@@ -4077,3 +4077,339 @@ fn b2_engine_judgment_assets_match_the_manifest() {
         assert_eq!(counted, 32, "{dir}: 판정 자산이 32건이 아니다");
     }
 }
+
+// ---------------------------------------------------------------------------
+// [#6037] 가드 술어 정밀화 — 한컴 판정 번들
+// ---------------------------------------------------------------------------
+
+/// 이번 술어가 **통과시키는** 편집만 모은다. 거부되는 것은 산출이 없어 판정 대상이 아니다.
+struct G6037 {
+    folder: &'static str,
+    stem: &'static str,
+    label: &'static str,
+    /// 목표 행렬을 만든다.
+    edit: fn(&mut serde_json::Value),
+    /// 판정표의 「기대 모양」.
+    expect: &'static str,
+}
+
+fn g6037_variants() -> Vec<G6037> {
+    fn push_series(e: &mut serde_json::Value, name: &str) {
+        let n = e["series"][0]["values"].as_array().unwrap().len();
+        e["series"]
+            .as_array_mut()
+            .unwrap()
+            .push(serde_json::json!({ "name": name, "values": vec!["11"; n] }));
+    }
+    let mut v = vec![
+        G6037 {
+            folder: "기타",
+            stem: "시가고가저가종가",
+            label: "중간계열추가",
+            edit: |e| {
+                let n = e["series"][0]["values"].as_array().unwrap().len();
+                let arr = e["series"].as_array_mut().unwrap();
+                let last = arr.len() - 1;
+                arr.insert(
+                    last,
+                    serde_json::json!({ "name": "추가계열", "values": vec!["11"; n] }),
+                );
+            },
+            expect: "계열 4→5, 끝은 종가 유지 — 캔들이 살아 있어야 한다(검은 박스면 실패)",
+        },
+        G6037 {
+            folder: "기타",
+            stem: "시가고가저가종가",
+            label: "중간계열삭제",
+            edit: |e| {
+                e["series"].as_array_mut().unwrap().remove(2);
+            },
+            expect: "계열 4→3(시가·고가·종가), 끝은 종가 유지 — 아래 꼬리만 사라진 캔들",
+        },
+        G6037 {
+            folder: "기타",
+            stem: "고가저가종가",
+            label: "꼬리계열추가",
+            edit: |e| push_series(e, "추가계열"),
+            expect: "계열 3→4. 캔들 장치가 없는 HLC 라 꼬리를 바꿔도 정상이어야 한다",
+        },
+    ];
+    for stem in [
+        "2차원원형",
+        "3차원원형",
+        "원형대원형",
+        "원형대가로막대형",
+        "쪼개진원형",
+    ] {
+        v.push(G6037 {
+            folder: "원형",
+            stem,
+            label: "계열추가",
+            edit: |e| push_series(e, "추가계열"),
+            expect: "계열 1→2. 원형은 첫 계열만 그리므로 **그림이 원본과 같아야** 한다 \
+                     (추가분은 보이지 않는 것이 정상, 파이가 사라지거나 값이 바뀌면 실패)",
+        });
+    }
+    v
+}
+
+/// [#6037 S5] 한컴 판정 번들 — 엔진 산출을 `output/` 에 낸다.
+///
+/// `cargo test --profile release-test --test issue_4100_chart_data_edit \
+///  generate_issue6037_judgment_bundle -- --ignored --nocapture`
+#[test]
+#[ignore = "판정 번들 생성 — 한컴 회신이 필요한 수동 절차"]
+fn generate_issue6037_judgment_bundle() {
+    let out_dir = manifest("output/issue6037_judgment");
+    std::fs::create_dir_all(&out_dir).expect("출력 디렉터리");
+
+    let mut sheet = String::from("# #6037 가드 술어 정밀화 — 한컴 판정표 (엔진 산출)\n\n");
+    sheet.push_str(
+        "가드 술어를 **계열 수**에서 **그리기 장치와의 짝**으로 좁혔습니다. 이 번들은 새로\n\
+         **통과시키기로 한** 편집만 담습니다 — 거부되는 것은 산출이 없어 판정 대상이 아닙니다.\n\n\
+         물어보는 것은 하나입니다: **통과시킨 것들이 한컴에서 멀쩡히 그려지는가.**\n\n",
+    );
+    sheet.push_str("## 보는 법\n\n");
+    sheet.push_str(
+        "1. `*-대조군.hwpx` 로 원본을 눈에 익힙니다.\n\
+         2. 변종마다 **네 가지**를 봐 주세요:\n   \
+         (a) 열 때 오류·복구 대화상자가 뜨는가\n   \
+         (b) 차트가 「기대 모양」대로 그려지는가\n   \
+         (c) 더블클릭하면 데이터 편집기가 열리는가\n   \
+         (d) 편집기의 행·열 수가 기대와 맞는가\n\n\
+         **원형 5종은 그림이 대조군과 같아야 정상입니다** — 계열을 더했는데 안 보이는 것이\n\
+         의도한 동작입니다(원형은 첫 계열만 그립니다). 파이가 사라지거나 조각 비율이 바뀌면\n\
+         실패입니다.\n\n\
+         **주식형 2종은 캔들이 살아 있어야 합니다** — 몸통이 통째로 검게 채워지면 실패입니다.\n\n",
+    );
+    sheet.push_str("## 산출물\n\n| 파일 | 무엇을 바꿨나 | 기대 모양 |\n|---|---|---|\n");
+
+    let variants = g6037_variants();
+    let mut written = 0usize;
+    let mut controls: Vec<&str> = Vec::new();
+    for v in &variants {
+        if !controls.contains(&v.stem) {
+            controls.push(v.stem);
+            let folder = v.folder;
+            let stem = v.stem;
+            std::fs::copy(
+                manifest(&format!("samples/chart/{folder}/{stem}.hwpx")),
+                out_dir.join(format!("{stem}-대조군.hwpx")),
+            )
+            .expect("대조군 복사");
+            written += 1;
+            sheet.push_str(&format!(
+                "| `{stem}-대조군.hwpx` | (무편집 원본) | 원본 그대로 |\n"
+            ));
+        }
+    }
+
+    for v in &variants {
+        for ext in ["hwpx", "hwp"] {
+            let src = manifest(&format!("samples/chart/{}/{}.{ext}", v.folder, v.stem));
+            let name = format!("{}-{}.{ext}", v.stem, v.label);
+            let mut core = core_of(&src);
+            let (legacy_before, emf_before) = b2_legacy_and_emf(&core);
+            let e = b2_structure_edits(&core, v.edit);
+            let out = set_chart(&mut core, &e);
+            assert_eq!(out["ok"], true, "{name}: 엔진이 거부했다 — {out}");
+            assert!(
+                !out["wrote"].as_array().unwrap().is_empty(),
+                "{name}: 쓴 표현이 없다 — {out}"
+            );
+            let bytes = if ext == "hwpx" {
+                core.export_hwpx_native().expect("HWPX 저장")
+            } else {
+                core.export_hwp_native().expect("HWP5 저장")
+            };
+            // 자기검증 — 재개방·①==②·③④ 불변.
+            let reread = DocumentCore::from_bytes(&bytes)
+                .unwrap_or_else(|err| panic!("{name}: rhwp 가 다시 열지 못한다 — {err:?}"));
+            let env = b2_envelope(&reread);
+            assert_eq!(env["ok"], true, "{name}: {env}");
+            let (zip_after, nested_after) = b2_representations(&reread);
+            if let Some(zip) = zip_after {
+                assert_eq!(zip, nested_after, "{name}: ① ≠ ②");
+            }
+            let (legacy_after, emf_after) = b2_legacy_and_emf(&reread);
+            assert_eq!(legacy_after, legacy_before, "{name}: ③ 이 변했다");
+            assert_eq!(emf_after, emf_before, "{name}: ④ 가 변했다");
+            std::fs::write(out_dir.join(&name), &bytes).expect("산출 쓰기");
+            written += 1;
+            sheet.push_str(&format!("| `{name}` | {} | {} |\n", v.label, v.expect));
+        }
+    }
+
+    sheet.push_str(&format!("\n총 {written} 파일.\n\n"));
+    sheet.push_str(
+        "## 따로 부탁드릴 것 하나 — 한컴 편집기에서 직접\n\n\
+         `시가고가저가종가` 를 열어 **한컴 데이터 편집기에서 `시가`(첫 계열)를 지우고** 저장 +\n\
+         PDF 로 내 주세요(`시가고가저가종가-첫계열삭제`). 엔진은 이 편집을 거부하므로 산출을\n\
+         만들 수 없는데, **그 거부가 옳은지는 아직 실측이 없습니다** — 캔들 몸통이 첫·끝 계열을\n\
+         쓰므로 첫 계열도 막았지만 추론이고, 이 한 건이 그것을 확정합니다.\n\n",
+    );
+    sheet.push_str(
+        "## PDF 회신\n\n\
+         각 파일을 한컴에서 열어 **같은 폴더에 PDF 로 저장**해 주시면 144DPI 래스터로 대조군과\n\
+         갈라 판정하겠습니다(`tools/hancom_chart_judgment_verify.py`). (d) 편집기 행·열 수는\n\
+         파일별로 한 줄씩 남겨 주세요.\n\n상세는 #6037.\n",
+    );
+    std::fs::write(out_dir.join("PANJEONG.md"), sheet).expect("판정표 쓰기");
+    println!("\n  판정 번들: {}", out_dir.display());
+    println!("  파일 {written}개 + 판정표 PANJEONG.md");
+    assert_eq!(written, 7 + 8 * 2, "대조군 7 + 변종 8 × 2포맷");
+}
+
+/// [#6037 S5] 판정 자산 트립와이어 — 원장에 적힌 바이트가 그대로 있는가.
+///
+/// 래스터 재계산은 `tools/hancom_chart_judgment_verify.py` 가 한다(PyMuPDF 필요). 여기서는
+/// CI 가 늘 돌 수 있는 것만 본다 — SHA-256 일치, 판정 단위 수, 포맷 간 판정 무모순.
+/// 원장 둘은 오라클이 다르다 — `MANIFEST.json` 은 **한컴 편집기 산출**, `MANIFEST-engine.json`
+/// 은 **rhwp 엔진 산출**이다.
+#[test]
+fn issue6037_judgment_assets_match_the_manifests() {
+    fn sha256_of(path: &std::path::Path) -> String {
+        use sha2::Digest as _;
+        let bytes = std::fs::read(path).unwrap_or_else(|e| panic!("{}: {e}", path.display()));
+        let mut hasher = sha2::Sha256::new();
+        hasher.update(&bytes);
+        hasher
+            .finalize()
+            .iter()
+            .map(|b| format!("{b:02x}"))
+            .collect()
+    }
+
+    for (rel, units) in [
+        ("samples/issue6037/MANIFEST.json", 13usize),
+        ("samples/issue6037/MANIFEST-engine.json", 8usize),
+    ] {
+        let ledger: serde_json::Value =
+            serde_json::from_slice(&std::fs::read(manifest(rel)).expect("원장 읽기"))
+                .expect("원장 JSON");
+        let entries = ledger["entries"].as_array().expect("entries");
+        let mut verdict_of_unit: std::collections::BTreeMap<String, String> = Default::default();
+
+        for entry in entries {
+            let name = entry["name"].as_str().expect("name");
+            // 문서·PDF 뿐 아니라 `documents[]` 의 포맷별 사본까지 전부 본다.
+            let mut pairs: Vec<(String, String)> = Vec::new();
+            for (pk, hk) in [
+                ("original_path", "original_sha256"),
+                ("hancom_pdf_path", "hancom_pdf_sha256"),
+            ] {
+                pairs.push((
+                    entry[pk].as_str().expect(pk).to_string(),
+                    entry[hk].as_str().expect(hk).to_string(),
+                ));
+            }
+            if let Some(docs) = entry["documents"].as_array() {
+                for d in docs {
+                    pairs.push((
+                        d["path"].as_str().expect("path").to_string(),
+                        d["sha256"].as_str().expect("sha256").to_string(),
+                    ));
+                }
+            }
+            for (path, want) in pairs {
+                let full = manifest(&path);
+                assert!(full.is_file(), "{rel} / {name}: {path} 이(가) 없다");
+                assert_eq!(
+                    sha256_of(&full),
+                    want,
+                    "{rel} / {name}: {path} SHA-256 불일치"
+                );
+            }
+
+            if entry["role"].as_str() == Some("control") {
+                assert_eq!(entry["verdict"], "대조군", "{rel} / {name}");
+                continue;
+            }
+            let unit = format!(
+                "{}-{}",
+                entry["base_document"].as_str().expect("base_document"),
+                entry["variant"].as_str().expect("variant")
+            );
+            let verdict = entry["verdict"].as_str().expect("verdict").to_string();
+            if let Some(prev) = verdict_of_unit.insert(unit.clone(), verdict.clone()) {
+                assert_eq!(prev, verdict, "{rel} / {unit}: 포맷 간 판정이 갈린다");
+            }
+        }
+        assert_eq!(verdict_of_unit.len(), units, "{rel}: 판정 단위 수");
+    }
+}
+
+/// [#6037 S5] 원장이 기록한 **결론**을 못 박는다 — 숫자가 아니라 판정의 의미를 지킨다.
+#[test]
+fn issue6037_ledgers_record_the_predicate_findings() {
+    let hancom: serde_json::Value = serde_json::from_slice(
+        &std::fs::read(manifest("samples/issue6037/MANIFEST.json")).expect("한컴 원장"),
+    )
+    .expect("JSON");
+    let engine: serde_json::Value = serde_json::from_slice(
+        &std::fs::read(manifest("samples/issue6037/MANIFEST-engine.json")).expect("엔진 원장"),
+    )
+    .expect("JSON");
+    let verdict = |l: &serde_json::Value, unit: &str| -> String {
+        l["entries"]
+            .as_array()
+            .expect("entries")
+            .iter()
+            .find(|e| {
+                format!(
+                    "{}-{}",
+                    e["base_document"].as_str().unwrap_or_default(),
+                    e["variant"].as_str().unwrap_or_default()
+                ) == unit
+            })
+            .and_then(|e| e["verdict"].as_str())
+            .unwrap_or_else(|| panic!("{unit} 판정이 원장에 없다"))
+            .to_string()
+    };
+
+    // 한컴 편집기 산출 — 파손은 양끝이 바뀔 때와 빈 계열일 때다.
+    for unit in [
+        "시가고가저가종가-종가삭제",   // 꼬리 삭제
+        "시가고가저가종가-첫계열삭제", // 첫 삭제 — 추론으로 막았던 것
+        "시가고가저가종가-꼬리계열추가",
+    ] {
+        assert_eq!(
+            verdict(&hancom, unit),
+            "반영_의미깨짐",
+            "{unit}: 양끝이 바뀌면 캔들이 깨진다는 실측이 흔들렸다"
+        );
+    }
+    for unit in ["시가고가저가종가-계열삭제", "고가저가종가-꼬리계열추가"] {
+        assert_eq!(
+            verdict(&hancom, unit),
+            "반영",
+            "{unit}: 양끝이 유지되거나 캔들이 없으면 정상이라는 실측이 흔들렸다"
+        );
+    }
+
+    // 엔진 산출 — 원형은 그림이 안 바뀌고(무효과), 주식형은 양끝 유지면 정상이다.
+    for stem in [
+        "2차원원형",
+        "3차원원형",
+        "원형대원형",
+        "원형대가로막대형",
+        "쪼개진원형",
+    ] {
+        assert_eq!(
+            verdict(&engine, &format!("{stem}-계열추가")),
+            "미반영",
+            "{stem}: 원형 계열 추가가 그림을 바꾸면 가드를 푼 근거가 무너진다"
+        );
+    }
+    for unit in [
+        "시가고가저가종가-중간계열추가",
+        "시가고가저가종가-중간계열삭제",
+        "고가저가종가-꼬리계열추가",
+    ] {
+        assert_eq!(
+            verdict(&engine, unit),
+            "반영",
+            "{unit}: 통과시킨 편집이 깨졌다"
+        );
+    }
+}
