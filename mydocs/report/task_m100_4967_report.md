@@ -109,7 +109,7 @@ Q3R의 same-snapshot query와 공개 계약 테스트는 qualification 증거의
 
 ## 7. 검증 결과
 
-- 공개 same-snapshot 계약: page tree build 쪽당 1, trace↔line membership 전건 1:1
+- 공개 same-snapshot 계약: current-thread page tree build 쪽당 1, trace↔line membership 전건 1:1
 - cache disposition 공개 fixture: `admitted`·`rejected`·`unmodelled` 경계 통과
 - 기존 Font Decision Trace 회귀: 불변
 - integration regression suite 009: 140/140
@@ -119,6 +119,22 @@ Q3R의 same-snapshot query와 공개 계약 테스트는 qualification 증거의
 - 공개 JSON privacy·canonical hash 검사 통과
 - Markdown 링크 검사 통과
 - `cargo fmt --all` 및 `cargo fmt --all -- --check` 통과
+
+### 7.1 push-preflight 검증 정정
+
+보고서 승인 뒤 기본 병렬 `regression_suite_009`를 재실행했을 때 최초 결과는 139/140이었다. 실패한
+same-snapshot test는 process-global `PAGE_TREE_BUILDS`를 reset한 뒤 읽는 동안 다른 병렬 테스트의 build를
+함께 세어 기대 1, 관찰 4가 됐다. 해당 테스트 단독 실행과 140건 직렬 실행은 모두 통과해 제품 query의
+다중 build 회귀와 구분했다.
+
+기존 전역 성능 counter와 전용 프로세스 테스트는 유지하고 generated suite용 current-thread counter를
+추가했다. 정정된 테스트는 별도 스레드의 실제 build가 현재 스레드 count를 오염하지 않는지 결정적으로
+검증한다. 이는 진단 계수기의 측정 범위 정정이며 query JSON·layout·font 판정과 본 보고서의 `no-change`
+결론에는 영향이 없다.
+
+fresh `--prepare` 뒤 #4967 원본이 포함된 `regression_suite_008`은 기본 병렬 3회 420/420, 직렬
+140/140을 통과했다. 기존 process-global 성능 가드 focused 4/4, Python 17/17, Clippy `-D warnings`,
+manifest·Markdown 링크·fmt·diff 검사와 Docker WASM 5분 56초도 통과했다. WASM `pkg` 추적 delta는 0이다.
 
 공개 정본 결과는
 [`rank8_private_qualification.json`](../tech/investigations/issue-4967/rank8_private_qualification.json),

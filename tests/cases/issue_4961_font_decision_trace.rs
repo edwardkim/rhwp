@@ -258,14 +258,35 @@ fn issue4967_combined_evidence_uses_one_tree_and_preserves_trace() {
     )
     .expect("standalone trace JSON");
 
-    rhwp::diagnostics::perf_counters::reset();
+    rhwp::diagnostics::perf_counters::reset_thread_page_tree_builds();
+    std::thread::spawn(|| {
+        let parallel_core = DocumentCore::from_bytes(include_bytes!("../../samples/field-01.hwp"))
+            .expect("parallel public fixture parses");
+        rhwp::diagnostics::perf_counters::reset_thread_page_tree_builds();
+        parallel_core
+            .get_font_decision_trace_native(0, r#"{"maxCharacters":4096}"#)
+            .expect("parallel standalone trace");
+        assert_eq!(
+            rhwp::diagnostics::perf_counters::thread_page_tree_builds(),
+            1
+        );
+    })
+    .join()
+    .expect("parallel counter probe joins");
+    assert_eq!(
+        rhwp::diagnostics::perf_counters::thread_page_tree_builds(),
+        0
+    );
     let evidence: serde_json::Value = serde_json::from_str(
         &core
             .get_font_layout_evidence_native(0, options)
             .expect("same-snapshot evidence"),
     )
     .expect("evidence JSON");
-    assert_eq!(rhwp::diagnostics::perf_counters::page_tree_builds(), 1);
+    assert_eq!(
+        rhwp::diagnostics::perf_counters::thread_page_tree_builds(),
+        1
+    );
     assert_eq!(evidence["scope"]["sameSnapshot"], true);
     assert_eq!(evidence["scope"]["pageTreeBuilds"], 1);
     assert_eq!(evidence["trace"], standalone);
