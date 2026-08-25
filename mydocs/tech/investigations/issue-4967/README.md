@@ -29,6 +29,29 @@ category·format·compressed fixed-context 수치가 일치했고 위험량 전�
 있다. 반면 v2 registry의 두 이름에 대한 explicit rule은 없다. 이 차이가 제품 miss인지 W4 관찰 경계인지
 Stage W8-R1-Q1에서 runtime trace로 판정한다.
 
+## Stage W8-R1-Q1 runtime 관찰 경계
+
+공개 HWPX fixture와 그 fixture를 `rhwp convert --verify --verify-pages`로 결정적으로 변환한 HWP5 fixture를
+같은 Font Decision Trace에 넣었다. 변환 계보와 digest는
+[`rank1_runtime_boundary.manifest.json`](fixtures/rank1_runtime_boundary.manifest.json), HWP fixture는
+[`rank1_runtime_boundary.hwp`](fixtures/rank1_runtime_boundary.hwp)에 고정했다. font bytes와 private corpus
+identity는 포함하지 않는다.
+
+재현 도구는 `scripts/font_rank1_runtime_boundary.mjs`, 계약 테스트는
+`scripts/tests/font_rank1_runtime_boundary.test.mjs`다. 공개 정본은
+[`rank1_runtime_boundary.json`](rank1_runtime_boundary.json)이다.
+
+- HWPX와 HWP5 모두 target 1,556건이며 runtime decision semantics가 같다.
+- 두 형식 모두 requested·normalized·alias-resolved face가 `문체부 바탕체`, layout-name step은 0이다.
+- metric entry는 전건 `null`, match kind는 전건 `none`이고 heuristic width 분포도 같다.
+- 각 형식의 native·현행 WASM canonical trace는 byte-exact하며 형식 간 trace digest도 같다.
+- W4 face miss는 raw-name 계측의 오탐이 아니라 runtime에서도 재현되는 실제 unresolved 경계다.
+- 첫 divergence는 기존 `MBatang` metric anchor 전의 `layout-name` plane이다.
+
+Q1 disposition은 `qualified-for-q2-layout-name-hypothesis`다. Q2는 제품 규칙을 바꾸지 않고 가상
+`문체부 바탕체 -> MBatang` relation에서 현행 generated metric과 exact `MT.TTF hmtx`만 제한 비교한다.
+paint identity·font supply 또는 제품 변경은 아직 qualification하지 않는다.
+
 공식 문체부 자료는 문화체육관광부 바탕체의 자유 이용·유료 판매 금지·출처 표시 조건을 설명하지만, 해당
 자료에서 local `MT.TTF`와 byte-exact한 공식 배포 artifact를 확인하지 못했다. local SFNT의
 `OS/2.fsType=2`도 restricted-license embedding을 선언한다. 따라서 Q0은 metric 계측 입력과 font bytes

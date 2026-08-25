@@ -1,0 +1,303 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-rank1-runtime-boundary-baseline",
+  "issue": 4967,
+  "stage": "W8-R1-Q1",
+  "target": {
+    "documentFace": "문체부 바탕체",
+    "canonicalFaceCandidate": "MBatang",
+    "queueRank": 1
+  },
+  "inputs": {
+    "hwpxFixture": {
+      "artifact": "mydocs/tech/investigations/issue-4963/fixtures/oracle_typesetting_fixture.hwpx",
+      "sha256": "8ded3aff6f0286ee5ee4ad9c66732026fa627220b529e5d0fa7b9d51bc3ddb3f"
+    },
+    "hwpFixture": {
+      "artifact": "mydocs/tech/investigations/issue-4967/fixtures/rank1_runtime_boundary.hwp",
+      "sha256": "081b597eb85c8431f691236ce36517edf863c1f10563d09edf2617a48cfbcb6b"
+    },
+    "fixtureManifest": {
+      "artifact": "mydocs/tech/investigations/issue-4967/fixtures/rank1_runtime_boundary.manifest.json",
+      "sha256": "f8d1d5ef3fdb76416fd7cf9115b3daf16974744c71c948baa1500443bcd41c53"
+    },
+    "q0Baseline": {
+      "artifact": "mydocs/tech/investigations/issue-4967/rank1_qualification_baseline.json",
+      "sha256": "aef00125b8bf98a33342b3f3bbb23ed562a9d8b638fd96809c2b0c37436f9438"
+    },
+    "nativeBinary": {
+      "artifact": "target/debug/rhwp-q-font-trace",
+      "sha256": "92a8b59bf26c4ed70cee71ea81ca1f8feec1f8e643e87a9f18eeb81d1dda7c59"
+    },
+    "wasmJs": {
+      "artifact": "pkg/rhwp.js",
+      "sha256": "5aa42ee0972a15f85995d64d2725c2ba98b7e1b1a88576dbf48b52447ac05cb9"
+    },
+    "wasmBinary": {
+      "artifact": "pkg/rhwp_bg.wasm",
+      "sha256": "63f1e5f87c7fe9e2a364d2ef99c15f37725be2f826d33c8f3a63e3bf74872913"
+    }
+  },
+  "formats": [
+    {
+      "format": "hwpx",
+      "fixtureSha256": "8ded3aff6f0286ee5ee4ad9c66732026fa627220b529e5d0fa7b9d51bc3ddb3f",
+      "trace": {
+        "records": 1556,
+        "requestedFaces": [
+          {
+            "value": "문체부 바탕체",
+            "count": 1556
+          }
+        ],
+        "normalizedFaces": [
+          {
+            "value": "문체부 바탕체",
+            "count": 1556
+          }
+        ],
+        "layoutNameStepCounts": [
+          {
+            "value": 0,
+            "count": 1556
+          }
+        ],
+        "aliasResolvedFaces": [
+          {
+            "value": "문체부 바탕체",
+            "count": 1556
+          }
+        ],
+        "languageSlots": [
+          {
+            "value": 0,
+            "count": 416
+          },
+          {
+            "value": 1,
+            "count": 1108
+          },
+          {
+            "value": 5,
+            "count": 32
+          }
+        ],
+        "metricEntries": [
+          {
+            "value": null,
+            "count": 1556
+          }
+        ],
+        "matchKinds": [
+          {
+            "value": "none",
+            "count": 1556
+          }
+        ],
+        "widthSources": [
+          {
+            "value": "heuristicFullwidth",
+            "count": 390
+          },
+          {
+            "value": "heuristicHalfwidth",
+            "count": 1114
+          },
+          {
+            "value": "heuristicNarrow",
+            "count": 52
+          }
+        ],
+        "paintRequestedFaces": {
+          "canvas2d": [
+            {
+              "value": "문체부 바탕체",
+              "count": 1556
+            }
+          ],
+          "canvaskit": [
+            {
+              "value": "문체부 바탕체",
+              "count": 1556
+            }
+          ],
+          "native": [
+            {
+              "value": "문체부 바탕체",
+              "count": 1556
+            }
+          ]
+        },
+        "layoutHash": "bd0ae773064929532d2be6b821f2bbad6465d2f0e506070fc9186df7167bff53",
+        "normalizedHash": "3e57079fd33765e3e3130c37b25572cdc2d762cd95853a7fdc12c46f321387b9",
+        "canonicalTraceSha256": "1f90e24b14bc47315b19e358e5db16ff60dbed1a35a313290f493eb944e74b20"
+      },
+      "parity": {
+        "nativeWasmByteExact": true,
+        "canonicalTraceSha256": "1f90e24b14bc47315b19e358e5db16ff60dbed1a35a313290f493eb944e74b20",
+        "maxCharacters": 4096
+      }
+    },
+    {
+      "format": "hwp5",
+      "fixtureSha256": "081b597eb85c8431f691236ce36517edf863c1f10563d09edf2617a48cfbcb6b",
+      "trace": {
+        "records": 1556,
+        "requestedFaces": [
+          {
+            "value": "문체부 바탕체",
+            "count": 1556
+          }
+        ],
+        "normalizedFaces": [
+          {
+            "value": "문체부 바탕체",
+            "count": 1556
+          }
+        ],
+        "layoutNameStepCounts": [
+          {
+            "value": 0,
+            "count": 1556
+          }
+        ],
+        "aliasResolvedFaces": [
+          {
+            "value": "문체부 바탕체",
+            "count": 1556
+          }
+        ],
+        "languageSlots": [
+          {
+            "value": 0,
+            "count": 416
+          },
+          {
+            "value": 1,
+            "count": 1108
+          },
+          {
+            "value": 5,
+            "count": 32
+          }
+        ],
+        "metricEntries": [
+          {
+            "value": null,
+            "count": 1556
+          }
+        ],
+        "matchKinds": [
+          {
+            "value": "none",
+            "count": 1556
+          }
+        ],
+        "widthSources": [
+          {
+            "value": "heuristicFullwidth",
+            "count": 390
+          },
+          {
+            "value": "heuristicHalfwidth",
+            "count": 1114
+          },
+          {
+            "value": "heuristicNarrow",
+            "count": 52
+          }
+        ],
+        "paintRequestedFaces": {
+          "canvas2d": [
+            {
+              "value": "문체부 바탕체",
+              "count": 1556
+            }
+          ],
+          "canvaskit": [
+            {
+              "value": "문체부 바탕체",
+              "count": 1556
+            }
+          ],
+          "native": [
+            {
+              "value": "문체부 바탕체",
+              "count": 1556
+            }
+          ]
+        },
+        "layoutHash": "bd0ae773064929532d2be6b821f2bbad6465d2f0e506070fc9186df7167bff53",
+        "normalizedHash": "3e57079fd33765e3e3130c37b25572cdc2d762cd95853a7fdc12c46f321387b9",
+        "canonicalTraceSha256": "1f90e24b14bc47315b19e358e5db16ff60dbed1a35a313290f493eb944e74b20"
+      },
+      "parity": {
+        "nativeWasmByteExact": true,
+        "canonicalTraceSha256": "1f90e24b14bc47315b19e358e5db16ff60dbed1a35a313290f493eb944e74b20",
+        "maxCharacters": 4096
+      }
+    }
+  ],
+  "formatComparison": {
+    "semanticEqual": true,
+    "languageSlotsDiffer": false,
+    "hwpxLanguageSlots": [
+      {
+        "value": 0,
+        "count": 416
+      },
+      {
+        "value": 1,
+        "count": 1108
+      },
+      {
+        "value": 5,
+        "count": 32
+      }
+    ],
+    "hwpLanguageSlots": [
+      {
+        "value": 0,
+        "count": 416
+      },
+      {
+        "value": 1,
+        "count": 1108
+      },
+      {
+        "value": 5,
+        "count": 32
+      }
+    ]
+  },
+  "firstDivergence": {
+    "targetDecisionPlane": "layout-name",
+    "observed": {
+      "requestedFace": "문체부 바탕체",
+      "normalizedFace": "문체부 바탕체",
+      "steps": 0,
+      "metricAliasResolvedFace": "문체부 바탕체",
+      "metricEntry": null,
+      "matchKind": "none"
+    },
+    "expectedForQ2Hypothesis": {
+      "normalizedFace": "MBatang",
+      "existingMetricAnchor": "font-metric.e6fdb023c2acf414807d"
+    },
+    "disposition": "qualified-for-q2-layout-name-hypothesis"
+  },
+  "executionPolicy": {
+    "fullCorpusRerun": false,
+    "hyperVOracleRerun": false,
+    "productMutation": false,
+    "publicFixturesOnly": true
+  },
+  "privacy": {
+    "absolutePathIncluded": false,
+    "fontBytesIncluded": false,
+    "privateCorpusAccessed": false,
+    "privateDocumentIdentityIncluded": false,
+    "fullTraceTracked": false
+  },
+  "canonicalSha256": "fe935443632d37715ed142edc475c4a4ec1f00aba2928615df5a02439bcc8267"
+}
