@@ -15815,6 +15815,35 @@ impl TypesetEngine {
                     prev_line_reserved_tac_picture_height = None;
                     continue;
                 }
+                // [#6086] 같은 vpos·다른 column_start 의 연속 저장 세그는 어울림
+                // 개체가 한 줄을 좌/우로 가른 **수평 분할**이다 — 같은 시각적
+                // 줄이므로 뒤 세그는 높이를 계상하지 않는다. 30098: 순서도 상자
+                // 옆 빈 문단 12개가 2세그 세로 적층으로 ×2 계상되어 +288px,
+                // 16쪽 vs 한글 15쪽. (#6035 의 쪽-리셋 동일-vpos 쌍은 column_start
+                // /폭이 같아 이 게이트에 걸리지 않는다.)
+                let horizontal_split_continuation = line_idx > 0
+                    && comp.lines.len() == para.line_segs.len()
+                    && para
+                        .line_segs
+                        .get(line_idx)
+                        .zip(para.line_segs.get(line_idx - 1))
+                        .is_some_and(|(cur, prev)| {
+                            let real = |seg: &crate::model::paragraph::LineSeg| {
+                                seg.tag
+                                    & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                                    == 0
+                            };
+                            real(cur)
+                                && real(prev)
+                                && cur.vertical_pos >= 0
+                                && cur.vertical_pos == prev.vertical_pos
+                                && cur.column_start != prev.column_start
+                        });
+                if horizontal_split_continuation {
+                    pairs.push((0.0, 0.0));
+                    prev_line_reserved_tac_picture_height = None;
+                    continue;
+                }
                 // Square wrap host 의 빈 wrap guide 줄은 높이를 제외하되, 같은 줄에
                 // TAC 수식/개체가 있으면 실제 콘텐츠 줄이므로 정상 advance 를 보존한다.
                 if has_picture_shape_square_wrap && runs_all_whitespace && !line_has_tac_control {
