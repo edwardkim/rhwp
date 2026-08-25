@@ -16,18 +16,19 @@ const HWP_FIXTURE: &str = "samples/2025 행정업무운영 편람(최종).hwp";
 const PAGE_30: u32 = 29;
 const PAGE_144: u32 = 143;
 const PAGE_145: u32 = 144;
-// [#5923] 비-TAC 다문단 셀 trailing 줄간격 제외로 Q&A 지역(281쪽 이후)이 한 쪽씩
-// 당겨진다 — p30·p144 지역은 불변이고 본문 문자 다중집합은 불변이다.
-const PAGE_283: u32 = 281;
-const PAGE_284: u32 = 282;
-const PAGE_285: u32 = 283;
-const PAGE_286: u32 = 284;
-const PAGE_287: u32 = 285;
-const PAGE_290: u32 = 288;
-const PAGE_291: u32 = 289;
-const PAGE_294: u32 = 292;
-const PAGE_295: u32 = 293;
-const PAGE_296: u32 = 294;
+const PAGE_277: u32 = 276;
+const PAGE_278: u32 = 277;
+const PAGE_279: u32 = 278;
+const PAGE_283: u32 = 282;
+const PAGE_284: u32 = 283;
+const PAGE_285: u32 = 284;
+const PAGE_286: u32 = 285;
+const PAGE_287: u32 = 286;
+const PAGE_290: u32 = 289;
+const PAGE_291: u32 = 290;
+const PAGE_294: u32 = 293;
+const PAGE_295: u32 = 294;
+const PAGE_296: u32 = 295;
 const Q5_RESPONSE_FIRST_LINE: &str = "문서는 결재권자의 결재가 완료된 시점에";
 const Q9_TITLE: &str = "보조기관, 보좌기관, 합의제행정기관의 의미";
 const Q10_TITLE: &str = "공문서 작성시 연·월·일의 정확한 표기방법";
@@ -106,6 +107,9 @@ fn issue_3930_preserves_page_count_and_inherited_even_master_page() {
     let source_p30_tree = page_tree(&source, PAGE_30);
     let source_p144_tree = page_tree(&source, PAGE_144);
     let source_p145_tree = page_tree(&source, PAGE_145);
+    let source_p277_tree = page_tree(&source, PAGE_277);
+    let source_p278_tree = page_tree(&source, PAGE_278);
+    let source_p279_tree = page_tree(&source, PAGE_279);
     let source_p283_tree = page_tree(&source, PAGE_283);
     let source_p284_tree = page_tree(&source, PAGE_284);
     let source_p285_tree = page_tree(&source, PAGE_285);
@@ -132,6 +136,20 @@ fn issue_3930_preserves_page_count_and_inherited_even_master_page() {
     assert!(
         !source_p145_tree.contains(ATTACHMENT_GUIDANCE),
         "원본 p145는 앞 표의 붙임 안내 블록을 다시 갖지 않아야 한다"
+    );
+    assert!(
+        source_p277_tree.contains("질의 및 답변")
+            && !source_p277_tree.contains("공문서란 무엇을 말하나요"),
+        "Q&A 장 표지는 PDF p277에 있어야 한다"
+    );
+    assert!(
+        !source_p278_tree.contains("질의 및 답변")
+            && !source_p278_tree.contains("공문서란 무엇을 말하나요"),
+        "두 explicit page break 사이의 PageHide 빈 쪽은 PDF p278처럼 보존해야 한다"
+    );
+    assert!(
+        source_p279_tree.contains("공문서란 무엇을 말하나요"),
+        "Q&A 목차는 PDF p279에서 시작해야 한다"
     );
     assert!(
         source_p283_tree.contains(Q5_RESPONSE_FIRST_LINE),
@@ -181,11 +199,9 @@ fn issue_3930_preserves_page_count_and_inherited_even_master_page() {
         source_p296_tree.contains(Q30_TITLE),
         "HWPX Q30 표제는 PDF/native HWP와 같이 p296에서 시작해야 한다"
     );
-    // [#5923] 383 → 382 — 비-TAC 다문단 셀 trailing 줄간격 제외. 본문 손실 없음
-    // (차이는 쪽 머리글 변형·쪽번호 꾸미기, #5801 게이트 동일 근거).
     assert_eq!(
         source.page_count(),
-        382,
+        383,
         "HWPX Q&A PageHide/목차 tail 보정 뒤 Hancom PDF 쪽수"
     );
     assert_eq!(
@@ -239,31 +255,25 @@ fn issue_3930_preserves_page_count_and_inherited_even_master_page() {
         "직렬화된 구역 10 SectionDef도 HWP 2020 바탕쪽 tail을 보존해야 한다"
     );
 
-    // [#5751] 종전에는 `reloaded == source` 등식이었다. 한글 2022 는 이 문서를
-    // `.hwp`·`.hwpx` 모두 **384쪽**으로 조판하는데, `#501` 가드 정정 뒤 저장 HWP
-    // 경로는 384 로 **정답에 도달**했고 HWPX 원본 경로만 383 에 남았다. 등식을
-    // 유지하면 정확해진 쪽을 되돌리라는 요구가 되고, 등식을 지우면 회귀 탐지력이
-    // 사라진다. 그래서 양쪽을 오라클 기준값과 함께 각각 고정한다. 남은 HWPX −1
-    // 격차는 HWP5/HWPX 조판 비대칭 축이라 별도 이슈로 추적한다.
-    //
-    // [#5923] 비-TAC 다문단 셀 trailing 줄간격 제외로 양쪽 모두 1쪽 당겨진다 —
-    // 저장 HWP 384→383, HWPX 원본 383→382. 같은 정정에서 native HWP fixture 는
-    // 385→384 가 되어 한글 2022 실측과 **정확히** 일치하게 됐다(#3820). 파생
-    // 경로의 추가 -1 은 기존 조판 비대칭 축의 연장이다.
+    // HWPX는 PDF p278 빈 쪽을 보존한다. 저장 HWP는 한글 2022 조판의 기존
+    // 추가 1쪽 계약까지 합쳐 384쪽이다.
     assert_eq!(
         reloaded.page_count(),
-        383,
-        "저장 HWP의 p144 table owner 보존 — [#5923] trailing 제외로 384→383"
+        384,
+        "저장 HWP는 한글 2022의 384쪽 조판 계약을 유지해야 한다"
     );
     assert_eq!(
         source.page_count(),
-        382,
-        "HWPX 원본 경로 — [#5923] trailing 제외로 383→382"
+        383,
+        "HWPX 원본 경로도 explicit PageHide 빈 쪽을 보존해야 한다"
     );
     for (page, source_tree) in [
         (PAGE_30, source_p30_tree),
         (PAGE_144, source_p144_tree),
         (PAGE_145, source_p145_tree),
+        (PAGE_277, source_p277_tree),
+        (PAGE_278, source_p278_tree),
+        (PAGE_279, source_p279_tree),
         (PAGE_283, source_p283_tree),
         (PAGE_284, source_p284_tree),
         (PAGE_285, source_p285_tree),

@@ -3817,8 +3817,8 @@ fn hwp5_origin_redundant_pagehide_break_marker(
 
     // Stored-layout HWPX section markers that combine a decorative group and
     // PageHide own the blank PageHide page immediately before a page-starting
-    // non-inline table. That marker is not the redundant HWP5-origin marker
-    // handled here.
+    // non-inline table or group. That marker is not the redundant HWP5-origin
+    // marker handled here.
     let hwpx_pagehide_blank_page_owner = hwpx_stored_layout
         && section_marker.controls.iter().any(|control| {
             matches!(
@@ -3830,10 +3830,14 @@ fn hwp5_origin_redundant_pagehide_break_marker(
                     )
             )
         })
-        && next_para
-            .controls
-            .iter()
-            .any(|control| matches!(control, Control::Table(table) if !table.common.treat_as_char));
+        && next_para.controls.iter().any(|control| match control {
+            Control::Table(table) => !table.common.treat_as_char,
+            Control::Shape(shape) => {
+                !shape.common().treat_as_char
+                    && matches!(shape.as_ref(), crate::model::shape::ShapeObject::Group(_))
+            }
+            _ => false,
+        });
 
     prior_empty.text.trim().is_empty()
         && prior_empty.controls.is_empty()

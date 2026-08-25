@@ -51,14 +51,13 @@ fn issue_5801_typeset_used_height_matches_stored_ladder() {
 }
 
 #[test]
-fn issue_5801_gate_does_not_move_the_page_boundary() {
-    // 회계만 고치고 쪽 경계는 건드리지 않는다 — 코퍼스 스윕에서도 쪽수 변화 0건이었다.
-    // [#5923] 다문단 셀 trailing 줄간격 제외(#5923 정합)로 383 → 382 로 1쪽 당겨진다.
-    // 본문 문자 다중집합은 불변이고 차이는 전부 쪽 머리글 변형·쪽번호 꾸미기다.
+fn issue_5801_gate_keeps_the_hancom_pdf_page_count() {
+    // #5801의 spacing 회계와 독립적으로, Q&A 장의 PageHide marker가 소유한
+    // PDF p278 빈 쪽까지 보존해야 한컴 PDF의 383쪽 경계가 유지된다.
     let doc = sample_doc();
     assert_eq!(
         doc.page_count(),
-        382,
-        "이 샘플의 쪽수는 게이트 전후로 같아야 한다"
+        383,
+        "이 샘플은 한컴 PDF의 PageHide 빈 쪽을 포함해 383쪽이어야 한다"
     );
 }
