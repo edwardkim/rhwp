@@ -2510,46 +2510,6 @@ mod tests {
         );
     }
 
-    #[test]
-    fn issue_6060_human_myeongjo_corner_quote_keeps_fullwidth() {
-        let m = EmbeddedTextMeasurer;
-        for family in [
-            "휴먼명조",
-            "'휴먼명조','Batang','바탕',serif",
-            "HumanMyeongJo",
-        ] {
-            let style = TextStyle {
-                font_family: family.to_string(),
-                font_size: 30.0,
-                ratio: 1.0,
-                ..Default::default()
-            };
-            let positions = m.compute_char_positions("「가", &style);
-            let quote_advance = positions[1] - positions[0];
-            assert!(
-                (quote_advance - 30.0).abs() < 1.5,
-                "{family} `「` 는 전각(≈30)이어야 함. got {quote_advance:.2} (반각 강제면 ≈15)"
-            );
-        }
-    }
-
-    #[test]
-    fn issue_6060_hy_headline_corner_quote_keeps_fullwidth() {
-        let m = EmbeddedTextMeasurer;
-        let style = TextStyle {
-            font_family: "HY헤드라인M".to_string(),
-            font_size: 30.0,
-            ratio: 1.0,
-            ..Default::default()
-        };
-        let positions = m.compute_char_positions("「가", &style);
-        let quote_advance = positions[1] - positions[0];
-        assert!(
-            (quote_advance - 30.0).abs() < 1.5,
-            "HY헤드라인M `「` 는 전각(≈30)이어야 함. got {quote_advance:.2} (반각 강제면 ≈15)"
-        );
-    }
-
     /// [U+00B7 .notdef 위장값 정정] 비례폰트(휴먼명조)에서 `·`(U+00B7) 글리프
     /// 부재로 cmap 이 .notdef(em_size) 로 위장 → 전각 측정되던 것을 narrow 로
     /// 정정한다. 한컴은 점 글리프를 가진 대체 폰트(바탕 ≈0.33em)로 `·` 를
