@@ -67,7 +67,8 @@ fn issue_5714_task2097_p2_top_row_full_height_bottom_row_squeezed() {
     assert_eq!(core.page_count(), 2, "한글 2024 COM 재실측 쪽수");
 
     let p2 = core.build_page_render_tree(1).expect("render p2");
-    let top = find_cell_containing(&p2.root, "국민 의견").expect("p2 must start at 국민 의견수렴 row");
+    let top =
+        find_cell_containing(&p2.root, "국민 의견").expect("p2 must start at 국민 의견수렴 row");
     assert!(
         (52.0..=60.0).contains(&top.bbox.height),
         "p2 첫 행은 전체 높이(한글 56.3px)여야 한다 — h={:.1} (유령 tail 밴드 압축이면 ~10px)",
