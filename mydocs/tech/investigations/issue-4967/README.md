@@ -1,17 +1,44 @@
 ---
 kind: investigation
 status: active
-canonical: mydocs/plans/task_m100_4967_v2.md
+canonical: mydocs/plans/task_m100_4967_v3.md
 last_verified: 2026-08-26
 ---
 
 # Issue #4967 — W8 font face 교정 qualification
 
-이 디렉터리는 W8 tracker의 첫 process canary인 rank 8 `KoPubWorld바탕체 Light`의 교정 적격성 증거를
-보존한다. rank 8 일괄 exact metric 후보와 rank 1 `문체부 바탕체` name-relation 후보는 각각
-Stage W8-Q5와 W8-R1-Q5에서 `no-change`로 종결됐으며 제품 font mapping은 변경하지 않는다. #4967 tracker는
-rank 7과 evidence-reopen lane 때문에 계속 active다. 최종 판정은
+이 디렉터리는 W8 tracker의 face별 교정 적격성 증거를 보존한다. rank 8 `KoPubWorld바탕체 Light`의
+일괄 exact metric 후보와 rank 1 `문체부 바탕체` name-relation 후보는 각각 Stage W8-Q5와 W8-R1-Q5에서
+`no-change`로 종결됐으며 제품 font mapping은 변경하지 않는다. rank 7 `KoPubWorld돋움체 Light`는
+Stage W8-R7-Q0에서 기존 증거·bounded cohort를 고정했고 독립 qualification을 진행 중이다. #4967 tracker는
+rank 7과 evidence-reopen lane 때문에 계속 active다. 완료된 face의 최종 판정은
 [`task_m100_4967_report.md`](../../../report/task_m100_4967_report.md)에 있다.
+
+## Stage W8-R7-Q0 증거 호환성과 bounded cohort
+
+rank 7은 같은 KoPubWorld family인 rank 8의 metric 결과를 재사용하지 않고 W3·W4·W5·W7.5 증거를 독립
+대사한다. 재현 도구는 `scripts/font_rank7_qualification.py`, 계약 테스트는
+`scripts/tests/test_font_rank7_qualification.py`다.
+
+- local-only 원장: `output/4967/w8-r7-q0/rank7_private_cohort.json`, mode `0600`
+- 공개 baseline: [`rank7_qualification_baseline.json`](rank7_qualification_baseline.json), mode `0644`
+- 10k corpus 재parse·Hyper-V Oracle 재실행·제품 source 변경: 0
+
+기존 journal의 rank 7 cohort는 5문서(HWP 3, HWPX 2), target 63,858자다. W4 위험 63,732자와
+category·format·compressed fixed-context 수치가 일치했고 위험량 전부가 stored lane이다.
+
+| 판정축 | 문자 수 |
+| --- | ---: |
+| table-cell / body / header / footer | 52,149 / 11,504 / 175 / 30 |
+| compressed 전체 / 위험 | 63,082 / 62,960 |
+| ratio 95·spacing -9 | 51,226 |
+| bold / italic | 4,468 / 0 |
+
+exact local TTF는 W5 SHA-256과 일치하고 `KoPubWorld돋움체 Light`, `KoPubWorldDotum Light`,
+`KoPubWorldDotumLight`가 같은 SFNT에 있다. 반면 현행 registry와 W7 projection에는 Canvas2D WOFF2·
+CanvasKit OTF supply rule만 있고 Rust layout-name·layout-metric rule은 없다. supply URL이 존재한다는 사실을
+metric identity로 승격하지 않는다. Stage W8-R7-Q1은 W5 hash-sealed fixture를 복원해 HWP/HWPX의 current
+runtime boundary와 native·WASM parity를 먼저 판정한다.
 
 ## Stage W8-R1-Q0 경계
 
