@@ -399,7 +399,8 @@ function handleAutosaveStatus(status: AutosaveStatus): void {
     return;
   }
 
-  const restoreTarget = autosavePreviousMessage;
+  const restoreTarget = autosavePreviousMessage
+    ?? (status.state === 'blocked' ? message.textContent ?? '' : null);
   autosavePreviousMessage = null;
   let nextMessage: string;
   if (status.state === 'saved') {
@@ -411,7 +412,7 @@ function handleAutosaveStatus(status: AutosaveStatus): void {
     nextMessage = '복구용 자동 저장 실패';
   }
   message.textContent = nextMessage;
-  if (restoreTarget !== null) {
+  if (restoreTarget !== null && restoreTarget !== nextMessage) {
     autosaveStatusRestoreTimer = setTimeout(() => {
       if (message.textContent === nextMessage) {
         message.textContent = restoreTarget;

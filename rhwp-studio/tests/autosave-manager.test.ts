@@ -265,8 +265,12 @@ test('AutosaveManager는 대기 중인 저장이 없으면 설정 변경만으�
 test('AutosaveManager는 보호 문서에서 평문 draft를 저장하지 않는다', async () => {
   const { store, saved } = createStore();
   const statuses: string[] = [];
+  let exportCalls = 0;
   const manager = new AutosaveManager({
-    exportBytes: () => new Uint8Array([1, 2, 3, 4]),
+    exportBytes: () => {
+      exportCalls += 1;
+      return new Uint8Array([1, 2, 3, 4]);
+    },
     isRecoveryBlocked: () => true,
     debounceMs: 0,
     minSaveIntervalMs: 0,
@@ -280,7 +284,82 @@ test('AutosaveManager는 보호 문서에서 평문 draft를 저장하지 않는
   await manager.flushNow('recovery-interval');
 
   assert.deepEqual(saved, []);
+  assert.equal(exportCalls, 0);
   assert.ok(statuses.includes('blocked'));
+});
+
+test('AutosaveManager는 보호 문서 차단도 idle debounce로 합친다', async () => {
+  const { store, saved, deleted } = createStore();
+  const eventBus = new EventBus();
+  const statuses: string[] = [];
+  let exportCalls = 0;
+  const manager = new AutosaveManager({
+    exportBytes: () => {
+      exportCalls += 1;
+      return new Uint8Array([1]);
+    },
+    isRecoveryBlocked: () => true,
+    schedule: {
+      recoveryEnabled: false,
+      idleEnabled: true,
+      idleDelayMs: 20,
+    },
+    idFactory: () => 'draft-protected-debounce',
+    store,
+    onStatus: (status) => statuses.push(status.state),
+  });
+
+  manager.connect(eventBus);
+  await manager.beginDocument({ fileName: 'secret.hwp', sourceFormat: 'hwp' });
+  for (let idx = 0; idx < 20; idx += 1) {
+    eventBus.emit('document-mutated', 'typing');
+    eventBus.emit('document-changed', 'typing');
+  }
+  await tick();
+
+  assert.deepEqual(saved, []);
+  assert.deepEqual(deleted, []);
+  assert.deepEqual(statuses, []);
+
+  await sleep(25);
+
+  assert.deepEqual(saved, []);
+  assert.deepEqual(deleted, ['draft-protected-debounce']);
+  assert.equal(exportCalls, 0);
+  assert.deepEqual(statuses, ['blocked']);
+});
+
+test('AutosaveManager는 자동저장이 꺼진 보호 문서에서 차단 알림도 예약하지 않는다', async () => {
+  const { store, saved, deleted } = createStore();
+  const eventBus = new EventBus();
+  const statuses: string[] = [];
+  let exportCalls = 0;
+  const manager = new AutosaveManager({
+    exportBytes: () => {
+      exportCalls += 1;
+      return new Uint8Array([1]);
+    },
+    isRecoveryBlocked: () => true,
+    schedule: {
+      recoveryEnabled: false,
+      idleEnabled: false,
+      idleDelayMs: 0,
+    },
+    idFactory: () => 'draft-protected-disabled',
+    store,
+    onStatus: (status) => statuses.push(status.state),
+  });
+
+  manager.connect(eventBus);
+  await manager.beginDocument({ fileName: 'secret.hwp', sourceFormat: 'hwp' });
+  eventBus.emit('document-mutated', 'typing');
+  eventBus.emit('document-changed', 'typing');
+  await sleep(5);
+
+  assert.deepEqual(saved, []);
+  assert.deepEqual(deleted, []);
+  assert.equal(exportCalls, 0);
+  assert.deepEqual(statuses, []);
 });
 
 test('AutosaveManager는 보호 상태로 바뀌면 남아 있던 draft를 폐기한다', async () => {

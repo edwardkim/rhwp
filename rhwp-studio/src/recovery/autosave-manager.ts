@@ -160,10 +160,6 @@ export class AutosaveManager {
 
   schedule(reason = 'document-mutated'): void {
     if (!this.current) return;
-    if (this.isRecoveryBlocked()) {
-      void this.flushNow(reason);
-      return;
-    }
     const settings = this.scheduleSettings;
     if (!settings.recoveryEnabled && !settings.idleEnabled) return;
 

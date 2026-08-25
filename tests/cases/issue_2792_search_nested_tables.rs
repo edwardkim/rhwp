@@ -19,8 +19,7 @@
 //!    깊이 1·2 매치는 같은 바깥 `cell.paragraph` 를 쓴다.
 //! 4. 중첩 매치는 `page` 를 **싣지 않는다** — 바깥 행으로 계산한 쪽은 틀리기 때문이다.
 //! 5. 본문·바깥 셀 매치의 동작은 종전 그대로다(순서 포함).
-//! 6. `replace_all_native` 는 중첩 전용 토큰을 바꾸지 않는다 — 이 사이클은
-//!    `DocumentCore::grep` / CLI `search` / MCP search 만 가르친다.
+//! 6. `replace_all_native` 는 중첩 전용 토큰도 같은 검색 순회로 찾아 바꾼다.
 #![cfg(not(target_arch = "wasm32"))]
 
 use rhwp::document_core::DocumentCore;
@@ -60,12 +59,34 @@ const FLAT_HML: &str = r#"<HWPML Version="2.91"><HEAD/><BODY><SECTION>
   </TABLE></TEXT></P>
 </SECTION></BODY><TAIL/></HWPML>"#;
 
+const TEXTBOX_TABLE_HML: &str = r#"<HWPML Version="2.91"><HEAD/><BODY><SECTION>
+  <P><TEXT><RECTANGLE X0="0" X1="5000" X2="5000" X3="0" Y0="0" Y1="0" Y2="2400" Y3="2400">
+    <SHAPEOBJECT><SIZE Width="5000" Height="2400"/></SHAPEOBJECT>
+    <DRAWINGOBJECT><SHAPECOMPONENT XPos="0" YPos="0" OriWidth="5000" OriHeight="2400" CurWidth="5000" CurHeight="2400"/>
+      <LINESHAPE Width="0" Style="Solid" EndCap="Flat" Alpha="0"/>
+      <DRAWTEXT><TEXTMARGIN Left="0" Right="0" Top="0" Bottom="0"/><PARALIST>
+        <P><TEXT><TABLE RowCount="1" ColCount="1">
+          <SHAPEOBJECT><SIZE Width="4000" Height="1200"/></SHAPEOBJECT>
+          <ROW><CELL ColAddr="0" RowAddr="0" Width="4000" Height="1200"><PARALIST>
+            <P><TEXT><CHAR>글상자표전용단어</CHAR></TEXT></P>
+          </PARALIST></CELL></ROW>
+        </TABLE></TEXT></P>
+      </PARALIST></DRAWTEXT>
+    </DRAWINGOBJECT>
+  </RECTANGLE></TEXT></P>
+</SECTION></BODY><TAIL/></HWPML>"#;
+
 fn nested() -> DocumentCore {
     DocumentCore::from_bytes(NESTED_HML.as_bytes()).expect("중첩 표 픽스처가 열려야 한다")
 }
 
 fn flat() -> DocumentCore {
     DocumentCore::from_bytes(FLAT_HML.as_bytes()).expect("평면 표 픽스처가 열려야 한다")
+}
+
+fn textbox_table() -> DocumentCore {
+    DocumentCore::from_bytes(TEXTBOX_TABLE_HML.as_bytes())
+        .expect("글상자 안 표 픽스처가 열려야 한다")
 }
 
 #[test]
@@ -199,21 +220,36 @@ fn limit_still_stops_early_with_nesting() {
 }
 
 #[test]
-fn replace_all_native_is_noop_on_nested_only_token() {
-    // grep 은 중첩 표까지 찾지만, 치환 엔진(`replace_all_native` / `search_all`)은
-    // 바깥 셀 문단만 본다. 이 사이클은 검색만 가르친다 — 치환은 아직 구멍이다.
+fn grep_finds_table_text_inside_textbox() {
+    let doc = textbox_table();
+    let hits = doc.grep("글상자표전용단어", true, None);
+    assert_eq!(
+        hits.len(),
+        1,
+        "글상자 안 표 텍스트를 직접 검색이 놓치면 안 됩니다: {hits:?}"
+    );
+    assert!(
+        hits[0].textbox.is_some(),
+        "글상자 안 표 매치는 최소한 글상자 호스트를 알려야 합니다: {:?}",
+        hits[0]
+    );
+}
+
+#[test]
+fn replace_all_native_replaces_nested_only_token() {
+    // grep 과 치환 엔진은 중첩 표 전용 토큰을 같은 범위로 다룬다.
     let mut doc = nested();
     assert_eq!(doc.grep("더깊은셀단어", true, None).len(), 1);
     let result = doc
-        .replace_all_native("더깊은셀단어", "치환되면안됨", true)
+        .replace_all_native("더깊은셀단어", "치환됨", true)
         .expect("replace_all_native 는 실패하지 않아야 한다");
     let v: serde_json::Value =
         serde_json::from_str(&result).unwrap_or_else(|e| panic!("{e}: {result}"));
     assert_eq!(v["ok"], true, "{result}");
     assert_eq!(
-        v["count"], 0,
-        "중첩 전용 토큰을 치환하면 안 됩니다: {result}"
+        v["count"], 1,
+        "중첩 전용 토큰도 한 번 치환되어야 합니다: {result}"
     );
-    assert_eq!(doc.grep("더깊은셀단어", true, None).len(), 1);
-    assert!(doc.grep("치환되면안됨", true, None).is_empty());
+    assert!(doc.grep("더깊은셀단어", true, None).is_empty());
+    assert_eq!(doc.grep("치환됨", true, None).len(), 1);
 }
