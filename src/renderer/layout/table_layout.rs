@@ -11320,11 +11320,6 @@ impl LayoutEngine {
                 table.page_break,
                 crate::model::table::TablePageBreak::RowBreak
             )
-            // 다행·다열 CELL 평가표의 문단 로컬 vpos=0 은 쪽 프레임이 아니다.
-            // valign=CENTER 셀은 선언 높이가 줄합과 비슷해 아래 4/5 검사가
-            // 우연히 참이 되고, 한 줄만 남긴 채 쪽을 비운다 (#6035).
-            || table.row_count != 1
-            || table.col_count != 1
             || cell.height >= 0x8000_0000
             || cell.paragraphs.iter().any(|paragraph| {
                 paragraph
@@ -11360,12 +11355,18 @@ impl LayoutEngine {
             }
         }
 
+        // reset 앞 조각이 선언 박스를 채운 경우만 저장 쪽 프레임이다.
+        // 문단 로컬 vpos=0 의 줄합이 valign=CENTER 선언 높이와 비슷하면
+        // preceding+trailing 4/5 가 우연히 참이 되어 한 줄만 남기고 쪽을
+        // 비운다 (#6035). 다행·다열 표까지 1×1 로 막으면 편람 HWPX 쪽수가
+        // 무너지므로, 리셋 앞 프레임만 본다.
         reset_count >= 2
             || (reset_count == 1 && {
-                let source_frame_span = preceding_frame_end.saturating_add(trailing_frame_end);
                 let declared_height = cell.height as i32;
-                source_frame_span >= declared_height.saturating_mul(4) / 5
-                    && source_frame_span <= declared_height
+                preceding_frame_end >= declared_height.saturating_mul(4) / 5
+                    && preceding_frame_end <= declared_height
+                    && trailing_frame_end > 0
+                    && trailing_frame_end <= declared_height
             })
     }
 
