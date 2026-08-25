@@ -11,6 +11,8 @@
 use std::path::Path;
 
 use rhwp::document_core::DocumentCore;
+use rhwp::renderer::composer::expand_pua_render_text;
+use rhwp::renderer::layout::map_pua_bullet_char;
 
 const SAMPLE: &str = "samples/issue6057/29494.hwp";
 
@@ -74,6 +76,17 @@ fn je_to_one_advances(svg: &str) -> Vec<(f64, f64)> {
         }
     }
     pairs
+}
+
+#[test]
+fn issue_6057_book_bracket_pua_expands_to_fullwidth_angle_brackets() {
+    assert_eq!(map_pua_bullet_char('\u{F0854}'), '\u{300A}');
+    assert_eq!(map_pua_bullet_char('\u{F0855}'), '\u{300B}');
+    assert_eq!(
+        expand_pua_render_text("법\u{F0855} 제"),
+        "법》 제",
+        "paint 경로가 U+F0855 를 전각 》 로 바꿔야 한다"
+    );
 }
 
 #[test]
