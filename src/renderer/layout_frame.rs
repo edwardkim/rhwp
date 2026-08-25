@@ -2,14 +2,136 @@
 
 #[cfg(feature = "subsecond-dev")]
 use std::cell::{Cell, RefCell};
-#[cfg(feature = "subsecond-dev")]
-use std::collections::HashMap;
 use std::ops::Range;
 
 use crate::model::paragraph::LineSeg;
 
 const SEGMENT_BOUNDARY_TAGS: u32 = LineSeg::TAG_FIRST_SEGMENT | LineSeg::TAG_LAST_SEGMENT;
 const MINIMUM_USABLE_INTERVAL_HWP: i32 = 1_440;
+
+#[cfg(feature = "subsecond-dev")]
+#[derive(Debug, Clone, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct FrameCarveTrace {
+    pub(crate) physical_row_index: usize,
+    pub(crate) top: i32,
+    pub(crate) line_height: i32,
+    pub(crate) intervals: Vec<Range<i32>>,
+}
+
+#[cfg(feature = "subsecond-dev")]
+#[derive(Debug, Clone, Default)]
+pub(crate) struct FrameCarveCapture {
+    pub(crate) total_records: usize,
+    pub(crate) truncated: bool,
+    pub(crate) records: Vec<FrameCarveTrace>,
+    limit: usize,
+    paragraph_filter: Option<usize>,
+}
+
+#[cfg(feature = "subsecond-dev")]
+#[derive(Clone, Copy)]
+pub(crate) struct FrameTraceCheckpoint {
+    total_records: usize,
+    truncated: bool,
+    records_len: usize,
+}
+
+#[cfg(feature = "subsecond-dev")]
+thread_local! {
+    static FRAME_TRACE: RefCell<Option<FrameCarveCapture>> = const { RefCell::new(None) };
+    static FRAME_PARAGRAPH: Cell<Option<usize>> = const { Cell::new(None) };
+}
+
+#[cfg(feature = "subsecond-dev")]
+pub(crate) fn replace_frame_trace_paragraph_index(value: Option<usize>) -> Option<usize> {
+    FRAME_PARAGRAPH.with(|slot| slot.replace(value))
+}
+
+#[cfg(feature = "subsecond-dev")]
+pub(crate) fn frame_trace_checkpoint() -> Option<FrameTraceCheckpoint> {
+    FRAME_TRACE.with(|slot| {
+        slot.borrow().as_ref().map(|capture| FrameTraceCheckpoint {
+            total_records: capture.total_records,
+            truncated: capture.truncated,
+            records_len: capture.records.len(),
+        })
+    })
+}
+
+#[cfg(feature = "subsecond-dev")]
+pub(crate) fn restore_frame_trace(checkpoint: Option<FrameTraceCheckpoint>) {
+    FRAME_TRACE.with(|slot| {
+        if let (Some(capture), Some(checkpoint)) = (slot.borrow_mut().as_mut(), checkpoint) {
+            capture.total_records = checkpoint.total_records;
+            capture.truncated = checkpoint.truncated;
+            capture.records.truncate(checkpoint.records_len);
+        }
+    });
+}
+
+#[cfg(feature = "subsecond-dev")]
+pub(crate) fn capture_frame_carves<T>(
+    enabled: bool,
+    limit: usize,
+    paragraph_filter: Option<usize>,
+    operation: impl FnOnce() -> T,
+) -> (T, FrameCarveCapture) {
+    if !enabled {
+        return (operation(), FrameCarveCapture::default());
+    }
+    let previous = FRAME_TRACE.with(|slot| {
+        slot.replace(Some(FrameCarveCapture {
+            limit,
+            paragraph_filter,
+            ..Default::default()
+        }))
+    });
+    struct Restore(Option<Option<FrameCarveCapture>>);
+    impl Drop for Restore {
+        fn drop(&mut self) {
+            if let Some(previous) = self.0.take() {
+                FRAME_TRACE.with(|slot| {
+                    slot.replace(previous);
+                });
+            }
+        }
+    }
+    let mut restore = Restore(Some(previous));
+    let result = operation();
+    let previous = restore.0.take().expect("frame trace restore owner");
+    let capture = FRAME_TRACE
+        .with(|slot| slot.replace(previous))
+        .unwrap_or_default();
+    (result, capture)
+}
+
+#[cfg(feature = "subsecond-dev")]
+fn record_frame_carve(top: i32, line_height: i32, intervals: &[Range<i32>]) {
+    FRAME_TRACE.with(|slot| {
+        let mut slot = slot.borrow_mut();
+        let Some(capture) = slot.as_mut() else { return };
+        if capture
+            .paragraph_filter
+            .is_some_and(|filter| FRAME_PARAGRAPH.with(Cell::get) != Some(filter))
+        {
+            return;
+        }
+        let physical_row_index = capture.total_records;
+        capture.total_records += 1;
+        if capture.records.len() >= capture.limit {
+            capture.truncated = true;
+            return;
+        }
+        let trace = FrameCarveTrace {
+            physical_row_index,
+            top,
+            line_height,
+            intervals: intervals.to_vec(),
+        };
+        capture.records.push(trace);
+    });
+}
 /// The column solver's unconditional inline-extent quantum.
 ///
 /// The recovered column-solver trace records this as a third quantization above
@@ -32,183 +154,6 @@ const MINIMUM_USABLE_INTERVAL_HWP: i32 = 1_440;
 /// `bw%4==2` documents and broke the `bw%4==0` ones.
 ///
 const COLUMN_WIDTH_QUANTUM_HWP: i32 = 4;
-
-#[cfg(feature = "subsecond-dev")]
-#[derive(Debug, Clone, serde::Serialize)]
-#[serde(rename_all = "camelCase")]
-pub(crate) struct FrameIntervalTrace {
-    pub(crate) start: i32,
-    pub(crate) end: i32,
-    pub(crate) width: i32,
-}
-
-#[cfg(feature = "subsecond-dev")]
-#[derive(Debug, Clone, serde::Serialize)]
-#[serde(rename_all = "camelCase")]
-pub(crate) struct FrameCarveTrace {
-    pub(crate) paragraph_index: Option<usize>,
-    pub(crate) physical_row_index: usize,
-    pub(crate) requested_top: i32,
-    pub(crate) resolved_top: i32,
-    pub(crate) band_height: i32,
-    pub(crate) intervals: Vec<FrameIntervalTrace>,
-    pub(crate) next_geometry_event: Option<i32>,
-    pub(crate) usable: bool,
-}
-
-#[cfg(feature = "subsecond-dev")]
-#[derive(Debug, Clone, Default)]
-pub(crate) struct FrameCarveCapture {
-    pub(crate) total_records: usize,
-    pub(crate) truncated: bool,
-    pub(crate) records: Vec<FrameCarveTrace>,
-    max_records: usize,
-    paragraph_filter: Option<usize>,
-    row_bases_by_paragraph: HashMap<Option<usize>, usize>,
-}
-
-#[cfg(feature = "subsecond-dev")]
-impl FrameCarveCapture {
-    fn with_limit(max_records: usize, paragraph_filter: Option<usize>) -> Self {
-        Self {
-            max_records,
-            paragraph_filter,
-            ..Self::default()
-        }
-    }
-}
-
-#[cfg(feature = "subsecond-dev")]
-thread_local! {
-    static FRAME_CARVE_TRACE: RefCell<Option<FrameCarveCapture>> = const { RefCell::new(None) };
-    static FRAME_TRACE_PARAGRAPH_INDEX: Cell<Option<usize>> = const { Cell::new(None) };
-}
-
-#[cfg(feature = "subsecond-dev")]
-pub(crate) fn replace_frame_trace_paragraph_index(paragraph_index: Option<usize>) -> Option<usize> {
-    FRAME_TRACE_PARAGRAPH_INDEX.with(|slot| slot.replace(paragraph_index))
-}
-
-#[cfg(feature = "subsecond-dev")]
-pub(crate) fn capture_frame_carves<T>(
-    enabled: bool,
-    max_records: usize,
-    paragraph_filter: Option<usize>,
-    operation: impl FnOnce() -> T,
-) -> (T, FrameCarveCapture) {
-    if !enabled {
-        return (operation(), FrameCarveCapture::default());
-    }
-    let guard = FrameCaptureGuard::new(max_records, paragraph_filter);
-    let result = operation();
-    (result, guard.finish())
-}
-
-#[cfg(feature = "subsecond-dev")]
-struct FrameCaptureGuard {
-    previous: Option<FrameCarveCapture>,
-    active: bool,
-}
-
-#[cfg(feature = "subsecond-dev")]
-impl FrameCaptureGuard {
-    fn new(max_records: usize, paragraph_filter: Option<usize>) -> Self {
-        Self {
-            previous: FRAME_CARVE_TRACE.with(|slot| {
-                slot.replace(Some(FrameCarveCapture::with_limit(
-                    max_records,
-                    paragraph_filter,
-                )))
-            }),
-            active: true,
-        }
-    }
-
-    fn finish(mut self) -> FrameCarveCapture {
-        let captured = FRAME_CARVE_TRACE
-            .with(|slot| slot.replace(self.previous.take()))
-            .unwrap_or_default();
-        self.active = false;
-        captured
-    }
-}
-
-#[cfg(feature = "subsecond-dev")]
-impl Drop for FrameCaptureGuard {
-    fn drop(&mut self) {
-        if self.active {
-            FRAME_CARVE_TRACE.with(|slot| {
-                slot.replace(self.previous.take());
-            });
-        }
-    }
-}
-
-#[cfg(feature = "subsecond-dev")]
-fn record_frame_carve(mut trace: FrameCarveTrace) {
-    FRAME_CARVE_TRACE.with(|slot| {
-        if let Some(capture) = slot.borrow_mut().as_mut() {
-            if capture
-                .paragraph_filter
-                .is_some_and(|filter| trace.paragraph_index != Some(filter))
-            {
-                return;
-            }
-            let row_base = *capture
-                .row_bases_by_paragraph
-                .entry(trace.paragraph_index)
-                .or_insert(trace.physical_row_index);
-            trace.physical_row_index = trace.physical_row_index.saturating_sub(row_base);
-            capture.total_records += 1;
-            if capture.records.len() < capture.max_records {
-                capture.records.push(trace);
-            } else {
-                capture.truncated = true;
-            }
-        }
-    });
-}
-
-#[cfg(feature = "subsecond-dev")]
-#[derive(Clone)]
-pub(crate) struct FrameTraceCheckpoint {
-    total_records: usize,
-    records_len: usize,
-    truncated: bool,
-    row_bases_by_paragraph: HashMap<Option<usize>, usize>,
-}
-
-#[cfg(feature = "subsecond-dev")]
-pub(crate) fn frame_trace_checkpoint() -> FrameTraceCheckpoint {
-    FRAME_CARVE_TRACE.with(|slot| {
-        slot.borrow()
-            .as_ref()
-            .map(|capture| FrameTraceCheckpoint {
-                total_records: capture.total_records,
-                records_len: capture.records.len(),
-                truncated: capture.truncated,
-                row_bases_by_paragraph: capture.row_bases_by_paragraph.clone(),
-            })
-            .unwrap_or(FrameTraceCheckpoint {
-                total_records: 0,
-                records_len: 0,
-                truncated: false,
-                row_bases_by_paragraph: HashMap::new(),
-            })
-    })
-}
-
-#[cfg(feature = "subsecond-dev")]
-pub(crate) fn restore_frame_trace(checkpoint: FrameTraceCheckpoint) {
-    FRAME_CARVE_TRACE.with(|slot| {
-        if let Some(capture) = slot.borrow_mut().as_mut() {
-            capture.total_records = checkpoint.total_records;
-            capture.records.truncate(checkpoint.records_len);
-            capture.truncated = checkpoint.truncated;
-            capture.row_bases_by_paragraph = checkpoint.row_bases_by_paragraph;
-        }
-    });
-}
 
 /// Snap a base edge down to `pitch`.
 ///
@@ -265,13 +210,17 @@ pub struct ParagraphBox {
 }
 
 impl ParagraphBox {
+    pub(crate) fn declared_horizontal(&self) -> Range<i32> {
+        self.horizontal.clone()
+    }
+
+    pub(crate) fn origin_is_derivable(&self) -> bool {
+        self.origin_is_derivable
+    }
+
     /// A column-relative box: `[margin_left, column_width - margin_right]`, the
     /// same range the render sites hand `LayoutFrame`.
     pub(crate) fn column(horizontal: Range<i32>) -> Self {
-        crate::hot_call!(Self::column_hot_impl, horizontal)
-    }
-
-    fn column_hot_impl(horizontal: Range<i32>) -> Self {
         Self {
             horizontal,
             origin_is_derivable: true,
@@ -296,51 +245,18 @@ impl ParagraphBox {
         margin_right_px: f64,
         dpi: f64,
     ) -> Self {
-        crate::hot_call!(
-            Self::body_hot_impl,
-            column_width_px,
-            margin_left_px,
-            margin_right_px,
-            dpi
-        )
-    }
-
-    fn body_hot_impl(
-        column_width_px: f64,
-        margin_left_px: f64,
-        margin_right_px: f64,
-        dpi: f64,
-    ) -> Self {
-        Self::body_hwp(
-            crate::renderer::px_to_hwpunit(column_width_px, dpi),
-            crate::renderer::px_to_hwpunit(margin_left_px, dpi),
-            crate::renderer::px_to_hwpunit(margin_right_px, dpi),
-        )
-    }
-
-    pub(crate) fn body_hwp(
-        column_width_hwp: i32,
-        margin_left_hwp: i32,
-        margin_right_hwp: i32,
-    ) -> Self {
-        crate::hot_call!(
-            Self::body_hwp_hot_impl,
-            column_width_hwp,
-            margin_left_hwp,
-            margin_right_hwp,
-        )
-    }
-
-    fn body_hwp_hot_impl(
-        column_width_hwp: i32,
-        margin_left_hwp: i32,
-        margin_right_hwp: i32,
-    ) -> Self {
         // The column solver quantizes the full inline extent before paragraph
-        // margins are applied. Snapping post-margin edges would incorrectly
-        // turn 850..37418 into 852..37416 (#1440).
-        let width = snap_base_right(column_width_hwp, COLUMN_WIDTH_QUANTUM_HWP);
-        Self::column(margin_left_hwp..width.saturating_sub(margin_right_hwp))
+        // margins are applied. This is the unconditional ÷4×4 lane recovered
+        // in the column solver, distinct from the paragraph's optional character
+        // grid. Snapping the post-margin edges would incorrectly turn
+        // 850..37418 into 852..37416 (#1440).
+        let column_width_hwp = snap_base_right(
+            crate::renderer::px_to_hwpunit(column_width_px, dpi),
+            COLUMN_WIDTH_QUANTUM_HWP,
+        );
+        let margin_left_hwp = crate::renderer::px_to_hwpunit(margin_left_px, dpi);
+        let margin_right_hwp = crate::renderer::px_to_hwpunit(margin_right_px, dpi);
+        Self::column(margin_left_hwp..column_width_hwp.saturating_sub(margin_right_hwp))
     }
 
     /// [`ParagraphBox::body`] for a paragraph whose resolved style is known.
@@ -353,49 +269,12 @@ impl ParagraphBox {
         style: Option<&crate::renderer::style_resolver::ResolvedParaStyle>,
         dpi: f64,
     ) -> Self {
-        crate::hot_call!(Self::body_for_style_hot_impl, column_width_px, style, dpi)
-    }
-
-    fn body_for_style_hot_impl(
-        column_width_px: f64,
-        style: Option<&crate::renderer::style_resolver::ResolvedParaStyle>,
-        dpi: f64,
-    ) -> Self {
-        Self::body_hwp_for_style(
-            crate::renderer::px_to_hwpunit(column_width_px, dpi),
-            style,
-            dpi,
-        )
-    }
-
-    pub(crate) fn body_hwp_for_style(
-        column_width_hwp: i32,
-        style: Option<&crate::renderer::style_resolver::ResolvedParaStyle>,
-        dpi: f64,
-    ) -> Self {
-        crate::hot_call!(
-            Self::body_hwp_for_style_hot_impl,
-            column_width_hwp,
-            style,
-            dpi,
-        )
-    }
-
-    fn body_hwp_for_style_hot_impl(
-        column_width_hwp: i32,
-        style: Option<&crate::renderer::style_resolver::ResolvedParaStyle>,
-        dpi: f64,
-    ) -> Self {
         use crate::model::style::HeadType;
-        let margin_left = style.map(|value| value.margin_left).unwrap_or(0.0);
-        let margin_right = style.map(|value| value.margin_right).unwrap_or(0.0);
-        let head_type = style.map(|value| value.head_type).unwrap_or(HeadType::None);
-        Self::body_hwp(
-            column_width_hwp,
-            crate::renderer::px_to_hwpunit(margin_left, dpi),
-            crate::renderer::px_to_hwpunit(margin_right, dpi),
-        )
-        .with_derivable_origin(matches!(head_type, HeadType::None | HeadType::Outline))
+        let margin_left = style.map(|s| s.margin_left).unwrap_or(0.0);
+        let margin_right = style.map(|s| s.margin_right).unwrap_or(0.0);
+        let head_type = style.map(|s| s.head_type).unwrap_or(HeadType::None);
+        Self::body(column_width_px, margin_left, margin_right, dpi)
+            .with_derivable_origin(matches!(head_type, HeadType::None | HeadType::Outline))
     }
 
     /// Declare whether this box's **origin** may be published, or only its width.
@@ -432,14 +311,6 @@ impl ParagraphBox {
     /// geometry pitch, which is the exposure Task 3 measured. Fixing the
     /// empty-list marker placement is the prerequisite for removing this.
     pub(crate) fn with_derivable_origin(self, origin_is_derivable: bool) -> Self {
-        crate::hot_call!(
-            Self::with_derivable_origin_hot_impl,
-            self,
-            origin_is_derivable
-        )
-    }
-
-    fn with_derivable_origin_hot_impl(self, origin_is_derivable: bool) -> Self {
         Self {
             origin_is_derivable: self.origin_is_derivable && origin_is_derivable,
             ..self
@@ -449,10 +320,6 @@ impl ParagraphBox {
     /// A box in a nested flow's own coordinates. Pass the real inset when the
     /// caller has one; `0..width` when the flow's left edge *is* the origin.
     pub(crate) fn content(horizontal: Range<i32>) -> Self {
-        crate::hot_call!(Self::content_hot_impl, horizontal)
-    }
-
-    fn content_hot_impl(horizontal: Range<i32>) -> Self {
         Self {
             horizontal,
             origin_is_derivable: true,
@@ -465,35 +332,17 @@ impl ParagraphBox {
     /// (`composer::recompose_cell_lines_in_frame`) is public, and a caller that
     /// cannot name its own coordinate system cannot use that entry at all.
     pub fn content_width_px(width_px: f64, dpi: f64) -> Self {
-        crate::hot_call!(Self::content_width_px_hot_impl, width_px, dpi)
-    }
-
-    fn content_width_px_hot_impl(width_px: f64, dpi: f64) -> Self {
         Self::content(0..crate::renderer::px_to_hwpunit(width_px, dpi))
     }
 
     /// The box after the geometry pitch — the single source for both the
     /// published record and the carved frame.
     pub(crate) fn effective(&self) -> Range<i32> {
-        crate::hot_call!(Self::effective_hot_impl, self)
-    }
-
-    fn effective_hot_impl(&self) -> Range<i32> {
         if self.origin_is_derivable {
             self.horizontal.clone()
         } else {
             0..self.horizontal.end.saturating_sub(self.horizontal.start)
         }
-    }
-
-    #[cfg(feature = "subsecond-dev")]
-    pub(crate) fn declared_horizontal(&self) -> Range<i32> {
-        self.horizontal.clone()
-    }
-
-    #[cfg(feature = "subsecond-dev")]
-    pub(crate) fn origin_is_derivable(&self) -> bool {
-        self.origin_is_derivable
     }
 
     pub(crate) fn width_hwp(&self) -> i32 {
@@ -538,10 +387,6 @@ impl ParagraphBox {
     /// deriving another horizontal range: two expressions for one quantity are
     /// what previously let the band and body disagree.
     pub(crate) fn frame_with(&self, top: i32, exclusions: Vec<FrameExclusion>) -> LayoutFrame {
-        crate::hot_call!(Self::frame_with_hot_impl, self, top, exclusions)
-    }
-
-    fn frame_with_hot_impl(&self, top: i32, exclusions: Vec<FrameExclusion>) -> LayoutFrame {
         LayoutFrame::new(self.effective(), top, exclusions)
     }
 
@@ -610,14 +455,6 @@ pub(crate) struct PhysicalRow {
 /// - Column-solver quantization belongs in `ParagraphBox::body`, before
 ///   paragraph margins. This predicate must not absorb it a second time.
 fn stored_row_matches_frame_expectation(expected: &Range<i32>, stored: &LineSeg) -> bool {
-    crate::hot_call!(
-        stored_row_matches_frame_expectation_hot_impl,
-        expected,
-        stored
-    )
-}
-
-fn stored_row_matches_frame_expectation_hot_impl(expected: &Range<i32>, stored: &LineSeg) -> bool {
     expected.start == stored.column_start
         && stored
             .column_start
@@ -665,10 +502,6 @@ pub(crate) struct LayoutFrame {
 impl LayoutFrame {
     /// Start a paragraph-local physical frame at a known horizontal extent.
     pub(crate) fn new(horizontal: Range<i32>, top: i32, exclusions: Vec<FrameExclusion>) -> Self {
-        crate::hot_call!(Self::new_hot_impl, horizontal, top, exclusions)
-    }
-
-    fn new_hot_impl(horizontal: Range<i32>, top: i32, exclusions: Vec<FrameExclusion>) -> Self {
         Self {
             horizontal,
             top,
@@ -682,22 +515,11 @@ impl LayoutFrame {
 
     /// Discard an uncommitted row trial and restore its exact frame state.
     pub(crate) fn restore_checkpoint(&mut self, checkpoint: Self) {
-        crate::hot_call!(Self::restore_checkpoint_hot_impl, self, checkpoint)
-    }
-
-    fn restore_checkpoint_hot_impl(&mut self, checkpoint: Self) {
         *self = checkpoint;
     }
 
     /// Carve the current physical row into ordered horizontal intervals.
     pub(crate) fn carve(&mut self, band_height: i32) -> &[Range<i32>] {
-        crate::hot_call!(Self::carve_hot_impl, self, band_height);
-        &self.current_intervals
-    }
-
-    fn carve_hot_impl(&mut self, band_height: i32) {
-        #[cfg(feature = "subsecond-dev")]
-        let requested_top = self.top;
         let old_max = self.next_geometry_event.map(|_| {
             self.current_intervals
                 .iter()
@@ -806,26 +628,7 @@ impl LayoutFrame {
             self.top = candidate_top;
             self.current_intervals = intervals;
             self.next_geometry_event = next_geometry_event;
-            #[cfg(feature = "subsecond-dev")]
-            record_frame_carve(FrameCarveTrace {
-                paragraph_index: FRAME_TRACE_PARAGRAPH_INDEX.with(Cell::get),
-                physical_row_index: self.rows.len(),
-                requested_top,
-                resolved_top: self.top,
-                band_height,
-                intervals: self
-                    .current_intervals
-                    .iter()
-                    .map(|interval| FrameIntervalTrace {
-                        start: interval.start,
-                        end: interval.end,
-                        width: interval.end.saturating_sub(interval.start),
-                    })
-                    .collect(),
-                next_geometry_event: self.next_geometry_event,
-                usable: self.carved_row_is_usable(),
-            });
-            return;
+            return &self.current_intervals;
         }
     }
 
@@ -905,19 +708,6 @@ impl LayoutFrame {
         &mut self,
         line_segs: &[LineSeg],
         metrics_for: impl Fn(&[LineSeg]) -> Option<FrameRowMetrics>,
-    ) -> bool {
-        crate::hot_call!(
-            Self::try_admit_stored_rows_hot_impl,
-            self,
-            line_segs,
-            &metrics_for,
-        )
-    }
-
-    fn try_admit_stored_rows_hot_impl(
-        &mut self,
-        line_segs: &[LineSeg],
-        metrics_for: &dyn Fn(&[LineSeg]) -> Option<FrameRowMetrics>,
     ) -> bool {
         let checkpoint = self.clone();
         let admitted = self.admit_stored_rows(line_segs, metrics_for).is_some();
@@ -1020,10 +810,6 @@ impl LayoutFrame {
     /// inverted interval published a negative width — the same corrupt record
     /// `ParagraphBox::is_usable` refuses upstream.
     pub(crate) fn carved_row_is_usable(&self) -> bool {
-        crate::hot_call!(Self::carved_row_is_usable_hot_impl, self)
-    }
-
-    fn carved_row_is_usable_hot_impl(&self) -> bool {
         !self.current_intervals.is_empty()
             && self
                 .current_intervals
@@ -1037,14 +823,6 @@ impl LayoutFrame {
     /// by `carve`. The frame gives all of them one vertical position, retains
     /// them as one physical row, then advances exactly once.
     pub(crate) fn commit_carved_row(
-        &mut self,
-        metrics: FrameRowMetrics,
-        segments: Vec<RowSegment>,
-    ) -> Option<usize> {
-        crate::hot_call!(Self::commit_carved_row_hot_impl, self, metrics, segments)
-    }
-
-    fn commit_carved_row_hot_impl(
         &mut self,
         mut metrics: FrameRowMetrics,
         segments: Vec<RowSegment>,
@@ -1061,6 +839,8 @@ impl LayoutFrame {
 
         metrics.vertical_pos = self.top;
         let row_index = self.rows.len();
+        #[cfg(feature = "subsecond-dev")]
+        record_frame_carve(self.top, metrics.line_height, &self.current_intervals);
         self.rows.push(PhysicalRow { metrics, segments });
         self.top = self
             .top
@@ -1092,10 +872,6 @@ impl LayoutFrame {
 
     /// Flatten retained physical rows at the document boundary.
     pub(crate) fn project_line_segs(&self) -> Vec<LineSeg> {
-        crate::hot_call!(Self::project_line_segs_hot_impl, self)
-    }
-
-    fn project_line_segs_hot_impl(&self) -> Vec<LineSeg> {
         let mut projected = Vec::new();
 
         for row in &self.rows {
@@ -1130,10 +906,6 @@ impl LayoutFrame {
 
     /// Flatten only rows appended after a paragraph-local checkpoint.
     pub(crate) fn project_line_segs_since(&self, first_row: usize) -> Vec<LineSeg> {
-        crate::hot_call!(Self::project_line_segs_since_hot_impl, self, first_row)
-    }
-
-    fn project_line_segs_since_hot_impl(&self, first_row: usize) -> Vec<LineSeg> {
         let first_segment = self.rows[..first_row.min(self.rows.len())]
             .iter()
             .map(|row| row.segments.len())
@@ -1148,49 +920,6 @@ impl LayoutFrame {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[cfg(feature = "subsecond-dev")]
-    fn trace(row: usize) -> FrameCarveTrace {
-        FrameCarveTrace {
-            paragraph_index: None,
-            physical_row_index: row,
-            requested_top: 0,
-            resolved_top: 0,
-            band_height: 1,
-            intervals: Vec::new(),
-            next_geometry_event: None,
-            usable: true,
-        }
-    }
-
-    #[cfg(feature = "subsecond-dev")]
-    fn nested_frame_capture_restores_after_unwind() {
-        let (_, captured) = capture_frame_carves(true, usize::MAX, None, || {
-            record_frame_carve(trace(1));
-            let _ = std::panic::catch_unwind(|| {
-                capture_frame_carves(true, usize::MAX, None, || -> () { panic!("inner capture") });
-            });
-            record_frame_carve(trace(2));
-        });
-        assert_eq!(
-            captured
-                .records
-                .iter()
-                .map(|trace| trace.physical_row_index)
-                .collect::<Vec<_>>(),
-            vec![1, 2]
-        );
-    }
-
-    #[cfg(feature = "subsecond-dev")]
-    fn frame_capture_limits_storage_while_counting_all_records() {
-        let (_, captured) = capture_frame_carves(true, 1, None, || {
-            record_frame_carve(trace(1));
-            record_frame_carve(trace(2));
-        });
-        assert_eq!((captured.total_records, captured.records.len()), (2, 1));
-        assert!(captured.truncated);
-    }
 
     fn metrics(line_height: i32, line_spacing: i32) -> FrameRowMetrics {
         FrameRowMetrics {
@@ -1478,11 +1207,6 @@ mod tests {
 
     #[test]
     fn taller_candidate_recarves_before_the_row_is_committed() {
-        #[cfg(feature = "subsecond-dev")]
-        {
-            nested_frame_capture_restores_after_unwind();
-            frame_capture_limits_storage_while_counting_all_records();
-        }
         every_body_route_builds_one_box_for_one_paragraph();
         the_column_solver_quantizes_before_paragraph_margins();
         the_snap_is_total_over_its_own_domain();
@@ -1550,6 +1274,27 @@ mod tests {
         assert!(projected[0].is_first_segment());
         assert!(projected[0].is_last_segment());
         assert_ne!(projected[0].tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY, 0);
+
+        #[cfg(feature = "subsecond-dev")]
+        {
+            let record = |top| record_frame_carve(top, 10, std::slice::from_ref(&(0..100)));
+            let (_, outer) = capture_frame_carves(true, 8, None, || {
+                record(1);
+                let (_, inner) = capture_frame_carves(true, 8, None, || record(2));
+                assert_eq!(inner.total_records, 1);
+                record(3);
+            });
+            assert_eq!(outer.total_records, 2);
+            assert_eq!(outer.records.len(), 2);
+            assert_eq!(outer.records[1].top, 3);
+            let (_, limited) = capture_frame_carves(true, 1, None, || {
+                record(4);
+                record(5);
+            });
+            assert_eq!(limited.total_records, 2);
+            assert_eq!(limited.records.len(), 1);
+            assert!(limited.truncated);
+        }
     }
 
     #[test]

@@ -3310,28 +3310,21 @@ impl DocumentCore {
             node: &RenderNode,
             runs: &mut Vec<String>,
             group_path: &mut Vec<usize>,
-            inherited_textbox_frame: Option<(f64, f64)>,
-            inherited_line_frame: Option<(f64, f64)>,
-            inherited_flow_context: Option<&'static str>,
+            line_width_hwp: Option<i32>,
+            flow_context: &'static str,
             dpi: f64,
         ) {
-            let textbox_frame = if matches!(node.node_type, RenderNodeType::TextBox) {
-                Some((node.bbox.x, node.bbox.width))
-            } else {
-                inherited_textbox_frame
-            };
-            let line_frame = if matches!(node.node_type, RenderNodeType::TextLine(_)) {
-                Some((node.bbox.x, node.bbox.width))
-            } else {
-                inherited_line_frame
+            let line_width_hwp = match node.node_type {
+                RenderNodeType::TextLine(_) => Some(diagnostic_px_to_hwpunit(node.bbox.width, dpi)),
+                _ => line_width_hwp,
             };
             let flow_context = match node.node_type {
-                RenderNodeType::Body { .. } => Some("body"),
-                RenderNodeType::Header => Some("header"),
-                RenderNodeType::Footer => Some("footer"),
-                RenderNodeType::MasterPage => Some("masterPage"),
-                RenderNodeType::FootnoteArea => Some("footnote"),
-                _ => inherited_flow_context,
+                RenderNodeType::Header => "header",
+                RenderNodeType::Footer => "footer",
+                RenderNodeType::MasterPage => "masterPage",
+                RenderNodeType::FootnoteArea => "footnote",
+                RenderNodeType::Body { .. } => "body",
+                _ => flow_context,
             };
             if let RenderNodeType::TextRun(ref text_run) = node.node_type {
                 let positions = text_run.replay_positions_for(&text_run.text);
@@ -3371,46 +3364,16 @@ impl DocumentCore {
                     String::new()
                 };
 
-                // Group child identity is a render-tree ancestry coordinate, not an editing
-                // cellPath coordinate.  Keep the two axes separate so diagnostic callers can
-                // resolve a child TextBox without changing cursor/table APIs.
-                let group_coords = if group_path.is_empty() {
-                    String::new()
-                } else {
-                    format!(
-                        ",\"groupPath\":[{}]",
-                        group_path
-                            .iter()
-                            .map(usize::to_string)
-                            .collect::<Vec<_>>()
-                            .join(",")
-                    )
-                };
-                let textbox_coords = textbox_frame
-                    .map(|(x, width)| {
-                        format!(
-                            ",\"textContainerX\":{},\"textContainerWidth\":{},\"textContainerXHwp\":{},\"textContainerWidthHwp\":{}",
-                            x,
-                            width,
-                            diagnostic_px_to_hwpunit(x, dpi),
-                            diagnostic_px_to_hwpunit(width, dpi),
-                        )
-                    })
-                    .unwrap_or_default();
-                let line_coords = line_frame
-                    .map(|(x, width)| {
-                        format!(
-                            ",\"lineContainerX\":{},\"lineContainerWidth\":{},\"lineContainerXHwp\":{},\"lineContainerWidthHwp\":{}",
-                            x,
-                            width,
-                            diagnostic_px_to_hwpunit(x, dpi),
-                            diagnostic_px_to_hwpunit(width, dpi),
-                        )
-                    })
-                    .unwrap_or_default();
-                let flow_coords = flow_context
-                    .map(|context| format!(",\"flowContext\":\"{context}\""))
-                    .unwrap_or_default();
+                let diagnostic_coords = format!(
+                    ",\"groupPath\":[{}],\"lineContainerWidthHwp\":{},\"flowContext\":\"{}\"",
+                    group_path
+                        .iter()
+                        .map(usize::to_string)
+                        .collect::<Vec<_>>()
+                        .join(","),
+                    line_width_hwp.unwrap_or(0),
+                    flow_context,
+                );
 
                 let escaped_font = super::super::helpers::json_escape(&text_run.style.font_family);
                 let font_info = format!(
@@ -3445,7 +3408,7 @@ impl DocumentCore {
                 };
 
                 runs.push(format!(
-                    "{{\"text\":\"{}\",\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1},\"charX\":[{}]{}{}{}{}{}{}{}{}{}}}",
+                    "{{\"text\":\"{}\",\"x\":{:.1},\"y\":{:.1},\"w\":{:.1},\"h\":{:.1},\"charX\":[{}]{}{}{}{}{}{}}}",
                     escaped_text,
                     node.bbox.x,
                     node.bbox.y,
@@ -3457,27 +3420,16 @@ impl DocumentCore {
                     shape_ids,
                     doc_coords,
                     cell_coords,
-                    group_coords,
-                    textbox_coords,
-                    line_coords,
-                    flow_coords,
+                    diagnostic_coords,
                 ));
             }
-            let owns_group_children = matches!(node.node_type, RenderNodeType::Group(_));
-            for (child_index, child) in node.children.iter().enumerate() {
-                if owns_group_children {
-                    group_path.push(child_index);
+            let group = matches!(node.node_type, RenderNodeType::Group(_));
+            for (index, child) in node.children.iter().enumerate() {
+                if group {
+                    group_path.push(index);
                 }
-                collect_text_runs(
-                    child,
-                    runs,
-                    group_path,
-                    textbox_frame,
-                    line_frame,
-                    flow_context,
-                    dpi,
-                );
-                if owns_group_children {
+                collect_text_runs(child, runs, group_path, line_width_hwp, flow_context, dpi);
+                if group {
                     group_path.pop();
                 }
             }
@@ -3489,8 +3441,7 @@ impl DocumentCore {
             &mut runs,
             &mut Vec::new(),
             None,
-            None,
-            Some("body"),
+            "body",
             self.dpi,
         );
 
@@ -4212,17 +4163,6 @@ impl DocumentCore {
         &mut self,
         fragment_budget: usize,
     ) -> DeferredPaginationStepResult {
-        crate::hot_call!(
-            Self::begin_deferred_pagination_hot_impl,
-            self,
-            fragment_budget,
-        )
-    }
-
-    fn begin_deferred_pagination_hot_impl(
-        &mut self,
-        fragment_budget: usize,
-    ) -> DeferredPaginationStepResult {
         self.pending_pagination_job = None;
         let Some(descriptor) = self.deferred_pagination_descriptor.clone() else {
             return DeferredPaginationStepResult {
@@ -4353,17 +4293,6 @@ impl DocumentCore {
     /// [#2424] shadow job에서 fragment budget만큼 전진한다.
     /// 완료 전에는 기존 공개 pagination과 render tree cache를 유지한다.
     pub fn step_deferred_pagination(
-        &mut self,
-        fragment_budget: usize,
-    ) -> DeferredPaginationStepResult {
-        crate::hot_call!(
-            Self::step_deferred_pagination_hot_impl,
-            self,
-            fragment_budget,
-        )
-    }
-
-    fn step_deferred_pagination_hot_impl(
         &mut self,
         fragment_budget: usize,
     ) -> DeferredPaginationStepResult {
@@ -4590,10 +4519,6 @@ impl DocumentCore {
     }
 
     fn paginate_pass(&mut self, force_breaks: &[std::collections::HashSet<usize>]) {
-        crate::hot_call!(Self::paginate_pass_hot_impl, self, force_breaks)
-    }
-
-    fn paginate_pass_hot_impl(&mut self, force_breaks: &[std::collections::HashSet<usize>]) {
         // [#4968 R4C-3] 이번 pass의 모든 fresh-layout 경로가 동일한 exact-source
         // generation을 읽는다. 등록 source가 없으면 None으로 K0 fast path를 고정한다.
         self.styles.kerning_measurement_context =
@@ -5457,10 +5382,6 @@ impl DocumentCore {
     /// [#2004] 부동 전면 이미지 스택 섹션의 정규화본(그림 tac=true 재분류 + 재구성)을 재계산.
     /// 원본 `document`/`composed` 는 무손상(save 무결). paginate 시작 시 호출.
     pub(crate) fn compute_render_normalized(&mut self) {
-        crate::hot_call!(Self::compute_render_normalized_hot_impl, self)
-    }
-
-    fn compute_render_normalized_hot_impl(&mut self) {
         let sec_count = self.document.sections.len();
         self.render_normalization
             .section_revisions
@@ -6522,27 +6443,6 @@ impl DocumentCore {
         old_text_len: usize,
         new_text_len: usize,
     ) -> Option<FocusedPageTreePatch> {
-        crate::hot_call!(
-            Self::try_patch_cached_focused_cell_tail_line_hot_impl,
-            self,
-            (
-                section_idx,
-                parent_para_idx,
-                control_idx,
-                cell_idx,
-                cell_para_idx,
-            ),
-            (line_index, line_start, old_text_len, new_text_len),
-        )
-    }
-
-    fn try_patch_cached_focused_cell_tail_line_hot_impl(
-        &self,
-        location: (usize, usize, usize, usize, usize),
-        edit: (usize, usize, usize, usize),
-    ) -> Option<FocusedPageTreePatch> {
-        let (section_idx, parent_para_idx, control_idx, cell_idx, cell_para_idx) = location;
-        let (line_index, line_start, old_text_len, new_text_len) = edit;
         // partial Canvas replay는 일반 화면 text만 대상으로 한다. 편집 표식/디버그
         // overlay는 bbox 밖에 별도 glyph를 그릴 수 있으므로 기존 full repaint를 유지한다.
         if self.show_paragraph_marks || self.show_control_codes || self.debug_overlay {
@@ -6794,20 +6694,6 @@ impl DocumentCore {
 
     /// 캐시된 페이지 렌더 트리를 반환한다 (캐시 미스 시 빌드 후 캐시).
     pub(crate) fn build_page_tree_cached(&self, page_num: u32) -> Result<PageRenderTree, HwpError> {
-        self.ensure_page_tree_cached(page_num)?;
-        self.page_tree_cache
-            .borrow()
-            .get(page_num as usize)
-            .and_then(Option::as_ref)
-            .cloned()
-            .ok_or_else(|| HwpError::RenderError("페이지 tree cache 채우기 실패".into()))
-    }
-
-    fn ensure_page_tree_cached(&self, page_num: u32) -> Result<(), HwpError> {
-        crate::hot_call!(Self::ensure_page_tree_cached_hot_impl, self, page_num)
-    }
-
-    fn ensure_page_tree_cached_hot_impl(&self, page_num: u32) -> Result<(), HwpError> {
         let idx = page_num as usize;
 
         // 캐시 크기 확보 + 히트 확인
@@ -6817,23 +6703,23 @@ impl DocumentCore {
                 cache.resize_with(idx + 1, || None);
             }
             if let Some(ref tree) = cache[idx] {
-                let _ = tree;
-                return Ok(());
+                return Ok(tree.clone());
             }
         }
 
         // 캐시 미스 → 빌드
         let tree = self.build_page_tree(page_num)?;
+        let cloned = tree.clone();
 
         {
             let mut cache = self.page_tree_cache.borrow_mut();
             if cache.len() <= idx {
                 cache.resize_with(idx + 1, || None);
             }
-            cache[idx] = Some(tree);
+            cache[idx] = Some(cloned);
         }
 
-        Ok(())
+        Ok(tree)
     }
 
     /// 캐시된 페이지 렌더 트리를 참조로 사용한다.
@@ -6846,7 +6732,20 @@ impl DocumentCore {
         build: impl FnOnce(&PageRenderTree) -> Result<T, HwpError>,
     ) -> Result<T, HwpError> {
         let idx = page_num as usize;
-        self.ensure_page_tree_cached(page_num)?;
+        let cached = self
+            .page_tree_cache
+            .borrow()
+            .get(idx)
+            .is_some_and(Option::is_some);
+
+        if !cached {
+            let tree = self.build_page_tree(page_num)?;
+            let mut cache = self.page_tree_cache.borrow_mut();
+            if cache.len() <= idx {
+                cache.resize_with(idx + 1, || None);
+            }
+            cache[idx] = Some(tree);
+        }
 
         let cache = self.page_tree_cache.borrow();
         let tree = cache[idx]
@@ -6857,10 +6756,6 @@ impl DocumentCore {
 
     /// 페이지 렌더 트리를 빌드한다.
     pub(crate) fn build_page_tree(&self, page_num: u32) -> Result<PageRenderTree, HwpError> {
-        crate::hot_call!(Self::build_page_tree_hot_impl, self, page_num)
-    }
-
-    fn build_page_tree_hot_impl(&self, page_num: u32) -> Result<PageRenderTree, HwpError> {
         use crate::model::style::HeadType;
         use crate::renderer::layout::resolve_numbering_id;
         use crate::renderer::pagination::PageItem;
@@ -7873,391 +7768,8 @@ mod tests {
     use crate::model::bin_data::BinDataContent;
     use crate::renderer::render_tree::RenderNodeType;
 
-    #[cfg(feature = "subsecond-dev")]
-    use super::super::line_break_provenance::{
-        classify_stored_cache, descend_group_path_segment, first_partition_mismatch,
-        line_seg_trace, stored_rows_are_well_formed,
-    };
-    #[cfg(feature = "subsecond-dev")]
-    use crate::model::{paragraph::LineSeg, shape::ShapeObject};
-
-    #[cfg(feature = "subsecond-dev")]
-    fn line_break_provenance_regressions() {
-        fn stored_frame_report(core: &DocumentCore) -> serde_json::Value {
-            let report = core
-                .line_break_provenance_native(
-                    0,
-                    0,
-                    &[],
-                    r#"{"geometry":false,"measurement":false,"geometryMode":"stored-lineseg"}"#,
-                )
-                .expect("stored-frame provenance report");
-            serde_json::from_str(&report).expect("provenance JSON")
-        }
-
-        let segments = [
-            LineSeg {
-                tag: LineSeg::TAG_FIRST_SEGMENT,
-                ..Default::default()
-            },
-            LineSeg {
-                tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
-                ..Default::default()
-            },
-        ];
-        assert!(!stored_rows_are_well_formed(&segments));
-
-        let stored = [
-            LineSeg {
-                tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
-                ..Default::default()
-            },
-            LineSeg {
-                tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
-                text_start: 5,
-                ..Default::default()
-            },
-        ];
-        let fresh = [
-            LineSeg {
-                tag: LineSeg::TAG_FIRST_SEGMENT,
-                ..Default::default()
-            },
-            LineSeg {
-                tag: LineSeg::TAG_LAST_SEGMENT,
-                text_start: 5,
-                ..Default::default()
-            },
-        ];
-        assert!(stored_rows_are_well_formed(&stored));
-        assert!(stored_rows_are_well_formed(&fresh));
-        assert_eq!(first_partition_mismatch(&stored, &fresh), Some(0));
-
-        let fixture =
-            std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/calc-cell.hwp");
-        let bytes = std::fs::read(&fixture).expect("read calc-cell fixture");
-        let mut core = DocumentCore::from_bytes(&bytes).expect("parse calc-cell fixture");
-        core.document.sections[0].paragraphs[0].line_segs = vec![
-            LineSeg {
-                tag: LineSeg::TAG_FIRST_SEGMENT,
-                segment_width: 1_200,
-                ..Default::default()
-            },
-            LineSeg {
-                tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
-                segment_width: 1_200,
-                ..Default::default()
-            },
-        ];
-        let value = stored_frame_report(&core);
-        assert_eq!(value["storedRowsWellFormed"], false);
-        assert_eq!(value["comparison"]["comparable"], false);
-        assert_eq!(value["comparison"]["matches"], serde_json::Value::Null);
-        assert_eq!(value["productionAdmission"], serde_json::Value::Null);
-        core.document.sections[0].paragraphs[0].line_segs = vec![
-            LineSeg {
-                tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
-                text_start: 8,
-                segment_width: 1_200,
-                ..Default::default()
-            },
-            LineSeg {
-                tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
-                text_start: 4,
-                segment_width: 1_200,
-                ..Default::default()
-            },
-        ];
-        let descending = stored_frame_report(&core);
-        assert_eq!(descending["storedRowsWellFormed"], false);
-        assert_eq!(descending["comparison"]["comparable"], false);
-        assert_eq!(descending["comparison"]["matches"], serde_json::Value::Null);
-
-        let mut core = DocumentCore::from_bytes(&bytes).expect("parse calc-cell fixture");
-        let paragraph = &mut core.document.sections[0].paragraphs[0];
-        paragraph.text = "\tX".into();
-        paragraph.char_offsets = vec![0, 8];
-        paragraph.char_count = 10;
-        paragraph.line_segs = vec![LineSeg {
-            tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
-            text_start: 8,
-            segment_width: 1_200,
-            ..Default::default()
-        }];
-        let value = stored_frame_report(&core);
-        assert_eq!(value["textUtf16Length"], 9);
-        assert_eq!(value["stored"][0]["textStartUtf16"], 8);
-        assert_eq!(value["geometrySource"], "stored-lineseg-scalar-frame");
-        assert_eq!(value["productionAdmission"], serde_json::Value::Null);
-
-        let mut core = DocumentCore::from_bytes(&bytes).expect("parse calc-cell fixture");
-        core.document.sections[0].paragraphs[0].line_segs = vec![
-            LineSeg {
-                tag: LineSeg::TAG_FIRST_SEGMENT,
-                segment_width: 100,
-                ..Default::default()
-            },
-            LineSeg {
-                tag: LineSeg::TAG_LAST_SEGMENT,
-                column_start: 200,
-                segment_width: 100,
-                ..Default::default()
-            },
-        ];
-        let value = stored_frame_report(&core);
-        assert_eq!(value["storedRowsWellFormed"], true);
-        assert_eq!(value["freshGeometryComplete"], false);
-        assert_eq!(value["comparison"]["comparable"], false);
-        assert_eq!(value["comparison"]["matches"], serde_json::Value::Null);
-
-        const HOST: usize = 325;
-        let picture_fixture = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
-            .join("samples/3-09월_교육_통합_2022.hwp");
-        let picture_bytes = std::fs::read(picture_fixture).expect("read p325 fixture");
-        let mut core = DocumentCore::from_bytes(&picture_bytes).expect("parse p325 fixture");
-        let column = core.document.sections[0].paragraphs[0]
-            .controls
-            .iter_mut()
-            .find_map(|control| match control {
-                Control::ColumnDef(column) => Some(column),
-                _ => None,
-            })
-            .expect("column definition");
-        column.same_width = false;
-        column.proportional_widths = true;
-        column.widths = vec![22_000, 10_000];
-        column.gaps = vec![500];
-        core.para_column_map[0].clear();
-        let inspect = |core: &DocumentCore| {
-            let report = core
-                .line_break_provenance_native(
-                    0,
-                    HOST,
-                    &[],
-                    r#"{"geometry":false,"measurement":false}"#,
-                )
-                .expect("picture-band provenance");
-            serde_json::from_str::<serde_json::Value>(&report).expect("provenance JSON")
-        };
-        for value in [inspect(&core), {
-            core.para_column_map[0].resize(HOST + 1, 0);
-            core.para_column_map[0][HOST] = u16::MAX;
-            inspect(&core)
-        }] {
-            assert_eq!(value["columnIndex"], serde_json::Value::Null);
-            assert_eq!(value["geometrySource"], "picture-band-column-fallback");
-            assert_eq!(value["freshGeometryComplete"], false);
-            assert_eq!(value["comparison"]["comparable"], false);
-        }
-
-        use crate::renderer::pagination::{ColumnContent, PageItem};
-        let mut core = DocumentCore::from_bytes(&bytes).expect("parse calc-cell fixture");
-        let column_def = ColumnDef {
-            column_count: 2,
-            same_width: false,
-            proportional_widths: true,
-            widths: vec![10_000, 22_000],
-            gaps: vec![500],
-            ..Default::default()
-        };
-        let page_def = &core.document.sections[0].section_def.page_def;
-        let layout = PageLayoutInfo::from_page_def(page_def, &column_def, core.dpi);
-        let first_x = layout.column_areas[0].x + 1.0;
-        let column = |column_index, item| ColumnContent {
-            column_index,
-            start_height: 0.0,
-            endnote_flow: false,
-            items: vec![item],
-            zone_layout: None,
-            zone_y_offset: 0.0,
-            wrap_around_paras: Vec::new(),
-            used_height: 0.0,
-            wrap_anchors: std::collections::HashMap::new(),
-            overlay_continuations: Vec::new(),
-            overlay_cuts: Vec::new(),
-        };
-        let page = &mut core.pagination[0].pages[0];
-        page.layout = layout;
-        page.column_contents = vec![
-            column(0, PageItem::FullParagraph { para_index: 0 }),
-            column(
-                1,
-                PageItem::PartialParagraph {
-                    para_index: 0,
-                    start_line: 0,
-                    end_line: 1,
-                },
-            ),
-        ];
-        let options = serde_json::json!({
-            "geometry": false,
-            "measurement": false,
-            "pageIndex": 0,
-            "textX": first_x,
-        });
-        let report = core
-            .line_break_provenance_native(0, 0, &[], &options.to_string())
-            .expect("split body provenance");
-        let value: serde_json::Value = serde_json::from_str(&report).expect("provenance JSON");
-        assert_eq!(
-            value["geometrySource"],
-            "visible-page-unequal-column-fragments"
-        );
-        assert_eq!(value["freshGeometryComplete"], false);
-        assert_eq!(value["comparison"]["comparable"], false);
-
-        let paragraph = Paragraph {
-            line_segs: vec![LineSeg {
-                tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
-                ..Default::default()
-            }],
-            ..Default::default()
-        };
-        paragraph.invalidate_layout_inputs();
-        assert_eq!(
-            classify_stored_cache(&paragraph),
-            ("stale-text-partition", true, false, 1)
-        );
-
-        let paragraph = Paragraph {
-            line_segs: vec![
-                LineSeg {
-                    tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
-                    ..Default::default()
-                },
-                LineSeg {
-                    tag: LineSeg::TAG_SINGLE_SEGMENT_LINE | LineSeg::TAG_IMPLEMENTATION_PROPERTY,
-                    ..Default::default()
-                },
-            ],
-            layout_only_fill_lines: 1,
-            ..Default::default()
-        };
-        let (kind, authentic, eligible, source_prefix_len) = classify_stored_cache(&paragraph);
-        assert_eq!(kind, "mixed-source-and-synthetic");
-        assert!(!authentic);
-        assert!(!eligible);
-        let (records, _, _) = line_seg_trace(&paragraph.line_segs, source_prefix_len, 2, 2);
-        assert!(records[0].source_cache_authentic);
-        assert!(!records[1].source_cache_authentic);
-
-        let mut core = DocumentCore::from_bytes(&bytes).expect("parse calc-cell fixture");
-        let para_shape_id = core
-            .resolve_control_para(0, 0, &[(2, 0, 0)])
-            .expect("cell paragraph")
-            .para_shape_id as usize;
-        core.styles.para_styles[para_shape_id].margin_left = 10.0;
-        let report = core
-            .line_break_provenance_native(
-                0,
-                0,
-                &[(2, 0, 0)],
-                r#"{"geometry":false,"measurement":false,"visibleFrameWidthHwp":1201}"#,
-            )
-            .expect("cell provenance");
-        let value: serde_json::Value = serde_json::from_str(&report).expect("provenance JSON");
-        assert_eq!(value["geometrySource"], "visible-line-content-frame-hwp");
-        assert_eq!(value["paragraphBox"]["declared"]["width"], 1_201);
-        assert_eq!(value["productionAdmission"], serde_json::Value::Null);
-
-        let group_fixture =
-            std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/group-box.hwp");
-        let group_bytes = std::fs::read(group_fixture).expect("read group-box fixture");
-        let core = DocumentCore::from_bytes(&group_bytes).expect("parse group-box fixture");
-        let layout: serde_json::Value = serde_json::from_str(
-            &core
-                .get_page_text_layout_native(0)
-                .expect("group-box text layout"),
-        )
-        .expect("text layout JSON");
-        let run = layout["runs"]
-            .as_array()
-            .and_then(|runs| {
-                runs.iter().find(|run| {
-                    run["groupPath"]
-                        .as_array()
-                        .is_some_and(|path| !path.is_empty())
-                })
-            })
-            .expect("grouped TextBox run");
-        let cell_path = run["cellPath"]
-            .as_array()
-            .expect("grouped TextBox cellPath")
-            .iter()
-            .map(|entry| {
-                (
-                    entry["controlIndex"].as_u64().unwrap() as usize,
-                    entry["cellIndex"].as_u64().unwrap() as usize,
-                    entry["cellParaIndex"].as_u64().unwrap() as usize,
-                )
-            })
-            .collect::<Vec<_>>();
-        let width = run["lineContainerWidthHwp"]
-            .as_i64()
-            .expect("canonical grouped line width") as i32;
-        let options = serde_json::json!({
-            "geometry": false,
-            "measurement": false,
-            "groupPath": run["groupPath"],
-            "visibleFrameWidthHwp": width,
-        });
-        let report = core
-            .line_break_provenance_native(
-                run["secIdx"].as_u64().unwrap() as usize,
-                run["parentParaIdx"].as_u64().unwrap() as usize,
-                &cell_path,
-                &options.to_string(),
-            )
-            .expect("grouped line provenance");
-        let value: serde_json::Value = serde_json::from_str(&report).expect("provenance JSON");
-        assert_eq!(
-            value["geometrySource"],
-            "visible-group-line-content-frame-hwp"
-        );
-        assert_eq!(value["paragraphBox"]["declared"]["width"], i64::from(width));
-
-        let outer = ShapeObject::Group(crate::model::shape::GroupShape {
-            children: vec![ShapeObject::Rectangle(Default::default())],
-            ..Default::default()
-        });
-        let inner = ShapeObject::Group(crate::model::shape::GroupShape {
-            children: vec![ShapeObject::Rectangle(Default::default())],
-            ..Default::default()
-        });
-        let mut depth = 0;
-        assert!(matches!(
-            descend_group_path_segment(&outer, &[0, 0], &mut depth).unwrap(),
-            ShapeObject::Rectangle(_)
-        ));
-        assert_eq!(depth, 1);
-        assert!(matches!(
-            descend_group_path_segment(&inner, &[0, 0], &mut depth).unwrap(),
-            ShapeObject::Rectangle(_)
-        ));
-        assert_eq!(depth, 2);
-
-        let mut segments = vec![LineSeg {
-            tag: LineSeg::TAG_FIRST_SEGMENT,
-            ..Default::default()
-        }];
-        segments.extend((0..8).map(|_| LineSeg::default()));
-        segments.push(LineSeg {
-            tag: LineSeg::TAG_LAST_SEGMENT,
-            ..Default::default()
-        });
-        assert!(stored_rows_are_well_formed(&segments));
-        let (records, row_count, segment_count) = line_seg_trace(&segments, segments.len(), 1, 2);
-        assert_eq!(row_count, 1);
-        assert_eq!(segment_count, 10);
-        assert_eq!(records.len(), 2);
-    }
-
     #[test]
     fn issue3137_focused_partial_repaint_rejects_unsafe_justify_and_extra_spacing() {
-        #[cfg(feature = "subsecond-dev")]
-        line_break_provenance_regressions();
-        let px = crate::renderer::hwpunit_to_px(1_201, 96.0);
-        assert_eq!(diagnostic_px_to_hwpunit(px, 96.0), 1_201);
         assert!(focused_partial_repaint_alignment_is_safe(
             Alignment::Left,
             false,

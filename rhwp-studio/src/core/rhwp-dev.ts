@@ -14,7 +14,6 @@ interface TextRunInfo {
   cellParaIdx?: number;
   cellPath?: Array<{ controlIndex: number; cellIndex: number; cellParaIndex: number }>;
   groupPath?: number[];
-  textContainerWidthHwp?: number;
   lineContainerWidthHwp?: number;
   flowContext?: 'body' | 'header' | 'footer' | 'masterPage' | 'footnote';
 }
@@ -37,10 +36,8 @@ export interface LineBreakProvenanceOptions {
   geometry?: boolean;
   measurement?: boolean;
   geometryMode?: 'current-frame' | 'stored-lineseg';
-  maxRows?: number;
+  maxRecords?: number;
   maxCarves?: number;
-  maxTokens?: number;
-  maxFitDecisions?: number;
 }
 
 export interface RhwpDevOptions {
@@ -90,17 +87,11 @@ export function initRhwpDev(wasm: WasmBridge, devOptions: RhwpDevOptions = {}): 
         target.parentParaIdx,
         JSON.stringify(cellPath),
         JSON.stringify({
-          geometry: options.geometry ?? true,
-          measurement: options.measurement ?? true,
+          ...options,
           pageIndex: target.pageIndex,
           textX: target.textX,
           groupPath: target.groupPath ?? [],
           visibleFrameWidthHwp: target.lineContainerWidthHwp,
-          geometryMode: options.geometryMode ?? 'current-frame',
-          maxRows: options.maxRows ?? 128,
-          maxCarves: options.maxCarves ?? 128,
-          maxTokens: options.maxTokens ?? 256,
-          maxFitDecisions: options.maxFitDecisions ?? 512,
         }),
       ));
     } catch (error) {
@@ -260,19 +251,11 @@ export function initRhwpDev(wasm: WasmBridge, devOptions: RhwpDevOptions = {}): 
     lineBreakVisible(
       pageNum?: number,
       options: LineBreakProvenanceOptions & { start?: number; limit?: number } = {},
-    ): {
-      pages: number[];
-      total: number;
-      offset: number;
-      limit: number;
-      truncated: boolean;
-      available: boolean;
-      error: string | null;
-      errors: unknown[];
-      nextOffset: number | null;
-      items: unknown[];
-    } {
+    ) {
       const targets = new Map<string, LineBreakProvenanceTarget>();
+      const offset = Math.max(0, Math.floor(options.start ?? 0));
+      const limit = Math.min(100, Math.max(1, Math.floor(options.limit ?? 20)));
+      const errors: unknown[] = [];
       const pages = pageNum === undefined
         ? devOptions.getVisiblePageIndices?.() ?? []
         : [pageNum];
@@ -282,6 +265,13 @@ export function initRhwpDev(wasm: WasmBridge, devOptions: RhwpDevOptions = {}): 
           data = JSON.parse((wasm as any).doc.getPageTextLayout(page));
         } catch (error) {
           console.warn(`[rhwpDev] page ${page} text layout 조회 실패`, error);
+          if (errors.length < limit) {
+            errors.push({
+              status: 'error',
+              pageIndex: page,
+              error: error instanceof Error ? error.message : String(error),
+            });
+          }
           continue;
         }
         for (const run of data.runs ?? []) {
@@ -327,40 +317,32 @@ export function initRhwpDev(wasm: WasmBridge, devOptions: RhwpDevOptions = {}): 
           }
         }
       }
-      const offset = Math.max(0, Math.floor(options.start ?? 0));
-      const limit = Math.min(100, Math.max(1, Math.floor(options.limit ?? 20)));
       const available = lineBreakInspectorAvailable();
       const targetList = Array.from(targets.values());
       const reports: unknown[] = [];
-      const errors: unknown[] = [];
       let cursor = offset;
-      while (available && cursor < targetList.length && reports.length < limit) {
+      let processed = 0;
+      while (available && cursor < targetList.length && processed < limit) {
         const report = inspectLineBreak(targetList[cursor], {
           geometry: options.geometry ?? false,
           measurement: options.measurement ?? false,
           geometryMode: options.geometryMode,
-          maxRows: options.maxRows,
+          maxRecords: options.maxRecords,
           maxCarves: options.maxCarves,
-          maxTokens: options.maxTokens,
-          maxFitDecisions: options.maxFitDecisions,
         });
         cursor += 1;
-        if (report && typeof report === 'object' && (report as { status?: string }).status === 'error') {
-          if (errors.length < 20) errors.push(report);
-        } else if (report !== null) {
+        processed += 1;
+        if (report && (report as { status?: string }).status === 'error') {
+          if (errors.length < limit) errors.push(report);
+        } else if (report) {
           reports.push(report);
         }
       }
-      console.log(`[rhwpDev] page(s) ${pages.join(',')} line-break provenance: ${reports.length} paragraph(s)`);
       return {
-        pages,
-        total: targets.size,
-        offset,
-        limit,
-        truncated: available && cursor < targets.size,
         available,
         error: available ? null : 'SUBSECOND_BASE_RESTART_REQUIRED',
         errors,
+        total: targets.size,
         nextOffset: available && cursor < targets.size ? cursor : null,
         items: reports,
       };
@@ -407,7 +389,7 @@ DEV 모드 (vite dev server) 영역 영역 자동 로드되는 디버깅 헬퍼.
 
   rhwpDev.lineBreakVisible(pageNum?, options?)
     해당 페이지(생략 시 현재 보이는 쪽)의 본문·중첩 셀 문단을 중복 제거해 전부 비교
-    기본 20개 paged boundary 요약; 상세 carve/token trace는 options lane을 켜거나 lineBreak() 사용
+    기본 20개 target; measurement/maxRecords는 채택 line, geometry/maxCarves는 commit frame carve
 
   rhwpDev.fidelity()
     현재 PDF whole-document fidelity harness API

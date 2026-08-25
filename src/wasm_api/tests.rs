@@ -2926,8 +2926,9 @@ fn test_cell_text_layout_contains_cell_info() {
         .and_then(|runs| runs.first())
         .expect("first cell text run");
     assert_eq!(run["flowContext"], "body");
-    assert!(run["lineContainerX"].is_number());
-    assert!(run["lineContainerWidth"].is_number());
+    assert!(run["lineContainerWidthHwp"]
+        .as_i64()
+        .is_some_and(|width| width > 0));
 
     let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/group-box.hwp");
     let bytes = std::fs::read(path).expect("read group-box fixture");
@@ -2946,16 +2947,10 @@ fn test_cell_text_layout_contains_cell_info() {
         })
         .expect("grouped TextBox run");
     assert_eq!(grouped["groupPath"][0], 0);
-    assert_eq!(grouped["textContainerXHwp"], 16_510);
-    assert_eq!(grouped["textContainerWidthHwp"], 1_703);
+    assert!(grouped["lineContainerWidthHwp"]
+        .as_i64()
+        .is_some_and(|width| width > 0));
     assert_eq!(grouped["flowContext"], "body");
-
-    let outside = runs
-        .iter()
-        .find(|run| run.get("groupPath").is_none())
-        .expect("sibling outside the group");
-    assert!(outside.get("textContainerWidthHwp").is_none());
-    assert_eq!(outside["flowContext"], "body");
 }
 
 #[test]

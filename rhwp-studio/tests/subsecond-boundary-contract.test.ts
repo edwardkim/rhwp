@@ -49,3 +49,49 @@ test('fidelity inspection enters through a hot WASM export', () => {
   );
   assert.match(source('src/core/rhwp-dev.ts'), /lineBreakVisible\(/);
 });
+
+test('visible line-break inspection distinguishes unavailable and failed batches', async () => {
+  const previousWindow = (globalThis as any).window;
+  const previousLog = console.log;
+  const previousWarn = console.warn;
+  const browser = {} as { rhwpDev?: any };
+  (globalThis as any).window = browser;
+  console.log = () => {};
+  console.warn = () => {};
+  try {
+    const { initRhwpDev } = await import('../src/core/rhwp-dev.ts');
+    const doc: Record<string, unknown> = {
+      getPageTextLayout: () => JSON.stringify({
+        runs: [0, 1].map(paraIdx => ({
+          secIdx: 0, paraIdx, charStart: 0, x: 0, y: 0, text: 'x',
+        })),
+      }),
+    };
+    const wasm = { pageCount: 1, doc } as never;
+    initRhwpDev(wasm);
+    const missing = browser.rhwpDev.lineBreakVisible(0, { limit: 1 });
+    assert.equal(missing.available, false);
+    assert.equal(missing.error, 'SUBSECOND_BASE_RESTART_REQUIRED');
+    assert.deepEqual(missing.items, []);
+
+    let calls = 0;
+    doc.getLineBreakProvenance = () => { throw new Error(`broken ${++calls}`); };
+    initRhwpDev(wasm);
+    const failed = browser.rhwpDev.lineBreakVisible(0, { limit: 1 });
+    assert.equal(failed.available, true);
+    assert.equal(failed.error, null);
+    assert.equal(failed.errors.length, 1);
+    assert.match(failed.errors[0].error, /broken 1/);
+    assert.equal(failed.nextOffset, 1);
+    assert.equal(calls, 1, 'one failed target still consumes the requested batch');
+
+    doc.getPageTextLayout = () => { throw new Error('layout unavailable'); };
+    const layoutFailed = browser.rhwpDev.lineBreakVisible(0, { limit: 1 });
+    assert.match(layoutFailed.errors[0].error, /layout unavailable/);
+  } finally {
+    console.log = previousLog;
+    console.warn = previousWarn;
+    if (previousWindow === undefined) delete (globalThis as any).window;
+    else (globalThis as any).window = previousWindow;
+  }
+});

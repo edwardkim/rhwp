@@ -20,8 +20,6 @@ use crate::renderer::px_to_hwpunit;
 use crate::renderer::style_resolver::{detect_lang_category, ResolvedStyleSet};
 #[cfg(feature = "subsecond-dev")]
 use std::cell::{Cell, RefCell};
-#[cfg(feature = "subsecond-dev")]
-use std::collections::HashMap;
 use std::ops::Range;
 
 struct PreparedParagraphKerning {
@@ -34,620 +32,101 @@ struct PreparedParagraphKerning {
 #[cfg(feature = "subsecond-dev")]
 #[derive(Debug, Clone, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
-pub(crate) struct LineBreakTokenTrace {
-    pub(crate) paragraph_index: Option<usize>,
-    pub(crate) token_index: usize,
-    pub(crate) kind: &'static str,
-    pub(crate) char_start_scalar: usize,
-    pub(crate) char_end_scalar: usize,
-    pub(crate) start_utf16: u32,
-    pub(crate) end_utf16: u32,
-    pub(crate) advance_hwp: Option<i32>,
-    pub(crate) max_font_size: f64,
+pub(crate) struct LineBreakRowTrace {
+    physical_row_index: usize,
+    start_utf16: u32,
+    end_utf16: u32,
+    available_width_hwp: i32,
+    termination: &'static str,
 }
 
 #[cfg(feature = "subsecond-dev")]
-#[derive(Debug, Clone, serde::Serialize)]
-#[serde(rename_all = "camelCase")]
-pub(crate) struct LineBreakFitTrace {
-    pub(crate) paragraph_index: Option<usize>,
-    pub(crate) physical_row_index: usize,
-    pub(crate) token_index: usize,
-    pub(crate) decision: &'static str,
-    pub(crate) char_start_scalar: usize,
-    pub(crate) char_end_scalar: usize,
-    pub(crate) line_start_scalar: usize,
-    pub(crate) start_utf16: u32,
-    pub(crate) end_utf16: u32,
-    pub(crate) line_start_utf16: u32,
-    pub(crate) first_line: bool,
-    pub(crate) current_width_hwp: i32,
-    pub(crate) token_advance_hwp: i32,
-    pub(crate) letter_spacing_trim_hwp: i32,
-    pub(crate) space_savings_hwp: i32,
-    pub(crate) natural_candidate_hwp: i32,
-    pub(crate) condensed_candidate_hwp: i32,
-    pub(crate) effective_width_hwp: i32,
-    pub(crate) condense_before: bool,
-    pub(crate) condense_after: bool,
-    pub(crate) terminal_hang: bool,
-    pub(crate) fits: bool,
-}
-
-#[cfg(feature = "subsecond-dev")]
-#[derive(Debug, Clone, serde::Serialize)]
+#[derive(Debug, Clone, Default, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct LineBreakMeasurementTrace {
-    pub(crate) token_count: usize,
-    pub(crate) tokens_truncated: bool,
-    pub(crate) tokens: Vec<LineBreakTokenTrace>,
-    pub(crate) fit_decision_count: usize,
-    pub(crate) fit_decisions_truncated: bool,
-    pub(crate) fit_decisions: Vec<LineBreakFitTrace>,
+    pub(crate) total_records: usize,
+    pub(crate) truncated: bool,
+    pub(crate) records: Vec<LineBreakRowTrace>,
     #[serde(skip)]
-    char_offsets: Vec<u32>,
+    physical_rows: usize,
     #[serde(skip)]
-    text_utf16_length: u32,
-    #[serde(skip)]
-    max_tokens: usize,
-    #[serde(skip)]
-    max_fit_decisions: usize,
+    limit: usize,
     #[serde(skip)]
     paragraph_filter: Option<usize>,
-    #[serde(skip)]
-    token_counts_by_paragraph: HashMap<Option<usize>, usize>,
-    #[serde(skip)]
-    fit_counts_by_paragraph: HashMap<Option<usize>, usize>,
-    #[serde(skip)]
-    row_bases_by_paragraph: HashMap<Option<usize>, usize>,
-}
-
-#[cfg(feature = "subsecond-dev")]
-impl Default for LineBreakMeasurementTrace {
-    fn default() -> Self {
-        Self::with_limits(usize::MAX, usize::MAX, None)
-    }
-}
-
-#[cfg(feature = "subsecond-dev")]
-impl LineBreakMeasurementTrace {
-    fn with_limits(
-        max_tokens: usize,
-        max_fit_decisions: usize,
-        paragraph_filter: Option<usize>,
-    ) -> Self {
-        Self {
-            token_count: 0,
-            tokens_truncated: false,
-            tokens: Vec::new(),
-            fit_decision_count: 0,
-            fit_decisions_truncated: false,
-            fit_decisions: Vec::new(),
-            char_offsets: Vec::new(),
-            text_utf16_length: 0,
-            max_tokens,
-            max_fit_decisions,
-            paragraph_filter,
-            token_counts_by_paragraph: HashMap::new(),
-            fit_counts_by_paragraph: HashMap::new(),
-            row_bases_by_paragraph: HashMap::new(),
-        }
-    }
 }
 
 #[cfg(feature = "subsecond-dev")]
 thread_local! {
-    static LINE_BREAK_MEASUREMENT_TRACE: RefCell<Option<LineBreakMeasurementTrace>> = const { RefCell::new(None) };
-    static LINE_BREAK_TRACE_PARAGRAPH_INDEX: Cell<Option<usize>> = const { Cell::new(None) };
+    static MEASUREMENT_TRACE: RefCell<Option<LineBreakMeasurementTrace>> = const { RefCell::new(None) };
+    static TRACE_PARAGRAPH: Cell<Option<usize>> = const { Cell::new(None) };
 }
 
 #[cfg(feature = "subsecond-dev")]
-pub(crate) struct TraceParagraphScope {
-    previous_line: Option<usize>,
-    previous_frame: Option<usize>,
-}
-
-#[cfg(feature = "subsecond-dev")]
-impl Drop for TraceParagraphScope {
-    fn drop(&mut self) {
-        LINE_BREAK_TRACE_PARAGRAPH_INDEX.with(|slot| slot.set(self.previous_line));
-        crate::renderer::layout_frame::replace_frame_trace_paragraph_index(self.previous_frame);
-    }
-}
-
-#[cfg(feature = "subsecond-dev")]
-pub(crate) fn trace_paragraph_scope(paragraph_index: Option<usize>) -> TraceParagraphScope {
-    TraceParagraphScope {
-        previous_line: LINE_BREAK_TRACE_PARAGRAPH_INDEX.with(|slot| slot.replace(paragraph_index)),
-        previous_frame: crate::renderer::layout_frame::replace_frame_trace_paragraph_index(
-            paragraph_index,
-        ),
-    }
-}
-
-#[cfg(all(test, feature = "subsecond-dev"))]
-mod trace_scope_tests {
-    use super::*;
-
-    fn decision(token_index: usize) -> LineBreakFitTrace {
-        LineBreakFitTrace {
-            paragraph_index: None,
-            physical_row_index: 0,
-            token_index,
-            decision: "test",
-            char_start_scalar: 0,
-            char_end_scalar: 0,
-            line_start_scalar: 0,
-            start_utf16: 0,
-            end_utf16: 0,
-            line_start_utf16: 0,
-            first_line: true,
-            current_width_hwp: 0,
-            token_advance_hwp: 0,
-            letter_spacing_trim_hwp: 0,
-            space_savings_hwp: 0,
-            natural_candidate_hwp: 0,
-            condensed_candidate_hwp: 0,
-            effective_width_hwp: 0,
-            condense_before: false,
-            condense_after: false,
-            terminal_hang: false,
-            fits: true,
-        }
-    }
-
-    #[test]
-    fn nested_trace_scope_restores_the_previous_paragraph() {
-        let outer = trace_paragraph_scope(Some(7));
-        assert_eq!(LINE_BREAK_TRACE_PARAGRAPH_INDEX.with(Cell::get), Some(7));
-        {
-            let _inner = trace_paragraph_scope(None);
-            assert_eq!(LINE_BREAK_TRACE_PARAGRAPH_INDEX.with(Cell::get), None);
-        }
-        assert_eq!(LINE_BREAK_TRACE_PARAGRAPH_INDEX.with(Cell::get), Some(7));
-        drop(outer);
-        assert_eq!(LINE_BREAK_TRACE_PARAGRAPH_INDEX.with(Cell::get), None);
-    }
-
-    #[test]
-    fn nested_measurement_capture_restores_after_unwind() {
-        let (_, captured) =
-            capture_line_break_measurement(true, usize::MAX, usize::MAX, None, || {
-                record_fit_decision(decision(1));
-                let _ = std::panic::catch_unwind(|| {
-                    capture_line_break_measurement(true, usize::MAX, usize::MAX, None, || -> () {
-                        panic!("inner capture")
-                    });
-                });
-                record_fit_decision(decision(2));
-            });
-        assert_eq!(
-            captured
-                .fit_decisions
-                .iter()
-                .map(|decision| decision.token_index)
-                .collect::<Vec<_>>(),
-            vec![1, 2]
-        );
-    }
-
-    #[test]
-    fn fit_trace_marks_a_fit_that_only_condensation_makes_possible() {
-        assert!(fit_used_condense(true, 1_020, 995, 1_000));
-        assert!(!fit_used_condense(true, 999, 995, 1_000));
-        assert!(!fit_used_condense(false, 1_020, 995, 1_000));
-    }
-
-    #[test]
-    fn empty_stored_offsets_fall_back_to_visible_utf16_prefixes() {
-        let chars = "😀\n".chars().collect::<Vec<_>>();
-        let tokens = vec![
-            BreakToken::Text {
-                start_idx: 0,
-                end_idx: 1,
-                width: 1.0,
-                max_font_size: 10.0,
-                char_widths: Vec::new(),
-            },
-            BreakToken::LineBreak { idx: 1 },
-        ];
-        let (_, captured) =
-            capture_line_break_measurement(true, usize::MAX, usize::MAX, None, || {
-                record_tokens(&tokens, &chars, &[]);
-            });
-        assert_eq!(
-            captured
-                .tokens
-                .iter()
-                .map(|token| (token.start_utf16, token.end_utf16))
-                .collect::<Vec<_>>(),
-            vec![(0, 2), (2, 3)]
-        );
-    }
-
-    #[test]
-    fn later_tokenization_replaces_the_superseded_measurement_lane() {
-        let chars = ['a'];
-        let token = |width| BreakToken::Text {
-            start_idx: 0,
-            end_idx: 1,
-            width,
-            max_font_size: 10.0,
-            char_widths: Vec::new(),
-        };
-        let (_, captured) =
-            capture_line_break_measurement(true, usize::MAX, usize::MAX, None, || {
-                record_tokens(&[token(1.0)], &chars, &[0]);
-                record_fit_decision(decision(1));
-                record_tokens(&[token(2.0)], &chars, &[0]);
-                record_fit_decision(decision(2));
-            });
-        assert_eq!(captured.tokens.len(), 1);
-        assert_eq!(captured.tokens[0].advance_hwp, Some(to_hwp(2.0)));
-        assert_eq!(captured.fit_decisions[0].token_index, 2);
-    }
-
-    #[test]
-    fn measurement_capture_limits_storage_while_counting_all_records() {
-        let chars = ['a', 'b'];
-        let tokens = [
-            BreakToken::Text {
-                start_idx: 0,
-                end_idx: 1,
-                width: 1.0,
-                max_font_size: 10.0,
-                char_widths: Vec::new(),
-            },
-            BreakToken::Text {
-                start_idx: 1,
-                end_idx: 2,
-                width: 1.0,
-                max_font_size: 10.0,
-                char_widths: Vec::new(),
-            },
-        ];
-        let (_, captured) = capture_line_break_measurement(true, 1, 1, None, || {
-            record_tokens(&tokens, &chars, &[0, 1]);
-            record_fit_decision(decision(1));
-            record_fit_decision(decision(2));
-        });
-        assert_eq!((captured.token_count, captured.tokens.len()), (2, 1));
-        assert!(captured.tokens_truncated);
-        assert_eq!(
-            (captured.fit_decision_count, captured.fit_decisions.len()),
-            (2, 1)
-        );
-        assert!(captured.fit_decisions_truncated);
-    }
-
-    #[test]
-    fn measurement_checkpoint_removes_rejected_capped_decisions_from_totals() {
-        let (_, captured) = capture_line_break_measurement(true, 0, 1, None, || {
-            record_fit_decision(decision(1));
-            let checkpoint = measurement_trace_checkpoint();
-            record_fit_decision(decision(2));
-            restore_measurement_trace(checkpoint);
-            record_fit_decision(decision(3));
-        });
-        assert_eq!(captured.fit_decision_count, 2);
-        assert_eq!(captured.fit_decisions.len(), 1);
-        assert_eq!(captured.fit_decisions[0].token_index, 1);
-        assert!(captured.fit_decisions_truncated);
-        assert_eq!(captured.fit_counts_by_paragraph.get(&None), Some(&2));
-    }
-}
-
-#[cfg(feature = "subsecond-dev")]
-pub(crate) fn capture_line_break_measurement<T>(
-    enabled: bool,
-    max_tokens: usize,
-    max_fit_decisions: usize,
-    paragraph_filter: Option<usize>,
-    operation: impl FnOnce() -> T,
-) -> (T, LineBreakMeasurementTrace) {
-    if !enabled {
-        return (operation(), LineBreakMeasurementTrace::default());
-    }
-    let guard = MeasurementCaptureGuard::new(max_tokens, max_fit_decisions, paragraph_filter);
-    let result = operation();
-    (result, guard.finish())
-}
-
-#[cfg(feature = "subsecond-dev")]
-struct MeasurementCaptureGuard {
-    previous: Option<LineBreakMeasurementTrace>,
-    active: bool,
-}
-
-#[cfg(feature = "subsecond-dev")]
-impl MeasurementCaptureGuard {
-    fn new(max_tokens: usize, max_fit_decisions: usize, paragraph_filter: Option<usize>) -> Self {
-        Self {
-            previous: LINE_BREAK_MEASUREMENT_TRACE.with(|slot| {
-                slot.replace(Some(LineBreakMeasurementTrace::with_limits(
-                    max_tokens,
-                    max_fit_decisions,
-                    paragraph_filter,
-                )))
-            }),
-            active: true,
-        }
-    }
-
-    fn finish(mut self) -> LineBreakMeasurementTrace {
-        let captured = LINE_BREAK_MEASUREMENT_TRACE
-            .with(|slot| slot.replace(self.previous.take()))
-            .unwrap_or_default();
-        self.active = false;
-        captured
-    }
-}
-
-#[cfg(feature = "subsecond-dev")]
-impl Drop for MeasurementCaptureGuard {
-    fn drop(&mut self) {
-        if self.active {
-            LINE_BREAK_MEASUREMENT_TRACE.with(|slot| {
-                slot.replace(self.previous.take());
-            });
-        }
-    }
-}
-
-#[cfg(feature = "subsecond-dev")]
-fn trace_utf16_offsets(text_chars: &[char], char_offsets: &[u32]) -> (Vec<u32>, u32) {
-    if char_offsets.len() == text_chars.len() {
-        let end = char_offsets
-            .last()
-            .zip(text_chars.last())
-            .map(|(offset, ch)| *offset + ch.len_utf16() as u32)
-            .unwrap_or(0);
-        return (char_offsets.to_vec(), end);
-    }
-    let mut next = 0u32;
-    let offsets = text_chars
-        .iter()
-        .map(|ch| {
-            let start = next;
-            next = next.saturating_add(ch.len_utf16() as u32);
-            start
-        })
-        .collect();
-    (offsets, next)
-}
-
-#[cfg(feature = "subsecond-dev")]
-fn record_tokens(tokens: &[BreakToken], text_chars: &[char], char_offsets: &[u32]) {
-    LINE_BREAK_MEASUREMENT_TRACE.with(|slot| {
-        let mut slot = slot.borrow_mut();
-        let Some(trace) = slot.as_mut() else {
-            return;
-        };
-        let paragraph_index = LINE_BREAK_TRACE_PARAGRAPH_INDEX.with(Cell::get);
-        if trace
-            .paragraph_filter
-            .is_some_and(|filter| paragraph_index != Some(filter))
-        {
-            return;
-        }
-        trace
-            .tokens
-            .retain(|token| token.paragraph_index != paragraph_index);
-        trace
-            .fit_decisions
-            .retain(|decision| decision.paragraph_index != paragraph_index);
-        let previous_token_count = trace
-            .token_counts_by_paragraph
-            .insert(paragraph_index, tokens.len())
-            .unwrap_or(0);
-        trace.token_count = trace
-            .token_count
-            .saturating_sub(previous_token_count)
-            .saturating_add(tokens.len());
-        let previous_fit_count = trace
-            .fit_counts_by_paragraph
-            .remove(&paragraph_index)
-            .unwrap_or(0);
-        trace.row_bases_by_paragraph.remove(&paragraph_index);
-        trace.fit_decision_count = trace.fit_decision_count.saturating_sub(previous_fit_count);
-        trace.fit_decisions_truncated = trace.fit_decision_count > trace.fit_decisions.len();
-        let (trace_offsets, text_utf16_length) = trace_utf16_offsets(text_chars, char_offsets);
-        trace.char_offsets = trace_offsets.clone();
-        trace.text_utf16_length = text_utf16_length;
-        let utf16 = |char_index: usize| {
-            trace_offsets
-                .get(char_index)
-                .copied()
-                .unwrap_or(text_utf16_length)
-        };
-        let remaining = trace.max_tokens.saturating_sub(trace.tokens.len());
-        trace
-            .tokens
-            .extend(tokens.iter().enumerate().take(remaining).map(
-                |(token_index, token)| match token {
-                    BreakToken::Text {
-                        start_idx,
-                        end_idx,
-                        width,
-                        max_font_size,
-                        ..
-                    } => LineBreakTokenTrace {
-                        paragraph_index: LINE_BREAK_TRACE_PARAGRAPH_INDEX.with(Cell::get),
-                        token_index,
-                        kind: "text",
-                        char_start_scalar: *start_idx,
-                        char_end_scalar: *end_idx,
-                        start_utf16: utf16(*start_idx),
-                        end_utf16: utf16(*end_idx),
-                        advance_hwp: Some(to_hwp(*width)),
-                        max_font_size: *max_font_size,
-                    },
-                    BreakToken::Space {
-                        idx,
-                        width,
-                        max_font_size,
-                    } => LineBreakTokenTrace {
-                        paragraph_index: LINE_BREAK_TRACE_PARAGRAPH_INDEX.with(Cell::get),
-                        token_index,
-                        kind: "space",
-                        char_start_scalar: *idx,
-                        char_end_scalar: *idx + 1,
-                        start_utf16: utf16(*idx),
-                        end_utf16: utf16(*idx + 1),
-                        advance_hwp: Some(to_hwp(*width)),
-                        max_font_size: *max_font_size,
-                    },
-                    BreakToken::Tab { idx, max_font_size } => LineBreakTokenTrace {
-                        paragraph_index: LINE_BREAK_TRACE_PARAGRAPH_INDEX.with(Cell::get),
-                        token_index,
-                        kind: "tab",
-                        char_start_scalar: *idx,
-                        char_end_scalar: *idx + 1,
-                        start_utf16: utf16(*idx),
-                        end_utf16: utf16(*idx + 1),
-                        advance_hwp: None,
-                        max_font_size: *max_font_size,
-                    },
-                    BreakToken::LineBreak { idx } => LineBreakTokenTrace {
-                        paragraph_index: LINE_BREAK_TRACE_PARAGRAPH_INDEX.with(Cell::get),
-                        token_index,
-                        kind: "line-break",
-                        char_start_scalar: *idx,
-                        char_end_scalar: *idx + 1,
-                        start_utf16: utf16(*idx),
-                        end_utf16: utf16(*idx + 1),
-                        advance_hwp: Some(0),
-                        max_font_size: 0.0,
-                    },
-                },
-            ));
-        trace.tokens_truncated = trace.token_count > trace.tokens.len();
-    });
-}
-
-#[cfg(feature = "subsecond-dev")]
-fn record_fit_decision(mut decision: LineBreakFitTrace) {
-    LINE_BREAK_MEASUREMENT_TRACE.with(|slot| {
-        if let Some(trace) = slot.borrow_mut().as_mut() {
-            let paragraph_index = LINE_BREAK_TRACE_PARAGRAPH_INDEX.with(Cell::get);
-            if trace
+fn measurement_trace_capacity() -> Option<usize> {
+    MEASUREMENT_TRACE.with(|slot| {
+        slot.borrow().as_ref().and_then(|trace| {
+            trace
                 .paragraph_filter
-                .is_some_and(|filter| paragraph_index != Some(filter))
-            {
-                return;
-            }
-            let utf16 = |char_index: usize| {
-                trace
-                    .char_offsets
-                    .get(char_index)
-                    .copied()
-                    .unwrap_or(trace.text_utf16_length)
-            };
-            decision.start_utf16 = utf16(decision.char_start_scalar);
-            decision.end_utf16 = utf16(decision.char_end_scalar);
-            decision.line_start_utf16 = utf16(decision.line_start_scalar);
-            decision.paragraph_index = paragraph_index;
-            let row_base = *trace
-                .row_bases_by_paragraph
-                .entry(paragraph_index)
-                .or_insert(decision.physical_row_index);
-            decision.physical_row_index = decision.physical_row_index.saturating_sub(row_base);
-            *trace
-                .fit_counts_by_paragraph
-                .entry(paragraph_index)
-                .or_insert(0) += 1;
-            trace.fit_decision_count += 1;
-            if trace.fit_decisions.len() < trace.max_fit_decisions {
-                trace.fit_decisions.push(decision);
-            }
-            trace.fit_decisions_truncated = trace.fit_decision_count > trace.fit_decisions.len();
-        }
-    });
+                .map_or(true, |filter| {
+                    TRACE_PARAGRAPH.with(Cell::get) == Some(filter)
+                })
+                .then(|| trace.limit.saturating_sub(trace.records.len()))
+        })
+    })
 }
 
 #[cfg(feature = "subsecond-dev")]
-fn fit_used_condense(
-    fits: bool,
-    natural_candidate_hwp: i32,
-    condensed_candidate_hwp: i32,
-    effective_width_hwp: i32,
-) -> bool {
-    fits && natural_candidate_hwp > effective_width_hwp.saturating_add(LINE_BREAK_TOLERANCE)
-        && condensed_candidate_hwp <= effective_width_hwp.saturating_add(LINE_BREAK_TOLERANCE)
-}
-
-#[cfg(feature = "subsecond-dev")]
-#[derive(Clone)]
+#[derive(Clone, Copy)]
 struct MeasurementTraceCheckpoint {
-    fit_decisions_len: usize,
-    fit_decision_count: usize,
-    fit_decisions_truncated: bool,
-    fit_counts_by_paragraph: HashMap<Option<usize>, usize>,
-    row_bases_by_paragraph: HashMap<Option<usize>, usize>,
+    total_records: usize,
+    truncated: bool,
+    records_len: usize,
+    physical_rows: usize,
 }
 
 #[cfg(feature = "subsecond-dev")]
-fn measurement_trace_checkpoint() -> MeasurementTraceCheckpoint {
-    LINE_BREAK_MEASUREMENT_TRACE.with(|slot| {
+fn measurement_trace_checkpoint() -> Option<MeasurementTraceCheckpoint> {
+    MEASUREMENT_TRACE.with(|slot| {
         slot.borrow()
             .as_ref()
             .map(|trace| MeasurementTraceCheckpoint {
-                fit_decisions_len: trace.fit_decisions.len(),
-                fit_decision_count: trace.fit_decision_count,
-                fit_decisions_truncated: trace.fit_decisions_truncated,
-                fit_counts_by_paragraph: trace.fit_counts_by_paragraph.clone(),
-                row_bases_by_paragraph: trace.row_bases_by_paragraph.clone(),
-            })
-            .unwrap_or(MeasurementTraceCheckpoint {
-                fit_decisions_len: 0,
-                fit_decision_count: 0,
-                fit_decisions_truncated: false,
-                fit_counts_by_paragraph: HashMap::new(),
-                row_bases_by_paragraph: HashMap::new(),
+                total_records: trace.total_records,
+                truncated: trace.truncated,
+                records_len: trace.records.len(),
+                physical_rows: trace.physical_rows,
             })
     })
 }
 
 #[cfg(feature = "subsecond-dev")]
-fn restore_measurement_trace(checkpoint: MeasurementTraceCheckpoint) {
-    LINE_BREAK_MEASUREMENT_TRACE.with(|slot| {
-        if let Some(trace) = slot.borrow_mut().as_mut() {
-            trace.fit_decisions.truncate(checkpoint.fit_decisions_len);
-            trace.fit_decision_count = checkpoint.fit_decision_count;
-            trace.fit_decisions_truncated = checkpoint.fit_decisions_truncated;
-            trace.fit_counts_by_paragraph = checkpoint.fit_counts_by_paragraph;
-            trace.row_bases_by_paragraph = checkpoint.row_bases_by_paragraph;
+fn restore_measurement_trace(checkpoint: Option<MeasurementTraceCheckpoint>) {
+    MEASUREMENT_TRACE.with(|slot| {
+        if let (Some(trace), Some(checkpoint)) = (slot.borrow_mut().as_mut(), checkpoint) {
+            trace.total_records = checkpoint.total_records;
+            trace.truncated = checkpoint.truncated;
+            trace.records.truncate(checkpoint.records_len);
+            trace.physical_rows = checkpoint.physical_rows;
         }
-    });
-}
-
-#[cfg(feature = "subsecond-dev")]
-fn measurement_trace_snapshot() -> Option<LineBreakMeasurementTrace> {
-    LINE_BREAK_MEASUREMENT_TRACE.with(|slot| slot.borrow().clone())
-}
-
-#[cfg(feature = "subsecond-dev")]
-fn restore_measurement_trace_snapshot(snapshot: Option<LineBreakMeasurementTrace>) {
-    LINE_BREAK_MEASUREMENT_TRACE.with(|slot| {
-        slot.replace(snapshot);
     });
 }
 
 #[cfg(feature = "subsecond-dev")]
 struct LineBreakTraceTransaction {
-    measurement_snapshot: Option<LineBreakMeasurementTrace>,
-    frame_checkpoint: Option<FrameTraceCheckpoint>,
+    measurement: Option<MeasurementTraceCheckpoint>,
+    frame: Option<FrameTraceCheckpoint>,
     committed: bool,
 }
 
 #[cfg(feature = "subsecond-dev")]
 impl LineBreakTraceTransaction {
-    fn new() -> Self {
-        Self {
-            measurement_snapshot: measurement_trace_snapshot(),
-            frame_checkpoint: Some(frame_trace_checkpoint()),
+    fn new() -> Option<Self> {
+        let measurement = measurement_trace_checkpoint();
+        let frame = frame_trace_checkpoint();
+        (measurement.is_some() || frame.is_some()).then_some(Self {
+            measurement,
+            frame,
             committed: false,
-        }
+        })
     }
 
     fn commit(&mut self) {
@@ -659,12 +138,132 @@ impl LineBreakTraceTransaction {
 impl Drop for LineBreakTraceTransaction {
     fn drop(&mut self) {
         if !self.committed {
-            restore_measurement_trace_snapshot(self.measurement_snapshot.take());
-            if let Some(checkpoint) = self.frame_checkpoint.take() {
-                restore_frame_trace(checkpoint);
+            restore_measurement_trace(self.measurement);
+            restore_frame_trace(self.frame);
+        }
+    }
+}
+
+#[cfg(feature = "subsecond-dev")]
+pub(crate) struct TraceParagraphScope(Option<usize>, Option<usize>);
+
+#[cfg(feature = "subsecond-dev")]
+impl Drop for TraceParagraphScope {
+    fn drop(&mut self) {
+        TRACE_PARAGRAPH.with(|slot| slot.set(self.0));
+        crate::renderer::layout_frame::replace_frame_trace_paragraph_index(self.1);
+    }
+}
+
+#[cfg(feature = "subsecond-dev")]
+pub(crate) fn trace_paragraph_scope(value: Option<usize>) -> TraceParagraphScope {
+    TraceParagraphScope(
+        TRACE_PARAGRAPH.with(|slot| slot.replace(value)),
+        crate::renderer::layout_frame::replace_frame_trace_paragraph_index(value),
+    )
+}
+
+#[cfg(feature = "subsecond-dev")]
+pub(crate) fn capture_line_break_measurement<T>(
+    enabled: bool,
+    max_records: usize,
+    paragraph_filter: Option<usize>,
+    operation: impl FnOnce() -> T,
+) -> (T, LineBreakMeasurementTrace) {
+    if !enabled {
+        return (operation(), LineBreakMeasurementTrace::default());
+    }
+    let previous = MEASUREMENT_TRACE.with(|slot| {
+        slot.replace(Some(LineBreakMeasurementTrace {
+            limit: max_records,
+            paragraph_filter,
+            ..Default::default()
+        }))
+    });
+    struct Restore(Option<Option<LineBreakMeasurementTrace>>);
+    impl Drop for Restore {
+        fn drop(&mut self) {
+            if let Some(previous) = self.0.take() {
+                MEASUREMENT_TRACE.with(|slot| {
+                    slot.replace(previous);
+                });
             }
         }
     }
+    let mut restore = Restore(Some(previous));
+    let result = operation();
+    let previous = restore.0.take().expect("measurement trace restore owner");
+    let trace = MEASUREMENT_TRACE
+        .with(|slot| slot.replace(previous))
+        .unwrap_or_default();
+    (result, trace)
+}
+
+#[cfg(feature = "subsecond-dev")]
+fn record_line_break(
+    text: &[char],
+    line: &LineBreakResult,
+    available_width_px: f64,
+    termination: FillTermination,
+    physical_row_index: Option<usize>,
+) -> Option<usize> {
+    MEASUREMENT_TRACE.with(|slot| {
+        let mut slot = slot.borrow_mut();
+        let trace = slot.as_mut()?;
+        if trace
+            .paragraph_filter
+            .is_some_and(|filter| TRACE_PARAGRAPH.with(Cell::get) != Some(filter))
+        {
+            return None;
+        }
+        let physical_row_index = physical_row_index.unwrap_or(trace.physical_rows);
+        trace.physical_rows = trace.physical_rows.max(physical_row_index + 1);
+        trace.total_records += 1;
+        if trace.records.len() >= trace.limit {
+            trace.truncated = true;
+            return Some(physical_row_index);
+        }
+        let utf16 = |end: usize| {
+            text[..end.min(text.len())]
+                .iter()
+                .map(|ch| ch.len_utf16() as u32)
+                .sum()
+        };
+        let record = LineBreakRowTrace {
+            physical_row_index,
+            start_utf16: utf16(line.start_idx),
+            end_utf16: utf16(line.end_idx),
+            available_width_hwp: to_hwp(available_width_px),
+            termination: match termination {
+                FillTermination::IntervalFull => "interval-full",
+                FillTermination::ForcedBreak => "forced-break",
+                FillTermination::ParagraphEnd => "paragraph-end",
+            },
+        };
+        trace.records.push(record);
+        Some(physical_row_index)
+    })
+}
+
+#[cfg(feature = "subsecond-dev")]
+fn record_omitted_line_breaks(count: usize, physical_row_index: Option<usize>) {
+    if count == 0 {
+        return;
+    }
+    MEASUREMENT_TRACE.with(|slot| {
+        let mut slot = slot.borrow_mut();
+        let Some(trace) = slot.as_mut() else { return };
+        if trace
+            .paragraph_filter
+            .is_some_and(|filter| TRACE_PARAGRAPH.with(Cell::get) != Some(filter))
+        {
+            return;
+        }
+        let physical_row_index = physical_row_index.unwrap_or(trace.physical_rows);
+        trace.physical_rows = trace.physical_rows.max(physical_row_index + 1);
+        trace.total_records += count;
+        trace.truncated = true;
+    });
 }
 
 /// A complete, source-independent projection of one supported Picture wrap
@@ -943,29 +542,6 @@ impl SpaceMetric {
 /// `space_metric` 은 공백 advance 규칙이다. 일반 HWP/HWPX tokenization 은 저장
 /// `LINE_SEG` 호환성을 위해 [`SpaceMetric::Stored`] 를 쓴다.
 fn tokenize_paragraph_with_regenerated_space_metric(
-    text_chars: &[char],
-    char_offsets: &[u32],
-    char_shapes: &[CharShapeRef],
-    styles: &ResolvedStyleSet,
-    english_break_unit: u8,
-    korean_break_unit: u8,
-    space_metric: SpaceMetric,
-    inline_controls: &[FlowInlineControl],
-) -> Vec<BreakToken> {
-    crate::hot_call!(
-        tokenize_paragraph_with_regenerated_space_metric_hot_impl,
-        text_chars,
-        char_offsets,
-        char_shapes,
-        styles,
-        english_break_unit,
-        korean_break_unit,
-        space_metric,
-        inline_controls,
-    )
-}
-
-fn tokenize_paragraph_with_regenerated_space_metric_hot_impl(
     text_chars: &[char],
     char_offsets: &[u32],
     char_shapes: &[CharShapeRef],
@@ -1394,8 +970,6 @@ fn tokenize_paragraph_with_regenerated_space_metric_hot_impl(
         }
     }
 
-    #[cfg(feature = "subsecond-dev")]
-    record_tokens(&tokens, text_chars, char_offsets);
     tokens
 }
 
@@ -1770,26 +1344,6 @@ impl FillCursor {
     }
 }
 
-/// Stable Subsecond boundary input for the greedy line filler.
-///
-/// Subsecond's WASM `HotFn` adapter supports function arities through `Fn9`.
-/// The filler has more independent inputs than that, so keep the immutable
-/// measurement/configuration lane in one value while leaving the mutable
-/// continuation cursor explicit at the call boundary. Adding a new tuning
-/// input intentionally changes this boundary and requires rebuilding the base
-/// WASM; edits to the filling algorithm itself do not.
-#[derive(Clone, Copy)]
-struct LineFillInput<'a> {
-    tokens: &'a [BreakToken],
-    text_chars: &'a [char],
-    available_width_px: f64,
-    indent_px: f64,
-    default_tab_width: f64,
-    korean_break_unit: u8,
-    condense_min_space: u8,
-    letter_spacing_px: &'a [f64],
-}
-
 /// Fill all scalar intervals through the resumable greedy continuation.
 fn fill_lines(
     tokens: &[BreakToken],
@@ -1804,36 +1358,29 @@ fn fill_lines(
     initial_is_first_line: bool,
     mut kerning: Option<&mut crate::renderer::kerning::KerningParagraphBreakSession<'_, '_, '_>>,
 ) -> Vec<LineBreakResult> {
-    crate::hot_call!(
-        fill_lines_hot_impl,
-        LineFillInput {
-            tokens,
-            text_chars,
-            available_width_px,
-            indent_px,
-            default_tab_width,
-            korean_break_unit,
-            condense_min_space,
-            letter_spacing_px,
-        },
-        initial_start_idx,
-        initial_is_first_line,
-        kerning,
-    )
-}
-
-fn fill_lines_hot_impl(
-    input: LineFillInput<'_>,
-    initial_start_idx: usize,
-    initial_is_first_line: bool,
-    mut kerning: Option<&mut crate::renderer::kerning::KerningParagraphBreakSession<'_, '_, '_>>,
-) -> Vec<LineBreakResult> {
     let mut cursor = FillCursor::new(initial_start_idx, initial_is_first_line);
     let mut results = Vec::new();
 
-    while let Some(interval) =
-        fill_one_interval_with_input(input, &mut cursor, kerning.as_deref_mut(), results.len())
-    {
+    while let Some(interval) = fill_one_interval(
+        tokens,
+        text_chars,
+        available_width_px,
+        indent_px,
+        default_tab_width,
+        korean_break_unit,
+        condense_min_space,
+        letter_spacing_px,
+        &mut cursor,
+        kerning.as_deref_mut(),
+    ) {
+        #[cfg(feature = "subsecond-dev")]
+        let _ = record_line_break(
+            text_chars,
+            &interval.line,
+            available_width_px,
+            interval.termination,
+            None,
+        );
         results.push(interval.line);
     }
 
@@ -1852,57 +1399,7 @@ fn fill_one_interval(
     letter_spacing_px: &[f64],
     cursor: &mut FillCursor,
     mut kerning: Option<&mut crate::renderer::kerning::KerningParagraphBreakSession<'_, '_, '_>>,
-    physical_row_index: usize,
 ) -> Option<FilledInterval> {
-    fill_one_interval_with_input(
-        LineFillInput {
-            tokens,
-            text_chars,
-            available_width_px,
-            indent_px,
-            default_tab_width,
-            korean_break_unit,
-            condense_min_space,
-            letter_spacing_px,
-        },
-        cursor,
-        kerning,
-        physical_row_index,
-    )
-}
-
-fn fill_one_interval_with_input(
-    input: LineFillInput<'_>,
-    cursor: &mut FillCursor,
-    kerning: Option<&mut crate::renderer::kerning::KerningParagraphBreakSession<'_, '_, '_>>,
-    physical_row_index: usize,
-) -> Option<FilledInterval> {
-    crate::hot_call!(
-        fill_one_interval_hot_impl,
-        input,
-        cursor,
-        kerning,
-        physical_row_index,
-    )
-}
-
-fn fill_one_interval_hot_impl(
-    input: LineFillInput<'_>,
-    cursor: &mut FillCursor,
-    mut kerning: Option<&mut crate::renderer::kerning::KerningParagraphBreakSession<'_, '_, '_>>,
-    physical_row_index: usize,
-) -> Option<FilledInterval> {
-    let LineFillInput {
-        tokens,
-        text_chars,
-        available_width_px,
-        indent_px,
-        default_tab_width,
-        korean_break_unit,
-        condense_min_space,
-        letter_spacing_px,
-    } = input;
-
     if cursor.finished {
         return None;
     }
@@ -2117,38 +1614,7 @@ fn fill_one_interval_hot_impl(
                         } else {
                             candidate_base
                         };
-                        let token_advance = candidate_width.saturating_sub(cursor.lw);
                         let overflows = candidate_width > current_width;
-                        let accepted = !overflows || ci == cursor.line_start_idx;
-                        #[cfg(feature = "subsecond-dev")]
-                        record_fit_decision(LineBreakFitTrace {
-                            paragraph_index: None,
-                            physical_row_index,
-                            token_index: ti,
-                            decision: if accepted {
-                                "char-fallback-fit"
-                            } else {
-                                "char-fallback-break"
-                            },
-                            char_start_scalar: ci,
-                            char_end_scalar: ci + 1,
-                            line_start_scalar: cursor.line_start_idx,
-                            start_utf16: 0,
-                            end_utf16: 0,
-                            line_start_utf16: 0,
-                            first_line: cursor.is_first_line,
-                            current_width_hwp: cursor.lw,
-                            token_advance_hwp: token_advance,
-                            letter_spacing_trim_hwp: 0,
-                            space_savings_hwp: 0,
-                            natural_candidate_hwp: candidate_width,
-                            condensed_candidate_hwp: candidate_width,
-                            effective_width_hwp: current_width,
-                            condense_before: false,
-                            condense_after: false,
-                            terminal_hang: false,
-                            fits: accepted,
-                        });
                         if overflows && ci > cursor.line_start_idx {
                             let result = LineBreakResult {
                                 start_idx: cursor.line_start_idx,
@@ -2196,41 +1662,6 @@ fn fill_one_interval_hot_impl(
                     effective_width,
                     *max_font_size,
                 );
-                #[cfg(feature = "subsecond-dev")]
-                {
-                    let natural_candidate_hwp = cursor.lw.saturating_add(w_hwp_fit);
-                    let condensed_candidate_hwp =
-                        condensed_line_width_hwp(natural_candidate_hwp, cursor.line_space_savings);
-                    record_fit_decision(LineBreakFitTrace {
-                        paragraph_index: None,
-                        physical_row_index,
-                        token_index: ti,
-                        decision: "token-fit",
-                        char_start_scalar: *start_idx,
-                        char_end_scalar: *end_idx,
-                        line_start_scalar: cursor.line_start_idx,
-                        start_utf16: 0,
-                        end_utf16: 0,
-                        line_start_utf16: 0,
-                        first_line: cursor.is_first_line,
-                        current_width_hwp: cursor.lw,
-                        token_advance_hwp: w_hwp,
-                        letter_spacing_trim_hwp: w_hwp.saturating_sub(w_hwp_fit),
-                        space_savings_hwp: cursor.line_space_savings,
-                        natural_candidate_hwp,
-                        condensed_candidate_hwp,
-                        effective_width_hwp: effective_width,
-                        condense_before: false,
-                        condense_after: fit_used_condense(
-                            token_fits,
-                            natural_candidate_hwp,
-                            condensed_candidate_hwp,
-                            effective_width,
-                        ),
-                        terminal_hang: false,
-                        fits: token_fits,
-                    });
-                }
 
                 // 단일 문자 CJK/한글 토큰의 줄바꿈 가능 지점 처리
                 // 이 글자를 포함한 후 break point 갱신 (end_idx 사용)
@@ -3113,6 +2544,8 @@ fn layout_paragraph_in_frame_impl(
     if !supports_picture_band_frame_controls(para) && !supports_cached_body_frame_controls(para) {
         return None;
     }
+    #[cfg(feature = "subsecond-dev")]
+    let mut trace_transaction = LineBreakTraceTransaction::new();
 
     let text_chars = para.text.chars().collect::<Vec<_>>();
     let para_style = styles.para_styles.get(para.para_shape_id as usize);
@@ -3226,10 +2659,6 @@ fn layout_paragraph_in_frame_impl(
         .unwrap_or(LineSeg::TAG_IMPLEMENTATION_PROPERTY);
     let first_row = frame.row_count();
     let frame_checkpoint = frame.clone();
-    #[cfg(feature = "subsecond-dev")]
-    let layout_frame_trace_checkpoint = frame_trace_checkpoint();
-    #[cfg(feature = "subsecond-dev")]
-    let layout_measurement_trace_checkpoint = measurement_trace_checkpoint();
     let mut cursor = FillCursor::new(0, true);
 
     let result = (|| {
@@ -3248,10 +2677,6 @@ fn layout_paragraph_in_frame_impl(
             let mut attempted_trials = Vec::with_capacity(MAX_ROW_HEIGHT_TRIALS);
 
             loop {
-                #[cfg(feature = "subsecond-dev")]
-                let trial_frame_trace_checkpoint = frame_trace_checkpoint();
-                #[cfg(feature = "subsecond-dev")]
-                let trial_measurement_trace_checkpoint = measurement_trace_checkpoint();
                 frame.restore_checkpoint(row_frame_checkpoint.clone());
                 cursor = cursor_checkpoint.clone();
                 let intervals = frame.carve(candidate_height).to_vec();
@@ -3270,6 +2695,14 @@ fn layout_paragraph_in_frame_impl(
                 attempted_trials.push(trial);
 
                 let mut segments = Vec::with_capacity(intervals.len());
+                #[cfg(feature = "subsecond-dev")]
+                let measurement_capacity = measurement_trace_capacity();
+                #[cfg(feature = "subsecond-dev")]
+                let mut measurement_count = 0usize;
+                #[cfg(feature = "subsecond-dev")]
+                let mut measurements = measurement_capacity
+                    .filter(|capacity| *capacity > 0)
+                    .map(|capacity| Vec::with_capacity(capacity.min(intervals.len())));
                 let mut maximum_font_size = 0.0f64;
                 let mut inline_metrics = (frame.row_count() == first_row)
                     .then_some(terminal_inline_metrics)
@@ -3291,9 +2724,21 @@ fn layout_paragraph_in_frame_impl(
                         &letter_spacing_px,
                         &mut cursor,
                         kerning_break_session.as_mut(),
-                        frame.row_count(),
                     )?;
                     let line = &filled.line;
+                    #[cfg(feature = "subsecond-dev")]
+                    if let Some(capacity) = measurement_capacity {
+                        measurement_count += 1;
+                        if let Some(measurements) = measurements.as_mut() {
+                            if measurements.len() < capacity {
+                                measurements.push((
+                                    filled.line.clone(),
+                                    available_width_px,
+                                    filled.termination,
+                                ));
+                            }
+                        }
+                    }
                     maximum_font_size = maximum_font_size.max(line.max_font_size);
                     for control in inline_controls.iter().filter(|control| {
                         (line.start_idx..line.end_idx).contains(&control.char_position)
@@ -3348,11 +2793,6 @@ fn layout_paragraph_in_frame_impl(
                     }
                 }
                 if metrics.line_height != candidate_height {
-                    #[cfg(feature = "subsecond-dev")]
-                    {
-                        restore_frame_trace(trial_frame_trace_checkpoint);
-                        restore_measurement_trace(trial_measurement_trace_checkpoint);
-                    }
                     candidate_height = metrics.line_height;
                     continue;
                 }
@@ -3372,6 +2812,24 @@ fn layout_paragraph_in_frame_impl(
                 }
 
                 frame.commit_carved_row(metrics, segments)?;
+                #[cfg(feature = "subsecond-dev")]
+                if measurement_capacity.is_some() {
+                    let mut trace_row = None;
+                    let mut recorded = 0;
+                    if let Some(measurements) = measurements {
+                        recorded = measurements.len();
+                        for (line, width, termination) in measurements {
+                            trace_row = record_line_break(
+                                &text_chars,
+                                &line,
+                                width,
+                                termination,
+                                trace_row,
+                            );
+                        }
+                    }
+                    record_omitted_line_breaks(measurement_count - recorded, trace_row);
+                }
                 break;
             }
         }
@@ -3383,19 +2841,23 @@ fn layout_paragraph_in_frame_impl(
         .and_then(|session| session.failed_reason())
         .is_some();
     if result.is_none() {
-        frame.restore_checkpoint(frame_checkpoint);
-        #[cfg(feature = "subsecond-dev")]
-        {
-            restore_frame_trace(layout_frame_trace_checkpoint);
-            restore_measurement_trace(layout_measurement_trace_checkpoint);
-        }
+        frame.restore_checkpoint(frame_checkpoint.clone());
     }
     drop(kerning_break_session);
     drop(kerning_transaction);
     if kerning_failed {
         // 한 boundary라도 예산/범위 검증에 실패하면 일부 K1 row를 게시하지
         // 않고 문단 전체를 원래 scalar transaction으로 다시 실행한다.
+        frame.restore_checkpoint(frame_checkpoint);
+        #[cfg(feature = "subsecond-dev")]
+        drop(trace_transaction);
         return layout_paragraph_in_frame_impl(para, frame, styles, dpi, false);
+    }
+    #[cfg(feature = "subsecond-dev")]
+    if result.is_some() {
+        if let Some(transaction) = trace_transaction.as_mut() {
+            transaction.commit();
+        }
     }
     result
 }
@@ -3413,15 +2875,6 @@ fn layout_paragraph_in_frame_impl(
 /// (1,133,166 measured); the residual is §2.14's metricCtx settlement — three
 /// independent ceilings — and is characterised, not modelled.
 pub(crate) fn stored_row_metrics(
-    para: &Paragraph,
-    styles: &ResolvedStyleSet,
-    dpi: f64,
-    row: &[LineSeg],
-) -> Option<FrameRowMetrics> {
-    crate::hot_call!(stored_row_metrics_hot_impl, para, styles, dpi, row)
-}
-
-fn stored_row_metrics_hot_impl(
     para: &Paragraph,
     styles: &ResolvedStyleSet,
     dpi: f64,
@@ -3642,21 +3095,6 @@ pub(crate) fn stored_rows_reproduce_frame_expectation(
     styles: &ResolvedStyleSet,
     dpi: f64,
 ) -> bool {
-    crate::hot_call!(
-        stored_rows_reproduce_frame_expectation_hot_impl,
-        para,
-        frame,
-        styles,
-        dpi,
-    )
-}
-
-fn stored_rows_reproduce_frame_expectation_hot_impl(
-    para: &Paragraph,
-    frame: &mut LayoutFrame,
-    styles: &ResolvedStyleSet,
-    dpi: f64,
-) -> bool {
     frame.try_admit_stored_rows(&para.line_segs, |row| {
         stored_row_metrics(para, styles, dpi, row)
     })
@@ -3735,25 +3173,6 @@ pub(crate) fn layout_picture_band(
     styles: &ResolvedStyleSet,
     dpi: f64,
 ) -> Option<PictureBandLayout> {
-    crate::hot_call!(
-        layout_picture_band_hot_impl,
-        paragraphs,
-        host_index,
-        column_width_px,
-        styles,
-        dpi
-    )
-}
-
-fn layout_picture_band_hot_impl(
-    paragraphs: &[Paragraph],
-    host_index: usize,
-    column_width_px: f64,
-    styles: &ResolvedStyleSet,
-    dpi: f64,
-) -> Option<PictureBandLayout> {
-    #[cfg(feature = "subsecond-dev")]
-    let mut trace_transaction = LineBreakTraceTransaction::new();
     let host = paragraphs.get(host_index)?;
     let column_horizontal = 0..px_to_hwpunit(column_width_px, dpi);
     let margins_for = |paragraph: &Paragraph| {
@@ -3799,6 +3218,8 @@ fn layout_picture_band_hot_impl(
     if host_pictures.next().is_some() {
         return None;
     }
+    #[cfg(feature = "subsecond-dev")]
+    let mut trace_transaction = LineBreakTraceTransaction::new();
 
     // A paragraph-relative Picture starts at its control's raw UTF-16 stream
     // position, not necessarily at the first visible character. Lay out a
@@ -3808,18 +3229,18 @@ fn layout_picture_band_hot_impl(
         .control_utf16_positions()
         .get(picture_control_index)
         .copied()?;
-    let anchor_top = {
+    let mut anchor_input = host.clone();
+    anchor_input.line_segs.clear();
+    let mut anchor_frame = host_box.frame(0);
+    let anchor_rows = {
         #[cfg(feature = "subsecond-dev")]
         let _trace_scope = trace_paragraph_scope(None);
-        let mut anchor_input = host.clone();
-        anchor_input.line_segs.clear();
-        let mut anchor_frame = host_box.frame(0);
-        let anchor_rows = layout_paragraph_in_frame(&anchor_input, &mut anchor_frame, styles, dpi)?;
-        anchor_rows
-            .iter()
-            .rfind(|row| row.text_start <= picture_raw_start)
-            .map(|row| row.vertical_pos)?
+        layout_paragraph_in_frame(&anchor_input, &mut anchor_frame, styles, dpi)?
     };
+    let anchor_top = anchor_rows
+        .iter()
+        .rfind(|row| row.text_start <= picture_raw_start)
+        .map(|row| row.vertical_pos)?;
 
     let exclusion = crate::renderer::float_placement::resolve_picture_exclusion(
         picture,
@@ -3832,6 +3253,8 @@ fn layout_picture_band_hot_impl(
     let mut line_segs = Vec::new();
 
     for (paragraph_index, paragraph) in paragraphs.iter().enumerate().skip(host_index) {
+        #[cfg(feature = "subsecond-dev")]
+        let _trace_scope = trace_paragraph_scope(Some(paragraph_index));
         if frame.top >= exclusion_end {
             break;
         }
@@ -3858,8 +3281,6 @@ fn layout_picture_band_hot_impl(
         // the cache prevents row-local flags from leaking and keeps vpos ladder
         // repair from treating the fresh zero-origin row as a saved reset.
         input.line_segs.clear();
-        #[cfg(feature = "subsecond-dev")]
-        let _trace_scope = trace_paragraph_scope(Some(paragraph_index));
         let paragraph_lines = layout_paragraph_in_frame(&input, &mut frame, styles, dpi)?;
         line_segs.push(paragraph_lines);
     }
@@ -3871,7 +3292,9 @@ fn layout_picture_band_hot_impl(
         });
     #[cfg(feature = "subsecond-dev")]
     if result.is_some() {
-        trace_transaction.commit();
+        if let Some(transaction) = trace_transaction.as_mut() {
+            transaction.commit();
+        }
     }
     result
 }
@@ -3932,25 +3355,6 @@ pub(crate) fn reflow_line_segs_after_cell_text_edit(
 }
 
 fn reflow_line_segs_impl(
-    para: &mut Paragraph,
-    paragraph_box: ParagraphBox,
-    styles: &ResolvedStyleSet,
-    dpi: f64,
-    preserve_prefix_for_edit: Option<usize>,
-    split_stale_cell_reflow: bool,
-) -> bool {
-    crate::hot_call!(
-        reflow_line_segs_hot_impl,
-        para,
-        paragraph_box,
-        styles,
-        dpi,
-        preserve_prefix_for_edit,
-        split_stale_cell_reflow,
-    )
-}
-
-fn reflow_line_segs_hot_impl(
     para: &mut Paragraph,
     paragraph_box: ParagraphBox,
     styles: &ResolvedStyleSet,
@@ -4450,27 +3854,6 @@ pub(crate) fn recalculate_section_vpos(
     dpi: f64,
     is_hwp3_variant: bool,
 ) {
-    crate::hot_call!(
-        recalculate_section_vpos_hot_impl,
-        paragraphs,
-        start_para,
-        ignore_reset_range,
-        start_stored_end,
-        styles,
-        dpi,
-        is_hwp3_variant,
-    )
-}
-
-fn recalculate_section_vpos_hot_impl(
-    paragraphs: &mut [Paragraph],
-    start_para: usize,
-    ignore_reset_range: Option<std::ops::Range<usize>>,
-    start_stored_end: Option<i32>,
-    styles: &ResolvedStyleSet,
-    dpi: f64,
-    is_hwp3_variant: bool,
-) {
     if paragraphs.is_empty() || start_para >= paragraphs.len() {
         return;
     }
@@ -4608,10 +3991,6 @@ fn recalculate_section_vpos_hot_impl(
 /// `start_stored_end` 로 전달하기 위한 헬퍼 — reflow 가 end 를 덮은 뒤에는 저장
 /// 좌표를 복원할 수 없다.
 pub(crate) fn paragraph_flow_end(para: &Paragraph) -> Option<i32> {
-    crate::hot_call!(paragraph_flow_end_hot_impl, para)
-}
-
-fn paragraph_flow_end_hot_impl(para: &Paragraph) -> Option<i32> {
     para.line_segs.last().map(|ls| {
         let height = if ls.line_height > ls.text_height && ls.text_height > 0 {
             ls.text_height
@@ -4713,7 +4092,6 @@ mod fill_cursor_tests {
             &[],
             &mut cursor,
             None,
-            results.len(),
         ) {
             results.push(result.line);
         }
@@ -4871,6 +4249,8 @@ mod fill_cursor_tests {
 #[cfg(test)]
 mod frame_reflow_tests {
     use super::*;
+    #[cfg(feature = "subsecond-dev")]
+    use crate::renderer::layout_frame::capture_frame_carves;
     use crate::renderer::layout_frame::{FrameExclusion, FrameExclusionPolicy};
     use crate::renderer::style_resolver::{ResolvedCharStyle, ResolvedParaStyle};
 
@@ -5041,16 +4421,34 @@ mod frame_reflow_tests {
                 char_shape_id: 0,
             }],
         );
-        let mut frame = LayoutFrame::new(
-            0..9_000,
-            100,
-            vec![FrameExclusion {
-                horizontal: 3_000..5_000,
-                vertical: 0..10_000,
-                policy: FrameExclusionPolicy::BothSides,
-            }],
-        );
+        let make_frame = || {
+            LayoutFrame::new(
+                0..9_000,
+                100,
+                vec![FrameExclusion {
+                    horizontal: 3_000..5_000,
+                    vertical: 0..10_000,
+                    policy: FrameExclusionPolicy::BothSides,
+                }],
+            )
+        };
+        let mut frame = make_frame();
 
+        #[cfg(feature = "subsecond-dev")]
+        {
+            let mut uncaptured_frame = make_frame();
+            layout_paragraph_in_frame(&para, &mut uncaptured_frame, &styles, 96.0)
+                .expect("ordinary frame layout");
+        }
+
+        #[cfg(feature = "subsecond-dev")]
+        let ((lines, measurement), carves) = capture_frame_carves(true, 8, None, || {
+            capture_line_break_measurement(true, 8, None, || {
+                layout_paragraph_in_frame(&para, &mut frame, &styles, 96.0)
+                    .expect("two usable intervals accept scalar text")
+            })
+        });
+        #[cfg(not(feature = "subsecond-dev"))]
         let lines = layout_paragraph_in_frame(&para, &mut frame, &styles, 96.0)
             .expect("two usable intervals accept scalar text");
 
@@ -5073,6 +4471,43 @@ mod frame_reflow_tests {
         assert!(lines[1].is_last_segment());
         assert_eq!(frame.row_count(), 1);
         assert_eq!(frame.top, 1_540);
+        #[cfg(feature = "subsecond-dev")]
+        {
+            assert_eq!(carves.records.len(), 1);
+            assert_eq!(measurement.records.len(), 2);
+            assert!(measurement
+                .records
+                .iter()
+                .all(|record| record.physical_row_index == 0));
+            let mut limited_frame = make_frame();
+            let ((_, limited), _) = capture_frame_carves(true, 8, None, || {
+                capture_line_break_measurement(true, 1, None, || {
+                    layout_paragraph_in_frame(&para, &mut limited_frame, &styles, 96.0)
+                })
+            });
+            assert_eq!(limited.total_records, 2);
+            assert_eq!(limited.records.len(), 1);
+            assert!(limited.truncated);
+            let text = ['a'];
+            let line = LineBreakResult {
+                start_idx: 0,
+                end_idx: 1,
+                max_font_size: 12.0,
+                has_line_break: false,
+            };
+            let record =
+                |width| record_line_break(&text, &line, width, FillTermination::ParagraphEnd, None);
+            let (_, outer) = capture_line_break_measurement(true, 8, None, || {
+                let _ = record(10.0);
+                let (_, inner) = capture_line_break_measurement(true, 8, None, || {
+                    let _ = record(20.0);
+                });
+                assert_eq!(inner.total_records, 1);
+                let _ = record(30.0);
+            });
+            assert_eq!(outer.total_records, 2);
+            assert_eq!(outer.records.len(), 2);
+        }
     }
 
     #[test]
@@ -5780,32 +5215,6 @@ mod frame_reflow_tests {
             section.paragraphs[332].line_segs[0].segment_width,
             "p332 is the first full-width paragraph after the exclusion"
         );
-        #[cfg(feature = "subsecond-dev")]
-        {
-            let ((traced_band, measurement), carves) =
-                crate::renderer::layout_frame::capture_frame_carves(true, 128, Some(328), || {
-                    capture_line_break_measurement(true, 256, 512, Some(328), || {
-                        layout_picture_band(&section.paragraphs, 325, column_width, &styles, DPI)
-                    })
-                });
-            assert!(traced_band.is_some());
-            assert_eq!(
-                measurement
-                    .fit_decisions
-                    .first()
-                    .expect("p328 fit trace")
-                    .physical_row_index,
-                0
-            );
-            assert_eq!(
-                carves
-                    .records
-                    .first()
-                    .expect("p328 carve trace")
-                    .physical_row_index,
-                0
-            );
-        }
     }
 
     #[test]
@@ -5835,29 +5244,23 @@ mod frame_reflow_tests {
         let column_width = page_layout.column_areas[0].width;
         let styles = crate::renderer::style_resolver::resolve_styles(&document.doc_info, DPI);
 
+        #[cfg(feature = "subsecond-dev")]
+        let ((band, measurement), carves) = capture_frame_carves(true, 128, None, || {
+            capture_line_break_measurement(true, 128, None, || {
+                layout_picture_band(&section.paragraphs[325..329], 0, column_width, &styles, DPI)
+            })
+        });
+        #[cfg(not(feature = "subsecond-dev"))]
+        let band =
+            layout_picture_band(&section.paragraphs[325..329], 0, column_width, &styles, DPI);
         assert!(
-            layout_picture_band(&section.paragraphs[325..329], 0, column_width, &styles, DPI)
-                .is_none(),
+            band.is_none(),
             "a subset ending before the exclusion clears cannot be published"
         );
         #[cfg(feature = "subsecond-dev")]
         {
-            let ((rejected, measurement), carves) =
-                crate::renderer::layout_frame::capture_frame_carves(true, usize::MAX, None, || {
-                    capture_line_break_measurement(true, usize::MAX, usize::MAX, None, || {
-                        layout_picture_band(
-                            &section.paragraphs[325..329],
-                            0,
-                            column_width,
-                            &styles,
-                            DPI,
-                        )
-                    })
-                });
-            assert!(rejected.is_none());
-            assert!(measurement.tokens.is_empty());
-            assert!(measurement.fit_decisions.is_empty());
-            assert!(carves.records.is_empty());
+            assert_eq!(measurement.total_records, 0);
+            assert_eq!(carves.total_records, 0);
         }
     }
 

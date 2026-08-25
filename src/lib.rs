@@ -4,21 +4,6 @@
 
 use wasm_bindgen::prelude::*;
 
-macro_rules! hot_call {
-    ($target:path $(, $arg:expr)* $(,)?) => {{
-        #[cfg(feature = "subsecond-dev")]
-        {
-            let mut hot = subsecond::HotFn::current($target);
-            hot.call(($($arg,)*))
-        }
-        #[cfg(not(feature = "subsecond-dev"))]
-        {
-            $target($($arg),*)
-        }
-    }};
-}
-pub(crate) use hot_call;
-
 pub mod agent;
 pub mod agent_seal;
 pub mod capabilities_schema;
