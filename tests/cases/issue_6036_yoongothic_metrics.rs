@@ -77,11 +77,9 @@ fn issue_6036_yoongothic_logo_advances_use_real_metrics() {
         if !matches!(body, "경" | "찰" | "청") {
             continue;
         }
-        let (Some(x), Some(y), Some(fs)) = (
-            attr(attrs, "x"),
-            attr(attrs, "y"),
-            attr(attrs, "font-size"),
-        ) else {
+        let (Some(x), Some(y), Some(fs)) =
+            (attr(attrs, "x"), attr(attrs, "y"), attr(attrs, "font-size"))
+        else {
             continue;
         };
         // 1쪽 머리 로고 한정: 16pt(21.33px) + 페이지 상단 y<200.
