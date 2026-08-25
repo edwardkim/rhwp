@@ -732,6 +732,11 @@ const LEGACY_STREAM: &str = "Contents";
 const EMF_STREAM: &str = "\u{2}OlePres000";
 
 /// 현재 값 그대로의 편집 입력 — 무편집 왕복의 재료.
+/// [#6037] 편집 후 다시 읽은 봉투 — 구조가 의도대로 남았는지 보는 데 쓴다.
+fn chart_data(core: &DocumentCore, index: usize) -> serde_json::Value {
+    serde_json::from_str(&core.get_chart_data_by_index_native(index).expect("읽기")).expect("JSON")
+}
+
 fn edits_from(core: &DocumentCore, index: usize) -> serde_json::Value {
     let read: serde_json::Value =
         serde_json::from_str(&core.get_chart_data_by_index_native(index).expect("읽기"))
@@ -3334,38 +3339,130 @@ fn b2_refused_on(path: &std::path::Path, reason: &str, mutate: impl Fn(&mut serd
     );
 }
 
-/// 원형·3D원형·ofPie 는 계열 수 1 고정 — 계열 추가 거부(양 포맷).
+/// [#6037] 원형은 계열 추가를 **허용**한다 — 파손이 아니라 무효과다.
+///
+/// 한컴도 막지 않고(실측 4변종), rhwp 는 꼬리에 붙이므로 원본 계열이 `idx=0` 에 남아 계속
+/// 그려진다(한컴은 맨 앞에 끼워 원본을 화면에서 밀어낸다 — 이 지점은 rhwp 가 더 안전하다).
+/// 원형에 계열이 여럿인 것은 OOXML 규격상 유효하다. "추가한 계열이 안 보인다"는 봉투의
+/// `plot` 을 읽어 표면이 안내할 몫이다(#6037 S3).
 #[test]
-fn pie_series_count_is_fixed() {
+fn pie_series_add_is_allowed_and_keeps_the_original_first() {
     for stem in ["원형/원형대원형", "원형/2차원원형", "원형/3차원원형"] {
         let base = manifest(&format!("samples/chart/{stem}.hwpx"));
         for path in [base.with_extension("hwpx"), base.with_extension("hwp")] {
-            b2_refused_on(&path, "pieSeriesCountFixed", |e| {
+            let mut core = core_of(&path);
+            let first_before = chart_data(&core, 0)["series"][0]["name"].clone();
+            let e = b2_structure_edits(&core, |e| {
                 let n = e["series"][0]["values"].as_array().unwrap().len();
                 e["series"].as_array_mut().unwrap().push(serde_json::json!({
                     "name": "추가계열", "values": vec!["1"; n],
                 }));
             });
+            let out = set_chart(&mut core, &e);
+            assert_eq!(out["ok"], true, "{}: {out}", path.display());
+            let after = chart_data(&core, 0);
+            assert_eq!(
+                after["series"][0]["name"],
+                first_before,
+                "{}: 원본 계열이 첫 자리에 남아야 그림이 유지된다",
+                path.display()
+            );
+            assert_eq!(
+                after["series"].as_array().unwrap().len(),
+                2,
+                "{}: 계열이 하나 늘어야 한다",
+                path.display()
+            );
         }
     }
 }
 
-/// 주식형은 계열 수가 종류에 묶인다(HLC=3 / OHLC=4) — 개수 변경 거부. 변경은 B3 소관.
+/// [#6037] 주식형 캔들 짝 — `upDownBars` 가 첫·끝 계열을 몸통으로 삼으므로 **양끝이 바뀌면**
+/// 거부한다. 개수 변경 자체는 막지 않는다.
+///
+/// 한컴 실측(12변종)이 가른 그대로다 — 꼬리 삽입·꼬리 삭제는 검은 박스, 중간 삽입·중간 삭제는
+/// 정상, `upDownBars` 없는 HLC 는 꼬리를 건드려도 정상.
 #[test]
-fn stock_series_count_is_fixed() {
+fn stock_candle_anchor_is_guarded_at_both_ends() {
     let ohlc = manifest("samples/chart/기타/시가고가저가종가.hwpx");
     for path in [ohlc.with_extension("hwpx"), ohlc.with_extension("hwp")] {
-        b2_refused_on(&path, "stockSeriesCountFixed", |e| {
+        // 꼬리 삭제 — 끝이 종가에서 저가로 바뀐다.
+        b2_refused_on(&path, "candleAnchorBroken", |e| {
+            e["series"].as_array_mut().unwrap().pop();
+        });
+        // 첫 계열 삭제 — 첫이 시가에서 고가로 바뀐다(미실측, 장치 동작에서 추론해 fail-closed).
+        b2_refused_on(&path, "candleAnchorBroken", |e| {
             e["series"].as_array_mut().unwrap().remove(0);
         });
+        // 꼬리 삽입 — 끝이 새 계열이 된다.
+        b2_refused_on(&path, "candleAnchorBroken", |e| {
+            let n = e["series"][0]["values"].as_array().unwrap().len();
+            e["series"].as_array_mut().unwrap().push(serde_json::json!({
+                "name": "추가계열", "values": vec!["1"; n],
+            }));
+        });
     }
+}
+
+/// [#6037] 양끝이 유지되는 구조 편집은 통과한다 — 중간 삽입·중간 삭제.
+#[test]
+fn stock_middle_series_edits_are_allowed() {
+    let ohlc = manifest("samples/chart/기타/시가고가저가종가.hwpx");
+    for path in [ohlc.with_extension("hwpx"), ohlc.with_extension("hwp")] {
+        // 중간 삽입 — 끝 계열(종가) 앞에 끼운다. 한컴 편집기가 하는 것과 같은 배치다.
+        let mut core = core_of(&path);
+        let e = b2_structure_edits(&core, |e| {
+            let n = e["series"][0]["values"].as_array().unwrap().len();
+            let arr = e["series"].as_array_mut().unwrap();
+            let last = arr.len() - 1;
+            arr.insert(
+                last,
+                serde_json::json!({ "name": "추가계열", "values": vec!["1"; n] }),
+            );
+        });
+        let out = set_chart(&mut core, &e);
+        assert_eq!(out["ok"], true, "{}: 중간 삽입 — {out}", path.display());
+        let after = chart_data(&core, 0);
+        assert_eq!(
+            after["series"].as_array().unwrap().len(),
+            5,
+            "{}: 계열이 하나 늘어야 한다",
+            path.display()
+        );
+        assert_eq!(
+            after["series"][4]["name"],
+            "종가",
+            "{}: 끝 계열은 종가로 유지돼야 캔들이 산다",
+            path.display()
+        );
+
+        // 중간 삭제 — 저가(index 2)를 지운다. 한컴 실측에서 정상 렌더였다.
+        let mut core = core_of(&path);
+        let e = b2_structure_edits(&core, |e| {
+            e["series"].as_array_mut().unwrap().remove(2);
+        });
+        let out = set_chart(&mut core, &e);
+        assert_eq!(out["ok"], true, "{}: 중간 삭제 — {out}", path.display());
+        let after = chart_data(&core, 0);
+        assert_eq!(after["series"].as_array().unwrap().len(), 3);
+        assert_eq!(after["series"][2]["name"], "종가");
+    }
+}
+
+/// [#6037] `upDownBars` 가 없는 HLC 는 꼬리를 건드려도 통과한다 — 캔들 앵커가 없다.
+#[test]
+fn hlc_without_candle_allows_tail_series_add() {
     let hlc = manifest("samples/chart/기타/고가저가종가.hwpx");
-    b2_refused_on(&hlc, "stockSeriesCountFixed", |e| {
+    let mut core = core_of(&hlc);
+    let e = b2_structure_edits(&core, |e| {
         let n = e["series"][0]["values"].as_array().unwrap().len();
         e["series"].as_array_mut().unwrap().push(serde_json::json!({
-            "name": "시가", "values": vec!["1"; n],
+            "name": "추가계열", "values": vec!["1"; n],
         }));
     });
+    let out = set_chart(&mut core, &e);
+    assert_eq!(out["ok"], true, "HLC 꼬리 추가 — {out}");
+    assert_eq!(chart_data(&core, 0)["series"].as_array().unwrap().len(), 4);
 }
 
 /// 마지막 1점·1계열은 지울 수 없다 — 특이케이스(1계열 1점, c:numLit)가 그 경계.
@@ -3459,13 +3556,10 @@ fn multi_level_labels_refuse_structure_edits() {
 /// 가드는 dry-run 에서도 발화한다.
 #[test]
 fn guards_fire_in_dry_run_too() {
-    let path = manifest("samples/chart/원형/원형대원형.hwpx");
-    b2_refused_on(&path, "pieSeriesCountFixed", |e| {
+    let path = manifest("samples/chart/기타/시가고가저가종가.hwpx");
+    b2_refused_on(&path, "candleAnchorBroken", |e| {
         e["dryRun"] = serde_json::json!(true);
-        let n = e["series"][0]["values"].as_array().unwrap().len();
-        e["series"].as_array_mut().unwrap().push(serde_json::json!({
-            "name": "추가계열", "values": vec!["1"; n],
-        }));
+        e["series"].as_array_mut().unwrap().pop();
     });
 }
 
