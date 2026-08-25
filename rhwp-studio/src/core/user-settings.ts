@@ -5,6 +5,11 @@
  * 섹션별 확장 가능한 구조.
  */
 
+import {
+  normalizePageArrangement,
+  type PageArrangement,
+} from '../view/page-arrangement.ts';
+
 /** 대표 글꼴 세트 (7개 언어별 글꼴) */
 export interface FontSet {
   name: string;
@@ -66,6 +71,8 @@ export interface ViewSettings {
   toolbarBasic: boolean;
   /** 서식 도구 상자(서식 도구 모음) 표시 여부 */
   toolbarFormat: boolean;
+  /** 배율과 독립적으로 유지하는 페이지 화면 배치 */
+  pageArrangement: PageArrangement;
 }
 
 /** 복구용 자동저장 설정 */
@@ -158,6 +165,7 @@ function defaultSettings(): AppSettings {
       clipView: true,
       toolbarBasic: true,
       toolbarFormat: true,
+      pageArrangement: { kind: 'auto' },
     },
     autosave: {
       recoveryEnabled: true,
@@ -266,6 +274,7 @@ class UserSettingsService {
             view.toolbarFormat,
             defaults.view.toolbarFormat,
           ),
+          pageArrangement: normalizePageArrangement(view.pageArrangement),
         },
         autosave: {
           ...defaults.autosave,
@@ -401,6 +410,12 @@ class UserSettingsService {
   /** 서식 도구 상자 표시 설정 */
   setToolbarFormat(value: boolean): void {
     this.data.view.toolbarFormat = value;
+    this.save();
+  }
+
+  /** 페이지 화면 배치 설정 */
+  setPageArrangement(value: PageArrangement): void {
+    this.data.view.pageArrangement = normalizePageArrangement(value);
     this.save();
   }
 

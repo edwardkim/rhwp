@@ -1,4 +1,9 @@
 import type { PageInfo } from '@/core/types';
+import {
+  DEFAULT_PAGE_ARRANGEMENT,
+  normalizePageArrangement,
+  type PageArrangement,
+} from './page-arrangement.ts';
 
 /** 그리드 모드 전환 줌 임계값 */
 const GRID_ZOOM_THRESHOLD = 0.5;
@@ -13,6 +18,8 @@ export class VirtualScroll {
   private pageHeights: number[] = [];
   private pageWidths: number[] = [];
   private pageLefts: number[] = [];
+  private pageRows: number[] = [];
+  private rowPages: number[][] = [];
   private maxPageWidth = 0;
   private totalHeight = 0;
   private totalWidth = 0;
@@ -25,18 +32,48 @@ export class VirtualScroll {
   }
 
   /** 페이지 크기 정보로 오프셋 배열을 구축한다 */
-  setPageDimensions(pages: PageInfo[], zoom = 1.0, viewportWidth = 0): void {
+  setPageDimensions(
+    pages: PageInfo[],
+    zoom = 1.0,
+    viewportWidth = 0,
+    arrangement: PageArrangement = DEFAULT_PAGE_ARRANGEMENT,
+  ): void {
     this.pageHeights = pages.map((p) => p.height * zoom);
     this.pageWidths = pages.map((p) => p.width * zoom);
     this.maxPageWidth = Math.max(...this.pageWidths, 0);
 
-    // 그리드 모드 판정
-    this.gridMode = zoom <= GRID_ZOOM_THRESHOLD && viewportWidth > 0 && pages.length > 1;
-
-    if (this.gridMode) {
-      this.layoutGrid(viewportWidth);
-    } else {
-      this.layoutSingleColumn();
+    const normalized = normalizePageArrangement(arrangement);
+    switch (normalized.kind) {
+      case 'single':
+        this.gridMode = false;
+        this.layoutSingleColumn();
+        break;
+      case 'double':
+        this.gridMode = true;
+        this.layoutUniformGrid(viewportWidth, 2);
+        break;
+      case 'facing':
+        this.gridMode = true;
+        this.layoutFacingPages(viewportWidth);
+        break;
+      case 'multiple':
+        this.gridMode = true;
+        this.layoutUniformGrid(viewportWidth, normalized.columns);
+        break;
+      case 'auto':
+      default:
+        // 기존 자동 동작: 50% 이하에서만 뷰포트에 들어가는 최대 열 수를 쓴다.
+        this.gridMode = zoom <= GRID_ZOOM_THRESHOLD && viewportWidth > 0 && pages.length > 1;
+        if (this.gridMode) {
+          const columns = Math.max(
+            1,
+            Math.floor((viewportWidth + this.pageGap) / (this.maxPageWidth + this.pageGap)),
+          );
+          this.layoutUniformGrid(viewportWidth, columns);
+        } else {
+          this.layoutSingleColumn();
+        }
+        break;
     }
     this.applyHorizontalPanSpace(viewportWidth);
   }
@@ -46,54 +83,87 @@ export class VirtualScroll {
     this.columns = 1;
     this.pageOffsets = [];
     this.pageLefts = [];
+    this.pageRows = [];
+    this.rowPages = [];
     let offset = this.pageGap;
     for (let i = 0; i < this.pageHeights.length; i++) {
       this.pageOffsets.push(offset);
       this.pageLefts.push(-1); // -1 = CSS 중앙 정렬 사용
+      this.pageRows.push(i);
+      this.rowPages.push([i]);
       offset += this.pageHeights[i] + this.pageGap;
     }
     this.totalHeight = offset;
     this.totalWidth = this.maxPageWidth + 40;
   }
 
-  /** 그리드(다중 열) 배치 */
-  private layoutGrid(viewportWidth: number): void {
+  /** 연속 페이지를 고정 열 수로 배치한다. */
+  private layoutUniformGrid(viewportWidth: number, columns: number): void {
+    const safeColumns = Math.max(1, Math.floor(columns));
+    const slots = this.pageHeights.map((_, pageIdx) => ({
+      pageIdx,
+      row: Math.floor(pageIdx / safeColumns),
+      col: pageIdx % safeColumns,
+    }));
+    this.layoutPageSlots(viewportWidth, safeColumns, slots);
+  }
+
+  /** 첫 홀수 쪽을 오른쪽에 둔 뒤 짝수/홀수 맞쪽을 구성한다. */
+  private layoutFacingPages(viewportWidth: number): void {
+    const slots = this.pageHeights.map((_, pageIdx) => ({
+      pageIdx,
+      row: Math.floor((pageIdx + 1) / 2),
+      col: pageIdx % 2 === 0 ? 1 : 0,
+    }));
+    this.layoutPageSlots(viewportWidth, 2, slots);
+  }
+
+  /** 실제 페이지 인덱스와 행/열 슬롯의 대응을 공통 좌표 배열로 변환한다. */
+  private layoutPageSlots(
+    viewportWidth: number,
+    columns: number,
+    slots: { pageIdx: number; row: number; col: number }[],
+  ): void {
     const gap = this.pageGap;
     const pw = this.maxPageWidth;
+    this.columns = columns;
+    this.pageOffsets = new Array(this.pageHeights.length).fill(0);
+    this.pageLefts = new Array(this.pageHeights.length).fill(0);
+    this.pageRows = new Array(this.pageHeights.length).fill(0);
+    this.rowPages = [];
 
-    // 열 수 계산: 뷰포트에 들어가는 최대 열 수
-    this.columns = Math.max(1, Math.floor((viewportWidth + gap) / (pw + gap)));
-
-    this.pageOffsets = [];
-    this.pageLefts = [];
+    if (slots.length === 0) {
+      this.totalHeight = 0;
+      this.totalWidth = Math.max(0, viewportWidth);
+      return;
+    }
 
     // 그리드 전체 너비 = columns * pageWidth + (columns-1) * gap
     const gridWidth = this.columns * pw + (this.columns - 1) * gap;
     const marginLeft = Math.max(gap, (viewportWidth - gridWidth) / 2);
 
-    let rowTop = gap;
-    for (let i = 0; i < this.pageHeights.length; i++) {
-      const col = i % this.columns;
-      if (col === 0 && i > 0) {
-        // 이전 행의 최대 높이만큼 이동
-        const rowStart = i - this.columns;
-        let maxH = 0;
-        for (let j = rowStart; j < i && j < this.pageHeights.length; j++) {
-          maxH = Math.max(maxH, this.pageHeights[j]);
-        }
-        rowTop += maxH + gap;
-      }
-      this.pageOffsets.push(rowTop);
-      this.pageLefts.push(marginLeft + col * (pw + gap));
+    const rowCount = Math.max(...slots.map((slot) => slot.row)) + 1;
+    const rowHeights = new Array(rowCount).fill(0);
+    for (const { pageIdx, row } of slots) {
+      this.pageRows[pageIdx] = row;
+      (this.rowPages[row] ??= []).push(pageIdx);
+      rowHeights[row] = Math.max(rowHeights[row], this.pageHeights[pageIdx] ?? 0);
     }
 
-    // 마지막 행 높이 추가
-    const lastRowStart = Math.floor((this.pageHeights.length - 1) / this.columns) * this.columns;
-    let lastRowMaxH = 0;
-    for (let j = lastRowStart; j < this.pageHeights.length; j++) {
-      lastRowMaxH = Math.max(lastRowMaxH, this.pageHeights[j]);
+    const rowTops = new Array(rowCount).fill(gap);
+    for (let row = 1; row < rowCount; row++) {
+      rowTops[row] = rowTops[row - 1] + rowHeights[row - 1] + gap;
     }
-    this.totalHeight = rowTop + lastRowMaxH + gap;
+
+    for (const { pageIdx, row, col } of slots) {
+      this.pageOffsets[pageIdx] = rowTops[row];
+      this.pageLefts[pageIdx] = marginLeft
+        + col * (pw + gap)
+        + (pw - (this.pageWidths[pageIdx] ?? 0)) / 2;
+    }
+
+    const lastRow = rowCount - 1;
+    this.totalHeight = rowTops[lastRow] + rowHeights[lastRow] + gap;
     this.totalWidth = Math.max(gridWidth + marginLeft * 2, viewportWidth);
   }
 
@@ -159,17 +229,13 @@ export class VirtualScroll {
     const visible = this.getVisiblePages(scrollY, viewportHeight);
     if (visible.length === 0) return [];
 
-    const first = visible[0];
-    const last = visible[visible.length - 1];
     const prefetch = new Set(visible);
 
-    // 이전/다음 행 추가
-    const cols = this.columns;
-    for (let c = 0; c < cols; c++) {
-      const prev = first - cols + c;
-      const next = last + 1 + c;
-      if (prev >= 0) prefetch.add(prev);
-      if (next < this.pageCount) prefetch.add(next);
+    const visibleRows = visible.map((pageIdx) => this.pageRows[pageIdx] ?? 0);
+    const firstRow = Math.min(...visibleRows);
+    const lastRow = Math.max(...visibleRows);
+    for (const row of [firstRow - 1, lastRow + 1]) {
+      for (const pageIdx of this.rowPages[row] ?? []) prefetch.add(pageIdx);
     }
 
     return Array.from(prefetch).sort((a, b) => a - b);
