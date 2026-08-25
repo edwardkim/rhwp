@@ -746,6 +746,29 @@ fn row_split_meets_min_top_keep(
     keep_height >= MIN_TOP_KEEP_PX
 }
 
+/// [#6035] 행의 셀 문단 저장 사다리에 **비전진(동일 vpos) 연속 seg 쌍**이 있는지 —
+/// 저장 시점 한글이 이 행을 쪽 경계에서 줄 단위로 나눈 흔적이다 (2804253 r70:
+/// 0/1560/1560, horz 동일이라 좌우분할 아님). 같은 vpos 의 세 의미(좌우분할·쪽
+/// 리셋·중복) 중 좌우분할은 `column_start`/폭이 갈리므로 세로 신호만 잡는다.
+fn row_has_stored_same_vpos_split_signal(table: &crate::model::table::Table, row: usize) -> bool {
+    table
+        .cells
+        .iter()
+        .filter(|cell| cell.row as usize == row)
+        .any(|cell| {
+            cell.paragraphs.iter().any(|paragraph| {
+                paragraph.line_segs.windows(2).any(|pair| {
+                    pair.iter().all(|seg| {
+                        seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                    }) && pair[0].vertical_pos > 0
+                        && pair[1].vertical_pos == pair[0].vertical_pos
+                        && pair[1].column_start == pair[0].column_start
+                        && pair[1].segment_width == pair[0].segment_width
+                })
+            })
+        })
+}
+
 /// Native HWP로 저장·재파싱한 뒤에도 남는 "1열 셀을 1×2로 분할"한 표 구조.
 ///
 /// [`crate::model::table::Table::split_cell_into`]는 기존 1열의 다른 셀을 새 2열
@@ -21251,6 +21274,20 @@ impl TypesetEngine {
                 || native_hwp5_internal_reset_row_tail
                 || uses_source_frame_tail
                 || native_short_parent_child_splittable;
+            // [#6035] HWPX 저장 사다리가 이 행을 **쪽 경계에서 줄 단위로 나눈
+            // 흔적**(셀 문단의 비전진 동일-vpos 연속 seg 쌍, 좌우분할 아님)을
+            // 담고 있으면, 완결 유닛 ≥1 컷에 25px 고아 가드를 적용하지 않는다 —
+            // 한글은 그 자리에서 한 줄만 남기는 분할을 실제로 수행했다(2804253
+            // 5쪽: 잔여 41.3px 에 '다. 원자재…' 첫 줄 20.8px 유지 — 저장 ladder
+            // 0/1560/1560, rhwp 는 행 통째 이월로 5쪽 하단 31pt 공백 + 총 12쪽
+            // vs 한글 11쪽). 큰 글줄(10pt+)에서는 한 줄이 25px 미만이라 정상
+            // 줄-단위 분할이 상시 기각되는 구조였다. 저장 흔적 없는 행과 예산
+            // 초과 컷(아래 재시도/이월 판정)은 종전 그대로다.
+            let cellbreak_complete_unit_keep = st.profile.hwpx_stored_layout()
+                && mt.allows_row_break_split()
+                && res.consumed_height > 0.5
+                && res.end_cut.iter().any(|units| *units > 0)
+                && row_has_stored_same_vpos_split_signal(table, r);
             // [Task #713] sliver(orphan) 회피 — 일반 표는 기존 content-only 기준을
             // 유지한다. 패딩 포함 painted 기준은 좁은 #2439 strict 표, saved internal
             // reset, 그리고 선언 높이보다 큰 1×1 child가 실제 multi-unit으로 검증된
@@ -21258,6 +21295,7 @@ impl TypesetEngine {
             // 함께 보이는 첫 child line을 현재 쪽 owner로 고정하지만 content-only
             // 높이가 25px에 근소하게 못 미치는 76076 p81→82 구조다.
             if r > cursor_row
+                && !cellbreak_complete_unit_keep
                 && !row_split_meets_min_top_keep(
                     res.consumed_height,
                     split_total,
