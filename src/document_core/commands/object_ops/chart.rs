@@ -203,6 +203,23 @@ fn labels_shared(data: &ChartData) -> bool {
         })
 }
 
+/// [#6037] `PlotKind` → 봉투 표기. OOXML 요소 이름에서 `Chart` 를 뺀 camelCase 다.
+fn plot_name(kind: PlotKind) -> &'static str {
+    match kind {
+        PlotKind::Bar => "bar",
+        PlotKind::Line => "line",
+        PlotKind::Area => "area",
+        PlotKind::Pie => "pie",
+        PlotKind::OfPie => "ofPie",
+        PlotKind::Doughnut => "doughnut",
+        PlotKind::Radar => "radar",
+        PlotKind::Scatter => "scatter",
+        PlotKind::Bubble => "bubble",
+        PlotKind::Stock => "stock",
+        PlotKind::Other => "other",
+    }
+}
+
 fn chart_data_json(chart: &ChartRef, data: &ChartData, source: ChartSource) -> serde_json::Value {
     let axis = match data.series.first().map(|s| s.axis) {
         Some(SeriesAxis::Scatter) => "scatter",
@@ -214,6 +231,12 @@ fn chart_data_json(chart: &ChartRef, data: &ChartData, source: ChartSource) -> s
         "ok": true,
         "chart": chart.index + 1,
         "axis": axis,
+        // [#6037] plot 종류 — 표면이 "이 편집이 화면에 나타나는가"를 사전에 판단할 근거다.
+        // 예: 원형은 첫 계열만 그리므로 계열을 더해도 보이지 않는다(거부는 하지 않는다).
+        // `axis` 와 같이 **첫 계열 기준**이다 — 코퍼스 전건이 단일 plot 이다.
+        "plot": data.series.first().map(|s| plot_name(s.plot)).unwrap_or("other"),
+        // [#6037] 캔들 장치 — 있으면 끝 계열을 바꾸는 구조 편집이 거부된다(candleAnchorBroken).
+        "hasUpDownBars": data.has_up_down_bars,
         "source": match source {
             ChartSource::ZipPart => "zipPart",
             ChartSource::NestedCopy => "nestedCopy",
