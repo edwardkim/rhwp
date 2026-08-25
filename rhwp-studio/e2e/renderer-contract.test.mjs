@@ -492,7 +492,12 @@ requireSnippet(
 );
 requireSnippet(
   canvasViewSource,
-  /activeRendererDecisionKey[\s\S]*?getCanvasKitRenderDiagnostics\(pageIdx\)[\s\S]*?!canvaskitDiagnostics\.passesRuntimeReadinessGate[\s\S]*?rendererSession\.isAutoRequest\(\)[\s\S]*?readinessBlockers\.join[\s\S]*?scheduleCanvasKitFallback\([\s\S]*?'runtime'[\s\S]*?fallbackFromRuntimeFailure\(error, expectedDecisionKey\)/,
+  /function canvasKitReadinessError[\s\S]*?readinessBlockers\.join[\s\S]*?lastRenderError[\s\S]*?lastUnexpectedUnsupportedOps/,
+  'CanvasKit readiness errors should retain bounded blocker and replay details',
+);
+requireSnippet(
+  canvasViewSource,
+  /activeRendererDecisionKey[\s\S]*?getCanvasKitRenderDiagnostics\(pageIdx\)[\s\S]*?!canvaskitDiagnostics\.passesRuntimeReadinessGate[\s\S]*?rendererSession\.isAutoRequest\(\)[\s\S]*?scheduleCanvasKitFallback\([\s\S]*?canvasKitReadinessError\(canvaskitDiagnostics\)[\s\S]*?'runtime'[\s\S]*?fallbackFromRuntimeFailure\(error, expectedDecisionKey\)/,
   'CanvasView should promote failed auto CanvasKit readiness through the current document decision only',
 );
 requireSnippet(
