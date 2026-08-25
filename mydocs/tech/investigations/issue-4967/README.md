@@ -56,3 +56,22 @@ paint·supply 규칙은 바꾸지 않는다. Canvas2D·CanvasKit actual paint는
 
 결과 정본은 `rank8_metric_hypothesis.json`이다. Q2는 `layout-metric` 하나만 Q3 검증 대상으로
 qualification하며 font identity·paint identity, 배포 권한 또는 제품 변경을 승인하지 않는다.
+
+## Stage W8-Q3 bounded private qualification
+
+`scripts/font_rank8_private_qualification.py`는 Q0에서 동결한 6문서만 읽고, current Font Decision Trace의
+transform을 px 정밀도로 재생한 뒤 exact TTF advance만 대입한다. 제품 metric DB·registry·paint·supply는
+바꾸지 않는다. render-tree 원문은 문서별 임시 디렉터리에서만 사용하고 자동 폐기하며, 상세 좌표·경로·문서
+hash는 mode `0600` local-only 결과에만 둔다.
+
+공개 결과 `rank8_private_qualification.json`은 다음 경계를 고정한다.
+
+- W3 source usage 43,432자와 페이지 render observation 44,117자는 반복 story 때문에 다른 회계다.
+- current transform 0 mismatch, exact metric 43,735자 적용, cmap miss 213자와 특수 advance 169자는 보존했다.
+- frame을 조인한 문서는 개선 3·악화 1, 독립 query 간 run set이 달라진 2문서 4,397자는 `unmodelled`다.
+- 한 표 셀 same-partition projection에서 +144 HWPUNIT, 1.92px overflow가 새로 발생했다.
+- current query는 stored-row cache admission을 노출하지 않으므로 LineSeg validity를 주장하지 않는다.
+
+결과는 `blocked`이며 W8-Q4로 진행하지 않는다. 재개 조건은 같은 composition snapshot에서 TextLine
+frame·context와 stored-row admission을 함께 제공하는 읽기 전용 evidence query다. 이 query 보강과 제품
+변경은 현재 qualification의 승인 범위가 아니다.

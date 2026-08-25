@@ -1,0 +1,100 @@
+{
+  "accounting": {
+    "currentTransformReplayMismatches": 0,
+    "documents": 6,
+    "documentsByFormat": {
+      "hwp": 3,
+      "hwpx": 3
+    },
+    "invalidFrameTargetCharacters": 0,
+    "invalidFrameTargetLines": 0,
+    "renderObservationDelta": 685,
+    "renderObservedCharacters": 44117,
+    "sourceAndRenderCountersAreDistinct": true,
+    "sourceUsageCharacters": 43432,
+    "traceTruncatedPages": 0,
+    "unframedTargetCharacters": 4397
+  },
+  "canonicalSha256": "2951d117bafe780fb58ea763504de952ce4d441dc878d428852b97605a81b214",
+  "decision": {
+    "actualDocumentImprovementObserved": true,
+    "allDocumentsNonWorsening": false,
+    "evidenceComplete": false,
+    "nextStage": null,
+    "productMutationAuthorized": false,
+    "status": "blocked"
+  },
+  "executionPolicy": {
+    "boundedDocuments": 6,
+    "fullCorpusPass": false,
+    "hyperVOracleRerun": false,
+    "productSourceMutation": false,
+    "registryMutation": false
+  },
+  "inputs": {
+    "exactTtfSha256": "e3ee21a86b6a6728c567a95aaebd8883480f27ce4f230207b0d7266b5cb3fb18",
+    "q0CanonicalSha256": "23536673cc94f1fcfa617adbd4adf4858116a029adc63403c5939b76c5293618",
+    "q2CanonicalSha256": "392f1a756fc3974f522f895ce14253ebe9f1487805da522a3907acbb5d22b0f5"
+  },
+  "issue": 4967,
+  "kind": "font-rank8-private-qualification-projection",
+  "lineSegFeatureDetection": {
+    "cacheAdmissionObserved": false,
+    "detector": "stored-presence-plus-observed-frame-capacity",
+    "freshRiskCharacters": 0,
+    "reason": "read-only query exposes rendered frames but not the internal stored-row admission decision",
+    "samePartitionProjection": true,
+    "sourceUsageLane": "stored",
+    "storedRiskCharacters": 43374,
+    "validityClaim": false
+  },
+  "privacy": {
+    "absolutePathIncluded": false,
+    "fontBytesIncluded": false,
+    "privateCorpusPathIncluded": false,
+    "privateDetailedOutputTracked": false,
+    "privateDocumentHashIncluded": false,
+    "privateDocumentIdentityIncluded": false,
+    "privateDocumentNameIncluded": false,
+    "privateTextIncluded": false
+  },
+  "projection": {
+    "candidateCoverage": {
+      "cmap-miss-preserved": 213,
+      "exact-metric-applied": 43735,
+      "special-preserved": 169
+    },
+    "contextLines": {
+      "body": 566,
+      "footnote": 4,
+      "header": 84,
+      "table-cell": 1276
+    },
+    "documentClassifications": {
+      "improved": 3,
+      "unmodelled": 2,
+      "worsened": 1
+    },
+    "firstCapacityDivergencePresent": true,
+    "firstMetricDivergencePresent": true,
+    "lineDispositions": {
+      "overflow-increased": 1,
+      "overflow-introduced": 1,
+      "overflow-removed": 190,
+      "slack-increased": 109,
+      "unchanged": 1629
+    },
+    "recordDeltaCounts": {
+      "equal": 382,
+      "narrower": 39917,
+      "wider": 3818
+    },
+    "targetLines": 1930
+  },
+  "schemaVersion": 1,
+  "stage": "W8-Q3",
+  "target": {
+    "face": "KoPubWorld바탕체 Light",
+    "targetDecisionPlane": "layout-metric"
+  }
+}
