@@ -267,10 +267,6 @@ fn synthesize_marker_paragraph(para: &Paragraph) -> Option<Paragraph> {
 
 /// 문단을 줄별 텍스트 런으로 분할한다.
 pub fn compose_paragraph(para: &Paragraph) -> ComposedParagraph {
-    crate::hot_call!(compose_paragraph_impl, para)
-}
-
-fn compose_paragraph_impl(para: &Paragraph) -> ComposedParagraph {
     // [Task #991] HWP5 parser 의 inline marker 누락 보정 (rendering 전용)
     let synth_para = synthesize_marker_paragraph(para);
     let para = synth_para.as_ref().unwrap_or(para);
@@ -2263,25 +2259,6 @@ fn preserve_context_resolved_runs(source: &ComposedParagraph, reflowed: &mut Com
 /// 0.55% width-estimation residual is not something the retired path knew; that
 /// is why the oracle is marked with its operands rather than re-pinned.
 pub fn recompose_cell_lines_in_frame(
-    composed: &mut ComposedParagraph,
-    para: &Paragraph,
-    cell_box: ParagraphBox,
-    styles: &ResolvedStyleSet,
-    dpi: f64,
-    legacy_hwp3_stored_geometry: bool,
-) {
-    crate::hot_call!(
-        recompose_cell_lines_in_frame_hot_impl,
-        composed,
-        para,
-        cell_box,
-        styles,
-        dpi,
-        legacy_hwp3_stored_geometry,
-    )
-}
-
-fn recompose_cell_lines_in_frame_hot_impl(
     composed: &mut ComposedParagraph,
     para: &Paragraph,
     cell_box: ParagraphBox,

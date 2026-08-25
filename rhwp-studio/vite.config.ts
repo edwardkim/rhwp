@@ -10,7 +10,12 @@ const subsecondWasmDir = resolve(
   configDir,
   '..',
   'target',
-  'rhwp-subsecond-vite',
+  'dx',
+  'rhwp-subsecond',
+  'debug',
+  'web',
+  'public',
+  'wasm',
 );
 const useSubsecondWasm = process.env.RHWP_SUBSECOND === '1';
 /**

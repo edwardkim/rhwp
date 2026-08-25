@@ -3098,15 +3098,6 @@ pub(crate) fn layout_paragraph_in_frame(
     styles: &ResolvedStyleSet,
     dpi: f64,
 ) -> Option<Vec<LineSeg>> {
-    crate::hot_call!(layout_paragraph_in_frame_hot_impl, para, frame, styles, dpi)
-}
-
-fn layout_paragraph_in_frame_hot_impl(
-    para: &Paragraph,
-    frame: &mut LayoutFrame,
-    styles: &ResolvedStyleSet,
-    dpi: f64,
-) -> Option<Vec<LineSeg>> {
     layout_paragraph_in_frame_impl(para, frame, styles, dpi, true)
 }
 
@@ -3490,27 +3481,6 @@ fn stored_row_metrics_hot_impl(
 /// the cache only on exact equality. Staleness is an additional invalidator: a
 /// geometrically matching record that describes obsolete text is still rebuilt.
 pub(crate) fn resolve_stored_line_segs_in_frame(
-    para: &Paragraph,
-    frame: &mut LayoutFrame,
-    styles: &ResolvedStyleSet,
-    dpi: f64,
-    legacy_hwp3_stored_geometry: bool,
-    miss_policy: StoredRowMissPolicy,
-    stale: bool,
-) -> Option<StoredRowResolution> {
-    crate::hot_call!(
-        resolve_stored_line_segs_in_frame_hot_impl,
-        para,
-        frame,
-        styles,
-        dpi,
-        legacy_hwp3_stored_geometry,
-        miss_policy,
-        stale,
-    )
-}
-
-fn resolve_stored_line_segs_in_frame_hot_impl(
     para: &Paragraph,
     frame: &mut LayoutFrame,
     styles: &ResolvedStyleSet,

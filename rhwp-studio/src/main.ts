@@ -181,29 +181,11 @@ type ActivePdfReference = PageReferenceLayer & {
   startBaselineScan(): void;
   onRenderCodePatched(
     renderRevision: string,
-    patchIdentity: string | null,
     previousRenderGeneration: number,
   ): void;
 };
 let activePdfReference: ActivePdfReference | null = null;
 let pdfReferenceGeneration = 0;
-
-function exactCommittedPatchIdentity(renderRevision: string | null): string | null {
-  if (renderRevision === null) return null;
-  const ledger = (window as Window & {
-    __rhwpSubsecondDelivery?: {
-      patches?: Array<{
-        identity?: string;
-        renderRevision?: string | null;
-        commitAssociation?: string;
-      }>;
-    };
-  }).__rhwpSubsecondDelivery;
-  const patch = [...(ledger?.patches ?? [])].reverse().find(candidate =>
-    candidate.renderRevision === renderRevision
-    && candidate.commitAssociation === 'exact');
-  return typeof patch?.identity === 'string' ? patch.identity : null;
-}
 
 function supportsPdfReferenceHarness(fileName: string): boolean {
   if (!import.meta.env.DEV || !/\.(hwp|hwpx)$/i.test(fileName)) return false;
@@ -283,13 +265,6 @@ async function activatePdfReference(
             ? doc.getRenderCodeRevision()
             : null;
         },
-        getCommittedPatchIdentity: () => {
-          const doc = wasm.borrowDocumentHandle() as { getRenderCodeRevision?: () => string } | null;
-          const revision = typeof doc?.getRenderCodeRevision === 'function'
-            ? doc.getRenderCodeRevision()
-            : null;
-          return exactCommittedPatchIdentity(revision);
-        },
         getRenderGeneration: () => canvasView?.getDiagnosticRenderGeneration() ?? 0,
       },
     );
@@ -333,10 +308,8 @@ async function startDevelopmentRenderRuntime(): Promise<void> {
       revision => {
         const previousRenderGeneration = canvasView?.getDiagnosticRenderGeneration() ?? 0;
         refreshPatchedRender();
-        const patchIdentity = exactCommittedPatchIdentity(revision);
         activePdfReference?.onRenderCodePatched(
           revision,
-          patchIdentity,
           previousRenderGeneration,
         );
       },

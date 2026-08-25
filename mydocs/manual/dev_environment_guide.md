@@ -286,16 +286,16 @@ npm run subsecond:install
 revision을 유도한다(#4580, `scripts/dioxus-cli-version.mjs`). Git 핀은 검증된 임시 checkout에 선언된
 workaround를 적용한 뒤 게시하고, 같은 source의 `dioxus-cli`를 `../target/dioxus-cli/bin/dx`에 설치한다. 첫
 `subsecond:serve`는 Dioxus가 맞는 `wasm-bindgen-cli`와 `esbuild`도 자동 설치하고 개발용 WASM을
-처음 빌드하므로 수 분이 걸릴 수 있다. `target/dioxus-cli/`, `target/dx/`,
-`target/rhwp-subsecond-vite/`는 로컬 생성물이며 커밋하지 않는다.
+처음 빌드하므로 수 분이 걸릴 수 있다. `target/dioxus-cli/`와 `target/dx/`는 로컬 생성물이며
+커밋하지 않는다.
 
 `subsecond:serve`는 자동화 세션의 stdin을 소비하지 않도록 `--interactive false`로 실행하고,
-상세 trace를 `target/subsecond-dx.log`에 남긴다. Rust 저장의 자동 rebuild는 그대로 동작한다.
-전체 rebuild가 필요하면 프로세스를 종료한 뒤 같은 명령을 다시 실행한다.
+상세 trace를 `target/subsecond-dx.log`에 남긴다. 패치 commit이 10초 안에 확인되지 않으면 Studio가
+dx에 full rebuild를 요청한다. 수동 rebuild는 프로세스를 종료한 뒤 같은 명령을 다시 실행한다.
 
 이 경로에서는 일반 배포용 `wasm-pack build --target web --out-dir pkg`를 먼저 실행할 필요가 없다.
-`subsecond:serve`가 개발용 WASM을 `target/dx/`에 만들고, `dev:subsecond`가 필요한 JS/WASM 두 파일을
-`target/rhwp-subsecond-vite/`로 동기화한다.
+`subsecond:serve`가 개발용 WASM을 `target/dx/`에 만들고, `dev:subsecond`의 Vite가 그 디렉터리를
+직접 읽는다. 따라서 dx full rebuild 뒤에는 새 base WASM으로 다시 열린다.
 
 ### feature 를 켠 채로 도는 검증 명령
 

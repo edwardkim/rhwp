@@ -53,7 +53,6 @@ export interface FidelityScanReport {
   trigger: 'baseline' | 'subsecond-patch' | 'manual';
   identity: FidelityScanIdentity;
   renderRevision: string | null;
-  patchIdentity: string | null;
   previousRenderRevision: string | null;
   comparisonGap: {
     supersededScanIds: number[];
@@ -241,7 +240,6 @@ export function buildFidelityScanReport(input: {
   trigger: FidelityScanReport['trigger'];
   identity: FidelityScanIdentity;
   renderRevision: string | null;
-  patchIdentity: string | null;
   hwpPageCount: number;
   pdfPageCount: number | null;
   observations: FidelityPageObservation[];
@@ -318,7 +316,6 @@ export function buildFidelityScanReport(input: {
     trigger: input.trigger,
     identity: input.identity,
     renderRevision: input.renderRevision,
-    patchIdentity: input.patchIdentity,
     previousRenderRevision: input.previous?.renderRevision ?? null,
     comparisonGap: input.supersededBetween?.length
       ? {

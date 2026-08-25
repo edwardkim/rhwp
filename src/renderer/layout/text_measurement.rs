@@ -113,23 +113,6 @@ pub(crate) fn find_next_tab_stop(
     auto_tab_right: bool,
     available_width: f64,
 ) -> (f64, u8, u8) {
-    crate::hot_call!(
-        find_next_tab_stop_hot_impl,
-        abs_x,
-        tab_stops,
-        default_tab_width,
-        auto_tab_right,
-        available_width,
-    )
-}
-
-fn find_next_tab_stop_hot_impl(
-    abs_x: f64,
-    tab_stops: &[TabStop],
-    default_tab_width: f64,
-    auto_tab_right: bool,
-    available_width: f64,
-) -> (f64, u8, u8) {
     // 커스텀 탭 정지에서 현재 위치 뒤의 첫 번째 검색
     for ts in tab_stops {
         // type=1(오른쪽) 탭은 단 기준 절대 위치이므로 available_width 클램핑 제외.
@@ -783,19 +766,6 @@ pub(crate) fn resolved_to_text_style(
     char_style_id: u32,
     lang_index: usize,
 ) -> TextStyle {
-    crate::hot_call!(
-        resolved_to_text_style_hot_impl,
-        styles,
-        char_style_id,
-        lang_index,
-    )
-}
-
-fn resolved_to_text_style_hot_impl(
-    styles: &ResolvedStyleSet,
-    char_style_id: u32,
-    lang_index: usize,
-) -> TextStyle {
     if let Some(cs) = styles.char_styles.get(char_style_id as usize) {
         TextStyle {
             font_family: cs.font_family_for_lang(lang_index).to_string(),
@@ -1262,10 +1232,6 @@ fn measure_char_width_embedded(
 /// 기본 TextMeasurer(EmbeddedTextMeasurer, 내장 메트릭 + 휴리스틱)에 위임한다.
 /// native/WASM 공통 — SVG byte 패리티의 전제다 (#4046).
 pub(crate) fn estimate_text_width(text: &str, style: &TextStyle) -> f64 {
-    crate::hot_call!(estimate_text_width_hot_impl, text, style)
-}
-
-fn estimate_text_width_hot_impl(text: &str, style: &TextStyle) -> f64 {
     default_measurer().estimate_text_width(text, style)
 }
 
@@ -1275,10 +1241,6 @@ fn estimate_text_width_hot_impl(text: &str, style: &TextStyle) -> f64 {
 /// 한컴은 HWPUNIT 정수로 폭을 누적하므로, round 없이 px를 합산한 뒤
 /// 줄바꿈 비교 시점에서 available_width와 비교하는 것이 더 정확하다.
 pub(crate) fn estimate_text_width_unrounded(text: &str, style: &TextStyle) -> f64 {
-    crate::hot_call!(estimate_text_width_unrounded_hot_impl, text, style)
-}
-
-fn estimate_text_width_unrounded_hot_impl(text: &str, style: &TextStyle) -> f64 {
     let (_, _, tab_w) = style_params(style);
     let chars: Vec<char> = text.chars().collect();
     let cluster_len = build_cluster_len(&chars);
@@ -1313,10 +1275,6 @@ fn estimate_text_width_unrounded_hot_impl(text: &str, style: &TextStyle) -> f64 
 /// 저장 metric과 재조판 metric이 같은 style에는 `None`을 반환해 별도 보정이 없도록
 /// 한다. 따라서 글꼴명이나 고정 글자 크기에 의존하지 않는다.
 pub(crate) fn hancom_regenerated_space_width(style: &TextStyle) -> Option<f64> {
-    crate::hot_call!(hancom_regenerated_space_width_hot_impl, style)
-}
-
-fn hancom_regenerated_space_width_hot_impl(style: &TextStyle) -> Option<f64> {
     let (font_size, ratio, _) = style_params(style);
     let base_w = font_size * 0.5;
     let mut width = base_w * ratio
@@ -1335,10 +1293,6 @@ fn hancom_regenerated_space_width_hot_impl(style: &TextStyle) -> Option<f64> {
 /// N글자 → N+1개 경계값을 반환한다 (0번째는 0.0, N번째는 전체 폭).
 /// run 내부 상대 좌표이며, 절대 좌표는 run.bbox.x + charX[i]로 계산한다.
 pub(crate) fn compute_char_positions(text: &str, style: &TextStyle) -> Vec<f64> {
-    crate::hot_call!(compute_char_positions_hot_impl, text, style)
-}
-
-fn compute_char_positions_hot_impl(text: &str, style: &TextStyle) -> Vec<f64> {
     default_measurer().compute_char_positions(text, style)
 }
 

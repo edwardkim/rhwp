@@ -64,74 +64,6 @@ struct ColumnItemCtx<'a> {
     wrap_anchors: &'a std::collections::HashMap<usize, super::pagination::WrapAnchorRef>,
 }
 
-/// Stable Subsecond call shape for the page render-tree owner.
-///
-/// `build_render_tree` exceeds Subsecond's `Fn9` WASM boundary. Grouping its
-/// existing read-only inputs keeps the public method unchanged while giving
-/// the page-level layout state transition one replaceable jump slot.
-struct BuildRenderTreeInput<'a> {
-    page_content: &'a PageContent,
-    paragraphs: &'a [Paragraph],
-    header_paragraphs: &'a [Paragraph],
-    footer_paragraphs: &'a [Paragraph],
-    composed: &'a [ComposedParagraph],
-    styles: &'a ResolvedStyleSet,
-    footnote_shape: &'a FootnoteShape,
-    bin_data_content: &'a [BinDataContent],
-    active_master_page: Option<&'a MasterPage>,
-    measured_tables: &'a [MeasuredTable],
-    page_border_fill: Option<&'a PageBorderFill>,
-    outline_numbering_id: u16,
-    wrap_around_paras: &'a [super::pagination::WrapAroundPara],
-}
-
-struct LayoutColumnItemInput<'a> {
-    tree: &'a mut PageLayoutContext,
-    col_node: &'a mut RenderNode,
-    paper_images: &'a mut Vec<RenderNode>,
-    para_start_y: &'a mut std::collections::HashMap<usize, f64>,
-    para_float_lanes: &'a mut ParaFloatLanes,
-    visible_float_exclusions: &'a mut Vec<VisibleFloatExclusion>,
-    para_inline_state:
-        &'a mut std::collections::HashMap<usize, super::layout::paragraph_layout::ParaInlineState>,
-    item: &'a PageItem,
-    ctx: ColumnItemCtx<'a>,
-    y_offset: f64,
-}
-
-struct BuildColumnsInput<'a> {
-    tree: &'a mut PageLayoutContext,
-    body_node: &'a mut RenderNode,
-    paper_images: &'a mut Vec<RenderNode>,
-    page_content: &'a PageContent,
-    paragraphs: &'a [Paragraph],
-    composed: &'a [ComposedParagraph],
-    styles: &'a ResolvedStyleSet,
-    bin_data_content: &'a [BinDataContent],
-    measured_tables: &'a [MeasuredTable],
-    layout: &'a PageLayoutInfo,
-    outline_numbering_id: u16,
-    wrap_around_paras: &'a [super::pagination::WrapAroundPara],
-}
-
-struct BuildSingleColumnInput<'a> {
-    tree: &'a mut PageLayoutContext,
-    paper_images: &'a mut Vec<RenderNode>,
-    col_content: &'a ColumnContent,
-    page_content: &'a PageContent,
-    paragraphs: &'a [Paragraph],
-    composed: &'a [ComposedParagraph],
-    styles: &'a ResolvedStyleSet,
-    bin_data_content: &'a [BinDataContent],
-    measured_tables: &'a [MeasuredTable],
-    layout: &'a PageLayoutInfo,
-    zone_layout: &'a PageLayoutInfo,
-    col_area: &'a LayoutRect,
-    outline_numbering_id: u16,
-    wrap_around_paras: &'a [super::pagination::WrapAroundPara],
-    body_wide_reserved: &'a [(usize, f64)],
-}
-
 const ENDNOTE_BETWEEN_NOTES_BASE_FLOW_HU: i32 = 1984;
 const SINGLE_ROW_DECLARED_TRUST_MAX_RATIO: f64 = 1.5;
 
@@ -3329,43 +3261,6 @@ impl LayoutEngine {
         outline_numbering_id: u16,
         wrap_around_paras: &[super::pagination::WrapAroundPara],
     ) -> PageRenderTree {
-        crate::hot_call!(
-            Self::build_render_tree_hot_impl,
-            self,
-            BuildRenderTreeInput {
-                page_content,
-                paragraphs,
-                header_paragraphs,
-                footer_paragraphs,
-                composed,
-                styles,
-                footnote_shape,
-                bin_data_content,
-                active_master_page,
-                measured_tables,
-                page_border_fill,
-                outline_numbering_id,
-                wrap_around_paras,
-            },
-        )
-    }
-
-    fn build_render_tree_hot_impl(&self, input: BuildRenderTreeInput<'_>) -> PageRenderTree {
-        let BuildRenderTreeInput {
-            page_content,
-            paragraphs,
-            header_paragraphs,
-            footer_paragraphs,
-            composed,
-            styles,
-            footnote_shape,
-            bin_data_content,
-            active_master_page,
-            measured_tables,
-            page_border_fill,
-            outline_numbering_id,
-            wrap_around_paras,
-        } = input;
         let layout = &page_content.layout;
         let mut tree = PageRenderTree::new(
             page_content.page_index,
@@ -5318,41 +5213,6 @@ impl LayoutEngine {
         outline_numbering_id: u16,
         wrap_around_paras: &[super::pagination::WrapAroundPara],
     ) {
-        crate::hot_call!(
-            Self::build_columns_hot_impl,
-            self,
-            BuildColumnsInput {
-                tree,
-                body_node,
-                paper_images,
-                page_content,
-                paragraphs,
-                composed,
-                styles,
-                bin_data_content,
-                measured_tables,
-                layout,
-                outline_numbering_id,
-                wrap_around_paras,
-            },
-        )
-    }
-
-    fn build_columns_hot_impl(&self, input: BuildColumnsInput<'_>) {
-        let BuildColumnsInput {
-            tree,
-            body_node,
-            paper_images,
-            page_content,
-            paragraphs,
-            composed,
-            styles,
-            bin_data_content,
-            measured_tables,
-            layout,
-            outline_numbering_id,
-            wrap_around_paras,
-        } = input;
         let mut prev_zone_y_end: f64 = 0.0;
         let mut current_zone_start_y: f64 = 0.0;
         let mut last_zone_y_offset: f64 = -1.0;
@@ -6146,47 +6006,6 @@ impl LayoutEngine {
         wrap_around_paras: &[super::pagination::WrapAroundPara],
         body_wide_reserved: &[(usize, f64)],
     ) -> (RenderNode, f64) {
-        crate::hot_call!(
-            Self::build_single_column_hot_impl,
-            self,
-            BuildSingleColumnInput {
-                tree,
-                paper_images,
-                col_content,
-                page_content,
-                paragraphs,
-                composed,
-                styles,
-                bin_data_content,
-                measured_tables,
-                layout,
-                zone_layout,
-                col_area,
-                outline_numbering_id,
-                wrap_around_paras,
-                body_wide_reserved,
-            },
-        )
-    }
-
-    fn build_single_column_hot_impl(&self, input: BuildSingleColumnInput<'_>) -> (RenderNode, f64) {
-        let BuildSingleColumnInput {
-            tree,
-            paper_images,
-            col_content,
-            page_content,
-            paragraphs,
-            composed,
-            styles,
-            bin_data_content,
-            measured_tables,
-            layout,
-            zone_layout,
-            col_area,
-            outline_numbering_id,
-            wrap_around_paras,
-            body_wide_reserved,
-        } = input;
         let col_node_id = tree.next_id();
         let mut col_node = RenderNode::new(
             col_node_id,
@@ -8093,7 +7912,7 @@ impl LayoutEngine {
         zone_column_count: usize,
         outline_numbering_id: u16,
         multi_col_width: Option<i32>,
-        y_offset: f64,
+        mut y_offset: f64,
         prev_tac_seg_applied: bool,
         wrap_around_paras: &[super::pagination::WrapAroundPara],
         wrap_anchors: &std::collections::HashMap<usize, super::pagination::WrapAnchorRef>,
@@ -8114,53 +7933,6 @@ impl LayoutEngine {
             wrap_around_paras,
             wrap_anchors,
         };
-        crate::hot_call!(
-            Self::layout_column_item_hot_impl,
-            self,
-            LayoutColumnItemInput {
-                tree,
-                col_node,
-                paper_images,
-                para_start_y,
-                para_float_lanes,
-                visible_float_exclusions,
-                para_inline_state,
-                item,
-                ctx,
-                y_offset,
-            },
-        )
-    }
-
-    fn layout_column_item_hot_impl(&self, input: LayoutColumnItemInput<'_>) -> (f64, bool) {
-        let LayoutColumnItemInput {
-            tree,
-            col_node,
-            paper_images,
-            para_start_y,
-            para_float_lanes,
-            visible_float_exclusions,
-            para_inline_state,
-            item,
-            ctx,
-            mut y_offset,
-        } = input;
-        let ColumnItemCtx {
-            page_content,
-            paragraphs,
-            composed,
-            styles,
-            bin_data_content,
-            measured_tables,
-            layout,
-            col_area,
-            zone_column_count,
-            outline_numbering_id,
-            multi_col_width,
-            prev_tac_seg_applied,
-            wrap_around_paras,
-            wrap_anchors,
-        } = ctx;
         match item {
             PageItem::FullParagraph { para_index } => {
                 // 빈 줄 감추기: 높이 0 처리된 문단은 문단부호만 렌더링하고 y_offset 변경 없음

@@ -53,13 +53,11 @@ export interface PdfReferenceHarnessOptions {
   ): Promise<DiagnosticPageCapture>;
   gotoPage(pageIndex: number): boolean;
   getRenderRevision(): string | null;
-  getCommittedPatchIdentity(): string | null;
   getRenderGeneration(): number;
 }
 
 interface FidelityScanTarget {
   renderRevision: string | null;
-  patchIdentity: string | null;
   renderGeneration: number;
   previousRenderGeneration: number | null;
 }
@@ -233,12 +231,10 @@ export class PdfReferenceOverlay implements PageReferenceLayer {
 
   onRenderCodePatched(
     renderRevision: string,
-    patchIdentity: string | null,
     previousRenderGeneration: number,
   ): void {
     void this.scanWholeDocument('subsecond-patch', {
       renderRevision,
-      patchIdentity,
       renderGeneration: this.harness.getRenderGeneration(),
       previousRenderGeneration,
     });
@@ -255,7 +251,6 @@ export class PdfReferenceOverlay implements PageReferenceLayer {
   private currentScanTarget(): FidelityScanTarget {
     return {
       renderRevision: this.harness.getRenderRevision(),
-      patchIdentity: this.harness.getCommittedPatchIdentity(),
       renderGeneration: this.harness.getRenderGeneration(),
       previousRenderGeneration: null,
     };
@@ -435,7 +430,6 @@ export class PdfReferenceOverlay implements PageReferenceLayer {
           pdfName: this.pdfName,
         },
         renderRevision: target.renderRevision,
-        patchIdentity: target.patchIdentity,
         hwpPageCount,
         pdfPageCount: this.pageCount,
         observations,

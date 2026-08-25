@@ -302,32 +302,6 @@ impl Paginator {
         opts: PaginationOpts,
         source_context: PaginationSourceContext,
     ) -> PaginationResult {
-        crate::hot_call!(
-            Self::paginate_with_measured_context_hot_impl,
-            self,
-            paragraphs,
-            measured,
-            page_def,
-            column_def,
-            section_index,
-            para_styles,
-            opts,
-            source_context,
-        )
-    }
-
-    #[allow(clippy::too_many_arguments)]
-    fn paginate_with_measured_context_hot_impl(
-        &self,
-        paragraphs: &[Paragraph],
-        measured: &MeasuredSection,
-        page_def: &PageDef,
-        column_def: &ColumnDef,
-        section_index: usize,
-        para_styles: &[crate::renderer::style_resolver::ResolvedParaStyle],
-        opts: PaginationOpts,
-        source_context: PaginationSourceContext,
-    ) -> PaginationResult {
         let hide_empty_line = opts.hide_empty_line;
         let respect_vpos_reset = opts.respect_vpos_reset;
         let is_hwp3_variant = opts.is_hwp3_variant;

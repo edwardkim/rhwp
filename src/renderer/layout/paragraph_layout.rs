@@ -1561,74 +1561,6 @@ fn collect_shape_marker_labels(show_ctrl: bool, para: Option<&Paragraph>) -> Vec
     }
 }
 
-struct LayoutInlineTableParagraphInput<'a> {
-    tree: &'a mut PageLayoutContext,
-    col_node: &'a mut RenderNode,
-    para: &'a Paragraph,
-    composed: Option<&'a ComposedParagraph>,
-    styles: &'a ResolvedStyleSet,
-    col_area: &'a LayoutRect,
-    y_start: f64,
-    section_index: usize,
-    para_index: usize,
-    bin_data_content: &'a [BinDataContent],
-    measured_tables: &'a [MeasuredTable],
-}
-
-struct LayoutParagraphInput<'a> {
-    tree: &'a mut PageLayoutContext,
-    col_node: &'a mut RenderNode,
-    para: &'a Paragraph,
-    composed: Option<&'a ComposedParagraph>,
-    styles: &'a ResolvedStyleSet,
-    col_area: &'a LayoutRect,
-    y_start: f64,
-    section_index: usize,
-    para_index: usize,
-    multi_col_width_hu: Option<i32>,
-    bin_data_content: Option<&'a [BinDataContent]>,
-    wrap_anchor: Option<&'a crate::renderer::pagination::WrapAnchorRef>,
-}
-
-struct LayoutPartialParagraphInput<'a> {
-    tree: &'a mut PageLayoutContext,
-    col_node: &'a mut RenderNode,
-    para: &'a Paragraph,
-    composed: Option<&'a ComposedParagraph>,
-    styles: &'a ResolvedStyleSet,
-    hwp3_body_reflow: bool,
-    col_area: &'a LayoutRect,
-    y_start: f64,
-    start_line: usize,
-    end_line: usize,
-    section_index: usize,
-    para_index: usize,
-    multi_col_width_hu: Option<i32>,
-    bin_data_content: Option<&'a [BinDataContent]>,
-    wrap_anchor: Option<&'a crate::renderer::pagination::WrapAnchorRef>,
-}
-
-struct LayoutComposedParagraphInput<'a> {
-    tree: &'a mut PageLayoutContext,
-    col_node: &'a mut RenderNode,
-    composed: &'a ComposedParagraph,
-    styles: &'a ResolvedStyleSet,
-    col_area: &'a LayoutRect,
-    y_start: f64,
-    start_line: usize,
-    end_line: usize,
-    section_index: usize,
-    para_index: usize,
-    cell_ctx: Option<CellContext>,
-    suppress_column_top_vpos_fallback: bool,
-    is_last_cell_para: bool,
-    first_line_x_offset: f64,
-    multi_col_width_hu: Option<i32>,
-    para: Option<&'a Paragraph>,
-    bin_data_content: Option<&'a [BinDataContent]>,
-    wrap_anchor: Option<&'a crate::renderer::pagination::WrapAnchorRef>,
-}
-
 impl LayoutEngine {
     /// [#5729] 저장 줄 밴드가 정확히 `om_top + 선언높이 + om_bottom` 인 TAC 표는
     /// 한글이 표 상단을 **줄 상단 + om_top** 에 앉힌다 (156505870 4표 실측:
@@ -1685,42 +1617,6 @@ impl LayoutEngine {
         bin_data_content: &[BinDataContent],
         measured_tables: &[MeasuredTable],
     ) -> f64 {
-        crate::hot_call!(
-            Self::layout_inline_table_paragraph_hot_impl,
-            self,
-            LayoutInlineTableParagraphInput {
-                tree,
-                col_node,
-                para,
-                composed,
-                styles,
-                col_area,
-                y_start,
-                section_index,
-                para_index,
-                bin_data_content,
-                measured_tables,
-            },
-        )
-    }
-
-    fn layout_inline_table_paragraph_hot_impl(
-        &self,
-        input: LayoutInlineTableParagraphInput<'_>,
-    ) -> f64 {
-        let LayoutInlineTableParagraphInput {
-            tree,
-            col_node,
-            para,
-            composed,
-            styles,
-            col_area,
-            y_start,
-            section_index,
-            para_index,
-            bin_data_content,
-            measured_tables,
-        } = input;
         use crate::model::control::Control;
 
         // 1. 문단 스타일 조회
@@ -2489,41 +2385,6 @@ impl LayoutEngine {
         bin_data_content: Option<&[BinDataContent]>,
         wrap_anchor: Option<&crate::renderer::pagination::WrapAnchorRef>,
     ) -> f64 {
-        crate::hot_call!(
-            Self::layout_paragraph_hot_impl,
-            self,
-            LayoutParagraphInput {
-                tree,
-                col_node,
-                para,
-                composed,
-                styles,
-                col_area,
-                y_start,
-                section_index,
-                para_index,
-                multi_col_width_hu,
-                bin_data_content,
-                wrap_anchor,
-            },
-        )
-    }
-
-    fn layout_paragraph_hot_impl(&self, input: LayoutParagraphInput<'_>) -> f64 {
-        let LayoutParagraphInput {
-            tree,
-            col_node,
-            para,
-            composed,
-            styles,
-            col_area,
-            y_start,
-            section_index,
-            para_index,
-            multi_col_width_hu,
-            bin_data_content,
-            wrap_anchor,
-        } = input;
         let end_line = composed
             .map(|c| c.lines.len())
             .unwrap_or(para.line_segs.len());
@@ -2565,47 +2426,6 @@ impl LayoutEngine {
         bin_data_content: Option<&[BinDataContent]>,
         wrap_anchor: Option<&crate::renderer::pagination::WrapAnchorRef>,
     ) -> f64 {
-        crate::hot_call!(
-            Self::layout_partial_paragraph_hot_impl,
-            self,
-            LayoutPartialParagraphInput {
-                tree,
-                col_node,
-                para,
-                composed,
-                styles,
-                hwp3_body_reflow,
-                col_area,
-                y_start,
-                start_line,
-                end_line,
-                section_index,
-                para_index,
-                multi_col_width_hu,
-                bin_data_content,
-                wrap_anchor,
-            },
-        )
-    }
-
-    fn layout_partial_paragraph_hot_impl(&self, input: LayoutPartialParagraphInput<'_>) -> f64 {
-        let LayoutPartialParagraphInput {
-            tree,
-            col_node,
-            para,
-            composed,
-            styles,
-            hwp3_body_reflow,
-            col_area,
-            y_start,
-            start_line,
-            end_line,
-            section_index,
-            para_index,
-            multi_col_width_hu,
-            bin_data_content,
-            wrap_anchor,
-        } = input;
         if let Some(comp) = composed {
             // [Task #1042 Stage 6b] 본문 paragraph 의 line_segs.empty case 의 wrap 정합 —
             // compose_lines fallback (CHARS_PER_LINE=45 heuristic) 결과를 column inner width
@@ -3172,53 +2992,6 @@ impl LayoutEngine {
         bin_data_content: Option<&[BinDataContent]>,
         wrap_anchor: Option<&crate::renderer::pagination::WrapAnchorRef>,
     ) -> f64 {
-        crate::hot_call!(
-            Self::layout_composed_paragraph_hot_impl,
-            self,
-            LayoutComposedParagraphInput {
-                tree,
-                col_node,
-                composed,
-                styles,
-                col_area,
-                y_start,
-                start_line,
-                end_line,
-                section_index,
-                para_index,
-                cell_ctx,
-                suppress_column_top_vpos_fallback,
-                is_last_cell_para,
-                first_line_x_offset,
-                multi_col_width_hu,
-                para,
-                bin_data_content,
-                wrap_anchor,
-            },
-        )
-    }
-
-    fn layout_composed_paragraph_hot_impl(&self, input: LayoutComposedParagraphInput<'_>) -> f64 {
-        let LayoutComposedParagraphInput {
-            tree,
-            col_node,
-            composed,
-            styles,
-            col_area,
-            y_start,
-            start_line,
-            end_line,
-            section_index,
-            para_index,
-            cell_ctx,
-            suppress_column_top_vpos_fallback,
-            is_last_cell_para,
-            first_line_x_offset,
-            multi_col_width_hu,
-            para,
-            bin_data_content,
-            wrap_anchor,
-        } = input;
         let mut y = y_start;
         let end = end_line.min(composed.lines.len());
         // [#4968 R4D-1] 한 문단의 모든 최종 emitted run이 같은 registry
@@ -7496,29 +7269,6 @@ impl LayoutEngine {
 
     /// 원본 문단 데이터로 레이아웃 (ComposedParagraph 없는 경우 fallback)
     pub(crate) fn layout_raw_paragraph(
-        &self,
-        tree: &mut PageLayoutContext,
-        col_node: &mut RenderNode,
-        para: &Paragraph,
-        col_area: &LayoutRect,
-        y_start: f64,
-        start_line: usize,
-        end_line: usize,
-    ) -> f64 {
-        crate::hot_call!(
-            Self::layout_raw_paragraph_hot_impl,
-            self,
-            tree,
-            col_node,
-            para,
-            col_area,
-            y_start,
-            start_line,
-            end_line,
-        )
-    }
-
-    fn layout_raw_paragraph_hot_impl(
         &self,
         tree: &mut PageLayoutContext,
         col_node: &mut RenderNode,

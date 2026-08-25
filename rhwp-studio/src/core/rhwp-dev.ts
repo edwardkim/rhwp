@@ -366,30 +366,6 @@ export function initRhwpDev(wasm: WasmBridge, devOptions: RhwpDevOptions = {}): 
       };
     },
 
-    subsecondLedger(options: {
-      events?: number;
-      patches?: number;
-      afterSequence?: number;
-    } = {}): unknown {
-      const ledger = (window as any).__rhwpSubsecondDelivery;
-      if (!ledger) return null;
-      const eventLimit = Math.min(128, Math.max(0, Math.floor(options.events ?? 20)));
-      const patchLimit = Math.min(32, Math.max(0, Math.floor(options.patches ?? 8)));
-      const afterSequence = Math.max(0, Math.floor(options.afterSequence ?? 0));
-      const availableEvents = ledger.events.filter(
-        (event: { sequence: number }) => event.sequence > afterSequence,
-      );
-      const events = eventLimit === 0 ? [] : availableEvents.slice(-eventLimit);
-      return structuredClone({
-        ...ledger,
-        eventCursor: ledger.events.at(-1)?.sequence ?? afterSequence,
-        truncatedBefore: events.length > 0
-          && events[0].sequence > afterSequence + 1,
-        events,
-        patches: patchLimit === 0 ? [] : ledger.patches.slice(-patchLimit),
-      });
-    },
-
     fidelity(): unknown {
       return (window as any).__rhwpFidelityHarness ?? null;
     },
@@ -432,9 +408,6 @@ DEV 모드 (vite dev server) 영역 영역 자동 로드되는 디버깅 헬퍼.
   rhwpDev.lineBreakVisible(pageNum?, options?)
     해당 페이지(생략 시 현재 보이는 쪽)의 본문·중첩 셀 문단을 중복 제거해 전부 비교
     기본 20개 paged boundary 요약; 상세 carve/token trace는 options lane을 켜거나 lineBreak() 사용
-
-  rhwpDev.subsecondLedger({events?, patches?, afterSequence?})
-    bounded/delta Subsecond ledger snapshot (기본 events 20, patches 8)
 
   rhwpDev.fidelity()
     현재 PDF whole-document fidelity harness API

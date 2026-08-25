@@ -183,6 +183,12 @@ hot_render_boundaries! {
         page_num: u32,
     ) -> Result<String, JsValue> = super::get_page_info_impl;
 
+    #[cfg(all(feature = "subsecond-dev", target_arch = "wasm32"))]
+    exports ["rebuildDerivedState"]
+    fn rebuild_derived_state(
+        document: &mut HwpDocument,
+    ) -> () = super::rebuild_derived_state_impl;
+
     // Fidelity harness의 fresh 줄나눔은 현재 패치의 측정·Frame carve 코드를 직접 실행해야 한다.
     // export만 base에 두면 화면은 새 코드인데 provenance는 옛 코드가 되어 비교 자체가 거짓이다.
     #[cfg(all(feature = "subsecond-dev", target_arch = "wasm32"))]
@@ -252,7 +258,11 @@ mod tests {
         ),
         (
             "getPageInfo",
-            "page-renderer.ts renderPage — 페이지 크기와 단 영역",
+            "canvas-view.ts refreshPages — 새 pagination의 페이지 크기와 단 영역",
+        ),
+        (
+            "rebuildDerivedState",
+            "subsecond-runtime.ts — 새 코드로 조판 캐시를 다시 만든다",
         ),
     ];
 

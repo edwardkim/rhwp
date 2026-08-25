@@ -1,5 +1,5 @@
 diff --git a/packages/cli/src/build/builder.rs b/packages/cli/src/build/builder.rs
-index 2e4fc9be..88b2b844 100644
+index 2e4fc9be..12541ca6 100644
 --- a/packages/cli/src/build/builder.rs
 +++ b/packages/cli/src/build/builder.rs
 @@ -29,0 +30,47 @@ use super::{BuildContext, BuildId, BuildMode, HotpatchModuleCache};
@@ -82,3 +82,19 @@ index dcd5d5b1..38aac157 100644
 @@ -3135 +3135 @@ impl BuildRequest {
 -    fn workspace_crate_dep_names(&self) -> Vec<String> {
 +    pub(crate) fn workspace_crate_dep_names(&self) -> Vec<String> {
+diff --git a/packages/cli/src/serve/mod.rs b/packages/cli/src/serve/mod.rs
+index f632956b..0233eb39 100644
+--- a/packages/cli/src/serve/mod.rs
++++ b/packages/cli/src/serve/mod.rs
+@@ -137 +137,10 @@ pub(crate) async fn serve_all(args: ServeArgs, tracer: &TraceController) -> Resu
+-                screen.push_ws_message(bundle, &msg);
++                if msg
++                    .to_text()
++                    .is_ok_and(|text| text == r#"{"RhwpFullRebuild":true}"#)
++                {
++                    builder.full_rebuild().await;
++                    devserver.send_reload_start().await;
++                    devserver.start_build().await;
++                } else {
++                    screen.push_ws_message(bundle, &msg);
++                }

@@ -10,8 +10,6 @@ export interface RenderCodeReload {
   isAvailable(): boolean;
   /** 지금 컴파일된 렌더 코드의 식별자. 해석하지 않고 이전 값과 비교만 한다. */
   getRenderCodeRevision(): string | null;
-  /** 문서 수명과 무관한 Subsecond commit epoch. */
-  getPatchEpoch?(): number | null;
   /** 화면용으로 파생해 둔 것을 새 코드로 다시 만든다. 못 했으면 `false` — 재도색해도 소용없다. */
   rebuildDerivedState(): boolean;
 }
@@ -45,13 +43,6 @@ export function createRenderCodeReload(
       return typeof doc?.getRenderCodeRevision === 'function' ? doc.getRenderCodeRevision() : null;
     },
 
-    getPatchEpoch(): number | null {
-      const read = Reflect.get(exports, 'getSubsecondPatchEpoch');
-      if (typeof read !== 'function') return null;
-      const epoch = Number(read());
-      return Number.isSafeInteger(epoch) && epoch >= 0 ? epoch : null;
-    },
-
     rebuildDerivedState(): boolean {
       const doc = currentDocument() as { rebuildDerivedState?: () => void } | null;
       if (typeof doc?.rebuildDerivedState !== 'function') return false;
@@ -80,8 +71,7 @@ export interface SubsecondWasmExports {
  */
 export type SubsecondSignal =
   | { kind: 'outcome'; code: string }
-  | { kind: 'global-failure'; eventType: string; reason: string; dispatchedPatches: number }
-  | { kind: 'commit-timeout'; patchIdentity: string; timeoutMs: number };
+  | { kind: 'global-failure'; eventType: string; reason: string; dispatchedPatches: number };
 
 /** 개발자에게 남길 한 줄. */
 export type SubsecondDiagnostic = {
@@ -97,534 +87,15 @@ type AnimationFrameScheduler = {
 export type DevelopmentRenderRuntimeOptions = {
   measureHeapBytes?: () => number | null;
   scheduler?: AnimationFrameScheduler;
-  commitObserverScheduler?: CommitObserverScheduler;
-  commitEvents?: CommitEventTarget;
-};
-type FullReloadClient = {
-  acknowledgedToken(): string | null;
-  acknowledge(token: string | null): void;
-  reload(): void;
-};
-type CommitEventTarget = {
-  addEventListener(type: string, listener: (event: Event) => void): void;
-  removeEventListener(type: string, listener: (event: Event) => void): void;
-  dispatchEvent(event: Event): boolean;
-};
-
-export type CommitObserverScheduler = {
-  setTimeout(callback: () => void, delay: number): number;
-  clearTimeout(id: number): void;
-  now(): number;
 };
 
 type WebSocketConnection = {
   onmessage: ((event: MessageEvent) => void) | null;
   onclose: ((event: CloseEvent) => void) | null;
   onopen: ((event: Event) => void) | null;
+  send(data: string): void;
   close(): void;
 };
-
-export type SubsecondDeliveryLedger = {
-  schemaVersion: 3;
-  connectionSerial: number;
-  connected: boolean;
-  receivedMessages: number;
-  dispatchedPatches: number;
-  ignoredPatchMessages: number;
-  lastReceivedPatchIdentity: string | null;
-  lastDispatchedPatchIdentity: string | null;
-  lastCommittedPatchIdentity: string | null;
-  lastOutcome: string | null;
-  lastRenderRevision: string | null;
-  lastPatchEpoch: number | null;
-  rebuiltRevisions: number;
-  unattributedCommits: number;
-  unresolvedCommitCandidates: number;
-  commitCorrelationBlocked: boolean;
-  lastFailure: string | null;
-  reconnectReplay: SubsecondReconnectReplay;
-  patches: SubsecondPatchDelivery[];
-  eventSequence: number;
-  events: SubsecondDeliveryEvent[];
-};
-
-export type SubsecondDeliveryPhase =
-  | 'socket-connect'
-  | 'socket-open'
-  | 'socket-close'
-  | 'message-received'
-  | 'patch-replayed'
-  | 'patch-replay-missed'
-  | 'patch-ignored'
-  | 'dispatch-outcome'
-  | 'patch-commit-timeout'
-  | 'patch-commit-observed'
-  | 'derived-state-rebuild-start'
-  | 'derived-state-rebuild-complete'
-  | 'derived-state-rebuild-failed'
-  | 'render-refresh-failed'
-  | 'full-reload-required'
-  | 'global-failure';
-
-export type SubsecondDeliveryEvent = {
-  sequence: number;
-  at: number;
-  phase: SubsecondDeliveryPhase;
-  connectionSerial: number;
-  patchIdentity: string | null;
-  outcome?: string;
-  renderRevision?: string;
-  patchEpoch?: number;
-  detail?: string;
-  association?: 'exact' | 'ambiguous' | 'possible';
-};
-
-export type SubsecondPatchPhase = {
-  status: 'not-started' | 'pending' | 'complete' | 'failed' | 'unknown';
-  at: number | null;
-  evidence: string | null;
-};
-
-export type SubsecondPatchDelivery = {
-  identity: string;
-  patchId: number | null;
-  connectionSerial: number;
-  receiptAt: number;
-  outcome: string | null;
-  dispatch: SubsecondPatchPhase;
-  fetch: SubsecondPatchPhase;
-  instantiate: SubsecondPatchPhase;
-  commit: SubsecondPatchPhase;
-  commitAssociation: 'none' | 'pending' | 'exact' | 'ambiguous';
-  renderRevision: string | null;
-  patchEpoch: number | null;
-  derivedStateRebuildSequence: number | null;
-  failure: string | null;
-};
-
-export type SubsecondReconnectReplay = {
-  connectionSerial: number;
-  expectedPatchIdentity: string | null;
-  status:
-    | 'not-applicable'
-    | 'pending'
-    | 'replayed'
-    | 'not-observed-by-deadline'
-    | 'superseded'
-    | 'closed';
-  observedAt: number | null;
-};
-
-const DELIVERY_LEDGER_KEY = '__rhwpSubsecondDelivery';
-const RUNTIME_SLOT_KEY = '__rhwpSubsecondRuntime';
-const SUBSECOND_COMMIT_EVENT = 'rhwp-subsecond-commit';
-const SUBSECOND_PATCH_READY_EVENT = 'rhwp-subsecond-patch-ready';
-const DEVELOPMENT_RUNTIME_IMPLEMENTATION = 2;
-const DEVELOPMENT_RUNTIME_OWNER = {};
-
-type SubsecondRealm = typeof globalThis & {
-  [DELIVERY_LEDGER_KEY]?: SubsecondDeliveryLedger;
-  [RUNTIME_SLOT_KEY]?: { implementation: number; owner: object; stop: () => void };
-};
-
-function currentDeliveryLedger(): SubsecondDeliveryLedger | null {
-  const realm = globalThis as SubsecondRealm;
-  const existing = realm[DELIVERY_LEDGER_KEY] as Partial<SubsecondDeliveryLedger> | undefined;
-  const structurallyCurrent = existing?.schemaVersion === 3
-    && 'lastReceivedPatchIdentity' in existing
-    && 'lastDispatchedPatchIdentity' in existing
-    && 'lastCommittedPatchIdentity' in existing
-    && 'lastPatchEpoch' in existing
-    && 'unattributedCommits' in existing
-    && 'unresolvedCommitCandidates' in existing
-    && 'commitCorrelationBlocked' in existing
-    && 'eventSequence' in existing
-    && (existing.patches ?? []).every(patch =>
-      'commitAssociation' in patch && 'patchEpoch' in patch);
-  return structurallyCurrent ? existing as SubsecondDeliveryLedger : null;
-}
-
-function deliveryLedger(): SubsecondDeliveryLedger {
-  const realm = globalThis as SubsecondRealm;
-  const current = currentDeliveryLedger();
-  if (current) return current;
-  const existing = realm[DELIVERY_LEDGER_KEY] as Partial<SubsecondDeliveryLedger> | undefined;
-  const previousUnresolved = Number(existing?.unresolvedCommitCandidates ?? 0);
-  const hasPreviousUnresolved = existing !== undefined
-    && 'unresolvedCommitCandidates' in existing
-    && Number.isSafeInteger(previousUnresolved)
-    && previousUnresolved >= 0;
-  const patches = Array.isArray(existing?.patches) ? existing.patches : [];
-  const inheritedUnresolved = (
-    hasPreviousUnresolved ? previousUnresolved : 0
-  ) + patches.filter(patch => patch?.commit?.status === 'pending').length;
-  const commitCorrelationBlocked = existing?.commitCorrelationBlocked === true
-    || (!hasPreviousUnresolved && patches.some(patch =>
-      patch?.commit?.status === 'unknown' || patch?.commitAssociation === 'ambiguous'));
-  const retainedEventSequence = Array.isArray(existing?.events)
-    ? existing.events.reduce((maximum, event) =>
-        Number.isSafeInteger(event?.sequence) ? Math.max(maximum, event.sequence) : maximum, 0)
-    : 0;
-  const previousEventSequence = Number(existing?.eventSequence ?? 0);
-  const eventSequence = Math.max(
-    retainedEventSequence,
-    Number.isSafeInteger(previousEventSequence) ? previousEventSequence : 0,
-  );
-  const previousDispatchedPatches = Number(existing?.dispatchedPatches ?? 0);
-  const dispatchedPatches = Number.isSafeInteger(previousDispatchedPatches)
-    && previousDispatchedPatches >= 0
-    ? previousDispatchedPatches
-    : 0;
-  const lastDispatchedPatchIdentity = typeof existing?.lastDispatchedPatchIdentity === 'string'
-    ? existing.lastDispatchedPatchIdentity
-    : null;
-  const lastCommittedPatchIdentity = typeof existing?.lastCommittedPatchIdentity === 'string'
-    ? existing.lastCommittedPatchIdentity
-    : null;
-  const receivedPatchIdentity = typeof existing?.lastReceivedPatchIdentity === 'string'
-    ? existing.lastReceivedPatchIdentity
-    : null;
-  const lastReceivedPatchIdentity = receivedPatchIdentity === lastDispatchedPatchIdentity
-    || receivedPatchIdentity === lastCommittedPatchIdentity
-    ? receivedPatchIdentity
-    : lastDispatchedPatchIdentity ?? lastCommittedPatchIdentity;
-  const ledger: SubsecondDeliveryLedger = {
-    schemaVersion: 3,
-    connectionSerial: 0,
-    connected: false,
-    receivedMessages: 0,
-    dispatchedPatches,
-    ignoredPatchMessages: 0,
-    lastReceivedPatchIdentity,
-    lastDispatchedPatchIdentity,
-    lastCommittedPatchIdentity,
-    lastOutcome: null,
-    lastRenderRevision: null,
-    lastPatchEpoch: null,
-    rebuiltRevisions: 0,
-    unattributedCommits: 0,
-    unresolvedCommitCandidates: inheritedUnresolved,
-    commitCorrelationBlocked,
-    lastFailure: null,
-    reconnectReplay: {
-      connectionSerial: 0,
-      expectedPatchIdentity: null,
-      status: 'not-applicable',
-      observedAt: null,
-    },
-    patches: [],
-    eventSequence,
-    events: [],
-  };
-  realm[DELIVERY_LEDGER_KEY] = ledger;
-  return ledger;
-}
-
-const MAX_DELIVERY_EVENTS = 128;
-const MAX_PATCH_DELIVERIES = 32;
-const REPLAY_OBSERVATION_MS = 1_000;
-const COMMIT_OBSERVATION_MS = 250;
-const PATCH_COMMIT_DEADLINE_MS = 10_000;
-
-function recordDeliveryEvent(
-  ledger: SubsecondDeliveryLedger,
-  event: Omit<SubsecondDeliveryEvent, 'sequence'>,
-): void {
-  ledger.eventSequence += 1;
-  ledger.events.push({ ...event, sequence: ledger.eventSequence });
-  if (ledger.events.length > MAX_DELIVERY_EVENTS) {
-    ledger.events.splice(0, ledger.events.length - MAX_DELIVERY_EVENTS);
-  }
-}
-
-function pendingPatchPhase(): SubsecondPatchPhase {
-  return { status: 'pending', at: null, evidence: null };
-}
-
-function rememberPatchDelivery(
-  ledger: SubsecondDeliveryLedger,
-  identity: string,
-  connectionSerial: number,
-  at: number,
-): SubsecondPatchDelivery {
-  const delivery: SubsecondPatchDelivery = {
-    identity,
-    patchId: patchSequence(identity),
-    connectionSerial,
-    receiptAt: at,
-    outcome: null,
-    dispatch: pendingPatchPhase(),
-    fetch: pendingPatchPhase(),
-    instantiate: pendingPatchPhase(),
-    commit: pendingPatchPhase(),
-    commitAssociation: 'pending',
-    renderRevision: null,
-    patchEpoch: null,
-    derivedStateRebuildSequence: null,
-    failure: null,
-  };
-  ledger.patches.push(delivery);
-  if (ledger.patches.length > MAX_PATCH_DELIVERIES) {
-    const evicted = ledger.patches.splice(0, ledger.patches.length - MAX_PATCH_DELIVERIES);
-    ledger.unresolvedCommitCandidates += evicted.filter(
-      patch => patch.commit.status === 'pending',
-    ).length;
-  }
-  return delivery;
-}
-
-function pendingPatches(ledger: SubsecondDeliveryLedger): SubsecondPatchDelivery[] {
-  return ledger.patches.filter(patch => patch.commit.status === 'pending');
-}
-
-function resourceTimingForPatch(identity: string): PerformanceResourceTiming | null {
-  if (typeof performance === 'undefined' || typeof performance.getEntriesByType !== 'function') {
-    return null;
-  }
-  const entries = performance.getEntriesByType('resource') as PerformanceResourceTiming[];
-  return [...entries].reverse().find(entry => {
-    try {
-      return new URL(entry.name, globalThis.location?.href).pathname === new URL(identity, globalThis.location?.href).pathname;
-    } catch {
-      return entry.name.endsWith(identity);
-    }
-  }) ?? null;
-}
-
-function patchEpochFromRevision(revision: string): number | null {
-  const epoch = revision.split(':').at(-1);
-  if (!epoch || !/^[a-f0-9]{8}$/i.test(epoch)) return null;
-  const value = Number.parseInt(epoch, 16);
-  return Number.isSafeInteger(value) ? value : null;
-}
-
-function observeCommittedPatch(
-  ledger: SubsecondDeliveryLedger,
-  revision: string | null,
-  patchEpoch: number,
-  at: number,
-  epochDelta: number,
-): SubsecondPatchDelivery | null {
-  const pending = pendingPatches(ledger);
-  if (
-    pending.length !== 1
-    || epochDelta !== 1
-    || ledger.unresolvedCommitCandidates > 0
-    || ledger.commitCorrelationBlocked
-  ) {
-    const unresolvedBefore = ledger.unresolvedCommitCandidates + pending.length;
-    ledger.unresolvedCommitCandidates = Math.max(0, unresolvedBefore - epochDelta);
-    const evidence = `ambiguous-commit-correlation:pending=${pending.length}:epochDelta=${epochDelta}:unresolvedBefore=${unresolvedBefore}:unresolvedAfter=${ledger.unresolvedCommitCandidates}:blocked=${ledger.commitCorrelationBlocked}`;
-    for (const patch of pending) {
-      const resource = resourceTimingForPatch(patch.identity);
-      patch.fetch = {
-        status: resource ? 'complete' : 'unknown',
-        at: resource ? resource.responseEnd : at,
-        evidence: resource ? 'resource-timing' : evidence,
-      };
-      patch.instantiate = { status: 'unknown', at, evidence };
-      patch.commit = { status: 'unknown', at, evidence };
-      patch.commitAssociation = 'ambiguous';
-    }
-    ledger.unattributedCommits += Math.max(1, epochDelta);
-    ledger.lastCommittedPatchIdentity = null;
-    recordDeliveryEvent(ledger, {
-      at,
-      phase: 'patch-commit-observed',
-      connectionSerial: ledger.connectionSerial,
-      patchIdentity: null,
-      renderRevision: revision ?? undefined,
-      patchEpoch,
-      detail: evidence,
-      association: 'ambiguous',
-    });
-    return null;
-  }
-  const patch = pending[0];
-  const resource = resourceTimingForPatch(patch.identity);
-  patch.fetch = {
-    status: 'complete',
-    at: resource ? resource.responseEnd : at,
-    evidence: resource ? 'resource-timing' : 'commit-implies-fetch',
-  };
-  patch.instantiate = {
-    status: 'complete',
-    at,
-    evidence: 'subsecond-commit-handler',
-  };
-  patch.commit = {
-    status: 'complete',
-    at,
-    evidence: 'patch-epoch-revision',
-  };
-  patch.commitAssociation = 'exact';
-  patch.renderRevision = revision;
-  patch.patchEpoch = patchEpoch;
-  ledger.lastPatchEpoch = patch.patchEpoch;
-  ledger.lastCommittedPatchIdentity = patch.identity;
-  recordDeliveryEvent(ledger, {
-    at,
-    phase: 'patch-commit-observed',
-    connectionSerial: patch.connectionSerial,
-    patchIdentity: patch.identity,
-    renderRevision: revision ?? undefined,
-    patchEpoch,
-    association: 'exact',
-  });
-  return patch;
-}
-
-function reconcileObservedRevision(
-  ledger: SubsecondDeliveryLedger,
-  revision: string,
-  at: number,
-): SubsecondPatchDelivery | null {
-  const patchEpoch = patchEpochFromRevision(revision);
-  const previousEpoch = ledger.lastPatchEpoch;
-  if (ledger.lastRenderRevision === revision && previousEpoch === patchEpoch) {
-    return [...ledger.patches].reverse().find(patch =>
-      patch.renderRevision === revision && patch.commitAssociation === 'exact') ?? null;
-  }
-  ledger.lastRenderRevision = revision;
-  ledger.lastPatchEpoch = patchEpoch;
-  const exactForEpoch = patchEpoch === null
-    ? null
-    : [...ledger.patches].reverse().find(patch =>
-        patch.patchEpoch === patchEpoch && patch.commitAssociation === 'exact') ?? null;
-  if (exactForEpoch && exactForEpoch.renderRevision === null) {
-    exactForEpoch.renderRevision = revision;
-  }
-  if (patchEpoch === null) return null;
-  if (previousEpoch === null) {
-    return pendingPatches(ledger).length > 0 && patchEpoch > 0
-      ? observeCommittedPatch(ledger, revision, patchEpoch, at, 0)
-      : null;
-  }
-  const epochDelta = Math.max(0, patchEpoch - previousEpoch);
-  if (epochDelta === 0) return null;
-  return observeCommittedPatch(ledger, revision, patchEpoch, at, epochDelta);
-}
-
-function startCommitObserver(
-  capabilities: RenderCodeReload,
-  ledger: SubsecondDeliveryLedger,
-  onRevisionObserved: (patch: SubsecondPatchDelivery | null) => void,
-  scheduler?: CommitObserverScheduler,
-): () => void {
-  const clock = scheduler ?? (typeof window === 'undefined'
-    ? null
-    : {
-        setTimeout: (callback: () => void, delay: number) => window.setTimeout(callback, delay),
-        clearTimeout: (id: number) => window.clearTimeout(id),
-        now: () => performance.now(),
-      });
-  if (!clock) return () => {};
-  let active = true;
-  let timer: number | null = null;
-  let baselineRevision: string | null = null;
-  let baselineEpoch: number | null = null;
-  const tick = (): void => {
-    if (!active) return;
-    try {
-      const observedAt = clock.now();
-      const epoch = capabilities.getPatchEpoch?.() ?? null;
-      const revision = capabilities.getRenderCodeRevision();
-      const hadPendingCommit = pendingPatches(ledger).length > 0;
-      let committedPatch: SubsecondPatchDelivery | null = null;
-      let notified = false;
-      if (epoch !== null && baselineEpoch === null) {
-        baselineEpoch = epoch;
-        const previousEpoch = ledger.lastPatchEpoch;
-        if (previousEpoch !== epoch) ledger.lastPatchEpoch = epoch;
-        if (previousEpoch !== null && epoch > previousEpoch) {
-          committedPatch = observeCommittedPatch(
-            ledger,
-            revision,
-            epoch,
-            observedAt,
-            epoch - previousEpoch,
-          );
-        } else if (previousEpoch === null && epoch > 0 && pendingPatches(ledger).length > 0) {
-          committedPatch = observeCommittedPatch(ledger, revision, epoch, observedAt, 0);
-        }
-      } else if (epoch !== null && epoch !== baselineEpoch) {
-        const previousEpoch = baselineEpoch;
-        baselineEpoch = epoch;
-        if (ledger.lastPatchEpoch !== epoch) {
-          ledger.lastPatchEpoch = epoch;
-          committedPatch = observeCommittedPatch(
-            ledger,
-            revision,
-            epoch,
-            observedAt,
-            previousEpoch === null ? 0 : Math.max(0, epoch - previousEpoch),
-          );
-        }
-      }
-      if (revision !== null && revision !== baselineRevision) {
-        const hadBaseline = baselineRevision !== null;
-        baselineRevision = revision;
-        committedPatch ??= reconcileObservedRevision(ledger, revision, clock.now());
-        const observedEpoch = epoch ?? patchEpochFromRevision(revision);
-        const firstRevisionMayContainPendingPatch = !hadBaseline
-          && hadPendingCommit
-          && observedEpoch !== null
-          && observedEpoch > 0;
-        if (hadBaseline || firstRevisionMayContainPendingPatch) {
-          onRevisionObserved(committedPatch);
-          notified = true;
-        }
-      }
-      if (committedPatch && !notified) onRevisionObserved(committedPatch);
-    } catch (error) {
-      ledger.lastFailure = `commit-observer: ${error instanceof Error ? error.message : String(error)}`;
-    } finally {
-      if (active) timer = clock.setTimeout(tick, COMMIT_OBSERVATION_MS);
-    }
-  };
-  tick();
-  return () => {
-    active = false;
-    if (timer !== null) clock.clearTimeout(timer);
-    timer = null;
-  };
-}
-
-/** 개발 harness가 mutation 없이 읽는 bounded snapshot. 런타임 전에는 null이다. */
-export function getSubsecondDeliverySnapshot(): SubsecondDeliveryLedger | null {
-  const ledger = currentDeliveryLedger();
-  return ledger === null ? null : structuredClone(ledger);
-}
-
-function patchIdentity(message: string): string | null {
-  try {
-    const parsed = JSON.parse(message) as {
-      HotReload?: { jump_table?: { lib?: unknown } | null };
-    };
-    const lib = parsed.HotReload?.jump_table?.lib;
-    return typeof lib === 'string' ? lib : null;
-  } catch {
-    return null;
-  }
-}
-
-function fullReloadToken(message: string): string | null {
-  try {
-    const token = (JSON.parse(message) as { RhwpFullReload?: unknown }).RhwpFullReload;
-    return typeof token === 'string' && token.length > 0 && token.length <= 256
-      ? token
-      : null;
-  } catch {
-    return null;
-  }
-}
-
-function patchSequence(identity: string): number | null {
-  const match = identity.match(/patch-(\d+)\.wasm$/);
-  if (!match) return null;
-  const value = Number(match[1]);
-  return Number.isSafeInteger(value) ? value : null;
-}
 
 /** 전역 오류·거부 이벤트를 듣는 대상. 기본값은 `window` 이고 테스트가 대체한다. */
 type FailureEventTarget = {
@@ -641,8 +112,8 @@ type SubsecondDevtoolsOptions = {
   errorEvents?: FailureEventTarget;
   now?: () => number;
   patchAccumulation?: SubsecondPatchAccumulation;
-  fullReload?: FullReloadClient;
-  patchReadyEvents?: CommitEventTarget;
+  reload?: () => void;
+  commitTimeout?: (queuedPatches: number) => void;
 };
 
 export type SubsecondPatchAccumulationOptions = {
@@ -654,6 +125,9 @@ export type SubsecondPatchAccumulationOptions = {
 
 const RECONNECT_MIN_MS = 250;
 const RECONNECT_MAX_MS = 4_000;
+const PATCH_COMMIT_TIMEOUT_MS = 10_000;
+const SUBSECOND_COMMIT_EVENT = 'rhwp-subsecond-commit';
+const FULL_REBUILD_REQUEST = '{"RhwpFullRebuild":true}';
 /** 엔진이 점프 테이블 수신까지 수락했음을 뜻하는 결과 코드의 단일 소유자. */
 export const PATCH_DISPATCHED_OUTCOME = 'patch-dispatched';
 /**
@@ -663,137 +137,6 @@ export const PATCH_DISPATCHED_OUTCOME = 'patch-dispatched';
 const STABLE_CONNECTION_MS = 4_000;
 const PATCH_WARNING_INTERVAL = 32;
 const BYTES_PER_MB = 1024 * 1024;
-const FULL_RELOAD_TOKEN_KEY = 'rhwp-subsecond-full-reload-token';
-
-type QueuedPatchMessage = {
-  message: string;
-  receivedAt: number;
-  connectionSerial: number;
-  replayed: boolean;
-};
-
-type PatchCommitGateOptions = {
-  scheduleTimeout(callback: () => void, delay: number): number;
-  cancelTimeout(id: number): void;
-  now(): number;
-  onTimeout(patch: SubsecondPatchDelivery): void;
-};
-
-/** 한 번에 한 patch만 commit까지 통과시키는 connector-local gate. */
-class PatchCommitGate {
-  private awaiting: string | null = null;
-  private permit = false;
-  private isBlocked = false;
-  private readonly queue: QueuedPatchMessage[] = [];
-  private currentReceipt: QueuedPatchMessage | null = null;
-  private deadlineTimer: number | null = null;
-  private readonly options: PatchCommitGateOptions;
-
-  constructor(options: PatchCommitGateOptions) {
-    this.options = options;
-  }
-
-  get receipt(): QueuedPatchMessage | null {
-    return this.currentReceipt;
-  }
-
-  get awaitingIdentity(): string | null {
-    return this.awaiting;
-  }
-
-  get blocked(): boolean {
-    return this.isBlocked;
-  }
-
-  canDispatch(ledger: SubsecondDeliveryLedger): boolean {
-    return this.permit
-      || (
-        pendingPatches(ledger).length === 0
-        && ledger.unresolvedCommitCandidates === 0
-        && !ledger.commitCorrelationBlocked
-      );
-  }
-
-  shouldQueue(ledger: SubsecondDeliveryLedger): boolean {
-    return this.awaiting !== null || !this.canDispatch(ledger);
-  }
-
-  enqueue(message: QueuedPatchMessage): void {
-    this.queue.push(message);
-  }
-
-  drain(handler: ((event: MessageEvent) => void) | null): void {
-    if (this.awaiting !== null || this.isBlocked || !handler) return;
-    const next = this.queue.shift();
-    if (!next) return;
-    this.currentReceipt = next;
-    try {
-      handler({ data: next.message } as MessageEvent);
-    } finally {
-      this.currentReceipt = null;
-    }
-  }
-
-  adopt(patch: SubsecondPatchDelivery): void {
-    this.cancelDeadline();
-    this.awaiting = patch.identity;
-    this.permit = false;
-    const startedAt = patch.dispatch.at ?? patch.receiptAt;
-    const remainingMs = Math.max(
-      0,
-      PATCH_COMMIT_DEADLINE_MS - Math.max(0, this.options.now() - startedAt),
-    );
-    this.deadlineTimer = this.options.scheduleTimeout(() => {
-      this.deadlineTimer = null;
-      if (this.awaiting !== patch.identity) return;
-      this.block();
-      this.options.onTimeout(patch);
-    }, remainingMs);
-  }
-
-  commit(identity: string): boolean {
-    if (identity !== this.awaiting) return false;
-    this.cancelDeadline();
-    this.awaiting = null;
-    this.permit = true;
-    this.isBlocked = false;
-    return true;
-  }
-
-  block(): void {
-    this.isBlocked = true;
-    this.queue.length = 0;
-  }
-
-  reset(): void {
-    this.cancelDeadline();
-    this.awaiting = null;
-    this.permit = false;
-    this.isBlocked = false;
-    this.queue.length = 0;
-    this.currentReceipt = null;
-  }
-
-  open(): void {
-    if (this.awaiting === null) this.isBlocked = false;
-  }
-
-  close(): void {
-    this.reset();
-    this.isBlocked = true;
-  }
-
-  private cancelDeadline(): void {
-    if (this.deadlineTimer === null) return;
-    const timer = this.deadlineTimer;
-    this.deadlineTimer = null;
-    try {
-      this.options.cancelTimeout(timer);
-    } catch {
-      // A diagnostic timer must never block commit handling or the next patch.
-    }
-  }
-}
 
 /**
  * 세션에 쌓인 핫패치 수를 세고, 셀 때마다가 아니라 임계값마다 경고한다.
@@ -812,6 +155,7 @@ class PatchCommitGate {
  * 큰 문서를 열어도 같이 커지는 값이라, 그것으로 임계를 잡으면 핫패치가 아닌 사용을 핫패치 탓으로 돌린다.
  */
 export class SubsecondPatchAccumulation {
+  private applied = 0;
   private readonly warn: (message: string) => void;
   private readonly warnEveryPatches: number;
   private readonly measureHeapBytes: () => number | null;
@@ -823,17 +167,18 @@ export class SubsecondPatchAccumulation {
   }
 
   /**
-   * realm ledger가 소유한 적용 요청 누적값을 관찰한다.
+   * 패치 하나가 적용에 들어갔음을 기록한다.
    *
    * 정확히는 "이 build 를 위한 `HotReload` 중 점프 테이블 역직렬화까지 성공한 메시지 수"다.
    * wasm 에서 `apply_patch` 는 fetch·instantiate future 를 띄우고 바로 `Ok(())` 를 돌려주며
    * (`subsecond-0.7.10/src/lib.rs:551`), 그 future 는 `.wasm` 이 아닌 경로에서 조용히 빠져나갈 수도
    * 있다(`:565-567`). 그래서 이 수는 실제 메모리 증가 횟수의 상한이다.
    */
-  recordApplied(sessionApplied: number): void {
-    if (sessionApplied <= 0 || sessionApplied % this.warnEveryPatches !== 0) return;
+  recordApplied(): void {
+    this.applied += 1;
+    if (this.applied % this.warnEveryPatches !== 0) return;
     this.warn(
-      `[subsecond] 이 세션에 핫패치 ${sessionApplied}건(적용 요청 기준)이 쌓였다${this.heapSuffix()}. `
+      `[subsecond] 이 세션에 핫패치 ${this.applied}건(적용 요청 기준)이 쌓였다${this.heapSuffix()}. `
       + '적용한 패치는 회수되지 않는다(wasm 선형 메모리·간접 함수 테이블은 축소 불가). '
       + '세션이 길어지면 WebAssembly.Memory.grow() 실패로 탭이 죽으므로 새로고침으로 세션을 끊어라.',
     );
@@ -895,8 +240,7 @@ const SUBSECOND_OUTCOMES: Record<string, SubsecondDiagnostic | undefined> = {
     level: 'warn',
     message:
       'jump_table 을 이 빌드의 subsecond JumpTable 로 읽지 못했다. dx 와 크레이트 버전이 ' +
-      '어긋났는지 `node scripts/dioxus-cli-version.mjs` 의 `version` 필드와 ' +
-      '`target/dioxus-cli/bin/dx --version` 을 대조한다.',
+      '어긋났는지 `node scripts/dioxus-cli-version.mjs` 의 값과 `dx --version` 을 대조한다.',
   },
   'patch-rejected': {
     level: 'warn',
@@ -923,15 +267,6 @@ export function isPatchDispatchedOutcome(outcome: string): boolean {
 
 /** 신호 하나를 개발자가 읽을 한 줄로 만든다. */
 export function describeSubsecondSignal(signal: SubsecondSignal): SubsecondDiagnostic {
-  if (signal.kind === 'commit-timeout') {
-    return {
-      level: 'warn',
-      message:
-        `${signal.patchIdentity} commit 이 ${signal.timeoutMs}ms 안에 관찰되지 않았다. `
-        + '후속 패치는 잘못된 WASM 기준에 적용하지 않도록 멈췄다. 늦은 commit 이 오면 자동으로 '
-        + '재개하며, 오지 않으면 dx full rebuild 또는 페이지 새로고침이 필요하다.',
-    };
-  }
   if (signal.kind === 'global-failure') {
     return {
       level: 'warn',
@@ -949,7 +284,7 @@ export function describeSubsecondSignal(signal: SubsecondSignal): SubsecondDiagn
       message:
         `읽지 못한 결과 값 ${JSON.stringify(signal.code)}. ` +
         '`src/subsecond_dev.rs` 의 DevtoolsMessageOutcome::code() 와 이 표가 어긋났거나, ' +
-        '옛 WASM 번들(불리언을 돌려주던 판)이 로드돼 있다 — `npm run subsecond:sync` 를 다시 돌린다.',
+        '옛 WASM 번들이 로드돼 있다 — dx를 full rebuild한 뒤 Studio를 다시 연다.',
     }
   );
 }
@@ -993,10 +328,8 @@ export class RenderCodeReloadWatcher {
   private running = false;
   private hasBaseline = false;
   private lastRevision: string | null = null;
-  private lastRebuiltRevision: string | null = null;
   private capabilities: RenderCodeReload;
   private onPatched: (revision: string) => void;
-  private onTransition: ((transition: RenderCodeReloadTransition) => void) | null;
   private scheduler: AnimationFrameScheduler;
 
   constructor(
@@ -1006,24 +339,15 @@ export class RenderCodeReloadWatcher {
       requestAnimationFrame: callback => requestAnimationFrame(callback),
       cancelAnimationFrame: id => cancelAnimationFrame(id),
     },
-    onTransition: ((transition: RenderCodeReloadTransition) => void) | null = null,
   ) {
     this.capabilities = capabilities;
     this.onPatched = onPatched;
     this.scheduler = scheduler;
-    this.onTransition = onTransition;
   }
 
   start(): boolean {
     if (this.running) return true;
     if (!this.capabilities.isAvailable()) return false;
-    if (!this.hasBaseline) {
-      const baseline = this.capabilities.getRenderCodeRevision();
-      if (baseline !== null) {
-        this.hasBaseline = true;
-        this.lastRevision = baseline;
-      }
-    }
     this.running = true;
     this.schedule();
     return true;
@@ -1035,19 +359,6 @@ export class RenderCodeReloadWatcher {
       this.scheduler.cancelAnimationFrame(this.frameId);
       this.frameId = null;
     }
-  }
-
-  /**
-   * Check the same revision boundary without waiting for a paint frame.
-   *
-   * Background tabs and automation may suspend `requestAnimationFrame`, but a
-   * committed layout patch still invalidates the document's derived state.
-   * The timer-side commit observer calls this method; `lastRevision` keeps the
-   * timer and rAF paths idempotent when both observe the same commit.
-   */
-  checkNow(forceCurrentRevision = false): void {
-    if (!this.running) return;
-    this.checkRevision(forceCurrentRevision);
   }
 
   private schedule(): void {
@@ -1068,78 +379,26 @@ export class RenderCodeReloadWatcher {
     });
   }
 
-  private notifyTransition(transition: RenderCodeReloadTransition): void {
-    try {
-      this.onTransition?.(transition);
-    } catch (error) {
-      console.warn('[subsecond] delivery observer failed without blocking render reload:', error);
-    }
-  }
-
-  private checkRevision(forceCurrentRevision = false): void {
+  private checkRevision(): void {
     const revision = this.capabilities.getRenderCodeRevision();
     if (revision === null) return;
     if (!this.hasBaseline) {
       this.hasBaseline = true;
       this.lastRevision = revision;
-      if (!forceCurrentRevision) return;
+      return;
     }
-    if (
-      revision === this.lastRevision
-      && (!forceCurrentRevision || revision === this.lastRebuiltRevision)
-    ) return;
+    if (revision === this.lastRevision) return;
     // 재도색보다 먼저 올린다. 던지는 패치를 매 프레임 다시 그리면 초당 60번 실패하므로,
     // 실패한 리비전은 다음 패치가 올 때까지 다시 시도하지 않는다 — 세션은 살아 있고, 재도색이
     // 던지는 패치 버그는 다음 저장이 만드는 새 리비전에서 정상으로 돌아온다.
     // 아래 재구성 자체가 계속 트랩하면 어느 리비전도 그리지 못하지만, 그건 핫패치 경계 밖의
     // 고장이라 새 패치로도 안 고쳐진다 — 보고는 #4578, 경계는 #4577 의 몫이다.
     this.lastRevision = revision;
-    this.notifyTransition({ phase: 'revision-detected', revision });
-    this.notifyTransition({ phase: 'rebuild-start', revision });
-    let rebuilt: boolean;
-    try {
-      rebuilt = this.capabilities.rebuildDerivedState();
-    } catch (error) {
-      this.notifyTransition({
-        phase: 'rebuild-failed',
-        revision,
-        error: error instanceof Error ? `${error.name}: ${error.message}` : String(error),
-      });
-      throw error;
-    }
-    if (rebuilt) {
-      this.lastRebuiltRevision = revision;
-      this.notifyTransition({ phase: 'rebuild-complete', revision });
-      try {
-        this.onPatched(revision);
-      } catch (error) {
-        this.notifyTransition({
-          phase: 'render-refresh-failed',
-          revision,
-          error: error instanceof Error ? `${error.name}: ${error.message}` : String(error),
-        });
-        throw error;
-      }
-    } else {
-      this.notifyTransition({
-        phase: 'rebuild-failed',
-        revision,
-        error: 'derived-state rebuild unavailable',
-      });
+    if (this.capabilities.rebuildDerivedState()) {
+      this.onPatched(revision);
     }
   }
 }
-
-export type RenderCodeReloadTransition = {
-  phase:
-    | 'revision-detected'
-    | 'rebuild-start'
-    | 'rebuild-complete'
-    | 'rebuild-failed'
-    | 'render-refresh-failed';
-  revision: string;
-  error?: string;
-};
 
 /**
  * 개발용 렌더 교체 런타임을 한 realm에 하나만 연결한다.
@@ -1149,21 +408,18 @@ export type RenderCodeReloadTransition = {
  * 호출자는 DEV 동적 import를 한 `main.ts`뿐이며, 반환된 해제 함수는 미래의 Studio 인스턴스 교체
  * 경로를 위한 유일한 정리선이다.
  */
+let stopDevelopmentRenderRuntime: (() => void) | null = null;
+
 export function startDevelopmentRenderRuntime(
   exports: object,
   currentDocument: () => object | null,
   onPatched: (revision: string) => void,
   options: DevelopmentRenderRuntimeOptions = {},
 ): (() => void) | null {
-  const realm = globalThis as SubsecondRealm;
-  const existing = realm[RUNTIME_SLOT_KEY];
-  if (existing?.owner === DEVELOPMENT_RUNTIME_OWNER) return existing.stop;
-  if (existing) existing.stop();
+  if (stopDevelopmentRenderRuntime) return stopDevelopmentRenderRuntime;
 
   const capabilities = createRenderCodeReload(exports, currentDocument);
   if (!capabilities.isAvailable()) return null;
-
-  const ledger = deliveryLedger();
 
   const disconnectDevtools = connectSubsecondDevtools(
     exports as SubsecondWasmExports,
@@ -1171,144 +427,20 @@ export function startDevelopmentRenderRuntime(
       patchAccumulation: new SubsecondPatchAccumulation({
         measureHeapBytes: options.measureHeapBytes,
       }),
-      patchReadyEvents: options.commitEvents,
     },
   );
-  const watcher = new RenderCodeReloadWatcher(
-    capabilities,
-    revision => {
-      ledger.lastRenderRevision = revision;
-      ledger.rebuiltRevisions += 1;
-      onPatched(revision);
-    },
-    options.scheduler,
-    transition => {
-      const at = typeof performance === 'undefined' ? 0 : performance.now();
-      if (transition.phase === 'revision-detected') {
-        reconcileObservedRevision(ledger, transition.revision, at);
-        return;
-      }
-      const patch = [...ledger.patches].reverse().find(candidate =>
-        candidate.renderRevision === transition.revision) ?? null;
-      const phase = transition.phase === 'rebuild-start'
-        ? 'derived-state-rebuild-start'
-        : transition.phase === 'rebuild-complete'
-          ? 'derived-state-rebuild-complete'
-          : transition.phase === 'rebuild-failed'
-            ? 'derived-state-rebuild-failed'
-            : transition.phase === 'render-refresh-failed'
-              ? 'render-refresh-failed'
-              : null;
-      if (!phase) return;
-      if (transition.phase === 'rebuild-complete' && patch) {
-        patch.derivedStateRebuildSequence = ledger.rebuiltRevisions + 1;
-      }
-      if (transition.phase === 'rebuild-failed') {
-        ledger.lastFailure = transition.error ?? 'derived-state rebuild failed';
-        if (patch?.commitAssociation === 'exact') {
-          patch.failure = ledger.lastFailure;
-        }
-      }
-      if (transition.phase === 'render-refresh-failed') {
-        ledger.lastFailure = transition.error ?? 'render refresh failed';
-        if (patch?.commitAssociation === 'exact') {
-          patch.failure = ledger.lastFailure;
-        }
-      }
-      recordDeliveryEvent(ledger, {
-        at,
-        phase,
-        connectionSerial: patch?.connectionSerial ?? ledger.connectionSerial,
-        patchIdentity: patch?.identity ?? null,
-        renderRevision: transition.revision,
-        patchEpoch: patch?.patchEpoch ?? undefined,
-        detail: transition.error,
-      });
-    },
-  );
-  const commitEvents = options.commitEvents ?? (typeof window === 'undefined' ? null : window);
-  const reconcileCommit = (observedPatch: SubsecondPatchDelivery | null = null): void => {
-    try {
-      watcher.checkNow(true);
-    } catch {
-      // Transition reporting already records rebuild/refresh failure. A committed patch must
-      // still release the next queued patch, which may contain the fix.
-    }
-    const patch = observedPatch ?? [...ledger.patches].reverse().find(candidate =>
-      candidate.renderRevision === ledger.lastRenderRevision
-      && candidate.commitAssociation === 'exact');
-    if (!patch || !commitEvents) return;
-    commitEvents.dispatchEvent(new CustomEvent(SUBSECOND_PATCH_READY_EVENT, {
-      detail: { patchIdentity: patch.identity },
-    }));
-  };
-  let commitNotificationQueued = false;
-  const onCommit = (): void => {
-    if (commitNotificationQueued) return;
-    commitNotificationQueued = true;
-    queueMicrotask(() => {
-      commitNotificationQueued = false;
-      reconcileCommit();
-    });
-  };
-  let stopCommitObserver = (): void => {};
-  let commitListenerAttached = false;
-  let released = false;
-  const release = (): void => {
-    if (released) return;
-    released = true;
-    let firstError: unknown = null;
-    const attempt = (dispose: () => void): void => {
-      try {
-        dispose();
-      } catch (error) {
-        firstError ??= error;
-      }
-    };
-    if (commitListenerAttached) attempt(() => {
-      commitEvents?.removeEventListener(SUBSECOND_COMMIT_EVENT, onCommit);
-    });
-    attempt(() => watcher.stop());
-    attempt(stopCommitObserver);
-    if (disconnectDevtools) attempt(disconnectDevtools);
-    if (firstError !== null) throw firstError;
-  };
-  const stop = () => {
-    try {
-      release();
-    } finally {
-      if (realm[RUNTIME_SLOT_KEY]?.stop === stop) delete realm[RUNTIME_SLOT_KEY];
-    }
-  };
-  try {
-    if (!watcher.start()) {
-      release();
-      return null;
-    }
-    stopCommitObserver = startCommitObserver(
-      capabilities,
-      ledger,
-      reconcileCommit,
-      options.commitObserverScheduler,
-    );
-    if (commitEvents) {
-      commitListenerAttached = true;
-      commitEvents.addEventListener(SUBSECOND_COMMIT_EVENT, onCommit);
-    }
-  } catch (error) {
-    try {
-      release();
-    } catch (cleanupError) {
-      throw new AggregateError([error, cleanupError], 'Subsecond runtime startup and cleanup failed');
-    }
-    throw error;
+  const watcher = new RenderCodeReloadWatcher(capabilities, onPatched, options.scheduler);
+  if (!watcher.start()) {
+    disconnectDevtools?.();
+    return null;
   }
-  realm[RUNTIME_SLOT_KEY] = {
-    implementation: DEVELOPMENT_RUNTIME_IMPLEMENTATION,
-    owner: DEVELOPMENT_RUNTIME_OWNER,
-    stop,
+
+  stopDevelopmentRenderRuntime = () => {
+    watcher.stop();
+    disconnectDevtools?.();
+    stopDevelopmentRenderRuntime = null;
   };
-  return stop;
+  return stopDevelopmentRenderRuntime;
 }
 
 /**
@@ -1327,9 +459,8 @@ export function connectSubsecondDevtools(
 
   const location = options.location ?? window.location;
   const createWebSocket = options.createWebSocket ?? (url => new WebSocket(url));
-  const scheduleTimeout = options.setTimeout
-    ?? ((callback, delay) => globalThis.setTimeout(callback, delay) as unknown as number);
-  const cancelTimeout = options.clearTimeout ?? (id => globalThis.clearTimeout(id));
+  const scheduleTimeout = options.setTimeout ?? ((callback, delay) => window.setTimeout(callback, delay));
+  const cancelTimeout = options.clearTimeout ?? (id => window.clearTimeout(id));
   // Node 기반 단위 테스트에서는 Vite가 주입하는 import.meta.env가 없으므로 기본 진단을 비활성화한다.
   const report = options.reportSignal ?? (typeof window === 'undefined' ? () => {} : reportToDevConsole);
   // Node 기반 단위 테스트는 소켓·타이머만 대체해도 되도록 전역 오류 대상은 브라우저에서만 기본 연결한다.
@@ -1337,123 +468,72 @@ export function connectSubsecondDevtools(
   // 연결이 버틴 시간만 재므로 단조 시계를 쓴다. Date.now() 는 시스템 시각 변경에 흔들린다.
   const now = options.now ?? (() => performance.now());
   const patchAccumulation = options.patchAccumulation ?? new SubsecondPatchAccumulation();
-  const patchReadyEvents = options.patchReadyEvents
-    ?? (typeof window === 'undefined' ? null : window);
-  const fullReload = options.fullReload ?? (typeof window === 'undefined' ? null : {
-    acknowledgedToken: () => window.sessionStorage.getItem(FULL_RELOAD_TOKEN_KEY),
-    acknowledge: (token: string | null) => {
-      if (token === null) window.sessionStorage.removeItem(FULL_RELOAD_TOKEN_KEY);
-      else window.sessionStorage.setItem(FULL_RELOAD_TOKEN_KEY, token);
-    },
-    reload: () => window.location.reload(),
-  });
+  const reload = options.reload ?? (() => window.location.reload());
+  const reportCommitTimeout = options.commitTimeout ?? (queued => console.error(
+    `[subsecond] patch commit timed out; requested dx full rebuild with ${queued} patch(es) queued`,
+  ));
   const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
   const url = `${protocol}//${location.host}/_dioxus?build_id=0`;
 
   let active = true;
   let socket: WebSocketConnection | null = null;
   let reconnectTimer: number | null = null;
-  let replayObservationTimer: number | null = null;
   let reconnectDelay = RECONNECT_MIN_MS;
-  let errorListenerAttached = false;
-  let rejectionListenerAttached = false;
-  let patchReadyListenerAttached = false;
-  let activeMessageHandler: ((event: MessageEvent) => void) | null = null;
-  const ledger = deliveryLedger();
-  const patchGate = new PatchCommitGate({
-    scheduleTimeout,
-    cancelTimeout,
-    now,
-    onTimeout: patch => {
-      if (!active) return;
-      const at = now();
-      const detail = `commit-not-observed-within-${PATCH_COMMIT_DEADLINE_MS}ms`;
-      ledger.lastFailure = `${patch.identity}: ${detail}`;
-      recordDeliveryEvent(ledger, {
-        at,
-        phase: 'patch-commit-timeout',
-        connectionSerial: patch.connectionSerial,
-        patchIdentity: patch.identity,
-        detail,
-      });
-      report({
-        kind: 'commit-timeout',
-        patchIdentity: patch.identity,
-        timeoutMs: PATCH_COMMIT_DEADLINE_MS,
-      });
-    },
-  });
-  const closeReconnectReplay = (connectionSerial: number, at: number): void => {
-    if (
-      ledger.reconnectReplay.connectionSerial !== connectionSerial
-      || (
-        ledger.reconnectReplay.status !== 'pending'
-        && ledger.reconnectReplay.status !== 'not-observed-by-deadline'
-      )
-    ) return;
-    ledger.reconnectReplay.status = 'closed';
-    ledger.reconnectReplay.observedAt = at;
-    recordDeliveryEvent(ledger, {
-      at,
-      phase: 'patch-replay-missed',
-      connectionSerial,
-      patchIdentity: ledger.reconnectReplay.expectedPatchIdentity,
-      detail: 'connection-closed',
-    });
+  let dispatchedPatches = 0;
+  let reloading = false;
+  let awaitingCommit = false;
+  let patchCommitTimer: number | null = null;
+  let rebuildRequested = false;
+  const queuedPatches: string[] = [];
+
+  const reloadPage = (): void => {
+    if (reloading) return;
+    reloading = true;
+    active = false;
+    if (patchCommitTimer !== null) cancelTimeout(patchCommitTimer);
+    patchCommitTimer = null;
+    reload();
   };
-  const recognizeReconnectReplay = (
-    identity: string,
-    connectionSerial: number,
-    receivedAt: number,
-  ): boolean => {
-    const replayStatus = ledger.reconnectReplay.status;
-    const replayed = identity === ledger.reconnectReplay.expectedPatchIdentity
-      && (replayStatus === 'pending' || replayStatus === 'not-observed-by-deadline')
-      && ledger.reconnectReplay.connectionSerial === connectionSerial;
-    if (!replayed) return false;
-    if (replayObservationTimer !== null) {
-      cancelTimeout(replayObservationTimer);
-      replayObservationTimer = null;
-    }
-    ledger.reconnectReplay.status = 'replayed';
-    ledger.reconnectReplay.observedAt = receivedAt;
-    recordDeliveryEvent(ledger, {
-      at: receivedAt,
-      phase: 'patch-replayed',
-      connectionSerial,
-      patchIdentity: identity,
-      detail: replayStatus === 'not-observed-by-deadline' ? 'late-replay' : undefined,
-    });
-    return true;
+  const sendFullRebuild = (): void => {
+    try { socket?.send(FULL_REBUILD_REQUEST); } catch {}
   };
-  const drainPatchQueue = (): void => {
-    patchGate.drain(activeMessageHandler);
+  const requestFullRebuild = (): void => {
+    rebuildRequested = true;
+    sendFullRebuild();
+    reportCommitTimeout(queuedPatches.length);
   };
-  const onPatchReady = (event: Event): void => {
-    const patchIdentity = (event as CustomEvent<{ patchIdentity?: unknown }>).detail?.patchIdentity;
-    if (typeof patchIdentity === 'string' && patchGate.commit(patchIdentity)) {
-      drainPatchQueue();
-    } else if (patchGate.awaitingIdentity === null && patchGate.canDispatch(ledger)) {
-      drainPatchQueue();
+
+  const isHotReload = (message: string): boolean => {
+    try {
+      return JSON.parse(message)?.HotReload != null;
+    } catch {
+      return false;
     }
   };
-  const retireSocket = (target: WebSocketConnection | null): unknown[] => {
-    const errors: unknown[] = [];
-    if (target && socket === target) socket = null;
-    if (!target) return errors;
-    for (const retire of [
-      () => { target.onmessage = null; },
-      () => { target.onopen = null; },
-      () => { target.onclose = null; },
-      () => target.close(),
-    ]) {
-      try {
-        retire();
-      } catch (error) {
-        errors.push(error);
-      }
+  const dispatch = (message: string): boolean => {
+    const outcome = applyMessage(message);
+    const dispatched = isPatchDispatchedOutcome(outcome);
+    if (dispatched) {
+      awaitingCommit = true;
+      patchCommitTimer = scheduleTimeout(() => {
+        patchCommitTimer = null;
+        if (active && awaitingCommit) requestFullRebuild();
+      }, PATCH_COMMIT_TIMEOUT_MS);
+      dispatchedPatches += 1;
+      patchAccumulation.recordApplied();
     }
-    return errors;
+    report({ kind: 'outcome', code: outcome });
+    if (!awaitingCommit && queuedPatches.length > 0) {
+      dispatch(queuedPatches.shift()!);
+    }
+    return dispatched;
+  };
+  const releaseCommittedPatch = (): void => {
+    if (!active || !awaitingCommit || rebuildRequested) return;
+    if (patchCommitTimer !== null) cancelTimeout(patchCommitTimer);
+    patchCommitTimer = null;
+    awaitingCommit = false;
+    if (queuedPatches.length > 0) dispatch(queuedPatches.shift()!);
   };
 
   // wasm 의 apply_patch 실패는 반환값이 아니라 panic → trap 으로만 나간다. trap 은 microtask
@@ -1461,369 +541,42 @@ export function connectSubsecondDevtools(
   // 되므로 양쪽을 모두 듣는다. 어느 오류가 패치 탓인지는 알 수 없으니 단정하지 않고,
   // "패치를 넘긴 뒤였다" 는 사실과 다음에 볼 곳만 말한다.
   const onGlobalFailure = (event: Event): void => {
-    if (ledger.dispatchedPatches === 0 && pendingPatches(ledger).length === 0) return;
-    const reason = readFailureReason(event);
-    ledger.lastFailure = `${event.type}: ${reason}`;
-    recordDeliveryEvent(ledger, {
-      at: now(),
-      phase: 'global-failure',
-      connectionSerial: ledger.connectionSerial,
-      patchIdentity: null,
-      detail: `${event.type}: ${reason}`,
-      association: 'possible',
-    });
+    if (dispatchedPatches === 0) return;
     report({
       kind: 'global-failure',
       eventType: event.type,
-      reason,
-      dispatchedPatches: ledger.dispatchedPatches,
+      reason: readFailureReason(event),
+      dispatchedPatches,
     });
   };
+  errorEvents?.addEventListener('error', onGlobalFailure);
+  errorEvents?.addEventListener('unhandledrejection', onGlobalFailure);
+  errorEvents?.addEventListener(SUBSECOND_COMMIT_EVENT, releaseCommittedPatch);
   let openedAt: number | null = null;
-  const retireConnection = (
-    target: WebSocketConnection | null,
-    connectionSerial: number,
-    detail: string,
-  ): unknown[] => {
-    const errors: unknown[] = [];
-    openedAt = null;
-    if (replayObservationTimer !== null) {
-      const timer = replayObservationTimer;
-      replayObservationTimer = null;
-      try {
-        cancelTimeout(timer);
-      } catch (error) {
-        errors.push(error);
-      }
-    }
-    try {
-      closeReconnectReplay(connectionSerial, now());
-    } catch (error) {
-      errors.push(error);
-    }
-    errors.push(...retireSocket(target));
-    ledger.connected = false;
-    recordDeliveryEvent(ledger, {
-      at: now(),
-      phase: 'socket-close',
-      connectionSerial,
-      patchIdentity: ledger.lastDispatchedPatchIdentity,
-      detail,
-    });
-    return errors;
-  };
 
   const connect = (): void => {
     if (!active) return;
-    ledger.connectionSerial += 1;
-    const connectionSerial = ledger.connectionSerial;
-    recordDeliveryEvent(ledger, {
-      at: now(),
-      phase: 'socket-connect',
-      connectionSerial,
-      patchIdentity: ledger.lastDispatchedPatchIdentity,
-    });
     socket = createWebSocket(url);
-    const onMessage = (event: MessageEvent): void => {
-      const queued = patchGate.receipt;
-      if (!active || (!queued && ledger.connectionSerial !== connectionSerial)) return;
-      if (typeof event.data !== 'string') return;
-      const identity = patchIdentity(event.data);
-      const receivedAt = queued?.receivedAt ?? now();
-      const messageConnectionSerial = queued?.connectionSerial ?? connectionSerial;
-      const nextSequence = identity === null ? null : patchSequence(identity);
-      const expectedReplaySequence = ledger.reconnectReplay.expectedPatchIdentity === null
-        ? null
-        : patchSequence(ledger.reconnectReplay.expectedPatchIdentity);
-      if (!queued) {
-        ledger.receivedMessages += 1;
-        recordDeliveryEvent(ledger, {
-          at: receivedAt,
-          phase: 'message-received',
-          connectionSerial: messageConnectionSerial,
-          patchIdentity: identity,
-        });
-      }
-      const replayed = queued?.replayed
-        ?? (identity !== null
-          && recognizeReconnectReplay(identity, messageConnectionSerial, receivedAt));
-      if (
-        identity !== null
-        && !replayed
-        && !(
-          nextSequence !== null
-          && expectedReplaySequence !== null
-          && nextSequence < expectedReplaySequence
-        )
-        && ledger.reconnectReplay.connectionSerial === messageConnectionSerial
-        && (
-          ledger.reconnectReplay.status === 'pending'
-          || ledger.reconnectReplay.status === 'not-observed-by-deadline'
-        )
-      ) {
-        if (replayObservationTimer !== null) {
-          cancelTimeout(replayObservationTimer);
-          replayObservationTimer = null;
-        }
-        ledger.reconnectReplay.status = 'superseded';
-        ledger.reconnectReplay.observedAt = receivedAt;
-        recordDeliveryEvent(ledger, {
-          at: receivedAt,
-          phase: 'patch-replay-missed',
-          connectionSerial: messageConnectionSerial,
-          patchIdentity: ledger.reconnectReplay.expectedPatchIdentity,
-          detail: `superseded-by:${identity}`,
-        });
-      }
-      if (identity !== null && patchGate.blocked) {
-        ledger.ignoredPatchMessages += 1;
-        recordDeliveryEvent(ledger, {
-          at: receivedAt,
-          phase: 'patch-ignored',
-          connectionSerial: messageConnectionSerial,
-          patchIdentity: identity,
-          detail: 'prior-patch-did-not-commit',
-        });
+    socket.onmessage = event => {
+      if (!active || typeof event.data !== 'string') return;
+      if (event.data === '"FullReloadCommand"') {
+        reloadPage();
         return;
       }
-      if (
-        identity !== null
-        && !queued
-        && patchGate.shouldQueue(ledger)
-      ) {
-        patchGate.enqueue({
-          message: event.data,
-          receivedAt,
-          connectionSerial: messageConnectionSerial,
-          replayed,
-        });
-        return;
+      if (awaitingCommit && isHotReload(event.data)) {
+        queuedPatches.push(event.data);
+      } else {
+        dispatch(event.data);
       }
-      const reloadToken = fullReloadToken(event.data);
-      if (reloadToken !== null) {
-        patchGate.reset();
-        if (replayObservationTimer !== null) {
-          cancelTimeout(replayObservationTimer);
-          replayObservationTimer = null;
-        }
-        if (
-          ledger.reconnectReplay.connectionSerial === messageConnectionSerial
-          && (
-            ledger.reconnectReplay.status === 'pending'
-            || ledger.reconnectReplay.status === 'not-observed-by-deadline'
-          )
-        ) {
-          ledger.reconnectReplay.status = 'superseded';
-          ledger.reconnectReplay.observedAt = receivedAt;
-        }
-        let detail = `token=${reloadToken}:acknowledged`;
-        try {
-          if (!fullReload) throw new Error('full reload client unavailable');
-          const previousToken = fullReload.acknowledgedToken();
-          if (previousToken !== reloadToken) {
-            detail = `token=${reloadToken}:reload`;
-            fullReload.acknowledge(reloadToken);
-            active = false;
-            const reloadSocket = socket;
-            if (reloadSocket) reloadSocket.onmessage = null;
-            try {
-              fullReload.reload();
-            } catch (reloadError) {
-              const recoveryErrors: unknown[] = [reloadError];
-              let rollbackSucceeded = true;
-              try {
-                fullReload.acknowledge(previousToken);
-              } catch (error) {
-                rollbackSucceeded = false;
-                recoveryErrors.push(error);
-              }
-              recoveryErrors.push(...retireConnection(
-                reloadSocket,
-                messageConnectionSerial,
-                'full-reload-recovery',
-              ));
-              if (rollbackSucceeded) {
-                active = true;
-                try {
-                  connect();
-                } catch (error) {
-                  recoveryErrors.push(error);
-                  try {
-                    disconnect();
-                  } catch (disconnectError) {
-                    recoveryErrors.push(disconnectError);
-                  }
-                }
-              } else {
-                try {
-                  disconnect();
-                } catch (error) {
-                  recoveryErrors.push(error);
-                }
-              }
-              const recoveryError = new AggregateError(
-                recoveryErrors,
-                'full reload failed; connector restarted',
-              );
-              ledger.lastFailure = `full-reload: ${recoveryError.message}`;
-              detail = `token=${reloadToken}:failed:${recoveryError.message}`;
-            }
-          }
-        } catch (error) {
-          const failures = [error];
-          try {
-            disconnect();
-          } catch (disconnectError) {
-            failures.push(disconnectError);
-          }
-          const failure = failures.length === 1
-            ? error
-            : new AggregateError(failures, 'full reload fence and connector retirement failed');
-          const reason = failure instanceof Error ? `${failure.name}: ${failure.message}` : String(failure);
-          ledger.lastFailure = `full-reload: ${reason}`;
-          detail = `token=${reloadToken}:failed:${reason}`;
-        }
-        recordDeliveryEvent(ledger, {
-          at: receivedAt,
-          phase: 'full-reload-required',
-          connectionSerial: messageConnectionSerial,
-          patchIdentity: null,
-          detail,
-        });
-        return;
-      }
-      const previousSequence = ledger.lastReceivedPatchIdentity === null
-        ? null
-        : patchSequence(ledger.lastReceivedPatchIdentity);
-      const previousDelivery = identity === null
-        ? null
-        : [...ledger.patches].reverse().find(candidate => candidate.identity === identity) ?? null;
-      const retryableIdentity = previousDelivery?.dispatch.status === 'failed'
-        || previousDelivery?.commit.status === 'failed';
-      if (identity !== null && (
-        (identity === ledger.lastReceivedPatchIdentity && !retryableIdentity)
-        || (nextSequence !== null && previousSequence !== null && nextSequence < previousSequence)
-      )) {
-        ledger.ignoredPatchMessages += 1;
-        recordDeliveryEvent(ledger, {
-          at: receivedAt,
-          phase: 'patch-ignored',
-          connectionSerial: messageConnectionSerial,
-          patchIdentity: identity,
-          detail: replayed ? 'replayed-current-patch' : 'duplicate-or-out-of-order',
-        });
-        queueMicrotask(drainPatchQueue);
-        return;
-      }
-      if (identity !== null) ledger.lastReceivedPatchIdentity = identity;
-      const patch = identity === null
-        ? null
-        : rememberPatchDelivery(ledger, identity, messageConnectionSerial, receivedAt);
-      let outcome: string;
-      try {
-        outcome = applyMessage(event.data);
-      } catch (error) {
-        const reason = error instanceof Error ? `${error.name}: ${error.message}` : String(error);
-        if (patch) {
-          patchGate.block();
-          patch.failure = reason;
-          patch.dispatch = { status: 'failed', at: now(), evidence: reason };
-          patch.fetch = { status: 'not-started', at: null, evidence: 'dispatch-threw' };
-          patch.instantiate = { status: 'not-started', at: null, evidence: 'dispatch-threw' };
-          patch.commit = { status: 'not-started', at: null, evidence: 'dispatch-threw' };
-          patch.commitAssociation = 'none';
-        }
-        ledger.lastFailure = reason;
-        recordDeliveryEvent(ledger, {
-          at: now(),
-          phase: 'dispatch-outcome',
-          connectionSerial: messageConnectionSerial,
-          patchIdentity: identity,
-          outcome: 'threw',
-          detail: reason,
-        });
-        throw error;
-      }
-      ledger.lastOutcome = outcome;
-      if (patch) {
-        patch.outcome = outcome;
-        patch.dispatch = {
-          status: isPatchDispatchedOutcome(outcome) ? 'complete' : 'failed',
-          at: now(),
-          evidence: outcome,
-        };
-        if (!isPatchDispatchedOutcome(outcome)) {
-          patchGate.block();
-          patch.fetch = { status: 'not-started', at: null, evidence: 'dispatch-not-accepted' };
-          patch.instantiate = { status: 'not-started', at: null, evidence: 'dispatch-not-accepted' };
-          patch.commit = { status: 'not-started', at: null, evidence: outcome };
-          patch.commitAssociation = 'none';
-        }
-      }
-      recordDeliveryEvent(ledger, {
-        at: now(),
-        phase: 'dispatch-outcome',
-        connectionSerial: messageConnectionSerial,
-        patchIdentity: identity,
-        outcome,
-      });
-      if (isPatchDispatchedOutcome(outcome)) {
-        if (patch) patchGate.adopt(patch);
-        ledger.dispatchedPatches += 1;
-        ledger.lastDispatchedPatchIdentity = identity;
-        patchAccumulation.recordApplied(ledger.dispatchedPatches);
-      }
-      report({ kind: 'outcome', code: outcome });
     };
-    activeMessageHandler = onMessage;
-    socket.onmessage = onMessage;
     socket.onopen = () => {
-      if (!active || ledger.connectionSerial !== connectionSerial) return;
-      patchGate.open();
       openedAt = now();
-      ledger.connected = true;
-      const expectedPatchIdentity = ledger.lastReceivedPatchIdentity;
-      ledger.reconnectReplay = {
-        connectionSerial,
-        expectedPatchIdentity,
-        status: expectedPatchIdentity === null ? 'not-applicable' : 'pending',
-        observedAt: null,
-      };
-      recordDeliveryEvent(ledger, {
-        at: openedAt,
-        phase: 'socket-open',
-        connectionSerial,
-        patchIdentity: expectedPatchIdentity,
-      });
-      if (expectedPatchIdentity !== null) {
-        if (replayObservationTimer !== null) cancelTimeout(replayObservationTimer);
-        replayObservationTimer = scheduleTimeout(() => {
-          replayObservationTimer = null;
-          if (
-            ledger.reconnectReplay.connectionSerial !== connectionSerial
-            || ledger.reconnectReplay.status !== 'pending'
-          ) return;
-          const observedAt = now();
-          ledger.reconnectReplay.status = 'not-observed-by-deadline';
-          ledger.reconnectReplay.observedAt = observedAt;
-          recordDeliveryEvent(ledger, {
-            at: observedAt,
-            phase: 'patch-replay-missed',
-            connectionSerial,
-            patchIdentity: expectedPatchIdentity,
-          });
-        }, REPLAY_OBSERVATION_MS);
-      }
+      if (rebuildRequested) sendFullRebuild();
     };
     socket.onclose = event => {
-      if (!active || ledger.connectionSerial !== connectionSerial) return;
       // openedAt 은 언제나 "지금 열려 있는 소켓"만 가리킨다 — 재연결하지 않는 경로에서도 지운다.
       const lasted = openedAt === null ? 0 : now() - openedAt;
       openedAt = null;
-      const retirementErrors = retireConnection(socket, connectionSerial, `code=${event.code}`);
-      if (retirementErrors.length > 0) {
-        ledger.lastFailure = `socket-close cleanup: ${retirementErrors.length} error(s)`;
-      }
       if (!active) return;
       // 살아 있었던 연결이 끊긴 것이면 백오프를 되돌린다. 되돌리지 않으면 dx serve 를 껐다 켠
       // 뒤에도 끊김마다 최대 4초를 기다려, 남은 세션 내내 첫 패치가 그만큼 늦는다.
@@ -1838,65 +591,22 @@ export function connectSubsecondDevtools(
     };
   };
 
-  let disconnected = false;
-  const disconnect = (): void => {
-    if (disconnected) return;
-    disconnected = true;
+  connect();
+
+  return () => {
     active = false;
-    let firstError: unknown = null;
-    const attempt = (dispose: () => void): void => {
-      try {
-        dispose();
-      } catch (error) {
-        firstError ??= error;
-      }
-    };
-    if (errorListenerAttached) {
-      attempt(() => errorEvents?.removeEventListener('error', onGlobalFailure));
-    }
-    if (rejectionListenerAttached) {
-      attempt(() => errorEvents?.removeEventListener('unhandledrejection', onGlobalFailure));
-    }
-    if (patchReadyListenerAttached) {
-      attempt(() => patchReadyEvents?.removeEventListener(SUBSECOND_PATCH_READY_EVENT, onPatchReady));
-    }
-    attempt(() => patchGate.close());
-    activeMessageHandler = null;
+    errorEvents?.removeEventListener('error', onGlobalFailure);
+    errorEvents?.removeEventListener('unhandledrejection', onGlobalFailure);
+    errorEvents?.removeEventListener(SUBSECOND_COMMIT_EVENT, releaseCommittedPatch);
     if (reconnectTimer !== null) {
-      const timer = reconnectTimer;
+      cancelTimeout(reconnectTimer);
       reconnectTimer = null;
-      attempt(() => cancelTimeout(timer));
     }
-    attempt(() => {
-      const errors = retireConnection(socket, ledger.connectionSerial, 'disconnect');
-      if (errors.length > 0) throw new AggregateError(errors, 'connection retirement failed');
-    });
-    if (firstError !== null) throw firstError;
+    if (patchCommitTimer !== null) {
+      cancelTimeout(patchCommitTimer);
+      patchCommitTimer = null;
+    }
+    socket?.close();
+    socket = null;
   };
-
-  try {
-    if (errorEvents) {
-      errorListenerAttached = true;
-      errorEvents.addEventListener('error', onGlobalFailure);
-      rejectionListenerAttached = true;
-      errorEvents.addEventListener('unhandledrejection', onGlobalFailure);
-    }
-    if (patchReadyEvents) {
-      patchReadyListenerAttached = true;
-      patchReadyEvents.addEventListener(SUBSECOND_PATCH_READY_EVENT, onPatchReady);
-    }
-    const inheritedPending = pendingPatches(ledger);
-    if (inheritedPending.length === 1) patchGate.adopt(inheritedPending[0]);
-    connect();
-  } catch (error) {
-    ledger.lastFailure = `websocket-connect: ${error instanceof Error ? error.message : String(error)}`;
-    try {
-      disconnect();
-    } catch (cleanupError) {
-      ledger.lastFailure += `; cleanup: ${cleanupError instanceof Error ? cleanupError.message : String(cleanupError)}`;
-    }
-    return null;
-  }
-
-  return disconnect;
 }

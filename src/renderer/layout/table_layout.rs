@@ -1997,91 +1997,6 @@ struct HorizontalCellVars {
     split_terminal: bool,
 }
 
-/// Stable Subsecond call shape for whole-table layout.
-///
-/// The existing method has more inputs than the WASM jump adapter supports;
-/// this value groups them without changing callers or moving ownership.
-struct LayoutTableInput<'a> {
-    tree: &'a mut PageLayoutContext,
-    col_node: &'a mut RenderNode,
-    table: &'a crate::model::table::Table,
-    section_index: usize,
-    styles: &'a ResolvedStyleSet,
-    outline_numbering_id: u16,
-    col_area: &'a LayoutRect,
-    y_start: f64,
-    bin_data_content: &'a [BinDataContent],
-    measured_table: Option<&'a MeasuredTable>,
-    depth: usize,
-    table_meta: Option<(usize, usize)>,
-    host_alignment: Alignment,
-    enclosing_cell_ctx: Option<CellContext>,
-    host_margin_left: f64,
-    host_margin_right: f64,
-    inline_x_override: Option<f64>,
-    nested_split: Option<&'a NestedTableSplit>,
-    para_y: Option<f64>,
-    outer_host_stored_vpos_hu: Option<i32>,
-    allow_para_top_bleed: bool,
-    clamp_header_negative_para_offset: bool,
-    physical_outer_box_paint_inset: bool,
-}
-
-struct LayoutHorizontalCellParagraphsInput<'a> {
-    tree: &'a mut PageLayoutContext,
-    table_node: &'a mut RenderNode,
-    cell_node: &'a mut RenderNode,
-    cell: &'a crate::model::table::Cell,
-    composed_paras: &'a [ComposedParagraph],
-    table: &'a crate::model::table::Table,
-    styles: &'a ResolvedStyleSet,
-    bin_data_content: &'a [BinDataContent],
-    table_meta: Option<(usize, usize)>,
-    enclosing_cell_ctx: &'a Option<CellContext>,
-    row_filter: Option<(usize, usize)>,
-    row_y: &'a [f64],
-    effective_valign: VerticalAlign,
-    vars: HorizontalCellVars,
-}
-
-struct LayoutTableCellsInput<'a> {
-    tree: &'a mut PageLayoutContext,
-    table_node: &'a mut RenderNode,
-    table: &'a crate::model::table::Table,
-    section_index: usize,
-    styles: &'a ResolvedStyleSet,
-    outline_numbering_id: u16,
-    col_area: &'a LayoutRect,
-    bin_data_content: &'a [BinDataContent],
-    depth: usize,
-    table_meta: Option<(usize, usize)>,
-    outer_host_stored_vpos_hu: Option<i32>,
-    enclosing_cell_ctx: Option<CellContext>,
-    row_col_x: &'a [Vec<f64>],
-    row_y: &'a [f64],
-    independent_col_row_y: Option<&'a [Vec<f64>]>,
-    col_count: usize,
-    row_count: usize,
-    table_x: f64,
-    table_y: f64,
-    h_edges: &'a mut Vec<Vec<Option<BorderLine>>>,
-    v_edges: &'a mut Vec<Vec<Option<BorderLine>>>,
-    row_filter: Option<(usize, usize)>,
-    row_y_shift: f64,
-    split_y_offset: f64,
-    scalar_single_row_continuation: bool,
-    single_row_continuation_offset: Option<f64>,
-    single_row_fragment: bool,
-    single_row_fragment_content_offset: Option<f64>,
-    force_source_start_cut: bool,
-    replay_terminal_boundary_unit: bool,
-    split_terminal: bool,
-    clamp_header_negative_para_offset: bool,
-    inline_table_flow_y_shift: f64,
-    nested_non_tac_cell_margin_compat: bool,
-    cellzone_diagonal_origin_covered: &'a [Vec<bool>],
-}
-
 impl LayoutEngine {
     /// 셀 안 비-TAC 자리차지 개체가 표 흐름에 요구하는 세로 범위.
     ///
@@ -2382,63 +2297,6 @@ impl LayoutEngine {
         clamp_header_negative_para_offset: bool,
         physical_outer_box_paint_inset: bool,
     ) -> f64 {
-        crate::hot_call!(
-            Self::layout_table_hot_impl,
-            self,
-            LayoutTableInput {
-                tree,
-                col_node,
-                table,
-                section_index,
-                styles,
-                outline_numbering_id,
-                col_area,
-                y_start,
-                bin_data_content,
-                measured_table,
-                depth,
-                table_meta,
-                host_alignment,
-                enclosing_cell_ctx,
-                host_margin_left,
-                host_margin_right,
-                inline_x_override,
-                nested_split,
-                para_y,
-                outer_host_stored_vpos_hu,
-                allow_para_top_bleed,
-                clamp_header_negative_para_offset,
-                physical_outer_box_paint_inset,
-            },
-        )
-    }
-
-    fn layout_table_hot_impl(&self, input: LayoutTableInput<'_>) -> f64 {
-        let LayoutTableInput {
-            tree,
-            col_node,
-            table,
-            section_index,
-            styles,
-            outline_numbering_id,
-            col_area,
-            y_start,
-            bin_data_content,
-            measured_table,
-            depth,
-            table_meta,
-            host_alignment,
-            enclosing_cell_ctx,
-            host_margin_left,
-            host_margin_right,
-            inline_x_override,
-            nested_split,
-            para_y,
-            outer_host_stored_vpos_hu,
-            allow_para_top_bleed,
-            clamp_header_negative_para_offset,
-            physical_outer_box_paint_inset,
-        } = input;
         if table.cells.is_empty() {
             if depth == 0 {
                 return y_start;
@@ -3399,14 +3257,6 @@ impl LayoutEngine {
         table: &crate::model::table::Table,
         col_count: usize,
     ) -> Vec<f64> {
-        crate::hot_call!(Self::resolve_column_widths_hot_impl, self, table, col_count)
-    }
-
-    fn resolve_column_widths_hot_impl(
-        &self,
-        table: &crate::model::table::Table,
-        col_count: usize,
-    ) -> Vec<f64> {
         let width_scale = self.render_table_width_scale(table);
         // 1단계: col_span==1인 셀에서 개별 열 폭 추출
         let base_grid_outlier_rows = table.base_grid_outlier_rows();
@@ -3528,27 +3378,6 @@ impl LayoutEngine {
         styles: &ResolvedStyleSet,
         relaxed_pad: bool,
     ) -> Vec<f64> {
-        crate::hot_call!(
-            Self::resolve_row_heights_hot_impl,
-            self,
-            table,
-            col_count,
-            row_count,
-            measured_table,
-            styles,
-            relaxed_pad,
-        )
-    }
-
-    fn resolve_row_heights_hot_impl(
-        &self,
-        table: &crate::model::table::Table,
-        col_count: usize,
-        row_count: usize,
-        measured_table: Option<&MeasuredTable>,
-        styles: &ResolvedStyleSet,
-        relaxed_pad: bool,
-    ) -> Vec<f64> {
         self.resolve_row_heights_with_common_fit(
             table,
             col_count,
@@ -3561,27 +3390,6 @@ impl LayoutEngine {
     }
 
     fn resolve_row_heights_for_content(
-        &self,
-        table: &crate::model::table::Table,
-        col_count: usize,
-        row_count: usize,
-        measured_table: Option<&MeasuredTable>,
-        styles: &ResolvedStyleSet,
-        relaxed_pad: bool,
-    ) -> Vec<f64> {
-        crate::hot_call!(
-            Self::resolve_row_heights_for_content_hot_impl,
-            self,
-            table,
-            col_count,
-            row_count,
-            measured_table,
-            styles,
-            relaxed_pad,
-        )
-    }
-
-    fn resolve_row_heights_for_content_hot_impl(
         &self,
         table: &crate::model::table::Table,
         col_count: usize,
@@ -4247,14 +4055,6 @@ impl LayoutEngine {
         cell: &crate::model::table::Cell,
         table: &crate::model::table::Table,
     ) -> (f64, f64, f64, f64) {
-        crate::hot_call!(Self::resolve_cell_padding_hot_impl, self, cell, table)
-    }
-
-    fn resolve_cell_padding_hot_impl(
-        &self,
-        cell: &crate::model::table::Cell,
-        table: &crate::model::table::Table,
-    ) -> (f64, f64, f64, f64) {
         self.resolve_cell_padding_for_context(cell, table, false)
     }
 
@@ -4290,21 +4090,6 @@ impl LayoutEngine {
     }
 
     fn resolve_cell_padding_for_context(
-        &self,
-        cell: &crate::model::table::Cell,
-        table: &crate::model::table::Table,
-        allow_saved_small_cell_margin: bool,
-    ) -> (f64, f64, f64, f64) {
-        crate::hot_call!(
-            Self::resolve_cell_padding_for_context_hot_impl,
-            self,
-            cell,
-            table,
-            allow_saved_small_cell_margin,
-        )
-    }
-
-    fn resolve_cell_padding_for_context_hot_impl(
         &self,
         cell: &crate::model::table::Cell,
         table: &crate::model::table::Table,
@@ -4829,48 +4614,6 @@ impl LayoutEngine {
         effective_valign: VerticalAlign,
         v: HorizontalCellVars,
     ) {
-        crate::hot_call!(
-            Self::layout_horizontal_cell_paragraphs_hot_impl,
-            self,
-            LayoutHorizontalCellParagraphsInput {
-                tree,
-                table_node,
-                cell_node,
-                cell,
-                composed_paras,
-                table,
-                styles,
-                bin_data_content,
-                table_meta,
-                enclosing_cell_ctx,
-                row_filter,
-                row_y,
-                effective_valign,
-                vars: v,
-            },
-        )
-    }
-
-    fn layout_horizontal_cell_paragraphs_hot_impl(
-        &self,
-        input: LayoutHorizontalCellParagraphsInput<'_>,
-    ) {
-        let LayoutHorizontalCellParagraphsInput {
-            tree,
-            table_node,
-            cell_node,
-            cell,
-            composed_paras,
-            table,
-            styles,
-            bin_data_content,
-            table_meta,
-            enclosing_cell_ctx,
-            row_filter,
-            row_y,
-            effective_valign,
-            vars: v,
-        } = input;
         let HorizontalCellVars {
             cell_idx,
             r,
@@ -6801,87 +6544,6 @@ impl LayoutEngine {
         nested_non_tac_cell_margin_compat: bool,
         cellzone_diagonal_origin_covered: &[Vec<bool>],
     ) {
-        crate::hot_call!(
-            Self::layout_table_cells_hot_impl,
-            self,
-            LayoutTableCellsInput {
-                tree,
-                table_node,
-                table,
-                section_index,
-                styles,
-                outline_numbering_id,
-                col_area,
-                bin_data_content,
-                depth,
-                table_meta,
-                outer_host_stored_vpos_hu,
-                enclosing_cell_ctx,
-                row_col_x,
-                row_y,
-                independent_col_row_y,
-                col_count,
-                row_count,
-                table_x,
-                table_y,
-                h_edges,
-                v_edges,
-                row_filter,
-                row_y_shift,
-                split_y_offset,
-                scalar_single_row_continuation,
-                single_row_continuation_offset,
-                single_row_fragment,
-                single_row_fragment_content_offset,
-                force_source_start_cut,
-                replay_terminal_boundary_unit,
-                split_terminal,
-                clamp_header_negative_para_offset,
-                inline_table_flow_y_shift,
-                nested_non_tac_cell_margin_compat,
-                cellzone_diagonal_origin_covered,
-            },
-        )
-    }
-
-    fn layout_table_cells_hot_impl(&self, input: LayoutTableCellsInput<'_>) {
-        let LayoutTableCellsInput {
-            tree,
-            table_node,
-            table,
-            section_index,
-            styles,
-            outline_numbering_id,
-            col_area,
-            bin_data_content,
-            depth,
-            table_meta,
-            outer_host_stored_vpos_hu,
-            enclosing_cell_ctx,
-            row_col_x,
-            row_y,
-            independent_col_row_y,
-            col_count,
-            row_count,
-            table_x,
-            table_y,
-            h_edges,
-            v_edges,
-            row_filter,
-            row_y_shift,
-            split_y_offset,
-            scalar_single_row_continuation,
-            single_row_continuation_offset,
-            single_row_fragment,
-            single_row_fragment_content_offset,
-            force_source_start_cut,
-            replay_terminal_boundary_unit,
-            split_terminal,
-            clamp_header_negative_para_offset,
-            inline_table_flow_y_shift,
-            nested_non_tac_cell_margin_compat,
-            cellzone_diagonal_origin_covered,
-        } = input;
         let mut independent_border_nodes: Vec<RenderNode> = Vec::new();
         for (cell_idx, cell) in table.cells.iter().enumerate() {
             let c = cell.col as usize;
@@ -8683,15 +8345,6 @@ impl LayoutEngine {
         table: &crate::model::table::Table,
         styles: &ResolvedStyleSet,
     ) -> std::sync::Arc<Vec<CellUnit>> {
-        crate::hot_call!(Self::cell_units_hot_impl, self, cell, table, styles)
-    }
-
-    fn cell_units_hot_impl(
-        &self,
-        cell: &crate::model::table::Cell,
-        table: &crate::model::table::Table,
-        styles: &ResolvedStyleSet,
-    ) -> std::sync::Arc<Vec<CellUnit>> {
         let key = cell as *const crate::model::table::Cell as usize;
         if let Some(cached) = self.cell_units_cache.borrow().get(&key) {
             if issue2424_profile_enabled() {
@@ -8929,21 +8582,6 @@ impl LayoutEngine {
     }
 
     fn cell_units_uncached(
-        &self,
-        cell: &crate::model::table::Cell,
-        table: &crate::model::table::Table,
-        styles: &ResolvedStyleSet,
-    ) -> Vec<CellUnit> {
-        crate::hot_call!(
-            Self::cell_units_uncached_hot_impl,
-            self,
-            cell,
-            table,
-            styles
-        )
-    }
-
-    fn cell_units_uncached_hot_impl(
         &self,
         cell: &crate::model::table::Cell,
         table: &crate::model::table::Table,
@@ -11508,25 +11146,6 @@ impl LayoutEngine {
         avail_height: f64,
         styles: &ResolvedStyleSet,
     ) -> RowCutResult {
-        crate::hot_call!(
-            Self::advance_row_cut_hot_impl,
-            self,
-            table,
-            row,
-            start_cut,
-            avail_height,
-            styles,
-        )
-    }
-
-    fn advance_row_cut_hot_impl(
-        &self,
-        table: &crate::model::table::Table,
-        row: usize,
-        start_cut: &[usize],
-        avail_height: f64,
-        styles: &ResolvedStyleSet,
-    ) -> RowCutResult {
         let issue2424_started = issue2424_profile_enabled().then(std::time::Instant::now);
         let result = self.advance_row_cut_inner(table, row, start_cut, avail_height, styles);
         if let Some(started) = issue2424_started {
@@ -11971,25 +11590,6 @@ impl LayoutEngine {
         avail_height: f64,
         styles: &ResolvedStyleSet,
     ) -> RowCutResult {
-        crate::hot_call!(
-            Self::advance_row_cut_inner_hot_impl,
-            self,
-            table,
-            row,
-            start_cut,
-            avail_height,
-            styles,
-        )
-    }
-
-    fn advance_row_cut_inner_hot_impl(
-        &self,
-        table: &crate::model::table::Table,
-        row: usize,
-        start_cut: &[usize],
-        avail_height: f64,
-        styles: &ResolvedStyleSet,
-    ) -> RowCutResult {
         let mut row_cells: Vec<&crate::model::table::Cell> = table
             .cells
             .iter()
@@ -12365,27 +11965,6 @@ impl LayoutEngine {
         avail_height: f64,
         styles: &ResolvedStyleSet,
     ) -> RowCutResult {
-        crate::hot_call!(
-            Self::advance_row_block_cut_hot_impl,
-            self,
-            table,
-            b_start,
-            b_end,
-            start_cut,
-            avail_height,
-            styles,
-        )
-    }
-
-    fn advance_row_block_cut_hot_impl(
-        &self,
-        table: &crate::model::table::Table,
-        b_start: usize,
-        b_end: usize,
-        start_cut: &[usize],
-        avail_height: f64,
-        styles: &ResolvedStyleSet,
-    ) -> RowCutResult {
         let mut cells = Self::row_block_cells(table, b_start, b_end);
         // 안정 순서: (row, col) 오름차순.
         cells.sort_by_key(|c| (c.row, c.col));
@@ -12583,29 +12162,6 @@ impl LayoutEngine {
     /// 이 함수는 행별 top offset을 빼고 남은 예산으로 셀을 전진시켜 같은 블록 안의
     /// 아래 행 내용이 한컴처럼 다음 조각에 남도록 한다.
     pub(crate) fn advance_row_block_cut_with_row_offsets(
-        &self,
-        table: &crate::model::table::Table,
-        b_start: usize,
-        b_end: usize,
-        start_cut: &[usize],
-        avail_height: f64,
-        row_offsets: &[f64],
-        styles: &ResolvedStyleSet,
-    ) -> RowCutResult {
-        crate::hot_call!(
-            Self::advance_row_block_cut_with_row_offsets_hot_impl,
-            self,
-            table,
-            b_start,
-            b_end,
-            start_cut,
-            avail_height,
-            row_offsets,
-            styles,
-        )
-    }
-
-    fn advance_row_block_cut_with_row_offsets_hot_impl(
         &self,
         table: &crate::model::table::Table,
         b_start: usize,
