@@ -75,6 +75,11 @@ rank 1 disposition은 `no-change`다. runtime name miss는 실제지만 이를 `
 없고 portable supply·paint identity도 qualification되지 않았다. 제품 alias·metric·fallback 변경과
 W8-R1-Q3에는 진행하지 않는다.
 
+2026-08-26 `upstream/devel@ee7e8a6ed` 통합 뒤 변경된 `text_measurement`와 새 네이티브·Docker WASM
+산출물을 입력으로 Q1·Q2를 다시 실행했다. Q1은 각 형식 1,556건의 native/WASM byte parity와
+`layout-name` 경계를 유지했고, Q2는 두 advance delta와 fixed-frame crossing을 모두 0으로 유지했다.
+갱신된 canonical hash는 각 JSON 정본에 기록했으며 제품 판정은 계속 `no-change`다.
+
 ## Stage W8-R1-Q5 최종 disposition
 
 rank 1은 `no-change`로 동결한다. W4 face-miss는 Q1 runtime에서도 재현됐으므로 계측 lineage 오탐이 아니다.

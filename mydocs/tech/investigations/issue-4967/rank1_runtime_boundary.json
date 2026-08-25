@@ -27,15 +27,15 @@
     },
     "nativeBinary": {
       "artifact": "target/debug/rhwp-q-font-trace",
-      "sha256": "92a8b59bf26c4ed70cee71ea81ca1f8feec1f8e643e87a9f18eeb81d1dda7c59"
+      "sha256": "765f56066c3db91d997fe03ee0e0171256e8430a99b76cabcc819e7779316f82"
     },
     "wasmJs": {
       "artifact": "pkg/rhwp.js",
-      "sha256": "5aa42ee0972a15f85995d64d2725c2ba98b7e1b1a88576dbf48b52447ac05cb9"
+      "sha256": "5c0c6571d20bde1e344de5577de3cb85121011f17276ecd44d4a56c6647eaf0b"
     },
     "wasmBinary": {
       "artifact": "pkg/rhwp_bg.wasm",
-      "sha256": "63f1e5f87c7fe9e2a364d2ef99c15f37725be2f826d33c8f3a63e3bf74872913"
+      "sha256": "7c9c9f5f31b05e6f7984c68d4bc39666a7c259c31983407f93c7f28ab9a56f08"
     }
   },
   "formats": [
@@ -299,5 +299,5 @@
     "privateDocumentIdentityIncluded": false,
     "fullTraceTracked": false
   },
-  "canonicalSha256": "fe935443632d37715ed142edc475c4a4ec1f00aba2928615df5a02439bcc8267"
+  "canonicalSha256": "b0e22b0a76c5e5c940459eeb9b599ee5e5e962f1c985b38e799623fdd09cced4"
 }

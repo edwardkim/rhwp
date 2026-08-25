@@ -1,5 +1,5 @@
 {
-  "canonicalSha256": "0c223c7e82a849216a90f5c40c6442f358419dd4e5082e8daf0222c608a341dd",
+  "canonicalSha256": "f50ac03f28a4b7fd53a437b9187352160a04414afaee15f932cf0a7d110be3cd",
   "currentMetric": {
     "bold": false,
     "currentIndex": 370,
@@ -89,7 +89,7 @@
     },
     "nativeBinary": {
       "artifact": "target/debug/rhwp-q-font-trace",
-      "sha256": "92a8b59bf26c4ed70cee71ea81ca1f8feec1f8e643e87a9f18eeb81d1dda7c59"
+      "sha256": "765f56066c3db91d997fe03ee0e0171256e8430a99b76cabcc819e7779316f82"
     },
     "q0Baseline": {
       "artifact": "mydocs/tech/investigations/issue-4967/rank1_qualification_baseline.json",
@@ -97,11 +97,11 @@
     },
     "q1Baseline": {
       "artifact": "mydocs/tech/investigations/issue-4967/rank1_runtime_boundary.json",
-      "canonicalSha256": "fe935443632d37715ed142edc475c4a4ec1f00aba2928615df5a02439bcc8267"
+      "canonicalSha256": "b0e22b0a76c5e5c940459eeb9b599ee5e5e962f1c985b38e799623fdd09cced4"
     },
     "textMeasurementSource": {
       "artifact": "src/renderer/layout/text_measurement.rs",
-      "sha256": "3610bcf3ff7c845436de37f22b0826623125bed754073d05c7bbf5baece0ca21"
+      "sha256": "c4f68bdfca431b3a82cbe3bab70f0d7d4e28283387010d8439949a8a8a1b93f2"
     }
   },
   "issue": 4967,
