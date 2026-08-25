@@ -1621,7 +1621,13 @@ pub(crate) fn no_ls_short_label_cell(
 /// 추정 실폭이 셀 내폭을 명백히 초과(×1.05)하면 저장을 불신하고 fresh
 /// 재래핑한다. **가로쓰기 셀 전용** — 세로쓰기 셀은 글자를 세로로 쌓아 가로
 /// 실폭 판정이 무의미하므로 호출부(셀 방향을 아는 곳)에서 걸러야 한다
-/// (task81 세로쓰기 회귀 실측). 정상 1줄(실폭 ≤ 내폭)·다줄 저장(ls≥2)은 불변.
+/// (task81 세로쓰기 회귀 실측). 정상 1줄(실폭 ≤ 내폭)은 불변.
+///
+/// [#5952] 저장 ls≥2 인데 composed 가 1줄로 접혀 셀 내폭을 넘치면 Hangul 분할을
+/// 복원한다. 행정업무운영편람 61쪽 유의사항 상자는 저장 2줄(horzsize=37560HU)
+/// 문단이 1줄로 그려져 오른쪽 사이드바 "공문서"와 겹친다. ×1.8 과밀 게이트
+/// (#2430)는 ls==1 부실 저장용이라 여기(약 1.11×)는 통과하지 않는다. 저장이
+/// 이미 2줄이므로 ×1.05 만으로도 거짓 재래핑 위험이 작다.
 pub fn recompose_stored_single_line_if_overflowing(
     composed: &mut ComposedParagraph,
     para: &Paragraph,
@@ -1629,12 +1635,29 @@ pub fn recompose_stored_single_line_if_overflowing(
     styles: &ResolvedStyleSet,
     dpi: f64,
 ) {
-    let stored_single = para.line_segs.len() == 1
+    if composed.lines.is_empty() || cell_inner_width_px <= 0.0 {
+        return;
+    }
+    let authentic_stored = !para.line_segs.is_empty()
         && para
             .line_segs
             .iter()
             .all(|seg| seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0);
-    if !stored_single || composed.lines.len() != 1 || cell_inner_width_px <= 0.0 {
+    if authentic_stored && para.line_segs.len() >= 2 {
+        let over = composed
+            .lines
+            .iter()
+            .any(|line| estimate_composed_line_width(line, styles) > cell_inner_width_px * 1.05);
+        if over {
+            reflow_cell_line_ignoring_stored_segs(composed, para, cell_inner_width_px, styles, dpi);
+        }
+        return;
+    }
+    if composed.lines.len() != 1 {
+        return;
+    }
+    let stored_single = para.line_segs.len() == 1 && authentic_stored;
+    if !stored_single {
         return;
     }
     // [#2430] 발동 임계 ×1.05 는 측정(원패딩) vs 렌더(shrink패딩) 폭 발산(#2237)
@@ -1687,6 +1710,16 @@ pub fn recompose_stored_single_line_if_overflowing(
     if !over {
         return;
     }
+    reflow_cell_line_ignoring_stored_segs(composed, para, cell_inner_width_px, styles, dpi);
+}
+
+fn reflow_cell_line_ignoring_stored_segs(
+    composed: &mut ComposedParagraph,
+    para: &Paragraph,
+    cell_inner_width_px: f64,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+) {
     // 저장 seg 를 일시적으로 무시하고 NO_LS 폴백과 동일 경로로 재분할한다.
     let mut para_no_ls = para.clone();
     para_no_ls.line_segs.clear();
