@@ -557,6 +557,7 @@ struct RunEmitVars {
     line_spacing_px: f64,
     max_fs: f64,
     runs_all_whitespace: bool,
+    renders_synthetic_wrap_trailing_space: bool,
     start_line: usize,
     tab_width: f64,
     section_index: usize,
@@ -4350,6 +4351,7 @@ impl LayoutEngine {
                     line_spacing_px,
                     max_fs,
                     runs_all_whitespace,
+                    renders_synthetic_wrap_trailing_space,
                     start_line,
                     tab_width,
                     section_index,
@@ -4901,6 +4903,7 @@ impl LayoutEngine {
             line_spacing_px,
             max_fs,
             runs_all_whitespace,
+            renders_synthetic_wrap_trailing_space,
             start_line,
             tab_width,
             section_index,
@@ -4917,6 +4920,43 @@ impl LayoutEngine {
             mut current_line_reserved_tac_picture_height,
         } = st;
         let is_last_run_of_line = |idx: usize| idx == comp_line.runs.len() - 1;
+        // [#5679] 줄-말미 공백에 배정된 배분 여분(extra_word_sp) 회수분.
+        // 배분 몫은 **내부 공백 수**로 나눈다(위 needs_justify 분기의
+        // rendered_space_slots) — 줄-말미 공백은 est 의 effective_used 에서도
+        // 빠져 있다. 그런데 char_width_decision 은 모든 ' ' 에 여분을 붙이므로,
+        // 말미 공백이 여분까지 얹어 그려져 run bbox 와 x 전진이 줄 상자를
+        // 여분×말미공백수 만큼 넘는다(10857 p11: '외부 평가전문위원 ' 144.0 vs
+        // 줄 122.1 — 가시 글리프는 정확히 줄 끝에서 끝나고 초과 전량이 부풀린
+        // 말미 공백). 분모에 말미 공백을 넣는 synthetic-wrap 모드는 제외.
+        let line_trailing_space_by_run: Vec<usize> = {
+            let mut counts = vec![0usize; comp_line.runs.len()];
+            if !renders_synthetic_wrap_trailing_space && extra_word_sp != 0.0 {
+                let mut budget = comp_line
+                    .runs
+                    .iter()
+                    .flat_map(|r| effective_text_for_metrics(r).chars())
+                    .collect::<Vec<char>>()
+                    .iter()
+                    .rev()
+                    .take_while(|c| **c == ' ')
+                    .count();
+                for (ri, r) in comp_line.runs.iter().enumerate().rev() {
+                    if budget == 0 {
+                        break;
+                    }
+                    let rt = effective_text_for_metrics(r);
+                    let chars_total = rt.chars().count();
+                    let tail_sp = rt.chars().rev().take_while(|c| *c == ' ').count();
+                    let take = tail_sp.min(budget);
+                    counts[ri] = take;
+                    budget -= take;
+                    if take < chars_total {
+                        break;
+                    }
+                }
+            }
+            counts
+        };
         for (run_idx, run) in comp_line.runs.iter().enumerate() {
             // 조판부호: 이 run 시작 위치 이전의 도형 마커를 먼저 삽입
             for (smi, (spos, stext)) in shape_markers.iter().enumerate() {
@@ -5135,6 +5175,11 @@ impl LayoutEngine {
             } else {
                 estimate_text_width(effective_text_for_metrics(run), &text_style)
             };
+            // [#5679] 줄-말미 공백의 배분 여분 회수 — 자연 폭은 유지한다(한글도
+            // 말미 공백 자체는 줄 상자를 넘길 수 있다). 여분이 음수(압축)여도
+            // est 가 말미 공백을 제외했으므로 동일하게 회수한다.
+            let full_width =
+                full_width - extra_word_sp * line_trailing_space_by_run[run_idx] as f64;
             // 탭 리더 계산: 탭이 포함된 run에서 채움 기호 정보 추출
             // inline_tabs를 일시 제거하여 tab_stops 기반 위치 계산과 일관되게 함
             if has_tabs && run.text.contains('\t') {
