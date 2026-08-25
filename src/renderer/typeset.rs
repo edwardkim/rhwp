@@ -3239,6 +3239,36 @@ fn is_synthetic_line_seg(ls: &LineSeg) -> bool {
     ls.tag & 0x80000000 != 0
 }
 
+/// [#5921] stored near-top 리셋이 이번 쪽 잔여를 넘는가.
+///
+/// `native_near_top_reset` 은 저장 vpos≈sb 만 보고 쪽을 가른다. 잔여에
+/// 문단(sb+저장 줄 높이)이 들어가면 한글은 같은 쪽에 붙인다
+/// (`neartop_reset_sb2500.hwpx`: 잔여 80px > 필요 63px, 한글 2020 1쪽).
+/// 과적 케이스(148753276 pi46, used 942>933.6)는 잔여가 없어 리셋이 유지된다.
+fn native_near_top_reset_exceeds_remaining(
+    para: &Paragraph,
+    para_sb_hu: i32,
+    current_height: f64,
+    available_height: f64,
+    dpi: f64,
+) -> bool {
+    let remaining = (available_height - current_height).max(0.0);
+    let real_lines: Vec<&LineSeg> = para
+        .line_segs
+        .iter()
+        .filter(|ls| !is_synthetic_line_seg(ls))
+        .collect();
+    if real_lines.is_empty() {
+        return true;
+    }
+    let sb_px = hwpunit_to_px(para_sb_hu.max(0), dpi);
+    let lines_px: f64 = real_lines
+        .iter()
+        .map(|ls| hwpunit_to_px(ls.line_height.max(0), dpi))
+        .sum();
+    sb_px + lines_px > remaining + 0.5
+}
+
 /// 어울림(비 `treat_as_char`) 개체를 문단이 품고 있는가.
 ///
 /// 어울림 밴드 옆으로 흐르는 줄은 앞 문단과 같은 세로 위치를 정당하게 다시 쓰므로,
@@ -7082,7 +7112,14 @@ impl TypesetEngine {
                         && !shape_only_para
                         && !has_table_control
                         && para_has_visible_text(para)
-                        && prev_vpos_end > 60_000;
+                        && prev_vpos_end > 60_000
+                        && native_near_top_reset_exceeds_remaining(
+                            para,
+                            para_sb_hu_for_reset,
+                            st.current_height,
+                            st.available_height(),
+                            self.dpi,
+                        );
                     let next_heading_after_top_content_reset =
                         paragraphs.get(para_idx + 1).is_some_and(|next_para| {
                             let next_sb_hu = styles
