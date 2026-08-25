@@ -93,14 +93,14 @@ test('통합 배율 버튼은 좌우 확대 아이콘과 같은 18px SVG 돋보�
   assert.ok(icon);
   assert.match(
     html,
-    /<svg class="stb-zoom-menu-icon" viewBox="0 0 18 18"[^>]*>[\s\S]*?<circle[\s\S]*?<path[\s\S]*?<\/svg>/,
+    /<svg class="stb-zoom-menu-icon" viewBox="0 0 18 18"[^>]*>[\s\S]*?<circle cx="6\.5" cy="6\.5" r="4\.5">[\s\S]*?<path d="M9\.75 9\.75 15\.25 15\.25">[\s\S]*?<\/svg>/,
   );
   assert.doesNotMatch(html, /stb-status-glyph icon-zoom-menu/);
   assert.match(icon, /width:\s*18px/);
   assert.match(icon, /height:\s*18px/);
   assert.match(icon, /flex:\s*0 0 18px/);
   assert.match(icon, /stroke:\s*currentColor/);
-  assert.match(icon, /stroke-width:\s*2/);
+  assert.match(icon, /stroke-width:\s*1\.5/);
   assert.match(icon, /stroke-linecap:\s*round/);
   assert.doesNotMatch(css, /\.icon-zoom-menu::(?:before|after)/);
 });
@@ -119,19 +119,33 @@ test('배율 슬라이더 손잡이와 100% 눈금은 같은 12px 크기이며 �
   const firefoxThumb = css.match(
     /\.stb-zoom-range::-moz-range-thumb\s*\{(?<rules>[^}]*)\}/,
   )?.groups?.rules;
+  const webkitTrack = css.match(
+    /\.stb-zoom-range::-webkit-slider-runnable-track\s*\{(?<rules>[^}]*)\}/,
+  )?.groups?.rules;
+  const firefoxTrack = css.match(
+    /\.stb-zoom-range::-moz-range-track\s*\{(?<rules>[^}]*)\}/,
+  )?.groups?.rules;
 
   assert.ok(wrap);
   assert.ok(range);
   assert.ok(mark);
   assert.ok(webkitThumb);
   assert.ok(firefoxThumb);
+  assert.ok(webkitTrack);
+  assert.ok(firefoxTrack);
   assert.match(wrap, /--stb-zoom-thumb-size:\s*12px/);
+  assert.match(wrap, /--stb-zoom-track-size:\s*2px/);
   assert.match(range, /z-index:\s*2/);
+  assert.match(range, /appearance:\s*none/);
   assert.match(mark, /z-index:\s*1/);
   assert.match(mark, /height:\s*var\(--stb-zoom-thumb-size\)/);
   assert.match(webkitThumb, /width:\s*var\(--stb-zoom-thumb-size\)/);
   assert.match(webkitThumb, /height:\s*var\(--stb-zoom-thumb-size\)/);
   assert.match(firefoxThumb, /width:\s*var\(--stb-zoom-thumb-size\)/);
   assert.match(firefoxThumb, /height:\s*var\(--stb-zoom-thumb-size\)/);
+  assert.match(webkitTrack, /height:\s*var\(--stb-zoom-track-size\)/);
+  assert.match(webkitTrack, /background:\s*var\(--ui-border-strong\)/);
+  assert.match(firefoxTrack, /height:\s*var\(--stb-zoom-track-size\)/);
+  assert.match(firefoxTrack, /background:\s*var\(--ui-border-strong\)/);
   assert.doesNotMatch(css, /\.stb-zoom-range-wrap\.is-neutral[\s\S]*?visibility:\s*hidden/);
 });
