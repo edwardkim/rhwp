@@ -10,7 +10,7 @@ use crate::{load_document, EXIT_OK, EXIT_RUNTIME, EXIT_USAGE};
 pub(crate) fn run(args: &[String]) -> i32 {
     if args.is_empty() {
         eprintln!(
-            "사용법: rhwp dump-pages <파일.hwp> [-p <페이지번호>] [--respect-vpos-reset] [--json]"
+            "사용법: rhwp dump-pages <파일.hwp> [-p <페이지번호>] [--respect-vpos-reset] [--compat 2022|2024] [--json]"
         );
         return EXIT_USAGE;
     }
@@ -49,11 +49,13 @@ pub(crate) fn run(args: &[String]) -> i32 {
             }
             "--compat" => {
                 if i + 1 < args.len() {
-                    match args[i + 1].as_str() {
-                        "2022" => hangul2024_compat = false,
-                        "2024" => hangul2024_compat = true,
-                        other => {
-                            eprintln!("오류: --compat 값이 올바르지 않습니다(2022|2024): {other}");
+                    match crate::cli::parse_compat_generation(args[i + 1].as_str()) {
+                        Some(enabled) => hangul2024_compat = enabled,
+                        None => {
+                            eprintln!(
+                                "오류: --compat 값이 올바르지 않습니다(2022|2024): {}",
+                                args[i + 1]
+                            );
                             return EXIT_USAGE;
                         }
                     }

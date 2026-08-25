@@ -20,7 +20,8 @@ import type { FileSystemFileHandleLike } from '@/command/file-system-access';
 const DB_NAME = 'rhwpStudioRecent';
 const DB_VER = 1;
 const STORE = 'recent';
-const MAX_RECENT = 8;
+/** 저장소 상한. 메뉴는 기본 8개만 보이고 사용자가 더보기를 눌러 최대 20개를 확인한다. */
+const MAX_RECENT = 20;
 
 export interface RecentDoc {
   /** 고유 ID (crypto.randomUUID) */

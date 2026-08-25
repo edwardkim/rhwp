@@ -152,28 +152,48 @@ export function buildContentLossNotice(report: ContentLossReport): string | null
   ].join('\n');
 }
 
+function notifyContentLossAfterCommit(
+  report: ContentLossReport | null,
+  notify: (report: ContentLossReport) => void,
+): void {
+  if (!report || report.losses.length === 0) return;
+  try {
+    notify(report);
+  } catch {
+    // 저장은 이미 성공하고 상태도 commit됐다. 부가 알림 실패로 저장 성공을 되돌리지 않는다.
+    console.warn('[content-loss] 저장 후 내용 손실 알림 표시에 실패했습니다.');
+  }
+}
+
 /**
- * 영속화가 성공한 뒤에만 손실 알림을 전달한다.
+ * 영속화 성공 뒤 상태를 commit하고, 그 다음에만 손실 알림을 전달한다.
  *
- * `wasPersisted`가 false인 fallback 선택 단계나 `persist` 예외에서는 알림이 없다.
+ * `wasPersisted`가 false인 fallback 선택 단계나 `persist` 예외에서는 commit과 알림이 없다.
+ * 부가 알림 실패는 이미 성공한 영속화와 상태 commit을 실패로 바꾸지 않는다.
  */
 export async function persistWithContentLoss<T>(
   report: ContentLossReport | null,
   persist: () => Promise<T>,
   wasPersisted: (result: T) => boolean,
+  commit: (result: T) => void,
   notify: (report: ContentLossReport) => void,
 ): Promise<T> {
   const result = await persist();
-  if (report && report.losses.length > 0 && wasPersisted(result)) notify(report);
+  if (wasPersisted(result)) {
+    commit(result);
+    notifyContentLossAfterCommit(report, notify);
+  }
   return result;
 }
 
-/** 동기 download 시작이 성공한 뒤 같은 규칙으로 알린다. */
+/** 동기 download 시작 성공 뒤 상태를 commit하고, 그 다음에 같은 규칙으로 알린다. */
 export function persistDownloadWithContentLoss(
   report: ContentLossReport | null,
   download: () => void,
+  commit: () => void,
   notify: (report: ContentLossReport) => void,
 ): void {
   download();
-  if (report && report.losses.length > 0) notify(report);
+  commit();
+  notifyContentLossAfterCommit(report, notify);
 }

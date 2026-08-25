@@ -25,6 +25,7 @@ struct PdfExportArgs<'a> {
     pdf_options: rhwp::renderer::pdf::PdfExportOptions,
     direct_pdf_options: rhwp::renderer::pdf::DirectPdfExportOptions,
     render_profile: Option<rhwp::paint::RenderProfile>,
+    hangul2024_compat: bool,
     json_mode: bool,
 }
 
@@ -42,6 +43,7 @@ fn parse_export_pdf_args<'a>(args: &'a [String]) -> Result<PdfExportArgs<'a>, i3
     let mut direct_raster_dpi_was_set = false;
     // [#3596] --json: 산출물 매니페스트를 stdout 순수 JSON 으로. 렌더 동작 무변경.
     let mut json_mode = false;
+    let mut hangul2024_compat = false;
 
     let mut i = 0;
     while i < args.len() {
@@ -49,6 +51,23 @@ fn parse_export_pdf_args<'a>(args: &'a [String]) -> Result<PdfExportArgs<'a>, i3
             "--json" => {
                 json_mode = true;
                 i += 1;
+            }
+            "--compat" => {
+                if i + 1 >= args.len() {
+                    eprintln!("오류: --compat 뒤에 2022 또는 2024 가 필요합니다.");
+                    return Err(EXIT_USAGE);
+                }
+                match crate::cli::parse_compat_generation(args[i + 1].as_str()) {
+                    Some(enabled) => hangul2024_compat = enabled,
+                    None => {
+                        eprintln!(
+                            "오류: --compat 값이 올바르지 않습니다(2022|2024): {}",
+                            args[i + 1]
+                        );
+                        return Err(EXIT_USAGE);
+                    }
+                }
+                i += 2;
             }
             "--output" | "-o" => {
                 if i + 1 < args.len() {
@@ -297,6 +316,7 @@ fn parse_export_pdf_args<'a>(args: &'a [String]) -> Result<PdfExportArgs<'a>, i3
         pdf_options,
         direct_pdf_options,
         render_profile,
+        hangul2024_compat,
         json_mode,
     })
 }
@@ -323,6 +343,7 @@ pub(crate) fn export_pdf(args: &[String]) -> i32 {
             pdf_options,
             mut direct_pdf_options,
             render_profile,
+            hangul2024_compat,
             json_mode,
         } = match parse_export_pdf_args(args) {
             Ok(options) => options,
@@ -347,6 +368,11 @@ pub(crate) fn export_pdf(args: &[String]) -> i32 {
             if let Some(parent) = Path::new(file_path).parent() {
                 let _loaded = doc.populate_external_images_from_dir(parent);
             }
+        }
+
+        // 쪽수를 읽기 전에 세션 조판 세대를 확정해야 재페이지네이션이 한 번으로 끝난다.
+        if hangul2024_compat {
+            doc.set_hangul2024_compat(true);
         }
 
         let page_count = doc.page_count();
@@ -469,6 +495,7 @@ fn print_export_pdf_usage() {
         "      --profile <프로필>   layer 출력 프로필 (screen|print|high-quality|fast-preview)"
     );
     eprintln!("      --raster-dpi <DPI>    direct backend fallback raster DPI (기본값: 144)");
+    eprintln!("      --compat 2022|2024    목표 한글 조판 세대 (기본: 2022 — 2018·2020 포함)");
     eprintln!("      --font-path <경로>   폰트 파일 탐색 경로 (여러 번 지정 가능)");
     eprintln!("      --fallback-serif <명>");
     eprintln!("      --fallback-sans <명>");

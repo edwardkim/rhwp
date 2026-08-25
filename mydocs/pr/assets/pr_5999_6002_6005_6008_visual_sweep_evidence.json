@@ -1,0 +1,256 @@
+{
+  "schema": "rhwp-pr-visual-evidence/v2",
+  "generated_at_kst": "2026-08-24T21:46:02+09:00",
+  "workflow": "rhwp info --json -> hwp2024-mcp-convert start/status/download -> scripts/visual_sweep.py -> stable review PNG assets",
+  "entries": [
+    {
+      "pr": 5999,
+      "source": "samples/issue5880/rowbreak_fragment_overfill.hwpx",
+      "source_sha256": "2421db10c9ac4a4fcb6a60d2dc7bab3ed28c0e81ba11ccddeaeccdf20af6752f",
+      "rhwp_info_asset": "mydocs/pr/assets/pr_5999_info.json",
+      "rhwp_info": {
+        "format": "hwpx",
+        "version": "5.1.0.0",
+        "lastSavedWith": {
+          "confidence": "metadata",
+          "product": "hancom-office-2020",
+          "version": "11.0.0.8362"
+        },
+        "pageCount": 8
+      },
+      "mcp_engine": "2020",
+      "mcp_engine_reason": "lastSavedWith.product=hancom-office-2020",
+      "mcp": {
+        "job_id": "2529b8df-18aa-411a-8274-4d4dadda8c37",
+        "status": "succeeded",
+        "terminal": true,
+        "download_status": "success",
+        "download_sha256": "21360a4d1058a6120931fd14f5957b8ec9c45faac1765840efefe54be3ea4bf1"
+      },
+      "pdf": "pdf/rowbreak_fragment_overfill-2020.pdf",
+      "pdf_sha256": "21360a4d1058a6120931fd14f5957b8ec9c45faac1765840efefe54be3ea4bf1",
+      "pdf_pages": 8,
+      "visual_sweep": {
+        "command_shape": "python3 scripts/visual_sweep.py --key <key> --hwp <source> --pdf <pdf> --pages/--page <representative pages> --out output/visual_sweep_pr_5999_6002_6005_6008/<label> --rhwp-bin target/pr-review/release-test/rhwp --dpi 120",
+        "target_key": "pr5999_issue5880",
+        "output_dir": "/home/tsjang/rhwp/output/visual_sweep_pr_5999_6002_6005_6008/pr5999",
+        "overlay_metrics_asset": "mydocs/pr/assets/pr_5999_visual_sweep_overlay_metrics.json",
+        "representative_pages": [
+          2,
+          5,
+          6,
+          8
+        ],
+        "page_metrics": [
+          {
+            "page": 2,
+            "compare_png": null,
+            "overlay_png": "/home/tsjang/rhwp/output/visual_sweep_pr_5999_6002_6005_6008/pr5999/pr5999_issue5880/overlay/overlay_002.png",
+            "review_png": "/home/tsjang/rhwp/output/visual_sweep_pr_5999_6002_6005_6008/pr5999/pr5999_issue5880/review/review_002.png",
+            "pixel_match_percent": 90.99752,
+            "ink_match_percent": 8.84199,
+            "visual_accuracy_proxy_percent": 8.84199
+          },
+          {
+            "page": 5,
+            "compare_png": null,
+            "overlay_png": "/home/tsjang/rhwp/output/visual_sweep_pr_5999_6002_6005_6008/pr5999/pr5999_issue5880/overlay/overlay_005.png",
+            "review_png": "/home/tsjang/rhwp/output/visual_sweep_pr_5999_6002_6005_6008/pr5999/pr5999_issue5880/review/review_005.png",
+            "pixel_match_percent": 92.43508,
+            "ink_match_percent": 7.95011,
+            "visual_accuracy_proxy_percent": 7.95011
+          },
+          {
+            "page": 6,
+            "compare_png": null,
+            "overlay_png": "/home/tsjang/rhwp/output/visual_sweep_pr_5999_6002_6005_6008/pr5999/pr5999_issue5880/overlay/overlay_006.png",
+            "review_png": "/home/tsjang/rhwp/output/visual_sweep_pr_5999_6002_6005_6008/pr5999/pr5999_issue5880/review/review_006.png",
+            "pixel_match_percent": 90.08451,
+            "ink_match_percent": 5.56413,
+            "visual_accuracy_proxy_percent": 5.56413
+          },
+          {
+            "page": 8,
+            "compare_png": null,
+            "overlay_png": "/home/tsjang/rhwp/output/visual_sweep_pr_5999_6002_6005_6008/pr5999/pr5999_issue5880/overlay/overlay_008.png",
+            "review_png": "/home/tsjang/rhwp/output/visual_sweep_pr_5999_6002_6005_6008/pr5999/pr5999_issue5880/review/review_008.png",
+            "pixel_match_percent": 90.7487,
+            "ink_match_percent": 26.79218,
+            "visual_accuracy_proxy_percent": 26.79218
+          }
+        ],
+        "review_assets": [
+          "mydocs/pr/assets/pr_5999_visual_sweep_review_p002.png",
+          "mydocs/pr/assets/pr_5999_visual_sweep_review_p005.png",
+          "mydocs/pr/assets/pr_5999_visual_sweep_review_p006.png",
+          "mydocs/pr/assets/pr_5999_visual_sweep_review_p008.png"
+        ],
+        "review_asset_sha256": {
+          "mydocs/pr/assets/pr_5999_visual_sweep_review_p002.png": "ae93bc8ea529fb590fcf0c4486dbbe0d6540b6540ed500ef8fe201778fba36f0",
+          "mydocs/pr/assets/pr_5999_visual_sweep_review_p005.png": "074a44db10b3f7cb75d2187f01d33fea868ec08cc24315daaee2b54b24190193",
+          "mydocs/pr/assets/pr_5999_visual_sweep_review_p006.png": "f9e7673d5cc49e54da572da46c14ef3aac79212fa1e47a7582c828af734759f9",
+          "mydocs/pr/assets/pr_5999_visual_sweep_review_p008.png": "5eac328f1da6566b9a2385d95ff04aea6b93638b6fc599d7c2fa9d4af298340e"
+        }
+      }
+    },
+    {
+      "pr": 6002,
+      "source": "samples/issue5884/nested_row_first_line_height.hwpx",
+      "source_sha256": "c6bcf3686e8fbfbc79f5f3e2c690a62577e8ef63f0bad74e66ee3b255d76b931",
+      "rhwp_info_asset": "mydocs/pr/assets/pr_6002_info.json",
+      "rhwp_info": {
+        "format": "hwpx",
+        "version": "5.1.0.0",
+        "lastSavedWith": {
+          "confidence": "metadata",
+          "product": "hancom-office-2020",
+          "version": "11.0.0.8362"
+        },
+        "pageCount": 2
+      },
+      "mcp_engine": "2020",
+      "mcp_engine_reason": "lastSavedWith.product=hancom-office-2020",
+      "mcp": {
+        "job_id": "a56fc0d0-f77a-4aa1-a1a2-f59843252cab",
+        "status": "succeeded",
+        "terminal": true,
+        "download_status": "success",
+        "download_sha256": "abe64cdac923988f8a50594dc5004c0bbfa8fc063765883bbf736a25b5be7e39"
+      },
+      "pdf": "pdf/nested_row_first_line_height-2020.pdf",
+      "pdf_sha256": "abe64cdac923988f8a50594dc5004c0bbfa8fc063765883bbf736a25b5be7e39",
+      "pdf_pages": 2,
+      "visual_sweep": {
+        "command_shape": "python3 scripts/visual_sweep.py --key <key> --hwp <source> --pdf <pdf> --pages/--page <representative pages> --out output/visual_sweep_pr_5999_6002_6005_6008/<label> --rhwp-bin target/pr-review/release-test/rhwp --dpi 120",
+        "target_key": "pr6002_issue5884",
+        "output_dir": "/home/tsjang/rhwp/output/visual_sweep_pr_5999_6002_6005_6008/pr6002",
+        "overlay_metrics_asset": "mydocs/pr/assets/pr_6002_visual_sweep_overlay_metrics.json",
+        "representative_pages": [
+          2
+        ],
+        "page_metrics": [
+          {
+            "page": 2,
+            "compare_png": null,
+            "overlay_png": "/home/tsjang/rhwp/output/visual_sweep_pr_5999_6002_6005_6008/pr6002/pr6002_issue5884/overlay/overlay_002.png",
+            "review_png": "/home/tsjang/rhwp/output/visual_sweep_pr_5999_6002_6005_6008/pr6002/pr6002_issue5884/review/review_002.png",
+            "pixel_match_percent": 96.26732,
+            "ink_match_percent": 6.36583,
+            "visual_accuracy_proxy_percent": 6.36583
+          }
+        ],
+        "review_assets": [
+          "mydocs/pr/assets/pr_6002_visual_sweep_review_p002.png"
+        ],
+        "review_asset_sha256": {
+          "mydocs/pr/assets/pr_6002_visual_sweep_review_p002.png": "3f0eb2e70e753a265d77f08e344cc61a23d70217d6be0eaa18e2dbf5a94725ee"
+        }
+      }
+    },
+    {
+      "pr": 6005,
+      "source": "samples/issue5866/memo_field_hwp5.hwp",
+      "source_sha256": "660567a041a39470f7bb94a5752fa2bf53d0b2809e62f47ebe8bbdea15d6b350",
+      "rhwp_info_asset": "mydocs/pr/assets/pr_6005_info.json",
+      "rhwp_info": {
+        "format": "hwp5",
+        "version": "5.1.0.1",
+        "lastSavedWith": {
+          "confidence": "metadata",
+          "product": "hancom-office-2018",
+          "version": "10.0.0.11808"
+        },
+        "pageCount": 40
+      },
+      "mcp_engine": "2020",
+      "mcp_engine_reason": "lastSavedWith.product=hancom-office-2018",
+      "mcp": {
+        "job_id": "c7acb0bf-ff3d-40c3-ad51-cad4080565f1",
+        "status": "succeeded",
+        "terminal": true,
+        "download_status": "success",
+        "download_sha256": "d020b37edd534c41568b7347737ff882e4ee129e53053f764102a9fa045db061"
+      },
+      "pdf": "pdf/memo_field_hwp5-2020.pdf",
+      "pdf_sha256": "d020b37edd534c41568b7347737ff882e4ee129e53053f764102a9fa045db061",
+      "pdf_pages": 20,
+      "visual_sweep": {
+        "command_shape": "python3 scripts/visual_sweep.py --key <key> --hwp <source> --pdf <pdf> --pages/--page <representative pages> --out output/visual_sweep_pr_5999_6002_6005_6008/<label> --rhwp-bin target/pr-review/release-test/rhwp --dpi 120",
+        "target_key": "pr6005_issue5866",
+        "output_dir": "/home/tsjang/rhwp/output/visual_sweep_pr_5999_6002_6005_6008/pr6005",
+        "overlay_metrics_asset": "mydocs/pr/assets/pr_6005_visual_sweep_overlay_metrics.json",
+        "representative_pages": [
+          1
+        ],
+        "page_metrics": [
+          {
+            "page": 1,
+            "compare_png": null,
+            "overlay_png": "/home/tsjang/rhwp/output/visual_sweep_pr_5999_6002_6005_6008/pr6005/pr6005_issue5866/overlay/overlay_001.png",
+            "review_png": "/home/tsjang/rhwp/output/visual_sweep_pr_5999_6002_6005_6008/pr6005/pr6005_issue5866/review/review_001.png",
+            "pixel_match_percent": 92.33055,
+            "ink_match_percent": 5.28158,
+            "visual_accuracy_proxy_percent": 5.28158
+          }
+        ],
+        "review_assets": [
+          "mydocs/pr/assets/pr_6005_visual_sweep_review_p001.png"
+        ],
+        "review_asset_sha256": {
+          "mydocs/pr/assets/pr_6005_visual_sweep_review_p001.png": "1cb97042bb4f6549f282f40377be99f49da81333815a8683d7685146d034c96e"
+        }
+      },
+      "note": "parser/serializer structure preservation PR; visual sweep is recorded as reference evidence, not the primary merge gate."
+    },
+    {
+      "pr": 6008,
+      "source": "samples/issue5916/05434_vehicle_log_form.hwp",
+      "source_sha256": "cd609d29f75a49db8a4a5d0027fe4b6a7ba9a3abc2043561e44addd1d9f04de3",
+      "rhwp_info_asset": "mydocs/pr/assets/pr_6008_info.json",
+      "rhwp_info": {
+        "format": "hwp3",
+        "version": "3.0.0.0",
+        "lastSavedWith": null,
+        "pageCount": 2
+      },
+      "mcp_engine": "2020",
+      "mcp_engine_reason": "format=hwp3 and lastSavedWith=null; legacy HWP3 reference generated with the 2020-compatible engine and recorded as an explicit review choice.",
+      "mcp": {
+        "job_id": "1190e5b0-3ba5-4aa2-908f-61f3185ec80d",
+        "status": "succeeded",
+        "terminal": true,
+        "download_status": "success",
+        "download_sha256": "aefc8043d43bbdd3076260ef507e3104af89f04effc5ae440197637facc8bb0d"
+      },
+      "pdf": "pdf/05434_vehicle_log_form-2020.pdf",
+      "pdf_sha256": "aefc8043d43bbdd3076260ef507e3104af89f04effc5ae440197637facc8bb0d",
+      "pdf_pages": 2,
+      "visual_sweep": {
+        "command_shape": "python3 scripts/visual_sweep.py --key <key> --hwp <source> --pdf <pdf> --pages/--page <representative pages> --out output/visual_sweep_pr_5999_6002_6005_6008/<label> --rhwp-bin target/pr-review/release-test/rhwp --dpi 120",
+        "target_key": "pr6008_issue5916",
+        "output_dir": "/home/tsjang/rhwp/output/visual_sweep_pr_5999_6002_6005_6008/pr6008",
+        "overlay_metrics_asset": "mydocs/pr/assets/pr_6008_visual_sweep_overlay_metrics.json",
+        "representative_pages": [
+          2
+        ],
+        "page_metrics": [
+          {
+            "page": 2,
+            "compare_png": null,
+            "overlay_png": "/home/tsjang/rhwp/output/visual_sweep_pr_5999_6002_6005_6008/pr6008/pr6008_issue5916/overlay/overlay_002.png",
+            "review_png": "/home/tsjang/rhwp/output/visual_sweep_pr_5999_6002_6005_6008/pr6008/pr6008_issue5916/review/review_002.png",
+            "pixel_match_percent": 94.46502,
+            "ink_match_percent": 14.90723,
+            "visual_accuracy_proxy_percent": 14.90723
+          }
+        ],
+        "review_assets": [
+          "mydocs/pr/assets/pr_6008_visual_sweep_review_p002.png"
+        ],
+        "review_asset_sha256": {
+          "mydocs/pr/assets/pr_6008_visual_sweep_review_p002.png": "4c6eecce149ea9f188d3cac4c55035524a6d8e55dd0db10b2ac79d1e13400bd3"
+        }
+      }
+    }
+  ]
+}

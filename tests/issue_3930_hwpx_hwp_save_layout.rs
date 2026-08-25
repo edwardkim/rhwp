@@ -16,16 +16,18 @@ const HWP_FIXTURE: &str = "samples/2025 행정업무운영 편람(최종).hwp";
 const PAGE_30: u32 = 29;
 const PAGE_144: u32 = 143;
 const PAGE_145: u32 = 144;
-const PAGE_283: u32 = 282;
-const PAGE_284: u32 = 283;
-const PAGE_285: u32 = 284;
-const PAGE_286: u32 = 285;
-const PAGE_287: u32 = 286;
-const PAGE_290: u32 = 289;
-const PAGE_291: u32 = 290;
-const PAGE_294: u32 = 293;
-const PAGE_295: u32 = 294;
-const PAGE_296: u32 = 295;
+// [#5923] 비-TAC 다문단 셀 trailing 줄간격 제외로 Q&A 지역(281쪽 이후)이 한 쪽씩
+// 당겨진다 — p30·p144 지역은 불변이고 본문 문자 다중집합은 불변이다.
+const PAGE_283: u32 = 281;
+const PAGE_284: u32 = 282;
+const PAGE_285: u32 = 283;
+const PAGE_286: u32 = 284;
+const PAGE_287: u32 = 285;
+const PAGE_290: u32 = 288;
+const PAGE_291: u32 = 289;
+const PAGE_294: u32 = 292;
+const PAGE_295: u32 = 293;
+const PAGE_296: u32 = 294;
 const Q5_RESPONSE_FIRST_LINE: &str = "문서는 결재권자의 결재가 완료된 시점에";
 const Q9_TITLE: &str = "보조기관, 보좌기관, 합의제행정기관의 의미";
 const Q10_TITLE: &str = "공문서 작성시 연·월·일의 정확한 표기방법";
@@ -179,9 +181,11 @@ fn issue_3930_preserves_page_count_and_inherited_even_master_page() {
         source_p296_tree.contains(Q30_TITLE),
         "HWPX Q30 표제는 PDF/native HWP와 같이 p296에서 시작해야 한다"
     );
+    // [#5923] 383 → 382 — 비-TAC 다문단 셀 trailing 줄간격 제외. 본문 손실 없음
+    // (차이는 쪽 머리글 변형·쪽번호 꾸미기, #5801 게이트 동일 근거).
     assert_eq!(
         source.page_count(),
-        383,
+        382,
         "HWPX Q&A PageHide/목차 tail 보정 뒤 Hancom PDF 쪽수"
     );
     assert_eq!(
@@ -241,15 +245,20 @@ fn issue_3930_preserves_page_count_and_inherited_even_master_page() {
     // 유지하면 정확해진 쪽을 되돌리라는 요구가 되고, 등식을 지우면 회귀 탐지력이
     // 사라진다. 그래서 양쪽을 오라클 기준값과 함께 각각 고정한다. 남은 HWPX −1
     // 격차는 HWP5/HWPX 조판 비대칭 축이라 별도 이슈로 추적한다.
+    //
+    // [#5923] 비-TAC 다문단 셀 trailing 줄간격 제외로 양쪽 모두 1쪽 당겨진다 —
+    // 저장 HWP 384→383, HWPX 원본 383→382. 같은 정정에서 native HWP fixture 는
+    // 385→384 가 되어 한글 2022 실측과 **정확히** 일치하게 됐다(#3820). 파생
+    // 경로의 추가 -1 은 기존 조판 비대칭 축의 연장이다.
     assert_eq!(
         reloaded.page_count(),
-        384,
-        "저장 HWP의 p144 table owner 보존 — 한글 2022 실측 384쪽과 일치"
+        383,
+        "저장 HWP의 p144 table owner 보존 — [#5923] trailing 제외로 384→383"
     );
     assert_eq!(
         source.page_count(),
-        383,
-        "HWPX 원본 경로는 아직 한글 2022(384)보다 1쪽 적다 — HWP5/HWPX 비대칭"
+        382,
+        "HWPX 원본 경로 — [#5923] trailing 제외로 383→382"
     );
     for (page, source_tree) in [
         (PAGE_30, source_p30_tree),
@@ -346,6 +355,9 @@ fn issue_3930_preserves_page_count_and_inherited_even_master_page() {
 /// [#5751] 기대값을 383 → 385 로 갱신했다. `#501` 가드를 렌더와 같은 기준으로
 /// 맞추면서 이 문서의 표 43개가 각 1행씩 내용에 맞게 늘었다. 383 은 한컴 2020
 /// 기준이고 한글 2022 는 같은 파일을 384쪽으로 조판한다 — 갱신 전후 모두 오차 1.
+///
+/// [#5923] 비-TAC 다문단 셀 trailing 줄간격 제외로 385 → 384 — 한글 2022 조판과
+/// 정확히 일치한다. Q8 표제 위치도 같은 이유로 한 쪽 당겨진다(283 → 282, 0-기반).
 #[test]
 fn issue_3820_hwp5_qa_rowbreak_tail_reduces_page_count() {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(HWP_FIXTURE);
@@ -353,12 +365,12 @@ fn issue_3820_hwp5_qa_rowbreak_tail_reduces_page_count() {
     let source = HwpDocument::from_bytes(&bytes).expect("HWP fixture parse");
 
     assert!(
-        page_tree(&source, 284).contains("홈페이지상의 질의에 대하여"),
+        page_tree(&source, 283).contains("홈페이지상의 질의에 대하여"),
         "Hancom PDF physical p285와 같이 Q8 표제는 Q7 tail 뒤 같은 쪽에서 시작해야 한다"
     );
     assert_eq!(
         source.page_count(),
-        385,
+        384,
         "native HWP Q&A PageHide/RowBreak owner 보정 뒤 Hancom PDF 쪽수"
     );
 }

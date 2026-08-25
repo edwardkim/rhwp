@@ -97,8 +97,17 @@ function expectedReportedMethod(format, passwordProtected = false) {
   return passwordProtected ? 'exportHwpxWithPasswordAndReport' : 'exportHwpxWithReport';
 }
 
+async function dismissSkinOnboarding(page) {
+  await page.evaluate(() => {
+    const start = [...document.querySelectorAll('button.dialog-btn-primary')]
+      .find((button) => button.textContent?.trim() === '시작하기' && button.offsetParent !== null);
+    start?.click();
+  });
+}
+
 async function loadMemoryPatchedSample(page) {
   await loadApp(page);
+  await dismissSkinOnboarding(page);
   const loaded = await page.evaluate(async ({
     sampleUrl,
     sampleName,
@@ -368,6 +377,7 @@ async function harnessSnapshot(page) {
       blobInfo,
       downloadName: state.downloadName,
       dirty: window.__documentState?.isDirty?.() ?? null,
+      requiresPasswordForSave: window.__wasm?.requiresPasswordForSave ?? null,
     };
   }, { noticePrefix: NOTICE_PREFIX });
 }
@@ -934,6 +944,31 @@ await runTest('Issue #4430 content-loss artifact reaches explicit Studio saves',
   assert(snapshot.alerts.length === 0, 'fallback-name cancellation is not a save error');
   assertNoNotice(snapshot, 'fallback-name cancellation after a real reported export');
   assert(snapshot.dirty === true, 'fallback-name cancellation leaves the document dirty');
+  await markDocumentCleanForNavigation(page);
+
+  setTestCase('failed unprotected Save As preserves prior password-protected state');
+  await loadMemoryPatchedSample(page);
+  await installPersistenceHarness(page, { picker: 'error', anchor: 'error' });
+  await page.evaluate(() => { window.__wasm.requiresPasswordForSave = true; });
+  await markDocumentDirty(page);
+  await clickFileCommand(page, EXPECTED.hwp.command);
+  await enterSaveAsName(page, 'issue4430-protection-preserve', 'confirm');
+  await waitForHarnessEvent(page, 'picker:error');
+  await enterSaveAsName(page, 'issue4430-protection-preserve', 'confirm');
+  await waitForHarnessEvent(page, 'alert');
+  await waitForHarnessEvent(page, 'revokeObjectURL');
+  snapshot = await harnessSnapshot(page);
+  assertEventOrder(snapshot.events, [
+    'reported:exportHwpWithReport:report',
+    'picker:error',
+    'objectURL',
+    'anchor:throw',
+    'alert',
+    'revokeObjectURL',
+  ], 'failed unprotected Save As from a protected document');
+  assert(snapshot.requiresPasswordForSave === true,
+    'failed unprotected Save As does not clear the prior password-protected intent');
+  assert(snapshot.dirty === true, 'failed unprotected Save As leaves the document dirty');
   await markDocumentCleanForNavigation(page);
 
   setTestCase('anchor failure reports save error but never publishes content-loss notice');

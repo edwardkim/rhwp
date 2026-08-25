@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-08-22
+last_verified: 2026-08-24
 ---
 
 # 시각·fixture 증적
@@ -24,6 +24,16 @@ visual sweep을 실제 검토 근거로 쓰면 review 문서에 다음을 모두
 - 검토한 페이지 수와 자동 후보 수
 - pixel match, visual_accuracy_proxy_percent
 - 사람이 확인한 결과와 PR 주장과의 관계
+
+대표 review PNG는 파일 경로와 수치만 확인하지 않는다. PR comment나 archive 증적으로 쓰기 전에 실제
+이미지를 열어 다음을 확인한다.
+
+- HWP/PDF 본문 렌더와 visual_sweep이 덧그린 도구 라벨을 구분해 본다.
+- 도구 라벨의 한글 glyph, metric 수치, overlay legend가 tofu·`??`·잘림 없이 판독 가능한지 본다.
+- 낮은 `visual_accuracy_proxy_percent`를 “전체 fidelity 통과”처럼 쓰지 않고, PR 주장과 직접 연결되는
+  blocker 해소 근거인지 별도 residual인지 분리해 적는다.
+- 증적 생성 도구의 폰트·라벨 문제처럼 제품 렌더와 무관한 결함은 별도 issue로 등록하고, 해당 PR
+  comment에는 그 한계를 함께 쓴다.
 
 Codex 또는 Claude가 이미지를 확인했더라도 작업지시자 승인 전에는 시각 판정을 최종 통과라고 단정하지 않는다.
 원본 HWP/HWPX, 기준 PDF, visual sweep 결과의 출처·역할·SHA-256을 구분해 보존한다.
@@ -48,9 +58,8 @@ rhwp info --json <원본 HWP 또는 HWPX>
 ```
 
 `lastSavedWith.product`가 `hancom-office-2010`·`hancom-office-2018`·`hancom-office-2020`·
-`hancom-office-2022`이면 [HWP 2020 MCP 사용법](../mcp_hwp2020Convert_usage.md)의
-`hwp-convert-2020`을, `hancom-office-2024`이면
-[HWP 2024 MCP 사용법](../mcp_hwp2024Convert_usage.md)의 `hwp-convert-2024`를 사용한다.
+`hancom-office-2022`이면 [HWP 2024 MCP 사용법](../mcp_hwp2024Convert_usage.md)의 통합 Windows
+service에서 engine `2020`을, `hancom-office-2024`이면 같은 service의 engine `2024`를 사용한다.
 이 판정은 HWP5 `HwpSummaryInformation.revisionNumber`와 HWPX `version.xml/appVersion`의 마지막 저장
 메타데이터를 사용한다. 확장자와 파일 포맷 `version`만으로 서비스를 선택하지 않는다.
 
@@ -62,14 +71,18 @@ rhwp info --json <원본 HWP 또는 HWPX>
   `pdf/{원본 stem}-2024.pdf`에 저장한다.
 - 50MB 미만 MCP 산출 PDF는 commit 가능한 장기 증적이다. 큰 PDF는 pdf-large와 Git LFS 정책을 따른다.
 - 서버 URL, IP, 인증 token, .env.local 내용은 GitHub issue·PR·review 문서·로그에 기록하지 않는다.
-- 두 원격 서비스는 rhwp maintainer, collaborator 또는 MCP 관리자가 별도로 인증한 사용자만 사용한다.
+- 원격 service는 rhwp maintainer, collaborator 또는 MCP 관리자가 별도로 인증한 사용자만 사용한다.
 - 원본 크기와 예상 페이지 수를 먼저 확인한다. 페이지가 많거나 거대·중첩 표, 성능 sample은
   timeout_seconds를 900–1800초로 늘린다.
 - VS Code MCP 호출이 timeout되어도 서버 job이 성공했을 수 있다. CLI로 재호출해 로컬 PDF 수신까지 확인한다.
 
-HWP 2020 MCP의 성공 조건은 CLI `status: success`, server `run_status: 0`, `validation: ok`다.
-HWP 2024 MCP는 동기 `status: success` 또는 비동기 `succeeded → success`, client/server byte 수와
-SHA-256 일치를 확인한다. 공통으로 `pdf/` 아래 실제 PDF 존재와 `file` 또는 `pdfinfo` 확인이 필요하다.
+통합 Windows MCP는 동기 `status: success` 또는 비동기 `succeeded → success`, 요청한 `--engine`과
+비동기 `start`·`status` 응답의 `engine` 일치, client/server byte 수와 SHA-256 일치를 확인한다.
+2022 이하 저장본에는 `--engine 2020`, 2024 저장본에는 `--engine 2024`를 명시한다. `server.engine`은
+concrete backend 식별자일 수 있으므로 저장 버전별 engine 선택의 판정 기준으로 사용하지 않는다.
+`engine_profile`과 `hancom_version`은 서버가 제공할 때만 추가 증적으로 기록하며, 부재만으로 실패로
+판단하지 않는다.
+공통으로 `pdf/` 아래 실제 PDF 존재와 `file` 또는 `pdfinfo` 확인이 필요하다.
 review 문서에는 MCP 선택 전 `info --json`의 `format`·`lastSavedWith` 값, 사용한 서비스 버전, 원본
 경로·가능하면 SHA-256·출처 URL, PDF 경로·SHA-256, MCP job id, 서비스별 status·validation metadata·페이지 수,
 사용한 visual sweep asset과 지표를 적는다.

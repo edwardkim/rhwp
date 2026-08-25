@@ -242,6 +242,9 @@ const commandServices: CommandServices = {
   getInputHandler: () => inputHandler,
   getViewportManager: () => canvasView?.getViewportManager() ?? null,
   gotoPage: (globalPage) => canvasView?.gotoPage(globalPage) ?? false,
+  refreshDocumentStatus: () => {
+    sbMessage().textContent = `${wasm.fileName} — ${wasm.pageCount}페이지`;
+  },
   setEditMode,
 };
 
@@ -1397,6 +1400,7 @@ async function loadBytes(
     // 메타-only 로 기록한다 — 목록에는 남기되 자동 재열기는 핸들 있는 항목만 가능하다.
     // 자동저장 복구본은 options.skipRecent 로 제외.
     if (!options.skipRecent) {
+      recentSubmenuExpanded = false;
       void addRecentDoc({
         fileName: wasm.fileName,
         sourceFormat: wasm.getSourceFormat(),
@@ -1415,6 +1419,9 @@ async function loadBytes(
     });
   });
 }
+
+const RECENT_SUBMENU_COLLAPSED_LIMIT = 8;
+let recentSubmenuExpanded = false;
 
 /** 파일 메뉴 "최근 문서" 서브패널을 최신 목록으로 다시 렌더한다(메뉴 open 시 호출). */
 async function renderRecentSubmenu(): Promise<void> {
@@ -1436,6 +1443,7 @@ async function renderRecentSubmenu(): Promise<void> {
     right?: string;
     disabled?: boolean;
     title?: string;
+    onClick?: () => void;
   }): HTMLElement => {
     const item = document.createElement('div');
     item.className = opts.disabled ? 'md-item disabled' : 'md-item';
@@ -1454,6 +1462,13 @@ async function renderRecentSubmenu(): Promise<void> {
       right.textContent = opts.right;
       item.append(right);
     }
+    if (opts.onClick) {
+      item.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        opts.onClick?.();
+      });
+    }
     return item;
   };
 
@@ -1461,7 +1476,10 @@ async function renderRecentSubmenu(): Promise<void> {
   if (recents.length === 0) {
     frag.append(makeItem({ label: '(최근 문서 없음)', disabled: true }));
   } else {
-    for (const doc of recents) {
+    const visibleRecents = recentSubmenuExpanded
+      ? recents
+      : recents.slice(0, RECENT_SUBMENU_COLLAPSED_LIMIT);
+    for (const doc of visibleRecents) {
       frag.append(
         makeItem({
           label: doc.fileName,
@@ -1471,6 +1489,15 @@ async function renderRecentSubmenu(): Promise<void> {
           title: doc.fileName,
         }),
       );
+    }
+    if (!recentSubmenuExpanded && recents.length > RECENT_SUBMENU_COLLAPSED_LIMIT) {
+      frag.append(makeItem({
+        label: `최근 문서 더보기 (${recents.length - RECENT_SUBMENU_COLLAPSED_LIMIT}개)`,
+        onClick: () => {
+          recentSubmenuExpanded = true;
+          void renderRecentSubmenu();
+        },
+      }));
     }
     const sep = document.createElement('div');
     sep.className = 'md-sep';

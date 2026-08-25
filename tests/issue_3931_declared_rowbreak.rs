@@ -271,9 +271,10 @@ fn issue_3931_keeps_pr4763_hwp_page_count_contract() {
     let document = HwpDocument::from_bytes(&read_fixture()).expect("paginate #3931 HWP fixture");
     // [#5751] 383(한컴 2020 기준) → 385. 한글 2022 는 이 문서를 384쪽으로 조판하므로
     // 갱신 전후 모두 오차 1 이다. 모듈 주석의 근거 참조.
+    // [#5923] 다문단 셀 trailing 줄간격 제외로 385 → 384 — 한글 2022 조판과 일치.
     assert_eq!(
         document.page_count(),
-        385,
+        384,
         "#3931 fragment containment must preserve the #4763 HWP page-count contract"
     );
 }
@@ -302,9 +303,11 @@ fn issue_3931_hwpx_keeps_existing_fragment_route() {
         Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/2025 행정업무운영 편람(최종).hwpx");
     let bytes = fs::read(&path).unwrap_or_else(|error| panic!("read {}: {error}", path.display()));
     let document = HwpDocument::from_bytes(&bytes).expect("paginate #3931 HWPX fixture");
+    // [#5923] 다문단 셀 trailing 줄간격 제외로 383 → 382. 본문 문자 다중집합은
+    // 불변이고 차이는 쪽 머리글 변형·쪽번호 꾸미기다 (#5801 게이트 동일 근거).
     assert_eq!(
         document.page_count(),
-        383,
+        382,
         "#3931 fragment containment must preserve the #4763 HWPX page-count contract"
     );
     let (question_page, answer_page) = paragraph_text_pages(

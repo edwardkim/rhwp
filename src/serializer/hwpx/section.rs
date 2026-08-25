@@ -744,7 +744,8 @@ pub(crate) fn render_paragraph_parts(
     vert_start: u32,
     ctx: &mut SerializeContext,
 ) -> (String, String, u32) {
-    let (runs_xml, position_axis_intact, serialized_axis_end) = render_runs(para, ctx);
+    let (runs_xml, position_axis_intact, serialized_axis_end, mut hwp5_only_slot_positions) =
+        render_runs(para, ctx);
 
     // [#4778] 위치 축이 무너진 문단(파서가 담지 못한 8유닛 슬롯 — 예: 차례표지
     // 0x0008 — 이 있거나 mismatch 폴백으로 컨트롤을 말미에 몰아쓴 문단)에는 저장
@@ -769,15 +770,54 @@ pub(crate) fn render_paragraph_parts(
     // 직렬화기는 그 Field 슬롯과 안내문을 다시 방출한다. 이때 IR `char_count`만
     // 상한으로 쓰면 필드 뒤의 정상 lineseg까지 잘려 셀 세로 정렬이 달라진다
     // (issue1893의 `textpos=25`). 실제 방출한 축 끝도 함께 써야 한다.
-    let line_seg_axis_end = para.char_count.max(serialized_axis_end);
+    //
+    // [#5943] 그 상한을 쓰기 전에 **축을 HWPX 쪽으로 내린다**. HWP5 문단 축은 구역 정의와
+    // 템플릿 흡수 단 정의에도 8유닛씩을 주지만 HWPX 문단에는 그 자리가 없다(`hp:secPr` 은
+    // 구역 머리 run 소속). 그래서 구역 첫 문단에서 두 축이 16유닛 어긋나고, 원본 그대로 실은
+    // `textpos` 가 한글이 세는 자리보다 뒤를 가리킨다. 한글 2024 는 그 문단부터 본문을
+    // 폐기한다(02502.h2x: 9쪽 6,040자 → 1쪽 423자. `textpos` 를 48→40 으로 내리면 여전히
+    // 실패, **32 로 내리면 완전 복원** — 축이 16 짧다는 직접 증거다). 2022 는 관대했다.
+    // `char_count` 도 HWP5 축이므로 상한에서 같은 폭을 뺀다.
+    //
+    // 단 **HWPX 출처는 손대지 않는다**. `LineSeg::text_start` 는 파서가 파일 값을 그대로
+    // 담으므로 출처마다 축이 다르다 — HWPX 원본의 `textpos` 는 이미 HWPX 축이라 한 번 더
+    // 빼면 왕복이 깨진다(aift.hwpx 문단 0: `textpos 24 → 8`).
+    let hwp5_only_units = if ctx.line_segs_on_hwpx_axis {
+        hwp5_only_slot_positions.clear();
+        0
+    } else {
+        8 * hwp5_only_slot_positions.len() as u32
+    };
+    let rebased_line_segs: Option<Vec<LineSeg>> =
+        (!hwp5_only_slot_positions.is_empty() && !para.line_segs.is_empty()).then(|| {
+            para.line_segs
+                .iter()
+                .map(|seg| {
+                    let shift = 8 * hwp5_only_slot_positions
+                        .iter()
+                        .filter(|&&pos| pos < seg.text_start)
+                        .count() as u32;
+                    LineSeg {
+                        text_start: seg.text_start.saturating_sub(shift),
+                        ..seg.clone()
+                    }
+                })
+                .collect()
+        });
+    let source_line_segs = rebased_line_segs.as_deref().unwrap_or(&para.line_segs);
+
+    let line_seg_axis_end = para
+        .char_count
+        .max(serialized_axis_end)
+        .saturating_sub(hwp5_only_units);
     let axis_line_segs = if para.stored_text_partition_is_dirty() {
         // The retained rows are an edit-reflow template, not a partition of
         // the current text. Omit the cache and let the consumer recompute it.
-        &para.line_segs[..0]
+        &source_line_segs[..0]
     } else if line_seg_axis_end > 0 {
-        line_segs_within_text_axis(&para.line_segs, line_seg_axis_end)
+        line_segs_within_text_axis(source_line_segs, line_seg_axis_end)
     } else {
-        &para.line_segs[..]
+        source_line_segs
     };
 
     // [#5847] 줄 전체가 reflow 합성(bit31)인 문단 — 원본에 linesegarray 가 없어
@@ -1263,15 +1303,38 @@ fn split_text_into(splitter: &mut RunSplitter, para: &Paragraph, cursor: &mut In
     flush_trailing_title_marks(&mut splitter.content, &para.tab_extended, cursor);
 }
 
+/// [#5943] 슬롯을 방출하되 **XML 을 한 글자도 내지 않았으면** 그 위치를 기록한다.
+///
+/// HWP5 문단 축에서 확장 제어는 예외 없이 8유닛을 차지하지만, HWPX 에는 대응 요소가
+/// 문단 안에 없는 컨트롤이 있다 — 구역 정의(`hp:secPr` 은 문단이 아니라 구역 머리 run 이
+/// 싣는다)와 첫 문단이 템플릿에 흡수시킨 첫 단 정의가 그것이다. 이 슬롯들은 위치 계산을
+/// 위해 축을 8씩 전진시키지만 방출 XML 은 비어 있으므로, **한글이 세는 HWPX 축은 그만큼
+/// 짧다**. 어느 컨트롤이 비는지는 arm 유무와 consume-once 상태에 함께 걸려 있어 종류로
+/// 판정하면 틀리므로, 실제 방출 길이 변화로 본다.
+fn render_control_slot_tracked(
+    out: &mut String,
+    control: &Control,
+    ctx: &mut SerializeContext,
+    hwp5_pos: u32,
+    hwp5_only_slot_positions: &mut Vec<u32>,
+) {
+    let before = out.len();
+    render_control_slot(out, control, ctx);
+    if out.len() == before {
+        hwp5_only_slot_positions.push(hwp5_pos);
+    }
+}
+
 /// Paragraph 본문을 완전한 `<hp:run>` 시퀀스로 직렬화한다 (#1378 다중 run 분할).
 ///
-/// 반환: (run 시퀀스 XML, **위치 축 보존 여부**, 실제 방출한 UTF-16 축 끝).
+/// 반환: (run 시퀀스 XML, **위치 축 보존 여부**, 실제 방출한 UTF-16 축 끝,
+/// [#5943] HWP5 축에서만 자리를 차지한 슬롯들의 위치).
 ///
 /// [#4778] 두 번째 값이 `false` 면 방출된 텍스트 스트림이 원본 8유닛 슬롯 축과
 /// 어긋난 상태다(파서 미수용 슬롯 또는 mismatch 폴백). 호출부는 이때 저장
 /// lineseg 방출을 억제해야 한다 — textpos 사다리와 어긋난 lineseg 는 한글이
 /// 그 문단부터 본문을 통째 폐기하는 트리거다.
-fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool, u32) {
+fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool, u32, Vec<u32>) {
     // ID 참조 무결성 (구현계획서 1.5): 실제 char_shapes entry 만 reference.
     // 빈 IR 의 fallback 0 은 제외 — char_shapes 미등록 문서(`Document::default()`)의
     // 직렬화를 깨지 않도록.
@@ -1292,7 +1355,7 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool, u
         && para.title_marks.is_empty()
     {
         // 방출할 것이 없는 문단 — 옮길 슬롯도 없으므로 위치 축은 그대로다.
-        return (String::new(), true, 0);
+        return (String::new(), true, 0, Vec::new());
     }
 
     let mut splitter = RunSplitter::new(para);
@@ -1434,6 +1497,7 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool, u
             splitter.finish(),
             slot_count == 0 || marker_count >= slot_count,
             0,
+            Vec::new(),
         );
     }
 
@@ -1478,6 +1542,7 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool, u
             splitter.finish(),
             marker_count >= shortfall || text_unshifted_and_in_range,
             0,
+            Vec::new(),
         );
     }
 
@@ -1490,6 +1555,9 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool, u
     let mut text_buf = String::new();
     let mut slot_idx = 0usize;
     let mut expected_utf16_pos = 0u32;
+    // [#5943] XML 을 한 글자도 내지 않은 슬롯의 **HWP5 축** 위치. 저장 lineseg 의
+    // `textpos` 를 HWPX 축으로 내릴 때 쓴다 — 아래 `render_control_slot_tracked` 주석.
+    let mut hwp5_only_slot_positions: Vec<u32> = Vec::new();
     let mut field_end_emitted = vec![false; para.field_ranges.len()];
     // [Task #1556] 고아 fieldEnd 방출 추적.
     let mut orphan_emitted = vec![false; para.orphan_field_ends.len()];
@@ -1502,7 +1570,13 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool, u
     if para.text.is_empty() {
         while slot_idx < slots.len() {
             splitter.cut_before(expected_utf16_pos);
-            render_control_slot(&mut splitter.content, slots[slot_idx], ctx);
+            render_control_slot_tracked(
+                &mut splitter.content,
+                slots[slot_idx],
+                ctx,
+                expected_utf16_pos,
+                &mut hwp5_only_slot_positions,
+            );
             let emitted_ctrl_idx = slot_ctrl_indices[slot_idx];
             slot_idx += 1;
             expected_utf16_pos = expected_utf16_pos.saturating_add(8);
@@ -1601,7 +1675,13 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool, u
             );
             // 슬롯 시작 위치의 경계 — 슬롯은 새 run 소속 (규칙 1)
             splitter.cut_before(expected_utf16_pos);
-            render_control_slot(&mut splitter.content, slots[slot_idx], ctx);
+            render_control_slot_tracked(
+                &mut splitter.content,
+                slots[slot_idx],
+                ctx,
+                expected_utf16_pos,
+                &mut hwp5_only_slot_positions,
+            );
             let emitted_ctrl_idx = slot_ctrl_indices[slot_idx];
             slot_idx += 1;
             expected_utf16_pos = expected_utf16_pos.saturating_add(8);
@@ -1659,7 +1739,13 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool, u
                 &mut cursor,
             );
             splitter.cut_before(expected_utf16_pos);
-            render_control_slot(&mut splitter.content, slots[slot_idx], ctx);
+            render_control_slot_tracked(
+                &mut splitter.content,
+                slots[slot_idx],
+                ctx,
+                expected_utf16_pos,
+                &mut hwp5_only_slot_positions,
+            );
             slot_idx += 1;
             expected_utf16_pos = expected_utf16_pos.saturating_add(8);
             continue;
@@ -1713,7 +1799,13 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool, u
                 &mut cursor,
             );
             splitter.cut_before(expected_utf16_pos);
-            render_control_slot(&mut splitter.content, slots[slot_idx], ctx);
+            render_control_slot_tracked(
+                &mut splitter.content,
+                slots[slot_idx],
+                ctx,
+                expected_utf16_pos,
+                &mut hwp5_only_slot_positions,
+            );
             slot_idx += 1;
             expected_utf16_pos = expected_utf16_pos.saturating_add(8);
             continue;
@@ -1810,7 +1902,13 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool, u
 
     while slot_idx < slots.len() {
         splitter.cut_before(expected_utf16_pos);
-        render_control_slot(&mut splitter.content, slots[slot_idx], ctx);
+        render_control_slot_tracked(
+            &mut splitter.content,
+            slots[slot_idx],
+            ctx,
+            expected_utf16_pos,
+            &mut hwp5_only_slot_positions,
+        );
         let emitted_ctrl_idx = slot_ctrl_indices[slot_idx];
         slot_idx += 1;
         expected_utf16_pos = expected_utf16_pos.saturating_add(8);
@@ -1844,7 +1942,12 @@ fn render_runs(para: &Paragraph, ctx: &mut SerializeContext) -> (String, bool, u
             field_end_emitted[i] = true;
         }
     }
-    (splitter.finish(), axis_faithful, expected_utf16_pos)
+    (
+        splitter.finish(),
+        axis_faithful,
+        expected_utf16_pos,
+        hwp5_only_slot_positions,
+    )
 }
 
 fn inferred_control_slot_count(para: &Paragraph) -> usize {
@@ -2083,6 +2186,17 @@ fn render_control_slot(out: &mut String, control: &Control, ctx: &mut SerializeC
         Control::Field(f) => {
             // fieldBegin은 <hp:ctrl>...</hp:ctrl>로 감싸야 함 (Table/Picture와 달리)
             out.push_str("<hp:ctrl>");
+            // [#5866] HWP5 출처 메모(command `MEMO/…`)는 한글 실측 형상(파라미터
+            // 6종 + 빈 subList)으로 방출한다 — CROSSREF 로 굳히면 필드 범위
+            // 숨김이 풀려 메모 대상 텍스트가 본문에 붙는다.
+            if let Some(memo_children) = super::field::memo_field_children_xml(f) {
+                out.push_str(&super::field::field_begin_open_tag(f));
+                out.push('>');
+                out.push_str(&memo_children);
+                out.push_str("</hp:fieldBegin>");
+                out.push_str("</hp:ctrl>");
+                return;
+            }
             let generated_params = generated_field_parameters(f);
             let has_params = f.raw_parameters_xml.is_some() || generated_params.is_some();
             let has_memo = f.field_type == crate::model::control::FieldType::Memo

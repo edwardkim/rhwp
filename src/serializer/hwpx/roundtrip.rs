@@ -613,7 +613,18 @@ fn is_hwp_to_hwpx_incomparable(d: &IrDifference) -> bool {
         IrDifference::FieldContent { detail, .. } => {
             const PREFIX: &str = r#"parameters: expected=None actual=Some("<hp:parameters cnt=\"1\" name=\"\"><hp:stringParam name=\"Command\">"#;
             const SUFFIX: &str = r#"</hp:stringParam></hp:parameters>")"#;
-            detail.starts_with(PREFIX) && detail.ends_with(SUFFIX)
+            if detail.starts_with(PREFIX) && detail.ends_with(SUFFIX) {
+                return true;
+            }
+            // [#5866] 메모 승격의 의도된 정규화 두 건 — HWP5 원본은 command 만 갖고,
+            // 산출 HWPX 재파싱은 memo_field_children_xml 이 만든 파라미터 6종
+            // (Command 원문 포함)과 빈 subList 문단 1개를 갖는다. cnt·Command
+            // prefix 까지 고정해 다른 parameters 변화를 숨기지 않는다.
+            const MEMO_PREFIX: &str = r#"parameters: expected=None actual=Some("<hp:parameters cnt=\"6\" name=\"\"><hp:integerParam name=\"Prop\">0</hp:integerParam><hp:stringParam name=\"Command\">MEMO/"#;
+            if detail.starts_with(MEMO_PREFIX) {
+                return true;
+            }
+            detail == "memo paragraphs: expected=0 actual=1"
         }
         _ => false,
     }
@@ -1097,6 +1108,20 @@ fn axis_comparable_line_segs(
     crate::serializer::body_text::line_segs_within_text_axis(&para.line_segs, axis_end)
 }
 
+/// [#5943] 이 문단에서 HWPX 슬롯 축 재기준화로 설명 가능한 `textpos` 이동 상한.
+///
+/// `hp:secPr`·`hp:colPr` 은 HWPX 문단 슬롯 축을 차지하지 않으므로 슬롯당 8유닛씩만
+/// 내려갈 수 있다. 그 문단이 실제로 들고 있는 개수로 상한을 잡으므로, secd·cold 가
+/// 없는 평범한 문단은 0 — 허용치가 전혀 생기지 않는다.
+fn axis_rebase_cap(pa: &crate::model::paragraph::Paragraph) -> u32 {
+    use crate::model::control::Control;
+    8 * pa
+        .controls
+        .iter()
+        .filter(|c| matches!(c, Control::SectionDef(_) | Control::ColumnDef(_)))
+        .count() as u32
+}
+
 /// 문단 1쌍의 lineseg 비교 + 컨트롤 내부 문단 재귀 (`diff_paragraph_char_shapes` 와
 /// 동일 경로 순회).
 fn diff_paragraph_linesegs(
@@ -1153,9 +1178,24 @@ fn diff_paragraph_linesegs_with_axis(
             },
         });
     }
+    // [#5943] HWP5 축 ↔ HWPX 축 교차 비교의 `textpos` 허용치.
+    //
+    // `hp:secPr`·`hp:colPr` 은 HWPX 문단 슬롯 축을 차지하지 않으므로, HWP5 출처를 HWPX 로
+    // 내면 저장 lineseg 의 `textpos` 가 그만큼 내려간다(그렇게 내지 않으면 한글 2024 가
+    // 본문을 폐기한다 — #5943). 그 산출을 다시 읽어 원본 IR 과 대면 비교하는 `--verify`
+    // 에서는 두 축이 정당하게 다르므로, **그 문단에 실제로 있는 secd·cold 슬롯으로
+    // 설명되는 만큼만** 봐준다. 위양성을 없애되 임의의 어긋남은 그대로 잡는다.
+    let axis_rebase_cap = axis_rebase_cap(pa);
     for (idx, (sa, sb)) in la.iter().zip(lb.iter()).enumerate() {
+        // 줄 하나가 내려간 폭이 8의 배수이고 상한 안이면 재기준화로 설명된다.
+        let shift = sa.text_start.checked_sub(sb.text_start).unwrap_or(u32::MAX);
+        let text_start_a = if shift > 0 && shift % 8 == 0 && shift <= axis_rebase_cap {
+            sb.text_start
+        } else {
+            sa.text_start
+        };
         let fields: [(&'static str, i64, i64); 9] = [
-            ("textpos", sa.text_start as i64, sb.text_start as i64),
+            ("textpos", text_start_a as i64, sb.text_start as i64),
             ("vertpos", sa.vertical_pos as i64, sb.vertical_pos as i64),
             ("vertsize", sa.line_height as i64, sb.line_height as i64),
             ("textheight", sa.text_height as i64, sb.text_height as i64),

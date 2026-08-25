@@ -283,9 +283,9 @@ pub const MAP: &[CommandProvenance] = &[
         command: "csv-to-chart",
         untrusted: &[f(
             "changed[].from",
-            "ooxml_chart::data — CSV를 적용하기 전 차트 c:v 에 있던 문서 값",
+            "ooxml_chart::data — CSV를 적용하기 전 차트 c:v 에 있던 문서 값(값·계열명·카테고리 라벨, #5652 구조 편집 항목 포함)",
         )],
-        note: "csv·to·wrote 는 호출자 입력 또는 엔진값이고, 변경 전 값(from)만 문서에서 왔다.",
+        note: "csv·to·wrote·op 는 호출자 입력 또는 엔진값이고, 변경 전 값(from)만 문서에서 왔다.",
     },
     CommandProvenance {
         command: "dump-pages",
@@ -357,6 +357,12 @@ pub const MAP: &[CommandProvenance] = &[
                 "화면상 같아 보이는 **문서의 다른 누름틀 이름들** (#3707)",
             ),
             f("oldText", "set-cell 이 덮어쓰기 전 셀에 있던 문서 텍스트"),
+            // [#5652] set-chart-data — 코어 diff 를 봉투에 싣는다. 변경 전 값(값·계열명·라벨)은
+            // 차트 c:v 에서 왔다.
+            f(
+                "changed[].from",
+                "set-chart-data 가 덮어쓰기 전 차트 c:v 에 있던 문서 값(값·계열명·카테고리 라벨)",
+            ),
             // [#3885] redact — 마스킹 전 원문. 개인정보 그 자체이므로 이 경로의 값은
             // 로그·이슈에 옮기지 않는다(--no-raw 면 봉투에 없어 표지에서도 빠진다).
             f(

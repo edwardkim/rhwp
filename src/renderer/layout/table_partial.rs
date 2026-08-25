@@ -6,7 +6,7 @@ use super::super::height_measurer::MeasuredTable;
 use super::super::page_layout::LayoutRect;
 use super::super::render_tree::*;
 use super::super::style_resolver::ResolvedStyleSet;
-use super::super::{hwpunit_to_px, ShapeStyle};
+use super::super::{hwpunit_to_px, px_to_hwpunit, ShapeStyle};
 use super::border_rendering::{
     build_row_col_x, collect_cell_borders, render_edge_borders, render_transparent_borders,
 };
@@ -1367,7 +1367,38 @@ impl LayoutEngine {
             // [#3637] 이 조각에서 **실제로 그려지는 첫 문단**의 vpos. 아래 중첩 표
             // 문단 스냅이 쓰는 조각 원점이다. `line_segs.first()` 를 그대로 쓰면 셀
             // 전체 좌표라 연속 조각에서 원점만큼 통째로 밀린다.
-            let frag_vpos_origin = fragment_vpos_origin(cell, line_ranges.as_deref());
+            let mut frag_vpos_origin = fragment_vpos_origin(cell, line_ranges.as_deref());
+            // [#5880] 조각이 **중첩 표 호스트 문단의 중간 유닛**에서 시작하면(앞 쪽이
+            // 표의 앞 행들을 이미 그렸으면) 그 문단의 소비된 유닛 높이만큼 원점을
+            // 내린다. 호스트 문단은 표 전체가 저장 lineseg 한 줄이라 line_ranges 가
+            // 소비분을 표현하지 못하고, 원점이 문단 머리(vpos)에 남아 후속 문단
+            // 스냅이 소비분(2737927 p5: 행0·1 = 81px)만큼 아래로 밀렸다 — 밀린
+            // 조각 끝의 표·각주가 조각 상자를 넘어 clip 소실(-187자, 12줄).
+            // 텍스트 문단의 연속 조각은 line_ranges 의 start_line seg 가 이미 조각
+            // 상대 원점이므로(기존 #3637 계약) start_line==0 인 경우만 보정한다.
+            if let Some((su, _)) = cut_units {
+                if su > 0 {
+                    let units = self.cell_units(cell, table, styles);
+                    if let Some(first_unit) = units.get(su) {
+                        let first_para = first_unit.para_idx;
+                        let starts_at_line0 = line_ranges
+                            .as_deref()
+                            .and_then(|ranges| ranges.get(first_para))
+                            .is_none_or(|&(start, _)| start == 0);
+                        if starts_at_line0 {
+                            let consumed_px: f64 = units[..su]
+                                .iter()
+                                .filter(|unit| unit.para_idx == first_para)
+                                .map(|unit| unit.height)
+                                .sum();
+                            if consumed_px > 0.5 {
+                                frag_vpos_origin = frag_vpos_origin
+                                    .saturating_add(px_to_hwpunit(consumed_px, self.dpi));
+                            }
+                        }
+                    }
+                }
+            }
             let preserve_linear_single_cell_vpos = cut_units.is_some_and(|(su, _)| su == 0)
                 && matches!(
                     table.page_break,
@@ -1376,7 +1407,15 @@ impl LayoutEngine {
                 && !table.common.treat_as_char
                 && table.row_count == 1
                 && table.col_count == 1
-                && (table.common.vertical_offset as i32) == 0;
+                // [#5995] 셀 내부 vpos 사다리는 셀 콘텐츠 기준 좌표라 표 자신의
+                // 세로 오프셋과 무관하다. 저자가 남긴 미세 오프셋(30269 문단
+                // 0.136: -98HU = -0.03mm)이 `== 0` 판정으로 사다리 스냅 전체를
+                // 끄면, 27개 문단이 재흐름돼 중첩 표 위는 압축되고 아래엔 없는
+                // 빈 띠가 생긴다(한글 2020 대비 +11mm). 반 mm 미만은 배치 의도가
+                // 아니라 잔여값으로 보고 스냅을 유지한다. 이 분기는 한컴 계산의
+                // 권위 입력 주장이 아니라 기존 저장-배치 호환 경로(c7dbe8a2c)의
+                // 형상 완화다 — compute 모델이 이 형상을 담기 전까지의 compat.
+                && (table.common.vertical_offset as i32).unsigned_abs() <= 141;
             let vpos_origin = if preserve_linear_single_cell_vpos {
                 cell.paragraphs
                     .first()
@@ -1502,8 +1541,28 @@ impl LayoutEngine {
                         .get(start_line)
                         .or_else(|| para.line_segs.first());
                     if let Some(seg) = target_seg {
+                        // [#5995] 저장 vpos 는 spacing_before 를 이미 포함한 줄
+                        // 상단이다. 이후 layout_composed_paragraph 가 spacing_before
+                        // 를 다시 더하므로, 여기서 빼고 스냅해야 이중 가산이 없다
+                        // (table_layout.rs 의 `anchored_y - spacing_before` 와 같은
+                        // 규약. 30269: 미보정 시 +1.8mm 씩 두 번 밀려 조각 마지막
+                        // 줄이 다음 쪽으로 넘어간다).
+                        // 표 호스트 문단은 layout_composed_paragraph 의 spacing_before
+                        // 재가산 경로를 타지 않으므로 빼면 표가 그만큼 떠오른다 —
+                        // 텍스트 문단에만 적용한다.
+                        let snap_spacing_before =
+                            if start_line == 0 && cp_idx > 0 && !has_table_ctrl {
+                                styles
+                                    .para_styles
+                                    .get(para.para_shape_id as usize)
+                                    .map(|s| s.spacing_before)
+                                    .unwrap_or(0.0)
+                            } else {
+                                0.0
+                            };
                         let target_top =
-                            hwpunit_to_px((seg.vertical_pos - vpos_origin).max(0), self.dpi);
+                            hwpunit_to_px((seg.vertical_pos - vpos_origin).max(0), self.dpi)
+                                - snap_spacing_before;
                         let current_top = (para_y - text_y_start).max(0.0);
                         if target_top > current_top {
                             para_y += target_top - current_top;
@@ -2604,11 +2663,26 @@ impl LayoutEngine {
                                 //      45,290 HU)에 대비해 셀 바닥으로 상한
                                 // ①만으로는 #3654 처럼 도약 문서에서 여전히 밀려나고,
                                 // ②만으로는 상한에서 멈춘 뒤 뒤 문단이 그 아래로 쌓인다.
+                                // [#5995] 저장 vpos 는 다음 문단의 spacing_before 를
+                                // 이미 포함한다. vpos 사다리를 신뢰하는 1×1 선형
+                                // 셀에서는 layout_composed_paragraph 의 재가산 몫을
+                                // 빼고 밀어야 이중 가산이 없다(위 preserve 스냅과
+                                // 같은 규약). 그 외 형상은 기존 밀어내기 보존.
+                                let next_spacing_before = if preserve_linear_single_cell_vpos {
+                                    styles
+                                        .para_styles
+                                        .get(next_para.para_shape_id as usize)
+                                        .map(|s| s.spacing_before)
+                                        .unwrap_or(0.0)
+                                } else {
+                                    0.0
+                                };
                                 let next_vpos_y = text_y_start
                                     + hwpunit_to_px(
                                         (next_seg.vertical_pos - frag_vpos_origin).max(0),
                                         self.dpi,
-                                    );
+                                    )
+                                    - next_spacing_before;
                                 let cell_content_bottom =
                                     cell_content_bottom(cell_y, cell_h, pad_bottom);
                                 para_y = para_y.max(next_vpos_y.min(cell_content_bottom));
@@ -2708,7 +2782,12 @@ impl LayoutEngine {
             paragraphs,
             para_index,
             control_index,
-        );
+        ) || matches!(outer_table.page_break, crate::model::table::TablePageBreak::CellBreak)
+            && crate::renderer::float_placement::native_empty_host_cellbreak_fragment_repeats_outer_margin(
+                self.profile.get().hwp5_stored_pagination_layout(),
+                para,
+                outer_table,
+            );
         let pre_emitted_host_height = self
             .pre_emitted_host_heights
             .borrow()

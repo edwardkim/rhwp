@@ -21,8 +21,9 @@ const rootDir = dirname(dirname(fileURLToPath(import.meta.url)));
 const insertSrc = readFileSync(join(rootDir, 'src/command/commands/insert.ts'), 'utf8');
 
 // recordObjectMutation 경유로 라우팅돼야 하는 개체 뮤테이터(속성 setter 는 setProps 공유·별건).
+// [#5769 후속] changeShapeZOrder 는 이 목록에서 뺐다 — recordObjectMutation(스냅샷) 대신
+// SetZOrderCommand(kind:'command') 역연산으로 기록되며, 아래 전용 가드가 배선을 핀한다.
 const OBJECT_MUTATORS = [
-  'changeShapeZOrder',
   'deleteShapeControl',
   'deleteEquationControl',
   'deleteCellPictureControlByPath',
@@ -60,6 +61,21 @@ test('개체 조작 뮤테이터는 recordObjectMutation 인자 안에서만 호
       `${m} 가 recordObjectMutation 밖에서 호출됨 — 히스토리를 우회한다`,
     );
   }
+});
+
+// [#5769 후속] z순서도 회전/대칭과 같은 축이다 — 스냅샷에서 역연산으로 옮겼다.
+// 되돌릴 것은 대상+교환 이웃의 z 스칼라 1~2개뿐이므로 문서 클론 2개가 스택에
+// 얹힐 이유가 없다. 배선 상세는 issue-5769-zorder-inverse.test.ts 가 담당하고,
+// 여기선 "insert.ts 에 직접 호출이 없다" 는 우회 차단만 본다.
+test('z순서는 역연산 커맨드로 기록한다 — insert.ts 에 직접 뮤테이션이 남지 않는다', () => {
+  assert.doesNotMatch(
+    insertSrc,
+    /\bwasm\s*\.\s*changeShapeZOrder\s*\(/,
+    'changeShapeZOrder 직접 호출은 히스토리를 우회한다 — SetZOrderCommand 로 기록',
+  );
+  const funnel = functionBodyFrom(insertSrc, 'function changeZOrder');
+  assert.match(funnel, /new SetZOrderCommand\(/, '정렬 메뉴는 속성쌍 커맨드로 기록');
+  assert.match(funnel, /kind:\s*'command'/, '양식 모드 게이트 통과를 위해 command 라우터 경유');
 });
 
 test('services.wasm 을 별칭으로 빼내 가드를 우회할 수 없다', () => {

@@ -114,6 +114,8 @@ export interface CommandServices {
   getViewportManager: () => ViewportManager | null;
   /** 지정한 전역 쪽을 화면에 표시한다. 성공하면 true. */
   gotoPage: (globalPage: number) => boolean;
+  /** 저장으로 현재 문서명이 바뀐 뒤 상태 표시를 현재 문서 기준으로 갱신한다. */
+  refreshDocumentStatus: () => void;
   /** 에디터 편집 모드 변경 */
   setEditMode: (mode: EditorEditMode) => void;
 }

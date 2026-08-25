@@ -30,6 +30,7 @@ struct PngExportArgs<'a> {
     vlm_target: Option<rhwp::document_core::queries::rendering::VlmTarget>,
     dpi: Option<f64>,
     render_profile: rhwp::paint::RenderProfile,
+    hangul2024_compat: bool,
 }
 
 #[cfg(feature = "native-skia")]
@@ -47,6 +48,7 @@ fn parse_export_png_args<'a>(args: &'a [String]) -> Result<PngExportArgs<'a>, i3
     let mut dpi: Option<f64> = None;
     // PNG export is print-equivalent output. Editor visuals require an explicit screen profile.
     let mut render_profile = rhwp::paint::RenderProfile::HighQuality;
+    let mut hangul2024_compat = false;
 
     let mut i = 0;
     while i < args.len() {
@@ -59,6 +61,23 @@ fn parse_export_png_args<'a>(args: &'a [String]) -> Result<PngExportArgs<'a>, i3
                     eprintln!("오류: --output 뒤에 폴더 경로가 필요합니다.");
                     return Err(EXIT_USAGE);
                 }
+            }
+            "--compat" => {
+                if i + 1 >= args.len() {
+                    eprintln!("오류: --compat 뒤에 2022 또는 2024 가 필요합니다.");
+                    return Err(EXIT_USAGE);
+                }
+                match crate::cli::parse_compat_generation(args[i + 1].as_str()) {
+                    Some(enabled) => hangul2024_compat = enabled,
+                    None => {
+                        eprintln!(
+                            "오류: --compat 값이 올바르지 않습니다(2022|2024): {}",
+                            args[i + 1]
+                        );
+                        return Err(EXIT_USAGE);
+                    }
+                }
+                i += 2;
             }
             "--page" | "-p" => {
                 if i + 1 < args.len() {
@@ -194,6 +213,7 @@ fn parse_export_png_args<'a>(args: &'a [String]) -> Result<PngExportArgs<'a>, i3
         vlm_target,
         dpi,
         render_profile,
+        hangul2024_compat,
     })
 }
 
@@ -211,6 +231,7 @@ pub(crate) fn export_png(args: &[String]) -> i32 {
         vlm_target,
         dpi,
         render_profile,
+        hangul2024_compat,
     } = match parse_export_png_args(args) {
         Ok(options) => options,
         Err(code) => return code,
@@ -236,6 +257,10 @@ pub(crate) fn export_png(args: &[String]) -> i32 {
         Ok(c) => c,
         Err(e) => return e.report(),
     };
+
+    if hangul2024_compat {
+        core.set_hangul2024_compat(true);
+    }
 
     // [#3302] 외부 연결 그림(HWP3 pic_type=0 등)의 같은 디렉터리 자동 적재 — export-svg
     // 의 #741 규칙과 동일. 누락 시 skia 렌더가 회색 placeholder 를 그린다 (SO-SUEOP 1쪽 실측).
