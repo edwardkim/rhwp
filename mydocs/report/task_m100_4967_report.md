@@ -15,8 +15,9 @@ cache policy가 실제로 수용한 줄에서도 신규 overflow를 포함한 �
 회귀를 상쇄하지 않는 보호 불변식에 따라 제품 metric DB·registry·fallback·paint·supply는 변경하지 않는다.
 
 이 판정은 rank 8 lane의 종결이다. #4967은 여러 face를 순차 판정하는 tracker이며 rank 1·7과
-evidence-reopen lane이 남아 있으므로 **이슈는 닫지 않는다**. 2026-08-25 확인 시 #4967은 `OPEN`, 담당자
-`edwardkim`, milestone `v1.0.0`이고 연결된 열린 PR은 없다.
+evidence-reopen lane이 남아 있으므로 **이슈는 닫지 않는다**. 작업 착수 시 #4967은 `OPEN`, 담당자
+`edwardkim`, milestone `v1.0.0`이고 연결된 열린 PR은 없었다. 현재 rank 8 결과는
+[PR #6069](https://github.com/edwardkim/rhwp/pull/6069)로 제출됐으며 tracker 상태는 계속 `OPEN`이다.
 
 ## 2. 판정 계보
 
@@ -31,7 +32,8 @@ evidence-reopen lane이 남아 있으므로 **이슈는 닫지 않는다**. 2026
 | W8-Q5 | 제품 교정 후속 이슈를 제안할 것인가 | qualified가 아니므로 자식 이슈 초안·등록 0 |
 
 단계별 local commit은 `f5710a4c4`, `f5eeec366`, `bc25152cc`, `90768be62`, `0c2ff0068`,
-`9983ae66d`에 고정했다. 원격 push와 PR 생성은 아직 수행하지 않았다.
+`9983ae66d`에 고정했다. push-preflight 계수기 격리까지 포함한 code candidate는 `a637c9c8e`이며
+PR #6069로 제출했다.
 
 ## 3. 결정적 실사용 증거
 
@@ -143,8 +145,8 @@ manifest·Markdown 링크·fmt·diff 검사와 Docker WASM 5분 56초도 통과�
 
 ## 8. 완료와 후속 절차
 
-W8 rank 8 qualification은 메인테이너의 최종 보고서 승인으로 `no-change` 완료됐다. Q5 문서 변경은 local
-stage commit으로 고정하며, 그 뒤에도 remote push·PR 생성·GitHub comment는 각각 별도 승인 대상이다.
+W8 rank 8 qualification은 메인테이너의 최종 보고서 승인으로 `no-change` 완료됐고, code candidate는
+PR #6069로 제출됐다. self-review 기록, 최신 trailing head 검증과 merge는 각각 별도 gate로 유지한다.
 
 #4967 tracker의 다음 face 작업은 rank 8 결과를 rank 1·7에 추정 적용하지 않고, 각 face의 기존 증거와
 실사용 cohort를 독립적으로 확인하는 새 절편으로 시작한다.
