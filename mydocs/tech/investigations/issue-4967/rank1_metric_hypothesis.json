@@ -1,5 +1,5 @@
 {
-  "canonicalSha256": "6a972d5574efe81d616d45d403bbe5ba07e4b24f889eb3a0a66ddf1019514413",
+  "canonicalSha256": "0c223c7e82a849216a90f5c40c6442f358419dd4e5082e8daf0222c608a341dd",
   "currentMetric": {
     "bold": false,
     "currentIndex": 370,
@@ -39,6 +39,14 @@
     "disposition": "all-layout-bearing-codepoints-observationally-equivalent",
     "generatedHangulCodepoints": 11172,
     "generatedHangulOutsideExactCmap": 8822,
+    "styleDomain": {
+      "availableMetricStyles": [
+        "regular"
+      ],
+      "boldFallbackLayoutAdvance": "unchanged-metadata-only",
+      "boldItalicCombinations": 4,
+      "missingStyleSelection": "name-first-regular-metric"
+    },
     "transformClosure": "equal-base-advance-preserves-ratio-spacing-justification-and-clamp-result",
     "virtualToExact": {
       "advanceMismatchCount": 0,
@@ -63,9 +71,17 @@
       "artifact": "mydocs/tech/investigations/issue-4963/fixtures/oracle_typesetting_fixture.hwpx",
       "sha256": "8ded3aff6f0286ee5ee4ad9c66732026fa627220b529e5d0fa7b9d51bc3ddb3f"
     },
+    "fontDecisionSource": {
+      "artifact": "src/document_core/queries/font_decision.rs",
+      "sha256": "7a395b21f3ff18f8fa1b0a94426bc67a842aa554a0effe89496192f785da77cf"
+    },
     "metricLineage": {
       "artifact": "mydocs/tech/investigations/issue-4964/font_metric_lineage_manifest.json",
       "sha256": "aee36c2ba18d572cdfc773534413c09f8e9a5e108fef2eefdfee5e415c4e3b0e"
+    },
+    "metricLookupSource": {
+      "artifact": "src/renderer/font_metrics_data.rs",
+      "sha256": "5fc965ebf302693c3295db0e3d60791452ca9ce88a7e497c89314e755c28856c"
     },
     "metricSource": {
       "artifact": "src/renderer/font_metrics_generated.rs",

@@ -8,8 +8,9 @@ last_verified: 2026-08-26
 # Issue #4967 — W8 font face 교정 qualification
 
 이 디렉터리는 W8 tracker의 첫 process canary인 rank 8 `KoPubWorld바탕체 Light`의 교정 적격성 증거를
-보존한다. rank 8 일괄 exact metric 후보는 Stage W8-Q5에서 `no-change`로 종결됐으며 제품 font mapping은
-변경하지 않는다. #4967 tracker는 rank 1·7과 evidence-reopen lane 때문에 계속 active다. 최종 판정은
+보존한다. rank 8 일괄 exact metric 후보와 rank 1 `문체부 바탕체` name-relation 후보는 각각
+Stage W8-Q5와 W8-R1-Q5에서 `no-change`로 종결됐으며 제품 font mapping은 변경하지 않는다. #4967 tracker는
+rank 7과 evidence-reopen lane 때문에 계속 active다. 최종 판정은
 [`task_m100_4967_report.md`](../../../report/task_m100_4967_report.md)에 있다.
 
 ## Stage W8-R1-Q0 경계
@@ -67,10 +68,22 @@ Q1의 current trace를 함께 읽는다. 제품 registry·metric DB·fallback을
 - 공개 fixture 1,556건에서 current→virtual relation과 virtual→exact advance delta가 모두 0이다.
 - 장평·자간·justification transform 13축과 fixed-frame 6축의 total advance·첫 crossing도 모두 불변이다.
 - 전체 layout-bearing domain의 base advance가 동치이므로 Q0의 private 22문서를 다시 parse하지 않았다.
+- Q0 aggregate의 bold 38,090자는 regular metric을 쓰는 metadata-only `boldFallback` 경로이며 layout
+  advance가 불변이다. projector는 bold·italic 4개 style 조합도 닫는다.
 
 rank 1 disposition은 `no-change`다. runtime name miss는 실제지만 이를 `MBatang`으로 연결해도 layout 이득이
 없고 portable supply·paint identity도 qualification되지 않았다. 제품 alias·metric·fallback 변경과
 W8-R1-Q3에는 진행하지 않는다.
+
+## Stage W8-R1-Q5 최종 disposition
+
+rank 1은 `no-change`로 동결한다. W4 face-miss는 Q1 runtime에서도 재현됐으므로 계측 lineage 오탐이 아니다.
+반면 Q2는 가상 name relation과 exact metric이 전체 layout-bearing domain에서 현행 advance와 동치임을
+증명했다. 수정할 layout delta가 없으므로 qualified 전용 product-correction 자식 이슈와 registry operation을
+만들지 않는다. Q3·Q4는 후보 부재로 미진입한다.
+
+#4967은 rank 7과 evidence-reopen lane이 남아 있어 OPEN을 유지한다. rank 1을 다시 열려면 layout 이득을
+증명하는 새 evidence 또는 현재와 다른 하나의 decision plane 가설이 필요하다.
 
 공식 문체부 자료는 문화체육관광부 바탕체의 자유 이용·유료 판매 금지·출처 표시 조건을 설명하지만, 해당
 자료에서 local `MT.TTF`와 byte-exact한 공식 배포 artifact를 확인하지 못했다. local SFNT의

@@ -2,10 +2,10 @@
 kind: report
 status: final
 canonical: mydocs/report/task_m100_4967_report.md
-last_verified: 2026-08-25
+last_verified: 2026-08-26
 ---
 
-# Task M100 #4967 최종 보고서 — W8 rank 8 face 교정 qualification
+# Task M100 #4967 최종 보고서 — W8 rank 8·rank 1 face 교정 qualification
 
 ## 1. 최종 판정
 
@@ -14,8 +14,13 @@ rank 8 `KoPubWorld바탕체 Light`에 exact `hmtx` advance를 일괄 적용하�
 cache policy가 실제로 수용한 줄에서도 신규 overflow를 포함한 회귀가 확인됐다. 평균 개선량으로 fixed-frame
 회귀를 상쇄하지 않는 보호 불변식에 따라 제품 metric DB·registry·fallback·paint·supply는 변경하지 않는다.
 
-이 판정은 rank 8 lane의 종결이다. #4967은 여러 face를 순차 판정하는 tracker이며 rank 1·7과
-evidence-reopen lane이 남아 있으므로 **이슈는 닫지 않는다**. 작업 착수 시 #4967은 `OPEN`, 담당자
+rank 1 `문체부 바탕체`를 `MBatang`에 연결하는 `layout-name` 후보도 **`no-change`**다. localized name의
+runtime miss는 실제지만, 가상 relation과 exact `MT.TTF hmtx`가 전체 layout-bearing 문자 영역에서 현행
+advance와 동치여서 layout 이득이 없다. 이름 match metadata만 만들고 조판을 바꾸지 않는 제품 rule은
+추가하지 않는다.
+
+두 판정은 rank 8·rank 1 lane의 종결이다. #4967은 여러 face를 순차 판정하는 tracker이며 rank 7과
+evidence-reopen lane이 남아 있으므로 **이슈는 닫지 않는다**. 2026-08-26 재확인 시 #4967은 `OPEN`, 담당자
 `edwardkim`, milestone `v1.0.0`이고 연결된 열린 PR은 없었다. 현재 rank 8 결과는
 [PR #6069](https://github.com/edwardkim/rhwp/pull/6069)로 제출됐으며 tracker 상태는 계속 `OPEN`이다.
 
@@ -148,5 +153,80 @@ manifest·Markdown 링크·fmt·diff 검사와 Docker WASM 5분 56초도 통과�
 W8 rank 8 qualification은 메인테이너의 최종 보고서 승인으로 `no-change` 완료됐고, code candidate는
 PR #6069로 제출됐다. self-review 기록, 최신 trailing head 검증과 merge는 각각 별도 gate로 유지한다.
 
-#4967 tracker의 다음 face 작업은 rank 8 결과를 rank 1·7에 추정 적용하지 않고, 각 face의 기존 증거와
-실사용 cohort를 독립적으로 확인하는 새 절편으로 시작한다.
+#4967 tracker의 다음 face 작업은 rank 8·rank 1 결과를 rank 7에 추정 적용하지 않고, 해당 face의 기존
+증거와 실사용 cohort를 독립적으로 확인하는 새 절편으로 시작한다.
+
+## 9. rank 1 `문체부 바탕체` 최종 disposition
+
+### 9.1 판정 계보
+
+| Stage | 질문 | 결과 |
+| --- | --- | --- |
+| W8-R1-Q0 | 기존 W3·W4·W5·W7.5 증거와 exact source를 재사용할 수 있는가 | 22문서·위험 208,986자 재선정, exact name pair·`MBatang` entry 370 확인 |
+| W8-R1-Q1 | W4 face miss가 계측 projection 오탐인가 | HWP/HWPX 각 1,556건에서 runtime도 unresolved, 첫 divergence `layout-name` |
+| W8-R1-Q2 | 가상 name relation과 exact metric이 layout 이득을 만드는가 | 전체 layout-bearing domain과 fixed-frame 6축에서 advance·crossing delta 0, `no-change` |
+| W8-R1-Q3 | private cohort actual reflow를 검증할 것인가 | candidate delta가 없어 불필요, 미진입 |
+| W8-R1-Q4 | backend·portable 적용 정책을 설계할 것인가 | 제품 후보가 없어 불필요, 미진입 |
+| W8-R1-Q5 | product-correction 후속 이슈를 제안할 것인가 | qualified가 아니므로 자식 이슈 초안·등록 0 |
+
+단계별 local commit은 `857241ac1`, `9fc8110d3`, `e70e35ec3`에 고정했다. 제품 source와 원격 repository는
+변경하지 않았다.
+
+### 9.2 runtime miss와 correction 이득의 분리
+
+Q1에서 raw·normalized·metric alias-resolved face는 전건 `문체부 바탕체`, layout-name step은 0,
+metric entry는 `null`이었다. 따라서 W4의 face-miss 208,949자와 heuristic 37자는 runtime 경계와 같은
+현상을 센 것이며 계측 lineage를 정정할 이유가 없다.
+
+그러나 miss의 존재만으로 correction을 승인하지 않는다. Q2의 가상 `문체부 바탕체 -> MBatang` relation은
+Hangul을 1,000 HWPUNIT, space를 500 HWPUNIT으로 선택하고 나머지는 현행 heuristic을 보존한다. exact
+`MT.TTF`도 보유한 Hangul 2,350자와 space에서 같은 advance다.
+
+| Q2 항목 | 결과 |
+| --- | ---: |
+| 공개 trace record | 1,556 |
+| current transform replay mismatch | 0 |
+| current → virtual relation delta | 0 HWPUNIT |
+| virtual relation → exact delta | 0 HWPUNIT |
+| 장평·자간·justification axis | 13축, 전부 delta 0 |
+| fixed-frame | 6축, total advance·첫 crossing 전부 불변 |
+| exact layout-bearing cmap mismatch | 0 / 2,351 |
+
+generated entry는 exact cmap 밖 Hangul 8,822자에도 폭을 제공하고 item-level generator input manifest가
+남아 있지 않다. 따라서 현행 entry를 exact source-derived라고 부르거나 font·glyph·paint identity를
+주장하지 않는다. layout advance compatibility만 성립한다.
+
+최종 audit에서는 문자-domain 외에 style-domain도 다시 확인했다. Q0 기존 aggregate의 target 209,066자 중
+bold 요청은 38,090자, italic 요청은 0자다. `MBatang`에는 regular entry만 있어 bold 요청은 `nameFirst`
+regular metric과 `boldFallback` metadata를 선택한다. 이 step은 faux bold paint를 나타내지만
+`regularMetricAdvance`를 그대로 쓰므로 layout 폭에는 가산 보정이 없다. projector와 계약 테스트는
+bold·italic 4개 조합에서 이 no-op을 고정했고 `no-change` 판정은 유지됐다.
+
+### 9.3 Q3·Q4 미진입과 후속 이슈 없음
+
+Q3은 최소 한 실제 문서의 설명 가능한 개선을 확인하는 단계다. Q2에서 전체 layout-bearing domain의 base
+advance가 동치이고 같은 transform 뒤 결과도 같으므로 private 22문서를 다시 parse해도 검증할 candidate
+delta가 없다. 기존 자료가 충분한데 bounded corpus를 다시 읽는 것은 증거를 늘리지 않으므로 Q3에 진입하지
+않았다.
+
+Q4도 살아남은 correction 후보의 backend·portable 정책을 정하는 단계다. exact file은 공식 artifact와
+byte match가 확인되지 않았고 `OS/2.fsType=2`라 portable supply가 차단된 상태지만, 그 전에 layout 후보가
+`no-change`로 종료됐다. 기각된 후보를 전제로 Canvas2D·CanvasKit supply 정책을 설계하지 않는다.
+
+qualified 전용 product-correction 자식 이슈, registry operation과 acceptance matrix는 작성하지 않는다.
+rank 1 evidence-reopen 조건은 현재와 다른 layout 이득 또는 다른 단일 decision plane을 증명하는 새 근거다.
+
+### 9.4 tracker 상태와 보호 불변식
+
+- #4967은 2026-08-26 기준 `OPEN`, 담당자 `edwardkim`, milestone `v1.0.0`이다.
+- rank 7 `KoPubWorld돋움체 Light` qualification과 evidence-reopen lane이 남아 있어 이슈를 닫지 않는다.
+- W4 계측은 runtime miss와 일치하므로 정정하지 않는다.
+- metric compatibility를 font identity·paint identity·재배포 권한으로 승격하지 않는다.
+- private corpus identity·본문·hash와 font bytes를 공개하지 않는다.
+- 10k 전수·private bounded cohort·Hyper-V 재실행과 제품 mutation은 모두 0이다.
+- Q0의 기존 style aggregate 대사 외에 private 문서 재parse는 없었고 식별 정보도 공개하지 않았다.
+
+rank 1 공개 정본은
+[`rank1_qualification_baseline.json`](../tech/investigations/issue-4967/rank1_qualification_baseline.json),
+[`rank1_runtime_boundary.json`](../tech/investigations/issue-4967/rank1_runtime_boundary.json),
+[`rank1_metric_hypothesis.json`](../tech/investigations/issue-4967/rank1_metric_hypothesis.json)이다.

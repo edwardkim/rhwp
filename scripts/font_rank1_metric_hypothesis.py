@@ -230,6 +230,12 @@ def exhaustive_equivalence(
         "generatedHangulCodepoints": 11172,
         "generatedHangulOutsideExactCmap": 11172 - exact_hangul,
         "transformClosure": "equal-base-advance-preserves-ratio-spacing-justification-and-clamp-result",
+        "styleDomain": {
+            "boldItalicCombinations": 4,
+            "availableMetricStyles": ["regular"],
+            "missingStyleSelection": "name-first-regular-metric",
+            "boldFallbackLayoutAdvance": "unchanged-metadata-only",
+        },
         "disposition": "all-layout-bearing-codepoints-observationally-equivalent",
         "boundedCohortCharacterEnumerationRequired": False,
         "boundedCohortReparsePerformed": False,
@@ -412,7 +418,9 @@ def build_projection(
             "q1Baseline": {"artifact": "mydocs/tech/investigations/issue-4967/rank1_runtime_boundary.json", "canonicalSha256": q1["canonicalSha256"]},
             "fixture": {"artifact": "mydocs/tech/investigations/issue-4963/fixtures/oracle_typesetting_fixture.hwpx", "sha256": sha256_file(paths["fixture"])},
             "metricSource": {"artifact": "src/renderer/font_metrics_generated.rs", "sha256": sha256_file(paths["metricSource"])},
+            "metricLookupSource": {"artifact": "src/renderer/font_metrics_data.rs", "sha256": sha256_file(paths["metricLookupSource"])},
             "textMeasurementSource": {"artifact": "src/renderer/layout/text_measurement.rs", "sha256": sha256_file(paths["textMeasurementSource"])},
+            "fontDecisionSource": {"artifact": "src/document_core/queries/font_decision.rs", "sha256": sha256_file(paths["fontDecisionSource"])},
             "metricLineage": {"artifact": "mydocs/tech/investigations/issue-4964/font_metric_lineage_manifest.json", "sha256": sha256_file(paths["lineage"])},
             "nativeBinary": {"artifact": "target/debug/rhwp-q-font-trace", "sha256": sha256_file(paths["nativeBinary"])},
         },
@@ -510,7 +518,9 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument("--q1", required=True)
     parser.add_argument("--lineage", required=True)
     parser.add_argument("--metric-source", required=True)
+    parser.add_argument("--metric-lookup-source", required=True)
     parser.add_argument("--text-measurement-source", required=True)
+    parser.add_argument("--font-decision-source", required=True)
     parser.add_argument("--font-trace-bin", required=True)
     parser.add_argument("--output", required=True)
     return parser.parse_args()
@@ -525,7 +535,9 @@ def main() -> int:
         "q1": regular_input(ROOT, args.q1, 16 * 1024 * 1024),
         "lineage": regular_input(ROOT, args.lineage, 64 * 1024 * 1024),
         "metricSource": regular_input(ROOT, args.metric_source, 64 * 1024 * 1024),
+        "metricLookupSource": regular_input(ROOT, args.metric_lookup_source, 8 * 1024 * 1024),
         "textMeasurementSource": regular_input(ROOT, args.text_measurement_source, 8 * 1024 * 1024),
+        "fontDecisionSource": regular_input(ROOT, args.font_decision_source, 8 * 1024 * 1024),
         "nativeBinary": regular_input(ROOT, args.font_trace_bin, 512 * 1024 * 1024),
     }
     require_equal(sha256_file(paths["exactFont"]), EXPECTED_FONT_SHA256, "exact font")
@@ -544,6 +556,13 @@ def main() -> int:
     require_equal(entry.get("currentIndex"), 370, "MBatang lineage index")
     require_equal(entry.get("origin", {}).get("status"), "unknown", "MBatang origin status")
     require_equal(entry.get("semanticHashes", {}).get("metricDataSha256"), q0["currentMetricAnchor"]["metricDataSha256"], "MBatang metric hash")
+
+    metric_lookup_source = paths["metricLookupSource"].read_text(encoding="utf-8")
+    font_decision_source = paths["fontDecisionSource"].read_text(encoding="utf-8")
+    if "bold_fallback: bold" not in metric_lookup_source:
+        raise Rank1MetricError("name-first bold fallback contract drifted")
+    if "fauxBoldDoesNotChangeLayoutAdvance" not in font_decision_source:
+        raise Rank1MetricError("bold fallback layout-advance contract drifted")
 
     metric = parse_generated_metric(paths["metricSource"].read_text(encoding="utf-8"))
     require_equal(metric["index"], 370, "MBatang source index")

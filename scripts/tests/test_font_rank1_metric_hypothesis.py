@@ -88,11 +88,29 @@ class Rank1MetricHypothesisTests(unittest.TestCase):
         self.assertTrue(value["generatedMetricHit"])
         self.assertTrue(value["exactApplied"])
 
+    def test_bold_fallback_is_layout_advance_neutral(self):
+        metric = parse_generated_metric(SOURCE)
+        value_record = record("가", 1000, 800)
+        value_record["layoutMetric"]["transforms"] = [
+            {"kind": "boldFallback", "input": "bold", "output": "regularMetricAdvance"},
+            {"kind": "ratio", "input": "13.333333333333334", "output": "0.8"},
+        ]
+        value = project_record(
+            value_record,
+            metric,
+            {ord("가"): "ga"},
+            {"ga": (1000, 0)},
+        )
+        self.assertEqual(value["currentFinal"], value["virtualFinal"])
+        self.assertEqual(value["virtualFinal"], value["exactFinal"])
+
     def test_exhaustive_domain_rejects_any_exact_advance_drift(self):
         metric = parse_generated_metric(SOURCE)
         cmap = {0x20: "space", 0xAC00: "ga"}
         compatible = exhaustive_equivalence(metric, cmap, {"space": (500, 0), "ga": (1000, 0)})
         self.assertEqual(compatible["virtualToExact"]["advanceMismatchCount"], 0)
+        self.assertEqual(compatible["styleDomain"]["boldItalicCombinations"], 4)
+        self.assertEqual(compatible["styleDomain"]["boldFallbackLayoutAdvance"], "unchanged-metadata-only")
         self.assertFalse(compatible["boundedCohortReparsePerformed"])
         with self.assertRaises(Rank1MetricError):
             exhaustive_equivalence(metric, cmap, {"space": (500, 0), "ga": (999, 0)})
