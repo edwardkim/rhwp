@@ -10588,6 +10588,40 @@ impl LayoutEngine {
             && consumed_height + units[j].height + next.height > avail_height
     }
 
+    /// [#6045] 잔여 쪽 높이에 안 들어가는 TopAndBottom 원자 그림은 강제 소비하지
+    /// 않는다. 쪽보다 큰 개체는 진행 보장을 위해 그대로 두고, 다음 쪽 본문에
+    /// 들어가면 그쪽에서 통째로 그린다.
+    ///
+    /// `advance_row_cut` 의 `j==start` 강제 소비가 156684746 표8 r7c1 서울경제TV
+    /// 캡처(h=289px)를 9쪽 y=991 에 올려 지면(1122) 밖으로 자르고, 10쪽 오른쪽
+    /// 칸을 빈 칸으로 남겼다.
+    fn should_defer_overflowing_top_and_bottom_entry(
+        &self,
+        unit: &CellUnit,
+        unit_idx: usize,
+        start: usize,
+        consumed_in_cell: f64,
+        cell_avail: f64,
+    ) -> bool {
+        // 페이지 렌더 경로만 `current_body_area` 를 채운다. typeset scan 은
+        // (0,0,0,0) 이라 96dpi A4 본문(≈1028px) 근사로 "다음 쪽에 들어가면"
+        // 을 판정한다.
+        let page_body_h = {
+            let body = self.current_body_area.get().3;
+            if body > 0.5 {
+                body
+            } else {
+                1100.0
+            }
+        };
+        unit_idx == start
+            && consumed_in_cell <= 0.5
+            && unit.top_and_bottom_flow
+            && !unit.empty_spacer
+            && unit.height > cell_avail + 0.5
+            && unit.height <= page_body_h + 0.5
+    }
+
     fn rewind_rowbreak_fragment_tail_before_topandbottom_flow(
         table: &crate::model::table::Table,
         units: &[CellUnit],
@@ -11304,6 +11338,10 @@ impl LayoutEngine {
                         }
                     }
                 }
+                if self.should_defer_overflowing_top_and_bottom_entry(u, j, start, h, avail_height)
+                {
+                    break;
+                }
                 // [Task #1658] 미세 fragment 낭비 페이지 방지: 거대 셀이 페이지를 가로질러 분할될
                 // 때 셀 내용 vpos reset(hard_break_before)이 촘촘하면, 잔여공간이 충분한데도 reset 마다
                 // 페이지를 끊어 2줄 이하만 담은 낭비 페이지가 양산된다(법령 별표 거대 셀:
@@ -11582,7 +11620,17 @@ impl LayoutEngine {
             && !block_has_top_and_bottom_flow;
         let allow_midpage_reset_absorb =
             self.profile.get().hwpx_stored_layout() || block_has_top_and_bottom_flow;
+        let cell_spacing_px = hwpunit_to_px(table.cell_spacing as i32, self.dpi);
+        let mut row_y = 0.0;
+        let mut prev_row: Option<u16> = None;
+        let mut prev_row_h = 0.0;
         for (i, cell) in cells.iter().enumerate() {
+            if prev_row.is_some_and(|row| row != cell.row) {
+                row_y += prev_row_h + cell_spacing_px;
+                prev_row_h = 0.0;
+            }
+            prev_row = Some(cell.row);
+            let cell_avail = (avail_height - row_y).max(0.0);
             let units = self.cell_units(cell, table, styles);
             let start = start_cut.get(i).copied().unwrap_or(0).min(units.len());
             let mut j = start;
@@ -11606,6 +11654,9 @@ impl LayoutEngine {
                         .all(|unit| unit.empty_spacer && !unit.hard_break_before)
                 {
                     j = units.len();
+                    break;
+                }
+                if self.should_defer_overflowing_top_and_bottom_entry(u, j, start, h, cell_avail) {
                     break;
                 }
                 let strict_saved_frame_break = u.stored_frame_break_before;
@@ -11707,6 +11758,7 @@ impl LayoutEngine {
             if h > consumed_height {
                 consumed_height = h;
             }
+            prev_row_h = prev_row_h.max(h);
             // [#2097 진단] 셀별 walk 결과 — 동작 불변.
             if std::env::var("RHWP_DIAG_BLKCUT").is_ok() {
                 let stop = if j >= units.len() {
@@ -11853,6 +11905,9 @@ impl LayoutEngine {
                     break;
                 }
                 if j == start && !allow_force_progress && h + u.height > cell_budget {
+                    break;
+                }
+                if self.should_defer_overflowing_top_and_bottom_entry(u, j, start, h, cell_budget) {
                     break;
                 }
                 h += u.height;
