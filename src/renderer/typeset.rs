@@ -45,9 +45,10 @@ use super::pagination::{
 };
 
 /// [#5886] 미주 다단이 본문 하단 24px bleed 를 지나 **용지 밖**까지 그리는
-/// 잔여만 단 전환한다. 수식 line-box 로그 허용(48~68px)보다 크고, 실측
-/// 2022.hwpx 12쪽 초과(+198px)보다는 작다.
-const ENDNOTE_PAGE_OFFCANVAS_GUARD_PX: f64 = 80.0;
+/// 잔여만 단 전환한다. 용지 하단 여백(~30px)+bleed 보다 크고, CI 실측
+/// 2022.hwpx 12쪽 잔여 초과(+69.7px, 수정 전 +198px)보다는 작다.
+/// 80px 는 663번 문단(69.7px)을 놓쳐 알짜 풀이가 1193px 에 남았다.
+const ENDNOTE_PAGE_OFFCANVAS_GUARD_PX: f64 = 56.0;
 
 /// [#4654] 전면 크기 그림 낱장 배치는 문단의 비인라인 그림 중 엄격한 과반일 때만 쓴다.
 ///
@@ -9189,7 +9190,7 @@ impl TypesetEngine {
             // 실험으로 A3 에서 스냅 OFF → break-결정 높이를 compact(acc)로 환원.
             if ssot_level == EnSsotLevel::A2 {
                 if let Some(sim_bottom) = self.simulate_endnote_column_bottom_y(
-                    &st, paragraphs, styles, available, en_col_w, None,
+                    &st, paragraphs, styles, available, en_col_w, None, false,
                 ) {
                     if ssot_debug {
                         eprintln!(
@@ -10453,9 +10454,10 @@ impl TypesetEngine {
             }
             // [Task #1363 v2 Stage 3] A2: 새 para 를 이어붙인 렌더-정합 시뮬
             // bottom 으로 fit 판정 (saved line_segs 기반 → 렌더와 일치).
-            // [#5886] 기본 B 에서는 문단-사이 되감김이 용지 밖(+80px)으로
+            // [#5886] 기본 B 에서는 문단-사이 되감김이 용지 밖(+56px)으로
             // 나갈 때만 시뮬을 켠다. 24px A2 overflow 를 B 에 흘리면
             // split_endnote_to_fit 가 1375/1139 질문 흐름을 가른다.
+            // 시뮬은 렌더처럼 되감김 문단을 순차 적층한다(acc 는 올리지 않음).
             let simulated_endnote_bottom = if ssot_level >= EnSsotLevel::A2
                 || (compact_endnote_separator_profile
                     && local_vpos_rewind
@@ -10470,6 +10472,7 @@ impl TypesetEngine {
                     available,
                     en_col_w,
                     Some(en_para_idx),
+                    ssot_level < EnSsotLevel::A2,
                 )
             } else {
                 None
@@ -13884,6 +13887,7 @@ impl TypesetEngine {
     /// 산출한다. A2 게이트에서 `current_height` 를 이 값으로 스냅 → compute_en_metrics 의
     /// saved-delta 근사를 렌더 실측과 정합시킨다(p21 과대·p17 과소 누적 원인 제거 목표).
     /// `current_height` 상대공간(col_area_y=0, start=`current_start_height`)에서 구동.
+    #[allow(clippy::too_many_arguments)]
     fn simulate_endnote_column_bottom_y(
         &self,
         st: &TypesetState,
@@ -13892,6 +13896,7 @@ impl TypesetEngine {
         available: f64,
         en_col_w: f64,
         extra_para_full: Option<usize>,
+        sequential_compact_rewind: bool,
     ) -> Option<f64> {
         if st.current_items.is_empty() {
             return None;
@@ -14061,6 +14066,8 @@ impl TypesetEngine {
         hc.endnote_between_notes_hu = st.endnote_between_notes_hu;
         let mut y = st.current_start_height;
         let extra_item = extra_para_full.map(|pi| PageItem::FullParagraph { para_index: pi });
+        // [#5886] 한 번 compact 되감김이 나오면 렌더처럼 나머지도 순차 적층한다.
+        let mut stack_sequential = false;
         for item in st.current_items.iter().chain(extra_item.as_ref()) {
             let Some(pi) = page_item_para_index(item) else {
                 continue;
@@ -14068,7 +14075,35 @@ impl TypesetEngine {
             let Some(local) = lookup_local(pi) else {
                 continue;
             };
-            y = hc.vpos_adjust(y, local, &local_paras, styles);
+            // [#5886] 문단-사이 compact 되감김: 렌더는 겹치지 않고 순차 적층한다.
+            // vpos_adjust 되감김 + 저장 span 은 용지 밖 풀이를 과소 계상한다.
+            let compact_rewind_from_prev = sequential_compact_rewind
+                && hc
+                    .prev_layout_para
+                    .and_then(|prev_local| {
+                        let prev_bottom = local_paras.get(prev_local).and_then(|p| {
+                            p.line_segs
+                                .iter()
+                                .map(|s| {
+                                    s.vertical_pos
+                                        .saturating_add(s.line_height)
+                                        .saturating_add(s.line_spacing)
+                                })
+                                .max()
+                        })?;
+                        let curr_first = local_paras
+                            .get(local)
+                            .and_then(|p| p.line_segs.first())
+                            .map(|s| s.vertical_pos)?;
+                        Some(curr_first < prev_bottom)
+                    })
+                    .unwrap_or(false);
+            if compact_rewind_from_prev {
+                stack_sequential = true;
+            }
+            if !stack_sequential {
+                y = hc.vpos_adjust(y, local, &local_paras, styles);
+            }
             let item_para = &local_paras[local];
             let item_composed = crate::renderer::composer::compose_paragraph(item_para);
             // [Task #1363 v2 Stage 3] 휴리스틱 advance 추정. 렌더러는 미주 텍스트/수식 para 를
@@ -14091,7 +14126,7 @@ impl TypesetEngine {
                     .any(|w| w[1].vertical_pos < w[0].vertical_pos);
                 let para_advance_full = if para_has_treat_as_char_picture_or_shape(item_para) {
                     item_fmt.total_height
-                } else if internal_rewind {
+                } else if internal_rewind || stack_sequential {
                     item_fmt.line_advances_sum(0..item_fmt.line_heights.len())
                 } else {
                     let segs = &item_para.line_segs;
