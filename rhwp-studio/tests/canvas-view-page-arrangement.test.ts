@@ -46,11 +46,11 @@ test('자동 단일 열과 명시 한 쪽은 같은 토폴로지다', () => {
 test('CanvasView는 저장된 쪽 배치를 레이아웃 계산에 전달한다', () => {
   assert.match(
     canvasViewSource,
-    /pageArrangement\s*=\s*normalizePageArrangement\(userSettings\.getViewSettings\(\)\.pageArrangement\)/,
+    /resolvePageViewSettings\([\s\S]*?viewSettings\.pageArrangement,[\s\S]*?viewSettings\.pageMovement/,
   );
   assert.match(
     canvasViewSource,
-    /setPageDimensions\(this\.pages,\s*zoom,\s*viewport\.width,\s*this\.pageArrangement\)/,
+    /setPageDimensions\([\s\S]*?this\.pageArrangement,[\s\S]*?this\.pageMovement\.direction,[\s\S]*?viewport\.height/,
   );
 });
 
@@ -64,9 +64,23 @@ test('CanvasView는 보기 전용 이벤트로 배치를 바꾸고 문서 변경
 });
 
 test('배치 전환은 중심 앵커를 복원하고 토폴로지가 달라질 때만 Canvas를 해제한다', () => {
-  const method = classMethodSource('setPageArrangement', 'getPageArrangement');
+  const method = classMethodSource('setPageViewSettings', 'getPageArrangement');
   assert.match(method, /calculateAnchoredScroll\(/);
   assert.match(method, /CENTER_ZOOM_ANCHOR/);
   assert.match(method, /previousTopology\s*!==\s*nextTopology/);
   assert.match(method, /releaseAllRenderedPages\(\)/);
+});
+
+test('가로 쪽 이동은 배치와 함께 한 번에 전환하고 가로 가시 범위를 사용한다', () => {
+  assert.match(
+    canvasViewSource,
+    /eventBus\.on\('page-view-settings-changed',[\s\S]*?this\.setPageViewSettings/,
+  );
+  assert.match(
+    canvasViewSource,
+    /getVisiblePages\([\s\S]*?scrollX,[\s\S]*?vpWidth/,
+  );
+  const method = classMethodSource('setPageViewSettings', 'getPageArrangement');
+  assert.match(method, /resolvePageViewSettings/);
+  assert.doesNotMatch(method, /document-(?:changed|mutated)/);
 });

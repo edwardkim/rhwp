@@ -83,8 +83,9 @@
   flex-wrap: nowrap;
 }
 
-/* 한컴 zoom_out 버튼 margin: 0 8px */
-#sb-zoom-out { margin: 0 8px; }
+/* 한컴 2024 상황 선: 맞춤·100% 뒤에 축소-슬라이더-확대를 잇는다. */
+#sb-zoom-out { margin-left: 8px; }
+#sb-zoom-in { margin-right: 8px; }
 
 /* 아이콘 버튼 — 한컴 .btn_wo.btn_icon (24x24) */
 .stb-icon-btn {
@@ -104,6 +105,55 @@
 .stb-icon-btn:hover {
   background: var(--ui-hover);
   border-color: var(--ui-border-strong);
+}
+
+.stb-status-glyph {
+  position: relative;
+  display: inline-block;
+  color: var(--color-text-secondary);
+  box-sizing: border-box;
+}
+
+.icon-zoom-actual {
+  width: 13px;
+  height: 13px;
+  border: 2px solid currentColor;
+  box-shadow: inset 0 0 0 2px var(--color-surface-raised);
+  background: var(--ui-active);
+}
+
+.icon-zoom-menu {
+  width: 13px;
+  height: 13px;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+  margin: 0 3px 3px 0;
+}
+
+.icon-zoom-menu::after {
+  content: '';
+  position: absolute;
+  width: 6px;
+  border-top: 2px solid currentColor;
+  right: -5px;
+  bottom: -3px;
+  transform: rotate(45deg);
+  transform-origin: left center;
+}
+
+.stb-zoom-range {
+  width: 150px;
+  min-width: 80px;
+  height: 20px;
+  margin: 0 3px;
+  padding: 0;
+  accent-color: var(--accent-primary);
+  cursor: pointer;
+}
+
+.stb-zoom-range:focus-visible {
+  outline: 1px solid var(--color-focus-border);
+  outline-offset: 1px;
 }
 
 /* 줌 값 표시 — 한컴 .btn_dropdown (height:20px) */

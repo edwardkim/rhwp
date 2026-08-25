@@ -341,8 +341,11 @@
   .stb-message { display: none; }
   /* 모바일 줌: 쪽맞춤 + 100% 토글만 표시 */
   #sb-zoom-fit-width { display: none; }
+  #sb-zoom-100 { display: none; }
   #sb-zoom-out { display: none; }
+  #sb-zoom-range { display: none; }
   #sb-zoom-in { display: none; }
+  #sb-zoom-menu { display: none; }
   /* 줌 값 표시를 100% 토글 버튼으로 활용 */
   .stb-zoom-val {
     min-width: 44px;

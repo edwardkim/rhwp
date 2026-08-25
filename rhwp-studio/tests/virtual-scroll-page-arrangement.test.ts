@@ -86,3 +86,41 @@ test('맞쪽 첫 행의 프리페치는 다음 실제 행 전체를 포함한다
   const prefetched = scroll.getPrefetchPages(scroll.getPageOffset(0), 100);
   assert.deepEqual(prefetched, [0, 1, 2]);
 });
+
+test('가로 쪽 이동은 한 쪽씩 한 행에 놓고 뷰포트 높이에서 세로 중앙 정렬한다', () => {
+  const scroll = new VirtualScroll(10);
+  scroll.setPageDimensions(
+    pages(4, 200, 300),
+    1,
+    500,
+    { kind: 'single' },
+    'horizontal',
+    400,
+  );
+
+  assert.equal(scroll.isHorizontalMode(), true);
+  assert.equal(scroll.getPageLeft(0), 10);
+  assert.equal(scroll.getPageLeft(1), 220);
+  assert.equal(scroll.getPageOffset(0), 50);
+  assert.equal(scroll.getPageOffset(3), 50);
+  assert.equal(scroll.getTotalWidth(), 850);
+  assert.equal(scroll.getTotalHeight(), 400);
+  assert.equal(scroll.getPageAtPoint(230, 200), 1);
+});
+
+test('가로 쪽 이동은 가로 가시 범위만 렌더하고 양옆 한 쪽만 프리페치한다', () => {
+  const scroll = new VirtualScroll(10);
+  scroll.setPageDimensions(
+    pages(8, 200, 300),
+    1,
+    400,
+    { kind: 'single' },
+    'horizontal',
+    400,
+  );
+
+  assert.deepEqual(scroll.getVisiblePages(0, 400, 0, 200), [0]);
+  assert.deepEqual(scroll.getPrefetchPages(0, 400, 0, 200), [0, 1]);
+  assert.deepEqual(scroll.getVisiblePages(0, 400, 430, 200), [2]);
+  assert.deepEqual(scroll.getPrefetchPages(0, 400, 430, 200), [1, 2, 3]);
+});

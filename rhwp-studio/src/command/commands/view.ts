@@ -202,7 +202,8 @@ export const viewCommands: CommandDef[] = [
       const container = document.getElementById('scroll-container');
       if (!container) return;
       const pageInfo = services.wasm.getPageInfo(0);
-      const arrangement = userSettings.getViewSettings().pageArrangement;
+      const viewSettings = userSettings.getViewSettings();
+      const arrangement = viewSettings.pageArrangement;
       const fitZooms = {
         fitWidth: calculateArrangementFitWidthZoom({
           containerWidth: container.clientWidth,
@@ -220,6 +221,7 @@ export const viewCommands: CommandDef[] = [
         currentZoom: vm.getZoom(),
         fitZooms,
         arrangement,
+        pageMovement: viewSettings.pageMovement,
         onConfirm(value) {
           const zoom = resolveZoomDialogZoom({
             ...value,
@@ -229,9 +231,13 @@ export const viewCommands: CommandDef[] = [
             pageHeight: pageInfo.height,
             pageGap: 10,
           });
+          userSettings.setPageMovement(value.pageMovement);
           userSettings.setPageArrangement(value.arrangement);
-          const arrangement = userSettings.getViewSettings().pageArrangement;
-          services.eventBus.emit('page-arrangement-changed', arrangement);
+          const view = userSettings.getViewSettings();
+          services.eventBus.emit('page-view-settings-changed', {
+            arrangement: view.pageArrangement,
+            pageMovement: view.pageMovement,
+          });
           vm.setZoom(zoom);
           services.eventBus.emit('command-state-changed');
         },

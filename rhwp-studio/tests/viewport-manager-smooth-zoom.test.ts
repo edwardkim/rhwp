@@ -243,6 +243,52 @@ test('horizontal-dominant wheel input retains native horizontal pan', async () =
   assert.equal(container.scrollTop, 100);
 });
 
+test('가로 쪽 이동은 선택했을 때만 세로 휠을 좌우 스크롤로 바꾼다', async () => {
+  const { ViewportManager } = await loadViewportManager();
+  const viewport = new ViewportManager(new FakeEventBus() as never) as unknown as {
+    setPageMovement: (value: { direction: 'horizontal'; wheelHorizontal: boolean }) => void;
+    container: { scrollTop: number; scrollLeft: number };
+    onWheel: (event: {
+      ctrlKey: boolean;
+      metaKey: boolean;
+      shiftKey: boolean;
+      deltaX: number;
+      deltaY: number;
+      deltaMode: number;
+      preventDefault: () => void;
+    }) => void;
+  };
+  viewport.container = { scrollTop: 0, scrollLeft: 100 };
+  viewport.setPageMovement({ direction: 'horizontal', wheelHorizontal: true });
+  let prevented = false;
+  viewport.onWheel({
+    ctrlKey: false,
+    metaKey: false,
+    shiftKey: false,
+    deltaX: 0,
+    deltaY: 32,
+    deltaMode: 0,
+    preventDefault: () => { prevented = true; },
+  });
+  assert.equal(prevented, true);
+  assert.equal(viewport.container.scrollLeft, 132);
+  assert.equal(viewport.container.scrollTop, 0);
+
+  viewport.setPageMovement({ direction: 'horizontal', wheelHorizontal: false });
+  prevented = false;
+  viewport.onWheel({
+    ctrlKey: false,
+    metaKey: false,
+    shiftKey: false,
+    deltaX: 0,
+    deltaY: 32,
+    deltaMode: 0,
+    preventDefault: () => { prevented = true; },
+  });
+  assert.equal(prevented, false);
+  assert.equal(viewport.container.scrollLeft, 132);
+});
+
 test('an eight-pixel trackpad gesture settles within four frames and moves nearly five percent', async (t) => {
   const frames = new FakeAnimationFrames();
   const previousRequest = globalThis.requestAnimationFrame;
