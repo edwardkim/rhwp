@@ -1,37 +1,68 @@
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 
 use rhwp::document_core::DocumentCore;
 use rhwp::renderer::font_metrics_data::find_metric;
 
-fn registry() -> serde_json::Value {
+fn sealed_v1_registry() -> serde_json::Value {
     serde_json::from_str(include_str!(
         "../../assets/font-rules/font_rule_registry.json"
     ))
-    .expect("canonical font rule registry")
+    .expect("sealed v1 font rule registry")
+}
+
+fn registry() -> serde_json::Value {
+    serde_json::from_str(include_str!(
+        "../../assets/font-rules/font_rule_registry_v2.json"
+    ))
+    .expect("canonical v2 font rule lifecycle registry")
 }
 
 fn projection_rules<'a>(
     registry: &'a serde_json::Value,
     projection: &str,
 ) -> Vec<&'a serde_json::Value> {
-    registry["rules"]
+    let mut rules: Vec<_> = registry["rules"]
         .as_array()
         .expect("registry rules")
         .iter()
         .filter(|rule| {
-            rule["projections"]
-                .as_array()
-                .expect("rule projections")
-                .iter()
-                .any(|entry| entry["id"] == projection)
+            rule["status"] == "active"
+                && rule["projections"]
+                    .as_array()
+                    .expect("rule projections")
+                    .iter()
+                    .any(|entry| entry["id"] == projection)
         })
-        .collect()
+        .collect();
+    rules.sort_by_key(|rule| {
+        rule["projectionSequence"]
+            .as_u64()
+            .expect("active v2 projection sequence")
+    });
+    rules
 }
 
 fn source_boundary(rule: &serde_json::Value) -> &str {
-    rule["evidence"]["sourceBoundaryIds"][0]
+    rule["sourceBoundaryId"]
         .as_str()
-        .expect("source boundary")
+        .expect("v2 source boundary")
+}
+
+fn semantic_rule(rule: &serde_json::Value, source_boundary_id: &str) -> serde_json::Value {
+    serde_json::json!({
+        "conditions": rule["conditions"],
+        "decisionPlane": rule["decisionPlane"],
+        "metricEntryIds": rule["metricEntryIds"],
+        "order": rule["order"],
+        "projections": rule["projections"],
+        "relationType": rule["relationType"],
+        "ruleId": rule["ruleId"],
+        "sourceBoundaryId": source_boundary_id,
+        "sourceFace": rule["sourceFace"],
+        "status": rule["status"],
+        "supply": rule["supply"],
+        "targetFaceOrPolicy": rule["targetFaceOrPolicy"],
+    })
 }
 
 fn source_face(rule: &serde_json::Value) -> &str {
@@ -103,6 +134,66 @@ fn public_trace_record(font_name: &str, alt_type: u8, text: &str) -> serde_json:
         .find(|record| record["source"]["character"] == text)
         .unwrap_or_else(|| panic!("trace record for {font_name:?}/{text:?}"))
         .clone()
+}
+
+#[test]
+fn sealed_v1_and_current_v2_projection_semantics_match() {
+    let v1 = sealed_v1_registry();
+    let v2 = registry();
+    let v1_rules = v1["rules"].as_array().expect("sealed v1 rules");
+    let v2_rules = v2["rules"].as_array().expect("current v2 rules");
+
+    assert_eq!(v1_rules.len(), 830);
+    assert_eq!(v2["summary"]["activeRuleCount"], 830);
+    assert_eq!(v2["summary"]["retiredRuleCount"], 0);
+
+    let v1_semantics: BTreeMap<_, _> = v1_rules
+        .iter()
+        .map(|rule| {
+            let rule_id = rule["ruleId"].as_str().expect("sealed v1 ruleId");
+            let source_boundary_id = rule["evidence"]["sourceBoundaryIds"][0]
+                .as_str()
+                .expect("sealed v1 source boundary");
+            (rule_id.to_owned(), semantic_rule(rule, source_boundary_id))
+        })
+        .collect();
+    let v2_semantics: BTreeMap<_, _> = v2_rules
+        .iter()
+        .filter(|rule| rule["status"] == "active")
+        .map(|rule| {
+            let rule_id = rule["ruleId"].as_str().expect("current v2 ruleId");
+            (
+                rule_id.to_owned(),
+                semantic_rule(rule, source_boundary(rule)),
+            )
+        })
+        .collect();
+    assert_eq!(v2_semantics, v1_semantics);
+
+    for projection in [
+        "rust-layout-name",
+        "rust-layout-metric",
+        "canvas2d-paint",
+        "canvas2d-webfont",
+        "canvaskit-sfnt",
+    ] {
+        let v1_rule_ids: Vec<_> = v1_rules
+            .iter()
+            .filter(|rule| {
+                rule["projections"]
+                    .as_array()
+                    .expect("sealed v1 projections")
+                    .iter()
+                    .any(|entry| entry["id"] == projection)
+            })
+            .map(|rule| rule["ruleId"].as_str().expect("sealed v1 ruleId"))
+            .collect();
+        let v2_rule_ids: Vec<_> = projection_rules(&v2, projection)
+            .into_iter()
+            .map(|rule| rule["ruleId"].as_str().expect("current v2 ruleId"))
+            .collect();
+        assert_eq!(v2_rule_ids, v1_rule_ids, "{projection}");
+    }
 }
 
 #[test]

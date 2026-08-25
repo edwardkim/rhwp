@@ -18,29 +18,32 @@
     "outputs"
   ],
   "properties": {
-    "schemaVersion": { "const": "1.0" },
+    "schemaVersion": { "const": "2.0" },
     "kind": { "const": "font-rule-backend-projection-manifest" },
-    "issue": { "const": 4966 },
+    "issue": { "const": 5955 },
     "sourceCommit": { "$ref": "#/$defs/sha1" },
     "schema": { "$ref": "#/$defs/pathDigest" },
     "generatedBy": { "$ref": "#/$defs/pathDigest" },
     "registry": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["path", "sha256", "rulesSha256"],
+      "required": ["path", "sha256", "rulesSha256", "activeRuleCount", "retiredRuleCount"],
       "properties": {
-        "path": { "const": "assets/font-rules/font_rule_registry.json" },
+        "path": { "const": "assets/font-rules/font_rule_registry_v2.json" },
         "sha256": { "$ref": "#/$defs/sha256" },
-        "rulesSha256": { "$ref": "#/$defs/sha256" }
+        "rulesSha256": { "$ref": "#/$defs/sha256" },
+        "activeRuleCount": { "type": "integer", "minimum": 0, "maximum": 4096 },
+        "retiredRuleCount": { "type": "integer", "minimum": 0, "maximum": 4096 }
       }
     },
     "summary": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["outputCount", "ruleCount", "countsByProjection"],
+      "required": ["outputCount", "activeRuleCount", "retiredRuleCount", "countsByProjection"],
       "properties": {
         "outputCount": { "const": 5 },
-        "ruleCount": { "const": 830 },
+        "activeRuleCount": { "type": "integer", "minimum": 0, "maximum": 4096 },
+        "retiredRuleCount": { "type": "integer", "minimum": 0, "maximum": 4096 },
         "countsByProjection": {
           "type": "object",
           "additionalProperties": false,
@@ -52,11 +55,11 @@
             "rust-layout-name"
           ],
           "properties": {
-            "canvas2d-paint": { "const": 281 },
-            "canvas2d-webfont": { "const": 153 },
-            "canvaskit-sfnt": { "const": 158 },
-            "rust-layout-metric": { "const": 67 },
-            "rust-layout-name": { "const": 171 }
+            "canvas2d-paint": { "type": "integer", "minimum": 0, "maximum": 4096 },
+            "canvas2d-webfont": { "type": "integer", "minimum": 0, "maximum": 4096 },
+            "canvaskit-sfnt": { "type": "integer", "minimum": 0, "maximum": 4096 },
+            "rust-layout-metric": { "type": "integer", "minimum": 0, "maximum": 4096 },
+            "rust-layout-name": { "type": "integer", "minimum": 0, "maximum": 4096 }
           }
         }
       }
@@ -116,7 +119,7 @@
           ]
         },
         "ownership": { "const": "generated-whole-file" },
-        "ruleCount": { "type": "integer", "minimum": 1, "maximum": 830 },
+        "ruleCount": { "type": "integer", "minimum": 0, "maximum": 4096 },
         "inputSha256": { "$ref": "#/$defs/sha256" },
         "projectionSha256": { "$ref": "#/$defs/sha256" },
         "contentSha256": { "$ref": "#/$defs/sha256" }

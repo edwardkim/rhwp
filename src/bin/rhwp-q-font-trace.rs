@@ -15,7 +15,10 @@ const EXIT_USAGE: i32 = 2;
 const TOOL: &str = "rhwp-q-font-trace";
 const COMMAND: &str = "font-trace";
 const UNTRUSTED_FIELDS: &[&str] = &["source", "trace"];
-const USAGE: &str = "사용법: rhwp-q-font-trace <파일> --page <N> [--json]";
+const DEFAULT_MAX_CHARACTERS: usize = 1024;
+const MAX_CHARACTERS: usize = 4096;
+const USAGE: &str =
+    "사용법: rhwp-q-font-trace <파일> --page <N> [--max-characters <1..=4096>] [--json]";
 
 #[derive(Debug)]
 struct Options {
@@ -24,6 +27,7 @@ struct Options {
     version: bool,
     path: Option<String>,
     page: Option<u32>,
+    max_characters: usize,
 }
 
 fn write_stdout(text: &str, newline: bool) {
@@ -58,6 +62,17 @@ fn parse_page_value(raw: &str) -> Result<u32, i32> {
     }
 }
 
+fn parse_max_characters_value(raw: &str) -> Result<usize, i32> {
+    match raw.parse::<usize>() {
+        Ok(n) if (1..=MAX_CHARACTERS).contains(&n) => Ok(n),
+        _ => {
+            eprintln!("오류: --max-characters 뒤에 1..={MAX_CHARACTERS} 정수가 필요합니다.");
+            eprintln!("{USAGE}");
+            Err(EXIT_USAGE)
+        }
+    }
+}
+
 fn parse_args(args: &[String]) -> Result<Options, i32> {
     let mut opts = Options {
         json: false,
@@ -65,6 +80,7 @@ fn parse_args(args: &[String]) -> Result<Options, i32> {
         version: false,
         path: None,
         page: None,
+        max_characters: DEFAULT_MAX_CHARACTERS,
     };
     let mut i = 0;
     while i < args.len() {
@@ -88,6 +104,17 @@ fn parse_args(args: &[String]) -> Result<Options, i32> {
                     return Err(EXIT_USAGE);
                 };
                 opts.page = Some(parse_page_value(raw)?);
+                i += 2;
+            }
+            "--max-characters" => {
+                let Some(raw) = args.get(i + 1) else {
+                    eprintln!(
+                        "오류: --max-characters 뒤에 1..={MAX_CHARACTERS} 정수가 필요합니다."
+                    );
+                    eprintln!("{USAGE}");
+                    return Err(EXIT_USAGE);
+                };
+                opts.max_characters = parse_max_characters_value(raw)?;
                 i += 2;
             }
             other if other.starts_with('-') => {
@@ -122,7 +149,7 @@ fn parse_args(args: &[String]) -> Result<Options, i32> {
     Ok(opts)
 }
 
-fn load_trace(path: &str, page: u32) -> Result<Value, i32> {
+fn load_trace(path: &str, page: u32, max_characters: usize) -> Result<Value, i32> {
     let data = match std::fs::read(path) {
         Ok(bytes) => bytes,
         Err(e) => {
@@ -137,7 +164,8 @@ fn load_trace(path: &str, page: u32) -> Result<Value, i32> {
             return Err(EXIT_RUNTIME);
         }
     };
-    let raw = match core.get_font_decision_trace_native(page, "{}") {
+    let options = json!({ "maxCharacters": max_characters }).to_string();
+    let raw = match core.get_font_decision_trace_native(page, &options) {
         Ok(raw) => raw,
         Err(HwpError::PageOutOfRange(n)) => {
             eprintln!("오류: 페이지 {n}을(를) 찾을 수 없습니다");
@@ -199,7 +227,7 @@ fn run(args: &[String]) -> i32 {
     if opts.help {
         write_stdout(USAGE, true);
         write_stdout(
-            "쪽의 글꼴 결정 추적을 조회한다. 문서를 고치지 않는다. --page 는 0부터 센다.",
+            "쪽의 글꼴 결정 추적을 조회한다. 문서를 고치지 않는다. --page 는 0부터 세며 --max-characters 기본값은 1024다.",
             true,
         );
         write_stdout("종료 코드: 0 성공 · 1 실행 오류 · 2 사용법 오류", true);
@@ -211,7 +239,7 @@ fn run(args: &[String]) -> i32 {
     }
     let path = opts.path.as_deref().expect("parse_args 가 경로를 확인한다");
     let page = opts.page.expect("parse_args 가 --page 를 확인한다");
-    let trace = match load_trace(path, page) {
+    let trace = match load_trace(path, page, opts.max_characters) {
         Ok(trace) => trace,
         Err(code) => return code,
     };
