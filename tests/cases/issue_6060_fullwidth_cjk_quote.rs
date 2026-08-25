@@ -14,7 +14,7 @@ use std::path::Path;
 use rhwp::wasm_api::HwpDocument;
 
 const SAMPLE: &str = "samples/hwp3-sample16-hwp5.hwpx";
-const PAGE: usize = 4; // 5쪽
+const PAGE: u32 = 4; // 5쪽
 const NEEDLE: &str = "「국가를당사자";
 
 fn load_doc() -> HwpDocument {
