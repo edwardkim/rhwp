@@ -15,7 +15,6 @@ import math
 import os
 import statistics
 import subprocess
-import tempfile
 from collections import Counter, defaultdict
 from pathlib import Path
 from typing import Any
@@ -204,20 +203,6 @@ def line_disposition(current_overflow_px: float, candidate_overflow_px: float) -
     return "unchanged"
 
 
-def context_from_ancestors(ancestors: list[str]) -> str:
-    if "Cell" in ancestors:
-        return "table-cell"
-    if "TextBox" in ancestors:
-        return "text-box"
-    if "Header" in ancestors:
-        return "header"
-    if "Footer" in ancestors:
-        return "footer"
-    if "FootnoteArea" in ancestors:
-        return "footnote"
-    return "body"
-
-
 def classify_document(dispositions: Counter[str]) -> str:
     if dispositions["overflow-introduced"] or dispositions["overflow-increased"]:
         return "worsened"
@@ -226,33 +211,18 @@ def classify_document(dispositions: Counter[str]) -> str:
     return "unchanged"
 
 
-def _walk_render_tree(root: dict[str, Any]) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
-    runs: list[dict[str, Any]] = []
-    lines: list[dict[str, Any]] = []
+def qualification_status(
+    *, improved: bool, decisive_modelled_regressions: int, unmodelled_characters: int
+) -> str:
+    """A proven modelled regression rejects the candidate even with open gaps."""
 
-    def walk(node: dict[str, Any], ancestors: list[str], line: dict[str, Any] | None) -> None:
-        node_type = node.get("type")
-        if not isinstance(node_type, str):
-            raise Rank8PrivateQualificationError("render tree node type is invalid")
-        current_line = line
-        if node_type == "TextLine":
-            current_line = {
-                "bbox": node.get("bbox"),
-                "context": context_from_ancestors(ancestors),
-                "runIndexes": [],
-            }
-            lines.append(current_line)
-        if node_type == "TextRun":
-            if current_line is None:
-                raise Rank8PrivateQualificationError("render text run has no line owner")
-            run_index = len(runs)
-            runs.append(node)
-            current_line["runIndexes"].append(run_index)
-        for child in node.get("children", []):
-            walk(child, ancestors + [node_type], current_line)
-
-    walk(root, [], None)
-    return runs, lines
+    if decisive_modelled_regressions:
+        return "no-change"
+    if unmodelled_characters:
+        return "blocked"
+    if improved:
+        return "qualified-for-q4"
+    return "no-change"
 
 
 def _run_private(command: list[str], label: str, timeout_seconds: int) -> bytes:
@@ -274,7 +244,7 @@ def _run_private(command: list[str], label: str, timeout_seconds: int) -> bytes:
     return completed.stdout
 
 
-def _trace_page(
+def _evidence_page(
     binary: Path, source: Path, page: int, cohort_id: str
 ) -> tuple[int, dict[str, Any]]:
     payload = _run_private(
@@ -287,16 +257,28 @@ def _trace_page(
             str(MAX_TRACE_CHARACTERS),
             "--json",
         ],
-        f"{cohort_id} page trace",
+        f"{cohort_id} page same-snapshot evidence",
         120,
     )
     try:
         envelope = json.loads(payload)
     except json.JSONDecodeError as error:
-        raise Rank8PrivateQualificationError(f"{cohort_id} page trace JSON failed") from error
-    trace = envelope.get("trace")
-    if envelope.get("tool") != "rhwp-q-font-trace" or not isinstance(trace, dict):
-        raise Rank8PrivateQualificationError(f"{cohort_id} page trace identity mismatch")
+        raise Rank8PrivateQualificationError(
+            f"{cohort_id} page same-snapshot evidence JSON failed"
+        ) from error
+    evidence = envelope.get("evidence")
+    if envelope.get("tool") != "rhwp-q-font-layout-evidence" or not isinstance(
+        evidence, dict
+    ):
+        raise Rank8PrivateQualificationError(f"{cohort_id} page evidence identity mismatch")
+    if (
+        evidence.get("status") != "complete"
+        or evidence.get("scope", {}).get("pageTreeBuilds") != 1
+        or evidence.get("scope", {}).get("sameSnapshot") is not True
+        or evidence.get("counts", {}).get("unframedRuns") != 0
+    ):
+        raise Rank8PrivateQualificationError(f"{cohort_id} page evidence is incomplete")
+    trace = evidence.get("trace", {})
     counts = trace.get("counts", {})
     if (
         trace.get("status") != "complete"
@@ -304,22 +286,7 @@ def _trace_page(
         or counts.get("charactersSeen") != counts.get("recordsEmitted")
     ):
         raise Rank8PrivateQualificationError(f"{cohort_id} page trace is incomplete")
-    return page, trace
-
-
-def _layout_page(binary: Path, source: Path, page: int, cohort_id: str) -> dict[str, Any]:
-    payload = _run_private(
-        [str(binary), str(source), "--page", str(page), "--json"],
-        f"{cohort_id} page layout",
-        120,
-    )
-    try:
-        layout = json.loads(payload)
-    except json.JSONDecodeError as error:
-        raise Rank8PrivateQualificationError(f"{cohort_id} page layout JSON failed") from error
-    if layout.get("tool") != "rhwp-q-text-layout" or not isinstance(layout.get("runs"), list):
-        raise Rank8PrivateQualificationError(f"{cohort_id} page layout identity mismatch")
-    return layout
+    return page, evidence
 
 
 def _exact_font(path: Path) -> tuple[int, dict[int, int]]:
@@ -435,56 +402,19 @@ def _candidate_advances(
 
 
 def _page_projection(
-    tree_path: Path,
-    trace: dict[str, Any],
-    layout: dict[str, Any],
+    evidence: dict[str, Any],
     units_per_em: int,
     exact_advances: dict[int, int],
     page: int,
 ) -> dict[str, Any]:
-    try:
-        root = json.loads(tree_path.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError) as error:
-        raise Rank8PrivateQualificationError("render tree read failed") from error
-    render_runs, lines = _walk_render_tree(root)
-    runs = layout["runs"]
-    require_equal(len(runs), trace["counts"]["runsSeen"], "trace/layout run count")
+    trace = evidence["trace"]
+    lines = evidence["lines"]
+    require_equal(
+        evidence["counts"]["runs"], trace["counts"]["runsSeen"], "trace/evidence run count"
+    )
     records_by_run: dict[int, list[dict[str, Any]]] = defaultdict(list)
     for record in trace["records"]:
         records_by_run[record["source"]["runIndex"]].append(record)
-    for run_index, run in enumerate(runs):
-        observed = "".join(
-            record["source"]["character"] for record in records_by_run[run_index]
-        )
-        rendered = run.get("text")
-        require_equal(observed, rendered, "trace/render run text")
-
-    def signature(text: str, bbox: dict[str, Any]) -> tuple[Any, ...]:
-        return (
-            text,
-            round(float(bbox["x"]), 1),
-            round(float(bbox["y"]), 1),
-            round(float(bbox["w"]), 1),
-            round(float(bbox["h"]), 1),
-        )
-
-    layout_by_signature: dict[tuple[Any, ...], list[int]] = defaultdict(list)
-    for run_index, run in enumerate(runs):
-        layout_by_signature[
-            signature(
-                run["text"],
-                {"x": run["x"], "y": run["y"], "w": run["w"], "h": run["h"]},
-            )
-        ].append(run_index)
-    render_to_layout: dict[int, int] = {}
-    consumed: Counter[tuple[Any, ...]] = Counter()
-    for render_index, run in enumerate(render_runs):
-        key = signature(run.get("text", ""), run["bbox"])
-        offset = consumed[key]
-        candidates = layout_by_signature.get(key, [])
-        if offset < len(candidates):
-            render_to_layout[render_index] = candidates[offset]
-            consumed[key] += 1
 
     run_delta, signs, coverage, replay_mismatches = _candidate_advances(
         trace, units_per_em, exact_advances
@@ -506,11 +436,7 @@ def _page_projection(
             }
             break
     for line_index, line in enumerate(lines):
-        layout_indexes = [
-            render_to_layout[index]
-            for index in line["runIndexes"]
-            if index in render_to_layout
-        ]
+        layout_indexes = line["runIndices"]
         target_count = sum(
             1
             for run_index in layout_indexes
@@ -519,14 +445,14 @@ def _page_projection(
         )
         if target_count == 0:
             continue
-        bbox = line["bbox"]
-        if not isinstance(bbox, dict) or bbox.get("w", 0) <= 0:
+        bbox = line["frame"]
+        if not isinstance(bbox, dict) or bbox.get("width", 0) <= 0:
             invalid_frame_target_lines += 1
             invalid_frame_target_characters += target_count
             continue
-        owned_runs = [render_runs[index] for index in line["runIndexes"]]
-        current_right = max(run["bbox"]["x"] + run["bbox"]["w"] for run in owned_runs)
-        frame_right = bbox["x"] + bbox["w"]
+        owned_runs = line["runs"]
+        current_right = max(run["x"] + run["width"] for run in owned_runs)
+        frame_right = bbox["x"] + bbox["width"]
         delta_hwpunit = sum(run_delta.get(index, 0) for index in layout_indexes)
         delta_px = delta_hwpunit / HWPUNIT_PER_PX
         current_overflow = max(0.0, current_right - frame_right)
@@ -537,8 +463,10 @@ def _page_projection(
                 "page": page,
                 "lineOrdinal": line_index,
                 "context": line["context"],
+                "storedRowDisposition": line["storedRow"]["disposition"],
+                "storedRowReason": line["storedRow"]["reason"],
                 "targetCharacters": target_count,
-                "frameWidthPx": round(bbox["w"], 1),
+                "frameWidthPx": round(bbox["width"], 1),
                 "currentOverflowPx": round(current_overflow, 3),
                 "candidateOverflowPx": round(candidate_overflow, 3),
                 "advanceDeltaHwpunit": delta_hwpunit,
@@ -558,7 +486,9 @@ def _page_projection(
             source.get("codePoint"),
         )
         semantic_keys[key] += 1
-    framed_layout_indexes = set(render_to_layout.values())
+    framed_layout_indexes = {
+        run_index for line in lines for run_index in line.get("runIndices", [])
+    }
     unframed_target = sum(
         1
         for run_index, records in records_by_run.items()
@@ -588,39 +518,31 @@ def project_document(
     cohort_id: str,
     document: dict[str, Any],
     source: Path,
-    rhwp_bin: Path,
-    trace_bin: Path,
-    layout_bin: Path,
+    evidence_bin: Path,
     units_per_em: int,
     exact_advances: dict[int, int],
     workers: int,
 ) -> dict[str, Any]:
-    with tempfile.TemporaryDirectory(prefix=f"rhwp-4967-{cohort_id}-") as directory:
-        tree_dir = Path(directory)
-        _run_private(
-            [str(rhwp_bin), "export-render-tree", str(source), "--output", str(tree_dir)],
-            f"{cohort_id} render tree",
-            300,
-        )
-        tree_paths = sorted(tree_dir.glob("render_tree_*.json"))
-        if not tree_paths:
-            raise Rank8PrivateQualificationError(f"{cohort_id} render tree is empty")
+    first_page, first_evidence = _evidence_page(evidence_bin, source, 0, cohort_id)
+    require_equal(first_page, 0, "first evidence page")
+    page_count = first_evidence.get("scope", {}).get("pageCount")
+    if not isinstance(page_count, int) or page_count <= 0:
+        raise Rank8PrivateQualificationError(f"{cohort_id} page count is invalid")
 
-        def page_queries(page: int) -> tuple[int, dict[str, Any], dict[str, Any]]:
-            _, trace = _trace_page(trace_bin, source, page, cohort_id)
-            layout = _layout_page(layout_bin, source, page, cohort_id)
-            return page, trace, layout
+    def page_query(page: int) -> tuple[int, dict[str, Any]]:
+        return _evidence_page(evidence_bin, source, page, cohort_id)
 
+    if page_count > 1:
         with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as pool:
-            queried = list(pool.map(page_queries, range(len(tree_paths))))
-        traces = {page: trace for page, trace, _ in queried}
-        layouts = {page: layout for page, _, layout in queried}
-        pages = [
-            _page_projection(
-                path, traces[page], layouts[page], units_per_em, exact_advances, page
-            )
-            for page, path in enumerate(tree_paths)
-        ]
+            remaining = list(pool.map(page_query, range(1, page_count)))
+    else:
+        remaining = []
+    evidences = {page: evidence for page, evidence in [(0, first_evidence), *remaining]}
+    require_equal(len(evidences), page_count, "same-snapshot evidence page count")
+    pages = [
+        _page_projection(evidences[page], units_per_em, exact_advances, page)
+        for page in range(page_count)
+    ]
 
     lines = [line for page in pages for line in page["lines"]]
     dispositions = Counter(line["disposition"] for line in lines)
@@ -660,9 +582,21 @@ def project_document(
     invalid_frame_target_characters = sum(
         page["invalidFrameTargetCharacters"] for page in pages
     )
+    cache_unmodelled_target_characters = sum(
+        line["targetCharacters"]
+        for line in lines
+        if line["storedRowDisposition"] == "unmodelled"
+    )
+    cache_target_characters = Counter()
+    cache_target_lines = Counter()
+    for line in lines:
+        cache_target_characters[line["storedRowDisposition"]] += line["targetCharacters"]
+        cache_target_lines[line["storedRowDisposition"]] += 1
     classification = (
         "unmodelled"
-        if unframed_target_characters + invalid_frame_target_characters
+        if unframed_target_characters
+        + invalid_frame_target_characters
+        + cache_unmodelled_target_characters
         else classify_document(dispositions)
     )
     return {
@@ -685,6 +619,9 @@ def project_document(
         "invalidFrameTargetLines": sum(
             page["invalidFrameTargetLines"] for page in pages
         ),
+        "cacheUnmodelledTargetCharacters": cache_unmodelled_target_characters,
+        "cacheTargetCharacters": dict(sorted(cache_target_characters.items())),
+        "cacheTargetLines": dict(sorted(cache_target_lines.items())),
         "recordDeltaCounts": dict(sorted(delta_signs.items())),
         "candidateCoverage": dict(sorted(coverage.items())),
         "targetLines": len(lines),
@@ -704,30 +641,43 @@ def build_public(private: dict[str, Any], q0: dict[str, Any], q2: dict[str, Any]
     contexts: Counter[str] = Counter()
     record_deltas: Counter[str] = Counter()
     coverage: Counter[str] = Counter()
+    cache_target_characters: Counter[str] = Counter()
+    cache_target_lines: Counter[str] = Counter()
     for document in documents:
         line_dispositions.update(document["lineDispositions"])
         contexts.update(document["contextLines"])
         record_deltas.update(document["recordDeltaCounts"])
         coverage.update(document["candidateCoverage"])
-    improved = classifications["improved"] > 0
-    non_worsening = classifications["worsened"] == 0 and classifications["unmodelled"] == 0
+        cache_target_characters.update(document["cacheTargetCharacters"])
+        cache_target_lines.update(document["cacheTargetLines"])
+    improved = bool(
+        line_dispositions["overflow-removed"]
+        or line_dispositions["overflow-reduced"]
+    )
+    decisive_modelled_regressions = sum(
+        1
+        for document in documents
+        for line in document["lines"]
+        if line["storedRowDisposition"] in {"admitted", "rejected"}
+        and line["disposition"] in {"overflow-introduced", "overflow-increased"}
+    )
+    non_worsening = decisive_modelled_regressions == 0
     unmodelled = sum(
         document["unframedTargetCharacters"]
         + document["invalidFrameTargetCharacters"]
+        + document["cacheUnmodelledTargetCharacters"]
         for document in documents
     )
-    status = (
-        "blocked"
-        if unmodelled
-        else "qualified-for-q4"
-        if improved and non_worsening
-        else "no-change"
+    status = qualification_status(
+        improved=improved and non_worsening,
+        decisive_modelled_regressions=decisive_modelled_regressions,
+        unmodelled_characters=unmodelled,
     )
     result = {
         "schemaVersion": 1,
         "kind": "font-rank8-private-qualification-projection",
         "issue": 4967,
-        "stage": "W8-Q3",
+        "stage": "W8-Q3R",
         "target": {"face": TARGET_FACE, "targetDecisionPlane": "layout-metric"},
         "inputs": {
             "q0CanonicalSha256": q0["canonicalSha256"],
@@ -764,6 +714,9 @@ def build_public(private: dict[str, Any], q0: dict[str, Any], q2: dict[str, Any]
             "invalidFrameTargetLines": sum(
                 document["invalidFrameTargetLines"] for document in documents
             ),
+            "cacheUnmodelledTargetCharacters": sum(
+                document["cacheUnmodelledTargetCharacters"] for document in documents
+            ),
         },
         "projection": {
             "recordDeltaCounts": dict(sorted(record_deltas.items())),
@@ -772,6 +725,9 @@ def build_public(private: dict[str, Any], q0: dict[str, Any], q2: dict[str, Any]
             "contextLines": dict(sorted(contexts.items())),
             "lineDispositions": dict(sorted(line_dispositions.items())),
             "documentClassifications": dict(sorted(classifications.items())),
+            "decisiveModelledRegressionLines": decisive_modelled_regressions,
+            "cacheTargetCharacters": dict(sorted(cache_target_characters.items())),
+            "cacheTargetLines": dict(sorted(cache_target_lines.items())),
             "firstMetricDivergencePresent": any(
                 document["firstMetricDivergence"] is not None for document in documents
             ),
@@ -783,17 +739,28 @@ def build_public(private: dict[str, Any], q0: dict[str, Any], q2: dict[str, Any]
             "sourceUsageLane": "stored",
             "storedRiskCharacters": q0["cohort"]["storedRiskCharacters"],
             "freshRiskCharacters": q0["cohort"]["freshRiskCharacters"],
-            "detector": "stored-presence-plus-observed-frame-capacity",
+            "detector": "same-snapshot-production-cache-key-probe",
             "samePartitionProjection": True,
-            "cacheAdmissionObserved": False,
-            "validityClaim": False,
-            "reason": "read-only query exposes rendered frames but not the internal stored-row admission decision",
+            "cacheAdmissionObserved": True,
+            "validityClaim": unmodelled == 0,
+            "reason": (
+                None
+                if unmodelled == 0
+                else "at least one target character remains in a fail-closed unmodelled frame"
+            ),
         },
         "decision": {
             "status": status,
             "actualDocumentImprovementObserved": improved,
             "allDocumentsNonWorsening": non_worsening,
             "evidenceComplete": unmodelled == 0,
+            "terminalReason": (
+                "modelled-regression"
+                if decisive_modelled_regressions
+                else "unmodelled-evidence"
+                if unmodelled
+                else None
+            ),
             "productMutationAuthorized": False,
             "nextStage": "backend-portable-policy" if status == "qualified-for-q4" else None,
         },
@@ -828,9 +795,7 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument("--q2", required=True)
     parser.add_argument("--font-root", required=True)
     parser.add_argument("--ttf", required=True)
-    parser.add_argument("--rhwp-bin", required=True)
-    parser.add_argument("--font-trace-bin", required=True)
-    parser.add_argument("--text-layout-bin", required=True)
+    parser.add_argument("--font-layout-evidence-bin", required=True)
     parser.add_argument("--private-output", required=True)
     parser.add_argument("--public-output", required=True)
     parser.add_argument("--workers", type=int, default=4)
@@ -849,9 +814,9 @@ def main() -> int:
         raise Rank8PrivateQualificationError("private cohort must be owner-only")
     q0_path = regular_input(ROOT, args.q0, MAX_JSON_BYTES)
     q2_path = regular_input(ROOT, args.q2, MAX_JSON_BYTES)
-    rhwp_bin = regular_input(ROOT, args.rhwp_bin, 512 * 1024 * 1024)
-    trace_bin = regular_input(ROOT, args.font_trace_bin, 512 * 1024 * 1024)
-    layout_bin = regular_input(ROOT, args.text_layout_bin, 512 * 1024 * 1024)
+    evidence_bin = regular_input(
+        ROOT, args.font_layout_evidence_bin, 512 * 1024 * 1024
+    )
     font_root = Path(args.font_root).resolve(strict=True)
     ttf_path = regular_input(font_root, args.ttf, 64 * 1024 * 1024)
     require_equal(sha256_file(q0_path), Q0_SHA256, "Q0 raw")
@@ -882,9 +847,7 @@ def main() -> int:
                 cohort_id=cohort_id,
                 document=document,
                 source=source,
-                rhwp_bin=rhwp_bin,
-                trace_bin=trace_bin,
-                layout_bin=layout_bin,
+                evidence_bin=evidence_bin,
                 units_per_em=units_per_em,
                 exact_advances=exact_advances,
                 workers=args.workers,
@@ -894,7 +857,7 @@ def main() -> int:
         "schemaVersion": 1,
         "kind": "font-rank8-private-qualification-detail",
         "issue": 4967,
-        "stage": "W8-Q3",
+        "stage": "W8-Q3R",
         "localOnly": True,
         "privateCohortRawSha256": sha256_file(cohort_path),
         "documents": documents,

@@ -11,9 +11,9 @@ from font_rank8_private_qualification import (  # noqa: E402
     Rank8PrivateQualificationError,
     apply_metric_transform_precise,
     classify_document,
-    context_from_ancestors,
     infer_font_size_hwpunit,
     line_disposition,
+    qualification_status,
     resolve_font_size_hwpunit,
 )
 
@@ -71,12 +71,6 @@ class Rank8PrivateQualificationTest(unittest.TestCase):
             apply_metric_transform_precise(value, 5.2, font_size_hwpunit=1300), 359
         )
 
-    def test_context_uses_nearest_specialized_owner(self) -> None:
-        self.assertEqual(context_from_ancestors(["Page", "Body", "Table", "Cell"]), "table-cell")
-        self.assertEqual(context_from_ancestors(["Page", "Body", "TextBox"]), "text-box")
-        self.assertEqual(context_from_ancestors(["Page", "Header"]), "header")
-        self.assertEqual(context_from_ancestors(["Page", "Body"]), "body")
-
     def test_line_disposition_distinguishes_improvement_and_regression(self) -> None:
         self.assertEqual(line_disposition(1.0, 0.0), "overflow-removed")
         self.assertEqual(line_disposition(0.0, 1.0), "overflow-introduced")
@@ -94,6 +88,24 @@ class Rank8PrivateQualificationTest(unittest.TestCase):
             "worsened",
         )
         self.assertEqual(classify_document(Counter({"slack-increased": 2})), "unchanged")
+
+    def test_modelled_regression_decisively_rejects_candidate_before_open_gaps(self) -> None:
+        self.assertEqual(
+            qualification_status(
+                improved=True,
+                decisive_modelled_regressions=1,
+                unmodelled_characters=100,
+            ),
+            "no-change",
+        )
+        self.assertEqual(
+            qualification_status(
+                improved=True,
+                decisive_modelled_regressions=0,
+                unmodelled_characters=100,
+            ),
+            "blocked",
+        )
 
 
 if __name__ == "__main__":

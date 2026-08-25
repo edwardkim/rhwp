@@ -246,6 +246,96 @@ fn public_fixture_trace_is_bounded_and_deterministic() {
     }
 }
 
+#[test]
+fn issue4967_combined_evidence_uses_one_tree_and_preserves_trace() {
+    let core = DocumentCore::from_bytes(include_bytes!("../../samples/field-01.hwp"))
+        .expect("public fixture parses");
+    let options = r#"{"maxCharacters":4096}"#;
+    let standalone: serde_json::Value = serde_json::from_str(
+        &core
+            .get_font_decision_trace_native(0, options)
+            .expect("standalone trace"),
+    )
+    .expect("standalone trace JSON");
+
+    rhwp::diagnostics::perf_counters::reset();
+    let evidence: serde_json::Value = serde_json::from_str(
+        &core
+            .get_font_layout_evidence_native(0, options)
+            .expect("same-snapshot evidence"),
+    )
+    .expect("evidence JSON");
+    assert_eq!(rhwp::diagnostics::perf_counters::page_tree_builds(), 1);
+    assert_eq!(evidence["scope"]["sameSnapshot"], true);
+    assert_eq!(evidence["scope"]["pageTreeBuilds"], 1);
+    assert_eq!(evidence["trace"], standalone);
+    assert_eq!(evidence["status"], "complete");
+    assert_eq!(evidence["counts"]["unframedRuns"], 0);
+    assert_eq!(evidence["counts"]["runs"], evidence["counts"]["framedRuns"]);
+
+    let lines = evidence["lines"].as_array().expect("line evidence");
+    let mut memberships = std::collections::BTreeMap::<u64, usize>::new();
+    for line in lines {
+        for index in line["runIndices"].as_array().expect("run indices") {
+            *memberships
+                .entry(index.as_u64().expect("run index"))
+                .or_default() += 1;
+        }
+    }
+    assert_eq!(memberships.len() as u64, evidence["counts"]["runs"]);
+    assert!(memberships.values().all(|count| *count == 1));
+    for record in evidence["trace"]["records"]
+        .as_array()
+        .expect("trace records")
+    {
+        let run_index = record["source"]["runIndex"]
+            .as_u64()
+            .expect("trace run index");
+        assert_eq!(memberships.get(&run_index), Some(&1));
+    }
+    assert!(lines
+        .iter()
+        .any(|line| line["storedRow"]["disposition"] == "admitted"));
+}
+
+#[test]
+fn issue4967_combined_evidence_keeps_unowned_legacy_geometry_unmodelled() {
+    let core = DocumentCore::from_bytes(include_bytes!("../../samples/hwp3-sample16.hwp"))
+        .expect("public HWP3 fixture parses");
+    let evidence: serde_json::Value = serde_json::from_str(
+        &core
+            .get_font_layout_evidence_native(0, r#"{"maxCharacters":4096}"#)
+            .expect("same-snapshot HWP3 evidence"),
+    )
+    .expect("HWP3 evidence JSON");
+    let lines = evidence["lines"].as_array().expect("line evidence");
+    assert!(!lines.is_empty());
+    assert!(lines.iter().all(|line| {
+        line["storedRow"]["disposition"] == "unmodelled"
+            && line["storedRow"]["reason"] == "frameProvenanceIncomplete"
+    }));
+}
+
+#[test]
+fn issue4967_combined_evidence_reports_actual_cache_key_rejection() {
+    let core = DocumentCore::from_bytes(include_bytes!("../../samples/rowbreak-problem-pages.hwp"))
+        .expect("public rowbreak fixture parses");
+    let evidence: serde_json::Value = serde_json::from_str(
+        &core
+            .get_font_layout_evidence_native(0, r#"{"maxCharacters":4096}"#)
+            .expect("same-snapshot rowbreak evidence"),
+    )
+    .expect("rowbreak evidence JSON");
+    assert!(evidence["lines"]
+        .as_array()
+        .expect("line evidence")
+        .iter()
+        .any(|line| {
+            line["storedRow"]["disposition"] == "rejected"
+                && line["storedRow"]["reason"] == "cacheKeyRejectedOrStale"
+        }));
+}
+
 #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
 #[test]
 fn standalone_native_trace_requires_a_prepared_renderer_snapshot() {

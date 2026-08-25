@@ -9,7 +9,9 @@ use crate::renderer::composer::is_lang_neutral;
 use crate::renderer::font_decision::*;
 use crate::renderer::layout::trace_char_width_decisions;
 use crate::renderer::px_to_hwpunit;
-use crate::renderer::render_tree::{RenderNode, RenderNodeType, TextRunNode};
+use crate::renderer::render_tree::{
+    PageRenderTree, RenderNode, RenderNodeType, TextLineNode, TextRunNode,
+};
 use crate::renderer::style_resolver::{
     detect_lang_category, lookup_font_name_decision, FontSubstitutionBoundary,
 };
@@ -46,6 +48,63 @@ fn collect_runs<'a>(node: &'a RenderNode, runs: &mut Vec<&'a TextRunNode>) {
     }
     for child in &node.children {
         collect_runs(child, runs);
+    }
+}
+
+struct LineSnapshot<'a> {
+    node: &'a RenderNode,
+    line: &'a TextLineNode,
+    context: &'static str,
+    runs: Vec<(usize, &'a RenderNode, &'a TextRunNode)>,
+}
+
+fn collect_line_snapshots<'a>(
+    node: &'a RenderNode,
+    active_line: Option<usize>,
+    next_run_index: &mut usize,
+    lines: &mut Vec<LineSnapshot<'a>>,
+    unframed_run_indices: &mut Vec<usize>,
+    context: &'static str,
+) {
+    let context = match node.node_type {
+        RenderNodeType::TableCell(_) => "table-cell",
+        RenderNodeType::TextBox => "text-box",
+        RenderNodeType::Header => "header",
+        RenderNodeType::Footer => "footer",
+        RenderNodeType::FootnoteArea => "footnote",
+        _ => context,
+    };
+    let active_line = if let RenderNodeType::TextLine(line) = &node.node_type {
+        let index = lines.len();
+        lines.push(LineSnapshot {
+            node,
+            line,
+            context,
+            runs: Vec::new(),
+        });
+        Some(index)
+    } else {
+        active_line
+    };
+
+    if let RenderNodeType::TextRun(run) = &node.node_type {
+        let run_index = *next_run_index;
+        *next_run_index += 1;
+        if let Some(line_index) = active_line {
+            lines[line_index].runs.push((run_index, node, run));
+        } else {
+            unframed_run_indices.push(run_index);
+        }
+    }
+    for child in &node.children {
+        collect_line_snapshots(
+            child,
+            active_line,
+            next_run_index,
+            lines,
+            unframed_run_indices,
+            context,
+        );
     }
 }
 
@@ -372,6 +431,236 @@ impl DocumentCore {
         )
     }
 
+    /// Issue #4967: one-tree evidence surface for bounded font qualification.
+    ///
+    /// The trace, line frames and stored-row probe all consume the same
+    /// `PageRenderTree`. This method is read-only; the probe uses isolated
+    /// paragraph/frame values and cannot publish a reflow.
+    pub fn get_font_layout_evidence_native(
+        &self,
+        page_num: u32,
+        options_json: &str,
+    ) -> Result<String, HwpError> {
+        if page_num >= self.page_count() {
+            return Err(HwpError::PageOutOfRange(page_num));
+        }
+        let requested_limits = options(options_json)?;
+        let native_unavailable_reason =
+            if cfg!(all(not(target_arch = "wasm32"), feature = "native-skia")) {
+                "nativeRendererSnapshotRequired"
+            } else {
+                "nativeSkiaFeatureUnavailable"
+            };
+        let tree = self.build_page_tree(page_num)?;
+        let trace_raw = self.get_font_decision_trace_from_tree(
+            page_num,
+            requested_limits,
+            None,
+            native_unavailable_reason,
+            &tree,
+        )?;
+        let trace: serde_json::Value = serde_json::from_str(&trace_raw).map_err(|error| {
+            HwpError::RenderError(format!("font layout evidence trace: {error}"))
+        })?;
+
+        let mut lines = Vec::new();
+        let mut unframed_run_indices = Vec::new();
+        let mut next_run_index = 0usize;
+        collect_line_snapshots(
+            &tree.root,
+            None,
+            &mut next_run_index,
+            &mut lines,
+            &mut unframed_run_indices,
+            "body",
+        );
+        let line_values = lines
+            .iter()
+            .map(|snapshot| self.line_snapshot_evidence(snapshot))
+            .collect::<Vec<_>>();
+        let framed_runs = line_values
+            .iter()
+            .filter_map(|line| line.get("runIndices").and_then(serde_json::Value::as_array))
+            .map(Vec::len)
+            .sum::<usize>();
+
+        serde_json::to_string(&json!({
+            "schemaVersion": 1,
+            "status": if unframed_run_indices.is_empty() { "complete" } else { "unmodelled" },
+            "scope": {
+                "pageIndex": page_num,
+                "pageCount": self.page_count(),
+                "pageTreeBuilds": 1,
+                "sameSnapshot": true,
+            },
+            "counts": {
+                "lines": line_values.len(),
+                "runs": next_run_index,
+                "framedRuns": framed_runs,
+                "unframedRuns": unframed_run_indices.len(),
+            },
+            "trace": trace,
+            "lines": line_values,
+            "unframedRunIndices": unframed_run_indices,
+        }))
+        .map_err(|error| {
+            HwpError::RenderError(format!("font layout evidence serialization: {error}"))
+        })
+    }
+
+    fn line_snapshot_evidence(&self, snapshot: &LineSnapshot<'_>) -> serde_json::Value {
+        use crate::renderer::composer::{
+            probe_stored_row_disposition, StoredRowMissPolicy, StoredRowProbeDisposition,
+        };
+        use crate::renderer::layout_frame::ParagraphBox;
+
+        let first_run = snapshot.runs.first().map(|(_, _, run)| *run);
+        let source = first_run.and_then(|run| {
+            Some((
+                run.section_index?,
+                source_paragraph_index(run)?,
+                run.cell_context
+                    .as_ref()
+                    .map(|context| {
+                        context
+                            .path
+                            .iter()
+                            .map(|entry| {
+                                (entry.control_index, entry.cell_index, entry.cell_para_index)
+                            })
+                            .collect::<Vec<_>>()
+                    })
+                    .unwrap_or_default(),
+            ))
+        });
+        let source_consistent = source.as_ref().is_some_and(|expected| {
+            snapshot.runs.iter().all(|(_, _, run)| {
+                let path = run
+                    .cell_context
+                    .as_ref()
+                    .map(|context| {
+                        context
+                            .path
+                            .iter()
+                            .map(|entry| {
+                                (entry.control_index, entry.cell_index, entry.cell_para_index)
+                            })
+                            .collect::<Vec<_>>()
+                    })
+                    .unwrap_or_default();
+                run.section_index == Some(expected.0)
+                    && source_paragraph_index(run) == Some(expected.1)
+                    && path == expected.2
+            })
+        });
+
+        let (disposition, reason) = if !source_consistent {
+            (
+                StoredRowProbeDisposition::Unmodelled,
+                "sourceMappingUnavailable",
+            )
+        } else if !snapshot.node.bbox.width.is_finite() || snapshot.node.bbox.width <= 0.0 {
+            (StoredRowProbeDisposition::Unmodelled, "invalidActualFrame")
+        } else if let Some((section, paragraph, path)) = source.as_ref() {
+            match self.resolve_control_para(*section, *paragraph, path) {
+                Ok(para) => {
+                    let para_style = self.styles.para_styles.get(para.para_shape_id as usize);
+                    let margin_left = para_style.map(|style| style.margin_left).unwrap_or(0.0);
+                    let margin_right = para_style.map(|style| style.margin_right).unwrap_or(0.0);
+                    let owner_width = snapshot.node.bbox.width + margin_left + margin_right;
+                    let is_nested = !path.is_empty();
+                    let paragraph_box = if is_nested {
+                        ParagraphBox::content_width_px(owner_width, self.dpi)
+                    } else {
+                        ParagraphBox::body_for_style(owner_width, para_style, self.dpi)
+                    };
+                    let miss_policy = if is_nested {
+                        StoredRowMissPolicy::UnmodelledUnlessStale
+                    } else {
+                        StoredRowMissPolicy::Reflow
+                    };
+                    let disposition = probe_stored_row_disposition(
+                        para,
+                        paragraph_box,
+                        &self.styles,
+                        self.dpi,
+                        self.effective_layout_profile()
+                            .legacy_hwp3_stored_geometry(),
+                        miss_policy,
+                    );
+                    let reason = match disposition {
+                        StoredRowProbeDisposition::Admitted => "exactCacheKey",
+                        StoredRowProbeDisposition::Rejected => "cacheKeyRejectedOrStale",
+                        StoredRowProbeDisposition::Unmodelled => "frameProvenanceIncomplete",
+                        StoredRowProbeDisposition::NotApplicable => "noAuthoritativeStoredRows",
+                    };
+                    (disposition, reason)
+                }
+                Err(_) => (
+                    StoredRowProbeDisposition::Unmodelled,
+                    "sourceMappingUnavailable",
+                ),
+            }
+        } else {
+            (
+                StoredRowProbeDisposition::Unmodelled,
+                "sourceMappingUnavailable",
+            )
+        };
+
+        let source_value = source
+            .as_ref()
+            .map(|(section, paragraph, path)| {
+                json!({
+                    "sectionIndex": section,
+                    "paragraphIndex": paragraph,
+                    "nestedPath": path.iter().flat_map(|entry| [entry.0, entry.1, entry.2]).collect::<Vec<_>>(),
+                })
+            })
+            .unwrap_or(serde_json::Value::Null);
+        let run_indices = snapshot
+            .runs
+            .iter()
+            .map(|(index, _, _)| *index)
+            .collect::<Vec<_>>();
+        let run_frames = snapshot
+            .runs
+            .iter()
+            .map(|(index, node, _)| {
+                json!({
+                    "runIndex": index,
+                    "x": node.bbox.x,
+                    "y": node.bbox.y,
+                    "width": node.bbox.width,
+                    "height": node.bbox.height,
+                })
+            })
+            .collect::<Vec<_>>();
+        json!({
+            "lineId": snapshot.node.id,
+            "frame": {
+                "x": snapshot.node.bbox.x,
+                "y": snapshot.node.bbox.y,
+                "width": snapshot.node.bbox.width,
+                "height": snapshot.node.bbox.height,
+            },
+            "lineHeight": snapshot.line.line_height,
+            "baseline": snapshot.line.baseline,
+            "sectionIndex": snapshot.line.section_index,
+            "paragraphIndex": snapshot.line.para_index,
+            "lineIndex": snapshot.line.line_index,
+            "vpos": snapshot.line.vpos,
+            "source": source_value,
+            "context": snapshot.context,
+            "runIndices": run_indices,
+            "runs": run_frames,
+            "storedRow": {
+                "disposition": disposition.as_str(),
+                "reason": reason,
+            },
+        })
+    }
+
     pub(crate) fn get_font_decision_trace_with_native_observer(
         &self,
         page_num: u32,
@@ -385,8 +674,27 @@ impl DocumentCore {
             return Err(HwpError::PageOutOfRange(page_num));
         }
         let requested_limits = options(options_json)?;
-        let applied_limits = requested_limits;
         let tree = self.build_page_tree(page_num)?;
+        self.get_font_decision_trace_from_tree(
+            page_num,
+            requested_limits,
+            native_observer,
+            native_unavailable_reason,
+            &tree,
+        )
+    }
+
+    fn get_font_decision_trace_from_tree(
+        &self,
+        page_num: u32,
+        requested_limits: TraceLimits,
+        native_observer: Option<
+            &dyn Fn(&str, char, bool, bool) -> crate::renderer::font_decision::BackendDecision,
+        >,
+        native_unavailable_reason: &'static str,
+        tree: &PageRenderTree,
+    ) -> Result<String, HwpError> {
+        let applied_limits = requested_limits;
         let mut runs = Vec::new();
         collect_runs(&tree.root, &mut runs);
         let characters_seen = runs

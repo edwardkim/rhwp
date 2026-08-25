@@ -82,3 +82,9 @@ frame·context와 stored-row admission을 함께 제공하는 읽기 전용 evid
 disposition이 함께 소비하게 한다. 기존 trace API와 hash는 유지하고 새 결합 query만 추가한다. frame
 provenance가 불완전한 문단은 `unmodelled`로 남기며, query 결과로 제품 metric·registry·fallback·paint·supply를
 변경하지 않는다. 구현 검증 뒤에도 Q0의 동일 6문서만 다시 판정한다.
+
+구현 뒤 동일 6문서를 재판정해 trace↔line 미조인은 0이 됐다. target 44,117자의 cache disposition은
+`admitted` 15,788, `rejected` 10,187, `unmodelled` 18,142였다. modelled 회귀 5줄 중 admitted가 4줄이며,
+표 셀 +1.92px 신규 overflow도 admitted였다. 따라서 rank 8 일괄 exact metric 후보는 `no-change`이고 Q4와
+제품 변경으로 진행하지 않는다. 정본 수치는 갱신된 `rank8_private_qualification.json`, 과정과 판정 논리는
+[`task_m100_4967_w8_q3r.md`](../../../working/task_m100_4967_w8_q3r.md)에 있다.

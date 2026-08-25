@@ -1,5 +1,6 @@
 {
   "accounting": {
+    "cacheUnmodelledTargetCharacters": 18142,
     "currentTransformReplayMismatches": 0,
     "documents": 6,
     "documentsByFormat": {
@@ -13,16 +14,17 @@
     "sourceAndRenderCountersAreDistinct": true,
     "sourceUsageCharacters": 43432,
     "traceTruncatedPages": 0,
-    "unframedTargetCharacters": 4397
+    "unframedTargetCharacters": 0
   },
-  "canonicalSha256": "2951d117bafe780fb58ea763504de952ce4d441dc878d428852b97605a81b214",
+  "canonicalSha256": "054c06ff01071558b4eeb197d9dede013f799d6574de28050cd9730c34eb62d8",
   "decision": {
     "actualDocumentImprovementObserved": true,
     "allDocumentsNonWorsening": false,
     "evidenceComplete": false,
     "nextStage": null,
     "productMutationAuthorized": false,
-    "status": "blocked"
+    "status": "no-change",
+    "terminalReason": "modelled-regression"
   },
   "executionPolicy": {
     "boundedDocuments": 6,
@@ -39,10 +41,10 @@
   "issue": 4967,
   "kind": "font-rank8-private-qualification-projection",
   "lineSegFeatureDetection": {
-    "cacheAdmissionObserved": false,
-    "detector": "stored-presence-plus-observed-frame-capacity",
+    "cacheAdmissionObserved": true,
+    "detector": "same-snapshot-production-cache-key-probe",
     "freshRiskCharacters": 0,
-    "reason": "read-only query exposes rendered frames but not the internal stored-row admission decision",
+    "reason": "at least one target character remains in a fail-closed unmodelled frame",
     "samePartitionProjection": true,
     "sourceUsageLane": "stored",
     "storedRiskCharacters": 43374,
@@ -59,40 +61,50 @@
     "privateTextIncluded": false
   },
   "projection": {
+    "cacheTargetCharacters": {
+      "admitted": 15788,
+      "rejected": 10187,
+      "unmodelled": 18142
+    },
+    "cacheTargetLines": {
+      "admitted": 706,
+      "rejected": 316,
+      "unmodelled": 1021
+    },
     "candidateCoverage": {
       "cmap-miss-preserved": 213,
       "exact-metric-applied": 43735,
       "special-preserved": 169
     },
     "contextLines": {
-      "body": 566,
+      "body": 673,
       "footnote": 4,
       "header": 84,
-      "table-cell": 1276
+      "table-cell": 1282
     },
+    "decisiveModelledRegressionLines": 5,
     "documentClassifications": {
-      "improved": 3,
-      "unmodelled": 2,
-      "worsened": 1
+      "unmodelled": 4,
+      "worsened": 2
     },
     "firstCapacityDivergencePresent": true,
     "firstMetricDivergencePresent": true,
     "lineDispositions": {
-      "overflow-increased": 1,
-      "overflow-introduced": 1,
-      "overflow-removed": 190,
-      "slack-increased": 109,
-      "unchanged": 1629
+      "overflow-increased": 3,
+      "overflow-introduced": 2,
+      "overflow-removed": 217,
+      "slack-increased": 114,
+      "unchanged": 1707
     },
     "recordDeltaCounts": {
       "equal": 382,
       "narrower": 39917,
       "wider": 3818
     },
-    "targetLines": 1930
+    "targetLines": 2043
   },
   "schemaVersion": 1,
-  "stage": "W8-Q3",
+  "stage": "W8-Q3R",
   "target": {
     "face": "KoPubWorld바탕체 Light",
     "targetDecisionPlane": "layout-metric"
