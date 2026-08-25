@@ -19,6 +19,7 @@ export class VirtualScroll {
   private pageWidths: number[] = [];
   private pageLefts: number[] = [];
   private pageRows: number[] = [];
+  private pageColumns: number[] = [];
   private rowPages: number[][] = [];
   private maxPageWidth = 0;
   private totalHeight = 0;
@@ -84,12 +85,14 @@ export class VirtualScroll {
     this.pageOffsets = [];
     this.pageLefts = [];
     this.pageRows = [];
+    this.pageColumns = [];
     this.rowPages = [];
     let offset = this.pageGap;
     for (let i = 0; i < this.pageHeights.length; i++) {
       this.pageOffsets.push(offset);
       this.pageLefts.push(-1); // -1 = CSS 중앙 정렬 사용
       this.pageRows.push(i);
+      this.pageColumns.push(0);
       this.rowPages.push([i]);
       offset += this.pageHeights[i] + this.pageGap;
     }
@@ -130,6 +133,7 @@ export class VirtualScroll {
     this.pageOffsets = new Array(this.pageHeights.length).fill(0);
     this.pageLefts = new Array(this.pageHeights.length).fill(0);
     this.pageRows = new Array(this.pageHeights.length).fill(0);
+    this.pageColumns = new Array(this.pageHeights.length).fill(0);
     this.rowPages = [];
 
     if (slots.length === 0) {
@@ -156,6 +160,7 @@ export class VirtualScroll {
     }
 
     for (const { pageIdx, row, col } of slots) {
+      this.pageColumns[pageIdx] = col;
       this.pageOffsets[pageIdx] = rowTops[row];
       this.pageLefts[pageIdx] = marginLeft
         + col * (pw + gap)
@@ -369,6 +374,16 @@ export class VirtualScroll {
 
   getColumns(): number {
     return this.columns;
+  }
+
+  /** Canvas 내용 재사용 여부를 판정하는 행·열 슬롯 토폴로지 키. 좌표·배율은 포함하지 않는다. */
+  getLayoutTopologyKey(): string {
+    return `${this.columns}|${this.pageRows.join(',')}|${this.pageColumns.join(',')}`;
+  }
+
+  /** 위에서 아래 순서의 실제 행 시작 페이지. 맞쪽의 빈 슬롯은 목록에 들어가지 않는다. */
+  getRowStartPages(): number[] {
+    return this.rowPages.flatMap((pages) => pages.length > 0 ? [pages[0]] : []);
   }
 
   get pageCount(): number {

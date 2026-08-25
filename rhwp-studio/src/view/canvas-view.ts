@@ -17,6 +17,12 @@ import {
 } from './renderer-session';
 import { applyGridOverlayBox, createGridClipCornerOverlay, createGridOverlay } from './grid-overlay';
 import { getGridViewSettings } from './grid-settings';
+import { userSettings } from '@/core/user-settings';
+import {
+  normalizePageArrangement,
+  pageArrangementsEqual,
+  type PageArrangement,
+} from './page-arrangement.ts';
 import {
   calculateAnchoredScroll,
   CENTER_ZOOM_ANCHOR,
@@ -48,6 +54,7 @@ export class CanvasView {
   private coordinateSystem: CoordinateSystem;
 
   private scrollContent: HTMLElement;
+  private pageArrangement: PageArrangement;
   private pages: PageInfo[] = [];
   private currentVisiblePages: number[] = [];
   private unsubscribers: (() => void)[] = [];
@@ -77,6 +84,7 @@ export class CanvasView {
     this.pageRenderer = new PageRenderer(wasm);
     this.viewportManager = new ViewportManager(eventBus);
     this.coordinateSystem = new CoordinateSystem(this.virtualScroll);
+    this.pageArrangement = normalizePageArrangement(userSettings.getViewSettings().pageArrangement);
 
     this.scrollContent = container.querySelector('#scroll-content')!;
     this.viewportManager.attachTo(container);
@@ -91,6 +99,9 @@ export class CanvasView {
           zoom as number,
           normalizeZoomAnchor(anchor as Partial<ZoomAnchor> | undefined),
         );
+      }),
+      eventBus.on('page-arrangement-changed', (arrangement) => {
+        this.setPageArrangement(normalizePageArrangement(arrangement));
       }),
       eventBus.on('document-page-invalidated', (payload) => {
         void this.refreshInvalidatedPageForMutation(payload);
@@ -356,7 +367,7 @@ export class CanvasView {
   private recalcLayout(): void {
     const zoom = this.viewportManager.getZoom();
     const viewport = this.viewportManager.getViewportSize();
-    this.virtualScroll.setPageDimensions(this.pages, zoom, viewport.width);
+    this.virtualScroll.setPageDimensions(this.pages, zoom, viewport.width, this.pageArrangement);
     this.scrollContent.style.height = `${this.virtualScroll.getTotalHeight()}px`;
     this.scrollContent.style.width = `${this.virtualScroll.getTotalWidth()}px`;
     this.layoutViewportSize = viewport;
@@ -1050,6 +1061,68 @@ export class CanvasView {
 
   getVirtualScroll(): VirtualScroll {
     return this.virtualScroll;
+  }
+
+  /**
+   * 문서 내용과 무관한 페이지 화면 배치를 바꾼다.
+   *
+   * 중심 쪽을 전환 전후 같은 뷰포트 앵커에 놓고, 실제 행·열 슬롯 토폴로지가 달라진 경우에만
+   * Canvas 내용을 버린다. 좌표만 달라지면 recalcLayout()의 reposition 경로로 기존 Canvas를 쓴다.
+   */
+  setPageArrangement(arrangement: PageArrangement): boolean {
+    if (this.disposed) return false;
+    const next = normalizePageArrangement(arrangement);
+    if (pageArrangementsEqual(this.pageArrangement, next)) return false;
+
+    if (this.pages.length === 0) {
+      this.pageArrangement = next;
+      return true;
+    }
+
+    const scrollTop = this.viewportManager.getScrollY();
+    const scrollLeft = this.viewportManager.getScrollX();
+    const { width: viewportWidth, height: viewportHeight } = this.viewportManager.getViewportSize();
+    const focusPage = this.virtualScroll.getPageAtPoint(
+      scrollLeft + viewportWidth / 2,
+      scrollTop + viewportHeight / 2,
+    );
+    const oldBox = this.getZoomPageBox(focusPage, viewportWidth);
+    const previousTopology = this.virtualScroll.getLayoutTopologyKey();
+
+    this.pageArrangement = next;
+    this.recalcLayout();
+
+    const nextTopology = this.virtualScroll.getLayoutTopologyKey();
+    const newBox = this.getZoomPageBox(focusPage, viewportWidth);
+    const nextScroll = calculateAnchoredScroll(
+      oldBox,
+      newBox,
+      {
+        width: viewportWidth,
+        height: viewportHeight,
+        scrollLeft,
+        scrollTop,
+      },
+      CENTER_ZOOM_ANCHOR,
+    );
+    this.viewportManager.setScrollLeft(this.clampScrollLeft(nextScroll.scrollLeft));
+    this.viewportManager.setScrollTop(nextScroll.scrollTop);
+
+    if (previousTopology !== nextTopology) {
+      this.cancelPendingTextEditRefresh();
+      this.cancelTextEditStaticLayerVerification();
+      this.cancelPendingPrefetch();
+      this.releaseAllRenderedPages();
+      this.pageRenderer.cancelAll();
+    }
+    this.updateVisiblePages();
+    return true;
+  }
+
+  getPageArrangement(): PageArrangement {
+    return this.pageArrangement.kind === 'multiple'
+      ? { ...this.pageArrangement }
+      : { kind: this.pageArrangement.kind };
   }
 
   getViewportManager(): ViewportManager {

@@ -170,6 +170,22 @@ test('그리드 모드는 쪽이 아니라 행 단위로 움직인다 (#2560)', 
   assert.equal(vm.getScrollY(), rowTop(vs, vs.pagesPerRow));
 });
 
+test('맞쪽 PageDown은 첫 빈 슬롯과 마지막 단독 행을 포함한 모든 실제 행을 지난다', () => {
+  const vs = new VirtualScroll(GAP);
+  vs.setPageDimensions(pages(6, 800, 600), 0.5, 1200, { kind: 'facing' });
+  const vm = fakeViewport(200);
+  const rowStarts = vs.getRowStartPages();
+  assert.deepEqual(rowStarts, [0, 1, 3, 5], '1 / 2-3 / 4-5 / 6쪽 행');
+
+  const visited = new Set<number>([vm.getScrollY()]);
+  for (let i = 0; i < 30 && scrollByPageStep(vs, vm, 1).moved; i++) {
+    visited.add(vm.getScrollY());
+  }
+  for (const page of rowStarts) {
+    assert.ok(visited.has(rowTop(vs, page)), `${page + 1}쪽이 시작하는 행을 지나야 한다`);
+  }
+});
+
 test('delta 는 실제 스크롤 변화량이다 — 캐럿을 같은 화면 자리에 붙이는 근거', () => {
   const vs = singleColumn(5);
   const vm = fakeViewport();
