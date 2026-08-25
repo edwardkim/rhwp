@@ -47,10 +47,52 @@ fn fragment_draws_number(fragment: Option<FootnoteFragment>) -> bool {
         .unwrap_or(true)
 }
 
-fn footnote_composed_line_count(paragraphs: &[Paragraph]) -> usize {
+/// [#6034] 저장 LINE_SEG 가 없는 각주 문단은 45자 고정 휴리스틱(compose_lines
+/// 폴백) 대신 **각주 영역 폭**으로 재조판해 compose 한다. 한글 6.x 대 저장본은
+/// 각주 문단에 LINE_SEG 를 저장하지 않는데, 폴백 폭과 실제 영역 폭의 차가 각주
+/// 블록을 부풀려(2912735: rhwp 15줄 vs 한글 9줄) bottom-anchor 인 영역 상단이
+/// 본문 마지막 줄 위로 올라가 구분선이 글줄을 관통했다. 편집 경로
+/// (footnote_ops)의 reflow 계약과 같은 상자를 쓴다. LINE_SEG 가 있으면 종전
+/// 그대로 통과한다.
+fn compose_footnote_paragraph(
+    para: &Paragraph,
+    content_width_px: f64,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+) -> crate::renderer::composer::ComposedParagraph {
+    if para.line_segs.is_empty() && !para.text.is_empty() && content_width_px > 0.0 {
+        let para_style = styles.para_styles.get(para.para_shape_id as usize);
+        let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
+        let margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);
+        let final_width = (content_width_px - margin_left - margin_right).max(0.0);
+        if final_width > 0.0 {
+            let mut owned = para.clone();
+            crate::renderer::composer::reflow_line_segs(
+                &mut owned,
+                crate::renderer::composer::ParagraphBox::content_width_px(final_width, dpi),
+                styles,
+                dpi,
+            );
+            return compose_paragraph(&owned);
+        }
+    }
+    compose_paragraph(para)
+}
+
+fn footnote_composed_line_count(
+    paragraphs: &[Paragraph],
+    content_width_px: f64,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+) -> usize {
     paragraphs
         .iter()
-        .map(|paragraph| compose_paragraph(paragraph).lines.len().max(1))
+        .map(|paragraph| {
+            compose_footnote_paragraph(paragraph, content_width_px, styles, dpi)
+                .lines
+                .len()
+                .max(1)
+        })
         .sum()
 }
 
@@ -874,6 +916,7 @@ impl LayoutEngine {
         paragraphs: &[Paragraph],
         shape: &FootnoteShape,
         styles: &ResolvedStyleSet,
+        area_width: f64,
     ) -> f64 {
         if footnotes.is_empty() {
             return 0.0;
@@ -896,11 +939,13 @@ impl LayoutEngine {
         // layout 경로에서도 trailing spacing을 붙이지 않는다.
         for (i, fn_ref) in footnotes.iter().enumerate() {
             let fn_paras = get_footnote_paragraphs(fn_ref, paragraphs);
-            let (start_line, end_line) =
-                fragment_line_bounds(fn_ref.fragment, footnote_composed_line_count(fn_paras));
+            let (start_line, end_line) = fragment_line_bounds(
+                fn_ref.fragment,
+                footnote_composed_line_count(fn_paras, area_width, styles, self.dpi),
+            );
             let mut flat_line = 0usize;
             for para in fn_paras {
-                let composed = compose_paragraph(para);
+                let composed = compose_footnote_paragraph(para, area_width, styles, self.dpi);
                 if composed.lines.is_empty() {
                     if (start_line..end_line).contains(&flat_line) {
                         total += hwpunit_to_px(400, self.dpi);
@@ -992,13 +1037,15 @@ impl LayoutEngine {
                 shape.prefix_char,
                 shape.suffix_char,
             );
-            let (fragment_start, fragment_end) =
-                fragment_line_bounds(fn_ref.fragment, footnote_composed_line_count(fn_paras));
+            let (fragment_start, fragment_end) = fragment_line_bounds(
+                fn_ref.fragment,
+                footnote_composed_line_count(fn_paras, fn_area.width, styles, self.dpi),
+            );
             let mut flat_line = 0usize;
             let mut number_drawn = false;
 
             for (p_idx, para) in fn_paras.iter().enumerate() {
-                let composed = compose_paragraph(para);
+                let composed = compose_footnote_paragraph(para, fn_area.width, styles, self.dpi);
                 let marker_section = i; // footnote_index
                 let marker_para = usize::MAX - 2000 - p_idx; // 각주 내 문단 인덱스
                                                              // 각주 번호 스타일용 기본 char_shape_id (빈/비빈 문단 모두 동일)
