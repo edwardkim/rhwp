@@ -40,6 +40,31 @@ CanvasKit OTF supply rule만 있고 Rust layout-name·layout-metric rule은 없�
 metric identity로 승격하지 않는다. Stage W8-R7-Q1은 W5 hash-sealed fixture를 복원해 HWP/HWPX의 current
 runtime boundary와 native·WASM parity를 먼저 판정한다.
 
+## Stage W8-R7-Q1 공개 fixture와 current runtime boundary
+
+W5 generator로 rank 7 HWPX fixture를 재생성해 봉인 SHA-256
+`1cc8062c6fd0da39cfddc4182115226717516d4250e693b43596293374236f9e`와 byte-exact함을 확인했다. 이
+HWPX를 현재 HEAD의 `rhwp convert --verify --verify-pages`로 두 번 변환한 HWP5는 SHA-256
+`3a844e0530ecede89301ab1f3c2381865412f8472aa08733cdb9d1d25223ee7f`, IR 차이 없음, 1쪽 동치를
+유지했다.
+
+재현 도구는 `scripts/font_rank7_runtime_boundary.mjs`, 계약 테스트는
+`scripts/tests/font_rank7_runtime_boundary.test.mjs`다. 공개 정본은
+[`rank7_runtime_boundary.json`](rank7_runtime_boundary.json), 두 형식의 계보는
+[`rank7_runtime_boundary.manifest.json`](fixtures/rank7_runtime_boundary.manifest.json)에 있다.
+
+- HWPX·HWP5는 각 1,556건이며 형식별 native·Docker WASM trace가 byte-exact하다.
+- requested·normalized·metric alias face는 전건 `KoPubWorld돋움체 Light`다.
+- metric entry는 전건 `null`, match kind는 전건 `none`이고 heuristic 폭 분포는 390 / 1,114 / 52다.
+- HWPX는 `substFont=KoPubWorld바탕체 Light`를 document·paint 후보에 보존하지만 HWP5는 보존하지 않는다.
+- 이 metadata 차이에도 두 형식의 source+layoutMetric projection, 실제 layout run geometry와 fixed-frame
+  6축은 byte-equivalent하다.
+- 따라서 document substitution은 current layout metric에 영향을 주지 않으며 paint 후보 체인만 바꾼다.
+
+current layout의 첫 divergence는 `layout-metric`이다. Stage W8-R7-Q2는 제품 source를 바꾸지 않고 exact
+TTF와 CDN OTF·WOFF2의 `hmtx` identity, current heuristic 대비 누적 advance와 첫 frame crossing을 제한
+비교한다. HWPX의 substitution을 layout fallback으로 승격하지 않는다.
+
 ## Stage W8-R1-Q0 경계
 
 rank 1 `문체부 바탕체`는 rank 8 결론을 재사용하지 않고 기존 W3·W4·W5·W7.5 증거를 독립 대사한다.
