@@ -326,6 +326,84 @@ pub fn compose_paragraph(para: &Paragraph) -> ComposedParagraph {
 
     // 각주 마커는 paragraph_layout에서 FootnoteMarker 노드로 처리 (텍스트에 삽입하지 않음)
 
+    // [#6101] 블록(비인라인) TAC 표와 뒤따르는 본문 텍스트가 저장 lineseg **한
+    // 줄**에 함께 담긴 문단: 블록 표(폭 ≥ 줄폭 90%)와 텍스트는 물리적으로 한
+    // 줄에 공존할 수 없고, 한글은 표를 줄 머리에 두고 텍스트를 다음 줄로
+    // 내린다(36361137 7쪽 오라클 실측: 표 x 69.7, 텍스트는 표 아래 y 517.6).
+    // 분리하지 않으면 ① 레이아웃 TAC 폴백이 line0 전체 폭(=뒤 텍스트 558px)을
+    // leading 으로 오산해 표가 텍스트 폭만큼 우측으로 밀려 쪽 밖으로 잘리고
+    // ② 조판이 텍스트 줄을 계상·발행하지 않아 본문이 통째로 소실된다.
+    // 표 줄(빈 runs — TAC \n 경로의 "표 줄" 선례와 동형)과 텍스트 줄로 분리
+    // 한다. 텍스트 줄 메트릭은 저장 줄높이(=표 높이)를 물려받으면 표가 이중
+    // 계상되므로 lineseg-부재 합성 폴백과 같은 소형 값(400/320HU)으로 두어
+    // 소비자(조판 max_fs 재산출·레이아웃 corrected_line_height)가 스타일로
+    // 재산출하게 한다. 스트림상 텍스트가 표 앞이든 뒤든 같은 서명이다 —
+    // 36501883(텍스트→표 순서)도 한글은 표를 줄 머리(x 76.8)에, 텍스트를 표
+    // 아래(y 766.8)에 둔다. 저장 사다리가 이미 표에 자기 줄을 준 다중 줄
+    // 문단(#842 선행 텍스트 축)은 표 줄에 가시 글자가 없어 여기 걸리지 않는다.
+    let block_tac_split_pos = para
+        .controls
+        .iter()
+        .enumerate()
+        .find_map(|(i, ctrl)| match ctrl {
+            Control::Table(t)
+                if t.common.treat_as_char
+                    && !tac_controls.iter().any(|(_, _, ci)| *ci == i)
+                    && !super::height_measurer::is_tac_table_inline_in_para(t, seg_width, para) =>
+            {
+                tac_positions.get(i).copied()
+            }
+            _ => None,
+        });
+    if let Some(ctrl_pos) = block_tac_split_pos {
+        let total_chars = para.text.chars().count();
+        let chars: Vec<char> = para.text.chars().collect();
+        let line_end = |lines: &[ComposedLine], idx: usize| {
+            lines
+                .get(idx + 1)
+                .map(|l| l.char_start)
+                .unwrap_or(total_chars)
+        };
+        let host_line = (0..lines.len()).find(|&i| {
+            let end = line_end(&lines, i).max(lines[i].char_start + 1);
+            // 마지막 줄은 끝 경계 포함 — 텍스트→표 순서(36501883)는 컨트롤
+            // 위치가 줄 끝(== 텍스트 길이)에 앵커된다.
+            let end_inclusive = if i + 1 == lines.len() { end + 1 } else { end };
+            lines[i].char_start <= ctrl_pos && ctrl_pos < end_inclusive
+        });
+        if let Some(li) = host_line {
+            let start = lines[li].char_start.min(total_chars);
+            let end = line_end(&lines, li).min(total_chars);
+            // 가시 글자 판정: 공백·제어문자·오브젝트마커(U+FFFC)·한컴 PUA 필러
+            // (BMP U+E000~F8FF, 보충평면 U+F0000~ — U+F081C 등)는 제외한다.
+            // is_alphanumeric 으로 좁히면 별표(`*`)만으로 채운 마스킹 줄
+            // (36501883)을 놓친다.
+            let is_visible_glyph = |ch: char| {
+                !ch.is_whitespace()
+                    && ch > '\u{001F}'
+                    && ch != '\u{FFFC}'
+                    && !('\u{E000}'..='\u{F8FF}').contains(&ch)
+                    && (ch as u32) < 0xF0000
+            };
+            let line_has_visible_text = chars[start..end].iter().any(|&c| is_visible_glyph(c));
+            if line_has_visible_text {
+                let table_line = ComposedLine {
+                    runs: Vec::new(),
+                    line_height: lines[li].line_height,
+                    baseline_distance: lines[li].baseline_distance,
+                    segment_width: lines[li].segment_width,
+                    column_start: lines[li].column_start,
+                    line_spacing: lines[li].line_spacing,
+                    has_line_break: true,
+                    char_start: lines[li].char_start,
+                };
+                lines[li].line_height = 400;
+                lines[li].baseline_distance = 320;
+                lines.insert(li, table_line);
+            }
+        }
+    }
+
     let mut composed = ComposedParagraph {
         lines,
         para_style_id: para.para_shape_id,
@@ -759,7 +837,6 @@ fn compose_lines(para: &Paragraph) -> Vec<ComposedLine> {
         if text_end < text_start {
             text_end = text_start;
         }
-
         // 이 줄의 텍스트 추출
         let line_text: String = para
             .text
@@ -1788,10 +1865,44 @@ pub(crate) fn stored_rows_are_stale(
     // 1줄 ≈4.5× 과밀). **이 경계는 압축 상한에서 나온 값이지 맞춰 넣은 상수가
     // 아니다.** 빈 문단은 run 이 없어 이 판정이 발화하지 않는데, 폭을 넘길 텍스트
     // 자체가 없으므로 정상이다(전체 run-less 조합 8,345건 중 99.6%가 빈 문단).
-    composed
+    if composed
         .lines
         .iter()
         .any(|l| estimate_composed_line_width(l, styles) > inner_width_px * 1.8)
+    {
+        return true;
+    }
+    // [#6102] **비말미** 저장 줄의 과밀: 이어지는 줄이 있는데도 자기 폭(저장
+    // segment_width 와 내폭 둘 다)을 넘는 텍스트를 담았다고 주장하는 줄은
+    // 물리적으로 성립하지 않는다 — 한글은 줄을 다 채우기 **전에** 끊는다.
+    // 결재문서본문 계열(36360328 외 2건)의 저장 textpos 축이 파서 보정폭과
+    // 어긋나 첫 줄이 6자 늦게 끊기고 본문 우단을 71~99px 넘던 결함의 관측식.
+    // 0.5× advance 클램프 마스킹 코호트(#2525)는 **단일 줄**이라 비말미 조건에
+    // 걸리지 않고, 말미 줄은 초과분이 다음 줄로 갈 수 없으므로 제외한다.
+    // 여유는 6% + 12px — 정당한 Justify 줄은 말미 공백 overhang(≤반각 한 칸)
+    // 까지 포함해도 이 밑에 있다.
+    //
+    // **범위는 자리차지 표 host 문단 한정** — 종전에 프레임 소유자가 아예 없던
+    // 계보라 이 판정에 기대던 기존 핀이 없다. 일반 문단까지 넓히면 확정된
+    // 쪽수 핀 5건(#2006/#3930/#3931/#2559/#5801)이 흔들린다(전량 게이트 실측).
+    if !para.controls.iter().any(|c| {
+        matches!(c, crate::model::control::Control::Table(t)
+            if !t.common.treat_as_char
+                && matches!(t.common.text_wrap, crate::model::shape::TextWrap::TopAndBottom))
+    }) {
+        return false;
+    }
+    let non_last_overfull = |line: &ComposedLine, seg: &crate::model::paragraph::LineSeg| {
+        let est = estimate_composed_line_width(line, styles);
+        let seg_width_px = crate::renderer::hwpunit_to_px(seg.segment_width, 96.0);
+        est > inner_width_px * 1.06 + 12.0 && est > seg_width_px * 1.06 + 12.0
+    };
+    composed
+        .lines
+        .iter()
+        .zip(para.line_segs.iter())
+        .take(composed.lines.len().saturating_sub(1))
+        .any(|(line, seg)| non_last_overfull(line, seg))
 }
 
 /// Resolve a paragraph's rows through the physical frame its own geometry
@@ -1854,6 +1965,11 @@ pub(crate) fn recompose_stored_lines_in_frame(
             // they become `LineSeg` again.
             let mut reflowed_para = para.clone();
             reflowed_para.line_segs = frame.project_line_segs();
+            // [#6102] 프레임이 새로 새긴 행 경계는 이미 HWP5 문단 축이다 —
+            // 원본의 [#5961] 보정폭을 물려받으면 fresh 경계가 이중 보정되어
+            // 줄이 보정폭만큼 늦게 끊긴다(36360328: fill 이 char 51(=raw 83)에
+            // 끊었는데 +8 재보정으로 59가 되어 첫 줄이 우단 밖 +75px).
+            reflowed_para.hwpx_axis_shift = 0;
             let mut reflowed = compose_paragraph(&reflowed_para);
             preserve_context_resolved_runs(composed, &mut reflowed);
             let mut reconciled = composed.clone();
@@ -2998,6 +3114,11 @@ fn text_surface_replacement(ch: char) -> Option<String> {
     if (0xF02B1..=0xF02C4).contains(&cp) {
         let n = cp - 0xF02B1; // 0-based
         return char::from_u32(0x2460 + n).map(|c| c.to_string());
+    }
+    // [#6127] U+F02B0 = 네모 안 0 (2599643 신청 번호란 "②⓪⓪") — 0 은 U+2460
+    // 연속열 밖이라 ⓪(U+24EA) 를 따로 짝짓는다.
+    if cp == 0xF02B0 {
+        return Some('\u{24EA}'.to_string());
     }
     // [#5599] U+F02C5 는 연속 구간의 21이 아니라 **네모 12** 다 — 한글 2022 오라클
     // 실측(mel-001 p18 국정과제 bullet, PDF 좌표 절단 판정). 렌더는 위 대역과 같은

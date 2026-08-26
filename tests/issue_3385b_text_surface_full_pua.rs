@@ -114,22 +114,19 @@ fn book_bracket_pua_becomes_angle_brackets() {
     let _ = std::fs::remove_dir_all(&dir);
 }
 
-/// 렌더는 그대로다 — 텍스트 표면 변환이 렌더까지 번지면 안 된다.
-///
-/// `map_pua_bullet_char` 는 원래 렌더 경로의 표이므로 SVG 에는 이미 치환된 글자가 나온다.
-/// 여기서 고정하는 것은 **텍스트 전용 변환이 렌더 출력을 바꾸지 않는다**는 점이다 —
-/// 사각 안 숫자는 렌더에서 원문 유지(캡스톤 F-1 결정)여야 한다.
+/// 렌더는 사각형+숫자 벡터 합성이다 — 원-안 글리프 매핑(캡스톤 F-1 이 되돌린
+/// 발산)이 되살아나지 않고, raw PUA 도 새지 않는다([#6127] 백엔드 패리티).
 #[test]
-fn render_keeps_the_boxed_number_passthrough() {
+fn render_synthesizes_the_boxed_numbers() {
     let dir = out_dir("svg");
     let svg = export("export-svg", "samples/2022년 국립국어원 업무계획.hwp", &dir);
     let boxed = svg
         .chars()
-        .filter(|c| (0xF02B1..=0xF02C4).contains(&(*c as u32)))
+        .filter(|c| (0xF02B0..=0xF02C4).contains(&(*c as u32)))
         .count();
-    assert!(
-        boxed > 0,
-        "렌더에서 사각 안 숫자 원문이 사라졌다 — 텍스트 표면 변환이 렌더까지 번졌다"
+    assert_eq!(
+        boxed, 0,
+        "렌더에 raw 사각 안 숫자 PUA 가 남았다 — 글꼴 부재 환경에서 빈칸이 된다"
     );
     let _ = std::fs::remove_dir_all(&dir);
 }

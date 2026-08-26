@@ -3163,6 +3163,7 @@ impl LayoutEngine {
                 };
                 let cap_cell_ctx = table_meta
                     .map(|(pi, ci)| CellContext {
+                        in_textbox: false,
                         parent_para_index: pi,
                         path: vec![CellPathEntry {
                             control_index: ci,
@@ -4763,6 +4764,7 @@ impl LayoutEngine {
                 Some(new_ctx)
             } else {
                 table_meta.map(|(pi, ci)| CellContext {
+                    in_textbox: false,
                     parent_para_index: pi,
                     path: vec![CellPathEntry {
                         control_index: ci,
@@ -9428,7 +9430,34 @@ impl LayoutEngine {
                                         && !hard_break_before
                                     {
                                         if let Some(seg) = p.line_segs.first() {
-                                            let target_top = normalized_vpos_px(seg.vertical_pos);
+                                            let mut target_top =
+                                                normalized_vpos_px(seg.vertical_pos);
+                                            // [#6095] 중첩 표 호스트의 저장 vpos 가 표
+                                            // **아래** host 줄 좌표면(점프가 중첩 표 선언
+                                            // 높이 규모) 표 상단 목표는 vpos − 표 높이다.
+                                            // 그대로 gap 에 넣으면 표 높이가 gap 유닛과
+                                            // 중첩 행 유닛으로 이중 계상되어 조각 회계가
+                                            // 페인트보다 커지고 컷이 일러진다(3090867:
+                                            // gap 328 + nested 286, used 953 vs 페인트
+                                            // 744). table_partial 의 페인트측 스냅 억제와
+                                            // 같은 판별을 쓴다.
+                                            let nested_total_px: f64 = p
+                                                .controls
+                                                .iter()
+                                                .filter_map(|control| match control {
+                                                    Control::Table(nested) => Some(hwpunit_to_px(
+                                                        nested.common.height.min(i32::MAX as u32)
+                                                            as i32,
+                                                        self.dpi,
+                                                    )),
+                                                    _ => None,
+                                                })
+                                                .sum();
+                                            if nested_total_px > 0.0
+                                                && target_top - unit_cum >= nested_total_px - 24.0
+                                            {
+                                                target_top -= nested_total_px;
+                                            }
                                             if target_top > unit_cum {
                                                 uh += target_top - unit_cum;
                                                 vpos_gap_before = true;
@@ -9474,7 +9503,31 @@ impl LayoutEngine {
                         let mut vpos_gap_before = vpos_gap_before_para && ri == 0;
                         if use_vpos_unit_positions && ri == 0 && !hard_break_before {
                             if let Some(seg) = p.line_segs.first() {
-                                let target_top = normalized_vpos_px(seg.vertical_pos);
+                                let mut target_top = normalized_vpos_px(seg.vertical_pos);
+                                // [#6095] 중첩 표 호스트의 저장 vpos 가 표 **아래**
+                                // host 줄 좌표면(직전 흐름에서의 점프가 중첩 표 선언
+                                // 높이 규모) 표 상단 목표는 vpos − 표 높이다. 그대로
+                                // gap 에 넣으면 표 높이가 gap 과 중첩 행 유닛으로
+                                // 이중 계상되어 조각 회계가 페인트보다 커지고 컷이
+                                // 일러진다(3090867: gap 328 + rows 302, used 953 vs
+                                // 페인트 744 — 본문 2문단이 2쪽으로 밀림).
+                                // table_partial 의 페인트측 스냅 억제와 같은 판별.
+                                let nested_total_px: f64 = p
+                                    .controls
+                                    .iter()
+                                    .filter_map(|control| match control {
+                                        Control::Table(nested) => Some(hwpunit_to_px(
+                                            nested.common.height.min(i32::MAX as u32) as i32,
+                                            self.dpi,
+                                        )),
+                                        _ => None,
+                                    })
+                                    .sum();
+                                if nested_total_px > 0.0
+                                    && target_top - unit_cum >= nested_total_px - 24.0
+                                {
+                                    target_top -= nested_total_px;
+                                }
                                 if target_top > unit_cum {
                                     uh += target_top - unit_cum;
                                     vpos_gap_before = true;
@@ -11332,18 +11385,27 @@ impl LayoutEngine {
         }
 
         let mut reset_count = 0usize;
+        let mut in_paragraph_reset_count = 0usize;
         let mut previous_frame_end: Option<i32> = None;
         let mut preceding_frame_end = 0i32;
         let mut trailing_frame_end = 0i32;
         for paragraph in &cell.paragraphs {
-            for seg in paragraph.line_segs.iter().filter(|seg| {
-                seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
-            }) {
+            for (seg_idx, seg) in paragraph
+                .line_segs
+                .iter()
+                .filter(|seg| {
+                    seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                })
+                .enumerate()
+            {
                 let frame_end = seg.vertical_pos.saturating_add(seg.line_height);
                 if previous_frame_end
                     .is_some_and(|previous_end| previous_end > 0 && seg.vertical_pos <= 0)
                 {
                     reset_count += 1;
+                    if seg_idx > 0 {
+                        in_paragraph_reset_count += 1;
+                    }
                     preceding_frame_end =
                         preceding_frame_end.max(previous_frame_end.unwrap_or_default());
                     trailing_frame_end = 0;
@@ -11361,10 +11423,11 @@ impl LayoutEngine {
                 let source_frame_span = preceding_frame_end.saturating_add(trailing_frame_end);
                 let sum_fits_declared = source_frame_span >= declared_height.saturating_mul(4) / 5
                     && source_frame_span <= declared_height;
-                if cell.vertical_align == VerticalAlign::Center {
+                if cell.vertical_align == VerticalAlign::Center && in_paragraph_reset_count == 0 {
                     // CENTER 평가표는 문단 로컬 vpos=0 줄합이 선언 높이와 비슷해
                     // sum 4/5 가 우연히 참이 되고 한 줄만 남긴다 (#6035).
-                    // TOP 셀(편람 103×2)은 기존 sum 계약을 유지한다.
+                    // 같은 문단 내부의 vpos reset은 한 문단이 물리 쪽 경계를 건넌
+                    // 흔적이므로 #6025처럼 기존 sum 계약을 유지한다.
                     preceding_frame_end >= declared_height.saturating_mul(4) / 5
                         && preceding_frame_end <= declared_height
                         && trailing_frame_end > 0

@@ -1,4 +1,4 @@
-import type { CommandDef } from '../types';
+import type { CommandDef, CommandServices } from '../types';
 import { setThemeMode, setThemeSkin, syncThemeMenu, type EffectiveTheme } from '../../core/theme';
 import { userSettings, type ThemeMode, type ThemeSkin } from '../../core/user-settings';
 import { GridSettingsDialog } from '../../ui/grid-settings-dialog';
@@ -13,12 +13,36 @@ import { HWPUNIT_PER_MM } from '../../core/hwp-constants';
 import {
   calculateArrangementFitWidthZoom,
   calculateFitPageZoom,
+  resolveZoomFitZoom,
 } from '../../view/zoom-fit';
+import { CENTER_ZOOM_ANCHOR } from '../../view/zoom-anchor';
 import { applyToolboxVisibility } from '../../view/toolbox-visibility';
 import { ZoomDialog } from '../../ui/zoom-dialog';
-import { resolveZoomDialogZoom } from '../../view/zoom-dialog-state';
+import { resolveZoomDialogZoom, zoomFitModeFromChoice } from '../../view/zoom-dialog-state';
 
 const PX_TO_MM = 25.4 / 96;
+
+/**
+ * 쪽 맞춤·폭 맞춤을 지금의 창·쪽 크기로 계산해 적용하고 그 선택을 저장한다.
+ * 맞춤은 수치가 아니라 규칙이라, 다음에 여는 문서에서는 그 쪽 크기로 다시 계산한다.
+ */
+function applyZoomFit(services: CommandServices, mode: 'fitWidth' | 'fitPage'): void {
+  const vm = services.getViewportManager();
+  if (!vm || services.wasm.pageCount === 0) return;
+  const container = document.getElementById('scroll-container');
+  if (!container) return;
+  // getPageInfo 의 width/height 는 이미 px 단위 (96dpi 기준)
+  const pageInfo = services.wasm.getPageInfo(0);
+  const zoom = resolveZoomFitZoom(mode, {
+    containerWidth: container.clientWidth,
+    containerHeight: container.clientHeight,
+    pageWidth: pageInfo.width,
+    pageHeight: pageInfo.height,
+    arrangement: userSettings.getViewSettings().pageArrangement,
+  });
+  if (zoom === null) return;
+  vm.setZoom(zoom, CENTER_ZOOM_ANCHOR, mode);
+}
 
 /** 배율 고정값 커맨드 생성 헬퍼 */
 function zoomLevel(pct: number, shortcutLabel?: string): CommandDef {
@@ -238,7 +262,7 @@ export const viewCommands: CommandDef[] = [
             arrangement: view.pageArrangement,
             pageMovement: view.pageMovement,
           });
-          vm.setZoom(zoom);
+          vm.setZoom(zoom, CENTER_ZOOM_ANCHOR, zoomFitModeFromChoice(value.zoomChoice));
           services.eventBus.emit('command-state-changed');
         },
       }).show();
@@ -249,17 +273,7 @@ export const viewCommands: CommandDef[] = [
     label: '쪽 맞춤',
     shortcutLabel: 'Ctrl+G,P',
     execute(services) {
-      const vm = services.getViewportManager();
-      if (!vm || services.wasm.pageCount === 0) return;
-      const container = document.getElementById('scroll-container')!;
-      const pi = services.wasm.getPageInfo(0);
-      // pi.width/height는 이미 px 단위 (96dpi 기준)
-      vm.setZoom(calculateFitPageZoom(
-        container.clientWidth,
-        container.clientHeight,
-        pi.width,
-        pi.height,
-      ));
+      applyZoomFit(services, 'fitPage');
     },
   },
   {
@@ -267,16 +281,7 @@ export const viewCommands: CommandDef[] = [
     label: '폭 맞춤',
     shortcutLabel: 'Ctrl+G,W',
     execute(services) {
-      const vm = services.getViewportManager();
-      if (!vm || services.wasm.pageCount === 0) return;
-      const container = document.getElementById('scroll-container')!;
-      const pi = services.wasm.getPageInfo(0);
-      // pi.width는 이미 px 단위 (96dpi 기준)
-      vm.setZoom(calculateArrangementFitWidthZoom({
-        containerWidth: container.clientWidth,
-        pageWidth: pi.width,
-        arrangement: userSettings.getViewSettings().pageArrangement,
-      }));
+      applyZoomFit(services, 'fitWidth');
     },
   },
   zoomLevel(50),
@@ -405,6 +410,7 @@ export const viewCommands: CommandDef[] = [
   {
     id: 'view:toolbox-basic',
     label: '기본',
+    shortcutLabel: 'Ctrl+F1',
     execute() {
       userSettings.setToolbarBasic(!userSettings.getViewSettings().toolbarBasic);
       syncToolboxMenu();

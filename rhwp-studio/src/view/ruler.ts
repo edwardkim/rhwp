@@ -147,6 +147,9 @@ export class Ruler {
       eventBus.on('viewport-resize', () => { this.resize(); this.scheduleUpdate(); }),
       eventBus.on('document-changed', () => this.scheduleUpdate()),
       eventBus.on('document-view-changed', () => this.scheduleUpdate()),
+      // 문서를 새로 연 직후는 눈금자가 스스로 알 수 없는 유일한 시점이다. 크기도 다시
+      // 잡는다 — 빈 쪽 단계에서 컨테이너가 0 폭이었으면 캔버스가 0 인 채로 남는다.
+      eventBus.on('document-view-loaded', () => { this.resize(); this.scheduleUpdate(); }),
       eventBus.on('theme-changed', () => this.scheduleUpdate()),
       eventBus.on('cursor-para-changed', (props) => this.onParaChanged(props as ParaProperties)),
       eventBus.on('cursor-cell-changed', (data) => this.onCellChanged(data as { inCell: boolean; cellX?: number; cellWidth?: number })),
@@ -220,6 +223,22 @@ export class Ruler {
   update(): void {
     this.drawHorizontal();
     this.drawVertical();
+  }
+
+  /**
+   * 지금 문서의 쪽 정보를 읽는다. 없는 쪽이면 null.
+   *
+   * 문서가 갈리는 순간에는 가상 스크롤이 아직 옛 문서의 기하를 들고 있어, 새 문서에 없는
+   * 쪽 번호를 "보이는 쪽"으로 준다. 그걸 그대로 getPageInfo 에 넣으면 던지고, 예외가
+   * 그리기 도중에 나므로 눈금자는 눈금 없는 배경 띠만 남긴 채 다음 이벤트까지 그대로 있는다.
+   */
+  private pageInfoOrNull(pageIdx: number): ReturnType<WasmBridge['getPageInfo']> | null {
+    if (!Number.isInteger(pageIdx) || pageIdx < 0 || pageIdx >= this.wasm.pageCount) return null;
+    try {
+      return this.wasm.getPageInfo(pageIdx);
+    } catch {
+      return null;
+    }
   }
 
   /** 페이지 좌측 화면 좌표를 계산한다 (scroll-container 뷰포트 기준). */
@@ -494,7 +513,12 @@ export class Ruler {
 
     const zoom = this.viewportManager.getZoom();
     const scrollX = this.viewportManager.getScrollX();
-    const pageInfo = this.wasm.getPageInfo(pageIdx);
+    const pageInfo = this.pageInfoOrNull(pageIdx);
+    if (!pageInfo) {
+      this.hPins = [];
+      ctx.restore();
+      return;
+    }
 
     // 페이지 화면 좌표 (편집 용지와 정확히 일치)
     const pageScreenLeft = this.getPageScreenLeft(pageIdx, scrollX);
@@ -636,7 +660,7 @@ export class Ruler {
     ctx.restore();
   }
 
-  /** 세로 눈금자 그리기 — 활성 페이지 한 쪽의 눈금만 표시 */
+  /** 세로 눈금자 그리기 — 보이는 페이지 범위의 눈금을 표시 */
   private drawVertical(): void {
     const ctx = this.vCtx;
     if (!ctx) return;
@@ -652,8 +676,8 @@ export class Ruler {
     ctx.fillStyle = palette.bgMargin;
     ctx.fillRect(0, 0, canvasW, canvasH);
 
-    const pageIdx = this.rulerPageIndex();
-    if (pageIdx === null) {
+    const activePageIdx = this.rulerPageIndex();
+    if (activePageIdx === null) {
       this.vPins = [];
       ctx.restore();
       return;
@@ -663,78 +687,92 @@ export class Ruler {
     const scrollY = this.viewportManager.getScrollY();
     const mmPx = PX_PER_MM * zoom;
 
+    // 보이는 페이지 범위에서만 그리되, 문서 전환 직후 visible page 계산이 비어 있으면
+    // 활성 페이지로 한 번 더 그린다.
+    const vpHeight = canvasH;
+    const visiblePages = this.virtualScroll.getVisiblePages(scrollY, vpHeight);
+    const pagesToDraw = visiblePages.length > 0 ? visiblePages : [activePageIdx];
     this.vPins = [];
+    // 격자 보기: 같은 행의 쪽들이 같은 y를 공유해 핀이 겹친다 (가로 눈금자와 같은 이유).
+    const gridMode = this.virtualScroll.isGridMode();
 
-    // 페이지 상단의 화면 좌표 (scroll-container 뷰포트 기준)
-    const pageScreenTop = this.virtualScroll.getPageOffset(pageIdx) - scrollY;
-    const pageInfo = this.wasm.getPageInfo(pageIdx);
+    for (const pageIdx of pagesToDraw) {
+      // 페이지 상단의 화면 좌표 (scroll-container 뷰포트 기준)
+      const pageScreenTop = this.virtualScroll.getPageOffset(pageIdx) - scrollY;
+      const pageInfo = this.pageInfoOrNull(pageIdx);
+      if (!pageInfo) continue;
 
-    // 핀은 자기가 쓰는 여백의 경계에 선다 — 용지 끝에서 marginTop/marginBottom 만큼.
-    // 본문 위 끝(= marginTop + marginHeader)에 그리면 핀 위치와 커밋 값이 머리말만큼
-    // 어긋나, marginTop 이 0 이 되는 자리에서 더 못 올라가고 그 위 머리말 폭은 눈금자로
-    // 손댈 수단이 없었다.
-    const marginTopPx = pageScreenTop + pageInfo.marginTop * zoom;
-    const marginBottomPx = pageScreenTop + (pageInfo.height - pageInfo.marginBottom) * zoom;
-    // 밝은 띠 = 쪽 여백 안쪽. 핀 두 개가 그 띠의 양 끝이다 — 가로 눈금자와 같은 읽는 법이다
-    // (가로는 머리말이 없어 "여백 안쪽"이 곧 본문이다). 머리말/꼬리말을 세 번째 톤으로
-    // 나누는 안은 버렸다: 어두운 테마의 여백↔본문 색차가 rgb 9 뿐이라 그 사이에 낀 톤은
-    // 보이지 않고, 핀이 무엇을 가리키는지만 흐려진다.
-    ctx.fillStyle = palette.bgBody;
-    ctx.fillRect(0, marginTopPx, canvasW, marginBottomPx - marginTopPx);
+      // 핀은 자기가 쓰는 여백의 경계에 선다 — 용지 끝에서 marginTop/marginBottom 만큼.
+      // 본문 위 끝(= marginTop + marginHeader)에 그리면 핀 위치와 커밋 값이 머리말만큼
+      // 어긋나, marginTop 이 0 이 되는 자리에서 더 못 올라가고 그 위 머리말 폭은 눈금자로
+      // 손댈 수단이 없었다.
+      const marginTopPx = pageScreenTop + pageInfo.marginTop * zoom;
+      const marginBottomPx = pageScreenTop + (pageInfo.height - pageInfo.marginBottom) * zoom;
+      // 밝은 띠 = 쪽 여백 안쪽. 핀 두 개가 그 띠의 양 끝이다 — 가로 눈금자와 같은 읽는 법이다
+      // (가로는 머리말이 없어 "여백 안쪽"이 곧 본문이다). 머리말/꼬리말을 세 번째 톤으로
+      // 나누는 안은 버렸다: 어두운 테마의 여백↔본문 색차가 rgb 9 뿐이라 그 사이에 낀 톤은
+      // 보이지 않고, 핀이 무엇을 가리키는지만 흐려진다.
+      ctx.fillStyle = palette.bgBody;
+      ctx.fillRect(0, marginTopPx, canvasW, marginBottomPx - marginTopPx);
 
-    // 드래그 중이면 잡은 핀만 마우스 위치로 대체 (라이브 프리뷰)
-    const topY = this.vDrag?.kind === 'top' && this.vDrag.pageIdx === pageIdx
-      ? this.vDrag.y
-      : marginTopPx;
-    const bottomY = this.vDrag?.kind === 'bottom' && this.vDrag.pageIdx === pageIdx
-      ? this.vDrag.y
-      : marginBottomPx;
-    this.vPins.push({ kind: 'top', y: topY, pageIdx }, { kind: 'bottom', y: bottomY, pageIdx });
-
-    // mm 눈금 그리기
-    const pageHeightMm = Math.ceil(pageInfo.height / PX_PER_MM);
-
-    ctx.strokeStyle = palette.tick;
-    ctx.fillStyle = palette.text;
-    ctx.lineWidth = 0.5;
-    ctx.font = '9px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-
-    for (let mm = 0; mm <= pageHeightMm; mm++) {
-      const y = pageScreenTop + mm * mmPx;
-
-      // 화면 밖 스킵
-      if (y < -10 || y > canvasH + 10) continue;
-
-      let tickW: number;
-      if (mm % 10 === 0) {
-        tickW = 10;
-        // 10mm 단위 숫자 (cm 단위, 세로 텍스트)
-        const cm = mm / 10;
-        if (cm > 0) {
-          ctx.save();
-          ctx.translate(canvasW / 2 - 2, y);
-          ctx.rotate(-Math.PI / 2);
-          ctx.fillText(`${cm}`, 0, 0);
-          ctx.restore();
-        }
-      } else if (mm % 5 === 0) {
-        tickW = 6;
-      } else {
-        tickW = 3;
+      // 드래그 중이면 잡은 핀만 마우스 위치로 대체 (라이브 프리뷰)
+      const topY = this.vDrag?.kind === 'top' && this.vDrag.pageIdx === pageIdx
+        ? this.vDrag.y
+        : marginTopPx;
+      const bottomY = this.vDrag?.kind === 'bottom' && this.vDrag.pageIdx === pageIdx
+        ? this.vDrag.y
+        : marginBottomPx;
+      if (!gridMode) {
+        this.vPins.push({ kind: 'top', y: topY, pageIdx }, { kind: 'bottom', y: bottomY, pageIdx });
       }
 
-      ctx.beginPath();
-      ctx.moveTo(canvasW, y);
-      ctx.lineTo(canvasW - tickW, y);
-      ctx.stroke();
-    }
+      // mm 눈금 그리기
+      const pageHeightMm = Math.ceil(pageInfo.height / PX_PER_MM);
 
-    // 위/아래 여백 핀 — 활성 페이지의 본문 시작(▽)과 끝(△)만 표시한다.
-    ctx.fillStyle = palette.marker;
-    this.drawTriangleDown(ctx, canvasW / 2, topY, MARKER_SIZE);
-    this.drawTriangleUp(ctx, canvasW / 2, bottomY, MARKER_SIZE);
+      ctx.strokeStyle = palette.tick;
+      ctx.fillStyle = palette.text;
+      ctx.lineWidth = 0.5;
+      ctx.font = '9px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+
+      for (let mm = 0; mm <= pageHeightMm; mm++) {
+        const y = pageScreenTop + mm * mmPx;
+
+        // 화면 밖 스킵
+        if (y < -10 || y > canvasH + 10) continue;
+
+        let tickW: number;
+        if (mm % 10 === 0) {
+          tickW = 10;
+          // 10mm 단위 숫자 (cm 단위, 세로 텍스트)
+          const cm = mm / 10;
+          if (cm > 0) {
+            ctx.save();
+            ctx.translate(canvasW / 2 - 2, y);
+            ctx.rotate(-Math.PI / 2);
+            ctx.fillText(`${cm}`, 0, 0);
+            ctx.restore();
+          }
+        } else if (mm % 5 === 0) {
+          tickW = 6;
+        } else {
+          tickW = 3;
+        }
+
+        ctx.beginPath();
+        ctx.moveTo(canvasW, y);
+        ctx.lineTo(canvasW - tickW, y);
+        ctx.stroke();
+      }
+
+      // 위/아래 여백 핀 — 본문 시작(▽)과 끝(△)을 표시한다.
+      if (!gridMode) {
+        ctx.fillStyle = palette.marker;
+        this.drawTriangleDown(ctx, canvasW / 2, topY, MARKER_SIZE);
+        this.drawTriangleUp(ctx, canvasW / 2, bottomY, MARKER_SIZE);
+      }
+    }
 
     ctx.restore();
   }

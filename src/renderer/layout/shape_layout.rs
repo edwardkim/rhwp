@@ -148,6 +148,7 @@ fn ole_cell_context(
     para_index: usize,
 ) -> Option<crate::renderer::layout::CellContext> {
     (!parent_cell_path.is_empty()).then(|| crate::renderer::layout::CellContext {
+        in_textbox: false,
         parent_para_index: para_index,
         path: parent_cell_path.to_vec(),
     })
@@ -2722,6 +2723,7 @@ impl LayoutEngine {
                         ..inner_area
                     };
                     let cell_ctx = CellContext {
+                        in_textbox: true,
                         parent_para_index: para_index,
                         path: {
                             let mut p = parent_cell_path.to_vec();
@@ -2916,6 +2918,38 @@ impl LayoutEngine {
                                     total_content_height.max(hwpunit_to_px(bottom, self.dpi));
                             }
                         }
+                        // [#5820 축2] 저장 lineseg 가 없는 문단(기계생성 로고 줄)은
+                        // TAC 인라인 개체 높이가 곧 그 줄의 콘텐츠 높이다 — 제외하면
+                        // 콘텐츠 높이 0 으로 계산돼 CENTER 오프셋이 반칸(+21.2px)
+                        // 과대해지고 로고가 글상자 아래로 흘러넘친다(156560092:
+                        // 한글 로고 B 상자-상대 top +2.4 vs rhwp +21.2). lineseg 가
+                        // 있으면 그 lh 가 이미 줄을 계상하므로 이중 가산하지 않는다.
+                        if para.line_segs.is_empty() {
+                            let tac_max: i32 = para
+                                .controls
+                                .iter()
+                                .filter_map(|ctrl| match ctrl {
+                                    Control::Picture(pic) if pic.common.treat_as_char => {
+                                        Some(pic.common.height as i32)
+                                    }
+                                    Control::Shape(shape)
+                                        if shape.as_ref().common().treat_as_char =>
+                                    {
+                                        Some(shape.as_ref().common().height as i32)
+                                    }
+                                    Control::Equation(eq) if eq.common.treat_as_char => {
+                                        Some(eq.common.height as i32)
+                                    }
+                                    _ => None,
+                                })
+                                .max()
+                                .unwrap_or(0);
+                            if tac_max > 0 {
+                                let bottom = para_vpos.saturating_add(tac_max);
+                                total_content_height =
+                                    total_content_height.max(hwpunit_to_px(bottom, self.dpi));
+                            }
+                        }
                     }
 
                     let free_space = (inner_area.height - total_content_height).max(0.0);
@@ -2960,6 +2994,7 @@ impl LayoutEngine {
                 ..inner_area
             };
             let cell_ctx = CellContext {
+                in_textbox: true,
                 parent_para_index: para_index,
                 path: {
                     let mut p = parent_cell_path.to_vec();
@@ -3086,7 +3121,38 @@ impl LayoutEngine {
             } else {
                 0.0
             };
-            let total_line_width = total_inline_width + first_line_text_width;
+            // [#5820 축3] 한글은 오른쪽 정렬 폭에서 말미 공백을 제외한다 — 글상자
+            // [로고A][로고B][공백5] RIGHT 문단에서 포함하면 로고가 말미 공백 폭
+            // (32.7px)만큼 좌측 이탈한다(156560092 실측: 한글 로고 B 우변 여백
+            // 4.1px vs rhwp 36.8). paragraph_layout 의 셀-밖 Right 제외 규칙과
+            // 같은 계약이다.
+            let trailing_ws_width: f64 = if para_alignment == Alignment::Right
+                && pi < composed_paras.len()
+            {
+                composed_paras[pi]
+                    .lines
+                    .first()
+                    .map(|line| {
+                        let mut width = 0.0;
+                        for run in line.runs.iter().rev() {
+                            let n = run.text.chars().rev().take_while(|c| *c == ' ').count();
+                            if n == 0 {
+                                break;
+                            }
+                            let ts =
+                                resolved_to_text_style(styles, run.char_style_id, run.lang_index);
+                            width += estimate_text_width(&" ".repeat(n), &ts);
+                            if n != run.text.chars().count() {
+                                break;
+                            }
+                        }
+                        width
+                    })
+                    .unwrap_or(0.0)
+            } else {
+                0.0
+            };
+            let total_line_width = total_inline_width + first_line_text_width - trailing_ws_width;
             let mut inline_x = match para_alignment {
                 Alignment::Center | Alignment::Distribute => {
                     inner_area.x + (inner_area.width - total_line_width).max(0.0) / 2.0
@@ -3188,6 +3254,7 @@ impl LayoutEngine {
                         // 식별자: (바깥 Shape control_index, cell_index=0, 글상자 문단 pi). innerControlIdx 는
                         // layout_picture 의 control_index 인자(= ctrl_idx_in_para)로 별도 전달된다.
                         let pic_cell_ctx = CellContext {
+                            in_textbox: true,
                             parent_para_index: para_index,
                             path: {
                                 let mut p = parent_cell_path.to_vec();
@@ -3212,9 +3279,13 @@ impl LayoutEngine {
                             } else {
                                 pic_h
                             };
+                            // [#5820 축2] 인라인 형제는 **하단 정렬** — 한글은 같은 줄의
+                            // TAC 그림들을 베이스라인(하단)에 맞춘다(156560092 로고 A/B:
+                            // 한글 A top = B top + 10.4px = 상자-상대 +12.8, rhwp 상단
+                            // 정렬은 두 그림 top 이 같아 A 가 12.1px 낮았다).
                             let pic_container = LayoutRect {
                                 x: inline_x,
-                                y: inline_y,
+                                y: inline_y + (max_inline_height - clamped_h).max(0.0),
                                 width: clamped_w,
                                 height: clamped_h,
                             };
@@ -3270,6 +3341,7 @@ impl LayoutEngine {
                         // (시험지 page 2 문14 <보기> textbox 의 6개 inline 수식이
                         //  paragraph_layout + 본 분기 양쪽에서 각각 emit → 중복).
                         let equiv_cell_ctx = CellContext {
+                            in_textbox: true,
                             parent_para_index: para_index,
                             path: {
                                 let mut p = parent_cell_path.to_vec();
@@ -3626,6 +3698,7 @@ impl LayoutEngine {
                 };
 
                 let cell_ctx = CellContext {
+                    in_textbox: true,
                     parent_para_index: para_index,
                     path: {
                         let mut p = parent_cell_path.to_vec();

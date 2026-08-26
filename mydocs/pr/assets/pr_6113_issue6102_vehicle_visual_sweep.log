@@ -1,0 +1,11 @@
+== pr_6113_issue6102_vehicle ==
++ target/pr-review/release-test/rhwp dump-note-shape /home/tsjang/rhwp/samples/issue6102/36360328_vehicle_inspection_expense.hwpx
++ target/pr-review/release-test/rhwp export-svg /home/tsjang/rhwp/samples/issue6102/36360328_vehicle_inspection_expense.hwpx --font-style -o /home/tsjang/rhwp/output/pr_6088_6144_visual_sweep/local_hancom2020/pr_6113_issue6102_vehicle/svg
++ target/pr-review/release-test/rhwp export-render-tree /home/tsjang/rhwp/samples/issue6102/36360328_vehicle_inspection_expense.hwpx -o /home/tsjang/rhwp/output/pr_6088_6144_visual_sweep/local_hancom2020/pr_6113_issue6102_vehicle/render_tree
+SVG export pages: 1
++ pdftoppm -f 1 -l 1 -r 96 -png /home/tsjang/rhwp/pdf/pr_6088_6144/local_hancom2020/pr_6113_issue6102_vehicle_inspection_expense-local2020.pdf /home/tsjang/rhwp/output/pr_6088_6144_visual_sweep/local_hancom2020/pr_6113_issue6102_vehicle/pdf_png/pdf
++ pdftotext -bbox-layout /home/tsjang/rhwp/pdf/pr_6088_6144/local_hancom2020/pr_6113_issue6102_vehicle_inspection_expense-local2020.pdf /home/tsjang/rhwp/output/pr_6088_6144_visual_sweep/local_hancom2020/pr_6113_issue6102_vehicle/pdf_bbox.html
+Selected page singleton fallback: 산출물 파일명 숫자가 선택 페이지와 다르지만 모든 비교 그룹이 단일 페이지라 1:1로 매칭합니다.
+Selected pages: [1]
+Raster PNG pages: rhwp=1, pdf=1
+summary: /home/tsjang/rhwp/output/pr_6088_6144_visual_sweep/local_hancom2020/summary.json

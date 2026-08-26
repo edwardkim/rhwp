@@ -1,0 +1,25 @@
+{
+  "status": "success",
+  "job_id": "2086864d-c681-465f-af24-7c6831bd6743",
+  "output_path": "/home/tsjang/rhwp/pdf/pr_6088_6144/hancom2020/pr_6088_6144_issue6025_employment_support_criteria_3232693_employment_support_criteria-2020.pdf",
+  "output_filename": "pr_6088_6144_issue6025_employment_support_criteria_3232693_employment_support_criteria-2020.pdf",
+  "size": 97925,
+  "sha256": "985dab08280f0cb7a2489c796614337e230871428bc0ac98b5cd3be4b5abd579",
+  "server": {
+    "job_id": "2086864d-c681-465f-af24-7c6831bd6743",
+    "status": "success",
+    "target": "pdf",
+    "input_filename": "3232693_employment_support_criteria.hwpx",
+    "output_filename": "pr_6088_6144_issue6025_employment_support_criteria_3232693_employment_support_criteria-2020.pdf",
+    "size": 97925,
+    "sha256": "985dab08280f0cb7a2489c796614337e230871428bc0ac98b5cd3be4b5abd579",
+    "mime_type": "application/pdf",
+    "engine": "2020",
+    "engine_profile": "2020",
+    "hancom_version": "12.0.0.4605",
+    "backend": "hwp-managed-direct-dll-host",
+    "elapsed_ms": 9975,
+    "worker_elapsed_ms": 9462,
+    "worker_bits": 32
+  }
+}

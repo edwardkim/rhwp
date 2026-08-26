@@ -1576,7 +1576,28 @@ impl LayoutEngine {
                             hwpunit_to_px((seg.vertical_pos - vpos_origin).max(0), self.dpi)
                                 - snap_spacing_before;
                         let current_top = (para_y - text_y_start).max(0.0);
-                        if target_top > current_top {
+                        // [#6095] 중첩 표 호스트 문단의 저장 vpos 는 표 **아래**의
+                        // host 줄 좌표일 수 있다(3090867 앵커 vpos=33720 = 직전 흐름
+                        // + 중첩 표 높이). 그 좌표로 전방 스냅하면 표 페인트까지
+                        // 함께 내려가 표 위에 표 높이만큼 빈공간이 생긴다(+303px,
+                        // 본문이 2쪽으로 밀림). 점프가 중첩 표 선언 높이 규모면
+                        // post-table host 줄로 보고 스냅을 건너뛴다 — 표는 자연
+                        // 흐름에 그려지고, 후속 문단은 자기 저장 vpos 로 정렬된다.
+                        let nested_tables_px: f64 = para
+                            .controls
+                            .iter()
+                            .filter_map(|control| match control {
+                                Control::Table(nested) => Some(hwpunit_to_px(
+                                    nested.common.height.min(i32::MAX as u32) as i32,
+                                    self.dpi,
+                                )),
+                                _ => None,
+                            })
+                            .sum();
+                        let post_table_host_line = has_table_ctrl
+                            && nested_tables_px > 0.0
+                            && target_top - current_top >= nested_tables_px - 24.0;
+                        if target_top > current_top && !post_table_host_line {
                             para_y += target_top - current_top;
                         }
                     }
@@ -1611,6 +1632,7 @@ impl LayoutEngine {
                     context
                 } else {
                     CellContext {
+                        in_textbox: false,
                         parent_para_index: para_index,
                         path: vec![CellPathEntry {
                             control_index,
@@ -3699,6 +3721,7 @@ impl LayoutEngine {
             context
         } else {
             CellContext {
+                in_textbox: false,
                 parent_para_index: para_index,
                 path: vec![CellPathEntry {
                     control_index,
