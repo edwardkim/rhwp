@@ -3245,7 +3245,11 @@ export class InputHandler {
     const cursorRect = this.cursor.getRect();
     if (cursorRect) {
       const adjustedCursorRect = this.adjustExitedFieldEndCaretRect(cursorRect);
-      this.eventBus.emit('cursor-rect-updated', { x: adjustedCursorRect.x, y: adjustedCursorRect.y });
+      this.eventBus.emit('cursor-rect-updated', {
+        pageIndex: adjustedCursorRect.pageIndex,
+        x: adjustedCursorRect.x,
+        y: adjustedCursorRect.y,
+      });
     }
   }
 
@@ -3352,7 +3356,11 @@ export class InputHandler {
 
     const cursorRect = this.cursor.getRect();
     if (cursorRect) {
-      this.eventBus.emit('cursor-rect-updated', { x: cursorRect.x, y: cursorRect.y });
+      this.eventBus.emit('cursor-rect-updated', {
+        pageIndex: cursorRect.pageIndex,
+        x: cursorRect.x,
+        y: cursorRect.y,
+      });
     }
   }
 
@@ -3544,6 +3552,10 @@ export class InputHandler {
         pageBboxes.push({ pageIndex, x: minX, y: minY, width: maxX - minX, height: maxY - minY });
       }
       this.tableObjectRenderer.renderMultiPage(pageBboxes, zoom);
+      const selectedPage = pageHint !== undefined && byPage.has(pageHint)
+        ? pageHint
+        : pageBboxes[0].pageIndex;
+      this.eventBus.emit('editing-page-changed', selectedPage);
     } catch (e) {
       console.warn('[InputHandler] renderTableObjectSelection 실패:', e);
       this.tableObjectRenderer.clear();

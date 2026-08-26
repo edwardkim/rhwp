@@ -388,18 +388,18 @@ export function renderPictureObjectSelection(this: any): void {
     try {
       const zoom = this.viewportManager.getZoom();
       let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-      let pageIndex = 0;
+      let pageIndex: number | null = null;
       for (const r of refs) {
         const bbox = this.findPictureBbox(r);
         if (bbox) {
-          pageIndex = bbox.pageIndex;
+          pageIndex ??= bbox.pageIndex;
           minX = Math.min(minX, bbox.x);
           minY = Math.min(minY, bbox.y);
           maxX = Math.max(maxX, bbox.x + bbox.w);
           maxY = Math.max(maxY, bbox.y + bbox.h);
         }
       }
-      if (minX < Infinity) {
+      if (minX < Infinity && pageIndex !== null) {
         const locked = refs.some((r: PictureObjectRef) => isObjectSizeProtected.call(this, r));
         this.pictureObjectRenderer.render(
           { pageIndex, x: minX, y: minY, width: maxX - minX, height: maxY - minY },
@@ -407,6 +407,7 @@ export function renderPictureObjectSelection(this: any): void {
           0,
           locked,
         );
+        this.eventBus.emit('editing-page-changed', pageIndex);
       } else {
         this.pictureObjectRenderer.clear();
       }
@@ -470,6 +471,7 @@ export function renderPictureObjectSelection(this: any): void {
               zoom,
               midPoint,
             );
+            this.eventBus.emit('editing-page-changed', p);
             return;
           }
 
@@ -492,6 +494,7 @@ export function renderPictureObjectSelection(this: any): void {
             rotAngle,
             locked,
           );
+          this.eventBus.emit('editing-page-changed', p);
           syncOleObjectCaret.call(this, ref as PictureObjectRef, zoom);
           return;
         }
