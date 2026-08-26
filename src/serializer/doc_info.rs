@@ -1100,6 +1100,39 @@ pub fn surgical_remove_records(raw_stream: &mut Vec<u8>, tag_id: u16) -> usize {
     removed
 }
 
+/// DocInfo 스트림 내 `DOCUMENT_PROPERTIES` 의 구역 개수만 in-place 로 확정한다 (#6156).
+///
+/// 한글은 `DOCUMENT_PROPERTIES.section_count` 를 `BodyText/SectionN` 탐색의 상한으로
+/// 읽는다. 선언값이 실제 스트림 수보다 크면 없는 구역을 찾다가 문서를 손상으로
+/// 판정하고, `forceopen` 으로도 열리지 않는다. 그래서 이 값의 권위는 모델이 아니라
+/// **실제로 방출한 스트림 수**다.
+///
+/// 스트림 전체를 재직렬화하지 않는 이유는 [`surgical_update_caret`] 과 같다 — raw
+/// 통과(스트림·레코드 양쪽) 경로에서도 다른 바이트를 그대로 두어야 한다.
+pub fn surgical_update_section_count(
+    doc_info_stream: &mut [u8],
+    section_count: u16,
+) -> Result<(), String> {
+    let positions = scan_records(doc_info_stream);
+
+    let doc_props_pos = positions
+        .iter()
+        .find(|r| r.tag_id == tags::HWPTAG_DOCUMENT_PROPERTIES)
+        .ok_or_else(|| "DOCUMENT_PROPERTIES 레코드를 찾을 수 없음".to_string())?;
+
+    if doc_props_pos.data_size < 2 {
+        return Err(format!(
+            "DOCUMENT_PROPERTIES 데이터 크기 부족: {} < 2",
+            doc_props_pos.data_size
+        ));
+    }
+
+    let data_off = doc_props_pos.data_offset;
+    doc_info_stream[data_off..data_off + 2].copy_from_slice(&section_count.to_le_bytes());
+
+    Ok(())
+}
+
 /// DocInfo raw_stream 내 DOCUMENT_PROPERTIES 레코드의 캐럿 위치만 갱신한다.
 ///
 /// raw_stream 전체를 재직렬화하지 않고, 캐럿 위치 3필드(12바이트)만 in-place 수정.
