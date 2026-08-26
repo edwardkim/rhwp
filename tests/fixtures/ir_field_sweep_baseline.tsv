@@ -259,6 +259,7 @@ hwp5rb	issue6032/2912695_civil_petition_form.hwp	sections[].paragraphs[].control
 hwp5rb	issue6057/29494.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	4
 hwp5rb	issue6057/29494.hwp	sections[].paragraphs[].controls[].section_def.raw_ctrl_extra.len	1
 hwp5rb	issue6057/29494.hwp	sections[].section_def.raw_ctrl_extra.len	1
+hwp5rb	issue6127/2599643_vessel_pass_application.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	18
 hwp5rb	issue_1133.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	15
 hwp5rb	issues/2809/jubo_20260104.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	174
 hwp5rb	k-water-rfp-2024.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	457
