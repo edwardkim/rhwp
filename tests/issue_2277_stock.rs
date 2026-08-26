@@ -152,6 +152,31 @@ fn stock_five_series_keeps_candles_and_hilow() {
             8,
             "{rel}: 종가 4 + 추가계열 4",
         );
+        // [#6053] 이 산출은 계열 전건이 `a:ln > a:noFill` 이다(엔진이 템플릿을 복제하므로).
+        // 그래서 계열 선은 하나도 없어야 한다 — 한컴도 이 문서를 그렇게 그린다
+        // (pdf/issue6037/engine/시가고가저가종가-중간계열추가-hwpx.pdf: 추가계열이 마커로만 붙음).
+        assert_eq!(
+            svg.matches(r#"stroke-width="2""#).count(),
+            0,
+            "{rel}: noFill 계열만 있으므로 계열 선 0",
+        );
+    }
+}
+
+#[test]
+fn stock_corpus_series_draw_no_lines() {
+    // [#6053] 코퍼스 주식형은 계열 전건이 `c:spPr > a:ln > a:noFill` 이라 선이 없다.
+    // 선 표시 필드의 기본값이 뒤집히면(표기 없음 = 선 있음) 여기서 바로 드러난다.
+    for stem in [HLC_STEM, OHLC_STEM] {
+        for ext in ["hwpx", "hwp"] {
+            let rel = format!("samples/chart/{stem}.{ext}");
+            let svg = render_page0_svg(&rel);
+            assert_eq!(
+                svg.matches(r#"stroke-width="2""#).count(),
+                0,
+                "{rel}: 고저선·캔들이 그림을 만들고 계열 선은 없다",
+            );
+        }
     }
 }
 
