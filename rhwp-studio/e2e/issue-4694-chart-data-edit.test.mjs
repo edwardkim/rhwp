@@ -22,6 +22,24 @@ const SENTINEL = gymContract.edit.to; // #4055 — 원본 최대값 5 라 반영
 async function pause(page, ms = 300) {
   await page.evaluate(d => new Promise(r => setTimeout(r, d)), ms);
 }
+/**
+ * 첫 실행 스킨 선택 대화상자를 닫는다. 새 브라우저 프로필(headless)에서는 이 모달이
+ * 편집 영역을 덮어 캔버스 클릭이 카드에 먹힌다 — undo-depth-issue5769 와 같은 처리다.
+ * (#6053 에서 확인한 선행 부채: 이 파일은 온보딩 도입 이전에 작성됐다.)
+ */
+async function dismissSkinOnboarding(page) {
+  await page.evaluate(() => {
+    const anyCard = document.querySelector('.skin-onboarding-card');
+    if (anyCard) anyCard.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+    const ok = [...document.querySelectorAll('button.dialog-btn-primary')]
+      .find(x => x.offsetParent !== null);
+    if (ok) {
+      ok.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+      ok.click();
+    }
+  });
+  await pause(page, 600);
+}
 
 /**
  * 실제 dblclick 이벤트를 만드는 제스처. 이 CDP 환경에서 `click({clickCount:2})` 는
@@ -59,6 +77,7 @@ const dialogOpen = (page) => page.evaluate(() =>
 
 runTest('#4694 차트 데이터 편집 — 메뉴·더블클릭·편집·undo·무흔적', async ({ page }) => {
   const info = await loadHwpFile(page, SAMPLE);
+  await dismissSkinOnboarding(page);
   console.log(`문서 로드: ${info.pageCount}쪽`);
 
   const pt = await oleClickPoint(page);
@@ -132,6 +151,7 @@ runTest('#4694 차트 데이터 편집 — 메뉴·더블클릭·편집·undo·�
   // ── 6. 차트 아닌 OLE(한셀)는 더블클릭에도 다이얼로그가 열리지 않는다 ──
   // listCharts 대조 실패 → 기존 동작(무반응) 유지의 음성 계약.
   await loadHwpFile(page, '한셀OLE.hwp');
+  await dismissSkinOnboarding(page);
   const ptOle = await oleClickPoint(page);
   if (ptOle) {
     await page.mouse.click(ptOle.x, ptOle.y);
