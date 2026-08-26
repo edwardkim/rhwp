@@ -2918,6 +2918,38 @@ impl LayoutEngine {
                                     total_content_height.max(hwpunit_to_px(bottom, self.dpi));
                             }
                         }
+                        // [#5820 축2] 저장 lineseg 가 없는 문단(기계생성 로고 줄)은
+                        // TAC 인라인 개체 높이가 곧 그 줄의 콘텐츠 높이다 — 제외하면
+                        // 콘텐츠 높이 0 으로 계산돼 CENTER 오프셋이 반칸(+21.2px)
+                        // 과대해지고 로고가 글상자 아래로 흘러넘친다(156560092:
+                        // 한글 로고 B 상자-상대 top +2.4 vs rhwp +21.2). lineseg 가
+                        // 있으면 그 lh 가 이미 줄을 계상하므로 이중 가산하지 않는다.
+                        if para.line_segs.is_empty() {
+                            let tac_max: i32 = para
+                                .controls
+                                .iter()
+                                .filter_map(|ctrl| match ctrl {
+                                    Control::Picture(pic) if pic.common.treat_as_char => {
+                                        Some(pic.common.height as i32)
+                                    }
+                                    Control::Shape(shape)
+                                        if shape.as_ref().common().treat_as_char =>
+                                    {
+                                        Some(shape.as_ref().common().height as i32)
+                                    }
+                                    Control::Equation(eq) if eq.common.treat_as_char => {
+                                        Some(eq.common.height as i32)
+                                    }
+                                    _ => None,
+                                })
+                                .max()
+                                .unwrap_or(0);
+                            if tac_max > 0 {
+                                let bottom = para_vpos.saturating_add(tac_max);
+                                total_content_height =
+                                    total_content_height.max(hwpunit_to_px(bottom, self.dpi));
+                            }
+                        }
                     }
 
                     let free_space = (inner_area.height - total_content_height).max(0.0);
@@ -3247,9 +3279,13 @@ impl LayoutEngine {
                             } else {
                                 pic_h
                             };
+                            // [#5820 축2] 인라인 형제는 **하단 정렬** — 한글은 같은 줄의
+                            // TAC 그림들을 베이스라인(하단)에 맞춘다(156560092 로고 A/B:
+                            // 한글 A top = B top + 10.4px = 상자-상대 +12.8, rhwp 상단
+                            // 정렬은 두 그림 top 이 같아 A 가 12.1px 낮았다).
                             let pic_container = LayoutRect {
                                 x: inline_x,
-                                y: inline_y,
+                                y: inline_y + (max_inline_height - clamped_h).max(0.0),
                                 width: clamped_w,
                                 height: clamped_h,
                             };
