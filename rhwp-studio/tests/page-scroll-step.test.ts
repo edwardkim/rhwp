@@ -284,6 +284,7 @@ test('가로 PageUp은 한 화면 이내로 이동하며 모든 페이지 왼쪽
     const result = scrollByPageStep(vs, vm, -1);
     if (!result.moved) break;
     assert.equal(result.deltaY, 0);
+    assert.equal(result.deltaX, vm.getScrollX() - previous);
     assert.ok(result.deltaX < 0 && -result.deltaX <= viewportWidth + 0.5);
     visited.add(vm.getScrollX());
     previous = vm.getScrollX();
@@ -293,7 +294,7 @@ test('가로 PageUp은 한 화면 이내로 이동하며 모든 페이지 왼쪽
   for (let page = 0; page < vs.pageCount; page++) {
     assert.ok(visited.has(pageLeft(vs, page)), `${page + 1}쪽 왼쪽 경계를 지나야 한다`);
   }
-  assert.ok(previous >= 0);
+  assert.equal(vm.getScrollY(), 0, '가로 이동 PageUp은 Y overflow를 섞지 않는다');
 });
 
 test('문서가 없으면 아무 것도 하지 않는다', () => {

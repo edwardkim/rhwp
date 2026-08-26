@@ -13,7 +13,8 @@ export interface ActivePageCandidates {
 }
 
 export interface RulerPageCandidates {
-  pageCount: number;
+  documentPageCount: number;
+  layoutPageCount: number;
   focusedPageIndex: number | null;
   activePageIndex: number | null;
 }
@@ -70,12 +71,24 @@ export function resolveActivePage({
  * 아직 편집 focus가 없을 때만 뷰포트 활성 페이지를 초기 fallback으로 쓴다.
  */
 export function resolveRulerPageIndex({
-  pageCount,
+  documentPageCount,
+  layoutPageCount,
   focusedPageIndex,
   activePageIndex,
 }: RulerPageCandidates): number | null {
+  const pageCount = Math.min(documentPageCount, layoutPageCount);
   if (!Number.isInteger(pageCount) || pageCount <= 0) return null;
   if (isValidPageIndex(focusedPageIndex, pageCount)) return focusedPageIndex;
   if (isValidPageIndex(activePageIndex, pageCount)) return activePageIndex;
   return null;
+}
+
+/** 눈금자의 문단·셀 편집 문맥은 viewport 활성 쪽이 아니라 마지막 편집 focus에 속한다. */
+export function hasRulerEditingContext(
+  pageIndex: number,
+  focusedPageIndex: number | null,
+): boolean {
+  return Number.isInteger(pageIndex)
+    && pageIndex >= 0
+    && pageIndex === focusedPageIndex;
 }

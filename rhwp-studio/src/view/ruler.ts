@@ -15,6 +15,7 @@ import {
 // 편집 용지 대화상자와 같은 한도를 쓴다 — 한쪽만 막으면 같은 문서를 다른 입력으로 만들 수 있다.
 import { MIN_BODY_MM } from '@/core/page-body-limits';
 import {
+  hasRulerEditingContext,
   resolveRulerPageIndex,
   type ActivePageSnapshot,
 } from './active-page.ts';
@@ -235,16 +236,18 @@ export class Ruler {
 
   /** 드래그 중에는 잡은 핀을, 평상시에는 마지막 편집 focus를 사용한다. focus가 없을 때만 viewport로 초기화한다. */
   private rulerPageIndex(): number | null {
+    const pageCount = Math.min(this.wasm.pageCount, this.virtualScroll.pageCount);
     const draggedPageIndex = this.hDrag?.pageIdx
       ?? this.vDrag?.pageIdx
       ?? null;
     if (draggedPageIndex !== null) {
-      return draggedPageIndex >= 0 && draggedPageIndex < this.wasm.pageCount
+      return draggedPageIndex >= 0 && draggedPageIndex < pageCount
         ? draggedPageIndex
         : null;
     }
     return resolveRulerPageIndex({
-      pageCount: this.wasm.pageCount,
+      documentPageCount: this.wasm.pageCount,
+      layoutPageCount: this.virtualScroll.pageCount,
       focusedPageIndex: this.focusedPageIndex,
       activePageIndex: this.activePageSnapshot?.pageIndex ?? null,
     });
@@ -496,10 +499,8 @@ export class Ruler {
     // 페이지 화면 좌표 (편집 용지와 정확히 일치)
     const pageScreenLeft = this.getPageScreenLeft(pageIdx, scrollX);
     const pageDisplayWidth = pageInfo.width * zoom;
-    const editingContext = (
-      this.activePageSnapshot?.source === 'editing'
-      && this.activePageSnapshot.pageIndex === pageIdx
-    ) || (this.hDrag?.kind === 'paraIndent' && this.hDrag.pageIdx === pageIdx);
+    const editingContext = hasRulerEditingContext(pageIdx, this.focusedPageIndex)
+      || (this.hDrag?.kind === 'paraIndent' && this.hDrag.pageIdx === pageIdx);
 
     // 본문 영역 = 쪽 여백 안쪽. 드래그 중이면 잡은 △만 마우스 위치로 대체해 배경과 핀이
     // 함께 움직이게 한다 (라이브 프리뷰).

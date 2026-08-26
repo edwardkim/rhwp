@@ -6,6 +6,7 @@ import type { ObjectResizeTarget } from './command';
 import { computeArrowResize, MIN_SIZE_HWP, type ArrowKey } from './picture-resize';
 import { computeRotationRecord } from './object-drag-record';
 import { isMasterPageDecoration } from './picture-hit-policy';
+import { clearObjectEditingPage, summarizeObjectSelection } from './object-selection-page';
 import type { CellPathLike } from '@/core/types';
 import { showToast } from '@/ui/toast';
 
@@ -379,6 +380,11 @@ export function findPictureBbox(this: any,
 }
 
 /** 개체 선택 시 외곽선 + 핸들을 렌더링한다. */
+function clearPictureSelectionRender(this: any): void {
+  this.pictureObjectRenderer?.clear();
+  clearObjectEditingPage(this.eventBus);
+}
+
 export function renderPictureObjectSelection(this: any): void {
   if (!this.pictureObjectRenderer) return;
 
@@ -387,39 +393,39 @@ export function renderPictureObjectSelection(this: any): void {
     const refs = this.cursor.getSelectedPictureRefs();
     try {
       const zoom = this.viewportManager.getZoom();
-      let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-      let pageIndex: number | null = null;
+      const boxes = [];
       for (const r of refs) {
         const bbox = this.findPictureBbox(r);
-        if (bbox) {
-          pageIndex ??= bbox.pageIndex;
-          minX = Math.min(minX, bbox.x);
-          minY = Math.min(minY, bbox.y);
-          maxX = Math.max(maxX, bbox.x + bbox.w);
-          maxY = Math.max(maxY, bbox.y + bbox.h);
-        }
+        if (bbox) boxes.push(bbox);
       }
-      if (minX < Infinity && pageIndex !== null) {
+      const summary = summarizeObjectSelection(boxes);
+      if (summary) {
         const locked = refs.some((r: PictureObjectRef) => isObjectSizeProtected.call(this, r));
         this.pictureObjectRenderer.render(
-          { pageIndex, x: minX, y: minY, width: maxX - minX, height: maxY - minY },
+          {
+            pageIndex: summary.renderPageIndex,
+            x: summary.x,
+            y: summary.y,
+            width: summary.width,
+            height: summary.height,
+          },
           zoom,
           0,
           locked,
         );
-        this.eventBus.emit('editing-page-changed', pageIndex);
+        this.eventBus.emit('editing-page-changed', summary.editingPageIndex);
       } else {
-        this.pictureObjectRenderer.clear();
+        clearPictureSelectionRender.call(this);
       }
     } catch {
-      this.pictureObjectRenderer.clear();
+      clearPictureSelectionRender.call(this);
     }
     return;
   }
 
   const ref = this.cursor.getSelectedPictureRef();
   if (!ref) {
-    this.pictureObjectRenderer.clear();
+    clearPictureSelectionRender.call(this);
     return;
   }
   const matchType = ref.type ?? 'image';
@@ -500,10 +506,10 @@ export function renderPictureObjectSelection(this: any): void {
         }
       }
     }
-    this.pictureObjectRenderer.clear();
+    clearPictureSelectionRender.call(this);
   } catch (e) {
     console.warn('[InputHandler] renderPictureObjectSelection 실패:', e);
-    this.pictureObjectRenderer.clear();
+    clearPictureSelectionRender.call(this);
   }
 }
 

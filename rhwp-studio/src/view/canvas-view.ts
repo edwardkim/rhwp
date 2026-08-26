@@ -148,6 +148,12 @@ export class CanvasView {
       eventBus.on('editing-page-changed', (payload) => {
         this.setEditingPageIndex(this.pageIndexFromPayload(payload));
       }),
+      eventBus.on('picture-object-selection-changed', (selected) => {
+        if (selected === false) this.setEditingPageIndex(null);
+      }),
+      eventBus.on('table-object-selection-changed', (selected) => {
+        if (selected === false) this.setEditingPageIndex(null);
+      }),
     );
   }
 
@@ -529,15 +535,10 @@ export class CanvasView {
   /** 캐럿·개체 선택과 스크롤이 공유하는 활성 페이지 판정·발행 관문. */
   private updateActivePageSnapshot(): void {
     const viewport = this.viewportManager.getViewportSize();
+    const viewportCenterX = this.viewportManager.getScrollX() + viewport.width / 2;
     const viewportCenterY = this.viewportManager.getScrollY() + viewport.height / 2;
     const viewportPageIndex = this.currentVisiblePages.length > 0
-      ? this.virtualScroll.isHorizontalMode()
-        ? this.virtualScroll.getPageAtPoint(
-          this.viewportManager.getScrollX() + viewport.width / 2,
-          viewportCenterY,
-        )
-        // #2560: 순수 세로 스크롤 fallback은 그리드 행의 첫 실제 쪽을 유지한다.
-        : this.virtualScroll.getRowFirstPageAtY(viewportCenterY)
+      ? this.virtualScroll.getPageAtPoint(viewportCenterX, viewportCenterY)
       : null;
     const next = resolveActivePage({
       pageCount: this.virtualScroll.pageCount,

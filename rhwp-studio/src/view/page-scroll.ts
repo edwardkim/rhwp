@@ -32,14 +32,9 @@ function maxScrollTop(virtualScroll: VirtualScroll, viewportHeight: number): num
 }
 
 /** 가로 이동에서 `pageIdx` 쪽의 왼쪽 여백이 시작되는 문서 X. */
-function pageLeft(virtualScroll: VirtualScroll, pageIdx: number): number {
-  return virtualScroll.getPageLeftResolved(pageIdx, virtualScroll.getTotalWidth())
+function pageLeft(virtualScroll: VirtualScroll, pageIdx: number, totalWidth: number): number {
+  return virtualScroll.getPageLeftResolved(pageIdx, totalWidth)
     - virtualScroll.gap;
-}
-
-/** 가로 스크롤 가능한 최대 위치. */
-function maxScrollLeft(virtualScroll: VirtualScroll, viewportWidth: number): number {
-  return Math.max(0, virtualScroll.getTotalWidth() - viewportWidth);
 }
 
 /** `scrollY` 바로 아래의 행 경계. 더 없으면 문서 끝. */
@@ -75,9 +70,10 @@ function nextPageBoundary(
   virtualScroll: VirtualScroll,
   scrollX: number,
   limit: number,
+  totalWidth: number,
 ): number {
   for (let pageIdx = 0; pageIdx < virtualScroll.pageCount; pageIdx++) {
-    const left = pageLeft(virtualScroll, pageIdx);
+    const left = pageLeft(virtualScroll, pageIdx, totalWidth);
     if (left > scrollX + EPSILON) return left;
   }
   return limit;
@@ -87,9 +83,10 @@ function nextPageBoundary(
 function prevPageBoundary(
   virtualScroll: VirtualScroll,
   scrollX: number,
+  totalWidth: number,
 ): number {
   for (let pageIdx = virtualScroll.pageCount - 1; pageIdx >= 0; pageIdx--) {
-    const left = pageLeft(virtualScroll, pageIdx);
+    const left = pageLeft(virtualScroll, pageIdx, totalWidth);
     if (left < scrollX - EPSILON) return left;
   }
   return 0;
@@ -121,14 +118,15 @@ export function scrollByPageStep(
   if (virtualScroll.isHorizontalMode()) {
     const scrollX = viewportManager.getScrollX();
     const viewportWidth = viewportManager.getViewportSize().width;
-    const limit = maxScrollLeft(virtualScroll, viewportWidth);
+    const totalWidth = virtualScroll.getTotalWidth();
+    const limit = Math.max(0, totalWidth - viewportWidth);
     const target = direction > 0
       ? Math.min(
-        nextPageBoundary(virtualScroll, scrollX, limit),
+        nextPageBoundary(virtualScroll, scrollX, limit, totalWidth),
         scrollX + viewportWidth,
       )
       : Math.max(
-        prevPageBoundary(virtualScroll, scrollX),
+        prevPageBoundary(virtualScroll, scrollX, totalWidth),
         scrollX - viewportWidth,
       );
 

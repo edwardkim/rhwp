@@ -46,6 +46,7 @@ import type { NavigationKeyInput } from './navigation-keymap';
 import { isPointNearBoxBorder } from './table-border-hit';
 import { DeferredPaginationRunner } from './deferred-pagination-runner';
 import { tableObjectClipboardTarget } from './table-object-clipboard-target';
+import { clearObjectEditingPage } from './object-selection-page';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const DRAG_SCROLL_EDGE_PX = 48;
@@ -3509,11 +3510,16 @@ export class InputHandler {
   }
 
   /** 표 객체 선택 시 외곽선 + 핸들을 렌더링한다 */
+  private clearTableObjectSelectionRender(): void {
+    this.tableObjectRenderer?.clear();
+    clearObjectEditingPage(this.eventBus);
+  }
+
   private renderTableObjectSelection(): void {
     if (!this.tableObjectRenderer) return;
     const ref = this.cursor.getSelectedTableRef();
     if (!ref) {
-      this.tableObjectRenderer.clear();
+      this.clearTableObjectSelectionRender();
       return;
     }
     try {
@@ -3530,7 +3536,7 @@ export class InputHandler {
         cellBboxes = this.wasm.getTableCellBboxes(ref.sec, ref.ppi, ref.ci, pageHint);
       }
       if (cellBboxes.length === 0) {
-        this.tableObjectRenderer.clear();
+        this.clearTableObjectSelectionRender();
         return;
       }
       // 페이지별 그룹화
@@ -3558,7 +3564,7 @@ export class InputHandler {
       this.eventBus.emit('editing-page-changed', selectedPage);
     } catch (e) {
       console.warn('[InputHandler] renderTableObjectSelection 실패:', e);
-      this.tableObjectRenderer.clear();
+      this.clearTableObjectSelectionRender();
     }
   }
 

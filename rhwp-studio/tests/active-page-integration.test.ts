@@ -1,101 +1,55 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
 
-const rootDir = dirname(dirname(fileURLToPath(import.meta.url)));
+import { resolveActivePage } from '../src/view/active-page.ts';
+import { VirtualScroll } from '../src/view/virtual-scroll.ts';
 
-function source(path: string): string {
-  return readFileSync(join(rootDir, path), 'utf8');
+function pages(n: number, width = 800, height = 1000) {
+  return Array.from({ length: n }, () => ({ width, height })) as never;
 }
 
-function section(text: string, startMarker: string, endMarker: string): string {
-  const start = text.indexOf(startMarker);
-  const end = text.indexOf(endMarker, start);
-  assert.ok(start >= 0 && end > start, `${startMarker} 범위를 찾을 수 있어야 한다`);
-  return text.slice(start, end);
-}
+test('여러 쪽 배치는 X/Y가 실제로 겹치는 페이지만 활성 후보로 사용한다', () => {
+  const scroll = new VirtualScroll(10);
+  scroll.setPageDimensions(
+    pages(3),
+    1,
+    1000,
+    { kind: 'multiple', columns: 3, rows: 1 },
+  );
 
-test('일반 캐럿과 드래그 캐럿 이벤트가 모두 pageIndex를 전달한다', () => {
-  const input = source('src/engine/input-handler.ts');
-  const emissions = input.match(
-    /emit\('cursor-rect-updated', \{[\s\S]*?pageIndex: [\w.]+\.pageIndex,[\s\S]*?\}\);/g,
-  ) ?? [];
+  const leftVisible = scroll.getVisiblePages(0, 800, 0, 1000);
+  const leftCenterPage = scroll.getPageAtPoint(500, 400);
+  assert.deepEqual(leftVisible, [0, 1]);
+  assert.deepEqual(resolveActivePage({
+    pageCount: scroll.pageCount,
+    visiblePages: leftVisible,
+    editingPageIndex: 2,
+    viewportPageIndex: leftCenterPage,
+  }), { pageIndex: 0, source: 'viewport' });
 
-  assert.equal(emissions.length, 2);
-  assert.match(emissions[0], /adjustedCursorRect\.pageIndex/);
-  assert.match(emissions[1], /cursorRect\.pageIndex/);
+  const rightVisible = scroll.getVisiblePages(0, 800, 1620, 1000);
+  const rightCenterPage = scroll.getPageAtPoint(2120, 400);
+  assert.deepEqual(rightVisible, [2]);
+  assert.deepEqual(resolveActivePage({
+    pageCount: scroll.pageCount,
+    visiblePages: rightVisible,
+    editingPageIndex: 2,
+    viewportPageIndex: rightCenterPage,
+  }), { pageIndex: 2, source: 'editing' });
 });
 
-test('CanvasView는 캐럿·개체 focus와 스크롤 활성 페이지를 분리해 발행한다', () => {
-  const view = source('src/view/canvas-view.ts');
-  const constructor = section(view, '  constructor(', '\n  /** 문서 로드 후 호출');
-  const setEditing = section(
-    view,
-    '  private setEditingPageIndex(pageIndex: number | null): void {',
-    '\n  /** 캐럿·개체 선택과 스크롤이 공유하는',
-  );
-  const update = section(
-    view,
-    '  private updateActivePageSnapshot(): void {',
-    '\n  /** 스크롤 중에는',
-  );
+test('단일 열은 X 가시성 보강 뒤에도 현재 페이지 판정을 유지한다', () => {
+  const scroll = new VirtualScroll(10);
+  scroll.setPageDimensions(pages(3), 1, 1000, { kind: 'single' });
 
-  assert.match(constructor, /eventBus\.on\('cursor-rect-updated'/);
-  assert.match(constructor, /eventBus\.on\('editing-page-changed'/);
-  assert.match(setEditing, /this\.eventBus\.emit\('focused-page-changed', pageIndex\)/);
-  assert.match(update, /resolveActivePage\(\{/);
-  assert.match(update, /visiblePages: this\.currentVisiblePages/);
-  assert.match(update, /editingPageIndex: this\.editingPageIndex/);
-  assert.match(update, /isHorizontalMode\(\)[\s\S]*?getPageAtPoint/);
-  assert.match(update, /getRowFirstPageAtY\(viewportCenterY\)/);
-  assert.match(update, /this\.eventBus\.emit\('active-page-changed', next\)/);
-  assert.match(update, /'current-page-changed',[\s\S]*?next\.pageIndex/);
-});
-
-test('document-agent strict render 확인은 X/Y가 겹치는 실제 가시 페이지만 검사한다', () => {
-  const view = source('src/view/canvas-view.ts');
-  const refresh = section(
-    view,
-    '  async refreshDocumentAgentMutation(): Promise<void> {',
-    '\n  private async refreshInvalidatedPageForMutation',
-  );
-
-  assert.match(refresh, /const scrollY = this\.viewportManager\.getScrollY\(\)/);
-  assert.match(refresh, /const scrollX = this\.viewportManager\.getScrollX\(\)/);
-  assert.match(
-    refresh,
-    /getVisiblePages\(\s*scrollY,\s*viewport\.height,\s*scrollX,\s*viewport\.width,\s*\)/,
-  );
-  assert.match(refresh, /visiblePages\.filter\(pageIndex => !this\.canvasPool\.has\(pageIndex\)\)/);
-});
-
-test('그림·표 개체 선택도 선택된 실제 페이지를 활성 페이지 입력으로 전달한다', () => {
-  const input = source('src/engine/input-handler.ts');
-  const picture = source('src/engine/input-handler-picture.ts');
-  const tableRender = section(
-    input,
-    '  private renderTableObjectSelection(): void {',
-    '\n  /** 그림/글상자 클릭 감지',
-  );
-  const pictureRender = section(
-    picture,
-    'export function renderPictureObjectSelection(this: any): void {',
-    '\nexport function exitPictureObjectSelectionIfNeeded',
-  );
-
-  assert.match(tableRender, /this\.eventBus\.emit\('editing-page-changed', selectedPage\)/);
-  assert.match(pictureRender, /this\.eventBus\.emit\('editing-page-changed', pageIndex\)/);
-  assert.match(pictureRender, /this\.eventBus\.emit\('editing-page-changed', p\)/);
-});
-
-test('문서를 교체할 때 이전 활성 페이지 snapshot을 소비처에서 지운다', () => {
-  const view = source('src/view/canvas-view.ts');
-  const reset = section(view, '  private reset(): void {', '\n  private releaseAllRenderedPages');
-
-  assert.match(reset, /const hadActivePage = this\.activePageSnapshot !== null/);
-  assert.match(reset, /this\.activePageSnapshot = null/);
-  assert.match(reset, /this\.eventBus\.emit\('active-page-changed', null\)/);
-  assert.match(reset, /this\.eventBus\.emit\('focused-page-changed', null\)/);
+  const visible = scroll.getVisiblePages(1010, 800, 0, 1000);
+  const centerPage = scroll.getPageAtPoint(500, 1410);
+  assert.deepEqual(visible, [1]);
+  assert.equal(centerPage, 1);
+  assert.deepEqual(resolveActivePage({
+    pageCount: scroll.pageCount,
+    visiblePages: visible,
+    editingPageIndex: null,
+    viewportPageIndex: centerPage,
+  }), { pageIndex: 1, source: 'viewport' });
 });
