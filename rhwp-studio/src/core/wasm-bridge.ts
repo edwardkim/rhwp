@@ -395,7 +395,7 @@ export class WasmBridge {
     return this.loadDocumentAtomically(data, fileName, false, () => new HwpDocument(data));
   }
 
-  loadDocumentWithPassword(data: Uint8Array, password: string, fileName?: string): DocumentInfo {
+  loadEncryptedDocument(data: Uint8Array, password: string, fileName?: string): DocumentInfo {
     return this.loadDocumentAtomically(
       data,
       fileName,

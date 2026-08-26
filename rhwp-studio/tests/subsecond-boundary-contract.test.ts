@@ -254,10 +254,10 @@ test('a first-document trace is discarded when a patch lands before page layout'
   assert.equal(retained, false);
 
   const passwordLoader = main.slice(
-    main.indexOf('async function loadPasswordProtectedDocument'),
+    main.indexOf('async function loadEncryptedDocumentFromPrompt'),
     main.indexOf('\n\nasync function loadDocumentForOpen'),
   )
-    .replace(/async function loadPasswordProtectedDocument\([\s\S]*?\): Promise<readonly \[DocumentInfo, string \| null\]> \{/, 'async function loadPasswordProtectedDocument(data, fileName) {')
+    .replace(/async function loadEncryptedDocumentFromPrompt\([\s\S]*?\): Promise<readonly \[DocumentInfo, string \| null\]> \{/, 'async function loadEncryptedDocumentFromPrompt(data, fileName) {')
     .replace('let retryMessage: string | undefined;', 'let retryMessage;')
     .replace('let documentInfo: DocumentInfo;', 'let documentInfo;')
     .replaceAll(' as const', '');
@@ -266,10 +266,10 @@ test('a first-document trace is discarded when a patch lands before page layout'
   const open = Function(
     'showHwpPasswordDialog', 'DocumentOpenCancelledError', 'wasm',
     'isPasswordRejectedError', 'passwordOpenFailure', 'currentRenderCodeRevision',
-    `${passwordLoader}; return loadPasswordProtectedDocument;`,
+    `${passwordLoader}; return loadEncryptedDocumentFromPrompt;`,
   )(
     async () => 'secret', class extends Error {},
-    { loadDocumentWithPassword: () => { derivedUnder = revision; return { pageCount: 1 }; } },
+    { loadEncryptedDocument: () => { derivedUnder = revision; return { pageCount: 1 }; } },
     () => false, (error: unknown) => error, () => revision,
   ) as (data: Uint8Array, fileName: string) => Promise<readonly [unknown, string | null]>;
   const opening = open(new Uint8Array(), 'secret.hwp');

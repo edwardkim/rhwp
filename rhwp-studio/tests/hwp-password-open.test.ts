@@ -30,7 +30,7 @@ test('암호 문서는 명시적인 암호 필요 오류에서만 입력 UI로 �
   )?.groups?.body.trim();
   assert.equal(passwordFallbackBody, [
     'if (!isPasswordRequiredError(error)) throw error;',
-    'return loadPasswordProtectedDocument(data, fileName);',
+    'return loadEncryptedDocumentFromPrompt(data, fileName);',
   ].join('\n    '));
 });
 
@@ -43,18 +43,18 @@ test('드롭 문서도 파일 메뉴와 같은 암호 열기 경로를 쓰며 Fi
   assert.match(dropPath, /await loadFile\(file\);/, '드롭 문서는 파일 메뉴와 같은 loadFile 경로를 사용해야 합니다');
   assert.doesNotMatch(dropPath, /captureDroppedFileHandle|getAsFileSystemHandle|fileHandle:/,
     '암호 문서 드롭에서 Chromium File System Access IPC를 시작하면 안 됩니다');
-  assert.match(mainSource, /async function loadDocumentForOpen[\s\S]*loadPasswordProtectedDocument/,
+  assert.match(mainSource, /async function loadDocumentForOpen[\s\S]*loadEncryptedDocumentFromPrompt/,
     'loadFile 이후 암호 감지와 password dialog 경로를 유지해야 합니다');
 });
 
 test('암호 입력은 단일 시도에만 쓰고, 취소와 오입력은 영속 경로에 도달하지 않는다', () => {
-  const passwordPath = between(mainSource, 'async function loadPasswordProtectedDocument', 'async function loadDocumentForOpen');
+  const passwordPath = between(mainSource, 'async function loadEncryptedDocumentFromPrompt', 'async function loadDocumentForOpen');
   assert.match(passwordPath, /showHwpPasswordDialog\(fileName, retryMessage\)/, '문서 이름만 대화상자에 전달한다');
-  assert.match(passwordPath, /^async function loadPasswordProtectedDocument\(\s*data: Uint8Array,\s*fileName: string,?\s*\)/);
+  assert.match(passwordPath, /^async function loadEncryptedDocumentFromPrompt\(\s*data: Uint8Array,\s*fileName: string,?\s*\)/);
   assert.deepEqual(passwordPath.split('\n').map(line => line.trim()).filter(line => /\bpassword\b/.test(line)), [
     'let password = await showHwpPasswordDialog(fileName, retryMessage);',
     'if (password === null) throw new DocumentOpenCancelledError();',
-    'documentInfo = wasm.loadDocumentWithPassword(data, password, fileName);',
+    'documentInfo = wasm.loadEncryptedDocument(data, password, fileName);',
     "password = '';",
   ]);
   const attemptBody = passwordPath.match(
@@ -62,7 +62,7 @@ test('암호 입력은 단일 시도에만 쓰고, 취소와 오입력은 영속
   )?.groups?.body.trim();
   assert.equal(
     attemptBody,
-    'documentInfo = wasm.loadDocumentWithPassword(data, password, fileName);',
+    'documentInfo = wasm.loadEncryptedDocument(data, password, fileName);',
     '암호 시도는 generic 진단 콜백 없이 WASM을 직접 호출한다',
   );
   assert.match(passwordPath, /finally \{[\s\S]*password = '';[\s\S]*\}\n\s*return \[documentInfo, currentRenderCodeRevision\(\)\] as const;/);
@@ -81,11 +81,11 @@ test('WasmBridge는 다음 문서를 모두 준비한 뒤에만 기존 문서를
     '문서 교체가 성공한 뒤 같은 commit 구간에서 보호 의도를 갱신한다');
   assert.match(atomic, /if \(previousDoc\)[\s\S]*previousDoc\.free\(\)/, '교체 완료 뒤에만 이전 문서를 해제한다');
 
-  const plainLoad = between(bridgeSource, 'loadDocument(data: Uint8Array', 'loadDocumentWithPassword');
+  const plainLoad = between(bridgeSource, 'loadDocument(data: Uint8Array', 'loadEncryptedDocument');
   assert.match(plainLoad, /loadDocumentAtomically\([\s\S]*false/, '평문 load는 보호 의도를 해제한다');
   const passwordLoad = between(
     bridgeSource,
-    'loadDocumentWithPassword',
+    'loadEncryptedDocument',
     'private async populateExternalImagesFromDevServer',
   );
   assert.match(passwordLoad, /HwpDocument\.openWithPassword\(data, password\)/, '암호 전용 WASM API를 노출한다');
