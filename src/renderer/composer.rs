@@ -1807,13 +1807,11 @@ pub(crate) fn stored_rows_are_stale(
     // **범위는 자리차지 표 host 문단 한정** — 종전에 프레임 소유자가 아예 없던
     // 계보라 이 판정에 기대던 기존 핀이 없다. 일반 문단까지 넓히면 확정된
     // 쪽수 핀 5건(#2006/#3930/#3931/#2559/#5801)이 흔들린다(전량 게이트 실측).
-    if !para
-        .controls
-        .iter()
-        .any(|c| matches!(c, crate::model::control::Control::Table(t)
+    if !para.controls.iter().any(|c| {
+        matches!(c, crate::model::control::Control::Table(t)
             if !t.common.treat_as_char
-                && matches!(t.common.text_wrap, crate::model::shape::TextWrap::TopAndBottom)))
-    {
+                && matches!(t.common.text_wrap, crate::model::shape::TextWrap::TopAndBottom))
+    }) {
         return false;
     }
     let non_last_overfull = |line: &ComposedLine, seg: &crate::model::paragraph::LineSeg| {
