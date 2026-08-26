@@ -20,6 +20,9 @@
 클릭하면 그 페이지의 눈금자가 표시된다. Studio 전체 테스트, TypeScript 검사, 프로덕션 빌드와 기존
 PageUp/PageDown E2E도 통과했다.
 
+문서를 처음 연 뒤 아직 클릭하지 않은 상태에서도 복원된 캐럿 쪽을 명시적 focus로 확정한다. 따라서 가로·
+세로 이동에서 줌 아웃으로 배치가 바뀌어도 최초 페이지의 눈금자가 다음 페이지로 넘어가지 않는다.
+
 ## 단계별 구현
 
 | 단계 | commit | 내용 |
@@ -31,6 +34,7 @@ PageUp/PageDown E2E도 통과했다.
 | 4 | `266976e64` | 전체 회귀·빌드·실제 브라우저 검증 |
 | 후속 UX 정합 | 이 보고서 갱신 commit | 순수 스크롤과 눈금자 편집 focus 분리 |
 | 5 | `f16b1fed8` | PR #6116 리뷰의 2D 가시성·선택 lifecycle·테스트 보정 |
+| 6 | `775106d0d` | 최초 로딩 캐럿 쪽을 명시적 눈금자 focus로 발행 |
 
 ## 최종 동작 계약
 
@@ -42,6 +46,7 @@ PageUp/PageDown E2E도 통과했다.
 - `current-page-changed` 상태 표시줄은 이 `ActivePageSnapshot`을 사용해 순수 스크롤도 반영한다.
 - Ruler는 마지막 유효 편집 focus 페이지를 우선하고, 아직 focus가 없을 때만 활성 페이지를 초기 fallback으로
   사용한다.
+- 최초 문서 활성화에서 복원된 캐럿 좌표가 있으면 그 물리 쪽을 즉시 편집 focus로 발행한다.
 
 ### 페이지 이동과 2D 가시성
 
@@ -67,10 +72,10 @@ $ cd rhwp-studio && npx tsc --noEmit
 exit 0
 
 $ cd rhwp-studio && npm test
-tests 1152, pass 1151, fail 0, skipped 1
+tests 1155, pass 1154, fail 0, skipped 1
 
 $ cd rhwp-studio && npm run build
-230 modules transformed, build success
+231 modules transformed, build success
 
 $ cd rhwp-studio && npm run e2e:page-key-scroll
 PASS: 6쪽 문서, TC1~TC7 전체 통과
@@ -89,8 +94,8 @@ exit 0
 
 빌드의 500 kB 초과 chunk 안내는 기존 Vite 크기 경고이며 빌드는 성공했다. 브라우저 검증 뒤 수집한
 console `error`/`warn`은 0건이었다. 단계별 commit SHA를 보존한 채 최신 `upstream/devel`을 merge한
-제출 head와 리뷰 보정 code candidate에서도 TypeScript, Studio 전체 1,151건, 프로덕션 빌드,
-PageUp/PageDown E2E,
+제출 head와 5단계 리뷰 보정 candidate는 Studio 전체 1,151건과 PageUp/PageDown E2E를 통과했다.
+6단계 최초 focus 보정 candidate는 Studio 전체 1,154건, TypeScript, 프로덕션 빌드,
 `cargo fmt --all -- --check`와 `git diff --check`를 다시 통과했다.
 
 ## 실제 브라우저 검증
@@ -113,6 +118,8 @@ Chrome E2E에서 `samples/biz_plan.hwp` 6쪽을 사용했다.
 | 가로 이동, 보이는 4쪽 클릭 | 가로 눈금자가 4쪽 좌표에 다시 표시 | 통과 |
 | 가로 이동, PageUp | 페이지 경계까지 -357.5px 뒤 다음 단계 -804px, Y 변화 0; 상태 `4 / 4 → 2 / 4` | 통과 |
 | 가로 이동, PageDown | `scrollLeft +804`, Y 변화 0; 상태 `2 / 4 → 4 / 4` | 통과 |
+| 최초 로딩/가로 이동, 클릭 없이 축소 | 115쪽 복구 문서 100%→10% 전 구간에서 상태 `1 / 115`, 눈금자 1쪽 유지 | 통과 |
+| 최초 로딩/세로 이동, 클릭 없이 축소 | 새 탭의 같은 문서 100%→10% 전 구간에서 상태 `1 / 115`, 눈금자 1쪽 유지 | 통과 |
 
 로컬 자동화의 숨은 파일 입력은 in-app browser의 native file chooser hook에서 캡처되지 않아
 `exam_kor.hwp` 자체를 이 세션에서 시각 검증하지는 않았다. 이는 Studio 파일 열기 실패가 아니라 자동화
@@ -127,6 +134,7 @@ Chrome E2E에서 `samples/biz_plan.hwp` 6쪽을 사용했다.
 - [#6042](https://github.com/edwardkim/rhwp/issues/6042): 행 가상화·LRU·프리페치 성능
 - [#6108](https://github.com/edwardkim/rhwp/issues/6108): 쪽 배치별 맞춤 배율 정확성
 - [#6109](https://github.com/edwardkim/rhwp/issues/6109): 확대/축소 설정 입력 검증
+- [#6149](https://github.com/edwardkim/rhwp/issues/6149): 저배율 눈금자 LOD와 최소 페이지 간격
 
 ## 작업 상태
 
@@ -134,3 +142,5 @@ Chrome E2E에서 `samples/biz_plan.hwp` 6쪽을 사용했다.
 재검증을 완료했다. 검증 완료 head를 원격에 push하고 한국어 제목의 PR #6116을 `devel` 대상으로
 생성했다. PR 리뷰 10건은 5단계에서 반영·부분 반영·의도된 계약 유지로 분류했고, 보정 code candidate
 `f16b1fed8`은 focused 36건, Studio 전체 1,151건, TypeScript, build, Chrome E2E와 포맷 gate를 통과했다.
+6단계 `775106d0d`는 최초 캐럿 쪽 focus를 확정하고 focused 15건, Studio 전체 1,154건, TypeScript,
+231-module build와 가로·세로 실제 브라우저 100%→10% 검증을 통과했다. 저배율 식별성은 #6149로 분리했다.

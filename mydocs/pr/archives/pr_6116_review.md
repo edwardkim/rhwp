@@ -27,7 +27,7 @@ last_verified: 2026-08-26
 | 작성자 | `postmelee` |
 | base / head | `devel` / `codex/issue-6107-active-page-ruler` |
 | 원 review head | `6b0fa6ee9de406c9f9abf13ca8ab19bd277a1321` |
-| 보정 code candidate | `f16b1fed8` |
+| 보정 code candidate | `775106d0d` |
 | 원 review head 상태 | Open, non-draft, `MERGEABLE/CLEAN` |
 | 원 review head 규모 | 19 files, +1,401 / -143 |
 
@@ -43,6 +43,10 @@ resolver, CanvasView, 키 이동, 눈금자, 테스트와 단계별 문서가 �
 보정했다. active viewport와 마지막 편집 focus는 서로 다른 사용자 상태이므로 두 이벤트를 하나로 합치지
 않았다. 한글 2024 대조와 사용자 확인으로 확정한 “눈금자는 마지막 클릭의 물리 페이지 좌표에 남는다”와
 “가로 이동 PageUp/PageDown은 X축만 바꾼다” 계약도 유지했다.
+
+추가 재현된 최초 로딩 결함은 복원된 캐럿을 표시할 때 같은 물리 쪽 focus 이벤트도 발행해 보정했다.
+따라서 페이지를 아직 클릭하지 않은 상태에서도 줌이 viewport topology를 바꾸더라도 최초 캐럿 쪽이
+눈금자 기준으로 유지된다.
 
 ## 외부 리뷰 판정
 
@@ -73,11 +77,13 @@ resolver, CanvasView, 키 이동, 눈금자, 테스트와 단계별 문서가 �
 
 | 검증 | 결과 |
 | --- | --- |
-| 보정 focused test | 36/36 통과 |
-| Studio 전체 test | 1,151 pass, 1 skip, 실패 0 |
+| 기존 리뷰 보정 focused test | 36/36 통과 |
+| 최초 focus 보정 focused test | 15/15 통과 |
+| Studio 전체 test | 1,154 pass, 1 skip, 실패 0 |
 | TypeScript | 통과 |
-| 프로덕션 build | 230 modules, 통과 |
+| 프로덕션 build | 231 modules, 통과 |
 | Chrome PageUp/PageDown E2E | 6쪽 TC1~TC7 전체 통과 |
+| 실제 브라우저 최초 focus | 115쪽, 가로·세로 각각 100%→10%, `1 / 115` 유지 |
 | generated suite 준비 | 32 harnesses, 9 exceptions |
 | `cargo fmt --all`·`--check` | 통과 |
 | `git diff --check` | 통과 |
@@ -89,7 +95,7 @@ focus routing이므로 실제 Chrome E2E와 함수 수준 2D 배치 테스트를
 
 ## 최종 권고
 
-외부 리뷰의 재현 가능한 정확성·lifecycle 항목은 보정됐고, 두 의도된 계약은 사용자 혼란을 줄이는 기존
-결정을 유지한다. 보정 code candidate와 이 review 기록을 push하고 10개 스레드에 항목별 근거를 남겨
-모두 resolve했다. 최신 head의 Frontend package gate와 required aggregate가 성공하고
+외부 리뷰의 재현 가능한 정확성·lifecycle 항목과 최초 로딩 focus 결함은 보정됐고, 두 의도된 계약은
+사용자 혼란을 줄이는 기존 결정을 유지한다. 최신 보정 code candidate와 이 review 기록을 push하고
+최초 focus 보정 근거를 PR에 추가한다. 최신 head의 Frontend package gate와 required aggregate가 성공하고
 `MERGEABLE/CLEAN`을 다시 확인하기 전에는 merge하지 않는다.
