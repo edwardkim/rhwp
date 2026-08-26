@@ -17,6 +17,31 @@ pub(crate) const MAX_KERNING_RUN_CODE_POINTS: usize = 4_096;
 pub(crate) const MAX_KERNING_RUN_GLYPHS: usize = 4_096;
 pub(crate) const MAX_KERNING_ADJACENT_PAIRS: usize = 4_095;
 pub(crate) const MAX_KERNING_TRACE_RECORDS_PER_RUN: usize = 4_096;
+/// 한 layout owner가 보존할 수 있는 exact face/source 수와 총 payload 상한.
+///
+/// 총 payload는 기존 portable/embedded page 경계(64 MiB)와 같고, 개별 source는
+/// [`MAX_KERNING_FONT_BYTES`]가 먼저 제한한다. slot 수는 손상 문서가 같은 source에
+/// 무제한 alias를 만드는 것을 막기 위해 별도로 제한한다.
+pub(crate) const MAX_KERNING_REGISTRY_FACES: usize = 256;
+pub(crate) const MAX_KERNING_REGISTRY_BYTES: usize = 64 * 1024 * 1024;
+pub(crate) const MAX_KERNING_REGISTRY_SLOTS: usize = 4_096;
+
+/// HWP 글자모양과 언어별 font selection의 정확한 위치다.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct ExactFontSlot {
+    pub char_shape_id: u32,
+    pub language_index: usize,
+}
+
+impl ExactFontSlot {
+    pub(crate) fn new(char_shape_id: u32, language_index: usize) -> Self {
+        Self {
+            char_shape_id,
+            language_index,
+        }
+    }
+}
 
 #[derive(Debug, Clone, Copy)]
 pub(crate) struct ExactFontSource<'a> {
@@ -46,6 +71,146 @@ pub(crate) trait ExactFontSourceProvider {
         &'a self,
         handle: &ExactFontSourceHandle,
     ) -> Option<ExactFontSource<'a>>;
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub(crate) enum ExactFontRegistryRegistration {
+    Registered,
+    AlreadyRegistered,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub(crate) enum ExactFontRegistryError {
+    InvalidLanguageIndex,
+    FontByteLimitExceeded,
+    FaceLimitExceeded,
+    TotalByteLimitExceeded,
+    SlotLimitExceeded,
+    SlotConflict,
+}
+
+impl ExactFontRegistryError {
+    pub(crate) fn as_str(self) -> &'static str {
+        match self {
+            Self::InvalidLanguageIndex => "invalid-language-index",
+            Self::FontByteLimitExceeded => "font-byte-limit-exceeded",
+            Self::FaceLimitExceeded => "face-limit-exceeded",
+            Self::TotalByteLimitExceeded => "total-byte-limit-exceeded",
+            Self::SlotLimitExceeded => "slot-limit-exceeded",
+            Self::SlotConflict => "slot-conflict",
+        }
+    }
+}
+
+/// Layout owner가 보존하는 bounded exact-source registry다.
+///
+/// slot은 payload 없는 handle만 가리키고 source table이 immutable bytes를 소유한다.
+/// 동일 handle을 여러 slot이 공유할 때 bytes는 한 번만 보존한다. 같은 slot을 다른
+/// source로 덮어쓰는 동작은 selection provenance를 숨길 수 있으므로 fail-closed한다.
+#[derive(Default)]
+pub(crate) struct ExactFontSourceRegistry {
+    slots: HashMap<ExactFontSlot, ExactFontSourceHandle>,
+    sources: HashMap<ExactFontSourceHandle, Box<[u8]>>,
+    total_source_bytes: usize,
+    generation: u64,
+}
+
+impl ExactFontSourceRegistry {
+    pub(crate) fn register(
+        &mut self,
+        slot: ExactFontSlot,
+        source: ExactFontSource<'_>,
+    ) -> Result<ExactFontRegistryRegistration, ExactFontRegistryError> {
+        if slot.language_index >= 7 {
+            return Err(ExactFontRegistryError::InvalidLanguageIndex);
+        }
+        let handle = identify_exact_font_source(source).map_err(|reason| match reason {
+            ExactFontSourceResolutionReason::FontByteLimitExceeded => {
+                ExactFontRegistryError::FontByteLimitExceeded
+            }
+            ExactFontSourceResolutionReason::SourceUnavailable
+            | ExactFontSourceResolutionReason::FaceIndexMismatch
+            | ExactFontSourceResolutionReason::ByteLengthMismatch
+            | ExactFontSourceResolutionReason::Sha256Mismatch => {
+                unreachable!("identity creation only checks the byte limit")
+            }
+        })?;
+
+        if let Some(existing) = self.slots.get(&slot) {
+            return if existing == &handle {
+                Ok(ExactFontRegistryRegistration::AlreadyRegistered)
+            } else {
+                Err(ExactFontRegistryError::SlotConflict)
+            };
+        }
+        if self.slots.len() >= MAX_KERNING_REGISTRY_SLOTS {
+            return Err(ExactFontRegistryError::SlotLimitExceeded);
+        }
+
+        if !self.sources.contains_key(&handle) {
+            if self.sources.len() >= MAX_KERNING_REGISTRY_FACES {
+                return Err(ExactFontRegistryError::FaceLimitExceeded);
+            }
+            let Some(next_total) = self.total_source_bytes.checked_add(source.bytes.len()) else {
+                return Err(ExactFontRegistryError::TotalByteLimitExceeded);
+            };
+            if next_total > MAX_KERNING_REGISTRY_BYTES {
+                return Err(ExactFontRegistryError::TotalByteLimitExceeded);
+            }
+            self.sources
+                .insert(handle.clone(), source.bytes.to_vec().into_boxed_slice());
+            self.total_source_bytes = next_total;
+        }
+        self.slots.insert(slot, handle);
+        self.generation = self.generation.wrapping_add(1);
+        Ok(ExactFontRegistryRegistration::Registered)
+    }
+
+    pub(crate) fn handle_for_slot(&self, slot: ExactFontSlot) -> Option<&ExactFontSourceHandle> {
+        self.slots.get(&slot)
+    }
+
+    pub(crate) fn clear(&mut self) -> bool {
+        if self.slots.is_empty() && self.sources.is_empty() {
+            return false;
+        }
+        self.slots.clear();
+        self.sources.clear();
+        self.total_source_bytes = 0;
+        self.generation = self.generation.wrapping_add(1);
+        true
+    }
+
+    pub(crate) fn source_count(&self) -> usize {
+        self.sources.len()
+    }
+
+    pub(crate) fn slot_count(&self) -> usize {
+        self.slots.len()
+    }
+
+    pub(crate) fn total_source_bytes(&self) -> usize {
+        self.total_source_bytes
+    }
+
+    pub(crate) fn generation(&self) -> u64 {
+        self.generation
+    }
+}
+
+impl ExactFontSourceProvider for ExactFontSourceRegistry {
+    fn source_for_handle<'a>(
+        &'a self,
+        handle: &ExactFontSourceHandle,
+    ) -> Option<ExactFontSource<'a>> {
+        let bytes = self.sources.get(handle)?;
+        Some(ExactFontSource {
+            bytes,
+            face_index: handle.face_index,
+        })
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]

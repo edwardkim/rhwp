@@ -6,12 +6,13 @@ mod kerning;
 use kerning::{
     compute_kerning_pair_candidate, decide_kerning_run_gate, inspect_exact_font_kerning,
     identify_exact_font_source, prepare_kerning_pair_engine, resolve_exact_font_source,
-    ExactFontSource, ExactFontSourceHandle, ExactFontSourceProvider,
+    ExactFontRegistryError, ExactFontRegistryRegistration, ExactFontSlot, ExactFontSource,
+    ExactFontSourceHandle, ExactFontSourceProvider, ExactFontSourceRegistry,
     ExactFontSourceResolutionReason, KerningCapability, KerningCapabilityFallbackReason,
     KerningPairCandidateFallbackReason, KerningPairCandidateStatus, KerningRequest,
     KerningRunFallbackReason, KerningRunGate, KerningSourceSession,
     KerningSourceSessionStatus, MAX_KERNING_ADJACENT_PAIRS, MAX_KERNING_FONT_BYTES,
-    MAX_KERNING_RUN_CODE_POINTS, MAX_KERNING_RUN_GLYPHS,
+    MAX_KERNING_REGISTRY_FACES, MAX_KERNING_RUN_CODE_POINTS, MAX_KERNING_RUN_GLYPHS,
 };
 use std::cell::Cell;
 #[cfg(target_arch = "wasm32")]
@@ -23,6 +24,105 @@ const NO_PAIR_TABLE: &[u8] =
     include_bytes!("../fixtures/fonts/RHWPBitmapSvgGlyphSmoke.ttf");
 const EXACT_KERNING_SMOKE: &[u8] =
     include_bytes!("../fixtures/fonts/RHWPExactKerningSmoke.ttf");
+
+#[test]
+fn issue_4968_exact_slot_registry_roundtrips_provider_and_session() {
+    let slot = ExactFontSlot::new(7, 1);
+    let mut registry = ExactFontSourceRegistry::default();
+    assert_eq!(
+        registry.register(
+            slot,
+            ExactFontSource {
+                bytes: EXACT_KERNING_SMOKE,
+                face_index: 0,
+            },
+        ),
+        Ok(ExactFontRegistryRegistration::Registered)
+    );
+    assert_eq!(registry.slot_count(), 1);
+    assert_eq!(registry.source_count(), 1);
+    assert_eq!(registry.total_source_bytes(), EXACT_KERNING_SMOKE.len());
+
+    let handle = registry.handle_for_slot(slot).expect("slot handle").clone();
+    let mut session = KerningSourceSession::new(&registry);
+    let trace = session.prepare(&handle);
+    assert_eq!(trace.status, KerningSourceSessionStatus::Ready);
+    assert!(session.engine(&handle).is_some());
+    drop(session);
+
+    assert_eq!(
+        registry.register(
+            slot,
+            ExactFontSource {
+                bytes: EXACT_KERNING_SMOKE,
+                face_index: 0,
+            },
+        ),
+        Ok(ExactFontRegistryRegistration::AlreadyRegistered)
+    );
+    assert_eq!(registry.source_count(), 1);
+}
+
+#[test]
+fn issue_4968_exact_slot_registry_fails_closed_on_conflict_and_face_limit() {
+    let mut registry = ExactFontSourceRegistry::default();
+    let slot = ExactFontSlot::new(1, 1);
+    registry
+        .register(
+            slot,
+            ExactFontSource {
+                bytes: EXACT_KERNING_SMOKE,
+                face_index: 0,
+            },
+        )
+        .expect("first source");
+    assert_eq!(
+        registry.register(
+            slot,
+            ExactFontSource {
+                bytes: NO_PAIR_TABLE,
+                face_index: 0,
+            },
+        ),
+        Err(ExactFontRegistryError::SlotConflict)
+    );
+
+    let mut bounded = ExactFontSourceRegistry::default();
+    for face_index in 0..MAX_KERNING_REGISTRY_FACES as u32 {
+        bounded
+            .register(
+                ExactFontSlot::new(face_index, 0),
+                ExactFontSource {
+                    bytes: b"bounded",
+                    face_index,
+                },
+            )
+            .expect("bounded face");
+    }
+    assert_eq!(
+        bounded.register(
+            ExactFontSlot::new(MAX_KERNING_REGISTRY_FACES as u32, 0),
+            ExactFontSource {
+                bytes: b"bounded",
+                face_index: MAX_KERNING_REGISTRY_FACES as u32,
+            },
+        ),
+        Err(ExactFontRegistryError::FaceLimitExceeded)
+    );
+}
+
+#[test]
+fn issue_4968_external_exact_source_registration_keeps_k0_svg_identical() {
+    const BLANK: &[u8] = include_bytes!("../../saved/blank2010.hwp");
+    let mut core = rhwp::DocumentCore::from_bytes(BLANK).expect("blank document");
+    let before = core.render_page_svg_native(0).expect("baseline SVG");
+    let registration = core
+        .register_exact_font_source_native(0, 1, EXACT_KERNING_SMOKE, 0)
+        .expect("external exact source registration");
+    assert!(registration.contains("\"status\":\"registered\""));
+    let after = core.render_page_svg_native(0).expect("registered SVG");
+    assert_eq!(after, before);
+}
 
 struct BorrowedSourceProvider<'a> {
     source: Option<ExactFontSource<'a>>,

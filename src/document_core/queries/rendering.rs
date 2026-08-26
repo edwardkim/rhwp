@@ -19,6 +19,9 @@ use crate::renderer::canvas::CanvasRenderer;
 use crate::renderer::composer::{compose_paragraph, compose_section, ComposedParagraph};
 use crate::renderer::height_measurer::{HeightMeasurer, MeasuredSection, MeasuredTable};
 use crate::renderer::html::HtmlRenderer;
+use crate::renderer::kerning::{
+    ExactFontRegistryRegistration, ExactFontSlot, MAX_KERNING_REGISTRY_SLOTS,
+};
 use crate::renderer::layer_renderer::LayerRenderer;
 use crate::renderer::layout::{
     estimate_text_width, resolved_to_text_style, CellContext, LayoutEngine,
@@ -328,6 +331,180 @@ fn load_bounded_embedded_font_bytes(
     }
 
     bytes_by_id
+}
+
+fn collect_exact_font_slots_from_paragraphs(
+    paragraphs: &[Paragraph],
+    slots: &mut std::collections::HashSet<ExactFontSlot>,
+    remaining_work_units: &mut usize,
+    depth: usize,
+) {
+    const MAX_EXACT_FONT_TRAVERSAL_DEPTH: usize = 128;
+    if depth > MAX_EXACT_FONT_TRAVERSAL_DEPTH
+        || slots.len() >= MAX_KERNING_REGISTRY_SLOTS
+        || *remaining_work_units == 0
+    {
+        return;
+    }
+    for paragraph in paragraphs {
+        if *remaining_work_units == 0 {
+            return;
+        }
+        *remaining_work_units -= 1;
+        let composed = compose_paragraph(paragraph);
+        for run in composed.lines.iter().flat_map(|line| &line.runs) {
+            if *remaining_work_units == 0 {
+                return;
+            }
+            *remaining_work_units -= 1;
+            if !run.text.is_empty() {
+                slots.insert(ExactFontSlot::new(run.char_style_id, run.lang_index));
+                if slots.len() >= MAX_KERNING_REGISTRY_SLOTS {
+                    return;
+                }
+            }
+        }
+        for control in &paragraph.controls {
+            if *remaining_work_units == 0 {
+                return;
+            }
+            *remaining_work_units -= 1;
+            match control {
+                Control::Table(table) => {
+                    if let Some(caption) = &table.caption {
+                        collect_exact_font_slots_from_paragraphs(
+                            &caption.paragraphs,
+                            slots,
+                            remaining_work_units,
+                            depth + 1,
+                        );
+                    }
+                    for cell in &table.cells {
+                        collect_exact_font_slots_from_paragraphs(
+                            &cell.paragraphs,
+                            slots,
+                            remaining_work_units,
+                            depth + 1,
+                        );
+                    }
+                }
+                Control::Shape(shape) => collect_exact_font_slots_from_shape(
+                    shape,
+                    slots,
+                    remaining_work_units,
+                    depth + 1,
+                ),
+                Control::Picture(picture) => {
+                    if let Some(caption) = &picture.caption {
+                        collect_exact_font_slots_from_paragraphs(
+                            &caption.paragraphs,
+                            slots,
+                            remaining_work_units,
+                            depth + 1,
+                        );
+                    }
+                }
+                Control::Header(header) => collect_exact_font_slots_from_paragraphs(
+                    &header.paragraphs,
+                    slots,
+                    remaining_work_units,
+                    depth + 1,
+                ),
+                Control::Footer(footer) => collect_exact_font_slots_from_paragraphs(
+                    &footer.paragraphs,
+                    slots,
+                    remaining_work_units,
+                    depth + 1,
+                ),
+                Control::Footnote(note) => collect_exact_font_slots_from_paragraphs(
+                    &note.paragraphs,
+                    slots,
+                    remaining_work_units,
+                    depth + 1,
+                ),
+                Control::Endnote(note) => collect_exact_font_slots_from_paragraphs(
+                    &note.paragraphs,
+                    slots,
+                    remaining_work_units,
+                    depth + 1,
+                ),
+                Control::HiddenComment(comment) => collect_exact_font_slots_from_paragraphs(
+                    &comment.paragraphs,
+                    slots,
+                    remaining_work_units,
+                    depth + 1,
+                ),
+                Control::Field(field) if !field.memo_paragraphs.is_empty() => {
+                    collect_exact_font_slots_from_paragraphs(
+                        &field.memo_paragraphs,
+                        slots,
+                        remaining_work_units,
+                        depth + 1,
+                    )
+                }
+                _ => {}
+            }
+            if slots.len() >= MAX_KERNING_REGISTRY_SLOTS {
+                return;
+            }
+        }
+    }
+}
+
+fn collect_exact_font_slots_from_shape(
+    shape: &crate::model::shape::ShapeObject,
+    slots: &mut std::collections::HashSet<ExactFontSlot>,
+    remaining_work_units: &mut usize,
+    depth: usize,
+) {
+    if depth > 128 || slots.len() >= MAX_KERNING_REGISTRY_SLOTS || *remaining_work_units == 0 {
+        return;
+    }
+    *remaining_work_units -= 1;
+    if let Some(drawing) = shape.drawing() {
+        if let Some(text_box) = &drawing.text_box {
+            collect_exact_font_slots_from_paragraphs(
+                &text_box.paragraphs,
+                slots,
+                remaining_work_units,
+                depth + 1,
+            );
+        }
+        if let Some(caption) = &drawing.caption {
+            collect_exact_font_slots_from_paragraphs(
+                &caption.paragraphs,
+                slots,
+                remaining_work_units,
+                depth + 1,
+            );
+        }
+    }
+    match shape {
+        crate::model::shape::ShapeObject::Group(group) => {
+            if let Some(caption) = &group.caption {
+                collect_exact_font_slots_from_paragraphs(
+                    &caption.paragraphs,
+                    slots,
+                    remaining_work_units,
+                    depth + 1,
+                );
+            }
+            for child in &group.children {
+                collect_exact_font_slots_from_shape(child, slots, remaining_work_units, depth + 1);
+            }
+        }
+        crate::model::shape::ShapeObject::Picture(picture) => {
+            if let Some(caption) = &picture.caption {
+                collect_exact_font_slots_from_paragraphs(
+                    &caption.paragraphs,
+                    slots,
+                    remaining_work_units,
+                    depth + 1,
+                );
+            }
+        }
+        _ => {}
+    }
 }
 
 // ── [#2004] 부동 전면 이미지 스택 → 인라인 재분류 (render-전용, 원본 무손상) ──
@@ -795,6 +972,148 @@ fn apply_page_number_layouts_for_section(result: &mut PaginationResult, section:
 }
 
 impl DocumentCore {
+    /// 현재 문서에서 실제 텍스트 run이 참조하는 embedded face만 exact slot registry에
+    /// 선등록한다. 개별 32 MiB·문서 layout owner 총 64 MiB 상한은 기존 page lowering과
+    /// 동일하며, 초과·손상 source는 추측 없이 등록하지 않는다.
+    pub(crate) fn rebuild_embedded_exact_font_sources(&mut self) {
+        self.layout_engine.clear_exact_font_sources();
+        let has_embedded_source = self
+            .document
+            .doc_info
+            .font_faces
+            .iter()
+            .flatten()
+            .any(|font| {
+                (font.is_embedded && font.resolved_bin_data_id.is_some())
+                    || font.subst_font.as_ref().is_some_and(|substitute| {
+                        substitute.is_embedded && substitute.resolved_bin_data_id.is_some()
+                    })
+            });
+        if !has_embedded_source {
+            return;
+        }
+
+        let mut slot_set = std::collections::HashSet::new();
+        let mut remaining_work_units = 1_000_000usize;
+        for section in &self.document.sections {
+            collect_exact_font_slots_from_paragraphs(
+                &section.paragraphs,
+                &mut slot_set,
+                &mut remaining_work_units,
+                0,
+            );
+            for master_page in &section.section_def.master_pages {
+                collect_exact_font_slots_from_paragraphs(
+                    &master_page.paragraphs,
+                    &mut slot_set,
+                    &mut remaining_work_units,
+                    0,
+                );
+            }
+        }
+        let mut slots = slot_set.into_iter().collect::<Vec<_>>();
+        slots.sort_by_key(|slot| (slot.char_shape_id, slot.language_index));
+
+        let mut embedded_font_ids = Vec::new();
+        for slot in &slots {
+            let Some(font_id) = self
+                .document
+                .doc_info
+                .char_shapes
+                .get(slot.char_shape_id as usize)
+                .and_then(|shape| shape.font_ids.get(slot.language_index))
+                .copied()
+            else {
+                continue;
+            };
+            let Some(font) = self
+                .document
+                .doc_info
+                .font_faces
+                .get(slot.language_index)
+                .and_then(|fonts| fonts.get(font_id as usize))
+            else {
+                continue;
+            };
+            if font.is_embedded {
+                if let Some(bin_data_id) = font.resolved_bin_data_id {
+                    embedded_font_ids.push(bin_data_id);
+                }
+            }
+            if let Some(bin_data_id) = font
+                .subst_font
+                .as_ref()
+                .filter(|substitute| substitute.is_embedded)
+                .and_then(|substitute| substitute.resolved_bin_data_id)
+            {
+                embedded_font_ids.push(bin_data_id);
+            }
+        }
+        let font_bytes_by_id = load_bounded_embedded_font_bytes(
+            &self.document.bin_data_content,
+            &embedded_font_ids,
+            MAX_EMBEDDED_FONT_BYTES,
+            MAX_EMBEDDED_FONT_BYTES_PER_PAGE,
+        );
+
+        for slot in slots {
+            let Some(font_id) = self
+                .document
+                .doc_info
+                .char_shapes
+                .get(slot.char_shape_id as usize)
+                .and_then(|shape| shape.font_ids.get(slot.language_index))
+                .copied()
+            else {
+                continue;
+            };
+            let Some(font) = self
+                .document
+                .doc_info
+                .font_faces
+                .get(slot.language_index)
+                .and_then(|fonts| fonts.get(font_id as usize))
+            else {
+                continue;
+            };
+
+            let primary = font
+                .is_embedded
+                .then_some(font.resolved_bin_data_id)
+                .flatten()
+                .and_then(|bin_data_id| {
+                    let bytes = font_bytes_by_id.get(&bin_data_id)?;
+                    let face_index = resolve_embedded_font_face_index(bytes, &font.name, None)?;
+                    Some((&bytes[..], face_index))
+                });
+            let substitute = font
+                .subst_font
+                .as_ref()
+                .filter(|substitute| substitute.is_embedded)
+                .and_then(|substitute| {
+                    let bin_data_id = substitute.resolved_bin_data_id?;
+                    let bytes = font_bytes_by_id.get(&bin_data_id)?;
+                    let face_index =
+                        resolve_embedded_font_face_index(bytes, substitute.face.as_str(), None)?;
+                    Some((&bytes[..], face_index))
+                });
+            let Some((bytes, face_index)) = primary.or(substitute) else {
+                continue;
+            };
+            match self
+                .layout_engine
+                .register_exact_font_source(slot, bytes, face_index)
+            {
+                Ok(ExactFontRegistryRegistration::Registered)
+                | Ok(ExactFontRegistryRegistration::AlreadyRegistered) => {}
+                Err(_) => {
+                    // Registry 상한·충돌은 fail-closed다. 문서 로드는 유지하고 해당 slot의
+                    // kerning source만 없는 상태로 둔다.
+                }
+            }
+        }
+    }
+
     /// 페이지 렌더 트리를 생성하여 반환한다 (native bridge / 외부 렌더러용).
     pub fn build_page_render_tree(&self, page_num: u32) -> Result<PageRenderTree, HwpError> {
         let tree = self.build_page_tree(page_num)?;
@@ -2586,6 +2905,7 @@ impl DocumentCore {
             .iter()
             .map(|s| compose_section(s))
             .collect();
+        self.rebuild_embedded_exact_font_sources();
         self.mark_all_sections_dirty();
         self.paginate();
         self.page_count()
