@@ -5373,9 +5373,29 @@ impl LayoutEngine {
                                 // = 187.5px, 한글 PDF 678.7 ↔ 강제 valign 은 셀 상단 492.0 에
                                 // 붙여 앞 그림과 145px 겹쳤다. 저장 좌표가 신뢰되는 프로파일
                                 // 에서 vpos>0 일 때만 흐름 배치로 전환한다.
-                                let stored_flow_vpos =
-                                    (self.profile.get().hwp5_stored_pagination_layout()
-                                        || self.profile.get().hwpx_stored_layout())
+                                // [#6110] 저장 vpos 가 **이 그림 자신이 밀어낸 빈 줄**의
+                                // 자리인 경우는 흐름 오프셋이 아니다. 자리차지 그림은
+                                // 글줄을 자기 높이만큼 아래로 밀고, 한글은 그 밀린 줄의
+                                // vpos 를 저장한다 — 39819 머리 표 로고 칸은 문단이 하나
+                                // 뿐인 빈 문단인데 저장 vpos(7382HU)가 그림 높이(7382HU)와
+                                // **정확히 같다**. 그 값을 흐름 오프셋으로 쓰면 그림이 제
+                                // 높이만큼(+98.4px) 칸 밖으로 내려간다. #5731 이 겨냥한
+                                // 형상은 앞선 캡션·그림이 실제로 자리를 차지한 다문단 셀
+                                // 이므로, 앞 내용이 없는 이 형상은 제외한다.
+                                let vpos_is_this_floats_own_displacement =
+                                    para.text.trim().is_empty()
+                                        && cell.paragraphs.iter().take(cp_idx).all(|prev| {
+                                            prev.text.trim().is_empty() && prev.controls.is_empty()
+                                        })
+                                        && para.line_segs.first().is_some_and(|seg| {
+                                            (hwpunit_to_px(seg.vertical_pos, self.dpi) - pic_h)
+                                                .abs()
+                                                <= 1.0
+                                        });
+                                let trusts_stored_flow = !vpos_is_this_floats_own_displacement
+                                    && (self.profile.get().hwp5_stored_pagination_layout()
+                                        || self.profile.get().hwpx_stored_layout());
+                                let stored_flow_vpos = trusts_stored_flow
                                     .then(|| para.line_segs.first())
                                     .flatten()
                                     .filter(|seg| seg.vertical_pos > 0)
