@@ -11385,18 +11385,27 @@ impl LayoutEngine {
         }
 
         let mut reset_count = 0usize;
+        let mut in_paragraph_reset_count = 0usize;
         let mut previous_frame_end: Option<i32> = None;
         let mut preceding_frame_end = 0i32;
         let mut trailing_frame_end = 0i32;
         for paragraph in &cell.paragraphs {
-            for seg in paragraph.line_segs.iter().filter(|seg| {
-                seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
-            }) {
+            for (seg_idx, seg) in paragraph
+                .line_segs
+                .iter()
+                .filter(|seg| {
+                    seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                })
+                .enumerate()
+            {
                 let frame_end = seg.vertical_pos.saturating_add(seg.line_height);
                 if previous_frame_end
                     .is_some_and(|previous_end| previous_end > 0 && seg.vertical_pos <= 0)
                 {
                     reset_count += 1;
+                    if seg_idx > 0 {
+                        in_paragraph_reset_count += 1;
+                    }
                     preceding_frame_end =
                         preceding_frame_end.max(previous_frame_end.unwrap_or_default());
                     trailing_frame_end = 0;
@@ -11414,10 +11423,11 @@ impl LayoutEngine {
                 let source_frame_span = preceding_frame_end.saturating_add(trailing_frame_end);
                 let sum_fits_declared = source_frame_span >= declared_height.saturating_mul(4) / 5
                     && source_frame_span <= declared_height;
-                if cell.vertical_align == VerticalAlign::Center {
+                if cell.vertical_align == VerticalAlign::Center && in_paragraph_reset_count == 0 {
                     // CENTER 평가표는 문단 로컬 vpos=0 줄합이 선언 높이와 비슷해
                     // sum 4/5 가 우연히 참이 되고 한 줄만 남긴다 (#6035).
-                    // TOP 셀(편람 103×2)은 기존 sum 계약을 유지한다.
+                    // 같은 문단 내부의 vpos reset은 한 문단이 물리 쪽 경계를 건넌
+                    // 흔적이므로 #6025처럼 기존 sum 계약을 유지한다.
                     preceding_frame_end >= declared_height.saturating_mul(4) / 5
                         && preceding_frame_end <= declared_height
                         && trailing_frame_end > 0
@@ -14455,7 +14465,7 @@ mod row_cut_tests {
     use crate::model::image::Picture;
     use crate::model::paragraph::{LineSeg, Paragraph};
     use crate::model::shape::{CommonObjAttr, TextWrap, VertRelTo};
-    use crate::model::table::{Cell, Table};
+    use crate::model::table::{Cell, Table, VerticalAlign};
     use crate::renderer::composer::{ComposedLine, ComposedParagraph, ComposedTextRun};
     use crate::renderer::style_resolver::ResolvedStyleSet;
 
@@ -14485,6 +14495,23 @@ mod row_cut_tests {
         Paragraph {
             text: "가나다".to_string(),
             ..text_para(n_lines, vpos_start)
+        }
+    }
+
+    fn visible_text_para_at(vpos: &[i32], line_height: i32) -> Paragraph {
+        Paragraph {
+            text: "가나다".to_string(),
+            char_count: vpos.len().max(1) as u32,
+            line_segs: vpos
+                .iter()
+                .map(|vertical_pos| LineSeg {
+                    vertical_pos: *vertical_pos,
+                    line_height,
+                    line_spacing: 0,
+                    ..Default::default()
+                })
+                .collect(),
+            ..Default::default()
         }
     }
 
@@ -14527,6 +14554,14 @@ mod row_cut_tests {
             page_break: crate::model::table::TablePageBreak::RowBreak,
             ..table(cells)
         }
+    }
+
+    fn hwpx_stored_engine() -> LayoutEngine {
+        let eng = LayoutEngine::new(96.0);
+        eng.set_layout_profile(crate::model::provenance::LayoutCompatibilityProfile::new(
+            false, false, true, true, false, false,
+        ));
+        eng
     }
 
     fn saved_reset_unit(
@@ -15508,6 +15543,59 @@ mod row_cut_tests {
         let r = eng.advance_row_cut(&t, 0, &[], 80.0, &styles);
         assert_eq!(r.end_cut, vec![4], "하단 vpos 리셋은 저장 쪽 경계로 보존");
         assert!(!r.fully_consumed);
+    }
+
+    #[test]
+    fn test_direct_hwpx_center_cell_keeps_in_paragraph_source_frame_reset() {
+        // #6025: 1열 RowBreak 표의 행 7은 같은 문단 안에서 10800HU -> 0HU로
+        // 되감겨 저장됐다. CENTER 셀이라도 이 구조는 한 문단이 쪽 경계를 건넌
+        // 물리 source frame 이므로, 다음 visible unit 확장으로 "라." 첫 줄을
+        // 1쪽 말미에 남겨야 한다.
+        let eng = hwpx_stored_engine();
+        let mut t = rowbreak_table(vec![cell(
+            0,
+            0,
+            vec![
+                visible_text_para_at(&[200], 1000),
+                visible_text_para_at(&[1800, 3200], 1000),
+                visible_text_para_at(&[4800, 6200], 1000),
+                visible_text_para_at(&[7800, 9200], 1000),
+                visible_text_para_at(&[10800, 0], 1000),
+                visible_text_para_at(&[1600], 1000),
+            ],
+        )]);
+        t.cells[0].height = 16170;
+        t.cells[0].vertical_align = VerticalAlign::Center;
+
+        assert!(
+            eng.direct_hwpx_cell_has_declared_stored_frame(&t.cells[0], &t),
+            "같은 문단 내부 vpos reset은 CENTER 셀에서도 source frame으로 보존"
+        );
+    }
+
+    #[test]
+    fn test_direct_hwpx_center_cell_rejects_paragraph_local_vpos_reset() {
+        // #6035: 평가표의 항목들은 별도 문단이 모두 vpos=0으로 시작한다. 이 경우
+        // 줄합이 선언 높이의 4/5에 들어와도 셀 내부 로컬 좌표이지 물리 frame
+        // reset이 아니므로 한 줄만 남기는 source-frame 확장을 하면 안 된다.
+        let eng = hwpx_stored_engine();
+        let mut t = rowbreak_table(vec![cell(
+            0,
+            0,
+            vec![
+                visible_text_para_at(&[0], 1200),
+                visible_text_para_at(&[0], 1200),
+                visible_text_para_at(&[1560], 1200),
+                visible_text_para_at(&[3120], 1200),
+            ],
+        )]);
+        t.cells[0].height = 6657;
+        t.cells[0].vertical_align = VerticalAlign::Center;
+
+        assert!(
+            !eng.direct_hwpx_cell_has_declared_stored_frame(&t.cells[0], &t),
+            "문단 사이 vpos=0 반복은 CENTER 평가표의 로컬 좌표로 남겨야 함"
+        );
     }
 
     #[test]
