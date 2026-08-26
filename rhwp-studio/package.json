@@ -27,6 +27,8 @@
     "e2e:unsaved-guard": "node e2e/unsaved-changes-guard.test.mjs",
     "e2e:undo": "node e2e/undo-contracts.test.mjs",
     "e2e:status-page-number": "node e2e/status-page-number.test.mjs --mode=headless",
+    "e2e:ruler-document-switch": "node e2e/ruler-document-switch.test.mjs --mode=headless",
+    "e2e:zoom-fit-mode": "node e2e/zoom-fit-mode-persistence.test.mjs --mode=headless",
     "e2e:undo-object-selection": "node e2e/undo-object-selection.test.mjs",
     "e2e:loading-busy-cursor": "node e2e/loading-busy-cursor.test.mjs --mode=headless",
     "e2e:hwp-password-open": "node e2e/hwp-password-open.test.mjs --mode=headless",

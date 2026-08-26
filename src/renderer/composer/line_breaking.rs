@@ -2075,8 +2075,25 @@ fn control_owns_a_layout_box(control: &Control) -> bool {
     )
 }
 
+/// [#6102] 자리차지(TopAndBottom) 비-TAC 표는 자기 레이아웃 상자를 갖지만
+/// **줄 폭**은 소비하지 않는다 — 세로 밴드를 예약할 뿐 본문 프레임의 가로
+/// 줄바꿈에는 폭-중립이다. 결재문서본문 계열(구역 첫 문단 + 자리차지 표
+/// host)의 저장 `textpos` 가 실폭보다 길게 적혀 있을 때, 프레임이 표 컨트롤
+/// 때문에 사양하면 검증(admission)조차 못 해 본문 첫 줄이 우단 밖까지
+/// 그려진다(36360328 +75px — 한글 2020 은 재래핑한다). 어울림(Square)은
+/// 배제 밴드가 줄 폭을 바꾸므로, 그림/도형 float 는 별도 계보
+/// (`layout_picture_band`)가 소유하므로 계속 사양한다.
+fn control_is_line_width_neutral_float_table(control: &Control) -> bool {
+    matches!(control, Control::Table(t)
+        if !t.common.treat_as_char
+            && matches!(t.common.text_wrap, crate::model::shape::TextWrap::TopAndBottom))
+}
+
 pub(super) fn supports_cached_body_frame_controls(para: &Paragraph) -> bool {
-    para.controls.iter().all(control_is_width_neutral_marker)
+    para.controls.iter().all(|control| {
+        control_is_width_neutral_marker(control)
+            || control_is_line_width_neutral_float_table(control)
+    })
 }
 
 /// The picture-band frame intentionally admits only its floating host, the
@@ -2270,7 +2287,9 @@ fn layout_paragraph_in_frame_impl(
     dpi: f64,
     allow_kerning: bool,
 ) -> Option<Vec<LineSeg>> {
-    if !supports_picture_band_frame_controls(para) {
+    // [#6102] 폭-중립 자리차지 표 host 도 fill 대상 — 표는 줄 폭을 소비하지
+    // 않으므로(자기 레이아웃 소유자가 따로 배치) 텍스트만 재래핑하면 된다.
+    if !supports_picture_band_frame_controls(para) && !supports_cached_body_frame_controls(para) {
         return None;
     }
 
@@ -2621,8 +2640,16 @@ pub(crate) fn resolve_stored_line_segs_in_frame(
     miss_policy: StoredRowMissPolicy,
     stale: bool,
 ) -> Option<StoredRowResolution> {
+    // [#6102] 폭-중립 float 표 host 는 본문 프레임 게이트가 이미 통과시킨
+    // 문단이다 — picture-band 게이트만으로 사양하면 저장 textpos 의
+    // admission 검증이 통째로 빠져 결재문서본문 계열의 첫 줄이 우단 밖으로
+    // 넘친다(36360328 +75px, 한글 2020 은 재래핑). 단, 이 계보는 **stale
+    // (물리 위반) 증거가 있을 때만** 개입한다 — 증거 없이 admission 불일치
+    // 만으로 재래핑하면 종전 무소유였던 float-host 문단의 확정 핀이 흔들린다.
     if !supports_picture_band_frame_controls(para) {
-        return None;
+        if !supports_cached_body_frame_controls(para) || !stale {
+            return None;
+        }
     }
 
     // NO_LS: there is no stored record to compare, so this is the rebuild case

@@ -11,6 +11,7 @@ import {
   resolvePageViewSettings,
   type PageMovementSettings,
 } from '../view/page-movement.ts';
+import { normalizeZoomFitMode, type ZoomFitMode } from '../view/zoom-fit.ts';
 
 /** 대표 글꼴 세트 (7개 언어별 글꼴) */
 export interface FontSet {
@@ -77,6 +78,8 @@ export interface ViewSettings {
   pageArrangement: PageArrangement;
   /** 쪽을 세로/가로 어느 방향으로 이어 볼지와 휠 변환 설정 */
   pageMovement: PageMovementSettings;
+  /** 마지막으로 고른 쪽 맞춤/폭 맞춤. 문서를 열 때 그 쪽 크기로 다시 계산해 적용한다. */
+  zoomFitMode: ZoomFitMode;
 }
 
 /** 복구용 자동저장 설정 */
@@ -167,10 +170,11 @@ function defaultSettings(): AppSettings {
       showParagraphMarks: false,
       showControlCodes: false,
       clipView: true,
-      toolbarBasic: true,
+      toolbarBasic: false,
       toolbarFormat: true,
       pageArrangement: { kind: 'auto' },
       pageMovement: { ...DEFAULT_PAGE_MOVEMENT },
+      zoomFitMode: 'none',
     },
     autosave: {
       recoveryEnabled: true,
@@ -282,6 +286,7 @@ class UserSettingsService {
           ),
           pageArrangement: pageView.arrangement,
           pageMovement: pageView.movement,
+          zoomFitMode: normalizeZoomFitMode(view.zoomFitMode),
         },
         autosave: {
           ...defaults.autosave,
@@ -426,6 +431,14 @@ class UserSettingsService {
       value,
       this.data.view.pageMovement,
     ).arrangement;
+    this.save();
+  }
+
+  /** 마지막으로 고른 쪽 맞춤/폭 맞춤을 저장한다 ('none' 이면 수치 배율). */
+  setZoomFitMode(value: ZoomFitMode): void {
+    const next = normalizeZoomFitMode(value);
+    if (this.data.view.zoomFitMode === next) return;
+    this.data.view.zoomFitMode = next;
     this.save();
   }
 

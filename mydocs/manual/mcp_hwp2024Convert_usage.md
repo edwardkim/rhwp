@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/mcp_hwp2024Convert_usage.md
-last_verified: 2026-08-24
+last_verified: 2026-08-26
 ---
 
 # HWP 2024 변환 MCP client 사용법
@@ -237,6 +237,7 @@ Windows PowerShell:
 ```
 
 status의 terminal 상태는 `succeeded`, `failed`, `expired`다. `succeeded`일 때만 download한다.
+`failed` 또는 `expired`이면 result blob과 local output은 없으므로 download하지 않는다.
 비동기 start에는 local `output_dir`을 전달하지 않으며 download 단계에서 지정한다.
 
 ## VS Code MCP 등록
@@ -438,6 +439,18 @@ server process 전체에서 하나씩 직렬 실행한다. 비동기 요청은 �
 많은 문서·거대 표·중첩 표는 1800초를 권장한다. client의 동기 HTTP request는 변환 timeout에 120초
 여유를 더해 기다린다.
 
+## 손상 HWP 입력
+
+HWP5 구조 사전 검증에서 손상으로 판정되면 비동기 job은 `failed`로 끝나고 다음과 같은 오류를 반환한다.
+
+```text
+input preflight rejected the document: corrupt HWP document: <손상 원인>
+```
+
+이 경우 한컴 worker와 PDF/HWPX 변환은 시작되지 않으며 결과 blob도 만들지 않는다. `timeout_seconds`를
+늘리거나 다른 engine으로 재시도하지 말고, `status` 오류를 기록한 뒤 원본 파일을 다시 받거나 복구한다.
+`succeeded`가 아니므로 `download`를 호출해서는 안 된다.
+
 ## 성공 확인
 
 변환 결과에서 다음을 확인한다.
@@ -506,6 +519,11 @@ PDF 서명을 확인했고, 비동기 `start`와 `status`의 `engine`은 요청�
 
 실제 server 주소와 token은 검증 기록에 포함하지 않았다.
 
+2026-08-26 배포 server에서 손상 HWP regression fixture 두 개를 비동기 `start → status`로 검증했다.
+HWP→PDF와 HWP→HWPX job 모두 즉시 terminal `failed`가 되었고, 각각
+`input preflight rejected the document: corrupt HWP document: DocumentProperties section count does not match BodyText streams`
+오류를 반환했다. 두 요청 모두 한컴 direct worker를 시작하지 않았고 result blob을 만들지 않았다.
+
 ## 문제 해결
 
 - `HWP2024_MCP_AUTH_TOKEN or --auth-token is required`
@@ -518,6 +536,10 @@ PDF 서명을 확인했고, 비동기 `start`와 `status`의 `engine`은 요청�
   - server 경로가 아니라 MCP client가 실행되는 PC의 local path를 사용한다.
 - `unsupported target 'hwpx' for .hwpx input`
   - `.hwpx` 입력은 `pdf` 또는 `hwp`로 변환한다.
+- `input preflight rejected the document: corrupt HWP document: ...`
+  - HWP5 구조 사전 검증이 입력을 손상 문서로 판정한 것이다. 변환은 시작되지 않았고 output도 없다.
+    timeout 또는 engine을 바꿔 재시도하지 말고, 원본을 다시 받거나 복구한다. `succeeded`가 아니므로
+    download하지 않는다.
 - 기존 파일 오류
   - client는 output을 덮어쓰지 않는다. 다른 `output_filename`을 사용하거나 기존 파일을 별도 보관한 뒤 재시도한다.
 - 큰 문서 timeout

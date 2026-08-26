@@ -78,15 +78,29 @@ fn extracted_text_has_no_boxed_number_pua() {
     let _ = std::fs::remove_dir_all(&dir);
 }
 
-/// 렌더는 원문 PUA 를 그대로 흘린다 — 폰트 정합 결정(Task #509)을 깨지 않는다.
+/// 렌더는 사각형+숫자 **벡터 합성**으로 그린다 — 폰트 정합 결정의 현행 형태.
+///
+/// 캡스톤 F-1 은 표준 ①~⑳ **글리프 매핑**을 되돌렸다(1순위 폰트의 원-안 글리프가
+/// 한컴 사각-안 정답지와 발산). 그 뒤 #4158 이 CharOverlap 경로에, web_canvas 가
+/// 평문 경로에 사각형+숫자 벡터 합성을 도입했고, [#6127] 이 SVG·Skia 평문 경로를
+/// 같은 합성으로 맞췄다 — 함초롬 확장 글꼴이 없는 소비자에서 raw PUA 는 빈칸이
+/// 되기 때문이다. 이 테스트는 (a) 원-안 글리프 매핑이 되살아나지 않는 것과
+/// (b) raw PUA 가 렌더로 새지 않는 것을 함께 고정한다.
 #[test]
-fn rendered_svg_keeps_the_raw_pua() {
+fn rendered_svg_synthesizes_boxed_numbers() {
     let dir = out_dir("svg");
     let svg = run_export("export-svg", &dir);
     let kept = svg.chars().filter(|c| boxed_number_pua(*c)).count();
+    assert_eq!(
+        kept, 0,
+        "렌더에 raw 사각 안 숫자 PUA 가 남았다 — 글꼴 부재 환경에서 빈칸이 된다"
+    );
+    // 원-안 글리프 매핑(캡스톤 F-1 이 되돌린 발산)이 아니라 사각형 합성인지는
+    // 합성 상자의 stroke rect 존재로 확인한다 — 문서 본문에 실제 ① 글자가 있을
+    // 수 있어 ① 부재로는 판정하지 못한다.
     assert!(
-        kept > 0,
-        "렌더에서 원문 PUA 가 사라졌다 — 텍스트 표면 변환이 렌더까지 번졌다"
+        svg.contains("fill=\"none\" stroke=\"#"),
+        "합성 사각형 rect 가 없다 — 벡터 합성이 적용되지 않았다"
     );
     let _ = std::fs::remove_dir_all(&dir);
 }

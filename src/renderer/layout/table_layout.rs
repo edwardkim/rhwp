@@ -397,6 +397,10 @@ fn extend_table_horizontal_bbox_to_direct_cell_paint(table_node: &mut RenderNode
     table_node.bbox.width = (right - left).max(0.0);
 }
 
+/// [#6122] 칸 안 인라인(TAC) 개체를 다음 줄로 내릴지 판정할 때의 폭 여유.
+/// 저장 폭과 렌더 폭의 반올림 차이로 한 줄에 딱 맞는 개체가 밀려나지 않게 한다.
+pub(super) const INLINE_WRAP_WIDTH_EPSILON_PX: f64 = 0.5;
+
 const NESTED_FRAGMENT_EDGE_EPSILON_PX: f64 = 0.5;
 /// [#5587] 중첩표가 부모 셀보다 이만큼 넘게 넓으면 "부모보다 넓게 저장된 표"로
 /// 본다. 42065의 padding 이동 케이스는 저장 폭이 부모 셀 이하라 걸리지 않는다.
@@ -3163,6 +3167,7 @@ impl LayoutEngine {
                 };
                 let cap_cell_ctx = table_meta
                     .map(|(pi, ci)| CellContext {
+                        in_textbox: false,
                         parent_para_index: pi,
                         path: vec![CellPathEntry {
                             control_index: ci,
@@ -4763,6 +4768,7 @@ impl LayoutEngine {
                 Some(new_ctx)
             } else {
                 table_meta.map(|(pi, ci)| CellContext {
+                    in_textbox: false,
                     parent_para_index: pi,
                     path: vec![CellPathEntry {
                         control_index: ci,
@@ -5054,7 +5060,8 @@ impl LayoutEngine {
                                 .is_some();
                             if !will_render_inline {
                                 // LINE_SEG 기반 줄 판별
-                                let target_line = if all_runs_empty && para.line_segs.len() > 1 {
+                                let mut target_line = if all_runs_empty && para.line_segs.len() > 1
+                                {
                                     // 빈 문단: TAC 순번으로 LINE_SEG에 1:1 매핑
                                     let li = tac_seq_index.min(para.line_segs.len() - 1);
                                     tac_seq_index += 1;
@@ -5078,11 +5085,41 @@ impl LayoutEngine {
                                         .unwrap_or(0)
                                 };
 
+                                // [#6122] 한 문단의 TAC 그림 여러 장이 같은 composed 줄로
+                                // 판정됐는데 폭 합이 칸 내폭을 넘으면 한글은 다음 줄로
+                                // 내린다. 저장 lineseg 가 그 증거다 — 2181727 6쪽 [그림 7]
+                                // 은 줄 2개(lh 15693·10010)가 각 그림 높이와 정확히 같다.
+                                // composed 는 칸 내폭 재래핑에서 TAC 개체 폭을 계상하지
+                                // 않아 두 장을 한 줄로 보고, 둘째가 칸·용지 밖으로 나갔다
+                                // (#4370·#6101 과 같은 "인라인 개체 폭 초과 미개행" 계열).
+                                let width_overflows_line = inline_x > inner_area.x + 0.5
+                                    && inline_x + pic_w
+                                        > inner_area.x
+                                            + inner_area.width
+                                            + INLINE_WRAP_WIDTH_EPSILON_PX;
+                                let stored_line_available =
+                                    current_tac_line + 1 < para.line_segs.len();
+                                let wrapped_by_width = target_line <= current_tac_line
+                                    && width_overflows_line
+                                    && stored_line_available;
+                                if wrapped_by_width {
+                                    target_line = current_tac_line + 1;
+                                }
+
                                 if target_line > current_tac_line {
                                     // 줄이 바뀜: inline_x 리셋, y를 LINE_SEG vpos 기준으로 이동
                                     current_tac_line = target_line;
-                                    let line_w =
-                                        tac_line_widths.get(target_line).copied().unwrap_or(0.0);
+                                    // 폭 초과로 내린 줄은 composed 에 대응 줄이 없다 —
+                                    // 정렬 계산의 줄 너비는 이 그림 자신의 폭으로 본다.
+                                    let line_w = tac_line_widths
+                                        .get(target_line)
+                                        .copied()
+                                        .filter(|_| !wrapped_by_width)
+                                        .unwrap_or(if wrapped_by_width {
+                                            pic_w.min(inner_area.width)
+                                        } else {
+                                            0.0
+                                        });
                                     // [Task #548] target_line 의 effective_margin_left 적용
                                     let line_margin = effective_margin_left_line(
                                         para_margin_left_px,
@@ -9428,7 +9465,34 @@ impl LayoutEngine {
                                         && !hard_break_before
                                     {
                                         if let Some(seg) = p.line_segs.first() {
-                                            let target_top = normalized_vpos_px(seg.vertical_pos);
+                                            let mut target_top =
+                                                normalized_vpos_px(seg.vertical_pos);
+                                            // [#6095] 중첩 표 호스트의 저장 vpos 가 표
+                                            // **아래** host 줄 좌표면(점프가 중첩 표 선언
+                                            // 높이 규모) 표 상단 목표는 vpos − 표 높이다.
+                                            // 그대로 gap 에 넣으면 표 높이가 gap 유닛과
+                                            // 중첩 행 유닛으로 이중 계상되어 조각 회계가
+                                            // 페인트보다 커지고 컷이 일러진다(3090867:
+                                            // gap 328 + nested 286, used 953 vs 페인트
+                                            // 744). table_partial 의 페인트측 스냅 억제와
+                                            // 같은 판별을 쓴다.
+                                            let nested_total_px: f64 = p
+                                                .controls
+                                                .iter()
+                                                .filter_map(|control| match control {
+                                                    Control::Table(nested) => Some(hwpunit_to_px(
+                                                        nested.common.height.min(i32::MAX as u32)
+                                                            as i32,
+                                                        self.dpi,
+                                                    )),
+                                                    _ => None,
+                                                })
+                                                .sum();
+                                            if nested_total_px > 0.0
+                                                && target_top - unit_cum >= nested_total_px - 24.0
+                                            {
+                                                target_top -= nested_total_px;
+                                            }
                                             if target_top > unit_cum {
                                                 uh += target_top - unit_cum;
                                                 vpos_gap_before = true;
@@ -9474,7 +9538,31 @@ impl LayoutEngine {
                         let mut vpos_gap_before = vpos_gap_before_para && ri == 0;
                         if use_vpos_unit_positions && ri == 0 && !hard_break_before {
                             if let Some(seg) = p.line_segs.first() {
-                                let target_top = normalized_vpos_px(seg.vertical_pos);
+                                let mut target_top = normalized_vpos_px(seg.vertical_pos);
+                                // [#6095] 중첩 표 호스트의 저장 vpos 가 표 **아래**
+                                // host 줄 좌표면(직전 흐름에서의 점프가 중첩 표 선언
+                                // 높이 규모) 표 상단 목표는 vpos − 표 높이다. 그대로
+                                // gap 에 넣으면 표 높이가 gap 과 중첩 행 유닛으로
+                                // 이중 계상되어 조각 회계가 페인트보다 커지고 컷이
+                                // 일러진다(3090867: gap 328 + rows 302, used 953 vs
+                                // 페인트 744 — 본문 2문단이 2쪽으로 밀림).
+                                // table_partial 의 페인트측 스냅 억제와 같은 판별.
+                                let nested_total_px: f64 = p
+                                    .controls
+                                    .iter()
+                                    .filter_map(|control| match control {
+                                        Control::Table(nested) => Some(hwpunit_to_px(
+                                            nested.common.height.min(i32::MAX as u32) as i32,
+                                            self.dpi,
+                                        )),
+                                        _ => None,
+                                    })
+                                    .sum();
+                                if nested_total_px > 0.0
+                                    && target_top - unit_cum >= nested_total_px - 24.0
+                                {
+                                    target_top -= nested_total_px;
+                                }
                                 if target_top > unit_cum {
                                     uh += target_top - unit_cum;
                                     vpos_gap_before = true;
@@ -11332,18 +11420,27 @@ impl LayoutEngine {
         }
 
         let mut reset_count = 0usize;
+        let mut in_paragraph_reset_count = 0usize;
         let mut previous_frame_end: Option<i32> = None;
         let mut preceding_frame_end = 0i32;
         let mut trailing_frame_end = 0i32;
         for paragraph in &cell.paragraphs {
-            for seg in paragraph.line_segs.iter().filter(|seg| {
-                seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
-            }) {
+            for (seg_idx, seg) in paragraph
+                .line_segs
+                .iter()
+                .filter(|seg| {
+                    seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                })
+                .enumerate()
+            {
                 let frame_end = seg.vertical_pos.saturating_add(seg.line_height);
                 if previous_frame_end
                     .is_some_and(|previous_end| previous_end > 0 && seg.vertical_pos <= 0)
                 {
                     reset_count += 1;
+                    if seg_idx > 0 {
+                        in_paragraph_reset_count += 1;
+                    }
                     preceding_frame_end =
                         preceding_frame_end.max(previous_frame_end.unwrap_or_default());
                     trailing_frame_end = 0;
@@ -11361,10 +11458,11 @@ impl LayoutEngine {
                 let source_frame_span = preceding_frame_end.saturating_add(trailing_frame_end);
                 let sum_fits_declared = source_frame_span >= declared_height.saturating_mul(4) / 5
                     && source_frame_span <= declared_height;
-                if cell.vertical_align == VerticalAlign::Center {
+                if cell.vertical_align == VerticalAlign::Center && in_paragraph_reset_count == 0 {
                     // CENTER 평가표는 문단 로컬 vpos=0 줄합이 선언 높이와 비슷해
                     // sum 4/5 가 우연히 참이 되고 한 줄만 남긴다 (#6035).
-                    // TOP 셀(편람 103×2)은 기존 sum 계약을 유지한다.
+                    // 같은 문단 내부의 vpos reset은 한 문단이 물리 쪽 경계를 건넌
+                    // 흔적이므로 #6025처럼 기존 sum 계약을 유지한다.
                     preceding_frame_end >= declared_height.saturating_mul(4) / 5
                         && preceding_frame_end <= declared_height
                         && trailing_frame_end > 0

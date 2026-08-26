@@ -76,7 +76,9 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `issue-536-boxed-pua-canvas2d.test.mjs` | 상시 | active | #536 실제 HWP의 사각 안 숫자 PUA를 기본 Canvas2D가 결정적으로 합성 | basic/issue2007_nested_cell_pagination_42065.hwp | npm e2e:issue-536 | #4122 17쪽 pagination stack 계약 포함 |
 | `local-font-partial-enumeration-issue4741.test.mjs` | 상시 | active | #4741 Local Font Access 부분 열거를 강제해 raw probe·exact Canvas2D face·폭·cache·편람 383쪽 계약 검증 | 2025 행정업무운영 편람(최종).hwp | npm e2e:issue-4741 | KoPub바탕체 Light 설치 호스트 Chrome 전용 |
 | `issue-595.test.mjs` | 진단 | hold | Issue #595 진단 e2e | exam_math.hwp | 수동 | legacy-name · #595 진단 (assertion 0) |
+| `issue-6099-probe.mjs` | 진단 | active | #6099 90° 회전 그림 DOM frame/img 실측과 스크린샷 생성 프로브 | samples 하위 지정 파일 | 수동 | legacy-name · 일회성 실측 프로브 |
 | `line-spacing.test.mjs` | 상시 | active | 줄간격 변경에 따른 페이지 넘김 검증 | — | 수동 |  |
+| `loading-busy-cursor.test.mjs` | 상시 | active | #5740 대형 문서 로딩 중 busy 상태와 wait cursor 표시 계약 | 2025 행정업무운영 편람(최종).hwp | npm e2e:loading-busy-cursor |  |
 | `navigation-shortcuts.test.mjs` | 상시 | active | 플랫폼별 navigation shortcut | — | 수동 |  |
 | `page-border-toggle.test.mjs` | 상시 | active | 쪽 테두리/배경 미리보기 버튼 토글 | — | 수동 |  |
 | `page-break.test.mjs` | 상시 | active | biz_plan.hwp 강제 쪽 나누기 / "5. 사업추진조직" 문단 앞에 쪽 나누기 삽입 후 페이지 재배치 확인 | biz_plan.hwp | 수동 |  |
@@ -95,6 +97,7 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `renderer-contract.test.mjs` | 상시 | active | 렌더러 백엔드 계약 검증 (plane/replay 정합) | — | npm+CI |  |
 | `report-generator.mjs` | 유틸 | active | E2E 테스트 HTML 보고서 생성기 | — | 수동 |  |
 | `responsive.test.mjs` | 상시 | active | 반응형 레이아웃 검증 | — | 수동 |  |
+| `ruler-document-switch.test.mjs` | 상시 | active | 문서를 바꿔 열면 눈금자가 새 문서의 쪽을 다시 그린다 (`document-view-loaded`) — 문단 여백이 같은 문서를 잇달아 열 때 앞 문서 눈금이 남는 회귀 가드 | 누름틀-2024.hwp · 253E164F57A1BC6934-empty.hwp | npm e2e:ruler-document-switch |  |
 | `run-render-diff.mjs` | 유틸 | active | render-diff CI 러너 (canvas/pdf diff 오케스트레이션) | — | npm+CI |  |
 | `run-with-vite.mjs` | 유틸 | active | Vite dev server 기동 + 임의 명령 실행 공용 러너 (VITE_URL 주입, 종료 코드 전파) | — | npm e2e:undo-depth |  |
 | `save-as-format.test.mjs` | 상시 | active | 저장 출력 포맷 선택 (file:save-as-hwp / file:save-as-hwpx) E2E — #1613 | biz_plan.hwp, hwpx/footnote-01.hwpx | 수동 |  |
@@ -102,6 +105,7 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `vite-server.mjs` | 유틸 | active | Vite dev server 기동·대기·종료 공용 헬퍼 — node 직접 기동(win32 .cmd EINVAL 우회), taskkill 트리 정리 | — | 수동 | `run-render-diff.mjs`·`run-with-vite.mjs`에서 import |
 | `shape-inline.test.mjs` | 상시 | active | 도형 인라인 컨트롤 — 커서 이동 및 텍스트 삽입 | — | 수동 |  |
 | `shift-end.test.mjs` | 상시 | active | shift-return.hwp Shift+End 블록 선택 | shift-return.hwp | 수동 |  |
+| `status-page-number.test.mjs` | 상시 | active | #5749 상태 표시줄 쪽 번호가 물리 순번이 아니라 문서 쪽번호를 따르는 계약 | 쪽기준.hwp | npm e2e:status-page-number |  |
 | `table-picture-resize-1282.test.mjs` | 상시 | active | E2E 테스트 (Issue #1282): 회전된 표 셀 내부 picture 리사이즈. | ta-pic-001-r-쪽영역안제한.hwp, ta-pic-001-r-쪽영역안제한 | 수동 |  |
 | `tac-inline-create.test.mjs` | 상시 | active | 빈 문서에서 인라인 TAC 표 직접 생성 (Issue #32) | — | 수동 |  |
 | `tac-inline-table.test.mjs` | 상시 | active | 인라인 TAC 표 배치 검증 (Issue #31) | tac-case-001.hwp | 수동 |  |
@@ -115,6 +119,7 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `theme-auto-dark.test.mjs` | 상시 | active | Chrome Auto Dark Mode 대응 | — | 수동 |  |
 | `theme-bootstrap.test.mjs` | 상시 | active | 초기 테마 bootstrap | — | 수동 |  |
 | `theme-mode.test.mjs` | 상시 | active | 보기 > 테마 | — | 수동 |  |
+| `toolbox-visibility.test.mjs` | 상시 | active | 기본 도구 상자 접기/펴기와 표시 상태 저장·복원 | — | npm e2e:toolbox-visibility |  |
 | `topmost-hittest.test.mjs` | 상시 | active | E2E 테스트 (Issue #1280 v2): 겹침 클릭 = "최상단 개체" 선택 | textbox-under-image.hwp | 수동 |  |
 | `topmost-lifecycle.test.mjs` | 상시 | active | E2E 테스트 (Issue #1280 v2): 겹침 최상단 선택 → 연산 lifecycle | textbox-under-image.hwp | 수동 |  |
 | `typesetting.test.mjs` | 상시 | active | 조판 품질 검증 (문단부호 표시 상태) | — | 수동 |  |
@@ -124,3 +129,4 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `undo-object-selection.test.mjs` | 상시 | active | E2E: undo/redo 후 개체/표 선택 stale ref 해제 (Task #2303) /  / 계약: undo/r | — | npm e2e:undo-object-selection |  |
 | `unsaved-changes-guard.test.mjs` | 상시 | active | #886 저장되지 않은 변경사항 보호 모달 | — | npm e2e:unsaved-guard |  |
 | `unsupported-format-error.test.mjs` | 상시 | active | 미지원 문서 오류 알림 후 정상 문서 재로드 | field-01.hwp | 수동 |  |
+| `zoom-fit-mode-persistence.test.mjs` | 상시 | active | 쪽 맞춤/폭 맞춤 선택 저장과 문서 로드 시 복원 — 새 문서 쪽 크기로 재계산, 수치 배율은 맞춤 해제 | 2010-01-06.hwp · 253E164F57A1BC6934-empty.hwp | npm e2e:zoom-fit-mode |  |

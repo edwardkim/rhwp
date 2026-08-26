@@ -62,3 +62,49 @@ export function calculateFitPageZoom(
     (containerHeight - VERTICAL_FRAME_PADDING) / pageHeight,
   ));
 }
+
+/** 사용자가 마지막으로 고른 맞춤 배율. 'none' 은 수치 배율(사용자 지정)이다. */
+export type ZoomFitMode = 'none' | 'fitWidth' | 'fitPage';
+
+export function normalizeZoomFitMode(value: unknown): ZoomFitMode {
+  return value === 'fitWidth' || value === 'fitPage' ? value : 'none';
+}
+
+export interface ZoomFitMetrics {
+  containerWidth: number;
+  containerHeight: number;
+  pageWidth: number;
+  pageHeight: number;
+  arrangement: PageArrangement;
+  pageGap?: number;
+}
+
+/**
+ * 저장된 맞춤 배율을 지금의 창·쪽 크기로 다시 계산한다.
+ *
+ * 맞춤은 수치가 아니라 규칙이므로 문서마다(쪽 크기가 다르므로) 다시 계산해야 한다.
+ * 수치 배율('none')이면 되돌릴 배율이 없다는 뜻으로 null 을 준다.
+ */
+export function resolveZoomFitZoom(
+  mode: ZoomFitMode,
+  metrics: ZoomFitMetrics,
+): number | null {
+  switch (mode) {
+    case 'fitWidth':
+      return calculateArrangementFitWidthZoom({
+        containerWidth: metrics.containerWidth,
+        pageWidth: metrics.pageWidth,
+        arrangement: metrics.arrangement,
+        pageGap: metrics.pageGap,
+      });
+    case 'fitPage':
+      return calculateFitPageZoom(
+        metrics.containerWidth,
+        metrics.containerHeight,
+        metrics.pageWidth,
+        metrics.pageHeight,
+      );
+    case 'none':
+      return null;
+  }
+}

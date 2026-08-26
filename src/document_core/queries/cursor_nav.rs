@@ -2422,6 +2422,7 @@ mod flat_cell_ctx_matches_tests {
     #[test]
     fn matches_direct_single_level_cell() {
         let ctx = CellContext {
+            in_textbox: false,
             parent_para_index: 0,
             path: vec![entry(1, 2, 3)],
         };
@@ -2435,6 +2436,7 @@ mod flat_cell_ctx_matches_tests {
         // 안쪽 셀에 속하므로 매칭돼선 안 된다 — 종전엔 path.len() 가드가
         // 없어 여기서 잘못 true 를 반환했다(#2651).
         let ctx = CellContext {
+            in_textbox: false,
             parent_para_index: 0,
             path: vec![entry(1, 2, 3), entry(0, 0, 0)],
         };
@@ -2444,6 +2446,7 @@ mod flat_cell_ctx_matches_tests {
     #[test]
     fn rejects_mismatched_outer_indices() {
         let ctx = CellContext {
+            in_textbox: false,
             parent_para_index: 0,
             path: vec![entry(1, 2, 3)],
         };
@@ -2453,6 +2456,7 @@ mod flat_cell_ctx_matches_tests {
     #[test]
     fn path_matcher_uses_the_full_nested_container_path() {
         let ctx = CellContext {
+            in_textbox: false,
             parent_para_index: 7,
             path: vec![entry(1, 0, 0), entry(2, 0, 12), entry(0, 50, 3)],
         };
@@ -2465,6 +2469,7 @@ mod flat_cell_ctx_matches_tests {
     #[test]
     fn path_matcher_rejects_a_different_nested_cell_or_intermediate_paragraph() {
         let ctx = CellContext {
+            in_textbox: false,
             parent_para_index: 7,
             path: vec![entry(1, 0, 0), entry(2, 0, 12), entry(0, 50, 0)],
         };

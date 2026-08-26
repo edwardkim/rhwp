@@ -746,6 +746,29 @@ fn row_split_meets_min_top_keep(
     keep_height >= MIN_TOP_KEEP_PX
 }
 
+/// [#6035] 행의 셀 문단 저장 사다리에 **비전진(동일 vpos) 연속 seg 쌍**이 있는지 —
+/// 저장 시점 한글이 이 행을 쪽 경계에서 줄 단위로 나눈 흔적이다 (2804253 r70:
+/// 0/1560/1560, horz 동일이라 좌우분할 아님). 같은 vpos 의 세 의미(좌우분할·쪽
+/// 리셋·중복) 중 좌우분할은 `column_start`/폭이 갈리므로 세로 신호만 잡는다.
+fn row_has_stored_same_vpos_split_signal(table: &crate::model::table::Table, row: usize) -> bool {
+    table
+        .cells
+        .iter()
+        .filter(|cell| cell.row as usize == row)
+        .any(|cell| {
+            cell.paragraphs.iter().any(|paragraph| {
+                paragraph.line_segs.windows(2).any(|pair| {
+                    pair.iter().all(|seg| {
+                        seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                    }) && pair[0].vertical_pos > 0
+                        && pair[1].vertical_pos == pair[0].vertical_pos
+                        && pair[1].column_start == pair[0].column_start
+                        && pair[1].segment_width == pair[0].segment_width
+                })
+            })
+        })
+}
+
 /// Native HWP로 저장·재파싱한 뒤에도 남는 "1열 셀을 1×2로 분할"한 표 구조.
 ///
 /// [`crate::model::table::Table::split_cell_into`]는 기존 1열의 다른 셀을 새 2열
@@ -3318,7 +3341,6 @@ fn stored_vpos_top_collision(prev: &Paragraph, curr: &Paragraph) -> bool {
     if para_has_visible_text(prev) || para_has_visible_text(curr) || prev.controls.is_empty() {
         return false;
     }
-
     let real = |ls: &&LineSeg| !is_synthetic_line_seg(ls);
     let (Some(prev_first), Some(prev_last), Some(curr_first)) = (
         prev.line_segs.iter().find(real),
@@ -3335,6 +3357,15 @@ fn stored_vpos_top_collision(prev: &Paragraph, curr: &Paragraph) -> bool {
         ls.tag & LineSeg::TAG_FIRST_SEGMENT != 0 && ls.segment_width > 0 && ls.line_height > 0
     };
     if !parsed_seg(prev_first) || !parsed_seg(prev_last) || !parsed_seg(curr_first) {
+        return false;
+    }
+
+    // [#6087] 앞 문단의 저장 **전진이 0**(줄간격 0%: lh + ls ≤ 0)이면 쪽을
+    // 점유하지 않으므로, 그 직후의 vpos=0 은 "다시 맨 위 주장"이 아니라 같은
+    // 자리다 — 충돌 아님. 30307: pi=0(구역/단 정의, lh 1300 + ls −1300) 직후
+    // pi=1 을 충돌로 읽어 완전한 빈 1쪽을 만들었다(한글 13쪽 vs 14쪽). p122
+    // 증거(전진 1600/22838 문단들의 연쇄 단독 쪽)는 전진 > 0 이라 불변.
+    if prev_last.line_height.saturating_add(prev_last.line_spacing) <= 0 {
         return false;
     }
 
@@ -3373,6 +3404,11 @@ fn saved_rowbreak_first_fragment_flow_overflow_allowance(
     (fragment_flow_bottom - source_flow_bottom).max(0.0)
 }
 
+/// [#6123] 저장 프레임 바닥이 **저장 행 경계**와 같다고 볼 수 있는 허용치.
+/// 저장 높이는 HWPUNIT→px 변환에서 행마다 반올림 오차를 남기므로 행 수에
+/// 비례하는 몫을 더해 쓴다(호출부).
+const SAVED_FRAME_ROW_END_STORED_TOLERANCE_PX: f64 = 1.0;
+
 /// 저장된 첫 RowBreak 조각 높이에 가장 가까운 행 경계를 찾는다.
 ///
 /// 저장 프레임의 남은 물리 공간은 글꼴 측정 drift를 흡수할 수 있지만, 다음 행까지
@@ -3381,6 +3417,7 @@ fn saved_rowbreak_first_fragment_flow_overflow_allowance(
 fn nearest_saved_rowbreak_frame_row_end(
     frame_height: f64,
     row_heights: &[f64],
+    stored_row_heights: &[f64],
     cell_spacing: f64,
 ) -> Option<usize> {
     if !frame_height.is_finite() || frame_height <= 0.0 {
@@ -3388,18 +3425,58 @@ fn nearest_saved_rowbreak_frame_row_end(
     }
 
     let mut bottom = 0.0;
-    let mut nearest: Option<(usize, f64)> = None;
+    let mut nearest: Option<(usize, f64, f64)> = None;
     for (row, height) in row_heights.iter().enumerate() {
         if row > 0 {
             bottom += cell_spacing;
         }
         bottom += height;
         let distance = (bottom - frame_height).abs();
-        if nearest.is_none_or(|(_, best)| distance < best) {
-            nearest = Some((row + 1, distance));
+        if nearest.is_none_or(|(_, best, _)| distance < best) {
+            nearest = Some((row + 1, distance, bottom));
         }
     }
-    nearest.map(|(end_row, _)| end_row)
+    let (end_row, _, row_bottom) = nearest?;
+
+    // [#6123] 프레임이 그 행 경계를 **닿지 못하면** 그 행을 소유하지 않는다.
+    //
+    // 최근접 스냅에는 거리 제한이 없어, 프레임 바닥이 어떤 행 한복판에 떨어져도
+    // 그 행의 끝으로 끌려갔다 — 3112461 7쪽은 프레임 388.0px 이 행 1(측정
+    // 36.0~573.1)의 65% 지점인데 행 끝(573.1)으로 스냅돼 그 행을 통째로 앞
+    // 쪽에 얹었고, 표가 본문 하단을 174px 넘겼다. 한글은 그 행을 줄 단위로
+    // 가른다.
+    //
+    // 프레임이 경계를 **넘어서는**(frame ≥ 누적) 경우는 종전 그대로다 — 21298295
+    // 별표 5 는 프레임이 행 13 경계를 22.6px 지나며, 그 초과는 다음 행의 측정↔
+    // 저장 drift 다. 반대로 **모자라는** 쪽은 그 행을 다 담지 못했다는 뜻이므로,
+    // 흡수 가능한 drift(관련 행들의 |측정 − 저장| 합 + 행별 px 변환 반올림)
+    // 안에서만 허용한다. 저장 높이를 못 읽는 행은 그 행의 측정 높이가 곧 상한이
+    // 되어 종전 스냅이 그대로 남는다.
+    let shortfall = row_bottom - frame_height;
+    if shortfall <= 0.0 {
+        return Some(end_row);
+    }
+    // 모자란 몫이 **조각이 될 수 없는 크기**(`MIN_TOP_KEEP_PX`)면 그 잔여를 다음
+    // 쪽으로 옮길 수 없으므로 행을 통째로 두는 것이 맞다 — 1790387 PrEP 보고서는
+    // 프레임이 행 3 경계에 16.8px 못 미친다. 그보다 크게 모자라면 흡수 가능한
+    // drift(관련 행들의 |측정 − 저장| 합 + 행별 px 변환 반올림) 안에서만 허용한다.
+    // 저장 높이를 못 읽는 행은 그 행의 측정 높이가 곧 상한이 되어 종전 스냅이
+    // 그대로 남는다.
+    let drift_budget: f64 = row_heights
+        .iter()
+        .take(end_row)
+        .enumerate()
+        .map(|(row, measured)| {
+            let stored = stored_row_heights.get(row).copied().unwrap_or(0.0);
+            if stored > 0.0 && stored.is_finite() {
+                (measured - stored).abs()
+            } else {
+                *measured
+            }
+        })
+        .sum::<f64>()
+        + SAVED_FRAME_ROW_END_STORED_TOLERANCE_PX * end_row as f64;
+    (shortfall <= drift_budget.max(MIN_TOP_KEEP_PX)).then_some(end_row)
 }
 
 /// Visible host text that is structurally a numbered table caption.
@@ -5177,7 +5254,31 @@ fn stored_ladder_encodes_spacing_before(
     // 문단 경계에서 줄 간격을 흡수한 사다리를 오탐한다(2990099·3249937 에서 +3·+1쪽 회귀).
     let intra_gap = stored_intra_line_gap(para).or_else(|| stored_intra_line_gap(prev));
     let Some(intra_gap) = intra_gap else {
-        return true; // 한 줄짜리들뿐 — 비교 기준이 없다.
+        // [#6031] 한 줄짜리 문단 연속 구간 — 줄 간 delta 표본이 없다. 직전 문단
+        // 마지막 줄의 저장 trailing ls 와 경계 gap 이 **정확히 일치**하면 사다리가
+        // 경계를 줄바꿈처럼 적은 것(sb 미인코딩)이다 (3249937 p6: gap 1400 == ls
+        // 1400, sb 1000 미반영 → 쪽-말미 2줄이 본문 밖 +40pt). ls 필드를 1차
+        // 기준으로 쓰면 경계 흡수형 사다리를 오탐하지만(아래 주석, 2990099·
+        // 3249937 +3·+1쪽 회귀), 표본 부재 시의 등가-일치 판별은 흡수형
+        // (gap < ls)과 정상형(gap ≥ ls+sb) 어느 쪽에도 걸리지 않는다.
+        // sb 하한 5px: 아주 작은 sb(예: hwp3-sample16 계보 285HU=3.8px)는 한글이
+        // 저장 흐름을 신뢰하는 문서군과 겹친다(#2158 핀 64쪽 실측 — 누락 판정 시
+        // 트림 철회 누적 +3.8px×282 경계로 65쪽 회귀). 여백 관통을 만드는 굵은
+        // sb(6.7px+)만 누락 판정한다.
+        // 추가 지문: 이 생성기 계열은 줄 피치를 lh·ls 에 양분해 적는다
+        // (ls == lh, paraPr 160% 와도 모순 — 3249937 전 문단 1400/1400).
+        // 정상 저장 사다리(ls < lh, hwp3-sample16 660/2000)는 한글이 저장
+        // 흐름을 신뢰하는 문서군과 겹치므로 등가-일치만으로 누락 판정하지 않는다.
+        if spacing_before_px > 5.0
+            && prev_last.line_spacing == prev_last.line_height
+            && prev_last.line_spacing > 0
+            && (stored_gap - prev_last.line_spacing).abs() <= 2
+            && hwpunit_to_px(prev_last.line_spacing, dpi) + spacing_before_px
+                > hwpunit_to_px(stored_gap, dpi) + 0.5
+        {
+            return false;
+        }
+        return true; // 판별 불가 — 종전 보수 유지.
     };
     // 문단 경계 간격이 줄 간격과 같으면 사다리가 경계를 줄바꿈처럼 적은 것이다.
     hwpunit_to_px(stored_gap, dpi) + 0.5 >= hwpunit_to_px(intra_gap, dpi) + spacing_before_px
@@ -15659,6 +15760,32 @@ impl TypesetEngine {
         {
             y = st.current_height;
         }
+        // [#6031] sb-누락 ladder 는 경계 하나가 아니라 **문서 전체 서명**이다 —
+        // 위 ±2px 일치 스킵만으로는 누락분이 다음 sb=0 경계의 후방 스냅으로
+        // 흘러가 되감긴다(3249937 p3: pi=36 스킵분 −6.7px 가 pi=37 스냅으로
+        // 제거, 쪽 말미 누적 +53.3px 를 typeset 만 안 본다). 렌더는 후방 스냅
+        // 상한(8px)으로 이 되감김을 거부하므로 판정 좌표와 배치 좌표가 갈라져
+        // 쪽-말미 줄이 본문 하단 밖에 그려진다(#5801 코어). 경계 검사
+        // (`stored_ladder_encodes_spacing_before`)가 누락을 확정하면 남은 열의
+        // 후방 스냅·트림을 dirty 로 철회해 두 좌표계를 일치시킨다 — 한글
+        // fresh 도 sb 를 가산한 흐름으로 쪽을 끊는다(p3 말미 810.7px 실측
+        // = 한글 809.7pt 정합, 꼬리 '바.' 줄은 한글도 4쪽 첫 줄).
+        if st.profile.hwpx_stored_layout()
+            && !st.profile.hwp3_layout()
+            && spacing_before_px > 5.0
+            && !st.vpos_ladder_dirty
+            && !stored_ladder_encodes_spacing_before(
+                paragraphs,
+                para_idx,
+                spacing_before_px,
+                self.dpi,
+            )
+        {
+            st.vpos_ladder_dirty = true;
+            if y < st.current_height {
+                y = st.current_height;
+            }
+        }
         // [#2243 진단] snap 입출력 — 동작 불변.
         if std::env::var("RHWP_DIAG_TAC").is_ok() && (y - st.current_height).abs() > 0.05 {
             eprintln!(
@@ -15897,6 +16024,35 @@ impl TypesetEngine {
                         .iter()
                         .any(|(pos, _, _)| *pos == line.char_start);
                 if empty_tac_guide_line {
+                    pairs.push((0.0, 0.0));
+                    prev_line_reserved_tac_picture_height = None;
+                    continue;
+                }
+                // [#6086] 같은 vpos·다른 column_start 의 연속 저장 세그는 어울림
+                // 개체가 한 줄을 좌/우로 가른 **수평 분할**이다 — 같은 시각적
+                // 줄이므로 뒤 세그는 높이를 계상하지 않는다. 30098: 순서도 상자
+                // 옆 빈 문단 12개가 2세그 세로 적층으로 ×2 계상되어 +288px,
+                // 16쪽 vs 한글 15쪽. (#6035 의 쪽-리셋 동일-vpos 쌍은 column_start
+                // /폭이 같아 이 게이트에 걸리지 않는다.)
+                let horizontal_split_continuation = line_idx > 0
+                    && comp.lines.len() == para.line_segs.len()
+                    && para
+                        .line_segs
+                        .get(line_idx)
+                        .zip(para.line_segs.get(line_idx - 1))
+                        .is_some_and(|(cur, prev)| {
+                            let real = |seg: &crate::model::paragraph::LineSeg| {
+                                seg.tag
+                                    & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                                    == 0
+                            };
+                            real(cur)
+                                && real(prev)
+                                && cur.vertical_pos >= 0
+                                && cur.vertical_pos == prev.vertical_pos
+                                && cur.column_start != prev.column_start
+                        });
+                if horizontal_split_continuation {
                     pairs.push((0.0, 0.0));
                     prev_line_reserved_tac_picture_height = None;
                     continue;
@@ -16624,6 +16780,14 @@ impl TypesetEngine {
         let hangul2024_blank_spill = st.profile.hangul2024_layout()
             && st.hangul2024_spill_para == Some(para_idx)
             && !st.current_items.is_empty();
+        if std::env::var("RHWP_DIAG_6031").is_ok()
+            && st.current_height + page_end_fit_height > available
+        {
+            eprintln!(
+                "DIAG_6031 pi={para_idx} cur={:.1} fit_h={page_end_fit_height:.1} avail={available:.1} single={saved_single_line_bottom_fits} list_tail={saved_list_tail_body_vpos_fits} base={:?}",
+                st.current_height, current_page_vpos_base,
+            );
+        }
         if forced_page_break_line.is_none()
             && !stored_vpos_rewind_break
             && (hangul2024_blank_spill
@@ -17058,6 +17222,11 @@ impl TypesetEngine {
                         && para.controls.is_empty()
                         && !st.current_items.is_empty()
                         && !para_near_rowbreak_table(paragraphs, para_idx)
+                        // [#6031] sb-누락 ladder(dirty) 의 꼬리 좌표는 배치 좌표가
+                        // 아니다 — 렌더 흐름은 sb 를 가산해 이미 그 아래에 있고,
+                        // 이 좌표로 붙든 줄은 본문 하단 밖에 그려진다(3249937 p3
+                        // '바.' +25.1pt). 한글 fresh 도 이 줄을 다음 쪽에 둔다.
+                        && !st.vpos_ladder_dirty
                         && saved_line_range_fits_body_tail(
                             para,
                             li,
@@ -21188,6 +21357,20 @@ impl TypesetEngine {
                 || native_hwp5_internal_reset_row_tail
                 || uses_source_frame_tail
                 || native_short_parent_child_splittable;
+            // [#6035] HWPX 저장 사다리가 이 행을 **쪽 경계에서 줄 단위로 나눈
+            // 흔적**(셀 문단의 비전진 동일-vpos 연속 seg 쌍, 좌우분할 아님)을
+            // 담고 있으면, 완결 유닛 ≥1 컷에 25px 고아 가드를 적용하지 않는다 —
+            // 한글은 그 자리에서 한 줄만 남기는 분할을 실제로 수행했다(2804253
+            // 5쪽: 잔여 41.3px 에 '다. 원자재…' 첫 줄 20.8px 유지 — 저장 ladder
+            // 0/1560/1560, rhwp 는 행 통째 이월로 5쪽 하단 31pt 공백 + 총 12쪽
+            // vs 한글 11쪽). 큰 글줄(10pt+)에서는 한 줄이 25px 미만이라 정상
+            // 줄-단위 분할이 상시 기각되는 구조였다. 저장 흔적 없는 행과 예산
+            // 초과 컷(아래 재시도/이월 판정)은 종전 그대로다.
+            let cellbreak_complete_unit_keep = st.profile.hwpx_stored_layout()
+                && mt.allows_row_break_split()
+                && res.consumed_height > 0.5
+                && res.end_cut.iter().any(|units| *units > 0)
+                && row_has_stored_same_vpos_split_signal(table, r);
             // [Task #713] sliver(orphan) 회피 — 일반 표는 기존 content-only 기준을
             // 유지한다. 패딩 포함 painted 기준은 좁은 #2439 strict 표, saved internal
             // reset, 그리고 선언 높이보다 큰 1×1 child가 실제 multi-unit으로 검증된
@@ -21195,6 +21378,7 @@ impl TypesetEngine {
             // 함께 보이는 첫 child line을 현재 쪽 owner로 고정하지만 content-only
             // 높이가 25px에 근소하게 못 미치는 76076 p81→82 구조다.
             if r > cursor_row
+                && !cellbreak_complete_unit_keep
                 && !row_split_meets_min_top_keep(
                     res.consumed_height,
                     split_total,
@@ -23666,6 +23850,7 @@ impl TypesetEngine {
         fragment_has_intra_row_cut: bool,
         terminal_fragment: bool,
         relax_terminal_table_footnote_fit: bool,
+        queued_fresh_page: bool,
     ) {
         let note_fits = |st: &TypesetState, content_height: f64, draw_separator: bool| {
             // 단일단의 중간 RowBreak fragment 뒤에는 같은 page에 이어질 본문이 없다.
@@ -23741,9 +23926,16 @@ impl TypesetEngine {
         }
 
         while let Some(note) = notes.get(continuation.next_table_footnote) {
-            let force_source_page_split = note
-                .fragment_split
-                .is_some_and(|split| split.force_next_page);
+            // [#5966] `force_next_page` 는 "이 각주를 다음 물리 쪽에 두라"는 저장
+            // 지시다. 큐 소진을 위해 **강제로 연 새 쪽**에서는 이미 충족됐으므로
+            // 일반 fit 경로(원자 배치)로 보낸다 — 종전에는 이 단락이 원자 배치를
+            // 차단했고, 마커 행이 현재 fragment 밖이면 분할 필터도 기각해 빈 새
+            // 쪽에서 진행 불가(디버그 불변식 패닉, 1130000-202100008: note 0
+            // h=90.1px 가 avail 876.9px 에 들어가는데도 정지).
+            let force_source_page_split = !queued_fresh_page
+                && note
+                    .fragment_split
+                    .is_some_and(|split| split.force_next_page);
             if force_source_page_split || !note_fits(st, note.content_height, true) {
                 // p728 note 77처럼 table cell 안의 stored vpos reset이 실제 footnote
                 // page boundary를 명시하고, marker row가 지금 확정한 intermediate
@@ -24043,9 +24235,30 @@ impl TypesetEngine {
             } else {
                 None
             };
+            // [#6123] 저장 행 높이(행 안 row_span==1 셀의 최대 저장 높이). 프레임
+            // 바닥이 진짜 행 경계인지 저장 좌표계에서 검산하는 데 쓴다.
+            let stored_row_heights: Vec<f64> = (0..row_count)
+                .map(|row| {
+                    table
+                        .cells
+                        .iter()
+                        .filter(|cell| {
+                            cell.row as usize == row
+                                && cell.row_span == 1
+                                && cell.height < 0x8000_0000
+                        })
+                        .map(|cell| hwpunit_to_px(cell.height as i32, self.dpi))
+                        .fold(0.0f64, f64::max)
+                })
+                .collect();
             let source_first_fragment_row_end = saved_first_fragment_source_frame
                 .and_then(|(frame_height, _)| {
-                    nearest_saved_rowbreak_frame_row_end(frame_height, cut_row_h, cs)
+                    nearest_saved_rowbreak_frame_row_end(
+                        frame_height,
+                        cut_row_h,
+                        &stored_row_heights,
+                        cs,
+                    )
                 });
             // 기존 각주가 이미 이 page의 body tail을 예약했으면 object frame만으로
             // whole row를 수용할 수 없다. 그 마지막 행의 cell-unit partial cut은
@@ -24482,6 +24695,7 @@ impl TypesetEngine {
                         fragment_starts_intra_row,
                         true,
                         relax_terminal_table_footnote_fit && is_continuation,
+                    false,
                     );
                     // terminal fragment에 들어가지 못한 URL 각주는 새 page의 footer
                     // lane에 먼저 예약한다. 다음 본문은 그 reservation을 보고 같은
@@ -24505,6 +24719,7 @@ impl TypesetEngine {
                             fragment_starts_intra_row,
                             true,
                             relax_terminal_table_footnote_fit && is_continuation,
+                        true,
                         );
                         st.reset_vpos_after_queued_table_footnote_page = true;
                         let after = (
@@ -24565,6 +24780,7 @@ impl TypesetEngine {
                     fragment_starts_intra_row || !split_end_cut.is_empty(),
                     false,
                     false,
+                false,
                 );
             }
             st.advance_column_or_new_page();
@@ -25617,9 +25833,51 @@ mod issue_3820_saved_rowbreak_first_fragment_frame_contract {
     #[test]
     fn frame_slack_stops_at_its_nearest_row_boundary() {
         assert_eq!(
-            nearest_saved_rowbreak_frame_row_end(87.0, &[30.0, 55.0, 60.0], 0.0),
+            nearest_saved_rowbreak_frame_row_end(
+                87.0,
+                &[30.0, 55.0, 60.0],
+                &[30.0, 56.0, 60.0],
+                0.0
+            ),
             Some(2),
             "saved-frame slack may absorb measurement drift at row 2, but not admit row 3"
+        );
+
+        // [#6123] 프레임이 행 경계에 **닿지 못하면** 그 행을 소유하지 않는다 —
+        // 행 경계 신호가 아니라 행 안에서 끊으라는 신호다(3112461 7쪽: 프레임 388 이
+        // 행 1(36~573)의 65% 지점인데 573 으로 스냅돼 행이 통째로 앞 쪽에 얹혔다).
+        assert_eq!(
+            nearest_saved_rowbreak_frame_row_end(388.0, &[36.0, 537.0], &[36.0, 472.0], 0.0),
+            None,
+            "모자란 몫(185.1)이 흡수 가능한 drift(65.0)를 넘으면 행 경계가 아니다"
+        );
+
+        // 경계를 **넘어서는** 프레임은 종전대로 그 행 끝을 소유한다 — 초과분은
+        // 다음 행의 측정↔저장 drift 다(21298295 별표 5: 행 13 경계를 22.6px 초과).
+        assert_eq!(
+            nearest_saved_rowbreak_frame_row_end(112.6, &[30.0, 60.0], &[30.0, 60.0], 0.0),
+            Some(2),
+            "프레임이 경계를 지나면 그 행까지는 확실히 첫 조각 소유다"
+        );
+
+        // 조각이 될 수 없는 크기(25px)만큼 모자란 프레임은 그 행을 그대로 소유한다 —
+        // 그 잔여는 어차피 다음 쪽으로 옮길 수 없다(1790387 PrEP 보고서: 16.8px).
+        assert_eq!(
+            nearest_saved_rowbreak_frame_row_end(
+                405.8,
+                &[28.4, 103.5, 163.5, 127.3],
+                &[28.4, 103.5, 163.5, 127.3],
+                0.0
+            ),
+            Some(4),
+            "16.8px 잔여는 독립 조각이 될 수 없으므로 행을 통째로 둔다"
+        );
+
+        // 저장 행 높이를 못 읽는 표(전부 0)는 종전 최근접 스냅을 유지한다.
+        assert_eq!(
+            nearest_saved_rowbreak_frame_row_end(87.0, &[30.0, 55.0, 60.0], &[0.0, 0.0, 0.0], 0.0),
+            Some(2),
+            "저장 높이가 없으면 측정 최근접 스냅이 유일한 신호다"
         );
     }
 }

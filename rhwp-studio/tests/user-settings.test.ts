@@ -175,7 +175,7 @@ test('짤림보기(clipView) 설정은 rhwp-settings에 저장되고 기본값�
   }
 });
 
-test('도구 상자(기본/서식) 표시 설정은 rhwp-settings에 저장되고 기본값은 보임이다', () => {
+test('도구 상자 표시 설정은 저장되고 기본 도구 상자만 처음에 접혀 있다', () => {
   const originalStorage = (globalThis as { localStorage?: Storage }).localStorage;
   const store = new Map<string, string>();
   const mockStorage = {
@@ -201,7 +201,7 @@ test('도구 상자(기본/서식) 표시 설정은 rhwp-settings에 저장되�
 
   (globalThis as { localStorage?: Storage }).localStorage = mockStorage;
   try {
-    assert.equal(userSettings.getViewSettings().toolbarBasic, true);
+    assert.equal(userSettings.getViewSettings().toolbarBasic, false);
     assert.equal(userSettings.getViewSettings().toolbarFormat, true);
 
     userSettings.setToolbarBasic(false);
@@ -215,7 +215,7 @@ test('도구 상자(기본/서식) 표시 설정은 rhwp-settings에 저장되�
     assert.equal(stored.view.toolbarBasic, false);
     assert.equal(stored.view.toolbarFormat, true);
   } finally {
-    userSettings.setToolbarBasic(true);
+    userSettings.setToolbarBasic(false);
     userSettings.setToolbarFormat(true);
     (globalThis as { localStorage?: Storage }).localStorage = originalStorage;
   }

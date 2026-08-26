@@ -565,12 +565,22 @@ export class PageRenderer {
         clipHost.style.pointerEvents = 'none';
       }
 
+      // [#6099] image.bbox 는 **회전 후 외접 상자**다. 프레임을 그 크기로 만들고
+      // rotate 를 다시 걸면 이중 회전이 되어 90° 그림이 세로로 선 채 clip 에
+      // 잘린다(2197981 스캔 서식: 한글 712×506 vs 503×452 정사각형). SVG/캔버스
+      // 페인터(`effective_image_bbox`)와 같은 규약 — 90/270° 는 프레임을 회전 **전**
+      // 치수(가로세로 swap)로 만들고 같은 중심에서 rotate 해 외접 상자를 복원한다.
+      const quarterTurned = ((image.rotation % 180) + 180) % 180 === 90;
+      const frameWidth = quarterTurned ? image.bbox.height : image.bbox.width;
+      const frameHeight = quarterTurned ? image.bbox.width : image.bbox.height;
+      const frameX = image.bbox.x + (image.bbox.width - frameWidth) / 2;
+      const frameY = image.bbox.y + (image.bbox.height - frameHeight) / 2;
       const frame = document.createElement('div');
       frame.style.position = 'absolute';
-      frame.style.left = `${(image.bbox.x - (needsClipWrapper ? visibleBbox.x : 0)) * displayScale}px`;
-      frame.style.top = `${(image.bbox.y - (needsClipWrapper ? visibleBbox.y : 0)) * displayScale}px`;
-      frame.style.width = `${image.bbox.width * displayScale}px`;
-      frame.style.height = `${image.bbox.height * displayScale}px`;
+      frame.style.left = `${(frameX - (needsClipWrapper ? visibleBbox.x : 0)) * displayScale}px`;
+      frame.style.top = `${(frameY - (needsClipWrapper ? visibleBbox.y : 0)) * displayScale}px`;
+      frame.style.width = `${frameWidth * displayScale}px`;
+      frame.style.height = `${frameHeight * displayScale}px`;
       frame.style.overflow = 'hidden';
       frame.style.pointerEvents = 'none';
       const scaleX = image.horzFlip ? -1 : 1;
@@ -587,7 +597,8 @@ export class PageRenderer {
       // 그림 효과(회색조/흑백/밝기/명암) — WASM canvas 경로(render_image)와 달리
       // DOM flow-image 경로는 필터가 누락돼 원본 컬러로 렌더되던 문제를 고친다.
       if (image.filter) element.style.filter = image.filter;
-      const applyCrop = () => applyFlowImageCrop(element, image, displayScale);
+      const applyCrop = () =>
+        applyFlowImageCrop(element, image, displayScale, frameWidth, frameHeight);
       element.addEventListener('load', applyCrop, { once: true });
       applyCrop();
       frame.appendChild(element);
@@ -1453,6 +1464,10 @@ function applyFlowImageCrop(
   element: HTMLImageElement,
   image: FlowImagePaintOp,
   displayScale: number,
+  // [#6099] 90/270° 프레임은 회전 전 치수(swap)로 만들어지므로, crop 사영도
+  // bbox(회전 후 외접)가 아니라 실제 프레임 치수를 기준으로 해야 한다.
+  frameWidth: number = image.bbox.width,
+  frameHeight: number = image.bbox.height,
 ): void {
   const crop = image.crop;
   if (!crop || element.naturalWidth <= 0 || element.naturalHeight <= 0) {
@@ -1475,8 +1490,8 @@ function applyFlowImageCrop(
   const sourceHeight = (crop.bottom - crop.top) / scaleYHu;
   if (sourceWidth <= 0 || sourceHeight <= 0) return;
 
-  const scaleX = (image.bbox.width * displayScale) / sourceWidth;
-  const scaleY = (image.bbox.height * displayScale) / sourceHeight;
+  const scaleX = (frameWidth * displayScale) / sourceWidth;
+  const scaleY = (frameHeight * displayScale) / sourceHeight;
   element.style.left = `${-sourceLeft * scaleX}px`;
   element.style.top = `${-sourceTop * scaleY}px`;
   element.style.width = `${element.naturalWidth * scaleX}px`;

@@ -34,15 +34,15 @@
   // 도구 상자(기본/서식) 숨김도 같은 시점에 찍는다 — 숨기기로 저장해 두면 첫 페인트부터
   // 숨긴 상태로 그려져 도구 모음이 잠깐 보였다 사라지지 않는다.
   // 속성·기본값은 src/view/toolbox-visibility.ts, 규칙은 src/style.css 와 함께 갱신한다.
-  let toolbarBasic = true;
+  let toolbarBasic = false;
   let toolbarFormat = true;
   try {
     const settings = JSON.parse(localStorage.getItem('rhwp-settings') || '{}');
     const view = (settings && settings.view) || {};
-    if (view.toolbarBasic === false) toolbarBasic = false;
+    if (view.toolbarBasic === true) toolbarBasic = true;
     if (view.toolbarFormat === false) toolbarFormat = false;
   } catch {
-    toolbarBasic = true;
+    toolbarBasic = false;
     toolbarFormat = true;
   }
   root.dataset.toolboxBasic = toolbarBasic ? 'shown' : 'hidden';

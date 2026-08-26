@@ -768,6 +768,9 @@ pub struct CellContext {
     pub parent_para_index: usize,
     /// 표 경로 (depth 1=단일 표, depth 2+=중첩 표)
     pub path: Vec<CellPathEntry>,
+    /// [#5820] 글상자(drawText) 내부 문단 여부 — 표 셀과 달리 한글은 글상자
+    /// 안에서도 셀 밖 규칙(오른쪽 정렬 말미 공백 제외)을 적용한다.
+    pub in_textbox: bool,
 }
 
 /// [#2091] 표 컨트롤 블록 배치 결과 — early_return 은 원본의 함수 조기 return 신호.
@@ -2867,6 +2870,50 @@ impl LayoutEngine {
         paper_images.sort_by_key(Self::paper_node_sort_key);
     }
 
+    /// [#6121] 셀 안 anchored(비 TAC) 개체를 셀 본문 텍스트 위로 올린다.
+    ///
+    /// 한글은 표 칸 문단에 앵커된 자리차지/어울림 개체(글 뒤로 제외)를 칸의 본문
+    /// 텍스트 **위**에 그린다 — 본문 흐름에서 개체가 문단 텍스트 뒤에 일괄
+    /// 페인트되는 계약과 같다. 셀 조립은 문단 순서대로 개체를 즉시 밀어 넣으므로
+    /// 뒤 문단 텍스트가 앞 문단 개체 위에 그려졌다(경찰청 보도자료 머리 칸:
+    /// 흰색 서식-잔재 run 이 container 의 "경 찰 청" drawText 를 파먹음).
+    /// `layout_cell_shape` 가 마킹한 layer(text_wrap·z_order·stable_index)를
+    /// 소비해, 해당 자식들만 z_order 안정 정렬로 셀 children 끝으로 옮긴다 —
+    /// 개체가 이미 셀 마지막 문단 뒤에 있으면 결과 순서는 그대로다.
+    fn lift_cell_anchored_objects_above_text(node: &mut RenderNode) {
+        for child in &mut node.children {
+            Self::lift_cell_anchored_objects_above_text(child);
+        }
+        if !matches!(node.node_type, RenderNodeType::TableCell(_)) {
+            return;
+        }
+        let lifts = |child: &RenderNode| {
+            child
+                .layer
+                .is_some_and(|layer| !matches!(layer.text_wrap, Some(TextWrap::BehindText)))
+        };
+        if !node.children.iter().any(lifts) {
+            return;
+        }
+        let mut kept: Vec<RenderNode> = Vec::with_capacity(node.children.len());
+        let mut lifted: Vec<RenderNode> = Vec::new();
+        for child in node.children.drain(..) {
+            if lifts(&child) {
+                lifted.push(child);
+            } else {
+                kept.push(child);
+            }
+        }
+        lifted.sort_by_key(|child| {
+            child
+                .layer
+                .map(|layer| (layer.z_order, layer.stable_index))
+                .unwrap_or((0, 0))
+        });
+        kept.extend(lifted);
+        node.children = kept;
+    }
+
     /// 빈 줄 감추기 문단 집합 설정
     pub fn set_hidden_empty_paras(&self, paras: &std::collections::HashSet<usize>) {
         *self.hidden_empty_paras.borrow_mut() = paras.clone();
@@ -3401,6 +3448,9 @@ impl LayoutEngine {
         // composer를 거치지 않고 직접 만들어진 표 셀/머리말 TextRun까지 같은
         // 한컴 PDF 표시 계약을 적용한다. 원문 IR과 char offset은 변경하지 않는다.
         tree.apply_legacy_hancom_product_display_projection();
+
+        // [#6121] 셀 안 anchored 개체 ↔ 셀 본문 텍스트 페인트 순서 정합.
+        Self::lift_cell_anchored_objects_above_text(&mut tree.root);
 
         // [#4515] 최상위 표 y 겹침 자가 검증. paper/overlay 표가 root 에 모두 붙은
         // 페이지 조립 완료 시점에 검사해야 글앞/글뒤 표까지 대상에 들어간다.
@@ -6723,6 +6773,40 @@ impl LayoutEngine {
                 hcursor.prev_layout_para = None;
                 hcursor.vpos_page_base = None;
                 hcursor.vpos_lazy_base = None;
+                // [#5820] 단, 쪽/단의 **첫 항목**이 이어지는 partial 이면 스냅
+                // 기준(base)을 여기서 그 연속 줄의 저장 vpos 로 직접 세운다 —
+                // 완전 리셋로 남기면 뒤의 lazy 역산이 빈 문단 trailing-ls bridge
+                // 로 base 를 ls 만큼 낮춰 쪽 전체 스냅이 +ls 밀린다(156560092
+                // 2쪽: 역산 base 67062 vs 저장 67902, 글상자 y +11.2px — 조판
+                // 패스는 같은 자리에서 텍스트-연속 역산으로 67902 를 얻어 두
+                // 패스가 발산했다). 순차-y 원칙(위 주석)은 유지된다 — 첫 항목의
+                // 배치 y 와 저장 vpos 를 같은 자리에 놓는 base 라 partial 직후
+                // 항목의 보정이 순차 y 와 일치한다.
+                if item_ordinal == 0 {
+                    if let PageItem::PartialParagraph {
+                        para_index,
+                        start_line,
+                        ..
+                    } = item
+                    {
+                        if *start_line > 0 {
+                            let seed = paragraphs
+                                .get(*para_index)
+                                .and_then(|p| p.line_segs.get(*start_line))
+                                .filter(|seg| {
+                                    seg.tag
+                                        & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                                        == 0
+                                })
+                                .map(|seg| {
+                                    seg.vertical_pos
+                                        - ((y_offset - visual_col_y) / self.dpi * 7200.0).round()
+                                            as i32
+                                });
+                            hcursor.vpos_lazy_base = seed;
+                        }
+                    }
+                }
             } else {
                 hcursor.prev_layout_para = Some(item_para);
             }
@@ -11175,6 +11259,7 @@ impl LayoutEngine {
                                 );
                             }
                             let cell_ctx = CellContext {
+                                in_textbox: false,
                                 parent_para_index: para_index,
                                 path: vec![CellPathEntry {
                                     control_index,

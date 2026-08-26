@@ -2778,6 +2778,44 @@ impl SvgRenderer {
 
         self.output.push_str("</g>\n");
     }
+    /// [#6127] 한컴 사각 안 숫자(U+F02B1~F02C4) 벡터 합성 — web_canvas
+    /// `draw_boxed_pua_number` 와 같은 기하(상자 0.72em, 숫자 0.5em, 중앙 정렬).
+    fn draw_boxed_pua_number(
+        &mut self,
+        number: u32,
+        x: f64,
+        baseline_y: f64,
+        style: &TextStyle,
+        font_size: f64,
+    ) {
+        let box_size = (font_size * 0.72).max(1.0);
+        let box_y = baseline_y - font_size * 0.76;
+        let color = color_to_svg(style.color);
+        let number_font_size = (font_size * 0.5).max(1.0);
+        let font_family = if style.font_family.is_empty() {
+            "sans-serif".to_string()
+        } else {
+            super::render_font_family_chain_for_weight(&style.font_family, style.is_visually_bold())
+        };
+        self.output.push_str(&format!(
+            "<rect x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" fill=\"none\" stroke=\"{}\" stroke-width=\"{:.2}\"/>\n",
+            x,
+            box_y,
+            box_size,
+            box_size,
+            color,
+            (font_size * 0.04).max(0.6),
+        ));
+        self.output.push_str(&format!(
+            "<text x=\"{:.2}\" y=\"{:.2}\" font-family=\"{}\" font-size=\"{:.2}\" fill=\"{}\" text-anchor=\"middle\">{}</text>\n",
+            x + box_size / 2.0,
+            box_y + box_size * 0.72,
+            escape_xml(&font_family),
+            number_font_size,
+            color,
+            number,
+        ));
+    }
 }
 
 impl Renderer for SvgRenderer {
@@ -3022,6 +3060,18 @@ impl Renderer for SvgRenderer {
         for (char_idx, cluster_str) in clusters.iter() {
             if cluster_str == " " || cluster_str == "\t" {
                 continue;
+            }
+            // [#6127] 한컴 사각 안 숫자(U+F02B1~F02C4) 평문 폴백 — web_canvas
+            // (`draw_boxed_pua_number`)와 동일한 bounded vector 합성. raw PUA 를
+            // 흘리면 함초롬 확장 글꼴이 없는 소비자(브라우저·PyMuPDF)에서 빈칸이
+            // 된다(2599643 "②⓪⓪" 소실). CharOverlap 경로의 #4158 합성과 같은
+            // 의미이고, 백엔드 간 패리티를 맞춘다.
+            if cluster_str.chars().count() == 1 {
+                if let Some(number) = cluster_str.chars().next().and_then(super::boxed_pua_number) {
+                    let char_x = x + char_positions[*char_idx];
+                    self.draw_boxed_pua_number(number, char_x, y, style, font_size);
+                    continue;
+                }
             }
             if is_middle_dot(cluster_str) {
                 let adv = cluster_advance(*char_idx, cluster_str);

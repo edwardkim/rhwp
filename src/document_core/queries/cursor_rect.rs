@@ -1595,6 +1595,7 @@ impl DocumentCore {
                             Some(ctx)
                         } else {
                             Some(CellContext {
+                                in_textbox: false,
                                 parent_para_index: pi,
                                 path: vec![CellPathEntry {
                                     control_index: ci,
@@ -3488,6 +3489,7 @@ impl DocumentCore {
                             Some(ctx)
                         } else {
                             Some(CellContext {
+                                in_textbox: false,
                                 parent_para_index: pi,
                                 path: vec![CellPathEntry {
                                     control_index: ci,

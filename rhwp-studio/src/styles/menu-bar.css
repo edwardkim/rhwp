@@ -18,6 +18,44 @@
   user-select: none;
 }
 
+/* 한글 2024식 기본 도구 상자 접기/펴기 — 별도 이미지 없이 기존 색상 토큰을 쓴다. */
+.menu-toolbox-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 22px;
+  margin-left: auto;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-muted);
+  cursor: pointer;
+}
+
+.menu-toolbox-toggle:hover,
+.menu-toolbox-toggle:focus-visible {
+  border-color: var(--accent-hover);
+  background: var(--ui-accent-bg);
+  color: var(--color-primary-dark);
+  outline: none;
+}
+
+.menu-toolbox-toggle::before {
+  box-sizing: border-box;
+  width: 7px;
+  height: 7px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  content: '';
+  transform: translateY(-2px) rotate(45deg);
+}
+
+.menu-toolbox-toggle.active::before {
+  transform: translateY(2px) rotate(225deg);
+}
+
 .menu-title {
   display: inline-block;
   padding: 4px 14px;
