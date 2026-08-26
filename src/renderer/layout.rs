@@ -2617,6 +2617,12 @@ impl LayoutEngine {
         crate::renderer::kerning::KerningSourceSession::new(&self.exact_font_sources)
     }
 
+    pub(crate) fn exact_font_layout_session(
+        &self,
+    ) -> crate::renderer::kerning::KerningLayoutSession<'_> {
+        crate::renderer::kerning::KerningLayoutSession::new(&self.exact_font_sources)
+    }
+
     pub(crate) fn exact_font_source_registry_counts(&self) -> (usize, usize, usize, u64) {
         (
             self.exact_font_sources.slot_count(),

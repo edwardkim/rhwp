@@ -17,6 +17,9 @@ pub(crate) const MAX_KERNING_RUN_CODE_POINTS: usize = 4_096;
 pub(crate) const MAX_KERNING_RUN_GLYPHS: usize = 4_096;
 pub(crate) const MAX_KERNING_ADJACENT_PAIRS: usize = 4_095;
 pub(crate) const MAX_KERNING_TRACE_RECORDS_PER_RUN: usize = 4_096;
+/// 한 문단 transaction에서 최초 run, 공백 fallback, line-boundary 재측정이
+/// 함께 소비할 수 있는 segment 상한이다.
+pub(crate) const MAX_KERNING_PARAGRAPH_SEGMENTS: usize = 256;
 /// 한 layout owner가 보존할 수 있는 exact face/source 수와 총 payload 상한.
 ///
 /// 총 payload는 기존 portable/embedded page 경계(64 MiB)와 같고, 개별 source는
@@ -371,6 +374,231 @@ impl KerningRunMeasurement {
         self.pair_adjusted_positions
             .as_deref()
             .unwrap_or(&self.base_positions)
+    }
+}
+
+/// 문단의 어느 문자 범위가 어느 exact slot의 R4B 측정을 소비했는지 보존한다.
+///
+/// 범위는 Unicode scalar index의 half-open interval이다. 원문이나 font payload는
+/// 보존하지 않는다.
+#[derive(Debug, Clone, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct KerningParagraphSegmentMeasurement {
+    pub start_index: usize,
+    pub end_index: usize,
+    pub slot: ExactFontSlot,
+    pub measurement: KerningRunMeasurement,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub(crate) enum KerningParagraphMeasurementDisposition {
+    ExistingPositions,
+    PairAdjusted,
+    FailClosed,
+}
+
+/// Segment 결과를 문단의 단일 position map으로 commit하지 못한 구조적 이유다.
+///
+/// 개별 run의 source/capability 실패는 R4B measurement에 남고 그 segment만 기존
+/// positions를 쓴다. 이 enum은 문단 전체를 rollback해야 하는 range·회계·수치
+/// 불일치만 나타낸다.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub(crate) enum KerningParagraphMeasurementFallbackReason {
+    CodePointLimitExceeded,
+    SegmentLimitExceeded,
+    BasePositionCountMismatch,
+    BasePositionNonFinite,
+    BasePositionNonMonotonic,
+    SegmentRangeInvalid,
+    SegmentRangeOverlap,
+    SegmentCodePointCountMismatch,
+    SegmentBasePositionMismatch,
+    SegmentAdvanceCountMismatch,
+    AdjustedPositionNonFinite,
+    AdjustedPositionNonMonotonic,
+}
+
+/// 한 문단의 token·long-word·line-boundary 소비자가 공유하는 owned position map.
+///
+/// K0와 fail-closed는 `pair_adjusted_positions`를 만들지 않고 기존
+/// `base_positions`를 그대로 반환한다. 실제 pair 적용 segment가 하나라도 있을
+/// 때만 문단 단위 adjusted map을 commit한다.
+#[derive(Debug, Clone, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct KerningParagraphMeasurement {
+    pub disposition: KerningParagraphMeasurementDisposition,
+    pub fallback_reason: Option<KerningParagraphMeasurementFallbackReason>,
+    pub code_point_count: usize,
+    pub code_point_limit_exceeded: bool,
+    pub bounded_segment_count: usize,
+    pub segment_limit_exceeded: bool,
+    pub base_positions: Vec<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub pair_adjusted_positions: Option<Vec<f64>>,
+    pub segments: Vec<KerningParagraphSegmentMeasurement>,
+}
+
+impl KerningParagraphMeasurement {
+    pub(crate) fn positions(&self) -> &[f64] {
+        self.pair_adjusted_positions
+            .as_deref()
+            .unwrap_or(&self.base_positions)
+    }
+
+    /// 같은 owned map에서 half-open 문자 범위의 폭을 읽는다.
+    pub(crate) fn range_width(&self, start_index: usize, end_index: usize) -> Option<f64> {
+        if start_index > end_index || end_index > self.code_point_count {
+            return None;
+        }
+        let positions = self.positions();
+        Some(*positions.get(end_index)? - *positions.get(start_index)?)
+    }
+}
+
+/// R4B segment들을 문단의 `N+1` position map 하나로 원자적으로 합친다.
+///
+/// 구조 검증이나 상한이 하나라도 실패하면 일부 pair delta를 남기지 않고 문단
+/// 전체를 base positions로 rollback한다. 개별 segment의 fail-closed는 이미 그
+/// measurement가 zero delta를 소유하므로 다른 검증된 segment의 적용을 막지 않는다.
+pub(crate) fn compose_kerning_paragraph_measurement(
+    code_point_count: usize,
+    base_positions: Vec<f64>,
+    segments: Vec<KerningParagraphSegmentMeasurement>,
+) -> KerningParagraphMeasurement {
+    let code_point_limit_exceeded = code_point_count > MAX_KERNING_RUN_CODE_POINTS;
+    let segment_limit_exceeded = segments.len() > MAX_KERNING_PARAGRAPH_SEGMENTS;
+    let bounded_segment_count = segments.len().min(MAX_KERNING_PARAGRAPH_SEGMENTS);
+
+    macro_rules! rollback {
+        ($reason:expr $(,)?) => {
+            return KerningParagraphMeasurement {
+                disposition: KerningParagraphMeasurementDisposition::FailClosed,
+                fallback_reason: Some($reason),
+                code_point_count,
+                code_point_limit_exceeded,
+                bounded_segment_count,
+                segment_limit_exceeded,
+                base_positions,
+                pair_adjusted_positions: None,
+                segments,
+            }
+        };
+    }
+
+    if code_point_limit_exceeded {
+        rollback!(KerningParagraphMeasurementFallbackReason::CodePointLimitExceeded);
+    }
+    if segment_limit_exceeded {
+        rollback!(KerningParagraphMeasurementFallbackReason::SegmentLimitExceeded);
+    }
+    if base_positions.len() != code_point_count.saturating_add(1) {
+        rollback!(KerningParagraphMeasurementFallbackReason::BasePositionCountMismatch);
+    }
+    if base_positions.iter().any(|position| !position.is_finite()) {
+        rollback!(KerningParagraphMeasurementFallbackReason::BasePositionNonFinite);
+    }
+    if base_positions.windows(2).any(|pair| pair[1] < pair[0]) {
+        rollback!(KerningParagraphMeasurementFallbackReason::BasePositionNonMonotonic);
+    }
+
+    let mut paragraph_advance_deltas = vec![0.0; code_point_count];
+    let mut previous_end = 0usize;
+    let mut has_pair_adjustment = false;
+    for segment in &segments {
+        if segment.start_index >= segment.end_index || segment.end_index > code_point_count {
+            rollback!(KerningParagraphMeasurementFallbackReason::SegmentRangeInvalid);
+        }
+        if segment.start_index < previous_end {
+            rollback!(KerningParagraphMeasurementFallbackReason::SegmentRangeOverlap);
+        }
+        previous_end = segment.end_index;
+
+        let segment_len = segment.end_index - segment.start_index;
+        if segment.measurement.code_point_limit_exceeded
+            || segment.measurement.code_point_count != segment_len
+        {
+            rollback!(KerningParagraphMeasurementFallbackReason::SegmentCodePointCountMismatch,);
+        }
+        if segment.measurement.base_positions.len() != segment_len.saturating_add(1) {
+            rollback!(KerningParagraphMeasurementFallbackReason::SegmentBasePositionMismatch,);
+        }
+        let segment_origin = segment.measurement.base_positions[0];
+        let paragraph_origin = base_positions[segment.start_index];
+        let base_matches = segment.measurement.base_positions.iter().enumerate().all(
+            |(offset, segment_position)| {
+                let local_segment = *segment_position - segment_origin;
+                let local_paragraph =
+                    base_positions[segment.start_index + offset] - paragraph_origin;
+                let tolerance = 1e-9_f64.max(local_paragraph.abs() * 1e-12);
+                (local_segment - local_paragraph).abs() <= tolerance
+            },
+        );
+        if !base_matches {
+            rollback!(KerningParagraphMeasurementFallbackReason::SegmentBasePositionMismatch,);
+        }
+
+        if segment.measurement.disposition == KerningRunMeasurementDisposition::PairAdjusted {
+            if segment.measurement.advance_deltas.len() != segment_len {
+                rollback!(KerningParagraphMeasurementFallbackReason::SegmentAdvanceCountMismatch,);
+            }
+            has_pair_adjustment = true;
+            for (offset, delta) in segment
+                .measurement
+                .advance_deltas
+                .iter()
+                .copied()
+                .enumerate()
+            {
+                paragraph_advance_deltas[segment.start_index + offset] += delta;
+            }
+        }
+    }
+
+    if !has_pair_adjustment {
+        return KerningParagraphMeasurement {
+            disposition: KerningParagraphMeasurementDisposition::ExistingPositions,
+            fallback_reason: None,
+            code_point_count,
+            code_point_limit_exceeded: false,
+            bounded_segment_count,
+            segment_limit_exceeded: false,
+            base_positions,
+            pair_adjusted_positions: None,
+            segments,
+        };
+    }
+
+    let mut adjusted_positions = Vec::with_capacity(base_positions.len());
+    adjusted_positions.push(base_positions[0]);
+    let mut cumulative_delta = 0.0;
+    for (index, base_position) in base_positions.iter().copied().enumerate().skip(1) {
+        cumulative_delta += paragraph_advance_deltas[index - 1];
+        let adjusted = base_position + cumulative_delta;
+        if !adjusted.is_finite() {
+            rollback!(KerningParagraphMeasurementFallbackReason::AdjustedPositionNonFinite);
+        }
+        if adjusted
+            < *adjusted_positions
+                .last()
+                .expect("paragraph position origin")
+        {
+            rollback!(KerningParagraphMeasurementFallbackReason::AdjustedPositionNonMonotonic,);
+        }
+        adjusted_positions.push(adjusted);
+    }
+
+    KerningParagraphMeasurement {
+        disposition: KerningParagraphMeasurementDisposition::PairAdjusted,
+        fallback_reason: None,
+        code_point_count,
+        code_point_limit_exceeded: false,
+        bounded_segment_count,
+        segment_limit_exceeded: false,
+        base_positions,
+        pair_adjusted_positions: Some(adjusted_positions),
+        segments,
     }
 }
 
@@ -810,6 +1038,62 @@ impl<'a> KerningSourceSession<'a> {
     /// `prepare`가 성공한 exact handle의 engine만 빌려준다.
     pub(crate) fn engine(&self, handle: &ExactFontSourceHandle) -> Option<&KerningPairEngine<'a>> {
         self.entries.get(handle)?.engine.as_ref()
+    }
+}
+
+/// 한 layout/reflow transaction에서 slot binding과 per-face source cache를 함께 고정한다.
+///
+/// registry는 transaction 수명 동안 불변으로 빌리므로 generation과 slot→handle
+/// 대응이 중간에 바뀔 수 없다. source bytes는 외부 registry가 계속 소유하고 이
+/// 객체는 복제하거나 trace에 싣지 않는다.
+pub(crate) struct KerningLayoutSession<'a> {
+    registry: &'a ExactFontSourceRegistry,
+    registry_generation: u64,
+    source_session: KerningSourceSession<'a>,
+}
+
+impl<'a> KerningLayoutSession<'a> {
+    pub(crate) fn new(registry: &'a ExactFontSourceRegistry) -> Self {
+        Self {
+            registry,
+            registry_generation: registry.generation(),
+            source_session: KerningSourceSession::new(registry),
+        }
+    }
+
+    pub(crate) fn registry_generation(&self) -> u64 {
+        self.registry_generation
+    }
+
+    pub(crate) fn source_handle(&self, slot: ExactFontSlot) -> Option<&ExactFontSourceHandle> {
+        self.registry.handle_for_slot(slot)
+    }
+
+    /// Slot 해소와 R4B run 측정을 같은 transaction에서 수행한다.
+    ///
+    /// K0는 slot lookup도 생략하고 R4B의 source-미접근 fast path로 바로 들어간다.
+    #[allow(clippy::too_many_arguments)]
+    pub(crate) fn measure_run(
+        &mut self,
+        slot: ExactFontSlot,
+        text: &str,
+        requested: bool,
+        base_positions: Vec<f64>,
+        effective_font_size_px: f64,
+        width_ratio: f64,
+    ) -> KerningRunMeasurement {
+        let handle = requested
+            .then(|| self.registry.handle_for_slot(slot).cloned())
+            .flatten();
+        compute_kerning_run_measurement(
+            text,
+            requested,
+            base_positions,
+            effective_font_size_px,
+            width_ratio,
+            handle.as_ref(),
+            &mut self.source_session,
+        )
     }
 }
 
