@@ -925,7 +925,7 @@ fn collect_text_variant_diagnostics_reject_reasons(
 /// 말미 공백은 저자 콘텐츠(밑줄 서명란 등)다.
 ///
 /// 반환하는 키는 그 run 의 주소다. 한 번의 트리 순회 안에서만 쓰이며 그 범위에서 안정적이다.
-pub(crate) fn line_decoration_trim_target(children: &[LayerNode]) -> Option<(usize, usize)> {
+pub fn line_decoration_trim_target(children: &[LayerNode]) -> Option<(usize, usize)> {
     fn scan(node: &LayerNode, found: &mut Option<Option<(usize, usize)>>) {
         if found.is_some() {
             return;
@@ -972,69 +972,6 @@ pub(crate) fn line_decoration_trim_target(children: &[LayerNode]) -> Option<(usi
 
 #[cfg(test)]
 mod tests {
-
-    /// [#6117] layer 재생 경로의 장식선 트림 대상 선정 — RenderNode 경로와 같은 규칙.
-    mod issue_6117_decoration_trim {
-        use super::super::line_decoration_trim_target;
-        use crate::paint::{LayerNode, LayerNodeKind, PaintOp};
-        use crate::renderer::render_tree::{BoundingBox, TextRunNode};
-        use crate::renderer::TextStyle;
-
-        fn run(text: &str, para_end: bool) -> TextRunNode {
-            TextRunNode {
-                text: text.to_string(),
-                style: TextStyle::default(),
-                char_shape_id: None,
-                para_shape_id: None,
-                section_index: None,
-                para_index: None,
-                char_start: None,
-                cell_context: None,
-                is_para_end: para_end,
-                is_line_break_end: false,
-                rotation: 0.0,
-                is_vertical: false,
-                char_overlap: None,
-                border_fill_id: 0,
-                baseline: 12.0,
-                field_marker: Default::default(),
-                display_text: None,
-            }
-        }
-
-        fn leaf(runs: Vec<TextRunNode>) -> LayerNode {
-            let ops: Vec<PaintOp> = runs
-                .into_iter()
-                .map(|r| PaintOp::text_run(BoundingBox::new(0.0, 0.0, 10.0, 10.0), r))
-                .collect();
-            LayerNode::leaf(BoundingBox::new(0.0, 0.0, 10.0, 10.0), None, ops)
-        }
-
-        #[test]
-        fn trims_trailing_spaces_of_the_last_visible_run() {
-            let children = vec![leaf(vec![run("가나", false), run("다라  ", false)])];
-            let (_, trim) = line_decoration_trim_target(&children)
-                .expect("말미 공백이 있는 soft-wrap 줄은 트림 대상이다");
-            assert_eq!(trim, 2);
-        }
-
-        #[test]
-        fn keeps_author_spaces_on_a_paragraph_end_run() {
-            let children = vec![leaf(vec![run("서명란   ", true)])];
-            assert!(
-                line_decoration_trim_target(&children).is_none(),
-                "문단 끝 줄의 말미 공백은 저자 콘텐츠라 트림 대상이 아니다"
-            );
-        }
-
-        #[test]
-        fn ignores_space_only_runs_after_the_text() {
-            let children = vec![leaf(vec![run("본문  ", false), run("   ", false)])];
-            let (_, trim) = line_decoration_trim_target(&children)
-                .expect("공백뿐인 꼬리 run 은 건너뛰고 앞의 가시 run 을 본다");
-            assert_eq!(trim, 2);
-        }
-    }
 
     use super::*;
     use crate::paint::{
