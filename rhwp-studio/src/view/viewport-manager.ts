@@ -37,7 +37,6 @@ export class ViewportManager {
   private onScrollBound: () => void;
   private onWheelBound: (e: WheelEvent) => void;
   private onZoomAnimationFrameBound: (timestamp: number) => void;
-  private onResizeObserverErrorBound: (e: ErrorEvent) => void;
   private eventBus: EventBus;
 
   constructor(eventBus: EventBus) {
@@ -45,7 +44,6 @@ export class ViewportManager {
     this.onScrollBound = this.onScroll.bind(this);
     this.onWheelBound = this.onWheel.bind(this);
     this.onZoomAnimationFrameBound = this.onZoomAnimationFrame.bind(this);
-    this.onResizeObserverErrorBound = this.onResizeObserverError.bind(this);
   }
 
   /** 스크롤 컨테이너에 연결한다 */
@@ -54,12 +52,6 @@ export class ViewportManager {
     this.container = container;
     container.addEventListener('scroll', this.onScrollBound, { passive: true });
     container.addEventListener('wheel', this.onWheelBound, { passive: false });
-
-    // 크로미움은 이 경고를 실제 스크립트 예외가 아니라 window `error` 이벤트로 합성
-    // 보고한다. 아래 콜백이 동기 DOM 변이를 하지 않아도(매크로태스크로 미룸) 대형
-    // 문서 초기 렌더처럼 같은 프레임에 다른 요소들이 대량으로 리사이즈되면 여전히
-    // 뜰 수 있는, 기능에 영향 없는 잡음이라 uncaught error 로 새지 않게 막는다.
-    window.addEventListener('error', this.onResizeObserverErrorBound);
 
     this.resizeObserver = new ResizeObserver(() => {
       if (this.resizeAnimationFrame !== null) return;
@@ -88,7 +80,6 @@ export class ViewportManager {
     }
     this.resizeObserver?.disconnect();
     this.resizeObserver = null;
-    window.removeEventListener('error', this.onResizeObserverErrorBound);
     if (this.resizeAnimationFrame !== null) {
       clearTimeout(this.resizeAnimationFrame);
       this.resizeAnimationFrame = null;
@@ -99,14 +90,6 @@ export class ViewportManager {
     }
     this.cancelZoomAnimation();
     this.container = null;
-  }
-
-  /** ResizeObserver 잡음 window error 를 uncaught 로 전파하지 않도록 막는다. */
-  private onResizeObserverError(e: ErrorEvent): void {
-    if (e.message?.includes('ResizeObserver loop')) {
-      e.stopImmediatePropagation();
-      e.preventDefault();
-    }
   }
 
   private onScroll(): void {

@@ -1,3 +1,4 @@
+import '@/core/runtime-diagnostics';
 import { WasmBridge } from '@/core/wasm-bridge';
 import type { DocumentInfo, PageInfo } from '@/core/types';
 import { EventBus } from '@/core/event-bus';

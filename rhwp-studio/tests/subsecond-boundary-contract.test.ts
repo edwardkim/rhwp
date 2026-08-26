@@ -22,6 +22,46 @@ test('개발용 런타임 import 실패는 Studio 초기화를 중단시키지 �
   const canvasViewCreatedAt = main.indexOf('canvasView = new CanvasView(');
   const runtimeStartedAt = main.indexOf('await startDevelopmentRenderRuntime();', canvasViewCreatedAt);
   assert.ok(canvasViewCreatedAt >= 0 && runtimeStartedAt > canvasViewCreatedAt);
+  assert.ok(main.startsWith("import '@/core/runtime-diagnostics';"));
+});
+
+test('handled browser runtime signals do not become uncaught diagnostics', async () => {
+  const listeners = new Map<string, (event: any) => void>();
+  const previousWindow = (globalThis as any).window;
+  (globalThis as any).window = {
+    addEventListener(type: string, listener: EventListenerOrEventListenerObject, capture?: boolean) {
+      assert.equal(capture, true);
+      listeners.set(type, listener as (event: any) => void);
+    },
+  };
+  try {
+    await import(`../src/core/runtime-diagnostics.ts?startup=${Date.now()}`);
+  } finally {
+    if (previousWindow === undefined) delete (globalThis as any).window;
+    else (globalThis as any).window = previousWindow;
+  }
+
+  const event = (value: Record<string, unknown>) => {
+    const calls: string[] = [];
+    return {
+      ...value,
+      calls,
+      preventDefault: () => calls.push('preventDefault'),
+      stopImmediatePropagation: () => calls.push('stopImmediatePropagation'),
+    };
+  };
+  for (const message of [
+    'ResizeObserver loop completed with undelivered notifications.',
+    'ResizeObserver loop limit exceeded',
+  ]) {
+    const resize = event({ message });
+    listeners.get('error')!(resize);
+    assert.deepEqual(resize.calls, ['stopImmediatePropagation', 'preventDefault']);
+  }
+  const unrelated = event({ message: 'real application failure' });
+  listeners.get('error')!(unrelated);
+  assert.deepEqual(unrelated.calls, []);
+  assert.deepEqual([...listeners.keys()], ['error']);
 });
 
 test('일반 Studio 클래스는 개발용 소켓과 감시자를 소유하지 않는다', () => {
