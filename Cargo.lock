@@ -2339,6 +2339,7 @@ dependencies = [
  "rhwp-ooxml-chart",
  "rhwp-password-crypto",
  "roxmltree 0.21.1",
+ "rustybuzz",
  "serde",
  "serde_json",
  "sha1",

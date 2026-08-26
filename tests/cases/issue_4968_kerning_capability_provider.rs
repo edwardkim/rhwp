@@ -1,11 +1,13 @@
-//! Issue #4968 W9-Q3-2/Q3-3: exact capability and run gating must be bounded and fail-closed.
+//! Issue #4968 W9-Q3-2..Q3-4: capability, run gate, and pair candidate must fail closed.
 
 #[path = "../../src/renderer/kerning.rs"]
 mod kerning;
 
 use kerning::{
-    decide_kerning_run_gate, inspect_exact_font_kerning, ExactFontSource, KerningCapability,
-    KerningCapabilityFallbackReason, KerningRequest, KerningRunFallbackReason, KerningRunGate,
+    compute_kerning_pair_candidate, decide_kerning_run_gate, inspect_exact_font_kerning,
+    prepare_kerning_pair_engine, ExactFontSource, KerningCapability,
+    KerningCapabilityFallbackReason, KerningPairCandidateFallbackReason,
+    KerningPairCandidateStatus, KerningRequest, KerningRunFallbackReason, KerningRunGate,
     MAX_KERNING_ADJACENT_PAIRS, MAX_KERNING_FONT_BYTES, MAX_KERNING_RUN_CODE_POINTS,
     MAX_KERNING_RUN_GLYPHS,
 };
@@ -189,4 +191,145 @@ fn issue_4968_run_gate_is_bounded_and_does_not_claim_pair_application() {
         glyphs.fallback_reason,
         Some(KerningRunFallbackReason::RunGlyphLimitExceeded)
     );
+}
+
+#[test]
+fn issue_4968_pair_candidate_is_exact_bounded_and_not_applied() {
+    let source = ExactFontSource {
+        bytes: NOTO_REGULAR,
+        face_index: 0,
+    };
+    let capability = inspect_exact_font_kerning(Some(source));
+    let engine = prepare_kerning_pair_engine(source, &capability).expect("exact Noto engine");
+
+    let pair_text = "AV To WA HH";
+    let pair_gate = decide_kerning_run_gate(true, pair_text, pair_text.chars().count(), &capability);
+    let pair = compute_kerning_pair_candidate(pair_text, &engine, &pair_gate);
+    assert_eq!(
+        pair.status,
+        KerningPairCandidateStatus::AdjustmentCandidate
+    );
+    assert_eq!(pair.capability, KerningCapability::GposKern);
+    assert_eq!(pair.glyph_count, 11);
+    assert_eq!(pair.examined_pair_count, 10);
+    assert_eq!(pair.total_x_advance_delta, -94);
+    assert!(pair.adjusted_position_count > 0);
+    assert_eq!(pair.fallback_reason, None);
+    let pair_json = serde_json::to_value(&pair).expect("pair candidate JSON");
+    assert_eq!(pair_json["status"], "adjustment-candidate");
+    assert!(pair_json.get("text").is_none(), "trace must omit source text");
+    assert!(
+        pair_json.get("applied").is_none(),
+        "candidate must not claim application"
+    );
+
+    let no_pair_text = "HH";
+    let no_pair_gate =
+        decide_kerning_run_gate(true, no_pair_text, no_pair_text.chars().count(), &capability);
+    let no_pair = compute_kerning_pair_candidate(no_pair_text, &engine, &no_pair_gate);
+    assert_eq!(
+        no_pair.status,
+        KerningPairCandidateStatus::NoAdjustmentCandidate
+    );
+    assert_eq!(no_pair.total_x_advance_delta, 0);
+    assert!(no_pair.position_deltas.is_empty());
+
+    let disabled_gate = decide_kerning_run_gate(false, "AV", 2, &capability);
+    let disabled = compute_kerning_pair_candidate("AV", &engine, &disabled_gate);
+    assert_eq!(disabled.status, KerningPairCandidateStatus::NotEligible);
+    assert_eq!(
+        disabled.fallback_reason,
+        Some(KerningPairCandidateFallbackReason::RunGateNotEligible)
+    );
+
+    let mismatched = prepare_kerning_pair_engine(
+        ExactFontSource {
+            bytes: NO_PAIR_TABLE,
+            face_index: 0,
+        },
+        &capability,
+    );
+    assert_eq!(
+        mismatched.err(),
+        Some(KerningPairCandidateFallbackReason::FontSourceMismatch)
+    );
+
+    let stale_gate = decide_kerning_run_gate(true, "AV", 2, &capability);
+    let stale = compute_kerning_pair_candidate("AVA", &engine, &stale_gate);
+    assert_eq!(stale.status, KerningPairCandidateStatus::FailClosed);
+    assert_eq!(
+        stale.fallback_reason,
+        Some(KerningPairCandidateFallbackReason::RunGateInputMismatch)
+    );
+
+    let rtl_text = "אב";
+    let rtl_gate =
+        decide_kerning_run_gate(true, rtl_text, rtl_text.chars().count(), &capability);
+    let rtl = compute_kerning_pair_candidate(rtl_text, &engine, &rtl_gate);
+    assert_eq!(rtl.status, KerningPairCandidateStatus::FailClosed);
+    assert_eq!(
+        rtl.fallback_reason,
+        Some(KerningPairCandidateFallbackReason::UnsupportedDirection)
+    );
+
+    let ligature_text = "ffi";
+    let ligature_gate = decide_kerning_run_gate(
+        true,
+        ligature_text,
+        ligature_text.chars().count(),
+        &capability,
+    );
+    let ligature = compute_kerning_pair_candidate(ligature_text, &engine, &ligature_gate);
+    assert_eq!(ligature.status, KerningPairCandidateStatus::FailClosed);
+    assert_eq!(
+        ligature.fallback_reason,
+        Some(KerningPairCandidateFallbackReason::NominalGlyphIdentityChanged)
+    );
+
+    let bounded_text = "A".repeat(MAX_KERNING_RUN_CODE_POINTS);
+    let bounded_gate = decide_kerning_run_gate(
+        true,
+        &bounded_text,
+        MAX_KERNING_RUN_GLYPHS,
+        &capability,
+    );
+    let bounded = compute_kerning_pair_candidate(&bounded_text, &engine, &bounded_gate);
+    assert_ne!(bounded.status, KerningPairCandidateStatus::FailClosed);
+    assert_eq!(bounded.glyph_count, MAX_KERNING_RUN_GLYPHS);
+    assert_eq!(bounded.examined_pair_count, MAX_KERNING_ADJACENT_PAIRS);
+    assert!(bounded.adjusted_position_count <= MAX_KERNING_RUN_GLYPHS);
+}
+
+#[test]
+fn issue_4968_pair_candidate_honors_legacy_and_gpos_precedence() {
+    let legacy_font = replace_table_with_legacy_kern(NO_PAIR_TABLE, b"sbix");
+    let legacy_source = ExactFontSource {
+        bytes: &legacy_font,
+        face_index: 0,
+    };
+    let legacy_capability = inspect_exact_font_kerning(Some(legacy_source));
+    let legacy_engine =
+        prepare_kerning_pair_engine(legacy_source, &legacy_capability).expect("legacy engine");
+    let legacy_text = "\u{e100}\u{e101}";
+    let legacy_gate = decide_kerning_run_gate(true, legacy_text, 2, &legacy_capability);
+    let legacy = compute_kerning_pair_candidate(legacy_text, &legacy_engine, &legacy_gate);
+    assert_eq!(legacy.capability, KerningCapability::LegacyKern);
+    assert_eq!(
+        legacy.status,
+        KerningPairCandidateStatus::AdjustmentCandidate
+    );
+    assert_eq!(legacy.total_x_advance_delta, -70);
+
+    let both_font = replace_table_with_legacy_kern(NOTO_REGULAR, b"BASE");
+    let both_source = ExactFontSource {
+        bytes: &both_font,
+        face_index: 0,
+    };
+    let both_capability = inspect_exact_font_kerning(Some(both_source));
+    let both_engine =
+        prepare_kerning_pair_engine(both_source, &both_capability).expect("GPOS engine");
+    let both_gate = decide_kerning_run_gate(true, "AV", 2, &both_capability);
+    let both = compute_kerning_pair_candidate("AV", &both_engine, &both_gate);
+    assert_eq!(both.capability, KerningCapability::GposKern);
+    assert_eq!(both.total_x_advance_delta, -18);
 }
