@@ -1600,7 +1600,8 @@ pub(crate) fn contains_old_hangul_jamo(text: &str) -> bool {
 /// 합성한다.
 pub(crate) fn boxed_pua_number(ch: char) -> Option<u32> {
     let code_point = ch as u32;
-    (0xF02B1..=0xF02C4)
+    // [#6127] U+F02B0 = 네모 안 0 — 한글 2020 실측(2599643 "②⓪⓪" 신청 번호란).
+    (0xF02B0..=0xF02C4)
         .contains(&code_point)
         .then(|| code_point - 0xF02B0)
 }
@@ -2497,7 +2498,9 @@ mod tests {
         assert_eq!(boxed_pua_number('\u{F02B1}'), Some(1));
         assert_eq!(boxed_pua_number('\u{F02BA}'), Some(10));
         assert_eq!(boxed_pua_number('\u{F02C4}'), Some(20));
-        assert_eq!(boxed_pua_number('\u{F02B0}'), None);
+        // [#6127] U+F02B0 = 네모 안 0 (2599643 실측 "②⓪⓪").
+        assert_eq!(boxed_pua_number('\u{F02B0}'), Some(0));
+        assert_eq!(boxed_pua_number('\u{F02AF}'), None);
         assert_eq!(boxed_pua_number('\u{F02C5}'), None);
         assert_eq!(boxed_pua_number('1'), None);
     }

@@ -3115,6 +3115,11 @@ fn text_surface_replacement(ch: char) -> Option<String> {
         let n = cp - 0xF02B1; // 0-based
         return char::from_u32(0x2460 + n).map(|c| c.to_string());
     }
+    // [#6127] U+F02B0 = 네모 안 0 (2599643 신청 번호란 "②⓪⓪") — 0 은 U+2460
+    // 연속열 밖이라 ⓪(U+24EA) 를 따로 짝짓는다.
+    if cp == 0xF02B0 {
+        return Some('\u{24EA}'.to_string());
+    }
     // [#5599] U+F02C5 는 연속 구간의 21이 아니라 **네모 12** 다 — 한글 2022 오라클
     // 실측(mel-001 p18 국정과제 bullet, PDF 좌표 절단 판정). 렌더는 위 대역과 같은
     // 원문 유지 계약이고, 텍스트 표면만 ⑫ 로 읽을 수 있게 바꾼다.

@@ -435,6 +435,48 @@ impl SkiaTextReplay<'_> {
                             );
                             continue;
                         }
+                        // [#6127] 한컴 사각 안 숫자(U+F02B1~F02C4) 평문 폴백 —
+                        // web_canvas·SVG 와 같은 bounded vector 합성(상자 0.72em,
+                        // 숫자 0.5em). raw PUA 는 함초롬 확장 글꼴이 없으면 빈칸.
+                        if cluster.chars().count() == 1 {
+                            if let Some(number) = cluster
+                                .chars()
+                                .next()
+                                .and_then(crate::renderer::boxed_pua_number)
+                            {
+                                let char_x = bbox.x as f32
+                                    + char_positions.get(*char_idx).copied().unwrap_or(0.0) as f32
+                                    + dx;
+                                let baseline_y = y as f32 + dy;
+                                let box_size = (font_size * 0.72).max(1.0);
+                                let box_y = baseline_y - font_size * 0.76;
+                                let mut box_paint = Paint::default();
+                                box_paint.set_anti_alias(true);
+                                box_paint.set_style(paint::Style::Stroke);
+                                box_paint.set_stroke_width((font_size * 0.04).max(0.6));
+                                box_paint.set_color(color);
+                                canvas.draw_rect(
+                                    skia_safe::Rect::from_xywh(char_x, box_y, box_size, box_size),
+                                    &box_paint,
+                                );
+                                let number_str = number.to_string();
+                                let number_size = (font_size * 0.5).max(1.0);
+                                if let Some(number_font) = font_for_text(&number_str, number_size) {
+                                    let width =
+                                        number_font.measure_str(&number_str, Some(&text_paint)).0;
+                                    canvas.draw_str(
+                                        &number_str,
+                                        (
+                                            char_x + (box_size - width) / 2.0,
+                                            box_y + box_size * 0.72,
+                                        ),
+                                        &number_font,
+                                        &text_paint,
+                                    );
+                                }
+                                continue;
+                            }
+                        }
                         if let Some(font) = font_for_text(cluster, font_size) {
                             let char_x = bbox.x as f32
                                 + char_positions.get(*char_idx).copied().unwrap_or(0.0) as f32
