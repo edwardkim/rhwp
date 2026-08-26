@@ -5,7 +5,8 @@
 - **브랜치**: `codex/issue-6112-toolbox-collapse`
 - **구현 commit**: `d707d4cf2b4efef757420381b6a460f1b325482e`
 - **작성일**: 2026-08-26 KST
-- **현재 상태**: 최신 devel 동기화·로컬 PR 검증 완료, 원격 push·PR 생성 대기
+- **PR**: [#6115](https://github.com/edwardkim/rhwp/pull/6115)
+- **현재 상태**: PR #6115 code candidate CI·self-review 완료, review-only 후속 기록 push 대기
 
 ## 결과 요약
 
@@ -64,5 +65,8 @@
 1. 완료 — 작업지시자가 수행·구현 계획, 단계 보고, 최종 보고와 절차 복구 문서를 검토하고 PR
    게이트 진입을 승인했다.
 2. 완료 — 최신 `upstream/devel@6b5c4f871`을 merge하고 공통 포맷·문서·Studio 검사를 통과했다.
-3. 원격 branch push와 `devel` 대상 PR을 생성한다.
-4. PR CI·리뷰·사용자 판정 뒤 merge와 #6112 close를 별도 승인으로 처리한다.
+3. 완료 — 원격 branch를 push하고 `devel` 대상 PR #6115를 생성했다.
+4. 완료 — code candidate `7c4fffa48`의 CI 13 success / 12 policy skip / 0 failure와 self-review를
+   완료했다.
+5. self-review 후속 기록을 push하고 최신 head의 review-only fast-pass를 확인한다.
+6. 사용자 판정 뒤 merge와 #6112 close를 별도 승인으로 처리한다.
