@@ -9568,6 +9568,43 @@ impl LayoutEngine {
                 }
             }
         }
+        // [#5701] 자리차지(TopAndBottom) 표 host 의 저장 사다리가 문단 **내부**
+        // 에서 되감기면(법무부 연구용역보고서 p76 pi485: 63298→21050 — 한글이
+        // 표 뒤에서 쪽을 끊은 흔적) vpos-델타 기반 흐름 전진이 0 으로 붕괴해,
+        // 표가 430px 를 페인트하고도 y 가 쪽 상단에 남아 후속 문단(pi486)이
+        // 표 위에 겹쳐 그려진다(r=1.00 이중 페인트). 페인트된 콘텐츠 하단을
+        // 흐름 하한으로 삼는다 — 되감긴 host 한정이라 정상 자리차지 표의
+        // 전진 회계는 불변이다.
+        if matches!(
+            para.controls.get(control_index),
+            Some(Control::Table(tbl))
+                if !tbl.common.treat_as_char
+                    && matches!(
+                        tbl.common.text_wrap,
+                        crate::model::shape::TextWrap::TopAndBottom
+                    )
+        ) && para
+            .line_segs
+            .iter()
+            .filter(|s| s.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0)
+            .map(|s| s.vertical_pos)
+            .collect::<Vec<_>>()
+            .windows(2)
+            .any(|w| w[1] < w[0] && w[0] > 5000)
+        {
+            let painted_bottom = self.last_item_content_bottom.get();
+            if painted_bottom.is_finite() && painted_bottom > y_offset {
+                y_offset = painted_bottom;
+            }
+        }
+        if std::env::var("RHWP_DIAG_5701").is_ok() {
+            eprintln!(
+                "DIAG5701_TBL_EXIT pi={} y_out={:.1} content_bottom={:.1}",
+                para_index,
+                y_offset,
+                self.last_item_content_bottom.get(),
+            );
+        }
         TableControlOut {
             y_offset,
             tac_seg_applied,
