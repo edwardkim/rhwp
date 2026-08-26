@@ -147,6 +147,13 @@ pub struct TextStyle {
     pub underline: UnderlineType,
     /// 취소선
     pub strikethrough: bool,
+    /// 문서가 kerning pair positioning을 요청했는지 여부.
+    ///
+    /// `false`는 기존 layer-tree 직렬화에서 생략해 kerning-off schema와
+    /// byte baseline을 보존한다. 실제 pair adjustment는 공통 measurement
+    /// decision이 exact font capability를 확인한 뒤 별도로 결정한다.
+    #[serde(skip_serializing_if = "std::ops::Not::not")]
+    pub kerning: bool,
     /// 자간 (px)
     pub letter_spacing: f64,
     /// 장평 비율 (1.0 = 100%, 0.8 = 80%)
@@ -347,6 +354,7 @@ impl Default for TextStyle {
             italic: false,
             underline: UnderlineType::None,
             strikethrough: false,
+            kerning: false,
             letter_spacing: 0.0,
             ratio: 1.0,
             default_tab_width: 0.0,

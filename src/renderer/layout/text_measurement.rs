@@ -774,6 +774,7 @@ pub(crate) fn resolved_to_text_style(
             italic: cs.italic,
             underline: cs.underline,
             strikethrough: cs.strikethrough,
+            kerning: cs.kerning,
             letter_spacing: cs.letter_spacing_for_lang(lang_index),
             ratio: cs.ratio_for_lang(lang_index),
             default_tab_width: 0.0,

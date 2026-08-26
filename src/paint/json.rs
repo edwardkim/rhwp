@@ -1515,6 +1515,9 @@ fn write_text_style(buf: &mut String, style: &TextStyle) {
         json_escape(&color_ref_to_css(style.shade_color)),
         style.emphasis_dot,
     );
+    if style.kerning {
+        buf.push_str(",\"kerning\":true");
+    }
     buf.push('}');
 }
 
