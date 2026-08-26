@@ -38,17 +38,20 @@
 - `ResizeObserver`: root·viewport·track의 폭 변화 뒤 overflow를 rAF 한 번으로 재계산한다.
 - `MutationObserver`: track 직계 group/sep의 `style`·`hidden` 변경만 감지한다. button active 변경에는 반응하지
   않아 사용 중 scroll 위치가 불필요하게 초기화되지 않게 한다.
-- `scroll`: 현재 `scrollLeft`와 최대값으로 이전·다음 disabled를 갱신한다.
+- `scroll`: 현재 `scrollLeft`와 최대값으로 이전·다음 disabled·edge hidden을 갱신한다.
 - `focusin`: offscreen command에 keyboard focus가 가면 native `scrollIntoView(inline:nearest)`로 보인다.
 - mode group 변경: `scrollLeft=0`으로 복귀한 뒤 overflow·disabled를 다시 계산한다.
 
-이동 목표는 현재 scrollLeft보다 큰/작은 첫 가시 `.tb-group`의 `offsetLeft`다. 목표는 `0..maxScroll`로
-clamp하고 reduced-motion 환경에서는 즉시, 그 외에는 smooth scroll한다. 숨겨진 group은 경계 목록에서 뺀다.
+이동 목표는 현재 scrollLeft보다 큰/작은 첫 가시 `.tb-group`의 track 기준 시작점이다. 바깥 toolbar 기준
+`offsetLeft`를 직접 쓰지 않고 group·track `getBoundingClientRect().left`의 차로 0점을 정규화한다. 목표는
+`0..maxScroll`로 clamp하고 reduced-motion 환경에서는 즉시, 그 외에는 smooth scroll한다. 숨겨진 group은
+경계 목록에서 뺀다.
 
 ## 4. DOM·CSS 계약
 
 - root: `display:flex`, `flex-wrap:nowrap`, `height/min-height:56px`, `overflow:hidden`
-- nav: overflow가 있을 때만 `hidden=false`, 고정 폭, theme token hover/focus/disabled
+- nav: overflow가 있을 때만 `hidden=false`, 고정 폭, theme token hover/focus/disabled. 시작·끝 해당 방향은
+  24px slot을 유지한 채 `visibility:hidden`으로 감춘다.
 - viewport: `flex:1`, `min-width:0`, `overflow-x:auto`, `overflow-y:hidden`, `touch-action:pan-x`
 - track: `display:flex`, `width:max-content`, `min-width:100%`, `height:100%`, `flex-wrap:nowrap`
 - group: `flex:0 0 auto`
@@ -63,7 +66,8 @@ ResizeObserver가 줄어든 viewport를 다시 측정해 안정된 최대 scroll
 - overflow가 없을 때 nav는 `hidden`이라 접근성 트리와 Tab 순서에서 제외한다.
 - viewport는 `aria-label="기본 도구 상자 명령"`을 제공한다.
 - 기존 button Tab 순서와 accessible name은 DOM 순서를 그대로 따른다.
-- 시작·끝 disabled는 화면 위치와 항상 일치한다.
+- 시작·끝 disabled·`aria-hidden`·시각 숨김은 화면 위치와 항상 일치하고, slot은 padding처럼 남아 viewport
+  폭이 바뀌지 않는다.
 - #6115로 root가 숨겨지면 nav를 포함한 전체 껍데기가 함께 사라진다.
 
 ## 6. 테스트 설계
@@ -74,7 +78,7 @@ ResizeObserver가 줄어든 viewport를 다시 측정해 안정된 최대 scroll
 - toolbar `nowrap`, 56px, desktop label·44px button 유지
 - 1023/767 breakpoint가 label·button·toolbar 높이를 바꾸지 않음
 - ResizeObserver·MutationObserver, scroll/focus listeners와 dispose
-- 가시 group 경계 산출, clamp, 시작·끝 disabled와 hidden nav
+- track 기준 가시 group 경계 산출, clamp, 시작·끝 disabled·edge hidden nav
 
 ### 6.2 브라우저 E2E
 
@@ -84,9 +88,10 @@ ResizeObserver가 줄어든 viewport를 다시 측정해 안정된 최대 scroll
 | 1024, 976, 883, 768px | 56px 한 줄, nav 표시, label 유지, 그룹 버튼 이동 |
 | 412, 375px | 56px 한 줄, 첫→끝→첫 group 도달, page overflow 없음 |
 
-overflow viewport에서 다음/이전 클릭, `scrollLeft` 변화, 양 끝 disabled, horizontal wheel, 마지막 command focus를
-검증한다. mode group의 inline style을 실제 mode 이벤트와 같은 방식으로 전환한 뒤 시작 위치·nav 상태를 다시
-확인한다. #6115 visibility는 `data-toolbox-basic=hidden/shown`에서 root와 nav가 함께 숨고 복귀하는지 본다.
+overflow viewport에서 다음/이전 클릭, track 기준 `scrollLeft`, 시작·중간·끝 버튼 표시, horizontal wheel,
+마지막 command focus를 검증한다. mode group의 inline style을 실제 mode 이벤트와 같은 방식으로 전환한 뒤
+시작 위치·nav 상태를 다시 확인한다. #6115 visibility는 `data-toolbox-basic=hidden/shown`에서 root와 nav가
+함께 숨고 복귀하는지 본다.
 
 ## 7. 검증 명령
 

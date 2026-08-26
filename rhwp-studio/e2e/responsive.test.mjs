@@ -113,6 +113,8 @@ async function run() {
           toolbarNextVisible: isVisible(toolbarNext),
           toolbarPreviousDisabled: toolbarPrevious?.disabled ?? null,
           toolbarNextDisabled: toolbarNext?.disabled ?? null,
+          toolbarPreviousAriaHidden: toolbarPrevious?.getAttribute('aria-hidden'),
+          toolbarNextAriaHidden: toolbarNext?.getAttribute('aria-hidden'),
           toolbarClientWidth: toolbar?.clientWidth ?? 0,
           toolbarScrollWidth: toolbar?.scrollWidth ?? 0,
           toolbarViewportClientWidth: toolbarViewport?.clientWidth ?? 0,
@@ -163,9 +165,17 @@ async function run() {
 
       const toolbarOverflowExpected = vp.width <= 1024;
       if (toolbarOverflowExpected) {
-        check(tc, result.toolbarPreviousVisible && result.toolbarNextVisible, '기본 도구 좌우 이동 버튼 표시');
-        check(tc, result.toolbarPreviousDisabled === true, '시작 위치 이전 버튼 disabled');
-        check(tc, result.toolbarNextDisabled === false, '시작 위치 다음 버튼 enabled');
+        check(tc, !result.toolbarPreviousVisible && result.toolbarNextVisible, '시작 위치는 다음 이동 버튼만 표시');
+        check(
+          tc,
+          result.toolbarPreviousDisabled === true && result.toolbarPreviousAriaHidden === 'true',
+          '시작 위치 이전 버튼은 slot만 남기고 접근성 트리에서 숨김',
+        );
+        check(
+          tc,
+          result.toolbarNextDisabled === false && result.toolbarNextAriaHidden === 'false',
+          '시작 위치 다음 버튼 enabled',
+        );
         check(
           tc,
           result.toolbarViewportScrollWidth > result.toolbarViewportClientWidth,
@@ -340,7 +350,12 @@ async function run() {
           next.click();
           await settle();
           const firstTarget = viewport.scrollLeft;
-          const alignedToGroup = visibleGroups().some(group => Math.abs(group.offsetLeft - firstTarget) <= 1);
+          const viewportLeft = viewport.getBoundingClientRect().left;
+          const alignedToGroup = firstTarget > 1 && visibleGroups().some(group => (
+            Math.abs(group.getBoundingClientRect().left - viewportLeft) <= 1
+          ));
+          const middleNavigationVisible = getComputedStyle(previous).visibility !== 'hidden'
+            && getComputedStyle(next).visibility !== 'hidden';
 
           viewport.focus();
           viewport.dispatchEvent(new KeyboardEvent('keydown', {
@@ -349,7 +364,10 @@ async function run() {
           await settle();
           const maximum = viewport.scrollWidth - viewport.clientWidth;
           const endedByKeyboard = Math.abs(viewport.scrollLeft - maximum) <= 1
-            && next.disabled === true && previous.disabled === false;
+            && next.disabled === true && previous.disabled === false
+            && next.getAttribute('aria-hidden') === 'true'
+            && getComputedStyle(next).visibility === 'hidden'
+            && getComputedStyle(previous).visibility !== 'hidden';
 
           const splitArrow = track.querySelector('.tb-split-arrow');
           splitArrow?.focus();
@@ -372,14 +390,18 @@ async function run() {
           }));
           await settle();
           const startedByKeyboard = viewport.scrollLeft <= 1
-            && previous.disabled === true && next.disabled === false;
+            && previous.disabled === true && next.disabled === false
+            && previous.getAttribute('aria-hidden') === 'true'
+            && getComputedStyle(previous).visibility === 'hidden'
+            && getComputedStyle(next).visibility !== 'hidden';
 
-          return { alignedToGroup, endedByKeyboard, splitMenuVisible, startedByKeyboard };
+          return { alignedToGroup, middleNavigationVisible, endedByKeyboard, splitMenuVisible, startedByKeyboard };
         });
-        check(tc, toolbarInteraction.alignedToGroup, '다음 버튼은 group 경계로 이동');
-        check(tc, toolbarInteraction.endedByKeyboard, 'End로 마지막 group 도달·다음 disabled');
+        check(tc, toolbarInteraction.alignedToGroup, '다음 버튼은 track 기준 group 경계로 이동');
+        check(tc, toolbarInteraction.middleNavigationVisible, '중간 위치는 양쪽 이동 버튼 표시');
+        check(tc, toolbarInteraction.endedByKeyboard, 'End로 마지막 group 도달·다음 버튼 숨김');
         check(tc, toolbarInteraction.splitMenuVisible, '가로 viewport 밖에도 split menu가 잘리지 않음');
-        check(tc, toolbarInteraction.startedByKeyboard, 'Home으로 첫 group 복귀·이전 disabled');
+        check(tc, toolbarInteraction.startedByKeyboard, 'Home으로 첫 group 복귀·이전 버튼 숨김');
 
         const toolbarViewport = await page.$('#icon-toolbar-viewport');
         const viewportBox = await toolbarViewport?.boundingBox();
@@ -430,7 +452,9 @@ async function run() {
           await waitFrames();
           const defaultRestored = getComputedStyle(defaultGroup).display !== 'none'
             && viewport.scrollLeft <= 1
-            && !next.hidden && previous.disabled && !next.disabled;
+            && !next.hidden && previous.disabled && !next.disabled
+            && getComputedStyle(previous).visibility === 'hidden'
+            && getComputedStyle(next).visibility !== 'hidden';
 
           document.documentElement.dataset.toolboxBasic = 'hidden';
           const hiddenWithShell = getComputedStyle(root).display === 'none';

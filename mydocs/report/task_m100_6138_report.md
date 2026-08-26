@@ -14,7 +14,8 @@
 - 1280px 이상처럼 track 전체가 들어가면 이동 버튼을 숨기고 모든 group을 그대로 표시
 - track이 넘치면 양쪽 이중 꺾쇠와 native horizontal viewport를 표시
 - 모든 지원 너비에서 label 포함 44px desktop button 밀도와 56px 높이 유지
-- 다음/이전은 command 하나가 아니라 가시 group의 시작 경계로 이동
+- 다음/이전은 command 하나가 아니라 track 기준 가시 group의 시작 경계로 이동
+- 시작에서는 이전, 끝에서는 다음 버튼을 숨기고 24px slot은 양 끝 padding처럼 유지
 - wheel·touch·keyboard·focus와 mode·resize·toolbox visibility 변화 지원
 - 기존 group·command DOM, 순서, ID, listener와 상태 authority 재사용
 
@@ -44,9 +45,9 @@
 | 게이트 | 결과 |
 | --- | --- |
 | TypeScript | 통과 |
-| Studio 전체 test | 1,146 passed, 0 failed, 1 skipped |
+| Studio 전체 test | 1,148 passed, 0 failed, 1 skipped |
 | Studio production build | 통과 |
-| responsive/theme/#6118 통합 E2E | 609 passed, 0 failed |
+| responsive/theme/#6118 통합 E2E | 610 passed, 0 failed |
 | 대표 화면 육안 검토 | 1280·1024·375px 통과 |
 | Markdown 상대 링크·diff whitespace | 603문서 이상 없음·통과 |
 | review checkout Rust manifest·format | 942 sources·32 harnesses·9 exceptions, fmt 통과 |
@@ -61,3 +62,7 @@ E2E manifest 미등재 세 파일은 이번 변경 밖의 기존 상태다. Rust
 정책이다. 두 이슈의 문서와 커밋은 분리했지만 사용자에게는 한 번에 보이는 인접 chrome 변경이므로
 12개 viewport와 18개 theme 조합을 함께 검증했다. 원격 push와 PR 생성은 아직 수행하지 않았으며 사용자
 승인 뒤 두 이슈를 연결한 PR 한 건으로 제출한다.
+
+사용자 시각 검토에서 발견한 32px anchor 오차는 group 좌표를 track 기준으로 정규화해 보정했다. 시작·
+중간·끝의 방향 버튼 표시도 한글 2024 참고 동작과 맞추되, 숨긴 slot을 제거하지 않아 viewport가 이동 중
+늘거나 줄지 않게 했다.

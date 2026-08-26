@@ -4,6 +4,7 @@ import test from 'node:test';
 import {
   adjacentIconToolbarGroupTarget,
   hasIconToolbarOverflow,
+  iconToolbarGroupBoundary,
 } from '../src/ui/icon-toolbar-scroller.ts';
 
 const source = readFileSync(new URL('../src/ui/icon-toolbar-scroller.ts', import.meta.url), 'utf8');
@@ -26,6 +27,12 @@ test('navigation resolves the next and previous visible group boundaries', () =>
   assert.equal(adjacentIconToolbarGroupTarget(boundaries, 710, -1, 700), 578);
 });
 
+test('group anchors are normalized from the outer toolbar to the scroll track', () => {
+  assert.equal(iconToolbarGroupBoundary(32, 32), 0);
+  assert.equal(iconToolbarGroupBoundary(223, 32), 191);
+  assert.equal(iconToolbarGroupBoundary(364, 32), 332);
+});
+
 test('controller owns resize, mode, focus, keyboard, and end-state synchronization', () => {
   assert.match(source, /new ResizeObserver/);
   assert.match(source, /new MutationObserver/);
@@ -33,11 +40,19 @@ test('controller owns resize, mode, focus, keyboard, and end-state synchronizati
   assert.match(source, /attributeFilter: \['style', 'hidden'\]/);
   assert.match(source, /availableWithoutNavigation/);
   assert.match(source, /this\.previousButton\.hidden = !overflowing/);
-  assert.match(source, /this\.previousButton\.disabled = navigationHidden \|\| current <= SCROLL_EPSILON/);
+  assert.match(source, /group\.getBoundingClientRect\(\)\.left, trackLeft/);
+  assert.match(source, /classList\.toggle\('tb-scroll-nav-edge-hidden', atStart\)/);
+  assert.match(source, /setAttribute\('aria-hidden', atEnd \? 'true' : 'false'\)/);
   assert.match(source, /event\.key === 'ArrowLeft'/);
   assert.match(source, /event\.key === 'End'/);
   assert.match(source, /commandRect\.right > viewportRect\.right/);
   assert.match(source, /dispose\(\): void/);
+});
+
+test('edge navigation keeps its slot while disappearing visually', () => {
+  assert.match(toolbarCss, /\.tb-scroll-nav\.tb-scroll-nav-edge-hidden\s*\{[^}]*visibility:\s*hidden;/s);
+  assert.match(toolbarCss, /\.tb-scroll-nav\.tb-scroll-nav-edge-hidden\s*\{[^}]*pointer-events:\s*none;/s);
+  assert.doesNotMatch(toolbarCss, /\.tb-scroll-nav\.tb-scroll-nav-edge-hidden\s*\{[^}]*display:\s*none;/s);
 });
 
 test('main initializes the controller and mode switching still targets the single track', () => {

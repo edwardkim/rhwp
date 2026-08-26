@@ -63,6 +63,12 @@
   display: none;
 }
 
+/* 끝에서는 해당 방향 버튼만 감추고 24px slot은 padding처럼 남겨 viewport 폭을 안정시킨다. */
+.tb-scroll-nav.tb-scroll-nav-edge-hidden {
+  visibility: hidden;
+  pointer-events: none;
+}
+
 .tb-scroll-nav:hover:not(:disabled) {
   background: var(--ui-hover-strong);
   border-color: var(--ui-border-light);

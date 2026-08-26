@@ -27,6 +27,10 @@ export function adjacentIconToolbarGroupTarget(
   return Math.max(0, Math.min(target, maximum));
 }
 
+export function iconToolbarGroupBoundary(groupLeft: number, trackLeft: number): number {
+  return Math.max(0, groupLeft - trackLeft);
+}
+
 /**
  * 기본 도구 상자를 한 줄로 유지하면서 넘치는 기존 group DOM을 좌우로 탐색한다.
  *
@@ -169,9 +173,10 @@ export class IconToolbarScroller {
   }
 
   private visibleGroupBoundaries(): number[] {
+    const trackLeft = this.track.getBoundingClientRect().left;
     return Array.from(this.track.querySelectorAll<HTMLElement>(GROUP_SELECTOR))
       .filter(group => !group.hidden && getComputedStyle(group).display !== 'none' && group.offsetWidth > 0)
-      .map(group => group.offsetLeft)
+      .map(group => iconToolbarGroupBoundary(group.getBoundingClientRect().left, trackLeft))
       .sort((left, right) => left - right);
   }
 
@@ -202,8 +207,14 @@ export class IconToolbarScroller {
       || this.nextButton.hasAttribute('hidden');
     const current = this.viewport.scrollLeft;
     const maximum = this.maxScrollLeft();
-    this.previousButton.disabled = navigationHidden || current <= SCROLL_EPSILON;
-    this.nextButton.disabled = navigationHidden || current >= maximum - SCROLL_EPSILON;
+    const atStart = navigationHidden || current <= SCROLL_EPSILON;
+    const atEnd = navigationHidden || current >= maximum - SCROLL_EPSILON;
+    this.previousButton.disabled = atStart;
+    this.nextButton.disabled = atEnd;
+    this.previousButton.classList.toggle('tb-scroll-nav-edge-hidden', atStart);
+    this.nextButton.classList.toggle('tb-scroll-nav-edge-hidden', atEnd);
+    this.previousButton.setAttribute('aria-hidden', atStart ? 'true' : 'false');
+    this.nextButton.setAttribute('aria-hidden', atEnd ? 'true' : 'false');
   }
 
   dispose(): void {

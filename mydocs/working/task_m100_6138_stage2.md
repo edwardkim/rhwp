@@ -22,10 +22,10 @@ scrollbar만 숨긴다. 결과적으로 모든 너비에서 label 포함 44px de
 
 - root·viewport·track `ResizeObserver`로 실제 `scrollWidth`와 nav 없는 가용 폭 비교
 - 직계 group/sep의 `style`·`hidden`만 보는 `MutationObserver`로 mode 변경 감지
-- 가시 `.tb-group`의 `offsetLeft`를 이용한 다음·이전 경계 이동
+- 가시 `.tb-group`의 track 기준 시작점을 이용한 다음·이전 경계 이동
 - ArrowLeft/ArrowRight·Home·End keyboard 이동
 - 수평 wheel·touch의 native scroll과 offscreen command focus 보정
-- 시작·끝 native disabled와 overflow가 없을 때 nav `hidden`
+- 시작·끝 native disabled·방향 버튼 숨김과 overflow가 없을 때 nav `hidden`
 
 nav가 이미 보이는 상태에서도 nav 폭 48px을 가용 폭에 다시 더해 판정하므로 넓어질 때 버튼이 계속 남는
 resize hysteresis가 없다. mode group이 바뀌면 시작 위치로 복귀한 뒤 overflow를 다시 계산한다.
@@ -72,10 +72,21 @@ split menu와 `aria-expanded`를 함께 닫는다.
 - [x] 1920~375px에서 56px 단일 행과 desktop label 밀도를 유지한다.
 - [x] nav는 실제 overflow 여부에 따라 숨김/표시된다.
 - [x] group 경계·native scroll·keyboard·focus로 양 끝까지 도달한다.
-- [x] 시작·끝 disabled와 accessible label을 제공한다.
+- [x] 시작·끝 disabled·방향 버튼 숨김과 accessible label을 제공한다.
 - [x] mode·resize·#6115 visibility 뒤 상태를 다시 계산한다.
 - [x] 기존 command DOM·순서·listener와 split menu를 보존한다.
 - [x] #6118 서식 바 1·2행·더보기 계약과 동시 E2E를 통과한다.
 
 Stage 2는 완료했다. 다음 단계는 전체 Studio test/build, 대표 screenshot과 세 skin light/dark 시각 검토,
 문서·format 게이트, #6118+#6138 최종 통합 보고를 준비하는 Stage 3다.
+
+## 7. 사용자 시각 검토 후속 — track anchor와 양 끝 버튼
+
+초기 controller는 `.tb-group.offsetLeft`를 scroll 좌표로 직접 사용했다. 실제 offset parent는 바깥
+`#icon-toolbar`라 왼쪽 nav slot과 padding 32px이 섞였고, 375px 첫 이동이 실제 두 번째 group 경계
+191px 대신 32px에 멈춰 첫 버튼을 잘랐다. group과 track의 bounding rect 차로 좌표를 정규화해 실제
+경계 `0, 191, 332…`를 사용하도록 수정했다.
+
+한글 2024 참고 동작에 맞춰 시작에서는 이전 버튼, 끝에서는 다음 버튼을 각각 감춘다. `display:none`으로
+slot을 없애면 viewport 폭이 24px 변하므로 고정 slot은 양 끝 padding처럼 유지하고 버튼만
+`visibility:hidden`, disabled, `aria-hidden=true`로 처리한다. 중간에서는 양쪽 버튼이 보인다.
