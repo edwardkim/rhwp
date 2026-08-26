@@ -20,12 +20,13 @@ $spec = Get-Content -LiteralPath $specPath -Raw -Encoding UTF8 | ConvertFrom-Jso
 if (
   $spec.schemaVersion -ne 1 -or
   $spec.kind -ne 'font-oracle-hyperv-task-spec' -or
-  $spec.issue -ne 4963
+  $spec.issue -notin @(4963, 4968)
 ) {
   throw 'Interactive task spec identity is invalid.'
 }
 $runner = (Resolve-Path -LiteralPath ([string]$spec.runner)).Path
 $arguments = @{
+  Issue = [int]$spec.issue
   Source = [string]$spec.source
   PdfOutput = [string]$spec.pdfOutput
   ResultOutput = [string]$spec.resultOutput
@@ -35,6 +36,9 @@ $arguments = @{
   ProbeFaces = @($spec.probeFaces)
   FontResourceFiles = @($spec.fontResourceFiles)
   SecurityModuleName = [string]$spec.securityModuleName
+}
+if ($spec.PSObject.Properties.Name -contains 'hwpmlOutput') {
+  $arguments.HwpmlOutput = [string]$spec.hwpmlOutput
 }
 
 & $runner @arguments

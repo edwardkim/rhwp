@@ -63,3 +63,36 @@ node scripts/kerning_q1_baseline.mjs
 
 공개 정본의 canonical SHA-256은
 `74f0310aa61cb4464b7176a4f53b4154aab3b828bbf5608ed7ebc9644689d499`다.
+
+## Stage W9-Q2
+
+- 공개 fixture: [`kerning_pair_fixture.hwpx`](fixtures/kerning_pair_fixture.hwpx)
+- OpenType 경계: [`kerning_capability_boundary.json`](kerning_capability_boundary.json)
+- 현행 제품·WASM 기준선: [`kerning_q2_fixture_baseline.json`](kerning_q2_fixture_baseline.json)
+- 한컴 판정: [`kerning_q2_hancom_adjudication.json`](kerning_q2_hancom_adjudication.json)
+- 수행 보고서: [`task_m100_4968_w9_q2.md`](../../../working/task_m100_4968_w9_q2.md)
+- local-only 원장: `output/4968/w9-q2/hyperv-readback/`, mode `0600`
+
+공개 fixture는 `AV To WA HH 가나다`와 ratio 100/90/80, spacing 0/-5/-10, K0/K1을 교차한다. body
+K0/K1은 같은 stored/fresh lane에 있어 flag 효과를 분리하며, table-cell·text-box는 보조 context다. Noto Sans
+KR의 공개 GPOS 경계는 `AV=-18`, `To=-76`, `WA=0`, `HH=0` design unit다.
+
+HWP 2020 `11.0.0.9136`은 HWPML2X readback에서 22개 fixture context의 kerning flag·장평·자간·face를 전부
+보존했지만 PDF body 9축의 K0/K1 position과 pair gap은 전부 같았다. 그러므로 이 관측은 한컴 버전 한정 음성
+호환성 증거이며 K1 구현값의 정답은 OpenType capability 계약에서 가져온다. 적용 순서는 differential이 없어
+한컴 출력에서 관측할 수 없었다.
+
+```bash
+python3 -m unittest -v scripts.tests.test_kerning_q2
+node --test scripts/tests/kerning_q2_fixture_baseline.test.mjs
+python3 scripts/kerning_q2_hancom_adjudication.py \
+  --evidence-root output/4968/w9-q2/hyperv-readback \
+  --output-root mydocs/tech/investigations/issue-4968 \
+  --output kerning_q2_hancom_adjudication.json
+node scripts/kerning_q2_fixture_baseline.mjs
+```
+
+OpenType 경계, 한컴 판정, 통합 Q2 baseline의 canonical SHA-256은 각각
+`4d628135329b82ed401453eef709783329840a5d1e22068afd83a7d2e7927576`,
+`8fce761f58c742a9a6d4fcf1cbfdf7a3037acd8f14f028e5f2c5cd41f64ff1ee`,
+`8ad6b8562bfb19fc9c751d1d74012c334d821028640a1459e27a0b0b6bbbbda1`이다.
