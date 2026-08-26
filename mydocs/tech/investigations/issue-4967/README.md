@@ -1,6 +1,6 @@
 ---
 kind: investigation
-status: active
+status: completed
 canonical: mydocs/plans/task_m100_4967_v3.md
 last_verified: 2026-08-26
 ---
@@ -9,9 +9,9 @@ last_verified: 2026-08-26
 
 이 디렉터리는 W8 tracker의 face별 교정 적격성 증거를 보존한다. rank 8 `KoPubWorld바탕체 Light`의
 일괄 exact metric 후보와 rank 1 `문체부 바탕체` name-relation 후보는 각각 Stage W8-Q5와 W8-R1-Q5에서
-`no-change`로 종결됐으며 제품 font mapping은 변경하지 않는다. rank 7 `KoPubWorld돋움체 Light`는
-Stage W8-R7-Q0에서 기존 증거·bounded cohort를 고정했고 독립 qualification을 진행 중이다. #4967 tracker는
-rank 7과 evidence-reopen lane 때문에 계속 active다. 완료된 face의 최종 판정은
+`no-change`로 종결됐으며 제품 font mapping은 변경하지 않는다. rank 7 `KoPubWorld돋움체 Light`도
+Stage W8-R7-Q5에서 `no-change`로 종결됐다. qualification 가능한 rank 1·7·8이 모두 완료되고 나머지 14개는
+명시적 evidence 변화 전까지 terminal이므로 현재 W8 queue는 비어 있다. 완료된 face의 최종 판정은
 [`task_m100_4967_report.md`](../../../report/task_m100_4967_report.md)에 있다.
 
 ## Stage W8-R7-Q0 증거 호환성과 bounded cohort
@@ -107,6 +107,17 @@ same-snapshot actual geometry와 stored-row admission을 판정한다.
 backend·portable·시각 정책에는 진입하지 않는다. 제품 registry·metric DB·fallback·paint·supply 변경도
 없다. 다음 gate는 Q5 최종 disposition과 #4967 tracker evidence-reopen lane 감사다.
 
+## Stage W8-R7-Q5 최종 disposition과 tracker 감사
+
+rank 7은 `no-change`로 최종 동결한다. qualified 전용 product-correction 자식 이슈·registry operation·
+acceptance matrix는 만들지 않는다. rank 1·7·8은 모두 종결됐고 나머지 rank는 외부 evidence 변화가 실제로
+발생할 때만 재개한다.
+
+GitHub read-only 감사에서 #4967은 OPEN이지만 실제 sub-issue가 0개이고 #4960의 W8 checkbox도 미완료였다.
+현재 변경 병합 뒤 #4967을 #4960 sub-issue로 연결하고 W8을 완료 표시한 다음, 최종 comment·reopen 조건을
+남겨 #4967을 completed close하는 것을 권고한다. 새 source·provider·identity·capability evidence가 생기면
+tracker를 reopen하거나 face별 새 이슈를 등록한다. 이번 Q5의 GitHub mutation은 0이다.
+
 ## Stage W8-R1-Q0 경계
 
 rank 1 `문체부 바탕체`는 rank 8 결론을 재사용하지 않고 기존 W3·W4·W5·W7.5 증거를 독립 대사한다.
@@ -181,8 +192,9 @@ rank 1은 `no-change`로 동결한다. W4 face-miss는 Q1 runtime에서도 재�
 증명했다. 수정할 layout delta가 없으므로 qualified 전용 product-correction 자식 이슈와 registry operation을
 만들지 않는다. Q3·Q4는 후보 부재로 미진입한다.
 
-#4967은 rank 7과 evidence-reopen lane이 남아 있어 OPEN을 유지한다. rank 1을 다시 열려면 layout 이득을
-증명하는 새 evidence 또는 현재와 다른 하나의 decision plane 가설이 필요하다.
+rank 1 Q5 시점에는 rank 7과 evidence-reopen lane이 남아 있어 #4967을 OPEN으로 유지했다. 이후 rank 7도
+완료됐으며 최종 tracker 운영 판정은 W8-R7-Q5 절을 따른다. rank 1을 다시 열려면 layout 이득을 증명하는
+새 evidence 또는 현재와 다른 하나의 decision plane 가설이 필요하다.
 
 공식 문체부 자료는 문화체육관광부 바탕체의 자유 이용·유료 판매 금지·출처 표시 조건을 설명하지만, 해당
 자료에서 local `MT.TTF`와 byte-exact한 공식 배포 artifact를 확인하지 못했다. local SFNT의
