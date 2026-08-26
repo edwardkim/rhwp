@@ -1031,7 +1031,8 @@ test('hot-patch dev wiring is declared in the manifests and the vite config', ()
   assert.match(adapterCargo, /build\s*=\s*"build\.rs"/);
   assert.match(adapterCargo, /subsecond-dev\s*=\s*\["rhwp\/subsecond-dev"\]/);
   assert.match(vite, /['"]\/_dioxus['"]/);
-  assert.match(vite, /['"]\/wasm['"][\s\S]*127\.0\.0\.1:7711/);
+  assert.match(vite, /subsecondWasmPlugin\(subsecondWasmDir\)/);
+  assert.doesNotMatch(vite, /['"]\/wasm['"]\s*:\s*\{[\s\S]{0,120}?target/);
   assert.match(vite, /librhwp-subsecond-patch-\*\.wasm/);
   assert.match(vite, /handleHotUpdate[\s\S]*librhwp-subsecond-patch-/);
   assert.match(vite, /RHWP_SUBSECOND/);

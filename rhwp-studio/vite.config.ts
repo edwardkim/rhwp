@@ -3,6 +3,7 @@ import { resolve, extname, join } from 'path';
 import { readFileSync, readFile } from 'fs';
 import { VitePWA } from 'vite-plugin-pwa';
 import { hwpdocsPdfTwinPlugin } from './vite/hwpdocs-pdf-twin-plugin.ts';
+import { subsecondWasmPlugin } from './vite/subsecond-wasm-plugin.ts';
 
 const configDir = import.meta.dirname;
 const pkg = JSON.parse(readFileSync(resolve(configDir, 'package.json'), 'utf-8'));
@@ -57,9 +58,6 @@ export default defineConfig({
         target: 'http://127.0.0.1:7711',
         ws: true,
       },
-      '/wasm': {
-        target: 'http://127.0.0.1:7711',
-      },
     } : undefined,
     fs: {
       // [Task #741 후속] 외부 file path 그림 영역 영역 samples/ dir 영역 영역 fetch 가능 영역.
@@ -76,7 +74,7 @@ export default defineConfig({
     },
   },
   plugins: [
-    ...(useSubsecondWasm ? [hwpdocsPdfTwinPlugin()] : []),
+    ...(useSubsecondWasm ? [subsecondWasmPlugin(subsecondWasmDir), hwpdocsPdfTwinPlugin()] : []),
     {
       name: 'ignore-subsecond-patch-artifacts',
       handleHotUpdate(context) {
