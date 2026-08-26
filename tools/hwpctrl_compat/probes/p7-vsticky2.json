@@ -1,0 +1,62 @@
+{
+  "id": "p7-vsticky2",
+  "title": "첫 자리가 세로 x 를 정하나",
+  "ledger": [],
+  "open": "samples/para-001.hwp",
+  "calls": [
+    [
+      "SetPos",
+      [
+        0,
+        0,
+        20
+      ]
+    ],
+    [
+      "Run",
+      [
+        "MoveLineDown"
+      ]
+    ],
+    [
+      "GetPos",
+      []
+    ],
+    [
+      "SetPos",
+      [
+        0,
+        0,
+        60
+      ]
+    ],
+    [
+      "Run",
+      [
+        "MoveLineDown"
+      ]
+    ],
+    [
+      "GetPos",
+      []
+    ],
+    [
+      "SetPos",
+      [
+        0,
+        0,
+        20
+      ]
+    ],
+    [
+      "Run",
+      [
+        "MoveLineDown"
+      ]
+    ],
+    [
+      "GetPos",
+      []
+    ]
+  ]
+}

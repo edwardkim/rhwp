@@ -1,0 +1,66 @@
+{
+  "id": "FJ64",
+  "tier": 3,
+  "title": "두 칸 동시 지목 (작성자+이메일)",
+  "input": "samples/field-01.hwp",
+  "instructions": "작성자에 '여정쌍작성', 이메일에 'pair-ae@rhwp.example' 을 넣은 author-email.hwp 를 제출하라. 값은 홍길동이 아니다. 회사명과 전화번호는 비운다. 힌트: --data '{\"작성자\": \"여정쌍작성\", \"이메일\": \"pair-ae@rhwp.example\"}' -o author-email.hwp --json 판정은 라이브 재실행 또는 산출물 재독이며, 파일 부재를 통과로 치지 않는다. T07 의 fields[0].value==홍길동 판정은 쓰지 마라. 새 CLI 는 없다.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "author-email.hwp"
+    ]
+  },
+  "checks": [
+    {
+      "name": "작성자 값",
+      "op": "value_eq",
+      "value": "여정쌍작성",
+      "path": "fields[1].value",
+      "cmd": [
+        "fields",
+        "{file:author-email.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "이메일 본문 실재",
+      "op": "value_ge",
+      "value": 1,
+      "path": "matchCount",
+      "cmd": [
+        "search",
+        "{file:author-email.hwp}",
+        "--json",
+        "--",
+        "pair-ae@rhwp.example"
+      ]
+    },
+    {
+      "name": "회사명은 비어 있음 — T07 좌표 거부",
+      "op": "value_eq",
+      "value": "",
+      "path": "fields[0].value",
+      "cmd": [
+        "fields",
+        "{file:author-email.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "전화번호 공란",
+      "op": "value_eq",
+      "value": "",
+      "path": "fields[3].value",
+      "cmd": [
+        "fields",
+        "{file:author-email.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "원본 무편집 복사가 아님",
+      "op": "differs_from_input",
+      "file": "author-email.hwp"
+    }
+  ]
+}

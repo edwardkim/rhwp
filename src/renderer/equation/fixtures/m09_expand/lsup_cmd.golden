@@ -1,0 +1,25 @@
+# M09-g equation golden — current-engine lock (variant/exception/unimplemented honesty)
+command: MATRIX
+script: LSUP{i}{A}
+honesty: left-script
+
+=== ast ===
+Superscript {
+    base: Text(
+        "A",
+    ),
+    sup: Text(
+        "i",
+    ),
+}
+
+=== layout ===
+Superscript x=0.0000 y=0.0000 w=21.7350 h=20.0000 bl=16.0000
+  base:
+    Text("A") x=0.0000 y=0.0000 w=13.6500 h=20.0000 bl=16.0000
+  sup:
+    Text("i") x=13.6500 y=0.0000 w=8.0850 h=14.0000 bl=11.2000
+
+=== svg ===
+<text x="0.00" y="16.00" font-size="20.00" fill="#000000" font-style="italic" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">A</text>
+<text x="13.65" y="11.20" font-size="14.00" fill="#000000" font-style="italic" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">i</text>

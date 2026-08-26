@@ -1,0 +1,25 @@
+{
+  "id": "SD26",
+  "tier": 2,
+  "title": "jsonContract.stdout",
+  "input": "samples/table-001.hwp",
+  "instructions": "capabilities 가 선언하는 jsonContract.stdout 규약을 answer.json 에 {\"stdout\": S} 으로 제출하라. 힌트: capabilities 의 jsonContract.stdout.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "jsonContract.stdout",
+      "op": "answer_eq",
+      "answer": "stdout",
+      "path": "jsonContract.stdout",
+      "cmd": [
+        "capabilities"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

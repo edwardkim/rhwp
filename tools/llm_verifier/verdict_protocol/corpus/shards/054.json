@@ -1,0 +1,2944 @@
+{
+  "schemaVersion": "v-proto.1.0",
+  "shardId": "054",
+  "records": [
+    {
+      "recordId": "vproto-002161",
+      "sourceTag": "국가인권위원회/업무계획/2024/2161#replay/reproduced-false",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "plan.json",
+        "--expect-output-sha256",
+        "abababababababababababababababababababababababababababababababab",
+        "--json"
+      ],
+      "exitClass": 3,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "mode": "verify",
+        "input": "samples/gov/국가인권위원회_업무계획_2024_2161.hwpx",
+        "inputSha256": "daf6e9560bce15c085323197a29477ac7cdc26c59938d7afeb2facf65217c2e4",
+        "planSha256": "036f201496e474e9109396211d8e64d927b24177e51cebdc132d3575e2f68f96",
+        "outputSha256": "e5104142aaeaab83d4ffa5060b605849dc72804711f6338831f3746c5b9b9317",
+        "expectedOutputSha256": "1b264e4eac8f393b99d6fb710fbc4c5af0ee6eee72523133bf7d23469efac661",
+        "reproduced": false,
+        "steps": 1,
+        "toolVersion": "0.8.4",
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": false,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-002162",
+      "sourceTag": "통계청/업무계획/2024/2162#fill-fields/verify-fail-with-findings",
+      "command": "fill-fields",
+      "argv": [
+        "edit",
+        "fill-fields",
+        "samples/gov/통계청_업무계획_2024_2162.hwp",
+        "--data",
+        "@fields.json",
+        "-o",
+        "out.hwp",
+        "--verify",
+        "--json"
+      ],
+      "exitClass": 3,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/통계청_업무계획_2024_2162.hwp",
+        "dryRun": false,
+        "filledCount": 3,
+        "filled": [
+          {
+            "name": "생년월일",
+            "occurrence": 0,
+            "value": "생년월일-값-2161-0"
+          },
+          {
+            "name": "주소",
+            "occurrence": 1,
+            "value": "주소-값-2161-1"
+          },
+          {
+            "name": "연락처",
+            "occurrence": 2,
+            "value": "연락처-값-2161-2"
+          }
+        ],
+        "notFound": [],
+        "ambiguous": [],
+        "confusable": [],
+        "changedPages": [
+          0,
+          1
+        ],
+        "untrustedContent": true,
+        "untrustedFields": [
+          "filled[].value",
+          "filled[].name"
+        ],
+        "output": "output/gov/통계청_업무계획_2024_2162_filled.hwp",
+        "outputFormat": "hwp5",
+        "verify": {
+          "identical": false,
+          "diffCount": 2
+        },
+        "findingCount": 3,
+        "findings": [
+          {
+            "kind": "ssn",
+            "masked": "******-*******",
+            "page": 0,
+            "paragraph": 3,
+            "charOffset": 8
+          },
+          {
+            "kind": "phone",
+            "masked": "***-****-****",
+            "page": 0,
+            "paragraph": 5,
+            "charOffset": 4
+          }
+        ]
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": 3,
+        "verify": {
+          "identical": false,
+          "diffCount": 2
+        },
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-002163",
+      "sourceTag": "기상청/업무계획/2024/2163#render-diff/struct-mismatch",
+      "command": "render-diff",
+      "argv": [
+        "render-diff",
+        "samples/gov/기상청_업무계획_2024_2163.hwp",
+        "--json"
+      ],
+      "exitClass": 3,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "mode": "self-roundtrip",
+        "sourceA": "samples/gov/기상청_업무계획_2024_2163.hwp",
+        "sourceB": "samples/gov/기상청_업무계획_2024_2163.hwp",
+        "via": "hwpx",
+        "pageFilter": null,
+        "threshold": 2.0,
+        "pageCountA": 4,
+        "pageCountB": 4,
+        "pageCountMismatch": false,
+        "maxDisp": 6.5,
+        "worstPage": 0,
+        "overPages": 2,
+        "structPages": 2,
+        "hardStructPages": 0,
+        "status": "STRUCT",
+        "regression": true,
+        "pages": [
+          {
+            "page": 0,
+            "maxDisp": 6.5,
+            "over": true,
+            "structMismatch": false,
+            "nodeCountA": 42,
+            "nodeCountB": 42
+          },
+          {
+            "page": 1,
+            "maxDisp": 0.6,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 43,
+            "nodeCountB": 43
+          },
+          {
+            "page": 2,
+            "maxDisp": 0.8,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 44,
+            "nodeCountB": 44
+          },
+          {
+            "page": 3,
+            "maxDisp": 1.0,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 45,
+            "nodeCountB": 45
+          }
+        ],
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": true,
+        "status": "STRUCT",
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": false,
+        "overPages": 2
+      }
+    },
+    {
+      "recordId": "vproto-002164",
+      "sourceTag": "관세청/업무계획/2024/2164#info/page-verify-unexpected",
+      "command": "info",
+      "argv": [
+        "info",
+        "samples/gov/관세청_업무계획_2024_2164.hwpx",
+        "--json"
+      ],
+      "exitClass": 4,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/관세청_업무계획_2024_2164.hwpx",
+        "format": "hwpx",
+        "sizeBytes": 320331,
+        "version": "owpml-1.0",
+        "sections": 4,
+        "pageCount": 0,
+        "paraCount": 186,
+        "fonts": [
+          "굴림",
+          "굴림체",
+          "돋움",
+          "돋움체",
+          "바탕",
+          "바탕체",
+          "나눔고딕",
+          "나눔명조",
+          "본고딕"
+        ],
+        "title": "공사계약 일반조건 (관세청 업무계획 2024)",
+        "warnings": [],
+        "untrustedContent": true,
+        "untrustedFields": [
+          "title",
+          "fonts[]"
+        ]
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-002165",
+      "sourceTag": "검찰청/업무계획/2024/2165#verify/verify-pages-mismatch",
+      "command": "verify",
+      "argv": [
+        "verify",
+        "samples/gov/검찰청_업무계획_2024_2165.hwp",
+        "--expect-pages",
+        "1",
+        "--json"
+      ],
+      "exitClass": 4,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/검찰청_업무계획_2024_2165.hwp",
+        "output": "output/gov/검찰청_업무계획_2024_2165.hwp",
+        "format": "hwp5",
+        "bytes": 276924,
+        "wasDistribution": false,
+        "passwordProtected": false,
+        "verify": {
+          "identical": true,
+          "diffCount": 0
+        },
+        "verifyPages": {
+          "expected": 8,
+          "actual": 7,
+          "match": false
+        },
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": {
+          "identical": true,
+          "diffCount": 0
+        },
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-002166",
+      "sourceTag": "경찰청/업무계획/2024/2166#ir-diff/page-verify-not-applicable",
+      "command": "ir-diff",
+      "argv": [
+        "ir-diff",
+        "samples/gov/경찰청_업무계획_2024_2166.hwp",
+        "samples/gov/경찰청_업무계획_2024_2166.hwpx",
+        "samples/gov/경찰청_업무계획_2024_2166.hwpx",
+        "--json"
+      ],
+      "exitClass": 4,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "a": "samples/gov/경찰청_업무계획_2024_2166.hwp",
+        "b": "samples/gov/경찰청_업무계획_2024_2166.hwpx",
+        "identical": true,
+        "diffCount": 0,
+        "categories": {},
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": true,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": 0,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-002167",
+      "sourceTag": "소방청/업무계획/2024/2167#layout-anomaly/page-count-mismatch",
+      "command": "layout-anomaly",
+      "argv": [
+        "layout-anomaly",
+        "samples/gov/소방청_업무계획_2024_2167.hwpx",
+        "--json"
+      ],
+      "exitClass": 4,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/소방청_업무계획_2024_2167.hwpx",
+        "pageCount": 3,
+        "pageFilter": null,
+        "overflowTolerancePx": 1.0,
+        "overlapTolerancePx": 1.0,
+        "strict": false,
+        "overflowCount": 0,
+        "overlapCount": 0,
+        "emptyPageCount": 2,
+        "hasSignal": true,
+        "pages": [
+          {
+            "page": 0,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 1,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 2,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": true,
+            "overflowItems": [],
+            "overlapItems": []
+          }
+        ],
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "pageCountMismatch": true
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": true,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": false,
+        "overflowCount": 0,
+        "overlapCount": 0,
+        "emptyPageCount": 2,
+        "pageCountMismatch": true,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-002168",
+      "sourceTag": "해양경찰청/업무계획/2024/2168#replay/page-verify-not-applicable",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "plan.json",
+        "--json"
+      ],
+      "exitClass": 4,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "mode": "attest",
+        "input": "samples/gov/해양경찰청_업무계획_2024_2168.hwp",
+        "inputSha256": "504d8212a625c1fb801ac4ddbea9b42920e903c470a4880e16db83c963a369fc",
+        "planSha256": "4e56a5e64dc25af8cd6a1f2a8cd435ba94caabd99caca9495105c82cfa4be88d",
+        "outputSha256": "77bc34fcf7e3f3a6b6a30289b55bbc9fa18205595584188e21af3bd727ae2a3e",
+        "expectedOutputSha256": null,
+        "reproduced": null,
+        "steps": 3,
+        "toolVersion": "0.8.4",
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-002169",
+      "sourceTag": "병무청/업무계획/2024/2169#fill-fields/verify-pages",
+      "command": "fill-fields",
+      "argv": [
+        "edit",
+        "fill-fields",
+        "samples/gov/병무청_업무계획_2024_2169.hwp",
+        "--data",
+        "@fields.json",
+        "-o",
+        "out.hwp",
+        "--verify",
+        "--json"
+      ],
+      "exitClass": 4,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/병무청_업무계획_2024_2169.hwp",
+        "output": "output/gov/병무청_업무계획_2024_2169.hwp",
+        "format": "hwp5",
+        "bytes": 277288,
+        "wasDistribution": false,
+        "passwordProtected": false,
+        "verify": {
+          "identical": true,
+          "diffCount": 0
+        },
+        "verifyPages": {
+          "expected": 12,
+          "actual": 11,
+          "match": false
+        },
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "filledCount": 1,
+        "filled": [
+          {
+            "name": "제목",
+            "occurrence": 0,
+            "value": "감사 지적사항 조치 결과"
+          }
+        ],
+        "pageCountMismatch": true
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": {
+          "identical": true,
+          "diffCount": 0
+        },
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": true,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-002170",
+      "sourceTag": "산림청/업무계획/2024/2170#render-diff/page-count-mismatch",
+      "command": "render-diff",
+      "argv": [
+        "render-diff",
+        "samples/gov/산림청_업무계획_2024_2170.hwpx",
+        "--json"
+      ],
+      "exitClass": 4,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "mode": "self-roundtrip",
+        "sourceA": "samples/gov/산림청_업무계획_2024_2170.hwpx",
+        "sourceB": "samples/gov/산림청_업무계획_2024_2170.hwpx",
+        "via": "hwp",
+        "pageFilter": null,
+        "threshold": 2.0,
+        "pageCountA": 3,
+        "pageCountB": 4,
+        "pageCountMismatch": true,
+        "maxDisp": 1.2,
+        "worstPage": 0,
+        "overPages": 0,
+        "structPages": 0,
+        "hardStructPages": 0,
+        "status": "OK",
+        "regression": false,
+        "pages": [
+          {
+            "page": 0,
+            "maxDisp": 0.2,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 49,
+            "nodeCountB": 49
+          },
+          {
+            "page": 1,
+            "maxDisp": 0.4,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 50,
+            "nodeCountB": 50
+          },
+          {
+            "page": 2,
+            "maxDisp": 0.6,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 51,
+            "nodeCountB": 51
+          },
+          {
+            "page": 3,
+            "maxDisp": 0.8,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 52,
+            "nodeCountB": 52
+          },
+          {
+            "page": 4,
+            "maxDisp": 1.0,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 53,
+            "nodeCountB": 53
+          },
+          {
+            "page": 5,
+            "maxDisp": 1.2,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 54,
+            "nodeCountB": 54
+          }
+        ],
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": false,
+        "status": "OK",
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": true,
+        "overPages": 0
+      }
+    },
+    {
+      "recordId": "vproto-002171",
+      "sourceTag": "농촌진흥청/업무계획/2024/2171#info/ok-meta",
+      "command": "info",
+      "argv": [
+        "info",
+        "samples/gov/농촌진흥청_업무계획_2024_2171.hwp",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/농촌진흥청_업무계획_2024_2171.hwp",
+        "format": "hwp5",
+        "sizeBytes": 321290,
+        "version": "5.0.2.5",
+        "sections": 3,
+        "pageCount": 11,
+        "paraCount": 193,
+        "fonts": [
+          "나눔명조",
+          "본고딕",
+          "본명조",
+          "HY신명조",
+          "HY중고딕",
+          "한양견고딕",
+          "함초롬바탕",
+          "함초롬돋움"
+        ],
+        "title": "규제 심사(안) 개요 (농촌진흥청 업무계획 2024)",
+        "warnings": [],
+        "untrustedContent": true,
+        "untrustedFields": [
+          "title",
+          "fonts[]"
+        ]
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-002172",
+      "sourceTag": "중소벤처기업부/업무계획/2024/2172#verify/expect-pass",
+      "command": "verify",
+      "argv": [
+        "verify",
+        "samples/gov/중소벤처기업부_업무계획_2024_2172.hwp",
+        "--expect-pages",
+        "12",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/중소벤처기업부_업무계획_2024_2172.hwp",
+        "expectations": [
+          {
+            "kind": "pages",
+            "expected": 12,
+            "actual": 12,
+            "pass": true
+          },
+          {
+            "kind": "min-chars",
+            "expected": 251,
+            "actual": 251,
+            "pass": true
+          },
+          {
+            "kind": "min-tables",
+            "expected": 1,
+            "actual": 2,
+            "pass": true
+          },
+          {
+            "kind": "contains",
+            "expected": "시행일자",
+            "actual": "시행일자",
+            "pass": true
+          },
+          {
+            "kind": "format",
+            "expected": "hwp5",
+            "actual": "hwp5",
+            "pass": true
+          }
+        ],
+        "passCount": 5,
+        "failCount": 0,
+        "verdict": "pass",
+        "untrustedContent": true,
+        "untrustedFields": [
+          "expectations[].actual"
+        ]
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": 0,
+        "passCount": 5,
+        "verdict": "pass",
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-002173",
+      "sourceTag": "과학기술정보통신부/업무계획/2024/2173#ir-diff/self-identical",
+      "command": "ir-diff",
+      "argv": [
+        "ir-diff",
+        "samples/gov/과학기술정보통신부_업무계획_2024_2173.hwpx",
+        "samples/gov/과학기술정보통신부_업무계획_2024_2173.hwpxx",
+        "samples/gov/과학기술정보통신부_업무계획_2024_2173.hwp",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "a": "samples/gov/과학기술정보통신부_업무계획_2024_2173.hwpx",
+        "b": "samples/gov/과학기술정보통신부_업무계획_2024_2173.hwpx",
+        "identical": true,
+        "diffCount": 0,
+        "categories": {},
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": true,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": 0,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-002174",
+      "sourceTag": "문화체육관광부/업무계획/2024/2174#layout-anomaly/clean",
+      "command": "layout-anomaly",
+      "argv": [
+        "layout-anomaly",
+        "samples/gov/문화체육관광부_업무계획_2024_2174.hwp",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/문화체육관광부_업무계획_2024_2174.hwp",
+        "pageCount": 4,
+        "pageFilter": null,
+        "overflowTolerancePx": 1.0,
+        "overlapTolerancePx": 1.0,
+        "strict": false,
+        "overflowCount": 0,
+        "overlapCount": 0,
+        "emptyPageCount": 0,
+        "hasSignal": false,
+        "pages": [
+          {
+            "page": 0,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 1,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 2,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 3,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          }
+        ],
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": false,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": false,
+        "overflowCount": 0,
+        "overlapCount": 0,
+        "emptyPageCount": 0,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-002175",
+      "sourceTag": "환경부/업무계획/2024/2175#replay/attest",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "plan.json",
+        "--plan-json",
+        "{}",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "mode": "attest",
+        "input": "samples/gov/환경부_업무계획_2024_2175.hwp",
+        "inputSha256": "641f90529010ae026fc390867589a6d09a7fcb8604671a54f065f6ce455ee0ba",
+        "planSha256": "4b2089d99923a4304277fe7a1f49c7d9c7d69b8f6fc93f81d15ce45435706519",
+        "outputSha256": "fe09e065f422a3cab3e817e33e5a78e19f3c165a63f7fd6854f7dccea1433420",
+        "expectedOutputSha256": null,
+        "reproduced": null,
+        "steps": 5,
+        "toolVersion": "0.8.4",
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-002176",
+      "sourceTag": "해양수산부/업무계획/2024/2176#fill-fields/dry-run",
+      "command": "fill-fields",
+      "argv": [
+        "edit",
+        "fill-fields",
+        "samples/gov/해양수산부_업무계획_2024_2176.hwpx",
+        "--data",
+        "@fields.json",
+        "--dry-run",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/해양수산부_업무계획_2024_2176.hwpx",
+        "dryRun": true,
+        "filledCount": 5,
+        "filled": [
+          {
+            "name": "계좌번호",
+            "occurrence": 0,
+            "value": "계좌번호-값-2175-0"
+          },
+          {
+            "name": "신청인",
+            "occurrence": 1,
+            "value": "신청인-값-2175-1"
+          },
+          {
+            "name": "생년월일",
+            "occurrence": 2,
+            "value": "생년월일-값-2175-2"
+          },
+          {
+            "name": "주소",
+            "occurrence": 3,
+            "value": "주소-값-2175-3"
+          },
+          {
+            "name": "연락처",
+            "occurrence": 4,
+            "value": "연락처-값-2175-4"
+          }
+        ],
+        "notFound": [],
+        "ambiguous": [],
+        "confusable": [],
+        "changedPages": null,
+        "untrustedContent": true,
+        "untrustedFields": [
+          "filled[].value",
+          "filled[].name"
+        ]
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-002177",
+      "sourceTag": "법제처/예산서/2024/2177#render-diff/ok",
+      "command": "render-diff",
+      "argv": [
+        "render-diff",
+        "samples/gov/법제처_예산서_2024_2177.hwp",
+        "--via",
+        "hwpx",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "mode": "self-roundtrip",
+        "sourceA": "samples/gov/법제처_예산서_2024_2177.hwp",
+        "sourceB": "samples/gov/법제처_예산서_2024_2177.hwp",
+        "via": "hwpx",
+        "pageFilter": null,
+        "threshold": 2.0,
+        "pageCountA": 3,
+        "pageCountB": 3,
+        "pageCountMismatch": false,
+        "maxDisp": 0.4,
+        "worstPage": 0,
+        "overPages": 0,
+        "structPages": 0,
+        "hardStructPages": 0,
+        "status": "OK",
+        "regression": false,
+        "pages": [
+          {
+            "page": 0,
+            "maxDisp": 0.0,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 56,
+            "nodeCountB": 56
+          },
+          {
+            "page": 1,
+            "maxDisp": 0.2,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 57,
+            "nodeCountB": 57
+          },
+          {
+            "page": 2,
+            "maxDisp": 0.4,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 58,
+            "nodeCountB": 58
+          }
+        ],
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": false,
+        "status": "OK",
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": false,
+        "overPages": 0
+      }
+    },
+    {
+      "recordId": "vproto-002178",
+      "sourceTag": "행정안전부/예산서/2024/2178#info/ok-meta",
+      "command": "info",
+      "argv": [
+        "info",
+        "samples/gov/행정안전부_예산서_2024_2178.hwp",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/행정안전부_예산서_2024_2178.hwp",
+        "format": "hwp5",
+        "sizeBytes": 322249,
+        "version": "5.0.2.5",
+        "sections": 2,
+        "pageCount": 18,
+        "paraCount": 200,
+        "fonts": [
+          "함초롬돋움",
+          "맑은 고딕",
+          "굴림",
+          "굴림체",
+          "돋움",
+          "돋움체",
+          "바탕"
+        ],
+        "title": "민원 처리 결과 통지 (행정안전부 예산서 2024)",
+        "warnings": [],
+        "untrustedContent": true,
+        "untrustedFields": [
+          "title",
+          "fonts[]"
+        ]
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-002179",
+      "sourceTag": "국세청/예산서/2024/2179#verify/expect-pass",
+      "command": "verify",
+      "argv": [
+        "verify",
+        "samples/gov/국세청_예산서_2024_2179.hwpx",
+        "--expect-pages",
+        "19",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/국세청_예산서_2024_2179.hwpx",
+        "expectations": [
+          {
+            "kind": "pages",
+            "expected": 19,
+            "actual": 19,
+            "pass": true
+          },
+          {
+            "kind": "min-chars",
+            "expected": 258,
+            "actual": 258,
+            "pass": true
+          },
+          {
+            "kind": "min-tables",
+            "expected": 1,
+            "actual": 4,
+            "pass": true
+          },
+          {
+            "kind": "contains",
+            "expected": "주소",
+            "actual": "주소",
+            "pass": true
+          },
+          {
+            "kind": "format",
+            "expected": "hwp5",
+            "actual": "hwpx",
+            "pass": true
+          }
+        ],
+        "passCount": 5,
+        "failCount": 0,
+        "verdict": "pass",
+        "untrustedContent": true,
+        "untrustedFields": [
+          "expectations[].actual"
+        ]
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": 0,
+        "passCount": 5,
+        "verdict": "pass",
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-002180",
+      "sourceTag": "대법원/예산서/2024/2180#ir-diff/self-identical",
+      "command": "ir-diff",
+      "argv": [
+        "ir-diff",
+        "samples/gov/대법원_예산서_2024_2180.hwp",
+        "samples/gov/대법원_예산서_2024_2180.hwpx",
+        "samples/gov/대법원_예산서_2024_2180.hwpx",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "a": "samples/gov/대법원_예산서_2024_2180.hwp",
+        "b": "samples/gov/대법원_예산서_2024_2180.hwp",
+        "identical": true,
+        "diffCount": 0,
+        "categories": {},
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": true,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": 0,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-002181",
+      "sourceTag": "특허청/예산서/2024/2181#layout-anomaly/overflow-nonstrict",
+      "command": "layout-anomaly",
+      "argv": [
+        "layout-anomaly",
+        "samples/gov/특허청_예산서_2024_2181.hwp",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/특허청_예산서_2024_2181.hwp",
+        "pageCount": 5,
+        "pageFilter": null,
+        "overflowTolerancePx": 1.0,
+        "overlapTolerancePx": 1.0,
+        "strict": false,
+        "overflowCount": 2,
+        "overlapCount": 0,
+        "emptyPageCount": 0,
+        "hasSignal": true,
+        "pages": [
+          {
+            "page": 0,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": true,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [
+              {
+                "kind": "para",
+                "section": 0,
+                "paragraph": 2,
+                "dx": 6.5,
+                "dy": 0.0,
+                "edge": "right"
+              }
+            ],
+            "overlapItems": []
+          },
+          {
+            "page": 1,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 2,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 3,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 4,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          }
+        ],
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": true,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": false,
+        "overflowCount": 2,
+        "overlapCount": 0,
+        "emptyPageCount": 0,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-002182",
+      "sourceTag": "교육부/예산서/2024/2182#replay/attest",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "plan.json",
+        "--plan-json",
+        "{}",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "mode": "attest",
+        "input": "samples/gov/교육부_예산서_2024_2182.hwpx",
+        "inputSha256": "bf9e3d1514c777d6b75fec4289f04536a1275fc4825d10fba8a5174f9842bd21",
+        "planSha256": "92dfbeb25b8639f62131a7f6c8e3bfe462faa5e18c4c7d69e4e9418f05c6415e",
+        "outputSha256": "472016e3ca20735c58343b5c5edf75fa0078d903067acde014bf737f1d1ef190",
+        "expectedOutputSha256": null,
+        "reproduced": null,
+        "steps": 2,
+        "toolVersion": "0.8.4",
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-002183",
+      "sourceTag": "보건복지부/예산서/2024/2183#fill-fields/write-verify-ok",
+      "command": "fill-fields",
+      "argv": [
+        "edit",
+        "fill-fields",
+        "samples/gov/보건복지부_예산서_2024_2183.hwp",
+        "--data",
+        "@fields.json",
+        "-o",
+        "out.hwp",
+        "--verify",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/보건복지부_예산서_2024_2183.hwp",
+        "dryRun": false,
+        "filledCount": 6,
+        "filled": [
+          {
+            "name": "법인명",
+            "occurrence": 0,
+            "value": "법인명-값-2182-0"
+          },
+          {
+            "name": "대표자",
+            "occurrence": 1,
+            "value": "대표자-값-2182-1"
+          },
+          {
+            "name": "담당부서",
+            "occurrence": 2,
+            "value": "담당부서-값-2182-2"
+          },
+          {
+            "name": "담당자",
+            "occurrence": 3,
+            "value": "담당자-값-2182-3"
+          },
+          {
+            "name": "문서번호",
+            "occurrence": 4,
+            "value": "문서번호-값-2182-4"
+          },
+          {
+            "name": "시행일자",
+            "occurrence": 5,
+            "value": "시행일자-값-2182-5"
+          }
+        ],
+        "notFound": [],
+        "ambiguous": [],
+        "confusable": [],
+        "changedPages": [
+          0
+        ],
+        "untrustedContent": true,
+        "untrustedFields": [
+          "filled[].value",
+          "filled[].name"
+        ],
+        "output": "output/gov/보건복지부_예산서_2024_2183_filled.hwp",
+        "outputFormat": "hwp5",
+        "verify": {
+          "identical": true,
+          "diffCount": 0
+        }
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": {
+          "identical": true,
+          "diffCount": 0
+        },
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-002184",
+      "sourceTag": "국토교통부/예산서/2024/2184#render-diff/ok",
+      "command": "render-diff",
+      "argv": [
+        "render-diff",
+        "samples/gov/국토교통부_예산서_2024_2184.hwp",
+        "--via",
+        "hwp",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "mode": "self-roundtrip",
+        "sourceA": "samples/gov/국토교통부_예산서_2024_2184.hwp",
+        "sourceB": "samples/gov/국토교통부_예산서_2024_2184.hwp",
+        "via": "hwp",
+        "pageFilter": null,
+        "threshold": 2.0,
+        "pageCountA": 5,
+        "pageCountB": 5,
+        "pageCountMismatch": false,
+        "maxDisp": 1.4,
+        "worstPage": 0,
+        "overPages": 0,
+        "structPages": 0,
+        "hardStructPages": 0,
+        "status": "OK",
+        "regression": false,
+        "pages": [
+          {
+            "page": 0,
+            "maxDisp": 1.4,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 63,
+            "nodeCountB": 63
+          },
+          {
+            "page": 1,
+            "maxDisp": 0.0,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 64,
+            "nodeCountB": 64
+          },
+          {
+            "page": 2,
+            "maxDisp": 0.2,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 65,
+            "nodeCountB": 65
+          },
+          {
+            "page": 3,
+            "maxDisp": 0.4,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 66,
+            "nodeCountB": 66
+          },
+          {
+            "page": 4,
+            "maxDisp": 0.6,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 67,
+            "nodeCountB": 67
+          }
+        ],
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": false,
+        "status": "OK",
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": false,
+        "overPages": 0
+      }
+    },
+    {
+      "recordId": "vproto-002185",
+      "sourceTag": "고용노동부/예산서/2024/2185#info/ok-meta",
+      "command": "info",
+      "argv": [
+        "info",
+        "samples/gov/고용노동부_예산서_2024_2185.hwpx",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/고용노동부_예산서_2024_2185.hwpx",
+        "format": "hwpx",
+        "sizeBytes": 323208,
+        "version": "owpml-1.0",
+        "sections": 1,
+        "pageCount": 25,
+        "paraCount": 207,
+        "fonts": [
+          "바탕체",
+          "나눔고딕",
+          "나눔명조",
+          "본고딕",
+          "본명조",
+          "HY신명조"
+        ],
+        "title": "정보공개 청구서 (고용노동부 예산서 2024)",
+        "warnings": [],
+        "untrustedContent": true,
+        "untrustedFields": [
+          "title",
+          "fonts[]"
+        ]
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-002186",
+      "sourceTag": "외교부/예산서/2024/2186#verify/expect-pass",
+      "command": "verify",
+      "argv": [
+        "verify",
+        "samples/gov/외교부_예산서_2024_2186.hwp",
+        "--expect-pages",
+        "6",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/외교부_예산서_2024_2186.hwp",
+        "expectations": [
+          {
+            "kind": "pages",
+            "expected": 6,
+            "actual": 6,
+            "pass": true
+          },
+          {
+            "kind": "min-chars",
+            "expected": 265,
+            "actual": 265,
+            "pass": true
+          },
+          {
+            "kind": "min-tables",
+            "expected": 1,
+            "actual": 1,
+            "pass": true
+          },
+          {
+            "kind": "contains",
+            "expected": "담당자",
+            "actual": "담당자",
+            "pass": true
+          },
+          {
+            "kind": "format",
+            "expected": "hwp5",
+            "actual": "hwp5",
+            "pass": true
+          }
+        ],
+        "passCount": 5,
+        "failCount": 0,
+        "verdict": "pass",
+        "untrustedContent": true,
+        "untrustedFields": [
+          "expectations[].actual"
+        ]
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": 0,
+        "passCount": 5,
+        "verdict": "pass",
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-002187",
+      "sourceTag": "기획재정부/예산서/2024/2187#ir-diff/self-identical",
+      "command": "ir-diff",
+      "argv": [
+        "ir-diff",
+        "samples/gov/기획재정부_예산서_2024_2187.hwp",
+        "samples/gov/기획재정부_예산서_2024_2187.hwpx",
+        "samples/gov/기획재정부_예산서_2024_2187.hwpx",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "a": "samples/gov/기획재정부_예산서_2024_2187.hwp",
+        "b": "samples/gov/기획재정부_예산서_2024_2187.hwp",
+        "identical": true,
+        "diffCount": 0,
+        "categories": {},
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": true,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": 0,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-002188",
+      "sourceTag": "공정거래위원회/예산서/2024/2188#layout-anomaly/empty-strict-ok",
+      "command": "layout-anomaly",
+      "argv": [
+        "layout-anomaly",
+        "samples/gov/공정거래위원회_예산서_2024_2188.hwpx",
+        "--strict",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/공정거래위원회_예산서_2024_2188.hwpx",
+        "pageCount": 6,
+        "pageFilter": null,
+        "overflowTolerancePx": 1.0,
+        "overlapTolerancePx": 1.0,
+        "strict": true,
+        "overflowCount": 0,
+        "overlapCount": 0,
+        "emptyPageCount": 1,
+        "hasSignal": true,
+        "pages": [
+          {
+            "page": 0,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 1,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 2,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 3,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 4,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 5,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": true,
+            "overflowItems": [],
+            "overlapItems": []
+          }
+        ],
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": true,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": true,
+        "overflowCount": 0,
+        "overlapCount": 0,
+        "emptyPageCount": 1,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-002189",
+      "sourceTag": "금융위원회/예산서/2024/2189#replay/verify-reproduced",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "plan.json",
+        "--expect-output-sha256",
+        "f8b7bc7a9b2ba09a383bb0e114567231a090e19f9a82564c0f81dbe505bcd5aa",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "mode": "verify",
+        "input": "samples/gov/금융위원회_예산서_2024_2189.hwp",
+        "inputSha256": "013ea7f6b65a450f4ccf31cf3b6d5cf14ee8ba72469a278bab29cd8bfb37ae34",
+        "planSha256": "ac8c036ebbce6d2d1b8b9495643d9d878b7af0402d1bec16fa95300c9cc3ceed",
+        "outputSha256": "f8b7bc7a9b2ba09a383bb0e114567231a090e19f9a82564c0f81dbe505bcd5aa",
+        "expectedOutputSha256": "f8b7bc7a9b2ba09a383bb0e114567231a090e19f9a82564c0f81dbe505bcd5aa",
+        "reproduced": true,
+        "steps": 4,
+        "toolVersion": "0.8.4",
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": true,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-002190",
+      "sourceTag": "방송통신위원회/예산서/2024/2190#fill-fields/not-found-exit0",
+      "command": "fill-fields",
+      "argv": [
+        "edit",
+        "fill-fields",
+        "samples/gov/방송통신위원회_예산서_2024_2190.hwp",
+        "--data",
+        "@fields.json",
+        "-o",
+        "out.hwp",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/방송통신위원회_예산서_2024_2190.hwp",
+        "dryRun": false,
+        "filledCount": 7,
+        "filled": [
+          {
+            "name": "제목",
+            "occurrence": 0,
+            "value": "제목-값-2189-0"
+          },
+          {
+            "name": "금액",
+            "occurrence": 1,
+            "value": "금액-값-2189-1"
+          },
+          {
+            "name": "계좌번호",
+            "occurrence": 2,
+            "value": "계좌번호-값-2189-2"
+          },
+          {
+            "name": "신청인",
+            "occurrence": 3,
+            "value": "신청인-값-2189-3"
+          },
+          {
+            "name": "생년월일",
+            "occurrence": 4,
+            "value": "생년월일-값-2189-4"
+          },
+          {
+            "name": "주소",
+            "occurrence": 5,
+            "value": "주소-값-2189-5"
+          },
+          {
+            "name": "연락처",
+            "occurrence": 6,
+            "value": "연락처-값-2189-6"
+          }
+        ],
+        "notFound": [
+          "없는필드2"
+        ],
+        "ambiguous": [],
+        "confusable": [],
+        "changedPages": [
+          0,
+          1
+        ],
+        "untrustedContent": true,
+        "untrustedFields": [
+          "filled[].value",
+          "filled[].name"
+        ],
+        "output": "output/gov/방송통신위원회_예산서_2024_2190_filled.hwp",
+        "outputFormat": "hwp5"
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-002191",
+      "sourceTag": "개인정보보호위원회/예산서/2024/2191#render-diff/under-threshold",
+      "command": "render-diff",
+      "argv": [
+        "render-diff",
+        "samples/gov/개인정보보호위원회_예산서_2024_2191.hwpx",
+        "--max-disp",
+        "2",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "mode": "self-roundtrip",
+        "sourceA": "samples/gov/개인정보보호위원회_예산서_2024_2191.hwpx",
+        "sourceB": "samples/gov/개인정보보호위원회_예산서_2024_2191.hwpx",
+        "via": "hwpx",
+        "pageFilter": null,
+        "threshold": 2.0,
+        "pageCountA": 2,
+        "pageCountB": 2,
+        "pageCountMismatch": false,
+        "maxDisp": 1.2,
+        "worstPage": 0,
+        "overPages": 0,
+        "structPages": 0,
+        "hardStructPages": 0,
+        "status": "OK",
+        "regression": false,
+        "pages": [
+          {
+            "page": 0,
+            "maxDisp": 1.2,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 40,
+            "nodeCountB": 40
+          },
+          {
+            "page": 1,
+            "maxDisp": 1.4,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 41,
+            "nodeCountB": 41
+          }
+        ],
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": false,
+        "status": "OK",
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": false,
+        "overPages": 0
+      }
+    },
+    {
+      "recordId": "vproto-002192",
+      "sourceTag": "국민권익위원회/예산서/2024/2192#info/ok-meta",
+      "command": "info",
+      "argv": [
+        "info",
+        "samples/gov/국민권익위원회_예산서_2024_2192.hwp",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/국민권익위원회_예산서_2024_2192.hwp",
+        "format": "hwp5",
+        "sizeBytes": 324167,
+        "version": "5.0.2.5",
+        "sections": 4,
+        "pageCount": 32,
+        "paraCount": 214,
+        "fonts": [
+          "한양견고딕",
+          "함초롬바탕",
+          "함초롬돋움",
+          "맑은 고딕",
+          "굴림",
+          "굴림체",
+          "돋움",
+          "돋움체",
+          "바탕",
+          "바탕체",
+          "나눔고딕",
+          "나눔명조",
+          "본고딕"
+        ],
+        "title": "개인정보 처리방침 개정 고시 (국민권익위원회 예산서 2024)",
+        "warnings": [],
+        "untrustedContent": true,
+        "untrustedFields": [
+          "title",
+          "fonts[]"
+        ]
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-002193",
+      "sourceTag": "국가인권위원회/예산서/2024/2193#verify/expect-fail",
+      "command": "verify",
+      "argv": [
+        "verify",
+        "samples/gov/국가인권위원회_예산서_2024_2193.hwp",
+        "--expect-min-chars",
+        "99999",
+        "--json"
+      ],
+      "exitClass": 3,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/국가인권위원회_예산서_2024_2193.hwp",
+        "expectations": [
+          {
+            "kind": "pages",
+            "expected": 13,
+            "actual": 15,
+            "pass": false
+          },
+          {
+            "kind": "min-chars",
+            "expected": 272,
+            "actual": 272,
+            "pass": true
+          },
+          {
+            "kind": "min-tables",
+            "expected": 1,
+            "actual": 3,
+            "pass": true
+          },
+          {
+            "kind": "contains",
+            "expected": "신청인",
+            "actual": "신청인",
+            "pass": true
+          },
+          {
+            "kind": "format",
+            "expected": "hwp5",
+            "actual": "hwp5",
+            "pass": true
+          }
+        ],
+        "passCount": 4,
+        "failCount": 1,
+        "verdict": "fail",
+        "untrustedContent": true,
+        "untrustedFields": [
+          "expectations[].actual"
+        ]
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": 1,
+        "passCount": 4,
+        "verdict": "fail",
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-002194",
+      "sourceTag": "통계청/예산서/2024/2194#ir-diff/cross-format-diff",
+      "command": "ir-diff",
+      "argv": [
+        "ir-diff",
+        "samples/gov/통계청_예산서_2024_2194.hwpx",
+        "samples/gov/통계청_예산서_2024_2194.hwpxx",
+        "samples/gov/통계청_예산서_2024_2194.hwp",
+        "--json"
+      ],
+      "exitClass": 3,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "a": "samples/gov/통계청_예산서_2024_2194.hwpx",
+        "b": "samples/gov/통계청_예산서_2024_2194.hwp",
+        "identical": false,
+        "diffCount": 9,
+        "categories": {
+          "text": 4,
+          "charShape": 1,
+          "table": 3,
+          "ctrl": 1
+        },
+        "untrustedContent": true,
+        "untrustedFields": [
+          "categories"
+        ]
+      },
+      "judgment": {
+        "identical": false,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": 9,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-002195",
+      "sourceTag": "기상청/예산서/2024/2195#layout-anomaly/overflow-strict",
+      "command": "layout-anomaly",
+      "argv": [
+        "layout-anomaly",
+        "samples/gov/기상청_예산서_2024_2195.hwp",
+        "--strict",
+        "--json"
+      ],
+      "exitClass": 3,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/기상청_예산서_2024_2195.hwp",
+        "pageCount": 7,
+        "pageFilter": null,
+        "overflowTolerancePx": 1.0,
+        "overlapTolerancePx": 1.0,
+        "strict": true,
+        "overflowCount": 3,
+        "overlapCount": 1,
+        "emptyPageCount": 0,
+        "hasSignal": true,
+        "pages": [
+          {
+            "page": 0,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": true,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [
+              {
+                "kind": "para",
+                "section": 0,
+                "paragraph": 2,
+                "dx": 11.5,
+                "dy": 0.0,
+                "edge": "right"
+              }
+            ],
+            "overlapItems": []
+          },
+          {
+            "page": 1,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": true,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": [
+              {
+                "kind": "text-text",
+                "a": {
+                  "section": 0,
+                  "paragraph": 4
+                },
+                "b": {
+                  "section": 0,
+                  "paragraph": 5
+                },
+                "overlapPx": 7.0
+              }
+            ]
+          },
+          {
+            "page": 2,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 3,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 4,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 5,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 6,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          }
+        ],
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": true,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": true,
+        "overflowCount": 3,
+        "overlapCount": 1,
+        "emptyPageCount": 0,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-002196",
+      "sourceTag": "관세청/예산서/2024/2196#replay/verify-mismatch",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "plan.json",
+        "--expect-output-sha256",
+        "0000000000000000000000000000000000000000000000000000000000000000",
+        "--json"
+      ],
+      "exitClass": 3,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "mode": "verify",
+        "input": "samples/gov/관세청_예산서_2024_2196.hwp",
+        "inputSha256": "f008839f2797840d41c12a6df28c8aefbcd61599b34d2c174497c98004562a3b",
+        "planSha256": "1d91f3466fafbb17b4c45d1344d5febea16dd1c7cc71523464c15b9fe6cd8010",
+        "outputSha256": "3a2ac1ec648bd3264139c940707b07a191fd66e53bf3fccd2f356ff495ac56f1",
+        "expectedOutputSha256": "f62e510bba62023a93e6192d4e4d2d98509042b5dd53f352313e88ac0eb7331f",
+        "reproduced": false,
+        "steps": 1,
+        "toolVersion": "0.8.4",
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": false,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-002197",
+      "sourceTag": "검찰청/예산서/2024/2197#fill-fields/verify-ir-diff",
+      "command": "fill-fields",
+      "argv": [
+        "edit",
+        "fill-fields",
+        "samples/gov/검찰청_예산서_2024_2197.hwpx",
+        "--data",
+        "@fields.json",
+        "-o",
+        "out.hwp",
+        "--verify",
+        "--json"
+      ],
+      "exitClass": 3,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/검찰청_예산서_2024_2197.hwpx",
+        "dryRun": false,
+        "filledCount": 2,
+        "filled": [
+          {
+            "name": "전자우편",
+            "occurrence": 0,
+            "value": "전자우편-값-2196-0"
+          },
+          {
+            "name": "사업자등록번호",
+            "occurrence": 1,
+            "value": "사업자등록번호-값-2196-1"
+          }
+        ],
+        "notFound": [],
+        "ambiguous": [],
+        "confusable": [],
+        "changedPages": [
+          0
+        ],
+        "untrustedContent": true,
+        "untrustedFields": [
+          "filled[].value",
+          "filled[].name"
+        ],
+        "output": "output/gov/검찰청_예산서_2024_2197_filled.hwpx",
+        "outputFormat": "hwpx",
+        "verify": {
+          "identical": false,
+          "diffCount": 1
+        }
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": {
+          "identical": false,
+          "diffCount": 1
+        },
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-002198",
+      "sourceTag": "경찰청/예산서/2024/2198#render-diff/regression",
+      "command": "render-diff",
+      "argv": [
+        "render-diff",
+        "samples/gov/경찰청_예산서_2024_2198.hwp",
+        "--via",
+        "hwp",
+        "--json"
+      ],
+      "exitClass": 3,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "mode": "self-roundtrip",
+        "sourceA": "samples/gov/경찰청_예산서_2024_2198.hwp",
+        "sourceB": "samples/gov/경찰청_예산서_2024_2198.hwp",
+        "via": "hwp",
+        "pageFilter": null,
+        "threshold": 2.0,
+        "pageCountA": 4,
+        "pageCountB": 4,
+        "pageCountMismatch": false,
+        "maxDisp": 5.5,
+        "worstPage": 0,
+        "overPages": 2,
+        "structPages": 0,
+        "hardStructPages": 0,
+        "status": "OVER",
+        "regression": true,
+        "pages": [
+          {
+            "page": 0,
+            "maxDisp": 5.5,
+            "over": true,
+            "structMismatch": false,
+            "nodeCountA": 47,
+            "nodeCountB": 47
+          },
+          {
+            "page": 1,
+            "maxDisp": 1.2,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 48,
+            "nodeCountB": 48
+          },
+          {
+            "page": 2,
+            "maxDisp": 1.4,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 49,
+            "nodeCountB": 49
+          },
+          {
+            "page": 3,
+            "maxDisp": 0.0,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 50,
+            "nodeCountB": 50
+          }
+        ],
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": true,
+        "status": "OVER",
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": false,
+        "overPages": 2
+      }
+    },
+    {
+      "recordId": "vproto-002199",
+      "sourceTag": "소방청/예산서/2024/2199#info/io-missing",
+      "command": "info",
+      "argv": [
+        "info",
+        "samples/gov/소방청_예산서_2024_2199.hwp",
+        "--json"
+      ],
+      "exitClass": 1,
+      "stdoutPresent": false,
+      "stderrKind": "io",
+      "envelope": null,
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-002200",
+      "sourceTag": "해양경찰청/예산서/2024/2200#verify/io-missing",
+      "command": "verify",
+      "argv": [
+        "verify",
+        "samples/gov/해양경찰청_예산서_2024_2200.hwpx",
+        "--expect-pages",
+        "1",
+        "--json"
+      ],
+      "exitClass": 1,
+      "stdoutPresent": false,
+      "stderrKind": "io",
+      "envelope": null,
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    }
+  ]
+}

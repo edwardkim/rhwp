@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.form_fill.form_catalog.v1",
+  "id": "rrn-correct",
+  "title": "주민등록 정정 신청",
+  "family": "민원",
+  "genre": "정정",
+  "sample": "fixtures/forms/주민등록정정.hwp",
+  "format": "hwp5",
+  "relatedIssue": "#3329",
+  "why": "정정 전/후 값이 같은 이름 쌍이 아님 — 별도 필드.",
+  "notes": "",
+  "claim": "M-fill",
+  "generator": "tools/form_fill/fatten_form_fill.py",
+  "fieldCount": 9,
+  "firstFieldName": "성명",
+  "repeatedNames": [],
+  "nameCounts": {"성명": 1, "주민등록번호": 1, "주소": 1, "정정항목": 1, "정정전": 1, "정정후": 1, "사유": 1, "첨부": 1, "신청일": 1},
+  "hash": "9449ba8cc350",
+  "surveyFieldCount": 9,
+  "textSecurity": {"status": "clean"},
+  "fields": [
+    {"name": "성명", "guide": "신청인", "value": "", "memo": "", "paragraph": 0, "nested": []},
+    {"name": "주민등록번호", "guide": "주민번호", "value": "", "memo": "", "paragraph": 1, "nested": []},
+    {"name": "주소", "guide": "주소", "value": "", "memo": "", "paragraph": 2, "nested": []},
+    {"name": "정정항목", "guide": "항목", "value": "", "memo": "", "paragraph": 3, "nested": []},
+    {"name": "정정전", "guide": "정정 전", "value": "", "memo": "", "paragraph": 4, "nested": []},
+    {"name": "정정후", "guide": "정정 후", "value": "", "memo": "", "paragraph": 5, "nested": []},
+    {"name": "사유", "guide": "사유", "value": "", "memo": "", "paragraph": 6, "nested": []},
+    {"name": "첨부", "guide": "첨부", "value": "", "memo": "", "paragraph": 7, "nested": []},
+    {"name": "신청일", "guide": "신청일", "value": "", "memo": "", "paragraph": 8, "nested": []}
+  ]
+}

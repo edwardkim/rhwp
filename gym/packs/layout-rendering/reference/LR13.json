@@ -1,0 +1,17 @@
+{
+  "id": "LR13",
+  "steps": [
+    {
+      "answer": {
+        "pages": {
+          "cmd": [
+            "info",
+            "{input}",
+            "--json"
+          ],
+          "path": "pageCount"
+        }
+      }
+    }
+  ]
+}

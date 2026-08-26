@@ -7,6 +7,9 @@ last_verified: 2026-08-03
 
 # 진입로별 실패 사전 — 증상 문자열로 찾는다
 
+> **v0.8.4 현행성 주의:** Python·Node 바인딩 오류 항목은 철회 전 기록이다.
+> 두 공식 바인딩은 #4655에서 제거됐으며 현재 지원되는 진입로의 오류가 아니다.
+
 받은 오류 메시지를 **그대로 검색**해 찾을 수 있게 만든 사전이다. 표제는 실제로
 재현해서 받은 문자열이고, 재현하지 못한 항목은 근거(코드 경로)를 명시했다.
 
@@ -294,7 +297,10 @@ CLI 였다면 exit 3 이었을 판정이 **`isError:false` 로 온다.**
 
 ---
 
-## 5. 바인딩 — 예외 클래스가 곧 종료 코드
+## 5. 철회된 바인딩 오류 이력
+
+이 절은 #4655 이전 Python·Node 바인딩의 오류 계약을 보존한 historical record다.
+현재 지원 진입로의 트러블슈팅으로 사용하지 않는다.
 
 ### `BinaryNotFoundError: RHWP_BIN 가 가리키는 실행 파일을 쓸 수 없습니다: <경로>`
 
@@ -444,6 +450,6 @@ RHWP_BIN 가 가리키는 실행 파일을 쓸 수 없습니다: C:/없는경로
 - [agent_troubleshooting_guide.md](../../manual/agent_troubleshooting_guide.md) — **진입로 무관 공통 실패**
 - [cli_commands.md](../../manual/cli_commands.md) — 명령·플래그·종료 코드 권위
 - [mcp_integration_guide.md](../../manual/mcp_integration_guide.md) — MCP 오류 의미론
-- [python_binding_guide.md](../../manual/python_binding_guide.md) · [node_binding_guide.md](../../manual/node_binding_guide.md)
+- 공식 Python·Node 바인딩 철회: [#4655](https://github.com/edwardkim/rhwp/issues/4655)
 - [agent_boundary_contract.md](../agent_boundary_contract.md) — 핸들·경로·자원 한계의 경계 계약
 - 이슈 [#3869](https://github.com/edwardkim/rhwp/issues/3869)

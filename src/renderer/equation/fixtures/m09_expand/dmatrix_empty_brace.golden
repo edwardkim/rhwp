@@ -1,0 +1,20 @@
+# M09-g equation golden — current-engine lock (variant/exception/unimplemented honesty)
+command: DMATRIX
+script: DMATRIX{}
+honesty: missing-operand
+
+=== ast ===
+Matrix {
+    rows: [
+        [],
+    ],
+    style: Vert,
+}
+
+=== layout ===
+Matrix(Vert) x=0.0000 y=0.0000 w=20.0000 h=20.0000 bl=10.0000
+  row0:
+
+=== svg ===
+<line x1="3.00" y1="0.00" x2="3.00" y2="20.00" stroke="#000000" stroke-width="0.80"/>
+<line x1="17.00" y1="0.00" x2="17.00" y2="20.00" stroke="#000000" stroke-width="0.80"/>

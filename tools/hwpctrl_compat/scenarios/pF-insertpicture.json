@@ -1,0 +1,126 @@
+{
+  "id": "pF-insertpicture",
+  "title": "그림 넣기 — 앞머리 컨트롤이 있는 문단에서도 닻이 맞는다 (#4347)",
+  "ledger": [
+    "HwpCtrl.method.InsertPicture"
+  ],
+  "open": "samples/para-001.hwp",
+  "paths": {
+    "picture": {
+      "win": "{repo}\\samples\\s1.jpg",
+      "posix": "{repo}/samples/s1.jpg"
+    }
+  },
+  "calls": [
+    [
+      "SetPos",
+      [
+        0,
+        0,
+        20
+      ]
+    ],
+    [
+      "GetPos",
+      [],
+      {
+        "expect": {
+          "list": 0,
+          "para": 0,
+          "pos": 20
+        }
+      }
+    ],
+    [
+      "InsertPicture",
+      [
+        {
+          "$path": "picture"
+        },
+        true,
+        0
+      ]
+    ],
+    [
+      "GetPos",
+      [],
+      {
+        "expect": {
+          "list": 0,
+          "para": 0,
+          "pos": 28
+        }
+      }
+    ],
+    [
+      "HeadCtrl.Next.Next.CtrlID",
+      [],
+      {
+        "expect": "gso"
+      }
+    ],
+    [
+      "HeadCtrl.Next.Next.UserDesc",
+      [],
+      {
+        "expect": "그림"
+      }
+    ],
+    [
+      "HeadCtrl.Next.Next.Properties.SetID",
+      [],
+      {
+        "expect": "ShapeObject"
+      }
+    ],
+    [
+      "HeadCtrl.Next.Next.Properties.Item",
+      [
+        "Width"
+      ],
+      {
+        "expect": 12300
+      }
+    ],
+    [
+      "HeadCtrl.Next.Next.Properties.Item",
+      [
+        "Height"
+      ],
+      {
+        "expect": 11400
+      }
+    ],
+    [
+      "HeadCtrl.Next.Next.Properties.Item",
+      [
+        "TreatAsChar"
+      ],
+      {
+        "expect": 1
+      }
+    ],
+    [
+      "HeadCtrl.Next.Next.GetAnchorPos(0).Item",
+      [
+        "Para"
+      ],
+      {
+        "expect": 0
+      }
+    ],
+    [
+      "HeadCtrl.Next.Next.GetAnchorPos(0).Item",
+      [
+        "Pos"
+      ],
+      {
+        "expect": 20
+      }
+    ],
+    [
+      "SelectionMode",
+      []
+    ]
+  ]
+}

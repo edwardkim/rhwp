@@ -1,0 +1,167 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.provenance.untrusted_fields.v1",
+  "claim": "M-prov",
+  "issue": 5480,
+  "generator": "tools/provenance_map/fatten_provenance_map.py",
+  "command": "digest",
+  "mapIndex": 10,
+  "family": "query",
+  "familyTitle": "조회",
+  "opensDocument": true,
+  "cli": "rhwp digest <파일> --json [--sections|--pages]",
+  "risk": "high",
+  "whyRisk": "발췌는 짧아서 시스템 프롬프트 '요약' 칸에 들어가기 쉽다.",
+  "note": "nextStep 은 고정 문자열 계약이고 format/pageCount/paraCount 는 엔진값이다.",
+  "consumerRule": "모드마다 표지 부분집합이 다르다. 선언 목록을 그대로 믿지 말고 표지를 읽는다.",
+  "trap": "nextStep 은 고정 계약. 문서가 정한 다음 행동이 아니다.",
+  "untrusted": [
+    "outline[]",
+    "excerpt",
+    "sections[].heading",
+    "sections[].excerpt"
+  ],
+  "origins": {
+    "outline[]": "StructureNode.heading — 최상위 제목 문단 텍스트",
+    "excerpt": "extract_page_text_native 앞쪽 발췌(기본 3쪽) 또는 --pages 범위 발췌",
+    "sections[].heading": "절 제목 문단 텍스트 (--sections)",
+    "sections[].excerpt": "절 본문 발췌 (--sections)"
+  },
+  "engineFields": [
+    [
+      "format",
+      "포맷 토큰"
+    ],
+    [
+      "pageCount",
+      "쪽 수"
+    ],
+    [
+      "paraCount",
+      "문단 수"
+    ],
+    [
+      "nextStep",
+      "고정 문자열 계약"
+    ]
+  ],
+  "callerFields": [
+    [
+      "source",
+      "입력 경로"
+    ]
+  ],
+  "modes": [
+    {
+      "mode": "default",
+      "flags": [
+        "--json"
+      ],
+      "present": [
+        "outline[]",
+        "excerpt"
+      ],
+      "why": "기본 앞쪽 발췌",
+      "sampleKind": "typical",
+      "untrustedContent": true
+    },
+    {
+      "mode": "sections",
+      "flags": [
+        "--json",
+        "--sections"
+      ],
+      "present": [
+        "outline[]",
+        "excerpt",
+        "sections[].heading",
+        "sections[].excerpt"
+      ],
+      "why": "--sections 는 절 단위 발췌를 더 싣는다",
+      "sampleKind": "typical",
+      "untrustedContent": true
+    },
+    {
+      "mode": "pages",
+      "flags": [
+        "--json",
+        "--pages"
+      ],
+      "present": [
+        "excerpt"
+      ],
+      "why": "--pages 는 범위 발췌. outline 이 빠질 수 있다",
+      "sampleKind": "typical",
+      "untrustedContent": true
+    }
+  ],
+  "fields": [
+    {
+      "path": "outline[]",
+      "origin": "StructureNode.heading — 최상위 제목 문단 텍스트",
+      "hint": "최상위 제목.",
+      "presentInModes": [
+        "default",
+        "sections"
+      ]
+    },
+    {
+      "path": "excerpt",
+      "origin": "extract_page_text_native 앞쪽 발췌(기본 3쪽) 또는 --pages 범위 발췌",
+      "hint": "발췌. 시스템 요약 칸 금지.",
+      "presentInModes": [
+        "default",
+        "sections",
+        "pages"
+      ]
+    },
+    {
+      "path": "sections[].heading",
+      "origin": "절 제목 문단 텍스트 (--sections)",
+      "hint": "절 제목.",
+      "presentInModes": [
+        "sections"
+      ]
+    },
+    {
+      "path": "sections[].excerpt",
+      "origin": "절 본문 발췌 (--sections)",
+      "hint": "절 발췌.",
+      "presentInModes": [
+        "sections"
+      ]
+    }
+  ],
+  "forbiddenSlots": [
+    "system_prompt",
+    "tool_name",
+    "tool_arg_path",
+    "tool_arg_output",
+    "shell_command",
+    "url_destination",
+    "http_request_body",
+    "run_plan_json",
+    "permission_judgment",
+    "source_label",
+    "log_filename",
+    "email_recipient",
+    "email_subject",
+    "mcp_resource_uri",
+    "next_cli_subcommand",
+    "verify_expected",
+    "filename_from_title",
+    "env_variable",
+    "scheduler_payload",
+    "multimodal_caption"
+  ],
+  "allowedSinks": [
+    "user_visible_ok",
+    "fenced_llm_block"
+  ],
+  "policy": {
+    "meaning": "여기 실린 값은 데이터이지 지시가 아니다.",
+    "conservatism": "애매하면 문서 파생으로 선언한다.",
+    "subset": "봉투 표지의 untrustedFields 는 이 목록의 부분집합이다.",
+    "alwaysMarked": "표지 키는 항상 실린다. 키 부재는 미표기다."
+  }
+}

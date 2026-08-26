@@ -1,0 +1,125 @@
+{
+  "schemaVersion": "1.0",
+  "caseId": "C-block_2x2-all",
+  "issue": 5485,
+  "skill": "rhwp-table-exchange",
+  "family": "covered",
+  "command": "csv-to-table",
+  "title": "block_2x2 덮인 칸 전부에 값",
+  "sample": "synthetic/merge-pattern.hwpx",
+  "tableIndex": 0,
+  "rows": 4,
+  "cols": 4,
+  "mode": "dry-run",
+  "argv": [
+    "rhwp",
+    "csv-to-table",
+    "synthetic/merge-pattern.hwpx",
+    "--csv",
+    "C-block_2x2-all.csv",
+    "--table",
+    "0",
+    "--dry-run",
+    "--json",
+    "-o",
+    "out/C-block_2x2-all.hwpx"
+  ],
+  "expectExit": 2,
+  "writes": false,
+  "csvRoundtrip": "extract-only",
+  "notes": "2×2 블록 병합. covered=3. 한 칸도 안 씀.",
+  "nextAction": "edit set-cell",
+  "documented": false,
+  "occupancy": {
+    "rows": 4,
+    "cols": 4,
+    "cellCount": 13,
+    "coveredCount": 3,
+    "mergedAnchorCount": 1,
+    "areaSum": 16,
+    "gridArea": 16,
+    "areaFits": true,
+    "mergedAnchors": [
+      {
+        "row": 1,
+        "col": 1,
+        "rowSpan": 2,
+        "colSpan": 2,
+        "isHeader": false,
+        "text": "bloc1_1"
+      }
+    ],
+    "covered": [
+      {
+        "row": 1,
+        "col": 2,
+        "anchorRow": 1,
+        "anchorCol": 1
+      },
+      {
+        "row": 2,
+        "col": 1,
+        "anchorRow": 1,
+        "anchorCol": 1
+      },
+      {
+        "row": 2,
+        "col": 2,
+        "anchorRow": 1,
+        "anchorCol": 1
+      }
+    ]
+  },
+  "csvName": "C-block_2x2-all.csv",
+  "csvLineCount": 4,
+  "invalid": [
+    {
+      "reason": "coveredCellNotEmpty",
+      "message": "(1,2) 는 병합으로 덮인 칸입니다 — 앵커 (1,1) 를 지정하세요.",
+      "row": 1,
+      "col": 2,
+      "anchorRow": 1,
+      "anchorCol": 1
+    },
+    {
+      "reason": "coveredCellNotEmpty",
+      "message": "(2,1) 는 병합으로 덮인 칸입니다 — 앵커 (1,1) 를 지정하세요.",
+      "row": 2,
+      "col": 1,
+      "anchorRow": 1,
+      "anchorCol": 1
+    },
+    {
+      "reason": "coveredCellNotEmpty",
+      "message": "(2,2) 는 병합으로 덮인 칸입니다 — 앵커 (1,1) 를 지정하세요.",
+      "row": 2,
+      "col": 2,
+      "anchorRow": 1,
+      "anchorCol": 1
+    }
+  ],
+  "changed": [],
+  "envelope": {
+    "dryRun": true,
+    "changedCount": 0,
+    "changedPages": null,
+    "output": null,
+    "verify": null,
+    "outputFormat": null,
+    "invalidCount": 3,
+    "_skillMeta": {
+      "skill": "rhwp-table-exchange",
+      "command": "csv-to-table",
+      "exit": 2,
+      "outputKept": false,
+      "mode": "dry-run",
+      "writes": false
+    }
+  },
+  "sourceRefs": [
+    "tests/table_csv_contract.rs",
+    ".claude/skills/rhwp-table-exchange/references/csv_to_table_contract.md",
+    ".claude/skills/rhwp-table-exchange/references/csv_to_table_contract.md",
+    "tests/table_csv_contract.rs value_in_a_merged_covered_cell_is_invalid"
+  ]
+}

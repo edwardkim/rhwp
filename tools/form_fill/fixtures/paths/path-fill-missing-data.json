@@ -1,0 +1,18 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.form_fill.path_contract.v1",
+  "claim": "M-fill",
+  "generator": "tools/form_fill/fatten_form_fill.py",
+  "existingCliOnly": true,
+  "id": "path-fill-missing-data",
+  "axis": "usage",
+  "title": "--data 없음",
+  "why": "exit 2.",
+  "argv": [
+    "edit",
+    "fill-fields",
+    "samples/field-01.hwp"
+  ],
+  "exit": 2,
+  "writesFile": false
+}

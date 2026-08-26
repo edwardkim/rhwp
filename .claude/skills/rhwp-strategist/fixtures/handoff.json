@@ -1,0 +1,48 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5335,
+  "parts": [
+    {
+      "id": 1,
+      "name": "확인한 것",
+      "fields": [
+        "objective",
+        "documentCount",
+        "mappedCount",
+        "failedFiles",
+        "evidenceCount",
+        "truncatedSearches",
+        "noEvidenceQuestions",
+        "verdict",
+        "swsLevel",
+        "scaffoldAdvertised"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "산출물",
+      "fields": [
+        "spec.json",
+        "evidence.json",
+        "corpus_map.json",
+        "validate envelope",
+        "deliverable.hwpx?"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "다음",
+      "fields": [
+        "password request",
+        "keyword candidates",
+        "limit revisit",
+        "fde/chief handoff"
+      ]
+    }
+  ],
+  "forbiddenPhrases": [
+    "대략 다 읽었습니다",
+    "시장은 긍정적입니다",
+    "수주 확률"
+  ]
+}

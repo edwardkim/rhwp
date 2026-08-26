@@ -73,3 +73,17 @@ test('로컬 감지 미지원 환경에서는 prompt 없이 웹 대체와 누락
     ['휴먼명조', 'web-substitute', 'HY신명조'],
   ]);
 });
+
+test('정부상징 legacy face는 확인된 ROKG successor를 로컬 사용 가능으로 보고한다', () => {
+  const report = analyzeDocumentFonts(['정부상징 부처명_16040911'], {
+    localFonts: ['대한민국정부상징체 R'],
+    localSupported: true,
+    localSnapshotLoaded: true,
+    localSnapshotStored: true,
+  });
+
+  assert.equal(report.shouldPromptLocalAccess, false);
+  assert.deepEqual(report.fonts.map(font => [font.status, font.source, font.substituteFont]), [
+    ['available', 'local', '대한민국정부상징체 R'],
+  ]);
+});

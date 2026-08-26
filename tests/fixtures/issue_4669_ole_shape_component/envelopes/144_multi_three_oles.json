@@ -1,0 +1,243 @@
+{
+  "schema": "rhwp.issue4669.ole-shape-component.v1",
+  "issue": 4669,
+  "tracker": 5450,
+  "fixture_id": "144_multi_three_oles",
+  "family": "multi-ole",
+  "contract": "OLE 3개 (양수 offset / curSz0+flip / id=0)",
+  "source": "synthetic",
+  "oles": [
+    {
+      "index": 0,
+      "id": 1001,
+      "instid": 2001,
+      "hwpx_ole_id": 1001,
+      "instance_id": 2001,
+      "save_id": 1001,
+      "offset": [
+        10,
+        20
+      ],
+      "offset_u32": [
+        10,
+        20
+      ],
+      "orgSz": [
+        42001,
+        13501
+      ],
+      "curSz": [
+        29999,
+        4051
+      ],
+      "was_zero": [
+        false,
+        false
+      ],
+      "flip": [
+        0,
+        0
+      ],
+      "rotation": [
+        0,
+        14999,
+        2025,
+        1
+      ],
+      "trans": [
+        1,
+        0,
+        10,
+        0,
+        1,
+        20
+      ],
+      "sca": [
+        0.714245,
+        0,
+        0,
+        0,
+        0.300052,
+        0
+      ],
+      "line": {
+        "color": "#000000",
+        "width": 0,
+        "style": "NONE",
+        "endCap": "ROUND"
+      },
+      "expect_xml": [
+        "id=\"1001\"",
+        "instid=\"2001\"",
+        "<hp:offset x=\"10\" y=\"20\"/>",
+        "<hp:orgSz width=\"42001\" height=\"13501\"/>",
+        "<hp:curSz width=\"29999\" height=\"4051\"/>",
+        "<hp:flip horizontal=\"0\" vertical=\"0\"/>",
+        "angle=\"0\"",
+        "centerX=\"14999\"",
+        "centerY=\"2025\"",
+        "rotateimage=\"1\"",
+        "style=\"NONE\"",
+        "width=\"0\""
+      ],
+      "forbid_xml": [
+        "<hp:offset x=\"0\" y=\"0\"/>"
+      ],
+      "forbid_id_zero": true
+    },
+    {
+      "index": 1,
+      "id": 1002,
+      "instid": 2002,
+      "hwpx_ole_id": 1002,
+      "instance_id": 2002,
+      "save_id": 1002,
+      "offset": [
+        0,
+        0
+      ],
+      "offset_u32": [
+        0,
+        0
+      ],
+      "orgSz": [
+        42001,
+        13501
+      ],
+      "curSz": [
+        0,
+        0
+      ],
+      "was_zero": [
+        true,
+        true
+      ],
+      "flip": [
+        1,
+        0
+      ],
+      "rotation": [
+        0,
+        14999,
+        2025,
+        1
+      ],
+      "trans": [
+        1,
+        0,
+        0,
+        0,
+        1,
+        0
+      ],
+      "sca": [
+        0.714245,
+        0,
+        0,
+        0,
+        0.300052,
+        0
+      ],
+      "line": {
+        "color": "#000000",
+        "width": 0,
+        "style": "NONE",
+        "endCap": "ROUND"
+      },
+      "expect_xml": [
+        "id=\"1002\"",
+        "instid=\"2002\"",
+        "<hp:offset x=\"0\" y=\"0\"/>",
+        "<hp:orgSz width=\"42001\" height=\"13501\"/>",
+        "<hp:curSz width=\"0\" height=\"0\"/>",
+        "<hp:flip horizontal=\"1\" vertical=\"0\"/>",
+        "angle=\"0\"",
+        "centerX=\"14999\"",
+        "centerY=\"2025\"",
+        "rotateimage=\"1\"",
+        "style=\"NONE\"",
+        "width=\"0\""
+      ],
+      "forbid_xml": [
+        "<hp:curSz width=\"42001\" height=\"13501\"/>"
+      ],
+      "forbid_id_zero": true
+    },
+    {
+      "index": 2,
+      "id": 0,
+      "instid": 3003,
+      "hwpx_ole_id": 0,
+      "instance_id": 3003,
+      "save_id": 0,
+      "offset": [
+        0,
+        0
+      ],
+      "offset_u32": [
+        0,
+        0
+      ],
+      "orgSz": [
+        42001,
+        13501
+      ],
+      "curSz": [
+        29999,
+        4051
+      ],
+      "was_zero": [
+        false,
+        false
+      ],
+      "flip": [
+        0,
+        0
+      ],
+      "rotation": [
+        0,
+        14999,
+        2025,
+        1
+      ],
+      "trans": [
+        1,
+        0,
+        0,
+        0,
+        1,
+        0
+      ],
+      "sca": [
+        0.714245,
+        0,
+        0,
+        0,
+        0.300052,
+        0
+      ],
+      "line": {
+        "color": "#FF0000",
+        "width": 3,
+        "style": "SOLID",
+        "endCap": "FLAT"
+      },
+      "expect_xml": [
+        "id=\"0\"",
+        "instid=\"3003\"",
+        "<hp:offset x=\"0\" y=\"0\"/>",
+        "<hp:orgSz width=\"42001\" height=\"13501\"/>",
+        "<hp:curSz width=\"29999\" height=\"4051\"/>",
+        "<hp:flip horizontal=\"0\" vertical=\"0\"/>",
+        "angle=\"0\"",
+        "centerX=\"14999\"",
+        "centerY=\"2025\"",
+        "rotateimage=\"1\"",
+        "style=\"SOLID\"",
+        "width=\"3\""
+      ],
+      "forbid_xml": [],
+      "forbid_id_zero": false
+    }
+  ]
+}

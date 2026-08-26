@@ -1,0 +1,22 @@
+{
+  "id": "p4-insert",
+  "title": "Insert 계열·이름 붙이기·개요 문자열 재기",
+  "ledger": [],
+  "open": "samples/issue-986-receipt.hwp",
+  "calls": [
+    ["GetHeadingString", []],
+    ["MovePos", [2, 0, 0]],
+    ["GetHeadingString", []],
+    ["GetPos", []],
+    ["GetCurFieldName", [0]],
+    ["SetCurFieldName", ["새이름"]],
+    ["GetCurFieldName", [0]],
+    ["GetFieldList", [0, 0]],
+    ["Insert", ["가"]],
+    ["GetPos", []],
+    ["Insert", ["나다"]],
+    ["GetPos", []],
+    ["Insert", [65]],
+    ["GetPos", []]
+  ]
+}

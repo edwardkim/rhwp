@@ -1,0 +1,10 @@
+{
+  "planVersion": "1.0",
+  "source": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "op": "replace",
+  "steps": [
+    {
+      "op": "replace_text"
+    }
+  ]
+}

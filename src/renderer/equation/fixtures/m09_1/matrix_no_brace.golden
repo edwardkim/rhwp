@@ -1,0 +1,11 @@
+# M09-1 equation golden — current-engine lock
+command: MATRIX
+script: MATRIX
+
+=== ast ===
+Empty
+
+=== layout ===
+Empty x=0.0000 y=0.0000 w=0.0000 h=0.0000 bl=0.0000
+
+=== svg ===

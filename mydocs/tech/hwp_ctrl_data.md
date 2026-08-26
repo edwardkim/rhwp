@@ -2,7 +2,7 @@
 kind: reference
 status: active
 canonical: mydocs/tech/hwp_spec_errata.md
-last_verified: 2026-07-28
+last_verified: 2026-08-10
 ---
 
 # HWPTAG_CTRL_DATA 분석 (hwplib 크로스 체크)
@@ -78,11 +78,43 @@ offset  size  설명
 - **호환 근거**: #3507 — 동일 payload를 두 번 쓰면 rhwp 재로드는 성공하지만 macOS 한컴 Viewer와
   Windows 한글 2024가 파일 손상으로 거부한다.
 
-### 4. Table (tbl) ⚪ raw round-trip 보존
+### 4. Table (tbl) ✅ raw round-trip + 제한된 HWPX→HWP materialization
 
 - hwplib: `ForControlTable.java` → CtrlData 읽기
 - 표의 부가 메타데이터
-- **현재 영향**: 없음
+- HWP5 파서의 canonical owner는 해당 control index의 `Paragraph.ctrl_data_records`다.
+  serializer는 payload를 해석하거나 item id를 다시 배정하지 않고 raw bytes를 출력한다.
+- HWPX→HWP adapter는 `3×2 + repeat_header + RowBreak` 조건에서만 다음 104바이트
+  table-layout payload를 materialize한다.
+
+```text
+ParameterSet 0x021B
+  item 0x0242 (ParameterSet)
+    ParameterSet 0x0242
+      Integer4 items:
+        (0x4000, 3826), (0x4001, 1048), (0x4002, 28346),
+        (0x4003, 8475), (0x4004, 708),  (0x4005, 0),
+        (0x4006, 2),    (0x4007, 9),    (0x4008, 0),
+        (0x4009, 59528),(0x400A, 84188)
+```
+
+- 위 item id는 이 opaque payload에서 함께 관찰된 정확한 값이다. `0x4000 + index`를
+  범용 할당 규칙이나 확장 가능한 사설 namespace로 취급하지 않는다. 인접 ID에 새 의미를
+  배정하지 말고, 새 payload는 독립된 바이너리 근거와 실제 소비자를 먼저 확정한다.
+- **근거와 한계**: #1064와 #1099에서 같은 104바이트 payload가 관찰됐지만, 당시 결과에는
+  다른 HWP5 저장 계약도 함께 작용했다. #4438의 합성 exact/item-id 역순/CTRL_DATA 없음
+  단일 변화축은 외부 reader에서 모두 열리고 Save As됐다. exact와 item-id 역순 입력은 같은
+  2쪽 구조를 렌더링했고, CTRL_DATA가 없으면 1쪽이었다. 저장 출력은 각 입력의 11개
+  `(item_id, value)` 결합을 유지한 채 item record 순서를 반전했으며, 없음 입력은 계속
+  CTRL_DATA가 없었다. 따라서 이 fixture에서는 payload 존재가 관찰된 layout에 영향을 주지만
+  item-id 치환만으로는 차이가 관찰되지 않았다. 이는 개별 item의 일반 의미·무시 여부,
+  namespace 또는 다른 문서의 호환성을 확정하지 않으므로, adapter가 재현하는 opaque bytes와
+  rhwp 내부 보존 경계만 계약으로 삼는다.
+- source IR 불변이 필요한 저장 경계는
+  `DocumentCore::export_hwp_with_adapter_snapshot()`으로 adapter를 `Document` 복제본에만
+  적용한다. 현재 세션 저장 경로가 이 API를 소비하며, materialized raw bytes와 출처 marker는
+  저장 snapshot에만 존재한다. 반대로 `export_hwp_with_adapter()`는 live IR을 정규화하는
+  in-place API이므로 source-nonmutation 계약으로 해석하지 않는다.
 
 ### 5. Picture ($pic) ⚪ raw round-trip 보존
 
@@ -111,7 +143,7 @@ offset  size  설명
 | 새 Bookmark CTRL_DATA 생성 | ✅ `build_bookmark_ctrl_data()` |
 | Bookmark 삭제/이름변경 시 동기화 | ✅ |
 | 기타 컨트롤 구조적 파싱 | ⚪ 불필요 (raw 보존으로 충분) |
-| 새 컨트롤 생성 시 CTRL_DATA 생성 | ⚠️ Bookmark만 구현, 기타 미구현 |
+| 새 컨트롤 생성 시 CTRL_DATA 생성 | ⚠️ Bookmark와 위 제한된 table-layout 계약만 구현, 기타 미구현 |
 | SectionDef exact duplicate 방어 | ✅ 첫 중첩 header 전의 첫 직접 자식은 단일 owner, legacy 이중 소유 IR은 serializer에서 1회 출력 |
 
 ## 향후 고도화 대상

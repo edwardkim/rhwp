@@ -1,0 +1,13 @@
+{
+  "id": "env_overflow",
+  "layer": "envelope",
+  "code": null,
+  "symptom": "overflow",
+  "retry": false,
+  "fix": "칸은 쓰였다. 넘침은 보고일 뿐. 필요하면 문구를 줄이거나 칸을 키운다.",
+  "tools": [
+    "hwp_doc_set_cell",
+    "hwp_set_cell"
+  ],
+  "policy": "isError:false. 필드를 게이트로 읽는다."
+}

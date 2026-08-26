@@ -1,0 +1,11 @@
+{
+  "id": "multi_query_edit",
+  "task": "검색→치환→저장",
+  "choice": "session",
+  "first_tool": "hwp_open",
+  "why": "한 핸들 누적.",
+  "forbidden": [
+    "invented_tools",
+    "relative_paths"
+  ]
+}

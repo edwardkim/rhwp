@@ -1,0 +1,21 @@
+{
+  "id": "FJ68",
+  "steps": [
+    {
+      "answer": {
+        "name": {
+          "cmd": [
+            "edit",
+            "fill-fields",
+            "{input}",
+            "--data",
+            "{\"제목\": \"제목예고\"}",
+            "--dry-run",
+            "--json"
+          ],
+          "path": "filled[0].name"
+        }
+      }
+    }
+  ]
+}

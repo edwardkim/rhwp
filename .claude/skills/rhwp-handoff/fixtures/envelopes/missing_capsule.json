@@ -1,0 +1,19 @@
+{
+  "exception": "missing_capsule",
+  "halt": true,
+  "guessResume": false,
+  "reason": "머리가 가리키는 session.capsule.json 이 없다",
+  "_skillMeta": {
+    "exit": 1,
+    "command": "read",
+    "trigger": null,
+    "exception": "missing_capsule",
+    "stdoutSilentOnFail": true,
+    "hardGate": "cargo fmt --all -- --check",
+    "staleFmtRejected": true,
+    "neverGitAddA": true,
+    "neverStealNamedWorktrees": true,
+    "neverInventDocumentCore": true,
+    "noNewCli": true
+  }
+}

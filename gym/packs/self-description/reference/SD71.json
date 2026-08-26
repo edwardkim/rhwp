@@ -1,0 +1,12 @@
+{
+  "id": "SD71",
+  "steps": [
+    {
+      "run": [
+        "export-capabilities-schema",
+        "-o",
+        "{sub:capabilities-schema.json}"
+      ]
+    }
+  ]
+}

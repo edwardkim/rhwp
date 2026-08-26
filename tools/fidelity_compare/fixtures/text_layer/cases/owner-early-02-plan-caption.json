@@ -1,0 +1,63 @@
+{
+  "id": "owner-early-02-plan-caption",
+  "schema": "rhwp.fidelity_compare.text_layer_case.v1",
+  "schemaVersion": "1.0",
+  "claim": "M-fid",
+  "generator": "tools/fidelity_compare/fatten_text_layer.py",
+  "kind": "excess",
+  "classification": "excess",
+  "family": "owner_shift",
+  "genre": "업무계획",
+  "registeredKey": "plan",
+  "title": "그림 캡션 조기 배치",
+  "why": "캡션이 한 쪽 이르게 나오면 owner-shift. 방향=rhwp_earlier_than_reference.",
+  "page": 12,
+  "page1based": 13,
+  "referenceText": "본문고정영역ABCDEFGH이번쪽공통",
+  "svgText": "본문고정영역ABCDEFGH이번쪽공통<그림 3-2> 디지털정부 추진체계 도해 (자료: 행정안전부 2022)",
+  "referenceNfc": "본문고정영역ABCDEFGH이번쪽공통",
+  "svgNfc": "본문고정영역ABCDEFGH이번쪽공통<그림 3-2> 디지털정부 추진체계 도해 (자료: 행정안전부 2022)",
+  "referenceSequence": "본문고정영역ABCDEFGH이번쪽공통",
+  "svgSequence": "본문고정영역ABCDEFGH이번쪽공통<그림3-2>디지털정부추진체계도해(자료:행정안전부2022)",
+  "referenceOnly": 0,
+  "svgOnly": 32,
+  "referenceOnlyChars": "",
+  "svgOnlyChars": "U+0028:(×1,U+0029:)×1,U+002D:-×1,U+0030:0×1,U+0032:2×4,U+0033:3×1,U+003A::×1,U+003C:<×1,U+003E:>×1,U+ACC4:\\uacc4×1,U+ADF8:\\uadf8×1,U+B3C4:\\ub3c4×1,U+B514:\\ub514×1,U+B8CC:\\ub8cc×1,U+B9BC:\\ub9bc×1,U+BD80:\\ubd80×2,U+C548:\\uc548×1,U+C790:\\uc790×1,U+C804:\\uc804×1,U+C815:\\uc815×2,U+C9C0:\\uc9c0×1,U+C9C4:\\uc9c4×1,U+CCB4:\\uccb4×1,U+CD94:\\ucd94×1,U+D138:\\ud138×1,U+D574:\\ud574×1,U+D589:\\ud589×1",
+  "glyphRiskCount": 0,
+  "glyphRisks": "",
+  "referenceGlyphRiskCount": 0,
+  "referenceGlyphRisks": "",
+  "ownerShift": [
+    {
+      "page": 12,
+      "next_page": 13,
+      "direction": "rhwp_earlier_than_reference",
+      "shared_count": 32,
+      "source_coverage": 1.0,
+      "target_coverage": 1.0,
+      "shared": "U+0028:(×1,U+0029:)×1,U+002D:-×1,U+0030:0×1,U+0032:2×4,U+0033:3×1,U+003A::×1,U+003C:<×1,U+003E:>×1,U+ACC4:\\uacc4×1,U+ADF8:\\uadf8×1,U+B3C4:\\ub3c4×1,U+B514:\\ub514×1,U+B8CC:\\ub8cc×1,U+B9BC:\\ub9bc×1,U+BD80:\\ubd80×2,U+C548:\\uc548×1,U+C790:\\uc790×1,U+C804:\\uc804×1,U+C815:\\uc815×2,U+C9C0:\\uc9c0×1,U+C9C4:\\uc9c4×1,U+CCB4:\\uccb4×1,U+CD94:\\ucd94×1,U+D138:\\ud138×1,U+D574:\\ud574×1,U+D589:\\ud589×1"
+    }
+  ],
+  "sequence": [
+    {
+      "page": 12,
+      "next_page": 13,
+      "direction": "rhwp_earlier_than_reference",
+      "chars": 32,
+      "sequence": "<그림3-2>디지털정부추진체계도해(자료:행정안전부2022)"
+    }
+  ],
+  "visibleExcess": [],
+  "clipExcludedChars": 0,
+  "nextReferenceText": "본문고정영역ABCDEFGH이번쪽공통<그림 3-2> 디지털정부 추진체계 도해 (자료: 행정안전부 2022)",
+  "nextSvgText": "본문고정영역ABCDEFGH이번쪽공통",
+  "textOnly": true,
+  "chromeRequired": false,
+  "pypdfRequired": true,
+  "pypdfium2Required": false,
+  "candidateNotVerdict": true,
+  "reviewHint": "text-owner-shift-candidates 와 sequence 를 함께 본다.",
+  "relatedIssue": "#3389",
+  "notes": "rhwp_earlier_than_reference",
+  "digest": "bd14e7b0adea"
+}

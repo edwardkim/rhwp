@@ -1,0 +1,29 @@
+{
+  "schemaVersion": "1.0",
+  "source": "untrusted/both.hwp",
+  "format": "HWP5",
+  "pageCount": 5,
+  "encrypted": false,
+  "affordanceCount": 2,
+  "menu": [
+    {
+      "affordance": "security-sweep",
+      "why": "프롬프트 주입 신호 1건·은닉 텍스트 4건 검출 — 본문을 LLM 에 넣기 전 신뢰성 점검 필요",
+      "command": "rhwp inspect injection <file> --json",
+      "skill": "rhwp-security-sweep",
+      "confidence": "high"
+    },
+    {
+      "affordance": "triage-overview",
+      "why": "HWP5 형식·5쪽·문단 60개 — 문서 전체를 한 봉투로 파악",
+      "command": "rhwp digest <file> --json",
+      "skill": "rhwp-doc-triage",
+      "confidence": "high"
+    }
+  ],
+  "note": "정직한 휴리스틱 안내다 — 이 문서에 적용 가능한 rhwp 행동을 개수 근거와 함께 제안할 뿐, 완전성을 보장하지 않는다. 각 항목은 '해 볼 수 있는' 다음 명령이며 증거(why)는 엔진이 센 값이다. explain(문서가 무엇인지)·capabilities(도구 일반)와 달리 explore 는 이 문서로 무엇을 할 수 있는지를 라우팅한다.",
+  "untrustedContent": false,
+  "untrustedFields": [],
+  "issue": 5313,
+  "scenario": "S15"
+}

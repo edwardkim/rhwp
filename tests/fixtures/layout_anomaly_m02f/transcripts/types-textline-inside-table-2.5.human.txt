@@ -1,0 +1,6 @@
+# transcript types-textline-inside-table-2.5
+# family=types
+# hypothesis=--types TextLine 은 표 컨테이너를 건너뛰고 내부 줄의 2.5px 오른쪽 넘침만 overflow 로 센다. off-canvas 는 타입 필터와 무관하게 표에서 먼저 닫힌다.
+쪽 수: 3  overflow: 1  off-canvas: 0  overlap: 0  text-overlap: 0  empty_page(가능성): 0
+  [OVERFLOW] page   0     2.50px  Page/Body/Table0/Cell0/TextLine0 (TextLine)
+status: ANOMALY

@@ -1,0 +1,36 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5313,
+  "handoff": [
+    {
+      "when": "table-extract 가 메뉴에 있다",
+      "to": "rhwp-table-exchange",
+      "cmd": "export-tables / table-to-csv"
+    },
+    {
+      "when": "form-fill 이 메뉴에 있다",
+      "to": "rhwp-form-fill",
+      "cmd": "fields → fill-fields / batch fill"
+    },
+    {
+      "when": "security-sweep 가 메뉴에 있다",
+      "to": "rhwp-security-sweep",
+      "cmd": "inspect injection|hidden-text|unicode"
+    },
+    {
+      "when": "structure / long-doc / note / triage",
+      "to": "rhwp-doc-triage",
+      "cmd": "export-structure / digest / explain"
+    },
+    {
+      "when": "메뉴를 본 뒤 여러 번 편집",
+      "to": "rhwp-safe-edit",
+      "cmd": "run 계획서 3층"
+    },
+    {
+      "when": "파일 수백 개",
+      "to": "rhwp-bulk-pipeline",
+      "cmd": "batch info / export-text (explore 아님)"
+    }
+  ]
+}

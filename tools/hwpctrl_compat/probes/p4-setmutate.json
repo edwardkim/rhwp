@@ -1,0 +1,17 @@
+{
+  "id": "p4-setmutate",
+  "title": "ParameterSet/Array 고치기 멤버 — 반환 꼴 재기",
+  "ledger": [],
+  "open": "samples/table-001.hwp",
+  "calls": [
+    ["CreateSet(\"CharShape\").SetItem", ["Height", 1000]],
+    ["CreateSet(\"CharShape\").RemoveItem", ["Height"]],
+    ["CreateSet(\"CharShape\").RemoveAll", []],
+    ["CreateSet(\"CharShape\").Merge", [{"$obj": "CreateSet(\"CharShape\")"}]],
+    ["CreateSet(\"CharShape\").IsEquivalent", [{"$obj": "CreateSet(\"CharShape\")"}]],
+    ["CreateSet(\"CharShape\").CreateItemArray(\"Items\", 3).Item", [0]],
+    ["CreateSet(\"CharShape\").CreateItemArray(\"Items\", 3).Clone.Count", []],
+    ["CreateSet(\"CharShape\").CreateItemArray(\"Items\", 3).SetItem", [0, {"$obj": "CreateSet(\"CharShape\")"}]],
+    ["CreateSet(\"CharShape\").CreateItemArray(\"Items\", 3).Copy", [{"$obj": "CreateSet(\"CharShape\").CreateItemArray(\"Items\", 3)"}]]
+  ]
+}

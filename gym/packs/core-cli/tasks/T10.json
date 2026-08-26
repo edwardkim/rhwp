@@ -1,0 +1,58 @@
+{
+  "id": "T10",
+  "tier": 3,
+  "title": "결정론 실증",
+  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "instructions": "같은 run 계획서를 두 번 실행해(산출 파일명만 다르게) 두 산출물 o1.hwp, o2.hwp 와 그때 쓴 계획서 plan.json 을 함께 제출하라. 계획서는 과제 입력을 대상으로 최소 1개 이상의 편집 단계를 담아야 한다 — 채점기가 그 계획을 rhwp 로 되돌려 실행해 o1.hwp 를 실제로 재현하는지 확인하므로, 원본을 복사만 한 제출은 통과하지 못한다. 같은 계획은 같은 바이트를 낸다 — 이 저장소 검증 사다리의 토대다.",
+  "submit": {
+    "kind": "pair",
+    "files": [
+      "o1.hwp",
+      "o2.hwp",
+      "plan.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "두 산출물 바이트 동일",
+      "op": "same_hash",
+      "files": [
+        "o1.hwp",
+        "o2.hwp"
+      ]
+    },
+    {
+      "name": "원본 무편집 복사가 아님",
+      "op": "differs_from_input",
+      "file": "o1.hwp"
+    },
+    {
+      "name": "계획서 입력이 과제 입력",
+      "op": "value_eq",
+      "value": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+      "cmd": [
+        "replay",
+        "{file:plan.json}",
+        "--json"
+      ],
+      "path": "input"
+    },
+    {
+      "name": "제출 계획이 o1.hwp 를 실제로 재현",
+      "op": "value_eq",
+      "value": true,
+      "cmd": [
+        "replay",
+        "{file:plan.json}",
+        "--expect-output-sha256",
+        "{sha256:o1.hwp}",
+        "--json"
+      ],
+      "path": "reproduced",
+      "expect_exits": [
+        0,
+        3
+      ]
+    }
+  ]
+}

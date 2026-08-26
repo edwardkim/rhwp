@@ -1,0 +1,11 @@
+{
+  "id": "T03-B07",
+  "recipe": "03",
+  "kind": "bash",
+  "sourceFile": "mydocs/manual/recipes/03_redact_before_sharing.md",
+  "excerpted": true,
+  "fabricatedLive": false,
+  "raw": "rhwp search output/pii-demo_공개.hwp \"***-****-****\" --json --limit 1",
+  "firstLine": "rhwp search output/pii-demo_공개.hwp \"***-****-****\" --json --limit 1",
+  "notGym": true
+}

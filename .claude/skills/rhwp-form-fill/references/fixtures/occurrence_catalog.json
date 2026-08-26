@@ -1,0 +1,412 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5300,
+  "zeroBased": true,
+  "bareKeyMeansFirstMatch": true,
+  "outOfRangeGoesToNotFound": true,
+  "cases": [
+    {
+      "id": "occ-mokcha-0",
+      "sample": "samples/field-01.hwp",
+      "name": "목차1",
+      "total": 5,
+      "key": "목차1[0]",
+      "bareKeyFills": 0,
+      "bareKeyAmbiguous": true,
+      "outOfRange": false
+    },
+    {
+      "id": "occ-mokcha-1",
+      "sample": "samples/field-01.hwp",
+      "name": "목차1",
+      "total": 5,
+      "key": "목차1[1]",
+      "bareKeyFills": null,
+      "bareKeyAmbiguous": true,
+      "outOfRange": false
+    },
+    {
+      "id": "occ-mokcha-2",
+      "sample": "samples/field-01.hwp",
+      "name": "목차1",
+      "total": 5,
+      "key": "목차1[2]",
+      "bareKeyFills": null,
+      "bareKeyAmbiguous": true,
+      "outOfRange": false
+    },
+    {
+      "id": "occ-mokcha-3",
+      "sample": "samples/field-01.hwp",
+      "name": "목차1",
+      "total": 5,
+      "key": "목차1[3]",
+      "bareKeyFills": null,
+      "bareKeyAmbiguous": true,
+      "outOfRange": false
+    },
+    {
+      "id": "occ-mokcha-4",
+      "sample": "samples/field-01.hwp",
+      "name": "목차1",
+      "total": 5,
+      "key": "목차1[4]",
+      "bareKeyFills": null,
+      "bareKeyAmbiguous": true,
+      "outOfRange": false
+    },
+    {
+      "id": "occ-mokcha-oob",
+      "sample": "samples/field-01.hwp",
+      "name": "목차1",
+      "total": 5,
+      "key": "목차1[5]",
+      "outOfRange": true,
+      "landsIn": "notFound"
+    },
+    {
+      "id": "occ-mokcha-neg",
+      "sample": "samples/field-01.hwp",
+      "name": "목차1",
+      "total": 5,
+      "key": "목차1[-1]",
+      "outOfRange": true,
+      "landsIn": "notFound",
+      "note": "음수 순번은 범위 밖. 발명한 wrap-around 없음"
+    },
+    {
+      "id": "occ-reg-00",
+      "sample": "samples/80168_regulatory_analysis.hwp",
+      "name": "피규제집단명",
+      "total": 14,
+      "key": "피규제집단명[0]",
+      "optionalSample": true,
+      "outOfRange": false,
+      "issue": 3476
+    },
+    {
+      "id": "occ-reg-01",
+      "sample": "samples/80168_regulatory_analysis.hwp",
+      "name": "피규제집단명",
+      "total": 14,
+      "key": "피규제집단명[1]",
+      "optionalSample": true,
+      "outOfRange": false,
+      "issue": 3476
+    },
+    {
+      "id": "occ-reg-02",
+      "sample": "samples/80168_regulatory_analysis.hwp",
+      "name": "피규제집단명",
+      "total": 14,
+      "key": "피규제집단명[2]",
+      "optionalSample": true,
+      "outOfRange": false,
+      "issue": 3476
+    },
+    {
+      "id": "occ-reg-03",
+      "sample": "samples/80168_regulatory_analysis.hwp",
+      "name": "피규제집단명",
+      "total": 14,
+      "key": "피규제집단명[3]",
+      "optionalSample": true,
+      "outOfRange": false,
+      "issue": 3476
+    },
+    {
+      "id": "occ-reg-04",
+      "sample": "samples/80168_regulatory_analysis.hwp",
+      "name": "피규제집단명",
+      "total": 14,
+      "key": "피규제집단명[4]",
+      "optionalSample": true,
+      "outOfRange": false,
+      "issue": 3476
+    },
+    {
+      "id": "occ-reg-05",
+      "sample": "samples/80168_regulatory_analysis.hwp",
+      "name": "피규제집단명",
+      "total": 14,
+      "key": "피규제집단명[5]",
+      "optionalSample": true,
+      "outOfRange": false,
+      "issue": 3476
+    },
+    {
+      "id": "occ-reg-06",
+      "sample": "samples/80168_regulatory_analysis.hwp",
+      "name": "피규제집단명",
+      "total": 14,
+      "key": "피규제집단명[6]",
+      "optionalSample": true,
+      "outOfRange": false,
+      "issue": 3476
+    },
+    {
+      "id": "occ-reg-07",
+      "sample": "samples/80168_regulatory_analysis.hwp",
+      "name": "피규제집단명",
+      "total": 14,
+      "key": "피규제집단명[7]",
+      "optionalSample": true,
+      "outOfRange": false,
+      "issue": 3476
+    },
+    {
+      "id": "occ-reg-08",
+      "sample": "samples/80168_regulatory_analysis.hwp",
+      "name": "피규제집단명",
+      "total": 14,
+      "key": "피규제집단명[8]",
+      "optionalSample": true,
+      "outOfRange": false,
+      "issue": 3476
+    },
+    {
+      "id": "occ-reg-09",
+      "sample": "samples/80168_regulatory_analysis.hwp",
+      "name": "피규제집단명",
+      "total": 14,
+      "key": "피규제집단명[9]",
+      "optionalSample": true,
+      "outOfRange": false,
+      "issue": 3476
+    },
+    {
+      "id": "occ-reg-10",
+      "sample": "samples/80168_regulatory_analysis.hwp",
+      "name": "피규제집단명",
+      "total": 14,
+      "key": "피규제집단명[10]",
+      "optionalSample": true,
+      "outOfRange": false,
+      "issue": 3476
+    },
+    {
+      "id": "occ-reg-11",
+      "sample": "samples/80168_regulatory_analysis.hwp",
+      "name": "피규제집단명",
+      "total": 14,
+      "key": "피규제집단명[11]",
+      "optionalSample": true,
+      "outOfRange": false,
+      "issue": 3476
+    },
+    {
+      "id": "occ-reg-12",
+      "sample": "samples/80168_regulatory_analysis.hwp",
+      "name": "피규제집단명",
+      "total": 14,
+      "key": "피규제집단명[12]",
+      "optionalSample": true,
+      "outOfRange": false,
+      "issue": 3476
+    },
+    {
+      "id": "occ-reg-13",
+      "sample": "samples/80168_regulatory_analysis.hwp",
+      "name": "피규제집단명",
+      "total": 14,
+      "key": "피규제집단명[13]",
+      "optionalSample": true,
+      "outOfRange": false,
+      "issue": 3476
+    },
+    {
+      "id": "occ-reg-oob",
+      "sample": "samples/80168_regulatory_analysis.hwp",
+      "name": "피규제집단명",
+      "total": 14,
+      "key": "피규제집단명[14]",
+      "optionalSample": true,
+      "outOfRange": true,
+      "landsIn": "notFound"
+    },
+    {
+      "id": "occ-unique-회사명",
+      "name": "회사명",
+      "total": 1,
+      "key": "회사명",
+      "indexOptional": true,
+      "ambiguousIfBare": false
+    },
+    {
+      "id": "occ-unique-작성자",
+      "name": "작성자",
+      "total": 1,
+      "key": "작성자",
+      "indexOptional": true,
+      "ambiguousIfBare": false
+    },
+    {
+      "id": "occ-unique-부서명",
+      "name": "부서명",
+      "total": 1,
+      "key": "부서명",
+      "indexOptional": true,
+      "ambiguousIfBare": false
+    },
+    {
+      "id": "occ-unique-전화번호",
+      "name": "전화번호",
+      "total": 1,
+      "key": "전화번호",
+      "indexOptional": true,
+      "ambiguousIfBare": false
+    },
+    {
+      "id": "occ-unique-이메일",
+      "name": "이메일",
+      "total": 1,
+      "key": "이메일",
+      "indexOptional": true,
+      "ambiguousIfBare": false
+    },
+    {
+      "id": "occ-unique-제목",
+      "name": "제목",
+      "total": 1,
+      "key": "제목",
+      "indexOptional": true,
+      "ambiguousIfBare": false
+    },
+    {
+      "id": "occ-unique-myMsg01",
+      "name": "myMsg01",
+      "total": 1,
+      "key": "myMsg01",
+      "indexOptional": true,
+      "ambiguousIfBare": false
+    },
+    {
+      "id": "occ-addr-00",
+      "name": "성명",
+      "total": 16,
+      "key": "성명[0]",
+      "synthetic": true,
+      "rule": "순번은 fields --json 목록 순서, 0 기준"
+    },
+    {
+      "id": "occ-addr-01",
+      "name": "성명",
+      "total": 16,
+      "key": "성명[1]",
+      "synthetic": true,
+      "rule": "순번은 fields --json 목록 순서, 0 기준"
+    },
+    {
+      "id": "occ-addr-02",
+      "name": "성명",
+      "total": 16,
+      "key": "성명[2]",
+      "synthetic": true,
+      "rule": "순번은 fields --json 목록 순서, 0 기준"
+    },
+    {
+      "id": "occ-addr-03",
+      "name": "성명",
+      "total": 16,
+      "key": "성명[3]",
+      "synthetic": true,
+      "rule": "순번은 fields --json 목록 순서, 0 기준"
+    },
+    {
+      "id": "occ-addr-04",
+      "name": "성명",
+      "total": 16,
+      "key": "성명[4]",
+      "synthetic": true,
+      "rule": "순번은 fields --json 목록 순서, 0 기준"
+    },
+    {
+      "id": "occ-addr-05",
+      "name": "성명",
+      "total": 16,
+      "key": "성명[5]",
+      "synthetic": true,
+      "rule": "순번은 fields --json 목록 순서, 0 기준"
+    },
+    {
+      "id": "occ-addr-06",
+      "name": "성명",
+      "total": 16,
+      "key": "성명[6]",
+      "synthetic": true,
+      "rule": "순번은 fields --json 목록 순서, 0 기준"
+    },
+    {
+      "id": "occ-addr-07",
+      "name": "성명",
+      "total": 16,
+      "key": "성명[7]",
+      "synthetic": true,
+      "rule": "순번은 fields --json 목록 순서, 0 기준"
+    },
+    {
+      "id": "occ-addr-08",
+      "name": "성명",
+      "total": 16,
+      "key": "성명[8]",
+      "synthetic": true,
+      "rule": "순번은 fields --json 목록 순서, 0 기준"
+    },
+    {
+      "id": "occ-addr-09",
+      "name": "성명",
+      "total": 16,
+      "key": "성명[9]",
+      "synthetic": true,
+      "rule": "순번은 fields --json 목록 순서, 0 기준"
+    },
+    {
+      "id": "occ-addr-10",
+      "name": "성명",
+      "total": 16,
+      "key": "성명[10]",
+      "synthetic": true,
+      "rule": "순번은 fields --json 목록 순서, 0 기준"
+    },
+    {
+      "id": "occ-addr-11",
+      "name": "성명",
+      "total": 16,
+      "key": "성명[11]",
+      "synthetic": true,
+      "rule": "순번은 fields --json 목록 순서, 0 기준"
+    },
+    {
+      "id": "occ-addr-12",
+      "name": "성명",
+      "total": 16,
+      "key": "성명[12]",
+      "synthetic": true,
+      "rule": "순번은 fields --json 목록 순서, 0 기준"
+    },
+    {
+      "id": "occ-addr-13",
+      "name": "성명",
+      "total": 16,
+      "key": "성명[13]",
+      "synthetic": true,
+      "rule": "순번은 fields --json 목록 순서, 0 기준"
+    },
+    {
+      "id": "occ-addr-14",
+      "name": "성명",
+      "total": 16,
+      "key": "성명[14]",
+      "synthetic": true,
+      "rule": "순번은 fields --json 목록 순서, 0 기준"
+    },
+    {
+      "id": "occ-addr-15",
+      "name": "성명",
+      "total": 16,
+      "key": "성명[15]",
+      "synthetic": true,
+      "rule": "순번은 fields --json 목록 순서, 0 기준"
+    }
+  ]
+}

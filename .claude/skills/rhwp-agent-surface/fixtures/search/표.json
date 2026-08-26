@@ -1,0 +1,107 @@
+{
+  "invocation": "rhwp capabilities --search 표",
+  "invocation_json": "rhwp capabilities --search 표 --json",
+  "query": "표",
+  "keywords_and": [
+    "표"
+  ],
+  "match_count": 15,
+  "empty": false,
+  "layer": "cli-json",
+  "ssot": "capabilities_command_entries() name+summary+subcommands",
+  "matches": [
+    {
+      "name": "info",
+      "family": "query",
+      "summary": "문서 메타(포맷·버전·페이지/문단 수·폰트·제목) 표시",
+      "json": true
+    },
+    {
+      "name": "anchor",
+      "family": "query",
+      "summary": "투명성 로그(T7 방어) — add(append-only 등재, 깨진 로그 거부)·checkpoint(머클 루트)·verify(등재·자기 무결·머클 경로 판정, 아님 exit 3). 공표는 운영 절차 (#4543)",
+      "json": false
+    },
+    {
+      "name": "recall-scope",
+      "family": "query",
+      "summary": "오염 리콜 범위 — 오염 캡슐(경로 또는 sha256)의 후손 폐쇄집합을 계보 걷기로 계산해 영향/미영향을 가르고, --ledger 를 주면 영향 캡슐의 정산 청구 좌표까지 짚는다(리콜의 회계 연결) (#4558)",
+      "json": false
+    },
+    {
+      "name": "export-provenance-map",
+      "family": "query",
+      "summary": "명령별 문서 파생(신뢰 불가) 봉투 필드 지도 — 봉투의 untrustedContent/untrustedFields 표지의 원천",
+      "json": false
+    },
+    {
+      "name": "export-capabilities-schema",
+      "family": "export",
+      "summary": "capabilities 자기서술 자체의 JSON Schema 산출 — 명령 표면 코드 생성의 단일 출처 (#3776)",
+      "json": false
+    },
+    {
+      "name": "export-tables",
+      "family": "export",
+      "summary": "표를 병합·중첩 구조를 보존한 격자 JSON으로 추출",
+      "json": false
+    },
+    {
+      "name": "table-to-csv",
+      "family": "export",
+      "summary": "본문 최상위 표를 병합 격자를 채운 RFC 4180 CSV 로 내보내기",
+      "json": false
+    },
+    {
+      "name": "csv-to-table",
+      "family": "edit",
+      "summary": "CSV 로 기존 표 N 의 셀 덮어쓰기 — 표 크기 불변, 행·열 불일치는 invalid+exit 2",
+      "json": false
+    },
+    {
+      "name": "csv-to-chart",
+      "family": "edit",
+      "summary": "CSV 로 기존 차트 N 의 값 덮어쓰기 — 계열·값 개수 불변, 불일치는 invalid+exit 2. \\\n             편집은 OOXML 두 표현(zip 파트·중첩 CFB)에 함께 쓴다",
+      "json": false
+    },
+    {
+      "name": "explain",
+      "family": "query",
+      "summary": "문서를 결정론적 규칙 문장으로 요약(형식·쪽수·문단·표·누름틀·각주/미주·암호 여부)",
+      "json": false
+    },
+    {
+      "name": "explore",
+      "family": "query",
+      "summary": "이 문서로 할 수 있는 rhwp 행동을 순위 매긴 메뉴로 라우팅(표·누름틀·구조·차트·보안·요약)",
+      "json": false
+    },
+    {
+      "name": "edit",
+      "family": "edit",
+      "summary": "문서 편집 — fill-fields: 누름틀 채우기 / replace-text: 일괄 치환(--occurrence k번째만) / set-cell: 표 셀 기록 / insert-text-in-cell: 표 셀 문단 삽입 / delete-text-in-cell: 표 셀 문단 삭제 / insert-text: 문단 좌표 삽입 / delete-text: 문단 좌표 삭제 / insert-paragraph: 빈 문단 삽입 / delete-paragraph: 문단 삭제 / merge-paragraph: 문단 병합 / insert-page-break: 쪽 나눔 / insert-column-break: 단 나눔 / insert-table: 본문 표 생성 / insert-row: 표 행 삽입 / insert-col: 표 열 삽입 / delete-row: 표 행 삭제 / delete-col: 표 열 삭제 / merge-cells: 표 셀 병합 / split-cell: 병합 셀 분할 / split-table: 표 나누기 / fit-table: 표 폭 맞춤 / resize-table: 표 크기 조절 / merge-table: 다음 표와 붙이기 / merge-paragraph-in-cell: 표 셀 문단 병합 / set-column-widths: 표 열 폭 설정 / insert-footnote: 각주 삽입 / insert-endnote: 미주 삽입 / delete-footnote: 각주 삭제 / add-bookmark: 책갈피 추가 / delete-bookmark: 책갈피 삭제 / rename-bookmark: 책갈피 이름 변경 / delete-header-footer: 머리말/꼬리말 삭제 / insert-header-footer-text: 머리말/꼬리말 텍스트 삽입 / set-header-footer-text: 머리말/꼬리말 문단 텍스트 교체 / delete-hf-text: 머리말/꼬리말 텍스트 삭제 / split-paragraph-in-hf: 머리말/꼬리말 문단 분할 / merge-paragraph-in-hf: 머리말/꼬리말 문단 병합 / split-paragraph-in-cell: 표 셀 문단 분할 / delete-control: 컨트롤 삭제 / delete-table: 표 삭제 / insert-header-footer: 머리말/꼬리말 생성 / insert-image: 도장·서명 그림 삽입 / redact: 개인정보 마스킹 / sanitize: 메타데이터 제거",
+      "json": false
+    },
+    {
+      "name": "diag",
+      "family": "diagnostic",
+      "summary": "문서 구조 진단(번호/글머리표/개요)",
+      "json": false
+    },
+    {
+      "name": "hwp5-table-probe",
+      "family": "diagnostic",
+      "summary": "표 저장 프로브",
+      "json": false
+    },
+    {
+      "name": "gen-table",
+      "family": "internal",
+      "summary": "표 샘플 생성",
+      "json": false
+    }
+  ],
+  "truncated": false,
+  "total_match_count": 15,
+  "note": "개수는 계약이 아니다. 바이너리 출력이 이긴다."
+}

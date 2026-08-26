@@ -1,0 +1,24 @@
+{
+  "id": "SE18",
+  "steps": [
+    {
+      "answer": {
+        "clean": {
+          "cmd": [
+            "inspect",
+            "unicode",
+            "{input}",
+            "--kind",
+            "all",
+            "--json"
+          ],
+          "path": "clean",
+          "allowExits": [
+            0,
+            3
+          ]
+        }
+      }
+    }
+  ]
+}

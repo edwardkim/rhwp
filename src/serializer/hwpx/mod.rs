@@ -9,6 +9,8 @@
 //! - Stage 5: 도형·필드 + 대형 실문서 스모크
 
 pub mod canonical_defaults;
+pub mod char_shape_tables;
+pub mod char_shapes;
 pub mod content;
 pub mod context;
 pub mod field;
@@ -31,6 +33,7 @@ use std::fmt::Write as _;
 
 use crate::model::bin_data::MAX_BIN_DATA_BYTES;
 use crate::model::document::{Document, HWP5_ORIGIN_HWPX_MARKER_PATH};
+use crate::serializer::content_loss::{ContentLoss, ContentLossReason, SerializedDocument};
 
 use super::SerializeError;
 use content::BinDataEntry as ContentBinDataEntry;
@@ -43,6 +46,13 @@ use writer::HwpxZipWriter;
 /// `SerializeContext`가 1-pass 스캔으로 ID 풀을 구성하고, 각 writer가 동일 컨텍스트를
 /// 참조한다. 직렬화 종료 시 `assert_all_refs_resolved()`가 미등록 참조를 단언한다.
 pub fn serialize_hwpx(doc: &Document) -> Result<Vec<u8>, SerializeError> {
+    let serialized = serialize_hwpx_with_report(doc)?;
+    serialized.content_loss().write_warnings_to_stderr();
+    Ok(serialized.into_bytes())
+}
+
+/// HWPX 직렬화 바이트와 바로 그 산출물의 내용 손실을 함께 반환한다 (#4430).
+pub fn serialize_hwpx_with_report(doc: &Document) -> Result<SerializedDocument, SerializeError> {
     use static_assets::*;
 
     // 1-pass: ID 풀 구성
@@ -113,6 +123,15 @@ pub fn serialize_hwpx(doc: &Document) -> Result<Vec<u8>, SerializeError> {
             .unwrap_or_else(|| SETTINGS_XML.as_bytes()),
     )?;
 
+    // 6-1. [#3557] Scripts/* — IR 밖 패키지 스크립트 원본 통과. 파서가 aux 로
+    //      보존한 것을 그대로 되쓴다(content.hpf 참조는 write_content_hpf 의
+    //      원본 splice 가 담당).
+    for (path, bytes) in &doc.hwpx_aux_entries {
+        if path.starts_with("Scripts/") {
+            z.write_deflated(path, bytes)?;
+        }
+    }
+
     // 7. META-INF/container.rdf — header + every section part.
     // Hancom uses this RDF graph alongside content.hpf; a stale one-section
     // RDF makes multi-section documents fail to open even when the ZIP and
@@ -150,15 +169,17 @@ pub fn serialize_hwpx(doc: &Document) -> Result<Vec<u8>, SerializeError> {
         // 재압축이 필수라 원본 통과 fallback 이 없다. 상한 초과는 [#1917] 이 정한
         // 로드 실패 의미(빈 엔트리 placeholder + pic 컨트롤 보존)를 그대로 따른다 —
         // 여기서 오류로 중단하면 폭탄 문서 하나가 저장 자체를 막는다.
-        let bytes = data.data.load_limited(MAX_BIN_DATA_BYTES).unwrap_or_else(|| {
-            eprintln!(
-                "경고: BinData {}({}) 로드 실패 또는 압축 해제 상한 {}MB 초과 — 빈 엔트리로 대체 (#2550)",
-                entry.bin_data_id,
-                entry.href,
-                MAX_BIN_DATA_BYTES / (1024 * 1024)
-            );
-            Vec::new()
-        });
+        let bytes = match data.data.load_limited(MAX_BIN_DATA_BYTES) {
+            Some(bytes) => bytes,
+            None => {
+                ctx.content_loss.record(ContentLoss::binary_content_emptied(
+                    entry.bin_data_id,
+                    entry.href.clone(),
+                    ContentLossReason::ResourceReadFailedOrLimitExceeded,
+                ));
+                Vec::new()
+            }
+        };
         const CFB_MAGIC: [u8; 8] = [0xD0, 0xCF, 0x11, 0xE0, 0xA1, 0xB1, 0x1A, 0xE1];
         let payload: Vec<u8> = if data.extension.eq_ignore_ascii_case("ole")
             && bytes.len() >= 8
@@ -179,6 +200,8 @@ pub fn serialize_hwpx(doc: &Document) -> Result<Vec<u8>, SerializeError> {
     //      원본 content.hpf 가 Chart 파트를 나열하지 않으므로 manifest·3-way
     //      단언 대상 밖이며(collect_from_document 에서 분리), BinData 로 옮기면
     //      한컴이 차트 XML 을 OLE 복합문서로 해석한다.
+    // chart_entries 순회 중에는 ctx를 불변 대여하므로 손실 이벤트를 잠시 분리한다.
+    let mut chart_losses = Vec::new();
     for entry in &ctx.chart_entries {
         let data = doc
             .bin_data_content
@@ -192,19 +215,21 @@ pub fn serialize_hwpx(doc: &Document) -> Result<Vec<u8>, SerializeError> {
             })?;
         // [#2550] 차트 파트도 같은 상한 — bin_data_content 를 공유하므로 폭탄 표면이다.
         // 상한 초과·로드 실패는 위 BinData 엔트리와 같은 빈 파트 placeholder 다.
-        let chart_bytes = data
-            .data
-            .load_limited(MAX_BIN_DATA_BYTES)
-            .unwrap_or_else(|| {
-                eprintln!(
-                    "경고: 차트 BinData {}({}) 로드 실패 또는 압축 해제 상한 {}MB 초과 — 빈 파트로 대체 (#2550)",
+        let chart_bytes = match data.data.load_limited(MAX_BIN_DATA_BYTES) {
+            Some(bytes) => bytes,
+            None => {
+                chart_losses.push(ContentLoss::binary_content_emptied(
                     entry.bin_data_id,
-                    entry.href,
-                    MAX_BIN_DATA_BYTES / (1024 * 1024)
-                );
+                    entry.href.clone(),
+                    ContentLossReason::ResourceReadFailedOrLimitExceeded,
+                ));
                 Vec::new()
-            });
+            }
+        };
         z.write_deflated(&entry.href, &chart_bytes)?;
+    }
+    for loss in chart_losses {
+        ctx.content_loss.record(loss);
     }
 
     // 9. Contents/content.hpf — 항상 동적 경로 + BinData 매니페스트 엔트리
@@ -236,6 +261,10 @@ pub fn serialize_hwpx(doc: &Document) -> Result<Vec<u8>, SerializeError> {
     if let Some(marker) = doc.hwpx_aux_entry(HWP5_ORIGIN_HWPX_MARKER_PATH) {
         z.write_deflated(HWP5_ORIGIN_HWPX_MARKER_PATH, marker)?;
     }
+    // HWP3-origin 마커 — 재열람 시 hwp3_lineage 복원(왕복 레이아웃 등식).
+    if let Some(marker) = doc.hwpx_aux_entry(crate::model::document::HWP3_ORIGIN_HWPX_MARKER_PATH) {
+        z.write_deflated(crate::model::document::HWP3_ORIGIN_HWPX_MARKER_PATH, marker)?;
+    }
 
     // 참조 정합성 단언 (Stage 1+)
     ctx.assert_all_refs_resolved()?;
@@ -247,7 +276,8 @@ pub fn serialize_hwpx(doc: &Document) -> Result<Vec<u8>, SerializeError> {
     // 세 집합이 동일해야 한컴이 바인딩 오류 없이 그림을 표시함.
     assert_bin_data_3way(&bin_entries, &zip_bin_entries)?;
 
-    z.finish()
+    let bytes = z.finish()?;
+    Ok(SerializedDocument::new(bytes, ctx.content_loss))
 }
 
 /// Document IR을 한컴 ODF AES-256-CBC 비밀번호 보호 HWPX로 직렬화한다.
@@ -258,8 +288,26 @@ pub fn serialize_hwpx_with_password(
     doc: &Document,
     password: &[u8],
 ) -> Result<Vec<u8>, SerializeError> {
-    let plain = serialize_hwpx(doc)?;
-    crate::password_crypto::encrypt_hwpx_package(&plain, password)
+    let serialized = serialize_hwpx_with_report(doc)?;
+    let (plain, content_loss) = serialized.into_parts();
+    let bytes = encrypt_hwpx_bytes(&plain, password)?;
+    content_loss.write_warnings_to_stderr();
+    Ok(bytes)
+}
+
+/// 비밀번호 HWPX 바이트와 바로 그 산출물의 내용 손실을 함께 반환한다 (#4430).
+pub fn serialize_hwpx_with_password_and_report(
+    doc: &Document,
+    password: &[u8],
+) -> Result<SerializedDocument, SerializeError> {
+    let serialized = serialize_hwpx_with_report(doc)?;
+    let (plain, content_loss) = serialized.into_parts();
+    let bytes = encrypt_hwpx_bytes(&plain, password)?;
+    Ok(SerializedDocument::new(bytes, content_loss))
+}
+
+fn encrypt_hwpx_bytes(plain: &[u8], password: &[u8]) -> Result<Vec<u8>, SerializeError> {
+    crate::password_crypto::encrypt_hwpx_package(plain, password)
         .map_err(|error| SerializeError::CryptoError(error.to_string()))
 }
 
@@ -378,6 +426,23 @@ mod tests {
         let mut got = Vec::new();
         std::io::Read::read_to_end(&mut entry, &mut got).expect("read");
         assert_eq!(got, static_assets::VERSION_XML.as_bytes());
+    }
+
+    /// `version.xml` 의 `xmlVersion` 은 조판을 가른다 — 상수를 되돌리지 못하게 못 박는다.
+    ///
+    /// 한글은 선언된 OWPML 판본에 따라 옛 조판 규칙을 적용한다. `1.2` 를 선언하면 같은
+    /// 내용이 한 쪽 더 늘어난다(01513·01888·01892·01908 실측: 원본 1쪽 / `1.2` 2쪽 /
+    /// `1.5` 1쪽). 쪽수가 이미 맞던 문서 12건에는 영향이 없었다(회귀 0).
+    ///
+    /// 같은 파일의 `appVersion`·`micro`·`buildNumber` 는 바꿔도 쪽수가 그대로다 —
+    /// 조판을 가르는 것은 이 속성 하나뿐이다.
+    #[test]
+    fn version_xml_declares_the_owpml_revision_that_hangul_lays_out_with() {
+        assert!(
+            static_assets::VERSION_XML.contains(r#"xmlVersion="1.5""#),
+            "xmlVersion 은 1.5 여야 한다: {}",
+            static_assets::VERSION_XML
+        );
     }
 
     #[test]
@@ -575,6 +640,83 @@ mod tests {
         );
     }
 
+    /// #4387: 불균등 다단(단별 개별 너비/간격, `sameSz="false"`)이 HWPX 왕복에서
+    /// 균등 폭으로 저하되지 않아야 한다. `<hp:colSz>` 미방출/미파싱 시
+    /// `ColumnDef.widths`/`gaps` 가 비어 렌더러(page_layout.rs
+    /// calculate_column_areas) 가 same_width=false 조건을 만족 못 하고 균등
+    /// 분할 분기로 폴백한다.
+    #[test]
+    fn issue4387_unequal_column_widths_roundtrip() {
+        use crate::model::control::Control;
+        use crate::model::document::Section;
+        use crate::model::page::{ColumnDef, ColumnType};
+        use crate::model::paragraph::Paragraph;
+
+        let mut cd = ColumnDef::default();
+        cd.column_type = ColumnType::Normal;
+        cd.column_count = 2;
+        cd.same_width = false;
+        cd.widths = vec![4000, 6000];
+        cd.gaps = vec![500, 0];
+
+        let mut para = Paragraph::default();
+        para.text = "x".to_string();
+        para.controls.push(Control::ColumnDef(cd));
+
+        let mut section = Section::default();
+        section.paragraphs.push(para);
+        let mut doc = Document::default();
+        doc.sections.push(section);
+
+        let bytes = serialize_hwpx(&doc).expect("serialize unequal columns");
+
+        // 직렬화된 XML에 단별 colSz 가 실제로 들어갔는지 ZIP에서 추출해 확인.
+        let cursor = std::io::Cursor::new(&bytes);
+        let mut archive = zip::ZipArchive::new(cursor).expect("valid zip");
+        let mut sec0 = archive.by_name("Contents/section0.xml").expect("section0");
+        let mut xml = String::new();
+        sec0.read_to_string(&mut xml).expect("read");
+        assert!(
+            xml.contains(r#"sameSz="0""#),
+            "sameSz=false 가 방출돼야 함: {}",
+            &xml[..900.min(xml.len())]
+        );
+        assert!(
+            xml.contains(r#"<hp:colSz width="4000" gap="500"/>"#)
+                && xml.contains(r#"<hp:colSz width="6000" gap="0"/>"#),
+            "colSz 요소가 방출돼야 함(#4387): {}",
+            &xml[..900.min(xml.len())]
+        );
+        drop(sec0);
+
+        // 왕복 확인: 다시 파싱했을 때 개별 너비/간격이 그대로 복원돼야 한다.
+        let parsed = parse_hwpx(&bytes).expect("parse back");
+        let p0 = &parsed.sections[0].paragraphs[0];
+        let cd2 = p0
+            .controls
+            .iter()
+            .find_map(|c| match c {
+                Control::ColumnDef(cd) => Some(cd),
+                _ => None,
+            })
+            .expect("ColumnDef control roundtrips");
+        assert!(!cd2.same_width);
+        assert_eq!(
+            cd2.widths,
+            vec![4000, 6000],
+            "단별 너비가 왕복에서 보존돼야 함(#4387)"
+        );
+        assert_eq!(
+            cd2.gaps,
+            vec![500, 0],
+            "단별 간격이 왕복에서 보존돼야 함(#4387)"
+        );
+        assert!(
+            !cd2.proportional_widths,
+            "HWPX colSz 는 절대 HWPUNIT — 비례값 플래그가 켜지면 안 됨"
+        );
+    }
+
     #[test]
     fn tab_and_linebreak_emitted_inline() {
         let mut doc = Document::default();
@@ -590,10 +732,13 @@ mod tests {
         let mut sec0 = archive.by_name("Contents/section0.xml").expect("section0");
         let mut xml = String::new();
         std::io::Read::read_to_string(&mut sec0, &mut xml).expect("read");
-        // Stage 2.3 (ref_mixed 기반): 혼합 콘텐츠 + tab 속성 포함
+        // Stage 2.3 (ref_mixed 기반): 혼합 콘텐츠 + tab 속성 포함.
+        // [#4403] tab_extended 데이터 없는 암묵적 기본 탭은 "데이터 없음" 마커
+        // (width=0)로 방출한다 — 고정 상수(옛 4000)를 emit 하면 재적재 시 렌더러가
+        // 그 폭을 실제 계산값으로 신뢰해 문단의 진짜 TabDef 를 무시한다.
         assert!(
             xml.contains(
-                r#"<hp:t>A<hp:tab width="4000" leader="0" type="1"/>B<hp:lineBreak/>C</hp:t>"#
+                r#"<hp:t>A<hp:tab width="0" leader="0" type="1"/>B<hp:lineBreak/>C</hp:t>"#
             ),
             "mixed content not rendered: {}",
             xml
@@ -646,6 +791,7 @@ mod tests {
             font_name: "HYhwpEQ".to_string(),
             version_info: "Equation Version 60".to_string(),
             raw_ctrl_data: Vec::new(),
+            raw_ctrl_seal: None,
         })));
         section.paragraphs.push(para);
         doc.sections.push(section);
@@ -862,6 +1008,130 @@ mod tests {
     }
 
     #[test]
+    fn issue4388_hyperlink_control_drop_is_not_silent() {
+        // [#4388] `Control::Hyperlink` 는 HWP3 파서만 생성하는 legacy IR 이며 HWPX 는
+        // 대응 표현이 없다(HWPX 는 하이퍼링크를 Field(HYPERLINK) 로 표현). 종전엔
+        // `render_control_slot` 의 catch-all `_ => {}` 로 떨어져 **경고도 없이** 사라졌다.
+        // 이 테스트는 "드롭 자체"만 확인한다 — 드롭이 실제로 조용하지 않은지(stderr
+        // 경고)는 이 코드베이스의 기존 관례상 단위 테스트로 캡처하지 않는다(Table/
+        // Picture/Field 직렬화 실패 eprintln! 도 동일). `warn_if_unrepresentable_in_hwpx`
+        // (section.rs)가 실제 경고를 담당한다.
+        //
+        // [#4388 후속] `--verify` 가 이 손실을 검출해야 한다는 조건은 **되돌렸다** —
+        // `is_hwpx_inline_slot` 에 Hyperlink 를 등록했더니 그 목록을 공유하는
+        // `roundtrip::diff_documents`(포맷 비종속, `convert`(HWP5 대상) `--verify` 도
+        // 재사용)가 HWP5 직렬화기의 기존(이슈 범위 밖) Hyperlink 손실까지 새로
+        // "검출"해 `tests/issue_hwp3_bookmark_native.rs::bookmarks_survive_saving_to_hwp5`
+        // 가 hwp3-sample16.hwp 에서 깨졌다(실측 재현). 그 회귀 가드는
+        // `roundtrip.rs::issue4388_diff_documents_hyperlink_not_compared_as_control` 로
+        // 옮겼다 — "diff 가 검출해야 함"이 아니라 "diff 가 검출하면 안 됨"으로 반전.
+        use crate::model::control::{Control, Hyperlink};
+        use crate::model::paragraph::CharShapeRef;
+        use crate::model::style::CharShape;
+
+        let mut doc = Document::default();
+        // char_shapes[0] 을 등록해 char_shape_id=0 참조가 유효하도록 한다(그렇지
+        // 않으면 직렬화가 "미등록 ID 참조" 로 실패).
+        doc.doc_info.char_shapes.push(CharShape::default());
+        let mut section = crate::model::document::Section::default();
+        let mut para = crate::model::paragraph::Paragraph::default();
+        para.text = "ab".to_string();
+        para.char_offsets = vec![0, 9];
+        para.char_count = 11; // (11-1-2)/8 = 1 슬롯 (task1587_ruby_control_roundtrips 와 동일 관례)
+        para.char_shapes = vec![CharShapeRef {
+            start_pos: 0,
+            char_shape_id: 0,
+        }];
+        para.controls.push(Control::Hyperlink(Hyperlink {
+            url: "http://example.com".to_string(),
+            text: "example".to_string(),
+        }));
+        section.paragraphs.push(para);
+        doc.sections.push(section);
+
+        let bytes = serialize_hwpx(&doc).expect("serialize hyperlink");
+        let doc2 = crate::parser::hwpx::parse_hwpx(&bytes).expect("parse");
+
+        let hyperlinks_after: Vec<_> = doc2.sections[0].paragraphs[0]
+            .controls
+            .iter()
+            .filter(|c| matches!(c, Control::Hyperlink(_)))
+            .collect();
+        assert!(
+            hyperlinks_after.is_empty(),
+            "Hyperlink 는 HWPX 로 안전하게 변환할 대응 표현이 없어 드롭되는 것이 현재 계약이다: {:?}",
+            doc2.sections[0].paragraphs[0].controls
+        );
+
+        // [#4388 후속] is_hwpx_inline_slot 미등록 회귀 가드 — 등록하면 mismatch-분기
+        // (render_runs) 가 이 컨트롤을 슬롯으로 취급해 위치 축이 바뀐다.
+        assert!(
+            !crate::serializer::hwpx::section::is_hwpx_inline_slot(&Control::Hyperlink(
+                Hyperlink::default()
+            )),
+            "Hyperlink 는 is_hwpx_inline_slot 에 등록되면 안 됨(#4388 후속 회귀 참조)"
+        );
+    }
+
+    #[test]
+    fn issue4388_unknown_control_drop_is_not_silent() {
+        // [#4388] catch-all 전수 census 중 Hyperlink 와 동형인 두 번째 사례. HWP5/HWP3
+        // 바이너리 파서가 인식하지 못한 ctrl_id 는 `Control::Unknown` 으로 남는데(HWPX
+        // 파서는 이 변형을 절대 만들지 않는다 — grep 확인), HWP5 PARA_TEXT 는 그 자리를
+        // Table/Picture 와 같은 0x000B 확장 컨트롤 문자(8유닛)로 표시한다. HWPX 는 "인식
+        // 못 한 컨트롤"을 표현할 수단이 없고 `UnknownControl` 은 ctrl_id 하나만 보존해
+        // 원본 바이트도 없다 — 변환 불가가 맞다. 종전엔 catch-all 로 떨어져 **경고
+        // 없이** 사라졌다 — 이제 `warn_if_unrepresentable_in_hwpx` 가 경고한다(stderr
+        // 캡처는 Hyperlink 테스트와 동일한 이유로 이 테스트에서 확인하지 않는다).
+        //
+        // [#4388 후속] Hyperlink 와 동일하게 --verify 검출 요구는 되돌렸다 — 이유와
+        // 회귀 가드는 `roundtrip.rs::issue4388_diff_documents_unknown_not_compared_as_control`.
+        use crate::model::control::{Control, UnknownControl};
+        use crate::model::paragraph::CharShapeRef;
+        use crate::model::style::CharShape;
+
+        let mut doc = Document::default();
+        doc.doc_info.char_shapes.push(CharShape::default());
+        let mut section = crate::model::document::Section::default();
+        let mut para = crate::model::paragraph::Paragraph::default();
+        // "a" + 오브젝트 마커(U+FFFC) + "b" — Table/Picture 와 동일한 8유닛 슬롯 관례.
+        para.text = "a\u{fffc}b".to_string();
+        para.char_offsets = vec![0, 1, 9];
+        para.char_count = 11; // 1(a) + 8(obj) + 1(b) + 1(종단 관례) = 11
+        para.char_shapes = vec![CharShapeRef {
+            start_pos: 0,
+            char_shape_id: 0,
+        }];
+        para.controls.push(Control::Unknown(UnknownControl {
+            ctrl_id: 0x1234_5678,
+        }));
+        section.paragraphs.push(para);
+        doc.sections.push(section);
+
+        let bytes = serialize_hwpx(&doc).expect("serialize unknown");
+        let doc2 = crate::parser::hwpx::parse_hwpx(&bytes).expect("parse");
+
+        let unknowns_after: Vec<_> = doc2.sections[0].paragraphs[0]
+            .controls
+            .iter()
+            .filter(|c| matches!(c, Control::Unknown(_)))
+            .collect();
+        assert!(
+            unknowns_after.is_empty(),
+            "Unknown 컨트롤은 HWPX 로 변환할 대응 표현·원본 바이트가 없어 드롭되는 것이 \
+             현재 계약이다: {:?}",
+            doc2.sections[0].paragraphs[0].controls
+        );
+
+        assert!(
+            !crate::serializer::hwpx::section::is_hwpx_inline_slot(&Control::Unknown(
+                UnknownControl::default()
+            )),
+            "Unknown 은 is_hwpx_inline_slot 에 등록되면 안 됨(#4388 후속 회귀 참조)"
+        );
+    }
+
+    #[test]
     fn task1591_bookmark_not_hoisted_before_slot() {
         // [#1591] 북마크가 슬롯 컨트롤(표 등) 뒤에 있을 때, 직렬화기가 북마크를 문단
         // 시작으로 hoisting 하면 컨트롤 순서가 뒤바뀐다. [#1591 v2] 슬롯 있는 문단의
@@ -925,7 +1195,13 @@ mod tests {
         let mut section = crate::model::document::Section::default();
         let mut p = crate::model::paragraph::Paragraph::default();
         p.text = String::new();
-        p.char_count = 33; // [secd 0..8][cold 8..16][tbl 16..24][pageNum 24..32] + 1
+        // [secd 0..8][cold 8..16][tbl 16..24][pageNum 24..32][bokm 32..40] + 끝 1 = 41
+        //
+        // [#4677] 종전 값은 33 이었다 — 책갈피를 zero-width 로 보던 시절의 예산이다. 한컴
+        // 원본 HWP5 는 책갈피도 8 유닛 제어문자로 본문에 싣고(`16 00 6d 6b 6f 62 … 16 00`),
+        // rhwp 도 이제 두 축(HWP5 제어문자·HWPX 슬롯) 모두에서 자리를 잡는다. 이 테스트가
+        // 지키는 축(hidden 슬롯 정합 → char_shape 경계 24 보존)은 그대로다.
+        p.char_count = 41;
         p.char_shapes = vec![
             CharShapeRef {
                 start_pos: 0,
@@ -993,17 +1269,23 @@ mod tests {
         doc.doc_info.char_shapes.push(CharShape::default()); // id 1
         let mut section = crate::model::document::Section::default();
         let mut p = crate::model::paragraph::Paragraph::default();
-        // [secd 0..8][cold 8..16][fieldBegin 16..24] A@24 [fieldEnd 25..33] B@33 → cc 35
+        // [secd 0..8][cold 8..16][fieldBegin 16..24][bokm 24..32] A@32 [fieldEnd 33..41] B@41
+        // → cc 43
+        //
+        // [#4677] 종전 예산은 책갈피에 자리를 주지 않아 `A@24 … B@33`, cc 35 였다. 한컴 원본은
+        // 책갈피도 확장 제어문자 8 유닛을 쓰므로(`16 00 6d 6b 6f 62 … 16 00`) 자리를 하나
+        // 넣고 뒤 위치를 8 씩 민다. 이 테스트가 지키는 축(same-para 균형 필드의 fieldEnd 가
+        // 자기 자리에 보존되고 **뒤 char_shape 경계가 밀리지 않는 것**)은 그대로다.
         p.text = "AB".to_string();
-        p.char_offsets = vec![24, 33];
-        p.char_count = 35;
+        p.char_offsets = vec![32, 41];
+        p.char_count = 43;
         p.char_shapes = vec![
             CharShapeRef {
                 start_pos: 0,
                 char_shape_id: 0,
             },
             CharShapeRef {
-                start_pos: 33,
+                start_pos: 41,
                 char_shape_id: 1,
             },
         ];
@@ -1031,11 +1313,14 @@ mod tests {
             1,
             "same-para 균형 필드(fieldBegin/End 1/1)가 보존돼야 한다 (종전: fieldEnd 드롭)"
         );
-        assert_eq!(p2.char_count, 35, "fieldEnd 8유닛 보존 → cc 불변");
+        assert_eq!(
+            p2.char_count, 43,
+            "fieldEnd 8유닛 + 책갈피 8유닛(#4677) 보존"
+        );
         let positions: Vec<u32> = p2.char_shapes.iter().map(|cs| cs.start_pos).collect();
         assert_eq!(
             positions,
-            vec![0, 33],
+            vec![0, 41],
             "후속 char_shape 경계 보존 (종전 −8)"
         );
     }

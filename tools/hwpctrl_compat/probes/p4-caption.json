@@ -1,0 +1,22 @@
+{
+  "id": "p4-caption",
+  "title": "캡션 붙이기·떼기 — 리스트가 생기고 사라지는가",
+  "ledger": [],
+  "open": "samples/mix-shape-01.hwp",
+  "calls": [
+    ["SetPos", [0, 0, 0]],
+    ["Run", ["SelectCtrlFront"]],
+    ["CurSelectedCtrl.UserDesc", []],
+    ["GetPos", []],
+    ["Run", ["ShapeObjAttachCaption"]],
+    ["GetPos", []],
+    ["SelectionMode", []],
+    ["CurSelectedCtrl.UserDesc", []],
+    ["MovePos", [2, 0, 0]],
+    ["GetPos", []],
+    ["Run", ["SelectCtrlFront"]],
+    ["Run", ["ShapeObjDetachCaption"]],
+    ["GetPos", []],
+    ["SelectionMode", []]
+  ]
+}

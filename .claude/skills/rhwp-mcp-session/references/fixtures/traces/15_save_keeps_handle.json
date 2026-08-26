@@ -1,0 +1,91 @@
+{
+  "id": "15_save_keeps_handle",
+  "title": "저장 후에도 핸들은 살아 있어 이어서 편집할 수 있다.",
+  "kind": "session",
+  "lifecycle": "hwp_open → doc_* → hwp_close",
+  "absolute_paths": true,
+  "single_write_point": "hwp_doc_save",
+  "steps": [
+    {
+      "seq": 1,
+      "tool": "hwp_open",
+      "arguments": {
+        "path": "C:/abs/서식.hwp"
+      },
+      "expect_layer": "ok",
+      "read_fields": [
+        "docId"
+      ],
+      "notes": ""
+    },
+    {
+      "seq": 2,
+      "tool": "hwp_doc_fill_fields",
+      "arguments": {
+        "docId": "doc-1",
+        "data": {
+          "성명": "홍길동"
+        }
+      },
+      "expect_layer": "envelope",
+      "read_fields": [
+        "filledCount"
+      ],
+      "notes": ""
+    },
+    {
+      "seq": 3,
+      "tool": "hwp_doc_save",
+      "arguments": {
+        "docId": "doc-1",
+        "output": "C:/abs/out/1차.hwp"
+      },
+      "expect_layer": "ok",
+      "read_fields": [
+        "output"
+      ],
+      "notes": ""
+    },
+    {
+      "seq": 4,
+      "tool": "hwp_doc_fill_fields",
+      "arguments": {
+        "docId": "doc-1",
+        "data": {
+          "생년월일": "1990-01-01"
+        }
+      },
+      "expect_layer": "envelope",
+      "read_fields": [
+        "filledCount"
+      ],
+      "notes": ""
+    },
+    {
+      "seq": 5,
+      "tool": "hwp_doc_save",
+      "arguments": {
+        "docId": "doc-1",
+        "output": "C:/abs/out/2차.hwp",
+        "verify": true
+      },
+      "expect_layer": "ok",
+      "read_fields": [
+        "output"
+      ],
+      "notes": ""
+    },
+    {
+      "seq": 6,
+      "tool": "hwp_close",
+      "arguments": {
+        "docId": "doc-1"
+      },
+      "expect_layer": "ok",
+      "read_fields": [
+        "closed"
+      ],
+      "notes": ""
+    }
+  ]
+}

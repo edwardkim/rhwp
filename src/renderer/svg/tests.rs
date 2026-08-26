@@ -54,6 +54,237 @@ fn test_svg_draw_text_medium_weight() {
 }
 
 #[test]
+fn legacy_hanyang_faces_have_portable_local_aliases() {
+    // HWPX가 저장한 legacy face와 한컴 2020 PDF가 실제로 대체해 출력한 family가
+    // 다르다. `--font-style` SVG가 이 순서를 잃으면 검증 host에서 무관한 폴백 또는
+    // 두부(□)로 rasterize되어 PDF 대조 증적이 무효해진다.
+    assert_eq!(
+        font_local_aliases("한양중고딕"),
+        vec![
+            "HCR Dotum",
+            "함초롬돋움",
+            "한양중고딕",
+            "HY중고딕",
+            "HYGothic-Medium",
+        ]
+    );
+    assert_eq!(
+        font_local_aliases("휴먼명조"),
+        vec![
+            "HCR Batang",
+            "함초롬바탕",
+            "Batang",
+            "바탕",
+            "AppleMyungjo",
+            "Noto Serif CJK KR",
+            "휴먼명조",
+            "HumanMyeongJo",
+        ],
+        "Chrome에서 bitmap HMKMM을 먼저 고르면 한글이 두부가 되므로 outline 대체가 우선이어야 함"
+    );
+    assert_eq!(
+        font_local_aliases("휴먼고딕"),
+        vec![
+            "Malgun Gothic",
+            "맑은 고딕",
+            "Apple SD Gothic Neo",
+            "Noto Sans KR ExtraLight",
+            "Noto Sans KR",
+            "Pretendard",
+            "휴먼고딕",
+        ],
+        "Chrome에서 HMKMG를 먼저 고르면 한글이 두부가 되므로 outline 대체가 우선이어야 함"
+    );
+    assert_eq!(
+        font_local_aliases("한양신명조"),
+        vec!["한양신명조", "HY신명조", "HYSinMyeongJo-Medium"],
+        "정상 outline인 HY신명조는 원 face를 먼저 유지해야 함"
+    );
+    assert_eq!(
+        known_font_filenames("한양중고딕").first(),
+        Some(&"HANDotum.ttf"),
+        "한컴 2020 PDF와 같은 HCR Dotum을 full embed에서 먼저 찾아야 함"
+    );
+    assert_eq!(
+        known_font_filenames("휴먼명조").first(),
+        Some(&"HANBatang.ttf"),
+        "한컴 2020 PDF와 같은 HCR Batang을 휴먼명조보다 먼저 찾아야 함"
+    );
+    assert_eq!(
+        known_font_filenames("한양신명조").first(),
+        Some(&"H2MJSM.TTF"),
+        "Windows 설치본의 실제 한양신명조 파일을 먼저 찾아야 함"
+    );
+    assert_eq!(
+        font_local_bold_aliases("휴먼명조").first(),
+        Some(&"HCR Batang Bold"),
+        "휴먼명조의 Bold는 browser synthetic bold가 아니라 한컴 HCR Bold face여야 함"
+    );
+    assert_eq!(
+        known_bold_font_filenames("한양중고딕").first(),
+        Some(&"HANDotumB.ttf"),
+        "한양중고딕의 Bold full embed는 한컴 HCR Dotum Bold 파일을 먼저 찾아야 함"
+    );
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+#[test]
+fn font_file_candidates_are_single_path_components() {
+    assert!(FontFileName::from_document_candidate("NotoSansKR-Regular.ttf".to_string()).is_some());
+    assert!(FontFileName::from_document_candidate("Noto Sans KR.otf".to_string()).is_some());
+
+    let nested = std::path::Path::new("fonts").join("NotoSansKR-Regular.ttf");
+    assert!(FontFileName::from_document_candidate(
+        nested.to_str().expect("UTF-8 test path").to_string()
+    )
+    .is_none());
+
+    let parent = std::path::Path::new("..").join("NotoSansKR-Regular.ttf");
+    assert!(FontFileName::from_document_candidate(
+        parent.to_str().expect("UTF-8 test path").to_string()
+    )
+    .is_none());
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+#[test]
+fn planned_font_lookup_does_not_descend_below_search_roots() {
+    let root = std::env::temp_dir().join(format!("rhwp-svg-font-candidate-{}", std::process::id()));
+    let nested = root.join("nested");
+    std::fs::create_dir_all(&nested).expect("temporary nested font directory");
+    std::fs::write(nested.join("DocumentFont.ttf"), b"font").expect("nested test font");
+
+    let font_name = std::path::Path::new("nested").join("DocumentFont");
+    let lookup = plan_svg_font_file_lookup(
+        font_name.to_str().expect("UTF-8 test path"),
+        std::slice::from_ref(&root),
+        false,
+    );
+    assert!(
+        find_font_file(&lookup).is_none(),
+        "font lookup must consider direct file names only"
+    );
+
+    std::fs::remove_dir_all(root).expect("remove temporary font directory");
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+#[test]
+fn style_font_face_css_orders_broken_bitmap_faces_after_outline_fallbacks() {
+    let mut renderer = SvgRenderer::new();
+    renderer.font_embed_mode = FontEmbedMode::Style;
+    for family in ["휴먼명조", "휴먼고딕", "한양중고딕", "한양신명조"] {
+        renderer
+            .font_codepoints
+            .entry(family.to_string())
+            .or_default()
+            .extend("한글".chars());
+    }
+    renderer.font_bold_families.insert("휴먼명조".to_string());
+    renderer.font_bold_families.insert("한양중고딕".to_string());
+
+    let css = generate_font_style(
+        &renderer,
+        &[],
+        &std::collections::HashMap::<String, Vec<u8>>::new(),
+    );
+    let human_myeongjo = css
+        .lines()
+        .find(|line| line.contains("font-family: \"휴먼명조\""))
+        .expect("휴먼명조 style rule");
+    assert!(
+        human_myeongjo
+            .find("local(\"HCR Batang\")")
+            .expect("HCR Batang local")
+            < human_myeongjo
+                .find("local(\"휴먼명조\")")
+                .expect("휴먼명조 local"),
+        "실제 CSS에서도 한컴 PDF 대체 명조가 깨진 HMKMM local보다 앞서야 함"
+    );
+    let hanyang_jung = css
+        .lines()
+        .find(|line| line.contains("font-family: \"한양중고딕\""))
+        .expect("한양중고딕 style rule");
+    assert!(
+        hanyang_jung.contains("local(\"HCR Dotum\"), local(\"함초롬돋움\"), local(\"한양중고딕\")"),
+        "한컴 PDF 대체 고딕이 legacy local face보다 앞서야 함"
+    );
+    let human_gothic = css
+        .lines()
+        .find(|line| line.contains("font-family: \"휴먼고딕\""))
+        .expect("휴먼고딕 style rule");
+    assert!(
+        human_gothic
+            .find("local(\"Malgun Gothic\")")
+            .expect("Malgun Gothic local")
+            < human_gothic
+                .find("local(\"휴먼고딕\")")
+                .expect("휴먼고딕 local"),
+        "실제 CSS에서도 outline 고딕이 깨진 HMKMG local보다 앞서야 함"
+    );
+    let hanyang = css
+        .lines()
+        .find(|line| line.contains("font-family: \"한양신명조\""))
+        .expect("한양신명조 style rule");
+    assert!(
+        hanyang.contains(
+            "local(\"한양신명조\"), local(\"HY신명조\"), local(\"HYSinMyeongJo-Medium\")"
+        ),
+        "정상 outline 한양신명조의 local 우선순위를 보존해야 함"
+    );
+    let human_myeongjo_bold = css
+        .lines()
+        .find(|line| {
+            line.contains("font-family: \"휴먼명조\"") && line.contains("font-weight: bold")
+        })
+        .expect("휴먼명조 bold style rule");
+    assert!(
+        human_myeongjo_bold.contains("local(\"HCR Batang Bold\")"),
+        "휴먼명조 bold는 HCR Batang Bold를 명시해 synthetic bold를 피해야 함"
+    );
+    let hanyang_jung_bold = css
+        .lines()
+        .find(|line| {
+            line.contains("font-family: \"한양중고딕\"") && line.contains("font-weight: bold")
+        })
+        .expect("한양중고딕 bold style rule");
+    assert!(
+        hanyang_jung_bold.contains("local(\"HCR Dotum Bold\")"),
+        "한양중고딕 bold는 HCR Dotum Bold를 명시해 synthetic bold를 피해야 함"
+    );
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+#[test]
+fn full_font_embed_uses_real_bold_face_when_document_uses_bold() {
+    let dir = std::env::temp_dir().join(format!("rhwp-svg-bold-font-{}", std::process::id()));
+    std::fs::create_dir_all(&dir).expect("temporary font directory");
+    std::fs::write(dir.join("HANBatang.ttf"), b"regular").expect("regular test font");
+    std::fs::write(dir.join("HANBatangB.ttf"), b"bold").expect("bold test font");
+
+    let mut renderer = SvgRenderer::new();
+    renderer.font_embed_mode = FontEmbedMode::Full;
+    renderer
+        .font_codepoints
+        .entry("휴먼명조".to_string())
+        .or_default()
+        .extend("한글".chars());
+    renderer.font_bold_families.insert("휴먼명조".to_string());
+
+    let css = generate_font_style(
+        &renderer,
+        std::slice::from_ref(&dir),
+        &std::collections::HashMap::<String, Vec<u8>>::new(),
+    );
+    std::fs::remove_dir_all(&dir).expect("temporary font directory cleanup");
+
+    assert!(
+        css.contains("font-family: \"휴먼명조\"; src: url(\"data:font/opentype;base64,Ym9sZA==\") format(\"opentype\"); font-weight: bold;"),
+        "full embed는 별도 Bold TTF를 font-weight: bold face로 선언해야 함"
+    );
+}
+
+#[test]
 fn test_svg_draw_text_superscript_adjusts_baseline_and_size() {
     let mut renderer = SvgRenderer::new();
     renderer.begin_page(800.0, 600.0);
@@ -140,8 +371,11 @@ fn test_svg_draw_text_script_scales_text_length_by_glyph_size() {
         renderer.begin_page(800.0, 600.0);
         renderer.draw_text("1", 10.0, 100.0, &style);
         let script_length = text_length_of(renderer.output(), "1");
+        // [#5756] 이후 첨자 advance 는 측정 단계에서 0.7 배 글꼴로 계산된다 —
+        // 글자 폭이 픽셀 반올림을 거치므로 정확 0.7 배 대신 반올림 오차(≤0.05px)를
+        // 허용한다.
         assert!(
-            (script_length - base_length * 0.7).abs() < 0.001,
+            (script_length - base_length * 0.7).abs() < 0.05,
             "첨자 textLength 는 본문의 0.7 배여야 함: base={base_length}, script={script_length}"
         );
     }
@@ -374,7 +608,9 @@ fn test_svg_text_decoration() {
     );
     let output = renderer.output();
     // 밑줄: <line> 요소로 출력
-    let underline_count = output.matches("y1=\"22\"").count(); // y + 2.0
+    // [#5730] 밑줄은 기준선 + 0.17em (한글 2022 실측) — 16px 글꼴이면 20 + 2.72 = 22.72.
+    // (부동소수 표기 꼬리가 붙을 수 있어 닫는 따옴표 없이 접두 일치로 확인한다.)
+    let underline_count = output.matches("y1=\"22.72").count();
     assert!(underline_count > 0, "밑줄 <line> 요소가 있어야 함");
     // 취소선: <line> 요소로 출력
     let strike_count = output
@@ -399,8 +635,13 @@ fn test_svg_text_ratio() {
         },
     );
     let output = renderer.output();
-    // 첫 문자 '장': translate(50,100) scale(0.8000,1)
-    assert!(output.contains("transform=\"translate(50,100) scale(0.8000,1)\""));
+    // [#5821] 압축 장평은 세로 fs×√r + 가로 √r (총 폭 ×r 불변) — 한글 2022
+    // PDF 실측 계약. 첫 문자 '장': translate(50,100) scale(√0.8=0.8944,1).
+    assert!(output.contains("transform=\"translate(50,100) scale(0.8944,1)\""));
+    assert!(
+        output.contains("font-size=\"14.31"),
+        "글리프 크기가 16×√0.8=14.31 로 축소되어야 함"
+    );
     // 문자별 렌더링이므로 각 문자가 개별 <text> 요소
     let text_count = output.matches("<text ").count();
     assert_eq!(text_count, 2, "2개 문자 = 2개 <text> 요소");

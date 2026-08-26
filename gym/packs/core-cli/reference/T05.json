@@ -1,0 +1,18 @@
+{
+  "id": "T05",
+  "steps": [
+    {
+      "answer": {
+        "tableCount": {
+          "cmd": [
+            "export-tables",
+            "{input}",
+            "--json"
+          ],
+          "path": "tables",
+          "len": true
+        }
+      }
+    }
+  ]
+}

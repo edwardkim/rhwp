@@ -1,0 +1,20 @@
+{
+  "id": "p4-persistset",
+  "title": "상태가 남는 셋이 있는가 — HParameterSet",
+  "ledger": [],
+  "open": "samples/table-001.hwp",
+  "calls": [
+    ["HParameterSet.HCharShape.SetID", []],
+    ["HParameterSet.HCharShape.Count", []],
+    ["HParameterSet.HCharShape.HSet.SetID", []],
+    ["HParameterSet.HCharShape.HSet.Count", []],
+    ["HParameterSet.HCharShape.HSet.SetItem", ["Height", 1000]],
+    ["HParameterSet.HCharShape.HSet.Item", ["Height"]],
+    ["HParameterSet.HCharShape.HSet.Count", []],
+    ["HParameterSet.HCharShape.HSet.RemoveItem", ["Height"]],
+    ["HParameterSet.HCharShape.HSet.Count", []],
+    ["HParameterSet.HCharShape.HSet.SetItem", ["Height", 2000]],
+    ["HParameterSet.HCharShape.HSet.RemoveAll", [0]],
+    ["HParameterSet.HCharShape.HSet.Count", []]
+  ]
+}

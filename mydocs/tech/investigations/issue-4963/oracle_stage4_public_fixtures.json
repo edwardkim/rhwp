@@ -1,0 +1,144 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-oracle-stage4-public-fixtures",
+  "issue": 4963,
+  "validLadder": {
+    "schemaVersion": 1,
+    "kind": "font-oracle-stage4-ladder-evidence",
+    "issue": 4963,
+    "evidenceClass": "synthetic-contract-fixture",
+    "target": {
+      "queueRank": 1,
+      "documentFace": "문체부 바탕체"
+    },
+    "fixtureSha256": "deb4566e2be357959c22db06460f485a12bb61521b22179495fcb1cda79ca511",
+    "attestation": {
+      "schemaVersion": 1,
+      "kind": "font-oracle-disposable-environment-attestation",
+      "issue": 4963,
+      "evidenceClass": "synthetic-contract-fixture",
+      "provider": "contract-fixture",
+      "vmIdentitySha256": "1111111111111111111111111111111111111111111111111111111111111111",
+      "baselineSnapshotIdentitySha256": "2222222222222222222222222222222222222222222222222222222222222222",
+      "baselineFontManifestSha256": "3333333333333333333333333333333333333333333333333333333333333333",
+      "externalControlPlane": true,
+      "restoreProbe": {
+        "performed": true,
+        "beforeManifestSha256": "3333333333333333333333333333333333333333333333333333333333333333",
+        "recoveredManifestSha256": "3333333333333333333333333333333333333333333333333333333333333333"
+      },
+      "privacy": {
+        "absolutePathIncluded": false,
+        "hostNameIncluded": false,
+        "fontBytesIncluded": false
+      }
+    },
+    "unrelatedFontProjectionSha256": "4444444444444444444444444444444444444444444444444444444444444444",
+    "runs": [
+      {
+        "executionId": "contract-exact-only",
+        "physicalState": "exact-only",
+        "questions": [
+          "exact-installed"
+        ],
+        "inputSha256": "deb4566e2be357959c22db06460f485a12bb61521b22179495fcb1cda79ca511",
+        "unrelatedFontProjectionSha256": "4444444444444444444444444444444444444444444444444444444444444444",
+        "managedFonts": [
+          {
+            "face": "문체부 바탕체",
+            "sha256": "d10509215d923fef07c1f2dffe8ebf55cbca706476559a861dff6f7cf969ff44",
+            "present": true
+          },
+          {
+            "face": "KoPubWorld바탕체 Light",
+            "sha256": "e3ee21a86b6a6728c567a95aaebd8883480f27ce4f230207b0d7266b5cb3fb18",
+            "present": false
+          }
+        ],
+        "processReset": true,
+        "fontCacheAction": "guest-reboot",
+        "outputProfileSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "restore": {
+          "restoredBeforeRun": true,
+          "restoredAfterRun": true,
+          "baselineManifestSha256": "3333333333333333333333333333333333333333333333333333333333333333",
+          "recoveredManifestSha256": "3333333333333333333333333333333333333333333333333333333333333333"
+        }
+      },
+      {
+        "executionId": "contract-subst-only",
+        "physicalState": "subst-only",
+        "questions": [
+          "document-subst-font-only"
+        ],
+        "inputSha256": "deb4566e2be357959c22db06460f485a12bb61521b22179495fcb1cda79ca511",
+        "unrelatedFontProjectionSha256": "4444444444444444444444444444444444444444444444444444444444444444",
+        "managedFonts": [
+          {
+            "face": "문체부 바탕체",
+            "sha256": "d10509215d923fef07c1f2dffe8ebf55cbca706476559a861dff6f7cf969ff44",
+            "present": false
+          },
+          {
+            "face": "KoPubWorld바탕체 Light",
+            "sha256": "e3ee21a86b6a6728c567a95aaebd8883480f27ce4f230207b0d7266b5cb3fb18",
+            "present": true
+          }
+        ],
+        "processReset": true,
+        "fontCacheAction": "guest-reboot",
+        "outputProfileSha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "restore": {
+          "restoredBeforeRun": true,
+          "restoredAfterRun": true,
+          "baselineManifestSha256": "3333333333333333333333333333333333333333333333333333333333333333",
+          "recoveredManifestSha256": "3333333333333333333333333333333333333333333333333333333333333333"
+        }
+      },
+      {
+        "executionId": "contract-none-related",
+        "physicalState": "none-related",
+        "questions": [
+          "exact-removed",
+          "all-related-fonts-missing"
+        ],
+        "inputSha256": "deb4566e2be357959c22db06460f485a12bb61521b22179495fcb1cda79ca511",
+        "unrelatedFontProjectionSha256": "4444444444444444444444444444444444444444444444444444444444444444",
+        "managedFonts": [
+          {
+            "face": "문체부 바탕체",
+            "sha256": "d10509215d923fef07c1f2dffe8ebf55cbca706476559a861dff6f7cf969ff44",
+            "present": false
+          },
+          {
+            "face": "KoPubWorld바탕체 Light",
+            "sha256": "e3ee21a86b6a6728c567a95aaebd8883480f27ce4f230207b0d7266b5cb3fb18",
+            "present": false
+          }
+        ],
+        "processReset": true,
+        "fontCacheAction": "guest-reboot",
+        "outputProfileSha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+        "restore": {
+          "restoredBeforeRun": true,
+          "restoredAfterRun": true,
+          "baselineManifestSha256": "3333333333333333333333333333333333333333333333333333333333333333",
+          "recoveredManifestSha256": "3333333333333333333333333333333333333333333333333333333333333333"
+        }
+      }
+    ],
+    "dispositions": [
+      {
+        "question": "curated-official-successor-only",
+        "status": "not-provided",
+        "reason": "No direct official-successor anchor exists for this target."
+      }
+    ],
+    "privacy": {
+      "absolutePathIncluded": false,
+      "hostNameIncluded": false,
+      "fontBytesIncluded": false,
+      "privateDocumentIdentityIncluded": false
+    }
+  }
+}

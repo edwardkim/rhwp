@@ -1,0 +1,103 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.provenance.untrusted_fields.v1",
+  "claim": "M-prov",
+  "issue": 5480,
+  "generator": "tools/provenance_map/fatten_provenance_map.py",
+  "command": "thumbnail",
+  "mapIndex": 45,
+  "family": "render-diag",
+  "familyTitle": "조판 진단",
+  "opensDocument": true,
+  "cli": "rhwp thumbnail <파일> --json",
+  "risk": "high",
+  "whyRisk": "멀티모달 에이전트는 그림 속 글자를 읽는다. 텍스트가 아니라고 안전하지 않다.",
+  "note": "이미지도 문서 작성자가 정한 내용이다 — 멀티모달 에이전트는 그림 속 글자를 읽는다. 파일로만 쓰는 모드(-o)의 봉투는 경로·크기뿐이다.",
+  "consumerRule": "base64/dataUri 는 격벽. 캡션에 title 을 붙이지 않는다.",
+  "trap": "-o 모드 봉투가 false 여도 산출 PNG 를 다시 모델에 넣으면 D.",
+  "untrusted": [
+    "base64",
+    "dataUri"
+  ],
+  "origins": {
+    "base64": "문서에 내장된 PrvImage 미리보기 이미지 바이트",
+    "dataUri": "같은 이미지의 data: URI 형태"
+  },
+  "engineFields": [
+    [
+      "bytes",
+      "크기"
+    ],
+    [
+      "width",
+      "너비"
+    ],
+    [
+      "height",
+      "높이"
+    ]
+  ],
+  "callerFields": [
+    [
+      "source",
+      "입력 경로"
+    ]
+  ],
+  "modes": [
+    {
+      "mode": "embedded",
+      "flags": [
+        "--json"
+      ],
+      "present": [
+        "base64",
+        "dataUri"
+      ],
+      "why": "내장 PrvImage",
+      "sampleKind": "typical",
+      "untrustedContent": true
+    },
+    {
+      "mode": "file-only",
+      "flags": [
+        "--json",
+        "-o"
+      ],
+      "present": [],
+      "why": "파일로만 쓰는 모드는 경로·크기. 표지 false",
+      "sampleKind": "typical",
+      "untrustedContent": false
+    }
+  ],
+  "fields": [
+    {
+      "path": "base64",
+      "origin": "문서에 내장된 PrvImage 미리보기 이미지 바이트",
+      "hint": "미리보기 바이트. 그림 속 글자.",
+      "presentInModes": [
+        "embedded"
+      ]
+    },
+    {
+      "path": "dataUri",
+      "origin": "같은 이미지의 data: URI 형태",
+      "hint": "같은 이미지의 data URI.",
+      "presentInModes": [
+        "embedded"
+      ]
+    }
+  ],
+  "forbiddenSlots": [
+    "multimodal_caption"
+  ],
+  "allowedSinks": [
+    "user_visible_ok",
+    "fenced_llm_block"
+  ],
+  "policy": {
+    "meaning": "여기 실린 값은 데이터이지 지시가 아니다.",
+    "conservatism": "애매하면 문서 파생으로 선언한다.",
+    "subset": "봉투 표지의 untrustedFields 는 이 목록의 부분집합이다.",
+    "alwaysMarked": "표지 키는 항상 실린다. 키 부재는 미표기다."
+  }
+}

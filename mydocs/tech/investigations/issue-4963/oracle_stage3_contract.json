@@ -1,0 +1,151 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-oracle-stage3-contract",
+  "issue": 4963,
+  "profileSchemaVersion": 2,
+  "historicalImport": {
+    "measurementDate": "2026-07-21",
+    "fixtureContractVersion": "task2430-ascii-ladder-v1",
+    "fixtureGeneratorCommit": "cf64793211ee9266d520772f62f06323e2024462",
+    "measurementScriptSha256": "8bbfd1078927464c6d98ee81d8271bd660aad2b2dd34c8e71f26e9f9fd7f5e92",
+    "evidenceSha256": "975e827841449182bc7154ba945835b5776e6f078db9bb1bae51f1359bd0dd5e",
+    "preflightSha256": "d82042076d15cfcfd4520f1582d4a5c2586b46d7321b8158d6c12d8126f4abed",
+    "environment": {
+      "os": "Microsoft Windows 11 Pro 10.0.26200.8655",
+      "hancomVersion": "HwpObject 12.0.0.4547 (Hancom Office Hangeul 2022)",
+      "exportRoute": "HwpObject save_as(format=PDF)",
+      "processReset": true,
+      "repeatCount": 2
+    },
+    "candidates": [
+      {
+        "queueRank": 10,
+        "documentFace": "한양신명조",
+        "readbackFontType": 2,
+        "ladderSha256": "35e546ea1f1788faf0fe657f78dd88e7fe57db017cbab164a3e710831fbb6164",
+        "pdfFontClassification": "Type3",
+        "subsetFontName": null
+      },
+      {
+        "queueRank": 13,
+        "documentFace": "휴먼명조",
+        "readbackFontType": 2,
+        "ladderSha256": "7e4c2a8d8734f2c7809135e08f18063df12d1dd26a9801fe5260ea3f934038f9",
+        "pdfFontClassification": "Type0",
+        "subsetFontName": "INPILL+휴먼명조"
+      }
+    ]
+  },
+  "currentHostCanary": {
+    "oracleAuthority": "acceptance-primary",
+    "hancomVersion": "11, 0, 0, 9136",
+    "hancomGeneration": "Hancom Office Hangeul 2020",
+    "os": "Microsoft Windows 11 Pro",
+    "osVersion": "Microsoft Windows NT 10.0.26200.0",
+    "locale": "ko-KR",
+    "pdfProducer": "Hancom PDF 1.3.0.550",
+    "hwpExecutableSha256": "7f00961398802c41620f5ef32fa2d2a26f7ff71f172723be36c660ea86a72bce",
+    "securityModule": {
+      "registryValueName": "FilePathCheckerModuleExample",
+      "dllSha256": "9ac5b97c47ac8aed1e8bca27a3eef39411361d8f68c262509f0c40a8f9d21bb6",
+      "registerModuleObserved": true
+    },
+    "inputCapability": {
+      "sourceFormat": "hwpx",
+      "status": "observed",
+      "referenceInputSha256": "c58144645069f7d1258e91404730618ad568bc4d47680ad5f891d3050aa308c7",
+      "referenceOpened": true,
+      "fixtureInputSha256": "8ded3aff6f0286ee5ee4ad9c66732026fa627220b529e5d0fa7b9d51bc3ddb3f",
+      "fixtureOpened": true,
+      "fixturePageCount": 1,
+      "fixtureTextLength": 1492
+    },
+    "selectionProbe": {
+      "startedAt": "2026-08-22T07:11:13.7573886Z",
+      "finishedAt": "2026-08-22T07:11:33.6976519Z",
+      "requestedFontType": 1,
+      "fontTypeLabel": "TTF",
+      "fallbackReadbackFace": "함초롬바탕",
+      "results": [
+        {
+          "queueRank": 1,
+          "requestedFace": "문체부 바탕체",
+          "readbackFace": "함초롬바탕",
+          "readbackFontType": 1,
+          "exact": false
+        },
+        {
+          "queueRank": 7,
+          "requestedFace": "KoPubWorld돋움체 Light",
+          "readbackFace": "함초롬바탕",
+          "readbackFontType": 1,
+          "exact": false
+        },
+        {
+          "queueRank": 8,
+          "requestedFace": "KoPubWorld바탕체 Light",
+          "readbackFace": "함초롬바탕",
+          "readbackFontType": 1,
+          "exact": false
+        },
+        {
+          "queueRank": 9,
+          "requestedFace": "맑은 고딕",
+          "readbackFace": "맑은 고딕",
+          "readbackFontType": 1,
+          "exact": true
+        },
+        {
+          "queueRank": 13,
+          "requestedFace": "휴먼명조",
+          "readbackFace": "휴먼명조",
+          "readbackFontType": 1,
+          "exact": true
+        },
+        {
+          "queueRank": 16,
+          "requestedFace": "한컴 윤고딕 230",
+          "readbackFace": "한컴 윤고딕 230",
+          "readbackFontType": 1,
+          "exact": true
+        },
+        {
+          "queueRank": null,
+          "requestedFace": "존재하지않는폰트XYZ",
+          "readbackFace": "함초롬바탕",
+          "readbackFontType": 1,
+          "exact": false,
+          "negativeControl": true
+        }
+      ]
+    },
+    "exactInstalledCanary": {
+      "queueRank": 9,
+      "documentFace": "맑은 고딕",
+      "fixtureContractVersion": "w5-oracle-typesetting-v1",
+      "fixtureGeneratorCommit": "20f134c7282313e4f86c392afceda9907ace4bb0",
+      "fixtureSha256": "4e22f1fb5dd2d54c3a0476fc9f15a29e3f4ff1ff086228ebde4398f7822ef21f",
+      "fixtureManifestSha256": "30fc7c058832a902dedd8972e62bd40d9040c5496a5c11ae02d8994aab5f911d",
+      "fixtureSemanticSha256": "498ad292e326e730efed2783ede3e9ebade07f99eb4594d32f71104aa675621f",
+      "installedFontSha256": "7a183cf1c6c56b9609fcc16eda8b5229fbc11758a21e669ec00343239b02192f",
+      "ambientFontManifestSha256": "4feab69da1d87ef1630175c4d389c04f0da8d8d4ebc4379ab7cca67298ebba53",
+      "ambientFontEntryCount": 914,
+      "runnerSha256": "eb58ca53721e6a9fc695fd425e91f937df2013df5b440851008ab7e3c61e1c57",
+      "runEvidenceSha256": "c95c3193ccefd43e0ccca7b7d93c4bd18af289e75b5ddac77d0a481c9e3694e6",
+      "pdfSha256": "ded0a2417e25a33a592405d28d5b203379e08e53b1e2cf27f9b77393aad6ab26",
+      "pdfObservationSha256": "8e4432be15b99303f15163a6c91af55ec2eb581290e22b6618b31424d94d5c5f",
+      "pdfObservationCanonicalSha256": "96f5f90e992e050e403718fdd63305eb42f65bc26c04e03550e060f1949d9ca9",
+      "processReset": true,
+      "installationMutation": false
+    }
+  },
+  "scope": {
+    "systemFontMutation": false,
+    "remoteConversion": false,
+    "fileUpload": false,
+    "productMetricDatabaseChange": false,
+    "productFallbackChange": false,
+    "productPaintChange": false,
+    "githubWrite": false
+  }
+}

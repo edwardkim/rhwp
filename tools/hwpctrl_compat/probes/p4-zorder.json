@@ -1,0 +1,30 @@
+{
+  "id": "p4-zorder",
+  "title": "앞뒤 순서 — 사슬 차례를 관측창에 넣는다",
+  "ledger": [],
+  "open": "samples/mix-shape-01.hwp",
+  "calls": [
+    ["SetPos", [0, 0, 0]],
+    ["HeadCtrl.Next.Next.UserDesc", []],
+    ["HeadCtrl.Next.Next.Next.UserDesc", []],
+    ["HeadCtrl.Next.Next.Next.Next.UserDesc", []],
+    ["Run", ["SelectCtrlFront"]],
+    ["CurSelectedCtrl.UserDesc", []],
+    ["Run", ["ShapeObjBringToFront"]],
+    ["HeadCtrl.Next.Next.UserDesc", []],
+    ["HeadCtrl.Next.Next.Next.UserDesc", []],
+    ["HeadCtrl.Next.Next.Next.Next.UserDesc", []],
+    ["Run", ["ShapeObjSendToBack"]],
+    ["HeadCtrl.Next.Next.UserDesc", []],
+    ["HeadCtrl.Next.Next.Next.UserDesc", []],
+    ["HeadCtrl.Next.Next.Next.Next.UserDesc", []],
+    ["Run", ["ShapeObjBringForward"]],
+    ["HeadCtrl.Next.Next.UserDesc", []],
+    ["HeadCtrl.Next.Next.Next.UserDesc", []],
+    ["HeadCtrl.Next.Next.Next.Next.UserDesc", []],
+    ["Run", ["ShapeObjSendBack"]],
+    ["HeadCtrl.Next.Next.UserDesc", []],
+    ["HeadCtrl.Next.Next.Next.UserDesc", []],
+    ["HeadCtrl.Next.Next.Next.Next.UserDesc", []]
+  ]
+}

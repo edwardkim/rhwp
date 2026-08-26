@@ -1,0 +1,166 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.form_fill.honggildong_4781.v1",
+  "id": "hr-card-hong-clone",
+  "axis": "honggildong-4781",
+  "claim": "M-fill",
+  "generator": "tools/form_fill/fatten_form_fill.py",
+  "form": "hr-card",
+  "title": "인사기록카드 홍길동 전칸 복제 금지",
+  "why": "첫 필드 값을 모든 고유 이름에 복사하면 T07 과제 문구를 깨뜨린다.",
+  "sample": "fixtures/forms/인사기록카드.hwp",
+  "relatedIssue": "#4781",
+  "argv": [
+    "edit",
+    "fill-fields",
+    "fixtures/forms/인사기록카드.hwp",
+    "--data",
+    "{\"사번\": \"홍길동\", \"성명\": \"홍길동\", \"한자성명\": \"홍길동\", \"생년월일\": \"홍길동\", \"직급\": \"홍길동\", \"직위\": \"홍길동\", \"소속\": \"홍길동\", \"입사일\": \"홍길동\", \"주소\": \"홍길동\", \"연락처\": \"홍길동\"}",
+    "-o",
+    "out/hr-card-hong-clone.hwp",
+    "--json"
+  ],
+  "data": {
+    "사번": "홍길동",
+    "성명": "홍길동",
+    "한자성명": "홍길동",
+    "생년월일": "홍길동",
+    "직급": "홍길동",
+    "직위": "홍길동",
+    "소속": "홍길동",
+    "입사일": "홍길동",
+    "주소": "홍길동",
+    "연락처": "홍길동"
+  },
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "fixtures/forms/인사기록카드.hwp",
+    "dryRun": false,
+    "filledCount": 10,
+    "filled": [
+      {
+        "name": "사번",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "성명",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "한자성명",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "생년월일",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "직급",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "직위",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "소속",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "입사일",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "주소",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "연락처",
+        "occurrence": 0,
+        "value": "홍길동"
+      }
+    ],
+    "notFound": [],
+    "ambiguous": [],
+    "confusable": [],
+    "verify": null,
+    "output": "out/hr-card-hong-clone.hwp",
+    "outputFormat": "hwp5"
+  },
+  "detect": {
+    "firstFieldName": "사번",
+    "firstFieldValue": "홍길동",
+    "firstFieldOk": true,
+    "cloned": [
+      {
+        "index": 1,
+        "name": "성명",
+        "before": "",
+        "after": "홍길동"
+      },
+      {
+        "index": 2,
+        "name": "한자성명",
+        "before": "",
+        "after": "홍길동"
+      },
+      {
+        "index": 3,
+        "name": "생년월일",
+        "before": "",
+        "after": "홍길동"
+      },
+      {
+        "index": 4,
+        "name": "직급",
+        "before": "",
+        "after": "홍길동"
+      },
+      {
+        "index": 5,
+        "name": "직위",
+        "before": "",
+        "after": "홍길동"
+      },
+      {
+        "index": 6,
+        "name": "소속",
+        "before": "",
+        "after": "홍길동"
+      },
+      {
+        "index": 7,
+        "name": "입사일",
+        "before": "",
+        "after": "홍길동"
+      },
+      {
+        "index": 18,
+        "name": "주소",
+        "before": "",
+        "after": "홍길동"
+      },
+      {
+        "index": 19,
+        "name": "연락처",
+        "before": "",
+        "after": "홍길동"
+      }
+    ],
+    "cloneCount": 9,
+    "verdict": "clone_forbidden"
+  },
+  "afterFirst": "홍길동",
+  "otherHongCount": 9,
+  "allowedClone": false,
+  "verdict": "clone_forbidden"
+}

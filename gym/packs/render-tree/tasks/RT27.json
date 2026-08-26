@@ -1,0 +1,39 @@
+{
+  "id": "RT27",
+  "tier": 4,
+  "title": "4쪽 시험지 셋째 쪽 렌더 트리",
+  "input": "samples/exam-kor-4p.hwp",
+  "instructions": "입력 문서의 2번 쪽(0-기준 페이지 2) 렌더 트리를 export-render-tree 로 추출해 제출 폴더의 _rt/render_tree_003.json 로 제출하라. 세 번째 쪽은 render_tree_003.json 이다. 002 나 004 가 아니다. 원본 HWP 를 그 자리에 복사하거나 info 봉투를 JSON 으로 저장하지 마라. 파일 번호는 쪽+1 이다. -p 2 는 render_tree_003.json 이다. 힌트: rhwp export-render-tree <문서> -p 2 -o _rt.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "_rt/render_tree_003.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "렌더 트리 산출 존재",
+      "op": "file_exists",
+      "file": "_rt/render_tree_003.json",
+      "minBytes": 200
+    },
+    {
+      "name": "루트 type 이 Page",
+      "op": "json_value_eq",
+      "file": "_rt/render_tree_003.json",
+      "path": "type",
+      "value": "Page"
+    },
+    {
+      "name": "쪽수 일치",
+      "op": "answer_eq",
+      "answer": "pages",
+      "cmd": [
+        "info",
+        "{input}",
+        "--json"
+      ],
+      "path": "pageCount"
+    }
+  ]
+}

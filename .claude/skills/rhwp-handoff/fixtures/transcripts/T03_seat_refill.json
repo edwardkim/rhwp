@@ -1,0 +1,21 @@
+{
+  "id": "T03_seat_refill",
+  "kind": "seat_refill",
+  "judgmentNotCrash": false,
+  "exit": 0,
+  "steps": [
+    {
+      "argv": [
+        "python",
+        "tools/handoff/orchestrator.py",
+        "--task",
+        "task.json",
+        "--agent",
+        "python worker.py",
+        "--work-dir",
+        "output/handoff/t-ord",
+        "--json"
+      ]
+    }
+  ]
+}

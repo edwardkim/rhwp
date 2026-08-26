@@ -1,0 +1,520 @@
+<title>rhwp 운동장 테마파크</title>
+<style>
+  :root{
+    --brand:#4E5AE8; --brand-2:#6C77FF;
+    --gold:#F5B942; --coral:#FF5D73; --mint:#20C6A6;
+    --ink:#20233A; --sub:#5b5f7a; --line:#e6e1d3;
+    --paper:#FBF6EC; --card:#FFFFFF; --raise:#fffdf7;
+    --shadow:24px 30px 60px -34px rgba(40,40,90,.45);
+    --ring:rgba(78,90,232,.5);
+    --festival: radial-gradient(1200px 500px at 50% -8%, rgba(245,185,66,.18), transparent 60%);
+    font-synthesis-weight:none;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --ink:#EDEEF7; --sub:#a3a7c8; --line:#2a2e50;
+      --paper:#12152B; --card:#191d38; --raise:#1e2340;
+      --shadow:26px 34px 70px -30px rgba(0,0,0,.7);
+      --festival: radial-gradient(1200px 520px at 50% -8%, rgba(245,185,66,.16), transparent 60%),
+                  radial-gradient(900px 480px at 12% 8%, rgba(108,119,255,.20), transparent 62%);
+    }
+  }
+  :root[data-theme="light"]{
+    --ink:#20233A; --sub:#5b5f7a; --line:#e6e1d3;
+    --paper:#FBF6EC; --card:#FFFFFF; --raise:#fffdf7;
+    --shadow:24px 30px 60px -34px rgba(40,40,90,.45);
+    --festival: radial-gradient(1200px 500px at 50% -8%, rgba(245,185,66,.18), transparent 60%);
+  }
+  :root[data-theme="dark"]{
+    --ink:#EDEEF7; --sub:#a3a7c8; --line:#2a2e50;
+    --paper:#12152B; --card:#191d38; --raise:#1e2340;
+    --shadow:26px 34px 70px -30px rgba(0,0,0,.7);
+    --festival: radial-gradient(1200px 520px at 50% -8%, rgba(245,185,66,.16), transparent 60%),
+                radial-gradient(900px 480px at 12% 8%, rgba(108,119,255,.20), transparent 62%);
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--paper);color:var(--ink);
+    font-family:"Apple SD Gothic Neo","Malgun Gothic","Pretendard",system-ui,sans-serif;
+    line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden;}
+  .wrap{max-width:1120px;margin:0 auto;padding:0 22px}
+  .mono{font-family:ui-monospace,"D2Coding","Consolas",monospace;font-variant-numeric:tabular-nums}
+  h1,h2,h3{text-wrap:balance;margin:0}
+  a{color:inherit}
+  .eyebrow{font-size:12px;letter-spacing:.32em;text-transform:uppercase;color:var(--brand-2);font-weight:700}
+
+  /* ── 전구 줄 ── */
+  #lights{position:sticky;top:0;z-index:40;display:block;width:100%;height:34px;
+    background:linear-gradient(var(--paper),color-mix(in srgb,var(--paper) 82%,transparent));
+    border-bottom:1px solid var(--line)}
+
+  /* ── 히어로 게이트 ── */
+  header{position:relative;padding:52px 0 34px;text-align:center;background:var(--festival)}
+  .park-name{font-weight:800;letter-spacing:-.01em;line-height:1.02;
+    font-size:clamp(38px,7.5vw,78px)}
+  .park-name .lit{color:var(--gold);
+    text-shadow:0 0 1px rgba(245,185,66,.7)}
+  @media (prefers-color-scheme:dark){.park-name .lit{text-shadow:0 0 22px rgba(245,185,66,.55),0 0 2px rgba(245,185,66,.9)}}
+  :root[data-theme="dark"] .park-name .lit{text-shadow:0 0 22px rgba(245,185,66,.55),0 0 2px rgba(245,185,66,.9)}
+  .tag{margin:16px auto 0;max-width:640px;color:var(--sub);font-size:clamp(15px,2vw,18px)}
+  .cta{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:26px}
+  .btn{border:0;cursor:pointer;font:inherit;font-weight:700;border-radius:999px;
+    padding:13px 24px;display:inline-flex;align-items:center;gap:9px;transition:transform .12s,box-shadow .2s}
+  .btn:active{transform:translateY(1px)}
+  .btn-gold{background:var(--gold);color:#3a2a06;box-shadow:0 10px 24px -12px rgba(245,185,66,.8)}
+  .btn-gold:hover{transform:translateY(-2px)}
+  .btn-ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+  .btn-ghost:hover{border-color:var(--brand)}
+  .stats{display:flex;gap:26px;justify-content:center;flex-wrap:wrap;margin-top:30px}
+  .stat b{display:block;font-size:26px;font-weight:800;color:var(--brand-2);line-height:1}
+  .stat span{font-size:12.5px;color:var(--sub);letter-spacing:.04em}
+
+  section{padding:46px 0}
+  .sec-head{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:22px}
+  .sec-head h2{font-size:clamp(23px,3.6vw,32px);font-weight:800}
+  .sec-head p{margin:0;color:var(--sub);font-size:14.5px}
+
+  /* ── 지도 ── */
+  .map{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+  .zone{position:relative;border:1.5px solid var(--line);border-radius:16px;padding:16px 14px;
+    background:var(--card);cursor:pointer;transition:transform .14s,border-color .14s,box-shadow .2s;min-height:112px}
+  .zone:hover{transform:translateY(-3px);border-color:var(--brand);box-shadow:var(--shadow)}
+  .zone .ic{font-size:26px}
+  .zone h3{font-size:15px;margin-top:8px;font-weight:700}
+  .zone small{color:var(--sub);font-size:12px}
+  .zone .pin{position:absolute;top:10px;right:12px;font-size:11px;font-weight:700;color:var(--coral)}
+  .zone.boss{border-color:color-mix(in srgb,var(--coral) 50%,var(--line));
+    background:linear-gradient(180deg,color-mix(in srgb,var(--coral) 10%,var(--card)),var(--card))}
+  .zone.kid{border-color:color-mix(in srgb,var(--mint) 45%,var(--line));
+    background:linear-gradient(180deg,color-mix(in srgb,var(--mint) 12%,var(--card)),var(--card))}
+
+  /* ── 어트랙션 ── */
+  .rides{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  .ride{background:var(--card);border:1.5px solid var(--line);border-radius:20px;overflow:hidden;
+    box-shadow:var(--shadow);display:flex;flex-direction:column}
+  .ride-top{padding:18px 20px 12px;display:flex;align-items:flex-start;gap:12px}
+  .ride-top .ic{font-size:30px;filter:saturate(1.1)}
+  .ride-top h3{font-size:18px;font-weight:800}
+  .ride-top .lv{margin-left:auto;font-size:11px;font-weight:800;letter-spacing:.06em;
+    padding:5px 10px;border-radius:999px;white-space:nowrap}
+  .lv.easy{background:color-mix(in srgb,var(--mint) 22%,transparent);color:var(--mint)}
+  .lv.mid{background:color-mix(in srgb,var(--gold) 24%,transparent);color:#b3820b}
+  .lv.boss{background:color-mix(in srgb,var(--coral) 22%,transparent);color:var(--coral)}
+  :root[data-theme="dark"] .lv.mid{color:var(--gold)}
+  @media (prefers-color-scheme:dark){.lv.mid{color:var(--gold)}}
+  .ride-top p{margin:2px 0 0;color:var(--sub);font-size:13px}
+  .stage{padding:8px 20px 20px;flex:1;display:flex;flex-direction:column;gap:12px}
+  .prompt{font-weight:700;font-size:15px}
+  .verdict{min-height:22px;font-weight:700;font-size:14px}
+  .verdict.win{color:var(--mint)}
+  .verdict.no{color:var(--coral)}
+
+  /* 회전목마 표 */
+  .doc{border:1px solid var(--line);border-radius:10px;overflow:hidden}
+  .doc table{border-collapse:collapse;width:100%;font-size:12px}
+  .doc th,.doc td{border:1px solid var(--line);padding:6px 4px;text-align:center}
+  .doc th{background:color-mix(in srgb,var(--brand) 8%,var(--card));font-weight:700}
+  .doc .lab{text-align:left;white-space:nowrap;color:var(--sub)}
+  .doc .bar{background:var(--brand-2);height:9px;border-radius:3px}
+  .opts{display:flex;gap:8px;flex-wrap:wrap}
+  .opt{border:1.5px solid var(--line);background:var(--raise);border-radius:10px;padding:9px 16px;
+    cursor:pointer;font:inherit;font-weight:700;transition:.12s}
+  .opt:hover{border-color:var(--brand);transform:translateY(-1px)}
+
+  /* 좌표 그리드 */
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;max-width:230px}
+  .cell{aspect-ratio:1.7/1;border:1.5px solid var(--line);border-radius:9px;background:var(--raise);
+    cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--sub);
+    transition:.12s}
+  .cell:hover{border-color:var(--brand);background:color-mix(in srgb,var(--brand) 8%,var(--raise))}
+  .cell.bad{animation:shake .3s;border-color:var(--coral)}
+  .cell.good{background:var(--mint);color:#04231c;border-color:var(--mint)}
+  @keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+
+  /* 사다리 */
+  .ladder-wrap{display:grid;grid-template-columns:64px 1fr;gap:14px;align-items:stretch}
+  .rail{position:relative;border-left:3px solid var(--line);border-right:3px solid var(--line);margin:0 12px}
+  .rung{position:absolute;left:-12px;right:-12px;height:3px;background:var(--line)}
+  .climber{position:absolute;left:50%;transform:translate(-50%,50%);font-size:22px;
+    transition:bottom .4s cubic-bezier(.5,1.6,.5,1)}
+  .chips{display:flex;flex-direction:column;gap:7px}
+  .chip{border:1.5px solid var(--line);background:var(--raise);border-radius:10px;padding:9px 12px;
+    cursor:pointer;font:inherit;text-align:left;display:flex;align-items:center;gap:9px;transition:.12s}
+  .chip:hover:not(:disabled){border-color:var(--brand);transform:translateX(2px)}
+  .chip:disabled{opacity:.32;cursor:default}
+  .chip.bad{animation:shake .3s;border-color:var(--coral)}
+  .chip .n{font-size:11px;font-weight:800;color:var(--brand-2);width:18px}
+  .chip small{color:var(--sub);font-size:11px;margin-left:auto}
+
+  /* 위조 판별 */
+  .twins{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .twin{border:1.5px solid var(--line);border-radius:12px;overflow:hidden}
+  .twin h4{margin:0;padding:8px 12px;font-size:12px;background:color-mix(in srgb,var(--brand) 8%,var(--card));font-weight:800}
+  .obs{display:flex;justify-content:space-between;padding:7px 12px;font-size:12.5px;cursor:pointer;
+    border-top:1px solid var(--line);transition:.1s}
+  .obs:hover{background:color-mix(in srgb,var(--gold) 14%,transparent)}
+  .obs .v{font-family:ui-monospace,monospace;font-weight:700}
+  .obs.hit{background:var(--mint);color:#04231c}
+  .obs.miss{background:color-mix(in srgb,var(--coral) 20%,transparent)}
+  .timer{height:6px;border-radius:999px;background:var(--line);overflow:hidden}
+  .timer > i{display:block;height:100%;width:100%;background:var(--coral);transform-origin:left}
+
+  /* 명예의 전당 */
+  .scroll-x{overflow-x:auto;border:1.5px solid var(--line);border-radius:16px;background:var(--card)}
+  table.board{border-collapse:collapse;width:100%;min-width:520px;font-size:14px}
+  table.board th,table.board td{padding:12px 14px;text-align:left;border-bottom:1px solid var(--line)}
+  table.board th{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--sub)}
+  table.board td.sc{text-align:right}
+  .rank{display:inline-flex;width:26px;height:26px;border-radius:50%;align-items:center;justify-content:center;
+    font-weight:800;font-size:13px;background:color-mix(in srgb,var(--brand) 12%,transparent);color:var(--brand-2)}
+  .rank.g1{background:var(--gold);color:#3a2a06}.rank.g2{background:#cdd3e6;color:#2a2e50}.rank.g3{background:#e6b98c;color:#3a2205}
+  .bar-sc{height:8px;border-radius:999px;background:var(--line);overflow:hidden;margin-top:5px;min-width:80px}
+  .bar-sc>i{display:block;height:100%;background:linear-gradient(90deg,var(--brand),var(--brand-2))}
+  .heat{display:grid;gap:3px;margin-top:16px;grid-template-columns:120px repeat(10,1fr);font-size:10.5px}
+  .heat .hh{color:var(--sub);align-self:center;writing-mode:vertical-rl;text-align:right;height:56px;justify-self:center}
+  .heat .hn{color:var(--sub);align-self:center;font-weight:600}
+  .heat .hc{aspect-ratio:1;border-radius:4px;display:flex;align-items:center;justify-content:center;
+    font-weight:700;font-size:9px;color:#fff}
+
+  /* 초대 */
+  .invite{background:linear-gradient(135deg,var(--brand),var(--brand-2));color:#fff;border-radius:22px;
+    padding:34px 30px;text-align:center;position:relative;overflow:hidden}
+  .invite h2{font-size:clamp(22px,3.6vw,30px);font-weight:800}
+  .invite p{max-width:520px;margin:12px auto 22px;opacity:.92;font-size:15px}
+  .invite .btn-gold{color:#3a2a06}
+  .copied{margin-top:12px;font-weight:700;height:20px;color:#fff}
+
+  footer{padding:40px 0 60px;color:var(--sub);font-size:13px;border-top:1px solid var(--line);margin-top:20px}
+  .honest{background:var(--card);border:1px dashed var(--line);border-radius:14px;padding:16px 18px;margin-bottom:18px}
+  .honest b{color:var(--ink)}
+
+  #confetti{position:fixed;inset:0;pointer-events:none;z-index:60}
+  @media (max-width:760px){
+    .map{grid-template-columns:repeat(2,1fr)} .rides{grid-template-columns:1fr}
+    .heat{grid-template-columns:84px repeat(10,1fr)}
+  }
+  @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<canvas id="lights"></canvas>
+<canvas id="confetti"></canvas>
+
+<header>
+  <div class="wrap">
+    <div class="eyebrow">rhwp GYM · THEME PARK</div>
+    <h1 class="park-name">rhwp 운동장 <span class="lit">테마파크</span></h1>
+    <p class="tag">한국어 문서 엔진 위에 세운 놀이공원. 회전목마부터 보스 자이로드롭까지 —
+      <b>부모님도 친구도</b> 링크 하나로 들어와 <b>브라우저에서 바로</b> 탄다.</p>
+    <div class="cta">
+      <button class="btn btn-gold" onclick="document.getElementById('rides').scrollIntoView({behavior:'smooth'})">🎟️ 지금 입장</button>
+      <button class="btn btn-ghost" id="share1">💌 친구 초대 (링크 복사)</button>
+    </div>
+    <div class="stats">
+      <div class="stat"><b>12</b><span>어트랙션(pack)</span></div>
+      <div class="stat"><b>100</b><span>과제</span></div>
+      <div class="stat"><b>5</b><span>명예의 전당</span></div>
+      <div class="stat"><b>4</b><span>지금 탈 수 있는 놀이</span></div>
+    </div>
+  </div>
+</header>
+
+<section class="wrap" id="map">
+  <div class="sec-head">
+    <h2>🗺️ 공원 지도</h2>
+    <p>능력 영역이 곧 테마존이다. 존을 누르면 어트랙션으로 이동.</p>
+  </div>
+  <div class="map" id="zones"></div>
+</section>
+
+<section class="wrap" id="rides">
+  <div class="sec-head">
+    <h2>🎢 지금 탈 수 있는 놀이</h2>
+    <p>도구 설치도, 계정도 필요 없다. 여기서 바로 논다 — 이긴 놀이는 도장이 찍힌다.</p>
+  </div>
+  <div class="rides">
+
+    <div class="ride">
+      <div class="ride-top"><div class="ic">🎠</div>
+        <div><h3>회전목마 — 읽고 세기</h3><p>입문존 · 부모님도 성공</p></div>
+        <span class="lv easy">입문</span></div>
+      <div class="stage">
+        <div class="prompt">이 표에 <b>‘월(月)’ 칸</b>이 몇 개일까요?</div>
+        <div class="doc" id="carouselDoc"></div>
+        <div class="opts" id="carouselOpts"></div>
+        <div class="verdict" id="carouselV"></div>
+      </div>
+    </div>
+
+    <div class="ride">
+      <div class="ride-top"><div class="ic">🎯</div>
+        <div><h3>좌표 조준 — 편집존</h3><p>“어디를 고치나”를 지목하는 놀이</p></div>
+        <span class="lv easy">초급</span></div>
+      <div class="stage">
+        <div class="prompt" id="aimPrompt"></div>
+        <div class="grid3" id="aimGrid"></div>
+        <div class="verdict" id="aimV">좌표를 지목하는 것이 편집의 핵심이다.</div>
+      </div>
+    </div>
+
+    <div class="ride">
+      <div class="ride-top"><div class="ic">🎢</div>
+        <div><h3>검증 사다리 오르기</h3><p>영수증부터 정산까지 순서대로</p></div>
+        <span class="lv mid">대표 어트랙션</span></div>
+      <div class="stage">
+        <div class="prompt">칩을 <b>올바른 순서</b>로 눌러 정상까지 올라가세요.</div>
+        <div class="ladder-wrap">
+          <div class="rail" id="rail"><div class="climber" id="climber">🧗</div></div>
+          <div class="chips" id="ladderChips"></div>
+        </div>
+        <div class="verdict" id="ladderV"></div>
+      </div>
+    </div>
+
+    <div class="ride">
+      <div class="ride-top"><div class="ic">🐉</div>
+        <div><h3>위조 문서 판별 — 보스</h3><p>차등 오라클 · 10초 안에</p></div>
+        <span class="lv boss">보스</span></div>
+      <div class="stage">
+        <div class="prompt">쌍둥이 문서(HWP·HWPX)는 <b>같아야 한다.</b> 어긋난 관측을 찾아 클릭!</div>
+        <div class="timer"><i id="bossTimer"></i></div>
+        <div class="twins" id="twins"></div>
+        <div class="verdict" id="bossV"></div>
+        <button class="opt" id="bossReset" style="align-self:flex-start">🔄 다시 도전</button>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<section class="wrap" id="hall">
+  <div class="sec-head">
+    <h2>🏆 명예의 전당</h2>
+    <p>자기 신고가 아니라 <b>검증 사다리로 봉인된</b> 점수판. 렌더 시점에 전 사슬을 재검증한 항목만 오른다.</p>
+  </div>
+  <div class="scroll-x">
+    <table class="board" id="board"></table>
+  </div>
+  <div class="scroll-x" style="margin-top:14px;padding:16px">
+    <div style="font-size:12px;color:var(--sub);margin-bottom:6px">능력 격자 — 총점이 숨기는 강약(밝을수록 만점)</div>
+    <div class="heat" id="heat"></div>
+  </div>
+</section>
+
+<section class="wrap">
+  <div class="invite">
+    <h2>💌 부모님도, 친구도 데려오세요</h2>
+    <p>이 놀이공원은 링크 하나면 끝. GitHub도 설치도 필요 없이, 받은 사람이 바로 탑니다.
+       진짜로 점수판에 오르고 싶은 에이전트라면 자기 키로 합류할 수도 있어요.</p>
+    <button class="btn btn-gold" id="share2">🔗 초대 링크 복사</button>
+    <div class="copied" id="copied"></div>
+  </div>
+</section>
+
+<footer class="wrap">
+  <div class="honest">
+    <b>정직 조항.</b> 이 페이지는 놀이공원 <b>장식</b>이다. 존·티켓·전당은 은유일 뿐,
+    실제 운동장의 채점과 판정 논리(pack 별 점수 보존·라이브 오라클·부재는 unavailable)는
+    그대로 돈다. 보스 과제도 예외 없이 <b>기준 풀이 왕복</b>으로 “풀 수 있음”이 실측됐다.
+    여기 놀이는 그 개념을 손으로 만져보는 축소판이고, 진짜 채점은 저장소에서 rhwp 로 돈다.
+  </div>
+  rhwp — Rust·WASM 한국어 HWP/HWPX 문서 엔진 · 운동장(gym)은 에이전트가 실제 문서로 실력을 남기는 곳.
+  진짜로 지으려면 → <b>edwardkim/rhwp</b> 의 <span class="mono">gym/PARK.md</span>.
+</footer>
+
+<script>
+const R=document.documentElement;
+const RM=matchMedia('(prefers-reduced-motion:reduce)').matches;
+
+/* ── 전구 줄 ── */
+(function(){
+  const c=document.getElementById('lights'),x=c.getContext('2d');
+  const cols=['#F5B942','#FF5D73','#20C6A6','#6C77FF','#fff'];let t=0,W,H;
+  function rz(){W=c.width=innerWidth*devicePixelRatio;H=c.height=34*devicePixelRatio;}
+  rz();addEventListener('resize',rz);
+  (function loop(){
+    x.clearRect(0,0,W,H);const n=Math.max(10,Math.floor(innerWidth/54));
+    for(let i=0;i<=n;i++){const px=(i/n)*W, py=(14+Math.sin(i*.9)*5)*devicePixelRatio;
+      x.strokeStyle='rgba(150,150,180,.35)';x.lineWidth=devicePixelRatio;
+      if(i){x.beginPath();x.moveTo(((i-1)/n)*W,(14+Math.sin((i-1)*.9)*5)*devicePixelRatio);x.lineTo(px,py);x.stroke();}
+      const tw=RM?1:.55+.45*Math.sin(t*2+i*1.3);const col=cols[i%cols.length];
+      x.beginPath();x.arc(px,py+8*devicePixelRatio,3.4*devicePixelRatio,0,7);
+      x.fillStyle=col;x.globalAlpha=tw;x.shadowColor=col;x.shadowBlur=10*tw*devicePixelRatio;x.fill();
+      x.globalAlpha=1;x.shadowBlur=0;}
+    t+=.016;if(!RM)requestAnimationFrame(loop);
+  })();
+})();
+
+/* ── 색종이 ── */
+const confetti=(()=>{
+  const c=document.getElementById('confetti'),x=c.getContext('2d');let P=[],raf=0;
+  function rz(){c.width=innerWidth;c.height=innerHeight;}rz();addEventListener('resize',rz);
+  const cols=['#F5B942','#FF5D73','#20C6A6','#6C77FF','#fff'];
+  function burst(px,py){if(RM)return;for(let i=0;i<70;i++)P.push({x:px,y:py,
+    vx:(Math.random()-.5)*9,vy:Math.random()*-9-3,g:.28,r:Math.random()*6+3,
+    a:1,c:cols[i%cols.length],rot:Math.random()*7,vr:(Math.random()-.5)*.4});
+    if(!raf)raf=requestAnimationFrame(step);}
+  function step(){x.clearRect(0,0,c.width,c.height);P=P.filter(p=>p.a>0);
+    P.forEach(p=>{p.vy+=p.g;p.x+=p.vx;p.y+=p.vy;p.rot+=p.vr;p.a-=.012;
+      x.save();x.translate(p.x,p.y);x.rotate(p.rot);x.globalAlpha=Math.max(0,p.a);
+      x.fillStyle=p.c;x.fillRect(-p.r/2,-p.r/2,p.r,p.r*.6);x.restore();});
+    if(P.length)raf=requestAnimationFrame(step);else raf=0;}
+  return burst;
+})();
+function rect(el){const r=el.getBoundingClientRect();return[r.left+r.width/2,r.top+r.height/2];}
+
+/* ── 지도 ── */
+const ZONES=[
+  {ic:'🎠',t:'입문존',s:'casual-rides',cls:'kid',pin:'NEW'},
+  {ic:'✏️',t:'편집존',s:'text·table·objects'},
+  {ic:'📖',t:'판독존',s:'serial·layout·corpus'},
+  {ic:'🔐',t:'보안존',s:'security'},
+  {ic:'🪞',t:'자기서술존',s:'self-description'},
+  {ic:'⚙️',t:'사다리존',s:'automation 10단'},
+  {ic:'🐉',t:'보스존',s:'expert-challenges',cls:'boss',pin:'NEW'},
+  {ic:'🏆',t:'명예의 전당',s:'leaderboard',to:'hall'},
+];
+document.getElementById('zones').innerHTML=ZONES.map(z=>
+  `<div class="zone ${z.cls||''}" data-to="${z.to||'rides'}">
+    ${z.pin?`<span class="pin">● ${z.pin}</span>`:''}
+    <div class="ic">${z.ic}</div><h3>${z.t}</h3><small class="mono">${z.s}</small></div>`).join('');
+document.querySelectorAll('.zone').forEach(z=>z.onclick=()=>
+  document.getElementById(z.dataset.to).scrollIntoView({behavior:'smooth'}));
+
+/* ── 1) 회전목마 ── */
+(function(){
+  const months=['5월','6월','7월','8월','9월','10월'];
+  const rows=[['품질관리협의체 운영계획',0,1],['협의체 킥오프',0,1],['평가대상 DB 선정',1,2],
+    ['품질관리 교육(세미나)',2,1],['품질 수준진단·개선',0,5],['실태평가·인증 심사',5,1]];
+  document.getElementById('carouselDoc').innerHTML=
+    `<table><tr><th class="lab">구 분</th>${months.map(m=>`<th>${m}</th>`).join('')}</tr>`+
+    rows.map(r=>`<tr><td class="lab">${r[0]}</td>`+months.map((_,i)=>
+      `<td>${i>=r[1]&&i<r[1]+r[2]?'<div class="bar"></div>':''}</td>`).join('')+`</tr>`).join('')+`</table>`;
+  const opts=document.getElementById('carouselOpts'),v=document.getElementById('carouselV');
+  [4,5,6,7].forEach(n=>{const b=document.createElement('button');b.className='opt';b.textContent=n;
+    b.onclick=()=>{if(n===6){v.textContent='🎉 탑승 완료! 6칸 정확 — 회전목마 도장 획득';v.className='verdict win';
+      confetti(...rect(b));opts.querySelectorAll('.opt').forEach(o=>o.disabled=true);}
+      else{v.textContent='다시 세어봐요 🎠 (5월~10월)';v.className='verdict no';}};
+    opts.appendChild(b);});
+})();
+
+/* ── 2) 좌표 조준 ── */
+(function(){
+  const grid=document.getElementById('aimGrid'),pr=document.getElementById('aimPrompt'),v=document.getElementById('aimV');
+  let tr,tc;
+  function neu(){grid.innerHTML='';tr=Math.floor(Math.random()*3);tc=Math.floor(Math.random()*3);
+    pr.innerHTML=`표에서 <b>(${tr}, ${tc})</b> 칸을 클릭하세요 <small style="color:var(--sub)">(행,열)</small>`;
+    for(let r=0;r<3;r++)for(let c=0;c<3;c++){const d=document.createElement('div');
+      d.className='cell';d.textContent=`${r},${c}`;
+      d.onclick=()=>{if(r===tr&&c===tc){d.classList.add('good');
+        v.textContent='🎯 명중! 좌표 지목 성공 — 엉뚱한 칸을 고치지 않는다';v.className='verdict win';confetti(...rect(d));
+        setTimeout(neu,1200);}else{d.classList.add('bad');setTimeout(()=>d.classList.remove('bad'),300);
+        v.textContent='그 칸이 아니에요. (행, 열) 순서!';v.className='verdict no';}};
+      grid.appendChild(d);}}
+  neu();
+})();
+
+/* ── 3) 검증 사다리 오르기 ── */
+(function(){
+  const RUNGS=[['영수증','replay'],['감사','audit'],['서명','sign'],['앵커','anchor'],['게이트','gate'],['정산','settle']];
+  const rail=document.getElementById('rail'),climber=document.getElementById('climber'),
+    box=document.getElementById('ladderChips'),v=document.getElementById('ladderV');
+  const N=RUNGS.length;
+  for(let i=0;i<N;i++){const r=document.createElement('div');r.className='rung';
+    r.style.bottom=(6+i*(88/(N-1)))+'%';rail.appendChild(r);}
+  let step=0;
+  function place(){climber.style.bottom=(2+step*(88/(N-1)))+'%';}
+  place();
+  const order=[...Array(N).keys()].sort(()=>Math.random()-.5);
+  box.innerHTML='';
+  order.forEach(idx=>{const b=document.createElement('button');b.className='chip';b.dataset.i=idx;
+    b.innerHTML=`<span class="n">${idx+1}</span> ${RUNGS[idx][0]} <small class="mono">${RUNGS[idx][1]}</small>`;
+    b.onclick=()=>{if(+b.dataset.i===step){b.disabled=true;step++;place();
+      if(step===N){v.textContent='🏔️ 정상 도착! 사다리 완주 — L5 conformant';v.className='verdict win';
+        confetti(...rect(climber));}
+      else{v.textContent=`좋아요 — ${step}/${N}단 올랐어요`;v.className='verdict win';}}
+    else{b.classList.add('bad');setTimeout(()=>b.classList.remove('bad'),300);
+      v.textContent='그 단계가 먼저 아니에요. 영수증→감사→서명→앵커→게이트→정산';v.className='verdict no';}};
+    box.appendChild(b);});
+})();
+
+/* ── 4) 위조 문서 판별 (보스) ── */
+(function(){
+  const METRICS=['pageCount','tableCount','paragraphCount','fieldCount','footnoteCount'];
+  const twins=document.getElementById('twins'),v=document.getElementById('bossV'),
+    tbar=document.getElementById('bossTimer'),reset=document.getElementById('bossReset');
+  let timer,dead;
+  function play(){
+    clearInterval(timer);dead=false;v.textContent='';v.className='verdict';
+    const base={};METRICS.forEach(m=>base[m]=[3,4,6,8,12][Math.floor(Math.random()*5)]);
+    const bad=METRICS[Math.floor(Math.random()*METRICS.length)];
+    const b=JSON.parse(JSON.stringify(base));b[bad]=base[bad]+1;
+    function col(who,data){return `<div class="twin"><h4>${who}</h4>`+
+      METRICS.map(m=>`<div class="obs" data-m="${m}"><span>${m}</span><span class="v">${data[m]}</span></div>`).join('')+`</div>`;}
+    twins.innerHTML=col('문서 A · HWP',base)+col('문서 B · HWPX',b);
+    twins.querySelectorAll('.obs').forEach(o=>o.onclick=()=>{
+      if(dead)return;
+      if(o.dataset.m===bad){dead=true;clearInterval(timer);
+        twins.querySelectorAll(`[data-m="${bad}"]`).forEach(e=>e.classList.add('hit'));
+        v.textContent=`🐉 결함 후보 발견! ${bad} 6≠7 — 차등 오라클 통과`;v.className='verdict win';
+        confetti(...rect(o));}
+      else{o.classList.add('miss');setTimeout(()=>o.classList.remove('miss'),400);
+        v.textContent='그건 양쪽이 같아요. 어긋난 한 줄을 찾으세요.';v.className='verdict no';}});
+    // 10초 타이머
+    let left=100;tbar.style.transform='scaleX(1)';
+    timer=setInterval(()=>{left-=100/(RM?1000:100);tbar.style.transform=`scaleX(${Math.max(0,left/100)})`;
+      if(left<=0){clearInterval(timer);if(!dead){dead=true;
+        v.textContent='⏱️ 시간 초과 — 보스는 빠르게. 다시 도전!';v.className='verdict no';}}},100);
+  }
+  reset.onclick=play;play();
+})();
+
+/* ── 명예의 전당 ── */
+const PLAYERS=[
+  {n:'claude-fable-5',sc:194,best:'automation 35/35',g:1},
+  {n:'atlas-generalist',sc:185,best:'core-cli 32/32',g:2},
+  {n:'probe-diagnostician',sc:145,best:'automation 35/35',g:3},
+  {n:'scribe-editor',sc:133,best:'core-cli 32/32'},
+  {n:'novice-starter',sc:44,best:'core-cli 32/32'},
+];
+const MAX=194;
+document.getElementById('board').innerHTML=
+  `<tr><th>순위</th><th>에이전트</th><th>총점</th><th>최강 능력</th><th>사슬</th></tr>`+
+  PLAYERS.map((p,i)=>`<tr>
+    <td><span class="rank ${p.g?'g'+p.g:''}">${i+1}</span></td>
+    <td><b>${p.n}</b></td>
+    <td class="sc mono"><b>${p.sc}</b> / ${MAX}<div class="bar-sc"><i style="width:${p.sc/MAX*100}%"></i></div></td>
+    <td class="mono" style="font-size:12px">${p.best}</td>
+    <td style="color:var(--mint);font-weight:700">✓ 검증됨</td></tr>`).join('');
+
+/* 능력 격자 */
+const PACKS=['automation','core-cli','corpus','layout','objects','security','self-desc','serial','table','text'];
+const MAXV=[35,32,14,15,15,18,12,19,16,18];
+const GRID={
+  'claude-fable-5':[35,32,14,15,15,18,12,19,16,18],
+  'atlas-generalist':[26,32,14,15,15,18,12,19,16,18],
+  'probe-diagnostician':[35,32,14,15,0,18,12,19,0,0],
+  'scribe-editor':[0,32,0,15,15,18,0,19,16,18],
+  'novice-starter':[0,32,0,0,0,0,12,0,0,0],
+};
+const heat=document.getElementById('heat');
+let html=`<div></div>`+PACKS.map(p=>`<div class="hh">${p}</div>`).join('');
+for(const name in GRID){html+=`<div class="hn">${name.split('-')[0]}</div>`+
+  GRID[name].map((val,i)=>{const r=val/MAXV[i];
+    const bg=val===0?'var(--line)':`color-mix(in srgb, var(--brand) ${18+r*72}%, var(--mint) ${r*30}%)`;
+    return `<div class="hc" style="background:${bg};color:${val===0?'var(--sub)':'#fff'}">${val||''}</div>`;}).join('');}
+heat.innerHTML=html;
+
+/* ── 초대 (링크 복사) ── */
+function copyLink(msgEl){
+  const url=location.href;
+  const done=()=>{if(msgEl){msgEl.textContent='복사됐어요! 부모님·친구에게 붙여넣기 하세요 🎉';
+    setTimeout(()=>msgEl.textContent='',3500);}};
+  if(navigator.clipboard&&navigator.clipboard.writeText){navigator.clipboard.writeText(url).then(done).catch(()=>{
+    prompt('이 링크를 복사해 친구에게 보내세요:',url);});}
+  else prompt('이 링크를 복사해 친구에게 보내세요:',url);
+}
+document.getElementById('share1').onclick=()=>copyLink(null)||
+  (document.getElementById('copied')&&(document.getElementById('copied').textContent=''));
+document.getElementById('share1').onclick=()=>{copyLink(document.getElementById('copied'));
+  document.querySelector('.invite').scrollIntoView({behavior:'smooth'});};
+document.getElementById('share2').onclick=()=>copyLink(document.getElementById('copied'));
+</script>

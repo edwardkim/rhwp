@@ -1,0 +1,25 @@
+{
+  "id": "SD28",
+  "tier": 3,
+  "title": "jsonContract.failure",
+  "input": "samples/table-001.hwp",
+  "instructions": "capabilities 가 선언하는 jsonContract.failure 규약을 answer.json 에 {\"failure\": S} 으로 제출하라. 힌트: capabilities 의 jsonContract.failure.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "jsonContract.failure",
+      "op": "answer_eq",
+      "answer": "failure",
+      "path": "jsonContract.failure",
+      "cmd": [
+        "capabilities"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

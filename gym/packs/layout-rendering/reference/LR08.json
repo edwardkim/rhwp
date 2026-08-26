@@ -1,0 +1,41 @@
+{
+  "id": "LR08",
+  "steps": [
+    {
+      "answer": {
+        "verdict": {
+          "cmd": [
+            "verify",
+            "{input}",
+            "--expect-min-pages",
+            "10",
+            "--expect-min-tables",
+            "1",
+            "--json"
+          ],
+          "path": "verdict",
+          "allowExits": [
+            0,
+            3
+          ]
+        },
+        "passed": {
+          "cmd": [
+            "verify",
+            "{input}",
+            "--expect-min-pages",
+            "10",
+            "--expect-min-tables",
+            "1",
+            "--json"
+          ],
+          "path": "passCount",
+          "allowExits": [
+            0,
+            3
+          ]
+        }
+      }
+    }
+  ]
+}

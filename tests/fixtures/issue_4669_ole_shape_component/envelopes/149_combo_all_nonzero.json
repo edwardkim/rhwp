@@ -1,0 +1,89 @@
+{
+  "schema": "rhwp.issue4669.ole-shape-component.v1",
+  "issue": 4669,
+  "tracker": 5450,
+  "fixture_id": "149_combo_all_nonzero",
+  "family": "combo",
+  "contract": "id≠instid + wraparound offset + curSz 독립 + flip + 90도 + 한셀 sca + SOLID",
+  "source": "synthetic combination",
+  "oles": [
+    {
+      "index": 0,
+      "id": 2141242094,
+      "instid": 1067500271,
+      "hwpx_ole_id": 2141242094,
+      "instance_id": 1067500271,
+      "save_id": 2141242094,
+      "offset": [
+        -2429,
+        -4332
+      ],
+      "offset_u32": [
+        4294964867,
+        4294962964
+      ],
+      "orgSz": [
+        42001,
+        13501
+      ],
+      "curSz": [
+        18000,
+        2400
+      ],
+      "was_zero": [
+        false,
+        false
+      ],
+      "flip": [
+        1,
+        1
+      ],
+      "rotation": [
+        90,
+        9000,
+        1200,
+        1
+      ],
+      "trans": [
+        1,
+        0,
+        -2429,
+        0,
+        1,
+        -4332
+      ],
+      "sca": [
+        0.714245,
+        0,
+        0,
+        0,
+        0.300052,
+        0
+      ],
+      "line": {
+        "color": "#112233",
+        "width": 4,
+        "style": "SOLID",
+        "endCap": "FLAT"
+      },
+      "expect_xml": [
+        "id=\"2141242094\"",
+        "instid=\"1067500271\"",
+        "<hp:offset x=\"4294964867\" y=\"4294962964\"/>",
+        "<hp:orgSz width=\"42001\" height=\"13501\"/>",
+        "<hp:curSz width=\"18000\" height=\"2400\"/>",
+        "<hp:flip horizontal=\"1\" vertical=\"1\"/>",
+        "angle=\"90\"",
+        "centerX=\"9000\"",
+        "centerY=\"1200\"",
+        "rotateimage=\"1\"",
+        "style=\"SOLID\"",
+        "width=\"4\""
+      ],
+      "forbid_xml": [
+        "<hp:offset x=\"0\" y=\"0\"/>"
+      ],
+      "forbid_id_zero": true
+    }
+  ]
+}

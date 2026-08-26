@@ -1,0 +1,7 @@
+{
+  "id": "capabilities_covers_every_help_command",
+  "file": "tests/cli_json_contract.rs",
+  "from": "rhwp --help",
+  "to": "capabilities commands[].name",
+  "on_fail": "capabilities_command_entries 등재"
+}

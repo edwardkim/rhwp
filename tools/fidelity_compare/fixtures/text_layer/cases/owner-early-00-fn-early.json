@@ -1,0 +1,63 @@
+{
+  "id": "owner-early-00-fn-early",
+  "schema": "rhwp.fidelity_compare.text_layer_case.v1",
+  "schemaVersion": "1.0",
+  "claim": "M-fid",
+  "generator": "tools/fidelity_compare/fatten_text_layer.py",
+  "kind": "excess",
+  "classification": "excess",
+  "family": "owner_shift",
+  "genre": "각주",
+  "registeredKey": "plan",
+  "title": "각주가 한 쪽 이르게 SVG 에 나타남",
+  "why": "각주가 pN SVG 에만 있고 PDF 는 pN+1 — rhwp_earlier. 방향=rhwp_earlier_than_reference.",
+  "page": 10,
+  "page1based": 11,
+  "referenceText": "본문고정영역ABCDEFGH이번쪽공통",
+  "svgText": "본문고정영역ABCDEFGH이번쪽공통각주내용 본 통계는 통계청 2022년 사회조사 원표를 재구성한 것이다.",
+  "referenceNfc": "본문고정영역ABCDEFGH이번쪽공통",
+  "svgNfc": "본문고정영역ABCDEFGH이번쪽공통각주내용 본 통계는 통계청 2022년 사회조사 원표를 재구성한 것이다.",
+  "referenceSequence": "본문고정영역ABCDEFGH이번쪽공통",
+  "svgSequence": "본문고정영역ABCDEFGH이번쪽공통각주내용본통계는통계청2022년사회조사원표를재구성한것이다.",
+  "referenceOnly": 0,
+  "svgOnly": 31,
+  "referenceOnlyChars": "",
+  "svgOnlyChars": "U+002E:.×1,U+0030:0×1,U+0032:2×3,U+AC01:\\uac01×1,U+AC83:\\uac83×1,U+ACC4:\\uacc4×2,U+AD6C:\\uad6c×1,U+B0B4:\\ub0b4×1,U+B144:\\ub144×1,U+B294:\\ub294×1,U+B2E4:\\ub2e4×1,U+B97C:\\ub97c×1,U+BCF8:\\ubcf8×1,U+C0AC:\\uc0ac×2,U+C131:\\uc131×1,U+C6A9:\\uc6a9×1,U+C6D0:\\uc6d0×1,U+C774:\\uc774×1,U+C7AC:\\uc7ac×1,U+C870:\\uc870×1,U+C8FC:\\uc8fc×1,U+CCAD:\\uccad×1,U+D1B5:\\ud1b5×2,U+D45C:\\ud45c×1,U+D55C:\\ud55c×1,U+D68C:\\ud68c×1",
+  "glyphRiskCount": 0,
+  "glyphRisks": "",
+  "referenceGlyphRiskCount": 0,
+  "referenceGlyphRisks": "",
+  "ownerShift": [
+    {
+      "page": 10,
+      "next_page": 11,
+      "direction": "rhwp_earlier_than_reference",
+      "shared_count": 31,
+      "source_coverage": 1.0,
+      "target_coverage": 1.0,
+      "shared": "U+002E:.×1,U+0030:0×1,U+0032:2×3,U+AC01:\\uac01×1,U+AC83:\\uac83×1,U+ACC4:\\uacc4×2,U+AD6C:\\uad6c×1,U+B0B4:\\ub0b4×1,U+B144:\\ub144×1,U+B294:\\ub294×1,U+B2E4:\\ub2e4×1,U+B97C:\\ub97c×1,U+BCF8:\\ubcf8×1,U+C0AC:\\uc0ac×2,U+C131:\\uc131×1,U+C6A9:\\uc6a9×1,U+C6D0:\\uc6d0×1,U+C774:\\uc774×1,U+C7AC:\\uc7ac×1,U+C870:\\uc870×1,U+C8FC:\\uc8fc×1,U+CCAD:\\uccad×1,U+D1B5:\\ud1b5×2,U+D45C:\\ud45c×1,U+D55C:\\ud55c×1,U+D68C:\\ud68c×1"
+    }
+  ],
+  "sequence": [
+    {
+      "page": 10,
+      "next_page": 11,
+      "direction": "rhwp_earlier_than_reference",
+      "chars": 31,
+      "sequence": "각주내용본통계는통계청2022년사회조사원표를재구성한것이다."
+    }
+  ],
+  "visibleExcess": [],
+  "clipExcludedChars": 0,
+  "nextReferenceText": "본문고정영역ABCDEFGH이번쪽공통각주내용 본 통계는 통계청 2022년 사회조사 원표를 재구성한 것이다.",
+  "nextSvgText": "본문고정영역ABCDEFGH이번쪽공통",
+  "textOnly": true,
+  "chromeRequired": false,
+  "pypdfRequired": true,
+  "pypdfium2Required": false,
+  "candidateNotVerdict": true,
+  "reviewHint": "text-owner-shift-candidates 와 sequence 를 함께 본다.",
+  "relatedIssue": "#3389",
+  "notes": "rhwp_earlier_than_reference",
+  "digest": "7adaa8adaf41"
+}

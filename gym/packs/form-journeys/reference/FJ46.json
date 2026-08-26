@@ -1,0 +1,25 @@
+{
+  "id": "FJ46",
+  "steps": [
+    {
+      "write_json": {
+        "to": "{sub:data.json}",
+        "body": {
+          "작성자": "메모서식작성자"
+        }
+      }
+    },
+    {
+      "run": [
+        "edit",
+        "fill-fields",
+        "{input}",
+        "--data",
+        "@{sub:data.json}",
+        "-o",
+        "{sub:memo-author.hwp}",
+        "--json"
+      ]
+    }
+  ]
+}

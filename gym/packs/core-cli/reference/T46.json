@@ -1,0 +1,23 @@
+{
+  "id": "T46",
+  "steps": [
+    {
+      "answer": {
+        "signalCount": {
+          "cmd": [
+            "inspect",
+            "injection",
+            "{input}",
+            "--json"
+          ],
+          "path": "injectionSignals",
+          "len": true,
+          "allowExits": [
+            0,
+            3
+          ]
+        }
+      }
+    }
+  ]
+}

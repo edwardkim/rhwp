@@ -1,0 +1,40 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5318,
+  "kind": "live",
+  "command": "run",
+  "sourceChapter": "30_편집과_계획.md",
+  "cmd": "rhwp run <tmp>/plan_a.json --json",
+  "exit": 0,
+  "envelope": {
+    "assertions": {
+      "notFoundEmpty": true,
+      "verify": false
+    },
+    "changedPages": [
+      0,
+      1,
+      "… (17개 중 2개 표시)"
+    ],
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "inputSha256": "bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626",
+    "output": "<tmp>/plan_out.hwp",
+    "outputFormat": "hwp5",
+    "outputSha256": "db72869c12a1c4149beb7e417c6d86f8c26de5282f7b218a136e974a1f140e58",
+    "planVersion": "1.0",
+    "schemaVersion": "1.0",
+    "steps": [
+      {
+        "action": "replace_text",
+        "find": "규제",
+        "replacedCount": 7,
+        "step": 0
+      }
+    ],
+    "untrustedContent": false,
+    "untrustedFields": [],
+    "verify": null
+  },
+  "extractedFromGenerated": true,
+  "handEdited": false
+}

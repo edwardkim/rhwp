@@ -1,0 +1,23 @@
+{
+  "id": "EX27",
+  "tier": 2,
+  "title": "본문 텍스트 — 4쪽 시험지 페이지 수",
+  "input": "samples/exam-kor-4p.hwp",
+  "instructions": "export-text 로 이 4쪽 시험지의 pageCount 를 보고하라. 답 형식: {\"pages\": <수>}.",
+  "submit": {
+    "kind": "answer"
+  },
+  "checks": [
+    {
+      "name": "pages 일치",
+      "op": "answer_eq",
+      "answer": "pages",
+      "cmd": [
+        "export-text",
+        "{input}",
+        "--json"
+      ],
+      "path": "pageCount"
+    }
+  ]
+}

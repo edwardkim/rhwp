@@ -1,0 +1,609 @@
+{
+  "canonicalSha256": "a84562e5a5a606cdc62fa8da3917df88ae85d40bc885d9b112f9a0d0a327a153",
+  "executionPolicy": {
+    "fallbackMutation": false,
+    "fullCorpusRerun": false,
+    "hyperVOracleRerun": false,
+    "metricDbMutation": false,
+    "paintOrSupplyMutation": false,
+    "registryMutation": false
+  },
+  "hypothesis": {
+    "boldCohortDynamicConfirmationRequired": true,
+    "decisionPlaneCount": 1,
+    "fixedGeometryNonWorsening": true,
+    "fixtureAdvanceCompatibility": true,
+    "fontIdentityEstablished": false,
+    "hwpHwpxMetricProjectionEqualAtQ1": true,
+    "nextStage": "bounded-private-cohort",
+    "paintIdentityEstablished": false,
+    "productMutationAuthorized": false,
+    "sharedCmapAdvanceCompatibility": true,
+    "status": "qualified-for-q3",
+    "targetDecisionPlane": "layout-metric"
+  },
+  "inputs": {
+    "fixture": {
+      "sha256": "1cc8062c6fd0da39cfddc4182115226717516d4250e693b43596293374236f9e"
+    },
+    "fontRuleRegistryV2": {
+      "ruleIds": [
+        "rule.studio-supply.b4a81472cc52c505ee6d.canvas2d",
+        "rule.studio-supply.b4a81472cc52c505ee6d.canvaskit"
+      ],
+      "sha256": "fbab4413007a29600e5d667503e80b861ec4096827a8936943bdf74e58a5ae16"
+    },
+    "fontRuleRegistryVersion": "font-kopubworld@1.0.3",
+    "q0Baseline": {
+      "canonicalSha256": "a3be826dda103dd7ec69b3db9cb3b1529e82d55520bcdbeadd1bc7ddfaae1c42"
+    },
+    "q1Baseline": {
+      "canonicalSha256": "70ad1a94851c1cd8ec4329dd284025882bec6f802b32d0e5cef17e4179fbe49b",
+      "formatTraceSha256": {
+        "hwp5": "7e98f026247824b47f4d628784a074560eb750fecc733298fae5f8c0800303ae",
+        "hwpx": "48616a8a41f3ab547522f6574b961833480b5b44d2156bf8eed9b95cca30ddb9"
+      },
+      "layoutMetricProjectionSha256": "a738899082f9d3b97d231e4629f1dd99880e60a18d07f3c725ed587bfa8aff12",
+      "traceSha256": "48616a8a41f3ab547522f6574b961833480b5b44d2156bf8eed9b95cca30ddb9"
+    }
+  },
+  "issue": 4967,
+  "kind": "font-rank7-metric-hypothesis",
+  "privacy": {
+    "absolutePathIncluded": false,
+    "fontBytesIncluded": false,
+    "fullTraceTracked": false,
+    "privateCorpusAccessed": false,
+    "privateDocumentIdentityIncluded": false
+  },
+  "projection": {
+    "advanceDeltaHwpunit": -40744,
+    "axes": [
+      {
+        "advanceDeltaHwpunit": -1257,
+        "candidateAdvanceHwpunit": 25815,
+        "currentAdvanceHwpunit": 27072,
+        "kerning": false,
+        "ratio": 80,
+        "records": 61,
+        "spacing": -10
+      },
+      {
+        "advanceDeltaHwpunit": -6515,
+        "candidateAdvanceHwpunit": 160854,
+        "currentAdvanceHwpunit": 167369,
+        "kerning": true,
+        "ratio": 80,
+        "records": 299,
+        "spacing": -10
+      },
+      {
+        "advanceDeltaHwpunit": -1377,
+        "candidateAdvanceHwpunit": 26819,
+        "currentAdvanceHwpunit": 28196,
+        "kerning": false,
+        "ratio": 80,
+        "records": 60,
+        "spacing": -5
+      },
+      {
+        "advanceDeltaHwpunit": -1377,
+        "candidateAdvanceHwpunit": 26819,
+        "currentAdvanceHwpunit": 28196,
+        "kerning": true,
+        "ratio": 80,
+        "records": 60,
+        "spacing": -5
+      },
+      {
+        "advanceDeltaHwpunit": -1487,
+        "candidateAdvanceHwpunit": 27793,
+        "currentAdvanceHwpunit": 29280,
+        "kerning": false,
+        "ratio": 80,
+        "records": 59,
+        "spacing": 0
+      },
+      {
+        "advanceDeltaHwpunit": -1487,
+        "candidateAdvanceHwpunit": 27793,
+        "currentAdvanceHwpunit": 29280,
+        "kerning": true,
+        "ratio": 80,
+        "records": 59,
+        "spacing": 0
+      },
+      {
+        "advanceDeltaHwpunit": -1400,
+        "candidateAdvanceHwpunit": 29056,
+        "currentAdvanceHwpunit": 30456,
+        "kerning": false,
+        "ratio": 90,
+        "records": 61,
+        "spacing": -10
+      },
+      {
+        "advanceDeltaHwpunit": -1400,
+        "candidateAdvanceHwpunit": 29056,
+        "currentAdvanceHwpunit": 30456,
+        "kerning": true,
+        "ratio": 90,
+        "records": 61,
+        "spacing": -10
+      },
+      {
+        "advanceDeltaHwpunit": -1517,
+        "candidateAdvanceHwpunit": 30181,
+        "currentAdvanceHwpunit": 31698,
+        "kerning": false,
+        "ratio": 90,
+        "records": 60,
+        "spacing": -5
+      },
+      {
+        "advanceDeltaHwpunit": -5299,
+        "candidateAdvanceHwpunit": 88375,
+        "currentAdvanceHwpunit": 93674,
+        "kerning": true,
+        "ratio": 90,
+        "records": 176,
+        "spacing": -5
+      },
+      {
+        "advanceDeltaHwpunit": -1679,
+        "candidateAdvanceHwpunit": 31261,
+        "currentAdvanceHwpunit": 32940,
+        "kerning": false,
+        "ratio": 90,
+        "records": 59,
+        "spacing": 0
+      },
+      {
+        "advanceDeltaHwpunit": -1679,
+        "candidateAdvanceHwpunit": 31261,
+        "currentAdvanceHwpunit": 32940,
+        "kerning": true,
+        "ratio": 90,
+        "records": 59,
+        "spacing": 0
+      },
+      {
+        "advanceDeltaHwpunit": -1504,
+        "candidateAdvanceHwpunit": 32786,
+        "currentAdvanceHwpunit": 34290,
+        "kerning": false,
+        "ratio": 100,
+        "records": 62,
+        "spacing": -10
+      },
+      {
+        "advanceDeltaHwpunit": -1504,
+        "candidateAdvanceHwpunit": 32786,
+        "currentAdvanceHwpunit": 34290,
+        "kerning": true,
+        "ratio": 100,
+        "records": 62,
+        "spacing": -10
+      },
+      {
+        "advanceDeltaHwpunit": -1650,
+        "candidateAdvanceHwpunit": 34070,
+        "currentAdvanceHwpunit": 35720,
+        "kerning": false,
+        "ratio": 100,
+        "records": 61,
+        "spacing": -5
+      },
+      {
+        "advanceDeltaHwpunit": -1650,
+        "candidateAdvanceHwpunit": 34070,
+        "currentAdvanceHwpunit": 35720,
+        "kerning": true,
+        "ratio": 100,
+        "records": 61,
+        "spacing": -5
+      },
+      {
+        "advanceDeltaHwpunit": -6190,
+        "candidateAdvanceHwpunit": 103110,
+        "currentAdvanceHwpunit": 109300,
+        "kerning": false,
+        "ratio": 100,
+        "records": 176,
+        "spacing": 0
+      },
+      {
+        "advanceDeltaHwpunit": -1772,
+        "candidateAdvanceHwpunit": 35328,
+        "currentAdvanceHwpunit": 37100,
+        "kerning": true,
+        "ratio": 100,
+        "records": 60,
+        "spacing": 0
+      }
+    ],
+    "candidateAdvanceHwpunit": 807233,
+    "currentAdvanceHwpunit": 847977,
+    "currentTransformReplayMismatches": 0,
+    "fixedGeometry": [
+      {
+        "advanceDeltaHwpunit": -2209,
+        "boundaryDisposition": "crossing-delayed",
+        "candidateFirstFrameCrossingCharacterIndex": 47,
+        "candidateMaximumSamePartitionLineWidthPx": 451.9,
+        "candidateMinimumSamePartitionSlackPx": -65.5,
+        "candidateNonWorsening": true,
+        "candidateParagraphAdvanceHwpunit": 33891,
+        "contentWidthHwpunit": 28980,
+        "context": "table-cell",
+        "currentFirstFrameCrossingCharacterIndex": 43,
+        "currentMaximumObservedLineWidthPx": 481.0,
+        "currentObservedLineCount": 1,
+        "currentParagraphAdvanceHwpunit": 36100,
+        "firstMetricBoundaryDivergenceCharacterIndex": 43,
+        "kerning": false,
+        "lineSegLane": "stored-line-lane",
+        "ratio": 100,
+        "representativeIndex": 0,
+        "spacing": 0
+      },
+      {
+        "advanceDeltaHwpunit": -1891,
+        "boundaryDisposition": "crossing-delayed",
+        "candidateFirstFrameCrossingCharacterIndex": 55,
+        "candidateMaximumSamePartitionLineWidthPx": 367.3,
+        "candidateMinimumSamePartitionSlackPx": 19.1,
+        "candidateNonWorsening": true,
+        "candidateParagraphAdvanceHwpunit": 30633,
+        "contentWidthHwpunit": 28980,
+        "context": "table-cell",
+        "currentFirstFrameCrossingCharacterIndex": 49,
+        "currentMaximumObservedLineWidthPx": 387.0,
+        "currentObservedLineCount": 2,
+        "currentParagraphAdvanceHwpunit": 32524,
+        "firstMetricBoundaryDivergenceCharacterIndex": 49,
+        "kerning": true,
+        "lineSegLane": "fresh-candidate-lane",
+        "ratio": 90,
+        "representativeIndex": 1,
+        "spacing": -5
+      },
+      {
+        "advanceDeltaHwpunit": -1522,
+        "boundaryDisposition": "no-crossing",
+        "candidateFirstFrameCrossingCharacterIndex": null,
+        "candidateMaximumSamePartitionLineWidthPx": 364.9,
+        "candidateMinimumSamePartitionSlackPx": 21.5,
+        "candidateNonWorsening": true,
+        "candidateParagraphAdvanceHwpunit": 27367,
+        "contentWidthHwpunit": 28980,
+        "context": "table-cell",
+        "currentFirstFrameCrossingCharacterIndex": null,
+        "currentMaximumObservedLineWidthPx": 386.0,
+        "currentObservedLineCount": 1,
+        "currentParagraphAdvanceHwpunit": 28889,
+        "firstMetricBoundaryDivergenceCharacterIndex": null,
+        "kerning": true,
+        "lineSegLane": "stored-line-lane",
+        "ratio": 80,
+        "representativeIndex": 2,
+        "spacing": -10
+      },
+      {
+        "advanceDeltaHwpunit": -2209,
+        "boundaryDisposition": "crossing-delayed",
+        "candidateFirstFrameCrossingCharacterIndex": 48,
+        "candidateMaximumSamePartitionLineWidthPx": 324.8,
+        "candidateMinimumSamePartitionSlackPx": 67.7,
+        "candidateNonWorsening": true,
+        "candidateParagraphAdvanceHwpunit": 33891,
+        "contentWidthHwpunit": 29434,
+        "context": "text-box",
+        "currentFirstFrameCrossingCharacterIndex": 44,
+        "currentMaximumObservedLineWidthPx": 353.0,
+        "currentObservedLineCount": 2,
+        "currentParagraphAdvanceHwpunit": 36100,
+        "firstMetricBoundaryDivergenceCharacterIndex": 44,
+        "kerning": false,
+        "lineSegLane": "fresh-candidate-lane",
+        "ratio": 100,
+        "representativeIndex": 0,
+        "spacing": 0
+      },
+      {
+        "advanceDeltaHwpunit": -1891,
+        "boundaryDisposition": "crossing-removed",
+        "candidateFirstFrameCrossingCharacterIndex": null,
+        "candidateMaximumSamePartitionLineWidthPx": 367.5,
+        "candidateMinimumSamePartitionSlackPx": 25.0,
+        "candidateNonWorsening": true,
+        "candidateParagraphAdvanceHwpunit": 27561,
+        "contentWidthHwpunit": 29434,
+        "context": "text-box",
+        "currentFirstFrameCrossingCharacterIndex": 57,
+        "currentMaximumObservedLineWidthPx": 393.0,
+        "currentObservedLineCount": 1,
+        "currentParagraphAdvanceHwpunit": 29452,
+        "firstMetricBoundaryDivergenceCharacterIndex": 57,
+        "kerning": true,
+        "lineSegLane": "stored-line-lane",
+        "ratio": 90,
+        "representativeIndex": 1,
+        "spacing": -5
+      },
+      {
+        "advanceDeltaHwpunit": -1571,
+        "boundaryDisposition": "no-crossing",
+        "candidateFirstFrameCrossingCharacterIndex": null,
+        "candidateMaximumSamePartitionLineWidthPx": 239.0,
+        "candidateMinimumSamePartitionSlackPx": 153.5,
+        "candidateNonWorsening": true,
+        "candidateParagraphAdvanceHwpunit": 24781,
+        "contentWidthHwpunit": 29434,
+        "context": "text-box",
+        "currentFirstFrameCrossingCharacterIndex": null,
+        "currentMaximumObservedLineWidthPx": 259.0,
+        "currentObservedLineCount": 2,
+        "currentParagraphAdvanceHwpunit": 26352,
+        "firstMetricBoundaryDivergenceCharacterIndex": null,
+        "kerning": true,
+        "lineSegLane": "fresh-candidate-lane",
+        "ratio": 80,
+        "representativeIndex": 2,
+        "spacing": -10
+      }
+    ],
+    "fixtureCodepoints": 53,
+    "q0StyleDomain": {
+      "axes": 23,
+      "boldCharacters": 4468,
+      "characters": 63858,
+      "italicCharacters": 0,
+      "ratioValues": [
+        95,
+        100
+      ],
+      "reason": "aggregate-style-axes-do-not-contain-codepoint-distribution",
+      "spacingValues": [
+        -15,
+        -12,
+        -11,
+        -10,
+        -9,
+        -8,
+        -6,
+        -5,
+        -3,
+        -2,
+        -1,
+        0,
+        1
+      ],
+      "transformDomainSupportedCharacters": 63858,
+      "weightedAdvanceDeltaAvailableFromAggregate": false
+    },
+    "recordDeltaCounts": {
+      "equal": 52,
+      "narrower": 778,
+      "wider": 726
+    },
+    "records": 1556,
+    "styleFallbackAudit": {
+      "candidateAssumption": "regular-metric-advance-with-synthetic-bold",
+      "dynamicCohortConfirmationRequired": true,
+      "layoutAdvanceChangedByBoldRequest": false,
+      "publicFixtureBoldRecords": 0,
+      "q0BoldCharacters": 4468,
+      "q0ItalicCharacters": 0,
+      "sourceContracts": {
+        "boldFallbackSelectionPresent": true,
+        "fauxBoldAdvanceInvariantPresent": true,
+        "fontDecisionSha256": "7a395b21f3ff18f8fa1b0a94426bc67a842aa554a0effe89496192f785da77cf",
+        "metricLookupSha256": "5fc965ebf302693c3295db0e3d60791452ca9ce88a7e497c89314e755c28856c"
+      }
+    },
+    "transformKindCounts": {
+      "extraCharacterSpacing": 117,
+      "extraWordSpacing": 24,
+      "letterSpacing": 1084,
+      "ratio": 1074
+    }
+  },
+  "schemaVersion": 1,
+  "sources": {
+    "cdnOtf": {
+      "bytes": 3469160,
+      "cmapCodepointCount": 26092,
+      "fixture": {
+        "advanceSha256": "0126f9a026ebf0a4501ed870c300955b219df9f938db5b2d80f545a6339e79e5",
+        "codepointCount": 53,
+        "missingCodepoints": 0,
+        "outlineSha256": "b7e86dfdba6de0ecccef925ee4b85784343c82b1796b328210a8759153f84900"
+      },
+      "flavor": null,
+      "glyphCount": 30178,
+      "label": "cdnOtf",
+      "nameTable": {
+        "family": [
+          "KoPubWorldDotum_Pro",
+          "KoPubWorldDotum_Pro Light",
+          "KoPubWorld돋움체_Pro",
+          "KoPubWorld돋움체_Pro Light"
+        ],
+        "fullName": [
+          "KoPubWorldDotum_Pro Light",
+          "KoPubWorld돋움체_Pro Light"
+        ],
+        "postScriptName": [
+          "KoPubWorldDotumPL"
+        ],
+        "preferredFamily": [
+          "KoPubWorldDotum_Pro",
+          "KoPubWorld돋움체_Pro"
+        ],
+        "preferredSubfamily": [
+          "Light"
+        ],
+        "subfamily": [
+          "Light"
+        ]
+      },
+      "os2FsType": 8,
+      "requestedNameExact": false,
+      "sfntVersion": "OTTO",
+      "sha256": "529b2f02b96276d9209124a72181fcd7bfc656a567718670d0c3934f6c11adea",
+      "technology": "opentype-cff",
+      "unitsPerEm": 1000
+    },
+    "cdnWoff2": {
+      "bytes": 1864824,
+      "cmapCodepointCount": 26092,
+      "fixture": {
+        "advanceSha256": "0126f9a026ebf0a4501ed870c300955b219df9f938db5b2d80f545a6339e79e5",
+        "codepointCount": 53,
+        "missingCodepoints": 0,
+        "outlineSha256": "b7e86dfdba6de0ecccef925ee4b85784343c82b1796b328210a8759153f84900"
+      },
+      "flavor": "woff2",
+      "glyphCount": 28736,
+      "label": "cdnWoff2",
+      "nameTable": {
+        "family": [
+          "KoPubWorldDotum_Pro",
+          "KoPubWorldDotum_Pro Light",
+          "KoPubWorld돋움체_Pro",
+          "KoPubWorld돋움체_Pro Light"
+        ],
+        "fullName": [
+          "KoPubWorldDotum_Pro Light",
+          "KoPubWorld돋움체_Pro Light"
+        ],
+        "postScriptName": [
+          "KoPubWorldDotumPL"
+        ],
+        "preferredFamily": [
+          "KoPubWorldDotum_Pro",
+          "KoPubWorld돋움체_Pro"
+        ],
+        "preferredSubfamily": [
+          "Light"
+        ],
+        "subfamily": [
+          "Light"
+        ]
+      },
+      "os2FsType": 8,
+      "requestedNameExact": false,
+      "sfntVersion": "OTTO",
+      "sha256": "bc8cea5d8e4c4d82f631e40af09a7e7b92565b2124861c8387bea60dd5890417",
+      "technology": "opentype-cff",
+      "unitsPerEm": 1000
+    },
+    "comparisons": {
+      "cdnOtfVsCdnWoff2": {
+        "advanceMismatchCount": 0,
+        "byteIdentity": false,
+        "commonAdvancePairSha256": "fba851dd839c4a2495dd20c00de6db1ac50b104752574f0dd23a4f1441b18ab9",
+        "commonCodepoints": 26092,
+        "fixtureAdvanceMismatchCount": 0,
+        "fixtureCodepoints": 53,
+        "fixtureOutlineDigestMatches": 53,
+        "fixtureOutlineDigestMismatches": 0,
+        "leftOnlyCodepoints": 0,
+        "nameIdentity": true,
+        "rightOnlyCodepoints": 0,
+        "technologyIdentity": true
+      },
+      "exactTtfVsCdnOtf": {
+        "advanceMismatchCount": 0,
+        "byteIdentity": false,
+        "commonAdvancePairSha256": "e96bd4dc90b01710525324fbecd8f22a2fa7125edb76bb1803cc32f6abe66cc0",
+        "commonCodepoints": 25973,
+        "fixtureAdvanceMismatchCount": 0,
+        "fixtureCodepoints": 53,
+        "fixtureOutlineDigestMatches": 2,
+        "fixtureOutlineDigestMismatches": 51,
+        "leftOnlyCodepoints": 1,
+        "nameIdentity": false,
+        "rightOnlyCodepoints": 119,
+        "technologyIdentity": false
+      },
+      "exactTtfVsCdnWoff2": {
+        "advanceMismatchCount": 0,
+        "byteIdentity": false,
+        "commonAdvancePairSha256": "e96bd4dc90b01710525324fbecd8f22a2fa7125edb76bb1803cc32f6abe66cc0",
+        "commonCodepoints": 25973,
+        "fixtureAdvanceMismatchCount": 0,
+        "fixtureCodepoints": 53,
+        "fixtureOutlineDigestMatches": 2,
+        "fixtureOutlineDigestMismatches": 51,
+        "leftOnlyCodepoints": 1,
+        "nameIdentity": false,
+        "rightOnlyCodepoints": 119,
+        "technologyIdentity": false
+      }
+    },
+    "distributionProvenance": {
+      "licenseSha256": "411e7de3f06d32aa0f1c9ab35c5760a7cbe9543ee5867ec491f9b696ed8e0816",
+      "licenseType": "KOPUS-Custom",
+      "liveReferenceVerifiedAt": "2026-08-26",
+      "officialByteLineage": "not-proven-by-package-metadata",
+      "officialLicenseReference": "https://www.heritagelab-chacl.org/9e8dfdd2-0faf-4224-a88e-6bd841c3ce06",
+      "package": "font-kopubworld",
+      "packageAuthority": "third-party-wrapper",
+      "packageRepository": "https://github.com/adrinerDP/font-kopubworld.git",
+      "packageSha256": "301715bd8dcf0f6f7943c9fce7cdebd783d435756517ce2929601919a01befa7",
+      "redistributionDecision": "not-made-in-qualification",
+      "version": "1.0.3"
+    },
+    "exactTtf": {
+      "bytes": 5187836,
+      "cmapCodepointCount": 25974,
+      "fixture": {
+        "advanceSha256": "0126f9a026ebf0a4501ed870c300955b219df9f938db5b2d80f545a6339e79e5",
+        "codepointCount": 53,
+        "missingCodepoints": 0,
+        "outlineSha256": "af37f54dee473053193612a83ae27bc5424112bf858088d387417ac3a25a6352"
+      },
+      "flavor": null,
+      "glyphCount": 31556,
+      "label": "exactTtf",
+      "nameTable": {
+        "family": [
+          "KoPubWorldDotum",
+          "KoPubWorldDotum Light",
+          "KoPubWorld돋움체",
+          "KoPubWorld돋움체 Light"
+        ],
+        "fullName": [
+          "KoPubWorldDotum Light",
+          "KoPubWorld돋움체 Light"
+        ],
+        "postScriptName": [
+          "KoPubWorldDotumLight"
+        ],
+        "preferredFamily": [
+          "KoPubWorldDotum",
+          "KoPubWorld돋움체"
+        ],
+        "preferredSubfamily": [
+          "Light"
+        ],
+        "subfamily": [
+          "Light"
+        ]
+      },
+      "os2FsType": 8,
+      "requestedNameExact": true,
+      "sfntVersion": "\u0000\u0001\u0000\u0000",
+      "sha256": "069494cce21a4222c88e537f256b6f46fee209375aba769f82431b2d382bc84f",
+      "technology": "truetype-glyf",
+      "unitsPerEm": 1000
+    }
+  },
+  "stage": "W8-R7-Q2",
+  "target": {
+    "documentFace": "KoPubWorld돋움체 Light",
+    "queueRank": 7
+  }
+}

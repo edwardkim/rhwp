@@ -1,0 +1,599 @@
+{
+  "schemaVersion": "1.0",
+  "claim": "M01-f",
+  "kind": "oraclePairFixture",
+  "hancomVersion": "2024",
+  "pairCount": 59,
+  "pairs": [
+    {
+      "id": "samples/2025 행정업무운영 편람(최종).hwp::pdf/2025 행정업무운영 편람(최종)-2024.pdf",
+      "sample": "samples/2025 행정업무운영 편람(최종).hwp",
+      "pdf": "pdf/2025 행정업무운영 편람(최종)-2024.pdf",
+      "stem": "2025 행정업무운영 편람(최종)",
+      "hancomVersion": "2024",
+      "variant": "2024",
+      "sourceFormat": "hwp",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/2025 행정업무운영 편람(최종).hwpx::pdf/2025 행정업무운영 편람(최종)-2024.pdf",
+      "sample": "samples/2025 행정업무운영 편람(최종).hwpx",
+      "pdf": "pdf/2025 행정업무운영 편람(최종)-2024.pdf",
+      "stem": "2025 행정업무운영 편람(최종)",
+      "hancomVersion": "2024",
+      "variant": "2024",
+      "sourceFormat": "hwpx",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/3-09월_교육_통합_2024-구분선아래20.hwp::pdf/3-09월_교육_통합_2024-구분선아래20-2024.pdf",
+      "sample": "samples/3-09월_교육_통합_2024-구분선아래20.hwp",
+      "pdf": "pdf/3-09월_교육_통합_2024-구분선아래20-2024.pdf",
+      "stem": "3-09월_교육_통합_2024-구분선아래20",
+      "hancomVersion": "2024",
+      "variant": "2024",
+      "sourceFormat": "hwp",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/3-09월_교육_통합_2024-구분선아래20.hwp::pdf-large/3-09월_교육_통합_2024-구분선아래20-2024.pdf",
+      "sample": "samples/3-09월_교육_통합_2024-구분선아래20.hwp",
+      "pdf": "pdf-large/3-09월_교육_통합_2024-구분선아래20-2024.pdf",
+      "stem": "3-09월_교육_통합_2024-구분선아래20",
+      "hancomVersion": "2024",
+      "variant": "2024",
+      "sourceFormat": "hwp",
+      "oracleRoot": "pdf-large"
+    },
+    {
+      "id": "samples/3-09월_교육_통합_2024-구분선아래20구분선위20.hwp::pdf/3-09월_교육_통합_2024-구분선아래20구분선위20.pdf",
+      "sample": "samples/3-09월_교육_통합_2024-구분선아래20구분선위20.hwp",
+      "pdf": "pdf/3-09월_교육_통합_2024-구분선아래20구분선위20.pdf",
+      "stem": "3-09월_교육_통합_2024-구분선아래20구분선위20",
+      "hancomVersion": "2024",
+      "variant": "exact",
+      "sourceFormat": "hwp",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/3-09월_교육_통합_2024-구분선아래20구분선위20.hwpx::pdf/3-09월_교육_통합_2024-구분선아래20구분선위20.pdf",
+      "sample": "samples/3-09월_교육_통합_2024-구분선아래20구분선위20.hwpx",
+      "pdf": "pdf/3-09월_교육_통합_2024-구분선아래20구분선위20.pdf",
+      "stem": "3-09월_교육_통합_2024-구분선아래20구분선위20",
+      "hancomVersion": "2024",
+      "variant": "exact",
+      "sourceFormat": "hwpx",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/3-09월_교육_통합_2024-미주사이20.hwp::pdf/3-09월_교육_통합_2024-미주사이20-2024.pdf",
+      "sample": "samples/3-09월_교육_통합_2024-미주사이20.hwp",
+      "pdf": "pdf/3-09월_교육_통합_2024-미주사이20-2024.pdf",
+      "stem": "3-09월_교육_통합_2024-미주사이20",
+      "hancomVersion": "2024",
+      "variant": "2024",
+      "sourceFormat": "hwp",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/3-09월_교육_통합_2024-미주사이20.hwp::pdf-large/3-09월_교육_통합_2024-미주사이20-2024.pdf",
+      "sample": "samples/3-09월_교육_통합_2024-미주사이20.hwp",
+      "pdf": "pdf-large/3-09월_교육_통합_2024-미주사이20-2024.pdf",
+      "stem": "3-09월_교육_통합_2024-미주사이20",
+      "hancomVersion": "2024",
+      "variant": "2024",
+      "sourceFormat": "hwp",
+      "oracleRoot": "pdf-large"
+    },
+    {
+      "id": "samples/3-11월_실전_통합_2024-구분선없음구분선위20미주사이20구분선아래20.hwp::pdf/3-11월_실전_통합_2024-구분선없음구분선위20미주사이20구분선아래20.pdf",
+      "sample": "samples/3-11월_실전_통합_2024-구분선없음구분선위20미주사이20구분선아래20.hwp",
+      "pdf": "pdf/3-11월_실전_통합_2024-구분선없음구분선위20미주사이20구분선아래20.pdf",
+      "stem": "3-11월_실전_통합_2024-구분선없음구분선위20미주사이20구분선아래20",
+      "hancomVersion": "2024",
+      "variant": "exact",
+      "sourceFormat": "hwp",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/3-11월_실전_통합_2024-구분선없음구분선위20미주사이20구분선아래20.hwpx::pdf/3-11월_실전_통합_2024-구분선없음구분선위20미주사이20구분선아래20.pdf",
+      "sample": "samples/3-11월_실전_통합_2024-구분선없음구분선위20미주사이20구분선아래20.hwpx",
+      "pdf": "pdf/3-11월_실전_통합_2024-구분선없음구분선위20미주사이20구분선아래20.pdf",
+      "stem": "3-11월_실전_통합_2024-구분선없음구분선위20미주사이20구분선아래20",
+      "hancomVersion": "2024",
+      "variant": "exact",
+      "sourceFormat": "hwpx",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/3-11월_실전_통합_2024-구분선위0미주사이0구분선아래0.hwp::pdf/3-11월_실전_통합_2024-구분선위0미주사이0구분선아래0.pdf",
+      "sample": "samples/3-11월_실전_통합_2024-구분선위0미주사이0구분선아래0.hwp",
+      "pdf": "pdf/3-11월_실전_통합_2024-구분선위0미주사이0구분선아래0.pdf",
+      "stem": "3-11월_실전_통합_2024-구분선위0미주사이0구분선아래0",
+      "hancomVersion": "2024",
+      "variant": "exact",
+      "sourceFormat": "hwp",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/3-11월_실전_통합_2024-구분선위0미주사이0구분선아래0.hwpx::pdf/3-11월_실전_통합_2024-구분선위0미주사이0구분선아래0.pdf",
+      "sample": "samples/3-11월_실전_통합_2024-구분선위0미주사이0구분선아래0.hwpx",
+      "pdf": "pdf/3-11월_실전_통합_2024-구분선위0미주사이0구분선아래0.pdf",
+      "stem": "3-11월_실전_통합_2024-구분선위0미주사이0구분선아래0",
+      "hancomVersion": "2024",
+      "variant": "exact",
+      "sourceFormat": "hwpx",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/3-11월_실전_통합_2024-구분선위0미주사이20구분선아래2.hwp::pdf/3-11월_실전_통합_2024-구분선위0미주사이20구분선아래2.pdf",
+      "sample": "samples/3-11월_실전_통합_2024-구분선위0미주사이20구분선아래2.hwp",
+      "pdf": "pdf/3-11월_실전_통합_2024-구분선위0미주사이20구분선아래2.pdf",
+      "stem": "3-11월_실전_통합_2024-구분선위0미주사이20구분선아래2",
+      "hancomVersion": "2024",
+      "variant": "exact",
+      "sourceFormat": "hwp",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/3-11월_실전_통합_2024-구분선위0미주사이20구분선아래2.hwpx::pdf/3-11월_실전_통합_2024-구분선위0미주사이20구분선아래2.pdf",
+      "sample": "samples/3-11월_실전_통합_2024-구분선위0미주사이20구분선아래2.hwpx",
+      "pdf": "pdf/3-11월_실전_통합_2024-구분선위0미주사이20구분선아래2.pdf",
+      "stem": "3-11월_실전_통합_2024-구분선위0미주사이20구분선아래2",
+      "hancomVersion": "2024",
+      "variant": "exact",
+      "sourceFormat": "hwpx",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/3-11월_실전_통합_2024-구분선위0미주사이7구분선아래2.hwp::pdf/3-11월_실전_통합_2024-구분선위0미주사이7구분선아래2.pdf",
+      "sample": "samples/3-11월_실전_통합_2024-구분선위0미주사이7구분선아래2.hwp",
+      "pdf": "pdf/3-11월_실전_통합_2024-구분선위0미주사이7구분선아래2.pdf",
+      "stem": "3-11월_실전_통합_2024-구분선위0미주사이7구분선아래2",
+      "hancomVersion": "2024",
+      "variant": "exact",
+      "sourceFormat": "hwp",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/3-11월_실전_통합_2024-구분선위0미주사이7구분선아래2.hwpx::pdf/3-11월_실전_통합_2024-구분선위0미주사이7구분선아래2.pdf",
+      "sample": "samples/3-11월_실전_통합_2024-구분선위0미주사이7구분선아래2.hwpx",
+      "pdf": "pdf/3-11월_실전_통합_2024-구분선위0미주사이7구분선아래2.pdf",
+      "stem": "3-11월_실전_통합_2024-구분선위0미주사이7구분선아래2",
+      "hancomVersion": "2024",
+      "variant": "exact",
+      "sourceFormat": "hwpx",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/3-11월_실전_통합_2024-구분선위0미주사이7구분선아래20.hwp::pdf/3-11월_실전_통합_2024-구분선위0미주사이7구분선아래20.pdf",
+      "sample": "samples/3-11월_실전_통합_2024-구분선위0미주사이7구분선아래20.hwp",
+      "pdf": "pdf/3-11월_실전_통합_2024-구분선위0미주사이7구분선아래20.pdf",
+      "stem": "3-11월_실전_통합_2024-구분선위0미주사이7구분선아래20",
+      "hancomVersion": "2024",
+      "variant": "exact",
+      "sourceFormat": "hwp",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/3-11월_실전_통합_2024-구분선위0미주사이7구분선아래20.hwpx::pdf/3-11월_실전_통합_2024-구분선위0미주사이7구분선아래20.pdf",
+      "sample": "samples/3-11월_실전_통합_2024-구분선위0미주사이7구분선아래20.hwpx",
+      "pdf": "pdf/3-11월_실전_통합_2024-구분선위0미주사이7구분선아래20.pdf",
+      "stem": "3-11월_실전_통합_2024-구분선위0미주사이7구분선아래20",
+      "hancomVersion": "2024",
+      "variant": "exact",
+      "sourceFormat": "hwpx",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/3-11월_실전_통합_2024-구분선위20미주사이0구분선아래20.hwp::pdf/3-11월_실전_통합_2024-구분선위20미주사이0구분선아래20.pdf",
+      "sample": "samples/3-11월_실전_통합_2024-구분선위20미주사이0구분선아래20.hwp",
+      "pdf": "pdf/3-11월_실전_통합_2024-구분선위20미주사이0구분선아래20.pdf",
+      "stem": "3-11월_실전_통합_2024-구분선위20미주사이0구분선아래20",
+      "hancomVersion": "2024",
+      "variant": "exact",
+      "sourceFormat": "hwp",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/3-11월_실전_통합_2024-구분선위20미주사이0구분선아래20.hwpx::pdf/3-11월_실전_통합_2024-구분선위20미주사이0구분선아래20.pdf",
+      "sample": "samples/3-11월_실전_통합_2024-구분선위20미주사이0구분선아래20.hwpx",
+      "pdf": "pdf/3-11월_실전_통합_2024-구분선위20미주사이0구분선아래20.pdf",
+      "stem": "3-11월_실전_통합_2024-구분선위20미주사이0구분선아래20",
+      "hancomVersion": "2024",
+      "variant": "exact",
+      "sourceFormat": "hwpx",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/3-11월_실전_통합_2024-구분선위20미주사이7구분선아래2.hwp::pdf/3-11월_실전_통합_2024-구분선위20미주사이7구분선아래2.pdf",
+      "sample": "samples/3-11월_실전_통합_2024-구분선위20미주사이7구분선아래2.hwp",
+      "pdf": "pdf/3-11월_실전_통합_2024-구분선위20미주사이7구분선아래2.pdf",
+      "stem": "3-11월_실전_통합_2024-구분선위20미주사이7구분선아래2",
+      "hancomVersion": "2024",
+      "variant": "exact",
+      "sourceFormat": "hwp",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/3-11월_실전_통합_2024-구분선위20미주사이7구분선아래2.hwpx::pdf/3-11월_실전_통합_2024-구분선위20미주사이7구분선아래2.pdf",
+      "sample": "samples/3-11월_실전_통합_2024-구분선위20미주사이7구분선아래2.hwpx",
+      "pdf": "pdf/3-11월_실전_통합_2024-구분선위20미주사이7구분선아래2.pdf",
+      "stem": "3-11월_실전_통합_2024-구분선위20미주사이7구분선아래2",
+      "hancomVersion": "2024",
+      "variant": "exact",
+      "sourceFormat": "hwpx",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/3-11월_실전_통합_2024-구분선위9미주사이8구분선아래7.hwp::pdf/3-11월_실전_통합_2024-구분선위9미주사이8구분선아래7.pdf",
+      "sample": "samples/3-11월_실전_통합_2024-구분선위9미주사이8구분선아래7.hwp",
+      "pdf": "pdf/3-11월_실전_통합_2024-구분선위9미주사이8구분선아래7.pdf",
+      "stem": "3-11월_실전_통합_2024-구분선위9미주사이8구분선아래7",
+      "hancomVersion": "2024",
+      "variant": "exact",
+      "sourceFormat": "hwp",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/3-11월_실전_통합_2024-구분선위9미주사이8구분선아래7.hwpx::pdf/3-11월_실전_통합_2024-구분선위9미주사이8구분선아래7.pdf",
+      "sample": "samples/3-11월_실전_통합_2024-구분선위9미주사이8구분선아래7.hwpx",
+      "pdf": "pdf/3-11월_실전_통합_2024-구분선위9미주사이8구분선아래7.pdf",
+      "stem": "3-11월_실전_통합_2024-구분선위9미주사이8구분선아래7",
+      "hancomVersion": "2024",
+      "variant": "exact",
+      "sourceFormat": "hwpx",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/[2027] 온새미로 1 본교재.hwp::pdf/[2027] 온새미로 1 본교재-2024.pdf",
+      "sample": "samples/[2027] 온새미로 1 본교재.hwp",
+      "pdf": "pdf/[2027] 온새미로 1 본교재-2024.pdf",
+      "stem": "[2027] 온새미로 1 본교재",
+      "hancomVersion": "2024",
+      "variant": "2024",
+      "sourceFormat": "hwp",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/[2027] 온새미로 1 본교재.hwpx::pdf/[2027] 온새미로 1 본교재-2024.pdf",
+      "sample": "samples/[2027] 온새미로 1 본교재.hwpx",
+      "pdf": "pdf/[2027] 온새미로 1 본교재-2024.pdf",
+      "stem": "[2027] 온새미로 1 본교재",
+      "hancomVersion": "2024",
+      "variant": "2024",
+      "sourceFormat": "hwpx",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/hwpspec.hwp::pdf/hwpspec-2024.pdf",
+      "sample": "samples/hwpspec.hwp",
+      "pdf": "pdf/hwpspec-2024.pdf",
+      "stem": "hwpspec",
+      "hancomVersion": "2024",
+      "variant": "2024",
+      "sourceFormat": "hwp",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/hwpx_sample2.hwp::pdf/hwpx_sample2-2024.pdf",
+      "sample": "samples/hwpx_sample2.hwp",
+      "pdf": "pdf/hwpx_sample2-2024.pdf",
+      "stem": "hwpx_sample2",
+      "hancomVersion": "2024",
+      "variant": "2024",
+      "sourceFormat": "hwp",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/hwpx_sample2.hwpx::pdf/hwpx_sample2-2024.pdf",
+      "sample": "samples/hwpx_sample2.hwpx",
+      "pdf": "pdf/hwpx_sample2-2024.pdf",
+      "stem": "hwpx_sample2",
+      "hancomVersion": "2024",
+      "variant": "2024",
+      "sourceFormat": "hwpx",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue1510_coanchored_float_tables.hwp::pdf/issue1510_coanchored_float_tables-hwp-2024.pdf",
+      "sample": "samples/issue1510_coanchored_float_tables.hwp",
+      "pdf": "pdf/issue1510_coanchored_float_tables-hwp-2024.pdf",
+      "stem": "issue1510_coanchored_float_tables",
+      "hancomVersion": "2024",
+      "variant": "hwp-2024",
+      "sourceFormat": "hwp",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue1510_coanchored_float_tables.hwpx::pdf/issue1510_coanchored_float_tables-hwpx-2024.pdf",
+      "sample": "samples/issue1510_coanchored_float_tables.hwpx",
+      "pdf": "pdf/issue1510_coanchored_float_tables-hwpx-2024.pdf",
+      "stem": "issue1510_coanchored_float_tables",
+      "hancomVersion": "2024",
+      "variant": "hwpx-2024",
+      "sourceFormat": "hwpx",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue1663_coanchored_float_orphan.hwpx::pdf/issue1663_coanchored_float_orphan-2024.pdf",
+      "sample": "samples/issue1663_coanchored_float_orphan.hwpx",
+      "pdf": "pdf/issue1663_coanchored_float_orphan-2024.pdf",
+      "stem": "issue1663_coanchored_float_orphan",
+      "hancomVersion": "2024",
+      "variant": "2024",
+      "sourceFormat": "hwpx",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue1770_rowsplit_tolerance.hwpx::pdf/issue1770_rowsplit_tolerance-2024.pdf",
+      "sample": "samples/issue1770_rowsplit_tolerance.hwpx",
+      "pdf": "pdf/issue1770_rowsplit_tolerance-2024.pdf",
+      "stem": "issue1770_rowsplit_tolerance",
+      "hancomVersion": "2024",
+      "variant": "2024",
+      "sourceFormat": "hwpx",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue1853_caption_precedes_body_split.hwpx::pdf/issue1853_caption_precedes_body_split-2024.pdf",
+      "sample": "samples/issue1853_caption_precedes_body_split.hwpx",
+      "pdf": "pdf/issue1853_caption_precedes_body_split-2024.pdf",
+      "stem": "issue1853_caption_precedes_body_split",
+      "hancomVersion": "2024",
+      "variant": "2024",
+      "sourceFormat": "hwpx",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue1949_giant_cell_nested_tables_perf.hwp::pdf/issue1949_giant_cell_nested_tables_perf-2024.pdf",
+      "sample": "samples/issue1949_giant_cell_nested_tables_perf.hwp",
+      "pdf": "pdf/issue1949_giant_cell_nested_tables_perf-2024.pdf",
+      "stem": "issue1949_giant_cell_nested_tables_perf",
+      "hancomVersion": "2024",
+      "variant": "2024",
+      "sourceFormat": "hwp",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue1949_giant_cell_nested_tables_perf.hwpx::pdf/issue1949_giant_cell_nested_tables_perf-2024.pdf",
+      "sample": "samples/issue1949_giant_cell_nested_tables_perf.hwpx",
+      "pdf": "pdf/issue1949_giant_cell_nested_tables_perf-2024.pdf",
+      "stem": "issue1949_giant_cell_nested_tables_perf",
+      "hancomVersion": "2024",
+      "variant": "2024",
+      "sourceFormat": "hwpx",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/issue1950_hwp3_tab_charoffset.hwp::pdf/issue1950_hwp3_tab_charoffset-2024.pdf",
+      "sample": "samples/issue1950_hwp3_tab_charoffset.hwp",
+      "pdf": "pdf/issue1950_hwp3_tab_charoffset-2024.pdf",
+      "stem": "issue1950_hwp3_tab_charoffset",
+      "hancomVersion": "2024",
+      "variant": "2024",
+      "sourceFormat": "hwp",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/k-water-rfp-2024.hwp::pdf/k-water-rfp-2024.pdf",
+      "sample": "samples/k-water-rfp-2024.hwp",
+      "pdf": "pdf/k-water-rfp-2024.pdf",
+      "stem": "k-water-rfp-2024",
+      "hancomVersion": "2024",
+      "variant": "exact",
+      "sourceFormat": "hwp",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/k-water-rfp.hwp::pdf/k-water-rfp-2024.pdf",
+      "sample": "samples/k-water-rfp.hwp",
+      "pdf": "pdf/k-water-rfp-2024.pdf",
+      "stem": "k-water-rfp",
+      "hancomVersion": "2024",
+      "variant": "2024",
+      "sourceFormat": "hwp",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/pr-1674.hwp::pdf/pr-1674-2024.pdf",
+      "sample": "samples/pr-1674.hwp",
+      "pdf": "pdf/pr-1674-2024.pdf",
+      "stem": "pr-1674",
+      "hancomVersion": "2024",
+      "variant": "2024",
+      "sourceFormat": "hwp",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/rowbreak-problem-pages.hwp::pdf/rowbreak-problem-pages-2024.pdf",
+      "sample": "samples/rowbreak-problem-pages.hwp",
+      "pdf": "pdf/rowbreak-problem-pages-2024.pdf",
+      "stem": "rowbreak-problem-pages",
+      "hancomVersion": "2024",
+      "variant": "2024",
+      "sourceFormat": "hwp",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/rowbreak-problem-pages.hwpx::pdf/rowbreak-problem-pages-2024.pdf",
+      "sample": "samples/rowbreak-problem-pages.hwpx",
+      "pdf": "pdf/rowbreak-problem-pages-2024.pdf",
+      "stem": "rowbreak-problem-pages",
+      "hancomVersion": "2024",
+      "variant": "2024",
+      "sourceFormat": "hwpx",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/SO-SUEOP.hwp::pdf/SO-SUEOP-2024.pdf",
+      "sample": "samples/SO-SUEOP.hwp",
+      "pdf": "pdf/SO-SUEOP-2024.pdf",
+      "stem": "SO-SUEOP",
+      "hancomVersion": "2024",
+      "variant": "2024",
+      "sourceFormat": "hwp",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/SO-SUEOP.hwpx::pdf/SO-SUEOP-2024.pdf",
+      "sample": "samples/SO-SUEOP.hwpx",
+      "pdf": "pdf/SO-SUEOP-2024.pdf",
+      "stem": "SO-SUEOP",
+      "hancomVersion": "2024",
+      "variant": "2024",
+      "sourceFormat": "hwpx",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/ta-pic-001-r-쪽영역안제한.hwp::pdf/ta-pic-001-r-쪽영역안제한-2024.pdf",
+      "sample": "samples/ta-pic-001-r-쪽영역안제한.hwp",
+      "pdf": "pdf/ta-pic-001-r-쪽영역안제한-2024.pdf",
+      "stem": "ta-pic-001-r-쪽영역안제한",
+      "hancomVersion": "2024",
+      "variant": "2024",
+      "sourceFormat": "hwp",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/ta-pic-001-r-쪽영역안제한.hwpx::pdf/ta-pic-001-r-쪽영역안제한-2024.pdf",
+      "sample": "samples/ta-pic-001-r-쪽영역안제한.hwpx",
+      "pdf": "pdf/ta-pic-001-r-쪽영역안제한-2024.pdf",
+      "stem": "ta-pic-001-r-쪽영역안제한",
+      "hancomVersion": "2024",
+      "variant": "2024",
+      "sourceFormat": "hwpx",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/ta-pic-001-r-쪽영역안제한no.hwp::pdf/ta-pic-001-r-쪽영역안제한no-2024.pdf",
+      "sample": "samples/ta-pic-001-r-쪽영역안제한no.hwp",
+      "pdf": "pdf/ta-pic-001-r-쪽영역안제한no-2024.pdf",
+      "stem": "ta-pic-001-r-쪽영역안제한no",
+      "hancomVersion": "2024",
+      "variant": "2024",
+      "sourceFormat": "hwp",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/ta-pic-001-r-쪽영역안제한no.hwpx::pdf/ta-pic-001-r-쪽영역안제한no-2024.pdf",
+      "sample": "samples/ta-pic-001-r-쪽영역안제한no.hwpx",
+      "pdf": "pdf/ta-pic-001-r-쪽영역안제한no-2024.pdf",
+      "stem": "ta-pic-001-r-쪽영역안제한no",
+      "hancomVersion": "2024",
+      "variant": "2024",
+      "sourceFormat": "hwpx",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/table_giant_cell_overfill.hwpx::pdf/table_giant_cell_overfill-2024.pdf",
+      "sample": "samples/table_giant_cell_overfill.hwpx",
+      "pdf": "pdf/table_giant_cell_overfill-2024.pdf",
+      "stem": "table_giant_cell_overfill",
+      "hancomVersion": "2024",
+      "variant": "2024",
+      "sourceFormat": "hwpx",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/table_scattered_header_rowbreak.hwp::pdf/table_scattered_header_rowbreak-2024.pdf",
+      "sample": "samples/table_scattered_header_rowbreak.hwp",
+      "pdf": "pdf/table_scattered_header_rowbreak-2024.pdf",
+      "stem": "table_scattered_header_rowbreak",
+      "hancomVersion": "2024",
+      "variant": "2024",
+      "sourceFormat": "hwp",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/table_text_anchor_wrap.hwpx::pdf/table_text_anchor_wrap-2024.pdf",
+      "sample": "samples/table_text_anchor_wrap.hwpx",
+      "pdf": "pdf/table_text_anchor_wrap-2024.pdf",
+      "stem": "table_text_anchor_wrap",
+      "hancomVersion": "2024",
+      "variant": "2024",
+      "sourceFormat": "hwpx",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/누름틀-2024.hwp::pdf/누름틀-2024.pdf",
+      "sample": "samples/누름틀-2024.hwp",
+      "pdf": "pdf/누름틀-2024.pdf",
+      "stem": "누름틀-2024",
+      "hancomVersion": "2024",
+      "variant": "exact",
+      "sourceFormat": "hwp",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/누름틀-2024.hwpx::pdf/누름틀-2024.pdf",
+      "sample": "samples/누름틀-2024.hwpx",
+      "pdf": "pdf/누름틀-2024.pdf",
+      "stem": "누름틀-2024",
+      "hancomVersion": "2024",
+      "variant": "exact",
+      "sourceFormat": "hwpx",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/대각선샘플.hwp::pdf/대각선샘플-2024.pdf",
+      "sample": "samples/대각선샘플.hwp",
+      "pdf": "pdf/대각선샘플-2024.pdf",
+      "stem": "대각선샘플",
+      "hancomVersion": "2024",
+      "variant": "2024",
+      "sourceFormat": "hwp",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/대각선샘플.hwpx::pdf/대각선샘플-2024.pdf",
+      "sample": "samples/대각선샘플.hwpx",
+      "pdf": "pdf/대각선샘플-2024.pdf",
+      "stem": "대각선샘플",
+      "hancomVersion": "2024",
+      "variant": "2024",
+      "sourceFormat": "hwpx",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/셀보호2.hwp::pdf/셀보호2-2024.pdf",
+      "sample": "samples/셀보호2.hwp",
+      "pdf": "pdf/셀보호2-2024.pdf",
+      "stem": "셀보호2",
+      "hancomVersion": "2024",
+      "variant": "2024",
+      "sourceFormat": "hwp",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/셀보호2.hwpx::pdf/셀보호2-2024.pdf",
+      "sample": "samples/셀보호2.hwpx",
+      "pdf": "pdf/셀보호2-2024.pdf",
+      "stem": "셀보호2",
+      "hancomVersion": "2024",
+      "variant": "2024",
+      "sourceFormat": "hwpx",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/추진일정.hwp::pdf/추진일정-2024.pdf",
+      "sample": "samples/추진일정.hwp",
+      "pdf": "pdf/추진일정-2024.pdf",
+      "stem": "추진일정",
+      "hancomVersion": "2024",
+      "variant": "2024",
+      "sourceFormat": "hwp",
+      "oracleRoot": "pdf"
+    },
+    {
+      "id": "samples/추진일정.hwpx::pdf/추진일정-2024.pdf",
+      "sample": "samples/추진일정.hwpx",
+      "pdf": "pdf/추진일정-2024.pdf",
+      "stem": "추진일정",
+      "hancomVersion": "2024",
+      "variant": "2024",
+      "sourceFormat": "hwpx",
+      "oracleRoot": "pdf"
+    }
+  ]
+}

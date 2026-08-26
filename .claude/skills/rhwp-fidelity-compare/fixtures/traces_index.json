@@ -1,0 +1,158 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5329,
+  "notGym": true,
+  "noNewCli": true,
+  "traces": [
+    {
+      "id": "T01",
+      "title": "plan registered 0-34",
+      "stop": "F03"
+    },
+    {
+      "id": "T02",
+      "title": "no oracle PDF",
+      "stop": "F01"
+    },
+    {
+      "id": "T03",
+      "title": "text-only direct pair",
+      "stop": "F02"
+    },
+    {
+      "id": "T04",
+      "title": "chrome missing",
+      "stop": "F10"
+    },
+    {
+      "id": "T05",
+      "title": "venv missing",
+      "stop": "F09"
+    },
+    {
+      "id": "T06",
+      "title": "windows python",
+      "stop": "F03"
+    },
+    {
+      "id": "T07",
+      "title": "break-system-packages",
+      "stop": "F15"
+    },
+    {
+      "id": "T08",
+      "title": "encrypted pdf",
+      "stop": "F13"
+    },
+    {
+      "id": "T09",
+      "title": "page count 35 vs 37",
+      "stop": "F11"
+    },
+    {
+      "id": "T10",
+      "title": "tofu sheet",
+      "stop": "F14"
+    },
+    {
+      "id": "T11",
+      "title": "korexam A3",
+      "stop": "F03"
+    },
+    {
+      "id": "T12",
+      "title": "math 6-11%",
+      "stop": "F03"
+    },
+    {
+      "id": "T13",
+      "title": "bunjang companion",
+      "stop": "F17"
+    },
+    {
+      "id": "T14",
+      "title": "pua 3385",
+      "stop": "F04"
+    },
+    {
+      "id": "T15",
+      "title": "owner shift footnote",
+      "stop": "F02"
+    },
+    {
+      "id": "T16",
+      "title": "incomplete run",
+      "stop": "F12"
+    },
+    {
+      "id": "T17",
+      "title": "maintainer verdict",
+      "stop": "F05"
+    },
+    {
+      "id": "T18",
+      "title": "gym refuse",
+      "stop": "F06"
+    },
+    {
+      "id": "T19",
+      "title": "rewrite visual refuse",
+      "stop": "F07"
+    },
+    {
+      "id": "T20",
+      "title": "rewrite hunter refuse",
+      "stop": "F08"
+    },
+    {
+      "id": "T21",
+      "title": "stale binary",
+      "stop": "F03"
+    },
+    {
+      "id": "T22",
+      "title": "end overflow",
+      "stop": "F12"
+    },
+    {
+      "id": "T23",
+      "title": "cp949 argv",
+      "stop": "F03"
+    },
+    {
+      "id": "T24",
+      "title": "out-dir tmp",
+      "stop": "F18"
+    },
+    {
+      "id": "T25",
+      "title": "HMKMM notdef",
+      "stop": "F14"
+    },
+    {
+      "id": "T26",
+      "title": "sequence URL",
+      "stop": "F02"
+    },
+    {
+      "id": "T27",
+      "title": "border clip",
+      "stop": "F02"
+    },
+    {
+      "id": "T28",
+      "title": "print-scale PDF",
+      "stop": "F17"
+    },
+    {
+      "id": "T29",
+      "title": "CHROME_BIN",
+      "stop": "F10"
+    },
+    {
+      "id": "T30",
+      "title": "multi font dirs",
+      "stop": "F04"
+    }
+  ]
+}

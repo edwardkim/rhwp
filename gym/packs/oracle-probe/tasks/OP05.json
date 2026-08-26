@@ -1,0 +1,27 @@
+{
+  "id": "OP05",
+  "tier": 2,
+  "title": "중첩 표 쪽수 라이브 재계산",
+  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "axis": "검증",
+  "instructions": "중첩 셀 페이지네이션 표본의 쪽수를 answer.json 에 {\"pages\": N} 으로 제출하라. CR01/T01/LR01 과 같은 표본이지만 이 pack 의 질문은 '네가 센 수가 라이브 오라클과 같은가' 이다. 힌트: rhwp info {input} --json pageCount.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "중첩 표 쪽수",
+      "op": "answer_eq",
+      "answer": "pages",
+      "cmd": [
+        "info",
+        "{input}",
+        "--json"
+      ],
+      "path": "pageCount"
+    }
+  ]
+}

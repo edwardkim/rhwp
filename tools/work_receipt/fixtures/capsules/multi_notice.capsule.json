@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workCapsule",
+  "parent": null,
+  "plan": {
+    "planVersion": "1.0",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "output": "out/multi-notice.hwp",
+    "steps": [
+      {
+        "action": "replace_text",
+        "find": "2025",
+        "replace": "2026"
+      },
+      {
+        "action": "replace_text",
+        "find": "총무과",
+        "replace": "운영지원과"
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"samples/basic/issue2007_nested_cell_pagination_42065.hwp\",\"output\":\"out/multi-notice.hwp\",\"steps\":[{\"action\":\"replace_text\",\"find\":\"2025\",\"replace\":\"2026\"},{\"action\":\"replace_text\",\"find\":\"총무과\",\"replace\":\"운영지원과\"}]}",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "inputSha256": "f4d9abedea675c9a6fa2cbeb9cb7fb22f15f9ca5e163e78de0e2dc984f99e5e8",
+    "planSha256": "20ea0434f20736ae7c80c6438d6acecb731c7e2c6ab0e2f5b88b497921f91c08",
+    "outputSha256": "71a5670cc8357ebb3cd48986880bbb241b337a5010e86076e34717bcb4309447",
+    "toolVersion": "fixture-0.0.0-not-a-release",
+    "steps": 2,
+    "reproduced": null,
+    "expectedOutputSha256": null
+  }
+}

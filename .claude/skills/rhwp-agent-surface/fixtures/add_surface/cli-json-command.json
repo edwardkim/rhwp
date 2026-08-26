@@ -1,0 +1,16 @@
+{
+  "id": "cli-json-command",
+  "layer": "cli-json",
+  "ssot": "명령 구현 + *_json_value",
+  "steps": [
+    "이슈 잠금 (assignee 또는 착수 코멘트)",
+    "red 계약 테스트 tests/<name>_contract.rs 신설",
+    "코어 함수 재사용 — 새 편집 로직 금지",
+    "stdout 순수 JSON, 실패 시 0바이트 (run 예외는 문서화)",
+    "schemaVersion + untrustedContent/untrustedFields 모든 모드",
+    "capabilities_command_entries() 등재",
+    "json 이면 mcp_tool_definitions() 한 줄",
+    "cli_commands.md + 지식 지도 행",
+    "드리프트 가드 green"
+  ]
+}

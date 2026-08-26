@@ -1,0 +1,25 @@
+# M09-g equation golden — current-engine lock (variant/exception/unimplemented honesty)
+command: MATRIX
+script: COLOR red x
+honesty: color-passthrough
+
+=== ast ===
+Row(
+    [
+        Text(
+            "red",
+        ),
+        Text(
+            "x",
+        ),
+    ],
+)
+
+=== layout ===
+Row x=0.0000 y=0.0000 w=46.2000 h=20.0000 bl=16.0000
+  Text("red") x=0.0000 y=0.0000 w=34.6500 h=20.0000 bl=16.0000
+  Text("x") x=34.6500 y=0.0000 w=11.5500 h=20.0000 bl=16.0000
+
+=== svg ===
+<text x="0.00" y="16.00" font-size="20.00" fill="#000000" font-style="italic" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">red</text>
+<text x="34.65" y="16.00" font-size="20.00" fill="#000000" font-style="italic" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">x</text>

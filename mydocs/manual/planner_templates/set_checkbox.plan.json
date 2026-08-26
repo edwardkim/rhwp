@@ -1,0 +1,9 @@
+{
+  "planVersion": "1.0",
+  "input": "<원본.hwp>",
+  "output": "<산출.hwp>",
+  "steps": [
+    { "action": "set_checkbox", "occurrence": 0 }
+  ],
+  "assertions": { "notFoundEmpty": true }
+}

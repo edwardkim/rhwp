@@ -1,0 +1,18 @@
+{
+  "id": "WR50",
+  "steps": [
+    {
+      "answer": {
+        "mode": {
+          "cmd": [
+            "replay",
+            "--plan-json",
+            "{\"planVersion\": \"1.0\", \"input\": \"samples/field-01.hwp\", \"output\": \"mode-set.hwp\", \"steps\": [{\"action\": \"replace_text\", \"find\": \"마케팅\", \"replace\": \"모드집합\"}]}",
+            "--json"
+          ],
+          "path": "mode"
+        }
+      }
+    }
+  ]
+}

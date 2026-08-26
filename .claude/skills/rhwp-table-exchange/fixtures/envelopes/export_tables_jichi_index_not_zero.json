@@ -1,0 +1,91 @@
+{
+  "_skillMeta": {
+    "skill": "rhwp-table-exchange",
+    "issue": 5306,
+    "note": "문서화된 실측 봉투. 바이너리를 이 파동에서 다시 돌리지 않았다.",
+    "command": "export-tables",
+    "sample": "samples/2025년 기부·답례품 실적 지자체 보고서_양식.hwpx",
+    "exit": 0,
+    "branch": "index-not-array-order",
+    "source": "tests/table_csv_contract.rs + edit_set_cell_contract.rs"
+  },
+  "schemaVersion": "1.0",
+  "source": "samples/2025년 기부·답례품 실적 지자체 보고서_양식.hwpx",
+  "tableCount": 53,
+  "tables": [
+    {
+      "index": 0,
+      "section": 0,
+      "paragraph": 0,
+      "control": 0,
+      "rows": 1,
+      "cols": 2,
+      "cellCount": 2,
+      "containerPath": [
+        {
+          "kind": "header",
+          "control": 0
+        }
+      ],
+      "cells": [
+        {
+          "row": 0,
+          "col": 0,
+          "rowSpan": 1,
+          "colSpan": 1,
+          "isHeader": false,
+          "text": "머리말표"
+        }
+      ],
+      "_note": "본문 최상위가 아님. table-to-csv/csv-to-table/set-cell 대상 아님."
+    },
+    {
+      "index": 12,
+      "section": 0,
+      "paragraph": 8,
+      "control": 0,
+      "rows": 8,
+      "cols": 6,
+      "cellCount": 40,
+      "cells": [
+        {
+          "row": 0,
+          "col": 0,
+          "rowSpan": 2,
+          "colSpan": 1,
+          "isHeader": true,
+          "text": "구분"
+        },
+        {
+          "row": 0,
+          "col": 1,
+          "rowSpan": 1,
+          "colSpan": 2,
+          "isHeader": true,
+          "text": "기부"
+        },
+        {
+          "row": 0,
+          "col": 3,
+          "rowSpan": 1,
+          "colSpan": 2,
+          "isHeader": true,
+          "text": "답례품"
+        },
+        {
+          "row": 0,
+          "col": 5,
+          "rowSpan": 2,
+          "colSpan": 1,
+          "isHeader": true,
+          "text": "비고"
+        }
+      ]
+    }
+  ],
+  "untrustedContent": true,
+  "untrustedFields": [
+    "tables[].cells[].text",
+    "tables[].cells[].nested[]"
+  ]
+}

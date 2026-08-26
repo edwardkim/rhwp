@@ -1,0 +1,18 @@
+{
+  "id": "WR09",
+  "steps": [
+    {
+      "answer": {
+        "reproduced": {
+          "cmd": [
+            "replay",
+            "--plan-json",
+            "{\"planVersion\": \"1.0\", \"input\": \"samples/field-01.hwp\", \"output\": \"null-repro.hwp\", \"steps\": [{\"action\": \"replace_text\", \"find\": \"마케팅\", \"replace\": \"재현널\"}]}",
+            "--json"
+          ],
+          "path": "reproduced"
+        }
+      }
+    }
+  ]
+}

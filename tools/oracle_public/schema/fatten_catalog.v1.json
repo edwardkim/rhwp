@@ -1,0 +1,48 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/edwardkim/rhwp/tools/oracle_public/schema/fatten_catalog.v1.json",
+  "title": "oracle_public fatten catalog v1",
+  "description": "M01-f 오라클 공개화 고도화 요약. 쌍 픽스처·커버리지·cheap 스윕·짝 없는 샘플 카탈로그의 인덱스.",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "kind",
+    "claim",
+    "pairCount",
+    "unmatchedCount",
+    "written"
+  ],
+  "properties": {
+    "schemaVersion": { "type": "string", "const": "1.0" },
+    "kind": { "type": "string", "const": "oracleFattenCatalog" },
+    "claim": { "type": "string", "const": "M01-f" },
+    "generator": { "type": "string" },
+    "generatedAt": { "type": "string" },
+    "repoRoot": { "type": "string" },
+    "pairCount": { "type": "integer", "minimum": 0 },
+    "matchedSampleCount": { "type": "integer", "minimum": 0 },
+    "unmatchedCount": { "type": "integer", "minimum": 0 },
+    "unusedOraclePdfCount": { "type": "integer", "minimum": 0 },
+    "oraclePdfCount": { "type": "integer", "minimum": 0 },
+    "byHancomVersion": {
+      "type": "object",
+      "additionalProperties": { "type": "integer" }
+    },
+    "byVerdict": {
+      "type": "object",
+      "additionalProperties": { "type": "integer" }
+    },
+    "written": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "constraints": {
+      "type": "object",
+      "properties": {
+        "visualSweepTouched": { "type": "boolean", "const": false },
+        "engineTouched": { "type": "boolean", "const": false },
+        "gymTouched": { "type": "boolean", "const": false }
+      }
+    }
+  }
+}

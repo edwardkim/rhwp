@@ -1,0 +1,154 @@
+{
+  "schemaVersion": "1.0",
+  "caseId": "D-table_001-both-2x2",
+  "issue": 5485,
+  "skill": "rhwp-table-exchange",
+  "family": "dimension",
+  "command": "csv-to-table",
+  "title": "table-001 2×2 CSV vs 19×9 — 두 이유 전부",
+  "sample": "samples/table-001.hwp",
+  "tableIndex": 0,
+  "rows": 19,
+  "cols": 9,
+  "mode": "dry-run",
+  "argv": [
+    "rhwp",
+    "csv-to-table",
+    "samples/table-001.hwp",
+    "--csv",
+    "D-table_001-both-2x2.csv",
+    "--table",
+    "0",
+    "--dry-run",
+    "--json",
+    "-o",
+    "out/D-table_001-both-2x2.hwp"
+  ],
+  "expectExit": 2,
+  "writes": false,
+  "csvRoundtrip": "extract-only",
+  "notes": "playbook §10-5. rowCountMismatch + colCountMismatch.",
+  "nextAction": "edit set-cell",
+  "documented": true,
+  "occupancy": {
+    "rows": 19,
+    "cols": 9,
+    "cellCount": 165,
+    "coveredCount": 6,
+    "mergedAnchorCount": 3,
+    "areaSum": 171,
+    "gridArea": 171,
+    "areaFits": true,
+    "mergedAnchors": [
+      {
+        "row": 0,
+        "col": 1,
+        "rowSpan": 1,
+        "colSpan": 3,
+        "isHeader": true,
+        "text": "5월"
+      },
+      {
+        "row": 0,
+        "col": 4,
+        "rowSpan": 1,
+        "colSpan": 3,
+        "isHeader": true,
+        "text": "6월"
+      },
+      {
+        "row": 0,
+        "col": 7,
+        "rowSpan": 3,
+        "colSpan": 1,
+        "isHeader": true,
+        "text": "비고"
+      }
+    ],
+    "covered": [
+      {
+        "row": 0,
+        "col": 2,
+        "anchorRow": 0,
+        "anchorCol": 1
+      },
+      {
+        "row": 0,
+        "col": 3,
+        "anchorRow": 0,
+        "anchorCol": 1
+      },
+      {
+        "row": 0,
+        "col": 5,
+        "anchorRow": 0,
+        "anchorCol": 4
+      },
+      {
+        "row": 0,
+        "col": 6,
+        "anchorRow": 0,
+        "anchorCol": 4
+      },
+      {
+        "row": 1,
+        "col": 7,
+        "anchorRow": 0,
+        "anchorCol": 7
+      },
+      {
+        "row": 2,
+        "col": 7,
+        "anchorRow": 0,
+        "anchorCol": 7
+      }
+    ]
+  },
+  "csvName": "D-table_001-both-2x2.csv",
+  "csvLineCount": 2,
+  "invalid": [
+    {
+      "reason": "rowCountMismatch",
+      "message": "CSV 행 수 2 가 표 0 의 행 수 19 와 다릅니다 — 표 크기는 바꾸지 않습니다.",
+      "expected": 19,
+      "actual": 2
+    },
+    {
+      "reason": "colCountMismatch",
+      "message": "CSV 0행 필드 수 2 가 표 0 의 열 수 9 와 다릅니다 — 표 크기는 바꾸지 않습니다.",
+      "row": 0,
+      "expected": 9,
+      "actual": 2
+    },
+    {
+      "reason": "colCountMismatch",
+      "message": "CSV 1행 필드 수 2 가 표 0 의 열 수 9 와 다릅니다 — 표 크기는 바꾸지 않습니다.",
+      "row": 1,
+      "expected": 9,
+      "actual": 2
+    }
+  ],
+  "changed": [],
+  "envelope": {
+    "dryRun": true,
+    "changedCount": 0,
+    "changedPages": null,
+    "output": null,
+    "verify": null,
+    "outputFormat": null,
+    "invalidCount": 3,
+    "_skillMeta": {
+      "skill": "rhwp-table-exchange",
+      "command": "csv-to-table",
+      "exit": 2,
+      "outputKept": false,
+      "mode": "dry-run",
+      "writes": false
+    }
+  },
+  "sourceRefs": [
+    "tests/table_csv_contract.rs",
+    ".claude/skills/rhwp-table-exchange/references/csv_to_table_contract.md",
+    ".claude/skills/rhwp-table-exchange/fixtures/envelopes/csv_to_table_table001_both_mismatch.json"
+  ]
+}

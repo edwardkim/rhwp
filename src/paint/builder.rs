@@ -439,6 +439,7 @@ mod tests {
                 section_index: Some(0),
                 para_index: Some(0),
                 control_index: Some(0),
+                cell_context: None,
             }),
             BoundingBox::new(0.0, 0.0, 10.0, 10.0),
         )
@@ -533,6 +534,7 @@ mod tests {
                 border_fill_id: 0,
                 text_direction: 0,
                 clip: true,
+                page_fragment: false,
                 model_cell_index: None,
             }),
             BoundingBox::new(100.0, 200.0, 150.0, 80.0),
@@ -964,6 +966,7 @@ mod tests {
                 section_index: Some(0),
                 para_index: Some(2),
                 control_index: Some(0),
+                cell_context: None,
             }),
             BoundingBox::new(60.0, 110.0, 180.0, 80.0),
         );
@@ -977,6 +980,7 @@ mod tests {
                 border_fill_id: 3,
                 text_direction: 0,
                 clip: true,
+                page_fragment: false,
                 model_cell_index: Some(4),
             }),
             BoundingBox::new(60.0, 110.0, 180.0, 80.0),
@@ -990,6 +994,7 @@ mod tests {
                 section_index: Some(0),
                 para_index: Some(2),
                 control_index: Some(1),
+                cell_context: None,
             }),
             BoundingBox::new(70.0, 120.0, 80.0, 40.0),
         );
@@ -1003,6 +1008,7 @@ mod tests {
                 border_fill_id: 6,
                 text_direction: 0,
                 clip: false,
+                page_fragment: false,
                 model_cell_index: None,
             }),
             BoundingBox::new(70.0, 120.0, 80.0, 40.0),

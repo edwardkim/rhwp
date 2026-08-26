@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/tech/font_fallback_strategy.md
-last_verified: 2026-07-16
+last_verified: 2026-08-25
 ---
 
 # CJK 폰트 폴백 전략 보고서
@@ -12,6 +12,25 @@ last_verified: 2026-07-16
 > 2026-07-17 현행화: canonical 웹폰트 source는 `assets/fonts/`이며, Git 추적 WOFF2는 36개
 > (22,651,296 bytes)다. Studio의 runtime `fonts/...` URL과 이 문서의 fallback 정책은 변경하지 않았다.
 > 아래 2026-04-07 로드맵·권장안의 `web/fonts` 표현은 당시 구현 경로를 설명하는 기록으로 보존한다.
+>
+> 2026-08-15 현행화: Local Font Access API의 성공 응답은 설치 face 전체 열거를 보장하지 않는다.
+> 문서 후보 coverage와 Canvas2D/CanvasKit 조달 능력을 분리하는 hybrid 감지 계약을 6.2에 반영했다.
+>
+> 2026-08-23 현행화: Rust layout-name·layout-metric, Studio Canvas2D paint·webfont와 CanvasKit SFNT의
+> 유한 규칙은 `assets/font-rules/font_rule_registry.json`에서 생성한 backend projection이 소유한다.
+> 아래 `font-substitution.ts`·`font-loader.ts`의 대형 literal 표 언급은 당시 구현 기록이다. 현재 두
+> 파일은 generated projection을 소비하며, document substitution·local probe·glyph/capability 판정은
+> hand-written 알고리즘으로 남는다.
+>
+> 2026-08-24 현행화: 현재 registry schema 1.0은 W1/W6에서 이행한 830개 active rule을 봉인한
+> read-only authority다. 제품 규칙의 추가·의미 수정·폐기는 schema 1.0 JSON이나 generated projection을
+> 직접 고치지 않고, 별도 승인된 다음 schema 판과 evidence delta 계약을 먼저 마련한다.
+>
+> 2026-08-25 현행화: current runtime authority는 lifecycle schema 2.0의
+> `assets/font-rules/font_rule_registry_v2.json`이다. schema 1.0은 byte가 봉인된 역사 anchor로 남고,
+> runtime은 v2의 active rule만 다섯 backend projection으로 생성한다. 이후 제품 규칙 변경은 같은 ID의
+> 제자리 수정이 아니라 issue-scoped append-only change set과 evidence parent·digest, pre/post semantic
+> delta를 거쳐야 한다.
 
 ## 목차
 
@@ -67,6 +86,39 @@ canonical source `assets/fonts/`에는 재배포 가능한 WOFF2 36개가 Git으
 2. **MS 폰트 woff2** (Arial, Calibri 등)도 재배포 불가
 3. 폴백 체인이 저작권 폰트에 의존하여, 해당 파일 제거 시 렌더링 품질 저하
 4. `font-loader.ts`에서 40+개 폰트명을 모두 저작권 woff2에 매핑
+
+### 1.5 현재 규칙 권위와 결정면
+
+현재 유한 mapping의 정본은 lifecycle schema 2.0의
+`assets/font-rules/font_rule_registry_v2.json`이고, runtime은 JSON을 직접 읽지 않는다.
+`scripts/font_rule_projection_gen.mjs`가 v2의 active rule만 다음 다섯 정적 산출물로 만들며 각 소비자는
+자기 결정면만 읽는다. schema 1.0의 `font_rule_registry.json`은 W1/W6 일회 이행을 증명하는 봉인된
+역사 anchor이지 현재 제품 projection의 입력이 아니다.
+
+| projection | 의미 |
+| --- | --- |
+| `rust-layout-name` | HWP font name의 layout용 정규화 |
+| `rust-layout-metric` | metric alias와 W6 metric entry 연결 |
+| `canvas2d-paint` | Canvas2D 대체·successor·paint chain의 유한 규칙 |
+| `canvas2d-webfont` | CSS `FontFace` 공급 payload |
+| `canvaskit-sfnt` | CanvasKit SFNT plan·capability 규칙 |
+
+같은 source/target 문자열이 보여도 layout, paint, supply와 detection을 합치지 않는다. 특히 Canvas2D
+CSS 사용 가능, webfont URL 계획, CanvasKit SFNT bytes 확보는 서로 다른 사실이다. W2 Font Decision
+Trace는 실제 선택이 끝난 뒤 generated `ruleId`를 설명할 뿐 규칙 선택 권위가 아니다.
+
+schema 1.0은 현재 결과의 역사 기준을 재현하는 봉인판이고, schema 2.0은 변경 가능한 제품 query model이다.
+두 JSON이나 generated projection을 직접 편집하지 않는다. 제품 변경은 승인된 append-only change set을
+side-effect-free reducer에 적용해 v2 registry를 재생성한다. evidence 보강은 selection tuple을 유지하고,
+tuple 의미가 달라지면 기존 rule을 `retired`로 남긴 뒤 새 `ruleId`와 predecessor·successor를 만든다.
+한 change set은 한 decision plane과 한 backend projection만 소유하며, 다른 네 projection의 semantic
+hash는 같아야 한다. 폐기된 rule은 runtime에서 제외하지만 offline lifecycle audit와 W2 trace join에는
+계속 남긴다.
+
+JSON Schema는 구조와 개수 상한을 고정하지만 relation·projection 조합, metric identity, supply family·URL과
+capability agreement 같은 교차 필드 의미까지 판정하지 않는다. 이 의미 경계의 실행 권위는
+`font_rule_registry_v2.mjs`의 `validateChangeSet()`·`validateRegistryV2()`이며, W8은 schema 검사만으로 규칙을
+수용하지 않는다.
 
 ---
 
@@ -386,17 +438,27 @@ async function getSystemFonts(): Promise<Set<string>> {
 **장점**: 시스템 설치 폰트 전체 목록 확보
 **단점**: Chrome 전용, 사용자 권한 요청 필요
 
-### 6.2 권장 감지 전략
+### 6.2 현행 hybrid 감지 전략
 
 ```
-문서 로드 시:
-  1. HWP 문서에서 사용된 폰트 목록 추출
-  2. 각 폰트에 대해 document.fonts.check() 또는 measureText 비교로 감지
-  3. 사용 가능 → 그대로 사용
-  4. 사용 불가 → 대체 매핑 테이블에서 오픈소스 폰트 결정
-  5. 오픈소스 폰트 woff2 로드 → FontFace API로 등록
-  6. Canvas ctx.font에 최종 폰트명 설정
+사용자 승인 뒤 감지 세대마다:
+  1. HWP/HWPX 문서의 exact face 후보 추출
+  2. Local Font Access 지원 시 목록을 한 번 열거하고 family/full/PostScript/style/지역화 이름 정규화
+  3. 열거 record와 번들 exact face로 해소되지 않은 문서 후보만 raw Canvas presence probe
+  4. 열거 face, probe-positive face, 확인했지만 미해소인 후보를 provenance와 함께 snapshot에 저장
+  5. 같은 감지 세대에서는 결과 재사용 — glyph/measure hot path에서 probe 금지
+  6. Canvas2D는 exact-enumerated 또는 exact-probed face를 CSS chain 앞에 배치
+  7. CanvasKit은 FontData.blob()으로 SFNT bytes를 얻은 exact-enumerated face만 Typeface로 등록
+  8. 나머지는 문서 대체 face → 공개 웹폰트 → portable generic 순서로 fallback
 ```
+
+`queryLocalFonts()` 함수의 존재, 성공, 결과 count는 문서 후보에 대한 완전성 증거가 아니다. 제품이
+`CanvasRenderingContext2D.font` setter를 패치하는 경우 presence probe는 패치 전 원시 descriptor 또는
+격리 realm을 사용해야 한다. `exact-probed`는 CSS Canvas2D 사용 가능 상태이며 SFNT bytes를 확보한
+상태가 아니므로 CanvasKit local Typeface 성공으로 승격하지 않는다.
+
+진단 매트릭스, RED fixture 분할, 검증 자산과 관련 이슈 인계 절차는
+[폰트 감지·대체 사고 대응 절차](../manual/font_incident_response.md)를 따른다.
 
 ### 6.3 font-loader.ts 개선안
 
@@ -717,14 +779,26 @@ HWP 문서에서 다음 폰트명들은 FONT_METRICS DB 에 정식 엔트리가 
 
 ### A.5 유지보수 체크리스트
 
-**새 한글 폰트 추가 시 반드시 확인**:
+**새 한글 폰트 규칙을 제안할 때 반드시 확인**:
 
-- [ ] `style_resolver.rs` 에 Layer 1 (별칭 → 정규명) 등록
-- [ ] `font_metrics_data.rs::resolve_metric_alias` 에 Layer 2 (정규명 → 영문 DB 이름) 등록
+- [ ] layout-name, layout-metric, paint, supply, detection 중 결정면과 relation을 먼저 확정한다.
+- [ ] schema 1.0 `font_rule_registry.json`과 schema 2.0 `font_rule_registry_v2.json`, generated source를
+      직접 편집하지 않는다. 제품 규칙 변경은 별도 이슈·계획 승인을 받은 append-only change set으로만
+      시작한다.
+- [ ] 기존 W1 snapshot을 갱신하지 않고 새 evidence parent·digest와 rule 유지·신규·retirement 판정을
+      migration manifest에 기록한다.
+- [ ] evidence-only면 같은 tuple·ruleId를 유지하고, tuple 변경이면 retire-and-replace와 새 ruleId를 쓴다.
+- [ ] Rust/Studio generated 파일을 직접 편집하지 않고 `font_rule_registry_v2.mjs`의 reducer 계약과
+      `font_rule_projection_gen.mjs`로 재생성한다.
+- [ ] JSON Schema 적합성에 더해 `font_rule_registry_v2.mjs`의 relation·metric·supply semantic validator를
+      통과한다.
+- [ ] layout-name 규칙이면 `rust-layout-name`, metric alias면 `rust-layout-metric` projection만 바뀌는지
+      manifest digest로 확인한다.
 - [ ] FONT_METRICS 배열에 영문 DB 이름으로 엔트리 존재하는지 확인. 없으면:
   - (A) `extract_metrics` 로 TTF 추가 (정식), 또는
   - (B) 기존 유사 폰트로 근사 매핑 (본한글 → Pretendard 사례)
-- [ ] 단위 테스트 추가 (`mod tests` in `font_metrics_data.rs`)
+- [ ] W2 trace가 generated `ruleId`와 W1 evidence를 정확히 연결하는지 확인한다.
+- [ ] registry·projection·pre-migration baseline과 backend focused test를 통과한다.
 
 Layer 2 누락 시 증상: `find_metric` None 반환 → 기본 폭 → SVG 에서 글자 겹침.
 
@@ -771,7 +845,8 @@ pyftsubset SourceHanSerifK-Regular.otf \
 **WASM 웹 빌드만**:
 - canonical source: `assets/fonts/SourceHanSerifK-OldHangul-subset.woff2`
 - runtime URL: `fonts/SourceHanSerifK-OldHangul-subset.woff2` (`rhwp-studio/public/fonts` 링크로 배포)
-- `rhwp-studio/src/core/font-loader.ts` 의 `FONT_LIST` 에 등록
+- webfont 공급은 canonical registry의 `canvas2d-webfont` projection에서 생성하고
+  `rhwp-studio/src/core/font-loader.ts`가 이를 소비한다.
 - `unicode-range: U+1100-11FF, U+A960-A97F, U+D7B0-D7FF` 으로 옛한글 영역만 매칭 → 일반 한글 미영향
 
 **네이티브 SVG 출력**:
@@ -851,7 +926,7 @@ OFL, 한글 11,172 완비. `ttfs/opensource/NotoSansKR-ExtraLight.ttf`(네이티
 
 | 경로 | 동작 | 충실도 |
 |------|------|--------|
-| **웹(rhwp-studio)** | `font-loader.ts` `@font-face` 로 ExtraLight 로드. `Haansoft Dotum`·돋움·굴림 → ExtraLight 매핑 | 자동·결정적 |
+| **웹(rhwp-studio)** | generated webfont supply를 `font-loader.ts`가 `@font-face`로 로드하고 generated Canvas2D paint 규칙이 `Haansoft Dotum`·돋움·굴림 → ExtraLight를 선택 | 자동·결정적 |
 | **네이티브 CLI(rsvg)** | SVG 의 `font-family` 체인을 fontconfig 가 해석 → ExtraLight 가 **설치돼 있어야** 적용 (`cp ttfs/opensource/*.ttf ~/.fonts && fc-cache`) | 설치 시 적용 |
 | **`--embed-fonts` @font-face** | typst `subsetter` 가 **cmap 제거** → 브라우저 `<text>` 문자 매핑 불가 | **현재 무효** |
 
@@ -868,6 +943,6 @@ OFL, 한글 11,172 완비. `ttfs/opensource/NotoSansKR-ExtraLight.ttf`(네이티
 - [ ] `renderer/mod.rs::generic_fallback` sans 체인의 무거운 폰트 직전에 경량 대체 삽입.
 - [ ] `svg.rs::korean_gothic_substitute` 에 대체 파일명 등록(임베딩 후보).
 - [ ] 번들 폰트는 **독립 family 명명**(타 family 의 weight-variant 금지).
-- [ ] 웹은 `font-loader.ts FONT_LIST` + `assets/fonts/*.woff2` canonical source를 동반하고 runtime
-      `fonts/...` URL은 유지.
+- [ ] 웹은 canonical registry의 `canvas2d-webfont` 규칙 + `assets/fonts/*.woff2` canonical source를
+      동반하고 runtime `fonts/...` URL은 유지한다. generated TypeScript는 직접 편집하지 않는다.
 - [ ] **레이아웃 불변 확인**: 렌더 폰트만 교체, 메트릭 DB 무변경 → `dump-pages` 전후 동일.

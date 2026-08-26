@@ -38,26 +38,17 @@ test('스타일 삭제는 snapshot 으로 기록된다', () => {
   assert.match(handleDelete, /this\.eventBus\.emit\('document-changed'\)/, '미주입 fallback 유지');
 });
 
-test('스타일 다이얼로그는 services 를 받고 history-jumped 로 목록을 무효화한다', () => {
+test('스타일 다이얼로그는 모달 중 도달 불가한 history-jumped 를 구독하지 않는다', () => {
   const dialog = source('src/ui/style-dialog.ts');
 
   assert.match(dialog, /private services\?: CommandServices/, 'services 주입');
-  // undo/redo 는 스타일 목록을 되돌리므로 열려 있는 목록이 stale 이 된다 (#2341).
-  assert.match(
-    dialog,
-    /this\.eventBus\.on\('history-jumped', \(\) => this\.syncAfterHistoryJump\(\)\)/,
-    'history-jumped 구독으로 표시 갱신',
-  );
-  // 목록만 다시 읽으면 `현재 커서 위치 스타일` 라벨이 되돌아가기 전 값으로 남는다 —
-  // 히스토리 점프는 캐럿 문단의 style_id 자체가 바뀌는 자리다.
-  const sync = slice(dialog, 'private syncAfterHistoryJump', '\n  }');
-  assert.match(sync, /getInputHandler\(\)\?\.getCurrentStyleId\(\)/, '캐럿 기준으로 현재 스타일 재조회');
-  assert.match(sync, /this\.setCurrentStyleId\(currentId\)/, '라벨·선택·정보 패널까지 갱신');
-  // 닫힌 뒤 구독이 남으면 사라진 목록을 갱신하려 든다.
-  assert.match(slice(dialog, 'override hide', '\n  }'), /this\.historyJumpOff\?\.\(\)/, '닫을 때 구독 해제');
+  // 한컴 2022도 F6 스타일 대화상자 중 Ctrl+Z를 문서에 전달하지 않는다. rhwp의 모달
+  // capture 계약도 같으므로 이 다이얼로그가 소비할 history-jumped 자체가 없다 (#3438).
+  assert.doesNotMatch(dialog, /history-jumped|historyJumpOff|syncAfterHistoryJump/,
+    '도달 불가한 구독·동기화·해제 코드를 두지 않음');
 });
 
-test('스타일 생성·수정은 모양 적용까지 한 스냅샷으로 원자화된다', () => {
+test('스타일 생성·수정은 모양 적용까지 한 스냅샷으로 원자화되고 실제 실패 신호만 처리한다', () => {
   const dialog = source('src/ui/style-edit-dialog.ts');
   const save = slice(dialog, 'const apply = (wasm: WasmBridge)', 'override show()');
 
@@ -77,8 +68,35 @@ test('스타일 생성·수정은 모양 적용까지 한 스냅샷으로 원자
     1,
     '스냅샷은 하나여야 한다(2뮤테이션 원자화)',
   );
-  assert.match(applyFn, /throw new Error\('\[StyleEditDialog\] 스타일 생성 실패'\)/, '실패 시 무변 엔트리 차단');
+  // createStyle 는 항상 새 ID를 반환한다. 존재하지 않는 음수 실패값을 다시 가정하면 안 된다.
+  assert.doesNotMatch(applyFn, /newId >= 0|스타일 생성 실패/, 'createStyle의 존재하지 않는 실패 신호를 검사하지 않음');
+  // 반면 기존 style ID를 받는 두 API는 false를 반환하므로, 실패를 무시하면 스냅샷에
+  // 무변 엔트리가 남거나 부분 변경을 성공처럼 처리하게 된다.
+  assert.match(applyFn, /if \(!wasm\.updateStyle\(this\.styleInfo\.id/, 'updateStyle false를 확인');
+  assert.match(applyFn, /if \(!wasm\.updateStyleShapes\(/, 'updateStyleShapes false를 확인');
+  assert.match(
+    save,
+    /operation: \(wasm\) => \{\s*saved = apply\(wasm\);\s*return saved \? ih\.getPosition\(\) : null;/,
+    'updateStyle false는 snapshot no-op으로 전달',
+  );
+  assert.match(save, /let saved = false/, '실제 저장 성공 여부를 확인');
+  assert.match(save, /if \(!saved\) return false/, 'false 반환은 모달을 닫지 않음');
+  assert.match(save, /catch \(err\) \{[\s\S]*?return false;/, '예외도 모달을 닫지 않음');
+  assert.match(save, /this\.onSave\?\.\(\);\s*return true;/, '성공한 저장 때만 후속 새로고침');
   assert.match(save, /this\.eventBus\.emit\('document-changed'\)/, '미주입 fallback 유지');
+});
+
+test('스타일 WASM 반환 계약은 생성 성공 ID와 기존 ID 갱신 실패를 구분한다', () => {
+  const wasmApi = source('../src/wasm_api.rs');
+  const updateStyle = slice(wasmApi, 'pub fn update_style', '\n    /// 스타일의 CharShape/ParaShape를 수정한다.');
+  const updateStyleShapes = slice(wasmApi, 'pub fn update_style_shapes', '\n    /// 새 스타일을 생성한다.');
+  const createStyle = slice(wasmApi, 'pub fn create_style', '\n    /// 스타일을 삭제한다.');
+
+  assert.match(updateStyle, /None => return false/, '없는 기존 스타일은 updateStyle=false');
+  assert.match(updateStyleShapes, /None => return false/, '없는 기존 스타일은 updateStyleShapes=false');
+  assert.match(createStyle, /styles\.push\(new_style\)/, 'createStyle은 새 스타일을 추가');
+  assert.match(createStyle, /\n\s*new_id\n/, 'createStyle은 추가한 ID를 반환');
+  assert.doesNotMatch(createStyle, /return -\d+/, 'createStyle은 음수 실패 ID를 계약으로 두지 않음');
 });
 
 test('스타일 다이얼로그 생성 지점이 services 를 넘긴다', () => {

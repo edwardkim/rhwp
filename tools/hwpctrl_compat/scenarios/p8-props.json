@@ -1,0 +1,77 @@
+{
+  "id": "p8-props",
+  "title": "보기·엔진 속성 — 밝힌 항목만 담는다",
+  "ledger": [
+    "HwpCtrl.property.ViewProperties",
+    "HwpCtrl.property.EngineProperties"
+  ],
+  "open": "samples/para-001.hwp",
+  "calls": [
+    [
+      "Run",
+      [
+        "ViewZoomNormal"
+      ]
+    ],
+    [
+      "ViewProperties.SetID",
+      []
+    ],
+    [
+      "ViewProperties.Count",
+      []
+    ],
+    [
+      "ViewProperties.IsSet",
+      []
+    ],
+    [
+      "ViewProperties.Item",
+      [
+        "ZoomType"
+      ]
+    ],
+    [
+      "ViewProperties.Item",
+      [
+        "ZoomRatio"
+      ]
+    ],
+    [
+      "ViewProperties.Item",
+      [
+        "ViewMode"
+      ]
+    ],
+    [
+      "ViewProperties.Item",
+      [
+        "없는이름"
+      ]
+    ],
+    [
+      "EngineProperties.SetID",
+      []
+    ],
+    [
+      "EngineProperties.Count",
+      []
+    ],
+    [
+      "EngineProperties.IsSet",
+      []
+    ],
+    [
+      "EngineProperties.Item",
+      [
+        "Version"
+      ]
+    ],
+    [
+      "EngineProperties.Item",
+      [
+        "OptionFlag"
+      ]
+    ]
+  ]
+}

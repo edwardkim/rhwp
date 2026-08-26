@@ -1,0 +1,11 @@
+{
+  "id": "T06-B07",
+  "recipe": "06",
+  "kind": "bash",
+  "sourceFile": "mydocs/manual/recipes/06_visual_regression_before_after.md",
+  "excerpted": true,
+  "fabricatedLive": false,
+  "raw": "rhwp render-diff batch_out/0001.hwp batch_out/0001.hwp",
+  "firstLine": "rhwp render-diff batch_out/0001.hwp batch_out/0001.hwp",
+  "notGym": true
+}

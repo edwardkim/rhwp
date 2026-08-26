@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workCapsule",
+  "parent": null,
+  "plan": {
+    "planVersion": "1.0",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "output": "out/checkbox_mark.hwp",
+    "steps": [
+      {
+        "action": "replace_text",
+        "find": "□ 동의",
+        "replace": "☑ 동의"
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"samples/basic/issue2007_nested_cell_pagination_42065.hwp\",\"output\":\"out/checkbox_mark.hwp\",\"steps\":[{\"action\":\"replace_text\",\"find\":\"□ 동의\",\"replace\":\"☑ 동의\"}]}",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "inputSha256": "7bcffaea242d6399a7dd30ac20ca56a8f07fab3f8fffdb983dd4439a04ec79de",
+    "planSha256": "38ca8df4287a623a349d8a6c6ad3d1808de0ba7c2f7280a08712db1a04b103c7",
+    "outputSha256": "1ad8f56a6b6e3c7f396caf84e6a2ee57c132cf60a5fd2dbb8464ec3f103e7463",
+    "toolVersion": "0.8.4",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null,
+    "untrustedContent": false,
+    "untrustedFields": []
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "id": "OP23",
+  "steps": [
+    {
+      "answer": {
+        "write": {
+          "cmd": [
+            "capabilities"
+          ],
+          "path": "formats.write",
+          "len": true
+        }
+      }
+    }
+  ]
+}

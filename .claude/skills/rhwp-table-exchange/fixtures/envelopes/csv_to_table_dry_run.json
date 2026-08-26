@@ -1,0 +1,85 @@
+{
+  "_skillMeta": {
+    "skill": "rhwp-table-exchange",
+    "issue": 5306,
+    "note": "문서화된 실측 봉투. 바이너리를 이 파동에서 다시 돌리지 않았다.",
+    "command": "csv-to-table",
+    "sample": "samples/hwp_table_test.hwp",
+    "exit": 0,
+    "branch": "dry-run-no-disk",
+    "outputKept": false,
+    "source": "tests/table_csv_contract.rs dry_run_writes_no_file"
+  },
+  "changed": [
+    {
+      "row": 1,
+      "col": 0,
+      "oldText": "",
+      "newText": "서버 이관"
+    },
+    {
+      "row": 1,
+      "col": 1,
+      "oldText": "",
+      "newText": "홍길동"
+    },
+    {
+      "row": 1,
+      "col": 2,
+      "oldText": "",
+      "newText": "1차 완료"
+    },
+    {
+      "row": 2,
+      "col": 0,
+      "oldText": "",
+      "newText": "DB 백업"
+    },
+    {
+      "row": 2,
+      "col": 1,
+      "oldText": "",
+      "newText": "김철수"
+    },
+    {
+      "row": 2,
+      "col": 2,
+      "oldText": "",
+      "newText": "진행중"
+    },
+    {
+      "row": 3,
+      "col": 0,
+      "oldText": "",
+      "newText": "문서 정리"
+    },
+    {
+      "row": 3,
+      "col": 1,
+      "oldText": "",
+      "newText": "박영희"
+    },
+    {
+      "row": 3,
+      "col": 2,
+      "oldText": "",
+      "newText": "대기"
+    }
+  ],
+  "changedCount": 9,
+  "changedPages": null,
+  "colCount": 3,
+  "csv": "table0_edited.csv",
+  "dryRun": true,
+  "invalid": [],
+  "output": null,
+  "rowCount": 4,
+  "schemaVersion": "1.0",
+  "source": "samples/hwp_table_test.hwp",
+  "table": 0,
+  "untrustedContent": true,
+  "untrustedFields": [
+    "changed[].oldText"
+  ],
+  "verify": null
+}

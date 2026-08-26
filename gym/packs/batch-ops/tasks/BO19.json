@@ -1,0 +1,22 @@
+{
+  "id": "BO19",
+  "tier": 2,
+  "title": "선확인 — form-02.hwpx --dry-run 예정 행 수",
+  "input": "samples/hwpx/form-02.hwpx",
+  "instructions": "gym/packs/batch-ops/assets/BO07-data.csv 는 데이터 2행이다. 병합을 적용하지 말고 예정 부 수를 보고하라. 답 형식: {\"planned\": 2}. 힌트: rhwp batch fill --form samples/hwpx/form-02.hwpx --data gym/packs/batch-ops/assets/BO07-data.csv --out-dir out --dry-run --json. 산출 파일은 만들지 마라.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "예정 행 수",
+      "op": "json_value_eq",
+      "file": "answer.json",
+      "path": "planned",
+      "value": 2
+    }
+  ]
+}

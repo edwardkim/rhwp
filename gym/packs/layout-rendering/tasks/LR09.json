@@ -1,0 +1,27 @@
+{
+  "id": "LR09",
+  "tier": 1,
+  "title": "문단 수 판정",
+  "input": "samples/table-001.hwp",
+  "instructions": "입력 문서의 문단 수를 answer.json 에 {\"paragraphs\": N} 으로 제출하라. 힌트: rhwp info 의 paraCount.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "문단 수",
+      "op": "answer_eq",
+      "answer": "paragraphs",
+      "path": "paraCount",
+      "cmd": [
+        "info",
+        "{input}",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

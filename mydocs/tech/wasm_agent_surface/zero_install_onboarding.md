@@ -403,20 +403,16 @@ studio `index.html:8-10` 이 이미 그 규칙을 따르며 이유를 주석에 
 
 ## 6. 이 문서가 다루지 않는 것
 
-#3869 는 W3(Python 휠)·W4(npm 패키지)로 **브라우저 밖 설치 0**도 요구한다.
+#3869 는 W3(Python 휠)·W4(npm 패키지)로 **브라우저 밖 설치 0**도 제안했다.
 
 ```
 pip install rhwp    # 바이너리 없음. WASM 이 휠 안에 들어 있다
 npm install rhwp    # 동일
 ```
 
-**이 문서는 그 축을 다루지 않는다.** 브라우저 데모와 휠 패키징은 요구가 다르다
-(전자는 UI·오프라인·origin, 후자는 런타임 임베딩·ABI). 다만 **자기서술은 공유한다** —
-휠 안의 WASM 도 같은 `capabilities()` 를 돌려줘야 한다
-([self_description.md §5.1](self_description.md)).
-
-기존 바인딩(서브프로세스 경로)과의 관계 정리는 #3869 W5 이며,
-[../bindings_foundation.md](../bindings_foundation.md) 가 그 판단표의 자리다.
+**이 문서는 그 축을 다루지 않는다.** 해당 Python·Node 패키지 제안은 v0.8.4에서
+공식 채택이 철회됐다(#4655). 브라우저 WASM 표면은 기존 공식 웹 배포 범위 안에서
+별도로 검증한다.
 
 ---
 
@@ -457,7 +453,7 @@ npm install rhwp    # 동일
 - [self_description.md](self_description.md) — 데모 첫 화면이 보여줄 것
 - [browser_bridge.md](browser_bridge.md) — "에이전트에 붙이기"의 실체
 - [../wasm_pack_version_policy.md](../wasm_pack_version_policy.md) — 툴체인 고정
-- [../bindings_foundation.md](../bindings_foundation.md) — 진입로 판단표(M18~M20, W5)
+- [CLI 명령 레퍼런스](../../manual/cli_commands.md) — 현재 진입로 계약
 - [../agent_security/threat_model.md](../agent_security/threat_model.md) — 데모에서
   `inspect` 를 보여줘야 하는 이유
 - [../agent_security/consumer_guide.md](../agent_security/consumer_guide.md) — 붙인 다음의 책임

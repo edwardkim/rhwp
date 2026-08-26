@@ -1,0 +1,24 @@
+{
+  "id": "p4-multisel2",
+  "title": "덧고르기 — SelectCtrl 두 번째 인자 훑기",
+  "ledger": [],
+  "open": "samples/mix-shape-01.hwp",
+  "calls": [
+    ["SetPos", [0, 0, 0]],
+    ["Run", ["SelectCtrlFront"]],
+    ["SelectionMode", []],
+    ["SelectCtrl", [{"$obj": "HeadCtrl.Next.Next.Next.Next"}, 1]],
+    ["SelectionMode", []],
+    ["CurSelectedCtrl.UserDesc", []],
+    ["HeadCtrl.Next.Next.Properties.Item", ["HorzOffset"]],
+    ["HeadCtrl.Next.Next.Next.Properties.Item", ["HorzOffset"]],
+    ["HeadCtrl.Next.Next.Next.Next.Properties.Item", ["HorzOffset"]],
+    ["Run", ["ShapeObjAlignLeft"]],
+    ["HeadCtrl.Next.Next.Properties.Item", ["HorzOffset"]],
+    ["HeadCtrl.Next.Next.Next.Properties.Item", ["HorzOffset"]],
+    ["HeadCtrl.Next.Next.Next.Next.Properties.Item", ["HorzOffset"]],
+    ["SelectCtrl", [{"$obj": "HeadCtrl.Next.Next"}, 0]],
+    ["SelectionMode", []],
+    ["CurSelectedCtrl.UserDesc", []]
+  ]
+}

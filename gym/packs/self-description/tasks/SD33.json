@@ -1,0 +1,25 @@
+{
+  "id": "SD33",
+  "tier": 2,
+  "title": "textSecurity 정책",
+  "input": "samples/table-001.hwp",
+  "instructions": "jsonContract.textSecurity.policy 문구를 answer.json 에 {\"policy\": S} 으로 제출하라. 힌트: capabilities 의 jsonContract.textSecurity.policy.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "textSecurity 정책",
+      "op": "answer_eq",
+      "answer": "policy",
+      "path": "jsonContract.textSecurity.policy",
+      "cmd": [
+        "capabilities"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

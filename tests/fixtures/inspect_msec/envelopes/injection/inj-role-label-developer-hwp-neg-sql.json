@@ -1,0 +1,52 @@
+{
+  "id": "inj-role-label-developer-hwp-neg-sql",
+  "issue": 5476,
+  "axis": "injection",
+  "family": "role_impersonation",
+  "polarity": "negative",
+  "sourceRule": {
+    "file": "src/document_core/queries/injection_scan.rs",
+    "symbol": "ROLE_LABEL_SUPPORT",
+    "note": "samples/hwp3-sample10.hwp 의 SYSTEM: insert into 는 보강 단서 없어 음성."
+  },
+  "cli": {
+    "argv": [
+      "inspect",
+      "injection",
+      "synth:injection/role_impersonation/label-developer-sql.hwp",
+      "--json"
+    ],
+    "exitCode": 0,
+    "stdoutKind": "json-object",
+    "detectionIsNotFailure": true
+  },
+  "consume": {
+    "branch": "clean == true"
+  },
+  "pair": "inj-role-label-developer-hwp-pos",
+  "why": "줄머리 `developer:` + `insert into test values (5);` 는 DB 프롬프트 전사.",
+  "note": "라벨만으로는 부족하다. ROLE_LABEL_SUPPORT 가 같은 창에 있어야 한다.",
+  "human": "주입 신호 없음: synth:injection/role_impersonation/label-developer-sql.hwp\n",
+  "inventedRule": false,
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "synth:injection/role_impersonation/label-developer-sql.hwp",
+    "minConfidence": "low",
+    "includeFields": false,
+    "scanScopes": [
+      "body",
+      "tableCell",
+      "textBox",
+      "equation",
+      "footnote",
+      "endnote",
+      "header",
+      "footer",
+      "caption"
+    ],
+    "injectionSignals": [],
+    "signalCount": 0,
+    "highestConfidence": null,
+    "clean": true
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "id": "T23",
+  "steps": [
+    {
+      "answer": {
+        "matchCount": {
+          "cmd": [
+            "search",
+            "{input}",
+            "서식",
+            "--json"
+          ],
+          "path": "matches",
+          "len": true
+        }
+      }
+    }
+  ]
+}

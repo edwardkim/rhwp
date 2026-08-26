@@ -1,0 +1,23 @@
+{
+  "id": "T18",
+  "tier": 1,
+  "title": "서식 표본 쪽수",
+  "input": "samples/form-01.hwp",
+  "instructions": "T18 은 입문·코어 온램프를 두껍게 하는 과제다. 서식 문서를 열어도 먼저 신상을 읽는다. 누름틀을 채우라는 과제가 아니다. 표본은 `samples/form-01.hwp` 이고, 이미 저장소 `samples/` 에 있다. 새 파일을 만들지 마라. 정답 숫자는 과제에 박제되어 있지 않다. 채점기가 같은 명령을 다시 돌린다. 힌트: info <문서> --json. 제출은 answer.json 에 {\"pages\": <값>} 로 적는다. 원본을 덮어쓰지 마라. T07 의 fields[0]==홍길동 판정을 복제하지 마라. form-01 은 서식 pack 의 단골이지만 여기서는 info.pageCount 만 묻는다.",
+  "submit": {
+    "kind": "answer"
+  },
+  "checks": [
+    {
+      "name": "서식 표본 쪽수",
+      "op": "answer_eq",
+      "answer": "pages",
+      "cmd": [
+        "info",
+        "{input}",
+        "--json"
+      ],
+      "path": "pageCount"
+    }
+  ]
+}

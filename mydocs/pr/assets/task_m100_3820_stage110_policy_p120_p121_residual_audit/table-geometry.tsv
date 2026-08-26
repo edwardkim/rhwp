@@ -1,0 +1,8 @@
+page	paragraph	measure	current	oracle	delta	verdict
+120	1283	left_pt	70.870	74.000	-3.130	outer-left 283HU missing from paint origin
+120	1283	top_pt	62.370	65.000	-2.630	outer-top 283HU missing from paint origin
+120	1283	width_pt	419.540	419.000	0.540	stored width preserved
+120	1283	height_pt	237.900	238.000	-0.100	stored height preserved
+120	1283	predicted_left_with_outer_margin_pt	73.700	74.000	-0.300	283HU inset predicts the oracle border
+120	1283	predicted_top_with_outer_margin_pt	65.200	65.000	0.200	283HU inset predicts the oracle border
+120	following_body	baseline_pt	355.28	355.00	0.28	flow position already matches; must not shift

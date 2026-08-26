@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.form_fill.path_contract.v1",
+  "claim": "M-fill",
+  "generator": "tools/form_fill/fatten_form_fill.py",
+  "existingCliOnly": true,
+  "id": "path-fill-missing-file",
+  "axis": "runtime",
+  "title": "없는 서식 파일",
+  "why": "exit 1, 출력 파일 미생성.",
+  "argv": [
+    "edit",
+    "fill-fields",
+    "없는파일-edit.hwp",
+    "--data",
+    "{\"a\":\"b\"}",
+    "-o",
+    "out/missing.hwp",
+    "--json"
+  ],
+  "exit": 1,
+  "writesFile": false
+}

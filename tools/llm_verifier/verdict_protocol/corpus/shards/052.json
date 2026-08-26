@@ -1,0 +1,2804 @@
+{
+  "schemaVersion": "v-proto.1.0",
+  "shardId": "052",
+  "records": [
+    {
+      "recordId": "vproto-002081",
+      "sourceTag": "법제처/서식/2024/2081#verify/usage-bad-flag",
+      "command": "verify",
+      "argv": [
+        "verify",
+        "samples/gov/법제처_서식_2024_2081.hwp",
+        "--expect-pages",
+        "nope",
+        "--json"
+      ],
+      "exitClass": 2,
+      "stdoutPresent": false,
+      "stderrKind": "usage",
+      "envelope": null,
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-002082",
+      "sourceTag": "행정안전부/서식/2024/2082#ir-diff/usage-bad-section",
+      "command": "ir-diff",
+      "argv": [
+        "ir-diff",
+        "samples/gov/행정안전부_서식_2024_2082.hwp",
+        "samples/gov/행정안전부_서식_2024_2082.hwpx",
+        "-s",
+        "-1",
+        "--json"
+      ],
+      "exitClass": 2,
+      "stdoutPresent": false,
+      "stderrKind": "usage",
+      "envelope": null,
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-002083",
+      "sourceTag": "국세청/서식/2024/2083#layout-anomaly/usage-bad-tol",
+      "command": "layout-anomaly",
+      "argv": [
+        "layout-anomaly",
+        "samples/gov/국세청_서식_2024_2083.hwpx",
+        "--overflow-tolerance",
+        "x",
+        "--json"
+      ],
+      "exitClass": 2,
+      "stdoutPresent": false,
+      "stderrKind": "usage",
+      "envelope": null,
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-002084",
+      "sourceTag": "대법원/서식/2024/2084#replay/usage-bad-hash",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "plan.json",
+        "--expect-output-sha256",
+        "zz",
+        "--json"
+      ],
+      "exitClass": 2,
+      "stdoutPresent": false,
+      "stderrKind": "usage",
+      "envelope": null,
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-002085",
+      "sourceTag": "특허청/서식/2024/2085#fill-fields/usage-bad-data",
+      "command": "fill-fields",
+      "argv": [
+        "edit",
+        "fill-fields",
+        "samples/gov/특허청_서식_2024_2085.hwp",
+        "--data",
+        "@fields.json",
+        "--data",
+        "{",
+        "--json"
+      ],
+      "exitClass": 2,
+      "stdoutPresent": false,
+      "stderrKind": "usage",
+      "envelope": null,
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-002086",
+      "sourceTag": "교육부/서식/2024/2086#render-diff/usage-bad-page",
+      "command": "render-diff",
+      "argv": [
+        "render-diff",
+        "samples/gov/교육부_서식_2024_2086.hwpx",
+        "-p",
+        "x",
+        "--json"
+      ],
+      "exitClass": 2,
+      "stdoutPresent": false,
+      "stderrKind": "usage",
+      "envelope": null,
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-002087",
+      "sourceTag": "보건복지부/서식/2024/2087#info/usage-unknown-flag",
+      "command": "info",
+      "argv": [
+        "info",
+        "samples/gov/보건복지부_서식_2024_2087.hwp",
+        "--not-a-flag",
+        "--json"
+      ],
+      "exitClass": 2,
+      "stdoutPresent": false,
+      "stderrKind": "usage",
+      "envelope": null,
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-002088",
+      "sourceTag": "국토교통부/서식/2024/2088#verify/fail-contains",
+      "command": "verify",
+      "argv": [
+        "verify",
+        "samples/gov/국토교통부_서식_2024_2088.hwp",
+        "--expect-contains",
+        "없는문자열",
+        "--json"
+      ],
+      "exitClass": 3,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/국토교통부_서식_2024_2088.hwp",
+        "expectations": [
+          {
+            "kind": "pages",
+            "expected": 8,
+            "actual": 8,
+            "pass": true
+          },
+          {
+            "kind": "min-chars",
+            "expected": 167,
+            "actual": 152,
+            "pass": false
+          },
+          {
+            "kind": "min-tables",
+            "expected": 1,
+            "actual": 3,
+            "pass": true
+          },
+          {
+            "kind": "contains",
+            "expected": "대표자",
+            "actual": "대표자",
+            "pass": true
+          },
+          {
+            "kind": "format",
+            "expected": "hwp5",
+            "actual": "hwp5",
+            "pass": true
+          }
+        ],
+        "passCount": 4,
+        "failCount": 1,
+        "verdict": "fail",
+        "untrustedContent": true,
+        "untrustedFields": [
+          "expectations[].actual"
+        ]
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": 1,
+        "passCount": 4,
+        "verdict": "fail",
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-002089",
+      "sourceTag": "고용노동부/서식/2024/2089#ir-diff/table-only-diff",
+      "command": "ir-diff",
+      "argv": [
+        "ir-diff",
+        "samples/gov/고용노동부_서식_2024_2089.hwpx",
+        "samples/gov/고용노동부_서식_2024_2089.hwpxx",
+        "samples/gov/고용노동부_서식_2024_2089.hwp",
+        "--json"
+      ],
+      "exitClass": 3,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "a": "samples/gov/고용노동부_서식_2024_2089.hwpx",
+        "b": "samples/gov/고용노동부_서식_2024_2089.hwp",
+        "identical": false,
+        "diffCount": 16,
+        "categories": {
+          "text": 6,
+          "paraShape": 2,
+          "charShape": 3,
+          "table": 4,
+          "ctrl": 1
+        },
+        "untrustedContent": true,
+        "untrustedFields": [
+          "categories"
+        ]
+      },
+      "judgment": {
+        "identical": false,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": 16,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-002090",
+      "sourceTag": "외교부/서식/2024/2090#layout-anomaly/overlap-strict",
+      "command": "layout-anomaly",
+      "argv": [
+        "layout-anomaly",
+        "samples/gov/외교부_서식_2024_2090.hwp",
+        "--strict",
+        "--json"
+      ],
+      "exitClass": 3,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/외교부_서식_2024_2090.hwp",
+        "pageCount": 4,
+        "pageFilter": null,
+        "overflowTolerancePx": 1.0,
+        "overlapTolerancePx": 1.0,
+        "strict": true,
+        "overflowCount": 0,
+        "overlapCount": 4,
+        "emptyPageCount": 0,
+        "hasSignal": true,
+        "pages": [
+          {
+            "page": 0,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 1,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": true,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": [
+              {
+                "kind": "text-text",
+                "a": {
+                  "section": 0,
+                  "paragraph": 4
+                },
+                "b": {
+                  "section": 0,
+                  "paragraph": 5
+                },
+                "overlapPx": 7.0
+              }
+            ]
+          },
+          {
+            "page": 2,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 3,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          }
+        ],
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": true,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": true,
+        "overflowCount": 0,
+        "overlapCount": 4,
+        "emptyPageCount": 0,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-002091",
+      "sourceTag": "기획재정부/서식/2024/2091#replay/reproduced-false",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "plan.json",
+        "--expect-output-sha256",
+        "abababababababababababababababababababababababababababababababab",
+        "--json"
+      ],
+      "exitClass": 3,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "mode": "verify",
+        "input": "samples/gov/기획재정부_서식_2024_2091.hwp",
+        "inputSha256": "1766a59b808873fffd25f22ff7f0c990c8ba7687e8d72276c5c86f038d77e70c",
+        "planSha256": "e01ec95c518a4290452c0b0463b3079bd21c0936a33bb856c18dc9540929c95d",
+        "outputSha256": "fdc0dccde22e0b9568bd2432de7494d227740e64eccb50c9196f3ee3eb4615a7",
+        "expectedOutputSha256": "e448f36b8602ed2f142d1222fc96b68bf461b35d48b4b487b52ed51217da8b9c",
+        "reproduced": false,
+        "steps": 1,
+        "toolVersion": "0.8.4",
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": false,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-002092",
+      "sourceTag": "공정거래위원회/서식/2024/2092#fill-fields/verify-fail-with-findings",
+      "command": "fill-fields",
+      "argv": [
+        "edit",
+        "fill-fields",
+        "samples/gov/공정거래위원회_서식_2024_2092.hwpx",
+        "--data",
+        "@fields.json",
+        "-o",
+        "out.hwp",
+        "--verify",
+        "--json"
+      ],
+      "exitClass": 3,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/공정거래위원회_서식_2024_2092.hwpx",
+        "dryRun": false,
+        "filledCount": 5,
+        "filled": [
+          {
+            "name": "시행일자",
+            "occurrence": 0,
+            "value": "시행일자-값-2091-0"
+          },
+          {
+            "name": "수신",
+            "occurrence": 1,
+            "value": "수신-값-2091-1"
+          },
+          {
+            "name": "제목",
+            "occurrence": 2,
+            "value": "제목-값-2091-2"
+          },
+          {
+            "name": "금액",
+            "occurrence": 3,
+            "value": "금액-값-2091-3"
+          },
+          {
+            "name": "계좌번호",
+            "occurrence": 4,
+            "value": "계좌번호-값-2091-4"
+          }
+        ],
+        "notFound": [],
+        "ambiguous": [],
+        "confusable": [],
+        "changedPages": [
+          0,
+          1
+        ],
+        "untrustedContent": true,
+        "untrustedFields": [
+          "filled[].value",
+          "filled[].name"
+        ],
+        "output": "output/gov/공정거래위원회_서식_2024_2092_filled.hwpx",
+        "outputFormat": "hwpx",
+        "verify": {
+          "identical": false,
+          "diffCount": 4
+        },
+        "findingCount": 2,
+        "findings": [
+          {
+            "kind": "ssn",
+            "masked": "******-*******",
+            "page": 0,
+            "paragraph": 3,
+            "charOffset": 8
+          },
+          {
+            "kind": "phone",
+            "masked": "***-****-****",
+            "page": 0,
+            "paragraph": 5,
+            "charOffset": 4
+          }
+        ]
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": 2,
+        "verify": {
+          "identical": false,
+          "diffCount": 4
+        },
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-002093",
+      "sourceTag": "금융위원회/서식/2024/2093#render-diff/struct-mismatch",
+      "command": "render-diff",
+      "argv": [
+        "render-diff",
+        "samples/gov/금융위원회_서식_2024_2093.hwp",
+        "--json"
+      ],
+      "exitClass": 3,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "mode": "self-roundtrip",
+        "sourceA": "samples/gov/금융위원회_서식_2024_2093.hwp",
+        "sourceB": "samples/gov/금융위원회_서식_2024_2093.hwp",
+        "via": "hwpx",
+        "pageFilter": null,
+        "threshold": 2.0,
+        "pageCountA": 4,
+        "pageCountB": 4,
+        "pageCountMismatch": false,
+        "maxDisp": 8.5,
+        "worstPage": 0,
+        "overPages": 2,
+        "structPages": 2,
+        "hardStructPages": 0,
+        "status": "STRUCT",
+        "regression": true,
+        "pages": [
+          {
+            "page": 0,
+            "maxDisp": 8.5,
+            "over": true,
+            "structMismatch": false,
+            "nodeCountA": 62,
+            "nodeCountB": 62
+          },
+          {
+            "page": 1,
+            "maxDisp": 1.0,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 63,
+            "nodeCountB": 63
+          },
+          {
+            "page": 2,
+            "maxDisp": 1.2,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 64,
+            "nodeCountB": 64
+          },
+          {
+            "page": 3,
+            "maxDisp": 1.4,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 65,
+            "nodeCountB": 65
+          }
+        ],
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": true,
+        "status": "STRUCT",
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": false,
+        "overPages": 2
+      }
+    },
+    {
+      "recordId": "vproto-002094",
+      "sourceTag": "방송통신위원회/서식/2024/2094#info/page-verify-unexpected",
+      "command": "info",
+      "argv": [
+        "info",
+        "samples/gov/방송통신위원회_서식_2024_2094.hwp",
+        "--json"
+      ],
+      "exitClass": 4,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/방송통신위원회_서식_2024_2094.hwp",
+        "format": "hwp5",
+        "sizeBytes": 310741,
+        "version": "5.0.2.5",
+        "sections": 2,
+        "pageCount": 0,
+        "paraCount": 116,
+        "fonts": [
+          "HY신명조",
+          "HY중고딕",
+          "한양견고딕",
+          "함초롬바탕",
+          "함초롬돋움",
+          "맑은 고딕",
+          "굴림",
+          "굴림체",
+          "돋움",
+          "돋움체",
+          "바탕"
+        ],
+        "title": "공사계약 일반조건 (방송통신위원회 서식 2024)",
+        "warnings": [],
+        "untrustedContent": true,
+        "untrustedFields": [
+          "title",
+          "fonts[]"
+        ]
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-002095",
+      "sourceTag": "개인정보보호위원회/서식/2024/2095#verify/verify-pages-mismatch",
+      "command": "verify",
+      "argv": [
+        "verify",
+        "samples/gov/개인정보보호위원회_서식_2024_2095.hwpx",
+        "--expect-pages",
+        "1",
+        "--json"
+      ],
+      "exitClass": 4,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/개인정보보호위원회_서식_2024_2095.hwpx",
+        "output": "output/gov/개인정보보호위원회_서식_2024_2095.hwp",
+        "format": "hwp5",
+        "bytes": 270554,
+        "wasDistribution": false,
+        "passwordProtected": false,
+        "verify": {
+          "identical": true,
+          "diffCount": 0
+        },
+        "verifyPages": {
+          "expected": 8,
+          "actual": 7,
+          "match": false
+        },
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": {
+          "identical": true,
+          "diffCount": 0
+        },
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-002096",
+      "sourceTag": "국민권익위원회/서식/2024/2096#ir-diff/page-verify-not-applicable",
+      "command": "ir-diff",
+      "argv": [
+        "ir-diff",
+        "samples/gov/국민권익위원회_서식_2024_2096.hwp",
+        "samples/gov/국민권익위원회_서식_2024_2096.hwpx",
+        "samples/gov/국민권익위원회_서식_2024_2096.hwpx",
+        "--json"
+      ],
+      "exitClass": 4,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "a": "samples/gov/국민권익위원회_서식_2024_2096.hwp",
+        "b": "samples/gov/국민권익위원회_서식_2024_2096.hwpx",
+        "identical": true,
+        "diffCount": 0,
+        "categories": {},
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": true,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": 0,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-002097",
+      "sourceTag": "국가인권위원회/서식/2024/2097#layout-anomaly/page-count-mismatch",
+      "command": "layout-anomaly",
+      "argv": [
+        "layout-anomaly",
+        "samples/gov/국가인권위원회_서식_2024_2097.hwp",
+        "--json"
+      ],
+      "exitClass": 4,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/국가인권위원회_서식_2024_2097.hwp",
+        "pageCount": 5,
+        "pageFilter": null,
+        "overflowTolerancePx": 1.0,
+        "overlapTolerancePx": 1.0,
+        "strict": false,
+        "overflowCount": 0,
+        "overlapCount": 0,
+        "emptyPageCount": 2,
+        "hasSignal": true,
+        "pages": [
+          {
+            "page": 0,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 1,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 2,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 3,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 4,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": true,
+            "overflowItems": [],
+            "overlapItems": []
+          }
+        ],
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "pageCountMismatch": true
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": true,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": false,
+        "overflowCount": 0,
+        "overlapCount": 0,
+        "emptyPageCount": 2,
+        "pageCountMismatch": true,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-002098",
+      "sourceTag": "통계청/서식/2024/2098#replay/page-verify-not-applicable",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "plan.json",
+        "--json"
+      ],
+      "exitClass": 4,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "mode": "attest",
+        "input": "samples/gov/통계청_서식_2024_2098.hwpx",
+        "inputSha256": "f5466c066fd37f60de5705f062ee0857c70df88239e919590d10e8a35b8ea14d",
+        "planSha256": "3b37a7a93fe8f2fd4cc3e25815bdf72f2a2f3b23d4dcd69e238a5cbb922e3efb",
+        "outputSha256": "cd8f83b13233fcfbe6eb88792aa8be430010986771a3743e5ce6958434bd8094",
+        "expectedOutputSha256": null,
+        "reproduced": null,
+        "steps": 3,
+        "toolVersion": "0.8.4",
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-002099",
+      "sourceTag": "기상청/서식/2024/2099#fill-fields/verify-pages",
+      "command": "fill-fields",
+      "argv": [
+        "edit",
+        "fill-fields",
+        "samples/gov/기상청_서식_2024_2099.hwp",
+        "--data",
+        "@fields.json",
+        "-o",
+        "out.hwp",
+        "--verify",
+        "--json"
+      ],
+      "exitClass": 4,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/기상청_서식_2024_2099.hwp",
+        "output": "output/gov/기상청_서식_2024_2099.hwp",
+        "format": "hwp5",
+        "bytes": 270918,
+        "wasDistribution": false,
+        "passwordProtected": false,
+        "verify": {
+          "identical": true,
+          "diffCount": 0
+        },
+        "verifyPages": {
+          "expected": 12,
+          "actual": 11,
+          "match": false
+        },
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "filledCount": 1,
+        "filled": [
+          {
+            "name": "제목",
+            "occurrence": 0,
+            "value": "감사 지적사항 조치 결과"
+          }
+        ],
+        "pageCountMismatch": true
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": {
+          "identical": true,
+          "diffCount": 0
+        },
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": true,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-002100",
+      "sourceTag": "관세청/서식/2024/2100#render-diff/page-count-mismatch",
+      "command": "render-diff",
+      "argv": [
+        "render-diff",
+        "samples/gov/관세청_서식_2024_2100.hwp",
+        "--json"
+      ],
+      "exitClass": 4,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "mode": "self-roundtrip",
+        "sourceA": "samples/gov/관세청_서식_2024_2100.hwp",
+        "sourceB": "samples/gov/관세청_서식_2024_2100.hwp",
+        "via": "hwp",
+        "pageFilter": null,
+        "threshold": 2.0,
+        "pageCountA": 3,
+        "pageCountB": 4,
+        "pageCountMismatch": true,
+        "maxDisp": 1.4,
+        "worstPage": 0,
+        "overPages": 0,
+        "structPages": 0,
+        "hardStructPages": 0,
+        "status": "OK",
+        "regression": false,
+        "pages": [
+          {
+            "page": 0,
+            "maxDisp": 0.6,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 69,
+            "nodeCountB": 69
+          },
+          {
+            "page": 1,
+            "maxDisp": 0.8,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 70,
+            "nodeCountB": 70
+          },
+          {
+            "page": 2,
+            "maxDisp": 1.0,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 71,
+            "nodeCountB": 71
+          },
+          {
+            "page": 3,
+            "maxDisp": 1.2,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 72,
+            "nodeCountB": 72
+          },
+          {
+            "page": 4,
+            "maxDisp": 1.4,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 73,
+            "nodeCountB": 73
+          },
+          {
+            "page": 5,
+            "maxDisp": 0.0,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 74,
+            "nodeCountB": 74
+          }
+        ],
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": false,
+        "status": "OK",
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": true,
+        "overPages": 0
+      }
+    },
+    {
+      "recordId": "vproto-002101",
+      "sourceTag": "검찰청/서식/2024/2101#info/ok-meta",
+      "command": "info",
+      "argv": [
+        "info",
+        "samples/gov/검찰청_서식_2024_2101.hwpx",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/검찰청_서식_2024_2101.hwpx",
+        "format": "hwpx",
+        "sizeBytes": 311700,
+        "version": "owpml-1.0",
+        "sections": 1,
+        "pageCount": 37,
+        "paraCount": 123,
+        "fonts": [
+          "굴림체",
+          "돋움",
+          "돋움체",
+          "바탕",
+          "바탕체",
+          "나눔고딕",
+          "나눔명조",
+          "본고딕",
+          "본명조",
+          "HY신명조"
+        ],
+        "title": "규제 심사(안) 개요 (검찰청 서식 2024)",
+        "warnings": [],
+        "untrustedContent": true,
+        "untrustedFields": [
+          "title",
+          "fonts[]"
+        ]
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-002102",
+      "sourceTag": "경찰청/서식/2024/2102#verify/expect-pass",
+      "command": "verify",
+      "argv": [
+        "verify",
+        "samples/gov/경찰청_서식_2024_2102.hwp",
+        "--expect-pages",
+        "2",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/경찰청_서식_2024_2102.hwp",
+        "expectations": [
+          {
+            "kind": "pages",
+            "expected": 2,
+            "actual": 2,
+            "pass": true
+          },
+          {
+            "kind": "min-chars",
+            "expected": 181,
+            "actual": 181,
+            "pass": true
+          },
+          {
+            "kind": "min-tables",
+            "expected": 1,
+            "actual": 2,
+            "pass": true
+          },
+          {
+            "kind": "contains",
+            "expected": "사업자등록번호",
+            "actual": "사업자등록번호",
+            "pass": true
+          },
+          {
+            "kind": "format",
+            "expected": "hwp5",
+            "actual": "hwp5",
+            "pass": true
+          }
+        ],
+        "passCount": 5,
+        "failCount": 0,
+        "verdict": "pass",
+        "untrustedContent": true,
+        "untrustedFields": [
+          "expectations[].actual"
+        ]
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": 0,
+        "passCount": 5,
+        "verdict": "pass",
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-002103",
+      "sourceTag": "소방청/서식/2024/2103#ir-diff/self-identical",
+      "command": "ir-diff",
+      "argv": [
+        "ir-diff",
+        "samples/gov/소방청_서식_2024_2103.hwp",
+        "samples/gov/소방청_서식_2024_2103.hwpx",
+        "samples/gov/소방청_서식_2024_2103.hwpx",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "a": "samples/gov/소방청_서식_2024_2103.hwp",
+        "b": "samples/gov/소방청_서식_2024_2103.hwp",
+        "identical": true,
+        "diffCount": 0,
+        "categories": {},
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": true,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": 0,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-002104",
+      "sourceTag": "해양경찰청/서식/2024/2104#layout-anomaly/clean",
+      "command": "layout-anomaly",
+      "argv": [
+        "layout-anomaly",
+        "samples/gov/해양경찰청_서식_2024_2104.hwpx",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/해양경찰청_서식_2024_2104.hwpx",
+        "pageCount": 6,
+        "pageFilter": null,
+        "overflowTolerancePx": 1.0,
+        "overlapTolerancePx": 1.0,
+        "strict": false,
+        "overflowCount": 0,
+        "overlapCount": 0,
+        "emptyPageCount": 0,
+        "hasSignal": false,
+        "pages": [
+          {
+            "page": 0,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 1,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 2,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 3,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 4,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 5,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          }
+        ],
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": false,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": false,
+        "overflowCount": 0,
+        "overlapCount": 0,
+        "emptyPageCount": 0,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-002105",
+      "sourceTag": "병무청/서식/2024/2105#replay/attest",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "plan.json",
+        "--plan-json",
+        "{}",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "mode": "attest",
+        "input": "samples/gov/병무청_서식_2024_2105.hwp",
+        "inputSha256": "1e68d2e500cf30cbef5f3e873f81f46ece27612b650e6e2b90fe2daa7305b215",
+        "planSha256": "50779430103c9e5bfbe97db4535475ab4dc5341c42bc08c6d2ff87606dec0ef1",
+        "outputSha256": "ca8a52ce5efe006020c72dcd82ae6f999e18050b9db87c4608f1541bf60242a2",
+        "expectedOutputSha256": null,
+        "reproduced": null,
+        "steps": 5,
+        "toolVersion": "0.8.4",
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-002106",
+      "sourceTag": "산림청/서식/2024/2106#fill-fields/dry-run",
+      "command": "fill-fields",
+      "argv": [
+        "edit",
+        "fill-fields",
+        "samples/gov/산림청_서식_2024_2106.hwp",
+        "--data",
+        "@fields.json",
+        "--dry-run",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/산림청_서식_2024_2106.hwp",
+        "dryRun": true,
+        "filledCount": 7,
+        "filled": [
+          {
+            "name": "담당자",
+            "occurrence": 0,
+            "value": "담당자-값-2105-0"
+          },
+          {
+            "name": "문서번호",
+            "occurrence": 1,
+            "value": "문서번호-값-2105-1"
+          },
+          {
+            "name": "시행일자",
+            "occurrence": 2,
+            "value": "시행일자-값-2105-2"
+          },
+          {
+            "name": "수신",
+            "occurrence": 3,
+            "value": "수신-값-2105-3"
+          },
+          {
+            "name": "제목",
+            "occurrence": 4,
+            "value": "제목-값-2105-4"
+          },
+          {
+            "name": "금액",
+            "occurrence": 5,
+            "value": "금액-값-2105-5"
+          },
+          {
+            "name": "계좌번호",
+            "occurrence": 6,
+            "value": "계좌번호-값-2105-6"
+          }
+        ],
+        "notFound": [],
+        "ambiguous": [],
+        "confusable": [],
+        "changedPages": null,
+        "untrustedContent": true,
+        "untrustedFields": [
+          "filled[].value",
+          "filled[].name"
+        ]
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-002107",
+      "sourceTag": "농촌진흥청/서식/2024/2107#render-diff/ok",
+      "command": "render-diff",
+      "argv": [
+        "render-diff",
+        "samples/gov/농촌진흥청_서식_2024_2107.hwpx",
+        "--via",
+        "hwpx",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "mode": "self-roundtrip",
+        "sourceA": "samples/gov/농촌진흥청_서식_2024_2107.hwpx",
+        "sourceB": "samples/gov/농촌진흥청_서식_2024_2107.hwpx",
+        "via": "hwpx",
+        "pageFilter": null,
+        "threshold": 2.0,
+        "pageCountA": 3,
+        "pageCountB": 3,
+        "pageCountMismatch": false,
+        "maxDisp": 0.8,
+        "worstPage": 0,
+        "overPages": 0,
+        "structPages": 0,
+        "hardStructPages": 0,
+        "status": "OK",
+        "regression": false,
+        "pages": [
+          {
+            "page": 0,
+            "maxDisp": 0.4,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 46,
+            "nodeCountB": 46
+          },
+          {
+            "page": 1,
+            "maxDisp": 0.6,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 47,
+            "nodeCountB": 47
+          },
+          {
+            "page": 2,
+            "maxDisp": 0.8,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 48,
+            "nodeCountB": 48
+          }
+        ],
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": false,
+        "status": "OK",
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": false,
+        "overPages": 0
+      }
+    },
+    {
+      "recordId": "vproto-002108",
+      "sourceTag": "중소벤처기업부/서식/2024/2108#info/ok-meta",
+      "command": "info",
+      "argv": [
+        "info",
+        "samples/gov/중소벤처기업부_서식_2024_2108.hwp",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/중소벤처기업부_서식_2024_2108.hwp",
+        "format": "hwp5",
+        "sizeBytes": 312659,
+        "version": "5.0.2.5",
+        "sections": 4,
+        "pageCount": 44,
+        "paraCount": 130,
+        "fonts": [
+          "본고딕",
+          "본명조",
+          "HY신명조",
+          "HY중고딕",
+          "한양견고딕",
+          "함초롬바탕",
+          "함초롬돋움",
+          "맑은 고딕",
+          "굴림"
+        ],
+        "title": "민원 처리 결과 통지 (중소벤처기업부 서식 2024)",
+        "warnings": [],
+        "untrustedContent": true,
+        "untrustedFields": [
+          "title",
+          "fonts[]"
+        ]
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-002109",
+      "sourceTag": "과학기술정보통신부/서식/2024/2109#verify/expect-pass",
+      "command": "verify",
+      "argv": [
+        "verify",
+        "samples/gov/과학기술정보통신부_서식_2024_2109.hwp",
+        "--expect-pages",
+        "9",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/과학기술정보통신부_서식_2024_2109.hwp",
+        "expectations": [
+          {
+            "kind": "pages",
+            "expected": 9,
+            "actual": 9,
+            "pass": true
+          },
+          {
+            "kind": "min-chars",
+            "expected": 188,
+            "actual": 188,
+            "pass": true
+          },
+          {
+            "kind": "min-tables",
+            "expected": 1,
+            "actual": 4,
+            "pass": true
+          },
+          {
+            "kind": "contains",
+            "expected": "수신",
+            "actual": "수신",
+            "pass": true
+          },
+          {
+            "kind": "format",
+            "expected": "hwp5",
+            "actual": "hwp5",
+            "pass": true
+          }
+        ],
+        "passCount": 5,
+        "failCount": 0,
+        "verdict": "pass",
+        "untrustedContent": true,
+        "untrustedFields": [
+          "expectations[].actual"
+        ]
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": 0,
+        "passCount": 5,
+        "verdict": "pass",
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-002110",
+      "sourceTag": "문화체육관광부/서식/2024/2110#ir-diff/self-identical",
+      "command": "ir-diff",
+      "argv": [
+        "ir-diff",
+        "samples/gov/문화체육관광부_서식_2024_2110.hwpx",
+        "samples/gov/문화체육관광부_서식_2024_2110.hwpxx",
+        "samples/gov/문화체육관광부_서식_2024_2110.hwp",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "a": "samples/gov/문화체육관광부_서식_2024_2110.hwpx",
+        "b": "samples/gov/문화체육관광부_서식_2024_2110.hwpx",
+        "identical": true,
+        "diffCount": 0,
+        "categories": {},
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": true,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": 0,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-002111",
+      "sourceTag": "환경부/서식/2024/2111#layout-anomaly/overflow-nonstrict",
+      "command": "layout-anomaly",
+      "argv": [
+        "layout-anomaly",
+        "samples/gov/환경부_서식_2024_2111.hwp",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/환경부_서식_2024_2111.hwp",
+        "pageCount": 7,
+        "pageFilter": null,
+        "overflowTolerancePx": 1.0,
+        "overlapTolerancePx": 1.0,
+        "strict": false,
+        "overflowCount": 2,
+        "overlapCount": 0,
+        "emptyPageCount": 0,
+        "hasSignal": true,
+        "pages": [
+          {
+            "page": 0,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": true,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [
+              {
+                "kind": "para",
+                "section": 0,
+                "paragraph": 2,
+                "dx": 8.5,
+                "dy": 0.0,
+                "edge": "right"
+              }
+            ],
+            "overlapItems": []
+          },
+          {
+            "page": 1,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 2,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 3,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 4,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 5,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 6,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          }
+        ],
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": true,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": false,
+        "overflowCount": 2,
+        "overlapCount": 0,
+        "emptyPageCount": 0,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-002112",
+      "sourceTag": "해양수산부/서식/2024/2112#replay/attest",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "plan.json",
+        "--plan-json",
+        "{}",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "mode": "attest",
+        "input": "samples/gov/해양수산부_서식_2024_2112.hwp",
+        "inputSha256": "1bd700cd41f4dd5d437970a4e399ce8d3dd35c131e45e2237e899d7250d44dcd",
+        "planSha256": "d4bbeb996fe65e7a986d089dade60005e86e994b0b3f585f27e4aeef6044ec57",
+        "outputSha256": "c55b9d828c73e89f8ae36245c5c33c19057669124bb8654e46f399d9305cb979",
+        "expectedOutputSha256": null,
+        "reproduced": null,
+        "steps": 2,
+        "toolVersion": "0.8.4",
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-002113",
+      "sourceTag": "법제처/질의회신/2024/2113#fill-fields/write-verify-ok",
+      "command": "fill-fields",
+      "argv": [
+        "edit",
+        "fill-fields",
+        "samples/gov/법제처_질의회신_2024_2113.hwpx",
+        "--data",
+        "@fields.json",
+        "-o",
+        "out.hwp",
+        "--verify",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/법제처_질의회신_2024_2113.hwpx",
+        "dryRun": false,
+        "filledCount": 2,
+        "filled": [
+          {
+            "name": "신청인",
+            "occurrence": 0,
+            "value": "신청인-값-2112-0"
+          },
+          {
+            "name": "생년월일",
+            "occurrence": 1,
+            "value": "생년월일-값-2112-1"
+          }
+        ],
+        "notFound": [],
+        "ambiguous": [],
+        "confusable": [],
+        "changedPages": [
+          0
+        ],
+        "untrustedContent": true,
+        "untrustedFields": [
+          "filled[].value",
+          "filled[].name"
+        ],
+        "output": "output/gov/법제처_질의회신_2024_2113_filled.hwpx",
+        "outputFormat": "hwpx",
+        "verify": {
+          "identical": true,
+          "diffCount": 0
+        }
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": {
+          "identical": true,
+          "diffCount": 0
+        },
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-002114",
+      "sourceTag": "행정안전부/질의회신/2024/2114#render-diff/ok",
+      "command": "render-diff",
+      "argv": [
+        "render-diff",
+        "samples/gov/행정안전부_질의회신_2024_2114.hwp",
+        "--via",
+        "hwp",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "mode": "self-roundtrip",
+        "sourceA": "samples/gov/행정안전부_질의회신_2024_2114.hwp",
+        "sourceB": "samples/gov/행정안전부_질의회신_2024_2114.hwp",
+        "via": "hwp",
+        "pageFilter": null,
+        "threshold": 2.0,
+        "pageCountA": 5,
+        "pageCountB": 5,
+        "pageCountMismatch": false,
+        "maxDisp": 1.0,
+        "worstPage": 0,
+        "overPages": 0,
+        "structPages": 0,
+        "hardStructPages": 0,
+        "status": "OK",
+        "regression": false,
+        "pages": [
+          {
+            "page": 0,
+            "maxDisp": 0.2,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 53,
+            "nodeCountB": 53
+          },
+          {
+            "page": 1,
+            "maxDisp": 0.4,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 54,
+            "nodeCountB": 54
+          },
+          {
+            "page": 2,
+            "maxDisp": 0.6,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 55,
+            "nodeCountB": 55
+          },
+          {
+            "page": 3,
+            "maxDisp": 0.8,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 56,
+            "nodeCountB": 56
+          },
+          {
+            "page": 4,
+            "maxDisp": 1.0,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 57,
+            "nodeCountB": 57
+          }
+        ],
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": false,
+        "status": "OK",
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": false,
+        "overPages": 0
+      }
+    },
+    {
+      "recordId": "vproto-002115",
+      "sourceTag": "국세청/질의회신/2024/2115#info/ok-meta",
+      "command": "info",
+      "argv": [
+        "info",
+        "samples/gov/국세청_질의회신_2024_2115.hwp",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/국세청_질의회신_2024_2115.hwp",
+        "format": "hwp5",
+        "sizeBytes": 313618,
+        "version": "5.0.2.5",
+        "sections": 3,
+        "pageCount": 3,
+        "paraCount": 137,
+        "fonts": [
+          "맑은 고딕",
+          "굴림",
+          "굴림체",
+          "돋움",
+          "돋움체",
+          "바탕",
+          "바탕체",
+          "나눔고딕"
+        ],
+        "title": "정보공개 청구서 (국세청 질의회신 2024)",
+        "warnings": [],
+        "untrustedContent": true,
+        "untrustedFields": [
+          "title",
+          "fonts[]"
+        ]
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-002116",
+      "sourceTag": "대법원/질의회신/2024/2116#verify/expect-pass",
+      "command": "verify",
+      "argv": [
+        "verify",
+        "samples/gov/대법원_질의회신_2024_2116.hwpx",
+        "--expect-pages",
+        "16",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/대법원_질의회신_2024_2116.hwpx",
+        "expectations": [
+          {
+            "kind": "pages",
+            "expected": 16,
+            "actual": 16,
+            "pass": true
+          },
+          {
+            "kind": "min-chars",
+            "expected": 195,
+            "actual": 195,
+            "pass": true
+          },
+          {
+            "kind": "min-tables",
+            "expected": 1,
+            "actual": 1,
+            "pass": true
+          },
+          {
+            "kind": "contains",
+            "expected": "연락처",
+            "actual": "연락처",
+            "pass": true
+          },
+          {
+            "kind": "format",
+            "expected": "hwp5",
+            "actual": "hwpx",
+            "pass": true
+          }
+        ],
+        "passCount": 5,
+        "failCount": 0,
+        "verdict": "pass",
+        "untrustedContent": true,
+        "untrustedFields": [
+          "expectations[].actual"
+        ]
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": 0,
+        "passCount": 5,
+        "verdict": "pass",
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-002117",
+      "sourceTag": "특허청/질의회신/2024/2117#ir-diff/self-identical",
+      "command": "ir-diff",
+      "argv": [
+        "ir-diff",
+        "samples/gov/특허청_질의회신_2024_2117.hwp",
+        "samples/gov/특허청_질의회신_2024_2117.hwpx",
+        "samples/gov/특허청_질의회신_2024_2117.hwpx",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "a": "samples/gov/특허청_질의회신_2024_2117.hwp",
+        "b": "samples/gov/특허청_질의회신_2024_2117.hwp",
+        "identical": true,
+        "diffCount": 0,
+        "categories": {},
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": true,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": 0,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-002118",
+      "sourceTag": "교육부/질의회신/2024/2118#layout-anomaly/empty-strict-ok",
+      "command": "layout-anomaly",
+      "argv": [
+        "layout-anomaly",
+        "samples/gov/교육부_질의회신_2024_2118.hwp",
+        "--strict",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/교육부_질의회신_2024_2118.hwp",
+        "pageCount": 8,
+        "pageFilter": null,
+        "overflowTolerancePx": 1.0,
+        "overlapTolerancePx": 1.0,
+        "strict": true,
+        "overflowCount": 0,
+        "overlapCount": 0,
+        "emptyPageCount": 1,
+        "hasSignal": true,
+        "pages": [
+          {
+            "page": 0,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 1,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 2,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 3,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 4,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 5,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 6,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 7,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": true,
+            "overflowItems": [],
+            "overlapItems": []
+          }
+        ],
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": true,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": true,
+        "overflowCount": 0,
+        "overlapCount": 0,
+        "emptyPageCount": 1,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-002119",
+      "sourceTag": "보건복지부/질의회신/2024/2119#replay/verify-reproduced",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "plan.json",
+        "--expect-output-sha256",
+        "3b12b2a8be3c080b9fa35331d6d4de2848c8441bf7f41f27129ff881b5ea526e",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "mode": "verify",
+        "input": "samples/gov/보건복지부_질의회신_2024_2119.hwpx",
+        "inputSha256": "b02d916422440e2b05c9fcebe5d3545d02bd1dc1e5b05636b06e8fc627656192",
+        "planSha256": "4e42775633074705c5b25620465e61195eca0832472f2140fe45354cc0021349",
+        "outputSha256": "3b12b2a8be3c080b9fa35331d6d4de2848c8441bf7f41f27129ff881b5ea526e",
+        "expectedOutputSha256": "3b12b2a8be3c080b9fa35331d6d4de2848c8441bf7f41f27129ff881b5ea526e",
+        "reproduced": true,
+        "steps": 4,
+        "toolVersion": "0.8.4",
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": true,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-002120",
+      "sourceTag": "국토교통부/질의회신/2024/2120#fill-fields/not-found-exit0",
+      "command": "fill-fields",
+      "argv": [
+        "edit",
+        "fill-fields",
+        "samples/gov/국토교통부_질의회신_2024_2120.hwp",
+        "--data",
+        "@fields.json",
+        "-o",
+        "out.hwp",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/국토교통부_질의회신_2024_2120.hwp",
+        "dryRun": false,
+        "filledCount": 3,
+        "filled": [
+          {
+            "name": "대표자",
+            "occurrence": 0,
+            "value": "대표자-값-2119-0"
+          },
+          {
+            "name": "담당부서",
+            "occurrence": 1,
+            "value": "담당부서-값-2119-1"
+          },
+          {
+            "name": "담당자",
+            "occurrence": 2,
+            "value": "담당자-값-2119-2"
+          }
+        ],
+        "notFound": [
+          "없는필드4"
+        ],
+        "ambiguous": [],
+        "confusable": [],
+        "changedPages": [
+          0,
+          1
+        ],
+        "untrustedContent": true,
+        "untrustedFields": [
+          "filled[].value",
+          "filled[].name"
+        ],
+        "output": "output/gov/국토교통부_질의회신_2024_2120_filled.hwp",
+        "outputFormat": "hwp5"
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    }
+  ]
+}

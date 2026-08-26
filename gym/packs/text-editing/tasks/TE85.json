@@ -1,0 +1,27 @@
+{
+  "id": "TE85",
+  "tier": 1,
+  "title": "중첩셀 digest 문단",
+  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "instructions": "중첩셀 표본을 digest 한 paraCount 를 answer.json 에 {\"paras\": N} 으로 제출하라. TE05 와 같은 표본이지만 이번 확장의 조사 여정에 다시 올려 라이브 오라클을 고정한다.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "중첩셀 digest 문단 · paras",
+      "op": "answer_eq",
+      "answer": "paras",
+      "path": "paraCount",
+      "cmd": [
+        "digest",
+        "{input}",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

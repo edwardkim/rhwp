@@ -58,3 +58,17 @@ path = "fuzz_targets/parse_ooxml_chart.rs"
 test = false
 doc = false
 bench = false
+
+[[bin]]
+name = "parse_equation"
+path = "fuzz_targets/parse_equation.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "export_svg"
+path = "fuzz_targets/export_svg.rs"
+test = false
+doc = false
+bench = false

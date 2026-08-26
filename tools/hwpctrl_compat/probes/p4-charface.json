@@ -1,0 +1,25 @@
+{
+  "id": "p4-charface",
+  "title": "글꼴 앞뒤로 돌리기·누름틀 지우기 — 관측창 찾기",
+  "ledger": [],
+  "open": "samples/issue-986-receipt.hwp",
+  "calls": [
+    ["MoveToField", ["pt_nm", true, true, false]],
+    ["CharShape.Item", ["FaceNameHangul"]],
+    ["CharShape.Item", ["Height"]],
+    ["CharShape.Item", ["Spacing"]],
+    ["CharShape.Item", ["Ratio"]],
+    ["Run", ["CharShapeNextFaceName"]],
+    ["CharShape.Item", ["FaceNameHangul"]],
+    ["Run", ["CharShapeNextFaceName"]],
+    ["CharShape.Item", ["FaceNameHangul"]],
+    ["Run", ["CharShapePrevFaceName"]],
+    ["CharShape.Item", ["FaceNameHangul"]],
+    ["GetCurFieldName", [0]],
+    ["FieldExist", ["pt_nm"]],
+    ["Run", ["DeleteField"]],
+    ["FieldExist", ["pt_nm"]],
+    ["GetCurFieldName", [0]],
+    ["GetFieldList", [0, 0]]
+  ]
+}

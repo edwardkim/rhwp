@@ -1,0 +1,594 @@
+{
+  "schema": "rhwp/hancom-judgment-manifest@1",
+  "title": "#6037 차트 계열 가드 술어 재검토 — 한컴 2022 판정 원장 (한컴 편집기 산출)",
+  "issue": 6037,
+  "pr": null,
+  "question": "한컴 2022 차트 데이터 편집기가 원형·주식형에서 계열을 더하고 지운 산출을 어떻게 그리는가 — 파손의 술어는 계열 수인가, 빈 계열과 캔들 짝(첫↔끝)인가",
+  "hancom": {
+    "version": "한글 2022",
+    "converted_on": "2026-08-25",
+    "converted_by": "작업지시자",
+    "note": "rhwp 가 만든 변종이 아니라 한컴 편집기로 직접 편집한 산출이다. 문서와 PDF 를 함께 회수했다."
+  },
+  "generator": {
+    "test": null,
+    "command": null,
+    "note": "생성기 없음 — 한컴 편집기 수작업 산출. 대조군은 저장소 코퍼스 정답지 pdf/chart/**-2022.pdf 를 그대로 쓴다."
+  },
+  "raster": {
+    "tool": "PyMuPDF",
+    "version": "PyMuPDF 1.28.0: Python bindings for the MuPDF 1.29.0 library.",
+    "dpi": 144,
+    "page": 1,
+    "colorspace": "RGB",
+    "alpha": false,
+    "hash": "SHA-256 of pixmap.samples (raw RGB bytes)"
+  },
+  "counts": {
+    "files": 39,
+    "controls": 4,
+    "variants": 13,
+    "conversions": 0,
+    "judgment_units": 13,
+    "tally": {
+      "반영": 7,
+      "반영_의미깨짐": 6
+    }
+  },
+  "finding": {
+    "predicate": "파손은 계열 수가 아니라 (1) 값이 빈 계열이 끼는가 (2) upDownBars 가 있을 때 끝 계열이 바뀌는가 로 갈린다",
+    "evidence": "주식형 6건이 전건 이 술어대로 갈린다 — OHLC 중간삽입/중간삭제 정상, OHLC 꼬리삽입/꼬리삭제 파손, HLC(upDownBars 없음) 꼬리삽입 정상",
+    "first_end": "첫 계열 삭제도 파손이다(시가 삭제 → 몸통 고가↔종가, 검은 박스) — 가드가 양끝을 봐야 하는 근거"
+  },
+  "provenance_gap": {
+    "pdf_source_format": "미기록 — 변종당 PDF 가 1개이며 hwp/hwpx 중 어느 쪽에서 저장했는지 회수 시 기록하지 않았다. 포맷 간 렌더 동일성은 이 원장으로 판정하지 않는다."
+  },
+  "entries": [
+    {
+      "name": "2차원원형-대조군",
+      "role": "control",
+      "format": "hwpx",
+      "chart_kind": "원형(pie)",
+      "source_sample": "samples/chart/원형/2차원원형.hwpx",
+      "base_document": "2차원원형",
+      "variant": "대조군",
+      "control": null,
+      "original_path": "samples/chart/원형/2차원원형.hwpx",
+      "original_sha256": "ce4304b8aa4fba79d493647d6fb1204b527bc2aac50c55a94bea9ec67f8994a8",
+      "hancom_pdf_path": "pdf/chart/원형/2차원원형-2022.pdf",
+      "hancom_pdf_sha256": "1023848d2fa9ef87922f4a96b915b08eebfe834a5dcd121291e09d9908c48a4b",
+      "raster": {
+        "pymupdf_144dpi_rgb_sha256": "af9613372c6259edd5c6176f2c6a46cdbaa8e0ebb8e3862a07a52a9f07b5df2c",
+        "width": 1190,
+        "height": 1682,
+        "pages": 1
+      },
+      "verdict": "대조군",
+      "editor_observation": "무편집 원본 — 코퍼스 정답지"
+    },
+    {
+      "name": "원형대원형-대조군",
+      "role": "control",
+      "format": "hwpx",
+      "chart_kind": "원형(ofPie)",
+      "source_sample": "samples/chart/원형/원형대원형.hwpx",
+      "base_document": "원형대원형",
+      "variant": "대조군",
+      "control": null,
+      "original_path": "samples/chart/원형/원형대원형.hwpx",
+      "original_sha256": "157cd5abf270194ecc36da948a2b983df0ea5c44b342135a71e2d6e0558d36b9",
+      "hancom_pdf_path": "pdf/chart/원형/원형대원형-2022.pdf",
+      "hancom_pdf_sha256": "2afd5511ef0cd95af98179046ff74b5c81f60bd352a73791035435dc8cc3c480",
+      "raster": {
+        "pymupdf_144dpi_rgb_sha256": "b54d8869da81051057cf04db663ce5f8eaf1f2ddf390ec90e9a19dbbef80f1b8",
+        "width": 1190,
+        "height": 1682,
+        "pages": 1
+      },
+      "verdict": "대조군",
+      "editor_observation": "무편집 원본 — 코퍼스 정답지"
+    },
+    {
+      "name": "고가저가종가-대조군",
+      "role": "control",
+      "format": "hwpx",
+      "chart_kind": "주식형(HLC)",
+      "source_sample": "samples/chart/기타/고가저가종가.hwpx",
+      "base_document": "고가저가종가",
+      "variant": "대조군",
+      "control": null,
+      "original_path": "samples/chart/기타/고가저가종가.hwpx",
+      "original_sha256": "6209a088f3cbea6ce8170080322aa3a8b70aea858377f3c84e8214d45011ed5a",
+      "hancom_pdf_path": "pdf/chart/기타/고가저가종가-2022.pdf",
+      "hancom_pdf_sha256": "fcd540e534e97d1623bb6b044d76e09688ffa15c11124d71e5adc5ec07f62c74",
+      "raster": {
+        "pymupdf_144dpi_rgb_sha256": "4bcc50807ebb190ba3f304352add46314ce2f8a3d39b4bd0d713b95ace2636c2",
+        "width": 1190,
+        "height": 1682,
+        "pages": 1
+      },
+      "verdict": "대조군",
+      "editor_observation": "무편집 원본 — 코퍼스 정답지"
+    },
+    {
+      "name": "시가고가저가종가-대조군",
+      "role": "control",
+      "format": "hwpx",
+      "chart_kind": "주식형(OHLC)",
+      "source_sample": "samples/chart/기타/시가고가저가종가.hwpx",
+      "base_document": "시가고가저가종가",
+      "variant": "대조군",
+      "control": null,
+      "original_path": "samples/chart/기타/시가고가저가종가.hwpx",
+      "original_sha256": "2d4eb6c11e6f32787c10515ad3e91b09ea3f4f5cda01ef2c9473bf8e9e1bac6e",
+      "hancom_pdf_path": "pdf/chart/기타/시가고가저가종가-2022.pdf",
+      "hancom_pdf_sha256": "f66e5263c47e7a0b9a852d46d5fa868c1bcd2e6df5d3698d1bc82fe7e616b2a4",
+      "raster": {
+        "pymupdf_144dpi_rgb_sha256": "4a8b1b43f1220390d328c845243fce2f1081eab5938c0571993abd069e7b0dbc",
+        "width": 1190,
+        "height": 1682,
+        "pages": 1
+      },
+      "verdict": "대조군",
+      "editor_observation": "무편집 원본 — 코퍼스 정답지"
+    },
+    {
+      "name": "2차원원형-계열추가",
+      "role": "variant",
+      "format": "hwpx+hwp",
+      "chart_kind": "원형(pie)",
+      "source_sample": "samples/chart/원형/2차원원형.hwpx",
+      "base_document": "2차원원형",
+      "variant": "계열추가",
+      "control": "2차원원형-대조군",
+      "original_path": "samples/issue6037/2차원원형-계열추가.hwpx",
+      "original_sha256": "ef9324355d50391b9bfd90e034c8cb8deae18f2fd9126d649790ef73c677d54a",
+      "documents": [
+        {
+          "format": "hwpx",
+          "path": "samples/issue6037/2차원원형-계열추가.hwpx",
+          "sha256": "ef9324355d50391b9bfd90e034c8cb8deae18f2fd9126d649790ef73c677d54a"
+        },
+        {
+          "format": "hwp",
+          "path": "samples/issue6037/2차원원형-계열추가.hwp",
+          "sha256": "201379e4a056303f351112c89f413a908c56d130b167a334e0739802144cd5cb"
+        }
+      ],
+      "hancom_pdf_path": "pdf/issue6037/2차원원형-계열추가.pdf",
+      "hancom_pdf_sha256": "2b0c6d2b12a16d6d5d0b74a2cd32ba9b5ea9ab28b67b209c555d76e07f689878",
+      "raster": {
+        "pymupdf_144dpi_rgb_sha256": "f2c1d0713ab402cf894c2407c10c695ef737502392f134f8155eb6272e94fd5d",
+        "width": 1190,
+        "height": 1682,
+        "pages": 1
+      },
+      "verdict": "반영",
+      "editor_observation": "계열 2개. 파이 조각 불변, 제목만 판매→계열 2. 새 계열은 값이 비어 그려지지 않음"
+    },
+    {
+      "name": "2차원원형-계열추가-데이터추가",
+      "role": "variant",
+      "format": "hwpx+hwp",
+      "chart_kind": "원형(pie)",
+      "source_sample": "samples/chart/원형/2차원원형.hwpx",
+      "base_document": "2차원원형",
+      "variant": "계열추가-데이터추가",
+      "control": "2차원원형-대조군",
+      "original_path": "samples/issue6037/2차원원형-계열추가-데이터추가.hwpx",
+      "original_sha256": "31560bb97323cf68cd77decba18ad765379c76c232084398e241dc40ae2cfd19",
+      "documents": [
+        {
+          "format": "hwpx",
+          "path": "samples/issue6037/2차원원형-계열추가-데이터추가.hwpx",
+          "sha256": "31560bb97323cf68cd77decba18ad765379c76c232084398e241dc40ae2cfd19"
+        },
+        {
+          "format": "hwp",
+          "path": "samples/issue6037/2차원원형-계열추가-데이터추가.hwp",
+          "sha256": "3562f3c45a091c8983b8799c96629c20926ab4c2f0924604ba4c84d85b3c07b7"
+        }
+      ],
+      "hancom_pdf_path": "pdf/issue6037/2차원원형-계열추가-데이터추가.pdf",
+      "hancom_pdf_sha256": "5eefb9aef774fae81352f8a55854e5c7db53f0c8259403182b2563e20c70bab0",
+      "raster": {
+        "pymupdf_144dpi_rgb_sha256": "354af6a36e79372e4797a35c4b63e2ccfec404f2a389fdbad8390f52677ef706",
+        "width": 1190,
+        "height": 1682,
+        "pages": 1
+      },
+      "verdict": "반영_의미깨짐",
+      "editor_observation": "한컴이 새 계열을 idx=0 에 끼워 원본 판매 데이터가 화면에서 밀려남"
+    },
+    {
+      "name": "원형대원형-계열추가",
+      "role": "variant",
+      "format": "hwpx+hwp",
+      "chart_kind": "원형(ofPie)",
+      "source_sample": "samples/chart/원형/원형대원형.hwpx",
+      "base_document": "원형대원형",
+      "variant": "계열추가",
+      "control": "원형대원형-대조군",
+      "original_path": "samples/issue6037/원형대원형-계열추가.hwpx",
+      "original_sha256": "40e121a62ae5224db4cc56d18812414122e942e8218e1540b1fd525728986e5c",
+      "documents": [
+        {
+          "format": "hwpx",
+          "path": "samples/issue6037/원형대원형-계열추가.hwpx",
+          "sha256": "40e121a62ae5224db4cc56d18812414122e942e8218e1540b1fd525728986e5c"
+        },
+        {
+          "format": "hwp",
+          "path": "samples/issue6037/원형대원형-계열추가.hwp",
+          "sha256": "d7fd1225d9734c4fd4eeee7c5198cff2c35d888dbf8f7351c89b30df3768398e"
+        }
+      ],
+      "hancom_pdf_path": "pdf/issue6037/원형대원형-계열추가.pdf",
+      "hancom_pdf_sha256": "1bb1994401a5934ee1bf543192e6fcf5a909f1f18c44ad614176b8b09ebf525b",
+      "raster": {
+        "pymupdf_144dpi_rgb_sha256": "9b1269dbccf55bc2b0bfafbba77df1e8951bd799282b5ef93c8e68874834e002",
+        "width": 1190,
+        "height": 1682,
+        "pages": 1
+      },
+      "verdict": "반영_의미깨짐",
+      "editor_observation": "빈 계열이 idx=0 에 들어가 파이가 통째로 사라지고 제목·범례만 남음"
+    },
+    {
+      "name": "원형대원형-계열추가-데이터추가",
+      "role": "variant",
+      "format": "hwpx+hwp",
+      "chart_kind": "원형(ofPie)",
+      "source_sample": "samples/chart/원형/원형대원형.hwpx",
+      "base_document": "원형대원형",
+      "variant": "계열추가-데이터추가",
+      "control": "원형대원형-대조군",
+      "original_path": "samples/issue6037/원형대원형-계열추가-데이터추가.hwpx",
+      "original_sha256": "ee5c175f85acd6cecf5d3efa23e7b7b07926ac1866942c114784e08776e08985",
+      "documents": [
+        {
+          "format": "hwpx",
+          "path": "samples/issue6037/원형대원형-계열추가-데이터추가.hwpx",
+          "sha256": "ee5c175f85acd6cecf5d3efa23e7b7b07926ac1866942c114784e08776e08985"
+        },
+        {
+          "format": "hwp",
+          "path": "samples/issue6037/원형대원형-계열추가-데이터추가.hwp",
+          "sha256": "2453339c238e727ffca525aed5e181cc8bd167aef1a41c4dfe46452ddd1cf29d"
+        }
+      ],
+      "hancom_pdf_path": "pdf/issue6037/원형대원형-계열추가-데이터추가.pdf",
+      "hancom_pdf_sha256": "bda4f84e179867f31e8abb17a4a7408e55f2306057b8fabe8eace27c2d2a6233",
+      "raster": {
+        "pymupdf_144dpi_rgb_sha256": "f4fd719930bb6516992b737cd3ddb4199a665c959f70936c55c2cd12b3ac99d1",
+        "width": 1190,
+        "height": 1682,
+        "pages": 1
+      },
+      "verdict": "반영",
+      "editor_observation": "정상 렌더. 다만 그려지는 것은 새 계열"
+    },
+    {
+      "name": "고가저가종가-계열추가",
+      "role": "variant",
+      "format": "hwpx+hwp",
+      "chart_kind": "주식형(HLC)",
+      "source_sample": "samples/chart/기타/고가저가종가.hwpx",
+      "base_document": "고가저가종가",
+      "variant": "계열추가",
+      "control": "고가저가종가-대조군",
+      "original_path": "samples/issue6037/고가저가종가-계열추가.hwpx",
+      "original_sha256": "4c7a1693e7e3d48fc55140aa25e1aa2390582a64f7397ac5602a07c77c3b2606",
+      "documents": [
+        {
+          "format": "hwpx",
+          "path": "samples/issue6037/고가저가종가-계열추가.hwpx",
+          "sha256": "4c7a1693e7e3d48fc55140aa25e1aa2390582a64f7397ac5602a07c77c3b2606"
+        },
+        {
+          "format": "hwp",
+          "path": "samples/issue6037/고가저가종가-계열추가.hwp",
+          "sha256": "301b31d4602ddb0ec10ec07fccadde7e1a84cf60b1a00bd23582a158b86b1d2a"
+        }
+      ],
+      "hancom_pdf_path": "pdf/issue6037/고가저가종가-계열추가.pdf",
+      "hancom_pdf_sha256": "da6bfe377ac0eb2a2faffd80de2462b99c30761d39b597ae856272b297ff11b7",
+      "raster": {
+        "pymupdf_144dpi_rgb_sha256": "0f899711279d6e572395a381525008e24e9211394fa6e0083fbf185f28a1eab0",
+        "width": 1190,
+        "height": 1682,
+        "pages": 1
+      },
+      "verdict": "반영",
+      "editor_observation": "HLC 는 upDownBars 가 없어 빈 계열이 중간에 끼어도 정상. 범례만 늘어남"
+    },
+    {
+      "name": "고가저가종가-계열추가-데이터추가",
+      "role": "variant",
+      "format": "hwpx+hwp",
+      "chart_kind": "주식형(HLC)",
+      "source_sample": "samples/chart/기타/고가저가종가.hwpx",
+      "base_document": "고가저가종가",
+      "variant": "계열추가-데이터추가",
+      "control": "고가저가종가-대조군",
+      "original_path": "samples/issue6037/고가저가종가-계열추가-데이터추가.hwpx",
+      "original_sha256": "3e9feb453b76d91876c73fa6d497b36d543b629462b352ec91b3beff18d1149f",
+      "documents": [
+        {
+          "format": "hwpx",
+          "path": "samples/issue6037/고가저가종가-계열추가-데이터추가.hwpx",
+          "sha256": "3e9feb453b76d91876c73fa6d497b36d543b629462b352ec91b3beff18d1149f"
+        },
+        {
+          "format": "hwp",
+          "path": "samples/issue6037/고가저가종가-계열추가-데이터추가.hwp",
+          "sha256": "e3a959736d294eab41f50a2fe631e46e0ba1b36021cca2ead708f176cd242a4c"
+        }
+      ],
+      "hancom_pdf_path": "pdf/issue6037/고가저가종가-계열추가-데이터추가.pdf",
+      "hancom_pdf_sha256": "e9eef261d23a7e7153b280a84b91efcf0038dba89e51fd5d0b55042e9d96049d",
+      "raster": {
+        "pymupdf_144dpi_rgb_sha256": "aee498f87039f4b7cbca3da9bf2f8cfadeda73a593a5133152b58f271938768d",
+        "width": 1190,
+        "height": 1682,
+        "pages": 1
+      },
+      "verdict": "반영",
+      "editor_observation": "중간 삽입. 정상"
+    },
+    {
+      "name": "고가저가종가-꼬리계열추가",
+      "role": "variant",
+      "format": "hwpx+hwp",
+      "chart_kind": "주식형(HLC)",
+      "source_sample": "samples/chart/기타/고가저가종가.hwpx",
+      "base_document": "고가저가종가",
+      "variant": "꼬리계열추가",
+      "control": "고가저가종가-대조군",
+      "original_path": "samples/issue6037/고가저가종가-꼬리계열추가.hwpx",
+      "original_sha256": "5415b5dcdde8fafdf1b0c108ae1076d65c1b18c226ec511b2c08be8fd2b565d9",
+      "documents": [
+        {
+          "format": "hwpx",
+          "path": "samples/issue6037/고가저가종가-꼬리계열추가.hwpx",
+          "sha256": "5415b5dcdde8fafdf1b0c108ae1076d65c1b18c226ec511b2c08be8fd2b565d9"
+        },
+        {
+          "format": "hwp",
+          "path": "samples/issue6037/고가저가종가-꼬리계열추가.hwp",
+          "sha256": "1f64ae23b548e15941d948aa81b71085fc9d375087a0766656fb523233063330"
+        }
+      ],
+      "hancom_pdf_path": "pdf/issue6037/고가저가종가-꼬리계열추가.pdf",
+      "hancom_pdf_sha256": "715d221aba283d778d64cfeb5d75e3a22be6a51ecefc6624e317a573e92e47f5",
+      "raster": {
+        "pymupdf_144dpi_rgb_sha256": "00a328ba707883b364db76d2414712ee3b15e5979eb913d97b0ca6b37d4827bb",
+        "width": 1190,
+        "height": 1682,
+        "pages": 1
+      },
+      "verdict": "반영",
+      "editor_observation": "**끝 계열이 바뀌는 꼬리 삽입인데 정상** — HLC 는 upDownBars 가 없어 캔들 앵커가 없다. 술어의 음성 대조군"
+    },
+    {
+      "name": "시가고가저가종가-계열추가",
+      "role": "variant",
+      "format": "hwpx+hwp",
+      "chart_kind": "주식형(OHLC)",
+      "source_sample": "samples/chart/기타/시가고가저가종가.hwpx",
+      "base_document": "시가고가저가종가",
+      "variant": "계열추가",
+      "control": "시가고가저가종가-대조군",
+      "original_path": "samples/issue6037/시가고가저가종가-계열추가.hwpx",
+      "original_sha256": "24db67b2a38f75e19452c897ed7d3f52398e892bd85ef70089738d3423ea9042",
+      "documents": [
+        {
+          "format": "hwpx",
+          "path": "samples/issue6037/시가고가저가종가-계열추가.hwpx",
+          "sha256": "24db67b2a38f75e19452c897ed7d3f52398e892bd85ef70089738d3423ea9042"
+        },
+        {
+          "format": "hwp",
+          "path": "samples/issue6037/시가고가저가종가-계열추가.hwp",
+          "sha256": "b60bd2b29f732c8bcf88dbbd652af15130f67430f4eb701eafae07988238e61d"
+        }
+      ],
+      "hancom_pdf_path": "pdf/issue6037/시가고가저가종가-계열추가.pdf",
+      "hancom_pdf_sha256": "9c5c57f03614fb0ea0935ea39dd80b619d25aff6b9ac9614535296c419b062da",
+      "raster": {
+        "pymupdf_144dpi_rgb_sha256": "bb8794b1f7274f9bf2e519c9aa120f54e9c68b5e0f1d6cc1fed91ebb60bcdda7",
+        "width": 1190,
+        "height": 1682,
+        "pages": 1
+      },
+      "verdict": "반영_의미깨짐",
+      "editor_observation": "빈 계열이 저가와 종가 사이에 끼어 캔들이 전부 검은 박스"
+    },
+    {
+      "name": "시가고가저가종가-계열추가-데이터추가",
+      "role": "variant",
+      "format": "hwpx+hwp",
+      "chart_kind": "주식형(OHLC)",
+      "source_sample": "samples/chart/기타/시가고가저가종가.hwpx",
+      "base_document": "시가고가저가종가",
+      "variant": "계열추가-데이터추가",
+      "control": "시가고가저가종가-대조군",
+      "original_path": "samples/issue6037/시가고가저가종가-계열추가-데이터추가.hwpx",
+      "original_sha256": "65f341a035094b08d38a7e0377215dc7e93b04742cef1a0ea45b972af42a58d4",
+      "documents": [
+        {
+          "format": "hwpx",
+          "path": "samples/issue6037/시가고가저가종가-계열추가-데이터추가.hwpx",
+          "sha256": "65f341a035094b08d38a7e0377215dc7e93b04742cef1a0ea45b972af42a58d4"
+        },
+        {
+          "format": "hwp",
+          "path": "samples/issue6037/시가고가저가종가-계열추가-데이터추가.hwp",
+          "sha256": "5eb26b448d3acfd3de1f3f43f37e40e6a2c91f8fefc493fd43d9600ec4bc874a"
+        }
+      ],
+      "hancom_pdf_path": "pdf/issue6037/시가고가저가종가-계열추가-데이터추가.pdf",
+      "hancom_pdf_sha256": "00539eccc90284dda426e61bb7ee17de105ce5d0022ee8d55b238e0a1ea5576b",
+      "raster": {
+        "pymupdf_144dpi_rgb_sha256": "840c8f40940b4a72337fdd0e667263591eb4adc4b53a488eb5e013cff9b3b7cd",
+        "width": 1190,
+        "height": 1682,
+        "pages": 1
+      },
+      "verdict": "반영",
+      "editor_observation": "중간 삽입 — 끝이 종가 그대로라 캔들 유지. 계열 5 가 선으로 추가"
+    },
+    {
+      "name": "시가고가저가종가-꼬리계열추가",
+      "role": "variant",
+      "format": "hwpx+hwp",
+      "chart_kind": "주식형(OHLC)",
+      "source_sample": "samples/chart/기타/시가고가저가종가.hwpx",
+      "base_document": "시가고가저가종가",
+      "variant": "꼬리계열추가",
+      "control": "시가고가저가종가-대조군",
+      "original_path": "samples/issue6037/시가고가저가종가-꼬리계열추가.hwpx",
+      "original_sha256": "5aacfb59a138d491e3a46f04e04ed63d33b4de97481323b94ab8656a4fdca2b3",
+      "documents": [
+        {
+          "format": "hwpx",
+          "path": "samples/issue6037/시가고가저가종가-꼬리계열추가.hwpx",
+          "sha256": "5aacfb59a138d491e3a46f04e04ed63d33b4de97481323b94ab8656a4fdca2b3"
+        },
+        {
+          "format": "hwp",
+          "path": "samples/issue6037/시가고가저가종가-꼬리계열추가.hwp",
+          "sha256": "10d49a134ca774102e39de9c32ebb9bea599739a1766957eabb2b93974007e9c"
+        }
+      ],
+      "hancom_pdf_path": "pdf/issue6037/시가고가저가종가-꼬리계열추가.pdf",
+      "hancom_pdf_sha256": "091c4d98ce578a30c48b155faf62822db4ea2844f724e223af07793947af90b8",
+      "raster": {
+        "pymupdf_144dpi_rgb_sha256": "46bd4c5159eb69bdb55984a300a15baee1515e4619cc8d800f40754a54189cca",
+        "width": 1190,
+        "height": 1682,
+        "pages": 1
+      },
+      "verdict": "반영_의미깨짐",
+      "editor_observation": "**꼬리 삽입 — 캔들 몸통이 시가↔계열 5 로 재앵커되어 검은 박스, 종가는 평범한 마커로 강등**"
+    },
+    {
+      "name": "시가고가저가종가-계열삭제",
+      "role": "variant",
+      "format": "hwpx+hwp",
+      "chart_kind": "주식형(OHLC)",
+      "source_sample": "samples/chart/기타/시가고가저가종가.hwpx",
+      "base_document": "시가고가저가종가",
+      "variant": "계열삭제",
+      "control": "시가고가저가종가-대조군",
+      "original_path": "samples/issue6037/시가고가저가종가-계열삭제.hwpx",
+      "original_sha256": "5a905bf1f28228353cc124f1c6663dd9e5817766988c40a613c1c46ceaf850d8",
+      "documents": [
+        {
+          "format": "hwpx",
+          "path": "samples/issue6037/시가고가저가종가-계열삭제.hwpx",
+          "sha256": "5a905bf1f28228353cc124f1c6663dd9e5817766988c40a613c1c46ceaf850d8"
+        },
+        {
+          "format": "hwp",
+          "path": "samples/issue6037/시가고가저가종가-계열삭제.hwp",
+          "sha256": "e5cc7b3e89b93e0cf33afd7d07b97ff8c21745064fa00f7ee219494e02b270c5"
+        }
+      ],
+      "hancom_pdf_path": "pdf/issue6037/시가고가저가종가-계열삭제.pdf",
+      "hancom_pdf_sha256": "104bd058f9a88dfd65f67eb99f1c126ca14581658db20812bb697fd2bfbf8166",
+      "raster": {
+        "pymupdf_144dpi_rgb_sha256": "b93190788f55fa5994f74f724cfa29fe52eadb0e1701613d1c22a59ca736571a",
+        "width": 1190,
+        "height": 1682,
+        "pages": 1
+      },
+      "verdict": "반영",
+      "editor_observation": "중간(저가) 삭제 — 끝 계열이 종가 그대로라 캔들 짝 유지, 정상"
+    },
+    {
+      "name": "시가고가저가종가-종가삭제",
+      "role": "variant",
+      "format": "hwpx+hwp",
+      "chart_kind": "주식형(OHLC)",
+      "source_sample": "samples/chart/기타/시가고가저가종가.hwpx",
+      "base_document": "시가고가저가종가",
+      "variant": "종가삭제",
+      "control": "시가고가저가종가-대조군",
+      "original_path": "samples/issue6037/시가고가저가종가-종가삭제.hwpx",
+      "original_sha256": "b831af428622a7763336672369dea26cd50a7c53cd5c264beb360fc2ef424ace",
+      "documents": [
+        {
+          "format": "hwpx",
+          "path": "samples/issue6037/시가고가저가종가-종가삭제.hwpx",
+          "sha256": "b831af428622a7763336672369dea26cd50a7c53cd5c264beb360fc2ef424ace"
+        },
+        {
+          "format": "hwp",
+          "path": "samples/issue6037/시가고가저가종가-종가삭제.hwp",
+          "sha256": "02451ef9100d18f91e542959dac77c1b4bffa473e9c22bda96f6c75e72059c65"
+        }
+      ],
+      "hancom_pdf_path": "pdf/issue6037/시가고가저가종가-종가삭제.pdf",
+      "hancom_pdf_sha256": "abcbafc8da5c8ae1941b46df858c2aafcb53d425130c2f9a73c2ce3b982b2a77",
+      "raster": {
+        "pymupdf_144dpi_rgb_sha256": "c379a23221ae52928f49be8b42b9d7a3211b3dba7452ae9adbaba0291b9fa5f8",
+        "width": 1190,
+        "height": 1682,
+        "pages": 1
+      },
+      "verdict": "반영_의미깨짐",
+      "editor_observation": "꼬리(종가) 삭제 — 끝이 저가로 바뀌어 몸통이 시가~저가, 전부 검은 박스"
+    },
+    {
+      "name": "시가고가저가종가-첫계열삭제",
+      "role": "variant",
+      "format": "hwpx+hwp",
+      "chart_kind": "주식형(OHLC)",
+      "source_sample": "samples/chart/기타/시가고가저가종가.hwpx",
+      "base_document": "시가고가저가종가",
+      "variant": "첫계열삭제",
+      "control": "시가고가저가종가-대조군",
+      "original_path": "samples/issue6037/시가고가저가종가-첫계열삭제.hwpx",
+      "original_sha256": "2bab5b57cbd6dc06e2a5f621bb1a4b44ce4b7e5a7bcc4c0e1fd3c131094b734e",
+      "documents": [
+        {
+          "format": "hwpx",
+          "path": "samples/issue6037/시가고가저가종가-첫계열삭제.hwpx",
+          "sha256": "2bab5b57cbd6dc06e2a5f621bb1a4b44ce4b7e5a7bcc4c0e1fd3c131094b734e"
+        },
+        {
+          "format": "hwp",
+          "path": "samples/issue6037/시가고가저가종가-첫계열삭제.hwp",
+          "sha256": "d71e5e80c0fb532f0b4e1f294398827dae0ceb3c03400b9cf7a042365dddfc61"
+        }
+      ],
+      "hancom_pdf_path": "pdf/issue6037/시가고가저가종가-첫계열삭제.pdf",
+      "hancom_pdf_sha256": "a6c151ecfbb43455ef14c30c9ec3be748df48599c50c5bbee81383c52e3aa1ba",
+      "raster": {
+        "pymupdf_144dpi_rgb_sha256": "9ccd7bcbac8b15f4d56fd3c0ed1153abba1b8894c4045d0e7e22aab90e7d37b4",
+        "width": 1190,
+        "height": 1682,
+        "pages": 1
+      },
+      "verdict": "반영_의미깨짐",
+      "editor_observation": "**첫 계열(시가) 삭제 — 몸통이 고가↔종가로 재앵커되어 전부 검은 박스.** 남은 [고가,저가,종가] 는 HLC 구성인데도 upDownBars 가 남아 캔들이 그려진다. 엔진이 추론으로 막았던 첫 계열 가드를 실측으로 정당화한다"
+    }
+  ],
+  "invariants": [
+    {
+      "kind": "counts",
+      "judgment_units": 13,
+      "tally": {
+        "반영": 7,
+        "반영_의미깨짐": 6
+      }
+    },
+    {
+      "kind": "page_geometry",
+      "width": 1190,
+      "height": 1682,
+      "pages": 1
+    }
+  ]
+}

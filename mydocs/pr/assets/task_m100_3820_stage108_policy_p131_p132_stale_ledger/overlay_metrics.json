@@ -1,0 +1,70 @@
+{
+  "summary": {
+    "compared_pages": 2,
+    "pixel_diff_threshold": 32,
+    "average_pixel_match_percent": 89.92803,
+    "worst_pixel_match_percent": 89.21304,
+    "average_ink_match_percent": 10.44027,
+    "worst_ink_match_percent": 9.39025,
+    "average_visual_accuracy_proxy_percent": 10.44027,
+    "worst_visual_accuracy_proxy_percent": 9.39025,
+    "worst_pages": [
+      131,
+      132
+    ]
+  },
+  "pages": [
+    {
+      "page": 131,
+      "rhwp_png": "/Users/tsjang/rhwp/output/task-3820-stage108-policy-p131-p132-current/task3820-stage108-policy-p131-p132-current/rhwp_png/rhwp_131.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/task-3820-stage108-policy-p131-p132-current/task3820-stage108-policy-p131-p132-current/pdf_png/pdf-131.png",
+      "overlay_png": "/Users/tsjang/rhwp/output/task-3820-stage108-policy-p131-p132-current/task3820-stage108-policy-p131-p132-current/overlay/overlay_131.png",
+      "width": 1191,
+      "height": 1684,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 2005644,
+      "diff_pixels": 216348,
+      "diff_ratio": 0.10786959,
+      "pixel_match_percent": 89.21304,
+      "ink_union_pixels": 238769,
+      "ink_diff_pixels": 216348,
+      "ink_diff_ratio": 0.90609753,
+      "ink_match_percent": 9.39025,
+      "visual_accuracy_proxy_percent": 9.39025,
+      "mean_abs_channel_delta": 16.133,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        141,
+        129,
+        1060,
+        1621
+      ]
+    },
+    {
+      "page": 132,
+      "rhwp_png": "/Users/tsjang/rhwp/output/task-3820-stage108-policy-p131-p132-current/task3820-stage108-policy-p131-p132-current/rhwp_png/rhwp_132.png",
+      "pdf_png": "/Users/tsjang/rhwp/output/task-3820-stage108-policy-p131-p132-current/task3820-stage108-policy-p131-p132-current/pdf_png/pdf-132.png",
+      "overlay_png": "/Users/tsjang/rhwp/output/task-3820-stage108-policy-p131-p132-current/task3820-stage108-policy-p131-p132-current/overlay/overlay_132.png",
+      "width": 1191,
+      "height": 1684,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 2005644,
+      "diff_pixels": 187668,
+      "diff_ratio": 0.09356995,
+      "pixel_match_percent": 90.64301,
+      "ink_union_pixels": 212031,
+      "ink_diff_pixels": 187668,
+      "ink_diff_ratio": 0.88509699,
+      "ink_match_percent": 11.4903,
+      "visual_accuracy_proxy_percent": 11.4903,
+      "mean_abs_channel_delta": 12.822,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        141,
+        125,
+        1058,
+        1621
+      ]
+    }
+  ]
+}

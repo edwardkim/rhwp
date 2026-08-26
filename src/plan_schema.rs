@@ -35,8 +35,13 @@
 
 use serde_json::{json, Value};
 
-/// 계획 스키마 버전. 봉투 schemaVersion·계획서 planVersion 과 독립적으로 진화한다.
-pub const PLAN_SCHEMA_VERSION: &str = "1.0";
+use crate::schema_registry::ENVELOPE_SCHEMA_VERSION;
+
+/// 계획 스키마 버전 — 단일 출처는 [`crate::schema_registry`](#4329). 여기서는
+/// 재수출만 해 기존 호출부 경로를 보존한다. 봉투 schemaVersion·계획서
+/// planVersion(아래 `REQUIRED_PLAN_VERSION`, 계획 파일이 선언하는 문법 수용
+/// 게이트)과는 여전히 독립적으로 진화한다.
+pub use crate::schema_registry::PLAN_SCHEMA_VERSION;
 
 /// 계획서가 선언해야 하는 `planVersion` 값 — 실행기가 이 값만 받는다.
 const REQUIRED_PLAN_VERSION: &str = "1.0";
@@ -142,6 +147,12 @@ fn plan_def() -> Value {
                 "Assertions",
                 "저장 전에 통과해야 하는 단언. 생략하면 기본값으로 판정한다.",
             ),
+            "preconditions": r_doc(
+                "Preconditions",
+                "[#4378 R22] 실행 전 전제(CAS). 하나라도 어긋나면 실행 0·저장 0 으로 \
+                 거절한다(exit 3 = 판정, preconditionFailed{kind,expected,actual} + nextCall). \
+                 `--dry-run` 도 같은 대조·같은 판정을 낸다.",
+            ),
             "dryRun": json!({
                 "type": "boolean",
                 "default": false,
@@ -154,6 +165,25 @@ fn plan_def() -> Value {
         "`rhwp run` 이 받는 편집 계획서. 도구 호출을 체이닝하는 대신 의도 하나를 선언하면 \
          실행기가 전 step 의 실행 가능성을 먼저 판정하고(불가 시 실행 0·exit 2), \
          인메모리 원자 실행 뒤 단언 통과 시에만 저장한다.",
+    )
+}
+
+/// [#4378 R22] 실행 전 전제 — 계획이 세워진 시점의 문서 상태를 고정한다.
+fn preconditions_def() -> Value {
+    object(
+        json!({
+            "inputSha256": prim(
+                "string",
+                "input 파일 전체의 SHA-256(64자리 16진, 대소문자 무관). 실행 시점의 \
+                 실제 해시와 다르면 — 계획 수립 후 다른 에이전트/사람이 문서를 바꿨다는 \
+                 뜻이므로 — 아무것도 적용하지 않고 preconditionFailed{kind,expected,actual} \
+                 + nextCall(재계획 힌트) + exit 3 으로 거절한다(`--dry-run` 도 같은 판정). \
+                 경합 유실(#3905: 두 exit 0 이 편집 하나를 무신호로 지움)의 \
+                 차단기다. 해시는 `rhwp-agent fingerprint` 또는 sha256sum 으로 얻는다.",
+            ),
+        }),
+        &["inputSha256"],
+        "실행 전 전제. 현재 축은 inputSha256 하나이며, 축 추가는 minor 다.",
     )
 }
 
@@ -423,6 +453,7 @@ pub fn plan_schema() -> Value {
     // 정의가 늘면 json! 매크로 재귀 한도에 걸린다 — 맵으로 조립한다.
     let defs: serde_json::Map<String, Value> = [
         ("Plan", plan_def()),
+        ("Preconditions", preconditions_def()),
         ("Assertions", assertions_def()),
         ("Step", step_def()),
         ("FillFieldsStep", fill_fields_step_def()),
@@ -439,7 +470,8 @@ pub fn plan_schema() -> Value {
 
     json!({
         "$schema": SCHEMA_DIALECT,
-        "$id": "https://github.com/edwardkim/rhwp/schema/plan/1.0",
+        // [#4329] $id 의 버전 조각도 레지스트리 상수에서 파생 — 리터럴 산개 금지.
+        "$id": format!("https://github.com/edwardkim/rhwp/schema/plan/{PLAN_SCHEMA_VERSION}"),
         "title": "rhwp 편집 계획서",
         "planSchemaVersion": PLAN_SCHEMA_VERSION,
         "description":
@@ -469,7 +501,7 @@ pub fn envelope() -> Value {
     let schema = plan_schema();
     let def_count = definition_count(&schema);
     json!({
-        "schemaVersion": "1.0",
+        "schemaVersion": ENVELOPE_SCHEMA_VERSION,
         "planSchemaVersion": PLAN_SCHEMA_VERSION,
         "dialect": SCHEMA_DIALECT,
         "definitionCount": def_count,

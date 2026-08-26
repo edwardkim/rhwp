@@ -1,0 +1,55 @@
+{
+  "id": "SR21",
+  "tier": 3,
+  "title": "convert --verify-pages 쪽수 자기검증",
+  "input": "samples/para-001.hwp",
+  "instructions": "입력을 convert 할 때 --verify-pages 를 켜고, 쪽수 검증 객체의 identical 을 answer.json 에 {\"identical\": true|false} 로 적어라. 쪽수가 어긋나면 산출물은 남고 exit 4 다. 힌트: rhwp convert --verify-pages --json 의 verifyPages.identical.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "conv.hwp",
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "HWP5 산출",
+      "op": "file_exists",
+      "file": "conv.hwp",
+      "minBytes": 256
+    },
+    {
+      "name": "원본과 다름 (무편집 복사 거부 — 판별력)",
+      "op": "differs_from_input",
+      "file": "conv.hwp"
+    },
+    {
+      "name": "info 형식",
+      "op": "value_eq",
+      "value": "hwp5",
+      "path": "format",
+      "cmd": [
+        "info",
+        "{file:conv.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "verifyPages 동일",
+      "op": "answer_eq",
+      "answer": "identical",
+      "path": "verifyPages.identical",
+      "cmd": [
+        "convert",
+        "{input}",
+        "{file:conv.hwp}",
+        "--verify-pages",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        4
+      ]
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "id": "EX23",
+  "tier": 2,
+  "title": "날짜 수확 — 2010-01-06 표본",
+  "input": "samples/2010-01-06.hwp",
+  "instructions": "extract-data --kind date 로 이 문서에서 날짜 항목 수(itemCount)를 보고하라. 답 형식: {\"dates\": <수>}.",
+  "submit": {
+    "kind": "answer"
+  },
+  "checks": [
+    {
+      "name": "dates 일치",
+      "op": "answer_eq",
+      "answer": "dates",
+      "cmd": [
+        "extract-data",
+        "{input}",
+        "--kind",
+        "date",
+        "--json"
+      ],
+      "path": "itemCount"
+    }
+  ]
+}

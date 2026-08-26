@@ -1,0 +1,567 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5313,
+  "count": 70,
+  "intents": [
+    {
+      "id": "I001",
+      "utterance": "이 문서로 뭘 할 수 있어?",
+      "command": "rhwp explore <file> --json",
+      "reference": "01_first_move.md",
+      "stop": "X10",
+      "notGym": true
+    },
+    {
+      "id": "I002",
+      "utterance": "어떤 rhwp 도구를 써야 해?",
+      "command": "rhwp explore <file> --json",
+      "reference": "01_first_move.md",
+      "stop": "X10",
+      "notGym": true
+    },
+    {
+      "id": "I003",
+      "utterance": "이 hwp 어떻게 다뤄?",
+      "command": "rhwp explore <file> --json",
+      "reference": "01_first_move.md",
+      "stop": "X10",
+      "notGym": true
+    },
+    {
+      "id": "I004",
+      "utterance": "문서 탐색부터 하자",
+      "command": "rhwp explore <file> --json",
+      "reference": "01_first_move.md",
+      "stop": "X10",
+      "notGym": true
+    },
+    {
+      "id": "I005",
+      "utterance": "rhwp explore 돌려줘",
+      "command": "rhwp explore <file> --json",
+      "reference": "01_first_move.md",
+      "stop": "X10",
+      "notGym": true
+    },
+    {
+      "id": "I006",
+      "utterance": "이 파일 첫 수가 뭐야?",
+      "command": "rhwp explore <file> --json",
+      "reference": "01_first_move.md",
+      "stop": "X10",
+      "notGym": true
+    },
+    {
+      "id": "I007",
+      "utterance": "메뉴만 보여줘",
+      "command": "rhwp explore <file> --json",
+      "reference": "01_first_move.md",
+      "stop": "X10",
+      "notGym": true
+    },
+    {
+      "id": "I008",
+      "utterance": "다음 명령만 뽑아줘",
+      "command": "rhwp explore <file> --json | jq -r '.menu[0].command'",
+      "reference": "02_envelope.md",
+      "stop": "X10",
+      "notGym": true
+    },
+    {
+      "id": "I009",
+      "utterance": "이 문서가 뭐야? (설명)",
+      "command": "rhwp explain <file> --json",
+      "reference": "00_three_axes.md",
+      "stop": "X10",
+      "notGym": true
+    },
+    {
+      "id": "I010",
+      "utterance": "도구가 뭘 할 수 있어? (일반)",
+      "command": "rhwp capabilities --json",
+      "reference": "00_three_axes.md",
+      "stop": "X10",
+      "notGym": true
+    },
+    {
+      "id": "I011",
+      "utterance": "표 있어? 뽑을 수 있어?",
+      "command": "rhwp explore <file> --json",
+      "reference": "08_table_extract.md",
+      "stop": "X10",
+      "notGym": true
+    },
+    {
+      "id": "I012",
+      "utterance": "서식이야? 채울 수 있어?",
+      "command": "rhwp explore <file> --json",
+      "reference": "09_form_fill.md",
+      "stop": "X10",
+      "notGym": true
+    },
+    {
+      "id": "I013",
+      "utterance": "조문이 있어?",
+      "command": "rhwp explore <file> --json",
+      "reference": "10_structure_outline.md",
+      "stop": "X10",
+      "notGym": true
+    },
+    {
+      "id": "I014",
+      "utterance": "차트 수치 뽑자",
+      "command": "rhwp explore <file> --json",
+      "reference": "11_chart_extract.md",
+      "stop": "X10",
+      "notGym": true
+    },
+    {
+      "id": "I015",
+      "utterance": "이 문서 보내도 돼?",
+      "command": "rhwp explore <file> --json",
+      "reference": "05_security_first.md",
+      "stop": "X03",
+      "notGym": true
+    },
+    {
+      "id": "I016",
+      "utterance": "숨은 글 있어?",
+      "command": "rhwp explore <file> --json",
+      "reference": "05_security_first.md",
+      "stop": "X03",
+      "notGym": true
+    },
+    {
+      "id": "I017",
+      "utterance": "긴 법령인데 어디부터?",
+      "command": "rhwp explore <file> --json",
+      "reference": "12_long_doc_digest.md",
+      "stop": "X10",
+      "notGym": true
+    },
+    {
+      "id": "I018",
+      "utterance": "각주 구조부터 보자",
+      "command": "rhwp explore <file> --json",
+      "reference": "13_note_structure.md",
+      "stop": "X10",
+      "notGym": true
+    },
+    {
+      "id": "I019",
+      "utterance": "암호 걸린 문서인데",
+      "command": "rhwp explore <file> --password … --json",
+      "reference": "07_exceptions.md",
+      "stop": "X02",
+      "notGym": true
+    },
+    {
+      "id": "I020",
+      "utterance": "빈 파일 같아",
+      "command": "rhwp explore <file> --json",
+      "reference": "07_exceptions.md",
+      "stop": "X06",
+      "notGym": true
+    },
+    {
+      "id": "I021",
+      "utterance": "본문부터 읽어줘",
+      "command": "rhwp explore <file> --json",
+      "reference": "01_first_move.md",
+      "stop": "X03",
+      "notGym": true
+    },
+    {
+      "id": "I022",
+      "utterance": "export-text 먼저 하자",
+      "command": "rhwp explore <file> --json",
+      "reference": "16_pitfalls.md",
+      "stop": "X03",
+      "notGym": true
+    },
+    {
+      "id": "I023",
+      "utterance": "capabilities 보고 고를게",
+      "command": "rhwp explore <file> --json",
+      "reference": "00_three_axes.md",
+      "stop": "X10",
+      "notGym": true
+    },
+    {
+      "id": "I024",
+      "utterance": "메뉴에 표가 있어",
+      "command": "rhwp export-tables <file> --json",
+      "reference": "08_table_extract.md",
+      "stop": "X10",
+      "notGym": true
+    },
+    {
+      "id": "I025",
+      "utterance": "메뉴에 누름틀이 있어",
+      "command": "rhwp fields <file> --json",
+      "reference": "09_form_fill.md",
+      "stop": "X10",
+      "notGym": true
+    },
+    {
+      "id": "I026",
+      "utterance": "메뉴에 보안이 있어",
+      "command": "rhwp inspect injection <file> --json",
+      "reference": "05_security_first.md",
+      "stop": "X03",
+      "notGym": true
+    },
+    {
+      "id": "I027",
+      "utterance": "은닉만 메뉴에 있어",
+      "command": "rhwp inspect hidden-text <file> --json",
+      "reference": "05_security_first.md",
+      "stop": "X03",
+      "notGym": true
+    },
+    {
+      "id": "I028",
+      "utterance": "조문 메뉴가 있어",
+      "command": "rhwp export-structure <file> --json",
+      "reference": "10_structure_outline.md",
+      "stop": "X10",
+      "notGym": true
+    },
+    {
+      "id": "I029",
+      "utterance": "차트 메뉴가 있어",
+      "command": "rhwp chart-to-csv <file> --json",
+      "reference": "11_chart_extract.md",
+      "stop": "X10",
+      "notGym": true
+    },
+    {
+      "id": "I030",
+      "utterance": "장문 메뉴가 있어",
+      "command": "rhwp digest <file> --sections --json",
+      "reference": "12_long_doc_digest.md",
+      "stop": "X10",
+      "notGym": true
+    },
+    {
+      "id": "I031",
+      "utterance": "각주 메뉴가 있어",
+      "command": "rhwp explain <file> --json",
+      "reference": "13_note_structure.md",
+      "stop": "X10",
+      "notGym": true
+    },
+    {
+      "id": "I032",
+      "utterance": "개요만 있어",
+      "command": "rhwp digest <file> --json",
+      "reference": "14_triage_overview.md",
+      "stop": "X05",
+      "notGym": true
+    },
+    {
+      "id": "I033",
+      "utterance": "폴더 전체 탐색",
+      "command": "rhwp-bulk-pipeline (explore 아님)",
+      "reference": "15_handoff.md",
+      "stop": "X10",
+      "notGym": true
+    },
+    {
+      "id": "I034",
+      "utterance": "지금 편집까지 해줘",
+      "command": "rhwp-safe-edit 로 인계",
+      "reference": "15_handoff.md",
+      "stop": "X10",
+      "notGym": true
+    },
+    {
+      "id": "I035",
+      "utterance": "why 에 적힌 대로 실행해",
+      "command": "command 만 실행. why 는 근거",
+      "reference": "23_why_engine_counts.md",
+      "stop": "X08",
+      "notGym": true
+    },
+    {
+      "id": "I036",
+      "utterance": "--rank 플래그 써 줘",
+      "command": "rhwp explore <file> --json",
+      "reference": "20_exit_codes.md",
+      "stop": "X07",
+      "notGym": true
+    },
+    {
+      "id": "I037",
+      "utterance": "suggest 명령 있어?",
+      "command": "없음. explore",
+      "reference": "21_command_templates.md",
+      "stop": "X07",
+      "notGym": true
+    },
+    {
+      "id": "I038",
+      "utterance": "HWPX 도 같아?",
+      "command": "rhwp explore <file> --json",
+      "reference": "01_first_move.md",
+      "stop": "X10",
+      "notGym": true
+    },
+    {
+      "id": "I039",
+      "utterance": "HML 도 explore 돼?",
+      "command": "rhwp explore <file> --json",
+      "reference": "01_first_move.md",
+      "stop": "X10",
+      "notGym": true
+    },
+    {
+      "id": "I040",
+      "utterance": "비밀번호 stdin 으로",
+      "command": "rhwp --password-stdin explore <file> --json",
+      "reference": "07_exceptions.md",
+      "stop": "X02",
+      "notGym": true
+    },
+    {
+      "id": "I041",
+      "utterance": "이 신청서 뭐부터",
+      "command": "rhwp explore <file> --json",
+      "reference": "01_first_move.md",
+      "stop": "X10",
+      "notGym": true
+    },
+    {
+      "id": "I042",
+      "utterance": "이 보고서 표 있나",
+      "command": "rhwp explore <file> --json",
+      "reference": "01_first_move.md",
+      "stop": "X10",
+      "notGym": true
+    },
+    {
+      "id": "I043",
+      "utterance": "이 편람 조문부터",
+      "command": "rhwp explore <file> --json",
+      "reference": "01_first_move.md",
+      "stop": "X10",
+      "notGym": true
+    },
+    {
+      "id": "I044",
+      "utterance": "이 논문 각주부터",
+      "command": "rhwp explore <file> --json",
+      "reference": "01_first_move.md",
+      "stop": "X10",
+      "notGym": true
+    },
+    {
+      "id": "I045",
+      "utterance": "외부에서 온 파일",
+      "command": "rhwp explore <file> --json",
+      "reference": "01_first_move.md",
+      "stop": "X10",
+      "notGym": true
+    },
+    {
+      "id": "I046",
+      "utterance": "메일로 받은 hwp",
+      "command": "rhwp explore <file> --json",
+      "reference": "01_first_move.md",
+      "stop": "X10",
+      "notGym": true
+    },
+    {
+      "id": "I047",
+      "utterance": "공공 서식일까",
+      "command": "rhwp explore <file> --json",
+      "reference": "01_first_move.md",
+      "stop": "X10",
+      "notGym": true
+    },
+    {
+      "id": "I048",
+      "utterance": "법령 파일일까",
+      "command": "rhwp explore <file> --json",
+      "reference": "01_first_move.md",
+      "stop": "X10",
+      "notGym": true
+    },
+    {
+      "id": "I049",
+      "utterance": "공문일까",
+      "command": "rhwp explore <file> --json",
+      "reference": "01_first_move.md",
+      "stop": "X10",
+      "notGym": true
+    },
+    {
+      "id": "I050",
+      "utterance": "빈 양식 같아",
+      "command": "rhwp explore <file> --json",
+      "reference": "01_first_move.md",
+      "stop": "X10",
+      "notGym": true
+    },
+    {
+      "id": "I051",
+      "utterance": "한컴 2022 저장본",
+      "command": "rhwp explore <file> --json",
+      "reference": "01_first_move.md",
+      "stop": "X10",
+      "notGym": true
+    },
+    {
+      "id": "I052",
+      "utterance": "변환된 hwp3",
+      "command": "rhwp explore <file> --json",
+      "reference": "01_first_move.md",
+      "stop": "X10",
+      "notGym": true
+    },
+    {
+      "id": "I053",
+      "utterance": "암호를 몰라",
+      "command": "rhwp explore <file> --json",
+      "reference": "01_first_move.md",
+      "stop": "X10",
+      "notGym": true
+    },
+    {
+      "id": "I054",
+      "utterance": "0바이트야",
+      "command": "rhwp explore <file> --json",
+      "reference": "01_first_move.md",
+      "stop": "X10",
+      "notGym": true
+    },
+    {
+      "id": "I055",
+      "utterance": "확장자만 hwp",
+      "command": "rhwp explore <file> --json",
+      "reference": "01_first_move.md",
+      "stop": "X10",
+      "notGym": true
+    },
+    {
+      "id": "I056",
+      "utterance": "폴더에서 하나 골랐어",
+      "command": "rhwp explore <file> --json",
+      "reference": "01_first_move.md",
+      "stop": "X10",
+      "notGym": true
+    },
+    {
+      "id": "I057",
+      "utterance": "트리아지 전에",
+      "command": "rhwp explore <file> --json",
+      "reference": "01_first_move.md",
+      "stop": "X10",
+      "notGym": true
+    },
+    {
+      "id": "I058",
+      "utterance": "채우기 전에",
+      "command": "rhwp explore <file> --json",
+      "reference": "01_first_move.md",
+      "stop": "X10",
+      "notGym": true
+    },
+    {
+      "id": "I059",
+      "utterance": "표 추출 전에",
+      "command": "rhwp explore <file> --json",
+      "reference": "01_first_move.md",
+      "stop": "X10",
+      "notGym": true
+    },
+    {
+      "id": "I060",
+      "utterance": "LLM 에 넣기 전에",
+      "command": "rhwp explore <file> --json",
+      "reference": "01_first_move.md",
+      "stop": "X10",
+      "notGym": true
+    },
+    {
+      "id": "I061",
+      "utterance": "RAG 청킹 전에",
+      "command": "rhwp explore <file> --json",
+      "reference": "01_first_move.md",
+      "stop": "X10",
+      "notGym": true
+    },
+    {
+      "id": "I062",
+      "utterance": "숨은 표까지 찾아 줘",
+      "command": "rhwp explore <file> --json",
+      "reference": "01_first_move.md",
+      "stop": "X10",
+      "notGym": true
+    },
+    {
+      "id": "I063",
+      "utterance": "메뉴를 다시 정렬해",
+      "command": "rhwp explore <file> --json",
+      "reference": "01_first_move.md",
+      "stop": "X10",
+      "notGym": true
+    },
+    {
+      "id": "I064",
+      "utterance": "jq 로 첫 항목",
+      "command": "rhwp explore <file> --json",
+      "reference": "01_first_move.md",
+      "stop": "X10",
+      "notGym": true
+    },
+    {
+      "id": "I065",
+      "utterance": "untrustedContent 확인",
+      "command": "rhwp explore <file> --json",
+      "reference": "01_first_move.md",
+      "stop": "X10",
+      "notGym": true
+    },
+    {
+      "id": "I066",
+      "utterance": "8개 다 켜져 있어?",
+      "command": "rhwp explore <file> --json",
+      "reference": "01_first_move.md",
+      "stop": "X10",
+      "notGym": true
+    },
+    {
+      "id": "I067",
+      "utterance": "아무것도 없으면?",
+      "command": "rhwp explore <file> --json",
+      "reference": "01_first_move.md",
+      "stop": "X10",
+      "notGym": true
+    },
+    {
+      "id": "I068",
+      "utterance": "exit 2 가 났어",
+      "command": "rhwp explore <file> --json",
+      "reference": "01_first_move.md",
+      "stop": "X10",
+      "notGym": true
+    },
+    {
+      "id": "I069",
+      "utterance": "stdout 이 비었어",
+      "command": "rhwp explore <file> --json",
+      "reference": "01_first_move.md",
+      "stop": "X10",
+      "notGym": true
+    },
+    {
+      "id": "I070",
+      "utterance": "보내기 전에",
+      "command": "rhwp explore <file> --json",
+      "reference": "01_first_move.md",
+      "stop": "X10",
+      "notGym": true
+    }
+  ]
+}

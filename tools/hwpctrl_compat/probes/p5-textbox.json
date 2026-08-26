@@ -1,0 +1,25 @@
+{
+  "id": "p5-textbox",
+  "title": "글상자 붙이기·떼기 — 캐럿이 들어가는가",
+  "ledger": [],
+  "open": "samples/mix-shape-01.hwp",
+  "calls": [
+    ["SetPos", [0, 0, 0]],
+    ["Run", ["SelectCtrlFront"]],
+    ["CurSelectedCtrl.UserDesc", []],
+    ["GetPos", []],
+    ["Run", ["ShapeObjAttachTextBox"]],
+    ["GetPos", []],
+    ["SelectionMode", []],
+    ["SetPos", [2, 0, 0]],
+    ["GetPos", []],
+    ["ParentCtrl.UserDesc", []],
+    ["Run", ["SelectCtrlFront"]],
+    ["CurSelectedCtrl.UserDesc", []],
+    ["Run", ["ShapeObjDetachTextBox"]],
+    ["GetPos", []],
+    ["SelectionMode", []],
+    ["SetPos", [2, 0, 0]],
+    ["GetPos", []]
+  ]
+}

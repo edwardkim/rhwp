@@ -1,0 +1,29 @@
+{
+  "id": "ST19",
+  "tier": 2,
+  "title": "실사용 보고서 둘째 차트 열 수",
+  "input": "samples/issue2006/1790387_prep_final_report.hwpx",
+  "instructions": "입력 차트의 charts[0].colCount 를 answer.json 에 {\"cols\": N} 으로 제출하라. 차트 번호는 1부터다. --chart 2 가 둘째 차트다. 0 으로 세면 없다. 숫자를 파일 이름·폴더 설명에서 추측하지 마라. 라이브 봉투를 읽어라. 힌트: rhwp chart-to-csv <문서> --chart 2 --json 의 charts[0].colCount.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "charts[0].colCount",
+      "op": "answer_eq",
+      "answer": "cols",
+      "path": "charts[0].colCount",
+      "cmd": [
+        "chart-to-csv",
+        "{input}",
+        "--chart",
+        "2",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

@@ -1,0 +1,31 @@
+{
+  "_skillMeta": {
+    "skill": "rhwp-table-exchange",
+    "issue": 5306,
+    "note": "문서화된 실측 봉투. 바이너리를 이 파동에서 다시 돌리지 않았다.",
+    "command": "table-to-csv",
+    "sample": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "exit": 0,
+    "branch": "codex-20-csv",
+    "source": "mydocs/manual/agent_codex/20_표와_데이터.md"
+  },
+  "bom": false,
+  "output": "<tmp>/t1.csv",
+  "outputFormat": "csv",
+  "schemaVersion": "1.0",
+  "source": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "tableCount": 1,
+  "tables": [
+    {
+      "colCount": 3,
+      "csv": "규제 사무명,현행 규제내용,변경(또는 신설) 규제내용\r\n공익침해행위 피신고자 등에 대한 사실확인 기능 보완,<신  설>,\"○ 신고사항의 진위여부를 확인하는데 필요한 범위에서 피신고자, 이해관계인, 관계기관에 출석요구, 자료제출요구 등을 할 수 있도록 함\"\r\n",
+      "index": 1,
+      "output": "<tmp>/t1.csv",
+      "rowCount": 2
+    }
+  ],
+  "untrustedContent": true,
+  "untrustedFields": [
+    "tables[].csv"
+  ]
+}

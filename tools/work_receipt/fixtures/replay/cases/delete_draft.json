@@ -1,0 +1,69 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workReceiptReplayCase",
+  "ident": "delete_draft",
+  "claim": "M-rcpt",
+  "issue": 5478,
+  "family": "공문",
+  "genre": "삭제",
+  "title": "초안 표기 삭제",
+  "why": "replace 빈 문자열 = 삭제. find 는 비면 안 된다.",
+  "notes": "빈 replace 허용, 빈 find 금지",
+  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "output": "out/delete-draft.hwp",
+  "ext": "hwp",
+  "actions": [
+    "replace_text"
+  ],
+  "stepCount": 1,
+  "plan": {
+    "planVersion": "1.0",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "output": "out/delete-draft.hwp",
+    "steps": [
+      {
+        "action": "replace_text",
+        "find": "[초안]",
+        "replace": ""
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"samples/basic/issue2007_nested_cell_pagination_42065.hwp\",\"output\":\"out/delete-draft.hwp\",\"steps\":[{\"action\":\"replace_text\",\"find\":\"[초안]\",\"replace\":\"\"}]}",
+  "planSha256": "fcc86c74a315a5027d52bebd33a8d0d942c5448df999eb47ed7ba7d8e3dcf1d7",
+  "command": "replay",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "inputSha256": "26c9ca877d8856d9513760fee5cd3971a6604957d4361819f5007ee1cd505af9",
+    "planSha256": "fcc86c74a315a5027d52bebd33a8d0d942c5448df999eb47ed7ba7d8e3dcf1d7",
+    "outputSha256": "15b11a00fbfd047cc8a1dd28f4e1db598e1cde1b57b5e84c6fe7ef37c3b7a336",
+    "toolVersion": "fixture-0.0.0-not-a-release",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null
+  },
+  "expected": {
+    "attest": {
+      "exit": 0,
+      "mode": "attest",
+      "reproduced": null,
+      "userOutputCreated": false
+    },
+    "verify_ok": {
+      "exit": 0,
+      "mode": "verify",
+      "reproduced": true,
+      "expectedOutputSha256": "15b11a00fbfd047cc8a1dd28f4e1db598e1cde1b57b5e84c6fe7ef37c3b7a336"
+    },
+    "verify_mismatch": {
+      "exit": 3,
+      "mode": "verify",
+      "reproduced": false,
+      "expectedOutputSha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "judgment": true
+    }
+  },
+  "claimedOutputPathUntouched": true,
+  "generator": "tools/work_receipt/fatten_work_receipt.py"
+}

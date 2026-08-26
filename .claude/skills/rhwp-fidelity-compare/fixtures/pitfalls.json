@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5329,
+  "notGym": true,
+  "noNewCli": true,
+  "items": [
+    "고정 Chrome 창은 A3 를 크롭해 가짜 diff 를 만든다",
+    "diff% 는 랭킹용이다. 자간 미세 차가 픽셀로 누적된다",
+    "text-report 는 순서·좌표를 모른다",
+    "배경 셸 한글 argv 는 cp949 로 깨진다",
+    "Chrome 실패는 한 번 재시도하고 stderr 를 표면화한다",
+    "samples/ 동반 PDF 는 미확인 시 참고 등급",
+    "맞춰찍기/배율 PDF 는 PageCount 가드가 필요하다",
+    "두부 시트는 하네스 오염일 수 있다",
+    "HMKMM/HMKMG EBDT 는 Chrome .notdef",
+    "--break-system-packages 금지",
+    "Windows 는 venv\\Scripts\\python.exe",
+    "누락 쪽이 있으면 종료 코드 0 이 아니다",
+    "page-count 차이는 전역 page-break 패치 근거가 아니다",
+    "최종 판정은 유지자"
+  ]
+}

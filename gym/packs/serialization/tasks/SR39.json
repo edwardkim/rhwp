@@ -1,0 +1,32 @@
+{
+  "id": "SR39",
+  "tier": 3,
+  "title": "그림 문서 연도 쌍 IR 차이 건수",
+  "input": "samples/pic2.hwp",
+  "instructions": "입력과 다른 연도 저장본(samples/pic2-2018.hwp) 의 IR 차이 건수를 answer.json 에 {\"diffs\": N} 으로 적어라. identical 만 보면 차이 규모가 가려진다. 힌트: rhwp ir-diff --json 의 diffCount.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "IR 차이 건수",
+      "op": "answer_eq",
+      "answer": "diffs",
+      "path": "diffCount",
+      "cmd": [
+        "ir-diff",
+        "{input}",
+        "samples/pic2-2018.hwp",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    }
+  ],
+  "axis": "변환"
+}

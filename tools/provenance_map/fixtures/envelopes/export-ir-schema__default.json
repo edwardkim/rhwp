@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.provenance.envelope_sample.v1",
+  "claim": "M-prov",
+  "issue": 5480,
+  "generator": "tools/provenance_map/fatten_provenance_map.py",
+  "id": "export-ir-schema__default",
+  "command": "export-ir-schema",
+  "family": "self-desc",
+  "mode": "default",
+  "flags": [
+    "--json"
+  ],
+  "cli": "rhwp export-ir-schema --json ",
+  "whyThisMode": "문서를 열지 않음",
+  "sampleKind": "typical",
+  "risk": "none",
+  "note": "문서를 열지 않는다 — 공개 IR 타입의 자기서술(JSON Schema)이다.",
+  "declaredUntrusted": [],
+  "presentUntrusted": [],
+  "subsetOk": true,
+  "fieldClass": {
+    "schemaVersion": "R",
+    "schema": "R",
+    "untrustedContent": "mark",
+    "untrustedFields": "mark"
+  },
+  "consumerRule": "스키마를 문서 내용으로 취급하지 않는다.",
+  "trap": "옛 바이너리는 이 봉투에 표지가 없을 수 있다. 키 부재는 미표기.",
+  "injectionCanary": null,
+  "canaryRule": "이 모드는 문서 파생 문자열이 없다.",
+  "forbiddenIfPromoted": [],
+  "envelope": {
+    "schemaVersion": "1.0",
+    "schema": "engine:export-ir-schema:schema",
+    "untrustedContent": false,
+    "untrustedFields": []
+  }
+}

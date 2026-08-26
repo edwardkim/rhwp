@@ -1,0 +1,25 @@
+{
+  "id": "FJ15",
+  "steps": [
+    {
+      "write_json": {
+        "to": "{sub:data.json}",
+        "body": {
+          "목차1[4]": "다섯째목차여정"
+        }
+      }
+    },
+    {
+      "run": [
+        "edit",
+        "fill-fields",
+        "{input}",
+        "--data",
+        "@{sub:data.json}",
+        "-o",
+        "{sub:toc4.hwp}",
+        "--json"
+      ]
+    }
+  ]
+}

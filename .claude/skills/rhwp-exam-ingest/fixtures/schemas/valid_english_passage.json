@@ -1,0 +1,88 @@
+{
+  "version": "1",
+  "page_size": {
+    "width_mm": 210.0,
+    "height_mm": 297.0
+  },
+  "default_font": "함초롬바탕",
+  "questions": [
+    {
+      "number": 20,
+      "stem": "위 글의 제목으로 가장 적절한 것은?",
+      "choices": [
+        {
+          "label": "①",
+          "text": "Why Rail Always Fails"
+        },
+        {
+          "label": "②",
+          "text": "Compact Growth and Transit"
+        },
+        {
+          "label": "③",
+          "text": "A History of Highways"
+        },
+        {
+          "label": "④",
+          "text": "Rural Housing Trends"
+        },
+        {
+          "label": "⑤",
+          "text": "Airport Design Basics"
+        }
+      ],
+      "auto_number": true,
+      "passage_ref": "p20-22"
+    },
+    {
+      "number": 21,
+      "stem": "밑줄 친 this cycle 이 가리키는 것은?",
+      "choices": [
+        {
+          "label": "①",
+          "text": "주택 밀집 → 녹지 확대"
+        },
+        {
+          "label": "②",
+          "text": "도시 확산 → 자가용 → 도로"
+        },
+        {
+          "label": "③",
+          "text": "철도 투자 → 인구 감소"
+        },
+        {
+          "label": "④",
+          "text": "세금 인상 → 이주민 증가"
+        },
+        {
+          "label": "⑤",
+          "text": "항만 개발 → 어업 쇠퇴"
+        }
+      ],
+      "auto_number": true,
+      "passage_ref": "p20-22"
+    }
+  ],
+  "header_text": "영어 영역",
+  "footer_text": "1/20",
+  "form_label": "홀수형",
+  "passages": [
+    {
+      "id": "p20-22",
+      "blocks": [
+        {
+          "type": "text",
+          "text": "[20~22] 다음 글을 읽고 물음에 답하시오."
+        },
+        {
+          "type": "text",
+          "text": "When cities expand without planning, public transit lags behind housing. Commuters then rely on cars, which in turn demand more roads."
+        },
+        {
+          "type": "text",
+          "text": "A compact-growth policy tries to reverse this cycle by placing homes near existing rail."
+        }
+      ]
+    }
+  ]
+}

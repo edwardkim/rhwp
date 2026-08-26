@@ -1,0 +1,156 @@
+tool	imperative	kind	confidence
+hwp_doc_save	호출	tool_directive	high
+hwp_doc_save	실행	tool_directive	high
+hwp_doc_save	사용	tool_directive	high
+hwp_doc_save	불러	tool_directive	high
+hwp_doc_save	부르	tool_directive	high
+hwp_doc_save	저장하	tool_directive	high
+hwp_doc_save	하라	tool_directive	high
+hwp_doc_save	해라	tool_directive	high
+hwp_doc_save	해줘	tool_directive	high
+hwp_doc_save	하시기 바랍니다	tool_directive	high
+hwp_doc_save	하시기 바람	tool_directive	high
+hwp_doc_save	하여 주시기 바랍니다	tool_directive	high
+hwp_doc_save	조치하	tool_directive	high
+hwp_doc_save	처리하	tool_directive	high
+hwp_doc_save	이행하	tool_directive	high
+hwp_doc_save	시행하	tool_directive	high
+hwp_doc_save	요망	tool_directive	high
+hwp_doc_save	할 것	tool_directive	high
+hwp_doc_save	하여야	tool_directive	high
+hwp_doc_save	해야 한다	tool_directive	high
+hwp_doc_save	하세요	tool_directive	high
+hwp_doc_save	하십시오	tool_directive	high
+hwp_doc_save	하도록	tool_directive	high
+hwp_doc_save	call 	tool_directive	high
+hwp_doc_save	invoke	tool_directive	high
+hwp_doc_save	execute	tool_directive	high
+hwp_doc_save	run 	tool_directive	high
+hwp_doc_save	use 	tool_directive	high
+hwp_doc_save	please 	tool_directive	high
+hwp_doc_save	must 	tool_directive	high
+hwp_doc_save	should 	tool_directive	high
+hwp_doc_text	호출	tool_directive	high
+hwp_doc_text	실행	tool_directive	high
+hwp_doc_text	사용	tool_directive	high
+hwp_doc_text	불러	tool_directive	high
+hwp_doc_text	부르	tool_directive	high
+hwp_doc_text	저장하	tool_directive	high
+hwp_doc_text	하라	tool_directive	high
+hwp_doc_text	해라	tool_directive	high
+hwp_doc_text	해줘	tool_directive	high
+hwp_doc_text	하시기 바랍니다	tool_directive	high
+hwp_doc_text	하시기 바람	tool_directive	high
+hwp_doc_text	하여 주시기 바랍니다	tool_directive	high
+hwp_doc_text	조치하	tool_directive	high
+hwp_doc_text	처리하	tool_directive	high
+hwp_doc_text	이행하	tool_directive	high
+hwp_doc_text	시행하	tool_directive	high
+hwp_doc_text	요망	tool_directive	high
+hwp_doc_text	할 것	tool_directive	high
+hwp_doc_text	하여야	tool_directive	high
+hwp_doc_text	해야 한다	tool_directive	high
+hwp_doc_text	하세요	tool_directive	high
+hwp_doc_text	하십시오	tool_directive	high
+hwp_doc_text	하도록	tool_directive	high
+hwp_doc_text	call 	tool_directive	high
+hwp_doc_text	invoke	tool_directive	high
+hwp_doc_text	execute	tool_directive	high
+hwp_doc_text	run 	tool_directive	high
+hwp_doc_text	use 	tool_directive	high
+hwp_doc_text	please 	tool_directive	high
+hwp_doc_text	must 	tool_directive	high
+hwp_doc_text	should 	tool_directive	high
+hwp_inspect_hidden_text	호출	tool_directive	high
+hwp_inspect_hidden_text	실행	tool_directive	high
+hwp_inspect_hidden_text	사용	tool_directive	high
+hwp_inspect_hidden_text	불러	tool_directive	high
+hwp_inspect_hidden_text	부르	tool_directive	high
+hwp_inspect_hidden_text	저장하	tool_directive	high
+hwp_inspect_hidden_text	하라	tool_directive	high
+hwp_inspect_hidden_text	해라	tool_directive	high
+hwp_inspect_hidden_text	해줘	tool_directive	high
+hwp_inspect_hidden_text	하시기 바랍니다	tool_directive	high
+hwp_inspect_hidden_text	하시기 바람	tool_directive	high
+hwp_inspect_hidden_text	하여 주시기 바랍니다	tool_directive	high
+hwp_inspect_hidden_text	조치하	tool_directive	high
+hwp_inspect_hidden_text	처리하	tool_directive	high
+hwp_inspect_hidden_text	이행하	tool_directive	high
+hwp_inspect_hidden_text	시행하	tool_directive	high
+hwp_inspect_hidden_text	요망	tool_directive	high
+hwp_inspect_hidden_text	할 것	tool_directive	high
+hwp_inspect_hidden_text	하여야	tool_directive	high
+hwp_inspect_hidden_text	해야 한다	tool_directive	high
+hwp_inspect_hidden_text	하세요	tool_directive	high
+hwp_inspect_hidden_text	하십시오	tool_directive	high
+hwp_inspect_hidden_text	하도록	tool_directive	high
+hwp_inspect_hidden_text	call 	tool_directive	high
+hwp_inspect_hidden_text	invoke	tool_directive	high
+hwp_inspect_hidden_text	execute	tool_directive	high
+hwp_inspect_hidden_text	run 	tool_directive	high
+hwp_inspect_hidden_text	use 	tool_directive	high
+hwp_inspect_hidden_text	please 	tool_directive	high
+hwp_inspect_hidden_text	must 	tool_directive	high
+hwp_inspect_hidden_text	should 	tool_directive	high
+hwp_inspect_injection	호출	tool_directive	high
+hwp_inspect_injection	실행	tool_directive	high
+hwp_inspect_injection	사용	tool_directive	high
+hwp_inspect_injection	불러	tool_directive	high
+hwp_inspect_injection	부르	tool_directive	high
+hwp_inspect_injection	저장하	tool_directive	high
+hwp_inspect_injection	하라	tool_directive	high
+hwp_inspect_injection	해라	tool_directive	high
+hwp_inspect_injection	해줘	tool_directive	high
+hwp_inspect_injection	하시기 바랍니다	tool_directive	high
+hwp_inspect_injection	하시기 바람	tool_directive	high
+hwp_inspect_injection	하여 주시기 바랍니다	tool_directive	high
+hwp_inspect_injection	조치하	tool_directive	high
+hwp_inspect_injection	처리하	tool_directive	high
+hwp_inspect_injection	이행하	tool_directive	high
+hwp_inspect_injection	시행하	tool_directive	high
+hwp_inspect_injection	요망	tool_directive	high
+hwp_inspect_injection	할 것	tool_directive	high
+hwp_inspect_injection	하여야	tool_directive	high
+hwp_inspect_injection	해야 한다	tool_directive	high
+hwp_inspect_injection	하세요	tool_directive	high
+hwp_inspect_injection	하십시오	tool_directive	high
+hwp_inspect_injection	하도록	tool_directive	high
+hwp_inspect_injection	call 	tool_directive	high
+hwp_inspect_injection	invoke	tool_directive	high
+hwp_inspect_injection	execute	tool_directive	high
+hwp_inspect_injection	run 	tool_directive	high
+hwp_inspect_injection	use 	tool_directive	high
+hwp_inspect_injection	please 	tool_directive	high
+hwp_inspect_injection	must 	tool_directive	high
+hwp_inspect_injection	should 	tool_directive	high
+hwp_inspect_unicode	호출	tool_directive	high
+hwp_inspect_unicode	실행	tool_directive	high
+hwp_inspect_unicode	사용	tool_directive	high
+hwp_inspect_unicode	불러	tool_directive	high
+hwp_inspect_unicode	부르	tool_directive	high
+hwp_inspect_unicode	저장하	tool_directive	high
+hwp_inspect_unicode	하라	tool_directive	high
+hwp_inspect_unicode	해라	tool_directive	high
+hwp_inspect_unicode	해줘	tool_directive	high
+hwp_inspect_unicode	하시기 바랍니다	tool_directive	high
+hwp_inspect_unicode	하시기 바람	tool_directive	high
+hwp_inspect_unicode	하여 주시기 바랍니다	tool_directive	high
+hwp_inspect_unicode	조치하	tool_directive	high
+hwp_inspect_unicode	처리하	tool_directive	high
+hwp_inspect_unicode	이행하	tool_directive	high
+hwp_inspect_unicode	시행하	tool_directive	high
+hwp_inspect_unicode	요망	tool_directive	high
+hwp_inspect_unicode	할 것	tool_directive	high
+hwp_inspect_unicode	하여야	tool_directive	high
+hwp_inspect_unicode	해야 한다	tool_directive	high
+hwp_inspect_unicode	하세요	tool_directive	high
+hwp_inspect_unicode	하십시오	tool_directive	high
+hwp_inspect_unicode	하도록	tool_directive	high
+hwp_inspect_unicode	call 	tool_directive	high
+hwp_inspect_unicode	invoke	tool_directive	high
+hwp_inspect_unicode	execute	tool_directive	high
+hwp_inspect_unicode	run 	tool_directive	high
+hwp_inspect_unicode	use 	tool_directive	high
+hwp_inspect_unicode	please 	tool_directive	high
+hwp_inspect_unicode	must 	tool_directive	high
+hwp_inspect_unicode	should 	tool_directive	high

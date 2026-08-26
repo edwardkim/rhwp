@@ -1,0 +1,30 @@
+{
+  "planVersion": "1.0",
+  "input": "samples/field-01.hwp",
+  "output": "out/plan_result.hwp",
+  "invalid": [
+    {
+      "step": 0,
+      "action": "fill_fields",
+      "reason": "필드 '없는필드' 이(가) 없거나 순번이 범위 밖입니다 (동명 0개)"
+    },
+    {
+      "step": 1,
+      "action": "replace_text",
+      "reason": "'여기에 입력' 일치 0건 — 치환할 곳이 없습니다"
+    },
+    {
+      "step": 2,
+      "action": "insert_image",
+      "reason": "알 수 없는 action: insert_image (fill_fields·replace_text·set_cell·set_checkbox)"
+    }
+  ],
+  "schemaVersion": "1.0",
+  "_skillMeta": {
+    "exit": 2,
+    "branch": "FixPlan",
+    "outputKept": false,
+    "layer": "run",
+    "collected": true
+  }
+}

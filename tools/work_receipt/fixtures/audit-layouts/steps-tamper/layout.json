@@ -1,0 +1,41 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workReceiptAuditLayout",
+  "ident": "steps-tamper",
+  "title": "step 수 변조",
+  "why": "receipt.steps=999. 길이 불일치 바늘.",
+  "notes": "steps 길이",
+  "members": [
+    "tamper_steps"
+  ],
+  "ignored": [],
+  "recursive": false,
+  "exit": 3,
+  "required": [
+    "schemaVersion",
+    "root",
+    "total",
+    "reproduced",
+    "failed",
+    "reproducedRate"
+  ],
+  "envelope": {
+    "schemaVersion": "1.0",
+    "root": "fixtures/audit-layouts/steps-tamper",
+    "total": 1,
+    "reproduced": 0,
+    "failed": [
+      {
+        "capsule": "tamper_steps.capsule.json",
+        "kind": "steps"
+      }
+    ],
+    "reproducedRate": 0.0
+  },
+  "command": [
+    "audit",
+    "fixtures/audit-layouts/steps-tamper",
+    "--json"
+  ],
+  "generator": "tools/work_receipt/fatten_work_receipt.py"
+}

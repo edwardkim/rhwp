@@ -1,0 +1,30 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workCapsule",
+  "parent": null,
+  "plan": {
+    "planVersion": "1.0",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "output": "out/agenda-item.hwp",
+    "steps": [
+      {
+        "action": "replace_text",
+        "find": "안건 제2호",
+        "replace": "안건 제3호"
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"samples/basic/issue2007_nested_cell_pagination_42065.hwp\",\"output\":\"out/agenda-item.hwp\",\"steps\":[{\"action\":\"replace_text\",\"find\":\"안건 제2호\",\"replace\":\"안건 제3호\"}]}",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "inputSha256": "8d52296e2886d6548cc95ffd3c74a27e0edc600cfd3dfed41404b152e5edc76a",
+    "planSha256": "655664ef3e7d5fd4aa1f9319ac1690041230c0be0c81972d56cc5518bd53c700",
+    "outputSha256": "4143bf72b5971419427593ab96933a8e93693f52a24b4245c7b4a4cf78897b4e",
+    "toolVersion": "fixture-0.0.0-not-a-release",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null
+  }
+}

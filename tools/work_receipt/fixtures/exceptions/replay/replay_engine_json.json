@@ -1,0 +1,29 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workReceiptExceptionEnvelope",
+  "ident": "replay_engine_json",
+  "claim": "M-rcpt",
+  "issue": 5478,
+  "command": "replay",
+  "family": "replay-io",
+  "argv": [
+    "replay",
+    "--plan-json",
+    "{\"input\":\"missing-input.hwp\",\"output\":\"y.hwp\",\"steps\":[]}",
+    "--json"
+  ],
+  "exit": 1,
+  "stdoutBytes": -1,
+  "stdoutSilent": false,
+  "needle": "입력을 읽을 수 없습니다",
+  "envelopeKeys": [
+    "schemaVersion",
+    "error"
+  ],
+  "why": "엔진/입력 IO 는 --json 이면 {error} 봉투. 성공 영수증 키가 없다.",
+  "judgment": false,
+  "io": true,
+  "usage": false,
+  "notes": "exit 3 은 도구 고장이 아니라 판정 데이터다. exit 1 은 IO, exit 2 는 사용법. 실패 경로 stdout 은 0바이트가 기본이고, replay --json 엔진 오류만 {schemaVersion,error} 를 싣는다.",
+  "generator": "tools/work_receipt/fatten_work_receipt.py"
+}

@@ -231,6 +231,14 @@ fn assert_control_equivalent(after: &Control, before: &Control) {
             };
             assert_rectangle_equivalent(after, before);
         }
+        // [#4386] COLDEF는 이제 Control::ColumnDef로 왕복한다.
+        (Control::ColumnDef(after), Control::ColumnDef(before)) => {
+            assert_eq!(after.column_type, before.column_type);
+            assert_eq!(after.column_count, before.column_count);
+            assert_eq!(after.direction, before.direction);
+            assert_eq!(after.same_width, before.same_width);
+            assert_eq!(after.spacing, before.spacing);
+        }
         _ => panic!("fixture control kind changed during HML round-trip"),
     }
 }

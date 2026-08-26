@@ -1,0 +1,26 @@
+{
+  "id": "SD59",
+  "tier": 2,
+  "title": "capabilities 스키마 dialect",
+  "input": "samples/table-001.hwp",
+  "instructions": "export-capabilities-schema 의 dialect 를 answer.json 에 {\"dialect\": S} 으로 제출하라. 힌트: rhwp export-capabilities-schema --json.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "capabilities 스키마 dialect",
+      "op": "answer_eq",
+      "answer": "dialect",
+      "path": "dialect",
+      "cmd": [
+        "export-capabilities-schema",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

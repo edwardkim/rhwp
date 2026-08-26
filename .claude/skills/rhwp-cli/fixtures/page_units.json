@@ -1,0 +1,16 @@
+{
+  "skill": "rhwp-cli",
+  "inch_hwpunit": 7200,
+  "inch_mm": 25.4,
+  "inch_px_dpi96": 96,
+  "px_hwpunit": 75,
+  "mm_hwpunit": 283.46,
+  "formulas": [
+    "1인치 = 7200 HWPUNIT = 25.4mm = 96px (DPI 96)",
+    "1px = 75 HWPUNIT",
+    "1mm ≈ 283.46 HWPUNIT",
+    "페이지 번호는 0부터. PDF/한컴 표기는 1부터.",
+    "extract-pages --from/--to 만 1 기준. -p 와 혼동하면 한 쪽 밀린다."
+  ],
+  "pageZeroBased": true
+}

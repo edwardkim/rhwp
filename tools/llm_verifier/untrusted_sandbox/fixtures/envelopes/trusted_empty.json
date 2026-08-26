@@ -1,0 +1,9 @@
+{
+  "schemaVersion": "1.0",
+  "source": "samples/blank.hwpx",
+  "pageCount": 1,
+  "output": "out.svg",
+  "bytes": 128,
+  "untrustedContent": false,
+  "untrustedFields": []
+}

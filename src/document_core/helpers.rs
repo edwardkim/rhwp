@@ -9,18 +9,11 @@ use crate::model::path::PathSegment;
 use crate::model::style::BorderLineType;
 
 pub(crate) fn is_treat_as_char_object_control(ctrl: &Control) -> bool {
-    match ctrl {
-        Control::Shape(shape) => shape.common().treat_as_char,
-        Control::Table(table) => table.common.treat_as_char,
-        Control::Picture(picture) => picture.common.treat_as_char,
-        Control::Equation(equation) => equation.common.treat_as_char,
-        _ => false,
-    }
+    ctrl.is_treat_as_char_object()
 }
 
 fn is_logical_inline_control(ctrl: &Control) -> bool {
-    is_treat_as_char_object_control(ctrl)
-        || matches!(ctrl, Control::Footnote(_) | Control::Endnote(_))
+    ctrl.is_logical_inline()
 }
 
 /// 문단의 탐색 가능한 텍스트 길이를 반환한다.
@@ -147,35 +140,11 @@ pub(crate) fn find_control_text_positions(para: &Paragraph) -> Vec<usize> {
 /// `find_control_text_positions()` 는 HWP/HWPX record stream 의 raw text position 을 보존한다.
 /// 반면 커서 이동은 `SectionDef`, `ColumnDef` 같은 구조 컨트롤을 건너뛰고,
 /// Shape/Table/Picture/Equation/Footnote/Endnote 같은 인라인 개체만 한 글자 폭으로 센다.
+///
+/// 알고리즘 본체는 [`Paragraph::logical_control_positions`] 로 이동했으며, 본 함수는
+/// 기존 호출 경로를 유지하기 위한 thin wrapper 다.
 pub(crate) fn find_logical_control_positions(para: &Paragraph) -> Vec<usize> {
-    if para.text.is_empty() && para.char_offsets.is_empty() {
-        let mut inline_seen = 0usize;
-        let mut positions = Vec::with_capacity(para.controls.len());
-
-        for ctrl in &para.controls {
-            positions.push(inline_seen);
-            if is_logical_inline_control(ctrl) {
-                inline_seen += 1;
-            }
-        }
-
-        return positions;
-    }
-
-    let text_positions = find_control_text_positions(para);
-    let text_len = para.text.chars().count();
-    let mut inline_seen = 0usize;
-    let mut positions = Vec::with_capacity(para.controls.len());
-
-    for (ci, ctrl) in para.controls.iter().enumerate() {
-        let text_pos = text_positions.get(ci).copied().unwrap_or(text_len);
-        positions.push(text_pos + inline_seen);
-        if is_logical_inline_control(ctrl) {
-            inline_seen += 1;
-        }
-    }
-
-    positions
+    para.logical_control_positions()
 }
 
 /// ShapeObject에서 TextBox를 추출하는 헬퍼
@@ -206,6 +175,37 @@ pub(crate) fn get_textbox_from_shape_mut(
         _ => return None,
     };
     drawing.text_box.as_mut()
+}
+
+/// ShapeObject에서 캡션을 추출하는 헬퍼 (#4321).
+///
+/// 캡션이 실제로 어느 필드에 남는지는 변형마다 다르다 — `.drawing()`(`DrawingObjAttr.caption`)
+/// 을 보면 되는 것과, 자기 struct의 `caption` 필드를 직접 봐야 하는 것으로 갈린다:
+///
+/// - `Line`/`Rectangle`/`Ellipse`/`Arc`/`Polygon`/`Curve`: `.drawing()` 이 `Some` 이고 파서가
+///   캡션을 거기 그대로 둔다 (`src/parser/control/shape.rs` 일반 도형 분기 — `xxx.drawing =
+///   drawing;` 뒤에 별도 이동이 없다. HWPX(`src/parser/hwpx/section.rs::parse_shape_object`)도
+///   `<hp:caption>` 을 같은 `DrawingObjAttr.caption` 자리에 직접 채운다).
+/// - `Group`/`Picture`: `.drawing()` 이 `None` 이다. 파서가 캡션을 자기 struct의 `caption`
+///   필드로 옮겨(HWP5: `group.caption = drawing.caption;`) 또는 처음부터 거기로(HWPX:
+///   `parse_container`/`parse_picture`) 채운다.
+/// - `Chart`/`Ole`: **`.drawing()` 이 `Some` 이지만 캡션은 거기 없다.** HWP5 파서
+///   (`src/parser/control/shape.rs:213,222`)가 `chart.caption = chart.drawing.caption.take();`
+///   / `ole.caption = ole.drawing.caption.take();` 로 캡션을 파싱 직후 `drawing.caption` 밖으로
+///   `.take()` 해 자기 struct 최상위 필드로 옮긴다 — `.drawing()` 만 보면 항상 `None` 이라
+///   미스캔이었다. (HWPX 의 `parse_hp_chart_element`/`parse_hp_ole_element` 는 `<hp:caption>`
+///   자체를 파싱하지 않아 — 아예 어느 필드에도 값이 없다 — 이건 별개의 파서 결함 #4319 다.)
+pub(crate) fn get_caption_from_shape(
+    shape: &crate::model::shape::ShapeObject,
+) -> Option<&crate::model::shape::Caption> {
+    use crate::model::shape::ShapeObject;
+    match shape {
+        ShapeObject::Group(g) => g.caption.as_ref(),
+        ShapeObject::Picture(p) => p.caption.as_ref(),
+        ShapeObject::Chart(c) => c.caption.as_ref(),
+        ShapeObject::Ole(o) => o.caption.as_ref(),
+        _ => shape.drawing().and_then(|d| d.caption.as_ref()),
+    }
 }
 
 /// 문단 목록에서 DocumentPath를 따라 중첩 표에 대한 가변 참조를 얻는다.

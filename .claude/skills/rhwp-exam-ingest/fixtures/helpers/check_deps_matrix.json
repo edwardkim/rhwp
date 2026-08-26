@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "1.0",
+  "helper": "check_deps.sh",
+  "usage": "check_deps.sh [--json]",
+  "required": [
+    "rhwp",
+    "imagemagick"
+  ],
+  "optional": [
+    "pdftoppm",
+    "pdftotext",
+    "python3",
+    "python-docx"
+  ],
+  "codes": [
+    "DEP_MISS_RHWP",
+    "DEP_MISS_IMAGEMAGICK",
+    "DEP_MISS_POPPLER",
+    "DEP_MISS_PDFTOTEXT",
+    "DEP_MISS_PYTHON3",
+    "DEP_MISS_PYTHON_DOCX"
+  ]
+}

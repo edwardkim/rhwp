@@ -1,0 +1,11 @@
+{
+  "schemaVersion": "1.0",
+  "patterns": [
+    "![alt](path)",
+    "<img src>",
+    "[id]: path"
+  ],
+  "base": "markdown file directory",
+  "remoteDownload": false,
+  "missingPathStop": "F07"
+}

@@ -1,0 +1,21 @@
+{
+  "baselineFontManifestSha256": "3bcd379d1f7fc217aad47a0b44b952d993c86ebbfabf46009386e4b3de768b40",
+  "baselineSnapshotIdentitySha256": "7961e64697b76e8985d918abcf52a8fa0eca1d7cb5d5d46bea0af7f926b4dbe8",
+  "evidenceClass": "acceptance-primary",
+  "externalControlPlane": true,
+  "issue": 4963,
+  "kind": "font-oracle-disposable-environment-attestation",
+  "privacy": {
+    "absolutePathIncluded": false,
+    "fontBytesIncluded": false,
+    "hostNameIncluded": false
+  },
+  "provider": "hyper-v-checkpoint",
+  "restoreProbe": {
+    "beforeManifestSha256": "3bcd379d1f7fc217aad47a0b44b952d993c86ebbfabf46009386e4b3de768b40",
+    "performed": true,
+    "recoveredManifestSha256": "3bcd379d1f7fc217aad47a0b44b952d993c86ebbfabf46009386e4b3de768b40"
+  },
+  "schemaVersion": 1,
+  "vmIdentitySha256": "466349124f6411dc1460697f8c2959256c28d682daf5f48376d05c83a1f5346d"
+}

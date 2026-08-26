@@ -1,0 +1,58 @@
+{
+  "id": "T53",
+  "tier": 3,
+  "title": "표 표본 결정론 실증",
+  "input": "samples/table-001.hwp",
+  "instructions": "T53 은 입문·코어 온램프를 두껍게 하는 과제다. T10 과 같은 결정론 실증이지만 입력이 table-001 이고 셀 문구가 '결정온램프' 다. 원본 복사만 하면 실패한다. 표본은 `samples/table-001.hwp` 이고, 이미 저장소 `samples/` 에 있다. 새 파일을 만들지 마라. 정답 숫자는 과제에 박제되어 있지 않다. 채점기가 같은 명령을 다시 돌린다. 힌트: 같은 run 계획서를 두 번 실행해 o1.hwp 와 o2.hwp 를 만들고 plan.json 을 함께 제출. 제출은 answer.json 에 o1.hwp, o2.hwp, plan.json 로 적는다. 원본을 덮어쓰지 마라. T07 의 fields[0]==홍길동 판정을 복제하지 마라. 채점기가 계획을 되돌려 o1.hwp 를 재현한다. 홍길동을 쓰지 마라.",
+  "submit": {
+    "kind": "pair",
+    "files": [
+      "o1.hwp",
+      "o2.hwp",
+      "plan.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "두 산출물 바이트 동일",
+      "op": "same_hash",
+      "files": [
+        "o1.hwp",
+        "o2.hwp"
+      ]
+    },
+    {
+      "name": "원본 무편집 복사가 아님",
+      "op": "differs_from_input",
+      "file": "o1.hwp"
+    },
+    {
+      "name": "계획서 입력이 과제 입력",
+      "op": "value_eq",
+      "value": "samples/table-001.hwp",
+      "cmd": [
+        "replay",
+        "{file:plan.json}",
+        "--json"
+      ],
+      "path": "input"
+    },
+    {
+      "name": "제출 계획이 o1.hwp 를 실제로 재현",
+      "op": "value_eq",
+      "value": true,
+      "cmd": [
+        "replay",
+        "{file:plan.json}",
+        "--expect-output-sha256",
+        "{sha256:o1.hwp}",
+        "--json"
+      ],
+      "path": "reproduced",
+      "expect_exits": [
+        0,
+        3
+      ]
+    }
+  ]
+}

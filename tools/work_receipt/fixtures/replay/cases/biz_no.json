@@ -1,0 +1,69 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workReceiptReplayCase",
+  "ident": "biz_no",
+  "claim": "M-rcpt",
+  "issue": 5478,
+  "family": "계약",
+  "genre": "사업자번호",
+  "title": "사업자등록번호 하이픈 정규화",
+  "why": "1234567890→123-45-67890. 검증 체크섬은 엔진이 하지 않는다.",
+  "notes": "표기만, 체크섬 없음",
+  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "output": "out/biz-no.hwp",
+  "ext": "hwp",
+  "actions": [
+    "replace_text"
+  ],
+  "stepCount": 1,
+  "plan": {
+    "planVersion": "1.0",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "output": "out/biz-no.hwp",
+    "steps": [
+      {
+        "action": "replace_text",
+        "find": "1234567890",
+        "replace": "123-45-67890"
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"samples/basic/issue2007_nested_cell_pagination_42065.hwp\",\"output\":\"out/biz-no.hwp\",\"steps\":[{\"action\":\"replace_text\",\"find\":\"1234567890\",\"replace\":\"123-45-67890\"}]}",
+  "planSha256": "457c2570dde7765b72902ff45878a99fb3ac3427e32c9dc7f8c1a46c5652c241",
+  "command": "replay",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "inputSha256": "26e8a0936e6d1f5b3822702224b2d74c49405282b30ae1ee8e8ef57f5e910c6e",
+    "planSha256": "457c2570dde7765b72902ff45878a99fb3ac3427e32c9dc7f8c1a46c5652c241",
+    "outputSha256": "2c16e6e3ab1fc7fc0e5409124b153d917c9e07e0564df68780208d91a56f7490",
+    "toolVersion": "fixture-0.0.0-not-a-release",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null
+  },
+  "expected": {
+    "attest": {
+      "exit": 0,
+      "mode": "attest",
+      "reproduced": null,
+      "userOutputCreated": false
+    },
+    "verify_ok": {
+      "exit": 0,
+      "mode": "verify",
+      "reproduced": true,
+      "expectedOutputSha256": "2c16e6e3ab1fc7fc0e5409124b153d917c9e07e0564df68780208d91a56f7490"
+    },
+    "verify_mismatch": {
+      "exit": 3,
+      "mode": "verify",
+      "reproduced": false,
+      "expectedOutputSha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "judgment": true
+    }
+  },
+  "claimedOutputPathUntouched": true,
+  "generator": "tools/work_receipt/fatten_work_receipt.py"
+}

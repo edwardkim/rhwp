@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-08-09
+last_verified: 2026-08-16
 ---
 
 # PR 리뷰 · 통합 워크플로우 매뉴얼
@@ -146,6 +146,19 @@ base 반영을 강제하지 않는 정책이면, 같은 PR·같은 source reposi
 재사용해 trailing review-only commit을 fast-pass할 수 있다. contributor가 source·test를 새로 push한 경우에는
 그 새 code head의 CI를 먼저 통과시킨 뒤 review 기록을 한 번만 이어 붙인다.
 
+PR 자체가 workflow·action·CI impact 정책을 바꾼 경우에는 PR head의 이 판단을 그대로 신뢰하지 않는다.
+기본 브랜치 trusted controller가 exact Full candidate와 review-only tail을 증명한 same-repository PR만
+[review-only fast-pass의 A.1](pr_review/review_only_fast_pass.md#a1-ci-실행-정책을-바꾼-pr의-trusted-재사용)에
+따라 예외 처리한다. controller가 아직 `main`에 활성화되지 않았거나 status가 불완전하면 Full CI를 기다린다.
+
+단, GitHub의 `MERGEABLE` 표시는 텍스트 충돌이 없다는 참고값일 뿐 최신 `devel`과의 컴파일·테스트 호환을
+보장하지 않는다. source가 공용 struct·trait·API를 바꾼 뒤 최신 `devel`이 그 API의 초기화·호출부를
+추가했다면 current-base merge tree의 CI가 실패할 수 있다. 이 사실이 `git merge-tree` 또는 최신 PR head의
+GitHub CI로 확인된 경우에는 문서 기록 경로가 아니라 코드 호환 보정 경로로 전환한다. 외부 contributor commit은
+재작성하지 않고, 필요한 경우에만 현재 contributor source branch에 정확한 최신 `upstream/devel`을 merge한 뒤
+호환 보정 code/test commit을 분리한다. 이 경로는 [collaborator 매개 외부 PR의 최신 `devel` 호환 보정](pr_review/collaborator_external_pr.md#9314-최신-devel-호환-보정)을
+따르며, 새 code head는 반드시 Full CI를 다시 통과해야 한다.
+
 #### 3.2.1 최신 `devel` 오늘할일을 보존하는 trailing 기록
 
 contributor source branch의 `mydocs/orders/YYYYMMDD.md`가 최신 `upstream/devel`보다 오래될 수 있다.
@@ -182,7 +195,7 @@ source·test·fixture·workflow 보정을 추가하지 않았다면 같은 전�
 4. renderer/layout 계열이면 focused Rust test와 실제 WASM/브라우저 또는 동등한 시각 검증을 별도로
    실행해, GitHub 전체 회귀가 놓칠 수 있는 이번 검토의 핵심 경로를 확인한다.
 
-이 조건에서는 `cargo test --profile release-test --tests`와 Native Skia 전체 묶음처럼 이미 같은 code
+이 조건에서는 [로컬 검증의 `release-test` 전체 nextest 회귀](pr_review/local_validation.md)와 Native Skia 전체 묶음처럼 이미 같은 code
 candidate에서 성공한 광범위 로컬 회귀를 중복 실행하지 않는다. 이미 시작한 명령을 중지했다면 결과를
 `PASS`로 기록하지 말고 중지 사실과 이유를 적는다. review 문서에는 candidate SHA, 재사용한 GitHub
 run URL 또는 run 번호, 실행한 focused 검증, 생략한 전체 검증과 사유를 모두 남긴다. 최신 head의
@@ -199,8 +212,9 @@ fast-pass 또는 Full CI aggregate 성공은 여전히 merge 직전 다시 확�
   merge와 stale run force-cancel은 대상 SHA를 확인한 뒤 순차로 실행한다.
 - 실제 GitHub review/comment, issue close, PR close는 승인과 선행 조건이 갖춰진 뒤에만 게시한다.
 - merge 후에는 merge SHA 확인 → 문서·asset의 devel 반영 → 최종 devel sync → issue 상태 확인 및
-  comment → branch/worktree/검토 전용 target 정리 순서를 지킨다. raw image URL을 쓰는 comment는
-  asset이 devel에 존재한 뒤에만 게시한다.
+  comment → branch/worktree/검토 전용 target 정리 순서를 지킨다. 이때 worktree 정리에는 commit을
+  만들지 않았더라도 이번 PR의 diff·CI·재현·검증만을 위해 만든 local 검토 worktree를 포함한다. raw image
+  URL을 쓰는 comment는 asset이 devel에 존재한 뒤에만 게시한다.
 
 서로 다른 host, worktree, CARGO_TARGET_DIR, Cargo home이 실제로 분리된 경우에도 로컬 Cargo 병렬 실행은
 이 매뉴얼의 기본 경로가 아니다. 필요하면 별도 작업 계획과 작업지시자 승인을 받아 lock·disk·결과 귀속을
@@ -220,6 +234,39 @@ fast-pass 또는 Full CI aggregate 성공은 여전히 merge 직전 다시 확�
 - 게시 직후 해당 review/comment API의 `body`를 읽어 literal `\\n`이 남지 않았는지 확인하고, 임시 본문
   파일은 정확한 경로만 정리한다.
 
+#### 3.4.1 Windows PowerShell 한글 본문
+
+Windows PowerShell 5.1의 here-string을 `gh ... --body-file -`에 직접 pipe하면 현재 console code page나
+UTF-8 BOM이 `gh` 표준입력에 섞일 수 있다. 그러면 GitHub에는 한글이 `??`로 치환되거나 본문 첫 글자
+앞에 보이지 않는 BOM이 남는다. 한글을 포함한 다단락 PR 본문·review·comment에는 **UTF-8 without BOM
+파일 경로**만 사용한다.
+
+```powershell
+$body = @'
+## 변경 요약
+
+- 한글 본문 예시
+'@
+$bodyPath = Join-Path $env:TEMP "rhwp-pr-body-$PID.md"
+$utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+[System.IO.File]::WriteAllText($bodyPath, $body, $utf8NoBom)
+
+# 생성 또는 수정 중 하나를 사용한다.
+gh pr create --repo edwardkim/rhwp --base devel --head <branch> --body-file $bodyPath
+gh pr edit <N> --repo edwardkim/rhwp --body-file $bodyPath
+
+$posted = (gh pr view <N> --repo edwardkim/rhwp --json body | ConvertFrom-Json).body
+if ($posted.Length -eq 0 -or [int][char]$posted[0] -eq 0xFEFF -or $posted.Contains('??')) {
+    throw 'PR 본문 UTF-8 전송을 다시 확인하세요.'
+}
+Remove-Item -LiteralPath $bodyPath
+```
+
+`<N>`은 `gh pr create`가 성공한 뒤 실제 번호로 바꾼다. create 직후 본문을 검증할 때는 같은 방식으로
+`gh pr view`를 실행한다. `??`가 문서 내용으로 의도된 경우에는 그 검사 대신 예상한 한글 제목·문장을
+`Contains()`로 확인한다. 임시 파일은 정확한 `$bodyPath`만 정리하며, `.env`·token·server URL을 본문이나
+검증 출력에 넣지 않는다.
+
 ## 4. review 산출물의 공통 규칙
 
 PR review 문서는 merge 후에도 모순되지 않아야 한다. draft, mergeable, head SHA, CI 상태는
@@ -231,7 +278,7 @@ PR review 문서는 merge 후에도 모순되지 않아야 한다. draft, mergea
 review 문서에는 계획형이나 미래형으로 쓰지 않는다. 실행한 명령, 대상 head, 결과를 과거형 사실로
 기록한다.
 
-- 올바른 예: "`cargo test --profile release-test --tests`를 실행해 통과했다."
+- 올바른 예: "로컬 검증의 `release-test` 전체 nextest 회귀를 실행해 통과했다."
 - 잘못된 예: "PR 전에 전체 테스트를 실행할 예정이다."
 
 아직 실행하지 않은 GitHub Actions, contributor의 새 push, 작업지시자 승인 뒤의 ready 전환·merge·
@@ -240,8 +287,18 @@ review 문서에는 계획형이나 미래형으로 쓰지 않는다. 실행한 
 
 review 문서 경로, review_impl 작성 조건, 사전 판단 report의 범위는 선택한 기본 경로와
 [PR 접수와 리뷰 기록](pr_review/intake_and_review.md)을 따른다. 시각 검증을 실제 판단 근거로 사용하면
-임시 output 경로만 남기지 말고, 대표 review PNG를 mydocs/pr/assets 아래 안정 경로에 보존한 뒤
-그 경로를 review 문서와 실제 GitHub comment에 사용한다.
+문서 비교 절차의 정본으로 [PDF/SVG visual sweep 가이드](verification/visual_sweep_guide.md#github-merge-comment)를
+사용한다. 임시 output 경로만 남기지 말고, 대표 review PNG를 mydocs/pr/assets 아래 안정 경로에 보존한 뒤
+그 경로를 review 문서와 실제 GitHub comment에 사용한다. 이때 대표 review PNG 자체를 열어 도구 라벨,
+한글 glyph, 수치 표기, overlay legend가 판독 가능한지 확인하고, 깨진 라벨이나 판정 오해 소지가 있으면
+merge 전 보정하거나 별도 issue로 분리해 review 문서에 적는다. merge 후 comment에는 Visual Sweep 정본
+link와 review 문서의 실제 수치·결론을 함께 남기며, PNG는 merge commit SHA 고정 raw URL로 표시한다.
+
+renderer/layout/typeset/paint 등 사용자-visible 렌더링 변경에 HWP/HWPX/PDF fixture가 붙어 있으면
+"시각 검증을 판단 근거로 사용한 경우"가 아니라 **시각 검증 필요 후보**로 먼저 분류한다. 이때 원 PR의
+before/after 이미지나 한컴 수치만 확인하고 maintainer의 직접 visual sweep 또는 동등한 판정 없이
+`수용`·`merge 권고`로 결론 내리지 않는다. 직접 수행하지 못했으면 review 문서와 PR comment에
+`visual sweep 미실행`, `원 PR 증적만 확인`, `보류/조건부 보류` 중 하나를 명시한다.
 
 ## 5. 기존 절 번호 대응
 

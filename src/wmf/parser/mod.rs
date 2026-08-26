@@ -59,14 +59,33 @@ pub fn read_variable<R: crate::wmf::Read>(
         return Ok((vec![0u8; 0], 0));
     }
 
-    let mut buffer = vec![0u8; len];
+    // `len` is derived from untrusted record/DIB size fields. Pre-allocating
+    // `vec![0u8; len]` for a crafted huge `len` aborts the process (OOM)
+    // before the too-short stream is ever detected. Grow the buffer only as
+    // bytes actually arrive, capping each reservation. Behaviour is identical
+    // for valid metafiles: exactly `len` bytes are returned, or an error if
+    // the stream is short.
+    const CHUNK: usize = 64 * 1024;
+    let mut buffer = Vec::new();
+    let mut filled = 0usize;
 
-    match buf.read(&mut buffer) {
-        Ok(bytes_read) if bytes_read == len => Ok((buffer, len)),
-        Ok(bytes_read) => Err(ReadError::new(format!(
-            "expected {len} bytes read, but {bytes_read} bytes read"
-        ))),
-        Err(err) => Err(ReadError::new(format!("{err:?}"))),
+    while filled < len {
+        let want = (len - filled).min(CHUNK);
+        buffer.resize(filled + want, 0u8);
+
+        match buf.read(&mut buffer[filled..]) {
+            Ok(0) => break,
+            Ok(bytes_read) => filled += bytes_read,
+            Err(err) => return Err(ReadError::new(format!("{err:?}"))),
+        }
+    }
+
+    if filled == len {
+        Ok((buffer, len))
+    } else {
+        Err(ReadError::new(format!(
+            "expected {len} bytes read, but {filled} bytes read"
+        )))
     }
 }
 

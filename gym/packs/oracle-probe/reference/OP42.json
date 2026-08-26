@@ -1,0 +1,27 @@
+{
+  "id": "OP42",
+  "steps": [
+    {
+      "answer": {
+        "hits": {
+          "cmd": [
+            "search",
+            "{input}",
+            "국어",
+            "--json"
+          ],
+          "path": "matches",
+          "len": true
+        },
+        "pages": {
+          "cmd": [
+            "info",
+            "{input}",
+            "--json"
+          ],
+          "path": "pageCount"
+        }
+      }
+    }
+  ]
+}

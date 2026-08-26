@@ -1,0 +1,24 @@
+{
+  "id": "T22",
+  "tier": 2,
+  "title": "국어원 문서에서 '국립' 검색",
+  "input": "samples/2022년 국립국어원 업무계획.hwp",
+  "instructions": "T22 은 입문·코어 온램프를 두껍게 하는 과제다. 같은 국어원 문서라도 T02 의 '국어' 와 '국립' 은 다른 매치 집합이다. 표본은 `samples/2022년 국립국어원 업무계획.hwp` 이고, 이미 저장소 `samples/` 에 있다. 새 파일을 만들지 마라. 정답 숫자는 과제에 박제되어 있지 않다. 채점기가 같은 명령을 다시 돌린다. 힌트: search <문서> 국립 --json. 제출은 answer.json 에 {\"matchCount\": <값>} 로 적는다. 원본을 덮어쓰지 마라. T07 의 fields[0]==홍길동 판정을 복제하지 마라. 질의 한 글자를 바꾸면 수가 달라진다. 라이브로 다시 세어라.",
+  "submit": {
+    "kind": "answer"
+  },
+  "checks": [
+    {
+      "name": "국어원 문서에서 '국립' 검색",
+      "op": "len_answer_eq",
+      "answer": "matchCount",
+      "cmd": [
+        "search",
+        "{input}",
+        "국립",
+        "--json"
+      ],
+      "path": "matches"
+    }
+  ]
+}

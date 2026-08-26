@@ -1,0 +1,71 @@
+{
+  "id": "XC34",
+  "steps": [
+    {
+      "run": [
+        "run",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"samples/hwp_table_test.hwp\", \"output\": \"{sub:o1.hwp}\", \"steps\": [{\"action\": \"set_cell\", \"table\": 0, \"row\": 0, \"col\": 0, \"text\": \"칸1-XC34\"}]}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "replay",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"samples/hwp_table_test.hwp\", \"output\": \"{sub:o1.hwp}\", \"steps\": [{\"action\": \"set_cell\", \"table\": 0, \"row\": 0, \"col\": 0, \"text\": \"칸1-XC34\"}]}",
+        "--capsule",
+        "{sub:tt5/g0.capsule.json}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "replay",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"{sub:o1.hwp}\", \"output\": \"{sub:o2.hwp}\", \"steps\": [{\"action\": \"set_cell\", \"table\": 0, \"row\": 0, \"col\": 0, \"text\": \"칸2-XC34\"}]}",
+        "--capsule",
+        "{sub:tt5/g1.capsule.json}",
+        "--parent",
+        "{sub:tt5/g0.capsule.json}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "replay",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"{sub:o2.hwp}\", \"output\": \"{sub:o3.hwp}\", \"steps\": [{\"action\": \"set_cell\", \"table\": 0, \"row\": 0, \"col\": 0, \"text\": \"칸3-XC34\"}]}",
+        "--capsule",
+        "{sub:tt5/g2.capsule.json}",
+        "--parent",
+        "{sub:tt5/g1.capsule.json}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "replay",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"{sub:o3.hwp}\", \"output\": \"{sub:o4.hwp}\", \"steps\": [{\"action\": \"set_cell\", \"table\": 0, \"row\": 0, \"col\": 0, \"text\": \"칸4-XC34\"}]}",
+        "--capsule",
+        "{sub:tt5/g3.capsule.json}",
+        "--parent",
+        "{sub:tt5/g2.capsule.json}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "replay",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"{sub:o4.hwp}\", \"output\": \"{sub:o5.hwp}\", \"steps\": [{\"action\": \"set_cell\", \"table\": 0, \"row\": 0, \"col\": 0, \"text\": \"칸5-XC34\"}]}",
+        "--capsule",
+        "{sub:tt5/g4.capsule.json}",
+        "--parent",
+        "{sub:tt5/g3.capsule.json}",
+        "--json"
+      ]
+    }
+  ]
+}

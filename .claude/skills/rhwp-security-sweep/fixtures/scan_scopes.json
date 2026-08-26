@@ -1,0 +1,21 @@
+{
+  "default": [
+    "body",
+    "tableCell",
+    "textBox",
+    "equation",
+    "footnote",
+    "endnote",
+    "header",
+    "footer",
+    "caption"
+  ],
+  "includeFields": [
+    "fieldName",
+    "fieldGuide",
+    "fieldCommand",
+    "hiddenComment",
+    "fieldMemo"
+  ],
+  "rule": "훑지 않은 영역은 깨끗함이 아니라 검사 안 함"
+}

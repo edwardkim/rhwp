@@ -24,7 +24,7 @@ last_verified: 2026-07-25
 | [collaborator_self_merge.md](collaborator_self_merge.md) | collaborator 자신의 PR을 준비·merge |
 | [collaborator_external_pr.md](collaborator_external_pr.md) | collaborator가 contributor PR head를 보정하거나 기록을 더함 |
 | [local_validation.md](local_validation.md) | local fetch, simulation, Cargo/npm/fixture 검증 |
-| [visual_fixture_evidence.md](visual_fixture_evidence.md) | renderer 또는 HWP/HWPX/PDF fixture·페이지·시각 검증 |
+| [visual_fixture_evidence.md](visual_fixture_evidence.md) | renderer 또는 HWP/HWPX/PDF fixture·페이지·시각 검증. 문서 비교 절차는 [Visual Sweep 가이드](../verification/visual_sweep_guide.md#github-merge-comment)를 정본으로 사용 |
 | [multi_pr_update_branch.md](multi_pr_update_branch.md) | 대량 유입, 다수 PR 누적 검토, update branch, stale CI |
 | [review_only_fast_pass.md](review_only_fast_pass.md) | code PR 뒤 review-only commit 또는 PR 전체가 허용된 review-only 범위 |
 | [post_merge.md](post_merge.md) | merge 이후 문서·asset·issue·comment·정리 |

@@ -1,0 +1,25 @@
+{
+  "id": "EX15",
+  "tier": 2,
+  "title": "차트 데이터 — 묶은가로막대형 행 수",
+  "input": "samples/chart/가로막대형/묶은가로막대형.hwp",
+  "instructions": "chart-to-csv 로 이 문서의 차트 1을 뽑아, 그 데이터의 행 수(rowCount)를 보고하라. 답 형식: {\"rows\": <수>}. 차트 번호는 1부터다.",
+  "submit": {
+    "kind": "answer"
+  },
+  "checks": [
+    {
+      "name": "rows 일치",
+      "op": "answer_eq",
+      "answer": "rows",
+      "cmd": [
+        "chart-to-csv",
+        "{input}",
+        "--chart",
+        "1",
+        "--json"
+      ],
+      "path": "charts[0].rowCount"
+    }
+  ]
+}

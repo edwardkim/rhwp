@@ -1,0 +1,105 @@
+[
+  {
+    "key": "pr6014_issue5712",
+    "hwp": "samples/issue5712/3184241_medical_exam_equipment.hwpx",
+    "pdf": "pdf/pr6014_issue5712_3184241_medical_exam_equipment-2020.pdf",
+    "requested_pages": [
+      3184241
+    ],
+    "completed_pages": [
+      3184241
+    ],
+    "missing_pages": [],
+    "run_state": "complete",
+    "run_manifest": "output/visual_sweep_pr6014_issue5712/pr6014_issue5712/run_manifest.json",
+    "exported_svg_pages": 1,
+    "exported_render_tree_pages": 1,
+    "exported_pdf_pages": 1,
+    "rasterized_svg_pages": 1,
+    "rasterized_pdf_pages": 1,
+    "svg_pages": 1,
+    "render_tree_pages": 1,
+    "pdf_pages": 1,
+    "compare_pages": 1,
+    "overlay_pages": 1,
+    "review_pages": 1,
+    "pdf_question_markers": 0,
+    "contact_sheet": "output/visual_sweep_pr6014_issue5712/pr6014_issue5712/contact_sheet.png",
+    "overlay_contact_sheet": "output/visual_sweep_pr6014_issue5712/pr6014_issue5712/overlay_contact_sheet.png",
+    "review_contact_sheet": "output/visual_sweep_pr6014_issue5712/pr6014_issue5712/review_contact_sheet.png",
+    "analysis_dir": "output/visual_sweep_pr6014_issue5712/pr6014_issue5712/analysis",
+    "overlay_dir": "output/visual_sweep_pr6014_issue5712/pr6014_issue5712/overlay",
+    "review_dir": "output/visual_sweep_pr6014_issue5712/pr6014_issue5712/review",
+    "note_shape": [
+      {
+        "section": 0,
+        "footnote": {
+          "separatorAboveMm": 2.999,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.998,
+          "separatorEnabled": true,
+          "separatorLengthMm": -0.004,
+          "rawSeparatorMarginTopMm": 2.999,
+          "rawSeparatorMarginBottomMm": 0.0,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.998
+        },
+        "endnote": {
+          "separatorAboveMm": 2.999,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.0,
+          "separatorEnabled": true,
+          "separatorLengthMm": 51831.325,
+          "rawSeparatorMarginTopMm": 2.999,
+          "rawSeparatorMarginBottomMm": 0.0,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.0
+        }
+      }
+    ],
+    "note_shape_json": "output/visual_sweep_pr6014_issue5712/pr6014_issue5712/analysis/note_shape.json",
+    "overlay_metrics": {
+      "compared_pages": 1,
+      "pixel_diff_threshold": 32,
+      "average_pixel_match_percent": 86.92195,
+      "worst_pixel_match_percent": 86.92195,
+      "average_ink_match_percent": 34.57916,
+      "worst_ink_match_percent": 34.57916,
+      "average_visual_accuracy_proxy_percent": 34.57916,
+      "worst_visual_accuracy_proxy_percent": 34.57916,
+      "worst_pages": [
+        3184241
+      ]
+    },
+    "overlay_metrics_json": "output/visual_sweep_pr6014_issue5712/pr6014_issue5712/overlay/overlay_metrics.json",
+    "visual_metrics": {
+      "analyzed_pages": 1,
+      "flagged_page_count": 0,
+      "frame_overflow_pages": [],
+      "content_bottom_drift_pages": [],
+      "red_marker_drift_pages": [],
+      "question_marker_flow_drift_pages": [],
+      "line_band_drift_pages": [],
+      "column_line_band_drift_pages": [],
+      "column_text_flow_collapse_pages": [],
+      "large_ink_region_drift_pages": [],
+      "endnote_separator_gap_drift_pages": [],
+      "endnote_separator_observed_pages": [],
+      "endnote_separator_gap_pages": [],
+      "endnote_no_separator_content_pages": [],
+      "between_notes_marker_gap_pages": [],
+      "equation_text_overlap_pages": [],
+      "square_wrap_text_overlap_pages": [],
+      "deferred_square_picture_top_drift_pages": [],
+      "right_table_left_strip_text_deficit_pages": [],
+      "question_title_text_overlap_pages": [],
+      "line_order_overlap_pages": [],
+      "render_tree_frame_tail_overflow_pages": [],
+      "question_marker_drift_pages": [],
+      "legacy_glyph_visual_pages": [],
+      "metrics_json": "/home/tsjang/rhwp/output/visual_sweep_pr6014_issue5712/pr6014_issue5712/analysis/metrics.json",
+      "question_flow_json": "/home/tsjang/rhwp/output/visual_sweep_pr6014_issue5712/pr6014_issue5712/analysis/question_flow.json"
+    },
+    "flagged_pages": []
+  }
+]

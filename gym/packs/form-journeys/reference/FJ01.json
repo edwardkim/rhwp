@@ -1,0 +1,25 @@
+{
+  "id": "FJ01",
+  "steps": [
+    {
+      "write_json": {
+        "to": "{sub:data.json}",
+        "body": {
+          "전화번호": "02-720-8899"
+        }
+      }
+    },
+    {
+      "run": [
+        "edit",
+        "fill-fields",
+        "{input}",
+        "--data",
+        "@{sub:data.json}",
+        "-o",
+        "{sub:named.hwp}",
+        "--json"
+      ]
+    }
+  ]
+}

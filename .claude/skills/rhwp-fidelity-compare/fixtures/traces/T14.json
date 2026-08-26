@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5329,
+  "notGym": true,
+  "noNewCli": true,
+  "id": "T14",
+  "title": "pua 3385",
+  "stop": "F04",
+  "steps": [
+    "glyph-risk"
+  ],
+  "tool": "tools/fidelity_compare/fidelity_compare.py"
+}

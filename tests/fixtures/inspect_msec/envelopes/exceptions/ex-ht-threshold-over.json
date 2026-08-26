@@ -1,0 +1,36 @@
+{
+  "id": "ex-ht-threshold-over",
+  "issue": 5476,
+  "axis": "hidden-text",
+  "family": "exception",
+  "polarity": "exception",
+  "sourceRule": {
+    "file": "src/main.rs",
+    "symbol": "inspect_command",
+    "note": "4096pt 초과. CharShape.base_size 스펙 상한."
+  },
+  "cli": {
+    "argv": [
+      "inspect",
+      "hidden-text",
+      "samples/hwp3-sample.hwp",
+      "--threshold-pt",
+      "4097"
+    ],
+    "exitCode": 2,
+    "stdoutKind": "empty",
+    "detectionIsNotFailure": false,
+    "stdoutBytes": 0,
+    "stderrContains": "오류: --threshold-pt 뒤에 0 이상 4096 이하의 실수가 필요합니다."
+  },
+  "consume": {
+    "branch": "stdout empty",
+    "doNotParseStdoutAsJson": true,
+    "stderrIsDiagnosis": true
+  },
+  "pair": null,
+  "why": "4096pt 초과. CharShape.base_size 스펙 상한.",
+  "note": "실패 시 stdout 0바이트. 반쪽 JSON 이 나가면 파이프가 성공으로 오독한다.",
+  "human": "",
+  "inventedRule": false
+}

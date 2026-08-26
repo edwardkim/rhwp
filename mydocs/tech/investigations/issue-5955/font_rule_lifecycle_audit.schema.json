@@ -1,0 +1,222 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/edwardkim/rhwp/blob/devel/mydocs/tech/investigations/issue-5955/font_rule_lifecycle_audit.schema.json",
+  "title": "rhwp font rule lifecycle trace audit",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "kind",
+    "issue",
+    "schema",
+    "registry",
+    "trace",
+    "summary",
+    "referencesSha256",
+    "references"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "1.0" },
+    "kind": { "const": "font-rule-lifecycle-trace-audit" },
+    "issue": { "const": 5955 },
+    "schema": { "$ref": "#/$defs/pathDigest" },
+    "registry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256", "rulesSha256", "historicalLedger"],
+      "properties": {
+        "path": { "const": "assets/font-rules/font_rule_registry_v2.json" },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "rulesSha256": { "$ref": "#/$defs/sha256" },
+        "historicalLedger": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["path", "sha256", "ruleCount"],
+          "properties": {
+            "path": {
+              "const": "mydocs/tech/investigations/issue-4939/font_rule_ledger.json"
+            },
+            "sha256": { "$ref": "#/$defs/sha256" },
+            "ruleCount": { "type": "integer", "minimum": 0, "maximum": 4096 }
+          }
+        }
+      }
+    },
+    "trace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "recordCount",
+        "ruleReferenceCount",
+        "uniqueRuleIdCount",
+        "layoutHash",
+        "normalizedHash"
+      ],
+      "properties": {
+        "schemaVersion": { "const": 1 },
+        "recordCount": { "type": "integer", "minimum": 0, "maximum": 4096 },
+        "ruleReferenceCount": { "type": "integer", "minimum": 0, "maximum": 262144 },
+        "uniqueRuleIdCount": { "type": "integer", "minimum": 0, "maximum": 262144 },
+        "layoutHash": { "$ref": "#/$defs/nullableSha256" },
+        "normalizedHash": { "$ref": "#/$defs/nullableSha256" }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "carriedForwardActive",
+        "introducedActive",
+        "historicalReferenceOnly",
+        "traceSourceDrift",
+        "retired",
+        "replaced",
+        "dangling"
+      ],
+      "properties": {
+        "carriedForwardActive": { "$ref": "#/$defs/count" },
+        "introducedActive": { "$ref": "#/$defs/count" },
+        "historicalReferenceOnly": { "$ref": "#/$defs/count" },
+        "traceSourceDrift": { "$ref": "#/$defs/count" },
+        "retired": { "$ref": "#/$defs/count" },
+        "replaced": { "$ref": "#/$defs/count" },
+        "dangling": { "$ref": "#/$defs/count" }
+      }
+    },
+    "referencesSha256": { "$ref": "#/$defs/sha256" },
+    "references": {
+      "type": "array",
+      "maxItems": 262144,
+      "items": { "$ref": "#/$defs/reference" }
+    }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "nullableSha256": {
+      "oneOf": [{ "$ref": "#/$defs/sha256" }, { "type": "null" }]
+    },
+    "nonEmptyString": { "type": "string", "minLength": 1, "maxLength": 2048 },
+    "nullableString": {
+      "oneOf": [{ "$ref": "#/$defs/nonEmptyString" }, { "type": "null" }]
+    },
+    "identifier": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 2048,
+      "pattern": "^[a-z0-9]+(?:[._:-][a-z0-9]+)*$"
+    },
+    "count": { "type": "integer", "minimum": 0, "maximum": 262144 },
+    "pathDigest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": { "$ref": "#/$defs/nonEmptyString" },
+        "sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "resolution": {
+      "enum": [
+        "carried-forward-active",
+        "introduced-active",
+        "historical-reference-only",
+        "trace-declared-source-drift",
+        "retired",
+        "replaced",
+        "dangling"
+      ]
+    },
+    "reason": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "eventId"],
+      "properties": {
+        "code": {
+          "enum": [
+            "carriedForward",
+            "introducedByChangeSet",
+            "historicalReferenceOnly",
+            "traceDeclaredLedgerSourceDrift",
+            "retiredWithoutSuccessor",
+            "retiredWithSuccessor",
+            "ruleIdNotFound"
+          ]
+        },
+        "eventId": { "$ref": "#/$defs/nullableString" }
+      }
+    },
+    "reference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "recordIndex",
+        "recordId",
+        "location",
+        "ruleId",
+        "traceReason",
+        "resolution",
+        "status",
+        "decisionPlane",
+        "projectionId",
+        "sourceBoundaryId",
+        "introducedBy",
+        "lastEvidenceChangeBy",
+        "retiredBy",
+        "retirementReason",
+        "successorRuleIds",
+        "predecessorRuleIds",
+        "reason"
+      ],
+      "properties": {
+        "recordIndex": { "type": "integer", "minimum": 0, "maximum": 4095 },
+        "recordId": { "$ref": "#/$defs/identifier" },
+        "location": { "$ref": "#/$defs/nonEmptyString" },
+        "ruleId": { "$ref": "#/$defs/identifier" },
+        "traceReason": {
+          "oneOf": [
+            { "enum": ["ledgerRuleMissing", "ledgerSourceDrift"] },
+            { "type": "null" }
+          ]
+        },
+        "resolution": { "$ref": "#/$defs/resolution" },
+        "status": {
+          "oneOf": [{ "enum": ["active", "retired"] }, { "type": "null" }]
+        },
+        "decisionPlane": { "$ref": "#/$defs/nullableString" },
+        "projectionId": {
+          "oneOf": [
+            {
+              "enum": [
+                "rust-layout-name",
+                "rust-layout-metric",
+                "canvas2d-paint",
+                "canvas2d-webfont",
+                "canvaskit-sfnt"
+              ]
+            },
+            { "type": "null" }
+          ]
+        },
+        "sourceBoundaryId": { "$ref": "#/$defs/nullableString" },
+        "introducedBy": { "$ref": "#/$defs/nullableString" },
+        "lastEvidenceChangeBy": { "$ref": "#/$defs/nullableString" },
+        "retiredBy": { "$ref": "#/$defs/nullableString" },
+        "retirementReason": { "$ref": "#/$defs/nullableString" },
+        "successorRuleIds": {
+          "type": "array",
+          "maxItems": 8,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/identifier" }
+        },
+        "predecessorRuleIds": {
+          "type": "array",
+          "maxItems": 8,
+          "uniqueItems": true,
+          "items": { "$ref": "#/$defs/identifier" }
+        },
+        "reason": { "$ref": "#/$defs/reason" }
+      }
+    }
+  }
+}

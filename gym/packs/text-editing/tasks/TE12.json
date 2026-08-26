@@ -1,0 +1,60 @@
+{
+  "id": "TE12",
+  "tier": 2,
+  "title": "치환 후 무관 문구 재검색",
+  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "instructions": "입력의 '규제' 를 모두 '점검' 으로 바꾼 edited.hwp 를 제출하고, 고치지 않은 문구 'ⅰ' 의 일치 건수를 answer.json 에 {\"untouched\": N} 으로 적어라. 채점기는 산출물을 다시 검색해 네가 적은 건수와 대조한다.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "edited.hwp",
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "옛 문구 완전 소거",
+      "op": "value_eq",
+      "value": 0,
+      "path": "matchCount",
+      "cmd": [
+        "search",
+        "{file:edited.hwp}",
+        "--json",
+        "--",
+        "규제"
+      ]
+    },
+    {
+      "name": "새 문구 실재",
+      "op": "value_ge",
+      "value": 1,
+      "path": "matchCount",
+      "cmd": [
+        "search",
+        "{file:edited.hwp}",
+        "--json",
+        "--",
+        "점검"
+      ]
+    },
+    {
+      "name": "무관 문구 잔여 건수",
+      "op": "answer_eq",
+      "answer": "untouched",
+      "path": "matchCount",
+      "cmd": [
+        "search",
+        "{file:edited.hwp}",
+        "--json",
+        "--",
+        "ⅰ"
+      ]
+    },
+    {
+      "name": "원본과 다름",
+      "op": "differs_from_input",
+      "file": "edited.hwp"
+    }
+  ]
+}

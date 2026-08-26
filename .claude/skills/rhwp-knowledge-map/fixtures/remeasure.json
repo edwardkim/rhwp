@@ -1,0 +1,45 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5342,
+  "skill": "rhwp-knowledge-map",
+  "notGym": true,
+  "noNewCli": true,
+  "noNewEditLogic": true,
+  "routerOnly": true,
+  "entryPoint": true,
+  "doNotRenarrateMapRows": true,
+  "canonicalWins": true,
+  "binaryWinsOnVersionMismatch": true,
+  "fieldDictionary": "mydocs/manual/agent_knowledge_map.md#2-봉투-필드-사전--필드-이름으로-찾는-역인덱스",
+  "commands": [
+    {
+      "id": "RM01",
+      "argv": [
+        "rhwp",
+        "capabilities"
+      ],
+      "why": "명령·플래그·recordFields·종료 코드 자기서술",
+      "source": "mydocs/manual/agent_knowledge_map.md#0-이-지도의-실측-기준"
+    },
+    {
+      "id": "RM02",
+      "argv": [
+        "rhwp",
+        "capabilities",
+        "--mcp"
+      ],
+      "why": "MCP 무상태 도구 선언",
+      "source": "mydocs/manual/agent_knowledge_map.md#0-이-지도의-실측-기준"
+    },
+    {
+      "id": "RM03",
+      "argv": [
+        "rhwp",
+        "mcp-serve"
+      ],
+      "method": "tools/list",
+      "why": "세션 포함 실제 도구 목록. capabilities --mcp 에 없는 세션 도구가 여기 있다",
+      "source": "mydocs/manual/agent_knowledge_map.md#0-이-지도의-실측-기준"
+    }
+  ]
+}

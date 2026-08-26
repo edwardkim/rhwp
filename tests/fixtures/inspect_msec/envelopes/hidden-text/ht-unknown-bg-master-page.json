@@ -1,0 +1,41 @@
+{
+  "id": "ht-unknown-bg-master-page",
+  "issue": 5476,
+  "axis": "hidden-text",
+  "family": "same_as_background",
+  "polarity": "negative",
+  "sourceRule": {
+    "file": "src/document_core/queries/hidden_text.rs",
+    "symbol": "Background::Unknown",
+    "note": "바탕쪽(마스터 페이지). 쪽 바탕 경로를 포기한다."
+  },
+  "cli": {
+    "argv": [
+      "inspect",
+      "hidden-text",
+      "synth:hidden-text/unknown/master-page.hwp",
+      "--json"
+    ],
+    "exitCode": 0,
+    "stdoutKind": "json-object",
+    "detectionIsNotFailure": true
+  },
+  "consume": {
+    "branch": "clean == true",
+    "reason": "unknown-background"
+  },
+  "pair": null,
+  "why": "바탕쪽(마스터 페이지). 쪽 바탕 경로를 포기한다.",
+  "note": "모르면 잡지 않는다. 오탐 한 건이면 도구가 꺼진다.",
+  "human": "은닉 텍스트 없음: synth:hidden-text/unknown/master-page.hwp (탐지 0건)\n",
+  "inventedRule": false,
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "synth:hidden-text/unknown/master-page.hwp",
+    "thresholdPt": 1.0,
+    "includeOffPage": false,
+    "hiddenText": [],
+    "hiddenCharCount": 0,
+    "clean": true
+  }
+}

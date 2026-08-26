@@ -1,0 +1,27 @@
+{
+  "id": "OP16",
+  "tier": 2,
+  "title": "수출입 현황 추출 항목 수",
+  "input": "samples/156636617_240617 2024년 5월 월간 수출입 현황(확정치).hwp",
+  "axis": "검증",
+  "instructions": "수출입 현황 문서에서 날짜·금액·수량 항목 수를 answer.json 에 {\"items\": N} 으로 제출하라. 채점기가 extract-data --json 의 items 길이를 다시 잰다.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "추출 항목 수",
+      "op": "len_answer_eq",
+      "answer": "items",
+      "cmd": [
+        "extract-data",
+        "{input}",
+        "--json"
+      ],
+      "path": "items"
+    }
+  ]
+}

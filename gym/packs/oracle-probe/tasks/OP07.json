@@ -1,0 +1,27 @@
+{
+  "id": "OP07",
+  "tier": 2,
+  "title": "중첩 표 덤프 쪽수 이중 계산",
+  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "axis": "검증",
+  "instructions": "dump-pages 가 잡는 쪽 수를 answer.json 에 {\"dumped\": N} 으로 제출하라. info.pageCount 와 같은 값이어야 하지만 오라클은 dump-pages 를 다시 돌린다. 힌트: rhwp dump-pages {input} --json.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "덤프 쪽수",
+      "op": "answer_eq",
+      "answer": "dumped",
+      "cmd": [
+        "dump-pages",
+        "{input}",
+        "--json"
+      ],
+      "path": "pageCount"
+    }
+  ]
+}

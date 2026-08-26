@@ -1,0 +1,138 @@
+id	family	ole_count	id_attr	instid	cursz	offset	contract
+000_hansel_oracle	oracle	1	2141242094	1067500271	29999x4051	0,0	samples/한셀OLE.hwpx 원본 hp:ole 의 id≠instid 와 shape-component 원문을 그대로 고정한다.
+001_id_ne_instid_hansel	id-instid	1	2141242094	1067500271	29999x4051	0,0	한셀 실측 id≠instid
+002_id_eq_instid	id-instid	1	77	77	29999x4051	0,0	id 와 instid 가 같은 경우도 둘 다 보존
+003_id_zero_instid_nonzero	id-instid	1	0	1067500271	29999x4051	0,0	명시적 id=0 은 instid 로 덮지 않는다
+004_id_nonzero_instid_zero	id-instid	1	1117817146	0	29999x4051	0,0	명시적 instid=0 은 id 로 덮지 않는다 (#4099)
+005_id_absent_instid_present	id-instid	1	2141242094	1067500271	29999x4051	0,0	id 부재 시 instid 가 id 를 겸한다
+006_id_present_instid_absent	id-instid	1	4242	0	29999x4051	0,0	instid 부재 시 id 가 instance_id 를 겸한다
+007_both_zero	id-instid	1	0	0	29999x4051	0,0	id=0 instid=0 둘 다 유효한 원문
+008_both_max_u32	id-instid	1	4294967295	4294967295	29999x4051	0,0	u32 최대값 id/instid
+009_id_max_instid_one	id-instid	1	4294967295	1	29999x4051	0,0	id 최대·instid 최소 비대칭
+010_id_one_instid_max	id-instid	1	1	4294967295	29999x4051	0,0	id 최소 비영·instid 최대
+011_id_hansel_instid_one	id-instid	1	2141242094	1	29999x4051	0,0	한셀 id + 작은 instid
+012_id_small_instid_hansel	id-instid	1	9	1067500271	29999x4051	0,0	작은 id + 한셀 instid
+013_id_pow2_instid_pow2	id-instid	1	1048576	1073741824	29999x4051	0,0	2의 거듭제곱 분리
+014_id_odd_instid_even	id-instid	1	2141242095	1067500270	29999x4051	0,0	홀/짝 분리
+015_id_chart_fallback_style	id-instid	1	1117817146	0	29999x4051	0,0	차트 fallback OLE 의 instid=0 관례
+016_id_near_i32_max	id-instid	1	2147483647	2147483648	29999x4051	0,0	i32 경계 근처
+021_cursz_zero_zero	cursz-orgsz	1	2141242094	1067500271	0x0	0,0	한컴 원산 관례 curSz=0 → was_zero 센티널
+022_cursz_zero_width_only	cursz-orgsz	1	2141242094	1067500271	0x4051	0,0	width 만 0 센티널
+023_cursz_zero_height_only	cursz-orgsz	1	2141242094	1067500271	29999x0	0,0	height 만 0 센티널
+024_cursz_eq_orgsz	cursz-orgsz	1	2141242094	1067500271	42001x13501	0,0	curSz = orgSz 는 재계산 없이 보존
+025_cursz_eq_extent	cursz-orgsz	1	2141242094	1067500271	29999x4051	0,0	한셀 실측 curSz = extent ≠ orgSz
+026_cursz_independent	cursz-orgsz	1	2141242094	1067500271	18000x2400	0,0	curSz 가 orgSz·extent 와 모두 다름
+027_cursz_one_by_one	cursz-orgsz	1	2141242094	1067500271	1x1	0,0	최소 양수 curSz
+028_orgsz_one_by_one	cursz-orgsz	1	2141242094	1067500271	1x1	0,0	최소 orgSz+curSz
+029_orgsz_zero_cursz_zero	cursz-orgsz	1	2141242094	1067500271	0x0	0,0	orgSz=0 이면 was_zero materialize 없음
+030_large_orgsz	cursz-orgsz	1	2141242094	1067500271	0x0	0,0	큰 orgSz + curSz=0
+031_square_orgsz	cursz-orgsz	1	2141242094	1067500271	8000x8000	0,0	정사각 원본
+032_wide_banner	cursz-orgsz	1	2141242094	1067500271	48000x1200	0,0	가로로 긴 OLE
+033_tall_banner	cursz-orgsz	1	2141242094	1067500271	1200x48000	0,0	세로로 긴 OLE
+034_cursz_gt_orgsz	cursz-orgsz	1	2141242094	1067500271	50000x20000	0,0	표시 크기가 원본보다 큼
+035_cursz_half_orgsz	cursz-orgsz	1	2141242094	1067500271	21000x6750	0,0	절반 스케일
+036_cursz_third_orgsz	cursz-orgsz	1	2141242094	1067500271	14000x4500	0,0	1/3 스케일
+037_orgsz_prime	cursz-orgsz	1	2141242094	1067500271	29989x4049	0,0	소수 크기 — 재유도 오탐 방지
+038_cursz_zero_7200_org	cursz-orgsz	1	2141242094	1067500271	0x0	0,0	7200 org + 0 cur — 기본값과 구분
+039_asymmetric_zero	cursz-orgsz	1	2141242094	1067500271	0x1	0,0	width 0 / height 1
+040_asymmetric_zero_h	cursz-orgsz	1	2141242094	1067500271	1x0	0,0	width 1 / height 0
+041_unit_hwpx	cursz-orgsz	1	2141242094	1067500271	283x283	0,0	1mm 근처 HWPUNIT
+045_offset_zero	offset	1	2141242094	1067500271	29999x4051	0,0	원점 offset
+046_offset_pos	offset	1	2141242094	1067500271	29999x4051	12,34	양수 offset (단위 시험 값)
+047_offset_hansel_zero	offset	1	2141242094	1067500271	29999x4051	0,0	한셀 실측 offset 0,0
+048_offset_wrap_y	offset	1	2141242094	1067500271	29999x4051	5250,-4332	y 음수 wraparound — pic #4668 과 동형, OLE 축
+049_offset_wrap_x	offset	1	2141242094	1067500271	29999x4051	-2429,100	x 음수 wraparound
+050_offset_wrap_both	offset	1	2141242094	1067500271	29999x4051	-100,-200	x/y 모두 wraparound
+051_offset_i32_min_y	offset	1	2141242094	1067500271	29999x4051	0,-2147483648	y = i32::MIN
+052_offset_large_pos	offset	1	2141242094	1067500271	29999x4051	100000,80000	큰 양수 offset
+053_offset_unit	offset	1	2141242094	1067500271	29999x4051	1,-1	최소 비영 ±1
+054_offset_page_out	offset	1	2141242094	1067500271	29999x4051	59528,-10000	쪽 너비 밖 + 위쪽 음수
+055_offset_x_only	offset	1	2141242094	1067500271	29999x4051	7777,0	x 만 이동
+056_offset_y_only	offset	1	2141242094	1067500271	29999x4051	0,8888	y 만 이동
+057_offset_u32_max_as_neg1	offset	1	2141242094	1067500271	29999x4051	-1,0	x=-1 → 4294967295
+058_offset_trans_match	offset	1	2141242094	1067500271	29999x4051	5250,-4332	offset 과 transMatrix 병진이 일치해야 하는 형태
+061_flip_0_0	flip	1	2141242094	1067500271	29999x4051	0,0	flip horizontal=0 vertical=0 원문 보존
+062_flip_1_0	flip	1	2141242094	1067500271	29999x4051	0,0	flip horizontal=1 vertical=0 원문 보존
+063_flip_0_1	flip	1	2141242094	1067500271	29999x4051	0,0	flip horizontal=0 vertical=1 원문 보존
+064_flip_1_1	flip	1	2141242094	1067500271	29999x4051	0,0	flip horizontal=1 vertical=1 원문 보존
+065_flip_h_cursz0	flip	1	2141242094	1067500271	0x0	0,0	수평 flip + curSz=0 동시 보존
+066_flip_v_offset_wrap	flip	1	2141242094	1067500271	29999x4051	0,-50	수직 flip + offset wraparound
+067_flip_both_id_ne	flip	1	2141242094	1067500271	29999x4051	0,0	양축 flip + id≠instid
+068_flip_none_cursz0	flip	1	2141242094	1067500271	0x0	0,0	flip 없음 + curSz=0 (기본 flip 재유도와 구분)
+069_rot_0_hansel	rotation	1	2141242094	1067500271	29999x4051	0,0	한셀 실측 rotationInfo
+070_rot_90	rotation	1	2141242094	1067500271	29999x4051	0,0	90도
+071_rot_180	rotation	1	2141242094	1067500271	29999x4051	0,0	180도
+072_rot_270	rotation	1	2141242094	1067500271	29999x4051	0,0	270도
+073_rot_45	rotation	1	2141242094	1067500271	29999x4051	0,0	45도 + 다른 중심
+074_rot_image_off	rotation	1	2141242094	1067500271	29999x4051	0,0	rotateimage=0
+075_rot_image_on_nonzero	rotation	1	2141242094	1067500271	29999x4051	0,0	작은 각 + 원점 중심
+076_rot_neg_center	rotation	1	2141242094	1067500271	29999x4051	0,0	음수 회전 중심
+077_rot_large_center	rotation	1	2141242094	1067500271	29999x4051	0,0	큰 회전 중심
+078_rot_359	rotation	1	2141242094	1067500271	29999x4051	0,0	359도 rotateimage=0
+079_rot_1_deg	rotation	1	2141242094	1067500271	29999x4051	0,0	1도
+080_rot_zero_center_zero_angle	rotation	1	2141242094	1067500271	29999x4051	0,0	전부 0 — 기본값 재유도와 구분
+081_render_hansel_scale	rendering	1	2141242094	1067500271	29999x4051	0,0	한셀 실측 sca 0.714245×0.300052
+082_render_identity	rendering	1	2141242094	1067500271	29999x4051	0,0	항등 행렬 3개
+083_render_scale_half	rendering	1	2141242094	1067500271	29999x4051	0,0	균등 0.5 스케일
+084_render_scale_2	rendering	1	2141242094	1067500271	29999x4051	0,0	균등 2배
+085_render_trans_only	rendering	1	2141242094	1067500271	29999x4051	0,0	병진만 — offset 과 일치 형태
+086_render_rot90	rendering	1	2141242094	1067500271	29999x4051	0,0	90도 rotMatrix
+087_render_shear	rendering	1	2141242094	1067500271	29999x4051	0,0	전단 성분
+088_render_tiny_scale	rendering	1	2141242094	1067500271	29999x4051	0,0	매우 작은 스케일
+089_render_neg_scale	rendering	1	2141242094	1067500271	29999x4051	0,0	음수 sx (거울)
+090_render_neg_sy	rendering	1	2141242094	1067500271	29999x4051	0,0	음수 sy
+091_render_precise	rendering	1	2141242094	1067500271	29999x4051	0,0	한셀 소수 정밀도 재현
+092_render_other_frac	rendering	1	2141242094	1067500271	29999x4051	0,0	다른 소수 — f32 왕복
+093_render_tx_ty	rendering	1	2141242094	1067500271	29999x4051	0,0	병진+한셀 스케일
+094_render_almost_id	rendering	1	2141242094	1067500271	29999x4051	0,0	항등에 가까운 스케일
+095_render_zero_scale	rendering	1	2141242094	1067500271	29999x4051	0,0	영 스케일 행렬
+096_render_combined	rendering	1	2141242094	1067500271	29999x4051	0,0	병진+스케일+회전 동시
+097_line_none_hansel	lineshape	1	2141242094	1067500271	29999x4051	0,0	한셀 실측 선 없음
+098_line_solid_w5	lineshape	1	2141242094	1067500271	29999x4051	0,0	SOLID width=5 (단위 시험)
+099_line_solid_w1	lineshape	1	2141242094	1067500271	29999x4051	0,0	빨간 실선 FLAT
+100_line_dash	lineshape	1	2141242094	1067500271	29999x4051	0,0	파란 파선 SQUARE
+101_line_dot	lineshape	1	2141242094	1067500271	29999x4051	0,0	점선
+102_line_dash_dot	lineshape	1	2141242094	1067500271	29999x4051	0,0	1점 쇄선
+103_line_dash_dot_dot	lineshape	1	2141242094	1067500271	29999x4051	0,0	2점 쇄선
+104_line_long_dash	lineshape	1	2141242094	1067500271	29999x4051	0,0	긴 파선
+105_line_circle	lineshape	1	2141242094	1067500271	29999x4051	0,0	원 테두리 스타일
+106_line_double_slim	lineshape	1	2141242094	1067500271	29999x4051	0,0	이중 가는 선
+107_line_slim_thick	lineshape	1	2141242094	1067500271	29999x4051	0,0	가늘+굵
+108_line_thick_slim	lineshape	1	2141242094	1067500271	29999x4051	0,0	굵+가늘
+109_line_slim_thick_slim	lineshape	1	2141242094	1067500271	29999x4051	0,0	가늘+굵+가늘
+110_line_white_solid	lineshape	1	2141242094	1067500271	29999x4051	0,0	흰 실선 굵게
+111_line_none_nonzero_w	lineshape	1	2141242094	1067500271	29999x4051	0,0	style=NONE 이지만 width>0 — 재유도 금지
+112_line_solid_zero_w	lineshape	1	2141242094	1067500271	29999x4051	0,0	SOLID + width=0
+113_mut_cursz0	hansel-mutant	1	2141242094	1067500271	0x0	0,0	한셀 원문에 curSz=0 만 넣은 재현
+114_mut_offset_wrap	hansel-mutant	1	2141242094	1067500271	29999x4051	5250,-4332	한셀 + wraparound offset
+115_mut_flip_h	hansel-mutant	1	2141242094	1067500271	29999x4051	0,0	한셀 + 수평 flip
+116_mut_id_zero	hansel-mutant	1	0	1067500271	29999x4051	0,0	한셀 instid 유지 + id=0
+117_mut_instid_zero	hansel-mutant	1	2141242094	0	29999x4051	0,0	한셀 id 유지 + instid=0
+118_mut_line_solid	hansel-mutant	1	2141242094	1067500271	29999x4051	0,0	한셀 + SOLID 테두리
+119_mut_rot90	hansel-mutant	1	2141242094	1067500271	29999x4051	0,0	한셀 + 90도
+120_mut_sca_id	hansel-mutant	1	2141242094	1067500271	29999x4051	0,0	한셀 sca 를 항등으로
+121_mut_lock	hansel-mutant	1	2141242094	1067500271	29999x4051	0,0	한셀 + lock=1
+122_mut_icon	hansel-mutant	1	2141242094	1067500271	29999x4051	0,0	한셀 + drawAspect=ICON
+123_mut_thumb	hansel-mutant	1	2141242094	1067500271	29999x4051	0,0	한셀 + THUMBNAIL
+124_mut_docprint	hansel-mutant	1	2141242094	1067500271	29999x4051	0,0	한셀 + DOCPRINT
+125_mut_wrap_tight	hansel-mutant	1	2141242094	1067500271	29999x4051	0,0	한셀 + TIGHT
+126_mut_wrap_topbottom	hansel-mutant	1	2141242094	1067500271	29999x4051	0,0	한셀 + TOP_AND_BOTTOM
+127_mut_front	hansel-mutant	1	2141242094	1067500271	29999x4051	0,0	한셀 + IN_FRONT_OF_TEXT
+128_mut_behind	hansel-mutant	1	2141242094	1067500271	29999x4051	0,0	한셀 + BEHIND_TEXT
+129_mut_all_zero_comp	hansel-mutant	1	2141242094	1067500271	0x0	0,0	한셀 id 유지 + 자식 0
+133_aspect_icon_cursz0	ole-attr	1	2141242094	1067500271	0x0	0,0	ICON + curSz=0
+134_lock_and_wrap_offset	ole-attr	1	2141242094	1067500271	29999x4051	-10,20	lock + wraparound x
+135_through_wrap	ole-attr	1	2141242094	1067500271	29999x4051	0,0	THROUGH 배치
+136_largest_flow	ole-attr	1	2141242094	1067500271	29999x4051	0,0	LARGEST_ONLY
+137_right_flow	ole-attr	1	2141242094	1067500271	29999x4051	0,0	RIGHT_ONLY
+138_picture_numbering_cursz0	ole-attr	1	2141242094	1067500271	0x0	0,0	PICTURE numbering + curSz=0
+143_multi_two_oles	multi-ole	2	1001	2001	29999x4051	10,20	한 문단에 OLE 2개 — 각각의 id/자식을 독립 보존
+144_multi_three_oles	multi-ole	3	1001	2001	29999x4051	10,20	OLE 3개 (양수 offset / curSz0+flip / id=0)
+145_multi_four_oles	multi-ole	4	1001	2001	29999x4051	10,20	OLE 4개 (instid=0 wraparound 포함)
+146_multi_id_eq_and_ne	multi-ole	2	1001	2001	29999x4051	10,20	id=instid 인 OLE 와 id≠instid 인 OLE 혼재
+147_multi_scale_pair	multi-ole	2	2141242094	1067500271	29999x4051	0,0	서로 다른 scaMatrix 를 가진 OLE 쌍
+148_multi_cursz0_pair	multi-ole	2	11	21	0x0	0,0	둘 다 curSz=0 이지만 orgSz 가 다름
+149_combo_all_nonzero	combo	1	2141242094	1067500271	18000x2400	-2429,-4332	id≠instid + wraparound offset + curSz 독립 + flip + 90도 + 한셀 sca + SOLID
+150_combo_all_zeroish	combo	1	0	0	0x0	0,0	명시적 0 값 묶음 — 기본값 재유도와 구분돼야 한다
+151_combo_cursz0_wrap_idne	combo	1	2141242094	1067500271	0x0	12,34	이슈 본문 재현: id≠instid + curSz=0 + 원문 offset
+152_combo_issue_body_xml	combo	1	2141242094	1067500271	0x0	12,34	이슈 본문 축약 XML 과 동일 값 (id 2141242094 / instid 1067500271 / curSz 0 / offset 12,34)

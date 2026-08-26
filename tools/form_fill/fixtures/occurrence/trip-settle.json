@@ -1,0 +1,227 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.form_fill.fill_case.v1",
+  "id": "trip-settle-occurrence",
+  "axis": "이름[N]",
+  "claim": "M-fill",
+  "generator": "tools/form_fill/fatten_form_fill.py",
+  "form": "trip-settle",
+  "title": "출장여비 정산서 반복 필드 순번 지목",
+  "family": "회계",
+  "genre": "정산",
+  "sample": "fixtures/forms/출장여비정산서.hwp",
+  "format": "hwp5",
+  "relatedIssue": "#3476",
+  "why": "이름[N] 은 fields 목록 순서 0 기준. 지목하지 않은 칸은 그대로. 순번 없음은 ambiguous, 범위 밖은 notFound.",
+  "firstFieldName": "출장자",
+  "fieldCount": 25,
+  "argv": [
+    "edit",
+    "fill-fields",
+    "fixtures/forms/출장여비정산서.hwp",
+    "--data",
+    "{\"일자[0]\": \"2026. 8. 3.\", \"일자[2]\": \"2026. 8. 3.-3\", \"교통비[0]\": \"38,400\", \"교통비[2]\": \"38,400-3\", \"숙박비[0]\": \"80,000\", \"숙박비[2]\": \"80,000-3\", \"식비[0]\": \"25,000\", \"식비[2]\": \"25,000-3\"}",
+    "-o",
+    "out/trip-settle-occ.hwp",
+    "--json"
+  ],
+  "existingCliOnly": true,
+  "data": {
+    "일자[0]": "2026. 8. 3.",
+    "일자[2]": "2026. 8. 3.-3",
+    "교통비[0]": "38,400",
+    "교통비[2]": "38,400-3",
+    "숙박비[0]": "80,000",
+    "숙박비[2]": "80,000-3",
+    "식비[0]": "25,000",
+    "식비[2]": "25,000-3"
+  },
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "fixtures/forms/출장여비정산서.hwp",
+    "dryRun": false,
+    "filledCount": 8,
+    "filled": [
+      {
+        "name": "일자",
+        "occurrence": 0,
+        "value": "2026. 8. 3."
+      },
+      {
+        "name": "일자",
+        "occurrence": 2,
+        "value": "2026. 8. 3.-3"
+      },
+      {
+        "name": "교통비",
+        "occurrence": 0,
+        "value": "38,400"
+      },
+      {
+        "name": "교통비",
+        "occurrence": 2,
+        "value": "38,400-3"
+      },
+      {
+        "name": "숙박비",
+        "occurrence": 0,
+        "value": "80,000"
+      },
+      {
+        "name": "숙박비",
+        "occurrence": 2,
+        "value": "80,000-3"
+      },
+      {
+        "name": "식비",
+        "occurrence": 0,
+        "value": "25,000"
+      },
+      {
+        "name": "식비",
+        "occurrence": 2,
+        "value": "25,000-3"
+      }
+    ],
+    "notFound": [],
+    "ambiguous": [],
+    "confusable": [],
+    "verify": null,
+    "output": "out/trip-settle-occ.hwp",
+    "outputFormat": "hwp5"
+  },
+  "exit": 0,
+  "untouchedOccurrences": {
+    "일자": [
+      1,
+      3,
+      4
+    ],
+    "교통비": [
+      1,
+      3,
+      4
+    ],
+    "숙박비": [
+      1,
+      3,
+      4
+    ],
+    "식비": [
+      1,
+      3,
+      4
+    ]
+  },
+  "afterTargeted": {
+    "일자": [
+      "2026. 8. 3.",
+      "",
+      "2026. 8. 3.-3",
+      "",
+      ""
+    ],
+    "교통비": [
+      "38,400",
+      "",
+      "38,400-3",
+      "",
+      ""
+    ],
+    "숙박비": [
+      "80,000",
+      "",
+      "80,000-3",
+      "",
+      ""
+    ],
+    "식비": [
+      "25,000",
+      "",
+      "25,000-3",
+      "",
+      ""
+    ]
+  },
+  "gate": true,
+  "ambiguous": {
+    "data": {
+      "일자": "2026. 8. 3.",
+      "교통비": "38,400",
+      "숙박비": "80,000",
+      "식비": "25,000"
+    },
+    "envelope": {
+      "schemaVersion": "1.0",
+      "source": "fixtures/forms/출장여비정산서.hwp",
+      "dryRun": true,
+      "filledCount": 4,
+      "filled": [
+        {
+          "name": "일자",
+          "occurrence": 0,
+          "value": "2026. 8. 3."
+        },
+        {
+          "name": "교통비",
+          "occurrence": 0,
+          "value": "38,400"
+        },
+        {
+          "name": "숙박비",
+          "occurrence": 0,
+          "value": "80,000"
+        },
+        {
+          "name": "식비",
+          "occurrence": 0,
+          "value": "25,000"
+        }
+      ],
+      "notFound": [],
+      "ambiguous": [
+        {
+          "name": "일자",
+          "matched": 1,
+          "total": 5
+        },
+        {
+          "name": "교통비",
+          "matched": 1,
+          "total": 5
+        },
+        {
+          "name": "숙박비",
+          "matched": 1,
+          "total": 5
+        },
+        {
+          "name": "식비",
+          "matched": 1,
+          "total": 5
+        }
+      ],
+      "confusable": [],
+      "verify": null
+    },
+    "incomplete": true
+  },
+  "outOfRange": {
+    "data": {
+      "일자[105]": "범위밖"
+    },
+    "envelope": {
+      "schemaVersion": "1.0",
+      "source": "fixtures/forms/출장여비정산서.hwp",
+      "dryRun": true,
+      "filledCount": 0,
+      "filled": [],
+      "notFound": [
+        "일자[105]"
+      ],
+      "ambiguous": [],
+      "confusable": [],
+      "verify": null
+    }
+  }
+}

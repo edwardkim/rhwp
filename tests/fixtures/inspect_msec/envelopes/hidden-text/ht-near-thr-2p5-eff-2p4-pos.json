@@ -1,0 +1,56 @@
+{
+  "id": "ht-near-thr-2p5-eff-2p4-pos",
+  "issue": 5476,
+  "axis": "hidden-text",
+  "family": "near_invisible",
+  "polarity": "positive",
+  "sourceRule": {
+    "file": "src/document_core/queries/hidden_text.rs",
+    "symbol": "HiddenTextOptions.threshold_pt",
+    "note": "실효 글자 크기가 임계 미만일 때만. 같으면 음성."
+  },
+  "cli": {
+    "argv": [
+      "inspect",
+      "hidden-text",
+      "synth:hidden-text/threshold/thr2.5-eff2.4.hwp",
+      "--json",
+      "--threshold-pt",
+      "2.5"
+    ],
+    "exitCode": 0,
+    "stdoutKind": "json-object",
+    "detectionIsNotFailure": true
+  },
+  "consume": {
+    "branch": "clean",
+    "compare": "effectivePt < thresholdPt"
+  },
+  "pair": null,
+  "why": "effectivePt=2.4 thresholdPt=2.5 → 탐지.",
+  "note": "미만(exclusive). 같으면 잡지 않는다.",
+  "human": "은닉 텍스트 1건: synth:hidden-text/threshold/thr2.5-eff2.4.hwp\n",
+  "inventedRule": false,
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "synth:hidden-text/threshold/thr2.5-eff2.4.hwp",
+    "thresholdPt": 2.5,
+    "includeOffPage": false,
+    "hiddenText": [
+      {
+        "kind": "near_invisible",
+        "section": 0,
+        "paragraph": 0,
+        "page": 0,
+        "excerpt": "극소",
+        "charCount": 2,
+        "detail": {
+          "effectivePt": 2.4,
+          "thresholdPt": 2.5
+        }
+      }
+    ],
+    "hiddenCharCount": 2,
+    "clean": false
+  }
+}

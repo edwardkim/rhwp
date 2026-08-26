@@ -1,0 +1,327 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5335,
+  "count": 40,
+  "journeys": [
+    {
+      "id": "J01",
+      "example": "01_gov_rfp_win.md",
+      "title": "01_gov_rfp_win.md",
+      "corpus": null,
+      "stop": null,
+      "fixture": null
+    },
+    {
+      "id": "J02",
+      "example": "02_quarterly_strategy.md",
+      "title": "02_quarterly_strategy.md",
+      "corpus": null,
+      "stop": null,
+      "fixture": null
+    },
+    {
+      "id": "J03",
+      "example": "03_failed_doc_stays.md",
+      "title": "03_failed_doc_stays.md",
+      "corpus": null,
+      "stop": null,
+      "fixture": null
+    },
+    {
+      "id": "J04",
+      "example": "04_missing_page_omitted.md",
+      "title": "04_missing_page_omitted.md",
+      "corpus": null,
+      "stop": null,
+      "fixture": null
+    },
+    {
+      "id": "J05",
+      "example": "05_section5_gate_pass.md",
+      "title": "05_section5_gate_pass.md",
+      "corpus": null,
+      "stop": null,
+      "fixture": null
+    },
+    {
+      "id": "J06",
+      "example": "06_unknown_evidence_reject.md",
+      "title": "06_unknown_evidence_reject.md",
+      "corpus": null,
+      "stop": null,
+      "fixture": null
+    },
+    {
+      "id": "J07",
+      "example": "07_placeholder_reject.md",
+      "title": "07_placeholder_reject.md",
+      "corpus": null,
+      "stop": null,
+      "fixture": null
+    },
+    {
+      "id": "J08",
+      "example": "08_zero_match_no_claim.md",
+      "title": "08_zero_match_no_claim.md",
+      "corpus": null,
+      "stop": null,
+      "fixture": null
+    },
+    {
+      "id": "J09",
+      "example": "09_no_market_forecast.md",
+      "title": "09_no_market_forecast.md",
+      "corpus": null,
+      "stop": null,
+      "fixture": null
+    },
+    {
+      "id": "J10",
+      "example": "10_fde_symptom_not_strategy.md",
+      "title": "10_fde_symptom_not_strategy.md",
+      "corpus": null,
+      "stop": null,
+      "fixture": null
+    },
+    {
+      "id": "J11",
+      "example": "11_chief_goal_handoff.md",
+      "title": "11_chief_goal_handoff.md",
+      "corpus": null,
+      "stop": null,
+      "fixture": null
+    },
+    {
+      "id": "J12",
+      "example": "12_search_limit_truncation.md",
+      "title": "12_search_limit_truncation.md",
+      "corpus": null,
+      "stop": null,
+      "fixture": null
+    },
+    {
+      "id": "J13",
+      "example": "13_extract_data_amounts.md",
+      "title": "13_extract_data_amounts.md",
+      "corpus": null,
+      "stop": null,
+      "fixture": null
+    },
+    {
+      "id": "J14",
+      "example": "14_validate_unlinked.md",
+      "title": "14_validate_unlinked.md",
+      "corpus": null,
+      "stop": null,
+      "fixture": null
+    },
+    {
+      "id": "J15",
+      "example": "15_unreadable_corpus.md",
+      "title": "15_unreadable_corpus.md",
+      "corpus": null,
+      "stop": null,
+      "fixture": null
+    },
+    {
+      "id": "J16",
+      "example": "16_sws_honest_level.md",
+      "title": "16_sws_honest_level.md",
+      "corpus": null,
+      "stop": null,
+      "fixture": null
+    },
+    {
+      "id": "J17",
+      "example": "17_malformed_engagement.md",
+      "title": "17_malformed_engagement.md",
+      "corpus": null,
+      "stop": null,
+      "fixture": null
+    },
+    {
+      "id": "J18",
+      "example": "18_coordinate_quote_reread.md",
+      "title": "18_coordinate_quote_reread.md",
+      "corpus": null,
+      "stop": null,
+      "fixture": null
+    },
+    {
+      "id": "J19",
+      "example": "19_reproducible_command.md",
+      "title": "19_reproducible_command.md",
+      "corpus": null,
+      "stop": null,
+      "fixture": null
+    },
+    {
+      "id": "J20",
+      "example": "20_scaffold_unadvertised.md",
+      "title": "20_scaffold_unadvertised.md",
+      "corpus": null,
+      "stop": null,
+      "fixture": null
+    },
+    {
+      "id": "J21",
+      "example": "21_cell_coords_table.md",
+      "title": "21_cell_coords_table.md",
+      "corpus": null,
+      "stop": null,
+      "fixture": null
+    },
+    {
+      "id": "J22",
+      "example": "22_textbox_coords.md",
+      "title": "22_textbox_coords.md",
+      "corpus": null,
+      "stop": null,
+      "fixture": null
+    },
+    {
+      "id": "J23",
+      "example": "23_truncated_search_visible.md",
+      "title": "23_truncated_search_visible.md",
+      "corpus": null,
+      "stop": null,
+      "fixture": null
+    },
+    {
+      "id": "J24",
+      "example": "24_inventory_failed_plus_ok.md",
+      "title": "24_inventory_failed_plus_ok.md",
+      "corpus": null,
+      "stop": null,
+      "fixture": null
+    },
+    {
+      "id": "J25",
+      "example": null,
+      "title": "invalid questions",
+      "corpus": null,
+      "stop": "ST-SKIP-ENGINE",
+      "fixture": null
+    },
+    {
+      "id": "J26",
+      "example": null,
+      "title": "empty corpus",
+      "corpus": null,
+      "stop": "ST-SKIP-ENGINE",
+      "fixture": null
+    },
+    {
+      "id": "J27",
+      "example": null,
+      "title": "capabilities fail",
+      "corpus": null,
+      "stop": "ST-INVENTED-CMD",
+      "fixture": null
+    },
+    {
+      "id": "J28",
+      "example": null,
+      "title": "search all fail",
+      "corpus": null,
+      "stop": "ST-SKIP-ENGINE",
+      "fixture": null
+    },
+    {
+      "id": "J29",
+      "example": null,
+      "title": "explainExit kept",
+      "corpus": null,
+      "stop": "ST-DROP-FAILED",
+      "fixture": null
+    },
+    {
+      "id": "J30",
+      "example": null,
+      "title": "multi keyword",
+      "corpus": null,
+      "stop": "ST-SKIP-ENGINE",
+      "fixture": null
+    },
+    {
+      "id": "J31",
+      "example": null,
+      "title": "relative corpus",
+      "corpus": null,
+      "stop": "ST-SKIP-ENGINE",
+      "fixture": null
+    },
+    {
+      "id": "J32",
+      "example": null,
+      "title": "suffix case",
+      "corpus": null,
+      "stop": "ST-SKIP-ENGINE",
+      "fixture": null
+    },
+    {
+      "id": "J33",
+      "example": null,
+      "title": "validate --evidence",
+      "corpus": null,
+      "stop": "ST-GATE-FAIL",
+      "fixture": null
+    },
+    {
+      "id": "J34",
+      "example": null,
+      "title": "no-sws-audit",
+      "corpus": null,
+      "stop": "ST-GATE-FAIL",
+      "fixture": null
+    },
+    {
+      "id": "J35",
+      "example": null,
+      "title": "link table",
+      "corpus": null,
+      "stop": "ST-UNLINKED",
+      "fixture": null
+    },
+    {
+      "id": "J36",
+      "example": null,
+      "title": "multi EV",
+      "corpus": null,
+      "stop": "ST-UNLINKED",
+      "fixture": null
+    },
+    {
+      "id": "J37",
+      "example": null,
+      "title": "date EV",
+      "corpus": null,
+      "stop": "ST-AMOUNT-REWRITE",
+      "fixture": null
+    },
+    {
+      "id": "J38",
+      "example": null,
+      "title": "currency copy",
+      "corpus": null,
+      "stop": "ST-AMOUNT-REWRITE",
+      "fixture": null
+    },
+    {
+      "id": "J39",
+      "example": null,
+      "title": "length key",
+      "corpus": null,
+      "stop": "ST-INVENT-PAGE",
+      "fixture": null
+    },
+    {
+      "id": "J40",
+      "example": null,
+      "title": "3-part reply",
+      "corpus": null,
+      "stop": "ST-FORECAST",
+      "fixture": null
+    }
+  ]
+}

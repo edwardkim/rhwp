@@ -1,0 +1,10 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Hwp5TableProbePlan",
+  "type": "object",
+  "required": [
+    "case_id",
+    "axes",
+    "variants"
+  ]
+}

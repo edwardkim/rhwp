@@ -3,8 +3,9 @@
   "compilerOptions": {
     "paths": {
       "@/*": ["./src/*"],
-      "@wasm/rhwp.js": ["./types/wasm-ci-unit-stub.d.ts"]
+      "@wasm/rhwp.js": ["./types/wasm-ci-unit-stub.d.ts"],
+      "@rhwp/hwpctrl/studio-plugin": ["./types/rhwp-hwpctrl-plugin.d.ts"]
     }
   },
-  "include": ["src", "types/wasm-ci-unit-stub.d.ts"]
+  "include": ["src", "types/wasm-ci-unit-stub.d.ts", "types/rhwp-hwpctrl-plugin.d.ts"]
 }

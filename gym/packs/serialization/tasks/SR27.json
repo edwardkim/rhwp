@@ -1,0 +1,55 @@
+{
+  "id": "SR27",
+  "tier": 3,
+  "title": "이미 편집 가능한 HWP5 convert --verify",
+  "input": "samples/para-001.hwp",
+  "instructions": "편집 가능 HWP5 를 convert --verify 로 conv.hwp 를 만들고, 검증 객체의 identical 을 answer.json 에 {\"identical\": true|false} 로 적어라. 차이가 있어도 산출물은 남고 exit 3 이다. 힌트: rhwp convert --verify --json 의 verify.identical.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "conv.hwp",
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "HWP5 산출",
+      "op": "file_exists",
+      "file": "conv.hwp",
+      "minBytes": 256
+    },
+    {
+      "name": "원본과 다름 (무편집 복사 거부 — 판별력)",
+      "op": "differs_from_input",
+      "file": "conv.hwp"
+    },
+    {
+      "name": "info 형식",
+      "op": "value_eq",
+      "value": "hwp5",
+      "path": "format",
+      "cmd": [
+        "info",
+        "{file:conv.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "verify IR 동일",
+      "op": "answer_eq",
+      "answer": "identical",
+      "path": "verify.identical",
+      "cmd": [
+        "convert",
+        "{input}",
+        "{file:conv.hwp}",
+        "--verify",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    }
+  ]
+}

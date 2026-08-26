@@ -1,0 +1,2980 @@
+{
+  "schemaVersion": "v-proto.1.0",
+  "shardId": "047",
+  "records": [
+    {
+      "recordId": "vproto-001881",
+      "sourceTag": "병무청/예산서/2023/1881#replay/reproduced-false",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "plan.json",
+        "--expect-output-sha256",
+        "abababababababababababababababababababababababababababababababab",
+        "--json"
+      ],
+      "exitClass": 3,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "mode": "verify",
+        "input": "samples/gov/병무청_예산서_2023_1881.hwp",
+        "inputSha256": "02191187e745d5561331ddc9046b40d383646d2fac071b8b26f5de0fe43e365e",
+        "planSha256": "8b346cf8718c3a7f2fafaf11253208dbde73ee7ec7f9b4682b48beecc7108971",
+        "outputSha256": "2b8cfd0c96b12c0d8adc887daecec469c7a61e667ca306f16e5ee4cb2cb72a16",
+        "expectedOutputSha256": "83c576b54a6d852ebbcefe7851461bd5c23464414fefdbd0ff7cb3fe6b08b4fe",
+        "reproduced": false,
+        "steps": 1,
+        "toolVersion": "0.8.4",
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": false,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-001882",
+      "sourceTag": "산림청/예산서/2023/1882#fill-fields/verify-fail-with-findings",
+      "command": "fill-fields",
+      "argv": [
+        "edit",
+        "fill-fields",
+        "samples/gov/산림청_예산서_2023_1882.hwpx",
+        "--data",
+        "@fields.json",
+        "-o",
+        "out.hwp",
+        "--verify",
+        "--json"
+      ],
+      "exitClass": 3,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/산림청_예산서_2023_1882.hwpx",
+        "dryRun": false,
+        "filledCount": 5,
+        "filled": [
+          {
+            "name": "담당자",
+            "occurrence": 0,
+            "value": "담당자-값-1881-0"
+          },
+          {
+            "name": "문서번호",
+            "occurrence": 1,
+            "value": "문서번호-값-1881-1"
+          },
+          {
+            "name": "시행일자",
+            "occurrence": 2,
+            "value": "시행일자-값-1881-2"
+          },
+          {
+            "name": "수신",
+            "occurrence": 3,
+            "value": "수신-값-1881-3"
+          },
+          {
+            "name": "제목",
+            "occurrence": 4,
+            "value": "제목-값-1881-4"
+          }
+        ],
+        "notFound": [],
+        "ambiguous": [],
+        "confusable": [],
+        "changedPages": [
+          0,
+          1
+        ],
+        "untrustedContent": true,
+        "untrustedFields": [
+          "filled[].value",
+          "filled[].name"
+        ],
+        "output": "output/gov/산림청_예산서_2023_1882_filled.hwpx",
+        "outputFormat": "hwpx",
+        "verify": {
+          "identical": false,
+          "diffCount": 4
+        },
+        "findingCount": 2,
+        "findings": [
+          {
+            "kind": "ssn",
+            "masked": "******-*******",
+            "page": 0,
+            "paragraph": 3,
+            "charOffset": 8
+          },
+          {
+            "kind": "phone",
+            "masked": "***-****-****",
+            "page": 0,
+            "paragraph": 5,
+            "charOffset": 4
+          }
+        ]
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": 2,
+        "verify": {
+          "identical": false,
+          "diffCount": 4
+        },
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-001883",
+      "sourceTag": "농촌진흥청/예산서/2023/1883#render-diff/struct-mismatch",
+      "command": "render-diff",
+      "argv": [
+        "render-diff",
+        "samples/gov/농촌진흥청_예산서_2023_1883.hwp",
+        "--json"
+      ],
+      "exitClass": 3,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "mode": "self-roundtrip",
+        "sourceA": "samples/gov/농촌진흥청_예산서_2023_1883.hwp",
+        "sourceB": "samples/gov/농촌진흥청_예산서_2023_1883.hwp",
+        "via": "hwpx",
+        "pageFilter": null,
+        "threshold": 2.0,
+        "pageCountA": 4,
+        "pageCountB": 4,
+        "pageCountMismatch": false,
+        "maxDisp": 8.5,
+        "worstPage": 0,
+        "overPages": 2,
+        "structPages": 2,
+        "hardStructPages": 0,
+        "status": "STRUCT",
+        "regression": true,
+        "pages": [
+          {
+            "page": 0,
+            "maxDisp": 8.5,
+            "over": true,
+            "structMismatch": false,
+            "nodeCountA": 62,
+            "nodeCountB": 62
+          },
+          {
+            "page": 1,
+            "maxDisp": 0.6,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 63,
+            "nodeCountB": 63
+          },
+          {
+            "page": 2,
+            "maxDisp": 0.8,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 64,
+            "nodeCountB": 64
+          },
+          {
+            "page": 3,
+            "maxDisp": 1.0,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 65,
+            "nodeCountB": 65
+          }
+        ],
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": true,
+        "status": "STRUCT",
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": false,
+        "overPages": 2
+      }
+    },
+    {
+      "recordId": "vproto-001884",
+      "sourceTag": "중소벤처기업부/예산서/2023/1884#info/page-verify-unexpected",
+      "command": "info",
+      "argv": [
+        "info",
+        "samples/gov/중소벤처기업부_예산서_2023_1884.hwp",
+        "--json"
+      ],
+      "exitClass": 4,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/중소벤처기업부_예산서_2023_1884.hwp",
+        "format": "hwp5",
+        "sizeBytes": 281971,
+        "version": "5.0.2.5",
+        "sections": 4,
+        "pageCount": 0,
+        "paraCount": 126,
+        "fonts": [
+          "본고딕",
+          "본명조",
+          "HY신명조",
+          "HY중고딕",
+          "한양견고딕",
+          "함초롬바탕",
+          "함초롬돋움",
+          "맑은 고딕",
+          "굴림"
+        ],
+        "title": "공사계약 일반조건 (중소벤처기업부 예산서 2023)",
+        "warnings": [],
+        "untrustedContent": true,
+        "untrustedFields": [
+          "title",
+          "fonts[]"
+        ]
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-001885",
+      "sourceTag": "과학기술정보통신부/예산서/2023/1885#verify/verify-pages-mismatch",
+      "command": "verify",
+      "argv": [
+        "verify",
+        "samples/gov/과학기술정보통신부_예산서_2023_1885.hwpx",
+        "--expect-pages",
+        "1",
+        "--json"
+      ],
+      "exitClass": 4,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/과학기술정보통신부_예산서_2023_1885.hwpx",
+        "output": "output/gov/과학기술정보통신부_예산서_2023_1885.hwp",
+        "format": "hwp5",
+        "bytes": 251444,
+        "wasDistribution": false,
+        "passwordProtected": false,
+        "verify": {
+          "identical": true,
+          "diffCount": 0
+        },
+        "verifyPages": {
+          "expected": 8,
+          "actual": 7,
+          "match": false
+        },
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": {
+          "identical": true,
+          "diffCount": 0
+        },
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-001886",
+      "sourceTag": "문화체육관광부/예산서/2023/1886#ir-diff/page-verify-not-applicable",
+      "command": "ir-diff",
+      "argv": [
+        "ir-diff",
+        "samples/gov/문화체육관광부_예산서_2023_1886.hwp",
+        "samples/gov/문화체육관광부_예산서_2023_1886.hwpx",
+        "samples/gov/문화체육관광부_예산서_2023_1886.hwpx",
+        "--json"
+      ],
+      "exitClass": 4,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "a": "samples/gov/문화체육관광부_예산서_2023_1886.hwp",
+        "b": "samples/gov/문화체육관광부_예산서_2023_1886.hwpx",
+        "identical": true,
+        "diffCount": 0,
+        "categories": {},
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": true,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": 0,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-001887",
+      "sourceTag": "환경부/예산서/2023/1887#layout-anomaly/page-count-mismatch",
+      "command": "layout-anomaly",
+      "argv": [
+        "layout-anomaly",
+        "samples/gov/환경부_예산서_2023_1887.hwp",
+        "--json"
+      ],
+      "exitClass": 4,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/환경부_예산서_2023_1887.hwp",
+        "pageCount": 5,
+        "pageFilter": null,
+        "overflowTolerancePx": 1.0,
+        "overlapTolerancePx": 1.0,
+        "strict": false,
+        "overflowCount": 0,
+        "overlapCount": 0,
+        "emptyPageCount": 2,
+        "hasSignal": true,
+        "pages": [
+          {
+            "page": 0,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 1,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 2,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 3,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 4,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": true,
+            "overflowItems": [],
+            "overlapItems": []
+          }
+        ],
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "pageCountMismatch": true
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": true,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": false,
+        "overflowCount": 0,
+        "overlapCount": 0,
+        "emptyPageCount": 2,
+        "pageCountMismatch": true,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-001888",
+      "sourceTag": "해양수산부/예산서/2023/1888#replay/page-verify-not-applicable",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "plan.json",
+        "--json"
+      ],
+      "exitClass": 4,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "mode": "attest",
+        "input": "samples/gov/해양수산부_예산서_2023_1888.hwpx",
+        "inputSha256": "4162d0136323c90a0b31e786a9fbfb5d81b50b56e2dde6f79b5fefe5fca6b28c",
+        "planSha256": "266a5d452640377fe9ba090ea3abb4f433e17af8f6def0fe9b6cb898f22e347e",
+        "outputSha256": "2d38f2308bfac89afe760aee033a2c4723c5faf4855ec3ba59efe282570d76e5",
+        "expectedOutputSha256": null,
+        "reproduced": null,
+        "steps": 3,
+        "toolVersion": "0.8.4",
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-001889",
+      "sourceTag": "법제처/회의록/2023/1889#fill-fields/verify-pages",
+      "command": "fill-fields",
+      "argv": [
+        "edit",
+        "fill-fields",
+        "samples/gov/법제처_회의록_2023_1889.hwp",
+        "--data",
+        "@fields.json",
+        "-o",
+        "out.hwp",
+        "--verify",
+        "--json"
+      ],
+      "exitClass": 4,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/법제처_회의록_2023_1889.hwp",
+        "output": "output/gov/법제처_회의록_2023_1889.hwp",
+        "format": "hwp5",
+        "bytes": 251808,
+        "wasDistribution": false,
+        "passwordProtected": false,
+        "verify": {
+          "identical": true,
+          "diffCount": 0
+        },
+        "verifyPages": {
+          "expected": 12,
+          "actual": 11,
+          "match": false
+        },
+        "untrustedContent": false,
+        "untrustedFields": [],
+        "filledCount": 1,
+        "filled": [
+          {
+            "name": "제목",
+            "occurrence": 0,
+            "value": "감사 지적사항 조치 결과"
+          }
+        ],
+        "pageCountMismatch": true
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": {
+          "identical": true,
+          "diffCount": 0
+        },
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": true,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-001890",
+      "sourceTag": "행정안전부/회의록/2023/1890#render-diff/page-count-mismatch",
+      "command": "render-diff",
+      "argv": [
+        "render-diff",
+        "samples/gov/행정안전부_회의록_2023_1890.hwp",
+        "--json"
+      ],
+      "exitClass": 4,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "mode": "self-roundtrip",
+        "sourceA": "samples/gov/행정안전부_회의록_2023_1890.hwp",
+        "sourceB": "samples/gov/행정안전부_회의록_2023_1890.hwp",
+        "via": "hwp",
+        "pageFilter": null,
+        "threshold": 2.0,
+        "pageCountA": 3,
+        "pageCountB": 4,
+        "pageCountMismatch": true,
+        "maxDisp": 1.2,
+        "worstPage": 0,
+        "overPages": 0,
+        "structPages": 0,
+        "hardStructPages": 0,
+        "status": "OK",
+        "regression": false,
+        "pages": [
+          {
+            "page": 0,
+            "maxDisp": 0.2,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 69,
+            "nodeCountB": 69
+          },
+          {
+            "page": 1,
+            "maxDisp": 0.4,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 70,
+            "nodeCountB": 70
+          },
+          {
+            "page": 2,
+            "maxDisp": 0.6,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 71,
+            "nodeCountB": 71
+          },
+          {
+            "page": 3,
+            "maxDisp": 0.8,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 72,
+            "nodeCountB": 72
+          },
+          {
+            "page": 4,
+            "maxDisp": 1.0,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 73,
+            "nodeCountB": 73
+          },
+          {
+            "page": 5,
+            "maxDisp": 1.2,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 74,
+            "nodeCountB": 74
+          }
+        ],
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": false,
+        "status": "OK",
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": true,
+        "overPages": 0
+      }
+    },
+    {
+      "recordId": "vproto-001891",
+      "sourceTag": "국세청/회의록/2023/1891#info/ok-meta",
+      "command": "info",
+      "argv": [
+        "info",
+        "samples/gov/국세청_회의록_2023_1891.hwpx",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/국세청_회의록_2023_1891.hwpx",
+        "format": "hwpx",
+        "sizeBytes": 282930,
+        "version": "owpml-1.0",
+        "sections": 3,
+        "pageCount": 19,
+        "paraCount": 133,
+        "fonts": [
+          "맑은 고딕",
+          "굴림",
+          "굴림체",
+          "돋움",
+          "돋움체",
+          "바탕",
+          "바탕체",
+          "나눔고딕"
+        ],
+        "title": "규제 심사(안) 개요 (국세청 회의록 2023)",
+        "warnings": [],
+        "untrustedContent": true,
+        "untrustedFields": [
+          "title",
+          "fonts[]"
+        ]
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-001892",
+      "sourceTag": "대법원/회의록/2023/1892#verify/expect-pass",
+      "command": "verify",
+      "argv": [
+        "verify",
+        "samples/gov/대법원_회의록_2023_1892.hwp",
+        "--expect-pages",
+        "12",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/대법원_회의록_2023_1892.hwp",
+        "expectations": [
+          {
+            "kind": "pages",
+            "expected": 12,
+            "actual": 12,
+            "pass": true
+          },
+          {
+            "kind": "min-chars",
+            "expected": 371,
+            "actual": 371,
+            "pass": true
+          },
+          {
+            "kind": "min-tables",
+            "expected": 1,
+            "actual": 2,
+            "pass": true
+          },
+          {
+            "kind": "contains",
+            "expected": "연락처",
+            "actual": "연락처",
+            "pass": true
+          },
+          {
+            "kind": "format",
+            "expected": "hwp5",
+            "actual": "hwp5",
+            "pass": true
+          }
+        ],
+        "passCount": 5,
+        "failCount": 0,
+        "verdict": "pass",
+        "untrustedContent": true,
+        "untrustedFields": [
+          "expectations[].actual"
+        ]
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": 0,
+        "passCount": 5,
+        "verdict": "pass",
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-001893",
+      "sourceTag": "특허청/회의록/2023/1893#ir-diff/self-identical",
+      "command": "ir-diff",
+      "argv": [
+        "ir-diff",
+        "samples/gov/특허청_회의록_2023_1893.hwp",
+        "samples/gov/특허청_회의록_2023_1893.hwpx",
+        "samples/gov/특허청_회의록_2023_1893.hwpx",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "a": "samples/gov/특허청_회의록_2023_1893.hwp",
+        "b": "samples/gov/특허청_회의록_2023_1893.hwp",
+        "identical": true,
+        "diffCount": 0,
+        "categories": {},
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": true,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": 0,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-001894",
+      "sourceTag": "교육부/회의록/2023/1894#layout-anomaly/clean",
+      "command": "layout-anomaly",
+      "argv": [
+        "layout-anomaly",
+        "samples/gov/교육부_회의록_2023_1894.hwpx",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/교육부_회의록_2023_1894.hwpx",
+        "pageCount": 6,
+        "pageFilter": null,
+        "overflowTolerancePx": 1.0,
+        "overlapTolerancePx": 1.0,
+        "strict": false,
+        "overflowCount": 0,
+        "overlapCount": 0,
+        "emptyPageCount": 0,
+        "hasSignal": false,
+        "pages": [
+          {
+            "page": 0,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 1,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 2,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 3,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 4,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 5,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          }
+        ],
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": false,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": false,
+        "overflowCount": 0,
+        "overlapCount": 0,
+        "emptyPageCount": 0,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-001895",
+      "sourceTag": "보건복지부/회의록/2023/1895#replay/attest",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "plan.json",
+        "--plan-json",
+        "{}",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "mode": "attest",
+        "input": "samples/gov/보건복지부_회의록_2023_1895.hwp",
+        "inputSha256": "a30c50f9107d8ca12a8cb779526cbc3b956017a71d15c5126d3de0a73c9dd37a",
+        "planSha256": "334d6566fefa9e6b3be886aede7fec9d9e3fec92024c54a3f04f0b962945d7b0",
+        "outputSha256": "eb9fc3add51d2786c4499981ab62e99f2b4c3b69fd98cf48d951a85ad30d8f20",
+        "expectedOutputSha256": null,
+        "reproduced": null,
+        "steps": 5,
+        "toolVersion": "0.8.4",
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-001896",
+      "sourceTag": "국토교통부/회의록/2023/1896#fill-fields/dry-run",
+      "command": "fill-fields",
+      "argv": [
+        "edit",
+        "fill-fields",
+        "samples/gov/국토교통부_회의록_2023_1896.hwp",
+        "--data",
+        "@fields.json",
+        "--dry-run",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/국토교통부_회의록_2023_1896.hwp",
+        "dryRun": true,
+        "filledCount": 7,
+        "filled": [
+          {
+            "name": "대표자",
+            "occurrence": 0,
+            "value": "대표자-값-1895-0"
+          },
+          {
+            "name": "담당부서",
+            "occurrence": 1,
+            "value": "담당부서-값-1895-1"
+          },
+          {
+            "name": "담당자",
+            "occurrence": 2,
+            "value": "담당자-값-1895-2"
+          },
+          {
+            "name": "문서번호",
+            "occurrence": 3,
+            "value": "문서번호-값-1895-3"
+          },
+          {
+            "name": "시행일자",
+            "occurrence": 4,
+            "value": "시행일자-값-1895-4"
+          },
+          {
+            "name": "수신",
+            "occurrence": 5,
+            "value": "수신-값-1895-5"
+          },
+          {
+            "name": "제목",
+            "occurrence": 6,
+            "value": "제목-값-1895-6"
+          }
+        ],
+        "notFound": [],
+        "ambiguous": [],
+        "confusable": [],
+        "changedPages": null,
+        "untrustedContent": true,
+        "untrustedFields": [
+          "filled[].value",
+          "filled[].name"
+        ]
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-001897",
+      "sourceTag": "고용노동부/회의록/2023/1897#render-diff/ok",
+      "command": "render-diff",
+      "argv": [
+        "render-diff",
+        "samples/gov/고용노동부_회의록_2023_1897.hwpx",
+        "--via",
+        "hwpx",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "mode": "self-roundtrip",
+        "sourceA": "samples/gov/고용노동부_회의록_2023_1897.hwpx",
+        "sourceB": "samples/gov/고용노동부_회의록_2023_1897.hwpx",
+        "via": "hwpx",
+        "pageFilter": null,
+        "threshold": 2.0,
+        "pageCountA": 3,
+        "pageCountB": 3,
+        "pageCountMismatch": false,
+        "maxDisp": 0.4,
+        "worstPage": 0,
+        "overPages": 0,
+        "structPages": 0,
+        "hardStructPages": 0,
+        "status": "OK",
+        "regression": false,
+        "pages": [
+          {
+            "page": 0,
+            "maxDisp": 0.0,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 46,
+            "nodeCountB": 46
+          },
+          {
+            "page": 1,
+            "maxDisp": 0.2,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 47,
+            "nodeCountB": 47
+          },
+          {
+            "page": 2,
+            "maxDisp": 0.4,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 48,
+            "nodeCountB": 48
+          }
+        ],
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": false,
+        "status": "OK",
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": false,
+        "overPages": 0
+      }
+    },
+    {
+      "recordId": "vproto-001898",
+      "sourceTag": "외교부/회의록/2023/1898#info/ok-meta",
+      "command": "info",
+      "argv": [
+        "info",
+        "samples/gov/외교부_회의록_2023_1898.hwp",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/외교부_회의록_2023_1898.hwp",
+        "format": "hwp5",
+        "sizeBytes": 283889,
+        "version": "5.0.2.5",
+        "sections": 2,
+        "pageCount": 26,
+        "paraCount": 140,
+        "fonts": [
+          "나눔고딕",
+          "나눔명조",
+          "본고딕",
+          "본명조",
+          "HY신명조",
+          "HY중고딕",
+          "한양견고딕"
+        ],
+        "title": "민원 처리 결과 통지 (외교부 회의록 2023)",
+        "warnings": [],
+        "untrustedContent": true,
+        "untrustedFields": [
+          "title",
+          "fonts[]"
+        ]
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-001899",
+      "sourceTag": "기획재정부/회의록/2023/1899#verify/expect-pass",
+      "command": "verify",
+      "argv": [
+        "verify",
+        "samples/gov/기획재정부_회의록_2023_1899.hwp",
+        "--expect-pages",
+        "19",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/기획재정부_회의록_2023_1899.hwp",
+        "expectations": [
+          {
+            "kind": "pages",
+            "expected": 19,
+            "actual": 19,
+            "pass": true
+          },
+          {
+            "kind": "min-chars",
+            "expected": 378,
+            "actual": 378,
+            "pass": true
+          },
+          {
+            "kind": "min-tables",
+            "expected": 1,
+            "actual": 4,
+            "pass": true
+          },
+          {
+            "kind": "contains",
+            "expected": "문서번호",
+            "actual": "문서번호",
+            "pass": true
+          },
+          {
+            "kind": "format",
+            "expected": "hwp5",
+            "actual": "hwp5",
+            "pass": true
+          }
+        ],
+        "passCount": 5,
+        "failCount": 0,
+        "verdict": "pass",
+        "untrustedContent": true,
+        "untrustedFields": [
+          "expectations[].actual"
+        ]
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": 0,
+        "passCount": 5,
+        "verdict": "pass",
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-001900",
+      "sourceTag": "공정거래위원회/회의록/2023/1900#ir-diff/self-identical",
+      "command": "ir-diff",
+      "argv": [
+        "ir-diff",
+        "samples/gov/공정거래위원회_회의록_2023_1900.hwpx",
+        "samples/gov/공정거래위원회_회의록_2023_1900.hwpxx",
+        "samples/gov/공정거래위원회_회의록_2023_1900.hwp",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "a": "samples/gov/공정거래위원회_회의록_2023_1900.hwpx",
+        "b": "samples/gov/공정거래위원회_회의록_2023_1900.hwpx",
+        "identical": true,
+        "diffCount": 0,
+        "categories": {},
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": true,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": 0,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-001901",
+      "sourceTag": "금융위원회/회의록/2023/1901#layout-anomaly/overflow-nonstrict",
+      "command": "layout-anomaly",
+      "argv": [
+        "layout-anomaly",
+        "samples/gov/금융위원회_회의록_2023_1901.hwp",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/금융위원회_회의록_2023_1901.hwp",
+        "pageCount": 7,
+        "pageFilter": null,
+        "overflowTolerancePx": 1.0,
+        "overlapTolerancePx": 1.0,
+        "strict": false,
+        "overflowCount": 2,
+        "overlapCount": 0,
+        "emptyPageCount": 0,
+        "hasSignal": true,
+        "pages": [
+          {
+            "page": 0,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": true,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [
+              {
+                "kind": "para",
+                "section": 0,
+                "paragraph": 2,
+                "dx": 5.5,
+                "dy": 0.0,
+                "edge": "right"
+              }
+            ],
+            "overlapItems": []
+          },
+          {
+            "page": 1,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 2,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 3,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 4,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 5,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 6,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          }
+        ],
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": true,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": false,
+        "overflowCount": 2,
+        "overlapCount": 0,
+        "emptyPageCount": 0,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-001902",
+      "sourceTag": "방송통신위원회/회의록/2023/1902#replay/attest",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "plan.json",
+        "--plan-json",
+        "{}",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "mode": "attest",
+        "input": "samples/gov/방송통신위원회_회의록_2023_1902.hwp",
+        "inputSha256": "ed9503728c9c254aa96078dacb8a02533fda7a75513524ef925a9ecd272dc8af",
+        "planSha256": "ead5e07c35734d0250ebe752280ee35be274e0890dcfd1c530e1d732c2b3c7ea",
+        "outputSha256": "552ac389bc1c08c4404e58bcaa446f648d9671b7fe0906ca857beb6b28e82489",
+        "expectedOutputSha256": null,
+        "reproduced": null,
+        "steps": 2,
+        "toolVersion": "0.8.4",
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-001903",
+      "sourceTag": "개인정보보호위원회/회의록/2023/1903#fill-fields/write-verify-ok",
+      "command": "fill-fields",
+      "argv": [
+        "edit",
+        "fill-fields",
+        "samples/gov/개인정보보호위원회_회의록_2023_1903.hwpx",
+        "--data",
+        "@fields.json",
+        "-o",
+        "out.hwp",
+        "--verify",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/개인정보보호위원회_회의록_2023_1903.hwpx",
+        "dryRun": false,
+        "filledCount": 2,
+        "filled": [
+          {
+            "name": "금액",
+            "occurrence": 0,
+            "value": "금액-값-1902-0"
+          },
+          {
+            "name": "계좌번호",
+            "occurrence": 1,
+            "value": "계좌번호-값-1902-1"
+          }
+        ],
+        "notFound": [],
+        "ambiguous": [],
+        "confusable": [],
+        "changedPages": [
+          0
+        ],
+        "untrustedContent": true,
+        "untrustedFields": [
+          "filled[].value",
+          "filled[].name"
+        ],
+        "output": "output/gov/개인정보보호위원회_회의록_2023_1903_filled.hwpx",
+        "outputFormat": "hwpx",
+        "verify": {
+          "identical": true,
+          "diffCount": 0
+        }
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": {
+          "identical": true,
+          "diffCount": 0
+        },
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-001904",
+      "sourceTag": "국민권익위원회/회의록/2023/1904#render-diff/ok",
+      "command": "render-diff",
+      "argv": [
+        "render-diff",
+        "samples/gov/국민권익위원회_회의록_2023_1904.hwp",
+        "--via",
+        "hwp",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "mode": "self-roundtrip",
+        "sourceA": "samples/gov/국민권익위원회_회의록_2023_1904.hwp",
+        "sourceB": "samples/gov/국민권익위원회_회의록_2023_1904.hwp",
+        "via": "hwp",
+        "pageFilter": null,
+        "threshold": 2.0,
+        "pageCountA": 5,
+        "pageCountB": 5,
+        "pageCountMismatch": false,
+        "maxDisp": 1.4,
+        "worstPage": 0,
+        "overPages": 0,
+        "structPages": 0,
+        "hardStructPages": 0,
+        "status": "OK",
+        "regression": false,
+        "pages": [
+          {
+            "page": 0,
+            "maxDisp": 1.4,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 53,
+            "nodeCountB": 53
+          },
+          {
+            "page": 1,
+            "maxDisp": 0.0,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 54,
+            "nodeCountB": 54
+          },
+          {
+            "page": 2,
+            "maxDisp": 0.2,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 55,
+            "nodeCountB": 55
+          },
+          {
+            "page": 3,
+            "maxDisp": 0.4,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 56,
+            "nodeCountB": 56
+          },
+          {
+            "page": 4,
+            "maxDisp": 0.6,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 57,
+            "nodeCountB": 57
+          }
+        ],
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": false,
+        "status": "OK",
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": false,
+        "overPages": 0
+      }
+    },
+    {
+      "recordId": "vproto-001905",
+      "sourceTag": "국가인권위원회/회의록/2023/1905#info/ok-meta",
+      "command": "info",
+      "argv": [
+        "info",
+        "samples/gov/국가인권위원회_회의록_2023_1905.hwp",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/국가인권위원회_회의록_2023_1905.hwp",
+        "format": "hwp5",
+        "sizeBytes": 284848,
+        "version": "5.0.2.5",
+        "sections": 1,
+        "pageCount": 33,
+        "paraCount": 147,
+        "fonts": [
+          "함초롬바탕",
+          "함초롬돋움",
+          "맑은 고딕",
+          "굴림",
+          "굴림체",
+          "돋움"
+        ],
+        "title": "정보공개 청구서 (국가인권위원회 회의록 2023)",
+        "warnings": [
+          {
+            "code": "distribution",
+            "message": "배포용 문서 — 편집 시 convert 가 필요하다"
+          }
+        ],
+        "untrustedContent": true,
+        "untrustedFields": [
+          "title",
+          "fonts[]"
+        ]
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-001906",
+      "sourceTag": "통계청/회의록/2023/1906#verify/expect-pass",
+      "command": "verify",
+      "argv": [
+        "verify",
+        "samples/gov/통계청_회의록_2023_1906.hwpx",
+        "--expect-pages",
+        "6",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/통계청_회의록_2023_1906.hwpx",
+        "expectations": [
+          {
+            "kind": "pages",
+            "expected": 6,
+            "actual": 6,
+            "pass": true
+          },
+          {
+            "kind": "min-chars",
+            "expected": 385,
+            "actual": 385,
+            "pass": true
+          },
+          {
+            "kind": "min-tables",
+            "expected": 1,
+            "actual": 1,
+            "pass": true
+          },
+          {
+            "kind": "contains",
+            "expected": "생년월일",
+            "actual": "생년월일",
+            "pass": true
+          },
+          {
+            "kind": "format",
+            "expected": "hwp5",
+            "actual": "hwpx",
+            "pass": true
+          }
+        ],
+        "passCount": 5,
+        "failCount": 0,
+        "verdict": "pass",
+        "untrustedContent": true,
+        "untrustedFields": [
+          "expectations[].actual"
+        ]
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": 0,
+        "passCount": 5,
+        "verdict": "pass",
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-001907",
+      "sourceTag": "기상청/회의록/2023/1907#ir-diff/self-identical",
+      "command": "ir-diff",
+      "argv": [
+        "ir-diff",
+        "samples/gov/기상청_회의록_2023_1907.hwp",
+        "samples/gov/기상청_회의록_2023_1907.hwpx",
+        "samples/gov/기상청_회의록_2023_1907.hwpx",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "a": "samples/gov/기상청_회의록_2023_1907.hwp",
+        "b": "samples/gov/기상청_회의록_2023_1907.hwp",
+        "identical": true,
+        "diffCount": 0,
+        "categories": {},
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": true,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": 0,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-001908",
+      "sourceTag": "관세청/회의록/2023/1908#layout-anomaly/empty-strict-ok",
+      "command": "layout-anomaly",
+      "argv": [
+        "layout-anomaly",
+        "samples/gov/관세청_회의록_2023_1908.hwp",
+        "--strict",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/관세청_회의록_2023_1908.hwp",
+        "pageCount": 8,
+        "pageFilter": null,
+        "overflowTolerancePx": 1.0,
+        "overlapTolerancePx": 1.0,
+        "strict": true,
+        "overflowCount": 0,
+        "overlapCount": 0,
+        "emptyPageCount": 1,
+        "hasSignal": true,
+        "pages": [
+          {
+            "page": 0,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 1,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 2,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 3,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 4,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 5,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 6,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          },
+          {
+            "page": 7,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": true,
+            "overflowItems": [],
+            "overlapItems": []
+          }
+        ],
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": true,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": true,
+        "overflowCount": 0,
+        "overlapCount": 0,
+        "emptyPageCount": 1,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-001909",
+      "sourceTag": "검찰청/회의록/2023/1909#replay/verify-reproduced",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "plan.json",
+        "--expect-output-sha256",
+        "515cc38ee3565fdd5a5011821868f304094d8e442cdf7bf52d8aa257c08ab7f2",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "mode": "verify",
+        "input": "samples/gov/검찰청_회의록_2023_1909.hwpx",
+        "inputSha256": "34d43c6960f284197e25f7a942d218c579558e4e8131cccd43fb761c45b43e89",
+        "planSha256": "75cc66eca9b9deb85184189af4dda2348d339183c24ede175ac4332408ce43b9",
+        "outputSha256": "515cc38ee3565fdd5a5011821868f304094d8e442cdf7bf52d8aa257c08ab7f2",
+        "expectedOutputSha256": "515cc38ee3565fdd5a5011821868f304094d8e442cdf7bf52d8aa257c08ab7f2",
+        "reproduced": true,
+        "steps": 4,
+        "toolVersion": "0.8.4",
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": true,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-001910",
+      "sourceTag": "경찰청/회의록/2023/1910#fill-fields/not-found-exit0",
+      "command": "fill-fields",
+      "argv": [
+        "edit",
+        "fill-fields",
+        "samples/gov/경찰청_회의록_2023_1910.hwp",
+        "--data",
+        "@fields.json",
+        "-o",
+        "out.hwp",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/경찰청_회의록_2023_1910.hwp",
+        "dryRun": false,
+        "filledCount": 3,
+        "filled": [
+          {
+            "name": "사업자등록번호",
+            "occurrence": 0,
+            "value": "사업자등록번호-값-1909-0"
+          },
+          {
+            "name": "법인명",
+            "occurrence": 1,
+            "value": "법인명-값-1909-1"
+          },
+          {
+            "name": "대표자",
+            "occurrence": 2,
+            "value": "대표자-값-1909-2"
+          }
+        ],
+        "notFound": [
+          "없는필드1"
+        ],
+        "ambiguous": [],
+        "confusable": [],
+        "changedPages": [
+          0,
+          1
+        ],
+        "untrustedContent": true,
+        "untrustedFields": [
+          "filled[].value",
+          "filled[].name"
+        ],
+        "output": "output/gov/경찰청_회의록_2023_1910_filled.hwp",
+        "outputFormat": "hwp5"
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-001911",
+      "sourceTag": "소방청/회의록/2023/1911#render-diff/under-threshold",
+      "command": "render-diff",
+      "argv": [
+        "render-diff",
+        "samples/gov/소방청_회의록_2023_1911.hwp",
+        "--max-disp",
+        "2",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "mode": "self-roundtrip",
+        "sourceA": "samples/gov/소방청_회의록_2023_1911.hwp",
+        "sourceB": "samples/gov/소방청_회의록_2023_1911.hwp",
+        "via": "hwpx",
+        "pageFilter": null,
+        "threshold": 2.0,
+        "pageCountA": 2,
+        "pageCountB": 2,
+        "pageCountMismatch": false,
+        "maxDisp": 1.2,
+        "worstPage": 0,
+        "overPages": 0,
+        "structPages": 0,
+        "hardStructPages": 0,
+        "status": "OK",
+        "regression": false,
+        "pages": [
+          {
+            "page": 0,
+            "maxDisp": 1.2,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 60,
+            "nodeCountB": 60
+          },
+          {
+            "page": 1,
+            "maxDisp": 1.4,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 61,
+            "nodeCountB": 61
+          }
+        ],
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": false,
+        "status": "OK",
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": false,
+        "overPages": 0
+      }
+    },
+    {
+      "recordId": "vproto-001912",
+      "sourceTag": "해양경찰청/회의록/2023/1912#info/ok-meta",
+      "command": "info",
+      "argv": [
+        "info",
+        "samples/gov/해양경찰청_회의록_2023_1912.hwpx",
+        "--json"
+      ],
+      "exitClass": 0,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/해양경찰청_회의록_2023_1912.hwpx",
+        "format": "hwpx",
+        "sizeBytes": 285807,
+        "version": "owpml-1.0",
+        "sections": 4,
+        "pageCount": 40,
+        "paraCount": 154,
+        "fonts": [
+          "바탕",
+          "바탕체",
+          "나눔고딕",
+          "나눔명조",
+          "본고딕",
+          "본명조",
+          "HY신명조",
+          "HY중고딕",
+          "한양견고딕",
+          "함초롬바탕",
+          "함초롬돋움",
+          "맑은 고딕",
+          "굴림"
+        ],
+        "title": "개인정보 처리방침 개정 고시 (해양경찰청 회의록 2023)",
+        "warnings": [],
+        "untrustedContent": true,
+        "untrustedFields": [
+          "title",
+          "fonts[]"
+        ]
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-001913",
+      "sourceTag": "병무청/회의록/2023/1913#verify/expect-fail",
+      "command": "verify",
+      "argv": [
+        "verify",
+        "samples/gov/병무청_회의록_2023_1913.hwp",
+        "--expect-min-chars",
+        "99999",
+        "--json"
+      ],
+      "exitClass": 3,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/병무청_회의록_2023_1913.hwp",
+        "expectations": [
+          {
+            "kind": "pages",
+            "expected": 13,
+            "actual": 15,
+            "pass": false
+          },
+          {
+            "kind": "min-chars",
+            "expected": 392,
+            "actual": 392,
+            "pass": true
+          },
+          {
+            "kind": "min-tables",
+            "expected": 1,
+            "actual": 3,
+            "pass": true
+          },
+          {
+            "kind": "contains",
+            "expected": "담당부서",
+            "actual": "담당부서",
+            "pass": true
+          },
+          {
+            "kind": "format",
+            "expected": "hwp5",
+            "actual": "hwp5",
+            "pass": true
+          }
+        ],
+        "passCount": 4,
+        "failCount": 1,
+        "verdict": "fail",
+        "untrustedContent": true,
+        "untrustedFields": [
+          "expectations[].actual"
+        ]
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": 1,
+        "passCount": 4,
+        "verdict": "fail",
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-001914",
+      "sourceTag": "산림청/회의록/2023/1914#ir-diff/cross-format-diff",
+      "command": "ir-diff",
+      "argv": [
+        "ir-diff",
+        "samples/gov/산림청_회의록_2023_1914.hwp",
+        "samples/gov/산림청_회의록_2023_1914.hwpx",
+        "samples/gov/산림청_회의록_2023_1914.hwpx",
+        "--json"
+      ],
+      "exitClass": 3,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "a": "samples/gov/산림청_회의록_2023_1914.hwp",
+        "b": "samples/gov/산림청_회의록_2023_1914.hwpx",
+        "identical": false,
+        "diffCount": 13,
+        "categories": {
+          "text": 6,
+          "paraShape": 2,
+          "charShape": 1,
+          "table": 3,
+          "ctrl": 1
+        },
+        "untrustedContent": true,
+        "untrustedFields": [
+          "categories"
+        ]
+      },
+      "judgment": {
+        "identical": false,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": 13,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-001915",
+      "sourceTag": "농촌진흥청/회의록/2023/1915#layout-anomaly/overflow-strict",
+      "command": "layout-anomaly",
+      "argv": [
+        "layout-anomaly",
+        "samples/gov/농촌진흥청_회의록_2023_1915.hwpx",
+        "--strict",
+        "--json"
+      ],
+      "exitClass": 3,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/농촌진흥청_회의록_2023_1915.hwpx",
+        "pageCount": 3,
+        "pageFilter": null,
+        "overflowTolerancePx": 1.0,
+        "overlapTolerancePx": 1.0,
+        "strict": true,
+        "overflowCount": 3,
+        "overlapCount": 1,
+        "emptyPageCount": 0,
+        "hasSignal": true,
+        "pages": [
+          {
+            "page": 0,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": true,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [
+              {
+                "kind": "para",
+                "section": 0,
+                "paragraph": 2,
+                "dx": 10.5,
+                "dy": 0.0,
+                "edge": "right"
+              }
+            ],
+            "overlapItems": []
+          },
+          {
+            "page": 1,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": true,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": [
+              {
+                "kind": "text-text",
+                "a": {
+                  "section": 0,
+                  "paragraph": 4
+                },
+                "b": {
+                  "section": 0,
+                  "paragraph": 5
+                },
+                "overlapPx": 7.0
+              }
+            ]
+          },
+          {
+            "page": 2,
+            "widthPx": 794,
+            "heightPx": 1123,
+            "overflow": false,
+            "overlap": false,
+            "emptyPage": false,
+            "overflowItems": [],
+            "overlapItems": []
+          }
+        ],
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": true,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": true,
+        "overflowCount": 3,
+        "overlapCount": 1,
+        "emptyPageCount": 0,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-001916",
+      "sourceTag": "중소벤처기업부/회의록/2023/1916#replay/verify-mismatch",
+      "command": "replay",
+      "argv": [
+        "replay",
+        "plan.json",
+        "--expect-output-sha256",
+        "0000000000000000000000000000000000000000000000000000000000000000",
+        "--json"
+      ],
+      "exitClass": 3,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "mode": "verify",
+        "input": "samples/gov/중소벤처기업부_회의록_2023_1916.hwp",
+        "inputSha256": "216e1d893217e8d20c45f53ebd0e169ed5407cfb074a38954538fcc0643c5786",
+        "planSha256": "0f715225f4d52fc3adccdd69617cfa2e730a9bd7c98738401a36a83b29b42cf4",
+        "outputSha256": "04930e8ab200fb8073da1afcc6e4d2a17c5654c400e6c8b172e462aa60a046b2",
+        "expectedOutputSha256": "379eb360f918bba2d8276bea6bf1853585cbb498d5b3fea84af874f192e0a584",
+        "reproduced": false,
+        "steps": 1,
+        "toolVersion": "0.8.4",
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": false,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-001917",
+      "sourceTag": "과학기술정보통신부/회의록/2023/1917#fill-fields/verify-ir-diff",
+      "command": "fill-fields",
+      "argv": [
+        "edit",
+        "fill-fields",
+        "samples/gov/과학기술정보통신부_회의록_2023_1917.hwp",
+        "--data",
+        "@fields.json",
+        "-o",
+        "out.hwp",
+        "--verify",
+        "--json"
+      ],
+      "exitClass": 3,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "source": "samples/gov/과학기술정보통신부_회의록_2023_1917.hwp",
+        "dryRun": false,
+        "filledCount": 4,
+        "filled": [
+          {
+            "name": "수신",
+            "occurrence": 0,
+            "value": "수신-값-1916-0"
+          },
+          {
+            "name": "제목",
+            "occurrence": 1,
+            "value": "제목-값-1916-1"
+          },
+          {
+            "name": "금액",
+            "occurrence": 2,
+            "value": "금액-값-1916-2"
+          },
+          {
+            "name": "계좌번호",
+            "occurrence": 3,
+            "value": "계좌번호-값-1916-3"
+          }
+        ],
+        "notFound": [],
+        "ambiguous": [],
+        "confusable": [],
+        "changedPages": [
+          0
+        ],
+        "untrustedContent": true,
+        "untrustedFields": [
+          "filled[].value",
+          "filled[].name"
+        ],
+        "output": "output/gov/과학기술정보통신부_회의록_2023_1917_filled.hwp",
+        "outputFormat": "hwp5",
+        "verify": {
+          "identical": false,
+          "diffCount": 3
+        }
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": {
+          "identical": false,
+          "diffCount": 3
+        },
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-001918",
+      "sourceTag": "문화체육관광부/회의록/2023/1918#render-diff/regression",
+      "command": "render-diff",
+      "argv": [
+        "render-diff",
+        "samples/gov/문화체육관광부_회의록_2023_1918.hwpx",
+        "--via",
+        "hwp",
+        "--json"
+      ],
+      "exitClass": 3,
+      "stdoutPresent": true,
+      "stderrKind": null,
+      "envelope": {
+        "schemaVersion": "1.0",
+        "mode": "self-roundtrip",
+        "sourceA": "samples/gov/문화체육관광부_회의록_2023_1918.hwpx",
+        "sourceB": "samples/gov/문화체육관광부_회의록_2023_1918.hwpx",
+        "via": "hwp",
+        "pageFilter": null,
+        "threshold": 2.0,
+        "pageCountA": 4,
+        "pageCountB": 4,
+        "pageCountMismatch": false,
+        "maxDisp": 7.5,
+        "worstPage": 0,
+        "overPages": 2,
+        "structPages": 1,
+        "hardStructPages": 1,
+        "status": "OVER",
+        "regression": true,
+        "pages": [
+          {
+            "page": 0,
+            "maxDisp": 7.5,
+            "over": true,
+            "structMismatch": false,
+            "nodeCountA": 67,
+            "nodeCountB": 67
+          },
+          {
+            "page": 1,
+            "maxDisp": 1.2,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 68,
+            "nodeCountB": 68
+          },
+          {
+            "page": 2,
+            "maxDisp": 1.4,
+            "over": false,
+            "structMismatch": false,
+            "nodeCountA": 69,
+            "nodeCountB": 69
+          },
+          {
+            "page": 3,
+            "maxDisp": 0.0,
+            "over": false,
+            "structMismatch": true,
+            "nodeCountA": 70,
+            "nodeCountB": 69
+          }
+        ],
+        "untrustedContent": false,
+        "untrustedFields": []
+      },
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": true,
+        "status": "OVER",
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": false,
+        "overPages": 2
+      }
+    },
+    {
+      "recordId": "vproto-001919",
+      "sourceTag": "환경부/회의록/2023/1919#info/io-missing",
+      "command": "info",
+      "argv": [
+        "info",
+        "samples/gov/환경부_회의록_2023_1919.hwp",
+        "--json"
+      ],
+      "exitClass": 1,
+      "stdoutPresent": false,
+      "stderrKind": "io",
+      "envelope": null,
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    },
+    {
+      "recordId": "vproto-001920",
+      "sourceTag": "해양수산부/회의록/2023/1920#verify/io-missing",
+      "command": "verify",
+      "argv": [
+        "verify",
+        "samples/gov/해양수산부_회의록_2023_1920.hwp",
+        "--expect-pages",
+        "1",
+        "--json"
+      ],
+      "exitClass": 1,
+      "stdoutPresent": false,
+      "stderrKind": "io",
+      "envelope": null,
+      "judgment": {
+        "identical": null,
+        "hasSignal": null,
+        "reproduced": null,
+        "findingCount": null,
+        "verify": null,
+        "failCount": null,
+        "passCount": null,
+        "verdict": null,
+        "regression": null,
+        "status": null,
+        "clean": null,
+        "signalCount": null,
+        "valid": null,
+        "diffCount": null,
+        "strict": null,
+        "overflowCount": null,
+        "overlapCount": null,
+        "emptyPageCount": null,
+        "pageCountMismatch": null,
+        "overPages": null
+      }
+    }
+  ]
+}

@@ -1,0 +1,51 @@
+{
+  "schema": 1,
+  "id": "s509-landscape",
+  "width": 842.0,
+  "height": 595.0,
+  "contract": "가로 페이지",
+  "ops": [
+    {
+      "kind": "pageBackground",
+      "x": 0.0,
+      "y": 0.0,
+      "w": 842.0,
+      "h": 595.0,
+      "text": null,
+      "gradient": false,
+      "image": false
+    },
+    {
+      "kind": "rectangle",
+      "x": 20.0,
+      "y": 20.0,
+      "w": 800.0,
+      "h": 40.0,
+      "text": null,
+      "gradient": false,
+      "image": false
+    },
+    {
+      "kind": "textRun",
+      "x": 28.0,
+      "y": 28.0,
+      "w": 240.0,
+      "h": 16.0,
+      "text": "가로",
+      "gradient": false,
+      "image": false
+    }
+  ],
+  "expectedKinds": [
+    "pageBackground",
+    "rectangle",
+    "textRun"
+  ],
+  "expectedTrace": [
+    "begin_page 842.00x595.00",
+    "  pageBackground bbox=0.00,0.00,842.00,595.00",
+    "  rectangle bbox=20.00,20.00,800.00,40.00",
+    "  textRun bbox=28.00,28.00,240.00,16.00",
+    "end_page ops=3"
+  ]
+}

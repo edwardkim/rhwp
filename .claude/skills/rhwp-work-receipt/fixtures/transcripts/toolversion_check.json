@@ -1,0 +1,13 @@
+{
+  "argv": [
+    "rhwp",
+    "replay",
+    "--plan-json",
+    "{\"planVersion\":\"1.0\",\"input\":\"samples/basic/issue2007_nested_cell_pagination_42065.hwp\",\"output\":\"out/notice_year.hwp\",\"steps\":[{\"action\":\"replace_text\",\"find\":\"2025년\",\"replace\":\"2026년\"}]}",
+    "--expect-output-sha256",
+    "3c1c839b9b750e90a88239cf7052f46858ebefac8d4e2f985d4fac7699c7a5b3",
+    "--json"
+  ],
+  "precheck": "envelope.toolVersion == claimed.toolVersion",
+  "pitfall": "버전이 다른데 reproduced:false 이면 주장이 아니라 도구가 갈렸을 수 있다"
+}

@@ -1,0 +1,25 @@
+{
+  "id": "SD31",
+  "tier": 2,
+  "title": "textSecurity 종류 수",
+  "input": "samples/table-001.hwp",
+  "instructions": "jsonContract.textSecurity.kinds 의 원소 수를 answer.json 에 {\"kinds\": N} 으로 제출하라. 힌트: capabilities 의 jsonContract.textSecurity.kinds.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "textSecurity 종류 수",
+      "op": "len_answer_eq",
+      "answer": "kinds",
+      "path": "jsonContract.textSecurity.kinds",
+      "cmd": [
+        "capabilities"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

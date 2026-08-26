@@ -1,0 +1,15 @@
+{
+  "id": "SD30",
+  "steps": [
+    {
+      "answer": {
+        "map": {
+          "cmd": [
+            "capabilities"
+          ],
+          "path": "jsonContract.provenance.map"
+        }
+      }
+    }
+  ]
+}

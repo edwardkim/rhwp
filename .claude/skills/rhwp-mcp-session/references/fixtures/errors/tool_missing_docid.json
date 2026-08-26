@@ -1,0 +1,13 @@
+{
+  "id": "tool_missing_docid",
+  "layer": "isError",
+  "code": null,
+  "symptom": "docId 가 필요합니다",
+  "retry": false,
+  "fix": "인자 이름은 handle 이 아니라 docId.",
+  "tools": [
+    "hwp_doc_text",
+    "hwp_close"
+  ],
+  "policy": "종료 코드 2/필수 인자 = 재시도 금지. 닫힌 핸들만 nextCall 로 재발급."
+}

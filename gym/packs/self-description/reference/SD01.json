@@ -1,0 +1,16 @@
+{
+  "id": "SD01",
+  "steps": [
+    {
+      "answer": {
+        "commands": {
+          "cmd": [
+            "capabilities"
+          ],
+          "path": "commands",
+          "len": true
+        }
+      }
+    }
+  ]
+}

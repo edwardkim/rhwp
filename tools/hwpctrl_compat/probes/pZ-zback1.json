@@ -1,0 +1,62 @@
+{
+  "id": "pZ-zback1",
+  "title": "ShapeObjSendToBack — 1번째 개체",
+  "ledger": [],
+  "open": "samples/mix-shape-01.hwp",
+  "paths": {
+    "a": {
+      "win": "{out}/pZ-zback1-a.hwp",
+      "posix": "{out}/pZ-zback1-a.hwp"
+    },
+    "b": {
+      "win": "{out}/pZ-zback1-b.hwp",
+      "posix": "{out}/pZ-zback1-b.hwp"
+    }
+  },
+  "calls": [
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "a"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "SetPos",
+      [
+        0,
+        0,
+        0
+      ]
+    ],
+    [
+      "Run",
+      [
+        "SelectCtrlFront"
+      ]
+    ],
+    [
+      "CurSelectedCtrl.UserDesc",
+      []
+    ],
+    [
+      "Run",
+      [
+        "ShapeObjSendToBack"
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "b"
+        },
+        "HWP",
+        ""
+      ]
+    ]
+  ]
+}

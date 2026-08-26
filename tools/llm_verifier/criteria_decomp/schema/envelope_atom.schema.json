@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rhwp.local/schema/v-decomp.envelope-atom.json",
+  "title": "V-decomp expected atom",
+  "description": "기존 봉투 필드 하나에 대한 닫힌 기대. 자유 산문 조건이 아니다.",
+  "type": "object",
+  "required": ["kind"],
+  "oneOf": [
+    {
+      "properties": {
+        "kind": { "const": "bool" },
+        "value": { "type": "boolean" }
+      },
+      "required": ["kind", "value"],
+      "additionalProperties": false
+    },
+    {
+      "properties": {
+        "kind": { "const": "u64" },
+        "value": { "type": "integer", "minimum": 0 }
+      },
+      "required": ["kind", "value"],
+      "additionalProperties": false
+    },
+    {
+      "properties": {
+        "kind": { "const": "empty_seq" }
+      },
+      "required": ["kind"],
+      "additionalProperties": false
+    },
+    {
+      "properties": {
+        "kind": { "const": "absent" }
+      },
+      "required": ["kind"],
+      "additionalProperties": false
+    },
+    {
+      "properties": {
+        "kind": { "const": "present" }
+      },
+      "required": ["kind"],
+      "additionalProperties": false
+    },
+    {
+      "properties": {
+        "kind": { "const": "str_eq" },
+        "value": { "type": "string" }
+      },
+      "required": ["kind", "value"],
+      "additionalProperties": false
+    },
+    {
+      "properties": {
+        "kind": { "const": "null" }
+      },
+      "required": ["kind"],
+      "additionalProperties": false
+    }
+  ]
+}

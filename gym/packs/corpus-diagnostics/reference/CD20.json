@@ -1,0 +1,22 @@
+{
+  "id": "CD20",
+  "steps": [
+    {
+      "answer": {
+        "identical": {
+          "cmd": [
+            "ir-diff",
+            "{input}",
+            "{input}",
+            "--json"
+          ],
+          "path": "identical",
+          "allowExits": [
+            0,
+            3
+          ]
+        }
+      }
+    }
+  ]
+}

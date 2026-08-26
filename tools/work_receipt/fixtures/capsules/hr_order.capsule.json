@@ -1,0 +1,30 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workCapsule",
+  "parent": null,
+  "plan": {
+    "planVersion": "1.0",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "output": "out/hr-order.hwp",
+    "steps": [
+      {
+        "action": "replace_text",
+        "find": "전보 발령",
+        "replace": "겸임 발령"
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"samples/basic/issue2007_nested_cell_pagination_42065.hwp\",\"output\":\"out/hr-order.hwp\",\"steps\":[{\"action\":\"replace_text\",\"find\":\"전보 발령\",\"replace\":\"겸임 발령\"}]}",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "inputSha256": "a2e6869346b32d703055493a2ab9975724aefa25baff7ab5a060dda9ae5dcfc4",
+    "planSha256": "13f17887507fbcfc056ed9ecd2e17ba04f04be30bab083803e3d2cada6525a93",
+    "outputSha256": "ae95e7c3990562bfac922f1631a4204687e76c9ba47ec66dbe69140957085aa4",
+    "toolVersion": "fixture-0.0.0-not-a-release",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null
+  }
+}

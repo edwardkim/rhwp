@@ -1,0 +1,425 @@
+{
+  "catalogVersion": "1.0",
+  "skill": "rhwp-work-receipt",
+  "issue": 5308,
+  "hashAlg": "SHA-256",
+  "note": "fileSha256 는 이 생성기가 쓴 파일 바이트. 에디터로 다시 저장하면 바뀐다.",
+  "roots": [
+    {
+      "file": "notice_year.capsule.json",
+      "id": "notice_year",
+      "title": "공문 연도 치환",
+      "why": "연도만 바꾸고 3해시 영수증을 넘긴다",
+      "inputSha256": "9872f62399b737c8ebe6cbe2adff4a9d777642e0cd507234428c8e9b3a439a3c",
+      "planSha256": "0177fa207e85bcf0bcbc52f3c7971f9566e10c8ef8402c302816ae05e3d336cc",
+      "outputSha256": "3c1c839b9b750e90a88239cf7052f46858ebefac8d4e2f985d4fac7699c7a5b3",
+      "fileSha256": "ac375d10634746200b216daf3c26c3c687ac734e754145bedd1f1def0046f56a",
+      "steps": 1,
+      "parent": null
+    },
+    {
+      "file": "org_rename.capsule.json",
+      "id": "org_rename",
+      "title": "기관명 치환",
+      "why": "기관 개편 후 직인 전 문구만 고친다",
+      "inputSha256": "272d5db8fd5d4e45e98a89c4c6218c65de06979b243ca0422b6dc271b0e7edac",
+      "planSha256": "3c3989f2b2fbeee94e58481ee5e35aac4fa7d30f700dcd7fe60474df0575e09c",
+      "outputSha256": "d6e74022b88769746130ff820752307b248afad76f8fabaa823b9260bbcbb362",
+      "fileSha256": "bfb11760d90bdf33d147b47eb81cff7d480f59e7b80bb034bb9070ea5ff36de6",
+      "steps": 1,
+      "parent": null
+    },
+    {
+      "file": "form_fill_echo.capsule.json",
+      "id": "form_fill_echo",
+      "title": "누름틀 멱등 치환",
+      "why": "바이트 중립 계획으로 입력=산출 해시를 가르친다",
+      "inputSha256": "47416d5e6c4135013bd10571c3ed57c845eaa1efd5237f08ce107476984b0f5d",
+      "planSha256": "71e5da230c3843f0824081f70973c3441c5cd946e0b057e95c394115d2bcb8f2",
+      "outputSha256": "191e12bc40ec8a7e2a615f493c8b51dcc753ac07ce7b16ceb8c74f1d6f83b5e2",
+      "fileSha256": "875b99b0974064ecb277be18cf8f44acfda537f344ab2579dc4e90b2aecd6b2d",
+      "steps": 1,
+      "parent": null
+    },
+    {
+      "file": "deadline.capsule.json",
+      "id": "deadline",
+      "title": "마감일 정정",
+      "why": "공고 정정 한 줄",
+      "inputSha256": "6674452ea8dee7c4a74d246d4efd196f6d0d21977e57260fa28b4a2ff432e2cb",
+      "planSha256": "d01ecf4fd7ae066353edc165c2ec13d569e95f9f0c854db6fdacd53d569b5002",
+      "outputSha256": "ee72bb89e84f5eb57cd397f1a796db6d7e289515db16dda5f3bada86cada33b4",
+      "fileSha256": "73b587aa8ef8f802be0f64f152a373c9e7943c5e094f40161ad7271784d2453c",
+      "steps": 1,
+      "parent": null
+    },
+    {
+      "file": "phone.capsule.json",
+      "id": "phone",
+      "title": "연락처 갱신",
+      "why": "담당 부서 번호 교체",
+      "inputSha256": "1b2fdae10d8e045b43c0bd71900770012c8aaae8b060a12dc7bb1b3925820e8f",
+      "planSha256": "d01576e3c45a91eccbcd277624d5ca48550cd827668887e9cb8ca65bbc1c2ca5",
+      "outputSha256": "b49250898a6b5360c187a5684b240d33a2bc8903a7334657758a08b953aa545b",
+      "fileSha256": "aabf3dcbe68dcbd802899a07515335f8f2bb915c2645587e0785781cb094dc85",
+      "steps": 1,
+      "parent": null
+    },
+    {
+      "file": "addr.capsule.json",
+      "id": "addr",
+      "title": "주소 치환",
+      "why": "이전 공문",
+      "inputSha256": "269f13d4bf0d9169e68658e5fa7b1c6318a5acbf2cf85a982423062069b84847",
+      "planSha256": "4534b871757a7b4dd328d05fe10d600f1300b68ed489d16186a9ab654c4b1664",
+      "outputSha256": "192678bd41e08539c17968ad5929919f20d566f9e9f65975caa96d052b16d587",
+      "fileSha256": "554adcc9b0736829af22b8b9a3f4a25a7fcf4f202235219b73488969381d8612",
+      "steps": 1,
+      "parent": null
+    },
+    {
+      "file": "law_ref.capsule.json",
+      "id": "law_ref",
+      "title": "조문 호수 정정",
+      "why": "인용 조문 오기",
+      "inputSha256": "086cfd693095982bddb00a97e176089a3a16b67819f2111ff64eaac581ef2e88",
+      "planSha256": "9c7527e108263e63d2753a86869d31b3cec99416458d52349b9ebf2b5bf16fae",
+      "outputSha256": "f1b085351ac9c303cb5311fb8f87b705bc05ddb3e69288dd6690a593ffcb8340",
+      "fileSha256": "86a4dedd7712097fb5a8411b0998fec0a737dc652b41b352ff06dda1182181b8",
+      "steps": 1,
+      "parent": null
+    },
+    {
+      "file": "amount.capsule.json",
+      "id": "amount",
+      "title": "금액 단위 정정",
+      "why": "자릿수 오기 — 영수증이 바이트를 고정",
+      "inputSha256": "07b626d36659476ad13a3071c2d12fc9bcacbe35e6ffda4e23dd53ada7070ee4",
+      "planSha256": "b55af5fd90f3b97b89f29a57781f199726de664871bb18ac6b2c7d3c14726979",
+      "outputSha256": "97ff17c0ffba202f977838bdec6656f8f9651f11d6eb57816d1e8a444eaffb0f",
+      "fileSha256": "1b8484f31e2a18552be082d971e45221e54553fb2b6793158bb3e121b5f17cb4",
+      "steps": 1,
+      "parent": null
+    },
+    {
+      "file": "checkbox_mark.capsule.json",
+      "id": "checkbox_mark",
+      "title": "체크 표시 치환",
+      "why": "체크박스는 글리프 치환이다",
+      "inputSha256": "7bcffaea242d6399a7dd30ac20ca56a8f07fab3f8fffdb983dd4439a04ec79de",
+      "planSha256": "38ca8df4287a623a349d8a6c6ad3d1808de0ba7c2f7280a08712db1a04b103c7",
+      "outputSha256": "1ad8f56a6b6e3c7f396caf84e6a2ee57c132cf60a5fd2dbb8464ec3f103e7463",
+      "fileSha256": "1f508b3b379929be317e484dd87724b6d017293b62f456c032b3a9ba83f07bcd",
+      "steps": 1,
+      "parent": null
+    },
+    {
+      "file": "privacy_mask.capsule.json",
+      "id": "privacy_mask",
+      "title": "주민번호 자리 마스킹",
+      "why": "제출 전 자리만 가린다. redact 가 아니라 replace_text",
+      "inputSha256": "9ee8c4318e53f67e8de0fdfad0fd4b9ac0c5a08580982fef9e9b02d430c6b5e8",
+      "planSha256": "80c4923e7ab9cb8d475fd5dda1eaec85e6d002ca789005da65806b5d02c10dff",
+      "outputSha256": "f85619322a3d51a49fc85797375e87b9e2d147f5c22421c82e1b89cf5814a65a",
+      "fileSha256": "970cdcaf1e57515776f3ac73872bb5d6741163de4ec53c7a91248a107e18ab8f",
+      "steps": 1,
+      "parent": null
+    },
+    {
+      "file": "title_fix.capsule.json",
+      "id": "title_fix",
+      "title": "제목 오기 정정",
+      "why": "오탈자 1건",
+      "inputSha256": "d3c344e9b2547f1bff929ce255740a0a2a28b0c6dc0d980adbeeff54908e4543",
+      "planSha256": "7fbe1cb17434815f683ce9f64f15cc251fdb3737ff23bedbf42ce7a206d2cf3f",
+      "outputSha256": "ab3da0ffbcb6f9da1b039f9dab66c5d9e8407a1792d62e23ec871a99043b93ef",
+      "fileSha256": "b2f5338223c170e15da6ac9fc8b2d65decaf3b0217c56c0d9d4dce5b6b0359ac",
+      "steps": 1,
+      "parent": null
+    },
+    {
+      "file": "date_iso.capsule.json",
+      "id": "date_iso",
+      "title": "날짜 표기 통일",
+      "why": "내부 양식 ISO 통일",
+      "inputSha256": "efb5fc6beb178ba9d6c404053c74d42b9a83a07c944b48403f066a52a0dff4f5",
+      "planSha256": "ede44c32e410e7d2de9ee1890f60e25513a4c2d104beb2a8074c0bdaae788908",
+      "outputSha256": "38b7400aae5266c3cf22759b851e504b19b6ebea893d2a051fb3d5b284434de0",
+      "fileSha256": "d4bc203ad7940696c5855a8e28ef20359ad9b4914e0d7dfbbe847ab2e022a2db",
+      "steps": 1,
+      "parent": null
+    },
+    {
+      "file": "dept.capsule.json",
+      "id": "dept",
+      "title": "부서명 개편",
+      "why": "직제 개편",
+      "inputSha256": "9ce6c796e6ee2a29b4d71916f388eb50686f33c7804d95d18bdd5cb3e25d0b32",
+      "planSha256": "1d04a88cf25f36538d938a6afea64bcbe9b96a1bed8d1bc0227380dca01c1120",
+      "outputSha256": "35d8d18914637a427f5e30dabaf66459d72a99a21daa596a46a06c52b25cac3c",
+      "fileSha256": "a9d561feb9543e4234c3ced8c33e226333402f59dfd56dd681e8e944df7942b2",
+      "steps": 1,
+      "parent": null
+    },
+    {
+      "file": "seal_caption.capsule.json",
+      "id": "seal_caption",
+      "title": "직인 안내문",
+      "why": "안내문만 고친다. 그림 삽입 아님",
+      "inputSha256": "2817e5d4d5df040e15969e23f8f56b51c04da399d54e07a0541182b06e5a1df1",
+      "planSha256": "f6e6a5966e267d03d058868e8d92c3d7dbc214b9b6e63bd0390f8d120a8093c7",
+      "outputSha256": "4132715a08cd1dcffe1cc53631ac5c0420b452def2a67424cf86071e66aa509a",
+      "fileSha256": "200b01d98f384173f8b653166ce311010f4a1b121039be9d54806f8d94cc5172",
+      "steps": 1,
+      "parent": null
+    },
+    {
+      "file": "page_ref.capsule.json",
+      "id": "page_ref",
+      "title": "쪽 지시 정정",
+      "why": "본문 쪽수 재매김",
+      "inputSha256": "180c04f6be9a7a6ea6bdd4c5c1cac107d098122ff3a80749366c574cbc90a66f",
+      "planSha256": "08c1312d3b82b98a606e44b74be2103ac32f5628b31065854c2de8b5c6c168a0",
+      "outputSha256": "cbe030fd8396ea9b1fd6b006556a8626a23a8d8bae837c703d31251488ce2b69",
+      "fileSha256": "3efc08ad8b71ab627674bb8990c44dca474ce707eb90b929703059935770007b",
+      "steps": 1,
+      "parent": null
+    },
+    {
+      "file": "en_typo.capsule.json",
+      "id": "en_typo",
+      "title": "영문 오탈자",
+      "why": "영문 병기 정정",
+      "inputSha256": "f8948c08ec2edda6b6b3233869b8373a92b7b3921466aa11ab9bcb8f36732170",
+      "planSha256": "b397bdfb3afe04ff0062c7ba4c81e6e703b1745cecf969ca6763e7b0f47671de",
+      "outputSha256": "e2c1b76a837f557bea3d5292eededd8efcc0d950bc1203d0d7ca4a742fb1c83a",
+      "fileSha256": "8594bf9ca56e069299ede421b439d7aa5f61edcc5fedb24630683bde57bbcb38",
+      "steps": 1,
+      "parent": null
+    },
+    {
+      "file": "hwpx_year.capsule.json",
+      "id": "hwpx_year",
+      "title": "HWPX 연도",
+      "why": "형식 보존: 입력 hwpx → 산출 hwpx",
+      "inputSha256": "9d8cb9d29cda15cd4976e9882bc113db0c6d556dec47ac512c48b4d172d473ec",
+      "planSha256": "385b0dfb626765eff5cfd63e0c47b730fbaf550e71203461b222e635a2055690",
+      "outputSha256": "351b862b8db4164ecfa3a820bf79f10dabaa9814e05b98cabb656ed8bc09aa8b",
+      "fileSha256": "6fa03f3519d699d295ed6d735177859b121fd9092a8e39195f0af264fa8ed2ec",
+      "steps": 1,
+      "parent": null
+    },
+    {
+      "file": "multi_step.capsule.json",
+      "id": "multi_step",
+      "title": "연도+기관 두 스텝",
+      "why": "한 계획에 step 2 — receipt.steps 는 2",
+      "inputSha256": "ae8adabfc79ba249911d7d7cc3aeacdc538237374d3df524eb04eb22031acb1b",
+      "planSha256": "d893ee54fc79bbde175e95b493c8b0775b8dabd5236f504c2e8543c1540ce49e",
+      "outputSha256": "bd938114b7034bad7d2d5a0629302cb5af4c11cf1292da945e0003e1adfe2996",
+      "fileSha256": "5b13232036c0e832b63dc5355b59f04801a9dd44799b14030f77d6b9288cd802",
+      "steps": 2,
+      "parent": null
+    },
+    {
+      "file": "idempotent.capsule.json",
+      "id": "idempotent",
+      "title": "이미 반영된 문구",
+      "why": "멱등 재실행. 산출 해시는 입력과 다를 수 있다(엔진이 다시 쓴다)",
+      "inputSha256": "60d8fab507ef12433be154a4d58b377dce19fe4be412e68c08eef3e5d36556c7",
+      "planSha256": "f01de62a0a31f072e7feef3f700f5b237dacd62633c60785ab550a762041234b",
+      "outputSha256": "9144b645f51f87e8b423c31f2add747f8519788a625e70739912a27a6985cfc9",
+      "fileSha256": "7bd663f6cd4fcdb78ed231e9cba706ba9f88eb7e36f4ab753e21e71098fa33e5",
+      "steps": 1,
+      "parent": null
+    },
+    {
+      "file": "ws_only.capsule.json",
+      "id": "ws_only",
+      "title": "공백 정리",
+      "why": "이중 공백 축소",
+      "inputSha256": "84d37f1e8cf88ec056b89d7b7ce0fc1a88f22b91eae88f771aa526597dd7087a",
+      "planSha256": "66d7e44fd8e73b5e4bf6699edabe1eab756ce052d141710f00f875312f95dd11",
+      "outputSha256": "e04a9c332be0b449c60bab11f9a3c3765675fa1b7be44c15818c30a31fb46d74",
+      "fileSha256": "46dbba7a089c46e0008a0bfc9e67061c0812cd72230ebfabfc8fe582fbb99845",
+      "steps": 1,
+      "parent": null
+    },
+    {
+      "file": "newline_keep.capsule.json",
+      "id": "newline_keep",
+      "title": "개행 유지 치환",
+      "why": "줄바꿈 없는 짧은 토큰",
+      "inputSha256": "cc60425a12cac786e5dc24c92b578d112f0da2cec8a29b3d2ae99a14528ef911",
+      "planSha256": "50284e5cdb98156b0ca7351ac3d4e994791f12b1ee48e160f65a56f320e558fb",
+      "outputSha256": "7be41425c2f9b780ce74dd1084872445947077946cdaaa97f8068700f4303a86",
+      "fileSha256": "e021f83d7ed185a901b54ae1debd540a8be07c25fd465201a7aff3d65970ec84",
+      "steps": 1,
+      "parent": null
+    },
+    {
+      "file": "table_label.capsule.json",
+      "id": "table_label",
+      "title": "표 제목 치환",
+      "why": "표 안 글자도 replace_text 범위",
+      "inputSha256": "262744fc253a9c74dfbb6bd68c100b31f86df77cad287d101c0982c72657d996",
+      "planSha256": "23519531543792b14effd3cbbeafd3e71c266bd0b284738128339202857bfce4",
+      "outputSha256": "8ac838e6c3447b29dec6be32fe00ab06fa45d4b313e07fd5fada38796c1e59e2",
+      "fileSha256": "39e43cf9c4f4552f1399d8c2332514adc269efea78de60198a8ff14c403dd41d",
+      "steps": 1,
+      "parent": null
+    },
+    {
+      "file": "footer.capsule.json",
+      "id": "footer",
+      "title": "바닥글 문구",
+      "why": "배포 등급 변경",
+      "inputSha256": "1dc3fb56bb3257ca6d137a7459838e77740f3a20f79df12c104460af6396ab6a",
+      "planSha256": "26da66ee2686f3f48fce59950cef6001a4422fef81ca857ae241ce814e396228",
+      "outputSha256": "8587d38110c426b73e161deceb6f277ffbc0c4bb47fc87d047605a39e92c1963",
+      "fileSha256": "a1d5704563567d1fc4c678579231841e88edec7895643c880e0f02f6185affad",
+      "steps": 1,
+      "parent": null
+    },
+    {
+      "file": "version_tag.capsule.json",
+      "id": "version_tag",
+      "title": "문서 버전 표기",
+      "why": "머리글 버전 태그",
+      "inputSha256": "e93aea01f585a2abc6c8ffa6877a827d6bfdd1379a68e8da85767fe1b7189667",
+      "planSha256": "e34795db957dcf29987f2e22ca65d48e63041603a5e5bda80d9f938fa9ecb348",
+      "outputSha256": "e13d7aafb0b62b0f184dec8ed15365b47531cb76d5bb8aef051e56f90207e0fc",
+      "fileSha256": "4c84a5ab4dc666f89d9e627f137daf05850e09de3f7d282db09401fe8b43a132",
+      "steps": 1,
+      "parent": null
+    }
+  ],
+  "children": [
+    {
+      "file": "chain_deadline.capsule.json",
+      "id": "chain_deadline",
+      "parent": "notice_year.capsule.json",
+      "parentSha256": "ac375d10634746200b216daf3c26c3c687ac734e754145bedd1f1def0046f56a",
+      "inputSha256": "3c1c839b9b750e90a88239cf7052f46858ebefac8d4e2f985d4fac7699c7a5b3",
+      "outputSha256": "6273000b7e8c7c9a4b54257d1f4cdf15ef1814be7025584d46d4158cf74bbaf1",
+      "fileSha256": "629160b17235d0b3d8d827b87c1aec7e48d70687bd9a1e3ada390efd344cd95d",
+      "lineageOk": true,
+      "parentPathRelativeToCapsuleFile": true
+    },
+    {
+      "file": "chain_dept.capsule.json",
+      "id": "chain_dept",
+      "parent": "org_rename.capsule.json",
+      "parentSha256": "bfb11760d90bdf33d147b47eb81cff7d480f59e7b80bb034bb9070ea5ff36de6",
+      "inputSha256": "d6e74022b88769746130ff820752307b248afad76f8fabaa823b9260bbcbb362",
+      "outputSha256": "1b8a89aad734808466b9adca6499a53c953caa48211e2417e8a59157972ce5aa",
+      "fileSha256": "0ccfb5821d693e0c2c05c5f208aa5f03085a3d8cfe9271653dce33fedd698644",
+      "lineageOk": true,
+      "parentPathRelativeToCapsuleFile": true
+    },
+    {
+      "file": "chain_footer.capsule.json",
+      "id": "chain_footer",
+      "parent": "title_fix.capsule.json",
+      "parentSha256": "b2f5338223c170e15da6ac9fc8b2d65decaf3b0217c56c0d9d4dce5b6b0359ac",
+      "inputSha256": "ab3da0ffbcb6f9da1b039f9dab66c5d9e8407a1792d62e23ec871a99043b93ef",
+      "outputSha256": "59a3fdbcc6f0624b2402a5ad29e14530fd122e2fbf2a99c7a6cee8d228b944c7",
+      "fileSha256": "3441636e45aca670cef07d5044bf8eedb7e0d046f50971abdde9a21b6cb133d4",
+      "lineageOk": true,
+      "parentPathRelativeToCapsuleFile": true
+    },
+    {
+      "file": "chain_version.capsule.json",
+      "id": "chain_version",
+      "parent": "date_iso.capsule.json",
+      "parentSha256": "d4bc203ad7940696c5855a8e28ef20359ad9b4914e0d7dfbbe847ab2e022a2db",
+      "inputSha256": "38b7400aae5266c3cf22759b851e504b19b6ebea893d2a051fb3d5b284434de0",
+      "outputSha256": "e9f89f406c2ff920576d55be98db425fe61de5d7001e6d74b0cbb233f3ab4f16",
+      "fileSha256": "6af0a7a4fa949ad9bcb58a67a73971049e01b884f1ef9f372f44dd0896aba51d",
+      "lineageOk": true,
+      "parentPathRelativeToCapsuleFile": true
+    },
+    {
+      "file": "chain_page.capsule.json",
+      "id": "chain_page",
+      "parent": "law_ref.capsule.json",
+      "parentSha256": "86a4dedd7712097fb5a8411b0998fec0a737dc652b41b352ff06dda1182181b8",
+      "inputSha256": "f1b085351ac9c303cb5311fb8f87b705bc05ddb3e69288dd6690a593ffcb8340",
+      "outputSha256": "a28f0d87792ee66060e185c6e30c58046f3757c2415329f8ca1166a8950b9618",
+      "fileSha256": "7c170d92f84408ef1344fdfaa3d30c01a80d9f3c0c890ec73835036d35bd81f7",
+      "lineageOk": true,
+      "parentPathRelativeToCapsuleFile": true
+    },
+    {
+      "file": "chain_addr.capsule.json",
+      "id": "chain_addr",
+      "parent": "phone.capsule.json",
+      "parentSha256": "aabf3dcbe68dcbd802899a07515335f8f2bb915c2645587e0785781cb094dc85",
+      "inputSha256": "b49250898a6b5360c187a5684b240d33a2bc8903a7334657758a08b953aa545b",
+      "outputSha256": "b1a55d79a92f0274f209a6660e6aa26b3740c340cd2749d0eb1f310b0a028b73",
+      "fileSha256": "e6b9e7dfea402f2efba616da9e3ef831883fb7e4907b9801d1b3104eef87d54d",
+      "lineageOk": true,
+      "parentPathRelativeToCapsuleFile": true
+    },
+    {
+      "file": "chain_table.capsule.json",
+      "id": "chain_table",
+      "parent": "amount.capsule.json",
+      "parentSha256": "1b8484f31e2a18552be082d971e45221e54553fb2b6793158bb3e121b5f17cb4",
+      "inputSha256": "97ff17c0ffba202f977838bdec6656f8f9651f11d6eb57816d1e8a444eaffb0f",
+      "outputSha256": "2d79e3ef32c0a73c955b02219c2a252bb52c3d283d50a0cba4da621080f2520e",
+      "fileSha256": "e8f5862b721dc5618be9b4858adf1eb67de7b1d4f79e51a3f920e2c7dbf4f8a1",
+      "lineageOk": true,
+      "parentPathRelativeToCapsuleFile": true
+    },
+    {
+      "file": "chain_en.capsule.json",
+      "id": "chain_en",
+      "parent": "hwpx_year.capsule.json",
+      "parentSha256": "6fa03f3519d699d295ed6d735177859b121fd9092a8e39195f0af264fa8ed2ec",
+      "inputSha256": "351b862b8db4164ecfa3a820bf79f10dabaa9814e05b98cabb656ed8bc09aa8b",
+      "outputSha256": "0b8cf328e690b106b694ec2945c685140f9dd5a430cbbbe996e7450e841aa60d",
+      "fileSha256": "26d9894ea2dffc5fabd06a73e603183f49de20c32d246d920a4e2ed56f69e1a8",
+      "lineageOk": true,
+      "parentPathRelativeToCapsuleFile": true
+    }
+  ],
+  "tampers": [
+    {
+      "file": "tamper_output_sha.capsule.json",
+      "kind": "outputSha256",
+      "expectAudit": "failed",
+      "note": "영수증 산출 해시를 0으로. 재실행 해시와 불일치"
+    },
+    {
+      "file": "tamper_input_sha.capsule.json",
+      "kind": "inputSha256",
+      "expectAudit": "failed",
+      "note": "입력 영수증 변조. 산출 대조 전에 잡힌다"
+    },
+    {
+      "file": "tamper_plan_vs_text.capsule.json",
+      "kind": "planText",
+      "expectAudit": "failed",
+      "note": "plan 객체만 바꿈. plan 과 planText 불일치"
+    },
+    {
+      "file": "tamper_steps.capsule.json",
+      "kind": "steps",
+      "expectAudit": "failed",
+      "note": "receipt.steps 와 plan.steps 길이 불일치"
+    },
+    {
+      "file": "tamper_pretty_print.capsule.json",
+      "kind": "immutability",
+      "expectAudit": "may-still-reproduce",
+      "note": "필드 추가는 재현과 별개로 파일 바이트를 바꾼다. 자식 parent.sha256 이 깨진다"
+    },
+    {
+      "file": "toolversion_mismatch.capsule.json",
+      "kind": "toolVersion",
+      "expectAudit": "live-binary-may-differ",
+      "note": "픽스처 버전과 실행 바이너리 버전이 다르면 산출 해시가 갈릴 수 있다"
+    }
+  ]
+}

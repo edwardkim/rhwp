@@ -1,0 +1,28 @@
+{
+  "id": "ST26",
+  "tier": 2,
+  "title": "묶은세로막대 HWP CSV 추출·BOM",
+  "input": "samples/chart/세로막대형/묶은세로막대형.hwp",
+  "instructions": "차트 1 의 숫자 시트를 chart.csv 로 제출하라. 엑셀 한글 깨짐을 막으려면 --bom 이다. 봉투 csv 문자열이 아니라 파일에만 붙는다. 원본 HWP/HWPX 를 복사하거나 머리 행만 있는 빈 표를 내지 마라. 힌트: rhwp chart-to-csv --chart 1 -o chart.csv --bom.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "chart.csv"
+    ]
+  },
+  "checks": [
+    {
+      "name": "CSV 산출 존재",
+      "op": "file_exists",
+      "file": "chart.csv",
+      "minBytes": 8
+    },
+    {
+      "name": "UTF-8 BOM",
+      "op": "utf8_bom",
+      "file": "chart.csv",
+      "value": true
+    }
+  ],
+  "axis": "추출"
+}

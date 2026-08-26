@@ -1,0 +1,17 @@
+{
+  "id": "TE67",
+  "steps": [
+    {
+      "answer": {
+        "pages": {
+          "cmd": [
+            "info",
+            "{input}",
+            "--json"
+          ],
+          "path": "pageCount"
+        }
+      }
+    }
+  ]
+}

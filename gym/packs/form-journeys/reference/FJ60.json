@@ -1,0 +1,26 @@
+{
+  "id": "FJ60",
+  "steps": [
+    {
+      "write_json": {
+        "to": "{sub:data.json}",
+        "body": {
+          "전화번호": "031-700-1212",
+          "이메일": "memo-pair@rhwp.example"
+        }
+      }
+    },
+    {
+      "run": [
+        "edit",
+        "fill-fields",
+        "{input}",
+        "--data",
+        "@{sub:data.json}",
+        "-o",
+        "{sub:memo-pair.hwp}",
+        "--json"
+      ]
+    }
+  ]
+}

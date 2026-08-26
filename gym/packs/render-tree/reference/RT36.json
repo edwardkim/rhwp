@@ -1,0 +1,15 @@
+{
+  "id": "RT36",
+  "steps": [
+    {
+      "run": [
+        "export-render-tree",
+        "{input}",
+        "-p",
+        "0",
+        "-o",
+        "{sub:_rt}"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "id": "p2-textfile-order",
+  "title": "GetTextFile — issue2439_zero_offset_coanchored_float_exclusion.hwp",
+  "ledger": [
+    "HwpCtrl.method.GetTextFile"
+  ],
+  "open": "samples/issue2439_zero_offset_coanchored_float_exclusion.hwp",
+  "calls": [
+    [
+      "GetTextFile",
+      [
+        "UNICODE",
+        ""
+      ]
+    ],
+    [
+      "GetTextFile",
+      [
+        "UNICODE",
+        "saveblock"
+      ]
+    ]
+  ]
+}

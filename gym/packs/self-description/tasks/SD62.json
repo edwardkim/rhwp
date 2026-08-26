@@ -1,0 +1,26 @@
+{
+  "id": "SD62",
+  "tier": 3,
+  "title": "매니페스트 IR 정의 수",
+  "input": "samples/table-001.hwp",
+  "instructions": "export-agent-manifest 의 irSchema.$defs 키 수를 answer.json 에 {\"defs\": N} 으로 제출하라. 힌트: rhwp export-agent-manifest --json.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "매니페스트 IR 정의 수",
+      "op": "len_answer_eq",
+      "answer": "defs",
+      "path": "irSchema.$defs",
+      "cmd": [
+        "export-agent-manifest",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

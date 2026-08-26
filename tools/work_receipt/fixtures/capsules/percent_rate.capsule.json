@@ -1,0 +1,30 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workCapsule",
+  "parent": null,
+  "plan": {
+    "planVersion": "1.0",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "output": "out/percent-rate.hwp",
+    "steps": [
+      {
+        "action": "replace_text",
+        "find": "연 3.0%",
+        "replace": "연 3.5%"
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"samples/basic/issue2007_nested_cell_pagination_42065.hwp\",\"output\":\"out/percent-rate.hwp\",\"steps\":[{\"action\":\"replace_text\",\"find\":\"연 3.0%\",\"replace\":\"연 3.5%\"}]}",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "inputSha256": "e832b2a057558affe875535a067c68eec166f343eab75a95c966e700e27689e9",
+    "planSha256": "0817e4e75fccb51dea09652a2d610feb5a4d68eb6672e183b2824ed030406342",
+    "outputSha256": "0d9d591f94c7732e5b3734abe29f71e8dc09b244495fd5def0dabd33cdb09f76",
+    "toolVersion": "fixture-0.0.0-not-a-release",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null
+  }
+}

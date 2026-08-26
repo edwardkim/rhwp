@@ -1,0 +1,9 @@
+{
+  "schemaVersion": "1.0",
+  "command": "ir-diff",
+  "exit": 3,
+  "identical": false,
+  "diffCount": 4,
+  "failCount": 4,
+  "verdict": "fail"
+}

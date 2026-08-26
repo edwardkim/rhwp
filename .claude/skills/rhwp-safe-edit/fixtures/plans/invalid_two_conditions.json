@@ -1,0 +1,16 @@
+{
+  "planVersion": "1.0",
+  "input": "samples/field-01.hwp",
+  "output": "out/plan_result.hwp",
+  "steps": [
+    {
+      "action": "replace_text",
+      "find": "A",
+      "replace": "B",
+      "if": {
+        "fieldExists": "회사명",
+        "textFound": "회사"
+      }
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "id": "CR32",
+  "tier": 1,
+  "title": "국어원 계획에 '국립' 이 몇 번?",
+  "input": "samples/2022년 국립국어원 업무계획.hwp",
+  "instructions": "장난감기차 — CR32 는 키 제한 없는 입문 놀이기구다. 쪽수가 아니라 검색 매치다. '국어' 와 '국립' 은 다르다. 문서는 `samples/2022년 국립국어원 업무계획.hwp` 이다. rhwp 를 한 번 실행하고 그 답을 그대로 옮기면 된다. 숫자를 추측하지 마라. 채점기가 같은 명령을 다시 돌린다. 힌트: search {입력} --json -- 국립. answer.json 에는 {\"hits\": 값} 만 적는다. 원본을 고치지 마라. 새 표본을 만들지 마라. search matchCount.",
+  "submit": {
+    "kind": "answer"
+  },
+  "checks": [
+    {
+      "name": "국어원 계획에 '국립' 이 몇 번?",
+      "op": "answer_eq",
+      "answer": "hits",
+      "cmd": [
+        "search",
+        "{input}",
+        "--json",
+        "--",
+        "국립"
+      ],
+      "path": "matchCount"
+    }
+  ],
+  "axis": "입문"
+}

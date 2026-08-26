@@ -1,0 +1,41 @@
+{
+  "id": "ht-graphic-covers-page-suppresses-page-bg",
+  "issue": 5476,
+  "axis": "hidden-text",
+  "family": "same_as_background",
+  "polarity": "negative",
+  "sourceRule": {
+    "file": "src/document_core/queries/hidden_text.rs",
+    "symbol": "page_source_is_suppressed_when_a_graphic_covers_the_page",
+    "note": "면을 덮는 개체가 있으면 쪽 바탕을 근거로 쓰지 않는다(그림 위 흰 글씨는 보인다)."
+  },
+  "cli": {
+    "argv": [
+      "inspect",
+      "hidden-text",
+      "samples/hml/formatting_table.hml",
+      "--json"
+    ],
+    "exitCode": 0,
+    "stdoutKind": "json-object",
+    "detectionIsNotFailure": true
+  },
+  "consume": {
+    "branch": "clean == true",
+    "reason": "graphic-covers-page"
+  },
+  "pair": null,
+  "why": "원본 HML 의 RECTANGLE 이 쪽 바탕 경로를 끈다. 계약 테스트가 개체를 걷어낸 합성본만 양성으로 쓴다.",
+  "note": "규칙을 바꾸지 않는다. 합성 절차만 문서화한다.",
+  "human": "은닉 텍스트 없음: samples/hml/formatting_table.hml (탐지 0건)\n",
+  "inventedRule": false,
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "samples/hml/formatting_table.hml",
+    "thresholdPt": 1.0,
+    "includeOffPage": false,
+    "hiddenText": [],
+    "hiddenCharCount": 0,
+    "clean": true
+  }
+}

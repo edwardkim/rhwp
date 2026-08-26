@@ -1,0 +1,7 @@
+# pull_request Rust CodeQL 전용 범위다. devel push와 schedule은 이 파일을 사용하지
+# 않아 전체 Rust 경로를 분석한다.
+paths:
+  - src/**
+  - crates/**
+  - rhwp-desk/src/**
+  - build.rs

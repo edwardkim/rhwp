@@ -1,0 +1,67 @@
+{
+  "id": "FJ66",
+  "tier": 3,
+  "title": "부서명 채움 뒤 sanitize",
+  "input": "samples/field-01.hwp",
+  "instructions": "부서명에 '정리부서' 를 채운 뒤 sanitize 한 submit.hwp 를 내라. FJ32 는 이메일이고 FJ05 는 form-01 이다. 회사명·작성자는 비운다. 값은 본문에 남고, 제출본을 다시 sanitize 하면 0건이어야 한다. 힌트: fill-fields 부서명=정리부서 → edit sanitize -o submit.hwp --json 판정은 라이브 재실행 또는 산출물 재독이며, 파일 부재를 통과로 치지 않는다. T07 의 fields[0].value==홍길동 판정은 쓰지 마라. 새 CLI 는 없다.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "submit.hwp"
+    ]
+  },
+  "checks": [
+    {
+      "name": "부서명 값",
+      "op": "value_eq",
+      "value": "정리부서",
+      "path": "fields[2].value",
+      "cmd": [
+        "fields",
+        "{file:submit.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "회사명은 비어 있음 — T07 좌표 거부",
+      "op": "value_eq",
+      "value": "",
+      "path": "fields[0].value",
+      "cmd": [
+        "fields",
+        "{file:submit.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "작성자 공란",
+      "op": "value_eq",
+      "value": "",
+      "path": "fields[1].value",
+      "cmd": [
+        "fields",
+        "{file:submit.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "재 sanitize 0건",
+      "op": "value_eq",
+      "value": 0,
+      "path": "removedCount",
+      "cmd": [
+        "edit",
+        "sanitize",
+        "{file:submit.hwp}",
+        "-o",
+        "{file:recheck.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "원본 무편집 복사가 아님",
+      "op": "differs_from_input",
+      "file": "submit.hwp"
+    }
+  ]
+}

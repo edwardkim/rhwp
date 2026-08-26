@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rhwp.local/llm_verifier/tool_version_gate/decision.schema.json",
+  "title": "V-fresh toolVersion gate decision",
+  "description": "Closed decision for receipt.toolVersion versus verifier binary version. reproduced:true is not accepted when versions differ.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "claim",
+    "kind",
+    "attestVersion",
+    "verifyVersion",
+    "reproduced",
+    "accepted",
+    "reason"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "v-fresh.1.0" },
+    "claim": { "const": "V-fresh" },
+    "kind": { "const": "toolVersionGate" },
+    "attestVersion": { "type": "string" },
+    "verifyVersion": { "type": "string" },
+    "reproduced": { "type": ["boolean", "null"] },
+    "accepted": { "type": "boolean" },
+    "reason": {
+      "type": "string",
+      "enum": [
+        "FRESH_REPRODUCED",
+        "FRESH_NOT_REPRODUCED",
+        "FRESH_ABSENT",
+        "STALE_TOOL",
+        "STALE_AND_NOT_REPRODUCED",
+        "STALE_AND_ABSENT",
+        "ATTEST_VERSION_MISSING",
+        "VERIFY_VERSION_MISSING"
+      ]
+    }
+  }
+}

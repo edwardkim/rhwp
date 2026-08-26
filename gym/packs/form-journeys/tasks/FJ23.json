@@ -1,0 +1,31 @@
+{
+  "id": "FJ23",
+  "tier": 3,
+  "title": "없는 필드 notFound 오라클",
+  "input": "samples/field-01.hwp",
+  "axis": "조회",
+  "instructions": "고의로 틀린 키 '회사명칭' 을 dry-run 으로 넣어 notFound 첫 원소를 보고하라. 회사명 오타는 조용히 무시되지 않는다. 채점은 notFound[0] 라이브 대조다. T07 처럼 회사명에 홍길동을 채우지 마라 — 이번은 오타 키의 거부 보고만 본다. answer.json 은 {\"missing\": \"…\"}. 힌트: --data '{\"회사명칭\": \"오타값\"}' --dry-run --json",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "notFound 첫 이름",
+      "op": "answer_eq",
+      "answer": "missing",
+      "path": "notFound[0]",
+      "cmd": [
+        "edit",
+        "fill-fields",
+        "{input}",
+        "--data",
+        "{\"회사명칭\": \"오타값\"}",
+        "--dry-run",
+        "--json"
+      ]
+    }
+  ]
+}

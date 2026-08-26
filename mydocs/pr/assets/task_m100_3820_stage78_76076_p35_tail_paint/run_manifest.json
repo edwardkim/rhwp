@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "key": "task3820-stage78-p35-tail-paint",
+  "provenance": {
+    "hwp": {
+      "path": "samples/76076_regulatory_analysis.hwp",
+      "sha256": "3308ba8505391bae2d0d62963e9399f4e48cdae574304cc0f89a311c6efbb6b5"
+    },
+    "pdf": {
+      "path": "samples/issue1891/76076_regulatory_analysis-2024.pdf",
+      "sha256": "06a389455d6b96e5f6580c9930fd8555256f9c712be85fb3cdaf31fc601a090d"
+    },
+    "git_head": "4c2a80ea51c13e3a5b9a98f9464ab47a44820ffc",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "438ae24784a32b5ae3d0643e032f3c841f238230ea5f1be9dfb4ec88b094d463"
+    },
+    "rhwp_binary": {
+      "configured": "/Users/tsjang/rhwp/target/task-3820-stage78-p35-tail-paint/release-test/rhwp",
+      "path": "target/task-3820-stage78-p35-tail-paint/release-test/rhwp",
+      "sha256": "2ebf9de9ff45f4210e295b1b4d75a343a4d59942b9cd56f66d1c118a2520f335"
+    }
+  },
+  "dpi": 180,
+  "pixel_diff_threshold": 32,
+  "requested_pages": [
+    35,
+    36
+  ],
+  "requested_page_shards": [
+    [
+      35,
+      36
+    ]
+  ],
+  "run_state": "complete"
+}

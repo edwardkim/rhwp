@@ -1,0 +1,24 @@
+{
+  "id": "p2-textfile-small",
+  "title": "GetTextFile — table-001.hwp",
+  "ledger": [
+    "HwpCtrl.method.GetTextFile"
+  ],
+  "open": "samples/table-001.hwp",
+  "calls": [
+    [
+      "GetTextFile",
+      [
+        "UNICODE",
+        ""
+      ]
+    ],
+    [
+      "GetTextFile",
+      [
+        "UNICODE",
+        "saveblock"
+      ]
+    ]
+  ]
+}

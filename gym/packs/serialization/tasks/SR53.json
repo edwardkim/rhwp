@@ -1,0 +1,32 @@
+{
+  "id": "SR53",
+  "tier": 3,
+  "title": "각주 문서 IR 자기대조",
+  "input": "samples/footnote-01.hwp",
+  "instructions": "각주 문서를 자기 자신과 ir-diff 해 IR 동일 여부를 answer.json 에 {\"identical\": true|false} 로 적어라. 힌트: rhwp ir-diff <입력> <입력> --json.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "IR 동일 판정",
+      "op": "answer_eq",
+      "answer": "identical",
+      "path": "identical",
+      "cmd": [
+        "ir-diff",
+        "{input}",
+        "{input}",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    }
+  ],
+  "axis": "변환"
+}

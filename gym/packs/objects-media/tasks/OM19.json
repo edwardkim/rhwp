@@ -1,0 +1,29 @@
+{
+  "id": "OM19",
+  "tier": 2,
+  "title": "표 문서 썸네일 MIME",
+  "input": "samples/table-001.hwp",
+  "instructions": "표 표본 썸네일의 MIME 형식을 answer.json 에 {\"mime\": \"...\"} 으로 제출하라. 다쪽 문서(OM09)가 아니라 table-001 이다. 힌트: rhwp thumbnail 의 mime.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "MIME 형식",
+      "op": "answer_eq",
+      "answer": "mime",
+      "path": "mime",
+      "cmd": [
+        "thumbnail",
+        "{input}",
+        "-o",
+        "{file:t.png}",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

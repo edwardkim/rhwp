@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "1.0",
+  "source": "fixtures/synthetic-unicode.hwp",
+  "kindFilter": "all",
+  "scannedChars": 64,
+  "findings": [
+    {
+      "kind": "bidi_override",
+      "codepoint": "U+202E",
+      "severity": "high",
+      "section": 0,
+      "paragraph": 0,
+      "location": "body",
+      "charOffset": 3,
+      "runLength": 1,
+      "excerpt": "ab‮c",
+      "rendered": "abc",
+      "raw": "ab‮c",
+      "why": "표시 순서를 뒤집는 제어문자입니다 — 화면에 보이는 순서와 실제 문자 순서가 다릅니다"
+    }
+  ],
+  "findingCount": 1,
+  "clean": false,
+  "severityCounts": {
+    "high": 1,
+    "medium": 0,
+    "low": 0
+  },
+  "kindCounts": {
+    "zero_width": 0,
+    "bidi_override": 1,
+    "tag_char": 0,
+    "confusable": 0
+  },
+  "exitCode": 0,
+  "consume": {
+    "rawAndRenderedAreData": true
+  }
+}

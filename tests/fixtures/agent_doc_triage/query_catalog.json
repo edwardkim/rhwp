@@ -1,0 +1,539 @@
+{
+  "schemaVersion": "1.0",
+  "queries": [
+    {
+      "q": "위임전결",
+      "docKind": "행정 편람",
+      "tool": "search",
+      "limit": 20
+    },
+    {
+      "q": "전결규정",
+      "docKind": "행정 편람",
+      "tool": "search",
+      "limit": 20
+    },
+    {
+      "q": "시행일",
+      "docKind": "법령·고시",
+      "tool": "search+date",
+      "limit": 20
+    },
+    {
+      "q": "부칙",
+      "docKind": "법령",
+      "tool": "search+structure",
+      "limit": 20
+    },
+    {
+      "q": "별표",
+      "docKind": "법령",
+      "tool": "search",
+      "limit": 20
+    },
+    {
+      "q": "별지",
+      "docKind": "서식",
+      "tool": "search",
+      "limit": 20
+    },
+    {
+      "q": "누름틀",
+      "docKind": "서식",
+      "tool": "explain.fields",
+      "limit": 0
+    },
+    {
+      "q": "개인정보",
+      "docKind": "배포 전",
+      "tool": "security-sweep",
+      "limit": 0
+    },
+    {
+      "q": "주민등록",
+      "docKind": "PII",
+      "tool": "security-sweep",
+      "limit": 0
+    },
+    {
+      "q": "계좌",
+      "docKind": "PII/금액",
+      "tool": "security+amount",
+      "limit": 20
+    },
+    {
+      "q": "예산",
+      "docKind": "업무계획",
+      "tool": "extract-data amount",
+      "limit": 50
+    },
+    {
+      "q": "백만원",
+      "docKind": "예산서",
+      "tool": "extract-data amount",
+      "limit": 50
+    },
+    {
+      "q": "억원",
+      "docKind": "예산서",
+      "tool": "extract-data amount",
+      "limit": 50
+    },
+    {
+      "q": "천원",
+      "docKind": "예산서",
+      "tool": "extract-data amount",
+      "limit": 50
+    },
+    {
+      "q": "원정",
+      "docKind": "공문",
+      "tool": "extract-data amount",
+      "limit": 20
+    },
+    {
+      "q": "금113",
+      "docKind": "영수증 표기",
+      "tool": "extract-data amount",
+      "limit": 20
+    },
+    {
+      "q": "과업",
+      "docKind": "용역",
+      "tool": "search",
+      "limit": 20
+    },
+    {
+      "q": "납기",
+      "docKind": "계약",
+      "tool": "search+date",
+      "limit": 20
+    },
+    {
+      "q": "계약기간",
+      "docKind": "계약",
+      "tool": "search+date",
+      "limit": 20
+    },
+    {
+      "q": "하자보수",
+      "docKind": "계약",
+      "tool": "search",
+      "limit": 20
+    },
+    {
+      "q": "지체상금",
+      "docKind": "계약",
+      "tool": "search+amount",
+      "limit": 20
+    },
+    {
+      "q": "특약",
+      "docKind": "계약",
+      "tool": "search",
+      "limit": 20
+    },
+    {
+      "q": "목차",
+      "docKind": "장문",
+      "tool": "export-structure",
+      "limit": 0
+    },
+    {
+      "q": "제1조",
+      "docKind": "법령",
+      "tool": "structure clause",
+      "limit": 0
+    },
+    {
+      "q": "제1항",
+      "docKind": "법령",
+      "tool": "structure 아님 auto증거",
+      "limit": 0
+    },
+    {
+      "q": "붙임",
+      "docKind": "공문",
+      "tool": "search",
+      "limit": 10
+    },
+    {
+      "q": "결재",
+      "docKind": "공문",
+      "tool": "search",
+      "limit": 20
+    },
+    {
+      "q": "수신",
+      "docKind": "공문",
+      "tool": "search",
+      "limit": 10
+    },
+    {
+      "q": "발신",
+      "docKind": "공문",
+      "tool": "search",
+      "limit": 10
+    },
+    {
+      "q": "경유",
+      "docKind": "공문",
+      "tool": "search",
+      "limit": 10
+    },
+    {
+      "q": "참조",
+      "docKind": "공문",
+      "tool": "search",
+      "limit": 10
+    },
+    {
+      "q": "시행문",
+      "docKind": "공문",
+      "tool": "search",
+      "limit": 10
+    },
+    {
+      "q": "직인",
+      "docKind": "시각",
+      "tool": "png 매치쪽",
+      "limit": 3
+    },
+    {
+      "q": "도장",
+      "docKind": "시각",
+      "tool": "png 매치쪽",
+      "limit": 3
+    },
+    {
+      "q": "서명",
+      "docKind": "시각/검색",
+      "tool": "search 후 png",
+      "limit": 5
+    },
+    {
+      "q": "회의일시",
+      "docKind": "회의록",
+      "tool": "extract-data date",
+      "limit": 20
+    },
+    {
+      "q": "참석자",
+      "docKind": "회의록",
+      "tool": "search",
+      "limit": 20
+    },
+    {
+      "q": "안건",
+      "docKind": "회의록",
+      "tool": "search+structure",
+      "limit": 20
+    },
+    {
+      "q": "의결",
+      "docKind": "회의록",
+      "tool": "search",
+      "limit": 20
+    },
+    {
+      "q": "수당",
+      "docKind": "행정",
+      "tool": "extract-data amount",
+      "limit": 30
+    },
+    {
+      "q": "여비",
+      "docKind": "행정",
+      "tool": "extract-data amount",
+      "limit": 30
+    },
+    {
+      "q": "출장",
+      "docKind": "행정",
+      "tool": "search",
+      "limit": 20
+    },
+    {
+      "q": "휴일",
+      "docKind": "행정",
+      "tool": "search",
+      "limit": 20
+    },
+    {
+      "q": "근무시간",
+      "docKind": "행정",
+      "tool": "search",
+      "limit": 20
+    },
+    {
+      "q": "연가",
+      "docKind": "행정",
+      "tool": "search",
+      "limit": 20
+    },
+    {
+      "q": "병가",
+      "docKind": "행정",
+      "tool": "search",
+      "limit": 20
+    },
+    {
+      "q": "교육",
+      "docKind": "행정",
+      "tool": "search",
+      "limit": 20
+    },
+    {
+      "q": "평가",
+      "docKind": "계획",
+      "tool": "search",
+      "limit": 20
+    },
+    {
+      "q": "성과",
+      "docKind": "계획",
+      "tool": "search",
+      "limit": 20
+    },
+    {
+      "q": "KPI",
+      "docKind": "계획",
+      "tool": "search --ignore-case",
+      "limit": 20
+    },
+    {
+      "q": "ISO",
+      "docKind": "매뉴얼",
+      "tool": "search --ignore-case",
+      "limit": 20
+    },
+    {
+      "q": "HWPX",
+      "docKind": "형식",
+      "tool": "info format",
+      "limit": 0
+    },
+    {
+      "q": "비밀번호",
+      "docKind": "암호",
+      "tool": "info/explain encrypted",
+      "limit": 0
+    },
+    {
+      "q": "각주",
+      "docKind": "논문/편람",
+      "tool": "explain.footnoteCount",
+      "limit": 0
+    },
+    {
+      "q": "미주",
+      "docKind": "논문",
+      "tool": "explain.endnoteCount",
+      "limit": 0
+    },
+    {
+      "q": "표1",
+      "docKind": "보고서",
+      "tool": "explain.tables",
+      "limit": 0
+    },
+    {
+      "q": "그림1",
+      "docKind": "보고서",
+      "tool": "search 후 png",
+      "limit": 5
+    },
+    {
+      "q": "참고문헌",
+      "docKind": "논문",
+      "tool": "search 또는 --pages 뒤쪽",
+      "limit": 20
+    },
+    {
+      "q": "부록",
+      "docKind": "장문",
+      "tool": "export-structure + --pages",
+      "limit": 20
+    },
+    {
+      "q": "색인",
+      "docKind": "편람",
+      "tool": "search",
+      "limit": 20
+    },
+    {
+      "q": "정의",
+      "docKind": "규정",
+      "tool": "search+structure",
+      "limit": 20
+    },
+    {
+      "q": "목적",
+      "docKind": "규정",
+      "tool": "structure heading",
+      "limit": 0
+    },
+    {
+      "q": "적용범위",
+      "docKind": "규정",
+      "tool": "search",
+      "limit": 20
+    },
+    {
+      "q": "용어",
+      "docKind": "규정",
+      "tool": "search",
+      "limit": 20
+    },
+    {
+      "q": "벌칙",
+      "docKind": "법령",
+      "tool": "search",
+      "limit": 20
+    },
+    {
+      "q": "과태료",
+      "docKind": "법령",
+      "tool": "search+amount",
+      "limit": 20
+    },
+    {
+      "q": "서식",
+      "docKind": "행정",
+      "tool": "explain.fields",
+      "limit": 0
+    },
+    {
+      "q": "신청인",
+      "docKind": "서식",
+      "tool": "form-fill",
+      "limit": 0
+    },
+    {
+      "q": "생년월일",
+      "docKind": "서식/PII",
+      "tool": "security+date",
+      "limit": 20
+    },
+    {
+      "q": "전화번호",
+      "docKind": "서식/PII",
+      "tool": "security-sweep",
+      "limit": 0
+    },
+    {
+      "q": "주소",
+      "docKind": "서식/PII",
+      "tool": "security-sweep",
+      "limit": 0
+    },
+    {
+      "q": "이메일",
+      "docKind": "서식/PII",
+      "tool": "security-sweep",
+      "limit": 0
+    },
+    {
+      "q": "사업자등록",
+      "docKind": "서식",
+      "tool": "search",
+      "limit": 10
+    },
+    {
+      "q": "법인등록",
+      "docKind": "서식",
+      "tool": "search",
+      "limit": 10
+    },
+    {
+      "q": "담당자",
+      "docKind": "공문",
+      "tool": "search",
+      "limit": 20
+    },
+    {
+      "q": "연락처",
+      "docKind": "공문",
+      "tool": "security-sweep",
+      "limit": 0
+    },
+    {
+      "q": "기한",
+      "docKind": "행정",
+      "tool": "search+date",
+      "limit": 20
+    },
+    {
+      "q": "제출",
+      "docKind": "행정",
+      "tool": "search",
+      "limit": 20
+    },
+    {
+      "q": "접수",
+      "docKind": "행정",
+      "tool": "search",
+      "limit": 20
+    },
+    {
+      "q": "반려",
+      "docKind": "행정",
+      "tool": "search",
+      "limit": 20
+    },
+    {
+      "q": "보완",
+      "docKind": "행정",
+      "tool": "search",
+      "limit": 20
+    },
+    {
+      "q": "승인",
+      "docKind": "행정",
+      "tool": "search",
+      "limit": 20
+    },
+    {
+      "q": "반려사유",
+      "docKind": "행정",
+      "tool": "search",
+      "limit": 20
+    },
+    {
+      "q": "근거법령",
+      "docKind": "행정",
+      "tool": "search+structure",
+      "limit": 20
+    },
+    {
+      "q": "관련문서",
+      "docKind": "행정",
+      "tool": "search",
+      "limit": 20
+    },
+    {
+      "q": "버전",
+      "docKind": "매뉴얼",
+      "tool": "info+search",
+      "limit": 10
+    },
+    {
+      "q": "개정",
+      "docKind": "매뉴얼",
+      "tool": "search+date",
+      "limit": 20
+    },
+    {
+      "q": "폐지",
+      "docKind": "법령",
+      "tool": "search",
+      "limit": 20
+    },
+    {
+      "q": "경과조치",
+      "docKind": "법령",
+      "tool": "search",
+      "limit": 20
+    }
+  ]
+}

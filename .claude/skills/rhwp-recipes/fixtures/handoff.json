@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5331,
+  "map": {
+    "01": "rhwp-form-fill",
+    "02": "rhwp-table-exchange",
+    "03": "rhwp-security-sweep",
+    "04": "rhwp-doc-triage",
+    "05": "rhwp-form-fill",
+    "06": "rhwp-visual-regression",
+    "09": "rhwp-bulk-pipeline",
+    "10": "rhwp-security-sweep"
+  },
+  "forbiddenRewrite": [
+    "rhwp-form-fill",
+    "rhwp-table-exchange",
+    "rhwp-security-sweep",
+    "rhwp-bulk-pipeline",
+    "rhwp-visual-regression",
+    "rhwp-onboarding",
+    "rhwp-mcp-session",
+    "rhwp-safe-edit",
+    "rhwp-provenance",
+    "rhwp-doc-triage"
+  ]
+}

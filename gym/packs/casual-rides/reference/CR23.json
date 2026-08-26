@@ -1,0 +1,17 @@
+{
+  "id": "CR23",
+  "steps": [
+    {
+      "answer": {
+        "footnotes": {
+          "cmd": [
+            "explain",
+            "{input}",
+            "--json"
+          ],
+          "path": "footnoteCount"
+        }
+      }
+    }
+  ]
+}

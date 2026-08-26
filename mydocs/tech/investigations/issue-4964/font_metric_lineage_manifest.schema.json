@@ -1,0 +1,298 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/edwardkim/rhwp/mydocs/tech/investigations/issue-4964/font_metric_lineage_manifest.schema.json",
+  "title": "rhwp font metric lineage manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "kind",
+    "sourceCommit",
+    "generatorVersion",
+    "schema",
+    "evidenceCatalog",
+    "summary",
+    "baselineHashes",
+    "entriesSha256",
+    "entries"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "1.0" },
+    "kind": { "const": "font-metric-lineage-manifest" },
+    "sourceCommit": { "$ref": "#/$defs/sha1" },
+    "generatorVersion": { "type": "string", "minLength": 1 },
+    "schema": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": { "type": "string", "minLength": 1 },
+        "sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "evidenceCatalog": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/evidence" }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "entryCount",
+        "stableEntryIdCount",
+        "w1MetricEntryLinks",
+        "measuredOverlayEntries",
+        "unknownOriginEntries",
+        "fullySourceExactEntries",
+        "partiallyByteVerifiedFontSources",
+        "w5OracleProfileLinks"
+      ],
+      "properties": {
+        "entryCount": { "const": 600 },
+        "stableEntryIdCount": { "const": 600 },
+        "w1MetricEntryLinks": { "const": 600 },
+        "measuredOverlayEntries": { "const": 5 },
+        "unknownOriginEntries": { "const": 595 },
+        "fullySourceExactEntries": { "const": 0 },
+        "partiallyByteVerifiedFontSources": { "const": 1 },
+        "w5OracleProfileLinks": { "const": 2 }
+      }
+    },
+    "baselineHashes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "compositionSha256",
+        "metricDataSha256",
+        "widthProjectionSha256",
+        "lookupProjectionSha256"
+      ],
+      "properties": {
+        "compositionSha256": { "$ref": "#/$defs/sha256" },
+        "metricDataSha256": { "$ref": "#/$defs/sha256" },
+        "widthProjectionSha256": { "$ref": "#/$defs/sha256" },
+        "lookupProjectionSha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "entriesSha256": { "$ref": "#/$defs/sha256" },
+    "entries": {
+      "type": "array",
+      "minItems": 600,
+      "maxItems": 600,
+      "items": { "$ref": "#/$defs/entry" }
+    }
+  },
+  "$defs": {
+    "sha1": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "status": {
+      "enum": ["verified", "historical", "inferred", "unknown", "not-applicable"]
+    },
+    "statusValue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "reason", "evidenceIds"],
+      "properties": {
+        "status": { "$ref": "#/$defs/status" },
+        "reason": { "type": "string", "minLength": 1 },
+        "value": {},
+        "evidenceIds": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "uniqueItems": true
+        }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "status": { "const": "verified" } } },
+          "then": { "required": ["value"] }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": { "enum": ["unknown", "not-applicable"] }
+            }
+          },
+          "then": { "not": { "required": ["value"] } }
+        }
+      ]
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "kind", "path", "sha256"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9]+(?:[.-][a-z0-9]+)*$" },
+        "kind": { "type": "string", "minLength": 1 },
+        "path": { "type": "string", "minLength": 1 },
+        "sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "entry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "entryId",
+        "currentIndex",
+        "metricIdentity",
+        "storageRegion",
+        "origin",
+        "fontSource",
+        "measurementSource",
+        "composition",
+        "compression",
+        "relations",
+        "oracleProfiles",
+        "semanticHashes"
+      ],
+      "properties": {
+        "entryId": { "type": "string", "pattern": "^font-metric\\.[0-9a-f]{20}$" },
+        "currentIndex": { "type": "integer", "minimum": 0, "maximum": 599 },
+        "metricIdentity": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["name", "bold", "italic", "emSize"],
+          "properties": {
+            "name": { "type": "string", "minLength": 1 },
+            "bold": { "type": "boolean" },
+            "italic": { "type": "boolean" },
+            "emSize": { "type": "integer", "minimum": 1, "maximum": 65535 }
+          }
+        },
+        "storageRegion": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "sourcePath", "latinRangesSymbol", "hangulSymbol"],
+          "properties": {
+            "kind": { "enum": ["historical-generated-region", "measured-overlay"] },
+            "sourcePath": { "type": "string", "minLength": 1 },
+            "latinRangesSymbol": { "type": "string", "pattern": "^[A-Z0-9_]+$" },
+            "hangulSymbol": {
+              "oneOf": [
+                { "type": "string", "pattern": "^[A-Z0-9_]+$" },
+                { "type": "null" }
+              ]
+            }
+          }
+        },
+        "origin": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["kind", "status", "reason", "declarationCommit", "evidenceIds"],
+          "properties": {
+            "kind": { "enum": ["historical-generated-snapshot", "measured-overlay"] },
+            "status": { "$ref": "#/$defs/status" },
+            "reason": { "type": "string", "minLength": 1 },
+            "declarationCommit": { "$ref": "#/$defs/sha1" },
+            "evidenceIds": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "type": "string", "minLength": 1 },
+              "uniqueItems": true
+            }
+          }
+        },
+        "fontSource": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status", "reason", "verificationScope", "sha256", "faceIndex", "namingRecords", "license", "provenance"],
+          "properties": {
+            "status": { "$ref": "#/$defs/status" },
+            "reason": { "type": "string", "minLength": 1 },
+            "verificationScope": { "enum": ["none", "printable-ascii-only", "full-metric"] },
+            "sha256": { "$ref": "#/$defs/statusValue" },
+            "faceIndex": { "$ref": "#/$defs/statusValue" },
+            "namingRecords": { "$ref": "#/$defs/statusValue" },
+            "license": { "$ref": "#/$defs/statusValue" },
+            "provenance": { "$ref": "#/$defs/statusValue" }
+          }
+        },
+        "measurementSource": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status", "reason", "method", "inputDigests", "interpolation", "evidenceIds"],
+          "properties": {
+            "status": { "$ref": "#/$defs/status" },
+            "reason": { "type": "string", "minLength": 1 },
+            "method": { "$ref": "#/$defs/statusValue" },
+            "inputDigests": { "$ref": "#/$defs/statusValue" },
+            "interpolation": { "$ref": "#/$defs/statusValue" },
+            "evidenceIds": {
+              "type": "array",
+              "items": { "type": "string", "minLength": 1 },
+              "uniqueItems": true
+            }
+          }
+        },
+        "composition": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["latinRangesSymbol", "hangulSymbol"],
+          "properties": {
+            "latinRangesSymbol": { "type": "string", "pattern": "^[A-Z0-9_]+$" },
+            "hangulSymbol": {
+              "oneOf": [
+                { "type": "string", "pattern": "^[A-Z0-9_]+$" },
+                { "type": "null" }
+              ]
+            }
+          }
+        },
+        "compression": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status", "algorithm", "reason", "maxAbsoluteError", "averageAbsoluteError"],
+          "properties": {
+            "status": { "$ref": "#/$defs/status" },
+            "algorithm": { "enum": ["none", "grouped-hangul-width-grid"] },
+            "reason": { "type": "string", "minLength": 1 },
+            "maxAbsoluteError": { "$ref": "#/$defs/statusValue" },
+            "averageAbsoluteError": { "$ref": "#/$defs/statusValue" }
+          }
+        },
+        "relations": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["relationId", "relationType", "evidenceIds"],
+            "properties": {
+              "relationId": { "type": "string", "minLength": 1 },
+              "relationType": { "enum": ["metric-entry", "measured-overlay"] },
+              "evidenceIds": {
+                "type": "array",
+                "minItems": 1,
+                "items": { "type": "string", "minLength": 1 },
+                "uniqueItems": true
+              }
+            }
+          }
+        },
+        "oracleProfiles": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["evidenceId", "relationType", "scope"],
+            "properties": {
+              "evidenceId": { "type": "string", "minLength": 1 },
+              "relationType": { "type": "string", "minLength": 1 },
+              "scope": { "const": "face-identity-not-metric-source-exactness" }
+            }
+          }
+        },
+        "semanticHashes": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["metricDataSha256", "widthProjectionSha256"],
+          "properties": {
+            "metricDataSha256": { "$ref": "#/$defs/sha256" },
+            "widthProjectionSha256": { "$ref": "#/$defs/sha256" }
+          }
+        }
+      }
+    }
+  }
+}

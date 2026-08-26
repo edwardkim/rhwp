@@ -1,0 +1,31 @@
+{
+  "id": "FJ69",
+  "tier": 2,
+  "title": "메모 표본 작성자 dry-run filledCount 오라클",
+  "input": "samples/field-01-memo.hwp",
+  "axis": "조회",
+  "instructions": "field-01-memo 에서 작성자에 '메모예고작성' 을 넣는 dry-run 의 filledCount 를 answer.json 의 filledCount 로 제출하라. FJ21 은 field-01 작성자 dry-run 이다. 표본이 다르다. 출력 파일을 만들지 마라. 힌트: --data '{\"작성자\": \"메모예고작성\"}' --dry-run --json 판정은 라이브 재실행 또는 산출물 재독이며, 파일 부재를 통과로 치지 않는다. T07 의 fields[0].value==홍길동 판정은 쓰지 마라. 새 CLI 는 없다.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "채워질 칸 수",
+      "op": "answer_eq",
+      "answer": "filledCount",
+      "path": "filledCount",
+      "cmd": [
+        "edit",
+        "fill-fields",
+        "{input}",
+        "--data",
+        "{\"작성자\": \"메모예고작성\"}",
+        "--dry-run",
+        "--json"
+      ]
+    }
+  ]
+}

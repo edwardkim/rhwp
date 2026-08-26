@@ -1,0 +1,19 @@
+{
+  "id": "EX09",
+  "steps": [
+    {
+      "answer": {
+        "dates": {
+          "cmd": [
+            "extract-data",
+            "{input}",
+            "--kind",
+            "date",
+            "--json"
+          ],
+          "path": "itemCount"
+        }
+      }
+    }
+  ]
+}

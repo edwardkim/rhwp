@@ -1,0 +1,11 @@
+{
+ "schemaVersion": "1",
+ "generatedBy": "tools/chief/service_loop.py",
+ "goal": "fill",
+ "route": "resolve-now",
+ "status": "done",
+ "artifacts": [
+  "filled.hwpx"
+ ],
+ "summary": "신청서 단건 (1차) 완료"
+}

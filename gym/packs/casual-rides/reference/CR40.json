@@ -1,0 +1,19 @@
+{
+  "id": "CR40",
+  "steps": [
+    {
+      "answer": {
+        "hits": {
+          "cmd": [
+            "search",
+            "{input}",
+            "--json",
+            "--",
+            "문제"
+          ],
+          "path": "matchCount"
+        }
+      }
+    }
+  ]
+}

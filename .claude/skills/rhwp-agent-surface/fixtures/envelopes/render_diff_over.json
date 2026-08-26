@@ -1,0 +1,12 @@
+{
+  "id": "render_diff_over",
+  "command": "render-diff",
+  "mcp": "hwp_render_diff",
+  "cli_exit": 3,
+  "isError": false,
+  "fields": {
+    "status": "OVER",
+    "regression": true
+  },
+  "read_as": "data"
+}

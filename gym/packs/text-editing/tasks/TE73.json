@@ -1,0 +1,29 @@
+{
+  "id": "TE73",
+  "tier": 1,
+  "title": "첫 '국어' 오프셋",
+  "input": "samples/2022년 국립국어원 업무계획.hwp",
+  "instructions": "입력에서 '국어' 의 첫 일치 문자 오프셋을 answer.json 에 {\"off\": N} 으로 제출하라. 힌트: search matches[0].offset.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "첫 '국어' 오프셋 · off",
+      "op": "answer_eq",
+      "answer": "off",
+      "path": "matches[0].offset",
+      "cmd": [
+        "search",
+        "{input}",
+        "--json",
+        "--",
+        "국어"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

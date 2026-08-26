@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "1.0",
+  "mode": "single",
+  "source": "txov-char-overlap-true.synth",
+  "pageCount": 3,
+  "pageFilter": null,
+  "overflowTolerancePx": 1.0,
+  "overlapTolerancePx": 2.0,
+  "types": null,
+  "strict": false,
+  "overflowCount": 0,
+  "offCanvasCount": 0,
+  "overlapCount": 0,
+  "textOverlapCount": 0,
+  "emptyPageCount": 0,
+  "hasSignal": false,
+  "pages": [],
+  "hypothesis": "한컴 글자겹침 컨트롤 런은 의도된 겹침이라 후보에서 뺀다.",
+  "fixtureId": "txov-char-overlap-true"
+}

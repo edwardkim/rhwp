@@ -1,0 +1,24 @@
+{
+  "id": "T008",
+  "command": "explore",
+  "chapter": "10_조회.md",
+  "cmd": "rhwp explore samples/basic/issue2007_nested_cell_pagination_42065.hwp --json",
+  "exit": 0,
+  "keys": [
+    "affordanceCount",
+    "encrypted",
+    "format",
+    "menu",
+    "note",
+    "pageCount",
+    "schemaVersion",
+    "source",
+    "untrustedContent",
+    "untrustedFields"
+  ],
+  "untrustedContent": false,
+  "untrustedFields": [],
+  "schemaVersion": "1.0",
+  "source": "mydocs/manual/agent_codex/10_조회.md",
+  "notInvented": true
+}

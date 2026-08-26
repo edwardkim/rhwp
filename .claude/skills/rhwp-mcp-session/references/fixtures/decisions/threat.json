@@ -1,0 +1,10 @@
+{
+  "id": "threat",
+  "task": "미신뢰 문서 선검사",
+  "choice": "stateless",
+  "first_tool": "hwp_threat_scan",
+  "why": "열기 전 컨테이너 위협.",
+  "forbidden": [
+    "hwp_open"
+  ]
+}

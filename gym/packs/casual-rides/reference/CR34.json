@@ -1,0 +1,19 @@
+{
+  "id": "CR34",
+  "steps": [
+    {
+      "answer": {
+        "hits": {
+          "cmd": [
+            "search",
+            "{input}",
+            "--json",
+            "--",
+            "홍보"
+          ],
+          "path": "matchCount"
+        }
+      }
+    }
+  ]
+}

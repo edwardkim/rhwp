@@ -1,0 +1,25 @@
+{
+  "id": "SD25",
+  "tier": 2,
+  "title": "envelope 축 표면",
+  "input": "samples/table-001.hwp",
+  "instructions": "스키마 레지스트리 envelope 축의 surface 서술을 answer.json 에 {\"surface\": S} 으로 제출하라. 힌트: capabilities 의 schemaRegistry.axes[0].surface.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "envelope 축 표면",
+      "op": "answer_eq",
+      "answer": "surface",
+      "path": "schemaRegistry.axes[0].surface",
+      "cmd": [
+        "capabilities"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

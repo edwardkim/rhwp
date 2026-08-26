@@ -1,0 +1,4 @@
+measure	pages	delta_from_reference	scope	note
+reference_pdf	215	0	full PDF	한컴 2020 기준 PDF
+rhwp_svg	215	0	full export	e9253d21d811 / binary c88b9d912549 current sweep
+rhwp_render_tree	215	0	full render tree	e9253d21d811 / binary c88b9d912549 current sweep

@@ -1,0 +1,16 @@
+{
+  "id": "ST26",
+  "steps": [
+    {
+      "run": [
+        "chart-to-csv",
+        "{input}",
+        "--chart",
+        "1",
+        "-o",
+        "{sub:chart.csv}",
+        "--bom"
+      ]
+    }
+  ]
+}

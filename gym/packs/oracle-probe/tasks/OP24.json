@@ -1,0 +1,29 @@
+{
+  "id": "OP24",
+  "tier": 2,
+  "title": "최소 쪽수 자기검증 판정",
+  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "axis": "검증",
+  "instructions": "입력이 17쪽 이상인지 자기검증하고 판정(verdict)을 answer.json 에 {\"verdict\": \"...\"} 으로 제출하라. 채점기가 verify --expect-min-pages 17 을 다시 돌려 같은 판정을 읽는다.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "판정 라이브 대조",
+      "op": "answer_eq",
+      "answer": "verdict",
+      "cmd": [
+        "verify",
+        "{input}",
+        "--expect-min-pages",
+        "17",
+        "--json"
+      ],
+      "path": "verdict"
+    }
+  ]
+}

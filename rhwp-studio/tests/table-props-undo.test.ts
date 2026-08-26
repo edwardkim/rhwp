@@ -27,7 +27,7 @@ test('표/셀 속성 다이얼로그 onConfirm은 스냅샷으로 undo 기록된
   );
 });
 
-test('셀 테두리/배경 다이얼로그 onConfirm은 스냅샷으로 undo 기록된다', () => {
+test('셀 테두리/배경 다이얼로그 onConfirm은 속성쌍 역연산 커맨드로 undo 기록된다 (#5959)', () => {
   const dialog = source('src/ui/cell-border-bg-dialog.ts');
   const start = dialog.indexOf('protected onConfirm');
   assert.notEqual(start, -1, 'onConfirm not found');
@@ -35,8 +35,17 @@ test('셀 테두리/배경 다이얼로그 onConfirm은 스냅샷으로 undo 기
 
   assert.match(
     block,
-    /executeOperation\(\{\s*kind: 'snapshot',\s*operationType: 'objectProps'/,
-    '셀 테두리/배경 적용은 snapshot 명령으로 기록되어야 함',
+    /applyCommandThroughRouter/,
+    '셀 테두리/배경 적용은 커맨드 라우터로 기록되어야 함',
+  );
+  assert.match(
+    block,
+    /new SetCellBorderFillCommand/,
+    'SetCellBorderFillCommand 경유여야 함(스냅샷 슬롯 0)',
+  );
+  assert.ok(
+    !/kind: 'snapshot'/.test(block),
+    '스냅샷 기록 잔존은 슬롯 예산 회귀다(#5959)',
   );
 });
 

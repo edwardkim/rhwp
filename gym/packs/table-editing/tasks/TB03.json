@@ -1,0 +1,43 @@
+{
+  "id": "TB03",
+  "tier": 3,
+  "title": "다중 셀 지목 교정",
+  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "instructions": "첫 번째 표의 (0행,0열) 을 '앞칸', (1행,0열) 을 '뒷칸' 으로 바꾼 cells.hwp 를 제출하라. 채점은 두 좌표를 각각 대조한다 — 하나만 고치면 통과하지 못한다. 힌트: rhwp edit set-cell.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "cells.hwp"
+    ]
+  },
+  "checks": [
+    {
+      "name": "(0,0) == 앞칸",
+      "op": "cell_text_eq",
+      "table": 0,
+      "row": 0,
+      "col": 0,
+      "value": "앞칸",
+      "path": "tables",
+      "cmd": [
+        "export-tables",
+        "{file:cells.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "(1,0) == 뒷칸",
+      "op": "cell_text_eq",
+      "table": 0,
+      "row": 1,
+      "col": 0,
+      "value": "뒷칸",
+      "path": "tables",
+      "cmd": [
+        "export-tables",
+        "{file:cells.hwp}",
+        "--json"
+      ]
+    }
+  ]
+}

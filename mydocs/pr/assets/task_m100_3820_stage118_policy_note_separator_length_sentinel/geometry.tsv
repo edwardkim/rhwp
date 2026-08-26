@@ -1,0 +1,8 @@
+page	owner	measure	stage115_before	stage118_final	oracle_or_contract	verdict
+120	FootnoteArea/Line	separator_svg_px	94.4933,1019.2867,201.5733,0.5	94.4933,1019.2867,188.9764,0.5	OWPML -1=5cm; PDF vector 71,764 -> 214,764pt	pass_with_dual_oracle_residual
+121	FootnoteArea/Line	separator_svg_px	94.4933,1003.5133,201.5733,0.5	94.4933,1003.5133,188.9764,0.5	OWPML -1=5cm; PDF vector 71,753 -> 214,753pt	pass_with_dual_oracle_residual
+120	FootnoteArea	area_bbox_px	94.5,1008.0,604.7,31.4	94.5,1008.0,604.7,31.4	vertical reservation must not move	pass
+121	FootnoteArea	area_bbox_px	94.5,992.2,604.7,47.2	94.5,992.2,604.7,47.2	vertical reservation must not move	pass
+120	pi1283/ci0	table_bbox_px	98.3,86.9,559.4,317.2	98.3,86.9,559.4,317.2	Stage115 outer-origin fix retained	pass
+120-121	footnotes	owner	158 / 159,160	158 / 159,160	Hancom PDF page owner and order	pass
+120-121	document	page_count	215	215	reference PDF 215	pass

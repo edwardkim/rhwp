@@ -1,0 +1,69 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workReceiptReplayCase",
+  "ident": "hr_grade",
+  "claim": "M-rcpt",
+  "issue": 5478,
+  "family": "인사",
+  "genre": "직급",
+  "title": "서기관→부이사관",
+  "why": "승진 발령 직급. 발령 종류와 다른 필드.",
+  "notes": "직급 축",
+  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "output": "out/hr-grade.hwp",
+  "ext": "hwp",
+  "actions": [
+    "replace_text"
+  ],
+  "stepCount": 1,
+  "plan": {
+    "planVersion": "1.0",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "output": "out/hr-grade.hwp",
+    "steps": [
+      {
+        "action": "replace_text",
+        "find": "직급 서기관",
+        "replace": "직급 부이사관"
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"samples/basic/issue2007_nested_cell_pagination_42065.hwp\",\"output\":\"out/hr-grade.hwp\",\"steps\":[{\"action\":\"replace_text\",\"find\":\"직급 서기관\",\"replace\":\"직급 부이사관\"}]}",
+  "planSha256": "cdc46f4143958edd79f549d6391ea1afdbd80e7a5e1b5115270914e823e18673",
+  "command": "replay",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "inputSha256": "0dd6eb5a6fb31cf3ba869d4491967789a920fe9b200a3098c8bfc3d7b7a59689",
+    "planSha256": "cdc46f4143958edd79f549d6391ea1afdbd80e7a5e1b5115270914e823e18673",
+    "outputSha256": "acd3e4102550fa85c22148bb832603cb40b13f57897141ece4eb121b05c58e29",
+    "toolVersion": "fixture-0.0.0-not-a-release",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null
+  },
+  "expected": {
+    "attest": {
+      "exit": 0,
+      "mode": "attest",
+      "reproduced": null,
+      "userOutputCreated": false
+    },
+    "verify_ok": {
+      "exit": 0,
+      "mode": "verify",
+      "reproduced": true,
+      "expectedOutputSha256": "acd3e4102550fa85c22148bb832603cb40b13f57897141ece4eb121b05c58e29"
+    },
+    "verify_mismatch": {
+      "exit": 3,
+      "mode": "verify",
+      "reproduced": false,
+      "expectedOutputSha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "judgment": true
+    }
+  },
+  "claimedOutputPathUntouched": true,
+  "generator": "tools/work_receipt/fatten_work_receipt.py"
+}

@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5329,
+  "notGym": true,
+  "noNewCli": true,
+  "id": "T13",
+  "title": "bunjang companion",
+  "stop": "F17",
+  "steps": [
+    "do not promote"
+  ],
+  "tool": "tools/fidelity_compare/fidelity_compare.py"
+}

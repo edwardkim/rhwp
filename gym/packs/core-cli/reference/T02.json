@@ -1,0 +1,19 @@
+{
+  "id": "T02",
+  "steps": [
+    {
+      "answer": {
+        "matchCount": {
+          "cmd": [
+            "search",
+            "{input}",
+            "국어",
+            "--json"
+          ],
+          "path": "matches",
+          "len": true
+        }
+      }
+    }
+  ]
+}

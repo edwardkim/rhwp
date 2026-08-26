@@ -1,0 +1,25 @@
+# M09-1 equation golden — current-engine lock
+command: DMATRIX
+script: DMATRIX{1}
+
+=== ast ===
+Matrix {
+    rows: [
+        [
+            Number(
+                "1",
+            ),
+        ],
+    ],
+    style: Vert,
+}
+
+=== layout ===
+Matrix(Vert) x=0.0000 y=0.0000 w=31.0000 h=20.0000 bl=10.0000
+  row0:
+    Number("1") x=10.0000 y=0.0000 w=11.0000 h=20.0000 bl=16.0000
+
+=== svg ===
+<line x1="3.00" y1="0.00" x2="3.00" y2="20.00" stroke="#000000" stroke-width="0.80"/>
+<line x1="28.00" y1="0.00" x2="28.00" y2="20.00" stroke="#000000" stroke-width="0.80"/>
+<text x="10.00" y="16.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">1</text>

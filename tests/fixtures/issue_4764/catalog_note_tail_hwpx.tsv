@@ -1,0 +1,9 @@
+corpus	source_kind	page_index	human_page	locked_count	residual	isolation	ink_budget_ppm	hist_l1	bbox_hu	font_env	wrap_risk	glyph_risk	table_risk	stage	note
+note_tail_hwpx	hwpx	0	1	0	none	independent	1200	80	32	0	0	0	0	s16	footnote tail HWPX remesure p1
+note_tail_hwpx	hwpx	1	2	0	none	independent	1250	90	40	0	0	0	0	s16	footnote tail HWPX remesure p2
+note_tail_hwpx	hwpx	2	3	0	none	independent	1300	100	48	0	0	0	0	s16	footnote tail HWPX remesure p3
+note_tail_hwpx	hwpx	3	4	0	none	independent	1350	110	32	0	0	0	0	s16	footnote tail HWPX remesure p4
+note_tail_hwpx	hwpx	4	5	0	none	independent	1400	120	40	0	0	0	0	s16	footnote tail HWPX remesure p5
+note_tail_hwpx	hwpx	5	6	0	none	independent	1450	80	48	0	0	0	0	s16	footnote tail HWPX remesure p6
+note_tail_hwpx	hwpx	6	7	0	none	independent	1500	90	32	0	0	0	0	s16	footnote tail HWPX remesure p7
+note_tail_hwpx	hwpx	7	8	0	none	independent	1200	100	40	0	0	0	0	s16	footnote tail HWPX remesure p8

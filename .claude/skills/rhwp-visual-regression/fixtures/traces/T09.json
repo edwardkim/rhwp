@@ -1,0 +1,10 @@
+{
+  "id": "T09",
+  "issue": 5312,
+  "command": "render-diff <A> <B>",
+  "status": "OVER",
+  "exit": 1,
+  "stdout": "페이지 수: A=3 B=3\n최대 변위: 279.00 px (page 1)\n임계 초과 페이지: 1 / 구조 불일치 페이지: 0 (임계 1.00px)\nstatus: OVER\n",
+  "source": "skill catalog",
+  "notGym": true
+}

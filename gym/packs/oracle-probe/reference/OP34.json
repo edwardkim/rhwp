@@ -1,0 +1,19 @@
+{
+  "id": "OP34",
+  "steps": [
+    {
+      "answer": {
+        "hits": {
+          "cmd": [
+            "search",
+            "{input}",
+            "--json",
+            "--",
+            "업무"
+          ],
+          "path": "matchCount"
+        }
+      }
+    }
+  ]
+}

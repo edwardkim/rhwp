@@ -1,0 +1,26 @@
+{
+  "id": "SD46",
+  "tier": 2,
+  "title": "MCP protocol",
+  "input": "samples/table-001.hwp",
+  "instructions": "capabilities --mcp 가 선언하는 protocol 식별자를 answer.json 에 {\"protocol\": S} 으로 제출하라. 힌트: capabilities --mcp 의 protocol.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "MCP protocol",
+      "op": "answer_eq",
+      "answer": "protocol",
+      "path": "protocol",
+      "cmd": [
+        "capabilities",
+        "--mcp"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

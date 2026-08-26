@@ -1,0 +1,42 @@
+{
+  "candidate": {
+    "documentFace": "휴먼명조",
+    "queueRank": 13
+  },
+  "environment": {
+    "ambientFontManifestSha256": "796ba7d2a9759c63d71098c5d3182af2d1a653cc096c332d8e987347a45700fb",
+    "hancomVersion": "11, 0, 0, 2129",
+    "processReset": true
+  },
+  "evidenceClass": "acceptance-blocking-observation",
+  "fontState": {
+    "exactReadbackSurvived": true,
+    "managedRelatedFontCount": 0,
+    "readbackFace": "휴먼명조",
+    "readbackFontType": 1,
+    "requestedFace": "휴먼명조"
+  },
+  "inputSha256": "a6dbe726d8718513f59a78fc562bded4721e9cdfa03673b87cc907d45dc3f124",
+  "issue": 4963,
+  "kind": "font-oracle-stage4-blocked-disposition",
+  "output": {
+    "glyphObservationCount": 1556,
+    "pageCount": 1,
+    "pdfObservationCanonicalSha256": "be30463bd3f96e979bded3fc7279d63c96f727991dd3521ca61f3c0133cab76f",
+    "pdfSha256": "601c805d01c067ca0ac144336eddfc0c9b9dea20fd958d91290d35960761cb89",
+    "textSpanCount": 304,
+    "visualLineCount": 30
+  },
+  "physicalState": "none-related",
+  "privacy": {
+    "absolutePathIncluded": false,
+    "fontBytesIncluded": false,
+    "hostNameIncluded": false,
+    "privateCorpusAccessed": false,
+    "privateDocumentIdentityIncluded": false
+  },
+  "reason": "The exact face remained selectable with zero managed related fonts; destructive mutation of a bundled HFT or an unmanaged ambient source is outside the contract.",
+  "recoveryCondition": "Resume only in a disposable image where every exact provider is inventoried and can be removed and restored without mutating a Hancom bundle.",
+  "schemaVersion": 1,
+  "status": "blocked-immutable-or-unmanaged-font"
+}

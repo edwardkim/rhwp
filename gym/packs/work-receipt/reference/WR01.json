@@ -1,0 +1,54 @@
+{
+  "id": "WR01",
+  "steps": [
+    {
+      "answer": {
+        "mode": {
+          "cmd": [
+            "replay",
+            "--plan-json",
+            "{\"planVersion\": \"1.0\", \"input\": \"samples/field-01.hwp\", \"output\": \"receipt-out.hwp\", \"steps\": [{\"action\": \"replace_text\", \"find\": \"마케팅\", \"replace\": \"영수증여정\"}]}",
+            "--json"
+          ],
+          "path": "mode"
+        },
+        "steps": {
+          "cmd": [
+            "replay",
+            "--plan-json",
+            "{\"planVersion\": \"1.0\", \"input\": \"samples/field-01.hwp\", \"output\": \"receipt-out.hwp\", \"steps\": [{\"action\": \"replace_text\", \"find\": \"마케팅\", \"replace\": \"영수증여정\"}]}",
+            "--json"
+          ],
+          "path": "steps"
+        },
+        "inputSha256": {
+          "cmd": [
+            "replay",
+            "--plan-json",
+            "{\"planVersion\": \"1.0\", \"input\": \"samples/field-01.hwp\", \"output\": \"receipt-out.hwp\", \"steps\": [{\"action\": \"replace_text\", \"find\": \"마케팅\", \"replace\": \"영수증여정\"}]}",
+            "--json"
+          ],
+          "path": "inputSha256"
+        },
+        "planSha256": {
+          "cmd": [
+            "replay",
+            "--plan-json",
+            "{\"planVersion\": \"1.0\", \"input\": \"samples/field-01.hwp\", \"output\": \"receipt-out.hwp\", \"steps\": [{\"action\": \"replace_text\", \"find\": \"마케팅\", \"replace\": \"영수증여정\"}]}",
+            "--json"
+          ],
+          "path": "planSha256"
+        },
+        "outputSha256": {
+          "cmd": [
+            "replay",
+            "--plan-json",
+            "{\"planVersion\": \"1.0\", \"input\": \"samples/field-01.hwp\", \"output\": \"receipt-out.hwp\", \"steps\": [{\"action\": \"replace_text\", \"find\": \"마케팅\", \"replace\": \"영수증여정\"}]}",
+            "--json"
+          ],
+          "path": "outputSha256"
+        }
+      }
+    }
+  ]
+}

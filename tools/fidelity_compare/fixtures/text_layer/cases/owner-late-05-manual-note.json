@@ -1,0 +1,63 @@
+{
+  "id": "owner-late-05-manual-note",
+  "schema": "rhwp.fidelity_compare.text_layer_case.v1",
+  "schemaVersion": "1.0",
+  "claim": "M-fid",
+  "generator": "tools/fidelity_compare/fatten_text_layer.py",
+  "kind": "loss",
+  "classification": "loss",
+  "family": "owner_shift",
+  "genre": "장문 편람",
+  "registeredKey": "manual",
+  "title": "편람 각주 지연",
+  "why": "법령 인용 각주. 다음 쪽으로 밀리면 sequence. 방향=rhwp_later_than_reference.",
+  "page": 35,
+  "page1based": 36,
+  "referenceText": "본문고정영역ABCDEFGH이번쪽공통각주 14 행정 효율과 협업 촉진에 관한 규정 제6조 및 별표 1 참조.",
+  "svgText": "본문고정영역ABCDEFGH이번쪽공통",
+  "referenceNfc": "본문고정영역ABCDEFGH이번쪽공통각주 14 행정 효율과 협업 촉진에 관한 규정 제6조 및 별표 1 참조.",
+  "svgNfc": "본문고정영역ABCDEFGH이번쪽공통",
+  "referenceSequence": "본문고정영역ABCDEFGH이번쪽공통각주14행정효율과협업촉진에관한규정제6조및별표1참조.",
+  "svgSequence": "본문고정영역ABCDEFGH이번쪽공통",
+  "referenceOnly": 28,
+  "svgOnly": 0,
+  "referenceOnlyChars": "U+002E:.×1,U+0031:1×2,U+0034:4×1,U+0036:6×1,U+AC01:\\uac01×1,U+ACFC:\\uacfc×1,U+AD00:\\uad00×1,U+ADDC:\\uaddc×1,U+BC0F:\\ubc0f×1,U+BCC4:\\ubcc4×1,U+C5C5:\\uc5c5×1,U+C5D0:\\uc5d0×1,U+C728:\\uc728×1,U+C815:\\uc815×2,U+C81C:\\uc81c×1,U+C870:\\uc870×2,U+C8FC:\\uc8fc×1,U+C9C4:\\uc9c4×1,U+CC38:\\ucc38×1,U+CD09:\\ucd09×1,U+D45C:\\ud45c×1,U+D55C:\\ud55c×1,U+D589:\\ud589×1,U+D611:\\ud611×1,U+D6A8:\\ud6a8×1",
+  "svgOnlyChars": "",
+  "glyphRiskCount": 0,
+  "glyphRisks": "",
+  "referenceGlyphRiskCount": 0,
+  "referenceGlyphRisks": "",
+  "ownerShift": [
+    {
+      "page": 35,
+      "next_page": 36,
+      "direction": "rhwp_later_than_reference",
+      "shared_count": 28,
+      "source_coverage": 1.0,
+      "target_coverage": 1.0,
+      "shared": "U+002E:.×1,U+0031:1×2,U+0034:4×1,U+0036:6×1,U+AC01:\\uac01×1,U+ACFC:\\uacfc×1,U+AD00:\\uad00×1,U+ADDC:\\uaddc×1,U+BC0F:\\ubc0f×1,U+BCC4:\\ubcc4×1,U+C5C5:\\uc5c5×1,U+C5D0:\\uc5d0×1,U+C728:\\uc728×1,U+C815:\\uc815×2,U+C81C:\\uc81c×1,U+C870:\\uc870×2,U+C8FC:\\uc8fc×1,U+C9C4:\\uc9c4×1,U+CC38:\\ucc38×1,U+CD09:\\ucd09×1,U+D45C:\\ud45c×1,U+D55C:\\ud55c×1,U+D589:\\ud589×1,U+D611:\\ud611×1,U+D6A8:\\ud6a8×1"
+    }
+  ],
+  "sequence": [
+    {
+      "page": 35,
+      "next_page": 36,
+      "direction": "rhwp_later_than_reference",
+      "chars": 28,
+      "sequence": "각주14행정효율과협업촉진에관한규정제6조및별표1참조."
+    }
+  ],
+  "visibleExcess": [],
+  "clipExcludedChars": 0,
+  "nextReferenceText": "본문고정영역ABCDEFGH이번쪽공통",
+  "nextSvgText": "본문고정영역ABCDEFGH이번쪽공통각주 14 행정 효율과 협업 촉진에 관한 규정 제6조 및 별표 1 참조.",
+  "textOnly": true,
+  "chromeRequired": false,
+  "pypdfRequired": true,
+  "pypdfium2Required": false,
+  "candidateNotVerdict": true,
+  "reviewHint": "PDF 쪽이 한 쪽 앞선 후보. 시트 없이 확정 금지.",
+  "relatedIssue": "#3389",
+  "notes": "rhwp_later_than_reference",
+  "digest": "92b50efb30f5"
+}

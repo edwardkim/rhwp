@@ -1,0 +1,29 @@
+{
+  "id": "OP34",
+  "tier": 2,
+  "title": "국어원 문서 '업무' 검색 건수",
+  "input": "samples/2022년 국립국어원 업무계획.hwp",
+  "axis": "검증",
+  "instructions": "국립국어원 업무계획에서 '업무' 가 몇 번 나오는지 answer.json 에 {\"hits\": N} 으로 제출하라. '국어' 검색 건수와 같다고 가정하지 마라.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "업무 검색 건수",
+      "op": "answer_eq",
+      "answer": "hits",
+      "cmd": [
+        "search",
+        "{input}",
+        "--json",
+        "--",
+        "업무"
+      ],
+      "path": "matchCount"
+    }
+  ]
+}

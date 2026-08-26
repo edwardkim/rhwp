@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "1.0",
+  "source": "samples/hwp_table_test.hwp",
+  "table": 0,
+  "rowCount": 4,
+  "colCount": 3,
+  "csv": "D-hwp_table_test_t0-row_short_1.csv",
+  "dryRun": true,
+  "changed": [],
+  "changedCount": 0,
+  "changedPages": null,
+  "invalid": [
+    {
+      "reason": "rowCountMismatch",
+      "message": "CSV 행 수 3 가 표 0 의 행 수 4 와 다릅니다 — 표 크기는 바꾸지 않습니다.",
+      "expected": 4,
+      "actual": 3
+    }
+  ],
+  "output": null,
+  "verify": null,
+  "untrustedContent": false,
+  "untrustedFields": [],
+  "_skillMeta": {
+    "skill": "rhwp-table-exchange",
+    "command": "csv-to-table",
+    "exit": 2,
+    "outputKept": false,
+    "mode": "dry-run",
+    "writes": false
+  }
+}

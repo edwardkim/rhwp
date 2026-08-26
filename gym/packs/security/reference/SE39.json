@@ -1,0 +1,24 @@
+{
+  "id": "SE39",
+  "steps": [
+    {
+      "answer": {
+        "hidden": {
+          "cmd": [
+            "inspect",
+            "hidden-text",
+            "{input}",
+            "--threshold-pt",
+            "2.0",
+            "--json"
+          ],
+          "path": "hiddenCharCount",
+          "allowExits": [
+            0,
+            3
+          ]
+        }
+      }
+    }
+  ]
+}

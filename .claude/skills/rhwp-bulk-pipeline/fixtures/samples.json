@@ -1,0 +1,96 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5311,
+  "skill": "rhwp-bulk-pipeline",
+  "notGym": true,
+  "noNewCli": true,
+  "samples": {
+    "plan2022": {
+      "path": "samples/2022년 국립국어원 업무계획.hwp",
+      "format": "hwp5",
+      "pageCount": 35,
+      "paraCount": 630,
+      "title": "2022년 국립국어원 업무계획",
+      "counts": {
+        "amount": 65,
+        "date": 29,
+        "number": 203
+      },
+      "totalItemCount": 297,
+      "note": "레시피 9 실측. info/export-text/extract-data 첫 행."
+    },
+    "trade": {
+      "path": "samples/156636617_240617 2024년 5월 월간 수출입 현황(확정치).hwp",
+      "format": "hwp5",
+      "pageCount": 19,
+      "counts": {
+        "amount": 0,
+        "date": 22,
+        "number": 124
+      },
+      "totalItemCount": 146,
+      "note": "레시피 9 실측. 금액 키 0 은 '없다'가 아니라 kind=all 에서 금액 미검출."
+    },
+    "field01": {
+      "path": "samples/field-01.hwp",
+      "format": "hwp5",
+      "pageCount": 3,
+      "fieldCount": 11,
+      "counts": {
+        "amount": 0,
+        "date": 0,
+        "number": 0
+      },
+      "totalItemCount": 0,
+      "note": "누름틀 11. extract-data 0건은 오류가 아니다."
+    },
+    "hwp3": {
+      "path": "samples/hwp3-sample.hwp",
+      "format": "hwp3",
+      "pageCount": 16,
+      "fieldCount": 0,
+      "counts": {
+        "amount": 0,
+        "date": 0,
+        "number": 11
+      },
+      "totalItemCount": 11,
+      "note": "HWP3 표본. fields 0 은 축 전환 신호."
+    },
+    "missing": {
+      "path": "samples/없는파일.hwp",
+      "missing": true,
+      "error": "문서를 열 수 없습니다: 지정된 파일을 찾을 수 없습니다. (os error 2)",
+      "exitClass": "runtime",
+      "note": "레시피 9 가 일부러 섞은 없는 파일. 실패 봉투 원형."
+    },
+    "form01": {
+      "path": "samples/form-01.hwp",
+      "format": "hwp5",
+      "fieldCount": 1,
+      "names": [
+        "myMsg01"
+      ],
+      "note": "메일머지 서식 최소 표본."
+    },
+    "table001": {
+      "path": "samples/table-001.hwp",
+      "format": "hwp5",
+      "hasMerge": true,
+      "note": "batch_axes_contract 표 병합 표본."
+    },
+    "handbook": {
+      "path": "samples/2025 행정업무운영 편람(최종).hwpx",
+      "format": "hwpx",
+      "pageCount": 387,
+      "convertBytes": 9083392,
+      "convertMs": 428,
+      "note": "레시피 9 convert 실측. 387쪽 / 428ms / 9_083_392 bytes."
+    },
+    "handbookHwp": {
+      "path": "samples/2025 행정업무운영 편람(최종).hwp",
+      "format": "hwp5",
+      "note": "extract-data 계약 오라클과 같은 편람 HWP5."
+    }
+  }
+}

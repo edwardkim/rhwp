@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1180" height="860" viewBox="0 0 1180 860" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">
+<rect width="1180" height="860" fill="#FBF6EC"/>
+<text x="590.0" y="54" font-size="33" font-weight="800" fill="#20233A" text-anchor="middle">에이전트 프레임 — 세부는 생태계가, 틀은 CI 가 지킨다</text>
+<text x="590.0" y="86" font-size="17" fill="#8b8fa6" text-anchor="middle">두 축 위 하위체계 · 모든 하위체계는 가드를 가진다(메타 불변식) · 틀 밖으로 못 나간다</text>
+<circle cx="590.0" cy="470" r="320" fill="none" stroke="#F5B942" stroke-width="3" stroke-dasharray="10 7"/>
+<text x="590.0" y="140" font-size="15" font-weight="800" fill="#F5B942" text-anchor="middle">🛡 CI 가드 테두리 — frame_guard.py + 하위체계별 가드</text>
+<circle cx="590.0" cy="470" r="118" fill="#4E5AE8"/>
+<text x="590.0" y="452" font-size="22" font-weight="800" fill="#fff" text-anchor="middle">두 축</text>
+<text x="590.0" y="482" font-size="14" fill="#dfe3ff" text-anchor="middle">검증 사다리</text>
+<text x="590.0" y="504" font-size="14" fill="#dfe3ff" text-anchor="middle">운동장(gym)</text>
+<line x1="590.0" y1="352.0" x2="590.0" y2="266.0" stroke="#8b8fa6" stroke-width="1.6" opacity="0.5"/>
+<rect x="518.0" y="218.0" width="144" height="48" rx="11" fill="#fff" stroke="#20C6A6" stroke-width="2.2"/>
+<text x="590.0" y="240.0" font-size="15" font-weight="700" fill="#20233A" text-anchor="middle">운동장</text>
+<text x="590.0" y="258.0" font-size="10.5" fill="#20C6A6" text-anchor="middle">머지</text>
+<line x1="673.4386001800126" y1="386.5613998199874" x2="710.2081528017131" y2="325.7502166379443" stroke="#8b8fa6" stroke-width="1.6" opacity="0.5"/>
+<rect x="679.2203461105329" y="284.7796538894671" width="144" height="48" rx="11" fill="#fff" stroke="#20C6A6" stroke-width="2.2"/>
+<text x="751.2203461105329" y="306.7796538894671" font-size="15" font-weight="700" fill="#20233A" text-anchor="middle">로드맵</text>
+<text x="751.2203461105329" y="324.7796538894671" font-size="10.5" fill="#20C6A6" text-anchor="middle">머지</text>
+<line x1="708.0" y1="470.0" x2="760.0" y2="470.0" stroke="#8b8fa6" stroke-width="1.6" opacity="0.5"/>
+<rect x="746.0" y="446.0" width="144" height="48" rx="11" fill="#fff" stroke="#20C6A6" stroke-width="2.2"/>
+<text x="818.0" y="468.0" font-size="15" font-weight="700" fill="#20233A" text-anchor="middle">채택 중력</text>
+<text x="818.0" y="486.0" font-size="10.5" fill="#20C6A6" text-anchor="middle">머지</text>
+<line x1="673.4386001800126" y1="553.4386001800126" x2="710.2081528017131" y2="614.2497833620557" stroke="#8b8fa6" stroke-width="1.6" opacity="0.5"/>
+<rect x="679.2203461105329" y="607.2203461105329" width="144" height="48" rx="11" fill="#fff" stroke="#F5B942" stroke-width="2.2"/>
+<text x="751.2203461105329" y="629.2203461105329" font-size="15" font-weight="700" fill="#20233A" text-anchor="middle">표준 AWS</text>
+<text x="751.2203461105329" y="647.2203461105329" font-size="10.5" fill="#F5B942" text-anchor="middle">진행중 PR</text>
+<line x1="590.0" y1="588.0" x2="590.0" y2="674.0" stroke="#8b8fa6" stroke-width="1.6" opacity="0.5"/>
+<rect x="518.0" y="674.0" width="144" height="48" rx="11" fill="#fff" stroke="#F5B942" stroke-width="2.2"/>
+<text x="590.0" y="696.0" font-size="15" font-weight="700" fill="#20233A" text-anchor="middle">노동 운영체제</text>
+<text x="590.0" y="714.0" font-size="10.5" fill="#F5B942" text-anchor="middle">진행중 PR</text>
+<line x1="506.5613998199874" y1="553.4386001800126" x2="469.7918471982869" y2="614.2497833620557" stroke="#8b8fa6" stroke-width="1.6" opacity="0.5"/>
+<rect x="356.77965388946717" y="607.2203461105329" width="144" height="48" rx="11" fill="#fff" stroke="#F5B942" stroke-width="2.2"/>
+<text x="428.77965388946717" y="629.2203461105329" font-size="15" font-weight="700" fill="#20233A" text-anchor="middle">계획 템플릿</text>
+<text x="428.77965388946717" y="647.2203461105329" font-size="10.5" fill="#F5B942" text-anchor="middle">진행중 PR</text>
+<line x1="472.0" y1="470.0" x2="420.0" y2="470.0" stroke="#8b8fa6" stroke-width="1.6" opacity="0.5"/>
+<rect x="290.0" y="446.0" width="144" height="48" rx="11" fill="#fff" stroke="#F5B942" stroke-width="2.2"/>
+<text x="362.0" y="468.0" font-size="15" font-weight="700" fill="#20233A" text-anchor="middle">MCP 리소스</text>
+<text x="362.0" y="486.0" font-size="10.5" fill="#F5B942" text-anchor="middle">진행중 PR</text>
+<line x1="506.5613998199874" y1="386.5613998199874" x2="469.79184719828686" y2="325.75021663794433" stroke="#8b8fa6" stroke-width="1.6" opacity="0.5"/>
+<rect x="356.7796538894671" y="284.77965388946717" width="144" height="48" rx="11" fill="#fff" stroke="#F5B942" stroke-width="2.2"/>
+<text x="428.7796538894671" y="306.77965388946717" font-size="15" font-weight="700" fill="#20233A" text-anchor="middle">붙이기 킷</text>
+<text x="428.7796538894671" y="324.77965388946717" font-size="10.5" fill="#F5B942" text-anchor="middle">진행중 PR</text>
+<rect x="60" y="790" width="16" height="16" rx="4" fill="#20C6A6"/><text x="84" y="803" font-size="13" fill="#20233A">머지(devel)</text>
+<rect x="190" y="790" width="16" height="16" rx="4" fill="#F5B942"/><text x="214" y="803" font-size="13" fill="#20233A">진행중(열린 PR)</text>
+<text x="1120" y="803" font-size="13" fill="#8b8fa6" text-anchor="end" font-style="italic">강제·잠금 아님 · 틀 안 기여는 가드를 통과 · 준거는 재현 가능성 · 틀 안 거쳐도 동작</text>
+</svg>

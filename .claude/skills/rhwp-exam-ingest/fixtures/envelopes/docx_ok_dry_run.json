@@ -1,0 +1,14 @@
+{
+  "schemaVersion": "1.0",
+  "helper": "extract_docx.py",
+  "ok": true,
+  "code": "DOCX_OK",
+  "dryRun": true,
+  "engine": "python-docx",
+  "pythonDocx": true,
+  "fallback": null,
+  "planned": [
+    "/tmp/out/text.txt",
+    "/tmp/out/img/*"
+  ]
+}

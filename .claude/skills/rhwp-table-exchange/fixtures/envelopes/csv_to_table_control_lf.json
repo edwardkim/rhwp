@@ -1,0 +1,30 @@
+{
+  "_skillMeta": {
+    "skill": "rhwp-table-exchange",
+    "issue": 5306,
+    "note": "문서화된 실측 봉투. 바이너리를 이 파동에서 다시 돌리지 않았다.",
+    "command": "csv-to-table",
+    "exit": 2,
+    "branch": "controlCharacter",
+    "outputKept": false,
+    "source": "cli_commands.md §csv-to-table + edit set-cell 같은 판정"
+  },
+  "changed": [],
+  "changedCount": 0,
+  "changedPages": null,
+  "colCount": 3,
+  "rowCount": 4,
+  "csv": "table0_control_lf.csv",
+  "dryRun": true,
+  "invalid": [
+    {
+      "reason": "controlCharacter",
+      "row": 1,
+      "col": 0,
+      "message": "셀 값에 줄바꿈·탭은 v1 에서 허용하지 않습니다."
+    }
+  ],
+  "schemaVersion": "1.0",
+  "source": "samples/hwp_table_test.hwp",
+  "table": 0
+}

@@ -1,0 +1,11 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "gymProfile",
+  "id": "starter",
+  "title": "입문",
+  "description": "처음 온 에이전트가 도구의 결을 익히는 최소 코스.",
+  "packs": [
+    "core-cli",
+    "self-description"
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "id": "WR06",
+  "steps": [
+    {
+      "answer": {
+        "toolVersion": {
+          "cmd": [
+            "replay",
+            "--plan-json",
+            "{\"planVersion\": \"1.0\", \"input\": \"samples/field-01.hwp\", \"output\": \"tool-out.hwp\", \"steps\": [{\"action\": \"replace_text\", \"find\": \"마케팅\", \"replace\": \"도구버전\"}]}",
+            "--json"
+          ],
+          "path": "toolVersion"
+        }
+      }
+    }
+  ]
+}

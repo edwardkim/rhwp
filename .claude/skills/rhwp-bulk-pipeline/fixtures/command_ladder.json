@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5311,
+  "skill": "rhwp-bulk-pipeline",
+  "notGym": true,
+  "noNewCli": true,
+  "ladder": [
+    {
+      "step": 1,
+      "action": "목록 작성",
+      "cmd": "find / Get-ChildItem"
+    },
+    {
+      "step": 2,
+      "action": "선점검",
+      "cmd": "batch info --json"
+    },
+    {
+      "step": 3,
+      "action": "본작업",
+      "cmd": "batch <axis> --json"
+    },
+    {
+      "step": 4,
+      "action": "분리",
+      "cmd": "jq select(.error)"
+    },
+    {
+      "step": 5,
+      "action": "재시도",
+      "cmd": "실패 목록만 같은 축"
+    },
+    {
+      "step": 6,
+      "action": "게이트",
+      "cmd": "N = success + failure"
+    }
+  ]
+}

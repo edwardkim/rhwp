@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5319,
+  "default": true,
+  "rows": [
+    {
+      "id": "AN-true",
+      "auto_number": true,
+      "stem": "다음 글의 주제는?",
+      "printed": "1. 다음 글의 주제는?"
+    },
+    {
+      "id": "AN-false",
+      "auto_number": false,
+      "stem": "2. ㉠에 해당하는 것은?",
+      "printed": "2. ㉠에 해당하는 것은?"
+    },
+    {
+      "id": "AN-omit",
+      "auto_number": null,
+      "stem": "빈칸에 들어갈 말",
+      "printed": "3. 빈칸에 들어갈 말",
+      "note": "미지정 시 true"
+    },
+    {
+      "id": "AN-dup-risk",
+      "auto_number": true,
+      "stem": "3. 밑줄 친",
+      "printed": "3. 3. 밑줄 친",
+      "avoid": true
+    }
+  ]
+}

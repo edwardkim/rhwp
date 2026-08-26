@@ -1,0 +1,194 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-oracle-stage2-contract",
+  "issue": 4963,
+  "fixture": {
+    "contractVersion": "w5-oracle-typesetting-v1",
+    "sourceTemplate": "samples/hwpx/ref/ref_empty.hwpx",
+    "sourceTemplateSha256": "c58144645069f7d1258e91404730618ad568bc4d47680ad5f891d3050aa308c7",
+    "canaryQueueRank": 1,
+    "canaryDocumentFace": "문체부 바탕체",
+    "sourceFormat": "hwpx",
+    "text": "가나다라마바사아자차카타파하 ABC xyz 0123456789 .,()[]　끝",
+    "ratios": [100, 90, 80],
+    "spacings": [0, -5, -10],
+    "kerning": [false, true],
+    "contexts": ["body", "table-cell", "text-box", "header", "footer"],
+    "lineSegLanes": ["stored-line-lane", "fresh-candidate-lane"],
+    "zipTimestamp": "1980-01-01T00:00:00Z",
+    "fontBytesEmbedded": false
+  },
+  "fontInventory": {
+    "localRootPolicy": "external-untracked-font-root-supplied-at-runtime",
+    "maximumBytes": 67108864,
+    "maximumCollectionFaces": 64,
+    "maximumSampleCodepoints": 256,
+    "sampleCodepoints": [32, 40, 46, 48, 65, 12288, 44032, 45208],
+    "sources": [
+      {
+        "queueRank": 1,
+        "documentFace": "문체부 바탕체",
+        "readiness": "ready-local-sfnt",
+        "relativePath": "hwp/MT.TTF",
+        "sha256": "d10509215d923fef07c1f2dffe8ebf55cbca706476559a861dff6f7cf969ff44",
+        "sourceKind": "local-only-nonredistributable"
+      },
+      {
+        "queueRank": 2,
+        "documentFace": "-윤명조120",
+        "readiness": "source-unavailable"
+      },
+      {
+        "queueRank": 3,
+        "documentFace": "-윤고딕110",
+        "readiness": "source-unavailable"
+      },
+      {
+        "queueRank": 4,
+        "documentFace": "산돌명조 L",
+        "readiness": "source-unavailable"
+      },
+      {
+        "queueRank": 5,
+        "documentFace": "-윤고딕310",
+        "readiness": "source-unavailable"
+      },
+      {
+        "queueRank": 6,
+        "documentFace": "-윤고딕120",
+        "readiness": "source-unavailable"
+      },
+      {
+        "queueRank": 7,
+        "documentFace": "KoPubWorld돋움체 Light",
+        "readiness": "ready-local-sfnt",
+        "relativePath": "kopubworld/KoPubWorld Dotum Light.ttf",
+        "sha256": "069494cce21a4222c88e537f256b6f46fee209375aba769f82431b2d382bc84f",
+        "sourceKind": "official-public-font-local-only"
+      },
+      {
+        "queueRank": 8,
+        "documentFace": "KoPubWorld바탕체 Light",
+        "readiness": "ready-local-sfnt",
+        "relativePath": "kopubworld/KoPubWorld Batang Light.ttf",
+        "sha256": "e3ee21a86b6a6728c567a95aaebd8883480f27ce4f230207b0d7266b5cb3fb18",
+        "sourceKind": "official-public-font-local-only"
+      },
+      {
+        "queueRank": 9,
+        "documentFace": "맑은 고딕",
+        "readiness": "ready-local-sfnt",
+        "relativePath": "windows/malgun.ttf",
+        "sha256": "7a183cf1c6c56b9609fcc16eda8b5229fbc11758a21e669ec00343239b02192f",
+        "sourceKind": "local-only-nonredistributable"
+      },
+      {
+        "queueRank": 10,
+        "documentFace": "한양신명조",
+        "readiness": "ready-existing-hft-evidence",
+        "evidenceArtifact": "tools/task2430/measured/preflight_report.tsv",
+        "evidenceSha256": "d82042076d15cfcfd4520f1582d4a5c2586b46d7321b8158d6c12d8126f4abed"
+      },
+      {
+        "queueRank": 11,
+        "documentFace": "-윤명조320",
+        "readiness": "source-unavailable"
+      },
+      {
+        "queueRank": 12,
+        "documentFace": "-윤명조130",
+        "readiness": "source-unavailable"
+      },
+      {
+        "queueRank": 13,
+        "documentFace": "휴먼명조",
+        "readiness": "ready-local-sfnt",
+        "relativePath": "hwp/HMKMM.TTF",
+        "sha256": "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6",
+        "sourceKind": "local-only-nonredistributable"
+      },
+      {
+        "queueRank": 14,
+        "documentFace": "-윤고딕320",
+        "readiness": "source-unavailable"
+      },
+      {
+        "queueRank": 15,
+        "documentFace": "-윤고딕130",
+        "readiness": "source-unavailable"
+      },
+      {
+        "queueRank": 16,
+        "documentFace": "한컴 윤고딕 230",
+        "readiness": "ready-local-sfnt",
+        "relativePath": "hwp/HANYGO230.ttf",
+        "sha256": "cdf746176aba807cbf9b168c2d749be6270f44f4b80568b9e18b05d1ba53a200",
+        "sourceKind": "local-only-nonredistributable"
+      },
+      {
+        "queueRank": 17,
+        "documentFace": "산돌고딕 M",
+        "readiness": "source-unavailable"
+      }
+    ]
+  },
+  "officialSupply": [
+    {
+      "documentFace": "KoPubWorld돋움체 Light",
+      "officialRecord": "https://gongu.copyright.or.kr/gongu/wrt/wrt/view.do?menuNo=200023&wrtSn=13287211",
+      "uci": "G905-13287211",
+      "downloadRecordName": "20. KoPub World 돋움체 L (KOGL 1유형).zip",
+      "downloadSha256": "a2bd6195594ae91a8bf75b94e23bcccc8268ab140857b5b0a17b9549e947a604",
+      "fontSha256": "069494cce21a4222c88e537f256b6f46fee209375aba769f82431b2d382bc84f",
+      "os2FsType": 8,
+      "licenseDecision": "local-analysis-only-no-font-redistribution"
+    },
+    {
+      "documentFace": "KoPubWorld바탕체 Light",
+      "officialRecord": "https://gongu.copyright.or.kr/gongu/wrt/wrt/view.do?menuNo=200023&wrtSn=13287214",
+      "uci": "G905-13287214",
+      "downloadRecordName": "23. KoPub World 바탕체 L (KOGL 1유형).zip",
+      "downloadSha256": "a8fb7ae0513c5f8b83b851a822cf4c49c7f16fdfbe277141b5d52a8bb2323d60",
+      "fontSha256": "e3ee21a86b6a6728c567a95aaebd8883480f27ce4f230207b0d7266b5cb3fb18",
+      "os2FsType": 8,
+      "licenseDecision": "local-analysis-only-no-font-redistribution"
+    }
+  ],
+  "pdfAnalysis": {
+    "qpdf": "qpdf",
+    "pdffonts": "pdffonts",
+    "mutool": "mutool",
+    "maximumBytes": 67108864,
+    "maximumPages": 50,
+    "maximumObjects": 200000,
+    "maximumGlyphs": 200000,
+    "maximumToolOutputBytes": 134217728,
+    "timeoutSeconds": 30,
+    "requiredViews": ["qpdf-check", "pdffonts", "mutool-stext-json", "mutool-trace"]
+  },
+  "privacy": {
+    "publishAbsolutePaths": false,
+    "publishFontBytes": false,
+    "publishPrivateDocumentIdentity": false,
+    "publicFontFields": [
+      "documentFace",
+      "nameTable",
+      "sha256",
+      "bytes",
+      "faceIndex",
+      "unitsPerEm",
+      "glyphCount",
+      "cmapCodepointCount",
+      "os2FsType",
+      "embeddingFlags",
+      "sampleGlyphEvidence"
+    ]
+  },
+  "scope": {
+    "systemFontMutation": false,
+    "productMetricDatabaseChange": false,
+    "productFallbackChange": false,
+    "productPaintChange": false,
+    "githubWrite": false
+  }
+}

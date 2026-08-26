@@ -1,0 +1,65 @@
+{
+  "id": "XC46",
+  "steps": [
+    {
+      "run": [
+        "run",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"samples/table-001.hwp\", \"output\": \"{sub:oa1.hwp}\", \"steps\": [{\"action\": \"set_cell\", \"table\": 0, \"row\": 0, \"col\": 0, \"text\": \"갑뿌리-XC46\"}]}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "replay",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"samples/table-001.hwp\", \"output\": \"{sub:oa1.hwp}\", \"steps\": [{\"action\": \"set_cell\", \"table\": 0, \"row\": 0, \"col\": 0, \"text\": \"갑뿌리-XC46\"}]}",
+        "--capsule",
+        "{sub:dual/a1.capsule.json}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "replay",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"{sub:oa1.hwp}\", \"output\": \"{sub:oa2.hwp}\", \"steps\": [{\"action\": \"set_cell\", \"table\": 0, \"row\": 0, \"col\": 0, \"text\": \"갑잎-XC46\"}]}",
+        "--capsule",
+        "{sub:dual/a2.capsule.json}",
+        "--parent",
+        "{sub:dual/a1.capsule.json}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "run",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"samples/table-001.hwp\", \"output\": \"{sub:ob1.hwp}\", \"steps\": [{\"action\": \"set_cell\", \"table\": 0, \"row\": 0, \"col\": 0, \"text\": \"을뿌리-XC46\"}]}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "replay",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"samples/table-001.hwp\", \"output\": \"{sub:ob1.hwp}\", \"steps\": [{\"action\": \"set_cell\", \"table\": 0, \"row\": 0, \"col\": 0, \"text\": \"을뿌리-XC46\"}]}",
+        "--capsule",
+        "{sub:dual/b1.capsule.json}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "replay",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"{sub:ob1.hwp}\", \"output\": \"{sub:ob2.hwp}\", \"steps\": [{\"action\": \"set_cell\", \"table\": 0, \"row\": 0, \"col\": 0, \"text\": \"을잎-XC46\"}]}",
+        "--capsule",
+        "{sub:dual/b2.capsule.json}",
+        "--parent",
+        "{sub:dual/b1.capsule.json}",
+        "--json"
+      ]
+    }
+  ]
+}

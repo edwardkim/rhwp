@@ -1,0 +1,8 @@
+{
+  "id": "svg-unknown-viewport",
+  "title": "viewport 없는 SVG",
+  "why": "좌표를 해석할 수 없으면 보수적으로 포함.",
+  "expectVisible": "keep-unknown",
+  "expectExcludedAtLeast": 0,
+  "svgPath": "fixtures/svg/svg-unknown-viewport.svg"
+}

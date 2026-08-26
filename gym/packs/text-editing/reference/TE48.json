@@ -1,0 +1,37 @@
+{
+  "id": "TE48",
+  "steps": [
+    {
+      "run": [
+        "edit",
+        "insert-text",
+        "{input}",
+        "--text",
+        "짐표지TE48",
+        "--section",
+        "0",
+        "--para",
+        "0",
+        "--offset",
+        "0",
+        "-o",
+        "{sub:ins48.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "answer": {
+        "page": {
+          "cmd": [
+            "search",
+            "{sub:ins48.hwp}",
+            "--json",
+            "--",
+            "짐표지TE48"
+          ],
+          "path": "matches[0].page"
+        }
+      }
+    }
+  ]
+}

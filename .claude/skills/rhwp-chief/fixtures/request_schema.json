@@ -1,0 +1,33 @@
+{
+ "schemaVersion": "1.0",
+ "issue": 5337,
+ "capability": "CAP-4900",
+ "notGym": true,
+ "noNewCli": true,
+ "noNewEditLogic": true,
+ "notFde": true,
+ "notStrategist": true,
+ "routingOnlyViaGoal": true,
+ "requestIsData": true,
+ "required": [
+  "doc"
+ ],
+ "optional": [
+  "goal",
+  "symptom",
+  "params"
+ ],
+ "types": {
+  "doc": "string-relative",
+  "goal": "string-or-absent",
+  "symptom": "string-data",
+  "params": "object"
+ },
+ "missingGoal": "diagnose",
+ "reject": [
+  "absolute-path",
+  "parent-escape",
+  "non-object-root",
+  "non-object-params"
+ ]
+}

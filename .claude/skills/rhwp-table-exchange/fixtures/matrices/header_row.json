@@ -1,0 +1,34 @@
+{
+  "catalogVersion": "1.0",
+  "skill": "rhwp-table-exchange",
+  "issue": 5306,
+  "pitfall": "CSV 첫 줄은 헤더가 아니라 표의 0행이다.",
+  "cases": [
+    {
+      "id": "keep-header",
+      "csvRows": 4,
+      "tableRows": 4,
+      "headerTouched": false,
+      "changedCount": 9,
+      "ok": true,
+      "sample": "recipes/02"
+    },
+    {
+      "id": "drop-header",
+      "csvRows": 3,
+      "tableRows": 4,
+      "headerTouched": true,
+      "ok": false,
+      "reason": "rowCountMismatch + 0행이 값으로 덮일 위험"
+    },
+    {
+      "id": "rename-header",
+      "csvRows": 4,
+      "tableRows": 4,
+      "headerTouched": true,
+      "changedIncludesRow0": true,
+      "ok": true,
+      "note": "의도적으로 헤더를 바꿀 때만."
+    }
+  ]
+}

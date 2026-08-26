@@ -1,0 +1,27 @@
+{
+  "id": "OM15",
+  "tier": 2,
+  "title": "HWPX 서식 첫 필드 이름",
+  "input": "samples/hwpx/form-01.hwpx",
+  "instructions": "form-01.hwpx 의 **첫 번째** 필드 이름을 answer.json 에 {\"name\": \"...\"} 으로 제출하라. 한컴 서식은 한글 이름과 영문 이름이 섞인다. 힌트: rhwp fields 의 fields[0].name.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "첫 필드 이름",
+      "op": "answer_eq",
+      "answer": "name",
+      "path": "fields[0].name",
+      "cmd": [
+        "fields",
+        "{input}",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

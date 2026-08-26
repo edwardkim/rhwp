@@ -241,6 +241,9 @@ export async function loadHwpFile(page, filename) {
       const buf = await resp.arrayBuffer();
       const docInfo = window.__wasm?.loadDocument(new Uint8Array(buf), fname);
       if (!docInfo) return { error: 'loadDocument returned null' };
+      const { loadWebFonts } = await import('/src/core/font-loader.ts');
+      await loadWebFonts(docInfo.fontsUsed ?? []);
+      await document.fonts.ready;
       await window.__canvasView?.loadDocument?.();
       return {
         pageCount: docInfo.pageCount,

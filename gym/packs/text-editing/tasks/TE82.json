@@ -1,0 +1,32 @@
+{
+  "id": "TE82",
+  "tier": 3,
+  "title": "시험지 문단 끼우기",
+  "input": "samples/exam_kor.hwp",
+  "instructions": "입력의 구역 0 · 문단 0 자리에 빈 문단을 끼운 split82.hwp 를 제출하고, 산출물의 문단 수를 answer.json 에 {\"paras\": N} 으로 적어라. 힌트: rhwp edit insert-paragraph --section 0 --para 0. 좌표는 0 기준. fill-fields(T07)가 아니다.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "split82.hwp",
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "산출 문단 수",
+      "op": "answer_eq",
+      "answer": "paras",
+      "path": "paragraphCount",
+      "cmd": [
+        "explain",
+        "{file:split82.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "원본과 다름",
+      "op": "differs_from_input",
+      "file": "split82.hwp"
+    }
+  ]
+}

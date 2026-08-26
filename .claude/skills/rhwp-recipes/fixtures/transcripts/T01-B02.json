@@ -1,0 +1,11 @@
+{
+  "id": "T01-B02",
+  "recipe": "01",
+  "kind": "bash",
+  "sourceFile": "mydocs/manual/recipes/01_fill_form_and_submit.md",
+  "excerpted": true,
+  "fabricatedLive": false,
+  "raw": "rhwp edit fill-fields samples/form-01.hwp \\\n  --data '{\"myMsg01\":\"홍길동 귀하\"}' \\\n  -o form-01_filled.hwp --json",
+  "firstLine": "rhwp edit fill-fields samples/form-01.hwp \\",
+  "notGym": true
+}

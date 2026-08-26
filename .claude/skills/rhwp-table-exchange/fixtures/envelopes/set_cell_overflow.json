@@ -1,0 +1,30 @@
+{
+  "_skillMeta": {
+    "skill": "rhwp-table-exchange",
+    "issue": 5306,
+    "note": "문서화된 실측 봉투. 바이너리를 이 파동에서 다시 돌리지 않았다.",
+    "command": "edit set-cell",
+    "exit": 0,
+    "branch": "overflow-does-not-block",
+    "complete": false,
+    "source": "cli_commands.md §edit set-cell #3480"
+  },
+  "schemaVersion": "1.0",
+  "source": "samples/table-001.hwp",
+  "table": 0,
+  "row": 2,
+  "col": 3,
+  "oldText": "",
+  "newText": "아주 긴 안내문을 한 칸에 밀어 넣으면 표 경계를 넘친다",
+  "dryRun": true,
+  "keepStyle": false,
+  "overflow": [
+    {
+      "target": "table0[2,3]",
+      "text": "아주 긴 안내문을 한 칸에 밀어 넣으면 표 경계를 넘친다",
+      "cellWidthPx": 214.63,
+      "textWidthPx": 440.0,
+      "lines": 3
+    }
+  ]
+}

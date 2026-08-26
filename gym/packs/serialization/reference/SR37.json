@@ -1,0 +1,22 @@
+{
+  "id": "SR37",
+  "steps": [
+    {
+      "answer": {
+        "identical": {
+          "cmd": [
+            "ir-diff",
+            "{input}",
+            "samples/hwpx_sample2.hwpx",
+            "--json"
+          ],
+          "path": "identical",
+          "allowExits": [
+            0,
+            3
+          ]
+        }
+      }
+    }
+  ]
+}

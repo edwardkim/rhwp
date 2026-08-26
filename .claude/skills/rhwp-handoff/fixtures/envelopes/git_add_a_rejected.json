@@ -1,0 +1,18 @@
+{
+  "command": "git add -A",
+  "rejected": true,
+  "mustUse": "git add -- <named-file>",
+  "_skillMeta": {
+    "exit": 2,
+    "command": "git",
+    "trigger": null,
+    "exception": null,
+    "stdoutSilentOnFail": false,
+    "hardGate": "cargo fmt --all -- --check",
+    "staleFmtRejected": true,
+    "neverGitAddA": true,
+    "neverStealNamedWorktrees": true,
+    "neverInventDocumentCore": true,
+    "noNewCli": true
+  }
+}

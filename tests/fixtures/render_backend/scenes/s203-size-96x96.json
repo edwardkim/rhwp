@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "id": "s203-size-96x96",
+  "width": 96.0,
+  "height": 96.0,
+  "contract": "페이지 치수 96x96 가 begin_page 에 그대로 찍힌다",
+  "ops": [
+    {
+      "kind": "rectangle",
+      "x": 0.0,
+      "y": 0.0,
+      "w": 10.0,
+      "h": 10.0,
+      "text": null,
+      "gradient": false,
+      "image": false
+    }
+  ],
+  "expectedKinds": [
+    "rectangle"
+  ],
+  "expectedTrace": [
+    "begin_page 96.00x96.00",
+    "  rectangle bbox=0.00,0.00,10.00,10.00",
+    "end_page ops=1"
+  ]
+}

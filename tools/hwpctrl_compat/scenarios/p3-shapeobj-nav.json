@@ -1,0 +1,31 @@
+{
+  "id": "p3-shapeobj-nav",
+  "title": "고른 개체 속으로 — 칸 고르기와 글상자 편집",
+  "ledger": [
+    "Action.ShapeObjTableSelCell",
+    "Action.ShapeObjTextBoxEdit"
+  ],
+  "open": "samples/20250130-hongbo.hwp",
+  "calls": [
+    ["SetPos", [0, 0, 0]],
+    ["Run", ["SelectCtrlFront"]],
+    ["GetPos", []],
+    ["SelectionMode", []],
+    ["Run", ["ShapeObjTableSelCell"]],
+    ["GetPos", []],
+    ["SelectionMode", []],
+    ["SetPos", [0, 0, 0]],
+    ["Run", ["SelectCtrlFront"]],
+    ["Run", ["ShapeObjTextBoxEdit"]],
+    ["GetPos", []],
+    ["SelectionMode", []],
+    ["SetPos", [0, 0, 0]],
+    ["Run", ["SelectCtrlFront"]],
+    ["Run", ["SelectCtrlFront"]],
+    ["Run", ["ShapeObjTableSelCell"]],
+    ["GetPos", []],
+    ["SelectionMode", []],
+    ["Run", ["MoveRootList"]],
+    ["GetPos", []]
+  ]
+}

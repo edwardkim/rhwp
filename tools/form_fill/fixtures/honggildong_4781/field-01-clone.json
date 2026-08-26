@@ -1,0 +1,118 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.form_fill.honggildong_4781.v1",
+  "id": "field-01-hong-clone",
+  "axis": "honggildong-4781",
+  "claim": "M-fill",
+  "generator": "tools/form_fill/fatten_form_fill.py",
+  "form": "field-01",
+  "title": "누름틀 11개 혼합 샘플 홍길동 전칸 복제 금지",
+  "why": "첫 필드 값을 모든 고유 이름에 복사하면 T07 과제 문구를 깨뜨린다.",
+  "sample": "samples/field-01.hwp",
+  "relatedIssue": "#4781",
+  "argv": [
+    "edit",
+    "fill-fields",
+    "samples/field-01.hwp",
+    "--data",
+    "{\"회사명\": \"홍길동\", \"작성자\": \"홍길동\", \"부서명\": \"홍길동\", \"전화번호\": \"홍길동\", \"이메일\": \"홍길동\", \"제목\": \"홍길동\"}",
+    "-o",
+    "out/field-01-hong-clone.hwp",
+    "--json"
+  ],
+  "data": {
+    "회사명": "홍길동",
+    "작성자": "홍길동",
+    "부서명": "홍길동",
+    "전화번호": "홍길동",
+    "이메일": "홍길동",
+    "제목": "홍길동"
+  },
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "samples/field-01.hwp",
+    "dryRun": false,
+    "filledCount": 6,
+    "filled": [
+      {
+        "name": "회사명",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "작성자",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "부서명",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "전화번호",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "이메일",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "제목",
+        "occurrence": 0,
+        "value": "홍길동"
+      }
+    ],
+    "notFound": [],
+    "ambiguous": [],
+    "confusable": [],
+    "verify": null,
+    "output": "out/field-01-hong-clone.hwp",
+    "outputFormat": "hwp5"
+  },
+  "detect": {
+    "firstFieldName": "회사명",
+    "firstFieldValue": "홍길동",
+    "firstFieldOk": true,
+    "cloned": [
+      {
+        "index": 1,
+        "name": "작성자",
+        "before": "",
+        "after": "홍길동"
+      },
+      {
+        "index": 2,
+        "name": "부서명",
+        "before": "",
+        "after": "홍길동"
+      },
+      {
+        "index": 3,
+        "name": "전화번호",
+        "before": "",
+        "after": "홍길동"
+      },
+      {
+        "index": 4,
+        "name": "이메일",
+        "before": "",
+        "after": "홍길동"
+      },
+      {
+        "index": 5,
+        "name": "제목",
+        "before": "",
+        "after": "홍길동"
+      }
+    ],
+    "cloneCount": 5,
+    "verdict": "clone_forbidden"
+  },
+  "afterFirst": "홍길동",
+  "otherHongCount": 5,
+  "allowedClone": false,
+  "verdict": "clone_forbidden"
+}

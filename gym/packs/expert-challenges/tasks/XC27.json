@@ -1,0 +1,67 @@
+{
+  "id": "XC27",
+  "tier": 4,
+  "title": "원장 실재와 4세대 계보",
+  "input": "samples/table-004.hwp",
+  "axis": "자동화",
+  "instructions": "XC27 — 원장 실재와 4세대 계보.\n\n입력 표본은 `samples/table-004.hwp` 이다. 보스 존 과제다. 한 단만 빠지면 최종 판정이 막힌다. 저장소 samples/ 에 이미 있는 실문서만 쓰고 새 픽스처를 만들지 않는다. expert-challenges pack 은 기존 CLI 표면(keygen · replay · run · anchor · settle · conformance · recall-scope · lineage · audit-report · export-tables) 만으로 여러 축을 한 제출에 묶는다. 새 명령·새 연산자·새 pack 은 없다. 원본을 덮어쓰지 마라. 산출은 제출 폴더의 -o / --capsule 뿐이다. 정답 해시·건수를 과제 파일에 박제하지 마라. 채점은 같은 판정 명령을 다시 돌린다.\n\ntable-004 4세대 막내를 정산 원장에 기록하고, **ledger.ndjson 실재** 와 계보 깊이 4 만 본다. 4관문 경로는 채점하지 않는다.\n\n제출 폴더에 led4/g0.capsule.json · led4/g1.capsule.json · led4/g2.capsule.json · led4/g3.capsule.json · wo.json · gate.json · claim.json · ledger.ndjson 를 두어라.\n\n수행 힌트: settle record --ledger + file_exists ledger + lineage --deep.\n\n이 과제는 XC01(L5 --deep 사다리 완주) · XC02(unaffected==0 과 affected>=2 동시) · XC03(정산 4관문 capsuleOk/gateOk/ledgerOk/workorderOk) · XC04(3세대 lineage --deep) · XC05(L3 --deep + audit-report) 를 복제하지 않는다. AU14+ 한 축 저티어 여정, WR 일일 3해시 answer.json, T07 서식 채움(fill-fields · 첫 필드 홍길동) 도 베끼지 마라.\n\nverify 의 네 관문 path 를 맞추려 하지 마라. 파일 실재와 계보다.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "led4/g0.capsule.json",
+      "led4/g1.capsule.json",
+      "led4/g2.capsule.json",
+      "led4/g3.capsule.json",
+      "wo.json",
+      "gate.json",
+      "claim.json",
+      "ledger.ndjson"
+    ]
+  },
+  "checks": [
+    {
+      "name": "깊이 4세대",
+      "op": "value_eq",
+      "value": 4,
+      "path": "depth",
+      "cmd": [
+        "lineage",
+        "{file:led4/g3.capsule.json}",
+        "--deep",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    },
+    {
+      "name": "사슬 온전",
+      "op": "value_eq",
+      "value": true,
+      "path": "valid",
+      "cmd": [
+        "lineage",
+        "{file:led4/g3.capsule.json}",
+        "--deep",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    },
+    {
+      "name": "원장 기록 실재",
+      "op": "file_exists",
+      "file": "ledger.ndjson",
+      "minBytes": 80
+    },
+    {
+      "name": "막내 캡슐 실재",
+      "op": "file_exists",
+      "file": "led4/g3.capsule.json",
+      "minBytes": 80
+    }
+  ]
+}

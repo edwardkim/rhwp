@@ -1,0 +1,106 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.form_fill.batch_row.v1",
+  "id": "eval-sheet-batch-jsonl",
+  "axis": "batch-fill",
+  "claim": "M-fill",
+  "generator": "tools/form_fill/fatten_form_fill.py",
+  "form": "eval-sheet",
+  "title": "평가표 JSONL 메일머지",
+  "why": "행마다 단건 봉투 + row. 실패 행도 스트림에 남긴다.",
+  "sample": "fixtures/forms/평가표.hwp",
+  "relatedIssue": "#3719",
+  "argv": [
+    "batch",
+    "fill",
+    "--form",
+    "fixtures/forms/평가표.hwp",
+    "--data",
+    "data/eval-sheet.jsonl",
+    "--out-dir",
+    "out/eval-sheet",
+    "--json"
+  ],
+  "dataFormat": "jsonl",
+  "dataText": "{\"평가회차\": \"1차\", \"평가대상\": \"시범 산출물-홍길동\"}\n{\"평가회차\": \"1차\", \"평가대상\": \"시범 산출물-김가온\"}\n{\"평가회차\": \"1차\", \"평가대상\": \"시범 산출물-이도윤\"}\n",
+  "records": [
+    {
+      "schemaVersion": "1.0",
+      "source": "fixtures/forms/평가표.hwp",
+      "dryRun": false,
+      "filledCount": 2,
+      "filled": [
+        {
+          "name": "평가회차",
+          "occurrence": 0,
+          "value": "1차"
+        },
+        {
+          "name": "평가대상",
+          "occurrence": 0,
+          "value": "시범 산출물-홍길동"
+        }
+      ],
+      "notFound": [],
+      "ambiguous": [],
+      "confusable": [],
+      "verify": null,
+      "output": "out/eval-sheet/0001.hwp",
+      "outputFormat": "hwp5",
+      "row": 0
+    },
+    {
+      "schemaVersion": "1.0",
+      "source": "fixtures/forms/평가표.hwp",
+      "dryRun": false,
+      "filledCount": 2,
+      "filled": [
+        {
+          "name": "평가회차",
+          "occurrence": 0,
+          "value": "1차"
+        },
+        {
+          "name": "평가대상",
+          "occurrence": 0,
+          "value": "시범 산출물-김가온"
+        }
+      ],
+      "notFound": [],
+      "ambiguous": [],
+      "confusable": [],
+      "verify": null,
+      "output": "out/eval-sheet/0002.hwp",
+      "outputFormat": "hwp5",
+      "row": 1
+    },
+    {
+      "schemaVersion": "1.0",
+      "source": "fixtures/forms/평가표.hwp",
+      "dryRun": false,
+      "filledCount": 2,
+      "filled": [
+        {
+          "name": "평가회차",
+          "occurrence": 0,
+          "value": "1차"
+        },
+        {
+          "name": "평가대상",
+          "occurrence": 0,
+          "value": "시범 산출물-이도윤"
+        }
+      ],
+      "notFound": [],
+      "ambiguous": [],
+      "confusable": [],
+      "verify": null,
+      "output": "out/eval-sheet/0003.hwp",
+      "outputFormat": "hwp5",
+      "row": 2
+    }
+  ],
+  "exit": 0,
+  "gate": true,
+  "writesFiles": true
+}

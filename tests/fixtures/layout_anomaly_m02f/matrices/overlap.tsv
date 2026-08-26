@@ -1,0 +1,49 @@
+id	family	overflowTol	overlapTol	types	pageIndex	pageCount	overflow	offCanvas	overlap	textOverlap	empty	signal	status	overflowTypes	offCanvasTypes	maxOver	hypothesis
+ovl-table-table-w0-h20	overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	두 표의 교차가 0x20px. 기본 overlap 허용치 2px 는 폭·높이 둘 다 넘어야 확정이다.
+ovl-table-table-w1-h20	overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	두 표의 교차가 1x20px. 기본 overlap 허용치 2px 는 폭·높이 둘 다 넘어야 확정이다.
+ovl-table-table-w2-h20	overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	두 표의 교차가 2x20px. 기본 overlap 허용치 2px 는 폭·높이 둘 다 넘어야 확정이다.
+ovl-table-table-w2.25-h20	overlap	1.0	2.0		0	3	0	0	1	0	0	1	ANOMALY			0.0000	두 표의 교차가 2.25x20px. 기본 overlap 허용치 2px 는 폭·높이 둘 다 넘어야 확정이다.
+ovl-table-table-w5-h20	overlap	1.0	2.0		0	3	0	0	1	0	0	1	ANOMALY			0.0000	두 표의 교차가 5x20px. 기본 overlap 허용치 2px 는 폭·높이 둘 다 넘어야 확정이다.
+ovl-table-table-w20-h20	overlap	1.0	2.0		0	3	0	0	1	0	0	1	ANOMALY			0.0000	두 표의 교차가 20x20px. 기본 overlap 허용치 2px 는 폭·높이 둘 다 넘어야 확정이다.
+ovl-table-table-w20-h1	overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	두 표의 교차가 20x1px. 기본 overlap 허용치 2px 는 폭·높이 둘 다 넘어야 확정이다.
+ovl-table-table-w20-h2	overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	두 표의 교차가 20x2px. 기본 overlap 허용치 2px 는 폭·높이 둘 다 넘어야 확정이다.
+ovl-table-table-w20-h2.25	overlap	1.0	2.0		0	3	0	0	1	0	0	1	ANOMALY			0.0000	두 표의 교차가 20x2.25px. 기본 overlap 허용치 2px 는 폭·높이 둘 다 넘어야 확정이다.
+ovl-table-table-w20-h0.5	overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	두 표의 교차가 20x0.5px. 기본 overlap 허용치 2px 는 폭·높이 둘 다 넘어야 확정이다.
+ovl-wrap-square-square	overlap	1.0	2.0		0	3	0	0	1	0	0	1	ANOMALY			0.0000	도형 wrap=Square 와 wrap=Square 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.
+ovl-wrap-square-tight	overlap	1.0	2.0		0	3	0	0	1	0	0	1	ANOMALY			0.0000	도형 wrap=Square 와 wrap=Tight 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.
+ovl-wrap-square-topandbottom	overlap	1.0	2.0		0	3	0	0	1	0	0	1	ANOMALY			0.0000	도형 wrap=Square 와 wrap=TopAndBottom 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.
+ovl-wrap-square-behindtext	overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	도형 wrap=Square 와 wrap=BehindText 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.
+ovl-wrap-square-none	overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	도형 wrap=Square 와 wrap=none 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.
+ovl-wrap-tight-square	overlap	1.0	2.0		0	3	0	0	1	0	0	1	ANOMALY			0.0000	도형 wrap=Tight 와 wrap=Square 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.
+ovl-wrap-tight-tight	overlap	1.0	2.0		0	3	0	0	1	0	0	1	ANOMALY			0.0000	도형 wrap=Tight 와 wrap=Tight 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.
+ovl-wrap-tight-topandbottom	overlap	1.0	2.0		0	3	0	0	1	0	0	1	ANOMALY			0.0000	도형 wrap=Tight 와 wrap=TopAndBottom 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.
+ovl-wrap-tight-behindtext	overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	도형 wrap=Tight 와 wrap=BehindText 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.
+ovl-wrap-tight-none	overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	도형 wrap=Tight 와 wrap=none 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.
+ovl-wrap-topandbottom-square	overlap	1.0	2.0		0	3	0	0	1	0	0	1	ANOMALY			0.0000	도형 wrap=TopAndBottom 와 wrap=Square 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.
+ovl-wrap-topandbottom-tight	overlap	1.0	2.0		0	3	0	0	1	0	0	1	ANOMALY			0.0000	도형 wrap=TopAndBottom 와 wrap=Tight 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.
+ovl-wrap-topandbottom-topandbottom	overlap	1.0	2.0		0	3	0	0	1	0	0	1	ANOMALY			0.0000	도형 wrap=TopAndBottom 와 wrap=TopAndBottom 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.
+ovl-wrap-topandbottom-behindtext	overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	도형 wrap=TopAndBottom 와 wrap=BehindText 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.
+ovl-wrap-topandbottom-none	overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	도형 wrap=TopAndBottom 와 wrap=none 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.
+ovl-wrap-behindtext-square	overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	도형 wrap=BehindText 와 wrap=Square 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.
+ovl-wrap-behindtext-tight	overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	도형 wrap=BehindText 와 wrap=Tight 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.
+ovl-wrap-behindtext-topandbottom	overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	도형 wrap=BehindText 와 wrap=TopAndBottom 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.
+ovl-wrap-behindtext-behindtext	overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	도형 wrap=BehindText 와 wrap=BehindText 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.
+ovl-wrap-behindtext-none	overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	도형 wrap=BehindText 와 wrap=none 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.
+ovl-wrap-none-square	overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	도형 wrap=none 와 wrap=Square 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.
+ovl-wrap-none-tight	overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	도형 wrap=none 와 wrap=Tight 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.
+ovl-wrap-none-topandbottom	overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	도형 wrap=none 와 wrap=TopAndBottom 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.
+ovl-wrap-none-behindtext	overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	도형 wrap=none 와 wrap=BehindText 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.
+ovl-wrap-none-none	overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	도형 wrap=none 와 wrap=none 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.
+ovl-master-square-ignored	overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	바탕쪽 유래 Square 도형은 본문 Square 와 겹쳐도 overlap 후보가 아니다.
+ovl-column-same-true	overlap	1.0	2.0		0	3	0	0	1	0	0	1	ANOMALY			0.0000	같은 단(column=0) 두 표가 겹치면 overlap 1건.
+ovl-column-same-false	overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	같은 단 안의 표만 짝짓는다. 다른 단은 x 가 나뉘어 있어도 후보에서 뺀다.
+ovl-carrier-empty-empty	overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	표와 같은 자리에 찍힌 운반용 TextLine 은 보이는 글자가 없으면 overlap 이 아니다. text=''.
+ovl-carrier-empty- 	overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	표와 같은 자리에 찍힌 운반용 TextLine 은 보이는 글자가 없으면 overlap 이 아니다. text=' '.
+ovl-carrier-empty-\t	overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	표와 같은 자리에 찍힌 운반용 TextLine 은 보이는 글자가 없으면 overlap 이 아니다. text='\t'.
+ovl-carrier-visible-\ubcf8\ubb38	overlap	1.0	2.0		0	3	0	0	1	0	0	1	ANOMALY			0.0000	표와 같은 자리에 찍힌 운반용 TextLine 은 보이는 글자가 없으면 overlap 이 아니다. text='본문'.
+ovl-carrier-visible- \uac00	overlap	1.0	2.0		0	3	0	0	1	0	0	1	ANOMALY			0.0000	표와 같은 자리에 찍힌 운반용 TextLine 은 보이는 글자가 없으면 overlap 이 아니다. text=' 가'.
+ovl-textline-dy0	overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	보이는 글자가 있는 두 문단 줄이 세로로 0px 겹친다. 줄 overlap 과 런 text-overlap 이 같이 열린다.
+ovl-textline-dy2	overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	보이는 글자가 있는 두 문단 줄이 세로로 2px 겹친다. 줄 overlap 과 런 text-overlap 이 같이 열린다.
+ovl-textline-dy4	overlap	1.0	2.0		0	3	0	0	1	1	0	1	ANOMALY			0.0000	보이는 글자가 있는 두 문단 줄이 세로로 4px 겹친다. 줄 overlap 과 런 text-overlap 이 같이 열린다.
+ovl-textline-dy10	overlap	1.0	2.0		0	3	0	0	1	1	0	1	ANOMALY			0.0000	보이는 글자가 있는 두 문단 줄이 세로로 10px 겹친다. 줄 overlap 과 런 text-overlap 이 같이 열린다.
+ovl-textline-dy12	overlap	1.0	2.0		0	3	0	0	1	1	0	1	ANOMALY			0.0000	보이는 글자가 있는 두 문단 줄이 세로로 12px 겹친다. 줄 overlap 과 런 text-overlap 이 같이 열린다.

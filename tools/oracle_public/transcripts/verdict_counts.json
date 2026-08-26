@@ -1,0 +1,9 @@
+{
+  "schemaVersion": "1.0",
+  "claim": "M01-f",
+  "pairCount": 409,
+  "byVerdict": {
+    "CHEAP_OK": 395,
+    "PAGE_ERROR": 14
+  }
+}

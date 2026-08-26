@@ -1,0 +1,19 @@
+{
+  "id": "TE54",
+  "steps": [
+    {
+      "run": [
+        "edit",
+        "replace-text",
+        "{input}",
+        "--find",
+        "규제",
+        "--replace",
+        "심사",
+        "-o",
+        "{sub:edited54.hwp}",
+        "--json"
+      ]
+    }
+  ]
+}

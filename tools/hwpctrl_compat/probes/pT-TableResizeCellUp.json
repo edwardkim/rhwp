@@ -1,0 +1,76 @@
+{
+  "id": "pT-TableResizeCellUp",
+  "title": "TableResizeCellUp",
+  "ledger": [],
+  "open": "samples/21868765_별표2_보건소_분장사무.hwp",
+  "paths": {
+    "w": {
+      "win": "{out}/pT-TableResizeCellUp-w.hwp",
+      "posix": "{out}/pT-TableResizeCellUp-w.hwp"
+    },
+    "a": {
+      "win": "{out}/pT-TableResizeCellUp-a.hwp",
+      "posix": "{out}/pT-TableResizeCellUp-a.hwp"
+    },
+    "b": {
+      "win": "{out}/pT-TableResizeCellUp-b.hwp",
+      "posix": "{out}/pT-TableResizeCellUp-b.hwp"
+    }
+  },
+  "calls": [
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "w"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "SetPos",
+      [
+        2,
+        0,
+        0
+      ]
+    ],
+    [
+      "Run",
+      [
+        "TableCellBlock"
+      ]
+    ],
+    [
+      "SelectionMode",
+      []
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "a"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "Run",
+      [
+        "TableResizeCellUp"
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "b"
+        },
+        "HWP",
+        ""
+      ]
+    ]
+  ]
+}

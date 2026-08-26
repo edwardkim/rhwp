@@ -1,0 +1,60 @@
+{
+  "schemaVersion": "1.0",
+  "rules": [
+    {
+      "id": 1,
+      "name": "declare-execute-docs-fork",
+      "text": "선언·실행·문서는 한 곳에서 갈라진다",
+      "fork": "mcp_tool_definitions()",
+      "do_not": "도구 목록을 호스트 설정·스킬·문서에 복제하지 않는다",
+      "guards": [
+        "capabilities_mcp_covers_every_json_command",
+        "tools_list_matches_capabilities_manifest",
+        "capabilities_mcp_tool_definitions_contract"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "never-invent-edit-logic",
+      "text": "새 편집·조회 로직을 만들지 않는다",
+      "reuse": [
+        "set_field_value_by_name_at",
+        "replace_all_native",
+        "grep",
+        "collect_field_records",
+        "extract_tables",
+        "edit_serialize",
+        "*_json_value 봉투 helper"
+      ],
+      "do_not": "서버 전용 경로를 새로 만들면 CLI 와 계약이 갈라진다"
+    },
+    {
+      "id": 3,
+      "name": "judgment-is-data",
+      "text": "판정은 데이터다",
+      "data_fields": [
+        "identical",
+        "replacedCount",
+        "notFound",
+        "ambiguous",
+        "invalid",
+        "matchCount",
+        "regression",
+        "verifyPages"
+      ],
+      "is_error_only": [
+        "없는 파일",
+        "닫힌 핸들",
+        "필수 인자 누락",
+        "알 수 없는 도구"
+      ],
+      "cli_exit": {
+        "0": "실행 성공 — 봉투 판정 필드를 마저 읽는다",
+        "1": "런타임 실패",
+        "2": "호출 조립 버그 — 같은 인자 재시도 금지",
+        "3": "검증 단언 실패(판정) — isError 가 아니다",
+        "4": "쪽 수 불일치"
+      }
+    }
+  ]
+}

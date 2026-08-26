@@ -1,0 +1,19 @@
+{
+  "id": "FJ43",
+  "steps": [
+    {
+      "answer": {
+        "hits": {
+          "cmd": [
+            "search",
+            "{input}",
+            "--json",
+            "--",
+            "마케팅"
+          ],
+          "path": "matchCount"
+        }
+      }
+    }
+  ]
+}

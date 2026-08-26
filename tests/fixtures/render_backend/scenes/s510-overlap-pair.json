@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "id": "s510-overlap-pair",
+  "width": 400.0,
+  "height": 300.0,
+  "contract": "글자겹침 쌍",
+  "ops": [
+    {
+      "kind": "textRun",
+      "x": 40.0,
+      "y": 40.0,
+      "w": 80.0,
+      "h": 16.0,
+      "text": "한",
+      "gradient": false,
+      "image": false
+    },
+    {
+      "kind": "charOverlap",
+      "x": 48.0,
+      "y": 40.0,
+      "w": 80.0,
+      "h": 16.0,
+      "text": "겹",
+      "gradient": false,
+      "image": false
+    }
+  ],
+  "expectedKinds": [
+    "textRun",
+    "charOverlap"
+  ],
+  "expectedTrace": [
+    "begin_page 400.00x300.00",
+    "  textRun bbox=40.00,40.00,80.00,16.00",
+    "  charOverlap bbox=48.00,40.00,80.00,16.00",
+    "end_page ops=2"
+  ]
+}

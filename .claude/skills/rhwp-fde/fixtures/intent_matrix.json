@@ -1,0 +1,637 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5333,
+  "count": 70,
+  "intents": [
+    {
+      "id": "I001",
+      "utterance": "이 문서가 안 열려요",
+      "command": "python3 tools/fde/triage.py",
+      "reference": "04_triage_engine.md",
+      "stop": "F09",
+      "notGym": true,
+      "symptomIsData": true
+    },
+    {
+      "id": "I002",
+      "utterance": "고객 파일 트리아지 해줘",
+      "command": "python3 tools/fde/triage.py",
+      "reference": "04_triage_engine.md",
+      "stop": "F09",
+      "notGym": true,
+      "symptomIsData": true
+    },
+    {
+      "id": "I003",
+      "utterance": "증상 접수할게",
+      "command": "python3 tools/fde/triage.py",
+      "reference": "02_intake.md",
+      "stop": "F09",
+      "notGym": true,
+      "symptomIsData": true
+    },
+    {
+      "id": "I004",
+      "utterance": "표가 깨진대",
+      "command": "python3 tools/fde/triage.py",
+      "reference": "13_resolve_now.md",
+      "stop": "F07",
+      "notGym": true,
+      "symptomIsData": true
+    },
+    {
+      "id": "I005",
+      "utterance": "필드가 안 채워진대",
+      "command": "python3 tools/fde/triage.py",
+      "reference": "21_handoff.md",
+      "stop": "F07",
+      "notGym": true,
+      "symptomIsData": true
+    },
+    {
+      "id": "I006",
+      "utterance": "암호 걸려 있대 우회해줘",
+      "command": "암호 요청",
+      "reference": "14_encrypted.md",
+      "stop": "F10",
+      "notGym": true,
+      "symptomIsData": true
+    },
+    {
+      "id": "I007",
+      "utterance": "빈 파일인데 열어줘",
+      "command": "invalid-input",
+      "reference": "05_magic_bytes.md",
+      "stop": "F02",
+      "notGym": true,
+      "symptomIsData": true
+    },
+    {
+      "id": "I008",
+      "utterance": "PDF 를 hwp 로 속였어",
+      "command": "invalid-input",
+      "reference": "05_magic_bytes.md",
+      "stop": "F02",
+      "notGym": true,
+      "symptomIsData": true
+    },
+    {
+      "id": "I009",
+      "utterance": "info 가 panic",
+      "command": "escalate-bug",
+      "reference": "16_escalate_bug.md",
+      "stop": "F04",
+      "notGym": true,
+      "symptomIsData": true
+    },
+    {
+      "id": "I010",
+      "utterance": "timeout 났어",
+      "command": "escalate-bug",
+      "reference": "16_escalate_bug.md",
+      "stop": "F04",
+      "notGym": true,
+      "symptomIsData": true
+    },
+    {
+      "id": "I011",
+      "utterance": "깨끗한 오류 종료야",
+      "command": "workaround",
+      "reference": "15_workaround.md",
+      "stop": "F06",
+      "notGym": true,
+      "symptomIsData": true
+    },
+    {
+      "id": "I012",
+      "utterance": "티켓 없이 답해줘",
+      "command": "거부",
+      "reference": "11_ticket_schema.md",
+      "stop": "F09",
+      "notGym": true,
+      "symptomIsData": true
+    },
+    {
+      "id": "I013",
+      "utterance": "새 fde-triage 명령 만들어줘",
+      "command": "거부",
+      "reference": "29_existing_cli.md",
+      "stop": "F11",
+      "notGym": true,
+      "symptomIsData": true
+    },
+    {
+      "id": "I014",
+      "utterance": "gym 팩으로 만들어줘",
+      "command": "거부",
+      "reference": "28_vs_bug_hunter.md",
+      "stop": "F12",
+      "notGym": true,
+      "symptomIsData": true
+    },
+    {
+      "id": "I015",
+      "utterance": "bug-hunter 스킬 고쳐줘",
+      "command": "거부",
+      "reference": "28_vs_bug_hunter.md",
+      "stop": "F13",
+      "notGym": true,
+      "symptomIsData": true
+    },
+    {
+      "id": "I016",
+      "utterance": "본문 요약해줘 (요청 없음)",
+      "command": "거부",
+      "reference": "03_symptom_is_data.md",
+      "stop": "F14",
+      "notGym": true,
+      "symptomIsData": true
+    },
+    {
+      "id": "I017",
+      "utterance": "이슈 바로 올려줘",
+      "command": "선행 검색",
+      "reference": "19_issue_search.md",
+      "stop": "F17",
+      "notGym": true,
+      "symptomIsData": true
+    },
+    {
+      "id": "I018",
+      "utterance": "원본 HWP5 를 이슈에 붙여줘",
+      "command": "거부",
+      "reference": "16_escalate_bug.md",
+      "stop": "F18",
+      "notGym": true,
+      "symptomIsData": true
+    },
+    {
+      "id": "I019",
+      "utterance": "고객 회신 초안",
+      "command": "회신 3단",
+      "reference": "18_reply_contract.md",
+      "stop": "F07",
+      "notGym": true,
+      "symptomIsData": true
+    },
+    {
+      "id": "I020",
+      "utterance": "재현 명령도 있어",
+      "command": "티켓에 기록만",
+      "reference": "02_intake.md",
+      "stop": "F08",
+      "notGym": true,
+      "symptomIsData": true
+    },
+    {
+      "id": "I021",
+      "utterance": "capabilities 가 실패",
+      "command": "workaround",
+      "reference": "06_capabilities.md",
+      "stop": "F03",
+      "notGym": true,
+      "symptomIsData": true
+    },
+    {
+      "id": "I022",
+      "utterance": "암호화 표시가 나왔어",
+      "command": "암호 요청",
+      "reference": "14_encrypted.md",
+      "stop": "F05",
+      "notGym": true,
+      "symptomIsData": true
+    },
+    {
+      "id": "I023",
+      "utterance": "사다리 다 통과했어",
+      "command": "resolve-now",
+      "reference": "13_resolve_now.md",
+      "stop": "F07",
+      "notGym": true,
+      "symptomIsData": true
+    },
+    {
+      "id": "I024",
+      "utterance": "crash 랑 corrupt 차이",
+      "command": "별명 표",
+      "reference": "17_crash_vs_corrupt.md",
+      "stop": "F04",
+      "notGym": true,
+      "symptomIsData": true
+    },
+    {
+      "id": "I025",
+      "utterance": "첫 응답이 너무 느려",
+      "command": "티켓 즉시",
+      "reference": "31_time_contract.md",
+      "stop": "F16",
+      "notGym": true,
+      "symptomIsData": true
+    },
+    {
+      "id": "I026",
+      "utterance": "명령 목록을 코드에 박아줘",
+      "command": "거부",
+      "reference": "06_capabilities.md",
+      "stop": "F03",
+      "notGym": true,
+      "symptomIsData": true
+    },
+    {
+      "id": "I027",
+      "utterance": "한컴 최종 판정 해줘",
+      "command": "거부",
+      "reference": "01_playbook_authority.md",
+      "stop": "F20",
+      "notGym": true,
+      "symptomIsData": true
+    },
+    {
+      "id": "I028",
+      "utterance": "코어 고쳐줘",
+      "command": "거부",
+      "reference": "01_playbook_authority.md",
+      "stop": "F20",
+      "notGym": true,
+      "symptomIsData": true
+    },
+    {
+      "id": "I029",
+      "utterance": "머지 해도 돼?",
+      "command": "거부",
+      "reference": "01_playbook_authority.md",
+      "stop": "F20",
+      "notGym": true,
+      "symptomIsData": true
+    },
+    {
+      "id": "I030",
+      "utterance": "export-structure 가 비0",
+      "command": "workaround",
+      "reference": "09_ladder_structure.md",
+      "stop": "F06",
+      "notGym": true,
+      "symptomIsData": true
+    },
+    {
+      "id": "I031",
+      "utterance": "시청 고객이 안 열린다고 함",
+      "command": "python3 tools/fde/triage.py",
+      "reference": "04_triage_engine.md",
+      "stop": "F09",
+      "notGym": true,
+      "symptomIsData": true
+    },
+    {
+      "id": "I032",
+      "utterance": "시청 고객이 깨진다고 함",
+      "command": "python3 tools/fde/triage.py",
+      "reference": "04_triage_engine.md",
+      "stop": "F09",
+      "notGym": true,
+      "symptomIsData": true
+    },
+    {
+      "id": "I033",
+      "utterance": "시청 고객이 필드가 안 채워진다고 함",
+      "command": "python3 tools/fde/triage.py",
+      "reference": "04_triage_engine.md",
+      "stop": "F09",
+      "notGym": true,
+      "symptomIsData": true
+    },
+    {
+      "id": "I034",
+      "utterance": "시청 고객이 암호가 걸린다고 함",
+      "command": "python3 tools/fde/triage.py",
+      "reference": "04_triage_engine.md",
+      "stop": "F09",
+      "notGym": true,
+      "symptomIsData": true
+    },
+    {
+      "id": "I035",
+      "utterance": "시청 고객이 표가 밀린다고 함",
+      "command": "python3 tools/fde/triage.py",
+      "reference": "04_triage_engine.md",
+      "stop": "F09",
+      "notGym": true,
+      "symptomIsData": true
+    },
+    {
+      "id": "I036",
+      "utterance": "구청 고객이 안 열린다고 함",
+      "command": "python3 tools/fde/triage.py",
+      "reference": "04_triage_engine.md",
+      "stop": "F09",
+      "notGym": true,
+      "symptomIsData": true
+    },
+    {
+      "id": "I037",
+      "utterance": "구청 고객이 깨진다고 함",
+      "command": "python3 tools/fde/triage.py",
+      "reference": "04_triage_engine.md",
+      "stop": "F09",
+      "notGym": true,
+      "symptomIsData": true
+    },
+    {
+      "id": "I038",
+      "utterance": "구청 고객이 필드가 안 채워진다고 함",
+      "command": "python3 tools/fde/triage.py",
+      "reference": "04_triage_engine.md",
+      "stop": "F09",
+      "notGym": true,
+      "symptomIsData": true
+    },
+    {
+      "id": "I039",
+      "utterance": "구청 고객이 암호가 걸린다고 함",
+      "command": "python3 tools/fde/triage.py",
+      "reference": "04_triage_engine.md",
+      "stop": "F09",
+      "notGym": true,
+      "symptomIsData": true
+    },
+    {
+      "id": "I040",
+      "utterance": "구청 고객이 표가 밀린다고 함",
+      "command": "python3 tools/fde/triage.py",
+      "reference": "04_triage_engine.md",
+      "stop": "F09",
+      "notGym": true,
+      "symptomIsData": true
+    },
+    {
+      "id": "I041",
+      "utterance": "교육청 고객이 안 열린다고 함",
+      "command": "python3 tools/fde/triage.py",
+      "reference": "04_triage_engine.md",
+      "stop": "F09",
+      "notGym": true,
+      "symptomIsData": true
+    },
+    {
+      "id": "I042",
+      "utterance": "교육청 고객이 깨진다고 함",
+      "command": "python3 tools/fde/triage.py",
+      "reference": "04_triage_engine.md",
+      "stop": "F09",
+      "notGym": true,
+      "symptomIsData": true
+    },
+    {
+      "id": "I043",
+      "utterance": "교육청 고객이 필드가 안 채워진다고 함",
+      "command": "python3 tools/fde/triage.py",
+      "reference": "04_triage_engine.md",
+      "stop": "F09",
+      "notGym": true,
+      "symptomIsData": true
+    },
+    {
+      "id": "I044",
+      "utterance": "교육청 고객이 암호가 걸린다고 함",
+      "command": "python3 tools/fde/triage.py",
+      "reference": "04_triage_engine.md",
+      "stop": "F09",
+      "notGym": true,
+      "symptomIsData": true
+    },
+    {
+      "id": "I045",
+      "utterance": "교육청 고객이 표가 밀린다고 함",
+      "command": "python3 tools/fde/triage.py",
+      "reference": "04_triage_engine.md",
+      "stop": "F09",
+      "notGym": true,
+      "symptomIsData": true
+    },
+    {
+      "id": "I046",
+      "utterance": "공단 고객이 안 열린다고 함",
+      "command": "python3 tools/fde/triage.py",
+      "reference": "04_triage_engine.md",
+      "stop": "F09",
+      "notGym": true,
+      "symptomIsData": true
+    },
+    {
+      "id": "I047",
+      "utterance": "공단 고객이 깨진다고 함",
+      "command": "python3 tools/fde/triage.py",
+      "reference": "04_triage_engine.md",
+      "stop": "F09",
+      "notGym": true,
+      "symptomIsData": true
+    },
+    {
+      "id": "I048",
+      "utterance": "공단 고객이 필드가 안 채워진다고 함",
+      "command": "python3 tools/fde/triage.py",
+      "reference": "04_triage_engine.md",
+      "stop": "F09",
+      "notGym": true,
+      "symptomIsData": true
+    },
+    {
+      "id": "I049",
+      "utterance": "공단 고객이 암호가 걸린다고 함",
+      "command": "python3 tools/fde/triage.py",
+      "reference": "04_triage_engine.md",
+      "stop": "F09",
+      "notGym": true,
+      "symptomIsData": true
+    },
+    {
+      "id": "I050",
+      "utterance": "공단 고객이 표가 밀린다고 함",
+      "command": "python3 tools/fde/triage.py",
+      "reference": "04_triage_engine.md",
+      "stop": "F09",
+      "notGym": true,
+      "symptomIsData": true
+    },
+    {
+      "id": "I051",
+      "utterance": "대학 고객이 안 열린다고 함",
+      "command": "python3 tools/fde/triage.py",
+      "reference": "04_triage_engine.md",
+      "stop": "F09",
+      "notGym": true,
+      "symptomIsData": true
+    },
+    {
+      "id": "I052",
+      "utterance": "대학 고객이 깨진다고 함",
+      "command": "python3 tools/fde/triage.py",
+      "reference": "04_triage_engine.md",
+      "stop": "F09",
+      "notGym": true,
+      "symptomIsData": true
+    },
+    {
+      "id": "I053",
+      "utterance": "대학 고객이 필드가 안 채워진다고 함",
+      "command": "python3 tools/fde/triage.py",
+      "reference": "04_triage_engine.md",
+      "stop": "F09",
+      "notGym": true,
+      "symptomIsData": true
+    },
+    {
+      "id": "I054",
+      "utterance": "대학 고객이 암호가 걸린다고 함",
+      "command": "python3 tools/fde/triage.py",
+      "reference": "04_triage_engine.md",
+      "stop": "F09",
+      "notGym": true,
+      "symptomIsData": true
+    },
+    {
+      "id": "I055",
+      "utterance": "대학 고객이 표가 밀린다고 함",
+      "command": "python3 tools/fde/triage.py",
+      "reference": "04_triage_engine.md",
+      "stop": "F09",
+      "notGym": true,
+      "symptomIsData": true
+    },
+    {
+      "id": "I056",
+      "utterance": "병원 고객이 안 열린다고 함",
+      "command": "python3 tools/fde/triage.py",
+      "reference": "04_triage_engine.md",
+      "stop": "F09",
+      "notGym": true,
+      "symptomIsData": true
+    },
+    {
+      "id": "I057",
+      "utterance": "병원 고객이 깨진다고 함",
+      "command": "python3 tools/fde/triage.py",
+      "reference": "04_triage_engine.md",
+      "stop": "F09",
+      "notGym": true,
+      "symptomIsData": true
+    },
+    {
+      "id": "I058",
+      "utterance": "병원 고객이 필드가 안 채워진다고 함",
+      "command": "python3 tools/fde/triage.py",
+      "reference": "04_triage_engine.md",
+      "stop": "F09",
+      "notGym": true,
+      "symptomIsData": true
+    },
+    {
+      "id": "I059",
+      "utterance": "병원 고객이 암호가 걸린다고 함",
+      "command": "python3 tools/fde/triage.py",
+      "reference": "04_triage_engine.md",
+      "stop": "F09",
+      "notGym": true,
+      "symptomIsData": true
+    },
+    {
+      "id": "I060",
+      "utterance": "병원 고객이 표가 밀린다고 함",
+      "command": "python3 tools/fde/triage.py",
+      "reference": "04_triage_engine.md",
+      "stop": "F09",
+      "notGym": true,
+      "symptomIsData": true
+    },
+    {
+      "id": "I061",
+      "utterance": "은행 고객이 안 열린다고 함",
+      "command": "python3 tools/fde/triage.py",
+      "reference": "04_triage_engine.md",
+      "stop": "F09",
+      "notGym": true,
+      "symptomIsData": true
+    },
+    {
+      "id": "I062",
+      "utterance": "은행 고객이 깨진다고 함",
+      "command": "python3 tools/fde/triage.py",
+      "reference": "04_triage_engine.md",
+      "stop": "F09",
+      "notGym": true,
+      "symptomIsData": true
+    },
+    {
+      "id": "I063",
+      "utterance": "은행 고객이 필드가 안 채워진다고 함",
+      "command": "python3 tools/fde/triage.py",
+      "reference": "04_triage_engine.md",
+      "stop": "F09",
+      "notGym": true,
+      "symptomIsData": true
+    },
+    {
+      "id": "I064",
+      "utterance": "은행 고객이 암호가 걸린다고 함",
+      "command": "python3 tools/fde/triage.py",
+      "reference": "04_triage_engine.md",
+      "stop": "F09",
+      "notGym": true,
+      "symptomIsData": true
+    },
+    {
+      "id": "I065",
+      "utterance": "은행 고객이 표가 밀린다고 함",
+      "command": "python3 tools/fde/triage.py",
+      "reference": "04_triage_engine.md",
+      "stop": "F09",
+      "notGym": true,
+      "symptomIsData": true
+    },
+    {
+      "id": "I066",
+      "utterance": "협회 고객이 안 열린다고 함",
+      "command": "python3 tools/fde/triage.py",
+      "reference": "04_triage_engine.md",
+      "stop": "F09",
+      "notGym": true,
+      "symptomIsData": true
+    },
+    {
+      "id": "I067",
+      "utterance": "협회 고객이 깨진다고 함",
+      "command": "python3 tools/fde/triage.py",
+      "reference": "04_triage_engine.md",
+      "stop": "F09",
+      "notGym": true,
+      "symptomIsData": true
+    },
+    {
+      "id": "I068",
+      "utterance": "협회 고객이 필드가 안 채워진다고 함",
+      "command": "python3 tools/fde/triage.py",
+      "reference": "04_triage_engine.md",
+      "stop": "F09",
+      "notGym": true,
+      "symptomIsData": true
+    },
+    {
+      "id": "I069",
+      "utterance": "협회 고객이 암호가 걸린다고 함",
+      "command": "python3 tools/fde/triage.py",
+      "reference": "04_triage_engine.md",
+      "stop": "F09",
+      "notGym": true,
+      "symptomIsData": true
+    },
+    {
+      "id": "I070",
+      "utterance": "협회 고객이 표가 밀린다고 함",
+      "command": "python3 tools/fde/triage.py",
+      "reference": "04_triage_engine.md",
+      "stop": "F09",
+      "notGym": true,
+      "symptomIsData": true
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "id": "FJ56",
+  "steps": [
+    {
+      "answer": {
+        "occ": {
+          "cmd": [
+            "edit",
+            "fill-fields",
+            "{input}",
+            "--data",
+            "{\"목차1[2]\": \"순번오라클\"}",
+            "--dry-run",
+            "--json"
+          ],
+          "path": "filled[0].occurrence"
+        }
+      }
+    }
+  ]
+}

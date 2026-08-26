@@ -20,16 +20,21 @@ use std::collections::BTreeSet;
 
 use crate::model::bin_data::{BinDataContent, BinDataStatus, BinDataType};
 use crate::model::control::Control;
-use crate::model::document::{Document, HwpVersion, Section, SectionDef};
+use crate::model::document::{
+    Document, HwpVersion, Section, SectionDef, HWP3_ORIGIN_STREAM_PATH, HWPX_ORIGIN_STREAM_PATH,
+};
 use crate::model::image::Picture;
 use crate::model::paragraph::Paragraph;
-use crate::model::shape::{common_obj_offsets, ShapeObject, TextBox};
+use crate::model::shape::{common_obj_offsets, OleShape, ShapeObject, TextBox};
 use crate::model::style::{BorderFill, BorderLineType, Fill, FillType};
 use crate::model::table::{Cell, Table, TablePageBreak};
 use crate::parser::FileFormat;
 
-use super::common_obj_attr_writer::{pack_common_attr_bits, serialize_common_obj_attr};
+use super::common_obj_attr_writer::serialize_common_obj_attr;
 use super::hwpx_master_page_slots::materialize_hwp5_master_page_slots;
+// [#4400] bit packing 은 serializer 소유 — document_core::converters 는 더 이상 이 로직을
+// 직접 갖지 않는다.
+use crate::serializer::control::pack_common_attr_bits;
 
 /// 어댑터 실행 보고서.
 ///
@@ -81,6 +86,8 @@ pub struct AdapterReport {
     pub text_box_para_header_tail_materialized: u32,
     /// HWPX 출처 일반 paragraph PARA_HEADER tail materialize 횟수
     pub para_header_tail_materialized: u32,
+    /// [#4677] 캡션 달린 묶음 개체의 번호 범주 비트(bit28→bit29) 보정 횟수
+    pub captioned_group_numbering_bit_materialized: u32,
     /// HWPX 수식(Equation) CTRL_HEADER attr 중 한컴 저장 관례 비트 보강 횟수 (Task #1061)
     pub equation_ctrl_header_attr_materialized: u32,
     /// HWPX 수식(Equation) EQEDIT 의 font_name/version_info 정답지 정합 정정 횟수 (Task #1061 Stage 2)
@@ -112,6 +119,12 @@ pub struct AdapterReport {
     /// 보강되지만 그림은 빠져 있었다(전 코퍼스 실측 80/80 이 개체 종류와 무관하게
     /// 이 비트를 요구).
     pub picture_caption_common_attr_materialized: u32,
+    /// [#4099] HWPX `<hp:chart>` OleShape 를 `<hp:default>` fallback OLE 로 접은 횟수.
+    pub chart_ole_folded_to_fallback: u32,
+    /// [#4099] fallback 이 없어 접지 못하고 참조만 비운 차트 OleShape 수.
+    pub chart_ole_without_fallback: u32,
+    /// [#4099] HWP5 산출에서 제거한 `ooxml_chart` BinDataContent 수.
+    pub chart_bin_data_contents_removed: u32,
 }
 
 impl AdapterReport {
@@ -161,7 +174,10 @@ impl AdapterReport {
                 + self.master_page_autonum_placeholder_removed
                 + self.master_page_line_rendering_size_ratio_materialized
                 + self.master_page_apply_slots_materialized
-                + self.picture_caption_common_attr_materialized)
+                + self.picture_caption_common_attr_materialized
+                + self.chart_ole_folded_to_fallback
+                + self.chart_ole_without_fallback
+                + self.chart_bin_data_contents_removed)
                 > 0
     }
 }
@@ -202,14 +218,21 @@ fn convert_to_hwp_ir(doc: &mut Document, source_is_hwpx: bool) -> AdapterReport 
 
     normalize_file_header_for_hwp(doc, &mut report);
     normalize_page_border_fills_for_hwp(doc);
+    // [#4099] 도형을 건드리는 첫 패스여야 한다 — 뒤 패스가 바깥 차트 OleShape 에 가한
+    // 변경은 fold 로 통째로 버려지고, BinData 순서 materialize 는 fold 가 올려놓은
+    // 진짜 `bin_data_id` 를 봐야 remap 이 맞는다.
+    fold_hwpx_chart_ole_for_hwp(doc, &mut report);
     normalize_picture_geometry_for_hwp(doc, source_is_hwpx);
     normalize_doc_properties_for_hwp(doc, &mut report);
     materialize_hwp5_bin_data_order(doc, &mut report);
     normalize_bin_data_for_hwp(doc, &mut report);
 
     // Stage 4: SectionDef 컨트롤 삽입 (HWPX 파서가 만들지 않으므로 직렬화기가 PAGE_DEF 출력 못 함)
+    // [#5249] secd tail 길이는 저장될 FileHeader 버전이 정한다. 위
+    // `normalize_file_header_for_hwp` 가 버전을 확정한 뒤이므로 여기서 읽어 내린다.
+    let file_version = doc.header.version.clone();
     for (section_idx, section) in doc.sections.iter_mut().enumerate() {
-        adapt_section_def(&mut section.section_def, &mut report);
+        adapt_section_def(&mut section.section_def, &file_version, &mut report);
         insert_section_def_control(section, &mut report);
         materialize_following_section_break_type(section_idx, section, &mut report);
 
@@ -229,6 +252,232 @@ fn convert_to_hwp_ir(doc: &mut Document, source_is_hwpx: bool) -> AdapterReport 
     }
 
     report
+}
+
+/// HWPX 파서가 `Chart/chartN.xml` 파트에 붙이는 확장자 표식
+/// (`parser/hwpx/mod.rs`, Task #195 규약).
+const OOXML_CHART_EXTENSION: &str = "ooxml_chart";
+
+/// 모든 `OleShape` 를 가변으로 방문한다.
+///
+/// 순회 골격은 `normalize_picture_geometry_for_hwp` 에서 가져왔다 — 이 파일의 네 워커
+/// 중 컨테이너 커버리지가 가장 넓은 쪽이다.
+///
+/// | 컨테이너 | bin order(`collect_bin_order_*`) | bin ref remap(`remap_bin_refs_*`) | 이 워커 |
+/// |---|---|---|---|
+/// | 표 셀 · 그룹 자식 · 머리말/꼬리말/각주/미주/숨은설명 | ✓ | ✓ | ✓ |
+/// | `drawing.text_box` · `drawing.caption` | ✓ | ✓ | ✓ |
+/// | `pic`/`group`/`chart`/`ole` own caption | 일부 | 일부 | ✓ |
+/// | `Control::Field.memo_paragraphs` | ✗ | ✗ | ✓ |
+/// | `Control::SectionDef.master_pages` | ✗ | ✗ | ✓ |
+///
+/// 네 워커를 하나의 visitor 로 통합하는 것은 커버리지가 서로 달라 동작이 바뀔 수 있는
+/// 별개 리팩터다 — 여기서는 좁은 타입으로만 골격을 재사용한다.
+///
+/// `chart_switch_fallback` 안쪽은 방문하지 않는다. HWPX 파서는 fallback 안에 또 다른
+/// 차트를 만들지 않고, `fold_hwpx_chart_ole_for_hwp` 가 그 상자를 곧 없앤다.
+fn for_each_ole_mut(doc: &mut Document, f: &mut dyn FnMut(&mut OleShape)) {
+    fn walk_paragraphs(paragraphs: &mut [Paragraph], f: &mut dyn FnMut(&mut OleShape)) {
+        for para in paragraphs {
+            walk_controls(&mut para.controls, f);
+        }
+    }
+
+    fn walk_caption(caption: &mut crate::model::shape::Caption, f: &mut dyn FnMut(&mut OleShape)) {
+        walk_paragraphs(&mut caption.paragraphs, f);
+    }
+
+    fn walk_master_pages(
+        master_pages: &mut [crate::model::header_footer::MasterPage],
+        f: &mut dyn FnMut(&mut OleShape),
+    ) {
+        for master_page in master_pages {
+            walk_paragraphs(&mut master_page.paragraphs, f);
+        }
+    }
+
+    fn walk_drawing(
+        drawing: &mut crate::model::shape::DrawingObjAttr,
+        f: &mut dyn FnMut(&mut OleShape),
+    ) {
+        if let Some(text_box) = &mut drawing.text_box {
+            walk_paragraphs(&mut text_box.paragraphs, f);
+        }
+        if let Some(caption) = &mut drawing.caption {
+            walk_caption(caption, f);
+        }
+    }
+
+    fn walk_shape(shape: &mut ShapeObject, f: &mut dyn FnMut(&mut OleShape)) {
+        match shape {
+            ShapeObject::Picture(pic) => {
+                if let Some(caption) = &mut pic.caption {
+                    walk_caption(caption, f);
+                }
+            }
+            ShapeObject::Group(group) => {
+                for child in &mut group.children {
+                    walk_shape(child, f);
+                }
+                if let Some(caption) = &mut group.caption {
+                    walk_caption(caption, f);
+                }
+            }
+            ShapeObject::Chart(chart) => {
+                walk_drawing(&mut chart.drawing, f);
+                if let Some(caption) = &mut chart.caption {
+                    walk_caption(caption, f);
+                }
+            }
+            ShapeObject::Ole(ole) => {
+                // 캡션·글상자를 먼저 훑는다. `f` 가 fold 로 OleShape 를 통째로
+                // 갈아끼우므로, 뒤에 방문하면 교체된 쪽을 다시 보게 된다.
+                walk_drawing(&mut ole.drawing, f);
+                if let Some(caption) = &mut ole.caption {
+                    walk_caption(caption, f);
+                }
+                f(ole);
+            }
+            _ => {
+                if let Some(drawing) = shape.drawing_mut() {
+                    walk_drawing(drawing, f);
+                }
+            }
+        }
+    }
+
+    fn walk_controls(controls: &mut [Control], f: &mut dyn FnMut(&mut OleShape)) {
+        for control in controls {
+            match control {
+                Control::Picture(pic) => {
+                    if let Some(caption) = &mut pic.caption {
+                        walk_caption(caption, f);
+                    }
+                }
+                Control::Shape(shape) => walk_shape(shape, f),
+                Control::Table(table) => {
+                    for cell in &mut table.cells {
+                        walk_paragraphs(&mut cell.paragraphs, f);
+                    }
+                    if let Some(caption) = &mut table.caption {
+                        walk_caption(caption, f);
+                    }
+                }
+                Control::Header(header) => walk_paragraphs(&mut header.paragraphs, f),
+                Control::Footer(footer) => walk_paragraphs(&mut footer.paragraphs, f),
+                Control::Footnote(footnote) => walk_paragraphs(&mut footnote.paragraphs, f),
+                Control::Endnote(endnote) => walk_paragraphs(&mut endnote.paragraphs, f),
+                Control::HiddenComment(comment) => walk_paragraphs(&mut comment.paragraphs, f),
+                Control::Field(field) => walk_paragraphs(&mut field.memo_paragraphs, f),
+                Control::SectionDef(section_def) => {
+                    walk_master_pages(&mut section_def.master_pages, f)
+                }
+                _ => {}
+            }
+        }
+    }
+
+    for section in doc.sections.iter_mut() {
+        walk_paragraphs(&mut section.paragraphs, f);
+        walk_master_pages(&mut section.section_def.master_pages, f);
+    }
+}
+
+/// [#4099] HWPX 차트를 HWP5 가 참조할 수 있는 OLE 하나로 접는다.
+///
+/// HWPX 파서는 `<hp:switch>` 의 `<hp:case>` 브랜치를 채택해 **가상 id**
+/// `bin_data_id = 60000+N` 을 세우고, `<hp:default>` 의 진짜 OLE 를
+/// `chart_switch_fallback` 에 매달아 둔다(#3546 — HWPX 저장 시 원형 재방출의 재료).
+/// 그 가상 id 는 zip 파트 `Chart/chartN.xml` 을 가리키므로 **HWP5 에는 대응물이 없다.**
+/// 손대지 않으면 세 가지가 한꺼번에 깨진다.
+///
+/// - `serialize_ole_data` 가 `60001` 을 그대로 기록 → HWP5 DocInfo 에 없는 storage 참조
+/// - `find_bin_data_info_with_compress` 폴백이 `/BinData/BINEA61.ooxml_chart` 라는
+///   **DocInfo 미등록 정크 스트림**을 만든다
+/// - 재파싱이 그 스트림을 읽지 않아 `--verify` 가 `bin_data_content count` 로 실패
+///
+/// ## 왜 fallback 을 통째로 채택하는가
+///
+/// 한컴이 저장한 같은 문서의 `.hwp` 를 대조하면 답이 나온다. GenShape CTRL_HEADER 의
+/// `instance_id` 가 **0** 인데, 이는 `<hp:default><hp:ole instid="0">` 의 값이지
+/// `<hp:chart id="1117817146">` 의 값이 아니다 — **한컴 자신의 HWPX→HWP5 변환도
+/// fallback 브랜치를 쓴다.** 그 OLE 가 가리키는 `BinData/ole1.ole` 안에는 한컴이 실제로
+/// 읽는 중첩 `OOXMLChartContents` 가 들어 있다(#4055 실측: 그 사본만 고쳐도 렌더에
+/// 반영된다).
+///
+/// 두 브랜치는 `sz`/`pos`/`outMargin`/`zOrder`/`textWrap` 이 전부 같고(실물은
+/// `orgSz`/`curSz`/`flip`/`lineShape` 도 동일하게 중복 기록한다 — #4669 이후 양쪽
+/// 모두 IR 에 실린다), 모델에 남는 차이는 `bin_data_id`·`instance_id`·
+/// `rotate_image`·`drawing_aspect`·`caption` 뿐이다. 그중 HWP5 로 나가는 것은
+/// 앞의 둘이고 둘 다 fallback 쪽이 정답이다.
+///
+/// ## fallback 이 없으면
+///
+/// `<hp:switch>` 없이 `<hp:chart>` 만 있거나 `<hp:default>` 가 빠진 case-only switch 는
+/// 접을 대상이 없다(코퍼스 0건, 파서 주석도 "아직 보지 못한 변형"). 참조를 비워
+/// 정크 스트림과 dangling 을 둘 다 막고 placeholder 로 남긴다.
+///
+/// 차트 XML 을 `mini_cfb` 로 OLE CFB 에 싸는 길도 있다 — #4097 이
+/// `build_cfb_with_root_clsid` 를 넣어 도구는 갖춰졌다. 다만 참조할 원본 CLSID 가 없어
+/// `{4C3DA137-DC90-47B9-9BED-59DAE352A280}` 를 하드코딩해야 하고, `OOXMLChartContents`
+/// 하나만 든 CFB 를 한컴이 받아들이는지는 미검증이다(#4055 는 기존 CFB 를 수정했을 뿐
+/// 새로 만들지 않았다). 실물 변종이 관측되면 그때 채운다.
+fn fold_hwpx_chart_ole_for_hwp(doc: &mut Document, report: &mut AdapterReport) {
+    let mut folded = 0u32;
+    let mut orphaned = 0u32;
+
+    for_each_ole_mut(doc, &mut |ole: &mut OleShape| {
+        if ole.chart_id_ref.is_none() {
+            return;
+        }
+        match ole.chart_switch_fallback.take() {
+            Some(fallback) => {
+                // [#4319] 파서가 `<hp:chart>` 와 `<hp:default><hp:ole>` 양쪽의
+                // `<hp:caption>` 을 읽는다. 실물은 두 브랜치가 같은 캡션을 중복
+                // 기록하지만, chart 쪽에만 있는 경우 fallback 채택으로 조용히
+                // 사라지지 않게 이월한다.
+                let chart_caption = ole.caption.take();
+                *ole = *fallback;
+                if ole.caption.is_none() {
+                    ole.caption = chart_caption;
+                }
+                debug_assert!(
+                    ole.chart_id_ref.is_none() && ole.chart_switch_fallback.is_none(),
+                    "fallback 브랜치에는 HWPX 차트 표식이 없어야 한다 — 멱등성 계약"
+                );
+                debug_assert!(
+                    ole.raw_tag_data.is_empty(),
+                    "HWPX 출신 OleShape 는 raw_tag_data 가 비어 있어야 한다 \
+                     (비면 serialize_ole_data 가 bin_data_id 필드를 무시한다)"
+                );
+                folded += 1;
+            }
+            None => {
+                ole.bin_data_id = 0;
+                ole.chart_id_ref = None;
+                orphaned += 1;
+            }
+        }
+    });
+
+    // 차트 XML 은 HWP5 에 담을 자리가 없다. 남기면 `cfb_writer` 폴백이 DocInfo 미등록
+    // 정크 스트림을 만들고 `--verify` 가 개수 불일치로 실패한다. 한컴이 읽는 표현은
+    // 중첩 CFB 안의 `OOXMLChartContents` 사본이므로 내용 손실도 없다.
+    let before = doc.bin_data_content.len();
+    doc.bin_data_content
+        .retain(|content| content.extension != OOXML_CHART_EXTENSION);
+    let removed = (before - doc.bin_data_content.len()) as u32;
+
+    if orphaned > 0 {
+        eprintln!(
+            "경고: fallback OLE 가 없는 HWPX 차트 {orphaned}개는 HWP5 로 옮기지 못해 \
+             빈 개체로 남깁니다 (#4099)"
+        );
+    }
+
+    report.chart_ole_folded_to_fallback += folded;
+    report.chart_ole_without_fallback += orphaned;
+    report.chart_bin_data_contents_removed += removed;
 }
 
 /// HWPX embedded BinData를 한컴 HWP 저장 관례에 맞춰 materialize한다.
@@ -728,6 +977,23 @@ fn normalize_picture_geometry_for_hwp(doc: &mut Document, source_is_hwpx: bool) 
         }
     }
 
+    // [#4367] HWP3 수식의 EQEDIT 계약 — 한컴 저장본 대조(sample16 정답지):
+    // font_size 는 0 이 아니라 1200, 수식 글꼴은 "HYhwpEQ", baseline 은 % 값
+    // (한컴 67). HWP3 파서의 baseline 원시값(465)은 그 축이 아니어서 범위 밖이고,
+    // font_size=0 인 수식 개체를 한글 2022 가 만나면 크래시한다(문단 이등분 COM
+    // 실측 — 크기 채움 후에도 크래시 잔존, EQEDIT 바이트 대조로 확정).
+    fn normalize_equation_for_hwp(eq: &mut crate::model::control::Equation) {
+        if eq.font_size == 0 {
+            eq.font_size = 1200;
+        }
+        if eq.font_name.is_empty() {
+            eq.font_name = "HYhwpEQ".to_string();
+        }
+        if !(0..=100).contains(&eq.baseline) {
+            eq.baseline = 65;
+        }
+    }
+
     fn walk_shape(shape: &mut ShapeObject, source_is_hwpx: bool) {
         // local file version 은 그림뿐 아니라 **모든 개체 요소**가 1 이어야 한다.
         // 한컴 저장본은 예외 없이 1 이고, HWP3 변환본은 도형(`$con`/`$rec` 등)만
@@ -743,6 +1009,67 @@ fn normalize_picture_geometry_for_hwp(doc: &mut Document, source_is_hwpx: bool) 
                 fill(pic, source_is_hwpx);
                 if let Some(caption) = &mut pic.caption {
                     walk_caption(caption, source_is_hwpx);
+                }
+            }
+            // [#4367] 사각형 도형의 꼭짓점 4점 — 그림(#3676 계약 ②)과 같은 축이다.
+            // 한컴 저장본은 SC_RECT 에 `(0,0) (w,0) (w,h) (0,h)` 를 담는데 HWP3
+            // 파서는 채우지 않아 전부 0 으로 나갔고, 사각형(글상자) 하나가 든
+            // 문단부터 한컴 2022 가 문서 전체를 거부했다(sample16 문단 이등분
+            // COM 실측 — N=5 열림/N=6 거부, 발동체는 사각형 글상자). 이미 채워진
+            // 도형(HWP5/HWPX 경로)은 건드리지 않는다.
+            ShapeObject::Rectangle(rect) => {
+                walk_drawing(&mut rect.drawing, source_is_hwpx);
+                let zeroed =
+                    rect.x_coords.iter().all(|&v| v == 0) && rect.y_coords.iter().all(|&v| v == 0);
+                if zeroed {
+                    let w = if rect.drawing.shape_attr.current_width > 0 {
+                        rect.drawing.shape_attr.current_width as i32
+                    } else {
+                        rect.common.width as i32
+                    };
+                    let h = if rect.drawing.shape_attr.current_height > 0 {
+                        rect.drawing.shape_attr.current_height as i32
+                    } else {
+                        rect.common.height as i32
+                    };
+                    if w > 0 && h > 0 {
+                        rect.x_coords = [0, w, w, 0];
+                        rect.y_coords = [0, 0, h, h];
+                    }
+                }
+                // 글상자 LIST_HEADER 의 최대 폭 — 한컴 저장본은 개체 폭을 담는데
+                // HWP3 파서는 0 으로 남긴다(같은 실측 문서의 바이트 대조).
+                if let Some(tb) = &mut rect.drawing.text_box {
+                    if tb.max_width == 0 {
+                        let w = if rect.drawing.shape_attr.current_width > 0 {
+                            rect.drawing.shape_attr.current_width
+                        } else {
+                            rect.common.width
+                        };
+                        tb.max_width = w;
+                    }
+                }
+                // SHAPE_COMPONENT storage flip 비트 — 한컴 저장본은 글상자 도형에
+                // 0x0108_0000(글상자 0x0100_0000 + 0x0008_0000)을 담고 회전중심을
+                // (w/2, h/2) 로 둔다. 이 storage 비트가 없으면 한컴이 개체 이후
+                // 레코드 스트림을 이어 읽지 못하는 케이스가 있다(HWPX materialize
+                // 의 기존 계약 주석·#3930 계열). HWP3 파서는 0 으로 남긴다.
+                //
+                // 글상자 비트(0x0100_0000)는 **글상자가 실재할 때만** 세운다 —
+                // 글상자 없는 일반 사각형에 세우면 한컴이 그 문서를 거부한다
+                // (크롤 스윕 29218 문단 이등분 COM 실측: p588 plain rect 가 발동체).
+                let has_text_box = rect.drawing.text_box.is_some();
+                let sa = &mut rect.drawing.shape_attr;
+                if sa.flip == 0 {
+                    sa.flip = if has_text_box {
+                        0x0108_0000
+                    } else {
+                        0x0008_0000
+                    };
+                }
+                if sa.rotation_center.x == 0 && sa.rotation_center.y == 0 {
+                    sa.rotation_center.x = (sa.current_width / 2) as i32;
+                    sa.rotation_center.y = (sa.current_height / 2) as i32;
                 }
             }
             ShapeObject::Group(group) => {
@@ -788,6 +1115,8 @@ fn normalize_picture_geometry_for_hwp(doc: &mut Document, source_is_hwpx: bool) 
                     }
                 }
                 Control::Shape(shape) => walk_shape(shape, source_is_hwpx),
+                // [#4367] 수식 EQEDIT 계약 정규화 — 위 normalize_equation_for_hwp 참조.
+                Control::Equation(eq) => normalize_equation_for_hwp(eq),
                 Control::Table(table) => {
                     for cell in &mut table.cells {
                         walk_paragraphs(&mut cell.paragraphs, source_is_hwpx);
@@ -839,10 +1168,23 @@ fn normalize_picture_geometry_for_hwp(doc: &mut Document, source_is_hwpx: bool) 
 /// HWPX 는 실제 문서에서 BOTH 하나만 갖는 것이 보통이지만, HWP 출력에도 같은 세 record가
 /// 필요하다. HWPX live IR 원형은 호출 경계에서 해당 overlay를 복원한다.
 fn normalize_page_border_fills_for_hwp(doc: &mut Document) {
-    for section in doc.sections.iter_mut() {
-        let sd = &mut section.section_def;
+    fn pad(sd: &mut crate::model::document::SectionDef) {
         while sd.extra_page_border_fills.len() < 2 {
             sd.extra_page_border_fills.push(sd.page_border_fill.clone());
+        }
+    }
+    for section in doc.sections.iter_mut() {
+        pad(&mut section.section_def);
+        // [#5142] HWPX 는 한 section 파일에 secPr 를 여러 개 둘 수 있고 이는 문단
+        // 중간의 SectionDef 컨트롤로 파싱된다. HWP5 저장 시 이 경계마다 별도
+        // Section 스트림으로 갈라지므로(#5142 serializer 분할), 그 컨트롤의 PBF 도
+        // 같은 3개 규격을 채워야 한글이 해당 스트림을 수용한다.
+        for para in section.paragraphs.iter_mut() {
+            for ctrl in para.controls.iter_mut() {
+                if let Control::SectionDef(sd) = ctrl {
+                    pad(sd);
+                }
+            }
         }
     }
 }
@@ -958,6 +1300,12 @@ fn insert_section_def_control(section: &mut Section, report: &mut AdapterReport)
         0,
         Control::SectionDef(Box::new(section.section_def.clone())),
     );
+    let leading_defs = first_para
+        .controls
+        .iter()
+        .take_while(|control| matches!(control, Control::SectionDef(_) | Control::ColumnDef(_)))
+        .count();
+    first_para.reserve_leading_extended_control_slots(leading_defs);
     report.section_def_controls_inserted += 1;
 }
 
@@ -1396,6 +1744,38 @@ fn materialize_fixed_width_space_control(
     report.header_footer_fwspace_control_materialized += 1;
 }
 
+/// [#4677] 캡션 달린 묶음 개체(`<hp:container>`)의 번호 범주 비트를 한컴 값으로 맞춘다.
+///
+/// 파서는 `numberingType="PICTURE"` 개체에 attr **bit 28** 을 세운다
+/// (`parser/hwpx/section.rs` — 한컴 2020 저장본 근거). 그런데 한글 2022 는 **캡션이 달린
+/// 묶음**을 저장할 때 같은 자리에 **bit 29** 를 쓴다. 오라클 실측(12.0.0.535, 같은 문서를
+/// 한글로 열어 다시 저장):
+///
+/// | 개체 | 한컴 attr | rhwp attr |
+/// |---|---|---|
+/// | `<hp:pic numberingType="PICTURE">` (캡션 없음) | `0x040A2310` | `0x040A2310` |
+/// | `<hp:container numberingType="PICTURE">` + 캡션 | `0x242A4311` | `0x142A4311` |
+///
+/// 이 한 비트가 어긋나면 한글은 문서를 열되 **본문을 통째로 버린다**(0자·1쪽). 캡션을 빼거나
+/// 묶음을 빼면 정상 개방되는 것으로 트리거를 확정했고, 비트만 바꿔 다시 측정해 회복을 확인했다
+/// (00900·00911·01134·02315 네 문서가 글자수·쪽수까지 원본과 일치).
+fn materialize_captioned_group_numbering_bit(
+    common: &mut crate::model::shape::CommonObjAttr,
+    report: &mut AdapterReport,
+) {
+    const PICTURE_NUMBERING_BIT: u32 = 1 << 28;
+    const CAPTIONED_GROUP_NUMBERING_BIT: u32 = 1 << 29;
+
+    if common.attr & CAPTIONED_GROUP_NUMBERING_BIT != 0 {
+        return;
+    }
+
+    common.attr &= !PICTURE_NUMBERING_BIT;
+    common.attr |= CAPTIONED_GROUP_NUMBERING_BIT;
+    common.hwp5_gen_shape_attr_bit28 = false;
+    report.captioned_group_numbering_bit_materialized += 1;
+}
+
 fn materialize_para_header_tail(para: &mut Paragraph, report: &mut AdapterReport) {
     if para.raw_header_extra.len() >= 12 {
         return;
@@ -1419,11 +1799,15 @@ fn materialize_para_header_tail(para: &mut Paragraph, report: &mut AdapterReport
     report.para_header_tail_materialized += 1;
 }
 
-fn adapt_section_def(section_def: &mut SectionDef, report: &mut AdapterReport) {
+fn adapt_section_def(
+    section_def: &mut SectionDef,
+    file_version: &HwpVersion,
+    report: &mut AdapterReport,
+) {
     materialize_section_def_hide_empty_line_flag(section_def, report);
     materialize_single_master_page_flags(section_def, report);
     materialize_multi_master_page_flags(section_def, report);
-    materialize_section_def_master_page_tail(section_def, report);
+    materialize_section_def_ctrl_tail(section_def, file_version, report);
 
     for master_page in &mut section_def.master_pages {
         adapt_paragraphs_with_context(
@@ -1534,27 +1918,68 @@ fn materialize_multi_master_page_flags(section_def: &mut SectionDef, report: &mu
     }
 }
 
-fn materialize_section_def_master_page_tail(
+/// 대표Language(2) + 확장 영역 17 — 5.0.4.0 이상 저장본의 `secd` tail (CTRL_HEADER 47).
+const EXTENDED_SECTION_DEF_TAIL: usize = 19;
+/// 대표Language(2) + 확장 영역 8 — 5.0.4.0 미만 저장본의 `secd` tail (CTRL_HEADER 38).
+const LEGACY_SECTION_DEF_TAIL: usize = 10;
+
+/// [#5249] `secd` CTRL_HEADER 확장 tail 길이 — **파일 형식 버전**이 정한다.
+///
+/// `samples/**/*.hwp` 한컴 저작 517구역 전수 실측(rhwp 산출 표식 `RhwpHwpxOrigin`
+/// 스트림을 가진 3구역 제외)에서 예외가 없다 — 재현: `scripts/secd_tail_survey.py`:
+///
+/// | FileHeader 버전 | 확장 tail | CTRL_HEADER | 구역 수 |
+/// |---|---|---|---|
+/// | 5.0.1.7 (관측 하한) | 8 byte | 36 | 4 |
+/// | 5.0.2.4 ~ 5.0.3.4 | 10 byte | 38 | 188 |
+/// | **5.0.4.0 이상** | **19 byte** | **47** | **325** |
+///
+/// 바탕쪽 수는 결정 요인이 아니다 — 5.0.4.0 이상에서 **바탕쪽 0인데 47인 구역이
+/// 284개**이고, 5.0.4.0 미만에서 **바탕쪽이 있는데 38인 구역이 10개**다. 즉 종전
+/// 게이트(`master_pages.is_empty()`)는 양방향으로 어긋났다(#2768 의 "바탕쪽 없는 47
+/// 259건"이 이 축의 그림자였다).
+///
+/// 버전 경계의 관측 범위는 (5.0.3.4, 5.0.4.0] 이다 — 그 사이 버전은 코퍼스에 없다.
+/// 미관측 구간은 보수적으로 10 byte(구 계약)로 떨어진다.
+fn section_def_ctrl_tail_len(version: &HwpVersion) -> usize {
+    let v = (
+        version.major,
+        version.minor,
+        version.build,
+        version.revision,
+    );
+    if v >= (5, 0, 4, 0) {
+        EXTENDED_SECTION_DEF_TAIL
+    } else {
+        LEGACY_SECTION_DEF_TAIL
+    }
+}
+
+/// HWPX 출처 SectionDef 에 저장 버전에 맞는 CTRL_HEADER tail 을 실체화한다.
+///
+/// HWPX 파서는 CTRL_HEADER tail 을 만들지 않으므로(원본에 그런 것이 없다) 직렬화기가
+/// 기본 10 byte 를 쓴다. 그런데 HWPX 출처 문서는 FileHeader 에 5.1.0.0 을 적으므로
+/// **버전은 47을 약속하고 내용은 38을 내보내는** 불일치가 됐다.
+///
+/// HWP5 원본에서 파싱한 `raw_ctrl_extra` 는 손대지 않는다 — 라운드트립 계약이 먼저다.
+fn materialize_section_def_ctrl_tail(
     section_def: &mut SectionDef,
+    file_version: &HwpVersion,
     report: &mut AdapterReport,
 ) {
-    if section_def.master_pages.is_empty() {
+    if !section_def.raw_ctrl_extra.is_empty() {
         return;
     }
 
-    // HWPX 출처 SectionDef는 HWP 원본 CTRL_HEADER tail이 없지만, 한컴이 HWPX를
-    // HWP5로 저장한 정답지는 바탕쪽이 있는 구역에서 대표Language(0) 뒤에
-    // 17 byte 확장 영역을 붙여 총 43 byte ctrl_data (CTRL_HEADER 47 byte)를 만든다.
-    //
-    // 관찰된 계약:
-    // - exam_kor: masterPageCnt=3 -> 0x0001 marker + 15 byte zero
-    // - exam_social-p1: 단일 Both 바탕쪽 -> 17 byte zero
-    // - exam_social section1: Both + Odd 2개 바탕쪽 -> 17 byte zero
-    let mut extra = vec![0; 19];
-    extra[0..2].copy_from_slice(&0u16.to_le_bytes());
-    if section_def.master_pages.len() >= 3 {
+    let mut extra = vec![0; section_def_ctrl_tail_len(file_version)];
+    // 확장 영역 offset 0 의 u16 마커. 코퍼스 47 byte 325구역 중 비영은 14건뿐이고
+    // 바탕쪽 수의 함수가 아니다(바탕쪽 1인데 1·4, 바탕쪽 2인데 0 이 공존). 결정 요인이
+    // 미확정이므로 종전 정답지(exam_kor 계열)에서 유도된 이 규칙을 **넓히지도 좁히지도
+    // 않고** 그대로 둔다. 확장 tail 이 아닌 경우엔 자리 자체가 없다.
+    if extra.len() == EXTENDED_SECTION_DEF_TAIL && section_def.master_pages.len() >= 3 {
         extra[2..4].copy_from_slice(&1u16.to_le_bytes());
     }
+
     if section_def.raw_ctrl_extra != extra {
         section_def.raw_ctrl_extra = extra;
         report.section_def_master_page_tail_materialized += 1;
@@ -1618,10 +2043,29 @@ fn adapt_shape_with_context(
         }
     }
 
-    if let ShapeObject::Group(group) = shape {
-        for child in &mut group.children {
-            adapt_shape_with_context(child, report, context);
+    // [#4677] `drawing_mut()` 이 None 인 두 종류(묶음·그림)의 캡션 문단도 보강한다.
+    //
+    // #2736 이 그림·도형 캡션을 덮었지만 그 경로는 (a) `Control::Picture` 로 **문단에 직접**
+    // 달린 그림과 (b) `drawing.caption` 을 가진 도형뿐이다. 묶음(`<hp:container>`)은 캡션을
+    // `GroupShape` 자기 필드로 갖고, 묶음 **안의** 그림도 `ShapeObject::Picture` 라 둘 다
+    // 위 경로에 걸리지 않는다. 미방문 문단은 header tail 이 10바이트로 남아 PARA_HEADER 가
+    // 22 바이트로 나가고(한컴은 24), 한글 2022 는 그 문서의 본문을 통째로 버린다(0자·1쪽).
+    match shape {
+        ShapeObject::Group(group) => {
+            if let Some(caption) = &mut group.caption {
+                adapt_paragraphs_with_context(&mut caption.paragraphs, report, context);
+                materialize_captioned_group_numbering_bit(&mut group.common, report);
+            }
+            for child in &mut group.children {
+                adapt_shape_with_context(child, report, context);
+            }
         }
+        ShapeObject::Picture(pic) => {
+            if let Some(caption) = &mut pic.caption {
+                adapt_paragraphs_with_context(&mut caption.paragraphs, report, context);
+            }
+        }
+        _ => {}
     }
 }
 
@@ -1803,12 +2247,28 @@ fn table_requires_layout_ctrl_data(table: &Table) -> bool {
         && matches!(table.page_break, TablePageBreak::RowBreak)
 }
 
-fn build_table_layout_ctrl_data() -> Vec<u8> {
-    // 한컴 HWPX→HWP 변환본에서 3x2 선택지 표 뒤에 붙는 Table CTRL_DATA.
-    // 공식 5.0 문서에는 의미가 정리되어 있지 않지만, #1064/#1099 정답지 모두
-    // 같은 104바이트 ParameterSet(0x021b → 0x0242)을 사용한다.
-    const VALUES: [u32; 11] = [3826, 1048, 28346, 8475, 708, 0, 2, 9, 0, 59528, 84188];
+// #1064/#1099에서 같은 104바이트 payload가 관찰됐다. #4438: 이 11쌍은 하나의
+// opaque table-layout payload에서 관찰된 정확한 계약이지, 개별 item의 의미 표가 아니다.
+// 외부 소비자가 각 item을 해석하는지는 확인되지 않았으므로 호환 의미를 추정하지 않는다.
+// 0x4000부터의 연속값을 일반 item-id 할당 범위로 해석하거나 다음 ID를 발명하지 않는다.
+// 새 의미를 추가하려면 이 배열을 연장하지 말고 독립된 바이너리 근거와 소비자를 먼저 확정한다.
+const TABLE_LAYOUT_CTRL_DATA_I4_ITEMS: [(u16, u32); 11] = [
+    (0x4000, 3826),
+    (0x4001, 1048),
+    (0x4002, 28346),
+    (0x4003, 8475),
+    (0x4004, 708),
+    (0x4005, 0),
+    (0x4006, 2),
+    (0x4007, 9),
+    (0x4008, 0),
+    (0x4009, 59528),
+    (0x400a, 84188),
+];
 
+fn build_table_layout_ctrl_data() -> Vec<u8> {
+    // HWPX→HWP adapter가 특정 3x2 선택지 표 뒤에 materialize하는 104바이트 raw 계약.
+    // serializer는 이 payload를 해석하거나 재번호화하지 않고 ctrl_data_records에서 복사한다.
     let mut data = Vec::with_capacity(104);
     data.extend_from_slice(&0x021b_u16.to_le_bytes());
     data.extend_from_slice(&1_u16.to_le_bytes());
@@ -1816,10 +2276,10 @@ fn build_table_layout_ctrl_data() -> Vec<u8> {
     data.extend_from_slice(&0x0242_u16.to_le_bytes());
     data.extend_from_slice(&0x8000_u16.to_le_bytes());
     data.extend_from_slice(&0x0242_u16.to_le_bytes());
-    data.extend_from_slice(&(VALUES.len() as u16).to_le_bytes());
+    data.extend_from_slice(&(TABLE_LAYOUT_CTRL_DATA_I4_ITEMS.len() as u16).to_le_bytes());
     data.extend_from_slice(&0_u16.to_le_bytes());
-    for (idx, value) in VALUES.iter().enumerate() {
-        data.extend_from_slice(&(0x4000_u16 + idx as u16).to_le_bytes());
+    for &(item_id, value) in &TABLE_LAYOUT_CTRL_DATA_I4_ITEMS {
+        data.extend_from_slice(&item_id.to_le_bytes());
         data.extend_from_slice(&0x0004_u16.to_le_bytes());
         data.extend_from_slice(&value.to_le_bytes());
     }
@@ -1859,11 +2319,9 @@ fn adapt_table_with_context(
     }
 
     // 셀별 보강 + 내부 문단 재귀 (중첩 표 대응)
-    let use_cell_width_ref = table_requires_cell_width_ref_contract(table);
-    let table_padding = table.padding;
     for cell in &mut table.cells {
         adapt_cell_list_attr(cell, report);
-        materialize_cell_list_header_contract(cell, use_cell_width_ref, &table_padding, report);
+        materialize_cell_list_header_contract(cell, report);
         for cpara in &mut cell.paragraphs {
             adapt_paragraph_with_context(cpara, report, context);
         }
@@ -1876,35 +2334,16 @@ fn adapt_table_with_context(
     }
 }
 
-fn table_requires_cell_width_ref_contract(table: &Table) -> bool {
-    // HWPX 조직도류 표는 많은 논리 열로 셀 폭을 쪼개어 만든 micro-grid 형태다.
-    // 이 계열은 LIST_HEADER width_ref bit가 없으면 한컴이 셀 내부 줄나눔 폭을 너무 좁게 잡는다.
-    //
-    // 반대로 mel-001의 8x12 인원 현황 표는 같은 bit를 세우면 한컴이 병합 셀 높이를 과도하게
-    // 계산했다. 따라서 raw_list_extra는 모든 셀에 materialize하되 width_ref bit는
-    // 고열 수 micro-grid 표에만 적용한다.
-    table.col_count >= 30
-}
-
-fn materialize_cell_list_header_contract(
-    cell: &mut Cell,
-    use_width_ref: bool,
-    table_padding: &crate::model::Padding,
-    report: &mut AdapterReport,
-) {
+fn materialize_cell_list_header_contract(cell: &mut Cell, report: &mut AdapterReport) {
     let before_width_ref = cell.list_header_width_ref;
     let before_extra_len = cell.raw_list_extra.len();
 
-    // [#1809] micro-grid 계약으로 width_ref bit0(=aim)을 켤 때, aim=false 셀의
-    // 유효 안 여백(effective_padding — 표 기본 폴백 포함)을 셀 padding 에 물질화한다.
-    // 재파싱 시 aim=true 가 되면 측정/레이아웃의 aim=true 원값 존중 경로(#493 시멘틱)가
-    // raw cell padding 을 그대로 쓰므로, 물질화 없이는 padding 0 셀의 행높이가
-    // 원본(HWPX, 표 기본 여백)과 어긋난다 (admrul_0296 행 32.37→31.60, 표 3.87px).
-    if use_width_ref && !cell.apply_inner_margin {
-        cell.padding = cell.effective_padding(table_padding);
-    }
-
-    if use_width_ref || cell.apply_inner_margin {
+    // [#4898] width_ref bit0(=aim, 자기 여백 사용)은 셀 자신의 `apply_inner_margin` 만 따른다.
+    // 예전에는 `col_count >= 30` micro-grid 휴리스틱이 aim=false 셀에도 이 비트를 세우고
+    // 표 기본 여백을 셀 padding 으로 물질화했는데, 한글이 그만큼 행 높이를 키워 1쪽 서식이
+    // 2쪽이 됐다. 한글 2022 오라클 10k 전수(x2h): 휴리스틱을 끄면 쪽수 결함 58건이 원본
+    // 쪽수로 복귀하고 새로 깨지는 문서는 0건이다(영향 문서 1,239건 전수 측정).
+    if cell.apply_inner_margin {
         cell.list_header_width_ref |= 0x0001;
     } else {
         cell.list_header_width_ref &= !0x0001;
@@ -2060,36 +2499,33 @@ fn adapt_cell_list_attr(cell: &mut Cell, report: &mut AdapterReport) {
     }
 }
 
-/// [Issue #1770] HWPX-origin 마커 스트림 경로.
-///
-/// rhwp 의 HWPX→HWP 변환은 LINE_SEG 를 verbatim 직렬화하므로 산출 HWP5 의 IR 은
-/// HWPX 시멘틱 그대로다. 재파스 시 이 마커로 `Document::is_hwpx_variant` 를 세워
-/// pagination/렌더의 `is_hwpx_source` 분기(RowBreak 분할 tolerance 등)를 HWPX 로
-/// 해석한다 — 같은 IR 이 같은 쪽수(roundtrip 자기정합, 2953495 4→5쪽 divergence 해소).
-/// 한컴은 미지의 루트 스트림을 무시하고(열림 계약 게이트로 검증), 한컴에서 재저장하면
-/// 마커가 사라지며 그 문서는 진짜 native HWP5 가 되므로 시멘틱이 자기일관적이다.
-pub const HWPX_ORIGIN_STREAM_PATH: &str = "/RhwpHwpxOrigin";
-
-/// [#3707] HWP3 출처 마커. `RhwpHwpxOrigin` 과 같은 방식이다.
-///
-/// HWP3 파싱은 `apply_hwp3_origin_fixup` 으로 `margin_bottom` 에서 1600 HU(21.3px)를
-/// 빼 한글97 의 마지막 줄 tolerance 를 모방한다. 그 보정은 IR 에만 있고 저장 파일의
-/// 여백은 원본 그대로다(그래야 한컴이 보는 기하가 원본과 같다). 그런데 재파싱 때
-/// 보정을 다시 걸지 판단하는 조건이 **문단 대비 모양 비율**이라, 저장하며 문단마다
-/// 모양이 생성돼 비율이 임계를 넘으면 보정이 사라진다(실측: ps 0.707 · cs 1.115 vs
-/// 임계 0.05 / 0.15).
-///
-/// 그 21.3px 만큼 미주 단 가용이 줄어 단 전환이 일찍 걸리고, 2단 미주의 왼쪽 단이
-/// 조기에 닫혀 미주가 다음 쪽으로 밀린다(SO-SUEOP 44쪽). 한컴은 원본·왕복본 모두
-/// 두 단을 고르게 채우므로 보정이 유지되는 쪽이 정답지와 맞는다.
-///
-/// 저장 여백을 줄이는 대신 **출처만 기록**해 재파싱이 보정을 결정론적으로 되건다.
-pub const HWP3_ORIGIN_STREAM_PATH: &str = "/RhwpHwp3Origin";
-
 /// `source_format` 검사 후 어댑터를 호출하는 보조 함수.
 ///
 /// 호출자: `DocumentCore::export_hwp_with_adapter()` (Stage 5 에서 추가).
 pub fn convert_if_hwpx_source(doc: &mut Document, source_format: FileFormat) -> AdapterReport {
+    // [#5933] HWPML(HML) 출처는 HWPX 전용 보정을 타면 안 되지만, **HWP5 스트림 계약**인
+    // 구역당 `HWPTAG_PAGE_BORDER_FILL` 3개(#3676)는 출처와 무관하게 지켜야 한다.
+    //
+    // HML 파서는 `extra_page_border_fills` 를 채우지 않아 저장본에 PBF 가 **1개만** 나갔고,
+    // 한글은 그 파일을 열되 본문을 통째로 버렸다(08462: 4쪽 7,428자 → **1쪽 0자**, 컨트롤
+    // 인구조사가 `cold:1,secd:1` 로 붕괴). rhwp 자기 조판은 같은 산출을 4쪽으로 읽으므로
+    // `--verify-pages` 로는 보이지 않는 축이다.
+    //
+    // 한글 2022 오라클 돌연변이 검정(08462) — 이 패딩만이 본문을 되살린다:
+    //
+    // | 변형 | 결과 |
+    // |---|---|
+    // | 현행(PBF 1) | 1쪽 0자 |
+    // | OLE contract 스트림 9개 추가 | 1쪽 0자 |
+    // | 스트림 압축 + `FileHeader` flags bit0 | 1쪽 0자 |
+    // | **PBF 3개** | **4쪽 7,549자** |
+    // | PBF 3개 + 압축 + 스트림 | 4쪽 7,549자 (차이 없음) |
+    //
+    // 저장 시점 보정이라 IR 과 HWPX 산출(단일 BOTH)은 그대로 둔다 — HWPX 출처와 같은 계약.
+    if matches!(source_format, FileFormat::Hml) {
+        normalize_page_border_fills_for_hwp(doc);
+        return AdapterReport::new().no_op("Hml: page_border_fill 3개만 보정");
+    }
     if !matches!(source_format, FileFormat::Hwpx | FileFormat::Hwp3) {
         return AdapterReport::new().no_op("source_format != Hwpx/Hwp3");
     }
@@ -2121,6 +2557,9 @@ pub fn convert_if_hwpx_source(doc: &mut Document, source_format: FileFormat) -> 
         doc.extra_streams
             .push((HWP3_ORIGIN_STREAM_PATH.to_string(), b"1".to_vec()));
     }
+    // [#4367] HWP3 개체 마커 축 재작성 — convert_to_hwp_ir(secd 삽입 등 다른
+    // 좌표 보정)보다 먼저, HWP3 출처에만 적용한다. HWPX 의 U+FFFC(#4778 계약)는
+    // 별개 시멘틱이므로 건드리지 않는다.
     let mut report = convert_to_hwp_ir(doc, matches!(source_format, FileFormat::Hwpx));
     report.master_page_apply_slots_materialized = master_page_apply_slots_materialized;
     report
@@ -2129,7 +2568,120 @@ pub fn convert_if_hwpx_source(doc: &mut Document, source_format: FileFormat) -> 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::model::paragraph::CharShapeRef;
+    use crate::model::paragraph::{CharShapeRef, LineSeg, RangeTag};
+
+    /// [#4680] 구역 정의 컨트롤을 첫 문단에 삽입할 때 글자 오프셋 자리를 함께 비워야 한다.
+    ///
+    /// `serialize_para_text` 는 `char_offsets` 의 빈 간격에만 제어문자를 넣고, 간격이 없으면
+    /// 글자를 다 쓴 뒤에 몰아 쓴다. HWP3 파서는 오프셋을 글자 수만으로 만들어 간격이 없어
+    /// 종전에는 `secd`·`cold` 가 본문 글자 **뒤**로 밀렸고, 그 저장본을 한글 2022 로 열면
+    /// 응답이 끊기거나 죽었다(실측 10건 중 5건이 이 수정으로 열린다). 한컴 산출물은 언제나
+    /// 정의 제어문자가 글자보다 앞이다.
+    #[test]
+    fn issue4680_section_def_insert_makes_room_in_char_offsets() {
+        use crate::model::document::{Section, SectionDef};
+        use crate::model::page::PageDef;
+        use crate::model::paragraph::Paragraph;
+
+        // HWP3 파서 산출 모양: 글자 수만큼의 연속 오프셋, 정의 컨트롤은 cold 하나뿐.
+        let mut para = Paragraph {
+            text: "(별표 2)".to_string(),
+            char_offsets: (0..6).collect(),
+            char_shapes: vec![
+                CharShapeRef {
+                    start_pos: 0,
+                    char_shape_id: 1,
+                },
+                CharShapeRef {
+                    start_pos: 3,
+                    char_shape_id: 2,
+                },
+            ],
+            range_tags: vec![RangeTag {
+                start: 0,
+                end: 4,
+                tag: 0x0100_0003,
+            }],
+            line_segs: vec![
+                LineSeg {
+                    text_start: 0,
+                    ..Default::default()
+                },
+                LineSeg {
+                    text_start: 3,
+                    ..Default::default()
+                },
+            ],
+            ..Default::default()
+        };
+        para.controls.push(Control::ColumnDef(Default::default()));
+        let mut section = Section {
+            section_def: SectionDef {
+                page_def: PageDef {
+                    width: 59528,
+                    height: 84188,
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+            paragraphs: vec![para],
+            ..Default::default()
+        };
+
+        let mut report = AdapterReport::default();
+        insert_section_def_control(&mut section, &mut report);
+
+        assert_eq!(report.section_def_controls_inserted, 1);
+        // secd + cold = 확장 제어문자 2개 × 8 코드유닛만큼 앞자리가 비어야 한다.
+        assert_eq!(
+            section.paragraphs[0].char_offsets,
+            vec![16, 17, 18, 19, 20, 21],
+            "정의 컨트롤 2개분(16 코드유닛) 만큼 밀려야 함"
+        );
+        assert_eq!(section.paragraphs[0].char_shapes[0].start_pos, 0);
+        assert_eq!(section.paragraphs[0].char_shapes[1].start_pos, 19);
+        assert_eq!(section.paragraphs[0].range_tags[0].start, 16);
+        assert_eq!(section.paragraphs[0].range_tags[0].end, 20);
+        assert_eq!(section.paragraphs[0].line_segs[0].text_start, 0);
+        assert_eq!(section.paragraphs[0].line_segs[1].text_start, 19);
+    }
+
+    /// [#4680] 자리가 이미 있는 IR(HWPX 출신 등)은 밀지 않는다 — 두 번 밀면 컨트롤과
+    /// 글자 사이에 빈 슬롯이 생겨 오히려 위치가 어긋난다.
+    #[test]
+    fn issue4680_existing_room_is_not_shifted_again() {
+        use crate::model::document::{Section, SectionDef};
+        use crate::model::page::PageDef;
+        use crate::model::paragraph::Paragraph;
+
+        let para = Paragraph {
+            text: "가나".to_string(),
+            // 이미 정의 컨트롤 하나(8 코드유닛)분 자리가 있는 오프셋
+            char_offsets: vec![8, 9],
+            ..Default::default()
+        };
+        let mut section = Section {
+            section_def: SectionDef {
+                page_def: PageDef {
+                    width: 59528,
+                    height: 84188,
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+            paragraphs: vec![para],
+            ..Default::default()
+        };
+
+        let mut report = AdapterReport::default();
+        insert_section_def_control(&mut section, &mut report);
+
+        assert_eq!(
+            section.paragraphs[0].char_offsets,
+            vec![8, 9],
+            "secd 한 개분 자리가 이미 있으므로 추가 이동 없음"
+        );
+    }
 
     /// [#3676] HWP3 parser가 실제로 만드는 그림/도형/표 캡션과 HiddenComment, 그리고
     /// 공통 adapter가 다루는 바탕쪽 글상자를 모두 건너 문단 직속 그림만 보정하면,
@@ -2809,20 +3361,17 @@ mod tests {
 
     #[test]
     fn cell_list_header_contract_materializes_width_ref_and_extra() {
+        // [#4898] bit0 는 셀 자신의 안 여백 사용 여부만 따른다.
         let mut cell = Cell {
             width: 2266,
             list_header_width_ref: 0,
             raw_list_extra: Vec::new(),
+            apply_inner_margin: true,
             ..Default::default()
         };
         let mut report = AdapterReport::new();
 
-        materialize_cell_list_header_contract(
-            &mut cell,
-            true,
-            &crate::model::Padding::default(),
-            &mut report,
-        );
+        materialize_cell_list_header_contract(&mut cell, &mut report);
 
         assert_eq!(cell.list_header_width_ref & 0x0001, 0x0001);
         assert_eq!(cell.raw_list_extra.len(), 13);
@@ -2833,12 +3382,7 @@ mod tests {
         assert!(cell.raw_list_extra[4..].iter().all(|&byte| byte == 0));
         assert_eq!(report.cells_list_header_contract_materialized, 1);
 
-        materialize_cell_list_header_contract(
-            &mut cell,
-            true,
-            &crate::model::Padding::default(),
-            &mut report,
-        );
+        materialize_cell_list_header_contract(&mut cell, &mut report);
         assert_eq!(report.cells_list_header_contract_materialized, 1);
     }
 
@@ -2852,12 +3396,7 @@ mod tests {
         };
         let mut report = AdapterReport::new();
 
-        materialize_cell_list_header_contract(
-            &mut cell,
-            false,
-            &crate::model::Padding::default(),
-            &mut report,
-        );
+        materialize_cell_list_header_contract(&mut cell, &mut report);
 
         assert_eq!(cell.list_header_width_ref & 0x0001, 0);
         assert_eq!(cell.raw_list_extra.len(), 13);
@@ -2953,6 +3492,73 @@ mod tests {
 
         assert_eq!(doc.sections[1].paragraphs[0].raw_break_type, 0x01);
         assert_eq!(report.following_section_break_type_materialized, 1);
+    }
+
+    /// [#4677] 캡션 달린 묶음 개체는 번호 범주 비트가 bit28 이 아니라 bit29 다.
+    ///
+    /// 파서는 `numberingType="PICTURE"` 개체에 bit28 을 세우는데, 한글 2022 는 캡션이 달린
+    /// 묶음을 저장할 때 bit29 를 쓴다(오라클 `0x242A4311` vs rhwp `0x142A4311`). 이 한 비트가
+    /// 어긋나면 한글이 문서를 열되 본문을 통째로 버린다. 캡션 문단 자체도 어댑터가 방문해야
+    /// PARA_HEADER tail 이 채워진다.
+    #[test]
+    fn captioned_group_gets_hancom_numbering_bit_and_visited_caption() {
+        use crate::model::shape::{Caption, GroupShape};
+
+        let caption_para = Paragraph::default();
+        let group = GroupShape {
+            common: crate::model::shape::CommonObjAttr {
+                attr: 1 << 28,
+                hwp5_gen_shape_attr_bit28: true,
+                ..Default::default()
+            },
+            caption: Some(Caption {
+                paragraphs: vec![caption_para],
+                ..Default::default()
+            }),
+            ..Default::default()
+        };
+
+        let mut doc = Document {
+            sections: vec![Section {
+                paragraphs: vec![Paragraph {
+                    controls: vec![Control::Shape(Box::new(ShapeObject::Group(group)))],
+                    ..Default::default()
+                }],
+                ..Default::default()
+            }],
+            ..Default::default()
+        };
+
+        let report = convert_hwpx_to_hwp_ir(&mut doc);
+
+        let group = doc.sections[0].paragraphs[0]
+            .controls
+            .iter()
+            .find_map(|ctrl| match ctrl {
+                Control::Shape(shape) => match shape.as_ref() {
+                    ShapeObject::Group(group) => Some(group),
+                    _ => None,
+                },
+                _ => None,
+            })
+            .expect("묶음 개체가 남아 있어야 한다");
+        assert_eq!(
+            group.common.attr & (1 << 28),
+            0,
+            "PICTURE 번호 비트(bit28)는 지운다"
+        );
+        assert_ne!(
+            group.common.attr & (1 << 29),
+            0,
+            "한컴은 캡션 달린 묶음에 bit29 를 쓴다"
+        );
+        assert_eq!(report.captioned_group_numbering_bit_materialized, 1);
+
+        let caption = group.caption.as_ref().expect("캡션 보존");
+        assert!(
+            caption.paragraphs[0].raw_header_extra.len() >= 12,
+            "캡션 문단도 방문해 PARA_HEADER tail 이 채워져야 한다"
+        );
     }
 
     #[test]
@@ -3288,6 +3894,89 @@ mod tests {
     }
 
     #[test]
+    fn table_layout_ctrl_data_item_ids_are_an_explicit_observed_contract() {
+        assert_eq!(
+            TABLE_LAYOUT_CTRL_DATA_I4_ITEMS,
+            [
+                (0x4000, 3826),
+                (0x4001, 1048),
+                (0x4002, 28346),
+                (0x4003, 8475),
+                (0x4004, 708),
+                (0x4005, 0),
+                (0x4006, 2),
+                (0x4007, 9),
+                (0x4008, 0),
+                (0x4009, 59528),
+                (0x400a, 84188),
+            ]
+        );
+
+        let payload = build_table_layout_ctrl_data();
+        assert_eq!(payload.len(), 104);
+        for (index, &(item_id, value)) in TABLE_LAYOUT_CTRL_DATA_I4_ITEMS.iter().enumerate() {
+            let offset = 16 + index * 8;
+            assert_eq!(
+                &payload[offset..offset + 2],
+                &item_id.to_le_bytes(),
+                "item[{index}] id"
+            );
+            assert_eq!(
+                &payload[offset + 2..offset + 4],
+                &0x0004_u16.to_le_bytes(),
+                "item[{index}] type"
+            );
+            assert_eq!(
+                &payload[offset + 4..offset + 8],
+                &value.to_le_bytes(),
+                "item[{index}] value"
+            );
+        }
+    }
+
+    #[test]
+    fn table_layout_ctrl_data_materializes_for_nested_cell_owner() {
+        let mut nested_paragraph = Paragraph::default();
+        nested_paragraph
+            .controls
+            .push(Control::Table(Box::new(Table {
+                row_count: 3,
+                col_count: 2,
+                page_break: TablePageBreak::RowBreak,
+                repeat_header: true,
+                ..Default::default()
+            })));
+
+        let mut paragraph = Paragraph::default();
+        paragraph.controls.push(Control::Table(Box::new(Table {
+            row_count: 1,
+            col_count: 1,
+            cells: vec![Cell {
+                col_span: 1,
+                row_span: 1,
+                paragraphs: vec![nested_paragraph],
+                ..Default::default()
+            }],
+            ..Default::default()
+        })));
+
+        let mut report = AdapterReport::new();
+        adapt_paragraph(&mut paragraph, &mut report);
+
+        assert_eq!(report.table_layout_ctrl_data_materialized, 1);
+        assert!(paragraph.ctrl_data_records[0].is_none());
+        let Control::Table(outer) = &paragraph.controls[0] else {
+            panic!("expected outer table");
+        };
+        let nested_owner = &outer.cells[0].paragraphs[0];
+        assert_eq!(nested_owner.ctrl_data_records.len(), 1);
+        assert_eq!(
+            nested_owner.ctrl_data_records[0].as_deref(),
+            Some(build_table_layout_ctrl_data().as_slice())
+        );
+    }
+
+    #[test]
     fn table_layout_ctrl_data_does_not_materialize_for_other_table_shapes() {
         let mut para = Paragraph::default();
         para.controls.push(Control::Table(Box::new(Table {
@@ -3314,13 +4003,13 @@ mod tests {
         };
 
         let mut report = AdapterReport::new();
-        adapt_section_def(&mut section_def, &mut report);
+        adapt_section_def(&mut section_def, &hwp_version(5, 1, 0, 0), &mut report);
 
         assert_eq!(section_def.flags, 0x2000_0000);
         assert_eq!(report.section_def_single_master_page_flags_materialized, 1);
 
         let mut second = AdapterReport::new();
-        adapt_section_def(&mut section_def, &mut second);
+        adapt_section_def(&mut section_def, &hwp_version(5, 1, 0, 0), &mut second);
         assert_eq!(second.section_def_single_master_page_flags_materialized, 0);
     }
 
@@ -3336,7 +4025,7 @@ mod tests {
         };
 
         let mut report = AdapterReport::new();
-        adapt_section_def(&mut section_def, &mut report);
+        adapt_section_def(&mut section_def, &hwp_version(5, 1, 0, 0), &mut report);
 
         assert_eq!(section_def.flags & 0xe000_0000, 0x8000_0000);
         assert_eq!(report.section_def_single_master_page_flags_materialized, 1);
@@ -3351,13 +4040,13 @@ mod tests {
         };
 
         let mut report = AdapterReport::new();
-        adapt_section_def(&mut section_def, &mut report);
+        adapt_section_def(&mut section_def, &hwp_version(5, 1, 0, 0), &mut report);
 
         assert_eq!(section_def.flags, 0xC000_0000);
         assert_eq!(report.section_def_multi_master_page_flags_materialized, 1);
 
         let mut second = AdapterReport::new();
-        adapt_section_def(&mut section_def, &mut second);
+        adapt_section_def(&mut section_def, &hwp_version(5, 1, 0, 0), &mut second);
         assert_eq!(second.section_def_multi_master_page_flags_materialized, 0);
     }
 
@@ -3370,7 +4059,7 @@ mod tests {
         };
 
         let mut report = AdapterReport::new();
-        adapt_section_def(&mut section_def, &mut report);
+        adapt_section_def(&mut section_def, &hwp_version(5, 1, 0, 0), &mut report);
 
         assert_eq!(section_def.flags & 0xe000_0000, 0xc000_0000);
         assert_eq!(report.section_def_multi_master_page_flags_materialized, 1);
@@ -3400,37 +4089,88 @@ mod tests {
         assert_ne!(section_def.flags & 0x0008_0000, 0);
     }
 
+    fn hwp_version(major: u8, minor: u8, build: u8, revision: u8) -> HwpVersion {
+        HwpVersion {
+            major,
+            minor,
+            build,
+            revision,
+        }
+    }
+
+    /// [#5249] `secd` tail 은 바탕쪽이 아니라 **저장될 파일 버전**이 정한다.
+    ///
+    /// 한컴 저작 517구역 실측(`scripts/secd_tail_survey.py`): 5.0.4.0 미만은 10 byte
+    /// tail(secd 38), 5.0.4.0 이상은 19 byte tail(secd 47). 종전 게이트(바탕쪽 유무)는
+    /// 양방향으로 어긋났다 — 바탕쪽 0인데 47이 284구역, 바탕쪽이 있는데 38이 10구역.
+    ///
+    /// 길이·마커 범위·raw 보존을 한 함수에 담는다 — `src` 유닛 테스트 총량은 래칫으로
+    /// 묶여 있고(`scripts/rust-unit-test-tiers.mjs`), 변환 산출 바이트 판정은
+    /// `tests/cases/issue_5249_section_def_ctrl_tail.rs` 가 따로 맡는다.
     #[test]
-    fn section_def_master_page_tail_marker_depends_on_master_page_count() {
-        let mut single = SectionDef {
-            master_pages: vec![Default::default()],
-            ..Default::default()
-        };
+    fn section_def_tail_follows_the_saved_file_version() {
+        // ① HWPX 출처의 실제 저장 버전(파서가 5.1.0.0 을 적는다) + 바탕쪽 없음.
+        let mut modern = SectionDef::default();
         let mut report = AdapterReport::new();
-        materialize_section_def_master_page_tail(&mut single, &mut report);
-        assert_eq!(single.raw_ctrl_extra.len(), 19);
-        assert_eq!(&single.raw_ctrl_extra[0..4], &[0, 0, 0, 0]);
+        materialize_section_def_ctrl_tail(&mut modern, &hwp_version(5, 1, 0, 0), &mut report);
+        assert_eq!(
+            modern.raw_ctrl_extra.len(),
+            19,
+            "5.1.0.0 저장본은 바탕쪽이 없어도 19 byte tail(secd 47)이다"
+        );
+        assert!(modern.raw_ctrl_extra.iter().all(|b| *b == 0));
         assert_eq!(report.section_def_master_page_tail_materialized, 1);
 
-        let mut pair = SectionDef {
-            master_pages: vec![Default::default(), Default::default()],
-            ..Default::default()
-        };
+        // ② 경계 자신과 그 바로 아래.
+        let mut boundary = SectionDef::default();
         let mut report = AdapterReport::new();
-        materialize_section_def_master_page_tail(&mut pair, &mut report);
-        assert_eq!(pair.raw_ctrl_extra.len(), 19);
-        assert_eq!(&pair.raw_ctrl_extra[0..4], &[0, 0, 0, 0]);
-        assert_eq!(report.section_def_master_page_tail_materialized, 1);
+        materialize_section_def_ctrl_tail(&mut boundary, &hwp_version(5, 0, 4, 0), &mut report);
+        assert_eq!(boundary.raw_ctrl_extra.len(), 19);
 
+        let mut legacy = SectionDef::default();
+        let mut report = AdapterReport::new();
+        materialize_section_def_ctrl_tail(&mut legacy, &hwp_version(5, 0, 3, 0), &mut report);
+        assert_eq!(
+            legacy.raw_ctrl_extra.len(),
+            10,
+            "5.0.3.0 은 10 byte tail(secd 38)"
+        );
+
+        // ③ 바탕쪽은 길이를 바꾸지 않는다 — 확장 tail 의 마커 자리만 건드린다.
         let mut triple = SectionDef {
             master_pages: vec![Default::default(), Default::default(), Default::default()],
             ..Default::default()
         };
         let mut report = AdapterReport::new();
-        materialize_section_def_master_page_tail(&mut triple, &mut report);
+        materialize_section_def_ctrl_tail(&mut triple, &hwp_version(5, 1, 0, 0), &mut report);
         assert_eq!(triple.raw_ctrl_extra.len(), 19);
         assert_eq!(&triple.raw_ctrl_extra[0..4], &[0, 0, 1, 0]);
-        assert_eq!(report.section_def_master_page_tail_materialized, 1);
+
+        // 구 계약에는 마커 자리가 없다 — 10 byte 를 넘겨 쓰지 않는다.
+        let mut legacy_triple = SectionDef {
+            master_pages: vec![Default::default(), Default::default(), Default::default()],
+            ..Default::default()
+        };
+        let mut report = AdapterReport::new();
+        materialize_section_def_ctrl_tail(
+            &mut legacy_triple,
+            &hwp_version(5, 0, 3, 0),
+            &mut report,
+        );
+        assert_eq!(legacy_triple.raw_ctrl_extra.len(), 10);
+        assert_eq!(&legacy_triple.raw_ctrl_extra[2..4], &[0, 0]);
+
+        // ④ HWP5 원본에서 파싱한 tail 은 손대지 않는다 — 라운드트립 계약이 먼저다.
+        let original = vec![9u8; 17];
+        let mut parsed = SectionDef {
+            raw_ctrl_extra: original.clone(),
+            master_pages: vec![Default::default(), Default::default(), Default::default()],
+            ..Default::default()
+        };
+        let mut report = AdapterReport::new();
+        materialize_section_def_ctrl_tail(&mut parsed, &hwp_version(5, 1, 0, 0), &mut report);
+        assert_eq!(parsed.raw_ctrl_extra, original);
+        assert_eq!(report.section_def_master_page_tail_materialized, 0);
     }
 
     #[test]

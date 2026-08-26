@@ -1,0 +1,28 @@
+{
+  "id": "p4-cellctx",
+  "title": "칸 블록 맥락이 실제로 서는가 — 잣대부터 확인",
+  "ledger": [],
+  "open": "samples/21868765_별표2_보건소_분장사무.hwp",
+  "calls": [
+    ["SetPos", [3, 0, 0]],
+    ["GetPos", []],
+    ["SelectionMode", []],
+    ["CellShape.Item", ["Width"]],
+    ["CellShape.Item", ["Height"]],
+    ["Run", ["TableCellBlock"]],
+    ["SelectionMode", []],
+    ["GetSelectedPos", []],
+    ["Run", ["TableCellBlockExtend"]],
+    ["SelectionMode", []],
+    ["Run", ["TableDistributeCellWidth"]],
+    ["CellShape.Item", ["Width"]],
+    ["CellShape.Item", ["Width"]],
+    ["SelectionMode", []],
+    ["Run", ["TableResizeCellRight"]],
+    ["CellShape.Item", ["Width"]],
+    ["CellShape.Item", ["Width"]],
+    ["Run", ["TableResizeCellRight"]],
+    ["CellShape.Item", ["Width"]],
+    ["CellShape.Item", ["Width"]]
+  ]
+}

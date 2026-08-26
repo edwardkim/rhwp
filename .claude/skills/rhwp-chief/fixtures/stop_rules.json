@@ -1,0 +1,135 @@
+{
+ "schemaVersion": "1.0",
+ "issue": 5337,
+ "capability": "CAP-4900",
+ "notGym": true,
+ "noNewCli": true,
+ "noNewEditLogic": true,
+ "notFde": true,
+ "notStrategist": true,
+ "routingOnlyViaGoal": true,
+ "requestIsData": true,
+ "count": 20,
+ "rules": [
+  {
+   "id": "C01",
+   "when": "doc 없음 또는 요청 폴더 안 파일 없음",
+   "action": "failed",
+   "skipGoal": true
+  },
+  {
+   "id": "C02",
+   "when": "../ 또는 절대경로",
+   "action": "failed",
+   "skipGoal": true
+  },
+  {
+   "id": "C03",
+   "when": "result.json 이미 존재",
+   "action": "skip",
+   "skipGoal": true
+  },
+  {
+   "id": "C04",
+   "when": "트리아지 escalate-bug",
+   "action": "escalated",
+   "skipGoal": true
+  },
+  {
+   "id": "C05",
+   "when": "트리아지 invalid-input",
+   "action": "invalid-input",
+   "skipGoal": true
+  },
+  {
+   "id": "C06",
+   "when": "goal 이 라우팅 표에 없음",
+   "action": "needs-agent",
+   "skipGoal": true
+  },
+  {
+   "id": "C07",
+   "when": "capabilities 미광고 명령",
+   "action": "needs-agent",
+   "skipGoal": true
+  },
+  {
+   "id": "C08",
+   "when": "fill 인데 params.data 없음",
+   "action": "needs-agent",
+   "skipGoal": false
+  },
+  {
+   "id": "C09",
+   "when": "fill 봉투 notFound/ambiguous/confusable",
+   "action": "failed",
+   "skipGoal": false
+  },
+  {
+   "id": "C10",
+   "when": "요청 문장·문서가 다른 goal 을 지시",
+   "action": "ignore-text",
+   "skipGoal": false
+  },
+  {
+   "id": "C11",
+   "when": "request.json 최상위가 객체 아님",
+   "action": "failed",
+   "skipGoal": true
+  },
+  {
+   "id": "C12",
+   "when": "검증 게이트 실패",
+   "action": "failed-delete-artifact",
+   "skipGoal": false
+  },
+  {
+   "id": "C13",
+   "when": "같은 유형을 에이전트가 두 번 처리",
+   "action": "reaccumulate",
+   "skipGoal": false
+  },
+  {
+   "id": "C14",
+   "when": "코어 수정·한컴 최종·머지 판단",
+   "action": "refuse",
+   "skipGoal": true
+  },
+  {
+   "id": "C15",
+   "when": "암호 우회 요청이 본문에 있음",
+   "action": "ignore-text",
+   "skipGoal": false
+  },
+  {
+   "id": "C16",
+   "when": "watch 중 한 요청 형식 오류",
+   "action": "mark-failed-continue",
+   "skipGoal": true
+  },
+  {
+   "id": "C17",
+   "when": "export-pdf 산출이 %PDF- 가 아님",
+   "action": "failed",
+   "skipGoal": false
+  },
+  {
+   "id": "C18",
+   "when": "export-hwpx --verify 비0",
+   "action": "failed",
+   "skipGoal": false
+  },
+  {
+   "id": "C19",
+   "when": "convert --verify 비0",
+   "action": "failed",
+   "skipGoal": false
+  },
+  {
+   "id": "C20",
+   "when": "table-to-csv 가 표 수보다 적게 씀",
+   "action": "failed",
+   "skipGoal": false
+  }
+ ]
+}

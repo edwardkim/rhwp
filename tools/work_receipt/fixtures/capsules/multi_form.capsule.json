@@ -1,0 +1,36 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workCapsule",
+  "parent": null,
+  "plan": {
+    "planVersion": "1.0",
+    "input": "samples/basic/blank2010.hwp",
+    "output": "out/multi-form.hwp",
+    "steps": [
+      {
+        "action": "fill_fields",
+        "data": {
+          "성명": "홍길동"
+        }
+      },
+      {
+        "action": "set_checkbox",
+        "name": "개인정보수집동의",
+        "checked": true
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"samples/basic/blank2010.hwp\",\"output\":\"out/multi-form.hwp\",\"steps\":[{\"action\":\"fill_fields\",\"data\":{\"성명\":\"홍길동\"}},{\"action\":\"set_checkbox\",\"name\":\"개인정보수집동의\",\"checked\":true}]}",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "samples/basic/blank2010.hwp",
+    "inputSha256": "1cd6bb2c3cbac06bd8867bb86cd324b7b3f86f2b8831221c8333c84901ed83f4",
+    "planSha256": "891a6c6e8c86147a7a328b9ec1611250b0aef4130630f4e94278702b6b74467f",
+    "outputSha256": "d071c1789f86caa1e3473fff240aa1a95ec053dbddc43dd221d1d6a115cb6b09",
+    "toolVersion": "fixture-0.0.0-not-a-release",
+    "steps": 2,
+    "reproduced": null,
+    "expectedOutputSha256": null
+  }
+}

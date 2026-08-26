@@ -1,0 +1,25 @@
+{
+  "id": "EX28",
+  "tier": 2,
+  "title": "수량 수확 — 시험지 HWP",
+  "input": "samples/exam-kor-1p.hwp",
+  "instructions": "extract-data --kind number 로 이 시험지에서 수량 항목 수(itemCount)를 보고하라. 답 형식: {\"numbers\": <수>}. 0건은 오류가 아니다.",
+  "submit": {
+    "kind": "answer"
+  },
+  "checks": [
+    {
+      "name": "numbers 일치",
+      "op": "answer_eq",
+      "answer": "numbers",
+      "cmd": [
+        "extract-data",
+        "{input}",
+        "--kind",
+        "number",
+        "--json"
+      ],
+      "path": "itemCount"
+    }
+  ]
+}

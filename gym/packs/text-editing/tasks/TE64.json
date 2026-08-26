@@ -1,0 +1,30 @@
+{
+  "id": "TE64",
+  "tier": 1,
+  "title": "대소문자 무시 'REGULATORY'",
+  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "instructions": "입력에서 'REGULATORY' 를 대소문자 구분 없이 검색한 건수를 answer.json 에 {\"matches\": N} 으로 제출하라. 힌트: search --ignore-case.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "대소문자 무시 'REGULATORY' · matches",
+      "op": "answer_eq",
+      "answer": "matches",
+      "path": "matchCount",
+      "cmd": [
+        "search",
+        "{input}",
+        "--ignore-case",
+        "--json",
+        "--",
+        "REGULATORY"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

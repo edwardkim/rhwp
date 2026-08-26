@@ -1,0 +1,27 @@
+{
+  "id": "OP08",
+  "tier": 2,
+  "title": "중첩 표 개수 라이브 재계산",
+  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "axis": "검증",
+  "instructions": "중첩 표 표본의 표 개수를 answer.json 에 {\"tables\": N} 으로 제출하라. 채점기가 export-tables --json 의 tableCount 를 다시 읽는다.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "중첩 표 개수",
+      "op": "answer_eq",
+      "answer": "tables",
+      "cmd": [
+        "export-tables",
+        "{input}",
+        "--json"
+      ],
+      "path": "tableCount"
+    }
+  ]
+}

@@ -1,0 +1,42 @@
+{
+  "schemaVersion": "1.0",
+  "countsAreNotContracts": true,
+  "layers": [
+    {
+      "id": "cli-json",
+      "title": "CLI JSON",
+      "what": "stdout 순수 JSON 봉투 + 종료 코드 0/1/2/3/4",
+      "ssot": "각 명령 구현 + 봉투 helper (*_json_value)",
+      "entry": [
+        "rhwp capabilities",
+        "rhwp <cmd> --json"
+      ],
+      "not": "rhwp --help 파싱은 계약이 아니다",
+      "guard": "tests/cli_json_contract.rs"
+    },
+    {
+      "id": "mcp-stateless",
+      "title": "MCP 무상태",
+      "what": "capabilities --mcp 선언과 mcp-serve tools/list 가 공유하는 도구",
+      "ssot": "src/main.rs mcp_tool_definitions()",
+      "entry": [
+        "rhwp capabilities --mcp",
+        "rhwp://capabilities/mcp"
+      ],
+      "not": "세션 도구는 이 층에 없다",
+      "guard": "capabilities_mcp_covers_every_json_command"
+    },
+    {
+      "id": "mcp-session",
+      "title": "MCP 세션",
+      "what": "열린 핸들(docId) 위의 재파싱 없는 연산",
+      "ssot": "src/mcp_serve.rs served_tools() + src/agent_profiles.rs ALL_SESSION_TOOLS",
+      "entry": [
+        "mcp-serve tools/list",
+        "hwp_open"
+      ],
+      "not": "capabilities --mcp 선언에 세션 이름이 없다",
+      "guard": "tools_list_matches_capabilities_manifest"
+    }
+  ]
+}

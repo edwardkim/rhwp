@@ -1,0 +1,183 @@
+{
+  "schema": "hwp5InventoryFailureClass.v1",
+  "source": "mydocs/troubleshootings/hwpx2hwp-rule.md §5",
+  "classes": [
+    {
+      "code": "A",
+      "name": "Container / Stream Contract",
+      "inspect": [
+        "FileHeader",
+        "DocInfo stream",
+        "BodyText/Section stream",
+        "BinData stream",
+        "compression flag",
+        "stream size",
+        "section_count"
+      ],
+      "signals": [
+        "파일 읽기 오류",
+        "파일 크기가 비정상적으로 작거나 큼",
+        "rhwp-studio는 열지만 한컴이 초기 로딩에서 실패"
+      ],
+      "inventory_columns": [
+        "stream_path",
+        "section",
+        "owner",
+        "size"
+      ],
+      "typical_diff_kinds": [
+        "missing",
+        "extra",
+        "size_changed"
+      ],
+      "typical_focus": "docinfo",
+      "next_probe": "DocInfo / FileHeader graft 를 BodyText 보다 먼저 분리한다."
+    },
+    {
+      "code": "B",
+      "name": "Record Tree Contract",
+      "inspect": [
+        "CTRL_HEADER -> concrete control record",
+        "LIST_HEADER -> child paragraph records",
+        "PARA_HEADER -> PARA_TEXT / PARA_CHAR_SHAPE / PARA_LINE_SEG",
+        "TABLE -> CELL/LIST_HEADER/TEXT subtree",
+        "SHAPE_COMPONENT / SHAPE_PICTURE subtree"
+      ],
+      "signals": [
+        "일부 출력 후 파일 손상",
+        "특정 표, 그림, 문단 직후 중단",
+        "rhwp-studio는 정상 렌더링"
+      ],
+      "inventory_columns": [
+        "scope_path",
+        "level",
+        "tuple_role",
+        "parent_uid",
+        "record_index"
+      ],
+      "typical_diff_kinds": [
+        "missing",
+        "extra",
+        "tag_changed",
+        "scope_changed"
+      ],
+      "typical_focus": "missing",
+      "next_probe": "중단 지점 직후 record 를 oracle 단위로 graft 한다."
+    },
+    {
+      "code": "C",
+      "name": "Count / Size / Reference Contract",
+      "inspect": [
+        "PARA_HEADER char_count",
+        "control mask",
+        "LIST_HEADER paragraph count",
+        "TABLE row_count / col_count / cell_count / span",
+        "DocInfo ID_MAPPINGS",
+        "CharShape / ParaShape / BorderFill / BinData reference id"
+      ],
+      "signals": [
+        "파일 손상",
+        "일부 셀이나 일부 문단 이후 중단",
+        "특정 object 삽입 후 다음 record가 밀린 듯 보임"
+      ],
+      "inventory_columns": [
+        "size",
+        "key_payload",
+        "payload_hash",
+        "control_id"
+      ],
+      "typical_diff_kinds": [
+        "size_changed",
+        "payload_changed",
+        "control_changed"
+      ],
+      "typical_focus": "ctrl",
+      "next_probe": "count/size 필드를 table-fields 또는 payload hex 로 좁힌다."
+    },
+    {
+      "code": "D",
+      "name": "DocInfo / BinData Contract",
+      "inspect": [
+        "BIN_DATA record count",
+        "BIN_DATA type/path/storage id",
+        "CFB BinData/BINxxxx stream 존재 여부",
+        "picture control의 bin_data_id",
+        "image format 변환 여부"
+      ],
+      "signals": [
+        "그림 경로 찾기 대화상자",
+        "이미지 미출력",
+        "한컴은 열지만 이미지가 빠짐"
+      ],
+      "inventory_columns": [
+        "control_id",
+        "payload_hash",
+        "stream_path"
+      ],
+      "typical_diff_kinds": [
+        "missing",
+        "payload_changed"
+      ],
+      "typical_focus": "docinfo",
+      "next_probe": "BIN_DATA 와 CTRL_HEADER(GenShape)/SHAPE_PICTURE 를 한 튜플로 본다."
+    },
+    {
+      "code": "E",
+      "name": "Missing HWP Defaults",
+      "inspect": [
+        "CTRL_HEADER attr",
+        "TABLE attr / margin / tail",
+        "LIST_HEADER extra",
+        "ParaShape attr bits",
+        "SectionDef 기본 필드",
+        "PageBorderFill / PageDef / ColumnDef 기본값"
+      ],
+      "signals": [
+        "한컴에서 열리지만 조판이 다름",
+        "셀 텍스트가 위로 올라가거나 클리핑됨",
+        "표가 종이 왼쪽에 붙음"
+      ],
+      "inventory_columns": [
+        "key_payload",
+        "payload_hash",
+        "size"
+      ],
+      "typical_diff_kinds": [
+        "payload_changed",
+        "size_changed"
+      ],
+      "typical_focus": "table",
+      "next_probe": "table-probe 한 축만 이식하는 variant 로 기본값 축을 가른다."
+    },
+    {
+      "code": "F",
+      "name": "Layout-computed Values",
+      "inspect": [
+        "PARA_LINE_SEG",
+        "line height / baseline",
+        "object vpos / hpos",
+        "table row height",
+        "page break result"
+      ],
+      "signals": [
+        "rhwp-studio 렌더링과 저장 HWP 재로드가 다름",
+        "한컴 저장 정답 HWP와 generated HWP의 lineSegArray가 다름",
+        "HWPX lineSegArray를 그대로 쓰면 표/문단 혼합 케이스가 깨짐"
+      ],
+      "inventory_columns": [
+        "tuple_role",
+        "payload_hash",
+        "size",
+        "body_order"
+      ],
+      "typical_diff_kinds": [
+        "payload_changed",
+        "size_changed",
+        "missing",
+        "extra"
+      ],
+      "typical_focus": "all",
+      "next_probe": "PARA_LINE_SEG 를 페이지 수 로직과 섞지 않는다. inventory payload 만 대조한다."
+    }
+  ]
+}

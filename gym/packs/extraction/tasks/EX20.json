@@ -1,0 +1,25 @@
+{
+  "id": "EX20",
+  "tier": 2,
+  "title": "빈 결과 — 빈 HWPX 에서 금액 0건",
+  "input": "samples/hwpx/blank_hwpx.hwpx",
+  "instructions": "빈 문서에서 extract-data --kind amount 를 돌려 항목 수(itemCount)를 보고하라. 답 형식: {\"amounts\": <수>}. 0건은 오류가 아니다.",
+  "submit": {
+    "kind": "answer"
+  },
+  "checks": [
+    {
+      "name": "amounts 일치",
+      "op": "answer_eq",
+      "answer": "amounts",
+      "cmd": [
+        "extract-data",
+        "{input}",
+        "--kind",
+        "amount",
+        "--json"
+      ],
+      "path": "itemCount"
+    }
+  ]
+}

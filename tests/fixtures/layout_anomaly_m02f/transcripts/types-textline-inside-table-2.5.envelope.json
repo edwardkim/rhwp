@@ -1,0 +1,36 @@
+{
+  "schemaVersion": "1.0",
+  "mode": "single",
+  "source": "types-textline-inside-table-2.5.synth",
+  "pageCount": 3,
+  "pageFilter": null,
+  "overflowTolerancePx": 1.0,
+  "overlapTolerancePx": 2.0,
+  "types": [
+    "TextLine"
+  ],
+  "strict": false,
+  "overflowCount": 1,
+  "offCanvasCount": 0,
+  "overlapCount": 0,
+  "textOverlapCount": 0,
+  "emptyPageCount": 0,
+  "hasSignal": true,
+  "pages": [
+    {
+      "page": 0,
+      "overflow": [
+        {
+          "path": "Page/Body/Table0/Cell0/TextLine0",
+          "nodeType": "TextLine"
+        }
+      ],
+      "offCanvas": [],
+      "overlap": [],
+      "textOverlap": [],
+      "emptyPage": false
+    }
+  ],
+  "hypothesis": "--types TextLine 은 표 컨테이너를 건너뛰고 내부 줄의 2.5px 오른쪽 넘침만 overflow 로 센다. off-canvas 는 타입 필터와 무관하게 표에서 먼저 닫힌다.",
+  "fixtureId": "types-textline-inside-table-2.5"
+}

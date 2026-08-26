@@ -1,0 +1,108 @@
+[
+  {
+    "key": "task3820-stage81-rebase-partial-table",
+    "hwp": "samples/76076_regulatory_analysis.hwp",
+    "pdf": "samples/issue1891/76076_regulatory_analysis-2024.pdf",
+    "requested_pages": [
+      35,
+      36
+    ],
+    "completed_pages": [
+      35,
+      36
+    ],
+    "missing_pages": [],
+    "run_state": "complete",
+    "run_manifest": "/tmp/rhwp-stage81-p35-p36/task3820-stage81-rebase-partial-table/run_manifest.json",
+    "exported_svg_pages": 82,
+    "exported_render_tree_pages": 82,
+    "exported_pdf_pages": 2,
+    "rasterized_svg_pages": 2,
+    "rasterized_pdf_pages": 2,
+    "svg_pages": 2,
+    "render_tree_pages": 2,
+    "pdf_pages": 2,
+    "compare_pages": 2,
+    "overlay_pages": 2,
+    "review_pages": 2,
+    "pdf_question_markers": 0,
+    "contact_sheet": "/tmp/rhwp-stage81-p35-p36/task3820-stage81-rebase-partial-table/contact_sheet.png",
+    "overlay_contact_sheet": "/tmp/rhwp-stage81-p35-p36/task3820-stage81-rebase-partial-table/overlay_contact_sheet.png",
+    "review_contact_sheet": "/tmp/rhwp-stage81-p35-p36/task3820-stage81-rebase-partial-table/review_contact_sheet.png",
+    "analysis_dir": "/tmp/rhwp-stage81-p35-p36/task3820-stage81-rebase-partial-table/analysis",
+    "overlay_dir": "/tmp/rhwp-stage81-p35-p36/task3820-stage81-rebase-partial-table/overlay",
+    "review_dir": "/tmp/rhwp-stage81-p35-p36/task3820-stage81-rebase-partial-table/review",
+    "note_shape": [
+      {
+        "section": 0,
+        "footnote": {
+          "separatorAboveMm": 2.999,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.998,
+          "separatorEnabled": true,
+          "separatorLengthMm": -0.004,
+          "rawSeparatorMarginTopMm": -0.004,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.998
+        },
+        "endnote": {
+          "separatorAboveMm": 0.79,
+          "separatorBelowMm": 2.0,
+          "betweenNotesMm": 0.0,
+          "separatorEnabled": true,
+          "separatorLengthMm": 43.321,
+          "rawSeparatorMarginTopMm": 0.79,
+          "rawSeparatorMarginBottomMm": 2.999,
+          "rawNoteSpacingMm": 2.0,
+          "rawUnknownMm": 0.0
+        }
+      }
+    ],
+    "note_shape_json": "/tmp/rhwp-stage81-p35-p36/task3820-stage81-rebase-partial-table/analysis/note_shape.json",
+    "overlay_metrics": {
+      "compared_pages": 2,
+      "pixel_diff_threshold": 32,
+      "average_pixel_match_percent": 91.1954,
+      "worst_pixel_match_percent": 90.28891,
+      "average_ink_match_percent": 26.77687,
+      "worst_ink_match_percent": 20.40964,
+      "average_visual_accuracy_proxy_percent": 26.77687,
+      "worst_visual_accuracy_proxy_percent": 20.40964,
+      "worst_pages": [
+        35,
+        36
+      ]
+    },
+    "overlay_metrics_json": "/tmp/rhwp-stage81-p35-p36/task3820-stage81-rebase-partial-table/overlay/overlay_metrics.json",
+    "visual_metrics": {
+      "analyzed_pages": 2,
+      "flagged_page_count": 0,
+      "frame_overflow_pages": [],
+      "content_bottom_drift_pages": [],
+      "red_marker_drift_pages": [],
+      "question_marker_flow_drift_pages": [],
+      "line_band_drift_pages": [],
+      "column_line_band_drift_pages": [],
+      "column_text_flow_collapse_pages": [],
+      "large_ink_region_drift_pages": [],
+      "endnote_separator_gap_drift_pages": [],
+      "endnote_separator_observed_pages": [],
+      "endnote_separator_gap_pages": [],
+      "endnote_no_separator_content_pages": [],
+      "between_notes_marker_gap_pages": [],
+      "equation_text_overlap_pages": [],
+      "square_wrap_text_overlap_pages": [],
+      "deferred_square_picture_top_drift_pages": [],
+      "right_table_left_strip_text_deficit_pages": [],
+      "question_title_text_overlap_pages": [],
+      "line_order_overlap_pages": [],
+      "render_tree_frame_tail_overflow_pages": [],
+      "question_marker_drift_pages": [],
+      "legacy_glyph_visual_pages": [],
+      "metrics_json": "/tmp/rhwp-stage81-p35-p36/task3820-stage81-rebase-partial-table/analysis/metrics.json",
+      "question_flow_json": "/tmp/rhwp-stage81-p35-p36/task3820-stage81-rebase-partial-table/analysis/question_flow.json"
+    },
+    "flagged_pages": []
+  }
+]

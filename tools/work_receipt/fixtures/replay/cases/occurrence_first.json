@@ -1,0 +1,70 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workReceiptReplayCase",
+  "ident": "occurrence_first",
+  "claim": "M-rcpt",
+  "issue": 5478,
+  "family": "공문",
+  "genre": "순번",
+  "title": "첫 번째 2025 만 2026",
+  "why": "occurrence=0 은 첫 일치만. 전건 치환(notice_year)과 반대.",
+  "notes": "occurrence 0 기준",
+  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "output": "out/occ-first.hwp",
+  "ext": "hwp",
+  "actions": [
+    "replace_text"
+  ],
+  "stepCount": 1,
+  "plan": {
+    "planVersion": "1.0",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "output": "out/occ-first.hwp",
+    "steps": [
+      {
+        "action": "replace_text",
+        "find": "2025",
+        "replace": "2026",
+        "occurrence": 0
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"samples/basic/issue2007_nested_cell_pagination_42065.hwp\",\"output\":\"out/occ-first.hwp\",\"steps\":[{\"action\":\"replace_text\",\"find\":\"2025\",\"replace\":\"2026\",\"occurrence\":0}]}",
+  "planSha256": "f3d00efb1e94d3b989ef60810f3691474d8dd4b7de63efa8ec8bedbe68cd459b",
+  "command": "replay",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "inputSha256": "a6515047eff9fc075d7bb24ab07c533856e87c5055313e46dfa83b11defa249b",
+    "planSha256": "f3d00efb1e94d3b989ef60810f3691474d8dd4b7de63efa8ec8bedbe68cd459b",
+    "outputSha256": "d96e364f7be815a8329b71f34f78773b23f386464334dfd241d8951aa0a64c4a",
+    "toolVersion": "fixture-0.0.0-not-a-release",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null
+  },
+  "expected": {
+    "attest": {
+      "exit": 0,
+      "mode": "attest",
+      "reproduced": null,
+      "userOutputCreated": false
+    },
+    "verify_ok": {
+      "exit": 0,
+      "mode": "verify",
+      "reproduced": true,
+      "expectedOutputSha256": "d96e364f7be815a8329b71f34f78773b23f386464334dfd241d8951aa0a64c4a"
+    },
+    "verify_mismatch": {
+      "exit": 3,
+      "mode": "verify",
+      "reproduced": false,
+      "expectedOutputSha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "judgment": true
+    }
+  },
+  "claimedOutputPathUntouched": true,
+  "generator": "tools/work_receipt/fatten_work_receipt.py"
+}

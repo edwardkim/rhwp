@@ -1,0 +1,25 @@
+{
+  "id": "SD09",
+  "tier": 2,
+  "title": "스키마 레지스트리 축",
+  "input": "samples/table-001.hwp",
+  "instructions": "capabilities 가 광고하는 스키마 레지스트리의 버전 축 개수를 answer.json 에 {\"axes\": N} 으로 제출하라. 힌트: capabilities 의 schemaRegistry.axes.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "레지스트리 축 수",
+      "op": "len_answer_eq",
+      "answer": "axes",
+      "path": "schemaRegistry.axes",
+      "cmd": [
+        "capabilities"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

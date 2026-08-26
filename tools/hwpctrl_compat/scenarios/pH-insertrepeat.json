@@ -1,0 +1,39 @@
+{
+  "id": "pH-insertrepeat",
+  "title": "반복 삽입 — 두 번째로 넣은 것을 짚어야 한다",
+  "ledger": [
+    "HwpCtrl.method.InsertPicture",
+    "HwpCtrl.method.InsertCtrl"
+  ],
+  "open": "samples/para-001.hwp",
+  "paths": {
+    "picture": {
+      "win": "{repo}\\samples\\s1.jpg",
+      "posix": "{repo}/samples/s1.jpg"
+    }
+  },
+  "calls": [
+    ["SetPos", [0, 5, 3]],
+    ["InsertPicture", [{"$path": "picture"}, true, 0]],
+    ["GetPos", [], {"expect": {"list": 0, "para": 5, "pos": 8}}],
+    ["InsertPicture", [{"$path": "picture"}, true, 0]],
+    ["GetPos", [], {"expect": {"list": 0, "para": 5, "pos": 16}}],
+
+    ["HeadCtrl.Next.Next.UserDesc", [], {"expect": "그림"}],
+    ["HeadCtrl.Next.Next.GetAnchorPos(0).Item", ["Pos"], {"expect": 0}],
+    ["HeadCtrl.Next.Next.Properties.Item", ["TreatAsChar"], {"expect": 1}],
+
+    ["HeadCtrl.Next.Next.Next.UserDesc", [], {"expect": "그림"}],
+    ["HeadCtrl.Next.Next.Next.GetAnchorPos(0).Item", ["Pos"], {"expect": 8}],
+    ["HeadCtrl.Next.Next.Next.Properties.Item", ["TreatAsChar"], {"expect": 1}],
+
+    ["SetPos", [0, 0, 0]],
+    ["InsertCtrl", ["tbl", {"$obj": "CreateSet(\"Table\")"}]],
+    ["SetPos", [0, 0, 8]],
+    ["InsertCtrl", ["tbl", {"$obj": "CreateSet(\"Table\")"}]],
+    ["HeadCtrl.Next.Next.CtrlID", [], {"expect": "tbl"}],
+    ["HeadCtrl.Next.Next.Next.CtrlID", [], {"expect": "tbl"}],
+    ["HeadCtrl.Next.Next.GetAnchorPos(0).Item", ["Para"]],
+    ["HeadCtrl.Next.Next.Next.GetAnchorPos(0).Item", ["Para"]]
+  ]
+}

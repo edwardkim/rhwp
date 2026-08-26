@@ -1,0 +1,69 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workReceiptReplayCase",
+  "ident": "agenda_item",
+  "claim": "M-rcpt",
+  "issue": 5478,
+  "family": "안건",
+  "genre": "호수",
+  "title": "안건 제2호→제3호",
+  "why": "안건 번호 정정. 회의록 출석과 다른 문서 역할.",
+  "notes": "안건 호수",
+  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "output": "out/agenda-item.hwp",
+  "ext": "hwp",
+  "actions": [
+    "replace_text"
+  ],
+  "stepCount": 1,
+  "plan": {
+    "planVersion": "1.0",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "output": "out/agenda-item.hwp",
+    "steps": [
+      {
+        "action": "replace_text",
+        "find": "안건 제2호",
+        "replace": "안건 제3호"
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"samples/basic/issue2007_nested_cell_pagination_42065.hwp\",\"output\":\"out/agenda-item.hwp\",\"steps\":[{\"action\":\"replace_text\",\"find\":\"안건 제2호\",\"replace\":\"안건 제3호\"}]}",
+  "planSha256": "655664ef3e7d5fd4aa1f9319ac1690041230c0be0c81972d56cc5518bd53c700",
+  "command": "replay",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "inputSha256": "8d52296e2886d6548cc95ffd3c74a27e0edc600cfd3dfed41404b152e5edc76a",
+    "planSha256": "655664ef3e7d5fd4aa1f9319ac1690041230c0be0c81972d56cc5518bd53c700",
+    "outputSha256": "4143bf72b5971419427593ab96933a8e93693f52a24b4245c7b4a4cf78897b4e",
+    "toolVersion": "fixture-0.0.0-not-a-release",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null
+  },
+  "expected": {
+    "attest": {
+      "exit": 0,
+      "mode": "attest",
+      "reproduced": null,
+      "userOutputCreated": false
+    },
+    "verify_ok": {
+      "exit": 0,
+      "mode": "verify",
+      "reproduced": true,
+      "expectedOutputSha256": "4143bf72b5971419427593ab96933a8e93693f52a24b4245c7b4a4cf78897b4e"
+    },
+    "verify_mismatch": {
+      "exit": 3,
+      "mode": "verify",
+      "reproduced": false,
+      "expectedOutputSha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "judgment": true
+    }
+  },
+  "claimedOutputPathUntouched": true,
+  "generator": "tools/work_receipt/fatten_work_receipt.py"
+}

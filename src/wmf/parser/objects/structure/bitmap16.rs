@@ -123,7 +123,17 @@ impl Bitmap16 {
     }
 
     pub fn calc_length(&self) -> usize {
-        ((((self.width * self.bits_pixel as i16 + 15) >> 4) << 1) * self.height) as usize
+        // Width/Height/BitsPixel are attacker-controlled DIB dimensions. The
+        // MS-WMF formula `(((Width * BitsPixel + 15) >> 4) << 1) * Height`
+        // overflows when evaluated in `i16` (DoS panic under debug overflow
+        // checks; a negative `i16` result becomes a huge `usize` via
+        // sign-extension in release → OOM). Evaluate in `i64` with saturating
+        // arithmetic and clamp to a non-negative byte count.
+        let width = i64::from(self.width);
+        let bits_pixel = i64::from(self.bits_pixel as i16);
+        let height = i64::from(self.height);
+        let stride = ((width.saturating_mul(bits_pixel).saturating_add(15)) >> 4) << 1;
+        stride.saturating_mul(height).max(0) as usize
     }
 }
 
@@ -145,5 +155,41 @@ impl From<Bitmap16> for crate::wmf::parser::DeviceIndependentBitmap {
                 a_data: v.bits,
             },
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::wmf::parser::BitCount;
+
+    fn bitmap16(width: i16, height: i16, bits_pixel: BitCount) -> Bitmap16 {
+        Bitmap16 {
+            typ: 0,
+            width,
+            height,
+            width_bytes: 0,
+            planes: 1,
+            bits_pixel,
+            bits: vec![],
+        }
+    }
+
+    /// 손상된 DDB 치수(Width * BitsPixel)는 i16 산술을 넘겨 디버그 빌드에서
+    /// "multiply with overflow" 패닉을, 릴리스에서는 음수 i16 → 사인확장된 거대한
+    /// usize(할당 OOM)를 유발했다. 이제 i64 포화 산술로 계산되어 패닉 없이 올바른
+    /// 값을 돌려준다. 이 단언은 두 빌드 프로파일 모두에서 회귀를 잡는다.
+    #[test]
+    fn calc_length_does_not_overflow_on_huge_dimensions() {
+        // (((30000 * 24 + 15) >> 4) << 1) * 30000 = 2_700_000_000 — i16이면 오버플로.
+        let bm = bitmap16(30000, 30000, BitCount::BI_BITCOUNT_5);
+        assert_eq!(bm.calc_length(), 2_700_000_000);
+    }
+
+    /// 음수 치수는 0으로 클램프되어 사인확장 폭발을 막는다.
+    #[test]
+    fn calc_length_clamps_negative_dimensions_to_zero() {
+        let bm = bitmap16(-1, 1, BitCount::BI_BITCOUNT_5);
+        assert_eq!(bm.calc_length(), 0);
     }
 }

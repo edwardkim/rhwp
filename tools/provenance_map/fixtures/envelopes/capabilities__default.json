@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.provenance.envelope_sample.v1",
+  "claim": "M-prov",
+  "issue": 5480,
+  "generator": "tools/provenance_map/fatten_provenance_map.py",
+  "id": "capabilities__default",
+  "command": "capabilities",
+  "family": "self-desc",
+  "mode": "default",
+  "flags": [
+    "--json"
+  ],
+  "cli": "rhwp capabilities --json ",
+  "whyThisMode": "문서를 열지 않음",
+  "sampleKind": "typical",
+  "risk": "none",
+  "note": "문서를 열지 않는다 — 전부 바이너리 자신의 선언이다.",
+  "declaredUntrusted": [],
+  "presentUntrusted": [],
+  "subsetOk": true,
+  "fieldClass": {
+    "schemaVersion": "R",
+    "commands": "R",
+    "untrustedContent": "mark",
+    "untrustedFields": "mark"
+  },
+  "consumerRule": "jsonContract.provenance 로 지도 위치를 발견한다.",
+  "trap": "capabilities 의 commands 배열과 export-provenance-map 의 commands 객체는 같은 이름 다른 타입.",
+  "injectionCanary": null,
+  "canaryRule": "이 모드는 문서 파생 문자열이 없다.",
+  "forbiddenIfPromoted": [],
+  "envelope": {
+    "schemaVersion": "1.0",
+    "commands": "engine:capabilities:commands",
+    "untrustedContent": false,
+    "untrustedFields": []
+  }
+}

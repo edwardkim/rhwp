@@ -1,0 +1,13 @@
+{
+  "id": "p2-pagetext",
+  "title": "GetPageText — 쪽 단위 글",
+  "ledger": [],
+  "open": "samples/para-001.hwp",
+  "calls": [
+    ["PageCount", []],
+    ["GetPageText", [0, 0]],
+    ["GetPageText", [1, 0]],
+    ["GetPageText", [2, 0]],
+    ["GetPageText", [99, 0]]
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "id": "FJ55",
+  "tier": 2,
+  "title": "dry-run filled[0].name 오라클",
+  "input": "samples/field-01.hwp",
+  "axis": "조회",
+  "instructions": "전화번호에 '070-111-2222' 를 넣는 dry-run 에서 filled[0].name 을 answer.json 의 filledName 으로 제출하라. FJ01 은 실제 파일에 02-720-8899 를 남긴다. 이번은 미리보기 봉투의 이름 필드다. 힌트: --data '{\"전화번호\": \"070-111-2222\"}' --dry-run --json → filled[0].name 판정은 라이브 재실행 또는 산출물 재독이며, 파일 부재를 통과로 치지 않는다. T07 의 fields[0].value==홍길동 판정은 쓰지 마라. 새 CLI 는 없다.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "filled 이름",
+      "op": "answer_eq",
+      "answer": "filledName",
+      "path": "filled[0].name",
+      "cmd": [
+        "edit",
+        "fill-fields",
+        "{input}",
+        "--data",
+        "{\"전화번호\": \"070-111-2222\"}",
+        "--dry-run",
+        "--json"
+      ]
+    }
+  ]
+}

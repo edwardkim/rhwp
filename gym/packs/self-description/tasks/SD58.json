@@ -1,0 +1,26 @@
+{
+  "id": "SD58",
+  "tier": 2,
+  "title": "capabilities 스키마 정의 수",
+  "input": "samples/table-001.hwp",
+  "instructions": "export-capabilities-schema 의 definitionCount 를 answer.json 에 {\"defs\": N} 으로 제출하라. 힌트: rhwp export-capabilities-schema --json.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "capabilities 스키마 정의 수",
+      "op": "answer_eq",
+      "answer": "defs",
+      "path": "definitionCount",
+      "cmd": [
+        "export-capabilities-schema",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

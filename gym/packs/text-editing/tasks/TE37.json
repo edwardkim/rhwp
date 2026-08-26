@@ -1,0 +1,33 @@
+{
+  "id": "TE37",
+  "tier": 2,
+  "title": "1쪽 시험지 머리 삽입",
+  "input": "samples/exam-kor-1p.hwp",
+  "instructions": "입력의 구역 0 · 문단 0 · 오프셋 0 에 '짐표지TE37' 을 넣은 ins37.hwp 를 제출하라. 좌표는 전부 0 기준이며 search 주소와 같다. 채점은 그 표지가 정확히 1건인지 재검색한다. 힌트: rhwp edit insert-text --section 0 --para 0 --offset 0.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "ins37.hwp"
+    ]
+  },
+  "checks": [
+    {
+      "name": "삽입 표지 1건",
+      "op": "value_eq",
+      "value": 1,
+      "path": "matchCount",
+      "cmd": [
+        "search",
+        "{file:ins37.hwp}",
+        "--json",
+        "--",
+        "짐표지TE37"
+      ]
+    },
+    {
+      "name": "원본과 다름",
+      "op": "differs_from_input",
+      "file": "ins37.hwp"
+    }
+  ]
+}

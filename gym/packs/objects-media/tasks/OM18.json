@@ -1,0 +1,29 @@
+{
+  "id": "OM18",
+  "tier": 2,
+  "title": "표 문서 썸네일 세로",
+  "input": "samples/table-001.hwp",
+  "instructions": "표 표본 썸네일의 **세로 픽셀**을 answer.json 에 {\"height\": N} 으로 제출하라. 가로는 OM17, 세로는 이 과제다. 힌트: rhwp thumbnail 의 height.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "세로 픽셀",
+      "op": "answer_eq",
+      "answer": "height",
+      "path": "height",
+      "cmd": [
+        "thumbnail",
+        "{input}",
+        "-o",
+        "{file:t.png}",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

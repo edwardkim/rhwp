@@ -1,0 +1,22 @@
+{
+  "id": "CD40",
+  "steps": [
+    {
+      "answer": {
+        "diffs": {
+          "cmd": [
+            "ir-diff",
+            "{input}",
+            "samples/hwpx/143E433F503322BD33.hwpx",
+            "--json"
+          ],
+          "path": "diffCount",
+          "allowExits": [
+            0,
+            3
+          ]
+        }
+      }
+    }
+  ]
+}

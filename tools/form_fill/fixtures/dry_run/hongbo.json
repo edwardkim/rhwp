@@ -1,0 +1,53 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.form_fill.fill_case.v1",
+  "id": "hongbo-dry-run",
+  "axis": "dry-run",
+  "claim": "M-fill",
+  "generator": "tools/form_fill/fatten_form_fill.py",
+  "form": "hongbo",
+  "title": "보도자료 서식 dry-run",
+  "family": "홍보",
+  "genre": "보도",
+  "sample": "samples/20250130-hongbo.hwp",
+  "format": "hwp5",
+  "relatedIssue": "#4781",
+  "why": "--dry-run 은 파일을 만들지 않는다. output/outputFormat 없음.",
+  "firstFieldName": "기관명",
+  "fieldCount": 12,
+  "argv": [
+    "edit",
+    "fill-fields",
+    "samples/20250130-hongbo.hwp",
+    "--data",
+    "{\"기관명\": \"한국수자원공사\"}",
+    "-o",
+    "out/hongbo-dry.hwp",
+    "--dry-run",
+    "--json"
+  ],
+  "existingCliOnly": true,
+  "data": {
+    "기관명": "한국수자원공사"
+  },
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "samples/20250130-hongbo.hwp",
+    "dryRun": true,
+    "filledCount": 1,
+    "filled": [
+      {
+        "name": "기관명",
+        "occurrence": 0,
+        "value": "한국수자원공사"
+      }
+    ],
+    "notFound": [],
+    "ambiguous": [],
+    "confusable": [],
+    "verify": null
+  },
+  "writesFile": false,
+  "hasOutputKey": false,
+  "exit": 0
+}

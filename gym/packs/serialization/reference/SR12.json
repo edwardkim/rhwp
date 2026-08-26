@@ -1,0 +1,22 @@
+{
+  "id": "SR12",
+  "steps": [
+    {
+      "answer": {
+        "identical": {
+          "cmd": [
+            "ir-diff",
+            "{input}",
+            "samples/pic2.hwpx",
+            "--json"
+          ],
+          "path": "identical",
+          "allowExits": [
+            0,
+            3
+          ]
+        }
+      }
+    }
+  ]
+}

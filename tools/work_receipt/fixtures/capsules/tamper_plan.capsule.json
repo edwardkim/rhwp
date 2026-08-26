@@ -1,0 +1,30 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workCapsule",
+  "parent": null,
+  "plan": {
+    "planVersion": "1.0",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "output": "output-neutral-tamper.hwp",
+    "steps": [
+      {
+        "action": "replace_text",
+        "find": "도움5로",
+        "replace": "도움6로"
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"samples/basic/issue2007_nested_cell_pagination_42065.hwp\",\"output\":\"out/addr-fix.hwp\",\"steps\":[{\"action\":\"replace_text\",\"find\":\"도움5로\",\"replace\":\"도움6로\"}]}",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "inputSha256": "60aff4945aaa98f5335156cfb30650c1de14f3740706ad94181c1102aa4343ba",
+    "planSha256": "96f088cb062923aaa3f50f82591ce5a1e7cdb855e46c8d486efcf9bf8b618c26",
+    "outputSha256": "c7ee937360dea46105d4bb4cb3ff8888037a3900488c4885cafb604abf4be7a8",
+    "toolVersion": "fixture-0.0.0-not-a-release",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null
+  }
+}

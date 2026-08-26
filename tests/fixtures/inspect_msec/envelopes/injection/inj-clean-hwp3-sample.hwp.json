@@ -1,0 +1,53 @@
+{
+  "id": "inj-clean-hwp3-sample.hwp",
+  "issue": 5476,
+  "axis": "injection",
+  "family": "clean-corpus",
+  "polarity": "negative",
+  "sourceRule": {
+    "file": "tests/injection_scan_contract.rs",
+    "symbol": "정상 문서 오탐 0",
+    "note": "오탐이 나면 아무도 이 기능을 켜지 않는다."
+  },
+  "cli": {
+    "argv": [
+      "inspect",
+      "injection",
+      "samples/hwp3-sample.hwp",
+      "--json"
+    ],
+    "exitCode": 0,
+    "stdoutKind": "json-object",
+    "detectionIsNotFailure": true
+  },
+  "consume": {
+    "branch": "clean == true",
+    "highestConfidence": null
+  },
+  "pair": null,
+  "why": "실문서 음성. samples/hwp3-sample.hwp",
+  "note": "0건이어도 injectionSignals 키는 빈 배열.",
+  "human": "주입 신호 없음: samples/hwp3-sample.hwp\n",
+  "inventedRule": false,
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "samples/hwp3-sample.hwp",
+    "minConfidence": "low",
+    "includeFields": false,
+    "scanScopes": [
+      "body",
+      "tableCell",
+      "textBox",
+      "equation",
+      "footnote",
+      "endnote",
+      "header",
+      "footer",
+      "caption"
+    ],
+    "injectionSignals": [],
+    "signalCount": 0,
+    "highestConfidence": null,
+    "clean": true
+  }
+}

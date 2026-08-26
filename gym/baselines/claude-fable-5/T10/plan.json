@@ -1,0 +1,17 @@
+{
+  "planVersion": "1.0",
+  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "output": "o1.hwp",
+  "steps": [
+    {
+      "action": "replace_text",
+      "find": "Ⅰ.",
+      "replace": "계획완료"
+    },
+    {
+      "action": "replace_text",
+      "find": "규제",
+      "replace": "원자실행"
+    }
+  ]
+}

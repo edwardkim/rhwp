@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5318,
+  "kind": "live",
+  "command": "export-provenance-map",
+  "sourceChapter": "70_자기서술.md",
+  "cmd": "rhwp export-provenance-map --json",
+  "exit": 0,
+  "envelope": {
+    "schemaVersion": "1.0",
+    "tool": "rhwp",
+    "version": "0.8.4",
+    "untrustedContent": false,
+    "untrustedFields": [],
+    "_truncatedForSkillFixture": true,
+    "_originalTopLevelKeys": [
+      "commands",
+      "envelopeFlags",
+      "pathSyntax",
+      "policy",
+      "schemaVersion",
+      "tool",
+      "untrustedContent",
+      "untrustedFields",
+      "version"
+    ],
+    "_originalChars": 15316,
+    "_command": "export-provenance-map"
+  },
+  "extractedFromGenerated": true,
+  "handEdited": false
+}

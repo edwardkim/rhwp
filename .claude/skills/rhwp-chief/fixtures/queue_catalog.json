@@ -1,0 +1,323 @@
+{
+ "schemaVersion": "1.0",
+ "issue": 5337,
+ "capability": "CAP-4900",
+ "notGym": true,
+ "noNewCli": true,
+ "noNewEditLogic": true,
+ "notFde": true,
+ "notStrategist": true,
+ "routingOnlyViaGoal": true,
+ "requestIsData": true,
+ "count": 44,
+ "queues": [
+  {
+   "id": "Q001",
+   "title": "공문을 PDF로 (1차)",
+   "goal": "export-pdf",
+   "status": "done",
+   "stop": null
+  },
+  {
+   "id": "Q002",
+   "title": "공문을 PDF로 (2차)",
+   "goal": "export-pdf",
+   "status": "done",
+   "stop": null
+  },
+  {
+   "id": "Q003",
+   "title": "공문을 PDF로 (야간)",
+   "goal": "export-pdf",
+   "status": "done",
+   "stop": null
+  },
+  {
+   "id": "Q004",
+   "title": "고시 인쇄본 (1차)",
+   "goal": "export-pdf",
+   "status": "done",
+   "stop": null
+  },
+  {
+   "id": "Q005",
+   "title": "고시 인쇄본 (2차)",
+   "goal": "export-pdf",
+   "status": "done",
+   "stop": null
+  },
+  {
+   "id": "Q006",
+   "title": "고시 인쇄본 (야간)",
+   "goal": "export-pdf",
+   "status": "done",
+   "stop": null
+  },
+  {
+   "id": "Q007",
+   "title": "회의록 본문 (1차)",
+   "goal": "export-text",
+   "status": "done",
+   "stop": null
+  },
+  {
+   "id": "Q008",
+   "title": "회의록 본문 (2차)",
+   "goal": "export-text",
+   "status": "done",
+   "stop": null
+  },
+  {
+   "id": "Q009",
+   "title": "회의록 본문 (야간)",
+   "goal": "export-text",
+   "status": "done",
+   "stop": null
+  },
+  {
+   "id": "Q010",
+   "title": "안내문 추출 (1차)",
+   "goal": "export-text",
+   "status": "done",
+   "stop": null
+  },
+  {
+   "id": "Q011",
+   "title": "안내문 추출 (2차)",
+   "goal": "export-text",
+   "status": "done",
+   "stop": null
+  },
+  {
+   "id": "Q012",
+   "title": "안내문 추출 (야간)",
+   "goal": "export-text",
+   "status": "done",
+   "stop": null
+  },
+  {
+   "id": "Q013",
+   "title": "HWP5를 HWPX로 (1차)",
+   "goal": "export-hwpx",
+   "status": "done",
+   "stop": null
+  },
+  {
+   "id": "Q014",
+   "title": "HWP5를 HWPX로 (2차)",
+   "goal": "export-hwpx",
+   "status": "done",
+   "stop": null
+  },
+  {
+   "id": "Q015",
+   "title": "HWP5를 HWPX로 (야간)",
+   "goal": "export-hwpx",
+   "status": "done",
+   "stop": null
+  },
+  {
+   "id": "Q016",
+   "title": "HWPX를 HWP로 (1차)",
+   "goal": "convert-hwp",
+   "status": "done",
+   "stop": null
+  },
+  {
+   "id": "Q017",
+   "title": "HWPX를 HWP로 (2차)",
+   "goal": "convert-hwp",
+   "status": "done",
+   "stop": null
+  },
+  {
+   "id": "Q018",
+   "title": "HWPX를 HWP로 (야간)",
+   "goal": "convert-hwp",
+   "status": "done",
+   "stop": null
+  },
+  {
+   "id": "Q019",
+   "title": "예산 표 수확 (1차)",
+   "goal": "extract-tables",
+   "status": "done",
+   "stop": null
+  },
+  {
+   "id": "Q020",
+   "title": "예산 표 수확 (2차)",
+   "goal": "extract-tables",
+   "status": "done",
+   "stop": null
+  },
+  {
+   "id": "Q021",
+   "title": "예산 표 수확 (야간)",
+   "goal": "extract-tables",
+   "status": "done",
+   "stop": null
+  },
+  {
+   "id": "Q022",
+   "title": "명단 표 (1차)",
+   "goal": "extract-tables",
+   "status": "done",
+   "stop": null
+  },
+  {
+   "id": "Q023",
+   "title": "명단 표 (2차)",
+   "goal": "extract-tables",
+   "status": "done",
+   "stop": null
+  },
+  {
+   "id": "Q024",
+   "title": "명단 표 (야간)",
+   "goal": "extract-tables",
+   "status": "done",
+   "stop": null
+  },
+  {
+   "id": "Q025",
+   "title": "신청서 단건 (1차)",
+   "goal": "fill",
+   "status": "done",
+   "stop": null
+  },
+  {
+   "id": "Q026",
+   "title": "신청서 단건 (2차)",
+   "goal": "fill",
+   "status": "done",
+   "stop": null
+  },
+  {
+   "id": "Q027",
+   "title": "신청서 단건 (야간)",
+   "goal": "fill",
+   "status": "done",
+   "stop": null
+  },
+  {
+   "id": "Q028",
+   "title": "열림만 확인 (1차)",
+   "goal": "diagnose",
+   "status": "done",
+   "stop": null
+  },
+  {
+   "id": "Q029",
+   "title": "열림만 확인 (2차)",
+   "goal": "diagnose",
+   "status": "done",
+   "stop": null
+  },
+  {
+   "id": "Q030",
+   "title": "열림만 확인 (야간)",
+   "goal": "diagnose",
+   "status": "done",
+   "stop": null
+  },
+  {
+   "id": "Q031",
+   "title": "요약 요청",
+   "goal": "summarize",
+   "status": "needs-agent",
+   "stop": "C06"
+  },
+  {
+   "id": "Q032",
+   "title": "번역 요청",
+   "goal": "translate",
+   "status": "needs-agent",
+   "stop": "C06"
+  },
+  {
+   "id": "Q033",
+   "title": "직인 요청",
+   "goal": "stamp",
+   "status": "needs-agent",
+   "stop": "C06"
+  },
+  {
+   "id": "Q034",
+   "title": "문장 윤문",
+   "goal": "rewrite",
+   "status": "needs-agent",
+   "stop": "C06"
+  },
+  {
+   "id": "Q035",
+   "title": "한컴 대조",
+   "goal": "compare-hancom",
+   "status": "needs-agent",
+   "stop": "C06"
+  },
+  {
+   "id": "Q036",
+   "title": "발명된 병합",
+   "goal": "mail-merge-all",
+   "status": "needs-agent",
+   "stop": "C06"
+  },
+  {
+   "id": "Q037",
+   "title": "goal 생략 → diagnose",
+   "goal": "diagnose",
+   "status": "done",
+   "stop": null
+  },
+  {
+   "id": "Q038",
+   "title": "패닉 문서에 PDF 강행 금지",
+   "goal": "export-pdf",
+   "status": "escalated",
+   "stop": "C04"
+  },
+  {
+   "id": "Q039",
+   "title": "JPG 를 HWP 로 오인",
+   "goal": "export-pdf",
+   "status": "invalid-input",
+   "stop": "C05"
+  },
+  {
+   "id": "Q040",
+   "title": "경로 탈출 시도",
+   "goal": "export-text",
+   "status": "failed",
+   "stop": "C02"
+  },
+  {
+   "id": "Q041",
+   "title": "절대경로 거부",
+   "goal": "export-text",
+   "status": "failed",
+   "stop": "C02"
+  },
+  {
+   "id": "Q042",
+   "title": "증상 주입 무시",
+   "goal": "export-text",
+   "status": "done",
+   "stop": "C10"
+  },
+  {
+   "id": "Q043",
+   "title": "fill 데이터 없음",
+   "goal": "fill",
+   "status": "needs-agent",
+   "stop": "C08"
+  },
+  {
+   "id": "Q044",
+   "title": "fill notFound 산출 삭제",
+   "goal": "fill",
+   "status": "failed",
+   "stop": "C09"
+  }
+ ]
+}

@@ -1,0 +1,50 @@
+# M09-g equation golden — current-engine lock (variant/exception/unimplemented honesty)
+command: OVER
+script: {n CHOOSE k} OVER 2
+honesty: choose-empty-top
+
+=== ast ===
+Fraction {
+    numer: Row(
+        [
+            Text(
+                "n",
+            ),
+            Paren {
+                left: "(",
+                right: ")",
+                body: Atop {
+                    top: Empty,
+                    bottom: Text(
+                        "k",
+                    ),
+                },
+            },
+        ],
+    ),
+    denom: Number(
+        "2",
+    ),
+}
+
+=== layout ===
+Fraction x=0.0000 y=0.0000 w=51.1000 h=63.8000 bl=44.4000
+  numer:
+    Row x=4.0000 y=4.0000 w=43.1000 h=35.0000 bl=16.0000
+      Text("n") x=0.0000 y=0.0000 w=11.5500 h=20.0000 bl=16.0000
+      Paren("(",")") x=11.5500 y=7.0000 w=31.5500 h=28.0000 bl=9.0000
+        Atop x=6.0000 y=0.0000 w=19.5500 h=28.0000 bl=9.0000
+          top:
+            Empty x=9.7750 y=4.0000 w=0.0000 h=0.0000 bl=0.0000
+          bottom:
+            Text("k") x=4.0000 y=4.0000 w=11.5500 h=20.0000 bl=16.0000
+  denom:
+    Number("2") x=20.0500 y=39.8000 w=11.0000 h=20.0000 bl=16.0000
+
+=== svg ===
+<text x="4.00" y="20.00" font-size="20.00" fill="#000000" font-style="italic" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">n</text>
+<path d="M20.41,11.00 C15.82,16.04 15.82,33.96 20.41,39.00" fill="none" stroke="#000000" stroke-width="0.84" stroke-linecap="round"/>
+<text x="25.55" y="31.00" font-size="20.00" fill="#000000" font-style="italic" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">k</text>
+<path d="M42.24,11.00 C46.83,16.04 46.83,33.96 42.24,39.00" fill="none" stroke="#000000" stroke-width="0.84" stroke-linecap="round"/>
+<line x1="1.00" y1="39.40" x2="50.10" y2="39.40" stroke="#000000" stroke-width="0.80"/>
+<text x="20.05" y="55.80" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">2</text>

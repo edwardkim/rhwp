@@ -1,0 +1,11 @@
+{
+  "id": "cell_then_render",
+  "task": "칸 수정 후 눈검증",
+  "choice": "session",
+  "first_tool": "hwp_doc_set_cell",
+  "why": "changedPages.",
+  "forbidden": [
+    "invented_tools",
+    "relative_paths"
+  ]
+}

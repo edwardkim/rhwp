@@ -1,0 +1,39 @@
+# M09-1 equation golden — current-engine lock
+command: MATRIX
+script: MATRIX{1 # 2 # 3}
+
+=== ast ===
+Matrix {
+    rows: [
+        [
+            Number(
+                "1",
+            ),
+        ],
+        [
+            Number(
+                "2",
+            ),
+        ],
+        [
+            Number(
+                "3",
+            ),
+        ],
+    ],
+    style: Plain,
+}
+
+=== layout ===
+Matrix(Plain) x=0.0000 y=0.0000 w=19.0000 h=72.0000 bl=36.0000
+  row0:
+    Number("1") x=4.0000 y=0.0000 w=11.0000 h=20.0000 bl=16.0000
+  row1:
+    Number("2") x=4.0000 y=26.0000 w=11.0000 h=20.0000 bl=16.0000
+  row2:
+    Number("3") x=4.0000 y=52.0000 w=11.0000 h=20.0000 bl=16.0000
+
+=== svg ===
+<text x="4.00" y="16.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">1</text>
+<text x="4.00" y="42.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">2</text>
+<text x="4.00" y="68.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">3</text>

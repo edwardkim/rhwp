@@ -1,0 +1,15 @@
+{
+  "id": "LR03",
+  "steps": [
+    {
+      "run": [
+        "export-svg",
+        "{input}",
+        "-p",
+        "0",
+        "-o",
+        "{sub:svg}"
+      ]
+    }
+  ]
+}

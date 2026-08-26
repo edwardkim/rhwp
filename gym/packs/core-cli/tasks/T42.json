@@ -1,0 +1,28 @@
+{
+  "id": "T42",
+  "tier": 2,
+  "title": "유니코드 기만 소견 수",
+  "input": "samples/unicode/각 항목에 명시되어 있는_유니코드.hwp",
+  "instructions": "T42 은 입문·코어 온램프를 두껍게 하는 과제다. 화면과 바이트가 어긋나는 소견 건수를 센다. 주입 신호와 다른 축이다. 표본은 `samples/unicode/각 항목에 명시되어 있는_유니코드.hwp` 이고, 이미 저장소 `samples/` 에 있다. 새 파일을 만들지 마라. 정답 숫자는 과제에 박제되어 있지 않다. 채점기가 같은 명령을 다시 돌린다. 힌트: inspect unicode <문서> --json. 제출은 answer.json 에 {\"findings\": <값>} 로 적는다. 원본을 덮어쓰지 마라. T07 의 fields[0]==홍길동 판정을 복제하지 마라. inspect unicode 의 findingCount.",
+  "submit": {
+    "kind": "answer"
+  },
+  "checks": [
+    {
+      "name": "유니코드 기만 소견 수",
+      "op": "answer_eq",
+      "answer": "findings",
+      "cmd": [
+        "inspect",
+        "unicode",
+        "{input}",
+        "--json"
+      ],
+      "path": "findingCount",
+      "expect_exits": [
+        0,
+        3
+      ]
+    }
+  ]
+}

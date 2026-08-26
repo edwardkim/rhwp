@@ -1,0 +1,128 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5300,
+  "commands": {
+    "fields": {
+      "required": [
+        "schemaVersion",
+        "source",
+        "fieldCount",
+        "fields"
+      ],
+      "fieldItem": [
+        "fieldId",
+        "fieldType",
+        "name",
+        "guide",
+        "memo",
+        "command",
+        "value",
+        "editableInForm",
+        "location"
+      ],
+      "location": [
+        "section",
+        "paragraph",
+        "nested"
+      ],
+      "optional": [
+        "textSecurity"
+      ],
+      "untrustedHint": "fields[].value / guide / memo 는 문서 파생 데이터"
+    },
+    "fill-fields": {
+      "required": [
+        "schemaVersion",
+        "source",
+        "dryRun",
+        "filledCount",
+        "filled",
+        "notFound",
+        "ambiguous"
+      ],
+      "filledItem": [
+        "name",
+        "occurrence",
+        "value"
+      ],
+      "ambiguousItem": [
+        "name",
+        "matched",
+        "total"
+      ],
+      "whenSaved": [
+        "output",
+        "outputFormat"
+      ],
+      "whenVerify": [
+        "verify"
+      ],
+      "verifyItem": [
+        "identical",
+        "diffCount"
+      ],
+      "alsoSeen": [
+        "changedPages",
+        "confusable"
+      ]
+    },
+    "batch-fill": {
+      "sameAs": "fill-fields",
+      "extra": [
+        "row"
+      ],
+      "failure": [
+        "schemaVersion",
+        "source",
+        "error",
+        "exitClass",
+        "row"
+      ],
+      "stdout": "NDJSON",
+      "stderr": "batch fill: N행 중 …"
+    },
+    "sanitize": {
+      "required": [
+        "schemaVersion",
+        "source",
+        "keepPreview",
+        "removedCount",
+        "removed",
+        "output",
+        "outputFormat"
+      ],
+      "removedItem": [
+        "field",
+        "before"
+      ],
+      "idempotent": "두 번째 실행 removedCount 는 0"
+    },
+    "insert-image": {
+      "required": [
+        "schemaVersion",
+        "source",
+        "image",
+        "page",
+        "x",
+        "y",
+        "width",
+        "height",
+        "dryRun",
+        "changedPages",
+        "overflow"
+      ],
+      "whenSaved": [
+        "binDataId",
+        "output",
+        "outputFormat"
+      ],
+      "unit": "HWPUNIT 1/7200 inch, A4 세로 59528x84188"
+    }
+  },
+  "exitCodes": {
+    "0": "성공 (0건 포함: fieldCount 0, filledCount 0 도 성공 봉투)",
+    "1": "런타임 (파일 없음·쓰기 실패). stdout 비움. 원본 불변",
+    "2": "사용법 (인자/JSON/빈 데이터 파일)",
+    "3": "--verify IR 차이. 산출물은 남는다"
+  }
+}

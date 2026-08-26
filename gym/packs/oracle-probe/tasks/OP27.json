@@ -1,0 +1,27 @@
+{
+  "id": "OP27",
+  "tier": 1,
+  "title": "쪽수 라이브 재계산 (field-01)",
+  "input": "samples/field-01.hwp",
+  "axis": "검증",
+  "instructions": "field-01 의 쪽수를 answer.json 에 {\"pages\": N} 으로 제출하라. 필드 수와 쪽수는 다른 오라클이다.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "field-01 쪽수",
+      "op": "answer_eq",
+      "answer": "pages",
+      "cmd": [
+        "info",
+        "{input}",
+        "--json"
+      ],
+      "path": "pageCount"
+    }
+  ]
+}

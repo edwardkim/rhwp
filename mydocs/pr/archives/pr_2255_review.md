@@ -17,8 +17,8 @@
   - CLI와 stdio bridge는 MCP `callTool` 요청 대기 시간을 사용자가 지정한
     `timeout_seconds`에 120초를 더해 설정한다.
   - 이전 `20260709-231800` client tarball을 제거해 사용자가 오래된 package를 선택하지 않게 한다.
-- [MCP 사용 매뉴얼](../../manual/mcp_hwp2020Convert_usage.md)은 새 tarball 경로와
-  긴 변환 요청 timeout 동기화 규칙을 안내한다.
+- 당시 MCP 사용 매뉴얼(mydocs/manual/mcp_hwp2020Convert_usage.md, 현재 제거됨)은 새 tarball 경로와
+  긴 변환 요청 timeout 동기화 규칙을 안내했다.
 - [PR 리뷰 워크플로우](../../manual/pr_review_workflow.md)는 대형 문서 기준 PDF 생성 시
   새 client 이상을 사용하고, CLI 재호출로 로컬 수신을 확인하도록 정정한다.
 - `mydocs/orders/20260713.md`에 collaborator self-PR 준비 기록을 추가했다.

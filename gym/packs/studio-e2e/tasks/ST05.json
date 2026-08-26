@@ -1,0 +1,43 @@
+{
+  "id": "ST05",
+  "tier": 3,
+  "title": "둘째 계열 마지막 값 편집 (묶은세로막대 HWP)",
+  "input": "samples/chart/세로막대형/묶은세로막대형.hwp",
+  "instructions": "차트 1의 (계열 1, 값 3) 원본 2.8 을 '55.9' 로 바꿔 out.hwp 로 저장하라. 원본 크기(계열 수·값 개수·계열명·카테고리 라벨)는 그대로 두어야 한다. 마지막 카테고리·둘째 계열이다. 표 모서리를 짚지 않으면 틀린 칸을 고친다. 한 칸만 바꾸고 나머지 숫자는 원본 CSV 와 같아야 한다. 무편집 복사는 거절된다. 힌트: chart-to-csv 로 뽑아 그 칸만 고치고 csv-to-chart 로 되넣어라(-o out.hwp).",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "out.hwp"
+    ]
+  },
+  "checks": [
+    {
+      "name": "산출물 존재",
+      "op": "file_exists",
+      "file": "out.hwp",
+      "minBytes": 1
+    },
+    {
+      "name": "원본과 다름 (무편집 복사 거부)",
+      "op": "differs_from_input",
+      "file": "out.hwp"
+    },
+    {
+      "name": "지목 칸이 이미 55.9 (센티넬 재적용이 무변경)",
+      "op": "value_eq",
+      "path": "changedCount",
+      "value": 0,
+      "cmd": [
+        "csv-to-chart",
+        "{file:out.hwp}",
+        "--csv",
+        "gym/packs/studio-e2e/assets/ST05-edit.csv",
+        "--chart",
+        "1",
+        "--dry-run",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "편집"
+}

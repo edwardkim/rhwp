@@ -20,7 +20,8 @@ export const defaultShortcuts: [ShortcutDef, string][] = [
   [{ key: 'z', ctrl: true }, 'edit:undo'],
   [{ key: 'z', ctrl: true, shift: true }, 'edit:redo'],
   [{ key: 'y', ctrl: true }, 'edit:redo'],
-  [{ key: 'a', ctrl: true }, 'edit:select-all'],
+  // 한글 IME에서는 e.key가 'ㅁ' 또는 조합 중 'Process'가 되므로 물리 KeyA로 보정한다.
+  [{ key: 'a', code: 'KeyA', ctrl: true }, 'edit:select-all'],
 
   [{ key: 'e', ctrl: true }, 'edit:delete'],
   [{ key: 'ㄷ', ctrl: true }, 'edit:delete'],
@@ -62,6 +63,7 @@ export const defaultShortcuts: [ShortcutDef, string][] = [
   // 줌
   [{ key: '=', ctrl: true }, 'view:zoom-in'],
   [{ key: '+', ctrl: true }, 'view:zoom-in'],
+  [{ key: '+', ctrl: true, shift: true }, 'view:zoom-in'],
   [{ key: '-', ctrl: true }, 'view:zoom-out'],
   [{ key: '0', ctrl: true }, 'view:zoom-100'],
 

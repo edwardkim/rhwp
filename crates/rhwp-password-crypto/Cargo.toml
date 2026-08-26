@@ -1,0 +1,23 @@
+[package]
+name = "rhwp-password-crypto"
+version = "0.1.0"
+edition = "2021"
+description = "Shared HWP3, HWP5, and HWPX password cryptography for rhwp"
+license = "MIT"
+publish = false
+
+[dependencies]
+aes = "0.9"
+base64 = "0.23"
+cbc = "0.2"
+crc32fast = "1"
+des = "0.9"
+flate2 = "1.0"
+getrandom = { version = "0.4", features = ["wasm_js"] }
+hmac = "0.13"
+pbkdf2 = "0.13"
+quick-xml = "0.41"
+roxmltree = "0.21"
+sha1 = "0.11"
+sha2 = "0.11"
+zip = { version = "8.5", default-features = false, features = ["deflate"] }

@@ -1,0 +1,16 @@
+{
+  "id": "SD34",
+  "steps": [
+    {
+      "answer": {
+        "subcommands": {
+          "cmd": [
+            "capabilities"
+          ],
+          "path": "batch.subcommands",
+          "len": true
+        }
+      }
+    }
+  ]
+}

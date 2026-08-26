@@ -1,0 +1,32 @@
+{
+  "id": "SH05",
+  "tier": 3,
+  "title": "🎡 시각 회귀 무결 — 렌더 변위",
+  "input": "samples/143E433F503322BD33.hwp",
+  "instructions": "구조가 같아도 화면이 틀어질 수 있다. rhwp 는 라운드트립이 유발한 렌더 기하 변화(px 변위)를 정량화해 시각 회귀를 판정한다 — 다른 도구가 안 재는 축이다. 입력을 자기 라운드트립으로 렌더 비교해 회귀 판정(status)을 answer.json 에 {\"status\": \"...\"} 로 제출하라. 힌트: rhwp render-diff <입력> --json 의 status(PASS/OVER/STRUCT_MISMATCH/...).",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "시각 회귀 판정(status)",
+      "op": "answer_eq",
+      "answer": "status",
+      "path": "status",
+      "cmd": [
+        "render-diff",
+        "{input}",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3,
+        4
+      ]
+    }
+  ],
+  "axis": "검증"
+}

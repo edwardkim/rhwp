@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/tech/autonomous_maintenance/drift_detection.md
-last_verified: 2026-08-04
+last_verified: 2026-08-12
 ---
 
 # 드리프트 자동 감지 → 이슈 자동 기안 (R95)
@@ -267,7 +267,7 @@ R95 를 설계하기 전에 **이미 도는 것**을 세어야 한다. 없는 �
 
 ### 3.1 GitHub Actions 워크플로 — 14개 (12개가 아니다)
 
-`.github/workflows/*.yml` 파일 수 실측 = **14**.
+`.github/workflows/*.yml` 파일 수 실측 = **12** (v0.8.4, #4655).
 
 | 파일 | 트리거 | 하는 일 | 드리프트 감지와의 관계 |
 |---|---|---|---|
@@ -283,10 +283,7 @@ R95 를 설계하기 전에 **이미 도는 것**을 세어야 한다. 없는 �
 | `deploy-pages.yml` | push(main) + dispatch | GitHub Pages 배포 | 배포 |
 | `release-binary.yml` | 태그 `v*` + dispatch | 4플랫폼 바이너리 릴리스 | 배포 |
 | `npm-publish.yml` | release published + dispatch | npm·확장 배포 | 배포 |
-| `node-binding.yml` | push·PR(`bindings/node/**`·`src/capabilities_schema.rs`) | Node 바인딩 계약 + **생성 타입 최신 검사** | **드리프트 가드다.** 3.5 참조 |
-| `python-binding.yml` | push·PR(`bindings/python/**`·`src/ir_schema.rs`) | 파이썬 패리티 가드 | 드리프트 가드 |
-
-**cron 은 둘뿐이다** — `cache-generation-sweep`(매일)·`codeql`(매주). 나머지 12개는 전부
+**cron 은 둘뿐이다** — `cache-generation-sweep`(매일)·`codeql`(매주). 나머지 10개는 전부
 **이벤트 구동**이다. 즉 **아무도 아무것도 안 하면 아무 검사도 안 돈다.**
 이것이 R95 가 채울 자리다: 드리프트는 이벤트가 없어도 자란다.
 
@@ -373,14 +370,15 @@ $ gh api repos/edwardkim/rhwp/compare/devel...<PR head sha>
 **확인되지 않음:** 왜 이 경로로 착지하는지(메인테이너의 로컬 적용 방식인지, 다른 규약인지)는
 확인하지 못했다. R95·R94 설계는 **이유를 몰라도 성립해야 한다** — 그래서 산출물 기준을 쓴다.
 
-### 3.5 이미 있는 드리프트 가드의 모범 — 생성 타입 최신 검사
+### 3.5 이미 있는 드리프트 가드의 모범 — 스키마 레지스트리 계약
 
-`node-binding.yml` 머리말이 R95 가 따라야 할 형태를 이미 보여준다.
+`tests/schema_version_registry_contract.rs`가 R95가 따라야 할 형태를 보여준다.
 
-> 4. 생성 타입 최신 검사 — 스키마가 바뀌었는데 커밋된 타입이 옛것이면 실패시킨다.
+> 코드가 선언하는 스키마 버전과 레지스트리·문서가 함께 움직이지 않으면 실패시킨다.
 
-이것이 **드리프트 감지의 정석**이다. 두 진술(`src/capabilities_schema.rs` ↔ 커밋된 `.d.ts`)을
-잡고, 한쪽에서 다른 쪽을 **재생성해서 비교**한다. 재생성 가능한 쌍은 이렇게 하면 오탐이 0이다.
+이것이 **드리프트 감지의 정석**이다. 코드와 레지스트리라는 두 진술을 잡고 기계 계약으로
+비교한다. 재계산 가능한 쌍은 이렇게 하면 오탐이 0이다. 과거 Node 생성 타입 최신 검사도 같은
+원리를 사용했으나 해당 바인딩과 workflow는 #4655에서 공식 배포·개발 표면과 함께 철회됐다.
 
 R95 의 감지 대상 대부분은 **재생성이 불가능한 쌍**이다 — 산문 문서를 코드에서 재생성할 수는
 없다. 그래서 5절의 설계가 필요하다.
@@ -864,4 +862,4 @@ R95 를 한 번에 켜지 않는다. 각 단계는 **앞 단계의 오탐률이 
 - `tools/agent_preflight.py` — 4절의 대상
 - `scripts/check_markdown_links.py` · `scripts/check_document_metadata.py` — 3.2
 - `.github/workflows/close-issues-on-devel-push.yml` — 3.4
-- `.github/workflows/node-binding.yml` — 3.5 생성 타입 최신 검사의 선례
+- `tests/schema_version_registry_contract.rs` — 3.5 스키마 레지스트리 계약의 현재 구현

@@ -1,0 +1,15 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5329,
+  "notGym": true,
+  "noNewCli": true,
+  "id": "T01",
+  "title": "plan registered 0-34",
+  "stop": "F03",
+  "steps": [
+    "venv",
+    "plan 0 34",
+    "rank"
+  ],
+  "tool": "tools/fidelity_compare/fidelity_compare.py"
+}

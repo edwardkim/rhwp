@@ -1,0 +1,15 @@
+{
+  "id": "SD13",
+  "steps": [
+    {
+      "answer": {
+        "tool": {
+          "cmd": [
+            "capabilities"
+          ],
+          "path": "tool"
+        }
+      }
+    }
+  ]
+}

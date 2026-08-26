@@ -1,0 +1,295 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5335,
+  "count": 40,
+  "allowedCommands": [
+    "info",
+    "search",
+    "extract-data",
+    "explain",
+    "scaffold",
+    "capabilities"
+  ],
+  "scenarios": [
+    {
+      "id": "S01",
+      "example": "01_gov_rfp_win.md",
+      "command": "search",
+      "engine": "tools/strategist/engagement.py",
+      "stop": null
+    },
+    {
+      "id": "S02",
+      "example": "02_quarterly_strategy.md",
+      "command": "search",
+      "engine": "tools/strategist/engagement.py",
+      "stop": null
+    },
+    {
+      "id": "S03",
+      "example": "03_failed_doc_stays.md",
+      "command": "extract-data",
+      "engine": "tools/strategist/engagement.py",
+      "stop": null
+    },
+    {
+      "id": "S04",
+      "example": "04_missing_page_omitted.md",
+      "command": "search",
+      "engine": "tools/strategist/engagement.py",
+      "stop": null
+    },
+    {
+      "id": "S05",
+      "example": "05_section5_gate_pass.md",
+      "command": "search",
+      "engine": "tools/strategist/engagement.py",
+      "stop": null
+    },
+    {
+      "id": "S06",
+      "example": "06_unknown_evidence_reject.md",
+      "command": "info",
+      "engine": "tools/strategist/engagement.py",
+      "stop": null
+    },
+    {
+      "id": "S07",
+      "example": "07_placeholder_reject.md",
+      "command": "search",
+      "engine": "tools/strategist/engagement.py",
+      "stop": null
+    },
+    {
+      "id": "S08",
+      "example": "08_zero_match_no_claim.md",
+      "command": "search",
+      "engine": "tools/strategist/engagement.py",
+      "stop": null
+    },
+    {
+      "id": "S09",
+      "example": "09_no_market_forecast.md",
+      "command": "extract-data",
+      "engine": "tools/strategist/engagement.py",
+      "stop": null
+    },
+    {
+      "id": "S10",
+      "example": "10_fde_symptom_not_strategy.md",
+      "command": "search",
+      "engine": "tools/strategist/engagement.py",
+      "stop": null
+    },
+    {
+      "id": "S11",
+      "example": "11_chief_goal_handoff.md",
+      "command": "search",
+      "engine": "tools/strategist/engagement.py",
+      "stop": null
+    },
+    {
+      "id": "S12",
+      "example": "12_search_limit_truncation.md",
+      "command": "info",
+      "engine": "tools/strategist/engagement.py",
+      "stop": null
+    },
+    {
+      "id": "S13",
+      "example": "13_extract_data_amounts.md",
+      "command": "search",
+      "engine": "tools/strategist/engagement.py",
+      "stop": null
+    },
+    {
+      "id": "S14",
+      "example": "14_validate_unlinked.md",
+      "command": "search",
+      "engine": "tools/strategist/engagement.py",
+      "stop": null
+    },
+    {
+      "id": "S15",
+      "example": "15_unreadable_corpus.md",
+      "command": "extract-data",
+      "engine": "tools/strategist/engagement.py",
+      "stop": null
+    },
+    {
+      "id": "S16",
+      "example": "16_sws_honest_level.md",
+      "command": "search",
+      "engine": "tools/strategist/engagement.py",
+      "stop": null
+    },
+    {
+      "id": "S17",
+      "example": "17_malformed_engagement.md",
+      "command": "search",
+      "engine": "tools/strategist/engagement.py",
+      "stop": null
+    },
+    {
+      "id": "S18",
+      "example": "18_coordinate_quote_reread.md",
+      "command": "info",
+      "engine": "tools/strategist/engagement.py",
+      "stop": null
+    },
+    {
+      "id": "S19",
+      "example": "19_reproducible_command.md",
+      "command": "search",
+      "engine": "tools/strategist/engagement.py",
+      "stop": null
+    },
+    {
+      "id": "S20",
+      "example": "20_scaffold_unadvertised.md",
+      "command": "search",
+      "engine": "tools/strategist/engagement.py",
+      "stop": null
+    },
+    {
+      "id": "S21",
+      "example": "21_cell_coords_table.md",
+      "command": "extract-data",
+      "engine": "tools/strategist/engagement.py",
+      "stop": null
+    },
+    {
+      "id": "S22",
+      "example": "22_textbox_coords.md",
+      "command": "search",
+      "engine": "tools/strategist/engagement.py",
+      "stop": null
+    },
+    {
+      "id": "S23",
+      "example": "23_truncated_search_visible.md",
+      "command": "search",
+      "engine": "tools/strategist/engagement.py",
+      "stop": null
+    },
+    {
+      "id": "S24",
+      "example": "24_inventory_failed_plus_ok.md",
+      "command": "info",
+      "engine": "tools/strategist/engagement.py",
+      "stop": null
+    },
+    {
+      "id": "S25",
+      "example": null,
+      "command": "search",
+      "engine": "tools/strategist/engagement.py",
+      "stop": "ST-SCAFFOLD-GUESS"
+    },
+    {
+      "id": "S26",
+      "example": null,
+      "command": "extract-data",
+      "engine": "tools/strategist/engagement.py",
+      "stop": "ST-TRUNCATE-HIDE"
+    },
+    {
+      "id": "S27",
+      "example": null,
+      "command": "explain",
+      "engine": "tools/strategist/engagement.py",
+      "stop": "ST-AMOUNT-REWRITE"
+    },
+    {
+      "id": "S28",
+      "example": null,
+      "command": "scaffold",
+      "engine": "tools/strategist/engagement.py",
+      "stop": "ST-DOC-AS-ORDER"
+    },
+    {
+      "id": "S29",
+      "example": null,
+      "command": "capabilities",
+      "engine": "tools/strategist/engagement.py",
+      "stop": "ST-LAYER-MIX"
+    },
+    {
+      "id": "S30",
+      "example": null,
+      "command": "info",
+      "engine": "tools/strategist/engagement.py",
+      "stop": "ST-FORECAST"
+    },
+    {
+      "id": "S31",
+      "example": null,
+      "command": "search",
+      "engine": "tools/strategist/engagement.py",
+      "stop": "ST-INVENT-PAGE"
+    },
+    {
+      "id": "S32",
+      "example": null,
+      "command": "extract-data",
+      "engine": "tools/strategist/engagement.py",
+      "stop": "ST-DROP-FAILED"
+    },
+    {
+      "id": "S33",
+      "example": null,
+      "command": "explain",
+      "engine": "tools/strategist/engagement.py",
+      "stop": "ST-SKIP-ENGINE"
+    },
+    {
+      "id": "S34",
+      "example": null,
+      "command": "scaffold",
+      "engine": "tools/strategist/engagement.py",
+      "stop": "ST-GATE-FAIL"
+    },
+    {
+      "id": "S35",
+      "example": null,
+      "command": "capabilities",
+      "engine": "tools/strategist/engagement.py",
+      "stop": "ST-UNKNOWN-EV"
+    },
+    {
+      "id": "S36",
+      "example": null,
+      "command": "info",
+      "engine": "tools/strategist/engagement.py",
+      "stop": "ST-PLACEHOLDER"
+    },
+    {
+      "id": "S37",
+      "example": null,
+      "command": "search",
+      "engine": "tools/strategist/engagement.py",
+      "stop": "ST-UNLINKED"
+    },
+    {
+      "id": "S38",
+      "example": null,
+      "command": "extract-data",
+      "engine": "tools/strategist/engagement.py",
+      "stop": "ST-INVENTED-CMD"
+    },
+    {
+      "id": "S39",
+      "example": null,
+      "command": "explain",
+      "engine": "tools/strategist/engagement.py",
+      "stop": "ST-GYM"
+    },
+    {
+      "id": "S40",
+      "example": null,
+      "command": "scaffold",
+      "engine": "tools/strategist/engagement.py",
+      "stop": "ST-SCAFFOLD-GUESS"
+    }
+  ]
+}

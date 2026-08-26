@@ -1,0 +1,24 @@
+{
+  "id": "p4-caption2",
+  "title": "새 캡션에 무엇이 들어 있나 — 자리 12의 정체",
+  "ledger": [],
+  "open": "samples/mix-shape-01.hwp",
+  "calls": [
+    ["SetPos", [0, 0, 0]],
+    ["Run", ["SelectCtrlFront"]],
+    ["Run", ["ShapeObjAttachCaption"]],
+    ["GetPos", []],
+    ["GetTextFile", ["TEXT", ""]],
+    ["InitScan", [255, 3, 0, 0, 0, 0]],
+    ["GetText", []],
+    ["GetText", []],
+    ["GetText", []],
+    ["ReleaseScan", []],
+    ["SetPos", [2, 0, 0]],
+    ["GetPos", []],
+    ["SelectText", [0, 0, 0, 12]],
+    ["GetSelectedPos", []],
+    ["ParentCtrl.UserDesc", []],
+    ["ParentCtrl.CtrlID", []]
+  ]
+}

@@ -1,0 +1,46 @@
+{
+  "id": "TE23",
+  "tier": 3,
+  "title": "조사 '의' 전건 치환",
+  "input": "samples/hwp3-sample.hwp",
+  "instructions": "입력 문서의 '의' 를 모두 '◎' 로 바꾼 산출물을 all23.hwp 로 제출하라. 채점은 옛 문구가 0건이 되었는지와 새 문구가 실재하는지를 각각 확인한다. 힌트: rhwp edit replace-text (occurrence 없이 전건). 다수 치환이다. 한 건만 바꾸면 옛 문구가 남는다.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "all23.hwp"
+    ]
+  },
+  "checks": [
+    {
+      "name": "옛 문구 완전 소거",
+      "op": "value_eq",
+      "value": 0,
+      "path": "matchCount",
+      "cmd": [
+        "search",
+        "{file:all23.hwp}",
+        "--json",
+        "--",
+        "의"
+      ]
+    },
+    {
+      "name": "새 문구 실재",
+      "op": "value_ge",
+      "value": 1,
+      "path": "matchCount",
+      "cmd": [
+        "search",
+        "{file:all23.hwp}",
+        "--json",
+        "--",
+        "◎"
+      ]
+    },
+    {
+      "name": "원본과 다름",
+      "op": "differs_from_input",
+      "file": "all23.hwp"
+    }
+  ]
+}

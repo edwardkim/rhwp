@@ -1,0 +1,11 @@
+{
+  "guards": [
+    "capabilities_mcp_covers_every_json_command",
+    "tools_list_matches_capabilities_manifest",
+    "capabilities_mcp_tool_definitions_contract",
+    "capabilities_covers_every_help_command",
+    "capabilities_version_matches_version_flag",
+    "skills_reference_only_real_commands"
+  ],
+  "rule": 1
+}

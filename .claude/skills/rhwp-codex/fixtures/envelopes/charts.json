@@ -1,0 +1,36 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5318,
+  "kind": "live",
+  "command": "charts",
+  "sourceChapter": "10_조회.md",
+  "cmd": "rhwp charts samples/issue2006/1790387_prep_final_report.hwpx --json",
+  "exit": 0,
+  "envelope": {
+    "charts": [
+      {
+        "control": 0,
+        "index": 0,
+        "nestedCopy": 8,
+        "paragraph": 285,
+        "section": 0,
+        "zipPart": 54
+      },
+      {
+        "control": 0,
+        "index": 1,
+        "nestedCopy": 9,
+        "paragraph": 286,
+        "section": 0,
+        "zipPart": 55
+      }
+    ],
+    "count": 2,
+    "schemaVersion": "1.0",
+    "source": "samples/issue2006/1790387_prep_final_report.hwpx",
+    "untrustedContent": false,
+    "untrustedFields": []
+  },
+  "extractedFromGenerated": true,
+  "handEdited": false
+}

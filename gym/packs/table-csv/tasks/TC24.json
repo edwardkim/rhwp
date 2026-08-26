@@ -1,0 +1,54 @@
+{
+  "id": "TC24",
+  "tier": 3,
+  "title": "표 값 되쓰기 — --verify 로 (0,0) 만 100",
+  "input": "samples/hwpx/basic-table-01.hwpx",
+  "instructions": "TC03 과 같이 표 0 의 (0,0) 을 100 으로 바꾸되, 저장 직후 자기검증을 켜라. out.hwpx 로 저장하고 (1,2) 의 7 은 그대로 두어야 한다. 힌트: rhwp csv-to-table <문서> --table 0 --csv gym/packs/table-csv/assets/TC24-edit.csv -o out.hwpx --verify --json.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "out.hwpx"
+    ]
+  },
+  "checks": [
+    {
+      "name": "산출물 존재",
+      "op": "file_exists",
+      "file": "out.hwpx",
+      "minBytes": 1
+    },
+    {
+      "name": "원본과 다름(무편집 거부)",
+      "op": "differs_from_input",
+      "file": "out.hwpx"
+    },
+    {
+      "name": "표0 (0,0) 이 100",
+      "op": "cell_text_eq",
+      "path": "tables",
+      "table": 0,
+      "row": 0,
+      "col": 0,
+      "value": 100,
+      "cmd": [
+        "export-tables",
+        "{file:out.hwpx}",
+        "--json"
+      ]
+    },
+    {
+      "name": "표0 (1,2) 는 그대로 7",
+      "op": "cell_text_eq",
+      "path": "tables",
+      "table": 0,
+      "row": 1,
+      "col": 2,
+      "value": 7,
+      "cmd": [
+        "export-tables",
+        "{file:out.hwpx}",
+        "--json"
+      ]
+    }
+  ]
+}

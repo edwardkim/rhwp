@@ -1,0 +1,20 @@
+{
+  "id": "WR14",
+  "steps": [
+    {
+      "answer": {
+        "reproduced": {
+          "cmd": [
+            "replay",
+            "--plan-json",
+            "{\"planVersion\": \"1.0\", \"input\": \"samples/field-01.hwp\", \"output\": \"reject-out.hwp\", \"steps\": [{\"action\": \"replace_text\", \"find\": \"마케팅\", \"replace\": \"거짓기각\"}]}",
+            "--expect-output-sha256",
+            "0000000000000000000000000000000000000000000000000000000000000000",
+            "--json"
+          ],
+          "path": "reproduced"
+        }
+      }
+    }
+  ]
+}

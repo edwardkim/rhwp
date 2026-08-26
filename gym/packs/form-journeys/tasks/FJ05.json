@@ -1,0 +1,47 @@
+{
+  "id": "FJ05",
+  "tier": 3,
+  "title": "채움 뒤 sanitize 제출본",
+  "input": "samples/form-01.hwp",
+  "instructions": "누름틀 'myMsg01' 에 '배포전값' 을 채운 뒤, 작성자·미리보기 같은 메타데이터를 지운 제출본 submit.hwp 를 내라. 값이 들어갔는지만 보면 안 된다 — 채점은 본문에 그 값이 남아 있는지와, 제출본을 한 번 더 sanitize 하면 지울 것이 0건인지를 본다(이미 정리된 산출물). 힌트: rhwp edit fill-fields <문서> --data '{\"myMsg01\": \"배포전값\"}' -o filled.hwp --json 그리고 rhwp edit sanitize filled.hwp -o submit.hwp --json",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "submit.hwp"
+    ]
+  },
+  "checks": [
+    {
+      "name": "채운 값이 본문에 남음",
+      "op": "value_ge",
+      "value": 1,
+      "path": "matchCount",
+      "cmd": [
+        "search",
+        "{file:submit.hwp}",
+        "--json",
+        "--",
+        "배포전값"
+      ]
+    },
+    {
+      "name": "제출본을 다시 sanitize 하면 0건 — 이미 정리됨",
+      "op": "value_eq",
+      "value": 0,
+      "path": "removedCount",
+      "cmd": [
+        "edit",
+        "sanitize",
+        "{file:submit.hwp}",
+        "-o",
+        "{file:recheck.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "원본 무편집 복사가 아님",
+      "op": "differs_from_input",
+      "file": "submit.hwp"
+    }
+  ]
+}

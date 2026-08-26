@@ -1,0 +1,206 @@
+# M09-g equation golden — current-engine lock (variant/exception/unimplemented honesty)
+command: DMATRIX
+script: DMATRIX{1 & {1} OVER {3} & SQRT(2) of {7} & d # {2} OVER {2} & SQRT(3) of {6} & d & 8 # SQRT(4) of {5} & d & 11 & {3} OVER {5} # d & 14 & {4} OVER {4} & SQRT(5) of {8}}
+honesty: implemented-variant
+
+=== ast ===
+Matrix {
+    rows: [
+        [
+            Number(
+                "1",
+            ),
+            Fraction {
+                numer: Number(
+                    "1",
+                ),
+                denom: Number(
+                    "3",
+                ),
+            },
+            Sqrt {
+                index: Some(
+                    Number(
+                        "2",
+                    ),
+                ),
+                body: Number(
+                    "7",
+                ),
+            },
+            Text(
+                "d",
+            ),
+        ],
+        [
+            Fraction {
+                numer: Number(
+                    "2",
+                ),
+                denom: Number(
+                    "2",
+                ),
+            },
+            Sqrt {
+                index: Some(
+                    Number(
+                        "3",
+                    ),
+                ),
+                body: Number(
+                    "6",
+                ),
+            },
+            Text(
+                "d",
+            ),
+            Number(
+                "8",
+            ),
+        ],
+        [
+            Sqrt {
+                index: Some(
+                    Number(
+                        "4",
+                    ),
+                ),
+                body: Number(
+                    "5",
+                ),
+            },
+            Text(
+                "d",
+            ),
+            Number(
+                "11",
+            ),
+            Fraction {
+                numer: Number(
+                    "3",
+                ),
+                denom: Number(
+                    "5",
+                ),
+            },
+        ],
+        [
+            Text(
+                "d",
+            ),
+            Number(
+                "14",
+            ),
+            Fraction {
+                numer: Number(
+                    "4",
+                ),
+                denom: Number(
+                    "4",
+                ),
+            },
+            Sqrt {
+                index: Some(
+                    Number(
+                        "5",
+                    ),
+                ),
+                body: Number(
+                    "8",
+                ),
+            },
+        ],
+    ],
+    style: Vert,
+}
+
+=== layout ===
+Matrix(Vert) x=0.0000 y=0.0000 w=174.8000 h=213.2000 bl=106.6000
+  row0:
+    Number("1") x=17.8500 y=14.4000 w=11.0000 h=20.0000 bl=16.0000
+    Fraction x=56.5500 y=0.0000 w=19.0000 h=48.8000 bl=29.4000
+      numer:
+        Number("1") x=4.0000 y=4.0000 w=11.0000 h=20.0000 bl=16.0000
+      denom:
+        Number("3") x=4.0000 y=24.8000 w=11.0000 h=20.0000 bl=16.0000
+    Sqrt x=95.4000 y=12.4000 w=26.7000 h=24.0000 bl=18.0000
+      index:
+        Number("2") x=0.0000 y=0.0000 w=7.7000 h=14.0000 bl=11.2000
+      body:
+        Number("7") x=14.7000 y=2.0000 w=11.0000 h=20.0000 bl=16.0000
+    Text("d") x=145.6750 y=14.4000 w=11.5500 h=20.0000 bl=16.0000
+  row1:
+    Fraction x=13.8500 y=54.8000 w=19.0000 h=48.8000 bl=29.4000
+      numer:
+        Number("2") x=4.0000 y=4.0000 w=11.0000 h=20.0000 bl=16.0000
+      denom:
+        Number("2") x=4.0000 y=24.8000 w=11.0000 h=20.0000 bl=16.0000
+    Sqrt x=52.7000 y=67.2000 w=26.7000 h=24.0000 bl=18.0000
+      index:
+        Number("3") x=0.0000 y=0.0000 w=7.7000 h=14.0000 bl=11.2000
+      body:
+        Number("6") x=14.7000 y=2.0000 w=11.0000 h=20.0000 bl=16.0000
+    Text("d") x=102.9750 y=69.2000 w=11.5500 h=20.0000 bl=16.0000
+    Number("8") x=145.9500 y=69.2000 w=11.0000 h=20.0000 bl=16.0000
+  row2:
+    Sqrt x=10.0000 y=122.0000 w=26.7000 h=24.0000 bl=18.0000
+      index:
+        Number("4") x=0.0000 y=0.0000 w=7.7000 h=14.0000 bl=11.2000
+      body:
+        Number("5") x=14.7000 y=2.0000 w=11.0000 h=20.0000 bl=16.0000
+    Text("d") x=60.2750 y=124.0000 w=11.5500 h=20.0000 bl=16.0000
+    Number("11") x=97.7500 y=124.0000 w=22.0000 h=20.0000 bl=16.0000
+    Fraction x=141.9500 y=109.6000 w=19.0000 h=48.8000 bl=29.4000
+      numer:
+        Number("3") x=4.0000 y=4.0000 w=11.0000 h=20.0000 bl=16.0000
+      denom:
+        Number("5") x=4.0000 y=24.8000 w=11.0000 h=20.0000 bl=16.0000
+  row3:
+    Text("d") x=17.5750 y=178.8000 w=11.5500 h=20.0000 bl=16.0000
+    Number("14") x=55.0500 y=178.8000 w=22.0000 h=20.0000 bl=16.0000
+    Fraction x=99.2500 y=164.4000 w=19.0000 h=48.8000 bl=29.4000
+      numer:
+        Number("4") x=4.0000 y=4.0000 w=11.0000 h=20.0000 bl=16.0000
+      denom:
+        Number("4") x=4.0000 y=24.8000 w=11.0000 h=20.0000 bl=16.0000
+    Sqrt x=138.1000 y=176.8000 w=26.7000 h=24.0000 bl=18.0000
+      index:
+        Number("5") x=0.0000 y=0.0000 w=7.7000 h=14.0000 bl=11.2000
+      body:
+        Number("8") x=14.7000 y=2.0000 w=11.0000 h=20.0000 bl=16.0000
+
+=== svg ===
+<line x1="3.00" y1="0.00" x2="3.00" y2="213.20" stroke="#000000" stroke-width="0.80"/>
+<line x1="171.80" y1="0.00" x2="171.80" y2="213.20" stroke="#000000" stroke-width="0.80"/>
+<text x="17.85" y="30.40" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">1</text>
+<text x="60.55" y="20.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">1</text>
+<line x1="57.55" y1="24.40" x2="74.55" y2="24.40" stroke="#000000" stroke-width="0.80"/>
+<text x="60.55" y="40.80" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">3</text>
+<path d="M97.10,25.80 L99.10,26.80 L105.10,36.40 L108.10,12.40 L122.10,12.40" fill="none" stroke="#000000" stroke-width="0.80"/>
+<text x="95.40" y="23.60" font-size="14.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">2</text>
+<text x="110.10" y="30.40" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">7</text>
+<text x="145.68" y="30.40" font-size="20.00" fill="#000000" font-style="italic" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">d</text>
+<text x="17.85" y="74.80" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">2</text>
+<line x1="14.85" y1="79.20" x2="31.85" y2="79.20" stroke="#000000" stroke-width="0.80"/>
+<text x="17.85" y="95.60" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">2</text>
+<path d="M54.40,80.60 L56.40,81.60 L62.40,91.20 L65.40,67.20 L79.40,67.20" fill="none" stroke="#000000" stroke-width="0.80"/>
+<text x="52.70" y="78.40" font-size="14.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">3</text>
+<text x="67.40" y="85.20" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">6</text>
+<text x="102.98" y="85.20" font-size="20.00" fill="#000000" font-style="italic" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">d</text>
+<text x="145.95" y="85.20" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">8</text>
+<path d="M11.70,135.40 L13.70,136.40 L19.70,146.00 L22.70,122.00 L36.70,122.00" fill="none" stroke="#000000" stroke-width="0.80"/>
+<text x="10.00" y="133.20" font-size="14.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">4</text>
+<text x="24.70" y="140.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">5</text>
+<text x="60.28" y="140.00" font-size="20.00" fill="#000000" font-style="italic" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">d</text>
+<text x="97.75" y="140.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">11</text>
+<text x="145.95" y="129.60" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">3</text>
+<line x1="142.95" y1="134.00" x2="159.95" y2="134.00" stroke="#000000" stroke-width="0.80"/>
+<text x="145.95" y="150.40" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">5</text>
+<text x="17.58" y="194.80" font-size="20.00" fill="#000000" font-style="italic" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">d</text>
+<text x="55.05" y="194.80" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">14</text>
+<text x="103.25" y="184.40" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">4</text>
+<line x1="100.25" y1="188.80" x2="117.25" y2="188.80" stroke="#000000" stroke-width="0.80"/>
+<text x="103.25" y="205.20" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">4</text>
+<path d="M139.80,190.20 L141.80,191.20 L147.80,200.80 L150.80,176.80 L164.80,176.80" fill="none" stroke="#000000" stroke-width="0.80"/>
+<text x="138.10" y="188.00" font-size="14.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">5</text>
+<text x="152.80" y="194.80" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">8</text>

@@ -1,0 +1,25 @@
+{
+  "id": "TC13",
+  "tier": 2,
+  "title": "표 선택 — multi-table-001 표 0 행 수",
+  "input": "samples/multi-table-001.hwp",
+  "instructions": "표가 여럿인 문서다. --table 0 만 뽑아 rowCount 를 보고하라. 답 형식: {\"rows\": <수>}. 힌트: rhwp table-to-csv <문서> --table 0 --json.",
+  "submit": {
+    "kind": "answer"
+  },
+  "checks": [
+    {
+      "name": "표0 행 수 일치",
+      "op": "answer_eq",
+      "answer": "rows",
+      "cmd": [
+        "table-to-csv",
+        "{input}",
+        "--table",
+        "0",
+        "--json"
+      ],
+      "path": "tables[0].rowCount"
+    }
+  ]
+}

@@ -76,6 +76,18 @@ fn convert_roundtrip() -> std::path::PathBuf {
     out
 }
 
+/// [#4957] HWP3 개체 마커(`U+FFFC`)는 본문 글자가 아니므로 비교 축에서 뺀다.
+///
+/// 파서가 개체 자리에 넣는 자리표시자이고, 저장기는 그 자리에 **확장 컨트롤 8유닛**을 쓴다 —
+/// 리터럴 글자로 쓰면 저장본을 한글로 열 때 원본에 없던 개체 문자가 생긴다. 그래서 왕복 뒤
+/// 텍스트에 이 글자가 없는 것이 정상이고, 종전에 남아 있던 쪽이 결함이었다.
+///
+/// 이 시험이 지키는 계약은 **미주 앞의 진짜 공백이 먹히지 않는가** 다. 마커를 뺀 축으로
+/// 비교해도 그 계약은 그대로 검출된다(실측 표본 문단 147: 마커 양옆 공백 두 개가 모두 남는다).
+fn without_object_markers(text: &str) -> String {
+    text.chars().filter(|c| *c != '\u{FFFC}').collect()
+}
+
 /// 미주가 있는 문단의 텍스트가 저장으로 바뀌지 않는다.
 #[test]
 fn saving_keeps_the_space_before_an_endnote() {
@@ -91,6 +103,10 @@ fn saving_keeps_the_space_before_an_endnote() {
 
     assert_eq!(after.len(), before.len(), "저장 후 미주 문단 수가 달라졌다");
     for (i, ((text_a, _), (text_b, _))) in before.iter().zip(after.iter()).enumerate() {
+        let (text_a, text_b) = (
+            without_object_markers(text_a),
+            without_object_markers(text_b),
+        );
         assert_eq!(
             text_a.chars().count(),
             text_b.chars().count(),

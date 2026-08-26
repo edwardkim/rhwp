@@ -1,0 +1,31 @@
+{
+  "id": "TE02",
+  "steps": [
+    {
+      "run": [
+        "edit",
+        "replace-text",
+        "{input}",
+        "--find",
+        "규제",
+        "--replace",
+        "점검",
+        "-o",
+        "{sub:edited.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "answer": {
+        "pages": {
+          "cmd": [
+            "info",
+            "{input}",
+            "--json"
+          ],
+          "path": "pageCount"
+        }
+      }
+    }
+  ]
+}

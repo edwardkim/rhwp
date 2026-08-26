@@ -1,0 +1,30 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "gymProfile",
+  "id": "maintainer",
+  "title": "메인테이너",
+  "description": "전 표면 — 검증 사다리와 자기서술까지 포함한 완주 코스.",
+  "packs": [
+    "automation",
+    "batch-ops",
+    "casual-rides",
+    "core-cli",
+    "corpus-diagnostics",
+    "expert-challenges",
+    "extraction",
+    "form-journeys",
+    "layout-rendering",
+    "objects-media",
+    "oracle-probe",
+    "render-tree",
+    "security",
+    "self-description",
+    "serialization",
+    "showcase",
+    "studio-e2e",
+    "table-csv",
+    "table-editing",
+    "text-editing",
+    "work-receipt"
+  ]
+}

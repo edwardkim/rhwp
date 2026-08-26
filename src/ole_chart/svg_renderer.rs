@@ -298,7 +298,7 @@ fn finite_or(value: f64, fallback: f64) -> f64 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::ole_chart::{OleChartSeries, OleChartType};
+    use crate::ole_chart::{OleChartSeries, OleChartType, SeriesAxis, SeriesAxisEvidence};
 
     fn sample_chart() -> OleChart {
         OleChart {
@@ -309,6 +309,8 @@ mod tests {
                 name: Some("적립금".to_string()),
                 values: vec![328.0, 812.0],
             }],
+            series_axis: SeriesAxis::Columns,
+            series_axis_evidence: SeriesAxisEvidence::ColumnLabelsEchoed,
         }
     }
 

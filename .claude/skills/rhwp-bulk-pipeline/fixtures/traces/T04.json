@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5311,
+  "skill": "rhwp-bulk-pipeline",
+  "notGym": true,
+  "noNewCli": true,
+  "id": "T04",
+  "title": "convert 편람 1건",
+  "command": "batch convert --out-dir out/bulk --json",
+  "axis": "convert",
+  "input": 1,
+  "success": 1,
+  "failure": 0,
+  "exit": 0,
+  "stop": "B17",
+  "rows": [
+    {
+      "schemaVersion": "1.0",
+      "source": "samples/2025 행정업무운영 편람(최종).hwpx",
+      "format": "hwp5",
+      "output": "out/bulk\\2025 행정업무운영 편람(최종).hwp",
+      "bytes": 9083392
+    }
+  ],
+  "stderrExample": "batch: 1건 중 1 성공, 0 실패"
+}

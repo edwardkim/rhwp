@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "rhwp.form_fill.form_catalog.v1",
+  "title": "fields survey catalog",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "kind",
+    "id",
+    "sample",
+    "fields",
+    "survey"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "1.0"
+    },
+    "kind": {
+      "const": "rhwp.form_fill.form_catalog.v1"
+    },
+    "id": {
+      "type": "string"
+    },
+    "sample": {
+      "type": "string"
+    },
+    "fieldCount": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "firstFieldName": {
+      "type": "string"
+    },
+    "fields": {
+      "type": "array"
+    },
+    "survey": {
+      "type": "object"
+    }
+  }
+}

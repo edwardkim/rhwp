@@ -1,0 +1,23 @@
+{
+  "id": "T04",
+  "tier": 2,
+  "title": "데이터 추출",
+  "input": "samples/156636617_240617 2024년 5월 월간 수출입 현황(확정치).hwp",
+  "instructions": "입력 문서에서 날짜·금액·수량 데이터를 추출해 항목 수를 answer.json 에 {\"itemCount\": <수>} 로 제출하라. 힌트: rhwp extract-data <문서> --json 의 items.",
+  "submit": {
+    "kind": "answer"
+  },
+  "checks": [
+    {
+      "name": "추출 항목 수 일치",
+      "op": "len_answer_eq",
+      "answer": "itemCount",
+      "cmd": [
+        "extract-data",
+        "{input}",
+        "--json"
+      ],
+      "path": "items"
+    }
+  ]
+}

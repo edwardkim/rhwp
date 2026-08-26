@@ -1,0 +1,49 @@
+{
+  "id": "p4-setmutate",
+  "title": "ParameterSet/Array 고치기 멤버 — 부름 규약과 반환",
+  "ledger": [
+    "ParameterSet.method.SetItem",
+    "ParameterSet.method.RemoveItem",
+    "ParameterSet.method.RemoveAll",
+    "ParameterSet.method.Merge",
+    "ParameterSet.method.IsEquivalent",
+    "ParameterArray.method.Item",
+    "ParameterArray.method.SetItem",
+    "ParameterArray.method.Copy",
+    "ParameterArray.method.Clone"
+  ],
+  "open": "samples/table-001.hwp",
+  "calls": [
+    ["CreateSet(\"CharShape\").SetItem", ["Height", 1000]],
+    ["CreateSet(\"CharShape\").Item", ["Height"]],
+    ["CreateSet(\"CharShape\").Count", []],
+    ["CreateSet(\"CharShape\").RemoveItem", ["Height"]],
+    ["CreateSet(\"CharShape\").RemoveAll", [], {"expectError": {
+      "rhwp": "필수 매개 변수입니다",
+      "ocx": null,
+      "why": "규격에 없는 인자를 하나 요구한다 — 없이 부르면 죽는다(계획서 §4.57). 오라클 오류 문구는 아직 안 쟀다"
+    }}],
+    ["CreateSet(\"CharShape\").RemoveAll", [0]],
+    ["CreateSet(\"CharShape\").RemoveAll", [1]],
+    ["CreateSet(\"CharShape\").Count", []],
+    ["CreateSet(\"CharShape\").Merge", [{"$obj": "CreateSet(\"CharShape\")"}]],
+    ["CreateSet(\"CharShape\").Merge", [{"$obj": "CreateSet(\"ParaShape\")"}]],
+    ["CreateSet(\"CharShape\").IsEquivalent", [{"$obj": "CreateSet(\"CharShape\")"}]],
+    ["CreateSet(\"CharShape\").IsEquivalent", [{"$obj": "CreateSet(\"ParaShape\")"}]],
+    ["CreateSet(\"ParaShape\").IsEquivalent", [{"$obj": "CreateSet(\"ParaShape\")"}]],
+    ["CreateSet(\"CharShape\").CreateItemArray(\"Items\", 3).Count", []],
+    ["CreateSet(\"CharShape\").CreateItemArray(\"Items\", 3).Item", [0]],
+    ["CreateSet(\"CharShape\").CreateItemArray(\"Items\", 3).Item", [2]],
+    ["CreateSet(\"CharShape\").CreateItemArray(\"Items\", 3).SetItem", [0, {"$obj": "CreateSet(\"CharShape\")"}]],
+    ["CreateSet(\"CharShape\").CreateItemArray(\"Items\", 3).Copy", [{"$obj": "CreateSet(\"CharShape\").CreateItemArray(\"Items\", 3)"}], {"expectError": {
+      "rhwp": "실물이 받지 않는 호출입니다",
+      "ocx": "원격 프로시저를 호출하지 못했습니다",
+      "why": "실물 양쪽이 다 죽는다(3자 실측 2026-08-10) — 데스크톱은 RPC 붕괴(이 문구는 그 붕괴 메시지다), 기안기는 MissingApi. 받아 주던 구현이 유일한 IMPL_GAP 이었다"
+    }}],
+    ["CreateSet(\"CharShape\").CreateItemArray(\"Items\", 3).Clone", [], {"expectError": {
+      "rhwp": "서버에서 예외 오류가 발생했습니다",
+      "ocx": null,
+      "why": "배열의 Clone 만 죽는다 — 셋 쪽 Clone 은 멀쩡하다(계획서 §4.57). 오라클 오류 문구는 아직 안 쟀다"
+    }}]
+  ]
+}

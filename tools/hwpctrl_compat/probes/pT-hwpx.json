@@ -1,0 +1,24 @@
+{
+  "id": "pT-hwpx",
+  "title": "한글이 저장한 HWPX 에서 그 비트가 무엇으로 불리나",
+  "ledger": [],
+  "open": "samples/21868765_별표2_보건소_분장사무.hwp",
+  "paths": {
+    "x": {
+      "win": "{out}/pT-x.hwpx",
+      "posix": "{out}/pT-x.hwpx"
+    }
+  },
+  "calls": [
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "x"
+        },
+        "HWPX",
+        ""
+      ]
+    ]
+  ]
+}

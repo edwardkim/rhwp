@@ -1,0 +1,32 @@
+{
+  "id": "LR35",
+  "tier": 2,
+  "title": "가로 문서 첫 쪽 SVG",
+  "input": "samples/landscape-001.hwp",
+  "instructions": "입력의 **첫 쪽**을 SVG 로 svg/ 폴더에 내보내라(파일명은 도구가 정한다). 무편집 복사는 거절한다. 힌트: rhwp export-svg -p 0 -o <폴더>.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "svg/landscape-001.svg"
+    ]
+  },
+  "checks": [
+    {
+      "name": "SVG 산출",
+      "op": "file_exists",
+      "file": "svg/landscape-001.svg",
+      "minBytes": 512
+    },
+    {
+      "name": "원본과 다름 (무편집 복사 거부 — 판별력)",
+      "op": "differs_from_input",
+      "file": "svg/landscape-001.svg"
+    },
+    {
+      "name": "SVG XML 형식",
+      "op": "xml_root_eq",
+      "file": "svg/landscape-001.svg",
+      "value": "svg"
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "id": "T27",
+  "title": "누름틀 11",
+  "scenario": "S03",
+  "argv": [
+    "explore",
+    "samples/field-01.hwp",
+    "--json"
+  ],
+  "envelope": "envelopes/S03.json",
+  "expect": {
+    "schemaVersion": "1.0",
+    "encrypted": false,
+    "menuIds": [
+      "form-fill",
+      "triage-overview"
+    ],
+    "first": "form-fill",
+    "firstCommand": "rhwp fields <file> --json",
+    "untrustedContent": false
+  },
+  "stop": "X10",
+  "notGym": true,
+  "usesExistingCommand": true
+}

@@ -1,0 +1,28 @@
+{
+  "id": "T15",
+  "title": "우선순위 계약",
+  "scenario": "S40",
+  "argv": [
+    "explore",
+    "samples/priority.hwp",
+    "--json"
+  ],
+  "envelope": "envelopes/S40.json",
+  "expect": {
+    "schemaVersion": "1.0",
+    "encrypted": false,
+    "menuIds": [
+      "security-sweep",
+      "form-fill",
+      "table-extract",
+      "chart-extract",
+      "triage-overview"
+    ],
+    "first": "security-sweep",
+    "firstCommand": "rhwp inspect injection <file> --json",
+    "untrustedContent": false
+  },
+  "stop": "X03",
+  "notGym": true,
+  "usesExistingCommand": true
+}

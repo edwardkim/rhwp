@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.form_fill.form_catalog.v1",
+  "id": "form-01",
+  "title": "명령 단추 예제 문서",
+  "family": "sample",
+  "genre": "단건",
+  "sample": "samples/form-01.hwp",
+  "format": "hwp5",
+  "relatedIssue": "#3329",
+  "why": "레시피 01 실측. 누름틀 myMsg01 1개.",
+  "notes": "",
+  "claim": "M-fill",
+  "generator": "tools/form_fill/fatten_form_fill.py",
+  "fieldCount": 1,
+  "firstFieldName": "myMsg01",
+  "repeatedNames": [],
+  "nameCounts": {"myMsg01": 1},
+  "hash": "0add7e0f4c39",
+  "surveyFieldCount": 1,
+  "textSecurity": {"status": "clean"},
+  "fields": [
+    {"name": "myMsg01", "guide": "여기에 입력", "value": "", "memo": "", "paragraph": 10, "nested": []}
+  ]
+}

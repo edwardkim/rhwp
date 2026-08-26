@@ -1,0 +1,15 @@
+{
+  "id": "WR43",
+  "steps": [
+    {
+      "run": [
+        "replay",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"samples/field-01-memo.hwp\", \"output\": \"day.hwp\", \"steps\": [{\"action\": \"replace_text\", \"find\": \"마케팅\", \"replace\": \"메모회계\"}]}",
+        "--capsule",
+        "{sub:receipts/day.capsule.json}",
+        "--json"
+      ]
+    }
+  ]
+}

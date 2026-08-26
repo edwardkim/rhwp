@@ -1,0 +1,66 @@
+{
+  "id": "inj-scopes-include-fields-on",
+  "issue": 5476,
+  "axis": "injection",
+  "family": "scanScopes",
+  "polarity": "contract",
+  "sourceRule": {
+    "file": "src/main.rs",
+    "symbol": "injection_scan_scopes",
+    "note": "훑지 않은 영역은 깨끗함이 아니라 검사 안 함."
+  },
+  "cli": {
+    "argv": [
+      "inspect",
+      "injection",
+      "samples/field-01.hwp",
+      "--json",
+      "--include-fields"
+    ],
+    "exitCode": 0,
+    "stdoutKind": "json-object",
+    "detectionIsNotFailure": true
+  },
+  "consume": {
+    "branch": "scanScopes",
+    "missingScopeIsNotClean": true,
+    "fieldScopes": [
+      "fieldName",
+      "fieldGuide",
+      "fieldCommand",
+      "hiddenComment",
+      "fieldMemo"
+    ]
+  },
+  "pair": null,
+  "why": "scanScopes 가 검사 범위를 밝힌다.",
+  "note": "필드 축은 --include-fields 로만 열린다.",
+  "human": "주입 신호 없음. 훑은 영역 14개.\n",
+  "inventedRule": false,
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "samples/field-01.hwp",
+    "minConfidence": "low",
+    "includeFields": true,
+    "scanScopes": [
+      "body",
+      "tableCell",
+      "textBox",
+      "equation",
+      "footnote",
+      "endnote",
+      "header",
+      "footer",
+      "caption",
+      "fieldName",
+      "fieldGuide",
+      "fieldCommand",
+      "hiddenComment",
+      "fieldMemo"
+    ],
+    "injectionSignals": [],
+    "signalCount": 0,
+    "highestConfidence": null,
+    "clean": true
+  }
+}

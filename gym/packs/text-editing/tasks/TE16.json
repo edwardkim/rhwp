@@ -1,0 +1,46 @@
+{
+  "id": "TE16",
+  "tier": 3,
+  "title": "세 번째만 치환",
+  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "instructions": "입력의 '규제' 가운데 **0 기준 2번째만** '감독' 로 바꾼 once16.hwp 을 제출하라. 전건 치환은 통과하지 못한다 — 옛 문구가 남아 있어야 한다. 힌트: rhwp edit replace-text --occurrence 2. 0·1 이 아니라 2 를 지목한다.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "once16.hwp"
+    ]
+  },
+  "checks": [
+    {
+      "name": "새 문구 실재",
+      "op": "value_ge",
+      "value": 1,
+      "path": "matchCount",
+      "cmd": [
+        "search",
+        "{file:once16.hwp}",
+        "--json",
+        "--",
+        "감독"
+      ]
+    },
+    {
+      "name": "옛 문구 잔여(전건 치환 거부)",
+      "op": "value_ge",
+      "value": 1,
+      "path": "matchCount",
+      "cmd": [
+        "search",
+        "{file:once16.hwp}",
+        "--json",
+        "--",
+        "규제"
+      ]
+    },
+    {
+      "name": "원본과 다름",
+      "op": "differs_from_input",
+      "file": "once16.hwp"
+    }
+  ]
+}

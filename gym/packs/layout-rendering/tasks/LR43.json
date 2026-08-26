@@ -1,0 +1,27 @@
+{
+  "id": "LR43",
+  "tier": 1,
+  "title": "영문 표본 쪽수",
+  "input": "samples/basic/english.hwp",
+  "instructions": "basic/english.hwp 의 쪽수를 answer.json 에 {\"pages\": N} 으로 제출하라. 힌트: rhwp info 의 pageCount.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "쪽수",
+      "op": "answer_eq",
+      "answer": "pages",
+      "path": "pageCount",
+      "cmd": [
+        "info",
+        "{input}",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

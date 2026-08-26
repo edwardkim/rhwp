@@ -1,0 +1,24 @@
+{
+  "id": "T21",
+  "tier": 1,
+  "title": "표 표본에서 '표' 검색",
+  "input": "samples/table-001.hwp",
+  "instructions": "T21 은 입문·코어 온램프를 두껍게 하는 과제다. T02 의 '국어' 검색을 표 표본·다른 질의로 갈라 둔다. 표본은 `samples/table-001.hwp` 이고, 이미 저장소 `samples/` 에 있다. 새 파일을 만들지 마라. 정답 숫자는 과제에 박제되어 있지 않다. 채점기가 같은 명령을 다시 돌린다. 힌트: search <문서> 표 --json. 제출은 answer.json 에 {\"matchCount\": <값>} 로 적는다. 원본을 덮어쓰지 마라. T07 의 fields[0]==홍길동 판정을 복제하지 마라. search 의 matches 길이를 센다. matchCount 키가 있어도 이 과제는 matches 길이다.",
+  "submit": {
+    "kind": "answer"
+  },
+  "checks": [
+    {
+      "name": "표 표본에서 '표' 검색",
+      "op": "len_answer_eq",
+      "answer": "matchCount",
+      "cmd": [
+        "search",
+        "{input}",
+        "표",
+        "--json"
+      ],
+      "path": "matches"
+    }
+  ]
+}

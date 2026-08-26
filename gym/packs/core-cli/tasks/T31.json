@@ -1,0 +1,23 @@
+{
+  "id": "T31",
+  "tier": 2,
+  "title": "메모 서식 누름틀 개수",
+  "input": "samples/field-01-memo.hwp",
+  "instructions": "T31 은 입문·코어 온램프를 두껍게 하는 과제다. field-01 과 memo 판은 안내문·메모가 다르다. 개수도 같다고 가정하지 마라. 표본은 `samples/field-01-memo.hwp` 이고, 이미 저장소 `samples/` 에 있다. 새 파일을 만들지 마라. 정답 숫자는 과제에 박제되어 있지 않다. 채점기가 같은 명령을 다시 돌린다. 힌트: fields <문서> --json. 제출은 answer.json 에 {\"fieldCount\": <값>} 로 적는다. 원본을 덮어쓰지 마라. T07 의 fields[0]==홍길동 판정을 복제하지 마라. fields 배열 길이를 라이브로 센다.",
+  "submit": {
+    "kind": "answer"
+  },
+  "checks": [
+    {
+      "name": "메모 서식 누름틀 개수",
+      "op": "len_answer_eq",
+      "answer": "fieldCount",
+      "cmd": [
+        "fields",
+        "{input}",
+        "--json"
+      ],
+      "path": "fields"
+    }
+  ]
+}

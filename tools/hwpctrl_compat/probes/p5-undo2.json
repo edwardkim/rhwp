@@ -1,0 +1,24 @@
+{
+  "id": "p5-undo2",
+  "title": "되돌리기 2차 — 액션으로 고친 뒤",
+  "ledger": [],
+  "open": "samples/para-001.hwp",
+  "calls": [
+    ["SetPos", [0, 0, 20]],
+    ["SelectText", [0, 16, 0, 21]],
+    ["CharShape.Item", ["Bold"]],
+    ["Run", ["CharShapeBold"]],
+    ["CharShape.Item", ["Bold"]],
+    ["Run", ["Undo"]],
+    ["CharShape.Item", ["Bold"]],
+    ["Run", ["Redo"]],
+    ["CharShape.Item", ["Bold"]],
+    ["SetPos", [0, 0, 20]],
+    ["GetPos", []],
+    ["Run", ["InsertTab"]],
+    ["GetPos", []],
+    ["Run", ["Undo"]],
+    ["GetPos", []],
+    ["GetTextFile", ["TEXT", ""]]
+  ]
+}

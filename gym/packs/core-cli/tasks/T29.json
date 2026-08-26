@@ -1,0 +1,23 @@
+{
+  "id": "T29",
+  "tier": 2,
+  "title": "form-01 누름틀 개수",
+  "input": "samples/form-01.hwp",
+  "instructions": "T29 은 입문·코어 온램프를 두껍게 하는 과제다. T03 은 field-01 만 센다. 같은 질문을 form-01 에 다시 한다. 표본은 `samples/form-01.hwp` 이고, 이미 저장소 `samples/` 에 있다. 새 파일을 만들지 마라. 정답 숫자는 과제에 박제되어 있지 않다. 채점기가 같은 명령을 다시 돌린다. 힌트: fields <문서> --json. 제출은 answer.json 에 {\"fieldCount\": <값>} 로 적는다. 원본을 덮어쓰지 마라. T07 의 fields[0]==홍길동 판정을 복제하지 마라. 필드 값을 채우지 마라. 개수만 센다.",
+  "submit": {
+    "kind": "answer"
+  },
+  "checks": [
+    {
+      "name": "form-01 누름틀 개수",
+      "op": "len_answer_eq",
+      "answer": "fieldCount",
+      "cmd": [
+        "fields",
+        "{input}",
+        "--json"
+      ],
+      "path": "fields"
+    }
+  ]
+}

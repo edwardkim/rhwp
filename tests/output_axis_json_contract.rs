@@ -9,6 +9,8 @@
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 
+use sha2::{Digest, Sha256};
+
 const SAMPLE: &str = "samples/hwp3-sample.hwp";
 
 fn sample() -> PathBuf {
@@ -139,6 +141,57 @@ fn export_markdown_json_manifest() {
             "매니페스트가 가리키는 MD 파일이 없습니다: {path}"
         );
     }
+
+    let _ = std::fs::remove_dir_all(&out_dir);
+}
+
+#[test]
+fn export_markdown_preserves_embedded_image_bytes_and_relative_link() {
+    let sample = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("samples/issue2817/paper_anchor_infront_pic.hwpx");
+    if !sample.exists() {
+        eprintln!("샘플 없음 — 건너뜀");
+        return;
+    }
+
+    let out_dir = temp_path("md-image", "d");
+    let args = [
+        "export-markdown",
+        sample.to_str().unwrap(),
+        "-o",
+        out_dir.to_str().unwrap(),
+        "--json",
+    ];
+    let output = run(&args);
+    assert_eq!(
+        output.status.code(),
+        Some(0),
+        "{}",
+        describe(&args, &output)
+    );
+
+    let envelope = parse_json(&args, &output);
+    assert_eq!(envelope["imageCount"], 1, "{envelope}");
+
+    let markdown_path = out_dir.join("paper_anchor_infront_pic.md");
+    let asset_relative = "paper_anchor_infront_pic_assets/paper_anchor_infront_pic_p001_img001.png";
+    let asset_path = out_dir.join(asset_relative);
+    let markdown = std::fs::read_to_string(&markdown_path).expect("Markdown 산출 읽기");
+    assert!(
+        markdown.contains(&format!("![image 1]({asset_relative})")),
+        "이미지 링크가 상대 자산 경로를 보존하지 않습니다: {markdown}"
+    );
+
+    let asset = std::fs::read(&asset_path).expect("Markdown 이미지 자산 읽기");
+    assert_eq!(asset.len(), 876, "이미지 자산 크기");
+    let asset_sha256 = Sha256::digest(&asset)
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect::<String>();
+    assert_eq!(
+        asset_sha256, "7f0977caf24233a6196c3b9898fb2f051bc24226ba14e1e680313a6699f95a33",
+        "Markdown 이미지 자산 바이트가 달라졌습니다"
+    );
 
     let _ = std::fs::remove_dir_all(&out_dir);
 }

@@ -1,0 +1,10 @@
+{
+  "id": "once_ir_diff",
+  "task": "두 파일 IR 비교",
+  "choice": "stateless",
+  "first_tool": "hwp_ir_diff",
+  "why": "세션 밖 두 경로 비교.",
+  "forbidden": [
+    "hwp_open"
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "id": "T09-J01",
+  "recipe": "09",
+  "kind": "json",
+  "sourceFile": "mydocs/manual/recipes/09_bulk_extract_convert.md",
+  "excerpted": true,
+  "fabricatedLive": false,
+  "raw": "{\"format\":\"hwp5\",\"pageCount\":35,\"paraCount\":630,\"schemaVersion\":\"1.0\",\"source\":\"samples/2022년 국립국어원 업무계획.hwp\",\"title\":\"2022년 국립국어원 업무계획\", …}",
+  "parsed": null,
+  "parseable": false,
+  "notGym": true
+}

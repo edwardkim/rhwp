@@ -24,8 +24,8 @@ const SAMPLE: &str = "samples/hwp3-sample.hwp";
 /// 서로 다른 두 문서 — pair 모드에서 확실히 회귀(STRUCT_MISMATCH)를 낸다.
 const PAIR_A: &str = "samples/tac-host-spacing.hwpx";
 const PAIR_B: &str = "samples/issue2527_empty_linesegs.hwpx";
-/// 자기 라운드트립이 임계를 넘는(OVER) 샘플 — 배치 회귀 집계용.
-const OVER_SAMPLE: &str = "samples/hwp3-pagedef-1915.hwp";
+/// HWP 경유 자기 라운드트립에서 구조 차이를 내는 샘플 — 배치 회귀 집계용.
+const HWP_VIA_REGRESSION_SAMPLE: &str = "samples/hwp3-sample11.hwp";
 
 fn sample(rel: &str) -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join(rel)
@@ -346,7 +346,7 @@ fn render_diff_batch_json_streams_ndjson_and_keeps_failed_loads() {
     // 로드 실패 레코드를 스트림에서 빼면 입력 N건·출력 N-1건이 되고, 아무도 그
     // 한 건이 처리되지 않았음을 모른다 — 누락은 반드시 레코드로 남아야 한다.
     let dir = TempDir::new("mixed");
-    dir.copy_in(OVER_SAMPLE);
+    dir.copy_in(HWP_VIA_REGRESSION_SAMPLE);
     std::fs::write(dir.path().join("깨진문서.hwp"), b"not a document").expect("깨진 파일");
     let out = dir.path().join("out");
 
@@ -354,6 +354,8 @@ fn render_diff_batch_json_streams_ndjson_and_keeps_failed_loads() {
         "render-diff",
         "--batch",
         dir.path().to_str().unwrap(),
+        "--via",
+        "hwp",
         "-o",
         out.to_str().unwrap(),
         "--json",
@@ -378,7 +380,7 @@ fn render_diff_batch_json_streams_ndjson_and_keeps_failed_loads() {
         assert!(r["source"].is_string(), "{r}");
         assert!(r["status"].is_string(), "{r}");
         assert!(r["regression"].is_boolean(), "{r}");
-        assert_eq!(r["via"], "hwpx", "{r}");
+        assert_eq!(r["via"], "hwp", "{r}");
     }
     let failed: Vec<&serde_json::Value> = records
         .iter()
@@ -397,12 +399,14 @@ fn render_diff_batch_json_streams_ndjson_and_keeps_failed_loads() {
 #[test]
 fn render_diff_batch_json_regression_only_exits_three() {
     let dir = TempDir::new("regression");
-    dir.copy_in(OVER_SAMPLE);
+    dir.copy_in(HWP_VIA_REGRESSION_SAMPLE);
     let out = dir.path().join("out");
     let args = [
         "render-diff",
         "--batch",
         dir.path().to_str().unwrap(),
+        "--via",
+        "hwp",
         "-o",
         out.to_str().unwrap(),
         "--json",
@@ -424,12 +428,14 @@ fn render_diff_batch_json_regression_only_exits_three() {
 fn render_diff_batch_human_mode_keeps_exit_one() {
     // 배치 사람 모드도 무변경 — 하드 실패는 종전대로 1 이다.
     let dir = TempDir::new("human");
-    dir.copy_in(OVER_SAMPLE);
+    dir.copy_in(HWP_VIA_REGRESSION_SAMPLE);
     let out = dir.path().join("out");
     let args = [
         "render-diff",
         "--batch",
         dir.path().to_str().unwrap(),
+        "--via",
+        "hwp",
         "-o",
         out.to_str().unwrap(),
     ];
@@ -446,12 +452,14 @@ fn render_diff_batch_human_mode_keeps_exit_one() {
 fn render_diff_batch_json_stdout_carries_no_human_summary() {
     // NDJSON stdout 에 요약·TSV 안내가 섞이면 스트림 파서가 그 줄에서 죽는다.
     let dir = TempDir::new("clean");
-    dir.copy_in(OVER_SAMPLE);
+    dir.copy_in(HWP_VIA_REGRESSION_SAMPLE);
     let out = dir.path().join("out");
     let args = [
         "render-diff",
         "--batch",
         dir.path().to_str().unwrap(),
+        "--via",
+        "hwp",
         "-o",
         out.to_str().unwrap(),
         "--json",

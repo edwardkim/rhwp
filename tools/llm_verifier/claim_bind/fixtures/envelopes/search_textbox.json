@@ -1,0 +1,17 @@
+{
+  "matches": [
+    {
+      "text": "붙임 1 보안서약서",
+      "section": 1,
+      "paragraph": 2,
+      "page": 8,
+      "charOffset": 0,
+      "length": 11,
+      "textbox": {
+        "index": 0
+      }
+    }
+  ],
+  "truncated": false,
+  "totalMatchCount": 1
+}

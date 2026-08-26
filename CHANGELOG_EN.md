@@ -6,6 +6,100 @@ This document records the major changes of the rhwp project.
 
 ## [Unreleased]
 
+## [0.8.4] — 2026-08-12
+
+### Distribution surface rollback
+
+- Restored the official distribution surface to the v0.8.2 set: GitHub Pages,
+  native CLI archives on GitHub Releases, npm `@rhwp/core` and `@rhwp/editor`,
+  VS Code Marketplace/Open VSX, and the Chrome, Edge, and Firefox extensions
+  remain supported (#4655).
+- Removed the PyPI, `@rhwp/node`, GHCR CLI image, deb/rpm/MSI, install scripts,
+  package-manager manifests, and setup GitHub Action paths that had been added
+  without explicit maintainer adoption and complete safety validation (#4655).
+- Removed the dedicated Python and Node binding source, tests, and current-use
+  documentation together with those withdrawn channels. A new official channel
+  now requires agreed build, install, update, rollback, and ownership evidence.
+
+## [0.8.3] — 2026-08-11
+
+> Cumulative PATCH release integrating 190 PRs since v0.8.2. It expands
+> encrypted-document open/save support, nested-table layout and editing,
+> MCP/agent execution contracts, official Node/Python bindings, and
+> multi-platform distribution. The existing JSON envelope major remains 1.0.
+
+### Encrypted documents and save compatibility
+
+- Open HWP5 EncryptVersion 4 documents with a Studio password prompt
+  (#3405, #3477).
+- Added HWP3 decryption and encrypted HWPX opening, with stronger preservation
+  of archaic Hangul strings in HWP3 (#3483, #3516).
+- Added encrypted save-and-reopen contracts for HWP3, HWP5, and HWPX (#3690).
+- Expanded fixes for corrupt HWP5 save paths and HWPX namespace, OLE, tab, and
+  chart round-trip preservation.
+
+### Typesetting and rendering fidelity
+
+- Continued fixes for nested-table pagination, RowBreak, empty cell paragraphs,
+  child-table flow, and the final bottom border (#4094, #4122, #4174, #4517,
+  #4525, #4567).
+- Restored square-number and small right-triangle glyphs encoded through PUA
+  character overlap (#4139, #4227, #4228).
+- Added exact CanvasKit glyph-run replay and improved page-number metrics and
+  replay determinism (#3741).
+
+### Editing, Studio, and VS Code
+
+- Fixed nested-table text/table selection and copy paths, and expanded
+  multi-cell formatting (#4119, #4267, #4276).
+- Added three-mode F5 table-cell resizing, table split/join, and a font-style
+  no-op fix (#3771, #3831, #4271).
+- Added VS Code document-outline navigation (#4093).
+- Expanded the HwpCtrl-compatible surface and compatibility ledger in stages
+  (#4187, #4274, #4486).
+
+### CLI, MCP, and agent contracts
+
+- `mcp-serve` now provides a stdio JSON-RPC server with document session handles
+  (#3571).
+- Added IR/capabilities/plan schemas, ontology, provenance, replay/lineage/audit,
+  signing, anchor/gate, security diagnostics, and a validation ladder. The
+  `capabilities` schema registry self-describes envelope 1.0, IR 1.0,
+  capabilities 1.3, and plan 1.1 (#4574).
+- `run` plans and capsules bind input, plan, and output hashes; optional CAS
+  preconditions can reject changed input before execution.
+- Added official Node and Python bindings plus generated-type drift checks.
+
+### Security and performance
+
+- Bounded decompression output to prevent memory exhaustion from deflate-bomb
+  inputs (#4263).
+- Reduced cursor, selection, local repaint, duplicate-render, and post-edit
+  rerender costs for large tables (#3672, #3745, #4156, #4265).
+- Integrated Subsecond hotpatch invalidation, diagnostics, lifecycle, and repaint
+  boundaries (#4602).
+
+### Packages and distribution
+
+- Added GitHub Release CLI archives for Linux x86_64, macOS x86_64/arm64, and
+  Windows x86_64, with `SHA256SUMS.txt`.
+- Added workflows for Python wheels/sdist, `@rhwp/node`, Debian/RPM/MSI
+  installers, and GHCR container images. Channels without publishing secrets or
+  packaging prerequisites validate and then skip publication explicitly.
+- Added cargo-binstall asset mapping, install.sh/install.ps1, and initial
+  Scoop/Homebrew/Winget/AUR channels. Hash-based manifests are updated only after
+  release assets exist.
+- Hardened CI with pinned action SHAs, stale-run cancellation, cache-generation
+  cleanup, and path-aware execution.
+
+### Contributors
+
+Sixteen people contributed during this cycle (GitHub handles, alphabetical):
+
+- @edwardkim, @enigma-jerry72, @humdrum00001010, @JamesPsh, @jangster77, @jeong-sik,
+  @johndoekim, @kevin9327, @lpaiu-cs, @NacreousCloud, @planet6897, @postmelee,
+  @scari, @seo-rii, @walnutkim, @yuyu04
+
 ## [0.8.2] — 2026-07-27
 
 > Hotfix — restores printing in the browser extensions, which had been broken

@@ -1,0 +1,12 @@
+{
+  "schemaVersion": "1.0",
+  "a": "samples/hwp3-sample.hwp",
+  "b": "samples/SO-SUEOP.hwp",
+  "identical": false,
+  "diffCount": 12,
+  "categories": {
+    "text": 4,
+    "char_count": 3,
+    "controls": 5
+  }
+}

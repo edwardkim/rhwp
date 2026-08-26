@@ -1,0 +1,11 @@
+{
+  "id": "T23",
+  "utterance": "레이아웃 버그",
+  "steps": [
+    {
+      "command": "export-svg",
+      "pageZeroBased": true
+    }
+  ],
+  "stop": "디버그 1단부터"
+}

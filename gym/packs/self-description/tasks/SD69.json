@@ -1,0 +1,26 @@
+{
+  "id": "SD69",
+  "tier": 2,
+  "title": "매니페스트 schemaVersion",
+  "input": "samples/table-001.hwp",
+  "instructions": "export-agent-manifest 최상위 schemaVersion 을 answer.json 에 {\"schemaVersion\": S} 으로 제출하라. 힌트: rhwp export-agent-manifest --json.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "매니페스트 schemaVersion",
+      "op": "answer_eq",
+      "answer": "schemaVersion",
+      "path": "schemaVersion",
+      "cmd": [
+        "export-agent-manifest",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

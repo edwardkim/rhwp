@@ -1,0 +1,133 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5329,
+  "notGym": true,
+  "noNewCli": true,
+  "artifacts": [
+    {
+      "file": "cmp-pNNN.png",
+      "means": "page sheet",
+      "authority": "사람 눈",
+      "textOnly": false
+    },
+    {
+      "file": "report.tsv",
+      "means": "pixel diff% ranking worst-first",
+      "authority": "후보 순위",
+      "textOnly": false
+    },
+    {
+      "file": "text-report.tsv",
+      "means": "NFC multiset loss/excess/substitution",
+      "authority": "후보",
+      "textOnly": true
+    },
+    {
+      "file": "svg-glyph-risk-report.tsv",
+      "means": "PUA/U+FFFD",
+      "authority": "두부 후보",
+      "textOnly": true
+    },
+    {
+      "file": "text-owner-shift-candidates.tsv",
+      "means": "adjacent page owner move",
+      "authority": "후보",
+      "textOnly": true
+    },
+    {
+      "file": "text-owner-sequence-candidates.tsv",
+      "means": "order-preserving string move",
+      "authority": "후보",
+      "textOnly": true
+    },
+    {
+      "file": "page-boundary-fidelity-candidates.tsv",
+      "means": "combined boundary queue",
+      "authority": "후보",
+      "textOnly": true
+    },
+    {
+      "file": "visible-text-excess-candidates.tsv",
+      "means": "clip-visible SVG excess",
+      "authority": "후보",
+      "textOnly": true
+    },
+    {
+      "file": "float-owner-shift-candidates.tsv",
+      "means": "text owner + successor float",
+      "authority": "후보",
+      "textOnly": false
+    },
+    {
+      "file": "page-count-ledger.tsv",
+      "means": "PDF/SVG/tree page counts",
+      "authority": "후보",
+      "textOnly": true
+    },
+    {
+      "file": "provenance.tsv",
+      "means": "source/oracle path+grade",
+      "authority": "재현",
+      "textOnly": true
+    },
+    {
+      "file": "run-state.tsv",
+      "means": "requested/completed/missing",
+      "authority": "완전성",
+      "textOnly": true
+    },
+    {
+      "file": "svg/export-svg-manifest.json",
+      "means": "export-svg cache",
+      "authority": "재사용",
+      "textOnly": true
+    },
+    {
+      "file": "layout-candidates.tsv",
+      "means": "body/footnote/table/footer",
+      "authority": "후보",
+      "textOnly": false
+    },
+    {
+      "file": "table-fragment-candidates.tsv",
+      "means": "same (pi,ci) across pages",
+      "authority": "후보",
+      "textOnly": false
+    },
+    {
+      "file": "svg-table-border-clip-candidates.tsv",
+      "means": "vertical border clip",
+      "authority": "후보",
+      "textOnly": false
+    },
+    {
+      "file": "svg-table-horizontal-border-clip-candidates.tsv",
+      "means": "horizontal border clip",
+      "authority": "후보",
+      "textOnly": false
+    },
+    {
+      "file": "table-cell-text-overlap-candidates.tsv",
+      "means": "duplicate paint in cell",
+      "authority": "후보",
+      "textOnly": false
+    },
+    {
+      "file": "table-cell-text-boundary-candidates.tsv",
+      "means": "text crossing cell edge",
+      "authority": "후보",
+      "textOnly": false
+    },
+    {
+      "file": "svg-text-band-clip-candidates.tsv",
+      "means": "glyph band clip",
+      "authority": "후보",
+      "textOnly": false
+    }
+  ],
+  "reportTsvHeader": "page\tdiff%\tnote",
+  "textReportTsvHeader": "page\treference_only\tsvg_only\treference_only_chars\tsvg_only_chars\tnote",
+  "provenanceTsvHeader": "role\tpath\tgrade",
+  "runStateTsvHeader": "field\tvalue",
+  "sort": "report.tsv rows sorted by descending diff%"
+}

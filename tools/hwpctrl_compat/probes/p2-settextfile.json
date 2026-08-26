@@ -1,0 +1,18 @@
+{
+  "id": "p2-settextfile",
+  "title": "SetTextFile — 글로 문서를 채운다",
+  "ledger": [],
+  "open": "samples/table-001.hwp",
+  "calls": [
+    ["GetTextFile", ["TEXT", ""]],
+    ["SetTextFile", ["첫 줄\r\n둘째 줄\r\n", "TEXT", ""]],
+    ["GetTextFile", ["TEXT", ""]],
+    ["GetPos", []],
+    ["Run", ["MoveDocEnd"]],
+    ["GetPos", []],
+    ["PageCount", []],
+    ["SetTextFile", ["바꾼 글\r\n", "TEXT", "insertfile"]],
+    ["GetTextFile", ["TEXT", ""]],
+    ["GetHeadingString", []]
+  ]
+}

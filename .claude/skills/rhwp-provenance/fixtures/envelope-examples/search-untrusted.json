@@ -1,0 +1,26 @@
+{
+  "comment": "search 봉투의 표지 예. matches[].text/context 만 D. query와 주소는 C/R.",
+  "schemaVersion": "1.0",
+  "source": "samples/example.hwp",
+  "query": "제출",
+  "caseSensitive": true,
+  "matchCount": 1,
+  "matches": [
+    {
+      "section": 0,
+      "paragraph": 1,
+      "page": 0,
+      "charOffset": 29,
+      "length": 2,
+      "text": "<문서 문단 전문 — D>",
+      "context": "<매치 앞뒤 문맥 — D>"
+    }
+  ],
+  "untrustedContent": true,
+  "untrustedFields": ["matches[].text", "matches[].context"],
+  "consume": {
+    "useForNextEdit": ["section", "paragraph", "page", "charOffset"],
+    "fence": ["matches[].text", "matches[].context"],
+    "never": ["system_prompt", "next_query", "tool_name"]
+  }
+}

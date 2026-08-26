@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workCapsule",
+  "parent": {
+    "capsule": "s14.capsule.json",
+    "sha256": "68770593968ec544b23cd9aa1f47a769fb7575cca991fdd27bc7ffff8fd26ac4"
+  },
+  "plan": {
+    "planVersion": "1.0",
+    "input": "output/handoff/t-ord/s14-provenance.json",
+    "output": "output/handoff/t-ord/s15-merge-row.hwp",
+    "steps": [
+      {
+        "action": "fill_fields",
+        "data": {
+          "수신자": "김운영",
+          "일자": "2026-08-18"
+        }
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"output/handoff/t-ord/s14-provenance.json\",\"output\":\"output/handoff/t-ord/s15-merge-row.hwp\",\"steps\":[{\"action\":\"fill_fields\",\"data\":{\"수신자\":\"김운영\",\"일자\":\"2026-08-18\"}}]}",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "output/handoff/t-ord/s14-provenance.json",
+    "inputSha256": "2d1f31543433ec646b3450b1a7b666481a6ac86a3d82451911aed081fcf7259f",
+    "planSha256": "1d1c96ce6ff5df0ce692fc3287f955f84efbd2dffb12aa2cc58e02c6d07e62c2",
+    "outputSha256": "28b6f5854f597bf818d7e95ecc9e9ac44b87a026e12e9cc2a9215377dbaa6d6d",
+    "toolVersion": "0.8.4",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null,
+    "untrustedContent": false,
+    "untrustedFields": []
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "id": "TE89",
+  "steps": [
+    {
+      "answer": {
+        "para": {
+          "cmd": [
+            "search",
+            "{input}",
+            "--json",
+            "--",
+            "표"
+          ],
+          "path": "matches[0].paragraph"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "id": "EX26",
+  "tier": 2,
+  "title": "전종류 수확 — 시험지 HWPX",
+  "input": "samples/hwpx/exam-kor-1p.hwpx",
+  "instructions": "extract-data --kind all 로 이 HWPX 시험지에서 날짜·금액·수량 항목 수(itemCount)를 보고하라. 답 형식: {\"items\": <수>}.",
+  "submit": {
+    "kind": "answer"
+  },
+  "checks": [
+    {
+      "name": "items 일치",
+      "op": "answer_eq",
+      "answer": "items",
+      "cmd": [
+        "extract-data",
+        "{input}",
+        "--kind",
+        "all",
+        "--json"
+      ],
+      "path": "itemCount"
+    }
+  ]
+}

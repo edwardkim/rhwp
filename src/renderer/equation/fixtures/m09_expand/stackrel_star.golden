@@ -1,0 +1,25 @@
+# M09-g equation golden — current-engine lock (variant/exception/unimplemented honesty)
+command: OVER
+script: STACKREL{*}{=}
+honesty: latex-stack
+
+=== ast ===
+Superscript {
+    base: Symbol(
+        "=",
+    ),
+    sup: Symbol(
+        "*",
+    ),
+}
+
+=== layout ===
+Superscript x=0.0000 y=0.0000 w=24.4000 h=20.0000 bl=16.0000
+  base:
+    Symbol("=") x=0.0000 y=0.0000 w=16.0000 h=20.0000 bl=16.0000
+  sup:
+    Symbol("*") x=16.0000 y=0.0000 w=8.4000 h=14.0000 bl=11.2000
+
+=== svg ===
+<text x="8.00" y="16.00" font-size="20.00" fill="#000000" text-anchor="middle" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">=</text>
+<text x="20.20" y="11.20" font-size="14.00" fill="#000000" text-anchor="middle" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">*</text>

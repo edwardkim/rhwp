@@ -1,0 +1,66 @@
+{
+  "kind": "hwp5InventoryFattenCatalog",
+  "claimId": "M-hwp5",
+  "schemaVersion": "1.0",
+  "issue": 5469,
+  "generatedAt": "2026-08-18T11:10:11Z",
+  "generator": "tools/hwp5_inventory/fatten_catalog.py",
+  "caseCount": 63,
+  "tagCount": 45,
+  "controlCount": 38,
+  "fieldCount": 23,
+  "failureClasses": [
+    "A",
+    "B",
+    "C",
+    "D",
+    "E",
+    "F"
+  ],
+  "families": {
+    "ctrl": 1,
+    "docinfo": 12,
+    "equation": 1,
+    "field": 10,
+    "form": 1,
+    "note": 5,
+    "page": 5,
+    "para": 8,
+    "shape": 9,
+    "table": 11
+  },
+  "failureClassCounts": {
+    "A": 5,
+    "B": 30,
+    "C": 8,
+    "D": 6,
+    "E": 12,
+    "F": 2
+  },
+  "hancomJudgments": {
+    "열림 + 조판 실패": 31,
+    "파일 손상": 25,
+    "파일 읽기 오류": 6,
+    "성공": 1
+  },
+  "contractStatus": {
+    "violated": 62,
+    "satisfied": 1
+  },
+  "alignPreferred": {
+    "lcs": 45,
+    "index": 18
+  },
+  "pageCountLogic": "out of scope — owned by #4882",
+  "forbiddenPaths": [
+    "src/serializer page-count export",
+    "canvaskit_policy",
+    "pdf",
+    "layout-anomaly",
+    "oracle_public",
+    "render_backend",
+    "proptest",
+    "fidelity_compare",
+    "gym"
+  ]
+}

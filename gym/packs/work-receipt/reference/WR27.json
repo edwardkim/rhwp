@@ -1,0 +1,15 @@
+{
+  "id": "WR27",
+  "steps": [
+    {
+      "run": [
+        "replay",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"samples/field-01.hwp\", \"output\": \"no-deep.hwp\", \"steps\": [{\"action\": \"replace_text\", \"find\": \"마케팅\", \"replace\": \"깊은검사없음\"}]}",
+        "--capsule",
+        "{sub:receipts/shallow.capsule.json}",
+        "--json"
+      ]
+    }
+  ]
+}

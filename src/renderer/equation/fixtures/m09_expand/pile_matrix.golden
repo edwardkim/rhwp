@@ -1,0 +1,80 @@
+# M09-g equation golden — current-engine lock (variant/exception/unimplemented honesty)
+command: PILE
+script: PILE{MATRIX{1 & 0 # 0 & 1} # MATRIX{0 & 1 # 1 & 0}}
+honesty: pile-layout-as-row
+
+=== ast ===
+Pile {
+    rows: [
+        Matrix {
+            rows: [
+                [
+                    Number(
+                        "1",
+                    ),
+                    Number(
+                        "0",
+                    ),
+                ],
+                [
+                    Number(
+                        "0",
+                    ),
+                    Number(
+                        "1",
+                    ),
+                ],
+            ],
+            style: Plain,
+        },
+        Matrix {
+            rows: [
+                [
+                    Number(
+                        "0",
+                    ),
+                    Number(
+                        "1",
+                    ),
+                ],
+                [
+                    Number(
+                        "1",
+                    ),
+                    Number(
+                        "0",
+                    ),
+                ],
+            ],
+            style: Plain,
+        },
+    ],
+    align: Center,
+}
+
+=== layout ===
+Row x=0.0000 y=0.0000 w=46.0000 h=98.0000 bl=49.0000
+  Matrix(Plain) x=0.0000 y=0.0000 w=46.0000 h=46.0000 bl=23.0000
+    row0:
+      Number("1") x=4.0000 y=0.0000 w=11.0000 h=20.0000 bl=16.0000
+      Number("0") x=31.0000 y=0.0000 w=11.0000 h=20.0000 bl=16.0000
+    row1:
+      Number("0") x=4.0000 y=26.0000 w=11.0000 h=20.0000 bl=16.0000
+      Number("1") x=31.0000 y=26.0000 w=11.0000 h=20.0000 bl=16.0000
+  Matrix(Plain) x=0.0000 y=52.0000 w=46.0000 h=46.0000 bl=23.0000
+    row0:
+      Number("0") x=4.0000 y=0.0000 w=11.0000 h=20.0000 bl=16.0000
+      Number("1") x=31.0000 y=0.0000 w=11.0000 h=20.0000 bl=16.0000
+    row1:
+      Number("1") x=4.0000 y=26.0000 w=11.0000 h=20.0000 bl=16.0000
+      Number("0") x=31.0000 y=26.0000 w=11.0000 h=20.0000 bl=16.0000
+
+=== svg ===
+<text x="4.00" y="16.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">1</text>
+<text x="31.00" y="16.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">0</text>
+<text x="4.00" y="42.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">0</text>
+<text x="31.00" y="42.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">1</text>
+<text x="4.00" y="68.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">0</text>
+<text x="31.00" y="68.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">1</text>
+<text x="4.00" y="94.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">1</text>
+<text x="31.00" y="94.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">0</text>

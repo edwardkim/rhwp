@@ -1,0 +1,48 @@
+{
+  "id": "01_open_info_close",
+  "title": "최소 수명 — 열고 규모를 보고 닫는다.",
+  "kind": "session",
+  "lifecycle": "hwp_open → doc_* → hwp_close",
+  "absolute_paths": true,
+  "single_write_point": "hwp_doc_save",
+  "steps": [
+    {
+      "seq": 1,
+      "tool": "hwp_open",
+      "arguments": {
+        "path": "C:/abs/편람.hwp"
+      },
+      "expect_layer": "ok",
+      "read_fields": [
+        "docId",
+        "pageCount"
+      ],
+      "notes": ""
+    },
+    {
+      "seq": 2,
+      "tool": "hwp_doc_info",
+      "arguments": {
+        "docId": "doc-1"
+      },
+      "expect_layer": "ok",
+      "read_fields": [
+        "format",
+        "pageCount"
+      ],
+      "notes": ""
+    },
+    {
+      "seq": 3,
+      "tool": "hwp_close",
+      "arguments": {
+        "docId": "doc-1"
+      },
+      "expect_layer": "ok",
+      "read_fields": [
+        "closed"
+      ],
+      "notes": ""
+    }
+  ]
+}

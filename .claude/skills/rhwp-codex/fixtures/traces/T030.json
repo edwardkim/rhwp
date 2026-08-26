@@ -1,0 +1,21 @@
+{
+  "id": "T030",
+  "command": "export-plan-schema",
+  "chapter": "70_자기서술.md",
+  "cmd": "rhwp export-plan-schema --json",
+  "exit": 0,
+  "keys": [
+    "definitionCount",
+    "dialect",
+    "planSchemaVersion",
+    "schema",
+    "schemaVersion",
+    "untrustedContent",
+    "untrustedFields"
+  ],
+  "untrustedContent": false,
+  "untrustedFields": [],
+  "schemaVersion": "1.0",
+  "source": "mydocs/manual/agent_codex/70_자기서술.md",
+  "notInvented": true
+}

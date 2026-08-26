@@ -213,6 +213,7 @@ function applyHfTemplate(
 export const pageCommands: CommandDef[] = [
   {
     id: 'page:setup',
+    opensDialog: true,
     label: '편집 용지',
     icon: 'icon-page-setup',
     shortcutLabel: 'F7',
@@ -227,6 +228,7 @@ export const pageCommands: CommandDef[] = [
   },
   {
     id: 'page:page-border',
+    opensDialog: true,
     label: '쪽 테두리/배경',
     canExecute: (ctx) => ctx.hasDocument,
     execute(services) {
@@ -333,6 +335,7 @@ export const pageCommands: CommandDef[] = [
   },
   {
     id: 'page:new-page-num',
+    opensDialog: true,
     label: '새 번호로 시작',
     canExecute: (ctx) => ctx.hasDocument && !ctx.inTable,
     execute(services) {
@@ -600,6 +603,7 @@ export const pageCommands: CommandDef[] = [
   },
   {
     id: 'page:col-settings',
+    opensDialog: true,
     label: '다단 설정',
     shortcutLabel: 'Ctrl+Alt+Enter',
     canExecute: (ctx) => ctx.hasDocument,
@@ -614,6 +618,7 @@ export const pageCommands: CommandDef[] = [
   // ─── 구역 설정 ──────────────────────────────────
   {
     id: 'page:section-settings',
+    opensDialog: true,
     label: '구역 설정',
     canExecute: (ctx) => ctx.hasDocument,
     execute(services) {

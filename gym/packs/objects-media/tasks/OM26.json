@@ -1,0 +1,27 @@
+{
+  "id": "OM26",
+  "tier": 1,
+  "title": "둘째 HWPX 서식 누름틀 전수",
+  "input": "samples/hwpx/form-02.hwpx",
+  "instructions": "form-02.hwpx 의 누름틀 개수를 answer.json 에 {\"fields\": N} 으로 제출하라. form-01(OM14)과 같은 명령, 다른 서식이다. 힌트: rhwp fields 의 fieldCount.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "필드 수",
+      "op": "answer_eq",
+      "answer": "fields",
+      "path": "fieldCount",
+      "cmd": [
+        "fields",
+        "{input}",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

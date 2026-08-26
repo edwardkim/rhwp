@@ -1,0 +1,155 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5342,
+  "skill": "rhwp-knowledge-map",
+  "notGym": true,
+  "noNewCli": true,
+  "noNewEditLogic": true,
+  "routerOnly": true,
+  "entryPoint": true,
+  "doNotRenarrateMapRows": true,
+  "canonicalWins": true,
+  "binaryWinsOnVersionMismatch": true,
+  "fieldDictionary": "mydocs/manual/agent_knowledge_map.md#2-봉투-필드-사전--필드-이름으로-찾는-역인덱스",
+  "items": [
+    {
+      "label": "cli_commands.md",
+      "href": "cli_commands.md",
+      "path": "mydocs/manual/cli_commands.md",
+      "line": 1437
+    },
+    {
+      "label": "cli_json_pipeline_guide.md",
+      "href": "cli_json_pipeline_guide.md",
+      "path": "mydocs/manual/cli_json_pipeline_guide.md",
+      "line": 1438
+    },
+    {
+      "label": "agent_task_playbook.md",
+      "href": "agent_task_playbook.md",
+      "path": "mydocs/manual/agent_task_playbook.md",
+      "line": 1439
+    },
+    {
+      "label": "agent_troubleshooting_guide.md",
+      "href": "agent_troubleshooting_guide.md",
+      "path": "mydocs/manual/agent_troubleshooting_guide.md",
+      "line": 1440
+    },
+    {
+      "label": "agent_surface_playbook.md",
+      "href": "agent_surface_playbook.md",
+      "path": "mydocs/manual/agent_surface_playbook.md",
+      "line": 1441
+    },
+    {
+      "label": "mcp_integration_guide.md",
+      "href": "mcp_integration_guide.md",
+      "path": "mydocs/manual/mcp_integration_guide.md",
+      "line": 1442
+    },
+    {
+      "label": "form_filling_guide.md",
+      "href": "form_filling_guide.md",
+      "path": "mydocs/manual/form_filling_guide.md",
+      "line": 1443
+    },
+    {
+      "label": "agent_preflight_guide.md",
+      "href": "agent_preflight_guide.md",
+      "path": "mydocs/manual/agent_preflight_guide.md",
+      "line": 1444
+    },
+    {
+      "label": "rhwp_cli_skill_guide.md",
+      "href": "rhwp_cli_skill_guide.md",
+      "path": "mydocs/manual/rhwp_cli_skill_guide.md",
+      "line": 1445
+    },
+    {
+      "label": "agent_capability_registry.md",
+      "href": "agent_capability_registry.md",
+      "path": "mydocs/manual/agent_capability_registry.md",
+      "line": 1446
+    },
+    {
+      "label": "tech/agent_security/README.md",
+      "href": "../tech/agent_security/README.md",
+      "path": "mydocs/tech/agent_security/README.md",
+      "line": 1447
+    },
+    {
+      "label": "threat_model.md",
+      "href": "../tech/agent_security/threat_model.md",
+      "path": "mydocs/tech/agent_security/threat_model.md",
+      "line": 1448
+    },
+    {
+      "label": "attack_surface.md",
+      "href": "../tech/agent_security/attack_surface.md",
+      "path": "mydocs/tech/agent_security/attack_surface.md",
+      "line": 1449
+    },
+    {
+      "label": "indirect_prompt_injection.md",
+      "href": "../tech/agent_security/indirect_prompt_injection.md",
+      "path": "mydocs/tech/agent_security/indirect_prompt_injection.md",
+      "line": 1450
+    },
+    {
+      "label": "hidden_content.md",
+      "href": "../tech/agent_security/hidden_content.md",
+      "path": "mydocs/tech/agent_security/hidden_content.md",
+      "line": 1451
+    },
+    {
+      "label": "unicode_deception.md",
+      "href": "../tech/agent_security/unicode_deception.md",
+      "path": "mydocs/tech/agent_security/unicode_deception.md",
+      "line": 1452
+    },
+    {
+      "label": "detection_policy.md",
+      "href": "../tech/agent_security/detection_policy.md",
+      "path": "mydocs/tech/agent_security/detection_policy.md",
+      "line": 1453
+    },
+    {
+      "label": "test_corpus.md",
+      "href": "../tech/agent_security/test_corpus.md",
+      "path": "mydocs/tech/agent_security/test_corpus.md",
+      "line": 1454
+    },
+    {
+      "label": "consumer_guide.md",
+      "href": "../tech/agent_security/consumer_guide.md",
+      "path": "mydocs/tech/agent_security/consumer_guide.md",
+      "line": 1455
+    },
+    {
+      "label": "disclosure.md",
+      "href": "../tech/agent_security/disclosure.md",
+      "path": "mydocs/tech/agent_security/disclosure.md",
+      "line": 1456
+    },
+    {
+      "label": "tech/envelope_provenance.md",
+      "href": "../tech/envelope_provenance.md",
+      "path": "mydocs/tech/envelope_provenance.md",
+      "line": 1457
+    },
+    {
+      "label": "tech/agent_boundary_contract.md",
+      "href": "../tech/agent_boundary_contract.md",
+      "path": "mydocs/tech/agent_boundary_contract.md",
+      "line": 1458
+    },
+    {
+      "label": "tech/tiny_model_macro_tools.md",
+      "href": "../tech/tiny_model_macro_tools.md",
+      "path": "mydocs/tech/tiny_model_macro_tools.md",
+      "line": 1459
+    }
+  ],
+  "count": 23
+}

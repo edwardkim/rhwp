@@ -1,0 +1,19 @@
+{
+  "id": "closed_handle",
+  "title": "닫힌/만료 docId 재사용",
+  "layer": "mcp-session",
+  "signal": "isError:true",
+  "envelope": {
+    "error": "열려 있지 않은 핸들: doc-1 (hwp_open 먼저)",
+    "nextCall": {
+      "name": "hwp_open",
+      "arguments": {
+        "path": "<열 문서 경로>"
+      },
+      "why": "핸들이 없거나 만료 — hwp_open 으로 docId 를 재발급한 뒤 재시도"
+    }
+  },
+  "retry": true,
+  "same_args_forbidden": false,
+  "fix": "hwp_open 으로 새 docId 를 받은 뒤 같은 조회를 반복"
+}

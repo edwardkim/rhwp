@@ -28,10 +28,16 @@ export interface AutosaveScheduleSettings {
 export type AutosaveStatus =
   | { state: 'saving'; reason: string }
   | { state: 'saved'; reason: string; byteLength: number }
+  | { state: 'blocked'; reason: string }
   | { state: 'error'; reason: string; error: unknown };
 
 export interface AutosaveManagerOptions {
   exportBytes: () => Uint8Array;
+  /**
+   * 참이면 복구용 자동 저장을 수행하지 않는다. 보호 문서에서 평문 복구본이 남는 것을
+   * 막기 위한 fail-closed 조건이다 (#5992).
+   */
+  isRecoveryBlocked?: () => boolean;
   debounceMs?: number;
   minSaveIntervalMs?: number;
   schedule?: Partial<AutosaveScheduleSettings>;
@@ -57,6 +63,7 @@ function reasonText(reason: unknown, fallback: string): string {
 
 export class AutosaveManager {
   private readonly exportBytes: () => Uint8Array;
+  private readonly isRecoveryBlocked: () => boolean;
   private readonly now: () => number;
   private readonly idFactory: () => string;
   private readonly store: AutosaveStoreLike;
@@ -75,6 +82,7 @@ export class AutosaveManager {
 
   constructor(options: AutosaveManagerOptions) {
     this.exportBytes = options.exportBytes;
+    this.isRecoveryBlocked = options.isRecoveryBlocked ?? (() => false);
     this.scheduleSettings = normalizeSchedule({
       recoveryEnabled: true,
       recoveryIntervalMs: options.minSaveIntervalMs ?? DEFAULT_RECOVERY_INTERVAL_MS,
@@ -176,6 +184,14 @@ export class AutosaveManager {
   async flushNow(reason = 'manual'): Promise<void> {
     const current = this.current;
     if (!current) return;
+
+    if (this.isRecoveryBlocked()) {
+      // 보호 문서의 평문 복구본을 만들지 않는다. 보호 상태로 바뀌기 전에 남은 draft가
+      // 있으면 함께 폐기해 복구 후보에서 제외한다 (#5992).
+      await this.discardCurrentDraft('recovery-blocked');
+      this.onStatus?.({ state: 'blocked', reason });
+      return;
+    }
 
     if (this.saving) {
       this.pendingReason = reason;

@@ -1,0 +1,32 @@
+{
+  "kind": "workCapsule",
+  "parent": null,
+  "plan": {
+    "input": "samples/basic/english.hwp",
+    "output": "out/english_receipt.hwp",
+    "planVersion": "1.0",
+    "steps": [
+      {
+        "action": "replace_text",
+        "find": "vegetarian",
+        "replace": "pescatarian"
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"samples/basic/english.hwp\",\"output\":\"out/english_receipt.hwp\",\"steps\":[{\"action\":\"replace_text\",\"find\":\"vegetarian\",\"replace\":\"pescatarian\"}]}",
+  "receipt": {
+    "expectedOutputSha256": null,
+    "input": "samples/basic/english.hwp",
+    "inputSha256": "ee72c16067013e110528375f04b2d123a8c4b0eaa9fee35fb39983614791e7e9",
+    "mode": "attest",
+    "outputSha256": "f3f0d913b2e0ed022e28525b5e16aec882146a45890f620ae91a12d45a9e09c6",
+    "planSha256": "07efe2058a861b96a95507d118f8dd5c8b6c4a3ce389593a36db1f72fc557016",
+    "reproduced": null,
+    "schemaVersion": "1.0",
+    "steps": 1,
+    "toolVersion": "0.8.4",
+    "untrustedContent": false,
+    "untrustedFields": []
+  },
+  "schemaVersion": "1.0"
+}

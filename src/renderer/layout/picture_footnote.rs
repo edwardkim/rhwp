@@ -1,6 +1,6 @@
 //! 그림/캡션 레이아웃 + 각주 영역 레이아웃
 
-use super::super::composer::{compose_paragraph, ComposedParagraph};
+use super::super::composer::{compose_paragraph, ComposedLine, ComposedParagraph};
 use super::super::page_layout::LayoutRect;
 use super::super::pagination::{FootnoteFragment, FootnoteRef, FootnoteSource};
 use super::super::render_tree::*;
@@ -11,8 +11,10 @@ use super::super::{
 };
 use super::border_rendering::border_width_to_px;
 use super::text_measurement::{estimate_text_width, resolved_to_text_style};
-use super::utils::{extract_shape_transform, find_bin_data_bytes, picture_display_size_hu};
-use super::LayoutEngine;
+use super::utils::{
+    extract_shape_transform, find_bin_data_bytes, picture_data_is_unusable, picture_display_size_hu,
+};
+use super::{footnote_separator_length_px, LayoutEngine};
 use crate::model::bin_data::BinDataContent;
 use crate::model::control::Control;
 use crate::model::footnote::{FootnoteShape, NumberFormat};
@@ -20,7 +22,7 @@ use crate::model::paragraph::Paragraph;
 use crate::model::shape::{
     Caption, CaptionDirection, CommonObjAttr, HorzAlign, HorzRelTo, TextWrap, VertAlign, VertRelTo,
 };
-use crate::model::style::Alignment;
+use crate::model::style::{Alignment, LineSpacingType};
 
 fn fragment_line_bounds(fragment: Option<FootnoteFragment>, total_lines: usize) -> (usize, usize) {
     match fragment {
@@ -45,10 +47,52 @@ fn fragment_draws_number(fragment: Option<FootnoteFragment>) -> bool {
         .unwrap_or(true)
 }
 
-fn footnote_composed_line_count(paragraphs: &[Paragraph]) -> usize {
+/// [#6034] 저장 LINE_SEG 가 없는 각주 문단은 45자 고정 휴리스틱(compose_lines
+/// 폴백) 대신 **각주 영역 폭**으로 재조판해 compose 한다. 한글 6.x 대 저장본은
+/// 각주 문단에 LINE_SEG 를 저장하지 않는데, 폴백 폭과 실제 영역 폭의 차가 각주
+/// 블록을 부풀려(2912735: rhwp 15줄 vs 한글 9줄) bottom-anchor 인 영역 상단이
+/// 본문 마지막 줄 위로 올라가 구분선이 글줄을 관통했다. 편집 경로
+/// (footnote_ops)의 reflow 계약과 같은 상자를 쓴다. LINE_SEG 가 있으면 종전
+/// 그대로 통과한다.
+fn compose_footnote_paragraph(
+    para: &Paragraph,
+    content_width_px: f64,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+) -> crate::renderer::composer::ComposedParagraph {
+    if para.line_segs.is_empty() && !para.text.is_empty() && content_width_px > 0.0 {
+        let para_style = styles.para_styles.get(para.para_shape_id as usize);
+        let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
+        let margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);
+        let final_width = (content_width_px - margin_left - margin_right).max(0.0);
+        if final_width > 0.0 {
+            let mut owned = para.clone();
+            crate::renderer::composer::reflow_line_segs(
+                &mut owned,
+                crate::renderer::composer::ParagraphBox::content_width_px(final_width, dpi),
+                styles,
+                dpi,
+            );
+            return compose_paragraph(&owned);
+        }
+    }
+    compose_paragraph(para)
+}
+
+fn footnote_composed_line_count(
+    paragraphs: &[Paragraph],
+    content_width_px: f64,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+) -> usize {
     paragraphs
         .iter()
-        .map(|paragraph| compose_paragraph(paragraph).lines.len().max(1))
+        .map(|paragraph| {
+            compose_footnote_paragraph(paragraph, content_width_px, styles, dpi)
+                .lines
+                .len()
+                .max(1)
+        })
         .sum()
 }
 
@@ -56,7 +100,7 @@ impl LayoutEngine {
     #[allow(clippy::too_many_arguments)]
     pub(crate) fn layout_picture(
         &self,
-        tree: &mut PageRenderTree,
+        tree: &mut PageLayoutContext,
         parent_node: &mut RenderNode,
         picture: &crate::model::image::Picture,
         container: &LayoutRect,
@@ -93,7 +137,7 @@ impl LayoutEngine {
     #[allow(clippy::too_many_arguments)]
     pub(crate) fn layout_picture_full(
         &self,
-        tree: &mut PageRenderTree,
+        tree: &mut PageLayoutContext,
         parent_node: &mut RenderNode,
         picture: &crate::model::image::Picture,
         container: &LayoutRect,
@@ -198,7 +242,7 @@ impl LayoutEngine {
         // [Task #2225] 그림 미지정(bin 참조 실패 + 외부 경로 없음): 한컴은 편집기
         // 에서만 점선 테두리+그림-없음 아이콘으로 표시하고 인쇄 등가 출력은
         // 미출력 — 의미 노드(MissingPicture)로 방출해 백엔드별 분기를 일원화.
-        if image_data.as_ref().is_none_or(|d| d.is_empty())
+        if picture_data_is_unusable(image_data.as_deref())
             && picture.image_attr.external_path.is_none()
         {
             let ph_id = tree.next_id();
@@ -389,7 +433,7 @@ impl LayoutEngine {
     /// 본문 그림(Picture) 개체를 레이아웃하고 업데이트된 y_offset을 반환한다.
     pub(crate) fn layout_body_picture(
         &self,
-        tree: &mut PageRenderTree,
+        tree: &mut PageLayoutContext,
         parent_node: &mut RenderNode,
         picture: &crate::model::image::Picture,
         container: &LayoutRect,
@@ -515,25 +559,12 @@ impl LayoutEngine {
         let bin_data_id = picture.image_attr.bin_data_id;
         let image_data = find_bin_data_bytes(bin_data_content, bin_data_id);
         // [Task #2225] 그림 미지정 — layout_picture_full 과 동일 분기.
-        if image_data.as_ref().is_none_or(|d| d.is_empty())
-            && picture.image_attr.external_path.is_none()
-        {
-            let ph_id = tree.next_id();
-            parent_node.children.push(RenderNode::new(
-                ph_id,
-                RenderNodeType::Placeholder(
-                    // [Task #2230] 본문 picture — 셀 경로 없음(None).
-                    crate::renderer::render_tree::PlaceholderNode::missing_picture(
-                        Some(section_index),
-                        Some(para_index),
-                        Some(control_index),
-                        None,
-                    ),
-                ),
-                BoundingBox::new(adjusted_pic_x, pic_y, pic_width, pic_height),
-            ));
-            return total_height;
-        }
+        //
+        // 여기서 곧장 되돌아가면(early return) 캡션 배치와 흐름 계산을 통째로 건너뛴다 —
+        // 캡션 글자가 사라지고, 반환값도 "후속 y" 가 아니라 "높이" 가 되어 뒤 문단이 그림
+        // 위로 올라탄다. 그래서 **노드만 바꿔 끼우고** 나머지 경로는 그대로 태운다.
+        let picture_missing = picture_data_is_unusable(image_data.as_deref())
+            && picture.image_attr.external_path.is_none();
 
         // 그림 자르기
         let crop = {
@@ -547,10 +578,19 @@ impl LayoutEngine {
 
         let original_size_hu = picture.crop_reference_size();
 
-        // 이미지 노드 생성
+        // 이미지 노드 생성 (그림 미지정이면 같은 자리·같은 bbox 의 placeholder 노드)
         let img_id = tree.next_id();
-        let img_node = RenderNode::new(
-            img_id,
+        let node_type = if picture_missing {
+            RenderNodeType::Placeholder(
+                // [Task #2230] 본문 picture — 셀 경로 없음(None).
+                crate::renderer::render_tree::PlaceholderNode::missing_picture(
+                    Some(section_index),
+                    Some(para_index),
+                    Some(control_index),
+                    None,
+                ),
+            )
+        } else {
             RenderNodeType::Image(ImageNode {
                 section_index: Some(section_index),
                 para_index: Some(para_index),
@@ -565,7 +605,11 @@ impl LayoutEngine {
                 transform: extract_shape_transform(&picture.shape_attr),
                 external_path: picture.image_attr.external_path.clone(),
                 ..ImageNode::new(bin_data_id, image_data)
-            }),
+            })
+        };
+        let img_node = RenderNode::new(
+            img_id,
+            node_type,
             BoundingBox::new(adjusted_pic_x, pic_y, pic_width, pic_height),
         );
 
@@ -658,53 +702,21 @@ impl LayoutEngine {
     }
 
     /// 캡션의 총 높이를 계산한다.
+    ///
+    /// 산식은 `composer::caption_height_px`가 단일 정의다(#4320) — height_measurer 의
+    /// `measure_caption`도 같은 함수를 호출한다.
     pub(crate) fn calculate_caption_height(
         &self,
         caption: &Option<Caption>,
         _styles: &ResolvedStyleSet,
     ) -> f64 {
-        let caption = match caption {
-            Some(c) => c,
-            None => return 0.0,
-        };
-
-        if caption.paragraphs.is_empty() {
-            return 0.0;
-        }
-
-        let mut line_seg_height = 0.0f64;
-        let mut composed_height = 0.0f64;
-        for para in &caption.paragraphs {
-            if let (Some(first), Some(last)) = (para.line_segs.first(), para.line_segs.last()) {
-                let para_top = first.vertical_pos.min(0);
-                let para_bottom = last.vertical_pos + last.line_height;
-                line_seg_height =
-                    line_seg_height.max(hwpunit_to_px(para_bottom - para_top, self.dpi));
-            }
-
-            let composed = compose_paragraph(para);
-            if composed.lines.is_empty() {
-                composed_height += hwpunit_to_px(400, self.dpi); // 기본 줄 높이
-            } else {
-                for (i, line) in composed.lines.iter().enumerate() {
-                    let line_h = hwpunit_to_px(line.line_height, self.dpi);
-                    let spacing = if i < composed.lines.len() - 1 {
-                        hwpunit_to_px(line.line_spacing, self.dpi)
-                    } else {
-                        0.0 // 마지막 줄은 line_spacing 제외
-                    };
-                    composed_height += line_h + spacing;
-                }
-            }
-        }
-
-        line_seg_height.max(composed_height)
+        super::super::composer::caption_height_px(caption, self.dpi)
     }
 
     /// 캡션을 레이아웃한다.
     pub(crate) fn layout_caption(
         &self,
-        tree: &mut PageRenderTree,
+        tree: &mut PageLayoutContext,
         parent_node: &mut RenderNode,
         caption: &Caption,
         styles: &ResolvedStyleSet,
@@ -780,7 +792,7 @@ impl LayoutEngine {
 
     fn layout_caption_topbottom_pictures(
         &self,
-        tree: &mut PageRenderTree,
+        tree: &mut PageLayoutContext,
         parent_node: &mut RenderNode,
         para: &Paragraph,
         caption_area: &LayoutRect,
@@ -863,11 +875,48 @@ impl LayoutEngine {
         }
     }
 
+    /// [#5708] 저장 LINE_SEG 가 없는 각주 문단의 합성 폴백 줄높이(400 HWPUNIT = 5.33px)를
+    /// 문단 줄간격 설정으로 보정한다.
+    ///
+    /// 폴백값을 그대로 쓰면 줄 전진(5.3px)이 글자 크기(9pt = 12px)보다 작아 각주 줄이 서로
+    /// 겹쳐 그려진다(00464 1쪽 하단 주석 8줄). 본문·표 경로는 #674 로 같은 보정을 이미
+    /// 하고 있고, 각주 경로만 빠져 있었다. `corrected_line_metrics` 는 `raw_lh < max_fs`
+    /// 일 때만 개입하므로 저장 LINE_SEG 를 가진 각주는 종전 그대로다(#2112 계약).
+    fn footnote_line_metrics(
+        &self,
+        comp_line: &ComposedLine,
+        para_style_id: u16,
+        styles: &ResolvedStyleSet,
+    ) -> (f64, f64) {
+        let raw_lh = hwpunit_to_px(comp_line.line_height, self.dpi);
+        let raw_ls = hwpunit_to_px(comp_line.line_spacing, self.dpi);
+        let max_fs = comp_line
+            .runs
+            .iter()
+            .map(|run| {
+                let ts = resolved_to_text_style(styles, run.char_style_id, run.lang_index);
+                if ts.font_size > 0.0 {
+                    ts.font_size
+                } else {
+                    12.0
+                }
+            })
+            .fold(0.0f64, f64::max);
+        let para_style = styles.para_styles.get(para_style_id as usize);
+        let ls_val = para_style.map(|s| s.line_spacing).unwrap_or(160.0);
+        let ls_type = para_style
+            .map(|s| s.line_spacing_type)
+            .unwrap_or(LineSpacingType::Percent);
+        crate::renderer::corrected_line_metrics(raw_lh, raw_ls, max_fs, ls_type, ls_val)
+    }
+
     pub(crate) fn estimate_footnote_area_height(
         &self,
         footnotes: &[FootnoteRef],
         paragraphs: &[Paragraph],
         shape: &FootnoteShape,
+        styles: &ResolvedStyleSet,
+        area_width: f64,
     ) -> f64 {
         if footnotes.is_empty() {
             return 0.0;
@@ -890,11 +939,13 @@ impl LayoutEngine {
         // layout 경로에서도 trailing spacing을 붙이지 않는다.
         for (i, fn_ref) in footnotes.iter().enumerate() {
             let fn_paras = get_footnote_paragraphs(fn_ref, paragraphs);
-            let (start_line, end_line) =
-                fragment_line_bounds(fn_ref.fragment, footnote_composed_line_count(fn_paras));
+            let (start_line, end_line) = fragment_line_bounds(
+                fn_ref.fragment,
+                footnote_composed_line_count(fn_paras, area_width, styles, self.dpi),
+            );
             let mut flat_line = 0usize;
             for para in fn_paras {
-                let composed = compose_paragraph(para);
+                let composed = compose_footnote_paragraph(para, area_width, styles, self.dpi);
                 if composed.lines.is_empty() {
                     if (start_line..end_line).contains(&flat_line) {
                         total += hwpunit_to_px(400, self.dpi);
@@ -904,10 +955,13 @@ impl LayoutEngine {
                     for line in &composed.lines {
                         let is_selected = (start_line..end_line).contains(&flat_line);
                         if is_selected {
-                            total += hwpunit_to_px(line.line_height, self.dpi);
+                            // [#5708] layout 경로와 같은 보정 산식을 쓴다.
+                            let (line_height, line_spacing_px) =
+                                self.footnote_line_metrics(line, composed.para_style_id, styles);
+                            total += line_height;
                             let is_last_selected_line = flat_line + 1 == end_line;
                             if !is_last_selected_line {
-                                total += hwpunit_to_px(line.line_spacing, self.dpi);
+                                total += line_spacing_px;
                             }
                         }
                         flat_line += 1;
@@ -925,7 +979,7 @@ impl LayoutEngine {
     /// 각주 영역 레이아웃 (구분선 + 각주 문단들)
     pub(crate) fn layout_footnote_area(
         &self,
-        tree: &mut PageRenderTree,
+        tree: &mut PageLayoutContext,
         fn_node: &mut RenderNode,
         footnotes: &[FootnoteRef],
         paragraphs: &[Paragraph],
@@ -943,13 +997,8 @@ impl LayoutEngine {
             y += hwpunit_to_px(shape.separator_above_margin_hu() as i32, self.dpi);
 
             // (2) 구분선
-            let sep_length = if shape.separator_length > 0 {
-                // separator_length는 HWP 단위로 페이지 폭의 비율
-                let fraction = shape.separator_length as f64 / 50000.0;
-                fn_area.width * fraction.min(1.0)
-            } else {
-                fn_area.width / 3.0 // 기본값: 1/3 폭
-            };
+            let sep_length =
+                footnote_separator_length_px(shape.separator_length, fn_area.width, self.dpi);
             let line_width = border_width_to_px(shape.separator_line_width).max(0.5);
 
             let sep_id = tree.next_id();
@@ -988,13 +1037,15 @@ impl LayoutEngine {
                 shape.prefix_char,
                 shape.suffix_char,
             );
-            let (fragment_start, fragment_end) =
-                fragment_line_bounds(fn_ref.fragment, footnote_composed_line_count(fn_paras));
+            let (fragment_start, fragment_end) = fragment_line_bounds(
+                fn_ref.fragment,
+                footnote_composed_line_count(fn_paras, fn_area.width, styles, self.dpi),
+            );
             let mut flat_line = 0usize;
             let mut number_drawn = false;
 
             for (p_idx, para) in fn_paras.iter().enumerate() {
-                let composed = compose_paragraph(para);
+                let composed = compose_footnote_paragraph(para, fn_area.width, styles, self.dpi);
                 let marker_section = i; // footnote_index
                 let marker_para = usize::MAX - 2000 - p_idx; // 각주 내 문단 인덱스
                                                              // 각주 번호 스타일용 기본 char_shape_id (빈/비빈 문단 모두 동일)
@@ -1080,7 +1131,7 @@ impl LayoutEngine {
     /// base_cs_id: 번호 스타일 결정용 기본 char_shape_id (문단의 char_shapes[0])
     pub(crate) fn layout_footnote_paragraph_with_number(
         &self,
-        tree: &mut PageRenderTree,
+        tree: &mut PageLayoutContext,
         parent: &mut RenderNode,
         composed: &ComposedParagraph,
         styles: &ResolvedStyleSet,
@@ -1103,9 +1154,22 @@ impl LayoutEngine {
         let line_end = line_end.min(composed.lines.len()).max(line_start);
 
         for (offset, comp_line) in composed.lines[line_start..line_end].iter().enumerate() {
-            // LineSeg.line_height는 HWP에서 줄간격이 이미 반영된 값
-            let line_height = hwpunit_to_px(comp_line.line_height, self.dpi);
-            let baseline = hwpunit_to_px(comp_line.baseline_distance, self.dpi);
+            // LineSeg.line_height는 HWP에서 줄간격이 이미 반영된 값.
+            // [#5708] 저장 LINE_SEG 가 없는 문단의 폴백(400 HWPUNIT = 5.33px)은 글자보다
+            // 작아 줄이 겹치므로 문단 줄간격 설정으로 보정한다.
+            let (line_height, corrected_line_spacing) =
+                self.footnote_line_metrics(comp_line, composed.para_style_id, styles);
+            let raw_baseline = hwpunit_to_px(comp_line.baseline_distance, self.dpi);
+            // 베이스라인도 같은 비율로 따라간다 — 줄 상자만 키우면 글자가 상자 위로 뜬다.
+            let baseline = if line_height > 0.0
+                && raw_baseline > 0.0
+                && hwpunit_to_px(comp_line.line_height, self.dpi) > 0.0
+            {
+                (raw_baseline * line_height / hwpunit_to_px(comp_line.line_height, self.dpi))
+                    .min(line_height)
+            } else {
+                raw_baseline
+            };
 
             let line_id = tree.next_id();
             let mut line_node = RenderNode::new(
@@ -1199,7 +1263,7 @@ impl LayoutEngine {
             if is_last_selected_line && is_last_line {
                 y += line_height;
             } else {
-                let line_spacing_px = hwpunit_to_px(comp_line.line_spacing, self.dpi);
+                let line_spacing_px = corrected_line_spacing;
                 y += line_height + line_spacing_px;
             }
         }
@@ -1225,7 +1289,7 @@ impl LayoutEngine {
     /// 마지막 TextLine의 마지막 TextRun 우측에 윗첨자 번호를 추가한다.
     pub(crate) fn add_footnote_superscripts(
         &self,
-        tree: &mut PageRenderTree,
+        tree: &mut PageLayoutContext,
         parent: &mut RenderNode,
         para: &Paragraph,
         _styles: &ResolvedStyleSet,
@@ -1241,8 +1305,8 @@ impl LayoutEngine {
         }
 
         // 각주/미주의 (번호, 텍스트 위치) 수집 — ComposedParagraph에서 미리 계산된 위치 사용
-        // 폴백: find_control_text_positions로 직접 계산
-        let ctrl_positions = crate::document_core::helpers::find_control_text_positions(para);
+        // 폴백: control_text_positions로 직접 계산
+        let ctrl_positions = para.control_text_positions();
         let mut footnotes: Vec<(String, usize)> = Vec::new();
         for (ci, ctrl) in para.controls.iter().enumerate() {
             let marker_text = match ctrl {
@@ -1553,7 +1617,7 @@ impl LayoutEngine {
     /// border_attr의 bit 0~5가 선 종류, border_width가 두께 (0이면 기본 0.1mm)
     pub(crate) fn render_picture_border(
         &self,
-        tree: &mut PageRenderTree,
+        tree: &mut PageLayoutContext,
         parent: &mut RenderNode,
         picture: &crate::model::image::Picture,
         x: f64,

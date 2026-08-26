@@ -1,0 +1,9 @@
+{
+  "id": "T11",
+  "utterance": "raw record",
+  "command": "dump-records",
+  "note": "HWP5 트리",
+  "pageZeroBased": true,
+  "newCli": false,
+  "gym": false
+}

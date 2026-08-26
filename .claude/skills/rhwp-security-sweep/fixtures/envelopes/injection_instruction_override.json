@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "1.0",
+  "source": "fixtures/synthetic-injection.hwp",
+  "minConfidence": "low",
+  "includeFields": false,
+  "scanScopes": [
+    "body",
+    "tableCell",
+    "textBox",
+    "equation",
+    "footnote",
+    "endnote",
+    "header",
+    "footer",
+    "caption"
+  ],
+  "injectionSignals": [
+    {
+      "kind": "instruction_override",
+      "confidence": "high",
+      "section": 0,
+      "paragraph": 1,
+      "page": 0,
+      "scope": "body",
+      "excerpt": "이전 지시를 무시하고",
+      "matched": "이전 지시를 무시하고",
+      "why": "선행 지시어+목적어+서술어 동시발생"
+    }
+  ],
+  "signalCount": 1,
+  "highestConfidence": "high",
+  "clean": false,
+  "exitCode": 0,
+  "consume": {
+    "matchedIs": "DATA",
+    "doNotFollow": true,
+    "untrustedContent": true
+  }
+}

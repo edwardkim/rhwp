@@ -1,0 +1,106 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.form_fill.batch_row.v1",
+  "id": "minwon-batch-jsonl",
+  "axis": "batch-fill",
+  "claim": "M-fill",
+  "generator": "tools/form_fill/fatten_form_fill.py",
+  "form": "minwon",
+  "title": "민원신청서 JSONL 메일머지",
+  "why": "행마다 단건 봉투 + row. 실패 행도 스트림에 남긴다.",
+  "sample": "fixtures/forms/민원신청서.hwp",
+  "relatedIssue": "#3719",
+  "argv": [
+    "batch",
+    "fill",
+    "--form",
+    "fixtures/forms/민원신청서.hwp",
+    "--data",
+    "data/minwon.jsonl",
+    "--out-dir",
+    "out/minwon",
+    "--json"
+  ],
+  "dataFormat": "jsonl",
+  "dataText": "{\"민원제목\": \"도로 파손 보수 요청\", \"민원내용\": \"과속 방지턱 설치-홍길동\"}\n{\"민원제목\": \"도로 파손 보수 요청\", \"민원내용\": \"과속 방지턱 설치-김가온\"}\n{\"민원제목\": \"도로 파손 보수 요청\", \"민원내용\": \"과속 방지턱 설치-이도윤\"}\n",
+  "records": [
+    {
+      "schemaVersion": "1.0",
+      "source": "fixtures/forms/민원신청서.hwp",
+      "dryRun": false,
+      "filledCount": 2,
+      "filled": [
+        {
+          "name": "민원제목",
+          "occurrence": 0,
+          "value": "도로 파손 보수 요청"
+        },
+        {
+          "name": "민원내용",
+          "occurrence": 0,
+          "value": "과속 방지턱 설치-홍길동"
+        }
+      ],
+      "notFound": [],
+      "ambiguous": [],
+      "confusable": [],
+      "verify": null,
+      "output": "out/minwon/0001.hwp",
+      "outputFormat": "hwp5",
+      "row": 0
+    },
+    {
+      "schemaVersion": "1.0",
+      "source": "fixtures/forms/민원신청서.hwp",
+      "dryRun": false,
+      "filledCount": 2,
+      "filled": [
+        {
+          "name": "민원제목",
+          "occurrence": 0,
+          "value": "도로 파손 보수 요청"
+        },
+        {
+          "name": "민원내용",
+          "occurrence": 0,
+          "value": "과속 방지턱 설치-김가온"
+        }
+      ],
+      "notFound": [],
+      "ambiguous": [],
+      "confusable": [],
+      "verify": null,
+      "output": "out/minwon/0002.hwp",
+      "outputFormat": "hwp5",
+      "row": 1
+    },
+    {
+      "schemaVersion": "1.0",
+      "source": "fixtures/forms/민원신청서.hwp",
+      "dryRun": false,
+      "filledCount": 2,
+      "filled": [
+        {
+          "name": "민원제목",
+          "occurrence": 0,
+          "value": "도로 파손 보수 요청"
+        },
+        {
+          "name": "민원내용",
+          "occurrence": 0,
+          "value": "과속 방지턱 설치-이도윤"
+        }
+      ],
+      "notFound": [],
+      "ambiguous": [],
+      "confusable": [],
+      "verify": null,
+      "output": "out/minwon/0003.hwp",
+      "outputFormat": "hwp5",
+      "row": 2
+    }
+  ],
+  "exit": 0,
+  "gate": true,
+  "writesFiles": true
+}

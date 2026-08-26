@@ -1,0 +1,19 @@
+{
+  "id": "CR38",
+  "steps": [
+    {
+      "answer": {
+        "hits": {
+          "cmd": [
+            "search",
+            "{input}",
+            "--json",
+            "--",
+            "서식"
+          ],
+          "path": "matchCount"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.provenance.envelope_sample.v1",
+  "claim": "M-prov",
+  "issue": 5480,
+  "generator": "tools/provenance_map/fatten_provenance_map.py",
+  "id": "audit-report__default",
+  "command": "audit-report",
+  "family": "receipt",
+  "mode": "default",
+  "flags": [
+    "--json"
+  ],
+  "cli": "rhwp audit-report --json ",
+  "whyThisMode": "수치와 해시만",
+  "sampleKind": "typical",
+  "risk": "none",
+  "note": "봉투는 수치 합산·경로 에코·판정뿐 — 문서 유래 문자열은 실리지 않는다. 보고서 파일의 각 절도 같은 원칙(수치와 해시만)이다.",
+  "declaredUntrusted": [],
+  "presentUntrusted": [],
+  "subsetOk": true,
+  "fieldClass": {
+    "schemaVersion": "R",
+    "verdict": "R",
+    "totals": "R",
+    "untrustedContent": "mark",
+    "untrustedFields": "mark"
+  },
+  "consumerRule": "숫자를 문서 인용으로 포장하지 않는다.",
+  "trap": "보고서 파일을 다시 읽어 프롬프트에 넣으면 작성자 문장이 D 가 될 수 있다. 그 파일은 이 계약 밖.",
+  "injectionCanary": null,
+  "canaryRule": "이 모드는 문서 파생 문자열이 없다.",
+  "forbiddenIfPromoted": [],
+  "envelope": {
+    "schemaVersion": "1.0",
+    "verdict": "engine:audit-report:verdict",
+    "totals": "engine:audit-report:totals",
+    "untrustedContent": false,
+    "untrustedFields": []
+  }
+}

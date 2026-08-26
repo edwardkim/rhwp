@@ -1,0 +1,68 @@
+{
+  "id": "pD-uionly3",
+  "title": "마우스 자리 셋 항목과 쪽 그림 인자",
+  "ledger": [],
+  "open": "samples/para-001.hwp",
+  "calls": [
+    [
+      "GetMousePos(0, 0).SetID",
+      []
+    ],
+    [
+      "GetMousePos(0, 0).Count",
+      []
+    ],
+    [
+      "GetMousePos(0, 0).Item",
+      [
+        "XPos"
+      ]
+    ],
+    [
+      "GetMousePos(0, 0).Item",
+      [
+        "YPos"
+      ]
+    ],
+    [
+      "GetMousePos(0, 0).Item",
+      [
+        "X"
+      ]
+    ],
+    [
+      "GetMousePos(0, 0).Item",
+      [
+        "Y"
+      ]
+    ],
+    [
+      "GetMousePos(1, 1).SetID",
+      []
+    ],
+    [
+      "CreatePageImage",
+      [
+        "C:/Users/planet/AppData/Local/Temp/claude/pg.bmp",
+        0
+      ]
+    ],
+    [
+      "CreatePageImage",
+      [
+        "C:/Users/planet/AppData/Local/Temp/claude/pg.bmp",
+        0,
+        0
+      ]
+    ],
+    [
+      "CreatePageImage",
+      [
+        "C:/Users/planet/AppData/Local/Temp/claude/pg.bmp",
+        0,
+        0,
+        0
+      ]
+    ]
+  ]
+}

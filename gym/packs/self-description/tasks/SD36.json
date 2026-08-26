@@ -1,0 +1,25 @@
+{
+  "id": "SD36",
+  "tier": 2,
+  "title": "batch MCP 노출 축 수",
+  "input": "samples/table-001.hwp",
+  "instructions": "batch.mcp.available 의 원소 수를 answer.json 에 {\"available\": N} 으로 제출하라. 힌트: capabilities 의 batch.mcp.available.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "batch MCP 노출 축 수",
+      "op": "len_answer_eq",
+      "answer": "available",
+      "path": "batch.mcp.available",
+      "cmd": [
+        "capabilities"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

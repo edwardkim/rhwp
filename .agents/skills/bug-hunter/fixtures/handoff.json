@@ -1,0 +1,44 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5324,
+  "skill": "bug-hunter",
+  "notGym": true,
+  "noNewCli": true,
+  "handoff": [
+    {
+      "when": "누름틀을 채우는 수단 자체",
+      "to": "rhwp-form-fill",
+      "back": "채운 산출을 정답지와 대조하러 여기로"
+    },
+    {
+      "when": "전후 레이아웃 px 숫자만",
+      "to": "rhwp-visual-regression",
+      "back": "한컴 충실도는 여기. render-diff 는 자기 일관성"
+    },
+    {
+      "when": "표 CSV 왕복",
+      "to": "rhwp-table-exchange",
+      "back": "되돌린 표를 재독·정답지 대조"
+    },
+    {
+      "when": "배포 전 숨은 글·주입",
+      "to": "rhwp-security-sweep",
+      "back": "스윕 후 제출 직전 산출 대조"
+    },
+    {
+      "when": "미지 문서 파악만",
+      "to": "rhwp-doc-triage",
+      "back": "파악 후 여정을 여기로"
+    },
+    {
+      "when": "수정 PR 절차",
+      "to": "rhwp-contributor",
+      "back": "요청받은 뒤에만. 이 스킬은 헌팅"
+    },
+    {
+      "when": "폴더 수백 건 일괄",
+      "to": "rhwp-bulk-pipeline",
+      "back": "실패한 한 건을 여정으로 승격"
+    }
+  ]
+}

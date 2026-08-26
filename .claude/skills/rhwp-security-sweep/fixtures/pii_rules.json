@@ -1,0 +1,49 @@
+{
+  "conservative": true,
+  "falsePositiveIsFailure": true,
+  "kinds": [
+    {
+      "id": "ssn",
+      "form": "######-#######",
+      "checks": [
+        "real-date",
+        "gender-1-8",
+        "mod11"
+      ]
+    },
+    {
+      "id": "card",
+      "form": "4-4-4-4 or Amex 4-6-5 or 15/16 contiguous",
+      "checks": [
+        "luhn",
+        "not-substring-of-longer-digit-run"
+      ]
+    },
+    {
+      "id": "phone",
+      "form": "01[016789]-3~4-4 or 02-3~4-4",
+      "checks": [
+        "hyphen-required"
+      ]
+    },
+    {
+      "id": "email",
+      "form": "local@label(.label)+",
+      "checks": [
+        ">=2-labels",
+        "tld-alpha>=2"
+      ]
+    }
+  ],
+  "outOfScope": [
+    "non-02-area-codes",
+    "card-13",
+    "card-14",
+    "card-19",
+    "passport",
+    "account",
+    "name",
+    "address",
+    "employee-id"
+  ]
+}

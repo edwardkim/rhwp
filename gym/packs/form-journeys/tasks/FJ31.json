@@ -1,0 +1,27 @@
+{
+  "id": "FJ31",
+  "tier": 2,
+  "title": "field-01-memo 첫 칸 memo 오라클",
+  "input": "samples/field-01-memo.hwp",
+  "axis": "조회",
+  "instructions": "field-01-memo 는 같은 11칸에 메모가 채워진 표본이다. fields[0].memo 를 answer.json 의 memo 로 제출하라. 값을 채우지 마라. 메모를 읽는 것과 T07 의 값 쓰기는 다른 축이다. 힌트: rhwp fields samples/field-01-memo.hwp --json → fields[0].memo 판정은 라이브 재실행 또는 산출물 재독이며, 파일 부재를 통과로 치지 않는다. T07 의 fields[0].value==홍길동 판정은 쓰지 마라. 새 CLI 는 없다.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "첫 칸 memo",
+      "op": "answer_eq",
+      "answer": "memo",
+      "path": "fields[0].memo",
+      "cmd": [
+        "fields",
+        "{input}",
+        "--json"
+      ]
+    }
+  ]
+}

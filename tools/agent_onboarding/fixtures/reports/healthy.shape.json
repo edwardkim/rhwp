@@ -1,0 +1,10 @@
+{
+  "exitCode": 0,
+  "ok": true,
+  "binary.found": true,
+  "requiredChecks": [
+    "version",
+    "selftest-info",
+    "selftest-export-text"
+  ]
+}

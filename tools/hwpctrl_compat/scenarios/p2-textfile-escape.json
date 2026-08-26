@@ -1,0 +1,30 @@
+{
+  "id": "p2-textfile-escape",
+  "title": "GetTextFile UNICODE — 여러 문자 원문 보존",
+  "ledger": [
+    "HwpCtrl.method.GetTextFile"
+  ],
+  "open": "samples/issue-986-receipt.hwp",
+  "calls": [
+    [
+      "PutFieldText",
+      [
+        "pt_nm",
+        "가A1 ◦○●※→↔㈜Ω℃†‡€①ⓐ"
+      ]
+    ],
+    [
+      "GetFieldText",
+      [
+        "pt_nm"
+      ]
+    ],
+    [
+      "GetTextFile",
+      [
+        "UNICODE",
+        ""
+      ]
+    ]
+  ]
+}

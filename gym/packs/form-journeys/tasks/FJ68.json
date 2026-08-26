@@ -1,0 +1,31 @@
+{
+  "id": "FJ68",
+  "tier": 2,
+  "title": "제목 dry-run filled[0].name 오라클",
+  "input": "samples/field-01.hwp",
+  "axis": "조회",
+  "instructions": "제목에 '제목예고' 를 넣는 dry-run 에서 filled[0].name 을 answer.json 의 name 으로 제출하라. FJ55 는 다른 키의 filled[0].name 이다. 출력 파일을 만들지 마라. 힌트: --data '{\"제목\": \"제목예고\"}' --dry-run --json 판정은 라이브 재실행 또는 산출물 재독이며, 파일 부재를 통과로 치지 않는다. T07 의 fields[0].value==홍길동 판정은 쓰지 마라. 새 CLI 는 없다.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "채워질 칸 이름",
+      "op": "answer_eq",
+      "answer": "name",
+      "path": "filled[0].name",
+      "cmd": [
+        "edit",
+        "fill-fields",
+        "{input}",
+        "--data",
+        "{\"제목\": \"제목예고\"}",
+        "--dry-run",
+        "--json"
+      ]
+    }
+  ]
+}

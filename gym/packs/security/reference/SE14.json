@@ -1,0 +1,24 @@
+{
+  "id": "SE14",
+  "steps": [
+    {
+      "answer": {
+        "findings": {
+          "cmd": [
+            "inspect",
+            "unicode",
+            "{input}",
+            "--kind",
+            "zero-width",
+            "--json"
+          ],
+          "path": "findingCount",
+          "allowExits": [
+            0,
+            3
+          ]
+        }
+      }
+    }
+  ]
+}

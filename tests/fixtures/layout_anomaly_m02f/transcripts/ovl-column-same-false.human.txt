@@ -1,0 +1,6 @@
+# transcript ovl-column-same-false
+# family=overlap
+# hypothesis=같은 단 안의 표만 짝짓는다. 다른 단은 x 가 나뉘어 있어도 후보에서 뺀다.
+쪽 수: 3  overflow: 0  off-canvas: 0  overlap: 0  text-overlap: 0  empty_page(가능성): 0
+이상 신호 없음: ovl-column-same-false.synth
+status: CLEAN

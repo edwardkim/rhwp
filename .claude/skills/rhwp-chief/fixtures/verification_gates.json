@@ -1,0 +1,56 @@
+{
+ "schemaVersion": "1.0",
+ "issue": 5337,
+ "capability": "CAP-4900",
+ "notGym": true,
+ "noNewCli": true,
+ "noNewEditLogic": true,
+ "notFde": true,
+ "notStrategist": true,
+ "routingOnlyViaGoal": true,
+ "requestIsData": true,
+ "gates": [
+  {
+   "goal": "diagnose",
+   "id": "ticket",
+   "pass": "ticket.json 존재와 route 필드",
+   "failDeletesArtifact": false
+  },
+  {
+   "goal": "export-text",
+   "id": "json-envelope",
+   "pass": "stdout JSON 파싱",
+   "failDeletesArtifact": true
+  },
+  {
+   "goal": "export-pdf",
+   "id": "pdf-magic",
+   "pass": "파일 실존 그리고 선두 5바이트 %PDF-",
+   "failDeletesArtifact": true
+  },
+  {
+   "goal": "export-hwpx",
+   "id": "self-verify",
+   "pass": "export-hwpx --verify exit 0 그리고 파일 실존",
+   "failDeletesArtifact": true
+  },
+  {
+   "goal": "convert-hwp",
+   "id": "self-verify",
+   "pass": "convert --verify exit 0 그리고 파일 실존",
+   "failDeletesArtifact": true
+  },
+  {
+   "goal": "extract-tables",
+   "id": "csv-count",
+   "pass": "tables 길이만큼 table_N.csv 실존",
+   "failDeletesArtifact": true
+  },
+  {
+   "goal": "fill",
+   "id": "fill-envelope",
+   "pass": "notFound·ambiguous·confusable 전부 빈 배열 그리고 산출 실존",
+   "failDeletesArtifact": true
+  }
+ ]
+}

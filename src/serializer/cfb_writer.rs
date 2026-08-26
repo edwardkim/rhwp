@@ -16,14 +16,29 @@ use crate::model::document::{Document, Preview};
 use crate::password_crypto::{encrypt_hwp5_stream, HWP5_ENCRYPT_VERSION};
 
 use super::body_text::serialize_section;
+use super::content_loss::{
+    ContentLoss, ContentLossReason, ContentLossReport, SerializedDocument, SerializedFormat,
+};
 use super::doc_info::serialize_doc_info;
 use super::header::serialize_file_header;
 use super::mini_cfb;
 use super::SerializeError;
 
+#[derive(Clone, Copy)]
+enum ContentLossWarningMode {
+    ReportOnly,
+    LegacyStderr,
+}
+
 /// Document IR을 HWP 5.0 CFB 바이너리로 직렬화
 pub fn serialize_hwp(doc: &Document) -> Result<Vec<u8>, SerializeError> {
-    serialize_hwp_inner(doc, None)
+    let serialized = serialize_hwp_inner(doc, None, ContentLossWarningMode::LegacyStderr)?;
+    Ok(serialized.into_bytes())
+}
+
+/// HWP 직렬화 바이트와 바로 그 산출물의 내용 손실을 함께 반환한다 (#4430).
+pub fn serialize_hwp_with_report(doc: &Document) -> Result<SerializedDocument, SerializeError> {
+    serialize_hwp_inner(doc, None, ContentLossWarningMode::ReportOnly)
 }
 
 /// Document IR을 HWP5 EncryptVersion 4 비밀번호 문서로 직렬화한다.
@@ -34,10 +49,24 @@ pub fn serialize_hwp_with_password(
     doc: &Document,
     password: &[u8],
 ) -> Result<Vec<u8>, SerializeError> {
-    serialize_hwp_inner(doc, Some(password))
+    let serialized =
+        serialize_hwp_inner(doc, Some(password), ContentLossWarningMode::LegacyStderr)?;
+    Ok(serialized.into_bytes())
 }
 
-fn serialize_hwp_inner(doc: &Document, password: Option<&[u8]>) -> Result<Vec<u8>, SerializeError> {
+/// 비밀번호 HWP 바이트와 바로 그 산출물의 내용 손실을 함께 반환한다 (#4430).
+pub fn serialize_hwp_with_password_and_report(
+    doc: &Document,
+    password: &[u8],
+) -> Result<SerializedDocument, SerializeError> {
+    serialize_hwp_inner(doc, Some(password), ContentLossWarningMode::ReportOnly)
+}
+
+fn serialize_hwp_inner(
+    doc: &Document,
+    password: Option<&[u8]>,
+    warning_mode: ContentLossWarningMode,
+) -> Result<SerializedDocument, SerializeError> {
     // 1. FileHeader 직렬화
     // [Task #1768] 배포용/암호화 문서 강하: IR 은 이미 복호화된 평문이고 본 직렬화는
     // ViewText/DISTRIBUTE_DOC_DATA 를 생성하지 않으므로, 플래그를 유지하면 산출물
@@ -78,15 +107,78 @@ fn serialize_hwp_inner(doc: &Document, password: Option<&[u8]>) -> Result<Vec<u8
         serialize_file_header(&doc.header)
     };
 
-    // 2. DocInfo 직렬화
-    let doc_info_bytes = serialize_doc_info(&doc.doc_info, &doc.doc_properties);
-
     // 3. BodyText 섹션별 직렬화
+    //
+    // [#5142] HWPX 는 한 section 파일 안에 `<hp:secPr>` 를 여러 개 둘 수 있고,
+    // 파서는 이를 IR 구역 하나(문단 중간 SectionDef 컨트롤들)로 읽는다. HWP5 로
+    // 그대로 몰아 저장하면 한글이 개방을 거부한다(06544: 63 secPr → Open=false,
+    // 0자·1쪽). 한글은 이런 문서를 구역을 나눠 저장하므로, 문단 중간의 SectionDef
+    // 경계마다 별도 BodyText/SectionN 스트림으로 가른다. 원본 스트림 재사용이
+    // 허용된 구역(HWP5 라운드트립)은 원본 바이트가 이미 한글이 수용한 형상이므로
+    // 가르지 않는다. HWP5 출처(네이티브·marker-HWPX)도 가르지 않는다 — 한글은
+    // HWP5 단일 스트림 안 다중 secd 를 수용하며(#505 계보), 가르면 rebuild 왕복의
+    // IR 형상(구역 수)이 바뀐다. 거부는 순수 HWPX 출처(x2h)에서만 관측됐다.
+    let split_multi_sec_pr = doc.layout_profile().hwpx_stored_layout();
     let mut section_bytes_list = Vec::new();
     for section in &doc.sections {
-        let section_bytes = serialize_section(section);
-        section_bytes_list.push(section_bytes);
+        let split_starts: Vec<usize> =
+            if !split_multi_sec_pr || section.raw_provenance_permits_reuse() {
+                Vec::new()
+            } else {
+                section
+                    .paragraphs
+                    .iter()
+                    .enumerate()
+                    .skip(1)
+                    .filter(|(_, p)| {
+                        p.controls
+                            .iter()
+                            .any(|c| matches!(c, crate::model::control::Control::SectionDef(_)))
+                    })
+                    .map(|(i, _)| i)
+                    .collect()
+            };
+        if split_starts.is_empty() {
+            section_bytes_list.push(serialize_section(section));
+            continue;
+        }
+        let mut starts = Vec::with_capacity(split_starts.len() + 1);
+        starts.push(0usize);
+        starts.extend(split_starts);
+        for (k, &start) in starts.iter().enumerate() {
+            let end = starts
+                .get(k + 1)
+                .copied()
+                .unwrap_or(section.paragraphs.len());
+            let paragraphs = section.paragraphs[start..end].to_vec();
+            let section_def = paragraphs
+                .first()
+                .and_then(|p| {
+                    p.controls.iter().find_map(|c| match c {
+                        crate::model::control::Control::SectionDef(sd) => Some((**sd).clone()),
+                        _ => None,
+                    })
+                })
+                .unwrap_or_else(|| section.section_def.clone());
+            let sub = crate::model::document::Section {
+                section_def,
+                paragraphs,
+                raw_stream: None,
+                raw_provenance: None,
+            };
+            section_bytes_list.push(serialize_section(&sub));
+        }
     }
+
+    // 2. DocInfo 직렬화 — 구역 분할로 스트림 수가 IR 구역 수와 달라지면
+    // DOCUMENT_PROPERTIES.section_count 도 실제 스트림 수로 맞춘다.
+    let doc_info_bytes = if section_bytes_list.len() != doc.sections.len() {
+        let mut props = doc.doc_properties.clone();
+        props.section_count = section_bytes_list.len() as u16;
+        serialize_doc_info(&doc.doc_info, &props)
+    } else {
+        serialize_doc_info(&doc.doc_info, &doc.doc_properties)
+    };
 
     // 4. 압축 여부 결정
     let compressed = doc.header.compressed;
@@ -100,7 +192,8 @@ fn serialize_hwp_inner(doc: &Document, password: Option<&[u8]>) -> Result<Vec<u8
     let preview = supplement_preview(doc);
 
     // 6. CFB 컨테이너 조립
-    write_hwp_cfb(
+    let mut content_loss = ContentLossReport::new(SerializedFormat::Hwp);
+    let bytes = write_hwp_cfb(
         &header_bytes,
         &doc_info_bytes,
         &section_bytes_list,
@@ -110,7 +203,12 @@ fn serialize_hwp_inner(doc: &Document, password: Option<&[u8]>) -> Result<Vec<u8
         &doc.extra_streams,
         compressed,
         password,
-    )
+        &mut content_loss,
+    )?;
+    if matches!(warning_mode, ContentLossWarningMode::LegacyStderr) {
+        content_loss.write_warnings_to_stderr();
+    }
+    Ok(SerializedDocument::new(bytes, content_loss))
 }
 
 /// PrvText 가 비었거나 placeholder 면 본문 텍스트로 채운다.
@@ -188,6 +286,7 @@ fn write_hwp_cfb(
     extra_streams: &[(String, Vec<u8>)],
     compressed: bool,
     password: Option<&[u8]>,
+    content_loss: &mut ContentLossReport,
 ) -> Result<Vec<u8>, SerializeError> {
     // 스트림 목록 수집
     let mut streams: Vec<(String, Vec<u8>)> = Vec::new();
@@ -247,12 +346,11 @@ fn write_hwp_cfb(
                 Some(_) => {
                     // 상한 초과 + 압축 상태 불일치 — 해제(OOM 위험)도, 그대로 쓰기
                     // (오독)도 안 된다. 렌더·클립보드와 같은 placeholder 로 접는다.
-                    eprintln!(
-                        "경고: BinData {} 압축 해제 상한 {}MB 초과이고 저장 압축 상태가 달라 \
-                         빈 스트림으로 대체합니다 (#2550)",
-                        storage_name,
-                        MAX_BIN_DATA_BYTES / (1024 * 1024)
-                    );
+                    content_loss.record(ContentLoss::binary_content_emptied(
+                        storage_id,
+                        path.clone(),
+                        ContentLossReason::StoredCompressionMismatch,
+                    ));
                     streams.push((path, encrypt_if_password(Vec::new(), password)));
                     continue;
                 }
@@ -262,12 +360,11 @@ fn write_hwp_cfb(
                 // 접는다. 이미 메모리에 있는 `Loaded` 값도 `load_limited()`에서
                 // 길이를 확인했으므로 같은 경로를 탄다.
                 None => {
-                    eprintln!(
-                        "경고: BinData {} 압축 해제 상한 {}MB 초과이고 원본 저장 형태가 없어 \
-                         빈 스트림으로 대체합니다 (#2550)",
-                        storage_name,
-                        MAX_BIN_DATA_BYTES / (1024 * 1024)
-                    );
+                    content_loss.record(ContentLoss::binary_content_emptied(
+                        storage_id,
+                        path.clone(),
+                        ContentLossReason::RawPassthroughUnavailable,
+                    ));
                     streams.push((path, encrypt_if_password(Vec::new(), password)));
                     continue;
                 }

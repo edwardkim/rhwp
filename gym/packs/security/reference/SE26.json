@@ -1,0 +1,24 @@
+{
+  "id": "SE26",
+  "steps": [
+    {
+      "answer": {
+        "signals": {
+          "cmd": [
+            "inspect",
+            "injection",
+            "{input}",
+            "--min-confidence",
+            "high",
+            "--json"
+          ],
+          "path": "signalCount",
+          "allowExits": [
+            0,
+            3
+          ]
+        }
+      }
+    }
+  ]
+}

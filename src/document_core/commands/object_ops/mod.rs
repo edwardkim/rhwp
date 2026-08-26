@@ -3,6 +3,8 @@
 //! 종전 단일 파일(9,845줄, 7개 도메인 응집)을 도메인 모듈로 분할. 함수 이동만 —
 //! 로직/외부 인터페이스 무변경 (impl DocumentCore 분산, 메서드 경로 동일).
 
+/// [#4100] 차트 숫자 데이터 읽기·쓰기.
+mod chart;
 mod common;
 mod connector;
 mod equation;

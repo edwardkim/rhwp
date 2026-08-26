@@ -1,0 +1,43 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.provenance.envelope_sample.v1",
+  "claim": "M-prov",
+  "issue": 5480,
+  "generator": "tools/provenance_map/fatten_provenance_map.py",
+  "id": "keygen__default",
+  "command": "keygen",
+  "family": "receipt",
+  "mode": "default",
+  "flags": [
+    "--json"
+  ],
+  "cli": "rhwp keygen --json ",
+  "whyThisMode": "문서를 열지 않음",
+  "sampleKind": "typical",
+  "risk": "none",
+  "note": "키 발급 봉투는 keyId(호출자 에코)·publicKey(엔진 생성)·keyFile(호출자 에코)뿐이다 — 문서를 열지 않는다.",
+  "declaredUntrusted": [],
+  "presentUntrusted": [],
+  "subsetOk": true,
+  "fieldClass": {
+    "schemaVersion": "R",
+    "keyId": "C",
+    "keyFile": "C",
+    "publicKey": "R",
+    "untrustedContent": "mark",
+    "untrustedFields": "mark"
+  },
+  "consumerRule": "표지 false 를 명시했는지 확인.",
+  "trap": "공개키를 문서 파생으로 선언하지 않는다.",
+  "injectionCanary": null,
+  "canaryRule": "이 모드는 문서 파생 문자열이 없다.",
+  "forbiddenIfPromoted": [],
+  "envelope": {
+    "schemaVersion": "1.0",
+    "keyId": "caller:keygen:keyId",
+    "keyFile": "caller:keygen:keyFile",
+    "publicKey": "engine:keygen:publicKey",
+    "untrustedContent": false,
+    "untrustedFields": []
+  }
+}

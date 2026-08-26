@@ -1,0 +1,23 @@
+{
+  "id": "TC21",
+  "tier": 2,
+  "title": "표 개수 — multi-table-001 tableCount",
+  "input": "samples/multi-table-001.hwp",
+  "instructions": "table-to-csv --json (표 선택 없이) 으로 본문 최상위 표 개수(tableCount)를 보고하라. 답 형식: {\"tables\": <수>}. --table 을 주면 1개만 나온다.",
+  "submit": {
+    "kind": "answer"
+  },
+  "checks": [
+    {
+      "name": "표 개수 일치",
+      "op": "answer_eq",
+      "answer": "tables",
+      "cmd": [
+        "table-to-csv",
+        "{input}",
+        "--json"
+      ],
+      "path": "tableCount"
+    }
+  ]
+}

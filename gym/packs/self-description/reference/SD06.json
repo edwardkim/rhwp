@@ -1,0 +1,16 @@
+{
+  "id": "SD06",
+  "steps": [
+    {
+      "answer": {
+        "defs": {
+          "cmd": [
+            "export-plan-schema",
+            "--json"
+          ],
+          "path": "definitionCount"
+        }
+      }
+    }
+  ]
+}

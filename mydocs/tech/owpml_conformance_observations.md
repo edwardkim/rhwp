@@ -2,7 +2,7 @@
 kind: reference
 status: active
 canonical: mydocs/tech/owpml_conformance_observations.md
-last_verified: 2026-08-09
+last_verified: 2026-08-18
 ---
 
 # HWP/OWPML 정합 관찰 노트
@@ -149,6 +149,20 @@ last_verified: 2026-08-09
   `pageDuplicate="0"`(중복 없음)인 경우에도 overlap bit를 함께 세운다 — OWPML 속성 이름의
   액면 의미(중복 없음)와 실제 저장 비트가 어긋난다.
 - **근거**: `src/parser/hwpx/section.rs:226-230`.
+
+## 17. `CharShape.ratios` — `<hh:ratio>` 생략 시 OWPML 기본값은 100, 0은 타입 수준 불법
+
+- **관찰**: `<hh:ratio>` 자식이 없는 `charPr`·`RATIO` 자식이 없는 HML `CHARSHAPE` 는 OWPML
+  기본값 100(장평 100%)으로 남아야 하는데, `CharShape::default()`의 파생값 0이 그대로 IR에
+  실려 세 라이터(HWP5·HWPX·HML)가 유효범위 [50,200] 밖의 0을 방출했다. `ratio`는
+  `xs:positiveInteger`라 0은 범위 이전에 타입 수준에서 불법이다. §6의 `relSz`와 같은 부류지만,
+  `ratios`는 렌더러가 소비하는 필드라(장평 0 = 글자 폭 0) 검증 lane이 다르다 — rhwp 자체
+  렌더는 폭 경로의 `ratio > 0.0` 폴백이 결함을 가리므로 저장 바이트/XML 검사가 방어선이다.
+  실측: HWPX 표본 276건의 한컴산 `ratio` 105,840건은 min=50/max=154로 전부 범위 안이고,
+  HWP3 변환 22표본의 위반은 전부 인덱스 0 placeholder(참조 0건) 유래였다.
+- **근거**: `src/model/style.rs`(`impl Default` 주석, "Header XML schema.xml:590-611" 인용),
+  계약 테스트 `tests/cases/issue_4161_ratio_default_contract.rs`. 수정 이슈 #4161
+  (계측: `mydocs/working/task_m100_4161_stage1.md`).
 
 ---
 

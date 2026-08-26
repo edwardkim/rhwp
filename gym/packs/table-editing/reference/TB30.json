@@ -1,0 +1,23 @@
+{
+  "id": "TB30",
+  "steps": [
+    {
+      "run": [
+        "edit",
+        "set-cell",
+        "{input}",
+        "--table",
+        "0",
+        "--row",
+        "0",
+        "--col",
+        "1",
+        "--text",
+        "보조칸",
+        "-o",
+        "{sub:aux_cell.hwp}",
+        "--json"
+      ]
+    }
+  ]
+}

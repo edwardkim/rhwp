@@ -1,0 +1,11 @@
+{
+  "id": "T38",
+  "title": "원본 불변 실패",
+  "steps": [
+    {
+      "note": "기존 CLI 표면만. 새 플래그 없음",
+      "usesExistingCommand": true
+    }
+  ],
+  "notGym": true
+}

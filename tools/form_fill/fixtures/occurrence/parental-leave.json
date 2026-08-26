@@ -1,0 +1,149 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.form_fill.fill_case.v1",
+  "id": "parental-leave-occurrence",
+  "axis": "이름[N]",
+  "claim": "M-fill",
+  "generator": "tools/form_fill/fatten_form_fill.py",
+  "form": "parental-leave",
+  "title": "육아휴직 신청서 반복 필드 순번 지목",
+  "family": "인사",
+  "genre": "휴직",
+  "sample": "fixtures/forms/육아휴직신청서.hwp",
+  "format": "hwp5",
+  "relatedIssue": "#3329",
+  "why": "이름[N] 은 fields 목록 순서 0 기준. 지목하지 않은 칸은 그대로. 순번 없음은 ambiguous, 범위 밖은 notFound.",
+  "firstFieldName": "소속",
+  "fieldCount": 13,
+  "argv": [
+    "edit",
+    "fill-fields",
+    "fixtures/forms/육아휴직신청서.hwp",
+    "--data",
+    "{\"자녀성명[0]\": \"홍아이\", \"자녀성명[2]\": \"홍아이-3\", \"자녀생년월일[0]\": \"2022. 5. 5.\", \"자녀생년월일[2]\": \"2022. 5. 5.-3\"}",
+    "-o",
+    "out/parental-leave-occ.hwp",
+    "--json"
+  ],
+  "existingCliOnly": true,
+  "data": {
+    "자녀성명[0]": "홍아이",
+    "자녀성명[2]": "홍아이-3",
+    "자녀생년월일[0]": "2022. 5. 5.",
+    "자녀생년월일[2]": "2022. 5. 5.-3"
+  },
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "fixtures/forms/육아휴직신청서.hwp",
+    "dryRun": false,
+    "filledCount": 4,
+    "filled": [
+      {
+        "name": "자녀성명",
+        "occurrence": 0,
+        "value": "홍아이"
+      },
+      {
+        "name": "자녀성명",
+        "occurrence": 2,
+        "value": "홍아이-3"
+      },
+      {
+        "name": "자녀생년월일",
+        "occurrence": 0,
+        "value": "2022. 5. 5."
+      },
+      {
+        "name": "자녀생년월일",
+        "occurrence": 2,
+        "value": "2022. 5. 5.-3"
+      }
+    ],
+    "notFound": [],
+    "ambiguous": [],
+    "confusable": [],
+    "verify": null,
+    "output": "out/parental-leave-occ.hwp",
+    "outputFormat": "hwp5"
+  },
+  "exit": 0,
+  "untouchedOccurrences": {
+    "자녀성명": [
+      1
+    ],
+    "자녀생년월일": [
+      1
+    ]
+  },
+  "afterTargeted": {
+    "자녀성명": [
+      "홍아이",
+      "",
+      "홍아이-3"
+    ],
+    "자녀생년월일": [
+      "2022. 5. 5.",
+      "",
+      "2022. 5. 5.-3"
+    ]
+  },
+  "gate": true,
+  "ambiguous": {
+    "data": {
+      "자녀성명": "홍아이",
+      "자녀생년월일": "2022. 5. 5."
+    },
+    "envelope": {
+      "schemaVersion": "1.0",
+      "source": "fixtures/forms/육아휴직신청서.hwp",
+      "dryRun": true,
+      "filledCount": 2,
+      "filled": [
+        {
+          "name": "자녀성명",
+          "occurrence": 0,
+          "value": "홍아이"
+        },
+        {
+          "name": "자녀생년월일",
+          "occurrence": 0,
+          "value": "2022. 5. 5."
+        }
+      ],
+      "notFound": [],
+      "ambiguous": [
+        {
+          "name": "자녀성명",
+          "matched": 1,
+          "total": 3
+        },
+        {
+          "name": "자녀생년월일",
+          "matched": 1,
+          "total": 3
+        }
+      ],
+      "confusable": [],
+      "verify": null
+    },
+    "incomplete": true
+  },
+  "outOfRange": {
+    "data": {
+      "자녀성명[103]": "범위밖"
+    },
+    "envelope": {
+      "schemaVersion": "1.0",
+      "source": "fixtures/forms/육아휴직신청서.hwp",
+      "dryRun": true,
+      "filledCount": 0,
+      "filled": [],
+      "notFound": [
+        "자녀성명[103]"
+      ],
+      "ambiguous": [],
+      "confusable": [],
+      "verify": null
+    }
+  }
+}

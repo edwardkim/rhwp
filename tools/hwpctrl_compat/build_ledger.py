@@ -200,6 +200,14 @@ def ingest_verdict(entries: list[dict], verdict_path: Path) -> list[str]:
         entry = by_id[entry_id]
         entry["oracle"]["scenarios"] = slot["scenarios"]
         entry["oracle"]["diff"] = 0 if slot["ok"] else 1
+        if entry["status"] == "substituted":
+            # `substituted` 는 "오라클이 이 항목의 판정자가 될 수 없다"는 선언이다. 그런
+            # 항목도 시나리오가 **계약의 일부**(반환 모양·경계 따위)는 재는데, 그 초록으로
+            # `verified` 를 채우면 재지 않은 부분까지 잰 것처럼 보인다. 사유를 적어 둔
+            # 상태는 오라클이 덮지 않는다.
+            if not entry.get("notes"):
+                notes.append(f"{entry['id']}: substituted 인데 사유가 없다")
+            continue
         if slot["ok"]:
             entry["status"] = "verified"
         elif entry["status"] == "verified":

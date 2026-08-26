@@ -1,6 +1,6 @@
 import type { CommandDef } from '../types';
-import { setThemeMode, syncThemeMenu, type EffectiveTheme } from '../../core/theme';
-import { userSettings, type ThemeMode } from '../../core/user-settings';
+import { setThemeMode, setThemeSkin, syncThemeMenu, type EffectiveTheme } from '../../core/theme';
+import { userSettings, type ThemeMode, type ThemeSkin } from '../../core/user-settings';
 import { GridSettingsDialog } from '../../ui/grid-settings-dialog';
 import {
   type GridOffsetMm,
@@ -10,7 +10,13 @@ import {
   toggleGridVisibility,
 } from '../../view/grid-settings';
 import { HWPUNIT_PER_MM } from '../../core/hwp-constants';
-import { calculateFitPageZoom, calculateFitWidthZoom } from '../../view/zoom-fit';
+import {
+  calculateArrangementFitWidthZoom,
+  calculateFitPageZoom,
+} from '../../view/zoom-fit';
+import { applyToolboxVisibility } from '../../view/toolbox-visibility';
+import { ZoomDialog } from '../../ui/zoom-dialog';
+import { resolveZoomDialogZoom } from '../../view/zoom-dialog-state';
 
 const PX_TO_MM = 25.4 / 96;
 
@@ -34,6 +40,19 @@ function themeModeCommand(mode: ThemeMode, label: string): CommandDef {
       const effective: EffectiveTheme = setThemeMode(mode);
       syncThemeMenu(mode);
       services.eventBus.emit('theme-changed', { mode, effective });
+      services.eventBus.emit('document-view-changed');
+    },
+  };
+}
+
+function themeSkinCommand(skin: ThemeSkin, label: string): CommandDef {
+  return {
+    id: `view:skin-${skin}`,
+    label,
+    execute(services) {
+      const effective: EffectiveTheme = setThemeSkin(skin);
+      syncThemeMenu();
+      services.eventBus.emit('theme-changed', { mode: userSettings.getThemeSettings().mode, effective });
       services.eventBus.emit('document-view-changed');
     },
   };
@@ -64,6 +83,15 @@ export function syncClipMenu(enabled: boolean): void {
   document.querySelectorAll('[data-cmd="view:toggle-clip"]').forEach(el => {
     el.classList.toggle('active', !enabled);
   });
+}
+
+/**
+ * 저장된 도구 상자(기본/서식) 보이기·숨기기 설정을 도구 모음과 메뉴 체크 표시에 반영한다.
+ * 시작 시 설정 복원과 토글 직후 양쪽이 같은 경로를 쓴다.
+ */
+export function syncToolboxMenu(): void {
+  const view = userSettings.getViewSettings();
+  applyToolboxVisibility(document, { basic: view.toolbarBasic, format: view.toolbarFormat });
 }
 
 function refreshCaretAfterViewChange(services: Parameters<CommandDef['execute']>[0]): void {
@@ -147,7 +175,7 @@ export const viewCommands: CommandDef[] = [
     id: 'view:zoom-in',
     label: '확대',
     icon: 'icon-zoom-menu-in',
-    shortcutLabel: 'Shift+Num +',
+    shortcutLabel: 'Ctrl++',
     execute(services) {
       const vm = services.getViewportManager();
       if (vm) vm.smoothZoomBy(0.1);
@@ -157,10 +185,63 @@ export const viewCommands: CommandDef[] = [
     id: 'view:zoom-out',
     label: '축소',
     icon: 'icon-zoom-menu-out',
-    shortcutLabel: 'Shift+Num -',
+    shortcutLabel: 'Ctrl+-',
     execute(services) {
       const vm = services.getViewportManager();
       if (vm) vm.smoothZoomBy(-0.1);
+    },
+  },
+  {
+    id: 'view:zoom-dialog',
+    label: '화면 확대/축소...',
+    opensDialog: true,
+    canExecute: (ctx) => ctx.hasDocument,
+    execute(services) {
+      const vm = services.getViewportManager();
+      if (!vm || services.wasm.pageCount === 0) return;
+      const container = document.getElementById('scroll-container');
+      if (!container) return;
+      const pageInfo = services.wasm.getPageInfo(0);
+      const viewSettings = userSettings.getViewSettings();
+      const arrangement = viewSettings.pageArrangement;
+      const fitZooms = {
+        fitWidth: calculateArrangementFitWidthZoom({
+          containerWidth: container.clientWidth,
+          pageWidth: pageInfo.width,
+          arrangement,
+        }),
+        fitPage: calculateFitPageZoom(
+          container.clientWidth,
+          container.clientHeight,
+          pageInfo.width,
+          pageInfo.height,
+        ),
+      };
+      new ZoomDialog({
+        currentZoom: vm.getZoom(),
+        fitZooms,
+        arrangement,
+        pageMovement: viewSettings.pageMovement,
+        onConfirm(value) {
+          const zoom = resolveZoomDialogZoom({
+            ...value,
+            viewportWidth: container.clientWidth,
+            viewportHeight: container.clientHeight,
+            pageWidth: pageInfo.width,
+            pageHeight: pageInfo.height,
+            pageGap: 10,
+          });
+          userSettings.setPageMovement(value.pageMovement);
+          userSettings.setPageArrangement(value.arrangement);
+          const view = userSettings.getViewSettings();
+          services.eventBus.emit('page-view-settings-changed', {
+            arrangement: view.pageArrangement,
+            pageMovement: view.pageMovement,
+          });
+          vm.setZoom(zoom);
+          services.eventBus.emit('command-state-changed');
+        },
+      }).show();
     },
   },
   {
@@ -191,7 +272,11 @@ export const viewCommands: CommandDef[] = [
       const container = document.getElementById('scroll-container')!;
       const pi = services.wasm.getPageInfo(0);
       // pi.width는 이미 px 단위 (96dpi 기준)
-      vm.setZoom(calculateFitWidthZoom(container.clientWidth, pi.width));
+      vm.setZoom(calculateArrangementFitWidthZoom({
+        containerWidth: container.clientWidth,
+        pageWidth: pi.width,
+        arrangement: userSettings.getViewSettings().pageArrangement,
+      }));
     },
   },
   zoomLevel(50),
@@ -201,9 +286,13 @@ export const viewCommands: CommandDef[] = [
   zoomLevel(150),
   zoomLevel(200),
   zoomLevel(300),
+  zoomLevel(500),
   themeModeCommand('system', '시스템 설정'),
   themeModeCommand('light', '밝게'),
   themeModeCommand('dark', '어둡게'),
+  themeSkinCommand('oldschool', '올드스쿨'),
+  themeSkinCommand('default', '클래식'),
+  themeSkinCommand('flat', '모던'),
   // ─── 보기 메뉴: 표시/숨기기 ─────────────────────────
   {
     id: 'view:form-mode',
@@ -261,7 +350,6 @@ export const viewCommands: CommandDef[] = [
       document.querySelectorAll('[data-cmd="view:border-transparent"]').forEach(el => {
         el.classList.toggle('active', next);
       });
-      services.eventBus.emit('transparent-borders-changed', next);
       services.eventBus.emit('document-view-changed');
     },
   },
@@ -292,6 +380,7 @@ export const viewCommands: CommandDef[] = [
   },
   {
     id: 'view:grid-settings',
+    opensDialog: true,
     label: '격자 설정',
     icon: 'icon-grid',
     canExecute: (ctx) => ctx.hasDocument,
@@ -313,38 +402,20 @@ export const viewCommands: CommandDef[] = [
       ).show();
     },
   },
-  (() => {
-    let visible: boolean | null = null;
-    return {
-      id: 'view:toolbox-basic',
-      label: '기본',
-      execute() {
-        const el = document.getElementById('icon-toolbar');
-        if (!el) return;
-        if (visible === null) visible = getComputedStyle(el).display !== 'none';
-        visible = !visible;
-        el.style.display = visible ? '' : 'none';
-        document.querySelectorAll('[data-cmd="view:toolbox-basic"]').forEach(btn => {
-          btn.classList.toggle('active', visible!);
-        });
-      },
-    } satisfies CommandDef;
-  })(),
-  (() => {
-    let visible: boolean | null = null;
-    return {
-      id: 'view:toolbox-format',
-      label: '서식',
-      execute() {
-        const el = document.getElementById('style-bar');
-        if (!el) return;
-        if (visible === null) visible = getComputedStyle(el).display !== 'none';
-        visible = !visible;
-        el.style.display = visible ? '' : 'none';
-        document.querySelectorAll('[data-cmd="view:toolbox-format"]').forEach(btn => {
-          btn.classList.toggle('active', visible!);
-        });
-      },
-    } satisfies CommandDef;
-  })(),
+  {
+    id: 'view:toolbox-basic',
+    label: '기본',
+    execute() {
+      userSettings.setToolbarBasic(!userSettings.getViewSettings().toolbarBasic);
+      syncToolboxMenu();
+    },
+  } satisfies CommandDef,
+  {
+    id: 'view:toolbox-format',
+    label: '서식',
+    execute() {
+      userSettings.setToolbarFormat(!userSettings.getViewSettings().toolbarFormat);
+      syncToolboxMenu();
+    },
+  } satisfies CommandDef,
 ];

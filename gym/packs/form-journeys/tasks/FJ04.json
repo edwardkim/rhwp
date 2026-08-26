@@ -1,0 +1,46 @@
+{
+  "id": "FJ04",
+  "tier": 2,
+  "title": "본문 치환 후 재검색",
+  "input": "samples/field-01.hwp",
+  "instructions": "표지 본문의 '마케팅' 을 모두 '여정기획' 으로 바꾼 replaced.hwp 를 제출하라. 누름틀을 채우는 과제가 아니다(T07·필드 채움과 축이 다르다). 채점은 옛 문구가 0건인지와 새 문구가 실재하는지를 산출물 재검색으로 닫는다. 힌트: rhwp edit replace-text <문서> --find 마케팅 --replace 여정기획 -o replaced.hwp --json 후 rhwp search replaced.hwp --json -- 마케팅",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "replaced.hwp"
+    ]
+  },
+  "checks": [
+    {
+      "name": "옛 문구 마케팅 완전 소거",
+      "op": "value_eq",
+      "value": 0,
+      "path": "matchCount",
+      "cmd": [
+        "search",
+        "{file:replaced.hwp}",
+        "--json",
+        "--",
+        "마케팅"
+      ]
+    },
+    {
+      "name": "새 문구 여정기획 실재",
+      "op": "value_ge",
+      "value": 1,
+      "path": "matchCount",
+      "cmd": [
+        "search",
+        "{file:replaced.hwp}",
+        "--json",
+        "--",
+        "여정기획"
+      ]
+    },
+    {
+      "name": "원본 무편집 복사가 아님",
+      "op": "differs_from_input",
+      "file": "replaced.hwp"
+    }
+  ]
+}

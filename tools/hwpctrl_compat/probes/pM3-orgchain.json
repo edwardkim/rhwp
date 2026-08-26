@@ -1,0 +1,132 @@
+{
+  "id": "pM3-orgchain",
+  "title": "OrgState 를 거듭 누르면",
+  "ledger": [],
+  "open": "samples/mix-shape-01.hwp",
+  "paths": {
+    "w": {
+      "win": "{out}/pM3-w.hwp",
+      "posix": "{out}/pM3-w.hwp"
+    },
+    "a": {
+      "win": "{out}/pM3-a.hwp",
+      "posix": "{out}/pM3-a.hwp"
+    },
+    "s0": {
+      "win": "{out}/pM3-s0.hwp",
+      "posix": "{out}/pM3-s0.hwp"
+    },
+    "s1": {
+      "win": "{out}/pM3-s1.hwp",
+      "posix": "{out}/pM3-s1.hwp"
+    },
+    "s2": {
+      "win": "{out}/pM3-s2.hwp",
+      "posix": "{out}/pM3-s2.hwp"
+    },
+    "s3": {
+      "win": "{out}/pM3-s3.hwp",
+      "posix": "{out}/pM3-s3.hwp"
+    }
+  },
+  "calls": [
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "w"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "SetPos",
+      [
+        0,
+        0,
+        0
+      ]
+    ],
+    [
+      "Run",
+      [
+        "SelectCtrlFront"
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "a"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "Run",
+      [
+        "ShapeObjHorzFlip"
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "s0"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "Run",
+      [
+        "ShapeObjHorzFlipOrgState"
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "s1"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "Run",
+      [
+        "ShapeObjHorzFlipOrgState"
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "s2"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "Run",
+      [
+        "ShapeObjHorzFlipOrgState"
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "s3"
+        },
+        "HWP",
+        ""
+      ]
+    ]
+  ]
+}

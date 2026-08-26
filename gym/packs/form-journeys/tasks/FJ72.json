@@ -1,0 +1,90 @@
+{
+  "id": "FJ72",
+  "tier": 4,
+  "title": "이메일·제목·부서 삼칸, 전화·회사명 공란",
+  "input": "samples/field-01.hwp",
+  "instructions": "이메일에 'tri@rhwp.example', 제목에 '여정삼제목', 부서명에 '여정삼부서' 를 넣은 triple.hwp 를 제출하라. FJ50 은 작성자·이메일·제목이다. 이번은 이메일·제목·부서이고 전화번호와 회사명·작성자는 비운다. 힌트: --data '{\"이메일\": \"tri@rhwp.example\", \"제목\": \"여정삼제목\", \"부서명\": \"여정삼부서\"}' -o triple.hwp --json 판정은 라이브 재실행 또는 산출물 재독이며, 파일 부재를 통과로 치지 않는다. T07 의 fields[0].value==홍길동 판정은 쓰지 마라. 새 CLI 는 없다.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "triple.hwp"
+    ]
+  },
+  "checks": [
+    {
+      "name": "이메일 본문 실재",
+      "op": "value_ge",
+      "value": 1,
+      "path": "matchCount",
+      "cmd": [
+        "search",
+        "{file:triple.hwp}",
+        "--json",
+        "--",
+        "tri@rhwp.example"
+      ]
+    },
+    {
+      "name": "제목 본문 실재",
+      "op": "value_ge",
+      "value": 1,
+      "path": "matchCount",
+      "cmd": [
+        "search",
+        "{file:triple.hwp}",
+        "--json",
+        "--",
+        "여정삼제목"
+      ]
+    },
+    {
+      "name": "부서명 값",
+      "op": "value_eq",
+      "value": "여정삼부서",
+      "path": "fields[2].value",
+      "cmd": [
+        "fields",
+        "{file:triple.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "전화번호 공란",
+      "op": "value_eq",
+      "value": "",
+      "path": "fields[3].value",
+      "cmd": [
+        "fields",
+        "{file:triple.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "회사명은 비어 있음 — T07 좌표 거부",
+      "op": "value_eq",
+      "value": "",
+      "path": "fields[0].value",
+      "cmd": [
+        "fields",
+        "{file:triple.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "작성자 공란",
+      "op": "value_eq",
+      "value": "",
+      "path": "fields[1].value",
+      "cmd": [
+        "fields",
+        "{file:triple.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "원본 무편집 복사가 아님",
+      "op": "differs_from_input",
+      "file": "triple.hwp"
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "id": "path-error-end-before-start",
+  "schema": "rhwp.fidelity_compare.text_only_path.v1",
+  "schemaVersion": "1.0",
+  "claim": "M-fid",
+  "title": "쪽 범위 역전",
+  "why": "끝 < 시작 이면 오류.",
+  "argv": [
+    "plan",
+    "5",
+    "1",
+    "--text-only"
+  ],
+  "mode": "error",
+  "exportAllSvg": false,
+  "layoutLedger": false,
+  "expectsError": true,
+  "errorNeedle": "끝 쪽이 시작 쪽보다 작을 수 없습니다",
+  "error": "끝 쪽이 시작 쪽보다 작을 수 없습니다",
+  "parsed": null,
+  "artifacts": [
+    "provenance.tsv",
+    "report.tsv",
+    "text-report.tsv",
+    "svg-glyph-risk-report.tsv",
+    "text-owner-shift-candidates.tsv",
+    "text-owner-sequence-candidates.tsv",
+    "page-boundary-fidelity-candidates.tsv",
+    "visible-text-excess-candidates.tsv",
+    "page-count-ledger.tsv",
+    "run-state.tsv"
+  ],
+  "chromeRequired": false,
+  "pypdfRequired": false,
+  "pypdfium2Required": false,
+  "pixelSheets": false,
+  "candidateNotVerdict": true
+}

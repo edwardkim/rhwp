@@ -1,0 +1,134 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5329,
+  "notGym": true,
+  "noNewCli": true,
+  "rules": [
+    {
+      "id": "F01",
+      "slug": "no_independent_pdf",
+      "when": "독립 한컴 PDF 없음",
+      "action": "rhwp-visual-regression 인계",
+      "hard": false
+    },
+    {
+      "id": "F02",
+      "slug": "text_only_candidates",
+      "when": "--text-only 후보만",
+      "action": "시트 없이 원장. 확정 금지",
+      "hard": false
+    },
+    {
+      "id": "F03",
+      "slug": "worst_first_rank",
+      "when": "report.tsv 상위",
+      "action": "최악 쪽부터 사람 감사",
+      "hard": false
+    },
+    {
+      "id": "F04",
+      "slug": "glyph_risk",
+      "when": "PUA/FFFD/□",
+      "action": "글꼴 별칭·경로 먼저",
+      "hard": false
+    },
+    {
+      "id": "F05",
+      "slug": "maintainer_verdict",
+      "when": "시트 감사 끝",
+      "action": "유지자 최종 판정",
+      "hard": false
+    },
+    {
+      "id": "F06",
+      "slug": "no_new_cli",
+      "when": "gym/새 CLI",
+      "action": "거절",
+      "hard": true
+    },
+    {
+      "id": "F07",
+      "slug": "no_rewrite_visual",
+      "when": "visual-regression 재작성",
+      "action": "거절",
+      "hard": true
+    },
+    {
+      "id": "F08",
+      "slug": "no_rewrite_bug_hunter",
+      "when": "bug-hunter 재작성",
+      "action": "거절",
+      "hard": true
+    },
+    {
+      "id": "F09",
+      "slug": "missing_venv",
+      "when": "venv 없음",
+      "action": "저장소 venv 재생성",
+      "hard": true
+    },
+    {
+      "id": "F10",
+      "slug": "missing_chrome",
+      "when": "Chrome 없음",
+      "action": "--text-only 또는 정지",
+      "hard": false
+    },
+    {
+      "id": "F11",
+      "slug": "page_count_mismatch",
+      "when": "쪽수 불일치",
+      "action": "후보 기록, 전역 패치 금지",
+      "hard": false
+    },
+    {
+      "id": "F12",
+      "slug": "incomplete_run",
+      "when": "run-state incomplete",
+      "action": "누락 쪽 먼저",
+      "hard": false
+    },
+    {
+      "id": "F13",
+      "slug": "encrypted_pdf",
+      "when": "암호화 PDF",
+      "action": "정지, 우회 금지",
+      "hard": true
+    },
+    {
+      "id": "F14",
+      "slug": "tofu_harness",
+      "when": "두부 시트",
+      "action": "하네스 오염, 글꼴 후 재실행",
+      "hard": false
+    },
+    {
+      "id": "F15",
+      "slug": "break_system_packages",
+      "when": "--break-system-packages",
+      "action": "거절",
+      "hard": true
+    },
+    {
+      "id": "F16",
+      "slug": "question_already_answered",
+      "when": "질문이 이미 답",
+      "action": "다음 단 금지",
+      "hard": false
+    },
+    {
+      "id": "F17",
+      "slug": "companion_pdf_promotion",
+      "when": "동반 PDF 승격",
+      "action": "provenance 확인 전 금지",
+      "hard": false
+    },
+    {
+      "id": "F18",
+      "slug": "overwrite_source",
+      "when": "원본 덮어쓰기",
+      "action": "금지",
+      "hard": true
+    }
+  ]
+}

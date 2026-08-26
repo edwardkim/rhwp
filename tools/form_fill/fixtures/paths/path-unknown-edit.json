@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.form_fill.path_contract.v1",
+  "claim": "M-fill",
+  "generator": "tools/form_fill/fatten_form_fill.py",
+  "existingCliOnly": true,
+  "id": "path-unknown-edit",
+  "axis": "usage",
+  "title": "없는 edit 하위명령",
+  "why": "새 CLI 를 만들지 않는다. exit 2.",
+  "argv": [
+    "edit",
+    "no-such-action"
+  ],
+  "exit": 2,
+  "writesFile": false
+}

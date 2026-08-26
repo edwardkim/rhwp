@@ -1,0 +1,18 @@
+{
+  "id": "SE71",
+  "steps": [
+    {
+      "answer": {
+        "files": {
+          "cmd": [
+            "scan",
+            "samples/basic",
+            "--json"
+          ],
+          "path": "files",
+          "len": true
+        }
+      }
+    }
+  ]
+}

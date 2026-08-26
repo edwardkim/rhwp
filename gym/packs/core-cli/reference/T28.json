@@ -1,0 +1,19 @@
+{
+  "id": "T28",
+  "steps": [
+    {
+      "answer": {
+        "matchCount": {
+          "cmd": [
+            "search",
+            "{input}",
+            "규제",
+            "--json"
+          ],
+          "path": "matches",
+          "len": true
+        }
+      }
+    }
+  ]
+}

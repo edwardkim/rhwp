@@ -1,0 +1,19 @@
+{
+  "matches": [
+    {
+      "text": "선행 연구의 가설은 다음과 같다.",
+      "context": "…선행 연구의 가설은 다음과 같다.…",
+      "section": 0,
+      "paragraph": 88,
+      "charOffset": 14,
+      "length": 2
+    }
+  ],
+  "truncated": false,
+  "totalMatchCount": 1,
+  "_skillMeta": {
+    "command": "search",
+    "exit": 0,
+    "note": "page absent — do not invent"
+  }
+}

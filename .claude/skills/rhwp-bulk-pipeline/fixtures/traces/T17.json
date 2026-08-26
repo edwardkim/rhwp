@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5311,
+  "skill": "rhwp-bulk-pipeline",
+  "notGym": true,
+  "noNewCli": true,
+  "id": "T17",
+  "title": "게이트 증발",
+  "command": "export-text | head",
+  "axis": "export-text",
+  "input": 5,
+  "success": 1,
+  "failure": 0,
+  "exit": null,
+  "stop": "B13",
+  "rows": [
+    {
+      "schemaVersion": "1.0",
+      "source": "samples/2022년 국립국어원 업무계획.hwp",
+      "pageCount": 35,
+      "text": " \n \n\n\n\n2022년 국립국어원 업무계획\n…"
+    }
+  ],
+  "stderrExample": "batch: 5건 중 1 성공, 0 실패"
+}

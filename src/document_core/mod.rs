@@ -147,6 +147,8 @@ pub struct DocumentCore {
     pub(crate) paste_cascade_count: u32,
     /// 문단부호(¶) 표시 여부
     pub(crate) show_paragraph_marks: bool,
+    /// [#4709] SVG 출력에 배치 메트릭 face 주석(data-metric-font) 부착 여부 (옵트인)
+    pub(crate) annotate_metric_font: bool,
     /// 조판부호 표시 여부 (개체 마커 [표]/[그림] 등, 문단부호 포함)
     pub(crate) show_control_codes: bool,
     /// 투명선 표시 여부
@@ -157,6 +159,10 @@ pub struct DocumentCore {
     pub(crate) debug_overlay: bool,
     /// LINE_SEG vpos-reset 강제 분리 적용 여부 (페이지네이션 옵션)
     pub(crate) respect_vpos_reset: bool,
+    /// 한글 2024 계열 조판 에뮬레이션 opt-in (세션 설정, CLI `--compat 2024`).
+    /// 문서 출처가 아니므로 provenance 가 아닌 여기서 들고,
+    /// [`Self::effective_layout_profile`] 이 profile 에 합성한다.
+    pub(crate) hangul2024_compat: bool,
     /// 구역별 표 측정 데이터 (페이지네이션 결과 보존)
     pub(crate) measured_tables: Vec<Vec<MeasuredTable>>,
     /// 구역별 dirty 플래그 (true = 재페이지네이션 필요)
@@ -199,6 +205,16 @@ pub struct DocumentCore {
     pub(crate) snapshot_store: Vec<(u32, Document)>,
     /// 다음 스냅샷 ID
     pub(crate) next_snapshot_id: u32,
+    /// [#5769] Undo/Redo용 삭제 조각 저장소 (ID → DeleteFragment).
+    /// 스냅샷과 달리 코어가 자동 축출하지 않는다 — TS 히스토리의 discard 계약 참조.
+    pub(crate) fragment_store: Vec<(u32, commands::delete_fragment::DeleteFragment)>,
+    /// 다음 삭제 조각 ID
+    pub(crate) next_fragment_id: u32,
+    /// [#5769] Stage 4 구역 raw 저널 (ID → SectionRawCapture).
+    /// 조각 저장소와 ID 계열을 나눈다. 자동 축출 없음 — discardSectionRaw 계약.
+    pub(crate) section_raw_store: Vec<(u32, commands::section_raw_journal::SectionRawCapture)>,
+    /// 다음 구역 raw 캡처 ID
+    pub(crate) next_section_raw_id: u32,
     /// 머리말/꼬리말 감추기: (global_page_index, is_header) 조합
     pub(crate) hidden_header_footer: std::collections::HashSet<(u32, bool)>,
     /// 파일 이름 (머리말/꼬리말 필드 치환용)
@@ -257,11 +273,22 @@ impl DocumentCore {
         use crate::renderer::style_resolver::resolve_font_substitution;
 
         let mut fonts = std::collections::BTreeSet::new();
+        let mut font_substitutions = std::collections::BTreeSet::new();
         for (lang_idx, lang_fonts) in self.document.doc_info.font_faces.iter().enumerate() {
             for font in lang_fonts {
                 let resolved = resolve_font_substitution(&font.name, font.alt_type, lang_idx)
                     .unwrap_or(&font.name);
                 fonts.insert(resolved.to_string());
+                if let Some(substitute) = font
+                    .subst_font
+                    .as_ref()
+                    .filter(|substitute| !substitute.is_embedded)
+                    .filter(|substitute| !substitute.face.trim().is_empty())
+                    .filter(|substitute| substitute.face.trim() != resolved)
+                {
+                    font_substitutions
+                        .insert((resolved.to_string(), substitute.face.trim().to_string()));
+                }
             }
         }
         let fonts_json: Vec<String> = fonts
@@ -293,8 +320,10 @@ impl DocumentCore {
                 c => vec![c],
             })
             .collect();
+        let font_substitutions_json =
+            serde_json::to_string(&font_substitutions).unwrap_or_else(|_| "[]".to_string());
         format!(
-            "{{\"version\":\"{}.{}.{}.{}\",\"sectionCount\":{},\"pageCount\":{},\"encrypted\":{},\"hwp3Variant\":{},\"fallbackFont\":\"{}\",\"fontsUsed\":[{}]}}",
+            "{{\"version\":\"{}.{}.{}.{}\",\"sectionCount\":{},\"pageCount\":{},\"encrypted\":{},\"hwp3Variant\":{},\"fallbackFont\":\"{}\",\"fontsUsed\":[{}],\"fontSubstitutions\":{}}}",
             self.document.header.version.major,
             self.document.header.version.minor,
             self.document.header.version.build,
@@ -305,6 +334,7 @@ impl DocumentCore {
             self.document.layout_profile().hwp3_layout(),
             escaped_fallback,
             fonts_json.join(","),
+            font_substitutions_json,
         )
     }
 
@@ -313,15 +343,44 @@ impl DocumentCore {
         crate::model::event::serialize_event_log(&self.event_log)
     }
 
+    /// 세션 설정(호환 모드)을 합성한 유효 레이아웃 프로필.
+    ///
+    /// 조판·레이아웃에 profile 을 공급하는 지점은 `document.layout_profile()`
+    /// 직접 호출 대신 이것을 쓴다. 출처 유도는 여전히
+    /// `Document::layout_profile` 이 단일 소유한다.
+    pub(crate) fn effective_layout_profile(
+        &self,
+    ) -> crate::model::provenance::LayoutCompatibilityProfile {
+        self.document
+            .layout_profile()
+            .with_hangul2024_layout(self.hangul2024_compat)
+    }
+
+    /// Rebuild the resolved-style aggregate with the document format's style
+    /// normalization. Layout provenance remains in `Document::layout_profile`
+    /// and is passed separately to cache-admission consumers.
+    pub(crate) fn rebuild_resolved_styles(&mut self) {
+        self.styles =
+            crate::renderer::style_resolver::resolve_styles_for_document(&self.document, self.dpi);
+    }
+
+    /// 한글 2024 계열 조판 에뮬레이션을 켜거나 끈다.
+    /// 변경 시 페이지네이션 결과가 달라지므로 모든 섹션을 재페이지네이션한다.
+    pub fn set_hangul2024_compat(&mut self, enabled: bool) {
+        if self.hangul2024_compat != enabled {
+            self.hangul2024_compat = enabled;
+            for d in self.dirty_sections.iter_mut() {
+                *d = true;
+            }
+            self.invalidate_page_tree_cache();
+            self.paginate();
+        }
+    }
+
     /// DPI를 설정하고 스타일을 재해소한 후 재페이지네이션한다.
     pub fn set_dpi(&mut self, dpi: f64) {
-        use crate::renderer::style_resolver::resolve_styles_with_variant;
         self.dpi = dpi;
-        self.styles = resolve_styles_with_variant(
-            &self.document.doc_info,
-            dpi,
-            self.document.layout_profile().hwp3_layout(),
-        );
+        self.rebuild_resolved_styles();
         self.paginate();
     }
 
@@ -340,11 +399,13 @@ impl DocumentCore {
             table_transpose_clipboard: None,
             paste_cascade_count: 0,
             show_paragraph_marks: false,
+            annotate_metric_font: false,
             show_control_codes: false,
             show_transparent_borders: false,
             clip_enabled: true,
             debug_overlay: false,
             respect_vpos_reset: false,
+            hangul2024_compat: false,
             measured_tables: Vec::new(),
             dirty_sections: Vec::new(),
             measured_sections: Vec::new(),
@@ -361,6 +422,10 @@ impl DocumentCore {
             overflow_links_cache: RefCell::new(HashMap::new()),
             snapshot_store: Vec::new(),
             next_snapshot_id: 0,
+            fragment_store: Vec::new(),
+            next_fragment_id: 0,
+            section_raw_store: Vec::new(),
+            next_section_raw_id: 0,
             hidden_header_footer: std::collections::HashSet::new(),
             file_name: String::new(),
             active_field: None,

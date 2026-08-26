@@ -1,0 +1,19 @@
+{
+  "id": "FJ04",
+  "steps": [
+    {
+      "run": [
+        "edit",
+        "replace-text",
+        "{input}",
+        "--find",
+        "마케팅",
+        "--replace",
+        "여정기획",
+        "-o",
+        "{sub:replaced.hwp}",
+        "--json"
+      ]
+    }
+  ]
+}

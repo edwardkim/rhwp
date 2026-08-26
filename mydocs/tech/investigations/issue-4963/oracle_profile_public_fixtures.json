@@ -1,0 +1,252 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-oracle-profile-public-fixtures",
+  "issue": 4963,
+  "validProfile": {
+    "schemaVersion": 2,
+    "kind": "font-oracle-profile",
+    "issue": 4963,
+    "candidate": {
+      "queueRank": 13,
+      "documentFace": "휴먼명조"
+    },
+    "questionId": "exact-installed",
+    "exactMissingState": "exact-installed",
+    "input": {
+      "sourceFormat": {
+        "status": "observed",
+        "value": "hwpx",
+        "reason": null
+      },
+      "sha256": {
+        "status": "observed",
+        "value": "1111111111111111111111111111111111111111111111111111111111111111",
+        "reason": null
+      },
+      "fixtureContractVersion": "public-contract-fixture-v1",
+      "fixtureGeneratorCommit": "2222222222222222222222222222222222222222"
+    },
+    "environment": {
+      "os": {
+        "status": "observed",
+        "value": "public-contract-fixture",
+        "reason": null
+      },
+      "locale": {
+        "status": "observed",
+        "value": "ko-KR",
+        "reason": null
+      },
+      "hancomVersion": {
+        "status": "observed",
+        "value": "public-contract-fixture-not-an-oracle",
+        "reason": null
+      },
+      "pdfProducer": {
+        "status": "observed",
+        "value": "public-contract-fixture-not-an-oracle",
+        "reason": null
+      },
+      "exportRoute": {
+        "status": "observed",
+        "value": "public-contract-fixture",
+        "reason": null
+      },
+      "oracleAuthority": "contract-fixture",
+      "ambientFontManifestSha256": {
+        "status": "observed",
+        "value": "3333333333333333333333333333333333333333333333333333333333333333",
+        "reason": null
+      },
+      "processReset": {
+        "status": "observed",
+        "value": true,
+        "reason": null
+      },
+      "rebooted": {
+        "status": "observed",
+        "value": false,
+        "reason": null
+      }
+    },
+    "execution": {
+      "evidenceClass": "synthetic-contract-fixture",
+      "measurementDate": "2026-08-22",
+      "startedAt": {
+        "status": "observed",
+        "value": "2026-08-22T00:00:00.000Z",
+        "reason": null
+      },
+      "finishedAt": {
+        "status": "observed",
+        "value": "2026-08-22T00:00:01.000Z",
+        "reason": null
+      },
+      "repeatIndex": 1
+    },
+    "fontState": {
+      "requestedFace": "휴먼명조",
+      "relatedFaceSet": [
+        "휴먼명조"
+      ],
+      "installedFontSha256": {
+        "status": "observed",
+        "value": "4444444444444444444444444444444444444444444444444444444444444444",
+        "reason": null
+      },
+      "readbackFace": {
+        "status": "observed",
+        "value": "휴먼명조",
+        "reason": null
+      },
+      "readbackFontType": {
+        "status": "observed",
+        "value": 2,
+        "reason": null
+      }
+    },
+    "observations": {
+      "subsetFontName": {
+        "status": "observed",
+        "value": "ABCDEF+HumanMyeongjo",
+        "reason": null
+      },
+      "glyphOutlineDigest": {
+        "status": "observed",
+        "value": "5555555555555555555555555555555555555555555555555555555555555555",
+        "reason": null
+      },
+      "hmtxAdvance": {
+        "status": "observed",
+        "value": {
+          "advance": 1000,
+          "unitsPerEm": 2048,
+          "faceIndex": 0,
+          "sourceFontSha256": "4444444444444444444444444444444444444444444444444444444444444444"
+        },
+        "reason": null
+      },
+      "pdfObservedAdvance": {
+        "status": "observed",
+        "value": {
+          "advance": 7.5,
+          "unit": "pdf-user-space",
+          "glyphOrCid": "CID-1"
+        },
+        "reason": null
+      },
+      "firstTypesettingDivergence": {
+        "status": "observed",
+        "value": {
+          "plane": "none",
+          "characterIndex": null,
+          "lineIndex": null,
+          "pageIndex": null
+        },
+        "reason": null
+      },
+      "lineCount": {
+        "status": "observed",
+        "value": 3,
+        "reason": null
+      },
+      "pageCount": {
+        "status": "observed",
+        "value": 1,
+        "reason": null
+      }
+    },
+    "relationEvidence": {
+      "type": "identity-exact",
+      "anchor": {
+        "status": "observed",
+        "value": "public-contract-fixture-name-table-and-readback",
+        "reason": null
+      }
+    },
+    "privacy": {
+      "fontBytesEmbedded": false,
+      "privateDocumentIdentityIncluded": false,
+      "absoluteFontPathIncluded": false
+    }
+  },
+  "negativeCases": [
+    {
+      "id": "missing-hmtx-evidence-envelope",
+      "operation": "delete",
+      "path": "observations.hmtxAdvance",
+      "expectedError": "observations schema drift"
+    },
+    {
+      "id": "plain-null-hmtx",
+      "operation": "set",
+      "path": "observations.hmtxAdvance",
+      "value": null,
+      "expectedError": "observations.hmtxAdvance must be an evidence object"
+    },
+    {
+      "id": "pdf-width-labeled-as-hmtx",
+      "operation": "set",
+      "path": "observations.hmtxAdvance.value",
+      "value": {
+        "advance": 7.5,
+        "unit": "pdf-user-space",
+        "glyphOrCid": "CID-1"
+      },
+      "expectedError": "observations.hmtxAdvance.value schema drift"
+    },
+    {
+      "id": "successor-without-direct-anchor",
+      "operation": "merge",
+      "path": "relationEvidence",
+      "value": {
+        "type": "official-successor",
+        "anchor": {
+          "status": "unavailable",
+          "value": null,
+          "reason": "no direct publication anchor"
+        }
+      },
+      "expectedError": "official-successor requires an observed direct anchor"
+    },
+    {
+      "id": "question-state-mismatch",
+      "operation": "set",
+      "path": "exactMissingState",
+      "value": "exact-removed",
+      "expectedError": "questionId and exactMissingState must match"
+    },
+    {
+      "id": "observed-null-value",
+      "operation": "set",
+      "path": "observations.subsetFontName.value",
+      "value": null,
+      "expectedError": "observations.subsetFontName observed evidence requires a value"
+    },
+    {
+      "id": "unavailable-without-reason",
+      "operation": "merge",
+      "path": "observations.subsetFontName",
+      "value": {
+        "status": "unavailable",
+        "value": null,
+        "reason": null
+      },
+      "expectedError": "observations.subsetFontName unavailable evidence requires a reason"
+    },
+    {
+      "id": "queue-rank-face-mismatch",
+      "operation": "set",
+      "path": "candidate.queueRank",
+      "value": 1,
+      "expectedError": "candidate queue rank and document face do not match the W4 queue"
+    },
+    {
+      "id": "privacy-font-bytes",
+      "operation": "set",
+      "path": "privacy.fontBytesEmbedded",
+      "value": true,
+      "expectedError": "privacy flags must all be false"
+    }
+  ]
+}

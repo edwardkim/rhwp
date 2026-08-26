@@ -1,0 +1,26 @@
+{
+  "id": "SD04",
+  "tier": 2,
+  "title": "출처 표지 지도",
+  "input": "samples/table-001.hwp",
+  "instructions": "봉투의 어느 필드가 문서에서 온 값인지 알려주는 지도에서, 지도가 다루는 명령 수를 answer.json 에 {\"commands\": N} 으로 제출하라. 힌트: rhwp export-provenance-map.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "지도 수록 명령 수",
+      "op": "len_answer_eq",
+      "answer": "commands",
+      "path": "commands",
+      "cmd": [
+        "export-provenance-map",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

@@ -1,0 +1,35 @@
+{
+  "id": "WR37",
+  "steps": [
+    {
+      "run": [
+        "run",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"samples/field-01.hwp\", \"output\": \"{sub:yesterday.hwp}\", \"steps\": [{\"action\": \"replace_text\", \"find\": \"마케팅\", \"replace\": \"어제온전\"}]}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "replay",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"samples/field-01.hwp\", \"output\": \"{sub:yesterday.hwp}\", \"steps\": [{\"action\": \"replace_text\", \"find\": \"마케팅\", \"replace\": \"어제온전\"}]}",
+        "--capsule",
+        "{sub:receipts/yesterday.capsule.json}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "replay",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"{sub:yesterday.hwp}\", \"output\": \"{sub:today.hwp}\", \"steps\": [{\"action\": \"replace_text\", \"find\": \"어제온전\", \"replace\": \"오늘온전\"}]}",
+        "--capsule",
+        "{sub:receipts/today.capsule.json}",
+        "--parent",
+        "{sub:receipts/yesterday.capsule.json}",
+        "--json"
+      ]
+    }
+  ]
+}

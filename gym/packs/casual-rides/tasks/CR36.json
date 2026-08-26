@@ -1,0 +1,24 @@
+{
+  "id": "CR36",
+  "tier": 1,
+  "title": "표 표본의 형식은?",
+  "input": "samples/table-001.hwp",
+  "instructions": "모래놀이 — CR36 는 키 제한 없는 입문 놀이기구다. 쪽수가 아니라 형식 문자열이다. info.format. 문서는 `samples/table-001.hwp` 이다. rhwp 를 한 번 실행하고 그 답을 그대로 옮기면 된다. 숫자를 추측하지 마라. 채점기가 같은 명령을 다시 돌린다. 힌트: info {입력} --json. answer.json 에는 {\"format\": 값} 만 적는다. 원본을 고치지 마라. 새 표본을 만들지 마라. info format.",
+  "submit": {
+    "kind": "answer"
+  },
+  "checks": [
+    {
+      "name": "표 표본의 형식은?",
+      "op": "answer_eq",
+      "answer": "format",
+      "cmd": [
+        "info",
+        "{input}",
+        "--json"
+      ],
+      "path": "format"
+    }
+  ],
+  "axis": "입문"
+}

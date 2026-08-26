@@ -1,0 +1,35 @@
+{
+  "id": "ST30",
+  "tier": 2,
+  "title": "실사용 보고서 첫째 차트 CSV·행 수",
+  "input": "samples/issue2006/1790387_prep_final_report.hwpx",
+  "instructions": "차트 1 의 숫자 시트를 chart.csv 로 제출하라. 값이 있는 행이 남아야 한다. 머리만 남은 CSV 는 이 문서의 회귀 가드가 잡는 결함이다. 원본 HWP/HWPX 를 복사하거나 머리 행만 있는 빈 표를 내지 마라. 힌트: rhwp chart-to-csv --chart 1 -o chart.csv.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "chart.csv"
+    ]
+  },
+  "checks": [
+    {
+      "name": "CSV 산출 존재",
+      "op": "file_exists",
+      "file": "chart.csv",
+      "minBytes": 8
+    },
+    {
+      "name": "charts[0].rowCount",
+      "op": "answer_eq",
+      "answer": "rows",
+      "path": "charts[0].rowCount",
+      "cmd": [
+        "chart-to-csv",
+        "{input}",
+        "--chart",
+        "1",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "추출"
+}

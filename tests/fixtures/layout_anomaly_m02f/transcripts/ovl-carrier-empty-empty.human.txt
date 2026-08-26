@@ -1,0 +1,6 @@
+# transcript ovl-carrier-empty-empty
+# family=overlap
+# hypothesis=표와 같은 자리에 찍힌 운반용 TextLine 은 보이는 글자가 없으면 overlap 이 아니다. text=''.
+쪽 수: 3  overflow: 0  off-canvas: 0  overlap: 0  text-overlap: 0  empty_page(가능성): 0
+이상 신호 없음: ovl-carrier-empty-empty.synth
+status: CLEAN

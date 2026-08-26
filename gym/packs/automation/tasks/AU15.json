@@ -1,0 +1,35 @@
+{
+  "id": "AU15",
+  "tier": 2,
+  "title": "둘째 행 계획 실행",
+  "input": "samples/table-001.hwp",
+  "instructions": "AU15 — 둘째 행 계획 실행.\n\n입력 표본은 `samples/table-001.hwp` 이다. 저장소 samples/ 에 이미 있는 실문서이며 새 픽스처를 만들지 않는다. automation pack 은 기존 CLI 표면(anchor · audit · audit-report · bundle · conformance · disclose · export-tables · gate · lineage · recall-scope · settle · verify-signature) 만으로 검증 사다리 여정을 늘린다. 새 명령·새 연산자·새 pack 은 없다.\n\n같은 표본이라도 **행이 바뀌면 다른 계약**이다. 첫 표 (1,0) 을 '둘째행확장' 으로 바꾸고 out.hwp 를 제출하라. (0,0) 만 고친 AU01 제출을 재사용하면 이 칸은 그대로라 실패한다.\n\n수행 힌트: rhwp run --plan-json set_cell row=1 col=0. 채점은 제출 폴더에서 같은 판정 명령을 다시 돌린다. 정답 해시·건수를 과제 파일에 박제하지 마라. 표본이 바뀌면 라이브 재계산이 따라간다.\n\n금지: XC01 L5 완주, XC02 오염 무영향 0, XC03 정산 4관문, XC04 3세대 --deep, XC05 L3 서명+앵커 완주, WR 일일 3해시, T07 서식 채움을 복제하지 마라. 원본 픽스처를 덮어쓰지 마라. 산출은 제출 폴더의 -o / --capsule 뿐이다. T07 서식 채움(fill-fields, 첫 필드 홍길동)을 복제하지 마라. XC01–XC05 사다리 완주(L5 · 3세대 --deep · 정산 4관문 · 오염 무영향 0 · L3 서명+앵커 완주)를 베끼지 마라. WR01+ 일일 영수증 3해시 answer.json 여정도 이 pack 의 일이 아니다.\n\n좌표 지목이 이 pack 의 판별력이다. 전역 치환으로 맞추려 하지 마라.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "out.hwp"
+    ]
+  },
+  "checks": [
+    {
+      "name": "(1,0) == 둘째행확장",
+      "op": "cell_text_eq",
+      "table": 0,
+      "row": 1,
+      "col": 0,
+      "value": "둘째행확장",
+      "path": "tables",
+      "cmd": [
+        "export-tables",
+        "{file:out.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "원본과 다름",
+      "op": "differs_from_input",
+      "file": "out.hwp"
+    }
+  ],
+  "axis": "자동화"
+}

@@ -1,0 +1,193 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Hwp5InventoryItem",
+  "type": "object",
+  "required": [
+    "sample",
+    "source_path",
+    "stream_path",
+    "section",
+    "record_index",
+    "record_uid",
+    "level",
+    "tag_id",
+    "tag_name",
+    "size",
+    "owner",
+    "parent_uid",
+    "parent_scope",
+    "scope_path",
+    "body_order",
+    "control_id",
+    "control_name",
+    "tuple_role",
+    "tuple_index",
+    "payload_head_hex",
+    "key_payload",
+    "payload_hash",
+    "note"
+  ],
+  "properties": {
+    "sample": {
+      "type": [
+        "string",
+        "integer",
+        "null"
+      ]
+    },
+    "source_path": {
+      "type": [
+        "string",
+        "integer",
+        "null"
+      ]
+    },
+    "stream_path": {
+      "type": [
+        "string",
+        "integer",
+        "null"
+      ]
+    },
+    "section": {
+      "type": [
+        "string",
+        "integer",
+        "null"
+      ]
+    },
+    "record_index": {
+      "type": [
+        "string",
+        "integer",
+        "null"
+      ]
+    },
+    "record_uid": {
+      "type": [
+        "string",
+        "integer",
+        "null"
+      ]
+    },
+    "level": {
+      "type": [
+        "string",
+        "integer",
+        "null"
+      ]
+    },
+    "tag_id": {
+      "type": [
+        "string",
+        "integer",
+        "null"
+      ]
+    },
+    "tag_name": {
+      "type": [
+        "string",
+        "integer",
+        "null"
+      ]
+    },
+    "size": {
+      "type": [
+        "string",
+        "integer",
+        "null"
+      ]
+    },
+    "owner": {
+      "type": [
+        "string",
+        "integer",
+        "null"
+      ]
+    },
+    "parent_uid": {
+      "type": [
+        "string",
+        "integer",
+        "null"
+      ]
+    },
+    "parent_scope": {
+      "type": [
+        "string",
+        "integer",
+        "null"
+      ]
+    },
+    "scope_path": {
+      "type": [
+        "string",
+        "integer",
+        "null"
+      ]
+    },
+    "body_order": {
+      "type": [
+        "string",
+        "integer",
+        "null"
+      ]
+    },
+    "control_id": {
+      "type": [
+        "string",
+        "integer",
+        "null"
+      ]
+    },
+    "control_name": {
+      "type": [
+        "string",
+        "integer",
+        "null"
+      ]
+    },
+    "tuple_role": {
+      "type": [
+        "string",
+        "integer",
+        "null"
+      ]
+    },
+    "tuple_index": {
+      "type": [
+        "string",
+        "integer",
+        "null"
+      ]
+    },
+    "payload_head_hex": {
+      "type": [
+        "string",
+        "integer",
+        "null"
+      ]
+    },
+    "key_payload": {
+      "type": [
+        "string",
+        "integer",
+        "null"
+      ]
+    },
+    "payload_hash": {
+      "type": [
+        "string",
+        "integer",
+        "null"
+      ]
+    },
+    "note": {
+      "type": [
+        "string",
+        "integer",
+        "null"
+      ]
+    }
+  }
+}

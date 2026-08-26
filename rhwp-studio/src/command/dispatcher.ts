@@ -1,6 +1,6 @@
 import type { EventBus } from '@/core/event-bus';
 import type { CommandRegistry } from './registry';
-import type { CommandServices, EditorContext } from './types';
+import type { CommandResult, CommandServices, EditorContext } from './types';
 
 const FORM_MODE_BLOCKED_IDS = new Set([
   'edit:cut',
@@ -40,29 +40,39 @@ export class CommandDispatcher {
    * @returns true: 실행됨, false: 미등록 또는 비활성
    */
   dispatch(commandId: string, params?: Record<string, unknown>): boolean {
+    return this.dispatchWithResult(commandId, params).ok;
+  }
+
+  /**
+   * 커맨드 실행 — 실패 사유까지 돌려준다.
+   *
+   * `dispatch()` 와 **같은 경로**다. 두 벌로 갈라 두면 한쪽 게이트만 고치는 드리프트가 생기므로
+   * `dispatch()` 는 이 메서드의 결과에서 `ok` 만 꺼낸다. 로그·이벤트 발행도 여기 한 곳이다.
+   */
+  dispatchWithResult(commandId: string, params?: Record<string, unknown>): CommandResult {
     const def = this.registry.get(commandId);
     if (!def) {
       console.warn(`[CommandDispatcher] 미등록 커맨드: ${commandId}`);
-      return false;
+      return { ok: false, reason: 'unregistered' };
     }
 
     const ctx = this.services.getContext();
     if (isBlockedInFormMode(commandId, ctx)) {
-      return false;
+      return { ok: false, reason: 'blocked-in-form-mode' };
     }
     if (def.canExecute && !def.canExecute(ctx)) {
       // canExecute 실패 — 비활성 상태
-      return false;
+      return { ok: false, reason: 'disabled' };
     }
 
     try {
       def.execute(this.services, params);
       // 커맨드 실행 후 UI 상태 갱신 알림
       this.eventBus.emit('command-state-changed');
-      return true;
+      return { ok: true };
     } catch (err) {
       console.error(`[CommandDispatcher] 커맨드 실행 실패: ${commandId}`, err);
-      return false;
+      return { ok: false, reason: 'threw', message: err instanceof Error ? err.message : String(err) };
     }
   }
 

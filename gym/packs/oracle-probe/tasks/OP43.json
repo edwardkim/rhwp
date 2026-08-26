@@ -1,0 +1,27 @@
+{
+  "id": "OP43",
+  "tier": 2,
+  "title": "form-01 표 수 라이브 재계산",
+  "input": "samples/form-01.hwp",
+  "axis": "검증",
+  "instructions": "form-01 의 표 개수를 answer.json 에 {\"tables\": N} 으로 제출하라.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "form-01 표 수",
+      "op": "answer_eq",
+      "answer": "tables",
+      "cmd": [
+        "export-tables",
+        "{input}",
+        "--json"
+      ],
+      "path": "tableCount"
+    }
+  ]
+}

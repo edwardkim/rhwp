@@ -1,0 +1,1484 @@
+[
+  {
+    "id": "tol-ovf-over0.5-tol0.5",
+    "family": "tolerance",
+    "hypothesis": "오른쪽 넘침 0.5px, overflow 허용치 0.5px. 판정은 초과량이 허용치보다 클 때만.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 0.5,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 10.0,
+        "y": 40.0,
+        "w": 180.5,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "tol-ovf-over1-tol0.5",
+    "family": "tolerance",
+    "hypothesis": "오른쪽 넘침 1px, overflow 허용치 0.5px. 판정은 초과량이 허용치보다 클 때만.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 0.5,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 10.0,
+        "y": 40.0,
+        "w": 181.0,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 1,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [
+        "Table"
+      ],
+      "offCanvasTypes": [],
+      "overflowPaths": [
+        "Page/Body/Table0"
+      ],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 1.0,
+      "overBottom": 0.0,
+      "maxOver": 1.0,
+      "reportLines": [
+        "  [OVERFLOW] page   0     1.00px  Page/Body/Table0 (Table)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "tol-ovf-over2-tol0.5",
+    "family": "tolerance",
+    "hypothesis": "오른쪽 넘침 2px, overflow 허용치 0.5px. 판정은 초과량이 허용치보다 클 때만.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 0.5,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 10.0,
+        "y": 40.0,
+        "w": 182.0,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 1,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [
+        "Table"
+      ],
+      "offCanvasTypes": [],
+      "overflowPaths": [
+        "Page/Body/Table0"
+      ],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 2.0,
+      "overBottom": 0.0,
+      "maxOver": 2.0,
+      "reportLines": [
+        "  [OVERFLOW] page   0     2.00px  Page/Body/Table0 (Table)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "tol-ovf-over8-tol0.5",
+    "family": "tolerance",
+    "hypothesis": "오른쪽 넘침 8px, overflow 허용치 0.5px. 판정은 초과량이 허용치보다 클 때만.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 0.5,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 10.0,
+        "y": 40.0,
+        "w": 188.0,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 1,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [
+        "Table"
+      ],
+      "offCanvasTypes": [],
+      "overflowPaths": [
+        "Page/Body/Table0"
+      ],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 8.0,
+      "overBottom": 0.0,
+      "maxOver": 8.0,
+      "reportLines": [
+        "  [OVERFLOW] page   0     8.00px  Page/Body/Table0 (Table)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "tol-ovf-over0.5-tol1",
+    "family": "tolerance",
+    "hypothesis": "오른쪽 넘침 0.5px, overflow 허용치 1px. 판정은 초과량이 허용치보다 클 때만.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 10.0,
+        "y": 40.0,
+        "w": 180.5,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "tol-ovf-over1-tol1",
+    "family": "tolerance",
+    "hypothesis": "오른쪽 넘침 1px, overflow 허용치 1px. 판정은 초과량이 허용치보다 클 때만.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 10.0,
+        "y": 40.0,
+        "w": 181.0,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "tol-ovf-over2-tol1",
+    "family": "tolerance",
+    "hypothesis": "오른쪽 넘침 2px, overflow 허용치 1px. 판정은 초과량이 허용치보다 클 때만.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 10.0,
+        "y": 40.0,
+        "w": 182.0,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 1,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [
+        "Table"
+      ],
+      "offCanvasTypes": [],
+      "overflowPaths": [
+        "Page/Body/Table0"
+      ],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 2.0,
+      "overBottom": 0.0,
+      "maxOver": 2.0,
+      "reportLines": [
+        "  [OVERFLOW] page   0     2.00px  Page/Body/Table0 (Table)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "tol-ovf-over8-tol1",
+    "family": "tolerance",
+    "hypothesis": "오른쪽 넘침 8px, overflow 허용치 1px. 판정은 초과량이 허용치보다 클 때만.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 10.0,
+        "y": 40.0,
+        "w": 188.0,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 1,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [
+        "Table"
+      ],
+      "offCanvasTypes": [],
+      "overflowPaths": [
+        "Page/Body/Table0"
+      ],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 8.0,
+      "overBottom": 0.0,
+      "maxOver": 8.0,
+      "reportLines": [
+        "  [OVERFLOW] page   0     8.00px  Page/Body/Table0 (Table)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "tol-ovf-over0.5-tol2",
+    "family": "tolerance",
+    "hypothesis": "오른쪽 넘침 0.5px, overflow 허용치 2px. 판정은 초과량이 허용치보다 클 때만.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 2.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 10.0,
+        "y": 40.0,
+        "w": 180.5,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "tol-ovf-over1-tol2",
+    "family": "tolerance",
+    "hypothesis": "오른쪽 넘침 1px, overflow 허용치 2px. 판정은 초과량이 허용치보다 클 때만.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 2.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 10.0,
+        "y": 40.0,
+        "w": 181.0,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "tol-ovf-over2-tol2",
+    "family": "tolerance",
+    "hypothesis": "오른쪽 넘침 2px, overflow 허용치 2px. 판정은 초과량이 허용치보다 클 때만.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 2.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 10.0,
+        "y": 40.0,
+        "w": 182.0,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "tol-ovf-over8-tol2",
+    "family": "tolerance",
+    "hypothesis": "오른쪽 넘침 8px, overflow 허용치 2px. 판정은 초과량이 허용치보다 클 때만.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 2.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 10.0,
+        "y": 40.0,
+        "w": 188.0,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 1,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [
+        "Table"
+      ],
+      "offCanvasTypes": [],
+      "overflowPaths": [
+        "Page/Body/Table0"
+      ],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 8.0,
+      "overBottom": 0.0,
+      "maxOver": 8.0,
+      "reportLines": [
+        "  [OVERFLOW] page   0     8.00px  Page/Body/Table0 (Table)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "tol-ovl-w1-tol1",
+    "family": "tolerance",
+    "hypothesis": "두 표 교차 1x20px, overlap 허용치 1px.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 1.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 40.0,
+        "h": 40.0
+      },
+      {
+        "t": "Table",
+        "x": 59.0,
+        "y": 50.0,
+        "w": 40.0,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "tol-ovl-w2-tol1",
+    "family": "tolerance",
+    "hypothesis": "두 표 교차 2x20px, overlap 허용치 1px.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 1.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 40.0,
+        "h": 40.0
+      },
+      {
+        "t": "Table",
+        "x": 58.0,
+        "y": 50.0,
+        "w": 40.0,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 1,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [
+        [
+          "Page/Body/Table0",
+          "Table",
+          "Page/Body/Table1",
+          "Table",
+          2.0,
+          30.0
+        ]
+      ],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [
+        "  [OVERLAP]  page   0  2.00x30.00px  Page/Body/Table0 (Table) x Page/Body/Table1 (Table)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "tol-ovl-w3-tol1",
+    "family": "tolerance",
+    "hypothesis": "두 표 교차 3x20px, overlap 허용치 1px.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 1.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 40.0,
+        "h": 40.0
+      },
+      {
+        "t": "Table",
+        "x": 57.0,
+        "y": 50.0,
+        "w": 40.0,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 1,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [
+        [
+          "Page/Body/Table0",
+          "Table",
+          "Page/Body/Table1",
+          "Table",
+          3.0,
+          30.0
+        ]
+      ],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [
+        "  [OVERLAP]  page   0  3.00x30.00px  Page/Body/Table0 (Table) x Page/Body/Table1 (Table)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "tol-ovl-w8-tol1",
+    "family": "tolerance",
+    "hypothesis": "두 표 교차 8x20px, overlap 허용치 1px.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 1.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 40.0,
+        "h": 40.0
+      },
+      {
+        "t": "Table",
+        "x": 52.0,
+        "y": 50.0,
+        "w": 40.0,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 1,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [
+        [
+          "Page/Body/Table0",
+          "Table",
+          "Page/Body/Table1",
+          "Table",
+          8.0,
+          30.0
+        ]
+      ],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [
+        "  [OVERLAP]  page   0  8.00x30.00px  Page/Body/Table0 (Table) x Page/Body/Table1 (Table)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "tol-ovl-w1-tol2",
+    "family": "tolerance",
+    "hypothesis": "두 표 교차 1x20px, overlap 허용치 2px.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 40.0,
+        "h": 40.0
+      },
+      {
+        "t": "Table",
+        "x": 59.0,
+        "y": 50.0,
+        "w": 40.0,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "tol-ovl-w2-tol2",
+    "family": "tolerance",
+    "hypothesis": "두 표 교차 2x20px, overlap 허용치 2px.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 40.0,
+        "h": 40.0
+      },
+      {
+        "t": "Table",
+        "x": 58.0,
+        "y": 50.0,
+        "w": 40.0,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "tol-ovl-w3-tol2",
+    "family": "tolerance",
+    "hypothesis": "두 표 교차 3x20px, overlap 허용치 2px.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 40.0,
+        "h": 40.0
+      },
+      {
+        "t": "Table",
+        "x": 57.0,
+        "y": 50.0,
+        "w": 40.0,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 1,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [
+        [
+          "Page/Body/Table0",
+          "Table",
+          "Page/Body/Table1",
+          "Table",
+          3.0,
+          30.0
+        ]
+      ],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [
+        "  [OVERLAP]  page   0  3.00x30.00px  Page/Body/Table0 (Table) x Page/Body/Table1 (Table)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "tol-ovl-w8-tol2",
+    "family": "tolerance",
+    "hypothesis": "두 표 교차 8x20px, overlap 허용치 2px.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 40.0,
+        "h": 40.0
+      },
+      {
+        "t": "Table",
+        "x": 52.0,
+        "y": 50.0,
+        "w": 40.0,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 1,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [
+        [
+          "Page/Body/Table0",
+          "Table",
+          "Page/Body/Table1",
+          "Table",
+          8.0,
+          30.0
+        ]
+      ],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [
+        "  [OVERLAP]  page   0  8.00x30.00px  Page/Body/Table0 (Table) x Page/Body/Table1 (Table)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "tol-ovl-w1-tol4",
+    "family": "tolerance",
+    "hypothesis": "두 표 교차 1x20px, overlap 허용치 4px.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 4.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 40.0,
+        "h": 40.0
+      },
+      {
+        "t": "Table",
+        "x": 59.0,
+        "y": 50.0,
+        "w": 40.0,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "tol-ovl-w2-tol4",
+    "family": "tolerance",
+    "hypothesis": "두 표 교차 2x20px, overlap 허용치 4px.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 4.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 40.0,
+        "h": 40.0
+      },
+      {
+        "t": "Table",
+        "x": 58.0,
+        "y": 50.0,
+        "w": 40.0,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "tol-ovl-w3-tol4",
+    "family": "tolerance",
+    "hypothesis": "두 표 교차 3x20px, overlap 허용치 4px.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 4.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 40.0,
+        "h": 40.0
+      },
+      {
+        "t": "Table",
+        "x": 57.0,
+        "y": 50.0,
+        "w": 40.0,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "tol-ovl-w8-tol4",
+    "family": "tolerance",
+    "hypothesis": "두 표 교차 8x20px, overlap 허용치 4px.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 4.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 40.0,
+        "h": 40.0
+      },
+      {
+        "t": "Table",
+        "x": 52.0,
+        "y": 50.0,
+        "w": 40.0,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 1,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [
+        [
+          "Page/Body/Table0",
+          "Table",
+          "Page/Body/Table1",
+          "Table",
+          8.0,
+          30.0
+        ]
+      ],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [
+        "  [OVERLAP]  page   0  8.00x30.00px  Page/Body/Table0 (Table) x Page/Body/Table1 (Table)"
+      ],
+      "status": "ANOMALY"
+    }
+  }
+]

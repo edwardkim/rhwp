@@ -406,6 +406,84 @@ fn issue_1470_style_update_preserves_direct_char_shape() {
     );
 }
 
+/// [#4325] `table.dirty`가 문서 범위로 지워지고 구역 범위로 소비되는 스코프 불일치 회귀.
+///
+/// `updateStyleShapes`는 스타일을 쓰는 모든 구역의 표를 `mark_cell_control_dirty`로
+/// dirty 마킹한 뒤, `0..num_sections`을 돌며 구역별로 `rebuild_section`을 호출한다.
+/// `rebuild_section(0)`이 유발하는 `paginate()` 패스는 아직 `dirty_sections[1]`이
+/// false라 구역 1을 건너뛰지만, 그 패스 끝에서 표 dirty 플래그를 지우는 루프가
+/// 문서 전체 범위였다 — 건너뛴 구역 1의 표까지 dirty가 사라졌다. 이후
+/// `rebuild_section(1)`이 구역 1을 실제로 재측정할 차례가 오면 `table.dirty`가
+/// 이미 false라 `measure_section_incremental`이 변경 전 `MeasuredTable`을 그대로
+/// clone해 구역 1의 표 높이가 영구히 stale로 남았다(원본 편집 전까지 복구 안 됨).
+#[test]
+fn issue_4325_style_update_second_section_table_not_left_stale() {
+    use crate::model::style::{CharShape, ParaShape, Style};
+
+    let mut doc = HwpDocument::create_empty();
+    doc.document.doc_info.char_shapes.push(CharShape {
+        base_size: 1000, // 10pt
+        ..Default::default()
+    });
+    doc.document.doc_info.para_shapes.push(ParaShape::default());
+    doc.document.doc_info.styles.push(Style {
+        local_name: "바탕글".to_string(),
+        english_name: "Normal".to_string(),
+        lang_id: 1042,
+        para_shape_id: 0,
+        char_shape_id: 0,
+        ..Default::default()
+    });
+
+    // 구역 0에 2x2 표 삽입 + 줄바꿈되는 셀 텍스트 (이슈 실측: "같은 표 + 줄바꿈되는 텍스트")
+    doc.create_table_native(0, 0, 0, 2, 2)
+        .expect("표 삽입 (구역0)");
+    let wrap_text = "가".repeat(120);
+    doc.insert_text_in_cell_native(0, 0, 0, 0, 0, 0, &wrap_text)
+        .expect("셀 텍스트 삽입 (구역0)");
+
+    // 구역 1: 구역 0과 완전히 같은 표+텍스트를 가진 구역을 추가한다 (이슈 실측: 2구역 문서).
+    let mut two_section_doc = doc.document.clone();
+    let section0 = two_section_doc.sections[0].clone();
+    two_section_doc.sections.push(section0);
+    doc.set_document(two_section_doc);
+
+    assert_eq!(doc.document.sections.len(), 2, "구역 2개 문서 준비");
+    assert_eq!(doc.measured_tables.len(), 2);
+    assert_eq!(
+        doc.measured_tables[0][0].total_height, doc.measured_tables[1][0].total_height,
+        "복제 직후 두 구역의 표 높이는 같아야 한다 (기준선)"
+    );
+    assert!(
+        doc.dirty_sections.iter().all(|d| !d),
+        "set_document 직후 paginate가 두 구역을 모두 처리해야 한다"
+    );
+    let before_height = doc.measured_tables[0][0].total_height;
+
+    // 스타일 글자모양을 36pt로 일괄 변경 (이슈 실측 시나리오)
+    assert!(
+        doc.update_style_shapes(0, r#"{"fontSize":3600}"#, "{}"),
+        "스타일 글자모양 수정 (36pt)"
+    );
+
+    let after0 = doc.measured_tables[0][0].total_height;
+    let after1 = doc.measured_tables[1][0].total_height;
+
+    assert!(
+        after0 > before_height,
+        "구역0 표 높이는 36pt 반영으로 커져야 한다 (before={before_height}, after0={after0})"
+    );
+    assert_eq!(
+        after0, after1,
+        "issue #4325 회귀: 구역1 표가 구역0과 동일한 표/텍스트인데도 stale MeasuredTable로 \
+         남았다 (before={before_height}, after0={after0}, after1={after1})"
+    );
+    assert_eq!(
+        doc.measured_tables[0][0].row_heights, doc.measured_tables[1][0].row_heights,
+        "issue #4325 회귀: 구역1 표의 행 높이가 구역0과 달라지면 안 된다"
+    );
+}
+
 #[test]
 fn issue_1470_character_style_does_not_replace_para_style() {
     use crate::model::paragraph::CharShapeRef;
@@ -1440,6 +1518,27 @@ fn test_empty_document_info() {
 }
 
 #[test]
+fn test_document_info_exposes_non_embedded_font_substitutions() {
+    let mut doc = HwpDocument::create_empty();
+    doc.document.doc_info.font_faces = vec![vec![crate::model::style::Font {
+        name: "정부상징 부처명_16040911".to_string(),
+        alt_type: 1,
+        subst_font: Some(crate::model::style::SubstFont {
+            face: "한컴바탕".to_string(),
+            font_type: 1,
+            ..Default::default()
+        }),
+        ..Default::default()
+    }]];
+
+    let info: Value = serde_json::from_str(&doc.get_document_info()).expect("document info JSON");
+    assert_eq!(
+        info["fontSubstitutions"],
+        serde_json::json!([["정부상징 부처명_16040911", "한컴바탕"]])
+    );
+}
+
+#[test]
 fn test_render_empty_page_svg() {
     let doc = HwpDocument::create_empty();
     let svg = doc.render_page_svg_native(0);
@@ -1708,6 +1807,7 @@ fn test_document_with_paragraphs() {
             },
         ],
         raw_stream: None,
+        raw_provenance: None,
     });
     doc.set_document(document);
 
@@ -1917,6 +2017,7 @@ fn create_doc_with_table() -> HwpDocument {
         },
         paragraphs: vec![parent_para],
         raw_stream: None,
+        raw_provenance: None,
     });
     doc.set_document(document);
     doc
@@ -2003,6 +2104,7 @@ fn create_doc_with_page_count_boundary_table() -> HwpDocument {
         },
         paragraphs: vec![parent_para],
         raw_stream: None,
+        raw_provenance: None,
     });
     doc.set_document(document);
     doc
@@ -4591,6 +4693,7 @@ fn create_doc_with_floating_picture(tac: bool, voff: u32, hoff: u32) -> HwpDocum
         },
         paragraphs: vec![pic_para, Paragraph::default()],
         raw_stream: None,
+        raw_provenance: None,
     });
     doc.set_document(document);
     doc
@@ -7203,6 +7306,8 @@ fn test_compare_orig_vs_saved() {
                 crate::model::control::Control::NewNumber(_) => "NewNumber",
                 crate::model::control::Control::PageNumberPos(_) => "PageNumberPos",
                 crate::model::control::Control::Bookmark(_) => "Bookmark",
+                crate::model::control::Control::IndexMark(_) => "IndexMark",
+                crate::model::control::Control::PageNumCtrl(_) => "PageNumCtrl",
                 crate::model::control::Control::Hyperlink(_) => "Hyperlink",
                 crate::model::control::Control::Ruby(_) => "Ruby",
                 crate::model::control::Control::CharOverlap(_) => "CharOverlap",
@@ -7247,6 +7352,8 @@ fn test_compare_orig_vs_saved() {
                 crate::model::control::Control::NewNumber(_) => "NewNumber",
                 crate::model::control::Control::PageNumberPos(_) => "PageNumberPos",
                 crate::model::control::Control::Bookmark(_) => "Bookmark",
+                crate::model::control::Control::IndexMark(_) => "IndexMark",
+                crate::model::control::Control::PageNumCtrl(_) => "PageNumCtrl",
                 crate::model::control::Control::Hyperlink(_) => "Hyperlink",
                 crate::model::control::Control::Ruby(_) => "Ruby",
                 crate::model::control::Control::CharOverlap(_) => "CharOverlap",
@@ -24069,6 +24176,8 @@ fn diag_memo_controls() {
                         crate::model::control::Control::PageNumberPos(_) => "PageNumPos",
                         crate::model::control::Control::PageHide(_) => "PageHide",
                         crate::model::control::Control::Bookmark(_) => "Bookmark",
+                        crate::model::control::Control::IndexMark(_) => "IndexMark",
+                        crate::model::control::Control::PageNumCtrl(_) => "PageNumCtrl",
                         crate::model::control::Control::Hyperlink(_) => "Hyperlink",
                         crate::model::control::Control::Ruby(_) => "Ruby",
                         crate::model::control::Control::CharOverlap(_) => "CharOverlap",
@@ -25468,6 +25577,7 @@ fn issue2214_target_cuts(doc: &HwpDocument) -> Vec<Issue2214TargetCut> {
                         start_cut,
                         end_cut,
                         is_block_split,
+                        ..
                     } => Some(Issue2214TargetCut {
                         page_index: page.page_index,
                         start_row: *start_row,
@@ -25573,6 +25683,19 @@ fn issue2214_assert_cut_continuity(label: &str, state: &str, cuts: &[Issue2214Ta
     }
 }
 
+/// #2430의 giant-cell target은 원본 형식마다 한컴 2020 편집 후 줄 경계가 다르다.
+///
+/// HWP 저장 LINE_SEG는 56번째 ASCII `1`에서 fifth line으로 전환하지만, HWPX는
+/// 같은 한컴 2020 adapter-save oracle에서 61번째가 전환점이다 (Task #3820 Stage 86).
+/// 이 값을 각 test에 따로 쓰면 HWPX의 실제 61회 경계를 다시 HWP 값으로 회귀시킨다.
+fn issue2214_flow_boundary_insert_count(label: &str) -> usize {
+    match label {
+        "hwp" => 56,
+        "hwpx" => 61,
+        other => panic!("unknown #2214 fixture label: {other}"),
+    }
+}
+
 /// #2214 Stage 3: scoped cache coherence는 deferred pagination geometry를 유지하면서
 /// warm tree/cursor만 최신 edit으로 복구하고, explicit flush에서만 cut/bounds를 갱신한다.
 #[test]
@@ -25637,6 +25760,8 @@ fn issue2214_scoped_cache_coherence_preserves_transient_pagination() {
         let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(relative);
         let bytes = std::fs::read(path).expect("read #2214 fixture");
         let mut doc = HwpDocument::from_bytes(&bytes).expect("load #2214 fixture");
+        let boundary_inserts = issue2214_flow_boundary_insert_count(label);
+        let target_end = 130 + boundary_inserts;
 
         // 실제 Studio처럼 편집 전에 페이지 트리/셀 유닛을 warm한다.
         let initial_ranges = target_tree_ranges(&doc);
@@ -25653,16 +25778,16 @@ fn issue2214_scoped_cache_coherence_preserves_transient_pagination() {
         // #2195 이후에도 44번째 입력은 target paragraph의 상대 flow advance를 바꾼다.
         // 다만 선언 셀 높이가 증가분을 흡수해 full pagination의 cut/bounds는 불변이다.
         // render_normalized warm tree는 flush 전에도 매 mutation을 즉시 반영해야 한다.
-        // [#2430] HY/한양 ASCII 실측 교정으로 숫자 advance 가 0.625→0.497em 으로
-        // 좁아져 줄 채움 임계가 44→56 입력으로 이동 (probe 실측, hwp/hwpx 동일).
-        for inserted in 0..56 {
+        // [#2430] HY/한양 ASCII advance는 0.497em이다. 그러나 저장 HWP LINE_SEG와
+        // HWPX adapter layout의 실제 한컴 2020 전환점은 각각 56/61회다.
+        for inserted in 0..boundary_inserts {
             let raw = doc
                 .insert_text_in_cell_native_deferred_pagination(0, 0, 2, 2, 5, 130 + inserted, "1")
                 .expect("deferred sequential insert");
             let result: Value = serde_json::from_str(&raw).expect("edit result json");
             assert_eq!(
                 result["cellFlowChanged"].as_bool(),
-                Some(inserted == 55),
+                Some(inserted + 1 == boundary_inserts),
                 "{label}: input {} flow signal",
                 inserted + 1
             );
@@ -25676,7 +25801,7 @@ fn issue2214_scoped_cache_coherence_preserves_transient_pagination() {
             .map(|(_, _, end)| *end)
             .expect("transient target end");
         let transient_rect = doc
-            .get_cursor_rect_in_cell_native(0, 0, 2, 2, 5, 186)
+            .get_cursor_rect_in_cell_native(0, 0, 2, 2, 5, target_end)
             .expect("transient direct rect");
 
         doc.flush_deferred_pagination()
@@ -25690,15 +25815,18 @@ fn issue2214_scoped_cache_coherence_preserves_transient_pagination() {
             .map(|(_, _, end)| *end)
             .expect("flushed target end");
         let flushed_rect = doc
-            .get_cursor_rect_in_cell_native(0, 0, 2, 2, 5, 186)
+            .get_cursor_rect_in_cell_native(0, 0, 2, 2, 5, target_end)
             .expect("flushed direct rect");
 
         eprintln!(
             "#2214 {label}: transient max={transient_max} rect={transient_rect}; flushed max={flushed_max} rect={flushed_rect}; cuts transient={transient_cut:?} flushed={flushed_cut:?}"
         );
 
-        assert_eq!(transient_max, 186, "{label}: scoped warm tree coherence");
-        assert_eq!(flushed_max, 186, "{label}: flush oracle");
+        assert_eq!(
+            transient_max, target_end,
+            "{label}: scoped warm tree coherence"
+        );
+        assert_eq!(flushed_max, target_end, "{label}: flush oracle");
         assert_eq!(
             transient_ranges, flushed_ranges,
             "{label}: transient target UTF-16 ranges must equal flush oracle"
@@ -25871,24 +25999,37 @@ fn issue3137_focused_cell_geometry_matches_exact_rect() {
         visit(&tree.root).expect("focused final TextLine")
     }
 
-    fn assert_cached_line_matches_fresh(doc: &HwpDocument, label: &str, operation: &str) {
+    fn assert_cached_line_matches_fresh(
+        doc: &HwpDocument,
+        label: &str,
+        operation: &str,
+        page_index: u32,
+    ) {
         let cached = {
             let cache = doc.core.page_tree_cache.borrow();
             focused_line_snapshot(
                 cache
-                    .first()
+                    .get(page_index as usize)
                     .and_then(Option::as_ref)
-                    .expect("focused page tree cache"),
+                    .unwrap_or_else(|| panic!("focused page tree cache page={page_index}")),
             )
         };
         let fresh = focused_line_snapshot(
-            &doc.build_page_render_tree(0)
+            &doc.build_page_render_tree(page_index)
                 .expect("fresh focused page render tree"),
         );
         assert_eq!(
             cached, fresh,
             "{label} {operation}: patched TextLine must equal a fresh page build"
         );
+    }
+
+    fn focused_patch_page_index(mutation: &Value, label: &str, operation: &str) -> u32 {
+        mutation["focusedPagePatch"]["pageIndex"]
+            .as_u64()
+            .unwrap_or_else(|| {
+                panic!("{label} {operation}: missing focused patch page: {mutation}")
+            }) as u32
     }
 
     fn rect_number(rect: &Value, key: &str) -> f64 {
@@ -25992,6 +26133,9 @@ fn issue3137_focused_cell_geometry_matches_exact_rect() {
         let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(relative);
         let bytes = std::fs::read(path).expect("read #3137 fixture");
         let mut doc = HwpDocument::from_bytes(&bytes).expect("load #3137 fixture");
+        // HWPX는 paragraph layout에는 full reflow를 쓰지만, same-line 결과라면
+        // cached tree tail patch는 fresh build와 동치여야 한다.
+        let supports_tail_cache_patch = true;
 
         let rect_130: Value = serde_json::from_str(
             &doc.get_cursor_rect_in_cell_native(0, 0, 2, 2, 5, 130)
@@ -26040,70 +26184,124 @@ fn issue3137_focused_cell_geometry_matches_exact_rect() {
                 .expect("second stable insert"),
         )
         .expect("second insert json");
-        let focused_alignment = doc
-            .core
-            .get_cell_paragraph_ref(0, 0, 2, 2, 5)
-            .and_then(|paragraph| {
-                doc.core
-                    .styles
-                    .para_styles
-                    .get(paragraph.para_shape_id as usize)
-            })
-            .map(|style| style.alignment);
         assert_eq!(
             insert_2["focusedPageTreePatched"].as_bool(),
-            Some(true),
-            "{label} insert-a must stay on the focused stable-alignment fast path: alignment={focused_alignment:?}, mutation={insert_2}"
+            Some(supports_tail_cache_patch),
+            "{label} insert-a same-line tail-cache policy"
         );
-        assert_cached_line_matches_fresh(&doc, label, "insert-a");
+        if supports_tail_cache_patch {
+            assert_cached_line_matches_fresh(
+                &doc,
+                label,
+                "insert-a",
+                focused_patch_page_index(&insert_2, label, "insert-a"),
+            );
+        } else {
+            assert!(
+                doc.core
+                    .page_tree_cache
+                    .borrow()
+                    .iter()
+                    .all(Option::is_none),
+                "{label} insert-a full reflow must invalidate cached page trees"
+            );
+        }
         let rect_132: Value = serde_json::from_str(
             &doc.get_cursor_rect_in_cell_native(0, 0, 2, 2, 5, 132)
                 .expect("second exact rect"),
         )
         .expect("second exact rect json");
-        assert_geometry(label, "insert-a", &rect_131, &insert_2, &rect_132, 131, 132);
+        if supports_tail_cache_patch {
+            assert_geometry(label, "insert-a", &rect_131, &insert_2, &rect_132, 131, 132);
+        }
 
         let replace: Value = serde_json::from_str(
             &doc.replace_text_in_cell_native_deferred_pagination(0, 0, 2, 2, 5, 131, 1, "한")
                 .expect("stable IME replace"),
         )
         .expect("replace json");
-        assert_cached_line_matches_fresh(&doc, label, "replace-ime");
+        if supports_tail_cache_patch {
+            assert_cached_line_matches_fresh(
+                &doc,
+                label,
+                "replace-ime",
+                focused_patch_page_index(&replace, label, "replace-ime"),
+            );
+        } else {
+            assert_eq!(replace["focusedPageTreePatched"].as_bool(), Some(false));
+            assert!(
+                doc.core
+                    .page_tree_cache
+                    .borrow()
+                    .iter()
+                    .all(Option::is_none),
+                "{label} replace-ime full reflow must invalidate cached page trees"
+            );
+        }
         let rect_replaced: Value = serde_json::from_str(
             &doc.get_cursor_rect_in_cell_native(0, 0, 2, 2, 5, 132)
                 .expect("replace exact rect"),
         )
         .expect("replace exact rect json");
-        assert_geometry(
-            label,
-            "replace-ime",
-            &rect_132,
-            &replace,
-            &rect_replaced,
-            132,
-            132,
-        );
+        if supports_tail_cache_patch {
+            assert_geometry(
+                label,
+                "replace-ime",
+                &rect_132,
+                &replace,
+                &rect_replaced,
+                132,
+                132,
+            );
+        }
 
         let delete: Value = serde_json::from_str(
             &doc.delete_text_in_cell_native_deferred_pagination(0, 0, 2, 2, 5, 131, 1)
                 .expect("stable backspace"),
         )
         .expect("delete json");
-        assert_cached_line_matches_fresh(&doc, label, "delete-backward");
+        let delete_patched = delete["focusedPageTreePatched"].as_bool();
+        if delete_patched == Some(false) {
+            assert!(
+                doc.core
+                    .page_tree_cache
+                    .borrow()
+                    .iter()
+                    .all(Option::is_none),
+                "{label} delete-backward fallback must invalidate cached page trees"
+            );
+        }
         let rect_deleted: Value = serde_json::from_str(
             &doc.get_cursor_rect_in_cell_native(0, 0, 2, 2, 5, 131)
                 .expect("delete exact rect"),
         )
         .expect("delete exact rect json");
-        assert_geometry(
-            label,
-            "delete-backward",
-            &rect_replaced,
-            &delete,
-            &rect_deleted,
-            132,
-            131,
-        );
+        match delete_patched {
+            Some(true) => {
+                assert_cached_line_matches_fresh(
+                    &doc,
+                    label,
+                    "delete-backward",
+                    focused_patch_page_index(&delete, label, "delete-backward"),
+                );
+                assert_geometry(
+                    label,
+                    "delete-backward",
+                    &rect_replaced,
+                    &delete,
+                    &rect_deleted,
+                    132,
+                    131,
+                );
+            }
+            Some(false) => {
+                assert_eq!(
+                    rect_deleted["cellBounds"], rect_replaced["cellBounds"],
+                    "{label} delete-backward fallback must keep cell bounds"
+                );
+            }
+            other => panic!("{label} delete-backward patch flag must be boolean: {other:?}"),
+        }
 
         // 중간 오프셋 편집은 후속 TextRun char_start까지 바꾸므로 보수적으로 전체
         // 캐시 무효화한다. 같은 text를 되돌린 뒤 page tree를 다시 warm한다.
@@ -26148,9 +26346,11 @@ fn issue3137_focused_cell_geometry_matches_exact_rect() {
         )
         .expect("rewarm after middle-edit fallback");
 
-        // 원본 뒤 첫 숫자가 이미 들어간 상태다. 55개를 더 넣으면 마지막 입력에서
-        // 4→5줄 flow 경계가 발생하고, 그 경계만 page-tree patch를 중단해야 한다.
-        for inserted in 0..55 {
+        // 이 시나리오는 앞서 IME replace/backspace를 거치므로 #2214의 pristine
+        // 56/61 입력 경계를 재사용하지 않는다. 실제 첫 flow boundary까지 각 stable
+        // 입력은 cached patch, boundary 입력은 full invalidation이어야 한다.
+        let mut saw_flow_boundary = false;
+        for inserted in 0..512 {
             let mutation: Value = serde_json::from_str(
                 &doc.insert_text_in_cell_native_deferred_pagination(
                     0,
@@ -26164,26 +26364,33 @@ fn issue3137_focused_cell_geometry_matches_exact_rect() {
                 .expect("tail insert through flow boundary"),
             )
             .expect("tail boundary json");
-            let boundary = inserted == 54;
-            assert_eq!(
-                mutation["cellFlowChanged"].as_bool(),
-                Some(boundary),
-                "{label}: tail input {} flow signal",
-                inserted + 2
-            );
+            let boundary = mutation["cellFlowChanged"].as_bool().unwrap_or_else(|| {
+                panic!(
+                    "{label}: tail input {} must report a boolean cell-flow signal: {mutation}",
+                    inserted + 2
+                )
+            });
             assert_eq!(
                 mutation["focusedPageTreePatched"].as_bool(),
-                Some(!boundary),
+                Some(supports_tail_cache_patch && !boundary),
                 "{label}: tail input {} patch signal",
                 inserted + 2
             );
             assert_eq!(
                 mutation["focusedPagePatch"].is_object(),
-                !boundary,
+                supports_tail_cache_patch && !boundary,
                 "{label}: tail input {} repaint patch signal",
                 inserted + 2
             );
+            if boundary {
+                saw_flow_boundary = true;
+                break;
+            }
         }
+        assert!(
+            saw_flow_boundary,
+            "{label}: IME-normalized tail input must eventually cross a line-flow boundary"
+        );
         assert!(
             doc.core
                 .page_tree_cache
@@ -26209,8 +26416,9 @@ fn issue2424_resumable_pagination_commits_only_after_final_fragment() {
         let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(relative);
         let bytes = std::fs::read(path).expect("read #2424 fixture");
         let mut doc = HwpDocument::from_bytes(&bytes).expect("load #2424 fixture");
+        let boundary_inserts = issue2214_flow_boundary_insert_count(label);
 
-        for inserted in 0..56 {
+        for inserted in 0..boundary_inserts {
             doc.insert_text_in_cell_native_deferred_pagination(0, 0, 2, 2, 5, 130 + inserted, "1")
                 .expect("deferred sequential insert");
         }
@@ -26284,19 +26492,52 @@ fn issue2424_resumable_delete_commits_only_after_final_fragment() {
         let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join(relative);
         let bytes = std::fs::read(path).expect("read #2424 fixture");
         let mut doc = HwpDocument::from_bytes(&bytes).expect("load #2424 fixture");
-        doc.insert_text_in_cell_native_deferred_pagination(0, 0, 2, 2, 5, 130, &"1".repeat(56))
-            .expect("prepare fifth cell line");
+        let boundary_inserts = issue2214_flow_boundary_insert_count(label);
+        doc.insert_text_in_cell_native_deferred_pagination(
+            0,
+            0,
+            2,
+            2,
+            5,
+            130,
+            &"1".repeat(boundary_inserts),
+        )
+        .expect("prepare fifth cell line");
         doc.flush_deferred_pagination()
             .expect("commit expanded pagination");
         let expanded_cuts = issue2214_target_cuts(&doc);
+        let expanded_line_starts = doc
+            .core
+            .get_cell_paragraph_ref(0, 0, 2, 2, 5)
+            .expect("expanded target paragraph")
+            .line_segs
+            .iter()
+            .map(|seg| seg.text_start)
+            .collect::<Vec<_>>();
 
         let delete_raw = doc
-            .delete_text_in_cell_native_deferred_pagination(0, 0, 2, 2, 5, 185, 1)
+            .delete_text_in_cell_native_deferred_pagination(
+                0,
+                0,
+                2,
+                2,
+                5,
+                129 + boundary_inserts,
+                1,
+            )
             .expect("deferred line-shrinking delete");
         let delete: Value = serde_json::from_str(&delete_raw).expect("delete result");
+        let deleted_line_starts = doc
+            .core
+            .get_cell_paragraph_ref(0, 0, 2, 2, 5)
+            .expect("deleted target paragraph")
+            .line_segs
+            .iter()
+            .map(|seg| seg.text_start)
+            .collect::<Vec<_>>();
         assert_eq!(
             delete["cellFlowChanged"], true,
-            "{label}: delete must remove the fifth line"
+            "{label}: delete must remove the fifth line; expanded={expanded_line_starts:?}, deleted={deleted_line_starts:?}"
         );
         let transient_cuts = issue2214_target_cuts(&doc);
         issue2214_assert_cut_continuity(label, "delete-transient", &transient_cuts);
@@ -26337,7 +26578,7 @@ fn issue2424_resumable_delete_commits_only_after_final_fragment() {
 
         let mut oracle = HwpDocument::from_bytes(&bytes).expect("load delete oracle");
         oracle
-            .insert_text_in_cell_native(0, 0, 2, 2, 5, 130, &"1".repeat(55))
+            .insert_text_in_cell_native(0, 0, 2, 2, 5, 130, &"1".repeat(boundary_inserts - 1))
             .expect("full-pagination delete oracle state");
         assert_eq!(
             committed_cuts,
@@ -26357,7 +26598,8 @@ fn issue2424_new_edit_stales_old_job_and_sync_flush_restarts_latest_revision() {
         .join("samples/issue1949_giant_cell_nested_tables_perf.hwp");
     let bytes = std::fs::read(path).expect("read #2424 fixture");
     let mut doc = HwpDocument::from_bytes(&bytes).expect("load #2424 fixture");
-    for inserted in 0..56 {
+    let boundary_inserts = issue2214_flow_boundary_insert_count("hwp");
+    for inserted in 0..boundary_inserts {
         doc.insert_text_in_cell_native_deferred_pagination(0, 0, 2, 2, 5, 130 + inserted, "1")
             .expect("deferred sequential insert");
     }
@@ -26376,7 +26618,7 @@ fn issue2424_new_edit_stales_old_job_and_sync_flush_restarts_latest_revision() {
     .expect("step json");
     assert_eq!(first_step["status"], "pending");
 
-    doc.insert_text_in_cell_native_deferred_pagination(0, 0, 2, 2, 5, 186, "1")
+    doc.insert_text_in_cell_native_deferred_pagination(0, 0, 2, 2, 5, 130 + boundary_inserts, "1")
         .expect("new edit supersedes first revision");
     let stale: Value = serde_json::from_str(
         &doc.step_deferred_pagination(1)
@@ -28185,5 +28427,105 @@ fn issue4167_units_fingerprint_doc_contract() {
         LayoutEngine::cell_paragraph_units_fingerprint(&spacer_before),
         LayoutEngine::cell_paragraph_units_fingerprint(&spacer_after),
         "스페이서 → 텍스트 전이는 지문이 변해 evict 되어야 한다"
+    );
+}
+
+/// [#4576] 핫패치 무효화 계약 — 원본 IR 이 그대로여도 파생본을 못 믿게 된 상황을
+/// 표현할 수 있어야 한다.
+///
+/// 렌더러 코드가 교체되면 `pagination`·`composed`·측정 캐시에 남은 값은 패치 이전
+/// 코드의 산출물이다. 원본 IR 은 한 글자도 안 바뀌었으므로 `dirty_sections` 도
+/// `section_revisions` 도 오르지 않고, 그래서 억지로 `paginate()` 를 불러도 깨끗한
+/// 구역을 건너뛴다 — 새 코드가 낸 숫자를 옛 코드가 잡은 페이지 박스에 그리는 혼합물이
+/// 남는다.
+///
+/// 이 테스트는 "패치 이전 코드가 만든 파생본"을 원본을 건드리지 않고 흉내 낸다:
+/// 메모된 조합·페이지네이션·측정 결과만 지금 코드가 같은 원본에서 절대 만들지 않을
+/// 값으로 바꾼다. 그 상태에서 `paginate()` 는 아무것도 되돌리지 못해야 하고(게이트가
+/// 살아 있다는 확인), `rebuild_derived_state()` 는 셋 다 원본에서 다시 만들어야 한다.
+#[test]
+fn issue_4576_rebuild_derived_state_recomputes_composition_and_pagination() {
+    let mut doc = HwpDocument::create_empty();
+    // 여러 쪽·여러 줄이 나오도록 본문을 채운다 (한 문단이 여러 페이지에 걸친다).
+    let body = "가나다라마바사아자차카타파하".repeat(400);
+    doc.insert_text_native(0, 0, 0, &body).expect("본문 삽입");
+
+    let baseline_pages = doc.page_count();
+    assert!(
+        baseline_pages >= 2,
+        "여러 쪽 문서를 전제로 한다 (실측 {baseline_pages}쪽)"
+    );
+    let baseline_tree = doc
+        .build_page_tree(0)
+        .expect("기준 페이지 트리")
+        .root
+        .to_json();
+    let baseline_height = doc.measured_sections[0].fallback_paragraphs[0].total_height;
+    let baseline_lines = doc.composed[0][0].lines.len();
+
+    // --- 패치 이전 코드의 파생본을 흉내 낸다 (원본 IR 은 손대지 않는다) ---
+    doc.composed[0][0].lines[0].runs[0].text = "옛 조합 규칙".to_string();
+    doc.pagination[0].pages.pop().expect("마지막 쪽 제거");
+    doc.measured_sections[0].fallback_paragraphs[0].total_height = 1.0;
+
+    doc.invalidate_page_tree_cache();
+    assert_ne!(
+        doc.build_page_tree(0)
+            .expect("오염된 페이지 트리")
+            .root
+            .to_json(),
+        baseline_tree,
+        "조합 오염이 페이지 트리에 실제로 보여야 테스트가 의미를 갖는다"
+    );
+    assert_eq!(
+        doc.page_count(),
+        baseline_pages - 1,
+        "페이지네이션 오염이 쪽 수에 보여야 한다"
+    );
+
+    // 문서가 안 바뀌었으므로 강제 재조판은 아무것도 되돌리지 못한다 (#4576 의 전제).
+    doc.paginate();
+    assert_eq!(
+        doc.page_count(),
+        baseline_pages - 1,
+        "깨끗한 구역을 건너뛰므로 paginate() 만으로는 페이지네이션이 복구되지 않는다"
+    );
+    assert_eq!(
+        doc.composed[0][0].lines[0].runs[0].text, "옛 조합 규칙",
+        "paginate() 는 조합을 다시 만들지 않는다"
+    );
+    assert_eq!(
+        doc.measured_sections[0].fallback_paragraphs[0].total_height, 1.0,
+        "paginate() 는 깨끗한 구역의 측정 캐시를 다시 만들지 않는다"
+    );
+
+    // --- 무효화 계약: 원본에서 파생 상태를 전부 다시 만든다 ---
+    doc.core.rebuild_derived_state();
+
+    assert_eq!(
+        doc.page_count(),
+        baseline_pages,
+        "페이지네이션이 원본에서 다시 만들어져야 한다"
+    );
+    assert_ne!(
+        doc.composed[0][0].lines[0].runs[0].text, "옛 조합 규칙",
+        "조합이 원본에서 다시 만들어져야 한다"
+    );
+    assert_eq!(
+        doc.composed[0][0].lines.len(),
+        baseline_lines,
+        "조합 결과의 줄 수가 원본 기준으로 돌아와야 한다"
+    );
+    assert_eq!(
+        doc.measured_sections[0].fallback_paragraphs[0].total_height, baseline_height,
+        "측정 캐시가 원본에서 다시 만들어져야 한다"
+    );
+    assert_eq!(
+        doc.build_page_tree(0)
+            .expect("복구 후 페이지 트리")
+            .root
+            .to_json(),
+        baseline_tree,
+        "페이지 트리가 기준선과 같아야 한다 (옛 코드 잔재 없음)"
     );
 }

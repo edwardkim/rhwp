@@ -1,0 +1,146 @@
+[
+  {
+    "applyable": {
+      "fill_fields": false,
+      "replace_text": true,
+      "set_cell": false,
+      "set_checkbox": false
+    },
+    "checkboxes": 0,
+    "claimed": true,
+    "fields": [],
+    "format": "hwpx",
+    "id": "ref_text_hwpx",
+    "identity": "ir_diff_0",
+    "layer": "m04-2",
+    "needles": [
+      "안녕",
+      "Hello",
+      "123"
+    ],
+    "nestedTables": 0,
+    "note": "hwpx_roundtrip_integration Stage 1. 표·누름틀·□ 없음.",
+    "path": "samples/hwpx/ref/ref_text.hwpx",
+    "tableCols": 0,
+    "tableRows": 0,
+    "tables": 0
+  },
+  {
+    "applyable": {
+      "fill_fields": false,
+      "replace_text": false,
+      "set_cell": true,
+      "set_checkbox": false
+    },
+    "checkboxes": 0,
+    "claimed": true,
+    "fields": [],
+    "format": "hwpx",
+    "id": "ref_table_hwpx",
+    "identity": "ir_diff_0",
+    "layer": "m04-2",
+    "needles": [],
+    "nestedTables": 0,
+    "note": "2×3 빈 표. baseline 등급. 본문 needle 을 주장하지 않음.",
+    "path": "samples/hwpx/ref/ref_table.hwpx",
+    "tableCols": 3,
+    "tableRows": 2,
+    "tables": 1
+  },
+  {
+    "applyable": {
+      "fill_fields": false,
+      "replace_text": true,
+      "set_cell": false,
+      "set_checkbox": false
+    },
+    "checkboxes": 0,
+    "claimed": true,
+    "fields": [],
+    "format": "hwp5",
+    "id": "para001_hwp5",
+    "identity": "ir_diff_0",
+    "layer": "m04-3",
+    "needles": [
+      "오호라",
+      "乾坤",
+      "구궁산"
+    ],
+    "nestedTables": 0,
+    "note": "hwp5_roundtrip_baseline A등급. 표·누름틀·□ 없음.",
+    "path": "samples/para-001.hwp",
+    "tableCols": 0,
+    "tableRows": 0,
+    "tables": 0
+  },
+  {
+    "applyable": {
+      "fill_fields": false,
+      "replace_text": true,
+      "set_cell": true,
+      "set_checkbox": false
+    },
+    "checkboxes": 0,
+    "claimed": true,
+    "fields": [],
+    "format": "hwp5",
+    "id": "table001_hwp5",
+    "identity": "ir_diff_0",
+    "layer": "m04-3",
+    "needles": [
+      "품질",
+      "5월",
+      "평가"
+    ],
+    "nestedTables": 0,
+    "note": "19×9 표, 중첩 없음. set_cell (0,2,1) 왕복이 손글씨로 고정.",
+    "path": "samples/table-001.hwp",
+    "tableCols": 9,
+    "tableRows": 19,
+    "tables": 1
+  },
+  {
+    "applyable": {
+      "fill_fields": false,
+      "replace_text": false,
+      "set_cell": false,
+      "set_checkbox": false
+    },
+    "checkboxes": 0,
+    "claimed": true,
+    "fields": [],
+    "format": "hwpx",
+    "id": "ref_empty_hwpx",
+    "identity": "identity_only",
+    "layer": "m04-f",
+    "needles": [],
+    "nestedTables": 0,
+    "note": "빈 문서. 편집 step 은 전부 skip. 무편집 왕복만 주장.",
+    "path": "samples/hwpx/ref/ref_empty.hwpx",
+    "tableCols": 0,
+    "tableRows": 0,
+    "tables": 0
+  },
+  {
+    "applyable": {
+      "fill_fields": false,
+      "replace_text": false,
+      "set_cell": false,
+      "set_checkbox": false
+    },
+    "checkboxes": 0,
+    "claimed": false,
+    "fields": [],
+    "format": "hwpx",
+    "id": "ref_mixed_hwpx",
+    "identity": "unclaimed",
+    "layer": "m04-f",
+    "needles": [],
+    "nestedTables": 0,
+    "note": "혼합 문서. 표현력을 추측하지 않음 — unclaimed_capability.",
+    "path": "samples/hwpx/ref/ref_mixed.hwpx",
+    "tableCols": 0,
+    "tableRows": 0,
+    "tables": 0
+  }
+]

@@ -19,7 +19,11 @@ impl GraphicsObjects {
     }
 
     pub fn delete(&mut self, i: usize) {
-        self.0[i] = GraphicsObject::Null;
+        // 손상 WMF 의 DELETEOBJECT 가 개체 표 범위를 벗어난 인덱스를 주면 직접 색인은
+        // 패닉(DoS)한다. `get` 과 같은 관용 규약으로 범위 밖 삭제는 무시한다.
+        if let Some(slot) = self.0.get_mut(i) {
+            *slot = GraphicsObject::Null;
+        }
     }
 
     pub fn get(&self, i: usize) -> &GraphicsObject {

@@ -475,9 +475,7 @@ impl DocumentCore {
             let now_tac = pic.common.treat_as_char;
             // tac 토글이 enum 에만 반영되고 packed attr 이 낡으면 직렬화가 옛 앵커를
             // 되살린다 — 여기서 즉시 동기화 (migrate 경로는 rel_to 갱신 후 재동기화).
-            crate::document_core::converters::common_obj_attr_writer::sync_anchor_bits(
-                &mut pic.common,
-            );
+            crate::serializer::control::sync_anchor_bits(&mut pic.common);
             (
                 caption_created,
                 had_caption && pic.caption.is_none(),
@@ -676,9 +674,7 @@ impl DocumentCore {
             let now_tac = pic.common.treat_as_char;
             // 본문 setter 와 같은 이유로 여기서도 packed attr 을 동기화한다 —
             // 머리말/꼬리말 경로도 같은 tac 토글 마이그레이션을 수행한다 (Issue #3781).
-            crate::document_core::converters::common_obj_attr_writer::sync_anchor_bits(
-                &mut pic.common,
-            );
+            crate::serializer::control::sync_anchor_bits(&mut pic.common);
             if !was_tac && now_tac {
                 if let crate::model::control::Control::Picture(pic_box) =
                     &mut inner_para.controls[inner_control_idx]
@@ -737,7 +733,7 @@ impl DocumentCore {
         pic.common.vertical_offset = 0;
         // stale packed attr 동기화 — 없으면 바이너리 왕복에서 Paper 앵커 부활
         // (treatAsChar=1 + PAPER 모순 → 한글 렌더 깨짐, Issue #3781 실측).
-        crate::document_core::converters::common_obj_attr_writer::sync_anchor_bits(&mut pic.common);
+        crate::serializer::control::sync_anchor_bits(&mut pic.common);
 
         let picture_height_hu = pic.common.height as i32;
         let baseline = (picture_height_hu as f64 * 0.85).round() as i32;
@@ -820,11 +816,7 @@ impl DocumentCore {
     fn tac_control_height_for_empty_picture_para(ctrl: &Control) -> Option<i32> {
         match ctrl {
             Control::Picture(pic) if pic.common.treat_as_char => Some(pic.common.height as i32),
-            Control::Shape(shape) if shape.common().treat_as_char => {
-                let common_h = shape.common().height as i32;
-                let current_h = shape.shape_attr().current_height as i32;
-                Some(common_h.max(current_h))
-            }
+            Control::Shape(shape) if shape.common().treat_as_char => Some(shape.flow_height_hu()),
             Control::Table(table) if table.common.treat_as_char => Some(table.common.height as i32),
             Control::Equation(eq) if eq.common.treat_as_char => Some(eq.common.height as i32),
             _ => None,
@@ -1443,6 +1435,34 @@ impl DocumentCore {
     /// — 기존 동작 + API caller 호환. studio drag 좌표 기반 호출은 `Some` 으로 전달.
     /// 본문 inline 분기 (cell_path 비어있음) 는 본 매개변수를 사용하지 않는다.
     #[allow(clippy::too_many_arguments)]
+    /// [#4347] 확장 컨트롤이 끼어들 `controls` 자리 — **글자 차례**를 따른다.
+    ///
+    /// 끝에 붙이면 자리표가 뒤죽박죽이 된다. 새 번호·수식·각주 경로가 쓰는 규약과 같다.
+    fn control_insert_index(
+        paragraph: &crate::model::paragraph::Paragraph,
+        char_offset: usize,
+    ) -> usize {
+        let positions = crate::document_core::helpers::find_control_text_positions(paragraph);
+        positions
+            .iter()
+            .position(|&pos| pos > char_offset)
+            .unwrap_or(paragraph.controls.len())
+    }
+
+    /// [#4347] 넣은 컨트롤이 **스트림에서 차지한 8칸**을 문단 좌표에 남긴다.
+    ///
+    /// 파서는 확장 컨트롤에 보이는 글자를 안 남기므로, 그 컨트롤의 자리는
+    /// `control_text_positions()` 가 `char_offsets` 의 **갭**으로 되짚는다. 삽입이 그 갭을
+    /// 안 만들면 컨트롤이 자리를 잃고 문단 끝 폴백으로 떨어진다 — 그림 앵커가 20 대신 406
+    /// 이던 것이 그 탓이다. 수식·각주 경로가 이미 이 꼴이다.
+    fn leave_coordinate_trace(
+        paragraph: &mut crate::model::paragraph::Paragraph,
+        char_offset: usize,
+    ) {
+        paragraph.shift_for_inline_control_insert(char_offset);
+        paragraph.char_count += 8;
+    }
+
     pub fn insert_picture_native(
         &mut self,
         section_idx: usize,
@@ -1594,9 +1614,17 @@ impl DocumentCore {
                     section.raw_stream = None;
                     let target_para =
                         Self::resolve_cell_paragraph_mut(section, para_idx, cell_path)?;
-                    let new_ctrl_idx = target_para.controls.len();
-                    target_para.controls.push(Control::Picture(Box::new(pic)));
-                    target_para.ctrl_data_records.push(None);
+                    // [#4347] **글상자 문단은 글자를 담는다.** 표 문단(글자 없음)과 달리 여기서는
+                    // 갭이 없으면 자리가 어긋난다 — 글자 일곱 개짜리 글상자의 자리 3 에 그림을
+                    // 넣어도 스트림 대응이 그대로였고(4→4), 캐럿이 설 수 있는 첫 자리가 0 에서
+                    // 7 로 튀었다. 본문 문단과 같은 자취를 남긴다.
+                    let new_ctrl_idx = Self::control_insert_index(target_para, char_offset);
+                    target_para.align_ctrl_data_records();
+                    target_para
+                        .controls
+                        .insert(new_ctrl_idx, Control::Picture(Box::new(pic)));
+                    target_para.ctrl_data_records.insert(new_ctrl_idx, None);
+                    target_para.shift_for_inline_control_insert(char_offset);
                     target_para.control_mask |= 0x00000800;
                     let logical_positions =
                         crate::document_core::helpers::find_logical_control_positions(target_para);
@@ -1667,6 +1695,10 @@ impl DocumentCore {
             };
 
             // table 같은 paragraph 의 sibling control 로 append.
+            //
+            // [#4347] 이 경로는 **글자 없는 표 문단**에 붙는 자리라 좌표 자취가 필요 없다 —
+            // 폴백 셈(`ci × 8`)이 곧 정답이다(실측 `표@0 그림@8`). 그런데도 길이를 더하면
+            // 표 배치가 흔들린다(글자처럼 그림 둘의 줄 넘김 테스트가 깨진다). 건드리지 않는다.
             self.document.sections[section_idx].raw_stream = None;
             let parent = &mut self.document.sections[section_idx].paragraphs[para_idx];
             let new_ctrl_idx = parent.controls.len();
@@ -1749,12 +1781,16 @@ impl DocumentCore {
             ..Default::default()
         };
 
-        // 현재 paragraph 의 sibling control 로 append (새 paragraph 생성 X).
+        // 현재 paragraph 의 sibling control 로 끼운다 (새 paragraph 생성 X).
         self.document.sections[section_idx].raw_stream = None;
         let parent = &mut self.document.sections[section_idx].paragraphs[para_idx];
-        let new_ctrl_idx = parent.controls.len();
-        parent.controls.push(Control::Picture(Box::new(pic)));
-        parent.ctrl_data_records.push(None);
+        let new_ctrl_idx = Self::control_insert_index(parent, char_offset);
+        parent.align_ctrl_data_records();
+        parent
+            .controls
+            .insert(new_ctrl_idx, Control::Picture(Box::new(pic)));
+        parent.ctrl_data_records.insert(new_ctrl_idx, None);
+        Self::leave_coordinate_trace(parent, char_offset);
         let logical_positions =
             crate::document_core::helpers::find_logical_control_positions(parent);
         let logical_after = logical_positions
@@ -1812,6 +1848,7 @@ mod issue_1151_cell_picture_insert_tests {
             },
             paragraphs: vec![Paragraph::default()],
             raw_stream: None,
+            raw_provenance: None,
         });
         let mut core = DocumentCore::new_empty();
         core.set_document(doc);
@@ -2511,6 +2548,7 @@ mod issue_1151_v2_tac_toggle_tests {
             },
             paragraphs: vec![Paragraph::default()],
             raw_stream: None,
+            raw_provenance: None,
         });
         let mut core = DocumentCore::new_empty();
         core.set_document(doc);
@@ -3590,6 +3628,7 @@ mod issue_1280_textbox_creation_tests {
             },
             paragraphs: vec![Paragraph::default()],
             raw_stream: None,
+            raw_provenance: None,
         });
         let mut core = DocumentCore::new_empty();
         core.set_document(doc);
@@ -4104,5 +4143,151 @@ mod bindata_storage_id_collision_tests {
             datas.iter().any(|d| &d[..] == minimal_png().as_slice()),
             "저장 왕복 후 신규 이미지가 소실됨"
         );
+    }
+}
+
+#[cfg(test)]
+mod issue_4347_insert_leaves_coordinate_trace {
+    //! [#4347] 그림 삽입이 `char_offsets` 에 갭을 안 남겨 개체 좌표가 문단 끝으로 떨어졌다.
+    //!
+    //! 파서는 확장 컨트롤을 만나면 8 코드 유닛을 건너뛰고 **보이는 글자를 안 남긴다**. 그래서
+    //! 컨트롤의 자리는 `control_text_positions()` 가 `char_offsets` 의 **갭**으로 되짚는다.
+    //! 삽입 경로가 그 갭을 만들지 않으면 그 컨트롤은 자리를 잃고 문단 끝 폴백으로 떨어진다.
+    //! 수식·각주·새 번호 경로는 이미 `shift_for_inline_control_insert` 로 갭을 만든다.
+
+    use super::*;
+    use crate::model::document::{Document, Section};
+    use crate::model::paragraph::Paragraph;
+
+    fn core_with_two_leading_controls() -> DocumentCore {
+        // 앞머리에 확장 컨트롤 둘(구역·단 정의처럼 16칸)이 있고 그 뒤로 글자 열이 오는 문단.
+        let mut para = Paragraph {
+            text: "0123456789".to_string(),
+            char_offsets: (16..26).collect(),
+            char_count: 27,
+            ..Default::default()
+        };
+        para.controls.push(Control::SectionDef(Default::default()));
+        para.controls.push(Control::ColumnDef(Default::default()));
+        para.ctrl_data_records.push(None);
+        para.ctrl_data_records.push(None);
+        let mut doc = Document::default();
+        doc.sections.push(Section {
+            paragraphs: vec![para],
+            ..Default::default()
+        });
+        let mut core = DocumentCore::new_empty();
+        core.set_document(doc);
+        core
+    }
+
+    fn png() -> Vec<u8> {
+        vec![
+            0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 0x00, 0x00, 0x00, 0x0D, 0x49, 0x48,
+            0x44, 0x52, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x08, 0x06, 0x00, 0x00,
+            0x00, 0x1F, 0x15, 0xC4, 0x89,
+        ]
+    }
+
+    /// 글상자 문단은 **글자를 담는다** — 표 문단(글자 없음)과 달리 갭이 없으면 자리가 어긋난다.
+    #[test]
+    fn inserted_picture_in_a_textbox_keeps_its_place_too() {
+        let mut core = DocumentCore::new_empty();
+        let mut doc = Document::default();
+        doc.sections.push(Section {
+            paragraphs: vec![Paragraph::default()],
+            ..Default::default()
+        });
+        core.set_document(doc);
+        // 글상자를 만들고 그 안에 글자 일곱을 넣는다.
+        let made = core
+            .create_shape_control_native(
+                0,
+                0,
+                0,
+                20000,
+                10000,
+                0,
+                0,
+                true,
+                "square",
+                "textbox",
+                false,
+                false,
+                &[],
+            )
+            .expect("글상자");
+        let ctrl_idx =
+            crate::document_core::helpers::json_u32(&made, "controlIdx").unwrap() as usize;
+        core.insert_text_in_cell_native(0, 0, ctrl_idx, 0, 0, 0, "가나다라마바사")
+            .expect("글상자에 글");
+
+        core.insert_picture_native(
+            0,
+            0,
+            3,
+            &[(ctrl_idx, 0, 0)],
+            &png(),
+            100,
+            100,
+            1,
+            1,
+            "png",
+            "",
+            None,
+            None,
+        )
+        .expect("글상자 안 그림");
+
+        let shape = match &core.document.sections[0].paragraphs[0].controls[ctrl_idx] {
+            Control::Shape(s) => s,
+            other => panic!("글상자가 아니다: {:?}", other),
+        };
+        let tb = shape
+            .drawing()
+            .and_then(|d| d.text_box.as_ref())
+            .expect("글상자 안");
+        let para = &tb.paragraphs[0];
+        assert_eq!(
+            para.char_offsets[2], 2,
+            "넣은 자리 앞 글자는 그대로여야 한다"
+        );
+        assert_eq!(
+            para.char_offsets[3], 11,
+            "넣은 자리 뒤 글자는 컨트롤 몫 8칸만큼 밀려야 한다"
+        );
+        assert_eq!(
+            para.control_text_positions().first().copied(),
+            Some(3),
+            "그림은 넣은 글자 자리에 있어야 한다"
+        );
+    }
+
+    #[test]
+    fn inserted_picture_keeps_its_place_not_the_paragraph_end() {
+        let mut core = core_with_two_leading_controls();
+        core.insert_picture_native(0, 0, 4, &[], &png(), 100, 100, 1, 1, "png", "", None, None)
+            .expect("그림 삽입");
+
+        let para = &core.document.sections[0].paragraphs[0];
+        // 넣은 자리 뒤 글자들은 8칸 밀려야 한다 — 그 갭이 곧 그림의 자리다.
+        assert_eq!(
+            para.char_offsets[3], 19,
+            "넣은 자리 앞 글자는 그대로여야 한다"
+        );
+        assert_eq!(
+            para.char_offsets[4], 28,
+            "넣은 자리 뒤 글자는 컨트롤 몫 8칸만큼 밀려야 한다"
+        );
+        assert_eq!(para.char_count, 35, "문단 길이도 8칸 늘어야 한다");
+
+        // 그 갭 덕분에 컨트롤 자리가 되짚어진다 — 문단 끝이 아니라 넣은 자리다.
+        let positions = para.control_text_positions();
+        assert_eq!(
+            positions.len(),
+            3,
+            "구역 정의·단 정의·그림 셋의 자리가 나와야 한다"
+        );
+        assert_eq!(positions[2], 4, "그림은 넣은 글자 자리에 있어야 한다");
     }
 }

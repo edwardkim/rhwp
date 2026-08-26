@@ -1,0 +1,11 @@
+{
+  "0": "success",
+  "1": "runtime",
+  "2": "usage",
+  "3": "ir-diff-or-verify",
+  "4": "verify-pages",
+  "pngMissingFeature": 2,
+  "pdfDirectMissingFeature": 1,
+  "irDiffJsonMismatch": 3,
+  "irDiffTextMismatch": 0
+}

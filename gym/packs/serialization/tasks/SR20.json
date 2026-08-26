@@ -1,0 +1,32 @@
+{
+  "id": "SR20",
+  "tier": 3,
+  "title": "기존 HWP·HWPX 쌍 IR 차이 건수",
+  "input": "samples/pic2.hwp",
+  "instructions": "입력과 짝 HWPX(samples/pic2.hwpx) 의 IR 차이 건수를 answer.json 에 {\"diffs\": N} 으로 적어라. identical 만 보면 차이 규모가 가려진다. 힌트: rhwp ir-diff --json 의 diffCount. 차이가 있으면 exit 3 이지만 봉투는 남는다.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "IR 차이 건수",
+      "op": "answer_eq",
+      "answer": "diffs",
+      "path": "diffCount",
+      "cmd": [
+        "ir-diff",
+        "{input}",
+        "samples/pic2.hwpx",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    }
+  ],
+  "axis": "변환"
+}

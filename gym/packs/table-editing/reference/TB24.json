@@ -1,0 +1,23 @@
+{
+  "id": "TB24",
+  "steps": [
+    {
+      "run": [
+        "edit",
+        "set-cell",
+        "{input}",
+        "--table",
+        "0",
+        "--row",
+        "0",
+        "--col",
+        "0",
+        "--text",
+        "항목명",
+        "-o",
+        "{sub:item_name.hwp}",
+        "--json"
+      ]
+    }
+  ]
+}

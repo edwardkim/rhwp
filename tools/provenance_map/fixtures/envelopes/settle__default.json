@@ -1,0 +1,41 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.provenance.envelope_sample.v1",
+  "claim": "M-prov",
+  "issue": 5480,
+  "generator": "tools/provenance_map/fatten_provenance_map.py",
+  "id": "settle__default",
+  "command": "settle",
+  "family": "receipt",
+  "mode": "default",
+  "flags": [
+    "--json"
+  ],
+  "cli": "rhwp settle --json ",
+  "whyThisMode": "제목·금액 원문은 봉투에 없음",
+  "sampleKind": "typical",
+  "risk": "none",
+  "note": "봉투는 경로 에코·해시·판정·seq 뿐이다 — 명세서 제목·금액 같은 문서 유래 문자열은 봉투에 싣지 않는다(금액은 운반만 하는 문자열이고 도구는 계산하지 않는다, 범위 경계).",
+  "declaredUntrusted": [],
+  "presentUntrusted": [],
+  "subsetOk": true,
+  "fieldClass": {
+    "schemaVersion": "R",
+    "verdict": "R",
+    "seq": "R",
+    "untrustedContent": "mark",
+    "untrustedFields": "mark"
+  },
+  "consumerRule": "명세서 원문은 이 봉투에 없다.",
+  "trap": "extract-data raw 를 settle 근거로 섞지 않는다.",
+  "injectionCanary": null,
+  "canaryRule": "이 모드는 문서 파생 문자열이 없다.",
+  "forbiddenIfPromoted": [],
+  "envelope": {
+    "schemaVersion": "1.0",
+    "verdict": "engine:settle:verdict",
+    "seq": 0,
+    "untrustedContent": false,
+    "untrustedFields": []
+  }
+}

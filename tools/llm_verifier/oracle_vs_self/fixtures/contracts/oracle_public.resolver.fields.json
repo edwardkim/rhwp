@@ -1,0 +1,24 @@
+{
+  "producer": "tools/oracle_public/oracle_resolver.py",
+  "consumed_as": "data",
+  "rewritten": false,
+  "schemaVersion": "1.0",
+  "hancomYears": ["2018", "2020", "2022", "2024"],
+  "oracleRoots": ["pdf", "pdf-2020", "pdf-large"],
+  "sourceFormats": ["hwp", "hwpx"],
+  "pairRequired": [
+    "sample",
+    "pdf",
+    "stem",
+    "hancomVersion",
+    "sourceFormat",
+    "oracleRoot"
+  ],
+  "pairOptional": ["id", "variant"],
+  "unmatchedRequired": ["sample"],
+  "signals": {
+    "has_hangul_pdf_true": "sample appears in pairs[]",
+    "has_hangul_pdf_false": "sample appears only in unmatched[]",
+    "versions": "pairs[].hancomVersion, '+' join when several agree"
+  }
+}

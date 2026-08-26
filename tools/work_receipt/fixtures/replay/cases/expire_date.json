@@ -1,0 +1,69 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workReceiptReplayCase",
+  "ident": "expire_date",
+  "claim": "M-rcpt",
+  "issue": 5478,
+  "family": "고시",
+  "genre": "유효기간",
+  "title": "유효기간 2026-12-31→2027-12-31",
+  "why": "일몰 조항 연장. deadline_iso 와 다른 필드(유효기간).",
+  "notes": "일몰 축",
+  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "output": "out/expire.hwp",
+  "ext": "hwp",
+  "actions": [
+    "replace_text"
+  ],
+  "stepCount": 1,
+  "plan": {
+    "planVersion": "1.0",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "output": "out/expire.hwp",
+    "steps": [
+      {
+        "action": "replace_text",
+        "find": "유효기간 2026-12-31",
+        "replace": "유효기간 2027-12-31"
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"samples/basic/issue2007_nested_cell_pagination_42065.hwp\",\"output\":\"out/expire.hwp\",\"steps\":[{\"action\":\"replace_text\",\"find\":\"유효기간 2026-12-31\",\"replace\":\"유효기간 2027-12-31\"}]}",
+  "planSha256": "f558ace7cc260fdc7187c2f873d791d2a95e6e9279385fb7892e37f19bde885c",
+  "command": "replay",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "inputSha256": "71f790e1be3cd473def90c3c30f4ce56a601d0b91c97380ca875e52b989f99f3",
+    "planSha256": "f558ace7cc260fdc7187c2f873d791d2a95e6e9279385fb7892e37f19bde885c",
+    "outputSha256": "e3539f74b0945ac161981c7dcaa7728bfb01e188ae877461e5f569ef3757dfe1",
+    "toolVersion": "fixture-0.0.0-not-a-release",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null
+  },
+  "expected": {
+    "attest": {
+      "exit": 0,
+      "mode": "attest",
+      "reproduced": null,
+      "userOutputCreated": false
+    },
+    "verify_ok": {
+      "exit": 0,
+      "mode": "verify",
+      "reproduced": true,
+      "expectedOutputSha256": "e3539f74b0945ac161981c7dcaa7728bfb01e188ae877461e5f569ef3757dfe1"
+    },
+    "verify_mismatch": {
+      "exit": 3,
+      "mode": "verify",
+      "reproduced": false,
+      "expectedOutputSha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "judgment": true
+    }
+  },
+  "claimedOutputPathUntouched": true,
+  "generator": "tools/work_receipt/fatten_work_receipt.py"
+}

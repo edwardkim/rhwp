@@ -1,0 +1,75 @@
+{
+  "schema": 1,
+  "id": "s503-chrome",
+  "width": 400.0,
+  "height": 300.0,
+  "contract": "양식·자리표시·수식·각주",
+  "ops": [
+    {
+      "kind": "formObject",
+      "x": 20.0,
+      "y": 20.0,
+      "w": 80.0,
+      "h": 24.0,
+      "text": null,
+      "gradient": false,
+      "image": false
+    },
+    {
+      "kind": "placeholder",
+      "x": 120.0,
+      "y": 20.0,
+      "w": 80.0,
+      "h": 60.0,
+      "text": null,
+      "gradient": false,
+      "image": false
+    },
+    {
+      "kind": "rawSvg",
+      "x": 220.0,
+      "y": 20.0,
+      "w": 80.0,
+      "h": 60.0,
+      "text": null,
+      "gradient": false,
+      "image": false
+    },
+    {
+      "kind": "equation",
+      "x": 20.0,
+      "y": 100.0,
+      "w": 60.0,
+      "h": 40.0,
+      "text": null,
+      "gradient": false,
+      "image": false
+    },
+    {
+      "kind": "footnoteMarker",
+      "x": 100.0,
+      "y": 100.0,
+      "w": 16.0,
+      "h": 16.0,
+      "text": null,
+      "gradient": false,
+      "image": false
+    }
+  ],
+  "expectedKinds": [
+    "formObject",
+    "placeholder",
+    "rawSvg",
+    "equation",
+    "footnoteMarker"
+  ],
+  "expectedTrace": [
+    "begin_page 400.00x300.00",
+    "  formObject bbox=20.00,20.00,80.00,24.00",
+    "  placeholder bbox=120.00,20.00,80.00,60.00",
+    "  rawSvg bbox=220.00,20.00,80.00,60.00",
+    "  equation bbox=20.00,100.00,60.00,40.00",
+    "  footnoteMarker bbox=100.00,100.00,16.00,16.00",
+    "end_page ops=5"
+  ]
+}

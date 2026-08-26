@@ -1,0 +1,18 @@
+{
+  "command": "DocumentCore::apply_session_resume",
+  "rejected": true,
+  "reason": "세션 핸드오프는 코어 편집 로직을 발명하지 않는다",
+  "_skillMeta": {
+    "exit": 2,
+    "command": "read",
+    "trigger": null,
+    "exception": null,
+    "stdoutSilentOnFail": false,
+    "hardGate": "cargo fmt --all -- --check",
+    "staleFmtRejected": true,
+    "neverGitAddA": true,
+    "neverStealNamedWorktrees": true,
+    "neverInventDocumentCore": true,
+    "noNewCli": true
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "id": "SD64",
+  "tier": 2,
+  "title": "출처 지도 pathSyntax",
+  "input": "samples/table-001.hwp",
+  "instructions": "export-provenance-map 의 pathSyntax 서술을 answer.json 에 {\"pathSyntax\": S} 으로 제출하라. 힌트: rhwp export-provenance-map --json.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "출처 지도 pathSyntax",
+      "op": "answer_eq",
+      "answer": "pathSyntax",
+      "path": "pathSyntax",
+      "cmd": [
+        "export-provenance-map",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

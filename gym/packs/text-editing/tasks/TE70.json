@@ -1,0 +1,27 @@
+{
+  "id": "TE70",
+  "tier": 2,
+  "title": "문단 문서 구조 노드",
+  "input": "samples/para-001.hwp",
+  "instructions": "입력의 구조 노드 수를 answer.json 에 {\"nodes\": N} 으로 제출하라. TE07 복제가 아니다 — 표본이 para-001 이다.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "문단 문서 구조 노드 · nodes",
+      "op": "answer_eq",
+      "answer": "nodes",
+      "path": "nodeCount",
+      "cmd": [
+        "export-structure",
+        "{input}",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

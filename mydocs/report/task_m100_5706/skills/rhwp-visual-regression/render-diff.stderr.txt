@@ -1,0 +1,12 @@
+LAYOUT_TABLE_OVERLAP: page=0, sec=0, para_a=0, para_b=6, a=60.5~193.3, b=71.8~383.3, overlap=121.5px
+LAYOUT_TABLE_OVERLAP: page=0, sec=0, para_a=6, para_b=3, a=71.8~383.3, b=248.8~311.5, overlap=134.5px
+LAYOUT_TABLE_OVERLAP: page=0, sec=0, para_a=5, para_b=10, a=364.5~746.5, b=438.5~537.5, overlap=308.0px
+LAYOUT_TABLE_OVERLAP: page=0, sec=0, para_a=0, para_b=6, a=60.5~193.3, b=71.8~383.3, overlap=121.5px
+LAYOUT_TABLE_OVERLAP: page=0, sec=0, para_a=6, para_b=3, a=71.8~383.3, b=248.8~311.5, overlap=134.5px
+LAYOUT_TABLE_OVERLAP: page=0, sec=0, para_a=5, para_b=10, a=364.5~746.5, b=438.5~537.5, overlap=308.0px
+LAYOUT_TABLE_OVERLAP: page=1, sec=0, para_a=22, para_b=28, a=64.2~748.0, b=202.0~547.4, overlap=546.0px
+LAYOUT_TABLE_OVERLAP: page=1, sec=0, para_a=22, para_b=28, a=64.2~748.0, b=202.0~547.4, overlap=546.0px
+LAYOUT_TABLE_OVERLAP: page=2, sec=0, para_a=35, para_b=33, a=60.5~750.2, b=62.3~521.7, overlap=687.9px
+LAYOUT_TABLE_OVERLAP: page=2, sec=0, para_a=33, para_b=34, a=62.3~521.7, b=518.1~753.6, overlap=3.6px
+LAYOUT_TABLE_OVERLAP: page=2, sec=0, para_a=35, para_b=33, a=60.5~750.2, b=62.3~521.7, overlap=687.9px
+LAYOUT_TABLE_OVERLAP: page=2, sec=0, para_a=33, para_b=34, a=62.3~521.7, b=518.1~753.6, overlap=3.6px

@@ -1,0 +1,27 @@
+{
+  "id": "TE75",
+  "tier": 1,
+  "title": "각주 문서 문단 수",
+  "input": "samples/footnote-01.hwp",
+  "instructions": "입력의 문단 수를 answer.json 에 {\"paras\": N} 으로 제출하라. 힌트: explain.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "각주 문서 문단 수 · paras",
+      "op": "answer_eq",
+      "answer": "paras",
+      "path": "paragraphCount",
+      "cmd": [
+        "explain",
+        "{input}",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

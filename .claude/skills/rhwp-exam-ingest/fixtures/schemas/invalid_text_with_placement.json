@@ -1,0 +1,38 @@
+{
+  "version": "1",
+  "questions": [
+    {
+      "number": 1,
+      "stem": "text 에 placement",
+      "stem_blocks": [
+        {
+          "type": "text",
+          "text": "안 됨",
+          "placement": "between"
+        }
+      ],
+      "choices": [
+        {
+          "label": "①",
+          "text": "환경 보호의 중요성을 강조하는 글"
+        },
+        {
+          "label": "②",
+          "text": "도시 생활의 편리함을 설명하는 글"
+        },
+        {
+          "label": "③",
+          "text": "전통 음식의 역사를 소개하는 글"
+        },
+        {
+          "label": "④",
+          "text": "최신 기술의 발전 동향을 분석하는 글"
+        },
+        {
+          "label": "⑤",
+          "text": "청소년 진로 탐색의 필요성을 논하는 글"
+        }
+      ]
+    }
+  ]
+}

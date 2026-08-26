@@ -1,0 +1,11 @@
+{
+  "id": "T04-B04",
+  "recipe": "04",
+  "kind": "bash",
+  "sourceFile": "mydocs/manual/recipes/04_safety_check_untrusted_doc.md",
+  "excerpted": true,
+  "fabricatedLive": false,
+  "raw": "rhwp digest output/pua-test.hwp --json --max-chars 500",
+  "firstLine": "rhwp digest output/pua-test.hwp --json --max-chars 500",
+  "notGym": true
+}

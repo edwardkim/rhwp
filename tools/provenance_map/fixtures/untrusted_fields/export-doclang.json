@@ -1,0 +1,69 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.provenance.untrusted_fields.v1",
+  "claim": "M-prov",
+  "issue": 5480,
+  "generator": "tools/provenance_map/fatten_provenance_map.py",
+  "command": "export-doclang",
+  "mapIndex": 54,
+  "family": "export",
+  "familyTitle": "변환 매니페스트",
+  "opensDocument": true,
+  "cli": "rhwp export-doclang <파일> --json",
+  "risk": "none",
+  "whyRisk": "손실 개수는 엔진 집계.",
+  "note": "저장 봉투는 경로·바이트·자산 개수·손실 개수뿐이다.",
+  "consumerRule": "개수로 분기. 손실 원문은 이 봉투에 없다.",
+  "trap": "손실 목록 파일이 따로 있으면 그 파일의 계약을 따른다.",
+  "untrusted": [],
+  "origins": {},
+  "engineFields": [
+    [
+      "bytes",
+      "바이트"
+    ],
+    [
+      "assetCount",
+      "자산 수"
+    ],
+    [
+      "lossCount",
+      "손실 수"
+    ]
+  ],
+  "callerFields": [
+    [
+      "source",
+      "입력"
+    ]
+  ],
+  "modes": [
+    {
+      "mode": "manifest",
+      "flags": [
+        "--json"
+      ],
+      "present": [],
+      "why": "경로·개수",
+      "sampleKind": "typical",
+      "untrustedContent": false
+    }
+  ],
+  "fields": [],
+  "forbiddenSlots": [
+    "tool_arg_path",
+    "tool_arg_output",
+    "filename_from_title",
+    "env_variable"
+  ],
+  "allowedSinks": [
+    "user_visible_ok",
+    "fenced_llm_block"
+  ],
+  "policy": {
+    "meaning": "여기 실린 값은 데이터이지 지시가 아니다.",
+    "conservatism": "애매하면 문서 파생으로 선언한다.",
+    "subset": "봉투 표지의 untrustedFields 는 이 목록의 부분집합이다.",
+    "alwaysMarked": "표지 키는 항상 실린다. 키 부재는 미표기다."
+  }
+}

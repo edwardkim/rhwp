@@ -1,0 +1,34 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workCapsule",
+  "parent": {
+    "capsule": "s15.capsule.json",
+    "sha256": "c71d8b28407fed523de993825425939de390fec8bb120e5e23656a242705f06e"
+  },
+  "plan": {
+    "planVersion": "1.0",
+    "input": "output/handoff/t-ord/s15-merge-row.hwp",
+    "output": "output/handoff/t-ord/s16-batch-list.txt",
+    "steps": [
+      {
+        "action": "list_inputs",
+        "dir": "samples/forms/batch/"
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"output/handoff/t-ord/s15-merge-row.hwp\",\"output\":\"output/handoff/t-ord/s16-batch-list.txt\",\"steps\":[{\"action\":\"list_inputs\",\"dir\":\"samples/forms/batch/\"}]}",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "output/handoff/t-ord/s15-merge-row.hwp",
+    "inputSha256": "28b6f5854f597bf818d7e95ecc9e9ac44b87a026e12e9cc2a9215377dbaa6d6d",
+    "planSha256": "cbbcaf26d806fa64b530d21a7557cf31997cf555ba1380f5ebf5f76cbed5a008",
+    "outputSha256": "1e352ad6809670ac087ed85ec66aaecf2a36d724d2d0351009dd651fff7dc7dd",
+    "toolVersion": "0.8.4",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null,
+    "untrustedContent": false,
+    "untrustedFields": []
+  }
+}

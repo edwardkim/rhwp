@@ -1,0 +1,27 @@
+{
+  "id": "OM28",
+  "tier": 2,
+  "title": "메모 서식 첫 필드 유형",
+  "input": "samples/field-01-memo.hwp",
+  "instructions": "field-01-memo 의 **첫 번째** 필드 유형을 answer.json 에 {\"type\": \"...\"} 으로 제출하라. 힌트: rhwp fields 의 fields[0].fieldType.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "첫 필드 유형",
+      "op": "answer_eq",
+      "answer": "type",
+      "path": "fields[0].fieldType",
+      "cmd": [
+        "fields",
+        "{input}",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

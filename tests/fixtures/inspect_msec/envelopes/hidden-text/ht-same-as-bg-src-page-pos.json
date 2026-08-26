@@ -1,0 +1,55 @@
+{
+  "id": "ht-same-as-bg-src-page-pos",
+  "issue": 5476,
+  "axis": "hidden-text",
+  "family": "same_as_background",
+  "polarity": "positive",
+  "sourceRule": {
+    "file": "src/document_core/queries/hidden_text.rs",
+    "symbol": "BackgroundSource::Page",
+    "note": "쪽 바탕(쪽 테두리/배경 또는 흰 종이)"
+  },
+  "cli": {
+    "argv": [
+      "inspect",
+      "hidden-text",
+      "synth:hidden-text/background/page.hwp",
+      "--json"
+    ],
+    "exitCode": 0,
+    "stdoutKind": "json-object",
+    "detectionIsNotFailure": true
+  },
+  "consume": {
+    "branch": "hiddenText[0].detail.backgroundSource",
+    "doNotFollowExcerpt": true
+  },
+  "pair": null,
+  "why": "배경 출처 page 가 확정될 때만 same_as_background 를 낸다.",
+  "note": "Background::Unknown 이면 색 판정을 포기한다.",
+  "human": "은닉 텍스트 1건: synth:hidden-text/background/page.hwp\n",
+  "inventedRule": false,
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "synth:hidden-text/background/page.hwp",
+    "thresholdPt": 1.0,
+    "includeOffPage": false,
+    "hiddenText": [
+      {
+        "kind": "same_as_background",
+        "section": 0,
+        "paragraph": 0,
+        "page": 0,
+        "excerpt": "배경과 같은 글자색",
+        "charCount": 10,
+        "detail": {
+          "textColor": "#336699",
+          "backgroundColor": "#336699",
+          "backgroundSource": "page"
+        }
+      }
+    ],
+    "hiddenCharCount": 10,
+    "clean": false
+  }
+}

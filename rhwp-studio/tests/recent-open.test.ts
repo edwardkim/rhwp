@@ -64,7 +64,7 @@ test('권한 확인 자체가 실패해도 항목을 유지한다', async () => 
 test('파일 이동/삭제(read 실패) 시 항목을 제거하고 안내한다', async () => {
   const { deps, calls } = makeDeps({
     readFile: async () => {
-      throw new DOMException('NotFoundError');
+      throw new DOMException('파일을 찾을 수 없습니다.', 'NotFoundError');
     },
   });
   const result = await openRecentEntry(makeEntry(), deps);

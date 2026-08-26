@@ -12,6 +12,7 @@
 use crate::envelope::{
     envelope, format_token, load_core, print_json, EXIT_OK, EXIT_RUNTIME, EXIT_USAGE,
 };
+use rhwp::schema_registry::ENVELOPE_SCHEMA_VERSION;
 use serde_json::{json, Value};
 use std::path::{Path, PathBuf};
 
@@ -195,7 +196,7 @@ pub fn run(args: &[String]) -> i32 {
             let mut line = record.clone();
             if let Some(map) = line.as_object_mut() {
                 map.insert("record".into(), json!("file"));
-                map.insert("schemaVersion".into(), json!("1.0"));
+                map.insert("schemaVersion".into(), json!(ENVELOPE_SCHEMA_VERSION));
             }
             match serde_json::to_string(&line) {
                 Ok(s) => crate::outln!("{s}"),
@@ -205,7 +206,7 @@ pub fn run(args: &[String]) -> i32 {
         let mut tail = summary.clone();
         if let Some(map) = tail.as_object_mut() {
             map.insert("record".into(), json!("summary"));
-            map.insert("schemaVersion".into(), json!("1.0"));
+            map.insert("schemaVersion".into(), json!(ENVELOPE_SCHEMA_VERSION));
         }
         match serde_json::to_string(&tail) {
             Ok(s) => crate::outln!("{s}"),

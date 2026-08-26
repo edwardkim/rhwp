@@ -1,0 +1,59 @@
+# M09-g equation golden — current-engine lock (variant/exception/unimplemented honesty)
+command: OVER
+script: PILE{1 OVER 2 # 3 OVER 4} OVER 5
+honesty: pile-layout-as-row
+
+=== ast ===
+Fraction {
+    numer: Pile {
+        rows: [
+            Fraction {
+                numer: Number(
+                    "1",
+                ),
+                denom: Number(
+                    "2",
+                ),
+            },
+            Fraction {
+                numer: Number(
+                    "3",
+                ),
+                denom: Number(
+                    "4",
+                ),
+            },
+        ],
+        align: Center,
+    },
+    denom: Number(
+        "5",
+    ),
+}
+
+=== layout ===
+Fraction x=0.0000 y=0.0000 w=27.0000 h=132.4000 bl=113.0000
+  numer:
+    Row x=4.0000 y=4.0000 w=19.0000 h=103.6000 bl=51.8000
+      Fraction x=0.0000 y=0.0000 w=19.0000 h=48.8000 bl=29.4000
+        numer:
+          Number("1") x=4.0000 y=4.0000 w=11.0000 h=20.0000 bl=16.0000
+        denom:
+          Number("2") x=4.0000 y=24.8000 w=11.0000 h=20.0000 bl=16.0000
+      Fraction x=0.0000 y=54.8000 w=19.0000 h=48.8000 bl=29.4000
+        numer:
+          Number("3") x=4.0000 y=4.0000 w=11.0000 h=20.0000 bl=16.0000
+        denom:
+          Number("4") x=4.0000 y=24.8000 w=11.0000 h=20.0000 bl=16.0000
+  denom:
+    Number("5") x=8.0000 y=108.4000 w=11.0000 h=20.0000 bl=16.0000
+
+=== svg ===
+<text x="8.00" y="24.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">1</text>
+<line x1="5.00" y1="28.40" x2="22.00" y2="28.40" stroke="#000000" stroke-width="0.80"/>
+<text x="8.00" y="44.80" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">2</text>
+<text x="8.00" y="78.80" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">3</text>
+<line x1="5.00" y1="83.20" x2="22.00" y2="83.20" stroke="#000000" stroke-width="0.80"/>
+<text x="8.00" y="99.60" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">4</text>
+<line x1="1.00" y1="108.00" x2="26.00" y2="108.00" stroke="#000000" stroke-width="0.80"/>
+<text x="8.00" y="124.40" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">5</text>

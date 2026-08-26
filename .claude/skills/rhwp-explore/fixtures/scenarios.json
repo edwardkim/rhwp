@@ -1,0 +1,1218 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5313,
+  "count": 40,
+  "scenarios": [
+    {
+      "id": "S01",
+      "title": "특수 신호 없는 짧은 메모",
+      "source": "samples/blank2010.hwp",
+      "kind": "no-special",
+      "stop": "X05",
+      "facts": {
+        "format_label": "HWP5",
+        "page_count": 2,
+        "para_count": 12,
+        "table_count": 0,
+        "merged_table_count": 0,
+        "field_count": 0,
+        "chart_count": 0,
+        "structure_node_count": 0,
+        "footnote_count": 0,
+        "endnote_count": 0,
+        "injection_signal_count": 0,
+        "hidden_text_count": 0,
+        "encrypted": false
+      },
+      "menuIds": [
+        "triage-overview"
+      ],
+      "first": "triage-overview",
+      "firstCommand": "rhwp digest <file> --json",
+      "narrative": "메뉴는 triage-overview 하나. digest 로 파악하고 멈출 수 있다.",
+      "notGym": true
+    },
+    {
+      "id": "S02",
+      "title": "누름틀만 있는 신청서",
+      "source": "samples/form-01.hwp",
+      "kind": "form",
+      "stop": "X10",
+      "facts": {
+        "format_label": "HWP5",
+        "page_count": 1,
+        "para_count": 8,
+        "table_count": 0,
+        "merged_table_count": 0,
+        "field_count": 1,
+        "chart_count": 0,
+        "structure_node_count": 0,
+        "footnote_count": 0,
+        "endnote_count": 0,
+        "injection_signal_count": 0,
+        "hidden_text_count": 0,
+        "encrypted": false
+      },
+      "menuIds": [
+        "form-fill",
+        "triage-overview"
+      ],
+      "first": "form-fill",
+      "firstCommand": "rhwp fields <file> --json",
+      "narrative": "form-fill 이 개요보다 위. fields --json 으로 인계.",
+      "notGym": true
+    },
+    {
+      "id": "S03",
+      "title": "누름틀 11개 혼합 서식",
+      "source": "samples/field-01.hwp",
+      "kind": "form",
+      "stop": "X10",
+      "facts": {
+        "format_label": "HWP5",
+        "page_count": 2,
+        "para_count": 30,
+        "table_count": 0,
+        "merged_table_count": 0,
+        "field_count": 11,
+        "chart_count": 0,
+        "structure_node_count": 0,
+        "footnote_count": 0,
+        "endnote_count": 0,
+        "injection_signal_count": 0,
+        "hidden_text_count": 0,
+        "encrypted": false
+      },
+      "menuIds": [
+        "form-fill",
+        "triage-overview"
+      ],
+      "first": "form-fill",
+      "firstCommand": "rhwp fields <file> --json",
+      "narrative": "fieldCount 11. 채움은 rhwp-form-fill 이 책임.",
+      "notGym": true
+    },
+    {
+      "id": "S04",
+      "title": "표 3개·병합 1개 보고서",
+      "source": "samples/report-tables.hwp",
+      "kind": "table",
+      "stop": "X10",
+      "facts": {
+        "format_label": "HWP5",
+        "page_count": 6,
+        "para_count": 80,
+        "table_count": 3,
+        "merged_table_count": 1,
+        "field_count": 0,
+        "chart_count": 0,
+        "structure_node_count": 0,
+        "footnote_count": 0,
+        "endnote_count": 0,
+        "injection_signal_count": 0,
+        "hidden_text_count": 0,
+        "encrypted": false
+      },
+      "menuIds": [
+        "table-extract",
+        "triage-overview"
+      ],
+      "first": "table-extract",
+      "firstCommand": "rhwp export-tables <file> --json",
+      "narrative": "table-extract why 에 병합 셀이 드러난다.",
+      "notGym": true
+    },
+    {
+      "id": "S05",
+      "title": "표만 있고 병합 없음",
+      "source": "samples/plain-tables.hwp",
+      "kind": "table",
+      "stop": "X10",
+      "facts": {
+        "format_label": "HWP5",
+        "page_count": 4,
+        "para_count": 40,
+        "table_count": 2,
+        "merged_table_count": 0,
+        "field_count": 0,
+        "chart_count": 0,
+        "structure_node_count": 0,
+        "footnote_count": 0,
+        "endnote_count": 0,
+        "injection_signal_count": 0,
+        "hidden_text_count": 0,
+        "encrypted": false
+      },
+      "menuIds": [
+        "table-extract",
+        "triage-overview"
+      ],
+      "first": "table-extract",
+      "firstCommand": "rhwp export-tables <file> --json",
+      "narrative": "병합 문구가 why 에 없다. 그래도 export-tables.",
+      "notGym": true
+    },
+    {
+      "id": "S06",
+      "title": "조문 구조 있는 편람",
+      "source": "samples/manual.hwp",
+      "kind": "structure",
+      "stop": "X10",
+      "facts": {
+        "format_label": "HWP5",
+        "page_count": 8,
+        "para_count": 120,
+        "table_count": 0,
+        "merged_table_count": 0,
+        "field_count": 0,
+        "chart_count": 0,
+        "structure_node_count": 12,
+        "footnote_count": 0,
+        "endnote_count": 0,
+        "injection_signal_count": 0,
+        "hidden_text_count": 0,
+        "encrypted": false
+      },
+      "menuIds": [
+        "structure-outline",
+        "triage-overview"
+      ],
+      "first": "structure-outline",
+      "firstCommand": "rhwp export-structure <file> --json",
+      "narrative": "노드 12 ≥ 3 이라 structure-outline confidence high.",
+      "notGym": true
+    },
+    {
+      "id": "S07",
+      "title": "조문 노드 1개",
+      "source": "samples/one-heading.hwp",
+      "kind": "structure",
+      "stop": "X10",
+      "facts": {
+        "format_label": "HWP5",
+        "page_count": 3,
+        "para_count": 20,
+        "table_count": 0,
+        "merged_table_count": 0,
+        "field_count": 0,
+        "chart_count": 0,
+        "structure_node_count": 1,
+        "footnote_count": 0,
+        "endnote_count": 0,
+        "injection_signal_count": 0,
+        "hidden_text_count": 0,
+        "encrypted": false
+      },
+      "menuIds": [
+        "structure-outline",
+        "triage-overview"
+      ],
+      "first": "structure-outline",
+      "firstCommand": "rhwp export-structure <file> --json",
+      "narrative": "노드 1개면 confidence medium. 항목은 있다.",
+      "notGym": true
+    },
+    {
+      "id": "S08",
+      "title": "차트 2개 설명회 자료",
+      "source": "samples/charts.hwp",
+      "kind": "chart",
+      "stop": "X10",
+      "facts": {
+        "format_label": "HWP5",
+        "page_count": 5,
+        "para_count": 35,
+        "table_count": 0,
+        "merged_table_count": 0,
+        "field_count": 0,
+        "chart_count": 2,
+        "structure_node_count": 0,
+        "footnote_count": 0,
+        "endnote_count": 0,
+        "injection_signal_count": 0,
+        "hidden_text_count": 0,
+        "encrypted": false
+      },
+      "menuIds": [
+        "chart-extract",
+        "triage-overview"
+      ],
+      "first": "chart-extract",
+      "firstCommand": "rhwp chart-to-csv <file> --json",
+      "narrative": "chart-to-csv 로 인계. 표가 없으면 table-extract 는 없다.",
+      "notGym": true
+    },
+    {
+      "id": "S09",
+      "title": "각주·미주 논문",
+      "source": "samples/paper.hwp",
+      "kind": "notes",
+      "stop": "X10",
+      "facts": {
+        "format_label": "HWP5",
+        "page_count": 7,
+        "para_count": 90,
+        "table_count": 0,
+        "merged_table_count": 0,
+        "field_count": 0,
+        "chart_count": 0,
+        "structure_node_count": 0,
+        "footnote_count": 14,
+        "endnote_count": 3,
+        "injection_signal_count": 0,
+        "hidden_text_count": 0,
+        "encrypted": false
+      },
+      "menuIds": [
+        "note-structure",
+        "triage-overview"
+      ],
+      "first": "note-structure",
+      "firstCommand": "rhwp explain <file> --json",
+      "narrative": "note-structure → explain. 쪽수 7 이라 long-doc 는 아직 없다.",
+      "notGym": true
+    },
+    {
+      "id": "S10",
+      "title": "각주만 있고 미주 0",
+      "source": "samples/footnotes-only.hwp",
+      "kind": "notes",
+      "stop": "X10",
+      "facts": {
+        "format_label": "HWP5",
+        "page_count": 4,
+        "para_count": 50,
+        "table_count": 0,
+        "merged_table_count": 0,
+        "field_count": 0,
+        "chart_count": 0,
+        "structure_node_count": 0,
+        "footnote_count": 4,
+        "endnote_count": 0,
+        "injection_signal_count": 0,
+        "hidden_text_count": 0,
+        "encrypted": false
+      },
+      "menuIds": [
+        "note-structure",
+        "triage-overview"
+      ],
+      "first": "note-structure",
+      "firstCommand": "rhwp explain <file> --json",
+      "narrative": "합이 1 이상이면 켠다. why 에 미주 0개가 그대로 적힌다.",
+      "notGym": true
+    },
+    {
+      "id": "S11",
+      "title": "10쪽 장문 하한",
+      "source": "samples/ten-pages.hwp",
+      "kind": "long",
+      "stop": "X10",
+      "facts": {
+        "format_label": "HWP5",
+        "page_count": 10,
+        "para_count": 200,
+        "table_count": 0,
+        "merged_table_count": 0,
+        "field_count": 0,
+        "chart_count": 0,
+        "structure_node_count": 0,
+        "footnote_count": 0,
+        "endnote_count": 0,
+        "injection_signal_count": 0,
+        "hidden_text_count": 0,
+        "encrypted": false
+      },
+      "menuIds": [
+        "long-doc-digest",
+        "triage-overview"
+      ],
+      "first": "long-doc-digest",
+      "firstCommand": "rhwp digest <file> --sections --json",
+      "narrative": "LONG_DOC_PAGES=10. confidence medium (20쪽 미만).",
+      "notGym": true
+    },
+    {
+      "id": "S12",
+      "title": "40쪽 법령 편람",
+      "source": "samples/law-40.hwp",
+      "kind": "long",
+      "stop": "X10",
+      "facts": {
+        "format_label": "HWP5",
+        "page_count": 40,
+        "para_count": 900,
+        "table_count": 0,
+        "merged_table_count": 0,
+        "field_count": 0,
+        "chart_count": 0,
+        "structure_node_count": 80,
+        "footnote_count": 0,
+        "endnote_count": 0,
+        "injection_signal_count": 0,
+        "hidden_text_count": 0,
+        "encrypted": false
+      },
+      "menuIds": [
+        "structure-outline",
+        "long-doc-digest",
+        "triage-overview"
+      ],
+      "first": "structure-outline",
+      "firstCommand": "rhwp export-structure <file> --json",
+      "narrative": "long-doc high + structure high. 통독 금지.",
+      "notGym": true
+    },
+    {
+      "id": "S13",
+      "title": "주입 신호만",
+      "source": "untrusted/inject.hwp",
+      "kind": "security",
+      "stop": "X03",
+      "facts": {
+        "format_label": "HWP5",
+        "page_count": 4,
+        "para_count": 40,
+        "table_count": 0,
+        "merged_table_count": 0,
+        "field_count": 0,
+        "chart_count": 0,
+        "structure_node_count": 0,
+        "footnote_count": 0,
+        "endnote_count": 0,
+        "injection_signal_count": 3,
+        "hidden_text_count": 0,
+        "encrypted": false
+      },
+      "menuIds": [
+        "security-sweep",
+        "triage-overview"
+      ],
+      "first": "security-sweep",
+      "firstCommand": "rhwp inspect injection <file> --json",
+      "narrative": "security-sweep 가 1번. command 는 inspect injection. high.",
+      "notGym": true
+    },
+    {
+      "id": "S14",
+      "title": "은닉 텍스트만",
+      "source": "untrusted/hidden.hwp",
+      "kind": "security",
+      "stop": "X03",
+      "facts": {
+        "format_label": "HWP5",
+        "page_count": 3,
+        "para_count": 25,
+        "table_count": 0,
+        "merged_table_count": 0,
+        "field_count": 0,
+        "chart_count": 0,
+        "structure_node_count": 0,
+        "footnote_count": 0,
+        "endnote_count": 0,
+        "injection_signal_count": 0,
+        "hidden_text_count": 2,
+        "encrypted": false
+      },
+      "menuIds": [
+        "security-sweep",
+        "triage-overview"
+      ],
+      "first": "security-sweep",
+      "firstCommand": "rhwp inspect hidden-text <file> --json",
+      "narrative": "hidden-text 명령. confidence medium.",
+      "notGym": true
+    },
+    {
+      "id": "S15",
+      "title": "주입+은닉 동시",
+      "source": "untrusted/both.hwp",
+      "kind": "security",
+      "stop": "X03",
+      "facts": {
+        "format_label": "HWP5",
+        "page_count": 5,
+        "para_count": 60,
+        "table_count": 0,
+        "merged_table_count": 0,
+        "field_count": 0,
+        "chart_count": 0,
+        "structure_node_count": 0,
+        "footnote_count": 0,
+        "endnote_count": 0,
+        "injection_signal_count": 1,
+        "hidden_text_count": 4,
+        "encrypted": false
+      },
+      "menuIds": [
+        "security-sweep",
+        "triage-overview"
+      ],
+      "first": "security-sweep",
+      "firstCommand": "rhwp inspect injection <file> --json",
+      "narrative": "why 에 두 건수가 함께. command 는 injection (둘 다 있을 때).",
+      "notGym": true
+    },
+    {
+      "id": "S16",
+      "title": "보안+서식+표가 한 문서",
+      "source": "untrusted/form-report.hwp",
+      "kind": "mixed",
+      "stop": "X03",
+      "facts": {
+        "format_label": "HWP5",
+        "page_count": 6,
+        "para_count": 70,
+        "table_count": 3,
+        "merged_table_count": 1,
+        "field_count": 8,
+        "chart_count": 0,
+        "structure_node_count": 0,
+        "footnote_count": 0,
+        "endnote_count": 0,
+        "injection_signal_count": 2,
+        "hidden_text_count": 0,
+        "encrypted": false
+      },
+      "menuIds": [
+        "security-sweep",
+        "form-fill",
+        "table-extract",
+        "triage-overview"
+      ],
+      "first": "security-sweep",
+      "firstCommand": "rhwp inspect injection <file> --json",
+      "narrative": "순서: security → form-fill → table-extract → triage.",
+      "notGym": true
+    },
+    {
+      "id": "S17",
+      "title": "암호가 풀린 짧은 문서",
+      "source": "secret/memo.hwp",
+      "kind": "encrypted",
+      "stop": "X04",
+      "facts": {
+        "format_label": "HWP5",
+        "page_count": 2,
+        "para_count": 15,
+        "table_count": 0,
+        "merged_table_count": 0,
+        "field_count": 0,
+        "chart_count": 0,
+        "structure_node_count": 0,
+        "footnote_count": 0,
+        "endnote_count": 0,
+        "injection_signal_count": 0,
+        "hidden_text_count": 0,
+        "encrypted": true
+      },
+      "menuIds": [
+        "triage-overview"
+      ],
+      "first": "triage-overview",
+      "firstCommand": "rhwp digest <file> --json",
+      "narrative": "메뉴는 나온다. why 가 후속 --password 를 상기.",
+      "notGym": true
+    },
+    {
+      "id": "S18",
+      "title": "암호+누름틀",
+      "source": "secret/form.hwp",
+      "kind": "encrypted",
+      "stop": "X04",
+      "facts": {
+        "format_label": "HWP5",
+        "page_count": 3,
+        "para_count": 20,
+        "table_count": 0,
+        "merged_table_count": 0,
+        "field_count": 5,
+        "chart_count": 0,
+        "structure_node_count": 0,
+        "footnote_count": 0,
+        "endnote_count": 0,
+        "injection_signal_count": 0,
+        "hidden_text_count": 0,
+        "encrypted": true
+      },
+      "menuIds": [
+        "form-fill",
+        "triage-overview"
+      ],
+      "first": "form-fill",
+      "firstCommand": "rhwp fields <file> --json",
+      "narrative": "fields 에도 --password 를 붙인다.",
+      "notGym": true
+    },
+    {
+      "id": "S19",
+      "title": "HWPX 표 문서",
+      "source": "samples/tables.hwpx",
+      "kind": "table",
+      "stop": "X10",
+      "facts": {
+        "format_label": "HWPX",
+        "page_count": 5,
+        "para_count": 55,
+        "table_count": 4,
+        "merged_table_count": 0,
+        "field_count": 0,
+        "chart_count": 0,
+        "structure_node_count": 0,
+        "footnote_count": 0,
+        "endnote_count": 0,
+        "injection_signal_count": 0,
+        "hidden_text_count": 0,
+        "encrypted": false
+      },
+      "menuIds": [
+        "table-extract",
+        "triage-overview"
+      ],
+      "first": "table-extract",
+      "firstCommand": "rhwp export-tables <file> --json",
+      "narrative": "format 레이블이 HWPX. 명령은 같다.",
+      "notGym": true
+    },
+    {
+      "id": "S20",
+      "title": "HWP3 표본",
+      "source": "samples/hwp3-sample.hwp",
+      "kind": "no-special",
+      "stop": "X05",
+      "facts": {
+        "format_label": "HWP3",
+        "page_count": 2,
+        "para_count": 18,
+        "table_count": 0,
+        "merged_table_count": 0,
+        "field_count": 0,
+        "chart_count": 0,
+        "structure_node_count": 0,
+        "footnote_count": 0,
+        "endnote_count": 0,
+        "injection_signal_count": 0,
+        "hidden_text_count": 0,
+        "encrypted": false
+      },
+      "menuIds": [
+        "triage-overview"
+      ],
+      "first": "triage-overview",
+      "firstCommand": "rhwp digest <file> --json",
+      "narrative": "형식만 다르고 특수 신호가 없으면 개요 하나.",
+      "notGym": true
+    },
+    {
+      "id": "S21",
+      "title": "HML 메모",
+      "source": "samples/note.hml",
+      "kind": "no-special",
+      "stop": "X05",
+      "facts": {
+        "format_label": "HML",
+        "page_count": 1,
+        "para_count": 6,
+        "table_count": 0,
+        "merged_table_count": 0,
+        "field_count": 0,
+        "chart_count": 0,
+        "structure_node_count": 0,
+        "footnote_count": 0,
+        "endnote_count": 0,
+        "injection_signal_count": 0,
+        "hidden_text_count": 0,
+        "encrypted": false
+      },
+      "menuIds": [
+        "triage-overview"
+      ],
+      "first": "triage-overview",
+      "firstCommand": "rhwp digest <file> --json",
+      "narrative": "HML 도 explore 입력이다.",
+      "notGym": true
+    },
+    {
+      "id": "S22",
+      "title": "0쪽·문단 0 — 로드는 됐으나 비어 보임",
+      "source": "samples/empty-body.hwp",
+      "kind": "empty-loaded",
+      "stop": "X05",
+      "facts": {
+        "format_label": "HWP5",
+        "page_count": 0,
+        "para_count": 0,
+        "table_count": 0,
+        "merged_table_count": 0,
+        "field_count": 0,
+        "chart_count": 0,
+        "structure_node_count": 0,
+        "footnote_count": 0,
+        "endnote_count": 0,
+        "injection_signal_count": 0,
+        "hidden_text_count": 0,
+        "encrypted": false
+      },
+      "menuIds": [
+        "triage-overview"
+      ],
+      "first": "triage-overview",
+      "firstCommand": "rhwp digest <file> --json",
+      "narrative": "로드 성공이면 메뉴는 개요 하나. 파싱 실패와 구별.",
+      "notGym": true
+    },
+    {
+      "id": "S23",
+      "title": "9쪽 — 장문 임계 직전",
+      "source": "samples/nine.hwp",
+      "kind": "no-special",
+      "stop": "X05",
+      "facts": {
+        "format_label": "HWP5",
+        "page_count": 9,
+        "para_count": 180,
+        "table_count": 0,
+        "merged_table_count": 0,
+        "field_count": 0,
+        "chart_count": 0,
+        "structure_node_count": 0,
+        "footnote_count": 0,
+        "endnote_count": 0,
+        "injection_signal_count": 0,
+        "hidden_text_count": 0,
+        "encrypted": false
+      },
+      "menuIds": [
+        "triage-overview"
+      ],
+      "first": "triage-overview",
+      "firstCommand": "rhwp digest <file> --json",
+      "narrative": "9쪽은 long-doc 를 켜지 않는다.",
+      "notGym": true
+    },
+    {
+      "id": "S24",
+      "title": "20쪽 — 장문 high 하한",
+      "source": "samples/twenty.hwp",
+      "kind": "long",
+      "stop": "X10",
+      "facts": {
+        "format_label": "HWP5",
+        "page_count": 20,
+        "para_count": 400,
+        "table_count": 0,
+        "merged_table_count": 0,
+        "field_count": 0,
+        "chart_count": 0,
+        "structure_node_count": 0,
+        "footnote_count": 0,
+        "endnote_count": 0,
+        "injection_signal_count": 0,
+        "hidden_text_count": 0,
+        "encrypted": false
+      },
+      "menuIds": [
+        "long-doc-digest",
+        "triage-overview"
+      ],
+      "first": "long-doc-digest",
+      "firstCommand": "rhwp digest <file> --sections --json",
+      "narrative": "2*LONG_DOC_PAGES. confidence high.",
+      "notGym": true
+    },
+    {
+      "id": "S25",
+      "title": "표+차트+조문 보고서",
+      "source": "samples/deck.hwp",
+      "kind": "mixed",
+      "stop": "X10",
+      "facts": {
+        "format_label": "HWP5",
+        "page_count": 8,
+        "para_count": 100,
+        "table_count": 4,
+        "merged_table_count": 0,
+        "field_count": 0,
+        "chart_count": 2,
+        "structure_node_count": 6,
+        "footnote_count": 0,
+        "endnote_count": 0,
+        "injection_signal_count": 0,
+        "hidden_text_count": 0,
+        "encrypted": false
+      },
+      "menuIds": [
+        "table-extract",
+        "structure-outline",
+        "chart-extract",
+        "triage-overview"
+      ],
+      "first": "table-extract",
+      "firstCommand": "rhwp export-tables <file> --json",
+      "narrative": "form-fill 없음. 표가 차트보다 위.",
+      "notGym": true
+    },
+    {
+      "id": "S26",
+      "title": "전체 어포던스",
+      "source": "samples/kitchen-sink.hwp",
+      "kind": "mixed",
+      "stop": "X03",
+      "facts": {
+        "format_label": "HWP5",
+        "page_count": 22,
+        "para_count": 500,
+        "table_count": 2,
+        "merged_table_count": 1,
+        "field_count": 4,
+        "chart_count": 1,
+        "structure_node_count": 5,
+        "footnote_count": 2,
+        "endnote_count": 1,
+        "injection_signal_count": 1,
+        "hidden_text_count": 1,
+        "encrypted": false
+      },
+      "menuIds": [
+        "security-sweep",
+        "form-fill",
+        "table-extract",
+        "structure-outline",
+        "chart-extract",
+        "note-structure",
+        "long-doc-digest",
+        "triage-overview"
+      ],
+      "first": "security-sweep",
+      "firstCommand": "rhwp inspect injection <file> --json",
+      "narrative": "8개가 모두 켜지고 보안이 1번.",
+      "notGym": true
+    },
+    {
+      "id": "S27",
+      "title": "장문+각주 논문",
+      "source": "samples/long-paper.hwp",
+      "kind": "long",
+      "stop": "X10",
+      "facts": {
+        "format_label": "HWP5",
+        "page_count": 36,
+        "para_count": 700,
+        "table_count": 0,
+        "merged_table_count": 0,
+        "field_count": 0,
+        "chart_count": 0,
+        "structure_node_count": 20,
+        "footnote_count": 40,
+        "endnote_count": 0,
+        "injection_signal_count": 0,
+        "hidden_text_count": 0,
+        "encrypted": false
+      },
+      "menuIds": [
+        "structure-outline",
+        "note-structure",
+        "long-doc-digest",
+        "triage-overview"
+      ],
+      "first": "structure-outline",
+      "firstCommand": "rhwp export-structure <file> --json",
+      "narrative": "structure → note → long-doc → triage.",
+      "notGym": true
+    },
+    {
+      "id": "S28",
+      "title": "은닉+장문",
+      "source": "untrusted/long-hidden.hwp",
+      "kind": "security",
+      "stop": "X03",
+      "facts": {
+        "format_label": "HWP5",
+        "page_count": 30,
+        "para_count": 600,
+        "table_count": 0,
+        "merged_table_count": 0,
+        "field_count": 0,
+        "chart_count": 0,
+        "structure_node_count": 0,
+        "footnote_count": 0,
+        "endnote_count": 0,
+        "injection_signal_count": 0,
+        "hidden_text_count": 6,
+        "encrypted": false
+      },
+      "menuIds": [
+        "security-sweep",
+        "long-doc-digest",
+        "triage-overview"
+      ],
+      "first": "security-sweep",
+      "firstCommand": "rhwp inspect hidden-text <file> --json",
+      "narrative": "medium 보안이어도 우선순위 90 이라 1번.",
+      "notGym": true
+    },
+    {
+      "id": "S29",
+      "title": "DRM 레이블 (로드 성공 가정)",
+      "source": "samples/drm-opened.hwp",
+      "kind": "no-special",
+      "stop": "X05",
+      "facts": {
+        "format_label": "DRM",
+        "page_count": 3,
+        "para_count": 10,
+        "table_count": 0,
+        "merged_table_count": 0,
+        "field_count": 0,
+        "chart_count": 0,
+        "structure_node_count": 0,
+        "footnote_count": 0,
+        "endnote_count": 0,
+        "injection_signal_count": 0,
+        "hidden_text_count": 0,
+        "encrypted": false
+      },
+      "menuIds": [
+        "triage-overview"
+      ],
+      "first": "triage-overview",
+      "firstCommand": "rhwp digest <file> --json",
+      "narrative": "형식 레이블만 DRM. 메뉴 규칙은 같다.",
+      "notGym": true
+    },
+    {
+      "id": "S30",
+      "title": "암호+장문+조문",
+      "source": "secret/law.hwp",
+      "kind": "encrypted",
+      "stop": "X04",
+      "facts": {
+        "format_label": "HWP5",
+        "page_count": 48,
+        "para_count": 1100,
+        "table_count": 0,
+        "merged_table_count": 0,
+        "field_count": 0,
+        "chart_count": 0,
+        "structure_node_count": 90,
+        "footnote_count": 0,
+        "endnote_count": 0,
+        "injection_signal_count": 0,
+        "hidden_text_count": 0,
+        "encrypted": true
+      },
+      "menuIds": [
+        "structure-outline",
+        "long-doc-digest",
+        "triage-overview"
+      ],
+      "first": "structure-outline",
+      "firstCommand": "rhwp export-structure <file> --json",
+      "narrative": "후속 digest --sections 에도 --password.",
+      "notGym": true
+    },
+    {
+      "id": "S31",
+      "title": "표 1개 최소",
+      "source": "samples/one-table.hwp",
+      "kind": "table",
+      "stop": "X10",
+      "facts": {
+        "format_label": "HWP5",
+        "page_count": 1,
+        "para_count": 5,
+        "table_count": 1,
+        "merged_table_count": 0,
+        "field_count": 0,
+        "chart_count": 0,
+        "structure_node_count": 0,
+        "footnote_count": 0,
+        "endnote_count": 0,
+        "injection_signal_count": 0,
+        "hidden_text_count": 0,
+        "encrypted": false
+      },
+      "menuIds": [
+        "table-extract",
+        "triage-overview"
+      ],
+      "first": "table-extract",
+      "firstCommand": "rhwp export-tables <file> --json",
+      "narrative": "표 1개도 table-extract 를 켠다.",
+      "notGym": true
+    },
+    {
+      "id": "S32",
+      "title": "차트 1개 최소",
+      "source": "samples/one-chart.hwp",
+      "kind": "chart",
+      "stop": "X10",
+      "facts": {
+        "format_label": "HWP5",
+        "page_count": 2,
+        "para_count": 12,
+        "table_count": 0,
+        "merged_table_count": 0,
+        "field_count": 0,
+        "chart_count": 1,
+        "structure_node_count": 0,
+        "footnote_count": 0,
+        "endnote_count": 0,
+        "injection_signal_count": 0,
+        "hidden_text_count": 0,
+        "encrypted": false
+      },
+      "menuIds": [
+        "chart-extract",
+        "triage-overview"
+      ],
+      "first": "chart-extract",
+      "firstCommand": "rhwp chart-to-csv <file> --json",
+      "narrative": "차트 1개도 chart-extract.",
+      "notGym": true
+    },
+    {
+      "id": "S33",
+      "title": "미주만",
+      "source": "samples/endnotes.hwp",
+      "kind": "notes",
+      "stop": "X10",
+      "facts": {
+        "format_label": "HWP5",
+        "page_count": 3,
+        "para_count": 22,
+        "table_count": 0,
+        "merged_table_count": 0,
+        "field_count": 0,
+        "chart_count": 0,
+        "structure_node_count": 0,
+        "footnote_count": 0,
+        "endnote_count": 2,
+        "injection_signal_count": 0,
+        "hidden_text_count": 0,
+        "encrypted": false
+      },
+      "menuIds": [
+        "note-structure",
+        "triage-overview"
+      ],
+      "first": "note-structure",
+      "firstCommand": "rhwp explain <file> --json",
+      "narrative": "각주 0·미주 2. why 가 둘 다 센다.",
+      "notGym": true
+    },
+    {
+      "id": "S34",
+      "title": "HWPX 서식",
+      "source": "samples/form.hwpx",
+      "kind": "form",
+      "stop": "X10",
+      "facts": {
+        "format_label": "HWPX",
+        "page_count": 2,
+        "para_count": 16,
+        "table_count": 0,
+        "merged_table_count": 0,
+        "field_count": 6,
+        "chart_count": 0,
+        "structure_node_count": 0,
+        "footnote_count": 0,
+        "endnote_count": 0,
+        "injection_signal_count": 0,
+        "hidden_text_count": 0,
+        "encrypted": false
+      },
+      "menuIds": [
+        "form-fill",
+        "triage-overview"
+      ],
+      "first": "form-fill",
+      "firstCommand": "rhwp fields <file> --json",
+      "narrative": "형식과 무관하게 fields.",
+      "notGym": true
+    },
+    {
+      "id": "S35",
+      "title": "주입 1건 최소 high",
+      "source": "untrusted/one-inject.hwp",
+      "kind": "security",
+      "stop": "X03",
+      "facts": {
+        "format_label": "HWP5",
+        "page_count": 1,
+        "para_count": 8,
+        "table_count": 0,
+        "merged_table_count": 0,
+        "field_count": 0,
+        "chart_count": 0,
+        "structure_node_count": 0,
+        "footnote_count": 0,
+        "endnote_count": 0,
+        "injection_signal_count": 1,
+        "hidden_text_count": 0,
+        "encrypted": false
+      },
+      "menuIds": [
+        "security-sweep",
+        "triage-overview"
+      ],
+      "first": "security-sweep",
+      "firstCommand": "rhwp inspect injection <file> --json",
+      "narrative": "1건이어도 high. 본문 금지.",
+      "notGym": true
+    },
+    {
+      "id": "S36",
+      "title": "서식+표+조문 (보안 없음)",
+      "source": "samples/office.hwp",
+      "kind": "mixed",
+      "stop": "X10",
+      "facts": {
+        "format_label": "HWP5",
+        "page_count": 7,
+        "para_count": 88,
+        "table_count": 5,
+        "merged_table_count": 0,
+        "field_count": 9,
+        "chart_count": 0,
+        "structure_node_count": 4,
+        "footnote_count": 0,
+        "endnote_count": 0,
+        "injection_signal_count": 0,
+        "hidden_text_count": 0,
+        "encrypted": false
+      },
+      "menuIds": [
+        "form-fill",
+        "table-extract",
+        "structure-outline",
+        "triage-overview"
+      ],
+      "first": "form-fill",
+      "firstCommand": "rhwp fields <file> --json",
+      "narrative": "form-fill 이 표보다 위 (80>75).",
+      "notGym": true
+    },
+    {
+      "id": "S37",
+      "title": "빈 파일 레이블 (로드 성공 가정)",
+      "source": "samples/empty.hwp",
+      "kind": "empty-loaded",
+      "stop": "X05",
+      "facts": {
+        "format_label": "빈 파일",
+        "page_count": 0,
+        "para_count": 0,
+        "table_count": 0,
+        "merged_table_count": 0,
+        "field_count": 0,
+        "chart_count": 0,
+        "structure_node_count": 0,
+        "footnote_count": 0,
+        "endnote_count": 0,
+        "injection_signal_count": 0,
+        "hidden_text_count": 0,
+        "encrypted": false
+      },
+      "menuIds": [
+        "triage-overview"
+      ],
+      "first": "triage-overview",
+      "firstCommand": "rhwp digest <file> --json",
+      "narrative": "detect_format Empty. 메뉴는 개요. 파싱 실패 경로와 구별.",
+      "notGym": true
+    },
+    {
+      "id": "S38",
+      "title": "알 수 없음 형식",
+      "source": "samples/odd.bin",
+      "kind": "no-special",
+      "stop": "X05",
+      "facts": {
+        "format_label": "알 수 없음",
+        "page_count": 1,
+        "para_count": 1,
+        "table_count": 0,
+        "merged_table_count": 0,
+        "field_count": 0,
+        "chart_count": 0,
+        "structure_node_count": 0,
+        "footnote_count": 0,
+        "endnote_count": 0,
+        "injection_signal_count": 0,
+        "hidden_text_count": 0,
+        "encrypted": false
+      },
+      "menuIds": [
+        "triage-overview"
+      ],
+      "first": "triage-overview",
+      "firstCommand": "rhwp digest <file> --json",
+      "narrative": "형식 레이블만 다르다. 추정 명령을 만들지 않는다.",
+      "notGym": true
+    },
+    {
+      "id": "S39",
+      "title": "쪽수 0·표 있음 (이례)",
+      "source": "samples/table-no-page.hwp",
+      "kind": "table",
+      "stop": "X10",
+      "facts": {
+        "format_label": "HWP5",
+        "page_count": 0,
+        "para_count": 4,
+        "table_count": 1,
+        "merged_table_count": 0,
+        "field_count": 0,
+        "chart_count": 0,
+        "structure_node_count": 0,
+        "footnote_count": 0,
+        "endnote_count": 0,
+        "injection_signal_count": 0,
+        "hidden_text_count": 0,
+        "encrypted": false
+      },
+      "menuIds": [
+        "table-extract",
+        "triage-overview"
+      ],
+      "first": "table-extract",
+      "firstCommand": "rhwp export-tables <file> --json",
+      "narrative": "쪽수가 0이어도 표 개수가 있으면 table-extract.",
+      "notGym": true
+    },
+    {
+      "id": "S40",
+      "title": "우선순위 고정 표본 (계약과 동일)",
+      "source": "samples/priority.hwp",
+      "kind": "mixed",
+      "stop": "X03",
+      "facts": {
+        "format_label": "HWP5",
+        "page_count": 3,
+        "para_count": 40,
+        "table_count": 1,
+        "merged_table_count": 0,
+        "field_count": 1,
+        "chart_count": 1,
+        "structure_node_count": 0,
+        "footnote_count": 0,
+        "endnote_count": 0,
+        "injection_signal_count": 1,
+        "hidden_text_count": 0,
+        "encrypted": false
+      },
+      "menuIds": [
+        "security-sweep",
+        "form-fill",
+        "table-extract",
+        "chart-extract",
+        "triage-overview"
+      ],
+      "first": "security-sweep",
+      "firstCommand": "rhwp inspect injection <file> --json",
+      "narrative": "ids = security, form-fill, table-extract, chart-extract, triage.",
+      "notGym": true
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workReceiptExceptionEnvelope",
+  "ident": "audit_steps",
+  "claim": "M-rcpt",
+  "issue": 5478,
+  "command": "audit",
+  "family": "audit-judgment",
+  "argv": [
+    "audit",
+    "layouts/steps-tamper",
+    "--json"
+  ],
+  "exit": 3,
+  "stdoutBytes": -1,
+  "stdoutSilent": false,
+  "needle": "receipt.steps 와 planText.steps 길이 불일치 (plan.steps 길이와 receipt.steps 불일치)",
+  "envelopeKeys": [
+    "schemaVersion",
+    "failed"
+  ],
+  "why": "steps 필드만 999 로.",
+  "judgment": true,
+  "io": false,
+  "usage": false,
+  "notes": "exit 3 은 도구 고장이 아니라 판정 데이터다. exit 1 은 IO, exit 2 는 사용법. 실패 경로 stdout 은 0바이트가 기본이고, replay --json 엔진 오류만 {schemaVersion,error} 를 싣는다.",
+  "generator": "tools/work_receipt/fatten_work_receipt.py"
+}

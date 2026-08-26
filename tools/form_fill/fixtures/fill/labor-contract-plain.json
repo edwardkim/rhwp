@@ -1,0 +1,65 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.form_fill.fill_case.v1",
+  "id": "labor-contract-fill-plain",
+  "axis": "fill-fields",
+  "claim": "M-fill",
+  "generator": "tools/form_fill/fatten_form_fill.py",
+  "form": "labor-contract",
+  "title": "표준 근로계약서 고유 이름 채움",
+  "family": "노무",
+  "genre": "계약",
+  "sample": "fixtures/forms/근로계약서.hwp",
+  "format": "hwp5",
+  "relatedIssue": "#3329",
+  "why": "순번 없는 고유 이름은 단건 채움. notFound/ambiguous 가 비어야 완료.",
+  "firstFieldName": "사업장명",
+  "fieldCount": 14,
+  "argv": [
+    "edit",
+    "fill-fields",
+    "fixtures/forms/근로계약서.hwp",
+    "--data",
+    "{\"사업장명\": \"한국문서공사\", \"생년월일\": \"2000. 1. 1.\", \"계약시작일\": \"2026. 3. 1.\"}",
+    "-o",
+    "out/labor-contract-plain.hwp",
+    "--json"
+  ],
+  "existingCliOnly": true,
+  "data": {
+    "사업장명": "한국문서공사",
+    "생년월일": "2000. 1. 1.",
+    "계약시작일": "2026. 3. 1."
+  },
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "fixtures/forms/근로계약서.hwp",
+    "dryRun": false,
+    "filledCount": 3,
+    "filled": [
+      {
+        "name": "사업장명",
+        "occurrence": 0,
+        "value": "한국문서공사"
+      },
+      {
+        "name": "생년월일",
+        "occurrence": 0,
+        "value": "2000. 1. 1."
+      },
+      {
+        "name": "계약시작일",
+        "occurrence": 0,
+        "value": "2026. 3. 1."
+      }
+    ],
+    "notFound": [],
+    "ambiguous": [],
+    "confusable": [],
+    "verify": null,
+    "output": "out/labor-contract-plain.hwp",
+    "outputFormat": "hwp5"
+  },
+  "exit": 0,
+  "gate": true
+}

@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "1.0",
+  "mode": "single",
+  "source": "ovf-table-right-over0.5-tol1.synth",
+  "pageCount": 3,
+  "pageFilter": null,
+  "overflowTolerancePx": 1.0,
+  "overlapTolerancePx": 2.0,
+  "types": null,
+  "strict": false,
+  "overflowCount": 0,
+  "offCanvasCount": 0,
+  "overlapCount": 0,
+  "textOverlapCount": 0,
+  "emptyPageCount": 0,
+  "hasSignal": false,
+  "pages": [],
+  "hypothesis": "표가 본문 오른쪽을 0.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.",
+  "fixtureId": "ovf-table-right-over0.5-tol1"
+}

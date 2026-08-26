@@ -1,0 +1,59 @@
+{
+  "id": "BO03",
+  "tier": 3,
+  "title": "HWP5 서식 + JSONL 데이터 메일머지",
+  "input": "samples/form-01.hwp",
+  "instructions": "이 서식은 HWP5 이고 누름틀 'myMsg01' 이 하나 있다. gym/packs/batch-ops/assets/BO03-data.jsonl 은 행마다 {\"myMsg01\": \"…\"} 객체 두 줄이다. 서식 1개에 데이터 2행을 병합해 out/ 폴더에 문서 2부(0001.hwp·0002.hwp)를 만들어라. 힌트: rhwp batch fill --form samples/form-01.hwp --data gym/packs/batch-ops/assets/BO03-data.jsonl --out-dir out --json (확장자가 .jsonl 이면 한 줄이 한 행이고, 서식이 .hwp 이면 산출도 .hwp 다).",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "out/0001.hwp",
+      "out/0002.hwp"
+    ]
+  },
+  "checks": [
+    {
+      "name": "1부 산출 존재",
+      "op": "file_exists",
+      "file": "out/0001.hwp",
+      "minBytes": 1
+    },
+    {
+      "name": "2부 산출 존재 (단건이 아니라 대량)",
+      "op": "file_exists",
+      "file": "out/0002.hwp",
+      "minBytes": 1
+    },
+    {
+      "name": "원본 서식과 다름 (무편집 복사 거부)",
+      "op": "differs_from_input",
+      "file": "out/0001.hwp"
+    },
+    {
+      "name": "1행 JSONL 값이 1부에 들어감",
+      "op": "value_ge",
+      "path": "matchCount",
+      "value": 1,
+      "cmd": [
+        "search",
+        "{file:out/0001.hwp}",
+        "--json",
+        "--",
+        "JsonlAlpha"
+      ]
+    },
+    {
+      "name": "2행 JSONL 값이 2부에 들어감",
+      "op": "value_ge",
+      "path": "matchCount",
+      "value": 1,
+      "cmd": [
+        "search",
+        "{file:out/0002.hwp}",
+        "--json",
+        "--",
+        "JsonlBeta"
+      ]
+    }
+  ]
+}

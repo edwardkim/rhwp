@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rhwp.dev/schema/llm-verifier/search-extract-envelope.v-bind.1.0.json",
+  "title": "SearchOrExtractDataEnvelope",
+  "description": "Existing rhwp CLI JSON envelopes consumed by axis 3. No new CLI fields.",
+  "type": "object",
+  "oneOf": [
+    {
+      "required": ["matches"],
+      "properties": {
+        "matches": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "text": { "type": "string" },
+              "context": { "type": "string" },
+              "section": { "type": "integer" },
+              "paragraph": { "type": "integer" },
+              "page": { "type": "integer" },
+              "charOffset": { "type": "integer" },
+              "length": { "type": "integer" },
+              "cell": { "type": "object" },
+              "textbox": { "type": "object" }
+            }
+          }
+        },
+        "truncated": { "type": "boolean" },
+        "totalMatchCount": { "type": "integer" },
+        "omittedCount": { "type": "integer" }
+      }
+    },
+    {
+      "required": ["items"],
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "kind": { "type": "string", "enum": ["date", "amount"] },
+              "raw": { "type": "string" },
+              "normalized": {},
+              "currency": { "type": "string" },
+              "unit": { "type": "string" },
+              "section": { "type": "integer" },
+              "paragraph": { "type": "integer" },
+              "page": { "type": "integer" },
+              "charOffset": { "type": "integer" },
+              "length": { "type": "integer" }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

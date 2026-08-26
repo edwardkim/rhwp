@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workCapsule",
+  "parent": null,
+  "plan": {
+    "planVersion": "1.0",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "output": "out/org_rename.hwp",
+    "steps": [
+      {
+        "action": "replace_text",
+        "find": "한국수자원공사",
+        "replace": "한강홍수통제소"
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"samples/basic/issue2007_nested_cell_pagination_42065.hwp\",\"output\":\"out/org_rename.hwp\",\"steps\":[{\"action\":\"replace_text\",\"find\":\"한국수자원공사\",\"replace\":\"한강홍수통제소\"}]}",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "inputSha256": "272d5db8fd5d4e45e98a89c4c6218c65de06979b243ca0422b6dc271b0e7edac",
+    "planSha256": "3c3989f2b2fbeee94e58481ee5e35aac4fa7d30f700dcd7fe60474df0575e09c",
+    "outputSha256": "d6e74022b88769746130ff820752307b248afad76f8fabaa823b9260bbcbb362",
+    "toolVersion": "0.8.4",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null,
+    "untrustedContent": false,
+    "untrustedFields": []
+  }
+}

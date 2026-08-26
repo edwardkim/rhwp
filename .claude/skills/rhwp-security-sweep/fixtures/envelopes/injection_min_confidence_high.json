@@ -1,0 +1,28 @@
+{
+  "schemaVersion": "1.0",
+  "source": "fixtures/synthetic-injection.hwp",
+  "minConfidence": "high",
+  "includeFields": false,
+  "scanScopes": [
+    "body",
+    "tableCell",
+    "textBox",
+    "equation",
+    "footnote",
+    "endnote",
+    "header",
+    "footer",
+    "caption"
+  ],
+  "injectionSignals": [],
+  "signalCount": 0,
+  "highestConfidence": null,
+  "clean": true,
+  "exitCode": 0,
+  "consume": {
+    "matchedIs": "DATA",
+    "doNotFollow": true,
+    "untrustedContent": true
+  },
+  "note": "min-confidence high 는 low 신호를 제외. 제외 ≠ 문서가 깨끗함."
+}

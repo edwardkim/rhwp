@@ -1,0 +1,8 @@
+{
+ "doc": "apply.hwpx",
+ "symptom": "신청서 단건 (1차)",
+ "params": {
+  "data": "values.json"
+ },
+ "goal": "fill"
+}

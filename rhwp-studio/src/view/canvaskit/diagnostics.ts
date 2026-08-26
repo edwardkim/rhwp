@@ -19,7 +19,6 @@ const EXPECTED_CANVASKIT_UNSUPPORTED_OPS = new Set([
   'textRun:layoutPositions',
   'textRun:scriptTextRequiresShaping',
   'textRunFont',
-  'viewOption:showControlCodes',
 ]);
 
 export function isExpectedCanvasKitUnsupportedOp(op: string): boolean {

@@ -1,0 +1,27 @@
+{
+  "id": "OP28",
+  "tier": 2,
+  "title": "field-01 문단 수 이중 계산",
+  "input": "samples/field-01.hwp",
+  "axis": "검증",
+  "instructions": "field-01 의 문단 수를 answer.json 에 {\"paragraphs\": N} 으로 제출하라.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "field-01 문단 수",
+      "op": "answer_eq",
+      "answer": "paragraphs",
+      "cmd": [
+        "explain",
+        "{input}",
+        "--json"
+      ],
+      "path": "paragraphCount"
+    }
+  ]
+}

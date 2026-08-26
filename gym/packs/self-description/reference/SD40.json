@@ -1,0 +1,19 @@
+{
+  "id": "SD40",
+  "steps": [
+    {
+      "answer": {
+        "hits": {
+          "cmd": [
+            "capabilities",
+            "--search",
+            "inspect",
+            "--json"
+          ],
+          "path": "commands",
+          "len": true
+        }
+      }
+    }
+  ]
+}

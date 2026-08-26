@@ -1,0 +1,11 @@
+{
+  "keys": [
+    {
+      "keyId": "gym.baseline/claude#1",
+      "publicKey": "odzT+spPmzfxery+WhXp2GY6LKgD2kPuaeUr/2oThgw=",
+      "revoked": null
+    }
+  ],
+  "kind": "keyring",
+  "schemaVersion": "1.0"
+}

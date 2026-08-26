@@ -1,0 +1,35 @@
+{
+  "id": "FJ20",
+  "steps": [
+    {
+      "write_json": {
+        "to": "{sub:data.json}",
+        "body": {
+          "myMsg01": "배포후확인"
+        }
+      }
+    },
+    {
+      "run": [
+        "edit",
+        "fill-fields",
+        "{input}",
+        "--data",
+        "@{sub:data.json}",
+        "-o",
+        "{sub:filled2.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "edit",
+        "sanitize",
+        "{sub:filled2.hwp}",
+        "-o",
+        "{sub:submit2.hwp}",
+        "--json"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "id": "ST02",
+  "steps": [
+    {
+      "run": [
+        "csv-to-chart",
+        "{input}",
+        "--csv",
+        "gym/packs/studio-e2e/assets/ST02-edit.csv",
+        "--chart",
+        "1",
+        "-o",
+        "{sub:out.hwp}",
+        "--json"
+      ]
+    }
+  ]
+}

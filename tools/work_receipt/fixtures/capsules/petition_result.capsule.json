@@ -1,0 +1,30 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workCapsule",
+  "parent": null,
+  "plan": {
+    "planVersion": "1.0",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "output": "out/petition-result.hwp",
+    "steps": [
+      {
+        "action": "replace_text",
+        "find": "처리결과 검토중",
+        "replace": "처리결과 수용"
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"samples/basic/issue2007_nested_cell_pagination_42065.hwp\",\"output\":\"out/petition-result.hwp\",\"steps\":[{\"action\":\"replace_text\",\"find\":\"처리결과 검토중\",\"replace\":\"처리결과 수용\"}]}",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "inputSha256": "d79745421cf7ece6f1dacc7ea6500a2e053070b33c2a8353b3d32ff002d3e7f8",
+    "planSha256": "7b2bebd11b5d961f21b7c66ddecfaa49ab04d192f67bc2e691f7d1f9f2f2aaf4",
+    "outputSha256": "d728a5cac036fb7168c330f726a9cc0210e2e98fac90bd531985dab87d115966",
+    "toolVersion": "fixture-0.0.0-not-a-release",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null
+  }
+}

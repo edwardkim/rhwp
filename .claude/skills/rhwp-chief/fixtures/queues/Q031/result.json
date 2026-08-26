@@ -1,0 +1,9 @@
+{
+ "schemaVersion": "1",
+ "generatedBy": "tools/chief/service_loop.py",
+ "goal": "summarize",
+ "route": "resolve-now",
+ "status": "needs-agent",
+ "reason": "모르는 goal: summarize",
+ "stop": "C06"
+}

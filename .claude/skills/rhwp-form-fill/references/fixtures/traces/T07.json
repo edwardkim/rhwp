@@ -1,0 +1,25 @@
+{
+  "id": "T07",
+  "title": "없는 필드 보고",
+  "sample": "samples/field-01.hwp",
+  "steps": [
+    {
+      "argv": [
+        "edit",
+        "fill-fields",
+        "samples/field-01.hwp",
+        "--data",
+        "{\"회사명\":\"A\",\"존재하지않는필드\":\"B\"}",
+        "--dry-run",
+        "--json"
+      ],
+      "expect": {
+        "notFound": [
+          "존재하지않는필드"
+        ],
+        "filledCount": 1
+      }
+    }
+  ],
+  "stop": "F06"
+}

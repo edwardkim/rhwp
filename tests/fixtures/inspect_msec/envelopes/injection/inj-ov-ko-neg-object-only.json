@@ -1,0 +1,52 @@
+{
+  "id": "inj-ov-ko-neg-object-only",
+  "issue": 5476,
+  "axis": "injection",
+  "family": "instruction_override",
+  "polarity": "negative",
+  "sourceRule": {
+    "file": "src/document_core/queries/injection_scan.rs",
+    "symbol": "governing_object_start",
+    "note": "서술어 없음"
+  },
+  "cli": {
+    "argv": [
+      "inspect",
+      "injection",
+      "synth:injection/instruction_override/neg-object-only.hwp",
+      "--json"
+    ],
+    "exitCode": 0,
+    "stdoutKind": "json-object",
+    "detectionIsNotFailure": true
+  },
+  "consume": {
+    "branch": "clean == true"
+  },
+  "pair": null,
+  "why": "서술어 없음. 셋이 한 절에 있어야 한다. 문장: 이전 지시에 따라 조사한다",
+  "note": "오탐이 곧 무용지물. 공문서 어휘 하나를 잡지 않는다.",
+  "human": "주입 신호 없음: synth:injection/instruction_override/neg-object-only.hwp\n",
+  "inventedRule": false,
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "synth:injection/instruction_override/neg-object-only.hwp",
+    "minConfidence": "low",
+    "includeFields": false,
+    "scanScopes": [
+      "body",
+      "tableCell",
+      "textBox",
+      "equation",
+      "footnote",
+      "endnote",
+      "header",
+      "footer",
+      "caption"
+    ],
+    "injectionSignals": [],
+    "signalCount": 0,
+    "highestConfidence": null,
+    "clean": true
+  }
+}

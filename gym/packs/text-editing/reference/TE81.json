@@ -1,0 +1,31 @@
+{
+  "id": "TE81",
+  "steps": [
+    {
+      "run": [
+        "edit",
+        "insert-paragraph",
+        "{input}",
+        "--section",
+        "0",
+        "--para",
+        "0",
+        "-o",
+        "{sub:split81.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "answer": {
+        "paras": {
+          "cmd": [
+            "explain",
+            "{sub:split81.hwp}",
+            "--json"
+          ],
+          "path": "paragraphCount"
+        }
+      }
+    }
+  ]
+}

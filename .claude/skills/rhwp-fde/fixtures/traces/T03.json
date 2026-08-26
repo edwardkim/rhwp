@@ -1,0 +1,38 @@
+{
+  "schemaVersion": "1",
+  "generatedBy": "tools/fde/triage.py",
+  "id": "T03",
+  "doc": "fixtures/transcripts/T03.input",
+  "docBytes": 128,
+  "symptom": "열면 프로그램이 죽어요",
+  "container": "hwpx",
+  "steps": [
+    {
+      "command": "capabilities --json",
+      "ok": true,
+      "exitCode": 0,
+      "envelopeKeys": [
+        "commands",
+        "schemaVersion"
+      ]
+    },
+    {
+      "command": "info {doc} --json",
+      "ok": false,
+      "failureSignature": [
+        "panic",
+        "src/hwp/parser.rs:88"
+      ]
+    }
+  ],
+  "route": "escalate-bug",
+  "routeReason": "info {doc} --json 단계에서 ['panic', 'src/hwp/parser.rs:88']",
+  "nextActions": [
+    "python3 tools/crash_minimizer.py doc.hwpx --bin <rhwp> --cmd \"info {doc} --json\" -o minimal.hwpx --emit-issue issue_draft.md",
+    "gh search issues --repo edwardkim/rhwp \"panicked at parser.rs\"",
+    "고객 회신: 재현 확보됨 + 추적번호"
+  ],
+  "elapsedSeconds": 0.4,
+  "issue": 5333,
+  "notProse": true
+}

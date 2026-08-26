@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "1",
+  "generatedBy": "tools/strategist/engagement.py",
+  "mode": "validate",
+  "claimCount": 1,
+  "ledgerEntryCount": 12,
+  "violationCount": 1,
+  "violations": [
+    {
+      "claim": "CLAIM-1",
+      "kind": "placeholder",
+      "detail": "플레이스홀더가 실제 주장으로 작성되지 않았다"
+    }
+  ],
+  "verdict": "fail",
+  "_skillMeta": {
+    "exit": 3,
+    "kind": "placeholder"
+  }
+}

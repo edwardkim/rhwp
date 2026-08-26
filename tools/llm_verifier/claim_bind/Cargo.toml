@@ -1,0 +1,15 @@
+[package]
+name = "llm-verifier-claim-bind"
+version = "0.1.0"
+edition = "2021"
+publish = false
+license = "MIT"
+description = "LLM-as-verifier axis 3: every natural-language CLAIM must bind to search/extract-data document coordinates"
+
+[lib]
+name = "llm_verifier_claim_bind"
+path = "src/lib.rs"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"

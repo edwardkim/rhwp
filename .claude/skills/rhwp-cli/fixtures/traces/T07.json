@@ -1,0 +1,11 @@
+{
+  "id": "T07",
+  "utterance": "본문만 텍스트",
+  "steps": [
+    {
+      "command": "export-text",
+      "pageZeroBased": true
+    }
+  ],
+  "stop": "--json --max-chars 로 예산"
+}

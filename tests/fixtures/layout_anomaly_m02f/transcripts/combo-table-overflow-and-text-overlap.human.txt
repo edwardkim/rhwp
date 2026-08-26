@@ -1,0 +1,8 @@
+# transcript combo-table-overflow-and-text-overlap
+# family=combined
+# hypothesis=표가 본문·페이지를 넘치고 내부 런이 겹치면 overflow+off-canvas+text-overlap 이 같이 열린다. 표 하나라 일반 overlap 은 없다.
+쪽 수: 3  overflow: 1  off-canvas: 1  overlap: 0  text-overlap: 1  empty_page(가능성): 0
+  [OVERFLOW] page   0    20.00px  Page/Body/Table0 (Table)
+  [OFF-CANVAS] page   0    10.00px  Page/Body/Table0 (Table)
+  [TEXT-OVERLAP] page   0  30.00x10.00px  Page/Body/Table0/Cell0/TextLine0/TextRun0 (TextRun) x Page/Body/Table0/Cell0/TextLine1/TextRun0 (TextRun)
+status: ANOMALY

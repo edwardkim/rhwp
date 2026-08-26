@@ -1,0 +1,27 @@
+{
+  "id": "T29",
+  "title": "장문 논문",
+  "scenario": "S27",
+  "argv": [
+    "explore",
+    "samples/long-paper.hwp",
+    "--json"
+  ],
+  "envelope": "envelopes/S27.json",
+  "expect": {
+    "schemaVersion": "1.0",
+    "encrypted": false,
+    "menuIds": [
+      "structure-outline",
+      "note-structure",
+      "long-doc-digest",
+      "triage-overview"
+    ],
+    "first": "structure-outline",
+    "firstCommand": "rhwp export-structure <file> --json",
+    "untrustedContent": false
+  },
+  "stop": "X10",
+  "notGym": true,
+  "usesExistingCommand": true
+}

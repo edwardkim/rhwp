@@ -1,0 +1,50 @@
+{
+  "name": "hwp_doc_search",
+  "kind": "session",
+  "in_capabilities_mcp": false,
+  "in_tools_list": true,
+  "family": "query",
+  "required": [
+    "docId",
+    "query"
+  ],
+  "optional": [
+    "caseSensitive",
+    "maxMatches",
+    "offset"
+  ],
+  "envelope_fields": [
+    "matchCount",
+    "totalMatchCount",
+    "truncated",
+    "omittedCount",
+    "matches",
+    "nextOffset"
+  ],
+  "writes_ir": false,
+  "writes_disk": false,
+  "idempotentHint": true,
+  "destructiveHint": false,
+  "stateless_twin": "hwp_search",
+  "when": "대형 문서에서 '어디를 고칠까'를 반복 탐색할 때.",
+  "when_not": "검색 1회면 hwp_search. 폴더 전수면 hwp_batch_search.",
+  "recovery": "핸들 만료면 hwp_open. query 누락이면 인자를 고친다(재시도 금지).",
+  "sample_call": {
+    "method": "tools/call",
+    "params": {
+      "name": "hwp_doc_search",
+      "arguments": {
+        "docId": "<docId>",
+        "query": "<query>"
+      }
+    }
+  },
+  "closed_handle_signal": {
+    "isError": true,
+    "needle": "열려 있지 않은 핸들",
+    "nextCall": {
+      "name": "hwp_open"
+    }
+  },
+  "source_const": "ALL_SESSION_TOOLS"
+}

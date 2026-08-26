@@ -1,0 +1,16 @@
+{
+  "id": "SD12",
+  "steps": [
+    {
+      "answer": {
+        "codes": {
+          "cmd": [
+            "capabilities"
+          ],
+          "path": "exitCodes",
+          "len": true
+        }
+      }
+    }
+  ]
+}

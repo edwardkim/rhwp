@@ -42,6 +42,12 @@ test('IME pending 상태처럼 key가 Process여도 code로 장평/자간 단축
   assert.equal(command({ key: 'Process', code: 'KeyW', altKey: true, shiftKey: true }), 'format:char-spacing-increase');
 });
 
+test('한글 IME의 Ctrl+A를 물리 KeyA로 모두 선택에 매핑한다', () => {
+  assert.equal(command({ key: 'ㅁ', code: 'KeyA', ctrlKey: true }), 'edit:select-all');
+  assert.equal(command({ key: 'Process', code: 'KeyA', ctrlKey: true }), 'edit:select-all');
+  assert.equal(command({ key: 'ㅂ', code: 'KeyQ', ctrlKey: true }), null);
+});
+
 test('macOS 영문 입력 Option+G의 © 문자 값도 물리 KeyG로 찾아가기를 실행한다', () => {
   assert.equal(command({ key: 'g', code: 'KeyG', altKey: true }, 'mac'), 'edit:goto');
   assert.equal(command({ key: '©', code: 'KeyG', altKey: true }, 'mac'), 'edit:goto');
@@ -63,4 +69,16 @@ test('표 줄/칸 추가·지우기 단축키는 대화상자 명령으로 매�
   assert.equal(command({ key: 'Process', code: 'Help', altKey: true }, 'other'), null);
   assert.equal(command({ key: 'Delete', altKey: true }), 'table:delete-row-col');
   assert.equal(command({ key: 'delete', altKey: true }), 'table:delete-row-col');
+});
+
+test('확대·축소는 노트북에서도 가능한 Ctrl/Command +/-로 통일한다', () => {
+  assert.equal(command({ key: '+', ctrlKey: true }), 'view:zoom-in');
+  assert.equal(command({ key: '+', ctrlKey: true, shiftKey: true }), 'view:zoom-in');
+  assert.equal(command({ key: '=', ctrlKey: true }), 'view:zoom-in');
+  assert.equal(command({ key: '-', ctrlKey: true }), 'view:zoom-out');
+  assert.equal(command({ key: '+', metaKey: true }, 'mac'), 'view:zoom-in');
+  assert.equal(command({ key: '+', metaKey: true, shiftKey: true }, 'mac'), 'view:zoom-in');
+  assert.equal(command({ key: '-', metaKey: true }, 'mac'), 'view:zoom-out');
+  assert.equal(command({ key: '+', code: 'NumpadAdd', shiftKey: true }), null);
+  assert.equal(command({ key: '-', code: 'NumpadSubtract', shiftKey: true }), null);
 });

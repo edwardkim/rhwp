@@ -1,0 +1,138 @@
+{"schemaVersion":1,"kind":"issue5128PageMapFull","phase":"pre_fix","srcPages":69,"rtPages":68,"measured":"2026-08-18","note":"diag_5128_page_map 실측. IR 동일."}
+{"side":"src","page":1,"head":"fullParagraph#p0","items":"fullParagraph:0,shape:0,shape:0,shape:0"}
+{"side":"src","page":2,"head":"fullParagraph#p0","items":"fullParagraph:0..7+18"}
+{"side":"src","page":3,"head":"4.2.1. 문서 속성17","items":"fullParagraph:26..33+25"}
+{"side":"src","page":4,"head":"4.3.9.2.7. 곡선 개체45","items":"fullParagraph:59..66+25"}
+{"side":"src","page":5,"head":"4.4.2.5. 히스토리 작성자63","items":"fullParagraph:92..97"}
+{"side":"src","page":6,"head":"저작권","items":"fullParagraph:0..6"}
+{"side":"src","page":7,"head":"본 문서에 대하여...","items":"fullParagraph:7..13"}
+{"side":"src","page":8,"head":"fullParagraph#p0","items":"fullParagraph:0,shape:0,fullParagraph:1..6+21"}
+{"side":"src","page":9,"head":"개요","items":"fullParagraph:26..32"}
+{"side":"src","page":10,"head":"자료형 설명","items":"fullParagraph:33..36,table:37,fullParagraph:38..39"}
+{"side":"src","page":11,"head":"한글 파일 구조","items":"fullParagraph:40..44,shape:44,table:45+5"}
+{"side":"src","page":12,"head":"table#p51","items":"table:51,fullParagraph:52..54"}
+{"side":"src","page":13,"head":"table#p55","items":"table:55,fullParagraph:56..62+2"}
+{"side":"src","page":14,"head":"partialTable#p64","items":"partialTable:64,fullParagraph:65..71+2"}
+{"side":"src","page":15,"head":"partialTable#p73","items":"partialTable:73,fullParagraph:74..79,shape:79+6"}
+{"side":"src","page":16,"head":"partialParagraph#p84","items":"partialParagraph:84,fullParagraph:85,shape:85,fullParagraph:86..90+7"}
+{"side":"src","page":17,"head":"fullParagraph#p98","items":"fullParagraph:98..105+15"}
+{"side":"src","page":18,"head":"table#p121","items":"table:121,fullParagraph:122,table:123,fullParagraph:124,table:125,fullParagraph:126..128+1"}
+{"side":"src","page":19,"head":"table#p130","items":"table:130,shape:130,table:130,fullParagraph:131..132,table:133+4"}
+{"side":"src","page":20,"head":"데이터 레코드","items":"fullParagraph:135..140,shape:140,fullParagraph:141+9"}
+{"side":"src","page":21,"head":"문서 정보의 데이터 레코드","items":"fullParagraph:150..151,table:152,fullParagraph:153..154,table:155,fullParagraph:156..157+1"}
+{"side":"src","page":22,"head":"table#p159","items":"table:159,fullParagraph:160..161,table:162"}
+{"side":"src","page":23,"head":"table#p163","items":"table:163"}
+{"side":"src","page":24,"head":"글꼴","items":"fullParagraph:164..165,table:166..169"}
+{"side":"src","page":25,"head":"테두리/배경","items":"fullParagraph:170..171,table:172..173,partialTable:174"}
+{"side":"src","page":26,"head":"partialTable#p174","items":"partialTable:174,table:175..177"}
+{"side":"src","page":27,"head":"table#p178","items":"table:178..181,fullParagraph:182..183"}
+{"side":"src","page":28,"head":"table#p184","items":"table:184..185"}
+{"side":"src","page":29,"head":"table#p186","items":"table:186"}
+{"side":"src","page":30,"head":"탭 정의","items":"fullParagraph:187..188,table:189..190,fullParagraph:191..192,partialTable:193"}
+{"side":"src","page":31,"head":"partialTable#p193","items":"partialTable:193,table:194..196,fullParagraph:197..198,table:199"}
+{"side":"src","page":32,"head":"문단 모양","items":"fullParagraph:200..201,table:202,partialTable:203"}
+{"side":"src","page":33,"head":"partialTable#p203","items":"partialTable:203,table:204..205,fullParagraph:206..207,table:208..209+3"}
+{"side":"src","page":34,"head":"파라미터 아이템","items":"fullParagraph:214,table:215..217,fullParagraph:218..220,table:221"}
+{"side":"src","page":35,"head":"호환 문서","items":"fullParagraph:222..223,table:224..225,fullParagraph:226..227,table:228,fullParagraph:229"}
+{"side":"src","page":36,"head":"본문의 데이터 레코드","items":"fullParagraph:230..231,table:232,fullParagraph:233,partialTable:234"}
+{"side":"src","page":37,"head":"partialTable#p234","items":"partialTable:234,table:235,fullParagraph:236..238,table:239,fullParagraph:240..241+9"}
+{"side":"src","page":38,"head":"table#p250","items":"table:250,fullParagraph:251..253,table:254,fullParagraph:255..256"}
+{"side":"src","page":39,"head":"Tag ID : HWPTAG_CTRL_HEADER","items":"fullParagraph:257,table:258,fullParagraph:259..260,table:261,fullParagraph:262..264+6"}
+{"side":"src","page":40,"head":"partialTable#p270","items":"partialTable:270,table:271..272,partialTable:273"}
+{"side":"src","page":41,"head":"partialTable#p273","items":"partialTable:273,table:274..276,fullParagraph:277..278"}
+{"side":"src","page":42,"head":"table#p279","items":"table:279..283,partialTable:284"}
+{"side":"src","page":43,"head":"partialTable#p284","items":"partialTable:284,table:285,fullParagraph:286..287,table:288,fullParagraph:289..290,table:291"}
+{"side":"src","page":44,"head":"table#p292","items":"table:292..293,fullParagraph:294,table:295..296"}
+{"side":"src","page":45,"head":"table#p297","items":"table:297..300,fullParagraph:301"}
+{"side":"src","page":46,"head":"table#p302","items":"table:302,fullParagraph:303,table:304,fullParagraph:305,table:306,fullParagraph:307,table:308+2"}
+{"side":"src","page":47,"head":"table#p312","items":"table:312..313"}
+{"side":"src","page":48,"head":"다각형 개체","items":"fullParagraph:314,table:315,fullParagraph:316,table:317,fullParagraph:318,table:319,fullParagraph:320,table:321+2"}
+{"side":"src","page":49,"head":"Tag ID : HWPTAG_SHAPE_COMPONENT_CURVE","items":"fullParagraph:324,table:325,fullParagraph:326,table:327,fullParagraph:328,table:329,fullParagraph:330..331+3"}
+{"side":"src","page":50,"head":"partialTable#p334","items":"partialTable:334,table:335..337,fullParagraph:338,table:339"}
+{"side":"src","page":51,"head":"table#p340","items":"table:340..342,partialTable:343"}
+{"side":"src","page":52,"head":"partialTable#p343","items":"partialTable:343,table:344,fullParagraph:345,table:346..347"}
+{"side":"src","page":53,"head":"table#p348","items":"table:348,fullParagraph:349..355+8"}
+{"side":"src","page":54,"head":"partialTable#p363","items":"partialTable:363,table:364,fullParagraph:365,table:366..370+2"}
+{"side":"src","page":55,"head":"partialTable#p372","items":"partialTable:372,fullParagraph:373,table:374,fullParagraph:375"}
+{"side":"src","page":56,"head":"table#p376","items":"table:376..377,fullParagraph:378..379,partialTable:380"}
+{"side":"src","page":57,"head":"partialTable#p380","items":"partialTable:380,table:381"}
+{"side":"src","page":58,"head":"각주/미주 모양","items":"fullParagraph:382..383,table:384..385"}
+{"side":"src","page":59,"head":"쪽 테두리/배경","items":"fullParagraph:386..387,table:388..390,fullParagraph:391,table:392"}
+{"side":"src","page":60,"head":"머리말/꼬리말","items":"fullParagraph:393,table:394,fullParagraph:395,table:396..397,fullParagraph:398..400"}
+{"side":"src","page":61,"head":"자동 번호","items":"fullParagraph:401,table:402..403,fullParagraph:404,table:405,fullParagraph:406,table:407"}
+{"side":"src","page":62,"head":"홀/짝수 조정","items":"fullParagraph:408,table:409,fullParagraph:410,table:411..412,fullParagraph:413,table:414"}
+{"side":"src","page":63,"head":"책갈피","items":"fullParagraph:415..417,table:418,fullParagraph:419,table:420,fullParagraph:421..422"}
+{"side":"src","page":64,"head":"필드 시작","items":"fullParagraph:423,table:424..425,fullParagraph:426"}
+{"side":"src","page":65,"head":"문서 이력 관리","items":"fullParagraph:427..434+20"}
+{"side":"src","page":66,"head":"partialTable#p454","items":"partialTable:454,fullParagraph:455..456,table:457,fullParagraph:458..459,table:460+9"}
+{"side":"src","page":67,"head":"fullParagraph#p0","items":"fullParagraph:0"}
+{"side":"src","page":68,"head":"변경 사항 이력","items":"fullParagraph:1..8+21"}
+{"side":"src","page":69,"head":"fullParagraph#p0","items":"fullParagraph:0,table:1,fullParagraph:2..4"}
+{"side":"rt","page":1,"head":"fullParagraph#p0","items":"fullParagraph:0,shape:0,shape:0,shape:0"}
+{"side":"rt","page":2,"head":"fullParagraph#p0","items":"fullParagraph:0..7+18"}
+{"side":"rt","page":3,"head":"4.2.1. 문서 속성17","items":"fullParagraph:26..33+25"}
+{"side":"rt","page":4,"head":"4.3.9.2.7. 곡선 개체45","items":"fullParagraph:59..66+25"}
+{"side":"rt","page":5,"head":"4.4.2.5. 히스토리 작성자63","items":"fullParagraph:92..97"}
+{"side":"rt","page":6,"head":"저작권","items":"fullParagraph:0..6"}
+{"side":"rt","page":7,"head":"본 문서에 대하여...","items":"fullParagraph:7..13"}
+{"side":"rt","page":8,"head":"fullParagraph#p0","items":"fullParagraph:0,shape:0,fullParagraph:1..6+21"}
+{"side":"rt","page":9,"head":"개요","items":"fullParagraph:26..32"}
+{"side":"rt","page":10,"head":"자료형 설명","items":"fullParagraph:33..36,table:37,fullParagraph:38..39"}
+{"side":"rt","page":11,"head":"한글 파일 구조","items":"fullParagraph:40..44,shape:44,table:45+5"}
+{"side":"rt","page":12,"head":"table#p51","items":"table:51,fullParagraph:52..54"}
+{"side":"rt","page":13,"head":"table#p55","items":"table:55,fullParagraph:56..62+2"}
+{"side":"rt","page":14,"head":"partialTable#p64","items":"partialTable:64,fullParagraph:65..71+2"}
+{"side":"rt","page":15,"head":"partialTable#p73","items":"partialTable:73,fullParagraph:74..79,shape:79+8"}
+{"side":"rt","page":16,"head":"본 문서에 부가 설명 없이 컨트롤","items":"fullParagraph:86..93+11"}
+{"side":"rt","page":17,"head":"DrmLicense 스트림","items":"fullParagraph:105..112+11"}
+{"side":"rt","page":18,"head":"Instance 스트림","items":"fullParagraph:124,table:125,fullParagraph:126..129"}
+{"side":"rt","page":19,"head":"table#p130","items":"table:130,shape:130,table:130,fullParagraph:131..132,table:133+4"}
+{"side":"rt","page":20,"head":"데이터 레코드","items":"fullParagraph:135..140,shape:140,fullParagraph:141+9"}
+{"side":"rt","page":21,"head":"문서 정보의 데이터 레코드","items":"fullParagraph:150..151,table:152,fullParagraph:153..154,table:155,fullParagraph:156..157+1"}
+{"side":"rt","page":22,"head":"table#p159","items":"table:159,fullParagraph:160..161,table:162"}
+{"side":"rt","page":23,"head":"table#p163","items":"table:163"}
+{"side":"rt","page":24,"head":"글꼴","items":"fullParagraph:164..165,table:166..169"}
+{"side":"rt","page":25,"head":"테두리/배경","items":"fullParagraph:170..171,table:172..174"}
+{"side":"rt","page":26,"head":"table#p175","items":"table:175..177"}
+{"side":"rt","page":27,"head":"table#p178","items":"table:178..181,fullParagraph:182..183"}
+{"side":"rt","page":28,"head":"table#p184","items":"table:184..185"}
+{"side":"rt","page":29,"head":"table#p186","items":"table:186"}
+{"side":"rt","page":30,"head":"탭 정의","items":"fullParagraph:187..188,table:189..190,fullParagraph:191..192,table:193"}
+{"side":"rt","page":31,"head":"table#p194","items":"table:194..196,fullParagraph:197..198,table:199,fullParagraph:200..201"}
+{"side":"rt","page":32,"head":"table#p202","items":"table:202..203"}
+{"side":"rt","page":33,"head":"table#p204","items":"table:204..205,fullParagraph:206..207,table:208..209+2"}
+{"side":"rt","page":34,"head":"파라미터 아이템","items":"fullParagraph:214,table:215..217,fullParagraph:218..220,table:221"}
+{"side":"rt","page":35,"head":"호환 문서","items":"fullParagraph:222..223,table:224..225,fullParagraph:226..227,table:228,fullParagraph:229"}
+{"side":"rt","page":36,"head":"본문의 데이터 레코드","items":"fullParagraph:230..231,table:232,fullParagraph:233,partialTable:234"}
+{"side":"rt","page":37,"head":"partialTable#p234","items":"partialTable:234,table:235,fullParagraph:236..238,table:239,fullParagraph:240..241+9"}
+{"side":"rt","page":38,"head":"table#p250","items":"table:250,fullParagraph:251..253,table:254,fullParagraph:255..256"}
+{"side":"rt","page":39,"head":"Tag ID : HWPTAG_CTRL_HEADER","items":"fullParagraph:257,table:258,fullParagraph:259..260,table:261,fullParagraph:262..264+6"}
+{"side":"rt","page":40,"head":"partialTable#p270","items":"partialTable:270,table:271..272,partialTable:273"}
+{"side":"rt","page":41,"head":"partialTable#p273","items":"partialTable:273,table:274..276,fullParagraph:277..278"}
+{"side":"rt","page":42,"head":"table#p279","items":"table:279..284"}
+{"side":"rt","page":43,"head":"table#p285","items":"table:285,fullParagraph:286..287,table:288,fullParagraph:289..290,table:291..292"}
+{"side":"rt","page":44,"head":"table#p293","items":"table:293,fullParagraph:294,table:295..297"}
+{"side":"rt","page":45,"head":"table#p298","items":"table:298..300,fullParagraph:301,table:302,fullParagraph:303,table:304+2"}
+{"side":"rt","page":46,"head":"table#p308","items":"table:308,fullParagraph:309,table:310,fullParagraph:311,table:312..313"}
+{"side":"rt","page":47,"head":"다각형 개체","items":"fullParagraph:314,table:315,fullParagraph:316,table:317,fullParagraph:318,table:319,fullParagraph:320,table:321+2"}
+{"side":"rt","page":48,"head":"Tag ID : HWPTAG_SHAPE_COMPONENT_CURVE","items":"fullParagraph:324,table:325,fullParagraph:326,table:327,fullParagraph:328,table:329,fullParagraph:330..331+3"}
+{"side":"rt","page":49,"head":"partialTable#p334","items":"partialTable:334,table:335..337,fullParagraph:338,table:339"}
+{"side":"rt","page":50,"head":"table#p340","items":"table:340..342,partialTable:343"}
+{"side":"rt","page":51,"head":"partialTable#p343","items":"partialTable:343,table:344,fullParagraph:345,table:346..347"}
+{"side":"rt","page":52,"head":"table#p348","items":"table:348,fullParagraph:349..355+8"}
+{"side":"rt","page":53,"head":"table#p364","items":"table:364,fullParagraph:365,table:366..370,fullParagraph:371+1"}
+{"side":"rt","page":54,"head":"partialTable#p372","items":"partialTable:372,fullParagraph:373,table:374,fullParagraph:375"}
+{"side":"rt","page":55,"head":"table#p376","items":"table:376..377,fullParagraph:378..379,table:380"}
+{"side":"rt","page":56,"head":"table#p381","items":"table:381"}
+{"side":"rt","page":57,"head":"각주/미주 모양","items":"fullParagraph:382..383,table:384..385"}
+{"side":"rt","page":58,"head":"쪽 테두리/배경","items":"fullParagraph:386..387,table:388..390,fullParagraph:391,table:392"}
+{"side":"rt","page":59,"head":"머리말/꼬리말","items":"fullParagraph:393,table:394,fullParagraph:395,table:396..397,fullParagraph:398..400"}
+{"side":"rt","page":60,"head":"자동 번호","items":"fullParagraph:401,table:402..403,fullParagraph:404,table:405,fullParagraph:406,table:407"}
+{"side":"rt","page":61,"head":"홀/짝수 조정","items":"fullParagraph:408,table:409,fullParagraph:410,table:411..412,fullParagraph:413,table:414"}
+{"side":"rt","page":62,"head":"책갈피","items":"fullParagraph:415..417,table:418,fullParagraph:419,table:420,fullParagraph:421..422"}
+{"side":"rt","page":63,"head":"필드 시작","items":"fullParagraph:423,table:424..425,fullParagraph:426"}
+{"side":"rt","page":64,"head":"문서 이력 관리","items":"fullParagraph:427..434+20"}
+{"side":"rt","page":65,"head":"partialTable#p454","items":"partialTable:454,fullParagraph:455..456,table:457,fullParagraph:458..459,table:460+9"}
+{"side":"rt","page":66,"head":"fullParagraph#p0","items":"fullParagraph:0"}
+{"side":"rt","page":67,"head":"변경 사항 이력","items":"fullParagraph:1..8+21"}
+{"side":"rt","page":68,"head":"fullParagraph#p0","items":"fullParagraph:0,table:1,fullParagraph:2..4"}

@@ -1,0 +1,6 @@
+# transcript types-image-hides-table-2.5
+# family=types
+# hypothesis=--types Image 는 표 overflow 2.5px 를 버린다. 확정 신호는 off-canvas 가 있을 때만 남는다.
+쪽 수: 3  overflow: 0  off-canvas: 0  overlap: 0  text-overlap: 0  empty_page(가능성): 0
+이상 신호 없음: types-image-hides-table-2.5.synth
+status: CLEAN

@@ -1,0 +1,25 @@
+{
+  "id": "OP22",
+  "tier": 2,
+  "title": "읽기 형식 수 라이브 재계산",
+  "input": "samples/table-001.hwp",
+  "axis": "검증",
+  "instructions": "읽을 수 있는 형식 수를 answer.json 에 {\"read\": N} 으로 제출하라. 채점기가 capabilities 의 formats.read 길이를 다시 잰다.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "읽기 형식 수",
+      "op": "len_answer_eq",
+      "answer": "read",
+      "cmd": [
+        "capabilities"
+      ],
+      "path": "formats.read"
+    }
+  ]
+}

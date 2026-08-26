@@ -1,0 +1,81 @@
+{
+ "schemaVersion": "1.0",
+ "issue": 5337,
+ "capability": "CAP-4900",
+ "notGym": true,
+ "noNewCli": true,
+ "noNewEditLogic": true,
+ "notFde": true,
+ "notStrategist": true,
+ "routingOnlyViaGoal": true,
+ "requestIsData": true,
+ "goals": [
+  {
+   "goal": "diagnose",
+   "commands": [
+    "info"
+   ],
+   "gate": "ticket",
+   "defaultWhenMissing": true,
+   "offTable": false
+  },
+  {
+   "goal": "export-text",
+   "commands": [
+    "export-text"
+   ],
+   "gate": "json-envelope",
+   "defaultWhenMissing": false,
+   "offTable": false
+  },
+  {
+   "goal": "export-pdf",
+   "commands": [
+    "export-pdf"
+   ],
+   "gate": "pdf-magic",
+   "defaultWhenMissing": false,
+   "offTable": false
+  },
+  {
+   "goal": "export-hwpx",
+   "commands": [
+    "export-hwpx"
+   ],
+   "gate": "self-verify",
+   "defaultWhenMissing": false,
+   "offTable": false
+  },
+  {
+   "goal": "convert-hwp",
+   "commands": [
+    "convert"
+   ],
+   "gate": "self-verify",
+   "defaultWhenMissing": false,
+   "offTable": false
+  },
+  {
+   "goal": "extract-tables",
+   "commands": [
+    "export-tables",
+    "table-to-csv"
+   ],
+   "gate": "csv-count",
+   "defaultWhenMissing": false,
+   "offTable": false
+  },
+  {
+   "goal": "fill",
+   "commands": [
+    "edit fill-fields"
+   ],
+   "gate": "fill-envelope",
+   "defaultWhenMissing": false,
+   "offTable": false
+  }
+ ],
+ "offTableStatus": "needs-agent",
+ "coverageGrowsBy": "adding a row to ROUTING_TABLE in tools/chief/service_loop.py",
+ "samePrAsPlaybook": true
+}

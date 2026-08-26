@@ -1,0 +1,23 @@
+{
+  "id": "T017",
+  "command": "chart-to-csv",
+  "chapter": "20_표와_데이터.md",
+  "cmd": "rhwp chart-to-csv samples/issue2006/1790387_prep_final_report.hwpx --chart 1 --json",
+  "exit": 0,
+  "keys": [
+    "bom",
+    "chartCount",
+    "charts",
+    "schemaVersion",
+    "source",
+    "untrustedContent",
+    "untrustedFields"
+  ],
+  "untrustedContent": true,
+  "untrustedFields": [
+    "charts[].csv"
+  ],
+  "schemaVersion": "1.0",
+  "source": "mydocs/manual/agent_codex/20_표와_데이터.md",
+  "notInvented": true
+}

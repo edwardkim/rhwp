@@ -1,0 +1,90 @@
+{
+  "id": "pP-TableResizeCellRight",
+  "title": "TableResizeCellRight — 한 칸만, 격자가 갈라진다",
+  "note": "어느 API 도 결과를 안 비추는 계열이라 **저장본 앞뒤 차분**으로 잰다(계획서 §4.21). 액션 하나에 문서 하나 — 이어 걸면 다음 저장의 재조판 여파가 자취에 섞인다. 첫 저장(`w`)은 버린다.\n\n`Cell` 갈래는 **그 칸 하나만** 경계를 옮긴다. 다른 행·열은 그대로라 경계가 어긋나 **격자가 갈라진다** — 147행 3열에서 (0,0) 폭을 늘리면 열이 넷이 되고 (0,0)이 `col_span` 2, 다른 행의 1열 칸들이 `col_span` 2 가 된다. 자취가 큰 이유다(칸 전부의 `col`/`row` 가 다시 매겨진다).\n\n`ignorePaths` 는 pN 계열과 같은 **잰 부산물**이다(그쪽 주석 참고).",
+  "ledger": [
+    "Action.TableResizeCellRight"
+  ],
+  "open": "samples/21868765_별표2_보건소_분장사무.hwp",
+  "paths": {
+    "w": {
+      "win": "{out}/pP-TableResizeCellRight-w.hwp",
+      "posix": "{out}/pP-TableResizeCellRight-w.hwp"
+    },
+    "a": {
+      "win": "{out}/pP-TableResizeCellRight-a.hwp",
+      "posix": "{out}/pP-TableResizeCellRight-a.hwp"
+    },
+    "b": {
+      "win": "{out}/pP-TableResizeCellRight-b.hwp",
+      "posix": "{out}/pP-TableResizeCellRight-b.hwp"
+    }
+  },
+  "ignorePaths": [
+    "list_header_width_ref",
+    "raw_table_record_attr",
+    "common.attr",
+    "common.hwp5_gen_shape_attr_bit28",
+    "controls[0].attr",
+    "raw_ctrl_data[3]"
+  ],
+  "deltas": [
+    {
+      "from": "a",
+      "to": "b",
+      "label": "TableResizeCellRight"
+    }
+  ],
+  "calls": [
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "w"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "SetPos",
+      [
+        2,
+        0,
+        0
+      ]
+    ],
+    [
+      "Run",
+      [
+        "TableCellBlock"
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "a"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "Run",
+      [
+        "TableResizeCellRight"
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "b"
+        },
+        "HWP",
+        ""
+      ]
+    ]
+  ]
+}

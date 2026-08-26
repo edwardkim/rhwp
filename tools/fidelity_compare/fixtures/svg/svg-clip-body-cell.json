@@ -1,0 +1,8 @@
+{
+  "id": "svg-clip-body-cell",
+  "title": "body/cell clip 이 이전 표 조각을 가림",
+  "why": "raw SVG text 는 hidden 을 세고 visible 원장은 가시 band 만.",
+  "expectVisible": "body-visiblepartial-cell",
+  "expectExcludedAtLeast": 21,
+  "svgPath": "fixtures/svg/svg-clip-body-cell.svg"
+}

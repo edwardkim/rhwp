@@ -1,0 +1,56 @@
+{
+  "id": "ht-near_invisible-body-hwp-pos",
+  "issue": 5476,
+  "axis": "hidden-text",
+  "family": "near_invisible",
+  "polarity": "positive",
+  "sourceRule": {
+    "file": "src/document_core/queries/hidden_text.rs",
+    "symbol": "HiddenKind::NearInvisible",
+    "note": "실효 글자 크기가 --threshold-pt 미만"
+  },
+  "cli": {
+    "argv": [
+      "inspect",
+      "hidden-text",
+      "synth:hidden-text/near_invisible/body.hwp",
+      "--json"
+    ],
+    "exitCode": 0,
+    "stdoutKind": "json-object",
+    "detectionIsNotFailure": true
+  },
+  "consume": {
+    "branch": "clean == false",
+    "field": "hiddenText[].kind",
+    "doNotFollowExcerpt": true,
+    "detectionIsNotFailure": true
+  },
+  "pair": "ht-near_invisible-body-hwp-neg",
+  "why": "극소 글자 양성. 범위 본문 문단, 형식 hwp. 탐지는 exit 0.",
+  "note": "기존 HiddenKind 만. 본문 문단 주소 어휘는 search --json 과 같다.",
+  "human": "은닉 텍스트 1건 (문자 15개): synth:hidden-text/near_invisible/body.hwp\n  [극소 글자] 구역0:문단0 (1쪽) 15자: 극소 글자로 심은 숨은 문장\n",
+  "inventedRule": false,
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "synth:hidden-text/near_invisible/body.hwp",
+    "thresholdPt": 1.0,
+    "includeOffPage": false,
+    "hiddenText": [
+      {
+        "kind": "near_invisible",
+        "section": 0,
+        "paragraph": 0,
+        "page": 0,
+        "excerpt": "극소 글자로 심은 숨은 문장",
+        "charCount": 15,
+        "detail": {
+          "effectivePt": 0.5,
+          "thresholdPt": 1.0
+        }
+      }
+    ],
+    "hiddenCharCount": 15,
+    "clean": false
+  }
+}

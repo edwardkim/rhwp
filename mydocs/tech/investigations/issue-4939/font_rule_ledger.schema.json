@@ -1,0 +1,254 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/edwardkim/rhwp/blob/devel/mydocs/tech/investigations/issue-4939/font_rule_ledger.schema.json",
+  "title": "rhwp font rule investigation ledger",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "kind",
+    "issue",
+    "sourceCommit",
+    "rules"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": "1.0"
+    },
+    "kind": {
+      "const": "font-rule-investigation-ledger"
+    },
+    "issue": {
+      "const": 4939
+    },
+    "sourceCommit": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "rules": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/rule"
+      }
+    }
+  },
+  "$defs": {
+    "nonEmptyString": {
+      "type": "string",
+      "minLength": 1
+    },
+    "nullableNonEmptyString": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "rule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ruleId",
+        "sourceOwner",
+        "sourceLocation",
+        "decisionPlane",
+        "relationType",
+        "sourceFace",
+        "targetFaceOrPolicy",
+        "conditions",
+        "backends",
+        "order",
+        "evidence",
+        "evidenceStatus",
+        "licenseOrDistribution",
+        "tests",
+        "knownLimitations",
+        "status"
+      ],
+      "properties": {
+        "ruleId": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(?:[.-][a-z0-9]+)*$"
+        },
+        "sourceOwner": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "sourceLocation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "path",
+            "symbol",
+            "selector"
+          ],
+          "properties": {
+            "path": {
+              "$ref": "#/$defs/nonEmptyString"
+            },
+            "symbol": {
+              "$ref": "#/$defs/nonEmptyString"
+            },
+            "selector": {
+              "$ref": "#/$defs/nonEmptyString"
+            }
+          }
+        },
+        "decisionPlane": {
+          "enum": [
+            "layout-name",
+            "layout-metric",
+            "paint",
+            "supply",
+            "detection",
+            "backend-resource",
+            "oracle"
+          ]
+        },
+        "relationType": {
+          "enum": [
+            "metric-entry",
+            "identity-alias",
+            "document-substitution",
+            "official-successor",
+            "metric-surrogate",
+            "measured-overlay",
+            "paint-substitute",
+            "style-fallback",
+            "generic-fallback",
+            "supply-source",
+            "capability-detection",
+            "oracle-observation",
+            "unknown"
+          ]
+        },
+        "sourceFace": {
+          "$ref": "#/$defs/nullableNonEmptyString"
+        },
+        "targetFaceOrPolicy": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "conditions": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "languageSlot": {
+              "$ref": "#/$defs/nullableNonEmptyString"
+            },
+            "altType": {
+              "$ref": "#/$defs/nullableNonEmptyString"
+            },
+            "bold": {
+              "type": [
+                "boolean",
+                "null"
+              ]
+            },
+            "italic": {
+              "type": [
+                "boolean",
+                "null"
+              ]
+            },
+            "weight": {
+              "$ref": "#/$defs/nullableNonEmptyString"
+            },
+            "availability": {
+              "$ref": "#/$defs/nullableNonEmptyString"
+            },
+            "profile": {
+              "$ref": "#/$defs/nullableNonEmptyString"
+            }
+          }
+        },
+        "backends": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "shared",
+              "rust-svg",
+              "native-skia",
+              "wasm",
+              "canvas2d",
+              "canvaskit",
+              "studio",
+              "asset",
+              "oracle"
+            ]
+          }
+        },
+        "order": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "kind",
+              "reference"
+            ],
+            "properties": {
+              "kind": {
+                "enum": [
+                  "issue",
+                  "commit",
+                  "document",
+                  "test",
+                  "font-digest",
+                  "oracle"
+                ]
+              },
+              "reference": {
+                "$ref": "#/$defs/nonEmptyString"
+              }
+            }
+          }
+        },
+        "evidenceStatus": {
+          "enum": [
+            "verified-by-bytes",
+            "verified-by-oracle",
+            "verified-by-test",
+            "historical",
+            "inferred",
+            "unknown"
+          ]
+        },
+        "licenseOrDistribution": {
+          "$ref": "#/$defs/nonEmptyString"
+        },
+        "tests": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/nonEmptyString"
+          }
+        },
+        "knownLimitations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/nonEmptyString"
+          }
+        },
+        "status": {
+          "enum": [
+            "candidate",
+            "active",
+            "historical",
+            "deprecated",
+            "unknown"
+          ]
+        }
+      }
+    }
+  }
+}

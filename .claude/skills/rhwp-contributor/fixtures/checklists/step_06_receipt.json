@@ -1,0 +1,22 @@
+{
+  "id": "step-06-receipt",
+  "step": 6,
+  "title": "작업 영수증 포인터",
+  "evidence": "rhwp replay --capsule",
+  "items": [
+    "rhwp replay --capsule 포인터",
+    "audit / lineage 포인터",
+    "work-receipt 스킬 미수정"
+  ],
+  "hardGate": "cargo fmt --all -- --check",
+  "forbids": [
+    "cargo fmt --check",
+    "git add -A",
+    "steal named worktree",
+    "invent DocumentCore edit",
+    "new rhwp CLI",
+    "edit gym/",
+    "rewrite rhwp-work-receipt"
+  ],
+  "issue": 5322
+}

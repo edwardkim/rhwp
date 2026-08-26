@@ -1,0 +1,31 @@
+{
+  "id": "AU67",
+  "tier": 3,
+  "title": "내부표 2링크 리콜",
+  "input": "samples/inner-table-01.hwp",
+  "instructions": "AU67 — 내부표 2링크 리콜.\n\n입력 표본은 `samples/inner-table-01.hwp` 이다. 저장소 samples/ 에 이미 있는 실문서이며 새 픽스처를 만들지 않는다. automation pack 은 기존 CLI 표면(anchor · audit · audit-report · bundle · conformance · disclose · export-tables · gate · lineage · recall-scope · settle · verify-signature) 만으로 검증 사다리 여정을 늘린다. 새 명령·새 연산자·새 pack 은 없다.\n\n캡슐 2링크 체인(a→b)을 `capsules/` 로 제출하라. 채점기는 뿌리 a 를 오염으로 지목해 **영향 캡슐이 2건 이상**인지 본다. AU10 은 table-001 + capsules/ 이다. 이 과제는 `samples/inner-table-01.hwp` + `capsules/` 이다. XC02 처럼 unaffected==0 을 함께 묻지 않는다. 3세대도 만들지 마라.\n\n수행 힌트: replay 로 a, replay --parent a 로 b. 채점은 recall-scope --contaminated a --among. 채점은 제출 폴더에서 같은 판정 명령을 다시 돌린다. 정답 해시·건수를 과제 파일에 박제하지 마라. 표본이 바뀌면 라이브 재계산이 따라간다.\n\n금지: XC01 L5 완주, XC02 오염 무영향 0, XC03 정산 4관문, XC04 3세대 --deep, XC05 L3 서명+앵커 완주, WR 일일 3해시, T07 서식 채움을 복제하지 마라. 원본 픽스처를 덮어쓰지 마라. 산출은 제출 폴더의 -o / --capsule 뿐이다. T07 서식 채움(fill-fields, 첫 필드 홍길동)을 복제하지 마라. XC01–XC05 사다리 완주(L5 · 3세대 --deep · 정산 4관문 · 오염 무영향 0 · L3 서명+앵커 완주)를 베끼지 마라. WR01+ 일일 영수증 3해시 answer.json 여정도 이 pack 의 일이 아니다.\n\n서로 무관한 두 장을 내면 영향권이 1 이라 실패한다. 부모 링크가 필요하다.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "capsules/a.capsule.json",
+      "capsules/b.capsule.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "영향 캡슐 2건 이상",
+      "op": "len_ge",
+      "value": 2,
+      "path": "affected",
+      "cmd": [
+        "recall-scope",
+        "--contaminated",
+        "{file:capsules/a.capsule.json}",
+        "--among",
+        "{file:capsules}",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "자동화"
+}

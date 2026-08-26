@@ -1,0 +1,97 @@
+{
+  "summary": {
+    "compared_pages": 3,
+    "pixel_diff_threshold": 32,
+    "average_pixel_match_percent": 86.28971,
+    "worst_pixel_match_percent": 82.40301,
+    "average_ink_match_percent": 15.83322,
+    "worst_ink_match_percent": 10.34293,
+    "average_visual_accuracy_proxy_percent": 15.83322,
+    "worst_visual_accuracy_proxy_percent": 10.34293,
+    "worst_pages": [
+      1,
+      2,
+      3
+    ]
+  },
+  "pages": [
+    {
+      "page": 1,
+      "rhwp_png": "/home/tsjang/rhwp-review-planet6897-5772-20260820/output/visual_sweep_pr5772/issue5748/rhwp_png/rhwp_001.png",
+      "pdf_png": "/home/tsjang/rhwp-review-planet6897-5772-20260820/output/visual_sweep_pr5772/issue5748/pdf_png/pdf-1.png",
+      "overlay_png": "/home/tsjang/rhwp-review-planet6897-5772-20260820/output/visual_sweep_pr5772/issue5748/overlay/overlay_001.png",
+      "width": 1191,
+      "height": 1684,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 2005644,
+      "diff_pixels": 272683,
+      "diff_ratio": 0.13595783,
+      "pixel_match_percent": 86.40422,
+      "ink_union_pixels": 304140,
+      "ink_diff_pixels": 272683,
+      "ink_diff_ratio": 0.89657066,
+      "ink_match_percent": 10.34293,
+      "visual_accuracy_proxy_percent": 10.34293,
+      "mean_abs_channel_delta": 23.53,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        114,
+        147,
+        1080,
+        1597
+      ]
+    },
+    {
+      "page": 2,
+      "rhwp_png": "/home/tsjang/rhwp-review-planet6897-5772-20260820/output/visual_sweep_pr5772/issue5748/rhwp_png/rhwp_002.png",
+      "pdf_png": "/home/tsjang/rhwp-review-planet6897-5772-20260820/output/visual_sweep_pr5772/issue5748/pdf_png/pdf-2.png",
+      "overlay_png": "/home/tsjang/rhwp-review-planet6897-5772-20260820/output/visual_sweep_pr5772/issue5748/overlay/overlay_002.png",
+      "width": 1191,
+      "height": 1684,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 2005644,
+      "diff_pixels": 199323,
+      "diff_ratio": 0.09938105,
+      "pixel_match_percent": 90.0619,
+      "ink_union_pixels": 237648,
+      "ink_diff_pixels": 199323,
+      "ink_diff_ratio": 0.83873207,
+      "ink_match_percent": 16.12679,
+      "visual_accuracy_proxy_percent": 16.12679,
+      "mean_abs_channel_delta": 14.846,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        114,
+        147,
+        1080,
+        1596
+      ]
+    },
+    {
+      "page": 3,
+      "rhwp_png": "/home/tsjang/rhwp-review-planet6897-5772-20260820/output/visual_sweep_pr5772/issue5748/rhwp_png/rhwp_003.png",
+      "pdf_png": "/home/tsjang/rhwp-review-planet6897-5772-20260820/output/visual_sweep_pr5772/issue5748/pdf_png/pdf-3.png",
+      "overlay_png": "/home/tsjang/rhwp-review-planet6897-5772-20260820/output/visual_sweep_pr5772/issue5748/overlay/overlay_003.png",
+      "width": 1191,
+      "height": 1684,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 2005644,
+      "diff_pixels": 352933,
+      "diff_ratio": 0.17596991,
+      "pixel_match_percent": 82.40301,
+      "ink_union_pixels": 446920,
+      "ink_diff_pixels": 352933,
+      "ink_diff_ratio": 0.78970062,
+      "ink_match_percent": 21.02994,
+      "visual_accuracy_proxy_percent": 21.02994,
+      "mean_abs_channel_delta": 26.867,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        113,
+        141,
+        1078,
+        1597
+      ]
+    }
+  ]
+}

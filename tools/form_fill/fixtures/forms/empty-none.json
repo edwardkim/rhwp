@@ -1,0 +1,24 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.form_fill.form_catalog.v1",
+  "id": "empty-none",
+  "title": "누름틀 없는 일반 문서",
+  "family": "sample",
+  "genre": "빈 목록",
+  "sample": "samples/hwp3-sample.hwp",
+  "format": "hwp5",
+  "relatedIssue": "#3281",
+  "why": "fieldCount 0 은 오류가 아니라 축 전환 신호.",
+  "notes": "fill-fields 축이 아님. set-cell 로 전환.",
+  "claim": "M-fill",
+  "generator": "tools/form_fill/fatten_form_fill.py",
+  "fieldCount": 0,
+  "firstFieldName": "",
+  "repeatedNames": [],
+  "nameCounts": {},
+  "hash": "d2c398daef54",
+  "surveyFieldCount": 0,
+  "textSecurity": {"status": "clean"},
+  "fields": [
+  ]
+}

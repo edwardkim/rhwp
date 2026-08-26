@@ -375,7 +375,7 @@ impl DocumentCore {
         color: u32,
     ) -> Result<String, HwpError> {
         use crate::model::control::Equation;
-        use crate::model::shape::CommonObjAttr;
+        use crate::model::shape::{CommonObjAttr, HorzRelTo, TextWrap, VertRelTo};
         use crate::parser::tags::CTRL_EQUATION;
 
         if section_idx >= self.document.sections.len() {
@@ -392,17 +392,60 @@ impl DocumentCore {
         }
 
         let (width, height) = crate::renderer::equation::intrinsic_size_hwp(script, font_size);
+        let equation_order = self.document.sections[section_idx]
+            .paragraphs
+            .iter()
+            .flat_map(|paragraph| paragraph.controls.iter())
+            .filter(|control| matches!(control, Control::Equation(_)))
+            .count() as u32;
+        let equation_instance_order = self
+            .document
+            .sections
+            .iter()
+            .flat_map(|section| section.paragraphs.iter())
+            .flat_map(|paragraph| paragraph.controls.iter())
+            .filter(|control| matches!(control, Control::Equation(_)))
+            .count();
+        // 한컴 계열 0x44 접두는 유지하되, 접두와 겹치지 않는 하위 26비트에 문서 전체
+        // 수식 순서를 배정한다. 구역 번호를 OR하면 구역 0과 64가 같은 ID가 된다.
+        let equation_instance_sequence = u32::try_from(equation_instance_order)
+            .ok()
+            .and_then(|order| order.checked_add(1))
+            .filter(|&order| order <= 0x03ff_ffff)
+            .ok_or_else(|| {
+                HwpError::RenderError("수식 instance ID를 더 이상 배정할 수 없습니다.".to_string())
+            })?;
+        let instance_id = 0x4400_0000 | equation_instance_sequence;
         let equation = Equation {
             common: CommonObjAttr {
                 ctrl_id: CTRL_EQUATION,
+                // 한컴 저장본의 인라인 수식 계약: 문단 기준 위치, 절대 크기,
+                // 글자처럼 취급, 글과 함께 이동, 위아래 배치.
+                attr: 0x0C2A_2311,
                 treat_as_char: true,
                 width,
                 height,
+                z_order: equation_order as i32,
+                margin: crate::model::Padding {
+                    left: 56,
+                    right: 56,
+                    top: 0,
+                    bottom: 0,
+                },
+                instance_id,
+                flow_with_text: true,
+                vert_rel_to: VertRelTo::Para,
+                horz_rel_to: HorzRelTo::Para,
+                text_wrap: TextWrap::TopAndBottom,
+                hwp5_gen_shape_attr_bit26: true,
+                description: "수식입니다.".to_string(),
                 ..Default::default()
             },
             script: script.to_string(),
             font_size,
             color,
+            baseline: 85,
+            version_info: "Equation Version 60".to_string(),
             font_name: "HYhwpEQ".to_string(),
             ..Default::default()
         };
@@ -435,22 +478,11 @@ impl DocumentCore {
         paragraph.has_para_text = true;
 
         // 본문 문단 리플로우
-        {
-            use crate::renderer::composer::reflow_line_segs;
-            use crate::renderer::hwpunit_to_px;
-            let page_def = &self.document.sections[section_idx].section_def.page_def;
-            let text_width =
-                page_def.width as i32 - page_def.margin_left as i32 - page_def.margin_right as i32;
-            let available_width = hwpunit_to_px(text_width, self.dpi);
-            let para_style = self.styles.para_styles.get(
-                self.document.sections[section_idx].paragraphs[para_idx].para_shape_id as usize,
-            );
-            let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
-            let margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);
-            let final_width = (available_width - margin_left - margin_right).max(0.0);
-            let body_para = &mut self.document.sections[section_idx].paragraphs[para_idx];
-            reflow_line_segs(body_para, final_width, &self.styles, self.dpi);
-        }
+        // 본문 문단의 상자는 쪽 폭이 아니라 **열** 폭에서 나온다. 직접 계산하면
+        // ColumnDef(다단)·margin_gutter·가로 용지·양면 짝수쪽 여백 교환·손상
+        // PageDef 의 A4 폴백을 모두 놓친다 — 그리고 그 결과가 디스크로 나간다.
+        // 대화형 편집의 관문과 같은 한 곳을 쓴다.
+        self.reflow_paragraph(section_idx, para_idx);
 
         self.recompose_section(section_idx);
         self.paginate_if_needed();

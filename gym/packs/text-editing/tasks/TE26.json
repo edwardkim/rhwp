@@ -1,0 +1,33 @@
+{
+  "id": "TE26",
+  "tier": 2,
+  "title": "전건 치환 선확인(보험료)",
+  "input": "samples/143E433F503322BD33.hwp",
+  "instructions": "입력의 '보험료' → '보험금' 전건 치환을 적용하지 않고 예정 건수를 answer.json 에 {\"planned\": N} 으로 제출하라. 힌트: --dry-run. replacedCount 가 0 이면 실제 저장은 산출 파일을 만들지 않는다.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "전건 치환 선확인(보험료) · planned",
+      "op": "answer_eq",
+      "answer": "planned",
+      "path": "replacedCount",
+      "cmd": [
+        "edit",
+        "replace-text",
+        "{input}",
+        "--find",
+        "보험료",
+        "--replace",
+        "보험금",
+        "--dry-run",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

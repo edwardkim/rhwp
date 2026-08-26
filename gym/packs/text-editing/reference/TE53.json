@@ -1,0 +1,33 @@
+{
+  "id": "TE53",
+  "steps": [
+    {
+      "run": [
+        "edit",
+        "replace-text",
+        "{input}",
+        "--find",
+        "국어",
+        "--replace",
+        "언어",
+        "-o",
+        "{sub:edited53.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "answer": {
+        "page": {
+          "cmd": [
+            "search",
+            "{sub:edited53.hwp}",
+            "--json",
+            "--",
+            "언어"
+          ],
+          "path": "matches[0].page"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "id": "p4-caption3",
+  "title": "캡션 문단의 자리 지도 — 어디가 글자이고 어디가 컨트롤인가",
+  "ledger": [],
+  "open": "samples/mix-shape-01.hwp",
+  "calls": [
+    ["SetPos", [0, 0, 0]],
+    ["Run", ["SelectCtrlFront"]],
+    ["Run", ["ShapeObjAttachCaption"]],
+    ["SetPos", [2, 0, 0]],
+    ["GetPos", []],
+    ["SetPos", [2, 0, 1]],
+    ["GetPos", []],
+    ["SetPos", [2, 0, 2]],
+    ["GetPos", []],
+    ["SetPos", [2, 0, 3]],
+    ["GetPos", []],
+    ["SetPos", [2, 0, 4]],
+    ["GetPos", []],
+    ["SetPos", [2, 0, 5]],
+    ["GetPos", []],
+    ["SetPos", [2, 0, 10]],
+    ["GetPos", []],
+    ["SetPos", [2, 0, 11]],
+    ["GetPos", []],
+    ["SetPos", [2, 0, 12]],
+    ["GetPos", []],
+    ["SetPos", [2, 0, 13]],
+    ["GetPos", []],
+    ["HeadCtrl.Next.Next.Next.CtrlID", []],
+    ["ParentCtrl.CtrlID", []]
+  ]
+}

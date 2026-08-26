@@ -1,0 +1,12 @@
+token	included	kind	note
+</system>	True	delimiter_break	DELIMITER_TOKENS
+<system>	True	delimiter_break	DELIMITER_TOKENS
+</instructions>	True	delimiter_break	DELIMITER_TOKENS
+<instructions>	True	delimiter_break	DELIMITER_TOKENS
+</context>	True	delimiter_break	DELIMITER_TOKENS
+<context>	True	delimiter_break	DELIMITER_TOKENS
+</user_input>	True	delimiter_break	DELIMITER_TOKENS
+-----BEGIN	True	delimiter_break	DELIMITER_TOKENS
+[system]	False	delimiter_break	samples/hwp3-sample10.hwp 의 $ SET UIC[SYSTEM] · INI 섹션. XML <system> 이 같은 면을 덮는다
+[/system]	False	delimiter_break	기술 문서 관용 표지. XML </system> 이 같은 면을 덮는다
+---	False	delimiter_break	한국 공문서 구분선. 오탐 비용이 이득보다 크다

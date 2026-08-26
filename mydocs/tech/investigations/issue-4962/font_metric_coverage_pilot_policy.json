@@ -1,0 +1,134 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-metric-coverage-pilot-selection-policy",
+  "issue": 4962,
+  "policyVersion": "stage3-p1",
+  "purpose": "risk-enriched-feasibility-not-corpus-prevalence",
+  "candidateSources": {
+    "hwp": "output/poc/font-layout-habits/summary-hwp-v2.json",
+    "hwpx": "output/poc/font-layout-habits/summary-hwpx-v2.json",
+    "field": "riskDocuments",
+    "requiredCandidatesPerFormat": 200,
+    "combinedTop200Allowed": false
+  },
+  "privacy": {
+    "manifestLocalOnly": true,
+    "manifestOutputRoot": "output/",
+    "publishDocumentIdentity": false,
+    "publishAggregateSelectionCountsOnly": true
+  },
+  "selection": {
+    "deduplicateBy": "blake3",
+    "formats": [
+      "hwp",
+      "hwpx"
+    ],
+    "documentsPerFormat": 16,
+    "canaryDocumentsPerFormat": 4,
+    "tieBreak": [
+      "selectedField",
+      "riskScore:desc",
+      "charCount:desc",
+      "sizeBytes:desc",
+      "blake3:asc"
+    ],
+    "strata": [
+      {
+        "id": "risk-max",
+        "tier": "canary",
+        "field": "riskScore",
+        "direction": "desc",
+        "countPerFormat": 1,
+        "minimum": 1
+      },
+      {
+        "id": "size-max",
+        "tier": "canary",
+        "field": "sizeBytes",
+        "direction": "desc",
+        "countPerFormat": 1,
+        "minimum": 1
+      },
+      {
+        "id": "characters-max",
+        "tier": "canary",
+        "field": "charCount",
+        "direction": "desc",
+        "countPerFormat": 1,
+        "minimum": 1
+      },
+      {
+        "id": "kerning-max",
+        "tier": "canary",
+        "field": "kerningCharCount",
+        "direction": "desc",
+        "countPerFormat": 1,
+        "minimum": 1
+      },
+      {
+        "id": "compressed-fixed-max",
+        "tier": "full",
+        "field": "compressedFixedFrameCharCount",
+        "direction": "desc",
+        "countPerFormat": 3,
+        "minimum": 1
+      },
+      {
+        "id": "extreme-compression-max",
+        "tier": "full",
+        "field": "extremeCompressedCharCount",
+        "direction": "desc",
+        "countPerFormat": 2,
+        "minimum": 1
+      },
+      {
+        "id": "risk-residual",
+        "tier": "full",
+        "field": "riskScore",
+        "direction": "desc",
+        "countPerFormat": 2,
+        "minimum": 1
+      },
+      {
+        "id": "size-residual",
+        "tier": "full",
+        "field": "sizeBytes",
+        "direction": "desc",
+        "countPerFormat": 2,
+        "minimum": 1
+      },
+      {
+        "id": "characters-residual",
+        "tier": "full",
+        "field": "charCount",
+        "direction": "desc",
+        "countPerFormat": 2,
+        "minimum": 1
+      },
+      {
+        "id": "risk-tail-control",
+        "tier": "full",
+        "field": "riskScore",
+        "direction": "asc",
+        "countPerFormat": 1,
+        "minimum": 1
+      }
+    ]
+  },
+  "executionGate": {
+    "canaryDocuments": 8,
+    "fullDocuments": 32,
+    "repeatFullPasses": 2,
+    "canaryMaximumFailures": 2,
+    "canaryMaximumResourceLimitFailures": 1,
+    "canaryMaximumPeakRssBytes": 1610612736,
+    "requireNoSupervisorFatalError": true,
+    "requireNoSensitiveOutput": true,
+    "requireRepeatedCountsAndHashes": true
+  },
+  "knownLimits": [
+    "Candidates are the top 200 successful POC risk records per format, not a random corpus sample.",
+    "The existing risk rows do not identify prior parser failures or LineSeg-missing documents.",
+    "Pilot results may estimate high-risk execution cost but not corpus-wide prevalence or failure rate."
+  ]
+}

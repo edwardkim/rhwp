@@ -1,0 +1,4512 @@
+[
+  {
+    "id": "ovf-table-left-over0.5-tol1",
+    "family": "overflow",
+    "hypothesis": "표가 본문 왼쪽을 0.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 19.5,
+        "y": 40.0,
+        "w": 80.5,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovf-table-left-over1-tol1",
+    "family": "overflow",
+    "hypothesis": "표가 본문 왼쪽을 1px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 19.0,
+        "y": 40.0,
+        "w": 81.0,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovf-table-left-over2.5-tol1",
+    "family": "overflow",
+    "hypothesis": "표가 본문 왼쪽을 2.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 17.5,
+        "y": 40.0,
+        "w": 82.5,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovf-table-left-over16-tol1",
+    "family": "overflow",
+    "hypothesis": "표가 본문 왼쪽을 16px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 4.0,
+        "y": 40.0,
+        "w": 96.0,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 1,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [
+        "Table"
+      ],
+      "offCanvasTypes": [],
+      "overflowPaths": [
+        "Page/Body/Table0"
+      ],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 6.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 6.0,
+      "reportLines": [
+        "  [OVERFLOW] page   0     6.00px  Page/Body/Table0 (Table)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "ovf-table-top-over0.5-tol1",
+    "family": "overflow",
+    "hypothesis": "표가 본문 위을 0.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 20.0,
+        "y": 39.5,
+        "w": 80.0,
+        "h": 40.5
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovf-table-top-over1-tol1",
+    "family": "overflow",
+    "hypothesis": "표가 본문 위을 1px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 20.0,
+        "y": 39.0,
+        "w": 80.0,
+        "h": 41.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovf-table-top-over2.5-tol1",
+    "family": "overflow",
+    "hypothesis": "표가 본문 위을 2.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 20.0,
+        "y": 37.5,
+        "w": 80.0,
+        "h": 42.5
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovf-table-top-over16-tol1",
+    "family": "overflow",
+    "hypothesis": "표가 본문 위을 16px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 20.0,
+        "y": 24.0,
+        "w": 80.0,
+        "h": 56.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovf-table-right-over0.5-tol1",
+    "family": "overflow",
+    "hypothesis": "표가 본문 오른쪽을 0.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 80.5,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovf-table-right-over1-tol1",
+    "family": "overflow",
+    "hypothesis": "표가 본문 오른쪽을 1px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 81.0,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovf-table-right-over2.5-tol1",
+    "family": "overflow",
+    "hypothesis": "표가 본문 오른쪽을 2.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 82.5,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovf-table-right-over16-tol1",
+    "family": "overflow",
+    "hypothesis": "표가 본문 오른쪽을 16px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 96.0,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovf-table-bottom-over0.5-tol1",
+    "family": "overflow",
+    "hypothesis": "표가 본문 아래을 0.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 80.0,
+        "h": 40.5
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovf-table-bottom-over1-tol1",
+    "family": "overflow",
+    "hypothesis": "표가 본문 아래을 1px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 80.0,
+        "h": 41.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovf-table-bottom-over2.5-tol1",
+    "family": "overflow",
+    "hypothesis": "표가 본문 아래을 2.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 80.0,
+        "h": 42.5
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovf-table-bottom-over16-tol1",
+    "family": "overflow",
+    "hypothesis": "표가 본문 아래을 16px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 80.0,
+        "h": 56.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovf-image-left-over0.5-tol1",
+    "family": "overflow",
+    "hypothesis": "그림가 본문 왼쪽을 0.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Image",
+        "x": 19.5,
+        "y": 40.0,
+        "w": 80.5,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovf-image-left-over1-tol1",
+    "family": "overflow",
+    "hypothesis": "그림가 본문 왼쪽을 1px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Image",
+        "x": 19.0,
+        "y": 40.0,
+        "w": 81.0,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovf-image-left-over2.5-tol1",
+    "family": "overflow",
+    "hypothesis": "그림가 본문 왼쪽을 2.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Image",
+        "x": 17.5,
+        "y": 40.0,
+        "w": 82.5,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovf-image-left-over16-tol1",
+    "family": "overflow",
+    "hypothesis": "그림가 본문 왼쪽을 16px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Image",
+        "x": 4.0,
+        "y": 40.0,
+        "w": 96.0,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 1,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [
+        "Image"
+      ],
+      "offCanvasTypes": [],
+      "overflowPaths": [
+        "Page/Body/Image0"
+      ],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 6.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 6.0,
+      "reportLines": [
+        "  [OVERFLOW] page   0     6.00px  Page/Body/Image0 (Image)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "ovf-image-top-over0.5-tol1",
+    "family": "overflow",
+    "hypothesis": "그림가 본문 위을 0.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Image",
+        "x": 20.0,
+        "y": 39.5,
+        "w": 80.0,
+        "h": 40.5
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovf-image-top-over1-tol1",
+    "family": "overflow",
+    "hypothesis": "그림가 본문 위을 1px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Image",
+        "x": 20.0,
+        "y": 39.0,
+        "w": 80.0,
+        "h": 41.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovf-image-top-over2.5-tol1",
+    "family": "overflow",
+    "hypothesis": "그림가 본문 위을 2.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Image",
+        "x": 20.0,
+        "y": 37.5,
+        "w": 80.0,
+        "h": 42.5
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovf-image-top-over16-tol1",
+    "family": "overflow",
+    "hypothesis": "그림가 본문 위을 16px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Image",
+        "x": 20.0,
+        "y": 24.0,
+        "w": 80.0,
+        "h": 56.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovf-image-right-over0.5-tol1",
+    "family": "overflow",
+    "hypothesis": "그림가 본문 오른쪽을 0.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Image",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 80.5,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovf-image-right-over1-tol1",
+    "family": "overflow",
+    "hypothesis": "그림가 본문 오른쪽을 1px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Image",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 81.0,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovf-image-right-over2.5-tol1",
+    "family": "overflow",
+    "hypothesis": "그림가 본문 오른쪽을 2.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Image",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 82.5,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovf-image-right-over16-tol1",
+    "family": "overflow",
+    "hypothesis": "그림가 본문 오른쪽을 16px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Image",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 96.0,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovf-image-bottom-over0.5-tol1",
+    "family": "overflow",
+    "hypothesis": "그림가 본문 아래을 0.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Image",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 80.0,
+        "h": 40.5
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovf-image-bottom-over1-tol1",
+    "family": "overflow",
+    "hypothesis": "그림가 본문 아래을 1px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Image",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 80.0,
+        "h": 41.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovf-image-bottom-over2.5-tol1",
+    "family": "overflow",
+    "hypothesis": "그림가 본문 아래을 2.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Image",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 80.0,
+        "h": 42.5
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovf-image-bottom-over16-tol1",
+    "family": "overflow",
+    "hypothesis": "그림가 본문 아래을 16px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Image",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 80.0,
+        "h": 56.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovf-textbox-left-over0.5-tol1",
+    "family": "overflow",
+    "hypothesis": "글상자가 본문 왼쪽을 0.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextBox",
+        "x": 19.5,
+        "y": 40.0,
+        "w": 80.5,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovf-textbox-left-over1-tol1",
+    "family": "overflow",
+    "hypothesis": "글상자가 본문 왼쪽을 1px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextBox",
+        "x": 19.0,
+        "y": 40.0,
+        "w": 81.0,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovf-textbox-left-over2.5-tol1",
+    "family": "overflow",
+    "hypothesis": "글상자가 본문 왼쪽을 2.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextBox",
+        "x": 17.5,
+        "y": 40.0,
+        "w": 82.5,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovf-textbox-left-over16-tol1",
+    "family": "overflow",
+    "hypothesis": "글상자가 본문 왼쪽을 16px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextBox",
+        "x": 4.0,
+        "y": 40.0,
+        "w": 96.0,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 1,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [
+        "TextBox"
+      ],
+      "offCanvasTypes": [],
+      "overflowPaths": [
+        "Page/Body/TextBox0"
+      ],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 6.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 6.0,
+      "reportLines": [
+        "  [OVERFLOW] page   0     6.00px  Page/Body/TextBox0 (TextBox)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "ovf-textbox-top-over0.5-tol1",
+    "family": "overflow",
+    "hypothesis": "글상자가 본문 위을 0.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextBox",
+        "x": 20.0,
+        "y": 39.5,
+        "w": 80.0,
+        "h": 40.5
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovf-textbox-top-over1-tol1",
+    "family": "overflow",
+    "hypothesis": "글상자가 본문 위을 1px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextBox",
+        "x": 20.0,
+        "y": 39.0,
+        "w": 80.0,
+        "h": 41.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovf-textbox-top-over2.5-tol1",
+    "family": "overflow",
+    "hypothesis": "글상자가 본문 위을 2.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextBox",
+        "x": 20.0,
+        "y": 37.5,
+        "w": 80.0,
+        "h": 42.5
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovf-textbox-top-over16-tol1",
+    "family": "overflow",
+    "hypothesis": "글상자가 본문 위을 16px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextBox",
+        "x": 20.0,
+        "y": 24.0,
+        "w": 80.0,
+        "h": 56.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovf-textbox-right-over0.5-tol1",
+    "family": "overflow",
+    "hypothesis": "글상자가 본문 오른쪽을 0.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextBox",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 80.5,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovf-textbox-right-over1-tol1",
+    "family": "overflow",
+    "hypothesis": "글상자가 본문 오른쪽을 1px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextBox",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 81.0,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovf-textbox-right-over2.5-tol1",
+    "family": "overflow",
+    "hypothesis": "글상자가 본문 오른쪽을 2.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextBox",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 82.5,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovf-textbox-right-over16-tol1",
+    "family": "overflow",
+    "hypothesis": "글상자가 본문 오른쪽을 16px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextBox",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 96.0,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovf-textbox-bottom-over0.5-tol1",
+    "family": "overflow",
+    "hypothesis": "글상자가 본문 아래을 0.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextBox",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 80.0,
+        "h": 40.5
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovf-textbox-bottom-over1-tol1",
+    "family": "overflow",
+    "hypothesis": "글상자가 본문 아래을 1px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextBox",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 80.0,
+        "h": 41.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovf-textbox-bottom-over2.5-tol1",
+    "family": "overflow",
+    "hypothesis": "글상자가 본문 아래을 2.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextBox",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 80.0,
+        "h": 42.5
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovf-textbox-bottom-over16-tol1",
+    "family": "overflow",
+    "hypothesis": "글상자가 본문 아래을 16px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextBox",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 80.0,
+        "h": 56.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovf-rect-left-over0.5-tol1",
+    "family": "overflow",
+    "hypothesis": "사각형가 본문 왼쪽을 0.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Rect",
+        "x": 19.5,
+        "y": 40.0,
+        "w": 80.5,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovf-rect-left-over1-tol1",
+    "family": "overflow",
+    "hypothesis": "사각형가 본문 왼쪽을 1px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Rect",
+        "x": 19.0,
+        "y": 40.0,
+        "w": 81.0,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovf-rect-left-over2.5-tol1",
+    "family": "overflow",
+    "hypothesis": "사각형가 본문 왼쪽을 2.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Rect",
+        "x": 17.5,
+        "y": 40.0,
+        "w": 82.5,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovf-rect-left-over16-tol1",
+    "family": "overflow",
+    "hypothesis": "사각형가 본문 왼쪽을 16px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Rect",
+        "x": 4.0,
+        "y": 40.0,
+        "w": 96.0,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 1,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [
+        "Rect"
+      ],
+      "offCanvasTypes": [],
+      "overflowPaths": [
+        "Page/Body/Rect0"
+      ],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 6.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 6.0,
+      "reportLines": [
+        "  [OVERFLOW] page   0     6.00px  Page/Body/Rect0 (Rect)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "ovf-rect-top-over0.5-tol1",
+    "family": "overflow",
+    "hypothesis": "사각형가 본문 위을 0.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Rect",
+        "x": 20.0,
+        "y": 39.5,
+        "w": 80.0,
+        "h": 40.5
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovf-rect-top-over1-tol1",
+    "family": "overflow",
+    "hypothesis": "사각형가 본문 위을 1px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Rect",
+        "x": 20.0,
+        "y": 39.0,
+        "w": 80.0,
+        "h": 41.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovf-rect-top-over2.5-tol1",
+    "family": "overflow",
+    "hypothesis": "사각형가 본문 위을 2.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Rect",
+        "x": 20.0,
+        "y": 37.5,
+        "w": 80.0,
+        "h": 42.5
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovf-rect-top-over16-tol1",
+    "family": "overflow",
+    "hypothesis": "사각형가 본문 위을 16px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Rect",
+        "x": 20.0,
+        "y": 24.0,
+        "w": 80.0,
+        "h": 56.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovf-rect-right-over0.5-tol1",
+    "family": "overflow",
+    "hypothesis": "사각형가 본문 오른쪽을 0.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Rect",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 80.5,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovf-rect-right-over1-tol1",
+    "family": "overflow",
+    "hypothesis": "사각형가 본문 오른쪽을 1px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Rect",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 81.0,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovf-rect-right-over2.5-tol1",
+    "family": "overflow",
+    "hypothesis": "사각형가 본문 오른쪽을 2.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Rect",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 82.5,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovf-rect-right-over16-tol1",
+    "family": "overflow",
+    "hypothesis": "사각형가 본문 오른쪽을 16px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Rect",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 96.0,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovf-rect-bottom-over0.5-tol1",
+    "family": "overflow",
+    "hypothesis": "사각형가 본문 아래을 0.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Rect",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 80.0,
+        "h": 40.5
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovf-rect-bottom-over1-tol1",
+    "family": "overflow",
+    "hypothesis": "사각형가 본문 아래을 1px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Rect",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 80.0,
+        "h": 41.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovf-rect-bottom-over2.5-tol1",
+    "family": "overflow",
+    "hypothesis": "사각형가 본문 아래을 2.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Rect",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 80.0,
+        "h": 42.5
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovf-rect-bottom-over16-tol1",
+    "family": "overflow",
+    "hypothesis": "사각형가 본문 아래을 16px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Rect",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 80.0,
+        "h": 56.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovf-textline-left-over0.5-tol1",
+    "family": "overflow",
+    "hypothesis": "문단 줄가 본문 왼쪽을 0.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextLine",
+        "x": 19.5,
+        "y": 40.0,
+        "w": 80.5,
+        "h": 40.0,
+        "children": [
+          {
+            "t": "TextRun",
+            "x": 19.5,
+            "y": 40.0,
+            "w": 40.0,
+            "h": 12.0,
+            "text": "본문"
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovf-textline-left-over1-tol1",
+    "family": "overflow",
+    "hypothesis": "문단 줄가 본문 왼쪽을 1px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextLine",
+        "x": 19.0,
+        "y": 40.0,
+        "w": 81.0,
+        "h": 40.0,
+        "children": [
+          {
+            "t": "TextRun",
+            "x": 19.0,
+            "y": 40.0,
+            "w": 40.0,
+            "h": 12.0,
+            "text": "본문"
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovf-textline-left-over2.5-tol1",
+    "family": "overflow",
+    "hypothesis": "문단 줄가 본문 왼쪽을 2.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextLine",
+        "x": 17.5,
+        "y": 40.0,
+        "w": 82.5,
+        "h": 40.0,
+        "children": [
+          {
+            "t": "TextRun",
+            "x": 17.5,
+            "y": 40.0,
+            "w": 40.0,
+            "h": 12.0,
+            "text": "본문"
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovf-textline-left-over16-tol1",
+    "family": "overflow",
+    "hypothesis": "문단 줄가 본문 왼쪽을 16px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextLine",
+        "x": 4.0,
+        "y": 40.0,
+        "w": 96.0,
+        "h": 40.0,
+        "children": [
+          {
+            "t": "TextRun",
+            "x": 4.0,
+            "y": 40.0,
+            "w": 40.0,
+            "h": 12.0,
+            "text": "본문"
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 1,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [
+        "TextLine"
+      ],
+      "offCanvasTypes": [],
+      "overflowPaths": [
+        "Page/Body/TextLine0"
+      ],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 6.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 6.0,
+      "reportLines": [
+        "  [OVERFLOW] page   0     6.00px  Page/Body/TextLine0 (TextLine)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "ovf-textline-top-over0.5-tol1",
+    "family": "overflow",
+    "hypothesis": "문단 줄가 본문 위을 0.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextLine",
+        "x": 20.0,
+        "y": 39.5,
+        "w": 80.0,
+        "h": 40.5,
+        "children": [
+          {
+            "t": "TextRun",
+            "x": 20.0,
+            "y": 39.5,
+            "w": 40.0,
+            "h": 12.0,
+            "text": "본문"
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovf-textline-top-over1-tol1",
+    "family": "overflow",
+    "hypothesis": "문단 줄가 본문 위을 1px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextLine",
+        "x": 20.0,
+        "y": 39.0,
+        "w": 80.0,
+        "h": 41.0,
+        "children": [
+          {
+            "t": "TextRun",
+            "x": 20.0,
+            "y": 39.0,
+            "w": 40.0,
+            "h": 12.0,
+            "text": "본문"
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovf-textline-top-over2.5-tol1",
+    "family": "overflow",
+    "hypothesis": "문단 줄가 본문 위을 2.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextLine",
+        "x": 20.0,
+        "y": 37.5,
+        "w": 80.0,
+        "h": 42.5,
+        "children": [
+          {
+            "t": "TextRun",
+            "x": 20.0,
+            "y": 37.5,
+            "w": 40.0,
+            "h": 12.0,
+            "text": "본문"
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovf-textline-top-over16-tol1",
+    "family": "overflow",
+    "hypothesis": "문단 줄가 본문 위을 16px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextLine",
+        "x": 20.0,
+        "y": 24.0,
+        "w": 80.0,
+        "h": 56.0,
+        "children": [
+          {
+            "t": "TextRun",
+            "x": 20.0,
+            "y": 24.0,
+            "w": 40.0,
+            "h": 12.0,
+            "text": "본문"
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovf-textline-right-over0.5-tol1",
+    "family": "overflow",
+    "hypothesis": "문단 줄가 본문 오른쪽을 0.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextLine",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 80.5,
+        "h": 40.0,
+        "children": [
+          {
+            "t": "TextRun",
+            "x": 20.0,
+            "y": 40.0,
+            "w": 40.0,
+            "h": 12.0,
+            "text": "본문"
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovf-textline-right-over1-tol1",
+    "family": "overflow",
+    "hypothesis": "문단 줄가 본문 오른쪽을 1px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextLine",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 81.0,
+        "h": 40.0,
+        "children": [
+          {
+            "t": "TextRun",
+            "x": 20.0,
+            "y": 40.0,
+            "w": 40.0,
+            "h": 12.0,
+            "text": "본문"
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovf-textline-right-over2.5-tol1",
+    "family": "overflow",
+    "hypothesis": "문단 줄가 본문 오른쪽을 2.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextLine",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 82.5,
+        "h": 40.0,
+        "children": [
+          {
+            "t": "TextRun",
+            "x": 20.0,
+            "y": 40.0,
+            "w": 40.0,
+            "h": 12.0,
+            "text": "본문"
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovf-textline-right-over16-tol1",
+    "family": "overflow",
+    "hypothesis": "문단 줄가 본문 오른쪽을 16px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextLine",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 96.0,
+        "h": 40.0,
+        "children": [
+          {
+            "t": "TextRun",
+            "x": 20.0,
+            "y": 40.0,
+            "w": 40.0,
+            "h": 12.0,
+            "text": "본문"
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovf-textline-bottom-over0.5-tol1",
+    "family": "overflow",
+    "hypothesis": "문단 줄가 본문 아래을 0.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextLine",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 80.0,
+        "h": 40.5,
+        "children": [
+          {
+            "t": "TextRun",
+            "x": 20.0,
+            "y": 40.0,
+            "w": 40.0,
+            "h": 12.0,
+            "text": "본문"
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovf-textline-bottom-over1-tol1",
+    "family": "overflow",
+    "hypothesis": "문단 줄가 본문 아래을 1px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextLine",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 80.0,
+        "h": 41.0,
+        "children": [
+          {
+            "t": "TextRun",
+            "x": 20.0,
+            "y": 40.0,
+            "w": 40.0,
+            "h": 12.0,
+            "text": "본문"
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovf-textline-bottom-over2.5-tol1",
+    "family": "overflow",
+    "hypothesis": "문단 줄가 본문 아래을 2.5px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 쪽 안에 잔류.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextLine",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 80.0,
+        "h": 42.5,
+        "children": [
+          {
+            "t": "TextRun",
+            "x": 20.0,
+            "y": 40.0,
+            "w": 40.0,
+            "h": 12.0,
+            "text": "본문"
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovf-textline-bottom-over16-tol1",
+    "family": "overflow",
+    "hypothesis": "문단 줄가 본문 아래을 16px 넘친다. overflow 허용치 1px. 페이지 상자와 비교하면 off-canvas 후보.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextLine",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 80.0,
+        "h": 56.0,
+        "children": [
+          {
+            "t": "TextRun",
+            "x": 20.0,
+            "y": 40.0,
+            "w": 40.0,
+            "h": 12.0,
+            "text": "본문"
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  }
+]

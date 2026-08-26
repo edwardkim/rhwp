@@ -1,0 +1,19 @@
+{
+  "id": "TE71",
+  "steps": [
+    {
+      "answer": {
+        "para": {
+          "cmd": [
+            "search",
+            "{input}",
+            "--json",
+            "--",
+            "보험료"
+          ],
+          "path": "matches[0].paragraph"
+        }
+      }
+    }
+  ]
+}

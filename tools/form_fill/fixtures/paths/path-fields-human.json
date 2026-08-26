@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.form_fill.path_contract.v1",
+  "claim": "M-fill",
+  "generator": "tools/form_fill/fatten_form_fill.py",
+  "existingCliOnly": true,
+  "id": "path-fields-human",
+  "axis": "fields",
+  "title": "fields 사람용 요약",
+  "why": "기본 출력은 JSON 이 아니다. --json 전용 계약.",
+  "argv": [
+    "fields",
+    "samples/field-01.hwp"
+  ],
+  "exit": 0,
+  "writesFile": false
+}

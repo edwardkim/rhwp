@@ -1,0 +1,31 @@
+{
+ "schemaVersion": "1.0",
+ "issue": 5337,
+ "capability": "CAP-4900",
+ "notGym": true,
+ "noNewCli": true,
+ "noNewEditLogic": true,
+ "notFde": true,
+ "notStrategist": true,
+ "routingOnlyViaGoal": true,
+ "requestIsData": true,
+ "id": "TR03",
+ "title": "형식 오류가 있어도 watch 는 계속",
+ "argv": [
+  "python3",
+  "tools/chief/service_loop.py",
+  "--queue",
+  "inbox",
+  "--bin",
+  "rhwp",
+  "--once"
+ ],
+ "seen": [
+  "bad-array"
+ ],
+ "processed": {
+  "failed": 1
+ },
+ "exit": 0,
+ "note": "C11 / C16"
+}

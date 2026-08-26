@@ -1,0 +1,94 @@
+{
+  "id": "pD-del-multi",
+  "title": "TableDeleteCell — multi",
+  "ledger": [],
+  "open": "samples/21868765_별표2_보건소_분장사무.hwp",
+  "paths": {
+    "w": {
+      "win": "{out}/pD-del-multi-w.hwp",
+      "posix": "{out}/pD-del-multi-w.hwp"
+    },
+    "a": {
+      "win": "{out}/pD-del-multi-a.hwp",
+      "posix": "{out}/pD-del-multi-a.hwp"
+    },
+    "b": {
+      "win": "{out}/pD-del-multi-b.hwp",
+      "posix": "{out}/pD-del-multi-b.hwp"
+    }
+  },
+  "calls": [
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "w"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "SetPos",
+      [
+        2,
+        0,
+        0
+      ]
+    ],
+    [
+      "Run",
+      [
+        "TableCellBlock"
+      ]
+    ],
+    [
+      "Run",
+      [
+        "TableCellBlockExtend"
+      ]
+    ],
+    [
+      "Run",
+      [
+        "TableRightCell"
+      ]
+    ],
+    [
+      "Run",
+      [
+        "TableLowerCell"
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "a"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "Run",
+      [
+        "TableDeleteCell"
+      ]
+    ],
+    [
+      "GetPos",
+      []
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "b"
+        },
+        "HWP",
+        ""
+      ]
+    ]
+  ]
+}

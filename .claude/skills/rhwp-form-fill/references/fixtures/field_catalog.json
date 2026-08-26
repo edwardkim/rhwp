@@ -1,0 +1,386 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5300,
+  "typicalKeys": [
+    {
+      "name": "성명",
+      "note": "신청인·작성자 이름. 반복되면 이름[N]",
+      "copyExactly": true,
+      "source": "catalog-of-typical-keys, not a live fields --json"
+    },
+    {
+      "name": "이름",
+      "note": "성명과 혼용. fields 의 name 을 그대로",
+      "copyExactly": true,
+      "source": "catalog-of-typical-keys, not a live fields --json"
+    },
+    {
+      "name": "생년월일",
+      "note": "YYYY. M. D. 또는 서식 guide 를 따름",
+      "copyExactly": true,
+      "source": "catalog-of-typical-keys, not a live fields --json"
+    },
+    {
+      "name": "주민등록번호",
+      "note": "PII. 채운 뒤 sanitize 와 별개로 redact 축을 검토",
+      "copyExactly": true,
+      "source": "catalog-of-typical-keys, not a live fields --json"
+    },
+    {
+      "name": "주소",
+      "note": "여러 줄이 정상인 칸. overflow 는 판단 자료",
+      "copyExactly": true,
+      "source": "catalog-of-typical-keys, not a live fields --json"
+    },
+    {
+      "name": "전화번호",
+      "note": "하이픈 포함 여부는 guide",
+      "copyExactly": true,
+      "source": "catalog-of-typical-keys, not a live fields --json"
+    },
+    {
+      "name": "휴대전화",
+      "note": "전화번호와 별 필드인 서식이 많다",
+      "copyExactly": true,
+      "source": "catalog-of-typical-keys, not a live fields --json"
+    },
+    {
+      "name": "이메일",
+      "note": "필드-01 표본에도 있음",
+      "copyExactly": true,
+      "source": "catalog-of-typical-keys, not a live fields --json"
+    },
+    {
+      "name": "소속",
+      "note": "기관·부서",
+      "copyExactly": true,
+      "source": "catalog-of-typical-keys, not a live fields --json"
+    },
+    {
+      "name": "부서명",
+      "note": "필드-01 표본",
+      "copyExactly": true,
+      "source": "catalog-of-typical-keys, not a live fields --json"
+    },
+    {
+      "name": "직위",
+      "note": "직급과 분리된 서식 있음",
+      "copyExactly": true,
+      "source": "catalog-of-typical-keys, not a live fields --json"
+    },
+    {
+      "name": "직급",
+      "note": "직위와 혼동 금지",
+      "copyExactly": true,
+      "source": "catalog-of-typical-keys, not a live fields --json"
+    },
+    {
+      "name": "회사명",
+      "note": "필드-01 표본. 로고 셀이면 건너뜀",
+      "copyExactly": true,
+      "source": "catalog-of-typical-keys, not a live fields --json"
+    },
+    {
+      "name": "작성자",
+      "note": "필드-01 표본",
+      "copyExactly": true,
+      "source": "catalog-of-typical-keys, not a live fields --json"
+    },
+    {
+      "name": "제목",
+      "note": "필드-01 표본",
+      "copyExactly": true,
+      "source": "catalog-of-typical-keys, not a live fields --json"
+    },
+    {
+      "name": "목차1",
+      "note": "필드-01 에서 5회 반복",
+      "copyExactly": true,
+      "source": "catalog-of-typical-keys, not a live fields --json"
+    },
+    {
+      "name": "날짜",
+      "note": "작성일·신청일과 별 필드일 수 있음",
+      "copyExactly": true,
+      "source": "catalog-of-typical-keys, not a live fields --json"
+    },
+    {
+      "name": "작성일",
+      "note": "날짜와 키가 다름",
+      "copyExactly": true,
+      "source": "catalog-of-typical-keys, not a live fields --json"
+    },
+    {
+      "name": "신청일",
+      "note": "작성일과 키가 다름",
+      "copyExactly": true,
+      "source": "catalog-of-typical-keys, not a live fields --json"
+    },
+    {
+      "name": "기관명",
+      "note": "로고 셀 함정 P10",
+      "copyExactly": true,
+      "source": "catalog-of-typical-keys, not a live fields --json"
+    },
+    {
+      "name": "문서번호",
+      "note": "채우지 말라는 memo 가 있으면 존중",
+      "copyExactly": true,
+      "source": "catalog-of-typical-keys, not a live fields --json"
+    },
+    {
+      "name": "수신",
+      "note": "공문 머리",
+      "copyExactly": true,
+      "source": "catalog-of-typical-keys, not a live fields --json"
+    },
+    {
+      "name": "경유",
+      "note": "공문 머리",
+      "copyExactly": true,
+      "source": "catalog-of-typical-keys, not a live fields --json"
+    },
+    {
+      "name": "제목줄",
+      "note": "제목과 별 키",
+      "copyExactly": true,
+      "source": "catalog-of-typical-keys, not a live fields --json"
+    },
+    {
+      "name": "사업명",
+      "note": "계획서",
+      "copyExactly": true,
+      "source": "catalog-of-typical-keys, not a live fields --json"
+    },
+    {
+      "name": "사업기간",
+      "note": "시작-끝 한 칸인 서식 있음",
+      "copyExactly": true,
+      "source": "catalog-of-typical-keys, not a live fields --json"
+    },
+    {
+      "name": "사업비",
+      "note": "숫자 포맷은 guide",
+      "copyExactly": true,
+      "source": "catalog-of-typical-keys, not a live fields --json"
+    },
+    {
+      "name": "담당자",
+      "note": "성명과 별 칸",
+      "copyExactly": true,
+      "source": "catalog-of-typical-keys, not a live fields --json"
+    },
+    {
+      "name": "담당부서",
+      "note": "부서명과 별 칸",
+      "copyExactly": true,
+      "source": "catalog-of-typical-keys, not a live fields --json"
+    },
+    {
+      "name": "피규제집단명",
+      "note": "규제영향분석서 14회 반복 표본",
+      "copyExactly": true,
+      "source": "catalog-of-typical-keys, not a live fields --json"
+    },
+    {
+      "name": "규제목적",
+      "note": "장문. overflow 가능",
+      "copyExactly": true,
+      "source": "catalog-of-typical-keys, not a live fields --json"
+    },
+    {
+      "name": "규제내용",
+      "note": "장문",
+      "copyExactly": true,
+      "source": "catalog-of-typical-keys, not a live fields --json"
+    },
+    {
+      "name": "myMsg01",
+      "note": "form-01.hwp 실측 키",
+      "copyExactly": true,
+      "source": "catalog-of-typical-keys, not a live fields --json"
+    },
+    {
+      "name": "인",
+      "note": "도장 칸. 텍스트 대신 insert-image",
+      "copyExactly": true,
+      "source": "catalog-of-typical-keys, not a live fields --json"
+    },
+    {
+      "name": "서명",
+      "note": "insert-image 축",
+      "copyExactly": true,
+      "source": "catalog-of-typical-keys, not a live fields --json"
+    },
+    {
+      "name": "직인",
+      "note": "insert-image 축",
+      "copyExactly": true,
+      "source": "catalog-of-typical-keys, not a live fields --json"
+    }
+  ],
+  "liveFromSamples": [
+    {
+      "sample": "form01",
+      "path": "samples/form-01.hwp",
+      "occurrence": 0,
+      "name": "myMsg01",
+      "indexedKey": "myMsg01"
+    },
+    {
+      "sample": "field01",
+      "path": "samples/field-01.hwp",
+      "occurrence": 0,
+      "name": "회사명",
+      "indexedKey": "회사명"
+    },
+    {
+      "sample": "field01",
+      "path": "samples/field-01.hwp",
+      "occurrence": 0,
+      "name": "작성자",
+      "indexedKey": "작성자"
+    },
+    {
+      "sample": "field01",
+      "path": "samples/field-01.hwp",
+      "occurrence": 0,
+      "name": "부서명",
+      "indexedKey": "부서명"
+    },
+    {
+      "sample": "field01",
+      "path": "samples/field-01.hwp",
+      "occurrence": 0,
+      "name": "전화번호",
+      "indexedKey": "전화번호"
+    },
+    {
+      "sample": "field01",
+      "path": "samples/field-01.hwp",
+      "occurrence": 0,
+      "name": "이메일",
+      "indexedKey": "이메일"
+    },
+    {
+      "sample": "field01",
+      "path": "samples/field-01.hwp",
+      "occurrence": 0,
+      "name": "제목",
+      "indexedKey": "제목"
+    },
+    {
+      "sample": "field01",
+      "path": "samples/field-01.hwp",
+      "occurrence": 6,
+      "name": "목차1",
+      "indexedKey": "목차1[0]"
+    },
+    {
+      "sample": "field01",
+      "path": "samples/field-01.hwp",
+      "occurrence": 7,
+      "name": "목차1",
+      "indexedKey": "목차1[1]"
+    },
+    {
+      "sample": "field01",
+      "path": "samples/field-01.hwp",
+      "occurrence": 8,
+      "name": "목차1",
+      "indexedKey": "목차1[2]"
+    },
+    {
+      "sample": "field01",
+      "path": "samples/field-01.hwp",
+      "occurrence": 9,
+      "name": "목차1",
+      "indexedKey": "목차1[3]"
+    },
+    {
+      "sample": "field01",
+      "path": "samples/field-01.hwp",
+      "occurrence": 10,
+      "name": "목차1",
+      "indexedKey": "목차1[4]"
+    },
+    {
+      "sample": "field01memo",
+      "path": "samples/field-01-memo.hwp",
+      "occurrence": 0,
+      "name": "회사명",
+      "indexedKey": "회사명"
+    },
+    {
+      "sample": "field01memo",
+      "path": "samples/field-01-memo.hwp",
+      "occurrence": 0,
+      "name": "작성자",
+      "indexedKey": "작성자"
+    },
+    {
+      "sample": "field01memo",
+      "path": "samples/field-01-memo.hwp",
+      "occurrence": 0,
+      "name": "부서명",
+      "indexedKey": "부서명"
+    },
+    {
+      "sample": "field01memo",
+      "path": "samples/field-01-memo.hwp",
+      "occurrence": 0,
+      "name": "전화번호",
+      "indexedKey": "전화번호"
+    },
+    {
+      "sample": "field01memo",
+      "path": "samples/field-01-memo.hwp",
+      "occurrence": 0,
+      "name": "이메일",
+      "indexedKey": "이메일"
+    },
+    {
+      "sample": "field01memo",
+      "path": "samples/field-01-memo.hwp",
+      "occurrence": 0,
+      "name": "제목",
+      "indexedKey": "제목"
+    },
+    {
+      "sample": "field01memo",
+      "path": "samples/field-01-memo.hwp",
+      "occurrence": 6,
+      "name": "목차1",
+      "indexedKey": "목차1[0]"
+    },
+    {
+      "sample": "field01memo",
+      "path": "samples/field-01-memo.hwp",
+      "occurrence": 7,
+      "name": "목차1",
+      "indexedKey": "목차1[1]"
+    },
+    {
+      "sample": "field01memo",
+      "path": "samples/field-01-memo.hwp",
+      "occurrence": 8,
+      "name": "목차1",
+      "indexedKey": "목차1[2]"
+    },
+    {
+      "sample": "field01memo",
+      "path": "samples/field-01-memo.hwp",
+      "occurrence": 9,
+      "name": "목차1",
+      "indexedKey": "목차1[3]"
+    },
+    {
+      "sample": "field01memo",
+      "path": "samples/field-01-memo.hwp",
+      "occurrence": 10,
+      "name": "목차1",
+      "indexedKey": "목차1[4]"
+    }
+  ],
+  "rule": "에이전트는 typicalKeys 를 추측 입력으로 쓰지 않는다. fields --json 의 name 만 --data 키다."
+}

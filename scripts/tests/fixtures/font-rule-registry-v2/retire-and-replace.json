@@ -1,0 +1,69 @@
+{
+  "fixtureVersion": "1.0",
+  "name": "retire-and-replace",
+  "changeSets": [
+    {
+      "schemaVersion": "2.0",
+      "kind": "font-rule-change-set",
+      "changeSetId": "issue-5955.fixture.retire-and-replace",
+      "issue": 5955,
+      "sequence": 1,
+      "parentRegistrySha256": "7faf193f59ac8e5caf8ab789266f39a0daf3e76a2ba13d72ea0ed266108cd831",
+      "decisionPlane": "paint",
+      "evidenceRecords": [
+        {
+          "evidenceId": "evidence.fixture.replacement",
+          "kind": "public-fixture",
+          "source": "scripts/tests/fixtures/font-rule-registry-v2/public-evidence.txt",
+          "sha256": "cb3716ed32e85b9522f539633735edb3a5038a156815ab22df3e188558058517",
+          "licenseOrProvenance": "synthetic public fixture",
+          "parentEvidenceIds": []
+        }
+      ],
+      "operations": [
+        {
+          "operationId": "operation.fixture.retire-and-replace",
+          "type": "retire-and-replace",
+          "retiredRuleId": "font-rule.fixture.paint.0001",
+          "expectedSelectionTupleSha256": "146f401106f52187aaa1cd9cc452eaa76d722fd1620288ffad6b4249b7332f42",
+          "replacementRule": {
+            "ruleId": "font-rule.fixture.paint.0002",
+            "relationType": "paint-substitute",
+            "decisionPlane": "paint",
+            "sourceBoundaryId": "boundary.fixture.public",
+            "sourceFace": "Fixture Sans",
+            "targetFaceOrPolicy": "Corrected Fixture Sans Fallback",
+            "conditions": {},
+            "order": 0,
+            "projection": {
+              "id": "canvas2d-paint",
+              "mode": "direct"
+            },
+            "projectionSequence": 0,
+            "metricEntryIds": [],
+            "supply": null,
+            "evidenceIds": ["evidence.fixture.replacement"]
+          },
+          "retirementReason": "Synthetic semantic correction contract",
+          "evidenceIds": ["evidence.fixture.replacement"]
+        }
+      ],
+      "expectedDelta": {
+        "projectionId": "canvas2d-paint",
+        "activeRuleDelta": 0,
+        "unchangedProjectionIds": [
+          "rust-layout-name",
+          "rust-layout-metric",
+          "canvas2d-webfont",
+          "canvaskit-sfnt"
+        ]
+      }
+    }
+  ],
+  "expected": {
+    "activeRuleIds": ["font-rule.fixture.paint.0002"],
+    "retiredRuleIds": ["font-rule.fixture.paint.0001"],
+    "projectionDelta": 0,
+    "successorRuleIds": ["font-rule.fixture.paint.0002"]
+  }
+}

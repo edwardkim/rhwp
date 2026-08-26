@@ -211,7 +211,7 @@ test('vertical-dominant wheel input locks horizontal pan in every delta mode', a
   }
 });
 
-test('horizontal-dominant wheel input retains native horizontal pan', async () => {
+test('세로 쪽 이동의 가로 우세 입력은 native 가로 pan을 유지한다', async () => {
   const { ViewportManager } = await loadViewportManager();
   const viewport = new ViewportManager(new FakeEventBus() as never);
   const container = { scrollTop: 100 };
@@ -241,6 +241,80 @@ test('horizontal-dominant wheel input retains native horizontal pan', async () =
 
   assert.equal(prevented, false);
   assert.equal(container.scrollTop, 100);
+});
+
+test('가로 쪽 이동은 선택했을 때 가로·세로 우세 입력을 모두 좌우 스크롤로 바꾼다', async () => {
+  const { ViewportManager } = await loadViewportManager();
+  const viewport = new ViewportManager(new FakeEventBus() as never) as unknown as {
+    setPageMovement: (value: { direction: 'horizontal'; wheelHorizontal: boolean }) => void;
+    container: { scrollTop: number; scrollLeft: number };
+    onWheel: (event: {
+      ctrlKey: boolean;
+      metaKey: boolean;
+      shiftKey: boolean;
+      deltaX: number;
+      deltaY: number;
+      deltaMode: number;
+      preventDefault: () => void;
+    }) => void;
+  };
+  viewport.container = { scrollTop: 0, scrollLeft: 100 };
+  viewport.setPageMovement({ direction: 'horizontal', wheelHorizontal: true });
+  let prevented = false;
+  viewport.onWheel({
+    ctrlKey: false,
+    metaKey: false,
+    shiftKey: false,
+    deltaX: 0,
+    deltaY: 32,
+    deltaMode: 0,
+    preventDefault: () => { prevented = true; },
+  });
+  assert.equal(prevented, true);
+  assert.equal(viewport.container.scrollLeft, 132);
+  assert.equal(viewport.container.scrollTop, 0);
+
+  prevented = false;
+  viewport.onWheel({
+    ctrlKey: false,
+    metaKey: false,
+    shiftKey: false,
+    deltaX: 24,
+    deltaY: 3,
+    deltaMode: 0,
+    preventDefault: () => { prevented = true; },
+  });
+  assert.equal(prevented, true);
+  assert.equal(viewport.container.scrollLeft, 156);
+  assert.equal(viewport.container.scrollTop, 0);
+
+  prevented = false;
+  viewport.onWheel({
+    ctrlKey: false,
+    metaKey: false,
+    shiftKey: false,
+    deltaX: -10,
+    deltaY: -2,
+    deltaMode: 0,
+    preventDefault: () => { prevented = true; },
+  });
+  assert.equal(prevented, true);
+  assert.equal(viewport.container.scrollLeft, 146);
+  assert.equal(viewport.container.scrollTop, 0);
+
+  viewport.setPageMovement({ direction: 'horizontal', wheelHorizontal: false });
+  prevented = false;
+  viewport.onWheel({
+    ctrlKey: false,
+    metaKey: false,
+    shiftKey: false,
+    deltaX: 0,
+    deltaY: 32,
+    deltaMode: 0,
+    preventDefault: () => { prevented = true; },
+  });
+  assert.equal(prevented, false);
+  assert.equal(viewport.container.scrollLeft, 146);
 });
 
 test('an eight-pixel trackpad gesture settles within four frames and moves nearly five percent', async (t) => {
@@ -372,15 +446,15 @@ test('wheel zoom emits the pointer anchor and inverse deltas restore zoom', asyn
   assert.ok(Math.abs(viewport.getZoom() - 1) < 1e-12);
 });
 
-test('zoom in and out controls use the smooth zoom path', () => {
+test('zoom in and out controls share the command smooth zoom path', () => {
   const mainSource = readFileSync(new URL('../src/main.ts', import.meta.url), 'utf8');
   const viewCommandSource = readFileSync(
     new URL('../src/command/commands/view.ts', import.meta.url),
     'utf8',
   );
 
-  assert.match(mainSource, /sb-zoom-in[\s\S]*?smoothZoomBy\(0\.1\)/);
-  assert.match(mainSource, /sb-zoom-out[\s\S]*?smoothZoomBy\(-0\.1\)/);
+  assert.match(mainSource, /zoomIn\.addEventListener[\s\S]*?dispatcher\.dispatch\('view:zoom-in'\)/);
+  assert.match(mainSource, /zoomOut\.addEventListener[\s\S]*?dispatcher\.dispatch\('view:zoom-out'\)/);
   assert.match(viewCommandSource, /id: 'view:zoom-in'[\s\S]*?smoothZoomBy\(0\.1\)/);
   assert.match(viewCommandSource, /id: 'view:zoom-out'[\s\S]*?smoothZoomBy\(-0\.1\)/);
 });

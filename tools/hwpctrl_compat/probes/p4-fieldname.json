@@ -1,0 +1,18 @@
+{
+  "id": "p4-fieldname",
+  "title": "누름틀 안에서 이름 바꾸기 — SetCurFieldName 4인자",
+  "ledger": [],
+  "open": "samples/issue-986-receipt.hwp",
+  "calls": [
+    ["MoveToField", ["pt_nm", true, true, false]],
+    ["GetPos", []],
+    ["GetCurFieldName", [0]],
+    ["SetCurFieldName", ["새이름", 0, "", ""]],
+    ["GetCurFieldName", [0]],
+    ["GetFieldList", [0, 0]],
+    ["SetCurFieldName", ["pt_nm", 0, "", ""]],
+    ["GetCurFieldName", [0]],
+    ["GetFieldText", ["새이름", 0]],
+    ["GetHeadingString", []]
+  ]
+}

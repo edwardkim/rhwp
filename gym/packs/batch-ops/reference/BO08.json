@@ -1,0 +1,18 @@
+{
+  "id": "BO08",
+  "steps": [
+    {
+      "run": [
+        "batch",
+        "fill",
+        "--form",
+        "{input}",
+        "--data",
+        "gym/packs/batch-ops/assets/BO08-data.jsonl",
+        "--out-dir",
+        "{sub:out}",
+        "--json"
+      ]
+    }
+  ]
+}

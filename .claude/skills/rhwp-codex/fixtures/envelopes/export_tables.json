@@ -1,0 +1,79 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5318,
+  "kind": "live",
+  "command": "export-tables",
+  "sourceChapter": "20_표와_데이터.md",
+  "cmd": "rhwp export-tables samples/basic/issue2007_nested_cell_pagination_42065.hwp --json",
+  "exit": 0,
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "tableCount": 5,
+    "tables": [
+      {
+        "cellCount": 2,
+        "cells": [
+          {
+            "col": 0,
+            "colSpan": 1,
+            "isHeader": false,
+            "row": 0,
+            "rowSpan": 1,
+            "text": "Ⅰ. 규제 심사(안) 개요"
+          },
+          {
+            "col": 0,
+            "colSpan": 1,
+            "isHeader": false,
+            "row": 1,
+            "rowSpan": 1,
+            "text": "□ 요  약"
+          }
+        ],
+        "cols": 1,
+        "control": 4,
+        "index": 0,
+        "paragraph": 0,
+        "rows": 2,
+        "section": 0
+      },
+      {
+        "cellCount": 6,
+        "cells": [
+          {
+            "col": 0,
+            "colSpan": 1,
+            "isHeader": false,
+            "row": 0,
+            "rowSpan": 1,
+            "text": "규제 사무명"
+          },
+          {
+            "col": 1,
+            "colSpan": 1,
+            "isHeader": false,
+            "row": 0,
+            "rowSpan": 1,
+            "text": "현행 규제내용"
+          },
+          "… (6개 중 2개 표시)"
+        ],
+        "cols": 3,
+        "control": 2,
+        "index": 1,
+        "paragraph": 1,
+        "rows": 2,
+        "section": 0
+      },
+      "… (5개 중 2개 표시)"
+    ],
+    "untrustedContent": true,
+    "untrustedFields": [
+      "tables[].cells[].text",
+      "tables[].cells[].nested[]"
+    ]
+  },
+  "extractedFromGenerated": true,
+  "handEdited": false
+}

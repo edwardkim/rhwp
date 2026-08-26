@@ -1,0 +1,39 @@
+ident	command	exit	family	needle	why
+replay_no_args	replay	2	replay-usage	사용법: rhwp replay	계획 위치 인자도 --plan-json 도 없으면 사용법. stdout 0바이트.
+replay_unknown_flag	replay	2	replay-usage	알 수 없는 옵션	미지 플래그는 usage. 엔진을 타기 전에 끊는다.
+replay_plan_json_missing	replay	2	replay-usage	--plan-json 뒤에 계획 JSON 이 필요합니다	플래그만 있고 값이 없다.
+replay_expect_missing	replay	2	replay-usage	--expect-output-sha256 뒤에 64자리 16진 해시가 필요합니다	verify 플래그 값 누락.
+replay_expect_short	replay	2	replay-usage	--expect-output-sha256 값은 64자리 16진이어야 합니다	replay_contract malformed_expected_hash. 짧은 값.
+replay_expect_not_hex	replay	2	replay-usage	--expect-output-sha256 값은 64자리 16진이어야 합니다	64자지만 16진이 아님.
+replay_parent_missing	replay	2	replay-usage	--parent 뒤에 부모 캡슐 경로가 필요합니다	체인 플래그 값 누락.
+replay_capsule_missing	replay	2	replay-usage	--capsule 뒤에 저장 경로가 필요합니다	캡슐 경로 누락.
+replay_sign_key_missing	replay	2	replay-usage	--sign-key 뒤에 키 파일 경로가 필요합니다	서명 키 경로 누락.
+replay_sign_without_capsule	replay	2	replay-usage	--sign-key 는 --capsule 과 함께 사용합니다	서명 대상은 캡슐 파일 바이트. 캡슐 없이 서명 금지.
+replay_plan_parse	replay	2	replay-usage	계획 JSON 파싱 실패	깨진 JSON 은 usage. 엔진 진입 전.
+replay_plan_no_input	replay	2	replay-usage	계획에 input 이 필요합니다	input 키 없음.
+replay_same_file	replay	2	replay-usage	--capsule과 --parent가 같은 기존 파일을 가리킵니다	부모 덮어쓰기 방지. 파일이 이미 있을 때만 발동.
+replay_plan_read	replay	1	replay-io	계획을 읽을 수 없습니다	위치 인자 계획 파일 IO. exit 1.
+replay_parent_read	replay	1	replay-io	부모 캡슐을 읽을 수 없습니다	canonicalize 실패. 부모 없음은 IO.
+replay_engine_json	replay	1	replay-io	입력을 읽을 수 없습니다	엔진/입력 IO 는 --json 이면 {error} 봉투. 성공 영수증 키가 없다.
+replay_verify_mismatch	replay	3	replay-judgment		주장이 틀린다. reproduced:false, exit 3. 도구 고장이 아니다.
+audit_no_args	audit	2	audit-usage	사용법: rhwp audit	폴더 인자 없음.
+audit_unknown_flag	audit	2	audit-usage	알 수 없는 옵션	미지 플래그.
+audit_empty	audit	2	audit-usage	에 *.capsule.json 이 없습니다	audit_contract empty_dir. stdout 0바이트.
+audit_dir_read	audit	1	audit-io	폴더를 읽을 수 없습니다	없는 폴더는 IO. 빈 폴더(usage)와 가른다.
+audit_kind	audit	3	audit-judgment	kind 가 workCapsule 이 아님	확장자만 맞은 JSON 은 회계 실패로 잡힌다.
+audit_output_sha	audit	3	audit-judgment	receipt.outputSha256 가 없거나 64자리 16진이 아님	출력 해시 기형.
+audit_input_sha	audit	3	audit-judgment	receipt.inputSha256 가 없거나 64자리 16진이 아님	입력 해시 기형. 산출 대조 전에 끊는다.
+audit_plan_vs_text	audit	3	audit-judgment	plan 과 planText 불일치	parsed plan 만 바꾼 변조. 산출이 같아도 실패.
+audit_plan_text_sha	audit	3	audit-judgment	planText 와 receipt.planSha256 불일치	plan 과 planText 를 같이 바꿔도 원문 해시가 폭로한다.
+audit_steps	audit	3	audit-judgment	receipt.steps 와 planText.steps 길이 불일치 (plan.steps 길이와 receipt.steps 불일치)	steps 필드만 999 로.
+audit_mixed_rate	audit	3	audit-judgment		2/3 재현. rate=reproduced/total. 실패 1건 = exit 3.
+lineage_no_args	lineage	2	lineage-usage	사용법: rhwp lineage	머리 캡슐 없음 = usage.
+lineage_unknown_flag	lineage	2	lineage-usage	알 수 없는 옵션	lineage_contract 미지 옵션.
+lineage_keyring_missing	lineage	2	lineage-usage	--keyring 뒤에 키 등록부 경로가 필요합니다	opt-in 서명 축 플래그 값 누락.
+lineage_anchor_missing	lineage	2	lineage-usage	--anchor-log 뒤에 로그 경로가 필요합니다	opt-in 앵커 축 플래그 값 누락.
+lineage_head_missing	lineage	1	lineage-io	캡슐을 읽을 수 없습니다	머리 없음은 IO exit 1. 깨진 체인(exit 3)과 가른다.
+lineage_parent_field	lineage	3	lineage-judgment	parent 필드 없음	parent 키 자체 없음은 root 가 아니다. fail-closed.
+lineage_parent_sha	lineage	3	lineage-judgment	parent.sha256 가 없거나 64자리 16진이 아님	링크 해시 누락은 검증 생략이 아니라 즉시 실패.
+lineage_parent_tamper	lineage	3	lineage-judgment		부모 파일 사후 변조 → parentOk:false, brokenAt=부모.
+lineage_invariant	lineage	3	lineage-judgment		부모 산출 ≠ 자식 입력 → lineageOk:false.
+lineage_kind	lineage	3	lineage-judgment	kind 가 workCapsule 이 아님	JSON 이지만 캡슐이 아님.

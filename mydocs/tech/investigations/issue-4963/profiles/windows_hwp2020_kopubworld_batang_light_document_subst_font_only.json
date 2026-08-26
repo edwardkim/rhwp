@@ -1,0 +1,200 @@
+{
+  "candidate": {
+    "documentFace": "KoPubWorld바탕체 Light",
+    "queueRank": 8
+  },
+  "environment": {
+    "ambientFontManifestSha256": {
+      "reason": null,
+      "status": "observed",
+      "value": "d825dd3db24df0f344cf5737fd76beb711c6445a98146c8bbf93ca1c01c98a9a"
+    },
+    "exportRoute": {
+      "reason": null,
+      "status": "observed",
+      "value": "HAction.FileSaveAsPdf"
+    },
+    "hancomVersion": {
+      "reason": null,
+      "status": "observed",
+      "value": "11, 0, 0, 9136"
+    },
+    "locale": {
+      "reason": null,
+      "status": "observed",
+      "value": "ko-KR"
+    },
+    "oracleAuthority": "acceptance-primary",
+    "os": {
+      "reason": null,
+      "status": "observed",
+      "value": "Microsoft Windows 11 Pro"
+    },
+    "pdfProducer": {
+      "reason": null,
+      "status": "observed",
+      "value": "Hancom PDF 1.3.0.550"
+    },
+    "processReset": {
+      "reason": null,
+      "status": "observed",
+      "value": true
+    },
+    "rebooted": {
+      "reason": null,
+      "status": "observed",
+      "value": true
+    }
+  },
+  "exactMissingState": "document-subst-font-only",
+  "execution": {
+    "evidenceClass": "oracle-run",
+    "finishedAt": {
+      "reason": null,
+      "status": "observed",
+      "value": "2026-08-22T14:12:50.8285782Z"
+    },
+    "measurementDate": "2026-08-22",
+    "repeatIndex": 1,
+    "startedAt": {
+      "reason": null,
+      "status": "observed",
+      "value": "2026-08-22T14:12:32.0490399Z"
+    }
+  },
+  "fontState": {
+    "installedFontSha256": {
+      "reason": null,
+      "status": "observed",
+      "value": "069494cce21a4222c88e537f256b6f46fee209375aba769f82431b2d382bc84f"
+    },
+    "readbackFace": {
+      "reason": null,
+      "status": "observed",
+      "value": "함초롬바탕"
+    },
+    "readbackFontType": {
+      "reason": null,
+      "status": "observed",
+      "value": 5
+    },
+    "relatedFaceSet": [
+      "KoPubWorld바탕체 Light",
+      "KoPubWorld돋움체 Light"
+    ],
+    "requestedFace": "KoPubWorld바탕체 Light"
+  },
+  "input": {
+    "fixtureContractVersion": "w5-oracle-typesetting-v1-subst-v1",
+    "fixtureGeneratorCommit": "04c1d874d67b84afced3061b80d4e22d4d827f72",
+    "sha256": {
+      "reason": null,
+      "status": "observed",
+      "value": "f6edc8fc43dfd3256385e9752979c14a7041e50c06d36be47cef6e3486835084"
+    },
+    "sourceFormat": {
+      "reason": null,
+      "status": "observed",
+      "value": "hwpx"
+    }
+  },
+  "issue": 4963,
+  "kind": "font-oracle-profile",
+  "observations": {
+    "firstTypesettingDivergence": {
+      "reason": null,
+      "status": "observed",
+      "value": {
+        "characterIndex": 18,
+        "lineIndex": 0,
+        "pageIndex": 0,
+        "plane": "selection"
+      }
+    },
+    "glyphOutlineDigest": {
+      "reason": "The selected HCR fallback source bytes were outside the managed font set.",
+      "status": "unavailable",
+      "value": null
+    },
+    "hmtxAdvance": {
+      "reason": "The selected HCR fallback hmtx source was not frozen by this controlled run.",
+      "status": "unavailable",
+      "value": null
+    },
+    "lineCount": {
+      "reason": null,
+      "status": "observed",
+      "value": 30
+    },
+    "pageCount": {
+      "reason": null,
+      "status": "observed",
+      "value": 1
+    },
+    "pdfObservedAdvance": {
+      "reason": null,
+      "status": "observed",
+      "value": {
+        "advance": 7.774934,
+        "glyphOrCid": "U+AC00/15",
+        "unit": "pdf-user-space"
+      }
+    },
+    "subsetFontName": {
+      "reason": null,
+      "status": "observed",
+      "value": "INPILL+HCRBatang-Bold"
+    }
+  },
+  "privacy": {
+    "absoluteFontPathIncluded": false,
+    "fontBytesEmbedded": false,
+    "privateDocumentIdentityIncluded": false
+  },
+  "questionId": "document-subst-font-only",
+  "relationEvidence": {
+    "anchor": {
+      "reason": null,
+      "status": "observed",
+      "value": {
+        "declaredSubstitutionFace": "KoPubWorld돋움체 Light",
+        "exportSubsetFontName": "INPILL+HCRBatang-Bold",
+        "exportUsedSubstitution": false,
+        "firstDivergenceComparedWith": "exact-installed",
+        "fixtureRelationAnchor": "fixture-declared-substFont",
+        "installedSubstitutionFontSha256": "069494cce21a4222c88e537f256b6f46fee209375aba769f82431b2d382bc84f",
+        "pdfObservationCanonicalSha256": "8392104ff5e0e504755a91db624f1fe53f2ea8a3c11655df5a53b09184721054",
+        "pdfSha256": "32b6d4d81d6dee8ff8c333ea2fd56283a05922bb872ac4ac6da0340bf2af7cf5",
+        "runEvidenceSha256": "ba96b8c04431518c07369f71b82963331893c2f26cbfc5b10e4ba2289cef7496",
+        "substitutionSourceNameTable": {
+          "family": [
+            "KoPubWorldDotum",
+            "KoPubWorldDotum Light",
+            "KoPubWorld돋움체",
+            "KoPubWorld돋움체 Light"
+          ],
+          "fullName": [
+            "KoPubWorldDotum Light",
+            "KoPubWorld돋움체 Light"
+          ],
+          "postScriptName": [
+            "KoPubWorldDotumLight"
+          ],
+          "preferredFamily": [
+            "KoPubWorldDotum",
+            "KoPubWorld돋움체"
+          ],
+          "preferredSubfamily": [
+            "Light"
+          ],
+          "subfamily": [
+            "Light"
+          ]
+        },
+        "typesettingProjectionSha256": "59801255a8663ef14c9796be76942bc95b2fa46f80bc6b0631bf5bd220c827be"
+      }
+    },
+    "type": "document-substitution"
+  },
+  "schemaVersion": 2
+}

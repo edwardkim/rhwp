@@ -1,0 +1,73 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5313,
+  "affordances": [
+    {
+      "id": "security-sweep",
+      "priority": 90,
+      "skill": "rhwp-security-sweep",
+      "commands": {
+        "injection": "rhwp inspect injection <file> --json",
+        "hidden": "rhwp inspect hidden-text <file> --json"
+      },
+      "when": "injection_signal_count>0 또는 hidden_text_count>0",
+      "chapter": "05_security_first.md"
+    },
+    {
+      "id": "form-fill",
+      "priority": 80,
+      "skill": "rhwp-form-fill",
+      "command": "rhwp fields <file> --json",
+      "when": "field_count>0",
+      "chapter": "09_form_fill.md"
+    },
+    {
+      "id": "table-extract",
+      "priority": 75,
+      "skill": "rhwp-table-exchange",
+      "command": "rhwp export-tables <file> --json",
+      "when": "table_count>0",
+      "chapter": "08_table_extract.md"
+    },
+    {
+      "id": "structure-outline",
+      "priority": 70,
+      "skill": "rhwp-doc-triage",
+      "command": "rhwp export-structure <file> --json",
+      "when": "structure_node_count>0",
+      "chapter": "10_structure_outline.md"
+    },
+    {
+      "id": "chart-extract",
+      "priority": 60,
+      "skill": "rhwp-table-exchange",
+      "command": "rhwp chart-to-csv <file> --json",
+      "when": "chart_count>0",
+      "chapter": "11_chart_extract.md"
+    },
+    {
+      "id": "note-structure",
+      "priority": 45,
+      "skill": "rhwp-doc-triage",
+      "command": "rhwp explain <file> --json",
+      "when": "footnote_count+endnote_count>0",
+      "chapter": "13_note_structure.md"
+    },
+    {
+      "id": "long-doc-digest",
+      "priority": 40,
+      "skill": "rhwp-doc-triage",
+      "command": "rhwp digest <file> --sections --json",
+      "when": "page_count>=10",
+      "chapter": "12_long_doc_digest.md"
+    },
+    {
+      "id": "triage-overview",
+      "priority": 20,
+      "skill": "rhwp-doc-triage",
+      "command": "rhwp digest <file> --json",
+      "when": "항상",
+      "chapter": "14_triage_overview.md"
+    }
+  ]
+}

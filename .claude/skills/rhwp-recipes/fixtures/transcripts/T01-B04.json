@@ -1,0 +1,11 @@
+{
+  "id": "T01-B04",
+  "recipe": "01",
+  "kind": "bash",
+  "sourceFile": "mydocs/manual/recipes/01_fill_form_and_submit.md",
+  "excerpted": true,
+  "fabricatedLive": false,
+  "raw": "rhwp edit fill-fields samples/form-01.hwp --data '{\"noSuchField\":\"x\"}' --dry-run --json",
+  "firstLine": "rhwp edit fill-fields samples/form-01.hwp --data '{\"noSuchField\":\"x\"}' --dry-run --json",
+  "notGym": true
+}

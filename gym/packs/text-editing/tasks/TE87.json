@@ -1,0 +1,27 @@
+{
+  "id": "TE87",
+  "tier": 1,
+  "title": "hwp3 형식",
+  "input": "samples/hwp3-sample.hwp",
+  "instructions": "입력의 형식 표기를 answer.json 에 {\"fmt\": \"...\"} 으로 제출하라. 한 줄로 추측하지 말고 info 를 읽어라.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "hwp3 형식 · fmt",
+      "op": "answer_eq",
+      "answer": "fmt",
+      "path": "format",
+      "cmd": [
+        "info",
+        "{input}",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

@@ -1,0 +1,21 @@
+{
+  "id": "EX21",
+  "steps": [
+    {
+      "answer": {
+        "dates": {
+          "cmd": [
+            "extract-data",
+            "{input}",
+            "--kind",
+            "date",
+            "--limit",
+            "1",
+            "--json"
+          ],
+          "path": "itemCount"
+        }
+      }
+    }
+  ]
+}

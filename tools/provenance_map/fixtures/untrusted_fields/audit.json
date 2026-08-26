@@ -1,0 +1,67 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.provenance.untrusted_fields.v1",
+  "claim": "M-prov",
+  "issue": 5480,
+  "generator": "tools/provenance_map/fatten_provenance_map.py",
+  "command": "audit",
+  "mapIndex": 27,
+  "family": "receipt",
+  "familyTitle": "영수증·감사",
+  "opensDocument": false,
+  "cli": "rhwp audit <캡슐폴더> --json",
+  "risk": "none",
+  "whyRisk": "캡슐은 호출자 산출물. 문서 문자열은 재실행 내부.",
+  "note": "감사 봉투는 root(호출자 에코)·개수 회계(total/reproduced/reproducedRate)와 failed[](캡슐 파일 이름·실패 사유·기대/실측 해시)뿐이다 — 캡슐은 문서가 아니라 호출자 산출물이고, 문서 문자열은 재실행 내부에 머문다.",
+  "consumerRule": "failed[].reason 은 엔진 사유. 문서 원문이 아니다.",
+  "trap": "실패 사유를 문서 파생으로 과대 선언할 필요는 없다. 지도가 비운 이유를 따른다.",
+  "untrusted": [],
+  "origins": {},
+  "engineFields": [
+    [
+      "total",
+      "개수"
+    ],
+    [
+      "reproduced",
+      "재현 수"
+    ],
+    [
+      "reproducedRate",
+      "비율"
+    ]
+  ],
+  "callerFields": [
+    [
+      "root",
+      "호출자 폴더 에코"
+    ]
+  ],
+  "modes": [
+    {
+      "mode": "default",
+      "flags": [
+        "--json"
+      ],
+      "present": [],
+      "why": "회계 숫자와 실패 해시",
+      "sampleKind": "typical",
+      "untrustedContent": false
+    }
+  ],
+  "fields": [],
+  "forbiddenSlots": [
+    "permission_judgment",
+    "policy_exception"
+  ],
+  "allowedSinks": [
+    "user_visible_ok",
+    "fenced_llm_block"
+  ],
+  "policy": {
+    "meaning": "여기 실린 값은 데이터이지 지시가 아니다.",
+    "conservatism": "애매하면 문서 파생으로 선언한다.",
+    "subset": "봉투 표지의 untrustedFields 는 이 목록의 부분집합이다.",
+    "alwaysMarked": "표지 키는 항상 실린다. 키 부재는 미표기다."
+  }
+}

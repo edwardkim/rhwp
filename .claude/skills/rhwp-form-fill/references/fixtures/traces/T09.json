@@ -1,0 +1,19 @@
+{
+  "id": "T09",
+  "title": "fieldCount 0 은 성공 봉투",
+  "sample": "samples/hwp3-sample.hwp",
+  "steps": [
+    {
+      "argv": [
+        "fields",
+        "samples/hwp3-sample.hwp",
+        "--json"
+      ],
+      "expect": {
+        "fieldCount": 0
+      },
+      "exit": 0
+    }
+  ],
+  "stop": "F02"
+}

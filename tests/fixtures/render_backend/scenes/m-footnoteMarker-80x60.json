@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "id": "m-footnoteMarker-80x60",
+  "width": 80.0,
+  "height": 60.0,
+  "contract": "footnoteMarker 를 80x60 페이지에 올리면 begin_page 헤더가 80.00x60.00",
+  "ops": [
+    {
+      "kind": "footnoteMarker",
+      "x": 4.0,
+      "y": 6.0,
+      "w": 24.0,
+      "h": 12.0,
+      "text": null,
+      "gradient": false,
+      "image": false
+    }
+  ],
+  "expectedKinds": [
+    "footnoteMarker"
+  ],
+  "expectedTrace": [
+    "begin_page 80.00x60.00",
+    "  footnoteMarker bbox=4.00,6.00,24.00,12.00",
+    "end_page ops=1"
+  ]
+}

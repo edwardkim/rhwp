@@ -1,0 +1,25 @@
+{
+  "id": "OP40",
+  "steps": [
+    {
+      "answer": {
+        "pages": {
+          "cmd": [
+            "info",
+            "{input}",
+            "--json"
+          ],
+          "path": "pageCount"
+        },
+        "tables": {
+          "cmd": [
+            "export-tables",
+            "{input}",
+            "--json"
+          ],
+          "path": "tableCount"
+        }
+      }
+    }
+  ]
+}

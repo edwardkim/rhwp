@@ -1,0 +1,29 @@
+{
+  "id": "SE09",
+  "tier": 3,
+  "title": "PII 종류 조사",
+  "input": "samples/task2097/75544_pii_bunseok.hwpx",
+  "instructions": "입력에서 탐지되는 개인정보 후보의 **종류 목록 길이**를 answer.json 에 {\"kinds\": N} 으로 제출하라. 힌트: redact --dry-run 의 kinds.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "종류 수",
+      "op": "len_answer_eq",
+      "answer": "kinds",
+      "path": "kinds",
+      "cmd": [
+        "edit",
+        "redact",
+        "{input}",
+        "--dry-run",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

@@ -355,7 +355,7 @@ fn draw_stretch_bracket(
             ctx.begin_path();
             ctx.set_line_cap("round");
             ctx.move_to(x + w * 0.9, y);
-            let _ = ctx.bezier_curve_to(
+            ctx.bezier_curve_to(
                 x + w * 0.05,
                 y + h * 0.18,
                 x + w * 0.05,
@@ -370,7 +370,7 @@ fn draw_stretch_bracket(
             ctx.begin_path();
             ctx.set_line_cap("round");
             ctx.move_to(x + w * 0.1, y);
-            let _ = ctx.bezier_curve_to(
+            ctx.bezier_curve_to(
                 x + w * 0.95,
                 y + h * 0.18,
                 x + w * 0.95,
@@ -401,40 +401,20 @@ fn draw_stretch_bracket(
             let qh = h / 4.0;
             ctx.begin_path();
             ctx.move_to(mid_x + w * 0.2, y);
-            let _ = ctx.quadratic_curve_to(mid_x - w * 0.1, y, mid_x - w * 0.1, y + qh);
-            let _ = ctx.quadratic_curve_to(
-                mid_x - w * 0.1,
-                y + qh * 2.0,
-                mid_x - w * 0.3,
-                y + qh * 2.0,
-            );
-            let _ = ctx.quadratic_curve_to(
-                mid_x - w * 0.1,
-                y + qh * 2.0,
-                mid_x - w * 0.1,
-                y + qh * 3.0,
-            );
-            let _ = ctx.quadratic_curve_to(mid_x - w * 0.1, y + h, mid_x + w * 0.2, y + h);
+            ctx.quadratic_curve_to(mid_x - w * 0.1, y, mid_x - w * 0.1, y + qh);
+            ctx.quadratic_curve_to(mid_x - w * 0.1, y + qh * 2.0, mid_x - w * 0.3, y + qh * 2.0);
+            ctx.quadratic_curve_to(mid_x - w * 0.1, y + qh * 2.0, mid_x - w * 0.1, y + qh * 3.0);
+            ctx.quadratic_curve_to(mid_x - w * 0.1, y + h, mid_x + w * 0.2, y + h);
             ctx.stroke();
         }
         "}" => {
             let qh = h / 4.0;
             ctx.begin_path();
             ctx.move_to(mid_x - w * 0.2, y);
-            let _ = ctx.quadratic_curve_to(mid_x + w * 0.1, y, mid_x + w * 0.1, y + qh);
-            let _ = ctx.quadratic_curve_to(
-                mid_x + w * 0.1,
-                y + qh * 2.0,
-                mid_x + w * 0.3,
-                y + qh * 2.0,
-            );
-            let _ = ctx.quadratic_curve_to(
-                mid_x + w * 0.1,
-                y + qh * 2.0,
-                mid_x + w * 0.1,
-                y + qh * 3.0,
-            );
-            let _ = ctx.quadratic_curve_to(mid_x + w * 0.1, y + h, mid_x - w * 0.2, y + h);
+            ctx.quadratic_curve_to(mid_x + w * 0.1, y, mid_x + w * 0.1, y + qh);
+            ctx.quadratic_curve_to(mid_x + w * 0.1, y + qh * 2.0, mid_x + w * 0.3, y + qh * 2.0);
+            ctx.quadratic_curve_to(mid_x + w * 0.1, y + qh * 2.0, mid_x + w * 0.1, y + qh * 3.0);
+            ctx.quadratic_curve_to(mid_x + w * 0.1, y + h, mid_x - w * 0.2, y + h);
             ctx.stroke();
         }
         "|" => {
@@ -499,8 +479,8 @@ fn draw_decoration(
             let ty = y + fs * 0.08;
             ctx.begin_path();
             ctx.move_to(mid_x - half_w * 0.6, ty);
-            let _ = ctx.quadratic_curve_to(mid_x - half_w * 0.2, ty - fs * 0.08, mid_x, ty);
-            let _ = ctx.quadratic_curve_to(
+            ctx.quadratic_curve_to(mid_x - half_w * 0.2, ty - fs * 0.08, mid_x, ty);
+            ctx.quadratic_curve_to(
                 mid_x + half_w * 0.2,
                 ty + fs * 0.08,
                 mid_x + half_w * 0.6,

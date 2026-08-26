@@ -1,0 +1,29 @@
+{
+  "id": "SR47",
+  "tier": 2,
+  "title": "그림 문서 마크다운 쪽수",
+  "input": "samples/pic2.hwp",
+  "instructions": "그림이 있는 입력을 마크다운으로 내보내고 렌더된 쪽 수를 answer.json 에 {\"pages\": N} 으로 제출하라. 힌트: rhwp export-markdown --json 의 pageCount.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "렌더 쪽 수",
+      "op": "answer_eq",
+      "answer": "pages",
+      "path": "pageCount",
+      "cmd": [
+        "export-markdown",
+        "{input}",
+        "-o",
+        "{file:md}",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "변환"
+}

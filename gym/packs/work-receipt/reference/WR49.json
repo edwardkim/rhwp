@@ -1,0 +1,18 @@
+{
+  "id": "WR49",
+  "steps": [
+    {
+      "answer": {
+        "steps": {
+          "cmd": [
+            "replay",
+            "--plan-json",
+            "{\"planVersion\": \"1.0\", \"input\": \"samples/field-01.hwp\", \"output\": \"live-steps.hwp\", \"steps\": [{\"action\": \"replace_text\", \"find\": \"마케팅\", \"replace\": \"걸음라이브\"}]}",
+            "--json"
+          ],
+          "path": "steps"
+        }
+      }
+    }
+  ]
+}

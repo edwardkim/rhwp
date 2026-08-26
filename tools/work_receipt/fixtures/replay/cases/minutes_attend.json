@@ -1,0 +1,69 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workReceiptReplayCase",
+  "ident": "minutes_attend",
+  "claim": "M-rcpt",
+  "issue": 5478,
+  "family": "회의록",
+  "genre": "출석",
+  "title": "출석 6인→출석 7인",
+  "why": "정족수 기록. 안건 번호와 분리.",
+  "notes": "출석 축",
+  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "output": "out/minutes-attend.hwp",
+  "ext": "hwp",
+  "actions": [
+    "replace_text"
+  ],
+  "stepCount": 1,
+  "plan": {
+    "planVersion": "1.0",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "output": "out/minutes-attend.hwp",
+    "steps": [
+      {
+        "action": "replace_text",
+        "find": "출석 6인",
+        "replace": "출석 7인"
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"samples/basic/issue2007_nested_cell_pagination_42065.hwp\",\"output\":\"out/minutes-attend.hwp\",\"steps\":[{\"action\":\"replace_text\",\"find\":\"출석 6인\",\"replace\":\"출석 7인\"}]}",
+  "planSha256": "d6acc466cf34e0ec92a1d13334f11a55238d4883adae1a1a7d1faf4a41c52347",
+  "command": "replay",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "inputSha256": "352a0048c658225ace3c1b642728b9b377f5e09773e5f4ec6234bc6a0b875c1a",
+    "planSha256": "d6acc466cf34e0ec92a1d13334f11a55238d4883adae1a1a7d1faf4a41c52347",
+    "outputSha256": "b8ea6fb0e773a42574d17236fff0b8dcabeee4c691e0d4517e58fb432a5067a6",
+    "toolVersion": "fixture-0.0.0-not-a-release",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null
+  },
+  "expected": {
+    "attest": {
+      "exit": 0,
+      "mode": "attest",
+      "reproduced": null,
+      "userOutputCreated": false
+    },
+    "verify_ok": {
+      "exit": 0,
+      "mode": "verify",
+      "reproduced": true,
+      "expectedOutputSha256": "b8ea6fb0e773a42574d17236fff0b8dcabeee4c691e0d4517e58fb432a5067a6"
+    },
+    "verify_mismatch": {
+      "exit": 3,
+      "mode": "verify",
+      "reproduced": false,
+      "expectedOutputSha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "judgment": true
+    }
+  },
+  "claimedOutputPathUntouched": true,
+  "generator": "tools/work_receipt/fatten_work_receipt.py"
+}

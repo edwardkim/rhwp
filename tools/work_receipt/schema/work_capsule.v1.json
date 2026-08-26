@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "rhwp.work_receipt.work_capsule.v1",
+  "title": "작업 캡슐",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "kind",
+    "parent",
+    "plan",
+    "planText",
+    "receipt"
+  ],
+  "properties": {
+    "kind": {
+      "const": "workCapsule"
+    },
+    "schemaVersion": {
+      "const": "1.0"
+    }
+  }
+}

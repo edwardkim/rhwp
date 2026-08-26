@@ -1,0 +1,23 @@
+{
+  "invocation": "rhwp capabilities --search lineage",
+  "invocation_json": "rhwp capabilities --search lineage --json",
+  "query": "lineage",
+  "keywords_and": [
+    "lineage"
+  ],
+  "match_count": 1,
+  "empty": false,
+  "layer": "cli-json",
+  "ssot": "capabilities_command_entries() name+summary+subcommands",
+  "matches": [
+    {
+      "name": "lineage",
+      "family": "query",
+      "summary": "작업 캡슐 해시 체인을 거슬러 연대기를 검증 — 부모 파일 무결·계보 불변식(부모 산출=자식 입력)·(--deep) 링크별 재현·(--keyring) 링크별 서명 귀속. 깨진 체인은 exit 3, brokenAt 명세 (#4401·#4509)",
+      "json": false
+    }
+  ],
+  "truncated": false,
+  "total_match_count": 1,
+  "note": "개수는 계약이 아니다. 바이너리 출력이 이긴다."
+}

@@ -1,0 +1,131 @@
+{
+  "id": "XC01",
+  "steps": [
+    {
+      "run": [
+        "keygen",
+        "--key-id",
+        "gym-boss",
+        "--out",
+        "{sub:agent.key.json}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "replay",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"samples/table-001.hwp\", \"output\": \"out.hwp\", \"steps\": [{\"action\": \"set_cell\", \"table\": 0, \"row\": 0, \"col\": 0, \"text\": \"사다리완주\"}]}",
+        "--capsule",
+        "{sub:caps/work.capsule.json}",
+        "--sign-key",
+        "{sub:agent.key.json}",
+        "--json"
+      ]
+    },
+    {
+      "keyring_from": {
+        "key": "{sub:agent.key.json}",
+        "out": "{sub:keyring.json}",
+        "keyId": "gym-boss"
+      }
+    },
+    {
+      "run": [
+        "anchor",
+        "add",
+        "{sub:caps/work.capsule.json}",
+        "--log",
+        "{sub:anchor.ndjson}",
+        "--json"
+      ]
+    },
+    {
+      "write_json": {
+        "to": "{sub:wo.json}",
+        "body": {
+          "schemaVersion": "1.0",
+          "kind": "workorder",
+          "workorderId": "boss-wo",
+          "acceptancePolicy": {
+            "schemaVersion": "1.0",
+            "kind": "admissionPolicy",
+            "default": "deny",
+            "rules": [
+              {
+                "id": "R1-재현",
+                "require": {
+                  "reproduced": {
+                    "eq": true
+                  }
+                }
+              }
+            ]
+          },
+          "unitPrice": {
+            "amount": "1000",
+            "currency": "KRW",
+            "per": "capsule"
+          }
+        }
+      }
+    },
+    {
+      "write_json": {
+        "to": "{sub:gate.json}",
+        "body": {
+          "schemaVersion": "1.0",
+          "verdict": "allow",
+          "violations": []
+        }
+      }
+    },
+    {
+      "run": [
+        "settle",
+        "propose",
+        "--workorder",
+        "{sub:wo.json}",
+        "--capsule",
+        "{sub:caps/work.capsule.json}",
+        "--gate-envelope",
+        "{sub:gate.json}",
+        "-o",
+        "{sub:claim.json}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "settle",
+        "record",
+        "{sub:claim.json}",
+        "--ledger",
+        "{sub:ledger.ndjson}",
+        "--verdict",
+        "accepted",
+        "--json"
+      ]
+    },
+    {
+      "write_json": {
+        "to": "{sub:policy.json}",
+        "body": {
+          "schemaVersion": "1.0",
+          "kind": "admissionPolicy",
+          "default": "deny",
+          "rules": [
+            {
+              "id": "R1-재현",
+              "require": {
+                "reproduced": {
+                  "eq": true
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

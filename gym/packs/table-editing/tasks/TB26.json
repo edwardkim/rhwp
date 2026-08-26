@@ -1,0 +1,48 @@
+{
+  "id": "TB26",
+  "tier": 4,
+  "title": "첫 표 좌상·좌하 쌍",
+  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "instructions": "첫 번째 표의 (0행,0열) 을 '상' · (1행,0열) 을 '하'으로 바꾼 up_down.hwp 를 제출하라. 채점은 그 좌표만 대조한다. 힌트: rhwp edit set-cell.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "up_down.hwp"
+    ]
+  },
+  "checks": [
+    {
+      "name": "(0,0) == 상",
+      "op": "cell_text_eq",
+      "table": 0,
+      "row": 0,
+      "col": 0,
+      "value": "상",
+      "path": "tables",
+      "cmd": [
+        "export-tables",
+        "{file:up_down.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "(1,0) == 하",
+      "op": "cell_text_eq",
+      "table": 0,
+      "row": 1,
+      "col": 0,
+      "value": "하",
+      "path": "tables",
+      "cmd": [
+        "export-tables",
+        "{file:up_down.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "원본과 다름",
+      "op": "differs_from_input",
+      "file": "up_down.hwp"
+    }
+  ]
+}

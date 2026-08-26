@@ -1,0 +1,17 @@
+{
+  "id": "OM31",
+  "steps": [
+    {
+      "run": [
+        "edit",
+        "fill-fields",
+        "{input}",
+        "--data",
+        "{\"부서명\": \"진단부서\"}",
+        "-o",
+        "{sub:dept.hwp}",
+        "--json"
+      ]
+    }
+  ]
+}

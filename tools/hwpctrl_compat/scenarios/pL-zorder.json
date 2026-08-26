@@ -1,0 +1,226 @@
+{
+  "id": "pL-zorder",
+  "title": "개체 앞뒤 순서 여섯 — 저장본에 남는 자취로 잰다",
+  "note": "어느 API 도 결과를 안 비추는 계열이라 **저장본 앞뒤 차분**으로 잰다(계획서 §4.19). 첫 저장(`zw`)은 재지 않고 버린다 — 문서를 연 뒤 첫 저장에서만 `shape_attr.flip` 의 bit16 이 개체 전부에 붙었다 안 붙었다 한다(같은 탐침을 두 번 돌려 확인, `probes/pZ3-bit28.json`). `flip` 은 뒤집기 축에서 뜻이 있는 값이라 목록으로 가리지 않고 **재는 자리 밖으로 뺐다**. \n\n`ignorePaths` 둘은 다르다. `hwp5_gen_shape_attr_bit28` 은 한글이 개체를 **처음 고칠 때** 켜는 비트인데 뜻을 아무도 모른다(rhwp 모델 주석: '번호 범주 high bit 후보'). 뜻을 모르는 비트를 흉내 내 저장본에 쓰지 않는다. `common.attr` 은 그 비트를 포함한 **묶음 값**이고, 거기 담긴 뜻 있는 필드(`text_wrap`·정렬·기준)는 저마다 제 줄로 따로 견주므로 묶음 값을 빼도 눈머는 축이 없다.",
+  "ledger": [
+    "Action.ShapeObjBringToFront",
+    "Action.ShapeObjSendToBack",
+    "Action.ShapeObjBringForward",
+    "Action.ShapeObjSendBack",
+    "Action.ShapeObjBringInFrontOfText",
+    "Action.ShapeObjCtrlSendBehindText"
+  ],
+  "open": "samples/mix-shape-01.hwp",
+  "paths": {
+    "zw": {
+      "win": "{out}/pL-zw.hwp",
+      "posix": "{out}/pL-zw.hwp"
+    },
+    "z0": {
+      "win": "{out}/pL-z0.hwp",
+      "posix": "{out}/pL-z0.hwp"
+    },
+    "z1": {
+      "win": "{out}/pL-z1.hwp",
+      "posix": "{out}/pL-z1.hwp"
+    },
+    "z2": {
+      "win": "{out}/pL-z2.hwp",
+      "posix": "{out}/pL-z2.hwp"
+    },
+    "z3": {
+      "win": "{out}/pL-z3.hwp",
+      "posix": "{out}/pL-z3.hwp"
+    },
+    "z4": {
+      "win": "{out}/pL-z4.hwp",
+      "posix": "{out}/pL-z4.hwp"
+    },
+    "z5": {
+      "win": "{out}/pL-z5.hwp",
+      "posix": "{out}/pL-z5.hwp"
+    },
+    "z6": {
+      "win": "{out}/pL-z6.hwp",
+      "posix": "{out}/pL-z6.hwp"
+    }
+  },
+  "deltas": [
+    {
+      "from": "z0",
+      "to": "z1",
+      "label": "ShapeObjSendToBack (타원 z=2 → 0)"
+    },
+    {
+      "from": "z1",
+      "to": "z2",
+      "label": "ShapeObjBringForward (한 칸 위)"
+    },
+    {
+      "from": "z2",
+      "to": "z3",
+      "label": "ShapeObjBringToFront (맨 위)"
+    },
+    {
+      "from": "z3",
+      "to": "z4",
+      "label": "ShapeObjSendBack (한 칸 아래)"
+    },
+    {
+      "from": "z4",
+      "to": "z5",
+      "label": "ShapeObjCtrlSendBehindText (글 뒤로)"
+    },
+    {
+      "from": "z5",
+      "to": "z6",
+      "label": "ShapeObjBringInFrontOfText (글 앞으로)"
+    }
+  ],
+  "calls": [
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "zw"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "SetPos",
+      [
+        0,
+        0,
+        0
+      ]
+    ],
+    [
+      "Run",
+      [
+        "SelectCtrlFront"
+      ]
+    ],
+    [
+      "Run",
+      [
+        "SelectCtrlFront"
+      ]
+    ],
+    [
+      "CurSelectedCtrl.UserDesc",
+      []
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "z0"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "Run",
+      [
+        "ShapeObjSendToBack"
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "z1"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "Run",
+      [
+        "ShapeObjBringForward"
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "z2"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "Run",
+      [
+        "ShapeObjBringToFront"
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "z3"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "Run",
+      [
+        "ShapeObjSendBack"
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "z4"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "Run",
+      [
+        "ShapeObjCtrlSendBehindText"
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "z5"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "Run",
+      [
+        "ShapeObjBringInFrontOfText"
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "z6"
+        },
+        "HWP",
+        ""
+      ]
+    ]
+  ],
+  "ignorePaths": [
+    "common.attr",
+    "common.hwp5_gen_shape_attr_bit28"
+  ]
+}

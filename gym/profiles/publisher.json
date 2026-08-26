@@ -1,0 +1,12 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "gymProfile",
+  "id": "publisher",
+  "title": "배포자",
+  "description": "내보내고 배포하기 전에 확인해야 하는 것들 — 변환·조판·보안.",
+  "packs": [
+    "serialization",
+    "layout-rendering",
+    "security"
+  ]
+}

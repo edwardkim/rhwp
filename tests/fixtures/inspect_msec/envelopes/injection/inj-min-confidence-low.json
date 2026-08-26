@@ -1,0 +1,129 @@
+{
+  "id": "inj-min-confidence-low",
+  "issue": 5476,
+  "axis": "injection",
+  "family": "min-confidence",
+  "polarity": "filter",
+  "sourceRule": {
+    "file": "src/document_core/queries/injection_scan.rs",
+    "symbol": "Confidence::parse",
+    "note": "미만 신호를 제외한다. 기본 low = 전부."
+  },
+  "cli": {
+    "argv": [
+      "inspect",
+      "injection",
+      "synth:injection/filter/all-kinds.hwp",
+      "--json",
+      "--min-confidence",
+      "low"
+    ],
+    "exitCode": 0,
+    "stdoutKind": "json-object",
+    "detectionIsNotFailure": true
+  },
+  "consume": {
+    "branch": "minConfidence",
+    "kept": [
+      "role_impersonation",
+      "instruction_override",
+      "tool_directive",
+      "authority_claim",
+      "exfiltration_hint",
+      "delimiter_break"
+    ]
+  },
+  "pair": null,
+  "why": "--min-confidence low 는 6건을 남긴다.",
+  "note": "필터는 탐지 규칙을 바꾸지 않는다. 보고만 줄인다.",
+  "human": "주입 신호 6건 (min=low)\n",
+  "inventedRule": false,
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "synth:injection/filter/all-kinds.hwp",
+    "minConfidence": "low",
+    "includeFields": false,
+    "scanScopes": [
+      "body",
+      "tableCell",
+      "textBox",
+      "equation",
+      "footnote",
+      "endnote",
+      "header",
+      "footer",
+      "caption"
+    ],
+    "injectionSignals": [
+      {
+        "kind": "role_impersonation",
+        "confidence": "high",
+        "scope": "body",
+        "section": 0,
+        "paragraph": 0,
+        "charOffset": 0,
+        "matched": "role_impersonation",
+        "excerpt": "role_impersonation",
+        "why": "SYSTEM:/Assistant:/<|im_start|>/[INST] 역할 표지"
+      },
+      {
+        "kind": "instruction_override",
+        "confidence": "high",
+        "scope": "body",
+        "section": 0,
+        "paragraph": 0,
+        "charOffset": 0,
+        "matched": "instruction_override",
+        "excerpt": "instruction_override",
+        "why": "이전 지시를 무시 / ignore previous instructions"
+      },
+      {
+        "kind": "tool_directive",
+        "confidence": "high",
+        "scope": "body",
+        "section": 0,
+        "paragraph": 0,
+        "charOffset": 0,
+        "matched": "tool_directive",
+        "excerpt": "tool_directive",
+        "why": "실제 MCP 도구 이름을 명령형으로 부름"
+      },
+      {
+        "kind": "authority_claim",
+        "confidence": "medium",
+        "scope": "body",
+        "section": 0,
+        "paragraph": 0,
+        "charOffset": 0,
+        "matched": "authority_claim",
+        "excerpt": "authority_claim",
+        "why": "사용자가 이미 승인했다 / admin override"
+      },
+      {
+        "kind": "exfiltration_hint",
+        "confidence": "medium",
+        "scope": "body",
+        "section": 0,
+        "paragraph": 0,
+        "charOffset": 0,
+        "matched": "exfiltration_hint",
+        "excerpt": "exfiltration_hint",
+        "why": "본문 URL/이메일 + 전송 명령형"
+      },
+      {
+        "kind": "delimiter_break",
+        "confidence": "low",
+        "scope": "body",
+        "section": 0,
+        "paragraph": 0,
+        "charOffset": 0,
+        "matched": "delimiter_break",
+        "excerpt": "delimiter_break",
+        "why": "코드펜스·</system> 구분자 흉내"
+      }
+    ],
+    "signalCount": 6,
+    "highestConfidence": "high",
+    "clean": false
+  }
+}

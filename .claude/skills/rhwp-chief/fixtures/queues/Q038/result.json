@@ -1,0 +1,9 @@
+{
+ "schemaVersion": "1",
+ "generatedBy": "tools/chief/service_loop.py",
+ "goal": "export-pdf",
+ "route": "escalate-bug",
+ "status": "escalated",
+ "reason": "트리아지 escalate-bug",
+ "stop": "C04"
+}

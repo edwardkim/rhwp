@@ -1,0 +1,38 @@
+{
+  "id": "OP40",
+  "tier": 3,
+  "title": "이중 오라클 — 쪽수와 표 수를 동시에",
+  "input": "samples/table-001.hwp",
+  "axis": "검증",
+  "instructions": "table-001 의 쪽수와 표 수를 한 장의 answer.json 에 {\"pages\": N, \"tables\": M} 으로 제출하라. 채점기가 info 와 export-tables 를 각각 다시 돌려 두 필드를 따로 대조한다. 한쪽만 맞으면 실패다.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "쪽수",
+      "op": "answer_eq",
+      "answer": "pages",
+      "cmd": [
+        "info",
+        "{input}",
+        "--json"
+      ],
+      "path": "pageCount"
+    },
+    {
+      "name": "표 수",
+      "op": "answer_eq",
+      "answer": "tables",
+      "cmd": [
+        "export-tables",
+        "{input}",
+        "--json"
+      ],
+      "path": "tableCount"
+    }
+  ]
+}

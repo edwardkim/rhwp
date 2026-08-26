@@ -1,0 +1,182 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.form_fill.fill_case.v1",
+  "id": "hr-card-occurrence",
+  "axis": "이름[N]",
+  "claim": "M-fill",
+  "generator": "tools/form_fill/fatten_form_fill.py",
+  "form": "hr-card",
+  "title": "인사기록카드 반복 필드 순번 지목",
+  "family": "인사",
+  "genre": "기록",
+  "sample": "fixtures/forms/인사기록카드.hwp",
+  "format": "hwp5",
+  "relatedIssue": "#3329",
+  "why": "이름[N] 은 fields 목록 순서 0 기준. 지목하지 않은 칸은 그대로. 순번 없음은 ambiguous, 범위 밖은 notFound.",
+  "firstFieldName": "사번",
+  "fieldCount": 20,
+  "argv": [
+    "edit",
+    "fill-fields",
+    "fixtures/forms/인사기록카드.hwp",
+    "--data",
+    "{\"학력학교[0]\": \"한국대학교\", \"학력학교[2]\": \"한국대학교-3\", \"학력전공[0]\": \"행정학\", \"학력전공[2]\": \"행정학-3\", \"경력기관[0]\": \"지방자치인재개발원\", \"경력기관[2]\": \"지방자치인재개발원-3\"}",
+    "-o",
+    "out/hr-card-occ.hwp",
+    "--json"
+  ],
+  "existingCliOnly": true,
+  "data": {
+    "학력학교[0]": "한국대학교",
+    "학력학교[2]": "한국대학교-3",
+    "학력전공[0]": "행정학",
+    "학력전공[2]": "행정학-3",
+    "경력기관[0]": "지방자치인재개발원",
+    "경력기관[2]": "지방자치인재개발원-3"
+  },
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "fixtures/forms/인사기록카드.hwp",
+    "dryRun": false,
+    "filledCount": 6,
+    "filled": [
+      {
+        "name": "학력학교",
+        "occurrence": 0,
+        "value": "한국대학교"
+      },
+      {
+        "name": "학력학교",
+        "occurrence": 2,
+        "value": "한국대학교-3"
+      },
+      {
+        "name": "학력전공",
+        "occurrence": 0,
+        "value": "행정학"
+      },
+      {
+        "name": "학력전공",
+        "occurrence": 2,
+        "value": "행정학-3"
+      },
+      {
+        "name": "경력기관",
+        "occurrence": 0,
+        "value": "지방자치인재개발원"
+      },
+      {
+        "name": "경력기관",
+        "occurrence": 2,
+        "value": "지방자치인재개발원-3"
+      }
+    ],
+    "notFound": [],
+    "ambiguous": [],
+    "confusable": [],
+    "verify": null,
+    "output": "out/hr-card-occ.hwp",
+    "outputFormat": "hwp5"
+  },
+  "exit": 0,
+  "untouchedOccurrences": {
+    "학력학교": [
+      1
+    ],
+    "학력전공": [
+      1
+    ],
+    "경력기관": [
+      1,
+      3
+    ]
+  },
+  "afterTargeted": {
+    "학력학교": [
+      "한국대학교",
+      "",
+      "한국대학교-3"
+    ],
+    "학력전공": [
+      "행정학",
+      "",
+      "행정학-3"
+    ],
+    "경력기관": [
+      "지방자치인재개발원",
+      "",
+      "지방자치인재개발원-3",
+      ""
+    ]
+  },
+  "gate": true,
+  "ambiguous": {
+    "data": {
+      "학력학교": "한국대학교",
+      "학력전공": "행정학",
+      "경력기관": "지방자치인재개발원"
+    },
+    "envelope": {
+      "schemaVersion": "1.0",
+      "source": "fixtures/forms/인사기록카드.hwp",
+      "dryRun": true,
+      "filledCount": 3,
+      "filled": [
+        {
+          "name": "학력학교",
+          "occurrence": 0,
+          "value": "한국대학교"
+        },
+        {
+          "name": "학력전공",
+          "occurrence": 0,
+          "value": "행정학"
+        },
+        {
+          "name": "경력기관",
+          "occurrence": 0,
+          "value": "지방자치인재개발원"
+        }
+      ],
+      "notFound": [],
+      "ambiguous": [
+        {
+          "name": "학력학교",
+          "matched": 1,
+          "total": 3
+        },
+        {
+          "name": "학력전공",
+          "matched": 1,
+          "total": 3
+        },
+        {
+          "name": "경력기관",
+          "matched": 1,
+          "total": 4
+        }
+      ],
+      "confusable": [],
+      "verify": null
+    },
+    "incomplete": true
+  },
+  "outOfRange": {
+    "data": {
+      "학력학교[103]": "범위밖"
+    },
+    "envelope": {
+      "schemaVersion": "1.0",
+      "source": "fixtures/forms/인사기록카드.hwp",
+      "dryRun": true,
+      "filledCount": 0,
+      "filled": [],
+      "notFound": [
+        "학력학교[103]"
+      ],
+      "ambiguous": [],
+      "confusable": [],
+      "verify": null
+    }
+  }
+}

@@ -8,6 +8,9 @@ last_verified: 2026-07-17
 # 배포 가이드
 
 rhwp 프로젝트의 배포 대상과 절차를 정리한다.
+GitHub repository·Actions의 공통 권한, 승인, 적용 후 관찰과 rollback은
+[GitHub 저장소 운영 매뉴얼](github_operations.md)을 먼저 적용하고, 이 문서는 release·package·스토어별
+배포 절차를 담당한다.
 
 ---
 
@@ -181,7 +184,8 @@ cd dist
 zip -r ../rhwp-firefox-{version}.zip .
 
 cd ../..
-git archive --format=zip --prefix=rhwp-source/ --output=rhwp-firefox/rhwp-source-{version}-amo.zip HEAD Cargo.toml rust-toolchain.toml rustfmt.toml Dockerfile docker-compose.yml .env.docker.example LICENSE README.md README_EN.md CHANGELOG.md CHANGELOG_EN.md THIRD_PARTY_LICENSES.md assets/fonts src rhwp-studio rhwp-firefox rhwp-shared scripts npm/README.md npm/editor
+git archive --format=zip --prefix=rhwp-source/ --output=rhwp-firefox/rhwp-source-{version}-amo.zip HEAD Cargo.toml Cargo.lock rust-toolchain.toml rustfmt.toml Dockerfile docker-compose.yml .env.docker.example LICENSE README.md README_EN.md CHANGELOG.md CHANGELOG_EN.md THIRD_PARTY_LICENSES.md llms.txt src rhwp-studio rhwp-firefox rhwp-shared assets/fonts assets/logo/logo-32.png saved/blank2010.hwp ttfs/opensource/NotoSansKR-Regular.ttf scripts npm/README.md npm/editor bindings/Native tools/rhwp-subsecond tools/batch-convert mydocs/manual/agent_knowledge_map.md mydocs/manual/agent_troubleshooting_guide.md mydocs/manual/recipes
+zip -d rhwp-firefox/rhwp-source-{version}-amo.zip "rhwp-source/rhwp-studio/public/samples/*"
 ```
 
 Firefox AMO 제출 시에는 확장 패키지와 함께 검토용 source zip을 업로드한다.
@@ -190,7 +194,8 @@ AMO source 업로드 제한은 200 MB 이므로 전체 Git tree를 압축하지 
 
 source zip은 확장 재빌드에 필요한 경로만 포함한다.
 
-- 포함: `src/`, `rhwp-studio/`, `rhwp-firefox/`, `rhwp-shared/`, `assets/fonts/`, build scripts, manifest/package files
+- 포함: `src/`, `rhwp-studio/`, `rhwp-firefox/`, `rhwp-shared/`, workspace member,
+  `Cargo.lock`, build script와 production `include_str!`/`include_bytes!` 리소스
 - 제외: top-level `samples/`, `pdf-large/`, `output/`, `target/`, `node_modules/`, extension `dist/`
 
 #### 확장 스토어 제출 문서
@@ -247,7 +252,8 @@ docker compose --env-file .env.docker run --rm wasm   # WASM 빌드
 ```
 
 macOS 로컬에서 release 검증이 필요한 경우 `cargo test --release --tests` 대신
-`cargo test --profile release-test --tests` 를 사용한다. 이유와 실측치는
+고정 `target/pr-review`의 `cargo nextest run --cargo-profile release-test`를 사용한다.
+thread 수의 선택 기준과 이유·실측치는
 [개발환경 가이드](dev_environment_guide.md)의 "macOS 로컬 빌드/테스트 검증"을
 참조한다.
 
@@ -306,13 +312,19 @@ git fetch upstream
 git switch devel
 git merge --ff-only upstream/devel
 cargo build
-cargo test --profile release-test --tests
+cargo nextest run \
+  --cargo-profile release-test \
+  --target-dir target/pr-review \
+  --tests --test-threads <현재_환경에_맞는_값> --no-fail-fast
 wasm-pack build --target web --out-dir pkg
 
 # release 시 devel → main PR 생성
 gh pr create --repo edwardkim/rhwp --base main --head devel \
   --title "v0.7.3 릴리즈" --body-file <release-pr-body.md>
 ```
+
+release 검증도 고정 thread 수를 복사하지 않는다. nextest 기본 동시성을 먼저 사용하고, release host의
+CPU·메모리·동시 작업을 기준으로 사용자가 필요할 때만 `--test-threads <현재 환경에 맞는 값>`을 지정한다.
 
 > release 준비 변경도 `upstream/devel`에 직접 push하지 않는다. 작업 브랜치 PR과 CI를 거쳐 통합하고,
 > 검증된 `devel`을 `main` 대상 release PR로 올린다.

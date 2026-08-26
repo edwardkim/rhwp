@@ -1,0 +1,21 @@
+id	family	overflowTol	overlapTol	types	pageIndex	pageCount	overflow	offCanvas	overlap	textOverlap	empty	signal	status	overflowTypes	offCanvasTypes	maxOver	hypothesis
+txov-same-line-dx0	text-overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	한 줄 안 두 런이 0px 겹친다. 맞닿음(0)은 교차가 아니고, 허용치 2px 를 넘는 폭·높이만 text-overlap 이다.
+txov-same-line-dx2	text-overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	한 줄 안 두 런이 2px 겹친다. 맞닿음(0)은 교차가 아니고, 허용치 2px 를 넘는 폭·높이만 text-overlap 이다.
+txov-same-line-dx4	text-overlap	1.0	2.0		0	3	0	0	0	1	0	1	ANOMALY			0.0000	한 줄 안 두 런이 4px 겹친다. 맞닿음(0)은 교차가 아니고, 허용치 2px 를 넘는 폭·높이만 text-overlap 이다.
+txov-same-line-dx10	text-overlap	1.0	2.0		0	3	0	0	0	1	0	1	ANOMALY			0.0000	한 줄 안 두 런이 10px 겹친다. 맞닿음(0)은 교차가 아니고, 허용치 2px 를 넘는 폭·높이만 text-overlap 이다.
+txov-same-line-dx20	text-overlap	1.0	2.0		0	3	0	0	0	1	0	1	ANOMALY			0.0000	한 줄 안 두 런이 20px 겹친다. 맞닿음(0)은 교차가 아니고, 허용치 2px 를 넘는 폭·높이만 text-overlap 이다.
+txov-same-line-dx30	text-overlap	1.0	2.0		0	3	0	0	0	1	0	1	ANOMALY			0.0000	한 줄 안 두 런이 30px 겹친다. 맞닿음(0)은 교차가 아니고, 허용치 2px 를 넘는 폭·높이만 text-overlap 이다.
+txov-in-table-dy0	text-overlap	1.0	2.0		0	3	0	0	0	1	0	1	ANOMALY			0.0000	표 하나 안의 두 런이 세로 어긋남 0px. 표-표 overlap 은 없고 글자끼리만 text-overlap 으로 남는다.
+txov-in-table-dy2	text-overlap	1.0	2.0		0	3	0	0	0	1	0	1	ANOMALY			0.0000	표 하나 안의 두 런이 세로 어긋남 2px. 표-표 overlap 은 없고 글자끼리만 text-overlap 으로 남는다.
+txov-in-table-dy4	text-overlap	1.0	2.0		0	3	0	0	0	1	0	1	ANOMALY			0.0000	표 하나 안의 두 런이 세로 어긋남 4px. 표-표 overlap 은 없고 글자끼리만 text-overlap 으로 남는다.
+txov-in-table-dy8	text-overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	표 하나 안의 두 런이 세로 어긋남 8px. 표-표 overlap 은 없고 글자끼리만 text-overlap 으로 남는다.
+txov-char-overlap-true	text-overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	한컴 글자겹침 컨트롤 런은 의도된 겹침이라 후보에서 뺀다.
+txov-char-overlap-false	text-overlap	1.0	2.0		0	3	0	0	0	1	0	1	ANOMALY			0.0000	글자겹침 플래그가 없으면 같은 자리 두 런은 text-overlap 이다.
+txov-zero-w	text-overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	면적이 없는 런 bbox 는 text-overlap 후보가 아니다.
+txov-zero-h	text-overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	면적이 없는 런 bbox 는 text-overlap 후보가 아니다.
+txov-area	text-overlap	1.0	2.0		0	3	0	0	0	1	0	1	ANOMALY			0.0000	면적이 없는 런 bbox 는 text-overlap 후보가 아니다.
+txov-text-ws-empty	text-overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	런 텍스트 '' 의 가시 글자 여부가 후보를 가른다.
+txov-text-ws- 	text-overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	런 텍스트 ' ' 의 가시 글자 여부가 후보를 가른다.
+txov-text-ws-\n	text-overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	런 텍스트 '\n' 의 가시 글자 여부가 후보를 가른다.
+txov-text-ws-\t\t	text-overlap	1.0	2.0		0	3	0	0	0	0	0	0	CLEAN			0.0000	런 텍스트 '\t\t' 의 가시 글자 여부가 후보를 가른다.
+txov-text-glyph-\uac00	text-overlap	1.0	2.0		0	3	0	0	0	1	0	1	ANOMALY			0.0000	런 텍스트 '가' 의 가시 글자 여부가 후보를 가른다.

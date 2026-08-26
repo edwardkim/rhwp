@@ -7,6 +7,8 @@
  * (`getPageSourceImageKeys`, 수백 바이트)을 서명으로 쓴다.
  */
 
+import { isSameRenderDocument } from './render-document-identity.ts';
+
 export interface PrefetchSignature {
   /**
    * 이 서명이 설명하는 문서 (`WasmBridge.documentDigest`).
@@ -87,8 +89,12 @@ export function shouldSkipImagePrefetch(
   currentRawSvgCount: number,
 ): boolean {
   if (imageKeys === null || documentDigest === null || !cached) return false;
-  if (cached.documentDigest !== documentDigest) return false;
-  if (cached.documentGeneration !== documentGeneration) return false;
+  if (
+    !isSameRenderDocument(
+      { digest: cached.documentDigest, generation: cached.documentGeneration },
+      { digest: documentDigest, generation: documentGeneration },
+    )
+  ) return false;
   // 그림 키가 덮지 못하는 rawSvg가 현재 새로 생긴 경우도 전체 JSON을 다시 읽어야 한다.
   if (currentRawSvgCount > 0) return false;
   if (cached.hadRawSvg) return false;

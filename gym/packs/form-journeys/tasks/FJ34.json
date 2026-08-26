@@ -1,0 +1,31 @@
+{
+  "id": "FJ34",
+  "tier": 3,
+  "title": "오타 두 키 notFound 길이 오라클",
+  "input": "samples/field-01.hwp",
+  "axis": "조회",
+  "instructions": "문서에 없는 키 '상호명' 과 '담당자명' 을 dry-run 으로 넣고 notFound 배열 길이를 answer.json 의 n 으로 제출하라. len_answer_eq 다. 숫자를 과제에 박제하지 마라. 회사명에 홍길동을 쓰지 마라. 힌트: --data '{\"상호명\":\"x\",\"담당자명\":\"y\"}' --dry-run --json 판정은 라이브 재실행 또는 산출물 재독이며, 파일 부재를 통과로 치지 않는다. T07 의 fields[0].value==홍길동 판정은 쓰지 마라. 새 CLI 는 없다.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "notFound 길이",
+      "op": "len_answer_eq",
+      "answer": "n",
+      "path": "notFound",
+      "cmd": [
+        "edit",
+        "fill-fields",
+        "{input}",
+        "--data",
+        "{\"상호명\": \"x\", \"담당자명\": \"y\"}",
+        "--dry-run",
+        "--json"
+      ]
+    }
+  ]
+}

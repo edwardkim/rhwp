@@ -1,0 +1,44 @@
+{
+  "name": "hwp_ws_open",
+  "kind": "session",
+  "in_capabilities_mcp": false,
+  "in_tools_list": true,
+  "family": "workspace",
+  "required": [
+    "id"
+  ],
+  "optional": [
+    "password"
+  ],
+  "envelope_fields": [
+    "docId",
+    "pageCount",
+    "source",
+    "schemaVersion"
+  ],
+  "writes_ir": false,
+  "writes_disk": false,
+  "idempotentHint": false,
+  "destructiveHint": false,
+  "stateless_twin": null,
+  "when": "hwp_ws_list 의 w1.. id 로 핸들을 열 때.",
+  "when_not": "경로를 알면 hwp_open.",
+  "recovery": "id 는 hwp_ws_list 의 entries[].id 만.",
+  "sample_call": {
+    "method": "tools/call",
+    "params": {
+      "name": "hwp_ws_open",
+      "arguments": {
+        "id": "<id>"
+      }
+    }
+  },
+  "closed_handle_signal": {
+    "isError": true,
+    "needle": "열려 있지 않은 핸들",
+    "nextCall": {
+      "name": "hwp_open"
+    }
+  },
+  "source_const": "ALL_SESSION_TOOLS"
+}

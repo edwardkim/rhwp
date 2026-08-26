@@ -1,0 +1,90 @@
+# M09-g equation golden — current-engine lock (variant/exception/unimplemented honesty)
+command: MATRIX
+script: CASES{x & if x>0 # -x & if x<0}
+honesty: cases-related
+
+=== ast ===
+Cases {
+    rows: [
+        Row(
+            [
+                Text(
+                    "x",
+                ),
+                Space(
+                    Tab,
+                ),
+                Text(
+                    "if",
+                ),
+                Text(
+                    "x",
+                ),
+                Symbol(
+                    ">",
+                ),
+                Number(
+                    "0",
+                ),
+            ],
+        ),
+        Row(
+            [
+                Symbol(
+                    "-",
+                ),
+                Text(
+                    "x",
+                ),
+                Space(
+                    Tab,
+                ),
+                Text(
+                    "if",
+                ),
+                Text(
+                    "x",
+                ),
+                Symbol(
+                    "<",
+                ),
+                Number(
+                    "0",
+                ),
+            ],
+        ),
+    ],
+}
+
+=== layout ===
+Paren("{","") x=0.0000 y=0.0000 w=127.2000 h=46.0000 bl=23.0000
+  Row x=0.0000 y=0.0000 w=121.2000 h=46.0000 bl=23.0000
+    Row x=6.0000 y=0.0000 w=93.2000 h=20.0000 bl=16.0000
+      Text("x") x=0.0000 y=0.0000 w=11.5500 h=20.0000 bl=16.0000
+      Space(20.0000) x=11.5500 y=0.0000 w=20.0000 h=20.0000 bl=16.0000
+      Text("if") x=31.5500 y=0.0000 w=23.1000 h=20.0000 bl=16.0000
+      Text("x") x=54.6500 y=0.0000 w=11.5500 h=20.0000 bl=16.0000
+      Symbol(">") x=66.2000 y=0.0000 w=16.0000 h=20.0000 bl=16.0000
+      Number("0") x=82.2000 y=0.0000 w=11.0000 h=20.0000 bl=16.0000
+    Row x=6.0000 y=26.0000 w=109.2000 h=20.0000 bl=16.0000
+      Symbol("-") x=0.0000 y=0.0000 w=16.0000 h=20.0000 bl=16.0000
+      Text("x") x=16.0000 y=0.0000 w=11.5500 h=20.0000 bl=16.0000
+      Space(20.0000) x=27.5500 y=0.0000 w=20.0000 h=20.0000 bl=16.0000
+      Text("if") x=47.5500 y=0.0000 w=23.1000 h=20.0000 bl=16.0000
+      Text("x") x=70.6500 y=0.0000 w=11.5500 h=20.0000 bl=16.0000
+      Symbol("<") x=82.2000 y=0.0000 w=16.0000 h=20.0000 bl=16.0000
+      Number("0") x=98.2000 y=0.0000 w=11.0000 h=20.0000 bl=16.0000
+
+=== svg ===
+<path d="M3.78,0.00 Q2.16,0.00 2.16,11.50 Q2.16,23.00 1.08,23.00 Q2.16,23.00 2.16,34.50 Q2.16,46.00 3.78,46.00" fill="none" stroke="#000000" stroke-width="0.80"/>
+<text x="6.00" y="16.00" font-size="20.00" fill="#000000" font-style="italic" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">x</text>
+<text x="37.55" y="16.00" font-size="20.00" fill="#000000" font-style="italic" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">if</text>
+<text x="60.65" y="16.00" font-size="20.00" fill="#000000" font-style="italic" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">x</text>
+<text x="80.20" y="16.00" font-size="20.00" fill="#000000" text-anchor="middle" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">&gt;</text>
+<text x="88.20" y="16.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">0</text>
+<text x="14.00" y="42.00" font-size="20.00" fill="#000000" text-anchor="middle" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">-</text>
+<text x="22.00" y="42.00" font-size="20.00" fill="#000000" font-style="italic" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">x</text>
+<text x="53.55" y="42.00" font-size="20.00" fill="#000000" font-style="italic" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">if</text>
+<text x="76.65" y="42.00" font-size="20.00" fill="#000000" font-style="italic" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">x</text>
+<text x="96.20" y="42.00" font-size="20.00" fill="#000000" text-anchor="middle" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">&lt;</text>
+<text x="104.20" y="42.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">0</text>

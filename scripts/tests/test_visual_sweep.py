@@ -2,10 +2,13 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import os
+import subprocess
 import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 from PIL import Image, ImageDraw
 
@@ -17,6 +20,86 @@ if SPEC is None or SPEC.loader is None:
 SWEEP = importlib.util.module_from_spec(SPEC)
 sys.modules[SPEC.name] = SWEEP
 SPEC.loader.exec_module(SWEEP)
+
+
+class LabelFontTests(unittest.TestCase):
+    def setUp(self) -> None:
+        SWEEP.label_font.cache_clear()
+
+    def tearDown(self) -> None:
+        SWEEP.label_font.cache_clear()
+
+    def test_fontconfig_label_font_path_uses_existing_match(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            font_path = Path(temp_dir) / "NotoSansCJK-Regular.ttc"
+            font_path.write_bytes(b"fake font")
+
+            def fake_run(cmd: list[str], **_: object) -> subprocess.CompletedProcess[str]:
+                return subprocess.CompletedProcess(cmd, 0, stdout=f"{font_path}\n", stderr="")
+
+            with (
+                patch.object(SWEEP.shutil, "which", return_value="/usr/bin/fc-match"),
+                patch.object(SWEEP.subprocess, "run", side_effect=fake_run),
+            ):
+                self.assertEqual(SWEEP.fontconfig_label_font_path(), font_path)
+
+    def test_configured_label_font_paths_puts_env_before_fontconfig(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            env_font = Path(temp_dir) / "review-label.ttf"
+            fc_font = Path(temp_dir) / "NotoSansCJK-Regular.ttc"
+            with (
+                patch.dict(os.environ, {SWEEP.LABEL_FONT_ENV: str(env_font)}),
+                patch.object(SWEEP, "fontconfig_label_font_path", return_value=fc_font),
+                patch.object(SWEEP, "known_label_font_paths", return_value=[]),
+            ):
+                self.assertEqual(SWEEP.configured_label_font_paths(), [env_font, fc_font])
+
+    def test_env_label_font_paths_accepts_platform_path_separator(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            first = Path(temp_dir) / "first.ttf"
+            second = Path(temp_dir) / "second.ttf"
+            value = os.pathsep.join([str(first), str(second)])
+            with patch.dict(os.environ, {SWEEP.LABEL_FONT_ENV: value}):
+                self.assertEqual(SWEEP.env_label_font_paths(), [first, second])
+
+    def test_known_label_font_paths_prioritizes_current_platform(self) -> None:
+        paths_by_platform = {
+            "Linux": ("linux-font.ttf",),
+            "Darwin": ("mac-font.ttf",),
+            "Windows": ("windows-font.ttf",),
+        }
+        with (
+            patch.object(SWEEP.platform, "system", return_value="Windows"),
+            patch.object(SWEEP, "LABEL_FONT_PATHS_BY_PLATFORM", paths_by_platform),
+        ):
+            self.assertEqual(
+                SWEEP.known_label_font_paths(),
+                [Path("windows-font.ttf"), Path("linux-font.ttf"), Path("mac-font.ttf")],
+            )
+
+    def test_configured_label_font_paths_dedupes_repeated_candidates(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            font_path = Path(temp_dir) / "same.ttf"
+            with (
+                patch.dict(os.environ, {SWEEP.LABEL_FONT_ENV: str(font_path)}),
+                patch.object(SWEEP, "fontconfig_label_font_path", return_value=font_path),
+                patch.object(SWEEP, "known_label_font_paths", return_value=[font_path]),
+            ):
+                self.assertEqual(SWEEP.configured_label_font_paths(), [font_path])
+
+    def test_label_font_loads_truetype_before_default_font(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            font_path = Path(temp_dir) / "NanumGothic.ttf"
+            font_path.write_bytes(b"fake font")
+            sentinel = object()
+            with (
+                patch.object(SWEEP, "configured_label_font_paths", return_value=[font_path]),
+                patch.object(SWEEP.ImageFont, "truetype", return_value=sentinel) as truetype,
+                patch.object(SWEEP.ImageFont, "load_default") as load_default,
+            ):
+                self.assertIs(SWEEP.label_font(), sentinel)
+                truetype.assert_called_once_with(str(font_path), 18)
+                load_default.assert_not_called()
 
 
 class SelectedRasterTests(unittest.TestCase):
@@ -242,6 +325,34 @@ class FidelityLayoutBridgeTests(unittest.TestCase):
             ],
         }
 
+    @staticmethod
+    def right_table_wrap_tree() -> dict[str, object]:
+        return {
+            "type": "Page",
+            "bbox": {"x": 0, "y": 0, "w": 400, "h": 500},
+            "children": [
+                {
+                    "type": "Body",
+                    "bbox": {"x": 20, "y": 20, "w": 360, "h": 420},
+                    "children": [
+                        {
+                            "type": "Table",
+                            "pi": 44,
+                            "ci": 1,
+                            "bbox": {"x": 220, "y": 100, "w": 120, "h": 180},
+                            "children": [],
+                        }
+                    ],
+                }
+            ],
+        }
+
+    @staticmethod
+    def draw_left_strip_text(image: Image.Image) -> None:
+        draw = ImageDraw.Draw(image)
+        for y in (120, 145, 170, 195, 220, 245):
+            draw.line((32, y, 198, y), fill=(0, 0, 0), width=3)
+
     def test_uses_fidelity_square_wrap_detector(self) -> None:
         for text_wrap in ("Square", "Tight", "Through"):
             with self.subTest(text_wrap=text_wrap):
@@ -273,6 +384,33 @@ class FidelityLayoutBridgeTests(unittest.TestCase):
         self.assertEqual(len(candidates), 1)
         self.assertEqual(candidates[0]["pi"], 1355)
         self.assertEqual(candidates[0]["image_top_drift_px"], 50.0)
+
+    def test_right_table_left_strip_deficit_detects_dropped_wrap_prefix(self) -> None:
+        tree = self.right_table_wrap_tree()
+        rhwp = Image.new("RGB", (400, 500), "white")
+        pdf = Image.new("RGB", (400, 500), "white")
+        self.draw_left_strip_text(pdf)
+
+        candidates = SWEEP.render_tree_right_table_left_strip_text_deficit_candidates(
+            tree, rhwp, pdf
+        )
+
+        self.assertEqual(len(candidates), 1)
+        self.assertEqual(candidates[0]["pi"], 44)
+        self.assertLess(candidates[0]["rhwp_to_pdf_ink_ratio"], 0.15)
+
+    def test_right_table_left_strip_deficit_ignores_matched_wrap_text(self) -> None:
+        tree = self.right_table_wrap_tree()
+        rhwp = Image.new("RGB", (400, 500), "white")
+        pdf = Image.new("RGB", (400, 500), "white")
+        self.draw_left_strip_text(rhwp)
+        self.draw_left_strip_text(pdf)
+
+        candidates = SWEEP.render_tree_right_table_left_strip_text_deficit_candidates(
+            tree, rhwp, pdf
+        )
+
+        self.assertEqual(candidates, [])
 
     def test_rejects_missing_or_malformed_render_tree(self) -> None:
         for tree in (None, {}, {"type": "Page"}):
@@ -361,6 +499,16 @@ class FidelityLayoutBridgeTests(unittest.TestCase):
 
         self.assertEqual(summary["deferred_square_picture_top_drift_pages"], [127])
         self.assertEqual(flagged[0]["page"], 127)
+
+    def test_summary_includes_right_table_left_strip_text_deficit_flag(self) -> None:
+        summary, flagged = SWEEP.visual_summary_for_pages(
+            [{"page": 5, "flags": ["right_table_left_strip_text_deficit"]}],
+            Path("metrics.json"),
+            Path("question_flow.json"),
+        )
+
+        self.assertEqual(summary["right_table_left_strip_text_deficit_pages"], [5])
+        self.assertEqual(flagged[0]["page"], 5)
 
 
 class LegacyGlyphVisualCandidateTests(unittest.TestCase):

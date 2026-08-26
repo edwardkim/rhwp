@@ -1,0 +1,326 @@
+{
+  "claim": "M-fill",
+  "existingCliOnly": true,
+  "commands": [
+    {
+      "id": "path-fields-json",
+      "argv": [
+        "fields",
+        "samples/field-01.hwp",
+        "--json"
+      ],
+      "exit": 0,
+      "axis": "fields"
+    },
+    {
+      "id": "path-fields-human",
+      "argv": [
+        "fields",
+        "samples/field-01.hwp"
+      ],
+      "exit": 0,
+      "axis": "fields"
+    },
+    {
+      "id": "path-fields-missing",
+      "argv": [
+        "fields",
+        "없는파일-fields.hwp",
+        "--json"
+      ],
+      "exit": 1,
+      "axis": "fields"
+    },
+    {
+      "id": "path-fields-usage",
+      "argv": [
+        "fields"
+      ],
+      "exit": 2,
+      "axis": "fields"
+    },
+    {
+      "id": "path-fill-dry-run",
+      "argv": [
+        "edit",
+        "fill-fields",
+        "samples/field-01.hwp",
+        "--data",
+        "{\"회사명\":\"주식회사 A\"}",
+        "-o",
+        "out/dry.hwp",
+        "--dry-run",
+        "--json"
+      ],
+      "exit": 0,
+      "axis": "dry-run"
+    },
+    {
+      "id": "path-fill-write",
+      "argv": [
+        "edit",
+        "fill-fields",
+        "samples/field-01.hwp",
+        "--data",
+        "{\"회사명\":\"주식회사 검증\"}",
+        "-o",
+        "out/write.hwp",
+        "--json"
+      ],
+      "exit": 0,
+      "axis": "fill-fields"
+    },
+    {
+      "id": "path-fill-verify",
+      "argv": [
+        "edit",
+        "fill-fields",
+        "samples/field-01.hwp",
+        "--data",
+        "{\"회사명\":\"검증사\"}",
+        "-o",
+        "out/verify.hwp",
+        "--verify",
+        "--json"
+      ],
+      "exit": 0,
+      "axis": "verify"
+    },
+    {
+      "id": "path-fill-occurrence",
+      "argv": [
+        "edit",
+        "fill-fields",
+        "samples/80168_regulatory_analysis.hwp",
+        "--data",
+        "{\"피규제집단명[0]\":\"가상협회 회원사\",\"피규제집단명[2]\":\"가상조합 조합원\"}",
+        "-o",
+        "out/occ.hwp",
+        "--json"
+      ],
+      "exit": 0,
+      "axis": "이름[N]"
+    },
+    {
+      "id": "path-fill-honggildong",
+      "argv": [
+        "edit",
+        "fill-fields",
+        "samples/field-01.hwp",
+        "--data",
+        "{\"회사명\":\"홍길동\"}",
+        "-o",
+        "filled.hwp",
+        "--json"
+      ],
+      "exit": 0,
+      "axis": "honggildong-4781"
+    },
+    {
+      "id": "path-fill-unknown",
+      "argv": [
+        "edit",
+        "fill-fields",
+        "samples/field-01.hwp",
+        "--data",
+        "{\"회사명\":\"A\",\"존재하지않는필드\":\"B\"}",
+        "--dry-run",
+        "--json"
+      ],
+      "exit": 0,
+      "axis": "notFound"
+    },
+    {
+      "id": "path-fill-missing-file",
+      "argv": [
+        "edit",
+        "fill-fields",
+        "없는파일-edit.hwp",
+        "--data",
+        "{\"a\":\"b\"}",
+        "-o",
+        "out/missing.hwp",
+        "--json"
+      ],
+      "exit": 1,
+      "axis": "runtime"
+    },
+    {
+      "id": "path-fill-bad-json",
+      "argv": [
+        "edit",
+        "fill-fields",
+        "samples/field-01.hwp",
+        "--data",
+        "{이건 JSON 이 아님",
+        "--dry-run"
+      ],
+      "exit": 2,
+      "axis": "usage"
+    },
+    {
+      "id": "path-fill-missing-data",
+      "argv": [
+        "edit",
+        "fill-fields",
+        "samples/field-01.hwp"
+      ],
+      "exit": 2,
+      "axis": "usage"
+    },
+    {
+      "id": "path-fill-data-at-file",
+      "argv": [
+        "edit",
+        "fill-fields",
+        "samples/field-01.hwp",
+        "--data",
+        "@row.json",
+        "-o",
+        "out/at.hwp",
+        "--json"
+      ],
+      "exit": 0,
+      "axis": "fill-fields"
+    },
+    {
+      "id": "path-fill-hwpx-preserve",
+      "argv": [
+        "edit",
+        "fill-fields",
+        "tools/forms/일반기안문_서식.hwpx",
+        "--data",
+        "@tools/forms/일반기안문_예시값.json",
+        "-o",
+        "out/gian.hwpx",
+        "--json"
+      ],
+      "exit": 0,
+      "axis": "format"
+    },
+    {
+      "id": "path-fill-default-next-to-input",
+      "argv": [
+        "edit",
+        "fill-fields",
+        "samples/field-01.hwp",
+        "--data",
+        "{\"회사명\":\"옆파일\"}",
+        "--json"
+      ],
+      "exit": 0,
+      "axis": "fill-fields"
+    },
+    {
+      "id": "path-batch-jsonl",
+      "argv": [
+        "batch",
+        "fill",
+        "--form",
+        "samples/field-01.hwp",
+        "--data",
+        "rows.jsonl",
+        "--out-dir",
+        "out/filled",
+        "--json"
+      ],
+      "exit": 0,
+      "axis": "batch-fill"
+    },
+    {
+      "id": "path-batch-csv",
+      "argv": [
+        "batch",
+        "fill",
+        "--form",
+        "samples/field-01.hwp",
+        "--data",
+        "명단.csv",
+        "--out-dir",
+        "out/filled",
+        "--name-field",
+        "작성자",
+        "--json"
+      ],
+      "exit": 0,
+      "axis": "batch-fill"
+    },
+    {
+      "id": "path-batch-dry-run",
+      "argv": [
+        "batch",
+        "fill",
+        "--form",
+        "samples/field-01.hwp",
+        "--data",
+        "rows.jsonl",
+        "--out-dir",
+        "out/filled",
+        "--dry-run",
+        "--json"
+      ],
+      "exit": 0,
+      "axis": "batch-dry-run"
+    },
+    {
+      "id": "path-batch-verify",
+      "argv": [
+        "batch",
+        "fill",
+        "--form",
+        "samples/field-01.hwp",
+        "--data",
+        "rows.jsonl",
+        "--out-dir",
+        "out/filled",
+        "--verify",
+        "--json"
+      ],
+      "exit": 0,
+      "axis": "verify"
+    },
+    {
+      "id": "path-batch-empty-data",
+      "argv": [
+        "batch",
+        "fill",
+        "--form",
+        "samples/field-01.hwp",
+        "--data",
+        "empty.csv",
+        "--out-dir",
+        "out/filled",
+        "--json"
+      ],
+      "exit": 2,
+      "axis": "usage"
+    },
+    {
+      "id": "path-batch-threads",
+      "argv": [
+        "batch",
+        "fill",
+        "--form",
+        "samples/field-01.hwp",
+        "--data",
+        "rows.jsonl",
+        "--out-dir",
+        "out/filled",
+        "--threads",
+        "4",
+        "--json"
+      ],
+      "exit": 0,
+      "axis": "batch-fill"
+    },
+    {
+      "id": "path-unknown-edit",
+      "argv": [
+        "edit",
+        "no-such-action"
+      ],
+      "exit": 2,
+      "axis": "usage"
+    }
+  ]
+}

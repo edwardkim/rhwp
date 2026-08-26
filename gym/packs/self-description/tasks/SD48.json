@@ -1,0 +1,26 @@
+{
+  "id": "SD48",
+  "tier": 2,
+  "title": "MCP 프로필 수",
+  "input": "samples/table-001.hwp",
+  "instructions": "capabilities --mcp 가 광고하는 역할 프로필 수를 answer.json 에 {\"profiles\": N} 으로 제출하라. 힌트: capabilities --mcp 의 profiles.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "MCP 프로필 수",
+      "op": "len_answer_eq",
+      "answer": "profiles",
+      "path": "profiles",
+      "cmd": [
+        "capabilities",
+        "--mcp"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

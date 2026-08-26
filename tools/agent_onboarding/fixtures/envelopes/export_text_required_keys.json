@@ -1,0 +1,7 @@
+{
+  "command": "export-text",
+  "required": [
+    "pages"
+  ],
+  "note": "pages 는 길이 1 이상 배열이어야 한다."
+}

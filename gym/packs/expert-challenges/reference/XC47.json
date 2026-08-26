@@ -1,0 +1,102 @@
+{
+  "id": "XC47",
+  "steps": [
+    {
+      "run": [
+        "keygen",
+        "--key-id",
+        "gym-xc47-dl4",
+        "--out",
+        "{sub:agent.key.json}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "run",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"samples/inner-table-01.hwp\", \"output\": \"{sub:op.hwp}\", \"steps\": [{\"action\": \"set_cell\", \"table\": 0, \"row\": 0, \"col\": 0, \"text\": \"쌍갑-XC47\"}]}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "replay",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"samples/inner-table-01.hwp\", \"output\": \"{sub:op.hwp}\", \"steps\": [{\"action\": \"set_cell\", \"table\": 0, \"row\": 0, \"col\": 0, \"text\": \"쌍갑-XC47\"}]}",
+        "--capsule",
+        "{sub:duall4/p.capsule.json}",
+        "--sign-key",
+        "{sub:agent.key.json}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "run",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"samples/inner-table-01.hwp\", \"output\": \"{sub:oq.hwp}\", \"steps\": [{\"action\": \"set_cell\", \"table\": 0, \"row\": 0, \"col\": 1, \"text\": \"쌍을-XC47\"}]}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "replay",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"samples/inner-table-01.hwp\", \"output\": \"{sub:oq.hwp}\", \"steps\": [{\"action\": \"set_cell\", \"table\": 0, \"row\": 0, \"col\": 1, \"text\": \"쌍을-XC47\"}]}",
+        "--capsule",
+        "{sub:duall4/q.capsule.json}",
+        "--sign-key",
+        "{sub:agent.key.json}",
+        "--json"
+      ]
+    },
+    {
+      "keyring_from": {
+        "key": "{sub:agent.key.json}",
+        "out": "{sub:keyring.json}",
+        "keyId": "gym-xc47-dl4"
+      }
+    },
+    {
+      "run": [
+        "anchor",
+        "add",
+        "{sub:duall4/p.capsule.json}",
+        "--log",
+        "{sub:anchor.ndjson}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "anchor",
+        "add",
+        "{sub:duall4/q.capsule.json}",
+        "--log",
+        "{sub:anchor.ndjson}",
+        "--json"
+      ]
+    },
+    {
+      "write_json": {
+        "to": "{sub:policy.json}",
+        "body": {
+          "schemaVersion": "1.0",
+          "kind": "admissionPolicy",
+          "default": "deny",
+          "rules": [
+            {
+              "id": "R1-재현",
+              "require": {
+                "reproduced": {
+                  "eq": true
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

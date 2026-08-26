@@ -1,0 +1,25 @@
+{
+  "id": "p2-setmutate",
+  "title": "만든 셋의 변경 메서드와 배열 멤버",
+  "ledger": [],
+  "open": "samples/table-001.hwp",
+  "calls": [
+    ["CreateSet(\"CharShape\").SetItem", ["Height", 1600]],
+    ["CreateSet(\"CharShape\").Count", []],
+    ["CreateSet(\"CharShape\").RemoveAll", []],
+    ["CreateSet(\"CharShape\").RemoveItem", ["Height"]],
+    ["CreateSet(\"CharShape\").CreateItemArray(\"Items\", 3).Item", [0]],
+    ["CreateSet(\"CharShape\").CreateItemArray(\"Items\", 3).SetItem", [0, 7]],
+    ["CreateSet(\"CharShape\").CreateItemArray(\"Items\", 3).Clone.Count", []],
+    ["EngineProperties.SetID", []],
+    ["EngineProperties.Count", []],
+    ["ViewProperties.SetID", []],
+    ["ViewProperties.Count", []],
+    ["ViewProperties.Item", ["OptionFlag"]],
+    ["SetPos", [0, 0, 0]],
+    ["Run", ["MoveSelDocEnd"]],
+    ["SelectionMode", []],
+    ["GetSelectedPosBySet.SetID", []],
+    ["GetSelectedPosBySet.Count", []]
+  ]
+}

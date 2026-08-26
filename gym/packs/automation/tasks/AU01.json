@@ -1,0 +1,34 @@
+{
+  "id": "AU01",
+  "tier": 2,
+  "title": "계획서 원자 실행",
+  "input": "samples/table-001.hwp",
+  "instructions": "입력의 첫 표 (0,0) 을 '계획실행' 으로 바꾸는 run 계획서를 만들어 실행하고 산출물 out.hwp 를 제출하라. 힌트: rhwp run --plan-json.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "out.hwp"
+    ]
+  },
+  "checks": [
+    {
+      "name": "(0,0) == 계획실행",
+      "op": "cell_text_eq",
+      "table": 0,
+      "row": 0,
+      "col": 0,
+      "value": "계획실행",
+      "path": "tables",
+      "cmd": [
+        "export-tables",
+        "{file:out.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "원본과 다름",
+      "op": "differs_from_input",
+      "file": "out.hwp"
+    }
+  ]
+}

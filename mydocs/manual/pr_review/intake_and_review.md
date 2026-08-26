@@ -12,8 +12,12 @@ merge, merge 후속 처리는 기본 경로 문서와 [merge 후속 처리](post
 
 ## 2.1 reviewer assign 선행
 
-개별 PR review를 시작하면 metadata 조사, local fetch, review 문서 작성보다 먼저 reviewer를 assign한다.
-대량 PR은 [다수 PR과 update branch](multi_pr_update_branch.md)의 사전 분류 뒤, 각 원 PR마다 assign한다.
+외부 contributor PR과 maintainer가 처리하는 PR review는 metadata 조사, local fetch, review 문서 작성보다
+먼저 reviewer를 assign한다. 대량 PR은 [다수 PR과 update branch](multi_pr_update_branch.md)의 사전 분류 뒤,
+각 원 PR마다 assign한다.
+
+collaborator 자신의 self PR은 reviewer를 지정하지 않는다. 이 경우 review 문서에 작성자 self-review임을
+기록하고, 최신 CI와 merge 조건을 독립적으로 확인한다.
 
 ~~~bash
 gh pr edit N --repo edwardkim/rhwp --add-reviewer <reviewer>
@@ -61,6 +65,26 @@ Cargo 성공은 시각 검증 판정을 대체하지 않는다. 다음 중 하�
 - PR이 기준 PDF, 한컴 출력, 페이지 수, render-diff, visual regression 해결을 주장한다.
 - HWP/HWPX sample, 기준 PDF, golden, visual fixture를 추가·갱신한다.
 
+다음 조합은 "필요 여부 검토"가 아니라 **merge/수용 판정 전 직접 증적 필수**다.
+
+- renderer/layout/typeset/paint/page-visible 경로가 바뀌고, PR 또는 관련 issue에 HWP/HWPX/PDF fixture가
+  첨부·추가되어 있다.
+- PR 설명이 특정 문서의 페이지, 표, 줄바꿈, clipping, 겹침, 여백, z-order, 그림·도형 배치 개선을
+  주장한다.
+
+이 경우 review 문서의 최종 권고를 `merge` 또는 `수용`으로 쓰기 전에 다음 중 하나를 완료해야 한다.
+
+- `rhwp info --json`으로 원본 HWP/HWPX의 저장 버전을 확인하고, 버전에 맞는 MCP 기준 PDF를 만든 뒤,
+  visual sweep 대표 PNG와 요약 지표를 실제로 열어 확인한다.
+- 이미 PR branch에 포함된 기준 PDF/PNG를 쓰는 경우에도, 그 파일을 직접 열어 PR 주장의 페이지·영역이
+  해결됐는지 확인하고, 원본·기준·검토 asset의 경로와 SHA-256을 review 문서에 적는다.
+- 직접 시각 검증을 수행하지 못하면 최종 권고는 `보류` 또는 `조건부 보류`로 적고, "원 PR 제공
+  before/after만 확인했고 maintainer visual sweep은 미실행"처럼 누락 범위를 명시한다.
+
+원 PR이 before/after 이미지나 수치를 제공했더라도 maintainer가 직접 확인한 visual sweep 또는 동등한
+시각 판정 없이 이를 "시각 검증 통과"로 승격하지 않는다. 특히 통합 cherry-pick PR에서는 source PR의
+증적을 참고 자료로만 기록하고, 통합 head의 실제 산출물로 다시 확인했는지 별도 항목으로 적는다.
+
 개체 geometry 무회귀의 재실증은 다음 명령을 사용할 수 있다. 추적 개체가 없는 0→0 행은 근거로 삼지 않는다.
 
 ~~~bash
@@ -74,7 +98,7 @@ python tools/object_visual_regression.py --preset ovr5 -o output/poc/ovr --diff-
 maintainer 일반 경로는 처리 중 active 경로에 작성하고, 완료 후 archive로 이동한다.
 collaborator self-merge와 collaborator 매개 외부 PR은 해당 기본 경로 문서가 정한 archive 경로를 처음부터 쓴다.
 PR 번호는 PR 생성 시점에 확정하며 생성 전에 예측하지 않는다. collaborator self-merge는 PR을 생성해
-번호를 받은 뒤 reviewer assign을 거쳐 번호 기반 review 문서를 같은 PR의 후속 commit으로 추가한다.
+번호를 받은 뒤 self-review 기록을 번호 기반 review 문서로 작성하고 같은 PR의 후속 commit으로 추가한다.
 
 ~~~text
 mydocs/pr/pr_N_review.md

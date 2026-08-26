@@ -1,0 +1,29 @@
+{
+  "id": "p4-cellctx2",
+  "title": "여러 칸 블록에서 나눔·조절 — 블록을 푼 뒤 읽는다",
+  "ledger": [],
+  "open": "samples/21868765_별표2_보건소_분장사무.hwp",
+  "calls": [
+    ["SetPos", [3, 0, 0]],
+    ["CellShape.Item", ["Width"]],
+    ["SetPos", [4, 0, 0]],
+    ["CellShape.Item", ["Width"]],
+    ["SetPos", [3, 0, 0]],
+    ["Run", ["TableCellBlock"]],
+    ["Run", ["TableCellBlockExtend"]],
+    ["Run", ["TableRightCell"]],
+    ["SelectionMode", []],
+    ["Run", ["TableDistributeCellWidth"]],
+    ["SetPos", [3, 0, 0]],
+    ["CellShape.Item", ["Width"]],
+    ["SetPos", [4, 0, 0]],
+    ["CellShape.Item", ["Width"]],
+    ["SetPos", [3, 0, 0]],
+    ["Run", ["TableCellBlock"]],
+    ["Run", ["TableResizeCellRight"]],
+    ["SetPos", [3, 0, 0]],
+    ["CellShape.Item", ["Width"]],
+    ["SetPos", [4, 0, 0]],
+    ["CellShape.Item", ["Width"]]
+  ]
+}

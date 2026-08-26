@@ -1,0 +1,35 @@
+{
+  "id": "ex-inj-two-files",
+  "issue": 5476,
+  "axis": "injection",
+  "family": "exception",
+  "polarity": "exception",
+  "sourceRule": {
+    "file": "src/main.rs",
+    "symbol": "inspect_command",
+    "note": "입력 파일 2개"
+  },
+  "cli": {
+    "argv": [
+      "inspect",
+      "injection",
+      "samples/hwp3-sample.hwp",
+      "samples/hwp3-sample4.hwp"
+    ],
+    "exitCode": 2,
+    "stdoutKind": "empty",
+    "detectionIsNotFailure": false,
+    "stdoutBytes": 0,
+    "stderrContains": "오류: 입력 파일은 하나만 지정할 수 있습니다"
+  },
+  "consume": {
+    "branch": "stdout empty",
+    "doNotParseStdoutAsJson": true,
+    "stderrIsDiagnosis": true
+  },
+  "pair": null,
+  "why": "입력 파일 2개",
+  "note": "실패 시 stdout 0바이트. 반쪽 JSON 이 나가면 파이프가 성공으로 오독한다.",
+  "human": "",
+  "inventedRule": false
+}

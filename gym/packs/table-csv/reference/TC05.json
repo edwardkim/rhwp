@@ -1,0 +1,17 @@
+{
+  "id": "TC05",
+  "steps": [
+    {
+      "run": [
+        "table-to-csv",
+        "{input}",
+        "--table",
+        "0",
+        "-o",
+        "{sub:bom.csv}",
+        "--bom",
+        "--json"
+      ]
+    }
+  ]
+}

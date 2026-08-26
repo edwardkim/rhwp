@@ -1,0 +1,5 @@
+$ file /tmp/rhwp-fidelity-plan/cmp-p001.png
+# 시트가 거의 □. svg-glyph-risk-report 에 U+25A1 다수, 본문 PUA 없음.
+# F14 — 문서 회귀가 아니라 하네스 글꼴 오염.
+$ RHWP_FONT_PATH_DIR=/Library/Fonts:/opt/hancom/fonts \
+    venv/bin/python tools/fidelity_compare/fidelity_compare.py plan 0 2 --out-dir /tmp/rhwp-fidelity-plan-fonts

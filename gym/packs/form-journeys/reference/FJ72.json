@@ -1,0 +1,27 @@
+{
+  "id": "FJ72",
+  "steps": [
+    {
+      "write_json": {
+        "to": "{sub:data.json}",
+        "body": {
+          "이메일": "tri@rhwp.example",
+          "제목": "여정삼제목",
+          "부서명": "여정삼부서"
+        }
+      }
+    },
+    {
+      "run": [
+        "edit",
+        "fill-fields",
+        "{input}",
+        "--data",
+        "@{sub:data.json}",
+        "-o",
+        "{sub:triple.hwp}",
+        "--json"
+      ]
+    }
+  ]
+}

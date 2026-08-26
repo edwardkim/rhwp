@@ -1,0 +1,2103 @@
+{
+  "schemaVersion": "1.0",
+  "generatedAt": "2026-08-15T22:51:35",
+  "toolOrder": [
+    "rhwp",
+    "pyhwp",
+    "soffice",
+    "hwplib"
+  ],
+  "env": {
+    "os": "Windows-10-10.0.26200-SP0",
+    "python": "3.11.9",
+    "rhwpVersion": "rhwp v0.8.4",
+    "rhwpProfile": "debug",
+    "corpus": {
+      "dir": "samples",
+      "total": 50,
+      "hwp": 25,
+      "hwpx": 25
+    },
+    "tools": {
+      "rhwp": {
+        "available": true,
+        "detail": "rhwp v0.8.4 (debug)"
+      },
+      "pyhwp": {
+        "available": true,
+        "detail": "hwp5txt (pyhwp 0.1b15) — venv, six 수동설치"
+      },
+      "soffice": {
+        "available": false,
+        "detail": "미설치(이 머신)"
+      },
+      "hwplib": {
+        "available": false,
+        "detail": "Java 라이브러리 — CLI 아님(미실행)"
+      },
+      "hancomSdk": {
+        "available": false,
+        "detail": "Windows 전용 독점 SDK(미실행)"
+      }
+    }
+  },
+  "tasks": [
+    {
+      "task": "export-text",
+      "results": [
+        {
+          "tool": "rhwp",
+          "available": true,
+          "summary": {
+            "attempted": 50,
+            "ok": 49,
+            "successRate": 0.98,
+            "medianMs": 2233.9,
+            "medianChars": 45967,
+            "byExt": {
+              ".hwp": {
+                "attempted": 25,
+                "ok": 25
+              },
+              ".hwpx": {
+                "attempted": 25,
+                "ok": 24
+              }
+            }
+          },
+          "fidelityVsRhwp": 1.0,
+          "runs": [
+            {
+              "file": "samples/143E433F503322BD33.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 429.8867999968934,
+              "chars": 1423
+            },
+            {
+              "file": "samples/156457624_210622 7월부터 해외직구 구매대행업체 등록제 시행.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 370.07050000102026,
+              "chars": 2969
+            },
+            {
+              "file": "samples/156636617_240617 2024년 5월 월간 수출입 현황(확정치).hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 1883.5647000014433,
+              "chars": 19600
+            },
+            {
+              "file": "samples/2010-01-06.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 821.7097999986436,
+              "chars": 5155
+            },
+            {
+              "file": "samples/2022년 국립국어원 업무계획.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 2233.9160999981686,
+              "chars": 33685
+            },
+            {
+              "file": "samples/2025 행정업무운영 편람(최종).hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 17614.146299998538,
+              "chars": 272686
+            },
+            {
+              "file": "samples/20250130-hongbo-no.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 116.13589999979013,
+              "chars": 1730
+            },
+            {
+              "file": "samples/20250130-hongbo.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 82.40360000127112,
+              "chars": 1730
+            },
+            {
+              "file": "samples/20250130-hongbo_saved.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 110.68929999964894,
+              "chars": 1726
+            },
+            {
+              "file": "samples/2026_oss_rst.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 156.75820000251406,
+              "chars": 3238
+            },
+            {
+              "file": "samples/21868765_별표2_보건소_분장사무.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 151.73099999810802,
+              "chars": 3112
+            },
+            {
+              "file": "samples/21_언어_기출_편집가능본.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 655.9106999993674,
+              "chars": 33926
+            },
+            {
+              "file": "samples/253E164F57A1BC6934-empty.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 75.89550000193412,
+              "chars": 2
+            },
+            {
+              "file": "samples/3-09월_교육_통합_2022.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 3913.1870999990497,
+              "chars": 53689
+            },
+            {
+              "file": "samples/3-09월_교육_통합_2023.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 2149.8504000010143,
+              "chars": 43881
+            },
+            {
+              "file": "samples/3-09월_교육_통합_2024-격자기준종이.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 2950.3992999998445,
+              "chars": 53689
+            },
+            {
+              "file": "samples/3-09월_교육_통합_2024-격자기준쪽.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 2729.5778000006976,
+              "chars": 53689
+            },
+            {
+              "file": "samples/3-09월_교육_통합_2024-구분선아래20.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 2212.8995999992185,
+              "chars": 53689
+            },
+            {
+              "file": "samples/3-09월_교육_통합_2024-구분선아래20구분선위20.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 2299.9251000001095,
+              "chars": 53689
+            },
+            {
+              "file": "samples/3-09월_교육_통합_2024-미주사이20.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 2914.26169999977,
+              "chars": 53713
+            },
+            {
+              "file": "samples/3-10월_교육_통합_2022.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 1679.3485000016517,
+              "chars": 46419
+            },
+            {
+              "file": "samples/3-11월_실전_통합_2022.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 2566.6383000025235,
+              "chars": 45967
+            },
+            {
+              "file": "samples/3-11월_실전_통합_2024-구분선없음구분선위20미주사이20구분선아래20.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 2608.435800000734,
+              "chars": 46007
+            },
+            {
+              "file": "samples/3-11월_실전_통합_2024-구분선위0미주사이0구분선아래0.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 2487.1419000010064,
+              "chars": 45967
+            },
+            {
+              "file": "samples/3-11월_실전_통합_2024-구분선위0미주사이20구분선아래2.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 2345.594099999289,
+              "chars": 45987
+            },
+            {
+              "file": "samples/2025 행정업무운영 편람(최종).hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 10610.85919999823,
+              "chars": 273076
+            },
+            {
+              "file": "samples/2025년 기부·답례품 실적 지자체 보고서_양식.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 818.7713999977859,
+              "chars": 4370
+            },
+            {
+              "file": "samples/3-09월_교육_통합_2022.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 4208.028099998046,
+              "chars": 53689
+            },
+            {
+              "file": "samples/3-09월_교육_통합_2023.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 2047.6769000015338,
+              "chars": 43881
+            },
+            {
+              "file": "samples/3-09월_교육_통합_2024-구분선아래20구분선위20.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 2237.1636999996554,
+              "chars": 53689
+            },
+            {
+              "file": "samples/3-10월_교육_통합_2022.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 1980.0543999990623,
+              "chars": 46419
+            },
+            {
+              "file": "samples/3-11월_실전_통합_2022.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 2434.398900000815,
+              "chars": 45967
+            },
+            {
+              "file": "samples/3-11월_실전_통합_2024-구분선없음구분선위20미주사이20구분선아래20.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 2448.778300000413,
+              "chars": 46007
+            },
+            {
+              "file": "samples/3-11월_실전_통합_2024-구분선위0미주사이0구분선아래0.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 2640.218200001982,
+              "chars": 45967
+            },
+            {
+              "file": "samples/3-11월_실전_통합_2024-구분선위0미주사이20구분선아래2.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 2888.9550999992935,
+              "chars": 45987
+            },
+            {
+              "file": "samples/3-11월_실전_통합_2024-구분선위0미주사이7구분선아래2.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 2583.9111000022967,
+              "chars": 45967
+            },
+            {
+              "file": "samples/3-11월_실전_통합_2024-구분선위0미주사이7구분선아래20.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 2351.0223000012047,
+              "chars": 45967
+            },
+            {
+              "file": "samples/3-11월_실전_통합_2024-구분선위20미주사이0구분선아래20.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 2422.1566999985953,
+              "chars": 45967
+            },
+            {
+              "file": "samples/3-11월_실전_통합_2024-구분선위20미주사이7구분선아래2.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 2209.43079999779,
+              "chars": 45967
+            },
+            {
+              "file": "samples/3-11월_실전_통합_2024-구분선위9미주사이8구분선아래7.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 2267.1984000007797,
+              "chars": 45967
+            },
+            {
+              "file": "samples/HWP5-nopassword-123456.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 580.6420000008075,
+              "chars": 26606
+            },
+            {
+              "file": "samples/HWP5-password-123456.hwpx",
+              "ext": ".hwpx",
+              "ok": false,
+              "ms": 33.619999998336425,
+              "chars": null
+            },
+            {
+              "file": "samples/SO-SUEOP.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 2491.40719999923,
+              "chars": 60550
+            },
+            {
+              "file": "samples/[2027] 온새미로 1 본교재.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 1251.2854999986303,
+              "chars": 32652
+            },
+            {
+              "file": "samples/hwp3-sample-hwpx.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 564.4580000007409,
+              "chars": 21528
+            },
+            {
+              "file": "samples/hwp3-sample10-hwpx.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 34390.14899999893,
+              "chars": 1082395
+            },
+            {
+              "file": "samples/hwp3-sample11-hwpx.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 4521.108900000399,
+              "chars": 242379
+            },
+            {
+              "file": "samples/hwp3-sample13-hwp5.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 78.55049999852781,
+              "chars": 2439
+            },
+            {
+              "file": "samples/hwp3-sample14-hwp5.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 197.34760000210372,
+              "chars": 7968
+            },
+            {
+              "file": "samples/hwp3-sample16-hwp5.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 1664.3857000017306,
+              "chars": 60910
+            }
+          ]
+        },
+        {
+          "tool": "pyhwp",
+          "available": true,
+          "summary": {
+            "attempted": 50,
+            "ok": 25,
+            "successRate": 0.5,
+            "medianMs": 1154.1,
+            "medianChars": 12682,
+            "byExt": {
+              ".hwp": {
+                "attempted": 25,
+                "ok": 25
+              },
+              ".hwpx": {
+                "attempted": 25,
+                "ok": 0
+              }
+            }
+          },
+          "fidelityVsRhwp": 0.27,
+          "overlapMs": {
+            "tool": 1154.1,
+            "ref": 2149.9
+          },
+          "note": "HWPX(ZIP)는 OLE 파서라 열지 못함; 표 셀 본문을 `<표>` 자리표로 대체.",
+          "runs": [
+            {
+              "file": "samples/143E433F503322BD33.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 886.5077000009478,
+              "chars": 1259
+            },
+            {
+              "file": "samples/156457624_210622 7월부터 해외직구 구매대행업체 등록제 시행.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 658.232699999644,
+              "chars": 1218
+            },
+            {
+              "file": "samples/156636617_240617 2024년 5월 월간 수출입 현황(확정치).hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 2318.6241000003065,
+              "chars": 6732
+            },
+            {
+              "file": "samples/2010-01-06.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 838.916300002893,
+              "chars": 1394
+            },
+            {
+              "file": "samples/2022년 국립국어원 업무계획.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 2683.3609999994223,
+              "chars": 22431
+            },
+            {
+              "file": "samples/2025 행정업무운영 편람(최종).hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 7757.031400000415,
+              "chars": 100478
+            },
+            {
+              "file": "samples/20250130-hongbo-no.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 791.3848999996844,
+              "chars": 1198
+            },
+            {
+              "file": "samples/20250130-hongbo.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 578.2055000017863,
+              "chars": 1198
+            },
+            {
+              "file": "samples/20250130-hongbo_saved.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 498.6635999994178,
+              "chars": 0
+            },
+            {
+              "file": "samples/2026_oss_rst.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 530.4632000006677,
+              "chars": 102
+            },
+            {
+              "file": "samples/21868765_별표2_보건소_분장사무.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 658.3085000020219,
+              "chars": 57
+            },
+            {
+              "file": "samples/21_언어_기출_편집가능본.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 790.6899000008707,
+              "chars": 30318
+            },
+            {
+              "file": "samples/253E164F57A1BC6934-empty.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 388.644500002556,
+              "chars": 0
+            },
+            {
+              "file": "samples/3-09월_교육_통합_2022.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 1179.664999999659,
+              "chars": 12682
+            },
+            {
+              "file": "samples/3-09월_교육_통합_2023.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 1202.6807000002009,
+              "chars": 10632
+            },
+            {
+              "file": "samples/3-09월_교육_통합_2024-격자기준종이.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 1129.8317999971914,
+              "chars": 12682
+            },
+            {
+              "file": "samples/3-09월_교육_통합_2024-격자기준쪽.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 1214.651899997989,
+              "chars": 12682
+            },
+            {
+              "file": "samples/3-09월_교육_통합_2024-구분선아래20.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 1165.4567000005045,
+              "chars": 12682
+            },
+            {
+              "file": "samples/3-09월_교육_통합_2024-구분선아래20구분선위20.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 3468.553200000315,
+              "chars": 12682
+            },
+            {
+              "file": "samples/3-09월_교육_통합_2024-미주사이20.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 1256.7739999976766,
+              "chars": 12682
+            },
+            {
+              "file": "samples/3-10월_교육_통합_2022.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 1002.734400000918,
+              "chars": 11298
+            },
+            {
+              "file": "samples/3-11월_실전_통합_2022.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 1154.126699999324,
+              "chars": 13478
+            },
+            {
+              "file": "samples/3-11월_실전_통합_2024-구분선없음구분선위20미주사이20구분선아래20.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 1176.7322999985481,
+              "chars": 13478
+            },
+            {
+              "file": "samples/3-11월_실전_통합_2024-구분선위0미주사이0구분선아래0.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 1270.0466999995115,
+              "chars": 13478
+            },
+            {
+              "file": "samples/3-11월_실전_통합_2024-구분선위0미주사이20구분선아래2.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 2091.5090999988024,
+              "chars": 13478
+            },
+            {
+              "file": "samples/2025 행정업무운영 편람(최종).hwpx",
+              "ext": ".hwpx",
+              "ok": false,
+              "ms": 767.1941000007791,
+              "chars": null
+            },
+            {
+              "file": "samples/2025년 기부·답례품 실적 지자체 보고서_양식.hwpx",
+              "ext": ".hwpx",
+              "ok": false,
+              "ms": 818.9406999990752,
+              "chars": null
+            },
+            {
+              "file": "samples/3-09월_교육_통합_2022.hwpx",
+              "ext": ".hwpx",
+              "ok": false,
+              "ms": 501.90999999904307,
+              "chars": null
+            },
+            {
+              "file": "samples/3-09월_교육_통합_2023.hwpx",
+              "ext": ".hwpx",
+              "ok": false,
+              "ms": 468.22400000019115,
+              "chars": null
+            },
+            {
+              "file": "samples/3-09월_교육_통합_2024-구분선아래20구분선위20.hwpx",
+              "ext": ".hwpx",
+              "ok": false,
+              "ms": 470.1574000027904,
+              "chars": null
+            },
+            {
+              "file": "samples/3-10월_교육_통합_2022.hwpx",
+              "ext": ".hwpx",
+              "ok": false,
+              "ms": 639.8424999970302,
+              "chars": null
+            },
+            {
+              "file": "samples/3-11월_실전_통합_2022.hwpx",
+              "ext": ".hwpx",
+              "ok": false,
+              "ms": 801.9414999980654,
+              "chars": null
+            },
+            {
+              "file": "samples/3-11월_실전_통합_2024-구분선없음구분선위20미주사이20구분선아래20.hwpx",
+              "ext": ".hwpx",
+              "ok": false,
+              "ms": 868.1149999974878,
+              "chars": null
+            },
+            {
+              "file": "samples/3-11월_실전_통합_2024-구분선위0미주사이0구분선아래0.hwpx",
+              "ext": ".hwpx",
+              "ok": false,
+              "ms": 846.1084000009578,
+              "chars": null
+            },
+            {
+              "file": "samples/3-11월_실전_통합_2024-구분선위0미주사이20구분선아래2.hwpx",
+              "ext": ".hwpx",
+              "ok": false,
+              "ms": 891.427599999588,
+              "chars": null
+            },
+            {
+              "file": "samples/3-11월_실전_통합_2024-구분선위0미주사이7구분선아래2.hwpx",
+              "ext": ".hwpx",
+              "ok": false,
+              "ms": 860.4942000019946,
+              "chars": null
+            },
+            {
+              "file": "samples/3-11월_실전_통합_2024-구분선위0미주사이7구분선아래20.hwpx",
+              "ext": ".hwpx",
+              "ok": false,
+              "ms": 776.9923000014387,
+              "chars": null
+            },
+            {
+              "file": "samples/3-11월_실전_통합_2024-구분선위20미주사이0구분선아래20.hwpx",
+              "ext": ".hwpx",
+              "ok": false,
+              "ms": 735.9765000001062,
+              "chars": null
+            },
+            {
+              "file": "samples/3-11월_실전_통합_2024-구분선위20미주사이7구분선아래2.hwpx",
+              "ext": ".hwpx",
+              "ok": false,
+              "ms": 904.0094000010868,
+              "chars": null
+            },
+            {
+              "file": "samples/3-11월_실전_통합_2024-구분선위9미주사이8구분선아래7.hwpx",
+              "ext": ".hwpx",
+              "ok": false,
+              "ms": 907.0726000027207,
+              "chars": null
+            },
+            {
+              "file": "samples/HWP5-nopassword-123456.hwpx",
+              "ext": ".hwpx",
+              "ok": false,
+              "ms": 712.3329999994894,
+              "chars": null
+            },
+            {
+              "file": "samples/HWP5-password-123456.hwpx",
+              "ext": ".hwpx",
+              "ok": false,
+              "ms": 596.6633000025467,
+              "chars": null
+            },
+            {
+              "file": "samples/SO-SUEOP.hwpx",
+              "ext": ".hwpx",
+              "ok": false,
+              "ms": 610.4482999980974,
+              "chars": null
+            },
+            {
+              "file": "samples/[2027] 온새미로 1 본교재.hwpx",
+              "ext": ".hwpx",
+              "ok": false,
+              "ms": 621.0473999999522,
+              "chars": null
+            },
+            {
+              "file": "samples/hwp3-sample-hwpx.hwpx",
+              "ext": ".hwpx",
+              "ok": false,
+              "ms": 671.0622999999032,
+              "chars": null
+            },
+            {
+              "file": "samples/hwp3-sample10-hwpx.hwpx",
+              "ext": ".hwpx",
+              "ok": false,
+              "ms": 706.1267999997654,
+              "chars": null
+            },
+            {
+              "file": "samples/hwp3-sample11-hwpx.hwpx",
+              "ext": ".hwpx",
+              "ok": false,
+              "ms": 759.017300002597,
+              "chars": null
+            },
+            {
+              "file": "samples/hwp3-sample13-hwp5.hwpx",
+              "ext": ".hwpx",
+              "ok": false,
+              "ms": 853.912800001126,
+              "chars": null
+            },
+            {
+              "file": "samples/hwp3-sample14-hwp5.hwpx",
+              "ext": ".hwpx",
+              "ok": false,
+              "ms": 833.6988000010024,
+              "chars": null
+            },
+            {
+              "file": "samples/hwp3-sample16-hwp5.hwpx",
+              "ext": ".hwpx",
+              "ok": false,
+              "ms": 850.7766999973683,
+              "chars": null
+            }
+          ]
+        },
+        {
+          "tool": "soffice",
+          "available": false,
+          "reason": "미설치(이 머신); 설치돼도 HWP5 임포트 필터 없어 현대 .hwp 못 엶"
+        },
+        {
+          "tool": "hwplib",
+          "available": false,
+          "reason": "Java 라이브러리, CLI 아님(래퍼 클래스+빌드 필요)"
+        }
+      ]
+    },
+    {
+      "task": "info",
+      "results": [
+        {
+          "tool": "rhwp",
+          "available": true,
+          "summary": {
+            "attempted": 50,
+            "ok": 49,
+            "successRate": 0.98,
+            "medianMs": 583.7,
+            "medianChars": null,
+            "byExt": {
+              ".hwp": {
+                "attempted": 25,
+                "ok": 25
+              },
+              ".hwpx": {
+                "attempted": 25,
+                "ok": 24
+              }
+            }
+          },
+          "fidelityVsRhwp": null,
+          "runs": [
+            {
+              "file": "samples/143E433F503322BD33.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 116.59689999942202,
+              "chars": null
+            },
+            {
+              "file": "samples/156457624_210622 7월부터 해외직구 구매대행업체 등록제 시행.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 110.49700000148732,
+              "chars": null
+            },
+            {
+              "file": "samples/156636617_240617 2024년 5월 월간 수출입 현황(확정치).hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 296.3371999976516,
+              "chars": null
+            },
+            {
+              "file": "samples/2010-01-06.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 107.92070000024978,
+              "chars": null
+            },
+            {
+              "file": "samples/2022년 국립국어원 업무계획.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 463.4284999992815,
+              "chars": null
+            },
+            {
+              "file": "samples/2025 행정업무운영 편람(최종).hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 2037.3691999993753,
+              "chars": null
+            },
+            {
+              "file": "samples/20250130-hongbo-no.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 75.95740000033402,
+              "chars": null
+            },
+            {
+              "file": "samples/20250130-hongbo.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 64.04480000128387,
+              "chars": null
+            },
+            {
+              "file": "samples/20250130-hongbo_saved.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 65.63489999825833,
+              "chars": null
+            },
+            {
+              "file": "samples/2026_oss_rst.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 68.99829999747453,
+              "chars": null
+            },
+            {
+              "file": "samples/21868765_별표2_보건소_분장사무.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 104.70690000147442,
+              "chars": null
+            },
+            {
+              "file": "samples/21_언어_기출_편집가능본.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 370.46599999666796,
+              "chars": null
+            },
+            {
+              "file": "samples/253E164F57A1BC6934-empty.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 45.75659999682102,
+              "chars": null
+            },
+            {
+              "file": "samples/3-09월_교육_통합_2022.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 529.1639999995823,
+              "chars": null
+            },
+            {
+              "file": "samples/3-09월_교육_통합_2023.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 458.3343000012974,
+              "chars": null
+            },
+            {
+              "file": "samples/3-09월_교육_통합_2024-격자기준종이.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 558.6218999997072,
+              "chars": null
+            },
+            {
+              "file": "samples/3-09월_교육_통합_2024-격자기준쪽.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 523.185400001239,
+              "chars": null
+            },
+            {
+              "file": "samples/3-09월_교육_통합_2024-구분선아래20.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 462.9172999993898,
+              "chars": null
+            },
+            {
+              "file": "samples/3-09월_교육_통합_2024-구분선아래20구분선위20.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 527.6749999975436,
+              "chars": null
+            },
+            {
+              "file": "samples/3-09월_교육_통합_2024-미주사이20.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 550.8917999977712,
+              "chars": null
+            },
+            {
+              "file": "samples/3-10월_교육_통합_2022.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 426.8021999996563,
+              "chars": null
+            },
+            {
+              "file": "samples/3-11월_실전_통합_2022.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 560.5659000029846,
+              "chars": null
+            },
+            {
+              "file": "samples/3-11월_실전_통합_2024-구분선없음구분선위20미주사이20구분선아래20.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 664.4737999995414,
+              "chars": null
+            },
+            {
+              "file": "samples/3-11월_실전_통합_2024-구분선위0미주사이0구분선아래0.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 535.4851000010967,
+              "chars": null
+            },
+            {
+              "file": "samples/3-11월_실전_통합_2024-구분선위0미주사이20구분선아래2.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 805.34070000067,
+              "chars": null
+            },
+            {
+              "file": "samples/2025 행정업무운영 편람(최종).hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 5154.788900003041,
+              "chars": null
+            },
+            {
+              "file": "samples/2025년 기부·답례품 실적 지자체 보고서_양식.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 583.710400002019,
+              "chars": null
+            },
+            {
+              "file": "samples/3-09월_교육_통합_2022.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 1077.1066999986942,
+              "chars": null
+            },
+            {
+              "file": "samples/3-09월_교육_통합_2023.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 822.7059999990161,
+              "chars": null
+            },
+            {
+              "file": "samples/3-09월_교육_통합_2024-구분선아래20구분선위20.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 1098.1955000024755,
+              "chars": null
+            },
+            {
+              "file": "samples/3-10월_교육_통합_2022.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 796.4734999986831,
+              "chars": null
+            },
+            {
+              "file": "samples/3-11월_실전_통합_2022.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 845.4587999985961,
+              "chars": null
+            },
+            {
+              "file": "samples/3-11월_실전_통합_2024-구분선없음구분선위20미주사이20구분선아래20.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 953.76540000143,
+              "chars": null
+            },
+            {
+              "file": "samples/3-11월_실전_통합_2024-구분선위0미주사이0구분선아래0.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 732.1172000010847,
+              "chars": null
+            },
+            {
+              "file": "samples/3-11월_실전_통합_2024-구분선위0미주사이20구분선아래2.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 767.5552000000607,
+              "chars": null
+            },
+            {
+              "file": "samples/3-11월_실전_통합_2024-구분선위0미주사이7구분선아래2.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 790.2087000002211,
+              "chars": null
+            },
+            {
+              "file": "samples/3-11월_실전_통합_2024-구분선위0미주사이7구분선아래20.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 618.3294000002206,
+              "chars": null
+            },
+            {
+              "file": "samples/3-11월_실전_통합_2024-구분선위20미주사이0구분선아래20.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 639.0271999989636,
+              "chars": null
+            },
+            {
+              "file": "samples/3-11월_실전_통합_2024-구분선위20미주사이7구분선아래2.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 638.9797999981965,
+              "chars": null
+            },
+            {
+              "file": "samples/3-11월_실전_통합_2024-구분선위9미주사이8구분선아래7.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 706.5112999989651,
+              "chars": null
+            },
+            {
+              "file": "samples/HWP5-nopassword-123456.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 835.4999000002863,
+              "chars": null
+            },
+            {
+              "file": "samples/HWP5-password-123456.hwpx",
+              "ext": ".hwpx",
+              "ok": false,
+              "ms": 222.30560000025434,
+              "chars": null
+            },
+            {
+              "file": "samples/SO-SUEOP.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 3811.864199997217,
+              "chars": null
+            },
+            {
+              "file": "samples/[2027] 온새미로 1 본교재.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 1290.1080000010552,
+              "chars": null
+            },
+            {
+              "file": "samples/hwp3-sample-hwpx.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 909.5698000019183,
+              "chars": null
+            },
+            {
+              "file": "samples/hwp3-sample10-hwpx.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 40138.01020000028,
+              "chars": null
+            },
+            {
+              "file": "samples/hwp3-sample11-hwpx.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 3152.69249999983,
+              "chars": null
+            },
+            {
+              "file": "samples/hwp3-sample13-hwp5.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 83.65430000048946,
+              "chars": null
+            },
+            {
+              "file": "samples/hwp3-sample14-hwp5.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 176.69269999896642,
+              "chars": null
+            },
+            {
+              "file": "samples/hwp3-sample16-hwp5.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 1584.4887999992352,
+              "chars": null
+            }
+          ]
+        },
+        {
+          "tool": "pyhwp",
+          "available": false,
+          "reason": "동일 형식 산출 없음(hwp5proc 는 저수준 레코드 덤프; 메타 봉투 아님)"
+        },
+        {
+          "tool": "soffice",
+          "available": false,
+          "reason": "미설치(이 머신); 구조화 메타/구조 출력 없음"
+        },
+        {
+          "tool": "hwplib",
+          "available": false,
+          "reason": "Java 라이브러리, CLI 아님"
+        }
+      ]
+    },
+    {
+      "task": "structure",
+      "results": [
+        {
+          "tool": "rhwp",
+          "available": true,
+          "summary": {
+            "attempted": 50,
+            "ok": 49,
+            "successRate": 0.98,
+            "medianMs": 954.2,
+            "medianChars": null,
+            "byExt": {
+              ".hwp": {
+                "attempted": 25,
+                "ok": 25
+              },
+              ".hwpx": {
+                "attempted": 25,
+                "ok": 24
+              }
+            }
+          },
+          "fidelityVsRhwp": null,
+          "runs": [
+            {
+              "file": "samples/143E433F503322BD33.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 53.02019999726326,
+              "chars": null
+            },
+            {
+              "file": "samples/156457624_210622 7월부터 해외직구 구매대행업체 등록제 시행.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 83.81759999974747,
+              "chars": null
+            },
+            {
+              "file": "samples/156636617_240617 2024년 5월 월간 수출입 현황(확정치).hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 371.2513999998919,
+              "chars": null
+            },
+            {
+              "file": "samples/2010-01-06.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 125.68350000219652,
+              "chars": null
+            },
+            {
+              "file": "samples/2022년 국립국어원 업무계획.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 470.1829000005091,
+              "chars": null
+            },
+            {
+              "file": "samples/2025 행정업무운영 편람(최종).hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 3654.388899998594,
+              "chars": null
+            },
+            {
+              "file": "samples/20250130-hongbo-no.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 107.42600000230595,
+              "chars": null
+            },
+            {
+              "file": "samples/20250130-hongbo.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 92.91530000336934,
+              "chars": null
+            },
+            {
+              "file": "samples/20250130-hongbo_saved.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 108.517299999221,
+              "chars": null
+            },
+            {
+              "file": "samples/2026_oss_rst.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 136.28330000210553,
+              "chars": null
+            },
+            {
+              "file": "samples/21868765_별표2_보건소_분장사무.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 181.72910000066622,
+              "chars": null
+            },
+            {
+              "file": "samples/21_언어_기출_편집가능본.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 650.7555999996839,
+              "chars": null
+            },
+            {
+              "file": "samples/253E164F57A1BC6934-empty.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 109.01640000156476,
+              "chars": null
+            },
+            {
+              "file": "samples/3-09월_교육_통합_2022.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 1085.4499999986729,
+              "chars": null
+            },
+            {
+              "file": "samples/3-09월_교육_통합_2023.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 850.5053000008047,
+              "chars": null
+            },
+            {
+              "file": "samples/3-09월_교육_통합_2024-격자기준종이.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 885.056799997983,
+              "chars": null
+            },
+            {
+              "file": "samples/3-09월_교육_통합_2024-격자기준쪽.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 763.9925000003132,
+              "chars": null
+            },
+            {
+              "file": "samples/3-09월_교육_통합_2024-구분선아래20.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 701.1308000001009,
+              "chars": null
+            },
+            {
+              "file": "samples/3-09월_교육_통합_2024-구분선아래20구분선위20.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 833.5021000020788,
+              "chars": null
+            },
+            {
+              "file": "samples/3-09월_교육_통합_2024-미주사이20.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 991.7763999983435,
+              "chars": null
+            },
+            {
+              "file": "samples/3-10월_교육_통합_2022.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 919.7590000003402,
+              "chars": null
+            },
+            {
+              "file": "samples/3-11월_실전_통합_2022.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 1140.3433999985282,
+              "chars": null
+            },
+            {
+              "file": "samples/3-11월_실전_통합_2024-구분선없음구분선위20미주사이20구분선아래20.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 1212.195200001588,
+              "chars": null
+            },
+            {
+              "file": "samples/3-11월_실전_통합_2024-구분선위0미주사이0구분선아래0.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 1263.222700003098,
+              "chars": null
+            },
+            {
+              "file": "samples/3-11월_실전_통합_2024-구분선위0미주사이20구분선아래2.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 1672.259999999369,
+              "chars": null
+            },
+            {
+              "file": "samples/2025 행정업무운영 편람(최종).hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 9156.614700001228,
+              "chars": null
+            },
+            {
+              "file": "samples/2025년 기부·답례품 실적 지자체 보고서_양식.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 900.9149999983492,
+              "chars": null
+            },
+            {
+              "file": "samples/3-09월_교육_통합_2022.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 1326.673399998981,
+              "chars": null
+            },
+            {
+              "file": "samples/3-09월_교육_통합_2023.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 954.2220000002999,
+              "chars": null
+            },
+            {
+              "file": "samples/3-09월_교육_통합_2024-구분선아래20구분선위20.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 1232.0952000009129,
+              "chars": null
+            },
+            {
+              "file": "samples/3-10월_교육_통합_2022.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 862.5382999998692,
+              "chars": null
+            },
+            {
+              "file": "samples/3-11월_실전_통합_2022.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 986.3422999987961,
+              "chars": null
+            },
+            {
+              "file": "samples/3-11월_실전_통합_2024-구분선없음구분선위20미주사이20구분선아래20.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 1265.2329000011378,
+              "chars": null
+            },
+            {
+              "file": "samples/3-11월_실전_통합_2024-구분선위0미주사이0구분선아래0.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 1102.0814000003156,
+              "chars": null
+            },
+            {
+              "file": "samples/3-11월_실전_통합_2024-구분선위0미주사이20구분선아래2.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 1097.3964000004344,
+              "chars": null
+            },
+            {
+              "file": "samples/3-11월_실전_통합_2024-구분선위0미주사이7구분선아래2.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 1110.2937000032398,
+              "chars": null
+            },
+            {
+              "file": "samples/3-11월_실전_통합_2024-구분선위0미주사이7구분선아래20.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 1071.8933000025572,
+              "chars": null
+            },
+            {
+              "file": "samples/3-11월_실전_통합_2024-구분선위20미주사이0구분선아래20.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 1143.021999996563,
+              "chars": null
+            },
+            {
+              "file": "samples/3-11월_실전_통합_2024-구분선위20미주사이7구분선아래2.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 1057.8376999983448,
+              "chars": null
+            },
+            {
+              "file": "samples/3-11월_실전_통합_2024-구분선위9미주사이8구분선아래7.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 1077.032400000462,
+              "chars": null
+            },
+            {
+              "file": "samples/HWP5-nopassword-123456.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 469.24330000183545,
+              "chars": null
+            },
+            {
+              "file": "samples/HWP5-password-123456.hwpx",
+              "ext": ".hwpx",
+              "ok": false,
+              "ms": 27.973500000371132,
+              "chars": null
+            },
+            {
+              "file": "samples/SO-SUEOP.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 1520.5305999988923,
+              "chars": null
+            },
+            {
+              "file": "samples/[2027] 온새미로 1 본교재.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 1235.0452000027872,
+              "chars": null
+            },
+            {
+              "file": "samples/hwp3-sample-hwpx.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 485.5825000013283,
+              "chars": null
+            },
+            {
+              "file": "samples/hwp3-sample10-hwpx.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 33184.41910000183,
+              "chars": null
+            },
+            {
+              "file": "samples/hwp3-sample11-hwpx.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 3417.5216000003275,
+              "chars": null
+            },
+            {
+              "file": "samples/hwp3-sample13-hwp5.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 71.39360000292072,
+              "chars": null
+            },
+            {
+              "file": "samples/hwp3-sample14-hwp5.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 138.30009999946924,
+              "chars": null
+            },
+            {
+              "file": "samples/hwp3-sample16-hwp5.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 1287.050899998576,
+              "chars": null
+            }
+          ]
+        },
+        {
+          "tool": "pyhwp",
+          "available": false,
+          "reason": "동일 형식 산출 없음(hwp5proc 는 저수준 레코드 덤프; 메타 봉투 아님)"
+        },
+        {
+          "tool": "soffice",
+          "available": false,
+          "reason": "미설치(이 머신); 구조화 메타/구조 출력 없음"
+        },
+        {
+          "tool": "hwplib",
+          "available": false,
+          "reason": "Java 라이브러리, CLI 아님"
+        }
+      ]
+    },
+    {
+      "task": "convert",
+      "results": [
+        {
+          "tool": "rhwp",
+          "available": true,
+          "summary": {
+            "attempted": 50,
+            "ok": 49,
+            "successRate": 0.98,
+            "medianMs": 2457.9,
+            "medianChars": null,
+            "byExt": {
+              ".hwp": {
+                "attempted": 25,
+                "ok": 25
+              },
+              ".hwpx": {
+                "attempted": 25,
+                "ok": 24
+              }
+            }
+          },
+          "fidelityVsRhwp": null,
+          "note": "HWP→markdown(에이전트-대면 변환); export-hwpx 로 HWPX 변환도 지원.",
+          "runs": [
+            {
+              "file": "samples/143E433F503322BD33.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 114.32910000075935,
+              "chars": null
+            },
+            {
+              "file": "samples/156457624_210622 7월부터 해외직구 구매대행업체 등록제 시행.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 192.55239999984042,
+              "chars": null
+            },
+            {
+              "file": "samples/156636617_240617 2024년 5월 월간 수출입 현황(확정치).hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 728.4838000014133,
+              "chars": null
+            },
+            {
+              "file": "samples/2010-01-06.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 162.31319999860716,
+              "chars": null
+            },
+            {
+              "file": "samples/2022년 국립국어원 업무계획.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 961.5023000005749,
+              "chars": null
+            },
+            {
+              "file": "samples/2025 행정업무운영 편람(최종).hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 23009.114399999817,
+              "chars": null
+            },
+            {
+              "file": "samples/20250130-hongbo-no.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 126.33679999999003,
+              "chars": null
+            },
+            {
+              "file": "samples/20250130-hongbo.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 112.54080000071554,
+              "chars": null
+            },
+            {
+              "file": "samples/20250130-hongbo_saved.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 117.61289999776636,
+              "chars": null
+            },
+            {
+              "file": "samples/2026_oss_rst.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 121.44019999686861,
+              "chars": null
+            },
+            {
+              "file": "samples/21868765_별표2_보건소_분장사무.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 201.89810000010766,
+              "chars": null
+            },
+            {
+              "file": "samples/21_언어_기출_편집가능본.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 798.5842999987653,
+              "chars": null
+            },
+            {
+              "file": "samples/253E164F57A1BC6934-empty.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 64.2678000003798,
+              "chars": null
+            },
+            {
+              "file": "samples/3-09월_교육_통합_2022.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 5045.876899999712,
+              "chars": null
+            },
+            {
+              "file": "samples/3-09월_교육_통합_2023.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 1970.2720999994199,
+              "chars": null
+            },
+            {
+              "file": "samples/3-09월_교육_통합_2024-격자기준종이.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 4055.3233999999065,
+              "chars": null
+            },
+            {
+              "file": "samples/3-09월_교육_통합_2024-격자기준쪽.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 3657.006999997975,
+              "chars": null
+            },
+            {
+              "file": "samples/3-09월_교육_통합_2024-구분선아래20.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 3518.5888999985764,
+              "chars": null
+            },
+            {
+              "file": "samples/3-09월_교육_통합_2024-구분선아래20구분선위20.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 3316.953999998077,
+              "chars": null
+            },
+            {
+              "file": "samples/3-09월_교육_통합_2024-미주사이20.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 3014.798600001086,
+              "chars": null
+            },
+            {
+              "file": "samples/3-10월_교육_통합_2022.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 1607.3883999997634,
+              "chars": null
+            },
+            {
+              "file": "samples/3-11월_실전_통합_2022.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 3034.9386999987473,
+              "chars": null
+            },
+            {
+              "file": "samples/3-11월_실전_통합_2024-구분선없음구분선위20미주사이20구분선아래20.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 2895.508899997367,
+              "chars": null
+            },
+            {
+              "file": "samples/3-11월_실전_통합_2024-구분선위0미주사이0구분선아래0.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 2711.138700000447,
+              "chars": null
+            },
+            {
+              "file": "samples/3-11월_실전_통합_2024-구분선위0미주사이20구분선아래2.hwp",
+              "ext": ".hwp",
+              "ok": true,
+              "ms": 2572.991600001842,
+              "chars": null
+            },
+            {
+              "file": "samples/2025 행정업무운영 편람(최종).hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 15279.906399999163,
+              "chars": null
+            },
+            {
+              "file": "samples/2025년 기부·답례품 실적 지자체 보고서_양식.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 797.3577999982808,
+              "chars": null
+            },
+            {
+              "file": "samples/3-09월_교육_통합_2022.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 5051.684599999135,
+              "chars": null
+            },
+            {
+              "file": "samples/3-09월_교육_통합_2023.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 1908.7456999986898,
+              "chars": null
+            },
+            {
+              "file": "samples/3-09월_교육_통합_2024-구분선아래20구분선위20.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 3085.640000001149,
+              "chars": null
+            },
+            {
+              "file": "samples/3-10월_교육_통합_2022.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 1643.010100000538,
+              "chars": null
+            },
+            {
+              "file": "samples/3-11월_실전_통합_2022.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 2308.9405999999144,
+              "chars": null
+            },
+            {
+              "file": "samples/3-11월_실전_통합_2024-구분선없음구분선위20미주사이20구분선아래20.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 2624.644800001988,
+              "chars": null
+            },
+            {
+              "file": "samples/3-11월_실전_통합_2024-구분선위0미주사이0구분선아래0.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 2457.944800000405,
+              "chars": null
+            },
+            {
+              "file": "samples/3-11월_실전_통합_2024-구분선위0미주사이20구분선아래2.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 5505.683499999577,
+              "chars": null
+            },
+            {
+              "file": "samples/3-11월_실전_통합_2024-구분선위0미주사이7구분선아래2.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 8638.733599997067,
+              "chars": null
+            },
+            {
+              "file": "samples/3-11월_실전_통합_2024-구분선위0미주사이7구분선아래20.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 4637.502499997936,
+              "chars": null
+            },
+            {
+              "file": "samples/3-11월_실전_통합_2024-구분선위20미주사이0구분선아래20.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 4299.386299997423,
+              "chars": null
+            },
+            {
+              "file": "samples/3-11월_실전_통합_2024-구분선위20미주사이7구분선아래2.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 4001.5209000011964,
+              "chars": null
+            },
+            {
+              "file": "samples/3-11월_실전_통합_2024-구분선위9미주사이8구분선아래7.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 4097.285299998475,
+              "chars": null
+            },
+            {
+              "file": "samples/HWP5-nopassword-123456.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 850.903800001106,
+              "chars": null
+            },
+            {
+              "file": "samples/HWP5-password-123456.hwpx",
+              "ext": ".hwpx",
+              "ok": false,
+              "ms": 49.675800000841264,
+              "chars": null
+            },
+            {
+              "file": "samples/SO-SUEOP.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 3187.6434000005247,
+              "chars": null
+            },
+            {
+              "file": "samples/[2027] 온새미로 1 본교재.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 1447.8820000003907,
+              "chars": null
+            },
+            {
+              "file": "samples/hwp3-sample-hwpx.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 443.55649999852176,
+              "chars": null
+            },
+            {
+              "file": "samples/hwp3-sample10-hwpx.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 38694.2166000008,
+              "chars": null
+            },
+            {
+              "file": "samples/hwp3-sample11-hwpx.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 3960.4655999974057,
+              "chars": null
+            },
+            {
+              "file": "samples/hwp3-sample13-hwp5.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 69.43200000023353,
+              "chars": null
+            },
+            {
+              "file": "samples/hwp3-sample14-hwp5.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 1036.2246000004234,
+              "chars": null
+            },
+            {
+              "file": "samples/hwp3-sample16-hwp5.hwpx",
+              "ext": ".hwpx",
+              "ok": true,
+              "ms": 2249.2411000021093,
+              "chars": null
+            }
+          ]
+        },
+        {
+          "tool": "pyhwp",
+          "available": false,
+          "reason": "동일 형식 산출 없음(hwp5proc 는 저수준 레코드 덤프; 메타 봉투 아님)"
+        },
+        {
+          "tool": "soffice",
+          "available": false,
+          "reason": "미설치(이 머신); 구조화 메타/구조 출력 없음"
+        },
+        {
+          "tool": "hwplib",
+          "available": false,
+          "reason": "Java 라이브러리, CLI 아님"
+        }
+      ]
+    }
+  ],
+  "capabilityMatrix": {
+    "columns": [
+      {
+        "key": "crossPlatform",
+        "label": "크로스플랫폼"
+      },
+      {
+        "key": "singleBinary",
+        "label": "단일 자립 바이너리"
+      },
+      {
+        "key": "agentCli",
+        "label": "에이전트-네이티브 CLI(JSON 봉투)"
+      },
+      {
+        "key": "mcp",
+        "label": "MCP 서버"
+      },
+      {
+        "key": "memSafe",
+        "label": "메모리 안전(Rust)"
+      },
+      {
+        "key": "verifiable",
+        "label": "검증 가능 작업(capsule/replay)"
+      },
+      {
+        "key": "edit",
+        "label": "편집"
+      },
+      {
+        "key": "render",
+        "label": "렌더(SVG/PNG/PDF)"
+      }
+    ],
+    "rows": [
+      {
+        "tool": "rhwp",
+        "crossPlatform": "yes",
+        "singleBinary": "yes",
+        "agentCli": "yes",
+        "mcp": "yes",
+        "memSafe": "yes",
+        "verifiable": "yes",
+        "edit": "yes",
+        "render": "yes",
+        "note": "Rust 단일 바이너리(Win/Linux/macOS + wasm32). --json 봉투·mcp-serve·replay/audit/lineage·fill/replace/redact·export-svg/png/pdf 를 한 실행파일로."
+      },
+      {
+        "tool": "pyhwp (hwp5txt)",
+        "crossPlatform": "yes",
+        "singleBinary": "no",
+        "agentCli": "partial",
+        "mcp": "no",
+        "memSafe": "no",
+        "verifiable": "no",
+        "edit": "no",
+        "render": "partial",
+        "note": "Python 패키지(+six 등 의존, import 조차 수동 보정 필요). 읽기전용, HWP5(OLE)만. 평문 출력(구조화 봉투 없음). hwp5html/hwp5odt 변환은 있으나 SVG/PNG/PDF 직접 렌더는 아니다. 사실상 휴면(Py2 세대)."
+      },
+      {
+        "tool": "LibreOffice (soffice)",
+        "crossPlatform": "yes",
+        "singleBinary": "no",
+        "agentCli": "partial",
+        "mcp": "no",
+        "memSafe": "no",
+        "verifiable": "no",
+        "edit": "yes",
+        "render": "yes",
+        "note": "대형 오피스 스위트. --headless --convert-to 는 구조화 출력이 없다. 편집·PDF 렌더는 강력하나 **HWP5 임포트 필터가 없어** 현대 .hwp 를 열지 못한다(구형 HWP2.0/3.0 필터만 존재)."
+      },
+      {
+        "tool": "hwplib (Java)",
+        "crossPlatform": "yes",
+        "singleBinary": "no",
+        "agentCli": "no",
+        "mcp": "no",
+        "memSafe": "no",
+        "verifiable": "no",
+        "edit": "yes",
+        "render": "no",
+        "note": "JVM 라이브러리(jar). CLI 가 아니다 — 부르려면 래퍼 클래스 작성 + 빌드가 필요하다. 라이브러리 API 로 읽기/쓰기는 되지만 명령줄 도구가 아니다."
+      },
+      {
+        "tool": "Hancom SDK",
+        "crossPlatform": "no",
+        "singleBinary": "no",
+        "agentCli": "no",
+        "mcp": "no",
+        "memSafe": "no",
+        "verifiable": "no",
+        "edit": "yes",
+        "render": "yes",
+        "note": "**Windows 전용** 독점 SDK(COM/자동화). 크로스플랫폼·CLI·오픈소스가 아니다. 구조 비교를 위해서만 등재한다(실행하지 않음)."
+      }
+    ]
+  },
+  "verdict": [
+    "rhwp 는 export-text 에서 49/50 파일을 처리했다(HWP+HWPX 혼합, 중앙값 2233.9ms).",
+    "pyhwp(hwp5txt)는 HWP5 25/25 성공, HWPX 0/25 성공(ZIP 기반 HWPX 는 OLE 파서로 열 수 없음 — 구조적 한계).",
+    "속도(동일 파일집합, 둘 다 연 HWP5): pyhwp 가 더 빨랐다(pyhwp 1154.1ms vs rhwp 2149.9ms 중앙값). rhwp 는 디버그 빌드이며 JSON 봉투·출처 표지를 함께 낸다 — 릴리스 빌드로는 좁혀진다. 그래도 더 빠른 축은 그대로 적는다.",
+    "충실도: 두 도구가 모두 연 HWP5 에서 pyhwp 문자수는 rhwp 대비 중앙값 0.27× — pyhwp 는 표 셀 본문을 `<표>` 자리표로 대체해 본문을 덜 뽑는다(에이전트가 표 안 숫자를 읽어야 하면 치명적).",
+    "폭: info, structure, convert 과제는 rhwp 만 구조화 CLI 로 수행했다 — 대안들은 동일 형식 산출(메타 봉투·구조 트리·HWPX/markdown 변환)이 없어 n/a.",
+    "능력: MCP 서버·검증 가능 작업(replay/capsule)·단일 자립 바이너리·메모리 안전(Rust)·JSON 봉투는 벤치한 대안 중 rhwp 만 갖췄다(능력 매트릭스 참조)."
+  ]
+}

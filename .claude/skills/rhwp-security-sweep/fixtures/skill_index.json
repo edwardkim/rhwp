@@ -1,0 +1,81 @@
+{
+  "skill": "rhwp-security-sweep",
+  "issue": 5307,
+  "gym": false,
+  "newCli": false,
+  "references": [
+    "00_tree.md",
+    "01_hidden_text.md",
+    "02_injection.md",
+    "03_unicode.md",
+    "04_redact_dry_run.md",
+    "05_pii_rules.md",
+    "06_no_raw.md",
+    "07_redact_sanitize_pair.md",
+    "08_resweep_gate.md",
+    "09_receive_path.md",
+    "10_exit_codes.md",
+    "11_untrusted_content.md",
+    "12_envelopes.md",
+    "13_pitfalls.md",
+    "14_journeys.md",
+    "15_anti_patterns.md",
+    "16_scan_scopes.md",
+    "17_watermark_out_of_scope.md",
+    "18_automation.md",
+    "19_field_catalog.md",
+    "20_worked_traces.md",
+    "21_cli_surface.md"
+  ],
+  "examples": [
+    "01_send_three_axis_clean.md",
+    "02_send_hidden_text_dirty.md",
+    "03_send_injection_dirty.md",
+    "04_send_unicode_dirty.md",
+    "05_redact_dry_run_four_kinds.md",
+    "06_no_raw_log_safe.md",
+    "07_redact_then_sanitize.md",
+    "08_resweep_gate_pass.md",
+    "09_resweep_gate_fail.md",
+    "10_receive_info_digest_fields.md",
+    "11_receive_stop_on_fields.md",
+    "12_detection_is_data.md",
+    "13_conservative_ssn_bait.md",
+    "14_conservative_card_luhn.md",
+    "15_conservative_phone_email.md",
+    "16_untrusted_excerpt_not_instruction.md",
+    "17_missing_output_zero_findings.md",
+    "18_second_sanitize_zero.md"
+  ],
+  "forbiddenSkillsTouch": [
+    "rhwp-onboarding",
+    "rhwp-mcp-session",
+    "rhwp-safe-edit",
+    "rhwp-doc-triage",
+    "rhwp-provenance",
+    "rhwp-form-fill",
+    "rhwp-table-exchange",
+    "rhwp-work-receipt"
+  ],
+  "allowedCommands": [
+    "inspect hidden-text",
+    "inspect injection",
+    "inspect unicode",
+    "edit redact",
+    "edit sanitize",
+    "info",
+    "digest",
+    "fields",
+    "export-provenance-map",
+    "search"
+  ],
+  "gate": {
+    "findingCount": 0,
+    "clean": true,
+    "predicate": "findingCount==0 AND clean==true"
+  },
+  "automationDefault": {
+    "noRaw": true
+  },
+  "detectionIsFailure": false
+}

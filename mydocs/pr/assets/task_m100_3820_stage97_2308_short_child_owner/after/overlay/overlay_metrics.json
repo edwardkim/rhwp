@@ -1,0 +1,70 @@
+{
+  "summary": {
+    "compared_pages": 2,
+    "pixel_diff_threshold": 32,
+    "average_pixel_match_percent": 93.11454,
+    "worst_pixel_match_percent": 88.94379,
+    "average_ink_match_percent": 10.8145,
+    "worst_ink_match_percent": 10.6511,
+    "average_visual_accuracy_proxy_percent": 10.8145,
+    "worst_visual_accuracy_proxy_percent": 10.6511,
+    "worst_pages": [
+      81,
+      82
+    ]
+  },
+  "pages": [
+    {
+      "page": 81,
+      "rhwp_png": "/tmp/rhwp-stage97-owner-after/stage97-issue2308-owner-after/rhwp_png/rhwp_081.png",
+      "pdf_png": "/tmp/rhwp-stage97-owner-after/stage97-issue2308-owner-after/pdf_png/pdf-81.png",
+      "overlay_png": "/tmp/rhwp-stage97-owner-after/stage97-issue2308-owner-after/overlay/overlay_081.png",
+      "width": 794,
+      "height": 1123,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 891662,
+      "diff_pixels": 98584,
+      "diff_ratio": 0.11056207,
+      "pixel_match_percent": 88.94379,
+      "ink_union_pixels": 110336,
+      "ink_diff_pixels": 98584,
+      "ink_diff_ratio": 0.89348898,
+      "ink_match_percent": 10.6511,
+      "visual_accuracy_proxy_percent": 10.6511,
+      "mean_abs_channel_delta": 17.023,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        75,
+        75,
+        715,
+        1083
+      ]
+    },
+    {
+      "page": 82,
+      "rhwp_png": "/tmp/rhwp-stage97-owner-after/stage97-issue2308-owner-after/rhwp_png/rhwp_082.png",
+      "pdf_png": "/tmp/rhwp-stage97-owner-after/stage97-issue2308-owner-after/pdf_png/pdf-82.png",
+      "overlay_png": "/tmp/rhwp-stage97-owner-after/stage97-issue2308-owner-after/overlay/overlay_082.png",
+      "width": 794,
+      "height": 1123,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 891662,
+      "diff_pixels": 24206,
+      "diff_ratio": 0.02714706,
+      "pixel_match_percent": 97.28529,
+      "ink_union_pixels": 27191,
+      "ink_diff_pixels": 24206,
+      "ink_diff_ratio": 0.89022103,
+      "ink_match_percent": 10.9779,
+      "visual_accuracy_proxy_percent": 10.9779,
+      "mean_abs_channel_delta": 4.403,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        75,
+        75,
+        715,
+        1083
+      ]
+    }
+  ]
+}

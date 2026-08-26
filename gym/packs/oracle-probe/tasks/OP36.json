@@ -1,0 +1,27 @@
+{
+  "id": "OP36",
+  "tier": 2,
+  "title": "exam-kor-1p 문단 수",
+  "input": "samples/exam-kor-1p.hwp",
+  "axis": "검증",
+  "instructions": "1쪽 시험지의 문단 수를 answer.json 에 {\"paragraphs\": N} 으로 제출하라.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "시험지 문단 수",
+      "op": "answer_eq",
+      "answer": "paragraphs",
+      "cmd": [
+        "explain",
+        "{input}",
+        "--json"
+      ],
+      "path": "paragraphCount"
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "id": "p2-objprops",
+  "title": "개체 Properties 에 위치 항목이 있는가 — 옮기기의 관측창 찾기",
+  "ledger": [],
+  "open": "samples/draw-group.hwp",
+  "calls": [
+    ["HeadCtrl.Next.Next.Properties.Count", []],
+    ["HeadCtrl.Next.Next.Properties.Item", ["VertOffset"]],
+    ["HeadCtrl.Next.Next.Properties.Item", ["HorzOffset"]],
+    ["HeadCtrl.Next.Next.Properties.Item", ["VertRelTo"]],
+    ["HeadCtrl.Next.Next.Properties.Item", ["HorzRelTo"]],
+    ["HeadCtrl.Next.Next.Properties.Item", ["VertAlign"]],
+    ["HeadCtrl.Next.Next.Properties.Item", ["HorzAlign"]],
+    ["HeadCtrl.Next.Next.Properties.Item", ["ZOrder"]],
+    ["SetPos", [0, 0, 0]],
+    ["Run", ["SelectCtrlFront"]],
+    ["Run", ["ShapeObjMoveRight"]],
+    ["HeadCtrl.Next.Next.Properties.Item", ["HorzOffset"]],
+    ["HeadCtrl.Next.Next.Properties.Item", ["VertOffset"]],
+    ["Run", ["ShapeObjMoveDown"]],
+    ["HeadCtrl.Next.Next.Properties.Item", ["VertOffset"]],
+    ["Run", ["ShapeObjResizeRight"]],
+    ["HeadCtrl.Next.Next.Properties.Item", ["Width"]],
+    ["Run", ["ShapeObjHorzFlip"]],
+    ["HeadCtrl.Next.Next.Properties.Item", ["HorzFlip"]]
+  ]
+}

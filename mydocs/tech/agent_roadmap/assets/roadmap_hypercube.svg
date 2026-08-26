@@ -1,0 +1,292 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="780" viewBox="0 0 1080 780" font-family="Segoe UI, Malgun Gothic, sans-serif">
+<defs>
+<radialGradient id="bg" cx="38%" cy="30%" r="95%">
+  <stop offset="0%" stop-color="#141c33"/><stop offset="55%" stop-color="#0d1226"/>
+  <stop offset="100%" stop-color="#070a16"/>
+</radialGradient>
+<linearGradient id="axis" x1="0" y1="0" x2="1" y2="0">
+  <stop offset="0%" stop-color="#22d3ee"/><stop offset="55%" stop-color="#818cf8"/>
+  <stop offset="100%" stop-color="#e879f9"/>
+</linearGradient>
+<linearGradient id="ladder" x1="0" y1="1" x2="1" y2="0">
+  <stop offset="0%" stop-color="#38bdf8"/><stop offset="100%" stop-color="#e879f9"/>
+</linearGradient>
+<filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+  <feGaussianBlur stdDeviation="3.2" result="b"/>
+  <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+</filter>
+<filter id="glow2" x="-80%" y="-80%" width="260%" height="260%">
+  <feGaussianBlur stdDeviation="7" result="b"/>
+  <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+</filter>
+</defs>
+<rect width="1080" height="780" fill="url(#bg)"/>
+<circle cx="762" cy="434" r="1.1" fill="#dbe6ff" opacity="0.47"/>
+<circle cx="774" cy="168" r="1.4" fill="#dbe6ff" opacity="0.42"/>
+<circle cx="504" cy="212" r="1.4" fill="#dbe6ff" opacity="0.49"/>
+<circle cx="780" cy="378" r="1.1" fill="#dbe6ff" opacity="0.53"/>
+<circle cx="1041" cy="17" r="0.6" fill="#dbe6ff" opacity="0.55"/>
+<circle cx="999" cy="675" r="0.8" fill="#dbe6ff" opacity="0.25"/>
+<circle cx="432" cy="209" r="0.8" fill="#dbe6ff" opacity="0.27"/>
+<circle cx="709" cy="485" r="0.8" fill="#dbe6ff" opacity="0.16"/>
+<circle cx="322" cy="283" r="1.4" fill="#dbe6ff" opacity="0.24"/>
+<circle cx="935" cy="305" r="1.1" fill="#dbe6ff" opacity="0.53"/>
+<circle cx="157" cy="736" r="0.6" fill="#dbe6ff" opacity="0.28"/>
+<circle cx="886" cy="615" r="1.1" fill="#dbe6ff" opacity="0.44"/>
+<circle cx="707" cy="188" r="1.4" fill="#dbe6ff" opacity="0.20"/>
+<circle cx="818" cy="311" r="1.4" fill="#dbe6ff" opacity="0.43"/>
+<circle cx="286" cy="119" r="1.4" fill="#dbe6ff" opacity="0.23"/>
+<circle cx="788" cy="623" r="0.8" fill="#dbe6ff" opacity="0.42"/>
+<circle cx="121" cy="83" r="0.8" fill="#dbe6ff" opacity="0.24"/>
+<circle cx="869" cy="494" r="1.4" fill="#dbe6ff" opacity="0.34"/>
+<circle cx="286" cy="652" r="0.8" fill="#dbe6ff" opacity="0.55"/>
+<circle cx="685" cy="681" r="1.4" fill="#dbe6ff" opacity="0.58"/>
+<circle cx="1041" cy="191" r="0.6" fill="#dbe6ff" opacity="0.50"/>
+<circle cx="519" cy="192" r="1.1" fill="#dbe6ff" opacity="0.32"/>
+<circle cx="99" cy="350" r="1.1" fill="#dbe6ff" opacity="0.39"/>
+<circle cx="152" cy="451" r="1.1" fill="#dbe6ff" opacity="0.16"/>
+<circle cx="827" cy="35" r="0.8" fill="#dbe6ff" opacity="0.42"/>
+<circle cx="123" cy="665" r="1.1" fill="#dbe6ff" opacity="0.38"/>
+<circle cx="81" cy="524" r="0.8" fill="#dbe6ff" opacity="0.46"/>
+<circle cx="385" cy="89" r="1.1" fill="#dbe6ff" opacity="0.28"/>
+<circle cx="48" cy="400" r="0.8" fill="#dbe6ff" opacity="0.60"/>
+<circle cx="120" cy="725" r="1.4" fill="#dbe6ff" opacity="0.37"/>
+<circle cx="283" cy="52" r="1.1" fill="#dbe6ff" opacity="0.42"/>
+<circle cx="455" cy="127" r="0.8" fill="#dbe6ff" opacity="0.52"/>
+<circle cx="268" cy="210" r="0.8" fill="#dbe6ff" opacity="0.26"/>
+<circle cx="140" cy="332" r="0.6" fill="#dbe6ff" opacity="0.31"/>
+<circle cx="178" cy="617" r="1.1" fill="#dbe6ff" opacity="0.49"/>
+<circle cx="800" cy="592" r="1.1" fill="#dbe6ff" opacity="0.50"/>
+<circle cx="837" cy="194" r="1.4" fill="#dbe6ff" opacity="0.25"/>
+<circle cx="365" cy="652" r="1.4" fill="#dbe6ff" opacity="0.40"/>
+<circle cx="936" cy="147" r="1.4" fill="#dbe6ff" opacity="0.35"/>
+<circle cx="418" cy="233" r="1.4" fill="#dbe6ff" opacity="0.52"/>
+<circle cx="159" cy="37" r="1.1" fill="#dbe6ff" opacity="0.22"/>
+<circle cx="727" cy="49" r="1.1" fill="#dbe6ff" opacity="0.27"/>
+<circle cx="1021" cy="35" r="0.8" fill="#dbe6ff" opacity="0.19"/>
+<circle cx="578" cy="769" r="0.8" fill="#dbe6ff" opacity="0.50"/>
+<circle cx="352" cy="223" r="1.4" fill="#dbe6ff" opacity="0.56"/>
+<circle cx="378" cy="458" r="0.8" fill="#dbe6ff" opacity="0.52"/>
+<circle cx="443" cy="108" r="1.4" fill="#dbe6ff" opacity="0.57"/>
+<circle cx="1061" cy="451" r="0.6" fill="#dbe6ff" opacity="0.47"/>
+<circle cx="73" cy="252" r="0.8" fill="#dbe6ff" opacity="0.35"/>
+<circle cx="227" cy="50" r="0.6" fill="#dbe6ff" opacity="0.20"/>
+<circle cx="599" cy="177" r="1.4" fill="#dbe6ff" opacity="0.55"/>
+<circle cx="508" cy="263" r="0.8" fill="#dbe6ff" opacity="0.24"/>
+<circle cx="725" cy="707" r="1.4" fill="#dbe6ff" opacity="0.31"/>
+<circle cx="856" cy="442" r="1.4" fill="#dbe6ff" opacity="0.28"/>
+<circle cx="82" cy="592" r="1.4" fill="#dbe6ff" opacity="0.58"/>
+<circle cx="495" cy="288" r="0.6" fill="#dbe6ff" opacity="0.50"/>
+<circle cx="247" cy="83" r="1.4" fill="#dbe6ff" opacity="0.23"/>
+<circle cx="413" cy="69" r="1.1" fill="#dbe6ff" opacity="0.29"/>
+<circle cx="569" cy="639" r="1.1" fill="#dbe6ff" opacity="0.60"/>
+<circle cx="599" cy="269" r="0.6" fill="#dbe6ff" opacity="0.37"/>
+<circle cx="370" cy="259" r="1.1" fill="#dbe6ff" opacity="0.42"/>
+<circle cx="929" cy="430" r="0.6" fill="#dbe6ff" opacity="0.33"/>
+<circle cx="1015" cy="629" r="1.1" fill="#dbe6ff" opacity="0.18"/>
+<circle cx="781" cy="402" r="0.8" fill="#dbe6ff" opacity="0.26"/>
+<circle cx="261" cy="196" r="1.1" fill="#dbe6ff" opacity="0.25"/>
+<circle cx="888" cy="210" r="1.1" fill="#dbe6ff" opacity="0.59"/>
+<circle cx="850" cy="772" r="0.6" fill="#dbe6ff" opacity="0.18"/>
+<circle cx="714" cy="555" r="1.4" fill="#dbe6ff" opacity="0.21"/>
+<circle cx="228" cy="725" r="0.6" fill="#dbe6ff" opacity="0.38"/>
+<circle cx="432" cy="342" r="1.4" fill="#dbe6ff" opacity="0.38"/>
+<circle cx="498" cy="247" r="1.4" fill="#dbe6ff" opacity="0.23"/>
+<circle cx="511" cy="333" r="1.1" fill="#dbe6ff" opacity="0.31"/>
+<circle cx="524" cy="9" r="0.8" fill="#dbe6ff" opacity="0.52"/>
+<circle cx="497" cy="560" r="1.1" fill="#dbe6ff" opacity="0.27"/>
+<circle cx="973" cy="725" r="0.8" fill="#dbe6ff" opacity="0.44"/>
+<circle cx="288" cy="734" r="1.1" fill="#dbe6ff" opacity="0.19"/>
+<circle cx="226" cy="710" r="1.1" fill="#dbe6ff" opacity="0.53"/>
+<circle cx="487" cy="482" r="0.8" fill="#dbe6ff" opacity="0.54"/>
+<circle cx="47" cy="607" r="1.4" fill="#dbe6ff" opacity="0.42"/>
+<circle cx="337" cy="462" r="0.6" fill="#dbe6ff" opacity="0.43"/>
+<circle cx="105" cy="290" r="0.6" fill="#dbe6ff" opacity="0.36"/>
+<circle cx="533" cy="616" r="0.6" fill="#dbe6ff" opacity="0.25"/>
+<circle cx="126" cy="674" r="1.4" fill="#dbe6ff" opacity="0.29"/>
+<circle cx="477" cy="565" r="0.8" fill="#dbe6ff" opacity="0.55"/>
+<circle cx="538" cy="648" r="1.1" fill="#dbe6ff" opacity="0.31"/>
+<circle cx="308" cy="303" r="1.1" fill="#dbe6ff" opacity="0.26"/>
+<circle cx="178" cy="153" r="1.1" fill="#dbe6ff" opacity="0.55"/>
+<circle cx="310" cy="24" r="1.1" fill="#dbe6ff" opacity="0.60"/>
+<circle cx="904" cy="750" r="0.8" fill="#dbe6ff" opacity="0.19"/>
+<circle cx="131" cy="159" r="1.4" fill="#dbe6ff" opacity="0.18"/>
+<text x="540.0" y="46" font-size="26" fill="#f1f5ff" text-anchor="middle" font-weight="bold" opacity="1.0" letter-spacing="0.5">rhwp 에이전트 로드맵 — 초차원 조망</text>
+<text x="540.0" y="72" font-size="13" fill="#8fa3cc" text-anchor="middle" font-weight="normal" opacity="1.0">M100 통합 좌표 · 한 축 정렬 (R1 → R200 → 10년 사다리) · 211 항목 · 2026-08-10 실측</text>
+<line x1="64" y1="596" x2="1006" y2="596" stroke="url(#axis)" stroke-width="3.5" filter="url(#glow)"/>
+<path d="M 1006 589 L 1022 596 L 1006 603 Z" fill="#e879f9" filter="url(#glow)"/>
+<circle cx="64" cy="596" r="13" fill="#fde68a" filter="url(#glow2)"/>
+<circle cx="64" cy="596" r="5.5" fill="#fff7d6"/>
+<text x="64" y="634" font-size="11.5" fill="#fde68a" text-anchor="middle" font-weight="bold" opacity="1.0">조망 #3907</text>
+<text x="64" y="649" font-size="10" fill="#b8a76a" text-anchor="middle" font-weight="normal" opacity="1.0">(M100)</text>
+<line x1="96" y1="596" x2="400" y2="596" stroke="#22d3ee" stroke-width="7" opacity="0.28"/>
+<line x1="96" y1="588" x2="96" y2="604" stroke="#22d3ee" stroke-width="2" opacity="0.85"/>
+<line x1="400" y1="588" x2="400" y2="604" stroke="#22d3ee" stroke-width="2" opacity="0.85"/>
+<text x="248.0" y="622" font-size="12" fill="#22d3ee" text-anchor="middle" font-weight="bold" opacity="1.0">R1–R100 · 표면</text>
+<line x1="400" y1="596" x2="664" y2="596" stroke="#818cf8" stroke-width="7" opacity="0.28"/>
+<line x1="400" y1="588" x2="400" y2="604" stroke="#818cf8" stroke-width="2" opacity="0.85"/>
+<line x1="664" y1="588" x2="664" y2="604" stroke="#818cf8" stroke-width="2" opacity="0.85"/>
+<text x="532.0" y="622" font-size="12" fill="#818cf8" text-anchor="middle" font-weight="bold" opacity="1.0">R101–R200 · 지평</text>
+<line x1="664" y1="596" x2="1000" y2="596" stroke="#e879f9" stroke-width="7" opacity="0.28"/>
+<line x1="664" y1="588" x2="664" y2="604" stroke="#e879f9" stroke-width="2" opacity="0.85"/>
+<line x1="1000" y1="588" x2="1000" y2="604" stroke="#e879f9" stroke-width="2" opacity="0.85"/>
+<text x="832.0" y="622" font-size="12" fill="#e879f9" text-anchor="middle" font-weight="bold" opacity="1.0">1년 → 10년 · 검증 사다리</text>
+<text x="535" y="649" font-size="11" fill="#7487b3" text-anchor="middle" font-weight="normal" opacity="1.0">모든 항목은 이 한 축 위의 좌표를 갖는다 — 차원들은 여기서 전개된다</text>
+<text x="96" y="106" font-size="14" fill="#67e8f9" text-anchor="start" font-weight="bold" opacity="1.0">D1 · 표면 (R1–R100, 트랙 A–J)</text>
+<text x="426" y="106" font-size="10.5" fill="#7487b3" text-anchor="start" font-weight="normal" opacity="1.0">완료 35 · 실측 10 · 문서 7 · 이슈 3 · 가설 45</text>
+<text x="96" y="139" font-size="11" fill="#aebadb" text-anchor="start" font-weight="normal" opacity="1.0">A 봉투</text>
+<rect x="188" y="128" width="117.5" height="13" rx="2.5" fill="#4ade80" opacity="0.92"/>
+<text x="246.75" y="138" font-size="9.5" fill="#0b1020" text-anchor="middle" font-weight="bold" opacity="1.0">7</text>
+<rect x="307" y="128" width="15.5" height="13" rx="2.5" fill="#fbbf24" opacity="0.92"/>
+<rect x="324" y="128" width="32.5" height="13" rx="2.5" fill="#475569" opacity="0.92"/>
+<text x="340.25" y="138" font-size="9.5" fill="#e8edfa" text-anchor="middle" font-weight="bold" opacity="1.0">2</text>
+<text x="96" y="172" font-size="11" fill="#aebadb" text-anchor="start" font-weight="normal" opacity="1.0">B 가드·보안</text>
+<rect x="188" y="161" width="49.5" height="13" rx="2.5" fill="#4ade80" opacity="0.92"/>
+<text x="212.75" y="171" font-size="9.5" fill="#0b1020" text-anchor="middle" font-weight="bold" opacity="1.0">3</text>
+<rect x="239" y="161" width="32.5" height="13" rx="2.5" fill="#22d3ee" opacity="0.92"/>
+<text x="255.25" y="171" font-size="9.5" fill="#0b1020" text-anchor="middle" font-weight="bold" opacity="1.0">2</text>
+<rect x="273" y="161" width="15.5" height="13" rx="2.5" fill="#a78bfa" opacity="0.92"/>
+<rect x="290" y="161" width="15.5" height="13" rx="2.5" fill="#fbbf24" opacity="0.92"/>
+<rect x="307" y="161" width="49.5" height="13" rx="2.5" fill="#475569" opacity="0.92"/>
+<text x="331.75" y="171" font-size="9.5" fill="#e8edfa" text-anchor="middle" font-weight="bold" opacity="1.0">3</text>
+<text x="96" y="205" font-size="11" fill="#aebadb" text-anchor="start" font-weight="normal" opacity="1.0">C 동시성</text>
+<rect x="188" y="194" width="15.5" height="13" rx="2.5" fill="#22d3ee" opacity="0.92"/>
+<rect x="205" y="194" width="49.5" height="13" rx="2.5" fill="#a78bfa" opacity="0.92"/>
+<text x="229.75" y="204" font-size="9.5" fill="#e8edfa" text-anchor="middle" font-weight="bold" opacity="1.0">3</text>
+<rect x="256" y="194" width="100.5" height="13" rx="2.5" fill="#475569" opacity="0.92"/>
+<text x="306.25" y="204" font-size="9.5" fill="#e8edfa" text-anchor="middle" font-weight="bold" opacity="1.0">6</text>
+<text x="96" y="238" font-size="11" fill="#aebadb" text-anchor="start" font-weight="normal" opacity="1.0">D 발견</text>
+<rect x="188" y="227" width="100.5" height="13" rx="2.5" fill="#4ade80" opacity="0.92"/>
+<text x="238.25" y="237" font-size="9.5" fill="#0b1020" text-anchor="middle" font-weight="bold" opacity="1.0">6</text>
+<rect x="290" y="227" width="15.5" height="13" rx="2.5" fill="#22d3ee" opacity="0.92"/>
+<rect x="307" y="227" width="15.5" height="13" rx="2.5" fill="#fbbf24" opacity="0.92"/>
+<rect x="324" y="227" width="32.5" height="13" rx="2.5" fill="#475569" opacity="0.92"/>
+<text x="340.25" y="237" font-size="9.5" fill="#e8edfa" text-anchor="middle" font-weight="bold" opacity="1.0">2</text>
+<text x="96" y="271" font-size="11" fill="#aebadb" text-anchor="start" font-weight="normal" opacity="1.0">E 실물 능력</text>
+<rect x="188" y="260" width="117.5" height="13" rx="2.5" fill="#4ade80" opacity="0.92"/>
+<text x="246.75" y="270" font-size="9.5" fill="#0b1020" text-anchor="middle" font-weight="bold" opacity="1.0">7</text>
+<rect x="307" y="260" width="49.5" height="13" rx="2.5" fill="#475569" opacity="0.92"/>
+<text x="331.75" y="270" font-size="9.5" fill="#e8edfa" text-anchor="middle" font-weight="bold" opacity="1.0">3</text>
+<text x="96" y="304" font-size="11" fill="#aebadb" text-anchor="start" font-weight="normal" opacity="1.0">F 규모</text>
+<rect x="188" y="293" width="15.5" height="13" rx="2.5" fill="#4ade80" opacity="0.92"/>
+<rect x="205" y="293" width="32.5" height="13" rx="2.5" fill="#22d3ee" opacity="0.92"/>
+<text x="221.25" y="303" font-size="9.5" fill="#0b1020" text-anchor="middle" font-weight="bold" opacity="1.0">2</text>
+<rect x="239" y="293" width="117.5" height="13" rx="2.5" fill="#475569" opacity="0.92"/>
+<text x="297.75" y="303" font-size="9.5" fill="#e8edfa" text-anchor="middle" font-weight="bold" opacity="1.0">7</text>
+<text x="96" y="337" font-size="11" fill="#aebadb" text-anchor="start" font-weight="normal" opacity="1.0">G 바인딩</text>
+<rect x="188" y="326" width="15.5" height="13" rx="2.5" fill="#4ade80" opacity="0.92"/>
+<rect x="205" y="326" width="15.5" height="13" rx="2.5" fill="#22d3ee" opacity="0.92"/>
+<rect x="222" y="326" width="32.5" height="13" rx="2.5" fill="#a78bfa" opacity="0.92"/>
+<text x="238.25" y="336" font-size="9.5" fill="#e8edfa" text-anchor="middle" font-weight="bold" opacity="1.0">2</text>
+<rect x="256" y="326" width="100.5" height="13" rx="2.5" fill="#475569" opacity="0.92"/>
+<text x="306.25" y="336" font-size="9.5" fill="#e8edfa" text-anchor="middle" font-weight="bold" opacity="1.0">6</text>
+<text x="96" y="370" font-size="11" fill="#aebadb" text-anchor="start" font-weight="normal" opacity="1.0">H MCP</text>
+<rect x="188" y="359" width="100.5" height="13" rx="2.5" fill="#4ade80" opacity="0.92"/>
+<text x="238.25" y="369" font-size="9.5" fill="#0b1020" text-anchor="middle" font-weight="bold" opacity="1.0">6</text>
+<rect x="290" y="359" width="15.5" height="13" rx="2.5" fill="#a78bfa" opacity="0.92"/>
+<rect x="307" y="359" width="49.5" height="13" rx="2.5" fill="#475569" opacity="0.92"/>
+<text x="331.75" y="369" font-size="9.5" fill="#e8edfa" text-anchor="middle" font-weight="bold" opacity="1.0">3</text>
+<text x="96" y="403" font-size="11" fill="#aebadb" text-anchor="start" font-weight="normal" opacity="1.0">I 표준</text>
+<rect x="188" y="392" width="49.5" height="13" rx="2.5" fill="#4ade80" opacity="0.92"/>
+<text x="212.75" y="402" font-size="9.5" fill="#0b1020" text-anchor="middle" font-weight="bold" opacity="1.0">3</text>
+<rect x="239" y="392" width="117.5" height="13" rx="2.5" fill="#475569" opacity="0.92"/>
+<text x="297.75" y="402" font-size="9.5" fill="#e8edfa" text-anchor="middle" font-weight="bold" opacity="1.0">7</text>
+<text x="96" y="436" font-size="11" fill="#aebadb" text-anchor="start" font-weight="normal" opacity="1.0">J 자율</text>
+<rect x="188" y="425" width="15.5" height="13" rx="2.5" fill="#4ade80" opacity="0.92"/>
+<rect x="205" y="425" width="49.5" height="13" rx="2.5" fill="#22d3ee" opacity="0.92"/>
+<text x="229.75" y="435" font-size="9.5" fill="#0b1020" text-anchor="middle" font-weight="bold" opacity="1.0">3</text>
+<rect x="256" y="425" width="100.5" height="13" rx="2.5" fill="#475569" opacity="0.92"/>
+<text x="306.25" y="435" font-size="9.5" fill="#e8edfa" text-anchor="middle" font-weight="bold" opacity="1.0">6</text>
+<line x1="216" y1="460" x2="248" y2="590" stroke="#22d3ee" stroke-width="1" stroke-dasharray="3 5" opacity="0.5"/>
+<text x="96" y="488" font-size="12.5" fill="#a5b4fc" text-anchor="start" font-weight="bold" opacity="1.0">D2 · 지평 (R101–R200, 트랙 L–U) — 전 100항 [지평], 승격 규약 대기</text>
+<g transform="translate(110,516) rotate(45)"><rect x="-7.5" y="-7.5" width="15" height="15" rx="2.5" fill="none" stroke="#818cf8" stroke-width="1.6" opacity="0.8"/></g>
+<text x="110" y="521" font-size="9.5" fill="#a5b4fc" text-anchor="middle" font-weight="bold" opacity="1.0">L</text>
+<g transform="translate(150,516) rotate(45)"><rect x="-7.5" y="-7.5" width="15" height="15" rx="2.5" fill="none" stroke="#818cf8" stroke-width="1.6" opacity="0.8"/></g>
+<text x="150" y="521" font-size="9.5" fill="#a5b4fc" text-anchor="middle" font-weight="bold" opacity="1.0">M</text>
+<g transform="translate(190,516) rotate(45)"><rect x="-7.5" y="-7.5" width="15" height="15" rx="2.5" fill="none" stroke="#818cf8" stroke-width="1.6" opacity="0.8"/></g>
+<text x="190" y="521" font-size="9.5" fill="#a5b4fc" text-anchor="middle" font-weight="bold" opacity="1.0">N</text>
+<g transform="translate(230,516) rotate(45)"><rect x="-7.5" y="-7.5" width="15" height="15" rx="2.5" fill="none" stroke="#818cf8" stroke-width="1.6" opacity="0.8"/></g>
+<text x="230" y="521" font-size="9.5" fill="#a5b4fc" text-anchor="middle" font-weight="bold" opacity="1.0">O</text>
+<g transform="translate(270,516) rotate(45)"><rect x="-7.5" y="-7.5" width="15" height="15" rx="2.5" fill="none" stroke="#818cf8" stroke-width="1.6" opacity="0.8"/></g>
+<text x="270" y="521" font-size="9.5" fill="#a5b4fc" text-anchor="middle" font-weight="bold" opacity="1.0">P</text>
+<g transform="translate(310,516) rotate(45)"><rect x="-7.5" y="-7.5" width="15" height="15" rx="2.5" fill="none" stroke="#818cf8" stroke-width="1.6" opacity="0.8"/></g>
+<text x="310" y="521" font-size="9.5" fill="#a5b4fc" text-anchor="middle" font-weight="bold" opacity="1.0">Q</text>
+<g transform="translate(350,516) rotate(45)"><rect x="-7.5" y="-7.5" width="15" height="15" rx="2.5" fill="none" stroke="#818cf8" stroke-width="1.6" opacity="0.8"/></g>
+<text x="350" y="521" font-size="9.5" fill="#a5b4fc" text-anchor="middle" font-weight="bold" opacity="1.0">R</text>
+<g transform="translate(390,516) rotate(45)"><rect x="-7.5" y="-7.5" width="15" height="15" rx="2.5" fill="none" stroke="#818cf8" stroke-width="1.6" opacity="0.8"/></g>
+<text x="390" y="521" font-size="9.5" fill="#a5b4fc" text-anchor="middle" font-weight="bold" opacity="1.0">S</text>
+<g transform="translate(430,516) rotate(45)"><rect x="-7.5" y="-7.5" width="15" height="15" rx="2.5" fill="none" stroke="#818cf8" stroke-width="1.6" opacity="0.8"/></g>
+<text x="430" y="521" font-size="9.5" fill="#a5b4fc" text-anchor="middle" font-weight="bold" opacity="1.0">T</text>
+<g transform="translate(470,516) rotate(45)"><rect x="-7.5" y="-7.5" width="15" height="15" rx="2.5" fill="none" stroke="#818cf8" stroke-width="1.6" opacity="0.8"/></g>
+<text x="470" y="521" font-size="9.5" fill="#a5b4fc" text-anchor="middle" font-weight="bold" opacity="1.0">U</text>
+<line x1="296" y1="534" x2="532" y2="590" stroke="#818cf8" stroke-width="1" stroke-dasharray="3 5" opacity="0.5"/>
+<line x1="668" y1="548" x2="986" y2="122" stroke="url(#ladder)" stroke-width="2.5" opacity="0.85" filter="url(#glow)"/>
+<text x="889.0" y="431.0" font-size="14" fill="#f0abfc" text-anchor="middle" font-weight="bold" opacity="1.0">D3 · 시간 (검증 사다리)</text>
+<circle cx="668.0" cy="548.0" r="8" fill="#38bdf8" filter="url(#glow)"/>
+<circle cx="668.0" cy="548.0" r="3.2" fill="#e0f2fe"/>
+<text x="668.0" y="532.0" font-size="10.5" fill="#e8edfa" text-anchor="middle" font-weight="bold" opacity="1.0">1년 영수증</text>
+<text x="668.0" y="544.0" font-size="9" fill="#8fa3cc" text-anchor="middle" font-weight="normal" opacity="1.0">#4392</text>
+<circle cx="699.8" cy="505.4" r="8" fill="#38bdf8" filter="url(#glow)"/>
+<circle cx="699.8" cy="505.4" r="3.2" fill="#e0f2fe"/>
+<text x="699.8" y="529.4" font-size="10.5" fill="#e8edfa" text-anchor="middle" font-weight="bold" opacity="1.0">2년 감사</text>
+<text x="699.8" y="541.4" font-size="9" fill="#8fa3cc" text-anchor="middle" font-weight="normal" opacity="1.0">#4399</text>
+<circle cx="731.6" cy="462.8" r="8" fill="#38bdf8" filter="url(#glow)"/>
+<circle cx="731.6" cy="462.8" r="3.2" fill="#e0f2fe"/>
+<text x="731.6" y="446.8" font-size="10.5" fill="#e8edfa" text-anchor="middle" font-weight="bold" opacity="1.0">3년 계보</text>
+<text x="731.6" y="458.8" font-size="9" fill="#8fa3cc" text-anchor="middle" font-weight="normal" opacity="1.0">#4406</text>
+<circle cx="763.4" cy="420.2" r="7.5" fill="#0d1226" stroke="#e879f9" stroke-width="2"/>
+<text x="763.4" y="444.2" font-size="10.5" fill="#e8edfa" text-anchor="middle" font-weight="bold" opacity="1.0">합류 DAG</text>
+<text x="763.4" y="456.2" font-size="9" fill="#8fa3cc" text-anchor="middle" font-weight="normal" opacity="1.0">#4410</text>
+<circle cx="795.2" cy="377.6" r="7.5" fill="#0d1226" stroke="#e879f9" stroke-width="2"/>
+<text x="795.2" y="361.6" font-size="10.5" fill="#e8edfa" text-anchor="middle" font-weight="bold" opacity="1.0">4년 서명</text>
+<text x="795.2" y="373.6" font-size="9" fill="#8fa3cc" text-anchor="middle" font-weight="normal" opacity="1.0">#4455</text>
+<circle cx="827.0" cy="335.0" r="7.5" fill="#0d1226" stroke="#e879f9" stroke-width="2"/>
+<text x="827.0" y="359.0" font-size="10.5" fill="#e8edfa" text-anchor="middle" font-weight="bold" opacity="1.0">5년 앵커</text>
+<text x="827.0" y="371.0" font-size="9" fill="#8fa3cc" text-anchor="middle" font-weight="normal" opacity="1.0">#4456</text>
+<circle cx="858.8" cy="292.4" r="7.5" fill="#0d1226" stroke="#e879f9" stroke-width="2"/>
+<text x="858.8" y="276.4" font-size="10.5" fill="#e8edfa" text-anchor="middle" font-weight="bold" opacity="1.0">6년 게이트</text>
+<text x="858.8" y="288.4" font-size="9" fill="#8fa3cc" text-anchor="middle" font-weight="normal" opacity="1.0">#4457</text>
+<circle cx="890.6" cy="249.8" r="7.5" fill="#0d1226" stroke="#e879f9" stroke-width="2"/>
+<text x="890.6" y="273.8" font-size="10.5" fill="#e8edfa" text-anchor="middle" font-weight="bold" opacity="1.0">7년 연합</text>
+<text x="890.6" y="285.8" font-size="9" fill="#8fa3cc" text-anchor="middle" font-weight="normal" opacity="1.0">#4458</text>
+<circle cx="922.4" cy="207.2" r="7.5" fill="#0d1226" stroke="#e879f9" stroke-width="2"/>
+<text x="922.4" y="191.2" font-size="10.5" fill="#e8edfa" text-anchor="middle" font-weight="bold" opacity="1.0">8년 공개</text>
+<text x="922.4" y="203.2" font-size="9" fill="#8fa3cc" text-anchor="middle" font-weight="normal" opacity="1.0">#4459</text>
+<circle cx="954.2" cy="164.6" r="7.5" fill="#0d1226" stroke="#e879f9" stroke-width="2"/>
+<text x="954.2" y="188.59999999999997" font-size="10.5" fill="#e8edfa" text-anchor="middle" font-weight="bold" opacity="1.0">9년 정산</text>
+<text x="954.2" y="200.59999999999997" font-size="9" fill="#8fa3cc" text-anchor="middle" font-weight="normal" opacity="1.0">#4460</text>
+<circle cx="986.0" cy="122.0" r="7.5" fill="#0d1226" stroke="#e879f9" stroke-width="2"/>
+<text x="986.0" y="106.0" font-size="10.5" fill="#e8edfa" text-anchor="middle" font-weight="bold" opacity="1.0">10년 표준</text>
+<text x="986.0" y="118.0" font-size="9" fill="#8fa3cc" text-anchor="middle" font-weight="normal" opacity="1.0">#4461</text>
+<line x1="668" y1="548" x2="832" y2="590" stroke="#e879f9" stroke-width="1" stroke-dasharray="3 5" opacity="0.5"/>
+<circle cx="672" cy="88" r="6.5" fill="#38bdf8"/>
+<text x="684" y="92" font-size="10" fill="#9fb0d6" text-anchor="start" font-weight="normal" opacity="1.0">구현 PR 제출(머지 대기)</text>
+<circle cx="836" cy="88" r="6" fill="#0d1226" stroke="#e879f9" stroke-width="2"/>
+<text x="848" y="92" font-size="10" fill="#9fb0d6" text-anchor="start" font-weight="normal" opacity="1.0">[지평] 설계서 PR</text>
+<text x="96" y="676" font-size="12.5" fill="#fbbf24" text-anchor="start" font-weight="bold" opacity="1.0">D4 · 실행 깊이</text>
+<circle cx="216" cy="672" r="5" fill="#fbbf24" opacity="0.35"/>
+<line x1="224" y1="672" x2="308" y2="672" stroke="#fbbf24" stroke-width="1" opacity="0.35"/>
+<text x="228" y="676" font-size="10.5" fill="#d8c07a" text-anchor="start" font-weight="normal" opacity="1.0">M1 설계</text>
+<circle cx="318" cy="672" r="5" fill="#fbbf24" opacity="0.55"/>
+<line x1="326" y1="672" x2="410" y2="672" stroke="#fbbf24" stroke-width="1" opacity="0.35"/>
+<text x="330" y="676" font-size="10.5" fill="#d8c07a" text-anchor="start" font-weight="normal" opacity="1.0">M2 구현</text>
+<circle cx="420" cy="672" r="5" fill="#fbbf24" opacity="0.75"/>
+<line x1="428" y1="672" x2="512" y2="672" stroke="#fbbf24" stroke-width="1" opacity="0.35"/>
+<text x="432" y="676" font-size="10.5" fill="#d8c07a" text-anchor="start" font-weight="normal" opacity="1.0">M3 통합</text>
+<circle cx="522" cy="672" r="5" fill="#fbbf24" opacity="0.9500000000000001"/>
+<text x="534" y="676" font-size="10.5" fill="#d8c07a" text-anchor="start" font-weight="normal" opacity="1.0">M4 표준</text>
+<text x="96" y="712" font-size="12.5" fill="#94a3b8" text-anchor="start" font-weight="bold" opacity="1.0">D5 · 등급</text>
+<rect x="196" y="701" width="13" height="13" rx="3" fill="#4ade80"/>
+<text x="214" y="712" font-size="10.5" fill="#9fb0d6" text-anchor="start" font-weight="normal" opacity="1.0">완료</text>
+<rect x="272" y="701" width="13" height="13" rx="3" fill="#22d3ee"/>
+<text x="290" y="712" font-size="10.5" fill="#9fb0d6" text-anchor="start" font-weight="normal" opacity="1.0">실측</text>
+<rect x="348" y="701" width="13" height="13" rx="3" fill="#a78bfa"/>
+<text x="366" y="712" font-size="10.5" fill="#9fb0d6" text-anchor="start" font-weight="normal" opacity="1.0">문서</text>
+<rect x="424" y="701" width="13" height="13" rx="3" fill="#fbbf24"/>
+<text x="442" y="712" font-size="10.5" fill="#9fb0d6" text-anchor="start" font-weight="normal" opacity="1.0">이슈</text>
+<rect x="500" y="701" width="13" height="13" rx="3" fill="#475569"/>
+<text x="518" y="712" font-size="10.5" fill="#9fb0d6" text-anchor="start" font-weight="normal" opacity="1.0">가설</text>
+<rect x="576" y="701" width="13" height="13" rx="3" fill="#818cf8"/>
+<text x="594" y="712" font-size="10.5" fill="#9fb0d6" text-anchor="start" font-weight="normal" opacity="1.0">지평</text>
+<text x="96" y="738" font-size="10" fill="#5b6c94" text-anchor="start" font-weight="normal" opacity="1.0">규약: 완료 표기는 머지 링크와 함께만 · 착수는 근거가 결정 · 등급 실측 = tools/roadmap_progress.py</text>
+</svg>

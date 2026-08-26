@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5329,
+  "notGym": true,
+  "noNewCli": true,
+  "id": "T26",
+  "title": "sequence URL",
+  "stop": "F02",
+  "steps": [
+    "p52-p53"
+  ],
+  "tool": "tools/fidelity_compare/fidelity_compare.py"
+}

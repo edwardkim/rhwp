@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workCapsule",
+  "parent": {
+    "capsule": "b.capsule.json",
+    "sha256": "629160b17235d0b3d8d827b87c1aec7e48d70687bd9a1e3ada390efd344cd95d"
+  },
+  "plan": {
+    "planVersion": "1.0",
+    "input": "out/chain_deadline.hwp",
+    "output": "out/grand.hwp",
+    "steps": [
+      {
+        "action": "replace_text",
+        "find": "4월 15일",
+        "replace": "4월 30일"
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"out/chain_deadline.hwp\",\"output\":\"out/grand.hwp\",\"steps\":[{\"action\":\"replace_text\",\"find\":\"4월 15일\",\"replace\":\"4월 30일\"}]}",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "inputSha256": "6273000b7e8c7c9a4b54257d1f4cdf15ef1814be7025584d46d4158cf74bbaf1",
+    "planSha256": "29b2cefd07f70633b2468cf142c0dc4f914dff1993f91c4646d198262a9e1040",
+    "outputSha256": "203e81caa3de86b2dc02f46ba7ed68df418b9263d0ce59fbab3b33826da883fa",
+    "toolVersion": "0.8.4",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null,
+    "untrustedContent": false,
+    "untrustedFields": []
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "id": "CD23",
+  "steps": [
+    {
+      "answer": {
+        "identical": {
+          "cmd": [
+            "ir-diff",
+            "{input}",
+            "samples/hwpx/2026_oss_rst.hwpx",
+            "--json"
+          ],
+          "path": "identical",
+          "allowExits": [
+            0,
+            3
+          ]
+        }
+      }
+    }
+  ]
+}

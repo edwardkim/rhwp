@@ -1,0 +1,68 @@
+{
+  "id": "uni-tag-ignore-payload",
+  "issue": 5476,
+  "axis": "unicode",
+  "family": "tag_char",
+  "polarity": "positive",
+  "sourceRule": {
+    "file": "src/document_core/text_security.rs",
+    "symbol": "is_tag_char",
+    "note": "U+E0000..E007F. 숨은 ASCII 복원은 hidden 필드."
+  },
+  "cli": {
+    "argv": [
+      "inspect",
+      "unicode",
+      "synth:unicode/tag/ignore.hwp",
+      "--json"
+    ],
+    "exitCode": 0,
+    "stdoutKind": "json-object",
+    "detectionIsNotFailure": true
+  },
+  "consume": {
+    "branch": "findings[0].hidden",
+    "hidden": "Ignore"
+  },
+  "pair": null,
+  "why": "태그 문자로 실어 나른 숨은 지시 Ignore.",
+  "note": "정상 문서에 있을 이유가 없다.",
+  "human": "숨은 내용  : Ignore\n",
+  "inventedRule": false,
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "synth:unicode/tag/ignore.hwp",
+    "kindFilter": "all",
+    "scannedChars": 11,
+    "findings": [
+      {
+        "kind": "tag_char",
+        "codepoint": "U+E0049",
+        "severity": "high",
+        "section": 0,
+        "paragraph": 0,
+        "location": "body",
+        "charOffset": 0,
+        "runLength": 6,
+        "excerpt": "Total<U+E0049><U+E0067><U+E006E><U+E006F><U+E0072><U+E0065>",
+        "rendered": "Total",
+        "raw": "Total<U+E0049><U+E0067><U+E006E><U+E006F><U+E0072><U+E0065>",
+        "why": "렌더링되지 않는 태그 문자입니다 — 화면에 흔적 없이 지시를 실어 나르는 채널입니다",
+        "hidden": "Ignore"
+      }
+    ],
+    "findingCount": 1,
+    "clean": false,
+    "severityCounts": {
+      "high": 1,
+      "medium": 0,
+      "low": 0
+    },
+    "kindCounts": {
+      "zero_width": 0,
+      "bidi_override": 0,
+      "tag_char": 1,
+      "confusable": 0
+    }
+  }
+}

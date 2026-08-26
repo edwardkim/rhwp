@@ -1,0 +1,33 @@
+{
+  "id": "FJ21",
+  "steps": [
+    {
+      "answer": {
+        "dryRun": {
+          "cmd": [
+            "edit",
+            "fill-fields",
+            "{input}",
+            "--data",
+            "{\"작성자\": \"미리보기작성자\"}",
+            "--dry-run",
+            "--json"
+          ],
+          "path": "dryRun"
+        },
+        "filledCount": {
+          "cmd": [
+            "edit",
+            "fill-fields",
+            "{input}",
+            "--data",
+            "{\"작성자\": \"미리보기작성자\"}",
+            "--dry-run",
+            "--json"
+          ],
+          "path": "filledCount"
+        }
+      }
+    }
+  ]
+}

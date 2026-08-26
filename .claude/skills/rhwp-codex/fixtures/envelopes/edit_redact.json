@@ -1,0 +1,30 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5318,
+  "kind": "live",
+  "command": "edit redact",
+  "sourceChapter": "30_편집과_계획.md",
+  "cmd": "rhwp edit redact samples/field-01.hwp --dry-run --json",
+  "exit": 0,
+  "envelope": {
+    "changedPages": null,
+    "dryRun": true,
+    "findingCount": 0,
+    "findings": [],
+    "inPlace": false,
+    "kinds": [
+      "ssn",
+      "card",
+      "… (4개 중 2개 표시)"
+    ],
+    "mask": "*",
+    "noRaw": false,
+    "redactedCount": 0,
+    "schemaVersion": "1.0",
+    "source": "samples/field-01.hwp",
+    "untrustedContent": false,
+    "untrustedFields": []
+  },
+  "extractedFromGenerated": true,
+  "handEdited": false
+}

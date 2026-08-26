@@ -1,0 +1,32 @@
+{
+ "schemaVersion": "1.0",
+ "issue": 5337,
+ "capability": "CAP-4900",
+ "notGym": true,
+ "noNewCli": true,
+ "noNewEditLogic": true,
+ "notFde": true,
+ "notStrategist": true,
+ "routingOnlyViaGoal": true,
+ "requestIsData": true,
+ "id": "TR07",
+ "title": "표 밖 3건은 전부 needs-agent",
+ "argv": [
+  "python3",
+  "tools/chief/service_loop.py",
+  "--queue",
+  "odd",
+  "--bin",
+  "rhwp",
+  "--once"
+ ],
+ "seen": [
+  "Q031",
+  "Q032",
+  "Q033"
+ ],
+ "processed": {
+  "needs-agent": 3
+ },
+ "exit": 0
+}

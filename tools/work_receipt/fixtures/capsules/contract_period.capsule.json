@@ -1,0 +1,30 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workCapsule",
+  "parent": null,
+  "plan": {
+    "planVersion": "1.0",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "output": "out/contract-period.hwp",
+    "steps": [
+      {
+        "action": "replace_text",
+        "find": "계약기간 2026-01-01 ~ 2026-12-31",
+        "replace": "계약기간 2026-01-01 ~ 2027-06-30"
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"samples/basic/issue2007_nested_cell_pagination_42065.hwp\",\"output\":\"out/contract-period.hwp\",\"steps\":[{\"action\":\"replace_text\",\"find\":\"계약기간 2026-01-01 ~ 2026-12-31\",\"replace\":\"계약기간 2026-01-01 ~ 2027-06-30\"}]}",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "inputSha256": "604e2c3be4054da9444a343a675bd692afb589819be2c83ba8b8603cc452434b",
+    "planSha256": "11df42e2712f881ed903baa40e5e2804a918b8052a7fa2897d6d90f42e4503c1",
+    "outputSha256": "28597e49574a636dee3a55326c4f3d59f947d280074c43e7287f455fbd4082a2",
+    "toolVersion": "fixture-0.0.0-not-a-release",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null
+  }
+}

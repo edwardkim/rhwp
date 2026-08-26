@@ -1,0 +1,15 @@
+{
+  "id": "SD27",
+  "steps": [
+    {
+      "answer": {
+        "schemaPolicy": {
+          "cmd": [
+            "capabilities"
+          ],
+          "path": "jsonContract.schemaPolicy"
+        }
+      }
+    }
+  ]
+}

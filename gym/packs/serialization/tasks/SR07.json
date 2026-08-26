@@ -1,0 +1,38 @@
+{
+  "id": "SR07",
+  "tier": 2,
+  "title": "HWPX 원본 조사",
+  "input": "samples/hwpx/143E433F503322BD33.hwpx",
+  "instructions": "HWPX 원본 문서의 쪽수를 answer.json 에 {\"pages\": N} 으로 제출하라 — rhwp 는 HWP 와 HWPX 를 같은 IR 로 읽는다.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "쪽수",
+      "op": "answer_eq",
+      "answer": "pages",
+      "path": "pageCount",
+      "cmd": [
+        "info",
+        "{input}",
+        "--json"
+      ]
+    },
+    {
+      "name": "형식 표기",
+      "op": "value_eq",
+      "value": "hwpx",
+      "path": "format",
+      "cmd": [
+        "info",
+        "{input}",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

@@ -1,0 +1,35 @@
+# M09-1 equation golden — current-engine lock
+command: SQRT
+script: SQRT {a+b}
+
+=== ast ===
+Sqrt {
+    index: None,
+    body: Row(
+        [
+            Text(
+                "a",
+            ),
+            Symbol(
+                "+",
+            ),
+            Text(
+                "b",
+            ),
+        ],
+    ),
+}
+
+=== layout ===
+Sqrt x=0.0000 y=0.0000 w=53.1000 h=24.0000 bl=18.0000
+  body:
+    Row x=13.0000 y=2.0000 w=39.1000 h=20.0000 bl=16.0000
+      Text("a") x=0.0000 y=0.0000 w=11.5500 h=20.0000 bl=16.0000
+      Symbol("+") x=11.5500 y=0.0000 w=16.0000 h=20.0000 bl=16.0000
+      Text("b") x=27.5500 y=0.0000 w=11.5500 h=20.0000 bl=16.0000
+
+=== svg ===
+<path d="M0.00,13.40 L2.00,14.40 L8.00,24.00 L11.00,0.00 L53.10,0.00" fill="none" stroke="#000000" stroke-width="0.80"/>
+<text x="13.00" y="18.00" font-size="20.00" fill="#000000" font-style="italic" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">a</text>
+<text x="32.55" y="18.00" font-size="20.00" fill="#000000" text-anchor="middle" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">+</text>
+<text x="40.55" y="18.00" font-size="20.00" fill="#000000" font-style="italic" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">b</text>

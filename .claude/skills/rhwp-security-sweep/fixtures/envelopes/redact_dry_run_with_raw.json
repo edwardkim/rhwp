@@ -1,0 +1,58 @@
+{
+  "schemaVersion": "1.0",
+  "source": "output/pii-demo.hwp",
+  "kinds": [
+    "ssn",
+    "card",
+    "phone",
+    "email"
+  ],
+  "mask": "*",
+  "dryRun": true,
+  "inPlace": false,
+  "noRaw": false,
+  "findingCount": 4,
+  "findings": [
+    {
+      "kind": "card",
+      "masked": "****-****-****-****",
+      "section": 0,
+      "paragraph": 7,
+      "page": 0,
+      "charOffset": 10,
+      "raw": "4111-1111-1111-1111"
+    },
+    {
+      "kind": "ssn",
+      "masked": "******-*******",
+      "section": 0,
+      "paragraph": 8,
+      "page": 0,
+      "charOffset": 11,
+      "raw": "900101-1234568"
+    },
+    {
+      "kind": "phone",
+      "masked": "***-****-****",
+      "section": 0,
+      "paragraph": 10,
+      "page": 0,
+      "charOffset": 7,
+      "raw": "010-1234-5678"
+    },
+    {
+      "kind": "email",
+      "masked": "****@*******.***",
+      "section": 0,
+      "paragraph": 11,
+      "page": 0,
+      "charOffset": 9,
+      "raw": "hong@example.com"
+    }
+  ],
+  "redactedCount": 0,
+  "changedPages": null,
+  "exitCode": 0,
+  "note": "레시피 3 실측 형태. 미끼 2건(900101-1234567, 1234-5678-9012-3456)은 없음.",
+  "warning": "자동화 로그에 이 봉투를 붙이지 말 것. raw 키가 있다."
+}

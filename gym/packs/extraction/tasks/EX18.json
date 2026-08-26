@@ -1,0 +1,25 @@
+{
+  "id": "EX18",
+  "tier": 2,
+  "title": "차트 데이터 — 묶은세로막대형 HWPX",
+  "input": "samples/chart/세로막대형/묶은세로막대형.hwpx",
+  "instructions": "EX01 의 HWPX 쌍이다. chart-to-csv --chart 1 의 rowCount 를 보고하라. 답 형식: {\"rows\": <수>}.",
+  "submit": {
+    "kind": "answer"
+  },
+  "checks": [
+    {
+      "name": "rows 일치",
+      "op": "answer_eq",
+      "answer": "rows",
+      "cmd": [
+        "chart-to-csv",
+        "{input}",
+        "--chart",
+        "1",
+        "--json"
+      ],
+      "path": "charts[0].rowCount"
+    }
+  ]
+}

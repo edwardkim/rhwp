@@ -1,0 +1,25 @@
+{
+  "id": "OP41",
+  "steps": [
+    {
+      "answer": {
+        "fields": {
+          "cmd": [
+            "fields",
+            "{input}",
+            "--json"
+          ],
+          "path": "fieldCount"
+        },
+        "pages": {
+          "cmd": [
+            "info",
+            "{input}",
+            "--json"
+          ],
+          "path": "pageCount"
+        }
+      }
+    }
+  ]
+}

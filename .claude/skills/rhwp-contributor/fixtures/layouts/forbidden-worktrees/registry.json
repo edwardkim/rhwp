@@ -1,0 +1,17 @@
+{
+  "skill": "rhwp-contributor",
+  "issue": 5322,
+  "forbidden": [
+    "C:\\Users\\swsz9\\rhwp",
+    "C:\\Users\\swsz9\\rhwp-desk",
+    "C:\\Users\\swsz9\\rhwp-desk-design",
+    "C:\\Users\\swsz9\\rhwp-handoff",
+    "C:\\Users\\swsz9\\rhwp-scaffold-final",
+    "C:\\Users\\swsz9\\rhwp-doc-repro"
+  ],
+  "forbiddenGlobs": [
+    "C:\\\\Users\\\\swsz9\\\\rhwp-desk*"
+  ],
+  "rule": "never steal named worktrees",
+  "allowedExample": "C:\\\\Users\\\\swsz9\\\\rhwp-agent-contributor"
+}

@@ -1,0 +1,5207 @@
+{
+  "schemaVersion": "v-step.1.0",
+  "generatedBy": "tools/llm_verifier/process_steps/generate_corpus.py",
+  "recordCount": 6912,
+  "shardCount": 288,
+  "stepKindCounts": {
+    "fill-fields": 691,
+    "replace-text": 692,
+    "delete-text": 692,
+    "insert-text": 692,
+    "redact": 692,
+    "sanitize": 692,
+    "csv-to-table": 691,
+    "insert-table": 690,
+    "delete-row": 690,
+    "apply-char-format": 690
+  },
+  "rewardPassCount": 1381,
+  "rewardFailCount": 5531,
+  "uniqueness": "stepKind+stepIndex+checkFingerprints+processReward+sourceTag",
+  "shards": [
+    {
+      "path": "shards/000.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/001.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/002.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/003.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 6,
+      "rewardFail": 18
+    },
+    {
+      "path": "shards/004.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/005.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/006.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/007.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/008.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 6,
+      "rewardFail": 18
+    },
+    {
+      "path": "shards/009.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/010.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/011.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/012.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/013.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 6,
+      "rewardFail": 18
+    },
+    {
+      "path": "shards/014.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/015.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/016.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/017.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/018.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 6,
+      "rewardFail": 18
+    },
+    {
+      "path": "shards/019.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/020.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/021.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/022.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/023.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 6,
+      "rewardFail": 18
+    },
+    {
+      "path": "shards/024.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/025.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/026.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/027.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/028.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 6,
+      "rewardFail": 18
+    },
+    {
+      "path": "shards/029.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/030.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/031.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/032.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/033.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 6,
+      "rewardFail": 18
+    },
+    {
+      "path": "shards/034.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/035.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/036.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/037.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/038.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 6,
+      "rewardFail": 18
+    },
+    {
+      "path": "shards/039.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/040.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/041.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/042.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/043.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 6,
+      "rewardFail": 18
+    },
+    {
+      "path": "shards/044.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/045.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/046.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/047.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/048.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 6,
+      "rewardFail": 18
+    },
+    {
+      "path": "shards/049.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/050.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/051.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/052.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/053.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 6,
+      "rewardFail": 18
+    },
+    {
+      "path": "shards/054.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/055.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/056.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/057.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/058.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 6,
+      "rewardFail": 18
+    },
+    {
+      "path": "shards/059.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/060.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/061.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/062.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/063.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 6,
+      "rewardFail": 18
+    },
+    {
+      "path": "shards/064.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/065.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/066.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/067.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/068.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 6,
+      "rewardFail": 18
+    },
+    {
+      "path": "shards/069.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/070.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/071.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/072.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/073.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 6,
+      "rewardFail": 18
+    },
+    {
+      "path": "shards/074.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/075.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/076.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/077.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/078.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 6,
+      "rewardFail": 18
+    },
+    {
+      "path": "shards/079.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/080.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/081.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/082.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/083.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 6,
+      "rewardFail": 18
+    },
+    {
+      "path": "shards/084.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/085.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/086.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/087.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/088.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 6,
+      "rewardFail": 18
+    },
+    {
+      "path": "shards/089.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/090.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/091.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/092.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/093.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 6,
+      "rewardFail": 18
+    },
+    {
+      "path": "shards/094.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/095.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/096.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/097.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/098.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 6,
+      "rewardFail": 18
+    },
+    {
+      "path": "shards/099.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/100.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/101.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/102.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/103.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 6,
+      "rewardFail": 18
+    },
+    {
+      "path": "shards/104.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/105.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/106.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/107.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/108.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 6,
+      "rewardFail": 18
+    },
+    {
+      "path": "shards/109.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/110.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/111.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/112.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/113.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 6,
+      "rewardFail": 18
+    },
+    {
+      "path": "shards/114.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/115.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/116.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/117.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/118.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 6,
+      "rewardFail": 18
+    },
+    {
+      "path": "shards/119.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/120.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/121.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/122.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/123.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 6,
+      "rewardFail": 18
+    },
+    {
+      "path": "shards/124.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/125.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/126.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/127.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/128.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 6,
+      "rewardFail": 18
+    },
+    {
+      "path": "shards/129.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/130.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/131.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/132.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/133.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 6,
+      "rewardFail": 18
+    },
+    {
+      "path": "shards/134.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/135.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/136.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/137.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/138.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 6,
+      "rewardFail": 18
+    },
+    {
+      "path": "shards/139.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/140.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/141.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/142.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/143.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 6,
+      "rewardFail": 18
+    },
+    {
+      "path": "shards/144.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/145.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/146.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/147.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/148.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 6,
+      "rewardFail": 18
+    },
+    {
+      "path": "shards/149.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/150.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/151.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/152.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/153.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 6,
+      "rewardFail": 18
+    },
+    {
+      "path": "shards/154.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/155.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/156.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/157.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/158.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 6,
+      "rewardFail": 18
+    },
+    {
+      "path": "shards/159.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/160.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/161.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/162.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/163.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 6,
+      "rewardFail": 18
+    },
+    {
+      "path": "shards/164.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/165.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/166.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/167.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/168.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 6,
+      "rewardFail": 18
+    },
+    {
+      "path": "shards/169.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/170.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/171.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/172.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/173.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 6,
+      "rewardFail": 18
+    },
+    {
+      "path": "shards/174.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/175.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/176.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/177.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/178.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 6,
+      "rewardFail": 18
+    },
+    {
+      "path": "shards/179.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/180.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/181.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/182.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/183.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 6,
+      "rewardFail": 18
+    },
+    {
+      "path": "shards/184.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/185.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/186.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/187.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/188.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 6,
+      "rewardFail": 18
+    },
+    {
+      "path": "shards/189.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/190.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/191.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/192.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/193.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 6,
+      "rewardFail": 18
+    },
+    {
+      "path": "shards/194.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/195.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/196.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/197.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/198.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 6,
+      "rewardFail": 18
+    },
+    {
+      "path": "shards/199.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/200.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/201.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/202.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/203.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 6,
+      "rewardFail": 18
+    },
+    {
+      "path": "shards/204.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/205.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/206.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/207.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/208.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 6,
+      "rewardFail": 18
+    },
+    {
+      "path": "shards/209.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/210.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/211.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/212.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/213.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 6,
+      "rewardFail": 18
+    },
+    {
+      "path": "shards/214.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/215.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/216.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/217.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/218.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 6,
+      "rewardFail": 18
+    },
+    {
+      "path": "shards/219.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/220.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/221.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/222.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/223.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 6,
+      "rewardFail": 18
+    },
+    {
+      "path": "shards/224.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/225.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/226.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/227.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/228.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 6,
+      "rewardFail": 18
+    },
+    {
+      "path": "shards/229.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/230.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/231.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/232.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/233.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 6,
+      "rewardFail": 18
+    },
+    {
+      "path": "shards/234.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/235.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/236.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/237.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/238.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 6,
+      "rewardFail": 18
+    },
+    {
+      "path": "shards/239.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/240.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/241.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/242.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/243.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 6,
+      "rewardFail": 18
+    },
+    {
+      "path": "shards/244.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/245.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/246.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/247.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/248.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 6,
+      "rewardFail": 18
+    },
+    {
+      "path": "shards/249.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/250.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/251.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/252.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/253.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 6,
+      "rewardFail": 18
+    },
+    {
+      "path": "shards/254.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/255.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/256.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/257.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/258.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 6,
+      "rewardFail": 18
+    },
+    {
+      "path": "shards/259.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/260.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/261.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/262.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/263.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 6,
+      "rewardFail": 18
+    },
+    {
+      "path": "shards/264.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/265.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/266.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/267.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/268.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 6,
+      "rewardFail": 18
+    },
+    {
+      "path": "shards/269.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/270.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/271.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/272.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/273.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 6,
+      "rewardFail": 18
+    },
+    {
+      "path": "shards/274.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/275.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/276.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/277.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/278.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 6,
+      "rewardFail": 18
+    },
+    {
+      "path": "shards/279.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/280.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/281.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/282.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/283.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 6,
+      "rewardFail": 18
+    },
+    {
+      "path": "shards/284.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/285.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 5,
+      "rewardFail": 19
+    },
+    {
+      "path": "shards/286.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    },
+    {
+      "path": "shards/287.json",
+      "count": 24,
+      "stepKinds": [
+        "apply-char-format",
+        "csv-to-table",
+        "delete-row",
+        "delete-text",
+        "fill-fields",
+        "insert-table",
+        "insert-text",
+        "redact",
+        "replace-text",
+        "sanitize"
+      ],
+      "rewardPass": 4,
+      "rewardFail": 20
+    }
+  ]
+}

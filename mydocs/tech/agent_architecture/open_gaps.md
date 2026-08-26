@@ -2,10 +2,13 @@
 kind: reference
 status: active
 canonical: mydocs/tech/agent_architecture/layer_model.md
-last_verified: 2026-08-03
+last_verified: 2026-08-12
 ---
 
 # 미해결 공백 대장
+
+> **v0.8.4 현행성 주의:** Python·Node 바인딩 관련 공백은 #4655의 철회 결정으로
+> 닫혔다. 관련 경로와 테스트 언급은 당시 진단 기록이며 현재 백로그가 아니다.
 
 > 오늘까지 여러 이슈·PR·조사 문서에서 나온 **미해결 항목을 한 곳에** 모은다.
 > 흩어져 있으면 두 번 조사하거나 영영 잊힌다.
@@ -526,9 +529,9 @@ Rhwp.swift  RhwpDocumentTextView.swift
 $ grep -ril fuzz .github/
 (결과 0건)
 $ ls .github/workflows/
-cache-generation-sweep.yml  cancel-stale-pr-runs.yml  ci.yml  close-issues-on-devel-push.yml
-codeql.yml  deploy-pages.yml  full-renderer-sweep.yml  node-binding.yml  npm-publish.yml
-python-binding.yml  release-binary.yml  render-diff.yml
+build-nextest-archives.yml  cache-generation-sweep.yml  cancel-stale-pr-runs.yml  ci.yml
+close-issues-on-devel-push.yml  codeql.yml  deploy-pages.yml  full-renderer-sweep.yml
+npm-publish.yml  release-binary.yml  render-diff.yml  run-nextest-archives.yml
 $ ls fuzz/fuzz_targets/
 parse_hml.rs  parse_hwp.rs  parse_hwp3.rs  parse_hwpx.rs  parse_ooxml_chart.rs  parse_wmf.rs
 ```

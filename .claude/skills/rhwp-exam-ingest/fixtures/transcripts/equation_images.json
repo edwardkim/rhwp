@@ -1,0 +1,17 @@
+{
+  "id": "T10",
+  "title": "수식 이미지",
+  "issue": 5319,
+  "notGym": true,
+  "limit": "L-equation",
+  "steps": [
+    {
+      "cmd": "crop 적분 bbox",
+      "expect": "image 블록"
+    },
+    {
+      "cmd": "고지 Equation IR 없음",
+      "expect": "F16"
+    }
+  ]
+}

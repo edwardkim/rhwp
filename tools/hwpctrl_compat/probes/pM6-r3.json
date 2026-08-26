@@ -1,0 +1,90 @@
+{
+  "id": "pM6-r3",
+  "title": "배율 3걸음 뒤 가로 뒤집기 — 이동량 식 검증",
+  "ledger": [],
+  "open": "samples/mix-shape-01.hwp",
+  "paths": {
+    "w": {
+      "win": "{out}/pM6-r3-w.hwp",
+      "posix": "{out}/pM6-r3-w.hwp"
+    },
+    "a": {
+      "win": "{out}/pM6-r3-a.hwp",
+      "posix": "{out}/pM6-r3-a.hwp"
+    },
+    "b": {
+      "win": "{out}/pM6-r3-b.hwp",
+      "posix": "{out}/pM6-r3-b.hwp"
+    }
+  },
+  "calls": [
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "w"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "SetPos",
+      [
+        0,
+        0,
+        0
+      ]
+    ],
+    [
+      "Run",
+      [
+        "SelectCtrlFront"
+      ]
+    ],
+    [
+      "Run",
+      [
+        "ShapeObjResizeRight"
+      ]
+    ],
+    [
+      "Run",
+      [
+        "ShapeObjResizeRight"
+      ]
+    ],
+    [
+      "Run",
+      [
+        "ShapeObjResizeRight"
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "a"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "Run",
+      [
+        "ShapeObjHorzFlip"
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "b"
+        },
+        "HWP",
+        ""
+      ]
+    ]
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workCapsule",
+  "parent": null,
+  "plan": {
+    "planVersion": "1.0",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "output": "out/ws_only.hwp",
+    "steps": [
+      {
+        "action": "replace_text",
+        "find": "  ",
+        "replace": " "
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"samples/basic/issue2007_nested_cell_pagination_42065.hwp\",\"output\":\"out/ws_only.hwp\",\"steps\":[{\"action\":\"replace_text\",\"find\":\"  \",\"replace\":\" \"}]}",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "inputSha256": "84d37f1e8cf88ec056b89d7b7ce0fc1a88f22b91eae88f771aa526597dd7087a",
+    "planSha256": "66d7e44fd8e73b5e4bf6699edabe1eab756ce052d141710f00f875312f95dd11",
+    "outputSha256": "e04a9c332be0b449c60bab11f9a3c3765675fa1b7be44c15818c30a31fb46d74",
+    "toolVersion": "0.8.4",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null,
+    "untrustedContent": false,
+    "untrustedFields": []
+  }
+}

@@ -1,0 +1,205 @@
+{
+  "schema": "oracle_public.issue_drafts/v1",
+  "source_report": "C:\\Users\\swsz9\\rhwp-m01-oracle-fatten\\tools\\oracle_public\\drafts\\examples\\report_cheap_anomalies.json",
+  "threshold": {
+    "metric": "pdf_pages",
+    "op": ">=",
+    "value": 12.0
+  },
+  "drafted": 22,
+  "skipped": 3,
+  "submitted": false,
+  "submit": "manual",
+  "drafts": [
+    {
+      "id": "1342000_edu_curriculum_map",
+      "path": "C:\\Users\\swsz9\\rhwp-m01-oracle-fatten\\tools\\oracle_public\\drafts\\examples\\1342000_edu_curriculum_map.md",
+      "reason": "pdf_pages=415 >= 12",
+      "metric": "pdf_pages",
+      "value": 415.0,
+      "repro": "python tools/oracle_public/page_smoke.py --pair samples/task2287/1342000_edu_curriculum_map.hwp pdf/task2287/1342000_edu_curriculum_map-2022.pdf"
+    },
+    {
+      "id": "2025 행정업무운영 편람(최종)",
+      "path": "C:\\Users\\swsz9\\rhwp-m01-oracle-fatten\\tools\\oracle_public\\drafts\\examples\\2025-행정업무운영-편람-최종.md",
+      "reason": "pdf_pages=383 >= 12",
+      "metric": "pdf_pages",
+      "value": 383.0,
+      "repro": "python tools/oracle_public/page_smoke.py --pair samples/2025 행정업무운영 편람(최종).hwp pdf/2025 행정업무운영 편람(최종)-2020-kopub.pdf"
+    },
+    {
+      "id": "2025 행정업무운영 편람(최종)",
+      "path": "C:\\Users\\swsz9\\rhwp-m01-oracle-fatten\\tools\\oracle_public\\drafts\\examples\\2025-행정업무운영-편람-최종-2.md",
+      "reason": "pdf_pages=383 >= 12",
+      "metric": "pdf_pages",
+      "value": 383.0,
+      "repro": "python tools/oracle_public/page_smoke.py --pair samples/2025 행정업무운영 편람(최종).hwpx pdf/2025 행정업무운영 편람(최종)-2020-kopub.pdf"
+    },
+    {
+      "id": "2025 행정업무운영 편람(최종)",
+      "path": "C:\\Users\\swsz9\\rhwp-m01-oracle-fatten\\tools\\oracle_public\\drafts\\examples\\2025-행정업무운영-편람-최종-3.md",
+      "reason": "pdf_pages=383 >= 12",
+      "metric": "pdf_pages",
+      "value": 383.0,
+      "repro": "python tools/oracle_public/page_smoke.py --pair samples/2025 행정업무운영 편람(최종).hwp pdf/2025 행정업무운영 편람(최종)-2024.pdf"
+    },
+    {
+      "id": "2025 행정업무운영 편람(최종)",
+      "path": "C:\\Users\\swsz9\\rhwp-m01-oracle-fatten\\tools\\oracle_public\\drafts\\examples\\2025-행정업무운영-편람-최종-4.md",
+      "reason": "pdf_pages=383 >= 12",
+      "metric": "pdf_pages",
+      "value": 383.0,
+      "repro": "python tools/oracle_public/page_smoke.py --pair samples/2025 행정업무운영 편람(최종).hwpx pdf/2025 행정업무운영 편람(최종)-2024.pdf"
+    },
+    {
+      "id": "1130000-201900011_D0150004-1-002_2017년기준 시장구조조사",
+      "path": "C:\\Users\\swsz9\\rhwp-m01-oracle-fatten\\tools\\oracle_public\\drafts\\examples\\1130000-201900011_D0150004-1-002_2017년기준-시장구조조사.md",
+      "reason": "pdf_pages=315 >= 12",
+      "metric": "pdf_pages",
+      "value": 315.0,
+      "repro": "python tools/oracle_public/page_smoke.py --pair samples/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp pdf/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사-2022.pdf"
+    },
+    {
+      "id": "80168_regulatory_analysis",
+      "path": "C:\\Users\\swsz9\\rhwp-m01-oracle-fatten\\tools\\oracle_public\\drafts\\examples\\80168_regulatory_analysis.md",
+      "reason": "pdf_pages=157 >= 12",
+      "metric": "pdf_pages",
+      "value": 157.0,
+      "repro": "python tools/oracle_public/page_smoke.py --pair samples/80168_regulatory_analysis.hwp pdf/80168_regulatory_analysis-2022.pdf"
+    },
+    {
+      "id": "1790387_prep_final_report",
+      "path": "C:\\Users\\swsz9\\rhwp-m01-oracle-fatten\\tools\\oracle_public\\drafts\\examples\\1790387_prep_final_report.md",
+      "reason": "pdf_pages=146 >= 12",
+      "metric": "pdf_pages",
+      "value": 146.0,
+      "repro": "python tools/oracle_public/page_smoke.py --pair samples/issue2006/1790387_prep_final_report.hwpx pdf-large/issue2006/1790387_prep_final_report-2022.pdf"
+    },
+    {
+      "id": "issue1949_giant_cell_nested_tables_perf",
+      "path": "C:\\Users\\swsz9\\rhwp-m01-oracle-fatten\\tools\\oracle_public\\drafts\\examples\\issue1949_giant_cell_nested_tables_perf.md",
+      "reason": "pdf_pages=115 >= 12",
+      "metric": "pdf_pages",
+      "value": 115.0,
+      "repro": "python tools/oracle_public/page_smoke.py --pair samples/issue1949_giant_cell_nested_tables_perf.hwp pdf/issue1949_giant_cell_nested_tables_perf-2024.pdf"
+    },
+    {
+      "id": "issue1949_giant_cell_nested_tables_perf",
+      "path": "C:\\Users\\swsz9\\rhwp-m01-oracle-fatten\\tools\\oracle_public\\drafts\\examples\\issue1949_giant_cell_nested_tables_perf-2.md",
+      "reason": "pdf_pages=115 >= 12",
+      "metric": "pdf_pages",
+      "value": 115.0,
+      "repro": "python tools/oracle_public/page_smoke.py --pair samples/issue1949_giant_cell_nested_tables_perf.hwpx pdf/issue1949_giant_cell_nested_tables_perf-2024.pdf"
+    },
+    {
+      "id": "hwpctl_API_v2.4",
+      "path": "C:\\Users\\swsz9\\rhwp-m01-oracle-fatten\\tools\\oracle_public\\drafts\\examples\\hwpctl_API_v2.4.md",
+      "reason": "pdf_pages=105 >= 12",
+      "metric": "pdf_pages",
+      "value": 105.0,
+      "repro": "python tools/oracle_public/page_smoke.py --pair samples/hwpctl_API_v2.4.hwp pdf/hwpctl_API_v2.4-2022.pdf"
+    },
+    {
+      "id": "sungeo",
+      "path": "C:\\Users\\swsz9\\rhwp-m01-oracle-fatten\\tools\\oracle_public\\drafts\\examples\\sungeo.md",
+      "reason": "pdf_pages=94 >= 12",
+      "metric": "pdf_pages",
+      "value": 94.0,
+      "repro": "python tools/oracle_public/page_smoke.py --pair samples/basic/sungeo.hwp pdf/basic/sungeo-2022.pdf"
+    },
+    {
+      "id": "kps-ai",
+      "path": "C:\\Users\\swsz9\\rhwp-m01-oracle-fatten\\tools\\oracle_public\\drafts\\examples\\kps-ai.md",
+      "reason": "pdf_pages=77 >= 12",
+      "metric": "pdf_pages",
+      "value": 77.0,
+      "repro": "python tools/oracle_public/page_smoke.py --pair samples/kps-ai.hwp pdf/kps-ai-2022.pdf"
+    },
+    {
+      "id": "aift",
+      "path": "C:\\Users\\swsz9\\rhwp-m01-oracle-fatten\\tools\\oracle_public\\drafts\\examples\\aift.md",
+      "reason": "pdf_pages=74 >= 12",
+      "metric": "pdf_pages",
+      "value": 74.0,
+      "repro": "python tools/oracle_public/page_smoke.py --pair samples/aift.hwp pdf/aift-2022.pdf"
+    },
+    {
+      "id": "aift",
+      "path": "C:\\Users\\swsz9\\rhwp-m01-oracle-fatten\\tools\\oracle_public\\drafts\\examples\\aift-2.md",
+      "reason": "pdf_pages=74 >= 12",
+      "metric": "pdf_pages",
+      "value": 74.0,
+      "repro": "python tools/oracle_public/page_smoke.py --pair samples/hwpx/aift.hwpx pdf/hwpx/aift-2022.pdf"
+    },
+    {
+      "id": "hwpctl_ParameterSetID_Item_v1.2",
+      "path": "C:\\Users\\swsz9\\rhwp-m01-oracle-fatten\\tools\\oracle_public\\drafts\\examples\\hwpctl_ParameterSetID_Item_v1.2.md",
+      "reason": "pdf_pages=74 >= 12",
+      "metric": "pdf_pages",
+      "value": 74.0,
+      "repro": "python tools/oracle_public/page_smoke.py --pair samples/hwpctl_ParameterSetID_Item_v1.2.hwp pdf/hwpctl_ParameterSetID_Item_v1.2-2022.pdf"
+    },
+    {
+      "id": "hwpspec",
+      "path": "C:\\Users\\swsz9\\rhwp-m01-oracle-fatten\\tools\\oracle_public\\drafts\\examples\\hwpspec.md",
+      "reason": "pdf_pages=73 >= 12",
+      "metric": "pdf_pages",
+      "value": 73.0,
+      "repro": "python tools/oracle_public/page_smoke.py --pair samples/hwpspec.hwp pdf/hwpspec-2024.pdf"
+    },
+    {
+      "id": "tac-img-02",
+      "path": "C:\\Users\\swsz9\\rhwp-m01-oracle-fatten\\tools\\oracle_public\\drafts\\examples\\tac-img-02.md",
+      "reason": "pdf_pages=66 >= 12",
+      "metric": "pdf_pages",
+      "value": 66.0,
+      "repro": "python tools/oracle_public/page_smoke.py --pair samples/tac-img-02.hwp pdf/tac-img-02-2022.pdf"
+    },
+    {
+      "id": "unmatched-143E433F503322BD33",
+      "path": "C:\\Users\\swsz9\\rhwp-m01-oracle-fatten\\tools\\oracle_public\\drafts\\examples\\unmatched-143E433F503322BD33.md",
+      "reason": "exceeds=true",
+      "metric": "pdf_pages",
+      "value": 0.0,
+      "repro": "python tools/oracle_public/oracle_resolver.py --pretty --validate"
+    },
+    {
+      "id": "unmatched-156457624_210622 7월부터 해외직구 구매대행업체 등록제 시행",
+      "path": "C:\\Users\\swsz9\\rhwp-m01-oracle-fatten\\tools\\oracle_public\\drafts\\examples\\unmatched-156457624_210622-7월부터-해외직구-구매대행업체-등록제-시행.md",
+      "reason": "exceeds=true",
+      "metric": "pdf_pages",
+      "value": 0.0,
+      "repro": "python tools/oracle_public/oracle_resolver.py --pretty --validate"
+    },
+    {
+      "id": "unmatched-156636617_240617 2024년 5월 월간 수출입 현황(확정치)",
+      "path": "C:\\Users\\swsz9\\rhwp-m01-oracle-fatten\\tools\\oracle_public\\drafts\\examples\\unmatched-156636617_240617-2024년-5월-월간-수출입-현황-확정치.md",
+      "reason": "exceeds=true",
+      "metric": "pdf_pages",
+      "value": 0.0,
+      "repro": "python tools/oracle_public/oracle_resolver.py --pretty --validate"
+    },
+    {
+      "id": "unmatched-20250130-hongbo-no",
+      "path": "C:\\Users\\swsz9\\rhwp-m01-oracle-fatten\\tools\\oracle_public\\drafts\\examples\\unmatched-20250130-hongbo-no.md",
+      "reason": "exceeds=true",
+      "metric": "pdf_pages",
+      "value": 0.0,
+      "repro": "python tools/oracle_public/oracle_resolver.py --pretty --validate"
+    }
+  ],
+  "skipped_documents": [
+    {
+      "id": "pass-2025 행정업무운영 편람(최종)",
+      "reason": "pdf_pages=0 게이트 통과"
+    },
+    {
+      "id": "pass-2025 행정업무운영 편람(최종)",
+      "reason": "pdf_pages=0 게이트 통과"
+    },
+    {
+      "id": "pass-2025 행정업무운영 편람(최종)",
+      "reason": "pdf_pages=0 게이트 통과"
+    }
+  ]
+}

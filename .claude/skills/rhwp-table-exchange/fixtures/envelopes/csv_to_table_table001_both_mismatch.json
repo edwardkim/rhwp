@@ -1,0 +1,42 @@
+{
+  "_skillMeta": {
+    "skill": "rhwp-table-exchange",
+    "issue": 5306,
+    "note": "문서화된 실측 봉투. 바이너리를 이 파동에서 다시 돌리지 않았다.",
+    "command": "csv-to-table",
+    "sample": "samples/table-001.hwp",
+    "exit": 2,
+    "branch": "dimension-collected",
+    "outputKept": false,
+    "source": "mydocs/manual/agent_surface_playbook.md §10-5"
+  },
+  "changed": [],
+  "changedCount": 0,
+  "colCount": 9,
+  "rowCount": 19,
+  "csv": "out/bad.csv",
+  "dryRun": true,
+  "invalid": [
+    {
+      "actual": 2,
+      "expected": 19,
+      "reason": "rowCountMismatch",
+      "message": "CSV 행 수 2 가 표 0 의 행 수 19 와 다릅니다 — 표 크기는 바꾸지 않습니다."
+    },
+    {
+      "actual": 2,
+      "expected": 9,
+      "reason": "colCountMismatch",
+      "row": 0
+    },
+    {
+      "actual": 2,
+      "expected": 9,
+      "reason": "colCountMismatch",
+      "row": 1
+    }
+  ],
+  "schemaVersion": "1.0",
+  "source": "samples/table-001.hwp",
+  "table": 0
+}

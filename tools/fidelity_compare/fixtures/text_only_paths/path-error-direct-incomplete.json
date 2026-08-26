@@ -1,0 +1,39 @@
+{
+  "id": "path-error-direct-incomplete",
+  "schema": "rhwp.fidelity_compare.text_only_path.v1",
+  "schemaVersion": "1.0",
+  "claim": "M-fid",
+  "title": "direct pair 불완전",
+  "why": "세 플래그 중 일부만 있으면 오류.",
+  "argv": [
+    "0",
+    "1",
+    "--source",
+    "a.hwp",
+    "--text-only"
+  ],
+  "mode": "error",
+  "exportAllSvg": false,
+  "layoutLedger": false,
+  "expectsError": true,
+  "errorNeedle": "direct pair에는 --source, --reference-pdf, --label을 모두",
+  "error": "direct pair에는 --source, --reference-pdf, --label을 모두",
+  "parsed": null,
+  "artifacts": [
+    "provenance.tsv",
+    "report.tsv",
+    "text-report.tsv",
+    "svg-glyph-risk-report.tsv",
+    "text-owner-shift-candidates.tsv",
+    "text-owner-sequence-candidates.tsv",
+    "page-boundary-fidelity-candidates.tsv",
+    "visible-text-excess-candidates.tsv",
+    "page-count-ledger.tsv",
+    "run-state.tsv"
+  ],
+  "chromeRequired": false,
+  "pypdfRequired": false,
+  "pypdfium2Required": false,
+  "pixelSheets": false,
+  "candidateNotVerdict": true
+}

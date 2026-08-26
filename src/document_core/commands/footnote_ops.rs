@@ -9,7 +9,7 @@ use crate::error::HwpError;
 use crate::model::control::Control;
 use crate::model::event::DocumentEvent;
 use crate::model::paragraph::{ParaMeta, Paragraph};
-use crate::renderer::composer::reflow_line_segs;
+use crate::renderer::composer::{reflow_line_segs, ParagraphBox};
 
 impl DocumentCore {
     fn renumber_footnotes_in_section(&mut self, section_idx: usize) {
@@ -339,12 +339,24 @@ impl DocumentCore {
         match ctrl {
             Control::Footnote(f) => {
                 if let Some(para) = f.paragraphs.get_mut(fn_para_idx) {
-                    reflow_line_segs(para, final_width, &self.styles, self.dpi);
+                    // 각주 본문 상자 — 각주 영역은 자기 열이 아니므로 미스냅.
+                    reflow_line_segs(
+                        para,
+                        ParagraphBox::content_width_px(final_width, self.dpi),
+                        &self.styles,
+                        self.dpi,
+                    );
                 }
             }
             Control::Endnote(e) => {
                 if let Some(para) = e.paragraphs.get_mut(fn_para_idx) {
-                    reflow_line_segs(para, final_width, &self.styles, self.dpi);
+                    // 미주 본문 상자 — 각주와 같은 이유로 미스냅.
+                    reflow_line_segs(
+                        para,
+                        ParagraphBox::content_width_px(final_width, self.dpi),
+                        &self.styles,
+                        self.dpi,
+                    );
                 }
             }
             _ => {}

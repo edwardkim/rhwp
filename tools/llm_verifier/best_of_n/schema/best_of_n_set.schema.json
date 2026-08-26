@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rhwp.local/schema/best_of_n_set.json",
+  "title": "V-bon Best-of-N candidate set",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "claim",
+    "kind",
+    "setId",
+    "command",
+    "mode",
+    "n",
+    "intendedChangedCount",
+    "rankFields",
+    "candidates"
+  ],
+  "additionalProperties": true,
+  "not": {
+    "anyOf": [
+      { "required": ["process_steps"] },
+      { "required": ["processSteps"] },
+      { "required": ["proseScore"] },
+      { "required": ["llmScore"] }
+    ]
+  },
+  "properties": {
+    "schemaVersion": { "const": "1.0" },
+    "claim": { "const": "V-bon" },
+    "kind": { "const": "bestOfNSet" },
+    "setId": { "type": "string" },
+    "command": {
+      "type": "string",
+      "enum": [
+        "fill-fields",
+        "csv-to-table",
+        "ir-diff",
+        "convert",
+        "replace-text",
+        "redact",
+        "set-cell",
+        "csv-to-chart",
+        "sanitize",
+        "run"
+      ]
+    },
+    "mode": { "type": "string", "enum": ["dry-run", "verify", "ir-diff"] },
+    "n": { "type": "integer", "minimum": 1 },
+    "intendedChangedCount": { "type": "integer", "minimum": 0 },
+    "rankFields": {
+      "type": "array",
+      "const": ["changedCount", "invalid", "verify.identical", "exitClass"]
+    },
+    "candidates": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/candidate" }
+    }
+  },
+  "$defs": {
+    "candidate": {
+      "type": "object",
+      "required": [
+        "candidateId",
+        "changedCount",
+        "invalid",
+        "exitClass",
+        "expectedRank"
+      ],
+      "properties": {
+        "candidateId": { "type": "string" },
+        "changedCount": { "type": "integer", "minimum": 0 },
+        "invalid": {},
+        "verify": {
+          "anyOf": [
+            { "type": "null" },
+            {
+              "type": "object",
+              "properties": {
+                "identical": { "type": ["boolean", "null"] },
+                "diffCount": { "type": "integer", "minimum": 0 }
+              }
+            }
+          ]
+        },
+        "exitClass": { "type": "integer", "enum": [0, 1, 2, 3, 4] },
+        "expectedRank": { "type": "integer", "minimum": 1 }
+      }
+    }
+  }
+}

@@ -1,0 +1,55 @@
+# M09-g equation golden — current-engine lock (variant/exception/unimplemented honesty)
+command: PMATRIX
+script: PMATRIX{PILE{a # b} & 0 # 0 & 1}
+honesty: pile-layout-as-row
+
+=== ast ===
+Matrix {
+    rows: [
+        [
+            Pile {
+                rows: [
+                    Text(
+                        "a",
+                    ),
+                    Text(
+                        "b",
+                    ),
+                ],
+                align: Center,
+            },
+            Number(
+                "0",
+            ),
+        ],
+        [
+            Number(
+                "0",
+            ),
+            Number(
+                "1",
+            ),
+        ],
+    ],
+    style: Paren,
+}
+
+=== layout ===
+Matrix(Paren) x=0.0000 y=0.0000 w=58.5500 h=72.0000 bl=36.0000
+  row0:
+    Row x=10.0000 y=0.0000 w=11.5500 h=46.0000 bl=23.0000
+      Text("a") x=0.0000 y=0.0000 w=11.5500 h=20.0000 bl=16.0000
+      Text("b") x=0.0000 y=26.0000 w=11.5500 h=20.0000 bl=16.0000
+    Number("0") x=37.5500 y=13.0000 w=11.0000 h=20.0000 bl=16.0000
+  row1:
+    Number("0") x=10.2750 y=52.0000 w=11.0000 h=20.0000 bl=16.0000
+    Number("1") x=37.5500 y=52.0000 w=11.0000 h=20.0000 bl=16.0000
+
+=== svg ===
+<path d="M5.40,0.00 C0.30,12.96 0.30,59.04 5.40,72.00" fill="none" stroke="#000000" stroke-width="0.84" stroke-linecap="round"/>
+<path d="M53.15,0.00 C58.25,12.96 58.25,59.04 53.15,72.00" fill="none" stroke="#000000" stroke-width="0.84" stroke-linecap="round"/>
+<text x="10.00" y="16.00" font-size="20.00" fill="#000000" font-style="italic" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">a</text>
+<text x="10.00" y="42.00" font-size="20.00" fill="#000000" font-style="italic" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">b</text>
+<text x="37.55" y="29.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">0</text>
+<text x="10.28" y="68.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">0</text>
+<text x="37.55" y="68.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">1</text>

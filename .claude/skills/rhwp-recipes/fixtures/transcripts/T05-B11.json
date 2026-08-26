@@ -1,0 +1,11 @@
+{
+  "id": "T05-B11",
+  "recipe": "05",
+  "kind": "bash",
+  "sourceFile": "mydocs/manual/recipes/05_mail_merge_batch_fill.md",
+  "excerpted": true,
+  "fabricatedLive": false,
+  "raw": "printf 'myMsg01\\n\"김철수, 대표\"\\n' > comma_rows.csv",
+  "firstLine": "printf 'myMsg01\\n\"김철수, 대표\"\\n' > comma_rows.csv",
+  "notGym": true
+}

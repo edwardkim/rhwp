@@ -1,0 +1,34 @@
+{
+  "id": "ex-inspect-unknown-axis-inject",
+  "issue": 5476,
+  "axis": "injection",
+  "family": "exception",
+  "polarity": "exception",
+  "sourceRule": {
+    "file": "src/main.rs",
+    "symbol": "inspect_command",
+    "note": "inject → injection 교정."
+  },
+  "cli": {
+    "argv": [
+      "inspect",
+      "inject",
+      "x.hwp"
+    ],
+    "exitCode": 2,
+    "stdoutKind": "empty",
+    "detectionIsNotFailure": false,
+    "stdoutBytes": 0,
+    "stderrContains": "inspect injection"
+  },
+  "consume": {
+    "branch": "stdout empty",
+    "doNotParseStdoutAsJson": true,
+    "stderrIsDiagnosis": true
+  },
+  "pair": null,
+  "why": "inject → injection 교정.",
+  "note": "실패 시 stdout 0바이트. 반쪽 JSON 이 나가면 파이프가 성공으로 오독한다.",
+  "human": "",
+  "inventedRule": false
+}

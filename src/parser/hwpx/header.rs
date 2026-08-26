@@ -925,9 +925,12 @@ fn parse_para_shape(
                 Ok(Event::Start(ref ce)) => {
                     match parse_para_shape_child(ce, &mut ps) {
                         ParaShapeChildKind::Margin => {
+                            // [#4898] switch 밖 평문 여백 — 원본 표기를 보존한다.
+                            ps.hwpx_plain_para_margin = true;
                             parse_para_shape_margin_children(reader, &mut ps)?;
                         }
                         ParaShapeChildKind::Switch => {
+                            ps.hwpx_plain_para_margin = false;
                             // <switch>/<case>/<default> 네임스페이스 분기 처리
                             // HwpUnitChar case를 우선 적용, 없으면 default 사용
                             parse_para_shape_switch(reader, &mut ps)?;
@@ -1098,22 +1101,30 @@ fn parse_para_shape_child(
                     }
                     b"widowOrphan" => {
                         if parse_bool(&attr) {
-                            ps.attr2 |= 1 << 5;
+                            ps.attr1 |= 1 << 16;
+                        } else {
+                            ps.attr1 &= !(1 << 16);
                         }
                     }
                     b"keepWithNext" => {
                         if parse_bool(&attr) {
-                            ps.attr2 |= 1 << 6;
+                            ps.attr1 |= 1 << 17;
+                        } else {
+                            ps.attr1 &= !(1 << 17);
                         }
                     }
                     b"keepLines" => {
                         if parse_bool(&attr) {
-                            ps.attr2 |= 1 << 7;
+                            ps.attr1 |= 1 << 18;
+                        } else {
+                            ps.attr1 &= !(1 << 18);
                         }
                     }
                     b"pageBreakBefore" => {
                         if parse_bool(&attr) {
-                            ps.attr2 |= 1 << 8;
+                            ps.attr1 |= 1 << 19;
+                        } else {
+                            ps.attr1 &= !(1 << 19);
                         }
                     }
                     _ => {}
@@ -1124,7 +1135,26 @@ fn parse_para_shape_child(
         b"autoSpacing" => {
             // HWPX autoSpacing은 HWP ParaShape.attr1 bits 20..21이 아니다.
             // 해당 비트는 문단 세로 정렬이며, <align vertical="...">에서 채운다.
-            // autoSpacing의 HWP 저장 위치는 별도 검증 전까지 attr1에 반영하지 않는다.
+            // 한컴 HWP5의 자동 간격 정본은 attr2 bits 4/5다.
+            for attr in ce.attributes().flatten() {
+                match attr.key.as_ref() {
+                    b"eAsianEng" => {
+                        if parse_bool(&attr) {
+                            ps.attr2 |= 1 << 4;
+                        } else {
+                            ps.attr2 &= !(1 << 4);
+                        }
+                    }
+                    b"eAsianNum" => {
+                        if parse_bool(&attr) {
+                            ps.attr2 |= 1 << 5;
+                        } else {
+                            ps.attr2 &= !(1 << 5);
+                        }
+                    }
+                    _ => {}
+                }
+            }
             ParaShapeChildKind::Other
         }
         b"switch" => ParaShapeChildKind::Switch,
@@ -1258,7 +1288,9 @@ fn parse_para_shape_switch(
                                         // HWP3 암호 원본의 별도 spacing 계약은 HWP3 parser
                                         // 안에서만 처리한다. HWPX 전체에 반감 적용하면
                                         // 일반 HWPX 문단 흐름과 기준 HWP3 변환본이 함께 밀린다.
-                                        let val2x = val * 2;
+                                        // 손상 문서의 극단 value 는 i32 곱셈 오버플로 패닉을
+                                        // 유발하므로 saturating 으로 막는다(정상값은 무영향).
+                                        let val2x = val.saturating_mul(2);
                                         match tag_name {
                                             b"left" => {
                                                 ps.margin_left = val2x;
@@ -1327,7 +1359,8 @@ fn parse_para_shape_switch(
                                     let effective_type = ls_type.unwrap_or(ps.line_spacing_type);
                                     ps.line_spacing = match effective_type {
                                         LineSpacingType::Percent => v,
-                                        _ => v * 2,
+                                        // 손상 value 의 i32 곱셈 오버플로 패닉 차단.
+                                        _ => v.saturating_mul(2),
                                     };
                                     case_line_spacing = Some(v);
                                 }
@@ -1876,8 +1909,9 @@ fn parse_tab_def(
                         let mut item = parse_tab_item(ce);
                         if in_hwpunitchar_case {
                             // HwpUnitChar 값은 실제 HWPUNIT(1× 스케일)이므로
-                            // HWP 바이너리와 동일한 2× 스케일로 변환
-                            item.position *= 2;
+                            // HWP 바이너리와 동일한 2× 스케일로 변환.
+                            // 손상 pos 의 u32 곱셈 오버플로 패닉 차단(정상값은 무영향).
+                            item.position = item.position.saturating_mul(2);
                             td.tabs.push(item);
                             found_case = true;
                         } else if in_default {
@@ -2663,6 +2697,54 @@ mod tests {
         assert_eq!(ps.spacing_after, 1136);
     }
 
+    /// 손상 HWPX 의 HwpUnitChar `<hp:case>` 값이 2× IR 스케일 변환에서 정수
+    /// 곱셈 오버플로 패닉(DoS)을 일으키지 않고 saturating 으로 안전 처리되는지
+    /// 검증한다. 종전에는 `value`/`pos` 극단값이 `parse_hwpx_header` 를 패닉시켜
+    /// info/export-text/export-structure/convert 전부가 손상 문서 한 건에
+    /// 죽었다(header.rs:1288/1357/1907, `attempt to multiply with overflow`).
+    #[test]
+    fn hwpunitchar_oversized_value_saturates_without_panic() {
+        let xml = r##"<?xml version="1.0" encoding="UTF-8"?>
+<hh:head xmlns:hh="http://www.hancom.co.kr/hwpml/2011/head"
+  xmlns:hc="http://www.hancom.co.kr/hwpml/2011/core"
+  xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph">
+  <hh:refList>
+    <hh:paraProperties itemCnt="1">
+      <hh:paraPr id="1">
+        <hp:switch>
+          <hp:case hp:required-namespace="http://www.hancom.co.kr/hwpml/2016/HwpUnitChar">
+            <hh:margin>
+              <hc:left value="2000000000" unit="HWPUNIT"/>
+              <hc:right value="2000000000" unit="HWPUNIT"/>
+            </hh:margin>
+            <hh:lineSpacing type="FIXED" value="2000000000"/>
+          </hp:case>
+        </hp:switch>
+      </hh:paraPr>
+    </hh:paraProperties>
+    <hh:tabProperties itemCnt="1">
+      <hh:tabPr id="0" autoTabLeft="0" autoTabRight="0">
+        <hp:switch>
+          <hp:case hp:required-namespace="http://www.hancom.co.kr/hwpml/2016/HwpUnitChar">
+            <hh:tabItem pos="2147483648" type="LEFT" leader="NONE" unit="HWPUNIT"/>
+          </hp:case>
+        </hp:switch>
+      </hh:tabPr>
+    </hh:tabProperties>
+  </hh:refList>
+</hh:head>"##;
+
+        // 핵심: 패닉하지 않고 Ok 를 돌려준다.
+        let (doc_info, _) = parse_hwpx_header(xml).expect("손상 HwpUnitChar 값은 패닉 없이 파싱");
+        let ps = &doc_info.para_shapes[1];
+        // 2_000_000_000 × 2 는 i32 를 넘으므로 i32::MAX 로 포화된다.
+        assert_eq!(ps.margin_left, i32::MAX);
+        assert_eq!(ps.margin_right, i32::MAX);
+        assert_eq!(ps.line_spacing, i32::MAX);
+        // 2_147_483_648(u32) × 2 는 u32 를 넘으므로 u32::MAX 로 포화된다.
+        assert_eq!(doc_info.tab_defs[0].tabs[0].position, u32::MAX);
+    }
+
     #[test]
     fn odd_para_margin_survives_hwpx_serialize_parse_roundtrip() {
         // [#3368] 홀수 여백(ml=101)은 <hp:case>(HwpUnitChar) 의 정수 나눗셈으로
@@ -2796,6 +2878,40 @@ mod tests {
         assert_eq!(
             doc_info.para_shapes[2].break_latin_word.as_deref(),
             Some("HYPHENATION")
+        );
+    }
+
+    #[test]
+    fn para_shape_break_setting_and_auto_spacing_use_distinct_bits() {
+        let xml = r##"<?xml version="1.0" encoding="UTF-8"?>
+<hh:head xmlns:hh="http://www.hancom.co.kr/hwpml/2011/head">
+  <hh:refList>
+    <hh:paraProperties itemCnt="1">
+      <hh:paraPr id="1" tabPrIDRef="0">
+        <hh:align horizontal="JUSTIFY" vertical="CENTER"/>
+        <hh:breakSetting breakLatinWord="KEEP_WORD" breakNonLatinWord="KEEP_WORD" widowOrphan="1" keepWithNext="1" keepLines="1" pageBreakBefore="1" lineWrap="BREAK"/>
+        <hh:autoSpacing eAsianEng="1" eAsianNum="1"/>
+      </hh:paraPr>
+    </hh:paraProperties>
+  </hh:refList>
+</hh:head>"##;
+
+        let (doc_info, _) = parse_hwpx_header(xml).expect("HWPX header parse");
+        let ps = &doc_info.para_shapes[1];
+        assert_eq!(
+            ps.attr1 & ((1 << 16) | (1 << 17) | (1 << 18) | (1 << 19)),
+            (1 << 16) | (1 << 17) | (1 << 18) | (1 << 19),
+            "breakSetting은 attr1 16-19에만 기록해야 한다"
+        );
+        assert_eq!(
+            ps.attr2 & ((1 << 4) | (1 << 5)),
+            (1 << 4) | (1 << 5),
+            "autoSpacing은 attr2 4/5에 기록해야 한다"
+        );
+        assert_eq!(
+            ps.attr2 & ((1 << 6) | (1 << 7) | (1 << 8)),
+            0,
+            "구 breakSetting attr2 6-8 규약을 새 HWPX 입력에 만들면 안 된다"
         );
     }
 

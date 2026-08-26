@@ -1,0 +1,10 @@
+{
+  "stderr": "오류: 부모 캡슐을 읽을 수 없습니다 - ghost.capsule.json: ...",
+  "_skillMeta": {
+    "exit": 1,
+    "branch": "io-parent",
+    "command": "replay",
+    "note": "부모 경로 IO. exit 1",
+    "stdoutSilentOnFail": true
+  }
+}

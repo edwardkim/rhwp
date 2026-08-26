@@ -1,0 +1,12 @@
+{
+  "id": "BO04",
+  "steps": [
+    {
+      "answer": {
+        "planned": {
+          "const": 2
+        }
+      }
+    }
+  ]
+}

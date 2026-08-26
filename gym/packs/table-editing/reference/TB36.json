@@ -1,0 +1,23 @@
+{
+  "id": "TB36",
+  "steps": [
+    {
+      "run": [
+        "edit",
+        "set-cell",
+        "{input}",
+        "--table",
+        "0",
+        "--row",
+        "1",
+        "--col",
+        "0",
+        "--text",
+        "아래표지",
+        "-o",
+        "{sub:below_mark.hwp}",
+        "--json"
+      ]
+    }
+  ]
+}

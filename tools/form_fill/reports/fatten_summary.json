@@ -1,0 +1,33 @@
+{
+  "claim": "M-fill",
+  "generator": "tools/form_fill/fatten_form_fill.py",
+  "generatedAt": "2026-08-18T11:38:57Z",
+  "formCount": 61,
+  "fillCount": 30,
+  "occurrenceCount": 17,
+  "dryRunCount": 25,
+  "verifyCount": 25,
+  "batchCount": 13,
+  "honggildongCount": 37,
+  "pathCount": 23,
+  "writtenCount": 236,
+  "axisCounts": {
+    "fill-fields": 28,
+    "notFound": 6,
+    "이름[N]": 18,
+    "dry-run": 26,
+    "verify": 27,
+    "batch-fill": 10,
+    "batch-dry-run": 7,
+    "honggildong-4781": 38,
+    "fields": 4,
+    "runtime": 1,
+    "usage": 4,
+    "format": 1
+  },
+  "hongPass": 25,
+  "hongCloneForbidden": 12,
+  "existingCliOnly": true,
+  "inventedFillLogic": false,
+  "touchedGym": false
+}

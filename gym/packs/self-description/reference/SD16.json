@@ -1,0 +1,15 @@
+{
+  "id": "SD16",
+  "steps": [
+    {
+      "answer": {
+        "policy": {
+          "cmd": [
+            "capabilities"
+          ],
+          "path": "schemaRegistry.policy"
+        }
+      }
+    }
+  ]
+}

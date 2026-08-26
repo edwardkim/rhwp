@@ -1,0 +1,25 @@
+{
+  "id": "SD29",
+  "tier": 2,
+  "title": "출처 표지 필드 수",
+  "input": "samples/table-001.hwp",
+  "instructions": "jsonContract.provenance.fields 의 원소 수를 answer.json 에 {\"fields\": N} 으로 제출하라. 힌트: capabilities 의 jsonContract.provenance.fields.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "출처 표지 필드 수",
+      "op": "len_answer_eq",
+      "answer": "fields",
+      "path": "jsonContract.provenance.fields",
+      "cmd": [
+        "capabilities"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

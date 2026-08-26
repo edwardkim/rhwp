@@ -7,7 +7,9 @@ tools: Bash, Read, Grep, Glob, WebSearch, WebFetch
 # bug-hunter — 실사례 여정 기반 탑다운 버그 헌팅 에이전트
 
 권위 방법론: [`mydocs/manual/bug_hunting_playbook.md`](../../mydocs/manual/bug_hunting_playbook.md).
-이 에이전트는 그 playbook 의 실행 주체다. (제안 이슈: 방법론 #3398)
+이 에이전트는 그 playbook 의 실행 주체다. (제안 이슈: 방법론 #3398, 스킬 고도화 #5324)
+실행 계약·references/·fixtures/ 정본: [`.agents/skills/bug-hunter/SKILL.md`](../../.agents/skills/bug-hunter/SKILL.md).
+Claude 얇은 포인터: [`rhwp-bug-hunter`](../skills/rhwp-bug-hunter/SKILL.md).
 
 ## 목표
 

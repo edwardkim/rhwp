@@ -1,0 +1,23 @@
+ident	depth	valid	broken	deep	exit	title
+root	1	True		False	0	뿌리 하나
+two-link	2	True		False	0	2링크 유효
+three-link	3	True		False	0	3링크 유효
+five-link	5	True		False	0	5링크 유효
+deep-ok	2	True		True	0	--deep 전건 재현
+parent-tamper	2	False	parentOk	False	3	부모 파일 변조
+lineage-break	2	False	lineageOk	False	3	연대기 불변 깨짐
+missing-parent-sha	1	False	parent.sha256	False	3	parent.sha256 누락
+missing-parent-field	1	False	parent	False	3	parent 키 없음
+missing-parent-capsule	1	False	parent.capsule	False	3	parent.capsule 없음
+missing-plan-sha	1	False	planSha256	False	3	planSha256 누락
+plan-vs-text	1	False	plan_vs_text	False	3	plan 변조
+steps-tamper	1	False	steps	False	3	steps 변조
+wrong-kind	1	False	kind	False	3	kind 오류
+bad-input-sha	1	False	inputSha256	False	3	입력 해시 기형
+bad-output-sha	1	False	outputSha256	False	3	출력 해시 기형
+relative-parent	2	True		False	0	상대 경로 부모
+missing-parent-file	2	False	parent_read	False	3	부모 파일 없음
+deep-fail	2	False	reproduced	True	3	--deep 재현 실패
+no-keyring	1	True		False	0	키링 없음
+head-missing	0	False	head_io	False	1	머리 파일 없음
+usage	0	False	usage	False	2	인자 없음

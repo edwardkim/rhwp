@@ -8,8 +8,10 @@ import { SelectionRenderer } from './selection-renderer';
 import { CommandHistory } from './history';
 import { DeleteSelectionCommand, ApplyCharFormatCommand, ApplyParaFormatCommand, SnapshotCommand, SubmodeSnapshotCommand, SetFormValueCommand, TextMutationEffectAccumulator, IMMEDIATE_TEXT_MUTATION_EFFECTS, applyCharShapeModsToRange, cellAxisPath, cellParaIndexOf } from './command';
 import type { OperationDescriptor, ParaFormatTarget, RefreshPolicy, TextMutationEffects, EditCommand, EditContext, FormValueTarget } from './command';
-import { selectCellIndicesInRange, paraFormatTargetsForCellBlock } from './cell-block-format';
+import { selectCellIndicesInRange, paraFormatTargetsForCellBlock, withCellPathTarget } from './cell-block-format';
 import type { SelectedCellBlock } from './cell-block-format';
+import { chartTargetFromSelection, matchChartRef } from '@/core/chart-data-target';
+import type { SelectedOleRefLike } from '@/core/chart-data-target';
 import { VirtualScroll } from '@/view/virtual-scroll';
 import { ViewportManager } from '@/view/viewport-manager';
 import type {
@@ -44,6 +46,8 @@ import type { NavigationKeyInput } from './navigation-keymap';
 import { isPointNearBoxBorder } from './table-border-hit';
 import { DeferredPaginationRunner } from './deferred-pagination-runner';
 import { tableObjectClipboardTarget } from './table-object-clipboard-target';
+import { clearObjectEditingPage } from './object-selection-page';
+import { showInitialCaretAndPublishFocus } from './initial-caret-focus';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const DRAG_SCROLL_EDGE_PX = 48;
@@ -58,6 +62,21 @@ const DOCUMENT_PAGINATION_INITIAL_START_DELAY_MS = 100;
 const DOCUMENT_PAGINATION_RESTART_COALESCE_DELAY_MS = 200;
 // 첫 fragment 하나 뒤 다음 입력과 후속 step이 겹치지 않게 하는 짧은 settle gap.
 const DOCUMENT_PAGINATION_POST_FIRST_STEP_DELAY_MS = 25;
+
+export class DocumentAgentRenderCommitError extends Error {
+  readonly code = 'RENDER_FAILED';
+  readonly recovered: boolean;
+  override readonly cause: unknown;
+
+  constructor(cause: unknown, recovered: boolean) {
+    super(recovered
+      ? 'document-agent render 실패 후 snapshot을 복구했습니다.'
+      : 'document-agent render 실패 후 snapshot 복구도 실패했습니다.');
+    this.name = 'DocumentAgentRenderCommitError';
+    this.recovered = recovered;
+    this.cause = cause;
+  }
+}
 /**
  * [#3412] idle 자동 flush 대상 문서 크기 상한.
  *
@@ -190,7 +209,7 @@ function pxToRaw(px: number): number {
 }
 
 function availableDropWidthPx(pageInfo: PageInfo, pageX: number): number {
-  const bodyWidth = Math.max(1, pageInfo.width - pageInfo.marginLeft - pageInfo.marginRight);
+  const bodyWidth = Math.max(1, pageInfo.bodyRight - pageInfo.bodyLeft);
   const columns = pageInfo.columns?.filter((column) => column.width > 0) ?? [];
   if (columns.length === 0) return bodyWidth;
 
@@ -484,7 +503,7 @@ export class InputHandler {
   private formOverlay: HTMLElement | null = null;
 
   // [Task #394] 셀 진입 자동 ON 로직 비활성화 — checkTransparentBordersTransition 와 동시 주석 처리.
-  // 되돌리려면 아래 3 개 변수 + 호출 지점 + 메서드 본체 + 이벤트 핸들러의 주석을 동시에 해제.
+  // 되돌리려면 아래 3 개 변수 + 호출 지점 + 메서드 본체의 주석을 동시에 해제.
   // // 투명선 자동 활성화 상태
   // private wasInCell = false;
   // private manualTransparentBorders = false;
@@ -687,13 +706,6 @@ export class InputHandler {
     eventBus.on('open-document-bytes', () => {
       this.clearTableResizeRuntimeCache();
     });
-
-    // [Task #394] 셀 진입 자동 ON 로직 비활성화 — manual 추적 불필요.
-    // transparent-borders-changed 이벤트 자체는 view.ts 에서 emit 되므로 보존됨 (다른 구독자가 사용 가능).
-    // // 투명선 수동 토글 상태 추적
-    // eventBus.on('transparent-borders-changed', (show) => {
-    //   this.manualTransparentBorders = show as boolean;
-    // });
 
     // Toolbar에서 서식 적용 요청 수신 (글꼴명, 크기, 색상 — 커맨드 시스템 미경유)
     eventBus.on('format-char', (props) => {
@@ -1714,6 +1726,16 @@ export class InputHandler {
     ];
   }
 
+  /** [#4694] 선택된 ole 이 데이터 편집 가능한 차트로 해석되는가 — 우클릭당 1회 열거. */
+  private isChartDataEditable(ref: SelectedOleRefLike): boolean {
+    try {
+      const target = chartTargetFromSelection(ref);
+      return target !== null && matchChartRef(this.wasm.listCharts(), target) !== null;
+    } catch {
+      return false;
+    }
+  }
+
   /** 그림 객체 선택 컨텍스트 메뉴 항목 */
   private getPictureObjectContextMenuItems(): ContextMenuItem[] {
     const ref = this.cursor.getSelectedPictureRef();
@@ -1737,6 +1759,13 @@ export class InputHandler {
     if (ref?.type === 'equation') {
       items.push(
         { type: 'command', commandId: 'insert:equation-edit', label: '수식 편집...' },
+        { type: 'separator' },
+      );
+    }
+    // [#4694] 차트(ole) 객체: 열거·대조가 성공하는 선택에만 데이터 편집 항목을 노출한다.
+    if (ref?.type === 'ole' && this.isChartDataEditable(ref)) {
+      items.push(
+        { type: 'command', commandId: 'insert:chart-data-edit', label: '차트 데이터 편집...' },
         { type: 'separator' },
       );
     }
@@ -1823,6 +1852,18 @@ export class InputHandler {
 
   /** 특수 키 처리 (Backspace, Enter, 화살표, Ctrl+Z/Y) */
   private onKeyDown(e: KeyboardEvent): void {
+    _keyboard.onKeyDown.call(this, e);
+  }
+
+  /**
+   * PgUp/PgDn·Home/End 를 포커스 주인과 무관하게 편집기 경로로 처리한다.
+   *
+   * 편집기 textarea 가 포커스를 잃으면(툴바 버튼·서식 콤보) keydown 이 오지 않아 이
+   * 키들이 통째로 무동작이 된다. 전역 폴백(main.ts)이 그때 keydown 을 그대로 넘기는
+   * 진입점이다 — 분기 로직을 복제하지 않고 같은 경로를 태워 동작을 하나로 유지한다.
+   */
+  handleDocumentNavigationKey(e: KeyboardEvent): void {
+    if (!this.active) return;
     _keyboard.onKeyDown.call(this, e);
   }
 
@@ -1969,14 +2010,28 @@ export class InputHandler {
       kind: 'snapshot',
       operationType: 'applyCharFormatCellBlock',
       operation: (wasm) => {
-        for (const cellIdx of block.cellIndices) {
-          const paraCount = wasm.getCellParagraphCount(block.sec, block.ppi, block.ci, cellIdx);
-          for (let cellParaIdx = 0; cellParaIdx < paraCount; cellParaIdx++) {
-            const len = wasm.getCellParagraphLength(block.sec, block.ppi, block.ci, cellIdx, cellParaIdx);
-            if (len <= 0) continue;
-            wasm.applyCharFormatInCell(block.sec, block.ppi, block.ci, cellIdx, cellParaIdx, 0, len, propsJson);
+        // 셀 수만큼 뮤테이터를 호출하므로 재페이지네이션을 묶는다(#4118).
+        wasm.runInBatch(() => {
+          for (const cellIdx of block.cellIndices) {
+            if (block.cellPath) {
+              const path = block.cellPath;
+              const paraCount = wasm.getCellParagraphCountByPath(block.sec, block.ppi, JSON.stringify(withCellPathTarget(path, cellIdx)));
+              for (let cellParaIdx = 0; cellParaIdx < paraCount; cellParaIdx++) {
+                const pathJson = JSON.stringify(withCellPathTarget(path, cellIdx, cellParaIdx));
+                const len = wasm.getCellParagraphLengthByPath(block.sec, block.ppi, pathJson);
+                if (len <= 0) continue;
+                wasm.applyCharFormatInCellByPath(block.sec, block.ppi, pathJson, 0, len, propsJson);
+              }
+              continue;
+            }
+            const paraCount = wasm.getCellParagraphCount(block.sec, block.ppi, block.ci, cellIdx);
+            for (let cellParaIdx = 0; cellParaIdx < paraCount; cellParaIdx++) {
+              const len = wasm.getCellParagraphLength(block.sec, block.ppi, block.ci, cellIdx, cellParaIdx);
+              if (len <= 0) continue;
+              wasm.applyCharFormatInCell(block.sec, block.ppi, block.ci, cellIdx, cellParaIdx, 0, len, propsJson);
+            }
           }
-        }
+        });
         return { ...cursorBefore };
       },
     });
@@ -1991,6 +2046,10 @@ export class InputHandler {
 
   /** [#4151] 셀 블록 서식의 토글 방향·툴바 상태 기준: 블록 첫 셀의 첫 글자 서식. */
   private getCharPropertiesAtCellBlockAnchor(block: SelectedCellBlock): CharProperties {
+    if (block.cellPath) {
+      const pathJson = JSON.stringify(withCellPathTarget(block.cellPath, block.cellIndices[0], 0));
+      return this.wasm.getCellCharPropertiesAtByPath(block.sec, block.ppi, pathJson, 0);
+    }
     return this.wasm.getCellCharPropertiesAt(block.sec, block.ppi, block.ci, block.cellIndices[0], 0, 0);
   }
 
@@ -2189,16 +2248,26 @@ export class InputHandler {
     const ctx = this.cursor.getCellTableContext();
     const range = this.cursor.getSelectedCellRange();
     if (!ctx || !range) return null;
-    // 중첩 표는 getParaFormatTargetsForRange 도 cellPath.length > 1 을 대상에서 빼므로
-    // 여기서 빠져도 동작이 달라지지 않는다. 지원하려면 ...ByPath 축으로 별도 배선이 필요하다.
-    if (ctx.cellPath && ctx.cellPath.length > 1) return null;
+    const excluded = this.cursor.getExcludedCells();
+
+    if (ctx.cellPath && ctx.cellPath.length > 1) {
+      const path = ctx.cellPath;
+      const dims = this.wasm.getTableDimensionsByPath(ctx.sec, ctx.ppi, JSON.stringify(path));
+      const cellIndices = selectCellIndicesInRange(
+        dims.cellCount,
+        (cellIdx) => this.wasm.getCellInfoByPath(ctx.sec, ctx.ppi, JSON.stringify(withCellPathTarget(path, cellIdx))),
+        range,
+        excluded,
+      );
+      return { sec: ctx.sec, ppi: ctx.ppi, ci: ctx.ci, cellIndices, cellPath: path };
+    }
 
     const dims = this.wasm.getTableDimensions(ctx.sec, ctx.ppi, ctx.ci);
     const cellIndices = selectCellIndicesInRange(
       dims.cellCount,
       (cellIdx) => this.wasm.getCellInfo(ctx.sec, ctx.ppi, ctx.ci, cellIdx),
       range,
-      this.cursor.getExcludedCells(),
+      excluded,
     );
     return { sec: ctx.sec, ppi: ctx.ppi, ci: ctx.ci, cellIndices };
   }
@@ -2214,6 +2283,8 @@ export class InputHandler {
 
   /** 셀 블록 안 모든 셀의 모든 문단을 문단 서식 대상으로 만든다 */
   private getParaFormatTargetsForCellBlock(block: SelectedCellBlock): ParaFormatTarget[] {
+    // 중첩 표 문단 서식은 목표 밖(getParaFormatTargetsForRange 도 동일 하계)이다.
+    if (block.cellPath) return [];
     return paraFormatTargetsForCellBlock(
       block,
       (cellIdx) => this.wasm.getCellParagraphCount(block.sec, block.ppi, block.ci, cellIdx),
@@ -2448,15 +2519,36 @@ export class InputHandler {
     }
   }
 
-  /** 선택 영역을 삭제한다 */
-  private deleteSelection(): void {
+  /**
+   * 선택 영역을 삭제한다.
+   *
+   * @param options.deferRecord true 이면 히스토리 기록 없이 직접 실행만 한다 —
+   *   붙여넣기 등에서 스냅샷 콜백 안에 들어갈 때 사용. 호출자가 SnapshotCommand 로
+   *   기록하므로 중복 엔트리를 방지한다.
+   */
+  private deleteSelection(options?: { deferRecord?: boolean }): void {
     const sel = this.cursor.getSelectionOrdered();
     if (!sel) return;
     if (!this.canDeleteSelectionInFormMode()) return;
 
-    const cmd = new DeleteSelectionCommand(sel.start, sel.end);
+    // [Task #3416] F3 블록이면 확장 단계도 함께 기록한다 — 한컴은 undo 뒤 단계까지 되돌린다.
+    const cmd = new DeleteSelectionCommand(sel.start, sel.end, this.cursor.blockSelectionPhase());
     this.cursor.clearSelection();
-    this.executeOperation({ kind: 'command', command: cmd });
+    if (options?.deferRecord) {
+      // 붙여넣기 등 스냅샷 콜백에서 호출될 때 — 히스토리 기록 없이 직접 실행만.
+      // 호출자의 SnapshotCommand 가 before-snapshot 으로 전체 undo 를 커버한다.
+      //
+      // 반환값을 반드시 소비해 JS 커서를 옮긴다 — getPosition() 은 내부 캐시
+      // (`{ ...this.position }`)라 WASM 캐럿이 움직여도 갱신되지 않는다. 놓치면
+      // 이어지는 붙여넣기가 삭제 **전** 좌표(선택 끝)에 삽입된다(실측:
+      // "AAAABBBBCCCC" 에서 BBBB 선택+붙여넣기 → XYZ 가 끝에 붙는다).
+      // executeOperation('command') 의 moveTo·resetPreferredX 에 해당하는 최소 배선.
+      const newPos = cmd.execute(this.wasm);
+      this.cursor.moveTo(newPos);
+      this.cursor.resetPreferredX();
+    } else {
+      this.executeOperation({ kind: 'command', command: cmd });
+    }
   }
 
   /** Undo 처리 */
@@ -2469,6 +2561,9 @@ export class InputHandler {
       this.resetDerivedStateAfterHistoryJump();
       // [Task #2337] 방금 되돌린 커맨드가 HF/FN 편집이면 그 커서 모드로 복원(본문 moveTo 대신).
       this.restoreEditContextAfterHistory(this.history.peekRedoTop(), newPos);
+      // [Task #3416] 그 위에 "지우기 전 선택" 을 되살린다 — 커서 위치가 정해진 뒤라야
+      // anchor 만 더해 범위가 완성된다. redo 쪽에는 두지 않는다(한컴도 redo 는 해제).
+      this.restoreSelectionAfterUndo(this.history.peekRedoTop());
       this.afterEdit();
     }
   }
@@ -2590,6 +2685,31 @@ export class InputHandler {
   }
 
   /**
+   * [Task #3416] undo 뒤 "지우기 전 선택" 을 되살린다.
+   *
+   * 한컴 2024 실측 — 선택을 지우고 undo 하면 지우기 전 범위가 그대로 복원되고(캐럿은 선택 끝),
+   * redo 하면 해제된다. 선택 위에 타이핑해 대체한 경우의 undo 는 복원하지 않는다. 그래서 이
+   * 복원은 `selectionBefore()` 를 구현한 커맨드(선택 삭제)에만 걸리고, 나머지는
+   * `resetDerivedStateAfterHistoryJump` 의 해제가 그대로 최종 상태다.
+   *
+   * **복원 전에 현재 문서에서 유효한 범위인지 반드시 확인한다.** #2339 가 해제를 넣은 이유가
+   * 유령 범위이기 때문이다 — 문서에 없는 anchor/focus 를 세우면 이후 Bold·Backspace 가 본 적
+   * 없는 범위를 만진다. 유효하지 않으면 해제된 상태로 둔다(종전 동작).
+   */
+  private restoreSelectionAfterUndo(cmd: EditCommand | null): void {
+    const range = cmd?.selectionBefore?.();
+    if (!range) return;
+    // 구역을 걸치는 범위는 되살리지 않는다 — 한컴 실측을 한 구역 안에서만 했다. 이건 실재
+    // 여부가 아니라 "어디까지 맞출지" 의 판단이라 여기 남는다.
+    if (range.start.sectionIndex !== range.end.sectionIndex) return;
+    // 범위가 현재 문서에 실재하는지는 `selectRange` 가 판정하고 거절한다(#2339 유령 범위
+    // 차단은 anchor/focus 소유자의 계약이다). 거절되면 해제된 상태 그대로 둔다.
+    // 블록 단계는 범위와 같은 호출로 세운다 — `resetDerivedStateAfterHistoryJump` 의
+    // `exitBlockSelectionMode()` 가 방금 0 으로 되돌린 것을 여기서 되살린다.
+    this.cursor.selectRange(range.start, range.end, range.blockPhase);
+  }
+
+  /**
    * 편집 작업 통합 라우터.
    * 호출부는 OperationDescriptor로 "무엇을 하려는가"만 서술하고,
    * 라우터가 적절한 Undo 전략을 자동 선택한다.
@@ -2662,6 +2782,72 @@ export class InputHandler {
         this.refreshAfterOperation(desc.meta?.refresh, 'none', desc.command.type, pos, pos);
         break;
       }
+    }
+  }
+
+  /**
+   * document-agent 전용 two-phase snapshot 경로.
+   *
+   * 기존 executeOperation은 history commit 직후 document event로 비동기 render를 예약한다.
+   * exact command는 host 응답 전에 실제 visible page render가 성공해야 하므로, snapshot을
+   * history에 올린 뒤 strict render를 먼저 기다리고 성공할 때만 mutation event를 commit한다.
+   */
+  async executeDocumentAgentOperation(
+    desc: Extract<OperationDescriptor, { kind: 'snapshot' }>,
+    render: () => Promise<void>,
+  ): Promise<void> {
+    if (!this.isOperationAllowedInEditMode(desc)) {
+      throw new Error('현재 편집 모드에서는 document-agent snapshot을 실행할 수 없습니다.');
+    }
+    const cursorBefore = this.cursor.getPosition();
+    const command = new SnapshotCommand(
+      desc.operationType,
+      cursorBefore,
+      cursorBefore,
+      desc.operation,
+    );
+    const newPos = this.history.execute(command, this.wasm);
+    if (command.isNoOp()) {
+      throw new Error('document-agent snapshot이 mutation 없이 종료되었습니다.');
+    }
+    this.cursor.moveTo(newPos);
+    this.cursor.resetPreferredX();
+    this.pendingFocusedPagePatch = null;
+    this.lastCellKey = null;
+    this.protectedCellHitCache = null;
+    this.clearTableResizeRuntimeCache();
+
+    try {
+      await render();
+      this.updateCaret();
+    } catch (renderError) {
+      try {
+        const restored = this.history.rollbackUncommittedSnapshot(command.type, this.wasm);
+        if (!restored) throw new Error('복구할 최신 snapshot을 찾을 수 없습니다.');
+        this.cursor.moveTo(restored);
+        this.cursor.resetPreferredX();
+        await render();
+        this.updateCaret();
+      } catch (rollbackError) {
+        throw new DocumentAgentRenderCommitError(
+          new AggregateError([renderError, rollbackError]),
+          false,
+        );
+      }
+      throw new DocumentAgentRenderCommitError(renderError, true);
+    }
+
+    // commit 통지는 strict render 뒤에만 낸다. EventBus는 모든 subscriber를 실행한 뒤 첫
+    // 예외를 되던지므로, 개별 observer 실패가 이미 성공한 문서 transaction을 뒤집지 않게 한다.
+    try {
+      this.eventBus.emit('document-mutated', 'document-agent');
+    } catch (error) {
+      console.error('[InputHandler] document-agent mutation observer 실패:', error);
+    }
+    try {
+      this.eventBus.emit('document-changed', 'document-agent-rendered');
+    } catch (error) {
+      console.error('[InputHandler] document-agent change observer 실패:', error);
     }
   }
 
@@ -3061,7 +3247,11 @@ export class InputHandler {
     const cursorRect = this.cursor.getRect();
     if (cursorRect) {
       const adjustedCursorRect = this.adjustExitedFieldEndCaretRect(cursorRect);
-      this.eventBus.emit('cursor-rect-updated', { x: adjustedCursorRect.x, y: adjustedCursorRect.y });
+      this.eventBus.emit('cursor-rect-updated', {
+        pageIndex: adjustedCursorRect.pageIndex,
+        x: adjustedCursorRect.x,
+        y: adjustedCursorRect.y,
+      });
     }
   }
 
@@ -3168,7 +3358,11 @@ export class InputHandler {
 
     const cursorRect = this.cursor.getRect();
     if (cursorRect) {
-      this.eventBus.emit('cursor-rect-updated', { x: cursorRect.x, y: cursorRect.y });
+      this.eventBus.emit('cursor-rect-updated', {
+        pageIndex: cursorRect.pageIndex,
+        x: cursorRect.x,
+        y: cursorRect.y,
+      });
     }
   }
 
@@ -3317,11 +3511,16 @@ export class InputHandler {
   }
 
   /** 표 객체 선택 시 외곽선 + 핸들을 렌더링한다 */
+  private clearTableObjectSelectionRender(): void {
+    this.tableObjectRenderer?.clear();
+    clearObjectEditingPage(this.eventBus);
+  }
+
   private renderTableObjectSelection(): void {
     if (!this.tableObjectRenderer) return;
     const ref = this.cursor.getSelectedTableRef();
     if (!ref) {
-      this.tableObjectRenderer.clear();
+      this.clearTableObjectSelectionRender();
       return;
     }
     try {
@@ -3338,7 +3537,7 @@ export class InputHandler {
         cellBboxes = this.wasm.getTableCellBboxes(ref.sec, ref.ppi, ref.ci, pageHint);
       }
       if (cellBboxes.length === 0) {
-        this.tableObjectRenderer.clear();
+        this.clearTableObjectSelectionRender();
         return;
       }
       // 페이지별 그룹화
@@ -3360,9 +3559,13 @@ export class InputHandler {
         pageBboxes.push({ pageIndex, x: minX, y: minY, width: maxX - minX, height: maxY - minY });
       }
       this.tableObjectRenderer.renderMultiPage(pageBboxes, zoom);
+      const selectedPage = pageHint !== undefined && byPage.has(pageHint)
+        ? pageHint
+        : pageBboxes[0].pageIndex;
+      this.eventBus.emit('editing-page-changed', selectedPage);
     } catch (e) {
       console.warn('[InputHandler] renderTableObjectSelection 실패:', e);
-      this.tableObjectRenderer.clear();
+      this.clearTableObjectSelectionRender();
     }
   }
 
@@ -3498,11 +3701,18 @@ export class InputHandler {
   private scrollCaretIntoView(rect: import('@/core/types').CursorRect): void {
     const zoom = this.viewportManager.getZoom();
     const pageOffset = this.virtualScroll.getPageOffset(rect.pageIndex);
+    const pageLeft = this.virtualScroll.getPageLeftResolved(
+      rect.pageIndex,
+      this.container.scrollWidth,
+    );
     const caretDocY = pageOffset + rect.y * zoom;
+    const caretDocX = pageLeft + rect.x * zoom;
     const caretHeight = rect.height * zoom;
 
     const scrollTop = this.container.scrollTop;
     const viewHeight = this.container.clientHeight;
+    const scrollLeft = this.container.scrollLeft;
+    const viewWidth = this.container.clientWidth;
     const margin = 20; // 여백 px
 
     if (caretDocY < scrollTop + margin) {
@@ -3511,6 +3721,12 @@ export class InputHandler {
     } else if (caretDocY + caretHeight > scrollTop + viewHeight - margin) {
       // 캐럿이 화면 아래쪽 밖
       this.container.scrollTop = caretDocY + caretHeight - viewHeight + margin;
+    }
+
+    if (caretDocX < scrollLeft + margin) {
+      this.container.scrollLeft = Math.max(0, caretDocX - margin);
+    } else if (caretDocX > scrollLeft + viewWidth - margin) {
+      this.container.scrollLeft = caretDocX - viewWidth + margin;
     }
   }
 
@@ -3527,9 +3743,15 @@ export class InputHandler {
       this.active = true;
 
       const rect = this.cursor.getRect();
-      if (rect) {
-        this.caret.show(rect, this.viewportManager.getZoom());
-      }
+      // 문서 초기화 직후에도 실제 캐럿 쪽을 편집 focus로 확정한다. 이 발행이 없으면
+      // CanvasView는 첫 쪽을 viewport fallback으로만 알고, 줌으로 배치가 바뀔 때
+      // 눈금자 대상도 뷰포트 중심의 다른 쪽으로 이동한다.
+      showInitialCaretAndPublishFocus(
+        rect,
+        this.viewportManager.getZoom(),
+        this.caret,
+        this.eventBus,
+      );
       this.emitCursorFormatState();
       this.focusTextarea();
     } catch (e) {
@@ -3538,9 +3760,12 @@ export class InputHandler {
       this.cursor.moveTo({ sectionIndex: 0, paragraphIndex: 0, charOffset: 0 });
       this.active = true;
       const rect = this.cursor.getRect();
-      if (rect) {
-        this.caret.show(rect, this.viewportManager.getZoom());
-      }
+      showInitialCaretAndPublishFocus(
+        rect,
+        this.viewportManager.getZoom(),
+        this.caret,
+        this.eventBus,
+      );
       this.focusTextarea();
     }
   }
@@ -3887,6 +4112,15 @@ export class InputHandler {
   /** 선택된 그림/글상자 참조 반환 ([Task #825] headerFooter 동반 시 머리말/꼬리말 picture marker) */
   getSelectedPictureRef(): { sec: number; ppi: number; ci: number; type: 'image' | 'shape' | 'equation' | 'group' | 'line' | 'ole'; cellIdx?: number; cellParaIdx?: number; outerTableControlIdx?: number; cellPath?: Array<{ controlIndex: number; cellIndex: number; cellParaIndex: number }>; noteRef?: any; headerFooter?: { kind: 'header' | 'footer'; outerParaIdx: number; outerControlIdx: number } } | null { return this.cursor.getSelectedPictureRef(); }
 
+  /**
+   * 선택된 개체 밖(인접 문단)의 위치 — 커서를 옮기지 않는다 (Task #3351).
+   *
+   * 개체 조작을 기록하는 쪽이 "그 조작이 일어난 자리" 를 캐럿으로 남기기 위해 쓴다.
+   */
+  getPositionOutsideSelectedPicture(): DocumentPosition | null {
+    return this.cursor.positionOutsideSelectedPicture();
+  }
+
   /** 다중 선택된 개체 목록 */
   getSelectedPictureRefs(): { sec: number; ppi: number; ci: number; type: string }[] { return this.cursor.getSelectedPictureRefs(); }
 
@@ -3998,6 +4232,45 @@ export class InputHandler {
     }
     this.focusTextarea();
     return false;
+  }
+
+  /**
+   * 문서 에이전트의 exact body paragraph target을 선택하고 해당 쪽을 뷰포트 중앙에 둔다.
+   * 문서를 바꾸지 않는 navigation 전용 경계이며 셀·각주·머리말 좌표는 받지 않는다.
+   */
+  focusBodyParagraph(section: number, paragraph: number, length: number): boolean {
+    if (!Number.isSafeInteger(section) || section < 0
+        || !Number.isSafeInteger(paragraph) || paragraph < 0
+        || !Number.isSafeInteger(length) || length < 0) return false;
+    try {
+      if (this.wasm.getParagraphLength(section, paragraph) !== length) return false;
+      this.wasm.getCursorRect(section, paragraph, 0);
+      this.wasm.getCursorRect(section, paragraph, length);
+
+      this.exitFootnoteModeForBodyNavigation();
+      this.cursor.clearSelection();
+      this.cursor.moveTo({ sectionIndex: section, paragraphIndex: paragraph, charOffset: 0 });
+      this.cursor.setAnchor();
+      this.cursor.moveTo({ sectionIndex: section, paragraphIndex: paragraph, charOffset: length });
+      this.cursor.resetPreferredX();
+      this.active = true;
+      this.updateCaret(true);
+      this.focusTextarea();
+
+      const rect = this.cursor.getRect();
+      if (rect) {
+        const zoom = this.viewportManager.getZoom();
+        const centerY = this.virtualScroll.getPageOffset(rect.pageIndex) + rect.y * zoom;
+        const maxScrollTop = Math.max(0, this.container.scrollHeight - this.container.clientHeight);
+        this.container.scrollTop = Math.max(
+          0,
+          Math.min(maxScrollTop, centerY - this.container.clientHeight / 2),
+        );
+      }
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   /** 현재 커서 위치의 누름틀 필드와 내용을 제거한다. */
@@ -4631,6 +4904,8 @@ export class InputHandler {
     if (this.cursor.isInTableObjectSelection()) {
       const ref = this.cursor.getSelectedTableRef();
       if (ref) {
+        // 중첩 표 잘라내기는 지원하지 않는다. keydown 경로도 같은 선택 상태를 유지한다.
+        if (ref.cellPath && ref.cellPath.length > 1) return;
         this.performCopy();
         this.cursor.moveOutOfSelectedTable();
         this.eventBus.emit('table-object-selection-changed', false);
@@ -4668,6 +4943,7 @@ export class InputHandler {
       if (ref.cellPath && ref.cellPath.length > 1) {
         this.cursor.moveOutOfSelectedTable();
         this.eventBus.emit('table-object-selection-changed', false);
+        this.updateCaret();
         return;
       }
       this.cursor.moveOutOfSelectedTable();
@@ -4778,9 +5054,12 @@ export class InputHandler {
           range,
           this.cursor.getExcludedCells(),
         );
-        for (const cellIdx of cellIndices) {
-          wasm.setCellProperties(ctx.sec, ctx.ppi, ctx.ci, cellIdx, props);
-        }
+        // 셀 수만큼 setCellProperties 를 호출하므로 재페이지네이션을 묶는다(#4118).
+        wasm.runInBatch(() => {
+          for (const cellIdx of cellIndices) {
+            wasm.setCellProperties(ctx.sec, ctx.ppi, ctx.ci, cellIdx, props);
+          }
+        });
         return this.cursor.getPosition();
       },
     });

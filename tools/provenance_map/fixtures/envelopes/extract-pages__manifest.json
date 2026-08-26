@@ -1,0 +1,47 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.provenance.envelope_sample.v1",
+  "claim": "M-prov",
+  "issue": 5480,
+  "generator": "tools/provenance_map/fatten_provenance_map.py",
+  "id": "extract-pages__manifest",
+  "command": "extract-pages",
+  "family": "export",
+  "mode": "manifest",
+  "flags": [
+    "--json"
+  ],
+  "cli": "rhwp extract-pages <파일> --pages N-M --json ",
+  "whyThisMode": "쪽 범위와 문단 개수",
+  "sampleKind": "typical",
+  "risk": "none",
+  "note": "발췌 봉투는 쪽 범위와 문단 개수뿐이다.",
+  "declaredUntrusted": [],
+  "presentUntrusted": [],
+  "subsetOk": true,
+  "fieldClass": {
+    "schemaVersion": "R",
+    "source": "C",
+    "pageRange": "R",
+    "paragraphCount": "R",
+    "untrustedContent": "mark",
+    "untrustedFields": "mark"
+  },
+  "consumerRule": "개수만.",
+  "trap": "추출된 문서를 다시 export-text 하면 그 표지를 따른다.",
+  "injectionCanary": null,
+  "canaryRule": "이 모드는 문서 파생 문자열이 없다.",
+  "forbiddenIfPromoted": [
+    "tool_arg_path",
+    "tool_arg_output",
+    "filename_from_title"
+  ],
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "<repo>/samples/fixture-extract-pages.hwp",
+    "pageRange": "engine:extract-pages:pageRange",
+    "paragraphCount": 0,
+    "untrustedContent": false,
+    "untrustedFields": []
+  }
+}

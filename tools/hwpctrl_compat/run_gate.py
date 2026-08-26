@@ -32,6 +32,7 @@ import time
 from pathlib import Path
 
 from oracle_version import matches_expected_version
+from scenario_spec import check_call, contracts
 
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parents[1]
@@ -78,6 +79,16 @@ def wait_for_hwp_exit(baseline: set[str], settle_seconds: float, poll_seconds: f
     return leftovers
 
 
+def cleanup_and_wait_for_hwp_exit(baseline: set[str], settle_seconds: float) -> set[str]:
+    """명시적 강제 종료 뒤에도 PID가 사라질 때까지 기다린다.
+
+    ``taskkill``은 요청을 수락한 직후 반환할 수 있다. 곧바로 PID를 다시 읽으면 아직 종료 중인
+    ``Hwp.exe``를 LEFTOVER로 오인하고 다음 시나리오를 OCCUPIED로 건너뛴다.
+    """
+    cleanup_spawned_hwp(baseline)
+    return wait_for_hwp_exit(baseline, settle_seconds)
+
+
 def stored_oracle_status(path: Path, expect_version: str | None) -> str:
     """`--skip-ocx`가 읽을 기존 정답지가 현재 오라클인지 판정한다."""
     if not path.exists():
@@ -104,6 +115,9 @@ def run_ocx(scenario: Path, out_dir: Path, timeout: int, expect_version: str | N
     # 읽기 전용으로 열렸다 — 편집 액션이 조용히 무시되므로 정답지로 쓸 수 없다(계획서 §4.24).
     if proc.returncode == 4:
         return "READONLY"
+    # 시나리오가 표본 파일을 고쳤다 — 그 정답지는 물론 **다음 실행 전부**를 못 믿는다.
+    if proc.returncode == 5:
+        return "SAMPLE_DIRTY"
     if proc.returncode != 0:
         sys.stderr.write(proc.stderr.decode("utf-8", "replace")[-2000:])
         return "ERR"
@@ -120,15 +134,22 @@ def run_rhwp(scenario: Path, out_dir: Path, impl: str, timeout: int) -> str:
         "--impl",
         impl,
     ]
-    try:
-        proc = subprocess.run(cmd, capture_output=True, timeout=timeout, check=False)
-    except subprocess.TimeoutExpired:
-        return "STALL"
-    sys.stdout.write(proc.stdout.decode("utf-8", "replace"))
-    if proc.returncode != 0:
-        sys.stderr.write(proc.stderr.decode("utf-8", "replace")[-2000:])
-        return "ERR"
-    return "OK"
+    # 종료 코드 0/1 밖은 시나리오 실패가 아니라 프로세스급 붕괴다. Windows 에서 러너가
+    # returns.json 을 다 쓰고 process.exit 하는 중 libuv 단언으로 죽는 종료 레이스가 실측됐다
+    # (`Assertion failed: !(handle->flags & UV_HANDLE_CLOSING)`, 0xC0000409). 그 코드만
+    # 한 번 다시 태운다 — 선언된 실패(1)와 두 번 연속 붕괴는 그대로 ERR 다.
+    for attempt in (1, 2):
+        try:
+            proc = subprocess.run(cmd, capture_output=True, timeout=timeout, check=False)
+        except subprocess.TimeoutExpired:
+            return "STALL"
+        sys.stdout.write(proc.stdout.decode("utf-8", "replace"))
+        if proc.returncode == 0:
+            return "OK"
+        if proc.returncode == 1 or attempt == 2:
+            sys.stderr.write(proc.stderr.decode("utf-8", "replace")[-2000:])
+            return "ERR"
+    return "ERR"
 
 
 def validate_rhwp_output(scenario: Path, out_dir: Path) -> str:
@@ -136,7 +157,12 @@ def validate_rhwp_output(scenario: Path, out_dir: Path) -> str:
 
     macOS/Linux에는 Hancom COM이 없으므로 새 Oracle 결과를 만들 수 없다. 그렇다고
     반환 JSON만 생성되고 API 오류가 기록된 실행을 성공으로 취급하면 안 된다. 이 검사는
-    호출 개수, 호출 순서, 각 호출 오류, SaveAs 산출물을 확인하는 플랫폼 공통 하한선이다.
+    호출 개수, 호출 순서, 각 호출 오류, 시나리오가 선언한 기대 반환값, SaveAs 산출물을
+    확인하는 플랫폼 공통 하한선이다.
+
+    **오류 거부 규칙은 무르게 하지 않는다.** 일부러 죽는 호출은 시나리오가 `expectError` 로
+    미리 선언해야 하고, 선언한 문구와 다르게 죽으면 그것도 실패다. 선언해 놓고 안 죽는 것
+    역시 실패다 — 계약이 깨진 것은 어느 쪽이든 같다(#4274 리뷰).
     """
     try:
         definition = json.loads(scenario.read_text(encoding="utf-8"))
@@ -151,8 +177,20 @@ def validate_rhwp_output(scenario: Path, out_dir: Path) -> str:
     calls = result.get("calls")
     if not isinstance(calls, list) or [call.get("call") for call in calls] != expected_calls:
         return "CALL_SEQUENCE"
-    if any(call.get("error") for call in calls):
-        return "CALL_ERROR"
+    try:
+        declared = contracts(definition)
+    except ValueError as exc:
+        print(f"  시나리오 계약 오류: {exc}")
+        return "INVALID_CONTRACT"
+    breaches = [
+        (call, reason)
+        for contract, call in zip(declared, calls)
+        if (reason := check_call(contract, call, "rhwp")) is not None
+    ]
+    if breaches:
+        for _, reason in breaches:
+            print(f"  계약 위반: {reason}")
+        return "CALL_ERROR" if any(call.get("error") for call, _ in breaches) else "EXPECT_DIFF"
 
     if definition.get("saveAs"):
         saved = result.get("saved") or {}
@@ -275,8 +313,7 @@ def main() -> int:
             finally:
                 leftovers = wait_for_hwp_exit(baseline, args.quit_settle_seconds)
                 if leftovers and args.cleanup_spawned:
-                    cleanup_spawned_hwp(baseline)
-                    leftovers = new_hwp_pids(baseline)
+                    leftovers = cleanup_and_wait_for_hwp_exit(baseline, args.quit_settle_seconds)
                 if leftovers:
                     status[name] = f"{status.get(name, 'ERR')}/LEFTOVER"
                     print(f"  오라클 {name}: 남은 한글 PID {', '.join(sorted(leftovers))} — 자동 종료하지 않음")

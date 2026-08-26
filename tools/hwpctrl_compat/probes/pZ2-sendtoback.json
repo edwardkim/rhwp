@@ -1,0 +1,64 @@
+{
+  "id": "pZ2-sendtoback",
+  "title": "sendtoback",
+  "ledger": [],
+  "open": "samples/mix-shape-01.hwp",
+  "paths": {
+    "a": {
+      "win": "{out}/pZ2-sendtoback-a.hwp",
+      "posix": "{out}/pZ2-sendtoback-a.hwp"
+    },
+    "b": {
+      "win": "{out}/pZ2-sendtoback-b.hwp",
+      "posix": "{out}/pZ2-sendtoback-b.hwp"
+    }
+  },
+  "calls": [
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "a"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "SetPos",
+      [
+        0,
+        0,
+        0
+      ]
+    ],
+    [
+      "Run",
+      [
+        "SelectCtrlFront"
+      ]
+    ],
+    [
+      "Run",
+      [
+        "SelectCtrlFront"
+      ]
+    ],
+    [
+      "Run",
+      [
+        "ShapeObjSendToBack"
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "b"
+        },
+        "HWP",
+        ""
+      ]
+    ]
+  ]
+}

@@ -1,0 +1,192 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.form_fill.fill_case.v1",
+  "id": "overtime-occurrence",
+  "axis": "이름[N]",
+  "claim": "M-fill",
+  "generator": "tools/form_fill/fatten_form_fill.py",
+  "form": "overtime",
+  "title": "초과근무 신청서 반복 필드 순번 지목",
+  "family": "인사",
+  "genre": "초과근무",
+  "sample": "fixtures/forms/초과근무신청서.hwp",
+  "format": "hwp5",
+  "relatedIssue": "#3329",
+  "why": "이름[N] 은 fields 목록 순서 0 기준. 지목하지 않은 칸은 그대로. 순번 없음은 ambiguous, 범위 밖은 notFound.",
+  "firstFieldName": "소속",
+  "fieldCount": 21,
+  "argv": [
+    "edit",
+    "fill-fields",
+    "fixtures/forms/초과근무신청서.hwp",
+    "--data",
+    "{\"근무일[0]\": \"2026. 7. 20.\", \"근무일[2]\": \"2026. 7. 22.\", \"시작시각[0]\": \"18:30\", \"시작시각[2]\": \"18:30-3\", \"종료시각[0]\": \"21:00\", \"종료시각[2]\": \"21:00-3\"}",
+    "-o",
+    "out/overtime-occ.hwp",
+    "--json"
+  ],
+  "existingCliOnly": true,
+  "data": {
+    "근무일[0]": "2026. 7. 20.",
+    "근무일[2]": "2026. 7. 22.",
+    "시작시각[0]": "18:30",
+    "시작시각[2]": "18:30-3",
+    "종료시각[0]": "21:00",
+    "종료시각[2]": "21:00-3"
+  },
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "fixtures/forms/초과근무신청서.hwp",
+    "dryRun": false,
+    "filledCount": 6,
+    "filled": [
+      {
+        "name": "근무일",
+        "occurrence": 0,
+        "value": "2026. 7. 20."
+      },
+      {
+        "name": "근무일",
+        "occurrence": 2,
+        "value": "2026. 7. 22."
+      },
+      {
+        "name": "시작시각",
+        "occurrence": 0,
+        "value": "18:30"
+      },
+      {
+        "name": "시작시각",
+        "occurrence": 2,
+        "value": "18:30-3"
+      },
+      {
+        "name": "종료시각",
+        "occurrence": 0,
+        "value": "21:00"
+      },
+      {
+        "name": "종료시각",
+        "occurrence": 2,
+        "value": "21:00-3"
+      }
+    ],
+    "notFound": [],
+    "ambiguous": [],
+    "confusable": [],
+    "verify": null,
+    "output": "out/overtime-occ.hwp",
+    "outputFormat": "hwp5"
+  },
+  "exit": 0,
+  "untouchedOccurrences": {
+    "근무일": [
+      1,
+      3,
+      4
+    ],
+    "시작시각": [
+      1,
+      3,
+      4
+    ],
+    "종료시각": [
+      1,
+      3,
+      4
+    ]
+  },
+  "afterTargeted": {
+    "근무일": [
+      "2026. 7. 20.",
+      "",
+      "2026. 7. 22.",
+      "",
+      ""
+    ],
+    "시작시각": [
+      "18:30",
+      "",
+      "18:30-3",
+      "",
+      ""
+    ],
+    "종료시각": [
+      "21:00",
+      "",
+      "21:00-3",
+      "",
+      ""
+    ]
+  },
+  "gate": true,
+  "ambiguous": {
+    "data": {
+      "근무일": "2026. 7. 20.",
+      "시작시각": "18:30",
+      "종료시각": "21:00"
+    },
+    "envelope": {
+      "schemaVersion": "1.0",
+      "source": "fixtures/forms/초과근무신청서.hwp",
+      "dryRun": true,
+      "filledCount": 3,
+      "filled": [
+        {
+          "name": "근무일",
+          "occurrence": 0,
+          "value": "2026. 7. 20."
+        },
+        {
+          "name": "시작시각",
+          "occurrence": 0,
+          "value": "18:30"
+        },
+        {
+          "name": "종료시각",
+          "occurrence": 0,
+          "value": "21:00"
+        }
+      ],
+      "notFound": [],
+      "ambiguous": [
+        {
+          "name": "근무일",
+          "matched": 1,
+          "total": 5
+        },
+        {
+          "name": "시작시각",
+          "matched": 1,
+          "total": 5
+        },
+        {
+          "name": "종료시각",
+          "matched": 1,
+          "total": 5
+        }
+      ],
+      "confusable": [],
+      "verify": null
+    },
+    "incomplete": true
+  },
+  "outOfRange": {
+    "data": {
+      "근무일[105]": "범위밖"
+    },
+    "envelope": {
+      "schemaVersion": "1.0",
+      "source": "fixtures/forms/초과근무신청서.hwp",
+      "dryRun": true,
+      "filledCount": 0,
+      "filled": [],
+      "notFound": [
+        "근무일[105]"
+      ],
+      "ambiguous": [],
+      "confusable": [],
+      "verify": null
+    }
+  }
+}

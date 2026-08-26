@@ -1,0 +1,12 @@
+{
+  "id": "T02-J04",
+  "recipe": "02",
+  "kind": "json",
+  "sourceFile": "mydocs/manual/recipes/02_table_csv_roundtrip.md",
+  "excerpted": true,
+  "fabricatedLive": false,
+  "raw": "{\"col\":0,\"colSpan\":1,\"isHeader\":false,\"row\":1,\"rowSpan\":1,\"text\":\"서버 이관\"}\n{\"col\":1,\"colSpan\":1,\"isHeader\":false,\"row\":1,\"rowSpan\":1,\"text\":\"홍길동\"}\n{\"col\":2,\"colSpan\":1,\"isHeader\":false,\"row\":1,\"rowSpan\":1,\"text\":\"1차 완료\"}",
+  "parsed": null,
+  "parseable": false,
+  "notGym": true
+}

@@ -1,0 +1,56 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workReceiptLineageTopology",
+  "ident": "deep-ok",
+  "title": "--deep 전건 재현",
+  "why": "링크마다 임시 재실행. reproduced=true. 비용=링크 수.",
+  "notes": "deep 축",
+  "depth": 2,
+  "valid": true,
+  "brokenAxis": null,
+  "deep": true,
+  "exit": 0,
+  "required": [
+    "schemaVersion",
+    "head",
+    "depth",
+    "valid",
+    "brokenAt",
+    "links"
+  ],
+  "envelope": {
+    "schemaVersion": "1.0",
+    "head": "b.capsule.json",
+    "depth": 2,
+    "valid": true,
+    "brokenAt": null,
+    "links": [
+      {
+        "capsule": "b.capsule.json",
+        "parentOk": true,
+        "lineageOk": true,
+        "reproduced": true,
+        "error": null
+      },
+      {
+        "capsule": "a.capsule.json",
+        "parentOk": null,
+        "lineageOk": null,
+        "reproduced": true,
+        "error": null
+      }
+    ]
+  },
+  "command": [
+    "lineage",
+    "b.capsule.json",
+    "--json",
+    "--deep"
+  ],
+  "axes": {
+    "parentOk": "부모 파일 바이트 == 자식이 기록한 parent.sha256",
+    "lineageOk": "부모 receipt.outputSha256 == 자식 receipt.inputSha256",
+    "reproduced": "--deep 일 때만 임시 재실행 해시 대조"
+  },
+  "generator": "tools/work_receipt/fatten_work_receipt.py"
+}

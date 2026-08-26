@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "1.0",
+  "source": "fixtures/synthetic-injection.hwp",
+  "minConfidence": "low",
+  "includeFields": false,
+  "scanScopes": [
+    "body",
+    "tableCell",
+    "textBox",
+    "equation",
+    "footnote",
+    "endnote",
+    "header",
+    "footer",
+    "caption"
+  ],
+  "injectionSignals": [
+    {
+      "kind": "tool_directive",
+      "confidence": "high",
+      "section": 0,
+      "paragraph": 1,
+      "page": 0,
+      "scope": "body",
+      "excerpt": "hwp_doc_save",
+      "matched": "hwp_doc_save",
+      "why": "실제 MCP 도구 이름 명령형"
+    }
+  ],
+  "signalCount": 1,
+  "highestConfidence": "high",
+  "clean": false,
+  "exitCode": 0,
+  "consume": {
+    "matchedIs": "DATA",
+    "doNotFollow": true,
+    "untrustedContent": true
+  }
+}

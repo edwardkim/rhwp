@@ -1,0 +1,25 @@
+{
+  "id": "EX24",
+  "tier": 2,
+  "title": "차트 데이터 — 누적세로막대형 행 수",
+  "input": "samples/chart/세로막대형/누적세로막대형.hwp",
+  "instructions": "chart-to-csv 로 이 문서의 차트 1을 뽑아, 그 데이터의 행 수(rowCount)를 보고하라. 답 형식: {\"rows\": <수>}. EX01 과 같은 세로막대 가족이되 묶음이 아니라 누적이다.",
+  "submit": {
+    "kind": "answer"
+  },
+  "checks": [
+    {
+      "name": "rows 일치",
+      "op": "answer_eq",
+      "answer": "rows",
+      "cmd": [
+        "chart-to-csv",
+        "{input}",
+        "--chart",
+        "1",
+        "--json"
+      ],
+      "path": "charts[0].rowCount"
+    }
+  ]
+}

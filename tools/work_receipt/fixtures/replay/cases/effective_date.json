@@ -1,0 +1,69 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workReceiptReplayCase",
+  "ident": "effective_date",
+  "claim": "M-rcpt",
+  "issue": 5478,
+  "family": "고시",
+  "genre": "시행일",
+  "title": "이 고시는 고시한 날부터 시행한다 유지",
+  "why": "표준 시행 문장. find==replace 로 존재만 확인하는 결정론 표본.",
+  "notes": "idempotent 고시 문장",
+  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "output": "out/effective.hwp",
+  "ext": "hwp",
+  "actions": [
+    "replace_text"
+  ],
+  "stepCount": 1,
+  "plan": {
+    "planVersion": "1.0",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "output": "out/effective.hwp",
+    "steps": [
+      {
+        "action": "replace_text",
+        "find": "고시한 날부터 시행한다",
+        "replace": "고시한 날부터 시행한다"
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"samples/basic/issue2007_nested_cell_pagination_42065.hwp\",\"output\":\"out/effective.hwp\",\"steps\":[{\"action\":\"replace_text\",\"find\":\"고시한 날부터 시행한다\",\"replace\":\"고시한 날부터 시행한다\"}]}",
+  "planSha256": "f1ce80ee79f7201c651f7a349e3ad1321d2be981a2bffae1149e6c8e5d873a96",
+  "command": "replay",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "inputSha256": "cb9f57f471a48c95af5afa32bbc51d58d4b6c6eb6236e15ff74baff6b1403613",
+    "planSha256": "f1ce80ee79f7201c651f7a349e3ad1321d2be981a2bffae1149e6c8e5d873a96",
+    "outputSha256": "d464b78f8f8b09695d8bd888d0df1bb21ae15a872cff4f7d158cd37da9e2990c",
+    "toolVersion": "fixture-0.0.0-not-a-release",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null
+  },
+  "expected": {
+    "attest": {
+      "exit": 0,
+      "mode": "attest",
+      "reproduced": null,
+      "userOutputCreated": false
+    },
+    "verify_ok": {
+      "exit": 0,
+      "mode": "verify",
+      "reproduced": true,
+      "expectedOutputSha256": "d464b78f8f8b09695d8bd888d0df1bb21ae15a872cff4f7d158cd37da9e2990c"
+    },
+    "verify_mismatch": {
+      "exit": 3,
+      "mode": "verify",
+      "reproduced": false,
+      "expectedOutputSha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "judgment": true
+    }
+  },
+  "claimedOutputPathUntouched": true,
+  "generator": "tools/work_receipt/fatten_work_receipt.py"
+}

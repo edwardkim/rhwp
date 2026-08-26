@@ -1,0 +1,63 @@
+{
+  "id": "12_text_window_follow",
+  "title": "maxChars 창을 nextOffset 으로 잇는다. truncated 만 보고 끝내지 않는다.",
+  "kind": "session",
+  "lifecycle": "hwp_open → doc_* → hwp_close",
+  "absolute_paths": true,
+  "single_write_point": "hwp_doc_save",
+  "steps": [
+    {
+      "seq": 1,
+      "tool": "hwp_open",
+      "arguments": {
+        "path": "C:/abs/편람.hwp"
+      },
+      "expect_layer": "ok",
+      "read_fields": [
+        "docId"
+      ],
+      "notes": ""
+    },
+    {
+      "seq": 2,
+      "tool": "hwp_doc_text",
+      "arguments": {
+        "docId": "doc-1",
+        "maxChars": 2000,
+        "charOffset": 0
+      },
+      "expect_layer": "ok",
+      "read_fields": [
+        "nextOffset",
+        "truncated"
+      ],
+      "notes": ""
+    },
+    {
+      "seq": 3,
+      "tool": "hwp_doc_text",
+      "arguments": {
+        "docId": "doc-1",
+        "maxChars": 2000,
+        "charOffset": 2000
+      },
+      "expect_layer": "ok",
+      "read_fields": [
+        "pages"
+      ],
+      "notes": ""
+    },
+    {
+      "seq": 4,
+      "tool": "hwp_close",
+      "arguments": {
+        "docId": "doc-1"
+      },
+      "expect_layer": "ok",
+      "read_fields": [
+        "closed"
+      ],
+      "notes": ""
+    }
+  ]
+}

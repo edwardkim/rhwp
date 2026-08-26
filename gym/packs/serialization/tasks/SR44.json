@@ -1,0 +1,29 @@
+{
+  "id": "SR44",
+  "tier": 2,
+  "title": "문단 문서 DocLang 버전",
+  "input": "samples/para-001.hwp",
+  "instructions": "입력을 DocLang 으로 내보내고, 봉투의 DocLang 버전을 answer.json 에 {\"version\": \"...\"} 로 적어라. 힌트: rhwp export-doclang --json 의 doclangVersion. 버전 문자열을 기억해 박제하지 말고 봉투를 읽어라.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "DocLang 버전",
+      "op": "answer_eq",
+      "answer": "version",
+      "path": "doclangVersion",
+      "cmd": [
+        "export-doclang",
+        "{input}",
+        "-o",
+        "{file:out.doclang}",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "변환"
+}

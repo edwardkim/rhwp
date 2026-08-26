@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "1.0",
+  "mode": "single",
+  "source": "types-image-hides-table-2.5.synth",
+  "pageCount": 3,
+  "pageFilter": null,
+  "overflowTolerancePx": 1.0,
+  "overlapTolerancePx": 2.0,
+  "types": [
+    "Image"
+  ],
+  "strict": false,
+  "overflowCount": 0,
+  "offCanvasCount": 0,
+  "overlapCount": 0,
+  "textOverlapCount": 0,
+  "emptyPageCount": 0,
+  "hasSignal": false,
+  "pages": [],
+  "hypothesis": "--types Image 는 표 overflow 2.5px 를 버린다. 확정 신호는 off-canvas 가 있을 때만 남는다.",
+  "fixtureId": "types-image-hides-table-2.5"
+}

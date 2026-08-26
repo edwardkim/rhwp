@@ -1,0 +1,142 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.form_fill.honggildong_4781.v1",
+  "id": "minwon-hong-clone",
+  "axis": "honggildong-4781",
+  "claim": "M-fill",
+  "generator": "tools/form_fill/fatten_form_fill.py",
+  "form": "minwon",
+  "title": "민원신청서 홍길동 전칸 복제 금지",
+  "why": "첫 필드 값을 모든 고유 이름에 복사하면 T07 과제 문구를 깨뜨린다.",
+  "sample": "fixtures/forms/민원신청서.hwp",
+  "relatedIssue": "#4781",
+  "argv": [
+    "edit",
+    "fill-fields",
+    "fixtures/forms/민원신청서.hwp",
+    "--data",
+    "{\"민원제목\": \"홍길동\", \"민원내용\": \"홍길동\", \"전자우편\": \"홍길동\", \"관계\": \"홍길동\", \"처리기한\": \"홍길동\", \"공개여부\": \"홍길동\", \"접수번호\": \"홍길동\", \"접수일\": \"홍길동\"}",
+    "-o",
+    "out/minwon-hong-clone.hwp",
+    "--json"
+  ],
+  "data": {
+    "민원제목": "홍길동",
+    "민원내용": "홍길동",
+    "전자우편": "홍길동",
+    "관계": "홍길동",
+    "처리기한": "홍길동",
+    "공개여부": "홍길동",
+    "접수번호": "홍길동",
+    "접수일": "홍길동"
+  },
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "fixtures/forms/민원신청서.hwp",
+    "dryRun": false,
+    "filledCount": 8,
+    "filled": [
+      {
+        "name": "민원제목",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "민원내용",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "전자우편",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "관계",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "처리기한",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "공개여부",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "접수번호",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "접수일",
+        "occurrence": 0,
+        "value": "홍길동"
+      }
+    ],
+    "notFound": [],
+    "ambiguous": [],
+    "confusable": [],
+    "verify": null,
+    "output": "out/minwon-hong-clone.hwp",
+    "outputFormat": "hwp5"
+  },
+  "detect": {
+    "firstFieldName": "민원제목",
+    "firstFieldValue": "홍길동",
+    "firstFieldOk": true,
+    "cloned": [
+      {
+        "index": 1,
+        "name": "민원내용",
+        "before": "",
+        "after": "홍길동"
+      },
+      {
+        "index": 5,
+        "name": "전자우편",
+        "before": "",
+        "after": "홍길동"
+      },
+      {
+        "index": 9,
+        "name": "관계",
+        "before": "",
+        "after": "홍길동"
+      },
+      {
+        "index": 10,
+        "name": "처리기한",
+        "before": "",
+        "after": "홍길동"
+      },
+      {
+        "index": 11,
+        "name": "공개여부",
+        "before": "",
+        "after": "홍길동"
+      },
+      {
+        "index": 12,
+        "name": "접수번호",
+        "before": "",
+        "after": "홍길동"
+      },
+      {
+        "index": 13,
+        "name": "접수일",
+        "before": "",
+        "after": "홍길동"
+      }
+    ],
+    "cloneCount": 7,
+    "verdict": "clone_forbidden"
+  },
+  "afterFirst": "홍길동",
+  "otherHongCount": 7,
+  "allowedClone": false,
+  "verdict": "clone_forbidden"
+}

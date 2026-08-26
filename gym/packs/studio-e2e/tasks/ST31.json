@@ -1,0 +1,29 @@
+{
+  "id": "ST31",
+  "tier": 2,
+  "title": "묶은세로막대 첫 차트 번호",
+  "input": "samples/chart/세로막대형/묶은세로막대형.hwp",
+  "instructions": "입력 차트의 charts[0].chart 를 answer.json 에 {\"chart\": N} 으로 제출하라. 차트 번호는 문서 순서 1부터다. 배열 인덱스 0 과 혼동하지 마라. 숫자를 파일 이름·폴더 설명에서 추측하지 마라. 라이브 봉투를 읽어라. 힌트: rhwp chart-to-csv <문서> --chart 1 --json 의 charts[0].chart.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "charts[0].chart",
+      "op": "answer_eq",
+      "answer": "chart",
+      "path": "charts[0].chart",
+      "cmd": [
+        "chart-to-csv",
+        "{input}",
+        "--chart",
+        "1",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

@@ -1,0 +1,18 @@
+{
+  "id": "WR07",
+  "steps": [
+    {
+      "answer": {
+        "schemaVersion": {
+          "cmd": [
+            "replay",
+            "--plan-json",
+            "{\"planVersion\": \"1.0\", \"input\": \"samples/field-01.hwp\", \"output\": \"schema-out.hwp\", \"steps\": [{\"action\": \"replace_text\", \"find\": \"마케팅\", \"replace\": \"스키마버전\"}]}",
+            "--json"
+          ],
+          "path": "schemaVersion"
+        }
+      }
+    }
+  ]
+}

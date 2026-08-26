@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-metric-coverage-full-manifest-policy",
+  "issue": 4962,
+  "policyVersion": "stage4-c-v2",
+  "expected": {
+    "documents": 10000,
+    "formats": {
+      "hwp": 6582,
+      "hwpx": 3418
+    },
+    "candidateBytes": 5471422390,
+    "ignoredRegularFiles": 1,
+    "ignoredBytes": 6017
+  },
+  "discovery": {
+    "extensions": {
+      ".hwp": "hwp",
+      ".hwpx": "hwpx"
+    },
+    "ignoredExtensions": [
+      ".tsv"
+    ],
+    "rejectSymlinks": true,
+    "rejectSpecialFiles": true,
+    "maxInputBytes": 269484032
+  },
+  "formatClassification": {
+    "inputFormat": "extension",
+    "executionFormat": "supported-container-signature-or-input-fallback",
+    "unsupportedSignature": "worker-explicit-failure",
+    "supportedContainerFormats": [
+      "hwp",
+      "hwpx"
+    ]
+  },
+  "identity": {
+    "algorithm": "blake3",
+    "allowDuplicateContent": true,
+    "rejectDuplicateSource": true,
+    "order": [
+      "format:asc",
+      "blake3:asc",
+      "sizeBytes:asc",
+      "source:asc"
+    ]
+  },
+  "execution": {
+    "hashConcurrency": 4,
+    "verifyStableStatAcrossHash": true
+  },
+  "storage": {
+    "requireCheckpointMaximumPlusReserve": true
+  },
+  "privacy": {
+    "manifestLocalOnly": true,
+    "manifestFileMode": "0600",
+    "preflightContainsDocumentIdentity": false,
+    "publishManifest": false
+  }
+}

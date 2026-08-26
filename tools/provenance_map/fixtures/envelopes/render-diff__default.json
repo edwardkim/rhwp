@@ -1,0 +1,53 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.provenance.envelope_sample.v1",
+  "claim": "M-prov",
+  "issue": 5480,
+  "generator": "tools/provenance_map/fatten_provenance_map.py",
+  "id": "render-diff__default",
+  "command": "render-diff",
+  "family": "render-diag",
+  "mode": "default",
+  "flags": [
+    "--json"
+  ],
+  "cli": "rhwp render-diff <a> <b> --json ",
+  "whyThisMode": "기하만. 본문·이미지 바이트 없음",
+  "sampleKind": "typical",
+  "risk": "none",
+  "note": "기하 차이 봉투는 경로·노드 유형·좌표·집계값만 싣는다. 본문 텍스트와 이미지 바이트는 싣지 않는다.",
+  "declaredUntrusted": [],
+  "presentUntrusted": [],
+  "subsetOk": true,
+  "fieldClass": {
+    "schemaVersion": "R",
+    "source": "R",
+    "a": "C",
+    "b": "C",
+    "diffCount": "R",
+    "nodes": "R",
+    "untrustedContent": "mark",
+    "untrustedFields": "mark"
+  },
+  "consumerRule": "좌표로 눈검증 대상을 고른다.",
+  "trap": "이 자리를 고치지 않는다. 렌더 차이 구현은 다른 석.",
+  "injectionCanary": null,
+  "canaryRule": "이 모드는 문서 파생 문자열이 없다.",
+  "forbiddenIfPromoted": [],
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "<repo>/samples/fixture-render-diff.hwp",
+    "a": "caller:render-diff:a",
+    "b": "caller:render-diff:b",
+    "diffCount": 0,
+    "nodes": [
+      {
+        "x": "engine:render-diff:nodes[].x",
+        "y": "engine:render-diff:nodes[].y",
+        "type": "engine:render-diff:nodes[].type"
+      }
+    ],
+    "untrustedContent": false,
+    "untrustedFields": []
+  }
+}

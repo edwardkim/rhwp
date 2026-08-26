@@ -1,0 +1,28 @@
+{
+  "id": "p4-caretstart",
+  "title": "문단 첫 자리는 어디인가 — 앞머리 자리차지를 어디까지 건너뛰나",
+  "ledger": [],
+  "open": "samples/mix-shape-01.hwp",
+  "calls": [
+    ["SetPos", [0, 0, 0]],
+    ["GetPos", []],
+    ["SetPos", [0, 0, 1]],
+    ["GetPos", []],
+    ["SetPos", [0, 0, 8]],
+    ["GetPos", []],
+    ["SetPos", [0, 0, 16]],
+    ["GetPos", []],
+    ["SetPos", [0, 0, 24]],
+    ["GetPos", []],
+    ["SetPos", [0, 0, 32]],
+    ["GetPos", []],
+    ["SetPos", [0, 0, 40]],
+    ["GetPos", []],
+    ["HeadCtrl.Next.Next.GetAnchorPos(0).Item", ["Pos"]],
+    ["HeadCtrl.Next.Next.Properties.Item", ["TreatAsChar"]],
+    ["HeadCtrl.Next.Next.Next.GetAnchorPos(0).Item", ["Pos"]],
+    ["HeadCtrl.Next.Next.Next.Properties.Item", ["TreatAsChar"]],
+    ["HeadCtrl.Next.Next.Next.Next.GetAnchorPos(0).Item", ["Pos"]],
+    ["HeadCtrl.Next.Next.Next.Next.Properties.Item", ["TreatAsChar"]]
+  ]
+}

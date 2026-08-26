@@ -1,0 +1,16 @@
+{
+  "id": "SD35",
+  "steps": [
+    {
+      "answer": {
+        "flags": {
+          "cmd": [
+            "capabilities"
+          ],
+          "path": "batch.flags",
+          "len": true
+        }
+      }
+    }
+  ]
+}

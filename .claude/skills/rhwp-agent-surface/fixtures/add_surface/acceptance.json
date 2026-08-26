@@ -1,0 +1,13 @@
+{
+  "items": [
+    "stdout 순수성: --json 모드에서 stdout 에 JSON 하나(배치는 NDJSON)만",
+    "실패 경로: 런타임 실패 시 stdout 비움, exit 1. 조립 오류 exit 2",
+    "schemaVersion 필드 포함",
+    "출처 표지: untrustedContent·untrustedFields 를 모든 모드에서",
+    "무상태: inputSchema.required 와 cli.args 자리표시자 1:1",
+    "세션: 닫힌 핸들 isError, 기록은 hwp_doc_save 만",
+    "실패 응답에 nextCall{name,arguments,why}",
+    "문서: cli_commands.md + 지식 지도 행"
+  ],
+  "source": "agent_surface_playbook.md §3"
+}

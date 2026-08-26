@@ -1,0 +1,49 @@
+{
+  "schemaVersion": "1",
+  "generatedBy": "tools/strategist/engagement.py",
+  "corpus": "corpus/cloud-q3",
+  "documentCount": 4,
+  "mappedCount": 4,
+  "documents": [
+    {
+      "file": "2Q_실적.hwpx",
+      "sizeBytes": 80000,
+      "status": "ok",
+      "info": {
+        "format": "hwpx",
+        "pageCount": 6
+      }
+    },
+    {
+      "file": "수주파이프.hwp",
+      "sizeBytes": 80333,
+      "status": "ok",
+      "info": {
+        "format": "hwp",
+        "pageCount": 7
+      }
+    },
+    {
+      "file": "인력배치.hwpx",
+      "sizeBytes": 80666,
+      "status": "ok",
+      "info": {
+        "format": "hwpx",
+        "pageCount": 8
+      }
+    },
+    {
+      "file": "리스크등록부.hwp",
+      "sizeBytes": 80999,
+      "status": "ok",
+      "info": {
+        "format": "hwp",
+        "pageCount": 9
+      }
+    }
+  ],
+  "_skillMeta": {
+    "id": "quarterly",
+    "issue": 5335
+  }
+}

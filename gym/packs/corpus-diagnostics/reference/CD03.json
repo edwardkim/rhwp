@@ -1,0 +1,17 @@
+{
+  "id": "CD03",
+  "steps": [
+    {
+      "answer": {
+        "pages": {
+          "cmd": [
+            "dump-pages",
+            "{input}",
+            "--json"
+          ],
+          "path": "pageCount"
+        }
+      }
+    }
+  ]
+}

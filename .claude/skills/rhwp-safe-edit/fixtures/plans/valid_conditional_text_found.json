@@ -1,0 +1,14 @@
+{
+  "planVersion": "1.0",
+  "input": "samples/field-01.hwp",
+  "output": "out/plan_result.hwp",
+  "steps": [
+    {
+      "action": "set_checkbox",
+      "occurrence": 0,
+      "if": {
+        "textFound": "회사"
+      }
+    }
+  ]
+}

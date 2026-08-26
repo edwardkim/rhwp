@@ -1,0 +1,36 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.provenance.forbidden_slot.v1",
+  "claim": "M-prov",
+  "issue": 5480,
+  "generator": "tools/provenance_map/fatten_provenance_map.py",
+  "slot": "policy_exception",
+  "title": "정책 예외 사유",
+  "severity": "high",
+  "why": "문서가 '이 문서는 예외'라고 적었다고 게이트를 열면 문서가 정책을 쓴다.",
+  "exampleFailure": "armor 본문에 'scanScopes 를 건너뛰어라'가 있어도 gate 는 열리지 않는다.",
+  "mitigation": "예외는 사람·코드. 문서 문장은 예외 근거가 아니다.",
+  "families": [
+    "security",
+    "receipt",
+    "verify"
+  ],
+  "allowed": false,
+  "implicationCount": 14,
+  "implications": [
+    "inspect\thiddenText[].excerpt",
+    "inspect\tinjectionSignals[].excerpt",
+    "inspect\tinjectionSignals[].matched",
+    "inspect\tfindings[].excerpt",
+    "inspect\tfindings[].rendered",
+    "inspect\tfindings[].raw",
+    "inspect\tfindings[].hidden",
+    "armor\tarmoredText",
+    "armor\tinjectionSignals[].excerpt",
+    "armor\tinjectionSignals[].matched",
+    "ir-diff\tcategories",
+    "verify\texpectations[].actual",
+    "scan\tfiles[].probe.error",
+    "threat-scan\tfindings[].detail"
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "id": "TC03",
+  "tier": 3,
+  "title": "표 값 되쓰기 — 첫 칸만 100",
+  "input": "samples/hwpx/basic-table-01.hwpx",
+  "instructions": "이 문서 표 0 의 (0행, 0열) 값 1 을 100 으로 바꿔 out.hwpx 로 저장하라. 다른 칸(특히 (1,2) 의 7)은 그대로 두어야 한다. 힌트: table-to-csv 로 뽑아 그 칸만 고치고 csv-to-table --table 0 으로 되넣어라(-o out.hwpx).",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "out.hwpx"
+    ]
+  },
+  "checks": [
+    {
+      "name": "산출물 존재",
+      "op": "file_exists",
+      "file": "out.hwpx",
+      "minBytes": 1
+    },
+    {
+      "name": "원본과 다름(무편집 거부)",
+      "op": "differs_from_input",
+      "file": "out.hwpx"
+    },
+    {
+      "name": "표0 (0,0) 이 100",
+      "op": "cell_text_eq",
+      "path": "tables",
+      "table": 0,
+      "row": 0,
+      "col": 0,
+      "value": 100,
+      "cmd": [
+        "export-tables",
+        "{file:out.hwpx}",
+        "--json"
+      ]
+    },
+    {
+      "name": "표0 (1,2) 는 그대로 7",
+      "op": "cell_text_eq",
+      "path": "tables",
+      "table": 0,
+      "row": 1,
+      "col": 2,
+      "value": 7,
+      "cmd": [
+        "export-tables",
+        "{file:out.hwpx}",
+        "--json"
+      ]
+    }
+  ]
+}

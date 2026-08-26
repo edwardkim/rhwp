@@ -1,6 +1,8 @@
 //! 도형/글상자/그룹 개체 레이아웃
 
-use super::super::composer::{compose_paragraph, reflow_line_segs, ComposedParagraph};
+use super::super::composer::{
+    compose_paragraph, reflow_line_segs, ComposedParagraph, ParagraphBox,
+};
 use super::super::page_layout::LayoutRect;
 use super::super::pagination::PageItem;
 use super::super::render_tree::*;
@@ -119,7 +121,7 @@ fn should_suppress_group_child_construction_stroke(drawing: &DrawingObjAttr) -> 
 }
 
 fn push_placeholder_render_node(
-    tree: &mut PageRenderTree,
+    tree: &mut PageLayoutContext,
     parent: &mut RenderNode,
     bbox: BoundingBox,
     fill_color: u32,
@@ -139,8 +141,20 @@ fn push_placeholder_render_node(
     parent.children.push(node);
 }
 
+/// [#4694] 셀/글상자 안 ole 의 컨테이너 문맥. 비어 있으면(본문 직속) None —
+/// 방출도 비어 selection ref 가 3좌표로 유지된다(회귀 0).
+fn ole_cell_context(
+    parent_cell_path: &[CellPathEntry],
+    para_index: usize,
+) -> Option<crate::renderer::layout::CellContext> {
+    (!parent_cell_path.is_empty()).then(|| crate::renderer::layout::CellContext {
+        parent_para_index: para_index,
+        path: parent_cell_path.to_vec(),
+    })
+}
+
 fn push_ole_placeholder_render_node(
-    tree: &mut PageRenderTree,
+    tree: &mut PageLayoutContext,
     parent: &mut RenderNode,
     bbox: BoundingBox,
     fill_color: u32,
@@ -149,6 +163,7 @@ fn push_ole_placeholder_render_node(
     section_index: usize,
     para_index: usize,
     control_index: usize,
+    parent_cell_path: &[CellPathEntry],
 ) {
     let node_id = tree.next_id();
     let node = RenderNode::new(
@@ -160,6 +175,7 @@ fn push_ole_placeholder_render_node(
             section_index,
             para_index,
             control_index,
+            ole_cell_context(parent_cell_path, para_index),
         )),
         bbox,
     );
@@ -167,7 +183,7 @@ fn push_ole_placeholder_render_node(
 }
 
 fn push_raw_svg_render_node(
-    tree: &mut PageRenderTree,
+    tree: &mut PageLayoutContext,
     parent: &mut RenderNode,
     bbox: BoundingBox,
     svg: String,
@@ -182,13 +198,14 @@ fn push_raw_svg_render_node(
 }
 
 fn push_ole_raw_svg_render_node(
-    tree: &mut PageRenderTree,
+    tree: &mut PageLayoutContext,
     parent: &mut RenderNode,
     bbox: BoundingBox,
     svg: String,
     section_index: usize,
     para_index: usize,
     control_index: usize,
+    parent_cell_path: &[CellPathEntry],
 ) {
     let node_id = tree.next_id();
     let node = RenderNode::new(
@@ -198,6 +215,7 @@ fn push_ole_raw_svg_render_node(
             section_index,
             para_index,
             control_index,
+            ole_cell_context(parent_cell_path, para_index),
         )),
         bbox,
     );
@@ -205,7 +223,7 @@ fn push_ole_raw_svg_render_node(
 }
 
 fn push_ole_empty_para_end_anchor(
-    tree: &mut PageRenderTree,
+    tree: &mut PageLayoutContext,
     parent: &mut RenderNode,
     anchor_x: f64,
     anchor_y: f64,
@@ -396,15 +414,16 @@ fn should_reflow_matrix_textbox_lines(
     let has_axis_scale =
         (sa.render_sx.abs() - 1.0).abs() > 0.001 || (sa.render_sy.abs() - 1.0).abs() > 0.001;
     let has_rotation_or_shear = sa.render_b.abs() > 1e-6 || sa.render_c.abs() > 1e-6;
-    let compressed_group_child = sa.group_level > 0
-        && sa.render_sx > 0.0
-        && sa.render_sy > 0.0
-        && (sa.render_sx < 0.99 || sa.render_sy < 0.99);
+    // Y-only 축소(sy<1, sx≈1)는 저장 줄의 가로폭을 바꾸지 않는다. groupLevel>0 만으로
+    // 재래핑하면 행정업무운영편람 바탕쪽 "업무관리시스템"처럼 저장 1글자×7줄이
+    // 가용 폭(lastWidth 2374 HU) 기준 2글자 줄로 합쳐져 세로 제목이 깨진다.
+    let width_compressed_group_child =
+        sa.group_level > 0 && sa.render_sx > 0.0 && sa.render_sx < 0.99;
     has_axis_scale
         && !has_rotation_or_shear
         && text_box.paragraphs.iter().any(|para| {
             matrix_textbox_lines_need_reflow(para)
-                && (compressed_group_child
+                && (width_compressed_group_child
                     || matrix_textbox_lines_overflow_height(para, available_height, dpi))
         })
 }
@@ -435,29 +454,37 @@ fn reflow_matrix_textbox_para(
         }
     }
 
-    reflow_line_segs(para, available_width, styles, dpi);
+    // 도형/글상자 내용 상자 — 도형은 자기 열이 없으므로 미스냅.
+    reflow_line_segs(
+        para,
+        ParagraphBox::content_width_px(available_width, dpi),
+        styles,
+        dpi,
+    );
 }
 
 impl LayoutEngine {
     fn push_hwpx_hmapsi_preview_clip_node(
         &self,
-        tree: &mut PageRenderTree,
+        tree: &mut PageLayoutContext,
         parent: &mut RenderNode,
         bbox: BoundingBox,
         cfb_data: &[u8],
         section_index: usize,
         para_index: usize,
         control_index: usize,
+        parent_cell_path: &[CellPathEntry],
     ) -> bool {
         if !self.profile.get().hwpx_stored_layout()
             || !crate::parser::ole_container::is_hmapsi_ole_container(cfb_data)
         {
             return false;
         }
-        let (page_width, page_height) = match &tree.root.node_type {
-            RenderNodeType::Page(page) if page.page_index == 0 => (page.width, page.height),
-            _ => return false,
-        };
+        // [#4277] 페이지 기하는 프레임에서 읽는다 — 페인트 root 를 거치지 않는다.
+        if tree.page_index() != 0 {
+            return false;
+        }
+        let (page_width, page_height) = tree.page_size();
         let preview = self.hwpx_page_preview.borrow();
         let Some(preview) = preview.as_ref() else {
             return false;
@@ -495,6 +522,7 @@ impl LayoutEngine {
                 section_index,
                 para_index,
                 control_index,
+                ole_cell_context(parent_cell_path, para_index),
             )),
             bbox,
         );
@@ -569,7 +597,7 @@ impl LayoutEngine {
                         break;
                     }
                     if let Some(last_ls) = tp.line_segs.last() {
-                        let end = last_ls.vertical_pos + last_ls.line_height;
+                        let end = last_ls.vertical_pos.saturating_add(last_ls.line_height);
                         if end > max_vpos_end {
                             max_vpos_end = end;
                         }
@@ -607,7 +635,7 @@ impl LayoutEngine {
     #[allow(clippy::too_many_arguments)]
     pub(crate) fn layout_shape(
         &self,
-        tree: &mut PageRenderTree,
+        tree: &mut PageLayoutContext,
         parent: &mut RenderNode,
         paragraphs: &[Paragraph],
         para_index: usize,
@@ -779,7 +807,7 @@ impl LayoutEngine {
         let (shape_x, shape_y) = if let Some((ix, iy)) = inline_pos {
             (ix, iy)
         } else {
-            self.compute_object_position(
+            let (mut x, y) = self.compute_object_position(
                 common_for_position,
                 shape_w,
                 shape_h,
@@ -789,7 +817,23 @@ impl LayoutEngine {
                 paper_area,
                 para_y,
                 alignment,
-            )
+            );
+            // [#5808] 어울림(Square) **도형**의 왼쪽 바깥여백은 한글이 가로 위치에
+            // 가산한다 (156518601 1쪽 묶음: 오프셋 29138+여백 566 HU = 471.6px,
+            // 한글 실측 471.3 — 미가산이면 7.2px 왼쪽). 그림은 반대 계약이 이미
+            // 핀돼 있다(#3821: 그림의 om_left 는 wrap 간격이지 위치 이동이 아님) —
+            // 그림 경로가 함께 쓰는 compute_object_position 이 아니라 도형 호출부
+            // 에서만 가산한다. 실측이 Left 정렬뿐이라 Center/Right 는 종전 유지.
+            if !common.treat_as_char
+                && matches!(common.text_wrap, crate::model::shape::TextWrap::Square)
+                && matches!(
+                    common.horz_align,
+                    crate::model::shape::HorzAlign::Left | crate::model::shape::HorzAlign::Inside
+                )
+            {
+                x += hwpunit_to_px(i32::from(common.margin.left), self.dpi);
+            }
+            (x, y)
         };
 
         // 캡션 높이 및 간격 계산
@@ -928,7 +972,7 @@ impl LayoutEngine {
     #[allow(clippy::too_many_arguments)]
     pub(crate) fn layout_group_child_affine(
         &self,
-        tree: &mut PageRenderTree,
+        tree: &mut PageLayoutContext,
         parent: &mut RenderNode,
         child: &crate::model::shape::ShapeObject,
         group_origin_x: f64,
@@ -1129,7 +1173,7 @@ impl LayoutEngine {
     #[allow(clippy::too_many_arguments)]
     pub(crate) fn layout_shape_object(
         &self,
-        tree: &mut PageRenderTree,
+        tree: &mut PageLayoutContext,
         parent: &mut RenderNode,
         shape: &crate::model::shape::ShapeObject,
         base_x: f64,
@@ -1173,7 +1217,7 @@ impl LayoutEngine {
     #[allow(clippy::too_many_arguments)]
     fn layout_shape_object_with_group_origin(
         &self,
-        tree: &mut PageRenderTree,
+        tree: &mut PageLayoutContext,
         parent: &mut RenderNode,
         shape: &crate::model::shape::ShapeObject,
         base_x: f64,
@@ -1902,11 +1946,29 @@ impl LayoutEngine {
                 // 그룹 내 그림: common이 비어있으므로 w, h(shape_attr 기반)를 직접 사용
                 let bin_data_id = pic.image_attr.bin_data_id;
                 let image_data = find_bin_data_bytes(bin_data_content, bin_data_id);
+                // [#5568] 그림 자르기(crop)를 본문 경로와 동일하게 싣는다. 묶음은
+                // 원본 하나를 imgClip 띠로 나눠 쓰는 문서가 있어(같은 bin_data 를
+                // 자식마다 다른 영역으로), 빠뜨리면 원본 전체가 대상 상자에
+                // 압착된다(비율 파괴). 렌더러의 crop 분기는 이 두 필드만 소비한다.
+                let crop = {
+                    let c = &pic.crop;
+                    if c.right > c.left
+                        && c.bottom > c.top
+                        && (c.left != 0 || c.top != 0 || c.right != 0 || c.bottom != 0)
+                    {
+                        Some((c.left, c.top, c.right, c.bottom))
+                    } else {
+                        None
+                    }
+                };
+                let original_size_hu = pic.crop_reference_size();
                 let img_id = tree.next_id();
                 let img_node = RenderNode::new(
                     img_id,
                     RenderNodeType::Image(ImageNode {
                         transform,
+                        crop,
+                        original_size_hu,
                         effect: pic.image_attr.effect,
                         brightness: pic.image_attr.brightness,
                         contrast: pic.image_attr.contrast,
@@ -1938,7 +2000,25 @@ impl LayoutEngine {
             }
             ShapeObject::Ole(ole) => {
                 // Task #195 단계 8: BinData에서 OOXML 차트 시도 → 성공 시 네이티브 SVG 렌더
+                // [#4694] 표 셀은 parent_cell_path 가 아니라 table_cell_ref 로 온다(#1138).
+                // ole 노드의 컨테이너 문맥 방출용으로 한 경로에 합친다 — 상위 경로 뒤에 셀 항목.
+                let ole_container_path: Vec<CellPathEntry> = {
+                    let mut p = parent_cell_path.to_vec();
+                    if let Some((cell_idx, cell_para_idx, outer_ctrl)) = table_cell_ref {
+                        p.push(CellPathEntry {
+                            control_index: outer_ctrl,
+                            cell_index: cell_idx,
+                            cell_para_index: cell_para_idx,
+                            text_direction: 0,
+                        });
+                    }
+                    p
+                };
                 let mut rendered = false;
+                // [#5582] legacy 차트 `Contents` 파싱 실패는 최종 판정이 아니라 폴백
+                // 사유다 — 라벨만 기억하고 EMF/WMF/네이티브 이미지/hmapsi 폴백을
+                // 계속 시도한다. 전부 실패했을 때만 이 라벨로 자리표시를 그린다.
+                let mut chart_error_label: Option<String> = None;
                 // [#2550] 상한 로드 1회 — 이하 분기가 같은 바이트를 공유한다 (기존 3중
                 // 해제 제거 겸). 상한 초과는 아래 placeholder 폴백으로 접힌다.
                 if let Some((content, ole_bytes)) =
@@ -1962,6 +2042,7 @@ impl LayoutEngine {
                                 section_index,
                                 para_index,
                                 control_index,
+                                &ole_container_path,
                             );
                             rendered = true;
                         }
@@ -1984,6 +2065,7 @@ impl LayoutEngine {
                                         section_index,
                                         para_index,
                                         control_index,
+                                        &ole_container_path,
                                     );
                                     rendered = true;
                                 }
@@ -2013,27 +2095,21 @@ impl LayoutEngine {
                                                 section_index,
                                                 para_index,
                                                 control_index,
+                                                &ole_container_path,
                                             );
                                             rendered = true;
                                         }
                                         Err(error) => {
-                                            push_ole_placeholder_render_node(
-                                                tree,
-                                                parent,
-                                                BoundingBox::new(
-                                                    render_x, render_y, render_w, render_h,
-                                                ),
-                                                0xFFFFF4E5,
-                                                0xFFB45F06,
-                                                ole_chart_fallback_label(
-                                                    error.stable_message(),
-                                                    ole.bin_data_id,
-                                                ),
-                                                section_index,
-                                                para_index,
-                                                control_index,
-                                            );
-                                            rendered = true;
+                                            // [#5582] 종전에는 여기서 자리표시를 그리고
+                                            // 끝냈다 — `Contents` 를 가진 차트 아닌
+                                            // 일반 OLE 가 갖고 있는 EMF/WMF 미리보기에
+                                            // 도달하지 못해 개체가 화면에서 사라졌다
+                                            // (36494613 실측: 개체 2개 자리표시 →
+                                            // EMF 렌더 복원). 폴백 사유로 강등한다.
+                                            chart_error_label = Some(ole_chart_fallback_label(
+                                                error.stable_message(),
+                                                ole.bin_data_id,
+                                            ));
                                         }
                                     }
                                 }
@@ -2061,6 +2137,7 @@ impl LayoutEngine {
                                             section_index,
                                             para_index,
                                             control_index,
+                                            &ole_container_path,
                                         );
                                         rendered = true;
                                     }
@@ -2093,6 +2170,7 @@ impl LayoutEngine {
                                             section_index,
                                             para_index,
                                             control_index,
+                                            &ole_container_path,
                                         );
                                         rendered = true;
                                     }
@@ -2135,8 +2213,178 @@ impl LayoutEngine {
                                         section_index,
                                         para_index,
                                         control_index,
+                                        &ole_container_path,
                                     );
                                     rendered = true;
+                                }
+                            }
+
+                            // [#5725] 미리보기 없는 한글 수식 OLE — `Contents` 봉투의
+                            // 수식 스크립트를 기존 수식 렌더러(Control::Equation 경로와
+                            // 동일)로 그린다. 코퍼스의 수식 OLE `OlePres000` 은 전부
+                            // 28바이트 스텁이라 미리보기 폴백으로는 그릴 것이 없다 —
+                            // 스크립트가 유일한 출처다 (10k 실측 8문서/39개체).
+                            if !rendered {
+                                if let Some(script) = container.raw_contents.as_deref().and_then(
+                                    crate::parser::ole_container::parse_equation_contents_script,
+                                ) {
+                                    let tokens =
+                                        super::super::equation::tokenizer::tokenize(&script);
+                                    let ast = super::super::equation::parser::EqParser::new(tokens)
+                                        .parse();
+                                    // 글자 크기는 개체 크기에 맞춘다 — 기준 10px 레이아웃의
+                                    // 높이 비로 역산. (SVG/Skia 는 수식을 bbox 폭에만 맞춰
+                                    // 가로 스케일하므로 세로는 여기서 맞아야 한다.)
+                                    let base_layout =
+                                        super::super::equation::layout::EqLayout::new(10.0)
+                                            .layout(&ast);
+                                    let font_size_px = if base_layout.height > 0.0 && render_h > 0.0
+                                    {
+                                        (10.0 * render_h / base_layout.height).clamp(2.0, 400.0)
+                                    } else {
+                                        10.0
+                                    };
+                                    let layout_box =
+                                        super::super::equation::layout::EqLayout::new(font_size_px)
+                                            .layout(&ast);
+                                    let color_str =
+                                        super::super::equation::svg_render::eq_color_to_svg(0);
+                                    let svg_content =
+                                        super::super::equation::svg_render::render_equation_svg(
+                                            &layout_box,
+                                            &color_str,
+                                            font_size_px,
+                                        );
+                                    let eq_node = RenderNode::new(
+                                        tree.next_id(),
+                                        RenderNodeType::Equation(EquationNode {
+                                            svg_content,
+                                            layout_box,
+                                            color_str,
+                                            color: 0,
+                                            script,
+                                            font_size: font_size_px,
+                                            section_index: Some(section_index),
+                                            para_index: Some(para_index),
+                                            control_index: Some(control_index),
+                                            cell_index: table_cell_ref.map(|(c, _, _)| c),
+                                            cell_para_index: table_cell_ref.map(|(_, p, _)| p),
+                                            note_ref: None,
+                                        }),
+                                        BoundingBox::new(render_x, render_y, render_w, render_h),
+                                    );
+                                    parent.children.push(eq_node);
+                                    rendered = true;
+                                }
+                            }
+
+                            // [#5724] 미리보기 없는 그림(메타파일/비트맵) OLE —
+                            // `CONTENTS` 가 곧 그림이다 (CompObj UserType=`그림 (메타
+                            // 파일)`, ProgID=StaticMetafile 실측). 미리보기가 있으면 위
+                            // EMF/WMF 폴백이 이미 소비했으므로, 이 갈래는 미리보기가
+                            // 아예 없는 잔여만 구제한다 (10k 실측 WMF 8문서/11개체 +
+                            // BMP 1문서/2개체). 기존 WMF 재생기가 placeable 헤더까지
+                            // 자체 처리한다.
+                            if !rendered {
+                                if let Some(raw) = container.raw_contents.as_deref() {
+                                    if crate::parser::ole_container::raw_contents_is_wmf(raw) {
+                                        if let Some(svg_bytes) =
+                                            crate::renderer::svg::convert_wmf_to_svg(raw)
+                                        {
+                                            use base64::Engine;
+                                            let b64 = base64::engine::general_purpose::STANDARD
+                                                .encode(&svg_bytes);
+                                            let href = format!("data:image/svg+xml;base64,{}", b64);
+                                            let svg_fragment = format!(
+                                                "<image x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" preserveAspectRatio=\"xMidYMid meet\" xlink:href=\"{}\" href=\"{}\"/>",
+                                                render_x, render_y, render_w, render_h, href, href
+                                            );
+                                            push_ole_raw_svg_render_node(
+                                                tree,
+                                                parent,
+                                                BoundingBox::new(
+                                                    render_x, render_y, render_w, render_h,
+                                                ),
+                                                svg_fragment,
+                                                section_index,
+                                                para_index,
+                                                control_index,
+                                                &ole_container_path,
+                                            );
+                                            rendered = true;
+                                        }
+                                    } else if crate::parser::ole_container::raw_contents_is_emf(raw)
+                                    {
+                                        let render_rect = (
+                                            render_x as f32,
+                                            render_y as f32,
+                                            render_w as f32,
+                                            render_h as f32,
+                                        );
+                                        if let Ok(svg_fragment) =
+                                            crate::emf::convert_to_svg(raw, render_rect)
+                                        {
+                                            push_ole_raw_svg_render_node(
+                                                tree,
+                                                parent,
+                                                BoundingBox::new(
+                                                    render_x, render_y, render_w, render_h,
+                                                ),
+                                                svg_fragment,
+                                                section_index,
+                                                para_index,
+                                                control_index,
+                                                &ole_container_path,
+                                            );
+                                            rendered = true;
+                                        }
+                                    } else if let Some((kind, bytes)) =
+                                        crate::parser::ole_container::detect_native_image(raw)
+                                    {
+                                        use base64::Engine;
+                                        // BMP → PNG 재인코딩 (SVG <image>는 data:image/bmp 미지원)
+                                        let (render_bytes, render_mime): (
+                                            std::borrow::Cow<[u8]>,
+                                            &str,
+                                        ) = if kind.mime() == "image/bmp" {
+                                            match crate::renderer::svg::bmp_bytes_to_png_bytes(
+                                                &bytes,
+                                            ) {
+                                                Some(png) => {
+                                                    (std::borrow::Cow::Owned(png), "image/png")
+                                                }
+                                                None => (
+                                                    std::borrow::Cow::Borrowed(bytes.as_slice()),
+                                                    kind.mime(),
+                                                ),
+                                            }
+                                        } else {
+                                            (
+                                                std::borrow::Cow::Borrowed(bytes.as_slice()),
+                                                kind.mime(),
+                                            )
+                                        };
+                                        let b64 = base64::engine::general_purpose::STANDARD
+                                            .encode(&*render_bytes);
+                                        let href = format!("data:{};base64,{}", render_mime, b64);
+                                        let svg_fragment = format!(
+                                            "<image x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" preserveAspectRatio=\"xMidYMid meet\" xlink:href=\"{}\" href=\"{}\"/>",
+                                            render_x, render_y, render_w, render_h, href, href
+                                        );
+                                        push_ole_raw_svg_render_node(
+                                            tree,
+                                            parent,
+                                            BoundingBox::new(
+                                                render_x, render_y, render_w, render_h,
+                                            ),
+                                            svg_fragment,
+                                            section_index,
+                                            para_index,
+                                            control_index,
+                                            &ole_container_path,
+                                        );
+                                        rendered = true;
+                                    }
                                 }
                             }
                         }
@@ -2149,6 +2397,7 @@ impl LayoutEngine {
                                 section_index,
                                 para_index,
                                 control_index,
+                                &ole_container_path,
                             )
                         {
                             rendered = true;
@@ -2157,19 +2406,37 @@ impl LayoutEngine {
                 }
 
                 if !rendered {
-                    // 폴백: placeholder
-                    let label = format!("OLE 개체 (BinData #{})", ole.bin_data_id);
-                    push_ole_placeholder_render_node(
-                        tree,
-                        parent,
-                        BoundingBox::new(render_x, render_y, render_w, render_h),
-                        0xFFF0F0F0,
-                        0xFF707070,
-                        label,
-                        section_index,
-                        para_index,
-                        control_index,
-                    );
+                    // [#5582] 차트 `Contents` 파싱이 실패했고 다른 미리보기 폴백도
+                    // 전부 실패한 경우엔 그 사유 라벨(종전 색)을 쓴다.
+                    //
+                    // [#5882] 사유 라벨 없는 회색 자리표시("OLE 개체 (BinData #N)")는
+                    // 문서에 없던 이물이다 — 그릴 내용이 원본에 없는 OLE(빈 CFB 등)에 대해
+                    // 한글은 빈 자리로 둔다. 진단이 필요할 때만 RHWP_DIAG_OLE_PLACEHOLDER
+                    // 로 렌더 트리에 넣는다.
+                    let draw_placeholder = chart_error_label.is_some()
+                        || std::env::var_os("RHWP_DIAG_OLE_PLACEHOLDER").is_some();
+                    if draw_placeholder {
+                        let (bg, fg, label) = match chart_error_label {
+                            Some(label) => (0xFFFFF4E5, 0xFFB45F06, label),
+                            None => (
+                                0xFFF0F0F0,
+                                0xFF707070,
+                                format!("OLE 개체 (BinData #{})", ole.bin_data_id),
+                            ),
+                        };
+                        push_ole_placeholder_render_node(
+                            tree,
+                            parent,
+                            BoundingBox::new(render_x, render_y, render_w, render_h),
+                            bg,
+                            fg,
+                            label,
+                            section_index,
+                            para_index,
+                            control_index,
+                            &ole_container_path,
+                        );
+                    }
                 }
             }
         }
@@ -2178,7 +2445,7 @@ impl LayoutEngine {
     /// 도형의 이미지 채우기를 자식 이미지 노드로 추가한다.
     pub(crate) fn add_image_fill_node(
         &self,
-        tree: &mut PageRenderTree,
+        tree: &mut PageLayoutContext,
         parent: &mut RenderNode,
         drawing: &crate::model::shape::DrawingObjAttr,
         base_x: f64,
@@ -2265,7 +2532,7 @@ impl LayoutEngine {
     #[allow(clippy::too_many_arguments)]
     pub(crate) fn layout_textbox_content(
         &self,
-        tree: &mut PageRenderTree,
+        tree: &mut PageLayoutContext,
         shape_node: &mut RenderNode,
         drawing: &crate::model::shape::DrawingObjAttr,
         base_x: f64,
@@ -2400,6 +2667,20 @@ impl LayoutEngine {
             .as_deref()
             .unwrap_or(&text_box.paragraphs);
 
+        // [#5721] page-기준 vpos 재기저화(origin 빼기)는 저장 vpos 스트림 **전체**가
+        // page 좌표일 때만 유효하다. box 좌표 스트림(첫 문단 vpos 가 origin 미만)
+        // 에서 줄 단위로 발동하면, origin 을 우연히 넘는 뒤쪽 문단만 재기저화되어
+        // 순서가 꺾인다 — 2568129 글상자 실측: 제목 표 문단 vpos 228.6px(17145HU) 가
+        // origin(~199px) 을 넘어 29.4px 로 내려앉아 앞의 발신처 표(110.3px) **위**에
+        // 그려졌다. 첫 유효 vpos 가 origin 이상인 스트림에만 origin 을 유지한다.
+        let textbox_vpos_origin_hu = textbox_vpos_origin_hu.filter(|origin| {
+            textbox_paragraphs
+                .iter()
+                .find_map(|p| p.line_segs.first())
+                .map(|seg| seg.vertical_pos >= *origin)
+                .unwrap_or(false)
+        });
+
         // 빈 텍스트박스에 오버플로우 문단이 매핑되어 있는지 확인 (가로/세로 공통)
         let key = (para_index, control_index);
         if let Some(overflow_paras) = overflow_map.get(&key) {
@@ -2510,7 +2791,7 @@ impl LayoutEngine {
                 }
                 // 이 문단의 마지막 line_seg의 끝 위치 추적
                 if let Some(last_ls) = para.line_segs.last() {
-                    let end = last_ls.vertical_pos + last_ls.line_height;
+                    let end = last_ls.vertical_pos.saturating_add(last_ls.line_height);
                     if end > max_vpos_end {
                         max_vpos_end = end;
                     }
@@ -3116,7 +3397,7 @@ impl LayoutEngine {
     #[allow(clippy::too_many_arguments)]
     fn layout_vertical_textbox_text_with_paras(
         &self,
-        tree: &mut PageRenderTree,
+        tree: &mut PageLayoutContext,
         shape_node: &mut RenderNode,
         paragraphs: &[Paragraph],
         text_box: &crate::model::shape::TextBox,
@@ -3179,7 +3460,9 @@ impl LayoutEngine {
                     start_idx: chars.len(),
                     end_idx: chars.len(),
                     col_width: ls
-                        .map(|l| hwpunit_to_px(l.line_height + l.line_spacing, self.dpi))
+                        .map(|l| {
+                            hwpunit_to_px(l.line_height.saturating_add(l.line_spacing), self.dpi)
+                        })
                         .unwrap_or(13.0),
                     col_spacing: 0.0,
                     total_height: 0.0,
@@ -3194,7 +3477,7 @@ impl LayoutEngine {
                 let ls = para.line_segs.get(line_idx);
                 // 칼럼 너비 = line_height + line_spacing (전체 피치 흡수)
                 let col_width = ls
-                    .map(|l| hwpunit_to_px(l.line_height + l.line_spacing, self.dpi))
+                    .map(|l| hwpunit_to_px(l.line_height.saturating_add(l.line_spacing), self.dpi))
                     .unwrap_or(13.0);
                 let col_spacing = 0.0;
                 let absorbed_spacing = ls
@@ -3685,7 +3968,7 @@ impl LayoutEngine {
                     .paragraphs
                     .iter()
                     .flat_map(|p| p.line_segs.last())
-                    .map(|s| s.vertical_pos + s.line_height)
+                    .map(|s| s.vertical_pos.saturating_add(s.line_height))
                     .max()
                     .unwrap_or(0);
                 let required = content_h as u32 + pad_top + pad_bottom;

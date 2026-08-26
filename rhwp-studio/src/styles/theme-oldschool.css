@@ -1,0 +1,132 @@
+/* 올드스쿨 스킨 (옵트인) — 보기 > 테마 > "올드스쿨 스킨"
+ *
+ * 한글 97 시절의 고전 데스크톱 룩: 실버 크롬(#c0c0c0), 3D 베벨 경계,
+ * 네이비 액센트(#000080), 각진 모서리, 고전 시스템 글꼴(굴림).
+ *
+ * 규칙은 rhwp_studio_theming.md 를 따른다:
+ * - 모든 규칙은 [data-theme-skin="oldschool"] 스코프 아래 (기본 스킨 = 무속성 비활성)
+ * - 색 변수는 :not([data-theme-effective="dark"]) 가드 — 다크 팔레트를 덮지 않는다
+ * - 표면 규칙은 토큰만 참조한다 (스킨 로컬 --os-* 토큰 포함)
+ */
+
+:root[data-theme-skin="oldschool"]:not([data-theme-effective="dark"]) {
+  /* 스킨 로컬 토큰 */
+  --os-chrome: #c0c0c0;
+  --os-bevel-light: #ffffff;
+  --os-bevel-dark: #808080;
+  --os-bevel-darker: #404040;
+  --os-select: #000080;
+
+  /* 표면: 실버 크롬 */
+  --ui-bg: #c0c0c0;
+  --ui-bg-light: #c0c0c0;
+  --ui-surface-raised: #c0c0c0;
+  --ui-surface-muted: #b0b0b0;
+  --ui-toolbar-bg-start: #c0c0c0;
+  --ui-toolbar-bg-end: #c0c0c0;
+
+  /* 경계선 */
+  --ui-border: #808080;
+  --ui-border-light: #9a9a9a;
+  --ui-border-subtle: #a8a8a8;
+  --ui-border-strong: #404040;
+
+  /* 상호작용 */
+  --ui-hover: #d4d0c8;
+  --ui-hover-strong: #d4d0c8;
+  --ui-active: #b0b0b0;
+  --ui-selected: #cdd5e8;
+  --ui-menu-open: #000080;
+  --ui-menu-open-border: #000080;
+
+  /* 액센트: 클래식 네이비 */
+  --accent-primary: #000080;
+  --accent-strong: #000060;
+  --accent-light: #2a2aa0;
+  --accent-hover: #9aa2c8;
+  --accent-subtle: #3a3a90;
+  --focus-ring: #000080;
+  --ui-link: #0000c0;
+
+  /* 문서 작업 영역: 진회색 데스크 */
+  --doc-workspace: #808080;
+  --doc-shadow: rgba(0, 0, 0, 0.5);
+
+  /* 눈금자 */
+  --ruler-bg: #c0c0c0;
+  --ruler-body: #ffffff;
+  --ruler-tick: #404040;
+  --ruler-text: #202020;
+  --ruler-marker: #000080;
+}
+
+/* 다크 모드용 베벨 토큰 — 색 팔레트는 base.css 다크가 소유하고,
+   여기서는 스킨 로컬 --os-* 만 다크에 맞게 정의해 하드코딩 폴백을 없앤다. */
+:root[data-theme-skin="oldschool"][data-theme-effective="dark"] {
+  --os-chrome: var(--ui-bg);
+  --os-bevel-light: #4a505a;
+  --os-bevel-dark: #16191d;
+  --os-bevel-darker: #0e1013;
+  --os-select: var(--accent-primary);
+}
+
+/* 형태: 각진 모서리·하드 섀도·고전 글꼴 (라이트·다크 공통) */
+:root[data-theme-skin="oldschool"] {
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --shadow-dropdown: 2px 2px 0 rgba(0, 0, 0, 0.35);
+  --shadow-dialog: 3px 3px 0 rgba(0, 0, 0, 0.4);
+  --shadow-light: 1px 1px 0 rgba(0, 0, 0, 0.3);
+  /* UI 크롬 글꼴만 바꾼다 — 문서 본문 렌더링 글꼴과 무관하다. */
+  --font-family-ui: Gulim, '굴림', Dotum, '돋움', 'Malgun Gothic', sans-serif;
+}
+
+/* ── 크롬 표면: 실버 + 3D 베벨 ─────────────────────────── */
+[data-theme-skin="oldschool"] #menu-bar {
+  background: var(--os-chrome);
+  border-bottom: 1px solid var(--os-bevel-dark);
+}
+
+[data-theme-skin="oldschool"] #icon-toolbar,
+[data-theme-skin="oldschool"] #style-bar {
+  background: var(--os-chrome);
+  border-top: 1px solid var(--os-bevel-light);
+  border-bottom: 1px solid var(--os-bevel-dark);
+}
+
+[data-theme-skin="oldschool"] #status-bar {
+  background: var(--os-chrome);
+  border-top: 1px solid var(--os-bevel-light);
+}
+
+/* 도구 상자 버튼: 평평하다가 hover 시 튀어나오고 누르면 들어가는 고전 동작 */
+[data-theme-skin="oldschool"] #icon-toolbar .tb-btn {
+  border: 1px solid transparent;
+}
+
+[data-theme-skin="oldschool"] #icon-toolbar .tb-btn:hover {
+  background: var(--os-chrome);
+  border-color: var(--os-bevel-light) var(--os-bevel-dark)
+    var(--os-bevel-dark) var(--os-bevel-light);
+}
+
+[data-theme-skin="oldschool"] #icon-toolbar .tb-btn:active {
+  border-color: var(--os-bevel-dark) var(--os-bevel-light)
+    var(--os-bevel-light) var(--os-bevel-dark);
+}
+
+[data-theme-skin="oldschool"] #icon-toolbar .tb-sep {
+  background: var(--os-bevel-dark);
+  box-shadow: 1px 0 0 var(--os-bevel-light);
+}
+
+/* ── 메뉴 드롭다운: 베벨 패널 ──────────────────────────── */
+[data-theme-skin="oldschool"] #menu-bar .menu-dropdown,
+[data-theme-skin="oldschool"] #menu-bar .md-sub-panel {
+  background: var(--os-chrome);
+  border: 2px solid;
+  border-color: var(--os-bevel-light) var(--os-bevel-darker)
+    var(--os-bevel-darker) var(--os-bevel-light);
+  padding: 2px;
+}

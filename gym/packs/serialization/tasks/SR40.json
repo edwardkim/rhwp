@@ -1,0 +1,50 @@
+{
+  "id": "SR40",
+  "tier": 2,
+  "title": "문단 문서를 HWPX로 변환",
+  "input": "samples/para-001.hwp",
+  "instructions": "입력을 HWPX 로 변환해 conv.hwpx 를 제출하고, 변환 봉투의 형식 표기를 answer.json 에 {\"format\": \"...\"} 로 적어라. 힌트: rhwp export-hwpx --json 의 format. convert 와 달리 이 명령은 HWPX 컨테이너를 만든다.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "conv.hwpx",
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "HWPX 산출",
+      "op": "file_exists",
+      "file": "conv.hwpx",
+      "minBytes": 256
+    },
+    {
+      "name": "원본과 다름 (무편집 복사 거부 — 판별력)",
+      "op": "differs_from_input",
+      "file": "conv.hwpx"
+    },
+    {
+      "name": "info 형식",
+      "op": "value_eq",
+      "value": "hwpx",
+      "path": "format",
+      "cmd": [
+        "info",
+        "{file:conv.hwpx}",
+        "--json"
+      ]
+    },
+    {
+      "name": "변환 봉투 형식",
+      "op": "answer_eq",
+      "answer": "format",
+      "path": "format",
+      "cmd": [
+        "export-hwpx",
+        "{input}",
+        "{file:conv.hwpx}",
+        "--json"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "id": "ex-inj-minconf-bad",
+  "issue": 5476,
+  "axis": "injection",
+  "family": "exception",
+  "polarity": "exception",
+  "sourceRule": {
+    "file": "src/main.rs",
+    "symbol": "inspect_command",
+    "note": "알 수 없는 등급"
+  },
+  "cli": {
+    "argv": [
+      "inspect",
+      "injection",
+      "samples/hwp3-sample.hwp",
+      "--min-confidence",
+      "urgent"
+    ],
+    "exitCode": 2,
+    "stdoutKind": "empty",
+    "detectionIsNotFailure": false,
+    "stdoutBytes": 0,
+    "stderrContains": "오류: --min-confidence 는 low|medium|high 중 하나입니다 - urgent"
+  },
+  "consume": {
+    "branch": "stdout empty",
+    "doNotParseStdoutAsJson": true,
+    "stderrIsDiagnosis": true
+  },
+  "pair": null,
+  "why": "알 수 없는 등급",
+  "note": "실패 시 stdout 0바이트. 반쪽 JSON 이 나가면 파이프가 성공으로 오독한다.",
+  "human": "",
+  "inventedRule": false
+}

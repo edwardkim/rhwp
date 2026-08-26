@@ -1,0 +1,38 @@
+{
+  "consumerIssue": 4967,
+  "conversion": {
+    "command": "rhwp convert <source> <output> --verify --verify-pages",
+    "deterministicRepeatSha256Equal": true,
+    "irDifference": false,
+    "pageCountEqual": true
+  },
+  "documentFace": "KoPubWorld돋움체 Light",
+  "fontBytesEmbedded": false,
+  "hwp": {
+    "artifact": "mydocs/tech/investigations/issue-4967/fixtures/rank7_runtime_boundary.hwp",
+    "format": "hwp5",
+    "pageCount": 1,
+    "sha256": "3a844e0530ecede89301ab1f3c2381865412f8472aa08733cdb9d1d25223ee7f"
+  },
+  "hwpx": {
+    "artifact": "mydocs/tech/investigations/issue-4967/fixtures/rank7_qualification.hwpx",
+    "format": "hwpx",
+    "pageCount": 1,
+    "sha256": "1cc8062c6fd0da39cfddc4182115226717516d4250e693b43596293374236f9e"
+  },
+  "issue": 4967,
+  "kind": "font-rank7-runtime-boundary-fixture-manifest",
+  "privacy": {
+    "fontBytesIncluded": false,
+    "privateCorpusAccessed": false,
+    "privateDocumentIdentityIncluded": false
+  },
+  "producerFixtureManifest": {
+    "artifact": "mydocs/tech/investigations/issue-4967/fixtures/rank7_qualification.manifest.json",
+    "sha256": "38778e8ee3ecc8a9c5177c082eea2528214c5b4a7d71c66c009873922befd9df"
+  },
+  "producerIssue": 4963,
+  "queueRank": 7,
+  "schemaVersion": 1,
+  "substitutionFace": "KoPubWorld바탕체 Light"
+}

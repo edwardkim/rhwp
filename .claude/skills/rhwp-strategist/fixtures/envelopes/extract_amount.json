@@ -1,0 +1,19 @@
+{
+  "items": [
+    {
+      "kind": "amount",
+      "raw": "3,180백만원",
+      "normalized": 3180000000,
+      "currency": "KRW",
+      "section": 0,
+      "paragraph": 7,
+      "page": 0,
+      "charOffset": 55,
+      "length": 11
+    }
+  ],
+  "_skillMeta": {
+    "command": "extract-data",
+    "exit": 0
+  }
+}

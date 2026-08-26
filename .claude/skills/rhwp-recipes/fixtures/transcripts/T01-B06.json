@@ -1,0 +1,11 @@
+{
+  "id": "T01-B06",
+  "recipe": "01",
+  "kind": "bash",
+  "sourceFile": "mydocs/manual/recipes/01_fill_form_and_submit.md",
+  "excerpted": true,
+  "fabricatedLive": false,
+  "raw": "rhwp edit fill-fields samples/form-01.hwp --data @data.json -o out.hwp --verify --json \\\n  | jq -e '.verify.identical and (.notFound|length==0) and (.ambiguous|length==0)' \\\n  > /dev/null || { echo \"채움 실패 — 자세히 보려면 --json 없이 다시 실행\"; exit 1; }",
+  "firstLine": "rhwp edit fill-fields samples/form-01.hwp --data @data.json -o out.hwp --verify --json \\",
+  "notGym": true
+}

@@ -1,0 +1,23 @@
+{
+  "id": "18_unknown_tool_didyoumean",
+  "title": "없는 이름은 발명하지 말고 didYouMean/nextCall 을 따른다.",
+  "kind": "recovery",
+  "lifecycle": "recovery",
+  "absolute_paths": true,
+  "single_write_point": null,
+  "steps": [
+    {
+      "seq": 1,
+      "tool": "hwp_doc_foo",
+      "arguments": {
+        "docId": "doc-1"
+      },
+      "expect_layer": "isError",
+      "read_fields": [
+        "didYouMean",
+        "nextCall"
+      ],
+      "notes": "발명된 이름 — didYouMean 을 따른다"
+    }
+  ]
+}

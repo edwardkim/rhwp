@@ -1,0 +1,67 @@
+{
+  "id": "inj-role-token-system-hwp",
+  "issue": 5476,
+  "axis": "injection",
+  "family": "role_impersonation",
+  "polarity": "positive",
+  "sourceRule": {
+    "file": "src/document_core/queries/injection_scan.rs",
+    "symbol": "role_impersonation",
+    "note": "대화 역할·채팅 템플릿 토큰이 본문에 있습니다 — 문서 텍스트가 모델 프롬프트의 역할 경계를 흉내 냅니다"
+  },
+  "cli": {
+    "argv": [
+      "inspect",
+      "injection",
+      "synth:injection/role_impersonation/system.hwp",
+      "--json"
+    ],
+    "exitCode": 0,
+    "stdoutKind": "json-object",
+    "detectionIsNotFailure": true
+  },
+  "consume": {
+    "branch": "clean == false",
+    "matchedIs": "DATA",
+    "doNotExecuteMatched": true,
+    "detectionIsNotFailure": true
+  },
+  "pair": null,
+  "why": "대화 역할·채팅 템플릿 토큰이 본문에 있습니다 — 문서 텍스트가 모델 프롬프트의 역할 경계를 흉내 냅니다",
+  "note": "기존 토큰만. 새 패턴을 넣지 않는다.",
+  "human": "주입 신호 1건 (high): synth:injection/role_impersonation/system.hwp\n  [role_impersonation] <|system|>\n",
+  "inventedRule": false,
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "synth:injection/role_impersonation/system.hwp",
+    "minConfidence": "low",
+    "includeFields": false,
+    "scanScopes": [
+      "body",
+      "tableCell",
+      "textBox",
+      "equation",
+      "footnote",
+      "endnote",
+      "header",
+      "footer",
+      "caption"
+    ],
+    "injectionSignals": [
+      {
+        "kind": "role_impersonation",
+        "confidence": "high",
+        "scope": "body",
+        "section": 0,
+        "paragraph": 0,
+        "charOffset": 0,
+        "matched": "<|system|>",
+        "excerpt": "<|system|>",
+        "why": "대화 역할·채팅 템플릿 토큰이 본문에 있습니다 — 문서 텍스트가 모델 프롬프트의 역할 경계를 흉내 냅니다"
+      }
+    ],
+    "signalCount": 1,
+    "highestConfidence": "high",
+    "clean": false
+  }
+}

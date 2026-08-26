@@ -1,0 +1,26 @@
+{
+  "id": "T21",
+  "title": "medium 보안도 1번",
+  "scenario": "S28",
+  "argv": [
+    "explore",
+    "untrusted/long-hidden.hwp",
+    "--json"
+  ],
+  "envelope": "envelopes/S28.json",
+  "expect": {
+    "schemaVersion": "1.0",
+    "encrypted": false,
+    "menuIds": [
+      "security-sweep",
+      "long-doc-digest",
+      "triage-overview"
+    ],
+    "first": "security-sweep",
+    "firstCommand": "rhwp inspect hidden-text <file> --json",
+    "untrustedContent": false
+  },
+  "stop": "X03",
+  "notGym": true,
+  "usesExistingCommand": true
+}

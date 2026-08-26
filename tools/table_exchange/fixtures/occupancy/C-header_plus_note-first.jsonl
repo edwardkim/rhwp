@@ -1,0 +1,6 @@
+{"caseId":"C-header_plus_note-first","kind":"covered","row":0,"col":2,"anchorRow":0,"anchorCol":1}
+{"caseId":"C-header_plus_note-first","kind":"covered","row":0,"col":3,"anchorRow":0,"anchorCol":1}
+{"caseId":"C-header_plus_note-first","kind":"covered","row":1,"col":4,"anchorRow":0,"anchorCol":4}
+{"caseId":"C-header_plus_note-first","kind":"covered","row":2,"col":4,"anchorRow":0,"anchorCol":4}
+{"caseId":"C-header_plus_note-first","kind":"merged-anchor","row":0,"col":1,"rowSpan":1,"colSpan":3,"text":"headH1"}
+{"caseId":"C-header_plus_note-first","kind":"merged-anchor","row":0,"col":4,"rowSpan":3,"colSpan":1,"text":"headH4"}

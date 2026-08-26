@@ -1,0 +1,60 @@
+{
+  "id": "TE53",
+  "tier": 2,
+  "title": "국어 전건 후 첫 쪽",
+  "input": "samples/2022년 국립국어원 업무계획.hwp",
+  "instructions": "입력 문서의 '국어' 를 모두 '언어' 로 바꾼 산출물을 edited53.hwp 로 제출하라. 채점은 옛 문구가 0건이 되었는지와 새 문구가 실재하는지를 각각 확인한다. 힌트: rhwp edit replace-text (occurrence 없이 전건). 첫 일치 쪽(0 기준)을 answer.json 에 {\"page\": N} 으로 적어라.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "edited53.hwp",
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "옛 문구 완전 소거",
+      "op": "value_eq",
+      "value": 0,
+      "path": "matchCount",
+      "cmd": [
+        "search",
+        "{file:edited53.hwp}",
+        "--json",
+        "--",
+        "국어"
+      ]
+    },
+    {
+      "name": "새 문구 실재",
+      "op": "value_ge",
+      "value": 1,
+      "path": "matchCount",
+      "cmd": [
+        "search",
+        "{file:edited53.hwp}",
+        "--json",
+        "--",
+        "언어"
+      ]
+    },
+    {
+      "name": "원본과 다름",
+      "op": "differs_from_input",
+      "file": "edited53.hwp"
+    },
+    {
+      "name": "첫 일치 쪽",
+      "op": "answer_eq",
+      "answer": "page",
+      "path": "matches[0].page",
+      "cmd": [
+        "search",
+        "{file:edited53.hwp}",
+        "--json",
+        "--",
+        "언어"
+      ]
+    }
+  ]
+}

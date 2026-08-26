@@ -1,0 +1,103 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5331,
+  "note": "키 목록은 정본 레시피 실측 JSON 에서 발췌. 새 키를 발명하지 않음.",
+  "commands": {
+    "fields": {
+      "required": [
+        "schemaVersion",
+        "source",
+        "fieldCount",
+        "fields"
+      ],
+      "security": [
+        "textSecurity"
+      ]
+    },
+    "fill-fields": {
+      "required": [
+        "schemaVersion",
+        "filledCount",
+        "notFound",
+        "ambiguous",
+        "dryRun"
+      ],
+      "verify": [
+        "verify"
+      ]
+    },
+    "export-tables": {
+      "required": [
+        "schemaVersion",
+        "source",
+        "tableCount",
+        "tables"
+      ]
+    },
+    "table-to-csv": {
+      "required": [
+        "schemaVersion",
+        "tables",
+        "untrustedContent",
+        "untrustedFields"
+      ]
+    },
+    "csv-to-table": {
+      "required": [
+        "schemaVersion",
+        "changedCount",
+        "invalid",
+        "verify"
+      ]
+    },
+    "redact": {
+      "required": [
+        "schemaVersion",
+        "dryRun",
+        "findingCount",
+        "findings"
+      ],
+      "safeLog": [
+        "noRaw"
+      ]
+    },
+    "info": {
+      "required": [
+        "schemaVersion",
+        "source",
+        "pageCount",
+        "paraCount",
+        "format"
+      ]
+    },
+    "digest": {
+      "required": [
+        "schemaVersion",
+        "excerpt",
+        "truncated"
+      ]
+    },
+    "batch-fill": {
+      "required": [
+        "schemaVersion",
+        "row",
+        "output",
+        "notFound",
+        "ambiguous"
+      ]
+    },
+    "inspect": {
+      "requiredNote": "hidden-text.clean / injection.signalCount / unicode.findingCount"
+    },
+    "render-diff": {
+      "json": false,
+      "gate": "exit code + status PASS|STRUCT_MISMATCH|..."
+    }
+  },
+  "untrustedContent": {
+    "table-to-csv": true,
+    "search-matches": true,
+    "explore-note": false
+  },
+  "notGym": true
+}

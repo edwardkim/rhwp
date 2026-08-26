@@ -1,0 +1,71 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workReceiptReplayCase",
+  "ident": "cell_amount",
+  "claim": "M-rcpt",
+  "issue": 5478,
+  "family": "예산",
+  "genre": "셀금액",
+  "title": "예산 표 (0,2,3) 칸에 금액",
+  "why": "set_cell 은 격자 주소 u16. 줄바꿈·탭 없는 한 줄 값.",
+  "notes": "plan_schema set_cell 한 줄 계약",
+  "input": "samples/basic/calendar_year.hwp",
+  "output": "out/cell-amount.hwp",
+  "ext": "hwp",
+  "actions": [
+    "set_cell"
+  ],
+  "stepCount": 1,
+  "plan": {
+    "planVersion": "1.0",
+    "input": "samples/basic/calendar_year.hwp",
+    "output": "out/cell-amount.hwp",
+    "steps": [
+      {
+        "action": "set_cell",
+        "table": 0,
+        "row": 2,
+        "col": 3,
+        "text": "12,500,000"
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"samples/basic/calendar_year.hwp\",\"output\":\"out/cell-amount.hwp\",\"steps\":[{\"action\":\"set_cell\",\"table\":0,\"row\":2,\"col\":3,\"text\":\"12,500,000\"}]}",
+  "planSha256": "b8e8097f7c6e121eef50b5e3d1cf531a55eb5d987139086223f79feeeb667f4d",
+  "command": "replay",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "samples/basic/calendar_year.hwp",
+    "inputSha256": "b0fc351fd8afef455a07e7aad3bcf6b163089ec84807106d93ec7e815636bf14",
+    "planSha256": "b8e8097f7c6e121eef50b5e3d1cf531a55eb5d987139086223f79feeeb667f4d",
+    "outputSha256": "b1d5f6e4b5e1b4e5de21a42d47ed6e4137579f2ace2260b54fae8833ae1dca60",
+    "toolVersion": "fixture-0.0.0-not-a-release",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null
+  },
+  "expected": {
+    "attest": {
+      "exit": 0,
+      "mode": "attest",
+      "reproduced": null,
+      "userOutputCreated": false
+    },
+    "verify_ok": {
+      "exit": 0,
+      "mode": "verify",
+      "reproduced": true,
+      "expectedOutputSha256": "b1d5f6e4b5e1b4e5de21a42d47ed6e4137579f2ace2260b54fae8833ae1dca60"
+    },
+    "verify_mismatch": {
+      "exit": 3,
+      "mode": "verify",
+      "reproduced": false,
+      "expectedOutputSha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "judgment": true
+    }
+  },
+  "claimedOutputPathUntouched": true,
+  "generator": "tools/work_receipt/fatten_work_receipt.py"
+}

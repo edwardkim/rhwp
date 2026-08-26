@@ -1,0 +1,11 @@
+{
+  "id": "T05-B02",
+  "recipe": "05",
+  "kind": "bash",
+  "sourceFile": "mydocs/manual/recipes/05_mail_merge_batch_fill.md",
+  "excerpted": true,
+  "fabricatedLive": false,
+  "raw": "printf '%s\\n' \\\n  '{\"myMsg01\":\"김철수 귀하\"}' \\\n  '{\"myMsg01\":\"이영희 귀하\"}' \\\n  > row1.jsonl",
+  "firstLine": "printf '%s\\n' \\",
+  "notGym": true
+}

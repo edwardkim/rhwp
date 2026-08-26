@@ -1,0 +1,27 @@
+{
+  "id": "LR14",
+  "tier": 1,
+  "title": "문단 문서 쪽수",
+  "input": "samples/para-001.hwp",
+  "instructions": "문단 표본의 쪽수를 answer.json 에 {\"pages\": N} 으로 제출하라. table-001(LR09 문단 수)과 다른 표본·다른 필드다. 힌트: rhwp info 의 pageCount.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "쪽수",
+      "op": "answer_eq",
+      "answer": "pages",
+      "path": "pageCount",
+      "cmd": [
+        "info",
+        "{input}",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

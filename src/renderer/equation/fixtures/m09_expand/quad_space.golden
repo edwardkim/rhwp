@@ -1,0 +1,30 @@
+# M09-g equation golden — current-engine lock (variant/exception/unimplemented honesty)
+command: MATRIX
+script: a QUAD b
+honesty: latex-space
+
+=== ast ===
+Row(
+    [
+        Text(
+            "a",
+        ),
+        Text(
+            "\u{2003}",
+        ),
+        Text(
+            "b",
+        ),
+    ],
+)
+
+=== layout ===
+Row x=0.0000 y=0.0000 w=35.7000 h=20.0000 bl=16.0000
+  Text("a") x=0.0000 y=0.0000 w=11.5500 h=20.0000 bl=16.0000
+  Text("\u{2003}") x=11.5500 y=0.0000 w=12.6000 h=20.0000 bl=16.0000
+  Text("b") x=24.1500 y=0.0000 w=11.5500 h=20.0000 bl=16.0000
+
+=== svg ===
+<text x="0.00" y="16.00" font-size="20.00" fill="#000000" font-style="italic" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">a</text>
+<text x="11.55" y="16.00" font-size="20.00" fill="#000000" font-style="italic" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif"> </text>
+<text x="24.15" y="16.00" font-size="20.00" fill="#000000" font-style="italic" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">b</text>

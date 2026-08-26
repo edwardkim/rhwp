@@ -1,0 +1,35 @@
+{
+  "id": "AU53",
+  "steps": [
+    {
+      "run": [
+        "replay",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"samples/multi-table-001.hwp\", \"output\": \"out.hwp\", \"steps\": [{\"action\": \"set_cell\", \"table\": 0, \"row\": 0, \"col\": 0, \"text\": \"관문다중\"}]}",
+        "--capsule",
+        "{sub:work.capsule.json}",
+        "--json"
+      ]
+    },
+    {
+      "write_json": {
+        "to": "{sub:policy.json}",
+        "body": {
+          "schemaVersion": "1.0",
+          "kind": "admissionPolicy",
+          "default": "deny",
+          "rules": [
+            {
+              "id": "R-다중-재현",
+              "require": {
+                "reproduced": {
+                  "eq": true
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

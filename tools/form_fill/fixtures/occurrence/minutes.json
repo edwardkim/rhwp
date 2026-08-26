@@ -1,0 +1,128 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.form_fill.fill_case.v1",
+  "id": "minutes-occurrence",
+  "axis": "이름[N]",
+  "claim": "M-fill",
+  "generator": "tools/form_fill/fatten_form_fill.py",
+  "form": "minutes",
+  "title": "회의록 반복 필드 순번 지목",
+  "family": "공문서",
+  "genre": "회의",
+  "sample": "fixtures/forms/회의록.hwp",
+  "format": "hwpx",
+  "relatedIssue": "#3372",
+  "why": "이름[N] 은 fields 목록 순서 0 기준. 지목하지 않은 칸은 그대로. 순번 없음은 ambiguous, 범위 밖은 notFound.",
+  "firstFieldName": "회의명",
+  "fieldCount": 18,
+  "argv": [
+    "edit",
+    "fill-fields",
+    "fixtures/forms/회의록.hwp",
+    "--data",
+    "{\"참석자[0]\": \"김가온\", \"참석자[2]\": \"박서준\"}",
+    "-o",
+    "out/minutes-occ.hwp",
+    "--json"
+  ],
+  "existingCliOnly": true,
+  "data": {
+    "참석자[0]": "김가온",
+    "참석자[2]": "박서준"
+  },
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "fixtures/forms/회의록.hwp",
+    "dryRun": false,
+    "filledCount": 2,
+    "filled": [
+      {
+        "name": "참석자",
+        "occurrence": 0,
+        "value": "김가온"
+      },
+      {
+        "name": "참석자",
+        "occurrence": 2,
+        "value": "박서준"
+      }
+    ],
+    "notFound": [],
+    "ambiguous": [],
+    "confusable": [],
+    "verify": null,
+    "output": "out/minutes-occ.hwp",
+    "outputFormat": "hwp5"
+  },
+  "exit": 0,
+  "untouchedOccurrences": {
+    "참석자": [
+      1,
+      3,
+      4,
+      5,
+      6,
+      7
+    ]
+  },
+  "afterTargeted": {
+    "참석자": [
+      "김가온",
+      "",
+      "박서준",
+      "",
+      "",
+      "",
+      "",
+      ""
+    ]
+  },
+  "gate": true,
+  "ambiguous": {
+    "data": {
+      "참석자": "김가온"
+    },
+    "envelope": {
+      "schemaVersion": "1.0",
+      "source": "fixtures/forms/회의록.hwp",
+      "dryRun": true,
+      "filledCount": 1,
+      "filled": [
+        {
+          "name": "참석자",
+          "occurrence": 0,
+          "value": "김가온"
+        }
+      ],
+      "notFound": [],
+      "ambiguous": [
+        {
+          "name": "참석자",
+          "matched": 1,
+          "total": 8
+        }
+      ],
+      "confusable": [],
+      "verify": null
+    },
+    "incomplete": true
+  },
+  "outOfRange": {
+    "data": {
+      "참석자[108]": "범위밖"
+    },
+    "envelope": {
+      "schemaVersion": "1.0",
+      "source": "fixtures/forms/회의록.hwp",
+      "dryRun": true,
+      "filledCount": 0,
+      "filled": [],
+      "notFound": [
+        "참석자[108]"
+      ],
+      "ambiguous": [],
+      "confusable": [],
+      "verify": null
+    }
+  }
+}

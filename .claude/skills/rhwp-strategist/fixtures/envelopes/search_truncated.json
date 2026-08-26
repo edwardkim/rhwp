@@ -1,0 +1,51 @@
+{
+  "matches": [
+    {
+      "text": "데이터 언급 0",
+      "section": 0,
+      "paragraph": 0,
+      "page": 0,
+      "charOffset": 0,
+      "length": 3
+    },
+    {
+      "text": "데이터 언급 1",
+      "section": 0,
+      "paragraph": 1,
+      "page": 0,
+      "charOffset": 0,
+      "length": 3
+    },
+    {
+      "text": "데이터 언급 2",
+      "section": 0,
+      "paragraph": 2,
+      "page": 0,
+      "charOffset": 0,
+      "length": 3
+    },
+    {
+      "text": "데이터 언급 3",
+      "section": 0,
+      "paragraph": 3,
+      "page": 1,
+      "charOffset": 0,
+      "length": 3
+    },
+    {
+      "text": "데이터 언급 4",
+      "section": 0,
+      "paragraph": 4,
+      "page": 1,
+      "charOffset": 0,
+      "length": 3
+    }
+  ],
+  "truncated": true,
+  "totalMatchCount": 41,
+  "omittedCount": 36,
+  "_skillMeta": {
+    "command": "search",
+    "exit": 0
+  }
+}

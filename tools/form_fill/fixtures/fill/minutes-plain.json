@@ -1,0 +1,65 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.form_fill.fill_case.v1",
+  "id": "minutes-fill-plain",
+  "axis": "fill-fields",
+  "claim": "M-fill",
+  "generator": "tools/form_fill/fatten_form_fill.py",
+  "form": "minutes",
+  "title": "회의록 고유 이름 채움",
+  "family": "공문서",
+  "genre": "회의",
+  "sample": "fixtures/forms/회의록.hwp",
+  "format": "hwpx",
+  "relatedIssue": "#3372",
+  "why": "순번 없는 고유 이름은 단건 채움. notFound/ambiguous 가 비어야 완료.",
+  "firstFieldName": "회의명",
+  "fieldCount": 18,
+  "argv": [
+    "edit",
+    "fill-fields",
+    "fixtures/forms/회의록.hwp",
+    "--data",
+    "{\"회의명\": \"디지털정부 실무협의회\", \"개최일시\": \"2026. 7. 30. 14:00\", \"장소\": \"본관 3층 중회의실\"}",
+    "-o",
+    "out/minutes-plain.hwpx",
+    "--json"
+  ],
+  "existingCliOnly": true,
+  "data": {
+    "회의명": "디지털정부 실무협의회",
+    "개최일시": "2026. 7. 30. 14:00",
+    "장소": "본관 3층 중회의실"
+  },
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "fixtures/forms/회의록.hwp",
+    "dryRun": false,
+    "filledCount": 3,
+    "filled": [
+      {
+        "name": "회의명",
+        "occurrence": 0,
+        "value": "디지털정부 실무협의회"
+      },
+      {
+        "name": "개최일시",
+        "occurrence": 0,
+        "value": "2026. 7. 30. 14:00"
+      },
+      {
+        "name": "장소",
+        "occurrence": 0,
+        "value": "본관 3층 중회의실"
+      }
+    ],
+    "notFound": [],
+    "ambiguous": [],
+    "confusable": [],
+    "verify": null,
+    "output": "out/minutes-plain.hwpx",
+    "outputFormat": "hwpx"
+  },
+  "exit": 0,
+  "gate": true
+}

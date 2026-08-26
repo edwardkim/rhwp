@@ -1,0 +1,27 @@
+
+=== layout-anomaly 요약 ===
+  총 파일         : 20
+  CLEAN           : 11
+  ANOMALY         : 9
+  LOAD_FAIL       : 0
+
+[        ANOMALY] overflow=1    overlap=0    empty=0   combo-table-overflow-and-text-overlap.synth
+[        ANOMALY] overflow=2    overlap=1    empty=0   combo-two-tables-negative-y.synth
+[          CLEAN] overflow=0    overlap=0    empty=0   empty-p0-of3-blank.synth
+[          CLEAN] overflow=0    overlap=0    empty=1   empty-p1-of3-blank.synth
+[        ANOMALY] overflow=1    overlap=0    empty=0   off-body-only-not-page.synth
+[        ANOMALY] overflow=1    overlap=0    empty=0   offy-table-y-80.synth
+[          CLEAN] overflow=0    overlap=0    empty=0   ovf-table-right-over0.5-tol1.synth
+[          CLEAN] overflow=0    overlap=0    empty=0   ovf-table-right-over2.5-tol1.synth
+[          CLEAN] overflow=0    overlap=0    empty=0   ovl-carrier-empty-empty.synth
+[          CLEAN] overflow=0    overlap=0    empty=0   ovl-column-same-false.synth
+[        ANOMALY] overflow=0    overlap=1    empty=0   ovl-table-table-w20-h20.synth
+[          CLEAN] overflow=0    overlap=0    empty=0   ovl-wrap-behindtext-square.synth
+[        ANOMALY] overflow=1    overlap=0    empty=0   suppress-table-right-8.synth
+[          CLEAN] overflow=0    overlap=0    empty=0   tol-ovf-over1-tol1.synth
+[          CLEAN] overflow=0    overlap=0    empty=0   txov-char-overlap-true.synth
+[        ANOMALY] overflow=0    overlap=0    empty=0   txov-in-table-dy0.synth
+[        ANOMALY] overflow=0    overlap=0    empty=0   txov-same-line-dx10.synth
+[          CLEAN] overflow=0    overlap=0    empty=0   types-image-hides-table-2.5.synth
+[        ANOMALY] overflow=1    overlap=0    empty=0   types-textline-inside-table-2.5.synth
+[          CLEAN] overflow=0    overlap=0    empty=0   vis-table-visfalse-edfalse.synth

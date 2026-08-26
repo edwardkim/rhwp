@@ -1,0 +1,14 @@
+# layout-anomaly exit 계약 성적표
+scenario	exit	note
+single-clean-default	0	기본은 신호가 없어도 0
+single-signal-default	0	기본은 overflow 가 있어도 0
+single-signal-strict	3	--strict + 확정 신호는 3
+single-empty-strict	0	empty_page 만으로는 --strict 가 3 을 내지 않는다
+single-unknown-flag	2	알 수 없는 옵션은 2, stdout 0바이트
+single-bad-types	2	--types NotAType 은 2
+batch-missing-folder	2	--batch 폴더 없음은 2
+batch-load-fail	1	로드 실패는 1 이 --strict 의 3보다 우선
+batch-signal-strict	3	배치 --strict + 확정 신호는 3
+batch-clean-strict	0	깨끗한 배치는 --strict 여도 0
+off-canvas-strict	3	off-canvas 단독도 --strict 확정
+text-overlap-strict	3	text-overlap 단독도 --strict 확정

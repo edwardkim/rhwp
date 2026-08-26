@@ -1,0 +1,53 @@
+{
+  "id": "inj-ov-neg-clause-boundary-4088",
+  "issue": 5476,
+  "axis": "injection",
+  "family": "instruction_override",
+  "polarity": "negative",
+  "sourceRule": {
+    "file": "src/document_core/queries/injection_scan.rs",
+    "symbol": "contains_clause_boundary",
+    "note": "#4088. 60자 창이 절 경계를 넘으면 오탐. 목적격 자리에서만 본다."
+  },
+  "cli": {
+    "argv": [
+      "inspect",
+      "injection",
+      "synth:injection/instruction_override/neg-clause-boundary.hwp",
+      "--json"
+    ],
+    "exitCode": 0,
+    "stdoutKind": "json-object",
+    "detectionIsNotFailure": true
+  },
+  "consume": {
+    "branch": "clean == true",
+    "reason": "clause-boundary"
+  },
+  "pair": null,
+  "why": "모든 주장에 대하여 조사하라고 지시하도록 촉구하는 바 정부대표는 권력분립의 기본적 원칙을 무시하고 있다",
+  "note": "무시의 목적어는 지시가 아니라 원칙. 주어도 다르다.",
+  "human": "주입 신호 없음: 절 경계를 넘는 창\n",
+  "inventedRule": false,
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "synth:injection/instruction_override/neg-clause-boundary.hwp",
+    "minConfidence": "low",
+    "includeFields": false,
+    "scanScopes": [
+      "body",
+      "tableCell",
+      "textBox",
+      "equation",
+      "footnote",
+      "endnote",
+      "header",
+      "footer",
+      "caption"
+    ],
+    "injectionSignals": [],
+    "signalCount": 0,
+    "highestConfidence": null,
+    "clean": true
+  }
+}

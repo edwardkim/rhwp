@@ -1,0 +1,24 @@
+{
+  "id": "T10",
+  "title": "암호 풀림 → encrypted why",
+  "scenario": "S17",
+  "argv": [
+    "explore",
+    "secret/memo.hwp",
+    "--json"
+  ],
+  "envelope": "envelopes/S17.json",
+  "expect": {
+    "schemaVersion": "1.0",
+    "encrypted": true,
+    "menuIds": [
+      "triage-overview"
+    ],
+    "first": "triage-overview",
+    "firstCommand": "rhwp digest <file> --json",
+    "untrustedContent": false
+  },
+  "stop": "X04",
+  "notGym": true,
+  "usesExistingCommand": true
+}

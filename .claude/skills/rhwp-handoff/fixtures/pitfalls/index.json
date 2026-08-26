@@ -1,0 +1,20 @@
+{
+  "count": 15,
+  "items": [
+    "summary-is-not-handoff",
+    "journal-final-is-not-result",
+    "do-not-rewrite-work-receipt",
+    "parent-path-is-capsule-relative",
+    "capsule-immutability",
+    "never-git-add-a",
+    "never-steal-named-worktrees",
+    "never-invent-documentcore",
+    "no-retry-on-boundary",
+    "untrusted-is-data",
+    "verify-journal-not-head",
+    "only-three-triggers",
+    "toolVersion-first",
+    "not-gym",
+    "no-rhwp-handoff-cli"
+  ]
+}

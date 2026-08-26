@@ -1,0 +1,623 @@
+{
+  "schemaVersion": "1.0",
+  "routing": [
+    {
+      "pageCount": 1,
+      "band": "tiny",
+      "firstCommands": [
+        "info",
+        "export-text"
+      ],
+      "forbid": [
+        "export-text-unlimited-when-fact-only"
+      ],
+      "mustAnnounceTruncation": false
+    },
+    {
+      "pageCount": 2,
+      "band": "tiny",
+      "firstCommands": [
+        "info",
+        "export-text"
+      ],
+      "forbid": [
+        "export-text-unlimited-when-fact-only"
+      ],
+      "mustAnnounceTruncation": false
+    },
+    {
+      "pageCount": 3,
+      "band": "tiny",
+      "firstCommands": [
+        "info",
+        "export-text"
+      ],
+      "forbid": [
+        "export-text-unlimited-when-fact-only"
+      ],
+      "mustAnnounceTruncation": false
+    },
+    {
+      "pageCount": 4,
+      "band": "small",
+      "firstCommands": [
+        "info",
+        "explain"
+      ],
+      "forbid": [
+        "export-text-unlimited"
+      ],
+      "mustAnnounceTruncation": false
+    },
+    {
+      "pageCount": 5,
+      "band": "small",
+      "firstCommands": [
+        "info",
+        "explain"
+      ],
+      "forbid": [
+        "export-text-unlimited"
+      ],
+      "mustAnnounceTruncation": false
+    },
+    {
+      "pageCount": 6,
+      "band": "small",
+      "firstCommands": [
+        "info",
+        "explain"
+      ],
+      "forbid": [
+        "export-text-unlimited"
+      ],
+      "mustAnnounceTruncation": false
+    },
+    {
+      "pageCount": 7,
+      "band": "small",
+      "firstCommands": [
+        "info",
+        "explain"
+      ],
+      "forbid": [
+        "export-text-unlimited"
+      ],
+      "mustAnnounceTruncation": false
+    },
+    {
+      "pageCount": 8,
+      "band": "small",
+      "firstCommands": [
+        "info",
+        "explain"
+      ],
+      "forbid": [
+        "export-text-unlimited"
+      ],
+      "mustAnnounceTruncation": false
+    },
+    {
+      "pageCount": 9,
+      "band": "medium",
+      "firstCommands": [
+        "info",
+        "explain",
+        "digest"
+      ],
+      "forbid": [
+        "export-text-unlimited",
+        "png-all-pages"
+      ],
+      "mustAnnounceTruncation": true
+    },
+    {
+      "pageCount": 10,
+      "band": "medium",
+      "firstCommands": [
+        "info",
+        "explain",
+        "digest"
+      ],
+      "forbid": [
+        "export-text-unlimited",
+        "png-all-pages"
+      ],
+      "mustAnnounceTruncation": true
+    },
+    {
+      "pageCount": 11,
+      "band": "medium",
+      "firstCommands": [
+        "info",
+        "explain",
+        "digest"
+      ],
+      "forbid": [
+        "export-text-unlimited",
+        "png-all-pages"
+      ],
+      "mustAnnounceTruncation": true
+    },
+    {
+      "pageCount": 12,
+      "band": "medium",
+      "firstCommands": [
+        "info",
+        "explain",
+        "digest"
+      ],
+      "forbid": [
+        "export-text-unlimited",
+        "png-all-pages"
+      ],
+      "mustAnnounceTruncation": true
+    },
+    {
+      "pageCount": 13,
+      "band": "medium",
+      "firstCommands": [
+        "info",
+        "explain",
+        "digest"
+      ],
+      "forbid": [
+        "export-text-unlimited",
+        "png-all-pages"
+      ],
+      "mustAnnounceTruncation": true
+    },
+    {
+      "pageCount": 14,
+      "band": "medium",
+      "firstCommands": [
+        "info",
+        "explain",
+        "digest"
+      ],
+      "forbid": [
+        "export-text-unlimited",
+        "png-all-pages"
+      ],
+      "mustAnnounceTruncation": true
+    },
+    {
+      "pageCount": 15,
+      "band": "medium",
+      "firstCommands": [
+        "info",
+        "explain",
+        "digest"
+      ],
+      "forbid": [
+        "export-text-unlimited",
+        "png-all-pages"
+      ],
+      "mustAnnounceTruncation": true
+    },
+    {
+      "pageCount": 16,
+      "band": "medium",
+      "firstCommands": [
+        "info",
+        "explain",
+        "digest"
+      ],
+      "forbid": [
+        "export-text-unlimited",
+        "png-all-pages"
+      ],
+      "mustAnnounceTruncation": true
+    },
+    {
+      "pageCount": 17,
+      "band": "medium",
+      "firstCommands": [
+        "info",
+        "explain",
+        "digest"
+      ],
+      "forbid": [
+        "export-text-unlimited",
+        "png-all-pages"
+      ],
+      "mustAnnounceTruncation": true
+    },
+    {
+      "pageCount": 18,
+      "band": "medium",
+      "firstCommands": [
+        "info",
+        "explain",
+        "digest"
+      ],
+      "forbid": [
+        "export-text-unlimited",
+        "png-all-pages"
+      ],
+      "mustAnnounceTruncation": true
+    },
+    {
+      "pageCount": 19,
+      "band": "medium",
+      "firstCommands": [
+        "info",
+        "explain",
+        "digest"
+      ],
+      "forbid": [
+        "export-text-unlimited",
+        "png-all-pages"
+      ],
+      "mustAnnounceTruncation": true
+    },
+    {
+      "pageCount": 20,
+      "band": "medium",
+      "firstCommands": [
+        "info",
+        "explain",
+        "digest"
+      ],
+      "forbid": [
+        "export-text-unlimited",
+        "png-all-pages"
+      ],
+      "mustAnnounceTruncation": true
+    },
+    {
+      "pageCount": 21,
+      "band": "medium",
+      "firstCommands": [
+        "info",
+        "explain",
+        "digest"
+      ],
+      "forbid": [
+        "export-text-unlimited",
+        "png-all-pages"
+      ],
+      "mustAnnounceTruncation": true
+    },
+    {
+      "pageCount": 22,
+      "band": "medium",
+      "firstCommands": [
+        "info",
+        "explain",
+        "digest"
+      ],
+      "forbid": [
+        "export-text-unlimited",
+        "png-all-pages"
+      ],
+      "mustAnnounceTruncation": true
+    },
+    {
+      "pageCount": 23,
+      "band": "medium",
+      "firstCommands": [
+        "info",
+        "explain",
+        "digest"
+      ],
+      "forbid": [
+        "export-text-unlimited",
+        "png-all-pages"
+      ],
+      "mustAnnounceTruncation": true
+    },
+    {
+      "pageCount": 24,
+      "band": "medium",
+      "firstCommands": [
+        "info",
+        "explain",
+        "digest"
+      ],
+      "forbid": [
+        "export-text-unlimited",
+        "png-all-pages"
+      ],
+      "mustAnnounceTruncation": true
+    },
+    {
+      "pageCount": 25,
+      "band": "medium",
+      "firstCommands": [
+        "info",
+        "explain",
+        "digest"
+      ],
+      "forbid": [
+        "export-text-unlimited",
+        "png-all-pages"
+      ],
+      "mustAnnounceTruncation": true
+    },
+    {
+      "pageCount": 26,
+      "band": "medium",
+      "firstCommands": [
+        "info",
+        "explain",
+        "digest"
+      ],
+      "forbid": [
+        "export-text-unlimited",
+        "png-all-pages"
+      ],
+      "mustAnnounceTruncation": true
+    },
+    {
+      "pageCount": 27,
+      "band": "medium",
+      "firstCommands": [
+        "info",
+        "explain",
+        "digest"
+      ],
+      "forbid": [
+        "export-text-unlimited",
+        "png-all-pages"
+      ],
+      "mustAnnounceTruncation": true
+    },
+    {
+      "pageCount": 28,
+      "band": "medium",
+      "firstCommands": [
+        "info",
+        "explain",
+        "digest"
+      ],
+      "forbid": [
+        "export-text-unlimited",
+        "png-all-pages"
+      ],
+      "mustAnnounceTruncation": true
+    },
+    {
+      "pageCount": 29,
+      "band": "medium",
+      "firstCommands": [
+        "info",
+        "explain",
+        "digest"
+      ],
+      "forbid": [
+        "export-text-unlimited",
+        "png-all-pages"
+      ],
+      "mustAnnounceTruncation": true
+    },
+    {
+      "pageCount": 30,
+      "band": "medium",
+      "firstCommands": [
+        "info",
+        "explain",
+        "digest"
+      ],
+      "forbid": [
+        "export-text-unlimited",
+        "png-all-pages"
+      ],
+      "mustAnnounceTruncation": true
+    },
+    {
+      "pageCount": 31,
+      "band": "large",
+      "firstCommands": [
+        "info",
+        "digest"
+      ],
+      "forbid": [
+        "export-text-unlimited",
+        "digest-excerpt-as-whole"
+      ],
+      "mustAnnounceTruncation": true
+    },
+    {
+      "pageCount": 32,
+      "band": "large",
+      "firstCommands": [
+        "info",
+        "digest"
+      ],
+      "forbid": [
+        "export-text-unlimited",
+        "digest-excerpt-as-whole"
+      ],
+      "mustAnnounceTruncation": true
+    },
+    {
+      "pageCount": 33,
+      "band": "large",
+      "firstCommands": [
+        "info",
+        "digest"
+      ],
+      "forbid": [
+        "export-text-unlimited",
+        "digest-excerpt-as-whole"
+      ],
+      "mustAnnounceTruncation": true
+    },
+    {
+      "pageCount": 34,
+      "band": "large",
+      "firstCommands": [
+        "info",
+        "digest"
+      ],
+      "forbid": [
+        "export-text-unlimited",
+        "digest-excerpt-as-whole"
+      ],
+      "mustAnnounceTruncation": true
+    },
+    {
+      "pageCount": 35,
+      "band": "large",
+      "firstCommands": [
+        "info",
+        "digest"
+      ],
+      "forbid": [
+        "export-text-unlimited",
+        "digest-excerpt-as-whole"
+      ],
+      "mustAnnounceTruncation": true
+    },
+    {
+      "pageCount": 36,
+      "band": "large",
+      "firstCommands": [
+        "info",
+        "digest"
+      ],
+      "forbid": [
+        "export-text-unlimited",
+        "digest-excerpt-as-whole"
+      ],
+      "mustAnnounceTruncation": true
+    },
+    {
+      "pageCount": 37,
+      "band": "large",
+      "firstCommands": [
+        "info",
+        "digest"
+      ],
+      "forbid": [
+        "export-text-unlimited",
+        "digest-excerpt-as-whole"
+      ],
+      "mustAnnounceTruncation": true
+    },
+    {
+      "pageCount": 38,
+      "band": "large",
+      "firstCommands": [
+        "info",
+        "digest"
+      ],
+      "forbid": [
+        "export-text-unlimited",
+        "digest-excerpt-as-whole"
+      ],
+      "mustAnnounceTruncation": true
+    },
+    {
+      "pageCount": 39,
+      "band": "large",
+      "firstCommands": [
+        "info",
+        "digest"
+      ],
+      "forbid": [
+        "export-text-unlimited",
+        "digest-excerpt-as-whole"
+      ],
+      "mustAnnounceTruncation": true
+    },
+    {
+      "pageCount": 40,
+      "band": "large",
+      "firstCommands": [
+        "info",
+        "digest"
+      ],
+      "forbid": [
+        "export-text-unlimited",
+        "digest-excerpt-as-whole"
+      ],
+      "mustAnnounceTruncation": true
+    },
+    {
+      "pageCount": 50,
+      "band": "large",
+      "firstCommands": [
+        "info",
+        "digest"
+      ],
+      "forbid": [
+        "export-text-unlimited",
+        "digest-excerpt-as-whole"
+      ],
+      "mustAnnounceTruncation": true
+    },
+    {
+      "pageCount": 80,
+      "band": "large",
+      "firstCommands": [
+        "info",
+        "digest"
+      ],
+      "forbid": [
+        "export-text-unlimited",
+        "digest-excerpt-as-whole"
+      ],
+      "mustAnnounceTruncation": true
+    },
+    {
+      "pageCount": 100,
+      "band": "large",
+      "firstCommands": [
+        "info",
+        "digest"
+      ],
+      "forbid": [
+        "export-text-unlimited",
+        "digest-excerpt-as-whole"
+      ],
+      "mustAnnounceTruncation": true
+    },
+    {
+      "pageCount": 120,
+      "band": "huge",
+      "firstCommands": [
+        "info",
+        "digest",
+        "search"
+      ],
+      "forbid": [
+        "export-text-unlimited",
+        "digest-pages-all",
+        "png-all-pages"
+      ],
+      "mustAnnounceTruncation": true
+    },
+    {
+      "pageCount": 200,
+      "band": "huge",
+      "firstCommands": [
+        "info",
+        "digest",
+        "search"
+      ],
+      "forbid": [
+        "export-text-unlimited",
+        "digest-pages-all",
+        "png-all-pages"
+      ],
+      "mustAnnounceTruncation": true
+    },
+    {
+      "pageCount": 387,
+      "band": "huge",
+      "firstCommands": [
+        "info",
+        "digest",
+        "search"
+      ],
+      "forbid": [
+        "export-text-unlimited",
+        "digest-pages-all",
+        "png-all-pages"
+      ],
+      "mustAnnounceTruncation": true
+    }
+  ]
+}

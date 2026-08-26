@@ -1,0 +1,16 @@
+{
+  "id": "SD69",
+  "steps": [
+    {
+      "answer": {
+        "schemaVersion": {
+          "cmd": [
+            "export-agent-manifest",
+            "--json"
+          ],
+          "path": "schemaVersion"
+        }
+      }
+    }
+  ]
+}

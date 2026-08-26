@@ -1,0 +1,17 @@
+{
+  "id": "TB10",
+  "steps": [
+    {
+      "answer": {
+        "cells": {
+          "cmd": [
+            "export-tables",
+            "{input}",
+            "--json"
+          ],
+          "path": "tables[0].cellCount"
+        }
+      }
+    }
+  ]
+}

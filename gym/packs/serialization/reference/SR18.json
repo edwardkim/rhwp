@@ -1,0 +1,22 @@
+{
+  "id": "SR18",
+  "steps": [
+    {
+      "answer": {
+        "paragraphsKept": {
+          "cmd": [
+            "extract-pages",
+            "{input}",
+            "{sub:slice.hwp}",
+            "--from",
+            "2",
+            "--to",
+            "2",
+            "--json"
+          ],
+          "path": "paragraphsKept"
+        }
+      }
+    }
+  ]
+}

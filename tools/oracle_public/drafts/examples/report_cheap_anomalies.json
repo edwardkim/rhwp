@@ -1,0 +1,468 @@
+{
+  "schema": "oracle_public.failure_report/v1",
+  "generated_at": "2026-08-18T10:37:44Z",
+  "source": "oracle_public.fatten_catalog.cheap",
+  "rhwp_bin": "(unused)",
+  "dpi": 96,
+  "pixel_diff_threshold": 12,
+  "threshold": {
+    "metric": "pdf_pages",
+    "op": ">=",
+    "value": 12
+  },
+  "documents": [
+    {
+      "id": "1342000_edu_curriculum_map",
+      "hwp": "samples/task2287/1342000_edu_curriculum_map.hwp",
+      "pdf": "pdf/task2287/1342000_edu_curriculum_map-2022.pdf",
+      "pages": 415,
+      "metrics": {
+        "pdf_pages": 415,
+        "pdf_bytes": 2611677,
+        "sample_bytes": 1324032,
+        "worst_pages": [
+          1
+        ]
+      },
+      "repro": {
+        "command": "python tools/oracle_public/page_smoke.py --pair samples/task2287/1342000_edu_curriculum_map.hwp pdf/task2287/1342000_edu_curriculum_map-2022.pdf",
+        "cwd": "."
+      },
+      "notes": "cheap 스윕 판정 `CHEAP_OK` · 한컴 2022 · 군 `dir:task2287` · 쪽수 엔진/visual_sweep 미사용."
+    },
+    {
+      "id": "2025 행정업무운영 편람(최종)",
+      "hwp": "samples/2025 행정업무운영 편람(최종).hwp",
+      "pdf": "pdf/2025 행정업무운영 편람(최종)-2020-kopub.pdf",
+      "pages": 383,
+      "metrics": {
+        "pdf_pages": 383,
+        "pdf_bytes": 4871195,
+        "sample_bytes": 10687488,
+        "worst_pages": [
+          1
+        ]
+      },
+      "repro": {
+        "command": "python tools/oracle_public/page_smoke.py --pair samples/2025 행정업무운영 편람(최종).hwp pdf/2025 행정업무운영 편람(최종)-2020-kopub.pdf",
+        "cwd": "."
+      },
+      "notes": "cheap 스윕 판정 `CHEAP_OK` · 한컴 2020 · 군 `handbook` · 쪽수 엔진/visual_sweep 미사용."
+    },
+    {
+      "id": "2025 행정업무운영 편람(최종)",
+      "hwp": "samples/2025 행정업무운영 편람(최종).hwpx",
+      "pdf": "pdf/2025 행정업무운영 편람(최종)-2020-kopub.pdf",
+      "pages": 383,
+      "metrics": {
+        "pdf_pages": 383,
+        "pdf_bytes": 4871195,
+        "sample_bytes": 13639865,
+        "worst_pages": [
+          1
+        ]
+      },
+      "repro": {
+        "command": "python tools/oracle_public/page_smoke.py --pair samples/2025 행정업무운영 편람(최종).hwpx pdf/2025 행정업무운영 편람(최종)-2020-kopub.pdf",
+        "cwd": "."
+      },
+      "notes": "cheap 스윕 판정 `CHEAP_OK` · 한컴 2020 · 군 `handbook` · 쪽수 엔진/visual_sweep 미사용."
+    },
+    {
+      "id": "2025 행정업무운영 편람(최종)",
+      "hwp": "samples/2025 행정업무운영 편람(최종).hwp",
+      "pdf": "pdf/2025 행정업무운영 편람(최종)-2024.pdf",
+      "pages": 383,
+      "metrics": {
+        "pdf_pages": 383,
+        "pdf_bytes": 4391169,
+        "sample_bytes": 10687488,
+        "worst_pages": [
+          1
+        ]
+      },
+      "repro": {
+        "command": "python tools/oracle_public/page_smoke.py --pair samples/2025 행정업무운영 편람(최종).hwp pdf/2025 행정업무운영 편람(최종)-2024.pdf",
+        "cwd": "."
+      },
+      "notes": "cheap 스윕 판정 `CHEAP_OK` · 한컴 2024 · 군 `handbook` · 쪽수 엔진/visual_sweep 미사용."
+    },
+    {
+      "id": "2025 행정업무운영 편람(최종)",
+      "hwp": "samples/2025 행정업무운영 편람(최종).hwpx",
+      "pdf": "pdf/2025 행정업무운영 편람(최종)-2024.pdf",
+      "pages": 383,
+      "metrics": {
+        "pdf_pages": 383,
+        "pdf_bytes": 4391169,
+        "sample_bytes": 13639865,
+        "worst_pages": [
+          1
+        ]
+      },
+      "repro": {
+        "command": "python tools/oracle_public/page_smoke.py --pair samples/2025 행정업무운영 편람(최종).hwpx pdf/2025 행정업무운영 편람(최종)-2024.pdf",
+        "cwd": "."
+      },
+      "notes": "cheap 스윕 판정 `CHEAP_OK` · 한컴 2024 · 군 `handbook` · 쪽수 엔진/visual_sweep 미사용."
+    },
+    {
+      "id": "1130000-201900011_D0150004-1-002_2017년기준 시장구조조사",
+      "hwp": "samples/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp",
+      "pdf": "pdf/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사-2022.pdf",
+      "pages": 315,
+      "metrics": {
+        "pdf_pages": 315,
+        "pdf_bytes": 5063390,
+        "sample_bytes": 2348032,
+        "worst_pages": [
+          1
+        ]
+      },
+      "repro": {
+        "command": "python tools/oracle_public/page_smoke.py --pair samples/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사.hwp pdf/task2070/1130000-201900011_D0150004-1-002_2017년기준 시장구조조사-2022.pdf",
+        "cwd": "."
+      },
+      "notes": "cheap 스윕 판정 `CHEAP_OK` · 한컴 2022 · 군 `dir:task2070` · 쪽수 엔진/visual_sweep 미사용."
+    },
+    {
+      "id": "80168_regulatory_analysis",
+      "hwp": "samples/80168_regulatory_analysis.hwp",
+      "pdf": "pdf/80168_regulatory_analysis-2022.pdf",
+      "pages": 157,
+      "metrics": {
+        "pdf_pages": 157,
+        "pdf_bytes": 1096383,
+        "sample_bytes": 218624,
+        "worst_pages": [
+          1
+        ]
+      },
+      "repro": {
+        "command": "python tools/oracle_public/page_smoke.py --pair samples/80168_regulatory_analysis.hwp pdf/80168_regulatory_analysis-2022.pdf",
+        "cwd": "."
+      },
+      "notes": "cheap 스윕 판정 `CHEAP_OK` · 한컴 2022 · 군 `regulatory` · 쪽수 엔진/visual_sweep 미사용."
+    },
+    {
+      "id": "1790387_prep_final_report",
+      "hwp": "samples/issue2006/1790387_prep_final_report.hwpx",
+      "pdf": "pdf-large/issue2006/1790387_prep_final_report-2022.pdf",
+      "pages": 146,
+      "metrics": {
+        "pdf_pages": 146,
+        "pdf_bytes": 50228784,
+        "sample_bytes": 20178222,
+        "worst_pages": [
+          1
+        ]
+      },
+      "repro": {
+        "command": "python tools/oracle_public/page_smoke.py --pair samples/issue2006/1790387_prep_final_report.hwpx pdf-large/issue2006/1790387_prep_final_report-2022.pdf",
+        "cwd": "."
+      },
+      "notes": "cheap 스윕 판정 `CHEAP_OK` · 한컴 2022 · 군 `issue` · 쪽수 엔진/visual_sweep 미사용."
+    },
+    {
+      "id": "issue1949_giant_cell_nested_tables_perf",
+      "hwp": "samples/issue1949_giant_cell_nested_tables_perf.hwp",
+      "pdf": "pdf/issue1949_giant_cell_nested_tables_perf-2024.pdf",
+      "pages": 115,
+      "metrics": {
+        "pdf_pages": 115,
+        "pdf_bytes": 985362,
+        "sample_bytes": 303616,
+        "worst_pages": [
+          1
+        ]
+      },
+      "repro": {
+        "command": "python tools/oracle_public/page_smoke.py --pair samples/issue1949_giant_cell_nested_tables_perf.hwp pdf/issue1949_giant_cell_nested_tables_perf-2024.pdf",
+        "cwd": "."
+      },
+      "notes": "cheap 스윕 판정 `CHEAP_OK` · 한컴 2024 · 군 `table` · 쪽수 엔진/visual_sweep 미사용."
+    },
+    {
+      "id": "issue1949_giant_cell_nested_tables_perf",
+      "hwp": "samples/issue1949_giant_cell_nested_tables_perf.hwpx",
+      "pdf": "pdf/issue1949_giant_cell_nested_tables_perf-2024.pdf",
+      "pages": 115,
+      "metrics": {
+        "pdf_pages": 115,
+        "pdf_bytes": 985362,
+        "sample_bytes": 266523,
+        "worst_pages": [
+          1
+        ]
+      },
+      "repro": {
+        "command": "python tools/oracle_public/page_smoke.py --pair samples/issue1949_giant_cell_nested_tables_perf.hwpx pdf/issue1949_giant_cell_nested_tables_perf-2024.pdf",
+        "cwd": "."
+      },
+      "notes": "cheap 스윕 판정 `CHEAP_OK` · 한컴 2024 · 군 `table` · 쪽수 엔진/visual_sweep 미사용."
+    },
+    {
+      "id": "hwpctl_API_v2.4",
+      "hwp": "samples/hwpctl_API_v2.4.hwp",
+      "pdf": "pdf/hwpctl_API_v2.4-2022.pdf",
+      "pages": 105,
+      "metrics": {
+        "pdf_pages": 105,
+        "pdf_bytes": 828097,
+        "sample_bytes": 262144,
+        "worst_pages": [
+          1
+        ]
+      },
+      "repro": {
+        "command": "python tools/oracle_public/page_smoke.py --pair samples/hwpctl_API_v2.4.hwp pdf/hwpctl_API_v2.4-2022.pdf",
+        "cwd": "."
+      },
+      "notes": "cheap 스윕 판정 `CHEAP_OK` · 한컴 2022 · 군 `other` · 쪽수 엔진/visual_sweep 미사용."
+    },
+    {
+      "id": "sungeo",
+      "hwp": "samples/basic/sungeo.hwp",
+      "pdf": "pdf/basic/sungeo-2022.pdf",
+      "pages": 94,
+      "metrics": {
+        "pdf_pages": 94,
+        "pdf_bytes": 3385360,
+        "sample_bytes": 923648,
+        "worst_pages": [
+          1
+        ]
+      },
+      "repro": {
+        "command": "python tools/oracle_public/page_smoke.py --pair samples/basic/sungeo.hwp pdf/basic/sungeo-2022.pdf",
+        "cwd": "."
+      },
+      "notes": "cheap 스윕 판정 `CHEAP_OK` · 한컴 2022 · 군 `basic` · 쪽수 엔진/visual_sweep 미사용."
+    },
+    {
+      "id": "kps-ai",
+      "hwp": "samples/kps-ai.hwp",
+      "pdf": "pdf/kps-ai-2022.pdf",
+      "pages": 77,
+      "metrics": {
+        "pdf_pages": 77,
+        "pdf_bytes": 1047845,
+        "sample_bytes": 485888,
+        "worst_pages": [
+          1
+        ]
+      },
+      "repro": {
+        "command": "python tools/oracle_public/page_smoke.py --pair samples/kps-ai.hwp pdf/kps-ai-2022.pdf",
+        "cwd": "."
+      },
+      "notes": "cheap 스윕 판정 `CHEAP_OK` · 한컴 2022 · 군 `other` · 쪽수 엔진/visual_sweep 미사용."
+    },
+    {
+      "id": "aift",
+      "hwp": "samples/aift.hwp",
+      "pdf": "pdf/aift-2022.pdf",
+      "pages": 74,
+      "metrics": {
+        "pdf_pages": 74,
+        "pdf_bytes": 2566690,
+        "sample_bytes": 5724672,
+        "worst_pages": [
+          1
+        ]
+      },
+      "repro": {
+        "command": "python tools/oracle_public/page_smoke.py --pair samples/aift.hwp pdf/aift-2022.pdf",
+        "cwd": "."
+      },
+      "notes": "cheap 스윕 판정 `CHEAP_OK` · 한컴 2022 · 군 `other` · 쪽수 엔진/visual_sweep 미사용."
+    },
+    {
+      "id": "aift",
+      "hwp": "samples/hwpx/aift.hwpx",
+      "pdf": "pdf/hwpx/aift-2022.pdf",
+      "pages": 74,
+      "metrics": {
+        "pdf_pages": 74,
+        "pdf_bytes": 2566602,
+        "sample_bytes": 5056727,
+        "worst_pages": [
+          1
+        ]
+      },
+      "repro": {
+        "command": "python tools/oracle_public/page_smoke.py --pair samples/hwpx/aift.hwpx pdf/hwpx/aift-2022.pdf",
+        "cwd": "."
+      },
+      "notes": "cheap 스윕 판정 `CHEAP_OK` · 한컴 2022 · 군 `hwpx_tree` · 쪽수 엔진/visual_sweep 미사용."
+    },
+    {
+      "id": "hwpctl_ParameterSetID_Item_v1.2",
+      "hwp": "samples/hwpctl_ParameterSetID_Item_v1.2.hwp",
+      "pdf": "pdf/hwpctl_ParameterSetID_Item_v1.2-2022.pdf",
+      "pages": 74,
+      "metrics": {
+        "pdf_pages": 74,
+        "pdf_bytes": 807675,
+        "sample_bytes": 245760,
+        "worst_pages": [
+          1
+        ]
+      },
+      "repro": {
+        "command": "python tools/oracle_public/page_smoke.py --pair samples/hwpctl_ParameterSetID_Item_v1.2.hwp pdf/hwpctl_ParameterSetID_Item_v1.2-2022.pdf",
+        "cwd": "."
+      },
+      "notes": "cheap 스윕 판정 `CHEAP_OK` · 한컴 2022 · 군 `other` · 쪽수 엔진/visual_sweep 미사용."
+    },
+    {
+      "id": "hwpspec",
+      "hwp": "samples/hwpspec.hwp",
+      "pdf": "pdf/hwpspec-2024.pdf",
+      "pages": 73,
+      "metrics": {
+        "pdf_pages": 73,
+        "pdf_bytes": 1750513,
+        "sample_bytes": 2752512,
+        "worst_pages": [
+          1
+        ]
+      },
+      "repro": {
+        "command": "python tools/oracle_public/page_smoke.py --pair samples/hwpspec.hwp pdf/hwpspec-2024.pdf",
+        "cwd": "."
+      },
+      "notes": "cheap 스윕 판정 `CHEAP_OK` · 한컴 2024 · 군 `other` · 쪽수 엔진/visual_sweep 미사용."
+    },
+    {
+      "id": "tac-img-02",
+      "hwp": "samples/tac-img-02.hwp",
+      "pdf": "pdf/tac-img-02-2022.pdf",
+      "pages": 66,
+      "metrics": {
+        "pdf_pages": 66,
+        "pdf_bytes": 1346452,
+        "sample_bytes": 4315648,
+        "worst_pages": [
+          1
+        ]
+      },
+      "repro": {
+        "command": "python tools/oracle_public/page_smoke.py --pair samples/tac-img-02.hwp pdf/tac-img-02-2022.pdf",
+        "cwd": "."
+      },
+      "notes": "cheap 스윕 판정 `CHEAP_OK` · 한컴 2022 · 군 `other` · 쪽수 엔진/visual_sweep 미사용."
+    },
+    {
+      "id": "unmatched-143E433F503322BD33",
+      "hwp": "samples/143E433F503322BD33.hwp",
+      "pdf": "pdf-large/hwpx/143E433F503322BD33.pdf",
+      "pages": 0,
+      "exceeds": true,
+      "metrics": {
+        "pdf_pages": 0,
+        "pdf_bytes": 0,
+        "sample_bytes": 73216,
+        "worst_pages": []
+      },
+      "repro": {
+        "command": "python tools/oracle_public/oracle_resolver.py --pretty --validate",
+        "cwd": "."
+      },
+      "notes": "짝 없는 샘플. 이유 `no_oracle_pdf` · 근접 PDF 1건."
+    },
+    {
+      "id": "unmatched-156457624_210622 7월부터 해외직구 구매대행업체 등록제 시행",
+      "hwp": "samples/156457624_210622 7월부터 해외직구 구매대행업체 등록제 시행.hwp",
+      "pdf": "",
+      "pages": 0,
+      "exceeds": true,
+      "metrics": {
+        "pdf_pages": 0,
+        "pdf_bytes": 0,
+        "sample_bytes": 418304,
+        "worst_pages": []
+      },
+      "repro": {
+        "command": "python tools/oracle_public/oracle_resolver.py --pretty --validate",
+        "cwd": "."
+      },
+      "notes": "짝 없는 샘플. 이유 `no_oracle_pdf` · 근접 PDF 0건."
+    },
+    {
+      "id": "unmatched-156636617_240617 2024년 5월 월간 수출입 현황(확정치)",
+      "hwp": "samples/156636617_240617 2024년 5월 월간 수출입 현황(확정치).hwp",
+      "pdf": "",
+      "pages": 0,
+      "exceeds": true,
+      "metrics": {
+        "pdf_pages": 0,
+        "pdf_bytes": 0,
+        "sample_bytes": 418816,
+        "worst_pages": []
+      },
+      "repro": {
+        "command": "python tools/oracle_public/oracle_resolver.py --pretty --validate",
+        "cwd": "."
+      },
+      "notes": "짝 없는 샘플. 이유 `no_oracle_pdf` · 근접 PDF 0건."
+    },
+    {
+      "id": "unmatched-20250130-hongbo-no",
+      "hwp": "samples/20250130-hongbo-no.hwp",
+      "pdf": "",
+      "pages": 0,
+      "exceeds": true,
+      "metrics": {
+        "pdf_pages": 0,
+        "pdf_bytes": 0,
+        "sample_bytes": 587264,
+        "worst_pages": []
+      },
+      "repro": {
+        "command": "python tools/oracle_public/oracle_resolver.py --pretty --validate",
+        "cwd": "."
+      },
+      "notes": "짝 없는 샘플. 이유 `no_oracle_pdf` · 근접 PDF 0건."
+    },
+    {
+      "id": "pass-2025 행정업무운영 편람(최종)",
+      "hwp": "samples/2025 행정업무운영 편람(최종).hwp",
+      "pdf": "pdf/2025 행정업무운영 편람(최종)-hwp-2020.pdf",
+      "pages": 0,
+      "metrics": {
+        "pdf_pages": 0,
+        "pdf_bytes": 19609731,
+        "sample_bytes": 10687488,
+        "worst_pages": []
+      },
+      "notes": "작은 문서 — 쪽수 게이트 통과 예시."
+    },
+    {
+      "id": "pass-2025 행정업무운영 편람(최종)",
+      "hwp": "samples/2025 행정업무운영 편람(최종).hwp",
+      "pdf": "pdf/2025 행정업무운영 편람(최종)-hwp-kopub-2020.pdf",
+      "pages": 0,
+      "metrics": {
+        "pdf_pages": 0,
+        "pdf_bytes": 19997652,
+        "sample_bytes": 10687488,
+        "worst_pages": []
+      },
+      "notes": "작은 문서 — 쪽수 게이트 통과 예시."
+    },
+    {
+      "id": "pass-2025 행정업무운영 편람(최종)",
+      "hwp": "samples/2025 행정업무운영 편람(최종).hwpx",
+      "pdf": "pdf/2025 행정업무운영 편람(최종)-hwpx-kopub-2020.pdf",
+      "pages": 0,
+      "metrics": {
+        "pdf_pages": 0,
+        "pdf_bytes": 19996524,
+        "sample_bytes": 13639865,
+        "worst_pages": []
+      },
+      "notes": "작은 문서 — 쪽수 게이트 통과 예시."
+    }
+  ]
+}

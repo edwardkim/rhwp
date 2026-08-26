@@ -1,0 +1,19 @@
+{
+  "id": "T25",
+  "steps": [
+    {
+      "answer": {
+        "matchCount": {
+          "cmd": [
+            "search",
+            "{input}",
+            "홍보",
+            "--json"
+          ],
+          "path": "matches",
+          "len": true
+        }
+      }
+    }
+  ]
+}

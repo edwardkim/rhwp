@@ -1,0 +1,16 @@
+{
+  "id": "SD53",
+  "steps": [
+    {
+      "answer": {
+        "dialect": {
+          "cmd": [
+            "export-plan-schema",
+            "--json"
+          ],
+          "path": "dialect"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workCapsule",
+  "parent": {
+    "capsule": "s02.capsule.json",
+    "sha256": "eb6eb9afe598c93c73b263847ba1d892bce578700589c94d771f2607c2f1f3a0"
+  },
+  "plan": {
+    "planVersion": "1.0",
+    "input": "output/handoff/t-ord/s02-structure.json",
+    "output": "output/handoff/t-ord/s03-tables.csv",
+    "steps": [
+      {
+        "action": "export_tables",
+        "table": 0
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"output/handoff/t-ord/s02-structure.json\",\"output\":\"output/handoff/t-ord/s03-tables.csv\",\"steps\":[{\"action\":\"export_tables\",\"table\":0}]}",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "output/handoff/t-ord/s02-structure.json",
+    "inputSha256": "616d622b80531b466adced4df0bdb3b52dafee1232cc8e8f2fddd14f87aed8b4",
+    "planSha256": "3364ca1d10fa9c4b416277a579cfad157a7060409581e768489a4ebc55b86806",
+    "outputSha256": "632d3784953e4f1230bd99e9f548efa3779d594fe6f5504cee7a2b5638a56d89",
+    "toolVersion": "0.8.4",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null,
+    "untrustedContent": false,
+    "untrustedFields": []
+  }
+}

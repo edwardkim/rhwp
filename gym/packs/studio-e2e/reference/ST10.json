@@ -1,0 +1,19 @@
+{
+  "id": "ST10",
+  "steps": [
+    {
+      "answer": {
+        "cols": {
+          "cmd": [
+            "chart-to-csv",
+            "{input}",
+            "--chart",
+            "1",
+            "--json"
+          ],
+          "path": "charts[0].colCount"
+        }
+      }
+    }
+  ]
+}

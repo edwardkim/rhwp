@@ -299,6 +299,15 @@ impl DocumentCore {
         };
 
         let outer_ctrl = path[0].0;
+        let inner_para = path.last().map(|entry| entry.2).unwrap_or(0);
+        self.reflow_cell_paragraph_by_path(section_idx, parent_para_idx, path, inner_para);
+        self.recalculate_cell_paragraph_vpos_by_path(
+            section_idx,
+            parent_para_idx,
+            path,
+            inner_para,
+            None,
+        );
         self.mark_cell_control_dirty(section_idx, parent_para_idx, outer_ctrl);
         if let Some(section) = self.document.sections.get_mut(section_idx) {
             section.raw_stream = None;
@@ -630,10 +639,19 @@ impl DocumentCore {
             .get(host_para)?;
         for (control_index, cell_index, para_index) in path {
             let ctrl = para.controls.get(*control_index)?;
-            let Control::Table(table) = ctrl else {
-                return None;
+            para = match ctrl {
+                Control::Table(table) => {
+                    table.cells.get(*cell_index)?.paragraphs.get(*para_index)?
+                }
+                // 그리기 개체는 글상자와 캡션을 연다 — 둘째 칸이 그중 몇 번째인지다.
+                // 여기가 표만 알던 탓에 글상자·캡션 리스트는 **자리가 있어도 못 닿았다**
+                // (한글은 그 리스트 끝을 18 로 답하는데 rhwp 는 0 이었다).
+                Control::Shape(shape) => shape_lists(shape)
+                    .into_iter()
+                    .find(|(node, _)| node == cell_index)
+                    .and_then(|(_, paragraphs)| paragraphs.get(*para_index))?,
+                _ => return None,
             };
-            para = table.cells.get(*cell_index)?.paragraphs.get(*para_index)?;
         }
         Some(para)
     }
@@ -876,6 +894,7 @@ impl DocumentCore {
                             cell_para.insert_text_at(0, value);
                         }
                         rebuild_char_offsets(cell_para);
+                        cell_para.replace_line_segs(Vec::new());
                     }
                     Ok(())
                 } else {
@@ -949,6 +968,7 @@ impl DocumentCore {
 
         // char_offsets 재생성: FIELD_BEGIN/END 갭, 탭 폭, UTF-16 code unit 크기 반영
         rebuild_char_offsets(para);
+        para.replace_line_segs(Vec::new());
 
         Ok(())
     }
@@ -1051,6 +1071,13 @@ impl DocumentCore {
         para_idx: usize,
         char_offset: usize,
     ) -> Result<String, HwpError> {
+        let stored_end_for_reset = crate::renderer::composer::paragraph_flow_end(
+            self.document
+                .sections
+                .get(section_idx)
+                .and_then(|section| section.paragraphs.get(para_idx))
+                .ok_or_else(|| HwpError::InvalidField("문단 위치 초과".into()))?,
+        );
         let para = self
             .document
             .sections
@@ -1064,7 +1091,19 @@ impl DocumentCore {
         if let Some(section) = self.document.sections.get_mut(section_idx) {
             section.raw_stream = None;
         }
+        self.reflow_paragraph(section_idx, para_idx);
+        let hwp3_layout = self.document.layout_profile().hwp3_layout();
+        crate::renderer::composer::recalculate_section_vpos(
+            &mut self.document.sections[section_idx].paragraphs,
+            para_idx,
+            None,
+            stored_end_for_reset,
+            &self.styles,
+            self.dpi,
+            hwp3_layout,
+        );
         self.recompose_section(section_idx);
+        self.paginate();
         Ok(r#"{"ok":true}"#.to_string())
     }
 
@@ -1125,7 +1164,15 @@ impl DocumentCore {
         if let Some(section) = self.document.sections.get_mut(section_idx) {
             section.raw_stream = None;
         }
+        self.reflow_cell_paragraph(
+            section_idx,
+            parent_para_idx,
+            control_idx,
+            cell_idx,
+            cell_para_idx,
+        );
         self.recompose_section(section_idx);
+        self.paginate();
         Ok(r#"{"ok":true}"#.to_string())
     }
 
@@ -1457,10 +1504,12 @@ fn collect_fields_from_paragraph(
                                 extra_properties: 0,
                                 ctrl_data_name: Some(fname.clone()),
                                 instance_id: None,
+                                raw_type: None,
                                 memo_index: 0,
                                 memo_paragraphs: Vec::new(),
                                 memo_text_direction: None,
                                 raw_parameters_xml: None,
+                                parameters: Default::default(),
                                 guide_residue: None,
                             },
                             location: loc,
@@ -1485,30 +1534,30 @@ fn collect_fields_from_paragraph(
                 }
             }
             Control::Shape(shape) => {
-                if let Some(drawing) = shape.drawing() {
-                    if let Some(tb) = &drawing.text_box {
-                        // 글상자도 리스트 하나를 차지한다(한글2022 실측: 표 12칸 다음 글상자가
-                        // 그 자리에서 아이디를 받고, 그 뒤 표가 이어받는다).
-                        let box_list_id = walk.alloc();
-                        walk.lists.push(ListEntry {
-                            list_id: box_list_id,
-                            is_cell: false,
-                            host_list_id: list_id,
-                            section_index: base_location.section_index,
-                            host_para_index: para_in_list,
+                // 글상자도 리스트 하나를 차지한다(한글2022 실측: 표 12칸 다음 글상자가
+                // 그 자리에서 아이디를 받고, 그 뒤 표가 이어받는다). **캡션도 마찬가지다** —
+                // 안 세면 그 뒤 리스트 번호가 전부 밀린다.
+                for (node, paragraphs) in shape_lists(shape) {
+                    let box_list_id = walk.alloc();
+                    walk.lists.push(ListEntry {
+                        list_id: box_list_id,
+                        is_cell: false,
+                        host_list_id: list_id,
+                        section_index: base_location.section_index,
+                        host_para_index: para_in_list,
+                        control_index: ci,
+                        // 묶음 안에서 몇 번째 마디인지 — 사슬 쪽과 같은 번호를 쓴다.
+                        cell_index: node,
+                        para_count: paragraphs.len(),
+                        grid: None,
+                    });
+                    for (pi, tb_para) in paragraphs.iter().enumerate() {
+                        let mut loc = base_location.clone();
+                        loc.nested_path.push(NestedEntry::TextBox {
                             control_index: ci,
-                            cell_index: 0,
-                            para_count: tb.paragraphs.len(),
-                            grid: None,
+                            para_index: pi,
                         });
-                        for (pi, tb_para) in tb.paragraphs.iter().enumerate() {
-                            let mut loc = base_location.clone();
-                            loc.nested_path.push(NestedEntry::TextBox {
-                                control_index: ci,
-                                para_index: pi,
-                            });
-                            collect_fields_from_paragraph(tb_para, &loc, box_list_id, walk, result);
-                        }
+                        collect_fields_from_paragraph(tb_para, &loc, box_list_id, walk, result);
                     }
                 }
             }
@@ -1529,9 +1578,9 @@ pub(crate) fn cell_path_to_list(
     let mut current = lists.iter().find(|l| l.list_id == list_id)?;
     let mut para_index = para_in_list;
     loop {
-        if !current.is_cell {
-            return None; // 글상자 안 삽입은 아직 다루지 않는다.
-        }
+        // 셀만 풀던 자리다. 글상자·캡션도 같은 꼴의 경로를 쓴다 — 둘째 칸이 셀 번호가 아니라
+        // 그 개체가 연 리스트 중 몇 번째냐일 뿐이고, 푸는 쪽(`cell_paragraph_at_path`)이
+        // 컨트롤 갈래를 보고 가른다. 여기서 막고 있어서 캡션 리스트는 끝이 0 으로 나왔다.
         path.push((current.control_index, current.cell_index, para_index));
         if current.host_list_id == ROOT_LIST_ID {
             break;
@@ -1619,6 +1668,7 @@ pub(crate) fn char_idx_at_code_unit(para: &Paragraph, pos: usize) -> usize {
 /// 인라인 컨트롤이나 글자 앞에서 멈춘다. 컨트롤 하나는 8 코드 유닛이다.
 pub(crate) fn leading_anchor_pos(para: &Paragraph) -> usize {
     let mut skipped = 0usize;
+    let mut anchored_count = 0usize;
     for ctrl in &para.controls {
         let anchored = match ctrl {
             Control::Table(t) => !t.common.treat_as_char,
@@ -1635,6 +1685,27 @@ pub(crate) fn leading_anchor_pos(para: &Paragraph) -> usize {
             break;
         }
         skipped += 8;
+        anchored_count += 1;
+    }
+    // 컨트롤 개수 × 8 은 **개체들이 스트림에서 맞붙어 있을 때만** 맞는다. 자리차지 개체가
+    // 여럿인 문단은 개체 사이에 **공백 글자가 한 칸씩** 있어(한글 실측: 앵커가 16·25·34 로
+    // 8 이 아니라 9 씩 벌어진다) 개수 셈이 그만큼 앞질러 간다. `mix-shape-01` 에서 이 함수는
+    // 40 을 줬고 한글은 24 였다 — 캐럿이 문단 끝으로 밀려 `SelectCtrlFront` 가 아무 개체도
+    // 못 골랐다.
+    //
+    // 스트림에 글자가 있으면 그 **첫 글자 자리**가 답이다. 개수 셈이 그보다 앞서 나갈 때만
+    // 갈아끼운다 — 맞붙어 있는 문단에서는 두 값이 같아 아무것도 안 바뀐다.
+    //
+    // **0 은 안 믿는다.** 앞머리에 컨트롤이 있는데 첫 글자가 스트림 0 이라는 것은 대응표가
+    // 컨트롤을 안 담았다는 뜻이다 — 구역 나누기로 **새로 생긴 문단**이 그렇다(`char_offsets`
+    // 가 0 부터 다시 매겨진다). 그 문단에서는 개수 셈이 맞는 답이라 그대로 둔다.
+    if anchored_count > 0 {
+        if let Some(first_char) = para.char_offsets.first() {
+            let first_char = *first_char as usize;
+            if first_char > 0 && first_char < skipped {
+                skipped = first_char;
+            }
+        }
     }
     skipped.min((para.char_count as usize).saturating_sub(1))
 }
@@ -1701,6 +1772,34 @@ pub(crate) fn stream_pos(para: &Paragraph, char_idx: usize) -> usize {
         }
     }
     units
+}
+
+/// 그리기 개체 하나가 여는 **글 리스트들** — 글상자와 **캡션**이다.
+///
+/// 첫 값은 그 개체 안에서 몇 번째 리스트인지다. 리스트 표(`cell_index` 자리)와 컨트롤 사슬이
+/// 이 번호를 같이 써서 둘이 **같은 마디를 같은 이름으로** 가리킨다.
+///
+/// 캡션을 안 세던 것이 리스트 번호가 밀리던 뿌리였다(실측: `samples/draw-group.hwp` 의 묶음은
+/// 글상자가 없는데도 한글이 list 2 를 주고, 그 부모가 바로 그 묶음이며, 안에 `atno` 가 든
+/// 가운데 정렬 한 문단이다 — 캡션이다).
+///
+/// 글상자와 캡션을 **둘 다** 가진 개체의 앞뒤 순서는 아직 못 쟀다. 그런 표본을 만나면 그때
+/// 실측해서 고칠 것 — 지금 순서는 기존에 검증된 글상자 자리를 지키려고 글상자를 앞에 둔 것뿐이다.
+pub(crate) fn shape_lists(shape: &crate::model::shape::ShapeObject) -> Vec<(usize, &[Paragraph])> {
+    let mut out: Vec<(usize, &[Paragraph])> = Vec::new();
+    if let Some(tb) = shape.drawing().and_then(|d| d.text_box.as_ref()) {
+        out.push((0, tb.paragraphs.as_slice()));
+    }
+    let caption = match shape {
+        crate::model::shape::ShapeObject::Group(g) => g.caption.as_ref(),
+        other => other.drawing().and_then(|d| d.caption.as_ref()),
+    };
+    if let Some(cap) = caption {
+        if !cap.paragraphs.is_empty() {
+            out.push((1, cap.paragraphs.as_slice()));
+        }
+    }
+    out
 }
 
 /// 컨트롤 하나가 **글자 몫을 빼고** 스트림에서 더 차지하는 칸 수.
@@ -2155,6 +2254,7 @@ fn insert_click_here_field_in_para(
         field_id,
         ctrl_id: tags::FIELD_CLICKHERE,
         instance_id: None,
+        raw_type: None,
         ctrl_data_name: if name.is_empty() {
             None
         } else {
@@ -2164,6 +2264,7 @@ fn insert_click_here_field_in_para(
         memo_paragraphs: Vec::new(),
         memo_text_direction: None,
         raw_parameters_xml: None,
+        parameters: Default::default(),
         guide_residue: None,
     };
 
@@ -2361,7 +2462,7 @@ mod tests {
     use super::*;
     use crate::model::control::{Control, Field, FieldType};
     use crate::model::document::Section;
-    use crate::model::paragraph::{FieldRange, Paragraph};
+    use crate::model::paragraph::{FieldRange, LineSeg, Paragraph};
     use crate::model::table::{Cell, Table};
 
     fn make_field_control(ctrl_id: u32) -> Control {
@@ -2373,11 +2474,13 @@ mod tests {
             field_id: ctrl_id,
             ctrl_id,
             instance_id: None,
+            raw_type: None,
             ctrl_data_name: None,
             memo_index: 0,
             memo_paragraphs: Vec::new(),
             memo_text_direction: None,
             raw_parameters_xml: None,
+            parameters: Default::default(),
             guide_residue: None,
         })
     }
@@ -2777,6 +2880,7 @@ mod tests {
 
     #[test]
     fn set_cell_field_text_updates_text_metadata() {
+        modest_cell_field_fill_reaches_frame_consumers_before_serialization();
         let cell_para = Paragraph {
             text: "기존값".into(),
             char_count: 4,
@@ -2821,5 +2925,86 @@ mod tests {
         assert_eq!(updated.text, "새값");
         assert_eq!(updated.char_count, 3);
         assert_eq!(updated.char_offsets, vec![0, 1]);
+    }
+
+    fn modest_cell_field_fill_reaches_frame_consumers_before_serialization() {
+        let initial = "old";
+        let cell_para = Paragraph {
+            text: initial.into(),
+            char_count: 4,
+            char_offsets: vec![0, 1, 2],
+            line_segs: vec![LineSeg {
+                text_start: 0,
+                line_height: 1_000,
+                text_height: 900,
+                baseline_distance: 800,
+                segment_width: 1,
+                tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
+                ..Default::default()
+            }],
+            ..Default::default()
+        };
+        let mut core = DocumentCore::new_empty();
+        core.document.sections.push(Section {
+            paragraphs: vec![Paragraph {
+                controls: vec![Control::Table(Box::new(Table {
+                    cells: vec![Cell {
+                        field_name: Some("셀필드".into()),
+                        paragraphs: vec![cell_para],
+                        ..Default::default()
+                    }],
+                    ..Default::default()
+                }))],
+                ..Default::default()
+            }],
+            ..Default::default()
+        });
+        let location = FieldLocation {
+            section_index: 0,
+            para_index: 0,
+            nested_path: vec![NestedEntry::TableCell {
+                control_index: 0,
+                cell_index: 0,
+                para_index: 0,
+            }],
+        };
+
+        core.set_cell_field_text(&location, "moderately wider field value")
+            .unwrap();
+
+        let styles = crate::renderer::style_resolver::ResolvedStyleSet::default();
+        let dpi = 96.0;
+        let measured = {
+            let Control::Table(table) = &core.document.sections[0].paragraphs[0].controls[0] else {
+                panic!("expected table control");
+            };
+            let para = &table.cells[0].paragraphs[0];
+            assert!(para.line_segs.is_empty());
+            let composed = crate::renderer::composer::compose_paragraph(para);
+            crate::renderer::composer::estimate_composed_line_width(&composed.lines[0], &styles)
+        };
+        let width_hwp = crate::renderer::px_to_hwpunit(measured / 1.2, dpi);
+        let inner_width = crate::renderer::hwpunit_to_px(width_hwp, dpi);
+        assert!(measured > inner_width && measured < inner_width * 1.8);
+
+        let Control::Table(table) = &core.document.sections[0].paragraphs[0].controls[0] else {
+            panic!("expected table control");
+        };
+        let para = &table.cells[0].paragraphs[0];
+        let mut composed = crate::renderer::composer::compose_paragraph(para);
+        crate::renderer::composer::recompose_cell_lines_in_frame(
+            &mut composed,
+            para,
+            crate::renderer::composer::ParagraphBox::content(0..width_hwp),
+            &styles,
+            dpi,
+            false,
+        );
+
+        assert!(
+            composed.lines.len() > 1,
+            "the shared cell consumer must see a fresh boundary before save/reload"
+        );
+        assert!(composed.lines[1].char_start > 0);
     }
 }

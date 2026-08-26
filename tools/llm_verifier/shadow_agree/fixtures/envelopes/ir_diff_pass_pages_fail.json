@@ -1,0 +1,20 @@
+{
+  "check_a": "ir-diff",
+  "check_b": "verify-pages",
+  "envelope_a": {
+    "schemaVersion": "1",
+    "a": "samples/편람/src.hwp",
+    "b": "samples/편람/roundtrip.hwp",
+    "identical": true,
+    "diffCount": 0,
+    "categories": []
+  },
+  "envelope_b": {
+    "schemaVersion": "1",
+    "source": "samples/편람/roundtrip.hwp",
+    "expectations": [{"kind": "pages", "expected": 12}],
+    "passCount": 0,
+    "failCount": 1,
+    "verdict": "fail"
+  }
+}

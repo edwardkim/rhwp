@@ -1,0 +1,19 @@
+{
+  "id": "p4-selposbyset",
+  "title": "블록 위치를 셋으로 받기 — 판별되는 것은 반환값뿐",
+  "ledger": [
+    "HwpCtrl.method.GetSelectedPosBySet"
+  ],
+  "open": "samples/para-001.hwp",
+  "calls": [
+    ["SetPos", [0, 0, 0]],
+    ["GetSelectedPos", []],
+    ["GetSelectedPosBySet", [{"$obj": "CreateSet(\"ListParaPos\")"}, {"$obj": "CreateSet(\"ListParaPos\")"}]],
+    ["SelectText", [0, 16, 0, 21]],
+    ["GetSelectedPos", []],
+    ["GetSelectedPosBySet", [{"$obj": "CreateSet(\"ListParaPos\")"}, {"$obj": "CreateSet(\"ListParaPos\")"}]],
+    ["Run", ["SelectAll"]],
+    ["GetSelectedPos", []],
+    ["GetSelectedPosBySet", [{"$obj": "CreateSet(\"ListParaPos\")"}, {"$obj": "CreateSet(\"ListParaPos\")"}]]
+  ]
+}

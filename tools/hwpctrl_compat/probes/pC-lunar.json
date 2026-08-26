@@ -1,0 +1,23 @@
+{
+  "id": "pC-lunar",
+  "title": "음·양력 — 부름 규약과 답",
+  "ledger": [],
+  "open": "samples/para-001.hwp",
+  "calls": [
+    ["SolarToLunar", [2026, 8, 9]],
+    ["LunarToSolar", [2026, 6, 26, 0]],
+    ["LunarToSolar", [2026, 6, 26, 1]],
+    ["SolarToLunar", [1881, 1, 30]],
+    ["SolarToLunar", [1881, 1, 29]],
+    ["SolarToLunar", [1800, 1, 1]],
+    ["SolarToLunar", [1391, 2, 5]],
+    ["SolarToLunar", [2050, 12, 31]],
+    ["SolarToLunar", [2060, 1, 1]],
+    ["SolarToLunar", [2026, 13, 1]],
+    ["SolarToLunar", [2026, 2, 30]],
+    ["LunarToSolar", [2026, 6, 30, 0]],
+    ["LunarToSolar", [1800, 1, 1, 0]],
+    ["SolarToLunarBySet", [2026, 8, 9]],
+    ["LunarToSolarBySet", [2026, 6, 26, 0]]
+  ]
+}

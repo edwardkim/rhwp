@@ -1,0 +1,11 @@
+{
+  "id": "T03",
+  "utterance": "debug overlay",
+  "steps": [
+    {
+      "command": "export-svg",
+      "pageZeroBased": true
+    }
+  ],
+  "stop": "--debug-overlay"
+}

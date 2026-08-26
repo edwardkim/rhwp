@@ -1,0 +1,7 @@
+{
+ "schemaVersion": "1",
+ "generatedBy": "tools/fde/triage.py",
+ "route": "invalid-input",
+ "routeReason": "요청 폴더 안 문서가 없음: ../secrets.hwp",
+ "steps": []
+}

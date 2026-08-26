@@ -1,0 +1,41 @@
+# M09-g equation golden — current-engine lock (variant/exception/unimplemented honesty)
+command: PILE
+script: PILE{a # b # c # d # e}
+honesty: pile-layout-as-row
+
+=== ast ===
+Pile {
+    rows: [
+        Text(
+            "a",
+        ),
+        Text(
+            "b",
+        ),
+        Text(
+            "c",
+        ),
+        Text(
+            "d",
+        ),
+        Text(
+            "e",
+        ),
+    ],
+    align: Center,
+}
+
+=== layout ===
+Row x=0.0000 y=0.0000 w=11.5500 h=124.0000 bl=62.0000
+  Text("a") x=0.0000 y=0.0000 w=11.5500 h=20.0000 bl=16.0000
+  Text("b") x=0.0000 y=26.0000 w=11.5500 h=20.0000 bl=16.0000
+  Text("c") x=0.0000 y=52.0000 w=11.5500 h=20.0000 bl=16.0000
+  Text("d") x=0.0000 y=78.0000 w=11.5500 h=20.0000 bl=16.0000
+  Text("e") x=0.0000 y=104.0000 w=11.5500 h=20.0000 bl=16.0000
+
+=== svg ===
+<text x="0.00" y="16.00" font-size="20.00" fill="#000000" font-style="italic" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">a</text>
+<text x="0.00" y="42.00" font-size="20.00" fill="#000000" font-style="italic" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">b</text>
+<text x="0.00" y="68.00" font-size="20.00" fill="#000000" font-style="italic" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">c</text>
+<text x="0.00" y="94.00" font-size="20.00" fill="#000000" font-style="italic" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">d</text>
+<text x="0.00" y="120.00" font-size="20.00" fill="#000000" font-style="italic" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">e</text>

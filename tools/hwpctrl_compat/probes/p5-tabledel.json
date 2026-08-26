@@ -1,0 +1,27 @@
+{
+  "id": "p5-tabledel",
+  "title": "칸 지우기·글을 표로 — 리스트가 늘고 주는가",
+  "ledger": [],
+  "open": "samples/table-001.hwp",
+  "calls": [
+    ["SetPos", [2, 0, 0]],
+    ["Run", ["TableCellBlock"]],
+    ["SelectionMode", []],
+    ["Run", ["TableDeleteCell"]],
+    ["SelectionMode", []],
+    ["GetPos", []],
+    ["SetPos", [7, 0, 0]],
+    ["GetPos", []],
+    ["SetPos", [6, 0, 0]],
+    ["GetPos", []],
+    ["CellShape.Item", ["Width"]],
+    ["Run", ["Undo"]],
+    ["SetPos", [7, 0, 0]],
+    ["GetPos", []],
+    ["SetPos", [0, 0, 0]],
+    ["SelectText", [0, 16, 0, 21]],
+    ["Run", ["TableStringToTable"]],
+    ["GetPos", []],
+    ["SelectionMode", []]
+  ]
+}

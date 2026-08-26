@@ -1,0 +1,30 @@
+{
+  "id": "T21_budget_mid_batch",
+  "kind": "context_budget",
+  "judgmentNotCrash": false,
+  "exit": 0,
+  "steps": [
+    {
+      "argv": [
+        "rhwp",
+        "batch",
+        "info",
+        "--stdin",
+        "--json"
+      ]
+    },
+    {
+      "argv": [
+        "python",
+        "tools/handoff/orchestrator.py",
+        "--task",
+        "task.json",
+        "--agent",
+        "python worker.py",
+        "--work-dir",
+        "output/handoff/t-batch",
+        "--json"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "schemaVersion": "1.0",
+  "ladder": [
+    {
+      "step": 1,
+      "command": "info",
+      "reference": "01_info.md"
+    },
+    {
+      "step": 2,
+      "command": "explain",
+      "reference": "02_explain.md"
+    },
+    {
+      "step": 3,
+      "command": "export-structure",
+      "reference": "03_export_structure.md"
+    },
+    {
+      "step": 4,
+      "command": "digest",
+      "reference": "04_digest.md"
+    },
+    {
+      "step": 5,
+      "command": "search",
+      "reference": "05_search.md"
+    },
+    {
+      "step": 6,
+      "command": "extract-data",
+      "reference": "06_extract_data.md"
+    }
+  ],
+  "stopReference": "07_when_to_stop.md"
+}

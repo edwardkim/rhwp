@@ -1,0 +1,49 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.provenance.envelope_sample.v1",
+  "claim": "M-prov",
+  "issue": 5480,
+  "generator": "tools/provenance_map/fatten_provenance_map.py",
+  "id": "replay__receipt",
+  "command": "replay",
+  "family": "receipt",
+  "mode": "receipt",
+  "flags": [
+    "--json"
+  ],
+  "cli": "rhwp replay --plan-json <계획> --json ",
+  "whyThisMode": "해시·판정만. 저널 없음",
+  "sampleKind": "typical",
+  "risk": "none",
+  "note": "영수증 봉투는 해시(inputSha256·planSha256·outputSha256)·모드·step 수·도구 버전·재현 판정뿐이다 — run 과 달리 저널을 싣지 않아 문서 문자열이 나갈 자리가 없다. input 경로와 expectedOutputSha256 은 계획서(호출자)가 준 값의 에코다.",
+  "declaredUntrusted": [],
+  "presentUntrusted": [],
+  "subsetOk": true,
+  "fieldClass": {
+    "schemaVersion": "R",
+    "input": "C",
+    "expectedOutputSha256": "C",
+    "inputSha256": "R",
+    "planSha256": "R",
+    "outputSha256": "R",
+    "reproduced": "R",
+    "untrustedContent": "mark",
+    "untrustedFields": "mark"
+  },
+  "consumerRule": "영수증은 엔진 데이터. 재실행 내부의 문서 문자열은 이 봉투에 없다.",
+  "trap": "이 자리를 고치지 않는다. replay 석의 파일은 다른 진행 석.",
+  "injectionCanary": null,
+  "canaryRule": "이 모드는 문서 파생 문자열이 없다.",
+  "forbiddenIfPromoted": [],
+  "envelope": {
+    "schemaVersion": "1.0",
+    "input": "caller:replay:input",
+    "expectedOutputSha256": "caller:replay:expectedOutputSha256",
+    "inputSha256": "engine:replay:inputSha256",
+    "planSha256": "engine:replay:planSha256",
+    "outputSha256": "engine:replay:outputSha256",
+    "reproduced": "engine:replay:reproduced",
+    "untrustedContent": false,
+    "untrustedFields": []
+  }
+}

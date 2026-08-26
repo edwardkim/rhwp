@@ -1,0 +1,26 @@
+{
+  "id": "SD50",
+  "tier": 2,
+  "title": "MCP stdin 도구 수",
+  "input": "samples/table-001.hwp",
+  "instructions": "MCP invocation.stdinTools 의 원소 수를 answer.json 에 {\"stdinTools\": N} 으로 제출하라. 힌트: capabilities --mcp 의 invocation.stdinTools.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "MCP stdin 도구 수",
+      "op": "len_answer_eq",
+      "answer": "stdinTools",
+      "path": "invocation.stdinTools",
+      "cmd": [
+        "capabilities",
+        "--mcp"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

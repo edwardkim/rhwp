@@ -1,0 +1,67 @@
+{
+  "id": "uni-bidi-lri-hwp",
+  "issue": 5476,
+  "axis": "unicode",
+  "family": "bidi_override",
+  "polarity": "positive",
+  "sourceRule": {
+    "file": "src/document_core/text_security.rs",
+    "symbol": "is_bidi_control",
+    "note": "LRI LEFT-TO-RIGHT ISOLATE"
+  },
+  "cli": {
+    "argv": [
+      "inspect",
+      "unicode",
+      "synth:unicode/bidi/lri.hwp",
+      "--json"
+    ],
+    "exitCode": 0,
+    "stdoutKind": "json-object",
+    "detectionIsNotFailure": true
+  },
+  "consume": {
+    "branch": "clean == false",
+    "compareRenderedRaw": true
+  },
+  "pair": null,
+  "why": "LEFT-TO-RIGHT ISOLATE. rendered 와 raw 를 나란히 싣는다.",
+  "note": "Trojan Source 계열. UAX #9 전부가 아니라 명시적 방향 제어만.",
+  "human": "유니코드 기만 검사 — 탐지 1건\n  보이는 모습: filecod.exe\n  실제 순서  : file<U+2066>cod.exe<U+202C>\n",
+  "inventedRule": false,
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "synth:unicode/bidi/lri.hwp",
+    "kindFilter": "all",
+    "scannedChars": 12,
+    "findings": [
+      {
+        "kind": "bidi_override",
+        "codepoint": "U+2066",
+        "severity": "high",
+        "section": 0,
+        "paragraph": 0,
+        "location": "body",
+        "charOffset": 0,
+        "runLength": 1,
+        "excerpt": "file<U+2066>cod.exe<U+202C>",
+        "rendered": "filecod.exe",
+        "raw": "file<U+2066>cod.exe<U+202C>",
+        "why": "표시 순서를 뒤집는 제어문자입니다 — 화면에 보이는 순서와 실제 문자 순서가 다릅니다"
+      }
+    ],
+    "findingCount": 1,
+    "clean": false,
+    "severityCounts": {
+      "high": 1,
+      "medium": 0,
+      "low": 0
+    },
+    "kindCounts": {
+      "zero_width": 0,
+      "bidi_override": 1,
+      "tag_char": 0,
+      "confusable": 0
+    }
+  }
+}

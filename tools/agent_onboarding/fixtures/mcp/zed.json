@@ -1,0 +1,13 @@
+{
+  "context_servers": {
+    "rhwp": {
+      "source": "custom",
+      "command": {
+        "path": "rhwp",
+        "args": [
+          "mcp-serve"
+        ]
+      }
+    }
+  }
+}

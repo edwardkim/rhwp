@@ -1,0 +1,80 @@
+{
+  "id": "pZ-order",
+  "title": "SelectCtrlFront 가 고르는 차례",
+  "ledger": [],
+  "open": "samples/mix-shape-01.hwp",
+  "calls": [
+    [
+      "SetPos",
+      [
+        0,
+        0,
+        0
+      ]
+    ],
+    [
+      "Run",
+      [
+        "SelectCtrlFront"
+      ]
+    ],
+    [
+      "CurSelectedCtrl.UserDesc",
+      []
+    ],
+    [
+      "CurSelectedCtrl.GetAnchorPos(0).Item",
+      [
+        "Para"
+      ]
+    ],
+    [
+      "Run",
+      [
+        "SelectCtrlFront"
+      ]
+    ],
+    [
+      "CurSelectedCtrl.UserDesc",
+      []
+    ],
+    [
+      "CurSelectedCtrl.GetAnchorPos(0).Item",
+      [
+        "Para"
+      ]
+    ],
+    [
+      "Run",
+      [
+        "SelectCtrlFront"
+      ]
+    ],
+    [
+      "CurSelectedCtrl.UserDesc",
+      []
+    ],
+    [
+      "CurSelectedCtrl.GetAnchorPos(0).Item",
+      [
+        "Para"
+      ]
+    ],
+    [
+      "Run",
+      [
+        "SelectCtrlFront"
+      ]
+    ],
+    [
+      "CurSelectedCtrl.UserDesc",
+      []
+    ],
+    [
+      "CurSelectedCtrl.GetAnchorPos(0).Item",
+      [
+        "Para"
+      ]
+    ]
+  ]
+}

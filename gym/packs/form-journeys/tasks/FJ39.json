@@ -1,0 +1,57 @@
+{
+  "id": "FJ39",
+  "tier": 3,
+  "title": "제목 채움 뒤 제목 문구 치환",
+  "input": "samples/field-01.hwp",
+  "instructions": "제목에 '초안여정제목' 을 채운 다음 그 문구를 '확정여정제목' 으로 바꾼 retitle.hwp 를 제출하라. 회사명은 비운다. 본문 마케팅 치환(FJ04·FJ36)과 다른 문자열 축이다. 힌트: fill-fields 제목 → replace-text 초안여정제목/확정여정제목 판정은 라이브 재실행 또는 산출물 재독이며, 파일 부재를 통과로 치지 않는다. T07 의 fields[0].value==홍길동 판정은 쓰지 마라. 새 CLI 는 없다.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "retitle.hwp"
+    ]
+  },
+  "checks": [
+    {
+      "name": "초안 소거",
+      "op": "value_eq",
+      "value": 0,
+      "path": "matchCount",
+      "cmd": [
+        "search",
+        "{file:retitle.hwp}",
+        "--json",
+        "--",
+        "초안여정제목"
+      ]
+    },
+    {
+      "name": "확정 실재",
+      "op": "value_ge",
+      "value": 1,
+      "path": "matchCount",
+      "cmd": [
+        "search",
+        "{file:retitle.hwp}",
+        "--json",
+        "--",
+        "확정여정제목"
+      ]
+    },
+    {
+      "name": "회사명은 비어 있음 — T07 좌표 거부",
+      "op": "value_eq",
+      "value": "",
+      "path": "fields[0].value",
+      "cmd": [
+        "fields",
+        "{file:retitle.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "원본 무편집 복사가 아님",
+      "op": "differs_from_input",
+      "file": "retitle.hwp"
+    }
+  ]
+}

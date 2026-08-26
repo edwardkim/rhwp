@@ -1,0 +1,24 @@
+{
+  "id": "CR15",
+  "tier": 1,
+  "title": "2010년 표본 문단은 몇 개?",
+  "input": "samples/2010-01-06.hwp",
+  "instructions": "낚시게임 — CR15 는 키 제한 없는 입문 놀이기구다. 같은 파일의 문단 수. 쪽수와 섞지 마라. 문서는 `samples/2010-01-06.hwp` 이다. rhwp 를 한 번 실행하고 그 답을 그대로 옮기면 된다. 숫자를 추측하지 마라. 채점기가 같은 명령을 다시 돌린다. 힌트: explain {입력} --json. answer.json 에는 {\"paragraphs\": 값} 만 적는다. 원본을 고치지 마라. 새 표본을 만들지 마라. explain paragraphCount.",
+  "submit": {
+    "kind": "answer"
+  },
+  "checks": [
+    {
+      "name": "2010년 표본 문단은 몇 개?",
+      "op": "answer_eq",
+      "answer": "paragraphs",
+      "cmd": [
+        "explain",
+        "{input}",
+        "--json"
+      ],
+      "path": "paragraphCount"
+    }
+  ],
+  "axis": "입문"
+}

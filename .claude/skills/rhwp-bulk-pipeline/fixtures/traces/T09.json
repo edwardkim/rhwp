@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5311,
+  "skill": "rhwp-bulk-pipeline",
+  "notGym": true,
+  "noNewCli": true,
+  "id": "T09",
+  "title": "fields 조사",
+  "command": "batch fields --json",
+  "axis": "fields",
+  "input": 2,
+  "success": 2,
+  "failure": 0,
+  "exit": 0,
+  "stop": "B08",
+  "rows": [
+    {
+      "schemaVersion": "1.0",
+      "source": "samples/field-01.hwp",
+      "fieldCount": 11,
+      "fields": [
+        {
+          "name": "회사명"
+        }
+      ]
+    },
+    {
+      "schemaVersion": "1.0",
+      "source": "samples/hwp3-sample.hwp",
+      "fieldCount": 0,
+      "fields": []
+    }
+  ],
+  "stderrExample": "batch: 2건 중 2 성공, 0 실패"
+}

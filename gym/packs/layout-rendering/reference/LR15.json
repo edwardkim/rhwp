@@ -1,0 +1,17 @@
+{
+  "id": "LR15",
+  "steps": [
+    {
+      "answer": {
+        "paragraphs": {
+          "cmd": [
+            "info",
+            "{input}",
+            "--json"
+          ],
+          "path": "paraCount"
+        }
+      }
+    }
+  ]
+}

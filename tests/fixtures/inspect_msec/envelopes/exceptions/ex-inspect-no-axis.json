@@ -1,0 +1,32 @@
+{
+  "id": "ex-inspect-no-axis",
+  "issue": 5476,
+  "axis": "inspect",
+  "family": "exception",
+  "polarity": "exception",
+  "sourceRule": {
+    "file": "src/main.rs",
+    "symbol": "inspect_command",
+    "note": "축 없음. 수복 줄을 지어내지 않는다(오제안 0)."
+  },
+  "cli": {
+    "argv": [
+      "inspect"
+    ],
+    "exitCode": 2,
+    "stdoutKind": "empty",
+    "detectionIsNotFailure": false,
+    "stdoutBytes": 0,
+    "stderrContains": "오류: inspect 하위 명령을 지정해주세요 (hidden-text|injection|unicode|watermark)."
+  },
+  "consume": {
+    "branch": "stdout empty",
+    "doNotParseStdoutAsJson": true,
+    "stderrIsDiagnosis": true
+  },
+  "pair": null,
+  "why": "축 없음. 수복 줄을 지어내지 않는다(오제안 0).",
+  "note": "실패 시 stdout 0바이트. 반쪽 JSON 이 나가면 파이프가 성공으로 오독한다.",
+  "human": "",
+  "inventedRule": false
+}

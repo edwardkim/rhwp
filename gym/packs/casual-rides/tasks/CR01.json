@@ -1,0 +1,24 @@
+{
+  "id": "CR01",
+  "tier": 1,
+  "title": "몇 쪽인가요?",
+  "input": "samples/table-001.hwp",
+  "axis": "입문",
+  "instructions": "🎠 회전목마 — 문서를 열어 그 수를 answer.json 에 {\"pages\": 숫자} 로 적어 내면 된다. 딱 한 번 실행하면 답이 보인다.\n힌트: rhwp info {입력} --json 의 pageCount.",
+  "submit": {
+    "kind": "answer"
+  },
+  "checks": [
+    {
+      "name": "몇 쪽인가요?",
+      "op": "answer_eq",
+      "answer": "pages",
+      "cmd": [
+        "info",
+        "{input}",
+        "--json"
+      ],
+      "path": "pageCount"
+    }
+  ]
+}

@@ -1,0 +1,97 @@
+{
+  "catalogVersion": "1.0",
+  "skill": "rhwp-table-exchange",
+  "issue": 5306,
+  "rules": [
+    {
+      "id": "index-not-array",
+      "text": "tables[].index 가 --table N 이다. 배열 순번이 아니다.",
+      "sample": "samples/2025년 기부·답례품 실적 지자체 보고서_양식.hwpx"
+    },
+    {
+      "id": "index-may-skip-zero",
+      "text": "index 는 0부터 시작하지 않을 수 있다. knowledge_map §2-3."
+    },
+    {
+      "id": "same-space",
+      "text": "export-tables / table-to-csv / csv-to-table / edit set-cell 은 본문 최상위 표 좌표계를 공유한다."
+    },
+    {
+      "id": "container-excluded",
+      "text": "containerPath 가 있는 표는 CSV 왕복 대상이 아니다."
+    },
+    {
+      "id": "nested-excluded",
+      "text": "cells[].nested 안 표는 v1 범위 밖."
+    },
+    {
+      "id": "anchor-only",
+      "text": "병합 셀은 앵커 좌표에만 존재. 덮인 칸은 export-tables cells[] 에 없다."
+    },
+    {
+      "id": "csv-fills-covered",
+      "text": "table-to-csv 는 덮인 칸을 빈 문자열로 채워 직사각 격자를 만든다."
+    },
+    {
+      "id": "row-col-zero",
+      "text": "row/col 은 0 기준. 헤더 행도 0행이다."
+    }
+  ],
+  "samples": [
+    {
+      "sample": "samples/hwp_table_test.hwp",
+      "tableCount": 10,
+      "firstBodyIndex": 0,
+      "note": "레시피 02. 0번이 본문 3×4."
+    },
+    {
+      "sample": "samples/table-001.hwp",
+      "tableCount": 1,
+      "firstBodyIndex": 0,
+      "rows": 19,
+      "cols": 9,
+      "cellCount": 131,
+      "merged": 20
+    },
+    {
+      "sample": "samples/multi-table-001.hwp",
+      "tableCount": 6,
+      "pages": 2
+    },
+    {
+      "sample": "samples/inner-table-01.hwp",
+      "topLevel": 1,
+      "nestedInOneCell": 24
+    },
+    {
+      "sample": "samples/basic/treatise sample.hwp",
+      "infoCount": 1,
+      "exportTablesCount": 3
+    },
+    {
+      "sample": "samples/2025년 기부·답례품 실적 지자체 보고서_양식.hwpx",
+      "tableCount": 53,
+      "indexZeroIsHeader": true
+    },
+    {
+      "sample": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+      "tableCount": 5
+    },
+    {
+      "sample": "samples/hwpx/basic-table-01.hwpx",
+      "note": "cli_commands.md 사용 예"
+    },
+    {
+      "sample": "samples/복학원서.hwp",
+      "tableCount": 3,
+      "fields": 0,
+      "note": "누름틀 없는 표 칸 서식 — set-cell 축"
+    },
+    {
+      "sample": "samples/추진일정.hwp",
+      "tableCount": 1,
+      "fields": 1,
+      "note": "가장 싼 왕복 표본"
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "id": "export_svg_ok",
+  "command": "export-svg",
+  "exitCode": 0,
+  "schemaVersion": "1.0",
+  "format": "svg",
+  "pageCount": 3,
+  "renderedCount": 1,
+  "overflowCellLines": 0,
+  "pages": [
+    {
+      "page": 0,
+      "path": "output/poc/cli/svg/doc_001.svg",
+      "bytes": 12000,
+      "overflowCellLines": 0
+    }
+  ],
+  "_skillMeta": {
+    "exit": 0,
+    "issue": 5316
+  }
+}

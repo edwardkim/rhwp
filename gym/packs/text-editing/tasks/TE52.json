@@ -1,0 +1,60 @@
+{
+  "id": "TE52",
+  "tier": 2,
+  "title": "보험료 전건 후 첫 문단",
+  "input": "samples/143E433F503322BD33.hwp",
+  "instructions": "입력 문서의 '보험료' 를 모두 '보험금' 로 바꾼 산출물을 edited52.hwp 로 제출하라. 채점은 옛 문구가 0건이 되었는지와 새 문구가 실재하는지를 각각 확인한다. 힌트: rhwp edit replace-text (occurrence 없이 전건). 산출물에서 '보험금' 의 첫 일치 문단 번호를 answer.json 에 {\"para\": N} 으로 적어라.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "edited52.hwp",
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "옛 문구 완전 소거",
+      "op": "value_eq",
+      "value": 0,
+      "path": "matchCount",
+      "cmd": [
+        "search",
+        "{file:edited52.hwp}",
+        "--json",
+        "--",
+        "보험료"
+      ]
+    },
+    {
+      "name": "새 문구 실재",
+      "op": "value_ge",
+      "value": 1,
+      "path": "matchCount",
+      "cmd": [
+        "search",
+        "{file:edited52.hwp}",
+        "--json",
+        "--",
+        "보험금"
+      ]
+    },
+    {
+      "name": "원본과 다름",
+      "op": "differs_from_input",
+      "file": "edited52.hwp"
+    },
+    {
+      "name": "첫 일치 문단",
+      "op": "answer_eq",
+      "answer": "para",
+      "path": "matches[0].paragraph",
+      "cmd": [
+        "search",
+        "{file:edited52.hwp}",
+        "--json",
+        "--",
+        "보험금"
+      ]
+    }
+  ]
+}

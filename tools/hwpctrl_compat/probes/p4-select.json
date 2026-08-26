@@ -1,0 +1,20 @@
+{
+  "id": "p4-select",
+  "title": "블록 잡는 법 — SelectText 인자 수·SelectAll",
+  "ledger": [],
+  "open": "samples/para-001.hwp",
+  "calls": [
+    ["SetPos", [0, 0, 0]],
+    ["SelectText", [0, 0, 0, 5]],
+    ["GetSelectedPos", []],
+    ["SelectText", [0, 0, 0, 0, 0, 5]],
+    ["GetSelectedPos", []],
+    ["Cancel", []],
+    ["GetSelectedPos", []],
+    ["Run", ["SelectAll"]],
+    ["GetSelectedPos", []],
+    ["GetSelectedPosBySet", [{"$obj": "CreateSet(\"ListParaPos\")"}, {"$obj": "CreateSet(\"ListParaPos\")"}]],
+    ["Cancel", []],
+    ["GetSelectedPos", []]
+  ]
+}

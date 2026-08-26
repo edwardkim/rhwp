@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "id": "s601-honesty-gradient",
+  "width": 400.0,
+  "height": 300.0,
+  "contract": "정직성 그라디언트 프로브",
+  "ops": [
+    {
+      "kind": "rectangle",
+      "x": 0.0,
+      "y": 0.0,
+      "w": 80.0,
+      "h": 40.0,
+      "text": null,
+      "gradient": true,
+      "image": false
+    }
+  ],
+  "expectedKinds": [
+    "rectangle"
+  ],
+  "expectedTrace": [
+    "begin_page 400.00x300.00",
+    "  rectangle bbox=0.00,0.00,80.00,40.00",
+    "end_page ops=1"
+  ]
+}

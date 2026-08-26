@@ -1,0 +1,20 @@
+{
+  "id": "CD39",
+  "steps": [
+    {
+      "answer": {
+        "files": {
+          "cmd": [
+            "scan",
+            "samples/issues",
+            "--max-depth",
+            "1",
+            "--json"
+          ],
+          "path": "files",
+          "len": true
+        }
+      }
+    }
+  ]
+}

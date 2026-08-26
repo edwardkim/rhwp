@@ -1,0 +1,30 @@
+{
+  "id": "T47",
+  "steps": [
+    {
+      "run": [
+        "export-hwpx",
+        "samples/form-01.hwp",
+        "{sub:conv.hwpx}",
+        "--json"
+      ]
+    },
+    {
+      "answer": {
+        "identical": {
+          "cmd": [
+            "ir-diff",
+            "samples/form-01.hwp",
+            "{sub:conv.hwpx}",
+            "--json"
+          ],
+          "path": "identical",
+          "allowExits": [
+            0,
+            3
+          ]
+        }
+      }
+    }
+  ]
+}

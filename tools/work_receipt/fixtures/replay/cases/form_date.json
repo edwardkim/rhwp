@@ -1,0 +1,70 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workReceiptReplayCase",
+  "ident": "form_date",
+  "claim": "M-rcpt",
+  "issue": 5478,
+  "family": "신청서",
+  "genre": "작성일",
+  "title": "작성일자 누름틀",
+  "why": "fill_fields 작성일자. 성명 누름틀과 다른 필드 이름.",
+  "notes": "날짜 누름틀",
+  "input": "samples/basic/blank2010.hwp",
+  "output": "out/form-date.hwp",
+  "ext": "hwp",
+  "actions": [
+    "fill_fields"
+  ],
+  "stepCount": 1,
+  "plan": {
+    "planVersion": "1.0",
+    "input": "samples/basic/blank2010.hwp",
+    "output": "out/form-date.hwp",
+    "steps": [
+      {
+        "action": "fill_fields",
+        "data": {
+          "작성일자": "2026-03-31"
+        }
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"samples/basic/blank2010.hwp\",\"output\":\"out/form-date.hwp\",\"steps\":[{\"action\":\"fill_fields\",\"data\":{\"작성일자\":\"2026-03-31\"}}]}",
+  "planSha256": "51e01ccba34f73649c9131365a30d32f03405e2347a4031b0f00da2600210da3",
+  "command": "replay",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "samples/basic/blank2010.hwp",
+    "inputSha256": "934504bae29350f1705257a25402cf31924ead2a2f5f5447e03955658b10ddaf",
+    "planSha256": "51e01ccba34f73649c9131365a30d32f03405e2347a4031b0f00da2600210da3",
+    "outputSha256": "0aa14d3743ca63f4ae4413b27eb1c80638405bac2980674003c91d330e586a99",
+    "toolVersion": "fixture-0.0.0-not-a-release",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null
+  },
+  "expected": {
+    "attest": {
+      "exit": 0,
+      "mode": "attest",
+      "reproduced": null,
+      "userOutputCreated": false
+    },
+    "verify_ok": {
+      "exit": 0,
+      "mode": "verify",
+      "reproduced": true,
+      "expectedOutputSha256": "0aa14d3743ca63f4ae4413b27eb1c80638405bac2980674003c91d330e586a99"
+    },
+    "verify_mismatch": {
+      "exit": 3,
+      "mode": "verify",
+      "reproduced": false,
+      "expectedOutputSha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "judgment": true
+    }
+  },
+  "claimedOutputPathUntouched": true,
+  "generator": "tools/work_receipt/fatten_work_receipt.py"
+}

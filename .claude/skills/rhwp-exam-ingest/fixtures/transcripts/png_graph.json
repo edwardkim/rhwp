@@ -1,0 +1,21 @@
+{
+  "id": "T02",
+  "title": "PNG 그래프",
+  "issue": 5319,
+  "notGym": true,
+  "steps": [
+    {
+      "cmd": "Read desk.jpg",
+      "expect": "bbox 240,410,980,620"
+    },
+    {
+      "cmd": "crop_image.sh desk.jpg 240 410 980 620 $MEDIA/img/q1.png",
+      "expect": "CROP_OK"
+    },
+    {
+      "cmd": "rhwp build-from-ingest ingest.json --media-dir $MEDIA -o out.hwpx",
+      "expect": "exit 0"
+    }
+  ],
+  "limit": "L-picture"
+}

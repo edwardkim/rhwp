@@ -1,0 +1,78 @@
+{
+  "id": "pR-ell",
+  "title": "앵커 재배치 판별 — ell",
+  "ledger": [],
+  "open": "samples/mix-shape-01.hwp",
+  "paths": {
+    "a": {
+      "win": "{out}/pR-ell-a.hwp",
+      "posix": "{out}/pR-ell-a.hwp"
+    },
+    "b": {
+      "win": "{out}/pR-ell-b.hwp",
+      "posix": "{out}/pR-ell-b.hwp"
+    },
+    "c": {
+      "win": "{out}/pR-ell-c.hwp",
+      "posix": "{out}/pR-ell-c.hwp"
+    }
+  },
+  "calls": [
+    [
+      "SetPos",
+      [
+        0,
+        0,
+        0
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "a"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "Run",
+      [
+        "SelectCtrlFront"
+      ]
+    ],
+    [
+      "Run",
+      [
+        "SelectCtrlFront"
+      ]
+    ],
+    [
+      "Run",
+      [
+        "ShapeObjResizeRight"
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "b"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "c"
+        },
+        "HWP",
+        ""
+      ]
+    ]
+  ]
+}

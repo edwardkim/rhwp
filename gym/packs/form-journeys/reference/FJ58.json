@@ -1,0 +1,25 @@
+{
+  "id": "FJ58",
+  "steps": [
+    {
+      "write_json": {
+        "to": "{sub:data.json}",
+        "body": {
+          "목차1[0]": "메모첫목차"
+        }
+      }
+    },
+    {
+      "run": [
+        "edit",
+        "fill-fields",
+        "{input}",
+        "--data",
+        "@{sub:data.json}",
+        "-o",
+        "{sub:memo-toc0.hwp}",
+        "--json"
+      ]
+    }
+  ]
+}

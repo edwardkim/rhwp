@@ -1,0 +1,27 @@
+{
+  "id": "T20",
+  "title": "서식이 표보다 앞",
+  "scenario": "S36",
+  "argv": [
+    "explore",
+    "samples/office.hwp",
+    "--json"
+  ],
+  "envelope": "envelopes/S36.json",
+  "expect": {
+    "schemaVersion": "1.0",
+    "encrypted": false,
+    "menuIds": [
+      "form-fill",
+      "table-extract",
+      "structure-outline",
+      "triage-overview"
+    ],
+    "first": "form-fill",
+    "firstCommand": "rhwp fields <file> --json",
+    "untrustedContent": false
+  },
+  "stop": "X10",
+  "notGym": true,
+  "usesExistingCommand": true
+}

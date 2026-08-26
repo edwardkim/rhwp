@@ -1,0 +1,111 @@
+{
+  "canonicalSha256": "23536673cc94f1fcfa617adbd4adf4858116a029adc63403c5939b76c5293618",
+  "cohort": {
+    "aggregateUsageRows": 164,
+    "categoryRiskCharacters": {
+      "char-miss": 0,
+      "face-miss": 43342,
+      "heuristic": 32
+    },
+    "compressedCharacters": 30882,
+    "compressedFixedContextRiskCharacters": 9034,
+    "compressedRiskCharacters": 30838,
+    "contextCharacters": {
+      "body": 23442,
+      "footnote": 928,
+      "header": 125,
+      "table-cell": 18937
+    },
+    "documentUsageRows": 169,
+    "documents": 6,
+    "documentsByFormat": {
+      "hwp": 3,
+      "hwpx": 3
+    },
+    "formatCharacters": {
+      "hwp": 30805,
+      "hwpx": 12627
+    },
+    "freshRiskCharacters": 0,
+    "riskCharacters": 43374,
+    "storedRiskCharacters": 43374,
+    "totalCharacters": 43432
+  },
+  "currentRegistry": {
+    "decisionPlanes": [
+      "supply"
+    ],
+    "projectionIds": [
+      "canvas2d-webfont",
+      "canvaskit-sfnt"
+    ],
+    "rawSha256": "fbab4413007a29600e5d667503e80b861ec4096827a8936943bdf74e58a5ae16",
+    "rulesSha256": "bd9469aa16156a16ea262f608015cb0b78e925700ae7df69c38602ba6670c029",
+    "targetRuleIds": [
+      "rule.studio-supply.272f0ba64ebeef347d44.canvas2d",
+      "rule.studio-supply.272f0ba64ebeef347d44.canvaskit"
+    ]
+  },
+  "executionPolicy": {
+    "fullCorpusRerun": false,
+    "hyperVOracleRerun": false,
+    "nextStage": "public-fixture-and-current-trace"
+  },
+  "gates": {
+    "freshLaneIsNonTargetGuard": true,
+    "privateCohortSeparated": true,
+    "registrySupplyOnly": true,
+    "w4CountsReconciled": true,
+    "w5LadderHashBound": true
+  },
+  "inputs": {
+    "fontRuleRegistryV2": {
+      "artifact": "assets/font-rules/font_rule_registry_v2.json",
+      "sha256": "fbab4413007a29600e5d667503e80b861ec4096827a8936943bdf74e58a5ae16"
+    },
+    "w4Ranking": {
+      "artifact": "mydocs/report/assets/task_m100_4962/font_typesetting_risk_rank.json",
+      "sha256": "6947e9e8a6c67a60a54b04dc6f1abf75e3cc66d9096a978d301ba2c10bb4ee3a"
+    },
+    "w5Rank8Ladder": {
+      "artifact": "mydocs/tech/investigations/issue-4963/oracle_stage5_rank8_acceptance_ladder.json",
+      "sha256": "d6e8a4371dd049a899a88fb975d6499ed435154b72e1fc804b701addf3cb75ec"
+    }
+  },
+  "issue": 4967,
+  "kind": "font-rank8-qualification-baseline",
+  "privacy": {
+    "absolutePathIncluded": false,
+    "fontBytesIncluded": false,
+    "privateDocumentHashIncluded": false,
+    "privateDocumentIdentityIncluded": false,
+    "privateDocumentNameIncluded": false
+  },
+  "schemaVersion": 1,
+  "stage": "W8-Q0",
+  "target": {
+    "baseRank": 13,
+    "documentFace": "KoPubWorld바탕체 Light",
+    "empiricalRiskBand": "B",
+    "queueRank": 8
+  },
+  "w3LocalAttestation": {
+    "aggregateSha256": "378671053ae94c02cda4caf8b8a4a1ac7866c3711fdf72c14aa527f8d9bc2888",
+    "checkpointChainSha256": "94d9bbe3cce4218728ff29def8ab24abb51ffc434ec395d8be663fdab6b03649",
+    "checkpointPolicySha256": "b71c1c29b0e6dd120260f97e5632d7d7ab4c09e156078b185f28bfceadccf5dd",
+    "documentCount": 10000,
+    "sourceHead": "c1ec759f97eab0152fe8b38cef2e9fbbc50a5c6c"
+  },
+  "w5Oracle": {
+    "disposition": "complete-acceptance-ladder",
+    "exactTypesettingProjectionSha256": "38f83a7973aaa49b4464b4e8d7579c05dfd47f8209997ceb1a740fa0baf2b4c7",
+    "fixtureSha256": "f6edc8fc43dfd3256385e9752979c14a7041e50c06d36be47cef6e3486835084",
+    "physicalStates": [
+      "exact-only",
+      "subst-only",
+      "none-related"
+    ],
+    "profileCount": 4,
+    "substitutionAndMissingProjectionEqual": true
+  }
+}

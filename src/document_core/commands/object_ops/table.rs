@@ -574,10 +574,12 @@ impl DocumentCore {
             outer_margin_top: 283,
             outer_margin_bottom: 283,
             raw_ctrl_data,
+            raw_ctrl_seal: None,
             raw_table_record_attr: 0x00000006, // 한컴 기본값 (bit1=셀분리금지, bit2=repeat_header)
             // [#3570] 한컴은 TABLE 레코드를 zone 개수까지만 쓴다 — 여분 2바이트 없음.
             raw_table_record_extra: Vec::new(),
             dirty: true,
+            text_reflowed_after_edit: false,
             local_resize_rows: Vec::new(),
             local_resize_cols: Vec::new(),
             local_resize_cell_widths: Vec::new(),
@@ -1002,10 +1004,12 @@ impl DocumentCore {
             outer_margin_top: outer_margin,
             outer_margin_bottom: outer_margin,
             raw_ctrl_data,
+            raw_ctrl_seal: None,
             raw_table_record_attr: 0x04000006,
             // [#3570] 한컴은 TABLE 레코드를 zone 개수까지만 쓴다 — 여분 2바이트 없음.
             raw_table_record_extra: Vec::new(),
             dirty: true,
+            text_reflowed_after_edit: false,
             local_resize_rows: Vec::new(),
             local_resize_cols: Vec::new(),
             local_resize_cell_widths: Vec::new(),
@@ -1161,15 +1165,6 @@ impl DocumentCore {
             }
         }
         (0, 0)
-    }
-    /// 표의 모든 셀 bbox를 반환한다 (네이티브).
-    pub(crate) fn get_table_cell_bboxes_native(
-        &self,
-        section_idx: usize,
-        parent_para_idx: usize,
-        control_idx: usize,
-    ) -> Result<String, HwpError> {
-        self.get_table_cell_bboxes_from_page(section_idx, parent_para_idx, control_idx, 0)
     }
     /// page_hint부터 탐색하여 표의 셀 bbox를 반환한다 (네이티브).
     /// page_hint에서 못 찾으면 앞쪽도 탐색한다 (페이지 분할된 표 대응).

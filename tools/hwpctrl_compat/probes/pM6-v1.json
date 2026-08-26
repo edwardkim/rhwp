@@ -1,0 +1,78 @@
+{
+  "id": "pM6-v1",
+  "title": "세로 배율 1걸음 뒤 세로 뒤집기",
+  "ledger": [],
+  "open": "samples/mix-shape-01.hwp",
+  "paths": {
+    "w": {
+      "win": "{out}/pM6-v1-w.hwp",
+      "posix": "{out}/pM6-v1-w.hwp"
+    },
+    "a": {
+      "win": "{out}/pM6-v1-a.hwp",
+      "posix": "{out}/pM6-v1-a.hwp"
+    },
+    "b": {
+      "win": "{out}/pM6-v1-b.hwp",
+      "posix": "{out}/pM6-v1-b.hwp"
+    }
+  },
+  "calls": [
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "w"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "SetPos",
+      [
+        0,
+        0,
+        0
+      ]
+    ],
+    [
+      "Run",
+      [
+        "SelectCtrlFront"
+      ]
+    ],
+    [
+      "Run",
+      [
+        "ShapeObjResizeDown"
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "a"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "Run",
+      [
+        "ShapeObjVertFlip"
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "b"
+        },
+        "HWP",
+        ""
+      ]
+    ]
+  ]
+}

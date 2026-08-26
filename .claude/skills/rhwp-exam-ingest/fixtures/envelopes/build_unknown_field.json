@@ -1,0 +1,8 @@
+{
+  "schemaVersion": "1.0",
+  "command": "build-from-ingest",
+  "ok": false,
+  "code": "BUILD_UNKNOWN_FIELD",
+  "exit": 1,
+  "hint": "deny_unknown_fields (#3358). answer/latex/table 키 제거"
+}

@@ -1,0 +1,28 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5318,
+  "kind": "live",
+  "command": "inspect injection",
+  "sourceChapter": "60_보안.md",
+  "cmd": "rhwp inspect injection samples/143E433F503322BD33.hwp --json",
+  "exit": 0,
+  "envelope": {
+    "clean": true,
+    "highestConfidence": null,
+    "includeFields": false,
+    "injectionSignals": [],
+    "minConfidence": "low",
+    "scanScopes": [
+      "body",
+      "tableCell",
+      "… (9개 중 2개 표시)"
+    ],
+    "schemaVersion": "1.0",
+    "signalCount": 0,
+    "source": "samples/143E433F503322BD33.hwp",
+    "untrustedContent": false,
+    "untrustedFields": []
+  },
+  "extractedFromGenerated": true,
+  "handEdited": false
+}

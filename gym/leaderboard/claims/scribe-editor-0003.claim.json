@@ -1,0 +1,12 @@
+{
+  "capsuleSha256": "fa77e9bdf1ab2199bbbbb9200364eb04052e548a9bef7f99dc16877c88afd9dc",
+  "claimant": {
+    "keyId": "gym/scribe-editor"
+  },
+  "claimedAt": "2026-08-12T00:46:11Z",
+  "gateEnvelopeSha256": "cd252e95a086b140ecb8075d866f57c07596d286d93342b9d2720ca2a380bcdb",
+  "kind": "settlementClaim",
+  "schemaVersion": "1.0",
+  "workorderId": "gym-leaderboard-standing",
+  "workorderSha256": "050734f9bbb1e995bf7088d56a8280b46ccdc6c009aa6ce9f3add2a85c4c9849"
+}

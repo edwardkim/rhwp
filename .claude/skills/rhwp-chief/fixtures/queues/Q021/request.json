@@ -1,0 +1,6 @@
+{
+ "doc": "budget.hwpx",
+ "symptom": "예산 표 수확 (야간)",
+ "params": {},
+ "goal": "extract-tables"
+}

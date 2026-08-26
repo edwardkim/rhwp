@@ -1,0 +1,65 @@
+{
+  "id": "13_search_window_follow",
+  "title": "검색 이어보기 — 더 있는지는 nextOffset 으로 판정한다.",
+  "kind": "session",
+  "lifecycle": "hwp_open → doc_* → hwp_close",
+  "absolute_paths": true,
+  "single_write_point": "hwp_doc_save",
+  "steps": [
+    {
+      "seq": 1,
+      "tool": "hwp_open",
+      "arguments": {
+        "path": "C:/abs/편람.hwp"
+      },
+      "expect_layer": "ok",
+      "read_fields": [
+        "docId"
+      ],
+      "notes": ""
+    },
+    {
+      "seq": 2,
+      "tool": "hwp_doc_search",
+      "arguments": {
+        "docId": "doc-1",
+        "query": "조",
+        "maxMatches": 20,
+        "offset": 0
+      },
+      "expect_layer": "ok",
+      "read_fields": [
+        "nextOffset",
+        "totalMatchCount"
+      ],
+      "notes": ""
+    },
+    {
+      "seq": 3,
+      "tool": "hwp_doc_search",
+      "arguments": {
+        "docId": "doc-1",
+        "query": "조",
+        "maxMatches": 20,
+        "offset": 20
+      },
+      "expect_layer": "ok",
+      "read_fields": [
+        "matches"
+      ],
+      "notes": ""
+    },
+    {
+      "seq": 4,
+      "tool": "hwp_close",
+      "arguments": {
+        "docId": "doc-1"
+      },
+      "expect_layer": "ok",
+      "read_fields": [
+        "closed"
+      ],
+      "notes": ""
+    }
+  ]
+}

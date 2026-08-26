@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "1.0",
+  "mode": "roundtrip",
+  "sourceA": "samples/form-01.hwp",
+  "sourceB": null,
+  "via": "hwpx",
+  "pageFilter": null,
+  "threshold": 1.0,
+  "pageCountA": 1,
+  "pageCountB": 1,
+  "pageCountMismatch": false,
+  "maxDisp": 0.0,
+  "worstPage": null,
+  "overPages": 0,
+  "structPages": 0,
+  "hardStructPages": 0,
+  "status": "PASS",
+  "regression": false,
+  "pages": []
+}

@@ -16,11 +16,31 @@ fn find_body_bbox(node: &RenderNode) -> Option<BoundingBox> {
     node.children.iter().find_map(find_body_bbox)
 }
 
+/// [#4334] 이 표를 식별하는 조건은 원래 "para/control 인덱스가 없는 표"(`is_none()`)
+/// 였다. #4334 가 `layout_embedded_table`(중첩 표 host 경로 플러밍 결손)을 고치면서
+/// 그 인덱스가 채워지자 후보가 0개가 되어 이 테스트가 깨졌다 — 즉 이 실패 자체가
+/// #4334 수정이 실제로 이 표에 적용됐다는 증거였다.
+///
+/// 실제 문서 구조를 직접 확인해 얻은 값으로 바꿨다(`document_core::DocumentCore`
+/// 로 `samples/hwpx_sample2.hwpx` 를 모델 레벨에서 추적):
+/// section 0 → paragraph 74(빈 문단) 의 control[0] 이 1×1 "래퍼" 표이고, 그 표의
+/// 유일한 셀 안에 29개 문단이 쌓여 있다. 그중 cell 안 문단 인덱스 21번이 TAC
+/// (text-as-char) 로 박은 **3행 2열** 중첩 표를 담고 있다 — 이게 렌더 트리에서
+/// `para_index=Some(21), control_index=Some(0)` 로 나오는 표다(같은 셀 안에 1×1
+/// 표 2개·2행15열 표 1개가 더 있지만 cell 문단 인덱스가 다르다: 2, 9, 12).
+/// `doc_path_for_node`(render_tree.rs)가 이 인덱스 쌍을 "재귀 중첩 표"용
+/// `derived_table_meta` 유도식(부모 셀 경로의 마지막 두 항목)으로 채운다.
+///
+/// 인덱스 조건만으로도 이미 유일하지만(같은 셀 안 다른 중첩 표는 para 2/9/12),
+/// **기하 조건을 지우지 않고 그대로 남겨** 다른 표가 우연히 같은 인덱스를 갖는
+/// 경우(예: 문서가 바뀌어 표가 재배치된 경우)까지 방어한다 — 인덱스와 기하 둘 다
+/// 맞아야 통과.
 fn collect_issue_1486_tables<'a>(node: &'a RenderNode, out: &mut Vec<&'a RenderNode>) {
     if let RenderNodeType::Table(table) = &node.node_type {
         let b = &node.bbox;
-        if table.para_index.is_none()
-            && table.control_index.is_none()
+        if table.section_index == Some(0)
+            && table.para_index == Some(21)
+            && table.control_index == Some(0)
             && b.y < 220.0
             && b.width > 600.0
             && b.width < 680.0

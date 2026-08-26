@@ -1,0 +1,25 @@
+{
+  "id": "SE19",
+  "steps": [
+    {
+      "answer": {
+        "kinds": {
+          "cmd": [
+            "inspect",
+            "unicode",
+            "{input}",
+            "--kind",
+            "all",
+            "--json"
+          ],
+          "path": "kindCounts",
+          "len": true,
+          "allowExits": [
+            0,
+            3
+          ]
+        }
+      }
+    }
+  ]
+}

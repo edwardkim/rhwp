@@ -431,7 +431,7 @@ plan runner 는 **문서 손상에 대해서는 이 저장소에서 가장 잘 �
 
 ## 7. 바인딩 표면
 
-### 7.1 아직 머지 전 — Python(#3775) · Node(#3779)
+### 7.1 공식 Python·Node 바인딩 없음
 
 이 워크트리 기준 `bindings/` 실측:
 
@@ -443,11 +443,11 @@ bindings/
 └── swift/
 ```
 
-`bindings/python` · `bindings/node` **없음**. 따라서 S7·S8 의 모든 칸은
-**"확인되지 않음"** 이며, 이 문서의 매핑은 두 이슈가 머지되면 갱신해야 한다.
+`bindings/python` · `bindings/node` **없음**. 두 공식 바인딩은 v0.8.4에서 철회됐다
+([#4655](https://github.com/edwardkim/rhwp/issues/4655)). 따라서 S7·S8의 바인딩 칸은
+지원 대상이 아니며, 아래 체크리스트는 향후 재도입을 명시적으로 채택할 때만 적용한다.
 
-- Python 바인딩: [#3775](https://github.com/edwardkim/rhwp/issues/3775) — **머지 후 유효**
-- Node 바인딩: [#3779](https://github.com/edwardkim/rhwp/issues/3779) — **머지 후 유효**
+- 철회 결정: [#4655](https://github.com/edwardkim/rhwp/issues/4655)
 
 머지 시 반드시 확정할 항목(체크리스트):
 
@@ -582,7 +582,7 @@ done
 - `tools/list` 도구 수가 **38** 이 아닐 때 (무상태 26 + 세션 12)
 - `capabilities.jsonContract.textSecurity.surfaces` 목록이 바뀔 때
 - 프로필이 추가·삭제되거나 프로필별 도구 집합이 바뀔 때
-- `bindings/python`(#3775) 또는 `bindings/node`(#3779) 가 머지될 때 — §7.1 체크리스트 수행
+- Python·Node 바인딩의 재도입을 메인테이너가 명시적으로 채택할 때 — §7.1 체크리스트 수행
 - §7.2 의 미측정 표면(C#·Swift·WASM·확장) 중 하나라도 실측될 때
 - `run` 의 경로 취급이 바뀔 때 — §6.3 표 갱신
 

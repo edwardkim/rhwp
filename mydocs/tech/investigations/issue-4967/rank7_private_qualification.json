@@ -1,0 +1,401 @@
+{
+  "accounting": {
+    "cacheUnmodelledTargetCharacters": 55461,
+    "currentTransformReplayMismatches": 0,
+    "documents": 5,
+    "documentsByFormat": {
+      "hwp": 3,
+      "hwpx": 2
+    },
+    "invalidFrameTargetCharacters": 0,
+    "invalidFrameTargetLines": 0,
+    "renderObservationDelta": 11111,
+    "renderObservedCharacters": 74969,
+    "sourceAndRenderCountersAreDistinct": true,
+    "sourceUsageCharacters": 63858,
+    "styleUnmodelledTargetCharacters": 63465,
+    "traceTruncatedPages": 0,
+    "unframedTargetCharacters": 0
+  },
+  "canonicalSha256": "265d471cec078e8bb62d018776689078438271968b72492b905760662773feff",
+  "decision": {
+    "actualDocumentImprovementObserved": true,
+    "allDocumentsNonWorsening": false,
+    "evidenceComplete": false,
+    "nextStage": null,
+    "productMutationAuthorized": false,
+    "status": "no-change",
+    "terminalReason": "modelled-regression"
+  },
+  "executionPolicy": {
+    "boundedDocuments": 5,
+    "fullCorpusPass": false,
+    "hyperVOracleRerun": false,
+    "productSourceMutation": false,
+    "registryMutation": false
+  },
+  "inputs": {
+    "exactTtfSha256": "069494cce21a4222c88e537f256b6f46fee209375aba769f82431b2d382bc84f",
+    "q0CanonicalSha256": "a3be826dda103dd7ec69b3db9cb3b1529e82d55520bcdbeadd1bc7ddfaae1c42",
+    "q2CanonicalSha256": "a84562e5a5a606cdc62fa8da3917df88ae85d40bc885d9b112f9a0d0a327a153"
+  },
+  "issue": 4967,
+  "kind": "font-rank7-private-qualification-projection",
+  "lineSegFeatureDetection": {
+    "cacheAdmissionObserved": true,
+    "detector": "same-snapshot-production-cache-key-probe",
+    "freshRiskCharacters": 0,
+    "reason": "at least one target character remains outside the cache-admission model",
+    "samePartitionProjection": true,
+    "sourceUsageLane": "stored",
+    "storedRiskCharacters": 63732,
+    "validityClaim": false
+  },
+  "privacy": {
+    "absolutePathIncluded": false,
+    "fontBytesIncluded": false,
+    "privateCorpusPathIncluded": false,
+    "privateDetailedOutputTracked": false,
+    "privateDocumentHashIncluded": false,
+    "privateDocumentIdentityIncluded": false,
+    "privateDocumentNameIncluded": false,
+    "privateTextIncluded": false
+  },
+  "projection": {
+    "boldAudit": {
+      "dynamicConfirmationComplete": false,
+      "lineDispositions": {
+        "overflow-removed": 2,
+        "slack-increased": 2,
+        "unchanged": 22
+      },
+      "renderObservedCharacters": 1269,
+      "sourceUsageCharacters": 4468
+    },
+    "byContextLineDispositions": {
+      "body": {
+        "overflow-reduced": 8,
+        "overflow-removed": 166,
+        "slack-increased": 6,
+        "unchanged": 115
+      },
+      "footer": {
+        "overflow-removed": 115,
+        "unchanged": 115
+      },
+      "header": {
+        "slack-increased": 115,
+        "unchanged": 115
+      },
+      "table-cell": {
+        "overflow-increased": 31,
+        "overflow-introduced": 140,
+        "overflow-reduced": 4,
+        "overflow-removed": 8,
+        "slack-increased": 87,
+        "unchanged": 11744
+      }
+    },
+    "byFormatLineDispositions": {
+      "hwp": {
+        "overflow-introduced": 1,
+        "overflow-reduced": 1,
+        "overflow-removed": 124,
+        "slack-increased": 118,
+        "unchanged": 291
+      },
+      "hwpx": {
+        "overflow-increased": 31,
+        "overflow-introduced": 139,
+        "overflow-reduced": 11,
+        "overflow-removed": 165,
+        "slack-increased": 90,
+        "unchanged": 11798
+      }
+    },
+    "cacheTargetCharacters": {
+      "admitted": 19182,
+      "rejected": 326,
+      "unmodelled": 55461
+    },
+    "cacheTargetLines": {
+      "admitted": 1938,
+      "rejected": 9,
+      "unmodelled": 10822
+    },
+    "candidateCoverage": {
+      "cmap-miss-preserved": 251,
+      "exact-metric-applied": 74132,
+      "special-preserved": 586
+    },
+    "contextLines": {
+      "body": 295,
+      "footer": 230,
+      "header": 230,
+      "table-cell": 12014
+    },
+    "decisiveModelledRegressionLines": 51,
+    "documentClassifications": {
+      "unmodelled": 5
+    },
+    "firstCapacityDivergencePresent": true,
+    "firstMetricDivergencePresent": true,
+    "italicAudit": {
+      "lineDispositions": {},
+      "renderObservedCharacters": 0,
+      "sourceUsageCharacters": 0
+    },
+    "lineDispositions": {
+      "overflow-increased": 31,
+      "overflow-introduced": 140,
+      "overflow-reduced": 12,
+      "overflow-removed": 289,
+      "slack-increased": 208,
+      "unchanged": 12089
+    },
+    "recordDeltaCounts": {
+      "equal": 7776,
+      "narrower": 42868,
+      "wider": 24325
+    },
+    "regressionAudit": {
+      "byBoundaryDisposition": {
+        "overflow-increased": 31,
+        "overflow-introduced": 140
+      },
+      "byCacheDisposition": {
+        "admitted": 51,
+        "unmodelled": 120
+      },
+      "byContext": {
+        "table-cell": 171
+      },
+      "byFormat": {
+        "hwp": 1,
+        "hwpx": 170
+      },
+      "maximumOverflowIncreasePx": 4.22,
+      "modelledBoldLines": 0,
+      "modelledByCacheDisposition": {
+        "admitted": 51
+      },
+      "modelledByContext": {
+        "table-cell": 51
+      },
+      "modelledByFormat": {
+        "hwpx": 51
+      },
+      "modelledDistinctBoundarySignatures": 1,
+      "modelledMaximumOverflowIncreasePx": 0.707,
+      "modelledObservations": 51,
+      "observations": 171
+    },
+    "styleAxes": [
+      {
+        "advanceDeltaHwpunit": -4066,
+        "bold": false,
+        "characters": 71,
+        "equal": 6,
+        "italic": false,
+        "narrower": 50,
+        "ratio": 100,
+        "spacing": -15,
+        "wider": 15
+      },
+      {
+        "advanceDeltaHwpunit": -4282,
+        "bold": false,
+        "characters": 43,
+        "equal": 2,
+        "italic": false,
+        "narrower": 38,
+        "ratio": 100,
+        "spacing": -12,
+        "wider": 3
+      },
+      {
+        "advanceDeltaHwpunit": -7816,
+        "bold": false,
+        "characters": 58,
+        "equal": 2,
+        "italic": false,
+        "narrower": 54,
+        "ratio": 100,
+        "spacing": -11,
+        "wider": 2
+      },
+      {
+        "advanceDeltaHwpunit": -6667,
+        "bold": true,
+        "characters": 66,
+        "equal": 3,
+        "italic": false,
+        "narrower": 58,
+        "ratio": 100,
+        "spacing": -11,
+        "wider": 5
+      },
+      {
+        "advanceDeltaHwpunit": -4696,
+        "bold": false,
+        "characters": 36,
+        "equal": 0,
+        "italic": false,
+        "narrower": 36,
+        "ratio": 100,
+        "spacing": -10,
+        "wider": 0
+      },
+      {
+        "advanceDeltaHwpunit": -1215,
+        "bold": true,
+        "characters": 10,
+        "equal": 0,
+        "italic": false,
+        "narrower": 9,
+        "ratio": 100,
+        "spacing": -10,
+        "wider": 1
+      },
+      {
+        "advanceDeltaHwpunit": -13900,
+        "bold": false,
+        "characters": 166,
+        "equal": 6,
+        "italic": false,
+        "narrower": 144,
+        "ratio": 100,
+        "spacing": -8,
+        "wider": 16
+      },
+      {
+        "advanceDeltaHwpunit": -22729,
+        "bold": false,
+        "characters": 217,
+        "equal": 5,
+        "italic": false,
+        "narrower": 193,
+        "ratio": 100,
+        "spacing": -6,
+        "wider": 19
+      },
+      {
+        "advanceDeltaHwpunit": -28429,
+        "bold": true,
+        "characters": 261,
+        "equal": 4,
+        "italic": false,
+        "narrower": 242,
+        "ratio": 100,
+        "spacing": -6,
+        "wider": 15
+      },
+      {
+        "advanceDeltaHwpunit": -57554,
+        "bold": false,
+        "characters": 492,
+        "equal": 11,
+        "italic": false,
+        "narrower": 442,
+        "ratio": 100,
+        "spacing": -5,
+        "wider": 39
+      },
+      {
+        "advanceDeltaHwpunit": -79300,
+        "bold": true,
+        "characters": 679,
+        "equal": 19,
+        "italic": false,
+        "narrower": 617,
+        "ratio": 100,
+        "spacing": -5,
+        "wider": 43
+      },
+      {
+        "advanceDeltaHwpunit": -583779,
+        "bold": false,
+        "characters": 5105,
+        "equal": 148,
+        "italic": false,
+        "narrower": 4863,
+        "ratio": 100,
+        "spacing": -3,
+        "wider": 94
+      },
+      {
+        "advanceDeltaHwpunit": -430684,
+        "bold": false,
+        "characters": 3715,
+        "equal": 155,
+        "italic": false,
+        "narrower": 2882,
+        "ratio": 100,
+        "spacing": -2,
+        "wider": 678
+      },
+      {
+        "advanceDeltaHwpunit": -23202,
+        "bold": true,
+        "characters": 185,
+        "equal": 5,
+        "italic": false,
+        "narrower": 178,
+        "ratio": 100,
+        "spacing": -2,
+        "wider": 2
+      },
+      {
+        "advanceDeltaHwpunit": -6260,
+        "bold": false,
+        "characters": 54,
+        "equal": 13,
+        "italic": false,
+        "narrower": 41,
+        "ratio": 100,
+        "spacing": -1,
+        "wider": 0
+      },
+      {
+        "advanceDeltaHwpunit": -35520,
+        "bold": false,
+        "characters": 278,
+        "equal": 7,
+        "italic": false,
+        "narrower": 250,
+        "ratio": 100,
+        "spacing": 0,
+        "wider": 21
+      },
+      {
+        "advanceDeltaHwpunit": -662,
+        "bold": true,
+        "characters": 6,
+        "equal": 0,
+        "italic": false,
+        "narrower": 6,
+        "ratio": 100,
+        "spacing": 0,
+        "wider": 0
+      },
+      {
+        "advanceDeltaHwpunit": -8013,
+        "bold": true,
+        "characters": 62,
+        "equal": 3,
+        "italic": false,
+        "narrower": 59,
+        "ratio": 100,
+        "spacing": 1,
+        "wider": 0
+      }
+    ],
+    "targetLines": 12769
+  },
+  "schemaVersion": 1,
+  "stage": "W8-R7-Q3",
+  "target": {
+    "face": "KoPubWorld돋움체 Light",
+    "targetDecisionPlane": "layout-metric"
+  }
+}

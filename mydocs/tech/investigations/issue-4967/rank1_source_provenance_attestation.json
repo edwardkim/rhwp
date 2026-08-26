@@ -1,0 +1,28 @@
+{
+  "exactFile": {
+    "officialDownloadArtifactMatched": false,
+    "sha256": "d10509215d923fef07c1f2dffe8ebf55cbca706476559a861dff6f7cf969ff44"
+  },
+  "issue": 4967,
+  "kind": "font-rank1-source-provenance-attestation",
+  "officialReference": {
+    "conditionsObserved": [
+      "free-use",
+      "paid-sale-prohibited",
+      "attribution-required"
+    ],
+    "publisher": "문화체육관광부",
+    "publishedAt": "2016-10-07",
+    "retrievedAt": "2026-08-25",
+    "url": "https://www.mcst.go.kr/site/s_notice/press/pressView.jsp?pCurrentPage=1&pMenuCD=0302000000&pSearchType=&pSearchWord=&pSeq=15621&pTypeDept="
+  },
+  "portableSupplyDisposition": {
+    "reason": "The official reference describes use conditions, but no official artifact was matched byte-for-byte to the local MT.TTF and the font declares restricted-license embedding in OS/2.fsType.",
+    "status": "blocked-unmatched-official-artifact-and-restricted-embedding"
+  },
+  "privacy": {
+    "absolutePathIncluded": false,
+    "fontBytesIncluded": false
+  },
+  "schemaVersion": 1
+}

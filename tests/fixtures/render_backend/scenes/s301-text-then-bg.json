@@ -1,0 +1,39 @@
+{
+  "schema": 1,
+  "id": "s301-text-then-bg",
+  "width": 400.0,
+  "height": 300.0,
+  "contract": "텍스트가 트리 앞에 있어도 배경이 먼저",
+  "ops": [
+    {
+      "kind": "textRun",
+      "x": 16.0,
+      "y": 32.0,
+      "w": 200.0,
+      "h": 18.0,
+      "text": "앞",
+      "gradient": false,
+      "image": false
+    },
+    {
+      "kind": "pageBackground",
+      "x": 0.0,
+      "y": 0.0,
+      "w": 400.0,
+      "h": 300.0,
+      "text": null,
+      "gradient": false,
+      "image": false
+    }
+  ],
+  "expectedKinds": [
+    "pageBackground",
+    "textRun"
+  ],
+  "expectedTrace": [
+    "begin_page 400.00x300.00",
+    "  pageBackground bbox=0.00,0.00,400.00,300.00",
+    "  textRun bbox=16.00,32.00,200.00,18.00",
+    "end_page ops=2"
+  ]
+}

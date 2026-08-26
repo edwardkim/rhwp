@@ -1,0 +1,53 @@
+{
+  "id": "AU11",
+  "tier": 3,
+  "title": "연합 번들 교환",
+  "input": "samples/table-001.hwp",
+  "instructions": "작업 캡슐을 **오프라인 교환 번들**(.lineage-bundle)로 내보내 제출하라. 채점기는 수신자 입장에서 신뢰 도메인 파일로 번들을 검증한다. 힌트: rhwp bundle export/verify.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "work.lineage-bundle",
+      "domain.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "컨테이너 무결",
+      "op": "value_eq",
+      "value": true,
+      "path": "containerOk",
+      "cmd": [
+        "bundle",
+        "verify",
+        "{file:work.lineage-bundle}",
+        "--trust-domain",
+        "{file:domain.json}",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    },
+    {
+      "name": "폐쇄집합 완전",
+      "op": "value_eq",
+      "value": true,
+      "path": "closureOk",
+      "cmd": [
+        "bundle",
+        "verify",
+        "{file:work.lineage-bundle}",
+        "--trust-domain",
+        "{file:domain.json}",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    }
+  ],
+  "axis": "자동화"
+}

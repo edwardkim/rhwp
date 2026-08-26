@@ -1,0 +1,29 @@
+{
+  "id": "T49",
+  "tier": 2,
+  "title": "표 표본 첫 셀 온램프 표기",
+  "input": "samples/table-001.hwp",
+  "instructions": "T49 은 입문·코어 온램프를 두껍게 하는 과제다. T08 은 중첩표 표본 (0,0) 을 '짐검증' 으로 바꾼다. 여기서는 table-001 의 (0,0) 을 '코어온램프' 로 바꾼다. 표본은 `samples/table-001.hwp` 이고, 이미 저장소 `samples/` 에 있다. 새 파일을 만들지 마라. 정답 숫자는 과제에 박제되어 있지 않다. 채점기가 같은 명령을 다시 돌린다. 힌트: rhwp edit set-cell 또는 run 계획서 action set_cell table=0 row=0 col=0 text=코어온램프. 제출은 answer.json 에 cell.hwp 로 적는다. 원본을 덮어쓰지 마라. T07 의 fields[0]==홍길동 판정을 복제하지 마라. T07 서식 채움이 아니다. 누름틀을 건드리지 마라. 채점은 표 0 의 (0,0) 셀만 본다. 홍길동을 쓰지 마라.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "cell.hwp"
+    ]
+  },
+  "checks": [
+    {
+      "name": "표 0 (0,0) 이 정확히 코어온램프",
+      "op": "cell_text_eq",
+      "table": 0,
+      "row": 0,
+      "col": 0,
+      "value": "코어온램프",
+      "cmd": [
+        "export-tables",
+        "{file:cell.hwp}",
+        "--json"
+      ],
+      "path": "tables"
+    }
+  ]
+}

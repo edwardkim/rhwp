@@ -1,0 +1,28 @@
+{
+  "id": "CD02",
+  "tier": 2,
+  "title": "탐침 스윕",
+  "input": "samples/table-001.hwp",
+  "instructions": "samples/hml 폴더를 **탐침 모드**로 스캔해 첫 문서의 확장자 불일치 여부를 answer.json 에 {\"mismatch\": true|false} 로 제출하라. 힌트: rhwp scan --probe.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "확장자 불일치",
+      "op": "answer_eq",
+      "answer": "mismatch",
+      "path": "files[0].extMismatch",
+      "cmd": [
+        "scan",
+        "samples/hml",
+        "--probe",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

@@ -1,0 +1,2 @@
+page	pi	ci	rows	cols	edge	table_bbox	line_x0	line_x1	line_y	stroke_width	visible_height_ratio	clip_ids	clip_rect	note
+33	428	0	5	11	top	94.5,83.2,512.2,186.1	94.5	606.7	83.2	1.5	0.500	body-clip-3	94.5,83.2,707.5,1039.3	candidate only; table top/bottom frame stroke is clipped at a page boundary

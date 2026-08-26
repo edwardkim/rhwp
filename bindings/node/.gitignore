@@ -1,5 +1,0 @@
-# 설치 산출물·빌드 결과는 커밋하지 않는다.
-# (검증 중 만든 vitest 셰임·tsc 캐시가 딸려 들어간 적이 있어 명시한다)
-node_modules/
-dist/
-*.tsbuildinfo

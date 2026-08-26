@@ -1,0 +1,22 @@
+{
+  "id": "ST27",
+  "tier": 2,
+  "title": "꺾은선 HWP CSV 추출",
+  "input": "samples/chart/라인/꺽은선형.hwp",
+  "instructions": "차트 1 의 숫자 시트를 chart.csv 로 제출하라. 라인 차트의 시트를 파일로 남겨라. stdout 만 보고 제출을 빼먹지 마라. 원본 HWP/HWPX 를 복사하거나 머리 행만 있는 빈 표를 내지 마라. 힌트: rhwp chart-to-csv --chart 1 -o chart.csv.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "chart.csv"
+    ]
+  },
+  "checks": [
+    {
+      "name": "CSV 산출 존재",
+      "op": "file_exists",
+      "file": "chart.csv",
+      "minBytes": 8
+    }
+  ],
+  "axis": "추출"
+}

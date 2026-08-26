@@ -1,0 +1,30 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workCapsule",
+  "parent": null,
+  "plan": {
+    "planVersion": "1.0",
+    "input": "samples/basic/calendar_year.hwp",
+    "output": "out/table-label.hwp",
+    "steps": [
+      {
+        "action": "replace_text",
+        "find": "일련 번호",
+        "replace": "일련번호"
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"samples/basic/calendar_year.hwp\",\"output\":\"out/table-label.hwp\",\"steps\":[{\"action\":\"replace_text\",\"find\":\"일련 번호\",\"replace\":\"일련번호\"}]}",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "samples/basic/calendar_year.hwp",
+    "inputSha256": "7244d5220390409f22545e0c48a0ab7317a49ecfaebfe828bc768c2493f7bed6",
+    "planSha256": "3c3c8dc8d5cf969a9f665f4b71d80c8b9a762f8c90c38f5bf29d009b99929f34",
+    "outputSha256": "81672f7425e0e25090db1dc1c1f1a1c0dec34b1300a28567641306f8f7604249",
+    "toolVersion": "fixture-0.0.0-not-a-release",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null
+  }
+}

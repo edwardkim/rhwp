@@ -1,0 +1,34 @@
+{
+  "schemaVersion": "1.0",
+  "source": "synthetic/merge-pattern.hwpx",
+  "table": 0,
+  "rowCount": 4,
+  "colCount": 5,
+  "csv": "C-header_plus_note-first.csv",
+  "dryRun": true,
+  "changed": [],
+  "changedCount": 0,
+  "changedPages": null,
+  "invalid": [
+    {
+      "reason": "coveredCellNotEmpty",
+      "message": "(0,2) 는 병합으로 덮인 칸입니다 — 앵커 (0,1) 를 지정하세요.",
+      "row": 0,
+      "col": 2,
+      "anchorRow": 0,
+      "anchorCol": 1
+    }
+  ],
+  "output": null,
+  "verify": null,
+  "untrustedContent": false,
+  "untrustedFields": [],
+  "_skillMeta": {
+    "skill": "rhwp-table-exchange",
+    "command": "csv-to-table",
+    "exit": 2,
+    "outputKept": false,
+    "mode": "dry-run",
+    "writes": false
+  }
+}

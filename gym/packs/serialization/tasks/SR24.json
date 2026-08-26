@@ -1,0 +1,32 @@
+{
+  "id": "SR24",
+  "tier": 3,
+  "title": "서로 다른 두 문서 IR 불일치",
+  "input": "samples/table-001.hwp",
+  "instructions": "입력과 다른 문서(samples/para-001.hwp) 를 ir-diff 해 IR 동일 여부를 answer.json 에 {\"identical\": true|false} 로 적어라. 다른 문서면 보통 차이가 나고 exit 3 이다. 봉투의 identical 을 읽고, 종료 코드만으로 추측하지 마라. 힌트: rhwp ir-diff --json.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "IR 동일 판정",
+      "op": "answer_eq",
+      "answer": "identical",
+      "path": "identical",
+      "cmd": [
+        "ir-diff",
+        "{input}",
+        "samples/para-001.hwp",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    }
+  ],
+  "axis": "변환"
+}

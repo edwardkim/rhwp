@@ -1,0 +1,48 @@
+{
+  "id": "SH02",
+  "tier": 2,
+  "title": "🛡️ 안전 에어락 — 주입 스캔",
+  "input": "samples/field-01.hwp",
+  "instructions": "받은 문서의 텍스트를 프롬프트에 넣어 신뢰하기 전에, rhwp 는 문서를 고치지 않고 프롬프트 주입 신호를 읽어 통과 판정을 낸다 — 신뢰경계 앞의 에어락이다. 입력 문서를 에어락에 통과시켜 clean 여부와 주입 신호 수를 answer.json 에 {\"clean\": true|false, \"signalCount\": N} 로 제출하라. 힌트: rhwp inspect injection <파일> --json 의 clean·signalCount.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "에어락 통과 판정(clean)",
+      "op": "answer_eq",
+      "answer": "clean",
+      "path": "clean",
+      "cmd": [
+        "inspect",
+        "injection",
+        "{input}",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    },
+    {
+      "name": "주입 신호 수",
+      "op": "answer_eq",
+      "answer": "signalCount",
+      "path": "signalCount",
+      "cmd": [
+        "inspect",
+        "injection",
+        "{input}",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    }
+  ],
+  "axis": "조사"
+}

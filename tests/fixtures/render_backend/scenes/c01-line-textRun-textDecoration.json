@@ -1,0 +1,51 @@
+{
+  "schema": 1,
+  "id": "c01-line-textRun-textDecoration",
+  "width": 400.0,
+  "height": 300.0,
+  "contract": "flow 클러스터 line+textRun+textDecoration 순서 유지",
+  "ops": [
+    {
+      "kind": "line",
+      "x": 10.0,
+      "y": 10.0,
+      "w": 40.0,
+      "h": 20.0,
+      "text": null,
+      "gradient": false,
+      "image": false
+    },
+    {
+      "kind": "textRun",
+      "x": 70.0,
+      "y": 10.0,
+      "w": 40.0,
+      "h": 20.0,
+      "text": "B",
+      "gradient": false,
+      "image": false
+    },
+    {
+      "kind": "textDecoration",
+      "x": 130.0,
+      "y": 10.0,
+      "w": 40.0,
+      "h": 20.0,
+      "text": "C",
+      "gradient": false,
+      "image": false
+    }
+  ],
+  "expectedKinds": [
+    "line",
+    "textRun",
+    "textDecoration"
+  ],
+  "expectedTrace": [
+    "begin_page 400.00x300.00",
+    "  line bbox=10.00,10.00,40.00,20.00",
+    "  textRun bbox=70.00,10.00,40.00,20.00",
+    "  textDecoration bbox=130.00,10.00,40.00,20.00",
+    "end_page ops=3"
+  ]
+}

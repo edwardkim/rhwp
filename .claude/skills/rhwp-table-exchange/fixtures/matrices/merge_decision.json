@@ -1,0 +1,328 @@
+{
+  "catalogVersion": "1.0",
+  "skill": "rhwp-table-exchange",
+  "issue": 5306,
+  "rule": "rowSpan>1 또는 colSpan>1 이 하나라도 있으면 CSV 되돌리기 대신 edit set-cell.",
+  "decisions": [
+    "allowed",
+    "extract-only",
+    "forbidden",
+    "outer-only",
+    "skip",
+    "empty-slot",
+    "pick-first"
+  ],
+  "cases": [
+    {
+      "id": "hwp_table_test_t0",
+      "sample": "samples/hwp_table_test.hwp",
+      "index": 0,
+      "rows": 4,
+      "cols": 3,
+      "mergedCount": 0,
+      "nested": false,
+      "containerPath": null,
+      "csvRoundtrip": "allowed",
+      "reason": "모든 셀 rowSpan=colSpan=1. 레시피 02 실측.",
+      "next": "table-to-csv --table 0"
+    },
+    {
+      "id": "table_001",
+      "sample": "samples/table-001.hwp",
+      "index": 0,
+      "rows": 19,
+      "cols": 9,
+      "cellCount": 131,
+      "mergedCount": 20,
+      "nested": false,
+      "containerPath": null,
+      "csvRoundtrip": "extract-only",
+      "reason": "병합 20. table-to-csv 는 뽑을 수 있으나 되돌리면 coveredCellNotEmpty 위험.",
+      "next": "edit set-cell --table 0 --row R --col C"
+    },
+    {
+      "id": "inner_table",
+      "sample": "samples/inner-table-01.hwp",
+      "index": 0,
+      "cellCount": 14,
+      "nested": true,
+      "nestedCells": 24,
+      "csvRoundtrip": "outer-only",
+      "reason": "중첩 표는 v1 범위 밖. 바깥 표만 --table 0.",
+      "next": "바깥 격자만 CSV. 안쪽은 손대지 않음."
+    },
+    {
+      "id": "treatise_header",
+      "sample": "samples/basic/treatise sample.hwp",
+      "index": 2,
+      "containerPath": [
+        {
+          "kind": "header"
+        }
+      ],
+      "csvRoundtrip": "forbidden",
+      "reason": "머리말 표. table-to-csv/csv-to-table 좌표계 밖.",
+      "next": "본문 최상위 index 만 고른다."
+    },
+    {
+      "id": "jichi_header_zero",
+      "sample": "samples/2025년 기부·답례품 실적 지자체 보고서_양식.hwpx",
+      "index": 0,
+      "containerPath": [
+        {
+          "kind": "header"
+        }
+      ],
+      "csvRoundtrip": "forbidden",
+      "reason": "index 0 이 머리말. 본문 표는 더 큰 index.",
+      "next": "containerPath 없는 표를 고른다."
+    },
+    {
+      "id": "issue2007_t0",
+      "sample": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+      "index": 0,
+      "rows": 2,
+      "cols": 1,
+      "mergedCount": 0,
+      "csvRoundtrip": "allowed",
+      "reason": "1열×2행 개요 표. 병합 없음.",
+      "next": "table-to-csv --table 0"
+    },
+    {
+      "id": "issue2007_t1",
+      "sample": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+      "index": 1,
+      "rows": 2,
+      "cols": 3,
+      "mergedCount": 0,
+      "csvRoundtrip": "allowed",
+      "reason": "코덱스 20장 실측 표본.",
+      "next": "table-to-csv --table 1"
+    },
+    {
+      "id": "multi_table_pick",
+      "sample": "samples/multi-table-001.hwp",
+      "index": null,
+      "tableCount": 6,
+      "csvRoundtrip": "pick-first",
+      "reason": "표 6개. --table 없이 뽑으면 폴더.",
+      "next": "export-tables 로 index 확인 후 하나만."
+    },
+    {
+      "id": "wrapper_1x1",
+      "sample": "공문서 관용 1×1 래퍼",
+      "rows": 1,
+      "cols": 1,
+      "csvRoundtrip": "skip",
+      "reason": "1×1 래퍼는 데이터 표가 아니다. 소비자가 걸러야 한다.",
+      "next": "다음 index 를 본다."
+    },
+    {
+      "id": "autonumber_empty",
+      "sample": "자동번호 칸",
+      "csvRoundtrip": "empty-slot",
+      "reason": "자동번호는 IR 텍스트에 값이 없어 CSV 에 빈 자리.",
+      "next": "빈 칸을 채우지 않는다. 렌더 주입 값이다."
+    },
+    {
+      "id": "shape_2x2_m0",
+      "rows": 2,
+      "cols": 2,
+      "mergedCount": 0,
+      "cellCountExpectedIfNoMerge": 4,
+      "csvRoundtrip": "allowed",
+      "reason": "병합 0 → CSV 왕복",
+      "next": "table-to-csv --table N"
+    },
+    {
+      "id": "shape_3x4_m0",
+      "rows": 3,
+      "cols": 4,
+      "mergedCount": 0,
+      "cellCountExpectedIfNoMerge": 12,
+      "csvRoundtrip": "allowed",
+      "reason": "병합 0 → CSV 왕복",
+      "next": "table-to-csv --table N"
+    },
+    {
+      "id": "shape_4x3_m0",
+      "rows": 4,
+      "cols": 3,
+      "mergedCount": 0,
+      "cellCountExpectedIfNoMerge": 12,
+      "csvRoundtrip": "allowed",
+      "reason": "병합 0 → CSV 왕복",
+      "next": "table-to-csv --table N"
+    },
+    {
+      "id": "shape_5x5_m0",
+      "rows": 5,
+      "cols": 5,
+      "mergedCount": 0,
+      "cellCountExpectedIfNoMerge": 25,
+      "csvRoundtrip": "allowed",
+      "reason": "병합 0 → CSV 왕복",
+      "next": "table-to-csv --table N"
+    },
+    {
+      "id": "shape_8x4_m0",
+      "rows": 8,
+      "cols": 4,
+      "mergedCount": 0,
+      "cellCountExpectedIfNoMerge": 32,
+      "csvRoundtrip": "allowed",
+      "reason": "병합 0 → CSV 왕복",
+      "next": "table-to-csv --table N"
+    },
+    {
+      "id": "shape_10x6_m1",
+      "rows": 10,
+      "cols": 6,
+      "mergedCount": 1,
+      "cellCountExpectedIfNoMerge": 60,
+      "csvRoundtrip": "extract-only",
+      "reason": "병합 있음 → table-to-csv 추출만, 되돌리기는 set-cell",
+      "next": "edit set-cell --table N --row R --col C"
+    },
+    {
+      "id": "shape_12x8_m4",
+      "rows": 12,
+      "cols": 8,
+      "mergedCount": 4,
+      "cellCountExpectedIfNoMerge": 96,
+      "csvRoundtrip": "extract-only",
+      "reason": "병합 있음 → table-to-csv 추출만, 되돌리기는 set-cell",
+      "next": "edit set-cell --table N --row R --col C"
+    },
+    {
+      "id": "shape_19x9_m20",
+      "rows": 19,
+      "cols": 9,
+      "mergedCount": 20,
+      "cellCountExpectedIfNoMerge": 171,
+      "csvRoundtrip": "extract-only",
+      "reason": "병합 있음 → table-to-csv 추출만, 되돌리기는 set-cell",
+      "next": "edit set-cell --table N --row R --col C"
+    },
+    {
+      "id": "shape_30x10_m8",
+      "rows": 30,
+      "cols": 10,
+      "mergedCount": 8,
+      "cellCountExpectedIfNoMerge": 300,
+      "csvRoundtrip": "extract-only",
+      "reason": "병합 있음 → table-to-csv 추출만, 되돌리기는 set-cell",
+      "next": "edit set-cell --table N --row R --col C"
+    },
+    {
+      "id": "shape_2x1_m0",
+      "rows": 2,
+      "cols": 1,
+      "mergedCount": 0,
+      "cellCountExpectedIfNoMerge": 2,
+      "csvRoundtrip": "allowed",
+      "reason": "병합 0 → CSV 왕복",
+      "next": "table-to-csv --table N"
+    },
+    {
+      "id": "shape_1x1_m0",
+      "rows": 1,
+      "cols": 1,
+      "mergedCount": 0,
+      "cellCountExpectedIfNoMerge": 1,
+      "csvRoundtrip": "skip",
+      "reason": "1×1 래퍼 → 건너뜀",
+      "next": "다음 표"
+    },
+    {
+      "id": "shape_6x3_m2",
+      "rows": 6,
+      "cols": 3,
+      "mergedCount": 2,
+      "cellCountExpectedIfNoMerge": 18,
+      "csvRoundtrip": "extract-only",
+      "reason": "병합 있음 → table-to-csv 추출만, 되돌리기는 set-cell",
+      "next": "edit set-cell --table N --row R --col C"
+    },
+    {
+      "id": "shape_7x7_m0",
+      "rows": 7,
+      "cols": 7,
+      "mergedCount": 0,
+      "cellCountExpectedIfNoMerge": 49,
+      "csvRoundtrip": "allowed",
+      "reason": "병합 0 → CSV 왕복",
+      "next": "table-to-csv --table N"
+    },
+    {
+      "id": "shape_15x4_m3",
+      "rows": 15,
+      "cols": 4,
+      "mergedCount": 3,
+      "cellCountExpectedIfNoMerge": 60,
+      "csvRoundtrip": "extract-only",
+      "reason": "병합 있음 → table-to-csv 추출만, 되돌리기는 set-cell",
+      "next": "edit set-cell --table N --row R --col C"
+    },
+    {
+      "id": "shape_20x5_m0",
+      "rows": 20,
+      "cols": 5,
+      "mergedCount": 0,
+      "cellCountExpectedIfNoMerge": 100,
+      "csvRoundtrip": "allowed",
+      "reason": "병합 0 → CSV 왕복",
+      "next": "table-to-csv --table N"
+    },
+    {
+      "id": "shape_4x8_m1",
+      "rows": 4,
+      "cols": 8,
+      "mergedCount": 1,
+      "cellCountExpectedIfNoMerge": 32,
+      "csvRoundtrip": "extract-only",
+      "reason": "병합 있음 → table-to-csv 추출만, 되돌리기는 set-cell",
+      "next": "edit set-cell --table N --row R --col C"
+    },
+    {
+      "id": "shape_9x2_m0",
+      "rows": 9,
+      "cols": 2,
+      "mergedCount": 0,
+      "cellCountExpectedIfNoMerge": 18,
+      "csvRoundtrip": "allowed",
+      "reason": "병합 0 → CSV 왕복",
+      "next": "table-to-csv --table N"
+    },
+    {
+      "id": "shape_11x11_m6",
+      "rows": 11,
+      "cols": 11,
+      "mergedCount": 6,
+      "cellCountExpectedIfNoMerge": 121,
+      "csvRoundtrip": "extract-only",
+      "reason": "병합 있음 → table-to-csv 추출만, 되돌리기는 set-cell",
+      "next": "edit set-cell --table N --row R --col C"
+    },
+    {
+      "id": "shape_16x3_m0",
+      "rows": 16,
+      "cols": 3,
+      "mergedCount": 0,
+      "cellCountExpectedIfNoMerge": 48,
+      "csvRoundtrip": "allowed",
+      "reason": "병합 0 → CSV 왕복",
+      "next": "table-to-csv --table N"
+    },
+    {
+      "id": "shape_24x6_m12",
+      "rows": 24,
+      "cols": 6,
+      "mergedCount": 12,
+      "cellCountExpectedIfNoMerge": 144,
+      "csvRoundtrip": "extract-only",
+      "reason": "병합 있음 → table-to-csv 추출만, 되돌리기는 set-cell",
+      "next": "edit set-cell --table N --row R --col C"
+    }
+  ]
+}

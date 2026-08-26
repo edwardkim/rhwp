@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5324,
+  "skill": "bug-hunter",
+  "notGym": true,
+  "noNewCli": true,
+  "keys": [
+    "tool",
+    "version",
+    "outputPath",
+    "fonts",
+    "sourcePath",
+    "referencePdfPath",
+    "sourceSha256",
+    "referenceSha256",
+    "creator",
+    "producer",
+    "paper",
+    "recordedAt"
+  ]
+}

@@ -28,12 +28,14 @@ import argparse
 import io
 import json
 import os
+import platform
 import re
 import sys
 import traceback
 from pathlib import Path
 
 from oracle_version import matches_expected_version
+from scenario_spec import platform_path_key, resolve_args as resolve_arg_paths
 
 REPO = Path(__file__).resolve().parents[2]
 
@@ -53,14 +55,31 @@ def normalize(value):
     return {"__type": type(value).__name__}
 
 
+def _unescape_numeric_refs(text):
+    """COM `GetTextFile` 은 CP949 밖 글자를 `&#N;` 로 escape 하지만 **기안기 실물은 원문
+    유니코드를 그대로 준다**(2026-08-10 실측, 10.80.0.2862) — 웹 계약으로 되돌린다.
+    문서에 날 `&#숫자;` 글이 있으면 함께 풀리는 모호함이 있으나, impl 쪽도 같은 규칙을
+    쓰므로 대조는 공평하다."""
+    if not isinstance(text, str):
+        return text
+    return re.sub(r"&#(\d+);", lambda m: chr(int(m.group(1))), text)
+
+
 # 웹 규약으로 되돌리는 변환. `com` 은 raw COM 객체다.
 ADAPTERS = {
     # v2.4 §8.3.12 — 웹은 {list, para, pos} 객체를 리턴한다.
     "GetPos": lambda com, args: dict(zip(("list", "para", "pos"), com.GetPos())),
     # v2.4 §8.3.14 — 웹은 {slist, spara, spos, elist, epara, epos} 객체를 리턴한다.
+    # COM 튜플의 첫 값 `result` 는 규격에 없고 기안기 실물도 안 준다(2026-08-10 실측) — 버린다.
     "GetSelectedPos": lambda com, args: dict(
-        zip(("result", "slist", "spara", "spos", "elist", "epara", "epos"), com.GetSelectedPos())
+        zip(("slist", "spara", "spos", "elist", "epara", "epos"), com.GetSelectedPos()[1:])
     ),
+    # v2.4 §8.3.17 — 웹은 {result, text} 객체를 리턴한다(2026-08-10 실측). COM 은 튜플이다.
+    "GetText": lambda com, args: dict(zip(("result", "text"), com.GetText())),
+    # v2.4 §8.3.19 — 웹은 escape 없는 원문을 준다. COM 의 `&#N;` 을 되돌린다.
+    "GetTextFile": lambda com, args: _unescape_numeric_refs(com.GetTextFile(*args)),
+    # v2.4 §8.3.45 — 웹은 bool 을 리턴한다(2026-08-10 실측 true). COM 은 1 이다.
+    "SetTextFile": lambda com, args: bool(com.SetTextFile(*args)),
     # v2.4 §8.3.27 — 값 **아홉**이다: `result` 다음에 `seccnt`(구역 수)가 하나 더 온다.
     # 그것을 빼먹어 `secno` 부터 이름이 한 칸씩 밀려 있었다(실측으로 바로잡음 — 마지막 값은
     # 숫자가 아니라 "(A43): 문자 입력" 같은 **문자열**이라 밀림이 눈에 띄었다).
@@ -79,6 +98,14 @@ ADAPTERS = {
             ),
             com.KeyIndicator(),
         )
+    ),
+    # v2.4 §8.3.57·§8.3.59 — 웹은 날짜를 객체로 리턴한다(`result`·`year`·`month`·`day`,
+    # 음력 쪽은 `leap` 까지). COM 은 같은 값을 out 파라미터 튜플로 준다.
+    "SolarToLunar": lambda com, args: dict(
+        zip(("result", "year", "month", "day", "leap"), com.SolarToLunar(*args))
+    ),
+    "LunarToSolar": lambda com, args: dict(
+        zip(("result", "year", "month", "day"), com.LunarToSolar(*args))
     ),
 }
 
@@ -187,6 +214,23 @@ def clear_previous_outputs(scenario: dict, out_dir: Path) -> tuple[Path, Path, P
     return paths
 
 
+def discard_changes_and_quit(hwp: object, com: object) -> None:
+    """Oracle 문서 변경을 버린 뒤 한글을 종료한다.
+
+    `HwpObject.Quit()`만 호출하면 수정된 문서의 저장 확인창이 active RDP 세션을 막는다.
+    `pyhwpx.Hwp.clear(option=1)`은 active `XHwpDocument`에 hwpDiscard를 적용하는 API다.
+    시나리오의 `com.Clear(1)` 호출과는 다른 종료 경로이므로 혼용하지 않는다.
+    """
+    try:
+        hwp.clear(option=1)
+    except Exception:  # noqa: BLE001 - 종료는 clear 실패와 무관하게 시도한다.
+        pass
+    try:
+        com.Quit()
+    except Exception:  # noqa: BLE001 - runner 결과는 이미 기록했을 수 있다.
+        pass
+
+
 def run(scenario: dict, out_dir: Path, expect_version: str | None = None) -> dict:
     from pyhwpx import Hwp
 
@@ -219,15 +263,20 @@ def run(scenario: dict, out_dir: Path, expect_version: str | None = None) -> dic
     version = (result.get("oracle") or {}).get("version")
     if not matches_expected_version(version, expect_version):
         result["rejected"] = f"기대 major '{expect_version}' 실제 '{version}'"
-        try:
-            com.Quit()
-        except Exception:  # noqa: BLE001
-            pass
+        discard_changes_and_quit(hwp, com)
         return result
+
+    # 연 표본의 **원본 지문**을 떠 둔다. 시나리오가 표본을 고치면 그 다음 실행부터 정답지가
+    # 통째로 어긋나는데, 증상이 "갑자기 회귀"로 보여서 원인을 찾기 어렵다.
+    #
+    # 실제로 그랬다: `Clear(1)` 은 한글에게 **저장하고 닫으라**는 뜻이라 시나리오가 돌 때마다
+    # `samples/2026_oss_rst.hwp` 에 자동 번호가 쌓였다. 아래 가드가 그것을 즉시 잡는다.
+    src_path = (REPO / scenario["open"]).resolve() if scenario.get("open") else None
+    src_before = src_path.stat().st_mtime_ns if src_path and src_path.exists() else None
 
     try:
         if scenario.get("open"):
-            src = (REPO / scenario["open"]).resolve()
+            src = src_path
             opened = com.Open(str(src), "", "")
             result["calls"].append({"call": "Open", "args": [scenario["open"]], "value": normalize(opened)})
 
@@ -243,8 +292,13 @@ def run(scenario: dict, out_dir: Path, expect_version: str | None = None) -> dic
                 result["rejected"] = f"읽기 전용으로 열렸다(EditMode {mode})"
                 return result
 
+        # 경로는 **플랫폼마다 다른 값**이라 시나리오가 이름으로 적고 러너가 푼다. 이 러너는
+        # Windows 에서만 도니 언제나 `win` 갈래다. `{repo}`·`{out}` 토큰은 현재 worktree와
+        # 격리 output으로 풀어 다른 Oracle host에서도 같은 fixture를 쓴다.
+        path_key = platform_path_key(platform.system())
         for idx, call in enumerate(scenario.get("calls", [])):
             name, args = call[0], (call[1] if len(call) > 1 else [])
+            args = resolve_arg_paths(args, scenario, path_key, REPO, out_dir)
             record = {"call": name, "args": args}
             try:
                 record["value"] = call_one(com, name, args)
@@ -261,10 +315,14 @@ def run(scenario: dict, out_dir: Path, expect_version: str | None = None) -> dic
     except Exception:  # noqa: BLE001
         result["fatal"] = traceback.format_exc(limit=3)
     finally:
-        try:
-            com.Quit()
-        except Exception:  # noqa: BLE001
-            pass
+        discard_changes_and_quit(hwp, com)
+    # 표본이 바뀌었으면 이 실행의 정답지를 **믿을 수 없다** — 다음 실행은 다른 문서를 잰다.
+    if src_path is not None and src_path.exists():
+        if src_path.stat().st_mtime_ns != src_before:
+            result["rejected"] = (
+                f"표본이 실행 중에 바뀌었다({scenario['open']}) — 시나리오가 저장을 부른다. "
+                "`git checkout -- ` 로 되돌리고 그 호출을 고칠 것."
+            )
     return result
 
 
@@ -282,7 +340,11 @@ def main() -> int:
     with io.open(args.scenario, encoding="utf-8") as fh:
         scenario = json.load(fh)
 
-    out_dir = Path(args.out)
+    # **절대경로로 못박는다.** `$path` 로 넓힌 상대 경로를 한글에 넘기면 답도 오류도 없이
+    # 멈춘다 — `SaveAs("output/…/x.hwp")` 하나로 오라클이 십 분을 넘겨 죽었다. 시나리오 끝
+    # 저장은 `output_paths` 가 `.resolve()` 를 거쳐 무사했던 탓에 이 갈래만 조용히 달랐다.
+    # (Node 러너는 이미 `resolve(args.out)` 를 한다.)
+    out_dir = Path(args.out).resolve()
     out_dir.mkdir(parents=True, exist_ok=True)
     returns_path, rejected_path, _ = clear_previous_outputs(scenario, out_dir)
     result = run(scenario, out_dir, args.expect_version)
@@ -293,6 +355,13 @@ def main() -> int:
         with io.open(rejected_path, "w", encoding="utf-8", newline="\n") as fh:
             json.dump(result, fh, ensure_ascii=False, indent=2)
             fh.write("\n")
+        if "표본이 실행 중에 바뀌었다" in result["rejected"]:
+            print(
+                f"{scenario['id']}: **표본이 바뀌어 판정하지 않음** — {result['rejected']}\n"
+                "정답지가 다음 실행부터 통째로 어긋난다. `Clear(1)` 처럼 저장을 부르는 호출을 "
+                "찾아 고칠 것(0 이면 저장 안 한다).",
+            )
+            return 5
         if "EditMode" in result["rejected"]:
             print(
                 f"{scenario['id']}: **읽기 전용으로 열려 판정하지 않음** — {result['rejected']}\n"

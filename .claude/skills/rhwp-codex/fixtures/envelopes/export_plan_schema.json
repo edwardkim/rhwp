@@ -1,0 +1,28 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5318,
+  "kind": "live",
+  "command": "export-plan-schema",
+  "sourceChapter": "70_자기서술.md",
+  "cmd": "rhwp export-plan-schema --json",
+  "exit": 0,
+  "envelope": {
+    "schemaVersion": "1.0",
+    "untrustedContent": false,
+    "untrustedFields": [],
+    "_truncatedForSkillFixture": true,
+    "_originalTopLevelKeys": [
+      "definitionCount",
+      "dialect",
+      "planSchemaVersion",
+      "schema",
+      "schemaVersion",
+      "untrustedContent",
+      "untrustedFields"
+    ],
+    "_originalChars": 8313,
+    "_command": "export-plan-schema"
+  },
+  "extractedFromGenerated": true,
+  "handEdited": false
+}

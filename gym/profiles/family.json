@@ -1,0 +1,10 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "gymProfile",
+  "id": "family",
+  "title": "가족 코스",
+  "description": "부모님·친구와 함께 도는 입문 놀이기구만.",
+  "packs": [
+    "casual-rides"
+  ]
+}

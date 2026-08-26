@@ -1,0 +1,27 @@
+{
+  "id": "LR38",
+  "tier": 1,
+  "title": "실문서 쪽수",
+  "input": "samples/143E433F503322BD33.hwp",
+  "instructions": "실문서의 쪽수를 answer.json 에 {\"pages\": N} 으로 제출하라. SVG 렌더(LR07)와 같은 입력이지만 쪽수 축이다. 힌트: rhwp info 의 pageCount.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "쪽수",
+      "op": "answer_eq",
+      "answer": "pages",
+      "path": "pageCount",
+      "cmd": [
+        "info",
+        "{input}",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.form_fill.path_contract.v1",
+  "claim": "M-fill",
+  "generator": "tools/form_fill/fatten_form_fill.py",
+  "existingCliOnly": true,
+  "id": "path-fill-bad-json",
+  "axis": "usage",
+  "title": "잘못된 --data JSON",
+  "why": "exit 2.",
+  "argv": [
+    "edit",
+    "fill-fields",
+    "samples/field-01.hwp",
+    "--data",
+    "{이건 JSON 이 아님",
+    "--dry-run"
+  ],
+  "exit": 2,
+  "writesFile": false
+}

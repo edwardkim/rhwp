@@ -1,0 +1,159 @@
+{
+  "schema": 1,
+  "id": "s500-line-stack",
+  "width": 400.0,
+  "height": 300.0,
+  "contract": "12개 수평선",
+  "ops": [
+    {
+      "kind": "line",
+      "x": 0.0,
+      "y": 10.0,
+      "w": 380.0,
+      "h": 0.0,
+      "text": null,
+      "gradient": false,
+      "image": false
+    },
+    {
+      "kind": "line",
+      "x": 0.0,
+      "y": 22.0,
+      "w": 380.0,
+      "h": 0.0,
+      "text": null,
+      "gradient": false,
+      "image": false
+    },
+    {
+      "kind": "line",
+      "x": 0.0,
+      "y": 34.0,
+      "w": 380.0,
+      "h": 0.0,
+      "text": null,
+      "gradient": false,
+      "image": false
+    },
+    {
+      "kind": "line",
+      "x": 0.0,
+      "y": 46.0,
+      "w": 380.0,
+      "h": 0.0,
+      "text": null,
+      "gradient": false,
+      "image": false
+    },
+    {
+      "kind": "line",
+      "x": 0.0,
+      "y": 58.0,
+      "w": 380.0,
+      "h": 0.0,
+      "text": null,
+      "gradient": false,
+      "image": false
+    },
+    {
+      "kind": "line",
+      "x": 0.0,
+      "y": 70.0,
+      "w": 380.0,
+      "h": 0.0,
+      "text": null,
+      "gradient": false,
+      "image": false
+    },
+    {
+      "kind": "line",
+      "x": 0.0,
+      "y": 82.0,
+      "w": 380.0,
+      "h": 0.0,
+      "text": null,
+      "gradient": false,
+      "image": false
+    },
+    {
+      "kind": "line",
+      "x": 0.0,
+      "y": 94.0,
+      "w": 380.0,
+      "h": 0.0,
+      "text": null,
+      "gradient": false,
+      "image": false
+    },
+    {
+      "kind": "line",
+      "x": 0.0,
+      "y": 106.0,
+      "w": 380.0,
+      "h": 0.0,
+      "text": null,
+      "gradient": false,
+      "image": false
+    },
+    {
+      "kind": "line",
+      "x": 0.0,
+      "y": 118.0,
+      "w": 380.0,
+      "h": 0.0,
+      "text": null,
+      "gradient": false,
+      "image": false
+    },
+    {
+      "kind": "line",
+      "x": 0.0,
+      "y": 130.0,
+      "w": 380.0,
+      "h": 0.0,
+      "text": null,
+      "gradient": false,
+      "image": false
+    },
+    {
+      "kind": "line",
+      "x": 0.0,
+      "y": 142.0,
+      "w": 380.0,
+      "h": 0.0,
+      "text": null,
+      "gradient": false,
+      "image": false
+    }
+  ],
+  "expectedKinds": [
+    "line",
+    "line",
+    "line",
+    "line",
+    "line",
+    "line",
+    "line",
+    "line",
+    "line",
+    "line",
+    "line",
+    "line"
+  ],
+  "expectedTrace": [
+    "begin_page 400.00x300.00",
+    "  line bbox=0.00,10.00,380.00,0.00",
+    "  line bbox=0.00,22.00,380.00,0.00",
+    "  line bbox=0.00,34.00,380.00,0.00",
+    "  line bbox=0.00,46.00,380.00,0.00",
+    "  line bbox=0.00,58.00,380.00,0.00",
+    "  line bbox=0.00,70.00,380.00,0.00",
+    "  line bbox=0.00,82.00,380.00,0.00",
+    "  line bbox=0.00,94.00,380.00,0.00",
+    "  line bbox=0.00,106.00,380.00,0.00",
+    "  line bbox=0.00,118.00,380.00,0.00",
+    "  line bbox=0.00,130.00,380.00,0.00",
+    "  line bbox=0.00,142.00,380.00,0.00",
+    "end_page ops=12"
+  ]
+}

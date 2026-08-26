@@ -1,0 +1,82 @@
+{
+  "id": "14_multi_doc_handles",
+  "title": "프로세스당 핸들은 여러 개. docId 를 섞지 않는다.",
+  "kind": "session",
+  "lifecycle": "hwp_open → doc_* → hwp_close",
+  "absolute_paths": true,
+  "single_write_point": "hwp_doc_save",
+  "steps": [
+    {
+      "seq": 1,
+      "tool": "hwp_open",
+      "arguments": {
+        "path": "C:/abs/원본.hwp"
+      },
+      "expect_layer": "ok",
+      "read_fields": [
+        "docId"
+      ],
+      "notes": ""
+    },
+    {
+      "seq": 2,
+      "tool": "hwp_open",
+      "arguments": {
+        "path": "C:/abs/비교.hwp"
+      },
+      "expect_layer": "ok",
+      "read_fields": [
+        "docId"
+      ],
+      "notes": ""
+    },
+    {
+      "seq": 3,
+      "tool": "hwp_doc_info",
+      "arguments": {
+        "docId": "doc-1"
+      },
+      "expect_layer": "ok",
+      "read_fields": [
+        "pageCount"
+      ],
+      "notes": ""
+    },
+    {
+      "seq": 4,
+      "tool": "hwp_doc_info",
+      "arguments": {
+        "docId": "doc-2"
+      },
+      "expect_layer": "ok",
+      "read_fields": [
+        "pageCount"
+      ],
+      "notes": ""
+    },
+    {
+      "seq": 5,
+      "tool": "hwp_close",
+      "arguments": {
+        "docId": "doc-1"
+      },
+      "expect_layer": "ok",
+      "read_fields": [
+        "closed"
+      ],
+      "notes": ""
+    },
+    {
+      "seq": 6,
+      "tool": "hwp_close",
+      "arguments": {
+        "docId": "doc-2"
+      },
+      "expect_layer": "ok",
+      "read_fields": [
+        "closed"
+      ],
+      "notes": ""
+    }
+  ]
+}

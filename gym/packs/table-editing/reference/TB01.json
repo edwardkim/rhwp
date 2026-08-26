@@ -1,0 +1,25 @@
+{
+  "id": "TB01",
+  "steps": [
+    {
+      "answer": {
+        "rows": {
+          "cmd": [
+            "export-tables",
+            "{input}",
+            "--json"
+          ],
+          "path": "tables[0].rows"
+        },
+        "cols": {
+          "cmd": [
+            "export-tables",
+            "{input}",
+            "--json"
+          ],
+          "path": "tables[0].cols"
+        }
+      }
+    }
+  ]
+}

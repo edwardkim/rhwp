@@ -1,0 +1,59 @@
+{
+  "id": "BO16",
+  "tier": 3,
+  "title": "메일머지 — HWP5 + --name-field outname",
+  "input": "samples/form-01.hwp",
+  "instructions": "HWP5 서식, CSV 헤더 myMsg01,outname, 데이터 2행(HwpOutAlpha,hwpouta / HwpOutBeta,hwpoutb). 산출 이름은 outname 열이다(out/hwpouta.hwp·out/hwpoutb.hwp). 힌트: rhwp batch fill --form samples/form-01.hwp --data gym/packs/batch-ops/assets/BO16-data.csv --out-dir out --name-field outname --json.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "out/hwpouta.hwp",
+      "out/hwpoutb.hwp"
+    ]
+  },
+  "checks": [
+    {
+      "name": "1부 산출 존재",
+      "op": "file_exists",
+      "file": "out/hwpouta.hwp",
+      "minBytes": 1
+    },
+    {
+      "name": "마지막 산출 존재 (단건이 아니라 대량)",
+      "op": "file_exists",
+      "file": "out/hwpoutb.hwp",
+      "minBytes": 1
+    },
+    {
+      "name": "원본 서식과 다름 (무편집 복사 거부)",
+      "op": "differs_from_input",
+      "file": "out/hwpouta.hwp"
+    },
+    {
+      "name": "HwpOutAlpha 값이 hwpouta 문서에 들어감",
+      "op": "value_ge",
+      "path": "matchCount",
+      "value": 1,
+      "cmd": [
+        "search",
+        "{file:out/hwpouta.hwp}",
+        "--json",
+        "--",
+        "HwpOutAlpha"
+      ]
+    },
+    {
+      "name": "HwpOutBeta 값이 hwpoutb 문서에 들어감",
+      "op": "value_ge",
+      "path": "matchCount",
+      "value": 1,
+      "cmd": [
+        "search",
+        "{file:out/hwpoutb.hwp}",
+        "--json",
+        "--",
+        "HwpOutBeta"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "id": "p5-tablecell",
+  "title": "칸 폭이 다른 표를 찾고, 칸 지우기·나눔을 잰다",
+  "ledger": [],
+  "open": "samples/table-001.hwp",
+  "calls": [
+    ["SetPos", [2, 0, 0]],
+    ["GetPos", []],
+    ["CellShape.Item", ["Width"]],
+    ["SetPos", [3, 0, 0]],
+    ["CellShape.Item", ["Width"]],
+    ["SetPos", [4, 0, 0]],
+    ["CellShape.Item", ["Width"]],
+    ["SetPos", [5, 0, 0]],
+    ["CellShape.Item", ["Width"]],
+    ["SetPos", [6, 0, 0]],
+    ["CellShape.Item", ["Width"]],
+    ["SetPos", [7, 0, 0]],
+    ["CellShape.Item", ["Width"]],
+    ["SetPos", [2, 0, 0]],
+    ["Run", ["TableCellBlock"]],
+    ["Run", ["TableCellBlockExtend"]],
+    ["Run", ["TableRightCell"]],
+    ["SelectionMode", []],
+    ["Run", ["TableDistributeCellWidth"]],
+    ["SetPos", [2, 0, 0]],
+    ["CellShape.Item", ["Width"]],
+    ["SetPos", [3, 0, 0]],
+    ["CellShape.Item", ["Width"]]
+  ]
+}

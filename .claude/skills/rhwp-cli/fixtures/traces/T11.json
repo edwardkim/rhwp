@@ -1,0 +1,11 @@
+{
+  "id": "T11",
+  "utterance": "raw record",
+  "steps": [
+    {
+      "command": "dump-records",
+      "pageZeroBased": true
+    }
+  ],
+  "stop": "HWP5 트리"
+}

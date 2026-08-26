@@ -1,0 +1,6 @@
+# transcript tol-ovf-over1-tol1
+# family=tolerance
+# hypothesis=오른쪽 넘침 1px, overflow 허용치 1px. 판정은 초과량이 허용치보다 클 때만.
+쪽 수: 3  overflow: 0  off-canvas: 0  overlap: 0  text-overlap: 0  empty_page(가능성): 0
+이상 신호 없음: tol-ovf-over1-tol1.synth
+status: CLEAN

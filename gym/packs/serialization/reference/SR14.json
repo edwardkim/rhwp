@@ -1,0 +1,22 @@
+{
+  "id": "SR14",
+  "steps": [
+    {
+      "answer": {
+        "pagesBefore": {
+          "cmd": [
+            "extract-pages",
+            "{input}",
+            "{sub:slice.hwp}",
+            "--from",
+            "1",
+            "--to",
+            "2",
+            "--json"
+          ],
+          "path": "pagesBefore"
+        }
+      }
+    }
+  ]
+}

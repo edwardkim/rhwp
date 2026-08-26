@@ -1,0 +1,16 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5324,
+  "skill": "bug-hunter",
+  "notGym": true,
+  "noNewCli": true,
+  "verifyPages": "4/4",
+  "entryCountSame": true,
+  "missingNames": [
+    "BinData/ole1.ole"
+  ],
+  "addedNames": [
+    "Preview/PrvImage.png"
+  ],
+  "class_": "zip-loss"
+}

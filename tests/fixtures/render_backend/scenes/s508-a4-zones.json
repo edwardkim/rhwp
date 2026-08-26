@@ -1,0 +1,75 @@
+{
+  "schema": 1,
+  "id": "s508-a4-zones",
+  "width": 595.0,
+  "height": 842.0,
+  "contract": "A4 근사 머리/본문/바닥",
+  "ops": [
+    {
+      "kind": "pageBackground",
+      "x": 0.0,
+      "y": 0.0,
+      "w": 595.0,
+      "h": 842.0,
+      "text": null,
+      "gradient": false,
+      "image": false
+    },
+    {
+      "kind": "rectangle",
+      "x": 48.0,
+      "y": 36.0,
+      "w": 499.0,
+      "h": 28.0,
+      "text": null,
+      "gradient": false,
+      "image": false
+    },
+    {
+      "kind": "textRun",
+      "x": 56.0,
+      "y": 42.0,
+      "w": 200.0,
+      "h": 16.0,
+      "text": "머리글",
+      "gradient": false,
+      "image": false
+    },
+    {
+      "kind": "textRun",
+      "x": 56.0,
+      "y": 80.0,
+      "w": 400.0,
+      "h": 16.0,
+      "text": "본문 첫 줄",
+      "gradient": false,
+      "image": false
+    },
+    {
+      "kind": "textRun",
+      "x": 56.0,
+      "y": 800.0,
+      "w": 120.0,
+      "h": 14.0,
+      "text": "바닥글",
+      "gradient": false,
+      "image": false
+    }
+  ],
+  "expectedKinds": [
+    "pageBackground",
+    "rectangle",
+    "textRun",
+    "textRun",
+    "textRun"
+  ],
+  "expectedTrace": [
+    "begin_page 595.00x842.00",
+    "  pageBackground bbox=0.00,0.00,595.00,842.00",
+    "  rectangle bbox=48.00,36.00,499.00,28.00",
+    "  textRun bbox=56.00,42.00,200.00,16.00",
+    "  textRun bbox=56.00,80.00,400.00,16.00",
+    "  textRun bbox=56.00,800.00,120.00,14.00",
+    "end_page ops=5"
+  ]
+}

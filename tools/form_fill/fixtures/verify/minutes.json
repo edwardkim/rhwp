@@ -1,0 +1,57 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.form_fill.fill_case.v1",
+  "id": "minutes-verify",
+  "axis": "verify",
+  "claim": "M-fill",
+  "generator": "tools/form_fill/fatten_form_fill.py",
+  "form": "minutes",
+  "title": "회의록 --verify",
+  "family": "공문서",
+  "genre": "회의",
+  "sample": "fixtures/forms/회의록.hwp",
+  "format": "hwpx",
+  "relatedIssue": "#3372",
+  "why": "저장 직후 재파싱. identical:false 면 exit 3. 산출물은 남는다.",
+  "firstFieldName": "회의명",
+  "fieldCount": 18,
+  "argv": [
+    "edit",
+    "fill-fields",
+    "fixtures/forms/회의록.hwp",
+    "--data",
+    "{\"회의명\": \"디지털정부 실무협의회\"}",
+    "-o",
+    "out/minutes-verify.hwpx",
+    "--verify",
+    "--json"
+  ],
+  "existingCliOnly": true,
+  "data": {
+    "회의명": "디지털정부 실무협의회"
+  },
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "fixtures/forms/회의록.hwp",
+    "dryRun": false,
+    "filledCount": 1,
+    "filled": [
+      {
+        "name": "회의명",
+        "occurrence": 0,
+        "value": "디지털정부 실무협의회"
+      }
+    ],
+    "notFound": [],
+    "ambiguous": [],
+    "confusable": [],
+    "verify": {
+      "identical": true,
+      "diffCount": 0
+    },
+    "output": "out/minutes-verify.hwpx",
+    "outputFormat": "hwpx"
+  },
+  "exit": 0,
+  "leavesOutput": true
+}

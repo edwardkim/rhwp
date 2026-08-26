@@ -1,0 +1,19 @@
+{
+  "id": "ST08",
+  "steps": [
+    {
+      "answer": {
+        "charts": {
+          "cmd": [
+            "chart-to-csv",
+            "{input}",
+            "--chart",
+            "1",
+            "--json"
+          ],
+          "path": "chartCount"
+        }
+      }
+    }
+  ]
+}

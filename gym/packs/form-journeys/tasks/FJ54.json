@@ -1,0 +1,53 @@
+{
+  "id": "FJ54",
+  "tier": 3,
+  "title": "이메일 채움 뒤 칸 이름 불변",
+  "input": "samples/field-01.hwp",
+  "instructions": "이메일에 'keepname@journey.go.kr' 을 넣은 keep-name.hwp 를 제출하라. 채점은 값뿐 아니라 fields[4].name 이 여전히 '이메일' 인지도 본다. 회사명은 비운다. 힌트: fill-fields 후 fields 재독에서 name 과 value 를 함께 확인. 판정은 라이브 재실행 또는 산출물 재독이며, 파일 부재를 통과로 치지 않는다. T07 의 fields[0].value==홍길동 판정은 쓰지 마라. 새 CLI 는 없다.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "keep-name.hwp"
+    ]
+  },
+  "checks": [
+    {
+      "name": "이메일 칸 이름",
+      "op": "value_eq",
+      "value": "이메일",
+      "path": "fields[4].name",
+      "cmd": [
+        "fields",
+        "{file:keep-name.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "이메일 값",
+      "op": "value_eq",
+      "value": "keepname@journey.go.kr",
+      "path": "fields[4].value",
+      "cmd": [
+        "fields",
+        "{file:keep-name.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "회사명은 비어 있음 — T07 좌표 거부",
+      "op": "value_eq",
+      "value": "",
+      "path": "fields[0].value",
+      "cmd": [
+        "fields",
+        "{file:keep-name.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "원본 무편집 복사가 아님",
+      "op": "differs_from_input",
+      "file": "keep-name.hwp"
+    }
+  ]
+}

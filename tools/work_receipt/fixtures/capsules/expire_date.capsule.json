@@ -1,0 +1,30 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workCapsule",
+  "parent": null,
+  "plan": {
+    "planVersion": "1.0",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "output": "out/expire.hwp",
+    "steps": [
+      {
+        "action": "replace_text",
+        "find": "유효기간 2026-12-31",
+        "replace": "유효기간 2027-12-31"
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"samples/basic/issue2007_nested_cell_pagination_42065.hwp\",\"output\":\"out/expire.hwp\",\"steps\":[{\"action\":\"replace_text\",\"find\":\"유효기간 2026-12-31\",\"replace\":\"유효기간 2027-12-31\"}]}",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "inputSha256": "71f790e1be3cd473def90c3c30f4ce56a601d0b91c97380ca875e52b989f99f3",
+    "planSha256": "f558ace7cc260fdc7187c2f873d791d2a95e6e9279385fb7892e37f19bde885c",
+    "outputSha256": "e3539f74b0945ac161981c7dcaa7728bfb01e188ae877461e5f569ef3757dfe1",
+    "toolVersion": "fixture-0.0.0-not-a-release",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null
+  }
+}

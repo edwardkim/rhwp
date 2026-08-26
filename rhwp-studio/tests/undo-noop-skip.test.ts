@@ -65,13 +65,25 @@ test('executeOperation 의 snapshot 분기는 무변경이면 커서 이동·리
   );
 });
 
-test('경계 z순서는 반환 zOrder 비교로 무변경을 보고한다', () => {
+// [#5769 후속] 무변경 판정이 TS 값 비교에서 Rust 응답으로 옮겼다 — change_shape_z_order_native
+// 은 "이미 맨 앞/뒤" 경계에서 문서를 건드리지 않고 빈 moves 로 응답하고, SetZOrderCommand 가
+// 그것을 noOp 로 보고한다(phantom 엔트리·캡처 낭비 없음). 판정 주체가 단일 출처(Rust)로
+// 모인 것이 의도된 변경이다.
+test('경계 z순서는 Rust 응답의 빈 moves 로 무변경을 보고한다', () => {
   const insertSrc = src('src/command/commands/insert.ts');
   const body = functionBodyFrom(insertSrc, 'function changeZOrder');
 
-  assert.match(body, /getProps\(services, ref\)/, '호출 전 zOrder 를 읽어야 함');
-  assert.match(body, /r\.zOrder !== zBefore/, '반환 zOrder 와 호출 전 값을 비교해 변경 여부를 판정해야 함');
-  assert.match(body, /wasm\.changeShapeZOrder\(/, '뮤테이션은 operation 콜백 안에 있어야 함');
+  assert.match(body, /new SetZOrderCommand\(/, '무변경 판정은 커맨드가 담당한다');
+  assert.doesNotMatch(body, /getProps\(services, ref\)/,
+    '호출 전 값 재구성은 폐기 — moves 기록이 단일 출처다');
+  assert.match(body, /kind:\s*'command'/, '커맨드 경유로 양식 모드 게이트를 유지한다');
+
+  const cmdSrc = src('src/engine/command.ts');
+  const clsStart = cmdSrc.indexOf('export class SetZOrderCommand');
+  const rest = cmdSrc.slice(clsStart);
+  const cmd = rest.slice(0, rest.indexOf('\nexport class ', 1));
+  assert.match(cmd, /moves\.length === 0[\s\S]{0,200}?noOp = true/,
+    '빈 moves 를 무변경으로 보고해야 한다');
 });
 
 test('레이아웃 setter 의 {ok:false} 는 도달 불가 — 없는 신호를 검사하지 않는다', () => {

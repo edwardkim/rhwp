@@ -1,0 +1,35 @@
+{
+  "id": "OM03",
+  "tier": 2,
+  "title": "미리보기 생성",
+  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "instructions": "입력의 썸네일을 thumb.png 로 만들고, 그 **가로 픽셀 수**를 answer.json 에 {\"width\": N} 으로 제출하라. 힌트: rhwp thumbnail.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "thumb.png",
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "썸네일 산출",
+      "op": "file_exists",
+      "file": "thumb.png",
+      "minBytes": 256
+    },
+    {
+      "name": "가로 픽셀",
+      "op": "answer_eq",
+      "answer": "width",
+      "path": "width",
+      "cmd": [
+        "thumbnail",
+        "{input}",
+        "-o",
+        "{file:thumb.png}",
+        "--json"
+      ]
+    }
+  ]
+}

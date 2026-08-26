@@ -1,0 +1,2382 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<hs:sec xmlns:ha="http://www.hancom.co.kr/hwpml/2011/app" xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph" xmlns:hp10="http://www.hancom.co.kr/hwpml/2016/paragraph" xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section" xmlns:hc="http://www.hancom.co.kr/hwpml/2011/core" xmlns:hh="http://www.hancom.co.kr/hwpml/2011/head" xmlns:hhs="http://www.hancom.co.kr/hwpml/2011/history" xmlns:hm="http://www.hancom.co.kr/hwpml/2011/master-page" xmlns:hpf="http://www.hancom.co.kr/schema/2011/hpf" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf/" xmlns:ooxmlchart="http://www.hancom.co.kr/hwpml/2016/ooxmlchart" xmlns:hwpunitchar="http://www.hancom.co.kr/hwpml/2016/HwpUnitChar" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:config="urn:oasis:names:tc:opendocument:xmlns:config:1.0">
+<hp:p id="6" paraPrIDRef="37" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="1">
+<hp:secPr id="" textDirection="HORIZONTAL" spaceColumns="1134" tabStop="8000" tabStopVal="4000" tabStopUnit="HWPUNIT" outlineShapeIDRef="5" memoShapeIDRef="0" textVerticalWidthHead="0" masterPageCnt="0">
+<hp:grid lineGrid="0" charGrid="0" wonggojiFormat="0"/>
+<hp:startNum pageStartsOn="BOTH" page="0" pic="0" tbl="0" equation="0"/>
+<hp:visibility hideFirstHeader="0" hideFirstFooter="0" hideFirstMasterPage="0" border="SHOW_ALL" fill="SHOW_ALL" hideFirstPageNum="0" hideFirstEmptyLine="0" showLineNumber="0"/>
+<hp:lineNumberShape restartType="0" countBy="0" distance="0" startNumber="0"/>
+<hp:pagePr landscape="WIDELY" width="59528" height="84188" gutterType="LEFT_ONLY">
+<hp:margin header="4167" footer="3033" gutter="0" left="7200" right="7200" top="3600" bottom="3600"/>
+</hp:pagePr>
+<hp:footNotePr>
+<hp:autoNumFormat type="DIGIT" userChar="" prefixChar="" suffixChar=")" supscript="0"/>
+<hp:noteLine length="-1" type="SOLID" width="0.12 mm" color="#000000"/>
+<hp:noteSpacing betweenNotes="283" belowLine="567" aboveLine="850"/>
+<hp:numbering type="CONTINUOUS" newNum="1"/>
+<hp:placement place="EACH_COLUMN" beneathText="0"/>
+</hp:footNotePr>
+<hp:endNotePr>
+<hp:autoNumFormat type="DIGIT" userChar="" prefixChar="" suffixChar=")" supscript="0"/>
+<hp:noteLine length="12280" type="SOLID" width="0.12 mm" color="#000000"/>
+<hp:noteSpacing betweenNotes="0" belowLine="567" aboveLine="224"/>
+<hp:numbering type="CONTINUOUS" newNum="1"/>
+<hp:placement place="END_OF_DOCUMENT" beneathText="0"/>
+</hp:endNotePr>
+<hp:pageBorderFill type="BOTH" borderFillIDRef="7" textBorder="PAPER" headerInside="0" footerInside="0" fillArea="PAPER">
+<hp:offset left="1417" right="1417" top="1417" bottom="1417"/>
+</hp:pageBorderFill>
+<hp:pageBorderFill type="EVEN" borderFillIDRef="1" textBorder="PAPER" headerInside="0" footerInside="0" fillArea="PAPER">
+<hp:offset left="1417" right="1417" top="1417" bottom="1417"/>
+</hp:pageBorderFill>
+<hp:pageBorderFill type="ODD" borderFillIDRef="1" textBorder="PAPER" headerInside="0" footerInside="0" fillArea="PAPER">
+<hp:offset left="1417" right="1417" top="1417" bottom="1417"/>
+</hp:pageBorderFill>
+</hp:secPr>
+<hp:ctrl>
+<hp:colPr id="" type="NEWSPAPER" layout="LEFT" colCount="1" sameSz="1" sameGap="0"/>
+</hp:ctrl>
+</hp:run>
+<hp:run charPrIDRef="1">
+<hp:ctrl>
+<hp:header id="43" applyPageType="EVEN">
+<hp:subList id="" textDirection="HORIZONTAL" lineWrap="BREAK" vertAlign="TOP" linkListIDRef="0" linkListNextIDRef="0" textWidth="45128" textHeight="4167" hasTextRef="0" hasNumRef="0">
+<hp:p id="4" paraPrIDRef="22" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="30">
+<hp:t>
+ᄒᆞᆫ글 문서 파일 형식 5.0
+</hp:t>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="0" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="0" horzsize="45128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+</hp:subList>
+</hp:header>
+</hp:ctrl>
+<hp:ctrl>
+<hp:header id="41" applyPageType="ODD">
+<hp:subList id="" textDirection="HORIZONTAL" lineWrap="BREAK" vertAlign="TOP" linkListIDRef="0" linkListNextIDRef="0" textWidth="45128" textHeight="4167" hasTextRef="0" hasNumRef="0">
+<hp:p id="5" paraPrIDRef="22" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="29">
+<hp:t>
+<hp:tab width="33584" leader="0" type="2"/>
+</hp:t>
+</hp:run>
+<hp:run charPrIDRef="30">
+<hp:t>
+ᄒᆞᆫ글 문서 파일 형식 5.0
+</hp:t>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="0" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="0" horzsize="45128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+</hp:subList>
+</hp:header>
+</hp:ctrl>
+<hp:ctrl>
+<hp:newNum num="1" numType="PAGE"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="0" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="0" horzsize="45128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="7" paraPrIDRef="5" styleIDRef="17" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="27">
+<hp:ctrl>
+<hp:colPr id="" type="NEWSPAPER" layout="LEFT" colCount="1" sameSz="1" sameGap="0"/>
+</hp:ctrl>
+<hp:t>
+차 례
+</hp:t>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="1000" vertsize="2200" textheight="2200" baseline="1870" spacing="1320" horzpos="0" horzsize="45128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="8" paraPrIDRef="65" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="1">
+<hp:ctrl>
+<hp:fieldBegin id="1950637038" type="CROSSREF" name="" editable="1" dirty="0">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+TableOfContents:set:140:ContentsMake:uint:17 ContentsStyles:wstring:0: ContentsLevel:int:5 ContentsAutoTabRight:int:0 ContentsLeader:int:3 ContentsHyperlink:bool:1
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="4520" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="0" horzsize="45128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="9" paraPrIDRef="66" styleIDRef="18" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="5">
+<hp:ctrl>
+<hp:fieldBegin id="1950637321" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989673;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+저작권
+<hp:tab width="39076" leader="3" type="2"/>
+1
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637321"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="8120" vertsize="1300" textheight="1300" baseline="1105" spacing="780" horzpos="500" horzsize="43128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="10" paraPrIDRef="66" styleIDRef="18" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="5">
+<hp:ctrl>
+<hp:fieldBegin id="1950637322" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989674;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+본 문서에 대하여...
+<hp:tab width="32416" leader="3" type="2"/>
+2
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637322"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="12700" vertsize="1300" textheight="1300" baseline="1105" spacing="780" horzpos="500" horzsize="43128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="11" paraPrIDRef="66" styleIDRef="18" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="5">
+<hp:ctrl>
+<hp:fieldBegin id="1950637323" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989675;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+I. 글 5.0 파일 구조
+<hp:tab width="31044" leader="3" type="2"/>
+3
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637323"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="17280" vertsize="1300" textheight="1300" baseline="1105" spacing="780" horzpos="500" horzsize="43128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="12" paraPrIDRef="10" styleIDRef="19" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="6">
+<hp:ctrl>
+<hp:fieldBegin id="1950637324" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989676;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+1. 개요
+<hp:tab width="38016" leader="3" type="2"/>
+5
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637324"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="20860" vertsize="1200" textheight="1200" baseline="1020" spacing="720" horzpos="1500" horzsize="42128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="13" paraPrIDRef="10" styleIDRef="19" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="6">
+<hp:ctrl>
+<hp:fieldBegin id="1950637325" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989677;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+2. 자료형 설명
+<hp:tab width="34328" leader="3" type="2"/>
+6
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637325"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="24280" vertsize="1200" textheight="1200" baseline="1020" spacing="720" horzpos="1500" horzsize="42128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="14" paraPrIDRef="10" styleIDRef="19" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="6">
+<hp:ctrl>
+<hp:fieldBegin id="1950637326" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989678;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+3. 글 파일 구조
+<hp:tab width="32736" leader="3" type="2"/>
+7
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637326"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="27700" vertsize="1200" textheight="1200" baseline="1020" spacing="720" horzpos="1500" horzsize="42128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="15" paraPrIDRef="11" styleIDRef="20" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637327" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989679;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+3.1. 글 파일 구조 요약
+<hp:tab width="30380" leader="3" type="2"/>
+7
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637327"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="30620" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="2500" horzsize="41128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="16" paraPrIDRef="11" styleIDRef="20" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637328" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989680;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+3.2. 스토리지 별 저장 정보
+<hp:tab width="29056" leader="3" type="2"/>
+7
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637328"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="32720" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="2500" horzsize="41128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="17" paraPrIDRef="16" styleIDRef="21" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637329" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989681;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+3.2.1. 파일 인식 정보
+<hp:tab width="30840" leader="3" type="2"/>
+7
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637329"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="34820" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="3500" horzsize="40128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="18" paraPrIDRef="16" styleIDRef="21" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637330" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989682;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+3.2.2. 문서 정보
+<hp:tab width="33036" leader="3" type="2"/>
+8
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637330"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="36920" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="3500" horzsize="40128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="19" paraPrIDRef="16" styleIDRef="21" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637331" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989683;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+3.2.3. 본문
+<hp:tab width="35232" leader="3" type="2"/>
+9
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637331"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="39020" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="3500" horzsize="40128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="20" paraPrIDRef="16" styleIDRef="21" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637332" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989684;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+3.2.4. 문서 요약
+<hp:tab width="32544" leader="3" type="2"/>
+12
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637332"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="41120" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="3500" horzsize="40128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="21" paraPrIDRef="16" styleIDRef="21" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637333" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989685;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+3.2.5. 바이너리 데이터
+<hp:tab width="29928" leader="3" type="2"/>
+12
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637333"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="43220" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="3500" horzsize="40128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="22" paraPrIDRef="16" styleIDRef="21" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637334" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989686;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+3.2.6. 미리보기 텍스트
+<hp:tab width="29928" leader="3" type="2"/>
+12
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637334"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="45320" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="3500" horzsize="40128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="23" paraPrIDRef="16" styleIDRef="21" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637335" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989687;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+3.2.7. 미리보기 이미지
+<hp:tab width="29928" leader="3" type="2"/>
+13
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637335"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="47420" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="3500" horzsize="40128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="24" paraPrIDRef="16" styleIDRef="21" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637336" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989688;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+3.2.8. 문서 옵션
+<hp:tab width="32544" leader="3" type="2"/>
+13
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637336"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="49520" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="3500" horzsize="40128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="25" paraPrIDRef="16" styleIDRef="21" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637337" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989689;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+3.2.9. 스크립트
+<hp:tab width="32996" leader="3" type="2"/>
+13
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637337"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="51620" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="3500" horzsize="40128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="26" paraPrIDRef="16" styleIDRef="21" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637338" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989690;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+3.2.10. XML 템플릿
+<hp:tab width="31108" leader="3" type="2"/>
+13
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637338"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="53720" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="3500" horzsize="40128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="27" paraPrIDRef="16" styleIDRef="21" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637339" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989691;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+3.2.11. 문서 이력 관리
+<hp:tab width="29856" leader="3" type="2"/>
+14
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637339"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="55820" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="3500" horzsize="40128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="28" paraPrIDRef="16" styleIDRef="21" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637340" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#870020287;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+3.2.12. 참고문헌
+<hp:tab width="32504" leader="3" type="2"/>
+15
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637340"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="57920" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="3500" horzsize="40128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="29" paraPrIDRef="67" styleIDRef="19" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="6">
+<hp:ctrl>
+<hp:fieldBegin id="1950637341" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989692;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+4. 데이터 레코드
+<hp:tab width="32688" leader="3" type="2"/>
+16
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637341"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="60520" vertsize="1200" textheight="1200" baseline="1020" spacing="720" horzpos="1500" horzsize="42128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="30" paraPrIDRef="11" styleIDRef="20" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637342" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989693;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+4.1. 데이터 레코드 구조
+<hp:tab width="30340" leader="3" type="2"/>
+16
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637342"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="63440" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="2500" horzsize="41128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="31" paraPrIDRef="11" styleIDRef="20" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1951362676" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989694;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+4.2. ’문서 정보’의 데이터 레코드
+<hp:tab width="26752" leader="3" type="2"/>
+17
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1951362676"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="65540" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="2500" horzsize="41128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="32" paraPrIDRef="16" styleIDRef="21" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637344" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989695;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+4.2.1. 문서 속성
+<hp:tab width="32544" leader="3" type="2"/>
+17
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637344"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="500" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="3500" horzsize="40128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="33" paraPrIDRef="16" styleIDRef="21" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637345" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989696;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+4.2.2. 아이디 매핑 헤더
+<hp:tab width="29476" leader="3" type="2"/>
+17
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637345"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="2600" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="3500" horzsize="40128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="34" paraPrIDRef="16" styleIDRef="21" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637346" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989697;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+4.2.3. 바이너리 데이터
+<hp:tab width="29928" leader="3" type="2"/>
+18
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637346"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="4700" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="3500" horzsize="40128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="35" paraPrIDRef="16" styleIDRef="21" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637347" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989698;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+4.2.4. 글꼴
+<hp:tab width="34740" leader="3" type="2"/>
+20
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637347"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="6800" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="3500" horzsize="40128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="36" paraPrIDRef="16" styleIDRef="21" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637348" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989699;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+4.2.5. 테두리/배경
+<hp:tab width="31788" leader="3" type="2"/>
+21
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637348"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="8900" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="3500" horzsize="40128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="37" paraPrIDRef="16" styleIDRef="21" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637349" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989700;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+4.2.6. 글자 모양
+<hp:tab width="32544" leader="3" type="2"/>
+24
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637349"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="11000" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="3500" horzsize="40128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="38" paraPrIDRef="16" styleIDRef="21" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637350" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989701;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+4.2.7. 탭 정의
+<hp:tab width="33416" leader="3" type="2"/>
+26
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637350"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="13100" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="3500" horzsize="40128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="39" paraPrIDRef="16" styleIDRef="21" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637351" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989702;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+4.2.8. 문단 번호
+<hp:tab width="32544" leader="3" type="2"/>
+26
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637351"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="15200" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="3500" horzsize="40128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="40" paraPrIDRef="16" styleIDRef="21" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637352" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989703;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+4.2.9. 글머리표
+<hp:tab width="32996" leader="3" type="2"/>
+27
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637352"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="17300" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="3500" horzsize="40128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="41" paraPrIDRef="16" styleIDRef="21" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637353" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989704;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+4.2.10. 문단 모양
+<hp:tab width="32052" leader="3" type="2"/>
+28
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637353"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="19400" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="3500" horzsize="40128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="42" paraPrIDRef="16" styleIDRef="21" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637354" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989705;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+4.2.11. 스타일(문단 스타일)
+<hp:tab width="28004" leader="3" type="2"/>
+29
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637354"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="21500" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="3500" horzsize="40128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="43" paraPrIDRef="16" styleIDRef="21" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637355" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989706;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+4.2.12. 문서 임의의 데이터
+<hp:tab width="28112" leader="3" type="2"/>
+30
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637355"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="23600" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="3500" horzsize="40128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="44" paraPrIDRef="16" styleIDRef="21" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637356" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989707;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+4.2.13. 배포용 문서 데이터
+<hp:tab width="28112" leader="3" type="2"/>
+31
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637356"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="25700" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="3500" horzsize="40128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="45" paraPrIDRef="16" styleIDRef="21" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637357" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989708;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+4.2.14. 호환 문서
+<hp:tab width="32052" leader="3" type="2"/>
+32
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637357"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="27800" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="3500" horzsize="40128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="46" paraPrIDRef="16" styleIDRef="21" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637358" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989709;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+4.2.15. 레이아웃 호환성
+<hp:tab width="29436" leader="3" type="2"/>
+32
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637358"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="29900" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="3500" horzsize="40128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="47" paraPrIDRef="68" styleIDRef="20" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637359" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989710;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+4.3. ‘본문’의 데이터 레코드
+<hp:tab width="28948" leader="3" type="2"/>
+33
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637359"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="32000" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="2500" horzsize="41128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="48" paraPrIDRef="16" styleIDRef="21" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637360" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989711;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+4.3.1. 문단 헤더 Tag ID : HWPTAG_PARA_HEADER
+<hp:tab width="17376" leader="3" type="2"/>
+33
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637360"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="34100" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="3500" horzsize="40128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="49" paraPrIDRef="16" styleIDRef="21" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637361" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989712;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+4.3.2. 문단의 텍스트
+<hp:tab width="30800" leader="3" type="2"/>
+34
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637361"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="36200" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="3500" horzsize="40128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="50" paraPrIDRef="16" styleIDRef="21" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637362" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989713;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+4.3.3. 문단의 글자 모양
+<hp:tab width="29476" leader="3" type="2"/>
+34
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637362"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="38300" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="3500" horzsize="40128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="51" paraPrIDRef="16" styleIDRef="21" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637363" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989714;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+4.3.4. 문단의 레이아웃
+<hp:tab width="29928" leader="3" type="2"/>
+35
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637363"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="40400" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="3500" horzsize="40128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="52" paraPrIDRef="16" styleIDRef="21" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637364" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989715;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+4.3.5. 문단의 영역 태그
+<hp:tab width="29476" leader="3" type="2"/>
+35
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637364"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="42500" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="3500" horzsize="40128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="53" paraPrIDRef="16" styleIDRef="21" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637365" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989716;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+4.3.6. 컨트롤 헤더
+<hp:tab width="31672" leader="3" type="2"/>
+35
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637365"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="44600" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="3500" horzsize="40128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="54" paraPrIDRef="16" styleIDRef="21" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1951362677" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989717;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+4.3.7. 문단 리스트 헤더
+<hp:tab width="29476" leader="3" type="2"/>
+36
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1951362677"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="46700" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="3500" horzsize="40128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="55" paraPrIDRef="16" styleIDRef="21" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637367" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989718;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+4.3.8. 컨트롤 임의의 데이터
+<hp:tab width="27732" leader="3" type="2"/>
+36
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637367"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="48800" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="3500" horzsize="40128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="56" paraPrIDRef="16" styleIDRef="21" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637368" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989719;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+4.3.9. 개체 공통 속성을 포함하는 컨트롤(개체 컨트롤)
+<hp:tab width="17096" leader="3" type="2"/>
+36
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637368"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="50900" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="3500" horzsize="40128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="57" paraPrIDRef="17" styleIDRef="22" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637369" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#876892273;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+4.3.9.1. 표 개체
+<hp:tab width="31680" leader="3" type="2"/>
+39
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637369"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="53000" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="4500" horzsize="39128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="58" paraPrIDRef="17" styleIDRef="22" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637370" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989721;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+4.3.9.2. 그리기 개체(선, 사각형, 타원, 호, 다각형, 곡선)
+<hp:tab width="15492" leader="3" type="2"/>
+40
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637370"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="55100" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="4500" horzsize="39128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="59" paraPrIDRef="17" styleIDRef="22" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637371" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989722;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+4.3.9.2.1. 개체 요소
+<hp:tab width="30072" leader="3" type="2"/>
+40
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637371"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="57200" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="4500" horzsize="39128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="60" paraPrIDRef="17" styleIDRef="22" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637372" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989723;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+4.3.9.2.2. 선 개체
+<hp:tab width="30944" leader="3" type="2"/>
+42
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637372"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="59300" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="4500" horzsize="39128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="61" paraPrIDRef="17" styleIDRef="22" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637373" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989724;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+4.3.9.2.3. 사각형 개체
+<hp:tab width="29200" leader="3" type="2"/>
+43
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637373"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="61400" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="4500" horzsize="39128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="62" paraPrIDRef="17" styleIDRef="22" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637374" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989725;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+4.3.9.2.4. 타원 개체
+<hp:tab width="30072" leader="3" type="2"/>
+43
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637374"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="63500" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="4500" horzsize="39128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="63" paraPrIDRef="17" styleIDRef="22" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637375" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989726;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+4.3.9.2.5. 다각형 개체
+<hp:tab width="29200" leader="3" type="2"/>
+45
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637375"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="65600" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="4500" horzsize="39128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="64" paraPrIDRef="17" styleIDRef="22" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637376" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989727;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+4.3.9.2.6. 호 개체
+<hp:tab width="30944" leader="3" type="2"/>
+45
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637376"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="67700" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="4500" horzsize="39128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="65" paraPrIDRef="17" styleIDRef="22" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637377" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989728;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+4.3.9.2.7. 곡선 개체
+<hp:tab width="30072" leader="3" type="2"/>
+45
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637377"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="500" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="4500" horzsize="39128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="66" paraPrIDRef="17" styleIDRef="22" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637378" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989729;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+4.3.9.3. 글 수식 개체
+<hp:tab width="28612" leader="3" type="2"/>
+46
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637378"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="2600" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="4500" horzsize="39128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="67" paraPrIDRef="17" styleIDRef="22" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637379" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989730;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+4.3.9.4. 그림 개체(HWPTAG_SHAPE_COMPONENT_PICTURE)
+<hp:tab width="12900" leader="3" type="2"/>
+46
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637379"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="4700" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="4500" horzsize="39128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="68" paraPrIDRef="17" styleIDRef="22" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637380" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#844974508;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+4.3.9.5. OLE 개체(HWPTAG_SHAPE_COMPONENT_OLE)
+<hp:tab width="15024" leader="3" type="2"/>
+49
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637380"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="6800" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="4500" horzsize="39128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="69" paraPrIDRef="17" styleIDRef="22" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637381" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#870697040;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+4.3.9.6. 차트 개체
+<hp:tab width="30808" leader="3" type="2"/>
+50
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637381"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="8900" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="4500" horzsize="39128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="70" paraPrIDRef="17" styleIDRef="22" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637382" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#870697037;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+4.3.9.7. 묶음 개체(HWPTAG_SHAPE_COMPONENT_CONTAINER)
+<hp:tab width="11624" leader="3" type="2"/>
+51
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637382"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="11000" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="4500" horzsize="39128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="71" paraPrIDRef="17" styleIDRef="22" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637383" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#844969724;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+4.3.9.8. 동영상 개체(HWPTAG_VIDEO_TDATA)
+<hp:tab width="19244" leader="3" type="2"/>
+51
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637383"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="13100" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="4500" horzsize="39128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="72" paraPrIDRef="16" styleIDRef="21" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637384" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#844969715;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+4.3.10. 개체 이외의 컨트롤
+<hp:tab width="28112" leader="3" type="2"/>
+52
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637384"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="15200" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="3500" horzsize="40128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="73" paraPrIDRef="17" styleIDRef="22" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637385" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#844969736;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+4.3.10.1. 구역 정의
+<hp:tab width="30316" leader="3" type="2"/>
+53
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637385"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="17300" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="4500" horzsize="39128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="74" paraPrIDRef="17" styleIDRef="22" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637386" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989735;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+4.3.10.1.1. 용지 설정
+<hp:tab width="29580" leader="3" type="2"/>
+54
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637386"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="19400" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="4500" horzsize="39128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="75" paraPrIDRef="17" styleIDRef="22" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637387" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989736;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+4.3.10.1.2. 각주/미주 모양
+<hp:tab width="27500" leader="3" type="2"/>
+55
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637387"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="21500" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="4500" horzsize="39128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="76" paraPrIDRef="17" styleIDRef="22" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637388" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989737;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+4.3.10.1.3. 쪽 테두리/배경
+<hp:tab width="27500" leader="3" type="2"/>
+56
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637388"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="23600" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="4500" horzsize="39128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="77" paraPrIDRef="17" styleIDRef="22" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637389" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989738;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+4.3.10.2. 단 정의
+<hp:tab width="31188" leader="3" type="2"/>
+56
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637389"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="25700" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="4500" horzsize="39128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="78" paraPrIDRef="17" styleIDRef="22" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637390" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989739;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+4.3.10.3. 머리말/꼬리말
+<hp:tab width="28688" leader="3" type="2"/>
+57
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637390"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="27800" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="4500" horzsize="39128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="79" paraPrIDRef="17" styleIDRef="22" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637391" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989740;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+4.3.10.4. 각주/미주
+<hp:tab width="30432" leader="3" type="2"/>
+57
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637391"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="29900" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="4500" horzsize="39128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="80" paraPrIDRef="17" styleIDRef="22" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637392" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989741;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+4.3.10.5. 자동 번호
+<hp:tab width="30316" leader="3" type="2"/>
+58
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637392"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="32000" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="4500" horzsize="39128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="81" paraPrIDRef="17" styleIDRef="22" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637393" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989742;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+4.3.10.6. 새 번호 지정
+<hp:tab width="28992" leader="3" type="2"/>
+58
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637393"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="34100" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="4500" horzsize="39128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="82" paraPrIDRef="17" styleIDRef="22" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637394" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989743;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+4.3.10.7. 감추기
+<hp:tab width="31640" leader="3" type="2"/>
+58
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637394"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="36200" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="4500" horzsize="39128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="83" paraPrIDRef="17" styleIDRef="22" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637395" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989744;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+4.3.10.8. 홀/짝수 조정
+<hp:tab width="29108" leader="3" type="2"/>
+59
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637395"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="38300" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="4500" horzsize="39128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="84" paraPrIDRef="17" styleIDRef="22" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637396" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989745;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+4.3.10.9. 쪽 번호 위치
+<hp:tab width="28992" leader="3" type="2"/>
+59
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637396"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="40400" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="4500" horzsize="39128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="85" paraPrIDRef="17" styleIDRef="22" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637397" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989746;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+4.3.10.10. 찾아보기 표식
+<hp:tab width="28080" leader="3" type="2"/>
+59
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637397"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="42500" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="4500" horzsize="39128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="86" paraPrIDRef="17" styleIDRef="22" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637398" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989747;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+4.3.10.11. 책갈피
+<hp:tab width="31148" leader="3" type="2"/>
+60
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637398"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="44600" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="4500" horzsize="39128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="87" paraPrIDRef="17" styleIDRef="22" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637399" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989748;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+4.3.10.12. 글자 겹침
+<hp:tab width="29824" leader="3" type="2"/>
+60
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637399"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="46700" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="4500" horzsize="39128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="88" paraPrIDRef="17" styleIDRef="22" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637400" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989749;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+4.3.10.13. 덧말
+<hp:tab width="32020" leader="3" type="2"/>
+60
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637400"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="48800" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="4500" horzsize="39128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="89" paraPrIDRef="17" styleIDRef="22" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637401" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989750;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+4.3.10.14. 숨은 설명
+<hp:tab width="29824" leader="3" type="2"/>
+60
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637401"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="50900" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="4500" horzsize="39128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="90" paraPrIDRef="17" styleIDRef="22" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637402" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989751;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+4.3.10.15. 필드 시작
+<hp:tab width="29824" leader="3" type="2"/>
+61
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637402"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="53000" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="4500" horzsize="39128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="91" paraPrIDRef="68" styleIDRef="20" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637403" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989752;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+4.4. 문서 이력 관리
+<hp:tab width="32084" leader="3" type="2"/>
+62
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637403"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="55100" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="2500" horzsize="41128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="92" paraPrIDRef="16" styleIDRef="21" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637404" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989753;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+4.4.1. 문서 이력 관리란
+<hp:tab width="29476" leader="3" type="2"/>
+62
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637404"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="57200" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="3500" horzsize="40128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="93" paraPrIDRef="16" styleIDRef="21" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637405" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989754;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+4.4.2. 문서 이력 관리 레코드 정보
+<hp:tab width="25084" leader="3" type="2"/>
+62
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637405"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="59300" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="3500" horzsize="40128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="94" paraPrIDRef="17" styleIDRef="22" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637406" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989755;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+4.4.2.1. 히스토리 아이템 정보 시작
+<hp:tab width="23800" leader="3" type="2"/>
+62
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637406"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="61400" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="4500" horzsize="39128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="95" paraPrIDRef="17" styleIDRef="22" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637407" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989756;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+4.4.2.2. 히스토리 아이템 정보 끝
+<hp:tab width="24672" leader="3" type="2"/>
+62
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637407"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="63500" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="4500" horzsize="39128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="96" paraPrIDRef="17" styleIDRef="22" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637408" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989757;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+4.4.2.3. 히스토리 아이템 버전
+<hp:tab width="25996" leader="3" type="2"/>
+63
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637408"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="65600" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="4500" horzsize="39128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="97" paraPrIDRef="17" styleIDRef="22" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637409" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989758;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+4.4.2.4. 히스토리 날짜
+<hp:tab width="29064" leader="3" type="2"/>
+63
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637409"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="67700" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="4500" horzsize="39128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="98" paraPrIDRef="17" styleIDRef="22" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637410" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989759;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+4.4.2.5. 히스토리 작성자
+<hp:tab width="28192" leader="3" type="2"/>
+63
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637410"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="500" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="4500" horzsize="39128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="99" paraPrIDRef="17" styleIDRef="22" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637411" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989760;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+4.4.2.6. 히스토리 설명
+<hp:tab width="29064" leader="3" type="2"/>
+63
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637411"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="2600" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="4500" horzsize="39128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="100" paraPrIDRef="17" styleIDRef="22" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637412" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989761;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+4.4.2.7. 비교 정보
+<hp:tab width="30808" leader="3" type="2"/>
+63
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637412"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="4700" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="4500" horzsize="39128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="101" paraPrIDRef="17" styleIDRef="22" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="12">
+<hp:ctrl>
+<hp:fieldBegin id="1950637413" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#645989762;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+4.4.2.8. 가장 마지막 최근 문서
+<hp:tab width="25544" leader="3" type="2"/>
+63
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637413"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="6800" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="4500" horzsize="39128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="102" paraPrIDRef="9" styleIDRef="18" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="5">
+<hp:ctrl>
+<hp:fieldBegin id="1950637414" type="HYPERLINK" name="" editable="0" dirty="1">
+<hp:parameters cnt="1" name="">
+<hp:stringParam name="Command">
+?#647040728;0;1;0;
+</hp:stringParam>
+</hp:parameters>
+</hp:fieldBegin>
+</hp:ctrl>
+<hp:t>
+변경 사항 이력
+<hp:tab width="33856" leader="3" type="2"/>
+65
+</hp:t>
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637414"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="10400" vertsize="1300" textheight="1300" baseline="1105" spacing="780" horzpos="500" horzsize="43128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="103" paraPrIDRef="65" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="1">
+<hp:ctrl>
+<hp:fieldEnd beginIDRef="1950637038"/>
+</hp:ctrl>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="12980" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="0" horzsize="45128" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+</hs:sec>

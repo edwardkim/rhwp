@@ -1,0 +1,48 @@
+{
+  "id": "SD72",
+  "tier": 3,
+  "title": "계획 스키마 확보",
+  "input": "samples/table-001.hwp",
+  "instructions": "run 계획서 JSON Schema 를 plan-schema.json 으로 받아 제출하라. 계획을 쓰기 전에 문법 계약을 읽는 것이 왕복 실패를 줄인다. 힌트: rhwp export-plan-schema -o plan-schema.json.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "plan-schema.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "스키마 산출",
+      "op": "file_exists",
+      "file": "plan-schema.json",
+      "minBytes": 256
+    },
+    {
+      "name": "원본과 다름 (무편집 복사 거부 — 판별력)",
+      "op": "differs_from_input",
+      "file": "plan-schema.json"
+    },
+    {
+      "name": "계획 스키마 dialect",
+      "op": "json_value_eq",
+      "file": "plan-schema.json",
+      "path": "dialect",
+      "value": "https://json-schema.org/draft/2020-12/schema"
+    },
+    {
+      "name": "planSchemaVersion",
+      "op": "json_value_eq",
+      "file": "plan-schema.json",
+      "path": "planSchemaVersion",
+      "value": "1.1"
+    },
+    {
+      "name": "schema $ref",
+      "op": "json_value_eq",
+      "file": "plan-schema.json",
+      "path": "schema.$ref",
+      "value": "#/$defs/Plan"
+    }
+  ],
+  "axis": "조사"
+}

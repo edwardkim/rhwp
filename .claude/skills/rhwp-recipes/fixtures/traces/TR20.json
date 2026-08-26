@@ -1,0 +1,11 @@
+{
+  "id": "TR20",
+  "recipe": "03",
+  "transcript": "T03-B06",
+  "argvLine": "rhwp search output/pii-demo_공개.hwp \"010-1234-5678\" --json",
+  "usesExistingCommand": true,
+  "notGym": true,
+  "noNewCli": true,
+  "sourceFile": "mydocs/manual/recipes/03_redact_before_sharing.md",
+  "fabricatedLive": false
+}

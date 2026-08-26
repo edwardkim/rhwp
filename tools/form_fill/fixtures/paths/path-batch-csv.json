@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.form_fill.path_contract.v1",
+  "claim": "M-fill",
+  "generator": "tools/form_fill/fatten_form_fill.py",
+  "existingCliOnly": true,
+  "id": "path-batch-csv",
+  "axis": "batch-fill",
+  "title": "batch fill CSV",
+  "why": "확장자로 jsonl/csv 판별.",
+  "argv": [
+    "batch",
+    "fill",
+    "--form",
+    "samples/field-01.hwp",
+    "--data",
+    "명단.csv",
+    "--out-dir",
+    "out/filled",
+    "--name-field",
+    "작성자",
+    "--json"
+  ],
+  "exit": 0,
+  "writesFile": true
+}

@@ -1,0 +1,15 @@
+{
+  "source": "공문.hwp",
+  "find": "없는문자열XYZ",
+  "replace": "X",
+  "caseSensitive": true,
+  "dryRun": false,
+  "replacedCount": 0,
+  "schemaVersion": "1.0",
+  "_skillMeta": {
+    "exit": 0,
+    "branch": "no-output",
+    "outputKept": false,
+    "layer": "edit-replace-text"
+  }
+}

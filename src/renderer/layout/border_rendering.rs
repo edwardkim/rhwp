@@ -4,7 +4,31 @@ use super::super::render_tree::*;
 use super::super::style_resolver::ResolvedBorderStyle;
 use super::super::{LineStyle, StrokeDash};
 use crate::model::style::{BorderLine, BorderLineType, CenterLine};
-use crate::model::table::Table;
+use crate::model::table::{Table, MAX_TABLE_GRID_CELLS};
+
+/// [#4287] `build_row_col_x` 가 `row_count × col_count` 2D 그리드를 예약하지 않는 이유.
+///
+/// 파일에서 온 `u16` 행/열 수를 그대로 곱하면 65535×65535 `Option<f64>` (~68GB) 를
+/// 예약해 `handle_alloc_error` / wasm 트랩으로 죽는다. `Table::rebuild_grid()` 와
+/// 같은 `MAX_TABLE_GRID_CELLS` 를 넘기면 할당 없이 오류를 돌린다.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) struct TableGridTooLarge {
+    pub row_count: usize,
+    pub col_count: usize,
+}
+
+impl TableGridTooLarge {
+    fn check(row_count: usize, col_count: usize) -> Result<(), Self> {
+        if row_count.saturating_mul(col_count) > MAX_TABLE_GRID_CELLS {
+            Err(Self {
+                row_count,
+                col_count,
+            })
+        } else {
+            Ok(())
+        }
+    }
+}
 
 fn merge_border(a: &BorderLine, b: &BorderLine) -> BorderLine {
     if a.line_type == BorderLineType::None {
@@ -60,8 +84,9 @@ pub(crate) fn build_row_col_x(
     cell_spacing: f64,
     dpi: f64,
     width_scale: f64,
-) -> Vec<Vec<f64>> {
+) -> Result<Vec<Vec<f64>>, TableGridTooLarge> {
     use super::super::hwpunit_to_px;
+    TableGridTooLarge::check(row_count, col_count)?;
     // 셀 너비 그리드 구축 (O(cells) 탐색 1회)
     let mut cell_width_grid = vec![vec![None::<f64>; col_count]; row_count];
     for cell in &table.cells {
@@ -80,16 +105,89 @@ pub(crate) fn build_row_col_x(
             base_rx[c] + col_widths[c] + if c + 1 < col_count { cell_spacing } else { 0.0 };
     }
 
-    if table.common.treat_as_char {
-        return vec![base_rx; row_count];
-    }
-
     let target_total = if table.common.width > 0 {
         hwpunit_to_px(table.common.width as i32, dpi) * width_scale
             + cell_spacing * col_count.saturating_sub(1) as f64
     } else {
         base_rx.last().copied().unwrap_or(0.0)
     };
+
+    // [Issue #5590] 행마다 다른 열 구획을 선언한 표.
+    //
+    // 전역 열 grid 하나로 모든 행을 그리면, 행별 선언 구획이 서로 어긋나는 표에서
+    // 어느 행인가는 반드시 진다. 실제로 00288(약장 배치표)은 **모든 행의 셀 폭 합이
+    // 표 폭과 정확히 같은데도** 마지막 열이 1,006HU(13.4px) 깎여 격자가 어긋났다 —
+    // 전역 grid 가 앞 열들을 다른 행 기준으로 풀고 남은 폭을 마지막 열에 떠넘긴 결과다.
+    //
+    // 그 행의 셀이 (1) 0열부터 빈틈없이 (2) 마지막 열까지 덮고 (3) 선언 폭 합이 표 폭과
+    // 일치하면, 그 행은 자기 구획을 스스로 완결한 것이다. 이때는 전역 grid 대신 선언
+    // 구획을 그대로 쓴다. 셋 중 하나라도 어긋나는 행은 종전대로 전역 grid 를 따른다.
+    //
+    // 아래 Studio 명시 힌트(`local_resize_rows`) 경로는 `local_resize_cell_widths` 라는
+    // 별도 폭 원본을 쓰므로 건드리지 않는다.
+    // 전역 grid 가 표 선언 폭과 이미 맞는 표는 건드리지 않는다. 그런 표에서는 행별
+    // 구획을 다시 세울 근거가 없고(한컴 정합 픽스처 form-002 의 부분 가로선이 짧아진다),
+    // 이 결함은 전역 grid 가 선언 폭과 어긋난 표에서만 나타난다.
+    let global_grid_matches_declared =
+        (base_rx.last().copied().unwrap_or(0.0) - target_total).abs() <= 0.5;
+    if table.local_resize_rows.is_empty() && !global_grid_matches_declared {
+        let mut declared = vec![base_rx.clone(); row_count];
+        let mut any_declared_row = false;
+        for (r, row_x) in declared.iter_mut().enumerate().take(row_count) {
+            let Some(candidate) = declared_row_col_x(
+                table,
+                r,
+                col_count,
+                cell_spacing,
+                dpi,
+                width_scale,
+                target_total,
+            ) else {
+                continue;
+            };
+            // 전역 grid 와 사실상 같은 행은 그대로 둔다. 누적 순서만 다른 값으로
+            // 갈아끼우면 부동소수 끝자리가 흔들려 SVG 골든이 의미 없이 깨진다.
+            if candidate
+                .iter()
+                .zip(base_rx.iter())
+                .all(|(a, b)| (a - b).abs() <= 0.01)
+            {
+                continue;
+            }
+            any_declared_row = true;
+            *row_x = candidate;
+        }
+        if any_declared_row {
+            // [#5720] 선언 완결 행이 있는 표에서, 전역 grid 폴백으로 남은 행
+            // (세로 병합에 덮인 불완전 행 등)의 경계가 표 선언 폭을 넘으면 선언
+            // 폭으로 비례 축소한다. 행별 선언이 서로 어긋나는 표는 병합 셀 제약이
+            // 모순이라 전역 grid 의 결핍 보정("뒤쪽 열 확장")이 누적돼 선언 폭을
+            // 넘는데(2734559: 638.7px 선언 → 726.9px, 용지 밖 10.7px), 한글 2022
+            // 는 표를 선언 폭 그대로 그린다(COM PDF 실측 76.4~716.7px). 선언 완결
+            // 행은 그대로 두고 폴백 행만 줄여, 표 상자 폭 판정(#5590)이 선언 폭에
+            // 수렴하게 한다.
+            let base_total = base_rx.last().copied().unwrap_or(0.0);
+            if target_total > 0.0 && base_total > target_total + 0.5 {
+                let scale = target_total / base_total;
+                for row_x in declared.iter_mut() {
+                    let is_base_fallback = row_x
+                        .iter()
+                        .zip(base_rx.iter())
+                        .all(|(a, b)| (a - b).abs() <= 0.01);
+                    if is_base_fallback {
+                        for x in row_x.iter_mut() {
+                            *x *= scale;
+                        }
+                    }
+                }
+            }
+            return Ok(declared);
+        }
+    }
+
+    if table.common.treat_as_char {
+        return Ok(vec![base_rx; row_count]);
+    }
 
     let inferred_local_resize_rows = table.inferred_local_resize_rows();
     if !table.local_resize_rows.is_empty() || !inferred_local_resize_rows.is_empty() {
@@ -182,7 +280,7 @@ pub(crate) fn build_row_col_x(
                     .any(|(a, b)| (a - b).abs() > 0.01)
             })
         {
-            return row_col_x_from_cells;
+            return Ok(row_col_x_from_cells);
         }
     }
 
@@ -193,7 +291,7 @@ pub(crate) fn build_row_col_x(
         })
     });
     if !has_independent_widths {
-        return vec![base_rx; row_count];
+        return Ok(vec![base_rx; row_count]);
     }
 
     let fallback_w = hwpunit_to_px(1800, dpi);
@@ -213,7 +311,81 @@ pub(crate) fn build_row_col_x(
             row_col_x[r].clone_from_slice(&base_rx);
         }
     }
-    row_col_x
+    Ok(row_col_x)
+}
+
+/// [Issue #5590] 한 행이 자기 열 구획을 스스로 완결했는지 보고, 그렇다면 그 행의 x 경계를 만든다.
+///
+/// 조건 셋을 모두 만족해야 한다.
+/// 1. 그 행에서 시작하는(`row_span == 1`) 셀만으로 0열부터 빈틈없이 이어진다.
+/// 2. 마지막 열까지 덮는다.
+/// 3. 선언 폭 합이 표 폭(`target_total`)과 일치한다.
+///
+/// 병합 셀 안쪽 열 경계는 span 비율로 나눈다 — 그 경계를 쓰는 셀이 이 행에는 없고,
+/// 세로선 그리드가 열 개수를 맞춰야 하기 때문이다(기존 local-resize 경로와 같은 규약).
+#[allow(clippy::too_many_arguments)]
+fn declared_row_col_x(
+    table: &Table,
+    row: usize,
+    col_count: usize,
+    cell_spacing: f64,
+    dpi: f64,
+    width_scale: f64,
+    target_total: f64,
+) -> Option<Vec<f64>> {
+    use super::super::hwpunit_to_px;
+    let mut row_cells: Vec<_> = table
+        .cells
+        .iter()
+        .filter(|cell| cell.row as usize == row && cell.row_span == 1 && cell.width > 0)
+        .collect();
+    if row_cells.is_empty() {
+        return None;
+    }
+    row_cells.sort_by_key(|cell| cell.col);
+
+    let mut candidate = vec![0.0f64; col_count + 1];
+    let mut cursor = 0.0f64;
+    let mut next_col = 0usize;
+    for cell in row_cells {
+        let c = cell.col as usize;
+        let span = cell.col_span.max(1) as usize;
+        let end = c + span;
+        if c != next_col || end > col_count {
+            return None;
+        }
+        candidate[c] = cursor;
+        let cell_w = hwpunit_to_px(cell.width as i32, dpi) * width_scale;
+        for inner_col in c + 1..end {
+            let ratio = (inner_col - c) as f64 / span as f64;
+            candidate[inner_col] = cursor + cell_w * ratio;
+        }
+        cursor += cell_w;
+        candidate[end] = cursor;
+        if end < col_count {
+            cursor += cell_spacing;
+        }
+        next_col = end;
+    }
+    if next_col != col_count {
+        return None;
+    }
+    let mismatch = cursor - target_total;
+    if mismatch.abs() > 0.5 {
+        // [#5720] 행 선언 폭 합이 표 폭과 근소하게(1% 이내) 어긋나는 행도 자기
+        // 구획으로 인정하고 표 폭에 맞춰 비례 정규화한다. 2734559 실측 — 0~18행
+        // 합 634.96px vs 표 638.72px(0.6%): 한글은 이 행들의 구획을 표 전폭으로
+        // 늘려 그린다(COM PDF 세로선 76.4~716.7px). 엄격 일치만 받으면 이 행들이
+        // 모순된 전역 grid 로 떨어져 표가 선언 밖으로 벌어진다.
+        if target_total <= 0.0 || cursor <= 0.0 || mismatch.abs() > target_total * 0.01 {
+            return None;
+        }
+        let scale = target_total / cursor;
+        for x in candidate.iter_mut() {
+            *x *= scale;
+        }
+    }
+    Some(candidate)
 }
 
 /// 셀 테두리를 엣지 그리드에 수집
@@ -268,19 +440,21 @@ pub(crate) fn collect_cell_borders(
 /// 이중선/삼중선의 교차점 렌더링을 깔끔하게 처리한다.
 /// row_col_x: 행별 열 누적 위치 (셀별 독립 너비 지원)
 pub(crate) fn render_edge_borders(
-    tree: &mut PageRenderTree,
+    tree: &mut PageLayoutContext,
     h_edges: &[Vec<Option<BorderLine>>],
     v_edges: &[Vec<Option<BorderLine>>],
     row_col_x: &[Vec<f64>],
     row_y: &[f64],
     table_x: f64,
     table_y: f64,
+    top_clip_y: Option<f64>,
 ) -> Vec<RenderNode> {
     let mut nodes = Vec::new();
     let row_count = if row_y.len() > 1 { row_y.len() - 1 } else { 0 };
 
     // 수평 엣지 렌더링
     for (ri, h_row) in h_edges.iter().enumerate() {
+        let row_node_start = nodes.len();
         let y = table_y + row_y.get(ri).copied().unwrap_or(0.0);
         // 행 경계의 열 위치: 경계 아래 행 (또는 마지막 행) 기준
         let ref_row = ri.min(row_count.saturating_sub(1));
@@ -324,6 +498,11 @@ pub(crate) fn render_edge_borders(
             let x1 = table_x + ref_cx[start];
             let x2 = table_x + ref_cx.get(h_row.len()).copied().unwrap_or(ref_cx[start]);
             nodes.extend(create_border_line_nodes(tree, &sb, x1, y, x2, y));
+        }
+        if ri == 0 {
+            if let Some(clip_y) = top_clip_y {
+                inset_horizontal_border_group_at_top_clip(&mut nodes[row_node_start..], clip_y);
+            }
         }
     }
 
@@ -382,10 +561,48 @@ pub(crate) fn render_edge_borders(
     nodes
 }
 
+/// Keep only a table's physical top-frame paint inside an owning Body clip.
+///
+/// SVG, Web Canvas, and native Canvas all clip a stroke by its painted extent.
+/// A horizontal centreline exactly on the Body top therefore loses half of its
+/// stroke.  Move the complete top-border group by one common delta so compound
+/// borders retain their internal spacing.  The caller passes only the nodes
+/// emitted for row boundary 0; table/cell boxes and every non-table line remain
+/// unchanged.
+fn inset_horizontal_border_group_at_top_clip(nodes: &mut [RenderNode], clip_y: f64) {
+    const PAINT_INSET_EPSILON_PX: f64 = 0.05;
+
+    let painted_top = nodes
+        .iter()
+        .filter_map(|node| match &node.node_type {
+            RenderNodeType::Line(line) if (line.y1 - line.y2).abs() <= 0.01 => {
+                Some(line.y1.min(line.y2) - line.style.width.max(0.0) / 2.0)
+            }
+            _ => None,
+        })
+        .fold(f64::INFINITY, f64::min);
+    if !painted_top.is_finite() || painted_top >= clip_y + PAINT_INSET_EPSILON_PX {
+        return;
+    }
+
+    let delta_y = clip_y + PAINT_INSET_EPSILON_PX - painted_top;
+    for node in nodes {
+        let RenderNodeType::Line(line) = &mut node.node_type else {
+            continue;
+        };
+        if (line.y1 - line.y2).abs() > 0.01 {
+            continue;
+        }
+        line.y1 += delta_y;
+        line.y2 += delta_y;
+        node.bbox.y += delta_y;
+    }
+}
+
 /// 투명 테두리를 빨간색 점선 Line 노드로 생성한다.
 /// 엣지 그리드에서 None 슬롯(투명 테두리)을 찾아 연속 구간을 병합한다.
 pub(crate) fn render_transparent_borders(
-    tree: &mut PageRenderTree,
+    tree: &mut PageLayoutContext,
     h_edges: &[Vec<Option<BorderLine>>],
     v_edges: &[Vec<Option<BorderLine>>],
     row_col_x: &[Vec<f64>],
@@ -478,7 +695,7 @@ pub(crate) fn render_transparent_borders(
 /// 테두리선 Line 노드 생성 (이중선/삼중선 지원)
 /// None 타입이면 빈 벡터 반환
 pub(crate) fn create_border_line_nodes(
-    tree: &mut PageRenderTree,
+    tree: &mut PageLayoutContext,
     border: &BorderLine,
     x1: f64,
     y1: f64,
@@ -589,7 +806,7 @@ pub(crate) fn create_border_line_nodes(
 /// 평행선 노드 생성 (이중선/삼중선용)
 /// lines: &[(offset, width)] — offset은 선 중심의 수직 이동량
 fn create_parallel_lines(
-    tree: &mut PageRenderTree,
+    tree: &mut PageLayoutContext,
     color: u32,
     x1: f64,
     y1: f64,
@@ -637,7 +854,7 @@ fn create_parallel_lines(
 
 /// 임의 방향 평행선 노드 생성 (대각선 이중선/삼중선용)
 fn create_parallel_lines_perpendicular(
-    tree: &mut PageRenderTree,
+    tree: &mut PageLayoutContext,
     color: u32,
     x1: f64,
     y1: f64,
@@ -691,7 +908,7 @@ fn create_parallel_lines_perpendicular(
 
 /// 단일선 노드 생성
 fn create_single_line(
-    tree: &mut PageRenderTree,
+    tree: &mut PageLayoutContext,
     color: u32,
     width: f64,
     dash: StrokeDash,
@@ -725,7 +942,7 @@ fn create_single_line(
 }
 
 fn create_editor_only_line(
-    tree: &mut PageRenderTree,
+    tree: &mut PageLayoutContext,
     color: u32,
     width: f64,
     dash: StrokeDash,
@@ -765,7 +982,7 @@ fn border_line_type_from_code(code: u8) -> BorderLineType {
 }
 
 fn create_diagonal_line_nodes(
-    tree: &mut PageRenderTree,
+    tree: &mut PageLayoutContext,
     line_type: BorderLineType,
     color: u32,
     width_index: u8,
@@ -865,7 +1082,7 @@ fn create_diagonal_line_nodes(
 }
 
 fn create_crooked_diagonal_line_nodes(
-    tree: &mut PageRenderTree,
+    tree: &mut PageLayoutContext,
     line_type: BorderLineType,
     color: u32,
     width_index: u8,
@@ -978,7 +1195,7 @@ fn border_line_type_to_dash(lt: BorderLineType) -> Option<StrokeDash> {
 ///   bit 10: BackSlash 대각선 꺾은선
 ///   bit 13: 중심선
 pub(crate) fn render_cell_diagonal(
-    tree: &mut PageRenderTree,
+    tree: &mut PageLayoutContext,
     border_style: &ResolvedBorderStyle,
     cell_x: f64,
     cell_y: f64,
@@ -1117,7 +1334,8 @@ mod tests {
         let col_widths =
             base_widths_hu.map(|width| crate::renderer::hwpunit_to_px(width as i32, DPI));
 
-        let row_col_x = build_row_col_x(&table, &col_widths, 3, 3, 0.0, DPI, 1.0);
+        let row_col_x =
+            build_row_col_x(&table, &col_widths, 3, 3, 0.0, DPI, 1.0).expect("3×3 표는 상한 안");
         let expected_first_boundary = col_widths[0];
         let expected_last_width = col_widths[2];
 
@@ -1132,6 +1350,36 @@ mod tests {
             row_col_x[0]
         );
         assert_eq!(row_col_x[0], row_col_x[1]);
+        assert_oversized_declared_grid_is_rejected();
+    }
+
+    fn assert_oversized_declared_grid_is_rejected() {
+        // [#4287] 가드가 사라지면 2100×2100 × Option<f64> ≈ 70MB 를 예약한다.
+        // 65535×65535 는 회귀 시 CI 러너가 OOM 으로 죽으므로 쓰지 않는다 (#2722 보정과 동일).
+        const ROWS: usize = 2100;
+        const COLS: usize = 2100;
+        assert!(
+            ROWS.saturating_mul(COLS) > MAX_TABLE_GRID_CELLS,
+            "재현 입력이 상한을 넘어야 의미가 있다"
+        );
+
+        let table = Table {
+            row_count: ROWS as u16,
+            col_count: COLS as u16,
+            cells: vec![Cell {
+                row: 0,
+                col: 0,
+                row_span: 1,
+                col_span: 1,
+                width: 1000,
+                ..Default::default()
+            }],
+            ..Default::default()
+        };
+        let err = build_row_col_x(&table, &[1.0], COLS, ROWS, 0.0, 96.0, 1.0)
+            .expect_err("상한 초과 그리드는 할당하지 않고 오류여야 함");
+        assert_eq!(err.row_count, ROWS);
+        assert_eq!(err.col_count, COLS);
     }
 
     fn center_line_style(center_line: CenterLine) -> ResolvedBorderStyle {
@@ -1172,7 +1420,7 @@ mod tests {
 
     #[test]
     fn render_hwpx_vertical_center_line_as_horizontal_bar() {
-        let mut tree = PageRenderTree::new(0, 200.0, 100.0);
+        let mut tree = PageLayoutContext::new(0, 200.0, 100.0);
         let nodes = render_cell_diagonal(
             &mut tree,
             &center_line_style(CenterLine::Vertical),
@@ -1193,7 +1441,7 @@ mod tests {
 
     #[test]
     fn render_hwpx_horizontal_center_line_as_vertical_bar() {
-        let mut tree = PageRenderTree::new(0, 200.0, 100.0);
+        let mut tree = PageLayoutContext::new(0, 200.0, 100.0);
         let nodes = render_cell_diagonal(
             &mut tree,
             &center_line_style(CenterLine::Horizontal),
@@ -1213,7 +1461,7 @@ mod tests {
 
     #[test]
     fn render_cross_center_line_creates_vertical_and_horizontal_lines() {
-        let mut tree = PageRenderTree::new(0, 200.0, 100.0);
+        let mut tree = PageLayoutContext::new(0, 200.0, 100.0);
         let nodes = render_cell_diagonal(
             &mut tree,
             &center_line_style(CenterLine::Cross),
@@ -1238,7 +1486,7 @@ mod tests {
 
     #[test]
     fn render_nonzero_diagonal_shape_codes_as_basic_x() {
-        let mut tree = PageRenderTree::new(0, 200.0, 100.0);
+        let mut tree = PageLayoutContext::new(0, 200.0, 100.0);
         let nodes = render_cell_diagonal(
             &mut tree,
             &diagonal_style((0b111 << 2) | (0b111 << 5)),
@@ -1263,7 +1511,7 @@ mod tests {
 
     #[test]
     fn render_slash_crooked_with_backslash_as_bent_backslash() {
-        let mut tree = PageRenderTree::new(0, 200.0, 100.0);
+        let mut tree = PageLayoutContext::new(0, 200.0, 100.0);
         let nodes = render_cell_diagonal(
             &mut tree,
             &diagonal_style((2 << 8) | (0b010 << 5)),
@@ -1293,7 +1541,7 @@ mod tests {
 
     #[test]
     fn render_thick_slim_diagonal_as_parallel_lines() {
-        let mut tree = PageRenderTree::new(0, 200.0, 100.0);
+        let mut tree = PageLayoutContext::new(0, 200.0, 100.0);
         let mut style = diagonal_style(0b010 << 2);
         style.diagonal.diagonal_type = 10;
         style.diagonal.width = 13;
@@ -1305,5 +1553,129 @@ mod tests {
         assert!(thick.style.width > thin.style.width);
         assert_ne!((thick.x1, thick.y1), (thin.x1, thin.y1));
         assert_ne!((thick.x2, thick.y2), (thin.x2, thin.y2));
+    }
+
+    fn table_border_grid(
+        border: BorderLine,
+    ) -> (
+        Vec<Vec<Option<BorderLine>>>,
+        Vec<Vec<Option<BorderLine>>>,
+        Vec<Vec<f64>>,
+        Vec<f64>,
+    ) {
+        (
+            vec![vec![Some(border)], vec![Some(border)]],
+            vec![vec![None], vec![None]],
+            vec![vec![0.0, 100.0]],
+            vec![0.0, 20.0],
+        )
+    }
+
+    #[test]
+    fn body_top_table_frame_keeps_compound_strokes_inside_clip_with_one_delta() {
+        let border = BorderLine {
+            line_type: BorderLineType::Double,
+            width: 6,
+            color: 0,
+        };
+        let (h_edges, v_edges, row_col_x, row_y) = table_border_grid(border);
+        let mut baseline_tree = PageRenderTree::new(0, 200.0, 100.0);
+        let baseline = render_edge_borders(
+            &mut baseline_tree,
+            &h_edges,
+            &v_edges,
+            &row_col_x,
+            &row_y,
+            10.0,
+            30.0,
+            None,
+        );
+        let mut clipped_tree = PageRenderTree::new(0, 200.0, 100.0);
+        let clipped = render_edge_borders(
+            &mut clipped_tree,
+            &h_edges,
+            &v_edges,
+            &row_col_x,
+            &row_y,
+            10.0,
+            30.0,
+            Some(30.0),
+        );
+
+        assert_eq!(baseline.len(), clipped.len());
+        let mut top_deltas = Vec::new();
+        for (before, after) in baseline.iter().zip(&clipped) {
+            let (RenderNodeType::Line(before_line), RenderNodeType::Line(after_line)) =
+                (&before.node_type, &after.node_type)
+            else {
+                panic!("table border output must contain only Line nodes");
+            };
+            if before_line.y1 < 40.0 {
+                top_deltas.push(after_line.y1 - before_line.y1);
+                assert!(
+                    after_line.y1 - after_line.style.width / 2.0 >= 30.0,
+                    "top border paint must stay inside Body clip: {:?}",
+                    after_line,
+                );
+            } else {
+                assert_eq!(after_line.y1, before_line.y1, "bottom frame must not move");
+                assert_eq!(after.bbox.y, before.bbox.y, "bottom bbox must not move");
+            }
+        }
+        assert!(!top_deltas.is_empty());
+        let common_delta = top_deltas[0];
+        assert!(common_delta > 0.0);
+        assert!(
+            top_deltas
+                .iter()
+                .all(|delta| (*delta - common_delta).abs() <= f64::EPSILON),
+            "compound top-border lines must retain spacing with one common delta: {top_deltas:?}",
+        );
+    }
+
+    #[test]
+    fn body_top_table_frame_inset_changes_only_emitted_lines_not_owner_boxes() {
+        let border = BorderLine {
+            line_type: BorderLineType::Solid,
+            width: 6,
+            color: 0,
+        };
+        let (h_edges, v_edges, row_col_x, row_y) = table_border_grid(border);
+        let mut tree = PageRenderTree::new(0, 200.0, 100.0);
+        let table_bbox = BoundingBox::new(10.0, 30.0, 100.0, 20.0);
+        let cell_bbox = BoundingBox::new(10.0, 30.0, 100.0, 20.0);
+        let table_bbox_before = table_bbox;
+        let cell_bbox_before = cell_bbox;
+
+        let nodes = render_edge_borders(
+            &mut tree,
+            &h_edges,
+            &v_edges,
+            &row_col_x,
+            &row_y,
+            table_bbox.x,
+            table_bbox.y,
+            Some(table_bbox.y),
+        );
+        let top = nodes
+            .iter()
+            .find_map(|node| match &node.node_type {
+                RenderNodeType::Line(line) if line.y1 < 40.0 => Some(line),
+                _ => None,
+            })
+            .expect("top border line");
+
+        assert!(
+            top.y1 > table_bbox.y,
+            "only the paint centreline moves inward"
+        );
+        assert_eq!(table_bbox.x, table_bbox_before.x);
+        assert_eq!(table_bbox.y, table_bbox_before.y);
+        assert_eq!(table_bbox.width, table_bbox_before.width);
+        assert_eq!(table_bbox.height, table_bbox_before.height);
+        assert_eq!(cell_bbox.x, cell_bbox_before.x);
+        assert_eq!(cell_bbox.y, cell_bbox_before.y);
+        assert_eq!(cell_bbox.width, cell_bbox_before.width);
+        assert_eq!(cell_bbox.height, cell_bbox_before.height);
     }
 }

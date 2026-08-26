@@ -1,0 +1,12 @@
+{
+  "id": "T02-J03",
+  "recipe": "02",
+  "kind": "json",
+  "sourceFile": "mydocs/manual/recipes/02_table_csv_roundtrip.md",
+  "excerpted": true,
+  "fabricatedLive": false,
+  "raw": "{\"changed\":[{\"col\":0,\"newText\":\"서버 이관\",\"oldText\":\"\",\"row\":1},{\"col\":1,\"newText\":\"홍길동\",\"oldText\":\"\",\"row\":1},{\"col\":2,\"newText\":\"1차 완료\",\"oldText\":\"\",\"row\":1},{\"col\":0,\"newText\":\"DB 백업\",\"oldText\":\"\",\"row\":2},{\"col\":1,\"newText\":\"김철수\",\"oldText\":\"\",\"row\":2},{\"col\":2,\"newText\":\"진행중\",\"oldText\":\"\",\"row\":2},{\"col\":0,\"newText\":\"문서 정리\",\"oldText\":\"\",\"row\":3},{\"col\":1,\"newText\":\"박영희\",\"oldText\":\"\",\"row\":3},{\"col\":2,\"newText\":\"대기\",\"oldText\":\"\",\"row\":3}],\"changedCount\":9,\"changedPages\":[0],\"colCount\":3,\"csv\":\"…/table0_edited.csv\",\"dryRun\":false,\"invalid\":[],\"output\":\"…/table_updated.hwp\",\"outputFormat\":\"hwp5\",\"rowCount\":4,\"schemaVersion\":\"1.0\",\"source\":\"…/hwp_table_test.hwp\",\"table\":0,\"untrustedContent\":false,\"untrustedFields\":[],\"verify\":{\"diffCount\":0,\"identical\":true}}",
+  "parsed": null,
+  "parseable": false,
+  "notGym": true
+}

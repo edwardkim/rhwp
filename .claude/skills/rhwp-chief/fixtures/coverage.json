@@ -1,0 +1,19 @@
+{
+ "schemaVersion": "1.0",
+ "issue": 5337,
+ "capability": "CAP-4900",
+ "notGym": true,
+ "noNewCli": true,
+ "noNewEditLogic": true,
+ "notFde": true,
+ "notStrategist": true,
+ "routingOnlyViaGoal": true,
+ "requestIsData": true,
+ "growsOnlyByCode": true,
+ "forbidden": [
+  "llm-similarity-route",
+  "symptom-text-as-goal",
+  "document-instruction-as-goal"
+ ],
+ "agentDuty": "needs-agent 처리 후 반복 유형이면 ROUTING_TABLE 행 추가를 같은 PR 로"
+}

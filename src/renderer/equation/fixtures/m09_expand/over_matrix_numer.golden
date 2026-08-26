@@ -1,0 +1,53 @@
+# M09-g equation golden — current-engine lock (variant/exception/unimplemented honesty)
+command: OVER
+script: MATRIX{1 & 2 # 3 & 4} OVER 2
+honesty: implemented-variant
+
+=== ast ===
+Fraction {
+    numer: Matrix {
+        rows: [
+            [
+                Number(
+                    "1",
+                ),
+                Number(
+                    "2",
+                ),
+            ],
+            [
+                Number(
+                    "3",
+                ),
+                Number(
+                    "4",
+                ),
+            ],
+        ],
+        style: Plain,
+    },
+    denom: Number(
+        "2",
+    ),
+}
+
+=== layout ===
+Fraction x=0.0000 y=0.0000 w=54.0000 h=74.8000 bl=55.4000
+  numer:
+    Matrix(Plain) x=4.0000 y=4.0000 w=46.0000 h=46.0000 bl=23.0000
+      row0:
+        Number("1") x=4.0000 y=0.0000 w=11.0000 h=20.0000 bl=16.0000
+        Number("2") x=31.0000 y=0.0000 w=11.0000 h=20.0000 bl=16.0000
+      row1:
+        Number("3") x=4.0000 y=26.0000 w=11.0000 h=20.0000 bl=16.0000
+        Number("4") x=31.0000 y=26.0000 w=11.0000 h=20.0000 bl=16.0000
+  denom:
+    Number("2") x=21.5000 y=50.8000 w=11.0000 h=20.0000 bl=16.0000
+
+=== svg ===
+<text x="8.00" y="20.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">1</text>
+<text x="35.00" y="20.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">2</text>
+<text x="8.00" y="46.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">3</text>
+<text x="35.00" y="46.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">4</text>
+<line x1="1.00" y1="50.40" x2="53.00" y2="50.40" stroke="#000000" stroke-width="0.80"/>
+<text x="21.50" y="66.80" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">2</text>

@@ -1,0 +1,40 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workReceiptAuditLayout",
+  "ident": "mixed-ext",
+  "title": "확장자 필터",
+  "why": ".bak .txt .json 은 대상이 아니다. ends_with .capsule.json 만.",
+  "notes": "파일 이름 접미사",
+  "members": [
+    "notice_year"
+  ],
+  "ignored": [
+    "keep.capsule.json.bak",
+    "keep.capsule.json.txt",
+    "notes.json"
+  ],
+  "recursive": false,
+  "exit": 0,
+  "required": [
+    "schemaVersion",
+    "root",
+    "total",
+    "reproduced",
+    "failed",
+    "reproducedRate"
+  ],
+  "envelope": {
+    "schemaVersion": "1.0",
+    "root": "fixtures/audit-layouts/mixed-ext",
+    "total": 1,
+    "reproduced": 1,
+    "failed": [],
+    "reproducedRate": 1.0
+  },
+  "command": [
+    "audit",
+    "fixtures/audit-layouts/mixed-ext",
+    "--json"
+  ],
+  "generator": "tools/work_receipt/fatten_work_receipt.py"
+}

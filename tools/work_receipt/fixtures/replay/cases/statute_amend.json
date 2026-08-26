@@ -1,0 +1,69 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workReceiptReplayCase",
+  "ident": "statute_amend",
+  "claim": "M-rcpt",
+  "issue": 5478,
+  "family": "법령",
+  "genre": "개정",
+  "title": "일부개정→전부개정",
+  "why": "개정 종류 표기. 조문 내용과 다른 메타 문자열.",
+  "notes": "개정 종류",
+  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "output": "out/statute-amend.hwp",
+  "ext": "hwp",
+  "actions": [
+    "replace_text"
+  ],
+  "stepCount": 1,
+  "plan": {
+    "planVersion": "1.0",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "output": "out/statute-amend.hwp",
+    "steps": [
+      {
+        "action": "replace_text",
+        "find": "일부개정",
+        "replace": "전부개정"
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"samples/basic/issue2007_nested_cell_pagination_42065.hwp\",\"output\":\"out/statute-amend.hwp\",\"steps\":[{\"action\":\"replace_text\",\"find\":\"일부개정\",\"replace\":\"전부개정\"}]}",
+  "planSha256": "3e2f23fd1fc0097e8b3505a92330122f3a33641ec1504799c2e470a5005fade2",
+  "command": "replay",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "inputSha256": "ef031e85feba13a1cdaa7dddc0c8d438e87a569d7af28ccec50f22289b5dedb2",
+    "planSha256": "3e2f23fd1fc0097e8b3505a92330122f3a33641ec1504799c2e470a5005fade2",
+    "outputSha256": "9828d36051f0a50bbffa497dc9cd3b5d5621a143d4b74cebfba29110e7d23ecb",
+    "toolVersion": "fixture-0.0.0-not-a-release",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null
+  },
+  "expected": {
+    "attest": {
+      "exit": 0,
+      "mode": "attest",
+      "reproduced": null,
+      "userOutputCreated": false
+    },
+    "verify_ok": {
+      "exit": 0,
+      "mode": "verify",
+      "reproduced": true,
+      "expectedOutputSha256": "9828d36051f0a50bbffa497dc9cd3b5d5621a143d4b74cebfba29110e7d23ecb"
+    },
+    "verify_mismatch": {
+      "exit": 3,
+      "mode": "verify",
+      "reproduced": false,
+      "expectedOutputSha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "judgment": true
+    }
+  },
+  "claimedOutputPathUntouched": true,
+  "generator": "tools/work_receipt/fatten_work_receipt.py"
+}

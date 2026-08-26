@@ -1,0 +1,32 @@
+{
+  "id": "SR16",
+  "tier": 2,
+  "title": "같은 파일 IR 자기대조",
+  "input": "samples/table-001.hwp",
+  "instructions": "입력을 자기 자신과 ir-diff 해 IR 동일 여부를 answer.json 에 {\"identical\": true|false} 로 적어라. 같은 바이트를 두 번 읽으면 동일해야 한다. 힌트: rhwp ir-diff <입력> <입력> --json. 차이가 있으면 exit 3 이지만 봉투는 남는다(판정은 데이터).",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "IR 동일 판정",
+      "op": "answer_eq",
+      "answer": "identical",
+      "path": "identical",
+      "cmd": [
+        "ir-diff",
+        "{input}",
+        "{input}",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    }
+  ],
+  "axis": "변환"
+}

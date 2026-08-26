@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "id": "m-pageBackground-640x480",
+  "width": 640.0,
+  "height": 480.0,
+  "contract": "pageBackground 를 640x480 페이지에 올리면 begin_page 헤더가 640.00x480.00",
+  "ops": [
+    {
+      "kind": "pageBackground",
+      "x": 0.0,
+      "y": 0.0,
+      "w": 640.0,
+      "h": 480.0,
+      "text": null,
+      "gradient": false,
+      "image": false
+    }
+  ],
+  "expectedKinds": [
+    "pageBackground"
+  ],
+  "expectedTrace": [
+    "begin_page 640.00x480.00",
+    "  pageBackground bbox=0.00,0.00,640.00,480.00",
+    "end_page ops=1"
+  ]
+}

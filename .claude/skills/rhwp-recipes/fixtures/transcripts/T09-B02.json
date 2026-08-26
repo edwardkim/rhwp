@@ -1,0 +1,11 @@
+{
+  "id": "T09-B02",
+  "recipe": "09",
+  "kind": "bash",
+  "sourceFile": "mydocs/manual/recipes/09_bulk_extract_convert.md",
+  "excerpted": true,
+  "fabricatedLive": false,
+  "raw": "cat 목록.txt | rhwp batch info --json",
+  "firstLine": "cat 목록.txt | rhwp batch info --json",
+  "notGym": true
+}

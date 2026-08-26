@@ -1,0 +1,63 @@
+{
+  "id": "owner-early-09-korexam-header",
+  "schema": "rhwp.fidelity_compare.text_layer_case.v1",
+  "schemaVersion": "1.0",
+  "claim": "M-fid",
+  "generator": "tools/fidelity_compare/fatten_text_layer.py",
+  "kind": "excess",
+  "classification": "excess",
+  "family": "owner_shift",
+  "genre": "법학적성 언어이해",
+  "registeredKey": "korexam",
+  "title": "시험 머리글 조기 반복",
+  "why": "머리글이 SVG 에만 반복되면 과잉. 방향=rhwp_earlier_than_reference.",
+  "page": 19,
+  "page1based": 20,
+  "referenceText": "본문고정영역ABCDEFGH이번쪽공통",
+  "svgText": "본문고정영역ABCDEFGH이번쪽공통2022학년도 법학적성시험 제1교시 언어이해 홀수형 15쪽 A3",
+  "referenceNfc": "본문고정영역ABCDEFGH이번쪽공통",
+  "svgNfc": "본문고정영역ABCDEFGH이번쪽공통2022학년도 법학적성시험 제1교시 언어이해 홀수형 15쪽 A3",
+  "referenceSequence": "본문고정영역ABCDEFGH이번쪽공통",
+  "svgSequence": "본문고정영역ABCDEFGH이번쪽공통2022학년도법학적성시험제1교시언어이해홀수형15쪽A3",
+  "referenceOnly": 0,
+  "svgOnly": 29,
+  "referenceOnlyChars": "",
+  "svgOnlyChars": "U+0030:0×1,U+0031:1×2,U+0032:2×3,U+0033:3×1,U+0035:5×1,U+0041:A×1,U+AD50:\\uad50×1,U+B144:\\ub144×1,U+B3C4:\\ub3c4×1,U+BC95:\\ubc95×1,U+C131:\\uc131×1,U+C218:\\uc218×1,U+C2DC:\\uc2dc×2,U+C5B4:\\uc5b4×1,U+C5B8:\\uc5b8×1,U+C774:\\uc774×1,U+C801:\\uc801×1,U+C81C:\\uc81c×1,U+CABD:\\ucabd×1,U+D559:\\ud559×2,U+D574:\\ud574×1,U+D5D8:\\ud5d8×1,U+D615:\\ud615×1,U+D640:\\ud640×1",
+  "glyphRiskCount": 0,
+  "glyphRisks": "",
+  "referenceGlyphRiskCount": 0,
+  "referenceGlyphRisks": "",
+  "ownerShift": [
+    {
+      "page": 19,
+      "next_page": 20,
+      "direction": "rhwp_earlier_than_reference",
+      "shared_count": 29,
+      "source_coverage": 1.0,
+      "target_coverage": 1.0,
+      "shared": "U+0030:0×1,U+0031:1×2,U+0032:2×3,U+0033:3×1,U+0035:5×1,U+0041:A×1,U+AD50:\\uad50×1,U+B144:\\ub144×1,U+B3C4:\\ub3c4×1,U+BC95:\\ubc95×1,U+C131:\\uc131×1,U+C218:\\uc218×1,U+C2DC:\\uc2dc×2,U+C5B4:\\uc5b4×1,U+C5B8:\\uc5b8×1,U+C774:\\uc774×1,U+C801:\\uc801×1,U+C81C:\\uc81c×1,U+CABD:\\ucabd×1,U+D559:\\ud559×2,U+D574:\\ud574×1,U+D5D8:\\ud5d8×1,U+D615:\\ud615×1,U+D640:\\ud640×1"
+    }
+  ],
+  "sequence": [
+    {
+      "page": 19,
+      "next_page": 20,
+      "direction": "rhwp_earlier_than_reference",
+      "chars": 29,
+      "sequence": "2022학년도법학적성시험제1교시언어이해홀수형15쪽A3"
+    }
+  ],
+  "visibleExcess": [],
+  "clipExcludedChars": 0,
+  "nextReferenceText": "본문고정영역ABCDEFGH이번쪽공통2022학년도 법학적성시험 제1교시 언어이해 홀수형 15쪽 A3",
+  "nextSvgText": "본문고정영역ABCDEFGH이번쪽공통",
+  "textOnly": true,
+  "chromeRequired": false,
+  "pypdfRequired": true,
+  "pypdfium2Required": false,
+  "candidateNotVerdict": true,
+  "reviewHint": "text-owner-shift-candidates 와 sequence 를 함께 본다.",
+  "relatedIssue": "#3389",
+  "notes": "rhwp_earlier_than_reference",
+  "digest": "9a301aa07734"
+}

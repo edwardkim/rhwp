@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "1.0",
+  "head": "liar.capsule.json",
+  "depth": 2,
+  "valid": true,
+  "brokenAt": null,
+  "links": [
+    {
+      "capsule": "liar.capsule.json",
+      "inputSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "outputSha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "parentOk": true,
+      "lineageOk": true,
+      "reproduced": null
+    },
+    {
+      "capsule": "parent.capsule.json",
+      "inputSha256": "9872f62399b737c8ebe6cbe2adff4a9d777642e0cd507234428c8e9b3a439a3c",
+      "outputSha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "parentOk": null,
+      "lineageOk": null,
+      "reproduced": null
+    }
+  ]
+}

@@ -1,0 +1,27 @@
+{
+  "id": "FJ50",
+  "steps": [
+    {
+      "write_json": {
+        "to": "{sub:data.json}",
+        "body": {
+          "작성자": "삼칸기록자",
+          "이메일": "triple@journey.go.kr",
+          "제목": "삼칸여정제목"
+        }
+      }
+    },
+    {
+      "run": [
+        "edit",
+        "fill-fields",
+        "{input}",
+        "--data",
+        "@{sub:data.json}",
+        "-o",
+        "{sub:triple.hwp}",
+        "--json"
+      ]
+    }
+  ]
+}

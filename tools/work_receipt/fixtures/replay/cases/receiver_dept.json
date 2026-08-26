@@ -1,0 +1,69 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workReceiptReplayCase",
+  "ident": "receiver_dept",
+  "claim": "M-rcpt",
+  "issue": 5478,
+  "family": "공문",
+  "genre": "수신처",
+  "title": "수신 기획조정실→정책기획관",
+  "why": "수신처 직제명 변경. 발신 명의 변경과 축을 가른다.",
+  "notes": "수신 축",
+  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "output": "out/receiver-dept.hwp",
+  "ext": "hwp",
+  "actions": [
+    "replace_text"
+  ],
+  "stepCount": 1,
+  "plan": {
+    "planVersion": "1.0",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "output": "out/receiver-dept.hwp",
+    "steps": [
+      {
+        "action": "replace_text",
+        "find": "기획조정실",
+        "replace": "정책기획관"
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"samples/basic/issue2007_nested_cell_pagination_42065.hwp\",\"output\":\"out/receiver-dept.hwp\",\"steps\":[{\"action\":\"replace_text\",\"find\":\"기획조정실\",\"replace\":\"정책기획관\"}]}",
+  "planSha256": "d1f07ad3d3c816c81d63247fb7b0de0c1491387f527f1aa8f31bba9641c2be67",
+  "command": "replay",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "inputSha256": "e9289c712572b497aeea13bf73874ae13897175e9a7936273b16f5ea426a27e5",
+    "planSha256": "d1f07ad3d3c816c81d63247fb7b0de0c1491387f527f1aa8f31bba9641c2be67",
+    "outputSha256": "9fa346024780ed6cf5ae56b477c8375bc76cdd652477ba37ed431f5d90281416",
+    "toolVersion": "fixture-0.0.0-not-a-release",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null
+  },
+  "expected": {
+    "attest": {
+      "exit": 0,
+      "mode": "attest",
+      "reproduced": null,
+      "userOutputCreated": false
+    },
+    "verify_ok": {
+      "exit": 0,
+      "mode": "verify",
+      "reproduced": true,
+      "expectedOutputSha256": "9fa346024780ed6cf5ae56b477c8375bc76cdd652477ba37ed431f5d90281416"
+    },
+    "verify_mismatch": {
+      "exit": 3,
+      "mode": "verify",
+      "reproduced": false,
+      "expectedOutputSha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "judgment": true
+    }
+  },
+  "claimedOutputPathUntouched": true,
+  "generator": "tools/work_receipt/fatten_work_receipt.py"
+}

@@ -10,6 +10,7 @@ import {
 } from '../src/embed/protocol.ts';
 import { routeEmbedRequest, type EmbedRpcHandlers } from '../src/embed/rpc-router.ts';
 import { installEmbedRuntime } from '../src/embed/runtime.ts';
+import { DocumentAgentError } from '../src/document-agent/types.ts';
 
 test('renderer diagnostics v1 keeps auto intent in the additive selection field', () => {
   const source = readFileSync(new URL('../src/main.ts', import.meta.url), 'utf8');
@@ -47,7 +48,19 @@ test('embed protocol은 capability를 포함한 v1 connect와 session-bound requ
     'transferable-array-buffer',
     'hml-export',
     'renderer-diagnostics-v1',
+    'font-decision-trace-v1',
     'notify-saved-v1',
+    // 브리지 확장(P4). 프로토콜 세대는 1 을 유지하고 capability 로만 넓힌다 —
+    // 구버전 studio 에 붙은 신버전 SDK 는 기능만 비활성되고 기존 임베드는 그대로 돈다.
+    'automation-v1',
+    'plugin-loader-v1',
+    'hwpctrl-v1',
+    'chrome-v1',
+    'document-state-v1',
+    'selection-context-v1',
+    'document-agent-command-v1',
+    'target-navigation-v1',
+    'document-change-events-v1',
   ]);
 
   assert.equal(isRequestEnvelope({
@@ -70,6 +83,7 @@ test('embed router는 binary load와 unknown method를 공개 동작으로 처�
     },
     pageCount: async () => 2,
     getRendererDiagnostics: async (page) => rendererDiagnostics(page),
+    getFontDecisionTrace: async (page, maxCharacters) => ({ page, maxCharacters } as never),
     getPageSvg: async () => '<svg/>',
     exportHwp: async () => new Uint8Array([1]),
     exportHwpx: async () => new Uint8Array([2]),
@@ -88,6 +102,27 @@ test('embed router는 binary load와 unknown method를 공개 동작으로 처�
     await routeEmbedRequest('getRendererDiagnostics', { page: 3 }, handlers),
     rendererDiagnostics(3),
   );
+  assert.deepEqual(
+    await routeEmbedRequest('getFontDecisionTrace', {
+      page: 2,
+      limits: { maxCharacters: 17 },
+    }, handlers),
+    { page: 2, maxCharacters: 17 },
+  );
+  for (const params of [
+    { page: -1 },
+    { page: 0, limits: { maxCharacters: 0 } },
+    { page: 0, limits: { maxCharacters: 4097 } },
+    { page: 0, limits: { maxCharacters: 1.5 } },
+    { page: 0, limits: null },
+    { page: 0, limits: { unknown: 1 } },
+    { page: 0, backend: 'canvas2d' },
+  ]) {
+    await assert.rejects(
+      () => routeEmbedRequest('getFontDecisionTrace', params, handlers),
+      /page must|maxCharacters must|limits must|unknown field/,
+    );
+  }
   await assert.rejects(
     () => routeEmbedRequest('getRendererDiagnostics', { page: -1 }, handlers),
     /page must be a non-negative safe integer/,
@@ -109,6 +144,73 @@ test('embed router는 binary load와 unknown method를 공개 동작으로 처�
     () => routeEmbedRequest('loadFile', { data: [3, 4], fileName: 'legacy.hwp' }, handlers),
     /binary data/,
   );
+});
+
+test('embed router는 document-agent v1 command와 target을 strict DTO로만 전달한다', async () => {
+  const calls: Array<{ method: string; value?: unknown }> = [];
+  const target = {
+    kind: 'body_paragraph' as const,
+    section: 0,
+    paragraph: 2,
+    charOffset: 0 as const,
+    length: 7,
+  };
+  const apply = {
+    schemaVersion: 1 as const,
+    commandId: 'cmd-1',
+    expectedDocumentEpoch: 2,
+    expectedChangeSeq: 3,
+    expectedDocumentSha256: 'a'.repeat(64),
+    target,
+    expectedBeforeSha256: 'b'.repeat(64),
+    expectedFormatSha256: 'c'.repeat(64),
+    expectedAdjacentContextSha256: 'd'.repeat(64),
+    replacement: '새 문단',
+  };
+  const revert = {
+    schemaVersion: 1 as const,
+    commandId: 'cmd-1',
+    expectedDocumentEpoch: 2,
+    expectedChangeSeq: 4,
+    expectedAfterDocumentSha256: 'e'.repeat(64),
+    expectedAfterSha256: 'f'.repeat(64),
+  };
+  const handlers = {
+    getDocumentState: async () => { calls.push({ method: 'state' }); return { ok: true }; },
+    getSelectionContext: async () => { calls.push({ method: 'selection' }); return { ok: true }; },
+    applyTextCommand: async (value: unknown) => { calls.push({ method: 'apply', value }); return { ok: true }; },
+    revertTextCommand: async (value: unknown) => { calls.push({ method: 'revert', value }); return { ok: true }; },
+    focusTarget: async (value: unknown) => { calls.push({ method: 'focus', value }); return { ok: true }; },
+  } as EmbedRpcHandlers;
+
+  await routeEmbedRequest('getDocumentState', {}, handlers);
+  await routeEmbedRequest('getSelectionContext', {}, handlers);
+  await routeEmbedRequest('applyTextCommand', { command: apply }, handlers);
+  await routeEmbedRequest('revertTextCommand', { command: revert }, handlers);
+  await routeEmbedRequest('focusTarget', { target }, handlers);
+  assert.deepEqual(calls, [
+    { method: 'state' },
+    { method: 'selection' },
+    { method: 'apply', value: apply },
+    { method: 'revert', value: revert },
+    { method: 'focus', value: target },
+  ]);
+
+  for (const [method, params] of [
+    ['getDocumentState', { extra: true }],
+    ['getSelectionContext', { extra: true }],
+    ['applyTextCommand', { command: { ...apply, extra: true } }],
+    ['applyTextCommand', { command: { ...apply, expectedChangeSeq: Number.NaN } }],
+    ['applyTextCommand', { command: { ...apply, replacement: 'line1\nline2' } }],
+    ['revertTextCommand', { command: { ...revert, expectedAfterSha256: 'bad' } }],
+    ['focusTarget', { target: { ...target, charOffset: 1 } }],
+    ['focusTarget', { target: { ...target, length: 4001 } }],
+  ] as const) {
+    await assert.rejects(
+      () => routeEmbedRequest(method, params, handlers),
+      (error: unknown) => (error as { code?: string }).code === 'INVALID_COMMAND',
+    );
+  }
 });
 
 test('embed runtime은 parent의 exact origin에서 v1 port session을 설치한다', async () => {
@@ -424,6 +526,220 @@ test('exportHml 실패는 bytes 없이 error-only envelope를 반환한다', asy
     cleanup();
     channel.port1.close();
   }
+});
+
+test('embed runtime은 document-agent allowlist 오류와 recovered 상태를 그대로 전달한다', async () => {
+  let messageListener: (event: MessageEvent) => void = () => {};
+  const hostWindow = {
+    addEventListener(_type: string, listener: (event: MessageEvent) => void) {
+      messageListener = listener;
+    },
+    removeEventListener() {},
+  };
+  const parentWindow = { postMessage() {} };
+  const cleanup = installEmbedRuntime({
+    hostWindow: hostWindow as unknown as Window,
+    parentWindow: parentWindow as unknown as Window,
+    handlers: {
+      getDocumentState: async () => {
+        throw new DocumentAgentError('RENDER_FAILED', 'render failed', true);
+      },
+    } as EmbedRpcHandlers,
+  });
+  const channel = new MessageChannel();
+  const response = new Promise<unknown>((resolve) => {
+    channel.port1.onmessage = ({ data }) => {
+      if (data.type === 'rhwp-connected') {
+        channel.port1.postMessage({
+          type: 'rhwp-request', version: 1, sessionId: 'agent-error',
+          id: 5, method: 'getDocumentState', params: {},
+        });
+      } else {
+        resolve(data);
+      }
+    };
+    channel.port1.start();
+  });
+
+  try {
+    messageListener({
+      data: {
+        type: 'rhwp-connect', version: 1, sessionId: 'agent-error',
+        capabilities: ['transferable-array-buffer', 'document-state-v1'],
+      },
+      source: parentWindow,
+      origin: 'https://host.example',
+      ports: [channel.port2],
+    } as unknown as MessageEvent);
+    assert.deepEqual(await response, {
+      type: 'rhwp-response', version: 1, sessionId: 'agent-error', id: 5,
+      error: { code: 'RENDER_FAILED', message: 'render failed', recovered: true },
+    });
+  } finally {
+    cleanup();
+    channel.port1.close();
+  }
+});
+
+test('embed runtime은 client가 협상하지 않은 document-agent method를 dispatch하지 않는다', async () => {
+  let messageListener: (event: MessageEvent) => void = () => {};
+  let mutationCalls = 0;
+  const hostWindow = {
+    addEventListener(_type: string, listener: (event: MessageEvent) => void) {
+      messageListener = listener;
+    },
+    removeEventListener() {},
+  };
+  const parentWindow = { postMessage() {} };
+  const cleanup = installEmbedRuntime({
+    hostWindow: hostWindow as unknown as Window,
+    parentWindow: parentWindow as unknown as Window,
+    handlers: {
+      applyTextCommand: async () => {
+        mutationCalls += 1;
+        return {} as never;
+      },
+    } as EmbedRpcHandlers,
+  });
+  const channel = new MessageChannel();
+  const response = new Promise<unknown>((resolve) => {
+    channel.port1.onmessage = ({ data }) => {
+      if (data.type === 'rhwp-connected') {
+        channel.port1.postMessage({
+          type: 'rhwp-request', version: 1, sessionId: 'no-agent-cap',
+          id: 55, method: 'applyTextCommand', params: {},
+        });
+      } else {
+        resolve(data);
+      }
+    };
+    channel.port1.start();
+  });
+
+  try {
+    messageListener({
+      data: {
+        type: 'rhwp-connect', version: 1, sessionId: 'no-agent-cap',
+        capabilities: ['transferable-array-buffer'],
+      },
+      source: parentWindow,
+      origin: 'https://host.example',
+      ports: [channel.port2],
+    } as unknown as MessageEvent);
+    assert.deepEqual(await response, {
+      type: 'rhwp-response', version: 1, sessionId: 'no-agent-cap', id: 55,
+      error: {
+        code: 'UNSUPPORTED_CAPABILITY',
+        message: 'document-agent-command-v1 was not negotiated by the client.',
+      },
+    });
+    assert.equal(mutationCalls, 0);
+  } finally {
+    cleanup();
+    channel.port1.close();
+  }
+});
+
+test('embed legacy transport는 document mutation method를 dispatch하지 않는다', async () => {
+  let messageListener: (event: MessageEvent) => void = () => {};
+  let mutationCalls = 0;
+  let resolveResponse: (value: unknown) => void = () => {};
+  const response = new Promise<unknown>((resolve) => { resolveResponse = resolve; });
+  const hostWindow = {
+    addEventListener(_type: string, listener: (event: MessageEvent) => void) {
+      messageListener = listener;
+    },
+    removeEventListener() {},
+  };
+  const parentWindow = {
+    postMessage(message: unknown) { resolveResponse(message); },
+  };
+  const cleanup = installEmbedRuntime({
+    hostWindow: hostWindow as unknown as Window,
+    parentWindow: parentWindow as unknown as Window,
+    handlers: {
+      applyTextCommand: async () => {
+        mutationCalls += 1;
+        return {} as never;
+      },
+    } as EmbedRpcHandlers,
+  });
+
+  try {
+    messageListener({
+      data: { type: 'rhwp-request', id: 77, method: 'applyTextCommand', params: {} },
+      source: parentWindow,
+      origin: 'https://host.example',
+      ports: [],
+    } as unknown as MessageEvent);
+
+    assert.deepEqual(await Promise.race([
+      response,
+      new Promise((_, reject) => setTimeout(() => reject(new Error('legacy response timeout')), 50)),
+    ]), {
+      type: 'rhwp-response',
+      id: 77,
+      error: 'Legacy embed transport cannot execute document mutations.',
+    });
+    assert.equal(mutationCalls, 0);
+  } finally {
+    cleanup();
+  }
+});
+
+test('embed runtime은 bound port에 documentChanged v1 event를 전달하고 cleanup한다', async () => {
+  let messageListener: (event: MessageEvent) => void = () => {};
+  let emitDocumentChanged: (payload: unknown) => void = () => {};
+  let unsubscribed = 0;
+  const hostWindow = {
+    addEventListener(_type: string, listener: (event: MessageEvent) => void) {
+      messageListener = listener;
+    },
+    removeEventListener() {},
+  };
+  const parentWindow = { postMessage() {} };
+  const cleanup = installEmbedRuntime({
+    hostWindow: hostWindow as unknown as Window,
+    parentWindow: parentWindow as unknown as Window,
+    handlers: {} as EmbedRpcHandlers,
+    subscribeDocumentChanged(listener) {
+      emitDocumentChanged = listener;
+      return () => { unsubscribed += 1; };
+    },
+  });
+  const channel = new MessageChannel();
+  const eventPayload = {
+    schemaVersion: 1,
+    reason: 'agent_apply',
+    documentEpoch: 2,
+    changeSeq: 1,
+    commandId: 'cmd-1',
+  };
+  const eventMessage = new Promise<unknown>((resolve) => {
+    channel.port1.onmessage = ({ data }) => {
+      if (data.type === 'rhwp-connected') emitDocumentChanged(eventPayload);
+      if (data.type === 'rhwp-event') resolve(data);
+    };
+    channel.port1.start();
+  });
+
+  messageListener({
+    data: {
+      type: 'rhwp-connect', version: 1, sessionId: 'agent-event',
+      capabilities: ['transferable-array-buffer', 'document-change-events-v1'],
+    },
+    source: parentWindow,
+    origin: 'https://host.example',
+    ports: [channel.port2],
+  } as unknown as MessageEvent);
+
+  assert.deepEqual(await eventMessage, {
+    type: 'rhwp-event', version: 1, sessionId: 'agent-event',
+    event: 'documentChanged', payload: eventPayload,
+  });
+  cleanup();
+  assert.equal(unsubscribed, 1);
+  channel.port1.close();
 });
 
 function rendererDiagnostics(page: number) {

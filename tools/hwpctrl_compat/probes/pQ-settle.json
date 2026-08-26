@@ -1,0 +1,106 @@
+{
+  "id": "pQ-settle",
+  "title": "리사이즈 정착 — 둘째 저장이 내보내나",
+  "ledger": [],
+  "open": "samples/mix-shape-01.hwp",
+  "paths": {
+    "w": {
+      "win": "{out}/pQ-settle-w.hwp",
+      "posix": "{out}/pQ-settle-w.hwp"
+    },
+    "a": {
+      "win": "{out}/pQ-settle-a.hwp",
+      "posix": "{out}/pQ-settle-a.hwp"
+    },
+    "b": {
+      "win": "{out}/pQ-settle-b.hwp",
+      "posix": "{out}/pQ-settle-b.hwp"
+    },
+    "c": {
+      "win": "{out}/pQ-settle-c.hwp",
+      "posix": "{out}/pQ-settle-c.hwp"
+    },
+    "d": {
+      "win": "{out}/pQ-settle-d.hwp",
+      "posix": "{out}/pQ-settle-d.hwp"
+    }
+  },
+  "calls": [
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "w"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "SetPos",
+      [
+        0,
+        0,
+        0
+      ]
+    ],
+    [
+      "Run",
+      [
+        "SelectCtrlFront"
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "a"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "Run",
+      [
+        "ShapeObjResizeRight"
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "b"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "c"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "CurSelectedCtrl.Properties.Item",
+      [
+        "Width"
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "d"
+        },
+        "HWP",
+        ""
+      ]
+    ]
+  ]
+}

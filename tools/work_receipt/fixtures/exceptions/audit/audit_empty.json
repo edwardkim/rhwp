@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workReceiptExceptionEnvelope",
+  "ident": "audit_empty",
+  "claim": "M-rcpt",
+  "issue": 5478,
+  "command": "audit",
+  "family": "audit-usage",
+  "argv": [
+    "audit",
+    "empty-dir",
+    "--json"
+  ],
+  "exit": 2,
+  "stdoutBytes": 0,
+  "stdoutSilent": true,
+  "needle": "에 *.capsule.json 이 없습니다",
+  "envelopeKeys": [],
+  "why": "audit_contract empty_dir. stdout 0바이트.",
+  "judgment": false,
+  "io": false,
+  "usage": true,
+  "notes": "exit 3 은 도구 고장이 아니라 판정 데이터다. exit 1 은 IO, exit 2 는 사용법. 실패 경로 stdout 은 0바이트가 기본이고, replay --json 엔진 오류만 {schemaVersion,error} 를 싣는다.",
+  "generator": "tools/work_receipt/fatten_work_receipt.py"
+}

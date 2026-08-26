@@ -1,0 +1,24 @@
+{
+  "id": "T26",
+  "title": "빈 파일 레이블",
+  "scenario": "S37",
+  "argv": [
+    "explore",
+    "samples/empty.hwp",
+    "--json"
+  ],
+  "envelope": "envelopes/S37.json",
+  "expect": {
+    "schemaVersion": "1.0",
+    "encrypted": false,
+    "menuIds": [
+      "triage-overview"
+    ],
+    "first": "triage-overview",
+    "firstCommand": "rhwp digest <file> --json",
+    "untrustedContent": false
+  },
+  "stop": "X05",
+  "notGym": true,
+  "usesExistingCommand": true
+}

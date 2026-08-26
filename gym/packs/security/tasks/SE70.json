@@ -1,0 +1,39 @@
+{
+  "id": "SE70",
+  "tier": 4,
+  "title": "선발 보고서 PII 마스킹 후 재스윕",
+  "input": "samples/task2097/1730000_selection_report.hwp",
+  "instructions": "SE70 — 선발 보고서 PII 마스킹 후 재스윕.\n\n입력 표본은 `samples/task2097/1730000_selection_report.hwp` 이다. 이 파일은 저장소 samples/ 에 이미 있는 실문서이며 새 픽스처를 만들지 않는다. 보안 pack 은 기존 연산자와 기존 표본만으로 배포 전·수신 후 스윕 여정을 늘린다.\n\n선발 보고서를 masked.hwp 로 마스킹하라. 재스윕 findingCount==0 이 통과 조건. 원본 덮어쓰기 금지. 새 연산자 없이 기존 redact 만 사용한다.\n\n수행 힌트 명령은 `edit redact {input} -o masked.hwp --json` 이다. 채점 오라클은 같은 명령을 채점 시점에 다시 돌려 봉투 경로 `findingCount` 를 읽는다. 정답 숫자를 과제 파일에 박제하지 마라. 표본이 진화하거나 탐지 규칙이 보수적으로 바뀌면 라이브 재계산이 따라간다.\n\n산출물 findingCount 를 제출하라. 채점기는 산출물을 다시 스윕한다. 제출 키는 `artifact` 이고, 비교 대상은 봉투의 `findingCount` 값이다.\n\n금지: 원본 픽스처를 덮어쓰지 마라. `-o` 가 필요하면 제출 폴더에만 써라. T07 서식 채움(fill-fields)을 복제하지 마라. 새 CLI·새 연산자·새 표본을 만들지 마라. inspect 축은 신호가 있어도 종료 코드 0 또는 3 일 수 있다 — 판정은 데이터가 한다. `--no-raw` 없는 redact 봉투에는 원문이 실릴 수 있으니, 자동화 로그에 남길 때는 원문 비노출 플래그를 기본으로 삼아라. 스윕 3축이 모두 clean 이어도 평문 PII 는 별도 redact --dry-run 이 필요하다.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "masked.hwp"
+    ]
+  },
+  "checks": [
+    {
+      "name": "산출 존재",
+      "op": "file_exists",
+      "file": "masked.hwp",
+      "minBytes": 64
+    },
+    {
+      "name": "원본과 다름 (무편집 복사 거부)",
+      "op": "differs_from_input",
+      "file": "masked.hwp"
+    },
+    {
+      "name": "재스윕 잔여 0건",
+      "op": "value_eq",
+      "value": 0,
+      "path": "findingCount",
+      "cmd": [
+        "edit",
+        "redact",
+        "{file:masked.hwp}",
+        "--dry-run",
+        "--json"
+      ]
+    }
+  ]
+}

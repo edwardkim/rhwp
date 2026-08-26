@@ -1,0 +1,3402 @@
+[
+  {
+    "id": "ovl-table-table-w0-h20",
+    "family": "overlap",
+    "hypothesis": "두 표의 교차가 0x20px. 기본 overlap 허용치 2px 는 폭·높이 둘 다 넘어야 확정이다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 40.0,
+        "h": 40.0
+      },
+      {
+        "t": "Table",
+        "x": 60.0,
+        "y": 60.0,
+        "w": 40.0,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovl-table-table-w1-h20",
+    "family": "overlap",
+    "hypothesis": "두 표의 교차가 1x20px. 기본 overlap 허용치 2px 는 폭·높이 둘 다 넘어야 확정이다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 40.0,
+        "h": 40.0
+      },
+      {
+        "t": "Table",
+        "x": 59.0,
+        "y": 60.0,
+        "w": 40.0,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovl-table-table-w2-h20",
+    "family": "overlap",
+    "hypothesis": "두 표의 교차가 2x20px. 기본 overlap 허용치 2px 는 폭·높이 둘 다 넘어야 확정이다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 40.0,
+        "h": 40.0
+      },
+      {
+        "t": "Table",
+        "x": 58.0,
+        "y": 60.0,
+        "w": 40.0,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovl-table-table-w2.25-h20",
+    "family": "overlap",
+    "hypothesis": "두 표의 교차가 2.25x20px. 기본 overlap 허용치 2px 는 폭·높이 둘 다 넘어야 확정이다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 40.0,
+        "h": 40.0
+      },
+      {
+        "t": "Table",
+        "x": 57.75,
+        "y": 60.0,
+        "w": 40.0,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 1,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [
+        [
+          "Page/Body/Table0",
+          "Table",
+          "Page/Body/Table1",
+          "Table",
+          2.25,
+          20.0
+        ]
+      ],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [
+        "  [OVERLAP]  page   0  2.25x20.00px  Page/Body/Table0 (Table) x Page/Body/Table1 (Table)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "ovl-table-table-w5-h20",
+    "family": "overlap",
+    "hypothesis": "두 표의 교차가 5x20px. 기본 overlap 허용치 2px 는 폭·높이 둘 다 넘어야 확정이다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 40.0,
+        "h": 40.0
+      },
+      {
+        "t": "Table",
+        "x": 55.0,
+        "y": 60.0,
+        "w": 40.0,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 1,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [
+        [
+          "Page/Body/Table0",
+          "Table",
+          "Page/Body/Table1",
+          "Table",
+          5.0,
+          20.0
+        ]
+      ],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [
+        "  [OVERLAP]  page   0  5.00x20.00px  Page/Body/Table0 (Table) x Page/Body/Table1 (Table)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "ovl-table-table-w20-h20",
+    "family": "overlap",
+    "hypothesis": "두 표의 교차가 20x20px. 기본 overlap 허용치 2px 는 폭·높이 둘 다 넘어야 확정이다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 40.0,
+        "h": 40.0
+      },
+      {
+        "t": "Table",
+        "x": 40.0,
+        "y": 60.0,
+        "w": 40.0,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 1,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [
+        [
+          "Page/Body/Table0",
+          "Table",
+          "Page/Body/Table1",
+          "Table",
+          20.0,
+          20.0
+        ]
+      ],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [
+        "  [OVERLAP]  page   0  20.00x20.00px  Page/Body/Table0 (Table) x Page/Body/Table1 (Table)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "ovl-table-table-w20-h1",
+    "family": "overlap",
+    "hypothesis": "두 표의 교차가 20x1px. 기본 overlap 허용치 2px 는 폭·높이 둘 다 넘어야 확정이다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 40.0,
+        "h": 40.0
+      },
+      {
+        "t": "Table",
+        "x": 40.0,
+        "y": 79.0,
+        "w": 40.0,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovl-table-table-w20-h2",
+    "family": "overlap",
+    "hypothesis": "두 표의 교차가 20x2px. 기본 overlap 허용치 2px 는 폭·높이 둘 다 넘어야 확정이다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 40.0,
+        "h": 40.0
+      },
+      {
+        "t": "Table",
+        "x": 40.0,
+        "y": 78.0,
+        "w": 40.0,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovl-table-table-w20-h2.25",
+    "family": "overlap",
+    "hypothesis": "두 표의 교차가 20x2.25px. 기본 overlap 허용치 2px 는 폭·높이 둘 다 넘어야 확정이다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 40.0,
+        "h": 40.0
+      },
+      {
+        "t": "Table",
+        "x": 40.0,
+        "y": 77.75,
+        "w": 40.0,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 1,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [
+        [
+          "Page/Body/Table0",
+          "Table",
+          "Page/Body/Table1",
+          "Table",
+          20.0,
+          2.25
+        ]
+      ],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [
+        "  [OVERLAP]  page   0  20.00x2.25px  Page/Body/Table0 (Table) x Page/Body/Table1 (Table)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "ovl-table-table-w20-h0.5",
+    "family": "overlap",
+    "hypothesis": "두 표의 교차가 20x0.5px. 기본 overlap 허용치 2px 는 폭·높이 둘 다 넘어야 확정이다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 40.0,
+        "h": 40.0
+      },
+      {
+        "t": "Table",
+        "x": 40.0,
+        "y": 79.5,
+        "w": 40.0,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovl-wrap-square-square",
+    "family": "overlap",
+    "hypothesis": "도형 wrap=Square 와 wrap=Square 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Rect",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 40.0,
+        "h": 40.0,
+        "wrap": "Square"
+      },
+      {
+        "t": "Rect",
+        "x": 30.0,
+        "y": 50.0,
+        "w": 40.0,
+        "h": 40.0,
+        "wrap": "Square"
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 1,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [
+        [
+          "Page/Body/Rect0",
+          "Rect",
+          "Page/Body/Rect1",
+          "Rect",
+          30.0,
+          30.0
+        ]
+      ],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [
+        "  [OVERLAP]  page   0  30.00x30.00px  Page/Body/Rect0 (Rect) x Page/Body/Rect1 (Rect)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "ovl-wrap-square-tight",
+    "family": "overlap",
+    "hypothesis": "도형 wrap=Square 와 wrap=Tight 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Rect",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 40.0,
+        "h": 40.0,
+        "wrap": "Square"
+      },
+      {
+        "t": "Rect",
+        "x": 30.0,
+        "y": 50.0,
+        "w": 40.0,
+        "h": 40.0,
+        "wrap": "Tight"
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 1,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [
+        [
+          "Page/Body/Rect0",
+          "Rect",
+          "Page/Body/Rect1",
+          "Rect",
+          30.0,
+          30.0
+        ]
+      ],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [
+        "  [OVERLAP]  page   0  30.00x30.00px  Page/Body/Rect0 (Rect) x Page/Body/Rect1 (Rect)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "ovl-wrap-square-topandbottom",
+    "family": "overlap",
+    "hypothesis": "도형 wrap=Square 와 wrap=TopAndBottom 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Rect",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 40.0,
+        "h": 40.0,
+        "wrap": "Square"
+      },
+      {
+        "t": "Rect",
+        "x": 30.0,
+        "y": 50.0,
+        "w": 40.0,
+        "h": 40.0,
+        "wrap": "TopAndBottom"
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 1,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [
+        [
+          "Page/Body/Rect0",
+          "Rect",
+          "Page/Body/Rect1",
+          "Rect",
+          30.0,
+          30.0
+        ]
+      ],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [
+        "  [OVERLAP]  page   0  30.00x30.00px  Page/Body/Rect0 (Rect) x Page/Body/Rect1 (Rect)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "ovl-wrap-square-behindtext",
+    "family": "overlap",
+    "hypothesis": "도형 wrap=Square 와 wrap=BehindText 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Rect",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 40.0,
+        "h": 40.0,
+        "wrap": "Square"
+      },
+      {
+        "t": "Rect",
+        "x": 30.0,
+        "y": 50.0,
+        "w": 40.0,
+        "h": 40.0,
+        "wrap": "BehindText"
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovl-wrap-square-none",
+    "family": "overlap",
+    "hypothesis": "도형 wrap=Square 와 wrap=none 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Rect",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 40.0,
+        "h": 40.0,
+        "wrap": "Square"
+      },
+      {
+        "t": "Rect",
+        "x": 30.0,
+        "y": 50.0,
+        "w": 40.0,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovl-wrap-tight-square",
+    "family": "overlap",
+    "hypothesis": "도형 wrap=Tight 와 wrap=Square 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Rect",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 40.0,
+        "h": 40.0,
+        "wrap": "Tight"
+      },
+      {
+        "t": "Rect",
+        "x": 30.0,
+        "y": 50.0,
+        "w": 40.0,
+        "h": 40.0,
+        "wrap": "Square"
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 1,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [
+        [
+          "Page/Body/Rect0",
+          "Rect",
+          "Page/Body/Rect1",
+          "Rect",
+          30.0,
+          30.0
+        ]
+      ],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [
+        "  [OVERLAP]  page   0  30.00x30.00px  Page/Body/Rect0 (Rect) x Page/Body/Rect1 (Rect)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "ovl-wrap-tight-tight",
+    "family": "overlap",
+    "hypothesis": "도형 wrap=Tight 와 wrap=Tight 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Rect",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 40.0,
+        "h": 40.0,
+        "wrap": "Tight"
+      },
+      {
+        "t": "Rect",
+        "x": 30.0,
+        "y": 50.0,
+        "w": 40.0,
+        "h": 40.0,
+        "wrap": "Tight"
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 1,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [
+        [
+          "Page/Body/Rect0",
+          "Rect",
+          "Page/Body/Rect1",
+          "Rect",
+          30.0,
+          30.0
+        ]
+      ],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [
+        "  [OVERLAP]  page   0  30.00x30.00px  Page/Body/Rect0 (Rect) x Page/Body/Rect1 (Rect)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "ovl-wrap-tight-topandbottom",
+    "family": "overlap",
+    "hypothesis": "도형 wrap=Tight 와 wrap=TopAndBottom 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Rect",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 40.0,
+        "h": 40.0,
+        "wrap": "Tight"
+      },
+      {
+        "t": "Rect",
+        "x": 30.0,
+        "y": 50.0,
+        "w": 40.0,
+        "h": 40.0,
+        "wrap": "TopAndBottom"
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 1,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [
+        [
+          "Page/Body/Rect0",
+          "Rect",
+          "Page/Body/Rect1",
+          "Rect",
+          30.0,
+          30.0
+        ]
+      ],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [
+        "  [OVERLAP]  page   0  30.00x30.00px  Page/Body/Rect0 (Rect) x Page/Body/Rect1 (Rect)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "ovl-wrap-tight-behindtext",
+    "family": "overlap",
+    "hypothesis": "도형 wrap=Tight 와 wrap=BehindText 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Rect",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 40.0,
+        "h": 40.0,
+        "wrap": "Tight"
+      },
+      {
+        "t": "Rect",
+        "x": 30.0,
+        "y": 50.0,
+        "w": 40.0,
+        "h": 40.0,
+        "wrap": "BehindText"
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovl-wrap-tight-none",
+    "family": "overlap",
+    "hypothesis": "도형 wrap=Tight 와 wrap=none 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Rect",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 40.0,
+        "h": 40.0,
+        "wrap": "Tight"
+      },
+      {
+        "t": "Rect",
+        "x": 30.0,
+        "y": 50.0,
+        "w": 40.0,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovl-wrap-topandbottom-square",
+    "family": "overlap",
+    "hypothesis": "도형 wrap=TopAndBottom 와 wrap=Square 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Rect",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 40.0,
+        "h": 40.0,
+        "wrap": "TopAndBottom"
+      },
+      {
+        "t": "Rect",
+        "x": 30.0,
+        "y": 50.0,
+        "w": 40.0,
+        "h": 40.0,
+        "wrap": "Square"
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 1,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [
+        [
+          "Page/Body/Rect0",
+          "Rect",
+          "Page/Body/Rect1",
+          "Rect",
+          30.0,
+          30.0
+        ]
+      ],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [
+        "  [OVERLAP]  page   0  30.00x30.00px  Page/Body/Rect0 (Rect) x Page/Body/Rect1 (Rect)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "ovl-wrap-topandbottom-tight",
+    "family": "overlap",
+    "hypothesis": "도형 wrap=TopAndBottom 와 wrap=Tight 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Rect",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 40.0,
+        "h": 40.0,
+        "wrap": "TopAndBottom"
+      },
+      {
+        "t": "Rect",
+        "x": 30.0,
+        "y": 50.0,
+        "w": 40.0,
+        "h": 40.0,
+        "wrap": "Tight"
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 1,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [
+        [
+          "Page/Body/Rect0",
+          "Rect",
+          "Page/Body/Rect1",
+          "Rect",
+          30.0,
+          30.0
+        ]
+      ],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [
+        "  [OVERLAP]  page   0  30.00x30.00px  Page/Body/Rect0 (Rect) x Page/Body/Rect1 (Rect)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "ovl-wrap-topandbottom-topandbottom",
+    "family": "overlap",
+    "hypothesis": "도형 wrap=TopAndBottom 와 wrap=TopAndBottom 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Rect",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 40.0,
+        "h": 40.0,
+        "wrap": "TopAndBottom"
+      },
+      {
+        "t": "Rect",
+        "x": 30.0,
+        "y": 50.0,
+        "w": 40.0,
+        "h": 40.0,
+        "wrap": "TopAndBottom"
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 1,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [
+        [
+          "Page/Body/Rect0",
+          "Rect",
+          "Page/Body/Rect1",
+          "Rect",
+          30.0,
+          30.0
+        ]
+      ],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [
+        "  [OVERLAP]  page   0  30.00x30.00px  Page/Body/Rect0 (Rect) x Page/Body/Rect1 (Rect)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "ovl-wrap-topandbottom-behindtext",
+    "family": "overlap",
+    "hypothesis": "도형 wrap=TopAndBottom 와 wrap=BehindText 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Rect",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 40.0,
+        "h": 40.0,
+        "wrap": "TopAndBottom"
+      },
+      {
+        "t": "Rect",
+        "x": 30.0,
+        "y": 50.0,
+        "w": 40.0,
+        "h": 40.0,
+        "wrap": "BehindText"
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovl-wrap-topandbottom-none",
+    "family": "overlap",
+    "hypothesis": "도형 wrap=TopAndBottom 와 wrap=none 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Rect",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 40.0,
+        "h": 40.0,
+        "wrap": "TopAndBottom"
+      },
+      {
+        "t": "Rect",
+        "x": 30.0,
+        "y": 50.0,
+        "w": 40.0,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovl-wrap-behindtext-square",
+    "family": "overlap",
+    "hypothesis": "도형 wrap=BehindText 와 wrap=Square 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Rect",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 40.0,
+        "h": 40.0,
+        "wrap": "BehindText"
+      },
+      {
+        "t": "Rect",
+        "x": 30.0,
+        "y": 50.0,
+        "w": 40.0,
+        "h": 40.0,
+        "wrap": "Square"
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovl-wrap-behindtext-tight",
+    "family": "overlap",
+    "hypothesis": "도형 wrap=BehindText 와 wrap=Tight 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Rect",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 40.0,
+        "h": 40.0,
+        "wrap": "BehindText"
+      },
+      {
+        "t": "Rect",
+        "x": 30.0,
+        "y": 50.0,
+        "w": 40.0,
+        "h": 40.0,
+        "wrap": "Tight"
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovl-wrap-behindtext-topandbottom",
+    "family": "overlap",
+    "hypothesis": "도형 wrap=BehindText 와 wrap=TopAndBottom 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Rect",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 40.0,
+        "h": 40.0,
+        "wrap": "BehindText"
+      },
+      {
+        "t": "Rect",
+        "x": 30.0,
+        "y": 50.0,
+        "w": 40.0,
+        "h": 40.0,
+        "wrap": "TopAndBottom"
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovl-wrap-behindtext-behindtext",
+    "family": "overlap",
+    "hypothesis": "도형 wrap=BehindText 와 wrap=BehindText 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Rect",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 40.0,
+        "h": 40.0,
+        "wrap": "BehindText"
+      },
+      {
+        "t": "Rect",
+        "x": 30.0,
+        "y": 50.0,
+        "w": 40.0,
+        "h": 40.0,
+        "wrap": "BehindText"
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovl-wrap-behindtext-none",
+    "family": "overlap",
+    "hypothesis": "도형 wrap=BehindText 와 wrap=none 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Rect",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 40.0,
+        "h": 40.0,
+        "wrap": "BehindText"
+      },
+      {
+        "t": "Rect",
+        "x": 30.0,
+        "y": 50.0,
+        "w": 40.0,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovl-wrap-none-square",
+    "family": "overlap",
+    "hypothesis": "도형 wrap=none 와 wrap=Square 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Rect",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 40.0,
+        "h": 40.0
+      },
+      {
+        "t": "Rect",
+        "x": 30.0,
+        "y": 50.0,
+        "w": 40.0,
+        "h": 40.0,
+        "wrap": "Square"
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovl-wrap-none-tight",
+    "family": "overlap",
+    "hypothesis": "도형 wrap=none 와 wrap=Tight 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Rect",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 40.0,
+        "h": 40.0
+      },
+      {
+        "t": "Rect",
+        "x": 30.0,
+        "y": 50.0,
+        "w": 40.0,
+        "h": 40.0,
+        "wrap": "Tight"
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovl-wrap-none-topandbottom",
+    "family": "overlap",
+    "hypothesis": "도형 wrap=none 와 wrap=TopAndBottom 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Rect",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 40.0,
+        "h": 40.0
+      },
+      {
+        "t": "Rect",
+        "x": 30.0,
+        "y": 50.0,
+        "w": 40.0,
+        "h": 40.0,
+        "wrap": "TopAndBottom"
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovl-wrap-none-behindtext",
+    "family": "overlap",
+    "hypothesis": "도형 wrap=none 와 wrap=BehindText 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Rect",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 40.0,
+        "h": 40.0
+      },
+      {
+        "t": "Rect",
+        "x": 30.0,
+        "y": 50.0,
+        "w": 40.0,
+        "h": 40.0,
+        "wrap": "BehindText"
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovl-wrap-none-none",
+    "family": "overlap",
+    "hypothesis": "도형 wrap=none 와 wrap=none 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Rect",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 40.0,
+        "h": 40.0
+      },
+      {
+        "t": "Rect",
+        "x": 30.0,
+        "y": 50.0,
+        "w": 40.0,
+        "h": 40.0
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovl-master-square-ignored",
+    "family": "overlap",
+    "hypothesis": "바탕쪽 유래 Square 도형은 본문 Square 와 겹쳐도 overlap 후보가 아니다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Rect",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 40.0,
+        "h": 40.0,
+        "wrap": "Square",
+        "master": true
+      },
+      {
+        "t": "Rect",
+        "x": 30.0,
+        "y": 50.0,
+        "w": 40.0,
+        "h": 40.0,
+        "wrap": "Square"
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovl-column-same-true",
+    "family": "overlap",
+    "hypothesis": "같은 단(column=0) 두 표가 겹치면 overlap 1건.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Column",
+        "x": 10.0,
+        "y": 20.0,
+        "w": 80.0,
+        "h": 200.0,
+        "column": 0,
+        "children": [
+          {
+            "t": "Table",
+            "x": 12.0,
+            "y": 30.0,
+            "w": 50.0,
+            "h": 50.0
+          }
+        ]
+      },
+      {
+        "t": "Column",
+        "x": 20.0,
+        "y": 20.0,
+        "w": 80.0,
+        "h": 200.0,
+        "column": 0,
+        "children": [
+          {
+            "t": "Table",
+            "x": 20.0,
+            "y": 40.0,
+            "w": 50.0,
+            "h": 50.0
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 1,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [
+        [
+          "Page/Body/Column0/Table0",
+          "Table",
+          "Page/Body/Column1/Table0",
+          "Table",
+          42.0,
+          40.0
+        ]
+      ],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [
+        "  [OVERLAP]  page   0  42.00x40.00px  Page/Body/Column0/Table0 (Table) x Page/Body/Column1/Table0 (Table)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "ovl-column-same-false",
+    "family": "overlap",
+    "hypothesis": "같은 단 안의 표만 짝짓는다. 다른 단은 x 가 나뉘어 있어도 후보에서 뺀다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Column",
+        "x": 10.0,
+        "y": 20.0,
+        "w": 80.0,
+        "h": 200.0,
+        "column": 0,
+        "children": [
+          {
+            "t": "Table",
+            "x": 12.0,
+            "y": 30.0,
+            "w": 50.0,
+            "h": 50.0
+          }
+        ]
+      },
+      {
+        "t": "Column",
+        "x": 90.0,
+        "y": 20.0,
+        "w": 80.0,
+        "h": 200.0,
+        "column": 1,
+        "children": [
+          {
+            "t": "Table",
+            "x": 20.0,
+            "y": 40.0,
+            "w": 50.0,
+            "h": 50.0
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovl-carrier-empty-empty",
+    "family": "overlap",
+    "hypothesis": "표와 같은 자리에 찍힌 운반용 TextLine 은 보이는 글자가 없으면 overlap 이 아니다. text=''.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 80.0,
+        "h": 40.0
+      },
+      {
+        "t": "TextLine",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 80.0,
+        "h": 40.0,
+        "children": [
+          {
+            "t": "TextRun",
+            "x": 20.0,
+            "y": 40.0,
+            "w": 80.0,
+            "h": 40.0,
+            "text": ""
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovl-carrier-empty- ",
+    "family": "overlap",
+    "hypothesis": "표와 같은 자리에 찍힌 운반용 TextLine 은 보이는 글자가 없으면 overlap 이 아니다. text=' '.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 80.0,
+        "h": 40.0
+      },
+      {
+        "t": "TextLine",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 80.0,
+        "h": 40.0,
+        "children": [
+          {
+            "t": "TextRun",
+            "x": 20.0,
+            "y": 40.0,
+            "w": 80.0,
+            "h": 40.0,
+            "text": " "
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovl-carrier-empty-\\t",
+    "family": "overlap",
+    "hypothesis": "표와 같은 자리에 찍힌 운반용 TextLine 은 보이는 글자가 없으면 overlap 이 아니다. text='\\t'.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 80.0,
+        "h": 40.0
+      },
+      {
+        "t": "TextLine",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 80.0,
+        "h": 40.0,
+        "children": [
+          {
+            "t": "TextRun",
+            "x": 20.0,
+            "y": 40.0,
+            "w": 80.0,
+            "h": 40.0,
+            "text": "\t"
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovl-carrier-visible-\\ubcf8\\ubb38",
+    "family": "overlap",
+    "hypothesis": "표와 같은 자리에 찍힌 운반용 TextLine 은 보이는 글자가 없으면 overlap 이 아니다. text='본문'.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 80.0,
+        "h": 40.0
+      },
+      {
+        "t": "TextLine",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 80.0,
+        "h": 40.0,
+        "children": [
+          {
+            "t": "TextRun",
+            "x": 20.0,
+            "y": 40.0,
+            "w": 80.0,
+            "h": 40.0,
+            "text": "본문"
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 1,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [
+        [
+          "Page/Body/Table0",
+          "Table",
+          "Page/Body/TextLine1",
+          "TextLine",
+          80.0,
+          40.0
+        ]
+      ],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [
+        "  [OVERLAP]  page   0  80.00x40.00px  Page/Body/Table0 (Table) x Page/Body/TextLine1 (TextLine)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "ovl-carrier-visible- \\uac00",
+    "family": "overlap",
+    "hypothesis": "표와 같은 자리에 찍힌 운반용 TextLine 은 보이는 글자가 없으면 overlap 이 아니다. text=' 가'.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 80.0,
+        "h": 40.0
+      },
+      {
+        "t": "TextLine",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 80.0,
+        "h": 40.0,
+        "children": [
+          {
+            "t": "TextRun",
+            "x": 20.0,
+            "y": 40.0,
+            "w": 80.0,
+            "h": 40.0,
+            "text": " 가"
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 1,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [
+        [
+          "Page/Body/Table0",
+          "Table",
+          "Page/Body/TextLine1",
+          "TextLine",
+          80.0,
+          40.0
+        ]
+      ],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [
+        "  [OVERLAP]  page   0  80.00x40.00px  Page/Body/Table0 (Table) x Page/Body/TextLine1 (TextLine)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "ovl-textline-dy0",
+    "family": "overlap",
+    "hypothesis": "보이는 글자가 있는 두 문단 줄이 세로로 0px 겹친다. 줄 overlap 과 런 text-overlap 이 같이 열린다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextLine",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 80.0,
+        "h": 12.0,
+        "children": [
+          {
+            "t": "TextRun",
+            "x": 20.0,
+            "y": 40.0,
+            "w": 80.0,
+            "h": 12.0,
+            "text": "갑"
+          }
+        ]
+      },
+      {
+        "t": "TextLine",
+        "x": 20.0,
+        "y": 52.0,
+        "w": 80.0,
+        "h": 12.0,
+        "children": [
+          {
+            "t": "TextRun",
+            "x": 20.0,
+            "y": 52.0,
+            "w": 80.0,
+            "h": 12.0,
+            "text": "을"
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovl-textline-dy2",
+    "family": "overlap",
+    "hypothesis": "보이는 글자가 있는 두 문단 줄이 세로로 2px 겹친다. 줄 overlap 과 런 text-overlap 이 같이 열린다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextLine",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 80.0,
+        "h": 12.0,
+        "children": [
+          {
+            "t": "TextRun",
+            "x": 20.0,
+            "y": 40.0,
+            "w": 80.0,
+            "h": 12.0,
+            "text": "갑"
+          }
+        ]
+      },
+      {
+        "t": "TextLine",
+        "x": 20.0,
+        "y": 50.0,
+        "w": 80.0,
+        "h": 12.0,
+        "children": [
+          {
+            "t": "TextRun",
+            "x": 20.0,
+            "y": 50.0,
+            "w": 80.0,
+            "h": 12.0,
+            "text": "을"
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "ovl-textline-dy4",
+    "family": "overlap",
+    "hypothesis": "보이는 글자가 있는 두 문단 줄이 세로로 4px 겹친다. 줄 overlap 과 런 text-overlap 이 같이 열린다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextLine",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 80.0,
+        "h": 12.0,
+        "children": [
+          {
+            "t": "TextRun",
+            "x": 20.0,
+            "y": 40.0,
+            "w": 80.0,
+            "h": 12.0,
+            "text": "갑"
+          }
+        ]
+      },
+      {
+        "t": "TextLine",
+        "x": 20.0,
+        "y": 48.0,
+        "w": 80.0,
+        "h": 12.0,
+        "children": [
+          {
+            "t": "TextRun",
+            "x": 20.0,
+            "y": 48.0,
+            "w": 80.0,
+            "h": 12.0,
+            "text": "을"
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 1,
+      "textOverlap": 1,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [
+        [
+          "Page/Body/TextLine0",
+          "TextLine",
+          "Page/Body/TextLine1",
+          "TextLine",
+          80.0,
+          4.0
+        ]
+      ],
+      "textOverlapPairs": [
+        [
+          "Page/Body/TextLine0/TextRun0",
+          "TextRun",
+          "Page/Body/TextLine1/TextRun0",
+          "TextRun",
+          80.0,
+          4.0
+        ]
+      ],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [
+        "  [OVERLAP]  page   0  80.00x4.00px  Page/Body/TextLine0 (TextLine) x Page/Body/TextLine1 (TextLine)",
+        "  [TEXT-OVERLAP] page   0  80.00x4.00px  Page/Body/TextLine0/TextRun0 (TextRun) x Page/Body/TextLine1/TextRun0 (TextRun)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "ovl-textline-dy10",
+    "family": "overlap",
+    "hypothesis": "보이는 글자가 있는 두 문단 줄이 세로로 10px 겹친다. 줄 overlap 과 런 text-overlap 이 같이 열린다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextLine",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 80.0,
+        "h": 12.0,
+        "children": [
+          {
+            "t": "TextRun",
+            "x": 20.0,
+            "y": 40.0,
+            "w": 80.0,
+            "h": 12.0,
+            "text": "갑"
+          }
+        ]
+      },
+      {
+        "t": "TextLine",
+        "x": 20.0,
+        "y": 42.0,
+        "w": 80.0,
+        "h": 12.0,
+        "children": [
+          {
+            "t": "TextRun",
+            "x": 20.0,
+            "y": 42.0,
+            "w": 80.0,
+            "h": 12.0,
+            "text": "을"
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 1,
+      "textOverlap": 1,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [
+        [
+          "Page/Body/TextLine0",
+          "TextLine",
+          "Page/Body/TextLine1",
+          "TextLine",
+          80.0,
+          10.0
+        ]
+      ],
+      "textOverlapPairs": [
+        [
+          "Page/Body/TextLine0/TextRun0",
+          "TextRun",
+          "Page/Body/TextLine1/TextRun0",
+          "TextRun",
+          80.0,
+          10.0
+        ]
+      ],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [
+        "  [OVERLAP]  page   0  80.00x10.00px  Page/Body/TextLine0 (TextLine) x Page/Body/TextLine1 (TextLine)",
+        "  [TEXT-OVERLAP] page   0  80.00x10.00px  Page/Body/TextLine0/TextRun0 (TextRun) x Page/Body/TextLine1/TextRun0 (TextRun)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "ovl-textline-dy12",
+    "family": "overlap",
+    "hypothesis": "보이는 글자가 있는 두 문단 줄이 세로로 12px 겹친다. 줄 overlap 과 런 text-overlap 이 같이 열린다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "TextLine",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 80.0,
+        "h": 12.0,
+        "children": [
+          {
+            "t": "TextRun",
+            "x": 20.0,
+            "y": 40.0,
+            "w": 80.0,
+            "h": 12.0,
+            "text": "갑"
+          }
+        ]
+      },
+      {
+        "t": "TextLine",
+        "x": 20.0,
+        "y": 40.0,
+        "w": 80.0,
+        "h": 12.0,
+        "children": [
+          {
+            "t": "TextRun",
+            "x": 20.0,
+            "y": 40.0,
+            "w": 80.0,
+            "h": 12.0,
+            "text": "을"
+          }
+        ]
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 1,
+      "textOverlap": 1,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [
+        [
+          "Page/Body/TextLine0",
+          "TextLine",
+          "Page/Body/TextLine1",
+          "TextLine",
+          80.0,
+          12.0
+        ]
+      ],
+      "textOverlapPairs": [
+        [
+          "Page/Body/TextLine0/TextRun0",
+          "TextRun",
+          "Page/Body/TextLine1/TextRun0",
+          "TextRun",
+          80.0,
+          12.0
+        ]
+      ],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [
+        "  [OVERLAP]  page   0  80.00x12.00px  Page/Body/TextLine0 (TextLine) x Page/Body/TextLine1 (TextLine)",
+        "  [TEXT-OVERLAP] page   0  80.00x12.00px  Page/Body/TextLine0/TextRun0 (TextRun) x Page/Body/TextLine1/TextRun0 (TextRun)"
+      ],
+      "status": "ANOMALY"
+    }
+  }
+]

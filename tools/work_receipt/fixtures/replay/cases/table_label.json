@@ -1,0 +1,69 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workReceiptReplayCase",
+  "ident": "table_label",
+  "claim": "M-rcpt",
+  "issue": 5478,
+  "family": "표",
+  "genre": "라벨",
+  "title": "일련번호 헤더 표기 정정",
+  "why": "표 헤더 문자열. replace_text 로 두되 표 좌표 편집(set_cell)과 구분.",
+  "notes": "헤더는 본문 치환 축",
+  "input": "samples/basic/calendar_year.hwp",
+  "output": "out/table-label.hwp",
+  "ext": "hwp",
+  "actions": [
+    "replace_text"
+  ],
+  "stepCount": 1,
+  "plan": {
+    "planVersion": "1.0",
+    "input": "samples/basic/calendar_year.hwp",
+    "output": "out/table-label.hwp",
+    "steps": [
+      {
+        "action": "replace_text",
+        "find": "일련 번호",
+        "replace": "일련번호"
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"samples/basic/calendar_year.hwp\",\"output\":\"out/table-label.hwp\",\"steps\":[{\"action\":\"replace_text\",\"find\":\"일련 번호\",\"replace\":\"일련번호\"}]}",
+  "planSha256": "3c3c8dc8d5cf969a9f665f4b71d80c8b9a762f8c90c38f5bf29d009b99929f34",
+  "command": "replay",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "samples/basic/calendar_year.hwp",
+    "inputSha256": "7244d5220390409f22545e0c48a0ab7317a49ecfaebfe828bc768c2493f7bed6",
+    "planSha256": "3c3c8dc8d5cf969a9f665f4b71d80c8b9a762f8c90c38f5bf29d009b99929f34",
+    "outputSha256": "81672f7425e0e25090db1dc1c1f1a1c0dec34b1300a28567641306f8f7604249",
+    "toolVersion": "fixture-0.0.0-not-a-release",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null
+  },
+  "expected": {
+    "attest": {
+      "exit": 0,
+      "mode": "attest",
+      "reproduced": null,
+      "userOutputCreated": false
+    },
+    "verify_ok": {
+      "exit": 0,
+      "mode": "verify",
+      "reproduced": true,
+      "expectedOutputSha256": "81672f7425e0e25090db1dc1c1f1a1c0dec34b1300a28567641306f8f7604249"
+    },
+    "verify_mismatch": {
+      "exit": 3,
+      "mode": "verify",
+      "reproduced": false,
+      "expectedOutputSha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "judgment": true
+    }
+  },
+  "claimedOutputPathUntouched": true,
+  "generator": "tools/work_receipt/fatten_work_receipt.py"
+}

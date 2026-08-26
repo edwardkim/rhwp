@@ -1,0 +1,4 @@
+export-hwpx --verify --verify-pages: 4/4 exit 0
+zip name set missing: Contents/header.xml size 6737B shrink on 3 docs
+tabItem 480->240
+do not stop at oracle pass

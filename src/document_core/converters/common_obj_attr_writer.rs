@@ -6,10 +6,13 @@
 //! 본 모듈은 [`crate::parser::control::shape::parse_common_obj_attr`] 의 역방향이며,
 //! 라운드트립 테스트로 검증한다.
 
-use crate::model::shape::{
-    CommonObjAttr, HorzAlign, HorzRelTo, SizeCriterion, TextFlow, TextWrap, VertAlign, VertRelTo,
-};
+use crate::model::shape::CommonObjAttr;
 use crate::serializer::byte_writer::ByteWriter;
+// [#4400] 비트 팩킹은 본질적으로 직렬화 로직이라 `src/serializer/control.rs` 로 옮겼다 —
+// 직렬화기가 `document_core::converters` 를 참조하는 역방향 의존을 없앤다. `sync_anchor_bits`도
+// 같은 이유로 함께 옮겼으므로(gestell 자기검증), 이 어댑터가 필요로 하는 건
+// `attr==0`(HWPX 출처 시뮬레이션) 합성 폴백 하나뿐이다.
+use crate::serializer::control::pack_common_attr_bits;
 
 /// `CommonObjAttr` 을 CTRL_HEADER ctrl_data 영역 바이트로 직렬화.
 ///
@@ -62,164 +65,12 @@ pub fn serialize_common_obj_attr(common: &CommonObjAttr) -> Vec<u8> {
     w.into_bytes()
 }
 
-/// `CommonObjAttr` 의 enum 필드들로부터 attr u32 비트를 합성한다.
-///
-/// 비트 레이아웃 (parser/control/shape.rs 의 역방향):
-/// - bit 0: treat_as_char
-/// - bit 2: affect_line_spacing (줄 간격에 영향 — [#2784], 스펙 표 70)
-/// - bit 3-4: vert_rel_to (Paper=0, Page=1, Para=2)
-/// - bit 5-7: vert_align
-/// - bit 8-9: horz_rel_to
-/// - bit 10-12: horz_align
-/// - bit 13: flow_with_text (HWPX object contract)
-/// - bit 14: allow_overlap (HWPX object contract)
-/// - bit 15-17: width_criterion
-/// - bit 18-19: height_criterion
-/// - bit 21-23: text_wrap
-/// - bit 24-25: text_flow
-/// - bit 20: size protect when VertRelTo is Para
-/// - bit 26: HWPX GenShape storage high bit 후보
-/// - bit 28: HWPX GenShape numbering category high bit 후보
-pub(crate) fn pack_common_attr_bits(common: &CommonObjAttr) -> u32 {
-    let mut a: u32 = 0;
-    if common.treat_as_char {
-        a |= 0x01;
-    }
-    // [#2784] affectLSpacing — 개체 공통 속성 attr bit 2 (스펙 표 70).
-    if common.affect_line_spacing {
-        a |= 1 << 2;
-    }
-    a |= (vert_rel_to_to_bits(common.vert_rel_to) & 0x03) << 3;
-    a |= (vert_align_to_bits(common.vert_align) & 0x07) << 5;
-    a |= (horz_rel_to_to_bits(common.horz_rel_to) & 0x03) << 8;
-    a |= (horz_align_to_bits(common.horz_align) & 0x07) << 10;
-    if common.flow_with_text {
-        a |= 1 << 13;
-    }
-    if common.allow_overlap {
-        a |= 1 << 14;
-    }
-    if common.size_protect {
-        a |= 1 << 20;
-    }
-    a |= (width_criterion_to_bits(common.width_criterion) & 0x07) << 15;
-    a |= (height_criterion_to_bits(common.height_criterion) & 0x03) << 18;
-    a |= (text_wrap_to_bits(common.text_wrap) & 0x07) << 21;
-    a |= (text_flow_to_bits(common.text_flow) & 0x03) << 24;
-    if common.hwp5_gen_shape_attr_bit26 {
-        a |= 1 << 26;
-    }
-    if common.hwp5_gen_shape_attr_bit28 {
-        a |= 1 << 28;
-    }
-    a
-}
-
-/// tac/rel_to 마이그레이션 후 stale packed `attr` 동기화.
-///
-/// 배경 (Issue #3781 실측): `insert_picture_native` 가 `attr` 비트를 seed 하고
-/// `migrate_picture_floating_to_inline` 은 **enum 필드만** 갱신한다. 직렬화는
-/// `attr != 0` 이면 packed 값을 우선하므로(라운드트립 보존 계약), 마이그레이션된
-/// 그림이 HWP 바이너리 왕복에서 floating(Paper) 앵커로 되살아나
-/// `treatAsChar=1 + vertRelTo=PAPER` 모순 산출물이 된다 (한글 렌더 깨짐).
-/// 앵커 관련 비트(tac bit0 · vert_rel 3-4 · horz_rel 8-9)만 enum 에서 재기입하고,
-/// criterion/wrap/flow 등 나머지 비트는 보존한다 (전체 재패킹은 enum 미동기
-/// 필드의 정보 손실 위험).
-pub(crate) fn sync_anchor_bits(common: &mut CommonObjAttr) {
-    if common.attr == 0 {
-        return; // 직렬화가 pack_common_attr_bits 로 전량 재패킹 — 손댈 것 없음.
-    }
-    let mut a = common.attr;
-    a &= !(0x01 | (0x03 << 3) | (0x03 << 8));
-    if common.treat_as_char {
-        a |= 0x01;
-    }
-    a |= (vert_rel_to_to_bits(common.vert_rel_to) & 0x03) << 3;
-    a |= (horz_rel_to_to_bits(common.horz_rel_to) & 0x03) << 8;
-    common.attr = a;
-}
-
-fn vert_rel_to_to_bits(v: VertRelTo) -> u32 {
-    match v {
-        VertRelTo::Paper => 0,
-        VertRelTo::Page => 1,
-        VertRelTo::Para => 2,
-    }
-}
-
-fn vert_align_to_bits(v: VertAlign) -> u32 {
-    match v {
-        VertAlign::Top => 0,
-        VertAlign::Center => 1,
-        VertAlign::Bottom => 2,
-        VertAlign::Inside => 3,
-        VertAlign::Outside => 4,
-    }
-}
-
-fn horz_rel_to_to_bits(v: HorzRelTo) -> u32 {
-    match v {
-        HorzRelTo::Paper => 0,
-        HorzRelTo::Page => 1,
-        HorzRelTo::Column => 2,
-        HorzRelTo::Para => 3,
-    }
-}
-
-fn horz_align_to_bits(v: HorzAlign) -> u32 {
-    match v {
-        HorzAlign::Left => 0,
-        HorzAlign::Center => 1,
-        HorzAlign::Right => 2,
-        HorzAlign::Inside => 3,
-        HorzAlign::Outside => 4,
-    }
-}
-
-fn width_criterion_to_bits(v: SizeCriterion) -> u32 {
-    match v {
-        SizeCriterion::Paper => 0,
-        SizeCriterion::Page => 1,
-        SizeCriterion::Column => 2,
-        SizeCriterion::Para => 3,
-        SizeCriterion::Absolute => 4,
-    }
-}
-
-fn height_criterion_to_bits(v: SizeCriterion) -> u32 {
-    match v {
-        SizeCriterion::Paper => 0,
-        SizeCriterion::Page => 1,
-        // height 는 Absolute 만 의미 있음 (parser bit 18-19, 2비트만 사용)
-        _ => 2,
-    }
-}
-
-fn text_wrap_to_bits(v: TextWrap) -> u32 {
-    // hwplib 기준: 0=어울림(Square), 1=자리차지(TopAndBottom), 2=글뒤로(BehindText), 3=글앞으로(InFrontOfText)
-    // Tight/Through 는 HWP 5.0 에 직접 매핑이 없어 Square 로 폴백.
-    match v {
-        TextWrap::Square => 0,
-        TextWrap::Tight => 0,
-        TextWrap::Through => 0,
-        TextWrap::TopAndBottom => 1,
-        TextWrap::BehindText => 2,
-        TextWrap::InFrontOfText => 3,
-    }
-}
-
-fn text_flow_to_bits(v: TextFlow) -> u32 {
-    match v {
-        TextFlow::BothSides => 0,
-        TextFlow::LeftOnly => 1,
-        TextFlow::RightOnly => 2,
-        TextFlow::LargestOnly => 3,
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::model::shape::{
+        HorzAlign, HorzRelTo, SizeCriterion, TextFlow, TextWrap, VertAlign, VertRelTo,
+    };
     use crate::model::Padding;
     use crate::parser::control::parse_common_obj_attr;
 
@@ -447,53 +298,5 @@ mod tests {
         let bytes = serialize_common_obj_attr(&original);
         let parsed = parse_common_obj_attr(&bytes);
         assert_eq!(parsed.text_flow, TextFlow::BothSides);
-    }
-}
-
-#[cfg(test)]
-mod sync_anchor_bits_tests {
-    use super::*;
-    use crate::model::shape::{HorzRelTo, VertRelTo};
-
-    /// Issue #3781 실측 회귀: insert 가 seed 한 floating attr
-    /// ((4<<15)|(2<<18) — tac=0·rel=Paper) 위에서 inline 마이그레이션(enum 갱신) 후
-    /// sync 하면 tac/rel 비트만 Para 로 바뀌고 criterion 비트는 보존된다.
-    #[test]
-    fn sync_anchor_bits_updates_stale_floating_seed() {
-        let mut common = CommonObjAttr {
-            attr: (4 << 15) | (2 << 18),
-            treat_as_char: false,
-            vert_rel_to: VertRelTo::Paper,
-            horz_rel_to: HorzRelTo::Paper,
-            ..Default::default()
-        };
-        // 마이그레이션이 하는 일 (enum 갱신).
-        common.treat_as_char = true;
-        common.vert_rel_to = VertRelTo::Para;
-        common.horz_rel_to = HorzRelTo::Para;
-        sync_anchor_bits(&mut common);
-        assert_eq!(common.attr & 0x01, 0x01, "tac bit");
-        assert_eq!((common.attr >> 3) & 0x03, 2, "vert_rel_to = Para");
-        assert_eq!(
-            (common.attr >> 8) & 0x03,
-            3,
-            "horz_rel_to = Para (Paper0/Page1/Column2/Para3)"
-        );
-        assert_eq!((common.attr >> 15) & 0x07, 4, "width criterion 보존");
-        assert_eq!((common.attr >> 18) & 0x03, 2, "height criterion 보존");
-    }
-
-    /// attr=0(합성 경로) 은 무접촉 — 직렬화가 전량 재패킹한다.
-    #[test]
-    fn sync_anchor_bits_leaves_zero_attr_untouched() {
-        let mut common = CommonObjAttr {
-            attr: 0,
-            treat_as_char: true,
-            vert_rel_to: VertRelTo::Para,
-            horz_rel_to: HorzRelTo::Para,
-            ..Default::default()
-        };
-        sync_anchor_bits(&mut common);
-        assert_eq!(common.attr, 0);
     }
 }

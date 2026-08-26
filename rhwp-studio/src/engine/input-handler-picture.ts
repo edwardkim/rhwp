@@ -5,6 +5,8 @@ import { MovePictureCommand, MoveShapeCommand, ResizeObjectCommand } from './com
 import type { ObjectResizeTarget } from './command';
 import { computeArrowResize, MIN_SIZE_HWP, type ArrowKey } from './picture-resize';
 import { computeRotationRecord } from './object-drag-record';
+import { isMasterPageDecoration } from './picture-hit-policy';
+import { clearObjectEditingPage, summarizeObjectSelection } from './object-selection-page';
 import type { CellPathLike } from '@/core/types';
 import { showToast } from '@/ui/toast';
 
@@ -97,12 +99,28 @@ function scheduleOleSelectionLayerStabilize(this: any, ref: PictureObjectRef): v
 }
 
 /**
- * [Task #1280 v2] 렌더 정렬키 (plane, zOrder, stableIndex). Rust `paper_node_sort_key`
- * (layout.rs)와 단일 진실 원천. 사전식으로 클수록 위(최상단). layer 필드 부재 시
- * 렌더 폴백 (plane=2, z=0, stable=0)과 동일하게 처리한다.
+ * [Task #1280 v2, #4334] 렌더 정렬키 (plane, zOrder, stableIndex). Rust
+ * `paper_node_sort_key`(layout.rs)와 단일 진실 원천. 사전식으로 클수록 위(최상단).
+ * layer 필드 부재 시 렌더 폴백 (plane=2, z=0, stable=[])과 동일하게 처리한다.
+ *
+ * [#4334] `stableIndex` 는 더 이상 스칼라가 아니다 — `next_id()` 카운터도, layer 유무에
+ * 따라 서로 다른 자릿수 공간을 쓰던 패킹된 u32도 아니고, 문서 경로(정수 배열,
+ * `[secIdx, paraIdx, ...셀 경로, controlIdx]`, `doc_path_for_node`)를 그대로 받는다.
+ * layer 있는 노드와 없는 노드가 이제 같은 좌표계를 공유하므로 배열 길이가 다를 수
+ * 있다 — `compareLexArrays` 가 짧은 쪽을 공통 접두사로 보고 그 다음 길이로 비교한다
+ * (Rust `Vec<u32>` 의 `Ord` 와 동일 의미).
  */
-function controlTopKey(ctrl: any): [number, number, number] {
-  return [ctrl.plane ?? 2, ctrl.zOrder ?? 0, ctrl.stableIndex ?? 0];
+function controlTopKey(ctrl: any): [number, number, number[]] {
+  return [ctrl.plane ?? 2, ctrl.zOrder ?? 0, ctrl.stableIndex ?? []];
+}
+
+/** [#4334] 문서 경로 배열을 사전식으로 비교한다 — 공통 접두사가 같으면 짧은 쪽이 작다. */
+function compareLexArrays(a: number[], b: number[]): number {
+  const len = Math.min(a.length, b.length);
+  for (let i = 0; i < len; i++) {
+    if (a[i] !== b[i]) return a[i] - b[i];
+  }
+  return a.length - b.length;
 }
 
 /** a가 b보다 위(최상단)인가? 정렬키 사전식 비교. 동률이면 false(기존 emit 순서 유지). */
@@ -111,7 +129,7 @@ function isAboveControl(a: any, b: any): boolean {
   const kb = controlTopKey(b);
   if (ka[0] !== kb[0]) return ka[0] > kb[0];
   if (ka[1] !== kb[1]) return ka[1] > kb[1];
-  return ka[2] > kb[2];
+  return compareLexArrays(ka[2], kb[2]) > 0;
 }
 
 /** 적중한 layout 컨트롤에서 PictureObjectRef 를 구성한다(line 은 끝점 포함). */
@@ -209,7 +227,7 @@ export function findPictureAtClick(this: any,
       let shapeHit = false;
       let nestedPic: any = null;
       for (const ctrl of layout.controls) {
-        if (ctrl.secIdx === undefined || ctrl.wrap === 'behindText') continue;
+        if (ctrl.secIdx === undefined || ctrl.wrap === 'behindText' || isMasterPageDecoration(ctrl)) continue;
         const inBox = pageX >= ctrl.x && pageX <= ctrl.x + ctrl.w &&
           pageY >= ctrl.y && pageY <= ctrl.y + ctrl.h;
         if (!inBox) continue;
@@ -233,6 +251,7 @@ export function findPictureAtClick(this: any,
     for (const ctrl of layout.controls) {
       if (ctrl.type !== 'image' && ctrl.type !== 'shape' && ctrl.type !== 'equation' && ctrl.type !== 'group' && ctrl.type !== 'line' && ctrl.type !== 'ole') continue;
       if (ctrl.secIdx === undefined || ctrl.paraIdx === undefined || ctrl.controlIdx === undefined) continue;
+      if (isMasterPageDecoration(ctrl)) continue;
       // [Task #825] 머리말/꼬리말 그림: headerFooter marker 가 함께 있어야 lookup 가능.
       // (없으면 본문 picture 동작 그대로.)
 
@@ -361,6 +380,11 @@ export function findPictureBbox(this: any,
 }
 
 /** 개체 선택 시 외곽선 + 핸들을 렌더링한다. */
+function clearPictureSelectionRender(this: any): void {
+  this.pictureObjectRenderer?.clear();
+  clearObjectEditingPage(this.eventBus);
+}
+
 export function renderPictureObjectSelection(this: any): void {
   if (!this.pictureObjectRenderer) return;
 
@@ -369,38 +393,39 @@ export function renderPictureObjectSelection(this: any): void {
     const refs = this.cursor.getSelectedPictureRefs();
     try {
       const zoom = this.viewportManager.getZoom();
-      let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-      let pageIndex = 0;
+      const boxes = [];
       for (const r of refs) {
         const bbox = this.findPictureBbox(r);
-        if (bbox) {
-          pageIndex = bbox.pageIndex;
-          minX = Math.min(minX, bbox.x);
-          minY = Math.min(minY, bbox.y);
-          maxX = Math.max(maxX, bbox.x + bbox.w);
-          maxY = Math.max(maxY, bbox.y + bbox.h);
-        }
+        if (bbox) boxes.push(bbox);
       }
-      if (minX < Infinity) {
+      const summary = summarizeObjectSelection(boxes);
+      if (summary) {
         const locked = refs.some((r: PictureObjectRef) => isObjectSizeProtected.call(this, r));
         this.pictureObjectRenderer.render(
-          { pageIndex, x: minX, y: minY, width: maxX - minX, height: maxY - minY },
+          {
+            pageIndex: summary.renderPageIndex,
+            x: summary.x,
+            y: summary.y,
+            width: summary.width,
+            height: summary.height,
+          },
           zoom,
           0,
           locked,
         );
+        this.eventBus.emit('editing-page-changed', summary.editingPageIndex);
       } else {
-        this.pictureObjectRenderer.clear();
+        clearPictureSelectionRender.call(this);
       }
     } catch {
-      this.pictureObjectRenderer.clear();
+      clearPictureSelectionRender.call(this);
     }
     return;
   }
 
   const ref = this.cursor.getSelectedPictureRef();
   if (!ref) {
-    this.pictureObjectRenderer.clear();
+    clearPictureSelectionRender.call(this);
     return;
   }
   const matchType = ref.type ?? 'image';
@@ -452,6 +477,7 @@ export function renderPictureObjectSelection(this: any): void {
               zoom,
               midPoint,
             );
+            this.eventBus.emit('editing-page-changed', p);
             return;
           }
 
@@ -474,15 +500,16 @@ export function renderPictureObjectSelection(this: any): void {
             rotAngle,
             locked,
           );
+          this.eventBus.emit('editing-page-changed', p);
           syncOleObjectCaret.call(this, ref as PictureObjectRef, zoom);
           return;
         }
       }
     }
-    this.pictureObjectRenderer.clear();
+    clearPictureSelectionRender.call(this);
   } catch (e) {
     console.warn('[InputHandler] renderPictureObjectSelection 실패:', e);
-    this.pictureObjectRenderer.clear();
+    clearPictureSelectionRender.call(this);
   }
 }
 

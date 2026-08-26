@@ -1,0 +1,26 @@
+{
+  "id": "SD55",
+  "tier": 2,
+  "title": "IR 스키마 버전",
+  "input": "samples/table-001.hwp",
+  "instructions": "export-ir-schema 가 광고하는 irSchemaVersion 을 answer.json 에 {\"irSchemaVersion\": S} 으로 제출하라. 힌트: rhwp export-ir-schema --json.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "IR 스키마 버전",
+      "op": "answer_eq",
+      "answer": "irSchemaVersion",
+      "path": "irSchemaVersion",
+      "cmd": [
+        "export-ir-schema",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

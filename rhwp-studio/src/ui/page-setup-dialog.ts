@@ -5,6 +5,7 @@ import type { PageDef } from '@/core/types';
 import type { EventBus } from '@/core/event-bus';
 import type { CommandServices } from '@/command/types';
 import { applyThroughRouter } from './dialog-apply';
+import { pageBodyViolation } from '@/core/page-body-limits';
 
 const HWPUNIT_PER_MM = 7200 / 25.4; // ≈283.46
 const PAPER_PRESET_TOLERANCE_HU = 3;
@@ -227,6 +228,15 @@ export class PageSetupDialog extends ModalDialog {
       landscape,
       binding: parseInt(this.bindingRadios.find(r => r.checked)?.value ?? '0'),
     };
+
+    // [#4973] 본문이 소멸하는 여백은 받지 않는다. 렌더러가 용지 5% 여백으로 폴백해
+    // (Rust model/page.rs [Task #1583]) 화면은 멀쩡한데 저장값만 쓸 수 없게 되므로,
+    // 눈금자 핀이 드래그를 가두는 것과 같은 한도를 입력 자리에서도 건다.
+    const violation = pageBodyViolation(newDef);
+    if (violation) {
+      alert(violation);
+      return false;
+    }
 
     // [편집 용지 이관] 쪽 정의 변경을 snapshot 으로 라우팅해 undo 가능(#2077 수식 속성 동형).
     // services 미주입 환경(구 호출부)에서만 직접 적용 fallback.

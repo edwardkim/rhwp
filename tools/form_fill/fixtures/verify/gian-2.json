@@ -1,0 +1,57 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.form_fill.fill_case.v1",
+  "id": "gian-2-verify",
+  "axis": "verify",
+  "claim": "M-fill",
+  "generator": "tools/form_fill/fatten_form_fill.py",
+  "form": "gian-2",
+  "title": "간이기안문 별지 제2호서식 --verify",
+  "family": "공문서",
+  "genre": "내부결재",
+  "sample": "tools/forms/간이기안문_서식.hwpx",
+  "format": "hwpx",
+  "relatedIssue": "#3372",
+  "why": "저장 직후 재파싱. identical:false 면 exit 3. 산출물은 남는다.",
+  "firstFieldName": "생산등록번호",
+  "fieldCount": 13,
+  "argv": [
+    "edit",
+    "fill-fields",
+    "tools/forms/간이기안문_서식.hwpx",
+    "--data",
+    "{\"생산등록번호\": \"혁신정책담당관-9012\"}",
+    "-o",
+    "out/gian-2-verify.hwpx",
+    "--verify",
+    "--json"
+  ],
+  "existingCliOnly": true,
+  "data": {
+    "생산등록번호": "혁신정책담당관-9012"
+  },
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "tools/forms/간이기안문_서식.hwpx",
+    "dryRun": false,
+    "filledCount": 1,
+    "filled": [
+      {
+        "name": "생산등록번호",
+        "occurrence": 0,
+        "value": "혁신정책담당관-9012"
+      }
+    ],
+    "notFound": [],
+    "ambiguous": [],
+    "confusable": [],
+    "verify": {
+      "identical": true,
+      "diffCount": 0
+    },
+    "output": "out/gian-2-verify.hwpx",
+    "outputFormat": "hwpx"
+  },
+  "exit": 0,
+  "leavesOutput": true
+}

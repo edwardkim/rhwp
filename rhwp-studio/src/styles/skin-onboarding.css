@@ -1,0 +1,76 @@
+/* 첫 실행 스킨 선택 대화상자 (skin-onboarding- 접두어) */
+
+.skin-onboarding-body {
+  padding: 16px 20px 8px;
+}
+
+.skin-onboarding-intro {
+  margin: 0 0 12px;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-md);
+  line-height: 1.5;
+}
+
+.skin-onboarding-cards {
+  display: flex;
+  gap: 10px;
+}
+
+.skin-onboarding-card {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
+  padding: 10px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  font-family: var(--font-family-ui);
+  text-align: left;
+}
+
+.skin-onboarding-card:hover {
+  border-color: var(--accent-light);
+  background: var(--color-accent-bg-light);
+}
+
+.skin-onboarding-card.selected {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 1px var(--accent-primary);
+}
+
+.skin-onboarding-preview {
+  display: block;
+  height: 52px;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+}
+
+.skin-onboarding-preview-chrome {
+  display: block;
+  height: 18px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.skin-onboarding-preview-accent {
+  display: block;
+  width: 26px;
+  height: 5px;
+  margin: 5px 0 0 5px;
+  border-radius: 2px;
+}
+
+.skin-onboarding-name {
+  font-weight: 600;
+  font-size: var(--font-size-md);
+  color: var(--color-text);
+}
+
+.skin-onboarding-description {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  line-height: 1.4;
+}

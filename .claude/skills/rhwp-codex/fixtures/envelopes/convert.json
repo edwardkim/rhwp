@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5318,
+  "kind": "live",
+  "command": "convert",
+  "sourceChapter": "40_변환과_렌더.md",
+  "cmd": "rhwp convert samples/field-01.hwp <tmp>/conv.hwp --verify --json",
+  "exit": 0,
+  "envelope": {
+    "bytes": 473600,
+    "format": "hwp5",
+    "output": "<tmp>/conv.hwp",
+    "passwordProtected": false,
+    "schemaVersion": "1.0",
+    "source": "samples/field-01.hwp",
+    "untrustedContent": false,
+    "untrustedFields": [],
+    "verify": {
+      "diffCount": 0,
+      "identical": true
+    },
+    "verifyPages": null,
+    "wasDistribution": false
+  },
+  "extractedFromGenerated": true,
+  "handEdited": false
+}

@@ -47,20 +47,14 @@ rhwp changes that. Built with Rust and compiled to WebAssembly, it renders HWP d
 
 Build the skeleton solo, grow the muscle together, complete it as a public good.
 
-```
-0.5 ──── 1.0 ──── 2.0 ──── 3.0
-Foundation  Typeset   Collab    Complete
-```
+The project is currently **v0.8.4 — systematizing the v1.0 typesetting engine** while also
+growing its v2.0 collaboration foundation with more than 40 external contributors and two
+collaborators. The single [project roadmap](ROADMAP.md) explains what each version aims to achieve,
+how overlapping work is tracked, how completion is judged, and where the detailed AI-agent roadmap
+fits. It also defines which work belongs in the rhwp upstream and which product-specific work should
+grow in downstream projects. It is maintained in Korean as the source of truth.
 
-| Phase | Direction | Strategy |
-|-------|-----------|----------|
-| **0.5 → 1.0** | Systematize the typesetting engine on a read/write foundation | Build core architecture solo, keep it solid |
-| **1.0 → 2.0** | Open community participation on top of an AI-driven typesetting pipeline | Lower the barrier to contribution |
-| **2.0 → 3.0** | Let community-built features elevate rhwp to a public asset | Reach parity with Hancom |
-
-> The reason for completing the skeleton alone through v0.5.0 is simple — when the community arrives, the core architecture must already be solid so that direction does not drift.
-
-## Milestones
+## Current Milestone
 
 ### v0.5.0 ~ v0.8.x — Foundation (current)
 
@@ -191,6 +185,37 @@ document.getElementById('viewer').innerHTML = doc.renderPageSvg(0);
 |---------|---------|---------|
 | [@rhwp/editor](https://www.npmjs.com/package/@rhwp/editor) | Full editor UI (iframe embed) | `npm i @rhwp/editor` |
 | [@rhwp/core](https://www.npmjs.com/package/@rhwp/core) | WASM parser/renderer (API) | `npm i @rhwp/core` |
+
+## Install — CLI & MCP without building
+
+Grab a platform binary from [Releases](https://github.com/edwardkim/rhwp/releases/latest) —
+every release ships linux x86_64, macOS (x86_64/aarch64) and windows x86_64 archives
+plus `SHA256SUMS.txt` for integrity verification.
+
+```bash
+tar xzf rhwp-v*-linux-x86_64.tar.gz          # unzip on Windows
+sha256sum -c SHA256SUMS.txt --ignore-missing # optional integrity check
+./rhwp capabilities                          # first call — machine-readable self-description of every command
+```
+
+Put it on your PATH and the MCP snippet below works as-is.
+
+## Use with AI Agents (MCP)
+
+rhwp embeds an MCP (Model Context Protocol) server — one line of config lets
+Claude Code and other MCP hosts read, search, fill and convert HWP/HWPX files:
+
+```jsonc
+// .mcp.json
+{ "mcpServers": { "rhwp": { "command": "rhwp", "args": ["mcp-serve"] } } }
+```
+
+The `rhwp` executable from the Install section above is all you need — no
+source build. Start with `hwp_info` → `hwp_search` → `hwp_fill_fields`; for
+large documents use the `hwp_open` → `hwp_doc_*` session tools to query and
+edit without re-parsing. Full tool map:
+[MCP integration guide](mydocs/manual/mcp_integration_guide.md) (Korean).
+CLI-only? `rhwp capabilities` is the single machine-readable entry point.
 
 ## Quick Start (Build from Source)
 

@@ -1,0 +1,53 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.form_fill.fill_case.v1",
+  "id": "trip-settle-dry-run",
+  "axis": "dry-run",
+  "claim": "M-fill",
+  "generator": "tools/form_fill/fatten_form_fill.py",
+  "form": "trip-settle",
+  "title": "출장여비 정산서 dry-run",
+  "family": "회계",
+  "genre": "정산",
+  "sample": "fixtures/forms/출장여비정산서.hwp",
+  "format": "hwp5",
+  "relatedIssue": "#3476",
+  "why": "--dry-run 은 파일을 만들지 않는다. output/outputFormat 없음.",
+  "firstFieldName": "출장자",
+  "fieldCount": 25,
+  "argv": [
+    "edit",
+    "fill-fields",
+    "fixtures/forms/출장여비정산서.hwp",
+    "--data",
+    "{\"출장자\": \"홍길동\"}",
+    "-o",
+    "out/trip-settle-dry.hwp",
+    "--dry-run",
+    "--json"
+  ],
+  "existingCliOnly": true,
+  "data": {
+    "출장자": "홍길동"
+  },
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "fixtures/forms/출장여비정산서.hwp",
+    "dryRun": true,
+    "filledCount": 1,
+    "filled": [
+      {
+        "name": "출장자",
+        "occurrence": 0,
+        "value": "홍길동"
+      }
+    ],
+    "notFound": [],
+    "ambiguous": [],
+    "confusable": [],
+    "verify": null
+  },
+  "writesFile": false,
+  "hasOutputKey": false,
+  "exit": 0
+}

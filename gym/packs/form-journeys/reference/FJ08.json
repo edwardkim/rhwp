@@ -1,0 +1,25 @@
+{
+  "id": "FJ08",
+  "steps": [
+    {
+      "write_json": {
+        "to": "{sub:data.json}",
+        "body": {
+          "이메일": "journey@example.go.kr"
+        }
+      }
+    },
+    {
+      "run": [
+        "edit",
+        "fill-fields",
+        "{input}",
+        "--data",
+        "@{sub:data.json}",
+        "-o",
+        "{sub:mail.hwp}",
+        "--json"
+      ]
+    }
+  ]
+}

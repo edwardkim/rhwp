@@ -1,0 +1,86 @@
+{
+ "schemaVersion": "1.0",
+ "issue": 5337,
+ "capability": "CAP-4900",
+ "notGym": true,
+ "noNewCli": true,
+ "noNewEditLogic": true,
+ "notFde": true,
+ "notStrategist": true,
+ "routingOnlyViaGoal": true,
+ "requestIsData": true,
+ "order": [
+  "pending_check",
+  "triage_gate",
+  "goal_route",
+  "execute",
+  "verify_gate",
+  "write_response"
+ ],
+ "cli": [
+  {
+   "id": "loop-once",
+   "argv": [
+    "python3",
+    "tools/chief/service_loop.py",
+    "--queue",
+    "<큐>",
+    "--bin",
+    "<rhwp>",
+    "--once"
+   ]
+  },
+  {
+   "id": "loop-watch",
+   "argv": [
+    "python3",
+    "tools/chief/service_loop.py",
+    "--queue",
+    "<큐>",
+    "--bin",
+    "<rhwp>",
+    "--watch",
+    "10"
+   ]
+  }
+ ],
+ "rhwp": [
+  {
+   "goal": "export-text",
+   "argv": [
+    "export-text"
+   ]
+  },
+  {
+   "goal": "export-pdf",
+   "argv": [
+    "export-pdf"
+   ]
+  },
+  {
+   "goal": "export-hwpx",
+   "argv": [
+    "export-hwpx"
+   ]
+  },
+  {
+   "goal": "convert-hwp",
+   "argv": [
+    "convert"
+   ]
+  },
+  {
+   "goal": "extract-tables",
+   "argv": [
+    "export-tables",
+    "table-to-csv"
+   ]
+  },
+  {
+   "goal": "fill",
+   "argv": [
+    "edit fill-fields"
+   ]
+  }
+ ]
+}

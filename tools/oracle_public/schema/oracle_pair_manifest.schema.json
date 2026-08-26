@@ -1,0 +1,108 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/edwardkim/rhwp/tools/oracle_public/schema/oracle_pair_manifest.schema.json",
+  "title": "rhwp oracle pair manifest",
+  "description": "samples/ HWP·HWPX 와 pdf/{stem}-{hancomVersion}.pdf 오라클 쌍. M01-1 (#5343).",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "pairCount",
+    "matchedSampleCount",
+    "unmatchedCount",
+    "oracleLinkCount",
+    "pairs",
+    "unmatched"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": "string",
+      "const": "1.0"
+    },
+    "generator": {
+      "type": "string"
+    },
+    "targetPairCount": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "이슈의 참고 목표(~269). 실제 pairCount 를 맞추려고 자르지 않는다."
+    },
+    "pairCount": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "pairs 배열 길이. 샘플×PDF 링크 수와 같다."
+    },
+    "matchedSampleCount": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "unmatchedCount": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "oracleLinkCount": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "oracleRoots": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "byHancomVersion": {
+      "type": "object",
+      "additionalProperties": { "type": "integer" }
+    },
+    "pairs": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/Pair" }
+    },
+    "unmatched": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/UnmatchedSample" }
+    }
+  },
+  "definitions": {
+    "Pair": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sample",
+        "pdf",
+        "stem",
+        "hancomVersion",
+        "sourceFormat",
+        "oracleRoot"
+      ],
+      "properties": {
+        "id": { "type": "string" },
+        "sample": { "type": "string" },
+        "pdf": { "type": "string" },
+        "stem": { "type": "string" },
+        "hancomVersion": {
+          "type": "string",
+          "enum": ["2018", "2020", "2022", "2024"]
+        },
+        "variant": { "type": "string" },
+        "sourceFormat": {
+          "type": "string",
+          "enum": ["hwp", "hwpx"]
+        },
+        "oracleRoot": { "type": "string" }
+      }
+    },
+    "UnmatchedSample": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sample"],
+      "properties": {
+        "sample": { "type": "string" },
+        "stem": { "type": "string" },
+        "sourceFormat": {
+          "type": "string",
+          "enum": ["hwp", "hwpx"]
+        },
+        "reason": { "type": "string" }
+      }
+    }
+  }
+}

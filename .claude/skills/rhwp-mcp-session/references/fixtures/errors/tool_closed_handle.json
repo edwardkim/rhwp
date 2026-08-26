@@ -1,0 +1,15 @@
+{
+  "id": "tool_closed_handle",
+  "layer": "isError",
+  "code": null,
+  "symptom": "열려 있지 않은 핸들",
+  "retry": true,
+  "fix": "nextCall.name=hwp_open 으로 docId 를 재발급한 뒤 같은 조회를 반복한다.",
+  "tools": [
+    "hwp_doc_text",
+    "hwp_doc_info",
+    "hwp_doc_search",
+    "hwp_close"
+  ],
+  "policy": "종료 코드 2/필수 인자 = 재시도 금지. 닫힌 핸들만 nextCall 로 재발급."
+}

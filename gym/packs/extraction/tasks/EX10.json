@@ -1,0 +1,25 @@
+{
+  "id": "EX10",
+  "tier": 2,
+  "title": "금액 수확 — 시험지 HWP",
+  "input": "samples/exam-kor-1p.hwp",
+  "instructions": "extract-data --kind amount 로 이 시험지에서 금액만 수확해, 항목 수(itemCount)를 보고하라. 답 형식: {\"amounts\": <수>}. 0건은 오류가 아니다.",
+  "submit": {
+    "kind": "answer"
+  },
+  "checks": [
+    {
+      "name": "amounts 일치",
+      "op": "answer_eq",
+      "answer": "amounts",
+      "cmd": [
+        "extract-data",
+        "{input}",
+        "--kind",
+        "amount",
+        "--json"
+      ],
+      "path": "itemCount"
+    }
+  ]
+}

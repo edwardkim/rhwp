@@ -1,0 +1,39 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.provenance.envelope_sample.v1",
+  "claim": "M-prov",
+  "issue": 5480,
+  "generator": "tools/provenance_map/fatten_provenance_map.py",
+  "id": "recall-scope__default",
+  "command": "recall-scope",
+  "family": "receipt",
+  "mode": "default",
+  "flags": [
+    "--json"
+  ],
+  "cli": "rhwp recall-scope --json ",
+  "whyThisMode": "캡슐 파일명·해시·경로 배열",
+  "sampleKind": "typical",
+  "risk": "none",
+  "note": "봉투는 캡슐 파일명·해시·경로 배열·계수뿐 — 문서 본문 유래 문자열이 지나는 길이 없다.",
+  "declaredUntrusted": [],
+  "presentUntrusted": [],
+  "subsetOk": true,
+  "fieldClass": {
+    "schemaVersion": "R",
+    "count": "R",
+    "untrustedContent": "mark",
+    "untrustedFields": "mark"
+  },
+  "consumerRule": "파일명 배열은 캡슐 이름.",
+  "trap": "파일명을 문서 title 과 바꿔 쓰지 않는다.",
+  "injectionCanary": null,
+  "canaryRule": "이 모드는 문서 파생 문자열이 없다.",
+  "forbiddenIfPromoted": [],
+  "envelope": {
+    "schemaVersion": "1.0",
+    "count": "engine:recall-scope:count",
+    "untrustedContent": false,
+    "untrustedFields": []
+  }
+}

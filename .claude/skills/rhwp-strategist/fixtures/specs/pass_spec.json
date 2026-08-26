@@ -1,0 +1,48 @@
+{
+  "version": "1",
+  "title": "스마트시티 데이터 플랫폼 수주 근거 보고서",
+  "blocks": [
+    {
+      "type": "heading",
+      "level": 1,
+      "text": "스마트시티 데이터 플랫폼 수주 근거 보고서"
+    },
+    {
+      "type": "paragraph",
+      "text": "목표: 2026년 스마트시티 데이터 플랫폼 정부과제 수주"
+    },
+    {
+      "type": "paragraph",
+      "text": "발주 공고는 표준 API 연계를 필수기능으로 명시한다. [근거: EV-1, EV-2] CLAIM-1"
+    },
+    {
+      "type": "paragraph",
+      "text": "총사업비는 3,180백만원으로 적혀 있다. [근거: EV-3] CLAIM-2"
+    },
+    {
+      "type": "heading",
+      "level": 2,
+      "text": "근거 연결표"
+    },
+    {
+      "type": "table",
+      "rows": [
+        [
+          "주장",
+          "근거 ID",
+          "파일·좌표"
+        ],
+        [
+          "CLAIM-1",
+          "EV-1, EV-2",
+          "과업지시서.hwp (section=0, paragraph=12, page=2)"
+        ],
+        [
+          "CLAIM-2",
+          "EV-3",
+          "예산서_2025.hwpx (section=0, paragraph=7, page=0)"
+        ]
+      ]
+    }
+  ]
+}

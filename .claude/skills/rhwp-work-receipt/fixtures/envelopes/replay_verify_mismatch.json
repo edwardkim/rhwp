@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "1.0",
+  "mode": "verify",
+  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "inputSha256": "9872f62399b737c8ebe6cbe2adff4a9d777642e0cd507234428c8e9b3a439a3c",
+  "planSha256": "0177fa207e85bcf0bcbc52f3c7971f9566e10c8ef8402c302816ae05e3d336cc",
+  "outputSha256": "3c1c839b9b750e90a88239cf7052f46858ebefac8d4e2f985d4fac7699c7a5b3",
+  "toolVersion": "0.8.4",
+  "steps": 1,
+  "reproduced": false,
+  "expectedOutputSha256": "0000000000000000000000000000000000000000000000000000000000000000",
+  "untrustedContent": false,
+  "untrustedFields": [],
+  "_skillMeta": {
+    "exit": 3,
+    "branch": "verify-mismatch",
+    "command": "replay",
+    "note": "주장 기각. 도구 고장이 아니라 판정 데이터",
+    "stdoutSilentOnFail": false
+  }
+}

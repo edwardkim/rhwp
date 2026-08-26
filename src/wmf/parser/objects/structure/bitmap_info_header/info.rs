@@ -164,3 +164,56 @@ impl BitmapInfoHeaderInfo {
         ))
     }
 }
+
+/// Computes the DIB pixel-buffer byte count from header dimensions using the
+/// MS-WMF formula `(((Width * Planes * BitCount + 31) & !31) / 8) * abs(Height)`.
+///
+/// Width/Height/BitCount are attacker-controlled; evaluating the formula in the
+/// header's narrow integer types (`u16` for a core header, `u32` for
+/// info/v4/v5) overflows on crafted dimensions and panics under debug overflow
+/// checks (DoS). Evaluate in `u64` with saturating arithmetic and clamp into
+/// `usize`; the caller (`read_variable`) bounds the actual allocation.
+pub(super) fn dib_image_size(width: u64, height: u64, planes: u64, bit_count: u64) -> usize {
+    let stride = (width
+        .saturating_mul(planes)
+        .saturating_mul(bit_count)
+        .saturating_add(31)
+        & !31)
+        / 8;
+
+    usize::try_from(stride.saturating_mul(height)).unwrap_or(usize::MAX)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::dib_image_size;
+    use crate::wmf::parser::{BitCount, BitmapInfoHeader, BitmapInfoHeaderCore};
+
+    /// 유효 치수에서는 기존 좁은-정수 공식과 동일한 바이트 수를 낸다(무회귀).
+    #[test]
+    fn dib_image_size_matches_formula_on_valid_dimensions() {
+        // (((640 * 1 * 24 + 31) & !31) / 8) * 480 = 921_600
+        assert_eq!(dib_image_size(640, 480, 1, 24), 921_600);
+    }
+
+    /// 거대한 치수(u32::MAX)에서도 u64 포화로 패닉하지 않고 유한한 값을 낸다.
+    #[test]
+    fn dib_image_size_saturates_on_huge_dimensions() {
+        let v = dib_image_size(u64::from(u32::MAX), u64::from(u32::MAX), 1, 32);
+        assert!(v > 0);
+    }
+
+    /// Core 헤더 `size()`는 손상된 치수에서 u16 산술 오버플로로 패닉했었다.
+    /// 이제 포화 산술로 유한 값을 돌려준다.
+    #[test]
+    fn core_header_size_does_not_overflow() {
+        let header = BitmapInfoHeader::Core(BitmapInfoHeaderCore {
+            header_size: 12,
+            width: u16::MAX,
+            height: u16::MAX,
+            planes: 1,
+            bit_count: BitCount::BI_BITCOUNT_5,
+        });
+        assert!(header.size() > 0);
+    }
+}

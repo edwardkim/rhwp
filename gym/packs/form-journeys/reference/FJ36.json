@@ -1,0 +1,19 @@
+{
+  "id": "FJ36",
+  "steps": [
+    {
+      "run": [
+        "edit",
+        "replace-text",
+        "{input}",
+        "--find",
+        "마케팅",
+        "--replace",
+        "운영전략",
+        "-o",
+        "{sub:strategy.hwp}",
+        "--json"
+      ]
+    }
+  ]
+}

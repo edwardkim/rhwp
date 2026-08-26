@@ -1,0 +1,22 @@
+{
+  "id": "ST37",
+  "tier": 2,
+  "title": "백분율 누적세로막대 CSV 추출",
+  "input": "samples/chart/세로막대형/백프로기준누적세로막대형.hwp",
+  "instructions": "차트 1 의 숫자 시트를 chart.csv 로 제출하라. 백분율 누적은 표시 서식이다. CSV 는 원본 숫자 시트다. 100 으로 환산하지 마라. 원본 HWP/HWPX 를 복사하거나 머리 행만 있는 빈 표를 내지 마라. 힌트: rhwp chart-to-csv --chart 1 -o chart.csv.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "chart.csv"
+    ]
+  },
+  "checks": [
+    {
+      "name": "CSV 산출 존재",
+      "op": "file_exists",
+      "file": "chart.csv",
+      "minBytes": 8
+    }
+  ],
+  "axis": "추출"
+}

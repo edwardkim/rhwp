@@ -1,0 +1,5 @@
+page	pi	ci	rows	cols	row	col	candidate_kind	cell_bbox	node_type	line_bbox	text_bbox	edges	edge_clearance_px	max_overflow_px	left_px	right_px	top_px	bottom_px	text	note
+8	0	2	1	1	5	2	natural_visible_width_risk	322.7,677.2,394.5,216.1	TextRun	330.0,750.8,383.4,14.7	344.0,750.8,376.0,14.7	right	3.8	2.8	0.0	2.8	0.0	0.0	다음의 경우 검‧경이 진행하는 부패행위의 기소를 이첩받음	candidate only; line crosses Cell or visible-ending natural width exceeds it
+9	0	2	1	1	1	1	natural_visible_width_risk	136.3,295.9,144.2,120.8	TextRun	141.7,324.3,137.0,14.7	155.7,324.3,129.0,14.7	right	1.8	4.2	0.0	4.2	0.0	0.0	불공정거래행위 규제	candidate only; line crosses Cell or visible-ending natural width exceeds it
+9	0	2	1	1	7	1	natural_visible_width_risk	136.3,924.9,144.2,68.8	TextRun	141.7,952.0,137.0,14.7	155.7,952.0,129.0,14.7	right	1.8	4.2	0.0	4.2	0.0	0.0	조달사업 공공성 확보	candidate only; line crosses Cell or visible-ending natural width exceeds it
+9	0	2	1	1	7	2	natural_visible_width_risk	280.5,924.9,155.6,68.8	TextRun	285.9,942.0,148.3,14.7	299.9,942.0,141.0,14.7	right	1.9	4.8	0.0	4.8	0.0	0.0	조달사업에 관한 법률	candidate only; line crosses Cell or visible-ending natural width exceeds it

@@ -1,0 +1,19 @@
+{
+  "id": "T01",
+  "title": "form-01 조사",
+  "sample": "samples/form-01.hwp",
+  "steps": [
+    {
+      "argv": [
+        "fields",
+        "samples/form-01.hwp",
+        "--json"
+      ],
+      "expect": {
+        "fieldCount": 1,
+        "fields.0.name": "myMsg01"
+      }
+    }
+  ],
+  "stop": "F04"
+}

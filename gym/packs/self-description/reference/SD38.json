@@ -1,0 +1,15 @@
+{
+  "id": "SD38",
+  "steps": [
+    {
+      "answer": {
+        "ordering": {
+          "cmd": [
+            "capabilities"
+          ],
+          "path": "batch.ordering"
+        }
+      }
+    }
+  ]
+}

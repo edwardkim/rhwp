@@ -1,0 +1,73 @@
+{
+  "schemaVersion": "2.0",
+  "kind": "canonical-font-rule-lifecycle-registry",
+  "issue": 5955,
+  "sourceCommit": "1111111111111111111111111111111111111111",
+  "schema": {
+    "path": "assets/font-rules/font_rule_registry_v2.schema.json",
+    "sha256": "e3412357b2943c00c8a5d2fbb5b0371a8c8c9721157c67e5e38d68ae40a7d7b3"
+  },
+  "sealedV1Registry": {
+    "path": "assets/font-rules/font_rule_registry.json",
+    "sha256": "f549ca3a8807be712cc197daf14d96abb1e5f075ac55f1d9142db67c1a56681a"
+  },
+  "appliedChangeSets": [],
+  "summary": {
+    "ruleCount": 1,
+    "activeRuleCount": 1,
+    "retiredRuleCount": 0,
+    "countsByProjection": {
+      "canvas2d-paint": 1
+    }
+  },
+  "evidenceRecords": [
+    {
+      "evidenceId": "evidence.fixture.sealed-v1",
+      "kind": "sealed-v1",
+      "source": "assets/font-rules/font_rule_registry.json",
+      "sha256": "f549ca3a8807be712cc197daf14d96abb1e5f075ac55f1d9142db67c1a56681a",
+      "licenseOrProvenance": "rhwp W7 sealed registry",
+      "parentEvidenceIds": []
+    }
+  ],
+  "rulesSha256": "bce584f605a4dbdd919080127dd6ca372ca45526d6e8b58aee516e2ca5f6008c",
+  "rules": [
+    {
+      "ruleId": "font-rule.fixture.paint.0001",
+      "relationType": "paint-substitute",
+      "decisionPlane": "paint",
+      "sourceBoundaryId": "boundary.fixture.public",
+      "sourceFace": "Fixture Sans",
+      "targetFaceOrPolicy": "Fixture Sans Fallback",
+      "conditions": {},
+      "order": 0,
+      "projections": [
+        {
+          "id": "canvas2d-paint",
+          "mode": "direct"
+        }
+      ],
+      "projectionSequence": 0,
+      "metricEntryIds": [],
+      "supply": null,
+      "evidence": {
+        "w1RuleId": "font-rule.fixture.paint.0001",
+        "candidateIds": ["candidate.fixture.paint.0001"],
+        "sourceBoundaryIds": ["boundary.fixture.public"],
+        "evidenceStatus": "historical",
+        "baselineProjectionSha256": "2222222222222222222222222222222222222222222222222222222222222222"
+      },
+      "evidenceIds": ["evidence.fixture.sealed-v1"],
+      "selectionTupleSha256": "146f401106f52187aaa1cd9cc452eaa76d722fd1620288ffad6b4249b7332f42",
+      "status": "active",
+      "lifecycle": {
+        "introducedBy": "migration:issue-5955",
+        "lastEvidenceChangeBy": null,
+        "retiredBy": null,
+        "retirementReason": null,
+        "successorRuleIds": [],
+        "predecessorRuleIds": []
+      }
+    }
+  ]
+}

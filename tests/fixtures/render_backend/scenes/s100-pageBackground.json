@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "id": "s100-pageBackground",
+  "width": 400.0,
+  "height": 300.0,
+  "contract": "pageBackground 단독 장면",
+  "ops": [
+    {
+      "kind": "pageBackground",
+      "x": 0.0,
+      "y": 0.0,
+      "w": 400.0,
+      "h": 300.0,
+      "text": null,
+      "gradient": false,
+      "image": false
+    }
+  ],
+  "expectedKinds": [
+    "pageBackground"
+  ],
+  "expectedTrace": [
+    "begin_page 400.00x300.00",
+    "  pageBackground bbox=0.00,0.00,400.00,300.00",
+    "end_page ops=1"
+  ]
+}

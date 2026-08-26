@@ -1,0 +1,133 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5324,
+  "skill": "bug-hunter",
+  "notGym": true,
+  "noNewCli": true,
+  "count": 12,
+  "rules": [
+    {
+      "id": "C01",
+      "observation": "reference_only",
+      "labelKo": "소실",
+      "labelEn": "loss",
+      "final": false,
+      "axis": "text-multiset",
+      "issueReady": false,
+      "note": "기준 PDF 텍스트층에만 있는 문자. 후보."
+    },
+    {
+      "id": "C02",
+      "observation": "svg_only",
+      "labelKo": "과잉",
+      "labelEn": "excess",
+      "final": false,
+      "axis": "text-multiset",
+      "issueReady": false,
+      "note": "SVG <text> 에만 있는 문자. 숨김 대상 과잉 출력 의심."
+    },
+    {
+      "id": "C03",
+      "observation": "both_delta_same_page",
+      "labelKo": "치환",
+      "labelEn": "substitution",
+      "final": false,
+      "axis": "text-multiset",
+      "issueReady": false,
+      "note": "같은 쪽에 양쪽 차이. PUA·폰트 대체 후보."
+    },
+    {
+      "id": "C04",
+      "observation": "reread_mismatch",
+      "labelKo": "기록값 불일치",
+      "labelEn": "reread",
+      "final": true,
+      "axis": "reread",
+      "issueReady": true,
+      "note": "export-tables/fields 재독이 쓴 값과 다름. 기계 확정."
+    },
+    {
+      "id": "C05",
+      "observation": "exit_or_json_contract",
+      "labelKo": "계약 위반",
+      "labelEn": "contract",
+      "final": true,
+      "axis": "exit-json",
+      "issueReady": true,
+      "note": "종료 코드·JSON 봉투가 cli_commands.md 와 다름."
+    },
+    {
+      "id": "C06",
+      "observation": "pixel_diff_rank",
+      "labelKo": "픽셀 후보",
+      "labelEn": "pixel-candidate",
+      "final": false,
+      "axis": "pixel",
+      "issueReady": false,
+      "note": "diff% 랭킹. 절대 오라클 아님. 사람 감사."
+    },
+    {
+      "id": "C07",
+      "observation": "zip_name_set_missing",
+      "labelKo": "엔트리 소실",
+      "labelEn": "zip-loss",
+      "final": false,
+      "axis": "zip",
+      "issueReady": false,
+      "note": "개수가 아니라 이름 집합. 추가가 소실을 상쇄할 수 있다."
+    },
+    {
+      "id": "C08",
+      "observation": "constant_byte_shrink",
+      "labelKo": "상수 블록 소실 신호",
+      "labelEn": "constant-shrink",
+      "final": false,
+      "axis": "zip",
+      "issueReady": false,
+      "note": "여러 문서에서 같은 바이트 수만큼 줄어들면 구조 소실 의심."
+    },
+    {
+      "id": "C09",
+      "observation": "self_render_diff_only",
+      "labelKo": "자기 일관성",
+      "labelEn": "self-consistency",
+      "final": false,
+      "axis": "render-diff",
+      "issueReady": false,
+      "note": "정답지 없을 때 한계. 한컴 충실도 이슈로 승격 금지."
+    },
+    {
+      "id": "C10",
+      "observation": "console_mojibake",
+      "labelKo": "콘솔 착시",
+      "labelEn": "not-a-defect",
+      "final": true,
+      "axis": "encoding",
+      "issueReady": false,
+      "note": "cp949 콘솔. UTF-8 파일 비교만. 이슈 금지."
+    },
+    {
+      "id": "C11",
+      "observation": "pdf_path_only_glyphs",
+      "labelKo": "텍스트층 손상 후보",
+      "labelEn": "pdf-path-text",
+      "final": false,
+      "axis": "text-multiset",
+      "issueReady": false,
+      "note": "PDF 가 글자를 path 로 그린 경우. 단독 최종 판정 금지."
+    },
+    {
+      "id": "C12",
+      "observation": "layout_ledger_square_wrap",
+      "labelKo": "그림 침범 후보",
+      "labelEn": "square-wrap",
+      "final": false,
+      "axis": "layout-ledger",
+      "issueReady": false,
+      "note": "square_wrap_text_overlap. PDF raster 없이 후보화."
+    }
+  ],
+  "missing": "loss",
+  "extra": "excess",
+  "both": "substitution"
+}

@@ -1,0 +1,26 @@
+{
+  "id": "SD47",
+  "tier": 2,
+  "title": "MCP 서버 권고 이름",
+  "input": "samples/table-001.hwp",
+  "instructions": "MCP 매니페스트의 server.suggestedName 을 answer.json 에 {\"suggestedName\": S} 으로 제출하라. 힌트: capabilities --mcp 의 server.suggestedName.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "MCP 서버 권고 이름",
+      "op": "answer_eq",
+      "answer": "suggestedName",
+      "path": "server.suggestedName",
+      "cmd": [
+        "capabilities",
+        "--mcp"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

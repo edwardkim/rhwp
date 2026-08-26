@@ -1,0 +1,57 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.form_fill.fill_case.v1",
+  "id": "hr-card-verify",
+  "axis": "verify",
+  "claim": "M-fill",
+  "generator": "tools/form_fill/fatten_form_fill.py",
+  "form": "hr-card",
+  "title": "인사기록카드 --verify",
+  "family": "인사",
+  "genre": "기록",
+  "sample": "fixtures/forms/인사기록카드.hwp",
+  "format": "hwp5",
+  "relatedIssue": "#3329",
+  "why": "저장 직후 재파싱. identical:false 면 exit 3. 산출물은 남는다.",
+  "firstFieldName": "사번",
+  "fieldCount": 20,
+  "argv": [
+    "edit",
+    "fill-fields",
+    "fixtures/forms/인사기록카드.hwp",
+    "--data",
+    "{\"사번\": \"A10234\"}",
+    "-o",
+    "out/hr-card-verify.hwp",
+    "--verify",
+    "--json"
+  ],
+  "existingCliOnly": true,
+  "data": {
+    "사번": "A10234"
+  },
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "fixtures/forms/인사기록카드.hwp",
+    "dryRun": false,
+    "filledCount": 1,
+    "filled": [
+      {
+        "name": "사번",
+        "occurrence": 0,
+        "value": "A10234"
+      }
+    ],
+    "notFound": [],
+    "ambiguous": [],
+    "confusable": [],
+    "verify": {
+      "identical": true,
+      "diffCount": 0
+    },
+    "output": "out/hr-card-verify.hwp",
+    "outputFormat": "hwp5"
+  },
+  "exit": 0,
+  "leavesOutput": true
+}

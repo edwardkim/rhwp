@@ -1,0 +1,109 @@
+{
+  "catalogVersion": "1.0",
+  "skill": "rhwp-table-exchange",
+  "issue": 5306,
+  "rows": [
+    {
+      "id": "prompt_00",
+      "user": "표를 CSV 로 뽑아줘",
+      "route": "export-tables then table-to-csv",
+      "branch": "scan-first"
+    },
+    {
+      "id": "prompt_01",
+      "user": "엑셀에서 한글이 깨져",
+      "route": "table-to-csv --bom",
+      "branch": "bom"
+    },
+    {
+      "id": "prompt_02",
+      "user": "N번 표만",
+      "route": "table-to-csv --table N",
+      "branch": "single"
+    },
+    {
+      "id": "prompt_03",
+      "user": "이 CSV 를 표에 넣어줘",
+      "route": "csv-to-table --dry-run then write --verify",
+      "branch": "write"
+    },
+    {
+      "id": "prompt_04",
+      "user": "쓰기 전에 뭐가 바뀔지",
+      "route": "csv-to-table --dry-run --json",
+      "branch": "dry-run"
+    },
+    {
+      "id": "prompt_05",
+      "user": "되돌린 게 진짜야",
+      "route": "csv-to-table --verify",
+      "branch": "verify"
+    },
+    {
+      "id": "prompt_06",
+      "user": "셀 하나만 고쳐줘",
+      "route": "edit set-cell",
+      "branch": "fallback"
+    },
+    {
+      "id": "prompt_07",
+      "user": "병합 표 수정",
+      "route": "edit set-cell 만. CSV 왕복 금지",
+      "branch": "fallback"
+    },
+    {
+      "id": "prompt_08",
+      "user": "여러 문서 표 수확",
+      "route": "batch export-tables --json",
+      "branch": "batch"
+    },
+    {
+      "id": "prompt_09",
+      "user": "표가 몇 개야",
+      "route": "export-tables --json",
+      "branch": "scan"
+    },
+    {
+      "id": "shape_gate_00",
+      "merged": false,
+      "nested": false,
+      "container": false,
+      "route": "csv-roundtrip"
+    },
+    {
+      "id": "shape_gate_01",
+      "merged": true,
+      "nested": false,
+      "container": false,
+      "route": "set-cell"
+    },
+    {
+      "id": "shape_gate_02",
+      "merged": false,
+      "nested": true,
+      "container": false,
+      "route": "outer-csv-or-skip-nested"
+    },
+    {
+      "id": "shape_gate_03",
+      "merged": true,
+      "nested": true,
+      "container": false,
+      "route": "set-cell-outer-only"
+    },
+    {
+      "id": "shape_gate_04",
+      "merged": false,
+      "nested": false,
+      "container": true,
+      "route": "skip-not-top-level"
+    },
+    {
+      "id": "shape_gate_05",
+      "merged": true,
+      "nested": false,
+      "container": true,
+      "route": "skip-not-top-level"
+    }
+  ]
+}

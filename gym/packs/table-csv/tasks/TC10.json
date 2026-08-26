@@ -1,0 +1,38 @@
+{
+  "id": "TC10",
+  "tier": 2,
+  "title": "치수 계약 — basic-table-01 행·열 수",
+  "input": "samples/hwpx/basic-table-01.hwpx",
+  "instructions": "table-to-csv --table 0 --json 으로 표 0 의 행 수(rowCount)와 열 수(colCount)를 보고하라. 답 형식: {\"rows\": <수>, \"cols\": <수>}. csv-to-table 은 이 치수를 바꾸지 못한다.",
+  "submit": {
+    "kind": "answer"
+  },
+  "checks": [
+    {
+      "name": "행 수 일치",
+      "op": "answer_eq",
+      "answer": "rows",
+      "cmd": [
+        "table-to-csv",
+        "{input}",
+        "--table",
+        "0",
+        "--json"
+      ],
+      "path": "tables[0].rowCount"
+    },
+    {
+      "name": "열 수 일치",
+      "op": "answer_eq",
+      "answer": "cols",
+      "cmd": [
+        "table-to-csv",
+        "{input}",
+        "--table",
+        "0",
+        "--json"
+      ],
+      "path": "tables[0].colCount"
+    }
+  ]
+}

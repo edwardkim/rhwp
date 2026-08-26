@@ -1,0 +1,76 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.form_fill.batch_row.v1",
+  "id": "reg-80168-batch-dry-run",
+  "axis": "batch-dry-run",
+  "claim": "M-fill",
+  "generator": "tools/form_fill/fatten_form_fill.py",
+  "form": "reg-80168",
+  "title": "규제영향분석서 80168 batch --dry-run",
+  "why": "dry-run 이어도 --out-dir 는 필수. 폴더·파일을 만들지 않는다.",
+  "sample": "samples/80168_regulatory_analysis.hwp",
+  "relatedIssue": "#3719",
+  "argv": [
+    "batch",
+    "fill",
+    "--form",
+    "samples/80168_regulatory_analysis.hwp",
+    "--data",
+    "data/reg-80168.jsonl",
+    "--out-dir",
+    "out/reg-80168-dry",
+    "--dry-run",
+    "--json"
+  ],
+  "records": [
+    {
+      "schemaVersion": "1.0",
+      "source": "samples/80168_regulatory_analysis.hwp",
+      "dryRun": true,
+      "filledCount": 2,
+      "filled": [
+        {
+          "name": "서식명",
+          "occurrence": 0,
+          "value": "규제영향분석서"
+        },
+        {
+          "name": "법령명",
+          "occurrence": 0,
+          "value": "행정 효율과 협업 촉진에 관한 규정-홍길동"
+        }
+      ],
+      "notFound": [],
+      "ambiguous": [],
+      "confusable": [],
+      "verify": null,
+      "row": 0
+    },
+    {
+      "schemaVersion": "1.0",
+      "source": "samples/80168_regulatory_analysis.hwp",
+      "dryRun": true,
+      "filledCount": 2,
+      "filled": [
+        {
+          "name": "서식명",
+          "occurrence": 0,
+          "value": "규제영향분석서"
+        },
+        {
+          "name": "법령명",
+          "occurrence": 0,
+          "value": "행정 효율과 협업 촉진에 관한 규정-김가온"
+        }
+      ],
+      "notFound": [],
+      "ambiguous": [],
+      "confusable": [],
+      "verify": null,
+      "row": 1
+    }
+  ],
+  "exit": 0,
+  "writesFiles": false,
+  "anyOutputKey": false
+}

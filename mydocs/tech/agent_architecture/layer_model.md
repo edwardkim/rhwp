@@ -7,6 +7,10 @@ last_verified: 2026-08-03
 
 # 에이전트 표면 4층 성숙도 모델
 
+> **v0.8.4 현행성 주의:** 본문의 Python·Node 바인딩 실측은 2026-08-03 당시의
+> historical evidence다. 두 공식 바인딩과 전용 테스트·배포는 #4655에서 철회됐으며,
+> 현재 L3 지원 표면이나 다음 작업 지시로 해석하지 않는다.
+
 > rhwp 의 에이전트 표면은 **바닥에서 위로** 자랐다. 명령이 필요해서 명령을 만들고,
 > 가드가 필요해서 가드를 만들고, 문서가 필요해서 문서를 썼다. 그 결과 **층은 생겼는데
 > 층 사이의 순서가 없다.** 이 문서는 그 순서를 확정한다.
@@ -873,7 +877,6 @@ L3 로 분류되기 쉽지만, **선언과 실물의 불일치**이므로 L1 이
   특히 [위협 모델](../agent_security/threat_model.md)·[공격 표면](../agent_security/attack_surface.md)·
   [소비 에이전트 가이드](../agent_security/consumer_guide.md)
 - [경량 에이전트 내성 — CLI·MCP 계약 확장 4건](../weak_agent_proofing.md) — L1 내성 계약의 전신
-- [외부 바인딩 공통 기반(M18~M20)](../bindings_foundation.md) — L3 바인딩 축
 - [에이전트 경계 무결성 계약](../agent_boundary_contract.md) — L2 경계 계약
 
 ### 절차

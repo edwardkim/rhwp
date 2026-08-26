@@ -1,0 +1,46 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5329,
+  "notGym": true,
+  "noNewCli": true,
+  "aaMustPass": false,
+  "defaultMode": "pixel-and-text",
+  "textOnlySkipsChrome": true,
+  "rankingIsCandidate": true,
+  "verdictIsMaintainer": true,
+  "windowsPython": "venv\\Scripts\\python.exe",
+  "posixPython": "venv/bin/python",
+  "breakSystemPackages": false,
+  "coreReuse": [
+    "tools/fidelity_compare/fidelity_compare.py",
+    "export-svg",
+    "export-svg --font-style"
+  ],
+  "axes": [
+    {
+      "when": "no official PDF",
+      "go": "rhwp-visual-regression",
+      "stop": "F01"
+    },
+    {
+      "when": "text candidates first",
+      "go": "--text-only",
+      "stop": "F02"
+    },
+    {
+      "when": "pixel sheets",
+      "go": "default mode + Chrome",
+      "stop": "F03"
+    },
+    {
+      "when": "tofu",
+      "go": "font-style + RHWP_FONT_PATH_DIR",
+      "stop": "F04/F14"
+    },
+    {
+      "when": "encrypted",
+      "go": "stop",
+      "stop": "F13"
+    }
+  ]
+}

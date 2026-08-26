@@ -1,0 +1,17 @@
+{
+  "id": "OM01",
+  "steps": [
+    {
+      "answer": {
+        "fields": {
+          "cmd": [
+            "fields",
+            "{input}",
+            "--json"
+          ],
+          "path": "fieldCount"
+        }
+      }
+    }
+  ]
+}

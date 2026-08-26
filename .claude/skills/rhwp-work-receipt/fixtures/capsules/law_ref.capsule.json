@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workCapsule",
+  "parent": null,
+  "plan": {
+    "planVersion": "1.0",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "output": "out/law_ref.hwp",
+    "steps": [
+      {
+        "action": "replace_text",
+        "find": "제12조",
+        "replace": "제13조"
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"samples/basic/issue2007_nested_cell_pagination_42065.hwp\",\"output\":\"out/law_ref.hwp\",\"steps\":[{\"action\":\"replace_text\",\"find\":\"제12조\",\"replace\":\"제13조\"}]}",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "inputSha256": "086cfd693095982bddb00a97e176089a3a16b67819f2111ff64eaac581ef2e88",
+    "planSha256": "9c7527e108263e63d2753a86869d31b3cec99416458d52349b9ebf2b5bf16fae",
+    "outputSha256": "f1b085351ac9c303cb5311fb8f87b705bc05ddb3e69288dd6690a593ffcb8340",
+    "toolVersion": "0.8.4",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null,
+    "untrustedContent": false,
+    "untrustedFields": []
+  }
+}

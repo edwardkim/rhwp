@@ -80,8 +80,11 @@ runTest('겹침 클릭 = 최상단 개체 선택 (#1280 v2)', async ({ page }) =
   // Stage 1: plane/zOrder/stableIndex 노출 (WASM 경유 end-to-end)
   assert(typeof result.shapePlane === 'number' && typeof result.imagePlane === 'number',
     `plane 미노출: shape=${result.shapePlane}, image=${result.imagePlane}`);
-  assert(typeof result.shapeZ === 'number' && typeof result.shapeStable === 'number',
-    `zOrder/stableIndex 미노출: z=${result.shapeZ}, stable=${result.shapeStable}`);
+  assert(typeof result.shapeZ === 'number' &&
+    Array.isArray(result.shapeStable) && Array.isArray(result.imageStable) &&
+    result.shapeStable.every(Number.isInteger) && result.imageStable.every(Number.isInteger),
+  `zOrder/stableIndex 문서 경로 미노출: z=${result.shapeZ}, ` +
+    `shape=${JSON.stringify(result.shapeStable)}, image=${JSON.stringify(result.imageStable)}`);
   assert(result.shapePlane === 3, `글상자 plane=3(InFrontOfText) 기대, 실제 ${result.shapePlane}`);
   assert(result.imagePlane === 2, `이미지 plane=2(Square) 기대, 실제 ${result.imagePlane}`);
   // 핵심 불변식: 글상자가 이미지보다 위(plane 큼) → 클릭 시 글상자 선택.

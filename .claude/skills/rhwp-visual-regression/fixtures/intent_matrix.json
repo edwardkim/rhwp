@@ -1,0 +1,1527 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5312,
+  "count": 190,
+  "intents": [
+    {
+      "id": "I001",
+      "utterance": "편집 전후 화면 비교",
+      "command": "render-diff-pair",
+      "reference": "02_render_diff_two_file.md",
+      "stop": "F03",
+      "notGym": true
+    },
+    {
+      "id": "I002",
+      "utterance": "레이아웃 깨졌는지",
+      "command": "render-diff-pair",
+      "reference": "02_render_diff_two_file.md",
+      "stop": "F04",
+      "notGym": true
+    },
+    {
+      "id": "I003",
+      "utterance": "라운드트립 시각 검증",
+      "command": "render-diff-self",
+      "reference": "01_render_diff_self.md",
+      "stop": "F01",
+      "notGym": true
+    },
+    {
+      "id": "I004",
+      "utterance": "render-diff 돌려줘",
+      "command": "render-diff-pair",
+      "reference": "02_render_diff_two_file.md",
+      "stop": "F01",
+      "notGym": true
+    },
+    {
+      "id": "I005",
+      "utterance": "바뀐 게 의도한 것뿐인지",
+      "command": "render-diff-pair",
+      "reference": "04_struct_mismatch.md",
+      "stop": "F03",
+      "notGym": true
+    },
+    {
+      "id": "I006",
+      "utterance": "포맷 왕복 안전한지",
+      "command": "render-diff-self",
+      "reference": "01_render_diff_self.md",
+      "stop": "F01",
+      "notGym": true
+    },
+    {
+      "id": "I007",
+      "utterance": "HWP 어댑터로 왕복",
+      "command": "render-diff-self-hwp",
+      "reference": "01_render_diff_self.md",
+      "stop": "F01",
+      "notGym": true
+    },
+    {
+      "id": "I008",
+      "utterance": "폴더 전체 회귀 게이트",
+      "command": "render-diff-batch",
+      "reference": "03_render_diff_batch.md",
+      "stop": "F10",
+      "notGym": true
+    },
+    {
+      "id": "I009",
+      "utterance": "geom_inventory 뽑아줘",
+      "command": "render-diff-batch",
+      "reference": "18_tsv_schema.md",
+      "stop": "F10",
+      "notGym": true
+    },
+    {
+      "id": "I010",
+      "utterance": "STRUCT 떴는데 어쩌지",
+      "command": "render-diff-pair",
+      "reference": "04_struct_mismatch.md",
+      "stop": "F03",
+      "notGym": true
+    },
+    {
+      "id": "I011",
+      "utterance": "노드 경로 읽어줘",
+      "command": "render-diff-pair",
+      "reference": "15_node_paths.md",
+      "stop": "F03",
+      "notGym": true
+    },
+    {
+      "id": "I012",
+      "utterance": "쪽 수가 달라졌어",
+      "command": "render-diff-pair",
+      "reference": "21_page_mismatch.md",
+      "stop": "F05",
+      "notGym": true
+    },
+    {
+      "id": "I013",
+      "utterance": "파일을 못 열었어",
+      "command": "render-diff-pair",
+      "reference": "22_load_fail.md",
+      "stop": "F07",
+      "notGym": true
+    },
+    {
+      "id": "I014",
+      "utterance": "변위만 임계 초과",
+      "command": "render-diff-pair",
+      "reference": "23_over_status.md",
+      "stop": "F06",
+      "notGym": true
+    },
+    {
+      "id": "I015",
+      "utterance": "IR 구조 차이",
+      "command": "ir-diff-json",
+      "reference": "06_ir_diff.md",
+      "stop": "F08",
+      "notGym": true
+    },
+    {
+      "id": "I016",
+      "utterance": "ir-diff 제이슨",
+      "command": "ir-diff-json",
+      "reference": "06_ir_diff.md",
+      "stop": "F08",
+      "notGym": true
+    },
+    {
+      "id": "I017",
+      "utterance": "변환 파이프라인 게이트",
+      "command": "ir-diff-json",
+      "reference": "06_ir_diff.md",
+      "stop": "F08",
+      "notGym": true
+    },
+    {
+      "id": "I018",
+      "utterance": "빨리 눈으로 확인",
+      "command": "export-png",
+      "reference": "07_thumbnail_vs_png.md",
+      "stop": "F09",
+      "notGym": true
+    },
+    {
+      "id": "I019",
+      "utterance": "썸네일 뽑아줘",
+      "command": "thumbnail",
+      "reference": "07_thumbnail_vs_png.md",
+      "stop": "F09",
+      "notGym": true
+    },
+    {
+      "id": "I020",
+      "utterance": "저장 미리보기만",
+      "command": "thumbnail",
+      "reference": "07_thumbnail_vs_png.md",
+      "stop": "F09",
+      "notGym": true
+    },
+    {
+      "id": "I021",
+      "utterance": "재렌더 PNG",
+      "command": "export-png",
+      "reference": "07_thumbnail_vs_png.md",
+      "stop": "F09",
+      "notGym": true
+    },
+    {
+      "id": "I022",
+      "utterance": "자기 자신이랑 비교",
+      "command": "render-diff-pair",
+      "reference": "08_determinism.md",
+      "stop": "F02",
+      "notGym": true
+    },
+    {
+      "id": "I023",
+      "utterance": "결정성 기준선",
+      "command": "render-diff-pair",
+      "reference": "08_determinism.md",
+      "stop": "F02",
+      "notGym": true
+    },
+    {
+      "id": "I024",
+      "utterance": "임계 0.05 로",
+      "command": "render-diff-pair",
+      "reference": "09_max_disp.md",
+      "stop": "F06",
+      "notGym": true
+    },
+    {
+      "id": "I025",
+      "utterance": "max-disp 기본값",
+      "command": "render-diff-pair",
+      "reference": "09_max_disp.md",
+      "stop": "F01",
+      "notGym": true
+    },
+    {
+      "id": "I026",
+      "utterance": "기계 봉투로",
+      "command": "render-diff-json",
+      "reference": "10_envelopes.md",
+      "stop": "F08",
+      "notGym": true
+    },
+    {
+      "id": "I027",
+      "utterance": "json 모드 exit",
+      "command": "render-diff-json",
+      "reference": "20_exit_codes.md",
+      "stop": "F08",
+      "notGym": true
+    },
+    {
+      "id": "I028",
+      "utterance": "정밀 bbox",
+      "command": "export-render-tree",
+      "reference": "24_export_render_tree.md",
+      "stop": "F11",
+      "notGym": true
+    },
+    {
+      "id": "I029",
+      "utterance": "메일머지 산출물끼리",
+      "command": "render-diff-pair",
+      "reference": "02_render_diff_two_file.md",
+      "stop": "F01",
+      "notGym": true
+    },
+    {
+      "id": "I030",
+      "utterance": "채운 자리만 움직였는지",
+      "command": "render-diff-pair",
+      "reference": "04_struct_mismatch.md",
+      "stop": "F03",
+      "notGym": true
+    },
+    {
+      "id": "I031",
+      "utterance": "로고가 밀렸는지",
+      "command": "render-diff-pair",
+      "reference": "04_struct_mismatch.md",
+      "stop": "F04",
+      "notGym": true
+    },
+    {
+      "id": "I032",
+      "utterance": "CI 에 배치 심어",
+      "command": "render-diff-batch",
+      "reference": "19_gate_recipes.md",
+      "stop": "F10",
+      "notGym": true
+    },
+    {
+      "id": "I033",
+      "utterance": "TSV 컬럼이 뭐야",
+      "command": "render-diff-batch",
+      "reference": "18_tsv_schema.md",
+      "stop": "F10",
+      "notGym": true
+    },
+    {
+      "id": "I034",
+      "utterance": "WARN_TEXTRUN 은 실패야?",
+      "command": "render-diff-pair",
+      "reference": "05_status_codes.md",
+      "stop": "F12",
+      "notGym": true
+    },
+    {
+      "id": "I035",
+      "utterance": "페이지 0만",
+      "command": "render-diff-pair",
+      "reference": "02_render_diff_two_file.md",
+      "stop": "F11",
+      "notGym": true
+    },
+    {
+      "id": "I036",
+      "utterance": "한컴이랑 같은지",
+      "command": "export-png",
+      "reference": "11_pitfalls.md",
+      "stop": "F09",
+      "notGym": true
+    },
+    {
+      "id": "I037",
+      "utterance": "색이 바뀌었는지",
+      "command": "export-png",
+      "reference": "11_pitfalls.md",
+      "stop": "F09",
+      "notGym": true
+    },
+    {
+      "id": "I038",
+      "utterance": "래스터 diff",
+      "command": "export-png",
+      "reference": "11_pitfalls.md",
+      "stop": "F09",
+      "notGym": true
+    },
+    {
+      "id": "I039",
+      "utterance": "배치 폴더 없음",
+      "command": "render-diff-batch",
+      "reference": "22_load_fail.md",
+      "stop": "F07",
+      "notGym": true
+    },
+    {
+      "id": "I040",
+      "utterance": "없는 파일 단건",
+      "command": "render-diff-pair",
+      "reference": "22_load_fail.md",
+      "stop": "F07",
+      "notGym": true
+    },
+    {
+      "id": "I041",
+      "utterance": "빈 서식과 채움본 비교해",
+      "command": "render-diff-pair",
+      "reference": "02_render_diff_two_file.md",
+      "stop": "F03",
+      "notGym": true
+    },
+    {
+      "id": "I042",
+      "utterance": "빈 서식과 채움본 재줘",
+      "command": "render-diff-pair",
+      "reference": "02_render_diff_two_file.md",
+      "stop": "F03",
+      "notGym": true
+    },
+    {
+      "id": "I043",
+      "utterance": "빈 서식과 채움본 확인해",
+      "command": "render-diff-pair",
+      "reference": "02_render_diff_two_file.md",
+      "stop": "F03",
+      "notGym": true
+    },
+    {
+      "id": "I044",
+      "utterance": "빈 서식과 채움본 돌려",
+      "command": "render-diff-pair",
+      "reference": "02_render_diff_two_file.md",
+      "stop": "F03",
+      "notGym": true
+    },
+    {
+      "id": "I045",
+      "utterance": "빈 서식과 채움본 재봐",
+      "command": "render-diff-pair",
+      "reference": "02_render_diff_two_file.md",
+      "stop": "F03",
+      "notGym": true
+    },
+    {
+      "id": "I046",
+      "utterance": "빈 서식과 채움본 측정해",
+      "command": "render-diff-pair",
+      "reference": "02_render_diff_two_file.md",
+      "stop": "F03",
+      "notGym": true
+    },
+    {
+      "id": "I047",
+      "utterance": "빈 서식과 채움본 게이트 걸어",
+      "command": "render-diff-pair",
+      "reference": "02_render_diff_two_file.md",
+      "stop": "F03",
+      "notGym": true
+    },
+    {
+      "id": "I048",
+      "utterance": "빈 서식과 채움본 숫자로 봐",
+      "command": "render-diff-pair",
+      "reference": "02_render_diff_two_file.md",
+      "stop": "F03",
+      "notGym": true
+    },
+    {
+      "id": "I049",
+      "utterance": "빈 서식과 채움본 판정해",
+      "command": "render-diff-pair",
+      "reference": "02_render_diff_two_file.md",
+      "stop": "F03",
+      "notGym": true
+    },
+    {
+      "id": "I050",
+      "utterance": "빈 서식과 채움본 좁혀줘",
+      "command": "render-diff-pair",
+      "reference": "02_render_diff_two_file.md",
+      "stop": "F03",
+      "notGym": true
+    },
+    {
+      "id": "I051",
+      "utterance": "같은 길이 두 산출물 비교해",
+      "command": "render-diff-pair",
+      "reference": "02_render_diff_two_file.md",
+      "stop": "F01",
+      "notGym": true
+    },
+    {
+      "id": "I052",
+      "utterance": "같은 길이 두 산출물 재줘",
+      "command": "render-diff-pair",
+      "reference": "02_render_diff_two_file.md",
+      "stop": "F01",
+      "notGym": true
+    },
+    {
+      "id": "I053",
+      "utterance": "같은 길이 두 산출물 확인해",
+      "command": "render-diff-pair",
+      "reference": "02_render_diff_two_file.md",
+      "stop": "F01",
+      "notGym": true
+    },
+    {
+      "id": "I054",
+      "utterance": "같은 길이 두 산출물 돌려",
+      "command": "render-diff-pair",
+      "reference": "02_render_diff_two_file.md",
+      "stop": "F01",
+      "notGym": true
+    },
+    {
+      "id": "I055",
+      "utterance": "같은 길이 두 산출물 재봐",
+      "command": "render-diff-pair",
+      "reference": "02_render_diff_two_file.md",
+      "stop": "F01",
+      "notGym": true
+    },
+    {
+      "id": "I056",
+      "utterance": "같은 길이 두 산출물 측정해",
+      "command": "render-diff-pair",
+      "reference": "02_render_diff_two_file.md",
+      "stop": "F01",
+      "notGym": true
+    },
+    {
+      "id": "I057",
+      "utterance": "같은 길이 두 산출물 게이트 걸어",
+      "command": "render-diff-pair",
+      "reference": "02_render_diff_two_file.md",
+      "stop": "F01",
+      "notGym": true
+    },
+    {
+      "id": "I058",
+      "utterance": "같은 길이 두 산출물 숫자로 봐",
+      "command": "render-diff-pair",
+      "reference": "02_render_diff_two_file.md",
+      "stop": "F01",
+      "notGym": true
+    },
+    {
+      "id": "I059",
+      "utterance": "같은 길이 두 산출물 판정해",
+      "command": "render-diff-pair",
+      "reference": "02_render_diff_two_file.md",
+      "stop": "F01",
+      "notGym": true
+    },
+    {
+      "id": "I060",
+      "utterance": "같은 길이 두 산출물 좁혀줘",
+      "command": "render-diff-pair",
+      "reference": "02_render_diff_two_file.md",
+      "stop": "F01",
+      "notGym": true
+    },
+    {
+      "id": "I061",
+      "utterance": "자기 라운드트립 비교해",
+      "command": "render-diff-self",
+      "reference": "01_render_diff_self.md",
+      "stop": "F01",
+      "notGym": true
+    },
+    {
+      "id": "I062",
+      "utterance": "자기 라운드트립 재줘",
+      "command": "render-diff-self",
+      "reference": "01_render_diff_self.md",
+      "stop": "F01",
+      "notGym": true
+    },
+    {
+      "id": "I063",
+      "utterance": "자기 라운드트립 확인해",
+      "command": "render-diff-self",
+      "reference": "01_render_diff_self.md",
+      "stop": "F01",
+      "notGym": true
+    },
+    {
+      "id": "I064",
+      "utterance": "자기 라운드트립 돌려",
+      "command": "render-diff-self",
+      "reference": "01_render_diff_self.md",
+      "stop": "F01",
+      "notGym": true
+    },
+    {
+      "id": "I065",
+      "utterance": "자기 라운드트립 재봐",
+      "command": "render-diff-self",
+      "reference": "01_render_diff_self.md",
+      "stop": "F01",
+      "notGym": true
+    },
+    {
+      "id": "I066",
+      "utterance": "자기 라운드트립 측정해",
+      "command": "render-diff-self",
+      "reference": "01_render_diff_self.md",
+      "stop": "F01",
+      "notGym": true
+    },
+    {
+      "id": "I067",
+      "utterance": "자기 라운드트립 게이트 걸어",
+      "command": "render-diff-self",
+      "reference": "01_render_diff_self.md",
+      "stop": "F01",
+      "notGym": true
+    },
+    {
+      "id": "I068",
+      "utterance": "자기 라운드트립 숫자로 봐",
+      "command": "render-diff-self",
+      "reference": "01_render_diff_self.md",
+      "stop": "F01",
+      "notGym": true
+    },
+    {
+      "id": "I069",
+      "utterance": "자기 라운드트립 판정해",
+      "command": "render-diff-self",
+      "reference": "01_render_diff_self.md",
+      "stop": "F01",
+      "notGym": true
+    },
+    {
+      "id": "I070",
+      "utterance": "자기 라운드트립 좁혀줘",
+      "command": "render-diff-self",
+      "reference": "01_render_diff_self.md",
+      "stop": "F01",
+      "notGym": true
+    },
+    {
+      "id": "I071",
+      "utterance": "폴더 스윕 비교해",
+      "command": "render-diff-batch",
+      "reference": "03_render_diff_batch.md",
+      "stop": "F10",
+      "notGym": true
+    },
+    {
+      "id": "I072",
+      "utterance": "폴더 스윕 재줘",
+      "command": "render-diff-batch",
+      "reference": "03_render_diff_batch.md",
+      "stop": "F10",
+      "notGym": true
+    },
+    {
+      "id": "I073",
+      "utterance": "폴더 스윕 확인해",
+      "command": "render-diff-batch",
+      "reference": "03_render_diff_batch.md",
+      "stop": "F10",
+      "notGym": true
+    },
+    {
+      "id": "I074",
+      "utterance": "폴더 스윕 돌려",
+      "command": "render-diff-batch",
+      "reference": "03_render_diff_batch.md",
+      "stop": "F10",
+      "notGym": true
+    },
+    {
+      "id": "I075",
+      "utterance": "폴더 스윕 재봐",
+      "command": "render-diff-batch",
+      "reference": "03_render_diff_batch.md",
+      "stop": "F10",
+      "notGym": true
+    },
+    {
+      "id": "I076",
+      "utterance": "폴더 스윕 측정해",
+      "command": "render-diff-batch",
+      "reference": "03_render_diff_batch.md",
+      "stop": "F10",
+      "notGym": true
+    },
+    {
+      "id": "I077",
+      "utterance": "폴더 스윕 게이트 걸어",
+      "command": "render-diff-batch",
+      "reference": "03_render_diff_batch.md",
+      "stop": "F10",
+      "notGym": true
+    },
+    {
+      "id": "I078",
+      "utterance": "폴더 스윕 숫자로 봐",
+      "command": "render-diff-batch",
+      "reference": "03_render_diff_batch.md",
+      "stop": "F10",
+      "notGym": true
+    },
+    {
+      "id": "I079",
+      "utterance": "폴더 스윕 판정해",
+      "command": "render-diff-batch",
+      "reference": "03_render_diff_batch.md",
+      "stop": "F10",
+      "notGym": true
+    },
+    {
+      "id": "I080",
+      "utterance": "폴더 스윕 좁혀줘",
+      "command": "render-diff-batch",
+      "reference": "03_render_diff_batch.md",
+      "stop": "F10",
+      "notGym": true
+    },
+    {
+      "id": "I081",
+      "utterance": "IR 카테고리 비교해",
+      "command": "ir-diff-json",
+      "reference": "06_ir_diff.md",
+      "stop": "F08",
+      "notGym": true
+    },
+    {
+      "id": "I082",
+      "utterance": "IR 카테고리 재줘",
+      "command": "ir-diff-json",
+      "reference": "06_ir_diff.md",
+      "stop": "F08",
+      "notGym": true
+    },
+    {
+      "id": "I083",
+      "utterance": "IR 카테고리 확인해",
+      "command": "ir-diff-json",
+      "reference": "06_ir_diff.md",
+      "stop": "F08",
+      "notGym": true
+    },
+    {
+      "id": "I084",
+      "utterance": "IR 카테고리 돌려",
+      "command": "ir-diff-json",
+      "reference": "06_ir_diff.md",
+      "stop": "F08",
+      "notGym": true
+    },
+    {
+      "id": "I085",
+      "utterance": "IR 카테고리 재봐",
+      "command": "ir-diff-json",
+      "reference": "06_ir_diff.md",
+      "stop": "F08",
+      "notGym": true
+    },
+    {
+      "id": "I086",
+      "utterance": "IR 카테고리 측정해",
+      "command": "ir-diff-json",
+      "reference": "06_ir_diff.md",
+      "stop": "F08",
+      "notGym": true
+    },
+    {
+      "id": "I087",
+      "utterance": "IR 카테고리 게이트 걸어",
+      "command": "ir-diff-json",
+      "reference": "06_ir_diff.md",
+      "stop": "F08",
+      "notGym": true
+    },
+    {
+      "id": "I088",
+      "utterance": "IR 카테고리 숫자로 봐",
+      "command": "ir-diff-json",
+      "reference": "06_ir_diff.md",
+      "stop": "F08",
+      "notGym": true
+    },
+    {
+      "id": "I089",
+      "utterance": "IR 카테고리 판정해",
+      "command": "ir-diff-json",
+      "reference": "06_ir_diff.md",
+      "stop": "F08",
+      "notGym": true
+    },
+    {
+      "id": "I090",
+      "utterance": "IR 카테고리 좁혀줘",
+      "command": "ir-diff-json",
+      "reference": "06_ir_diff.md",
+      "stop": "F08",
+      "notGym": true
+    },
+    {
+      "id": "I091",
+      "utterance": "쪽 0 PNG 비교해",
+      "command": "export-png",
+      "reference": "07_thumbnail_vs_png.md",
+      "stop": "F09",
+      "notGym": true
+    },
+    {
+      "id": "I092",
+      "utterance": "쪽 0 PNG 재줘",
+      "command": "export-png",
+      "reference": "07_thumbnail_vs_png.md",
+      "stop": "F09",
+      "notGym": true
+    },
+    {
+      "id": "I093",
+      "utterance": "쪽 0 PNG 확인해",
+      "command": "export-png",
+      "reference": "07_thumbnail_vs_png.md",
+      "stop": "F09",
+      "notGym": true
+    },
+    {
+      "id": "I094",
+      "utterance": "쪽 0 PNG 돌려",
+      "command": "export-png",
+      "reference": "07_thumbnail_vs_png.md",
+      "stop": "F09",
+      "notGym": true
+    },
+    {
+      "id": "I095",
+      "utterance": "쪽 0 PNG 재봐",
+      "command": "export-png",
+      "reference": "07_thumbnail_vs_png.md",
+      "stop": "F09",
+      "notGym": true
+    },
+    {
+      "id": "I096",
+      "utterance": "쪽 0 PNG 측정해",
+      "command": "export-png",
+      "reference": "07_thumbnail_vs_png.md",
+      "stop": "F09",
+      "notGym": true
+    },
+    {
+      "id": "I097",
+      "utterance": "쪽 0 PNG 게이트 걸어",
+      "command": "export-png",
+      "reference": "07_thumbnail_vs_png.md",
+      "stop": "F09",
+      "notGym": true
+    },
+    {
+      "id": "I098",
+      "utterance": "쪽 0 PNG 숫자로 봐",
+      "command": "export-png",
+      "reference": "07_thumbnail_vs_png.md",
+      "stop": "F09",
+      "notGym": true
+    },
+    {
+      "id": "I099",
+      "utterance": "쪽 0 PNG 판정해",
+      "command": "export-png",
+      "reference": "07_thumbnail_vs_png.md",
+      "stop": "F09",
+      "notGym": true
+    },
+    {
+      "id": "I100",
+      "utterance": "쪽 0 PNG 좁혀줘",
+      "command": "export-png",
+      "reference": "07_thumbnail_vs_png.md",
+      "stop": "F09",
+      "notGym": true
+    },
+    {
+      "id": "I101",
+      "utterance": "내장 썸네일 비교해",
+      "command": "thumbnail",
+      "reference": "07_thumbnail_vs_png.md",
+      "stop": "F09",
+      "notGym": true
+    },
+    {
+      "id": "I102",
+      "utterance": "내장 썸네일 재줘",
+      "command": "thumbnail",
+      "reference": "07_thumbnail_vs_png.md",
+      "stop": "F09",
+      "notGym": true
+    },
+    {
+      "id": "I103",
+      "utterance": "내장 썸네일 확인해",
+      "command": "thumbnail",
+      "reference": "07_thumbnail_vs_png.md",
+      "stop": "F09",
+      "notGym": true
+    },
+    {
+      "id": "I104",
+      "utterance": "내장 썸네일 돌려",
+      "command": "thumbnail",
+      "reference": "07_thumbnail_vs_png.md",
+      "stop": "F09",
+      "notGym": true
+    },
+    {
+      "id": "I105",
+      "utterance": "내장 썸네일 재봐",
+      "command": "thumbnail",
+      "reference": "07_thumbnail_vs_png.md",
+      "stop": "F09",
+      "notGym": true
+    },
+    {
+      "id": "I106",
+      "utterance": "내장 썸네일 측정해",
+      "command": "thumbnail",
+      "reference": "07_thumbnail_vs_png.md",
+      "stop": "F09",
+      "notGym": true
+    },
+    {
+      "id": "I107",
+      "utterance": "내장 썸네일 게이트 걸어",
+      "command": "thumbnail",
+      "reference": "07_thumbnail_vs_png.md",
+      "stop": "F09",
+      "notGym": true
+    },
+    {
+      "id": "I108",
+      "utterance": "내장 썸네일 숫자로 봐",
+      "command": "thumbnail",
+      "reference": "07_thumbnail_vs_png.md",
+      "stop": "F09",
+      "notGym": true
+    },
+    {
+      "id": "I109",
+      "utterance": "내장 썸네일 판정해",
+      "command": "thumbnail",
+      "reference": "07_thumbnail_vs_png.md",
+      "stop": "F09",
+      "notGym": true
+    },
+    {
+      "id": "I110",
+      "utterance": "내장 썸네일 좁혀줘",
+      "command": "thumbnail",
+      "reference": "07_thumbnail_vs_png.md",
+      "stop": "F09",
+      "notGym": true
+    },
+    {
+      "id": "I111",
+      "utterance": "결정성 비교해",
+      "command": "render-diff-pair",
+      "reference": "08_determinism.md",
+      "stop": "F02",
+      "notGym": true
+    },
+    {
+      "id": "I112",
+      "utterance": "결정성 재줘",
+      "command": "render-diff-pair",
+      "reference": "08_determinism.md",
+      "stop": "F02",
+      "notGym": true
+    },
+    {
+      "id": "I113",
+      "utterance": "결정성 확인해",
+      "command": "render-diff-pair",
+      "reference": "08_determinism.md",
+      "stop": "F02",
+      "notGym": true
+    },
+    {
+      "id": "I114",
+      "utterance": "결정성 돌려",
+      "command": "render-diff-pair",
+      "reference": "08_determinism.md",
+      "stop": "F02",
+      "notGym": true
+    },
+    {
+      "id": "I115",
+      "utterance": "결정성 재봐",
+      "command": "render-diff-pair",
+      "reference": "08_determinism.md",
+      "stop": "F02",
+      "notGym": true
+    },
+    {
+      "id": "I116",
+      "utterance": "결정성 측정해",
+      "command": "render-diff-pair",
+      "reference": "08_determinism.md",
+      "stop": "F02",
+      "notGym": true
+    },
+    {
+      "id": "I117",
+      "utterance": "결정성 게이트 걸어",
+      "command": "render-diff-pair",
+      "reference": "08_determinism.md",
+      "stop": "F02",
+      "notGym": true
+    },
+    {
+      "id": "I118",
+      "utterance": "결정성 숫자로 봐",
+      "command": "render-diff-pair",
+      "reference": "08_determinism.md",
+      "stop": "F02",
+      "notGym": true
+    },
+    {
+      "id": "I119",
+      "utterance": "결정성 판정해",
+      "command": "render-diff-pair",
+      "reference": "08_determinism.md",
+      "stop": "F02",
+      "notGym": true
+    },
+    {
+      "id": "I120",
+      "utterance": "결정성 좁혀줘",
+      "command": "render-diff-pair",
+      "reference": "08_determinism.md",
+      "stop": "F02",
+      "notGym": true
+    },
+    {
+      "id": "I121",
+      "utterance": "임계 비교해",
+      "command": "render-diff-pair",
+      "reference": "09_max_disp.md",
+      "stop": "F06",
+      "notGym": true
+    },
+    {
+      "id": "I122",
+      "utterance": "임계 재줘",
+      "command": "render-diff-pair",
+      "reference": "09_max_disp.md",
+      "stop": "F06",
+      "notGym": true
+    },
+    {
+      "id": "I123",
+      "utterance": "임계 확인해",
+      "command": "render-diff-pair",
+      "reference": "09_max_disp.md",
+      "stop": "F06",
+      "notGym": true
+    },
+    {
+      "id": "I124",
+      "utterance": "임계 돌려",
+      "command": "render-diff-pair",
+      "reference": "09_max_disp.md",
+      "stop": "F06",
+      "notGym": true
+    },
+    {
+      "id": "I125",
+      "utterance": "임계 재봐",
+      "command": "render-diff-pair",
+      "reference": "09_max_disp.md",
+      "stop": "F06",
+      "notGym": true
+    },
+    {
+      "id": "I126",
+      "utterance": "임계 측정해",
+      "command": "render-diff-pair",
+      "reference": "09_max_disp.md",
+      "stop": "F06",
+      "notGym": true
+    },
+    {
+      "id": "I127",
+      "utterance": "임계 게이트 걸어",
+      "command": "render-diff-pair",
+      "reference": "09_max_disp.md",
+      "stop": "F06",
+      "notGym": true
+    },
+    {
+      "id": "I128",
+      "utterance": "임계 숫자로 봐",
+      "command": "render-diff-pair",
+      "reference": "09_max_disp.md",
+      "stop": "F06",
+      "notGym": true
+    },
+    {
+      "id": "I129",
+      "utterance": "임계 판정해",
+      "command": "render-diff-pair",
+      "reference": "09_max_disp.md",
+      "stop": "F06",
+      "notGym": true
+    },
+    {
+      "id": "I130",
+      "utterance": "임계 좁혀줘",
+      "command": "render-diff-pair",
+      "reference": "09_max_disp.md",
+      "stop": "F06",
+      "notGym": true
+    },
+    {
+      "id": "I131",
+      "utterance": "구조 경로 비교해",
+      "command": "render-diff-pair",
+      "reference": "15_node_paths.md",
+      "stop": "F03",
+      "notGym": true
+    },
+    {
+      "id": "I132",
+      "utterance": "구조 경로 재줘",
+      "command": "render-diff-pair",
+      "reference": "15_node_paths.md",
+      "stop": "F03",
+      "notGym": true
+    },
+    {
+      "id": "I133",
+      "utterance": "구조 경로 확인해",
+      "command": "render-diff-pair",
+      "reference": "15_node_paths.md",
+      "stop": "F03",
+      "notGym": true
+    },
+    {
+      "id": "I134",
+      "utterance": "구조 경로 돌려",
+      "command": "render-diff-pair",
+      "reference": "15_node_paths.md",
+      "stop": "F03",
+      "notGym": true
+    },
+    {
+      "id": "I135",
+      "utterance": "구조 경로 재봐",
+      "command": "render-diff-pair",
+      "reference": "15_node_paths.md",
+      "stop": "F03",
+      "notGym": true
+    },
+    {
+      "id": "I136",
+      "utterance": "구조 경로 측정해",
+      "command": "render-diff-pair",
+      "reference": "15_node_paths.md",
+      "stop": "F03",
+      "notGym": true
+    },
+    {
+      "id": "I137",
+      "utterance": "구조 경로 게이트 걸어",
+      "command": "render-diff-pair",
+      "reference": "15_node_paths.md",
+      "stop": "F03",
+      "notGym": true
+    },
+    {
+      "id": "I138",
+      "utterance": "구조 경로 숫자로 봐",
+      "command": "render-diff-pair",
+      "reference": "15_node_paths.md",
+      "stop": "F03",
+      "notGym": true
+    },
+    {
+      "id": "I139",
+      "utterance": "구조 경로 판정해",
+      "command": "render-diff-pair",
+      "reference": "15_node_paths.md",
+      "stop": "F03",
+      "notGym": true
+    },
+    {
+      "id": "I140",
+      "utterance": "구조 경로 좁혀줘",
+      "command": "render-diff-pair",
+      "reference": "15_node_paths.md",
+      "stop": "F03",
+      "notGym": true
+    },
+    {
+      "id": "I141",
+      "utterance": "쪽 수 비교해",
+      "command": "render-diff-pair",
+      "reference": "21_page_mismatch.md",
+      "stop": "F05",
+      "notGym": true
+    },
+    {
+      "id": "I142",
+      "utterance": "쪽 수 재줘",
+      "command": "render-diff-pair",
+      "reference": "21_page_mismatch.md",
+      "stop": "F05",
+      "notGym": true
+    },
+    {
+      "id": "I143",
+      "utterance": "쪽 수 확인해",
+      "command": "render-diff-pair",
+      "reference": "21_page_mismatch.md",
+      "stop": "F05",
+      "notGym": true
+    },
+    {
+      "id": "I144",
+      "utterance": "쪽 수 돌려",
+      "command": "render-diff-pair",
+      "reference": "21_page_mismatch.md",
+      "stop": "F05",
+      "notGym": true
+    },
+    {
+      "id": "I145",
+      "utterance": "쪽 수 재봐",
+      "command": "render-diff-pair",
+      "reference": "21_page_mismatch.md",
+      "stop": "F05",
+      "notGym": true
+    },
+    {
+      "id": "I146",
+      "utterance": "쪽 수 측정해",
+      "command": "render-diff-pair",
+      "reference": "21_page_mismatch.md",
+      "stop": "F05",
+      "notGym": true
+    },
+    {
+      "id": "I147",
+      "utterance": "쪽 수 게이트 걸어",
+      "command": "render-diff-pair",
+      "reference": "21_page_mismatch.md",
+      "stop": "F05",
+      "notGym": true
+    },
+    {
+      "id": "I148",
+      "utterance": "쪽 수 숫자로 봐",
+      "command": "render-diff-pair",
+      "reference": "21_page_mismatch.md",
+      "stop": "F05",
+      "notGym": true
+    },
+    {
+      "id": "I149",
+      "utterance": "쪽 수 판정해",
+      "command": "render-diff-pair",
+      "reference": "21_page_mismatch.md",
+      "stop": "F05",
+      "notGym": true
+    },
+    {
+      "id": "I150",
+      "utterance": "쪽 수 좁혀줘",
+      "command": "render-diff-pair",
+      "reference": "21_page_mismatch.md",
+      "stop": "F05",
+      "notGym": true
+    },
+    {
+      "id": "I151",
+      "utterance": "로드 실패 비교해",
+      "command": "render-diff-pair",
+      "reference": "22_load_fail.md",
+      "stop": "F07",
+      "notGym": true
+    },
+    {
+      "id": "I152",
+      "utterance": "로드 실패 재줘",
+      "command": "render-diff-pair",
+      "reference": "22_load_fail.md",
+      "stop": "F07",
+      "notGym": true
+    },
+    {
+      "id": "I153",
+      "utterance": "로드 실패 확인해",
+      "command": "render-diff-pair",
+      "reference": "22_load_fail.md",
+      "stop": "F07",
+      "notGym": true
+    },
+    {
+      "id": "I154",
+      "utterance": "로드 실패 돌려",
+      "command": "render-diff-pair",
+      "reference": "22_load_fail.md",
+      "stop": "F07",
+      "notGym": true
+    },
+    {
+      "id": "I155",
+      "utterance": "로드 실패 재봐",
+      "command": "render-diff-pair",
+      "reference": "22_load_fail.md",
+      "stop": "F07",
+      "notGym": true
+    },
+    {
+      "id": "I156",
+      "utterance": "로드 실패 측정해",
+      "command": "render-diff-pair",
+      "reference": "22_load_fail.md",
+      "stop": "F07",
+      "notGym": true
+    },
+    {
+      "id": "I157",
+      "utterance": "로드 실패 게이트 걸어",
+      "command": "render-diff-pair",
+      "reference": "22_load_fail.md",
+      "stop": "F07",
+      "notGym": true
+    },
+    {
+      "id": "I158",
+      "utterance": "로드 실패 숫자로 봐",
+      "command": "render-diff-pair",
+      "reference": "22_load_fail.md",
+      "stop": "F07",
+      "notGym": true
+    },
+    {
+      "id": "I159",
+      "utterance": "로드 실패 판정해",
+      "command": "render-diff-pair",
+      "reference": "22_load_fail.md",
+      "stop": "F07",
+      "notGym": true
+    },
+    {
+      "id": "I160",
+      "utterance": "로드 실패 좁혀줘",
+      "command": "render-diff-pair",
+      "reference": "22_load_fail.md",
+      "stop": "F07",
+      "notGym": true
+    },
+    {
+      "id": "I161",
+      "utterance": "OVER 페이지만 비교해",
+      "command": "render-diff-pair",
+      "reference": "23_over_status.md",
+      "stop": "F06",
+      "notGym": true
+    },
+    {
+      "id": "I162",
+      "utterance": "OVER 페이지만 재줘",
+      "command": "render-diff-pair",
+      "reference": "23_over_status.md",
+      "stop": "F06",
+      "notGym": true
+    },
+    {
+      "id": "I163",
+      "utterance": "OVER 페이지만 확인해",
+      "command": "render-diff-pair",
+      "reference": "23_over_status.md",
+      "stop": "F06",
+      "notGym": true
+    },
+    {
+      "id": "I164",
+      "utterance": "OVER 페이지만 돌려",
+      "command": "render-diff-pair",
+      "reference": "23_over_status.md",
+      "stop": "F06",
+      "notGym": true
+    },
+    {
+      "id": "I165",
+      "utterance": "OVER 페이지만 재봐",
+      "command": "render-diff-pair",
+      "reference": "23_over_status.md",
+      "stop": "F06",
+      "notGym": true
+    },
+    {
+      "id": "I166",
+      "utterance": "OVER 페이지만 측정해",
+      "command": "render-diff-pair",
+      "reference": "23_over_status.md",
+      "stop": "F06",
+      "notGym": true
+    },
+    {
+      "id": "I167",
+      "utterance": "OVER 페이지만 게이트 걸어",
+      "command": "render-diff-pair",
+      "reference": "23_over_status.md",
+      "stop": "F06",
+      "notGym": true
+    },
+    {
+      "id": "I168",
+      "utterance": "OVER 페이지만 숫자로 봐",
+      "command": "render-diff-pair",
+      "reference": "23_over_status.md",
+      "stop": "F06",
+      "notGym": true
+    },
+    {
+      "id": "I169",
+      "utterance": "OVER 페이지만 판정해",
+      "command": "render-diff-pair",
+      "reference": "23_over_status.md",
+      "stop": "F06",
+      "notGym": true
+    },
+    {
+      "id": "I170",
+      "utterance": "OVER 페이지만 좁혀줘",
+      "command": "render-diff-pair",
+      "reference": "23_over_status.md",
+      "stop": "F06",
+      "notGym": true
+    },
+    {
+      "id": "I171",
+      "utterance": "json 봉투 비교해",
+      "command": "render-diff-json",
+      "reference": "10_envelopes.md",
+      "stop": "F08",
+      "notGym": true
+    },
+    {
+      "id": "I172",
+      "utterance": "json 봉투 재줘",
+      "command": "render-diff-json",
+      "reference": "10_envelopes.md",
+      "stop": "F08",
+      "notGym": true
+    },
+    {
+      "id": "I173",
+      "utterance": "json 봉투 확인해",
+      "command": "render-diff-json",
+      "reference": "10_envelopes.md",
+      "stop": "F08",
+      "notGym": true
+    },
+    {
+      "id": "I174",
+      "utterance": "json 봉투 돌려",
+      "command": "render-diff-json",
+      "reference": "10_envelopes.md",
+      "stop": "F08",
+      "notGym": true
+    },
+    {
+      "id": "I175",
+      "utterance": "json 봉투 재봐",
+      "command": "render-diff-json",
+      "reference": "10_envelopes.md",
+      "stop": "F08",
+      "notGym": true
+    },
+    {
+      "id": "I176",
+      "utterance": "json 봉투 측정해",
+      "command": "render-diff-json",
+      "reference": "10_envelopes.md",
+      "stop": "F08",
+      "notGym": true
+    },
+    {
+      "id": "I177",
+      "utterance": "json 봉투 게이트 걸어",
+      "command": "render-diff-json",
+      "reference": "10_envelopes.md",
+      "stop": "F08",
+      "notGym": true
+    },
+    {
+      "id": "I178",
+      "utterance": "json 봉투 숫자로 봐",
+      "command": "render-diff-json",
+      "reference": "10_envelopes.md",
+      "stop": "F08",
+      "notGym": true
+    },
+    {
+      "id": "I179",
+      "utterance": "json 봉투 판정해",
+      "command": "render-diff-json",
+      "reference": "10_envelopes.md",
+      "stop": "F08",
+      "notGym": true
+    },
+    {
+      "id": "I180",
+      "utterance": "json 봉투 좁혀줘",
+      "command": "render-diff-json",
+      "reference": "10_envelopes.md",
+      "stop": "F08",
+      "notGym": true
+    },
+    {
+      "id": "I181",
+      "utterance": "텍스트 모드 비교해",
+      "command": "render-diff-pair",
+      "reference": "20_exit_codes.md",
+      "stop": "F01",
+      "notGym": true
+    },
+    {
+      "id": "I182",
+      "utterance": "텍스트 모드 재줘",
+      "command": "render-diff-pair",
+      "reference": "20_exit_codes.md",
+      "stop": "F01",
+      "notGym": true
+    },
+    {
+      "id": "I183",
+      "utterance": "텍스트 모드 확인해",
+      "command": "render-diff-pair",
+      "reference": "20_exit_codes.md",
+      "stop": "F01",
+      "notGym": true
+    },
+    {
+      "id": "I184",
+      "utterance": "텍스트 모드 돌려",
+      "command": "render-diff-pair",
+      "reference": "20_exit_codes.md",
+      "stop": "F01",
+      "notGym": true
+    },
+    {
+      "id": "I185",
+      "utterance": "텍스트 모드 재봐",
+      "command": "render-diff-pair",
+      "reference": "20_exit_codes.md",
+      "stop": "F01",
+      "notGym": true
+    },
+    {
+      "id": "I186",
+      "utterance": "텍스트 모드 측정해",
+      "command": "render-diff-pair",
+      "reference": "20_exit_codes.md",
+      "stop": "F01",
+      "notGym": true
+    },
+    {
+      "id": "I187",
+      "utterance": "텍스트 모드 게이트 걸어",
+      "command": "render-diff-pair",
+      "reference": "20_exit_codes.md",
+      "stop": "F01",
+      "notGym": true
+    },
+    {
+      "id": "I188",
+      "utterance": "텍스트 모드 숫자로 봐",
+      "command": "render-diff-pair",
+      "reference": "20_exit_codes.md",
+      "stop": "F01",
+      "notGym": true
+    },
+    {
+      "id": "I189",
+      "utterance": "텍스트 모드 판정해",
+      "command": "render-diff-pair",
+      "reference": "20_exit_codes.md",
+      "stop": "F01",
+      "notGym": true
+    },
+    {
+      "id": "I190",
+      "utterance": "텍스트 모드 좁혀줘",
+      "command": "render-diff-pair",
+      "reference": "20_exit_codes.md",
+      "stop": "F01",
+      "notGym": true
+    }
+  ]
+}

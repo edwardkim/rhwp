@@ -1,0 +1,9 @@
+{
+  "id": "T20",
+  "utterance": "특정 글자 주변 record",
+  "command": "hwp5-anchor-trace",
+  "note": "--needle",
+  "pageZeroBased": true,
+  "newCli": false,
+  "gym": false
+}

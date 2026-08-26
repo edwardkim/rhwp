@@ -1,0 +1,9 @@
+$ RHWP_BIN=target/release-test/rhwp venv/bin/python tools/fidelity_compare/fidelity_compare.py 0 214 \
+    --source samples/input.hwp --reference-pdf pdf/oracle-2020.pdf \
+    --label issue-3738-hwp --reference-grade '한컴 2020 기준 PDF' \
+    --text-only --export-all-svg --layout-ledger --out-dir /tmp/rhwp-fidelity-issue-3738
+기준 PDF: /repo/pdf/oracle-2020.pdf
+등급: 한컴 2020 기준 PDF
+요청: 215쪽, 완료: 215쪽, 누락: 0쪽
+text report: /tmp/rhwp-fidelity-issue-3738/text-report.tsv
+page-count ledger: /tmp/rhwp-fidelity-issue-3738/page-count-ledger.tsv

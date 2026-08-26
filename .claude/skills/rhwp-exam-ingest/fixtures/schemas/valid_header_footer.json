@@ -1,0 +1,40 @@
+{
+  "version": "1",
+  "page_size": {
+    "width_mm": 210.0,
+    "height_mm": 297.0
+  },
+  "default_font": "함초롬바탕",
+  "questions": [
+    {
+      "number": 21,
+      "stem": "밑줄 친 단어의 의미로 적절한 것은?",
+      "choices": [
+        {
+          "label": "①",
+          "text": "환경 보호의 중요성을 강조하는 글"
+        },
+        {
+          "label": "②",
+          "text": "도시 생활의 편리함을 설명하는 글"
+        },
+        {
+          "label": "③",
+          "text": "전통 음식의 역사를 소개하는 글"
+        },
+        {
+          "label": "④",
+          "text": "최신 기술의 발전 동향을 분석하는 글"
+        },
+        {
+          "label": "⑤",
+          "text": "청소년 진로 탐색의 필요성을 논하는 글"
+        }
+      ],
+      "auto_number": true
+    }
+  ],
+  "header_text": "제2외국어/한문 영역",
+  "footer_text": "8/20",
+  "form_label": "홀수형"
+}

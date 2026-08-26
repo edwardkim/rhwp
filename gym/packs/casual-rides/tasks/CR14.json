@@ -1,0 +1,24 @@
+{
+  "id": "CR14",
+  "tier": 1,
+  "title": "2010년 표본은 몇 쪽?",
+  "input": "samples/2010-01-06.hwp",
+  "instructions": "풍선다트 — CR14 는 키 제한 없는 입문 놀이기구다. 오래된 날짜 파일의 쪽수를 읽는다. 파일 이름의 날짜가 쪽수가 아니다. 문서는 `samples/2010-01-06.hwp` 이다. rhwp 를 한 번 실행하고 그 답을 그대로 옮기면 된다. 숫자를 추측하지 마라. 채점기가 같은 명령을 다시 돌린다. 힌트: info {입력} --json. answer.json 에는 {\"pages\": 값} 만 적는다. 원본을 고치지 마라. 새 표본을 만들지 마라. info pageCount.",
+  "submit": {
+    "kind": "answer"
+  },
+  "checks": [
+    {
+      "name": "2010년 표본은 몇 쪽?",
+      "op": "answer_eq",
+      "answer": "pages",
+      "cmd": [
+        "info",
+        "{input}",
+        "--json"
+      ],
+      "path": "pageCount"
+    }
+  ],
+  "axis": "입문"
+}

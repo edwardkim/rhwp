@@ -18,8 +18,15 @@ pub const CELL_FLAG_PROTECT: u16 = 0x0002;
 pub const CELL_FLAG_HEADER: u16 = 0x0004;
 pub const CELL_FLAG_EDITABLE_IN_FORM: u16 = 0x0008;
 
+#[cfg(test)]
+std::thread_local! {
+    static PARAGRAPH_FRAME_OWNER_WIDTHS_CALLS: std::cell::Cell<usize> = const {
+        std::cell::Cell::new(0)
+    };
+}
+
 /// 표 개체 (HWPTAG_TABLE)
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, Clone, serde::Serialize)]
 pub struct Table {
     /// 속성 비트 플래그
     pub attr: u32,
@@ -57,6 +64,12 @@ pub struct Table {
     pub outer_margin_bottom: i16,
     /// CTRL_HEADER ctrl_data의 4바이트(attr) 이후 추가 바이트 (라운드트립 보존용)
     pub raw_ctrl_data: Vec<u8>,
+    /// [#4495] raw_ctrl_data 출처 봉인 — 봉인 시점 `common`(CommonObjAttr) 의
+    /// 다이제스트. 저장 시 `common` 이 봉인과 같을 때만 raw 를 재사용한다.
+    /// None(합성 IR·봉인 이전)은 종전 계약(raw 우선) 유지. 다이제스트 밖 —
+    /// `model::raw_provenance` 참조.
+    #[serde(skip)]
+    pub raw_ctrl_seal: Option<[u8; 32]>,
     /// HWPTAG_TABLE 레코드의 원본 속성 값 (라운드트립 보존용, 0이면 재구성)
     pub raw_table_record_attr: u32,
     /// HWPTAG_TABLE 레코드의 border_fill_id 이후 추가 바이트 (라운드트립 보존용)
@@ -64,6 +77,10 @@ pub struct Table {
     /// 구조/내용 변경 시 true → 재측정 필요 (Default: false)
     #[doc(hidden)]
     pub dirty: bool,
+    /// 셀 텍스트 편집으로 line segment를 다시 계산했는지 나타내는 런타임 provenance.
+    /// 저장된 source frame과 reflow suffix를 구분하는 pagination 전용 상태다.
+    #[doc(hidden)]
+    pub text_reflowed_after_edit: bool,
     /// Studio 보상 resize로 행별 독립 가로 경계를 보존해야 하는 행.
     #[doc(hidden)]
     pub local_resize_rows: Vec<u16>,
@@ -80,7 +97,7 @@ pub struct Table {
 
 /// 표 쪽 나눔 종류
 /// bit 0-1: 0=나누지 않음, 1=셀 단위로 나눔, 2=나눔(행 단위)
-#[derive(Debug, Clone, Copy, Default, PartialEq)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, serde::Serialize)]
 pub enum TablePageBreak {
     /// 나누지 않음 (0)
     #[default]
@@ -92,7 +109,7 @@ pub enum TablePageBreak {
 }
 
 /// 표 영역 속성
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct TableZone {
     /// 시작 열 주소
     pub start_col: u16,
@@ -107,7 +124,7 @@ pub struct TableZone {
 }
 
 /// 표 셀 (HWPTAG_LIST_HEADER + 셀 속성)
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, Clone, serde::Serialize)]
 pub struct Cell {
     /// 셀 열 주소 (0부터 시작)
     pub col: u16,
@@ -131,6 +148,14 @@ pub struct Cell {
     pub list_header_width_ref: u16,
     /// 텍스트 방향 (0: 가로, 1: 세로)
     pub text_direction: u8,
+    /// [#4898] 줄바꿈 방식 — LIST_HEADER `list_attr` bit 19~20, OWPML `lineWrap`.
+    ///
+    /// `0` = BREAK(어절 단위 줄바꿈, 기본) · `1` = SQUEEZE(자간을 조절해 한 줄 유지) ·
+    /// `2` = KEEP. 종전에는 이 두 비트를 읽지도 쓰지도 않아 HWPX→HWP 저장에서 항상 0 이
+    /// 됐다 — 셀 줄바꿈 방식이 바뀌면 줄 수·셀 높이·표 높이가 따라 바뀐다.
+    /// 매핑은 한글 2022 실측이다(SQUEEZE 만 쓰는 문서를 SaveAs → LIST_HEADER 19개가 전부
+    /// bit19=1, BREAK 위주 문서는 SQUEEZE 인 셀 하나만 1). KEEP=2 는 스키마 열거 순서다.
+    pub line_wrap: u8,
     /// 세로 정렬 (0: top, 1: center, 2: bottom)
     pub vertical_align: VerticalAlign,
     /// 안 여백 지정 여부 (list_attr bit 16)
@@ -184,7 +209,7 @@ fn checked_table_span_end(start: u16, span: u16, axis: &str) -> Result<u16, Stri
 }
 
 /// 세로 정렬
-#[derive(Debug, Clone, Copy, Default, PartialEq)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, serde::Serialize)]
 pub enum VerticalAlign {
     #[default]
     Top,
@@ -232,6 +257,20 @@ impl Cell {
         false
     }
 
+    /// [Task #501 / #5751] 한컴 방어 가드의 발동 기준 — 셀 상하 안 여백 합이 셀
+    /// 선언 높이 **자체**를 넘으면 그 저장값을 비정상으로 본다
+    /// (mel-001 p2 셀[21]: pad 3400 HU vs h 1280 HU).
+    ///
+    /// 렌더(`table_layout`: padding 비례 축소)와 측정(`height_measurer`: 선언 높이
+    /// 권위 clamp)이 **같은 기준**을 쓰도록 단일 출처로 둔다 (#1785 의
+    /// `use_cell_padding_axis` 와 같은 결). 기준이 갈리면 측정만 행을 안 늘리고
+    /// 렌더는 저장 여백을 그대로 써서 글자가 아래 괘선을 넘는다 — 여백이 셀
+    /// 높이의 절반~1배인 정상 조밀 표에서 오발동한 #5751 이 그 사례다
+    /// (156505020 데이터 셀: pad 15.09px, h 21.09px).
+    pub fn vertical_padding_is_abnormal(cell_height_px: f64, total_v_pad_px: f64) -> bool {
+        cell_height_px > 0.0 && total_v_pad_px >= cell_height_px
+    }
+
     /// 축별 규칙(`use_cell_padding_axis`)을 네 축에 적용한 유효 안 여백 (HWPUNIT).
     /// [#2195 stage50] 표 기본 여백이 **네 축 모두 0**(미지정)이면 셀 저장 pad —
     /// 86712 구분선(한글 PDF 괘선 21.1px = 셀 141 상하 포함) + exam_social 머리말
@@ -266,6 +305,25 @@ impl Cell {
         }
     }
 
+    /// Padding that bounds a newly generated paragraph layout frame.
+    ///
+    /// An all-zero table padding is a real zero-width frame boundary for
+    /// stored HWP LineSeg geometry. `effective_padding()` deliberately keeps
+    /// a separate paint/measurement compatibility fallback to the cell's
+    /// saved padding, so frame construction must not reuse that exception.
+    pub(crate) fn paragraph_frame_padding(
+        &self,
+        table_padding: &crate::model::Padding,
+    ) -> crate::model::Padding {
+        if self.apply_inner_margin {
+            self.padding
+        } else if Self::table_padding_unspecified(table_padding) {
+            crate::model::Padding::default()
+        } else {
+            self.effective_padding(table_padding)
+        }
+    }
+
     pub fn cell_protect(&self) -> bool {
         self.list_header_width_ref & CELL_FLAG_PROTECT != 0
     }
@@ -285,6 +343,33 @@ impl Cell {
 
     pub fn set_editable_in_form(&mut self, value: bool) {
         self.set_list_header_flag(CELL_FLAG_EDITABLE_IN_FORM, value);
+    }
+
+    /// LIST_HEADER 속성 상위 절반의 비트를 세우거나 지운다.
+    ///
+    /// **이 필드는 이름과 달리 폭이 아니다** — LIST_HEADER 속성 u32 의 상위 16비트다(계획서
+    /// §4.21). 진짜 텍스트 영역 폭은 `raw_list_extra` 앞머리 u16 에 있다.
+    /// LIST_HEADER offset 34 의 **텍스트 영역 폭**을 델타만큼 옮긴다(라운드트립 보존 바이트).
+    ///
+    /// 이 값은 대개 셀 폭과 같지만 표본 전수에서 **414셀은 폭+30**이었다(안 여백 따위). 그래서
+    /// 리사이즈 때 `cell.width` 를 절대값으로 덮으면 그 오프셋을 지운다 — 한글은 이 필드를
+    /// **폭과 같은 델타**로 옮기므로(실측: 7384→7667 일 때 216,28→243,29 = +283) 증분한다.
+    pub fn shift_text_area_width(&mut self, delta: i64) {
+        if self.raw_list_extra.len() < 2 {
+            return;
+        }
+        let cur = i64::from(u16::from_le_bytes([
+            self.raw_list_extra[0],
+            self.raw_list_extra[1],
+        ]));
+        let next = u16::try_from(cur.saturating_add(delta).max(0)).unwrap_or(u16::MAX);
+        let bytes = next.to_le_bytes();
+        self.raw_list_extra[0] = bytes[0];
+        self.raw_list_extra[1] = bytes[1];
+    }
+
+    pub fn set_list_header_flag_pub(&mut self, flag: u16, value: bool) {
+        self.set_list_header_flag(flag, value);
     }
 
     fn set_list_header_flag(&mut self, flag: u16, value: bool) {
@@ -363,6 +448,7 @@ impl Cell {
             padding: template.padding,
             list_header_width_ref: template.list_header_width_ref,
             text_direction: template.text_direction,
+            line_wrap: template.line_wrap,
             vertical_align: template.vertical_align,
             apply_inner_margin: template.apply_inner_margin,
             is_header: template.is_header,
@@ -375,6 +461,237 @@ impl Cell {
 }
 
 impl Table {
+    #[cfg(test)]
+    pub(crate) fn reset_paragraph_frame_owner_widths_calls_for_test() {
+        PARAGRAPH_FRAME_OWNER_WIDTHS_CALLS.with(|calls| calls.set(0));
+    }
+
+    #[cfg(test)]
+    pub(crate) fn paragraph_frame_owner_widths_calls_for_test() -> usize {
+        PARAGRAPH_FRAME_OWNER_WIDTHS_CALLS.with(|calls| calls.get())
+    }
+
+    /// Widths owned by cell paragraph frames before padding and paragraph margins.
+    ///
+    /// Native tables may repeat a row with raw cell widths whose sum is a few
+    /// HWPUNIT short of the table's resolved column grid. Those raw values are
+    /// serialization auxiliaries, not independent row boundaries. Preserve
+    /// explicit/inferred local-resize rows; otherwise use genuine base-track
+    /// evidence and place any positive table-width residual on the last column.
+    ///
+    /// This is deliberately batch-shaped. Row-role inference examines the table
+    /// as a whole, so repeating it once per cell makes large native tables
+    /// quadratic and can prevent on-demand reflow from completing.
+    pub(crate) fn paragraph_frame_owner_widths(&self) -> Vec<i32> {
+        #[cfg(test)]
+        PARAGRAPH_FRAME_OWNER_WIDTHS_CALLS.with(|calls| calls.set(calls.get() + 1));
+
+        let to_i32 = |width: u64| width.min(i32::MAX as u64) as i32;
+        let mut owners = self
+            .cells
+            .iter()
+            .map(|cell| to_i32(u64::from(cell.width)))
+            .collect::<Vec<_>>();
+        let col_count = usize::from(self.col_count);
+        if owners.is_empty()
+            || col_count == 0
+            || self.common.treat_as_char
+            || self.common.width == 0
+        {
+            return owners;
+        }
+
+        let explicit_rows = self
+            .local_resize_rows
+            .iter()
+            .copied()
+            .collect::<std::collections::BTreeSet<_>>();
+        let (outlier_rows, inferred_rows) = self.inferred_width_row_roles();
+
+        // Runtime edit metadata is keyed by cell index, not by row/column.
+        // Preserve exact overrides without treating a missing override as zero.
+        for &(cell_index, width) in &self.local_resize_cell_widths {
+            if width > 0
+                && self
+                    .cells
+                    .get(cell_index)
+                    .is_some_and(|cell| explicit_rows.contains(&cell.row))
+            {
+                owners[cell_index] = to_i32(u64::from(width));
+            }
+        }
+
+        // Extract only real single-column evidence. `base_grid_column_widths`
+        // intentionally fills holes from the display grid; that fallback would
+        // make excluded local/outlier data look like a paragraph-frame base.
+        let mut base_tracks = vec![0u32; col_count];
+        for cell in &self.cells {
+            let col = usize::from(cell.col);
+            if cell.row >= self.row_count
+                || cell.col_span != 1
+                || cell.width == 0
+                || col >= col_count
+                || explicit_rows.contains(&cell.row)
+                || outlier_rows.contains(&cell.row)
+            {
+                continue;
+            }
+            base_tracks[col] = base_tracks[col].max(cell.width);
+        }
+        if base_tracks.contains(&0) {
+            return owners;
+        }
+        let base_total = base_tracks.iter().copied().map(u64::from).sum::<u64>();
+        let table_width = u64::from(self.common.width);
+        if table_width > base_total {
+            let residual = (table_width - base_total).min(u64::from(u32::MAX)) as u32;
+            if let Some(last) = base_tracks.last_mut() {
+                *last = last.saturating_add(residual);
+            }
+        }
+
+        let mut rows = vec![Vec::<usize>::new(); usize::from(self.row_count)];
+        for (cell_index, cell) in self.cells.iter().enumerate() {
+            if let Some(row) = rows.get_mut(usize::from(cell.row)) {
+                row.push(cell_index);
+            }
+        }
+        for (row_index, cell_indices) in rows.iter_mut().enumerate() {
+            let row = row_index as u16;
+            if explicit_rows.contains(&row) || inferred_rows.contains(&row) {
+                continue;
+            }
+            cell_indices.sort_by_key(|index| self.cells[*index].col);
+            let mut next_col = 0usize;
+            let mut row_total = 0u64;
+            let mut complete = !cell_indices.is_empty();
+            for &cell_index in cell_indices.iter() {
+                let cell = &self.cells[cell_index];
+                let start = usize::from(cell.col);
+                let Some(end) = start.checked_add(usize::from(cell.col_span)) else {
+                    complete = false;
+                    break;
+                };
+                if cell.row_span != 1
+                    || cell.col_span == 0
+                    || cell.width == 0
+                    || start != next_col
+                    || end > col_count
+                {
+                    complete = false;
+                    break;
+                }
+                row_total = row_total.saturating_add(u64::from(cell.width));
+                next_col = end;
+            }
+            if !complete || next_col != col_count || row_total == table_width {
+                continue;
+            }
+            for &cell_index in cell_indices.iter() {
+                let cell = &self.cells[cell_index];
+                let start = usize::from(cell.col);
+                let end = start + usize::from(cell.col_span);
+                let resolved = base_tracks[start..end]
+                    .iter()
+                    .copied()
+                    .map(u64::from)
+                    .sum::<u64>();
+                owners[cell_index] = to_i32(resolved);
+            }
+        }
+        owners
+    }
+
+    /// [#5910] 병합 셀 선언 높이가 걸친 행들의 단일행 선언 합보다 **작을** 때, 한글이
+    /// 마지막 걸침 행에서 흡수하는 축소량(HWPUNIT)을 행별로 계산한다.
+    ///
+    /// HWP 표의 행 높이는 셀마다 따로 저장되므로, `row_span>1` 셀의 선언 높이와 그 셀이
+    /// 걸친 행들의 `row_span==1` 선언 합이 어긋난 문서가 존재한다. 선언 합이 **모자랄**
+    /// 때(병합 선언이 더 큼) 잔여를 마지막 걸침 행에 더하는 규칙은 이미 있으나
+    /// (#2291/#2237), 반대 방향에는 규칙이 없어 걸침 묶음이 실제보다 부풀었다.
+    ///
+    /// 다만 두 선언이 어긋난다는 사실만으로는 어느 쪽이 옳은지 알 수 없다 — 걸침 선언이
+    /// 0 이거나 한 행 값과 같은 손상 문서도 실재한다(1342000_edu_curriculum_map: 걸침
+    /// 선언 0 vs 행합 1500). 그래서 **저장된 표 높이(`common.height`)가 축소 결과를
+    /// 확인해 줄 때만** 적용한다: 마지막 걸침 행까지의 행합이 축소 후 `common.height` 와
+    /// 정확히 같아야 한다. 이 확인이 없으면 종전 동작(축소 없음)을 유지한다.
+    ///
+    /// 실측 근거 — `samples/kps-ai.hwp` 43쪽 표(13행×5열)의 `r8 rs=3` 선언은 17,354HU
+    /// 인데 걸친 세 행의 단일행 선언은 6,082HU×3 = 18,246HU 다. 한글 2022 정본
+    /// (`pdf/kps-ai-2022.pdf` 46쪽)의 행 괘선 실측은 60.8/60.8/**51.9**pt 이고, 마지막
+    /// 행 5,190HU = 17,354 − 6,082×2 로 정확히 닫힌다. 같은 표의 `common.height`
+    /// 62,725HU 도 머리행 2,797 + 6,082×9 + 5,190 으로 같은 값에 닫혀 두 경로가 서로를
+    /// 확인해 준다.
+    ///
+    /// 걸친 행 중 하나라도 `row_span==1` 선언이 없으면(미지 행) 기존 분배 규칙이
+    /// 담당하므로 0 을 돌려준다. 반환 벡터의 길이는 `row_count` 다.
+    pub fn rowspan_declared_overflow_shrink(&self) -> Vec<HwpUnit> {
+        let row_count = self.row_count as usize;
+        let mut shrink = vec![0 as HwpUnit; row_count];
+        if row_count == 0 || self.common.height == 0 {
+            return shrink;
+        }
+
+        // 행별 단일행 선언 높이 (없으면 None = 미지 행)
+        let mut declared: Vec<Option<HwpUnit>> = vec![None; row_count];
+        for cell in &self.cells {
+            if cell.row_span != 1 || cell.height >= 0x8000_0000 {
+                continue;
+            }
+            let r = cell.row as usize;
+            if r >= row_count {
+                continue;
+            }
+            let slot = &mut declared[r];
+            if slot.is_none_or(|h| cell.height > h) {
+                *slot = Some(cell.height);
+            }
+        }
+
+        for cell in &self.cells {
+            let span = cell.row_span as usize;
+            let r = cell.row as usize;
+            if span <= 1 || cell.height >= 0x8000_0000 || r + span > row_count {
+                continue;
+            }
+            let last = r + span - 1;
+            // 걸친 행 합 — 미지 행이 있으면 기존 분배 규칙 담당.
+            let mut span_sum: u64 = 0;
+            let mut prefix_sum: u64 = 0;
+            let mut all_known = true;
+            for (i, h) in declared.iter().enumerate().take(last + 1) {
+                match h {
+                    Some(v) => {
+                        prefix_sum += *v as u64;
+                        if i >= r {
+                            span_sum += *v as u64;
+                        }
+                    }
+                    None => {
+                        all_known = false;
+                        break;
+                    }
+                }
+            }
+            if !all_known || span_sum <= cell.height as u64 {
+                continue;
+            }
+            let deficit = span_sum - cell.height as u64;
+            // 저장 표 높이 확인 — 축소 후 마지막 걸침 행까지의 행합이 `common.height`
+            // 와 정확히 같을 때만 적용한다. 손상 선언(걸침 선언 0 등)은 여기서 걸러진다.
+            if prefix_sum.checked_sub(deficit) != Some(self.common.height as u64) {
+                continue;
+            }
+            let capped = deficit.min(declared[last].unwrap_or(0) as u64) as HwpUnit;
+            // 같은 마지막 행에 상한이 여러 개면 **덜 줄이는** 쪽을 택한다 —
+            // 이 규칙은 부푼 묶음을 되돌리는 보정이지 새 압축이 아니다.
+            if shrink[last] == 0 || capped < shrink[last] {
+                shrink[last] = capped;
+            }
+        }
+        shrink
+    }
+
     /// [Task #1716] 반복 제목행으로 재사용할 **표 상단의 연속 제목행 블록** `0..H` 를 반환한다.
     ///
     /// 행 r 이 제목행 ⟺ header 셀(`is_header`, rowspan 덮개 포함)이 r 을 덮음. 상단(행 0)부터
@@ -423,16 +740,20 @@ impl Table {
         let mut grouped_rows =
             std::collections::BTreeMap::<Vec<(u16, u16)>, Vec<(u16, Vec<u32>)>>::new();
 
-        for row in 0..self.row_count {
+        let mut cells_by_row = vec![Vec::new(); usize::from(self.row_count)];
+        for cell in &self.cells {
+            if cell.row_span == 1 {
+                if let Some(row) = cells_by_row.get_mut(usize::from(cell.row)) {
+                    row.push(cell);
+                }
+            }
+        }
+
+        for (row_index, row_cells) in cells_by_row.iter_mut().enumerate() {
+            let row = row_index as u16;
             if explicit_rows.contains(&row) {
                 continue;
             }
-
-            let mut row_cells = self
-                .cells
-                .iter()
-                .filter(|cell| cell.row == row && cell.row_span == 1)
-                .collect::<Vec<_>>();
             row_cells.sort_by_key(|cell| cell.col);
 
             let mut next_col = 0u16;
@@ -440,7 +761,7 @@ impl Table {
             let mut widths = Vec::new();
             let mut valid = !row_cells.is_empty();
 
-            for cell in row_cells {
+            for cell in row_cells.iter().copied() {
                 let span = cell.col_span.max(1);
                 let end_col = cell.col.saturating_add(span);
                 if cell.col != next_col || end_col <= cell.col || end_col as usize > col_count {

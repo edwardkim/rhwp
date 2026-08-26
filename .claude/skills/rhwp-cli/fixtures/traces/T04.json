@@ -1,0 +1,11 @@
+{
+  "id": "T04",
+  "utterance": "겹침 보이게",
+  "steps": [
+    {
+      "command": "export-svg",
+      "pageZeroBased": true
+    }
+  ],
+  "stop": "--debug-overlay"
+}

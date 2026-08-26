@@ -1,0 +1,25 @@
+{
+  "id": "T026",
+  "command": "inspect injection",
+  "chapter": "60_보안.md",
+  "cmd": "rhwp inspect injection samples/143E433F503322BD33.hwp --json",
+  "exit": 0,
+  "keys": [
+    "clean",
+    "highestConfidence",
+    "includeFields",
+    "injectionSignals",
+    "minConfidence",
+    "scanScopes",
+    "schemaVersion",
+    "signalCount",
+    "source",
+    "untrustedContent",
+    "untrustedFields"
+  ],
+  "untrustedContent": false,
+  "untrustedFields": [],
+  "schemaVersion": "1.0",
+  "source": "mydocs/manual/agent_codex/60_보안.md",
+  "notInvented": true
+}

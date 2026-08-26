@@ -1,0 +1,130 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.form_fill.honggildong_4781.v1",
+  "id": "foi-hong-clone",
+  "axis": "honggildong-4781",
+  "claim": "M-fill",
+  "generator": "tools/form_fill/fatten_form_fill.py",
+  "form": "foi",
+  "title": "정보공개 청구서 홍길동 전칸 복제 금지",
+  "why": "첫 필드 값을 모든 고유 이름에 복사하면 T07 과제 문구를 깨뜨린다.",
+  "sample": "fixtures/forms/정보공개청구서.hwp",
+  "relatedIssue": "#4781",
+  "argv": [
+    "edit",
+    "fill-fields",
+    "fixtures/forms/정보공개청구서.hwp",
+    "--data",
+    "{\"청구기관\": \"홍길동\", \"정보내용\": \"홍길동\", \"공개방법\": \"홍길동\", \"수령방법\": \"홍길동\", \"연락처\": \"홍길동\", \"위임여부\": \"홍길동\", \"청구일\": \"홍길동\"}",
+    "-o",
+    "out/foi-hong-clone.hwp",
+    "--json"
+  ],
+  "data": {
+    "청구기관": "홍길동",
+    "정보내용": "홍길동",
+    "공개방법": "홍길동",
+    "수령방법": "홍길동",
+    "연락처": "홍길동",
+    "위임여부": "홍길동",
+    "청구일": "홍길동"
+  },
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "fixtures/forms/정보공개청구서.hwp",
+    "dryRun": false,
+    "filledCount": 7,
+    "filled": [
+      {
+        "name": "청구기관",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "정보내용",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "공개방법",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "수령방법",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "연락처",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "위임여부",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "청구일",
+        "occurrence": 0,
+        "value": "홍길동"
+      }
+    ],
+    "notFound": [],
+    "ambiguous": [],
+    "confusable": [],
+    "verify": null,
+    "output": "out/foi-hong-clone.hwp",
+    "outputFormat": "hwp5"
+  },
+  "detect": {
+    "firstFieldName": "청구기관",
+    "firstFieldValue": "홍길동",
+    "firstFieldOk": true,
+    "cloned": [
+      {
+        "index": 1,
+        "name": "정보내용",
+        "before": "",
+        "after": "홍길동"
+      },
+      {
+        "index": 2,
+        "name": "공개방법",
+        "before": "",
+        "after": "홍길동"
+      },
+      {
+        "index": 3,
+        "name": "수령방법",
+        "before": "",
+        "after": "홍길동"
+      },
+      {
+        "index": 6,
+        "name": "연락처",
+        "before": "",
+        "after": "홍길동"
+      },
+      {
+        "index": 9,
+        "name": "위임여부",
+        "before": "",
+        "after": "홍길동"
+      },
+      {
+        "index": 10,
+        "name": "청구일",
+        "before": "",
+        "after": "홍길동"
+      }
+    ],
+    "cloneCount": 6,
+    "verdict": "clone_forbidden"
+  },
+  "afterFirst": "홍길동",
+  "otherHongCount": 6,
+  "allowedClone": false,
+  "verdict": "clone_forbidden"
+}

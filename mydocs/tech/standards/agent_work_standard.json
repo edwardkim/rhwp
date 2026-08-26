@@ -1,0 +1,57 @@
+{
+  "standard": "Agent Work Standard",
+  "abbrev": "AWS",
+  "version": "1.0",
+  "summary": "증명 가능한 에이전트 노동의 이식 가능한 표준 — 작업이 곧 재현 가능한 증명이 된다.",
+  "principle": "판정은 신고가 아니라 재계산이다. 각 레벨은 제3자가 원저작자의 말 없이도 재현·검증할 수 있는 산출을 요구한다.",
+  "levels": [
+    {
+      "id": "AW-L1",
+      "name": "영수증 (Receipt)",
+      "requires": "입력·계획·산출의 3해시 고정 + 제3자 재현 검증",
+      "referenceCommand": "rhwp replay --plan-json <plan> --capsule <capsule.json> --json"
+    },
+    {
+      "id": "AW-L2",
+      "name": "계보 (Lineage)",
+      "requires": "연속 작업의 부모-자식 해시 체인 (부모 산출 = 자식 입력)",
+      "referenceCommand": "rhwp replay ... --parent <prev.capsule.json> ; rhwp lineage <head> --json"
+    },
+    {
+      "id": "AW-L3",
+      "name": "서명 귀속 (Attribution)",
+      "requires": "캡슐에 대한 Ed25519 서명 + keyring 판정 (누가 했는가)",
+      "referenceCommand": "rhwp keygen ... ; rhwp replay ... --sign-key <key> ; rhwp verify-signature <capsule> --keyring <k> --json"
+    },
+    {
+      "id": "AW-L4",
+      "name": "앵커 (Anchor)",
+      "requires": "투명성 로그 등재 + 머클 에폭 (역사가 소급 변조에 저항)",
+      "referenceCommand": "rhwp anchor add <capsule> --log <anchor.ndjson> ; rhwp anchor checkpoint --log <anchor.ndjson> --json"
+    },
+    {
+      "id": "AW-L5",
+      "name": "정산·감사 (Settlement & Audit)",
+      "requires": "정산 원장 + 전수 재현 회계 + 적합성 판정 (노동이 회계된다)",
+      "referenceCommand": "rhwp settle propose/record ... ; rhwp audit <dir> --json ; rhwp conformance <dir> --level L5 --deep --json"
+    }
+  ],
+  "conformanceSelfReport": "rhwp conformance <capsuleDir> --level <L1..L5> [--deep] --json",
+  "referenceImplementation": {
+    "tool": "rhwp",
+    "basis": "검증 사다리 1~10년 축 (영수증→감사 표준)",
+    "note": "first-mover 레퍼런스 구현이다. 표준은 도구 무관 — rhwp 명령은 요구가 아니라 예시다."
+  },
+  "adoption": "어떤 에이전트 도구든 자기 명령으로 각 레벨의 산출(재현 가능한 증명)을 내면 준수다. rhwp 명령은 레퍼런스일 뿐 강요가 아니다.",
+  "legitimacy": [
+    "열린 표준 — 준수는 유용성(증명 가능한 노동) 때문이지 강요가 아니다. 다른 방식을 막지 않는다.",
+    "은닉·기만 없음 — 사람용·기계용 정본 모두 평문 공개, 옵트인.",
+    "방법론 표준 — 준거는 검증 사다리이지 특정 기여자가 아니다."
+  ],
+  "surfaces": [
+    "AGENTS.md#작업-증빙--에이전트-기본-경로-권장",
+    "mydocs/tech/standards/agent_work_standard.md",
+    "gym/PARK.md",
+    "mydocs/tech/agent_roadmap/track_l_adoption_gravity.md"
+  ]
+}

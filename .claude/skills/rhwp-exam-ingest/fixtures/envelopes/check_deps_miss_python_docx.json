@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "1.0",
+  "helper": "check_deps.sh",
+  "ok": true,
+  "rhwp": "./target/release/rhwp",
+  "imagemagick": "magick",
+  "pythonDocx": false,
+  "missingRequired": [],
+  "missingOptional": [
+    "python-docx"
+  ],
+  "envelopes": [
+    {
+      "code": "DEP_MISS_PYTHON_DOCX",
+      "severity": "docx_input_soft",
+      "tool": "python-docx",
+      "exit": 0,
+      "hint": "pip install python-docx. 없어도 zip+정규식 fallback",
+      "blocks": [],
+      "fallback": "extract_docx.py zip regex"
+    }
+  ]
+}

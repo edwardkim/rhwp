@@ -1,0 +1,15 @@
+{
+  "planVersion": "1.0",
+  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "output": "out/cas.hwp",
+  "preconditions": {
+    "inputSha256": "5972508e7abc2c0f509fed4f6a42fca0d44e3554294866a094d5902fa0e67b83"
+  },
+  "steps": [
+    {
+      "action": "replace_text",
+      "find": "A",
+      "replace": "B"
+    }
+  ]
+}

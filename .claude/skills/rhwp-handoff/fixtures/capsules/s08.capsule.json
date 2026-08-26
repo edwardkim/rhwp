@@ -1,0 +1,36 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workCapsule",
+  "parent": {
+    "capsule": "s07.capsule.json",
+    "sha256": "24a0ff3f8db6673060d3c84741fcedbe23d242df116a2cc5c8a125fd45ab1ce5"
+  },
+  "plan": {
+    "planVersion": "1.0",
+    "input": "output/handoff/t-ord/s07-fill-preview.json",
+    "output": "output/handoff/t-ord/s08-filled.hwp",
+    "steps": [
+      {
+        "action": "fill_fields",
+        "data": {
+          "기관명": "한국수자원공사"
+        }
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"output/handoff/t-ord/s07-fill-preview.json\",\"output\":\"output/handoff/t-ord/s08-filled.hwp\",\"steps\":[{\"action\":\"fill_fields\",\"data\":{\"기관명\":\"한국수자원공사\"}}]}",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "output/handoff/t-ord/s07-fill-preview.json",
+    "inputSha256": "e4a260c02b8e67dfd727ac21acdebd7e8b7e1286477eb59eb64cf669e432e470",
+    "planSha256": "185fb692c64c4fe9102be2af458a047504507f10838d48838acd7bdceae0c50a",
+    "outputSha256": "8537e7b9771d012e3bdef6d2f9cd0254a1869823d394a4770be07c1cc9b4106b",
+    "toolVersion": "0.8.4",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null,
+    "untrustedContent": false,
+    "untrustedFields": []
+  }
+}

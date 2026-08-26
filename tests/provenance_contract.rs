@@ -21,6 +21,8 @@ use std::path::{Path, PathBuf};
 use std::process::{Command, Output, Stdio};
 use std::sync::OnceLock;
 
+use rhwp::model::control::Control;
+use rhwp::wasm_api::HwpDocument;
 use serde_json::Value;
 
 /// 본문·표·개요가 모두 있는 기본 샘플 (cli_json_contract 와 같은 문서).
@@ -35,6 +37,14 @@ const DOCLANG_SAMPLE: &str = "samples/para-001.hwp";
 const HML_SAMPLE: &str = "samples/hml/formatting_table.hml";
 /// PrvImage 썸네일이 내장된 문서.
 const THUMBNAIL_SAMPLE: &str = "samples/2022년 국립국어원 업무계획.hwp";
+/// [#4100] 차트가 **있으면서 본문 텍스트도 있는** 문서.
+///
+/// `samples/chart/` 코퍼스는 차트만 있고 본문이 비어 있어 문서 문자열 오라클이 만들어지지
+/// 않는다 — 오라클이 비면 그 레시피는 아무것도 검사하지 못한다. 이 보고서 문서는 차트 2개와
+/// 본문을 함께 갖고 있고, 계열 6개 중 한 계열에 `c:cat` 이 없는 실사용 변종이기도 하다.
+const CHART_SAMPLE: &str = "samples/issue2006/1790387_prep_final_report.hwpx";
+/// 본문 양식 컨트롤이 있는 문서 — `form-value` 봉투를 비지 않게 한다.
+const FORM_CTRL_SAMPLE: &str = "samples/form-01.hwp";
 
 // ── 실행 도우미 ────────────────────────────────────────────────────────────
 
@@ -44,6 +54,22 @@ fn rhwp_bin() -> String {
 
 fn sample(rel: &str) -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join(rel)
+}
+
+/// 본문 양식 컨트롤의 실제 좌표를 찾는다. fixture의 (0, 0, 0)를 가정하지 않는다.
+fn first_body_form(path: &Path) -> (usize, usize, usize) {
+    let bytes = std::fs::read(path).expect("양식 fixture 읽기");
+    let doc = HwpDocument::from_bytes(&bytes).expect("양식 fixture 파싱");
+    for (section, body) in doc.document().sections.iter().enumerate() {
+        for (paragraph, para) in body.paragraphs.iter().enumerate() {
+            for (ctrl, control) in para.controls.iter().enumerate() {
+                if matches!(control, Control::Form(_)) {
+                    return (section, paragraph, ctrl);
+                }
+            }
+        }
+    }
+    panic!("본문 양식 컨트롤이 없습니다");
 }
 
 fn tmp_dir() -> PathBuf {
@@ -338,6 +364,12 @@ const SWEEP_EXEMPT: &[(&str, &str)] = &[
          tests/issue_3358_ingest_unknown_fields.rs 가 그 봉투를 따로 고정한다.",
     ),
     (
+        "scaffold",
+        "입력이 문서가 아니라 사용자/에이전트가 만든 spec JSON 이라 '문서에서 온 문자열' \
+         오라클을 만들 수 없다. 봉투는 경로·바이트·블록/문단/표 개수뿐이고, 산출물은 \
+         명세에서 생성한 새 문서다 — 문서 파생 값이 아니다.",
+    ),
+    (
         "export-ir-schema",
         "문서를 입력으로 받지 않는 IR 타입 스키마다. --bare가 아닌 모드도 특정 문서가 아닌 \
          스키마 봉투를 낸다.",
@@ -382,6 +414,9 @@ fn recipes() -> Vec<Recipe> {
     let doclang = sample(DOCLANG_SAMPLE);
     let hml = sample(HML_SAMPLE);
     let thumb = sample(THUMBNAIL_SAMPLE);
+    let chart = sample(CHART_SAMPLE);
+    let form_ctrl = sample(FORM_CTRL_SAMPLE);
+    let (form_section, form_paragraph, form_control) = first_body_form(&form_ctrl);
 
     let p = |x: &Path| x.to_str().expect("경로").to_string();
     let out = |name: &str| p(&dir.join(name));
@@ -394,6 +429,136 @@ fn recipes() -> Vec<Recipe> {
         "steps": [ { "action": "set_cell", "table": 0, "row": 0, "col": 0, "text": "ZZ" } ],
     })
     .to_string();
+
+    // [#4509] 서명 검증 픽스처 — 순수 fs 로 기형(malformed) 경로를 고정한다.
+    // 암호학적 전 경로(valid·invalid·unknownKey·revoked)는 signing_contract 가
+    // 실키로 덮고, 스윕의 관심은 봉투 표지뿐이라 기형 서명 + 빈 keyring 이면
+    // 족하다 (exit 3 = 판정 데이터).
+    let sig_capsule = dir.join("prov-sign.capsule.json");
+    std::fs::write(&sig_capsule, br#"{"kind":"workCapsule"}"#).expect("서명 캡슐 픽스처");
+    let sig_sidecar = dir.join("prov-sign.capsule.json.sig.json");
+    std::fs::write(&sig_sidecar, br#"{"kind":"notASignature"}"#).expect("기형 서명 픽스처");
+    let sig_keyring = dir.join("prov-keyring.json");
+    std::fs::write(
+        &sig_keyring,
+        br#"{"schemaVersion":"1.0","kind":"keyring","keys":[]}"#,
+    )
+    .expect("빈 keyring 픽스처");
+    // bundle 픽스처 — 뿌리 캡슐 1개(부모 없음)와 빈 keyring 도메인.
+    let bundle_capsule = dir.join("prov-root.capsule.json");
+    std::fs::write(
+        &bundle_capsule,
+        serde_json::json!({
+            "schemaVersion": "1.0", "kind": "workCapsule", "parent": null,
+            "plan": { "planVersion": "1.0", "input": "x", "output": "y", "steps": [] },
+            "planText": "{}",
+            "receipt": { "inputSha256": "00", "outputSha256": "00" },
+        })
+        .to_string(),
+    )
+    .expect("번들 캡슐 픽스처");
+    let bundle_out = dir.join("prov.lineage-bundle");
+    let bundle_domain = dir.join("prov-domain.json");
+    std::fs::write(
+        &bundle_domain,
+        serde_json::json!({
+            "schemaVersion": "1.0", "kind": "trustDomain", "domain": "prov",
+            "keyring": { "schemaVersion": "1.0", "kind": "keyring", "keys": [] },
+            "checkpoints": [],
+        })
+        .to_string(),
+    )
+    .expect("도메인 픽스처");
+    // [#4551] disclose 픽스처 — 진짜 replay 캡슐이어야 restore 바이트 복원이 성립.
+    let disclose_plan = serde_json::json!({
+        "planVersion": "1.0",
+        "input": p(&table),
+        "output": out("prov-disclose.out.hwp"),
+        "steps": [ { "action": "set_cell", "table": 0, "row": 0, "col": 0, "text": "DP" } ],
+    })
+    .to_string();
+    let disclose_capsule = dir.join("prov-disclose.capsule.json");
+    let disclose_redacted = dir.join("prov-disclose.redacted.json");
+    let disclose_opening = dir.join("prov-disclose.opening.json");
+    let disclose_restored = dir.join("prov-disclose.restored.json");
+
+    // [#4553] settle 픽스처 — 명세서·allow 게이트 봉투 (캡슐은 disclose 픽스처 재사용).
+    let settle_wo = dir.join("prov-settle.wo.json");
+    std::fs::write(
+        &settle_wo,
+        serde_json::json!({
+            "schemaVersion": "1.0", "kind": "workorder", "workorderId": "prov-wo-1",
+            "acceptancePolicy": { "schemaVersion": "1.0", "kind": "admissionPolicy",
+                                   "default": "deny", "rules": [] },
+            "unitPrice": { "amount": "1", "currency": "KRW", "per": "capsule" },
+        })
+        .to_string(),
+    )
+    .expect("명세서 픽스처");
+    let settle_gate = dir.join("prov-settle.gate.json");
+    std::fs::write(
+        &settle_gate,
+        serde_json::json!({ "schemaVersion": "1.0", "verdict": "allow", "violations": [] })
+            .to_string(),
+    )
+    .expect("게이트 봉투 픽스처");
+    let settle_claim = dir.join("prov-settle.claim.json");
+    let settle_ledger = dir.join("prov-settle.ledger.ndjson");
+
+    // [#4558] y10 픽스처 — 감사 보고 산출 경로 (대상 폴더는 wrap 작업장 재사용).
+    let y10_report = dir.join("prov-y10.report.json");
+    // gate 픽스처 — 빈 규칙 + deny 기본 = 거부(exit 3) 순수 fs 경로.
+    let gate_policy = dir.join("prov-gate-policy.json");
+    std::fs::write(
+        &gate_policy,
+        br#"{"kind":"admissionPolicy","name":"prov","defaultVerdict":"deny","rules":[]}"#,
+    )
+    .expect("게이트 정책 픽스처");
+
+    // anchor verify 픽스처 — 빈 로그 + 아무 캡슐 = 미등재(logged:false, exit 3).
+    let anchor_log = dir.join("prov-anchor.ndjson");
+    std::fs::write(&anchor_log, b"").expect("빈 앵커 로그");
+    // entries·merkleRoot·upToSeq 는 checkpoint 봉투에만 있고, checkpoint 는 빈
+    // 로그를 거부한다(exit 2). 그래서 전용 로그를 비운 뒤 add→checkpoint 를
+    // 이 순서로 태운다 — 스윕은 선언 순서대로 순차 실행하므로 항목 수가 1로
+    // 고정된다(허용목록 대신 레시피가 필드를 실제로 내게 하는 쪽).
+    let anchor_seq_log = dir.join("prov-anchor-seq.ndjson");
+    std::fs::write(&anchor_seq_log, b"").expect("연번 앵커 로그");
+
+    // harness-status 픽스처 — 깨진 캡슐 폴더 규약(capsules/ 하위).
+    let harness_dir = dir.join("prov-harness");
+    std::fs::create_dir_all(harness_dir.join("capsules")).expect("하네스 작업장");
+    std::fs::write(
+        harness_dir
+            .join("capsules")
+            .join("0001_broken.capsule.json"),
+        br#"{"kind":"notACapsule"}"#,
+    )
+    .expect("깨진 하네스 캡슐");
+    // harness wrap 픽스처 — capsule·output·parent 는 실산출 경로에서만 나오므로
+    // 허용목록 대신 레시피가 그 필드를 실제로 내게 한다(빈 작업장 = 첫 캡슐).
+    let harness_wrap_dir = dir.join("prov-harness-wrap");
+    std::fs::create_dir_all(harness_wrap_dir.join("capsules")).expect("wrap 작업장");
+    let harness_plan = serde_json::json!({
+        "planVersion": "1.0",
+        "input": p(&table),
+        "output": p(&harness_wrap_dir.join("wrapped.hwp")),
+        "steps": [ { "action": "set_cell", "table": 0, "row": 0, "col": 0, "text": "ZZ" } ],
+    })
+    .to_string();
+
+    let keygen_out = dir.join("prov-keygen.key.json");
+    let _ = std::fs::remove_file(&keygen_out);
+
+    // audit 캡슐 폴더 — 고의로 깨진 캡슐 1개. 실패 회계 봉투(failed[])가 문서
+    // 문자열 없이 캡슐 이름·사유만 실음을 실측으로 고정한다 (실패 존재 → exit 3).
+    let audit_dir = dir.join("prov-audit-capsules");
+    std::fs::create_dir_all(&audit_dir).expect("audit 캡슐 폴더");
+    std::fs::write(
+        audit_dir.join("broken.capsule.json"),
+        r#"{"kind":"notACapsule"}"#,
+    )
+    .expect("깨진 캡슐 픽스처");
 
     // search 질의어는 문서에서 뽑는다 — 매치가 0건이면 봉투가 비어 가드가 공허해진다.
     let main_oracle = oracle(&main);
@@ -428,6 +593,32 @@ fn recipes() -> Vec<Recipe> {
         .expect("table-to-csv 기준선 CSV")
         .to_string();
     std::fs::write(&table_csv_path, table_csv).expect("CSV 기준선 쓰기");
+
+    // [#4100] csv-to-chart 도 호출자 CSV와 문서 차트를 함께 받는다. 문서에서 뽑은 같은
+    // CSV를 되먹이면 changedCount 0 이지만, JSON 표지가 붙는지와 지도 경로가 이 명령을
+    // 덮는지는 실제 호출로만 확인된다.
+    let chart_csv_path = PathBuf::from(out("provenance-chart.csv"));
+    let chart_seed_args = vec![
+        s("chart-to-csv"),
+        p(&chart),
+        s("--chart"),
+        s("1"),
+        s("--json"),
+    ];
+    let chart_seed = run(&chart_seed_args);
+    assert_eq!(
+        chart_seed.status.code(),
+        Some(0),
+        "차트 CSV 기준선을 만들지 못했습니다:\n{}",
+        describe(&chart_seed_args, &chart_seed)
+    );
+    let chart_seed_json: Value =
+        serde_json::from_slice(&chart_seed.stdout).expect("chart-to-csv 기준선 stdout JSON");
+    let chart_csv = chart_seed_json["charts"][0]["csv"]
+        .as_str()
+        .expect("chart-to-csv 기준선 CSV")
+        .to_string();
+    std::fs::write(&chart_csv_path, chart_csv).expect("차트 CSV 기준선 쓰기");
 
     // [#3885] redact 스윕용 가짜 개인정보 문서 — 저장소에 PII 샘플을 두지 않는다
     // (tests/redact_sanitize_contract.rs 와 같은 fill-fields 주입 방식). 값은 전부
@@ -465,6 +656,18 @@ fn recipes() -> Vec<Recipe> {
         "steps": [ { "action": "fill_fields", "data": { "prov없는필드": "x" } } ],
     })
     .to_string();
+    // [#4378 R22] 낡은 기준의 계획 — preconditionFailed·nextCall 은 CAS 거부
+    // 봉투에만 실린다(exit 3). 지문이 대조 단계에서 이미 틀리므로 step 은 판정
+    // 대상이 되지 않는다 — find 값은 문서에서 오지 않은 문자열이라 오라클과
+    // 겹치지 않는다.
+    let stale_plan = serde_json::json!({
+        "planVersion": "1.0",
+        "input": p(&field),
+        "output": out("prov-run-stale.hwp"),
+        "preconditions": { "inputSha256": "0".repeat(64) },
+        "steps": [ { "action": "replace_text", "find": "prov없는문자열", "replace": "y" } ],
+    })
+    .to_string();
     let fill_rows_path = PathBuf::from(out("prov-fill-rows.jsonl"));
     std::fs::write(&fill_rows_path, "{\"작성자\":\"홍길동 제안\"}\n").expect("fill rows 쓰기");
     let fill_out_dir = dir.join("prov-fill-out");
@@ -475,6 +678,72 @@ fn recipes() -> Vec<Recipe> {
             command: "info",
             doc: Some(main.clone()),
             args: vec![s("info"), s("--json"), p(&main)],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
+        Recipe {
+            command: "word-count",
+            doc: Some(main.clone()),
+            args: vec![s("word-count"), s("--json"), p(&main)],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
+        Recipe {
+            command: "bookmarks",
+            doc: Some(main.clone()),
+            args: vec![s("bookmarks"), s("--json"), p(&main)],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
+        Recipe {
+            command: "form-value",
+            doc: Some(form_ctrl.clone()),
+            args: vec![
+                s("form-value"),
+                p(&form_ctrl),
+                s("--section"),
+                s(&form_section.to_string()),
+                s("--para"),
+                s(&form_paragraph.to_string()),
+                s("--ctrl"),
+                s(&form_control.to_string()),
+                s("--json"),
+            ],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
+        Recipe {
+            command: "charts",
+            doc: Some(chart.clone()),
+            args: vec![s("charts"), s("--json"), p(&chart)],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
+        Recipe {
+            command: "headers-footers",
+            doc: Some(field.clone()),
+            args: vec![s("headers-footers"), s("--json"), p(&field)],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
+        Recipe {
+            command: "header-footer",
+            doc: Some(field.clone()),
+            args: vec![s("header-footer"), s("--header"), s("--json"), p(&field)],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
+        Recipe {
+            command: "charts",
+            doc: Some(chart.clone()),
+            args: vec![s("charts"), s("--json"), p(&chart)],
             stdin: None,
             exit: 0,
             ndjson: false,
@@ -543,6 +812,37 @@ fn recipes() -> Vec<Recipe> {
             ndjson: false,
         },
         Recipe {
+            command: "chart-to-csv",
+            doc: Some(chart.clone()),
+            args: vec![
+                s("chart-to-csv"),
+                p(&chart),
+                s("--chart"),
+                s("1"),
+                s("--json"),
+            ],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
+        Recipe {
+            command: "csv-to-chart",
+            doc: Some(chart.clone()),
+            args: vec![
+                s("csv-to-chart"),
+                p(&chart),
+                s("--csv"),
+                p(&chart_csv_path),
+                s("--chart"),
+                s("1"),
+                s("--dry-run"),
+                s("--json"),
+            ],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
+        Recipe {
             command: "search",
             doc: Some(main.clone()),
             args: vec![s("search"), p(&main), query, s("--json")],
@@ -554,6 +854,16 @@ fn recipes() -> Vec<Recipe> {
             command: "extract-data",
             doc: Some(main.clone()),
             args: vec![s("extract-data"), p(&main), s("--json")],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
+        // [프롬프트 주입 방패] armoredText 가 문서 본문을 담으므로 오라클이 그 경로에서
+        // 문서 문자열을 찾아야 하고, 지도가 armoredText 를 선언하는지 실측으로 고정한다.
+        Recipe {
+            command: "armor",
+            doc: Some(main.clone()),
+            args: vec![s("armor"), p(&main), s("--json")],
             stdin: None,
             exit: 0,
             ndjson: false,
@@ -588,6 +898,17 @@ fn recipes() -> Vec<Recipe> {
             command: "explain",
             doc: Some(field.clone()),
             args: vec![s("explain"), p(&field), s("--json")],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
+        // [#gym] explore — 어포던스 메뉴 봉투. 증거(menu[].why)는 엔진이 센 개수라 문서
+        // 파생 문자열이 없다(untrustedContent:false). 본문·표·개요가 있는 main 을 써
+        // 오라클을 비지 않게 하고, 표지 존재·지도 정합만 확인한다.
+        Recipe {
+            command: "explore",
+            doc: Some(main.clone()),
+            args: vec![s("explore"), p(&main), s("--json")],
             stdin: None,
             exit: 0,
             ndjson: false,
@@ -657,6 +978,22 @@ fn recipes() -> Vec<Recipe> {
             exit: 0,
             ndjson: false,
         },
+        Recipe {
+            command: "edit",
+            doc: Some(field.clone()),
+            args: vec![
+                s("edit"),
+                s("insert-text"),
+                p(&field),
+                s("--text"),
+                s("marker"),
+                s("--dry-run"),
+                s("--json"),
+            ],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
         // ── [#3880 T1] recordFields 전수 대조 보강 — 선언 필드를 실제로 내는 호출들 ──
         Recipe {
             // digest --sections: 선언 필드 sections(절 단위 청크)는 이 플래그에서만 나온다.
@@ -696,6 +1033,16 @@ fn recipes() -> Vec<Recipe> {
             ndjson: false,
         },
         Recipe {
+            // [#4378 R22] run CAS 거부 — preconditionFailed·nextCall 은 이 봉투에만
+            // 실린다(exit 3, 실행 0·디스크 무변경). 거부 봉투도 표지 검사를 받는다.
+            command: "run",
+            doc: Some(field.clone()),
+            args: vec![s("run"), s("--plan-json"), stale_plan, s("--json")],
+            stdin: None,
+            exit: 3,
+            ndjson: false,
+        },
+        Recipe {
             // table-to-csv -o: output·outputFormat 은 파일 산출에서만 나온다.
             command: "table-to-csv",
             doc: Some(table.clone()),
@@ -706,6 +1053,43 @@ fn recipes() -> Vec<Recipe> {
                 s("0"),
                 s("-o"),
                 out("prov-t2c.csv"),
+                s("--json"),
+            ],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
+        Recipe {
+            // chart-to-csv -o: output·outputFormat 은 파일 산출에서만 나온다.
+            command: "chart-to-csv",
+            doc: Some(chart.clone()),
+            args: vec![
+                s("chart-to-csv"),
+                p(&chart),
+                s("--chart"),
+                s("1"),
+                s("-o"),
+                out("prov-c2c.csv"),
+                s("--json"),
+            ],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
+        Recipe {
+            // csv-to-chart 실적용 + --verify: output·outputFormat·verify.
+            command: "csv-to-chart",
+            doc: Some(chart.clone()),
+            args: vec![
+                s("csv-to-chart"),
+                p(&chart),
+                s("--csv"),
+                p(&chart_csv_path),
+                s("--chart"),
+                s("1"),
+                s("-o"),
+                out("prov-csv2chart.hwpx"),
+                s("--verify"),
                 s("--json"),
             ],
             stdin: None,
@@ -799,6 +1183,387 @@ fn recipes() -> Vec<Recipe> {
             stdin: None,
             exit: 0,
             ndjson: true,
+        },
+        Recipe {
+            // replay 영수증 — 봉투가 해시·카운트뿐(문서 문자열 없음)임을 실측으로 고정.
+            command: "replay",
+            doc: Some(table.clone()),
+            args: vec![s("replay"), s("--plan-json"), plan.clone(), s("--json")],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
+        Recipe {
+            // audit 실패 회계 — 캡슐(호출자 산출물)만 읽고 문서 오라클이 없다(doc: None).
+            command: "audit",
+            doc: None,
+            args: vec![s("audit"), p(&audit_dir), s("--json")],
+            stdin: None,
+            exit: 3,
+            ndjson: false,
+        },
+        Recipe {
+            // keygen — 문서를 열지 않는 발급 명령. 봉투는 키 메타·경로 에코뿐.
+            command: "keygen",
+            doc: None,
+            args: vec![
+                s("keygen"),
+                s("--key-id"),
+                s("prov.example/sweep#1"),
+                s("--out"),
+                p(&keygen_out),
+                s("--json"),
+            ],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
+        Recipe {
+            // verify-signature 기형 경로 — 판정(malformed)은 봉투 데이터(exit 3).
+            command: "verify-signature",
+            doc: None,
+            args: vec![
+                s("verify-signature"),
+                p(&sig_capsule),
+                s("--keyring"),
+                p(&sig_keyring),
+                s("--json"),
+            ],
+            stdin: None,
+            exit: 3,
+            ndjson: false,
+        },
+        Recipe {
+            // harness-status — 깨진 캡슐 하나로 verdict:broken(exit 3) 경로 고정.
+            command: "harness-status",
+            doc: None,
+            args: vec![s("harness-status"), p(&harness_dir), s("--json")],
+            stdin: None,
+            exit: 3,
+            ndjson: false,
+        },
+        Recipe {
+            // harness wrap — 실산출 경로. 봉투는 경로·해시·연번뿐이라 문서
+            // 오라클이 없다(doc: None); steps 는 개수라 문서 문자열이 아니다.
+            command: "harness",
+            doc: None,
+            args: vec![
+                s("harness"),
+                s("wrap"),
+                s("--plan"),
+                harness_plan,
+                s("--dir"),
+                p(&harness_wrap_dir),
+                s("--json"),
+            ],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
+        Recipe {
+            // anchor 미등재 판정 — 판정은 봉투 데이터(exit 3), 문서 오라클 없음.
+            command: "anchor",
+            doc: None,
+            args: vec![
+                s("anchor"),
+                s("verify"),
+                p(&sig_capsule),
+                s("--log"),
+                p(&anchor_log),
+                s("--json"),
+            ],
+            stdin: None,
+            exit: 3,
+            ndjson: false,
+        },
+        Recipe {
+            // anchor add — 등재 성공 경로(seq·capsuleSha256). checkpoint 보다
+            // 먼저 선언해야 아래 체크포인트가 항목 1을 본다.
+            command: "anchor",
+            doc: None,
+            args: vec![
+                s("anchor"),
+                s("add"),
+                p(&sig_capsule),
+                s("--log"),
+                p(&anchor_seq_log),
+                s("--json"),
+            ],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
+        Recipe {
+            // gate deny 기본 — 빈 규칙은 통과가 아니다(exit 3), 문서 오라클 없음.
+            command: "gate",
+            doc: None,
+            args: vec![
+                s("gate"),
+                p(&sig_capsule),
+                s("--policy"),
+                p(&gate_policy),
+                s("--json"),
+            ],
+            stdin: None,
+            exit: 3,
+            ndjson: false,
+        },
+        Recipe {
+            // [#4551] disclose 픽스처 발급 — 아래 3개 레시피가 이 캡슐을 쓴다.
+            command: "replay",
+            doc: Some(table.clone()),
+            args: vec![
+                s("replay"),
+                s("--plan-json"),
+                disclose_plan.clone(),
+                s("--capsule"),
+                p(&disclose_capsule),
+                s("--json"),
+            ],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
+        Recipe {
+            // disclose redact — 커밋 치환·개봉 분리 (capsule/redacted/opening 실물).
+            command: "disclose",
+            doc: None,
+            args: vec![
+                s("disclose"),
+                s("redact"),
+                p(&disclose_capsule),
+                s("-o"),
+                p(&disclose_redacted),
+                s("--opening-out"),
+                p(&disclose_opening),
+                s("--json"),
+            ],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
+        Recipe {
+            // disclose verify — 전체 개봉 대조 ok (verifiedFields/unopened 실물).
+            command: "disclose",
+            doc: None,
+            args: vec![
+                s("disclose"),
+                s("verify"),
+                p(&disclose_redacted),
+                s("--opening"),
+                p(&disclose_opening),
+                s("--json"),
+            ],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
+        Recipe {
+            // disclose restore — 바이트 복원 (restoredSha256/byteIdentical 실물).
+            command: "disclose",
+            doc: None,
+            args: vec![
+                s("disclose"),
+                s("restore"),
+                p(&disclose_redacted),
+                s("--opening"),
+                p(&disclose_opening),
+                s("-o"),
+                p(&disclose_restored),
+                s("--json"),
+            ],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
+        Recipe {
+            // [#4553] settle propose — 3해시 고정 (미서명: signed false 실측).
+            command: "settle",
+            doc: None,
+            args: vec![
+                s("settle"),
+                s("propose"),
+                s("--workorder"),
+                p(&settle_wo),
+                s("--capsule"),
+                p(&disclose_capsule),
+                s("--gate-envelope"),
+                p(&settle_gate),
+                s("-o"),
+                p(&settle_claim),
+                s("--json"),
+            ],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
+        Recipe {
+            // settle verify 전 축 — 미서명 청구라 signerOk false = exit 3 (판정 데이터).
+            command: "settle",
+            doc: None,
+            args: vec![
+                s("settle"),
+                s("verify"),
+                p(&settle_claim),
+                s("--workorder"),
+                p(&settle_wo),
+                s("--capsule"),
+                p(&disclose_capsule),
+                s("--gate-envelope"),
+                p(&settle_gate),
+                s("--keyring"),
+                p(&sig_keyring),
+                s("--ledger"),
+                p(&settle_ledger),
+                s("--json"),
+            ],
+            stdin: None,
+            exit: 3,
+            ndjson: false,
+        },
+        Recipe {
+            // settle record — 원장 기입 (seq 0, 동형 체인).
+            command: "settle",
+            doc: None,
+            args: vec![
+                s("settle"),
+                s("record"),
+                p(&settle_claim),
+                s("--ledger"),
+                p(&settle_ledger),
+                s("--json"),
+            ],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
+        Recipe {
+            // settle record 재시도 — P3 이중 청구 (duplicate·existingSeq 실물).
+            command: "settle",
+            doc: None,
+            args: vec![
+                s("settle"),
+                s("record"),
+                p(&settle_claim),
+                s("--ledger"),
+                p(&settle_ledger),
+                s("--json"),
+            ],
+            stdin: None,
+            exit: 3,
+            ndjson: false,
+        },
+        Recipe {
+            // [#4558] audit-report — 픽스처 루트 전 캡슐 대상, opt-in 미지정 절은
+            // null 로 실린다(전 필드 실측).
+            command: "audit-report",
+            doc: None,
+            args: vec![
+                s("audit-report"),
+                s(dir.to_str().expect("경로")),
+                s("-o"),
+                p(&y10_report),
+                s("--json"),
+            ],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
+        Recipe {
+            // recall-scope — disclose 픽스처 캡슐을 오염 지목(자기 자신 = 회수 1호).
+            // settle 원장의 청구 대상이 바로 이 캡슐이라 claims 1건이 실측된다.
+            command: "recall-scope",
+            doc: None,
+            args: vec![
+                s("recall-scope"),
+                s("--contaminated"),
+                p(&disclose_capsule),
+                s("--among"),
+                s(dir.to_str().expect("경로")),
+                s("--ledger"),
+                p(&settle_ledger),
+                s("--json"),
+            ],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
+        Recipe {
+            // conformance L1 — 픽스처 루트에는 영수증 없는 수제 캡슐이 섞여 있어
+            // nonconformant(exit 3)가 결정론 — checks/achieved/verdict 전 필드 실측.
+            command: "conformance",
+            doc: None,
+            args: vec![
+                s("conformance"),
+                s(dir.to_str().expect("경로")),
+                s("--level"),
+                s("L1"),
+                s("--json"),
+            ],
+            stdin: None,
+            exit: 3,
+            ndjson: false,
+        },
+        Recipe {
+            // anchor checkpoint — entries·merkleRoot·upToSeq 는 여기서만 나온다.
+            command: "anchor",
+            doc: None,
+            args: vec![
+                s("anchor"),
+                s("checkpoint"),
+                s("--log"),
+                p(&anchor_seq_log),
+                s("--json"),
+            ],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
+        Recipe {
+            // bundle export — 뿌리 1개 폐쇄집합 (아래 verify 가 이 산출을 쓴다).
+            command: "bundle",
+            doc: None,
+            args: vec![
+                s("bundle"),
+                s("export"),
+                p(&bundle_capsule),
+                s("-o"),
+                p(&bundle_out),
+                s("--json"),
+            ],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
+        Recipe {
+            // bundle verify — 미서명 뿌리 번들은 빈 keyring 도메인 기준 ok.
+            command: "bundle",
+            doc: None,
+            args: vec![
+                s("bundle"),
+                s("verify"),
+                p(&bundle_out),
+                s("--trust-domain"),
+                p(&bundle_domain),
+                s("--json"),
+            ],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
+        Recipe {
+            // lineage 깨진 머리 — kind 불일치 캡슐 하나로 valid:false 경로(exit 3)를
+            // 고정한다. 봉투는 경로·해시·판정뿐, 문서 오라클이 없다(doc: None).
+            command: "lineage",
+            doc: None,
+            args: vec![
+                s("lineage"),
+                p(&audit_dir.join("broken.capsule.json")),
+                s("--json"),
+            ],
+            stdin: None,
+            exit: 3,
+            ndjson: false,
         },
         Recipe {
             command: "run",
@@ -965,6 +1730,14 @@ fn recipes() -> Vec<Recipe> {
             exit: 0,
             ndjson: false,
         },
+        Recipe {
+            command: "layout-anomaly",
+            doc: Some(main.clone()),
+            args: vec![s("layout-anomaly"), p(&main), s("--json")],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
         // [#3918 승격 3호] scan — 파싱이 성공하는 표본이므로 probe.error 는 실리지
         // 않는다. 스윕의 관심은 판정 결과가 아니라 표지(untrustedContent·Fields)가
         // 항상 실리고 지도 밖 경로를 광고하지 않는 것이다.
@@ -972,6 +1745,16 @@ fn recipes() -> Vec<Recipe> {
             command: "scan",
             doc: Some(main.clone()),
             args: vec![s("scan"), p(&main), s("--probe"), s("--json")],
+            stdin: None,
+            exit: 0,
+            ndjson: false,
+        },
+        // 구조 위협 스캔 — 정상 문서는 clean 이라 문서 문자열이 실리지 않는다.
+        // detail(외부참조 대상)만 문서 파생이고 그 표지는 지도가 선언한다.
+        Recipe {
+            command: "threat-scan",
+            doc: Some(main.clone()),
+            args: vec![s("threat-scan"), p(&main), s("--json")],
             stdin: None,
             exit: 0,
             ndjson: false,
@@ -1459,6 +2242,9 @@ fn sweep_exempt_envelopes_still_carry_provenance_marks() {
     let ingest = dir.join("prov-exempt-ingest.json");
     std::fs::write(&ingest, r#"{"version":"1","questions":[]}"#).expect("ingest 픽스처");
     let ingest_out = dir.join("prov-exempt-ingest.hwpx");
+    let scaffold_spec = dir.join("prov-exempt-scaffold.json");
+    std::fs::write(&scaffold_spec, r#"{"version":"1","blocks":[]}"#).expect("scaffold 픽스처");
+    let scaffold_out = dir.join("prov-exempt-scaffold.hwpx");
 
     let invocations: BTreeMap<&str, Vec<String>> = [
         ("export-ir-schema", vec![s("export-ir-schema"), s("--json")]),
@@ -1486,6 +2272,16 @@ fn sweep_exempt_envelopes_still_carry_provenance_marks() {
                 ingest.to_str().expect("경로").to_string(),
                 s("-o"),
                 ingest_out.to_str().expect("경로").to_string(),
+                s("--json"),
+            ],
+        ),
+        (
+            "scaffold",
+            vec![
+                s("scaffold"),
+                scaffold_spec.to_str().expect("경로").to_string(),
+                s("-o"),
+                scaffold_out.to_str().expect("경로").to_string(),
                 s("--json"),
             ],
         ),
@@ -1528,14 +2324,195 @@ fn sweep_exempt_envelopes_still_carry_provenance_marks() {
 /// 자기서술이 필드를 광고하는데 **아무 가드도 실물과 대조하지 않았다.** 스윕이
 /// 이미 전 `--json` 명령을 유효 인자로 실행하므로, 명령별 봉투 최상위 키 합집합과
 /// 선언을 대조한다. 중첩 경로(`steps[].confusable` 류)는 최상위 대조 대상이
-/// 아니다 — 바인딩 파리티 테스트(bindings/python/tests/test_envelope_parity.py)와
-/// 같은 기준이며, 그쪽은 대표 4개 명령만 본다(이쪽이 전수다).
+/// 아니다 — 이 테스트는 최상위 `recordFields`의 전수 계약만 다룬다.
 ///
 /// 조건부 필드는 **사유와 함께** CONDITIONAL_RECORD_FIELDS 에 적는다 — 사유 없는
 /// 허용목록은 가드를 무력화한다. 가능하면 허용 대신 레시피가 그 필드를 실제로
 /// 나오게 하는 쪽을 택한다(예: sanitize 레시피가 `-o` 로 저장해 `output` 을 낸다).
 const CONDITIONAL_RECORD_FIELDS: &[(&str, &str, &str)] = &[
     // (명령, 필드, 스윕 레시피가 그 필드를 못 내는 사유)
+    // 공유 edit recordFields 에 하위명령 전용 키가 쌓인다. 스윕 레시피는
+    // fill-fields/set-cell/replace-text 라 이 키들을 봉투에 안 낸다.
+    (
+        "edit",
+        "below",
+        "insert-row 전용. 스윕 레시피는 fill-fields/set-cell 이라 below 를 안 낸다",
+    ),
+    (
+        "edit",
+        "right",
+        "insert-col 전용. 스윕 레시피는 fill-fields/set-cell 이라 right 를 안 낸다",
+    ),
+    (
+        "edit",
+        "endRow",
+        "merge-cells 전용. 스윕 레시피는 fill-fields/set-cell 이라 endRow 를 안 낸다",
+    ),
+    (
+        "edit",
+        "endCol",
+        "merge-cells 전용. 스윕 레시피는 fill-fields/set-cell 이라 endCol 를 안 낸다",
+    ),
+    (
+        "edit",
+        "isHeader",
+        "insert-header-footer 전용. 스윕 레시피는 fill-fields/set-cell 이라 isHeader 를 안 낸다",
+    ),
+    (
+        "edit",
+        "applyTo",
+        "insert-header-footer 전용. 스윕 레시피는 fill-fields/set-cell 이라 applyTo 를 안 낸다",
+    ),
+    (
+        "edit",
+        "rows",
+        "split-cell-into 전용. 스윕 레시피는 fill-fields/set-cell 이라 rows 를 안 낸다",
+    ),
+    (
+        "edit",
+        "cols",
+        "split-cell-into 전용. 스윕 레시피는 fill-fields/set-cell 이라 cols 를 안 낸다",
+    ),
+    (
+        "edit",
+        "vertical",
+        "resize-table-cell 전용. 스윕 레시피는 fill-fields/set-cell 이라 vertical 을 안 낸다",
+    ),
+    (
+        "edit",
+        "forward",
+        "resize-table-cell 전용. 스윕 레시피는 fill-fields/set-cell 이라 forward 를 안 낸다",
+    ),
+    (
+        "edit",
+        "dx",
+        "move-table 전용. 스윕 레시피는 fill-fields/set-cell 이라 dx 를 안 낸다",
+    ),
+    (
+        "edit",
+        "dy",
+        "move-table 전용. 스윕 레시피는 fill-fields/set-cell 이라 dy 를 안 낸다",
+    ),
+    (
+        "edit",
+        "count",
+        "delete-row/delete-col/group-shapes 전용. 스윕 레시피는 fill-fields/set-cell 이라 count 를 안 낸다",
+    ),
+    (
+        "edit",
+        "ctrl",
+        "insert-text/delete-footnote 등 컨트롤 좌표 전용. 스윕 레시피는 fill-fields/set-cell 이라 ctrl 를 안 낸다",
+    ),
+    (
+        "edit",
+        "name",
+        "add-bookmark/rename-bookmark 전용. 다른 하위는 fill-fields/set-cell 처럼 name 을 안 싣는다",
+    ),
+    (
+        "edit",
+        "isHeader",
+        "delete-header-footer 전용. 스윕 레시피는 fill-fields/set-cell 이라 isHeader 를 안 낸다",
+    ),
+    (
+        "edit",
+        "applyTo",
+        "delete-header-footer 전용. 스윕 레시피는 fill-fields/set-cell 이라 applyTo 를 안 낸다",
+    ),
+    (
+        "edit",
+        "rows",
+        "insert-table 전용. 스윕 레시피는 fill-fields/set-cell 이라 rows 를 안 낸다",
+    ),
+    (
+        "edit",
+        "cols",
+        "insert-table 전용. 스윕 레시피는 fill-fields/set-cell 이라 cols 를 안 낸다",
+    ),
+    (
+        "edit",
+        "cellPara",
+        "insert-text-in-cell 전용. 스윕 레시피는 fill-fields/set-cell 이라 cellPara 를 안 낸다",
+    ),
+    (
+        "edit",
+        "widths",
+        "set-column-widths 전용. 스윕 레시피는 fill-fields/set-cell 이라 widths 를 안 낸다",
+    ),
+    (
+        "edit",
+        "fnPara",
+        "delete-text-in-footnote 전용. 스윕 레시피는 fill-fields/set-cell 이라 fnPara 를 안 낸다",
+    ),
+    (
+        "edit",
+        "columnCount",
+        "set-column-def 전용. 스윕 레시피는 fill-fields/set-cell 이라 columnCount 를 안 낸다",
+    ),
+    (
+        "edit",
+        "columnType",
+        "set-column-def 전용. 스윕 레시피는 fill-fields/set-cell 이라 columnType 을 안 낸다",
+    ),
+    (
+        "edit",
+        "sameWidth",
+        "set-column-def 전용. 스윕 레시피는 fill-fields/set-cell 이라 sameWidth 를 안 낸다",
+    ),
+    (
+        "edit",
+        "spacing",
+        "set-column-def 전용. 스윕 레시피는 fill-fields/set-cell 이라 spacing 을 안 낸다",
+    ),
+    (
+        "edit",
+        "innerPara",
+        "apply-char-format-in-cell 전용. 스윕 레시피는 fill-fields/set-cell 이라 innerPara 를 안 낸다",
+    ),
+    (
+        "edit",
+        "props",
+        "apply-char-format-in-cell 전용. 스윕 레시피는 fill-fields/set-cell 이라 props 를 안 낸다",
+    ),
+    (
+        "edit",
+        "bold",
+        "apply-char-format-in-cell 전용. 스윕 레시피는 fill-fields/set-cell 이라 bold 를 안 낸다",
+    ),
+    (
+        "edit",
+        "script",
+        "insert-equation 전용. 스윕 레시피는 fill-fields/set-cell 이라 script 를 안 낸다",
+    ),
+    (
+        "edit",
+        "fontSize",
+        "insert-equation/apply-char-format-in-cell 전용. 스윕 레시피는 fill-fields/set-cell 이라 fontSize 를 안 낸다",
+    ),
+    (
+        "edit",
+        "color",
+        "insert-equation/apply-char-format-in-cell 전용. 스윕 레시피는 fill-fields/set-cell 이라 color 를 안 낸다",
+    ),
+    (
+        "edit",
+        "x",
+        "insert-shape/insert-image 전용. 스윕 레시피는 fill-fields/set-cell 이라 x 를 안 낸다",
+    ),
+    (
+        "edit",
+        "y",
+        "insert-shape/insert-image 전용. 스윕 레시피는 fill-fields/set-cell 이라 y 를 안 낸다",
+    ),
+    (
+        "edit",
+        "width",
+        "insert-shape/insert-image 전용. 스윕 레시피는 fill-fields/set-cell 이라 width 를 안 낸다",
+    ),
+    (
+        "edit",
+        "height",
+        "insert-shape/insert-image 전용. 스윕 레시피는 fill-fields/set-cell 이라 height 를 안 낸다",
+    ),
 ];
 
 #[test]

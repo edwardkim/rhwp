@@ -1,0 +1,25 @@
+{
+  "issue": 5128,
+  "sample": "samples/한글문서파일형식_5.0_revision1.3.hwp",
+  "pages": 69,
+  "sections": 6,
+  "paragraphs": 619,
+  "p015": {
+    "kind": "partialTable",
+    "paraIndex": 73
+  },
+  "p016": {
+    "kind": "partialParagraph",
+    "paraIndex": 84
+  },
+  "splitTables": [
+    73,
+    174,
+    193,
+    203,
+    284,
+    343,
+    363,
+    380
+  ]
+}

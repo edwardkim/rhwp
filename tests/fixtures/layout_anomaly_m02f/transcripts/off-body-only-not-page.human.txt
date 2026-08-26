@@ -1,0 +1,6 @@
+# transcript off-body-only-not-page
+# family=off-canvas
+# hypothesis=표가 본문 오른쪽만 넘치고 페이지 상자 안에 남으면 overflow 만 있고 off-canvas 는 없다.
+쪽 수: 3  overflow: 1  off-canvas: 0  overlap: 0  text-overlap: 0  empty_page(가능성): 0
+  [OVERFLOW] page   0     5.00px  Page/Body/Table0 (Table)
+status: ANOMALY

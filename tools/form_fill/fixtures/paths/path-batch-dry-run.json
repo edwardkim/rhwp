@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.form_fill.path_contract.v1",
+  "claim": "M-fill",
+  "generator": "tools/form_fill/fatten_form_fill.py",
+  "existingCliOnly": true,
+  "id": "path-batch-dry-run",
+  "axis": "batch-dry-run",
+  "title": "batch fill --dry-run",
+  "why": "out-dir 필수, 파일 없음.",
+  "argv": [
+    "batch",
+    "fill",
+    "--form",
+    "samples/field-01.hwp",
+    "--data",
+    "rows.jsonl",
+    "--out-dir",
+    "out/filled",
+    "--dry-run",
+    "--json"
+  ],
+  "exit": 0,
+  "writesFile": false
+}

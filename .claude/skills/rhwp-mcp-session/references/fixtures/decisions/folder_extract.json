@@ -1,0 +1,10 @@
+{
+  "id": "folder_extract",
+  "task": "폴더 날짜·금액",
+  "choice": "stateless",
+  "first_tool": "hwp_batch_extract_data",
+  "why": "문서마다 limit.",
+  "forbidden": [
+    "hwp_open"
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "id": "XC15",
+  "steps": [
+    {
+      "run": [
+        "run",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"samples/table-001.hwp\", \"output\": \"{sub:o0.hwp}\", \"steps\": [{\"action\": \"set_cell\", \"table\": 0, \"row\": 0, \"col\": 0, \"text\": \"뿌리-XC15\"}]}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "replay",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"samples/table-001.hwp\", \"output\": \"{sub:o0.hwp}\", \"steps\": [{\"action\": \"set_cell\", \"table\": 0, \"row\": 0, \"col\": 0, \"text\": \"뿌리-XC15\"}]}",
+        "--capsule",
+        "{sub:fork/root.capsule.json}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "replay",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"{sub:o0.hwp}\", \"output\": \"{sub:left.hwp}\", \"steps\": [{\"action\": \"set_cell\", \"table\": 0, \"row\": 0, \"col\": 0, \"text\": \"좌잎-XC15\"}]}",
+        "--capsule",
+        "{sub:fork/left.capsule.json}",
+        "--parent",
+        "{sub:fork/root.capsule.json}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "replay",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"{sub:o0.hwp}\", \"output\": \"{sub:right.hwp}\", \"steps\": [{\"action\": \"set_cell\", \"table\": 0, \"row\": 0, \"col\": 0, \"text\": \"우잎-XC15\"}]}",
+        "--capsule",
+        "{sub:fork/right.capsule.json}",
+        "--parent",
+        "{sub:fork/root.capsule.json}",
+        "--json"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,559 @@
+{
+  "schema_version": "1.0",
+  "claim": "M01-5",
+  "metric": "pypdf_page_count",
+  "pixel_diff": "out_of_scope",
+  "counts": {
+    "multiver_stems": 9,
+    "page_count_disagree": 1,
+    "page_count_agree": 8,
+    "incomplete": 0
+  },
+  "disagreements": [
+    {
+      "stem": "2025 행정업무운영 편람(최종)",
+      "kind": "page_count_disagree",
+      "hangul_versions": [
+        "2010",
+        "2020",
+        "2024"
+      ],
+      "file_count": 8,
+      "trees": [
+        "pdf"
+      ],
+      "by_version": {
+        "2010": {
+          "hangul_version": "2010",
+          "files": [
+            "pdf/2025 행정업무운영 편람(최종)-2010-kopub.pdf"
+          ],
+          "page_counts": [
+            388
+          ],
+          "unmeasured": []
+        },
+        "2020": {
+          "hangul_version": "2020",
+          "files": [
+            "pdf/2025 행정업무운영 편람(최종)-2020-kopub.pdf",
+            "pdf/2025 행정업무운영 편람(최종)-hwp-2020.pdf",
+            "pdf/2025 행정업무운영 편람(최종)-hwp-kopub-2020.pdf",
+            "pdf/2025 행정업무운영 편람(최종)-hwpx-kopub-2020.pdf",
+            "pdf/stage242-hwp2020-page-count/2025 행정업무운영 편람(최종)-2020.pdf",
+            "pdf/stage242-hwp2020-page-count/hwpx/2025 행정업무운영 편람(최종)-2020.pdf"
+          ],
+          "page_counts": [
+            383,
+            383,
+            383,
+            383,
+            383,
+            383
+          ],
+          "unmeasured": []
+        },
+        "2024": {
+          "hangul_version": "2024",
+          "files": [
+            "pdf/2025 행정업무운영 편람(최종)-2024.pdf"
+          ],
+          "page_counts": [
+            383
+          ],
+          "unmeasured": []
+        }
+      },
+      "measured_page_counts": {
+        "2010": [
+          388
+        ],
+        "2020": [
+          383
+        ],
+        "2024": [
+          383
+        ]
+      },
+      "min_pages": 383,
+      "max_pages": 388,
+      "files": [
+        "pdf/2025 행정업무운영 편람(최종)-2010-kopub.pdf",
+        "pdf/2025 행정업무운영 편람(최종)-2020-kopub.pdf",
+        "pdf/2025 행정업무운영 편람(최종)-2024.pdf",
+        "pdf/2025 행정업무운영 편람(최종)-hwp-2020.pdf",
+        "pdf/2025 행정업무운영 편람(최종)-hwp-kopub-2020.pdf",
+        "pdf/2025 행정업무운영 편람(최종)-hwpx-kopub-2020.pdf",
+        "pdf/stage242-hwp2020-page-count/2025 행정업무운영 편람(최종)-2020.pdf",
+        "pdf/stage242-hwp2020-page-count/hwpx/2025 행정업무운영 편람(최종)-2020.pdf"
+      ]
+    }
+  ],
+  "multiver_stems": [
+    {
+      "stem": "2025 행정업무운영 편람(최종)",
+      "kind": "page_count_disagree",
+      "hangul_versions": [
+        "2010",
+        "2020",
+        "2024"
+      ],
+      "file_count": 8,
+      "trees": [
+        "pdf"
+      ],
+      "by_version": {
+        "2010": {
+          "hangul_version": "2010",
+          "files": [
+            "pdf/2025 행정업무운영 편람(최종)-2010-kopub.pdf"
+          ],
+          "page_counts": [
+            388
+          ],
+          "unmeasured": []
+        },
+        "2020": {
+          "hangul_version": "2020",
+          "files": [
+            "pdf/2025 행정업무운영 편람(최종)-2020-kopub.pdf",
+            "pdf/2025 행정업무운영 편람(최종)-hwp-2020.pdf",
+            "pdf/2025 행정업무운영 편람(최종)-hwp-kopub-2020.pdf",
+            "pdf/2025 행정업무운영 편람(최종)-hwpx-kopub-2020.pdf",
+            "pdf/stage242-hwp2020-page-count/2025 행정업무운영 편람(최종)-2020.pdf",
+            "pdf/stage242-hwp2020-page-count/hwpx/2025 행정업무운영 편람(최종)-2020.pdf"
+          ],
+          "page_counts": [
+            383,
+            383,
+            383,
+            383,
+            383,
+            383
+          ],
+          "unmeasured": []
+        },
+        "2024": {
+          "hangul_version": "2024",
+          "files": [
+            "pdf/2025 행정업무운영 편람(최종)-2024.pdf"
+          ],
+          "page_counts": [
+            383
+          ],
+          "unmeasured": []
+        }
+      },
+      "measured_page_counts": {
+        "2010": [
+          388
+        ],
+        "2020": [
+          383
+        ],
+        "2024": [
+          383
+        ]
+      },
+      "min_pages": 383,
+      "max_pages": 388,
+      "files": [
+        "pdf/2025 행정업무운영 편람(최종)-2010-kopub.pdf",
+        "pdf/2025 행정업무운영 편람(최종)-2020-kopub.pdf",
+        "pdf/2025 행정업무운영 편람(최종)-2024.pdf",
+        "pdf/2025 행정업무운영 편람(최종)-hwp-2020.pdf",
+        "pdf/2025 행정업무운영 편람(최종)-hwp-kopub-2020.pdf",
+        "pdf/2025 행정업무운영 편람(최종)-hwpx-kopub-2020.pdf",
+        "pdf/stage242-hwp2020-page-count/2025 행정업무운영 편람(최종)-2020.pdf",
+        "pdf/stage242-hwp2020-page-count/hwpx/2025 행정업무운영 편람(최종)-2020.pdf"
+      ]
+    },
+    {
+      "stem": "SO-SUEOP",
+      "kind": "page_count_agree",
+      "hangul_versions": [
+        "2022",
+        "2024"
+      ],
+      "file_count": 2,
+      "trees": [
+        "pdf"
+      ],
+      "by_version": {
+        "2022": {
+          "hangul_version": "2022",
+          "files": [
+            "pdf/task4097/SO-SUEOP.pdf"
+          ],
+          "page_counts": [
+            46
+          ],
+          "unmeasured": []
+        },
+        "2024": {
+          "hangul_version": "2024",
+          "files": [
+            "pdf/SO-SUEOP-2024.pdf"
+          ],
+          "page_counts": [
+            46
+          ],
+          "unmeasured": []
+        }
+      },
+      "measured_page_counts": {
+        "2022": [
+          46
+        ],
+        "2024": [
+          46
+        ]
+      },
+      "min_pages": 46,
+      "max_pages": 46,
+      "files": [
+        "pdf/SO-SUEOP-2024.pdf",
+        "pdf/task4097/SO-SUEOP.pdf"
+      ]
+    },
+    {
+      "stem": "hwp3-sample16-hwp5",
+      "kind": "page_count_agree",
+      "hangul_versions": [
+        "2020",
+        "2022"
+      ],
+      "file_count": 2,
+      "trees": [
+        "pdf"
+      ],
+      "by_version": {
+        "2020": {
+          "hangul_version": "2020",
+          "files": [
+            "pdf/hwp3-sample16-hwp5-2020.pdf"
+          ],
+          "page_counts": [
+            64
+          ],
+          "unmeasured": []
+        },
+        "2022": {
+          "hangul_version": "2022",
+          "files": [
+            "pdf/hwp3-sample16-hwp5-2022.pdf"
+          ],
+          "page_counts": [
+            64
+          ],
+          "unmeasured": []
+        }
+      },
+      "measured_page_counts": {
+        "2020": [
+          64
+        ],
+        "2022": [
+          64
+        ]
+      },
+      "min_pages": 64,
+      "max_pages": 64,
+      "files": [
+        "pdf/hwp3-sample16-hwp5-2020.pdf",
+        "pdf/hwp3-sample16-hwp5-2022.pdf"
+      ]
+    },
+    {
+      "stem": "hwpx_sample2",
+      "kind": "page_count_agree",
+      "hangul_versions": [
+        "2020",
+        "2024"
+      ],
+      "file_count": 2,
+      "trees": [
+        "pdf"
+      ],
+      "by_version": {
+        "2020": {
+          "hangul_version": "2020",
+          "files": [
+            "pdf/hwpx_sample2-2020.pdf"
+          ],
+          "page_counts": [
+            29
+          ],
+          "unmeasured": []
+        },
+        "2024": {
+          "hangul_version": "2024",
+          "files": [
+            "pdf/hwpx_sample2-2024.pdf"
+          ],
+          "page_counts": [
+            29
+          ],
+          "unmeasured": []
+        }
+      },
+      "measured_page_counts": {
+        "2020": [
+          29
+        ],
+        "2024": [
+          29
+        ]
+      },
+      "min_pages": 29,
+      "max_pages": 29,
+      "files": [
+        "pdf/hwpx_sample2-2020.pdf",
+        "pdf/hwpx_sample2-2024.pdf"
+      ]
+    },
+    {
+      "stem": "issue1949_giant_cell_nested_tables_perf",
+      "kind": "page_count_agree",
+      "hangul_versions": [
+        "2020",
+        "2024"
+      ],
+      "file_count": 2,
+      "trees": [
+        "pdf"
+      ],
+      "by_version": {
+        "2020": {
+          "hangul_version": "2020",
+          "files": [
+            "pdf/issue1949_giant_cell_nested_tables_perf-2020.pdf"
+          ],
+          "page_counts": [
+            115
+          ],
+          "unmeasured": []
+        },
+        "2024": {
+          "hangul_version": "2024",
+          "files": [
+            "pdf/issue1949_giant_cell_nested_tables_perf-2024.pdf"
+          ],
+          "page_counts": [
+            115
+          ],
+          "unmeasured": []
+        }
+      },
+      "measured_page_counts": {
+        "2020": [
+          115
+        ],
+        "2024": [
+          115
+        ]
+      },
+      "min_pages": 115,
+      "max_pages": 115,
+      "files": [
+        "pdf/issue1949_giant_cell_nested_tables_perf-2020.pdf",
+        "pdf/issue1949_giant_cell_nested_tables_perf-2024.pdf"
+      ]
+    },
+    {
+      "stem": "k-water-rfp",
+      "kind": "page_count_agree",
+      "hangul_versions": [
+        "2022",
+        "2024"
+      ],
+      "file_count": 3,
+      "trees": [
+        "pdf",
+        "pdf-large"
+      ],
+      "by_version": {
+        "2022": {
+          "hangul_version": "2022",
+          "files": [
+            "pdf/k-water-rfp-2022.pdf"
+          ],
+          "page_counts": [
+            27
+          ],
+          "unmeasured": []
+        },
+        "2024": {
+          "hangul_version": "2024",
+          "files": [
+            "pdf/k-water-rfp-2024.pdf"
+          ],
+          "page_counts": [
+            27
+          ],
+          "unmeasured": []
+        }
+      },
+      "measured_page_counts": {
+        "2022": [
+          27
+        ],
+        "2024": [
+          27
+        ]
+      },
+      "min_pages": 27,
+      "max_pages": 27,
+      "files": [
+        "pdf-large/hwpx/k-water-rfp.pdf",
+        "pdf/k-water-rfp-2022.pdf",
+        "pdf/k-water-rfp-2024.pdf"
+      ]
+    },
+    {
+      "stem": "none_table_declared_fits",
+      "kind": "page_count_agree",
+      "hangul_versions": [
+        "2020",
+        "2022"
+      ],
+      "file_count": 2,
+      "trees": [
+        "pdf"
+      ],
+      "by_version": {
+        "2020": {
+          "hangul_version": "2020",
+          "files": [
+            "pdf/task2097/none_table_declared_fits-2020.pdf"
+          ],
+          "page_counts": [
+            2
+          ],
+          "unmeasured": []
+        },
+        "2022": {
+          "hangul_version": "2022",
+          "files": [
+            "pdf/task2097/none_table_declared_fits-2022.pdf"
+          ],
+          "page_counts": [
+            2
+          ],
+          "unmeasured": []
+        }
+      },
+      "measured_page_counts": {
+        "2020": [
+          2
+        ],
+        "2022": [
+          2
+        ]
+      },
+      "min_pages": 2,
+      "max_pages": 2,
+      "files": [
+        "pdf/task2097/none_table_declared_fits-2020.pdf",
+        "pdf/task2097/none_table_declared_fits-2022.pdf"
+      ]
+    },
+    {
+      "stem": "pr-1674",
+      "kind": "page_count_agree",
+      "hangul_versions": [
+        "2020",
+        "2024"
+      ],
+      "file_count": 2,
+      "trees": [
+        "pdf",
+        "pdf-2020"
+      ],
+      "by_version": {
+        "2020": {
+          "hangul_version": "2020",
+          "files": [
+            "pdf-2020/pr-1674-2020.pdf"
+          ],
+          "page_counts": [
+            35
+          ],
+          "unmeasured": []
+        },
+        "2024": {
+          "hangul_version": "2024",
+          "files": [
+            "pdf/pr-1674-2024.pdf"
+          ],
+          "page_counts": [
+            35
+          ],
+          "unmeasured": []
+        }
+      },
+      "measured_page_counts": {
+        "2020": [
+          35
+        ],
+        "2024": [
+          35
+        ]
+      },
+      "min_pages": 35,
+      "max_pages": 35,
+      "files": [
+        "pdf-2020/pr-1674-2020.pdf",
+        "pdf/pr-1674-2024.pdf"
+      ]
+    },
+    {
+      "stem": "saved_single_line_spacing_after",
+      "kind": "page_count_agree",
+      "hangul_versions": [
+        "2020",
+        "2022"
+      ],
+      "file_count": 2,
+      "trees": [
+        "pdf"
+      ],
+      "by_version": {
+        "2020": {
+          "hangul_version": "2020",
+          "files": [
+            "pdf/task2093/saved_single_line_spacing_after-2020.pdf"
+          ],
+          "page_counts": [
+            1
+          ],
+          "unmeasured": []
+        },
+        "2022": {
+          "hangul_version": "2022",
+          "files": [
+            "pdf/task2093/saved_single_line_spacing_after-2022.pdf"
+          ],
+          "page_counts": [
+            1
+          ],
+          "unmeasured": []
+        }
+      },
+      "measured_page_counts": {
+        "2020": [
+          1
+        ],
+        "2022": [
+          1
+        ]
+      },
+      "min_pages": 1,
+      "max_pages": 1,
+      "files": [
+        "pdf/task2093/saved_single_line_spacing_after-2020.pdf",
+        "pdf/task2093/saved_single_line_spacing_after-2022.pdf"
+      ]
+    }
+  ]
+}

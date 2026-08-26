@@ -1,0 +1,42 @@
+{
+  "id": "FJ48",
+  "tier": 2,
+  "title": "메모 표본 제목 채움",
+  "input": "samples/field-01-memo.hwp",
+  "instructions": "field-01-memo 의 제목에만 '메모여정제목' 을 넣은 memo-title.hwp 를 제출하라. FJ09 와 값이 다르고 표본도 다르다. 회사명 공란. 힌트: --data '{\"제목\": \"메모여정제목\"}' 판정은 라이브 재실행 또는 산출물 재독이며, 파일 부재를 통과로 치지 않는다. T07 의 fields[0].value==홍길동 판정은 쓰지 마라. 새 CLI 는 없다.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "memo-title.hwp"
+    ]
+  },
+  "checks": [
+    {
+      "name": "제목 값",
+      "op": "value_eq",
+      "value": "메모여정제목",
+      "path": "fields[10].value",
+      "cmd": [
+        "fields",
+        "{file:memo-title.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "회사명은 비어 있음 — T07 좌표 거부",
+      "op": "value_eq",
+      "value": "",
+      "path": "fields[0].value",
+      "cmd": [
+        "fields",
+        "{file:memo-title.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "원본 무편집 복사가 아님",
+      "op": "differs_from_input",
+      "file": "memo-title.hwp"
+    }
+  ]
+}

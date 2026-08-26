@@ -1,0 +1,32 @@
+{
+  "id": "TE02",
+  "tier": 2,
+  "title": "치환이 조판을 깨지 않았음",
+  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "instructions": "입력의 '규제' 를 '점검' 으로 바꾼 edited.hwp 를 제출하고, **원본의 쪽수**를 answer.json 에 {\"pages\": N} 으로 적어라. 채점기는 산출물의 쪽수를 재계산해 네가 적은 원본 쪽수와 대조한다 — 같아야 편집이 조판을 건드리지 않은 것이다.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "edited.hwp",
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "산출 쪽수 == 원본 쪽수",
+      "op": "answer_eq",
+      "answer": "pages",
+      "path": "pageCount",
+      "cmd": [
+        "info",
+        "{file:edited.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "실제로 편집됨",
+      "op": "differs_from_input",
+      "file": "edited.hwp"
+    }
+  ]
+}

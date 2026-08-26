@@ -1,0 +1,23 @@
+{
+  "id": "SE41",
+  "steps": [
+    {
+      "answer": {
+        "hidden": {
+          "cmd": [
+            "inspect",
+            "hidden-text",
+            "{input}",
+            "--include-offpage",
+            "--json"
+          ],
+          "path": "hiddenCharCount",
+          "allowExits": [
+            0,
+            3
+          ]
+        }
+      }
+    }
+  ]
+}

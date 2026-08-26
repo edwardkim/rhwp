@@ -1,0 +1,1 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 40"><text x="4" y="20" font-size="12">shown</text><text x="4" y="20" font-size="12" display="none">hidden-display</text><g visibility="hidden"><text x="4" y="30" font-size="12">hidden-vis</text></g></svg>

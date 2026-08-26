@@ -1,0 +1,17 @@
+{
+  "id": "CR37",
+  "steps": [
+    {
+      "answer": {
+        "format": {
+          "cmd": [
+            "explain",
+            "{input}",
+            "--json"
+          ],
+          "path": "format"
+        }
+      }
+    }
+  ]
+}

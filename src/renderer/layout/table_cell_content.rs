@@ -29,7 +29,7 @@ impl LayoutEngine {
     #[allow(clippy::too_many_arguments)]
     pub(crate) fn layout_vertical_cell_text(
         &self,
-        tree: &mut PageRenderTree,
+        tree: &mut PageLayoutContext,
         cell_node: &mut RenderNode,
         composed_paras: &[ComposedParagraph],
         paragraphs: &[Paragraph],
@@ -76,7 +76,47 @@ impl LayoutEngine {
         let mut chars: Vec<CharInfo> = Vec::new();
         let mut columns: Vec<ColumnInfo> = Vec::new();
 
-        for (cp_idx, composed) in composed_paras.iter().enumerate() {
+        // [#6029] 세로쓰기의 줄(세로줄) 예산은 **칸 높이**다. 호출자가 넘긴
+        // composed 는 가로쓰기 계약의 칸-너비 재분할(recompose, Task #671)을
+        // 이미 거쳤는데, 세로 칸의 저장 lineseg 는 세로줄 extent 를
+        // horzsize(=칸 높이 축)에 담으므로 그 재분할이 "가로로 넘친 한 줄"로
+        // 오인해 열을 2~3자마다 쪼갠다 — 3200477 "담당" 열(폭 ≈17pt)에서
+        // 직함 27자 중 18자가 칸 밖으로 밀려 소실됐다(한글 2020 은 칸 높이
+        // ~113pt 한 열에 11자). 여기서 원문으로 다시 compose 해(저장 lineseg
+        // 의 열 구조 보존) 칸 **높이** measure 로만 재분할한다.
+        let height_recomposed: Vec<Option<ComposedParagraph>> = paragraphs
+            .iter()
+            .map(|para| {
+                if !para.text.is_empty() {
+                    let mut fresh = compose_paragraph(para);
+                    crate::renderer::composer::recompose_cell_lines_in_frame(
+                        &mut fresh,
+                        para,
+                        crate::renderer::composer::ParagraphBox::content_width_px(
+                            inner_area.height,
+                            self.dpi,
+                        ),
+                        styles,
+                        self.dpi,
+                        self.profile.get().legacy_hwp3_stored_geometry(),
+                    );
+                    Some(fresh)
+                } else {
+                    None
+                }
+            })
+            .collect();
+        let composed_paras: Vec<&ComposedParagraph> = composed_paras
+            .iter()
+            .enumerate()
+            .map(|(idx, comp)| {
+                height_recomposed
+                    .get(idx)
+                    .and_then(|o| o.as_ref())
+                    .unwrap_or(comp)
+            })
+            .collect();
+        for (cp_idx, &composed) in composed_paras.iter().enumerate() {
             let para = paragraphs.get(cp_idx);
             let alignment = get_alignment(composed.para_style_id);
 
@@ -319,7 +359,7 @@ impl LayoutEngine {
     #[allow(clippy::too_many_arguments)]
     pub(crate) fn layout_cell_shape(
         &self,
-        tree: &mut PageRenderTree,
+        tree: &mut PageLayoutContext,
         cell_node: &mut RenderNode,
         shape: &crate::model::shape::ShapeObject,
         inner_area: &LayoutRect,
@@ -416,7 +456,7 @@ impl LayoutEngine {
     /// enclosing_ctx: (section_index, body_para_index, 상위 경로, 표의 컨트롤 인덱스)
     pub(crate) fn layout_embedded_table(
         &self,
-        tree: &mut PageRenderTree,
+        tree: &mut PageLayoutContext,
         parent: &mut RenderNode,
         table: &crate::model::table::Table,
         styles: &ResolvedStyleSet,
@@ -483,7 +523,7 @@ impl LayoutEngine {
         }
 
         // 행별 열 위치 계산 (셀별 독립 너비 지원)
-        let row_col_x = build_row_col_x(
+        let row_col_x = match build_row_col_x(
             table,
             &col_widths,
             col_count,
@@ -491,7 +531,10 @@ impl LayoutEngine {
             cell_spacing,
             self.dpi,
             self.render_table_width_scale(table),
-        );
+        ) {
+            Ok(grid) => grid,
+            Err(_) => return y_start,
+        };
 
         let table_width = row_col_x
             .iter()
@@ -514,6 +557,27 @@ impl LayoutEngine {
         let mut v_edges: Vec<Vec<Option<BorderLine>>> = vec![vec![None; row_count]; col_count + 1];
 
         // 표 노드 생성
+        // [#4334] TAC(text-as-char) 중첩 표는 자기 자신의 (section, para, control) 을
+        // `enclosing_ctx`(호스트 글상자/셀의 경로 + 이 표 컨트롤의 호스트 문단 내
+        // 인덱스)에서 그대로 옮겨 담는다 — 이전에는 전부 None 이라 stableIndex 가
+        // next_id() 카운터 폴백에 전적으로 의존했다(#4334 stage3 실측).
+        let (table_section_index, table_para_index, table_control_index, table_cell_context) =
+            match enclosing_ctx {
+                Some((sec_idx, para_idx, parent_path, table_ci)) => (
+                    Some(sec_idx),
+                    Some(para_idx),
+                    Some(table_ci),
+                    if parent_path.is_empty() {
+                        None
+                    } else {
+                        Some(CellContext {
+                            parent_para_index: para_idx,
+                            path: parent_path.to_vec(),
+                        })
+                    },
+                ),
+                None => (None, None, None, None),
+            };
         let table_id = tree.next_id();
         let mut table_node = RenderNode::new(
             table_id,
@@ -521,9 +585,10 @@ impl LayoutEngine {
                 row_count: table.row_count,
                 col_count: table.col_count,
                 border_fill_id: table.border_fill_id,
-                section_index: None,
-                para_index: None,
-                control_index: None,
+                section_index: table_section_index,
+                para_index: table_para_index,
+                control_index: table_control_index,
+                cell_context: table_cell_context,
             }),
             BoundingBox::new(table_x, table_y, table_width, table_height),
         );
@@ -572,6 +637,7 @@ impl LayoutEngine {
                     border_fill_id: cell.border_fill_id,
                     text_direction: cell.text_direction,
                     clip: false,
+                    page_fragment: false,
                     model_cell_index: Some(cell_enum_idx as u32),
                 }),
                 BoundingBox::new(cell_x, cell_y, cell_w, cell_h),
@@ -762,6 +828,22 @@ impl LayoutEngine {
 
                             let bin_id = pic.image_attr.bin_data_id;
                             let img_data = find_bin_data_bytes(bin_data_content, bin_id);
+                            // [#5728] 그림 자르기(imgClip)를 본문/묶음 경로(#5568)와
+                            // 동일하게 싣는다 — 빠뜨리면 원본 전체가 대상 상자에
+                            // 압착된다(비율 파괴). 렌더러 crop 분기는 이 두 필드만
+                            // 소비한다.
+                            let crop = {
+                                let c = &pic.crop;
+                                if c.right > c.left
+                                    && c.bottom > c.top
+                                    && (c.left != 0 || c.top != 0 || c.right != 0 || c.bottom != 0)
+                                {
+                                    Some((c.left, c.top, c.right, c.bottom))
+                                } else {
+                                    None
+                                }
+                            };
+                            let original_size_hu = pic.crop_reference_size();
                             let img_node_id = tree.next_id();
                             // [Task #1151 v4] 셀 안 inline picture 의 cell context + outer
                             // 정보 보존. rendering.rs:1495 의 Image JSON 직렬화 에 cellIdx/
@@ -786,6 +868,23 @@ impl LayoutEngine {
                                         path,
                                     }
                                 });
+                            // [#5727] 문단 레이아웃(빈 줄 TAC 경로 등)이 이미 그리고
+                            // 등록한 그림은 다시 밀어넣지 않는다 — 이중 렌더 방지.
+                            if let (Some((sec_idx, outer_pi, _, _)), Some(cctx)) =
+                                (enclosing_ctx, cell_ctx.as_ref())
+                            {
+                                if tree
+                                    .get_inline_shape_position(
+                                        sec_idx,
+                                        outer_pi,
+                                        ctrl_idx,
+                                        Some(cctx),
+                                    )
+                                    .is_some()
+                                {
+                                    continue;
+                                }
+                            }
                             let img_node = RenderNode::new(
                                 img_node_id,
                                 RenderNodeType::Image(ImageNode {
@@ -797,8 +896,8 @@ impl LayoutEngine {
                                     fill_mode: None,
                                     original_size: None,
                                     transform: extract_shape_transform(&pic.shape_attr),
-                                    crop: None,
-                                    original_size_hu: None,
+                                    crop,
+                                    original_size_hu,
                                     effect: pic.image_attr.effect,
                                     brightness: pic.image_attr.brightness,
                                     contrast: pic.image_attr.contrast,
@@ -842,7 +941,7 @@ impl LayoutEngine {
 
         // 엣지 기반 테두리 렌더링
         table_node.children.extend(render_edge_borders(
-            tree, &h_edges, &v_edges, &row_col_x, &row_y, table_x, table_y,
+            tree, &h_edges, &v_edges, &row_col_x, &row_y, table_x, table_y, None,
         ));
         if self.show_transparent_borders.get() {
             table_node.children.extend(render_transparent_borders(

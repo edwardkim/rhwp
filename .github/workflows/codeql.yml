@@ -7,6 +7,9 @@ on:
       - 'mydocs/**'
       - 'docs/**'
       - 'samples/**'
+      - 'pdf/**'
+      - 'pdf-2020/**'
+      - 'pdf-large/**'
       - 'assets/**'
       - '*.md'
       - 'LICENSE'
@@ -21,7 +24,8 @@ on:
     branches: [main, devel]
     paths-ignore:
       - 'docs/**'
-      - 'samples/**'
+      # samples는 PR preflight에서 신규 reference-only와 기존 자료 변경을
+      # 구분해 CodeQL no-op/full 판정을 발행한다.
       - 'assets/**'
       - '*.md'
       - 'LICENSE'
@@ -48,13 +52,19 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
+      actions: read
       contents: read
       checks: read
       pull-requests: read
+      statuses: read
     outputs:
       fast_pass: ${{ steps.finalize.outputs.fast_pass || 'false' }}
       reason: ${{ steps.finalize.outputs.reason || 'preflight-unavailable' }}
       candidate_sha: ${{ steps.finalize.outputs.candidate_sha || '' }}
+      codeql_languages: ${{ steps.languages.outputs.codeql_languages || 'javascript-typescript,python,rust' }}
+      classification_status: ${{ steps.languages.outputs.classification_status || 'full' }}
+      impact_reason: ${{ steps.languages.outputs.reason || 'fail-closed:impact-unavailable' }}
+      impact_authority: ${{ steps.collect-impact.outputs.authority || 'unavailable' }}
 
     steps:
       - name: Detect review-only fast pass
@@ -72,6 +82,11 @@ jobs:
               'Analyze (rust)',
             ];
             const allowedConclusions = new Set(['success', 'skipped', 'neutral']);
+            // GitHub Advanced Security can complete the aggregate CodeQL check as
+            // neutral after every language-specific Analyze job has succeeded.
+            // That aggregate is evidence of the same candidate run, not the
+            // language-level verdict; skipped remains fail-closed here.
+            const allowedSecurityConclusions = new Set(['success', 'neutral']);
             const { owner, repo } = context.repo;
 
             function setResult(fastPass, reason, candidateSha = '') {
@@ -105,16 +120,19 @@ jobs:
             }
 
             function isReviewReferencePath(filename) {
+              const pdfPrefixes = ['pdf/', 'pdf-2020/', 'pdf-large/'];
               return (
                 filename.startsWith('samples/')
                 && (
                   filename.endsWith('.hwp')
                   || filename.endsWith('.hwpx')
-                  || filename.endsWith('.hml')
                   || filename.endsWith('.pdf')
                   || filename.endsWith('.png')
                 )
-              ) || (filename.startsWith('pdf/') && filename.endsWith('.pdf'));
+              ) || (
+                pdfPrefixes.some((prefix) => filename.startsWith(prefix))
+                && filename.endsWith('.pdf')
+              );
             }
 
             function reviewOnlyLabel(files) {
@@ -135,6 +153,7 @@ jobs:
               return filename.startsWith('.github/workflows/')
                 || filename.startsWith('.github/actions/')
                 || filename === 'scripts/ci-impact-classifier.cjs'
+                || filename === 'scripts/ci-impact-policy.cjs'
                 || filename === 'scripts/verify_review_only_merge_resolution.py';
             }
 
@@ -146,6 +165,59 @@ jobs:
                   const aTime = Date.parse(a.completed_at || a.started_at || a.created_at || 0);
                   return bTime - aTime;
                 })[0];
+            }
+
+            async function hasTrustedReviewReuse(pr) {
+              for (let attempt = 0; attempt < 7; attempt += 1) {
+                const statuses = await github.paginate(github.rest.repos.listCommitStatusesForRef, {
+                  owner,
+                  repo,
+                  ref: pr.head.sha,
+                  per_page: 100,
+                });
+                const latest = statuses
+                  .filter((status) => status.context === 'CI Impact Policy')
+                  .sort((left, right) => Number(right.id || 0) - Number(left.id || 0))[0];
+                if (latest) {
+                  const fields = new Map(String(latest.description || '').split(';').map((part) => {
+                    const separator = part.indexOf('=');
+                    return separator > 0
+                      ? [part.slice(0, separator), part.slice(separator + 1)]
+                      : ['', ''];
+                  }));
+                  const expectedFields = [
+                    'v', 'cv', 'mode', 'rfp', 'wf', 'rust', 'fe', 'render', 'skia', 'ql', 'b',
+                  ];
+                  const target = String(latest.target_url || '').match(/\/actions\/runs\/(\d+)$/);
+                  if (
+                    latest.state === 'success'
+                    && latest.creator?.login === 'github-actions[bot]'
+                    && fields.size === expectedFields.length
+                    && expectedFields.every((field) => fields.has(field))
+                    && fields.get('v') === '5'
+                    && fields.get('rfp') === '1'
+                    && fields.get('b') === pr.base.sha
+                    && target
+                  ) {
+                    const response = await github.rest.actions.getWorkflowRun({
+                      owner,
+                      repo,
+                      run_id: Number(target[1]),
+                    });
+                    const run = response.data;
+                    if (
+                      run.name === 'CI Impact Policy Controller'
+                      && String(run.path || '').split('@')[0] === '.github/workflows/ci-impact-policy.yml'
+                      && run.event === 'pull_request_target'
+                      && run.repository?.full_name === `${owner}/${repo}`
+                      && !(run.status === 'completed' && run.conclusion !== 'success')
+                    ) return true;
+                  }
+                  return false;
+                }
+                if (attempt < 6) await new Promise((resolve) => setTimeout(resolve, 5000));
+              }
+              return false;
             }
 
             async function codeqlResult(candidateSha, pr) {
@@ -167,10 +239,15 @@ jobs:
                 return { state: 'missing', reason: `missing-codeql-workflow:${candidateSha}` };
               }
               const runCreatedAt = Date.parse(workflowRun.created_at);
+              const runAttemptStartedAt = Date.parse(
+                workflowRun.run_started_at || workflowRun.created_at,
+              );
               const pullCreatedAt = Date.parse(pr.created_at);
               if (!Number.isFinite(runCreatedAt)
+                || !Number.isFinite(runAttemptStartedAt)
                 || !Number.isFinite(pullCreatedAt)
-                || runCreatedAt < pullCreatedAt) {
+                || runCreatedAt < pullCreatedAt
+                || runAttemptStartedAt < runCreatedAt) {
                 return { state: 'failed', reason: 'codeql-workflow-pr-identity-mismatch' };
               }
               if (workflowRun.status !== 'completed') {
@@ -205,6 +282,49 @@ jobs:
                   };
                 }
               }
+
+              // Each Analyze job must succeed independently. The repository currently
+              // emits one GHAS CodeQL policy check when the first language analysis
+              // arrives; bind that observed check to this candidate and run attempt.
+              // Do not infer later-language policy coverage from this single check.
+              const securityChecks = await github.paginate(github.rest.checks.listForRef, {
+                owner,
+                repo,
+                ref: candidateSha,
+                filter: 'latest',
+                per_page: 100,
+              });
+              const securityCheck = latestRun(securityChecks.filter((check) => (
+                check.app?.slug === 'github-advanced-security'
+                  && check.name === 'CodeQL'
+                  && check.head_sha === candidateSha
+              )));
+              if (!securityCheck) {
+                return {
+                  state: 'missing',
+                  reason: `missing-security-check:CodeQL:${candidateSha}`,
+                };
+              }
+              const securityCheckStartedAt = Date.parse(securityCheck.started_at);
+              if (!Number.isFinite(securityCheckStartedAt)
+                || securityCheckStartedAt < runAttemptStartedAt) {
+                return {
+                  state: 'missing',
+                  reason: `missing-security-check:CodeQL:${candidateSha}`,
+                };
+              }
+              if (securityCheck.status !== 'completed') {
+                return {
+                  state: 'pending',
+                  reason: `security-check-not-completed:CodeQL:${securityCheck.status}`,
+                };
+              }
+              if (!allowedSecurityConclusions.has(securityCheck.conclusion)) {
+                return {
+                  state: 'failed',
+                  reason: `security-check-not-green:CodeQL:${securityCheck.conclusion}`,
+                };
+              }
               return { state: 'green' };
             }
 
@@ -221,6 +341,17 @@ jobs:
                 pull_number: pr.number,
                 per_page: 100,
               });
+              const hasCiExecutionSurfaceChange = prFiles.some((file) => (
+                isCiExecutionPath(file.filename)
+                || isCiExecutionPath(file.previous_filename || '')
+              ));
+              if (hasCiExecutionSurfaceChange && !await hasTrustedReviewReuse(pr)) {
+                setResult(false, 'ci-execution-surface-change');
+                return;
+              }
+              if (hasCiExecutionSurfaceChange) {
+                core.info('trusted controller authorized enforcement-change review reuse');
+              }
               if (prFiles.length > 0 && prFiles.every((file) => isAllowedReviewPath(file))) {
                 core.info(`all PR files are review-only; using base SHA ${pr.base.sha}`);
                 setResult(true, 'all-review-only-no-code-impact', pr.base.sha);
@@ -439,12 +570,186 @@ jobs:
           printf 'fast_pass=%s\nreason=%s\ncandidate_sha=%s\n' \
             "${fast_pass}" "${reason}" "${CANDIDATE_SHA}" >> "$GITHUB_OUTPUT"
 
+      # [#3790 Stage 5B] PR head가 classifier를 바꿔 자기 CodeQL 언어를 줄일 수 없도록
+      # pull_request.base.sha의 classifier만 실행한다. push·schedule·수동 실행과 모든
+      # checkout/수집/classifier 오류는 아래 finalizer에서 세 언어 full로 닫는다.
+      - name: Check out trusted CodeQL impact classifier
+        id: checkout-impact-classifier
+        if: ${{ steps.finalize.outputs.fast_pass != 'true' }}
+        continue-on-error: true
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.sha }}
+          persist-credentials: false
+          sparse-checkout: scripts/ci-impact-classifier.cjs
+          sparse-checkout-cone-mode: false
+
+      - name: Collect CodeQL impact input
+        id: collect-impact
+        if: ${{ steps.finalize.outputs.fast_pass != 'true' }}
+        continue-on-error: true
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          CLASSIFIER_CHECKOUT_OUTCOME: ${{ steps.checkout-impact-classifier.outcome }}
+        with:
+          retries: 3
+          script: |
+            const fs = require('node:fs');
+            const path = require('node:path');
+            const workspace = process.env.GITHUB_WORKSPACE || process.cwd();
+            const inputPath = path.join(workspace, '.codeql-impact-input.json');
+            const classifierPath = path.join(
+              workspace,
+              'scripts',
+              'ci-impact-classifier.cjs',
+            );
+            const checkoutSucceeded = process.env.CLASSIFIER_CHECKOUT_OUTCOME === 'success'
+              && fs.existsSync(classifierPath);
+            const authority = !checkoutSucceeded
+              ? 'unavailable'
+              : context.eventName === 'pull_request'
+                ? 'pr-base-trusted'
+                : 'checked-out-ref';
+            core.setOutput('authority', authority);
+
+            function writeInput(input) {
+              fs.writeFileSync(inputPath, `${JSON.stringify(input)}\n`, 'utf8');
+              core.info(`CodeQL impact input: event=${input.eventName} files=${input.files.length}`);
+            }
+
+            try {
+              if (context.eventName !== 'pull_request') {
+                writeInput({
+                  eventName: context.eventName,
+                  files: [],
+                  forceFullReason: 'non-pull-request',
+                });
+                return;
+              }
+
+              const files = await github.paginate(github.rest.pulls.listFiles, {
+                ...context.repo,
+                pull_number: context.payload.pull_request.number,
+                per_page: 100,
+              });
+              writeInput({
+                eventName: context.eventName,
+                files: files.map((file) => ({
+                  filename: file.filename,
+                  previous_filename: file.previous_filename || '',
+                  status: file.status || 'modified',
+                })),
+              });
+            } catch (error) {
+              core.warning(`CodeQL impact collection failed; running full. ${error.message}`);
+              writeInput({
+                eventName: context.eventName,
+                files: [],
+                forceFullReason: 'collection-error',
+              });
+            }
+
+      - name: Classify CodeQL impact
+        id: impact
+        if: ${{ steps.finalize.outputs.fast_pass != 'true' }}
+        continue-on-error: true
+        run: >-
+          node scripts/ci-impact-classifier.cjs
+          --input .codeql-impact-input.json
+          --github-output "$GITHUB_OUTPUT"
+
+      - name: Finalize CodeQL language selection
+        id: languages
+        if: ${{ always() && steps.finalize.outputs.fast_pass != 'true' }}
+        shell: bash
+        env:
+          IMPACT_OUTCOME: ${{ steps.impact.outcome }}
+          RAW_LANGUAGES: ${{ steps.impact.outputs.codeql_languages }}
+          RAW_STATUS: ${{ steps.impact.outputs.classification_status }}
+          RAW_REASON: ${{ steps.impact.outputs.reason }}
+        run: |
+          set -euo pipefail
+          all_languages='javascript-typescript,python,rust'
+          languages="${RAW_LANGUAGES}"
+          status="${RAW_STATUS}"
+          reason="${RAW_REASON}"
+
+          if [[ "${IMPACT_OUTCOME}" != 'success' ]]; then
+            languages="${all_languages}"
+            status='full'
+            reason='fail-closed:impact-unavailable'
+          else
+            case "${languages}" in
+              'none') ;;
+              'javascript-typescript') ;;
+              'python') ;;
+              'rust') ;;
+              'javascript-typescript,python') ;;
+              'javascript-typescript,rust') ;;
+              'python,rust') ;;
+              'javascript-typescript,python,rust') ;;
+              *)
+                languages="${all_languages}"
+                status='full'
+                reason='fail-closed:invalid-codeql-languages'
+                ;;
+            esac
+            if [[ "${status}" != 'classified' && "${status}" != 'full' ]]; then
+              languages="${all_languages}"
+              status='full'
+              reason='fail-closed:invalid-codeql-languages'
+            elif [[ "${status}" == 'full' && "${languages}" != "${all_languages}" ]]; then
+              languages="${all_languages}"
+              status='full'
+              reason='fail-closed:invalid-codeql-languages'
+            fi
+          fi
+
+          printf 'codeql_languages=%s\nclassification_status=%s\nreason=%s\n' \
+            "${languages}" "${status}" "${reason}" >> "$GITHUB_OUTPUT"
+
+      - name: Summarize CodeQL impact classification
+        if: ${{ always() }}
+        continue-on-error: true
+        env:
+          FAST_PASS: ${{ steps.finalize.outputs.fast_pass || 'false' }}
+          FAST_PASS_REASON: ${{ steps.finalize.outputs.reason || 'preflight-unavailable' }}
+          IMPACT_AUTHORITY: ${{ steps.collect-impact.outputs.authority || 'unavailable' }}
+          CODEQL_LANGUAGES: ${{ steps.languages.outputs.codeql_languages || 'javascript-typescript,python,rust' }}
+          CLASSIFICATION_STATUS: ${{ steps.languages.outputs.classification_status || 'full' }}
+          IMPACT_REASON: ${{ steps.languages.outputs.reason || 'fail-closed:impact-unavailable' }}
+        run: |
+          if [[ "${FAST_PASS}" == 'true' ]]; then
+            IMPACT_AUTHORITY='n/a (fast-pass)'
+            CODEQL_LANGUAGES='n/a (fast-pass)'
+            CLASSIFICATION_STATUS='n/a (fast-pass)'
+            IMPACT_REASON="fast-pass:${FAST_PASS_REASON}"
+          fi
+
+          {
+            echo '### CodeQL impact classification'
+            echo
+            echo '> Pull requests classify with the base SHA classifier; non-PR events and all failures select all languages.'
+            echo
+            echo '| Axis | Value |'
+            echo '| --- | --- |'
+            printf '| fast_pass | %s |\n' "${FAST_PASS}"
+            printf '| authority | %s |\n' "${IMPACT_AUTHORITY}"
+            printf '| codeql_languages | %s |\n' "${CODEQL_LANGUAGES}"
+            printf '| classification_status | %s |\n' "${CLASSIFICATION_STATUS}"
+            printf '| reason | %s |\n' "${IMPACT_REASON}"
+          } >> "${GITHUB_STEP_SUMMARY}"
+
   analyze:
     name: Analyze (${{ matrix.language }})
     runs-on: ubuntu-latest
     timeout-minutes: 45
     needs: preflight
     if: ${{ always() && needs.preflight.outputs.fast_pass != 'true' }}
+    # preflight가 cancel·runner 장애로 job output을 발행하지 못해도 빈 선택이
+    # 세 no-op success로 열리지 않도록 consumer에서 다시 세 언어 full로 닫는다.
+    env:
+      SELECTED_LANGUAGES: ${{ needs.preflight.outputs.codeql_languages || 'javascript-typescript,python,rust' }}
     permissions:
       security-events: write
       contents: read
@@ -455,49 +760,48 @@ jobs:
         language: [javascript-typescript, python, rust]
 
     steps:
+      # matrix job 이름은 세 언어 모두 유지한다. 선택되지 않은 언어도 명시적 success로
+      # 끝나므로 현재·향후 required check가 check 부재로 pending되지 않는다.
+      - name: Skip unselected language
+        if: ${{ !contains(format(',{0},', env.SELECTED_LANGUAGES), format(',{0},', matrix.language)) }}
+        run: |
+          printf 'Skipping unselected CodeQL language: %s\n' '${{ matrix.language }}'
+
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        if: ${{ contains(format(',{0},', env.SELECTED_LANGUAGES), format(',{0},', matrix.language)) }}
 
       # [#3290] 호스티드 16GB VM 은 CodeQL 자동 감지 값이 적정하다. self-hosted 로
       # 되돌릴 경우 ram/threads 캡 필수 — #3289 사고(무캡 JVM 40~55GB×2 로 호스트
       # 포화·스톨) 및 task_m100_3289_report.md 거버넌스 절 참조.
-      - name: Initialize CodeQL
+      - name: Initialize CodeQL (non-Rust)
+        if: ${{ matrix.language != 'rust' && contains(format(',{0},', env.SELECTED_LANGUAGES), format(',{0},', matrix.language)) }}
         uses: github/codeql-action/init@v4
         with:
           languages: ${{ matrix.language }}
 
+      - name: Initialize CodeQL (Rust)
+        if: ${{ matrix.language == 'rust' && contains(format(',{0},', env.SELECTED_LANGUAGES), format(',{0},', matrix.language)) && github.event_name == 'pull_request' }}
+        uses: github/codeql-action/init@v4
+        with:
+          languages: rust
+          build-mode: none
+          config-file: .github/codeql/rust-pr.yml
+
+      # PR은 제품 Rust만 빠르게 검사하고, devel push·schedule은 아래 기존 전체
+      # 경로 분석을 유지한다. PR 축소가 기준선 보안 탐지를 대신하지 않게 한다.
+      - name: Initialize CodeQL (Rust full scan)
+        if: ${{ matrix.language == 'rust' && contains(format(',{0},', env.SELECTED_LANGUAGES), format(',{0},', matrix.language)) && github.event_name != 'pull_request' }}
+        uses: github/codeql-action/init@v4
+        with:
+          languages: rust
+          build-mode: none
+
       - name: Install Rust toolchain
-        if: matrix.language == 'rust'
+        if: ${{ matrix.language == 'rust' && contains(format(',{0},', env.SELECTED_LANGUAGES), format(',{0},', matrix.language)) }}
         uses: dtolnay/rust-toolchain@4cda84d5c5c54efe2404f9d843567869ab1699d4 # stable 브랜치 (2026-08-01 시점)
 
-      # [Task #1192 B] CodeQL rust analyze 는 cargo 캐시가 없어 매번 cold build 였다.
-      # ci.yml 과 동일 path, 별도 key namespace(codeql-rust)로 warm build 화.
-      # [Task #1667] PR run 은 restore-only, trusted branch push 에서만 save 한다.
-      - name: Restore cargo registry & build cache (rust)
-        id: codeql_rust_cache_restore
-        if: matrix.language == 'rust'
-        uses: actions/cache/restore@v6
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            target
-          key: ${{ runner.os }}-codeql-rust-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-codeql-rust-
-
-      - name: Build Rust (for CodeQL)
-        if: matrix.language == 'rust'
-        run: cargo build
-
-      - name: Save cargo registry & build cache (rust)
-        if: ${{ matrix.language == 'rust' && github.event_name == 'push' && (github.ref == 'refs/heads/devel' || github.ref == 'refs/heads/main') && steps.codeql_rust_cache_restore.outputs.cache-hit != 'true' }}
-        uses: actions/cache/save@v6
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            target
-          key: ${{ runner.os }}-codeql-rust-${{ hashFiles('**/Cargo.lock') }}
-
+      # [#5187] Rust는 명시적 none 모드로 분석한다. 동일 SHA 비교에서 현재 기본 경로와
+      # 추출 파일·SARIF 지표가 같았고, none 모드가 더 짧아 Rust 자동 빌드 의존을 제거한다.
       - name: Perform CodeQL Analysis
+        if: ${{ contains(format(',{0},', env.SELECTED_LANGUAGES), format(',{0},', matrix.language)) }}
         uses: github/codeql-action/analyze@v4

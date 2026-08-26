@@ -1,0 +1,34 @@
+{
+  "version": "1",
+  "page_size": {
+    "width_mm": 210.0,
+    "height_mm": 297.0
+  },
+  "default_font": "함초롬바탕",
+  "questions": [
+    {
+      "number": 1,
+      "stem": "다음 중 rel=nofollow 속성의 설명으로 옳은 것은?",
+      "choices": [
+        {
+          "label": "①",
+          "text": "검색엔진이 링크를 따라가지 않는다"
+        },
+        {
+          "label": "②",
+          "text": "새 탭에서 연다"
+        },
+        {
+          "label": "③",
+          "text": "스타일을 제거한다"
+        },
+        {
+          "label": "④",
+          "text": "폼을 전송한다"
+        }
+      ],
+      "auto_number": true
+    }
+  ],
+  "header_text": "자격 검정"
+}

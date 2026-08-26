@@ -1,0 +1,48 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workReceiptLineageTopology",
+  "ident": "root",
+  "title": "뿌리 하나",
+  "why": "parent=null 인 머리. depth=1, 판정 3축은 전부 null, valid=true.",
+  "notes": "뿌리도 계보다",
+  "depth": 1,
+  "valid": true,
+  "brokenAxis": null,
+  "deep": false,
+  "exit": 0,
+  "required": [
+    "schemaVersion",
+    "head",
+    "depth",
+    "valid",
+    "brokenAt",
+    "links"
+  ],
+  "envelope": {
+    "schemaVersion": "1.0",
+    "head": "a.capsule.json",
+    "depth": 1,
+    "valid": true,
+    "brokenAt": null,
+    "links": [
+      {
+        "capsule": "a.capsule.json",
+        "parentOk": null,
+        "lineageOk": null,
+        "reproduced": null,
+        "error": null
+      }
+    ]
+  },
+  "command": [
+    "lineage",
+    "a.capsule.json",
+    "--json"
+  ],
+  "axes": {
+    "parentOk": "부모 파일 바이트 == 자식이 기록한 parent.sha256",
+    "lineageOk": "부모 receipt.outputSha256 == 자식 receipt.inputSha256",
+    "reproduced": "--deep 일 때만 임시 재실행 해시 대조"
+  },
+  "generator": "tools/work_receipt/fatten_work_receipt.py"
+}

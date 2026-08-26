@@ -1,0 +1,82 @@
+{
+  "id": "XC26",
+  "tier": 5,
+  "title": "정산 판정과 4세대 계보",
+  "input": "samples/table-001.hwp",
+  "axis": "자동화",
+  "instructions": "XC26 — 정산 판정과 4세대 계보.\n\n입력 표본은 `samples/table-001.hwp` 이다. 보스 존 과제다. 한 단만 빠지면 최종 판정이 막힌다. 저장소 samples/ 에 이미 있는 실문서만 쓰고 새 픽스처를 만들지 않는다. expert-challenges pack 은 기존 CLI 표면(keygen · replay · run · anchor · settle · conformance · recall-scope · lineage · audit-report · export-tables) 만으로 여러 축을 한 제출에 묶는다. 새 명령·새 연산자·새 pack 은 없다. 원본을 덮어쓰지 마라. 산출은 제출 폴더의 -o / --capsule 뿐이다. 정답 해시·건수를 과제 파일에 박제하지 마라. 채점은 같은 판정 명령을 다시 돌린다.\n\n4세대 막내 캡슐로 청구를 만들고 settle verify 의 **verdict==ok** 와 계보 깊이 4 를 동시에 받아라. 원장 4관문(XC03)은 묻지 않는다.\n\n제출 폴더에 pay4/g0.capsule.json · pay4/g1.capsule.json · pay4/g2.capsule.json · pay4/g3.capsule.json · wo.json · gate.json · claim.json 를 두어라.\n\n수행 힌트: settle propose 후 settle verify (ledger 없음) + lineage --deep.\n\n이 과제는 XC01(L5 --deep 사다리 완주) · XC02(unaffected==0 과 affected>=2 동시) · XC03(정산 4관문 capsuleOk/gateOk/ledgerOk/workorderOk) · XC04(3세대 lineage --deep) · XC05(L3 --deep + audit-report) 를 복제하지 않는다. AU14+ 한 축 저티어 여정, WR 일일 3해시 answer.json, T07 서식 채움(fill-fields · 첫 필드 홍길동) 도 베끼지 마라.\n\ncapsuleOk/gateOk/ledgerOk/workorderOk 네 칸을 동시에 보지 않는다.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "pay4/g0.capsule.json",
+      "pay4/g1.capsule.json",
+      "pay4/g2.capsule.json",
+      "pay4/g3.capsule.json",
+      "wo.json",
+      "gate.json",
+      "claim.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "깊이 4세대",
+      "op": "value_eq",
+      "value": 4,
+      "path": "depth",
+      "cmd": [
+        "lineage",
+        "{file:pay4/g3.capsule.json}",
+        "--deep",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    },
+    {
+      "name": "사슬 온전",
+      "op": "value_eq",
+      "value": true,
+      "path": "valid",
+      "cmd": [
+        "lineage",
+        "{file:pay4/g3.capsule.json}",
+        "--deep",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    },
+    {
+      "name": "청구 검증 ok",
+      "op": "value_eq",
+      "value": "ok",
+      "path": "verdict",
+      "cmd": [
+        "settle",
+        "verify",
+        "{file:claim.json}",
+        "--workorder",
+        "{file:wo.json}",
+        "--capsule",
+        "{file:pay4/g3.capsule.json}",
+        "--gate-envelope",
+        "{file:gate.json}",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    },
+    {
+      "name": "막내 캡슐 실재",
+      "op": "file_exists",
+      "file": "pay4/g3.capsule.json",
+      "minBytes": 80
+    }
+  ]
+}

@@ -10,6 +10,9 @@ use std::fs;
 use std::io::Write;
 use std::path::{Path, PathBuf};
 
+use crate::diagnostics::{
+    read_hwp5_body_text_section_limited, MAX_HWP5_DIAGNOSTIC_STREAM_OUTPUT_BYTES,
+};
 use crate::parser::cfb_reader::CfbReader;
 use crate::parser::header;
 use crate::parser::tags;
@@ -704,7 +707,7 @@ fn read_all_streams(bytes: &[u8]) -> Result<BTreeMap<String, Vec<u8>>, String> {
     let mut streams = BTreeMap::new();
     for path in paths {
         let data = cfb
-            .read_stream_raw(&path)
+            .read_stream_raw_limited(&path, MAX_HWP5_DIAGNOSTIC_STREAM_OUTPUT_BYTES)
             .map_err(|error| format!("스트림 읽기 실패 - {path}: {error}"))?;
         streams.insert(path, data);
     }
@@ -717,7 +720,13 @@ fn read_decompressed_section(
     compressed: bool,
 ) -> Result<Option<Vec<u8>>, String> {
     let mut cfb = CfbReader::open(bytes).map_err(|error| format!("CFB 열기 실패: {error}"))?;
-    match cfb.read_body_text_section(section, compressed, false) {
+    match read_hwp5_body_text_section_limited(
+        &mut cfb,
+        section,
+        compressed,
+        false,
+        MAX_HWP5_DIAGNOSTIC_STREAM_OUTPUT_BYTES,
+    ) {
         Ok(data) => Ok(Some(data)),
         Err(_) => Ok(None),
     }

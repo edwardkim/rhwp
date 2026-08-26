@@ -1,0 +1,23 @@
+{
+  "producer": "scripts/visual_sweep.py",
+  "consumed_as": "data",
+  "rewritten": false,
+  "runSchemaVersion": 1,
+  "pageSchemaVersion": 1,
+  "runManifestFields": [
+    "schema_version",
+    "key",
+    "provenance",
+    "dpi",
+    "pixel_diff_threshold",
+    "requested_pages",
+    "requested_page_shards",
+    "run_state"
+  ],
+  "targetsRequire": ["hwp", "pdf"],
+  "signals": {
+    "cannot_run_without_reference_pdf": true,
+    "self_consistency_is_not_a_visual_sweep_target": true,
+    "render_diff_AeqA_is_a_different_tool": "rhwp render-diff"
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "id": "XC04",
+  "tier": 4,
+  "title": "계보 완주 — 3세대 사슬",
+  "input": "samples/table-001.hwp",
+  "axis": "자동화",
+  "instructions": "끊기지 않는 **3세대 계보**를 caps/ 에 제출하라(a → b → c). 막내 c 에서 계보를 깊게 훑으면 사슬이 온전(valid)하고 깊이가 3이어야 한다. 한 세대라도 부모 연결을 빠뜨리면 사슬이 끊긴다.\n힌트: replay --parent 로 세대를 잇는다. 채점은 lineage c --deep.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "caps/a.capsule.json",
+      "caps/b.capsule.json",
+      "caps/c.capsule.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "사슬 온전",
+      "op": "value_eq",
+      "value": true,
+      "path": "valid",
+      "cmd": [
+        "lineage",
+        "{file:caps/c.capsule.json}",
+        "--deep",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    },
+    {
+      "name": "깊이 3세대",
+      "op": "value_eq",
+      "value": 3,
+      "path": "depth",
+      "cmd": [
+        "lineage",
+        "{file:caps/c.capsule.json}",
+        "--deep",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    }
+  ]
+}

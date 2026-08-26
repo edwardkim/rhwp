@@ -1,0 +1,89 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5324,
+  "skill": "bug-hunter",
+  "notGym": true,
+  "noNewCli": true,
+  "rules": [
+    {
+      "id": "F01",
+      "when": "실물 정답지 없는 무작위 스윕",
+      "action": "playbook 카탈로그로 되돌림"
+    },
+    {
+      "id": "F02",
+      "when": "정답지를 아직 안 확보",
+      "action": "여정 실행 금지"
+    },
+    {
+      "id": "F03",
+      "when": "한컴 PDF provenance 미기록",
+      "action": "비교 시트를 이슈 근거로 쓰지 않음"
+    },
+    {
+      "id": "F04",
+      "when": "독립 기준 없음",
+      "action": "render-diff 만 + 한계 기록. 충실도 이슈 금지"
+    },
+    {
+      "id": "F05",
+      "when": "중간 단계에서 멈춤",
+      "action": "최종 산출물까지 이어서 실행"
+    },
+    {
+      "id": "F06",
+      "when": "reference_only 문자",
+      "action": "소실 후보. 단독 최종 판정 금지"
+    },
+    {
+      "id": "F07",
+      "when": "svg_only 문자",
+      "action": "과잉 후보. 단독 최종 판정 금지"
+    },
+    {
+      "id": "F08",
+      "when": "같은 쪽 양쪽 차이",
+      "action": "치환 후보. 사람 감사"
+    },
+    {
+      "id": "F09",
+      "when": "--verify 4/4 통과",
+      "action": "ZIP 엔트리 이름 집합·태그 개수 대조"
+    },
+    {
+      "id": "F10",
+      "when": "콘솔 한글 깨짐",
+      "action": "결함 아님. UTF-8 파일 재비교"
+    },
+    {
+      "id": "F11",
+      "when": "증상만 있는 이슈 초안",
+      "action": "재현·파일:라인·정답지 근거가 생길 때까지 금지"
+    },
+    {
+      "id": "F12",
+      "when": "이 스킬 안에서 수정 시작",
+      "action": "별도 작업. DocumentCore 금지"
+    },
+    {
+      "id": "F13",
+      "when": "실제 접수·로그인·실명인증 자동화",
+      "action": "즉시 거부"
+    },
+    {
+      "id": "F14",
+      "when": "devel 에서 이미 고쳐짐",
+      "action": "새 이슈 금지"
+    },
+    {
+      "id": "F15",
+      "when": "표본 1건으로 계약 단정",
+      "action": "N중 M·반례 수까지 가설"
+    },
+    {
+      "id": "F16",
+      "when": "가설만 있고 구현 기각 없음",
+      "action": "음성 결과도 이슈에 남김"
+    }
+  ]
+}

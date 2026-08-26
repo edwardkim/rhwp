@@ -1,0 +1,5 @@
+{
+  "surface": "hwp_replace_text / hwp_doc_replace_text",
+  "core": "replace_all_native",
+  "envelope": "replace_text_json_value"
+}

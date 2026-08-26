@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<hs:sec xmlns:ha="http://www.hancom.co.kr/hwpml/2011/app" xmlns:hp="http://www.hancom.co.kr/hwpml/2011/paragraph" xmlns:hp10="http://www.hancom.co.kr/hwpml/2016/paragraph" xmlns:hs="http://www.hancom.co.kr/hwpml/2011/section" xmlns:hc="http://www.hancom.co.kr/hwpml/2011/core" xmlns:hh="http://www.hancom.co.kr/hwpml/2011/head" xmlns:hhs="http://www.hancom.co.kr/hwpml/2011/history" xmlns:hm="http://www.hancom.co.kr/hwpml/2011/master-page" xmlns:hpf="http://www.hancom.co.kr/schema/2011/hpf" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf/" xmlns:ooxmlchart="http://www.hancom.co.kr/hwpml/2016/ooxmlchart" xmlns:hwpunitchar="http://www.hancom.co.kr/hwpml/2016/HwpUnitChar" xmlns:epub="http://www.idpf.org/2007/ops" xmlns:config="urn:oasis:names:tc:opendocument:xmlns:config:1.0">
+<hp:p id="3" paraPrIDRef="37" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="1">
+<hp:secPr id="" textDirection="HORIZONTAL" spaceColumns="1134" tabStop="8000" tabStopVal="4000" tabStopUnit="HWPUNIT" outlineShapeIDRef="6" memoShapeIDRef="0" textVerticalWidthHead="0" masterPageCnt="0">
+<hp:grid lineGrid="0" charGrid="0" wonggojiFormat="0"/>
+<hp:startNum pageStartsOn="BOTH" page="0" pic="0" tbl="0" equation="0"/>
+<hp:visibility hideFirstHeader="0" hideFirstFooter="0" hideFirstMasterPage="0" border="SHOW_ALL" fill="SHOW_ALL" hideFirstPageNum="0" hideFirstEmptyLine="0" showLineNumber="0"/>
+<hp:lineNumberShape restartType="0" countBy="0" distance="0" startNumber="0"/>
+<hp:pagePr landscape="WIDELY" width="59528" height="84186" gutterType="LEFT_ONLY">
+<hp:margin header="0" footer="4252" gutter="0" left="1500" right="528" top="5668" bottom="4252"/>
+</hp:pagePr>
+<hp:footNotePr>
+<hp:autoNumFormat type="DIGIT" userChar="" prefixChar="" suffixChar=")" supscript="0"/>
+<hp:noteLine length="-1" type="SOLID" width="0.12 mm" color="#000000"/>
+<hp:noteSpacing betweenNotes="283" belowLine="567" aboveLine="850"/>
+<hp:numbering type="CONTINUOUS" newNum="1"/>
+<hp:placement place="EACH_COLUMN" beneathText="0"/>
+</hp:footNotePr>
+<hp:endNotePr>
+<hp:autoNumFormat type="DIGIT" userChar="" prefixChar="" suffixChar=")" supscript="0"/>
+<hp:noteLine length="12280" type="SOLID" width="0.12 mm" color="#000000"/>
+<hp:noteSpacing betweenNotes="0" belowLine="567" aboveLine="224"/>
+<hp:numbering type="CONTINUOUS" newNum="1"/>
+<hp:placement place="END_OF_DOCUMENT" beneathText="0"/>
+</hp:endNotePr>
+<hp:pageBorderFill type="BOTH" borderFillIDRef="1" textBorder="PAPER" headerInside="0" footerInside="0" fillArea="PAPER">
+<hp:offset left="1417" right="1417" top="1417" bottom="1417"/>
+</hp:pageBorderFill>
+<hp:pageBorderFill type="EVEN" borderFillIDRef="1" textBorder="PAPER" headerInside="0" footerInside="0" fillArea="PAPER">
+<hp:offset left="1417" right="1417" top="1417" bottom="1417"/>
+</hp:pageBorderFill>
+<hp:pageBorderFill type="ODD" borderFillIDRef="1" textBorder="PAPER" headerInside="0" footerInside="0" fillArea="PAPER">
+<hp:offset left="1417" right="1417" top="1417" bottom="1417"/>
+</hp:pageBorderFill>
+</hp:secPr>
+<hp:ctrl>
+<hp:colPr id="" type="NEWSPAPER" layout="LEFT" colCount="1" sameSz="1" sameGap="0"/>
+</hp:ctrl>
+</hp:run>
+<hp:run charPrIDRef="1">
+<hp:pic id="1951281643" zOrder="203" numberingType="NONE" textWrap="TOP_AND_BOTTOM" textFlow="BOTH_SIDES" lock="0" dropcapstyle="None" href="" groupLevel="0" instid="877539820" reverse="0">
+<hp:offset x="4006" y="2757"/>
+<hp:orgSz width="54480" height="37500"/>
+<hp:curSz width="41511" height="28570"/>
+<hp:flip horizontal="0" vertical="0"/>
+<hp:rotationInfo angle="0" centerX="20755" centerY="14285" rotateimage="0"/>
+<hp:renderingInfo>
+<hc:transMatrix e1="1" e2="0" e3="4006" e4="0" e5="1" e6="2757"/>
+<hc:scaMatrix e1="0.76194936" e2="0" e3="-4006" e4="0" e5="0.7618667" e6="-2757"/>
+<hc:rotMatrix e1="1" e2="0" e3="0" e4="0" e5="1" e6="0"/>
+</hp:renderingInfo>
+<hp:imgRect>
+<hc:pt0 x="0" y="0"/>
+<hc:pt1 x="54480" y="0"/>
+<hc:pt2 x="54480" y="37500"/>
+<hc:pt3 x="0" y="37500"/>
+</hp:imgRect>
+<hp:imgClip left="0" right="40860" top="0" bottom="28140"/>
+<hp:inMargin left="0" right="0" top="0" bottom="0"/>
+<hp:imgDim dimwidth="40860" dimheight="28140"/>
+<hc:img binaryItemIDRef="image1" bright="0" contrast="0" effect="REAL_PIC" alpha="0"/>
+<hp:effects>
+</hp:effects>
+<hp:sz width="41511" widthRelTo="ABSOLUTE" height="28570" heightRelTo="ABSOLUTE" protect="0"/>
+<hp:pos treatAsChar="0" affectLSpacing="0" flowWithText="1" allowOverlap="0" holdAnchorAndSO="0" vertRelTo="PARA" horzRelTo="COLUMN" vertAlign="TOP" horzAlign="CENTER" vertOffset="4619" horzOffset="4294966032"/>
+<hp:outMargin left="0" right="0" top="0" bottom="0"/>
+<hp:shapeComment>
+그림입니다.
+원본 그림의 이름: 1.png
+원본 그림의 크기: 가로 545pixel, 세로 375pixel
+</hp:shapeComment>
+</hp:pic>
+<hp:rect id="1951281645" zOrder="212" numberingType="NONE" textWrap="IN_FRONT_OF_TEXT" textFlow="BOTH_SIDES" lock="0" dropcapstyle="None" href="" groupLevel="0" instid="877539822" ratio="0">
+<hp:offset x="0" y="0"/>
+<hp:orgSz width="20800" height="9800"/>
+<hp:curSz width="37958" height="16566"/>
+<hp:flip horizontal="0" vertical="0"/>
+<hp:rotationInfo angle="0" centerX="18979" centerY="8283" rotateimage="0"/>
+<hp:renderingInfo>
+<hc:transMatrix e1="1" e2="0" e3="0" e4="0" e5="1" e6="0"/>
+<hc:scaMatrix e1="1.8249038" e2="0" e3="0" e4="0" e5="1.6904081" e6="0"/>
+<hc:rotMatrix e1="1" e2="0" e3="0" e4="0" e5="1" e6="0"/>
+</hp:renderingInfo>
+<hp:lineShape color="#000000" width="33" style="NONE" endCap="FLAT" headStyle="NORMAL" tailStyle="NORMAL" headfill="1" tailfill="1" headSz="MEDIUM_MEDIUM" tailSz="MEDIUM_MEDIUM" outlineStyle="NORMAL" alpha="0"/>
+<hp:shadow type="NONE" color="#B2B2B2" offsetX="0" offsetY="0" alpha="0"/>
+<hp:drawText lastWidth="37958" name="" editable="0">
+<hp:subList id="" textDirection="HORIZONTAL" lineWrap="BREAK" vertAlign="CENTER" linkListIDRef="0" linkListNextIDRef="0" textWidth="0" textHeight="0" hasTextRef="0" hasNumRef="0">
+<hp:p id="0" paraPrIDRef="43" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="59">
+<hp:t>
+글 문서 파일 구조 5.0
+</hp:t>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="0" vertsize="3000" textheight="3000" baseline="2550" spacing="1800" horzpos="53" horzsize="37339" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="1" paraPrIDRef="43" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="60">
+<hp:t>
+Hwp Document File Formats 5.0
+</hp:t>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="4800" vertsize="2400" textheight="2400" baseline="2040" spacing="1440" horzpos="53" horzsize="37339" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+<hp:p id="2" paraPrIDRef="44" styleIDRef="0" pageBreak="0" columnBreak="0" merged="0">
+<hp:run charPrIDRef="61">
+<hp:t>
+revision 1.3:20181108
+</hp:t>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="8640" vertsize="1600" textheight="1600" baseline="1360" spacing="0" horzpos="53" horzsize="37339" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+</hp:subList>
+<hp:textMargin left="283" right="283" top="283" bottom="283"/>
+</hp:drawText>
+<hc:pt0 x="0" y="0"/>
+<hc:pt1 x="20800" y="0"/>
+<hc:pt2 x="20800" y="9800"/>
+<hc:pt3 x="0" y="9800"/>
+<hp:sz width="37958" widthRelTo="ABSOLUTE" height="16566" heightRelTo="ABSOLUTE" protect="0"/>
+<hp:pos treatAsChar="0" affectLSpacing="0" flowWithText="0" allowOverlap="1" holdAnchorAndSO="0" vertRelTo="PAPER" horzRelTo="PAPER" vertAlign="TOP" horzAlign="CENTER" vertOffset="46380" horzOffset="2445"/>
+<hp:outMargin left="0" right="0" top="0" bottom="0"/>
+<hp:shapeComment>
+사각형입니다.
+</hp:shapeComment>
+</hp:rect>
+<hp:pic id="1951281688" zOrder="206" numberingType="NONE" textWrap="TOP_AND_BOTTOM" textFlow="BOTH_SIDES" lock="0" dropcapstyle="None" href="" groupLevel="0" instid="877539865" reverse="0">
+<hp:offset x="4294966224" y="4294966901"/>
+<hp:orgSz width="21780" height="7740"/>
+<hp:curSz width="12029" height="4428"/>
+<hp:flip horizontal="0" vertical="0"/>
+<hp:rotationInfo angle="0" centerX="6014" centerY="2214" rotateimage="0"/>
+<hp:renderingInfo>
+<hc:transMatrix e1="1" e2="0" e3="-1072" e4="0" e5="1" e6="-395"/>
+<hc:scaMatrix e1="0.5522957" e2="0" e3="1072" e4="0" e5="0.572093" e6="395"/>
+<hc:rotMatrix e1="1" e2="0" e3="0" e4="0" e5="1" e6="0"/>
+</hp:renderingInfo>
+<hp:imgRect>
+<hc:pt0 x="0" y="0"/>
+<hc:pt1 x="21780" y="0"/>
+<hc:pt2 x="21780" y="7740"/>
+<hc:pt3 x="0" y="7740"/>
+</hp:imgRect>
+<hp:imgClip left="0" right="21780" top="0" bottom="7740"/>
+<hp:inMargin left="0" right="0" top="0" bottom="0"/>
+<hp:imgDim dimwidth="21780" dimheight="7740"/>
+<hc:img binaryItemIDRef="image3" bright="0" contrast="0" effect="REAL_PIC" alpha="0"/>
+<hp:effects>
+</hp:effects>
+<hp:sz width="12029" widthRelTo="ABSOLUTE" height="4428" heightRelTo="ABSOLUTE" protect="0"/>
+<hp:pos treatAsChar="0" affectLSpacing="0" flowWithText="1" allowOverlap="0" holdAnchorAndSO="0" vertRelTo="PARA" horzRelTo="COLUMN" vertAlign="TOP" horzAlign="CENTER" vertOffset="65586" horzOffset="4294967289"/>
+<hp:outMargin left="0" right="0" top="0" bottom="0"/>
+<hp:shapeComment>
+그림입니다.
+원본 그림의 이름: CLP00002ca00003.bmp
+원본 그림의 크기: 가로 290pixel, 세로 103pixel
+</hp:shapeComment>
+</hp:pic>
+</hp:run>
+<hp:linesegarray>
+<hp:lineseg textpos="0" vertpos="0" vertsize="1000" textheight="1000" baseline="850" spacing="600" horzpos="0" horzsize="57500" flags="393216"/>
+</hp:linesegarray>
+</hp:p>
+</hs:sec>

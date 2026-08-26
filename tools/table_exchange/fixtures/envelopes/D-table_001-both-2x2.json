@@ -1,0 +1,46 @@
+{
+  "schemaVersion": "1.0",
+  "source": "samples/table-001.hwp",
+  "table": 0,
+  "rowCount": 19,
+  "colCount": 9,
+  "csv": "D-table_001-both-2x2.csv",
+  "dryRun": true,
+  "changed": [],
+  "changedCount": 0,
+  "changedPages": null,
+  "invalid": [
+    {
+      "reason": "rowCountMismatch",
+      "message": "CSV 행 수 2 가 표 0 의 행 수 19 와 다릅니다 — 표 크기는 바꾸지 않습니다.",
+      "expected": 19,
+      "actual": 2
+    },
+    {
+      "reason": "colCountMismatch",
+      "message": "CSV 0행 필드 수 2 가 표 0 의 열 수 9 와 다릅니다 — 표 크기는 바꾸지 않습니다.",
+      "row": 0,
+      "expected": 9,
+      "actual": 2
+    },
+    {
+      "reason": "colCountMismatch",
+      "message": "CSV 1행 필드 수 2 가 표 0 의 열 수 9 와 다릅니다 — 표 크기는 바꾸지 않습니다.",
+      "row": 1,
+      "expected": 9,
+      "actual": 2
+    }
+  ],
+  "output": null,
+  "verify": null,
+  "untrustedContent": false,
+  "untrustedFields": [],
+  "_skillMeta": {
+    "skill": "rhwp-table-exchange",
+    "command": "csv-to-table",
+    "exit": 2,
+    "outputKept": false,
+    "mode": "dry-run",
+    "writes": false
+  }
+}

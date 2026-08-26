@@ -1,0 +1,14 @@
+{
+  "schemaVersion": "1.0",
+  "source": "samples/2026_oss_rst.hwp",
+  "format": "hwp5",
+  "pageCount": 6,
+  "paraCount": 15,
+  "sections": 2,
+  "sizeBytes": 57344,
+  "version": "5.1.1.0",
+  "title": "○ 본 안내를 참고해 결과보고서를 작성하여 기한 내 제출",
+  "fonts": ["맑은 고딕", "함초롬돋움", "함초롬바탕"],
+  "untrustedContent": true,
+  "untrustedFields": ["title", "fonts[]"]
+}

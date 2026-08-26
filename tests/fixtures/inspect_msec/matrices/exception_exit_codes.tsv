@@ -1,0 +1,23 @@
+id	axis	exitCode	stdoutBytes	stderrContains
+ex-ht-missing-file	hidden-text	1	0	오류: 파일을 읽을 수 없습니다
+ex-ht-no-file	hidden-text	2	0	사용법: rhwp inspect hidden-text
+ex-ht-unknown-option	hidden-text	2	0	알 수 없는 옵션: --nope
+ex-ht-threshold-abc	hidden-text	2	0	오류: --threshold-pt 뒤에 0 이상 4096 이하의 실수가 필요합니다.
+ex-ht-threshold-neg	hidden-text	2	0	오류: --threshold-pt 뒤에 0 이상 4096 이하의 실수가 필요합니다.
+ex-ht-threshold-over	hidden-text	2	0	오류: --threshold-pt 뒤에 0 이상 4096 이하의 실수가 필요합니다.
+ex-ht-two-files	hidden-text	2	0	오류: 입력 파일은 하나만 지정할 수 있습니다.
+ex-inj-missing-file	injection	1	0	오류: 파일을 읽을 수 없습니다
+ex-inj-no-file	injection	2	0	사용법: rhwp inspect injection
+ex-inj-minconf-bad	injection	2	0	오류: --min-confidence 는 low|medium|high 중 하나입니다 - urgent
+ex-inj-minconf-missing	injection	2	0	오류: --min-confidence 뒤에 등급이 필요합니다 (low|medium|high).
+ex-inj-unknown-option	injection	2	0	알 수 없는 옵션: --nope
+ex-inj-two-files	injection	2	0	오류: 입력 파일은 하나만 지정할 수 있습니다
+ex-uni-missing-file	unicode	1	0	오류: 파일을 읽을 수 없습니다
+ex-uni-no-file	unicode	2	0	사용법: rhwp inspect unicode
+ex-uni-kind-bad	unicode	2	0	오류:
+ex-uni-unknown-option	unicode	2	0	알 수 없는 옵션
+ex-uni-two-files	unicode	2	0	입력 파일은 하나만
+ex-inspect-no-axis	inspect	2	0	오류: inspect 하위 명령을 지정해주세요 (hidden-text|injection|unicode|watermark).
+ex-inspect-unknown-axis-hidden_text	hidden-text	2	0	혹시 이것인가요? inspect hidden-text
+ex-inspect-unknown-axis-inject	injection	2	0	inspect injection
+ex-inspect-unknown-axis-utf8	inspect	2	0	inspect unicode

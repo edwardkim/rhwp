@@ -1,0 +1,15 @@
+{
+  "id": "T10_dirty_worktree",
+  "kind": "dirty_named_worktree",
+  "judgmentNotCrash": false,
+  "exit": 2,
+  "steps": [
+    {
+      "argv": [
+        "git",
+        "worktree",
+        "list"
+      ]
+    }
+  ]
+}

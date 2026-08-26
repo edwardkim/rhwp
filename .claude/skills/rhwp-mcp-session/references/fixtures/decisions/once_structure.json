@@ -1,0 +1,10 @@
+{
+  "id": "once_structure",
+  "task": "법령 목차 1회",
+  "choice": "stateless",
+  "first_tool": "hwp_export_structure",
+  "why": "한 번이면 무상태.",
+  "forbidden": [
+    "hwp_open"
+  ]
+}

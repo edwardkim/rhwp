@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "kind": "issue4882MeasuredReport",
+  "issue": 4882,
+  "doc": "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp",
+  "companionHwpx": "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx",
+  "pagesOriginal": 215,
+  "pagesExportReimportBeforeFix": 223,
+  "pagesExportReimportAfterFix": 215,
+  "deltaBeforeFix": 8,
+  "irDiffsBeforeFix": [
+    {
+      "path": "section[0] paragraph[421]/ctrl[0]fn.p[0]",
+      "diff": "[1].vertpos: expected=0 actual=1172"
+    },
+    {
+      "path": "section[0] paragraph[728]/ctrl[0]tbl.cell[3].p[0]/ctrl[0]fn.p[0]",
+      "diff": "[2].vertpos: expected=0 actual=2344"
+    },
+    {
+      "path": "section[0] paragraph[1372]/ctrl[0]fn.p[0]",
+      "diff": "[2].vertpos: expected=0 actual=2344"
+    },
+    {
+      "path": "section[0] paragraph[1832]/ctrl[0]tbl.cell[0].p[3]/ctrl[0]fn.p[0]",
+      "diff": "[1].vertpos: expected=0 actual=1172"
+    },
+    {
+      "path": "section[0] paragraph[1865]/ctrl[0]fn.p[0]",
+      "diff": "[1].vertpos: expected=0 actual=1172"
+    }
+  ],
+  "files": {
+    "hwp": {
+      "path": "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp",
+      "bytes": 7149056,
+      "sha256": "50094a3db2b2003b293c5cbf43014d001aa97929acb488cef0cb7ea0e16b3113"
+    },
+    "hwpx": {
+      "path": "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx",
+      "bytes": 5838220,
+      "sha256": "8ae9dc95643d0902fcced2af73badd732aea86c1cc5b875ef7b1272bccba862c"
+    }
+  },
+  "notes": {
+    "notes": 274,
+    "zero": 2,
+    "summary": {
+      "notes": 274,
+      "footnotes": 274,
+      "endnotes": 0,
+      "inTable": 50,
+      "hwp5ZeroPattern": 2,
+      "hangulArtifact": 0,
+      "multiLine": 153,
+      "totalSegs": 558
+    },
+    "section0Bytes": 3733453
+  },
+  "repro": [
+    "python tools/page_roundtrip/harness.py --file samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp --route hwpx",
+    "rhwp export-hwpx \"samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp\" /tmp/rt.hwpx --verify-pages --verify --json"
+  ],
+  "outOfScope": [
+    "ole/shape-component",
+    "char_shapes",
+    "#4056 issue-505-equations.hwp",
+    "#5128 한글문서파일형식_5.0_revision1.3.hwp"
+  ]
+}

@@ -1,0 +1,18 @@
+[package]
+name = "llm-verifier-tool-version-gate"
+version = "0.1.0"
+edition = "2021"
+publish = false
+license = "MIT"
+description = "LLM-as-verifier axis: reject reproduced:true when receipt.toolVersion != verifier binary version"
+
+[lib]
+name = "llm_verifier_tool_version_gate"
+path = "src/lib.rs"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# Standalone crate. Root workspace ownership is outside this axis.
+[workspace]

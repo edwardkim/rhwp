@@ -19,13 +19,31 @@
 
 mod caps;
 mod chunkplan;
+mod compare;
+mod contextcost;
 mod difftext;
 mod doctor;
 mod envelope;
+mod envlint;
 mod evidence;
+mod explaincmd;
+mod explorecmd;
+mod fields;
+mod files;
 mod fingerprint;
+mod grepcmd;
+mod harvest;
+mod inspect;
+mod locate;
+mod lookups;
 mod piiscan;
+mod planlint;
+mod safety;
 mod scan;
+mod searchcmd;
+mod stats;
+mod structurecmd;
+mod tables;
 mod verify;
 
 use envelope::EXIT_USAGE;

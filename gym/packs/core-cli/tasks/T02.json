@@ -1,0 +1,24 @@
+{
+  "id": "T02",
+  "tier": 1,
+  "title": "전수 검색",
+  "input": "samples/2022년 국립국어원 업무계획.hwp",
+  "instructions": "입력 문서에서 '국어'가 몇 번 나오는지 세어 answer.json 에 {\"matchCount\": <수>} 로 제출하라. 힌트: rhwp search <문서> 국어 --json 의 matches.",
+  "submit": {
+    "kind": "answer"
+  },
+  "checks": [
+    {
+      "name": "매치 수 일치",
+      "op": "len_answer_eq",
+      "answer": "matchCount",
+      "cmd": [
+        "search",
+        "{input}",
+        "국어",
+        "--json"
+      ],
+      "path": "matches"
+    }
+  ]
+}

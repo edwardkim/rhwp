@@ -1,0 +1,9 @@
+{
+ "schemaVersion": "1",
+ "generatedBy": "tools/chief/service_loop.py",
+ "goal": "export-pdf",
+ "route": "invalid-input",
+ "status": "invalid-input",
+ "reason": "컨테이너 식별 실패",
+ "stop": "C05"
+}

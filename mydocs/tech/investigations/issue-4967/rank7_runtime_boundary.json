@@ -1,0 +1,482 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-rank7-runtime-boundary-baseline",
+  "issue": 4967,
+  "stage": "W8-R7-Q1",
+  "target": {
+    "documentFace": "KoPubWorld돋움체 Light",
+    "queueRank": 7
+  },
+  "inputs": {
+    "hwpxFixture": {
+      "artifact": "mydocs/tech/investigations/issue-4967/fixtures/rank7_qualification.hwpx",
+      "sha256": "1cc8062c6fd0da39cfddc4182115226717516d4250e693b43596293374236f9e"
+    },
+    "hwpFixture": {
+      "artifact": "mydocs/tech/investigations/issue-4967/fixtures/rank7_runtime_boundary.hwp",
+      "sha256": "3a844e0530ecede89301ab1f3c2381865412f8472aa08733cdb9d1d25223ee7f"
+    },
+    "generatorManifest": {
+      "artifact": "mydocs/tech/investigations/issue-4967/fixtures/rank7_qualification.manifest.json",
+      "sha256": "38778e8ee3ecc8a9c5177c082eea2528214c5b4a7d71c66c009873922befd9df"
+    },
+    "fixtureManifest": {
+      "artifact": "mydocs/tech/investigations/issue-4967/fixtures/rank7_runtime_boundary.manifest.json",
+      "sha256": "dcf38e7b22d2ab28dbf007f74dbc9602f3f7f5b18f93b3f3bf935e5fa41c0037"
+    },
+    "q0Baseline": {
+      "artifact": "mydocs/tech/investigations/issue-4967/rank7_qualification_baseline.json",
+      "sha256": "a15c7c4c51c08cd5c1251bda6551bc8e031a2360b3e1adf0246bb0712faf93bb"
+    },
+    "nativeBinary": {
+      "artifact": "target/release/rhwp-q-font-trace",
+      "sha256": "c3d01cd3b9e4e0859e9fed2cd36cbacabfa17e5eef3d2dd92fd0812cb8be4dca"
+    },
+    "layoutBinary": {
+      "artifact": "target/release/rhwp-q-text-layout",
+      "sha256": "aa23a4d199b40295f7b1f72b0098f11d82e00b0997d080ebd5b2c555c4334e67"
+    },
+    "wasmJs": {
+      "artifact": "pkg/rhwp.js",
+      "sha256": "5c0c6571d20bde1e344de5577de3cb85121011f17276ecd44d4a56c6647eaf0b"
+    },
+    "wasmBinary": {
+      "artifact": "pkg/rhwp_bg.wasm",
+      "sha256": "732834865b1f11cff04efc0130bb86ea3d554bf0842a03147ad6761c5a6653cd"
+    }
+  },
+  "formats": [
+    {
+      "format": "hwpx",
+      "fixtureSha256": "1cc8062c6fd0da39cfddc4182115226717516d4250e693b43596293374236f9e",
+      "boundary": {
+        "records": 1556,
+        "requestedFaces": [
+          {
+            "value": "KoPubWorld돋움체 Light",
+            "count": 1556
+          }
+        ],
+        "normalizedFaces": [
+          {
+            "value": "KoPubWorld돋움체 Light",
+            "count": 1556
+          }
+        ],
+        "aliasResolvedFaces": [
+          {
+            "value": "KoPubWorld돋움체 Light",
+            "count": 1556
+          }
+        ],
+        "substitutionFaces": [
+          {
+            "value": "KoPubWorld바탕체 Light",
+            "count": 1556
+          }
+        ],
+        "layoutNameStepKinds": [
+          {
+            "value": "documentSubstFont",
+            "count": 1556
+          }
+        ],
+        "cssFamilyChains": [
+          {
+            "value": [
+              "KoPubWorld돋움체 Light",
+              "KoPubWorld바탕체 Light"
+            ],
+            "count": 1556
+          }
+        ],
+        "metricEntries": [
+          {
+            "value": null,
+            "count": 1556
+          }
+        ],
+        "matchKinds": [
+          {
+            "value": "none",
+            "count": 1556
+          }
+        ],
+        "widthSources": [
+          {
+            "value": "heuristicFullwidth",
+            "count": 390
+          },
+          {
+            "value": "heuristicHalfwidth",
+            "count": 1114
+          },
+          {
+            "value": "heuristicNarrow",
+            "count": 52
+          }
+        ],
+        "paintRequested": {
+          "canvas2d": [
+            {
+              "value": "KoPubWorld돋움체 Light,KoPubWorld바탕체 Light",
+              "count": 1556
+            }
+          ],
+          "canvaskit": [
+            {
+              "value": "KoPubWorld돋움체 Light,KoPubWorld바탕체 Light",
+              "count": 1556
+            }
+          ],
+          "native": [
+            {
+              "value": "KoPubWorld돋움체 Light,KoPubWorld바탕체 Light",
+              "count": 1556
+            }
+          ]
+        },
+        "canonicalTraceSha256": "48616a8a41f3ab547522f6574b961833480b5b44d2156bf8eed9b95cca30ddb9"
+      },
+      "fixedGeometry": [
+        {
+          "context": "table-cell",
+          "representativeIndex": 0,
+          "lineSegLane": "stored-line-lane",
+          "ratio": 100,
+          "spacing": 0,
+          "kerning": false,
+          "contentWidthHwpunit": 28980,
+          "contentWidthPx": 386.4,
+          "lineCount": 1,
+          "maximumLineWidthPx": 481,
+          "minimumSlackPx": -94.6,
+          "crossesFrame": true
+        },
+        {
+          "context": "table-cell",
+          "representativeIndex": 1,
+          "lineSegLane": "fresh-candidate-lane",
+          "ratio": 90,
+          "spacing": -5,
+          "kerning": true,
+          "contentWidthHwpunit": 28980,
+          "contentWidthPx": 386.4,
+          "lineCount": 2,
+          "maximumLineWidthPx": 387,
+          "minimumSlackPx": -0.6,
+          "crossesFrame": true
+        },
+        {
+          "context": "table-cell",
+          "representativeIndex": 2,
+          "lineSegLane": "stored-line-lane",
+          "ratio": 80,
+          "spacing": -10,
+          "kerning": true,
+          "contentWidthHwpunit": 28980,
+          "contentWidthPx": 386.4,
+          "lineCount": 1,
+          "maximumLineWidthPx": 386,
+          "minimumSlackPx": 0.4,
+          "crossesFrame": false
+        },
+        {
+          "context": "text-box",
+          "representativeIndex": 0,
+          "lineSegLane": "fresh-candidate-lane",
+          "ratio": 100,
+          "spacing": 0,
+          "kerning": false,
+          "contentWidthHwpunit": 29434,
+          "contentWidthPx": 392.5,
+          "lineCount": 2,
+          "maximumLineWidthPx": 353,
+          "minimumSlackPx": 39.5,
+          "crossesFrame": false
+        },
+        {
+          "context": "text-box",
+          "representativeIndex": 1,
+          "lineSegLane": "stored-line-lane",
+          "ratio": 90,
+          "spacing": -5,
+          "kerning": true,
+          "contentWidthHwpunit": 29434,
+          "contentWidthPx": 392.5,
+          "lineCount": 1,
+          "maximumLineWidthPx": 393,
+          "minimumSlackPx": -0.5,
+          "crossesFrame": true
+        },
+        {
+          "context": "text-box",
+          "representativeIndex": 2,
+          "lineSegLane": "fresh-candidate-lane",
+          "ratio": 80,
+          "spacing": -10,
+          "kerning": true,
+          "contentWidthHwpunit": 29434,
+          "contentWidthPx": 392.5,
+          "lineCount": 2,
+          "maximumLineWidthPx": 259,
+          "minimumSlackPx": 133.5,
+          "crossesFrame": false
+        }
+      ],
+      "projections": {
+        "layoutMetricSha256": "a738899082f9d3b97d231e4629f1dd99880e60a18d07f3c725ed587bfa8aff12",
+        "layoutRunsSha256": "18c545b5eae7cfddb810e12b5c5e8dcb36c896b26e0a4d46b749603ff0b8456c"
+      },
+      "parity": {
+        "nativeWasmByteExact": true,
+        "canonicalTraceSha256": "48616a8a41f3ab547522f6574b961833480b5b44d2156bf8eed9b95cca30ddb9",
+        "maxCharacters": 4096
+      }
+    },
+    {
+      "format": "hwp5",
+      "fixtureSha256": "3a844e0530ecede89301ab1f3c2381865412f8472aa08733cdb9d1d25223ee7f",
+      "boundary": {
+        "records": 1556,
+        "requestedFaces": [
+          {
+            "value": "KoPubWorld돋움체 Light",
+            "count": 1556
+          }
+        ],
+        "normalizedFaces": [
+          {
+            "value": "KoPubWorld돋움체 Light",
+            "count": 1556
+          }
+        ],
+        "aliasResolvedFaces": [
+          {
+            "value": "KoPubWorld돋움체 Light",
+            "count": 1556
+          }
+        ],
+        "substitutionFaces": [
+          {
+            "value": null,
+            "count": 1556
+          }
+        ],
+        "layoutNameStepKinds": [],
+        "cssFamilyChains": [
+          {
+            "value": [
+              "KoPubWorld돋움체 Light"
+            ],
+            "count": 1556
+          }
+        ],
+        "metricEntries": [
+          {
+            "value": null,
+            "count": 1556
+          }
+        ],
+        "matchKinds": [
+          {
+            "value": "none",
+            "count": 1556
+          }
+        ],
+        "widthSources": [
+          {
+            "value": "heuristicFullwidth",
+            "count": 390
+          },
+          {
+            "value": "heuristicHalfwidth",
+            "count": 1114
+          },
+          {
+            "value": "heuristicNarrow",
+            "count": 52
+          }
+        ],
+        "paintRequested": {
+          "canvas2d": [
+            {
+              "value": "KoPubWorld돋움체 Light",
+              "count": 1556
+            }
+          ],
+          "canvaskit": [
+            {
+              "value": "KoPubWorld돋움체 Light",
+              "count": 1556
+            }
+          ],
+          "native": [
+            {
+              "value": "KoPubWorld돋움체 Light",
+              "count": 1556
+            }
+          ]
+        },
+        "canonicalTraceSha256": "7e98f026247824b47f4d628784a074560eb750fecc733298fae5f8c0800303ae"
+      },
+      "fixedGeometry": [
+        {
+          "context": "table-cell",
+          "representativeIndex": 0,
+          "lineSegLane": "stored-line-lane",
+          "ratio": 100,
+          "spacing": 0,
+          "kerning": false,
+          "contentWidthHwpunit": 28980,
+          "contentWidthPx": 386.4,
+          "lineCount": 1,
+          "maximumLineWidthPx": 481,
+          "minimumSlackPx": -94.6,
+          "crossesFrame": true
+        },
+        {
+          "context": "table-cell",
+          "representativeIndex": 1,
+          "lineSegLane": "fresh-candidate-lane",
+          "ratio": 90,
+          "spacing": -5,
+          "kerning": true,
+          "contentWidthHwpunit": 28980,
+          "contentWidthPx": 386.4,
+          "lineCount": 2,
+          "maximumLineWidthPx": 387,
+          "minimumSlackPx": -0.6,
+          "crossesFrame": true
+        },
+        {
+          "context": "table-cell",
+          "representativeIndex": 2,
+          "lineSegLane": "stored-line-lane",
+          "ratio": 80,
+          "spacing": -10,
+          "kerning": true,
+          "contentWidthHwpunit": 28980,
+          "contentWidthPx": 386.4,
+          "lineCount": 1,
+          "maximumLineWidthPx": 386,
+          "minimumSlackPx": 0.4,
+          "crossesFrame": false
+        },
+        {
+          "context": "text-box",
+          "representativeIndex": 0,
+          "lineSegLane": "fresh-candidate-lane",
+          "ratio": 100,
+          "spacing": 0,
+          "kerning": false,
+          "contentWidthHwpunit": 29434,
+          "contentWidthPx": 392.5,
+          "lineCount": 2,
+          "maximumLineWidthPx": 353,
+          "minimumSlackPx": 39.5,
+          "crossesFrame": false
+        },
+        {
+          "context": "text-box",
+          "representativeIndex": 1,
+          "lineSegLane": "stored-line-lane",
+          "ratio": 90,
+          "spacing": -5,
+          "kerning": true,
+          "contentWidthHwpunit": 29434,
+          "contentWidthPx": 392.5,
+          "lineCount": 1,
+          "maximumLineWidthPx": 393,
+          "minimumSlackPx": -0.5,
+          "crossesFrame": true
+        },
+        {
+          "context": "text-box",
+          "representativeIndex": 2,
+          "lineSegLane": "fresh-candidate-lane",
+          "ratio": 80,
+          "spacing": -10,
+          "kerning": true,
+          "contentWidthHwpunit": 29434,
+          "contentWidthPx": 392.5,
+          "lineCount": 2,
+          "maximumLineWidthPx": 259,
+          "minimumSlackPx": 133.5,
+          "crossesFrame": false
+        }
+      ],
+      "projections": {
+        "layoutMetricSha256": "a738899082f9d3b97d231e4629f1dd99880e60a18d07f3c725ed587bfa8aff12",
+        "layoutRunsSha256": "18c545b5eae7cfddb810e12b5c5e8dcb36c896b26e0a4d46b749603ff0b8456c"
+      },
+      "parity": {
+        "nativeWasmByteExact": true,
+        "canonicalTraceSha256": "7e98f026247824b47f4d628784a074560eb750fecc733298fae5f8c0800303ae",
+        "maxCharacters": 4096
+      }
+    }
+  ],
+  "formatComparison": {
+    "layoutMetricProjectionEqual": true,
+    "layoutRunProjectionEqual": true,
+    "fixedGeometryEqual": true,
+    "substitutionMetadataDiffers": true,
+    "substitutionAffectsLayoutMetric": false,
+    "substitutionAffectsPaintCandidateChain": true,
+    "layoutMetricProjectionSha256": "a738899082f9d3b97d231e4629f1dd99880e60a18d07f3c725ed587bfa8aff12",
+    "layoutRunProjectionSha256": "18c545b5eae7cfddb810e12b5c5e8dcb36c896b26e0a4d46b749603ff0b8456c"
+  },
+  "firstDivergence": {
+    "targetDecisionPlane": "layout-metric",
+    "observed": {
+      "requestedFace": "KoPubWorld돋움체 Light",
+      "normalizedFace": "KoPubWorld돋움체 Light",
+      "metricAliasResolvedFace": "KoPubWorld돋움체 Light",
+      "metricEntry": null,
+      "matchKind": "none",
+      "widthSources": [
+        {
+          "value": "heuristicFullwidth",
+          "count": 390
+        },
+        {
+          "value": "heuristicHalfwidth",
+          "count": 1114
+        },
+        {
+          "value": "heuristicNarrow",
+          "count": 52
+        }
+      ]
+    },
+    "formatMetadataBoundary": {
+      "hwpxDocumentSubstitution": "KoPubWorld바탕체 Light",
+      "hwpDocumentSubstitution": null,
+      "affectsLayoutMetric": false,
+      "affectsPaintCandidateChain": true
+    },
+    "expectedForQ2Hypothesis": {
+      "metricSource": "official exact KoPubWorld Dotum Light hmtx",
+      "sourceFontSha256": "069494cce21a4222c88e537f256b6f46fee209375aba769f82431b2d382bc84f"
+    },
+    "disposition": "qualified-for-q2-layout-metric-hypothesis"
+  },
+  "executionPolicy": {
+    "fullCorpusRerun": false,
+    "hyperVOracleRerun": false,
+    "productMutation": false,
+    "publicFixturesOnly": true,
+    "maxCharacters": 4096,
+    "childTimeoutMs": 60000,
+    "childOutputLimitBytes": 67108864
+  },
+  "privacy": {
+    "absolutePathIncluded": false,
+    "fontBytesIncluded": false,
+    "privateCorpusAccessed": false,
+    "privateDocumentIdentityIncluded": false,
+    "fullTraceTracked": false
+  },
+  "canonicalSha256": "70ad1a94851c1cd8ec4329dd284025882bec6f802b32d0e5cef17e4179fbe49b"
+}

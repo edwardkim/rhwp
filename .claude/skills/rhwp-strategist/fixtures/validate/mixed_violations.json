@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "1",
+  "generatedBy": "tools/strategist/engagement.py",
+  "mode": "validate",
+  "claimCount": 2,
+  "ledgerEntryCount": 12,
+  "violationCount": 2,
+  "violations": [
+    {
+      "claim": "CLAIM-1",
+      "kind": "placeholder",
+      "detail": "플레이스홀더가 실제 주장으로 작성되지 않았다"
+    },
+    {
+      "claim": "CLAIM-2",
+      "kind": "unknown-evidence",
+      "detail": "근거 대장에 없는 id: EV-77"
+    }
+  ],
+  "verdict": "fail",
+  "_skillMeta": {
+    "exit": 3,
+    "kind": "mixed"
+  }
+}

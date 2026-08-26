@@ -1,0 +1,17 @@
+{
+  "id": "FJ30",
+  "steps": [
+    {
+      "answer": {
+        "status": {
+          "cmd": [
+            "fields",
+            "{input}",
+            "--json"
+          ],
+          "path": "textSecurity.status"
+        }
+      }
+    }
+  ]
+}

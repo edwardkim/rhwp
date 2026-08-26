@@ -1,0 +1,46 @@
+{
+  "id": "TE57",
+  "tier": 3,
+  "title": "의 네 번째만",
+  "input": "samples/hwp3-sample.hwp",
+  "instructions": "입력의 '의' 가운데 **0 기준 3번째만** '◎' 로 바꾼 once57.hwp 을 제출하라. 전건 치환은 통과하지 못한다 — 옛 문구가 남아 있어야 한다. 힌트: rhwp edit replace-text --occurrence 3.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "once57.hwp"
+    ]
+  },
+  "checks": [
+    {
+      "name": "새 문구 실재",
+      "op": "value_ge",
+      "value": 1,
+      "path": "matchCount",
+      "cmd": [
+        "search",
+        "{file:once57.hwp}",
+        "--json",
+        "--",
+        "◎"
+      ]
+    },
+    {
+      "name": "옛 문구 잔여(전건 치환 거부)",
+      "op": "value_ge",
+      "value": 1,
+      "path": "matchCount",
+      "cmd": [
+        "search",
+        "{file:once57.hwp}",
+        "--json",
+        "--",
+        "의"
+      ]
+    },
+    {
+      "name": "원본과 다름",
+      "op": "differs_from_input",
+      "file": "once57.hwp"
+    }
+  ]
+}

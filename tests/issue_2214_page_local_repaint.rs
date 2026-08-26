@@ -209,6 +209,43 @@ fn approx_eq(actual: f64, expected: f64) -> bool {
     (actual - expected).abs() <= 0.2
 }
 
+/// 한컴 2020 adapter-save oracle의 원본 형식별 fifth-line 전환점이다.
+fn flow_boundary_insert_count(label: &str) -> usize {
+    match label {
+        "hwp" => 56,
+        "hwpx" => 61,
+        other => panic!("unknown #2214 fixture label: {other}"),
+    }
+}
+
+fn expected_line_starts(label: &str, inserted: usize) -> &'static [usize] {
+    if inserted >= flow_boundary_insert_count(label) {
+        match label {
+            "hwp" => &[0, 44, 84, 122, 129],
+            "hwpx" => &[0, 45, 87, 125, 129],
+            other => panic!("unknown #2214 fixture label: {other}"),
+        }
+    } else {
+        &[0, 44, 84, 122]
+    }
+}
+
+fn expected_56_path_caret(label: &str) -> (f64, f64) {
+    match label {
+        "hwp" => (573.9, 344.8),
+        "hwpx" => (671.6, 319.2),
+        other => panic!("unknown #2214 fixture label: {other}"),
+    }
+}
+
+fn expected_56_direct_caret(label: &str) -> (f64, f64) {
+    match label {
+        "hwp" => (573.9, 345.6),
+        "hwpx" => (671.6, 320.0),
+        other => panic!("unknown #2214 fixture label: {other}"),
+    }
+}
+
 /// Warm cache에서도 deferred edit 직후 최신 tree와 exact cursor를 반환해야 한다.
 #[test]
 fn issue_2214_warm_deferred_tree_and_cursor_are_exact() {
@@ -234,7 +271,9 @@ fn issue_2214_warm_deferred_tree_and_cursor_are_exact() {
             format!("{original_text}{}", "1".repeat(56)),
             "{label}: deferred edit must append exactly 56 characters"
         );
-        assert_eq!(line_starts(&doc), vec![0, 44, 84, 122, 129]);
+        let starts_after_56 = line_starts(&doc);
+        let rect = path_rect(&doc, expected_end);
+        assert_eq!(starts_after_56, expected_line_starts(label, 56));
         assert_eq!(
             doc.page_count(),
             115,
@@ -242,22 +281,21 @@ fn issue_2214_warm_deferred_tree_and_cursor_are_exact() {
         );
 
         // 실제 Studio 순서처럼 path-near를 첫 observer로 둔다.
-        let rect = path_rect(&doc, expected_end);
         assert!(
             approx_eq(rect.cell_bounds.h, 945.9),
             "{label}: deferred edit must retain pre-flush cell bounds: {rect:?}"
         );
         let tree_end = target_tree_end(&doc);
+        let (expected_x, expected_y) = expected_56_path_caret(label);
         let exact = tree_end == expected_end
             && rect.page_index == 0
-            && approx_eq(rect.x, 573.9)
+            && approx_eq(rect.x, expected_x)
             // 최신 devel의 table text baseline 보정 뒤 path-near는 direct보다
-            // 0.8px 위의 caret geometry를 반환한다. HWP/HWPX가 같은 기준선을
-            // 공유하고 flush 전후에도 이 값이 유지되는지를 고정한다.
-            && approx_eq(rect.y, 344.8)
+            // 0.8px 위의 caret geometry를 반환한다. 원본 형식별 기준선이
+            // flush 전후에도 유지되는지를 고정한다.
+            && approx_eq(rect.y, expected_y)
             && approx_eq(rect.height, 16.0)
             && !rect.cell_overflowed;
-        eprintln!("#2214 {label}: model={expected_end} tree={tree_end} rect={rect:?}");
         if !exact {
             failures.push(format!(
                 "{label}: model={expected_end} tree={tree_end} page={} x={:.1} y={:.1} bounds_h={:.1}",
@@ -283,8 +321,9 @@ fn issue_2214_cold_representative_queries_are_exact() {
         let direct = direct_rect(&direct44, INSERT_OFFSET + 56);
         assert_eq!(target_tree_end(&direct44), INSERT_OFFSET + 56);
         assert_eq!(direct.page_index, 0, "{label}: cold 56 direct page");
-        assert!(approx_eq(direct.x, 573.9), "{label}: cold 56 direct x");
-        assert!(approx_eq(direct.y, 345.6), "{label}: cold 56 direct y");
+        let (expected_x, expected_y) = expected_56_direct_caret(label);
+        assert!(approx_eq(direct.x, expected_x), "{label}: cold 56 direct x");
+        assert!(approx_eq(direct.y, expected_y), "{label}: cold 56 direct y");
         assert!(
             approx_eq(direct.cell_bounds.h, 945.9),
             "{label}: cold 56 direct pre-flush bounds"
@@ -358,7 +397,11 @@ fn issue_2214_cell_flow_transition_baseline() {
                 .expect("per-key deferred insert");
             let result = parse_cell_edit_result(result);
             let delta = relative_flow_advance(target_paragraph(&doc50)) - before;
-            let expected = if inserted == 55 { 1920 } else { 0 };
+            let expected = if inserted + 1 == flow_boundary_insert_count(label) {
+                1920
+            } else {
+                0
+            };
             assert_eq!(
                 result.char_offset,
                 INSERT_OFFSET + inserted + 1,
@@ -389,10 +432,10 @@ fn issue_2214_cell_flow_transition_baseline() {
         }
         assert_eq!(
             changed_inputs,
-            vec![56],
+            vec![flow_boundary_insert_count(label)],
             "{label}: exactly one flow boundary"
         );
-        assert_eq!(line_starts(&doc50), vec![0, 44, 84, 122, 129]);
+        assert_eq!(line_starts(&doc50), expected_line_starts(label, 62));
         assert_eq!(
             target_paragraph(&doc50).text,
             format!("{original50}{}", "1".repeat(62)),

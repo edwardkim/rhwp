@@ -1,0 +1,11 @@
+{
+  "id": "T02",
+  "utterance": "3쪽을 svg",
+  "steps": [
+    {
+      "command": "export-svg",
+      "pageZeroBased": true
+    }
+  ],
+  "stop": "-p 2 (0 기준)"
+}

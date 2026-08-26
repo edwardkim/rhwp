@@ -1,0 +1,24 @@
+{
+  "id": "SE58",
+  "steps": [
+    {
+      "answer": {
+        "findings": {
+          "cmd": [
+            "inspect",
+            "watermark",
+            "{input}",
+            "--kind",
+            "all",
+            "--json"
+          ],
+          "path": "findingCount",
+          "allowExits": [
+            0,
+            3
+          ]
+        }
+      }
+    }
+  ]
+}

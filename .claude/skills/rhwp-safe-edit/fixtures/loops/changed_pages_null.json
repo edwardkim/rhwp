@@ -1,0 +1,22 @@
+{
+  "id": "changed_pages_null",
+  "layer": "any",
+  "goal": "changedPages null ≠ 빈 배열",
+  "invariants": [
+    {
+      "value": null,
+      "meaning": "확정 불가. dry-run 또는 조판 전. 눈검증 금지"
+    },
+    {
+      "value": [],
+      "meaning": "바뀐 쪽 없음. 렌더 불필요"
+    },
+    {
+      "value": [
+        0,
+        1
+      ],
+      "meaning": "그 쪽만 export-svg -p"
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "id": "OM32",
+  "steps": [
+    {
+      "run": [
+        "edit",
+        "fill-fields",
+        "{input}",
+        "--data",
+        "{\"회사명\": \"한컴점검\"}",
+        "-o",
+        "{sub:company.hwp}",
+        "--json"
+      ]
+    }
+  ]
+}

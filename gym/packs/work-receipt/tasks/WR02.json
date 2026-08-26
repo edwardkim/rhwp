@@ -1,0 +1,66 @@
+{
+  "id": "WR02",
+  "tier": 2,
+  "title": "첫 영수증은 뿌리다",
+  "input": "samples/field-01.hwp",
+  "instructions": "오늘 첫 작업 캡슐 receipts/day.capsule.json 을 제출하라. 부모(--parent) 를 붙이지 않은 **뿌리**여야 한다. 채점은 lineage 로 깊이 1·valid·머리 링크 parentOk 가 null 인지를 본다 — AU12/XC04 의 2·3세대 depth 판정이 아니다. 힌트: rhwp replay --plan-json '{\"planVersion\": \"1.0\", \"input\": \"samples/field-01.hwp\", \"output\": \"day.hwp\", \"steps\": [{\"action\": \"replace_text\", \"find\": \"마케팅\", \"replace\": \"일일영수증\"}]}' --capsule receipts/day.capsule.json --json 후 rhwp lineage receipts/day.capsule.json --json",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "receipts/day.capsule.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "뿌리 캡슐 존재",
+      "op": "file_exists",
+      "file": "receipts/day.capsule.json",
+      "minBytes": 64
+    },
+    {
+      "name": "계보 유효",
+      "op": "value_eq",
+      "value": true,
+      "path": "valid",
+      "cmd": [
+        "lineage",
+        "{file:receipts/day.capsule.json}",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    },
+    {
+      "name": "깊이 1 — 부모 없음",
+      "op": "value_eq",
+      "value": 1,
+      "path": "depth",
+      "cmd": [
+        "lineage",
+        "{file:receipts/day.capsule.json}",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    },
+    {
+      "name": "머리 링크 parentOk 는 null — 뿌리는 부모 대조가 없다",
+      "op": "value_eq",
+      "value": null,
+      "path": "links[0].parentOk",
+      "cmd": [
+        "lineage",
+        "{file:receipts/day.capsule.json}",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    }
+  ]
+}

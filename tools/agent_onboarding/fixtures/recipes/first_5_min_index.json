@@ -1,0 +1,48 @@
+{
+  "steps": [
+    {
+      "id": "triage",
+      "commands": [
+        "info",
+        "explain",
+        "digest"
+      ],
+      "readOnly": true
+    },
+    {
+      "id": "tables",
+      "commands": [
+        "export-tables",
+        "table-to-csv"
+      ],
+      "readOnly": true
+    },
+    {
+      "id": "form-read",
+      "commands": [
+        "fields"
+      ],
+      "readOnly": true
+    },
+    {
+      "id": "security",
+      "commands": [
+        "inspect hidden-text",
+        "inspect injection",
+        "inspect unicode"
+      ],
+      "readOnly": true
+    },
+    {
+      "id": "attach",
+      "commands": [
+        "mcp-serve",
+        "capabilities --mcp",
+        "replay"
+      ],
+      "readOnly": true
+    }
+  ],
+  "notGym": true,
+  "noNewCli": true
+}

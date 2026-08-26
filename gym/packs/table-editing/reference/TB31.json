@@ -1,0 +1,59 @@
+{
+  "id": "TB31",
+  "steps": [
+    {
+      "run": [
+        "edit",
+        "set-cell",
+        "{input}",
+        "--table",
+        "0",
+        "--row",
+        "0",
+        "--col",
+        "0",
+        "--text",
+        "가",
+        "-o",
+        "{sub:step1.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "edit",
+        "set-cell",
+        "{sub:step1.hwp}",
+        "--table",
+        "0",
+        "--row",
+        "0",
+        "--col",
+        "1",
+        "--text",
+        "나",
+        "-o",
+        "{sub:step2.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "edit",
+        "set-cell",
+        "{sub:step2.hwp}",
+        "--table",
+        "0",
+        "--row",
+        "1",
+        "--col",
+        "0",
+        "--text",
+        "다",
+        "-o",
+        "{sub:triple.hwp}",
+        "--json"
+      ]
+    }
+  ]
+}

@@ -787,7 +787,9 @@ fn line_break_risk_for_run(leaf_path: &str, run: &TextRunNode) -> Option<TextV2L
         || run.style.emboss
         || run.style.engrave
         || run.style.emphasis_dot != 0
-        || run.style.shade_color != 0x00FF_FFFF
+        // [#4155] 종전엔 마스크 없이 흰색과만 비교해 "음영 없음" sentinel 0xFFFFFFFF 와
+        // 미지정 잔재 0 이 둘 다 효과 있음으로 샜다. 판정 정본은 model::color 하나다.
+        || crate::model::color::char_shade(run.style.shade_color).is_some()
     {
         reasons.push("textVisualEffect");
     }

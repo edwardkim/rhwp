@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "id": "s111-image",
+  "width": 400.0,
+  "height": 300.0,
+  "contract": "image 단독 장면",
+  "ops": [
+    {
+      "kind": "image",
+      "x": 23.0,
+      "y": 24.0,
+      "w": 40.0,
+      "h": 18.0,
+      "text": null,
+      "gradient": false,
+      "image": true
+    }
+  ],
+  "expectedKinds": [
+    "image"
+  ],
+  "expectedTrace": [
+    "begin_page 400.00x300.00",
+    "  image bbox=23.00,24.00,40.00,18.00",
+    "end_page ops=1"
+  ]
+}

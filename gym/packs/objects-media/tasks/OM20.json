@@ -1,0 +1,29 @@
+{
+  "id": "OM20",
+  "tier": 2,
+  "title": "문단 문서 썸네일 가로",
+  "input": "samples/para-001.hwp",
+  "instructions": "문단 표본 썸네일의 **가로 픽셀**을 answer.json 에 {\"width\": N} 으로 제출하라. 힌트: rhwp thumbnail 의 width.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "가로 픽셀",
+      "op": "answer_eq",
+      "answer": "width",
+      "path": "width",
+      "cmd": [
+        "thumbnail",
+        "{input}",
+        "-o",
+        "{file:t.png}",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

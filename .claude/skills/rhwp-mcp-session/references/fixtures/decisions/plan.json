@@ -1,0 +1,10 @@
+{
+  "id": "plan",
+  "task": "여러 편집을 원자적으로",
+  "choice": "stateless",
+  "first_tool": "hwp_run_plan",
+  "why": "선검증 후 한 번 저장.",
+  "forbidden": [
+    "hwp_open"
+  ]
+}

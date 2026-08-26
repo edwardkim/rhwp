@@ -1,0 +1,55 @@
+# M09-g equation golden — current-engine lock (variant/exception/unimplemented honesty)
+command: OVER
+script: sum_i a_i OVER n
+honesty: implemented-variant
+
+=== ast ===
+Row(
+    [
+        BigOp {
+            symbol: "∑",
+            sub: Some(
+                Text(
+                    "i",
+                ),
+            ),
+            sup: None,
+        },
+        Fraction {
+            numer: Subscript {
+                base: Text(
+                    "a",
+                ),
+                sub: Text(
+                    "i",
+                ),
+            },
+            denom: Text(
+                "n",
+            ),
+        },
+    ],
+)
+
+=== layout ===
+Row x=0.0000 y=0.0000 w=60.6350 h=56.8000 bl=29.8000
+  BigOp("∑") x=0.0000 y=11.8000 w=33.0000 h=45.0000 bl=18.0000
+    sub:
+      Text("i") x=7.9575 y=30.0000 w=8.0850 h=14.0000 bl=11.2000
+  Fraction x=33.0000 y=0.0000 w=27.6350 h=49.2000 bl=29.8000
+    numer:
+      Subscript x=4.0000 y=4.0000 w=19.6350 h=20.4000 bl=16.0000
+        base:
+          Text("a") x=0.0000 y=0.0000 w=11.5500 h=20.0000 bl=16.0000
+        sub:
+          Text("i") x=11.5500 y=6.4000 w=8.0850 h=14.0000 bl=11.2000
+    denom:
+      Text("n") x=8.0425 y=25.2000 w=11.5500 h=20.0000 bl=16.0000
+
+=== svg ===
+<text x="0.00" y="35.80" font-size="30.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">∑</text>
+<text x="7.96" y="53.00" font-size="14.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">i</text>
+<text x="37.00" y="20.00" font-size="20.00" fill="#000000" font-style="italic" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">a</text>
+<text x="48.55" y="21.60" font-size="14.00" fill="#000000" font-style="italic" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">i</text>
+<line x1="34.00" y1="24.80" x2="59.64" y2="24.80" stroke="#000000" stroke-width="0.80"/>
+<text x="41.04" y="41.20" font-size="20.00" fill="#000000" font-style="italic" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">n</text>

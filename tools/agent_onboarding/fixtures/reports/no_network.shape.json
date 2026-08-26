@@ -1,0 +1,7 @@
+{
+  "network.offline": true,
+  "exceptions.kind": [
+    "no_network"
+  ],
+  "note": "ok 는 다른 임계 검사에 따른다. 오프라인 단독으로 1/3 이 되지 않는다."
+}

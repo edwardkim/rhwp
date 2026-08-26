@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/agent_knowledge_map.md
-last_verified: 2026-08-03
+last_verified: 2026-08-23
 ---
 
 # 에이전트 지식 지도 — rhwp 참조 문서의 단일 진입점
@@ -20,30 +20,29 @@ rhwp 를 도구로 부리는 AI 에이전트·스크립트가 **첫 번째로 �
 
 | 항목 | 값 |
 |---|---|
-| 바이너리 | `rhwp v0.8.2` (release 빌드, `native-skia` 미포함) |
-| 측정일 | 2026-08-03 |
+| 바이너리 | `rhwp v0.8.3` (release 빌드, `native-skia` 미포함) |
+| 측정일 | 2026-08-11 |
 | 자기서술 출처 | `rhwp capabilities` · `rhwp capabilities --mcp` · `mcp-serve` 의 `tools/list` |
-| 표면 규모 | CLI 명령 **61개**(그중 `--json` 계약 **31개**, batch 축 **8개**) · MCP 도구 **51개**(무상태 39 + 세션 12) |
-| 봉투 필드 | `recordFields` 합집합 **148개** (§2) |
-| 표본 | `samples/` 439 항목 중 실측한 것만 §7 에 적었다 |
+| 표면 규모 | CLI 명령 **98개**(그중 `--json` 계약 **65개**, batch 축 **9개**) · MCP 도구 **181개**(무상태 163 + 세션 전용 18) |
+| 봉투 필드 | `capabilities.commands[].recordFields` 합집합 **325개** · §2 전수 사전 **334개**(자기서술 밖 실측·참조 필드 포함) |
+| 표본 | `samples/` tracked 파일 **895개** 중 실측한 것만 §7 에 적었다 |
 
 **재확인하는 법** — 이 지도를 믿기 전에 손에 든 바이너리로 다시 찍어 본다.
 
 ```
 rhwp capabilities                 # 명령·플래그·recordFields·종료 코드
-rhwp capabilities --mcp           # MCP 무상태 도구 선언(39)
+rhwp capabilities --mcp           # MCP 무상태 도구 선언(66)
 rhwp capabilities --mcp --profile <프로필>   # 역할별로 좁힌 도구 목록
 printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"x","version":"0"}}}' \
   '{"jsonrpc":"2.0","method":"notifications/initialized"}' \
-  '{"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}' | rhwp mcp-serve   # 세션 포함 51
+  '{"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}' | rhwp mcp-serve   # 세션 포함 82
 ```
 
 버전이 다르면 **바이너리가 이긴다**. 이 문서와 어긋나면 이 문서를 고친다.
 
-**이 빌드에 없는 것** — 로드맵 논의에 등장하지만 v0.8.2 에는 아직 없다.
-`rhwp capabilities --search <낱말>` → `알 수 없는 옵션: --search`(exit 2),
-`rhwp export-agent-manifest` → `알 수 없는 명령입니다`(exit 2). 도구 발견은
-`capabilities` 전문(全文) 1회 캐시 + `--profile` 좁히기로 한다.
+**도구 발견과 부트스트랩** — `rhwp capabilities --search <낱말> [--json]` 은 명령
+이름·요약·하위 명령을 검색한다. `rhwp export-agent-manifest --json` 은 capabilities·
+IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingAxes` 로 밝힌다.
 
 ## 1. 3문 진입 — 세 가지 질문으로 필요한 문서에 도착한다
 
@@ -56,7 +55,8 @@ printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocol
 
 | 하려는 일 | 명령 (MCP 도구) | 판정 필드 | 권위 |
 |---|---|---|---|
-| 규모·형식 파악 | `info --json` (`hwp_info`) | `format`·`pageCount`·`paraCount` | [CLI 매뉴얼](cli_commands.md) §info |
+| 요청에 어떤 스킬이 필요한가 | `python tools/skill_router/route.py "<요청>" --json` | `intent`·`requiredCapabilities`·`skillSelection`·`executionGraph` | [스킬 라우터](agent_skill_router.md) |
+| 규모·형식 파악 | `info --json` (`hwp_info`) | `format`·`pageCount`·`paraCount`·`lastSavedWith` | [CLI 매뉴얼](cli_commands.md) §info |
 | 한 호출로 전체 감 잡기 | `digest --json` (`hwp_digest`) | `outline`·`excerpt`·`nextStep` | [초소형 모델 매크로](../tech/tiny_model_macro_tools.md) |
 | 절 단위로 훑기 | `digest --sections --json` | `sections[]`·`sectionsMode` | 같은 문서 |
 | 쪽 범위만 발췌 | `digest --pages a..b --json` | `pages{from,to}`·`nextStep` | 같은 문서 |
@@ -108,6 +108,11 @@ printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocol
 | k 번째만 치환 | `edit replace-text --occurrence k` | `occurrence`·`replacedCount:1` | 같은 절 |
 | 체크박스 켜기 | `edit replace-text --find □ --replace ☑ --occurrence k` (`hwp_set_checkbox`) | `replacedCount` | 같은 절 |
 | 도장·서명 붙이기 | `edit insert-image` (`hwp_insert_image`) | `binDataId`·`overflow` | [CLI 매뉴얼](cli_commands.md) §edit insert-image |
+| 도형 묶기 | `edit group-shapes` (`hwp_group_shapes`) | `count`·`paragraph`/`ctrl` | [CLI 매뉴얼](cli_commands.md) §edit group-shapes |
+| 본문 문단 좌표에 그림 넣기 | `edit insert-picture` (`hwp_insert_picture`) | `binDataId`·`section`/`paragraph`/`offset` | [CLI 매뉴얼](cli_commands.md) §edit insert-picture |
+| 본문 그림 지우기 | `edit delete-picture` (`hwp_delete_picture`) | `section`/`paragraph`/`ctrl` | [CLI 매뉴얼](cli_commands.md) §edit delete-picture |
+| 본문 그림 속성 바꾸기 | `edit set-picture` (`hwp_set_picture`) | `section`/`paragraph`/`ctrl` | [CLI 매뉴얼](cli_commands.md) §edit set-picture |
+| 없는 자리에 글자 넣기 | `edit insert-text` (`hwp_insert_text`) | `insertedChars`·`section`/`paragraph`/`offset` | [CLI 매뉴얼](cli_commands.md) §edit insert-text |
 | 개인정보 마스킹 | `edit redact` (`hwp_redact`) | `findingCount`·`redactedCount` | [보안 소비자 가이드](../tech/agent_security/consumer_guide.md) |
 | 메타데이터 제거 | `edit sanitize` (`hwp_sanitize`) | `removedCount`·`removed[]` | 같은 문서 |
 | 여러 편집을 원자로 | `run <계획.json> --json` (`hwp_run_plan`) | `invalid[]`·`steps[]`·`verify` | [CLI 매뉴얼](cli_commands.md) §run |
@@ -131,6 +136,7 @@ printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocol
 |---|---|---|---|
 | 은닉 텍스트 찾기 | `inspect hidden-text --json` (`hwp_inspect_hidden_text`) | `clean`·`hiddenCharCount` | [은닉 콘텐츠](../tech/agent_security/hidden_content.md) |
 | 쪽 밖 문단까지 | `inspect hidden-text --include-offpage` | `includeOffPage:true` | 같은 문서 |
+| 파싱 전 구조 위협 신호 | `threat-scan --json` (`hwp_threat_scan`) | `clean`·`highestSeverity`·`notes` | [CLI 매뉴얼](cli_commands.md) |
 | 프롬프트 주입 신호 | `inspect injection --json` (`hwp_inspect_injection`) | `signalCount`·`highestConfidence` | [간접 프롬프트 인젝션](../tech/agent_security/indirect_prompt_injection.md) |
 | 누름틀 이름·메모까지 | `inspect injection --include-fields` | `scanScopes[]` 12축 | 같은 문서 |
 | 유니코드 기만 | `inspect unicode --json` (`hwp_inspect_unicode`) | `kindCounts`·`severityCounts` | [유니코드 기만](../tech/agent_security/unicode_deception.md) |
@@ -145,7 +151,7 @@ printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocol
 | 두 문서 IR 차이 | `ir-diff --json` (`hwp_ir_diff`) | `identical`·`diffCount`·`categories` | [ir-diff 매뉴얼](ir_diff_command.md) |
 | 라운드트립 시각 회귀 | `render-diff --json` (`hwp_render_diff`) | `status`·`maxDisp`·`regression` | [CLI 매뉴얼](cli_commands.md) §render-diff |
 | 조판 결과 덤프 | `dump-pages --json` | `pages[].columns[].items[]` | [dump 매뉴얼](dump_command.md) |
-| IR 모양 코드 생성 | `export-ir-schema --json` | `schema`·`definitionCount` | [바인딩 기초](../tech/bindings_foundation.md) |
+| IR 모양 코드 생성 | `export-ir-schema --json` | `schema`·`definitionCount` | [CLI 매뉴얼](cli_commands.md) |
 | 명령 표면 코드 생성 | `export-capabilities-schema --json` | `schema`·`mcpSchema` | 같은 문서 |
 
 #### (아) 대량 — 아카이브를 훑는다
@@ -224,42 +230,34 @@ printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocol
 | [9 — 폴더 문서 대량 추출·변환](recipes/09_bulk_extract_convert.md) | 폴더 단위 메타·본문·표 데이터 추출과 일괄 변환 | `batch info`·`batch export-text`·`batch extract-data`·`batch convert` |
 | [10 — 배포 전 보안 점검 스윕](recipes/10_security_sweep_before_share.md) | 송신 전 은닉·주입·유니코드 기만·개인정보 재검사 | `inspect hidden-text`·`inspect injection`·`inspect unicode`·`edit redact`·`edit sanitize` |
 
-### 1-4. 다른 언어에서 쓰려는가 — 바인딩 가이드
+### 1-4. 다른 언어에서 쓰려는가 — 기계 스키마 사용
 
-바인딩은 **새 표면이 아니라 기존 계약의 재포장**이다. 판정·좌표·파싱은 전부 rhwp
-본체가 하고, 바인딩은 인자 조립·봉투 파싱·종료 코드 매핑 셋만 한다. 그래서 §1-1 의
-명령 표와 §2 의 봉투 필드 사전이 언어를 바꿔도 그대로 권위다.
+공식 Python·Node 바인딩과 해당 패키지 배포는 v0.8.4에서 철회됐다
+([#4655](https://github.com/edwardkim/rhwp/issues/4655)). 다른 언어의 다운스트림 래퍼는
+§1-1 명령 표와 §2 봉투 필드 사전을 그대로 권위로 삼는다. IR 모양은
+`rhwp export-ir-schema`, 명령 표면은 `rhwp export-capabilities-schema`를 코드 생성의
+단일 출처로 쓴다. 별도 래퍼가 이 계약과 어긋나면 다운스트림에서 보정한다.
 
-| 언어 | 패키지 | 가이드 | 상태 |
-|---|---|---|---|
-| Node/TypeScript | `@rhwp/node` | [node_binding_guide.md](node_binding_guide.md) | M19 [#3776](https://github.com/edwardkim/rhwp/issues/3776) — 통합 검토 중 |
-| Python | `rhwp` | [python_binding_guide.md](python_binding_guide.md) | M18 [#3762](https://github.com/edwardkim/rhwp/issues/3762) — 통합 검토 중 |
-
-노출 기준은 손으로 고른 목록이 아니라 `capabilities` 의 `json` 선언이다 — 진단
-계열처럼 `--json` 이 없는 명령은 바인딩에 함수로 없고, 필요하면 저수준 실행기로
-직접 부른다. IR 모양은 `rhwp export-ir-schema`, 명령 표면은
-`rhwp export-capabilities-schema`를 코드 생성의 단일 출처로 쓴다. 두 가이드가 서로
-어긋나면 계약이 언어마다 갈린 것이므로 어긋난 쪽을 고친다.
-
-실측 규모(2026-08-03): `export-ir-schema` → `definitionCount:41`,
-`irSchemaVersion:"1.0"`. `export-capabilities-schema` → `definitionCount:19`,
-`capabilitiesSchemaVersion:"1.1"`, 그리고 MCP 선언용 `mcpSchema` 를 함께 낸다.
+실측 규모(2026-08-11): `export-ir-schema` → `definitionCount:41`,
+`irSchemaVersion:"1.0"`. `export-capabilities-schema` → `definitionCount:21`,
+`capabilitiesSchemaVersion:"1.3"`, 그리고 MCP 선언용 `mcpSchema` 를 함께 낸다.
+`export-plan-schema` → `definitionCount:11`, `planSchemaVersion:"1.1"` 이다.
 
 ### 1-5. 역할이 정해져 있는가 — 프로필 라우터
 
-51개를 전부 물리면 작은 모델은 도구 선택에서 진다. `--profile` 은 **역할별로 도구를
+82개를 전부 물리면 작은 모델은 도구 선택에서 진다. `--profile` 은 **역할별로 도구를
 좁히고 레시피를 함께 주는** 라우터다(실측: `capabilities --mcp --profile <이름>`,
 `mcp-serve --profile <이름>`).
 
 | 프로필 | 무상태 도구 | 서버 총계 | 요지 |
 |---|---|---|---|
-| `경영보고` | 6 | 6 | 문서 파악·요약 근거 수집, 제출용 산출물 확인 |
-| `행정서식` | 8 | 20 (세션 12 포함) | 누름틀·표·체크박스 채움과 제출 전 검증 |
-| `데이터분석` | 6 | 6 | 표 수확·아카이브 일괄 추출 |
-| `콘텐츠제작` | 6 | 6 | 명세로 새 문서를 만들고 배포 형식으로 |
-| `아카이브검색` | 7 | 15 (세션 8 포함) | 수백 건 스윕과 근거 쪽 번호 인용 |
-| `품질검증` | 6 | 6 | 변환·편집 무손실 게이트 |
-| `개발통합` | 39 | 51 | 필터 없음 — rhwp 를 통합하는 개발 에이전트 |
+| `경영보고` | 8 | 8 | 문서 파악·요약 근거 수집, 제출용 산출물 확인 |
+| `행정서식` | 12 | 28 (세션 전용 16 포함) | 누름틀·표·체크박스 채움과 제출 전 검증 |
+| `데이터분석` | 9 | 9 | 표 수확·아카이브 일괄 추출 |
+| `콘텐츠제작` | 9 | 9 | 명세로 새 문서를 만들고 배포 형식으로 |
+| `아카이브검색` | 11 | 23 (세션 전용 12 포함) | 수백 건 스윕과 근거 쪽 번호 인용 |
+| `품질검증` | 28 | 28 | 변환·편집 무손실 게이트와 작업 계보·서명·감사 판정 |
+| `개발통합` | 66 | 82 | 필터 없음 — rhwp 를 통합하는 개발 에이전트 |
 
 각 프로필 봉투에는 `profile.recipe[]`(권장 호출 순서)와 `profile.session`·
 `profile.sessionTools[]` 가 함께 실린다. 예를 들어 `행정서식` 의 레시피는
@@ -304,17 +302,18 @@ printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocol
 를 싣고 `--dry-run` 에서는 싣지 않는다. `edit set-cell` 은 `oldText` 때문에
 `untrustedContent:true`, `edit fill-fields`·`replace-text` 는 `false` 다(실측).
 
-### 2-2. 전수 사전 — 172개 필드
+### 2-2. 전수 사전 — 334개 필드
 
-`capabilities` 의 `recordFields` 합집합이다. `등장 명령` 은 자기서술 기준이며,
-실제 봉투에는 조건부로 더 실리는 필드가 있다(§2-5).
+`capabilities` 의 `recordFields` 고유 **325개**와 그 밖의 실측·참조 필드를 합친
+334개다. `등장 명령` 은 자기서술
+기준이며, 실제 봉투에는 조건부로 더 실리는 필드가 있다(§2-5).
 
 #### 신원·스키마
 
 | 필드 | 타입 | 의미 · `null` 의 뜻 | 등장 명령 |
 |---|---|---|---|
-| `schemaVersion` | string | 봉투 계약 버전 | 전 31개 `--json` 명령 |
-| `source` | string | 입력 경로 | 24개(문서를 여는 명령 전부) |
+| `schemaVersion` | string | 봉투 계약 버전 | 전 41개 `--json` 명령(`--bare` 본문 제외) |
+| `source` | string | 입력 경로 | 27개(문서를 여는 명령 전부) |
 | `tool` | string | 도구 이름(`"rhwp"`) | `capabilities`·`export-provenance-map` |
 | `version` | string | 문서 판본(`info`) 또는 바이너리 버전(`capabilities`) — **같은 이름, 다른 뜻** | `info`·`capabilities`·`export-provenance-map` |
 | `a` / `b` | string | 비교 대상 두 문서 경로 | `ir-diff` |
@@ -322,6 +321,45 @@ printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocol
 | `input` | string | `run` 계획서의 원본 문서 | `run` |
 | `csv` | string | 읽은 CSV 경로 | `csv-to-table` |
 | `image` | string | 삽입할 그림 경로 | `edit insert-image` |
+| `section` | number | 구역 번호 (0부터) | `edit insert-text`·`insert-paragraph`·`insert-page-break`·`insert-footnote` |
+| `below` | bool | 지정 행 아래에 끼울지 | `edit insert-row` |
+| `right` | bool | 지정 열 오른쪽에 끼울지 | `edit insert-col` |
+| `rows` | number | 셀을 나눌 행 수 (1 이상) | `edit split-cell-into` |
+| `cols` | number | 셀을 나눌 열 수 (1 이상) | `edit split-cell-into` |
+| `vertical` | bool | 참이면 행 높이, 거짓이면 열 폭 | `edit resize-table-cell` |
+| `forward` | bool | 참이면 늘리고, 거짓이면 줄인다 | `edit resize-table-cell` |
+| `dx` | number | 가로 이동량 (HWPUNIT, 음수 허용) | `edit move-table` |
+| `dy` | number | 세로 이동량 (HWPUNIT, 음수 허용) | `edit move-table` |
+| `endRow` | number | 병합 끝 행(포함, 0부터) | `edit merge-cells` |
+| `endCol` | number | 병합 끝 열(포함, 0부터) | `edit merge-cells` |
+| `rows` | number | 생성할 표의 행 수 (1 이상) | `edit insert-table` |
+| `cols` | number | 생성할 표의 열 수 (1 이상, 256 이하) | `edit insert-table` |
+| `section` | number | 구역 번호 (0부터) | `edit insert-text`·`insert-paragraph`·`insert-page-break`·`insert-column-break`·`insert-footnote`·`insert-number`·`merge-paragraph` |
+| `paragraph` | number | 문단 번호 (0부터) | 같은 축 |
+| `offset` | number | 문단 안 문자 오프셋 (0부터) | 같은 축 |
+| `cellPara` | number | 셀 안 문단 번호 (0부터) | `edit insert-text-in-cell`·`edit delete-text-in-cell` |
+| `ctrl` | number | 문단 안 컨트롤 인덱스 (0부터) | `edit delete-footnote`·`delete-bookmark`·`rename-bookmark`·`delete-control` |
+| `isHeader` | bool | 머리말이면 true, 꼬리말이면 false | `edit insert-header-footer`·`delete-header-footer`·`insert-header-footer-text`·`set-header-footer-text`·`delete-hf-text`·`split-paragraph-in-hf`·`merge-paragraph-in-hf` |
+| `applyTo` | number | 머리말/꼬리말 적용 대상 (0 양쪽, 1 짝수, 2 홀수) | `edit insert-header-footer`·`delete-header-footer`·`insert-header-footer-text`·`set-header-footer-text`·`delete-hf-text`·`split-paragraph-in-hf`·`merge-paragraph-in-hf` |
+| `name` | string | 책갈피 이름 | `edit add-bookmark`·`rename-bookmark` |
+| `text` | string | 삽입·기록할 문자열 | `edit insert-text`·`set-cell`·`insert-header-footer-text`·`set-header-footer-text` |
+| `insertedChars` | number | 실제로 끼운 글자 수 | `edit insert-text`·`insert-header-footer-text` |
+| `below` | bool | 지정 행 아래에 끼울지 | `edit insert-row` |
+| `right` | bool | 지정 열 오른쪽에 끼울지 | `edit insert-col` |
+| `endRow` | number | 병합 끝 행(포함, 0부터) | `edit merge-cells` |
+| `endCol` | number | 병합 끝 열(포함, 0부터) | `edit merge-cells` |
+| `count` | number | 지울 글자 수 (1 이상) | `edit delete-text`·`delete-hf-text`·`delete-text-in-footnote` |
+| `fnPara` | number | 각주/미주 안 문단 인덱스 (0부터) | `edit delete-text-in-footnote` |
+| `columnCount` | number | 구역의 단 수 (1 이상) | `edit set-column-def` |
+| `columnType` | number | 단 배치 유형 (0 일반 / 1 배분 / 2 평행) | `edit set-column-def` |
+| `sameWidth` | bool | 모든 단을 같은 폭으로 맞출지 | `edit set-column-def` |
+| `spacing` | number | 단 사이 간격 (HWPUNIT) | `edit set-column-def` |
+| `widths` | number[] | 혼합 폭 단의 폭 목록 (HWPUNIT) | `edit set-column-widths` |
+| `innerPara` | number | 셀·각주 안 문단 (0부터) | `edit apply-char-format-in-cell` |
+| `props` | string | 글자/문단 서식 JSON | `edit apply-char-format-in-cell` |
+| `bold` | bool | `--bold` 를 줬는지 | `edit apply-char-format-in-cell` |
+| `fontSize` | number\|null | `--font-size` (HWP 단위) | `edit apply-char-format-in-cell` |
+| `color` | string\|null | `--color` 원문 | `edit apply-char-format-in-cell` |
 | `docId` | string | 세션 핸들. 서버 프로세스 수명과 같고 영속되지 않는다 | 세션 도구 12종 |
 
 #### 문서 메타
@@ -331,16 +369,32 @@ printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocol
 | `format` | string | `hwp5`·`hwpx`·`hwp3`·`hml`, 산출 계열은 산출 형식(`svg`·`gif`…) | `info`·`digest`·렌더/변환 8종·`thumbnail` |
 | `sizeBytes` | number | 입력 파일 크기 | `info` |
 | `sections` | number | 구역 수(`info`) / 절 청크 배열(`digest --sections`) — **같은 이름, 다른 타입** | `info`·`digest` |
-| `pageCount` | number | 조판 결과 쪽 수 | `info`·`digest`·`export-text`·`export-svg`·`export-pdf`·`export-markdown`·`dump-pages` |
+| `pageCount` | number | 조판 결과 쪽 수 | `info`·`digest`·`export-text`·`export-svg`·`export-pdf`·`export-markdown`·`dump-pages`·`layout-anomaly`·`word-count` |
 | `paraCount` | number | 문단 수 | `info`·`digest` |
+| `sectionCount` | number | 구역 수 | `word-count` |
+| `paragraphCount` | number | 문단 수(`word-count`) / ingest 산출 문단 수 | `word-count`·`build-from-ingest` |
+| `charCount` | number | IR 본문 글자 수 | `word-count` |
+| `wordCount` | number | 공백 분리 어절 수 | `word-count` |
+| `bookmarks` | array | 책갈피 목록 `{name,sec,para,ctrlIdx,charPos}` | `bookmarks` |
+| `exists` | bool | 해당 머리말/꼬리말이 있는지 | `header-footer` |
+| `headersFooters` | array | 머리말/꼬리말 목록 `{sectionIdx,isHeader,applyTo,label}` | `headers-footers` |
 | `fonts` | string[] | 문서가 참조하는 글꼴 이름 — **문서 파생** | `info` |
 | `title` | string | 요약정보의 제목 — **문서 파생** | `info` |
+| `lastSavedWith` | object\|null | HWP5 `HwpSummaryInformation.revisionNumber` 또는 HWPX `version.xml/appVersion`에서 읽은 마지막 저장 제품 `{product,version,confidence}`. `product`는 알려진 주버전만 `hancom-office-2010`·`hancom-office-2018`·`hancom-office-2020`·`hancom-office-2022`·`hancom-office-2024`로 분류하고, 알 수 없는 주버전은 `null`; HWP3, 메타데이터 부재·손상은 필드 전체가 `null`. 원 작성 제품이 아니라 수정 가능한 마지막 저장 메타데이터다 | `info` |
 | `warnings` | string[] | 파싱 경고 목록 — 빈 배열이면 깨끗이 읽었다는 뜻 | `info` |
 | `summary` | string | 사람용 여러 줄 요약(형식·쪽수·표·누름틀·각주) — **문서 파생** | `explain` |
 | `encrypted` | bool | 암호화 문서 여부 | `explain` |
 | `footnoteCount` | number | 각주 수 | `explain` |
 | `endnoteCount` | number | 미주 수 | `explain` |
 | `wasDistribution` | bool | 입력이 배포용(읽기전용)이었나 | `convert` |
+
+#### 탐색 메뉴 (`explore`)
+
+| 필드 | 타입 | 의미 · `null` 의 뜻 | 등장 명령 |
+|---|---|---|---|
+| `affordanceCount` | number | `menu` 배열 길이 — 이 문서에 적용 가능하다고 판단한 행동 수 | `explore` |
+| `menu` | array | 순위 매긴 행동 메뉴 `{affordance,why,command,skill,confidence}`. `affordance`·`command`·`skill` 은 고정 어휘, `why` 만 기존 조회가 센 개수를 엮은 문장(문서 파생 아님) | `explore` |
+| `note` | string | 정직성 고지 — 메뉴는 제안이지 완전성 보장이 아니라는 고정 문구 | `explore` |
 
 #### 요약·개요 (`digest`)
 
@@ -355,7 +409,7 @@ printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocol
 
 | 필드 | 타입 | 의미 · `null` 의 뜻 | 등장 명령 |
 |---|---|---|---|
-| `pages` | array | 쪽 단위 레코드. 명령마다 원소 모양이 다르다(§2-3) | `export-text`·`export-svg`·`export-markdown`·`dump-pages`·`render-diff` |
+| `pages` | array | 쪽 단위 레코드. 명령마다 원소 모양이 다르다(§2-3) | `export-text`·`export-svg`·`export-markdown`·`dump-pages`·`render-diff`·`layout-anomaly` |
 | `omittedCount` | number | 상한 때문에 뺀 개수(문자 수 또는 매치 수) | `export-text`·`search` |
 | `mode` | string | `export-structure` 의 분류 방식(`auto`→실제 `outline`/`clause`) / `render-diff` 의 비교 모드(`roundtrip`) | `export-structure`·`render-diff` |
 | `nodeCount` | number | 구조 트리 노드 총수 | `export-structure` |
@@ -384,14 +438,33 @@ printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocol
 | `tableCount` | number | 본문 최상위 표 개수(중첩 표는 세지 않는다) | `export-tables`·`table-to-csv` |
 | `tables` | array | 표 목록(§2-3) — 문서 파생 | `export-tables`·`table-to-csv` |
 | `bom` | bool | CSV 파일에 UTF-8 BOM 을 붙였나 | `table-to-csv` |
-| `table` | number | 대상 표 index | `csv-to-table`·`edit set-cell` |
+| `table` | number | 대상 표 index | `csv-to-table`·`edit set-cell`·`set-cell-props`·`set-table-props` |
 | `rowCount` / `colCount` | number | 표의 행·열 수(CSV 대조 기준) | `csv-to-table` |
 | `changed` | array | 실제로 바뀔/바뀐 칸 `{row,col,oldText,newText}` | `csv-to-table` |
 | `changedCount` | number | 바뀐 칸 수 | `csv-to-table` |
 | `invalid` | array | **한 칸도 쓰지 않게 만든 이유들.** 비어 있지 않으면 exit 2 | `csv-to-table`·`run` |
-| `row` / `col` | number | 격자 좌표(0 기준). batch fill 에서는 `row` 가 **데이터 행 번호** | `edit set-cell`·`batch fill` |
+| `row` / `col` | number | 격자 좌표(0 기준). batch fill 에서는 `row` 가 **데이터 행 번호** | `edit set-cell`·`set-cell-props`·`batch fill` |
 | `oldText` / `newText` | string | 칸의 이전/새 값. `oldText` 는 **문서 파생** | `edit set-cell` |
 | `keepStyle` | bool | 칸 안내문 스타일을 상속했나 | `edit set-cell` |
+
+#### 차트 (#4100)
+
+| 필드 | 타입 | 의미 · `null` 의 뜻 | 등장 명령 |
+|---|---|---|---|
+| `chartCount` | number | 문서의 차트 개수(글상자·표 셀 안 포함) | `chart-to-csv` |
+| `charts` | array | 차트 목록. `charts` 명령은 `{index,section,paragraph,control}`(`--chart N`=`index+1`). `chart-to-csv` 는 `{chart,rowCount,colCount,csv,output?}` — `csv` 는 **문서 파생** | `charts`·`chart-to-csv` |
+| `chart` | number | 대상 차트 번호. **문서 순서 1부터**(표의 `table` 은 0부터 — 다른 규약이다) | `chart-to-csv`·`csv-to-chart` |
+| `wrote` | array | **어느 표현에 실제로 썼나** — `["zipPart","nestedCopy"]`(HWPX) / `["nestedCopy"]`(HWP5) / `[]`(거부·dry-run·무변경). 값이 OOXML 두 곳에 중복 저장돼 있어 한쪽만 쓰면 HWP 변환에서 편집이 사라진다 | `csv-to-chart`·`edit set-chart-data` |
+| `changed[].op` | string | [#5652] 구조 편집 항목 — `appendPoints`/`truncatePoints`(`series`,`block`,`before`,`after` = 점 개수) · `renameSeries`(`series`,`from`,`to`) · `relabel`(`series`,`point`,`from`,`to`) · `appendSeries`(`series`,`name`) · `truncateSeries`(`before`,`after` = 계열 수). `from`/`to` 는 문서 파생(변경 전 이름·라벨), `before`/`after` 는 엔진 개수다. `--structure`/`structure:true` 에서만 나온다 | `csv-to-chart`·`edit set-chart-data` |
+
+`rowCount`/`colCount`/`changed`/`changedCount`/`invalid` 는 표 소절과 같은 뜻이되 좌표가
+다르다 — 차트의 `changed[]` 는 `{series,point|x,from,to}` 또는 구조 항목 `{op,…}` 다.
+구조 편집 거부 사유(`invalid[].reason`, #5652·#6037): `candleAnchorBroken`(주식형 캔들의 첫·끝
+계열이 바뀜 — 원형에는 가드가 없다)·`lastPointDeleteRefused`·`lastSeriesDeleteRefused`·`scatterXYMismatch`·`multiLevelLabelsUnsupported`·
+`rowCountMismatch`·`labelsRequired`·`labelCountMismatch`·`unsafeText`·`seriesNameRequired`·
+`seriesNameNotPatchable`·`pointsNotInsertable`·`seriesNotClonable`·`selfCheckFailed`. 플래그 없이
+치수·이름·라벨이 다르면 B1 사유(`seriesCountMismatch`·`valueCountMismatch`·`seriesNameMismatch`·
+`categoryMismatch`)가 그대로 나온다 — 메시지가 `structure` 옵트인을 안내한다.
 
 #### 누름틀
 
@@ -402,12 +475,18 @@ printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocol
 | `filledCount` | number | 실제로 채운 필드 수 | `edit fill-fields`·`batch fill` |
 | `filled` | array | 채운 내역 `{name,occurrence,value}` | `edit fill-fields` |
 | `notFound` | string[] | 문서에 없는 이름(오타·범위 밖 순번). **조용히 무시되지 않는다.** 비어 있지 않아도 exit 0 이다 | `edit fill-fields`·`batch fill` |
+| `ok` | bool | 지정 좌표의 양식 값을 읽었는지. 대상이 양식 컨트롤이 아니면 `false` | `form-value` |
+| `formType` | string\|null | 양식 종류. 대상이 양식 컨트롤이 아니면 `null` | `form-value` |
+| `value` | string\|null | 양식에 저장된 값. 문서 파생 | `form-value` |
+| `caption` | string\|null | 단추 등 양식의 표시 캡션. 문서 파생 | `form-value` |
+| `enabled` | bool\|null | 양식이 현재 입력을 받을 수 있는지. 대상이 양식 컨트롤이 아니면 `null` | `form-value` |
 
 #### 편집 공통
 
 | 필드 | 타입 | 의미 · `null` 의 뜻 | 등장 명령 |
 |---|---|---|---|
 | `dryRun` | bool | 파일을 쓰지 않는 사전 확인 모드 | `edit` 6종·`csv-to-table`·`batch fill` |
+| `script` | string | 수식 컨트롤에 넣거나 바꿀 수식 스크립트 | `edit insert-equation` |
 | `output` | string | **실제로 저장된 경로. 저장했을 때만 실린다** — dry-run·치환 0건이면 키 자체가 없다 | 산출 계열 13종 |
 | `outputFormat` | string | 산출 형식(`hwp5`·`hwpx`·`csv`) — 입력 형식 보존 규약의 결과 | `run`·`table-to-csv`·`csv-to-table`·`edit` |
 | `bytes` | number | 산출물 크기 | `export-pdf`·`export-hwpx`·`export-hml`·`export-doclang`·`convert`·`build-from-ingest`·`thumbnail` |
@@ -430,7 +509,7 @@ printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocol
 |---|---|---|---|
 | `page` | number | 붙일 쪽(0 기준) | `edit insert-image` |
 | `x` / `y` | number | 용지 왼쪽 위 기준 위치 — 단위는 **HWPUNIT(1/7200 inch)**, 픽셀이 아니다 | `edit insert-image` |
-| `width` / `height` | number | 그림 크기(HWPUNIT). `thumbnail` 에서는 **픽셀** — 같은 이름, 다른 단위 | `edit insert-image`·`thumbnail` |
+| `width` / `height` | number | 그림·도형 크기(HWPUNIT). `thumbnail` 에서는 **픽셀** — 같은 이름, 다른 단위 | `edit insert-image`·`insert-shape`·`thumbnail` |
 | `binDataId` | number\|null | 문서에 새로 등록된 이진 자원 ID. **dry-run 이면 `null`** (아직 등록하지 않았다) | `edit insert-image` |
 
 #### 계획 실행 (`run`)
@@ -438,10 +517,170 @@ printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocol
 | 필드 | 타입 | 의미 · `null` 의 뜻 | 등장 명령 |
 |---|---|---|---|
 | `planVersion` | string | 계획서 버전. `"1.0"` 이 아니면 실행 0 · exit 2 | `run` |
-| `steps` | array | 실행 저널 — step 마다 `action` 과 그 step 의 판정 필드가 그대로 | `run` |
+| `steps` | array\|number | `run` 은 실행 저널(step 마다 `action` 과 판정 필드), `replay` 는 실행된 step 수 — **같은 이름, 다른 타입** | `run`·`replay` |
 | `invalid` | array | **정적 선검증 위반.** 비어 있지 않으면 한 step 도 실행하지 않는다 | `run` |
+| `preconditionFailed` | object\|null | **CAS 판정** (#4378 R22·R24) — `{kind:"inputSha256",expected,actual}`. 계획 수립 시점의 입력 지문과 실행 시점의 실제 지문이 다르다는 뜻이고, 실행 0 · 디스크 무변경 · **exit 3**. `invalid[]` 는 비어 있다 — 계획이 무효한 게 아니라 문서가 바뀐 것이다. `--dry-run` 도 같은 판정을 낸다. `null`/부재 = 대조하지 않았거나 일치 | `run`·`edit …  --expect-sha256` |
+| `nextCall` | object | **다음에 그대로 부를 호출** — `{name, arguments, why}`. `name` 은 실존 명령, `arguments` 는 그 뒤에 이어 붙일 argv 조각이다. CAS 거부에서는 기대 해시를 실제 해시로 갈아 끼운 계획을 `--dry-run` 으로 재선검증하는 호출이 온다(통과하면 `--dry-run` 만 빼고 재실행, `invalid` 가 나오면 문서를 다시 읽고 재계획). MCP 오류 봉투(R72)·CLI `수복:` 줄과 같은 어휘 | `run` |
 | `assertions` | object | 적용된 단언 `{verify,notFoundEmpty}` — 미지정 기본값도 명시해 저널에 남는다 | `run` (실측; `recordFields` 에는 없다) |
 | `preview` | array | `--dry-run` 전용. 선검증이 이미 계산한 대상 목록 | `run --dry-run` (실측) |
+| `inputSha256` | string | [#4378 R23] 실행에 쓴 `input` 문서 바이트의 SHA-256(R22 와 같은 해시 함수). 앞 실행 저널의 `outputSha256` 과 값이 같으면 두 실행이 연속이다 — 다르면 그 사이 다른 도구가 문서를 건드렸다는 뜻(저널만으로 탐지, 실행을 막지는 않는다) | `run` |
+| `outputSha256` | string | [#4378 R23] 실제로 저장한 산출 바이트의 SHA-256. 다음 계획의 `preconditions.inputSha256` 또는 다음 저널의 `inputSha256` 과 이어 붙이면 편집 사슬이 재구성된다 — `replay` 의 동명 필드는 임시 재실행 영수증이라 문맥이 다르다(같은 해시 함수, 다른 대상) | `run` |
+
+#### 작업 영수증 (`replay`)
+
+| 필드 | 타입 | 의미 · `null` 의 뜻 | 등장 명령 |
+|---|---|---|---|
+| `inputSha256` | string | 계획서 `input` 문서 바이트의 SHA-256 | `replay` |
+| `planSha256` | string | 계획서 원문 바이트의 SHA-256 | `replay` |
+| `outputSha256` | string | 임시 재실행 산출 바이트의 SHA-256 — 영수증의 몸통 | `replay` |
+| `expectedOutputSha256` | string\|null | 검증(verify) 모드에서 호출자가 주장한 산출 해시. 발급(attest) 모드는 `null` | `replay` |
+| `reproduced` | boolean\|null\|number | `replay` 는 재현 판정(`false` 면 exit 3, 발급 모드는 `null`), `audit` 는 재현 성공 캡슐 수 — **같은 이름, 다른 타입** | `replay`·`audit` |
+| `toolVersion` | string | 재현 조건 고정용 rhwp 버전 — 같은 계획이라도 버전이 다르면 산출이 다를 수 있다 | `replay` |
+
+#### 노동 감사 (`audit`)
+
+| 필드 | 타입 | 의미 · `null` 의 뜻 | 등장 명령 |
+|---|---|---|---|
+| `root` | string | 감사한 캡슐 폴더 경로(호출자 에코) | `audit` |
+| `total` | number | 발견한 `*.capsule.json` 수 — 0개면 봉투 없이 exit 2 | `audit` |
+| `failed` | array | 재현 실패 회계 — 캡슐 이름과 사유(또는 기대/실측 해시). 비어 있지 않으면 exit 3 | `audit` |
+| `reproducedRate` | number | 재현율(0.0~1.0) = `reproduced`/`total` | `audit` |
+
+#### 작업 계보 (`lineage`)
+
+| 필드 | 타입 | 의미 · `null` 의 뜻 | 등장 명령 |
+|---|---|---|---|
+| `head` | string | 체인의 머리(최신) 캡슐 경로(호출자 에코) | `lineage` |
+| `depth` | number | 걸은 링크 수 — 뿌리(부모 없음)까지 가면 체인 전체 길이 | `lineage` |
+| `valid` | bool | 계보 판정 — `false` 면 exit 3. **깨짐은 오류가 아니라 데이터** | `lineage` |
+| `brokenAt` | string\|null | 처음 깨진 링크의 캡슐 경로. 유효한 체인은 `null` | `lineage` |
+| `links` | array | 링크별 판정 — `parentOk`(부모 파일 무결)·`lineageOk`(부모 산출=자식 입력)·`reproduced`(`--deep`)·`signerOk`/`keyId`(`--keyring` 를 준 때만 실림, #4509). 머리 링크는 대조할 자식 기록이 없어 앞 둘이 `null` | `lineage` |
+
+#### 서명 (`keygen`·`verify-signature`)
+
+| 필드 | 타입 | 의미 · `null` 의 뜻 | 등장 명령 |
+|---|---|---|---|
+| `keyId` | string\|null | 키 식별자(소유/용도#세대 관례). 사이드카가 keyId 를 안 담으면 `null` | `keygen`·`verify-signature` |
+| `publicKey` | string | Ed25519 공개키 base64 — 키 등록부(keyring)에 실을 값 | `keygen` |
+| `keyFile` | string | 발급한 키 파일 경로(호출자 에코) — **비밀키 포함, 보관 책임은 소유자** | `keygen` |
+| `capsule` | string | 검증 대상 캡슐 경로(호출자 에코) | `verify-signature` |
+| `sigPath` | string | 대조한 분리 서명 경로 (기본 `<캡슐>.sig.json`) | `verify-signature` |
+| `capsuleSha256` | string | 캡슐 파일 바이트의 SHA-256 — 서명이 봉인한 대상 | `verify-signature` |
+| `capsuleShaMatches` | bool | 사이드카 기록 해시 == 실물 해시 — 다르면 다른 파일의 서명이다 | `verify-signature` |
+| `signatureOk` | bool\|null | 암호학적 검증 결과. 키를 몰라 검증 자체가 불가면 `null` | `verify-signature` |
+| `keyKnown` | bool | keyId 가 키 등록부에 있는가 | `verify-signature` |
+| `revoked` | object\|null | 폐기 기록(`{at, reason}`). 미폐기는 `null` — 폐기 판정이 서명 유효보다 우선한다 | `verify-signature` |
+| `verdict` | string | valid·invalid·unknownKey·revoked·malformed — **valid 아님 = exit 3** | `verify-signature` |
+
+#### 하네스 (`harness`)
+
+| 필드 | 타입 | 의미 · `null` 의 뜻 | 등장 명령 |
+|---|---|---|---|
+| `dir` | string | 작업장 폴더 경로(호출자 에코) | `harness` |
+| `capsule` 재사용 | — | wrap 이 만든 캡슐 **파일명**(연번_계획해시8) — verify-signature 의 경로 에코와 동명 재사용 | `harness` |
+| `parent` | string\|null | 자동 연결된 직전 캡슐 파일명. 첫 캡슐(뿌리)은 `null` | `harness` |
+| `signed` | bool\|object\|null | wrap 은 서명 여부(bool), status 는 집계 `{valid, invalid, unsigned}` — keyring 미지정이면 `null` | `harness` |
+| `capsules` | number | 작업장의 캡슐 수 | `harness` |
+| `chainValid` | bool | 연번 체인 무결(부모 파일명·해시 연쇄) — `false` 면 exit 3, `brokenAt` 이 원인 명세 | `harness` |
+
+#### 앵커 (`anchor`)
+
+| 필드 | 타입 | 의미 · `null` 의 뜻 | 등장 명령 |
+|---|---|---|---|
+| `log` | string | 투명성 로그 경로(호출자 에코) | `anchor` |
+| `seq` | number\|null | 등재 연번. verify 에서 미등재면 `null` | `anchor` |
+| `logged` | bool | 캡슐 해시가 로그에 등재돼 있는가 — `false` 면 exit 3 | `anchor` |
+| `logChainOk` | bool | 로그 자기 무결(줄 해시 체인·seq 연번) — 중간 변조는 여기서 폭로 | `anchor` |
+| `entries` | number | 로그 항목 수 | `anchor` |
+| `upToSeq` | number | 체크포인트가 덮는 마지막 연번 | `anchor` |
+| `merkleRoot` | string | 로그 줄 해시들의 머클 루트 — 외부 공표 대상(공표 자체는 운영) | `anchor` |
+| `inCheckpoint` | bool\|null | 머클 경로가 체크포인트 루트에 닿는가. 체크포인트 미지정이면 `null` | `anchor` |
+| `merklePath` | array\|null | 잎→루트 형제 해시 경로(`{sibling, siblingIsLeft}`) — 제3자가 재계산으로 검증 | `anchor` |
+
+#### 게이트 (`gate`)
+
+| 필드 | 타입 | 의미 · `null` 의 뜻 | 등장 명령 |
+|---|---|---|---|
+| `policy` | string | 정책 이름(정책 파일의 name 에코) | `gate` |
+| `policyPath` | string | 정책 파일 경로(호출자 에코) | `gate` |
+| `policySigned` | bool\|null | 정책 파일 서명 판정(4년 축 재사용). `--policy-keyring` 미지정이면 `null` | `gate` |
+| `target` | string | 판정 대상 캡슐 경로(호출자 에코) | `gate` |
+| `targetSha256` | string | 판정 시점 대상 해시 — 소비 직전 재대조로 TOCTOU 방어 | `gate` |
+| `evaluated` | number | 평가한 (키, 연산자) 조건 수 | `gate` |
+| `violations` | array | 위반 명세 `{rule, key, op, expected, actual}` — actual 의 unavailable 은 판정 재료 미지정 | `gate` |
+
+#### 연합 번들 (`bundle`)
+
+| 필드 | 타입 | 의미 · `null` 의 뜻 | 등장 명령 |
+|---|---|---|---|
+| `bundle` | string | 번들 파일 경로(호출자 에코) | `bundle` |
+| `signatures` | number | 동봉한 분리 서명 수 (export) | `bundle` |
+| `proofs` | number | 동봉한 머클 증명 수 (export) | `bundle` |
+| `trustDomain` | string | 판정 기준 도메인 이름 — **동봉 keyring 은 불신**, 수신자 보유 파일 기준 | `bundle` |
+| `containerOk` | bool | 매니페스트의 전 파일 해시 대조(운송 변조 검출) | `bundle` |
+| `lineageValid` | bool | 번들 내부 계보 걷기 판정(부모 해시·산출=입력) — gate 판정 키와 동명 동의 | `bundle` |
+
+#### 선택적 공개 (`disclose`)
+
+| 필드 | 타입 | 의미 · `null` 의 뜻 | 등장 명령 |
+|---|---|---|---|
+| `redacted` | string | 가림 캡슐 경로 — plan 문자열 잎이 전부 `{committed}` 로 치환된 판 | `disclose` |
+| `opening` | string | 비밀 개봉 파일 경로 — 값·salt·원본 planText 보관(**공개 금지 산출물**) | `disclose` |
+| `committedFields` | number | 커밋으로 치환된 잎 수(구조 골격 planVersion·action 은 평문 유지) | `disclose` |
+| `originalCapsuleSha256` | string | 가림 전 원본 캡슐의 파일 sha256 — restore 의 성공 기준점 | `disclose` |
+| `verifiedFields` | array | 부분 개봉에서 커밋 대조가 일치한 JSON 포인터 목록 | `disclose` |
+| `mismatched` | array | 커밋 불일치 포인터 목록 — 비어 있지 않으면 verdict mismatch·exit 3 | `disclose` |
+| `unopened` | number | 개봉되지 않은 커밋 잎 수 — 부분 공개 협상의 잔여 수량 | `disclose` |
+| `restored` | string | 복원 캡슐 경로 (restore) | `disclose` |
+| `restoredSha256` | string | 복원 캡슐의 파일 sha256 | `disclose` |
+| `byteIdentical` | bool | 복원 == 원본 바이트 — 참이면 **원본 분리 서명이 복원본에서 그대로 valid** | `disclose` |
+
+#### 정산 증빙 (`settle`)
+
+| 필드 | 타입 | 의미 · `null` 의 뜻 | 등장 명령 |
+|---|---|---|---|
+| `claim` | string | 청구 파일 경로(호출자 에코) | `settle` |
+| `workorderSha256` | string | 명세서 파일 바이트 sha256 — P4(사후 변경) 고정 | `settle` |
+| `gateEnvelopeSha256` | string | 게이트 판정 봉투 sha256 — P2(판정 위조) 고정 | `settle` |
+| `claimSha256` | string | 청구 파일 sha256 — 원장 기입의 대상 | `settle` |
+| `workorderOk` | bool | 명세서 재해시 == 청구 고정값 | `settle` |
+| `capsuleOk` | bool | 캡슐 재해시 == 청구 고정값 — P1(바꿔치기) 검출 | `settle` |
+| `gateOk` | bool | 게이트 봉투 재해시 == 청구 고정값 | `settle` |
+| `gateVerdict` | string\|null | 게이트 봉투의 verdict 재확인 — 해시가 맞아도 allow 아니면 rejected. 파싱 불가면 `null` | `settle` |
+| `signerOk` | bool | 청구 사이드카 서명 판정 — **사이드카 부재도 false**(청구 귀속은 본질). `--keyring` opt-in | `settle` |
+| `workorderSignerOk` | bool\|null | 명세서 서명 판정 — 사이드카 부재는 `null`(미서명 보고, 실패 아님) | `settle` |
+| `ledgerOk` | bool | 원장 자기 무결(동형 체인) 판정. `--ledger` opt-in | `settle` |
+| `duplicate` | bool\|null | 이중 청구 — 원장 전역에서 같은 capsuleSha256 의 accepted 존재. 원장이 깨졌으면 `null` | `settle` |
+| `existingSeq` | number | 이중 청구 시 기존 accepted 기입의 seq (record 거부 봉투) | `settle` |
+| `ledger` | string | 원장 경로(호출자 에코) | `settle` |
+
+#### 감사 표준 (`audit-report`·`recall-scope`·`conformance`)
+
+| 필드 | 타입 | 의미 · `null` 의 뜻 | 등장 명령 |
+|---|---|---|---|
+| `report` | string | 보고서 저장 경로(kind `agentLaborAuditReport`) — 보고서 자체가 4년 서명 대상 | `audit-report` |
+| `reproduction` | object\|null | 재현 절 `{attempted, reproduced, rate, failures[]}` — `--deep` 미지정이면 `null`(재현은 비싸다) | `audit-report` |
+| `lineage` | object | 계보 절 `{graphs(뿌리), heads(머리), valid, broken[{head, brokenAt}]}` | `audit-report` |
+| `attribution` | object\|null | 귀속 절 `{signed, unsigned, validSignatures, revokedKeyUses}` — `--keyring` opt-in | `audit-report` |
+| `anchoring` | object\|null | 앵커 절 `{anchored, unanchored}` — `--anchor-log` opt-in | `audit-report` |
+| `gate` | object\|null | 게이트 절 `{policySha256, passed, denied}` — `--policy` opt-in, 판정 재료는 타 절 재사용 | `audit-report` |
+| `toolVersions` | object | `{rhwp[], mixed}` — 캡슐 영수증의 기록 합산, 미기록은 "미기록"으로 정직 보고 | `audit-report` |
+| `contaminated` | string | 오염 노드의 파일 sha256 (경로 입력도 해시로 정규화 — 해시가 정체성) | `recall-scope` |
+| `affected` | array | 영향 캡슐 `{capsule, path[]}` — path 는 오염 노드부터 자신까지, 자기 자신도 회수 1호 | `recall-scope` |
+| `unaffected` | number | 미영향 캡슐 수 — 리콜 범위의 여집합 명시 | `recall-scope` |
+| `claims` | array | 영향 캡슐의 정산 청구 좌표 `{seq, claimSha256, verdict}` — `--ledger` opt-in(리콜의 회계 연결) | `recall-scope` |
+| `level` | string | 목표 등급 L1~L5 (누적 요건) | `conformance` |
+| `checks` | array | 항목별 판정 `{id, ok, detail}` — ok `null` 은 기계 판정 밖(수동 확인) 명시 | `conformance` |
+| `achieved` | bool | 전 검사 통과 여부 — 거짓이면 verdict nonconformant·exit 3 | `conformance` |
+
+
+
+| `closureOk` | bool | 조상 폐쇄집합 완전성 — 부모 참조가 번들 안에서 전부 해소 | `bundle` |
+| `anchored` | object\|null | 머클 증명 집계 `{ok, bad, checkpointTrusted}` — 증명 미동봉이면 `null` | `bundle` |
+
+
+
+
 
 #### 판정·비교
 
@@ -464,7 +703,18 @@ printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocol
 | `structPages` / `hardStructPages` | number | 구조 불일치 쪽 수 / 그중 완화 규칙으로도 못 넘긴 쪽 수 | `render-diff` |
 | `pageCountA` / `pageCountB` | number | 양쪽 쪽 수 | `render-diff` |
 | `pageCountMismatch` | bool | 쪽 수가 다른가 | `render-diff` |
-| `pageFilter` | number\|null | `-p` 로 좁혔나. `null` = 전 쪽 | `render-diff`·`dump-pages` |
+| `pageFilter` | number\|null | `-p` 로 좁혔나. `null` = 전 쪽 | `render-diff`·`dump-pages`·`layout-anomaly` |
+| `strict` | bool | 확정 이상 신호를 종료 코드 3으로 취급할지. 빈 쪽 신호는 `true`여도 실패시키지 않는다 | `layout-anomaly` |
+| `overflowTolerancePx` | number | 본문 여백 밖 이탈을 overflow로 볼 최소 거리(px) | `layout-anomaly` |
+| `overlapTolerancePx` | number | 두 요소 겹침을 overlap으로 볼 최소 폭·높이(px) | `layout-anomaly` |
+| `overflowCount` | number | 전 쪽에서 확정한 overflow 신호 수 | `layout-anomaly` |
+| `offCanvasCount` | number | 전 쪽에서 캔버스 완전히 밖으로 벗어난 노드 수 | `layout-anomaly` |
+| `overlapCount` | number | 전 쪽에서 확정한 overlap 신호 수 | `layout-anomaly` |
+| `textOverlapCount` | number | 전 쪽에서 확정한 text-overlap(텍스트 런 bbox 교차) 신호 수 | `layout-anomaly` |
+| `emptyPageCount` | number | 내용이 없는 중간 쪽 가능성 신호 수 | `layout-anomaly` |
+| `hasSignal` | bool | overflow·overlap·text-overlap 확정 신호가 하나 이상 있는가(`empty_page` 제외) | `layout-anomaly` |
+| `mode` | string | 단건 `"single"` / 배치 `"batch"` | `layout-anomaly` |
+| `types` | array\|null | `--types` 로 좁힌 노드 타입. `null` = 기본 검사 대상 전부 | `layout-anomaly` |
 
 #### 쪽 자르기 (`extract-pages`)
 
@@ -486,30 +736,40 @@ printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocol
 | `assetsDir` / `assetCount` | string / number | 이진 자원 폴더와 개수 | `export-doclang` |
 | `lossCount` | number | 변환에서 표현하지 못한 항목 수 | `export-doclang` |
 | `questionCount` / `paragraphCount` | number | ingest 로 만든 문항·문단 수 | `build-from-ingest` |
+| `blockCount` | number | scaffold 명세의 최상위 블록 수(제목·문단·표) | `scaffold` |
 
-#### 보안 조사 (`inspect`)
+#### 보안 조사 (`inspect`·`threat-scan`)
 
 | 필드 | 타입 | 의미 · `null` 의 뜻 | 등장 명령 |
 |---|---|---|---|
-| `clean` | bool | 탐지 0건인가. **세 축 공통 요약 판정** | `inspect` 3종 |
+| `clean` | bool | 탐지 0건인가. **보안 조사 공통 요약 판정** | `inspect` 3종·`threat-scan` |
 | `thresholdPt` | number | `near_invisible` 판정 임계 pt(기본 1.0) | `inspect hidden-text` |
 | `includeOffPage` | bool | 쪽 밖 문단도 봤나 | `inspect hidden-text` |
 | `hiddenText` | array | 은닉 텍스트 탐지 목록 | `inspect hidden-text` |
 | `hiddenCharCount` | number | 은닉으로 판정한 문자 수 | `inspect hidden-text` |
 | `minConfidence` | string | 신고 하한(`low`·`medium`·`high`) | `inspect injection` |
 | `includeFields` | bool | 누름틀·메모까지 확장 검사했나 | `inspect injection` |
-| `scanScopes` | string[] | 실제로 훑은 범위. 기본 8축, `--include-fields` 면 12축 | `inspect injection` |
+| `scanScopes` | string[] | 실제로 훑은 범위. `inspect injection`은 기본 8축(`--include-fields`면 12축), `threat-scan`은 컨테이너·레코드 검사 축 | `inspect injection`·`threat-scan` |
 | `injectionSignals` | array | 주입 신호 목록 | `inspect injection` |
 | `signalCount` | number | 신호 개수 | `inspect injection` |
 | `highestConfidence` | string\|null | 가장 높은 신뢰도. **신호가 0이면 `null`** (실측) | `inspect injection` |
 | `kindFilter` | string | `--kind` 필터(`all`·`zero-width`·`bidi`·`tag`·`confusable`) | `inspect unicode` |
 | `scannedChars` | number | 검사한 문자 수 — 탐지기가 실제로 돌았다는 증거 | `inspect unicode` |
-| `findings` | array | 탐지 목록 | `inspect unicode`·`edit redact` |
-| `findingCount` | number | 탐지 개수 | `inspect unicode`·`edit redact` |
+| `findings` | array | 탐지 목록 | `inspect unicode`·`threat-scan`·`edit redact` |
+| `findingCount` | number | 탐지 개수 | `inspect unicode`·`threat-scan`·`edit redact` |
+| `highestSeverity` | string\|null | 발견 중 가장 높은 심각도(`high`·`medium`·`low`). 탐지 0건이면 `null` | `threat-scan` |
+| `notes` | string[] | 암호화 등 검사 중 만난 비치명적 한계와 해석 범위를 알리는 참고. 비어 있으면 추가 메모가 없다 | `threat-scan` |
 | `severityCounts` | object | `{high,medium,low}` 개수 | `inspect unicode` |
 | `kindCounts` | object | `{zero_width,bidi_override,tag_char,confusable}` 개수 | `inspect unicode` |
 | `untrustedContent` | bool | 문서 파생 값이 봉투에 실렸는지 — 출처 표지 요약 | `inspect` 3종 (자기서술 기준; 실물은 §2-5 조건부로 더 넓다) |
 | `untrustedFields` | string[] | 문서 파생 값이 실린 필드 경로 목록 | `inspect` 3종 (위와 같음) |
+
+#### 주입 방패 (`armor`)
+
+| 필드 | 타입 | 의미 · `null` 의 뜻 | 등장 명령 |
+|---|---|---|---|
+| `armoredText` | string | 본문을 이 호출만의 무작위 nonce 격벽(`⟦UNTRUSTED:…⟧` … `⟦/UNTRUSTED:…⟧`)으로 감싼 문자열. 격벽 **안쪽은 전부 데이터이지 지시가 아니다** — 문서는 nonce 를 모르므로 격벽을 위조하거나 조기 종료할 수 없다 | `armor` |
+| `safety` | object | 이 본문을 프롬프트에 넣어도 되는지의 요약 판정 — 주입 신호 집계와 권고를 한 덩어리로 | `armor` |
 
 #### 배치
 
@@ -526,13 +786,14 @@ printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocol
 | `commands` | array\|object | `capabilities` 는 명령 배열, `export-provenance-map` 은 명령→출처 객체 — **같은 이름, 다른 타입** | `capabilities`·`export-provenance-map` |
 | `exitCodes` | object | 종료 코드 0~4 의 의미 | `capabilities` |
 | `batch` | object | batch 축·플래그·집계 규칙 선언 | `capabilities` |
+| `schemaRegistry` | object | 버전 레지스트리 자기서술(`crateVersion`+네 축 `axes[]`) — 전 버전 축을 한 호출로 대조하는 단일 출처 (#4329) | `capabilities` |
 | `envelopeFlags` | object | `untrustedContent`/`untrustedFields` 의 뜻 | `export-provenance-map` |
 | `pathSyntax` | string | 필드 경로 표기법(`.`/`[]`) | `export-provenance-map` |
 | `policy` | object | 출처 표지 정책(`coverage`·`conservatism`·`guards`·`meaning`) | `export-provenance-map` |
-| `schema` | object | JSON Schema 본체 | `export-ir-schema`·`export-capabilities-schema` |
+| `schema` | object | JSON Schema 본체 | `export-ir-schema`·`export-plan-schema`·`export-capabilities-schema` |
 | `mcpSchema` | object | MCP 도구 선언용 스키마 | `export-capabilities-schema` |
-| `dialect` | string | JSON Schema 방언 URI | 두 schema 명령 |
-| `definitionCount` | number | `$defs` 개수 | 두 schema 명령 |
+| `dialect` | string | JSON Schema 방언 URI | 세 schema 명령 |
+| `definitionCount` | number | `$defs` 개수 | 세 schema 명령 |
 | `irSchemaVersion` / `capabilitiesSchemaVersion` | string | 각 스키마의 자체 버전 | 각 명령 |
 | `planSchemaVersion` | string | `run` 계획서 스키마의 자체 버전 | `export-plan-schema` |
 | `capabilities` | object | 명령 표면 자기서술 봉투(내장) | `export-agent-manifest` |
@@ -764,7 +1025,7 @@ printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocol
 | `row` / `col` | 표 격자 좌표 | 0 | `export-tables`·`edit set-cell` |
 | `이름[N]` | 반복 누름틀 순번 | 0 | `edit fill-fields`·`hwp_doc_fill_fields` |
 | `control` / `cell` | 표 컨트롤·칸 일련번호 | 0 | `fields[].location.nested`·`matches[].cell` |
-| HWPUNIT | 길이 | 1/7200 inch | `edit insert-image` 의 `x`·`y`·`width`·`height` |
+| HWPUNIT | 길이 | 1/7200 inch | `edit insert-image`·`insert-shape` 의 `x`·`y`·`width`·`height` |
 
 ### 3-2. 명령별로 어느 주소를 받고 어느 주소를 주나
 
@@ -833,49 +1094,58 @@ exit 3 ↔ `isError:false` + `identical:false`. 상세는
 `nextCall.name:"hwp_search"`). CLI 도 같다: `rhwp serach` →
 `힌트: 가장 가까운 명령은 'search' 입니다`.
 
-## 5. 명령 전수 지도 — 61개를 성격으로 나눈다
+## 5. 명령 전수 지도 — 71개를 성격으로 나눈다
 
-`capabilities` 의 `category` 그대로다. **`--json` 이 있는 31개만이 기계 계약**이고,
+`capabilities` 의 `category` 그대로다. **`--json` 이 있는 40개만이 기계 계약**이고,
 나머지는 사람이 읽는 진단 출력이다.
 
 | 분류 | 개수 | 명령 |
 |---|---|---|
-| `query` | 8 | `info`·`digest`·`capabilities`·`export-provenance-map`·`search`·`extract-data`·`fields`·`inspect` |
-| `export` | 18 | `export-text`·`export-structure`·`export-ir-schema`·`export-svg`·`export-png`·`export-pdf`·`export-markdown`·`export-hwpx`·`export-hml`·`export-doclang`·`export-capabilities-schema`·`export-tables`·`table-to-csv`·`extract-pages`·`export-render-tree`·`convert`·`build-from-ingest`·`thumbnail` |
+| `query` | 13 | `info`·`digest`·`replay`·`lineage`·`audit`·`capabilities`·`export-provenance-map`·`export-agent-manifest`·`search`·`extract-data`·`fields`·`explain`·`inspect` |
+| `export` | 20 | `export-text`·`export-structure`·`export-ir-schema`·`export-plan-schema`·`export-svg`·`export-png`·`export-pdf`·`export-markdown`·`export-hwpx`·`export-hml`·`export-doclang`·`export-capabilities-schema`·`export-ontology`·`export-tables`·`table-to-csv`·`extract-pages`·`export-render-tree`·`convert`·`build-from-ingest`·`thumbnail` |
 | `edit` | 3 | `run`·`csv-to-table`·`edit`(6개 하위 명령) |
-| `batch` | 1 | `batch`(8축) |
+| `batch` | 2 | `batch`(9축)·`scan` |
 | `serve` | 1 | `mcp-serve` |
-| `diagnostic` | 25 | `dump`·`dump-pages`·`dump-extents`·`dump-note-shape`·`dump-endnote-lines`·`dump-records`·`diag`·`ir-diff`·`render-diff`·`hwpx-roundtrip`·`hwp5-roundtrip`·`measure-width`·`core-pages`·`bench`·`hwp5-inventory`·`hwp5-inventory-diff`·`hwp5-contract-analyze`·`hwp5-contract-probe`·`hwp5-ctrl-data-trace`·`hwp5-table-probe`·`hwp5-mel-personnel-probe`·`hwp5-borderfill-diagonal-probe`·`hwp5-first-para-control-probe`·`hwp5-anchor-trace`·`hwp5-cell-header-probe` |
+| `diagnostic` | 28 | `dump`·`dump-pages`·`dump-extents`·`dump-note-shape`·`dump-endnote-lines`·`dump-records`·`diag`·`ir-diff`·`verify`·`render-diff`·`layout-anomaly`·`hwpx-roundtrip`·`hwp5-roundtrip`·`measure-width`·`core-pages`·`bench`·`hwp5-inventory`·`hwp5-inventory-diff`·`hwp5-contract-analyze`·`hwp5-contract-probe`·`hwp5-ctrl-data-trace`·`hwp5-table-probe`·`hwp5-mel-personnel-probe`·`hwp5-borderfill-diagonal-probe`·`hwp5-first-para-control-probe`·`hwp5-anchor-trace`·`hwp5-cell-header-probe`·`hwp5-char-shape-audit` |
 | `internal` | 5 | `test-shape`·`test-caption`·`test-field`·`gen-table`·`gen-pua` |
 
-**`--json` 계약 31개** — `info`·`export-text`·`export-structure`·`digest`·
-`export-ir-schema`·`run`·`capabilities`·`export-provenance-map`·`export-svg`·
+**`--json` 계약 41개** — `info`·`export-text`·`export-structure`·`digest`·
+`export-ir-schema`·`run`·`replay`·`lineage`·`audit`·`export-plan-schema`·
+`capabilities`·`export-provenance-map`·`export-agent-manifest`·`export-svg`·
 `export-pdf`·`export-markdown`·`export-hwpx`·`export-hml`·`export-doclang`·
-`export-capabilities-schema`·`export-tables`·`table-to-csv`·`csv-to-table`·
-`extract-pages`·`search`·`extract-data`·`fields`·`inspect`·`convert`·
-`build-from-ingest`·`thumbnail`·`edit`·`batch`·`dump-pages`·`ir-diff`·`render-diff`.
+`export-capabilities-schema`·`export-ontology`·`export-tables`·`table-to-csv`·
+`csv-to-table`·`extract-pages`·`search`·`extract-data`·`fields`·`explain`·`inspect`·
+`convert`·`build-from-ingest`·`thumbnail`·`edit`·`batch`·`scan`·`dump-pages`·
+`ir-diff`·`verify`·`render-diff`·`layout-anomaly`.
 
-**batch 로도 도는 축 8개** — `export-text`·`info`·`export-structure`·`export-tables`·
-`fields`·`search`·`convert`·`fill`. 이 중 파일을 쓰는 축은 `convert`·`fill` 둘뿐이고,
+**batch 로도 도는 축 9개** — `export-text`·`info`·`export-structure`·`export-tables`·
+`fields`·`search`·`extract-data`·`convert`·`fill`. 이 중 파일을 쓰는 축은
+`convert`·`fill` 둘뿐이고,
 `convert` 는 MCP 에 노출하지 않는다(CLI 전용).
 
-**`edit` 하위 6개** — `fill-fields`·`replace-text`·`set-cell`·`insert-image`·
-`redact`·`sanitize`. 산출물은 **입력 형식을 보존**한다(HWPX → HWPX).
+**`edit` 하위 64개** — `fill-fields`·`replace-text`·`set-cell`·`insert-text-in-cell`·`delete-text-in-cell`·`insert-text`·`delete-text`·
+`insert-paragraph`·`delete-paragraph`·`merge-paragraph`·`split-paragraph`·`insert-page-break`·`insert-column-break`·`insert-table`·`insert-row`·`insert-col`·`delete-row`·`delete-col`·`merge-cells`·`split-cell`·`split-cell-into`·`split-table`·`fit-table`·`resize-table`·`merge-table`·`set-column-widths`·`insert-footnote`·`insert-endnote`·`delete-footnote`·`delete-equation`·`add-bookmark`·`delete-bookmark`·`delete-table`·`rename-bookmark`·`delete-header-footer`·`insert-header-footer-text`·`set-header-footer-text`·`delete-hf-text`·`split-paragraph-in-hf`·`merge-paragraph-in-hf`·`split-paragraph-in-cell`·`merge-paragraph-in-cell`·`apply-char-format`·`apply-para-format`·`apply-style`·`apply-cell-style`·`delete-control`·`insert-header-footer`·`insert-field-in-hf`·`set-column-def`·`set-numbering-restart`·`set-page-hide`·`transpose-table`·`insert-image`·`redact`·`sanitize`. 산출물은 **입력 형식을 보존**한다(HWPX → HWPX).
 
 **`inspect` 하위 3개** — `hidden-text`·`injection`·`unicode`. 전부 읽기 전용이고
 문서를 고치지 않는다.
 
-## 6. MCP 도구 전수 지도 — 51개
+## 6. MCP 도구 전수 지도 — 113개
 
-### 6-1. 무상태 39개 (`capabilities --mcp` 선언 = `mcp-serve` 제공)
+### 6-1. 무상태 163개 (`capabilities --mcp` 선언 = `mcp-serve` 제공)
 
 | 도구 | CLI 대응 | 필수 인자 |
 |---|---|---|
 | `hwp_info` | `info --json` | `path` |
+| `hwp_word_count` | `word-count --json` | `path` |
+| `hwp_bookmarks` | `bookmarks --json` | `path` |
+| `hwp_header_footer` | `header-footer --json` | `path` |
+| `hwp_headers_footers` | `headers-footers --json` | `path` |
+| `hwp_charts` | `charts --json` | `path` |
 | `hwp_digest` | `digest --json` | `path` |
 | `hwp_export_text` | `export-text --json` | `path` |
 | `hwp_export_structure` | `export-structure --json` | `path` |
 | `hwp_ir_diff` | `ir-diff --json` | `a`,`b` |
+| `hwp_verify` | `verify --json` | `path` |
 | `hwp_export_svg` | `export-svg --json` | `path` |
 | `hwp_export_pdf` | `export-pdf --json` | `path`,`output` |
 | `hwp_export_markdown` | `export-markdown --json` | `path`,`output` |
@@ -892,36 +1162,121 @@ exit 3 ↔ `isError:false` + `identical:false`. 상세는
 | `hwp_search` | `search --json` | `path`,`query` |
 | `hwp_extract_data` | `extract-data --json` | `path` |
 | `hwp_fields` | `fields --json` | `path` |
+| `hwp_explain` | `explain --json` | `path` |
+| `hwp_threat_scan` | `threat-scan --json` | `path` |
 | `hwp_inspect_hidden_text` | `inspect hidden-text --json` | `path` |
 | `hwp_inspect_injection` | `inspect injection --json` | `path` |
 | `hwp_inspect_unicode` | `inspect unicode --json` | `path` |
+| `hwp_scan` | `scan --json` | `path` |
 | `hwp_batch` | `batch <축> --json` | `subcommand`,`paths` |
 | `hwp_batch_search` | `batch search --json` | `query`,`paths` |
+| `hwp_batch_extract_data` | `batch extract-data --json` | `paths` |
 | `hwp_batch_fill` | `batch fill --json` | `form`,`data`,`outDir` |
 | `hwp_fill_fields` | `edit fill-fields --json` | `path`,`data` |
 | `hwp_replace_text` | `edit replace-text --json` | `path`,`find`,`replace` |
 | `hwp_set_checkbox` | `edit replace-text --find □ --replace ☑ --occurrence` | `path`,`occurrence`,`output` |
 | `hwp_set_cell` | `edit set-cell --json` | `path`,`table`,`row`,`col`,`text` |
+| `hwp_set_cell_props` | `edit set-cell-props --json` | `path`,`table`,`row`,`col`,`props` |
+| `hwp_set_table_props` | `edit set-table-props --json` | `path`,`table`,`props` |
+| `hwp_insert_row` | `edit insert-row --json` | `path`,`table`,`row` |
+| `hwp_insert_col` | `edit insert-col --json` | `path`,`table`,`col` |
+| `hwp_delete_row` | `edit delete-row --json` | `path`,`table`,`row` |
+| `hwp_delete_col` | `edit delete-col --json` | `path`,`table`,`col` |
+| `hwp_merge_cells` | `edit merge-cells --json` | `path`,`table`,`row`,`col`,`endRow`,`endCol` |
+| `hwp_split_cell` | `edit split-cell --json` | `path`,`table`,`row`,`col` |
+| `hwp_split_cell_into` | `edit split-cell-into --json` | `path`,`table`,`row`,`col`,`rows`,`cols` |
+| `hwp_resize_table_cell` | `edit resize-table-cell --json` | `path`,`table`,`row`,`col` |
+| `hwp_move_table` | `edit move-table --json` | `path`,`table`,`dx`,`dy` |
+| `hwp_insert_footnote` | `edit insert-footnote --json` | `path` |
+| `hwp_insert_endnote` | `edit insert-endnote --json` | `path` |
+| `hwp_delete_footnote` | `edit delete-footnote --json` | `path`,`section`,`paragraph`,`ctrl` |
+| `hwp_delete_text_in_footnote` | `edit delete-text-in-footnote --json` | `path`,`count` |
+| `hwp_delete_equation` | `edit delete-equation --json` | `path`,`section`,`paragraph`,`ctrl` |
+| `hwp_set_numbering_restart` | `edit set-numbering-restart --json` | `path`,`mode` |
+| `hwp_add_bookmark` | `edit add-bookmark --json` | `path`,`name` |
+| `hwp_delete_bookmark` | `edit delete-bookmark --json` | `path`,`section`,`paragraph`,`ctrl` |
+| `hwp_rename_bookmark` | `edit rename-bookmark --json` | `path`,`section`,`paragraph`,`ctrl`,`name` |
+| `hwp_delete_header_footer` | `edit delete-header-footer --json` | `path` |
+| `hwp_insert_header_footer_text` | `edit insert-header-footer-text --json` | `path`,`text` |
+| `hwp_set_header_footer_text` | `edit set-header-footer-text --json` | `path`,`text` |
+| `hwp_delete_hf_text` | `edit delete-hf-text --json` | `path`,`count` |
+| `hwp_split_paragraph_in_hf` | `edit split-paragraph-in-hf --json` | `path` |
+| `hwp_merge_paragraph_in_hf` | `edit merge-paragraph-in-hf --json` | `path` |
+| `hwp_split_paragraph_in_cell` | `edit split-paragraph-in-cell --json` | `path`,`table`,`row`,`col` |
+| `hwp_split_paragraph` | `edit split-paragraph --json` | `path` |
+| `hwp_set_page_hide` | `edit set-page-hide --json` | `path` |
+| `hwp_transpose_table` | `edit transpose-table --json` | `path`,`table` |
+| `hwp_merge_paragraph_in_cell` | `edit merge-paragraph-in-cell --json` | `path`,`table`,`row`,`col` |
+| `hwp_apply_char_format` | `edit apply-char-format --json` | `path`,`props` |
+| `hwp_apply_para_format` | `edit apply-para-format --json` | `path`,`props` |
+| `hwp_apply_style` | `edit apply-style --json` | `path`,`style` |
+| `hwp_apply_cell_style` | `edit apply-cell-style --json` | `path`,`table`,`row`,`col`,`style` |
+| `hwp_apply_para_format_in_cell` | `edit apply-para-format-in-cell --json` | `path`,`table`,`row`,`col`,`props` |
+| `hwp_delete_control` | `edit delete-control --json` | `path`,`section`,`paragraph`,`ctrl` |
+| `hwp_insert_table` | `edit insert-table --json` | `path`,`rows`,`cols` |
+| `hwp_insert_text_in_cell` | `edit insert-text-in-cell --json` | `path`,`table`,`row`,`col`,`text` |
+| `hwp_delete_table` | `edit delete-table --json` | `path`,`table` |
+| `hwp_insert_header_footer` | `edit insert-header-footer --json` | `path` |
+| `hwp_insert_field_in_hf` | `edit insert-field-in-hf --json` | `path`,`fieldType` |
+| `hwp_set_column_def` | `edit set-column-def --json` | `path`,`count` |
 | `hwp_insert_image` | `edit insert-image --json` | `path`,`image` |
+| `hwp_group_shapes` | `edit group-shapes --json` | `path`,`targets` |
+| `hwp_set_page_def` | `edit set-page-def --json` | `path`,`props` |
+| `hwp_set_section_def` | `edit set-section-def --json` | `path`,`props` |
+| `hwp_insert_picture` | `edit insert-picture --json` | `path`,`image` |
+| `hwp_delete_picture` | `edit delete-picture --json` | `path`,`section`,`paragraph`,`ctrl` |
+| `hwp_set_picture` | `edit set-picture --json` | `path`,`section`,`paragraph`,`ctrl`,`props` |
+| `hwp_insert_text` | `edit insert-text --json` | `path`,`text` |
+| `hwp_delete_text` | `edit delete-text --json` | `path`,`count` |
+| `hwp_insert_paragraph` | `edit insert-paragraph --json` | `path` |
+| `hwp_delete_paragraph` | `edit delete-paragraph --json` | `path` |
+| `hwp_merge_paragraph` | `edit merge-paragraph --json` | `path` |
+| `hwp_insert_page_break` | `edit insert-page-break --json` | `path` |
+| `hwp_insert_column_break` | `edit insert-column-break --json` | `path` |
 | `hwp_redact` | `edit redact --json` | `path` |
 | `hwp_sanitize` | `edit sanitize --json` | `path` |
 | `hwp_run_plan` | `run --plan-json --json` | `plan` |
+| `hwp_replay` | `replay --plan-json --json` | `plan` |
+| `hwp_lineage` | `lineage --json` | `capsule` |
+| `hwp_keygen` | `keygen --json` | `keyId`,`out` |
+| `hwp_verify_signature` | `verify-signature --json` | `capsule`,`keyring` |
+| `hwp_harness_wrap` | `harness wrap --json` | `plan`,`dir` |
+| `hwp_harness_status` | `harness-status --json` | `dir` |
+| `hwp_anchor_add` | `anchor add --json` | `capsule`,`log` |
+| `hwp_anchor_verify` | `anchor verify --json` | `capsule`,`log` |
+| `hwp_gate` | `gate --json` | `capsule`,`policy` |
+| `hwp_bundle_export` | `bundle export --json` | `head`,`out` |
+| `hwp_bundle_verify` | `bundle verify --json` | `bundle`,`trustDomain` |
+| `hwp_disclose_redact` | `disclose redact --json` | `capsule`,`out`,`openingOut` |
+| `hwp_disclose_verify` | `disclose verify --json` | `redacted`,`opening` |
+| `hwp_settle_propose` | `settle propose --json` | `workorder`,`capsule`,`gateEnvelope`,`out` |
+| `hwp_settle_verify` | `settle verify --json` | `claim`,`workorder`,`capsule`,`gateEnvelope` |
+| `hwp_settle_record` | `settle record --json` | `claim`,`ledger` |
+| `hwp_audit_report` | `audit-report --json` | `dir`,`out` |
+| `hwp_recall_scope` | `recall-scope --json` | `contaminated`,`among` |
+| `hwp_conformance` | `conformance --json` | `dir`,`level` |
+| `hwp_audit` | `audit --json` | `dir` |
+| `hwp_export_plan_schema` | `export-plan-schema --json` | (없음) |
 | `hwp_render_diff` | `render-diff --json` | `path` |
+| `hwp_layout_anomaly` | `layout-anomaly --json` | `path`,`page`,`strict`,`overflowTolerance`,`overlapTolerance`,`types`,`batch` |
 | `hwp_export_ir_schema` | `export-ir-schema --json` | (없음) |
 | `hwp_export_capabilities_schema` | `export-capabilities-schema --json` | (없음) |
 | `hwp_export_provenance_map` | `export-provenance-map --json` | (없음) |
+| `hwp_export_agent_manifest` | `export-agent-manifest --json` | (없음) |
+| `hwp_export_ontology` | `export-ontology --json` | (없음) |
 
 암호 문서는 어느 도구든 선택 인자 `password` 로 연다. 서버는 **응답·세션에 저장하지
 않고** 자식 CLI 의 stdin(`--password-stdin`)으로만 넘긴다(스키마에 `writeOnly:true`).
 
-`hwp_batch`·`hwp_batch_search` 는 `invocation.stdinTools` 로 표시된 stdin 도구다 —
-CLI 로 직접 조립할 때 경로 목록을 stdin 으로 흘려야 한다.
+`hwp_batch`·`hwp_batch_search`·`hwp_batch_extract_data` 는 `invocation.stdinTools` 로
+표시된 stdin 도구다 — CLI 로 직접 조립할 때 경로 목록을 stdin 으로 흘려야 한다.
 
-### 6-2. 세션 12개 (`mcp-serve` 전용, `capabilities --mcp` 에는 없다)
+### 6-2. 세션 전용 18개 (`mcp-serve` 전용, `capabilities --mcp` 에는 없다)
 
-`hwp_open` · `hwp_doc_info` · `hwp_doc_text` · `hwp_doc_fields` · `hwp_doc_tables` ·
-`hwp_doc_search` · `hwp_doc_render_page` · `hwp_doc_fill_fields` ·
-`hwp_doc_replace_text` · `hwp_doc_set_cell` · `hwp_doc_save` · `hwp_close`.
+`hwp_open` · `hwp_ws_list` · `hwp_ws_open` · `hwp_doc_info` · `hwp_doc_text` ·
+`hwp_doc_tree` · `hwp_doc_fields` · `hwp_doc_tables` · `hwp_doc_search` ·
+`hwp_doc_render_page` · `hwp_doc_fill_fields` · `hwp_doc_replace_text` ·
+`hwp_doc_set_cell` · `hwp_doc_save` · `hwp_ws_journal` · `hwp_close`.
 
 **계약**: 봉투 어휘는 무상태 대응 도구와 동형(`hwp_doc_search` ↔ `hwp_search`).
 디스크 기록은 `hwp_doc_save` 만. 저장 후에도 핸들은 열려 있어 이어서 편집할 수 있다.
@@ -930,6 +1285,18 @@ CLI 로 직접 조립할 때 경로 목록을 stdin 으로 흘려야 한다.
 **세션이 이기는 지점** — 387쪽 문서에서 `hwp_open` + 검색 3회 + `hwp_doc_info` +
 `hwp_close` 를 한 프로세스로 돌면 **310ms**, 같은 검색 3회를 무상태 CLI 로 돌리면
 **810ms** 다(실측). 문서가 클수록, 호출이 많을수록 격차가 벌어진다.
+
+**`hwp_doc_tree` 의 두 안정 ID 체계** — `nodes.pages`/`nodes.tables` 의 `p0../t0..`
+는 페이지·표 단위까지만 내려간다(#4357). 문단·표 셀 단위 좌표가 필요하면
+`nodes.paragraphs[].nodePath`/`nodes.cells[].nodePath` 를 쓴다 — 회귀 비교 엔진
+`docdiff::NodePath`/`PathStep`(`src/docdiff/model.rs`)가 이미 쓰는
+`sec[i]/para[i]/ctrl[i]/cell[r,c]` 문법을 그대로 승격한 것이라 새 문법이 아니다.
+두 체계는 **독립이고 서로 대체하지 않는다** — `idContract`(p0../t0..)와
+`nodePathContract`(sec.../cell...)가 응답에 나란히 실린다. 범위는 docdiff 비교
+엔진과 같아 본문과 표 셀 중첩까지만 내려가고, 글상자·머리말·꼬리말·각주/미주 안의
+표는 `PathStep` 에 대응 칸이 없어 `nodes.cells`/`nodes.paragraphs` 에 나오지 않는다
+(그 표의 위치는 `nodes.tables[].containerPath` 로 이미 알 수 있다 — `kind` 가
+`textbox`/`header`/`footer`/`footnote`/`endnote` 인 항목).
 
 ### 6-3. `structuredContent` 가 없는 도구
 
@@ -947,6 +1314,7 @@ CLI 로 직접 조립할 때 경로 목록을 stdin 으로 흘려야 한다.
 | `samples/field-01.hwp` | hwp5, 3쪽, 누름틀 **11개**(그중 `목차1` 이 5회 반복), 표 0 | `fields`/`fill-fields`, **`ambiguous` 와 `이름[N]` 지목**, `run` 계획 |
 | `samples/field-01-memo.hwp` | 위와 같은 문서 + 누름틀 **메모**가 채워져 있음 | `fields[].memo`, `inspect injection --include-fields` |
 | `samples/누름틀-2024.hwp` / `.hwpx` | 누름틀 2개, 같은 문서의 두 형식 | 형식 보존 편집(HWPX→HWPX) 대조 |
+| `samples/pr5935/test-{2018,2022,2024}.hwp` / `.hwpx` | 한컴오피스 버전별로 다시 저장한 같은 내용 | `info.lastSavedWith`의 HWP5 summary/HWPX `version.xml` 교차 대조 |
 | `samples/form-01.hwp`·`form-02.hwp` | 누름틀 1개, 1쪽 | 최소 서식 회귀 |
 | `samples/table-001.hwp` | 표 1개, 19×9 격자, 칸 131개, **병합 20개** | `export-tables` 병합 보존, `set-cell` 앵커 보호, `table-to-csv`/`csv-to-table` 왕복 |
 | `samples/multi-table-001.hwp` | 표 6개, 2쪽 | `--table <index>` 지목, 표 여럿일 때의 index 규칙 |
@@ -984,7 +1352,7 @@ CLI 로 직접 조립할 때 경로 목록을 stdin 으로 흘려야 한다.
 
 ## 8. 계약 테스트 지도 — `tests/*_contract.rs` 가 고정하는 계약
 
-61개 계약 테스트가 있다. 표면을 고칠 때 **어느 테스트가 red 로 바뀌어야 하는지**를
+tracked `tests/**/*_contract.rs` **85개**가 있다. 표면을 고칠 때 **어느 테스트가 red 로 바뀌어야 하는지**를
 먼저 정한다.
 
 ### 8-1. 봉투·계약 기반
@@ -1103,7 +1471,6 @@ CLI 로 직접 조립할 때 경로 목록을 stdin 으로 흘려야 한다.
 | 봉투 출처 표지 | [tech/envelope_provenance.md](../tech/envelope_provenance.md) | `untrusted*` 의 설계 |
 | 에이전트 경계 계약 | [tech/agent_boundary_contract.md](../tech/agent_boundary_contract.md) | 도구가 넘지 않는 선 |
 | 초소형 모델 매크로 | [tech/tiny_model_macro_tools.md](../tech/tiny_model_macro_tools.md) | `digest`·프로필의 설계 근거 |
-| 바인딩 기초 | [tech/bindings_foundation.md](../tech/bindings_foundation.md) | 다른 언어에서 부를 때 |
 
 ## 유지 규약
 

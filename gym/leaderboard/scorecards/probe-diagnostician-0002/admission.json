@@ -1,0 +1,15 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "gymAdmission",
+  "agent": "probe-diagnostician",
+  "verdict": "allow",
+  "packsScored": 10,
+  "packsUnavailable": 0,
+  "score": 145,
+  "max": 194,
+  "runner": {
+    "rhwpVersion": "0.8.2",
+    "rhwpCommit": "dc7a303599669a567fb0d501928070274656a173",
+    "capabilitiesSha256": "2c7c41bc8952b63c4502ec0685b76990e4ece5b178f6dc28a1a495b12880af75"
+  }
+}

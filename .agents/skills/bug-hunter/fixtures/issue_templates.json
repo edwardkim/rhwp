@@ -1,0 +1,108 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5324,
+  "skill": "bug-hunter",
+  "notGym": true,
+  "noNewCli": true,
+  "requiredFields": [
+    "repro",
+    "codePath",
+    "groundTruth"
+  ],
+  "fields": [
+    {
+      "id": "repro",
+      "required": true,
+      "title": "재현 명령",
+      "hint": "복붙하면 같은 산출이 나오는 rhwp / fidelity_compare 명령"
+    },
+    {
+      "id": "codePath",
+      "required": true,
+      "title": "코드 경로",
+      "hint": "파일:라인. devel HEAD 에서 확인"
+    },
+    {
+      "id": "groundTruth",
+      "required": true,
+      "title": "정답지 대비 근거",
+      "hint": "한컴 PDF provenance / 법정 서식 / 제출 요건 문구 / 재독 표"
+    },
+    {
+      "id": "classification",
+      "required": true,
+      "title": "비교 분류",
+      "hint": "소실·과잉·치환·재독·계약·픽셀 후보 중 하나"
+    },
+    {
+      "id": "limitations",
+      "required": true,
+      "title": "한계",
+      "hint": "오라클이 안 보는 축, 텍스트층 path, 자기 일관성만인지"
+    },
+    {
+      "id": "notAFix",
+      "required": true,
+      "title": "수정 아님",
+      "hint": "이 이슈는 헌팅 산출. 패치는 별도 PR"
+    }
+  ],
+  "templates": [
+    {
+      "id": "IT01",
+      "title": "[헌팅] <한 줄 격차>",
+      "fields": [
+        "repro",
+        "codePath",
+        "groundTruth",
+        "classification",
+        "limitations",
+        "notAFix"
+      ],
+      "body": [
+        "## 재현 명령",
+        "```bash",
+        "<복붙 가능한 명령>",
+        "```",
+        "## 코드 경로",
+        "`path/to/file.rs:LINE` (devel HEAD `<sha>` 에서 확인)",
+        "## 정답지 대비 근거",
+        "- 종류: 한컴 PDF / 법정 서식 / 제출 요건 / 재독 / 계약",
+        "- provenance: 도구·버전·경로·폰트",
+        "- 분류: 소실 / 과잉 / 치환 / 재독 / 계약 / 픽셀 후보",
+        "## 한계",
+        "- 이 오라클이 안 보는 축",
+        "## 수정",
+        "이 이슈는 헌팅 산출이다. 패치는 별도 PR."
+      ]
+    },
+    {
+      "id": "IT02",
+      "title": "[헌팅] 정답지 없음 — 자기 일관성만",
+      "fields": [
+        "repro",
+        "limitations",
+        "notAFix"
+      ],
+      "body": [
+        "독립 기준을 확보하지 못했다.",
+        "수행: `rhwp render-diff <파일> --via hwpx`",
+        "한컴 충실도 결함으로 승격하지 않는다 (F04)."
+      ]
+    },
+    {
+      "id": "IT03",
+      "title": "[헌팅] 음성 결과 — 가설 기각",
+      "fields": [
+        "repro",
+        "codePath",
+        "limitations"
+      ],
+      "body": [
+        "가설: …",
+        "구현/재현 결과: 증상 그대로 또는 사라짐",
+        "다음 사람이 같은 길을 다시 파지 않도록 남긴다 (함정 4)."
+      ]
+    }
+  ]
+}

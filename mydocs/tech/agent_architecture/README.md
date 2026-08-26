@@ -245,7 +245,6 @@ grep -ril fuzz .github/ | wc -l
 | [에이전트 보안](../agent_security/README.md) | 문서가 에이전트를 조종하는 경로 | **L2 의 권위**. [#3793](https://github.com/edwardkim/rhwp/issues/3793) 산출물 |
 | [경량 에이전트 내성](../weak_agent_proofing.md) | 약한 모델의 오사용 방지 | L1 내성 계약의 전신 |
 | [에이전트 경계 무결성 계약](../agent_boundary_contract.md) | 경로·자원·핸들 경계 | L2 경계 계약 |
-| [외부 바인딩 공통 기반](../bindings_foundation.md) | IR 스키마 버저닝·파이썬 1호 | L3 바인딩 축(M18~M20) |
 
 ### 절차
 

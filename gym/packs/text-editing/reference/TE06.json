@@ -1,0 +1,17 @@
+{
+  "id": "TE06",
+  "steps": [
+    {
+      "answer": {
+        "paras": {
+          "cmd": [
+            "explain",
+            "{input}",
+            "--json"
+          ],
+          "path": "paragraphCount"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "id": "pA-pagetext",
+  "title": "쪽 하나의 글 — 본문 문단만, 쪽 경계에서 자른다",
+  "ledger": [
+    "HwpCtrl.method.GetPageText"
+  ],
+  "open": "samples/20250130-hongbo.hwp",
+  "calls": [
+    [
+      "GetPageText",
+      [
+        0,
+        0
+      ]
+    ],
+    [
+      "GetPageText",
+      [
+        1,
+        0
+      ]
+    ],
+    [
+      "GetPageText",
+      [
+        2,
+        0
+      ]
+    ],
+    [
+      "GetPageText",
+      [
+        3,
+        0
+      ]
+    ],
+    [
+      "GetPageText",
+      [
+        9,
+        0
+      ]
+    ]
+  ]
+}

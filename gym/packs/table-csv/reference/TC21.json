@@ -1,0 +1,17 @@
+{
+  "id": "TC21",
+  "steps": [
+    {
+      "answer": {
+        "tables": {
+          "cmd": [
+            "table-to-csv",
+            "{input}",
+            "--json"
+          ],
+          "path": "tableCount"
+        }
+      }
+    }
+  ]
+}

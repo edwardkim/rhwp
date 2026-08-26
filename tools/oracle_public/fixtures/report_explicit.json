@@ -1,0 +1,42 @@
+{
+  "schema": "oracle_public.failure_report/v1",
+  "generated_at": "2026-08-18T00:10:00Z",
+  "source": "dump-pages-smoke",
+  "rhwp_bin": "target/debug/rhwp",
+  "dpi": 96,
+  "threshold": {
+    "metric": "page_count_delta",
+    "op": ">",
+    "value": 0
+  },
+  "documents": [
+    {
+      "id": "forced_flag",
+      "hwp": "samples/exam_math.hwp",
+      "pdf": "pdf/exam_math-2022.pdf",
+      "pages": 12,
+      "exceeds": true,
+      "metrics": {
+        "page_count_delta": 0,
+        "rhwp_pages": 12,
+        "pdf_pages": 12
+      },
+      "repro": {
+        "command": "rhwp dump-pages samples/exam_math.hwp --json"
+      },
+      "notes": "지표는 게이트를 넘지 않지만 검토자가 exceeds=true 로 초안을 강제했다."
+    },
+    {
+      "id": "suppressed",
+      "hwp": "samples/exam_eng.hwp",
+      "pdf": "pdf/exam_eng-2022.pdf",
+      "pages": 8,
+      "exceeds": false,
+      "metrics": {
+        "page_count_delta": 3,
+        "rhwp_pages": 11,
+        "pdf_pages": 8
+      }
+    }
+  ]
+}

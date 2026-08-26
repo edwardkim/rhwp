@@ -1,0 +1,1 @@
+{"planVersion":"1.0","input":"samples/basic/english.hwp","output":"out/english_receipt.hwp","steps":[{"action":"replace_text","find":"vegetarian","replace":"pescatarian"}]}

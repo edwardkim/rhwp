@@ -1,0 +1,16 @@
+{
+  "id": "SD31",
+  "steps": [
+    {
+      "answer": {
+        "kinds": {
+          "cmd": [
+            "capabilities"
+          ],
+          "path": "jsonContract.textSecurity.kinds",
+          "len": true
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{"schemaVersion": 1, "kind": "pageRoundtripTranscript", "issue": 4056, "doc": "samples/issue-505-equations.hwp", "route": "hwpx", "created": "2026-08-18T10:12:07Z"}
+{"seq": 0, "kind": "meta", "tool": "tools/page_roundtrip/transcript.py", "issue": 4056}
+{"seq": 1, "kind": "command", "argv": ["rhwp", "export-hwpx", "samples/issue-505-equations.hwp", "/tmp/rt.hwpx", "--verify-pages"]}
+{"seq": 2, "kind": "stderr", "text": "검증 실패(--verify-pages): 변환 전 4쪽, 재파싱 후 1쪽\n", "bytes": 67}
+{"seq": 3, "kind": "exit", "rc": 4}
+{"seq": 4, "kind": "pages", "before": 4, "after": 1, "identical": false}
+{"seq": 5, "kind": "verdict", "verdict": "EXPECTED_FAIL", "cataloged": true, "issue": 4056}
+{"seq": 6, "kind": "note", "text": "HWPX 내보내기 전후 쪽수 불일치 (4→1) — 다중 secd, 이 PR 범위 밖"}

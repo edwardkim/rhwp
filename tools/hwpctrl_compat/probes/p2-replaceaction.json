@@ -1,0 +1,21 @@
+{
+  "id": "p2-replaceaction",
+  "title": "ReplaceAction — 액션 이름을 바꿔치기하는가",
+  "ledger": [],
+  "open": "samples/para-001.hwp",
+  "calls": [
+    ["Run", ["MoveDocEnd"]],
+    ["GetPos", []],
+    ["Run", ["MoveDocBegin"]],
+    ["GetPos", []],
+    ["ReplaceAction", ["MoveDocEnd", "MoveDocBegin"]],
+    ["Run", ["MoveDocEnd"]],
+    ["GetPos", []],
+    ["ReplaceAction", ["MoveDocEnd", "MoveDocEnd"]],
+    ["Run", ["MoveDocEnd"]],
+    ["GetPos", []],
+    ["KeyIndicator", []],
+    ["Run", ["MoveDocBegin"]],
+    ["KeyIndicator", []]
+  ]
+}

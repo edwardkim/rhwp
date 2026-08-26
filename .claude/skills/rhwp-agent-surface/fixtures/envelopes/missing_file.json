@@ -1,0 +1,10 @@
+{
+  "id": "missing_file",
+  "command": "info",
+  "mcp": "hwp_info",
+  "cli_exit": 1,
+  "isError": true,
+  "fields": {},
+  "stdout_bytes": 0,
+  "read_as": "runtime"
+}

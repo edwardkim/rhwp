@@ -4,13 +4,25 @@
 //! 글리프 폭 데이터를 추출하고, Rust 소스코드로 출력한다.
 //!
 //! 사용법:
-//!   cargo run --bin font-metric-gen -- ttfs/windows/malgun.ttf
-//!   cargo run --bin font-metric-gen -- --dir ttfs/windows/ --output src/renderer/font_metrics_data.rs
+//!   cargo run --bin font-metric-gen -- ttfs/windows/malgun.ttf --face-index 0
+//!   cargo run --bin font-metric-gen -- --plan plan.json \
+//!     --generated-output generated.rs --metadata-output provenance.json
+//!
+//! 생성 모드는 입력 순서와 TTC face를 계획 파일에 명시해야 한다. core lookup과
+//! measured/manual overlay는 이 도구의 소유가 아니므로 출력 대상으로 지정할 수 없다.
 
+use serde::{Deserialize, Serialize};
+use sha2::{Digest, Sha256};
 use std::collections::HashMap;
 use std::env;
 use std::fs;
+use std::fs::OpenOptions;
+use std::io::Write;
 use std::path::{Path, PathBuf};
+use std::sync::atomic::{AtomicU64, Ordering};
+
+const GENERATOR_SOURCE_BYTES: &[u8] = include_bytes!("font_metric_gen.rs");
+static STAGED_OUTPUT_SEQUENCE: AtomicU64 = AtomicU64::new(0);
 
 // ─── TTF 바이너리 파싱 헬퍼 ───
 
@@ -31,6 +43,19 @@ fn read_i16_be(data: &[u8], off: usize) -> i16 {
 
 fn tag_str(data: &[u8], off: usize) -> String {
     String::from_utf8_lossy(&data[off..off + 4]).to_string()
+}
+
+fn sha256_bytes(data: &[u8]) -> String {
+    Sha256::digest(data)
+        .iter()
+        .map(|byte| format!("{:02x}", byte))
+        .collect()
+}
+
+fn sha256_file(path: &Path) -> Result<String, String> {
+    fs::read(path)
+        .map(|data| sha256_bytes(&data))
+        .map_err(|error| format!("{}: {}", path.display(), error))
 }
 
 // ─── TTF 테이블 디렉토리 ───
@@ -236,16 +261,48 @@ fn parse_hmtx(data: &[u8], tables: &[TableEntry], num_glyphs: u16) -> Vec<u16> {
     widths
 }
 
-// ─── name 테이블: 폰트 패밀리명 ───
+// ─── name 테이블 ───
 
-fn parse_name(data: &[u8], tables: &[TableEntry]) -> String {
+const REQUIRED_NAME_IDS: [u16; 8] = [1, 2, 3, 4, 6, 16, 17, 25];
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct NamingRecord {
+    record_index: usize,
+    platform_id: u16,
+    encoding_id: u16,
+    language_id: u16,
+    name_id: u16,
+    value: String,
+}
+
+fn decode_name_record(platform_id: u16, bytes: &[u8]) -> Option<String> {
+    if platform_id == 0 || platform_id == 3 {
+        if !bytes.len().is_multiple_of(2) {
+            return None;
+        }
+        let units = bytes
+            .chunks_exact(2)
+            .map(|pair| u16::from_be_bytes([pair[0], pair[1]]));
+        let value: String = char::decode_utf16(units)
+            .map(|item| item.unwrap_or(char::REPLACEMENT_CHARACTER))
+            .collect();
+        return Some(value);
+    }
+    if platform_id == 1 {
+        return Some(String::from_utf8_lossy(bytes).into_owned());
+    }
+    None
+}
+
+fn parse_naming_records(data: &[u8], tables: &[TableEntry]) -> Vec<NamingRecord> {
     let Some(name_off) = table_offset(tables, "name") else {
-        return String::new();
+        return Vec::new();
     };
     let count = read_u16_be(data, name_off + 2) as usize;
     let string_offset = name_off + read_u16_be(data, name_off + 4) as usize;
+    let mut records = Vec::new();
 
-    // nameID=1 (Font Family), platformID=3 (Windows), encodingID=1 (Unicode BMP)
     for i in 0..count {
         let rec = name_off + 6 + i * 12;
         if rec + 12 > data.len() {
@@ -253,36 +310,38 @@ fn parse_name(data: &[u8], tables: &[TableEntry]) -> String {
         }
         let platform_id = read_u16_be(data, rec);
         let encoding_id = read_u16_be(data, rec + 2);
+        let language_id = read_u16_be(data, rec + 4);
         let name_id = read_u16_be(data, rec + 6);
         let length = read_u16_be(data, rec + 8) as usize;
         let offset = string_offset + read_u16_be(data, rec + 10) as usize;
 
-        if name_id == 1 && platform_id == 3 && encoding_id == 1 && offset + length <= data.len() {
-            // UTF-16 BE 디코딩
-            let mut s = String::new();
-            for j in (0..length).step_by(2) {
-                let ch = read_u16_be(data, offset + j);
-                if let Some(c) = char::from_u32(ch as u32) {
-                    s.push(c);
-                }
-            }
-            return s;
+        if !REQUIRED_NAME_IDS.contains(&name_id) || offset + length > data.len() {
+            continue;
+        }
+        if let Some(value) = decode_name_record(platform_id, &data[offset..offset + length]) {
+            records.push(NamingRecord {
+                record_index: i,
+                platform_id,
+                encoding_id,
+                language_id,
+                name_id,
+                value,
+            });
         }
     }
+    records
+}
 
-    // 폴백: platformID=1 (Mac), encodingID=0 (Roman)
-    for i in 0..count {
-        let rec = name_off + 6 + i * 12;
-        if rec + 12 > data.len() {
-            break;
+fn select_family_name(records: &[NamingRecord]) -> String {
+    for name_id in [16, 1] {
+        if let Some(record) = records
+            .iter()
+            .find(|record| record.name_id == name_id && record.platform_id == 3)
+        {
+            return record.value.clone();
         }
-        let platform_id = read_u16_be(data, rec);
-        let name_id = read_u16_be(data, rec + 6);
-        let length = read_u16_be(data, rec + 8) as usize;
-        let offset = string_offset + read_u16_be(data, rec + 10) as usize;
-
-        if name_id == 1 && platform_id == 1 && offset + length <= data.len() {
-            return String::from_utf8_lossy(&data[offset..offset + length]).to_string();
+        if let Some(record) = records.iter().find(|record| record.name_id == name_id) {
+            return record.value.clone();
         }
     }
 
@@ -295,16 +354,14 @@ fn parse_name(data: &[u8], tables: &[TableEntry]) -> String {
 struct FontMetric {
     family_name: String,
     file_name: String,
+    source_sha256: String,
+    face_index: u32,
+    naming_records: Vec<NamingRecord>,
     em_size: u16,
     bold: bool,
     italic: bool,
     /// Unicode codepoint → advance width (em 단위)
     char_widths: HashMap<u32, u16>,
-}
-
-/// 단일 TTF 또는 TTC의 모든 폰트를 파싱
-fn parse_ttf(path: &Path) -> Result<FontMetric, String> {
-    parse_ttf_all(path).and_then(|v| v.into_iter().next().ok_or_else(|| "폰트 없음".to_string()))
 }
 
 fn parse_ttf_all(path: &Path) -> Result<Vec<FontMetric>, String> {
@@ -321,7 +378,8 @@ fn parse_ttf_all(path: &Path) -> Result<Vec<FontMetric>, String> {
         .to_string();
     let mut results = Vec::new();
 
-    for &font_off in &offsets {
+    let source_sha256 = sha256_bytes(&data);
+    for (face_index, &font_off) in offsets.iter().enumerate() {
         let tables = parse_table_directory_at(&data, font_off);
         if tables.is_empty() {
             continue;
@@ -331,7 +389,8 @@ fn parse_ttf_all(path: &Path) -> Result<Vec<FontMetric>, String> {
         let num_glyphs = parse_maxp(&data, &tables);
         let cmap = parse_cmap(&data, &tables);
         let hmtx = parse_hmtx(&data, &tables, num_glyphs);
-        let family_name = parse_name(&data, &tables);
+        let naming_records = parse_naming_records(&data, &tables);
+        let family_name = select_family_name(&naming_records);
 
         let mut char_widths = HashMap::new();
         for (&codepoint, &glyph_id) in &cmap {
@@ -343,6 +402,9 @@ fn parse_ttf_all(path: &Path) -> Result<Vec<FontMetric>, String> {
         results.push(FontMetric {
             family_name,
             file_name: file_name.clone(),
+            source_sha256: source_sha256.clone(),
+            face_index: face_index as u32,
+            naming_records,
             em_size: head.units_per_em,
             bold: (head.mac_style & 0x01) != 0,
             italic: (head.mac_style & 0x02) != 0,
@@ -355,6 +417,14 @@ fn parse_ttf_all(path: &Path) -> Result<Vec<FontMetric>, String> {
     } else {
         Ok(results)
     }
+}
+
+fn parse_ttf_face(path: &Path, face_index: u32) -> Result<FontMetric, String> {
+    let metrics = parse_ttf_all(path)?;
+    metrics
+        .into_iter()
+        .find(|metric| metric.face_index == face_index)
+        .ok_or_else(|| format!("{}: TTC face index {}가 없음", path.display(), face_index))
 }
 
 // ─── 한글 음절 분해 압축 ───
@@ -654,84 +724,11 @@ fn extract_latin_ranges(char_widths: &HashMap<u32, u16>) -> Vec<LatinRange> {
 fn generate_rust_source(metrics: &[FontMetric]) -> String {
     let mut out = String::new();
 
-    out.push_str("//! 폰트 메트릭 데이터 (자동 생성)\n");
-    out.push_str("//!\n");
-    out.push_str("//! font-metric-gen 도구로 TTF 파일에서 추출.\n");
-    out.push_str("//! 수동 편집 금지.\n\n");
-
-    // 한글 음절분해 구조체
-    out.push_str("#[derive(Debug)]\n");
-    out.push_str("pub struct HangulMetric {\n");
-    out.push_str("    pub cho_groups: u8,\n");
-    out.push_str("    pub jung_groups: u8,\n");
-    out.push_str("    pub jong_groups: u8,\n");
-    out.push_str("    pub cho_map: &'static [u8],\n");
-    out.push_str("    pub jung_map: &'static [u8],\n");
-    out.push_str("    pub jong_map: &'static [u8],\n");
-    out.push_str("    pub widths: &'static [u16],\n");
-    out.push_str("}\n\n");
-
-    // 폰트 메트릭 구조체
-    out.push_str("#[derive(Debug)]\n");
-    out.push_str("pub struct FontMetric {\n");
-    out.push_str("    pub name: &'static str,\n");
-    out.push_str("    pub bold: bool,\n");
-    out.push_str("    pub italic: bool,\n");
-    out.push_str("    pub em_size: u16,\n");
-    out.push_str("    pub latin_ranges: &'static [LatinRange],\n");
-    out.push_str("    pub hangul: Option<&'static HangulMetric>,\n");
-    out.push_str("}\n\n");
-
-    out.push_str("#[derive(Debug)]\n");
-    out.push_str("pub struct LatinRange {\n");
-    out.push_str("    pub start: u32,\n");
-    out.push_str("    pub end: u32,\n");
-    out.push_str("    pub widths: &'static [u16],\n");
-    out.push_str("}\n\n");
-
-    // 조회 함수
-    out.push_str("impl FontMetric {\n");
-    out.push_str("    pub fn get_width(&self, ch: char) -> Option<u16> {\n");
-    out.push_str("        let code = ch as u32;\n");
-    out.push_str("        // 한글 음절 (U+AC00~U+D7A3)\n");
-    out.push_str("        if code >= 0xAC00 && code <= 0xD7A3 {\n");
-    out.push_str("            if let Some(h) = self.hangul {\n");
-    out.push_str("                let idx = code - 0xAC00;\n");
-    out.push_str("                let cho = (idx / (21 * 28)) as usize;\n");
-    out.push_str("                let jung = ((idx % (21 * 28)) / 28) as usize;\n");
-    out.push_str("                let jong = (idx % 28) as usize;\n");
-    out.push_str("                let gi = h.cho_map[cho] as usize\n");
-    out.push_str("                    * h.jung_groups as usize * h.jong_groups as usize\n");
-    out.push_str("                    + h.jung_map[jung] as usize * h.jong_groups as usize\n");
-    out.push_str("                    + h.jong_map[jong] as usize;\n");
-    out.push_str("                return h.widths.get(gi).copied();\n");
-    out.push_str("            }\n");
-    out.push_str("            return None;\n");
-    out.push_str("        }\n");
-    out.push_str("        // Latin 및 기타 범위\n");
-    out.push_str("        for range in self.latin_ranges {\n");
-    out.push_str("            if code >= range.start && code <= range.end {\n");
-    out.push_str("                let w = range.widths[(code - range.start) as usize];\n");
-    out.push_str("                return if w > 0 { Some(w) } else { None };\n");
-    out.push_str("            }\n");
-    out.push_str("        }\n");
-    out.push_str("        None\n");
-    out.push_str("    }\n");
-    out.push_str("}\n\n");
-
-    // 이름+스타일로 검색 (bold/italic 일치 → fallback to Regular)
-    out.push_str("pub fn find_metric(name: &str, bold: bool, italic: bool) -> Option<&'static FontMetric> {\n");
-    out.push_str("    // 정확한 매칭 (name + bold + italic)\n");
-    out.push_str("    if let Some(m) = FONT_METRICS.iter().find(|m| m.name == name && m.bold == bold && m.italic == italic) {\n");
-    out.push_str("        return Some(m);\n");
-    out.push_str("    }\n");
-    out.push_str("    // bold만 매칭 (italic 무시)\n");
-    out.push_str("    if let Some(m) = FONT_METRICS.iter().find(|m| m.name == name && m.bold == bold && !m.italic) {\n");
-    out.push_str("        return Some(m);\n");
-    out.push_str("    }\n");
-    out.push_str("    // Regular 폴백\n");
-    out.push_str("    FONT_METRICS.iter().find(|m| m.name == name)\n");
-    out.push_str("}\n\n");
+    out.push_str("// 폰트 메트릭 generated data fragment (자동 생성)\n");
+    out.push_str("//\n");
+    out.push_str("// font-metric-gen이 명시적 plan 순서로 추출했다.\n");
+    out.push_str("// core lookup과 measured/manual overlay를 포함하지 않는다.\n");
+    out.push_str("// sort 또는 dedupe 금지.\n\n");
 
     // 각 폰트별 데이터 생성
     for (idx, m) in metrics.iter().enumerate() {
@@ -801,9 +798,9 @@ fn generate_rust_source(metrics: &[FontMetric]) -> String {
         out.push('\n');
     }
 
-    // FONT_METRICS 배열
+    // generated 영역 배열. core facade가 overlay 뒤가 아니라 이 배열 뒤에 overlay를 잇는다.
     out.push_str(&format!(
-        "pub static FONT_METRICS: [FontMetric; {}] = [\n",
+        "static GENERATED_FONT_METRICS: [FontMetric; {}] = [\n",
         metrics.len()
     ));
     for (idx, m) in metrics.iter().enumerate() {
@@ -830,6 +827,591 @@ fn generate_rust_source(metrics: &[FontMetric]) -> String {
     out
 }
 
+// ─── 명시적 생성 계획과 provenance metadata ───
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct GenerationPlan {
+    schema_version: u32,
+    target_region: String,
+    expected_entry_count: usize,
+    inputs: Vec<GenerationInput>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct GenerationInput {
+    order: usize,
+    path: String,
+    face_index: u32,
+    expected_identity: ExpectedIdentity,
+    license: EvidenceDeclaration,
+    provenance: EvidenceDeclaration,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct ExpectedIdentity {
+    family_name: String,
+    bold: bool,
+    italic: bool,
+}
+
+#[derive(Debug, Clone, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct EvidenceDeclaration {
+    status: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    spdx: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    source: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    evidence_path: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    reason: Option<String>,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct GeneratorManifest {
+    schema_version: u32,
+    generator: &'static str,
+    generator_version: &'static str,
+    generator_contract: &'static str,
+    generator_source_sha256: String,
+    target_region: String,
+    expected_entry_count: usize,
+    input_plan_sha256: String,
+    generated_source_sha256: String,
+    entries: Vec<GeneratedEntryMetadata>,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct GeneratedEntryMetadata {
+    order: usize,
+    source_path: String,
+    source_sha256: String,
+    face_index: u32,
+    family_name: String,
+    bold: bool,
+    italic: bool,
+    units_per_em: u16,
+    naming_records: Vec<NamingRecord>,
+    license: EvidenceMetadata,
+    provenance: EvidenceMetadata,
+    hangul_compression: HangulCompressionMetadata,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct EvidenceMetadata {
+    declaration: EvidenceDeclaration,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    evidence_sha256: Option<String>,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct HangulCompressionMetadata {
+    status: &'static str,
+    sample_count: usize,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    cho_groups: Option<u8>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    jung_groups: Option<u8>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    jong_groups: Option<u8>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    max_error: Option<u16>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    avg_error: Option<f64>,
+}
+
+fn validate_relative_path(path: &str, field: &str) -> Result<PathBuf, String> {
+    let parsed = PathBuf::from(path);
+    if parsed.is_absolute()
+        || parsed
+            .components()
+            .any(|component| matches!(component, std::path::Component::ParentDir))
+    {
+        return Err(format!(
+            "{}는 checkout 상대 경로여야 하고 '..'를 포함할 수 없음: {}",
+            field, path
+        ));
+    }
+    Ok(parsed)
+}
+
+fn checkout_root_from(start: &Path) -> Option<PathBuf> {
+    start.ancestors().find_map(|candidate| {
+        let is_checkout = candidate.join("Cargo.toml").is_file()
+            && candidate
+                .join("src/renderer/font_metrics_data.rs")
+                .is_file()
+            && candidate.join("src/tools/font_metric_gen.rs").is_file();
+        is_checkout.then(|| candidate.to_path_buf())
+    })
+}
+
+fn find_repository_root() -> Result<PathBuf, String> {
+    let current = env::current_dir()
+        .and_then(|path| path.canonicalize())
+        .map_err(|error| format!("현재 경로 확인 실패: {}", error))?;
+    if let Some(root) = checkout_root_from(&current) {
+        return Ok(root);
+    }
+
+    // checkout 밖에서 checkout 내부의 binary를 직접 실행하는 경우만 실행 파일 경로를 fallback으로 쓴다.
+    // checkout/worktree 내부에서는 공유 target binary보다 현재 worktree를 우선해 계보가 섞이지 않게 한다.
+    let executable = env::current_exe()
+        .and_then(|path| path.canonicalize())
+        .map_err(|error| format!("실행 파일 경로 확인 실패: {}", error))?;
+    checkout_root_from(&executable).ok_or_else(|| {
+        "rhwp checkout root를 찾을 수 없음; checkout 내부에서 실행하거나 checkout의 binary를 사용해야 함"
+            .to_string()
+    })
+}
+
+fn resolve_checkout_file(
+    repository_root: &Path,
+    path: &str,
+    field: &str,
+) -> Result<PathBuf, String> {
+    let relative = validate_relative_path(path, field)?;
+    let resolved = repository_root
+        .join(relative)
+        .canonicalize()
+        .map_err(|error| format!("{}({}): {}", field, path, error))?;
+    if !resolved.starts_with(repository_root) {
+        return Err(format!(
+            "{}는 symlink를 포함해 checkout 밖을 가리킬 수 없음: {}",
+            field, path
+        ));
+    }
+    if !resolved.is_file() {
+        return Err(format!("{}는 파일이어야 함: {}", field, path));
+    }
+    Ok(resolved)
+}
+
+fn validate_evidence(declaration: &EvidenceDeclaration, field: &str) -> Result<(), String> {
+    match declaration.status.as_str() {
+        "verified" => {
+            if declaration.source.as_deref().unwrap_or_default().is_empty() {
+                return Err(format!("{}.source는 verified 상태에서 필수", field));
+            }
+            if declaration
+                .evidence_path
+                .as_deref()
+                .unwrap_or_default()
+                .is_empty()
+            {
+                return Err(format!("{}.evidencePath는 verified 상태에서 필수", field));
+            }
+            if field.ends_with(".license")
+                && declaration.spdx.as_deref().unwrap_or_default().is_empty()
+            {
+                return Err(format!("{}.spdx는 verified 상태에서 필수", field));
+            }
+        }
+        "unknown" | "local-only" => {
+            if declaration.reason.as_deref().unwrap_or_default().is_empty() {
+                return Err(format!(
+                    "{}.reason은 {} 상태에서 필수",
+                    field, declaration.status
+                ));
+            }
+        }
+        other => return Err(format!("{}.status 미지원 값: {}", field, other)),
+    }
+    if let Some(path) = declaration.evidence_path.as_deref() {
+        validate_relative_path(path, &format!("{}.evidencePath", field))?;
+    }
+    Ok(())
+}
+
+fn load_generation_plan(path: &Path) -> Result<(GenerationPlan, String), String> {
+    let bytes = fs::read(path).map_err(|error| format!("{}: {}", path.display(), error))?;
+    let plan: GenerationPlan =
+        serde_json::from_slice(&bytes).map_err(|error| format!("{}: {}", path.display(), error))?;
+    if plan.schema_version != 1 {
+        return Err(format!(
+            "지원하지 않는 plan schemaVersion: {}",
+            plan.schema_version
+        ));
+    }
+    if plan.inputs.is_empty() {
+        return Err("plan.inputs가 비어 있음".to_string());
+    }
+    if plan.expected_entry_count != plan.inputs.len() {
+        return Err(format!(
+            "expectedEntryCount={}와 inputs 길이={}가 다름",
+            plan.expected_entry_count,
+            plan.inputs.len()
+        ));
+    }
+    match plan.target_region.as_str() {
+        "canary" => {}
+        "historical-generated-0-594" if plan.expected_entry_count == 595 => {}
+        "historical-generated-0-594" => {
+            return Err(
+                "canonical historical generated plan은 정확히 595개 입력이어야 함".to_string(),
+            );
+        }
+        other => return Err(format!("지원하지 않는 targetRegion: {}", other)),
+    }
+    let mut seen = std::collections::HashSet::new();
+    for (index, input) in plan.inputs.iter().enumerate() {
+        if input.order != index {
+            return Err(format!(
+                "입력 순서가 명시적 연속값이 아님: inputs[{}].order={} (expected {})",
+                index, input.order, index
+            ));
+        }
+        validate_relative_path(&input.path, &format!("inputs[{}].path", index))?;
+        validate_evidence(&input.license, &format!("inputs[{}].license", index))?;
+        validate_evidence(&input.provenance, &format!("inputs[{}].provenance", index))?;
+        if !seen.insert((input.path.as_str(), input.face_index)) {
+            return Err(format!(
+                "동일 source/face가 plan에 중복됨: {}#{}; 자동 dedupe하지 않음",
+                input.path, input.face_index
+            ));
+        }
+    }
+    Ok((plan, sha256_bytes(&bytes)))
+}
+
+fn evidence_metadata(
+    repository_root: &Path,
+    declaration: &EvidenceDeclaration,
+    field: &str,
+) -> Result<EvidenceMetadata, String> {
+    let evidence_sha256 = declaration
+        .evidence_path
+        .as_deref()
+        .map(|path| resolve_checkout_file(repository_root, path, field))
+        .transpose()?
+        .as_deref()
+        .map(sha256_file)
+        .transpose()?;
+    Ok(EvidenceMetadata {
+        declaration: declaration.clone(),
+        evidence_sha256,
+    })
+}
+
+fn hangul_compression_metadata(metric: &FontMetric) -> HangulCompressionMetadata {
+    let sample_count = metric
+        .char_widths
+        .keys()
+        .filter(|&&codepoint| (HANGUL_BASE..=HANGUL_END).contains(&codepoint))
+        .count();
+    match compress_hangul(&metric.char_widths, 4, 6, 3) {
+        Some(compressed) => HangulCompressionMetadata {
+            status: "verified",
+            sample_count,
+            cho_groups: Some(compressed.cho_groups),
+            jung_groups: Some(compressed.jung_groups),
+            jong_groups: Some(compressed.jong_groups),
+            max_error: Some(compressed.max_error),
+            avg_error: Some(compressed.avg_error),
+        },
+        None => HangulCompressionMetadata {
+            status: "not-applicable",
+            sample_count,
+            cho_groups: None,
+            jung_groups: None,
+            jong_groups: None,
+            max_error: None,
+            avg_error: None,
+        },
+    }
+}
+
+fn protected_output_name(path: &Path) -> bool {
+    matches!(
+        path.file_name().and_then(|name| name.to_str()),
+        Some("font_metrics_data.rs" | "font_metrics_overlays.rs")
+    )
+}
+
+fn resolved_output_path(repository_root: &Path, path: &Path) -> Result<PathBuf, String> {
+    let anchored = if path.is_absolute() {
+        path.to_path_buf()
+    } else {
+        repository_root.join(path)
+    };
+    if anchored.exists() {
+        return anchored
+            .canonicalize()
+            .map_err(|error| format!("{}: {}", anchored.display(), error));
+    }
+    let parent = anchored.parent().unwrap_or(repository_root);
+    let file_name = anchored
+        .file_name()
+        .ok_or_else(|| format!("출력 파일명이 없음: {}", anchored.display()))?;
+    parent
+        .canonicalize()
+        .map(|canonical_parent| canonical_parent.join(file_name))
+        .map_err(|error| format!("{}: {}", parent.display(), error))
+}
+
+fn validate_output_paths(
+    repository_root: &Path,
+    generated: &Path,
+    metadata: &Path,
+) -> Result<(PathBuf, PathBuf), String> {
+    let generated_resolved = resolved_output_path(repository_root, generated)?;
+    let metadata_resolved = resolved_output_path(repository_root, metadata)?;
+    let protected_paths = [
+        repository_root.join("src/renderer/font_metrics_data.rs"),
+        repository_root.join("src/renderer/font_metrics_overlays.rs"),
+    ];
+    if protected_output_name(generated)
+        || protected_output_name(metadata)
+        || protected_paths.contains(&generated_resolved)
+        || protected_paths.contains(&metadata_resolved)
+    {
+        return Err(
+            "generator ownership 위반: core lookup 또는 measured/manual overlay는 출력 대상이 아님"
+                .to_string(),
+        );
+    }
+    if generated_resolved == metadata_resolved {
+        return Err("generated output과 metadata output은 서로 달라야 함".to_string());
+    }
+    if generated.extension().and_then(|ext| ext.to_str()) != Some("rs") {
+        return Err("generated output 확장자는 .rs여야 함".to_string());
+    }
+    if metadata.extension().and_then(|ext| ext.to_str()) != Some("json") {
+        return Err("metadata output 확장자는 .json이어야 함".to_string());
+    }
+    Ok((generated_resolved, metadata_resolved))
+}
+
+fn is_canonical_generated_output(repository_root: &Path, path: &Path) -> bool {
+    path == repository_root.join("src/renderer/font_metrics_generated.rs")
+}
+
+struct StagedOutput {
+    path: Option<PathBuf>,
+    target: PathBuf,
+}
+
+impl StagedOutput {
+    fn new(target: &Path, bytes: &[u8]) -> Result<Self, String> {
+        let parent = target
+            .parent()
+            .ok_or_else(|| format!("출력 부모 경로가 없음: {}", target.display()))?;
+        let file_name = target
+            .file_name()
+            .and_then(|name| name.to_str())
+            .ok_or_else(|| format!("출력 파일명이 올바른 UTF-8이 아님: {}", target.display()))?;
+
+        for _ in 0..100 {
+            let sequence = STAGED_OUTPUT_SEQUENCE.fetch_add(1, Ordering::Relaxed);
+            let staged_path = parent.join(format!(
+                ".{}.{}.{}.rhwp-stage",
+                file_name,
+                std::process::id(),
+                sequence
+            ));
+            match OpenOptions::new()
+                .write(true)
+                .create_new(true)
+                .open(&staged_path)
+            {
+                Ok(mut file) => {
+                    if let Err(error) = file.write_all(bytes).and_then(|_| file.sync_all()) {
+                        let _ = fs::remove_file(&staged_path);
+                        return Err(format!("{}: {}", staged_path.display(), error));
+                    }
+                    return Ok(Self {
+                        path: Some(staged_path),
+                        target: target.to_path_buf(),
+                    });
+                }
+                Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists => continue,
+                Err(error) => return Err(format!("{}: {}", staged_path.display(), error)),
+            }
+        }
+        Err(format!(
+            "고유한 sibling staging 파일을 만들 수 없음: {}",
+            target.display()
+        ))
+    }
+
+    fn commit(mut self) -> Result<(), String> {
+        let staged_path = self.path.take().expect("staged path는 commit 전 존재");
+        if !self.target.exists() {
+            return match fs::rename(&staged_path, &self.target) {
+                Ok(()) => Ok(()),
+                Err(error) => {
+                    self.path = Some(staged_path);
+                    Err(format!("{}: {}", self.target.display(), error))
+                }
+            };
+        }
+        if !self.target.is_file() {
+            self.path = Some(staged_path);
+            return Err(format!(
+                "출력 대상은 기존 일반 파일이거나 새 파일이어야 함: {}",
+                self.target.display()
+            ));
+        }
+
+        let file_name = self
+            .target
+            .file_name()
+            .and_then(|name| name.to_str())
+            .expect("StagedOutput::new에서 UTF-8 파일명 검증됨");
+        let parent = self.target.parent().expect("target 부모는 검증됨");
+        let sequence = STAGED_OUTPUT_SEQUENCE.fetch_add(1, Ordering::Relaxed);
+        let backup_path = parent.join(format!(
+            ".{}.{}.{}.rhwp-backup",
+            file_name,
+            std::process::id(),
+            sequence
+        ));
+        if let Err(error) = fs::rename(&self.target, &backup_path) {
+            self.path = Some(staged_path);
+            return Err(format!("{} backup 실패: {}", self.target.display(), error));
+        }
+        if let Err(error) = fs::rename(&staged_path, &self.target) {
+            self.path = Some(staged_path);
+            let restore = fs::rename(&backup_path, &self.target);
+            return match restore {
+                Ok(()) => Err(format!("{} commit 실패: {}", self.target.display(), error)),
+                Err(restore_error) => Err(format!(
+                    "{} commit 실패: {}; backup 복원 실패({}): {}",
+                    self.target.display(),
+                    error,
+                    backup_path.display(),
+                    restore_error
+                )),
+            };
+        }
+        fs::remove_file(&backup_path)
+            .map_err(|error| format!("{} backup 정리 실패: {}", backup_path.display(), error))?;
+        Ok(())
+    }
+}
+
+impl Drop for StagedOutput {
+    fn drop(&mut self) {
+        if let Some(path) = self.path.as_deref() {
+            let _ = fs::remove_file(path);
+        }
+    }
+}
+
+fn generate_from_plan(
+    plan_path: &Path,
+    generated_output: &Path,
+    metadata_output: &Path,
+) -> Result<(), String> {
+    let repository_root = find_repository_root()?;
+    let plan_path = if plan_path.is_absolute() {
+        plan_path.to_path_buf()
+    } else {
+        repository_root.join(plan_path)
+    };
+    let (generated_output, metadata_output) =
+        validate_output_paths(&repository_root, generated_output, metadata_output)?;
+    let (plan, input_plan_sha256) = load_generation_plan(&plan_path)?;
+    if is_canonical_generated_output(&repository_root, &generated_output)
+        && plan.target_region != "historical-generated-0-594"
+    {
+        return Err(
+            "canonical generated DB 출력에는 595-entry historical-generated-0-594 plan이 필요"
+                .to_string(),
+        );
+    }
+    let mut metrics = Vec::with_capacity(plan.inputs.len());
+    for (index, input) in plan.inputs.iter().enumerate() {
+        let input_path = resolve_checkout_file(
+            &repository_root,
+            &input.path,
+            &format!("inputs[{}].path", index),
+        )?;
+        let metric = parse_ttf_face(&input_path, input.face_index)?;
+        if metric.family_name != input.expected_identity.family_name
+            || metric.bold != input.expected_identity.bold
+            || metric.italic != input.expected_identity.italic
+        {
+            return Err(format!(
+                "{}#{} identity drift: 실제=({}, bold={}, italic={}), 기대=({}, bold={}, italic={})",
+                input.path,
+                input.face_index,
+                metric.family_name,
+                metric.bold,
+                metric.italic,
+                input.expected_identity.family_name,
+                input.expected_identity.bold,
+                input.expected_identity.italic
+            ));
+        }
+        metrics.push(metric);
+    }
+
+    let generated_source = generate_rust_source(&metrics);
+    let generated_source_sha256 = sha256_bytes(generated_source.as_bytes());
+    let entries = plan
+        .inputs
+        .iter()
+        .zip(metrics.iter())
+        .enumerate()
+        .map(|(index, (input, metric))| {
+            Ok(GeneratedEntryMetadata {
+                order: input.order,
+                source_path: input.path.clone(),
+                source_sha256: metric.source_sha256.clone(),
+                face_index: metric.face_index,
+                family_name: metric.family_name.clone(),
+                bold: metric.bold,
+                italic: metric.italic,
+                units_per_em: metric.em_size,
+                naming_records: metric.naming_records.clone(),
+                license: evidence_metadata(
+                    &repository_root,
+                    &input.license,
+                    &format!("inputs[{}].license.evidencePath", index),
+                )?,
+                provenance: evidence_metadata(
+                    &repository_root,
+                    &input.provenance,
+                    &format!("inputs[{}].provenance.evidencePath", index),
+                )?,
+                hangul_compression: hangul_compression_metadata(metric),
+            })
+        })
+        .collect::<Result<Vec<_>, String>>()?;
+    let manifest = GeneratorManifest {
+        schema_version: 1,
+        generator: "font-metric-gen",
+        generator_version: env!("CARGO_PKG_VERSION"),
+        generator_contract: "generated-data-and-provenance-only-v1",
+        generator_source_sha256: sha256_bytes(GENERATOR_SOURCE_BYTES),
+        target_region: plan.target_region,
+        expected_entry_count: plan.expected_entry_count,
+        input_plan_sha256,
+        generated_source_sha256,
+        entries,
+    };
+    let metadata = serde_json::to_string_pretty(&manifest)
+        .map_err(|error| format!("metadata 직렬화 실패: {}", error))?
+        + "\n";
+
+    // 두 산출물을 sibling 임시 파일에 완성한 뒤 metadata를 먼저 반영한다.
+    // generated 파일이 마지막 commit point이므로 metadata 실패 시 기존 generated는 불변이다.
+    let generated_staged = StagedOutput::new(&generated_output, generated_source.as_bytes())?;
+    let metadata_staged = StagedOutput::new(&metadata_output, metadata.as_bytes())?;
+    metadata_staged.commit()?;
+    generated_staged.commit()?;
+    Ok(())
+}
+
 // ─── 진단 출력 ───
 
 fn print_diagnostic(metric: &FontMetric) {
@@ -853,6 +1435,9 @@ fn print_diagnostic(metric: &FontMetric) {
     };
     println!("  패밀리: {} [{}]", metric.family_name, style);
     println!("  파일: {}", metric.file_name);
+    println!("  source SHA-256: {}", metric.source_sha256);
+    println!("  TTC face index: {}", metric.face_index);
+    println!("  name records: {}", metric.naming_records.len());
     println!("  em크기: {}", metric.em_size);
     println!("  총 글리프: {}", total_chars);
     println!("  한글 음절: {} / 11172", hangul_count);
@@ -884,29 +1469,64 @@ fn print_diagnostic(metric: &FontMetric) {
     println!();
 }
 
-// ─── main ───
+fn argument_value(args: &[String], flag: &str) -> Result<Option<String>, String> {
+    let Some(index) = args.iter().position(|argument| argument == flag) else {
+        return Ok(None);
+    };
+    args.get(index + 1)
+        .cloned()
+        .map(Some)
+        .ok_or_else(|| format!("{} 값이 없음", flag))
+}
 
-fn main() {
+fn print_usage() {
+    eprintln!("사용법:");
+    eprintln!("  font-metric-gen <파일.ttf> [--face-index N]  # 단일 face 진단");
+    eprintln!("  font-metric-gen --dir <폴더> --list          # 폴더 내 폰트 목록");
+    eprintln!("  font-metric-gen --plan <plan.json> --generated-output <출력.rs> --metadata-output <출력.json>");
+    eprintln!();
+    eprintln!(
+        "생성 모드는 plan의 명시적 order와 faceIndex를 그대로 보존하며 sort/dedupe하지 않습니다."
+    );
+}
+
+fn run() -> Result<(), String> {
     let args: Vec<String> = env::args().collect();
 
     if args.len() < 2 {
-        eprintln!("사용법:");
-        eprintln!("  font-metric-gen <파일.ttf>              # 단일 파일 진단");
-        eprintln!("  font-metric-gen --dir <폴더> [--output <출력.rs>]  # 폴더 일괄 처리");
-        eprintln!("  font-metric-gen --dir <폴더> --list      # 폴더 내 폰트 목록");
-        std::process::exit(1);
+        print_usage();
+        return Err("인자가 없음".to_string());
+    }
+
+    if args[1] == "--plan" {
+        let plan = argument_value(&args, "--plan")?
+            .map(PathBuf::from)
+            .ok_or_else(|| "--plan 값이 없음".to_string())?;
+        let generated_output = argument_value(&args, "--generated-output")?
+            .map(PathBuf::from)
+            .ok_or_else(|| "--generated-output이 필수".to_string())?;
+        let metadata_output = argument_value(&args, "--metadata-output")?
+            .map(PathBuf::from)
+            .ok_or_else(|| "--metadata-output이 필수".to_string())?;
+        generate_from_plan(&plan, &generated_output, &metadata_output)?;
+        println!("generated data: {}", generated_output.display());
+        println!("provenance metadata: {}", metadata_output.display());
+        return Ok(());
     }
 
     if args[1] == "--dir" {
-        let dir = PathBuf::from(&args[2]);
-        let list_mode = args.iter().any(|a| a == "--list");
-        let output_path = args
-            .iter()
-            .position(|a| a == "--output")
-            .map(|i| PathBuf::from(&args[i + 1]));
+        if !args.iter().any(|argument| argument == "--list") {
+            return Err(
+                "--dir 생성은 암묵적 sort/dedupe 때문에 폐기됨; --plan 생성 모드를 사용하세요"
+                    .to_string(),
+            );
+        }
+        let dir = argument_value(&args, "--dir")?
+            .map(PathBuf::from)
+            .ok_or_else(|| "--dir 값이 없음".to_string())?;
 
         let mut entries: Vec<_> = fs::read_dir(&dir)
-            .expect("디렉토리 열기 실패")
+            .map_err(|error| format!("{}: {}", dir.display(), error))?
             .filter_map(|e| e.ok())
             .filter(|e| {
                 let name = e.file_name().to_string_lossy().to_lowercase();
@@ -915,137 +1535,58 @@ fn main() {
             .collect();
         entries.sort_by_key(|e| e.file_name());
 
-        if list_mode {
-            println!("폰트 목록 ({} 파일):", entries.len());
-            for entry in &entries {
-                match parse_ttf(&entry.path()) {
-                    Ok(m) => {
-                        let style = match (m.bold, m.italic) {
+        println!("폰트 목록 ({} 파일):", entries.len());
+        for entry in &entries {
+            match parse_ttf_all(&entry.path()) {
+                Ok(metrics) => {
+                    for metric in metrics {
+                        let style = match (metric.bold, metric.italic) {
                             (false, false) => "",
                             (true, false) => " [B]",
                             (false, true) => " [I]",
                             (true, true) => " [BI]",
                         };
                         println!(
-                            "  {} → \"{}\"{} (em={}, 글리프={})",
-                            m.file_name,
-                            m.family_name,
+                            "  {}#{} → \"{}\"{} (em={}, 글리프={})",
+                            metric.file_name,
+                            metric.face_index,
+                            metric.family_name,
                             style,
-                            m.em_size,
-                            m.char_widths.len()
+                            metric.em_size,
+                            metric.char_widths.len()
                         );
                     }
-                    Err(e) => println!("  {} → 오류: {}", entry.file_name().to_string_lossy(), e),
                 }
-            }
-            return;
-        }
-
-        let mut metrics = Vec::new();
-        let mut errors = Vec::new();
-
-        println!("TTF 파싱 중... ({} 파일)", entries.len());
-        for entry in &entries {
-            match parse_ttf_all(&entry.path()) {
-                Ok(fonts) => {
-                    for m in fonts {
-                        if !list_mode {
-                            print_diagnostic(&m);
-                            println!();
-                        }
-                        metrics.push(m);
-                    }
-                }
-                Err(e) => errors.push(e),
+                Err(error) => println!(
+                    "  {} → 오류: {}",
+                    entry.file_name().to_string_lossy(),
+                    error
+                ),
             }
         }
-
-        println!("파싱 성공: {} / 실패: {}", metrics.len(), errors.len());
-        if !errors.is_empty() {
-            println!("실패 목록:");
-            for e in &errors {
-                println!("  {}", e);
-            }
-        }
-
-        // 중복 제거: (family_name, bold, italic) 동일 시 글리프 수 최대인 것만 유지
-        let before_dedup = metrics.len();
-        let mut deduped: Vec<FontMetric> = Vec::new();
-        for m in metrics {
-            if let Some(existing) = deduped.iter_mut().find(|e| {
-                e.family_name == m.family_name && e.bold == m.bold && e.italic == m.italic
-            }) {
-                if m.char_widths.len() > existing.char_widths.len() {
-                    *existing = m;
-                }
-            } else {
-                deduped.push(m);
-            }
-        }
-        // 우선 폰트를 앞쪽에 배치 (HWP 기본 폰트 → 기타)
-        let priority_fonts: Vec<&str> = vec![
-            "함초롬돋움",
-            "함초롬바탕",
-            "HCR Batang",
-            "HCR Dotum",
-            "Malgun Gothic",
-            "맑은 고딕",
-            "Haansoft Batang",
-            "Haansoft Dotum",
-            "NanumGothic",
-            "NanumMyeongjo",
-            "NanumBarunGothic",
-            "Noto Sans KR",
-            "Noto Serif KR",
-            "Arial",
-            "Times New Roman",
-            "Calibri",
-            "Verdana",
-            "Tahoma",
-            "Batang",
-            "Dotum",
-            "Gulim",
-            "Gungsuh",
-        ];
-        deduped.sort_by(|a, b| {
-            let pa = priority_fonts.iter().position(|&p| p == a.family_name);
-            let pb = priority_fonts.iter().position(|&p| p == b.family_name);
-            match (pa, pb) {
-                (Some(ia), Some(ib)) => ia
-                    .cmp(&ib)
-                    .then(a.bold.cmp(&b.bold))
-                    .then(a.italic.cmp(&b.italic)),
-                (Some(_), None) => std::cmp::Ordering::Less,
-                (None, Some(_)) => std::cmp::Ordering::Greater,
-                (None, None) => a
-                    .family_name
-                    .cmp(&b.family_name)
-                    .then(a.bold.cmp(&b.bold))
-                    .then(a.italic.cmp(&b.italic)),
-            }
-        });
-        println!("중복 제거: {} → {} 엔트리", before_dedup, deduped.len());
-
-        if let Some(output) = output_path {
-            println!("\nRust 소스코드 생성 중...");
-            let source = generate_rust_source(&deduped);
-            fs::write(&output, &source).expect("출력 파일 쓰기 실패");
-            println!(
-                "출력: {} ({} 바이트, {} 폰트)",
-                output.display(),
-                source.len(),
-                deduped.len()
-            );
-        }
+        return Ok(());
     } else {
         // 단일 파일 진단
         let path = PathBuf::from(&args[1]);
-        match parse_ttf(&path) {
-            Ok(m) => print_diagnostic(&m),
-            Err(e) => {
-                eprintln!("오류: {}", e);
-                std::process::exit(1);
-            }
-        }
+        let face_index = argument_value(&args, "--face-index")?
+            .map(|value| {
+                value
+                    .parse::<u32>()
+                    .map_err(|error| format!("--face-index: {}", error))
+            })
+            .transpose()?
+            .unwrap_or(0);
+        let metric = parse_ttf_face(&path, face_index)?;
+        print_diagnostic(&metric);
+    }
+    Ok(())
+}
+
+// ─── main ───
+
+fn main() {
+    if let Err(error) = run() {
+        eprintln!("오류: {}", error);
+        std::process::exit(1);
     }
 }

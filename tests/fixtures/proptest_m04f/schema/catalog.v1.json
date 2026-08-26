@@ -1,0 +1,30 @@
+{
+  "$id": "rhwp.proptest_m04f.catalog.v1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "actions": [
+    "fill_fields",
+    "replace_text",
+    "set_cell",
+    "set_checkbox"
+  ],
+  "description": "기존 run step 4종의 변형·스킵·예외. DocumentCore mutation 발명 금지.",
+  "requiredCaseKeys": [
+    "id",
+    "expected"
+  ],
+  "skipReasons": [
+    "empty_find",
+    "no_hits",
+    "occurrence_oob",
+    "field_missing",
+    "table_missing",
+    "nested_table",
+    "cell_missing",
+    "cell_control_char",
+    "checkbox_missing",
+    "all_steps_skipped",
+    "unclaimed_capability"
+  ],
+  "title": "M04-f proptest 왕복 카탈로그",
+  "version": "m04f.v1"
+}

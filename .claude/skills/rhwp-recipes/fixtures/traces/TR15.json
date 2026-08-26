@@ -1,0 +1,11 @@
+{
+  "id": "TR15",
+  "recipe": "03",
+  "transcript": "T03-B01",
+  "argvLine": "rhwp edit fill-fields samples/field-01.hwp --data '{\"작성자\":\"홍길동 900101-1234568\",\"전화번호\":\"010-1234-5678\",\"이메일\":\"hong@example.com\",\"회사명\":\"카드 4111-1111-1111-1111 / 미끼 900101-1234567 / 미끼 1234-5678-9012-3456\"}' -o output/pii-demo.hwp --json",
+  "usesExistingCommand": true,
+  "notGym": true,
+  "noNewCli": true,
+  "sourceFile": "mydocs/manual/recipes/03_redact_before_sharing.md",
+  "fabricatedLive": false
+}

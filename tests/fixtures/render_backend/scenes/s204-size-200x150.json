@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "id": "s204-size-200x150",
+  "width": 200.0,
+  "height": 150.0,
+  "contract": "페이지 치수 200x150 가 begin_page 에 그대로 찍힌다",
+  "ops": [
+    {
+      "kind": "rectangle",
+      "x": 0.0,
+      "y": 0.0,
+      "w": 10.0,
+      "h": 10.0,
+      "text": null,
+      "gradient": false,
+      "image": false
+    }
+  ],
+  "expectedKinds": [
+    "rectangle"
+  ],
+  "expectedTrace": [
+    "begin_page 200.00x150.00",
+    "  rectangle bbox=0.00,0.00,10.00,10.00",
+    "end_page ops=1"
+  ]
+}

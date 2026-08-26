@@ -1,0 +1,13 @@
+{
+  "planVersion": "1.0",
+  "input": "samples/field-01.hwp",
+  "output": "out/filled.hwp",
+  "steps": [
+    {
+      "action": "fill_fields",
+      "data": {
+        "회사명": "페타플로"
+      }
+    }
+  ]
+}

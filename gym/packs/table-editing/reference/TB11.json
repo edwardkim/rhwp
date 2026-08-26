@@ -1,0 +1,23 @@
+{
+  "id": "TB11",
+  "steps": [
+    {
+      "run": [
+        "edit",
+        "set-cell",
+        "{input}",
+        "--table",
+        "0",
+        "--row",
+        "0",
+        "--col",
+        "1",
+        "--text",
+        "옆칸",
+        "-o",
+        "{sub:cells.hwp}",
+        "--json"
+      ]
+    }
+  ]
+}

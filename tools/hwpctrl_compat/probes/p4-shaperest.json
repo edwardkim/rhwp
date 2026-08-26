@@ -1,0 +1,27 @@
+{
+  "id": "p4-shaperest",
+  "title": "묶음 풀기·글상자·뒤집기 — 남은 그리기 후보",
+  "ledger": [],
+  "open": "samples/draw-group.hwp",
+  "calls": [
+    ["SetPos", [0, 0, 0]],
+    ["Run", ["SelectCtrlFront"]],
+    ["CurSelectedCtrl.UserDesc", []],
+    ["HeadCtrl.Next.Next.UserDesc", []],
+    ["HeadCtrl.Next.Next.Next.UserDesc", []],
+    ["HeadCtrl.Next.Next.Properties.Item", ["Width"]],
+    ["HeadCtrl.Next.Next.Properties.Item", ["Height"]],
+    ["Run", ["ShapeObjHorzFlip"]],
+    ["HeadCtrl.Next.Next.Properties.Item", ["Width"]],
+    ["HeadCtrl.Next.Next.Properties.Item", ["Height"]],
+    ["Run", ["ShapeObjAttachTextBox"]],
+    ["HeadCtrl.Next.Next.UserDesc", []],
+    ["HeadCtrl.Next.Next.Next.UserDesc", []],
+    ["GetPos", []],
+    ["Run", ["ShapeObjUngroup"]],
+    ["HeadCtrl.Next.Next.UserDesc", []],
+    ["HeadCtrl.Next.Next.Next.UserDesc", []],
+    ["HeadCtrl.Next.Next.Next.Next.UserDesc", []],
+    ["SelectionMode", []]
+  ]
+}

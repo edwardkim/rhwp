@@ -48,7 +48,9 @@ param(
   [Parameter(Mandatory = $true)][string]$Source,
   [Parameter(Mandatory = $true)][string]$Output,
   [int]$MessageBoxMode = 0x00020000,
-  [switch]$KeepAlive
+  [switch]$KeepAlive,
+  # [#5726] 본문 텍스트가 0자인 1쪽 문서(그림 전용 표지 등)를 오라클로 인정할 때만 켠다.
+  [switch]$AllowEmpty
 )
 
 $ErrorActionPreference = 'Stop'
@@ -96,9 +98,24 @@ try {
   # (2) 창 숨김.
   try { $hwp.XHwpWindows.Item(0).Visible = $false } catch { }
 
-  $null = $hwp.Open($src, "HWP", "forceopen:true")
+  # [#5726] 형식을 "HWP" 로 못박으면 .hwpx 가 HWP5 로 강제 개봉돼 **빈 문서가 조용히 열리고**
+  # 빈 1쪽 PDF 가 오라클로 남는다(forceopen 이 실패도 감춘다). 형식 인자를 비워 자동 판별에
+  # 맡기고, Open 실패는 그 자리에서 끊는다. HWP3 원본도 fmt="HWP" 는 무조건 false 였다.
+  $opened = $hwp.Open($src, "", "")
+  if (-not $opened) { throw "Open 실패 (자동 판별): $src" }
   $pageCount = $hwp.PageCount
   Write-Output "opened: $src (PageCount=$pageCount)"
+
+  # [#5726] 조용한 빈 오라클 차단 — 쪽수가 0이거나, 1쪽인데 본문 텍스트가 0자면 끊는다.
+  # 그림 전용 1쪽 문서를 정말 오라클로 쓸 때만 -AllowEmpty 로 우회한다.
+  if ($pageCount -lt 1) { throw "빈 오라클 차단: PageCount=$pageCount ($src)" }
+  if ($pageCount -eq 1 -and -not $AllowEmpty) {
+    $textLen = -1
+    try { $textLen = ([string]$hwp.GetTextFile("TEXT", "")).Trim().Length } catch { }
+    if ($textLen -eq 0) {
+      throw "빈 오라클 차단: PageCount=1 이고 본문 텍스트 0자 — 형식 오판/빈 문서 의심 ($src). 의도된 그림 전용 문서면 -AllowEmpty."
+    }
+  }
 
   $act = $hwp.CreateAction("FileSaveAsPdf")
   $set = $act.CreateSet()

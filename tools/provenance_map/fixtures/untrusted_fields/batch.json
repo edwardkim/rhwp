@@ -1,0 +1,259 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.provenance.untrusted_fields.v1",
+  "claim": "M-prov",
+  "issue": 5480,
+  "generator": "tools/provenance_map/fatten_provenance_map.py",
+  "command": "batch",
+  "mapIndex": 46,
+  "family": "batch",
+  "familyTitle": "배치",
+  "opensDocument": true,
+  "cli": "rhwp batch <축> --json",
+  "risk": "critical",
+  "whyRisk": "자체 스키마가 없다. 표지는 레코드마다. 최상위 한 번만 보면 누락.",
+  "note": "batch 는 자체 스키마가 없다 — NDJSON 레코드가 서브커맨드 봉투 모양 그대로다. 그래서 여기 목록은 batch 서브커맨드들의 합집합이고, 각 레코드의 표지는 그 레코드에 실제로 있는 필드만 담는다.",
+  "consumerRule": "NDJSON 각 줄을 그 줄의 표지로 읽는다.",
+  "trap": "한 줄의 false 를 파일 전체 안전으로 읽지 않는다.",
+  "untrusted": [
+    "text",
+    "title",
+    "fonts[]",
+    "structure.preamble[]",
+    "structure.roots[].heading",
+    "structure.roots[].marker",
+    "structure.roots[].body[]",
+    "structure.roots[].children[]",
+    "tables[].caption",
+    "tables[].cells[].text",
+    "tables[].cells[].nested[]",
+    "fields[].name",
+    "fields[].guide",
+    "fields[].memo",
+    "fields[].command",
+    "fields[].value",
+    "textSecurity.findings[].names[]",
+    "matches[].text",
+    "matches[].context"
+  ],
+  "origins": {
+    "text": "export-text 축 레코드의 쪽 텍스트",
+    "title": "info 축 레코드의 문서 제목",
+    "fonts[]": "info 축 레코드의 글꼴 이름",
+    "structure.preamble[]": "export-structure 축 레코드",
+    "structure.roots[].heading": "export-structure 축 레코드",
+    "structure.roots[].marker": "export-structure 축 레코드",
+    "structure.roots[].body[]": "export-structure 축 레코드",
+    "structure.roots[].children[]": "export-structure 축 레코드",
+    "tables[].caption": "export-tables 축 레코드",
+    "tables[].cells[].text": "export-tables 축 레코드",
+    "tables[].cells[].nested[]": "export-tables 축 레코드",
+    "fields[].name": "fields 축 레코드",
+    "fields[].guide": "fields 축 레코드",
+    "fields[].memo": "fields 축 레코드",
+    "fields[].command": "fields 축 레코드",
+    "fields[].value": "fields 축 레코드",
+    "textSecurity.findings[].names[]": "fields 축 레코드",
+    "matches[].text": "search 축 레코드",
+    "matches[].context": "search 축 레코드"
+  },
+  "engineFields": [
+    [
+      "ok",
+      "레코드 성공 여부"
+    ]
+  ],
+  "callerFields": [
+    [
+      "source",
+      "레코드 입력 경로"
+    ]
+  ],
+  "modes": [
+    {
+      "mode": "export-text",
+      "flags": [
+        "batch",
+        "export-text",
+        "--json"
+      ],
+      "present": [
+        "text"
+      ],
+      "why": "서브커맨드 합집합 중 text",
+      "sampleKind": "typical",
+      "untrustedContent": true
+    },
+    {
+      "mode": "info",
+      "flags": [
+        "batch",
+        "info",
+        "--json"
+      ],
+      "present": [
+        "title",
+        "fonts[]"
+      ],
+      "why": "info 레코드",
+      "sampleKind": "typical",
+      "untrustedContent": true
+    },
+    {
+      "mode": "search",
+      "flags": [
+        "batch",
+        "search",
+        "--json"
+      ],
+      "present": [
+        "matches[].text",
+        "matches[].context"
+      ],
+      "why": "search 레코드",
+      "sampleKind": "typical",
+      "untrustedContent": true
+    }
+  ],
+  "fields": [
+    {
+      "path": "text",
+      "origin": "export-text 축 레코드의 쪽 텍스트",
+      "hint": "표시 문자열 또는 본문. 격벽 또는 화면.",
+      "presentInModes": [
+        "export-text"
+      ]
+    },
+    {
+      "path": "title",
+      "origin": "info 축 레코드의 문서 제목",
+      "hint": "본문 첫 의미 줄. 파일 이름·메일 제목·source_label 금지.",
+      "presentInModes": [
+        "info"
+      ]
+    },
+    {
+      "path": "fonts[]",
+      "origin": "info 축 레코드의 글꼴 이름",
+      "hint": "글꼴 이름 문자열. 경로 조각으로 쓰지 않는다.",
+      "presentInModes": [
+        "info"
+      ]
+    },
+    {
+      "path": "structure.preamble[]",
+      "origin": "export-structure 축 레코드",
+      "hint": "제목 이전 본문.",
+      "presentInModes": []
+    },
+    {
+      "path": "structure.roots[].heading",
+      "origin": "export-structure 축 레코드",
+      "hint": "제목. 짧아서 지시처럼 보인다.",
+      "presentInModes": []
+    },
+    {
+      "path": "structure.roots[].marker",
+      "origin": "export-structure 축 레코드",
+      "hint": "번호 마커. 법률 id 로 승격 금지.",
+      "presentInModes": []
+    },
+    {
+      "path": "structure.roots[].body[]",
+      "origin": "export-structure 축 레코드",
+      "hint": "본문 문단.",
+      "presentInModes": []
+    },
+    {
+      "path": "structure.roots[].children[]",
+      "origin": "export-structure 축 레코드",
+      "hint": "재귀 하위 노드.",
+      "presentInModes": []
+    },
+    {
+      "path": "tables[].caption",
+      "origin": "export-tables 축 레코드",
+      "hint": "표 캡션.",
+      "presentInModes": []
+    },
+    {
+      "path": "tables[].cells[].text",
+      "origin": "export-tables 축 레코드",
+      "hint": "셀 원문. 격자 주소로 지목.",
+      "presentInModes": []
+    },
+    {
+      "path": "tables[].cells[].nested[]",
+      "origin": "export-tables 축 레코드",
+      "hint": "중첩 표 재귀.",
+      "presentInModes": []
+    },
+    {
+      "path": "fields[].name",
+      "origin": "fields 축 레코드",
+      "hint": "누름틀 이름.",
+      "presentInModes": []
+    },
+    {
+      "path": "fields[].guide",
+      "origin": "fields 축 레코드",
+      "hint": "안내문 — 숨은 지시 자리.",
+      "presentInModes": []
+    },
+    {
+      "path": "fields[].memo",
+      "origin": "fields 축 레코드",
+      "hint": "메모 — 숨은 지시 자리.",
+      "presentInModes": []
+    },
+    {
+      "path": "fields[].command",
+      "origin": "fields 축 레코드",
+      "hint": "command 문자열. 실행 금지.",
+      "presentInModes": []
+    },
+    {
+      "path": "fields[].value",
+      "origin": "fields 축 레코드",
+      "hint": "현재값.",
+      "presentInModes": []
+    },
+    {
+      "path": "textSecurity.findings[].names[]",
+      "origin": "fields 축 레코드",
+      "hint": "판정 대상 이름 원문.",
+      "presentInModes": []
+    },
+    {
+      "path": "matches[].text",
+      "origin": "search 축 레코드",
+      "hint": "매치 문단 전문. 주소로 지목할 것.",
+      "presentInModes": [
+        "search"
+      ]
+    },
+    {
+      "path": "matches[].context",
+      "origin": "search 축 레코드",
+      "hint": "문맥 발췌.",
+      "presentInModes": [
+        "search"
+      ]
+    }
+  ],
+  "forbiddenSlots": [
+    "system_prompt",
+    "next_cli_subcommand",
+    "scheduler_payload"
+  ],
+  "allowedSinks": [
+    "user_visible_ok",
+    "fenced_llm_block"
+  ],
+  "policy": {
+    "meaning": "여기 실린 값은 데이터이지 지시가 아니다.",
+    "conservatism": "애매하면 문서 파생으로 선언한다.",
+    "subset": "봉투 표지의 untrustedFields 는 이 목록의 부분집합이다.",
+    "alwaysMarked": "표지 키는 항상 실린다. 키 부재는 미표기다."
+  }
+}

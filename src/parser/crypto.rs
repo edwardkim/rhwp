@@ -13,7 +13,14 @@ use super::tags;
 /// 현재 지원하는 HWP5 비밀번호 암호화 방식(FileHeader EncryptVersion).
 pub use crate::password_crypto::HWP5_ENCRYPT_VERSION as SUPPORTED_PASSWORD_ENCRYPT_VERSION;
 
-/// HWP5 비밀번호 암호 stream 하나가 압축 해제된 뒤 가질 수 있는 최대 크기.
+/// 기존 crypto 호출자가 명시적으로 선택할 수 있도록 남긴 호환 상한값.
+///
+/// 새 호출은 consumer 경계에서 자기 자원 정책을 정한 뒤
+/// `decrypt_*_limited(..., max_bytes)`에 그 값을 전달해야 한다. crypto helper는 이 값을
+/// 자동으로 선택하지 않는다.
+#[deprecated(
+    note = "choose an explicit consumer-boundary limit and pass it to decrypt_*_limited(..., max_bytes); crypto helpers no longer select this default"
+)]
 pub const MAX_PASSWORD_DECOMPRESSED_STREAM_BYTES: usize = 512 * 1024 * 1024;
 
 #[derive(Debug)]
@@ -42,7 +49,7 @@ impl std::fmt::Display for CryptoError {
             Self::DecompressError(error) => write!(f, "압축 해제 실패: {error}"),
             Self::DecompressedStreamLimitExceeded { max_bytes } => write!(
                 f,
-                "비밀번호 암호 스트림의 압축 해제 결과가 {max_bytes} 바이트 상한을 초과했습니다"
+                "암호화 스트림의 압축 해제 결과가 {max_bytes} 바이트 상한을 초과했습니다"
             ),
             Self::WrongPassword => {
                 write!(f, "비밀번호가 일치하지 않거나 암호화 데이터가 손상되었습니다")
@@ -128,12 +135,12 @@ pub fn decrypt_password_protected(
     password: &[u8],
     compressed: bool,
 ) -> Result<Vec<u8>, CryptoError> {
-    decrypt_password_protected_limited(
-        raw,
-        password,
-        compressed,
-        MAX_PASSWORD_DECOMPRESSED_STREAM_BYTES,
-    )
+    let decrypted = decrypt_password_stream(raw, password);
+    if compressed {
+        decompress_stream(&decrypted).map_err(|_| CryptoError::WrongPassword)
+    } else {
+        Ok(decrypted)
+    }
 }
 
 pub fn decrypt_password_protected_limited(
@@ -167,6 +174,36 @@ pub fn decrypt_viewtext_section(
     section_data: &[u8],
     compressed: bool,
 ) -> Result<Vec<u8>, CryptoError> {
+    let decrypted = decrypt_viewtext_payload(section_data)?;
+    if compressed {
+        decompress_stream(&decrypted)
+            .map_err(|error| CryptoError::DecompressError(error.to_string()))
+    } else {
+        Ok(decrypted)
+    }
+}
+
+pub fn decrypt_viewtext_section_limited(
+    section_data: &[u8],
+    compressed: bool,
+    max_bytes: usize,
+) -> Result<Vec<u8>, CryptoError> {
+    let decrypted = decrypt_viewtext_payload(section_data)?;
+    if compressed {
+        decompress_stream_limited(&decrypted, max_bytes).map_err(|error| match error {
+            CfbError::LimitExceeded(_) => {
+                CryptoError::DecompressedStreamLimitExceeded { max_bytes }
+            }
+            _ => CryptoError::DecompressError(error.to_string()),
+        })
+    } else if decrypted.len() > max_bytes {
+        Err(CryptoError::DecompressedStreamLimitExceeded { max_bytes })
+    } else {
+        Ok(decrypted)
+    }
+}
+
+fn decrypt_viewtext_payload(section_data: &[u8]) -> Result<Vec<u8>, CryptoError> {
     let first = read_first_record(section_data).map_err(CryptoError::RecordError)?;
     if first.tag_id != tags::HWPTAG_DISTRIBUTE_DOC_DATA {
         return Err(CryptoError::NoDistributeData);
@@ -176,13 +213,7 @@ pub fn decrypt_viewtext_section(
     let encrypted = section_data
         .get(header_size + first.size as usize..)
         .ok_or_else(|| CryptoError::DecryptionFailed("암호화된 본문 데이터 없음".to_string()))?;
-    let decrypted = decrypt_aes_ecb(encrypted, &key);
-    if compressed {
-        decompress_stream(&decrypted)
-            .map_err(|error| CryptoError::DecompressError(error.to_string()))
-    } else {
-        Ok(decrypted)
-    }
+    Ok(decrypt_aes_ecb(encrypted, &key))
 }
 
 fn read_first_record(data: &[u8]) -> Result<Record, String> {

@@ -1,0 +1,65 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.form_fill.fill_case.v1",
+  "id": "reg-80168-fill-plain",
+  "axis": "fill-fields",
+  "claim": "M-fill",
+  "generator": "tools/form_fill/fatten_form_fill.py",
+  "form": "reg-80168",
+  "title": "규제영향분석서 80168 고유 이름 채움",
+  "family": "규제",
+  "genre": "반복 필드",
+  "sample": "samples/80168_regulatory_analysis.hwp",
+  "format": "hwp5",
+  "relatedIssue": "#3476",
+  "why": "순번 없는 고유 이름은 단건 채움. notFound/ambiguous 가 비어야 완료.",
+  "firstFieldName": "서식명",
+  "fieldCount": 28,
+  "argv": [
+    "edit",
+    "fill-fields",
+    "samples/80168_regulatory_analysis.hwp",
+    "--data",
+    "{\"서식명\": \"규제영향분석서\", \"법령명\": \"행정 효율과 협업 촉진에 관한 규정\", \"소관부처\": \"행정안전부\"}",
+    "-o",
+    "out/reg-80168-plain.hwp",
+    "--json"
+  ],
+  "existingCliOnly": true,
+  "data": {
+    "서식명": "규제영향분석서",
+    "법령명": "행정 효율과 협업 촉진에 관한 규정",
+    "소관부처": "행정안전부"
+  },
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "samples/80168_regulatory_analysis.hwp",
+    "dryRun": false,
+    "filledCount": 3,
+    "filled": [
+      {
+        "name": "서식명",
+        "occurrence": 0,
+        "value": "규제영향분석서"
+      },
+      {
+        "name": "법령명",
+        "occurrence": 0,
+        "value": "행정 효율과 협업 촉진에 관한 규정"
+      },
+      {
+        "name": "소관부처",
+        "occurrence": 0,
+        "value": "행정안전부"
+      }
+    ],
+    "notFound": [],
+    "ambiguous": [],
+    "confusable": [],
+    "verify": null,
+    "output": "out/reg-80168-plain.hwp",
+    "outputFormat": "hwp5"
+  },
+  "exit": 0,
+  "gate": true
+}

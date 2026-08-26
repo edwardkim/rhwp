@@ -1,0 +1,11 @@
+{
+  "id": "T32",
+  "title": "표 칸 인계",
+  "steps": [
+    {
+      "note": "기존 CLI 표면만. 새 플래그 없음",
+      "usesExistingCommand": true
+    }
+  ],
+  "notGym": true
+}

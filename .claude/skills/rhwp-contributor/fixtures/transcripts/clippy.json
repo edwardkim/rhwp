@@ -1,0 +1,13 @@
+{
+  "id": "clippy",
+  "issue": 5322,
+  "argv": [
+    "cargo clippy -- -D warnings"
+  ],
+  "forbids": [
+    "git add -A",
+    "cargo fmt --check",
+    "gh pr create --base main"
+  ],
+  "hardGate": "cargo fmt --all -- --check"
+}

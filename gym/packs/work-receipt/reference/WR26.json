@@ -1,0 +1,15 @@
+{
+  "id": "WR26",
+  "steps": [
+    {
+      "run": [
+        "replay",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"samples/form-02.hwp\", \"output\": \"form2-day.hwp\", \"steps\": [{\"action\": \"replace_text\", \"find\": \"마케팅\", \"replace\": \"서식이틀\"}]}",
+        "--capsule",
+        "{sub:receipts/form2.capsule.json}",
+        "--json"
+      ]
+    }
+  ]
+}

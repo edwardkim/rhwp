@@ -1,0 +1,24 @@
+{
+  "id": "T01",
+  "title": "특수 없음 → digest",
+  "scenario": "S01",
+  "argv": [
+    "explore",
+    "samples/blank2010.hwp",
+    "--json"
+  ],
+  "envelope": "envelopes/S01.json",
+  "expect": {
+    "schemaVersion": "1.0",
+    "encrypted": false,
+    "menuIds": [
+      "triage-overview"
+    ],
+    "first": "triage-overview",
+    "firstCommand": "rhwp digest <file> --json",
+    "untrustedContent": false
+  },
+  "stop": "X05",
+  "notGym": true,
+  "usesExistingCommand": true
+}

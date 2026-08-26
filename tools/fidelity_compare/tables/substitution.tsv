@@ -1,0 +1,37 @@
+id	kind	family	registered_key	genre	page	reference_only	svg_only	reference_only_chars	svg_only_chars	glyph_risk_count	owner_shift	sequence	visible_excess	related_issue	title
+sub-fullwidth-plan-cover	substitution	plan	plan	업무계획	1	4	4	U+0030:0×1,U+0032:2×3	U+FF10:\uff10×1,U+FF12:\uff12×3	0	-	-	-	#3389	표지 연도·기관명 — 전각 숫자
+sub-fullwidth-plan-budget	substitution	plan	plan	업무계획	1	19	19	U+0030:0×3,U+0031:1×1,U+0032:2×2,U+0033:3×1,U+0034:4×2,U+0035:5×2,U+0036:6×2,U+0037:7×4,U+0038:8×1,U+0039:9×1	U+FF10:\uff10×3,U+FF11:\uff11×1,U+FF12:\uff12×2,U+FF13:\uff13×1,U+FF14:\uff14×2,U+FF15:\uff15×2,U+FF16:\uff16×2,U+FF17:\uff17×4,U+FF18:\uff18×1,U+FF19:\uff19×1	0	-	-	-	#3389	예산 숫자 행 — 전각 숫자
+sub-fullwidth-plan-footnote	substitution	plan	plan	업무계획	1	10	10	U+0030:0×2,U+0031:1×2,U+0032:2×6	U+FF10:\uff10×2,U+FF11:\uff11×2,U+FF12:\uff12×6	0	-	-	-	#3389	각주 표지 — 전각 숫자
+sub-fullwidth-plan-caption	substitution	plan	plan	업무계획	1	6	6	U+0030:0×1,U+0032:2×4,U+0033:3×1	U+FF10:\uff10×1,U+FF12:\uff12×4,U+FF13:\uff13×1	0	-	-	-	#3389	그림 캡션 — 전각 숫자
+sub-dash-plan-caption	substitution	plan	plan	업무계획	1	1	1	U+002D:-×1	U+2013:\u2013×1	0	-	-	-	#3389	그림 캡션 — 대시 치환
+sub-pua-fffd-plan-pua-circled	substitution	plan	plan	업무계획	1	4	4	U+F02B1:\U000f02b1×1,U+F02B2:\U000f02b2×1,U+F02B3:\U000f02b3×1,U+F02B4:\U000f02b4×1	U+FFFD:\ufffd×4	4	-	-	-	#3385	원문자 과제 번호 — PUA→U+FFFD
+sub-fullwidth-manual-toc	substitution	manual	manual	장문 편람	1	5	5	U+0031:1×1,U+0032:2×1,U+0033:3×1,U+0034:4×1,U+0035:5×1	U+FF11:\uff11×1,U+FF12:\uff12×1,U+FF13:\uff13×1,U+FF14:\uff14×1,U+FF15:\uff15×1	0	-	-	-	#3389	편람 목차 — 전각 숫자
+sub-fullwidth-manual-article	substitution	manual	manual	장문 편람	1	2	2	U+0031:1×1,U+0032:2×1	U+FF11:\uff11×1,U+FF12:\uff12×1	0	-	-	-	#3389	조문 본문 — 전각 숫자
+sub-fullwidth-manual-note	substitution	manual	manual	장문 편람	1	4	4	U+0031:1×2,U+0034:4×1,U+0036:6×1	U+FF11:\uff11×2,U+FF14:\uff14×1,U+FF16:\uff16×1	0	-	-	-	#3389	해설 각주 — 전각 숫자
+sub-fullwidth-bunjang-row	substitution	bunjang	bunjang	표 중심	1	22	22	U+0030:0×5,U+0031:1×3,U+0032:2×5,U+0033:3×1,U+0034:4×1,U+0035:5×2,U+0036:6×2,U+0037:7×1,U+0038:8×2	U+FF10:\uff10×5,U+FF11:\uff11×3,U+FF12:\uff12×5,U+FF13:\uff13×1,U+FF14:\uff14×1,U+FF15:\uff15×2,U+FF16:\uff16×2,U+FF17:\uff17×1,U+FF18:\uff18×2	0	-	-	-	#3389	거래 한 행 — 전각 숫자
+sub-dash-bunjang-row	substitution	bunjang	bunjang	표 중심	1	2	2	U+002D:-×2	U+2013:\u2013×2	0	-	-	-	#3389	거래 한 행 — 대시 치환
+sub-fullwidth-bunjang-footer	substitution	bunjang	bunjang	표 중심	1	9	9	U+0030:0×4,U+0031:1×2,U+0032:2×1,U+0035:5×1,U+0038:8×1	U+FF10:\uff10×4,U+FF11:\uff11×2,U+FF12:\uff12×1,U+FF15:\uff15×1,U+FF18:\uff18×1	0	-	-	-	#3389	표 하단 합계 — 전각 숫자
+sub-circled-korexam-choice	substitution	korexam	korexam	법학적성 언어이해	1	5	15	U+2460:\u2460×1,U+2461:\u2461×1,U+2462:\u2462×1,U+2463:\u2463×1,U+2464:\u2464×1	U+0028:(×5,U+0029:)×5,U+0031:1×1,U+0032:2×1,U+0033:3×1,U+0034:4×1,U+0035:5×1	0	-	-	-	#3389	선지 ①~⑤ — 원문자→ASCII
+sub-fullwidth-korexam-header	substitution	korexam	korexam	법학적성 언어이해	1	8	8	U+0030:0×1,U+0031:1×2,U+0032:2×3,U+0033:3×1,U+0035:5×1	U+FF10:\uff10×1,U+FF11:\uff11×2,U+FF12:\uff12×3,U+FF13:\uff13×1,U+FF15:\uff15×1	0	-	-	-	#3389	시험 머리글 — 전각 숫자
+sub-fullwidth-math-item	substitution	math	math	수학 시험	1	4	4	U+0031:1×2,U+0032:2×2	U+FF11:\uff11×2,U+FF12:\uff12×2	0	-	-	-	#3389	문항 본문 — 전각 숫자
+sub-fullwidth-math-choice	substitution	math	math	수학 시험	1	5	5	U+0032:2×1,U+0033:3×1,U+0034:4×1,U+0035:5×1,U+0036:6×1	U+FF12:\uff12×1,U+FF13:\uff13×1,U+FF14:\uff14×1,U+FF15:\uff15×1,U+FF16:\uff16×1	0	-	-	-	#3389	수식 선지 — 전각 숫자
+sub-circled-math-choice	substitution	math	math	수학 시험	1	5	15	U+2460:\u2460×1,U+2461:\u2461×1,U+2462:\u2462×1,U+2463:\u2463×1,U+2464:\u2464×1	U+0028:(×5,U+0029:)×5,U+0031:1×1,U+0032:2×1,U+0033:3×1,U+0034:4×1,U+0035:5×1	0	-	-	-	#3389	수식 선지 — 원문자→ASCII
+sub-fullwidth-math-caption	substitution	math	math	수학 시험	1	3	3	U+0031:1×1,U+0032:2×1,U+0034:4×1	U+FF11:\uff11×1,U+FF12:\uff12×1,U+FF14:\uff14×1	0	-	-	-	#3389	그래프 캡션 — 전각 숫자
+sub-fullwidth-eng-passage	substitution	eng	eng	영어 시험	1	6	6	U+0030:0×1,U+0031:1×1,U+0032:2×3,U+0033:3×1	U+FF10:\uff10×1,U+FF11:\uff11×1,U+FF12:\uff12×3,U+FF13:\uff13×1	0	-	-	-	#3389	영어 지문 — 전각 숫자
+sub-fullwidth-eng-url	substitution	eng	eng	영어 시험	1	6	6	U+0030:0×1,U+0031:1×1,U+0032:2×3,U+0037:7×1	U+FF10:\uff10×1,U+FF11:\uff11×1,U+FF12:\uff12×3,U+FF17:\uff17×1	0	-	-	-	#3389	출처 URL — 전각 숫자
+sub-dash-eng-url	substitution	eng	eng	영어 시험	1	2	2	U+002D:-×2	U+2013:\u2013×2	0	-	-	-	#3389	출처 URL — 대시 치환
+sub-fullwidth-fn-early	substitution	footnote	plan	각주	1	4	4	U+0030:0×1,U+0032:2×3	U+FF10:\uff10×1,U+FF12:\uff12×3	0	-	-	-	#3389	각주 본문 이르게 — 전각 숫자
+sub-fullwidth-fn-late	substitution	footnote	manual	각주	1	2	2	U+0031:1×1,U+0032:2×1	U+FF11:\uff11×1,U+FF12:\uff12×1	0	-	-	-	#3389	각주 본문 늦게 — 전각 숫자
+sub-fullwidth-citation-law	substitution	citation	manual	법령 인용	1	5	5	U+0031:1×2,U+0032:2×2,U+0038:8×1	U+FF11:\uff11×2,U+FF12:\uff12×2,U+FF18:\uff18×1	0	-	-	-	#3389	법령명+조문 — 전각 숫자
+sub-fullwidth-citation-url	substitution	citation	manual	법령 인용	1	6	6	U+0030:0×1,U+0031:1×1,U+0032:2×1,U+0034:4×1,U+0036:6×1,U+0038:8×1	U+FF10:\uff10×1,U+FF11:\uff11×1,U+FF12:\uff12×1,U+FF14:\uff14×1,U+FF16:\uff16×1,U+FF18:\uff18×1	0	-	-	-	#3389	고시 URL — 전각 숫자
+sub-pua-fffd-pua-bullet	substitution	pua	plan	원문자	1	1	1	U+F02FB:\U000f02fb×1	U+FFFD:\ufffd×1	1	-	-	-	#2007	한컴 전용 불릿 — PUA→U+FFFD
+sub-pua-fffd-pua-range	substitution	pua	plan	원문자	1	14	14	U+F02B1:\U000f02b1×1,U+F02B2:\U000f02b2×1,U+F02B3:\U000f02b3×1,U+F02B4:\U000f02b4×1,U+F02B5:\U000f02b5×1,U+F02B6:\U000f02b6×1,U+F02B7:\U000f02b7×1,U+F02B8:\U000f02b8×1,U+F02B9:\U000f02b9×1,U+F02BA:\U000f02ba×1,U+F02BB:\U000f02bb×1,U+F02BC:\U000f02bc×1,U+F02BD:\U000f02bd×1,U+F02BE:\U000f02be×1	U+FFFD:\ufffd×14	14	-	-	-	#3385	원문자 전 구간 — PUA→U+FFFD
+sub-fullwidth-page-no	substitution	header	plan	머리글	1	2	2	U+0031:1×1,U+0032:2×1	U+FF11:\uff11×1,U+FF12:\uff12×1	0	-	-	-	#3389	쪽번호 — 전각 숫자
+sub-dash-page-no	substitution	header	plan	머리글	1	2	2	U+002D:-×2	U+2013:\u2013×2	0	-	-	-	#3389	쪽번호 — 대시 치환
+sub-fullwidth-fullwidth-year	substitution	norm	korexam	정규화	1	8	8	U+0030:0×2,U+0032:2×5,U+0034:4×1	U+FF10:\uff10×2,U+FF12:\uff12×5,U+FF14:\uff14×1	0	-	-	-	#3389	전각 연도 — 전각 숫자
+sub-fullwidth-hyphen-range	substitution	norm	plan	정규화	1	16	16	U+0030:0×4,U+0031:1×4,U+0032:2×7,U+0033:3×1	U+FF10:\uff10×4,U+FF11:\uff11×4,U+FF12:\uff12×7,U+FF13:\uff13×1	0	-	-	-	#3389	구간 하이픈 — 전각 숫자
+sub-dash-hyphen-range	substitution	norm	plan	정규화	1	5	5	U+002D:-×5	U+2013:\u2013×5	0	-	-	-	#3389	구간 하이픈 — 대시 치환
+sub-fullwidth-issue-3738-head	substitution	direct	plan	direct pair	1	3	3	U+0031:1×1,U+0032:2×1,U+0035:5×1	U+FF11:\uff11×1,U+FF12:\uff12×1,U+FF15:\uff15×1	0	-	-	-	#3738	이슈 3738 머리 — 전각 숫자
+sub-dash-issue-3738-head	substitution	direct	plan	direct pair	1	1	1	U+002D:-×1	U+2013:\u2013×1	0	-	-	-	#3738	이슈 3738 머리 — 대시 치환
+sub-fullwidth-overflow-body	substitution	overflow	manual	visible excess	1	2	2	U+0034:4×1,U+0038:8×1	U+FF14:\uff14×1,U+FF18:\uff18×1	0	-	-	-	#3389	본문+다음쪽 선점 — 전각 숫자
+sub-mixed-plan-goal	substitution	plan	plan	업무계획	1	8	4	U+0030:0×1,U+0032:2×3,U+AC10:\uac10×1,U+B294:\ub294×1,U+CCB4:\uccb4×1,U+D558:\ud558×1	U+FF10:\uff10×1,U+FF12:\uff12×3	0	-	-	-	#3389	목표 문단 소실+전각 혼합

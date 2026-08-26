@@ -1,0 +1,25 @@
+{
+  "id": "SD13",
+  "tier": 2,
+  "title": "도구 이름",
+  "input": "samples/table-001.hwp",
+  "instructions": "rhwp 가 capabilities 봉투에 싣는 도구 이름을 answer.json 에 {\"tool\": S} 으로 제출하라. 힌트: capabilities 의 tool.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "도구 이름",
+      "op": "answer_eq",
+      "answer": "tool",
+      "path": "tool",
+      "cmd": [
+        "capabilities"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

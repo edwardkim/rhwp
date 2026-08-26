@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "1.0",
+  "root": "fixtures/audit-layouts/nested-ignored",
+  "total": 1,
+  "reproduced": 1,
+  "failed": [],
+  "reproducedRate": 1.0,
+  "ignoredNested": [
+    "nested/hidden.capsule.json"
+  ],
+  "untrustedContent": false,
+  "untrustedFields": [],
+  "_skillMeta": {
+    "exit": 0,
+    "branch": "audit-non-recursive",
+    "command": "audit",
+    "note": "하위 폴더 *.capsule.json 은 세지 않는다",
+    "stdoutSilentOnFail": false
+  }
+}

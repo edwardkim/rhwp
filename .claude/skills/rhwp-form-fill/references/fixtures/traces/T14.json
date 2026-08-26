@@ -1,0 +1,11 @@
+{
+  "id": "T14",
+  "title": "name-field 금지문자 치환",
+  "steps": [
+    {
+      "note": "기존 CLI 표면만. 새 플래그 없음",
+      "usesExistingCommand": true
+    }
+  ],
+  "notGym": true
+}

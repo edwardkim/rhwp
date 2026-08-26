@@ -1,0 +1,16 @@
+{
+  "id": "SD36",
+  "steps": [
+    {
+      "answer": {
+        "available": {
+          "cmd": [
+            "capabilities"
+          ],
+          "path": "batch.mcp.available",
+          "len": true
+        }
+      }
+    }
+  ]
+}

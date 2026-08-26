@@ -1,0 +1,27 @@
+{
+  "id": "OM10",
+  "tier": 1,
+  "title": "메모 서식 누름틀 전수",
+  "input": "samples/field-01-memo.hwp",
+  "instructions": "입력 서식(field-01-memo)의 누름틀 개수를 answer.json 에 {\"fields\": N} 으로 제출하라. field-01.hwp 와 같은 이름 축이지만 메모 판은 필드 구성이 다를 수 있다. 힌트: rhwp fields 의 fieldCount.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "필드 수",
+      "op": "answer_eq",
+      "answer": "fields",
+      "path": "fieldCount",
+      "cmd": [
+        "fields",
+        "{input}",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

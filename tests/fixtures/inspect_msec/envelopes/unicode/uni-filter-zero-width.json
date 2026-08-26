@@ -1,0 +1,69 @@
+{
+  "id": "uni-filter-zero-width",
+  "issue": 5476,
+  "axis": "unicode",
+  "family": "kind-filter",
+  "polarity": "filter",
+  "sourceRule": {
+    "file": "src/document_core/text_security.rs",
+    "symbol": "DeceptionKind::from_filter",
+    "note": "zero-width"
+  },
+  "cli": {
+    "argv": [
+      "inspect",
+      "unicode",
+      "synth:unicode/mixed/all-kinds.hwp",
+      "--json",
+      "--kind",
+      "zero-width"
+    ],
+    "exitCode": 0,
+    "stdoutKind": "json-object",
+    "detectionIsNotFailure": true
+  },
+  "consume": {
+    "branch": "kindFilter",
+    "kept": "zero_width"
+  },
+  "pair": "uni-filter-all-mixed",
+  "why": "--kind zero-width 는 다른 축을 보고하지 않는다.",
+  "note": "필터는 탐지 규칙을 바꾸지 않는다.",
+  "human": "축 zero-width — 탐지 1건\n",
+  "inventedRule": false,
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "synth:unicode/mixed/all-kinds.hwp",
+    "kindFilter": "zero-width",
+    "scannedChars": 40,
+    "findings": [
+      {
+        "kind": "zero_width",
+        "codepoint": "U+200B",
+        "severity": "high",
+        "section": 0,
+        "paragraph": 0,
+        "location": "body",
+        "charOffset": 0,
+        "runLength": 3,
+        "excerpt": "제출<U+200B><U+200B><U+200B>방법",
+        "rendered": "제출방법",
+        "raw": "제출<U+200B><U+200B><U+200B>방법",
+        "why": "사람 눈에 보이지 않는 문자입니다 — 화면에 없는 내용이 LLM 이 읽는 텍스트에는 남습니다"
+      }
+    ],
+    "findingCount": 1,
+    "clean": false,
+    "severityCounts": {
+      "high": 1,
+      "medium": 0,
+      "low": 0
+    },
+    "kindCounts": {
+      "zero_width": 1,
+      "bidi_override": 0,
+      "tag_char": 0,
+      "confusable": 0
+    }
+  }
+}

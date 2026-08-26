@@ -1,0 +1,53 @@
+{
+  "id": "SR23",
+  "tier": 2,
+  "title": "HWPX 원본 PDF 렌더 쪽수",
+  "input": "samples/hwpx/143E433F503322BD33.hwpx",
+  "instructions": "HWPX 원본을 PDF 로 내보내 out.pdf 를 제출하고, 실제 렌더한 쪽 수를 answer.json 에 {\"rendered\": N} 으로 적어라. pageCount 와 renderedCount 는 보통 같지만, 봉투 필드를 혼동하면 오답이다. 힌트: rhwp export-pdf --json 의 renderedCount.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "out.pdf",
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "PDF 산출",
+      "op": "file_exists",
+      "file": "out.pdf",
+      "minBytes": 256
+    },
+    {
+      "name": "원본과 다름 (무편집 복사 거부 — 판별력)",
+      "op": "differs_from_input",
+      "file": "out.pdf"
+    },
+    {
+      "name": "PDF 형식",
+      "op": "value_eq",
+      "value": "pdf",
+      "path": "format",
+      "cmd": [
+        "export-pdf",
+        "{input}",
+        "-o",
+        "{file:out.pdf}",
+        "--json"
+      ]
+    },
+    {
+      "name": "렌더한 쪽 수",
+      "op": "answer_eq",
+      "answer": "rendered",
+      "path": "renderedCount",
+      "cmd": [
+        "export-pdf",
+        "{input}",
+        "-o",
+        "{file:out.pdf}",
+        "--json"
+      ]
+    }
+  ]
+}

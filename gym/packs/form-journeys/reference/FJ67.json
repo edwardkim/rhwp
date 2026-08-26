@@ -1,0 +1,35 @@
+{
+  "id": "FJ67",
+  "steps": [
+    {
+      "write_json": {
+        "to": "{sub:data.json}",
+        "body": {
+          "제목": "메모제출제목"
+        }
+      }
+    },
+    {
+      "run": [
+        "edit",
+        "fill-fields",
+        "{input}",
+        "--data",
+        "@{sub:data.json}",
+        "-o",
+        "{sub:filled.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "edit",
+        "sanitize",
+        "{sub:filled.hwp}",
+        "-o",
+        "{sub:submit.hwp}",
+        "--json"
+      ]
+    }
+  ]
+}

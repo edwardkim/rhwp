@@ -1,0 +1,50 @@
+{
+  "id": "p8-events",
+  "title": "이벤트 넷과 PopupDialog — 이 개체에 있나",
+  "ledger": [],
+  "open": "samples/para-001.hwp",
+  "calls": [
+    [
+      "AddEventListener",
+      [
+        "OnScroll"
+      ]
+    ],
+    [
+      "AddEventListener",
+      [
+        "OnMouseLButtonDown",
+        0
+      ]
+    ],
+    [
+      "OnScroll",
+      []
+    ],
+    [
+      "OnMouseLButtonDown",
+      []
+    ],
+    [
+      "OnMouseLButtonUp",
+      []
+    ],
+    [
+      "RegisterModule",
+      [
+        "FilePathCheckDLL",
+        "FilePathCheckerModule"
+      ]
+    ],
+    [
+      "PopupDialog",
+      []
+    ],
+    [
+      "PopupDialog",
+      [
+        0
+      ]
+    ]
+  ]
+}

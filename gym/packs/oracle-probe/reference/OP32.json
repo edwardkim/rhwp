@@ -1,0 +1,17 @@
+{
+  "id": "OP32",
+  "steps": [
+    {
+      "answer": {
+        "paragraphs": {
+          "cmd": [
+            "explain",
+            "{input}",
+            "--json"
+          ],
+          "path": "paragraphCount"
+        }
+      }
+    }
+  ]
+}

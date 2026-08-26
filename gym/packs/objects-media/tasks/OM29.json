@@ -1,0 +1,29 @@
+{
+  "id": "OM29",
+  "tier": 2,
+  "title": "1쪽 시험지 썸네일 가로",
+  "input": "samples/exam-kor-1p.hwp",
+  "instructions": "1쪽 시험지 썸네일의 **가로 픽셀**을 answer.json 에 {\"width\": N} 으로 제출하라. 힌트: rhwp thumbnail 의 width.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "가로 픽셀",
+      "op": "answer_eq",
+      "answer": "width",
+      "path": "width",
+      "cmd": [
+        "thumbnail",
+        "{input}",
+        "-o",
+        "{file:t.png}",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

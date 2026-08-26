@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1180" height="840" viewBox="0 0 1180 840" font-family="'Malgun Gothic','Apple SD Gothic Neo',sans-serif">
+<rect width="1180" height="840" fill="#FBF6EC"/>
+<text x="60" y="58" font-size="34" font-weight="800" fill="#20233A">다표면 채택 중력 — 모든 문이 같은 축으로</text>
+<text x="60" y="92" font-size="18" fill="#8b8fa6">트랙 L (집계 밖) · 에이전트가 어느 표면으로 들어오든 검증 사다리·운동장으로 이어진다</text>
+<text x="62" y="126" font-size="15" font-weight="700" fill="#4E5AE8">에이전트가 들어오는 문</text>
+<text x="822" y="126" font-size="15" font-weight="700" fill="#4E5AE8">모두가 이어지는 축</text>
+<rect x="820" y="220" width="300" height="150" rx="26" fill="#4E5AE8"/>
+<text x="970.0" y="276" font-size="27" font-weight="800" fill="#fff" text-anchor="middle">검증 사다리</text>
+<text x="970.0" y="310" font-size="18" fill="#dfe3ff" text-anchor="middle">작업 = 증명</text>
+<text x="970.0" y="340" font-size="14" fill="#c3c9ff" text-anchor="middle" font-family="monospace">replay·harness·gate·audit</text>
+<rect x="820" y="430" width="300" height="150" rx="26" fill="#4E5AE8"/>
+<text x="970.0" y="486" font-size="27" font-weight="800" fill="#fff" text-anchor="middle">운동장 (gym)</text>
+<text x="970.0" y="520" font-size="18" fill="#dfe3ff" text-anchor="middle">실력 = 기록</text>
+<text x="970.0" y="550" font-size="14" fill="#c3c9ff" text-anchor="middle" font-family="monospace">12 pack · 리더보드</text>
+<rect x="60" y="150" width="320" height="78" rx="14" fill="#fff" stroke="#20A05E" stroke-width="2.5"/>
+<rect x="60" y="150" width="7" height="78" rx="3" fill="#20A05E"/>
+<text x="82" y="182" font-size="19" font-weight="700" fill="#20233A">규약 파일 22종</text>
+<text x="82" y="206" font-size="13" fill="#8b8fa6" font-family="monospace">.md · 스킬 · AGENTS</text>
+<text x="366" y="172" font-size="12" font-weight="700" fill="#20A05E" text-anchor="end">완료 #4562</text>
+<path d="M 380 189.0 C 490 189.0, 710 295.0, 820 295.0" fill="none" stroke="#20A05E" stroke-width="2" opacity="0.75"/>
+<path d="M 380 189.0 C 490 189.0, 710 505.0, 820 505.0" fill="none" stroke="#20A05E" stroke-width="2" opacity="0.75"/>
+<rect x="60" y="252" width="320" height="78" rx="14" fill="#fff" stroke="#D9902B" stroke-width="2.5"/>
+<rect x="60" y="252" width="7" height="78" rx="3" fill="#D9902B"/>
+<text x="82" y="284" font-size="19" font-weight="700" fill="#20233A">CLI 온보딩</text>
+<text x="82" y="308" font-size="13" fill="#8b8fa6" font-family="monospace">capabilities · help · llms.txt</text>
+<text x="366" y="274" font-size="12" font-weight="700" fill="#D9902B" text-anchor="end">문서 L2</text>
+<path d="M 380 291.0 C 490 291.0, 710 295.0, 820 295.0" fill="none" stroke="#D9902B" stroke-width="2" opacity="0.75"/>
+<path d="M 380 291.0 C 490 291.0, 710 505.0, 820 505.0" fill="none" stroke="#D9902B" stroke-width="2" opacity="0.75"/>
+<rect x="60" y="354" width="320" height="78" rx="14" fill="#fff" stroke="#E0574F" stroke-width="2.5"/>
+<rect x="60" y="354" width="7" height="78" rx="3" fill="#E0574F"/>
+<text x="82" y="386" font-size="19" font-weight="700" fill="#20233A">MCP 서버</text>
+<text x="82" y="410" font-size="13" fill="#8b8fa6" font-family="monospace">tools 66 · resources 13 · prompts 0</text>
+<text x="366" y="376" font-size="12" font-weight="700" fill="#E0574F" text-anchor="end">prompts 미개척 L3</text>
+<path d="M 380 393.0 C 490 393.0, 710 295.0, 820 295.0" fill="none" stroke="#E0574F" stroke-width="2" stroke-dasharray="7 5" opacity="0.75"/>
+<path d="M 380 393.0 C 490 393.0, 710 505.0, 820 505.0" fill="none" stroke="#E0574F" stroke-width="2" stroke-dasharray="7 5" opacity="0.75"/>
+<rect x="60" y="456" width="320" height="78" rx="14" fill="#fff" stroke="#20A05E" stroke-width="2.5"/>
+<rect x="60" y="456" width="7" height="78" rx="3" fill="#20A05E"/>
+<text x="82" y="488" font-size="19" font-weight="700" fill="#20233A">하네스</text>
+<text x="82" y="512" font-size="13" fill="#8b8fa6" font-family="monospace">init · wrap · status</text>
+<text x="366" y="478" font-size="12" font-weight="700" fill="#20A05E" text-anchor="end">실측 L5</text>
+<path d="M 380 495.0 C 490 495.0, 710 295.0, 820 295.0" fill="none" stroke="#20A05E" stroke-width="2" opacity="0.75"/>
+<rect x="60" y="558" width="320" height="78" rx="14" fill="#fff" stroke="#D9902B" stroke-width="2.5"/>
+<rect x="60" y="558" width="7" height="78" rx="3" fill="#D9902B"/>
+<text x="82" y="590" font-size="19" font-weight="700" fill="#20233A">planner</text>
+<text x="82" y="614" font-size="13" fill="#8b8fa6" font-family="monospace">run · plan schema</text>
+<text x="366" y="580" font-size="12" font-weight="700" fill="#D9902B" text-anchor="end">가설 L6</text>
+<path d="M 380 597.0 C 490 597.0, 710 295.0, 820 295.0" fill="none" stroke="#D9902B" stroke-width="2" opacity="0.75"/>
+<rect x="60" y="660" width="320" height="78" rx="14" fill="#fff" stroke="#D9902B" stroke-width="2.5"/>
+<rect x="60" y="660" width="7" height="78" rx="3" fill="#D9902B"/>
+<text x="82" y="692" font-size="19" font-weight="700" fill="#20233A">로드맵·아틀라스</text>
+<text x="82" y="716" font-size="13" fill="#8b8fa6" font-family="monospace">atlas · hyperdimensional</text>
+<text x="366" y="682" font-size="12" font-weight="700" fill="#D9902B" text-anchor="end">문서 L8</text>
+<path d="M 380 699.0 C 490 699.0, 710 295.0, 820 295.0" fill="none" stroke="#D9902B" stroke-width="2" opacity="0.75"/>
+<path d="M 380 699.0 C 490 699.0, 710 505.0, 820 505.0" fill="none" stroke="#D9902B" stroke-width="2" opacity="0.75"/>
+<path d="M 970.0 370 C 1040.0 400, 1040.0 400, 970.0 430" fill="none" stroke="#fff" stroke-width="2" stroke-dasharray="4 4"/>
+<text x="1050.0" y="405.0" font-size="12" fill="#8b8fa6">되먹임</text>
+<text x="60" y="782" font-size="13" font-weight="700" fill="#20233A">상태:</text>
+<rect x="60" y="790" width="16" height="16" rx="4" fill="#20A05E"/>
+<text x="84" y="803" font-size="14" fill="#20233A">완료·실측</text>
+<rect x="185" y="790" width="16" height="16" rx="4" fill="#D9902B"/>
+<text x="209" y="803" font-size="14" fill="#20233A">문서·가설</text>
+<rect x="310" y="790" width="16" height="16" rx="4" fill="#E0574F"/>
+<text x="334" y="803" font-size="14" fill="#20233A">미개척(강력한 지렛대)</text>
+<text x="1120" y="803" font-size="13" fill="#8b8fa6" text-anchor="end" font-style="italic">헌법: 은닉 금지 · 유용성 우선 · 강요 없음 · 되돌릴 수 있음</text>
+</svg>

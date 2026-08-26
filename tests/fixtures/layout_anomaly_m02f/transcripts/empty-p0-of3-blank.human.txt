@@ -1,0 +1,6 @@
+# transcript empty-p0-of3-blank
+# family=empty-page
+# hypothesis=page=0/3, content=False. empty_page 는 쪽 수≥3 이고 첫·마지막이 아니며 콘텐츠가 없을 때만 가능성 신호. has_signal 에는 들어가지 않는다. 표지·뒷면 빈 쪽은 침묵.
+쪽 수: 3  overflow: 0  off-canvas: 0  overlap: 0  text-overlap: 0  empty_page(가능성): 0
+이상 신호 없음: empty-p0-of3-blank.synth
+status: CLEAN

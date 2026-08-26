@@ -1,0 +1,144 @@
+{
+  "id": "XC17",
+  "steps": [
+    {
+      "run": [
+        "keygen",
+        "--key-id",
+        "gym-xc17-l4s",
+        "--out",
+        "{sub:agent.key.json}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "run",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"samples/table-004.hwp\", \"output\": \"{sub:o1.hwp}\", \"steps\": [{\"action\": \"set_cell\", \"table\": 0, \"row\": 0, \"col\": 0, \"text\": \"칸1-XC17\"}]}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "replay",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"samples/table-004.hwp\", \"output\": \"{sub:o1.hwp}\", \"steps\": [{\"action\": \"set_cell\", \"table\": 0, \"row\": 0, \"col\": 0, \"text\": \"칸1-XC17\"}]}",
+        "--capsule",
+        "{sub:gate4s/g0.capsule.json}",
+        "--sign-key",
+        "{sub:agent.key.json}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "replay",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"{sub:o1.hwp}\", \"output\": \"{sub:o2.hwp}\", \"steps\": [{\"action\": \"set_cell\", \"table\": 0, \"row\": 0, \"col\": 0, \"text\": \"칸2-XC17\"}]}",
+        "--capsule",
+        "{sub:gate4s/g1.capsule.json}",
+        "--sign-key",
+        "{sub:agent.key.json}",
+        "--parent",
+        "{sub:gate4s/g0.capsule.json}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "replay",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"{sub:o2.hwp}\", \"output\": \"{sub:o3.hwp}\", \"steps\": [{\"action\": \"set_cell\", \"table\": 0, \"row\": 0, \"col\": 0, \"text\": \"칸3-XC17\"}]}",
+        "--capsule",
+        "{sub:gate4s/g2.capsule.json}",
+        "--sign-key",
+        "{sub:agent.key.json}",
+        "--parent",
+        "{sub:gate4s/g1.capsule.json}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "replay",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"{sub:o3.hwp}\", \"output\": \"{sub:o4.hwp}\", \"steps\": [{\"action\": \"set_cell\", \"table\": 0, \"row\": 0, \"col\": 0, \"text\": \"칸4-XC17\"}]}",
+        "--capsule",
+        "{sub:gate4s/g3.capsule.json}",
+        "--sign-key",
+        "{sub:agent.key.json}",
+        "--parent",
+        "{sub:gate4s/g2.capsule.json}",
+        "--json"
+      ]
+    },
+    {
+      "keyring_from": {
+        "key": "{sub:agent.key.json}",
+        "out": "{sub:keyring.json}",
+        "keyId": "gym-xc17-l4s"
+      }
+    },
+    {
+      "run": [
+        "anchor",
+        "add",
+        "{sub:gate4s/g0.capsule.json}",
+        "--log",
+        "{sub:anchor.ndjson}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "anchor",
+        "add",
+        "{sub:gate4s/g1.capsule.json}",
+        "--log",
+        "{sub:anchor.ndjson}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "anchor",
+        "add",
+        "{sub:gate4s/g2.capsule.json}",
+        "--log",
+        "{sub:anchor.ndjson}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "anchor",
+        "add",
+        "{sub:gate4s/g3.capsule.json}",
+        "--log",
+        "{sub:anchor.ndjson}",
+        "--json"
+      ]
+    },
+    {
+      "write_json": {
+        "to": "{sub:policy.json}",
+        "body": {
+          "schemaVersion": "1.0",
+          "kind": "admissionPolicy",
+          "default": "deny",
+          "rules": [
+            {
+              "id": "R1-계보",
+              "require": {
+                "lineageValid": {
+                  "eq": true
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+sample	status	pages_a	pages_b	max_disp	worst_page	struct_pages	over_pages	elapsed_ms	error	struct_delta
+form-01.hwp	PASS	1	1	0.000	-	0	0	5		
+filled-0001.hwp	STRUCT_MISMATCH	1	1	495.930	0	1	1	12		TextRun:-2
+long-replace.hwp	OVER	3	3	279.000	1	0	1	18		
+broken.hwp	LOAD_FAIL	0	0	0.000	-	0	0	1	parse failed	
+paged.hwp	PAGE_MISMATCH	2	3	0.000	-	0	0	9		
+noise.hwp	WARN_TEXTRUN	1	1	0.400	0	1	0	7		TextRun:+1

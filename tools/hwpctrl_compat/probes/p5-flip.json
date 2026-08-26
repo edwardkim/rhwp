@@ -1,0 +1,27 @@
+{
+  "id": "p5-flip",
+  "title": "뒤집기 — 어디에 적히는가",
+  "ledger": [],
+  "open": "samples/mix-shape-01.hwp",
+  "calls": [
+    ["SetPos", [0, 0, 0]],
+    ["Run", ["SelectCtrlFront"]],
+    ["CurSelectedCtrl.UserDesc", []],
+    ["HeadCtrl.Next.Next.Next.Properties.Item", ["Width"]],
+    ["HeadCtrl.Next.Next.Next.Properties.Item", ["Height"]],
+    ["HeadCtrl.Next.Next.Next.Properties.Item", ["HorzFlip"]],
+    ["HeadCtrl.Next.Next.Next.Properties.Item", ["VertFlip"]],
+    ["HeadCtrl.Next.Next.Next.Properties.Item", ["Flip"]],
+    ["HeadCtrl.Next.Next.Next.Properties.Item", ["Rotation"]],
+    ["HeadCtrl.Next.Next.Next.Properties.Item", ["RotateAngle"]],
+    ["Run", ["ShapeObjHorzFlip"]],
+    ["HeadCtrl.Next.Next.Next.Properties.Item", ["HorzFlip"]],
+    ["HeadCtrl.Next.Next.Next.Properties.Item", ["Flip"]],
+    ["HeadCtrl.Next.Next.Next.Properties.Item", ["Width"]],
+    ["HeadCtrl.Next.Next.Next.Properties.Item", ["HorzOffset"]],
+    ["Run", ["ShapeObjVertFlip"]],
+    ["HeadCtrl.Next.Next.Next.Properties.Item", ["VertFlip"]],
+    ["HeadCtrl.Next.Next.Next.Properties.Item", ["VertOffset"]],
+    ["HeadCtrl.Next.Next.Next.Properties.Count", []]
+  ]
+}

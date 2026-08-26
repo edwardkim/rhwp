@@ -1,0 +1,65 @@
+{
+  "schemaVersion": "1.0",
+  "caseId": "T-hwp_table_test_t0-bom",
+  "issue": 5485,
+  "skill": "rhwp-table-exchange",
+  "family": "table-to-csv",
+  "command": "table-to-csv",
+  "title": "hwp_table_test_t0 --bom 은 파일만, 봉투 csv 에는 U+FEFF 없음",
+  "sample": "samples/hwp_table_test.hwp",
+  "tableIndex": 0,
+  "rows": 4,
+  "cols": 3,
+  "mode": "extract",
+  "argv": [
+    "rhwp",
+    "table-to-csv",
+    "samples/hwp_table_test.hwp",
+    "--table",
+    "0",
+    "-o",
+    "table0_bom.csv",
+    "--bom",
+    "--json"
+  ],
+  "expectExit": 0,
+  "writes": true,
+  "csvRoundtrip": "allowed",
+  "notes": "bom_flag_only_affects_the_file_not_the_envelope.",
+  "nextAction": "엑셀은 파일만 연다. 봉투 csv 를 붙여넣지 마라.",
+  "documented": true,
+  "occupancy": {
+    "rows": 4,
+    "cols": 3,
+    "cellCount": 12,
+    "coveredCount": 0,
+    "mergedAnchorCount": 0,
+    "areaSum": 12,
+    "gridArea": 12,
+    "areaFits": true,
+    "mergedAnchors": [],
+    "covered": []
+  },
+  "csvName": "table0_bom.csv",
+  "csvLineCount": 4,
+  "invalid": [],
+  "changed": [],
+  "envelope": {
+    "dryRun": null,
+    "changedCount": null,
+    "changedPages": null,
+    "output": "table0_bom.csv",
+    "verify": null,
+    "outputFormat": "csv",
+    "invalidCount": 0,
+    "_skillMeta": {
+      "skill": "rhwp-table-exchange",
+      "command": "table-to-csv",
+      "exit": 0,
+      "envelopeCsvStartsWithBom": false
+    }
+  },
+  "sourceRefs": [
+    "tests/table_csv_contract.rs bom_flag_only_affects_the_file_not_the_envelope"
+  ]
+}

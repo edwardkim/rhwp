@@ -1,0 +1,12 @@
+# M09-g equation golden — current-engine lock (variant/exception/unimplemented honesty)
+command: MATRIX
+script: LADDER
+honesty: ladder-fallback-matrix
+
+=== ast ===
+Empty
+
+=== layout ===
+Empty x=0.0000 y=0.0000 w=0.0000 h=0.0000 bl=0.0000
+
+=== svg ===

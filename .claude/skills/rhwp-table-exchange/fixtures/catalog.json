@@ -1,0 +1,169 @@
+{
+  "catalogVersion": "1.0",
+  "skill": "rhwp-table-exchange",
+  "issue": 5306,
+  "note": "기존 CLI 만 배선. 새 명령·DocumentCore 편집 로직 없음. gym 없음.",
+  "commands": [
+    "export-tables",
+    "table-to-csv",
+    "csv-to-table",
+    "edit set-cell"
+  ],
+  "flags": {
+    "table-to-csv": [
+      "--table",
+      "-o",
+      "--bom",
+      "--json"
+    ],
+    "csv-to-table": [
+      "--csv",
+      "--table",
+      "-o",
+      "--dry-run",
+      "--verify",
+      "--json"
+    ],
+    "export-tables": [
+      "--json",
+      "-o"
+    ],
+    "edit set-cell": [
+      "--table",
+      "--row",
+      "--col",
+      "--text",
+      "--keep-style",
+      "-o",
+      "--dry-run",
+      "--json"
+    ]
+  },
+  "invalidReasons": [
+    "rowCountMismatch",
+    "colCountMismatch",
+    "coveredCellNotEmpty",
+    "controlCharacter",
+    "csvParse"
+  ],
+  "exits": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "references": [
+    "export_tables_matrix.md",
+    "table_to_csv_envelopes.md",
+    "csv_to_table_contract.md",
+    "dry_run_verify.md",
+    "merged_table_fallback.md",
+    "pitfalls.md",
+    "failure_envelopes.md",
+    "sample_transcripts.md",
+    "coordinate_index.md"
+  ],
+  "examples": [
+    "01_coordinate_scan.md",
+    "02_single_table_extract.md",
+    "03_all_tables_folder.md",
+    "04_bom_excel.md",
+    "05_dry_run_preview.md",
+    "06_verify_success.md",
+    "07_row_count_mismatch.md",
+    "08_col_count_mismatch.md",
+    "09_covered_cell.md",
+    "10_control_character.md",
+    "11_header_row_pitfall.md",
+    "12_merged_fallback_set_cell.md",
+    "13_nested_out_of_v1.md",
+    "14_roundtrip_hwp_table_test.md",
+    "15_verify_exit3.md",
+    "16_batch_harvest.md",
+    "17_rfc4180_quoting.md",
+    "18_index_not_zero.md"
+  ],
+  "envelopes": [
+    "batch_export_tables_ndjson.json",
+    "csv_to_table_col_mismatch.json",
+    "csv_to_table_control_lf.json",
+    "csv_to_table_control_tab.json",
+    "csv_to_table_covered.json",
+    "csv_to_table_csv_parse.json",
+    "csv_to_table_dry_run.json",
+    "csv_to_table_header_changed.json",
+    "csv_to_table_identical_zero.json",
+    "csv_to_table_missing_args_exit2.json",
+    "csv_to_table_ok_recipe02.json",
+    "csv_to_table_row_mismatch.json",
+    "csv_to_table_table001_both_mismatch.json",
+    "csv_to_table_verify_fail.json",
+    "csv_to_table_verify_ok.json",
+    "export_tables_hwp_table_test.json",
+    "export_tables_inner_table.json",
+    "export_tables_issue2007.json",
+    "export_tables_jichi_index_not_zero.json",
+    "export_tables_missing_file_exit1.json",
+    "export_tables_multi_table.json",
+    "export_tables_table_001.json",
+    "export_tables_treatise_container.json",
+    "export_tables_usage_exit2.json",
+    "reread_export_tables_row1.json",
+    "set_cell_anchor_ok.json",
+    "set_cell_covered_exit2.json",
+    "set_cell_dry_run.json",
+    "set_cell_keep_style.json",
+    "set_cell_oob_exit2.json",
+    "set_cell_overflow.json",
+    "table_to_csv_all_tables.json",
+    "table_to_csv_bom_file.json",
+    "table_to_csv_hwp_table_test_t0.json",
+    "table_to_csv_issue2007_t1.json",
+    "table_to_csv_missing_args_exit2.json",
+    "table_to_csv_rfc4180.json",
+    "table_to_csv_stdout_pipe.json",
+    "table_to_csv_unknown_table_exit1.json"
+  ],
+  "loops": [
+    "bom_excel.json",
+    "dimension_reject.json",
+    "merge_fallback.json",
+    "nested_reject.json",
+    "roundtrip_plain.json",
+    "verify_exit3.json"
+  ],
+  "matrices": [
+    "bom_encoding.json",
+    "coordinate_index.json",
+    "exit_codes.json",
+    "header_row.json",
+    "invalid_reasons.json",
+    "merge_decision.json",
+    "sample_catalog.json"
+  ],
+  "transcripts": [
+    "codex20_issue2007.json",
+    "playbook_table001_mismatch.json",
+    "recipe02_roundtrip.json"
+  ],
+  "csv": [
+    "basic_table_01.csv",
+    "issue2007_table1.csv",
+    "jichi_identical_placeholder.csv",
+    "table001_bad_2x2.csv",
+    "table0_bom.csv",
+    "table0_col_long.csv",
+    "table0_control_lf.csv",
+    "table0_control_tab.csv",
+    "table0_covered.csv",
+    "table0_edited.csv",
+    "table0_header_dropped.csv",
+    "table0_original.csv",
+    "table0_quoted.csv",
+    "table0_row_short.csv",
+    "table0_unclosed_quote.csv"
+  ],
+  "decisions": [
+    "request_to_command.json"
+  ]
+}

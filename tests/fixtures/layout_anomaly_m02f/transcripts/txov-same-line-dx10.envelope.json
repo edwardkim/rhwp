@@ -1,0 +1,38 @@
+{
+  "schemaVersion": "1.0",
+  "mode": "single",
+  "source": "txov-same-line-dx10.synth",
+  "pageCount": 3,
+  "pageFilter": null,
+  "overflowTolerancePx": 1.0,
+  "overlapTolerancePx": 2.0,
+  "types": null,
+  "strict": false,
+  "overflowCount": 0,
+  "offCanvasCount": 0,
+  "overlapCount": 0,
+  "textOverlapCount": 1,
+  "emptyPageCount": 0,
+  "hasSignal": true,
+  "pages": [
+    {
+      "page": 0,
+      "overflow": [],
+      "offCanvas": [],
+      "overlap": [],
+      "textOverlap": [
+        {
+          "pathA": "Page/Body/TextLine0/TextRun0",
+          "typeA": "TextRun",
+          "pathB": "Page/Body/TextLine0/TextRun1",
+          "typeB": "TextRun",
+          "overlapW": 10.0,
+          "overlapH": 12.0
+        }
+      ],
+      "emptyPage": false
+    }
+  ],
+  "hypothesis": "한 줄 안 두 런이 10px 겹친다. 맞닿음(0)은 교차가 아니고, 허용치 2px 를 넘는 폭·높이만 text-overlap 이다.",
+  "fixtureId": "txov-same-line-dx10"
+}

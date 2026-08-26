@@ -1,0 +1,28 @@
+{
+  "id": "OP20",
+  "tier": 2,
+  "title": "hml 탐침 첫 문서 확장자 불일치",
+  "input": "samples/table-001.hwp",
+  "axis": "검증",
+  "instructions": "samples/hml 을 탐침 모드로 스캔해 첫 문서의 확장자 불일치 여부를 answer.json 에 {\"mismatch\": true|false} 로 제출하라. 채점기가 scan --probe --json 의 files[0].extMismatch 를 다시 읽는다.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "확장자 불일치",
+      "op": "answer_eq",
+      "answer": "mismatch",
+      "cmd": [
+        "scan",
+        "samples/hml",
+        "--probe",
+        "--json"
+      ],
+      "path": "files[0].extMismatch"
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "id": "EX03",
+  "tier": 2,
+  "title": "날짜 수확 — extract-data --kind date",
+  "input": "samples/20250130-hongbo.hwp",
+  "instructions": "extract-data --kind date 로 이 문서에서 날짜만 수확해, 항목 수(itemCount)를 보고하라. 답 형식: {\"dates\": <수>}. 힌트: rhwp extract-data <문서> --kind date --json 의 itemCount.",
+  "submit": {
+    "kind": "answer"
+  },
+  "checks": [
+    {
+      "name": "날짜 항목 수 일치",
+      "op": "answer_eq",
+      "answer": "dates",
+      "cmd": [
+        "extract-data",
+        "{input}",
+        "--kind",
+        "date",
+        "--json"
+      ],
+      "path": "itemCount"
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "gymPack",
+  "id": "text-editing",
+  "title": "본문 편집",
+  "axis": "편집 (탐색→치환→재검증)",
+  "description": "문구 치환·정리의 왕복. 고친 자리를 지목해 판정하고, 고치지 않은 것까지 바뀌지 않았는지 본다.",
+  "requires": {
+    "commands": [
+      "digest",
+      "edit",
+      "explain",
+      "export-structure",
+      "info",
+      "search"
+    ]
+  },
+  "runner": {
+    "rhwpVersion": "0.8.2",
+    "rhwpCommit": "1e8667aa86aeb979119aa9152112b42e4f16a76c",
+    "capabilitiesSha256": "2c7c41bc8952b63c4502ec0685b76990e4ece5b178f6dc28a1a495b12880af75"
+  }
+}

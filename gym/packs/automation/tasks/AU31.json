@@ -1,0 +1,34 @@
+{
+  "id": "AU31",
+  "tier": 3,
+  "title": "HWPX 표 서명 귀속",
+  "input": "samples/hwpx/basic-table-01.hwpx",
+  "instructions": "AU31 — HWPX 표 서명 귀속.\n\n입력 표본은 `samples/hwpx/basic-table-01.hwpx` 이다. 저장소 samples/ 에 이미 있는 실문서이며 새 픽스처를 만들지 않는다. automation pack 은 기존 CLI 표면(anchor · audit · audit-report · bundle · conformance · disclose · export-tables · gate · lineage · recall-scope · settle · verify-signature) 만으로 검증 사다리 여정을 늘린다. 새 명령·새 연산자·새 pack 은 없다.\n\n키 `au-sign-hwpx` 를 발급해 작업 캡슐에 **분리 서명**을 붙여라. 제출은 capsules/work.capsule.json 과 keyring.json 이다. AU03 은 table-001 + gym-agent 이다. 이 과제는 표본 `samples/hwpx/basic-table-01.hwpx` 와 키 id 가 다르다. XC05 의 L3+앵커+보고서 완주를 하지 마라.\n\n수행 힌트: rhwp keygen --key-id au-sign-hwpx → replay --sign-key → verify-signature. 채점은 제출 폴더에서 같은 판정 명령을 다시 돌린다. 정답 해시·건수를 과제 파일에 박제하지 마라. 표본이 바뀌면 라이브 재계산이 따라간다.\n\n금지: XC01 L5 완주, XC02 오염 무영향 0, XC03 정산 4관문, XC04 3세대 --deep, XC05 L3 서명+앵커 완주, WR 일일 3해시, T07 서식 채움을 복제하지 마라. 원본 픽스처를 덮어쓰지 마라. 산출은 제출 폴더의 -o / --capsule 뿐이다. T07 서식 채움(fill-fields, 첫 필드 홍길동)을 복제하지 마라. XC01–XC05 사다리 완주(L5 · 3세대 --deep · 정산 4관문 · 오염 무영향 0 · L3 서명+앵커 완주)를 베끼지 마라. WR01+ 일일 영수증 3해시 answer.json 여정도 이 pack 의 일이 아니다.\n\n키링에 공개키만 넣는다. 비밀키를 제출 폴더에 남기지 마라.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "capsules/work.capsule.json",
+      "keyring.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "서명 판정 valid",
+      "op": "value_eq",
+      "value": "valid",
+      "path": "verdict",
+      "cmd": [
+        "verify-signature",
+        "{file:capsules/work.capsule.json}",
+        "--keyring",
+        "{file:keyring.json}",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    }
+  ],
+  "axis": "자동화"
+}

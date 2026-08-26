@@ -1,0 +1,210 @@
+{
+  "id": "pM-flip",
+  "title": "개체 뒤집기 넷 — 저장본에 남는 자취로 잰다",
+  "note": "어느 API 도 결과를 안 비추는 계열이라 **저장본 앞뒤 차분**으로 잰다(계획서 §4.20·§4.22). 첫 저장(`fw`)은 버린다 — 문서를 연 뒤 첫 저장에만 붙는 비결정 비트를 재는 자리 밖으로 뺀다.\n\n`ignorePaths` 의 `shape_attr.flip` 은 **세션 부산물 비트(0x30000) 때문**이다. 같은 파일 상태(flip=720898)에서 `VertFlipOrgState` 를 걸어도 앞선 이력에 따라 그 비트가 남기도(`pM2-vv`: →720896) 지워지기도(`pM-flip` 경로: →524288) 한다 — 파일 밖 상태의 함수라 대조가 성립하지 않는다. 한글이 저장한 HWPX 의 `<hp:flip>` 도 horizontal·vertical 두 속성뿐이라 그 비트를 담을 자리가 없다(`probes/pM9-hwpx.json`). 뜻 있는 축은 `horz_flip`·`vert_flip` 제 줄로, 행렬은 `render_*` 로 따로 견주므로 눈머는 축이 없다.\n\n마지막 두 걸음(f4→f5·f5→f6, OrgState 를 거듭 누르기)은 그 부산물 비트만 만지거나 아무 일도 안 하므로 거른 뒤 빈 자취가 된다 — 빈 자취는 통과가 아니라는 규칙과 부딪혀 delta 로 세지 않고 호출만 남겼다(L2 반환은 대조된다).\n\n이동량은 `even_ceil(cur) − 2·(org%2)` 다 — 배율 0~3걸음 × 두 축 × 홀짝 org 여덟 관측이 전부 맞고, 같은 크기를 다른 이력으로 만들어도 같은 값이다(`pM6-*`·`pM8-path`). 이 게이트는 배율 없는 개체만 태운다 — 배율을 만드는 `ShapeObjResize*` 가 rhwp 에서 아직 변환 행렬을 안 갱신해(별도 결함) 그 차이가 뒤집기 자취에 섞이기 때문이다.\n\n`raw_rendering` 을 거르는 이유: 변환 행렬의 **원본 바이트**라 뜻은 `render_sx`·`render_sy`·`render_tx`·`render_ty`·`render_b`·`render_c` 제 줄로 전부 따로 견줘진다. 블록 구조(행렬 개수)가 두 직렬화기에서 달라 **같은 변화가 다른 오프셋에** 나타난다 — 실제로 sx 부호 바이트(0x3F→0xBF)와 tx=8474 의 f64 바이트(141·192·64)가 양쪽에 똑같이 있는데 자리만 어긋나 diff 로 새었다.",
+  "ledger": [
+    "Action.ShapeObjHorzFlip",
+    "Action.ShapeObjVertFlip",
+    "Action.ShapeObjHorzFlipOrgState",
+    "Action.ShapeObjVertFlipOrgState"
+  ],
+  "open": "samples/mix-shape-01.hwp",
+  "paths": {
+    "fw": {
+      "win": "{out}/pM-fw.hwp",
+      "posix": "{out}/pM-fw.hwp"
+    },
+    "f0": {
+      "win": "{out}/pM-f0.hwp",
+      "posix": "{out}/pM-f0.hwp"
+    },
+    "f1": {
+      "win": "{out}/pM-f1.hwp",
+      "posix": "{out}/pM-f1.hwp"
+    },
+    "f2": {
+      "win": "{out}/pM-f2.hwp",
+      "posix": "{out}/pM-f2.hwp"
+    },
+    "f3": {
+      "win": "{out}/pM-f3.hwp",
+      "posix": "{out}/pM-f3.hwp"
+    },
+    "f4": {
+      "win": "{out}/pM-f4.hwp",
+      "posix": "{out}/pM-f4.hwp"
+    },
+    "f5": {
+      "win": "{out}/pM-f5.hwp",
+      "posix": "{out}/pM-f5.hwp"
+    },
+    "f6": {
+      "win": "{out}/pM-f6.hwp",
+      "posix": "{out}/pM-f6.hwp"
+    }
+  },
+  "ignorePaths": [
+    "shape_attr.flip",
+    "shape_attr.raw_rendering",
+    "common.attr",
+    "common.hwp5_gen_shape_attr_bit28"
+  ],
+  "deltas": [
+    {
+      "from": "f0",
+      "to": "f1",
+      "label": "ShapeObjHorzFlip (켬)"
+    },
+    {
+      "from": "f1",
+      "to": "f2",
+      "label": "ShapeObjVertFlip (켬)"
+    },
+    {
+      "from": "f2",
+      "to": "f3",
+      "label": "ShapeObjHorzFlipOrgState (끔)"
+    },
+    {
+      "from": "f3",
+      "to": "f4",
+      "label": "ShapeObjVertFlipOrgState (끔)"
+    }
+  ],
+  "calls": [
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "fw"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "SetPos",
+      [
+        0,
+        0,
+        0
+      ]
+    ],
+    [
+      "Run",
+      [
+        "SelectCtrlFront"
+      ]
+    ],
+    [
+      "CurSelectedCtrl.UserDesc",
+      []
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "f0"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "Run",
+      [
+        "ShapeObjHorzFlip"
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "f1"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "Run",
+      [
+        "ShapeObjVertFlip"
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "f2"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "Run",
+      [
+        "ShapeObjHorzFlipOrgState"
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "f3"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "Run",
+      [
+        "ShapeObjVertFlipOrgState"
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "f4"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "Run",
+      [
+        "ShapeObjHorzFlipOrgState"
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "f5"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "Run",
+      [
+        "ShapeObjHorzFlipOrgState"
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "f6"
+        },
+        "HWP",
+        ""
+      ]
+    ]
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "id": "T06",
+  "issue": 5312,
+  "command": "render-diff --batch rd_batch --via hwpx -o rd_out",
+  "status": "PASS",
+  "exit": 0,
+  "stdout": "[           PASS] max_disp=   0.00 struct=0 over=0      5ms  form-01.hwp\n[           PASS] max_disp=   0.00 struct=0 over=0      4ms  form-02.hwp\n\nTSV 저장: rd_out\\geom_inventory.tsv\n\n=== render-diff 요약 ===\n  총 파일         : 2\n  PASS            : 2\n  WARN_TEXTRUN    : 0\n  OVER            : 0\n  STRUCT_MISMATCH : 0\n  PAGE_MISMATCH   : 0\n  LOAD_FAIL       : 0\n  전체 최대 변위  : 0.00 px\n",
+  "source": "recipes/06_visual_regression_before_after.md",
+  "notGym": true
+}

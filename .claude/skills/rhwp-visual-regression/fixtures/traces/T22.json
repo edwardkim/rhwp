@@ -1,0 +1,10 @@
+{
+  "id": "T22",
+  "issue": 5312,
+  "command": "render-diff <A> <B>",
+  "status": "PAGE_MISMATCH",
+  "exit": 1,
+  "stdout": "페이지 수: A=2 B=3\n⚠ 페이지 수 불일치 — 시각 회귀 강신호\n최대 변위: 0.00 px (page -)\nstatus: PAGE_MISMATCH\n",
+  "source": "skill catalog",
+  "notGym": true
+}

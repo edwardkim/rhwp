@@ -1,0 +1,61 @@
+{
+  "schemaVersion": "1.0",
+  "source": "output/pii-demo.hwp",
+  "kinds": [
+    "ssn",
+    "card",
+    "phone",
+    "email"
+  ],
+  "mask": "*",
+  "dryRun": false,
+  "inPlace": false,
+  "noRaw": true,
+  "findingCount": 4,
+  "findings": [
+    {
+      "kind": "card",
+      "masked": "****-****-****-****",
+      "section": 0,
+      "paragraph": 7,
+      "page": 0,
+      "charOffset": 10
+    },
+    {
+      "kind": "ssn",
+      "masked": "******-*******",
+      "section": 0,
+      "paragraph": 8,
+      "page": 0,
+      "charOffset": 11
+    },
+    {
+      "kind": "phone",
+      "masked": "***-****-****",
+      "section": 0,
+      "paragraph": 10,
+      "page": 0,
+      "charOffset": 7
+    },
+    {
+      "kind": "email",
+      "masked": "****@*******.***",
+      "section": 0,
+      "paragraph": 11,
+      "page": 0,
+      "charOffset": 9
+    }
+  ],
+  "redactedCount": 4,
+  "changedPages": [
+    0
+  ],
+  "exitCode": 0,
+  "note": "레시피 3 실측 형태. 미끼 2건(900101-1234567, 1234-5678-9012-3456)은 없음.",
+  "output": "output/pii-demo_공개.hwp",
+  "outputFormat": "hwp5",
+  "verify": {
+    "diffCount": 0,
+    "identical": true
+  }
+}

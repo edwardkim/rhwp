@@ -1,0 +1,19 @@
+# M09-g equation golden — current-engine lock (variant/exception/unimplemented honesty)
+command: MATRIX
+script: TEXT{if}
+honesty: latex-text
+
+=== ast ===
+FontStyle {
+    style: Roman,
+    body: Text(
+        "if",
+    ),
+}
+
+=== layout ===
+FontStyle(Roman) x=0.0000 y=0.0000 w=23.1000 h=20.0000 bl=16.0000
+  Text("if") x=0.0000 y=0.0000 w=23.1000 h=20.0000 bl=16.0000
+
+=== svg ===
+<text x="0.00" y="16.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">if</text>

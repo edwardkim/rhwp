@@ -1,0 +1,27 @@
+{
+  "id": "OM41",
+  "tier": 2,
+  "title": "둘째 HWPX 서식 첫 필드 이름",
+  "input": "samples/hwpx/form-02.hwpx",
+  "instructions": "form-02.hwpx 의 **첫 번째** 필드 이름을 answer.json 에 {\"name\": \"...\"} 으로 제출하라. form-01 의 이름을 재사용하지 마라. 힌트: rhwp fields 의 fields[0].name.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "첫 필드 이름",
+      "op": "answer_eq",
+      "answer": "name",
+      "path": "fields[0].name",
+      "cmd": [
+        "fields",
+        "{input}",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

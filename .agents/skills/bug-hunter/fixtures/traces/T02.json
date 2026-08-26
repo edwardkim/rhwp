@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5324,
+  "skill": "bug-hunter",
+  "notGym": true,
+  "noNewCli": true,
+  "id": "T02",
+  "journey": "J02",
+  "title": "plan 0–34 fidelity_compare",
+  "commands": [
+    "venv/bin/python tools/fidelity_compare/fidelity_compare.py plan 0 34 --out-dir /tmp/rhwp-fidelity-plan",
+    "sort -t $'\\t' -k2,2nr -k3,3nr /tmp/rhwp-fidelity-plan/text-report.tsv | head"
+  ],
+  "stop": "F06",
+  "filed": false,
+  "note": "픽셀 상위 + 문자 소실 교집합 후 사람 감사."
+}

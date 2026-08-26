@@ -1,0 +1,27 @@
+{
+  "id": "FJ30",
+  "tier": 1,
+  "title": "textSecurity.status 오라클",
+  "input": "samples/field-01.hwp",
+  "axis": "조회",
+  "instructions": "field-01 의 fields 봉투에서 textSecurity.status 를 answer.json 의 status 로 제출하라. 채우기 전에 은닉·주입 신호를 보는 조회 축이다. 값을 넣지 마라. 힌트: rhwp fields samples/field-01.hwp --json → textSecurity.status 판정은 라이브 재실행 또는 산출물 재독이며, 파일 부재를 통과로 치지 않는다. T07 의 fields[0].value==홍길동 판정은 쓰지 마라. 새 CLI 는 없다.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "보안 상태",
+      "op": "answer_eq",
+      "answer": "status",
+      "path": "textSecurity.status",
+      "cmd": [
+        "fields",
+        "{input}",
+        "--json"
+      ]
+    }
+  ]
+}

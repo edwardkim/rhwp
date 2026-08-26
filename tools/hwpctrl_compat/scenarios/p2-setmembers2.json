@@ -1,0 +1,59 @@
+{
+  "id": "p2-setmembers2",
+  "title": "ParameterSet 멤버 — 만든 빈 셋에서",
+  "ledger": [
+    "ParameterSet.property.Count",
+    "ParameterSet.property.IsSet",
+    "ParameterSet.method.Clone",
+    "ParameterSet.method.CreateItemSet",
+    "ParameterSet.method.CreateItemArray",
+    "ParameterSet.method.Item",
+    "ParameterArray.property.Count",
+    "ParameterArray.property.IsSet"
+  ],
+  "open": "samples/table-001.hwp",
+  "calls": [
+    [
+      "CreateSet(\"CharShape\").SetID",
+      []
+    ],
+    [
+      "CreateSet(\"CharShape\").Count",
+      []
+    ],
+    [
+      "CreateSet(\"CharShape\").IsSet",
+      []
+    ],
+    [
+      "CreateSet(\"CharShape\").Clone.SetID",
+      []
+    ],
+    [
+      "CreateSet(\"CharShape\").Clone.Count",
+      []
+    ],
+    [
+      "CreateSet(\"CharShape\").Item",
+      [
+        "Height"
+      ]
+    ],
+    [
+      "CreateSet(\"CharShape\").CreateItemArray(\"Items\", 3).Count",
+      []
+    ],
+    [
+      "CreateSet(\"CharShape\").CreateItemArray(\"Items\", 3).IsSet",
+      []
+    ],
+    [
+      "CreateSet(\"CharShape\").CreateItemSet(\"BorderFill\", \"BorderFill\").SetID",
+      []
+    ],
+    [
+      "CreateSet(\"CharShape\").CreateItemSet(\"BorderFill\", \"BorderFill\").Count",
+      []
+    ]
+  ]
+}

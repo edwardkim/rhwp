@@ -1,0 +1,30 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workCapsule",
+  "parent": null,
+  "plan": {
+    "planVersion": "1.0",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "output": "out/audit-action.hwp",
+    "steps": [
+      {
+        "action": "replace_text",
+        "find": "처분요구 주의",
+        "replace": "처분요구 시정"
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"samples/basic/issue2007_nested_cell_pagination_42065.hwp\",\"output\":\"out/audit-action.hwp\",\"steps\":[{\"action\":\"replace_text\",\"find\":\"처분요구 주의\",\"replace\":\"처분요구 시정\"}]}",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "inputSha256": "50815925419ec23dd89b443053c1c7503bfda57a134f5edef7268c130b624014",
+    "planSha256": "f3b86dabd659e9541e720633e8c203d6b0de4b5b70d5b0bb5dff47b6db660ba5",
+    "outputSha256": "7654a402ca1a619c6de50f0ed8e16ff4144253ce2ec67e9b8cd2c00686040b64",
+    "toolVersion": "fixture-0.0.0-not-a-release",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null
+  }
+}

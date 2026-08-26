@@ -1,0 +1,33 @@
+{
+  "id": "SE12",
+  "tier": 2,
+  "title": "누름틀까지 주입 스윕",
+  "input": "samples/field-01.hwp",
+  "instructions": "누름틀·메모까지 포함해 주입 신호 건수를 answer.json 에 {\"signals\": N} 으로 제출하라. 힌트: rhwp inspect injection --include-fields.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "필드 포함 주입 신호 건수",
+      "op": "answer_eq",
+      "answer": "signals",
+      "path": "signalCount",
+      "cmd": [
+        "inspect",
+        "injection",
+        "{input}",
+        "--include-fields",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    }
+  ],
+  "axis": "조사"
+}

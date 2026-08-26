@@ -1,0 +1,18 @@
+{
+  "id": "TC03",
+  "steps": [
+    {
+      "run": [
+        "csv-to-table",
+        "{input}",
+        "--table",
+        "0",
+        "--csv",
+        "gym/packs/table-csv/assets/TC03-edit.csv",
+        "-o",
+        "{sub:out.hwpx}",
+        "--json"
+      ]
+    }
+  ]
+}

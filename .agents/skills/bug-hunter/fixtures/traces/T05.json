@@ -1,0 +1,17 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5324,
+  "skill": "bug-hunter",
+  "notGym": true,
+  "noNewCli": true,
+  "id": "T05",
+  "journey": "J06",
+  "title": "언어이해 8쪽 provenance 기록 후 대조",
+  "commands": [
+    "기록: Creator Hwp 2022 12.0.0.4426 Producer Hancom PDF 1.3.0.550",
+    "venv/bin/python tools/fidelity_compare/fidelity_compare.py 7 7 --source samples/21_언어_기출_편집가능본.hwp --reference-pdf pdf/21_언어_기출_편집가능본-2022.pdf --out-dir /tmp/rhwp-fidelity-leet-p8"
+  ],
+  "stop": "F03",
+  "filed": false,
+  "note": "페이지 0 기준이므로 8쪽은 -p 7."
+}

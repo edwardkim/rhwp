@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/tech/wasm_agent_surface/README.md
-last_verified: 2026-08-03
+last_verified: 2026-08-19
 ---
 
 # WASM/브라우저 에이전트 표면 문서 지도
@@ -44,6 +44,7 @@ M24 는 세 줄짜리 체크리스트다(#3608 본문 §8 "장기 지평(M18~M30
 | --- | --- | --- | --- |
 | [WASM capabilities 자기서술 설계](self_description.md) | canonical | 브라우저 소비자가 "이 모듈이 뭘 할 수 있나"를 아는 방법, CLI 와의 동등성 유지 | M24 첫 줄을 구현할 때. **이 축의 전제** |
 | [브라우저 내 MCP-유사 브리지](browser_bridge.md) | canonical | JSON-RPC 를 postMessage·MessageChannel·Worker 중 무엇에 얹을지, 그리고 origin 경계 | M24 둘째 줄. studio 연동을 설계할 때 |
+| [문서 에이전트 exact command 계약](document_agent_command.md) | canonical | HWP/HWPX 문단 교체의 상태 fence, 재현 가능한 SHA-256, 트랜잭션·되돌리기·이벤트 계약 | 서버가 만든 편집 후보를 Studio에서 안전하게 적용할 때 |
 | [설치 0 온보딩 데모](zero_install_onboarding.md) | guide | 아무것도 설치하지 않고 rhwp 를 써보는 경로, 크기 예산, 오프라인 동작 | M24 셋째 줄. #3869 의 진입점 |
 
 셋은 **순서대로 의존한다.** 자기서술이 없으면 브리지가 무엇을 노출할지 정할 수 없고,
@@ -146,8 +147,9 @@ du -sh assets/fonts
   [소비 에이전트 가이드](../agent_security/consumer_guide.md).
   브라우저는 **새 경계**를 추가한다(origin). 위협 모델의 `#3787` 축과 어긋나지 않게 쓴다 —
   [browser_bridge.md §5](browser_bridge.md).
-- **외부 바인딩** — [IR 스키마 버저닝·표면 판단](../bindings_foundation.md)(M18~M20).
-  WASM 표면은 그 판단표에 **네 번째 열**로 들어간다.
+- **외부 소비자 계약** — [CLI 명령 레퍼런스](../../manual/cli_commands.md)와
+  `export-ir-schema`·`export-capabilities-schema`를 권위로 삼는다. 공식 Python·Node
+  바인딩은 v0.8.4에서 철회됐다(#4655).
 - **툴체인** — [wasm-pack 버전 고정 정책](../wasm_pack_version_policy.md).
 - **경계 계약** — [에이전트 경계 무결성 계약](../agent_boundary_contract.md).
 

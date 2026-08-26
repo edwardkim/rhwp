@@ -1,0 +1,37 @@
+{
+  "id": "CD06",
+  "tier": 2,
+  "title": "쪽 추출",
+  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "instructions": "입력의 **첫 쪽만** 뽑아낸 page1.hwp 를 제출하라. 주의: 추출물은 다시 조판되므로 요청한 범위의 쪽 수와 결과 쪽 수가 항상 같지는 않다 — 결과를 확인하고 제출하라. 힌트: rhwp extract-pages <입력> <출력> --from N --to M.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "page1.hwp"
+    ]
+  },
+  "checks": [
+    {
+      "name": "추출물 실재",
+      "op": "file_exists",
+      "file": "page1.hwp",
+      "minBytes": 1024
+    },
+    {
+      "name": "한 쪽 문서",
+      "op": "value_eq",
+      "value": 1,
+      "path": "pageCount",
+      "cmd": [
+        "info",
+        "{file:page1.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "원본과 다름",
+      "op": "differs_from_input",
+      "file": "page1.hwp"
+    }
+  ]
+}

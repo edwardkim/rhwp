@@ -1,0 +1,27 @@
+{
+  "schemaVersion": "1.0",
+  "source": "samples/table-001.hwp",
+  "tableCount": 1,
+  "tables": [
+    {
+      "index": 0,
+      "rowCount": 19,
+      "colCount": 9,
+      "csv": "구 분,5월,,,6월,,,비고,\r\n,,,,,,,,\r\n,,,,,,,,\r\n,,,,,,,,\r\n,,,,,,,,\r\n,,,,,,,,\r\n,,,,,,,,\r\n,,,,,,,,\r\n,,,,,,,,\r\n,,,,,,,,\r\n,,,,,,,,\r\n,,,,,,,,\r\n,,,,,,,,\r\n,,,,,,,,\r\n,,,,,,,,\r\n,,,,,,,,\r\n,,,,,,,,\r\n,,,,,,,,\r\n,,,,,,,,\r\n",
+      "output": "table0.csv"
+    }
+  ],
+  "bom": false,
+  "untrustedContent": true,
+  "untrustedFields": [
+    "tables[].csv"
+  ],
+  "_skillMeta": {
+    "skill": "rhwp-table-exchange",
+    "command": "table-to-csv",
+    "exit": 0,
+    "envelopeCsvStartsWithBom": false
+  },
+  "output": "table0.csv",
+  "outputFormat": "csv"
+}

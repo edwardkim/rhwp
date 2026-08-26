@@ -1,0 +1,29 @@
+{
+  "id": "TE71",
+  "tier": 1,
+  "title": "첫 '보험료' 문단",
+  "input": "samples/143E433F503322BD33.hwp",
+  "instructions": "입력에서 '보험료' 의 첫 일치 문단 번호를 answer.json 에 {\"para\": N} 으로 제출하라. 힌트: search matches[0].paragraph.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "첫 '보험료' 문단 · para",
+      "op": "answer_eq",
+      "answer": "para",
+      "path": "matches[0].paragraph",
+      "cmd": [
+        "search",
+        "{input}",
+        "--json",
+        "--",
+        "보험료"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

@@ -1,0 +1,23 @@
+{
+  "id": "missing_file",
+  "kind": "missing-file",
+  "command": "export-svg",
+  "argv": [
+    "export-svg",
+    "없는파일.hwp",
+    "-p",
+    "0"
+  ],
+  "exitCode": 1,
+  "exitClass": "runtime",
+  "stderrContains": "오류: 파일을 읽을 수 없습니다",
+  "stdoutEmpty": true,
+  "source": "src/main.rs fs::read → EXIT_RUNTIME",
+  "doNot": "없는 경로를 성공으로 읽지 않는다. exit 0 이 아니다.",
+  "repair": null,
+  "stdoutKeys": null,
+  "_skillMeta": {
+    "exit": 1,
+    "issue": 5316
+  }
+}

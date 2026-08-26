@@ -1,0 +1,58 @@
+{
+  "id": "pR-sel2",
+  "title": "고르기 2회만 — 재배치가 있나",
+  "ledger": [],
+  "open": "samples/mix-shape-01.hwp",
+  "paths": {
+    "a": {
+      "win": "{out}/pR-sel2-a.hwp",
+      "posix": "{out}/pR-sel2-a.hwp"
+    },
+    "b": {
+      "win": "{out}/pR-sel2-b.hwp",
+      "posix": "{out}/pR-sel2-b.hwp"
+    }
+  },
+  "calls": [
+    [
+      "SetPos",
+      [
+        0,
+        0,
+        0
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "a"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "Run",
+      [
+        "SelectCtrlFront"
+      ]
+    ],
+    [
+      "Run",
+      [
+        "SelectCtrlFront"
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "b"
+        },
+        "HWP",
+        ""
+      ]
+    ]
+  ]
+}

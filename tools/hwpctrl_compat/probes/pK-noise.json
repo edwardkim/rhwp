@@ -1,0 +1,66 @@
+{
+  "id": "pK-noise",
+  "title": "액션 없이 두 번 저장 — 잡음 바닥",
+  "ledger": [],
+  "open": "samples/mix-shape-01.hwp",
+  "paths": {
+    "n0": {
+      "win": "{out}/pK-n0.hwp",
+      "posix": "{out}/pK-n0.hwp"
+    },
+    "n1": {
+      "win": "{out}/pK-n1.hwp",
+      "posix": "{out}/pK-n1.hwp"
+    },
+    "n2": {
+      "win": "{out}/pK-n2.hwp",
+      "posix": "{out}/pK-n2.hwp"
+    }
+  },
+  "calls": [
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "n0"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "n1"
+        },
+        "HWP",
+        ""
+      ]
+    ],
+    [
+      "SetPos",
+      [
+        0,
+        0,
+        0
+      ]
+    ],
+    [
+      "Run",
+      [
+        "SelectCtrlFront"
+      ]
+    ],
+    [
+      "SaveAs",
+      [
+        {
+          "$path": "n2"
+        },
+        "HWP",
+        ""
+      ]
+    ]
+  ]
+}

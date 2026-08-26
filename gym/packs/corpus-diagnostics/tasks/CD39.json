@@ -1,0 +1,29 @@
+{
+  "id": "CD39",
+  "tier": 2,
+  "title": "issues 폴더 1단 스윕",
+  "input": "samples/table-001.hwp",
+  "instructions": "samples/issues 폴더를 **깊이 1**로만 스캔해 발견 문서 수를 answer.json 에 {\"files\": N} 으로 제출하라. 힌트: rhwp scan --max-depth 1.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "1단 발견 문서 수",
+      "op": "len_answer_eq",
+      "answer": "files",
+      "path": "files",
+      "cmd": [
+        "scan",
+        "samples/issues",
+        "--max-depth",
+        "1",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

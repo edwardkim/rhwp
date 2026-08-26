@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "1.0",
+  "skill": "rhwp-doc-triage",
+  "references": [
+    "00_tree.md",
+    "01_info.md",
+    "02_explain.md",
+    "03_export_structure.md",
+    "04_digest.md",
+    "05_search.md",
+    "06_extract_data.md",
+    "07_when_to_stop.md",
+    "08_envelopes.md",
+    "09_handoff.md",
+    "10_context_budget.md",
+    "11_pitfalls.md",
+    "12_journeys.md",
+    "13_batch_prefilter.md",
+    "14_page_address.md",
+    "15_anti_dump.md",
+    "16_intent_matrix.md",
+    "17_query_catalog.md",
+    "18_pagecount_routing.md",
+    "19_worked_traces.md",
+    "20_field_catalog.md"
+  ],
+  "forbiddenSkillsTouch": [
+    "rhwp-onboarding",
+    "rhwp-mcp-session",
+    "rhwp-safe-edit",
+    "rhwp-provenance"
+  ]
+}

@@ -1,0 +1,55 @@
+{
+  "id": "FJ18",
+  "tier": 2,
+  "title": "다른 표본 단칸 채움 (form-02)",
+  "input": "samples/form-02.hwp",
+  "instructions": "form-02 의 유일한 누름틀 myMsg01 에 '이준호 귀하' 를 넣은 form2.hwp 를 제출하라. FJ02·FJ05 는 form-01 이다. 이번은 다른 파일이고 값도 '김가온 귀하'·'배포전값' 이 아니다. T07 의 field-01 첫 칸 홍길동과 표본·좌표·값이 모두 다르다. 힌트: rhwp edit fill-fields samples/form-02.hwp --data '{\"myMsg01\": \"이준호 귀하\"}' -o form2.hwp --json",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "form2.hwp"
+    ]
+  },
+  "checks": [
+    {
+      "name": "칸 이름 myMsg01",
+      "op": "value_eq",
+      "value": "myMsg01",
+      "path": "fields[0].name",
+      "cmd": [
+        "fields",
+        "{file:form2.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "myMsg01 값",
+      "op": "value_eq",
+      "value": "이준호 귀하",
+      "path": "fields[0].value",
+      "cmd": [
+        "fields",
+        "{file:form2.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "본문 재검색",
+      "op": "value_ge",
+      "value": 1,
+      "path": "matchCount",
+      "cmd": [
+        "search",
+        "{file:form2.hwp}",
+        "--json",
+        "--",
+        "이준호 귀하"
+      ]
+    },
+    {
+      "name": "원본 무편집 복사가 아님",
+      "op": "differs_from_input",
+      "file": "form2.hwp"
+    }
+  ]
+}

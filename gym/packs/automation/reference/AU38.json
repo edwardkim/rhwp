@@ -1,0 +1,25 @@
+{
+  "id": "AU38",
+  "steps": [
+    {
+      "run": [
+        "replay",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"samples/table-complex.hwp\", \"output\": \"out.hwp\", \"steps\": [{\"action\": \"set_cell\", \"table\": 0, \"row\": 0, \"col\": 0, \"text\": \"앵커복합\"}]}",
+        "--capsule",
+        "{sub:capsules/work.capsule.json}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "anchor",
+        "add",
+        "{sub:capsules/work.capsule.json}",
+        "--log",
+        "{sub:anchor.ndjson}",
+        "--json"
+      ]
+    }
+  ]
+}

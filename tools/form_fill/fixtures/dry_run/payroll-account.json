@@ -1,0 +1,53 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.form_fill.fill_case.v1",
+  "id": "payroll-account-dry-run",
+  "axis": "dry-run",
+  "claim": "M-fill",
+  "generator": "tools/form_fill/fatten_form_fill.py",
+  "form": "payroll-account",
+  "title": "급여 계좌 변경 신청 dry-run",
+  "family": "급여",
+  "genre": "계좌",
+  "sample": "fixtures/forms/급여계좌변경.hwp",
+  "format": "hwp5",
+  "relatedIssue": "#3329",
+  "why": "--dry-run 은 파일을 만들지 않는다. output/outputFormat 없음.",
+  "firstFieldName": "성명",
+  "fieldCount": 10,
+  "argv": [
+    "edit",
+    "fill-fields",
+    "fixtures/forms/급여계좌변경.hwp",
+    "--data",
+    "{\"성명\": \"홍길동\"}",
+    "-o",
+    "out/payroll-account-dry.hwp",
+    "--dry-run",
+    "--json"
+  ],
+  "existingCliOnly": true,
+  "data": {
+    "성명": "홍길동"
+  },
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "fixtures/forms/급여계좌변경.hwp",
+    "dryRun": true,
+    "filledCount": 1,
+    "filled": [
+      {
+        "name": "성명",
+        "occurrence": 0,
+        "value": "홍길동"
+      }
+    ],
+    "notFound": [],
+    "ambiguous": [],
+    "confusable": [],
+    "verify": null
+  },
+  "writesFile": false,
+  "hasOutputKey": false,
+  "exit": 0
+}

@@ -1,0 +1,64 @@
+{
+  "id": "FJ01",
+  "tier": 3,
+  "title": "이름 있는 필드 지목 채움 (전화번호)",
+  "input": "samples/field-01.hwp",
+  "instructions": "입력 서식의 누름틀을 fields 로 조사한 뒤, 이름이 '전화번호' 인 칸에만 '02-720-8899' 를 넣어 named.hwp 로 제출하라. 첫 필드(회사명)와 작성자 칸은 비워 두어야 한다 — 첫 칸에 홍길동을 넣는 T07 과는 다른 좌표다. 힌트: rhwp edit fill-fields <문서> --data '{\"전화번호\": \"02-720-8899\"}' -o named.hwp --json 후 rhwp fields named.hwp --json 으로 재독.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "named.hwp"
+    ]
+  },
+  "checks": [
+    {
+      "name": "지목한 칸 이름이 전화번호",
+      "op": "value_eq",
+      "value": "전화번호",
+      "path": "fields[3].name",
+      "cmd": [
+        "fields",
+        "{file:named.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "전화번호 값이 02-720-8899",
+      "op": "value_eq",
+      "value": "02-720-8899",
+      "path": "fields[3].value",
+      "cmd": [
+        "fields",
+        "{file:named.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "첫 필드(회사명)는 비어 있음 — T07 좌표 거부",
+      "op": "value_eq",
+      "value": "",
+      "path": "fields[0].value",
+      "cmd": [
+        "fields",
+        "{file:named.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "작성자 칸도 비어 있음",
+      "op": "value_eq",
+      "value": "",
+      "path": "fields[1].value",
+      "cmd": [
+        "fields",
+        "{file:named.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "원본 무편집 복사가 아님",
+      "op": "differs_from_input",
+      "file": "named.hwp"
+    }
+  ]
+}

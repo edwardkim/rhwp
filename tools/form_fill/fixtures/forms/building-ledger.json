@@ -1,0 +1,33 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.form_fill.form_catalog.v1",
+  "id": "building-ledger",
+  "title": "건축물대장 열람 신청",
+  "family": "민원",
+  "genre": "열람",
+  "sample": "fixtures/forms/건축물대장열람.hwp",
+  "format": "hwp5",
+  "relatedIssue": "#3329",
+  "why": "대상 건축물이 여러 동이면 소재지 반복.",
+  "notes": "",
+  "claim": "M-fill",
+  "generator": "tools/form_fill/fatten_form_fill.py",
+  "fieldCount": 9,
+  "firstFieldName": "신청인",
+  "repeatedNames": ["소재지"],
+  "nameCounts": {"신청인": 1, "연락처": 1, "소재지": 3, "열람종류": 1, "부수": 1, "용도": 1, "신청일": 1},
+  "hash": "a5e3fb2b8cf1",
+  "surveyFieldCount": 9,
+  "textSecurity": {"status": "clean"},
+  "fields": [
+    {"name": "신청인", "guide": "신청인", "value": "", "memo": "", "paragraph": 0, "nested": []},
+    {"name": "연락처", "guide": "전화", "value": "", "memo": "", "paragraph": 1, "nested": []},
+    {"name": "소재지", "guide": "건축물 소재지 (1/3)", "value": "", "memo": "", "paragraph": 2, "nested": []},
+    {"name": "소재지", "guide": "건축물 소재지 (2/3)", "value": "", "memo": "", "paragraph": 3, "nested": []},
+    {"name": "소재지", "guide": "건축물 소재지 (3/3)", "value": "", "memo": "", "paragraph": 4, "nested": []},
+    {"name": "열람종류", "guide": "일반/표제부/전유부", "value": "", "memo": "", "paragraph": 5, "nested": []},
+    {"name": "부수", "guide": "부수", "value": "", "memo": "", "paragraph": 6, "nested": []},
+    {"name": "용도", "guide": "용도", "value": "", "memo": "", "paragraph": 7, "nested": []},
+    {"name": "신청일", "guide": "신청일", "value": "", "memo": "", "paragraph": 8, "nested": []}
+  ]
+}

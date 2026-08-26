@@ -1,0 +1,65 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.form_fill.fill_case.v1",
+  "id": "foi-fill-plain",
+  "axis": "fill-fields",
+  "claim": "M-fill",
+  "generator": "tools/form_fill/fatten_form_fill.py",
+  "form": "foi",
+  "title": "정보공개 청구서 고유 이름 채움",
+  "family": "민원",
+  "genre": "공개청구",
+  "sample": "fixtures/forms/정보공개청구서.hwp",
+  "format": "hwp5",
+  "relatedIssue": "#3329",
+  "why": "순번 없는 고유 이름은 단건 채움. notFound/ambiguous 가 비어야 완료.",
+  "firstFieldName": "청구기관",
+  "fieldCount": 11,
+  "argv": [
+    "edit",
+    "fill-fields",
+    "fixtures/forms/정보공개청구서.hwp",
+    "--data",
+    "{\"청구기관\": \"행정안전부\", \"정보내용\": \"표준 서식 원문\", \"공개방법\": \"전자파일\"}",
+    "-o",
+    "out/foi-plain.hwp",
+    "--json"
+  ],
+  "existingCliOnly": true,
+  "data": {
+    "청구기관": "행정안전부",
+    "정보내용": "표준 서식 원문",
+    "공개방법": "전자파일"
+  },
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "fixtures/forms/정보공개청구서.hwp",
+    "dryRun": false,
+    "filledCount": 3,
+    "filled": [
+      {
+        "name": "청구기관",
+        "occurrence": 0,
+        "value": "행정안전부"
+      },
+      {
+        "name": "정보내용",
+        "occurrence": 0,
+        "value": "표준 서식 원문"
+      },
+      {
+        "name": "공개방법",
+        "occurrence": 0,
+        "value": "전자파일"
+      }
+    ],
+    "notFound": [],
+    "ambiguous": [],
+    "confusable": [],
+    "verify": null,
+    "output": "out/foi-plain.hwp",
+    "outputFormat": "hwp5"
+  },
+  "exit": 0,
+  "gate": true
+}

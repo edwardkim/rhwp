@@ -1,0 +1,29 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workCapsule",
+  "parent": null,
+  "plan": {
+    "planVersion": "1.0",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "output": "out/footer-keep.hwp",
+    "steps": [
+      {
+        "action": "replace_text",
+        "find": "- 1 -",
+        "replace": "- 1 -"
+      }
+    ]
+  },
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "inputSha256": "07a6ba9fd1e3259c0d599cd7ad83938794432b80f5fef1bb072753a902367fc8",
+    "planSha256": "54a3ce28f240c9a7bad3a07ba6ccc74d7dccf8966bdbb99336a245c50e03d844",
+    "outputSha256": "32316021c3cd573927c2042cfdd150166002141f2d7ab938c2a125c1b820812f",
+    "toolVersion": "fixture-0.0.0-not-a-release",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null
+  }
+}

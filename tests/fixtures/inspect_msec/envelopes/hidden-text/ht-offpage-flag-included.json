@@ -1,0 +1,63 @@
+{
+  "id": "ht-offpage-flag-included",
+  "issue": 5476,
+  "axis": "hidden-text",
+  "family": "off_page",
+  "polarity": "positive",
+  "sourceRule": {
+    "file": "src/document_core/queries/hidden_text.rs",
+    "symbol": "HiddenTextOptions.include_off_page",
+    "note": "기본 꺼짐. 조판 좌표 판정이라 오탐 여지가 있다."
+  },
+  "cli": {
+    "argv": [
+      "inspect",
+      "hidden-text",
+      "synth:hidden-text/off_page/body.hwp",
+      "--json",
+      "--include-offpage"
+    ],
+    "exitCode": 0,
+    "stdoutKind": "json-object",
+    "detectionIsNotFailure": true
+  },
+  "consume": {
+    "branch": "includeOffPage",
+    "cleanDependsOnFlag": true
+  },
+  "pair": "ht-offpage-flag-excluded",
+  "why": "같은 문서. 플래그 없으면 off_page 를 보고하지 않는다.",
+  "note": "기본값이 꺼진 축을 켠 것처럼 읽으면 거짓 보고다.",
+  "human": "은닉 텍스트 1건: 쪽 밖\n",
+  "inventedRule": false,
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "synth:hidden-text/off_page/body.hwp",
+    "thresholdPt": 1.0,
+    "includeOffPage": true,
+    "hiddenText": [
+      {
+        "kind": "off_page",
+        "section": 0,
+        "paragraph": 0,
+        "page": 0,
+        "excerpt": "쪽 밖",
+        "charCount": 3,
+        "detail": {
+          "bbox": {
+            "x": -40.0,
+            "y": 8.0,
+            "w": 20.0,
+            "h": 12.0
+          },
+          "pageSize": {
+            "w": 595.0,
+            "h": 842.0
+          }
+        }
+      }
+    ],
+    "hiddenCharCount": 3,
+    "clean": false
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "id": "CR32",
+  "steps": [
+    {
+      "answer": {
+        "hits": {
+          "cmd": [
+            "search",
+            "{input}",
+            "--json",
+            "--",
+            "국립"
+          ],
+          "path": "matchCount"
+        }
+      }
+    }
+  ]
+}

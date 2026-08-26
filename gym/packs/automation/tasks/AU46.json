@@ -1,0 +1,39 @@
+{
+  "id": "AU46",
+  "tier": 3,
+  "title": "table-004 가림 복원 무결",
+  "input": "samples/table-004.hwp",
+  "instructions": "AU46 — table-004 가림 복원 무결.\n\n입력 표본은 `samples/table-004.hwp` 이다. 저장소 samples/ 에 이미 있는 실문서이며 새 픽스처를 만들지 않는다. automation pack 은 기존 CLI 표면(anchor · audit · audit-report · bundle · conformance · disclose · export-tables · gate · lineage · recall-scope · settle · verify-signature) 만으로 검증 사다리 여정을 늘린다. 새 명령·새 연산자·새 pack 은 없다.\n\n작업 캡슐을 가림(salt 커밋)한 뒤 개봉으로 복원해 work.capsule.json · redacted.json · opening.json · restored.json 을 제출하라. AU06 은 table-001 에서 세 검사를 한 번에 본다. 이 과제는 `samples/table-004.hwp` 에서 **restore** 축만 지목한다. 부분 개봉으로 우회하지 마라.\n\n수행 힌트: rhwp disclose redact -o redacted.json --opening-out opening.json 후 restore. 채점은 제출 폴더에서 같은 판정 명령을 다시 돌린다. 정답 해시·건수를 과제 파일에 박제하지 마라. 표본이 바뀌면 라이브 재계산이 따라간다.\n\n금지: XC01 L5 완주, XC02 오염 무영향 0, XC03 정산 4관문, XC04 3세대 --deep, XC05 L3 서명+앵커 완주, WR 일일 3해시, T07 서식 채움을 복제하지 마라. 원본 픽스처를 덮어쓰지 마라. 산출은 제출 폴더의 -o / --capsule 뿐이다. T07 서식 채움(fill-fields, 첫 필드 홍길동)을 복제하지 마라. XC01–XC05 사다리 완주(L5 · 3세대 --deep · 정산 4관문 · 오염 무영향 0 · L3 서명+앵커 완주)를 베끼지 마라. WR01+ 일일 영수증 3해시 answer.json 여정도 이 pack 의 일이 아니다.\n\n가림본이 원본과 같으면 가림이 일어나지 않은 것이다.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "work.capsule.json",
+      "redacted.json",
+      "opening.json",
+      "restored.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "가림 복원 무결",
+      "op": "value_eq",
+      "value": true,
+      "path": "byteIdentical",
+      "cmd": [
+        "disclose",
+        "restore",
+        "{file:redacted.json}",
+        "--opening",
+        "{file:opening.json}",
+        "-o",
+        "{file:_grader_restore.json}",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    }
+  ],
+  "axis": "자동화"
+}

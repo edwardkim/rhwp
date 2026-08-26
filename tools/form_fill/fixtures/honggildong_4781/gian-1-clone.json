@@ -1,0 +1,322 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.form_fill.honggildong_4781.v1",
+  "id": "gian-1-hong-clone",
+  "axis": "honggildong-4781",
+  "claim": "M-fill",
+  "generator": "tools/form_fill/fatten_form_fill.py",
+  "form": "gian-1",
+  "title": "일반기안문 별지 제1호서식 홍길동 전칸 복제 금지",
+  "why": "첫 필드 값을 모든 고유 이름에 복사하면 T07 과제 문구를 깨뜨린다.",
+  "sample": "tools/forms/일반기안문_서식.hwpx",
+  "relatedIssue": "#4781",
+  "argv": [
+    "edit",
+    "fill-fields",
+    "tools/forms/일반기안문_서식.hwpx",
+    "--data",
+    "{\"행정기관명\": \"홍길동\", \"수신자\": \"홍길동\", \"경유\": \"홍길동\", \"제목\": \"홍길동\", \"본문\": \"홍길동\", \"붙임\": \"홍길동\", \"발신명의\": \"홍길동\", \"수신자명단\": \"홍길동\", \"기안자\": \"홍길동\", \"검토자\": \"홍길동\", \"결재권자\": \"홍길동\", \"협조자\": \"홍길동\", \"시행번호\": \"홍길동\", \"시행일\": \"홍길동\", \"접수번호\": \"홍길동\", \"접수일\": \"홍길동\", \"우편번호\": \"홍길동\", \"주소\": \"홍길동\", \"홈페이지\": \"홍길동\", \"전화번호\": \"홍길동\", \"팩스번호\": \"홍길동\", \"전자우편\": \"홍길동\", \"공개구분\": \"홍길동\"}",
+    "-o",
+    "out/gian-1-hong-clone.hwp",
+    "--json"
+  ],
+  "data": {
+    "행정기관명": "홍길동",
+    "수신자": "홍길동",
+    "경유": "홍길동",
+    "제목": "홍길동",
+    "본문": "홍길동",
+    "붙임": "홍길동",
+    "발신명의": "홍길동",
+    "수신자명단": "홍길동",
+    "기안자": "홍길동",
+    "검토자": "홍길동",
+    "결재권자": "홍길동",
+    "협조자": "홍길동",
+    "시행번호": "홍길동",
+    "시행일": "홍길동",
+    "접수번호": "홍길동",
+    "접수일": "홍길동",
+    "우편번호": "홍길동",
+    "주소": "홍길동",
+    "홈페이지": "홍길동",
+    "전화번호": "홍길동",
+    "팩스번호": "홍길동",
+    "전자우편": "홍길동",
+    "공개구분": "홍길동"
+  },
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "tools/forms/일반기안문_서식.hwpx",
+    "dryRun": false,
+    "filledCount": 23,
+    "filled": [
+      {
+        "name": "행정기관명",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "수신자",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "경유",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "제목",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "본문",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "붙임",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "발신명의",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "수신자명단",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "기안자",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "검토자",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "결재권자",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "협조자",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "시행번호",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "시행일",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "접수번호",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "접수일",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "우편번호",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "주소",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "홈페이지",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "전화번호",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "팩스번호",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "전자우편",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "공개구분",
+        "occurrence": 0,
+        "value": "홍길동"
+      }
+    ],
+    "notFound": [],
+    "ambiguous": [],
+    "confusable": [],
+    "verify": null,
+    "output": "out/gian-1-hong-clone.hwp",
+    "outputFormat": "hwp5"
+  },
+  "detect": {
+    "firstFieldName": "행정기관명",
+    "firstFieldValue": "홍길동",
+    "firstFieldOk": true,
+    "cloned": [
+      {
+        "index": 1,
+        "name": "수신자",
+        "before": "",
+        "after": "홍길동"
+      },
+      {
+        "index": 2,
+        "name": "경유",
+        "before": "",
+        "after": "홍길동"
+      },
+      {
+        "index": 3,
+        "name": "제목",
+        "before": "",
+        "after": "홍길동"
+      },
+      {
+        "index": 4,
+        "name": "본문",
+        "before": "",
+        "after": "홍길동"
+      },
+      {
+        "index": 5,
+        "name": "붙임",
+        "before": "",
+        "after": "홍길동"
+      },
+      {
+        "index": 6,
+        "name": "발신명의",
+        "before": "",
+        "after": "홍길동"
+      },
+      {
+        "index": 7,
+        "name": "수신자명단",
+        "before": "",
+        "after": "홍길동"
+      },
+      {
+        "index": 8,
+        "name": "기안자",
+        "before": "",
+        "after": "홍길동"
+      },
+      {
+        "index": 9,
+        "name": "검토자",
+        "before": "",
+        "after": "홍길동"
+      },
+      {
+        "index": 10,
+        "name": "결재권자",
+        "before": "",
+        "after": "홍길동"
+      },
+      {
+        "index": 11,
+        "name": "협조자",
+        "before": "",
+        "after": "홍길동"
+      },
+      {
+        "index": 12,
+        "name": "시행번호",
+        "before": "",
+        "after": "홍길동"
+      },
+      {
+        "index": 13,
+        "name": "시행일",
+        "before": "",
+        "after": "홍길동"
+      },
+      {
+        "index": 14,
+        "name": "접수번호",
+        "before": "",
+        "after": "홍길동"
+      },
+      {
+        "index": 15,
+        "name": "접수일",
+        "before": "",
+        "after": "홍길동"
+      },
+      {
+        "index": 16,
+        "name": "우편번호",
+        "before": "",
+        "after": "홍길동"
+      },
+      {
+        "index": 17,
+        "name": "주소",
+        "before": "",
+        "after": "홍길동"
+      },
+      {
+        "index": 18,
+        "name": "홈페이지",
+        "before": "",
+        "after": "홍길동"
+      },
+      {
+        "index": 19,
+        "name": "전화번호",
+        "before": "",
+        "after": "홍길동"
+      },
+      {
+        "index": 20,
+        "name": "팩스번호",
+        "before": "",
+        "after": "홍길동"
+      },
+      {
+        "index": 21,
+        "name": "전자우편",
+        "before": "",
+        "after": "홍길동"
+      },
+      {
+        "index": 22,
+        "name": "공개구분",
+        "before": "",
+        "after": "홍길동"
+      }
+    ],
+    "cloneCount": 22,
+    "verdict": "clone_forbidden"
+  },
+  "afterFirst": "홍길동",
+  "otherHongCount": 22,
+  "allowedClone": false,
+  "verdict": "clone_forbidden"
+}

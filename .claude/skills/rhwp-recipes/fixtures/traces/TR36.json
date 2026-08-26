@@ -1,0 +1,11 @@
+{
+  "id": "TR36",
+  "recipe": "05",
+  "transcript": "T05-B01",
+  "argvLine": "rhwp fields --json samples/form-01.hwp",
+  "usesExistingCommand": true,
+  "notGym": true,
+  "noNewCli": true,
+  "sourceFile": "mydocs/manual/recipes/05_mail_merge_batch_fill.md",
+  "fabricatedLive": false
+}

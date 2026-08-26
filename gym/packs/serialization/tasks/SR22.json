@@ -1,0 +1,43 @@
+{
+  "id": "SR22",
+  "tier": 3,
+  "title": "다중 쪽 문서에서 첫 쪽만 남긴 원본 쪽수",
+  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "instructions": "중첩 셀 페이지네이션 샘플의 첫 쪽만 남겨 slice.hwp 로 저장하고, 추출 전 원본 쪽수를 answer.json 에 {\"pagesBefore\": N} 으로 제출하라. 재조판으로 pagesAfter 는 1이 아닐 수 있다. 힌트: rhwp extract-pages --from 1 --to 1 --json 의 pagesBefore.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "slice.hwp",
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "추출물 실재",
+      "op": "file_exists",
+      "file": "slice.hwp",
+      "minBytes": 256
+    },
+    {
+      "name": "원본과 다름 (무편집 복사 거부 — 판별력)",
+      "op": "differs_from_input",
+      "file": "slice.hwp"
+    },
+    {
+      "name": "추출 전 쪽수",
+      "op": "answer_eq",
+      "answer": "pagesBefore",
+      "path": "pagesBefore",
+      "cmd": [
+        "extract-pages",
+        "{input}",
+        "{file:slice.hwp}",
+        "--from",
+        "1",
+        "--to",
+        "1",
+        "--json"
+      ]
+    }
+  ]
+}

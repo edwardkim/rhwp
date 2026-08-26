@@ -1,0 +1,27 @@
+{
+  "id": "ST36",
+  "tier": 2,
+  "title": "3차원 원형 HWPX 차트 수",
+  "input": "samples/chart/원형/3차원원형.hwpx",
+  "instructions": "입력 차트의 chartCount 를 answer.json 에 {\"charts\": N} 으로 제출하라. 3D 원형의 데이터 계약도 chart-to-csv 다. 숫자를 파일 이름·폴더 설명에서 추측하지 마라. 라이브 봉투를 읽어라. 힌트: rhwp chart-to-csv <문서> (차트 전부) --json 의 chartCount.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "chartCount",
+      "op": "answer_eq",
+      "answer": "charts",
+      "path": "chartCount",
+      "cmd": [
+        "chart-to-csv",
+        "{input}",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

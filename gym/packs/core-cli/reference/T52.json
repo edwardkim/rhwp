@@ -1,0 +1,13 @@
+{
+  "id": "T52",
+  "steps": [
+    {
+      "run": [
+        "run",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"samples/table-001.hwp\", \"output\": \"{sub:plan_out.hwp}\", \"steps\": [{\"action\": \"set_cell\", \"table\": 0, \"row\": 0, \"col\": 0, \"text\": \"계획온램프\"}, {\"action\": \"set_cell\", \"table\": 0, \"row\": 0, \"col\": 1, \"text\": \"원자온램프\"}]}",
+        "--json"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "id": "probe-dlgshot",
+  "title": "대화상자 확인",
+  "ledger": [],
+  "open": "samples/para-001.hwp",
+  "calls": [
+    [
+      "SetPos",
+      [
+        0,
+        0,
+        20
+      ]
+    ],
+    [
+      "Run",
+      [
+        "CharShapeHeight"
+      ]
+    ],
+    [
+      "GetPos",
+      []
+    ]
+  ]
+}

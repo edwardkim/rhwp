@@ -1,0 +1,11 @@
+{
+  "id": "T04-B07",
+  "recipe": "04",
+  "kind": "bash",
+  "sourceFile": "mydocs/manual/recipes/04_safety_check_untrusted_doc.md",
+  "excerpted": true,
+  "fabricatedLive": false,
+  "raw": "rhwp search output/pua-test.hwp \"정답지\" --json --limit 2",
+  "firstLine": "rhwp search output/pua-test.hwp \"정답지\" --json --limit 2",
+  "notGym": true
+}

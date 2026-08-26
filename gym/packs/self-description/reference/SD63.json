@@ -1,0 +1,17 @@
+{
+  "id": "SD63",
+  "steps": [
+    {
+      "answer": {
+        "flags": {
+          "cmd": [
+            "export-provenance-map",
+            "--json"
+          ],
+          "path": "envelopeFlags",
+          "len": true
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workReceiptAuditLayout",
+  "ident": "same-folder-chain",
+  "title": "같은 폴더 체인",
+  "why": "부모·자식이 한 폴더. audit 는 체인을 따라가지 않고 각각 재실행.",
+  "notes": "audit ≠ lineage",
+  "members": [
+    "notice_year",
+    "chain_child"
+  ],
+  "ignored": [],
+  "recursive": false,
+  "exit": 0,
+  "required": [
+    "schemaVersion",
+    "root",
+    "total",
+    "reproduced",
+    "failed",
+    "reproducedRate"
+  ],
+  "envelope": {
+    "schemaVersion": "1.0",
+    "root": "fixtures/audit-layouts/same-folder-chain",
+    "total": 2,
+    "reproduced": 2,
+    "failed": [],
+    "reproducedRate": 1.0
+  },
+  "command": [
+    "audit",
+    "fixtures/audit-layouts/same-folder-chain",
+    "--json"
+  ],
+  "generator": "tools/work_receipt/fatten_work_receipt.py"
+}

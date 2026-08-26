@@ -1,0 +1,173 @@
+{
+  "canonicalSha256": "51c2c6354ee5f8821db49e6e71690928461d1dc811ee76a8f1b246d382a13003",
+  "cohort": {
+    "aggregateUsageRows": 525,
+    "categoryRiskCharacters": {
+      "char-miss": 0,
+      "face-miss": 208949,
+      "heuristic": 37
+    },
+    "compressedCharacters": 166944,
+    "compressedFixedContextRiskCharacters": 153061,
+    "compressedRiskCharacters": 166896,
+    "contextCharacters": {
+      "body": 19143,
+      "footnote": 313,
+      "table-cell": 189610
+    },
+    "documentUsageRows": 813,
+    "documents": 22,
+    "documentsByFormat": {
+      "hwp": 15,
+      "hwpx": 7
+    },
+    "formatCharacters": {
+      "hwp": 169593,
+      "hwpx": 39473
+    },
+    "freshRiskCharacters": 0,
+    "riskCharacters": 208986,
+    "storedRiskCharacters": 208986,
+    "totalCharacters": 209066
+  },
+  "currentMetricAnchor": {
+    "bold": false,
+    "currentIndex": 370,
+    "entryId": "font-metric.e6fdb023c2acf414807d",
+    "italic": false,
+    "metricDataSha256": "4a731b237f741c99c34f9bbb937a1083a5f033b1af1ccc0439e89a98a8c711e7",
+    "name": "MBatang",
+    "ruleIds": [
+      "rule.rust-metric.9a1be171e3e380695845"
+    ],
+    "widthProjectionSha256": "db1a7f375e382fdbff1e06c7e25f2220ee3e7fb7c77556ddbc4fa3ea4a47a12b"
+  },
+  "currentRegistry": {
+    "decisionPlanes": [],
+    "rawSha256": "fbab4413007a29600e5d667503e80b861ec4096827a8936943bdf74e58a5ae16",
+    "rulesSha256": "bd9469aa16156a16ea262f608015cb0b78e925700ae7df69c38602ba6670c029",
+    "targetRuleIds": []
+  },
+  "exactSource": {
+    "cmapCodepoints": 2356,
+    "embeddingDisposition": "restricted-license-embedding",
+    "familyNames": [
+      "MBatang",
+      "문체부 바탕체"
+    ],
+    "fullNames": [
+      "MBatang",
+      "문체부 바탕체"
+    ],
+    "glyphs": 2357,
+    "horizontalMetrics": 2357,
+    "os2FsType": 2,
+    "postScriptNames": [
+      "MBatang",
+      "문체부 바탕체"
+    ],
+    "sfntCount": 1,
+    "sha256": "d10509215d923fef07c1f2dffe8ebf55cbca706476559a861dff6f7cf969ff44",
+    "unitsPerEm": 1000
+  },
+  "executionPolicy": {
+    "fullCorpusRerun": false,
+    "hyperVOracleRerun": false,
+    "nextStage": "runtime-name-and-metric-boundary",
+    "productMutation": false
+  },
+  "gates": {
+    "existingMetricAnchorFound": true,
+    "localizedAndEnglishNamesShareExactSfnt": true,
+    "portableSupplyQualified": false,
+    "privateCohortSeparated": true,
+    "w4CountsReconciled": true,
+    "w5LadderHashBound": true
+  },
+  "inputs": {
+    "fontRuleProjectionBaseline": {
+      "artifact": "mydocs/tech/investigations/issue-4966/font_rule_projection_baseline.json",
+      "sha256": "1b05ace839408178681ce89af2c58311958e9b42b73d59e6b6fae2bab553a3b9"
+    },
+    "fontRuleRegistryV2": {
+      "artifact": "assets/font-rules/font_rule_registry_v2.json",
+      "sha256": "fbab4413007a29600e5d667503e80b861ec4096827a8936943bdf74e58a5ae16"
+    },
+    "sourceProvenance": {
+      "artifact": "mydocs/tech/investigations/issue-4967/rank1_source_provenance_attestation.json",
+      "sha256": "020b85fc5c1e190f659bf66a22a3b18721ab36ff35e6b0b0c9044f6e731ff01c"
+    },
+    "w4Ranking": {
+      "artifact": "mydocs/report/assets/task_m100_4962/font_typesetting_risk_rank.json",
+      "sha256": "6947e9e8a6c67a60a54b04dc6f1abf75e3cc66d9096a978d301ba2c10bb4ee3a"
+    },
+    "w5Rank1Ladder": {
+      "artifact": "mydocs/tech/investigations/issue-4963/oracle_stage4_rank1_acceptance_ladder.json",
+      "sha256": "ae50db7b425d0ba2ed13780188a89b717025549e18639dbfc7fd727c96f818ce"
+    }
+  },
+  "issue": 4967,
+  "kind": "font-rank1-qualification-baseline",
+  "privacy": {
+    "absolutePathIncluded": false,
+    "fontBytesIncluded": false,
+    "privateDocumentHashIncluded": false,
+    "privateDocumentIdentityIncluded": false,
+    "privateDocumentNameIncluded": false
+  },
+  "schemaVersion": 1,
+  "sourceProvenance": {
+    "exactFile": {
+      "officialDownloadArtifactMatched": false,
+      "sha256": "d10509215d923fef07c1f2dffe8ebf55cbca706476559a861dff6f7cf969ff44"
+    },
+    "issue": 4967,
+    "kind": "font-rank1-source-provenance-attestation",
+    "officialReference": {
+      "conditionsObserved": [
+        "free-use",
+        "paid-sale-prohibited",
+        "attribution-required"
+      ],
+      "publishedAt": "2016-10-07",
+      "publisher": "문화체육관광부",
+      "retrievedAt": "2026-08-25",
+      "url": "https://www.mcst.go.kr/site/s_notice/press/pressView.jsp?pCurrentPage=1&pMenuCD=0302000000&pSearchType=&pSearchWord=&pSeq=15621&pTypeDept="
+    },
+    "portableSupplyDisposition": {
+      "reason": "The official reference describes use conditions, but no official artifact was matched byte-for-byte to the local MT.TTF and the font declares restricted-license embedding in OS/2.fsType.",
+      "status": "blocked-unmatched-official-artifact-and-restricted-embedding"
+    },
+    "privacy": {
+      "absolutePathIncluded": false,
+      "fontBytesIncluded": false
+    },
+    "schemaVersion": 1
+  },
+  "stage": "W8-R1-Q0",
+  "target": {
+    "baseRank": 1,
+    "canonicalFaceCandidate": "MBatang",
+    "documentFace": "문체부 바탕체",
+    "empiricalRiskBand": "A",
+    "queueRank": 1
+  },
+  "w3LocalAttestation": {
+    "aggregateSha256": "378671053ae94c02cda4caf8b8a4a1ac7866c3711fdf72c14aa527f8d9bc2888",
+    "checkpointChainSha256": "94d9bbe3cce4218728ff29def8ab24abb51ffc434ec395d8be663fdab6b03649",
+    "checkpointPolicySha256": "b71c1c29b0e6dd120260f97e5632d7d7ab4c09e156078b185f28bfceadccf5dd",
+    "documentCount": 10000,
+    "journalSha256": "89d376705c706771ec745b85319409982625e451157e67eede501284941efc46",
+    "sourceHead": "c1ec759f97eab0152fe8b38cef2e9fbbc50a5c6c"
+  },
+  "w5Oracle": {
+    "disposition": "complete-acceptance-ladder",
+    "exactProfileSha256": "2b0059e5ba67be55fec28a3326903762bd2c8ff354de0f08487447783e41d607",
+    "officialSuccessor": "not-provided",
+    "physicalStates": [
+      "exact-only",
+      "subst-only",
+      "none-related"
+    ]
+  }
+}

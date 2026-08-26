@@ -1,0 +1,7 @@
+{
+  "schemaVersion": "1.0",
+  "helper": "crop_image.sh",
+  "ok": false,
+  "code": "CROP_NO_OUTPUT",
+  "message": "오류: 자르기 실패 — 출력 파일이 생성되지 않음"
+}

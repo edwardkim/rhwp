@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "rhwp.form_fill.batch_row.v1",
+  "title": "batch fill row case",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "kind",
+    "id",
+    "argv",
+    "records"
+  ],
+  "properties": {
+    "axis": {
+      "enum": [
+        "batch-fill",
+        "batch-dry-run",
+        "batch-name-field"
+      ]
+    },
+    "records": {
+      "type": "array"
+    }
+  }
+}

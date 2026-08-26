@@ -1,0 +1,26 @@
+{
+  "id": "FJ16",
+  "steps": [
+    {
+      "write_json": {
+        "to": "{sub:data.json}",
+        "body": {
+          "목차1[0]": "양끝시작여정",
+          "목차1[4]": "양끝마침여정"
+        }
+      }
+    },
+    {
+      "run": [
+        "edit",
+        "fill-fields",
+        "{input}",
+        "--data",
+        "@{sub:data.json}",
+        "-o",
+        "{sub:toc-ends.hwp}",
+        "--json"
+      ]
+    }
+  ]
+}

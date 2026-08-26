@@ -1,4 +1,7 @@
 import { ModalDialog } from './dialog';
+import { applyCommandThroughRouter } from './dialog-apply';
+import { SetCellBorderFillCommand } from '@/engine/command';
+import type { CellBorderFillTarget } from '@/engine/command';
 import type { WasmBridge } from '@/core/wasm-bridge';
 import type { CellBbox, CellProperties } from '@/core/types';
 import type { EventBus } from '@/core/event-bus';
@@ -1018,54 +1021,67 @@ export class CellBorderBgDialog extends ModalDialog {
         ? this.diagScopeRadios
         : this.borderScopeRadios;
     const scope = scopeRadios?.find(r => r.checked)?.value ?? 'selected';
-    const applyProps = () => {
+    // [#5959] 적용 대상을 데이터로 고정한다 — 커맨드 execute 가 다시 읽지 않는다.
+    const buildTargets = (): CellBorderFillTarget => {
       if (this.applyMode === 'asOne') {
-        const range = scope === 'all'
-          ? (() => {
-            const dims = this.wasm.getTableDimensions(sec, ppi, ci);
-            return {
+        if (scope === 'all') {
+          const dims = this.wasm.getTableDimensions(sec, ppi, ci);
+          return {
+            kind: 'zone',
+            range: {
               startRow: 0,
               startCol: 0,
               endRow: Math.max(0, dims.rowCount - 1),
               endCol: Math.max(0, dims.colCount - 1),
-            };
-          })()
-          : this.selectionRange;
-        if (range) {
-          this.wasm.setCellZoneProperties(sec, ppi, ci, range, newProps as Partial<CellProperties>);
-        } else {
-          this.wasm.setCellProperties(sec, ppi, ci, this.cellIdx, newProps as Partial<CellProperties>);
+            },
+          };
         }
-      } else if (scope === 'all') {
+        if (this.selectionRange) return { kind: 'zone', range: this.selectionRange };
+        return { kind: 'cells', cellIdxes: [this.cellIdx] };
+      }
+      if (scope === 'all') {
         const dims = this.wasm.getTableDimensions(sec, ppi, ci);
-        for (let i = 0; i < dims.cellCount; i++) {
-          this.wasm.setCellProperties(sec, ppi, ci, i, newProps as Partial<CellProperties>);
-        }
-      } else if (this.selectionRange) {
+        const all = Array.from({ length: dims.cellCount }, (_, i) => i);
+        return { kind: 'cells', cellIdxes: all };
+      }
+      if (this.selectionRange) {
         const cellIndices = this.selectedCellIndicesForRange(this.selectionRange);
-        const targetIndices = cellIndices.length > 0 ? cellIndices : [this.cellIdx];
-        for (const cellIdx of targetIndices) {
+        return { kind: 'cells', cellIdxes: cellIndices.length > 0 ? cellIndices : [this.cellIdx] };
+      }
+      return { kind: 'cells', cellIdxes: [this.cellIdx] };
+    };
+    // 셀 테두리/배경 일괄 적용도 undo 대상이다 — 속성쌍 역연산 커맨드로 기록해
+    // 스냅샷 슬롯을 쓰지 않는다(#5959). services 미주입 환경(구 호출부)에서만
+    // 직접 적용 fallback(기록 없음 — 종전 계약 유지).
+    // services 미주입 환경의 직접 적용 — 기록 없음(종전 계약 유지).
+    const applyDirect = () => {
+      const t = buildTargets();
+      if (t.kind === 'zone') {
+        this.wasm.setCellZoneProperties(sec, ppi, ci, t.range, newProps as Partial<CellProperties>);
+        return;
+      }
+      // 셀 수만큼 setCellProperties 를 호출하므로 재페이지네이션을 묶는다(#4118).
+      this.wasm.runInBatch(() => {
+        for (const cellIdx of t.cellIdxes) {
           this.wasm.setCellProperties(sec, ppi, ci, cellIdx, newProps as Partial<CellProperties>);
         }
-      } else {
-        this.wasm.setCellProperties(sec, ppi, ci, this.cellIdx, newProps as Partial<CellProperties>);
-      }
+      });
     };
-    // 셀 테두리/배경 일괄 적용도 undo 대상이다 — 편집 라우터를 통과시켜
-    // 스냅샷 하나로 기록한다 (#1320 계약, picture-props-dialog(#2027)와 동일
-    // 패턴). services 미주입 환경에서만 직접 적용 fallback.
     const ih = this.services?.getInputHandler();
     if (ih) {
-      ih.executeOperation({
-        kind: 'snapshot',
-        operationType: 'objectProps',
-        operation: () => {
-          applyProps();
-          return ih.getCursorPosition();
-        },
+      applyCommandThroughRouter({
+        services: this.services,
+        label: 'CellBorderBgDialog',
+        command: () => ({
+          kind: 'command',
+          command: new SetCellBorderFillCommand(
+            sec, ppi, ci, buildTargets(), newProps, ih.getCursorPosition(),
+          ),
+        }),
+        fallback: applyDirect,
       });
     } else {
-      applyProps();
+      applyDirect();
       this.eventBus.emit('document-changed');
     }
   }

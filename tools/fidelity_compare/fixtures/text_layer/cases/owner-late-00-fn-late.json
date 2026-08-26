@@ -1,0 +1,63 @@
+{
+  "id": "owner-late-00-fn-late",
+  "schema": "rhwp.fidelity_compare.text_layer_case.v1",
+  "schemaVersion": "1.0",
+  "claim": "M-fid",
+  "generator": "tools/fidelity_compare/fatten_text_layer.py",
+  "kind": "loss",
+  "classification": "loss",
+  "family": "owner_shift",
+  "genre": "각주",
+  "registeredKey": "manual",
+  "title": "각주가 한 쪽 늦게 SVG 에 나타남",
+  "why": "각주가 PDF pN 에만 있고 SVG 는 pN+1 — rhwp_later. 방향=rhwp_later_than_reference.",
+  "page": 30,
+  "page1based": 31,
+  "referenceText": "본문고정영역ABCDEFGH이번쪽공통각주내용 별표 2의 서식은 행정안전부령 제1호에 따른다.",
+  "svgText": "본문고정영역ABCDEFGH이번쪽공통",
+  "referenceNfc": "본문고정영역ABCDEFGH이번쪽공통각주내용 별표 2의 서식은 행정안전부령 제1호에 따른다.",
+  "svgNfc": "본문고정영역ABCDEFGH이번쪽공통",
+  "referenceSequence": "본문고정영역ABCDEFGH이번쪽공통각주내용별표2의서식은행정안전부령제1호에따른다.",
+  "svgSequence": "본문고정영역ABCDEFGH이번쪽공통",
+  "referenceOnly": 25,
+  "svgOnly": 0,
+  "referenceOnlyChars": "U+002E:.×1,U+0031:1×1,U+0032:2×1,U+AC01:\\uac01×1,U+B0B4:\\ub0b4×1,U+B2E4:\\ub2e4×1,U+B530:\\ub530×1,U+B839:\\ub839×1,U+B978:\\ub978×1,U+BCC4:\\ubcc4×1,U+BD80:\\ubd80×1,U+C11C:\\uc11c×1,U+C2DD:\\uc2dd×1,U+C548:\\uc548×1,U+C5D0:\\uc5d0×1,U+C6A9:\\uc6a9×1,U+C740:\\uc740×1,U+C758:\\uc758×1,U+C804:\\uc804×1,U+C815:\\uc815×1,U+C81C:\\uc81c×1,U+C8FC:\\uc8fc×1,U+D45C:\\ud45c×1,U+D589:\\ud589×1,U+D638:\\ud638×1",
+  "svgOnlyChars": "",
+  "glyphRiskCount": 0,
+  "glyphRisks": "",
+  "referenceGlyphRiskCount": 0,
+  "referenceGlyphRisks": "",
+  "ownerShift": [
+    {
+      "page": 30,
+      "next_page": 31,
+      "direction": "rhwp_later_than_reference",
+      "shared_count": 25,
+      "source_coverage": 1.0,
+      "target_coverage": 1.0,
+      "shared": "U+002E:.×1,U+0031:1×1,U+0032:2×1,U+AC01:\\uac01×1,U+B0B4:\\ub0b4×1,U+B2E4:\\ub2e4×1,U+B530:\\ub530×1,U+B839:\\ub839×1,U+B978:\\ub978×1,U+BCC4:\\ubcc4×1,U+BD80:\\ubd80×1,U+C11C:\\uc11c×1,U+C2DD:\\uc2dd×1,U+C548:\\uc548×1,U+C5D0:\\uc5d0×1,U+C6A9:\\uc6a9×1,U+C740:\\uc740×1,U+C758:\\uc758×1,U+C804:\\uc804×1,U+C815:\\uc815×1,U+C81C:\\uc81c×1,U+C8FC:\\uc8fc×1,U+D45C:\\ud45c×1,U+D589:\\ud589×1,U+D638:\\ud638×1"
+    }
+  ],
+  "sequence": [
+    {
+      "page": 30,
+      "next_page": 31,
+      "direction": "rhwp_later_than_reference",
+      "chars": 25,
+      "sequence": "각주내용별표2의서식은행정안전부령제1호에따른다."
+    }
+  ],
+  "visibleExcess": [],
+  "clipExcludedChars": 0,
+  "nextReferenceText": "본문고정영역ABCDEFGH이번쪽공통",
+  "nextSvgText": "본문고정영역ABCDEFGH이번쪽공통각주내용 별표 2의 서식은 행정안전부령 제1호에 따른다.",
+  "textOnly": true,
+  "chromeRequired": false,
+  "pypdfRequired": true,
+  "pypdfium2Required": false,
+  "candidateNotVerdict": true,
+  "reviewHint": "PDF 쪽이 한 쪽 앞선 후보. 시트 없이 확정 금지.",
+  "relatedIssue": "#3389",
+  "notes": "rhwp_later_than_reference",
+  "digest": "0967dee40d82"
+}

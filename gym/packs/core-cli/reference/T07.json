@@ -1,0 +1,25 @@
+{
+  "id": "T07",
+  "steps": [
+    {
+      "write_json": {
+        "to": "{sub:data.json}",
+        "body": {
+          "회사명": "홍길동"
+        }
+      }
+    },
+    {
+      "run": [
+        "edit",
+        "fill-fields",
+        "samples/field-01.hwp",
+        "--data",
+        "@{sub:data.json}",
+        "-o",
+        "{sub:filled.hwp}",
+        "--json"
+      ]
+    }
+  ]
+}

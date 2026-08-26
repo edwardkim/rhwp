@@ -1,0 +1,69 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workReceiptReplayCase",
+  "ident": "contract_party",
+  "claim": "M-rcpt",
+  "issue": 5478,
+  "family": "계약",
+  "genre": "당사자",
+  "title": "갑 표시 정정",
+  "why": "갑: 서울특별시→갑: 서울특별시장. 법인명 케이스와 다른 칸.",
+  "notes": "당사자 축",
+  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "output": "out/contract-party.hwp",
+  "ext": "hwp",
+  "actions": [
+    "replace_text"
+  ],
+  "stepCount": 1,
+  "plan": {
+    "planVersion": "1.0",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "output": "out/contract-party.hwp",
+    "steps": [
+      {
+        "action": "replace_text",
+        "find": "갑: 서울특별시",
+        "replace": "갑: 서울특별시장"
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"samples/basic/issue2007_nested_cell_pagination_42065.hwp\",\"output\":\"out/contract-party.hwp\",\"steps\":[{\"action\":\"replace_text\",\"find\":\"갑: 서울특별시\",\"replace\":\"갑: 서울특별시장\"}]}",
+  "planSha256": "8294408b571f588d071ca3cc4f6659ee11e31a75e313c36737b63626136b64a7",
+  "command": "replay",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "inputSha256": "0887d9bddb9e5912fbdc318fe8e7a3e16d626ee924d016a82dbef275663b272a",
+    "planSha256": "8294408b571f588d071ca3cc4f6659ee11e31a75e313c36737b63626136b64a7",
+    "outputSha256": "8d29aa11ec62ace9eeb9bdd72aa2a9bebbee18c37acaeb6e6f7ca70e702c9f98",
+    "toolVersion": "fixture-0.0.0-not-a-release",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null
+  },
+  "expected": {
+    "attest": {
+      "exit": 0,
+      "mode": "attest",
+      "reproduced": null,
+      "userOutputCreated": false
+    },
+    "verify_ok": {
+      "exit": 0,
+      "mode": "verify",
+      "reproduced": true,
+      "expectedOutputSha256": "8d29aa11ec62ace9eeb9bdd72aa2a9bebbee18c37acaeb6e6f7ca70e702c9f98"
+    },
+    "verify_mismatch": {
+      "exit": 3,
+      "mode": "verify",
+      "reproduced": false,
+      "expectedOutputSha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "judgment": true
+    }
+  },
+  "claimedOutputPathUntouched": true,
+  "generator": "tools/work_receipt/fatten_work_receipt.py"
+}

@@ -1,0 +1,54 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5335,
+  "items": [
+    {
+      "id": "P01",
+      "ref": "12_pitfalls.md#p01"
+    },
+    {
+      "id": "P02",
+      "ref": "12_pitfalls.md#p02"
+    },
+    {
+      "id": "P03",
+      "ref": "12_pitfalls.md#p03"
+    },
+    {
+      "id": "P04",
+      "ref": "12_pitfalls.md#p04"
+    },
+    {
+      "id": "P05",
+      "ref": "12_pitfalls.md#p05"
+    },
+    {
+      "id": "P06",
+      "ref": "12_pitfalls.md#p06"
+    },
+    {
+      "id": "P07",
+      "ref": "12_pitfalls.md#p07"
+    },
+    {
+      "id": "P08",
+      "ref": "12_pitfalls.md#p08"
+    },
+    {
+      "id": "P09",
+      "ref": "12_pitfalls.md#p09"
+    },
+    {
+      "id": "P10",
+      "ref": "12_pitfalls.md#p10"
+    },
+    {
+      "id": "P11",
+      "ref": "12_pitfalls.md#p11"
+    },
+    {
+      "id": "P12",
+      "ref": "12_pitfalls.md#p12"
+    }
+  ]
+}

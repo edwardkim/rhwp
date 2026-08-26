@@ -1,0 +1,23 @@
+{
+  "id": "TB04",
+  "steps": [
+    {
+      "run": [
+        "edit",
+        "set-cell",
+        "{input}",
+        "--table",
+        "0",
+        "--row",
+        "0",
+        "--col",
+        "0",
+        "--text",
+        "왕복검증",
+        "-o",
+        "{sub:roundtrip.hwp}",
+        "--json"
+      ]
+    }
+  ]
+}

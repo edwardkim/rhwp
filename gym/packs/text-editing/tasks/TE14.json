@@ -1,0 +1,60 @@
+{
+  "id": "TE14",
+  "tier": 2,
+  "title": "치환 후 첫 일치 문단 좌표",
+  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "instructions": "입력의 '규제' 를 모두 '점검' 으로 바꾼 edited.hwp 를 제출하고, 산출물에서 '점검' 의 **첫 일치 문단 번호**를 answer.json 에 {\"para\": N} 으로 적어라. 힌트: rhwp search 의 matches[0].paragraph.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "edited.hwp",
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "옛 문구 완전 소거",
+      "op": "value_eq",
+      "value": 0,
+      "path": "matchCount",
+      "cmd": [
+        "search",
+        "{file:edited.hwp}",
+        "--json",
+        "--",
+        "규제"
+      ]
+    },
+    {
+      "name": "새 문구 실재",
+      "op": "value_ge",
+      "value": 1,
+      "path": "matchCount",
+      "cmd": [
+        "search",
+        "{file:edited.hwp}",
+        "--json",
+        "--",
+        "점검"
+      ]
+    },
+    {
+      "name": "첫 일치 문단",
+      "op": "answer_eq",
+      "answer": "para",
+      "path": "matches[0].paragraph",
+      "cmd": [
+        "search",
+        "{file:edited.hwp}",
+        "--json",
+        "--",
+        "점검"
+      ]
+    },
+    {
+      "name": "원본과 다름",
+      "op": "differs_from_input",
+      "file": "edited.hwp"
+    }
+  ]
+}

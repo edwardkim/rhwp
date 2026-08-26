@@ -1,0 +1,45 @@
+{
+  "name": "hwp_doc_structure",
+  "kind": "session",
+  "in_capabilities_mcp": false,
+  "in_tools_list": true,
+  "family": "query",
+  "required": [
+    "docId"
+  ],
+  "optional": [
+    "mode"
+  ],
+  "envelope_fields": [
+    "schemaVersion",
+    "source",
+    "mode",
+    "nodeCount",
+    "structure"
+  ],
+  "writes_ir": false,
+  "writes_disk": false,
+  "idempotentHint": true,
+  "destructiveHint": false,
+  "stateless_twin": "hwp_export_structure",
+  "when": "법령·규정 조문 계층을 세션 안에서 반복 인용할 때.",
+  "when_not": "목차 한 번이면 hwp_export_structure. 안정 노드 ID 가 필요하면 hwp_doc_tree.",
+  "recovery": "nextCall 로 hwp_open.",
+  "sample_call": {
+    "method": "tools/call",
+    "params": {
+      "name": "hwp_doc_structure",
+      "arguments": {
+        "docId": "<docId>"
+      }
+    }
+  },
+  "closed_handle_signal": {
+    "isError": true,
+    "needle": "열려 있지 않은 핸들",
+    "nextCall": {
+      "name": "hwp_open"
+    }
+  },
+  "source_const": "ALL_SESSION_TOOLS"
+}

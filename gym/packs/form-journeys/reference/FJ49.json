@@ -1,0 +1,25 @@
+{
+  "id": "FJ49",
+  "steps": [
+    {
+      "write_json": {
+        "to": "{sub:data.json}",
+        "body": {
+          "이메일": "memo@journey.go.kr"
+        }
+      }
+    },
+    {
+      "run": [
+        "edit",
+        "fill-fields",
+        "{input}",
+        "--data",
+        "@{sub:data.json}",
+        "-o",
+        "{sub:memo-mail.hwp}",
+        "--json"
+      ]
+    }
+  ]
+}

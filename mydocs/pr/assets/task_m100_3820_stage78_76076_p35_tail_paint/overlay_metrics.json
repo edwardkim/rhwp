@@ -1,0 +1,70 @@
+{
+  "summary": {
+    "compared_pages": 2,
+    "pixel_diff_threshold": 32,
+    "average_pixel_match_percent": 90.95725,
+    "worst_pixel_match_percent": 89.85756,
+    "average_ink_match_percent": 26.29701,
+    "worst_ink_match_percent": 19.56384,
+    "average_visual_accuracy_proxy_percent": 26.29701,
+    "worst_visual_accuracy_proxy_percent": 19.56384,
+    "worst_pages": [
+      35,
+      36
+    ]
+  },
+  "pages": [
+    {
+      "page": 35,
+      "rhwp_png": "/tmp/rhwp-stage78-sweep-current.QMiOK2/task3820-stage78-p35-tail-paint/rhwp_png/rhwp_035.png",
+      "pdf_png": "/tmp/rhwp-stage78-sweep-current.QMiOK2/task3820-stage78-p35-tail-paint/pdf_png/pdf-35.png",
+      "overlay_png": "/tmp/rhwp-stage78-sweep-current.QMiOK2/task3820-stage78-p35-tail-paint/overlay/overlay_035.png",
+      "width": 1489,
+      "height": 2105,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 3134345,
+      "diff_pixels": 317899,
+      "diff_ratio": 0.10142438,
+      "pixel_match_percent": 89.85756,
+      "ink_union_pixels": 395219,
+      "ink_diff_pixels": 317899,
+      "ink_diff_ratio": 0.80436163,
+      "ink_match_percent": 19.56384,
+      "visual_accuracy_proxy_percent": 19.56384,
+      "mean_abs_channel_delta": 18.471,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        141,
+        141,
+        1374,
+        2031
+      ]
+    },
+    {
+      "page": 36,
+      "rhwp_png": "/tmp/rhwp-stage78-sweep-current.QMiOK2/task3820-stage78-p35-tail-paint/rhwp_png/rhwp_036.png",
+      "pdf_png": "/tmp/rhwp-stage78-sweep-current.QMiOK2/task3820-stage78-p35-tail-paint/pdf_png/pdf-36.png",
+      "overlay_png": "/tmp/rhwp-stage78-sweep-current.QMiOK2/task3820-stage78-p35-tail-paint/overlay/overlay_036.png",
+      "width": 1489,
+      "height": 2105,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 3134345,
+      "diff_pixels": 248963,
+      "diff_ratio": 0.07943063,
+      "pixel_match_percent": 92.05694,
+      "ink_union_pixels": 371754,
+      "ink_diff_pixels": 248963,
+      "ink_diff_ratio": 0.66969824,
+      "ink_match_percent": 33.03018,
+      "visual_accuracy_proxy_percent": 33.03018,
+      "mean_abs_channel_delta": 13.188,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        141,
+        141,
+        1374,
+        2031
+      ]
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workCapsule",
+  "parent": null,
+  "plan": {
+    "planVersion": "1.0",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "output": "out/page_ref.hwp",
+    "steps": [
+      {
+        "action": "replace_text",
+        "find": "3쪽 참조",
+        "replace": "4쪽 참조"
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"samples/basic/issue2007_nested_cell_pagination_42065.hwp\",\"output\":\"out/page_ref.hwp\",\"steps\":[{\"action\":\"replace_text\",\"find\":\"3쪽 참조\",\"replace\":\"4쪽 참조\"}]}",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "inputSha256": "180c04f6be9a7a6ea6bdd4c5c1cac107d098122ff3a80749366c574cbc90a66f",
+    "planSha256": "08c1312d3b82b98a606e44b74be2103ac32f5628b31065854c2de8b5c6c168a0",
+    "outputSha256": "cbe030fd8396ea9b1fd6b006556a8626a23a8d8bae837c703d31251488ce2b69",
+    "toolVersion": "0.8.4",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null,
+    "untrustedContent": false,
+    "untrustedFields": []
+  }
+}

@@ -1,0 +1,38 @@
+{
+  "id": "p4-fieldname",
+  "title": "누름틀 안에서 이름 바꾸기 — SetCurFieldName 은 인자 넷",
+  "ledger": [
+    "HwpCtrl.method.SetCurFieldName"
+  ],
+  "open": "samples/issue-986-receipt.hwp",
+  "calls": [
+    ["MoveToField", ["pt_nm", true, true, false]],
+    ["GetPos", []],
+    ["GetCurFieldName", [0]],
+    ["SetCurFieldName", ["새이름"], {"expectError": {
+      "rhwp": "필수 매개 변수입니다",
+      "ocx": null,
+      "why": "규격은 뒤 셋을 선택으로 적지만 실물은 넷을 다 요구한다(계획서 §4.54·§4.57). 오라클 오류 문구는 아직 안 쟀다"
+    }}],
+    ["SetCurFieldName", ["새이름", 0], {"expectError": {
+      "rhwp": "필수 매개 변수입니다",
+      "ocx": null,
+      "why": "인자 둘도 같은 오류다(계획서 §4.54)"
+    }}],
+    ["SetCurFieldName", ["새이름", 0, ""], {"expectError": {
+      "rhwp": "필수 매개 변수입니다",
+      "ocx": null,
+      "why": "인자 셋도 같은 오류다 — 넷을 다 줘야 이름이 바뀐다(계획서 §4.57)"
+    }}],
+    ["SetCurFieldName", ["새이름", 0, "", ""]],
+    ["GetCurFieldName", [0]],
+    ["GetFieldList", [0, 0]],
+    ["FieldExist", ["pt_nm"]],
+    ["FieldExist", ["새이름"]],
+    ["SetCurFieldName", ["pt_nm", 0, "", ""]],
+    ["GetCurFieldName", [0]],
+    ["FieldExist", ["pt_nm"]],
+    ["FieldExist", ["새이름"]],
+    ["GetFieldList", [0, 0]]
+  ]
+}

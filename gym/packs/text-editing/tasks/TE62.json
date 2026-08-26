@@ -1,0 +1,29 @@
+{
+  "id": "TE62",
+  "tier": 1,
+  "title": "국어원 '국어' 검색",
+  "input": "samples/2022년 국립국어원 업무계획.hwp",
+  "instructions": "입력에서 '국어' 일치 건수를 answer.json 에 {\"hits\": N} 으로 제출하라. core-cli T02 는 len_answer_eq(matches) 다. 이번은 matchCount 를 그대로 읽는다.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "국어원 '국어' 검색 · hits",
+      "op": "answer_eq",
+      "answer": "hits",
+      "path": "matchCount",
+      "cmd": [
+        "search",
+        "{input}",
+        "--json",
+        "--",
+        "국어"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

@@ -7,6 +7,9 @@ last_verified: 2026-08-03
 
 # 진입로 비용 모델 — 실측값과 재현 방법
 
+> **v0.8.4 현행성 주의:** Python·Node 바인딩 측정은 철회 전 실험 기록이다.
+> #4655 이후 현재 지원 표면의 성능 기준으로 사용하지 않는다.
+
 [entrypoint_decision.md](entrypoint_decision.md) 의 모든 성능 주장이 여기서 나온다.
 숫자마다 **어느 문서·몇 회·어느 머신**인지를 붙인다. 조건 없는 숫자는 거짓말이다.
 
@@ -385,7 +388,10 @@ step 이 늘수록 격차가 벌어진다(체이닝은 step 마다 기동+파싱
 
 ---
 
-## 8. 언어 바인딩
+## 8. 철회된 언어 바인딩 실측 이력
+
+이 절은 #4655 이전 Python 바인딩의 측정값을 보존한 historical record다. 현재
+지원 진입로의 성능 근거나 재현 절차로 사용하지 않는다.
 
 Python 바인딩을 소스에서(`PYTHONPATH=bindings/python/src`,
 `RHWP_BIN=target/release/rhwp.exe`) 직접 실행.
@@ -458,5 +464,5 @@ Node 바인딩은 **미측정**이다(§10).
 - [cli_commands.md](../../manual/cli_commands.md) — 명령·플래그 권위
 - [cli_json_pipeline_guide.md](../../manual/cli_json_pipeline_guide.md) — 다른 조건의 배치 실측
 - [mcp_integration_guide.md](../../manual/mcp_integration_guide.md) — MCP 두 경로
-- [python_binding_guide.md](../../manual/python_binding_guide.md) · [node_binding_guide.md](../../manual/node_binding_guide.md)
+- 공식 Python·Node 바인딩 철회: [#4655](https://github.com/edwardkim/rhwp/issues/4655)
 - 이슈 [#3869](https://github.com/edwardkim/rhwp/issues/3869)

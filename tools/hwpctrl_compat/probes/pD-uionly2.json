@@ -1,0 +1,52 @@
+{
+  "id": "pD-uionly2",
+  "title": "마우스 자리 셋과 쪽 그림 만들기",
+  "ledger": [],
+  "open": "samples/para-001.hwp",
+  "calls": [
+    [
+      "GetMousePos.SetID",
+      [
+        0,
+        0
+      ]
+    ],
+    [
+      "GetMousePos.Count",
+      [
+        0,
+        0
+      ]
+    ],
+    [
+      "GetMousePos.Item",
+      [
+        0,
+        0
+      ]
+    ],
+    [
+      "CreatePageImage",
+      [
+        "C:/Users/planet/AppData/Local/Temp/claude/pg.bmp",
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    ],
+    [
+      "CreatePageImageEx",
+      [
+        "C:/Users/planet/AppData/Local/Temp/claude/pg2.bmp",
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ]
+    ]
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "id": "WR10",
+  "steps": [
+    {
+      "answer": {
+        "expectedOutputSha256": {
+          "cmd": [
+            "replay",
+            "--plan-json",
+            "{\"planVersion\": \"1.0\", \"input\": \"samples/field-01.hwp\", \"output\": \"null-expect.hwp\", \"steps\": [{\"action\": \"replace_text\", \"find\": \"마케팅\", \"replace\": \"기대널\"}]}",
+            "--json"
+          ],
+          "path": "expectedOutputSha256"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "id": "T43",
+  "tier": 2,
+  "title": "표 표본 주입 신호",
+  "input": "samples/table-001.hwp",
+  "instructions": "T43 은 입문·코어 온램프를 두껍게 하는 과제다. T11 의 출처 불명 해시 문서가 아니라 깨끗한 표 표본을 스윕한다. 0일 수도 있다. 표본은 `samples/table-001.hwp` 이고, 이미 저장소 `samples/` 에 있다. 새 파일을 만들지 마라. 정답 숫자는 과제에 박제되어 있지 않다. 채점기가 같은 명령을 다시 돌린다. 힌트: inspect injection <문서> --json. 제출은 answer.json 에 {\"signalCount\": <값>} 로 적는다. 원본을 덮어쓰지 마라. T07 의 fields[0]==홍길동 판정을 복제하지 마라. 0이라고 추측하지 말고 명령을 돌려라. injectionSignals 길이다.",
+  "submit": {
+    "kind": "answer"
+  },
+  "checks": [
+    {
+      "name": "표 표본 주입 신호",
+      "op": "len_answer_eq",
+      "answer": "signalCount",
+      "cmd": [
+        "inspect",
+        "injection",
+        "{input}",
+        "--json"
+      ],
+      "path": "injectionSignals",
+      "expect_exits": [
+        0,
+        3
+      ]
+    }
+  ]
+}

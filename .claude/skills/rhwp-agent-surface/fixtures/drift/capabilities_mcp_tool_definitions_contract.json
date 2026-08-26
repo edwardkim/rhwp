@@ -1,0 +1,11 @@
+{
+  "id": "capabilities_mcp_tool_definitions_contract",
+  "file": "tests/cli_json_contract.rs",
+  "checks": [
+    "name",
+    "description",
+    "inputSchema.type=object",
+    "cli.command"
+  ],
+  "on_fail": "tool() helper 로 고친다"
+}

@@ -1,0 +1,15 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5312,
+  "rule": "A==A 는 항상 PASS",
+  "why": "회귀 도구의 결정성 기준선. 실패는 문서가 아니라 파이프라인",
+  "command": [
+    "render-diff",
+    "<A>",
+    "<A>"
+  ],
+  "expectedStatus": "PASS",
+  "expectedMaxDisp": 0.0,
+  "expectedExit": 0,
+  "ciBaseline": true
+}

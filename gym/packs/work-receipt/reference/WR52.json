@@ -1,0 +1,15 @@
+{
+  "id": "WR52",
+  "steps": [
+    {
+      "run": [
+        "replay",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"samples/field-01.hwp\", \"output\": \"planout.hwp\", \"steps\": [{\"action\": \"replace_text\", \"find\": \"마케팅\", \"replace\": \"계획산출\"}]}",
+        "--capsule",
+        "{sub:receipts/planout.capsule.json}",
+        "--json"
+      ]
+    }
+  ]
+}

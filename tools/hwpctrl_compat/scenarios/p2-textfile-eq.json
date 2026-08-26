@@ -1,0 +1,24 @@
+{
+  "id": "p2-textfile-eq",
+  "title": "GetTextFile — eq-01.hwp",
+  "ledger": [
+    "HwpCtrl.method.GetTextFile"
+  ],
+  "open": "samples/eq-01.hwp",
+  "calls": [
+    [
+      "GetTextFile",
+      [
+        "UNICODE",
+        ""
+      ]
+    ],
+    [
+      "GetTextFile",
+      [
+        "UNICODE",
+        "saveblock"
+      ]
+    ]
+  ]
+}

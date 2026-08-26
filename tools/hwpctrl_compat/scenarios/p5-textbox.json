@@ -1,0 +1,28 @@
+{
+  "id": "p5-textbox",
+  "title": "글상자 붙이기·떼기 — 빈 채로 생기고, 떼면 리스트가 사라진다",
+  "ledger": [
+    "Action.ShapeObjAttachTextBox",
+    "Action.ShapeObjDetachTextBox"
+  ],
+  "open": "samples/mix-shape-01.hwp",
+  "calls": [
+    ["SetPos", [0, 0, 0]],
+    ["Run", ["SelectCtrlFront"]],
+    ["CurSelectedCtrl.UserDesc", []],
+    ["GetPos", []],
+    ["Run", ["ShapeObjAttachTextBox"]],
+    ["GetPos", []],
+    ["SelectionMode", []],
+    ["SetPos", [2, 0, 0]],
+    ["GetPos", []],
+    ["ParentCtrl.UserDesc", []],
+    ["Run", ["SelectCtrlFront"]],
+    ["CurSelectedCtrl.UserDesc", []],
+    ["Run", ["ShapeObjDetachTextBox"]],
+    ["GetPos", []],
+    ["SelectionMode", []],
+    ["SetPos", [2, 0, 0]],
+    ["GetPos", []]
+  ]
+}

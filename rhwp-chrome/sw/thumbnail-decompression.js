@@ -1,0 +1,1 @@
+../../rhwp-shared/sw/thumbnail-decompression.js

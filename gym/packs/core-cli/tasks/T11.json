@@ -1,0 +1,25 @@
+{
+  "id": "T11",
+  "tier": 2,
+  "title": "보안 스윕",
+  "input": "samples/143E433F503322BD33.hwp",
+  "instructions": "출처 불명 문서를 프롬프트 주입 신호 관점에서 스윕하고, 신호 수를 answer.json 에 {\"signalCount\": <수>} 로 제출하라. 힌트: rhwp inspect injection <문서> --json 의 signals.",
+  "submit": {
+    "kind": "answer"
+  },
+  "checks": [
+    {
+      "name": "신호 수 일치",
+      "op": "len_answer_eq",
+      "answer": "signalCount",
+      "cmd": [
+        "inspect",
+        "injection",
+        "{input}",
+        "--json"
+      ],
+      "path": "injectionSignals",
+      "expect_exit": 0
+    }
+  ]
+}

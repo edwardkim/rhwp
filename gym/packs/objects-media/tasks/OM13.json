@@ -1,0 +1,27 @@
+{
+  "id": "OM13",
+  "tier": 1,
+  "title": "첫 필드 이름",
+  "input": "samples/field-01.hwp",
+  "instructions": "입력 서식의 **첫 번째** 필드 이름을 answer.json 에 {\"name\": \"...\"} 으로 제출하라. 유형(OM08 fieldType)이 아니라 이름이다. 힌트: rhwp fields 의 fields[0].name.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "첫 필드 이름",
+      "op": "answer_eq",
+      "answer": "name",
+      "path": "fields[0].name",
+      "cmd": [
+        "fields",
+        "{input}",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

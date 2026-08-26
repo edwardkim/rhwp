@@ -1,0 +1,31 @@
+{
+  "id": "FJ33",
+  "tier": 3,
+  "title": "세 칸 dry-run filledCount 오라클",
+  "input": "samples/field-01.hwp",
+  "axis": "조회",
+  "instructions": "작성자·부서명·이메일을 한 번에 지목하는 dry-run 의 filledCount 를 answer.json 의 filled 로 제출하라. 회사명은 넣지 마라. 파일을 쓰지 마라. 라이브 오라클이 개수를 대조한다. 힌트: --data '{\"작성자\":\"갑\",\"부서명\":\"을\",\"이메일\":\"병\"}' --dry-run --json 판정은 라이브 재실행 또는 산출물 재독이며, 파일 부재를 통과로 치지 않는다. T07 의 fields[0].value==홍길동 판정은 쓰지 마라. 새 CLI 는 없다.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "채워질 칸 수",
+      "op": "answer_eq",
+      "answer": "filled",
+      "path": "filledCount",
+      "cmd": [
+        "edit",
+        "fill-fields",
+        "{input}",
+        "--data",
+        "{\"작성자\": \"갑\", \"부서명\": \"을\", \"이메일\": \"병\"}",
+        "--dry-run",
+        "--json"
+      ]
+    }
+  ]
+}

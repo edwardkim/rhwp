@@ -1,0 +1,31 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workCapsule",
+  "parent": null,
+  "plan": {
+    "planVersion": "1.0",
+    "input": "samples/basic/blank2010.hwp",
+    "output": "out/form-indexed.hwp",
+    "steps": [
+      {
+        "action": "fill_fields",
+        "data": {
+          "피규제집단명[13]": "한국위생용품공업협동조합"
+        }
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"samples/basic/blank2010.hwp\",\"output\":\"out/form-indexed.hwp\",\"steps\":[{\"action\":\"fill_fields\",\"data\":{\"피규제집단명[13]\":\"한국위생용품공업협동조합\"}}]}",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "samples/basic/blank2010.hwp",
+    "inputSha256": "142040e343008238d4e0d11be33e8136371f70a170b853cb773498a6e5a642cd",
+    "planSha256": "737d2c60ca13ffa72b95fcc8e68a031fc66a9fad72daf4a0eac87fb9b5db7974",
+    "outputSha256": "9c6fe77d5ac8c11db7c538b0f4eb231a925c8728108c7a56e046458baf295dca",
+    "toolVersion": "fixture-0.0.0-not-a-release",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null
+  }
+}

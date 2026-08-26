@@ -1,0 +1,19 @@
+{
+  "id": "SR19",
+  "steps": [
+    {
+      "answer": {
+        "pages": {
+          "cmd": [
+            "export-pdf",
+            "{input}",
+            "-o",
+            "{sub:out.pdf}",
+            "--json"
+          ],
+          "path": "pageCount"
+        }
+      }
+    }
+  ]
+}

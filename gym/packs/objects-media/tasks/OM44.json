@@ -1,0 +1,29 @@
+{
+  "id": "OM44",
+  "tier": 2,
+  "title": "요청 서식 썸네일 가로",
+  "input": "samples/basic/request.hwp",
+  "instructions": "basic/request.hwp 썸네일의 **가로 픽셀**을 answer.json 에 {\"width\": N} 으로 제출하라. 누름틀이 없는 일반 문서도 미리보기는 나온다. 힌트: rhwp thumbnail 의 width.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "가로 픽셀",
+      "op": "answer_eq",
+      "answer": "width",
+      "path": "width",
+      "cmd": [
+        "thumbnail",
+        "{input}",
+        "-o",
+        "{file:t.png}",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

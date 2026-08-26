@@ -1,0 +1,25 @@
+{
+  "id": "WR53",
+  "steps": [
+    {
+      "run": [
+        "replay",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"samples/field-01.hwp\", \"output\": \"diff-a.hwp\", \"steps\": [{\"action\": \"replace_text\", \"find\": \"마케팅\", \"replace\": \"출근형제\"}]}",
+        "--capsule",
+        "{sub:receipts/a.capsule.json}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "replay",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"samples/field-01.hwp\", \"output\": \"diff-b.hwp\", \"steps\": [{\"action\": \"replace_text\", \"find\": \"마케팅\", \"replace\": \"퇴근형제\"}]}",
+        "--capsule",
+        "{sub:receipts/b.capsule.json}",
+        "--json"
+      ]
+    }
+  ]
+}

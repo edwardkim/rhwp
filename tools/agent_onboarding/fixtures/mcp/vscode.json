@@ -1,0 +1,11 @@
+{
+  "servers": {
+    "rhwp": {
+      "type": "stdio",
+      "command": "rhwp",
+      "args": [
+        "mcp-serve"
+      ]
+    }
+  }
+}

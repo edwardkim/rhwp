@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workCapsule",
+  "parent": {
+    "capsule": "title_fix.capsule.json",
+    "sha256": "b2f5338223c170e15da6ac9fc8b2d65decaf3b0217c56c0d9d4dce5b6b0359ac"
+  },
+  "plan": {
+    "planVersion": "1.0",
+    "input": "out/title_fix.hwp",
+    "output": "out/chain_footer.hwp",
+    "steps": [
+      {
+        "action": "replace_text",
+        "find": "대외비",
+        "replace": "공개"
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"out/title_fix.hwp\",\"output\":\"out/chain_footer.hwp\",\"steps\":[{\"action\":\"replace_text\",\"find\":\"대외비\",\"replace\":\"공개\"}]}",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "out/title_fix.hwp",
+    "inputSha256": "ab3da0ffbcb6f9da1b039f9dab66c5d9e8407a1792d62e23ec871a99043b93ef",
+    "planSha256": "cb767c6f12937af3d746658686bab6fff78e572bd09444924d5a9fe9e475a21a",
+    "outputSha256": "59a3fdbcc6f0624b2402a5ad29e14530fd122e2fbf2a99c7a6cee8d228b944c7",
+    "toolVersion": "0.8.4",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null,
+    "untrustedContent": false,
+    "untrustedFields": []
+  }
+}

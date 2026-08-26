@@ -1,0 +1,29 @@
+{
+  "id": "TE63",
+  "tier": 1,
+  "title": "유니코드 표본 검색",
+  "input": "samples/unicode/각 항목에 명시되어 있는_유니코드.hwp",
+  "instructions": "입력에서 '유니코드' 일치 건수를 answer.json 에 {\"hits\": N} 으로 제출하라.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "유니코드 표본 검색 · hits",
+      "op": "answer_eq",
+      "answer": "hits",
+      "path": "matchCount",
+      "cmd": [
+        "search",
+        "{input}",
+        "--json",
+        "--",
+        "유니코드"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

@@ -1,0 +1,33 @@
+{
+  "id": "FJ22",
+  "steps": [
+    {
+      "answer": {
+        "dryRun": {
+          "cmd": [
+            "edit",
+            "fill-fields",
+            "{input}",
+            "--data",
+            "{\"myMsg01\": \"오라클수신자\"}",
+            "--dry-run",
+            "--json"
+          ],
+          "path": "dryRun"
+        },
+        "filledCount": {
+          "cmd": [
+            "edit",
+            "fill-fields",
+            "{input}",
+            "--data",
+            "{\"myMsg01\": \"오라클수신자\"}",
+            "--dry-run",
+            "--json"
+          ],
+          "path": "filledCount"
+        }
+      }
+    }
+  ]
+}

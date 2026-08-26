@@ -1,0 +1,23 @@
+{
+  "id": "TE32",
+  "steps": [
+    {
+      "run": [
+        "edit",
+        "insert-text",
+        "{input}",
+        "--text",
+        "짐표지TE32",
+        "--section",
+        "0",
+        "--para",
+        "0",
+        "--offset",
+        "0",
+        "-o",
+        "{sub:ins32.hwp}",
+        "--json"
+      ]
+    }
+  ]
+}

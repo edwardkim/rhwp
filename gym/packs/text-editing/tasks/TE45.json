@@ -1,0 +1,47 @@
+{
+  "id": "TE45",
+  "tier": 2,
+  "title": "삽입 후 첫 일치 문단",
+  "input": "samples/para-001.hwp",
+  "instructions": "입력의 구역 0 · 문단 0 · 오프셋 0 에 '짐표지TE45' 을 넣은 ins45.hwp 를 제출하라. 좌표는 전부 0 기준이며 search 주소와 같다. 채점은 그 표지가 정확히 1건인지 재검색한다. 힌트: rhwp edit insert-text --section 0 --para 0 --offset 0. 산출물에서 표지의 첫 일치 문단 번호를 answer.json 에 {\"para\": N} 으로 적어라.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "ins45.hwp",
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "삽입 표지 1건",
+      "op": "value_eq",
+      "value": 1,
+      "path": "matchCount",
+      "cmd": [
+        "search",
+        "{file:ins45.hwp}",
+        "--json",
+        "--",
+        "짐표지TE45"
+      ]
+    },
+    {
+      "name": "원본과 다름",
+      "op": "differs_from_input",
+      "file": "ins45.hwp"
+    },
+    {
+      "name": "첫 일치 문단",
+      "op": "answer_eq",
+      "answer": "para",
+      "path": "matches[0].paragraph",
+      "cmd": [
+        "search",
+        "{file:ins45.hwp}",
+        "--json",
+        "--",
+        "짐표지TE45"
+      ]
+    }
+  ]
+}

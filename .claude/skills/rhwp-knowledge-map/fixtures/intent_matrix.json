@@ -1,0 +1,857 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5342,
+  "skill": "rhwp-knowledge-map",
+  "notGym": true,
+  "noNewCli": true,
+  "noNewEditLogic": true,
+  "routerOnly": true,
+  "entryPoint": true,
+  "doNotRenarrateMapRows": true,
+  "canonicalWins": true,
+  "binaryWinsOnVersionMismatch": true,
+  "fieldDictionary": "mydocs/manual/agent_knowledge_map.md#2-봉투-필드-사전--필드-이름으로-찾는-역인덱스",
+  "intents": [
+    {
+      "id": "I001",
+      "utterance": "지식 지도부터 읽어",
+      "command": "없음 — 첫 문서는 llms.txt",
+      "reference": "00_first_read.md",
+      "stop": "R01"
+    },
+    {
+      "id": "I002",
+      "utterance": "llms.txt 다음 문서",
+      "command": "없음 — agent_knowledge_map.md",
+      "reference": "00_first_read.md",
+      "stop": "R01"
+    },
+    {
+      "id": "I003",
+      "utterance": "어디에 무엇이 있는지 표",
+      "command": "없음 — 지도 §1-1",
+      "reference": "19_three_questions.md",
+      "stop": "R01"
+    },
+    {
+      "id": "I004",
+      "utterance": "이 필드 이름 뜻이 뭐야",
+      "command": "없음 — 지도 §2 조회, 발명 금지",
+      "reference": "05_envelope_dict.md",
+      "stop": "R03"
+    },
+    {
+      "id": "I005",
+      "utterance": "schemaVersion 이 뭐야",
+      "command": "없음 — 지도 §2-1",
+      "reference": "18_field_lookup.md",
+      "stop": "R03"
+    },
+    {
+      "id": "I006",
+      "utterance": "untrustedFields 경로",
+      "command": "rhwp export-provenance-map --json",
+      "reference": "05_envelope_dict.md",
+      "stop": "R08"
+    },
+    {
+      "id": "I007",
+      "utterance": "capabilities 다시 찍자",
+      "command": "rhwp capabilities",
+      "reference": "01_remeasure.md",
+      "stop": "R02"
+    },
+    {
+      "id": "I008",
+      "utterance": "MCP 도구 선언 재측정",
+      "command": "rhwp capabilities --mcp",
+      "reference": "01_remeasure.md",
+      "stop": "R02"
+    },
+    {
+      "id": "I009",
+      "utterance": "세션 포함 tools/list",
+      "command": "rhwp mcp-serve",
+      "reference": "22_mcp_remeasure.md",
+      "stop": "R02"
+    },
+    {
+      "id": "I010",
+      "utterance": "지도 last_verified 오래됨",
+      "command": "없음 — 날짜를 보여 주고 중단",
+      "reference": "10_stale_last_verified.md",
+      "stop": "R04"
+    },
+    {
+      "id": "I011",
+      "utterance": "바이너리가 v0.8.4 인데 지도는 v0.8.3",
+      "command": "rhwp capabilities",
+      "reference": "11_version_mismatch.md",
+      "stop": "R05"
+    },
+    {
+      "id": "I012",
+      "utterance": "지도와 cli_commands 가 숫자가 다름",
+      "command": "없음 — cli_commands.md 를 따른다",
+      "reference": "12_map_vs_canonical.md",
+      "stop": "R06"
+    },
+    {
+      "id": "I013",
+      "utterance": "recordField 이름을 내가 지어",
+      "command": "없음 — §2 에 없는 이름은 쓰지 않는다",
+      "reference": "05_envelope_dict.md",
+      "stop": "R07"
+    },
+    {
+      "id": "I014",
+      "utterance": "서식 채워줘",
+      "command": "rhwp fields <file> --json",
+      "reference": "08_jump_to_skill.md",
+      "stop": "R08"
+    },
+    {
+      "id": "I015",
+      "utterance": "표를 CSV",
+      "command": "rhwp export-tables <file> --json",
+      "reference": "08_jump_to_skill.md",
+      "stop": "R08"
+    },
+    {
+      "id": "I016",
+      "utterance": "배포 전 마스킹",
+      "command": "rhwp edit redact <file> --dry-run",
+      "reference": "08_jump_to_skill.md",
+      "stop": "R08"
+    },
+    {
+      "id": "I017",
+      "utterance": "폴더 일괄 추출",
+      "command": "rhwp batch info --json",
+      "reference": "08_jump_to_skill.md",
+      "stop": "R08"
+    },
+    {
+      "id": "I018",
+      "utterance": "레이아웃 숫자 비교",
+      "command": "rhwp render-diff <file> --json",
+      "reference": "08_jump_to_skill.md",
+      "stop": "R08"
+    },
+    {
+      "id": "I019",
+      "utterance": "MCP 호스트에 붙여",
+      "command": "rhwp mcp-serve",
+      "reference": "08_jump_to_skill.md",
+      "stop": "R08"
+    },
+    {
+      "id": "I020",
+      "utterance": "대전 교본 장 순서",
+      "command": "없음 — rhwp-codex 로 인계",
+      "reference": "04_boundary.md",
+      "stop": "R09"
+    },
+    {
+      "id": "I021",
+      "utterance": "3층 계약으로 도구 추가",
+      "command": "없음 — rhwp-agent-surface 로 인계",
+      "reference": "04_boundary.md",
+      "stop": "R09"
+    },
+    {
+      "id": "I022",
+      "utterance": "지식지도 명령 만들어줘",
+      "command": "없음 — 새 CLI 금지",
+      "reference": "13_stop_conditions.md",
+      "stop": "R11"
+    },
+    {
+      "id": "I023",
+      "utterance": "gym pack 으로 지도 검증",
+      "command": "없음 — gym 금지",
+      "reference": "13_stop_conditions.md",
+      "stop": "R12"
+    },
+    {
+      "id": "I024",
+      "utterance": "지도를 처음부터 끝까지 읽어",
+      "command": "없음 — 필요한 절만",
+      "reference": "00_first_read.md",
+      "stop": "R10"
+    },
+    {
+      "id": "I025",
+      "utterance": "exit 2 가 났어",
+      "command": "없음 — 실패 사전 앵커",
+      "reference": "19_three_questions.md",
+      "stop": "R01"
+    },
+    {
+      "id": "I026",
+      "utterance": "identical false 는 오류인가",
+      "command": "없음 — 지도 §4, 데이터다",
+      "reference": "19_three_questions.md",
+      "stop": "R01"
+    },
+    {
+      "id": "I027",
+      "utterance": "페이지 번호 0부터?",
+      "command": "없음 — 지도 §3-1, extract-pages 만 1",
+      "reference": "19_three_questions.md",
+      "stop": "R01"
+    },
+    {
+      "id": "I028",
+      "utterance": "어떤 샘플로 fields 시험",
+      "command": "없음 — 지도 §7-1 표본 표",
+      "reference": "20_samples_index.md",
+      "stop": "R01"
+    },
+    {
+      "id": "I029",
+      "utterance": "provenance 계약 테스트",
+      "command": "없음 — 지도 §8-1",
+      "reference": "21_contract_tests_index.md",
+      "stop": "R01"
+    },
+    {
+      "id": "I030",
+      "utterance": "온보딩 첫 5분",
+      "command": "rhwp capabilities",
+      "reference": "08_jump_to_skill.md",
+      "stop": "R08"
+    },
+    {
+      "id": "I031",
+      "utterance": "작업 영수증 발급",
+      "command": "rhwp replay --json",
+      "reference": "08_jump_to_skill.md",
+      "stop": "R08"
+    },
+    {
+      "id": "I032",
+      "utterance": "안전 편집 dry-run",
+      "command": "rhwp run <plan> --dry-run --json",
+      "reference": "08_jump_to_skill.md",
+      "stop": "R08"
+    },
+    {
+      "id": "I033",
+      "utterance": "출처 표지 읽기",
+      "command": "rhwp export-provenance-map --json",
+      "reference": "08_jump_to_skill.md",
+      "stop": "R08"
+    },
+    {
+      "id": "I034",
+      "utterance": "문서 트리아지",
+      "command": "rhwp info <file> --json",
+      "reference": "08_jump_to_skill.md",
+      "stop": "R08"
+    },
+    {
+      "id": "I035",
+      "utterance": "기여하려면",
+      "command": "없음 — rhwp-contributor",
+      "reference": "08_jump_to_skill.md",
+      "stop": "R08"
+    },
+    {
+      "id": "I036",
+      "utterance": "시험지 PDF 를 HWPX 로",
+      "command": "rhwp build-from-ingest --json",
+      "reference": "08_jump_to_skill.md",
+      "stop": "R08"
+    },
+    {
+      "id": "I037",
+      "utterance": "메일머지 N행",
+      "command": "rhwp batch fill --json",
+      "reference": "08_jump_to_skill.md",
+      "stop": "R08"
+    },
+    {
+      "id": "I038",
+      "utterance": "은닉 텍스트 스윕",
+      "command": "rhwp inspect hidden-text --json",
+      "reference": "08_jump_to_skill.md",
+      "stop": "R08"
+    },
+    {
+      "id": "I039",
+      "utterance": "세션 hwp_open",
+      "command": "rhwp mcp-serve",
+      "reference": "22_mcp_remeasure.md",
+      "stop": "R08"
+    },
+    {
+      "id": "I040",
+      "utterance": "프로필 행정서식",
+      "command": "rhwp capabilities --mcp --profile 행정서식",
+      "reference": "19_three_questions.md",
+      "stop": "R08"
+    },
+    {
+      "id": "I041",
+      "utterance": "스키마 코드 생성",
+      "command": "rhwp export-capabilities-schema --json",
+      "reference": "19_three_questions.md",
+      "stop": "R01"
+    },
+    {
+      "id": "I042",
+      "utterance": "IR 스키마",
+      "command": "rhwp export-ir-schema --json",
+      "reference": "19_three_questions.md",
+      "stop": "R01"
+    },
+    {
+      "id": "I043",
+      "utterance": "filledCount 성공인데 빈칸",
+      "command": "없음 — 실패 사전 편집 오독",
+      "reference": "19_three_questions.md",
+      "stop": "R01"
+    },
+    {
+      "id": "I044",
+      "utterance": "한글 파일명 깨짐",
+      "command": "없음 — 실패 사전 입력·인코딩",
+      "reference": "19_three_questions.md",
+      "stop": "R01"
+    },
+    {
+      "id": "I045",
+      "utterance": "export-png 없다",
+      "command": "rhwp capabilities",
+      "reference": "01_remeasure.md",
+      "stop": "R02"
+    },
+    {
+      "id": "I046",
+      "utterance": "changedPages 로 쪽만 렌더",
+      "command": "없음 — 지도 §1-1 (다) 앵커",
+      "reference": "07_section_index.md",
+      "stop": "R01"
+    },
+    {
+      "id": "I047",
+      "utterance": "hwp_doc_save 만이 기록?",
+      "command": "없음 — 지도 §1-1 (자)",
+      "reference": "07_section_index.md",
+      "stop": "R01"
+    },
+    {
+      "id": "I048",
+      "utterance": "배치 convert 는 MCP 있나",
+      "command": "없음 — 지도 §1-1 (아) CLI 전용",
+      "reference": "07_section_index.md",
+      "stop": "R01"
+    },
+    {
+      "id": "I049",
+      "utterance": "null 과 모르겠다 구별",
+      "command": "없음 — 지도 §2-4",
+      "reference": "18_field_lookup.md",
+      "stop": "R03"
+    },
+    {
+      "id": "I050",
+      "utterance": "recordFields 가 전부인가",
+      "command": "없음 — 지도 §2-5",
+      "reference": "05_envelope_dict.md",
+      "stop": "R03"
+    },
+    {
+      "id": "I051",
+      "utterance": "didYouMean 힌트",
+      "command": "없음 — 지도 §4",
+      "reference": "19_three_questions.md",
+      "stop": "R01"
+    },
+    {
+      "id": "I052",
+      "utterance": "명령 가족 query",
+      "command": "없음 — 지도 §5, 상세는 대전",
+      "reference": "04_boundary.md",
+      "stop": "R09"
+    },
+    {
+      "id": "I053",
+      "utterance": "세션 도구 몇 개",
+      "command": "rhwp mcp-serve",
+      "reference": "22_mcp_remeasure.md",
+      "stop": "R02"
+    },
+    {
+      "id": "I054",
+      "utterance": "samples 는 음성 코퍼스?",
+      "command": "없음 — 지도 §7-2",
+      "reference": "20_samples_index.md",
+      "stop": "R01"
+    },
+    {
+      "id": "I055",
+      "utterance": "redact 가 잡는 표본",
+      "command": "없음 — 지도 §7-3",
+      "reference": "20_samples_index.md",
+      "stop": "R01"
+    },
+    {
+      "id": "I056",
+      "utterance": "cli_json_contract 가 고정하는 것",
+      "command": "없음 — 지도 §8-1",
+      "reference": "21_contract_tests_index.md",
+      "stop": "R01"
+    },
+    {
+      "id": "I057",
+      "utterance": "보안 축 계약 테스트",
+      "command": "없음 — 지도 §8-6",
+      "reference": "21_contract_tests_index.md",
+      "stop": "R01"
+    },
+    {
+      "id": "I058",
+      "utterance": "문서 축 권위표",
+      "command": "없음 — 지도 §9",
+      "reference": "06_canonicals.md",
+      "stop": "R01"
+    },
+    {
+      "id": "I059",
+      "utterance": "지도 행을 더 자세히 풀어써",
+      "command": "없음 — 재서술 금지, canonical 로",
+      "reference": "12_map_vs_canonical.md",
+      "stop": "R13"
+    },
+    {
+      "id": "I060",
+      "utterance": "지도 숫자 손으로 고치자",
+      "command": "rhwp capabilities",
+      "reference": "01_remeasure.md",
+      "stop": "R14"
+    },
+    {
+      "id": "I061",
+      "utterance": "첫 문서로 ROADMAP 을 읽자",
+      "command": "없음 — llms.txt 가 지도를 가리킨다",
+      "reference": "00_first_read.md",
+      "stop": "R01"
+    },
+    {
+      "id": "I062",
+      "utterance": "필드 사전을 내가 암기한 이름으로",
+      "command": "없음 — §2 조회",
+      "reference": "05_envelope_dict.md",
+      "stop": "R07"
+    },
+    {
+      "id": "I063",
+      "utterance": "replacedCount 0 은 실패?",
+      "command": "없음 — 지도 §4 데이터",
+      "reference": "18_field_lookup.md",
+      "stop": "R03"
+    },
+    {
+      "id": "I064",
+      "utterance": "notFound 는 isError 인가",
+      "command": "없음 — 지도 §4 데이터",
+      "reference": "18_field_lookup.md",
+      "stop": "R03"
+    },
+    {
+      "id": "I065",
+      "utterance": "overflow 필드",
+      "command": "없음 — 지도 §2 조회",
+      "reference": "18_field_lookup.md",
+      "stop": "R03"
+    },
+    {
+      "id": "I066",
+      "utterance": "ambiguous 필드",
+      "command": "없음 — 지도 §2 조회",
+      "reference": "18_field_lookup.md",
+      "stop": "R03"
+    },
+    {
+      "id": "I067",
+      "utterance": "matchCount 필드",
+      "command": "없음 — 지도 §2 조회",
+      "reference": "18_field_lookup.md",
+      "stop": "R03"
+    },
+    {
+      "id": "I068",
+      "utterance": "findingCount 필드",
+      "command": "없음 — 지도 §2 조회",
+      "reference": "18_field_lookup.md",
+      "stop": "R03"
+    },
+    {
+      "id": "I069",
+      "utterance": "hiddenCharCount 필드",
+      "command": "없음 — 지도 §2 조회",
+      "reference": "18_field_lookup.md",
+      "stop": "R03"
+    },
+    {
+      "id": "I070",
+      "utterance": "verify.identical 필드",
+      "command": "없음 — 지도 §2 조회",
+      "reference": "18_field_lookup.md",
+      "stop": "R03"
+    },
+    {
+      "id": "I071",
+      "utterance": "docId 필드",
+      "command": "없음 — 지도 §2 조회",
+      "reference": "18_field_lookup.md",
+      "stop": "R03"
+    },
+    {
+      "id": "I072",
+      "utterance": "closed 필드",
+      "command": "없음 — 지도 §2 조회",
+      "reference": "18_field_lookup.md",
+      "stop": "R03"
+    },
+    {
+      "id": "I073",
+      "utterance": "profile.recipe 필드",
+      "command": "없음 — 지도 §1-5 앵커",
+      "reference": "19_three_questions.md",
+      "stop": "R01"
+    },
+    {
+      "id": "I074",
+      "utterance": "missingAxes 필드",
+      "command": "없음 — 지도 §0 export-agent-manifest",
+      "reference": "01_remeasure.md",
+      "stop": "R01"
+    },
+    {
+      "id": "I075",
+      "utterance": "에이전트 매니페스트",
+      "command": "rhwp export-agent-manifest --json",
+      "reference": "01_remeasure.md",
+      "stop": "R01"
+    },
+    {
+      "id": "I076",
+      "utterance": "capabilities --search 검색",
+      "command": "rhwp capabilities --search <낱말>",
+      "reference": "01_remeasure.md",
+      "stop": "R02"
+    },
+    {
+      "id": "I077",
+      "utterance": "지도와 대전이 필드 정의가 다름",
+      "command": "없음 — 지도 §2 가 필드 사전",
+      "reference": "04_boundary.md",
+      "stop": "R06"
+    },
+    {
+      "id": "I078",
+      "utterance": "표면 플레이북 수용 기준",
+      "command": "없음 — agent_surface_playbook.md",
+      "reference": "04_boundary.md",
+      "stop": "R09"
+    },
+    {
+      "id": "I079",
+      "utterance": "레시피 07 을 지도에 추가",
+      "command": "없음 — 지도는 행만, 07 발명은 레시피 스킬",
+      "reference": "12_map_vs_canonical.md",
+      "stop": "R13"
+    },
+    {
+      "id": "I080",
+      "utterance": "실패 증상 검색",
+      "command": "없음 — agent_troubleshooting_guide.md",
+      "reference": "06_canonicals.md",
+      "stop": "R01"
+    },
+    {
+      "id": "I081",
+      "utterance": "선검사 스크립트",
+      "command": "없음 — agent_preflight_guide.md",
+      "reference": "06_canonicals.md",
+      "stop": "R01"
+    },
+    {
+      "id": "I082",
+      "utterance": "JSON 파이프라인 배치",
+      "command": "없음 — cli_json_pipeline_guide.md",
+      "reference": "06_canonicals.md",
+      "stop": "R08"
+    },
+    {
+      "id": "I083",
+      "utterance": "서식 함정 심화",
+      "command": "없음 — form_filling_guide.md",
+      "reference": "06_canonicals.md",
+      "stop": "R08"
+    },
+    {
+      "id": "I084",
+      "utterance": "경계 계약",
+      "command": "없음 — tech/agent_boundary_contract.md",
+      "reference": "06_canonicals.md",
+      "stop": "R01"
+    },
+    {
+      "id": "I085",
+      "utterance": "위협 모델",
+      "command": "없음 — tech/agent_security/threat_model.md",
+      "reference": "06_canonicals.md",
+      "stop": "R08"
+    },
+    {
+      "id": "I086",
+      "utterance": "지도 유지 규약",
+      "command": "없음 — 지도 말미 유지 규약",
+      "reference": "15_pitfalls.md",
+      "stop": "R14"
+    },
+    {
+      "id": "I087",
+      "utterance": "링크 검사 어떻게",
+      "command": "없음 — check_markdown_links.py 앵커",
+      "reference": "15_pitfalls.md",
+      "stop": "R01"
+    },
+    {
+      "id": "I088",
+      "utterance": "HWPUNIT 좌표",
+      "command": "없음 — 지도 §3-1",
+      "reference": "19_three_questions.md",
+      "stop": "R01"
+    },
+    {
+      "id": "I089",
+      "utterance": "이름[N] 반복 필드",
+      "command": "없음 — 지도 §3-1",
+      "reference": "08_jump_to_skill.md",
+      "stop": "R08"
+    },
+    {
+      "id": "I090",
+      "utterance": "병합 칸 앵커",
+      "command": "없음 — 지도 §3-3",
+      "reference": "08_jump_to_skill.md",
+      "stop": "R08"
+    },
+    {
+      "id": "I091",
+      "utterance": "pagesAfter 가 범위와 다름",
+      "command": "없음 — 지도 §3-3",
+      "reference": "19_three_questions.md",
+      "stop": "R01"
+    },
+    {
+      "id": "I092",
+      "utterance": "structuredContent 없는 도구",
+      "command": "없음 — 지도 §6-3",
+      "reference": "22_mcp_remeasure.md",
+      "stop": "R01"
+    },
+    {
+      "id": "I093",
+      "utterance": "hwp_batch 는 NDJSON",
+      "command": "없음 — 지도 §6-3",
+      "reference": "22_mcp_remeasure.md",
+      "stop": "R01"
+    },
+    {
+      "id": "I094",
+      "utterance": "닫힌 핸들 재사용",
+      "command": "없음 — 지도 §6-2 nextCall hwp_open",
+      "reference": "22_mcp_remeasure.md",
+      "stop": "R08"
+    },
+    {
+      "id": "I095",
+      "utterance": "387쪽 세션 이득",
+      "command": "없음 — 지도 §6-2 실측 앵커",
+      "reference": "22_mcp_remeasure.md",
+      "stop": "R01"
+    },
+    {
+      "id": "I096",
+      "utterance": "비밀번호 stdin",
+      "command": "없음 — 지도 §6-1 writeOnly",
+      "reference": "22_mcp_remeasure.md",
+      "stop": "R01"
+    },
+    {
+      "id": "I097",
+      "utterance": "개발통합 프로필",
+      "command": "rhwp capabilities --mcp --profile 개발통합",
+      "reference": "19_three_questions.md",
+      "stop": "R08"
+    },
+    {
+      "id": "I098",
+      "utterance": "없는 프로필 이름",
+      "command": "없음 — 실행 전 차단 앵커",
+      "reference": "09_exceptions.md",
+      "stop": "R01"
+    },
+    {
+      "id": "I099",
+      "utterance": "바인딩이 철회됐다는데",
+      "command": "없음 — 지도 §1-4",
+      "reference": "19_three_questions.md",
+      "stop": "R01"
+    },
+    {
+      "id": "I100",
+      "utterance": "첫 5분 레시피 지도",
+      "command": "없음 — rhwp-onboarding",
+      "reference": "08_jump_to_skill.md",
+      "stop": "R08"
+    },
+    {
+      "id": "I101",
+      "utterance": "inspect 3축",
+      "command": "rhwp inspect hidden-text --json",
+      "reference": "08_jump_to_skill.md",
+      "stop": "R08"
+    },
+    {
+      "id": "I102",
+      "utterance": "sanitize 메타 제거",
+      "command": "rhwp edit sanitize --json",
+      "reference": "08_jump_to_skill.md",
+      "stop": "R08"
+    },
+    {
+      "id": "I103",
+      "utterance": "insert-image 도장",
+      "command": "rhwp edit insert-image --json",
+      "reference": "08_jump_to_skill.md",
+      "stop": "R08"
+    },
+    {
+      "id": "I104",
+      "utterance": "thumbnail 미리보기",
+      "command": "rhwp thumbnail --json",
+      "reference": "07_section_index.md",
+      "stop": "R01"
+    },
+    {
+      "id": "I105",
+      "utterance": "export-structure 목차",
+      "command": "rhwp export-structure --json",
+      "reference": "07_section_index.md",
+      "stop": "R08"
+    },
+    {
+      "id": "I106",
+      "utterance": "word-count",
+      "command": "rhwp word-count --json",
+      "reference": "07_section_index.md",
+      "stop": "R01"
+    },
+    {
+      "id": "I107",
+      "utterance": "bookmarks",
+      "command": "rhwp bookmarks --json",
+      "reference": "07_section_index.md",
+      "stop": "R01"
+    },
+    {
+      "id": "I108",
+      "utterance": "charts 목록",
+      "command": "rhwp charts --json",
+      "reference": "07_section_index.md",
+      "stop": "R01"
+    },
+    {
+      "id": "I109",
+      "utterance": "threat-scan",
+      "command": "rhwp threat-scan --json",
+      "reference": "08_jump_to_skill.md",
+      "stop": "R08"
+    },
+    {
+      "id": "I110",
+      "utterance": "layout-anomaly",
+      "command": "rhwp layout-anomaly --json",
+      "reference": "07_section_index.md",
+      "stop": "R01"
+    },
+    {
+      "id": "I111",
+      "utterance": "audit 재현율",
+      "command": "rhwp audit --json",
+      "reference": "08_jump_to_skill.md",
+      "stop": "R08"
+    },
+    {
+      "id": "I112",
+      "utterance": "lineage 계보",
+      "command": "rhwp lineage --json",
+      "reference": "08_jump_to_skill.md",
+      "stop": "R08"
+    },
+    {
+      "id": "I113",
+      "utterance": "keygen 서명",
+      "command": "rhwp keygen --json",
+      "reference": "07_section_index.md",
+      "stop": "R01"
+    },
+    {
+      "id": "I114",
+      "utterance": "gate 정책",
+      "command": "rhwp gate --json",
+      "reference": "07_section_index.md",
+      "stop": "R01"
+    },
+    {
+      "id": "I115",
+      "utterance": "bundle 반출",
+      "command": "rhwp bundle export --json",
+      "reference": "07_section_index.md",
+      "stop": "R01"
+    },
+    {
+      "id": "I116",
+      "utterance": "disclose 선택 공개",
+      "command": "rhwp disclose redact --json",
+      "reference": "07_section_index.md",
+      "stop": "R01"
+    },
+    {
+      "id": "I117",
+      "utterance": "settle 정산",
+      "command": "rhwp settle propose --json",
+      "reference": "07_section_index.md",
+      "stop": "R01"
+    },
+    {
+      "id": "I118",
+      "utterance": "conformance 수준",
+      "command": "rhwp conformance --json",
+      "reference": "07_section_index.md",
+      "stop": "R01"
+    },
+    {
+      "id": "I119",
+      "utterance": "scan 한 파일",
+      "command": "rhwp scan --json",
+      "reference": "07_section_index.md",
+      "stop": "R01"
+    },
+    {
+      "id": "I120",
+      "utterance": "dump-pages 조판",
+      "command": "rhwp dump-pages --json",
+      "reference": "07_section_index.md",
+      "stop": "R01"
+    }
+  ],
+  "count": 120
+}

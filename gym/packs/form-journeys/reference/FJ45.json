@@ -1,0 +1,45 @@
+{
+  "id": "FJ45",
+  "steps": [
+    {
+      "write_json": {
+        "to": "{sub:data-a.json}",
+        "body": {
+          "작성자": "분리작성자"
+        }
+      }
+    },
+    {
+      "run": [
+        "edit",
+        "fill-fields",
+        "{input}",
+        "--data",
+        "@{sub:data-a.json}",
+        "-o",
+        "{sub:author-only.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "write_json": {
+        "to": "{sub:data-m.json}",
+        "body": {
+          "이메일": "split@journey.go.kr"
+        }
+      }
+    },
+    {
+      "run": [
+        "edit",
+        "fill-fields",
+        "{input}",
+        "--data",
+        "@{sub:data-m.json}",
+        "-o",
+        "{sub:mail-only.hwp}",
+        "--json"
+      ]
+    }
+  ]
+}

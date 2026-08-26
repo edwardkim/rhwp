@@ -1,0 +1,33 @@
+id	mode	expects_error	export_all_svg	layout_ledger	chrome	pypdf	pypdfium2	artifact_count	title
+path-reg-bunjang-text-only	registered	0	0	0	0	1	0	10	등록 키 bunjang / text-only
+path-reg-bunjang-text-only-export-all-svg	registered	0	1	0	0	1	0	11	등록 키 bunjang / text-only+export-all-svg
+path-reg-bunjang-text-only-layout-ledger	registered	0	0	1	0	1	0	18	등록 키 bunjang / text-only+layout-ledger
+path-reg-bunjang-text-only-export-all-svg-layout-ledger	registered	0	1	1	0	1	0	19	등록 키 bunjang / text-only+export-all-svg+layout-ledger
+path-reg-eng-text-only	registered	0	0	0	0	1	0	10	등록 키 eng / text-only
+path-reg-eng-text-only-export-all-svg	registered	0	1	0	0	1	0	11	등록 키 eng / text-only+export-all-svg
+path-reg-eng-text-only-layout-ledger	registered	0	0	1	0	1	0	18	등록 키 eng / text-only+layout-ledger
+path-reg-eng-text-only-export-all-svg-layout-ledger	registered	0	1	1	0	1	0	19	등록 키 eng / text-only+export-all-svg+layout-ledger
+path-reg-korexam-text-only	registered	0	0	0	0	1	0	10	등록 키 korexam / text-only
+path-reg-korexam-text-only-export-all-svg	registered	0	1	0	0	1	0	11	등록 키 korexam / text-only+export-all-svg
+path-reg-korexam-text-only-layout-ledger	registered	0	0	1	0	1	0	18	등록 키 korexam / text-only+layout-ledger
+path-reg-korexam-text-only-export-all-svg-layout-ledger	registered	0	1	1	0	1	0	19	등록 키 korexam / text-only+export-all-svg+layout-ledger
+path-reg-manual-text-only	registered	0	0	0	0	1	0	10	등록 키 manual / text-only
+path-reg-manual-text-only-export-all-svg	registered	0	1	0	0	1	0	11	등록 키 manual / text-only+export-all-svg
+path-reg-manual-text-only-layout-ledger	registered	0	0	1	0	1	0	18	등록 키 manual / text-only+layout-ledger
+path-reg-manual-text-only-export-all-svg-layout-ledger	registered	0	1	1	0	1	0	19	등록 키 manual / text-only+export-all-svg+layout-ledger
+path-reg-math-text-only	registered	0	0	0	0	1	0	10	등록 키 math / text-only
+path-reg-math-text-only-export-all-svg	registered	0	1	0	0	1	0	11	등록 키 math / text-only+export-all-svg
+path-reg-math-text-only-layout-ledger	registered	0	0	1	0	1	0	18	등록 키 math / text-only+layout-ledger
+path-reg-math-text-only-export-all-svg-layout-ledger	registered	0	1	1	0	1	0	19	등록 키 math / text-only+export-all-svg+layout-ledger
+path-reg-plan-text-only	registered	0	0	0	0	1	0	10	등록 키 plan / text-only
+path-reg-plan-text-only-export-all-svg	registered	0	1	0	0	1	0	11	등록 키 plan / text-only+export-all-svg
+path-reg-plan-text-only-layout-ledger	registered	0	0	1	0	1	0	18	등록 키 plan / text-only+layout-ledger
+path-reg-plan-text-only-export-all-svg-layout-ledger	registered	0	1	1	0	1	0	19	등록 키 plan / text-only+export-all-svg+layout-ledger
+path-direct-text-only	direct	0	1	1	0	1	0	19	direct pair 215쪽 전수 텍스트
+path-direct-text-only-min	direct	0	0	0	0	1	0	10	direct pair 최소 --text-only
+path-error-unknown-key	error	1	0	0	0	0	0	10	미등록 키
+path-error-direct-incomplete	error	1	0	0	0	0	0	10	direct pair 불완전
+path-error-grade-on-registered	error	1	0	0	0	0	0	10	등록 키에 grade
+path-error-end-before-start	error	1	0	0	0	0	0	10	쪽 범위 역전
+path-error-direct-three-positionals	error	1	0	0	0	0	0	10	direct pair 에 키까지
+path-error-non-integer-page	error	1	0	0	0	0	0	10	쪽 번호 비정수

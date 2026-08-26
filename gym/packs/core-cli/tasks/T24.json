@@ -1,0 +1,24 @@
+{
+  "id": "T24",
+  "tier": 2,
+  "title": "누름틀 표본에서 '회사' 검색",
+  "input": "samples/field-01.hwp",
+  "instructions": "T24 은 입문·코어 온램프를 두껍게 하는 과제다. 회사명 칸을 채우라는 뜻이 아니다. 본문에 '회사' 가 몇 번 나오는지 센다. 표본은 `samples/field-01.hwp` 이고, 이미 저장소 `samples/` 에 있다. 새 파일을 만들지 마라. 정답 숫자는 과제에 박제되어 있지 않다. 채점기가 같은 명령을 다시 돌린다. 힌트: search <문서> 회사 --json. 제출은 answer.json 에 {\"matchCount\": <값>} 로 적는다. 원본을 덮어쓰지 마라. T07 의 fields[0]==홍길동 판정을 복제하지 마라. T07 복제가 아니다. 값을 쓰지 말고 검색만 하라.",
+  "submit": {
+    "kind": "answer"
+  },
+  "checks": [
+    {
+      "name": "누름틀 표본에서 '회사' 검색",
+      "op": "len_answer_eq",
+      "answer": "matchCount",
+      "cmd": [
+        "search",
+        "{input}",
+        "회사",
+        "--json"
+      ],
+      "path": "matches"
+    }
+  ]
+}

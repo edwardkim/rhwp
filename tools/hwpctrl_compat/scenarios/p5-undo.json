@@ -1,0 +1,38 @@
+{
+  "id": "p5-undo",
+  "title": "되돌리기·다시 하기 — 고친 뒤에 걸어야 보인다",
+  "ledger": [
+    "Action.Undo",
+    "Action.Redo"
+  ],
+  "open": "samples/para-001.hwp",
+  "calls": [
+    ["SetPos", [0, 0, 20]],
+    ["GetPos", []],
+    ["Run", ["Undo"]],
+    ["GetPos", []],
+    ["Run", ["InsertTab"]],
+    ["GetPos", []],
+    ["Run", ["Undo"]],
+    ["GetPos", []],
+    ["Run", ["Redo"]],
+    ["GetPos", []],
+    ["Run", ["Undo"]],
+    ["GetPos", []],
+    ["Run", ["InsertTab"]],
+    ["Run", ["InsertTab"]],
+    ["Run", ["InsertTab"]],
+    ["GetPos", []],
+    ["Run", ["Undo"]],
+    ["GetPos", []],
+    ["Run", ["Undo"]],
+    ["GetPos", []],
+    ["Run", ["Undo"]],
+    ["GetPos", []],
+    ["Run", ["Undo"]],
+    ["GetPos", []],
+    ["Run", ["Redo"]],
+    ["GetPos", []],
+    ["GetTextFile", ["UNICODE", ""]]
+  ]
+}

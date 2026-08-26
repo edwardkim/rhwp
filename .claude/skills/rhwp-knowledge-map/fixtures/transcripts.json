@@ -1,0 +1,373 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5342,
+  "skill": "rhwp-knowledge-map",
+  "notGym": true,
+  "noNewCli": true,
+  "noNewEditLogic": true,
+  "routerOnly": true,
+  "entryPoint": true,
+  "doNotRenarrateMapRows": true,
+  "canonicalWins": true,
+  "binaryWinsOnVersionMismatch": true,
+  "fieldDictionary": "mydocs/manual/agent_knowledge_map.md#2-봉투-필드-사전--필드-이름으로-찾는-역인덱스",
+  "ids": [
+    "X001",
+    "X002",
+    "X003",
+    "X004",
+    "X005",
+    "X006",
+    "X007",
+    "X008",
+    "X009",
+    "X010",
+    "X011",
+    "X012",
+    "X013",
+    "X014",
+    "X015",
+    "X016",
+    "X017",
+    "X018",
+    "X019",
+    "X020",
+    "X021",
+    "X022",
+    "X023",
+    "X024",
+    "X025",
+    "X026",
+    "X027",
+    "X028",
+    "X029",
+    "X030",
+    "X031",
+    "X032",
+    "X033",
+    "X034",
+    "X035",
+    "X036",
+    "X037",
+    "X038",
+    "X039",
+    "X040",
+    "X041",
+    "X042",
+    "X043",
+    "X044"
+  ],
+  "count": 44,
+  "excerptedFromCanonical": true,
+  "fabricatedLive": false,
+  "items": [
+    {
+      "id": "X001",
+      "sourceFile": "llms.txt",
+      "raw": "> 알(R), 모두의 한글 — Rust + WebAssembly 로 HWP/HWPX/HWP3/HML 문서를 파싱·편집·렌더링하는 오픈소스 문서 엔진. CLI `--json` 봉투(#2707 종료 코드)와 MCP 서버(`rhwp mcp-serve`)를 갖춰 AI 에이전트가 1급 소비자다.",
+      "excerpted": true,
+      "fabricatedLive": false
+    },
+    {
+      "id": "X002",
+      "sourceFile": "llms.txt",
+      "raw": "에이전트는 [에이전트 지식 지도](mydocs/manual/agent_knowledge_map.md)를 첫 문서로 읽는다 — 작업별 명령 결정 표, 봉투 필드 사전, 실패 사전 앵커가 한 곳에 있다.",
+      "excerpted": true,
+      "fabricatedLive": false
+    },
+    {
+      "id": "X003",
+      "sourceFile": "llms.txt",
+      "raw": "- [README](README.md): 프로젝트 개요·현재 단계·온라인 데모.",
+      "excerpted": true,
+      "fabricatedLive": false
+    },
+    {
+      "id": "X004",
+      "sourceFile": "llms.txt",
+      "raw": "- [프로젝트 로드맵](ROADMAP.md): v0.5→v3.0 제품 방향, 현재 위치와 완료 기준을 설명하는 기준 문서.",
+      "excerpted": true,
+      "fabricatedLive": false
+    },
+    {
+      "id": "X005",
+      "sourceFile": "llms.txt",
+      "raw": "- [AGENTS.md](AGENTS.md): 저장소 작업 규약과 문서 로딩 순서.",
+      "excerpted": true,
+      "fabricatedLive": false
+    },
+    {
+      "id": "X006",
+      "sourceFile": "llms.txt",
+      "raw": "- [에이전트 지식 지도](mydocs/manual/agent_knowledge_map.md): 단일 진입점 — 3문 진입(작업/실패/추가)·봉투 필드 사전·주소 어휘·표본/계약 테스트 지도.",
+      "excerpted": true,
+      "fabricatedLive": false
+    },
+    {
+      "id": "X007",
+      "sourceFile": "llms.txt",
+      "raw": "- [manual 문서 지도](mydocs/manual/README.md): 상황별 권위 문서 선택표.",
+      "excerpted": true,
+      "fabricatedLive": false
+    },
+    {
+      "id": "X008",
+      "sourceFile": "llms.txt",
+      "raw": "- [온보딩 가이드](mydocs/manual/onboarding_guide.md): 신규 기여자 시작 절차.",
+      "excerpted": true,
+      "fabricatedLive": false
+    },
+    {
+      "id": "X009",
+      "sourceFile": "llms.txt",
+      "raw": "- [CLI 명령어 매뉴얼](mydocs/manual/cli_commands.md): 명령·옵션·`--json` 봉투의 canonical reference. 종료 코드 계약(0 성공/1 런타임/2 사용법/3 IR 차이/4 쪽수 불일치, #2707) 포함.",
+      "excerpted": true,
+      "fabricatedLive": false
+    },
+    {
+      "id": "X010",
+      "sourceFile": "llms.txt",
+      "raw": "- [CLI JSON 파이프라인 가이드](mydocs/manual/cli_json_pipeline_guide.md): stdout 순수 JSON/NDJSON 규약과 `batch` 파이프라인의 실측 시나리오.",
+      "excerpted": true,
+      "fabricatedLive": false
+    },
+    {
+      "id": "X011",
+      "sourceFile": "llms.txt",
+      "raw": "- [MCP 통합 가이드](mydocs/manual/mcp_integration_guide.md): `capabilities --mcp` 매니페스트 소비와 `mcp-serve` 표준 서버, 판정 3층(JSON-RPC 오류/isError/봉투) 의미론.",
+      "excerpted": true,
+      "fabricatedLive": false
+    },
+    {
+      "id": "X012",
+      "sourceFile": "llms.txt",
+      "raw": "- [에이전트 실무 대체 예제집](mydocs/manual/agent_task_playbook.md): 사람 업무 → 명령 시퀀스 → 기계 검증 8개 시나리오 + 공무원 업무 커버리지 21행.",
+      "excerpted": true,
+      "fabricatedLive": false
+    },
+    {
+      "id": "X013",
+      "sourceFile": "mydocs/manual/agent_knowledge_map.md",
+      "raw": "canonical: mydocs/manual/agent_knowledge_map.md",
+      "excerpted": true,
+      "fabricatedLive": false
+    },
+    {
+      "id": "X014",
+      "sourceFile": "mydocs/manual/agent_knowledge_map.md",
+      "raw": "rhwp 를 도구로 부리는 AI 에이전트·스크립트가 **첫 번째로 읽는 문서**다. 루트",
+      "excerpted": true,
+      "fabricatedLive": false
+    },
+    {
+      "id": "X015",
+      "sourceFile": "mydocs/manual/agent_knowledge_map.md",
+      "raw": "[`llms.txt`](../../llms.txt)가 이 문서를 가리키고, 이 문서가 나머지 전부를 가리킨다.",
+      "excerpted": true,
+      "fabricatedLive": false
+    },
+    {
+      "id": "X016",
+      "sourceFile": "mydocs/manual/agent_knowledge_map.md",
+      "raw": "**단일 출처 원칙**: 이 지도는 요약과 앵커만 담는다. 상세 서술·수치·절차의 권위는",
+      "excerpted": true,
+      "fabricatedLive": false
+    },
+    {
+      "id": "X017",
+      "sourceFile": "mydocs/manual/agent_knowledge_map.md",
+      "raw": "각 canonical 문서([CLI 명령어 매뉴얼](cli_commands.md) 등)에 있으며, 이 지도와",
+      "excerpted": true,
+      "fabricatedLive": false
+    },
+    {
+      "id": "X018",
+      "sourceFile": "mydocs/manual/agent_knowledge_map.md",
+      "raw": "다르면 그쪽을 따른다. 새 표면이 머지되면 해당 행만 추가한다(기존 행 재서술 금지).",
+      "excerpted": true,
+      "fabricatedLive": false
+    },
+    {
+      "id": "X019",
+      "sourceFile": "mydocs/manual/agent_knowledge_map.md",
+      "raw": "이 문서의 표·수치·예시는 **추측이 아니라 실행 결과**다. 기준은 다음과 같다.",
+      "excerpted": true,
+      "fabricatedLive": false
+    },
+    {
+      "id": "X020",
+      "sourceFile": "mydocs/manual/agent_knowledge_map.md",
+      "raw": "| 바이너리 | `rhwp v0.8.3` (release 빌드, `native-skia` 미포함) |",
+      "excerpted": true,
+      "fabricatedLive": false
+    },
+    {
+      "id": "X021",
+      "sourceFile": "mydocs/manual/agent_knowledge_map.md",
+      "raw": "| 자기서술 출처 | `rhwp capabilities` · `rhwp capabilities --mcp` · `mcp-serve` 의 `tools/list` |",
+      "excerpted": true,
+      "fabricatedLive": false
+    },
+    {
+      "id": "X022",
+      "sourceFile": "mydocs/manual/agent_knowledge_map.md",
+      "raw": "| 표면 규모 | CLI 명령 **98개**(그중 `--json` 계약 **65개**, batch 축 **9개**) · MCP 도구 **181개**(무상태 163 + 세션 전용 18) |",
+      "excerpted": true,
+      "fabricatedLive": false
+    },
+    {
+      "id": "X023",
+      "sourceFile": "mydocs/manual/agent_knowledge_map.md",
+      "raw": "| 봉투 필드 | `capabilities.commands[].recordFields` 합집합 **321개** · §2 전수 사전 **329개**(자기서술 밖 실측·참조 필드 포함) |",
+      "excerpted": true,
+      "fabricatedLive": false
+    },
+    {
+      "id": "X024",
+      "sourceFile": "mydocs/manual/agent_knowledge_map.md",
+      "raw": "| 표본 | `samples/` tracked 파일 **781개** 중 실측한 것만 §7 에 적었다 |",
+      "excerpted": true,
+      "fabricatedLive": false
+    },
+    {
+      "id": "X025",
+      "sourceFile": "mydocs/manual/agent_knowledge_map.md",
+      "raw": "**재확인하는 법** — 이 지도를 믿기 전에 손에 든 바이너리로 다시 찍어 본다.",
+      "excerpted": true,
+      "fabricatedLive": false
+    },
+    {
+      "id": "X026",
+      "sourceFile": "mydocs/manual/agent_knowledge_map.md",
+      "raw": "rhwp capabilities                 # 명령·플래그·recordFields·종료 코드",
+      "excerpted": true,
+      "fabricatedLive": false
+    },
+    {
+      "id": "X027",
+      "sourceFile": "mydocs/manual/agent_knowledge_map.md",
+      "raw": "rhwp capabilities --mcp           # MCP 무상태 도구 선언(66)",
+      "excerpted": true,
+      "fabricatedLive": false
+    },
+    {
+      "id": "X028",
+      "sourceFile": "mydocs/manual/agent_knowledge_map.md",
+      "raw": "rhwp capabilities --mcp --profile <프로필>   # 역할별로 좁힌 도구 목록",
+      "excerpted": true,
+      "fabricatedLive": false
+    },
+    {
+      "id": "X029",
+      "sourceFile": "mydocs/manual/agent_knowledge_map.md",
+      "raw": "printf '%s\\n' '{\"jsonrpc\":\"2.0\",\"id\":1,\"method\":\"initialize\",\"params\":{\"protocolVersion\":\"2024-11-05\",\"capabilities\":{},\"clientInfo\":{\"name\":\"x\",\"version\":\"0\"}}}' \\",
+      "excerpted": true,
+      "fabricatedLive": false
+    },
+    {
+      "id": "X030",
+      "sourceFile": "mydocs/manual/agent_knowledge_map.md",
+      "raw": "  '{\"jsonrpc\":\"2.0\",\"method\":\"notifications/initialized\"}' \\",
+      "excerpted": true,
+      "fabricatedLive": false
+    },
+    {
+      "id": "X031",
+      "sourceFile": "mydocs/manual/agent_knowledge_map.md",
+      "raw": "  '{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/list\",\"params\":{}}' | rhwp mcp-serve   # 세션 포함 82",
+      "excerpted": true,
+      "fabricatedLive": false
+    },
+    {
+      "id": "X032",
+      "sourceFile": "mydocs/manual/agent_knowledge_map.md",
+      "raw": "버전이 다르면 **바이너리가 이긴다**. 이 문서와 어긋나면 이 문서를 고친다.",
+      "excerpted": true,
+      "fabricatedLive": false
+    },
+    {
+      "id": "X033",
+      "sourceFile": "mydocs/manual/agent_knowledge_map.md",
+      "raw": "**도구 발견과 부트스트랩** — `rhwp capabilities --search <낱말> [--json]` 은 명령",
+      "excerpted": true,
+      "fabricatedLive": false
+    },
+    {
+      "id": "X034",
+      "sourceFile": "mydocs/manual/agent_knowledge_map.md",
+      "raw": "이름·요약·하위 명령을 검색한다. `rhwp export-agent-manifest --json` 은 capabilities·",
+      "excerpted": true,
+      "fabricatedLive": false
+    },
+    {
+      "id": "X035",
+      "sourceFile": "mydocs/manual/agent_knowledge_map.md",
+      "raw": "IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingAxes` 로 밝힌다.",
+      "excerpted": true,
+      "fabricatedLive": false
+    },
+    {
+      "id": "X036",
+      "sourceFile": "mydocs/manual/agent_knowledge_map.md",
+      "raw": "무상태 MCP 도구는 CLI 계약의 얇은 껍데기다(선언 = `capabilities --mcp`, 실행 =",
+      "excerpted": true,
+      "fabricatedLive": false
+    },
+    {
+      "id": "X037",
+      "sourceFile": "mydocs/manual/agent_knowledge_map.md",
+      "raw": "| 규모·형식 파악 | `info --json` (`hwp_info`) | `format`·`pageCount`·`paraCount` | [CLI 매뉴얼](cli_commands.md) §info |",
+      "excerpted": true,
+      "fabricatedLive": false
+    },
+    {
+      "id": "X038",
+      "sourceFile": "mydocs/manual/agent_knowledge_map.md",
+      "raw": "| 한 호출로 전체 감 잡기 | `digest --json` (`hwp_digest`) | `outline`·`excerpt`·`nextStep` | [초소형 모델 매크로](../tech/tiny_model_macro_tools.md) |",
+      "excerpted": true,
+      "fabricatedLive": false
+    },
+    {
+      "id": "X039",
+      "sourceFile": "mydocs/manual/agent_knowledge_map.md",
+      "raw": "| 절 단위로 훑기 | `digest --sections --json` | `sections[]`·`sectionsMode` | 같은 문서 |",
+      "excerpted": true,
+      "fabricatedLive": false
+    },
+    {
+      "id": "X040",
+      "sourceFile": "mydocs/manual/agent_knowledge_map.md",
+      "raw": "| 쪽 범위만 발췌 | `digest --pages a..b --json` | `pages{from,to}`·`nextStep` | 같은 문서 |",
+      "excerpted": true,
+      "fabricatedLive": false
+    },
+    {
+      "id": "X041",
+      "sourceFile": "mydocs/manual/agent_knowledge_map.md",
+      "raw": "| 목차·조문 계층 | `export-structure --json` (`hwp_export_structure`) | `structure.roots[]`·`nodeCount` | [CLI 매뉴얼](cli_commands.md) §1 |",
+      "excerpted": true,
+      "fabricatedLive": false
+    },
+    {
+      "id": "X042",
+      "sourceFile": "mydocs/manual/agent_knowledge_map.md",
+      "raw": "| 내장 미리보기 그림 | `thumbnail --json` (`hwp_thumbnail`) | `mime`·`width`·`height`·`bytes` | [CLI 매뉴얼](cli_commands.md) §thumbnail |",
+      "excerpted": true,
+      "fabricatedLive": false
+    },
+    {
+      "id": "X043",
+      "sourceFile": "mydocs/manual/agent_knowledge_map.md",
+      "raw": "| 이 바이너리가 뭘 할 수 있나 | `capabilities` | `commands[]`·`formats` | 본 문서 §0 |",
+      "excerpted": true,
+      "fabricatedLive": false
+    },
+    {
+      "id": "X044",
+      "sourceFile": "mydocs/manual/agent_knowledge_map.md",
+      "raw": "| 이 봉투의 어느 값이 문서에서 왔나 | `export-provenance-map --json` (`hwp_export_provenance_map`) | `commands.<명령>.untrusted[]` | [봉투 출처 표지](../tech/envelope_provenance.md) |",
+      "excerpted": true,
+      "fabricatedLive": false
+    }
+  ]
+}

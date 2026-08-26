@@ -1,0 +1,25 @@
+# M09-g equation golden — current-engine lock (variant/exception/unimplemented honesty)
+command: OVER
+script: 1 ATOP 2
+honesty: atop-vs-over
+
+=== ast ===
+Atop {
+    top: Number(
+        "1",
+    ),
+    bottom: Number(
+        "2",
+    ),
+}
+
+=== layout ===
+Atop x=0.0000 y=0.0000 w=19.0000 h=48.0000 bl=29.0000
+  top:
+    Number("1") x=4.0000 y=4.0000 w=11.0000 h=20.0000 bl=16.0000
+  bottom:
+    Number("2") x=4.0000 y=24.0000 w=11.0000 h=20.0000 bl=16.0000
+
+=== svg ===
+<text x="4.00" y="20.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">1</text>
+<text x="4.00" y="40.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">2</text>

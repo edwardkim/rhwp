@@ -1,0 +1,11 @@
+{
+  "fixtureVersion": "1.0",
+  "name": "carry-forward",
+  "changeSets": [],
+  "expected": {
+    "activeRuleIds": ["font-rule.fixture.paint.0001"],
+    "retiredRuleIds": [],
+    "selectionTupleDelta": 0,
+    "projectionDelta": 0
+  }
+}

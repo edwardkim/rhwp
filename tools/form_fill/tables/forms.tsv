@@ -1,0 +1,62 @@
+id	family	sample	format	fieldCount	firstField	repeated	issue
+field-01	sample	samples/field-01.hwp	hwp5	11	회사명	목차1	#3329
+field-01-memo	sample	samples/field-01-memo.hwp	hwp5	11	회사명	목차1	#3281
+form-01	sample	samples/form-01.hwp	hwp5	1	myMsg01		#3329
+gian-1	공문서	tools/forms/일반기안문_서식.hwpx	hwpx	23	행정기관명		#3372
+gian-2	공문서	tools/forms/간이기안문_서식.hwpx	hwpx	13	생산등록번호		#3372
+reg-80168	규제	samples/80168_regulatory_analysis.hwp	hwp5	28	서식명	피규제집단명	#3476
+hongbo	홍보	samples/20250130-hongbo.hwp	hwp5	12	기관명		#4781
+trip-apply	인사	fixtures/forms/출장신청서.hwp	hwp5	14	소속		#3329
+leave-apply	인사	fixtures/forms/휴가원.hwp	hwp5	12	소속		#3329
+bokhak	학사	fixtures/forms/복학원서.hwp	hwp5	13	대학		#3329
+admission	학사	fixtures/forms/입학원서.hwp	hwp5	15	수험번호		#3329
+scholarship	학사	fixtures/forms/장학금신청서.hwp	hwp5	21	단과대학	가족성명,가족관계	#3329
+minwon	민원	fixtures/forms/민원신청서.hwp	hwp5	14	민원제목	성명,주소,연락처	#3329
+minutes	공문서	fixtures/forms/회의록.hwp	hwpx	18	회의명	참석자	#3372
+sihaeng	공문서	fixtures/forms/시행문.hwp	hwpx	12	행정기관명		#3372
+gongo	공문서	fixtures/forms/공고문.hwp	hwpx	11	공고기관		#3372
+labor-contract	노무	fixtures/forms/근로계약서.hwp	hwp5	14	사업장명	성명,주소	#3329
+hr-card	인사	fixtures/forms/인사기록카드.hwp	hwp5	20	사번	학력학교,학력전공,경력기관	#3329
+health-survey	보건	fixtures/forms/건강검진문진표.hwp	hwp5	17	성명	복용약,과거병력	#3329
+biz-reg	세무	fixtures/forms/사업자등록신청서.hwp	hwp5	14	상호	공동사업자	#3329
+build-permit	인허가	fixtures/forms/건축허가신청서.hwp	hwp5	15	허가번호	성명	#3329
+eia	환경	fixtures/forms/환경영향평가서.hwp	hwp5	13	사업명	평가항목	#3476
+research-plan	연구	fixtures/forms/연구계획서.hwp	hwp5	14	과제명	공동연구원	#3476
+eval-sheet	평가	fixtures/forms/평가표.hwp	hwp5	29	평가회차	평가항목,배점,점수	#3476
+bid	계약	fixtures/forms/입찰참가신청서.hwp	hwp5	12	공고번호	성명	#3329
+spend	회계	fixtures/forms/지출결의서.hwp	hwp5	19	결의번호	계정과목,적요,금액	#3329
+pumui	공문서	fixtures/forms/품의서.hwp	hwpx	12	품의번호	검토자	#3372
+hyopjo	공문서	fixtures/forms/협조전.hwp	hwpx	11	발신부서	수신부서	#3372
+inspect	계약	fixtures/forms/검수조서.hwp	hwp5	22	계약명	품목,규격,수량	#3329
+pass-apply	보안	fixtures/forms/출입증신청서.hwp	hwp5	13	신청구분	동반자	#3329
+foi	민원	fixtures/forms/정보공개청구서.hwp	hwp5	11	청구기관	성명,주소	#3329
+pii-access	민원	fixtures/forms/개인정보열람청구서.hwp	hwp5	10	처리기관	성명	#3329
+car-log	총무	fixtures/forms/차량운행일지.hwp	hwp5	29	차량번호	운전자,출발지,도착지,주행거리	#3476
+overtime	인사	fixtures/forms/초과근무신청서.hwp	hwp5	21	소속	근무일,시작시각,종료시각	#3329
+training	인사	fixtures/forms/교육훈련신청서.hwp	hwp5	14	과정명	교육생	#3329
+proposal-cover	제안	fixtures/forms/제안서표지.hwp	hwp5	12	사업명	구성원	#3329
+security-oath	보안	fixtures/forms/보안서약서.hwp	hwp5	7	성명		#3329
+asset-out	총무	fixtures/forms/자산반출신청서.hwp	hwp5	17	신청부서	물품명,수량	#3476
+room-book	총무	fixtures/forms/회의실사용신청서.hwp	hwp5	16	회의실	사용일,시작시각,종료시각	#3329
+trip-settle	회계	fixtures/forms/출장여비정산서.hwp	hwp5	25	출장자	일자,교통비,숙박비,식비	#3476
+purchase	총무	fixtures/forms/구매요구서.hwp	hwp5	29	요구부서	품명,규격,수량,추정단가	#3476
+disposal	총무	fixtures/forms/폐기업무신청서.hwp	hwp5	23	신청부서	물품명,취득일,장부가액	#3476
+transfer-list	기록	fixtures/forms/문서이관목록.hwp	hwp5	29	이관연도	철제목,생산연도,보존기간	#3476
+record-eval	기록	fixtures/forms/기록물평가서.hwp	hwp5	22	평가위원회	대상기록,평가의견,처분	#3476
+admin-appeal	쟁송	fixtures/forms/행정심판청구서.hwp	hwp5	11	피청구인	성명,주소	#3329
+objection	민원	fixtures/forms/이의신청서.hwp	hwp5	9	원처분기관		#3329
+petition	민원	fixtures/forms/청원서.hwp	hwp5	12	청원제목	연명자	#3329
+sinmungo	민원	fixtures/forms/신문고민원.hwp	hwp5	10	민원제목		#3329
+contract	계약	fixtures/forms/물품구매계약서.hwp	hwp5	12	계약명	성명,주소	#3329
+tax-invoice	세무	fixtures/forms/세금계산서발행요청.hwp	hwp5	12	공급자상호	품목	#3329
+trip-order	인사	fixtures/forms/출장명령서.hwp	hwp5	11	명령번호	출장자	#3329
+annual-leave	인사	fixtures/forms/연가신청서.hwp	hwp5	11	소속		#3329
+parental-leave	인사	fixtures/forms/육아휴직신청서.hwp	hwp5	13	소속	자녀성명,자녀생년월일	#3329
+side-job	인사	fixtures/forms/겸직허가신청서.hwp	hwp5	12	소속	겸직기관,겸직업무	#3329
+pension	연금	fixtures/forms/퇴직연금청구서.hwp	hwp5	12	청구구분	성명	#3329
+payroll-account	급여	fixtures/forms/급여계좌변경.hwp	hwp5	10	성명		#3329
+family-cert	민원	fixtures/forms/가족관계증명청구.hwp	hwp5	10	증명종류	성명	#3329
+rrn-correct	민원	fixtures/forms/주민등록정정.hwp	hwp5	9	성명		#3329
+building-ledger	민원	fixtures/forms/건축물대장열람.hwp	hwp5	9	신청인	소재지	#3329
+land-use	민원	fixtures/forms/토지이용계획확인.hwp	hwp5	10	신청인	지번	#3329
+empty-none	sample	samples/hwp3-sample.hwp	hwp5	0			#3281

@@ -1,0 +1,23 @@
+{
+  "id": "T03",
+  "tier": 2,
+  "title": "서식 조사",
+  "input": "samples/field-01.hwp",
+  "instructions": "입력 서식의 누름틀 필드가 몇 개인지 세어 answer.json 에 {\"fieldCount\": <수>} 로 제출하라. 힌트: rhwp fields <문서> --json.",
+  "submit": {
+    "kind": "answer"
+  },
+  "checks": [
+    {
+      "name": "필드 수 일치",
+      "op": "len_answer_eq",
+      "answer": "fieldCount",
+      "cmd": [
+        "fields",
+        "{input}",
+        "--json"
+      ],
+      "path": "fields"
+    }
+  ]
+}

@@ -13,7 +13,7 @@ import type { FileSystemFileHandleLike } from '../src/command/file-system-access
  * PR #2286 리뷰 회귀 테스트 (#2285 범위 + 메타-only 확장):
  * - 핸들 있으면 라이브 재열기용 저장, 없으면 메타-only 기록 (바이트 미보관)
  * - 동일 파일 판정은 isSameEntry 권위 (같은 파일명·다른 파일 공존)
- * - 최대 8개 상한, 목록 지우기
+ * - 최대 20개 상한, 목록 지우기
  * node 환경(IndexedDB 없음)이라 메모리 폴백 경로를 검증한다 — 스토어 로직은
  * withDb 양쪽 분기에 동일 규칙으로 구현되어 있다.
  */
@@ -86,15 +86,15 @@ test('동일 핸들(isSameEntry=true) 재열기는 중복 없이 최신화된다
   assert.ok(docs[0].openedAt >= firstAt);
 });
 
-test('최대 8개 상한 — 가장 오래된 항목부터 밀려난다', async () => {
+test('최대 20개 상한 — 가장 오래된 항목부터 밀려난다', async () => {
   await clearRecentDocs();
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < 22; i++) {
     await addRecentDoc({ fileName: `f${i}.hwp`, sourceFormat: 'hwp', handle: makeHandle(`f${i}`) });
     await new Promise((r) => setTimeout(r, 2));
   }
   const docs = await listRecentDocs();
-  assert.equal(docs.length, 8);
-  assert.equal(docs[0].fileName, 'f9.hwp', '최신이 맨 앞');
+  assert.equal(docs.length, 20);
+  assert.equal(docs[0].fileName, 'f21.hwp', '최신이 맨 앞');
   const names = docs.map((d) => d.fileName);
   assert.ok(!names.includes('f0.hwp') && !names.includes('f1.hwp'), '가장 오래된 2개 제거');
 });

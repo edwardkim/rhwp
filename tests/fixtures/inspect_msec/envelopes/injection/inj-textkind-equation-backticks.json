@@ -1,0 +1,53 @@
+{
+  "id": "inj-textkind-equation-backticks",
+  "issue": 5476,
+  "axis": "injection",
+  "family": "delimiter_break",
+  "polarity": "negative",
+  "sourceRule": {
+    "file": "src/document_core/queries/injection_scan.rs",
+    "symbol": "TextKind::EquationScript",
+    "note": "EQEDIT 백틱은 공백. 산문 코드펜스 축을 끈다. 실측 34샘플 976건."
+  },
+  "cli": {
+    "argv": [
+      "inspect",
+      "injection",
+      "synth:injection/textkind/equation-backticks.hwp",
+      "--json"
+    ],
+    "exitCode": 0,
+    "stdoutKind": "json-object",
+    "detectionIsNotFailure": true
+  },
+  "consume": {
+    "branch": "clean == true",
+    "reason": "equation-script"
+  },
+  "pair": "inj-delim-fence-prose-hwp",
+  "why": "alpha _{1} ,``` alpha _{2} 는 수식 공백이지 프롬프트 펜스가 아니다.",
+  "note": "문법에 따라 같은 문자의 뜻이 다르다.",
+  "human": "주입 신호 없음: 수식 스크립트 백틱\n",
+  "inventedRule": false,
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "synth:injection/textkind/equation-backticks.hwp",
+    "minConfidence": "low",
+    "includeFields": false,
+    "scanScopes": [
+      "body",
+      "tableCell",
+      "textBox",
+      "equation",
+      "footnote",
+      "endnote",
+      "header",
+      "footer",
+      "caption"
+    ],
+    "injectionSignals": [],
+    "signalCount": 0,
+    "highestConfidence": null,
+    "clean": true
+  }
+}

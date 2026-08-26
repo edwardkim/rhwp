@@ -1,0 +1,29 @@
+{
+  "id": "OM24",
+  "tier": 2,
+  "title": "문단 문서 마크다운 이미지 계수",
+  "input": "samples/para-001.hwp",
+  "instructions": "문단 표본을 마크다운으로 내보낼 때 추출되는 이미지 개수를 answer.json 에 {\"images\": N} 으로 제출하라. 표 문서(OM23)와 같은 필드, 다른 표본이다. 힌트: rhwp export-markdown 의 imageCount.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "이미지 수",
+      "op": "answer_eq",
+      "answer": "images",
+      "path": "imageCount",
+      "cmd": [
+        "export-markdown",
+        "{input}",
+        "-o",
+        "{file:md}",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

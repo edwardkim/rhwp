@@ -1,0 +1,38 @@
+{
+  "schemaVersion": "1.0",
+  "mode": "single",
+  "source": "ovl-table-table-w20-h20.synth",
+  "pageCount": 3,
+  "pageFilter": null,
+  "overflowTolerancePx": 1.0,
+  "overlapTolerancePx": 2.0,
+  "types": null,
+  "strict": false,
+  "overflowCount": 0,
+  "offCanvasCount": 0,
+  "overlapCount": 1,
+  "textOverlapCount": 0,
+  "emptyPageCount": 0,
+  "hasSignal": true,
+  "pages": [
+    {
+      "page": 0,
+      "overflow": [],
+      "offCanvas": [],
+      "overlap": [
+        {
+          "pathA": "Page/Body/Table0",
+          "typeA": "Table",
+          "pathB": "Page/Body/Table1",
+          "typeB": "Table",
+          "overlapW": 20.0,
+          "overlapH": 20.0
+        }
+      ],
+      "textOverlap": [],
+      "emptyPage": false
+    }
+  ],
+  "hypothesis": "두 표의 교차가 20x20px. 기본 overlap 허용치 2px 는 폭·높이 둘 다 넘어야 확정이다.",
+  "fixtureId": "ovl-table-table-w20-h20"
+}

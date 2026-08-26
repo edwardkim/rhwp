@@ -1,0 +1,39 @@
+{
+  "id": "FJ39",
+  "steps": [
+    {
+      "write_json": {
+        "to": "{sub:data.json}",
+        "body": {
+          "제목": "초안여정제목"
+        }
+      }
+    },
+    {
+      "run": [
+        "edit",
+        "fill-fields",
+        "{input}",
+        "--data",
+        "@{sub:data.json}",
+        "-o",
+        "{sub:draft-title.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "edit",
+        "replace-text",
+        "{sub:draft-title.hwp}",
+        "--find",
+        "초안여정제목",
+        "--replace",
+        "확정여정제목",
+        "-o",
+        "{sub:retitle.hwp}",
+        "--json"
+      ]
+    }
+  ]
+}

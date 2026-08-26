@@ -1,0 +1,58 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5318,
+  "kind": "live",
+  "command": "fields",
+  "sourceChapter": "10_조회.md",
+  "cmd": "rhwp fields samples/field-01.hwp --json",
+  "exit": 0,
+  "envelope": {
+    "fieldCount": 11,
+    "fields": [
+      {
+        "command": "Clickhere:set:48:Direction:wstring:6:여기에 입력 HelpState:wstring:0:  ",
+        "editableInForm": true,
+        "fieldId": 1584999796,
+        "fieldType": "ClickHere",
+        "guide": "여기에 입력",
+        "location": {
+          "nested": [],
+          "paragraph": 7,
+          "section": 0
+        },
+        "memo": "",
+        "name": "회사명",
+        "value": ""
+      },
+      {
+        "command": "Clickhere:set:48:Direction:wstring:6:여기에 입력 HelpState:wstring:0:  ",
+        "editableInForm": true,
+        "fieldId": 1584999797,
+        "fieldType": "ClickHere",
+        "guide": "여기에 입력",
+        "location": {
+          "nested": [],
+          "paragraph": 8,
+          "section": 0
+        },
+        "memo": "",
+        "name": "작성자",
+        "value": ""
+      },
+      "… (11개 중 2개 표시)"
+    ],
+    "schemaVersion": "1.0",
+    "source": "samples/field-01.hwp",
+    "textSecurity": {
+      "status": "clean"
+    },
+    "untrustedContent": true,
+    "untrustedFields": [
+      "fields[].name",
+      "fields[].guide",
+      "… (4개 중 2개 표시)"
+    ]
+  },
+  "extractedFromGenerated": true,
+  "handEdited": false
+}

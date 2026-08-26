@@ -1,0 +1,16 @@
+{
+  "matches": [
+    {
+      "text": "본 사업의 핵심은 도시 데이터 플랫폼 구축이다.",
+      "context": "…본 사업의 핵심은 도시 데이터 플랫폼 구축이다.…",
+      "section": 0,
+      "paragraph": 4,
+      "page": 1,
+      "charOffset": 8,
+      "length": 7
+    }
+  ],
+  "truncated": false,
+  "totalMatchCount": 1,
+  "omittedCount": 0
+}

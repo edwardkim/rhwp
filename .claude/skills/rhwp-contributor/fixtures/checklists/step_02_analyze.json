@@ -1,0 +1,23 @@
+{
+  "id": "step-02-analyze",
+  "step": 2,
+  "title": "정본·계약 분석",
+  "evidence": "mydocs/manual + 기존 계약 시험",
+  "items": [
+    "AGENTS.md 로딩 순서",
+    "CONTRIBUTING.md fmt 절",
+    "local_validation.md §4.3",
+    "DocumentCore 비범위 명시"
+  ],
+  "hardGate": "cargo fmt --all -- --check",
+  "forbids": [
+    "cargo fmt --check",
+    "git add -A",
+    "steal named worktree",
+    "invent DocumentCore edit",
+    "new rhwp CLI",
+    "edit gym/",
+    "rewrite rhwp-work-receipt"
+  ],
+  "issue": 5322
+}

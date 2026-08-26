@@ -1,0 +1,36 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5312,
+  "handoff": [
+    {
+      "when": "누름틀을 채운 뒤 레이아웃을 본다",
+      "to": "rhwp-form-fill 에서 돌아와 이 스킬",
+      "cmd": "render-diff <빈서식> <채움산출>"
+    },
+    {
+      "when": "표 CSV 왕복 후 칸 너비",
+      "to": "rhwp-table-exchange",
+      "cmd": "render-diff 전후 후 필요하면 export-png"
+    },
+    {
+      "when": "원본을 계획서로 여러 번 고침",
+      "to": "rhwp-safe-edit",
+      "cmd": "run --verify 후 render-diff"
+    },
+    {
+      "when": "배포 전 숨은 글·주입",
+      "to": "rhwp-security-sweep",
+      "cmd": "inspect. 비교 전에 먼저"
+    },
+    {
+      "when": "문서가 뭔지만",
+      "to": "rhwp-doc-triage",
+      "cmd": "info / explain. 비교하지 않음"
+    },
+    {
+      "when": "작업 영수증이 필요",
+      "to": "rhwp-work-receipt",
+      "cmd": "replay. 이 스킬은 레이아웃만"
+    }
+  ]
+}

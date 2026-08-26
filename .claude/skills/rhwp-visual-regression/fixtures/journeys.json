@@ -1,0 +1,816 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5312,
+  "count": 80,
+  "journeys": [
+    {
+      "id": "J01",
+      "title": "자기 라운드트립만",
+      "steps": [
+        "render-diff-self"
+      ],
+      "stop": "F01",
+      "sample": "form-01",
+      "notGym": true
+    },
+    {
+      "id": "J02",
+      "title": "전후 비교 PASS",
+      "steps": [
+        "render-diff-pair"
+      ],
+      "stop": "F01",
+      "sample": "form-01",
+      "notGym": true
+    },
+    {
+      "id": "J03",
+      "title": "채움 후 STRUCT 의도",
+      "steps": [
+        "render-diff-pair"
+      ],
+      "stop": "F03",
+      "sample": "form-01",
+      "notGym": true
+    },
+    {
+      "id": "J04",
+      "title": "STRUCT 무관 자리",
+      "steps": [
+        "render-diff-pair",
+        "export-png"
+      ],
+      "stop": "F04",
+      "sample": "field-01",
+      "notGym": true
+    },
+    {
+      "id": "J05",
+      "title": "쪽 수 불일치",
+      "steps": [
+        "render-diff-pair",
+        "dump-pages"
+      ],
+      "stop": "F05",
+      "sample": "field-01",
+      "notGym": true
+    },
+    {
+      "id": "J06",
+      "title": "OVER 만",
+      "steps": [
+        "render-diff-pair"
+      ],
+      "stop": "F06",
+      "sample": "field-01",
+      "notGym": true
+    },
+    {
+      "id": "J07",
+      "title": "로드 실패",
+      "steps": [
+        "render-diff-pair",
+        "info"
+      ],
+      "stop": "F07",
+      "sample": "missing",
+      "notGym": true
+    },
+    {
+      "id": "J08",
+      "title": "배치 전원 PASS",
+      "steps": [
+        "render-diff-batch"
+      ],
+      "stop": "F01",
+      "sample": "rd_batch",
+      "notGym": true
+    },
+    {
+      "id": "J09",
+      "title": "배치 혼합 격리",
+      "steps": [
+        "render-diff-batch"
+      ],
+      "stop": "F10",
+      "sample": "rd_batch",
+      "notGym": true
+    },
+    {
+      "id": "J10",
+      "title": "A==A 기준선",
+      "steps": [
+        "render-diff-pair"
+      ],
+      "stop": "F02",
+      "sample": "form-01",
+      "notGym": true
+    },
+    {
+      "id": "J11",
+      "title": "ir-diff 동일",
+      "steps": [
+        "ir-diff-json"
+      ],
+      "stop": "F01",
+      "sample": "hwp3",
+      "notGym": true
+    },
+    {
+      "id": "J12",
+      "title": "ir-diff 차이 데이터",
+      "steps": [
+        "ir-diff-json"
+      ],
+      "stop": "F08",
+      "sample": "hwp3+sosueop",
+      "notGym": true
+    },
+    {
+      "id": "J13",
+      "title": "눈 검증 PNG",
+      "steps": [
+        "export-png"
+      ],
+      "stop": "F09",
+      "sample": "form-01",
+      "notGym": true
+    },
+    {
+      "id": "J14",
+      "title": "썸네일 함정",
+      "steps": [
+        "thumbnail",
+        "export-png"
+      ],
+      "stop": "F09",
+      "sample": "form-01",
+      "notGym": true
+    },
+    {
+      "id": "J15",
+      "title": "임계 조임",
+      "steps": [
+        "render-diff-pair"
+      ],
+      "stop": "F06",
+      "sample": "form-01",
+      "notGym": true
+    },
+    {
+      "id": "J16",
+      "title": "json 모드 게이트",
+      "steps": [
+        "render-diff-json"
+      ],
+      "stop": "F08",
+      "sample": "form-01",
+      "notGym": true
+    },
+    {
+      "id": "J17",
+      "title": "메일머지 산출물끼리",
+      "steps": [
+        "render-diff-pair"
+      ],
+      "stop": "F01",
+      "sample": "batch_out",
+      "notGym": true
+    },
+    {
+      "id": "J18",
+      "title": "정밀 bbox",
+      "steps": [
+        "export-render-tree"
+      ],
+      "stop": "F11",
+      "sample": "form-01",
+      "notGym": true
+    },
+    {
+      "id": "J19",
+      "title": "WARN_TEXTRUN 통과",
+      "steps": [
+        "render-diff-pair"
+      ],
+      "stop": "F12",
+      "sample": "form-01",
+      "notGym": true
+    },
+    {
+      "id": "J20",
+      "title": "질문이 이미 답",
+      "steps": [
+        "render-diff-self"
+      ],
+      "stop": "F11",
+      "sample": "form-01",
+      "notGym": true
+    },
+    {
+      "id": "J21",
+      "title": "전후 비교 1",
+      "steps": [
+        "render-diff-pair"
+      ],
+      "stop": "F03",
+      "sample": "form-01",
+      "notGym": true
+    },
+    {
+      "id": "J22",
+      "title": "배치 행 2 격리",
+      "steps": [
+        "render-diff-batch"
+      ],
+      "stop": "F10",
+      "sample": "form-02",
+      "notGym": true
+    },
+    {
+      "id": "J23",
+      "title": "ir-diff 표본 3",
+      "steps": [
+        "ir-diff-json"
+      ],
+      "stop": "F08",
+      "sample": "form-01",
+      "notGym": true
+    },
+    {
+      "id": "J24",
+      "title": "PNG 쪽 4",
+      "steps": [
+        "export-png"
+      ],
+      "stop": "F09",
+      "sample": "form-02",
+      "notGym": true
+    },
+    {
+      "id": "J25",
+      "title": "결정성 반복 5",
+      "steps": [
+        "render-diff-pair"
+      ],
+      "stop": "F02",
+      "sample": "form-01",
+      "notGym": true
+    },
+    {
+      "id": "J26",
+      "title": "STRUCT 경로 6",
+      "steps": [
+        "render-diff-pair"
+      ],
+      "stop": "F03",
+      "sample": "form-02",
+      "notGym": true
+    },
+    {
+      "id": "J27",
+      "title": "무관 자리 7",
+      "steps": [
+        "render-diff-pair",
+        "export-png"
+      ],
+      "stop": "F04",
+      "sample": "form-01",
+      "notGym": true
+    },
+    {
+      "id": "J28",
+      "title": "OVER 행 8",
+      "steps": [
+        "render-diff-pair"
+      ],
+      "stop": "F06",
+      "sample": "form-02",
+      "notGym": true
+    },
+    {
+      "id": "J29",
+      "title": "LOAD 행 9",
+      "steps": [
+        "render-diff-pair"
+      ],
+      "stop": "F07",
+      "sample": "form-01",
+      "notGym": true
+    },
+    {
+      "id": "J30",
+      "title": "PAGE 행 10",
+      "steps": [
+        "render-diff-pair"
+      ],
+      "stop": "F05",
+      "sample": "form-02",
+      "notGym": true
+    },
+    {
+      "id": "J31",
+      "title": "json 봉투 11",
+      "steps": [
+        "render-diff-json"
+      ],
+      "stop": "F08",
+      "sample": "form-01",
+      "notGym": true
+    },
+    {
+      "id": "J32",
+      "title": "자기 왕복 12번째 표본",
+      "steps": [
+        "render-diff-self"
+      ],
+      "stop": "F01",
+      "sample": "form-02",
+      "notGym": true
+    },
+    {
+      "id": "J33",
+      "title": "전후 비교 13",
+      "steps": [
+        "render-diff-pair"
+      ],
+      "stop": "F03",
+      "sample": "form-01",
+      "notGym": true
+    },
+    {
+      "id": "J34",
+      "title": "배치 행 14 격리",
+      "steps": [
+        "render-diff-batch"
+      ],
+      "stop": "F10",
+      "sample": "form-02",
+      "notGym": true
+    },
+    {
+      "id": "J35",
+      "title": "ir-diff 표본 15",
+      "steps": [
+        "ir-diff-json"
+      ],
+      "stop": "F08",
+      "sample": "form-01",
+      "notGym": true
+    },
+    {
+      "id": "J36",
+      "title": "PNG 쪽 16",
+      "steps": [
+        "export-png"
+      ],
+      "stop": "F09",
+      "sample": "form-02",
+      "notGym": true
+    },
+    {
+      "id": "J37",
+      "title": "결정성 반복 17",
+      "steps": [
+        "render-diff-pair"
+      ],
+      "stop": "F02",
+      "sample": "form-01",
+      "notGym": true
+    },
+    {
+      "id": "J38",
+      "title": "STRUCT 경로 18",
+      "steps": [
+        "render-diff-pair"
+      ],
+      "stop": "F03",
+      "sample": "form-02",
+      "notGym": true
+    },
+    {
+      "id": "J39",
+      "title": "무관 자리 19",
+      "steps": [
+        "render-diff-pair",
+        "export-png"
+      ],
+      "stop": "F04",
+      "sample": "form-01",
+      "notGym": true
+    },
+    {
+      "id": "J40",
+      "title": "OVER 행 20",
+      "steps": [
+        "render-diff-pair"
+      ],
+      "stop": "F06",
+      "sample": "form-02",
+      "notGym": true
+    },
+    {
+      "id": "J41",
+      "title": "LOAD 행 21",
+      "steps": [
+        "render-diff-pair"
+      ],
+      "stop": "F07",
+      "sample": "form-01",
+      "notGym": true
+    },
+    {
+      "id": "J42",
+      "title": "PAGE 행 22",
+      "steps": [
+        "render-diff-pair"
+      ],
+      "stop": "F05",
+      "sample": "form-02",
+      "notGym": true
+    },
+    {
+      "id": "J43",
+      "title": "json 봉투 23",
+      "steps": [
+        "render-diff-json"
+      ],
+      "stop": "F08",
+      "sample": "form-01",
+      "notGym": true
+    },
+    {
+      "id": "J44",
+      "title": "자기 왕복 24번째 표본",
+      "steps": [
+        "render-diff-self"
+      ],
+      "stop": "F01",
+      "sample": "form-02",
+      "notGym": true
+    },
+    {
+      "id": "J45",
+      "title": "전후 비교 25",
+      "steps": [
+        "render-diff-pair"
+      ],
+      "stop": "F03",
+      "sample": "form-01",
+      "notGym": true
+    },
+    {
+      "id": "J46",
+      "title": "배치 행 26 격리",
+      "steps": [
+        "render-diff-batch"
+      ],
+      "stop": "F10",
+      "sample": "form-02",
+      "notGym": true
+    },
+    {
+      "id": "J47",
+      "title": "ir-diff 표본 27",
+      "steps": [
+        "ir-diff-json"
+      ],
+      "stop": "F08",
+      "sample": "form-01",
+      "notGym": true
+    },
+    {
+      "id": "J48",
+      "title": "PNG 쪽 28",
+      "steps": [
+        "export-png"
+      ],
+      "stop": "F09",
+      "sample": "form-02",
+      "notGym": true
+    },
+    {
+      "id": "J49",
+      "title": "결정성 반복 29",
+      "steps": [
+        "render-diff-pair"
+      ],
+      "stop": "F02",
+      "sample": "form-01",
+      "notGym": true
+    },
+    {
+      "id": "J50",
+      "title": "STRUCT 경로 30",
+      "steps": [
+        "render-diff-pair"
+      ],
+      "stop": "F03",
+      "sample": "form-02",
+      "notGym": true
+    },
+    {
+      "id": "J51",
+      "title": "무관 자리 31",
+      "steps": [
+        "render-diff-pair",
+        "export-png"
+      ],
+      "stop": "F04",
+      "sample": "form-01",
+      "notGym": true
+    },
+    {
+      "id": "J52",
+      "title": "OVER 행 32",
+      "steps": [
+        "render-diff-pair"
+      ],
+      "stop": "F06",
+      "sample": "form-02",
+      "notGym": true
+    },
+    {
+      "id": "J53",
+      "title": "LOAD 행 33",
+      "steps": [
+        "render-diff-pair"
+      ],
+      "stop": "F07",
+      "sample": "form-01",
+      "notGym": true
+    },
+    {
+      "id": "J54",
+      "title": "PAGE 행 34",
+      "steps": [
+        "render-diff-pair"
+      ],
+      "stop": "F05",
+      "sample": "form-02",
+      "notGym": true
+    },
+    {
+      "id": "J55",
+      "title": "json 봉투 35",
+      "steps": [
+        "render-diff-json"
+      ],
+      "stop": "F08",
+      "sample": "form-01",
+      "notGym": true
+    },
+    {
+      "id": "J56",
+      "title": "자기 왕복 36번째 표본",
+      "steps": [
+        "render-diff-self"
+      ],
+      "stop": "F01",
+      "sample": "form-02",
+      "notGym": true
+    },
+    {
+      "id": "J57",
+      "title": "전후 비교 37",
+      "steps": [
+        "render-diff-pair"
+      ],
+      "stop": "F03",
+      "sample": "form-01",
+      "notGym": true
+    },
+    {
+      "id": "J58",
+      "title": "배치 행 38 격리",
+      "steps": [
+        "render-diff-batch"
+      ],
+      "stop": "F10",
+      "sample": "form-02",
+      "notGym": true
+    },
+    {
+      "id": "J59",
+      "title": "ir-diff 표본 39",
+      "steps": [
+        "ir-diff-json"
+      ],
+      "stop": "F08",
+      "sample": "form-01",
+      "notGym": true
+    },
+    {
+      "id": "J60",
+      "title": "PNG 쪽 40",
+      "steps": [
+        "export-png"
+      ],
+      "stop": "F09",
+      "sample": "form-02",
+      "notGym": true
+    },
+    {
+      "id": "J61",
+      "title": "결정성 반복 41",
+      "steps": [
+        "render-diff-pair"
+      ],
+      "stop": "F02",
+      "sample": "form-01",
+      "notGym": true
+    },
+    {
+      "id": "J62",
+      "title": "STRUCT 경로 42",
+      "steps": [
+        "render-diff-pair"
+      ],
+      "stop": "F03",
+      "sample": "form-02",
+      "notGym": true
+    },
+    {
+      "id": "J63",
+      "title": "무관 자리 43",
+      "steps": [
+        "render-diff-pair",
+        "export-png"
+      ],
+      "stop": "F04",
+      "sample": "form-01",
+      "notGym": true
+    },
+    {
+      "id": "J64",
+      "title": "OVER 행 44",
+      "steps": [
+        "render-diff-pair"
+      ],
+      "stop": "F06",
+      "sample": "form-02",
+      "notGym": true
+    },
+    {
+      "id": "J65",
+      "title": "LOAD 행 45",
+      "steps": [
+        "render-diff-pair"
+      ],
+      "stop": "F07",
+      "sample": "form-01",
+      "notGym": true
+    },
+    {
+      "id": "J66",
+      "title": "PAGE 행 46",
+      "steps": [
+        "render-diff-pair"
+      ],
+      "stop": "F05",
+      "sample": "form-02",
+      "notGym": true
+    },
+    {
+      "id": "J67",
+      "title": "json 봉투 47",
+      "steps": [
+        "render-diff-json"
+      ],
+      "stop": "F08",
+      "sample": "form-01",
+      "notGym": true
+    },
+    {
+      "id": "J68",
+      "title": "자기 왕복 48번째 표본",
+      "steps": [
+        "render-diff-self"
+      ],
+      "stop": "F01",
+      "sample": "form-02",
+      "notGym": true
+    },
+    {
+      "id": "J69",
+      "title": "전후 비교 49",
+      "steps": [
+        "render-diff-pair"
+      ],
+      "stop": "F03",
+      "sample": "form-01",
+      "notGym": true
+    },
+    {
+      "id": "J70",
+      "title": "배치 행 50 격리",
+      "steps": [
+        "render-diff-batch"
+      ],
+      "stop": "F10",
+      "sample": "form-02",
+      "notGym": true
+    },
+    {
+      "id": "J71",
+      "title": "ir-diff 표본 51",
+      "steps": [
+        "ir-diff-json"
+      ],
+      "stop": "F08",
+      "sample": "form-01",
+      "notGym": true
+    },
+    {
+      "id": "J72",
+      "title": "PNG 쪽 52",
+      "steps": [
+        "export-png"
+      ],
+      "stop": "F09",
+      "sample": "form-02",
+      "notGym": true
+    },
+    {
+      "id": "J73",
+      "title": "결정성 반복 53",
+      "steps": [
+        "render-diff-pair"
+      ],
+      "stop": "F02",
+      "sample": "form-01",
+      "notGym": true
+    },
+    {
+      "id": "J74",
+      "title": "STRUCT 경로 54",
+      "steps": [
+        "render-diff-pair"
+      ],
+      "stop": "F03",
+      "sample": "form-02",
+      "notGym": true
+    },
+    {
+      "id": "J75",
+      "title": "무관 자리 55",
+      "steps": [
+        "render-diff-pair",
+        "export-png"
+      ],
+      "stop": "F04",
+      "sample": "form-01",
+      "notGym": true
+    },
+    {
+      "id": "J76",
+      "title": "OVER 행 56",
+      "steps": [
+        "render-diff-pair"
+      ],
+      "stop": "F06",
+      "sample": "form-02",
+      "notGym": true
+    },
+    {
+      "id": "J77",
+      "title": "LOAD 행 57",
+      "steps": [
+        "render-diff-pair"
+      ],
+      "stop": "F07",
+      "sample": "form-01",
+      "notGym": true
+    },
+    {
+      "id": "J78",
+      "title": "PAGE 행 58",
+      "steps": [
+        "render-diff-pair"
+      ],
+      "stop": "F05",
+      "sample": "form-02",
+      "notGym": true
+    },
+    {
+      "id": "J79",
+      "title": "json 봉투 59",
+      "steps": [
+        "render-diff-json"
+      ],
+      "stop": "F08",
+      "sample": "form-01",
+      "notGym": true
+    },
+    {
+      "id": "J80",
+      "title": "자기 왕복 60번째 표본",
+      "steps": [
+        "render-diff-self"
+      ],
+      "stop": "F01",
+      "sample": "form-02",
+      "notGym": true
+    }
+  ]
+}

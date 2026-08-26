@@ -1,0 +1,46 @@
+{
+  "id": "FJ38",
+  "tier": 3,
+  "title": "채운 값을 다시 치환 (form-01)",
+  "input": "samples/form-01.hwp",
+  "instructions": "form-01 의 myMsg01 에 '치환전값' 을 채운 뒤, 그 문구를 '치환후값' 으로 replace-text 한 swapped.hwp 를 제출하라. 옛 문구는 0건, 새 문구는 1건 이상이어야 한다. 필드에 홍길동을 넣지 마라. 힌트: fill-fields 치환전값 → replace-text 치환전값/치환후값 판정은 라이브 재실행 또는 산출물 재독이며, 파일 부재를 통과로 치지 않는다. T07 의 fields[0].value==홍길동 판정은 쓰지 마라. 새 CLI 는 없다.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "swapped.hwp"
+    ]
+  },
+  "checks": [
+    {
+      "name": "옛 값 소거",
+      "op": "value_eq",
+      "value": 0,
+      "path": "matchCount",
+      "cmd": [
+        "search",
+        "{file:swapped.hwp}",
+        "--json",
+        "--",
+        "치환전값"
+      ]
+    },
+    {
+      "name": "새 값 실재",
+      "op": "value_ge",
+      "value": 1,
+      "path": "matchCount",
+      "cmd": [
+        "search",
+        "{file:swapped.hwp}",
+        "--json",
+        "--",
+        "치환후값"
+      ]
+    },
+    {
+      "name": "원본 무편집 복사가 아님",
+      "op": "differs_from_input",
+      "file": "swapped.hwp"
+    }
+  ]
+}

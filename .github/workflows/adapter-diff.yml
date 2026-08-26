@@ -1,0 +1,207 @@
+name: Adapter inter-diff
+
+# M06-4 / #5392 — 전어댑터 상호 diff 골든 하네스.
+# SvgBackend 는 devel 에 있다. Png/Skia 는 PR 에만 있을 수 있다.
+# 없는 어댑터는 skip 으로 남기고 있는 어댑터끼리만 맞댄다.
+# 싼 CI 픽스처. 실문서 전수·native-skia 피처·gym 이 아니다.
+
+on:
+  pull_request:
+    branches: [main, devel]
+  push:
+    branches: [main, devel]
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: adapter-diff-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  adapter-impact:
+    name: adapter inter-diff preflight
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    outputs:
+      adapter_required: ${{ steps.classify.outputs.adapter_required || 'true' }}
+      reason: ${{ steps.classify.outputs.reason || 'preflight-unavailable' }}
+    steps:
+      # 문서 전용 PR 또는 검증된 코드 후보 뒤의 review-only tail에서는 stable check
+      # 이름을 유지하고 worker만 skip한다. API·계보·후보 run 판정은 fail-closed다.
+      - name: Classify review-only or trusted trailing review tail
+        id: classify
+        continue-on-error: true
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            function setResult(required, reason) {
+              core.setOutput('adapter_required', required ? 'true' : 'false');
+              core.setOutput('reason', reason);
+              core.info(`adapter_required=${required} reason=${reason}`);
+            }
+
+            const pr = context.payload.pull_request;
+            if (context.eventName !== 'pull_request' || !pr || pr.base.ref !== 'devel') {
+              setResult(true, `full-non-devel-pr:${pr?.base?.ref || context.eventName}`);
+              return;
+            }
+
+            function isAllowedReviewPath(file) {
+              const filename = file.filename;
+              if (filename.startsWith('mydocs/')) {
+                return true;
+              }
+              if (file.status !== 'added') {
+                return false;
+              }
+              return isReviewReferencePath(filename);
+            }
+
+            function isReviewReferencePath(filename) {
+              const pdfPrefixes = ['pdf/', 'pdf-2020/', 'pdf-large/'];
+              return (
+                filename.startsWith('samples/')
+                && (
+                  filename.endsWith('.hwp')
+                  || filename.endsWith('.hwpx')
+                  || filename.endsWith('.pdf')
+                  || filename.endsWith('.png')
+                )
+              ) || (
+                pdfPrefixes.some((prefix) => filename.startsWith(prefix))
+                && filename.endsWith('.pdf')
+              );
+            }
+
+            const files = await github.paginate(github.rest.pulls.listFiles, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pr.number,
+              per_page: 100,
+            });
+            if (files.length > 0 && files.every((file) => isAllowedReviewPath(file))) {
+              setResult(false, 'skip-review-only-pr');
+              return;
+            }
+
+            const commits = await github.paginate(github.rest.pulls.listCommits, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pr.number,
+              per_page: 100,
+            });
+            const reviewOnlyCandidates = [];
+            let codeCandidateSha = '';
+            let newerTailCommit = null;
+            for (let index = commits.length - 1; index >= 0; index -= 1) {
+              const commit = commits[index];
+              const detail = await github.rest.repos.getCommit({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: commit.sha,
+              });
+              const commitFiles = detail.data.files || [];
+              if (commitFiles.length === 0 || commitFiles.length >= 300) {
+                setResult(true, `unusable-file-list:${commit.sha}`);
+                return;
+              }
+              if (!commitFiles.every((file) => isAllowedReviewPath(file))) {
+                codeCandidateSha = commit.sha;
+                break;
+              }
+              const parents = commit.parents || [];
+              if (parents.length !== 1
+                || (newerTailCommit && newerTailCommit.parents[0].sha !== commit.sha)) {
+                setResult(true, 'full-code-or-non-mydocs-change');
+                return;
+              }
+              reviewOnlyCandidates.push(commit.sha);
+              if (reviewOnlyCandidates.length > 20) {
+                setResult(true, 'review-tail-too-long');
+                return;
+              }
+              newerTailCommit = commit;
+            }
+            if (reviewOnlyCandidates.length === 0 || !codeCandidateSha
+              || newerTailCommit.parents[0].sha !== codeCandidateSha) {
+              setResult(true, 'full-code-or-non-mydocs-change');
+              return;
+            }
+            reviewOnlyCandidates.push(codeCandidateSha);
+
+            const candidateRuns = await github.paginate(github.rest.actions.listWorkflowRuns, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              workflow_id: 'adapter-diff.yml',
+              event: 'pull_request',
+              per_page: 100,
+            });
+            for (const candidateSha of reviewOnlyCandidates) {
+              const latestCandidateRun = candidateRuns
+                .filter((run) => (
+                  run.event === 'pull_request'
+                  && run.head_sha === candidateSha
+                  && run.head_branch === pr.head.ref
+                  && run.head_repository?.id === pr.head.repo?.id
+                ))
+                .sort((left, right) => Date.parse(right.created_at) - Date.parse(left.created_at))[0];
+              if (!latestCandidateRun || latestCandidateRun.status !== 'completed') {
+                core.info(`candidate not reusable yet: ${candidateSha}`);
+                continue;
+              }
+              const runCreatedAt = Date.parse(latestCandidateRun.created_at || '');
+              const pullCreatedAt = Date.parse(pr.created_at || '');
+              if (latestCandidateRun.conclusion !== 'success'
+                || !Number.isFinite(runCreatedAt)
+                || !Number.isFinite(pullCreatedAt)
+                || runCreatedAt < pullCreatedAt) {
+                setResult(true, 'review-tail-candidate-run-unavailable');
+                return;
+              }
+              setResult(false, `skip-trusted-mydocs-tail:${candidateSha}`);
+              return;
+            }
+
+            setResult(true, 'review-tail-candidate-run-unavailable');
+
+  adapter-diff:
+    name: adapter inter-diff
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    needs: adapter-impact
+    if: ${{ always() && needs.adapter-impact.result == 'success' && needs.adapter-impact.outputs.adapter_required == 'true' }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@4cda84d5c5c54efe2404f9d843567869ab1699d4 # stable 브랜치 (2026-08-01 시점)
+        with:
+          toolchain: 1.93.1
+
+      - name: Rust build cache
+        uses: Swatinem/rust-cache@f0d9c3887740aee45f6153b24b3a6b815192ec16 # v2.9.1
+        with:
+          shared-key: adapter-diff
+          save-if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/devel' || github.ref == 'refs/heads/main') }}
+
+      - name: Check adapter-diff runner contract
+        run: node --test scripts/tests/run-adapter-diff.test.mjs
+
+      - name: Check adapter-diff harness
+        run: python3 -m unittest tools.adapter_diff.test_harness
+
+      - name: Discover adapters (honest skip)
+        run: python3 tools/adapter_diff/harness.py --ci --strict
+
+      - name: Prepare derived Rust test suites
+        run: node scripts/rust-test-suite-manifest.mjs --prepare
+
+      - name: Run adapter inter-diff case
+        run: node scripts/run-adapter-diff.mjs --cargo-test

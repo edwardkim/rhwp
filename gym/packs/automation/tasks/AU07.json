@@ -1,0 +1,35 @@
+{
+  "id": "AU07",
+  "tier": 3,
+  "title": "반입 관문 통과",
+  "input": "samples/table-001.hwp",
+  "instructions": "작업 캡슐을 만들어 과제 고정 정책(policy.json 을 함께 제출)에 대해 **관문을 통과**시켜라. 정책은 재현을 요구하므로 채점기는 --deep 로 재현까지 확인한다. 힌트: rhwp gate --deep.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "work.capsule.json",
+      "policy.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "관문 allow",
+      "op": "value_eq",
+      "value": "allow",
+      "path": "verdict",
+      "cmd": [
+        "gate",
+        "{file:work.capsule.json}",
+        "--policy",
+        "{file:policy.json}",
+        "--deep",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    }
+  ],
+  "axis": "자동화"
+}

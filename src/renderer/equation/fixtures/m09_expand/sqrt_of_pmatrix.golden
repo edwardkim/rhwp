@@ -1,0 +1,50 @@
+# M09-g equation golden — current-engine lock (variant/exception/unimplemented honesty)
+command: SQRT
+script: SQRT PMATRIX{1 & 2 # 3 & 4}
+honesty: implemented-variant
+
+=== ast ===
+Sqrt {
+    index: None,
+    body: Matrix {
+        rows: [
+            [
+                Number(
+                    "1",
+                ),
+                Number(
+                    "2",
+                ),
+            ],
+            [
+                Number(
+                    "3",
+                ),
+                Number(
+                    "4",
+                ),
+            ],
+        ],
+        style: Paren,
+    },
+}
+
+=== layout ===
+Sqrt x=0.0000 y=0.0000 w=72.0000 h=50.0000 bl=25.0000
+  body:
+    Matrix(Paren) x=13.0000 y=2.0000 w=58.0000 h=46.0000 bl=23.0000
+      row0:
+        Number("1") x=10.0000 y=0.0000 w=11.0000 h=20.0000 bl=16.0000
+        Number("2") x=37.0000 y=0.0000 w=11.0000 h=20.0000 bl=16.0000
+      row1:
+        Number("3") x=10.0000 y=26.0000 w=11.0000 h=20.0000 bl=16.0000
+        Number("4") x=37.0000 y=26.0000 w=11.0000 h=20.0000 bl=16.0000
+
+=== svg ===
+<path d="M0.00,29.00 L2.00,30.00 L8.00,50.00 L11.00,0.00 L72.00,0.00" fill="none" stroke="#000000" stroke-width="0.80"/>
+<path d="M18.40,2.00 C13.30,10.28 13.30,39.72 18.40,48.00" fill="none" stroke="#000000" stroke-width="0.84" stroke-linecap="round"/>
+<path d="M65.60,2.00 C70.70,10.28 70.70,39.72 65.60,48.00" fill="none" stroke="#000000" stroke-width="0.84" stroke-linecap="round"/>
+<text x="23.00" y="18.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">1</text>
+<text x="50.00" y="18.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">2</text>
+<text x="23.00" y="44.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">3</text>
+<text x="50.00" y="44.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">4</text>

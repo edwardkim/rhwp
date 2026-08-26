@@ -1,0 +1,59 @@
+{
+  "id": "XC52",
+  "steps": [
+    {
+      "run": [
+        "run",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"samples/table-001.hwp\", \"output\": \"{sub:o0.hwp}\", \"steps\": [{\"action\": \"set_cell\", \"table\": 0, \"row\": 0, \"col\": 0, \"text\": \"뿌리-XC52\"}]}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "replay",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"samples/table-001.hwp\", \"output\": \"{sub:o0.hwp}\", \"steps\": [{\"action\": \"set_cell\", \"table\": 0, \"row\": 0, \"col\": 0, \"text\": \"뿌리-XC52\"}]}",
+        "--capsule",
+        "{sub:tri/root.capsule.json}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "replay",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"{sub:o0.hwp}\", \"output\": \"{sub:left.hwp}\", \"steps\": [{\"action\": \"set_cell\", \"table\": 0, \"row\": 0, \"col\": 0, \"text\": \"좌잎-XC52\"}]}",
+        "--capsule",
+        "{sub:tri/left.capsule.json}",
+        "--parent",
+        "{sub:tri/root.capsule.json}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "replay",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"{sub:o0.hwp}\", \"output\": \"{sub:mid.hwp}\", \"steps\": [{\"action\": \"set_cell\", \"table\": 0, \"row\": 0, \"col\": 0, \"text\": \"가운잎-XC52\"}]}",
+        "--capsule",
+        "{sub:tri/mid.capsule.json}",
+        "--parent",
+        "{sub:tri/root.capsule.json}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "replay",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"{sub:o0.hwp}\", \"output\": \"{sub:right.hwp}\", \"steps\": [{\"action\": \"set_cell\", \"table\": 0, \"row\": 0, \"col\": 0, \"text\": \"우잎-XC52\"}]}",
+        "--capsule",
+        "{sub:tri/right.capsule.json}",
+        "--parent",
+        "{sub:tri/root.capsule.json}",
+        "--json"
+      ]
+    }
+  ]
+}

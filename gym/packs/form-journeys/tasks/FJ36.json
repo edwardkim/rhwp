@@ -1,0 +1,46 @@
+{
+  "id": "FJ36",
+  "tier": 2,
+  "title": "본문 치환 후 재검색 (운영전략)",
+  "input": "samples/field-01.hwp",
+  "instructions": "표지 본문의 '마케팅' 을 모두 '운영전략' 으로 바꾼 strategy.hwp 를 제출하라. FJ04 는 '여정기획' 이다. 이번 새 문구는 다르다. 누름틀을 채우지 마라. 힌트: rhwp edit replace-text <문서> --find 마케팅 --replace 운영전략 -o strategy.hwp --json 판정은 라이브 재실행 또는 산출물 재독이며, 파일 부재를 통과로 치지 않는다. T07 의 fields[0].value==홍길동 판정은 쓰지 마라. 새 CLI 는 없다.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "strategy.hwp"
+    ]
+  },
+  "checks": [
+    {
+      "name": "옛 문구 소거",
+      "op": "value_eq",
+      "value": 0,
+      "path": "matchCount",
+      "cmd": [
+        "search",
+        "{file:strategy.hwp}",
+        "--json",
+        "--",
+        "마케팅"
+      ]
+    },
+    {
+      "name": "새 문구 실재",
+      "op": "value_ge",
+      "value": 1,
+      "path": "matchCount",
+      "cmd": [
+        "search",
+        "{file:strategy.hwp}",
+        "--json",
+        "--",
+        "운영전략"
+      ]
+    },
+    {
+      "name": "원본 무편집 복사가 아님",
+      "op": "differs_from_input",
+      "file": "strategy.hwp"
+    }
+  ]
+}

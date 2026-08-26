@@ -1,0 +1,25 @@
+{
+  "id": "EX08",
+  "tier": 2,
+  "title": "날짜 수확 — 시험지 HWP",
+  "input": "samples/exam-kor-1p.hwp",
+  "instructions": "extract-data --kind date 로 이 1쪽 시험지에서 날짜만 수확해, 항목 수(itemCount)를 보고하라. 답 형식: {\"dates\": <수>}. 0건은 오류가 아니다.",
+  "submit": {
+    "kind": "answer"
+  },
+  "checks": [
+    {
+      "name": "dates 일치",
+      "op": "answer_eq",
+      "answer": "dates",
+      "cmd": [
+        "extract-data",
+        "{input}",
+        "--kind",
+        "date",
+        "--json"
+      ],
+      "path": "itemCount"
+    }
+  ]
+}

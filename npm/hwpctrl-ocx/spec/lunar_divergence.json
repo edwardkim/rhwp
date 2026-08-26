@@ -1,0 +1,537 @@
+{
+  "schemaVersion": "1.0",
+  "why": "한글 2022 의 음력 표가 한국천문연구원(KASI) 공공자료와 다른 자리다. 1841~2043 의 2,051일 표본을 재서 나온 전부다(1.71%). `@rhwp/hwpctrl` 은 공공자료를 따르므로 이 날들에서 한글과 다른 답을 낸다 — 숨기지 않으려고 여기에 적는다.",
+  "sample": {
+    "range": "1841~2043",
+    "dates": 2051,
+    "diverged": 35
+  },
+  "note": "`hangul` 의 답 스물둘은 29일짜리 달의 30일이라 KASI 달력에 없는 날이고, 2033년 넷은 윤달 배치가 갈린 자리다.",
+  "entries": [
+    {
+      "solar": "1881-06-26",
+      "kasi": {
+        "year": 1881,
+        "month": 6,
+        "day": 1,
+        "leap": false
+      },
+      "hangul": {
+        "year": 1881,
+        "month": 5,
+        "day": 30,
+        "leap": false
+      }
+    },
+    {
+      "solar": "1885-12-06",
+      "kasi": {
+        "year": 1885,
+        "month": 11,
+        "day": 1,
+        "leap": false
+      },
+      "hangul": {
+        "year": 1885,
+        "month": 10,
+        "day": 30,
+        "leap": false
+      }
+    },
+    {
+      "solar": "1894-09-29",
+      "kasi": {
+        "year": 1894,
+        "month": 9,
+        "day": 1,
+        "leap": false
+      },
+      "hangul": {
+        "year": 1894,
+        "month": 8,
+        "day": 30,
+        "leap": false
+      }
+    },
+    {
+      "solar": "1903-06-25",
+      "kasi": {
+        "year": 1903,
+        "month": 5,
+        "day": 1,
+        "leap": true
+      },
+      "hangul": {
+        "year": 1903,
+        "month": 5,
+        "day": 30,
+        "leap": false
+      }
+    },
+    {
+      "solar": "1907-12-05",
+      "kasi": {
+        "year": 1907,
+        "month": 11,
+        "day": 1,
+        "leap": false
+      },
+      "hangul": {
+        "year": 1907,
+        "month": 10,
+        "day": 30,
+        "leap": false
+      }
+    },
+    {
+      "solar": "1912-04-17",
+      "kasi": {
+        "year": 1912,
+        "month": 3,
+        "day": 1,
+        "leap": false
+      },
+      "hangul": {
+        "year": 1912,
+        "month": 2,
+        "day": 30,
+        "leap": false
+      }
+    },
+    {
+      "solar": "1916-09-27",
+      "kasi": {
+        "year": 1916,
+        "month": 9,
+        "day": 1,
+        "leap": false
+      },
+      "hangul": {
+        "year": 1916,
+        "month": 8,
+        "day": 30,
+        "leap": false
+      }
+    },
+    {
+      "solar": "1925-08-19",
+      "kasi": {
+        "year": 1925,
+        "month": 7,
+        "day": 1,
+        "leap": false
+      },
+      "hangul": {
+        "year": 1925,
+        "month": 6,
+        "day": 30,
+        "leap": false
+      }
+    },
+    {
+      "solar": "1943-05-04",
+      "kasi": {
+        "year": 1943,
+        "month": 4,
+        "day": 1,
+        "leap": false
+      },
+      "hangul": {
+        "year": 1943,
+        "month": 3,
+        "day": 30,
+        "leap": false
+      }
+    },
+    {
+      "solar": "1947-10-14",
+      "kasi": {
+        "year": 1947,
+        "month": 9,
+        "day": 1,
+        "leap": false
+      },
+      "hangul": {
+        "year": 1947,
+        "month": 8,
+        "day": 30,
+        "leap": false
+      }
+    },
+    {
+      "solar": "1956-07-08",
+      "kasi": {
+        "year": 1956,
+        "month": 6,
+        "day": 1,
+        "leap": false
+      },
+      "hangul": {
+        "year": 1956,
+        "month": 5,
+        "day": 30,
+        "leap": false
+      }
+    },
+    {
+      "solar": "1960-12-18",
+      "kasi": {
+        "year": 1960,
+        "month": 11,
+        "day": 1,
+        "leap": false
+      },
+      "hangul": {
+        "year": 1960,
+        "month": 10,
+        "day": 30,
+        "leap": false
+      }
+    },
+    {
+      "solar": "1965-05-01",
+      "kasi": {
+        "year": 1965,
+        "month": 4,
+        "day": 1,
+        "leap": false
+      },
+      "hangul": {
+        "year": 1965,
+        "month": 3,
+        "day": 30,
+        "leap": false
+      }
+    },
+    {
+      "solar": "1966-02-15",
+      "kasi": {
+        "year": 1966,
+        "month": 1,
+        "day": 25,
+        "leap": false
+      },
+      "hangul": {
+        "year": 1966,
+        "month": 1,
+        "day": 26,
+        "leap": false
+      }
+    },
+    {
+      "solar": "1969-10-11",
+      "kasi": {
+        "year": 1969,
+        "month": 9,
+        "day": 1,
+        "leap": false
+      },
+      "hangul": {
+        "year": 1969,
+        "month": 8,
+        "day": 30,
+        "leap": false
+      }
+    },
+    {
+      "solar": "1987-06-26",
+      "kasi": {
+        "year": 1987,
+        "month": 6,
+        "day": 1,
+        "leap": false
+      },
+      "hangul": {
+        "year": 1987,
+        "month": 5,
+        "day": 30,
+        "leap": false
+      }
+    },
+    {
+      "solar": "1990-10-26",
+      "kasi": {
+        "year": 1990,
+        "month": 9,
+        "day": 8,
+        "leap": false
+      },
+      "hangul": {
+        "year": 1990,
+        "month": 9,
+        "day": 9,
+        "leap": false
+      }
+    },
+    {
+      "solar": "1996-05-17",
+      "kasi": {
+        "year": 1996,
+        "month": 4,
+        "day": 1,
+        "leap": false
+      },
+      "hangul": {
+        "year": 1996,
+        "month": 3,
+        "day": 30,
+        "leap": false
+      }
+    },
+    {
+      "solar": "2000-10-27",
+      "kasi": {
+        "year": 2000,
+        "month": 10,
+        "day": 1,
+        "leap": false
+      },
+      "hangul": {
+        "year": 2000,
+        "month": 9,
+        "day": 30,
+        "leap": false
+      }
+    },
+    {
+      "solar": "2004-11-14",
+      "kasi": {
+        "year": 2004,
+        "month": 10,
+        "day": 3,
+        "leap": false
+      },
+      "hangul": {
+        "year": 2004,
+        "month": 10,
+        "day": 2,
+        "leap": false
+      }
+    },
+    {
+      "solar": "2006-02-21",
+      "kasi": {
+        "year": 2006,
+        "month": 1,
+        "day": 24,
+        "leap": false
+      },
+      "hangul": {
+        "year": 2006,
+        "month": 1,
+        "day": 23,
+        "leap": false
+      }
+    },
+    {
+      "solar": "2009-08-20",
+      "kasi": {
+        "year": 2009,
+        "month": 7,
+        "day": 1,
+        "leap": false
+      },
+      "hangul": {
+        "year": 2009,
+        "month": 6,
+        "day": 30,
+        "leap": false
+      }
+    },
+    {
+      "solar": "2014-01-01",
+      "kasi": {
+        "year": 2013,
+        "month": 12,
+        "day": 1,
+        "leap": false
+      },
+      "hangul": {
+        "year": 2013,
+        "month": 11,
+        "day": 30,
+        "leap": false
+      }
+    },
+    {
+      "solar": "2016-02-23",
+      "kasi": {
+        "year": 2016,
+        "month": 1,
+        "day": 16,
+        "leap": false
+      },
+      "hangul": {
+        "year": 2016,
+        "month": 1,
+        "day": 15,
+        "leap": false
+      }
+    },
+    {
+      "solar": "2017-03-06",
+      "kasi": {
+        "year": 2017,
+        "month": 2,
+        "day": 9,
+        "leap": false
+      },
+      "hangul": {
+        "year": 2017,
+        "month": 2,
+        "day": 8,
+        "leap": false
+      }
+    },
+    {
+      "solar": "2018-05-15",
+      "kasi": {
+        "year": 2018,
+        "month": 4,
+        "day": 1,
+        "leap": false
+      },
+      "hangul": {
+        "year": 2018,
+        "month": 3,
+        "day": 30,
+        "leap": false
+      }
+    },
+    {
+      "solar": "2022-10-25",
+      "kasi": {
+        "year": 2022,
+        "month": 10,
+        "day": 1,
+        "leap": false
+      },
+      "hangul": {
+        "year": 2022,
+        "month": 9,
+        "day": 30,
+        "leap": false
+      }
+    },
+    {
+      "solar": "2033-09-10",
+      "kasi": {
+        "year": 2033,
+        "month": 8,
+        "day": 17,
+        "leap": false
+      },
+      "hangul": {
+        "year": 2033,
+        "month": 7,
+        "day": 17,
+        "leap": true
+      }
+    },
+    {
+      "solar": "2033-10-09",
+      "kasi": {
+        "year": 2033,
+        "month": 9,
+        "day": 17,
+        "leap": false
+      },
+      "hangul": {
+        "year": 2033,
+        "month": 8,
+        "day": 17,
+        "leap": false
+      }
+    },
+    {
+      "solar": "2033-11-07",
+      "kasi": {
+        "year": 2033,
+        "month": 10,
+        "day": 16,
+        "leap": false
+      },
+      "hangul": {
+        "year": 2033,
+        "month": 9,
+        "day": 16,
+        "leap": false
+      }
+    },
+    {
+      "solar": "2033-12-06",
+      "kasi": {
+        "year": 2033,
+        "month": 11,
+        "day": 15,
+        "leap": false
+      },
+      "hangul": {
+        "year": 2033,
+        "month": 10,
+        "day": 15,
+        "leap": false
+      }
+    },
+    {
+      "solar": "2034-01-04",
+      "kasi": {
+        "year": 2033,
+        "month": 11,
+        "day": 14,
+        "leap": true
+      },
+      "hangul": {
+        "year": 2033,
+        "month": 11,
+        "day": 14,
+        "leap": false
+      }
+    },
+    {
+      "solar": "2037-01-10",
+      "kasi": {
+        "year": 2036,
+        "month": 11,
+        "day": 24,
+        "leap": false
+      },
+      "hangul": {
+        "year": 2036,
+        "month": 11,
+        "day": 25,
+        "leap": false
+      }
+    },
+    {
+      "solar": "2040-07-09",
+      "kasi": {
+        "year": 2040,
+        "month": 6,
+        "day": 1,
+        "leap": false
+      },
+      "hangul": {
+        "year": 2040,
+        "month": 5,
+        "day": 30,
+        "leap": false
+      }
+    },
+    {
+      "solar": "2042-12-25",
+      "kasi": {
+        "year": 2042,
+        "month": 11,
+        "day": 14,
+        "leap": false
+      },
+      "hangul": {
+        "year": 2042,
+        "month": 11,
+        "day": 13,
+        "leap": false
+      }
+    }
+  ]
+}

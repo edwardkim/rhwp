@@ -1,0 +1,22 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.form_fill.path_contract.v1",
+  "claim": "M-fill",
+  "generator": "tools/form_fill/fatten_form_fill.py",
+  "existingCliOnly": true,
+  "id": "path-fill-default-next-to-input",
+  "axis": "fill-fields",
+  "title": "-o 생략 기본 산출",
+  "why": "입력 옆 <이름>_filled.hwp(.hwpx).",
+  "argv": [
+    "edit",
+    "fill-fields",
+    "samples/field-01.hwp",
+    "--data",
+    "{\"회사명\":\"옆파일\"}",
+    "--json"
+  ],
+  "exit": 0,
+  "writesFile": true,
+  "defaultOutput": "field-01_filled.hwp"
+}

@@ -1,0 +1,41 @@
+{
+  "id": "AU59",
+  "tier": 3,
+  "title": "내부표 청구 검증",
+  "input": "samples/inner-table-01.hwp",
+  "instructions": "AU59 — 내부표 청구 검증.\n\n입력 표본은 `samples/inner-table-01.hwp` 이다. 저장소 samples/ 에 이미 있는 실문서이며 새 픽스처를 만들지 않는다. automation pack 은 기존 CLI 표면(anchor · audit · audit-report · bundle · conformance · disclose · export-tables · gate · lineage · recall-scope · settle · verify-signature) 만으로 검증 사다리 여정을 늘린다. 새 명령·새 연산자·새 pack 은 없다.\n\n작업 캡슐·발주 명세서(gym-wo-inner)·게이트 판정 봉투를 3해시로 고정한 청구 claim.json 을 발급하라. AU08 은 table-001 + gym-wo-1 이다. 이 과제는 `samples/inner-table-01.hwp` + gym-wo-inner 이다. XC03 처럼 원장 4관문(capsuleOk/gateOk/ledgerOk/workorderOk) 과 ledger.ndjson 을 요구하지 않는다. settle verify 의 verdict 만 본다.\n\n수행 힌트: rhwp settle propose --workorder wo.json --capsule ... --gate-envelope gate.json -o claim.json. 채점은 제출 폴더에서 같은 판정 명령을 다시 돌린다. 정답 해시·건수를 과제 파일에 박제하지 마라. 표본이 바뀌면 라이브 재계산이 따라간다.\n\n금지: XC01 L5 완주, XC02 오염 무영향 0, XC03 정산 4관문, XC04 3세대 --deep, XC05 L3 서명+앵커 완주, WR 일일 3해시, T07 서식 채움을 복제하지 마라. 원본 픽스처를 덮어쓰지 마라. 산출은 제출 폴더의 -o / --capsule 뿐이다. T07 서식 채움(fill-fields, 첫 필드 홍길동)을 복제하지 마라. XC01–XC05 사다리 완주(L5 · 3세대 --deep · 정산 4관문 · 오염 무영향 0 · L3 서명+앵커 완주)를 베끼지 마라. WR01+ 일일 영수증 3해시 answer.json 여정도 이 pack 의 일이 아니다.\n\n원장 기록(settle record)은 이 과제의 범위가 아니다.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "claim.json",
+      "work.capsule.json",
+      "wo.json",
+      "gate.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "청구 검증 ok",
+      "op": "value_eq",
+      "value": "ok",
+      "path": "verdict",
+      "cmd": [
+        "settle",
+        "verify",
+        "{file:claim.json}",
+        "--workorder",
+        "{file:wo.json}",
+        "--capsule",
+        "{file:work.capsule.json}",
+        "--gate-envelope",
+        "{file:gate.json}",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    }
+  ],
+  "axis": "자동화"
+}

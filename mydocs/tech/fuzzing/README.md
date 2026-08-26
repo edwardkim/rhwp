@@ -41,8 +41,8 @@ last_verified: 2026-08-03
 ### 1-2. 시드 코퍼스 12개 (269KB)
 
 `fuzz/corpus/<타깃>/` 실측: `parse_hwp` 3 · `parse_hwp3` 2 · `parse_hwpx` 3 ·
-`parse_hml` 2 · `parse_wmf` 1 · `parse_ooxml_chart` 1. 출처와 확장 방법은
-[operations.md §3](operations.md) 참조.
+`parse_hml` 2 · `parse_wmf` 5(최소 placeable + M09x 도형 4) · `parse_ooxml_chart` 1.
+출처와 확장 방법은 [operations.md §3](operations.md) 참조.
 
 ### 1-3. 도입 이력
 

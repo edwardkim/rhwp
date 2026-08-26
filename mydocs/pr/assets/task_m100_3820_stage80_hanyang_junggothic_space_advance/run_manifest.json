@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "key": "task3820-stage80-hanyang-space",
+  "provenance": {
+    "hwp": {
+      "path": "samples/76076_regulatory_analysis.hwp",
+      "sha256": "3308ba8505391bae2d0d62963e9399f4e48cdae574304cc0f89a311c6efbb6b5"
+    },
+    "pdf": {
+      "path": "samples/issue1891/76076_regulatory_analysis-2024.pdf",
+      "sha256": "06a389455d6b96e5f6580c9930fd8555256f9c712be85fb3cdaf31fc601a090d"
+    },
+    "git_head": "ff9cf5ef3cc0570383e9f860e8854ae1de4aa4f6",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "438ae24784a32b5ae3d0643e032f3c841f238230ea5f1be9dfb4ec88b094d463"
+    },
+    "rhwp_binary": {
+      "configured": "/Users/tsjang/rhwp/target/task-3820-stage80-hanyang-space/release-test/rhwp",
+      "path": "target/task-3820-stage80-hanyang-space/release-test/rhwp",
+      "sha256": "705eafa8c4bc5305046b10dbca2ea97884e37f3737cc12cbef0cb582ad511583"
+    }
+  },
+  "dpi": 180,
+  "pixel_diff_threshold": 32,
+  "requested_pages": [
+    35,
+    36
+  ],
+  "requested_page_shards": [
+    [
+      35,
+      36
+    ]
+  ],
+  "run_state": "complete"
+}

@@ -1,0 +1,292 @@
+{
+  "schema_version": "1.0",
+  "claim": "M01-5",
+  "metric": "pypdf_page_count",
+  "pixel_diff": "out_of_scope",
+  "trees": {
+    "pdf": {
+      "present": true,
+      "default_hangul_version": "2022",
+      "file_count": 406,
+      "measured": 406,
+      "unmeasured": 0
+    },
+    "pdf-2020": {
+      "present": true,
+      "default_hangul_version": "2020",
+      "file_count": 1,
+      "measured": 1,
+      "unmeasured": 0
+    },
+    "pdf-large": {
+      "present": true,
+      "default_hangul_version": null,
+      "file_count": 18,
+      "measured": 18,
+      "unmeasured": 0
+    }
+  },
+  "counts": {
+    "files": 425,
+    "stems": 395,
+    "multiver_stems": 9,
+    "page_count_disagree": 1,
+    "page_count_agree": 8,
+    "incomplete": 0,
+    "measured_files": 425,
+    "unmeasured_files": 0
+  },
+  "incorporation": {
+    "pdf-2020": [
+      {
+        "path": "pdf-2020/pr-1674-2020.pdf",
+        "tree": "pdf-2020",
+        "filename": "pr-1674-2020.pdf",
+        "stem": "pr-1674",
+        "hangul_version": "2020",
+        "version_source": "explicit",
+        "version_inferred": false,
+        "variants": [],
+        "size_bytes": 860225,
+        "page_count": 35,
+        "page_count_status": "measured"
+      }
+    ],
+    "pdf-large": [
+      {
+        "path": "pdf-large/3-09월_교육_통합_2024-구분선아래20-2024.pdf",
+        "tree": "pdf-large",
+        "filename": "3-09월_교육_통합_2024-구분선아래20-2024.pdf",
+        "stem": "3-09월_교육_통합_2024-구분선아래20",
+        "hangul_version": "2024",
+        "version_source": "explicit",
+        "version_inferred": false,
+        "variants": [],
+        "size_bytes": 1472249,
+        "page_count": 23,
+        "page_count_status": "measured"
+      },
+      {
+        "path": "pdf-large/3-09월_교육_통합_2024-미주사이20-2024.pdf",
+        "tree": "pdf-large",
+        "filename": "3-09월_교육_통합_2024-미주사이20-2024.pdf",
+        "stem": "3-09월_교육_통합_2024-미주사이20",
+        "hangul_version": "2024",
+        "version_source": "explicit",
+        "version_inferred": false,
+        "variants": [],
+        "size_bytes": 1473246,
+        "page_count": 24,
+        "page_count_status": "measured"
+      },
+      {
+        "path": "pdf-large/hwpx/143E433F503322BD33.pdf",
+        "tree": "pdf-large",
+        "filename": "143E433F503322BD33.pdf",
+        "stem": "143E433F503322BD33",
+        "hangul_version": null,
+        "version_source": "unknown",
+        "version_inferred": false,
+        "variants": [],
+        "size_bytes": 147003,
+        "page_count": 1,
+        "page_count_status": "measured"
+      },
+      {
+        "path": "pdf-large/hwpx/2026_oss_rst.pdf",
+        "tree": "pdf-large",
+        "filename": "2026_oss_rst.pdf",
+        "stem": "2026_oss_rst",
+        "hangul_version": null,
+        "version_source": "unknown",
+        "version_inferred": false,
+        "variants": [],
+        "size_bytes": 171288,
+        "page_count": 6,
+        "page_count_status": "measured"
+      },
+      {
+        "path": "pdf-large/hwpx/[2027] 온새미로 1 본교재.pdf",
+        "tree": "pdf-large",
+        "filename": "[2027] 온새미로 1 본교재.pdf",
+        "stem": "[2027] 온새미로 1 본교재",
+        "hangul_version": null,
+        "version_source": "unknown",
+        "version_inferred": false,
+        "variants": [],
+        "size_bytes": 1255445,
+        "page_count": 46,
+        "page_count_status": "measured"
+      },
+      {
+        "path": "pdf-large/hwpx/el-school-001.pdf",
+        "tree": "pdf-large",
+        "filename": "el-school-001.pdf",
+        "stem": "el-school-001",
+        "hangul_version": null,
+        "version_source": "unknown",
+        "version_inferred": false,
+        "variants": [],
+        "size_bytes": 74746,
+        "page_count": 1,
+        "page_count_status": "measured"
+      },
+      {
+        "path": "pdf-large/hwpx/eq-002.pdf",
+        "tree": "pdf-large",
+        "filename": "eq-002.pdf",
+        "stem": "eq-002",
+        "hangul_version": null,
+        "version_source": "unknown",
+        "version_inferred": false,
+        "variants": [],
+        "size_bytes": 23807,
+        "page_count": 1,
+        "page_count_status": "measured"
+      },
+      {
+        "path": "pdf-large/hwpx/footnote-tbox-01.pdf",
+        "tree": "pdf-large",
+        "filename": "footnote-tbox-01.pdf",
+        "stem": "footnote-tbox-01",
+        "hangul_version": null,
+        "version_source": "unknown",
+        "version_inferred": false,
+        "variants": [],
+        "size_bytes": 14537,
+        "page_count": 1,
+        "page_count_status": "measured"
+      },
+      {
+        "path": "pdf-large/hwpx/hcar-001.pdf",
+        "tree": "pdf-large",
+        "filename": "hcar-001.pdf",
+        "stem": "hcar-001",
+        "hangul_version": null,
+        "version_source": "unknown",
+        "version_inferred": false,
+        "variants": [],
+        "size_bytes": 258069,
+        "page_count": 6,
+        "page_count_status": "measured"
+      },
+      {
+        "path": "pdf-large/hwpx/hy-001.pdf",
+        "tree": "pdf-large",
+        "filename": "hy-001.pdf",
+        "stem": "hy-001",
+        "hangul_version": null,
+        "version_source": "unknown",
+        "version_inferred": false,
+        "variants": [],
+        "size_bytes": 126209,
+        "page_count": 2,
+        "page_count_status": "measured"
+      },
+      {
+        "path": "pdf-large/hwpx/hy-002.pdf",
+        "tree": "pdf-large",
+        "filename": "hy-002.pdf",
+        "stem": "hy-002",
+        "hangul_version": null,
+        "version_source": "unknown",
+        "version_inferred": false,
+        "variants": [],
+        "size_bytes": 112893,
+        "page_count": 2,
+        "page_count_status": "measured"
+      },
+      {
+        "path": "pdf-large/hwpx/issue_1133.pdf",
+        "tree": "pdf-large",
+        "filename": "issue_1133.pdf",
+        "stem": "issue_1133",
+        "hangul_version": null,
+        "version_source": "unknown",
+        "version_inferred": false,
+        "variants": [],
+        "size_bytes": 110523,
+        "page_count": 3,
+        "page_count_status": "measured"
+      },
+      {
+        "path": "pdf-large/hwpx/k-water-rfp.pdf",
+        "tree": "pdf-large",
+        "filename": "k-water-rfp.pdf",
+        "stem": "k-water-rfp",
+        "hangul_version": null,
+        "version_source": "unknown",
+        "version_inferred": false,
+        "variants": [],
+        "size_bytes": 1451239,
+        "page_count": 27,
+        "page_count_status": "measured"
+      },
+      {
+        "path": "pdf-large/hwpx/math-001.pdf",
+        "tree": "pdf-large",
+        "filename": "math-001.pdf",
+        "stem": "math-001",
+        "hangul_version": null,
+        "version_source": "unknown",
+        "version_inferred": false,
+        "variants": [],
+        "size_bytes": 101699,
+        "page_count": 1,
+        "page_count_status": "measured"
+      },
+      {
+        "path": "pdf-large/hwpx/shape-001.pdf",
+        "tree": "pdf-large",
+        "filename": "shape-001.pdf",
+        "stem": "shape-001",
+        "hangul_version": null,
+        "version_source": "unknown",
+        "version_inferred": false,
+        "variants": [],
+        "size_bytes": 9681,
+        "page_count": 1,
+        "page_count_status": "measured"
+      },
+      {
+        "path": "pdf-large/hwpx/ta-pic-001-r.pdf",
+        "tree": "pdf-large",
+        "filename": "ta-pic-001-r.pdf",
+        "stem": "ta-pic-001-r",
+        "hangul_version": null,
+        "version_source": "unknown",
+        "version_inferred": false,
+        "variants": [],
+        "size_bytes": 229401,
+        "page_count": 1,
+        "page_count_status": "measured"
+      },
+      {
+        "path": "pdf-large/hwpx/tb-org-02.pdf",
+        "tree": "pdf-large",
+        "filename": "tb-org-02.pdf",
+        "stem": "tb-org-02",
+        "hangul_version": null,
+        "version_source": "unknown",
+        "version_inferred": false,
+        "variants": [],
+        "size_bytes": 38942,
+        "page_count": 1,
+        "page_count_status": "measured"
+      },
+      {
+        "path": "pdf-large/issue2006/1790387_prep_final_report-2022.pdf",
+        "tree": "pdf-large",
+        "filename": "1790387_prep_final_report-2022.pdf",
+        "stem": "1790387_prep_final_report",
+        "hangul_version": "2022",
+        "version_source": "explicit",
+        "version_inferred": false,
+        "variants": [],
+        "size_bytes": 50228784,
+        "page_count": 146,
+        "page_count_status": "measured"
+      }
+    ]
+  }
+}

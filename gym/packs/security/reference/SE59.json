@@ -1,0 +1,20 @@
+{
+  "id": "SE59",
+  "steps": [
+    {
+      "answer": {
+        "findings": {
+          "cmd": [
+            "edit",
+            "redact",
+            "{input}",
+            "--dry-run",
+            "--no-raw",
+            "--json"
+          ],
+          "path": "findingCount"
+        }
+      }
+    }
+  ]
+}

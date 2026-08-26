@@ -1,0 +1,19 @@
+{
+  "command": "git checkout",
+  "path": "C:\\Users\\swsz9\\rhwp",
+  "rejected": true,
+  "mustUse": "git worktree add -b <branch> <empty-path> upstream/devel",
+  "_skillMeta": {
+    "exit": 2,
+    "command": "git",
+    "trigger": null,
+    "exception": null,
+    "stdoutSilentOnFail": false,
+    "hardGate": "cargo fmt --all -- --check",
+    "staleFmtRejected": true,
+    "neverGitAddA": true,
+    "neverStealNamedWorktrees": true,
+    "neverInventDocumentCore": true,
+    "noNewCli": true
+  }
+}

@@ -1,0 +1,166 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.form_fill.honggildong_4781.v1",
+  "id": "labor-contract-hong-clone",
+  "axis": "honggildong-4781",
+  "claim": "M-fill",
+  "generator": "tools/form_fill/fatten_form_fill.py",
+  "form": "labor-contract",
+  "title": "표준 근로계약서 홍길동 전칸 복제 금지",
+  "why": "첫 필드 값을 모든 고유 이름에 복사하면 T07 과제 문구를 깨뜨린다.",
+  "sample": "fixtures/forms/근로계약서.hwp",
+  "relatedIssue": "#4781",
+  "argv": [
+    "edit",
+    "fill-fields",
+    "fixtures/forms/근로계약서.hwp",
+    "--data",
+    "{\"사업장명\": \"홍길동\", \"생년월일\": \"홍길동\", \"계약시작일\": \"홍길동\", \"계약종료일\": \"홍길동\", \"근무장소\": \"홍길동\", \"업무내용\": \"홍길동\", \"소정근로시간\": \"홍길동\", \"임금\": \"홍길동\", \"임금지급일\": \"홍길동\", \"작성일\": \"홍길동\"}",
+    "-o",
+    "out/labor-contract-hong-clone.hwp",
+    "--json"
+  ],
+  "data": {
+    "사업장명": "홍길동",
+    "생년월일": "홍길동",
+    "계약시작일": "홍길동",
+    "계약종료일": "홍길동",
+    "근무장소": "홍길동",
+    "업무내용": "홍길동",
+    "소정근로시간": "홍길동",
+    "임금": "홍길동",
+    "임금지급일": "홍길동",
+    "작성일": "홍길동"
+  },
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "fixtures/forms/근로계약서.hwp",
+    "dryRun": false,
+    "filledCount": 10,
+    "filled": [
+      {
+        "name": "사업장명",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "생년월일",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "계약시작일",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "계약종료일",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "근무장소",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "업무내용",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "소정근로시간",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "임금",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "임금지급일",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "작성일",
+        "occurrence": 0,
+        "value": "홍길동"
+      }
+    ],
+    "notFound": [],
+    "ambiguous": [],
+    "confusable": [],
+    "verify": null,
+    "output": "out/labor-contract-hong-clone.hwp",
+    "outputFormat": "hwp5"
+  },
+  "detect": {
+    "firstFieldName": "사업장명",
+    "firstFieldValue": "홍길동",
+    "firstFieldOk": true,
+    "cloned": [
+      {
+        "index": 5,
+        "name": "생년월일",
+        "before": "",
+        "after": "홍길동"
+      },
+      {
+        "index": 6,
+        "name": "계약시작일",
+        "before": "",
+        "after": "홍길동"
+      },
+      {
+        "index": 7,
+        "name": "계약종료일",
+        "before": "",
+        "after": "홍길동"
+      },
+      {
+        "index": 8,
+        "name": "근무장소",
+        "before": "",
+        "after": "홍길동"
+      },
+      {
+        "index": 9,
+        "name": "업무내용",
+        "before": "",
+        "after": "홍길동"
+      },
+      {
+        "index": 10,
+        "name": "소정근로시간",
+        "before": "",
+        "after": "홍길동"
+      },
+      {
+        "index": 11,
+        "name": "임금",
+        "before": "",
+        "after": "홍길동"
+      },
+      {
+        "index": 12,
+        "name": "임금지급일",
+        "before": "",
+        "after": "홍길동"
+      },
+      {
+        "index": 13,
+        "name": "작성일",
+        "before": "",
+        "after": "홍길동"
+      }
+    ],
+    "cloneCount": 9,
+    "verdict": "clone_forbidden"
+  },
+  "afterFirst": "홍길동",
+  "otherHongCount": 9,
+  "allowedClone": false,
+  "verdict": "clone_forbidden"
+}

@@ -1,0 +1,33 @@
+{
+  "id": "AU13",
+  "tier": 2,
+  "title": "적합성 L2 자가진단",
+  "input": "samples/table-001.hwp",
+  "instructions": "캡슐 폴더가 적합성 **L2**(감사 가능 + 계보) 를 통과하게 만들어 capsules/ 를 제출하라. 힌트: rhwp conformance --level L2.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "capsules/work.capsule.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "L2 적합",
+      "op": "value_eq",
+      "value": "conformant",
+      "path": "verdict",
+      "cmd": [
+        "conformance",
+        "{file:capsules}",
+        "--level",
+        "L2",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    }
+  ],
+  "axis": "자동화"
+}

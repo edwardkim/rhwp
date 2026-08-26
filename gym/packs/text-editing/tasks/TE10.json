@@ -1,0 +1,46 @@
+{
+  "id": "TE10",
+  "tier": 3,
+  "title": "실문서 치환 왕복",
+  "input": "samples/143E433F503322BD33.hwp",
+  "instructions": "실문서의 '보험료' 를 '납입금' 으로 모두 바꾼 real.hwp 를 제출하라. 옛 문구는 0건이어야 한다.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "real.hwp"
+    ]
+  },
+  "checks": [
+    {
+      "name": "옛 문구 소거",
+      "op": "value_eq",
+      "value": 0,
+      "path": "matchCount",
+      "cmd": [
+        "search",
+        "{file:real.hwp}",
+        "--json",
+        "--",
+        "보험료"
+      ]
+    },
+    {
+      "name": "새 문구 실재",
+      "op": "value_ge",
+      "value": 1,
+      "path": "matchCount",
+      "cmd": [
+        "search",
+        "{file:real.hwp}",
+        "--json",
+        "--",
+        "납입금"
+      ]
+    },
+    {
+      "name": "원본과 다름",
+      "op": "differs_from_input",
+      "file": "real.hwp"
+    }
+  ]
+}

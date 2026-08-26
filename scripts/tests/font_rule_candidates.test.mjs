@@ -1,0 +1,137 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import test from 'node:test';
+import { fileURLToPath } from 'node:url';
+
+import {
+  parseStudioSubstitutions,
+  validateCandidateSnapshot,
+} from '../font_rule_candidates.mjs';
+import {
+  canonicalJson,
+  sha256Text,
+  verifyHistoricalSourceCandidates,
+} from '../font_rule_ledger.mjs';
+
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
+const SNAPSHOT_PATH = path.join(
+  ROOT,
+  'mydocs',
+  'tech',
+  'investigations',
+  'issue-4939',
+  'font_rule_candidates.json',
+);
+
+function readJson(file) {
+  return JSON.parse(fs.readFileSync(file, 'utf8'));
+}
+
+function frozenSnapshot() {
+  return readJson(SNAPSHOT_PATH);
+}
+
+test('all 30 historical source boundaries close with extracted candidates', () => {
+  const snapshot = frozenSnapshot();
+
+  assert.equal(snapshot.candidates.length, 30);
+  assert.equal(snapshot.dispositions.length, 30);
+  assert.equal(snapshot.dispositions.every(entry => entry.status === 'extracted'), true);
+  assert.equal(snapshot.dispositions.every(entry => entry.candidateCount > 0), true);
+  assert.equal(snapshot.summary.unrecognizedMappingBlockCount, 0);
+  assert.deepEqual(verifyHistoricalSourceCandidates(snapshot, ROOT), []);
+  assert.deepEqual(validateCandidateSnapshot(
+    snapshot,
+    ROOT,
+    { verifyCurrentSources: false },
+  ), []);
+});
+
+test('finite inventories preserve metric, Studio substitution and font supply populations', () => {
+  const snapshot = frozenSnapshot();
+  const count = boundaryId => snapshot.ruleCandidates
+    .filter(candidate => candidate.sourceBoundaryId === boundaryId).length;
+
+  assert.equal(count('rust-metric.metric-table'), 600);
+  assert.equal(count('studio-substitution.substitution-tables'), 265);
+  assert.equal(count('studio-supply.font-list'), 153);
+  assert.equal(snapshot.ruleCandidates.some(candidate => candidate.candidateKind === 'finite-mapping'), true);
+  assert.equal(snapshot.ruleCandidates.some(candidate => candidate.candidateKind === 'ordered-chain'), true);
+  assert.equal(snapshot.ruleCandidates.some(candidate => candidate.candidateKind === 'predicate'), true);
+});
+
+test('supply, detection and runtime fallback candidates remain on separate decision planes', () => {
+  const snapshot = frozenSnapshot();
+  const byOwner = owner => snapshot.ruleCandidates.filter(candidate => candidate.ownerId === owner);
+
+  assert.equal(byOwner('studio-supply').every(candidate => candidate.decisionPlane === 'supply'), true);
+  assert.equal(byOwner('asset-authority').every(candidate => candidate.decisionPlane === 'supply'), true);
+  assert.equal(byOwner('studio-detection').every(candidate => candidate.decisionPlane === 'detection'), true);
+  assert.equal(byOwner('studio-substitution').every(candidate => candidate.decisionPlane === 'paint'), true);
+});
+
+test('candidate IDs are unique and every row carries its historical source digest', () => {
+  const snapshot = frozenSnapshot();
+  const ids = snapshot.ruleCandidates.map(candidate => candidate.candidateId);
+
+  assert.equal(new Set(ids).size, ids.length);
+  for (const candidate of snapshot.ruleCandidates) {
+    assert.match(candidate.sourceLocation.sourceSha256, /^[0-9a-f]{64}$/);
+    const boundary = snapshot.candidates.find(
+      entry => `${entry.ownerId}.${entry.selectorId}` === candidate.sourceBoundaryId,
+    );
+    assert.equal(candidate.sourceLocation.sourceSha256, boundary.sourceSha256);
+  }
+});
+
+test('candidate collection is byte deterministic', () => {
+  const first = frozenSnapshot();
+  const second = frozenSnapshot();
+
+  assert.equal(canonicalJson(first), canonicalJson(second));
+  assert.equal(sha256Text(canonicalJson(first)), sha256Text(canonicalJson(second)));
+});
+
+test('Studio substitution tuple parsing keeps escape and plain character paths disjoint', () => {
+  const boundary = {
+    ownerId: 'studio-substitution',
+    selectorId: 'redos-regression',
+    path: 'synthetic/substitution.ts',
+    symbol: 'SUBST_TABLES',
+    selector: 'const SUBST_TABLES',
+    sourceSha256: '0'.repeat(64),
+  };
+  const escapedPairs = '\\\\'.repeat(10_000);
+  const source = `const SUBST_TABLES = [
+    // Lang 0
+    ['source${escapedPairs}', 0, 'target${escapedPairs}', 1],
+  ];`;
+
+  const parsed = parseStudioSubstitutions(boundary, source);
+
+  assert.equal(parsed.rows.length, 1);
+  assert.equal(parsed.recognizedMappingBlocks, 1);
+  assert.equal(parsed.rows[0].sourceFace, `source${escapedPairs}`);
+  assert.equal(parsed.rows[0].targetOrPolicy, `target${escapedPairs}`);
+});
+
+test('a zero-count disposition fails closed', () => {
+  const snapshot = frozenSnapshot();
+  snapshot.dispositions[0].candidateCount = 0;
+
+  assert.match(
+    validateCandidateSnapshot(snapshot, ROOT, { verifyCurrentSources: false }).join('\n'),
+    /candidateCount must be positive/,
+  );
+});
+
+test('an orphan candidate source boundary fails closed', () => {
+  const snapshot = frozenSnapshot();
+  snapshot.ruleCandidates[0].sourceBoundaryId = 'missing.owner';
+
+  assert.match(
+    validateCandidateSnapshot(snapshot, ROOT, { verifyCurrentSources: false }).join('\n'),
+    /unknown sourceBoundaryId/,
+  );
+});

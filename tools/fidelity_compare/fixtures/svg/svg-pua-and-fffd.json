@@ -1,0 +1,9 @@
+{
+  "id": "svg-pua-and-fffd",
+  "title": "raw PUA + U+FFFD",
+  "why": "glyph-risk 는 PDF 추출과 독립.",
+  "expectVisible": "항목󰊱󰊲󰊳�",
+  "expectExcludedAtLeast": 0,
+  "expectGlyphs": "󰊱󰊲󰊳�",
+  "svgPath": "fixtures/svg/svg-pua-and-fffd.svg"
+}

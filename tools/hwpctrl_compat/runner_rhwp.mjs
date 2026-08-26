@@ -14,7 +14,11 @@
  * - `legacy`  — 기존 `rhwp-studio/src/hwpctl/` 층. **P0 자체 검증 전용**이다.
  *               하니스가 "이미 아는 차이"를 실제로 잡아내는지 보는 데 쓴다.
  * - `<경로>`  — 신규 패키지의 엔트리(ESM). P1 부터 이쪽을 쓴다.
- *               `createHwpCtrl({ wasm, onSave })` 를 export 하면 된다.
+ *               `createHwpCtrl({ wasm, onSave, onReadFile })` 를 export 하면 된다.
+ *
+ * `onReadFile` 은 규격이 **경로**를 받는 API(`InsertPicture`)를 위한 호스트 고리다. 바탕화면
+ * 컨트롤은 경로가 곧 파일이지만 이 층은 브라우저에서도 돌아 스스로 못 연다 — 하니스는 node 의
+ * 파일 읽기를 그대로 준다.
  *
  * ## 대조가 성립하려면
  *
@@ -24,7 +28,7 @@
  */
 
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
-import { dirname, join, resolve } from 'node:path';
+import { dirname, isAbsolute, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { execFileSync } from 'node:child_process';
 
@@ -127,7 +131,8 @@ async function loadImpl(impl, wasm) {
     // 신규 패키지는 **자기 손으로** 문서를 연다(규격의 `Open`). 하니스가 문서를 만들어
     // 넘겨 주면 그 API 가 대조에서 빠져 "구현했다"고 착각하게 된다.
     ownsOpen: true,
-    make: ({ wasm, onSave }) => mod.createHwpCtrl({ wasm, onSave }),
+    make: ({ wasm, onSave, onReadFile, onCreatePageImage }) =>
+      mod.createHwpCtrl({ wasm, onSave, onReadFile, onCreatePageImage }),
   };
 }
 
@@ -161,6 +166,26 @@ function resolvePath(ctrl, path) {
     obj = typeof next === 'function' ? next.apply(obj, callArgs) : next;
   }
   return obj;
+}
+
+/**
+ * 인자 중 `{"$path": "이름"}` 을 **이 플랫폼의 실제 경로**로 바꾼다 — `scenario_spec.py` 의
+ * `resolve_args` 와 같은 규칙이다(규칙을 한쪽만 고치면 하니스 차이가 diff 로 샌다).
+ *
+ * 시나리오가 Windows 절대 경로를 박아 두면 Linux 에서는 그것이 "못 여는 경로"가 아니라
+ * **그냥 그런 이름의 상대 경로**가 된다. `C:\없는폴더xyz\a.bmp` 가 멀쩡히 만들어져 `false`
+ * 여야 할 자리가 `true` 가 됐고, 저장소 작업본에 그 이름의 파일까지 남았다(#4274 리뷰).
+ */
+function resolvePathArgs(args, scenario, outDir) {
+  const table = scenario.paths ?? {};
+  const key = process.platform === 'win32' ? 'win' : 'posix';
+  return args.map((a) => {
+    if (!a || typeof a !== 'object' || Array.isArray(a) || !('$path' in a)) return a;
+    const variants = table[a.$path];
+    if (!variants) throw new Error(`시나리오에 없는 경로 이름입니다: ${a.$path}`);
+    if (!(key in variants)) throw new Error(`경로 '${a.$path}' 에 '${key}' 갈래가 없습니다`);
+    return String(variants[key]).replaceAll('{repo}', REPO).replaceAll('{out}', outDir);
+  });
 }
 
 /**
@@ -226,12 +251,28 @@ async function main() {
     let ctrl;
     // 저장은 호스트가 받는다 — 규격상 브라우저에서는 다운로드다(v2.4 §2.2).
     let savedBytes = null;
-    const onSave = (bytes) => {
+    // 시나리오가 **중간에** `SaveAs` 를 걸면(앞뒤 저장본을 떠 액션의 자취를 재는 L3) 그
+    // 자리에서 파일로 흘린다. 이름이 절대경로일 때만 그렇게 한다 — 시나리오 끝의
+    // `saveAs` 는 이름만 주고 러너가 `outDir` 아래에 쓴다.
+    const onSave = (bytes, fileName) => {
       savedBytes = bytes;
+      if (typeof fileName === 'string' && isAbsolute(fileName)) {
+        writeFileSync(fileName, bytes);
+      }
+    };
+    // 규격이 **경로**를 받는 API(`InsertPicture`)를 위한 호스트 고리. 오라클은 바탕화면에서
+    // 그 경로를 그대로 열므로 이쪽도 같은 경로를 읽어 준다.
+    const onReadFile = (path) => new Uint8Array(readFileSync(path));
+    // `CreatePageImage` 는 코어가 그린 쪽 SVG 를 호스트에 넘긴다 — 픽셀로 앉히는 것은 호스트
+    // 일이다(studio 는 CanvasKit 으로 한다). 하니스에는 래스터라이저가 없으므로 그 SVG 를 그대로
+    // 쓴다. **파일 갈래는 대조 대상이 아니다** — 대조하는 것은 반환값이다.
+    const onCreatePageImage = ({ path, svg }) => {
+      writeFileSync(path, svg, 'utf-8');
+      return true;
     };
 
     if (impl.ownsOpen) {
-      ctrl = impl.make({ wasm, onSave });
+      ctrl = impl.make({ wasm, onSave, onReadFile, onCreatePageImage });
       if (scenario.open) {
         const bytes = readFileSync(join(REPO, scenario.open));
         const opened = ctrl.Open(new Uint8Array(bytes), '', '');
@@ -247,7 +288,8 @@ async function main() {
       }
     }
 
-    for (const [name, callArgs = []] of scenario.calls ?? []) {
+    for (const [name, rawArgs = []] of scenario.calls ?? []) {
+      const callArgs = resolvePathArgs(rawArgs, scenario, outDir);
       const record = { call: name, args: callArgs };
       try {
         record.value = callOne(ctrl, name, callArgs);

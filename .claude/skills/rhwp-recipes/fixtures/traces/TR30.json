@@ -1,0 +1,11 @@
+{
+  "id": "TR30",
+  "recipe": "04",
+  "transcript": "T04-B06",
+  "argvLine": "rhwp search samples/form-01.hwp \"입력\" --json",
+  "usesExistingCommand": true,
+  "notGym": true,
+  "noNewCli": true,
+  "sourceFile": "mydocs/manual/recipes/04_safety_check_untrusted_doc.md",
+  "fabricatedLive": false
+}

@@ -1,0 +1,171 @@
+# M09-g equation golden — current-engine lock (variant/exception/unimplemented honesty)
+command: BMATRIX
+script: BMATRIX{{21} OVER {22} & {23} OVER {24} & {25} OVER {26} # {27} OVER {28} & {29} OVER {30} & {31} OVER {32} # {33} OVER {34} & {35} OVER {36} & {37} OVER {38}}
+honesty: implemented-variant
+
+=== ast ===
+Matrix {
+    rows: [
+        [
+            Fraction {
+                numer: Number(
+                    "21",
+                ),
+                denom: Number(
+                    "22",
+                ),
+            },
+            Fraction {
+                numer: Number(
+                    "23",
+                ),
+                denom: Number(
+                    "24",
+                ),
+            },
+            Fraction {
+                numer: Number(
+                    "25",
+                ),
+                denom: Number(
+                    "26",
+                ),
+            },
+        ],
+        [
+            Fraction {
+                numer: Number(
+                    "27",
+                ),
+                denom: Number(
+                    "28",
+                ),
+            },
+            Fraction {
+                numer: Number(
+                    "29",
+                ),
+                denom: Number(
+                    "30",
+                ),
+            },
+            Fraction {
+                numer: Number(
+                    "31",
+                ),
+                denom: Number(
+                    "32",
+                ),
+            },
+        ],
+        [
+            Fraction {
+                numer: Number(
+                    "33",
+                ),
+                denom: Number(
+                    "34",
+                ),
+            },
+            Fraction {
+                numer: Number(
+                    "35",
+                ),
+                denom: Number(
+                    "36",
+                ),
+            },
+            Fraction {
+                numer: Number(
+                    "37",
+                ),
+                denom: Number(
+                    "38",
+                ),
+            },
+        ],
+    ],
+    style: Bracket,
+}
+
+=== layout ===
+Matrix(Bracket) x=0.0000 y=0.0000 w=142.0000 h=158.4000 bl=79.2000
+  row0:
+    Fraction x=10.0000 y=0.0000 w=30.0000 h=48.8000 bl=29.4000
+      numer:
+        Number("21") x=4.0000 y=4.0000 w=22.0000 h=20.0000 bl=16.0000
+      denom:
+        Number("22") x=4.0000 y=24.8000 w=22.0000 h=20.0000 bl=16.0000
+    Fraction x=56.0000 y=0.0000 w=30.0000 h=48.8000 bl=29.4000
+      numer:
+        Number("23") x=4.0000 y=4.0000 w=22.0000 h=20.0000 bl=16.0000
+      denom:
+        Number("24") x=4.0000 y=24.8000 w=22.0000 h=20.0000 bl=16.0000
+    Fraction x=102.0000 y=0.0000 w=30.0000 h=48.8000 bl=29.4000
+      numer:
+        Number("25") x=4.0000 y=4.0000 w=22.0000 h=20.0000 bl=16.0000
+      denom:
+        Number("26") x=4.0000 y=24.8000 w=22.0000 h=20.0000 bl=16.0000
+  row1:
+    Fraction x=10.0000 y=54.8000 w=30.0000 h=48.8000 bl=29.4000
+      numer:
+        Number("27") x=4.0000 y=4.0000 w=22.0000 h=20.0000 bl=16.0000
+      denom:
+        Number("28") x=4.0000 y=24.8000 w=22.0000 h=20.0000 bl=16.0000
+    Fraction x=56.0000 y=54.8000 w=30.0000 h=48.8000 bl=29.4000
+      numer:
+        Number("29") x=4.0000 y=4.0000 w=22.0000 h=20.0000 bl=16.0000
+      denom:
+        Number("30") x=4.0000 y=24.8000 w=22.0000 h=20.0000 bl=16.0000
+    Fraction x=102.0000 y=54.8000 w=30.0000 h=48.8000 bl=29.4000
+      numer:
+        Number("31") x=4.0000 y=4.0000 w=22.0000 h=20.0000 bl=16.0000
+      denom:
+        Number("32") x=4.0000 y=24.8000 w=22.0000 h=20.0000 bl=16.0000
+  row2:
+    Fraction x=10.0000 y=109.6000 w=30.0000 h=48.8000 bl=29.4000
+      numer:
+        Number("33") x=4.0000 y=4.0000 w=22.0000 h=20.0000 bl=16.0000
+      denom:
+        Number("34") x=4.0000 y=24.8000 w=22.0000 h=20.0000 bl=16.0000
+    Fraction x=56.0000 y=109.6000 w=30.0000 h=48.8000 bl=29.4000
+      numer:
+        Number("35") x=4.0000 y=4.0000 w=22.0000 h=20.0000 bl=16.0000
+      denom:
+        Number("36") x=4.0000 y=24.8000 w=22.0000 h=20.0000 bl=16.0000
+    Fraction x=102.0000 y=109.6000 w=30.0000 h=48.8000 bl=29.4000
+      numer:
+        Number("37") x=4.0000 y=4.0000 w=22.0000 h=20.0000 bl=16.0000
+      denom:
+        Number("38") x=4.0000 y=24.8000 w=22.0000 h=20.0000 bl=16.0000
+
+=== svg ===
+<path d="M4.20,0.00 L1.80,0.00 L1.80,158.40 L4.20,158.40" fill="none" stroke="#000000" stroke-width="0.80"/>
+<path d="M137.80,0.00 L140.20,0.00 L140.20,158.40 L137.80,158.40" fill="none" stroke="#000000" stroke-width="0.80"/>
+<text x="14.00" y="20.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">21</text>
+<line x1="11.00" y1="24.40" x2="39.00" y2="24.40" stroke="#000000" stroke-width="0.80"/>
+<text x="14.00" y="40.80" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">22</text>
+<text x="60.00" y="20.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">23</text>
+<line x1="57.00" y1="24.40" x2="85.00" y2="24.40" stroke="#000000" stroke-width="0.80"/>
+<text x="60.00" y="40.80" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">24</text>
+<text x="106.00" y="20.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">25</text>
+<line x1="103.00" y1="24.40" x2="131.00" y2="24.40" stroke="#000000" stroke-width="0.80"/>
+<text x="106.00" y="40.80" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">26</text>
+<text x="14.00" y="74.80" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">27</text>
+<line x1="11.00" y1="79.20" x2="39.00" y2="79.20" stroke="#000000" stroke-width="0.80"/>
+<text x="14.00" y="95.60" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">28</text>
+<text x="60.00" y="74.80" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">29</text>
+<line x1="57.00" y1="79.20" x2="85.00" y2="79.20" stroke="#000000" stroke-width="0.80"/>
+<text x="60.00" y="95.60" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">30</text>
+<text x="106.00" y="74.80" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">31</text>
+<line x1="103.00" y1="79.20" x2="131.00" y2="79.20" stroke="#000000" stroke-width="0.80"/>
+<text x="106.00" y="95.60" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">32</text>
+<text x="14.00" y="129.60" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">33</text>
+<line x1="11.00" y1="134.00" x2="39.00" y2="134.00" stroke="#000000" stroke-width="0.80"/>
+<text x="14.00" y="150.40" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">34</text>
+<text x="60.00" y="129.60" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">35</text>
+<line x1="57.00" y1="134.00" x2="85.00" y2="134.00" stroke="#000000" stroke-width="0.80"/>
+<text x="60.00" y="150.40" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">36</text>
+<text x="106.00" y="129.60" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">37</text>
+<line x1="103.00" y1="134.00" x2="131.00" y2="134.00" stroke="#000000" stroke-width="0.80"/>
+<text x="106.00" y="150.40" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">38</text>

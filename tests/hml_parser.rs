@@ -375,6 +375,48 @@ fn inline_controls_preserve_text_offsets_and_unsupported_paths() {
     }
 }
 
+/// [#4386] `COLDEF Count="2"` 이상인 다단 정의는 `Control::ColumnDef`로 채워져야 한다.
+/// 종전엔 `is_unsupported_inline`의 허용 목록에만 있고 `capture_start`에 처리 분기가
+/// 없어, 경고 없이 조용히 드롭되고 렌더러가 항상 단일 단으로 그렸다(모든 fixture가
+/// `Count="1"`이라 우연히 통과했다). 속성 값(`Layout`/`SameGap`/`SameSize`/`Type`)은
+/// `samples/hml/aligns.hml`의 실물 `COLDEF Count="1" Layout="Left" SameGap="0"
+/// SameSize="true" Type="Newspaper"` 관찰값을 그대로 따른다.
+#[test]
+fn coldef_with_two_columns_populates_column_def_control_without_warning() {
+    let xml = br#"<HWPML Version="2.91"><HEAD/><BODY><SECTION><P ParaShape="0" Style="0"><TEXT CharShape="0"><SECDEF CharGrid="0"><PAGEDEF GutterType="LeftOnly" Height="84188" Landscape="0" Width="59528"><PAGEMARGIN Bottom="4252" Footer="4252" Gutter="0" Header="4252" Left="8504" Right="8504" Top="5668"/></PAGEDEF></SECDEF><COLDEF Count="2" Layout="Left" SameGap="850" SameSize="true" Type="Newspaper"/><CHAR>two columns</CHAR></TEXT></P></SECTION></BODY><TAIL/></HWPML>"#;
+    let parsed = parse_hml(xml).expect("multi-column HML should parse");
+    let paragraph = &parsed.document.sections[0].paragraphs[0];
+
+    let column_def = paragraph
+        .controls
+        .iter()
+        .find_map(|control| match control {
+            Control::ColumnDef(column_def) => Some(column_def),
+            _ => None,
+        })
+        .expect("COLDEF must produce a Control::ColumnDef, not be silently dropped");
+    assert_eq!(column_def.column_count, 2);
+    assert!(column_def.same_width);
+    assert_eq!(column_def.spacing, 850);
+    assert_eq!(
+        column_def.column_type,
+        rhwp::model::page::ColumnType::Normal
+    );
+    assert_eq!(
+        column_def.direction,
+        rhwp::model::page::ColumnDirection::LeftToRight
+    );
+
+    assert!(
+        !parsed
+            .warnings
+            .iter()
+            .any(|warning| warning.xml_path.ends_with("/COLDEF")),
+        "COLDEF must not be reported as a generic unsupported element: {:?}",
+        parsed.warnings
+    );
+}
+
 #[test]
 fn does_not_detect_malformed_utf8_as_hml() {
     let mut bytes = HML_29.as_bytes().to_vec();
@@ -390,12 +432,71 @@ fn detects_real_hwpml_291_fixture_by_root_signature() {
     assert_eq!(detect_format(&bytes), FileFormat::Hml);
 }
 
+/// [#5848] DOCTYPE 계약이 **"통째 거부"에서 "안전한 선언만 수용"으로 좁혀졌다.**
+///
+/// 종전에는 `Event::DocType` 을 만나면 무조건 `DTD is not allowed` 였다. 그런데 법제처
+/// 국가법령정보센터 배포본이 `<!DOCTYPE HWPML [ <!ENTITY nbsp "&#160;"> ]>` 를 달고 나와서,
+/// 그 규칙이 실사용 문서를 통째로 못 열게 만들고 있었다.
+///
+/// 지금은 **엔티티 선언만 거두고 나머지는 버린다.** 이 시험이 쓰는
+/// `<!ENTITY secret "expanded">` 는 중첩 참조가 없는 리터럴이라 안전한 쪽이므로 열린다.
+/// 위험한 쪽(중첩 참조 · 외부 엔티티)이 여전히 막히는지는 아래 두 시험이 지킨다.
 #[test]
-fn rejects_hml_with_doctype() {
+fn accepts_doctype_with_safe_literal_entity() {
     let xml = br#"<?xml version="1.0"?>
 <!DOCTYPE HWPML [<!ENTITY secret "expanded">]>
 <HWPML Style="embed" SubVersion="9.0.1.0" Version="2.9">
   <HEAD SecCnt="1"/><BODY><SECTION Id="0"/></BODY><TAIL/>
+</HWPML>"#;
+
+    assert!(
+        parse_hml(xml).is_ok(),
+        "리터럴 엔티티만 선언한 DOCTYPE 은 열려야 한다"
+    );
+}
+
+/// XML 1.0 이 금지한 제어 문자와 noncharacter 는 Rust `char`로 만들 수 있어도
+/// 내부 DTD 엔티티에 실으면 안 된다. 선언이 버려져 본문 참조도 거부되어야 한다.
+#[test]
+fn rejects_invalid_xml_character_references_in_doctype_entities() {
+    for character_ref in ["&#0;", "&#x1F;", "&#xFFFE;"] {
+        let doctype = format!("<!DOCTYPE HWPML [<!ENTITY invalid \"{character_ref}\">]>");
+        let xml = HML_29
+            .replacen("\n<HWPML", &format!("\n{doctype}\n<HWPML"), 1)
+            .replacen("안녕 HML 123", "&invalid;", 1);
+
+        assert!(
+            matches!(parse_hml(xml.as_bytes()), Err(HmlError::InvalidXml(_))),
+            "{character_ref} 는 XML 1.0 DTD 엔티티로 수용하면 안 된다"
+        );
+    }
+}
+
+/// 확장 폭탄(billion laughs) — 값에 다른 엔티티 참조가 있는 선언은 **싣지 않으므로**
+/// 본문에서 그 이름을 부르면 거부된다. 재귀 확장이 성립할 자리가 없다.
+#[test]
+fn rejects_nested_entity_expansion() {
+    let xml = br#"<?xml version="1.0"?>
+<!DOCTYPE HWPML [
+  <!ENTITY a "AAAAAAAAAA">
+  <!ENTITY b "&a;&a;&a;&a;&a;&a;&a;&a;&a;&a;">
+]>
+<HWPML Style="embed" SubVersion="9.0.1.0" Version="2.9">
+  <HEAD SecCnt="1"/><BODY><SECTION Id="0">&b;</SECTION></BODY><TAIL/>
+</HWPML>"#;
+
+    assert!(matches!(parse_hml(xml), Err(HmlError::InvalidXml(_))));
+}
+
+/// XXE — `SYSTEM` 외부 엔티티는 값을 읽지도 않으므로 본문 참조가 거부된다.
+#[test]
+fn rejects_external_entity_reference() {
+    let xml = br#"<?xml version="1.0"?>
+<!DOCTYPE HWPML [
+  <!ENTITY xx SYSTEM "file:///etc/passwd">
+]>
+<HWPML Style="embed" SubVersion="9.0.1.0" Version="2.9">
+  <HEAD SecCnt="1"/><BODY><SECTION Id="0">&xx;</SECTION></BODY><TAIL/>
 </HWPML>"#;
 
     assert!(matches!(parse_hml(xml), Err(HmlError::InvalidXml(_))));
@@ -720,7 +821,11 @@ fn maps_real_hwpml_291_formatting_table_fixture_without_losing_inline_order() {
 
     assert_eq!(paragraphs.len(), 2);
     assert_eq!(paragraphs[0].text, "123456");
-    assert_eq!(paragraphs[0].char_offsets, [0, 1, 2, 11, 12, 13]);
+    // [#4386] paragraphs[0]는 SECDEF 다음에 COLDEF(Count="1")를 갖고 있다. COLDEF가
+    // 더는 조용히 드롭되지 않고 인라인 컨트롤 자리(8 raw unit)를 반영하므로, "123"의
+    // 시작 위치가 종전 0이 아니라 COLDEF 뒤인 8로 옮겨간다. paragraphs[1]에는
+    // SECDEF/COLDEF가 없어 그대로 [0, 1, 2, 11, 12, 13]이다(표 컨트롤 자리만 반영).
+    assert_eq!(paragraphs[0].char_offsets, [8, 9, 10, 19, 20, 21]);
     assert_eq!(paragraphs[1].text, "abcefg");
     assert_eq!(paragraphs[1].char_offsets, [0, 1, 2, 11, 12, 13]);
     assert_eq!(parsed.document.doc_info.char_shapes[5].base_size, 1600);
@@ -730,8 +835,16 @@ fn maps_real_hwpml_291_formatting_table_fixture_without_losing_inline_order() {
     );
     assert_eq!(parsed.document.doc_info.styles[17].local_name, "차례 3");
 
-    let Control::Shape(shape) = &paragraphs[0].controls[0] else {
-        panic!("first inline control should be a shape");
+    // [#4386] paragraphs[0]의 첫 인라인 컨트롤은 이제 COLDEF에서 만들어진
+    // Control::ColumnDef다(SECDEF 다음, RECTANGLE 앞의 원문 순서 그대로). Count="1"
+    // 이라 렌더링 결과는 종전과 같지만, 더는 조용히 사라지지 않고 순서대로 채워진다.
+    let Control::ColumnDef(column_def) = &paragraphs[0].controls[0] else {
+        panic!("first inline control should be the COLDEF-derived ColumnDef");
+    };
+    assert_eq!(column_def.column_count, 1);
+
+    let Control::Shape(shape) = &paragraphs[0].controls[1] else {
+        panic!("second inline control should be a shape");
     };
     let ShapeObject::Rectangle(rectangle) = shape.as_ref() else {
         panic!("fixture shape should be a rectangle");

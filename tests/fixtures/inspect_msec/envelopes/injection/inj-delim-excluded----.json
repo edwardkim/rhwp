@@ -1,0 +1,52 @@
+{
+  "id": "inj-delim-excluded----",
+  "issue": 5476,
+  "axis": "injection",
+  "family": "delimiter_break",
+  "polarity": "negative",
+  "sourceRule": {
+    "file": "src/document_core/queries/injection_scan.rs",
+    "symbol": "DELIMITER_TOKENS",
+    "note": "한국 공문서 구분선. 오탐 비용이 이득보다 크다"
+  },
+  "cli": {
+    "argv": [
+      "inspect",
+      "injection",
+      "synth:injection/delimiter_break/excluded----.hwp",
+      "--json"
+    ],
+    "exitCode": 0,
+    "stdoutKind": "json-object",
+    "detectionIsNotFailure": true
+  },
+  "consume": {
+    "branch": "clean == true"
+  },
+  "pair": null,
+  "why": "한국 공문서 구분선. 오탐 비용이 이득보다 크다",
+  "note": "실측으로 뺀 토큰. 새 구분자 발명 금지.",
+  "human": "주입 신호 없음: 제외 토큰 ---\n",
+  "inventedRule": false,
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "synth:injection/delimiter_break/excluded----.hwp",
+    "minConfidence": "low",
+    "includeFields": false,
+    "scanScopes": [
+      "body",
+      "tableCell",
+      "textBox",
+      "equation",
+      "footnote",
+      "endnote",
+      "header",
+      "footer",
+      "caption"
+    ],
+    "injectionSignals": [],
+    "signalCount": 0,
+    "highestConfidence": null,
+    "clean": true
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5318,
+  "kind": "live",
+  "command": "replay",
+  "sourceChapter": "50_검증_사다리.md",
+  "cmd": "rhwp replay --plan-json '<계획 JSON 인라인>' --json",
+  "exit": 0,
+  "envelope": {
+    "expectedOutputSha256": null,
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "inputSha256": "bebd4ce3691246b0fb3ae332e1d40bc51d9035cddb9fc3d378466b6a8a2b5626",
+    "mode": "attest",
+    "outputSha256": "db72869c12a1c4149beb7e417c6d86f8c26de5282f7b218a136e974a1f140e58",
+    "planSha256": "01af0d83782e2d9ecd0b48bcd9c789db50b661632e9e38d887989515d6fc2809",
+    "reproduced": null,
+    "schemaVersion": "1.0",
+    "steps": 1,
+    "toolVersion": "0.8.4",
+    "untrustedContent": false,
+    "untrustedFields": []
+  },
+  "extractedFromGenerated": true,
+  "handEdited": false
+}

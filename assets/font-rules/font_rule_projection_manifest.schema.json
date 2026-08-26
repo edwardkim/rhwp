@@ -1,0 +1,129 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/edwardkim/rhwp/blob/devel/assets/font-rules/font_rule_projection_manifest.schema.json",
+  "title": "rhwp generated font rule projection manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "kind",
+    "issue",
+    "sourceCommit",
+    "schema",
+    "generatedBy",
+    "registry",
+    "summary",
+    "projectionBundleSha256",
+    "contentBundleSha256",
+    "outputs"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "2.0" },
+    "kind": { "const": "font-rule-backend-projection-manifest" },
+    "issue": { "const": 5955 },
+    "sourceCommit": { "$ref": "#/$defs/sha1" },
+    "schema": { "$ref": "#/$defs/pathDigest" },
+    "generatedBy": { "$ref": "#/$defs/pathDigest" },
+    "registry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256", "rulesSha256", "activeRuleCount", "retiredRuleCount"],
+      "properties": {
+        "path": { "const": "assets/font-rules/font_rule_registry_v2.json" },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "rulesSha256": { "$ref": "#/$defs/sha256" },
+        "activeRuleCount": { "type": "integer", "minimum": 0, "maximum": 4096 },
+        "retiredRuleCount": { "type": "integer", "minimum": 0, "maximum": 4096 }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["outputCount", "activeRuleCount", "retiredRuleCount", "countsByProjection"],
+      "properties": {
+        "outputCount": { "const": 5 },
+        "activeRuleCount": { "type": "integer", "minimum": 0, "maximum": 4096 },
+        "retiredRuleCount": { "type": "integer", "minimum": 0, "maximum": 4096 },
+        "countsByProjection": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "canvas2d-paint",
+            "canvas2d-webfont",
+            "canvaskit-sfnt",
+            "rust-layout-metric",
+            "rust-layout-name"
+          ],
+          "properties": {
+            "canvas2d-paint": { "type": "integer", "minimum": 0, "maximum": 4096 },
+            "canvas2d-webfont": { "type": "integer", "minimum": 0, "maximum": 4096 },
+            "canvaskit-sfnt": { "type": "integer", "minimum": 0, "maximum": 4096 },
+            "rust-layout-metric": { "type": "integer", "minimum": 0, "maximum": 4096 },
+            "rust-layout-name": { "type": "integer", "minimum": 0, "maximum": 4096 }
+          }
+        }
+      }
+    },
+    "projectionBundleSha256": { "$ref": "#/$defs/sha256" },
+    "contentBundleSha256": { "$ref": "#/$defs/sha256" },
+    "outputs": {
+      "type": "array",
+      "minItems": 5,
+      "maxItems": 5,
+      "items": { "$ref": "#/$defs/output" }
+    }
+  },
+  "$defs": {
+    "sha1": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "pathDigest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": { "type": "string", "minLength": 1, "maxLength": 2048 },
+        "sha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "output": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "projectionId",
+        "language",
+        "path",
+        "ownership",
+        "ruleCount",
+        "inputSha256",
+        "projectionSha256",
+        "contentSha256"
+      ],
+      "properties": {
+        "projectionId": {
+          "enum": [
+            "rust-layout-name",
+            "rust-layout-metric",
+            "canvas2d-paint",
+            "canvas2d-webfont",
+            "canvaskit-sfnt"
+          ]
+        },
+        "language": { "enum": ["rust", "typescript"] },
+        "path": {
+          "enum": [
+            "src/renderer/font_rule_projections/layout_name.rs",
+            "src/renderer/font_rule_projections/layout_metric.rs",
+            "rhwp-studio/src/core/generated/font-rule-projections/canvas2d-paint.ts",
+            "rhwp-studio/src/core/generated/font-rule-projections/webfont-supply.ts",
+            "rhwp-studio/src/core/generated/font-rule-projections/canvaskit-sfnt.ts"
+          ]
+        },
+        "ownership": { "const": "generated-whole-file" },
+        "ruleCount": { "type": "integer", "minimum": 0, "maximum": 4096 },
+        "inputSha256": { "$ref": "#/$defs/sha256" },
+        "projectionSha256": { "$ref": "#/$defs/sha256" },
+        "contentSha256": { "$ref": "#/$defs/sha256" }
+      }
+    }
+  }
+}

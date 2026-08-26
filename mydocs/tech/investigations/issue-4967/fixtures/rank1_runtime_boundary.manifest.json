@@ -1,0 +1,33 @@
+{
+  "consumerIssue": 4967,
+  "conversion": {
+    "command": "rhwp convert <source> <output> --verify --verify-pages",
+    "deterministicRepeatSha256Equal": true,
+    "irDifference": false,
+    "pageCountEqual": true
+  },
+  "documentFace": "문체부 바탕체",
+  "fontBytesEmbedded": false,
+  "hwp": {
+    "artifact": "mydocs/tech/investigations/issue-4967/fixtures/rank1_runtime_boundary.hwp",
+    "format": "hwp5",
+    "pageCount": 1,
+    "sha256": "081b597eb85c8431f691236ce36517edf863c1f10563d09edf2617a48cfbcb6b"
+  },
+  "hwpx": {
+    "artifact": "mydocs/tech/investigations/issue-4963/fixtures/oracle_typesetting_fixture.hwpx",
+    "format": "hwpx",
+    "pageCount": 1,
+    "sha256": "8ded3aff6f0286ee5ee4ad9c66732026fa627220b529e5d0fa7b9d51bc3ddb3f"
+  },
+  "issue": 4967,
+  "kind": "font-rank1-runtime-boundary-fixture-manifest",
+  "privacy": {
+    "fontBytesIncluded": false,
+    "privateCorpusAccessed": false,
+    "privateDocumentIdentityIncluded": false
+  },
+  "producerIssue": 4963,
+  "queueRank": 1,
+  "schemaVersion": 1
+}

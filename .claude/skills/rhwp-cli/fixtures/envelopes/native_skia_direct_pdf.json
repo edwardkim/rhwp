@@ -1,0 +1,23 @@
+{
+  "id": "native_skia_direct_pdf",
+  "kind": "native-skia-missing",
+  "command": "export-pdf",
+  "argv": [
+    "export-pdf",
+    "sample.hwp",
+    "--backend",
+    "direct"
+  ],
+  "exitCode": 1,
+  "exitClass": "runtime",
+  "stderrContains": "direct PDF backend requires a build with the native-skia feature",
+  "stdoutEmpty": true,
+  "source": "export-pdf --backend direct 스텁은 RenderError → exit 1",
+  "doNot": "export-png 스텁(exit 2)과 코드를 섞지 말 것. direct PDF 는 1.",
+  "repair": null,
+  "stdoutKeys": null,
+  "_skillMeta": {
+    "exit": 1,
+    "issue": 5316
+  }
+}

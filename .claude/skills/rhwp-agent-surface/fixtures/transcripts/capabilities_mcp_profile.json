@@ -1,0 +1,14 @@
+{
+  "invocation": "rhwp capabilities --mcp --profile 행정서식",
+  "profile_ssot": "src/agent_profiles.rs PROFILES",
+  "unknown_exit": 2,
+  "names": [
+    "경영보고",
+    "행정서식",
+    "데이터분석",
+    "콘텐츠제작",
+    "아카이브검색",
+    "품질검증",
+    "개발통합"
+  ]
+}

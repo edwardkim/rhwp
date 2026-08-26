@@ -491,7 +491,7 @@ G1 은 기존 스크립트의 대칭 확장이다. G3 은 #3869 W2 가 요구하
 - [zero_install_onboarding.md](zero_install_onboarding.md) — 자기서술이 실려 나가는 배포 경로
 - [../agent_security/threat_model.md](../agent_security/threat_model.md) — 출처 표지의 근거
 - [../agent_security/consumer_guide.md](../agent_security/consumer_guide.md) — 소비자 책임 경계
-- [../bindings_foundation.md](../bindings_foundation.md) — 외부 바인딩의 표면 판단(M18~M20)
+- [CLI 명령 레퍼런스](../../manual/cli_commands.md) — 외부 소비자 표면의 현재 권위
 - [../wasm_pack_version_policy.md](../wasm_pack_version_policy.md) — 툴체인 고정
 - 이슈 [#3608](https://github.com/edwardkim/rhwp/issues/3608) M24 ·
   [#3869](https://github.com/edwardkim/rhwp/issues/3869) W1·W2 ·

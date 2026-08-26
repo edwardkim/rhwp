@@ -1,0 +1,26 @@
+{
+  "id": "p3-charshape-actions",
+  "title": "글자 모양 액션 — 높이·너비·자간·글꼴 이동",
+  "ledger": [],
+  "open": "samples/para-001.hwp",
+  "calls": [
+    ["SetPos", [0, 0, 20]],
+    ["CharShape.Item", ["Height"]],
+    ["CharShape.Item", ["Ratio"]],
+    ["CharShape.Item", ["Spacing"]],
+    ["CharShape.Item", ["FaceNameHangul"]],
+    ["Run", ["CharShapeHeight"]],
+    ["CharShape.Item", ["Height"]],
+    ["Run", ["CharShapeWidth"]],
+    ["CharShape.Item", ["Ratio"]],
+    ["Run", ["CharShapeSpacing"]],
+    ["CharShape.Item", ["Spacing"]],
+    ["Run", ["CharShapeNextFaceName"]],
+    ["CharShape.Item", ["FaceNameHangul"]],
+    ["Run", ["CharShapePrevFaceName"]],
+    ["CharShape.Item", ["FaceNameHangul"]],
+    ["Run", ["ParagraphShapeIndentAtCaret"]],
+    ["ParaShape.Item", ["Indentation"]],
+    ["ParaShape.Item", ["LeftMargin"]]
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "id": "rpc_invalid_request",
+  "layer": "jsonrpc",
+  "code": -32600,
+  "symptom": "Invalid Request",
+  "retry": false,
+  "fix": "jsonrpc/method/id 구조를 고친다.",
+  "tools": [],
+  "policy": "프로토콜을 고친다. 같은 바이트를 재전송하지 않는다."
+}

@@ -1,0 +1,10 @@
+# transcript combo-two-tables-negative-y
+# family=combined
+# hypothesis=음수 y 로 겹친 두 표는 off-canvas 2 + overlap 1.
+쪽 수: 3  overflow: 2  off-canvas: 2  overlap: 1  text-overlap: 0  empty_page(가능성): 0
+  [OVERFLOW] page   0    60.00px  Page/Body/Table0 (Table)
+  [OVERFLOW] page   0    40.00px  Page/Body/Table1 (Table)
+  [OFF-CANVAS] page   0    40.00px  Page/Body/Table0 (Table)
+  [OFF-CANVAS] page   0    20.00px  Page/Body/Table1 (Table)
+  [OVERLAP]  page   0  60.00x60.00px  Page/Body/Table0 (Table) x Page/Body/Table1 (Table)
+status: ANOMALY

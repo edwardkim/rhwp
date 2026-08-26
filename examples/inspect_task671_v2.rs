@@ -3,7 +3,7 @@ use std::io::Read;
 
 use rhwp::model::control::Control;
 use rhwp::renderer::composer::{
-    compose_paragraph, estimate_composed_line_width, recompose_for_cell_width,
+    compose_paragraph, estimate_composed_line_width, recompose_cell_lines_in_frame, ParagraphBox,
 };
 use rhwp::renderer::style_resolver::resolve_styles;
 
@@ -16,6 +16,7 @@ fn main() {
     let doc = rhwp::parser::parse_document(&buf).unwrap();
     let dpi: f64 = 96.0;
     let styles = resolve_styles(&doc.doc_info, dpi);
+    let legacy_hwp3_stored_geometry = doc.layout_profile().legacy_hwp3_stored_geometry();
 
     let sec = &doc.sections[0];
     for (pi, para) in sec.paragraphs.iter().enumerate() {
@@ -103,7 +104,14 @@ fn main() {
                         println!("      compose: lines={} widths={:?}", pre_lines, pre_widths);
 
                         // recompose 적용
-                        recompose_for_cell_width(&mut comp, p, inner_w, &styles);
+                        recompose_cell_lines_in_frame(
+                            &mut comp,
+                            p,
+                            ParagraphBox::content_width_px(inner_w, 96.0),
+                            &styles,
+                            96.0,
+                            legacy_hwp3_stored_geometry,
+                        );
                         let post_lines = comp.lines.len();
                         let post_widths: Vec<f64> = comp
                             .lines

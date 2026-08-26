@@ -1,0 +1,48 @@
+{
+  "id": "SD71",
+  "tier": 3,
+  "title": "capabilities 스키마 확보",
+  "input": "samples/table-001.hwp",
+  "instructions": "rhwp 의 capabilities JSON Schema 를 capabilities-schema.json 으로 받아 제출하라. 외부 바인딩이 명령 표면 타입을 생성하려면 이 스키마가 먼저다. 힌트: rhwp export-capabilities-schema -o capabilities-schema.json.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "capabilities-schema.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "스키마 산출",
+      "op": "file_exists",
+      "file": "capabilities-schema.json",
+      "minBytes": 256
+    },
+    {
+      "name": "원본과 다름 (무편집 복사 거부 — 판별력)",
+      "op": "differs_from_input",
+      "file": "capabilities-schema.json"
+    },
+    {
+      "name": "capabilities 스키마 dialect",
+      "op": "json_value_eq",
+      "file": "capabilities-schema.json",
+      "path": "dialect",
+      "value": "https://json-schema.org/draft/2020-12/schema"
+    },
+    {
+      "name": "capabilitiesSchemaVersion",
+      "op": "json_value_eq",
+      "file": "capabilities-schema.json",
+      "path": "capabilitiesSchemaVersion",
+      "value": "1.3"
+    },
+    {
+      "name": "schema $ref",
+      "op": "json_value_eq",
+      "file": "capabilities-schema.json",
+      "path": "schema.$ref",
+      "value": "#/$defs/Capabilities"
+    }
+  ],
+  "axis": "조사"
+}

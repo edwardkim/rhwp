@@ -1,0 +1,11 @@
+{
+  "schemaVersion": "1.0",
+  "helper": "check_deps.sh",
+  "ok": true,
+  "rhwp": "./target/release/rhwp",
+  "imagemagick": "magick",
+  "pythonDocx": true,
+  "missingRequired": [],
+  "missingOptional": [],
+  "envelopes": []
+}

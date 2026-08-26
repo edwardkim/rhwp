@@ -5,6 +5,7 @@
 //! 산출물까지 만들고 exit 0 으로 끝났다.
 #![cfg(not(target_arch = "wasm32"))]
 
+use base64::Engine as _;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 
@@ -37,6 +38,14 @@ fn run(args: &[&str]) -> Output {
         .expect("rhwp 실행 실패")
 }
 
+fn run_in(current_dir: &Path, args: &[&str]) -> Output {
+    Command::new(rhwp_bin())
+        .current_dir(current_dir)
+        .args(args)
+        .output()
+        .expect("rhwp 실행 실패")
+}
+
 fn describe(args: &[&str], output: &Output) -> String {
     format!(
         "명령: rhwp {}\nstdout:\n{}\nstderr:\n{}",
@@ -44,6 +53,33 @@ fn describe(args: &[&str], output: &Output) -> String {
         String::from_utf8_lossy(&output.stdout),
         String::from_utf8_lossy(&output.stderr)
     )
+}
+
+fn parse_json(args: &[&str], output: &Output) -> serde_json::Value {
+    serde_json::from_slice(&output.stdout).unwrap_or_else(|error| {
+        panic!(
+            "stdout 이 순수 JSON 이 아닙니다 ({error}).\n{}",
+            describe(args, output)
+        )
+    })
+}
+
+struct TestDir(PathBuf);
+
+impl TestDir {
+    fn new(label: &str) -> Self {
+        Self(unique_temp_dir(label))
+    }
+
+    fn path(&self) -> &Path {
+        &self.0
+    }
+}
+
+impl Drop for TestDir {
+    fn drop(&mut self) {
+        let _ = std::fs::remove_dir_all(&self.0);
+    }
 }
 
 /// 종전 최악 사례 — 오타 옵션을 무시하고 산출물을 만들며 exit 0 이었다.
@@ -179,4 +215,133 @@ fn missing_preview_is_runtime_error() {
         "{}",
         describe(&args, &output)
     );
+}
+
+/// [#5511 Q1] 파일 모드는 parser가 돌려준 내장 이미지를 그대로 쓰고 입력은 고치지 않는다.
+#[test]
+fn file_mode_writes_exact_embedded_preview_and_preserves_input() {
+    let sample = sample_path();
+    let input_before = std::fs::read(&sample).expect("표본 읽기");
+    let expected = rhwp::parser::extract_thumbnail_only(&input_before).expect("내장 썸네일");
+    let dir = TestDir::new("exact-preview");
+    let out = dir.path().join(format!("thumb.{}", expected.format));
+    let args = [
+        "thumbnail",
+        sample.to_str().unwrap(),
+        "-o",
+        out.to_str().unwrap(),
+        "--json",
+    ];
+
+    let output = run(&args);
+    assert_eq!(
+        output.status.code(),
+        Some(0),
+        "{}",
+        describe(&args, &output)
+    );
+    let envelope = parse_json(&args, &output);
+    assert_eq!(std::fs::read(&out).expect("썸네일 산출물"), expected.data);
+    assert_eq!(
+        std::fs::read(&sample).expect("표본 재읽기"),
+        input_before,
+        "thumbnail은 입력 문서를 변경하면 안 됩니다"
+    );
+    assert_eq!(envelope["format"], expected.format);
+    assert_eq!(envelope["width"], expected.width);
+    assert_eq!(envelope["height"], expected.height);
+    assert_eq!(envelope["bytes"], expected.data.len());
+    assert_eq!(envelope["output"], out.to_str().unwrap());
+}
+
+/// base64와 data URI도 파일 모드와 같은 내장 이미지 바이트를 전달하며 산출물을 만들지 않는다.
+#[test]
+fn encoded_modes_round_trip_exact_preview_without_file_output() {
+    let sample = sample_path();
+    let input = std::fs::read(&sample).expect("표본 읽기");
+    let expected = rhwp::parser::extract_thumbnail_only(&input).expect("내장 썸네일");
+    let dir = TestDir::new("encoded-preview");
+
+    for (mode, field) in [("--base64", "base64"), ("--data-uri", "dataUri")] {
+        let args = ["thumbnail", sample.to_str().unwrap(), mode, "--json"];
+        let output = run_in(dir.path(), &args);
+        assert_eq!(
+            output.status.code(),
+            Some(0),
+            "{}",
+            describe(&args, &output)
+        );
+        let envelope = parse_json(&args, &output);
+        let encoded = envelope[field].as_str().expect("인코딩 필드");
+        let encoded = encoded.rsplit_once(',').map_or(encoded, |(_, body)| body);
+        let decoded = base64::engine::general_purpose::STANDARD
+            .decode(encoded)
+            .expect("base64 decode");
+        assert_eq!(decoded, expected.data, "{mode} 바이트 동등성");
+        assert!(envelope["output"].is_null(), "{envelope}");
+    }
+
+    assert_eq!(
+        std::fs::read_dir(dir.path()).expect("격리 폴더").count(),
+        0,
+        "encoded 모드는 파일을 만들면 안 됩니다"
+    );
+}
+
+/// 출력 경로 생략 시 현재 디렉터리 아래 `output/<stem>_thumb.<format>`을 만든다.
+#[test]
+fn default_output_path_is_relative_to_current_directory() {
+    let sample = sample_path();
+    let input = std::fs::read(&sample).expect("표본 읽기");
+    let expected = rhwp::parser::extract_thumbnail_only(&input).expect("내장 썸네일");
+    let dir = TestDir::new("default-output");
+    let stem = sample.file_stem().unwrap().to_string_lossy();
+    let relative = format!("output/{stem}_thumb.{}", expected.format);
+    let args = ["thumbnail", sample.to_str().unwrap(), "--json"];
+
+    let output = run_in(dir.path(), &args);
+    assert_eq!(
+        output.status.code(),
+        Some(0),
+        "{}",
+        describe(&args, &output)
+    );
+    let envelope = parse_json(&args, &output);
+    assert_eq!(envelope["output"], relative);
+    assert_eq!(
+        std::fs::read(dir.path().join(&relative)).expect("기본 경로 산출물"),
+        expected.data
+    );
+}
+
+/// 디렉터리로 내려갈 수 없는 출력 경로는 runtime 실패이며 성공 봉투를 남기지 않는다.
+#[test]
+fn output_write_failure_is_runtime_error_without_stdout() {
+    let sample = sample_path();
+    let dir = TestDir::new("write-failure");
+    let blocker = dir.path().join("not-a-directory");
+    std::fs::write(&blocker, b"keep").expect("경로 차단 파일");
+    let out = blocker.join("thumb.png");
+    let args = [
+        "thumbnail",
+        sample.to_str().unwrap(),
+        "-o",
+        out.to_str().unwrap(),
+        "--json",
+    ];
+
+    let output = run(&args);
+    assert_eq!(
+        output.status.code(),
+        Some(1),
+        "{}",
+        describe(&args, &output)
+    );
+    assert!(output.stdout.is_empty(), "{}", describe(&args, &output));
+    assert!(
+        String::from_utf8_lossy(&output.stderr).contains("파일 저장 실패"),
+        "{}",
+        describe(&args, &output)
+    );
+    assert_eq!(std::fs::read(&blocker).expect("차단 파일"), b"keep");
 }

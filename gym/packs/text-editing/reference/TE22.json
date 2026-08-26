@@ -1,0 +1,19 @@
+{
+  "id": "TE22",
+  "steps": [
+    {
+      "run": [
+        "edit",
+        "replace-text",
+        "{input}",
+        "--find",
+        "국어",
+        "--replace",
+        "언어",
+        "-o",
+        "{sub:all22.hwp}",
+        "--json"
+      ]
+    }
+  ]
+}

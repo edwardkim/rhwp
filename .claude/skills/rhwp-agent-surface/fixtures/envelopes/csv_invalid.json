@@ -1,0 +1,17 @@
+{
+  "id": "csv_invalid",
+  "command": "csv-to-table",
+  "mcp": "hwp_csv_to_table",
+  "cli_exit": 2,
+  "isError": true,
+  "fields": {
+    "invalid": [
+      {
+        "reason": "rowCountMismatch"
+      }
+    ],
+    "changedCount": 0
+  },
+  "read_as": "assembly-or-contract",
+  "note": "한 칸도 쓰지 않는다"
+}

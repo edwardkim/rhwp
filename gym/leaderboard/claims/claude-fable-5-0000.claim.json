@@ -1,0 +1,12 @@
+{
+  "capsuleSha256": "c5e06f04d1ca9f70679cba3a5c98c14246bf77234cc406eb52aebf5456ad18d2",
+  "claimant": {
+    "keyId": "gym/claude-fable-5"
+  },
+  "claimedAt": "2026-08-12T00:20:58Z",
+  "gateEnvelopeSha256": "1edea9b5b30e6ac8f91be57cf75c67580947ef83dea52db395f5f448d21deb56",
+  "kind": "settlementClaim",
+  "schemaVersion": "1.0",
+  "workorderId": "gym-leaderboard-standing",
+  "workorderSha256": "050734f9bbb1e995bf7088d56a8280b46ccdc6c009aa6ce9f3add2a85c4c9849"
+}

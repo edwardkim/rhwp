@@ -1,0 +1,28 @@
+{
+  "id": "RT32",
+  "steps": [
+    {
+      "run": [
+        "export-render-tree",
+        "{input}",
+        "-p",
+        "0",
+        "-o",
+        "{sub:_rt}",
+        "--respect-vpos-reset"
+      ]
+    },
+    {
+      "answer": {
+        "pages": {
+          "cmd": [
+            "info",
+            "{input}",
+            "--json"
+          ],
+          "path": "pageCount"
+        }
+      }
+    }
+  ]
+}

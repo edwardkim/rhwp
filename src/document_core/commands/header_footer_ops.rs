@@ -1,5 +1,6 @@
 //! 머리말/꼬리말 생성·조회·텍스트 편집 관련 native 메서드
 
+use super::formatting::para_shape_mods_affect_text_flow;
 use crate::document_core::helpers::{
     build_tab_def_from_json, json_has_border_keys, json_has_tab_keys, parse_json_i16_array,
     parse_para_shape_mods,
@@ -10,7 +11,8 @@ use crate::model::control::Control;
 use crate::model::event::DocumentEvent;
 use crate::model::header_footer::{Footer, Header, HeaderFooterApply};
 use crate::model::paragraph::{ParaMeta, Paragraph};
-use crate::renderer::composer::reflow_line_segs;
+use crate::renderer::composer::{reflow_line_segs, ParagraphBox};
+use crate::renderer::style_resolver::resolve_styles_for_document;
 
 /// applyTo u8 값 → HeaderFooterApply 변환
 fn apply_from_u8(v: u8) -> HeaderFooterApply {
@@ -736,11 +738,6 @@ impl DocumentCore {
         Ok(format!("{{\"ok\":true,\"hidden\":{}}}", hidden))
     }
 
-    /// 특정 페이지의 머리말/꼬리말이 감추기 상태인지 확인한다.
-    pub fn is_header_footer_hidden(&self, page_num: u32, is_header: bool) -> bool {
-        self.hidden_header_footer.contains(&(page_num, is_header))
-    }
-
     /// 머리말/꼬리말 문단 리플로우
     fn reflow_hf_paragraph(
         &mut self,
@@ -760,13 +757,21 @@ impl DocumentCore {
             hwpunit_to_px(text_width, self.dpi)
         };
 
+        // [#4324] 호출부(apply_para_format_in_hf_native)가 이 직전에
+        // find_or_create_para_shape 로 새 para_shape 를 만들 수 있다. 캐시된
+        // self.styles 는 직전 rebuild_section 스냅샷이라 그 새 id 를 포함하지 않을 수
+        // 있어(margin_left/right 가 0.0 으로 폴백) 여백을 무시한 폭으로 리플로우해버린다.
+        // formatting.rs 의 reflow_cell_paragraph(twin, text_editing.rs)와 동일하게
+        // doc_info 에서 매번 새로 resolve 한다.
+        let styles = resolve_styles_for_document(&self.document, self.dpi);
+
         // 문단 여백 적용
         let para_shape_id =
             match self.get_hf_paragraph_ref(section_idx, is_header, apply_to, hf_para_idx) {
                 Some(p) => p.para_shape_id,
                 None => return,
             };
-        let para_style = self.styles.para_styles.get(para_shape_id as usize);
+        let para_style = styles.para_styles.get(para_shape_id as usize);
         let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
         let margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);
         let final_width = (available_width - margin_left - margin_right).max(0.0);
@@ -781,7 +786,13 @@ impl DocumentCore {
                 _ => return,
             };
             if let Some(para) = paragraphs.get_mut(hf_para_idx) {
-                reflow_line_segs(para, final_width, &self.styles, self.dpi);
+                // 머리말/꼬리말 본문 상자 — 본문 열과 별개 흐름이므로 미스냅.
+                reflow_line_segs(
+                    para,
+                    ParagraphBox::content_width_px(final_width, self.dpi),
+                    &styles,
+                    self.dpi,
+                );
             }
         }
     }
@@ -858,8 +869,12 @@ impl DocumentCore {
             para.para_shape_id = new_id;
         }
 
-        // 줄간격 변경 시 LineSeg 재계산
-        if mods.line_spacing.is_some() || mods.line_spacing_type.is_some() {
+        // 줄바꿈에 영향을 주는 변경 시 LineSeg 재계산.
+        //
+        // [#4324] formatting.rs의 apply_para_format_native/apply_para_format_in_cell_native
+        // 와 동일한 게이트 결함 — 줄간격만 보고 여백/들여쓰기/줄나눔 단위를 놓쳤다.
+        // para_shape_mods_affect_text_flow(formatting.rs:16 부근)로 판정을 통일한다.
+        if para_shape_mods_affect_text_flow(&mods) {
             self.reflow_hf_paragraph(section_idx, is_header, apply_to, hf_para_idx);
         }
 
@@ -1110,6 +1125,7 @@ mod tests {
             },
             paragraphs: vec![Paragraph::default()],
             raw_stream: None,
+            raw_provenance: None,
         };
         doc.sections.push(section);
         let mut core = DocumentCore::new_empty();
@@ -1641,6 +1657,96 @@ mod tests {
             para.controls.len(),
             para.ctrl_data_records.len(),
             "삽입 후 두 배열 길이가 정합해야 한다"
+        );
+    }
+
+    /// [#4324] `reflow_hf_paragraph`가 `self.styles`(직전 rebuild_section 스냅샷)를
+    /// 읽으면, `apply_para_format_in_hf_native`가 그 직전에 `find_or_create_para_shape`로
+    /// 막 만든 새 para_shape_id는 그 스냅샷의 `para_styles` 범위 밖이라
+    /// margin_left/margin_right가 0.0으로 폴백한다 — 여백을 무시한(옛) 폭으로
+    /// 리플로우해버려 이 이슈가 고치려던 결함이 머리말/꼬리말 경로에서 그대로 남는다.
+    ///
+    /// 재현: `rebuild_section`으로 self.styles 스냅샷을 "margin 0, para_shape 1개"
+    /// 상태로 고정한 뒤(직전 명령이 남긴 스냅샷과 같은 전제), marginLeft 적용 전/후의
+    /// 줄 수를 비교한다.
+    #[test]
+    fn para_format_margin_change_in_header_reflows_with_correct_width_not_stale_styles() {
+        use crate::model::document::{Document, Section, SectionDef};
+        use crate::model::page::PageDef;
+        use crate::model::paragraph::CharShapeRef;
+
+        let mut doc = Document::default();
+        let section = Section {
+            section_def: SectionDef {
+                page_def: PageDef {
+                    width: 28504,
+                    height: 84188,
+                    margin_left: 4252,
+                    margin_right: 4252,
+                    margin_top: 5668,
+                    margin_bottom: 4252,
+                    margin_header: 4252,
+                    margin_footer: 4252,
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+            paragraphs: vec![Paragraph::default()],
+            raw_stream: None,
+            raw_provenance: None,
+        };
+        // text_width = 28504 - 4252 - 4252 = 20000 HWPUNIT (≈266.7px) — formatting.rs의
+        // 셀 재현 테스트와 같은 축척.
+        doc.sections.push(section);
+        let mut core = DocumentCore::new_empty();
+        core.document = doc;
+        core.composed = vec![Vec::new()];
+        core.dirty_sections = vec![true];
+        core.dirty_paragraphs = vec![None];
+
+        core.create_header_footer_native(0, true, 0)
+            .expect("머리말 생성이 성공해야 함");
+
+        let text = "A".repeat(200);
+        {
+            let para = core.get_hf_paragraph_mut(0, true, 0, 0).unwrap();
+            para.text = text.clone();
+            para.char_offsets = (0..text.chars().count() as u32).collect();
+            // 공통 IR 의 char_count 는 문단 종결자를 포함한다 (model/paragraph.rs).
+            para.char_count = text.chars().count() as u32 + 1;
+            para.char_shapes = vec![CharShapeRef {
+                start_pos: 0,
+                char_shape_id: 0,
+            }];
+            para.has_para_text = true;
+        }
+
+        // self.styles 스냅샷을 지금(margin 0, para_shape 1개) 상태로 고정한다.
+        core.rebuild_section(0);
+
+        // 기준선: 여백 0 상태에서 실제 폭으로 리플로우한 줄 수.
+        core.reflow_hf_paragraph(0, true, 0, 0);
+        let before_lines = core
+            .get_hf_paragraph_ref(0, true, 0, 0)
+            .unwrap()
+            .line_segs
+            .len();
+
+        // marginLeft 적용 — 기존 para_shape(margin 0)와 달라 새 id가 만들어진다.
+        // self.styles가 stale이면 새 id 조회가 None → margin 0 폴백 → 폭이 그대로다.
+        core.apply_para_format_in_hf_native(0, true, 0, 0, r#"{"marginLeft":8000}"#)
+            .expect("서식 적용이 성공해야 함");
+        let after_lines = core
+            .get_hf_paragraph_ref(0, true, 0, 0)
+            .unwrap()
+            .line_segs
+            .len();
+
+        assert!(
+            after_lines > before_lines,
+            "marginLeft 적용으로 사용 가능 폭이 줄었으면 줄 수가 늘어야 함 \
+             (before={before_lines}줄, after={after_lines}줄 — self.styles가 stale이면 \
+             새 para_shape_id 조회가 None이 되어 margin=0으로 폴백, after==before로 남는다)"
         );
     }
 }

@@ -4,5 +4,5 @@
 nextest-version = { required = "0.9.91", recommended = "0.9.140" }
 
 [[profile.default.overrides]]
-filter = "binary(overflow_cell_baseline)"
+filter = "test(/(^|::)overflow_cell_baseline::/)"
 priority = 100

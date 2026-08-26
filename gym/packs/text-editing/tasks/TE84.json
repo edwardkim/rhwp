@@ -1,0 +1,37 @@
+{
+  "id": "TE84",
+  "tier": 2,
+  "title": "삽입 dry-run 오프셋",
+  "input": "samples/para-001.hwp",
+  "instructions": "같은 좌표 삽입 dry-run 의 offset 을 answer.json 에 {\"off\": N} 으로 제출하라.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "삽입 dry-run 오프셋 · off",
+      "op": "answer_eq",
+      "answer": "off",
+      "path": "offset",
+      "cmd": [
+        "edit",
+        "insert-text",
+        "{input}",
+        "--text",
+        "짐표지TE84",
+        "--section",
+        "0",
+        "--para",
+        "0",
+        "--offset",
+        "0",
+        "--dry-run",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

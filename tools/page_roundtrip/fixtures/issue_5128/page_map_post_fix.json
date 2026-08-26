@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "kind": "issue5128PageMap",
+  "phase": "post_fix",
+  "srcPages": 69,
+  "rtPages": 69,
+  "firstDiffPage": null,
+  "srcP015": "partialTable#p73",
+  "srcP016": "partialParagraph#p84",
+  "rtP015": "partialTable#p73",
+  "rtP016": "partialParagraph#p84",
+  "contract": "pages(original)==pages(export-hwpx→reimport)==69"
+}

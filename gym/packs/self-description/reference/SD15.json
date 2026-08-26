@@ -1,0 +1,15 @@
+{
+  "id": "SD15",
+  "steps": [
+    {
+      "answer": {
+        "crateVersion": {
+          "cmd": [
+            "capabilities"
+          ],
+          "path": "schemaRegistry.crateVersion"
+        }
+      }
+    }
+  ]
+}

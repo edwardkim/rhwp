@@ -1,0 +1,25 @@
+{
+  "id": "FJ18",
+  "steps": [
+    {
+      "write_json": {
+        "to": "{sub:data.json}",
+        "body": {
+          "myMsg01": "이준호 귀하"
+        }
+      }
+    },
+    {
+      "run": [
+        "edit",
+        "fill-fields",
+        "{input}",
+        "--data",
+        "@{sub:data.json}",
+        "-o",
+        "{sub:form2.hwp}",
+        "--json"
+      ]
+    }
+  ]
+}

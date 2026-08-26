@@ -1,0 +1,21 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5324,
+  "skill": "bug-hunter",
+  "notGym": true,
+  "noNewCli": true,
+  "id": "T01",
+  "journey": "J01",
+  "title": "K-Startup 표 양식 채움 끝까지",
+  "commands": [
+    "rhwp info --json 양식.hwp",
+    "rhwp fields --json 양식.hwp",
+    "rhwp export-tables --json 양식.hwp",
+    "rhwp edit set-cell 양식.hwp --table 5 --row 0 --col 1 --text 시연용 -o 작성본.hwp --json",
+    "rhwp export-tables --json 작성본.hwp",
+    "rhwp export-pdf 작성본.hwp -o 제출용.pdf"
+  ],
+  "stop": "F13",
+  "filed": false,
+  "note": "실제 접수 없음. 가상 데이터."
+}

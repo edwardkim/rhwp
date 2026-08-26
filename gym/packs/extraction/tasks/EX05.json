@@ -1,0 +1,25 @@
+{
+  "id": "EX05",
+  "tier": 2,
+  "title": "금액 수확 — extract-data --kind amount",
+  "input": "samples/20250130-hongbo.hwp",
+  "instructions": "extract-data --kind amount 로 이 문서에서 금액만 수확해, 항목 수(itemCount)를 보고하라. 답 형식: {\"amounts\": <수>}. 힌트: rhwp extract-data <문서> --kind amount --json 의 itemCount.",
+  "submit": {
+    "kind": "answer"
+  },
+  "checks": [
+    {
+      "name": "amounts 일치",
+      "op": "answer_eq",
+      "answer": "amounts",
+      "cmd": [
+        "extract-data",
+        "{input}",
+        "--kind",
+        "amount",
+        "--json"
+      ],
+      "path": "itemCount"
+    }
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "schemaVersion": "1.0",
+  "source": "samples/table-001.hwp",
+  "tableCount": 1,
+  "tables": [
+    {
+      "index": 0,
+      "section": 0,
+      "paragraph": 0,
+      "control": 0,
+      "rows": 19,
+      "cols": 9,
+      "cellCount": 165,
+      "cells": [
+        {
+          "row": 0,
+          "col": 1,
+          "rowSpan": 1,
+          "colSpan": 3,
+          "isHeader": true,
+          "text": "5월"
+        },
+        {
+          "row": 0,
+          "col": 4,
+          "rowSpan": 1,
+          "colSpan": 3,
+          "isHeader": true,
+          "text": "6월"
+        },
+        {
+          "row": 0,
+          "col": 7,
+          "rowSpan": 3,
+          "colSpan": 1,
+          "isHeader": true,
+          "text": "비고"
+        }
+      ],
+      "_mergeNote": "전체 165 앵커. 여기선 병합 앵커만. 면적 합 171 <= 171."
+    }
+  ],
+  "untrustedContent": true,
+  "untrustedFields": [
+    "tables[].cells[].text",
+    "tables[].cells[].nested[]"
+  ],
+  "_skillMeta": {
+    "skill": "rhwp-table-exchange",
+    "command": "export-tables",
+    "exit": 0
+  }
+}

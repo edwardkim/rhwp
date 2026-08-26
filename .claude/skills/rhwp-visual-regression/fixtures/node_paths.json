@@ -1,0 +1,849 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5312,
+  "zeroBasedPage": true,
+  "readPathFirst": true,
+  "doNotReflexFail": true,
+  "cases": [
+    {
+      "id": "N01",
+      "path": "Page/Body2/Column0/TextLine10/TextRun0",
+      "edit": "form-01 myMsg01 채움",
+      "intended": true,
+      "note": "레시피 06 실측 495.93px",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N02",
+      "path": "Page/Body2/Column0/TextLine10/TextRun1",
+      "edit": "같은 줄 이웃 런",
+      "intended": true,
+      "note": "같은 필드 줄이면 의도 범위",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N03",
+      "path": "Page/Body/Column0/Table0/Cell[2,3]/TextLine0/TextRun0",
+      "edit": "set-cell 대상 칸",
+      "intended": true,
+      "note": "표 칸 편집",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N04",
+      "path": "Page/Body/Column0/TextLine0/TextRun0",
+      "edit": "replace-text 첫 줄",
+      "intended": true,
+      "note": "본문 치환",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N05",
+      "path": "Page/Header/TextLine0/TextRun0",
+      "edit": "본문만 편집했는데 머리말",
+      "intended": false,
+      "note": "진짜 회귀",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N06",
+      "path": "Page/Footer/TextLine0/TextRun0",
+      "edit": "꼬리말",
+      "intended": false,
+      "note": "쪽 번호·꼬리 밀림",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N07",
+      "path": "Page/Body2/Column1/TextLine0/TextRun0",
+      "edit": "다른 단",
+      "intended": false,
+      "note": "다단 문서에서 옆 단이 움직임",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N08",
+      "path": "Page/Body/Column0/Image0",
+      "edit": "로고",
+      "intended": false,
+      "note": "상단 로고가 밀리면 회귀",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N09",
+      "path": "Page/PageBg0",
+      "edit": "배경",
+      "intended": false,
+      "note": "0.00px 이면 틀은 유지",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N10",
+      "path": "Page/Body0/Column0/TextLine0/TextRun0",
+      "edit": "page 0 col 0 line 0",
+      "intended": false,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N11",
+      "path": "Page/Body0/Column0/TextLine1/TextRun0",
+      "edit": "page 0 col 0 line 1",
+      "intended": false,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N12",
+      "path": "Page/Body0/Column0/TextLine2/TextRun0",
+      "edit": "page 0 col 0 line 2",
+      "intended": false,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N13",
+      "path": "Page/Body0/Column0/TextLine3/TextRun0",
+      "edit": "page 0 col 0 line 3",
+      "intended": false,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N14",
+      "path": "Page/Body0/Column0/TextLine4/TextRun0",
+      "edit": "page 0 col 0 line 4",
+      "intended": true,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N15",
+      "path": "Page/Body0/Column0/TextLine5/TextRun0",
+      "edit": "page 0 col 0 line 5",
+      "intended": true,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N16",
+      "path": "Page/Body0/Column1/TextLine0/TextRun0",
+      "edit": "page 0 col 1 line 0",
+      "intended": false,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N17",
+      "path": "Page/Body0/Column1/TextLine1/TextRun0",
+      "edit": "page 0 col 1 line 1",
+      "intended": false,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N18",
+      "path": "Page/Body0/Column1/TextLine2/TextRun0",
+      "edit": "page 0 col 1 line 2",
+      "intended": false,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N19",
+      "path": "Page/Body0/Column1/TextLine3/TextRun0",
+      "edit": "page 0 col 1 line 3",
+      "intended": false,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N20",
+      "path": "Page/Body0/Column1/TextLine4/TextRun0",
+      "edit": "page 0 col 1 line 4",
+      "intended": true,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N21",
+      "path": "Page/Body0/Column1/TextLine5/TextRun0",
+      "edit": "page 0 col 1 line 5",
+      "intended": true,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N22",
+      "path": "Page/Body1/Column0/TextLine0/TextRun0",
+      "edit": "page 1 col 0 line 0",
+      "intended": false,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N23",
+      "path": "Page/Body1/Column0/TextLine1/TextRun0",
+      "edit": "page 1 col 0 line 1",
+      "intended": false,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N24",
+      "path": "Page/Body1/Column0/TextLine2/TextRun0",
+      "edit": "page 1 col 0 line 2",
+      "intended": false,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N25",
+      "path": "Page/Body1/Column0/TextLine3/TextRun0",
+      "edit": "page 1 col 0 line 3",
+      "intended": false,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N26",
+      "path": "Page/Body1/Column0/TextLine4/TextRun0",
+      "edit": "page 1 col 0 line 4",
+      "intended": true,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N27",
+      "path": "Page/Body1/Column0/TextLine5/TextRun0",
+      "edit": "page 1 col 0 line 5",
+      "intended": true,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N28",
+      "path": "Page/Body1/Column1/TextLine0/TextRun0",
+      "edit": "page 1 col 1 line 0",
+      "intended": false,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N29",
+      "path": "Page/Body1/Column1/TextLine1/TextRun0",
+      "edit": "page 1 col 1 line 1",
+      "intended": false,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N30",
+      "path": "Page/Body1/Column1/TextLine2/TextRun0",
+      "edit": "page 1 col 1 line 2",
+      "intended": false,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N31",
+      "path": "Page/Body1/Column1/TextLine3/TextRun0",
+      "edit": "page 1 col 1 line 3",
+      "intended": false,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N32",
+      "path": "Page/Body1/Column1/TextLine4/TextRun0",
+      "edit": "page 1 col 1 line 4",
+      "intended": true,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N33",
+      "path": "Page/Body1/Column1/TextLine5/TextRun0",
+      "edit": "page 1 col 1 line 5",
+      "intended": true,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N34",
+      "path": "Page/Body2/Column0/TextLine0/TextRun0",
+      "edit": "page 2 col 0 line 0",
+      "intended": false,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N35",
+      "path": "Page/Body2/Column0/TextLine1/TextRun0",
+      "edit": "page 2 col 0 line 1",
+      "intended": false,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N36",
+      "path": "Page/Body2/Column0/TextLine2/TextRun0",
+      "edit": "page 2 col 0 line 2",
+      "intended": false,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N37",
+      "path": "Page/Body2/Column0/TextLine3/TextRun0",
+      "edit": "page 2 col 0 line 3",
+      "intended": false,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N38",
+      "path": "Page/Body2/Column0/TextLine4/TextRun0",
+      "edit": "page 2 col 0 line 4",
+      "intended": true,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N39",
+      "path": "Page/Body2/Column0/TextLine5/TextRun0",
+      "edit": "page 2 col 0 line 5",
+      "intended": true,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N40",
+      "path": "Page/Body2/Column1/TextLine0/TextRun0",
+      "edit": "page 2 col 1 line 0",
+      "intended": false,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N41",
+      "path": "Page/Body2/Column1/TextLine1/TextRun0",
+      "edit": "page 2 col 1 line 1",
+      "intended": false,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N42",
+      "path": "Page/Body2/Column1/TextLine2/TextRun0",
+      "edit": "page 2 col 1 line 2",
+      "intended": false,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N43",
+      "path": "Page/Body2/Column1/TextLine3/TextRun0",
+      "edit": "page 2 col 1 line 3",
+      "intended": false,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N44",
+      "path": "Page/Body2/Column1/TextLine4/TextRun0",
+      "edit": "page 2 col 1 line 4",
+      "intended": true,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N45",
+      "path": "Page/Body2/Column1/TextLine5/TextRun0",
+      "edit": "page 2 col 1 line 5",
+      "intended": true,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N46",
+      "path": "Page/Body3/Column0/TextLine0/TextRun0",
+      "edit": "page 3 col 0 line 0",
+      "intended": false,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N47",
+      "path": "Page/Body3/Column0/TextLine1/TextRun0",
+      "edit": "page 3 col 0 line 1",
+      "intended": false,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N48",
+      "path": "Page/Body3/Column0/TextLine2/TextRun0",
+      "edit": "page 3 col 0 line 2",
+      "intended": false,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N49",
+      "path": "Page/Body3/Column0/TextLine3/TextRun0",
+      "edit": "page 3 col 0 line 3",
+      "intended": false,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N50",
+      "path": "Page/Body3/Column0/TextLine4/TextRun0",
+      "edit": "page 3 col 0 line 4",
+      "intended": true,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N51",
+      "path": "Page/Body3/Column0/TextLine5/TextRun0",
+      "edit": "page 3 col 0 line 5",
+      "intended": true,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N52",
+      "path": "Page/Body3/Column1/TextLine0/TextRun0",
+      "edit": "page 3 col 1 line 0",
+      "intended": false,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N53",
+      "path": "Page/Body3/Column1/TextLine1/TextRun0",
+      "edit": "page 3 col 1 line 1",
+      "intended": false,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N54",
+      "path": "Page/Body3/Column1/TextLine2/TextRun0",
+      "edit": "page 3 col 1 line 2",
+      "intended": false,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N55",
+      "path": "Page/Body3/Column1/TextLine3/TextRun0",
+      "edit": "page 3 col 1 line 3",
+      "intended": false,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N56",
+      "path": "Page/Body3/Column1/TextLine4/TextRun0",
+      "edit": "page 3 col 1 line 4",
+      "intended": true,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N57",
+      "path": "Page/Body3/Column1/TextLine5/TextRun0",
+      "edit": "page 3 col 1 line 5",
+      "intended": true,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N58",
+      "path": "Page/Body4/Column0/TextLine0/TextRun0",
+      "edit": "page 4 col 0 line 0",
+      "intended": false,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N59",
+      "path": "Page/Body4/Column0/TextLine1/TextRun0",
+      "edit": "page 4 col 0 line 1",
+      "intended": false,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N60",
+      "path": "Page/Body4/Column0/TextLine2/TextRun0",
+      "edit": "page 4 col 0 line 2",
+      "intended": false,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N61",
+      "path": "Page/Body4/Column0/TextLine3/TextRun0",
+      "edit": "page 4 col 0 line 3",
+      "intended": false,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N62",
+      "path": "Page/Body4/Column0/TextLine4/TextRun0",
+      "edit": "page 4 col 0 line 4",
+      "intended": true,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N63",
+      "path": "Page/Body4/Column0/TextLine5/TextRun0",
+      "edit": "page 4 col 0 line 5",
+      "intended": true,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N64",
+      "path": "Page/Body4/Column1/TextLine0/TextRun0",
+      "edit": "page 4 col 1 line 0",
+      "intended": false,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N65",
+      "path": "Page/Body4/Column1/TextLine1/TextRun0",
+      "edit": "page 4 col 1 line 1",
+      "intended": false,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N66",
+      "path": "Page/Body4/Column1/TextLine2/TextRun0",
+      "edit": "page 4 col 1 line 2",
+      "intended": false,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N67",
+      "path": "Page/Body4/Column1/TextLine3/TextRun0",
+      "edit": "page 4 col 1 line 3",
+      "intended": false,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N68",
+      "path": "Page/Body4/Column1/TextLine4/TextRun0",
+      "edit": "page 4 col 1 line 4",
+      "intended": true,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N69",
+      "path": "Page/Body4/Column1/TextLine5/TextRun0",
+      "edit": "page 4 col 1 line 5",
+      "intended": true,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N70",
+      "path": "Page/Body5/Column0/TextLine0/TextRun0",
+      "edit": "page 5 col 0 line 0",
+      "intended": false,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N71",
+      "path": "Page/Body5/Column0/TextLine1/TextRun0",
+      "edit": "page 5 col 0 line 1",
+      "intended": false,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N72",
+      "path": "Page/Body5/Column0/TextLine2/TextRun0",
+      "edit": "page 5 col 0 line 2",
+      "intended": false,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N73",
+      "path": "Page/Body5/Column0/TextLine3/TextRun0",
+      "edit": "page 5 col 0 line 3",
+      "intended": false,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N74",
+      "path": "Page/Body5/Column0/TextLine4/TextRun0",
+      "edit": "page 5 col 0 line 4",
+      "intended": true,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N75",
+      "path": "Page/Body5/Column0/TextLine5/TextRun0",
+      "edit": "page 5 col 0 line 5",
+      "intended": true,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N76",
+      "path": "Page/Body5/Column1/TextLine0/TextRun0",
+      "edit": "page 5 col 1 line 0",
+      "intended": false,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N77",
+      "path": "Page/Body5/Column1/TextLine1/TextRun0",
+      "edit": "page 5 col 1 line 1",
+      "intended": false,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N78",
+      "path": "Page/Body5/Column1/TextLine2/TextRun0",
+      "edit": "page 5 col 1 line 2",
+      "intended": false,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N79",
+      "path": "Page/Body5/Column1/TextLine3/TextRun0",
+      "edit": "page 5 col 1 line 3",
+      "intended": false,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N80",
+      "path": "Page/Body5/Column1/TextLine4/TextRun0",
+      "edit": "page 5 col 1 line 4",
+      "intended": true,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N81",
+      "path": "Page/Body5/Column1/TextLine5/TextRun0",
+      "edit": "page 5 col 1 line 5",
+      "intended": true,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N82",
+      "path": "Page/Body6/Column0/TextLine0/TextRun0",
+      "edit": "page 6 col 0 line 0",
+      "intended": false,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N83",
+      "path": "Page/Body6/Column0/TextLine1/TextRun0",
+      "edit": "page 6 col 0 line 1",
+      "intended": false,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N84",
+      "path": "Page/Body6/Column0/TextLine2/TextRun0",
+      "edit": "page 6 col 0 line 2",
+      "intended": false,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N85",
+      "path": "Page/Body6/Column0/TextLine3/TextRun0",
+      "edit": "page 6 col 0 line 3",
+      "intended": false,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N86",
+      "path": "Page/Body6/Column0/TextLine4/TextRun0",
+      "edit": "page 6 col 0 line 4",
+      "intended": true,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N87",
+      "path": "Page/Body6/Column0/TextLine5/TextRun0",
+      "edit": "page 6 col 0 line 5",
+      "intended": true,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N88",
+      "path": "Page/Body6/Column1/TextLine0/TextRun0",
+      "edit": "page 6 col 1 line 0",
+      "intended": false,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N89",
+      "path": "Page/Body6/Column1/TextLine1/TextRun0",
+      "edit": "page 6 col 1 line 1",
+      "intended": false,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N90",
+      "path": "Page/Body6/Column1/TextLine2/TextRun0",
+      "edit": "page 6 col 1 line 2",
+      "intended": false,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N91",
+      "path": "Page/Body6/Column1/TextLine3/TextRun0",
+      "edit": "page 6 col 1 line 3",
+      "intended": false,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N92",
+      "path": "Page/Body6/Column1/TextLine4/TextRun0",
+      "edit": "page 6 col 1 line 4",
+      "intended": true,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N93",
+      "path": "Page/Body6/Column1/TextLine5/TextRun0",
+      "edit": "page 6 col 1 line 5",
+      "intended": true,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N94",
+      "path": "Page/Body7/Column0/TextLine0/TextRun0",
+      "edit": "page 7 col 0 line 0",
+      "intended": false,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N95",
+      "path": "Page/Body7/Column0/TextLine1/TextRun0",
+      "edit": "page 7 col 0 line 1",
+      "intended": false,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N96",
+      "path": "Page/Body7/Column0/TextLine2/TextRun0",
+      "edit": "page 7 col 0 line 2",
+      "intended": false,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N97",
+      "path": "Page/Body7/Column0/TextLine3/TextRun0",
+      "edit": "page 7 col 0 line 3",
+      "intended": false,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N98",
+      "path": "Page/Body7/Column0/TextLine4/TextRun0",
+      "edit": "page 7 col 0 line 4",
+      "intended": true,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N99",
+      "path": "Page/Body7/Column0/TextLine5/TextRun0",
+      "edit": "page 7 col 0 line 5",
+      "intended": true,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N100",
+      "path": "Page/Body7/Column1/TextLine0/TextRun0",
+      "edit": "page 7 col 1 line 0",
+      "intended": false,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N101",
+      "path": "Page/Body7/Column1/TextLine1/TextRun0",
+      "edit": "page 7 col 1 line 1",
+      "intended": false,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N102",
+      "path": "Page/Body7/Column1/TextLine2/TextRun0",
+      "edit": "page 7 col 1 line 2",
+      "intended": false,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N103",
+      "path": "Page/Body7/Column1/TextLine3/TextRun0",
+      "edit": "page 7 col 1 line 3",
+      "intended": false,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N104",
+      "path": "Page/Body7/Column1/TextLine4/TextRun0",
+      "edit": "page 7 col 1 line 4",
+      "intended": true,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    },
+    {
+      "id": "N105",
+      "path": "Page/Body7/Column1/TextLine5/TextRun0",
+      "edit": "page 7 col 1 line 5",
+      "intended": true,
+      "note": "쪽·단·줄 좌표로 편집 위치와 대조",
+      "pageZeroBased": true
+    }
+  ]
+}

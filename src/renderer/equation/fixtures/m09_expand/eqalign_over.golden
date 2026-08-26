@@ -1,0 +1,61 @@
+# M09-g equation golden — current-engine lock (variant/exception/unimplemented honesty)
+command: EQALIGN
+script: EQALIGN{a OVER b &= c OVER d}
+honesty: implemented-variant
+
+=== ast ===
+EqAlign {
+    rows: [
+        (
+            Fraction {
+                numer: Text(
+                    "a",
+                ),
+                denom: Text(
+                    "b",
+                ),
+            },
+            Row(
+                [
+                    Symbol(
+                        "=",
+                    ),
+                    Fraction {
+                        numer: Text(
+                            "c",
+                        ),
+                        denom: Text(
+                            "d",
+                        ),
+                    },
+                ],
+            ),
+        ),
+    ],
+}
+
+=== layout ===
+EqAlign x=0.0000 y=0.0000 w=58.1000 h=48.8000 bl=24.4000
+  row0.left:
+    Fraction x=0.0000 y=0.0000 w=19.5500 h=48.8000 bl=29.4000
+      numer:
+        Text("a") x=4.0000 y=4.0000 w=11.5500 h=20.0000 bl=16.0000
+      denom:
+        Text("b") x=4.0000 y=24.8000 w=11.5500 h=20.0000 bl=16.0000
+  row0.right:
+    Row x=22.5500 y=0.0000 w=35.5500 h=48.8000 bl=29.4000
+      Symbol("=") x=0.0000 y=13.4000 w=16.0000 h=20.0000 bl=16.0000
+      Fraction x=16.0000 y=0.0000 w=19.5500 h=48.8000 bl=29.4000
+        numer:
+          Text("c") x=4.0000 y=4.0000 w=11.5500 h=20.0000 bl=16.0000
+        denom:
+          Text("d") x=4.0000 y=24.8000 w=11.5500 h=20.0000 bl=16.0000
+
+=== svg ===
+<text x="4.00" y="20.00" font-size="20.00" fill="#000000" font-style="italic" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">a</text>
+<line x1="1.00" y1="24.40" x2="18.55" y2="24.40" stroke="#000000" stroke-width="0.80"/>
+<text x="4.00" y="40.80" font-size="20.00" fill="#000000" font-style="italic" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">b</text>
+<text x="30.55" y="29.40" font-size="20.00" fill="#000000" text-anchor="middle" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">=</text>
+<text x="42.55" y="20.00" font-size="20.00" fill="#000000" font-style="italic" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">c</text>
+<line x1="39.55" y1="24.40" x2="57.10" y2="24.40" stroke="#000000" stroke-width="0.80"/>
+<text x="42.55" y="40.80" font-size="20.00" fill="#000000" font-style="italic" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">d</text>

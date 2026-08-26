@@ -1,0 +1,23 @@
+{
+  "id": "SE37",
+  "steps": [
+    {
+      "answer": {
+        "signals": {
+          "cmd": [
+            "inspect",
+            "injection",
+            "{input}",
+            "--include-fields",
+            "--json"
+          ],
+          "path": "signalCount",
+          "allowExits": [
+            0,
+            3
+          ]
+        }
+      }
+    }
+  ]
+}

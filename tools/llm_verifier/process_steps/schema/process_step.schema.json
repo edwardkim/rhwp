@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rhwp.local/schema/v-step/process_step.schema.json",
+  "title": "ProcessStep",
+  "description": "편집 한 스텝 + 네 기계 검사 + 과정 보상.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "recordId",
+    "episodeId",
+    "sourceTag",
+    "stepIndex",
+    "stepKind",
+    "source",
+    "editExitClass",
+    "checks",
+    "processReward"
+  ],
+  "properties": {
+    "recordId": { "type": "string" },
+    "episodeId": { "type": "string" },
+    "sourceTag": { "type": "string" },
+    "stepIndex": { "type": "integer", "minimum": 0 },
+    "stepKind": {
+      "type": "string",
+      "enum": [
+        "fill-fields",
+        "replace-text",
+        "delete-text",
+        "insert-text",
+        "redact",
+        "sanitize",
+        "csv-to-table",
+        "insert-table",
+        "delete-row",
+        "apply-char-format"
+      ]
+    },
+    "source": { "type": "string" },
+    "argv": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "editExitClass": { "type": "integer", "enum": [0, 1, 2, 3, 4] },
+    "checks": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": { "$ref": "check_observation.schema.json" }
+    },
+    "processReward": { "$ref": "process_reward.schema.json" }
+  }
+}

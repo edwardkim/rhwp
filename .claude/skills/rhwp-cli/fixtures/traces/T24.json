@@ -1,0 +1,11 @@
+{
+  "id": "T24",
+  "utterance": "간격이 이상해",
+  "steps": [
+    {
+      "command": "dump-pages",
+      "pageZeroBased": true
+    }
+  ],
+  "stop": "2단 높이"
+}

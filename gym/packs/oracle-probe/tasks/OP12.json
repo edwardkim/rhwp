@@ -1,0 +1,27 @@
+{
+  "id": "OP12",
+  "tier": 2,
+  "title": "form-01 누름틀 수 라이브 재계산",
+  "input": "samples/form-01.hwp",
+  "axis": "검증",
+  "instructions": "form-01 서식의 누름틀 개수를 answer.json 에 {\"fields\": N} 으로 제출하라. 채점기가 같은 명령을 다시 실행한다.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "form-01 필드 수",
+      "op": "answer_eq",
+      "answer": "fields",
+      "cmd": [
+        "fields",
+        "{input}",
+        "--json"
+      ],
+      "path": "fieldCount"
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "id": "TB17",
+  "steps": [
+    {
+      "run": [
+        "edit",
+        "set-cell",
+        "{input}",
+        "--table",
+        "0",
+        "--row",
+        "0",
+        "--col",
+        "0",
+        "--text",
+        "실문서머리",
+        "-o",
+        "{sub:real_head.hwp}",
+        "--json"
+      ]
+    }
+  ]
+}

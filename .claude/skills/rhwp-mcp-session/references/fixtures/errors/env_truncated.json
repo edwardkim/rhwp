@@ -1,0 +1,14 @@
+{
+  "id": "env_truncated",
+  "layer": "envelope",
+  "code": null,
+  "symptom": "truncated:true",
+  "retry": true,
+  "fix": "더 있는지는 nextOffset. 없으면 끝. truncated 만으로 재호출하지 않는다.",
+  "tools": [
+    "hwp_doc_text",
+    "hwp_doc_search",
+    "hwp_doc_extract_data"
+  ],
+  "policy": "isError:false. 필드를 게이트로 읽는다."
+}

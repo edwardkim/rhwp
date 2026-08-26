@@ -1,0 +1,63 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5312,
+  "exitCodes": {
+    "0": "성공 또는 차이 없음(텍스트 ir-diff 는 차이가 있어도 0)",
+    "1": "런타임·로드 실패. render-diff 텍스트 모드 하드 실패도 1",
+    "2": "사용법. --batch 폴더 읽기 실패",
+    "3": "판정 데이터. ir-diff --json 차이, render-diff --json 하드 실패"
+  },
+  "commands": {
+    "render-diff-single": {
+      "required": [
+        "schemaVersion",
+        "mode",
+        "sourceA",
+        "sourceB",
+        "via",
+        "threshold",
+        "pageCountA",
+        "pageCountB",
+        "maxDisp",
+        "status",
+        "regression",
+        "pages"
+      ],
+      "mode": [
+        "pair",
+        "roundtrip"
+      ],
+      "stdout": "한 줄 JSON",
+      "hardExit": 3,
+      "textHardExit": 1
+    },
+    "render-diff-batch": {
+      "required": [
+        "schemaVersion",
+        "mode",
+        "source",
+        "status",
+        "maxDisp",
+        "regression"
+      ],
+      "stdout": "NDJSON",
+      "artifact": "geom_inventory.tsv",
+      "loadFailHasErrorKey": true,
+      "loadFailExit": 1,
+      "regressionExit": 3
+    },
+    "ir-diff": {
+      "required": [
+        "schemaVersion",
+        "a",
+        "b",
+        "identical",
+        "diffCount",
+        "categories"
+      ],
+      "invariant": "identical ⇔ diffCount==0 ⇔ categories 비어 있음",
+      "diffExit": 3,
+      "textDiffExit": 0
+    }
+  }
+}

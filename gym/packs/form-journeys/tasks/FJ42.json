@@ -1,0 +1,34 @@
+{
+  "id": "FJ42",
+  "tier": 3,
+  "title": "form-02 sanitize 만 (채움 없음)",
+  "input": "samples/form-02.hwp",
+  "instructions": "form-02 를 채우지 말고 sanitize 한 clean2.hwp 를 제출하라. FJ20·FJ41 과 표본 또는 채움 여부가 다르다. 재 sanitize removedCount==0. 힌트: rhwp edit sanitize samples/form-02.hwp -o clean2.hwp --json 판정은 라이브 재실행 또는 산출물 재독이며, 파일 부재를 통과로 치지 않는다. T07 의 fields[0].value==홍길동 판정은 쓰지 마라. 새 CLI 는 없다.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "clean2.hwp"
+    ]
+  },
+  "checks": [
+    {
+      "name": "재 sanitize 0건",
+      "op": "value_eq",
+      "value": 0,
+      "path": "removedCount",
+      "cmd": [
+        "edit",
+        "sanitize",
+        "{file:clean2.hwp}",
+        "-o",
+        "{file:clean2-re.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "원본 무편집 복사가 아님",
+      "op": "differs_from_input",
+      "file": "clean2.hwp"
+    }
+  ]
+}

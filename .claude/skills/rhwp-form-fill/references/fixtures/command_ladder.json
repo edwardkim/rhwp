@@ -1,0 +1,135 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5300,
+  "ladder": [
+    {
+      "id": "fields",
+      "argv": [
+        "fields",
+        "<서식>",
+        "--json"
+      ],
+      "writes": false,
+      "issue": 3281,
+      "when": "서식이 무엇을 요구하는지 읽을 때"
+    },
+    {
+      "id": "fill-fields",
+      "argv": [
+        "edit",
+        "fill-fields",
+        "<서식>",
+        "--data",
+        "<JSON|@파일>",
+        "-o",
+        "<출력>",
+        "--json"
+      ],
+      "writes": true,
+      "issue": 3329,
+      "when": "단건 채움"
+    },
+    {
+      "id": "fill-fields-occurrence",
+      "argv": [
+        "edit",
+        "fill-fields",
+        "<서식>",
+        "--data",
+        "{\"이름[N]\":\"값\"}",
+        "-o",
+        "<출력>",
+        "--json"
+      ],
+      "writes": true,
+      "issue": 3476,
+      "when": "같은 이름이 여러 번"
+    },
+    {
+      "id": "batch-fill",
+      "argv": [
+        "batch",
+        "fill",
+        "--form",
+        "<서식>",
+        "--data",
+        "<행.jsonl|.csv>",
+        "--out-dir",
+        "<폴더>",
+        "--json"
+      ],
+      "writes": true,
+      "issue": 3719,
+      "when": "서식 1 + 데이터 N행"
+    },
+    {
+      "id": "dry-run",
+      "argv": [
+        "…",
+        "--dry-run",
+        "--json"
+      ],
+      "writes": false,
+      "issue": 3329,
+      "when": "파일을 쓰기 전 판정"
+    },
+    {
+      "id": "verify",
+      "argv": [
+        "…",
+        "--verify",
+        "--json"
+      ],
+      "writes": true,
+      "issue": 3702,
+      "when": "저장 직후 재파싱 대조"
+    },
+    {
+      "id": "insert-image",
+      "argv": [
+        "edit",
+        "insert-image",
+        "<파일>",
+        "--image",
+        "<그림>",
+        "--page",
+        "N",
+        "--x",
+        "X",
+        "--y",
+        "Y",
+        "-o",
+        "<출력>",
+        "--json"
+      ],
+      "writes": true,
+      "issue": 3719,
+      "when": "직인·서명"
+    },
+    {
+      "id": "sanitize",
+      "argv": [
+        "edit",
+        "sanitize",
+        "<파일>",
+        "-o",
+        "<출력>",
+        "--json"
+      ],
+      "writes": true,
+      "issue": 3719,
+      "when": "제출 전 메타 제거"
+    }
+  ],
+  "order": [
+    "fields",
+    "dry-run",
+    "fill-fields",
+    "fill-fields-occurrence",
+    "batch-fill",
+    "verify",
+    "insert-image",
+    "sanitize"
+  ],
+  "notForcedTraversal": true
+}

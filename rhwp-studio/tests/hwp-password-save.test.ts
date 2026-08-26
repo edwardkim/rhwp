@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
 const commandSource = readFileSync(new URL('../src/command/commands/file.ts', import.meta.url), 'utf8');
+const mainSource = readFileSync(new URL('../src/main.ts', import.meta.url), 'utf8');
 const bridgeSource = readFileSync(new URL('../src/core/wasm-bridge.ts', import.meta.url), 'utf8');
 const dialogSource = readFileSync(new URL('../src/ui/hwp-password-dialog.ts', import.meta.url), 'utf8');
 const saveAsDialogSource = readFileSync(new URL('../src/ui/save-as-dialog.ts', import.meta.url), 'utf8');
@@ -35,7 +36,7 @@ test('다른 이름·HWP·HWPX 저장은 공통 대화상자에서 암호 설정
   assert.match(commandSource, /showSaveAs\(/, '파일명을 먼저 받는 대화상자를 열어야 합니다');
   assert.match(commandSource, /allowPassword: format !== 'hml'/, 'HWP/HWPX에만 암호 설정을 노출해야 합니다');
   assert.match(commandSource, /showHwpSavePasswordDialog\(selection\.fileName\)/, '암호 설정을 누르면 암호/확인 대화상자를 열어야 합니다');
-  assert.match(commandSource, /exportPasswordProtectedDocumentForFormat/, '전용 암호 serializer를 선택해야 합니다');
+  assert.match(commandSource, /exportPasswordProtectedDocumentWithReportForFormat/, '내용 손실 보고를 포함한 전용 암호 serializer를 선택해야 합니다');
   assert.match(commandSource, /암호 설정 저장은 HWP 또는 HWPX 형식에서만 지원합니다/, 'HML 암호 저장을 거부해야 합니다');
   assert.match(commandSource, /id: 'file:save-as'/, '다른 이름으로 저장 command를 유지해야 합니다');
   assert.match(commandSource, /saveAsFormat\(services, 'hwp'\)/, 'HWP 저장도 공통 저장 경로를 써야 합니다');
@@ -61,6 +62,30 @@ test('Studio는 암호 문자열을 보관하지 않고 보호 저장 여부만 
   assert.match(bridgeSource, /private _requiresPasswordForSave = false/, 'bridge는 boolean 상태만 보관해야 합니다');
   assert.match(bridgeSource, /exportHwpWithPassword\(password: string\)/, 'HWP password WASM facade가 있어야 합니다');
   assert.match(bridgeSource, /exportHwpxWithPassword\(password: string\)/, 'HWPX password WASM facade가 있어야 합니다');
+  assert.match(bridgeSource, /exportHwpWithPasswordAndReport\(password: string\)/, '명시 HWP 암호 저장은 reported facade를 제공해야 합니다');
+  assert.match(bridgeSource, /exportHwpxWithPasswordAndReport\(password: string\)/, '명시 HWPX 암호 저장은 reported facade를 제공해야 합니다');
+});
+
+test('보호 상태 변경은 fallback download가 성공한 뒤에만 commit한다', () => {
+  const protectedSave = between(commandSource, 'async function saveAsFormat', 'function reportSaveError');
+  const fallbackPersist = protectedSave.indexOf('persistDownloadWithContentLoss(');
+  const protectionCommit = protectedSave.indexOf(
+    'services.wasm.requiresPasswordForSave = password !== null;',
+    fallbackPersist,
+  );
+  assert.ok(fallbackPersist >= 0, 'fallback download 경로가 있어야 합니다');
+  assert.ok(protectionCommit > fallbackPersist,
+    'download가 예외 없이 시작되기 전에 기존 보호 상태를 바꾸면 안 됩니다');
+});
+
+test('다른 이름 저장은 새 문서명 상태와 최근 문서를 함께 갱신한다', () => {
+  const protectedSave = between(commandSource, 'async function saveAsFormat', 'function reportSaveError');
+  assert.match(protectedSave, /addRecentDoc\(\{[\s\S]*?fileName: downloadName/, 'fallback 저장본도 최근 문서에 기록해야 합니다');
+  assert.match(protectedSave, /services\.refreshDocumentStatus\(\)/, '저장 뒤 상태바 문서명을 갱신해야 합니다');
+  assert.match(commandSource, /function completeHandleSave[\s\S]*?addRecentDoc\(/, '파일 handle 저장본도 최근 문서에 기록해야 합니다');
+  assert.match(mainSource, /refreshDocumentStatus: \(\) => \{[\s\S]*?wasm\.fileName/, '상태바 갱신은 현재 문서명을 사용해야 합니다');
+  assert.match(mainSource, /RECENT_SUBMENU_COLLAPSED_LIMIT = 8/, '최근 문서는 기본 8개만 보여야 합니다');
+  assert.match(mainSource, /최근 문서 더보기/, '9개 이상이면 더보기 항목을 제공해야 합니다');
 });
 
 test('Studio public WASM 배포물도 암호 저장 binding을 제공한다', () => {

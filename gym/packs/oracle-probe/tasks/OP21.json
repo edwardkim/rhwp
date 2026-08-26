@@ -1,0 +1,25 @@
+{
+  "id": "OP21",
+  "tier": 1,
+  "title": "명령 표면 개수 라이브 재계산",
+  "input": "samples/table-001.hwp",
+  "axis": "검증",
+  "instructions": "rhwp 가 스스로 선언하는 명령 개수를 answer.json 에 {\"commands\": N} 으로 제출하라. 채점기가 capabilities 의 commands 길이를 다시 잰다. 숫자를 기억해 박제하지 마라.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "명령 수",
+      "op": "len_answer_eq",
+      "answer": "commands",
+      "cmd": [
+        "capabilities"
+      ],
+      "path": "commands"
+    }
+  ]
+}

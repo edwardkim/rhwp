@@ -1,0 +1,30 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workCapsule",
+  "parent": null,
+  "plan": {
+    "planVersion": "1.0",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "output": "out/corp-name.hwp",
+    "steps": [
+      {
+        "action": "replace_text",
+        "find": "(주)한빛",
+        "replace": "한빛 주식회사"
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"samples/basic/issue2007_nested_cell_pagination_42065.hwp\",\"output\":\"out/corp-name.hwp\",\"steps\":[{\"action\":\"replace_text\",\"find\":\"(주)한빛\",\"replace\":\"한빛 주식회사\"}]}",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "inputSha256": "1e7adf203c29bb93d643386897a242296dc9ed55a3862b4c09f3bf92f9c7958c",
+    "planSha256": "38e5fcad5009a0177483541c1fbecacfbc0fe5e8b4f01e24f27382bde2862461",
+    "outputSha256": "43166f67c5eea06e2033358f2e380e1078d6ed1458deadec087163bd59d10adb",
+    "toolVersion": "fixture-0.0.0-not-a-release",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null
+  }
+}

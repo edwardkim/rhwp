@@ -1,0 +1,20 @@
+{
+  "id": "no_input",
+  "kind": "no-input",
+  "command": "export-svg",
+  "argv": [
+    "export-svg"
+  ],
+  "exitCode": 2,
+  "exitClass": "usage",
+  "stderrContains": "오류: 문서 파일 경로를 지정해주세요.",
+  "stdoutEmpty": true,
+  "source": "positional 누락",
+  "doNot": "인자 없음을 런타임으로 읽지 않는다.",
+  "repair": null,
+  "stdoutKeys": null,
+  "_skillMeta": {
+    "exit": 2,
+    "issue": 5316
+  }
+}

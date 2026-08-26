@@ -1,0 +1,25 @@
+fixture	format	layer	action	verdict	needles	tables	fields	checkboxes	claimed
+ref_text_hwpx	hwpx	m04-2	fill_fields	skip_only	안녕,Hello,123	0		0	yes
+ref_text_hwpx	hwpx	m04-2	replace_text	apply_possible	안녕,Hello,123	0		0	yes
+ref_text_hwpx	hwpx	m04-2	set_cell	skip_only	안녕,Hello,123	0		0	yes
+ref_text_hwpx	hwpx	m04-2	set_checkbox	skip_only	안녕,Hello,123	0		0	yes
+ref_table_hwpx	hwpx	m04-2	fill_fields	skip_only		1		0	yes
+ref_table_hwpx	hwpx	m04-2	replace_text	skip_only		1		0	yes
+ref_table_hwpx	hwpx	m04-2	set_cell	apply_possible		1		0	yes
+ref_table_hwpx	hwpx	m04-2	set_checkbox	skip_only		1		0	yes
+para001_hwp5	hwp5	m04-3	fill_fields	skip_only	오호라,乾坤,구궁산	0		0	yes
+para001_hwp5	hwp5	m04-3	replace_text	apply_possible	오호라,乾坤,구궁산	0		0	yes
+para001_hwp5	hwp5	m04-3	set_cell	skip_only	오호라,乾坤,구궁산	0		0	yes
+para001_hwp5	hwp5	m04-3	set_checkbox	skip_only	오호라,乾坤,구궁산	0		0	yes
+table001_hwp5	hwp5	m04-3	fill_fields	skip_only	품질,5월,평가	1		0	yes
+table001_hwp5	hwp5	m04-3	replace_text	apply_possible	품질,5월,평가	1		0	yes
+table001_hwp5	hwp5	m04-3	set_cell	apply_possible	품질,5월,평가	1		0	yes
+table001_hwp5	hwp5	m04-3	set_checkbox	skip_only	품질,5월,평가	1		0	yes
+ref_empty_hwpx	hwpx	m04-f	fill_fields	skip_only		0		0	yes
+ref_empty_hwpx	hwpx	m04-f	replace_text	skip_only		0		0	yes
+ref_empty_hwpx	hwpx	m04-f	set_cell	skip_only		0		0	yes
+ref_empty_hwpx	hwpx	m04-f	set_checkbox	skip_only		0		0	yes
+ref_mixed_hwpx	hwpx	m04-f	fill_fields	skip_only		0		0	no
+ref_mixed_hwpx	hwpx	m04-f	replace_text	skip_only		0		0	no
+ref_mixed_hwpx	hwpx	m04-f	set_cell	skip_only		0		0	no
+ref_mixed_hwpx	hwpx	m04-f	set_checkbox	skip_only		0		0	no

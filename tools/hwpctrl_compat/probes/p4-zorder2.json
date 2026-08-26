@@ -1,0 +1,25 @@
+{
+  "id": "p4-zorder2",
+  "title": "앞뒤 순서가 어디 적히는가 — 속성 이름 후보 훑기",
+  "ledger": [],
+  "open": "samples/mix-shape-01.hwp",
+  "calls": [
+    ["SetPos", [0, 0, 0]],
+    ["HeadCtrl.Next.Next.Next.Properties.Count", []],
+    ["HeadCtrl.Next.Next.Next.Properties.SetID", []],
+    ["HeadCtrl.Next.Next.Next.Properties.Item", ["ZOrder"]],
+    ["HeadCtrl.Next.Next.Next.Properties.Item", ["ZOrderType"]],
+    ["HeadCtrl.Next.Next.Next.Properties.Item", ["Order"]],
+    ["HeadCtrl.Next.Next.Next.Properties.Item", ["InstID"]],
+    ["HeadCtrl.Next.Next.Next.Properties.Item", ["Version"]],
+    ["Run", ["SelectCtrlFront"]],
+    ["Run", ["ShapeObjBringToFront"]],
+    ["HeadCtrl.Next.Next.Next.Properties.Item", ["ZOrder"]],
+    ["HeadCtrl.Next.Next.Next.Properties.Item", ["ZOrderType"]],
+    ["HeadCtrl.Next.Next.Next.Properties.Item", ["Order"]],
+    ["HeadCtrl.Next.Next.Next.Properties.Item", ["InstID"]],
+    ["HeadCtrl.Next.Next.UserDesc", []],
+    ["HeadCtrl.Next.Next.Properties.Item", ["ZOrder"]],
+    ["HeadCtrl.Next.Next.Next.Next.Properties.Item", ["ZOrder"]]
+  ]
+}

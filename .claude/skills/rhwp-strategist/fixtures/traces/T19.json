@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5335,
+  "id": "T19",
+  "title": "scaffold 미광고",
+  "engine": "tools/strategist/engagement.py",
+  "notGym": true,
+  "steps": [
+    {
+      "n": 1,
+      "act": "read SKILL.md and playbook § relevant"
+    },
+    {
+      "n": 2,
+      "act": "scaffold 미광고"
+    },
+    {
+      "n": 3,
+      "act": "record envelope keys only"
+    }
+  ],
+  "stopMaybe": "ST-GATE-FAIL"
+}

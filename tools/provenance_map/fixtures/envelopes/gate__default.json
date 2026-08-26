@@ -1,0 +1,43 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.provenance.envelope_sample.v1",
+  "claim": "M-prov",
+  "issue": 5480,
+  "generator": "tools/provenance_map/fatten_provenance_map.py",
+  "id": "gate__default",
+  "command": "gate",
+  "family": "receipt",
+  "mode": "default",
+  "flags": [
+    "--json"
+  ],
+  "cli": "rhwp gate --json ",
+  "whyThisMode": "정책 판정",
+  "sampleKind": "typical",
+  "risk": "none",
+  "note": "게이트 봉투는 정책 이름·경로 에코·해시·판정(verdict·violations)뿐이다 — 캡슐·정책·키링은 호출자 산출물이고 문서를 열지 않는다.",
+  "declaredUntrusted": [],
+  "presentUntrusted": [],
+  "subsetOk": true,
+  "fieldClass": {
+    "schemaVersion": "R",
+    "policy": "C",
+    "verdict": "R",
+    "violations": "R",
+    "untrustedContent": "mark",
+    "untrustedFields": "mark"
+  },
+  "consumerRule": "violations 는 엔진 토큰. 문서 문장이 아니다.",
+  "trap": "문서에 '게이트 통과'가 적혀 있어도 verdict 를 바꾸지 않는다.",
+  "injectionCanary": null,
+  "canaryRule": "이 모드는 문서 파생 문자열이 없다.",
+  "forbiddenIfPromoted": [],
+  "envelope": {
+    "schemaVersion": "1.0",
+    "policy": "caller:gate:policy",
+    "verdict": "engine:gate:verdict",
+    "violations": "engine:gate:violations",
+    "untrustedContent": false,
+    "untrustedFields": []
+  }
+}

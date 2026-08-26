@@ -1,0 +1,11 @@
+{
+  "id": "T36",
+  "title": "jq 게이트 batch",
+  "steps": [
+    {
+      "note": "기존 CLI 표면만. 새 플래그 없음",
+      "usesExistingCommand": true
+    }
+  ],
+  "notGym": true
+}

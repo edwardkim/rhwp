@@ -1,0 +1,32 @@
+{
+  "id": "LR07",
+  "tier": 2,
+  "title": "실문서 쪽 렌더",
+  "input": "samples/143E433F503322BD33.hwp",
+  "instructions": "실문서의 첫 쪽을 SVG 로 svg/ 폴더에 내보내라.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "svg/143E433F503322BD33.svg"
+    ]
+  },
+  "checks": [
+    {
+      "name": "SVG 산출",
+      "op": "file_exists",
+      "file": "svg/143E433F503322BD33.svg",
+      "minBytes": 512
+    },
+    {
+      "name": "원본과 다름 (무편집 복사 거부 — 판별력)",
+      "op": "differs_from_input",
+      "file": "svg/143E433F503322BD33.svg"
+    },
+    {
+      "name": "SVG XML 형식",
+      "op": "xml_root_eq",
+      "file": "svg/143E433F503322BD33.svg",
+      "value": "svg"
+    }
+  ]
+}

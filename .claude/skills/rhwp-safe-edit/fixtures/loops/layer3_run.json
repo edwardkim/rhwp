@@ -1,0 +1,72 @@
+{
+  "id": "layer3_run",
+  "layer": 3,
+  "goal": "스키마 → dry-run → 원자 실행",
+  "steps": [
+    {
+      "id": "schema",
+      "command": [
+        "rhwp",
+        "export-plan-schema",
+        "--json"
+      ],
+      "expectExit": 0,
+      "readFields": [
+        "planSchemaVersion",
+        "definitionCount",
+        "schema"
+      ]
+    },
+    {
+      "id": "dry-run",
+      "command": [
+        "rhwp",
+        "run",
+        "out/plan.json",
+        "--dry-run",
+        "--json"
+      ],
+      "expectExit": [
+        0,
+        2
+      ],
+      "readFields": [
+        "invalid",
+        "preview",
+        "dryRun"
+      ],
+      "mustNotCreate": "out/plan_result.hwp"
+    },
+    {
+      "id": "execute",
+      "command": [
+        "rhwp",
+        "run",
+        "out/plan.json",
+        "--json"
+      ],
+      "expectExit": [
+        0,
+        3
+      ],
+      "readFields": [
+        "steps",
+        "verify",
+        "changedPages"
+      ]
+    },
+    {
+      "id": "reread",
+      "command": [
+        "rhwp",
+        "fields",
+        "out/plan_result.hwp",
+        "--json"
+      ],
+      "expectExit": 0,
+      "readFields": [
+        "fields"
+      ]
+    }
+  ]
+}

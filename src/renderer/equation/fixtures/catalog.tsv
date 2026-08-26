@@ -1,0 +1,262 @@
+# id	dir	command	honesty	script
+# M09-1 31 + M09-g variants/exceptions/unimplemented honesty.
+# Current-engine lock. Not a Hancom oracle. TAB-separated. Scripts must not contain TAB.
+over_simple	m09_1	OVER	implemented	1 OVER 2
+over_grouped	m09_1	OVER	implemented	{a+b} OVER {c-d}
+over_nested	m09_1	OVER	implemented	{1 OVER 2} OVER 3
+over_glued_denom	m09_1	OVER	implemented	7 OVER10
+over_in_paren	m09_1	OVER	implemented	LEFT ( x OVER y RIGHT )
+sqrt_ident	m09_1	SQRT	implemented	SQRT x
+sqrt_group	m09_1	SQRT	implemented	SQRT {a+b}
+sqrt_index_paren	m09_1	SQRT	implemented	SQRT(3) of x
+sqrt_index_brace	m09_1	SQRT	implemented	SQRT {3} of {x}
+root_ident	m09_1	ROOT	root-aliases-sqrt	ROOT x
+root_group	m09_1	ROOT	root-aliases-sqrt	ROOT {a+b}
+root_index	m09_1	ROOT	root-aliases-sqrt	ROOT(3) of x
+matrix_2x2	m09_1	MATRIX	implemented	MATRIX{a & b # c & d}
+matrix_col	m09_1	MATRIX	implemented	MATRIX{1 # 2 # 3}
+matrix_row	m09_1	MATRIX	implemented	MATRIX{a & b & c}
+matrix_no_brace	m09_1	MATRIX	matrix-no-brace-empty	MATRIX
+pmatrix_2x2	m09_1	PMATRIX	implemented	PMATRIX{a & b # c & d}
+pmatrix_1x1	m09_1	PMATRIX	implemented	PMATRIX{x}
+pmatrix_frac	m09_1	PMATRIX	implemented	PMATRIX{{1} OVER {2} & 0 # 0 & 1}
+bmatrix_2x2	m09_1	BMATRIX	implemented	BMATRIX{a & b # c & d}
+bmatrix_identity	m09_1	BMATRIX	implemented	BMATRIX{1 & 0 # 0 & 1}
+bmatrix_1x2	m09_1	BMATRIX	implemented	BMATRIX{x & y}
+dmatrix_2x2	m09_1	DMATRIX	implemented	DMATRIX{a & b # c & d}
+dmatrix_col	m09_1	DMATRIX	implemented	DMATRIX{x # y}
+dmatrix_1x1	m09_1	DMATRIX	implemented	DMATRIX{1}
+eqalign_two	m09_1	EQALIGN	implemented	EQALIGN{x &= 1 # y &= 2}
+eqalign_one	m09_1	EQALIGN	implemented	EQALIGN{a + b &= c}
+eqalign_no_amp	m09_1	EQALIGN	implemented	EQALIGN{x = 1 # y = 2}
+pile_center	m09_1	PILE	pile-layout-as-row	PILE{a # b # c}
+lpile_left	m09_1	PILE	pile-layout-as-row	LPILE{a # b}
+rpile_right	m09_1	PILE	pile-layout-as-row	RPILE{a # b}
+over_bare	m09_expand	OVER	missing-operand	OVER
+over_empty_numer	m09_expand	OVER	missing-operand	OVER 2
+over_empty_denom	m09_expand	OVER	missing-operand	1 OVER
+over_lower	m09_expand	OVER	case-insensitive	1 over 2
+over_mixed_case	m09_expand	OVER	case-insensitive	1 Over 2
+over_chain_three	m09_expand	OVER	implemented-variant	1 OVER 2 OVER 3
+over_chain_four	m09_expand	OVER	implemented-variant	1 OVER 2 OVER 3 OVER 4
+over_ws_pad	m09_expand	OVER	implemented-variant	1  OVER  2
+over_idents	m09_expand	OVER	implemented-variant	a OVER b
+over_greek	m09_expand	OVER	implemented-variant	ALPHA OVER BETA
+over_func	m09_expand	OVER	implemented-variant	sin x OVER cos x
+over_sqrt	m09_expand	OVER	implemented-variant	SQRT 2 OVER SQRT 3
+over_empty_groups	m09_expand	OVER	missing-operand	{} OVER {}
+over_glued_both	m09_expand	OVER	implemented-variant	1OVER2
+over_neg	m09_expand	OVER	implemented-variant	-1 OVER -2
+over_decimal	m09_expand	OVER	implemented-variant	1.5 OVER 2.5
+over_multidigit	m09_expand	OVER	implemented-variant	123 OVER 456
+over_sup	m09_expand	OVER	implemented-variant	x^2 OVER y^2
+over_sub	m09_expand	OVER	implemented-variant	x_1 OVER y_1
+over_subsup	m09_expand	OVER	implemented-variant	x_i^2 OVER y_j^3
+over_triple_nest	m09_expand	OVER	implemented-variant	{{{1 OVER 2} OVER 3} OVER 4}
+over_in_left_brace	m09_expand	OVER	implemented-variant	LEFT { a OVER b RIGHT }
+over_sum	m09_expand	OVER	implemented-variant	sum_i a_i OVER n
+over_matrix_numer	m09_expand	OVER	implemented-variant	MATRIX{1 & 2 # 3 & 4} OVER 2
+over_plus_ungrouped	m09_expand	OVER	implemented-variant	a+b OVER c+d
+over_paren_no_left	m09_expand	OVER	implemented-variant	(x OVER y)
+over_times	m09_expand	OVER	implemented-variant	a TIMES b OVER c TIMES d
+over_pi	m09_expand	OVER	implemented-variant	pi OVER 2
+over_infty	m09_expand	OVER	implemented-variant	1 OVER infty
+atop_simple	m09_expand	OVER	atop-vs-over	1 ATOP 2
+atop_grouped	m09_expand	OVER	atop-vs-over	{a+b} ATOP {c-d}
+atop_chain	m09_expand	OVER	atop-vs-over	1 ATOP 2 ATOP 3
+frac_latex	m09_expand	OVER	latex-frac	FRAC{1}{2}
+dfrac_latex	m09_expand	OVER	latex-frac	DFRAC{1}{2}
+tfrac_latex	m09_expand	OVER	latex-frac	TFRAC{a}{b}
+frac_missing_denom	m09_expand	OVER	missing-operand	FRAC{1}
+over_root	m09_expand	OVER	root-aliases-sqrt	ROOT 8 OVER ROOT 2
+sqrt_bare	m09_expand	SQRT	missing-operand	SQRT
+root_bare	m09_expand	ROOT	root-aliases-sqrt	ROOT
+sqrt_lower	m09_expand	SQRT	case-insensitive	sqrt x
+root_lower	m09_expand	ROOT	root-aliases-sqrt	root x
+sqrt_latex_index	m09_expand	SQRT	implemented-variant	SQRT[3]{x}
+sqrt_latex_empty_idx	m09_expand	SQRT	missing-operand	SQRT[]{x}
+sqrt_paren_no_of	m09_expand	SQRT	implemented-variant	SQRT(3) x
+sqrt_empty_paren	m09_expand	SQRT	missing-operand	SQRT() of x
+root_brace_of	m09_expand	ROOT	root-aliases-sqrt	ROOT {3} of {x}
+root_latex_index	m09_expand	ROOT	root-aliases-sqrt	ROOT[4]{y}
+sqrt_nested	m09_expand	SQRT	implemented-variant	SQRT SQRT x
+sqrt_of_frac	m09_expand	SQRT	implemented-variant	SQRT {1 OVER 2}
+root_of_frac	m09_expand	ROOT	root-aliases-sqrt	ROOT {a OVER b}
+sqrt_of_matrix	m09_expand	SQRT	implemented-variant	SQRT MATRIX{1 & 0 # 0 & 1}
+sqrt_sup	m09_expand	SQRT	implemented-variant	SQRT x^2
+sqrt_empty_body	m09_expand	SQRT	missing-operand	SQRT { }
+root_empty_body	m09_expand	ROOT	root-aliases-sqrt	ROOT { }
+sqrt_long	m09_expand	SQRT	implemented-variant	SQRT {a+b+c+d+e+f}
+sqrt_mixed_case	m09_expand	SQRT	case-insensitive	SqRt x
+root_mixed_case	m09_expand	ROOT	root-aliases-sqrt	RoOt {a+b}
+sqrt_of_pile	m09_expand	SQRT	pile-layout-as-row	SQRT PILE{a # b}
+root_of_paren_idx	m09_expand	ROOT	root-aliases-sqrt	ROOT(n) of {x+y}
+sqrt_index_zero	m09_expand	SQRT	implemented-variant	SQRT(0) of 1
+sqrt_index_frac	m09_expand	SQRT	implemented-variant	SQRT {1 OVER 2} of {x}
+root_index_frac	m09_expand	ROOT	root-aliases-sqrt	ROOT {1 OVER 2} of {x}
+sqrt_of_over_chain	m09_expand	SQRT	implemented-variant	SQRT {1 OVER 2 OVER 3}
+root_nested	m09_expand	ROOT	root-aliases-sqrt	ROOT ROOT x
+sqrt_int	m09_expand	SQRT	implemented-variant	SQRT {int_0^1 x dx}
+sqrt_of_pmatrix	m09_expand	SQRT	implemented-variant	SQRT PMATRIX{1 & 2 # 3 & 4}
+matrix_empty_brace	m09_expand	MATRIX	missing-operand	MATRIX{}
+matrix_1x1	m09_expand	MATRIX	implemented-variant	MATRIX{z}
+matrix_lower	m09_expand	MATRIX	case-insensitive	matrix{a & b # c & d}
+matrix_2x3	m09_expand	MATRIX	implemented-variant	MATRIX{a & b & c # d & e & f}
+matrix_3x2	m09_expand	MATRIX	implemented-variant	MATRIX{a & b # c & d # e & f}
+matrix_3x3	m09_expand	MATRIX	implemented-variant	MATRIX{a & b & c # d & e & f # g & h & i}
+matrix_trailing_hash	m09_expand	MATRIX	implemented-variant	MATRIX{a & b #}
+matrix_trailing_amp	m09_expand	MATRIX	implemented-variant	MATRIX{a & b &}
+matrix_jagged	m09_expand	MATRIX	implemented-variant	MATRIX{a # b & c # d & e & f}
+matrix_spacey	m09_expand	MATRIX	implemented-variant	MATRIX{ a  &  b  #  c  &  d }
+pmatrix_empty_brace	m09_expand	PMATRIX	missing-operand	PMATRIX{}
+pmatrix_no_brace	m09_expand	PMATRIX	matrix-no-brace-empty	PMATRIX
+pmatrix_lower	m09_expand	PMATRIX	case-insensitive	pmatrix{a & b # c & d}
+pmatrix_2x3	m09_expand	PMATRIX	implemented-variant	PMATRIX{a & b & c # d & e & f}
+pmatrix_3x2	m09_expand	PMATRIX	implemented-variant	PMATRIX{a & b # c & d # e & f}
+pmatrix_3x3	m09_expand	PMATRIX	implemented-variant	PMATRIX{a & b & c # d & e & f # g & h & i}
+pmatrix_trailing_hash	m09_expand	PMATRIX	implemented-variant	PMATRIX{a & b #}
+pmatrix_trailing_amp	m09_expand	PMATRIX	implemented-variant	PMATRIX{a & b &}
+pmatrix_jagged	m09_expand	PMATRIX	implemented-variant	PMATRIX{a # b & c # d & e & f}
+pmatrix_spacey	m09_expand	PMATRIX	implemented-variant	PMATRIX{ a  &  b  #  c  &  d }
+bmatrix_empty_brace	m09_expand	BMATRIX	missing-operand	BMATRIX{}
+bmatrix_no_brace	m09_expand	BMATRIX	matrix-no-brace-empty	BMATRIX
+bmatrix_1x1	m09_expand	BMATRIX	implemented-variant	BMATRIX{z}
+bmatrix_lower	m09_expand	BMATRIX	case-insensitive	bmatrix{a & b # c & d}
+bmatrix_2x3	m09_expand	BMATRIX	implemented-variant	BMATRIX{a & b & c # d & e & f}
+bmatrix_3x2	m09_expand	BMATRIX	implemented-variant	BMATRIX{a & b # c & d # e & f}
+bmatrix_3x3	m09_expand	BMATRIX	implemented-variant	BMATRIX{a & b & c # d & e & f # g & h & i}
+bmatrix_trailing_hash	m09_expand	BMATRIX	implemented-variant	BMATRIX{a & b #}
+bmatrix_trailing_amp	m09_expand	BMATRIX	implemented-variant	BMATRIX{a & b &}
+bmatrix_jagged	m09_expand	BMATRIX	implemented-variant	BMATRIX{a # b & c # d & e & f}
+bmatrix_spacey	m09_expand	BMATRIX	implemented-variant	BMATRIX{ a  &  b  #  c  &  d }
+dmatrix_empty_brace	m09_expand	DMATRIX	missing-operand	DMATRIX{}
+dmatrix_no_brace	m09_expand	DMATRIX	matrix-no-brace-empty	DMATRIX
+dmatrix_lower	m09_expand	DMATRIX	case-insensitive	dmatrix{a & b # c & d}
+dmatrix_2x3	m09_expand	DMATRIX	implemented-variant	DMATRIX{a & b & c # d & e & f}
+dmatrix_3x2	m09_expand	DMATRIX	implemented-variant	DMATRIX{a & b # c & d # e & f}
+dmatrix_3x3	m09_expand	DMATRIX	implemented-variant	DMATRIX{a & b & c # d & e & f # g & h & i}
+dmatrix_trailing_hash	m09_expand	DMATRIX	implemented-variant	DMATRIX{a & b #}
+dmatrix_trailing_amp	m09_expand	DMATRIX	implemented-variant	DMATRIX{a & b &}
+dmatrix_jagged	m09_expand	DMATRIX	implemented-variant	DMATRIX{a # b & c # d & e & f}
+dmatrix_spacey	m09_expand	DMATRIX	implemented-variant	DMATRIX{ a  &  b  #  c  &  d }
+matrix_empty_row	m09_expand	MATRIX	implemented-variant	MATRIX{a & b # # c & d}
+matrix_amp_only	m09_expand	MATRIX	missing-operand	MATRIX{&}
+matrix_hash_only	m09_expand	MATRIX	missing-operand	MATRIX{#}
+matrix_sqrt_cells	m09_expand	MATRIX	implemented-variant	MATRIX{SQRT 1 & SQRT 2 # SQRT 3 & SQRT 4}
+pmatrix_over_all	m09_expand	PMATRIX	implemented-variant	PMATRIX{{1} OVER {2} & {3} OVER {4} # {5} OVER {6} & {7} OVER {8}}
+bmatrix_func	m09_expand	BMATRIX	implemented-variant	BMATRIX{sin x & cos x # -sin x & cos x}
+dmatrix_nested_over	m09_expand	DMATRIX	implemented-variant	DMATRIX{{{1} OVER {2}} OVER 3 & 0 # 0 & 1}
+vmatrix_2x2	m09_expand	MATRIX	vmatrix-unimpl-text	VMATRIX{a & b # c & d}
+smallmatrix_2x2	m09_expand	MATRIX	smallmatrix-unimpl-text	SMALLMATRIX{a & b # c & d}
+vmatrix_no_brace	m09_expand	MATRIX	vmatrix-unimpl-text	VMATRIX
+smallmatrix_no_brace	m09_expand	MATRIX	smallmatrix-unimpl-text	SMALLMATRIX
+ladder_2x2	m09_expand	MATRIX	ladder-fallback-matrix	LADDER{a & b # c & d}
+sladder_2x2	m09_expand	MATRIX	ladder-fallback-matrix	SLADDER{a & b # c & d}
+ladder_no_brace	m09_expand	MATRIX	ladder-fallback-matrix	LADDER
+sladder_no_brace	m09_expand	MATRIX	ladder-fallback-matrix	SLADDER
+matrix_over_3x3	m09_expand	MATRIX	implemented-variant	MATRIX{{1} OVER {2} & {3} OVER {4} & {5} OVER {6} # {7} OVER {8} & {9} OVER {10} & {11} OVER {12} # {13} OVER {14} & {15} OVER {16} & {17} OVER {18}}
+matrix_5x5_over	m09_expand	MATRIX	implemented-variant	MATRIX{{1} OVER {2} & {3} OVER {4} & {5} OVER {6} & {7} OVER {8} & {9} OVER {10} # {11} OVER {12} & {13} OVER {14} & {15} OVER {16} & {17} OVER {18} & {19} OVER {20} # {21} OVER {22} & {23} OVER {24} & {25} OVER {26} & {27} OVER {28} & {29} OVER {30} # {31} OVER {32} & {33} OVER {34} & {35} OVER {36} & {37} OVER {38} & {39} OVER {40} # {41} OVER {42} & {43} OVER {44} & {45} OVER {46} & {47} OVER {48} & {49} OVER {50}}
+matrix_5x5_sqrt	m09_expand	MATRIX	implemented-variant	MATRIX{SQRT(2) of {5} & SQRT(3) of {6} & SQRT(4) of {7} & SQRT(5) of {8} & SQRT(6) of {9} # SQRT(7) of {10} & SQRT(8) of {11} & SQRT(9) of {12} & SQRT(10) of {13} & SQRT(11) of {14} # SQRT(12) of {15} & SQRT(13) of {16} & SQRT(14) of {17} & SQRT(15) of {18} & SQRT(16) of {19} # SQRT(17) of {20} & SQRT(18) of {21} & SQRT(19) of {22} & SQRT(20) of {23} & SQRT(21) of {24} # SQRT(22) of {25} & SQRT(23) of {26} & SQRT(24) of {27} & SQRT(25) of {28} & SQRT(26) of {29}}
+matrix_4x4_mixed	m09_expand	MATRIX	implemented-variant	MATRIX{1 & {1} OVER {3} & SQRT(2) of {7} & d # {2} OVER {2} & SQRT(3) of {6} & d & 8 # SQRT(4) of {5} & d & 11 & {3} OVER {5} # d & 14 & {4} OVER {4} & SQRT(5) of {8}}
+matrix_4x4_numbers	m09_expand	MATRIX	implemented-variant	MATRIX{1 & 2 & 3 & 4 # 5 & 6 & 7 & 8 # 9 & 10 & 11 & 12 # 13 & 14 & 15 & 16}
+matrix_3x3_over	m09_expand	MATRIX	implemented-variant	MATRIX{{21} OVER {22} & {23} OVER {24} & {25} OVER {26} # {27} OVER {28} & {29} OVER {30} & {31} OVER {32} # {33} OVER {34} & {35} OVER {36} & {37} OVER {38}}
+pmatrix_5x5_over	m09_expand	PMATRIX	implemented-variant	PMATRIX{{1} OVER {2} & {3} OVER {4} & {5} OVER {6} & {7} OVER {8} & {9} OVER {10} # {11} OVER {12} & {13} OVER {14} & {15} OVER {16} & {17} OVER {18} & {19} OVER {20} # {21} OVER {22} & {23} OVER {24} & {25} OVER {26} & {27} OVER {28} & {29} OVER {30} # {31} OVER {32} & {33} OVER {34} & {35} OVER {36} & {37} OVER {38} & {39} OVER {40} # {41} OVER {42} & {43} OVER {44} & {45} OVER {46} & {47} OVER {48} & {49} OVER {50}}
+pmatrix_5x5_sqrt	m09_expand	PMATRIX	implemented-variant	PMATRIX{SQRT(2) of {5} & SQRT(3) of {6} & SQRT(4) of {7} & SQRT(5) of {8} & SQRT(6) of {9} # SQRT(7) of {10} & SQRT(8) of {11} & SQRT(9) of {12} & SQRT(10) of {13} & SQRT(11) of {14} # SQRT(12) of {15} & SQRT(13) of {16} & SQRT(14) of {17} & SQRT(15) of {18} & SQRT(16) of {19} # SQRT(17) of {20} & SQRT(18) of {21} & SQRT(19) of {22} & SQRT(20) of {23} & SQRT(21) of {24} # SQRT(22) of {25} & SQRT(23) of {26} & SQRT(24) of {27} & SQRT(25) of {28} & SQRT(26) of {29}}
+pmatrix_4x4_mixed	m09_expand	PMATRIX	implemented-variant	PMATRIX{1 & {1} OVER {3} & SQRT(2) of {7} & d # {2} OVER {2} & SQRT(3) of {6} & d & 8 # SQRT(4) of {5} & d & 11 & {3} OVER {5} # d & 14 & {4} OVER {4} & SQRT(5) of {8}}
+pmatrix_4x4_numbers	m09_expand	PMATRIX	implemented-variant	PMATRIX{1 & 2 & 3 & 4 # 5 & 6 & 7 & 8 # 9 & 10 & 11 & 12 # 13 & 14 & 15 & 16}
+pmatrix_3x3_over	m09_expand	PMATRIX	implemented-variant	PMATRIX{{21} OVER {22} & {23} OVER {24} & {25} OVER {26} # {27} OVER {28} & {29} OVER {30} & {31} OVER {32} # {33} OVER {34} & {35} OVER {36} & {37} OVER {38}}
+bmatrix_5x5_over	m09_expand	BMATRIX	implemented-variant	BMATRIX{{1} OVER {2} & {3} OVER {4} & {5} OVER {6} & {7} OVER {8} & {9} OVER {10} # {11} OVER {12} & {13} OVER {14} & {15} OVER {16} & {17} OVER {18} & {19} OVER {20} # {21} OVER {22} & {23} OVER {24} & {25} OVER {26} & {27} OVER {28} & {29} OVER {30} # {31} OVER {32} & {33} OVER {34} & {35} OVER {36} & {37} OVER {38} & {39} OVER {40} # {41} OVER {42} & {43} OVER {44} & {45} OVER {46} & {47} OVER {48} & {49} OVER {50}}
+bmatrix_5x5_sqrt	m09_expand	BMATRIX	implemented-variant	BMATRIX{SQRT(2) of {5} & SQRT(3) of {6} & SQRT(4) of {7} & SQRT(5) of {8} & SQRT(6) of {9} # SQRT(7) of {10} & SQRT(8) of {11} & SQRT(9) of {12} & SQRT(10) of {13} & SQRT(11) of {14} # SQRT(12) of {15} & SQRT(13) of {16} & SQRT(14) of {17} & SQRT(15) of {18} & SQRT(16) of {19} # SQRT(17) of {20} & SQRT(18) of {21} & SQRT(19) of {22} & SQRT(20) of {23} & SQRT(21) of {24} # SQRT(22) of {25} & SQRT(23) of {26} & SQRT(24) of {27} & SQRT(25) of {28} & SQRT(26) of {29}}
+bmatrix_4x4_mixed	m09_expand	BMATRIX	implemented-variant	BMATRIX{1 & {1} OVER {3} & SQRT(2) of {7} & d # {2} OVER {2} & SQRT(3) of {6} & d & 8 # SQRT(4) of {5} & d & 11 & {3} OVER {5} # d & 14 & {4} OVER {4} & SQRT(5) of {8}}
+bmatrix_4x4_numbers	m09_expand	BMATRIX	implemented-variant	BMATRIX{1 & 2 & 3 & 4 # 5 & 6 & 7 & 8 # 9 & 10 & 11 & 12 # 13 & 14 & 15 & 16}
+bmatrix_3x3_over	m09_expand	BMATRIX	implemented-variant	BMATRIX{{21} OVER {22} & {23} OVER {24} & {25} OVER {26} # {27} OVER {28} & {29} OVER {30} & {31} OVER {32} # {33} OVER {34} & {35} OVER {36} & {37} OVER {38}}
+dmatrix_5x5_over	m09_expand	DMATRIX	implemented-variant	DMATRIX{{1} OVER {2} & {3} OVER {4} & {5} OVER {6} & {7} OVER {8} & {9} OVER {10} # {11} OVER {12} & {13} OVER {14} & {15} OVER {16} & {17} OVER {18} & {19} OVER {20} # {21} OVER {22} & {23} OVER {24} & {25} OVER {26} & {27} OVER {28} & {29} OVER {30} # {31} OVER {32} & {33} OVER {34} & {35} OVER {36} & {37} OVER {38} & {39} OVER {40} # {41} OVER {42} & {43} OVER {44} & {45} OVER {46} & {47} OVER {48} & {49} OVER {50}}
+dmatrix_5x5_sqrt	m09_expand	DMATRIX	implemented-variant	DMATRIX{SQRT(2) of {5} & SQRT(3) of {6} & SQRT(4) of {7} & SQRT(5) of {8} & SQRT(6) of {9} # SQRT(7) of {10} & SQRT(8) of {11} & SQRT(9) of {12} & SQRT(10) of {13} & SQRT(11) of {14} # SQRT(12) of {15} & SQRT(13) of {16} & SQRT(14) of {17} & SQRT(15) of {18} & SQRT(16) of {19} # SQRT(17) of {20} & SQRT(18) of {21} & SQRT(19) of {22} & SQRT(20) of {23} & SQRT(21) of {24} # SQRT(22) of {25} & SQRT(23) of {26} & SQRT(24) of {27} & SQRT(25) of {28} & SQRT(26) of {29}}
+dmatrix_4x4_mixed	m09_expand	DMATRIX	implemented-variant	DMATRIX{1 & {1} OVER {3} & SQRT(2) of {7} & d # {2} OVER {2} & SQRT(3) of {6} & d & 8 # SQRT(4) of {5} & d & 11 & {3} OVER {5} # d & 14 & {4} OVER {4} & SQRT(5) of {8}}
+dmatrix_4x4_numbers	m09_expand	DMATRIX	implemented-variant	DMATRIX{1 & 2 & 3 & 4 # 5 & 6 & 7 & 8 # 9 & 10 & 11 & 12 # 13 & 14 & 15 & 16}
+dmatrix_3x3_over	m09_expand	DMATRIX	implemented-variant	DMATRIX{{21} OVER {22} & {23} OVER {24} & {25} OVER {26} # {27} OVER {28} & {29} OVER {30} & {31} OVER {32} # {33} OVER {34} & {35} OVER {36} & {37} OVER {38}}
+matrix_7x3_over	m09_expand	MATRIX	implemented-variant	MATRIX{{41} OVER {42} & {43} OVER {44} & {45} OVER {46} # {47} OVER {48} & {49} OVER {50} & {51} OVER {52} # {53} OVER {54} & {55} OVER {56} & {57} OVER {58} # {59} OVER {60} & {61} OVER {62} & {63} OVER {64} # {65} OVER {66} & {67} OVER {68} & {69} OVER {70} # {71} OVER {72} & {73} OVER {74} & {75} OVER {76} # {77} OVER {78} & {79} OVER {80} & {81} OVER {82}}
+matrix_3x7_over	m09_expand	MATRIX	implemented-variant	MATRIX{{81} OVER {82} & {83} OVER {84} & {85} OVER {86} & {87} OVER {88} & {89} OVER {90} & {91} OVER {92} & {93} OVER {94} # {95} OVER {96} & {97} OVER {98} & {99} OVER {100} & {101} OVER {102} & {103} OVER {104} & {105} OVER {106} & {107} OVER {108} # {109} OVER {110} & {111} OVER {112} & {113} OVER {114} & {115} OVER {116} & {117} OVER {118} & {119} OVER {120} & {121} OVER {122}}
+pmatrix_7x3_over	m09_expand	PMATRIX	implemented-variant	PMATRIX{{41} OVER {42} & {43} OVER {44} & {45} OVER {46} # {47} OVER {48} & {49} OVER {50} & {51} OVER {52} # {53} OVER {54} & {55} OVER {56} & {57} OVER {58} # {59} OVER {60} & {61} OVER {62} & {63} OVER {64} # {65} OVER {66} & {67} OVER {68} & {69} OVER {70} # {71} OVER {72} & {73} OVER {74} & {75} OVER {76} # {77} OVER {78} & {79} OVER {80} & {81} OVER {82}}
+pmatrix_3x7_over	m09_expand	PMATRIX	implemented-variant	PMATRIX{{81} OVER {82} & {83} OVER {84} & {85} OVER {86} & {87} OVER {88} & {89} OVER {90} & {91} OVER {92} & {93} OVER {94} # {95} OVER {96} & {97} OVER {98} & {99} OVER {100} & {101} OVER {102} & {103} OVER {104} & {105} OVER {106} & {107} OVER {108} # {109} OVER {110} & {111} OVER {112} & {113} OVER {114} & {115} OVER {116} & {117} OVER {118} & {119} OVER {120} & {121} OVER {122}}
+bmatrix_7x3_over	m09_expand	BMATRIX	implemented-variant	BMATRIX{{41} OVER {42} & {43} OVER {44} & {45} OVER {46} # {47} OVER {48} & {49} OVER {50} & {51} OVER {52} # {53} OVER {54} & {55} OVER {56} & {57} OVER {58} # {59} OVER {60} & {61} OVER {62} & {63} OVER {64} # {65} OVER {66} & {67} OVER {68} & {69} OVER {70} # {71} OVER {72} & {73} OVER {74} & {75} OVER {76} # {77} OVER {78} & {79} OVER {80} & {81} OVER {82}}
+bmatrix_3x7_over	m09_expand	BMATRIX	implemented-variant	BMATRIX{{81} OVER {82} & {83} OVER {84} & {85} OVER {86} & {87} OVER {88} & {89} OVER {90} & {91} OVER {92} & {93} OVER {94} # {95} OVER {96} & {97} OVER {98} & {99} OVER {100} & {101} OVER {102} & {103} OVER {104} & {105} OVER {106} & {107} OVER {108} # {109} OVER {110} & {111} OVER {112} & {113} OVER {114} & {115} OVER {116} & {117} OVER {118} & {119} OVER {120} & {121} OVER {122}}
+dmatrix_7x3_over	m09_expand	DMATRIX	implemented-variant	DMATRIX{{41} OVER {42} & {43} OVER {44} & {45} OVER {46} # {47} OVER {48} & {49} OVER {50} & {51} OVER {52} # {53} OVER {54} & {55} OVER {56} & {57} OVER {58} # {59} OVER {60} & {61} OVER {62} & {63} OVER {64} # {65} OVER {66} & {67} OVER {68} & {69} OVER {70} # {71} OVER {72} & {73} OVER {74} & {75} OVER {76} # {77} OVER {78} & {79} OVER {80} & {81} OVER {82}}
+dmatrix_3x7_over	m09_expand	DMATRIX	implemented-variant	DMATRIX{{81} OVER {82} & {83} OVER {84} & {85} OVER {86} & {87} OVER {88} & {89} OVER {90} & {91} OVER {92} & {93} OVER {94} # {95} OVER {96} & {97} OVER {98} & {99} OVER {100} & {101} OVER {102} & {103} OVER {104} & {105} OVER {106} & {107} OVER {108} # {109} OVER {110} & {111} OVER {112} & {113} OVER {114} & {115} OVER {116} & {117} OVER {118} & {119} OVER {120} & {121} OVER {122}}
+eqalign_no_brace	m09_expand	EQALIGN	matrix-no-brace-empty	EQALIGN
+eqalign_empty	m09_expand	EQALIGN	missing-operand	EQALIGN{}
+eqalign_three	m09_expand	EQALIGN	implemented-variant	EQALIGN{x &= 1 # y &= 2 # z &= 3}
+eqalign_four	m09_expand	EQALIGN	implemented-variant	EQALIGN{a &= 1 # b &= 2 # c &= 3 # d &= 4}
+eqalign_left_only	m09_expand	EQALIGN	implemented-variant	EQALIGN{x # y}
+eqalign_andand	m09_expand	EQALIGN	implemented-variant	EQALIGN{x && 1}
+eqalign_over	m09_expand	EQALIGN	implemented-variant	EQALIGN{a OVER b &= c OVER d}
+eqalign_sqrt	m09_expand	EQALIGN	implemented-variant	EQALIGN{SQRT x &= 2 # SQRT y &= 3}
+eqalign_trailing_hash	m09_expand	EQALIGN	implemented-variant	EQALIGN{x &= 1 #}
+eqalign_lower	m09_expand	EQALIGN	case-insensitive	eqalign{x &= 1 # y &= 2}
+eqalign_mixed_amp	m09_expand	EQALIGN	implemented-variant	EQALIGN{x = 1 # y &= 2}
+eqalign_six_over	m09_expand	EQALIGN	implemented-variant	EQALIGN{{1} OVER {2} &= {3} OVER {4} # {2} OVER {3} &= {4} OVER {5} # {3} OVER {4} &= {5} OVER {6} # {4} OVER {5} &= {6} OVER {7} # {5} OVER {6} &= {7} OVER {8} # {6} OVER {7} &= {8} OVER {9}}
+eqalign_ten_over	m09_expand	EQALIGN	implemented-variant	EQALIGN{{1} OVER {2} &= {3} OVER {4} # {2} OVER {3} &= {4} OVER {5} # {3} OVER {4} &= {5} OVER {6} # {4} OVER {5} &= {6} OVER {7} # {5} OVER {6} &= {7} OVER {8} # {6} OVER {7} &= {8} OVER {9} # {7} OVER {8} &= {9} OVER {10} # {8} OVER {9} &= {10} OVER {11} # {9} OVER {10} &= {11} OVER {12} # {10} OVER {11} &= {12} OVER {13}}
+eqalign_matrix	m09_expand	EQALIGN	implemented-variant	EQALIGN{A &= MATRIX{1 & 0 # 0 & 1} # B &= MATRIX{0 & 1 # 1 & 0}}
+eqalign_root	m09_expand	EQALIGN	root-aliases-sqrt	EQALIGN{ROOT 8 &= 2 # ROOT 27 &= 3}
+pile_no_brace	m09_expand	PILE	pile-layout-as-row	PILE
+lpile_no_brace	m09_expand	PILE	pile-layout-as-row	LPILE
+rpile_no_brace	m09_expand	PILE	pile-layout-as-row	RPILE
+pile_empty	m09_expand	PILE	missing-operand	PILE{}
+pile_single	m09_expand	PILE	pile-layout-as-row	PILE{a}
+pile_over	m09_expand	PILE	pile-layout-as-row	PILE{{1} OVER {2} # {3} OVER {4}}
+pile_sqrt	m09_expand	PILE	pile-layout-as-row	PILE{SQRT a # SQRT b # SQRT c}
+pile_five	m09_expand	PILE	pile-layout-as-row	PILE{a # b # c # d # e}
+pile_lower	m09_expand	PILE	case-insensitive	pile{a # b}
+lpile_over	m09_expand	PILE	pile-layout-as-row	LPILE{{1} OVER {2} # x}
+rpile_over	m09_expand	PILE	pile-layout-as-row	RPILE{{1} OVER {2} # x}
+pile_eight_frac	m09_expand	PILE	pile-layout-as-row	PILE{{1} OVER {2} # {2} OVER {3} # {3} OVER {4} # {4} OVER {5} # {5} OVER {6} # {6} OVER {7} # {7} OVER {8} # {8} OVER {9}}
+lpile_eight_frac	m09_expand	PILE	pile-layout-as-row	LPILE{{1} OVER {2} # {2} OVER {3} # {3} OVER {4} # {4} OVER {5} # {5} OVER {6} # {6} OVER {7} # {7} OVER {8} # {8} OVER {9}}
+rpile_eight_frac	m09_expand	PILE	pile-layout-as-row	RPILE{{1} OVER {2} # {2} OVER {3} # {3} OVER {4} # {4} OVER {5} # {5} OVER {6} # {6} OVER {7} # {7} OVER {8} # {8} OVER {9}}
+lpile_three	m09_expand	PILE	pile-layout-as-row	LPILE{a # b # c}
+rpile_three	m09_expand	PILE	pile-layout-as-row	RPILE{a # b # c}
+pile_matrix	m09_expand	PILE	pile-layout-as-row	PILE{MATRIX{1 & 0 # 0 & 1} # MATRIX{0 & 1 # 1 & 0}}
+lpile_lower	m09_expand	PILE	case-insensitive	lpile{a # b}
+rpile_lower	m09_expand	PILE	case-insensitive	rpile{a # b}
+benzene	m09_expand	MATRIX	benzene-placeholder	BENZENE
+benzene_group	m09_expand	MATRIX	benzene-placeholder	BENZENE{C6H6}
+bigg_paren	m09_expand	MATRIX	bigg-size-ignored	BIGG (
+bigg_ident	m09_expand	MATRIX	bigg-size-ignored	BIGG x
+choose_simple	m09_expand	OVER	choose-empty-top	n CHOOSE k
+binom_simple	m09_expand	OVER	choose-empty-top	BINOM{n}{k}
+longdiv_simple	m09_expand	MATRIX	longdiv-simplified-row	LONGDIV{3}{2}{6}
+color_red	m09_expand	MATRIX	color-passthrough	COLOR red x
+unknown_foobar	m09_expand	MATRIX	unknown-command-text	FOOBAR
+unknown_xyz	m09_expand	MATRIX	unknown-command-text	XYZ{1}
+cases_2	m09_expand	MATRIX	cases-related	CASES{x & if x>0 # -x & if x<0}
+cases_no_brace	m09_expand	MATRIX	cases-related	CASES
+rel_arrow	m09_expand	MATRIX	rel-buildrel	REL -> {f} {g}
+buildrel_arrow	m09_expand	MATRIX	rel-buildrel	BUILDREL -> {def}
+phantom_x	m09_expand	MATRIX	phantom-space	PHANTOM{x}
+begin_matrix	m09_expand	MATRIX	latex-env-partial	BEGIN{matrix} a & b # c & d END{matrix}
+end_matrix_alone	m09_expand	MATRIX	latex-env-partial	END{matrix}
+begin_pmatrix	m09_expand	PMATRIX	latex-env-partial	BEGIN{pmatrix} 1 & 0 # 0 & 1 END{pmatrix}
+quad_space	m09_expand	MATRIX	latex-space	a QUAD b
+operatorname_sin	m09_expand	MATRIX	latex-text	OPERATORNAME{sin}
+text_cmd	m09_expand	MATRIX	latex-text	TEXT{if}
+overset_hat	m09_expand	OVER	latex-stack	OVERSET{^}{x}
+underset_bar	m09_expand	OVER	latex-stack	UNDERSET{_}{x}
+stackrel_star	m09_expand	OVER	latex-stack	STACKREL{*}{=}
+lim_cmd	m09_expand	MATRIX	limit-cmd	lim_x->0 f(x)
+lim_upper_cmd	m09_expand	MATRIX	limit-cmd	Lim_n->infty a_n
+lsub_cmd	m09_expand	MATRIX	left-script	LSUB{i}{A}
+lsup_cmd	m09_expand	MATRIX	left-script	LSUP{i}{A}
+sub_cmd	m09_expand	MATRIX	left-script	SUB{i}
+sup_cmd	m09_expand	MATRIX	left-script	SUP{2}
+over_eqalign	m09_expand	OVER	implemented-variant	EQALIGN{1 OVER 2 &= 3 OVER 6}
+over_pile	m09_expand	OVER	pile-layout-as-row	PILE{1 OVER 2 # 3 OVER 4} OVER 5
+sqrt_eqalign	m09_expand	SQRT	implemented-variant	EQALIGN{SQRT x &= y}
+root_matrix	m09_expand	ROOT	root-aliases-sqrt	ROOT MATRIX{1 & 0 # 0 & 1}
+over_choose	m09_expand	OVER	choose-empty-top	{n CHOOSE k} OVER 2
+matrix_cases_cell	m09_expand	MATRIX	cases-related	MATRIX{CASES{1 # 0} & 2}
+pmatrix_pile_cell	m09_expand	PMATRIX	pile-layout-as-row	PMATRIX{PILE{a # b} & 0 # 0 & 1}
+bmatrix_eqalign_cell	m09_expand	BMATRIX	implemented-variant	BMATRIX{EQALIGN{x &= 1} & 0 # 0 & 1}
+dmatrix_root_cell	m09_expand	DMATRIX	root-aliases-sqrt	DMATRIX{ROOT 2 & 0 # 0 & ROOT 3}
+over_nested_matrix_3	m09_expand	OVER	implemented-variant	{MATRIX{{1} OVER {2} & {3} OVER {4} # {5} OVER {6} & {7} OVER {8}}} OVER {MATRIX{{9} OVER {10} & {11} OVER {12} # {13} OVER {14} & {15} OVER {16}}}
+sqrt_nested_pmatrix_3	m09_expand	SQRT	implemented-variant	SQRT {3} of {PMATRIX{{1} OVER {2} & {3} OVER {4} # {5} OVER {6} & {7} OVER {8}}}
+eqalign_matrix_fracs	m09_expand	EQALIGN	implemented-variant	EQALIGN{MATRIX{{1} OVER {2} & 0 # 0 & {3} OVER {4}} &= I # PMATRIX{{5} OVER {6} & 1 # 1 & {7} OVER {8}} &= A}
+pile_four_matrices	m09_expand	PILE	pile-layout-as-row	PILE{MATRIX{1 & 0 # 0 & 1} # PMATRIX{1 & 0 # 0 & 1} # BMATRIX{1 & 0 # 0 & 1} # DMATRIX{1 & 0 # 0 & 1}}

@@ -400,10 +400,25 @@ fn text_line_bbox_containing(root: &RenderNode, needle: &str) -> Option<Bounding
         .find_map(|child| text_line_bbox_containing(child, needle))
 }
 
+/// [#4334] "중첩 표"를 원래 para/control 인덱스가 없는 표(`is_none()`)로 찾았는데,
+/// #4334 가 `layout_embedded_table`(TAC 중첩 표)/재귀 중첩 표의 host 경로 플러밍
+/// 결손을 고치면서 그 인덱스가 채워져 후보가 0개가 됐다 — 이 실패 자체가 수정이
+/// 실제로 이 표(page 8 "이어지는 참조 각주" 셀 안 TAC 중첩 표)에 적용됐다는 증거다.
+///
+/// `cell_context.is_some()` 로 바꿨다 — 이게 원래 `is_none()` 이 대신 쓰던 신호의
+/// 진짜 의미다: "이 표가 다른 셀/글상자 안에 중첩돼 있는가?" (#4334 가 `TableNode`
+/// 에 새로 채운 필드, `ImageNode.cell_context` 와 같은 다단계 경로). 이 함수는
+/// 이미 `root`(특정 셀 서브트리)로 스코프가 좁혀진 채 호출되므로(두 호출부 모두
+/// `row26_detail` 셀), 실측(HWPX: para=1,ctrl=0,cell_context=Some) 으로 그 스코프
+/// 안 유일한 표가 실제로 중첩 표임을 확인했다 — #1486 케이스와 달리 특정 인덱스
+/// 값을 하드코딩하지 않는다: 이 함수는 HWP/HWPX 두 변형에서 재사용되는데 같은
+/// 의미 내용이라도 포맷별 내부 문단 인덱스가 다를 수 있어(#1486 은 한 포맷 한
+/// 표라 값 고정이 안전했지만 여기는 아니다) 인덱스 유무가 아니라 "중첩 여부"라는
+/// 원래 의도를 그대로 유지하는 조건이 맞다.
 fn first_nested_table_bbox(root: &RenderNode) -> Option<BoundingBox> {
     for child in &root.children {
         if let RenderNodeType::Table(t) = &child.node_type {
-            if t.para_index.is_none() && t.control_index.is_none() {
+            if t.cell_context.is_some() {
                 return Some(child.bbox);
             }
         }

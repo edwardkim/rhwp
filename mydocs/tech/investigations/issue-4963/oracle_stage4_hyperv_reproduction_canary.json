@@ -1,0 +1,74 @@
+{
+  "baseline": {
+    "manifestSha256": "3bcd379d1f7fc217aad47a0b44b952d993c86ebbfabf46009386e4b3de768b40",
+    "unrelatedProjectionSha256": "437a36e513cce9d2909d904f3d07d2341051cc017e21be9ec6d35bbb9d87bc78"
+  },
+  "canonicalSha256": "b31d0e07437fceb80efb6e10fcda5a4834eb5b7cf7c9496ba3d95600a9466c17",
+  "comparisons": {
+    "exactEqualsNone": false,
+    "substitutionEqualsNone": true
+  },
+  "documentFace": "KoPubWorld바탕체 Light",
+  "environment": {
+    "currentCulture": "ko-KR",
+    "currentUICulture": "en-US",
+    "hancomVersion": "11, 0, 0, 9136",
+    "hwpExecutableSha256": "7f00961398802c41620f5ef32fa2d2a26f7ff71f172723be36c660ea86a72bce",
+    "systemLocale": "en-US"
+  },
+  "evidenceClass": "reproduction-primary",
+  "fixtureSha256": "f6edc8fc43dfd3256385e9752979c14a7041e50c06d36be47cef6e3486835084",
+  "issue": 4963,
+  "kind": "font-oracle-hyperv-reproduction-summary",
+  "privacy": {
+    "absolutePathIncluded": false,
+    "fontBytesIncluded": false,
+    "privateCorpusAccessed": false
+  },
+  "queueRank": 8,
+  "schemaVersion": 1,
+  "states": {
+    "exact-only": {
+      "fonts": [
+        "INPILL+KoPubWorldBatangLight"
+      ],
+      "glyphObservationCount": 1556,
+      "manifestFileSha256": "669862499b70427996dee610f31d308e7d08b170dd4345f17a2b49873d5730b6",
+      "observationFileSha256": "0882b0403c3c6d6601f149b0da4bcafb2e3dc226071a65db1915bd88d75ee708",
+      "pageCount": 1,
+      "pdfSha256": "dab43e3a9371233efdc3a51d3f26da26ac82668570892ee7c9e937cb3578b6c3",
+      "recoveredManifestFileSha256": "5f21dc917a725107b86ac2ac98bf70e7a1dd3ab1d622a7c7c6cd4596ac432bda",
+      "runFileSha256": "e59c1d2269e1c13f6292bee3f8977de0763aad665f7353129cfe1b48eae4ec2d",
+      "typesettingProjectionSha256": "38f83a7973aaa49b4464b4e8d7579c05dfd47f8209997ceb1a740fa0baf2b4c7",
+      "visualLineCount": 30
+    },
+    "none-related": {
+      "fonts": [
+        "INPILL+HCRBatang-Bold"
+      ],
+      "glyphObservationCount": 1556,
+      "manifestFileSha256": "5f21dc917a725107b86ac2ac98bf70e7a1dd3ab1d622a7c7c6cd4596ac432bda",
+      "observationFileSha256": "43824c08d26a516ba3a041ee0db2f6d59cfd941b69589fe21ecaece2a8115068",
+      "pageCount": 1,
+      "pdfSha256": "a7868745fb1c6a9e7dae94d492c022c86c49823475319acd186e71ee3f97ea86",
+      "recoveredManifestFileSha256": "5f21dc917a725107b86ac2ac98bf70e7a1dd3ab1d622a7c7c6cd4596ac432bda",
+      "runFileSha256": "2bdf93b51e89541b6bf4158cf175a321f1420110454bf89d73a8fdbbc0583baa",
+      "typesettingProjectionSha256": "59801255a8663ef14c9796be76942bc95b2fa46f80bc6b0631bf5bd220c827be",
+      "visualLineCount": 30
+    },
+    "subst-only": {
+      "fonts": [
+        "INPILL+HCRBatang-Bold"
+      ],
+      "glyphObservationCount": 1556,
+      "manifestFileSha256": "ebe6ea75c1a1817f338d9931db04f696e1b0927a2e4afd95f379f8d6e96b94d3",
+      "observationFileSha256": "e705a49446db51ea857497a6de0293a8e0c2f1225ffc04bd2af24eecfa19c127",
+      "pageCount": 1,
+      "pdfSha256": "e3dcfc93c8a093c9763497127083c8b76c3ebc9d7e5eefc6b09b0901cedcfbf3",
+      "recoveredManifestFileSha256": "5f21dc917a725107b86ac2ac98bf70e7a1dd3ab1d622a7c7c6cd4596ac432bda",
+      "runFileSha256": "b86b1628beace8d6d0aeabecbe5e34337b52c78777a6293bad63abb19d978bf0",
+      "typesettingProjectionSha256": "59801255a8663ef14c9796be76942bc95b2fa46f80bc6b0631bf5bd220c827be",
+      "visualLineCount": 30
+    }
+  }
+}

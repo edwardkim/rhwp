@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://rhwp.local/llm_verifier/tool_version_gate/gate_row.schema.json",
+  "title": "V-fresh toolVersion gate row",
+  "description": "One distinct (attestVersion, verifyVersion, reproduced, accepted) record. Not a same-version V-replay re-run.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "claim",
+    "kind",
+    "recordId",
+    "uniquenessKey",
+    "attestVersion",
+    "verifyVersion",
+    "reproduced",
+    "accepted",
+    "reason",
+    "family"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "v-fresh.1.0" },
+    "claim": { "const": "V-fresh" },
+    "kind": { "const": "toolVersionGate" },
+    "recordId": { "type": "string", "minLength": 1 },
+    "uniquenessKey": { "type": "string", "minLength": 3 },
+    "attestVersion": { "type": "string" },
+    "verifyVersion": { "type": "string" },
+    "reproduced": { "type": ["boolean", "null"] },
+    "accepted": { "type": "boolean" },
+    "reason": {
+      "type": "string",
+      "enum": [
+        "FRESH_REPRODUCED",
+        "FRESH_NOT_REPRODUCED",
+        "FRESH_ABSENT",
+        "STALE_TOOL",
+        "STALE_AND_NOT_REPRODUCED",
+        "STALE_AND_ABSENT",
+        "ATTEST_VERSION_MISSING",
+        "VERIFY_VERSION_MISSING"
+      ]
+    },
+    "family": { "type": "string", "minLength": 1 }
+  }
+}

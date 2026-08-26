@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "id": "s600-honesty-text",
+  "width": 400.0,
+  "height": 300.0,
+  "contract": "정직성 텍스트 프로브",
+  "ops": [
+    {
+      "kind": "textRun",
+      "x": 10.0,
+      "y": 20.0,
+      "w": 160.0,
+      "h": 16.0,
+      "text": "M06-F-CAP",
+      "gradient": false,
+      "image": false
+    }
+  ],
+  "expectedKinds": [
+    "textRun"
+  ],
+  "expectedTrace": [
+    "begin_page 400.00x300.00",
+    "  textRun bbox=10.00,20.00,160.00,16.00",
+    "end_page ops=1"
+  ]
+}

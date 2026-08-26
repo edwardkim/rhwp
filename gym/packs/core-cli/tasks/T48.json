@@ -1,0 +1,43 @@
+{
+  "id": "T48",
+  "tier": 2,
+  "title": "표 표본 HWPX 변환 자기검증",
+  "input": "samples/table-001.hwp",
+  "instructions": "T48 은 입문·코어 온램프를 두껍게 하는 과제다. 표 표본을 HWPX 로 변환하고 IR 동등을 읽는다. 서식 변환과 다른 입력이다. 표본은 `samples/table-001.hwp` 이고, 이미 저장소 `samples/` 에 있다. 새 파일을 만들지 마라. 정답 숫자는 과제에 박제되어 있지 않다. 채점기가 같은 명령을 다시 돌린다. 힌트: rhwp export-hwpx <문서> conv.hwpx --json 그리고 rhwp ir-diff <문서> conv.hwpx --json. 제출은 answer.json 에 변환물 conv.hwpx 과 {\"identical\": true|false} 로 적는다. 원본을 덮어쓰지 마라. T07 의 fields[0]==홍길동 판정을 복제하지 마라. 산출 파일 이름은 conv.hwpx. 원본을 덮지 마라.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "conv.hwpx"
+    ]
+  },
+  "checks": [
+    {
+      "name": "HWPX 형식 확인",
+      "op": "value_eq",
+      "value": "hwpx",
+      "cmd": [
+        "info",
+        "{file:conv.hwpx}",
+        "--json"
+      ],
+      "path": "format",
+      "expect_exit": 0
+    },
+    {
+      "name": "변환물 IR 대조",
+      "op": "answer_eq",
+      "answer": "identical",
+      "cmd": [
+        "ir-diff",
+        "{input}",
+        "{file:conv.hwpx}",
+        "--json"
+      ],
+      "path": "identical",
+      "expect_exits": [
+        0,
+        3
+      ]
+    }
+  ]
+}

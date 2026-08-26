@@ -1,0 +1,27 @@
+{
+  "id": "TE65",
+  "tier": 1,
+  "title": "문단 문서 발췌 문단 수",
+  "input": "samples/para-001.hwp",
+  "instructions": "입력을 digest 했을 때 잡히는 문단 수를 answer.json 에 {\"paras\": N} 으로 제출하라. explain 의 paragraphCount 와 다른 필드다. TE05 와 표본이 다르다.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "문단 문서 발췌 문단 수 · paras",
+      "op": "answer_eq",
+      "answer": "paras",
+      "path": "paraCount",
+      "cmd": [
+        "digest",
+        "{input}",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

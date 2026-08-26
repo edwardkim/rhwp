@@ -1,0 +1,53 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.form_fill.fill_case.v1",
+  "id": "reg-80168-dry-run",
+  "axis": "dry-run",
+  "claim": "M-fill",
+  "generator": "tools/form_fill/fatten_form_fill.py",
+  "form": "reg-80168",
+  "title": "규제영향분석서 80168 dry-run",
+  "family": "규제",
+  "genre": "반복 필드",
+  "sample": "samples/80168_regulatory_analysis.hwp",
+  "format": "hwp5",
+  "relatedIssue": "#3476",
+  "why": "--dry-run 은 파일을 만들지 않는다. output/outputFormat 없음.",
+  "firstFieldName": "서식명",
+  "fieldCount": 28,
+  "argv": [
+    "edit",
+    "fill-fields",
+    "samples/80168_regulatory_analysis.hwp",
+    "--data",
+    "{\"서식명\": \"규제영향분석서\"}",
+    "-o",
+    "out/reg-80168-dry.hwp",
+    "--dry-run",
+    "--json"
+  ],
+  "existingCliOnly": true,
+  "data": {
+    "서식명": "규제영향분석서"
+  },
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "samples/80168_regulatory_analysis.hwp",
+    "dryRun": true,
+    "filledCount": 1,
+    "filled": [
+      {
+        "name": "서식명",
+        "occurrence": 0,
+        "value": "규제영향분석서"
+      }
+    ],
+    "notFound": [],
+    "ambiguous": [],
+    "confusable": [],
+    "verify": null
+  },
+  "writesFile": false,
+  "hasOutputKey": false,
+  "exit": 0
+}

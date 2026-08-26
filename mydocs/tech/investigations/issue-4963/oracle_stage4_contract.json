@@ -1,0 +1,162 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-oracle-stage4-contract",
+  "issue": 4963,
+  "stage": "W5-4",
+  "predecessor": {
+    "stage3Contract": "mydocs/tech/investigations/issue-4963/oracle_stage3_contract.json",
+    "stage3ContractSha256": "52d27ea8aac1b8b666213fecea6dc38bc4a1cc0378ba9827f1fe0e2201b06c7f",
+    "readiness": "mydocs/tech/investigations/issue-4963/font_oracle_readiness.json",
+    "readinessSha256": "76338ef972a7a279e6cd499d103b9e5c8836ad942dd4ce9134c5142a669e91db"
+  },
+  "fixturePolicy": {
+    "generator": "scripts/generate_oracle_typesetting_fixture.py",
+    "generatorSha256": "b601fdc400d092c796ee26f72a117d61c9d5ed23be9d41ca2c8d6355d2f7b4fa",
+    "contractVersion": "w5-oracle-typesetting-v1-subst-v1",
+    "sameInputBytesAcrossStates": true,
+    "documentSubstitutionMustBeExplicit": true,
+    "fontBytesEmbedded": false
+  },
+  "environmentPolicy": {
+    "currentHostMutationAllowed": false,
+    "disposableAttestationRequired": true,
+    "acceptedProviders": [
+      "hyper-v-checkpoint",
+      "vmware-snapshot",
+      "virtualbox-snapshot"
+    ],
+    "externalControlPlaneRequired": true,
+    "restoreBeforeEachUniqueState": true,
+    "restoreAfterEachUniqueState": true,
+    "baselineAndRecoveredManifestMustMatch": true,
+    "unrelatedFontProjectionMustRemainIdentical": true,
+    "newHancomProcessPerRun": true,
+    "rebootOrFontCacheRefreshMustBeRecorded": true,
+    "featureDetectionRequired": true,
+    "versionBranching": false
+  },
+  "statePolicy": {
+    "orderedQuestions": [
+      "exact-installed",
+      "exact-removed",
+      "document-subst-font-only",
+      "curated-official-successor-only",
+      "all-related-fonts-missing"
+    ],
+    "uniquePhysicalStates": [
+      "exact-only",
+      "subst-only",
+      "none-related"
+    ],
+    "stateMapping": {
+      "exact-installed": "exact-only",
+      "exact-removed": "none-related",
+      "document-subst-font-only": "subst-only",
+      "curated-official-successor-only": "not-provided-no-direct-anchor",
+      "all-related-fonts-missing": "none-related"
+    },
+    "equivalentExecutionReuse": [
+      [
+        "exact-removed",
+        "all-related-fonts-missing"
+      ]
+    ],
+    "successorRunWithoutDirectAnchor": false,
+    "unexpectedExactReadbackAfterRemoval": "blocked-immutable-or-unmanaged-font"
+  },
+  "targets": [
+    {
+      "queueRank": 1,
+      "documentFace": "문체부 바탕체",
+      "exactFont": {
+        "relativePath": "hwp/MT.TTF",
+        "sha256": "d10509215d923fef07c1f2dffe8ebf55cbca706476559a861dff6f7cf969ff44",
+        "sourceKind": "local-only-nonredistributable"
+      },
+      "documentSubstitution": {
+        "face": "KoPubWorld바탕체 Light",
+        "relativePath": "kopubworld/KoPubWorld Batang Light.ttf",
+        "sha256": "e3ee21a86b6a6728c567a95aaebd8883480f27ce4f230207b0d7266b5cb3fb18",
+        "relationAnchor": "fixture-declared-substFont",
+        "sourceKind": "official-public-font-local-only"
+      },
+      "officialSuccessor": {
+        "status": "not-provided",
+        "reason": "No direct publisher or byte lineage establishes an official successor."
+      },
+      "fixture": {
+        "sha256": "deb4566e2be357959c22db06460f485a12bb61521b22179495fcb1cda79ca511",
+        "bytes": 9148,
+        "manifestSha256": "60a5a31c4a0aa1e22500c83f59116a7870ef4c13529d15fa1fccf61d1a36dea3",
+        "semanticSha256": "fbd8ae4698e1e7d81aab2da5f4817b10419e7ab37b5629ab7df2beec0848b0ff"
+      },
+      "immutableExactPolicy": "stop-if-exact-readback-survives-none-related"
+    },
+    {
+      "queueRank": 13,
+      "documentFace": "휴먼명조",
+      "exactFont": {
+        "relativePath": "hwp/HMKMM.TTF",
+        "sha256": "d033df71fa41de48905407f7d39aca74ebd9ae87298c5420513acaa187fbefc6",
+        "sourceKind": "local-only-nonredistributable"
+      },
+      "documentSubstitution": {
+        "face": "KoPubWorld바탕체 Light",
+        "relativePath": "kopubworld/KoPubWorld Batang Light.ttf",
+        "sha256": "e3ee21a86b6a6728c567a95aaebd8883480f27ce4f230207b0d7266b5cb3fb18",
+        "relationAnchor": "fixture-declared-substFont",
+        "sourceKind": "official-public-font-local-only"
+      },
+      "officialSuccessor": {
+        "status": "not-provided",
+        "reason": "No direct publisher or byte lineage establishes an official successor."
+      },
+      "fixture": {
+        "sha256": "a6dbe726d8718513f59a78fc562bded4721e9cdfa03673b87cc907d45dc3f124",
+        "bytes": 9149,
+        "manifestSha256": "1e10ab6c8b67ca231007c3578c8074e4694a68bd7b7e2cb3d3d09eb3a989b515",
+        "semanticSha256": "8148150c28cb226b7acf48d7f0e0e5d1ebb34dc9c91947e4c564b4e26b77f39f"
+      },
+      "immutableExactPolicy": "stop-if-exact-readback-survives-none-related"
+    },
+    {
+      "queueRank": 7,
+      "documentFace": "KoPubWorld돋움체 Light",
+      "exactFont": {
+        "relativePath": "kopubworld/KoPubWorld Dotum Light.ttf",
+        "sha256": "069494cce21a4222c88e537f256b6f46fee209375aba769f82431b2d382bc84f",
+        "sourceKind": "official-public-font-local-only"
+      },
+      "documentSubstitution": {
+        "face": "KoPubWorld바탕체 Light",
+        "relativePath": "kopubworld/KoPubWorld Batang Light.ttf",
+        "sha256": "e3ee21a86b6a6728c567a95aaebd8883480f27ce4f230207b0d7266b5cb3fb18",
+        "relationAnchor": "fixture-declared-substFont",
+        "sourceKind": "official-public-font-local-only"
+      },
+      "officialSuccessor": {
+        "status": "not-provided",
+        "reason": "No direct publisher or byte lineage establishes an official successor."
+      },
+      "fixture": {
+        "sha256": "1cc8062c6fd0da39cfddc4182115226717516d4250e693b43596293374236f9e",
+        "bytes": 9138,
+        "manifestSha256": "38778e8ee3ecc8a9c5177c082eea2528214c5b4a7d71c66c009873922befd9df",
+        "semanticSha256": "e19b5842e7eaa1dc258d3f7abaaa79e421f099329c57976878c5f5fc16b61970"
+      },
+      "immutableExactPolicy": "stop-if-exact-readback-survives-none-related"
+    }
+  ],
+  "mutationPolicy": {
+    "allowedScope": "attested-disposable-guest-only",
+    "allowedFontSet": "target-exact-and-fixture-substitution-only",
+    "systemOrUserFontMutationOnCurrentHost": false,
+    "hancomBundledFontMutation": false,
+    "privateCorpusAccess": false,
+    "remoteUpload": false,
+    "githubWrite": false,
+    "productMetricDatabaseChange": false,
+    "productFallbackChange": false,
+    "productPaintChange": false
+  }
+}

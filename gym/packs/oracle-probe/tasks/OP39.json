@@ -1,0 +1,27 @@
+{
+  "id": "OP39",
+  "tier": 2,
+  "title": "field-01 형식 표지",
+  "input": "samples/field-01.hwp",
+  "axis": "검증",
+  "instructions": "field-01 의 형식 표지를 answer.json 에 {\"format\": \"...\"} 으로 제출하라.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "field-01 형식",
+      "op": "answer_eq",
+      "answer": "format",
+      "cmd": [
+        "info",
+        "{input}",
+        "--json"
+      ],
+      "path": "format"
+    }
+  ]
+}

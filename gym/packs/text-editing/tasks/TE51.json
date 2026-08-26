@@ -1,0 +1,60 @@
+{
+  "id": "TE51",
+  "tier": 2,
+  "title": "치환 후 무관 문구(심사본)",
+  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "instructions": "입력 문서의 '규제' 를 모두 '심사' 로 바꾼 산출물을 edited51.hwp 로 제출하라. 채점은 옛 문구가 0건이 되었는지와 새 문구가 실재하는지를 각각 확인한다. 힌트: rhwp edit replace-text (occurrence 없이 전건). 고치지 않은 문구 'ⅰ' 의 일치 건수를 answer.json 에 {\"untouched\": N} 으로 적어라.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "edited51.hwp",
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "옛 문구 완전 소거",
+      "op": "value_eq",
+      "value": 0,
+      "path": "matchCount",
+      "cmd": [
+        "search",
+        "{file:edited51.hwp}",
+        "--json",
+        "--",
+        "규제"
+      ]
+    },
+    {
+      "name": "새 문구 실재",
+      "op": "value_ge",
+      "value": 1,
+      "path": "matchCount",
+      "cmd": [
+        "search",
+        "{file:edited51.hwp}",
+        "--json",
+        "--",
+        "심사"
+      ]
+    },
+    {
+      "name": "원본과 다름",
+      "op": "differs_from_input",
+      "file": "edited51.hwp"
+    },
+    {
+      "name": "무관 문구 잔여 건수",
+      "op": "answer_eq",
+      "answer": "untouched",
+      "path": "matchCount",
+      "cmd": [
+        "search",
+        "{file:edited51.hwp}",
+        "--json",
+        "--",
+        "ⅰ"
+      ]
+    }
+  ]
+}

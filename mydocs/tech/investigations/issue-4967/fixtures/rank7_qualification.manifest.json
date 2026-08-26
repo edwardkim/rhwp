@@ -1,0 +1,358 @@
+{
+  "inputBytes": 9138,
+  "inputSha256": "1cc8062c6fd0da39cfddc4182115226717516d4250e693b43596293374236f9e",
+  "issue": 4963,
+  "kind": "font-oracle-typesetting-fixture-manifest",
+  "lineSegLaneCounts": {
+    "fresh-candidate-lane": 12,
+    "stored-line-lane": 14
+  },
+  "schemaVersion": 1,
+  "semantic": {
+    "contexts": [
+      {
+        "charPropertyId": 7,
+        "context": "body",
+        "lineSegLane": "stored-line-lane",
+        "paragraphId": 49631000
+      },
+      {
+        "charPropertyId": 8,
+        "context": "body",
+        "lineSegLane": "fresh-candidate-lane",
+        "paragraphId": 49631001
+      },
+      {
+        "charPropertyId": 9,
+        "context": "body",
+        "lineSegLane": "stored-line-lane",
+        "paragraphId": 49631002
+      },
+      {
+        "charPropertyId": 10,
+        "context": "body",
+        "lineSegLane": "fresh-candidate-lane",
+        "paragraphId": 49631003
+      },
+      {
+        "charPropertyId": 11,
+        "context": "body",
+        "lineSegLane": "stored-line-lane",
+        "paragraphId": 49631004
+      },
+      {
+        "charPropertyId": 12,
+        "context": "body",
+        "lineSegLane": "fresh-candidate-lane",
+        "paragraphId": 49631005
+      },
+      {
+        "charPropertyId": 13,
+        "context": "body",
+        "lineSegLane": "stored-line-lane",
+        "paragraphId": 49631006
+      },
+      {
+        "charPropertyId": 14,
+        "context": "body",
+        "lineSegLane": "fresh-candidate-lane",
+        "paragraphId": 49631007
+      },
+      {
+        "charPropertyId": 15,
+        "context": "body",
+        "lineSegLane": "stored-line-lane",
+        "paragraphId": 49631008
+      },
+      {
+        "charPropertyId": 16,
+        "context": "body",
+        "lineSegLane": "fresh-candidate-lane",
+        "paragraphId": 49631009
+      },
+      {
+        "charPropertyId": 17,
+        "context": "body",
+        "lineSegLane": "stored-line-lane",
+        "paragraphId": 49631010
+      },
+      {
+        "charPropertyId": 18,
+        "context": "body",
+        "lineSegLane": "fresh-candidate-lane",
+        "paragraphId": 49631011
+      },
+      {
+        "charPropertyId": 19,
+        "context": "body",
+        "lineSegLane": "stored-line-lane",
+        "paragraphId": 49631012
+      },
+      {
+        "charPropertyId": 20,
+        "context": "body",
+        "lineSegLane": "fresh-candidate-lane",
+        "paragraphId": 49631013
+      },
+      {
+        "charPropertyId": 21,
+        "context": "body",
+        "lineSegLane": "stored-line-lane",
+        "paragraphId": 49631014
+      },
+      {
+        "charPropertyId": 22,
+        "context": "body",
+        "lineSegLane": "fresh-candidate-lane",
+        "paragraphId": 49631015
+      },
+      {
+        "charPropertyId": 23,
+        "context": "body",
+        "lineSegLane": "stored-line-lane",
+        "paragraphId": 49631016
+      },
+      {
+        "charPropertyId": 24,
+        "context": "body",
+        "lineSegLane": "fresh-candidate-lane",
+        "paragraphId": 49631017
+      },
+      {
+        "charPropertyId": 7,
+        "context": "table-cell",
+        "lineSegLane": "stored-line-lane",
+        "paragraphId": 49631018
+      },
+      {
+        "charPropertyId": 7,
+        "context": "text-box",
+        "lineSegLane": "fresh-candidate-lane",
+        "paragraphId": 49631028
+      },
+      {
+        "charPropertyId": 16,
+        "context": "table-cell",
+        "lineSegLane": "fresh-candidate-lane",
+        "paragraphId": 49631019
+      },
+      {
+        "charPropertyId": 16,
+        "context": "text-box",
+        "lineSegLane": "stored-line-lane",
+        "paragraphId": 49631029
+      },
+      {
+        "charPropertyId": 24,
+        "context": "table-cell",
+        "lineSegLane": "stored-line-lane",
+        "paragraphId": 49631020
+      },
+      {
+        "charPropertyId": 24,
+        "context": "text-box",
+        "lineSegLane": "fresh-candidate-lane",
+        "paragraphId": 49631030
+      },
+      {
+        "charPropertyId": 24,
+        "context": "header",
+        "lineSegLane": "stored-line-lane",
+        "paragraphId": 49630003
+      },
+      {
+        "charPropertyId": 24,
+        "context": "footer",
+        "lineSegLane": "stored-line-lane",
+        "paragraphId": 49630004
+      }
+    ],
+    "contractVersion": "w5-oracle-typesetting-v1-subst-v1",
+    "documentFace": "KoPubWorld돋움체 Light",
+    "fontBytesEmbedded": false,
+    "matrix": [
+      {
+        "charPropertyId": 7,
+        "kerning": false,
+        "ratio": 100,
+        "spacing": 0
+      },
+      {
+        "charPropertyId": 8,
+        "kerning": true,
+        "ratio": 100,
+        "spacing": 0
+      },
+      {
+        "charPropertyId": 9,
+        "kerning": false,
+        "ratio": 100,
+        "spacing": -5
+      },
+      {
+        "charPropertyId": 10,
+        "kerning": true,
+        "ratio": 100,
+        "spacing": -5
+      },
+      {
+        "charPropertyId": 11,
+        "kerning": false,
+        "ratio": 100,
+        "spacing": -10
+      },
+      {
+        "charPropertyId": 12,
+        "kerning": true,
+        "ratio": 100,
+        "spacing": -10
+      },
+      {
+        "charPropertyId": 13,
+        "kerning": false,
+        "ratio": 90,
+        "spacing": 0
+      },
+      {
+        "charPropertyId": 14,
+        "kerning": true,
+        "ratio": 90,
+        "spacing": 0
+      },
+      {
+        "charPropertyId": 15,
+        "kerning": false,
+        "ratio": 90,
+        "spacing": -5
+      },
+      {
+        "charPropertyId": 16,
+        "kerning": true,
+        "ratio": 90,
+        "spacing": -5
+      },
+      {
+        "charPropertyId": 17,
+        "kerning": false,
+        "ratio": 90,
+        "spacing": -10
+      },
+      {
+        "charPropertyId": 18,
+        "kerning": true,
+        "ratio": 90,
+        "spacing": -10
+      },
+      {
+        "charPropertyId": 19,
+        "kerning": false,
+        "ratio": 80,
+        "spacing": 0
+      },
+      {
+        "charPropertyId": 20,
+        "kerning": true,
+        "ratio": 80,
+        "spacing": 0
+      },
+      {
+        "charPropertyId": 21,
+        "kerning": false,
+        "ratio": 80,
+        "spacing": -5
+      },
+      {
+        "charPropertyId": 22,
+        "kerning": true,
+        "ratio": 80,
+        "spacing": -5
+      },
+      {
+        "charPropertyId": 23,
+        "kerning": false,
+        "ratio": 80,
+        "spacing": -10
+      },
+      {
+        "charPropertyId": 24,
+        "kerning": true,
+        "ratio": 80,
+        "spacing": -10
+      }
+    ],
+    "queueRank": 7,
+    "sourceTemplateSha256": "c58144645069f7d1258e91404730618ad568bc4d47680ad5f891d3050aa308c7",
+    "substitutionFace": "KoPubWorld바탕체 Light",
+    "textSha256": "f0885cee0b35b2d726b4d937c56f8f05a0c590ae7e53bd1a6810cd352a60153c"
+  },
+  "semanticSha256": "e19b5842e7eaa1dc258d3f7abaaa79e421f099329c57976878c5f5fc16b61970",
+  "sourceFormat": "hwpx",
+  "zipEntries": [
+    {
+      "bytes": 19,
+      "compression": "stored",
+      "name": "mimetype",
+      "sha256": "5ab5230b5af04f78947736bf8dd1a269aa684e234f7f4a392efb85289d1655c2"
+    },
+    {
+      "bytes": 1708,
+      "compression": "deflated",
+      "name": "Contents/content.hpf",
+      "sha256": "8e274ad3eb05ab3c18647b718fe0ba64dedc2149c738659be5fffc0b8b22a5dc"
+    },
+    {
+      "bytes": 44436,
+      "compression": "deflated",
+      "name": "Contents/header.xml",
+      "sha256": "57a12858c7cae9a35ca2efb20df54e524a962d1c832b3fc1a570a6bb2bde21c9"
+    },
+    {
+      "bytes": 17603,
+      "compression": "deflated",
+      "name": "Contents/section0.xml",
+      "sha256": "67cc1cb892dc2773d87e14da1757c4cbacccf5eebdc38a5ddb5216d48b0e0bc0"
+    },
+    {
+      "bytes": 867,
+      "compression": "deflated",
+      "name": "META-INF/container.rdf",
+      "sha256": "0cfd814c20595c841e48e62fbf7591829f13c177fa92af634c8199f85ecf3a89"
+    },
+    {
+      "bytes": 475,
+      "compression": "deflated",
+      "name": "META-INF/container.xml",
+      "sha256": "5109d3a9249ec1058177fedab574c5d9616058aa92ebefcd33249ebb36a20f61"
+    },
+    {
+      "bytes": 134,
+      "compression": "deflated",
+      "name": "META-INF/manifest.xml",
+      "sha256": "2b4b155c1bb6a9ccc212fef113c4831d2f558e67cf1260eb314ce54f26fd32ea"
+    },
+    {
+      "bytes": 5126,
+      "compression": "deflated",
+      "name": "Preview/PrvImage.png",
+      "sha256": "2103d51fb863769afce086d2aa45eda343808e1c478527a9d40b3dfbebe513c6"
+    },
+    {
+      "bytes": 74,
+      "compression": "deflated",
+      "name": "Preview/PrvText.txt",
+      "sha256": "f0885cee0b35b2d726b4d937c56f8f05a0c590ae7e53bd1a6810cd352a60153c"
+    },
+    {
+      "bytes": 279,
+      "compression": "deflated",
+      "name": "settings.xml",
+      "sha256": "dcc4abfcc61852badcfc866339ec626cf4ffbdf77f0553cb708be58a05d6713f"
+    },
+    {
+      "bytes": 309,
+      "compression": "deflated",
+      "name": "version.xml",
+      "sha256": "343622a45451dd3b1c449f36016ef8608234b5b33e4e48dae3fc80f5f3888cbb"
+    }
+  ]
+}

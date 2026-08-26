@@ -1,0 +1,12 @@
+{
+  "id": "SR05",
+  "steps": [
+    {
+      "run": [
+        "export-ir-schema",
+        "-o",
+        "{sub:schema.json}"
+      ]
+    }
+  ]
+}

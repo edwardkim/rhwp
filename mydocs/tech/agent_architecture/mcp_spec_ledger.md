@@ -153,7 +153,7 @@ modern 오류가 아닌" 응답이면 legacy 로 판정해 `initialize` 로 폴�
 implemented-revision: 2025-06-18
 resource-not-found-code: -32002
 resource-not-found-test-files: tests/mcp_server_contract.rs, tests/mcp_resources_contract.rs
-serve-methods: initialize, ping, tools/list, tools/call, resources/list, resources/read
+serve-methods: initialize, ping, tools/list, tools/call, resources/list, resources/read, prompts/list, prompts/get
 ```
 <!-- MACHINE-LEDGER-END -->
 

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workReceiptExceptionEnvelope",
+  "ident": "replay_expect_missing",
+  "claim": "M-rcpt",
+  "issue": 5478,
+  "command": "replay",
+  "family": "replay-usage",
+  "argv": [
+    "replay",
+    "--plan-json",
+    "{}",
+    "--expect-output-sha256"
+  ],
+  "exit": 2,
+  "stdoutBytes": 0,
+  "stdoutSilent": true,
+  "needle": "--expect-output-sha256 뒤에 64자리 16진 해시가 필요합니다",
+  "envelopeKeys": [],
+  "why": "verify 플래그 값 누락.",
+  "judgment": false,
+  "io": false,
+  "usage": true,
+  "notes": "exit 3 은 도구 고장이 아니라 판정 데이터다. exit 1 은 IO, exit 2 는 사용법. 실패 경로 stdout 은 0바이트가 기본이고, replay --json 엔진 오류만 {schemaVersion,error} 를 싣는다.",
+  "generator": "tools/work_receipt/fatten_work_receipt.py"
+}

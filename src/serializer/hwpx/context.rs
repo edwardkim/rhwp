@@ -19,6 +19,7 @@ use std::collections::{HashMap, HashSet};
 
 use crate::model::control::Control;
 use crate::model::document::Document;
+use crate::serializer::content_loss::{ContentLossReport, SerializedFormat};
 use crate::serializer::SerializeError;
 
 /// 양방향 ID 풀 — 등록된 ID와 참조된 ID를 추적한다.
@@ -91,7 +92,7 @@ pub struct ChartPartEntry {
 }
 
 /// 1-pass 스캔으로 구축되는 직렬화 컨텍스트.
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub struct SerializeContext {
     pub char_shape_ids: IdPool<u32>,
     pub para_shape_ids: IdPool<u16>,
@@ -101,12 +102,21 @@ pub struct SerializeContext {
     pub style_ids: IdPool<u16>,
     /// `bin_data_id` (IR) → manifest 엔트리 매핑
     pub bin_data_map: HashMap<u16, BinDataEntry>,
+    /// HWP5 BIN_DATA 레코드 순번(1-based) → storage_id 사상.
+    ///
+    /// `ImageAttr.bin_data_id`는 storage stream 이름이 아니라 DocInfo 레코드
+    /// 순번이다. storage_id와 같은 숫자가 있어도 순번 사상이 우선해야 한다.
+    bin_seq_to_storage: HashMap<u16, u16>,
     /// [#3546] OOXML 차트 파트 — Chart/chartN.xml 원형 방출 목록.
     /// 원본 content.hpf 는 Chart 파트를 나열하지 않으므로 manifest·3-way
     /// 단언 대상 밖이다.
     pub chart_entries: Vec<ChartPartEntry>,
     /// 문서 전역 문단 ID 카운터 — `<hp:p id="...">` 에 발급한다.
     para_id_counter: u32,
+    /// HWP3 전용 Hyperlink control을 HWPX `fieldBegin`으로 승격할 때 쓰는 ID.
+    /// HWP3 원본에는 HWPX field ID가 없으므로, 기존 Field ID와 충돌 가능성이 낮은
+    /// 상위 범위를 문서 내에서 단조 감소시켜 링크마다 다른 값을 발급한다.
+    generated_hyperlink_id: u32,
     /// subList(셀·글상자) 직렬화 중첩 깊이 (#1379 3단계).
     ///
     /// 본문 경로는 colPr 를 섹션 템플릿 첫 run 에서 처리하므로 인라인 미방출이
@@ -121,15 +131,64 @@ pub struct SerializeContext {
     /// 방출했으므로 중복 방지를 위해 건너뛴다. `write_section` 이 첫 문단 렌더 직전
     /// true 로 설정하고, 첫 본문 ColumnDef 방출 시 `render_control_slot` 이 소거한다.
     pub body_coldef_template_pending: bool,
+    /// [#5943] 저장 lineseg 의 `textpos` 가 이미 HWPX 슬롯 축인지 여부.
+    ///
+    /// `LineSeg::text_start` 는 파서가 파일 값을 그대로 담으므로 **출처마다 축이 다르다**
+    /// — HWP5·HWP3·HML 출처는 확장 제어 하나당 8유닛을 주는 HWP5 축이고, HWPX 출처는
+    /// `hp:secPr`·`hp:colPr` 을 세지 않는 HWPX 축이다. 이 값이 참이면 재기준화하지
+    /// 않는다(이중으로 빼면 aift.hwpx 왕복이 `textpos 24 → 8` 로 깨진다).
+    /// 판정은 "이 lineseg 가 HWPX 컨테이너에서 나왔는가" — 출처 포맷이 HWPX 이거나
+    /// rhwp HWPX→HWP5 변환본(`hwpx_lineage`)이다. `hwpx_stored_layout()` 은 쓸 수 없다.
+    /// 그쪽은 rhwp 가 HWP5 에서 낸 HWPX(`META-INF/rhwp-hwp5-origin`)를 제외하는데, 그
+    /// 파일의 `textpos` 는 이 수정 이후 **HWPX 축**이라 다시 내리면 재수출 고정점이
+    /// 깨진다(02502 재수출: 32 → 16 실측).
+    pub line_segs_on_hwpx_axis: bool,
+    /// 이번 HWPX 산출물에서 발생한 사용자 내용 손실 (#4430).
+    ///
+    /// ID 풀과 마찬가지로 한 번의 직렬화 생명주기에만 속하며, 완료 시 바이트와 함께
+    /// `SerializedDocument`로 이동한다.
+    pub content_loss: ContentLossReport,
+}
+
+impl Default for SerializeContext {
+    fn default() -> Self {
+        Self {
+            char_shape_ids: IdPool::default(),
+            line_segs_on_hwpx_axis: false,
+            para_shape_ids: IdPool::default(),
+            border_fill_ids: IdPool::default(),
+            tab_pr_ids: IdPool::default(),
+            numbering_ids: IdPool::default(),
+            style_ids: IdPool::default(),
+            bin_data_map: HashMap::new(),
+            bin_seq_to_storage: HashMap::new(),
+            chart_entries: Vec::new(),
+            para_id_counter: 0,
+            generated_hyperlink_id: u32::MAX,
+            sub_list_depth: 0,
+            body_coldef_template_pending: false,
+            content_loss: ContentLossReport::new(SerializedFormat::Hwpx),
+        }
+    }
 }
 
 impl SerializeContext {
+    /// HWP3 `Control::Hyperlink`용 HWPX field ID를 하나 발급한다.
+    pub fn next_generated_hyperlink_id(&mut self) -> u32 {
+        let id = self.generated_hyperlink_id;
+        self.generated_hyperlink_id = self.generated_hyperlink_id.saturating_sub(1);
+        id
+    }
+
     /// Document IR 전체를 1-pass 스캔하여 ID 풀을 채운다.
     ///
     /// Stage 0에서는 최소 등록(header.xml 리소스만)만 수행한다. Stage 1~4에서
     /// 각 writer가 추가되면서 `reference()` 호출과 스캔 범위가 확장된다.
     pub fn collect_from_document(doc: &Document) -> Self {
         let mut ctx = Self::default();
+        ctx.line_segs_on_hwpx_axis = doc.provenance.format
+            == crate::model::provenance::SourceFormat::Hwpx
+            || doc.provenance.hwpx_lineage;
 
         // CharShape, ParaShape, BorderFill, TabDef, Numbering, Style, Font
         // 목록은 배열 인덱스가 곧 HWPX `id` 속성이 된다.
@@ -160,23 +219,22 @@ impl SerializeContext {
         for (idx, _) in doc.doc_info.styles.iter().enumerate() {
             ctx.style_ids.register(idx as u16);
         }
+        // [#1933 보강] style 0 은 `effective_style_id`/`write_styles` 계약상 "항상
+        // 등록됨" 취급이다 — `<hh:styles>` 블록 자체가 없는(styles 비어있는) 정상
+        // HWPX 도 파라그래프가 암묵적 기본 style 0을 참조할 수 있고, `write_styles`
+        // 는 그 경우 블록을 그대로 생략한다(header.rs). 종전에는 `doc_info.styles`
+        // 가 비어 있으면 0도 등록되지 않아, 있는 그대로 되돌려 쓰는 정상적인
+        // round-trip이 `assert_all_refs_resolved` 에서 "미등록 styleIDRef: [0]" 로
+        // 하드 실패했다(예: styles 블록이 없는 샘플의 HWPX 자기 왕복).
+        ctx.style_ids.register(0);
 
         // 인라인 컨트롤(표/그림 등)의 borderFillIDRef를 사전 등록하여
-        // assert_all_refs_resolved 검증 시 누락 방지.
+        // assert_all_refs_resolved 검증 시 누락 방지. 중첩 표(셀 안의 표)와
+        // 글상자·머리말/꼬리말·각주/미주 안의 표까지 재귀한다(아래
+        // `register_border_fills_in_paragraphs` 참조, `table_extract::collect_from_paragraph`
+        // 와 같은 위상의 재귀).
         for sec in &doc.sections {
-            for para in &sec.paragraphs {
-                for ctrl in &para.controls {
-                    if let Control::Table(tbl) = ctrl {
-                        ctx.border_fill_ids.register(tbl.border_fill_id);
-                        for zone in &tbl.zones {
-                            ctx.border_fill_ids.register(zone.border_fill_id);
-                        }
-                        for cell in &tbl.cells {
-                            ctx.border_fill_ids.register(cell.border_fill_id);
-                        }
-                    }
-                }
-            }
+            register_border_fills_in_paragraphs(&mut ctx, &sec.paragraphs, 0);
         }
 
         // BinData: bin_data_content의 storage_id → manifest 엔트리 생성.
@@ -250,6 +308,53 @@ impl SerializeContext {
             );
         }
 
+        // [#3893/#4049] HWP5 본문 개체의 BIN_DATA 순번 축. `storage_id`와
+        // 우연히 같은 숫자가 있어도 별개 의미이므로, 실제 데이터를 가진 모든
+        // 레코드의 사상을 등록한다.
+        for (i, bd) in doc.doc_info.bin_data_list.iter().enumerate() {
+            let seq = (i + 1) as u16;
+            if bd.storage_id != 0 && ctx.bin_data_map.contains_key(&bd.storage_id) {
+                ctx.bin_seq_to_storage.insert(seq, bd.storage_id);
+            }
+        }
+
+        // [#5168] 외부 연결(Link) BinData 는 `storage_id` 가 없어(0) 위 등록 루프들에서
+        // 모두 빠진다. 그러면 Link 를 참조하는 그림(`bin_data_id` = BIN_DATA 레코드 순번)이
+        // `resolve_bin_id` 의 직접 조회 폴백으로 떨어져, 순번이 내장 이미지의 `storage_id`
+        // 범위 안이면 **엉뚱한 내장 이미지로 바뀌고**(image{순번}=image{storage_id} 충돌),
+        // 범위를 넘으면 미등록으로 **드롭**됐다(07605: LINK 7·EMBED 5 → gso 12 → pic 10,
+        // image1~5 가 각 2회 참조). Link 마다 기존 키와 겹치지 않는 새 id 를 배정해 외부
+        // 참조 엔트리(`is_embedded=false`, href=연결 경로)로 등록하고 그 순번을 사상한다.
+        // 외부 참조라 ZIP 엔트리·3-way 단언에서는 제외된다(#1891 경로와 동일).
+        let mut next_link_id = ctx.bin_data_map.keys().copied().max().unwrap_or(0) + 1;
+        for (i, bd) in doc.doc_info.bin_data_list.iter().enumerate() {
+            let seq = (i + 1) as u16;
+            if bd.data_type != crate::model::bin_data::BinDataType::Link
+                || ctx.bin_seq_to_storage.contains_key(&seq)
+            {
+                continue;
+            }
+            let link_id = next_link_id;
+            next_link_id += 1;
+            let href = bd
+                .abs_path
+                .clone()
+                .or_else(|| bd.rel_path.clone())
+                .unwrap_or_default();
+            let ext = bd.extension.as_deref().unwrap_or("");
+            ctx.bin_data_map.insert(
+                link_id,
+                BinDataEntry {
+                    manifest_id: format!("image{}", link_id),
+                    href,
+                    media_type: mime_from_ext(ext).to_string(),
+                    bin_data_id: link_id,
+                    is_embedded: false,
+                },
+            );
+            ctx.bin_seq_to_storage.insert(seq, link_id);
+        }
+
         ctx
     }
 
@@ -261,10 +366,20 @@ impl SerializeContext {
     }
 
     /// `bin_data_id` → manifest id 조회 (Stage 4의 `<hc:img binaryItemIDRef="...">` 용).
+    ///
+    /// HWP5 본문 개체의 `bin_data_id`는 BIN_DATA 레코드 순번이므로, 등록된
+    /// 순번 사상을 storage ID 직접 조회보다 먼저 적용한다. 사상이 없는 sparse
+    /// ID(차트)와 수동 구성 문서는 기존 직접 조회를 사용한다.
     pub fn resolve_bin_id(&self, bin_data_id: u16) -> Option<&str> {
-        self.bin_data_map
+        self.bin_seq_to_storage
             .get(&bin_data_id)
+            .and_then(|storage| self.bin_data_map.get(storage))
             .map(|e| e.manifest_id.as_str())
+            .or_else(|| {
+                self.bin_data_map
+                    .get(&bin_data_id)
+                    .map(|e| e.manifest_id.as_str())
+            })
     }
 
     /// 모든 참조가 해소되었는지 단언. 해소되지 않은 ID가 있으면 `SerializeError::XmlError` 반환.
@@ -328,6 +443,156 @@ impl SerializeContext {
     }
 }
 
+/// 재귀 스캔 최대 깊이 — `table_extract::MAX_NEST_DEPTH` 와 같은 값.
+/// 순환 참조가 없는 정상 IR에서는 닿지 않고, 적대적/손상 입력에서 무한 재귀를 막는다.
+const MAX_BORDER_FILL_SCAN_DEPTH: usize = 8;
+
+/// 표 하나의 `border_fill_id`(표/영역/셀)를 등록한다.
+fn register_table_border_fills(ctx: &mut SerializeContext, table: &crate::model::table::Table) {
+    ctx.border_fill_ids.register(table.border_fill_id);
+    for zone in &table.zones {
+        ctx.border_fill_ids.register(zone.border_fill_id);
+    }
+    for cell in &table.cells {
+        ctx.border_fill_ids.register(cell.border_fill_id);
+    }
+}
+
+/// 문단 목록을 재귀하며 표(및 중첩 표)의 `border_fill_id`를 사전 등록한다.
+///
+/// `table_extract::collect_from_paragraph`/`nested_tables`(#3719 계열 표 추출)와 같은
+/// 위상의 재귀 — 표 셀 안의 표(중첩 표), 글상자, 머리말/꼬리말, 각주/미주까지 내려간다.
+/// 종전에는 `doc.sections[].paragraphs[]`의 최상위 `Control::Table`만 훑어 셀 안에 중첩된
+/// 표나 글상자·머리말/꼬리말·각주/미주 안의 표의 `border_fill_id`가 등록에서 빠졌다.
+/// 그 표가 실제 직렬화(`table.rs`의 `reference()` 호출)에서 참조되면
+/// `assert_all_refs_resolved`가 "미등록 ID 참조 발견"으로 하드 실패해 문서 전체의
+/// `export-hwpx`가 산출물 없이 실패했다(실측: 정부 보고서 표 107개 중 중첩 표 1개를 가진
+/// 문서에서 `borderFillIDRef: [0]` 미등록으로 재현).
+///
+/// [gestell 리뷰] 첫 수정은 6개 소유자(표 셀·글상자·머리말·꼬리말·각주·미주)만 돌았다.
+/// OWPML 은 문단 리스트를 8개 자리에 둘 수 있다 — 나머지 2개(캡션, 필드 메모)와 함께
+/// `Control::Picture`(자체 캡션을 갖는 별도 컨트롤)·`Control::HiddenComment` 도 이 재귀 밖에
+/// 있었다. `#2736`(전수 조사: 순회 × 컨테이너 행렬)이 이미 지적한 "공유 방문자 부재로 반복되는
+/// 재귀 누락"과 같은 계열 — 이번 세션의 `#4321`/PR #4365(`injection_scan.rs`)가 캡션·그림·필드
+/// 메모 누락을 고친 것과 동형이다.
+fn register_border_fills_in_paragraphs(
+    ctx: &mut SerializeContext,
+    paragraphs: &[crate::model::paragraph::Paragraph],
+    depth: usize,
+) {
+    if depth >= MAX_BORDER_FILL_SCAN_DEPTH {
+        return;
+    }
+    for para in paragraphs {
+        for ctrl in &para.controls {
+            register_border_fills_in_control(ctx, ctrl, depth);
+        }
+    }
+}
+
+fn register_border_fills_in_control(ctx: &mut SerializeContext, ctrl: &Control, depth: usize) {
+    match ctrl {
+        Control::Table(tbl) => {
+            register_table_border_fills(ctx, tbl);
+            for cell in &tbl.cells {
+                register_border_fills_in_paragraphs(ctx, &cell.paragraphs, depth + 1);
+            }
+            if let Some(caption) = &tbl.caption {
+                register_border_fills_in_paragraphs(ctx, &caption.paragraphs, depth + 1);
+            }
+        }
+        Control::Shape(shape) => {
+            register_border_fills_in_shape(ctx, shape, depth);
+        }
+        // 독립 그림 컨트롤(글상자/묶음 밖) — 자체 `caption` 을 갖는다(`src/model/image.rs`).
+        Control::Picture(pic) => {
+            if let Some(caption) = &pic.caption {
+                register_border_fills_in_paragraphs(ctx, &caption.paragraphs, depth + 1);
+            }
+        }
+        Control::Header(h) => {
+            register_border_fills_in_paragraphs(ctx, &h.paragraphs, depth + 1);
+        }
+        Control::Footer(f) => {
+            register_border_fills_in_paragraphs(ctx, &f.paragraphs, depth + 1);
+        }
+        Control::Footnote(f) => {
+            register_border_fills_in_paragraphs(ctx, &f.paragraphs, depth + 1);
+        }
+        Control::Endnote(e) => {
+            register_border_fills_in_paragraphs(ctx, &e.paragraphs, depth + 1);
+        }
+        // 숨은 설명(메모) — 화면에 안 보여도 파일에는 문단 리스트로 존재한다.
+        Control::HiddenComment(hc) => {
+            register_border_fills_in_paragraphs(ctx, &hc.paragraphs, depth + 1);
+        }
+        // 필드(누름틀 등) 메모 — `Field.memo_paragraphs`.
+        Control::Field(f) => {
+            register_border_fills_in_paragraphs(ctx, &f.memo_paragraphs, depth + 1);
+        }
+        _ => {}
+    }
+}
+
+/// `ShapeObject`(그리기 개체) 하나의 글상자·캡션과, 묶음이면 자식 개체까지 재귀한다.
+///
+/// 캡션 자리는 변형마다 다르다(#4319 가 렌더 쪽에서 이미 지적한 비대칭과 같은 축):
+/// - 기본 6종(Line/Rectangle/Ellipse/Arc/Polygon/Curve): `drawing.caption`
+/// - `Group`/`Picture`(묶음 내 자식으로서의 그림): 자기 struct 의 `caption`
+/// - `Chart`/`Ole`: 자기 struct 의 `caption` — 파서(`src/parser/control/shape.rs:213,222`)가
+///   `drawing.caption` 을 `.take()` 로 옮기므로 `drawing.caption` 은 항상 `None` 이다. 그래도
+///   방어적으로 두 자리를 모두 확인한다(렌더의 `shape_caption_for_layout` 폴백과 동형).
+fn register_border_fills_in_shape(
+    ctx: &mut SerializeContext,
+    shape: &crate::model::shape::ShapeObject,
+    depth: usize,
+) {
+    if depth >= MAX_BORDER_FILL_SCAN_DEPTH {
+        return;
+    }
+    use crate::model::shape::ShapeObject;
+
+    if let Some(tb) = shape.drawing().and_then(|d| d.text_box.as_ref()) {
+        register_border_fills_in_paragraphs(ctx, &tb.paragraphs, depth + 1);
+    }
+
+    match shape {
+        ShapeObject::Group(g) => {
+            if let Some(caption) = &g.caption {
+                register_border_fills_in_paragraphs(ctx, &caption.paragraphs, depth + 1);
+            }
+            for child in &g.children {
+                register_border_fills_in_shape(ctx, child, depth + 1);
+            }
+        }
+        ShapeObject::Picture(p) => {
+            if let Some(caption) = &p.caption {
+                register_border_fills_in_paragraphs(ctx, &caption.paragraphs, depth + 1);
+            }
+        }
+        ShapeObject::Chart(c) => {
+            if let Some(caption) = c.caption.as_ref().or(c.drawing.caption.as_ref()) {
+                register_border_fills_in_paragraphs(ctx, &caption.paragraphs, depth + 1);
+            }
+        }
+        ShapeObject::Ole(o) => {
+            if let Some(caption) = o.caption.as_ref().or(o.drawing.caption.as_ref()) {
+                register_border_fills_in_paragraphs(ctx, &caption.paragraphs, depth + 1);
+            }
+        }
+        ShapeObject::Line(_)
+        | ShapeObject::Rectangle(_)
+        | ShapeObject::Ellipse(_)
+        | ShapeObject::Arc(_)
+        | ShapeObject::Polygon(_)
+        | ShapeObject::Curve(_) => {
+            if let Some(caption) = shape.drawing().and_then(|d| d.caption.as_ref()) {
+                register_border_fills_in_paragraphs(ctx, &caption.paragraphs, depth + 1);
+            }
+        }
+    }
+}
+
 fn mime_from_ext(ext: &str) -> &'static str {
     match ext.to_ascii_lowercase().as_str() {
         "png" => "image/png",
@@ -358,6 +623,22 @@ mod tests {
         let doc = Document::default();
         let ctx = SerializeContext::collect_from_document(&doc);
         ctx.assert_all_refs_resolved().expect("empty doc must pass");
+    }
+
+    /// [Issue #4395] `doc_info.styles` 가 비어 있어도(=`<hh:styles>` 블록 없음) style id 0 은
+    /// 항상 등록된 것으로 취급해야 한다 — `effective_style_id`(아래)의 기존 계약이자,
+    /// `write_styles`(header.rs)가 빈 목록일 때 블록 자체를 생략하는 정상 동작과 짝을 이룬다.
+    /// 수정 전에는 `doc.doc_info.styles` 순회로만 등록해서 목록이 비면 0 도 미등록으로 남아,
+    /// styleIDRef=0 을 참조하는 문단이 있는 문서(예: `samples/task2156/width_ladder.hwpx`)의
+    /// 저장 자체가 "미등록 ID 참조 발견: styleIDRef: [0]" 로 하드 실패했다.
+    #[test]
+    fn style_zero_always_registered_without_explicit_style_list() {
+        let doc = Document::default();
+        assert!(doc.doc_info.styles.is_empty());
+        let mut ctx = SerializeContext::collect_from_document(&doc);
+        ctx.style_ids.reference(0);
+        ctx.assert_all_refs_resolved()
+            .expect("style 0 must always be registered, even with an empty style list (#4395)");
     }
 
     #[test]
@@ -393,6 +674,311 @@ mod tests {
         assert!(
             !ctx.numbering_ids.is_registered(&0),
             "0 은 1-based 축에 없음 (회귀 가드)"
+        );
+    }
+
+    #[test]
+    fn nested_table_border_fill_id_registered() {
+        // 실측(정부 보고서, 표 107개 중 1개가 셀 안에 표를 담은 문서)에서 재현: 종전에는
+        // `doc.sections[].paragraphs[]`의 최상위 `Control::Table`만 훑어 셀 안에 중첩된
+        // 표의 `border_fill_id`가 등록에서 빠졌다. 그 표가 실제 직렬화에서 참조되면
+        // `assert_all_refs_resolved`가 "미등록 ID 참조 발견"으로 하드 실패해 문서 전체의
+        // `export-hwpx`가 산출물 없이 실패했다 — 이 테스트는 그 등록 누락의 회귀 가드다.
+        use crate::model::paragraph::Paragraph;
+        use crate::model::table::{Cell, Table};
+
+        const OUTER_BORDER_FILL_ID: u16 = 1;
+        const INNER_BORDER_FILL_ID: u16 = 2; // outer와 달라 별도 등록이 필요함을 보장.
+
+        let mut inner_table = Table::default();
+        inner_table.border_fill_id = INNER_BORDER_FILL_ID;
+        inner_table.row_count = 1;
+        inner_table.col_count = 1;
+        inner_table.cells = vec![Cell::new_empty(0, 0, 1000, 1000, INNER_BORDER_FILL_ID)];
+
+        let mut outer_cell = Cell::new_empty(0, 0, 5000, 5000, OUTER_BORDER_FILL_ID);
+        outer_cell.paragraphs = vec![{
+            let mut p = Paragraph::new_empty();
+            p.controls.push(Control::Table(Box::new(inner_table)));
+            p
+        }];
+
+        let mut outer_table = Table::default();
+        outer_table.border_fill_id = OUTER_BORDER_FILL_ID;
+        outer_table.row_count = 1;
+        outer_table.col_count = 1;
+        outer_table.cells = vec![outer_cell];
+
+        let mut doc = Document::default();
+        let mut para = Paragraph::new_empty();
+        para.controls.push(Control::Table(Box::new(outer_table)));
+        doc.sections = vec![crate::model::document::Section {
+            paragraphs: vec![para],
+            ..Default::default()
+        }];
+
+        let mut ctx = SerializeContext::collect_from_document(&doc);
+        assert!(
+            ctx.border_fill_ids.is_registered(&INNER_BORDER_FILL_ID),
+            "중첩 표(셀 안의 표)의 border_fill_id도 사전 등록되어야 한다"
+        );
+
+        // table.rs 의 실제 직렬화 경로와 동형: 중첩 표가 참조하는 시점을 재현해도
+        // assert_all_refs_resolved 가 통과해야 한다(수정 전에는 여기서 실패했다).
+        ctx.border_fill_ids.reference(OUTER_BORDER_FILL_ID);
+        ctx.border_fill_ids.reference(INNER_BORDER_FILL_ID);
+        ctx.assert_all_refs_resolved()
+            .expect("중첩 표 border_fill_id 참조가 미등록으로 남으면 안 된다");
+    }
+
+    // ── [gestell 리뷰] 문단 리스트 8개 소유자 전수 — 각 자리에 표를 하나씩 심어
+    // border_fill_id 사전 등록을 개별로 확인한다. 표 셀은 위 테스트가 이미 덮는다.
+
+    /// 표 하나(1×1)를 만들어 스스로 border_fill_id 를 갖게 한다 — 소유자 테스트 공용 헬퍼.
+    fn table_with_border_fill(id: u16) -> crate::model::table::Table {
+        use crate::model::table::{Cell, Table};
+        let mut t = Table::default();
+        t.border_fill_id = id;
+        t.row_count = 1;
+        t.col_count = 1;
+        t.cells = vec![Cell::new_empty(0, 0, 1000, 1000, id)];
+        t
+    }
+
+    /// 문단 하나에 표 컨트롤 하나를 심은 문단 리스트 — 캡션/메모/숨은설명 등
+    /// `Vec<Paragraph>` 필드에 그대로 대입해 쓴다.
+    fn paragraphs_with_table(id: u16) -> Vec<crate::model::paragraph::Paragraph> {
+        use crate::model::paragraph::Paragraph;
+        let mut p = Paragraph::new_empty();
+        p.controls
+            .push(Control::Table(Box::new(table_with_border_fill(id))));
+        vec![p]
+    }
+
+    /// 컨트롤 하나를 문서 최상위 문단에 심는다 — 소유자 테스트 공용 헬퍼.
+    fn doc_with_top_control(ctrl: Control) -> Document {
+        use crate::model::paragraph::Paragraph;
+        use crate::model::style::{CharShape, ParaShape, Style};
+        let mut doc = Document::default();
+        // 실제 문서는 항상 기본 char_shape/para_shape/style 을 최소 1개씩 갖는다 —
+        // 완전히 빈 doc_info 는 para_shape_id=0/style_id=0(필드 기본값) 참조조차
+        // 미등록으로 만들어, border_fill_id 축과 무관한 잡음으로 end-to-end 직렬화가
+        // 실패한다. 소유자별 회귀 테스트가 실제로 검사하려는 축(border_fill_id)만
+        // 남기기 위해 기본 항목을 채운다.
+        doc.doc_info.char_shapes = vec![CharShape::default()];
+        doc.doc_info.para_shapes = vec![ParaShape::default()];
+        doc.doc_info.styles = vec![Style::default()];
+        let mut para = Paragraph::new_empty();
+        para.controls.push(ctrl);
+        doc.sections = vec![crate::model::document::Section {
+            paragraphs: vec![para],
+            ..Default::default()
+        }];
+        doc
+    }
+
+    #[test]
+    fn table_caption_border_fill_id_registered() {
+        // 표 캡션(Table.caption) 안의 표 — 캡션은 8개 문단 리스트 소유자 중 하나다.
+        use crate::model::shape::Caption;
+        const ID: u16 = 21;
+        let mut outer = table_with_border_fill(1);
+        outer.caption = Some(Caption {
+            paragraphs: paragraphs_with_table(ID),
+            ..Default::default()
+        });
+        let doc = doc_with_top_control(Control::Table(Box::new(outer)));
+        let ctx = SerializeContext::collect_from_document(&doc);
+        assert!(
+            ctx.border_fill_ids.is_registered(&ID),
+            "표 캡션 안의 표 border_fill_id도 사전 등록되어야 한다"
+        );
+    }
+
+    /// [gestell 리뷰 요청] 실제 export-hwpx 진입점(`serialize_hwpx`)까지 물려서 확인한다 —
+    /// `SerializeContext` 등록만 보는 위 테스트보다 실측(#4408 재현)에 가까운 형태. 표
+    /// 캡션 안에 표를 담은 실제 코퍼스 문서를 찾지 못해(§보고 — 재현 문서 없음, 최소 IR로
+    /// 구성) `serialize_hwpx` 를 직접 호출해 전체 파이프라인이 크래시 없이 끝나는지 본다.
+    #[test]
+    fn table_in_caption_serializes_end_to_end_without_crash() {
+        use crate::model::shape::Caption;
+        const ID: u16 = 121;
+        let mut outer = table_with_border_fill(1);
+        outer.row_count = 1;
+        outer.col_count = 1;
+        outer.caption = Some(Caption {
+            paragraphs: paragraphs_with_table(ID),
+            ..Default::default()
+        });
+        let doc = doc_with_top_control(Control::Table(Box::new(outer)));
+        let result = crate::serializer::hwpx::serialize_hwpx(&doc);
+        assert!(
+            result.is_ok(),
+            "표 캡션 안에 표가 있으면 export-hwpx 가 산출물 없이 실패해서는 안 된다: {:?}",
+            result.err()
+        );
+    }
+
+    #[test]
+    fn shape_default_caption_border_fill_id_registered() {
+        // 기본 6종 도형(Line 등)의 캡션은 `drawing.caption` 에 있다.
+        use crate::model::shape::{Caption, LineShape, ShapeObject};
+        const ID: u16 = 22;
+        let mut line = LineShape::default();
+        line.drawing.caption = Some(Caption {
+            paragraphs: paragraphs_with_table(ID),
+            ..Default::default()
+        });
+        let doc = doc_with_top_control(Control::Shape(Box::new(ShapeObject::Line(line))));
+        let ctx = SerializeContext::collect_from_document(&doc);
+        assert!(
+            ctx.border_fill_ids.is_registered(&ID),
+            "기본 도형 drawing.caption 안의 표 border_fill_id도 사전 등록되어야 한다"
+        );
+    }
+
+    #[test]
+    fn shape_group_caption_and_child_border_fill_id_registered() {
+        // Group 은 자기 struct 의 `caption` 을 쓰고(drawing 이 없음), 자식 개체도 재귀해야 한다.
+        use crate::model::shape::{Caption, GroupShape, LineShape, ShapeObject};
+        const GROUP_CAPTION_ID: u16 = 23;
+        const CHILD_CAPTION_ID: u16 = 24;
+
+        let mut child_line = LineShape::default();
+        child_line.drawing.caption = Some(Caption {
+            paragraphs: paragraphs_with_table(CHILD_CAPTION_ID),
+            ..Default::default()
+        });
+
+        let mut group = GroupShape::default();
+        group.caption = Some(Caption {
+            paragraphs: paragraphs_with_table(GROUP_CAPTION_ID),
+            ..Default::default()
+        });
+        group.children = vec![ShapeObject::Line(child_line)];
+
+        let doc = doc_with_top_control(Control::Shape(Box::new(ShapeObject::Group(group))));
+        let ctx = SerializeContext::collect_from_document(&doc);
+        assert!(
+            ctx.border_fill_ids.is_registered(&GROUP_CAPTION_ID),
+            "Group.caption 안의 표 border_fill_id도 사전 등록되어야 한다"
+        );
+        assert!(
+            ctx.border_fill_ids.is_registered(&CHILD_CAPTION_ID),
+            "Group 자식 개체(재귀)의 캡션 안 표 border_fill_id도 사전 등록되어야 한다"
+        );
+    }
+
+    #[test]
+    fn shape_picture_variant_caption_border_fill_id_registered() {
+        // 묶음 내 자식으로서의 그림(ShapeObject::Picture) — 자기 struct 의 `caption`.
+        use crate::model::image::Picture;
+        use crate::model::shape::{Caption, ShapeObject};
+        const ID: u16 = 25;
+        let mut pic = Picture::default();
+        pic.caption = Some(Caption {
+            paragraphs: paragraphs_with_table(ID),
+            ..Default::default()
+        });
+        let doc = doc_with_top_control(Control::Shape(Box::new(ShapeObject::Picture(Box::new(
+            pic,
+        )))));
+        let ctx = SerializeContext::collect_from_document(&doc);
+        assert!(
+            ctx.border_fill_ids.is_registered(&ID),
+            "ShapeObject::Picture.caption 안의 표 border_fill_id도 사전 등록되어야 한다"
+        );
+    }
+
+    #[test]
+    fn shape_chart_caption_border_fill_id_registered() {
+        // Chart — 파서가 drawing.caption 을 자기 struct 의 caption 으로 옮긴다(#4319 계열).
+        // 두 자리 다 방어적으로 확인하므로 own-field 경로를 실측한다.
+        use crate::model::shape::{Caption, ChartShape, ShapeObject};
+        const ID: u16 = 26;
+        let mut chart = ChartShape::default();
+        chart.caption = Some(Caption {
+            paragraphs: paragraphs_with_table(ID),
+            ..Default::default()
+        });
+        let doc = doc_with_top_control(Control::Shape(Box::new(ShapeObject::Chart(Box::new(
+            chart,
+        )))));
+        let ctx = SerializeContext::collect_from_document(&doc);
+        assert!(
+            ctx.border_fill_ids.is_registered(&ID),
+            "Chart.caption 안의 표 border_fill_id도 사전 등록되어야 한다"
+        );
+    }
+
+    #[test]
+    fn shape_ole_caption_border_fill_id_registered() {
+        // Ole — Chart 와 같은 축(own-field caption).
+        use crate::model::shape::{Caption, OleShape, ShapeObject};
+        const ID: u16 = 27;
+        let mut ole = OleShape::default();
+        ole.caption = Some(Caption {
+            paragraphs: paragraphs_with_table(ID),
+            ..Default::default()
+        });
+        let doc = doc_with_top_control(Control::Shape(Box::new(ShapeObject::Ole(Box::new(ole)))));
+        let ctx = SerializeContext::collect_from_document(&doc);
+        assert!(
+            ctx.border_fill_ids.is_registered(&ID),
+            "Ole.caption 안의 표 border_fill_id도 사전 등록되어야 한다"
+        );
+    }
+
+    #[test]
+    fn control_picture_caption_border_fill_id_registered() {
+        // 독립 그림 컨트롤(Control::Picture) — ShapeObject::Picture 와 별개 축.
+        // 종전 코드는 Control::Picture 자체를 재귀 match 에서 다루지 않았다.
+        use crate::model::image::Picture;
+        use crate::model::shape::Caption;
+        const ID: u16 = 28;
+        let mut pic = Picture::default();
+        pic.caption = Some(Caption {
+            paragraphs: paragraphs_with_table(ID),
+            ..Default::default()
+        });
+        let doc = doc_with_top_control(Control::Picture(Box::new(pic)));
+        let ctx = SerializeContext::collect_from_document(&doc);
+        assert!(
+            ctx.border_fill_ids.is_registered(&ID),
+            "Control::Picture.caption 안의 표 border_fill_id도 사전 등록되어야 한다"
+        );
+    }
+
+    #[test]
+    fn hidden_comment_border_fill_id_registered() {
+        // 숨은 설명(HiddenComment) — 화면에 안 보여도 파일에는 문단 리스트로 존재한다.
+        use crate::model::control::HiddenComment;
+        const ID: u16 = 29;
+        let hc = HiddenComment {
+            paragraphs: paragraphs_with_table(ID),
+        };
+        let doc = doc_with_top_control(Control::HiddenComment(Box::new(hc)));
+        let ctx = SerializeContext::collect_from_document(&doc);
+        assert!(
+            ctx.border_fill_ids.is_registered(&ID),
+            "HiddenComment 안의 표 border_fill_id도 사전 등록되어야 한다"
+        );
+    }
+
+    #[test]
+    fn field_memo_paragraphs_border_fill_id_registered() {
+        // 필드(누름틀 등) 메모 — `Field.memo_paragraphs`.
+        use crate::model::control::Field;
+        const ID: u16 = 30;
+        let field = Field {
+            memo_paragraphs: paragraphs_with_table(ID),
+            ..Default::default()
+        };
+        let doc = doc_with_top_control(Control::Field(field));
+        let ctx = SerializeContext::collect_from_document(&doc);
+        assert!(
+            ctx.border_fill_ids.is_registered(&ID),
+            "Field.memo_paragraphs 안의 표 border_fill_id도 사전 등록되어야 한다"
         );
     }
 
@@ -483,6 +1069,34 @@ mod tests {
         let e1 = &ctx.bin_data_map[&1];
         assert!(e1.is_embedded, "콘텐츠 보유 항목은 isEmbeded=1 유지");
         assert_eq!(e1.href, "BinData/image1.png");
+    }
+
+    #[test]
+    fn hwp5_bin_sequence_precedes_colliding_storage_id() {
+        // HWP5 Picture의 bin_data_id는 storage stream 번호가 아니라 BIN_DATA
+        // 레코드 순번이다. Worldcup 계열처럼 storage id가 재배열된 경우에도
+        // 순번 1은 첫 레코드(storage 3)를 가리켜야 한다.
+        use crate::model::bin_data::{BinData, BinDataContent, BinDataType};
+
+        let mut doc = Document::default();
+        for storage_id in [3u16, 1, 2] {
+            doc.doc_info.bin_data_list.push(BinData {
+                data_type: BinDataType::Embedding,
+                storage_id,
+                extension: Some("png".to_string()),
+                ..Default::default()
+            });
+            doc.bin_data_content.push(BinDataContent {
+                id: storage_id,
+                data: vec![storage_id as u8].into(),
+                extension: "png".to_string(),
+            });
+        }
+
+        let ctx = SerializeContext::collect_from_document(&doc);
+        assert_eq!(ctx.resolve_bin_id(1), Some("image3"));
+        assert_eq!(ctx.resolve_bin_id(2), Some("image1"));
+        assert_eq!(ctx.resolve_bin_id(3), Some("image2"));
     }
 
     #[test]

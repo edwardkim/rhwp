@@ -1,0 +1,65 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.form_fill.fill_case.v1",
+  "id": "hr-card-fill-plain",
+  "axis": "fill-fields",
+  "claim": "M-fill",
+  "generator": "tools/form_fill/fatten_form_fill.py",
+  "form": "hr-card",
+  "title": "인사기록카드 고유 이름 채움",
+  "family": "인사",
+  "genre": "기록",
+  "sample": "fixtures/forms/인사기록카드.hwp",
+  "format": "hwp5",
+  "relatedIssue": "#3329",
+  "why": "순번 없는 고유 이름은 단건 채움. notFound/ambiguous 가 비어야 완료.",
+  "firstFieldName": "사번",
+  "fieldCount": 20,
+  "argv": [
+    "edit",
+    "fill-fields",
+    "fixtures/forms/인사기록카드.hwp",
+    "--data",
+    "{\"사번\": \"A10234\", \"성명\": \"홍길동\", \"한자성명\": \"洪吉童\"}",
+    "-o",
+    "out/hr-card-plain.hwp",
+    "--json"
+  ],
+  "existingCliOnly": true,
+  "data": {
+    "사번": "A10234",
+    "성명": "홍길동",
+    "한자성명": "洪吉童"
+  },
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "fixtures/forms/인사기록카드.hwp",
+    "dryRun": false,
+    "filledCount": 3,
+    "filled": [
+      {
+        "name": "사번",
+        "occurrence": 0,
+        "value": "A10234"
+      },
+      {
+        "name": "성명",
+        "occurrence": 0,
+        "value": "홍길동"
+      },
+      {
+        "name": "한자성명",
+        "occurrence": 0,
+        "value": "洪吉童"
+      }
+    ],
+    "notFound": [],
+    "ambiguous": [],
+    "confusable": [],
+    "verify": null,
+    "output": "out/hr-card-plain.hwp",
+    "outputFormat": "hwp5"
+  },
+  "exit": 0,
+  "gate": true
+}

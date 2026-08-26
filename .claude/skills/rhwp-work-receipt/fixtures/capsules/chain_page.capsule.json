@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workCapsule",
+  "parent": {
+    "capsule": "law_ref.capsule.json",
+    "sha256": "86a4dedd7712097fb5a8411b0998fec0a737dc652b41b352ff06dda1182181b8"
+  },
+  "plan": {
+    "planVersion": "1.0",
+    "input": "out/law_ref.hwp",
+    "output": "out/chain_page.hwp",
+    "steps": [
+      {
+        "action": "replace_text",
+        "find": "3쪽 참조",
+        "replace": "4쪽 참조"
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"out/law_ref.hwp\",\"output\":\"out/chain_page.hwp\",\"steps\":[{\"action\":\"replace_text\",\"find\":\"3쪽 참조\",\"replace\":\"4쪽 참조\"}]}",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "out/law_ref.hwp",
+    "inputSha256": "f1b085351ac9c303cb5311fb8f87b705bc05ddb3e69288dd6690a593ffcb8340",
+    "planSha256": "ccd71b479d81c617e308291900751da6cebd4091d14ba41fc49d90fa114e83d6",
+    "outputSha256": "a28f0d87792ee66060e185c6e30c58046f3757c2415329f8ca1166a8950b9618",
+    "toolVersion": "0.8.4",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null,
+    "untrustedContent": false,
+    "untrustedFields": []
+  }
+}

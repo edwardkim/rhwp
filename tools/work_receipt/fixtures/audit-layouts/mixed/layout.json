@@ -1,0 +1,43 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workReceiptAuditLayout",
+  "ident": "mixed",
+  "title": "2/3 재현",
+  "why": "출력 해시 변조 1건. total=3 reproduced=2 rate=2/3 exit 3.",
+  "notes": "실패한 1건만 failed[]",
+  "members": [
+    "notice_year",
+    "org_rename",
+    "tamper_output"
+  ],
+  "ignored": [],
+  "recursive": false,
+  "exit": 3,
+  "required": [
+    "schemaVersion",
+    "root",
+    "total",
+    "reproduced",
+    "failed",
+    "reproducedRate"
+  ],
+  "envelope": {
+    "schemaVersion": "1.0",
+    "root": "fixtures/audit-layouts/mixed",
+    "total": 3,
+    "reproduced": 2,
+    "failed": [
+      {
+        "capsule": "tamper_output.capsule.json",
+        "kind": "outputSha256"
+      }
+    ],
+    "reproducedRate": 0.6666666666666666
+  },
+  "command": [
+    "audit",
+    "fixtures/audit-layouts/mixed",
+    "--json"
+  ],
+  "generator": "tools/work_receipt/fatten_work_receipt.py"
+}

@@ -1,0 +1,63 @@
+{
+  "id": "owner-late-06-issue-3738-tail",
+  "schema": "rhwp.fidelity_compare.text_layer_case.v1",
+  "schemaVersion": "1.0",
+  "claim": "M-fid",
+  "generator": "tools/fidelity_compare/fatten_text_layer.py",
+  "kind": "loss",
+  "classification": "loss",
+  "family": "owner_shift",
+  "genre": "direct pair",
+  "registeredKey": "plan",
+  "title": "끝쪽 색인 지연",
+  "why": "끝쪽 색인이 통째로 소실되면 소실 후보. 방향=rhwp_later_than_reference.",
+  "page": 36,
+  "page1based": 37,
+  "referenceText": "본문고정영역ABCDEFGH이번쪽공통마지막 쪽 부록 색인 찾아보기 용 키워드 디지털정부 공공기록 개인정보",
+  "svgText": "본문고정영역ABCDEFGH이번쪽공통",
+  "referenceNfc": "본문고정영역ABCDEFGH이번쪽공통마지막 쪽 부록 색인 찾아보기 용 키워드 디지털정부 공공기록 개인정보",
+  "svgNfc": "본문고정영역ABCDEFGH이번쪽공통",
+  "referenceSequence": "본문고정영역ABCDEFGH이번쪽공통마지막쪽부록색인찾아보기용키워드디지털정부공공기록개인정보",
+  "svgSequence": "본문고정영역ABCDEFGH이번쪽공통",
+  "referenceOnly": 29,
+  "svgOnly": 0,
+  "referenceOnlyChars": "U+AC1C:\\uac1c×1,U+ACF5:\\uacf5×2,U+AE30:\\uae30×2,U+B4DC:\\ub4dc×1,U+B514:\\ub514×1,U+B85D:\\ub85d×2,U+B9C8:\\ub9c8×1,U+B9C9:\\ub9c9×1,U+BCF4:\\ubcf4×2,U+BD80:\\ubd80×2,U+C0C9:\\uc0c9×1,U+C544:\\uc544×1,U+C6A9:\\uc6a9×1,U+C6CC:\\uc6cc×1,U+C778:\\uc778×2,U+C815:\\uc815×2,U+C9C0:\\uc9c0×2,U+CABD:\\ucabd×1,U+CC3E:\\ucc3e×1,U+D0A4:\\ud0a4×1,U+D138:\\ud138×1",
+  "svgOnlyChars": "",
+  "glyphRiskCount": 0,
+  "glyphRisks": "",
+  "referenceGlyphRiskCount": 0,
+  "referenceGlyphRisks": "",
+  "ownerShift": [
+    {
+      "page": 36,
+      "next_page": 37,
+      "direction": "rhwp_later_than_reference",
+      "shared_count": 29,
+      "source_coverage": 1.0,
+      "target_coverage": 1.0,
+      "shared": "U+AC1C:\\uac1c×1,U+ACF5:\\uacf5×2,U+AE30:\\uae30×2,U+B4DC:\\ub4dc×1,U+B514:\\ub514×1,U+B85D:\\ub85d×2,U+B9C8:\\ub9c8×1,U+B9C9:\\ub9c9×1,U+BCF4:\\ubcf4×2,U+BD80:\\ubd80×2,U+C0C9:\\uc0c9×1,U+C544:\\uc544×1,U+C6A9:\\uc6a9×1,U+C6CC:\\uc6cc×1,U+C778:\\uc778×2,U+C815:\\uc815×2,U+C9C0:\\uc9c0×2,U+CABD:\\ucabd×1,U+CC3E:\\ucc3e×1,U+D0A4:\\ud0a4×1,U+D138:\\ud138×1"
+    }
+  ],
+  "sequence": [
+    {
+      "page": 36,
+      "next_page": 37,
+      "direction": "rhwp_later_than_reference",
+      "chars": 29,
+      "sequence": "마지막쪽부록색인찾아보기용키워드디지털정부공공기록개인정보"
+    }
+  ],
+  "visibleExcess": [],
+  "clipExcludedChars": 0,
+  "nextReferenceText": "본문고정영역ABCDEFGH이번쪽공통",
+  "nextSvgText": "본문고정영역ABCDEFGH이번쪽공통마지막 쪽 부록 색인 찾아보기 용 키워드 디지털정부 공공기록 개인정보",
+  "textOnly": true,
+  "chromeRequired": false,
+  "pypdfRequired": true,
+  "pypdfium2Required": false,
+  "candidateNotVerdict": true,
+  "reviewHint": "PDF 쪽이 한 쪽 앞선 후보. 시트 없이 확정 금지.",
+  "relatedIssue": "#3738",
+  "notes": "rhwp_later_than_reference",
+  "digest": "8d3dcbb8c588"
+}

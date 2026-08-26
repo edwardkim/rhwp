@@ -1,0 +1,55 @@
+{
+  "schema": "rhwp.fidelity_compare.fatten_summary.v1",
+  "claim": "M-fid",
+  "generator": "tools/fidelity_compare/fatten_text_layer.py",
+  "generatedAt": "2026-08-18T11:01:01Z",
+  "caseCount": 244,
+  "pathCount": 32,
+  "svgFixtureCount": 4,
+  "kindCounts": {
+    "match": 90,
+    "loss": 26,
+    "excess": 92,
+    "substitution": 36
+  },
+  "familyCounts": {
+    "plan": 43,
+    "manual": 22,
+    "bunjang": 15,
+    "korexam": 15,
+    "math": 19,
+    "eng": 17,
+    "footnote": 11,
+    "table": 10,
+    "citation": 9,
+    "pua": 11,
+    "header": 10,
+    "norm": 25,
+    "direct": 10,
+    "overflow": 7,
+    "owner_shift": 20
+  },
+  "registeredKeyCounts": {
+    "plan": 110,
+    "manual": 58,
+    "bunjang": 15,
+    "korexam": 22,
+    "math": 20,
+    "eng": 19
+  },
+  "ownerShiftCases": 20,
+  "sequenceCases": 19,
+  "glyphRiskCases": 53,
+  "visibleExcessCases": 5,
+  "constraints": {
+    "visualSweepTouched": false,
+    "engineTouched": false,
+    "gymTouched": false,
+    "canvaskitTouched": false,
+    "serializerTouched": false,
+    "layoutAnomalyTouched": false,
+    "renderBackendTouched": false,
+    "proptestTouched": false
+  },
+  "writtenCount": 299
+}

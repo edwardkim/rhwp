@@ -1,0 +1,29 @@
+{
+  "id": "OM09",
+  "tier": 2,
+  "title": "미리보기 MIME",
+  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "instructions": "입력 썸네일의 MIME 형식을 answer.json 에 {\"mime\": \"...\"} 으로 제출하라. 힌트: rhwp thumbnail 의 mime.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "MIME 형식",
+      "op": "answer_eq",
+      "answer": "mime",
+      "path": "mime",
+      "cmd": [
+        "thumbnail",
+        "{input}",
+        "-o",
+        "{file:t.png}",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

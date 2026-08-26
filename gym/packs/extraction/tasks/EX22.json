@@ -1,0 +1,23 @@
+{
+  "id": "EX22",
+  "tier": 2,
+  "title": "본문 텍스트 — table-001 페이지 수",
+  "input": "samples/table-001.hwp",
+  "instructions": "export-text 로 이 표 표본의 pageCount 를 보고하라. 답 형식: {\"pages\": <수>}.",
+  "submit": {
+    "kind": "answer"
+  },
+  "checks": [
+    {
+      "name": "pages 일치",
+      "op": "answer_eq",
+      "answer": "pages",
+      "cmd": [
+        "export-text",
+        "{input}",
+        "--json"
+      ],
+      "path": "pageCount"
+    }
+  ]
+}

@@ -6,6 +6,7 @@
  * 이 모듈은 wasm/커서 상태 없이 그 산출만 담당해 단위 테스트가 가능하게 한다.
  */
 import type { ParaFormatTarget } from './command';
+import type { CellPathEntry } from '@/core/types';
 
 /** 셀 블록이 가리키는 표와 그 안에서 선택된 셀 인덱스 목록 (제외 셀 반영 후) */
 export type SelectedCellBlock = {
@@ -13,6 +14,8 @@ export type SelectedCellBlock = {
   ppi: number;
   ci: number;
   cellIndices: number[];
+  /** 중첩 표일 때만 존재. cellIndices 의 각 값으로 이 경로의 마지막 엔트리 cellIndex 를 대체해 사용한다. */
+  cellPath?: CellPathEntry[];
 };
 
 export type CellRowCol = { row: number; col: number };
@@ -23,6 +26,16 @@ export type CellBlockRange = {
   endRow: number;
   endCol: number;
 };
+
+/** 중첩 표 경로의 마지막 엔트리 cellIndex(및 필요 시 cellParaIndex)를 지정 값으로 대체한다. */
+export function withCellPathTarget(
+  path: readonly CellPathEntry[],
+  cellIndex: number,
+  cellParaIndex = 0,
+): CellPathEntry[] {
+  const last = path[path.length - 1];
+  return [...path.slice(0, -1), { ...last, cellIndex, cellParaIndex }];
+}
 
 /**
  * 제외 셀 Set 의 키를 만든다.

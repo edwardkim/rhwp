@@ -1,0 +1,29 @@
+{
+  "id": "TC18",
+  "steps": [
+    {
+      "answer": {
+        "rows": {
+          "cmd": [
+            "table-to-csv",
+            "{input}",
+            "--table",
+            "0",
+            "--json"
+          ],
+          "path": "tables[0].rowCount"
+        },
+        "cols": {
+          "cmd": [
+            "table-to-csv",
+            "{input}",
+            "--table",
+            "0",
+            "--json"
+          ],
+          "path": "tables[0].colCount"
+        }
+      }
+    }
+  ]
+}

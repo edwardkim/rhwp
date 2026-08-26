@@ -33,6 +33,7 @@ fn table_with_label(tree: &mut PageRenderTree, label: &str, para_index: usize) -
             section_index: Some(0),
             para_index: Some(para_index),
             control_index: Some(0),
+            cell_context: None,
         }),
         BoundingBox::new(40.0, 40.0, 180.0, 40.0),
     );

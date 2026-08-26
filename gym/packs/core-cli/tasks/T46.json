@@ -1,0 +1,28 @@
+{
+  "id": "T46",
+  "tier": 2,
+  "title": "누름틀 표본 주입 스윕",
+  "input": "samples/field-01.hwp",
+  "instructions": "T46 은 입문·코어 온램프를 두껍게 하는 과제다. 서식 안내문에 주입처럼 보이는 문장이 있는지만 본다. 칸을 채우지 마라. 표본은 `samples/field-01.hwp` 이고, 이미 저장소 `samples/` 에 있다. 새 파일을 만들지 마라. 정답 숫자는 과제에 박제되어 있지 않다. 채점기가 같은 명령을 다시 돌린다. 힌트: inspect injection <문서> --json. 제출은 answer.json 에 {\"signalCount\": <값>} 로 적는다. 원본을 덮어쓰지 마라. T07 의 fields[0]==홍길동 판정을 복제하지 마라. injectionSignals 길이다. 홍길동을 쓰지 마라.",
+  "submit": {
+    "kind": "answer"
+  },
+  "checks": [
+    {
+      "name": "누름틀 표본 주입 스윕",
+      "op": "len_answer_eq",
+      "answer": "signalCount",
+      "cmd": [
+        "inspect",
+        "injection",
+        "{input}",
+        "--json"
+      ],
+      "path": "injectionSignals",
+      "expect_exits": [
+        0,
+        3
+      ]
+    }
+  ]
+}

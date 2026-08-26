@@ -1,0 +1,23 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.form_fill.path_contract.v1",
+  "claim": "M-fill",
+  "generator": "tools/form_fill/fatten_form_fill.py",
+  "existingCliOnly": true,
+  "id": "path-fill-occurrence",
+  "axis": "이름[N]",
+  "title": "피규제집단명[0]/[2] 지목",
+  "why": "80168 규제영향분석서 반복 필드.",
+  "argv": [
+    "edit",
+    "fill-fields",
+    "samples/80168_regulatory_analysis.hwp",
+    "--data",
+    "{\"피규제집단명[0]\":\"가상협회 회원사\",\"피규제집단명[2]\":\"가상조합 조합원\"}",
+    "-o",
+    "out/occ.hwp",
+    "--json"
+  ],
+  "exit": 0,
+  "writesFile": true
+}

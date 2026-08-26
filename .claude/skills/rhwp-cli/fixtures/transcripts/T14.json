@@ -1,0 +1,9 @@
+{
+  "id": "T14",
+  "utterance": "bbox 좌표",
+  "command": "export-render-tree",
+  "note": "디버그 5단",
+  "pageZeroBased": true,
+  "newCli": false,
+  "gym": false
+}

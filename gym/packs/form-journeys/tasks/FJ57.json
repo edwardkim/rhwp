@@ -1,0 +1,53 @@
+{
+  "id": "FJ57",
+  "tier": 2,
+  "title": "메모 표본 전화번호 채움",
+  "input": "samples/field-01-memo.hwp",
+  "instructions": "field-01-memo 에서 전화번호에만 '02-570-5757' 을 넣은 memo-phone.hwp 를 제출하라. FJ01 은 field-01 의 같은 칸이고, FJ46–FJ49 는 메모 표본의 작성자·부서·제목·이메일이다. 이번은 메모 표본의 전화 칸이다. 회사명과 작성자는 비운다. 힌트: rhwp edit fill-fields samples/field-01-memo.hwp --data '{\"전화번호\": \"02-570-5757\"}' -o memo-phone.hwp --json 판정은 라이브 재실행 또는 산출물 재독이며, 파일 부재를 통과로 치지 않는다. T07 의 fields[0].value==홍길동 판정은 쓰지 마라. 새 CLI 는 없다.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "memo-phone.hwp"
+    ]
+  },
+  "checks": [
+    {
+      "name": "전화번호 값",
+      "op": "value_eq",
+      "value": "02-570-5757",
+      "path": "fields[3].value",
+      "cmd": [
+        "fields",
+        "{file:memo-phone.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "회사명은 비어 있음 — T07 좌표 거부",
+      "op": "value_eq",
+      "value": "",
+      "path": "fields[0].value",
+      "cmd": [
+        "fields",
+        "{file:memo-phone.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "작성자 공란",
+      "op": "value_eq",
+      "value": "",
+      "path": "fields[1].value",
+      "cmd": [
+        "fields",
+        "{file:memo-phone.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "원본 무편집 복사가 아님",
+      "op": "differs_from_input",
+      "file": "memo-phone.hwp"
+    }
+  ]
+}

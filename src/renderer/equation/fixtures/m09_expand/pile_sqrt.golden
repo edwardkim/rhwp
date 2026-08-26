@@ -1,0 +1,49 @@
+# M09-g equation golden — current-engine lock (variant/exception/unimplemented honesty)
+command: PILE
+script: PILE{SQRT a # SQRT b # SQRT c}
+honesty: pile-layout-as-row
+
+=== ast ===
+Pile {
+    rows: [
+        Sqrt {
+            index: None,
+            body: Text(
+                "a",
+            ),
+        },
+        Sqrt {
+            index: None,
+            body: Text(
+                "b",
+            ),
+        },
+        Sqrt {
+            index: None,
+            body: Text(
+                "c",
+            ),
+        },
+    ],
+    align: Center,
+}
+
+=== layout ===
+Row x=0.0000 y=0.0000 w=25.5500 h=84.0000 bl=42.0000
+  Sqrt x=0.0000 y=0.0000 w=25.5500 h=24.0000 bl=18.0000
+    body:
+      Text("a") x=13.0000 y=2.0000 w=11.5500 h=20.0000 bl=16.0000
+  Sqrt x=0.0000 y=30.0000 w=25.5500 h=24.0000 bl=18.0000
+    body:
+      Text("b") x=13.0000 y=2.0000 w=11.5500 h=20.0000 bl=16.0000
+  Sqrt x=0.0000 y=60.0000 w=25.5500 h=24.0000 bl=18.0000
+    body:
+      Text("c") x=13.0000 y=2.0000 w=11.5500 h=20.0000 bl=16.0000
+
+=== svg ===
+<path d="M0.00,13.40 L2.00,14.40 L8.00,24.00 L11.00,0.00 L25.55,0.00" fill="none" stroke="#000000" stroke-width="0.80"/>
+<text x="13.00" y="18.00" font-size="20.00" fill="#000000" font-style="italic" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">a</text>
+<path d="M0.00,43.40 L2.00,44.40 L8.00,54.00 L11.00,30.00 L25.55,30.00" fill="none" stroke="#000000" stroke-width="0.80"/>
+<text x="13.00" y="48.00" font-size="20.00" fill="#000000" font-style="italic" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">b</text>
+<path d="M0.00,73.40 L2.00,74.40 L8.00,84.00 L11.00,60.00 L25.55,60.00" fill="none" stroke="#000000" stroke-width="0.80"/>
+<text x="13.00" y="78.00" font-size="20.00" fill="#000000" font-style="italic" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">c</text>

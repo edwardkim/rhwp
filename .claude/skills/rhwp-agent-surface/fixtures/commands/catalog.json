@@ -1,0 +1,884 @@
+{
+  "ssot": "capabilities_command_entries()",
+  "counts_are_not_contracts": true,
+  "add_piece": [
+    "red 계약 테스트 tests/*_contract.rs 신설",
+    "코어 함수 재사용 (규칙 2)",
+    "봉투 helper 재사용",
+    "mcp_tool_definitions() 한 줄 (json 이면)",
+    "cli_commands.md + 지식 지도 행",
+    "드리프트 가드 green"
+  ],
+  "items": [
+    {
+      "name": "info",
+      "family": "query",
+      "summary": "문서 메타(포맷·버전·페이지/문단 수·폰트·제목) 표시",
+      "json": true,
+      "layer": "cli-json",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": "hwp_info",
+      "how_to_discover": "rhwp capabilities --search info"
+    },
+    {
+      "name": "word-count",
+      "family": "query",
+      "summary": "문서 분량(구역·문단·글자·어절·쪽 수) — IR 본문만 센다",
+      "json": true,
+      "layer": "cli-json",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": "hwp_word_count",
+      "how_to_discover": "rhwp capabilities --search word-count"
+    },
+    {
+      "name": "bookmarks",
+      "family": "query",
+      "summary": "문서 책갈피 목록 — 코어 get_bookmarks_native",
+      "json": true,
+      "layer": "cli-json",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": "hwp_bookmarks",
+      "how_to_discover": "rhwp capabilities --search bookmarks"
+    },
+    {
+      "name": "header-footer",
+      "family": "query",
+      "summary": "구역 머리말/꼬리말 한 건 조회 — 코어 get_header_footer_native",
+      "json": true,
+      "layer": "cli-json",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": "hwp_header_footer",
+      "how_to_discover": "rhwp capabilities --search header-footer"
+    },
+    {
+      "name": "headers-footers",
+      "family": "query",
+      "summary": "문서 머리말/꼬리말 목록 — 코어 get_header_footer_list_native",
+      "json": true,
+      "layer": "cli-json",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": "hwp_headers_footers",
+      "how_to_discover": "rhwp capabilities --search headers-footers"
+    },
+    {
+      "name": "charts",
+      "family": "query",
+      "summary": "문서 차트 목록 — 코어 list_charts_native",
+      "json": true,
+      "layer": "cli-json",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": "hwp_charts",
+      "how_to_discover": "rhwp capabilities --search charts"
+    },
+    {
+      "name": "form-value",
+      "family": "query",
+      "summary": "양식 개체 값 조회 — 코어 get_form_value_native",
+      "json": true,
+      "layer": "cli-json",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": "hwp_form_value",
+      "how_to_discover": "rhwp capabilities --search form-value"
+    },
+    {
+      "name": "export-text",
+      "family": "export",
+      "summary": "페이지별 텍스트 추출 (TXT 파일 또는 --json stdout)",
+      "json": true,
+      "layer": "cli-json",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": "hwp_export_text",
+      "how_to_discover": "rhwp capabilities --search export-text"
+    },
+    {
+      "name": "export-structure",
+      "family": "export",
+      "summary": "문서 개요/조문 계층을 JSON 트리로 추출",
+      "json": true,
+      "layer": "cli-json",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": "hwp_export_structure",
+      "how_to_discover": "rhwp capabilities --search export-structure"
+    },
+    {
+      "name": "digest",
+      "family": "query",
+      "summary": "문서 요약 봉투(메타·개요·발췌·nextStep)를 한 번 호출로 출력",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": "hwp_digest",
+      "how_to_discover": "rhwp capabilities --search digest"
+    },
+    {
+      "name": "export-ir-schema",
+      "family": "export",
+      "summary": "공개 IR 의 JSON Schema 산출 — 외부 바인딩 코드 생성의 단일 출처 (#3762)",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": "hwp_export_ir_schema",
+      "how_to_discover": "rhwp capabilities --search export-ir-schema"
+    },
+    {
+      "name": "run",
+      "family": "edit",
+      "summary": "선언적 편집 계획 실행 — 정적 선검증·원자 실행·저널 (#3703). 선택 필드 \\\n             preconditions.inputSha256 을 실으면 실행 입구에서 입력 지문을 대조해 낡은 기준을 \\\n             거부한다 — 실행 0·디스크 무변경·preconditionFailed+nextCall·exit 3, --dry-run 도 \\\n             같은 판정 (#4378 R22)",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": null,
+      "how_to_discover": "rhwp capabilities --search run"
+    },
+    {
+      "name": "replay",
+      "family": "query",
+      "summary": "계획을 임시 산출로 재실행해 작업 영수증(입력·계획·산출 SHA-256)을 발급하고, --expect-output-sha256 로 타인의 작업 주장을 재현 검증한다 — 불일치는 exit 3 (#4391)",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": "hwp_replay",
+      "how_to_discover": "rhwp capabilities --search replay"
+    },
+    {
+      "name": "lineage",
+      "family": "query",
+      "summary": "작업 캡슐 해시 체인을 거슬러 연대기를 검증 — 부모 파일 무결·계보 불변식(부모 산출=자식 입력)·(--deep) 링크별 재현·(--keyring) 링크별 서명 귀속. 깨진 체인은 exit 3, brokenAt 명세 (#4401·#4509)",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": "hwp_lineage",
+      "how_to_discover": "rhwp capabilities --search lineage"
+    },
+    {
+      "name": "keygen",
+      "family": "export",
+      "summary": "Ed25519 서명키 파일 발급 — 캡슐 귀속(4년 축)의 시작점. 비밀키가 담기므로 기존 파일 덮어쓰기 금지, 보관 책임은 소유자 (#4509)",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": "hwp_keygen",
+      "how_to_discover": "rhwp capabilities --search keygen"
+    },
+    {
+      "name": "verify-signature",
+      "family": "query",
+      "summary": "캡슐 분리 서명(<캡슐>.sig.json)을 파일 바이트·키 등록부와 대조 — verdict(valid|invalid|unknownKey|revoked|malformed)는 봉투 데이터, 유효 아님 = exit 3 (#4509)",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": "hwp_verify_signature",
+      "how_to_discover": "rhwp capabilities --search verify-signature"
+    },
+    {
+      "name": "harness",
+      "family": "edit",
+      "summary": "검증 루프의 쓰는 쪽 — init(작업장 규약)·wrap(실산출+영수증+캡슐+자동 부모 연결+서명 한 방). 판정은 harness-status (#4537)",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": null,
+      "how_to_discover": "rhwp capabilities --search harness"
+    },
+    {
+      "name": "harness-status",
+      "family": "diagnostic",
+      "summary": "작업장 통합 판정 — 캡슐 체인 무결·(--keyring) 서명 집계·(--deep) 전수 재현을 한 봉투로. 깨짐 exit 3, brokenAt 이 원인 캡슐 (#4537)",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": "hwp_harness_status",
+      "how_to_discover": "rhwp capabilities --search harness-status"
+    },
+    {
+      "name": "anchor",
+      "family": "query",
+      "summary": "투명성 로그(T7 방어) — add(append-only 등재, 깨진 로그 거부)·checkpoint(머클 루트)·verify(등재·자기 무결·머클 경로 판정, 아님 exit 3). 공표는 운영 절차 (#4543)",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": null,
+      "how_to_discover": "rhwp capabilities --search anchor"
+    },
+    {
+      "name": "gate",
+      "family": "query",
+      "summary": "반입 정책 기계 판정 — admissionPolicy(연산자 eq·in·gte·lte 4종 고정, deny 기본, 미지 키 로드 거부)를 캡슐에 적용. 재료는 자기 신고가 아니라 재계산(계보·서명·앵커·--deep 재실행), 거부는 exit 3 + violations[] (#4545)",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": "hwp_gate",
+      "how_to_discover": "rhwp capabilities --search gate"
+    },
+    {
+      "name": "bundle",
+      "family": "query",
+      "summary": "연합 교환 — export(계보 폐쇄집합+서명+머클 증명을 zip 하나로)·verify(컨테이너·폐쇄집합·계보·서명[도메인 키링만, 동봉 불신]·앵커 5단 오프라인 판정, 깨짐 exit 3) (#4549)",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": null,
+      "how_to_discover": "rhwp capabilities --search bundle"
+    },
+    {
+      "name": "disclose",
+      "family": "query",
+      "summary": "선택적 공개 — redact(plan 문자열 잎을 salt 커밋으로 치환한 가림 캡슐+비밀 개봉 파일)·verify(부분 개봉 필드 대조, 불일치 exit 3)·restore(전체 개봉으로 바이트 완전 복원 — 원본 서명 그대로 valid) (#4551)",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": null,
+      "how_to_discover": "rhwp capabilities --search disclose"
+    },
+    {
+      "name": "settle",
+      "family": "query",
+      "summary": "정산 증빙 — propose(명세서·캡슐·게이트 봉투 3해시 고정 청구 발급, 4년 서명 선택)·verify(3해시 대조+게이트 verdict 재확인+서명·이중청구 opt-in 축, 실패 exit 3)·record(원장 append-only 기입, 이중 청구 전역 검사 exit 3) — 돈은 움직이지 않는다, 산출물은 제3자 검증 가능한 지불 근거뿐 (#4553)",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": null,
+      "how_to_discover": "rhwp capabilities --search settle"
+    },
+    {
+      "name": "recall-scope",
+      "family": "query",
+      "summary": "오염 리콜 범위 — 오염 캡슐(경로 또는 sha256)의 후손 폐쇄집합을 계보 걷기로 계산해 영향/미영향을 가르고, --ledger 를 주면 영향 캡슐의 정산 청구 좌표까지 짚는다(리콜의 회계 연결) (#4558)",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": "hwp_recall_scope",
+      "how_to_discover": "rhwp capabilities --search recall-scope"
+    },
+    {
+      "name": "conformance",
+      "family": "query",
+      "summary": "적합성 자가진단 L1~L5 — 영수증(1년)→감사가능+계보(2·3년)→귀속+앵커(4·5년)→게이트(6년)→원장(9년) 누적 요건을 기존 판정기 재사용으로 검사(신규 판정기 발명 0), 미달은 exit 3 이고 항목별 판정은 checks 가 말한다 (#4558)",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": "hwp_conformance",
+      "how_to_discover": "rhwp capabilities --search conformance"
+    },
+    {
+      "name": "audit",
+      "family": "query",
+      "summary": "작업 캡슐(*.capsule.json) 폴더 전수 재실행·대조 — 에이전트 노동의 재현율 회계. 불일치 1건이라도 있으면 exit 3 (#4393)",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": "hwp_audit",
+      "how_to_discover": "rhwp capabilities --search audit"
+    },
+    {
+      "name": "export-plan-schema",
+      "family": "export",
+      "summary": "계획서(run) 문법의 JSON Schema 산출 — 계획 생성의 단일 출처 (#3719 §6-4)",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": "hwp_export_plan_schema",
+      "how_to_discover": "rhwp capabilities --search export-plan-schema"
+    },
+    {
+      "name": "capabilities",
+      "family": "query",
+      "summary": "본 자기서술 JSON 출력",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": null,
+      "how_to_discover": "rhwp capabilities --search capabilities"
+    },
+    {
+      "name": "export-provenance-map",
+      "family": "query",
+      "summary": "명령별 문서 파생(신뢰 불가) 봉투 필드 지도 — 봉투의 untrustedContent/untrustedFields 표지의 원천",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": "hwp_export_provenance_map",
+      "how_to_discover": "rhwp capabilities --search export-provenance-map"
+    },
+    {
+      "name": "export-agent-manifest",
+      "family": "query",
+      "summary": "capabilities+irSchema+provenanceMap+planSchema 를 한 번의 호출로 조립 — 누락 축이 생기면 missingAxes 로 명시 (#3828 B2)",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": "hwp_export_agent_manifest",
+      "how_to_discover": "rhwp capabilities --search export-agent-manifest"
+    },
+    {
+      "name": "export-svg",
+      "family": "export",
+      "summary": "문서를 페이지별 SVG로 렌더하고 --json 매니페스트 출력",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": "hwp_export_svg",
+      "how_to_discover": "rhwp capabilities --search export-svg"
+    },
+    {
+      "name": "export-pdf",
+      "family": "export",
+      "summary": "문서를 PDF로 렌더 (svg|direct backend, --json 매니페스트)",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": "hwp_export_pdf",
+      "how_to_discover": "rhwp capabilities --search export-pdf"
+    },
+    {
+      "name": "export-markdown",
+      "family": "export",
+      "summary": "페이지별 텍스트를 Markdown으로 추출 (--json 매니페스트)",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": "hwp_export_markdown",
+      "how_to_discover": "rhwp capabilities --search export-markdown"
+    },
+    {
+      "name": "export-hwpx",
+      "family": "export",
+      "summary": "HWP→HWPX 변환 저장 (--verify 게이트 exit 3/4, --json 봉투)",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": null,
+      "how_to_discover": "rhwp capabilities --search export-hwpx"
+    },
+    {
+      "name": "export-hml",
+      "family": "export",
+      "summary": "HML 원본을 HWPML 2.91 XML로 저장 (--json 봉투)",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": "hwp_export_hml",
+      "how_to_discover": "rhwp capabilities --search export-hml"
+    },
+    {
+      "name": "export-doclang",
+      "family": "export",
+      "summary": "문서를 DocLang v0.6 XML로 내보내기 (--json 봉투)",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": "hwp_export_doclang",
+      "how_to_discover": "rhwp capabilities --search export-doclang"
+    },
+    {
+      "name": "export-capabilities-schema",
+      "family": "export",
+      "summary": "capabilities 자기서술 자체의 JSON Schema 산출 — 명령 표면 코드 생성의 단일 출처 (#3776)",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": "hwp_export_capabilities_schema",
+      "how_to_discover": "rhwp capabilities --search export-capabilities-schema"
+    },
+    {
+      "name": "export-ontology",
+      "family": "export",
+      "summary": "자기서술에서 기계 유도한 JSON-LD 온톨로지 산출 — IR 클래스·속성, 명령/MCP 행위, 신뢰 술어 (#3907 O1)",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": "hwp_export_ontology",
+      "how_to_discover": "rhwp capabilities --search export-ontology"
+    },
+    {
+      "name": "export-tables",
+      "family": "export",
+      "summary": "표를 병합·중첩 구조를 보존한 격자 JSON으로 추출",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": "hwp_export_tables",
+      "how_to_discover": "rhwp capabilities --search export-tables"
+    },
+    {
+      "name": "table-to-csv",
+      "family": "export",
+      "summary": "본문 최상위 표를 병합 격자를 채운 RFC 4180 CSV 로 내보내기",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": "hwp_table_to_csv",
+      "how_to_discover": "rhwp capabilities --search table-to-csv"
+    },
+    {
+      "name": "csv-to-table",
+      "family": "edit",
+      "summary": "CSV 로 기존 표 N 의 셀 덮어쓰기 — 표 크기 불변, 행·열 불일치는 invalid+exit 2",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": "hwp_csv_to_table",
+      "how_to_discover": "rhwp capabilities --search csv-to-table"
+    },
+    {
+      "name": "chart-to-csv",
+      "family": "export",
+      "summary": "차트 숫자 데이터를 RFC 4180 CSV 로 내보내기 (행=카테고리·분산형 X, 열=계열)",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": "hwp_chart_to_csv",
+      "how_to_discover": "rhwp capabilities --search chart-to-csv"
+    },
+    {
+      "name": "csv-to-chart",
+      "family": "edit",
+      "summary": "CSV 로 기존 차트 N 의 값 덮어쓰기 — 계열·값 개수 불변, 불일치는 invalid+exit 2. \\\n             편집은 OOXML 두 표현(zip 파트·중첩 CFB)에 함께 쓴다",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": "hwp_csv_to_chart",
+      "how_to_discover": "rhwp capabilities --search csv-to-chart"
+    },
+    {
+      "name": "extract-pages",
+      "family": "export",
+      "summary": "쪽 범위만 남겨 저장 (--json 봉투; 발췌·부분 제출·결함 이분법)",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": null,
+      "how_to_discover": "rhwp capabilities --search extract-pages"
+    },
+    {
+      "name": "search",
+      "family": "query",
+      "summary": "문서 검색 결과를 구역·문단·페이지·문자 오프셋 주소와 함께 출력",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": "hwp_search",
+      "how_to_discover": "rhwp capabilities --search search"
+    },
+    {
+      "name": "extract-data",
+      "family": "query",
+      "summary": "날짜·금액·수량을 구역·문단·페이지·문자 오프셋 주소와 함께 추출",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": "hwp_extract_data",
+      "how_to_discover": "rhwp capabilities --search extract-data"
+    },
+    {
+      "name": "fields",
+      "family": "query",
+      "summary": "누름틀/필드를 이름·안내문·현재값·위치와 함께 조사",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": "hwp_fields",
+      "how_to_discover": "rhwp capabilities --search fields"
+    },
+    {
+      "name": "explain",
+      "family": "query",
+      "summary": "문서를 결정론적 규칙 문장으로 요약(형식·쪽수·문단·표·누름틀·각주/미주·암호 여부)",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": "hwp_explain",
+      "how_to_discover": "rhwp capabilities --search explain"
+    },
+    {
+      "name": "explore",
+      "family": "query",
+      "summary": "이 문서로 할 수 있는 rhwp 행동을 순위 매긴 메뉴로 라우팅(표·누름틀·구조·차트·보안·요약)",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": "hwp_explore",
+      "how_to_discover": "rhwp capabilities --search explore"
+    },
+    {
+      "name": "inspect",
+      "family": "query",
+      "summary": "은닉 텍스트·프롬프트 주입·유니코드 기만을 조사하는 읽기 전용 보안 검사 명령군",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": null,
+      "how_to_discover": "rhwp capabilities --search inspect"
+    },
+    {
+      "name": "armor",
+      "family": "query",
+      "summary": "문서 본문을 nonce 격벽으로 감싸고 주입 신호를 신고한다 — LLM 에 넣기 전 프롬프트 주입 방패",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": "hwp_armor",
+      "how_to_discover": "rhwp capabilities --search armor"
+    },
+    {
+      "name": "convert",
+      "family": "export",
+      "summary": "HWPX/배포용→편집 가능 HWP5 변환 (--verify 게이트 exit 3/4, --json 봉투)",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": null,
+      "how_to_discover": "rhwp capabilities --search convert"
+    },
+    {
+      "name": "build-from-ingest",
+      "family": "export",
+      "summary": "ingest JSON에서 HWPX 생성 (--json 봉투)",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": "hwp_build_from_ingest",
+      "how_to_discover": "rhwp capabilities --search build-from-ingest"
+    },
+    {
+      "name": "scaffold",
+      "family": "export",
+      "summary": "구조화된 명세(JSON)에서 유효한 HWPX 문서 생성 — 문서를 *만드는* 생성 축 (--json 봉투)",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": "hwp_scaffold",
+      "how_to_discover": "rhwp capabilities --search scaffold"
+    },
+    {
+      "name": "thumbnail",
+      "family": "export",
+      "summary": "내장 썸네일(PrvImage) 추출 (--json 봉투)",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": "hwp_thumbnail",
+      "how_to_discover": "rhwp capabilities --search thumbnail"
+    },
+    {
+      "name": "edit",
+      "family": "edit",
+      "summary": "문서 편집 — fill-fields: 누름틀 채우기 / replace-text: 일괄 치환(--occurrence k번째만) / set-cell: 표 셀 기록 / insert-text-in-cell: 표 셀 문단 삽입 / delete-text-in-cell: 표 셀 문단 삭제 / insert-text: 문단 좌표 삽입 / delete-text: 문단 좌표 삭제 / insert-paragraph: 빈 문단 삽입 / delete-paragraph: 문단 삭제 / merge-paragraph: 문단 병합 / insert-page-break: 쪽 나눔 / insert-column-break: 단 나눔 / insert-table: 본문 표 생성 / insert-row: 표 행 삽입 / insert-col: 표 열 삽입 / delete-row: 표 행 삭제 / delete-col: 표 열 삭제 / merge-cells: 표 셀 병합 / split-cell: 병합 셀 분할 / split-table: 표 나누기 / fit-table: 표 폭 맞춤 / resize-table: 표 크기 조절 / merge-table: 다음 표와 붙이기 / merge-paragraph-in-cell: 표 셀 문단 병합 / set-column-widths: 표 열 폭 설정 / insert-footnote: 각주 삽입 / insert-endnote: 미주 삽입 / delete-footnote: 각주 삭제 / add-bookmark: 책갈피 추가 / delete-bookmark: 책갈피 삭제 / rename-bookmark: 책갈피 이름 변경 / delete-header-footer: 머리말/꼬리말 삭제 / insert-header-footer-text: 머리말/꼬리말 텍스트 삽입 / set-header-footer-text: 머리말/꼬리말 문단 텍스트 교체 / delete-hf-text: 머리말/꼬리말 텍스트 삭제 / split-paragraph-in-hf: 머리말/꼬리말 문단 분할 / merge-paragraph-in-hf: 머리말/꼬리말 문단 병합 / split-paragraph-in-cell: 표 셀 문단 분할 / delete-control: 컨트롤 삭제 / delete-table: 표 삭제 / insert-header-footer: 머리말/꼬리말 생성 / insert-image: 도장·서명 그림 삽입 / redact: 개인정보 마스킹 / sanitize: 메타데이터 제거",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": "edit-subcommands-via-search",
+      "how_to_discover": "rhwp capabilities --search edit"
+    },
+    {
+      "name": "batch",
+      "family": "batch",
+      "summary": "stdin 파일 목록을 한 프로세스에서 파일 간 병렬 처리, NDJSON 스트림 출력 (fill 축만 stdin 대신 --form 서식 + --data 행 파일로 메일머지)",
+      "json": true,
+      "layer": "cli-json",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": "hwp_batch",
+      "how_to_discover": "rhwp capabilities --search batch"
+    },
+    {
+      "name": "scan",
+      "family": "batch",
+      "summary": "디렉터리 재귀 발견·분류 — 확장자↔매직 대조(extMismatch), --probe 파싱 시도(암호·쪽수), batch stdin 목록의 원천",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": "hwp_scan",
+      "how_to_discover": "rhwp capabilities --search scan"
+    },
+    {
+      "name": "threat-scan",
+      "family": "query",
+      "summary": "무기화 문서 구조 위협 탐지 — 파싱 전에 컨테이너·레코드 구조를 훑어 실행체 내장·OLE 패키지·손상 레코드·매크로/스크립트·원격 외부참조 신호를 열거한다. 휴리스틱 판정이며 안티바이러스가 아니다(신호이지 증거·보증이 아님). rhwp 의 실질 방어는 메모리 안전+DoS 하드닝이고 이 스캔은 그 위의 가시성이다.",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": "hwp_threat_scan",
+      "how_to_discover": "rhwp capabilities --search threat-scan"
+    },
+    {
+      "name": "dump-pages",
+      "family": "diagnostic",
+      "summary": "페이지네이션 항목 덤프 (--json: 조판 진단 기계 계약)",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": null,
+      "how_to_discover": "rhwp capabilities --search dump-pages"
+    },
+    {
+      "name": "ir-diff",
+      "family": "diagnostic",
+      "summary": "두 문서의 IR 차이를 JSON으로 비교",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": "hwp_ir_diff",
+      "how_to_discover": "rhwp capabilities --search ir-diff"
+    },
+    {
+      "name": "verify",
+      "family": "diagnostic",
+      "summary": "기대 조건(--expect-pages/min-pages/max-pages/min-chars/min-tables/table-count/contains/not-contains/field/format) 대조 — 전부 만족 exit 0, 불일치는 봉투 후 exit 3",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": "hwp_verify",
+      "how_to_discover": "rhwp capabilities --search verify"
+    },
+    {
+      "name": "render-diff",
+      "family": "diagnostic",
+      "summary": "왕복/두 파일 렌더 기하 차이 검증 — --json 회귀 검출은 exit 3 (--batch 는 NDJSON)",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": "hwp_render_diff",
+      "how_to_discover": "rhwp capabilities --search render-diff"
+    },
+    {
+      "name": "layout-anomaly",
+      "family": "diagnostic",
+      "summary": "렌더 한 장의 기하 이상탐지(overflow/overlap/empty_page) — render-diff(변위)와 다른 질문. 기본 exit 0, --strict 만 확정 신호를 exit 3",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": "hwp_layout_anomaly",
+      "how_to_discover": "rhwp capabilities --search layout-anomaly"
+    },
+    {
+      "name": "dump",
+      "family": "diagnostic",
+      "summary": "문서 조판부호 구조 덤프",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": null,
+      "how_to_discover": "rhwp capabilities --search dump"
+    },
+    {
+      "name": "dump-note-shape",
+      "family": "diagnostic",
+      "summary": "각주/미주 모양 덤프",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": null,
+      "how_to_discover": "rhwp capabilities --search dump-note-shape"
+    },
+    {
+      "name": "dump-endnote-lines",
+      "family": "diagnostic",
+      "summary": "미주 줄 배치 덤프",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": null,
+      "how_to_discover": "rhwp capabilities --search dump-endnote-lines"
+    },
+    {
+      "name": "dump-records",
+      "family": "diagnostic",
+      "summary": "저수준 레코드 스트림 덤프",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": null,
+      "how_to_discover": "rhwp capabilities --search dump-records"
+    },
+    {
+      "name": "diag",
+      "family": "diagnostic",
+      "summary": "문서 구조 진단(번호/글머리표/개요)",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": null,
+      "how_to_discover": "rhwp capabilities --search diag"
+    },
+    {
+      "name": "hwpx-roundtrip",
+      "family": "diagnostic",
+      "summary": "HWPX 왕복 무손실 게이트",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": null,
+      "how_to_discover": "rhwp capabilities --search hwpx-roundtrip"
+    },
+    {
+      "name": "hwp5-roundtrip",
+      "family": "diagnostic",
+      "summary": "HWP5 왕복 무손실 게이트",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": null,
+      "how_to_discover": "rhwp capabilities --search hwp5-roundtrip"
+    },
+    {
+      "name": "measure-width",
+      "family": "diagnostic",
+      "summary": "텍스트 폭 측정 프로브",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": null,
+      "how_to_discover": "rhwp capabilities --search measure-width"
+    },
+    {
+      "name": "core-pages",
+      "family": "diagnostic",
+      "summary": "코어 페이지 수 프로브",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": null,
+      "how_to_discover": "rhwp capabilities --search core-pages"
+    },
+    {
+      "name": "bench",
+      "family": "diagnostic",
+      "summary": "성능 벤치마크",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": null,
+      "how_to_discover": "rhwp capabilities --search bench"
+    },
+    {
+      "name": "hwp5-inventory",
+      "family": "diagnostic",
+      "summary": "HWP5 레코드 인벤토리",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": null,
+      "how_to_discover": "rhwp capabilities --search hwp5-inventory"
+    },
+    {
+      "name": "hwp5-inventory-diff",
+      "family": "diagnostic",
+      "summary": "HWP5 인벤토리 비교",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": null,
+      "how_to_discover": "rhwp capabilities --search hwp5-inventory-diff"
+    },
+    {
+      "name": "hwp5-contract-probe",
+      "family": "diagnostic",
+      "summary": "HWP5 저장 계약 프로브",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": null,
+      "how_to_discover": "rhwp capabilities --search hwp5-contract-probe"
+    },
+    {
+      "name": "hwp5-ctrl-data-trace",
+      "family": "diagnostic",
+      "summary": "CTRL_DATA 추적",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": null,
+      "how_to_discover": "rhwp capabilities --search hwp5-ctrl-data-trace"
+    },
+    {
+      "name": "hwp5-table-probe",
+      "family": "diagnostic",
+      "summary": "표 저장 프로브",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": null,
+      "how_to_discover": "rhwp capabilities --search hwp5-table-probe"
+    },
+    {
+      "name": "hwp5-anchor-trace",
+      "family": "diagnostic",
+      "summary": "앵커 추적",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": null,
+      "how_to_discover": "rhwp capabilities --search hwp5-anchor-trace"
+    },
+    {
+      "name": "hwp5-char-shape-audit",
+      "family": "diagnostic",
+      "summary": "CHAR_SHAPE provenance audit",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": null,
+      "how_to_discover": "rhwp capabilities --search hwp5-char-shape-audit"
+    },
+    {
+      "name": "hwp5-cell-header-probe",
+      "family": "diagnostic",
+      "summary": "셀 헤더 프로브",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": null,
+      "how_to_discover": "rhwp capabilities --search hwp5-cell-header-probe"
+    },
+    {
+      "name": "test-shape",
+      "family": "internal",
+      "summary": "도형 왕복 테스트",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": null,
+      "how_to_discover": "rhwp capabilities --search test-shape"
+    },
+    {
+      "name": "test-caption",
+      "family": "internal",
+      "summary": "캡션 테스트",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": null,
+      "how_to_discover": "rhwp capabilities --search test-caption"
+    },
+    {
+      "name": "test-field",
+      "family": "internal",
+      "summary": "누름틀 왕복 테스트",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": null,
+      "how_to_discover": "rhwp capabilities --search test-field"
+    },
+    {
+      "name": "gen-table",
+      "family": "internal",
+      "summary": "표 샘플 생성",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": null,
+      "how_to_discover": "rhwp capabilities --search gen-table"
+    },
+    {
+      "name": "gen-pua",
+      "family": "internal",
+      "summary": "PUA 샘플 생성",
+      "json": false,
+      "layer": "cli-human",
+      "ssot": "capabilities_command_entries()",
+      "mcp_stateless": null,
+      "how_to_discover": "rhwp capabilities --search gen-pua"
+    }
+  ]
+}

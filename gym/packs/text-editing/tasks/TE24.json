@@ -1,0 +1,46 @@
+{
+  "id": "TE24",
+  "tier": 2,
+  "title": "규제영향분석 규제 전건",
+  "input": "samples/76076_regulatory_analysis.hwp",
+  "instructions": "입력 문서의 '규제' 를 모두 '점검' 로 바꾼 산출물을 all24.hwp 로 제출하라. 채점은 옛 문구가 0건이 되었는지와 새 문구가 실재하는지를 각각 확인한다. 힌트: rhwp edit replace-text (occurrence 없이 전건). 표본이 issue2007 이 아니다. 같은 단어도 문서가 바뀌면 좌표가 바뀐다.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "all24.hwp"
+    ]
+  },
+  "checks": [
+    {
+      "name": "옛 문구 완전 소거",
+      "op": "value_eq",
+      "value": 0,
+      "path": "matchCount",
+      "cmd": [
+        "search",
+        "{file:all24.hwp}",
+        "--json",
+        "--",
+        "규제"
+      ]
+    },
+    {
+      "name": "새 문구 실재",
+      "op": "value_ge",
+      "value": 1,
+      "path": "matchCount",
+      "cmd": [
+        "search",
+        "{file:all24.hwp}",
+        "--json",
+        "--",
+        "점검"
+      ]
+    },
+    {
+      "name": "원본과 다름",
+      "op": "differs_from_input",
+      "file": "all24.hwp"
+    }
+  ]
+}

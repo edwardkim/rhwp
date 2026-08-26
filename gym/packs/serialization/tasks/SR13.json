@@ -1,0 +1,50 @@
+{
+  "id": "SR13",
+  "tier": 2,
+  "title": "이미 편집 가능한 HWP5를 다시 convert",
+  "input": "samples/para-001.hwp",
+  "instructions": "입력은 이미 편집 가능한 HWP5 다. 그래도 convert 로 conv.hwp 를 만들고, 변환 봉투의 배포용 여부(wasDistribution)를 answer.json 에 {\"wasDistribution\": true|false} 로 적어라. convert 는 입력이 이미 편집 가능해도 산출물을 쓰고 봉투를 낸다 — 배포용 해제만이 전부가 아니다. 힌트: rhwp convert --json 의 wasDistribution.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "conv.hwp",
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "HWP5 산출",
+      "op": "file_exists",
+      "file": "conv.hwp",
+      "minBytes": 256
+    },
+    {
+      "name": "원본과 다름 (무편집 복사 거부 — 판별력)",
+      "op": "differs_from_input",
+      "file": "conv.hwp"
+    },
+    {
+      "name": "info 형식",
+      "op": "value_eq",
+      "value": "hwp5",
+      "path": "format",
+      "cmd": [
+        "info",
+        "{file:conv.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "배포용 여부",
+      "op": "answer_eq",
+      "answer": "wasDistribution",
+      "path": "wasDistribution",
+      "cmd": [
+        "convert",
+        "{input}",
+        "{file:conv.hwp}",
+        "--json"
+      ]
+    }
+  ]
+}

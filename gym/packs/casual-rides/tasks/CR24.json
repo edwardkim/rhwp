@@ -1,0 +1,24 @@
+{
+  "id": "CR24",
+  "tier": 1,
+  "title": "미주 문서는 미주가 몇 개?",
+  "input": "samples/endnote-01.hwp",
+  "instructions": "기념사진관 — CR24 는 키 제한 없는 입문 놀이기구다. 각주와 미주를 섞지 마라. endnoteCount. 문서는 `samples/endnote-01.hwp` 이다. rhwp 를 한 번 실행하고 그 답을 그대로 옮기면 된다. 숫자를 추측하지 마라. 채점기가 같은 명령을 다시 돌린다. 힌트: explain {입력} --json. answer.json 에는 {\"endnotes\": 값} 만 적는다. 원본을 고치지 마라. 새 표본을 만들지 마라. explain endnoteCount.",
+  "submit": {
+    "kind": "answer"
+  },
+  "checks": [
+    {
+      "name": "미주 문서는 미주가 몇 개?",
+      "op": "answer_eq",
+      "answer": "endnotes",
+      "cmd": [
+        "explain",
+        "{input}",
+        "--json"
+      ],
+      "path": "endnoteCount"
+    }
+  ],
+  "axis": "입문"
+}

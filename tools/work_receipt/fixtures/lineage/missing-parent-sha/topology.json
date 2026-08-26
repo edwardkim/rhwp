@@ -1,0 +1,48 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workReceiptLineageTopology",
+  "ident": "missing-parent-sha",
+  "title": "parent.sha256 누락",
+  "why": "검증 생략이 아니라 머리에서 즉시 실패.",
+  "notes": "fail-closed",
+  "depth": 1,
+  "valid": false,
+  "brokenAxis": "parent.sha256",
+  "deep": false,
+  "exit": 3,
+  "required": [
+    "schemaVersion",
+    "head",
+    "depth",
+    "valid",
+    "brokenAt",
+    "links"
+  ],
+  "envelope": {
+    "schemaVersion": "1.0",
+    "head": "b.capsule.json",
+    "depth": 1,
+    "valid": false,
+    "brokenAt": "b.capsule.json",
+    "links": [
+      {
+        "capsule": "b.capsule.json",
+        "parentOk": null,
+        "lineageOk": null,
+        "reproduced": null,
+        "error": "parent.sha256 가 없거나 64자리 16진이 아님"
+      }
+    ]
+  },
+  "command": [
+    "lineage",
+    "b.capsule.json",
+    "--json"
+  ],
+  "axes": {
+    "parentOk": "부모 파일 바이트 == 자식이 기록한 parent.sha256",
+    "lineageOk": "부모 receipt.outputSha256 == 자식 receipt.inputSha256",
+    "reproduced": "--deep 일 때만 임시 재실행 해시 대조"
+  },
+  "generator": "tools/work_receipt/fatten_work_receipt.py"
+}

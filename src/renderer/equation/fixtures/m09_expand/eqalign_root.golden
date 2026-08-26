@@ -1,0 +1,75 @@
+# M09-g equation golden — current-engine lock (variant/exception/unimplemented honesty)
+command: EQALIGN
+script: EQALIGN{ROOT 8 &= 2 # ROOT 27 &= 3}
+honesty: root-aliases-sqrt
+
+=== ast ===
+EqAlign {
+    rows: [
+        (
+            Sqrt {
+                index: None,
+                body: Number(
+                    "8",
+                ),
+            },
+            Row(
+                [
+                    Symbol(
+                        "=",
+                    ),
+                    Number(
+                        "2",
+                    ),
+                ],
+            ),
+        ),
+        (
+            Sqrt {
+                index: None,
+                body: Number(
+                    "27",
+                ),
+            },
+            Row(
+                [
+                    Symbol(
+                        "=",
+                    ),
+                    Number(
+                        "3",
+                    ),
+                ],
+            ),
+        ),
+    ],
+}
+
+=== layout ===
+EqAlign x=0.0000 y=0.0000 w=66.0000 h=54.0000 bl=27.0000
+  row0.left:
+    Sqrt x=11.0000 y=0.0000 w=25.0000 h=24.0000 bl=18.0000
+      body:
+        Number("8") x=13.0000 y=2.0000 w=11.0000 h=20.0000 bl=16.0000
+  row0.right:
+    Row x=39.0000 y=2.0000 w=27.0000 h=20.0000 bl=16.0000
+      Symbol("=") x=0.0000 y=0.0000 w=16.0000 h=20.0000 bl=16.0000
+      Number("2") x=16.0000 y=0.0000 w=11.0000 h=20.0000 bl=16.0000
+  row1.left:
+    Sqrt x=0.0000 y=30.0000 w=36.0000 h=24.0000 bl=18.0000
+      body:
+        Number("27") x=13.0000 y=2.0000 w=22.0000 h=20.0000 bl=16.0000
+  row1.right:
+    Row x=39.0000 y=32.0000 w=27.0000 h=20.0000 bl=16.0000
+      Symbol("=") x=0.0000 y=0.0000 w=16.0000 h=20.0000 bl=16.0000
+      Number("3") x=16.0000 y=0.0000 w=11.0000 h=20.0000 bl=16.0000
+
+=== svg ===
+<path d="M11.00,13.40 L13.00,14.40 L19.00,24.00 L22.00,0.00 L36.00,0.00" fill="none" stroke="#000000" stroke-width="0.80"/>
+<text x="24.00" y="18.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">8</text>
+<text x="47.00" y="18.00" font-size="20.00" fill="#000000" text-anchor="middle" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">=</text>
+<text x="55.00" y="18.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">2</text>
+<path d="M0.00,43.40 L2.00,44.40 L8.00,54.00 L11.00,30.00 L36.00,30.00" fill="none" stroke="#000000" stroke-width="0.80"/>
+<text x="13.00" y="48.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">27</text>
+<text x="47.00" y="48.00" font-size="20.00" fill="#000000" text-anchor="middle" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">=</text>
+<text x="55.00" y="48.00" font-size="20.00" fill="#000000" font-family="'Latin Modern Math', 'STIX Two Text', 'STIX Two Math', 'Times New Roman', 'Times', serif">3</text>

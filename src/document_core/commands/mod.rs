@@ -1,4 +1,7 @@
 mod clipboard;
+// [#5769] 삭제의 참 역연산 — 조각 저장소. DeleteFragment 타입이 DocumentCore
+// 필드로 쓰이므로 pub(crate).
+pub(crate) mod delete_fragment;
 mod document;
 mod footnote_ops;
 mod formatting;
@@ -9,3 +12,6 @@ mod object_ops;
 pub mod page_extract;
 mod table_ops;
 mod text_editing;
+// [#5769] Stage 4 — 구역 raw 저널. SectionRawCapture 타입이 DocumentCore 필드로
+// 쓰이므로 pub(crate).
+pub(crate) mod section_raw_journal;

@@ -1,0 +1,41 @@
+{
+  "id": "AU11",
+  "steps": [
+    {
+      "run": [
+        "replay",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"samples/table-001.hwp\", \"output\": \"out.hwp\", \"steps\": [{\"action\": \"set_cell\", \"table\": 0, \"row\": 0, \"col\": 0, \"text\": \"연합\"}]}",
+        "--capsule",
+        "{sub:work.capsule.json}",
+        "--json"
+      ]
+    },
+    {
+      "run": [
+        "bundle",
+        "export",
+        "{sub:work.capsule.json}",
+        "-o",
+        "{sub:work.lineage-bundle}",
+        "--json"
+      ]
+    },
+    {
+      "write_json": {
+        "to": "{sub:domain.json}",
+        "body": {
+          "schemaVersion": "1.0",
+          "kind": "trustDomain",
+          "domain": "gym",
+          "keyring": {
+            "schemaVersion": "1.0",
+            "kind": "keyring",
+            "keys": []
+          },
+          "checkpoints": []
+        }
+      }
+    }
+  ]
+}

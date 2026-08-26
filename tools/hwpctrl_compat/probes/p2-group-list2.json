@@ -1,0 +1,25 @@
+{
+  "id": "p2-group-list2",
+  "title": "묶음 문서의 리스트 2 는 무엇에 매달렸나 — 부모로 올라가 확인",
+  "ledger": [],
+  "open": "samples/draw-group.hwp",
+  "calls": [
+    ["SetPos", [2, 0, 0]],
+    ["GetPos", []],
+    ["Run", ["MoveParentList"]],
+    ["GetPos", []],
+    ["SetPos", [2, 0, 0]],
+    ["Run", ["MoveRootList"]],
+    ["GetPos", []],
+    ["SetPos", [2, 0, 0]],
+    ["Run", ["MoveListEnd"]],
+    ["GetPos", []],
+    ["ParaShape.Item", ["AlignType"]],
+    ["CharShape.Item", ["Height"]],
+    ["CharShape.Item", ["FaceNameHangul"]],
+    ["HeadCtrl.Next.Next.Next.Properties.Item", ["Width"]],
+    ["HeadCtrl.Next.Next.Next.Properties.Item", ["Height"]],
+    ["HeadCtrl.Next.Next.CtrlCh", []],
+    ["HeadCtrl.Next.Next.Next.CtrlCh", []]
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "kinds": [
+    {
+      "id": "role_impersonation",
+      "confidence": "high",
+      "meaning": "SYSTEM:/Assistant:/<|im_start|>/[INST] 역할 표지"
+    },
+    {
+      "id": "instruction_override",
+      "confidence": "high",
+      "meaning": "이전 지시를 무시 / ignore previous instructions"
+    },
+    {
+      "id": "tool_directive",
+      "confidence": "high",
+      "meaning": "실제 MCP 도구 이름을 명령형으로 부름"
+    },
+    {
+      "id": "authority_claim",
+      "confidence": "medium",
+      "meaning": "사용자가 이미 승인했다 / admin override"
+    },
+    {
+      "id": "exfiltration_hint",
+      "confidence": "medium",
+      "meaning": "본문 URL/이메일 + 전송 명령형"
+    },
+    {
+      "id": "delimiter_break",
+      "confidence": "low",
+      "meaning": "코드펜스·</system> 구분자 흉내"
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "id": "T17",
+  "title": "HWPX 표",
+  "scenario": "S19",
+  "argv": [
+    "explore",
+    "samples/tables.hwpx",
+    "--json"
+  ],
+  "envelope": "envelopes/S19.json",
+  "expect": {
+    "schemaVersion": "1.0",
+    "encrypted": false,
+    "menuIds": [
+      "table-extract",
+      "triage-overview"
+    ],
+    "first": "table-extract",
+    "firstCommand": "rhwp export-tables <file> --json",
+    "untrustedContent": false
+  },
+  "stop": "X10",
+  "notGym": true,
+  "usesExistingCommand": true
+}

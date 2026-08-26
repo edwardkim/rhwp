@@ -11,13 +11,15 @@
 2. Codex는 프로젝트 메모리 덤프 `mydocs/manual/codex/MEMORY.md`
 3. `mydocs/README.md`
 4. 작업 성격에 맞는 `mydocs/manual/README.md` 또는 `mydocs/tech/README.md`
-5. 개발·문서·Git 작업은 `mydocs/manual/codex/docs_and_git_workflow.md`
-6. PR 검토·merge·후속 처리는 `mydocs/manual/pr_review_workflow.md`를 먼저 읽고,
+5. GitHub Actions·저장소 설정·branch protection·cache·runner 운영은
+   `mydocs/manual/github_operations.md`
+6. 개발·문서·Git 작업은 `mydocs/manual/codex/docs_and_git_workflow.md`
+7. PR 검토·merge·후속 처리는 `mydocs/manual/pr_review_workflow.md`를 먼저 읽고,
    `mydocs/manual/pr_review/README.md`의 선택표가 지정한 기본·보조 자식 문서를 작업 전에 모두 읽는다.
-7. 로컬 빌드·WASM 검증은 `mydocs/manual/dev_environment_guide.md`,
+8. 로컬 빌드·WASM 검증은 `mydocs/manual/dev_environment_guide.md`,
    변경 범위별 검증 게이트는 `mydocs/manual/pr_review/local_validation.md`의 4.3
-8. CLI 작업은 `mydocs/manual/cli_commands.md`
-9. 시각 검증은 `mydocs/manual/verification/visual_verification_governance.md`와 `mydocs/manual/verification/visual_sweep_guide.md`
+9. CLI 작업은 `mydocs/manual/cli_commands.md`
+10. 시각 검증은 `mydocs/manual/verification/visual_verification_governance.md`와 `mydocs/manual/verification/visual_sweep_guide.md`
 
 더 구체적인 문서가 이 요약과 다르면 그 문서를 따른다.
 
@@ -30,10 +32,61 @@
   라우팅 결과에 해당하는 역할별 자식 절차를 따른다. 모 문서만 읽고 세부 경로를 추정해 진행하지 않는다.
 - 작업 단계가 바뀌면 현재 단계의 변경을 커밋한 뒤 다음 단계 문서를 시작한다.
 - GitHub comment, remote push, PR 생성은 사용자 승인을 받은 뒤 수행한다.
+- Windows PowerShell에서 한글을 포함한 여러 단락의 PR·review·comment 본문은 here-string을
+  `gh --body-file -`로 직접 pipe하지 않는다. UTF-8 **without BOM** 임시 Markdown 파일을
+  `--body-file`로 전달하고, 게시 뒤 API로 한글·선두 BOM·`??` 치환 여부를 확인한다. 정확한
+  명령과 정리 절차는 `mydocs/manual/pr_review_workflow.md`의 3.4.1을 따른다.
 
 ## 문서와 검증
 
+- **모든 PR·push 직전 필수 (건너뛰면 CI Lint Format check 실패)**:
+  ```
+  cargo fmt --all
+  cargo fmt --all -- --check
+  ```
+  CI Format check 는 `cargo fmt --all -- --check` 이다. `cargo fmt --check` 만으로는
+  부족하다. 테스트만 고친 커밋도 다시 돌려야 한다. `--check` 가 실패하면
+  `cargo fmt --all` 후 다시 `--check` 가 통과하기 전에는 push 하지 않는다.
+- **source-side test 변경 시 추가**: `src/**`의 `#[cfg(test)]`를 변경하면
+  `node scripts/rust-unit-test-tiers.mjs --check`를 실행한다. 이 검사는 source와 정책만 읽고
+  파생 inventory를 만들지 않는다. 진단용 `--generate` 결과는 `tests/generated/unit-test-tiers.json`에
+  남으며 커밋하지 않는다.
+- **review·maintainer worktree와 CI 전용**: 새 integration source는 `tests/cases/` 원본만 PR에
+  포함한다. `node scripts/rust-test-suite-manifest.mjs --prepare`와 manifest `--check`는
+  파생 suite를 준비한 review worktree와 CI에서만 수행한다. generated suite·manifest는
+  검증 증적일 뿐 source PR에 stage하지 않는다. 기본 `--prepare`는 root `Cargo.toml`을 바꾸지 않으며,
+  통합 불가 예외 target registry를 갱신하는 메인터너 전용 PR만 `--sync-cargo-targets`로 Cargo marker
+  블록을 동기화할 수 있다. 세부 절차는 `CONTRIBUTING.md`와
+  `mydocs/manual/pr_review/local_validation.md`의 integration test 절을 따른다.
 - 문서 역할·생명주기·canonical 관계는 `mydocs/README.md`의 manifest를 따른다.
 - 문서 이동·정보구조 리팩토링의 링크와 메타데이터 검사는
   `mydocs/manual/markdown_link_check_guide.md`를 따른다. 일반 Markdown 추가·수정에는 자동 CI를 실행하지 않는다.
 - 렌더링·레이아웃 변경은 시각 검증 정책에 따라 PDF/SVG 또는 동등한 근거를 남긴다.
+
+## 작업 증빙 — 에이전트 기본 경로 (권장)
+
+LLM 에이전트가 이 저장소에서 문서를 실제로 편집·생성하는 작업의 기본 경로다.
+전부 devel 에 병합된 기능이며, **권장이지 제출 조건이 아니다**. 도구별 지침 파일
+(`.github/copilot-instructions.md`·`.cursor/rules/rhwp.mdc`·`GEMINI.md`·
+`.windsurfrules`·`.clinerules`)은 전부 이 절을 가리키는 얇은 포인터다 — 실질
+내용은 여기 한 곳에서만 고친다.
+
+이 경로는 [에이전트 작업 표준(AWS) 1.0](mydocs/tech/standards/agent_work_standard.md)의
+**레퍼런스 구현**이다 — 아래 영수증·계보·서명·앵커·정산이 표준의 AW-L1~AW-L5 다.
+표준은 도구 무관하고 열려 있다(준수는 강요가 아니라 유용성 때문). 기계용 정본은
+[`agent_work_standard.json`](mydocs/tech/standards/agent_work_standard.json).
+
+- **영수증**: 편집 계획을 세우고 실행은 캡슐과 함께 남긴다 —
+  `rhwp replay --plan-json <계획> --capsule work.capsule.json --json`.
+  캡슐 하나가 "어떤 입력에서 어떤 계획으로 어떤 산출이 나왔나"를 3해시
+  (입력·계획·산출)로 고정하고, 제3자가 재실행으로 검증할 수 있다.
+- **계보**: 연속 작업은 `--parent 이전.capsule.json` 으로 잇고
+  `rhwp lineage <머리캡슐> --json` 으로 검증한다.
+- **회계**: 캡슐 폴더의 전수 재검증은 `rhwp audit <폴더> --json` — 재현율이
+  수치로 나온다.
+- **PR 증빙**: 관련 `--json` 봉투 원문 또는 캡슐 파일을 PR 본문에 붙인다
+  (PR 템플릿 체크리스트). 리뷰어는 주장 대신 재계산으로 확인한다.
+- **확장 축**: 서명·앵커·게이트·연합·선택적 공개·정산·감사 표준은 검증 사다리
+  좌표 [#4463](https://github.com/edwardkim/rhwp/issues/4463)를 본다 — 병합 전
+  기능은 규약이 아니라 로드맵이다.
+- 기여 절차 전체는 Claude Code 스킬 `rhwp-contributor` 가 체크리스트로 안내한다.

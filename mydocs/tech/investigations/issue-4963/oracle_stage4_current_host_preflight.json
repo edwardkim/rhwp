@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-oracle-stage4-environment-preflight",
+  "issue": 4963,
+  "stage": "W5-4",
+  "observedAt": "2026-08-22",
+  "environment": {
+    "hostOs": "Microsoft Windows 11 Pro",
+    "guestTooling": "WSL2 Ubuntu 24",
+    "hancomVersion": "11, 0, 0, 9136",
+    "hwpFeatureDetection": "observed-open",
+    "securityModuleRegistration": "observed-true"
+  },
+  "disposableEvidence": {
+    "hyperVCommand": {
+      "status": "observed",
+      "value": "available",
+      "reason": null
+    },
+    "vmInventory": {
+      "status": "blocked",
+      "value": null,
+      "reason": "The current session cannot enumerate Hyper-V virtual machines."
+    },
+    "checkpointIdentity": {
+      "status": "unavailable",
+      "value": null,
+      "reason": "No accessible VM checkpoint identity was supplied or observed."
+    },
+    "restoreVerification": {
+      "status": "unavailable",
+      "value": null,
+      "reason": "No disposable guest baseline has been restored and compared."
+    }
+  },
+  "qualified": false,
+  "mutationAllowed": false,
+  "decision": "contract-and-validator-only-until-external-snapshot-attestation",
+  "scope": {
+    "fontMutationPerformed": false,
+    "registryMutationPerformed": false,
+    "privateCorpusAccessed": false,
+    "remoteUploadPerformed": false,
+    "githubWritePerformed": false
+  }
+}

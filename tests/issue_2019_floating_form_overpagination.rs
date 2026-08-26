@@ -33,8 +33,11 @@ fn issue_2019_partial_mitigation_keeps_catastrophic_overpagination_from_returnin
     // 한글 2022 기준 페이지 수는 18쪽이다. 이 assert 는 페이지 수 폭증 재발만 막는다.
     // 서식 위치 정합은 pdf/issue2019 기준 PDF visual sweep 으로 별도 검증한다.
     let pages = doc.page_count();
-    assert!(
-        pages <= 20,
-        "부동 폼 과분할 재발 — 페이지 수 {pages} (부분 완화 기대 ≤20, 한글 18, 수정 전 81)"
+    // [#5919] 한글 2020 정본(pdf/issue2019/issue2019_floating_form_74312-2020.pdf)도 18쪽이다.
+    // 신구조문대비표 12쪽을 두 쪽으로 갈라 놓던 허위 쪽(수정 전 19쪽)을 억제했으므로
+    // 정본 값으로 핀을 강화한다(기존 부분 완화 상한 ≤20 대체).
+    assert_eq!(
+        pages, 18,
+        "부동 폼 과분할/허위 쪽 재발 — 페이지 수 {pages} (한글 정본 18, #5919 수정 전 19, 최초 버그 81)"
     );
 }

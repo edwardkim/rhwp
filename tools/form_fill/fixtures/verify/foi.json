@@ -1,0 +1,57 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.form_fill.fill_case.v1",
+  "id": "foi-verify",
+  "axis": "verify",
+  "claim": "M-fill",
+  "generator": "tools/form_fill/fatten_form_fill.py",
+  "form": "foi",
+  "title": "정보공개 청구서 --verify",
+  "family": "민원",
+  "genre": "공개청구",
+  "sample": "fixtures/forms/정보공개청구서.hwp",
+  "format": "hwp5",
+  "relatedIssue": "#3329",
+  "why": "저장 직후 재파싱. identical:false 면 exit 3. 산출물은 남는다.",
+  "firstFieldName": "청구기관",
+  "fieldCount": 11,
+  "argv": [
+    "edit",
+    "fill-fields",
+    "fixtures/forms/정보공개청구서.hwp",
+    "--data",
+    "{\"청구기관\": \"행정안전부\"}",
+    "-o",
+    "out/foi-verify.hwp",
+    "--verify",
+    "--json"
+  ],
+  "existingCliOnly": true,
+  "data": {
+    "청구기관": "행정안전부"
+  },
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "fixtures/forms/정보공개청구서.hwp",
+    "dryRun": false,
+    "filledCount": 1,
+    "filled": [
+      {
+        "name": "청구기관",
+        "occurrence": 0,
+        "value": "행정안전부"
+      }
+    ],
+    "notFound": [],
+    "ambiguous": [],
+    "confusable": [],
+    "verify": {
+      "identical": true,
+      "diffCount": 0
+    },
+    "output": "out/foi-verify.hwp",
+    "outputFormat": "hwp5"
+  },
+  "exit": 0,
+  "leavesOutput": true
+}

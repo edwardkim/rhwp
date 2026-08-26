@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "kind": "pageRoundtripTranscript",
+  "issue": 4882,
+  "doc": "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp",
+  "route": "hwpx",
+  "created": "2026-08-18T10:12:07Z",
+  "summary": {
+    "events": 8,
+    "pages": {
+      "before": 215,
+      "after": 215
+    },
+    "verdict": "MATCH",
+    "irDiffs": 0
+  },
+  "events": [
+    {
+      "seq": 0,
+      "kind": "meta",
+      "tool": "tools/page_roundtrip/transcript.py",
+      "issue": 4882
+    },
+    {
+      "seq": 1,
+      "kind": "command",
+      "argv": [
+        "rhwp",
+        "export-hwpx",
+        "samples/정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwp",
+        "/tmp/rt.hwpx",
+        "--verify-pages",
+        "--json"
+      ]
+    },
+    {
+      "seq": 2,
+      "kind": "stdout",
+      "text": "{\"schemaVersion\": 1, \"verifyPages\": {\"before\": 215, \"after\": 215, \"identical\": true}}",
+      "bytes": 85
+    },
+    {
+      "seq": 3,
+      "kind": "stderr",
+      "text": "검증 통과(--verify-pages): 215쪽\n",
+      "bytes": 38
+    },
+    {
+      "seq": 4,
+      "kind": "exit",
+      "rc": 0
+    },
+    {
+      "seq": 5,
+      "kind": "pages",
+      "before": 215,
+      "after": 215,
+      "identical": true
+    },
+    {
+      "seq": 6,
+      "kind": "verdict",
+      "verdict": "MATCH",
+      "cataloged": false,
+      "issue": 4882
+    },
+    {
+      "seq": 7,
+      "kind": "note",
+      "text": "M05-6 수정 후 기대 봉투. 쪽수 215==215."
+    }
+  ]
+}

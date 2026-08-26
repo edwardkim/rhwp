@@ -1,0 +1,26 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.form_fill.path_contract.v1",
+  "claim": "M-fill",
+  "generator": "tools/form_fill/fatten_form_fill.py",
+  "existingCliOnly": true,
+  "id": "path-batch-threads",
+  "axis": "batch-fill",
+  "title": "batch fill --threads",
+  "why": "단건과 같은 의미의 선택 옵션.",
+  "argv": [
+    "batch",
+    "fill",
+    "--form",
+    "samples/field-01.hwp",
+    "--data",
+    "rows.jsonl",
+    "--out-dir",
+    "out/filled",
+    "--threads",
+    "4",
+    "--json"
+  ],
+  "exit": 0,
+  "writesFile": true
+}

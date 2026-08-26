@@ -1,0 +1,8 @@
+{
+  "schemaVersion": "1.0",
+  "mode": "verify",
+  "toolVersion": "",
+  "reproduced": true,
+  "expectedOutputSha256": "3c1c839b9b750e90a88239cf7052f46858ebefac8d4e2f985d4fac7699c7a5b3",
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"samples/basic/blank.hwp\",\"output\":\"out/x.hwp\",\"steps\":[{\"action\":\"sanitize\"}]}"
+}

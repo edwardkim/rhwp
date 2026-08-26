@@ -1,0 +1,23 @@
+{
+  "id": "T15",
+  "tier": 1,
+  "title": "표 표본 쪽수",
+  "input": "samples/table-001.hwp",
+  "instructions": "T15 은 입문·코어 온램프를 두껍게 하는 과제다. T01 이 다쪽 중첩표 표본만 묻는 구멍을 메운다. 가장 작은 표 표본의 쪽수를 읽는다. 표본은 `samples/table-001.hwp` 이고, 이미 저장소 `samples/` 에 있다. 새 파일을 만들지 마라. 정답 숫자는 과제에 박제되어 있지 않다. 채점기가 같은 명령을 다시 돌린다. 힌트: info <문서> --json. 제출은 answer.json 에 {\"pages\": <값>} 로 적는다. 원본을 덮어쓰지 마라. T07 의 fields[0]==홍길동 판정을 복제하지 마라. table-001 은 입문존 CR01 과 같은 파일이지만, 코어 pack 에서는 신상 조회의 다른 축이다.",
+  "submit": {
+    "kind": "answer"
+  },
+  "checks": [
+    {
+      "name": "표 표본 쪽수",
+      "op": "answer_eq",
+      "answer": "pages",
+      "cmd": [
+        "info",
+        "{input}",
+        "--json"
+      ],
+      "path": "pageCount"
+    }
+  ]
+}

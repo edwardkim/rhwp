@@ -1,0 +1,27 @@
+{
+  "id": "OP30",
+  "tier": 2,
+  "title": "multi-table 표 수 라이브 재계산",
+  "input": "samples/multi-table-001.hwp",
+  "axis": "검증",
+  "instructions": "multi-table-001 의 표 개수를 answer.json 에 {\"tables\": N} 으로 제출하라. table-001 의 답을 재사용하면 라이브 오라클이 거부한다.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "다중 표 개수",
+      "op": "answer_eq",
+      "answer": "tables",
+      "cmd": [
+        "export-tables",
+        "{input}",
+        "--json"
+      ],
+      "path": "tableCount"
+    }
+  ]
+}

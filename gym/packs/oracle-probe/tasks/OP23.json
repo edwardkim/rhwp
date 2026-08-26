@@ -1,0 +1,25 @@
+{
+  "id": "OP23",
+  "tier": 2,
+  "title": "쓰기 형식 수 라이브 재계산",
+  "input": "samples/table-001.hwp",
+  "axis": "검증",
+  "instructions": "쓸 수 있는 형식 수를 answer.json 에 {\"write\": N} 으로 제출하라. 읽기 형식 수와 같다고 가정하지 마라 — 오라클이 따로 센다.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "쓰기 형식 수",
+      "op": "len_answer_eq",
+      "answer": "write",
+      "cmd": [
+        "capabilities"
+      ],
+      "path": "formats.write"
+    }
+  ]
+}

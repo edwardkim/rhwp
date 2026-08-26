@@ -1,0 +1,15 @@
+{
+  "id": "WR22",
+  "steps": [
+    {
+      "run": [
+        "replay",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"samples/field-01.hwp\", \"output\": \"parent-null.hwp\", \"steps\": [{\"action\": \"replace_text\", \"find\": \"마케팅\", \"replace\": \"부모널\"}]}",
+        "--capsule",
+        "{sub:receipts/root.capsule.json}",
+        "--json"
+      ]
+    }
+  ]
+}

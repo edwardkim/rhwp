@@ -1,0 +1,41 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workReceiptAuditLayout",
+  "ident": "bad-output-sha",
+  "title": "출력 해시 기형",
+  "why": "outputSha256=xyz. 64hex 가드.",
+  "notes": "hex 가드",
+  "members": [
+    "bad_output_sha"
+  ],
+  "ignored": [],
+  "recursive": false,
+  "exit": 3,
+  "required": [
+    "schemaVersion",
+    "root",
+    "total",
+    "reproduced",
+    "failed",
+    "reproducedRate"
+  ],
+  "envelope": {
+    "schemaVersion": "1.0",
+    "root": "fixtures/audit-layouts/bad-output-sha",
+    "total": 1,
+    "reproduced": 0,
+    "failed": [
+      {
+        "capsule": "bad_output_sha.capsule.json",
+        "error": "receipt.outputSha256 가 없거나 64자리 16진이 아님"
+      }
+    ],
+    "reproducedRate": 0.0
+  },
+  "command": [
+    "audit",
+    "fixtures/audit-layouts/bad-output-sha",
+    "--json"
+  ],
+  "generator": "tools/work_receipt/fatten_work_receipt.py"
+}

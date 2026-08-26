@@ -1,0 +1,16 @@
+{
+  "id": "SD66",
+  "steps": [
+    {
+      "answer": {
+        "ref": {
+          "cmd": [
+            "export-plan-schema",
+            "--json"
+          ],
+          "path": "schema.$ref"
+        }
+      }
+    }
+  ]
+}

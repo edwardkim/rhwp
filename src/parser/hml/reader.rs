@@ -1,7 +1,7 @@
 use quick_xml::events::{BytesStart, Event};
 use quick_xml::Reader;
 
-use crate::model::page::PageDef;
+use crate::model::page::{ColumnDef, ColumnDirection, ColumnType, PageDef};
 use crate::model::paragraph::{CharShapeRef, ColumnBreakType};
 use crate::model::shape::{
     CommonObjAttr, HorzAlign, HorzRelTo, ShapeComponentAttr, TextWrap, VertAlign, VertRelTo,
@@ -112,6 +112,7 @@ pub(crate) enum HmlControl {
     Equation(HmlEquation),
     Rectangle(HmlRectangle),
     Table(HmlTable),
+    ColumnDef(ColumnDef),
 }
 
 #[derive(Debug, Default)]
@@ -214,6 +215,9 @@ struct ReadState<'a> {
     saw_body: bool,
     /// [#2743] `HmlLimits::max_resource_id` 사본 — 리소스 `Id` 상한.
     max_resource_id: usize,
+    /// [#5848] 내부 DTD 가 선언한 엔티티. **리터럴 값만** 담는다 —
+    /// 값에 `&` 가 있으면(중첩 참조) 아예 싣지 않으므로 재귀 확장이 성립하지 않는다.
+    doctype_entities: std::collections::HashMap<String, String>,
 }
 
 impl<'a> ReadState<'a> {
@@ -222,6 +226,7 @@ impl<'a> ReadState<'a> {
             xml,
             stack: Vec::new(),
             source: HmlSource::default(),
+            doctype_entities: std::collections::HashMap::new(),
             pending_capture: None,
             paragraphs: Vec::new(),
             equations: Vec::new(),
@@ -442,6 +447,7 @@ impl<'a> ReadState<'a> {
             }
             "SCRIPT" => self.start_equation_script(element),
             "RECTANGLE" => self.start_rectangle(element),
+            "COLDEF" => self.capture_col_def(element),
             "SHAPEOBJECT" => self.capture_shape_object(element),
             "SHAPECOMPONENT" => self.capture_shape_component(element),
             "LINESHAPE" => self.capture_line_shape(element),
@@ -486,7 +492,13 @@ impl<'a> ReadState<'a> {
             return Err(HmlError::InvalidXml("multiple HWPML roots".to_string()));
         }
         let version = attribute(element, b"Version")?.unwrap_or_default();
-        if !matches!(version.as_str(), "2.9" | "2.91") {
+        // [#5848] 법제처 국가법령정보센터 배포본은 `Version="2.1"` 로 나온다.
+        //
+        // 이 게이트를 넓혀도 해석은 달라지지 않는다 — **파서는 버전 값으로 분기하지
+        // 않는다.** 여기서 검사한 뒤 `source.version` 에 담아 `doc_info.hwpml_version`
+        // 메타데이터로 흘려보낼 뿐이고(`adapter.rs:29`), 요소 처리는 전부 태그 이름으로
+        // 간다. 그래서 2.1 을 통과시키는 것은 같은 태그 기반 경로로 보내는 것뿐이다.
+        if !matches!(version.as_str(), "2.1" | "2.9" | "2.91") {
             return Err(HmlError::UnsupportedVersion(version));
         }
         self.source.version = version;
@@ -600,7 +612,9 @@ impl<'a> ReadState<'a> {
             base_size: parse_attribute(element, b"Height")?.unwrap_or(1000),
             border_fill_id: parse_attribute(element, b"BorderFillId")?.unwrap_or(0),
             text_color: parse_attribute(element, b"TextColor")?.unwrap_or(0),
-            shade_color: parse_attribute(element, b"ShadeColor")?.unwrap_or(0),
+            // 속성 부재 = 음영 없음. 한/글 산출 HML 은 4294967295 를 명시한다 (#4155)
+            shade_color: parse_attribute(element, b"ShadeColor")?
+                .unwrap_or(crate::model::color::NONE),
             ..Default::default()
         };
         if !set_indexed(
@@ -884,6 +898,33 @@ impl<'a> ReadState<'a> {
             rectangle.y_coords[index] = parse_attribute(element, *key)?.unwrap_or(0);
         }
         self.rectangles.push(rectangle);
+        Ok(())
+    }
+
+    /// [#4386] `TEXT` 직계 `COLDEF`(다단 정의) → `Control::ColumnDef`.
+    ///
+    /// `COLDEF`는 `RECTANGLE`/`TABLE`/`EQUATION`과 달리 자식 요소가 없는 빈 태그라
+    /// (`<COLDEF .../>`, 실물 관찰: `samples/hml/aligns.hml`) 시작·종료를 나눠 스테이징할
+    /// 필요가 없다 — 속성만으로 완성된 `ColumnDef`를 만들어 그 자리에서 바로
+    /// `controls`에 넣는다. 다른 인라인 컨트롤과 마찬가지로 원본 텍스트 스트림에서
+    /// 8-utf16 자리를 차지하므로 `reserve_control_slot`으로 `raw_pos`를 맞춘다.
+    ///
+    /// HWPX `hwpx/section.rs::parse_col_pr`가 같은 IR 필드를 채우는 방식을 참고했다:
+    /// `SameGap`(간격 수치)→`spacing`, `SameSize`(bool)→`same_width`. HML은 간격을
+    /// `SECDEF`가 아니라 `COLDEF` 자신의 `SameGap`에 싣는다(HWPX의 `sameGap`과 동형).
+    fn capture_col_def(&mut self, element: &BytesStart<'_>) -> Result<(), HmlError> {
+        self.reserve_control_slot()?;
+        let column_def = ColumnDef {
+            column_type: parse_column_type(attribute(element, b"Type")?.as_deref()),
+            column_count: parse_attribute(element, b"Count")?.unwrap_or(1),
+            direction: parse_column_direction(attribute(element, b"Layout")?.as_deref()),
+            same_width: parse_bool_attribute(element, b"SameSize")?,
+            spacing: parse_attribute(element, b"SameGap")?.unwrap_or(0),
+            ..Default::default()
+        };
+        self.current_paragraph()?
+            .controls
+            .push(HmlControl::ColumnDef(column_def));
         Ok(())
     }
 
@@ -1394,6 +1435,11 @@ pub(crate) fn has_hwpml_root(xml: &str) -> bool {
                         .flatten()
                         .is_some_and(|version| !version.is_empty());
             }
+            // [#5848] `<!DOCTYPE HWPML [ … ]>` 도 루트 앞에 올 수 있는 프롤로그다.
+            // 법제처 국가법령정보센터 배포본이 엔티티 선언(`&nbsp;`)을 담아 내보내는데,
+            // 종전에는 이 이벤트가 아래 `_ => return false` 로 떨어져 포맷 감지가
+            // 실패했다 — 실제로는 HWPML 인데 "알 수 없는 파일 형식"으로 거부됐다.
+            Ok(Event::DocType(_)) => {}
             Ok(Event::Decl(_) | Event::Comment(_) | Event::PI(_)) => {}
             Ok(Event::Text(text)) if text.iter().all(|byte| byte.is_ascii_whitespace()) => {}
             Ok(Event::Eof) | Err(_) => return false,
@@ -1427,9 +1473,14 @@ pub(crate) fn read_hml(xml: &str, limits: &HmlLimits) -> Result<HmlSource, HmlEr
             Event::Text(text) => append_decoded_text(&mut state, &text, limits)?,
             Event::CData(text) => append_cdata(&mut state, &text, limits)?,
             Event::GeneralRef(reference) => append_reference(&mut state, &reference)?,
-            Event::DocType(_) => {
-                return Err(HmlError::InvalidXml("DTD is not allowed".to_string()))
-            }
+            // [#5848] 내부 DTD 는 **엔티티 선언만** 거둬 쓰고 나머지는 버린다.
+            // 법제처 국가법령정보센터 배포본이 `<!ENTITY nbsp "&#160;">` 를 앞에 달고
+            // 나오는데, 종전에는 여기서 거부해 문서가 통째로 안 열렸다.
+            //
+            // 확장 폭탄·XXE 는 `collect_doctype_entities` 가 구조적으로 막는다 —
+            // 값에 `&` 가 있거나(중첩 참조) `SYSTEM`/`PUBLIC` 이 붙은 선언은 싣지 않고,
+            // 개수·길이에 상한을 둔다. 담긴 값은 그대로 한 번 치환될 뿐 재귀하지 않는다.
+            Event::DocType(doctype) => collect_doctype_entities(&mut state, &doctype)?,
             Event::Eof => break,
             _ => {}
         }
@@ -1473,6 +1524,112 @@ fn append_decoded_text(
     state.append_text(&decoded)
 }
 
+/// [#5848] 숫자 문자참조(`&#160;` · `&#xA0;`)만 실제 문자로 푼다.
+/// 엔티티 참조는 호출부가 이미 걸러 두므로 여기 들어오지 않는다.
+fn is_xml_10_char(code: u32) -> bool {
+    matches!(
+        code,
+        0x9 | 0xA | 0xD | 0x20..=0xD7FF | 0xE000..=0xFFFD | 0x10000..=0x10FFFF
+    )
+}
+
+fn resolve_char_refs(value: &str) -> Option<String> {
+    let mut out = String::with_capacity(value.len());
+    let mut rest = value;
+    while let Some(at) = rest.find("&#") {
+        out.push_str(&rest[..at]);
+        let body = &rest[at + 2..];
+        let end = body.find(';')?;
+        let digits = &body[..end];
+        let code = if let Some(hex) = digits.strip_prefix(['x', 'X']) {
+            u32::from_str_radix(hex, 16).ok()?
+        } else {
+            digits.parse::<u32>().ok()?
+        };
+        if !is_xml_10_char(code) {
+            return None;
+        }
+        out.push(char::from_u32(code)?);
+        rest = &body[end + 1..];
+    }
+    out.push_str(rest);
+    Some(out)
+}
+
+/// [#5848] 내부 DTD 에서 **안전한 엔티티 선언만** 거둔다.
+///
+/// 받아들이는 것: `<!ENTITY 이름 "값">` 에서 값에 `&` 가 없는 리터럴.
+/// 버리는 것:
+/// - 값에 `&` 가 있는 선언 — 중첩 참조는 재귀 확장(billion laughs)의 씨앗이다.
+/// - `SYSTEM`/`PUBLIC` 외부 엔티티 — XXE 경로다. 애초에 값을 읽지 않는다.
+/// - 파라미터 엔티티(`<!ENTITY % …>`) — DTD 자체를 조립하는 문법이라 쓰지 않는다.
+///
+/// 상한을 둬 선언이 많거나 긴 문서가 메모리를 밀어내지 못하게 한다.
+fn collect_doctype_entities(
+    state: &mut ReadState<'_>,
+    doctype: &quick_xml::events::BytesText<'_>,
+) -> Result<(), HmlError> {
+    const MAX_ENTITIES: usize = 64;
+    const MAX_VALUE_BYTES: usize = 256;
+
+    let text = doctype
+        .decode()
+        .map_err(|error| HmlError::InvalidXml(error.to_string()))?;
+    let mut rest = text.as_ref();
+    while let Some(at) = rest.find("<!ENTITY") {
+        rest = &rest[at + "<!ENTITY".len()..];
+        let Some(decl_end) = rest.find('>') else {
+            break;
+        };
+        let decl = &rest[..decl_end];
+        rest = &rest[decl_end + 1..];
+
+        let decl = decl.trim();
+        if decl.starts_with('%') || decl.contains("SYSTEM") || decl.contains("PUBLIC") {
+            continue;
+        }
+        let mut parts = decl.splitn(2, char::is_whitespace);
+        let Some(name) = parts.next().map(str::trim) else {
+            continue;
+        };
+        if name.is_empty() {
+            continue;
+        }
+        let Some(tail) = parts.next() else { continue };
+        let tail = tail.trim();
+        let quote = match tail.chars().next() {
+            Some(c @ ('"' | '\'')) => c,
+            _ => continue,
+        };
+        let body = &tail[quote.len_utf8()..];
+        let Some(close) = body.find(quote) else {
+            continue;
+        };
+        let value = &body[..close];
+        if value.len() > MAX_VALUE_BYTES {
+            continue;
+        }
+        // 값 안의 `&` 는 **숫자 문자참조(`&#160;`)만** 허용한다. 그것은 코드포인트
+        // 하나로 즉시 확정되어 재귀가 성립하지 않는다. 반면 `&other;` 는 다른 엔티티를
+        // 부르는 문법이라 확장 폭탄의 씨앗이므로 그런 선언은 통째로 버린다.
+        // (법제처 배포본이 쓰는 형태가 정확히 `<!ENTITY nbsp "&#160;">` 다.)
+        if value
+            .match_indices('&')
+            .any(|(at, _)| !value[at + 1..].starts_with('#'))
+        {
+            continue;
+        }
+        let Some(resolved) = resolve_char_refs(value) else {
+            continue;
+        };
+        if state.doctype_entities.len() >= MAX_ENTITIES {
+            break;
+        }
+        state.doctype_entities.insert(name.to_string(), resolved);
+    }
+    Ok(())
+}
+
 fn append_reference(
     state: &mut ReadState<'_>,
     reference: &quick_xml::events::BytesRef<'_>,
@@ -1492,6 +1649,12 @@ fn append_reference(
         "amp" => "&",
         "quot" => "\"",
         "apos" => "'",
+        // [#5848] 내부 DTD 가 리터럴로 선언한 엔티티. 값에 `&` 가 없는 것만 실렸으므로
+        // 여기서 한 번 붙이고 끝난다 — 재귀 확장이 일어날 수 없다.
+        other if state.doctype_entities.contains_key(other) => {
+            let text = state.doctype_entities[other].clone();
+            return state.append_text(&text);
+        }
         _ => {
             return Err(HmlError::InvalidXml(format!(
                 "entity &{name}; is not allowed"
@@ -1592,6 +1755,29 @@ fn parse_alignment(value: Option<&str>) -> Alignment {
         Some("Distribute") => Alignment::Distribute,
         Some("Split") => Alignment::Split,
         _ => Alignment::Justify,
+    }
+}
+
+/// [#4386] `COLDEF@Type`. 실물(`samples/hml/aligns.hml` 등)에서 관찰된 값은
+/// `"Newspaper"`(신문형=일반 흐름) 뿐이다. `Distribute`/`Parallel`은 HWPX
+/// `colPr@type`(`BalancedNewspaper`/`Parallel`)과 이 파일의 다른 속성들(예:
+/// `parse_alignment`의 `"Distribute"`)이 이미 따르는 PascalCase 열거값 표기 관례를
+/// 그대로 적용한 것으로, 실물로 확인되지 않았다 — 문서 밖 값은 전부 `Normal`로 접는다.
+fn parse_column_type(value: Option<&str>) -> ColumnType {
+    match value {
+        Some("Distribute") => ColumnType::Distribute,
+        Some("Parallel") => ColumnType::Parallel,
+        _ => ColumnType::Normal,
+    }
+}
+
+/// [#4386] `COLDEF@Layout`. 실물 관찰값은 `"Left"`뿐이다. HWPX
+/// `colPr@layout`(`"RIGHT"` → `RightToLeft`)과 동일한 fallback 방향으로 `"Right"`를
+/// `RightToLeft`에 매핑한다.
+fn parse_column_direction(value: Option<&str>) -> ColumnDirection {
+    match value {
+        Some("Right") => ColumnDirection::RightToLeft,
+        _ => ColumnDirection::LeftToRight,
     }
 }
 

@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "gymPack",
+  "id": "render-tree",
+  "title": "렌더 트리 구조 추출",
+  "axis": "조회 (렌더 트리 구조 추출)",
+  "description": "export-render-tree 로 페이지별 렌더 트리(bbox 계층)를 파일로 추출하는 능력을 실측한다. 렌더 트리 JSON 은 stdout 이 아니라 파일로만 나오므로(=--json 없음), 이 pack 은 export-render-tree 를 기준풀이 run 단계에서 실행해 그 산출 파일 존재로 명령을 강제하고, 총 쪽수 조회로 판정한다. 산출 파일은 export-render-tree 로만 만들 수 있어 다른 명령으로 우회할 수 없다.",
+  "requires": {
+    "commands": [
+      "export-render-tree",
+      "info"
+    ]
+  },
+  "runner": {
+    "rhwpVersion": "0.8.4",
+    "rhwpCommit": "4324eb0e4cf1a65f7efb305993a79ac44859a7ca",
+    "capabilitiesSha256": "4767e61c3af751bb2f97af9d0b3e5ffa5cbb5dc70a89cf3ae85987132fa5473d"
+  }
+}

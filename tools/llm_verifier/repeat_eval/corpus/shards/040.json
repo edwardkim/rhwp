@@ -1,0 +1,4461 @@
+{
+  "schemaVersion": "v-repeat.1.0",
+  "claim": "V-repeat",
+  "shardId": "040",
+  "records": [
+    {
+      "schemaVersion": "v-repeat.1.0",
+      "claim": "V-repeat",
+      "kind": "repeatEvaluation",
+      "recordId": "rep-000961",
+      "uniquenessKey": "a02324f0dda984e7|k=5|exitClass",
+      "artifact": {
+        "artifactId": "a02324f0dda984e7",
+        "command": "convert",
+        "sample": "samples/gov/교육부/고시/2018/0303.hwpx",
+        "argv": [
+          "convert",
+          "--verify",
+          "--json",
+          "samples/gov/교육부/고시/2018/0303.hwpx"
+        ],
+        "intendedExit": 0,
+        "intended": {
+          "source": "samples/gov/교육부/고시/2018/0303.hwpx",
+          "output": "out/v-repeat/교육부/고시/2018/0303.out.hwpx",
+          "outputFormat": "hwpx",
+          "pageCountMismatch": false,
+          "verify": {
+            "identical": true,
+            "diffCount": 0
+          },
+          "exitClass": 0
+        }
+      },
+      "k": 5,
+      "check": {
+        "name": "exitClass",
+        "kind": "exitClass",
+        "valueKind": "exit"
+      },
+      "trials": [
+        {
+          "seed": 0,
+          "exitClass": 3,
+          "observed": "3",
+          "envelope": {
+            "source": "samples/gov/교육부/고시/2018/0303.hwpx",
+            "output": "out/v-repeat/교육부/고시/2018/0303.out.hwpx",
+            "outputFormat": "hwpx",
+            "pageCountMismatch": false,
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 1,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/교육부/고시/2018/0303.hwpx",
+            "output": "out/v-repeat/교육부/고시/2018/0303.out.hwpx",
+            "outputFormat": "hwpx",
+            "pageCountMismatch": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 2,
+          "exitClass": 3,
+          "observed": "3",
+          "envelope": {
+            "source": "samples/gov/교육부/고시/2018/0303.hwpx",
+            "output": "out/v-repeat/교육부/고시/2018/0303.out.hwpx",
+            "outputFormat": "hwpx",
+            "pageCountMismatch": false,
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 3,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/교육부/고시/2018/0303.hwpx",
+            "output": "out/v-repeat/교육부/고시/2018/0303.out.hwpx",
+            "outputFormat": "hwpx",
+            "pageCountMismatch": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 4,
+          "exitClass": 3,
+          "observed": "3",
+          "envelope": {
+            "source": "samples/gov/교육부/고시/2018/0303.hwpx",
+            "output": "out/v-repeat/교육부/고시/2018/0303.out.hwpx",
+            "outputFormat": "hwpx",
+            "pageCountMismatch": false,
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "exitClass": 3
+          }
+        }
+      ],
+      "votes": {
+        "counts": {
+          "0": 2,
+          "3": 3
+        },
+        "majority": "3",
+        "plurality": "3",
+        "majorityCount": 3,
+        "isTie": false,
+        "majorityFrac": 0.6
+      },
+      "variance": {
+        "n": 5,
+        "distinct": 2,
+        "disagreement": 0.4
+      },
+      "finalValue": {
+        "reduce": "majority",
+        "value": "3",
+        "tie": false,
+        "pass": false
+      },
+      "profile": "tie_even"
+    },
+    {
+      "schemaVersion": "v-repeat.1.0",
+      "claim": "V-repeat",
+      "kind": "repeatEvaluation",
+      "recordId": "rep-000962",
+      "uniquenessKey": "a02324f0dda984e7|k=7|exitClass",
+      "artifact": {
+        "artifactId": "a02324f0dda984e7",
+        "command": "convert",
+        "sample": "samples/gov/교육부/고시/2018/0303.hwpx",
+        "argv": [
+          "convert",
+          "--verify",
+          "--json",
+          "samples/gov/교육부/고시/2018/0303.hwpx"
+        ],
+        "intendedExit": 0,
+        "intended": {
+          "source": "samples/gov/교육부/고시/2018/0303.hwpx",
+          "output": "out/v-repeat/교육부/고시/2018/0303.out.hwpx",
+          "outputFormat": "hwpx",
+          "pageCountMismatch": false,
+          "verify": {
+            "identical": true,
+            "diffCount": 0
+          },
+          "exitClass": 0
+        }
+      },
+      "k": 7,
+      "check": {
+        "name": "exitClass",
+        "kind": "exitClass",
+        "valueKind": "exit"
+      },
+      "trials": [
+        {
+          "seed": 0,
+          "exitClass": 3,
+          "observed": "3",
+          "envelope": {
+            "source": "samples/gov/교육부/고시/2018/0303.hwpx",
+            "output": "out/v-repeat/교육부/고시/2018/0303.out.hwpx",
+            "outputFormat": "hwpx",
+            "pageCountMismatch": false,
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 1,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/교육부/고시/2018/0303.hwpx",
+            "output": "out/v-repeat/교육부/고시/2018/0303.out.hwpx",
+            "outputFormat": "hwpx",
+            "pageCountMismatch": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 2,
+          "exitClass": 3,
+          "observed": "3",
+          "envelope": {
+            "source": "samples/gov/교육부/고시/2018/0303.hwpx",
+            "output": "out/v-repeat/교육부/고시/2018/0303.out.hwpx",
+            "outputFormat": "hwpx",
+            "pageCountMismatch": false,
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 3,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/교육부/고시/2018/0303.hwpx",
+            "output": "out/v-repeat/교육부/고시/2018/0303.out.hwpx",
+            "outputFormat": "hwpx",
+            "pageCountMismatch": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 4,
+          "exitClass": 3,
+          "observed": "3",
+          "envelope": {
+            "source": "samples/gov/교육부/고시/2018/0303.hwpx",
+            "output": "out/v-repeat/교육부/고시/2018/0303.out.hwpx",
+            "outputFormat": "hwpx",
+            "pageCountMismatch": false,
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 5,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/교육부/고시/2018/0303.hwpx",
+            "output": "out/v-repeat/교육부/고시/2018/0303.out.hwpx",
+            "outputFormat": "hwpx",
+            "pageCountMismatch": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 6,
+          "exitClass": 3,
+          "observed": "3",
+          "envelope": {
+            "source": "samples/gov/교육부/고시/2018/0303.hwpx",
+            "output": "out/v-repeat/교육부/고시/2018/0303.out.hwpx",
+            "outputFormat": "hwpx",
+            "pageCountMismatch": false,
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "exitClass": 3
+          }
+        }
+      ],
+      "votes": {
+        "counts": {
+          "0": 3,
+          "3": 4
+        },
+        "majority": "3",
+        "plurality": "3",
+        "majorityCount": 4,
+        "isTie": false,
+        "majorityFrac": 0.5714285714285714
+      },
+      "variance": {
+        "n": 7,
+        "distinct": 2,
+        "disagreement": 0.4285714285714286
+      },
+      "finalValue": {
+        "reduce": "majority",
+        "value": "3",
+        "tie": false,
+        "pass": false
+      },
+      "profile": "tie_even"
+    },
+    {
+      "schemaVersion": "v-repeat.1.0",
+      "claim": "V-repeat",
+      "kind": "repeatEvaluation",
+      "recordId": "rep-000963",
+      "uniquenessKey": "a02324f0dda984e7|k=11|exitClass",
+      "artifact": {
+        "artifactId": "a02324f0dda984e7",
+        "command": "convert",
+        "sample": "samples/gov/교육부/고시/2018/0303.hwpx",
+        "argv": [
+          "convert",
+          "--verify",
+          "--json",
+          "samples/gov/교육부/고시/2018/0303.hwpx"
+        ],
+        "intendedExit": 0,
+        "intended": {
+          "source": "samples/gov/교육부/고시/2018/0303.hwpx",
+          "output": "out/v-repeat/교육부/고시/2018/0303.out.hwpx",
+          "outputFormat": "hwpx",
+          "pageCountMismatch": false,
+          "verify": {
+            "identical": true,
+            "diffCount": 0
+          },
+          "exitClass": 0
+        }
+      },
+      "k": 11,
+      "check": {
+        "name": "exitClass",
+        "kind": "exitClass",
+        "valueKind": "exit"
+      },
+      "trials": [
+        {
+          "seed": 0,
+          "exitClass": 3,
+          "observed": "3",
+          "envelope": {
+            "source": "samples/gov/교육부/고시/2018/0303.hwpx",
+            "output": "out/v-repeat/교육부/고시/2018/0303.out.hwpx",
+            "outputFormat": "hwpx",
+            "pageCountMismatch": false,
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 1,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/교육부/고시/2018/0303.hwpx",
+            "output": "out/v-repeat/교육부/고시/2018/0303.out.hwpx",
+            "outputFormat": "hwpx",
+            "pageCountMismatch": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 2,
+          "exitClass": 3,
+          "observed": "3",
+          "envelope": {
+            "source": "samples/gov/교육부/고시/2018/0303.hwpx",
+            "output": "out/v-repeat/교육부/고시/2018/0303.out.hwpx",
+            "outputFormat": "hwpx",
+            "pageCountMismatch": false,
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 3,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/교육부/고시/2018/0303.hwpx",
+            "output": "out/v-repeat/교육부/고시/2018/0303.out.hwpx",
+            "outputFormat": "hwpx",
+            "pageCountMismatch": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 4,
+          "exitClass": 3,
+          "observed": "3",
+          "envelope": {
+            "source": "samples/gov/교육부/고시/2018/0303.hwpx",
+            "output": "out/v-repeat/교육부/고시/2018/0303.out.hwpx",
+            "outputFormat": "hwpx",
+            "pageCountMismatch": false,
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 5,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/교육부/고시/2018/0303.hwpx",
+            "output": "out/v-repeat/교육부/고시/2018/0303.out.hwpx",
+            "outputFormat": "hwpx",
+            "pageCountMismatch": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 6,
+          "exitClass": 3,
+          "observed": "3",
+          "envelope": {
+            "source": "samples/gov/교육부/고시/2018/0303.hwpx",
+            "output": "out/v-repeat/교육부/고시/2018/0303.out.hwpx",
+            "outputFormat": "hwpx",
+            "pageCountMismatch": false,
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 7,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/교육부/고시/2018/0303.hwpx",
+            "output": "out/v-repeat/교육부/고시/2018/0303.out.hwpx",
+            "outputFormat": "hwpx",
+            "pageCountMismatch": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 8,
+          "exitClass": 3,
+          "observed": "3",
+          "envelope": {
+            "source": "samples/gov/교육부/고시/2018/0303.hwpx",
+            "output": "out/v-repeat/교육부/고시/2018/0303.out.hwpx",
+            "outputFormat": "hwpx",
+            "pageCountMismatch": false,
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 9,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/교육부/고시/2018/0303.hwpx",
+            "output": "out/v-repeat/교육부/고시/2018/0303.out.hwpx",
+            "outputFormat": "hwpx",
+            "pageCountMismatch": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 10,
+          "exitClass": 3,
+          "observed": "3",
+          "envelope": {
+            "source": "samples/gov/교육부/고시/2018/0303.hwpx",
+            "output": "out/v-repeat/교육부/고시/2018/0303.out.hwpx",
+            "outputFormat": "hwpx",
+            "pageCountMismatch": false,
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "exitClass": 3
+          }
+        }
+      ],
+      "votes": {
+        "counts": {
+          "0": 5,
+          "3": 6
+        },
+        "majority": "3",
+        "plurality": "3",
+        "majorityCount": 6,
+        "isTie": false,
+        "majorityFrac": 0.5454545454545454
+      },
+      "variance": {
+        "n": 11,
+        "distinct": 2,
+        "disagreement": 0.4545454545454546
+      },
+      "finalValue": {
+        "reduce": "majority",
+        "value": "3",
+        "tie": false,
+        "pass": false
+      },
+      "profile": "tie_even"
+    },
+    {
+      "schemaVersion": "v-repeat.1.0",
+      "claim": "V-repeat",
+      "kind": "repeatEvaluation",
+      "recordId": "rep-000964",
+      "uniquenessKey": "4475fa6a43e641a8|k=5|replacedCount",
+      "artifact": {
+        "artifactId": "4475fa6a43e641a8",
+        "command": "replace-text",
+        "sample": "samples/gov/국가인권위원회/고시/2018/0314.hwpx",
+        "argv": [
+          "edit",
+          "replace-text",
+          "--verify",
+          "--json",
+          "samples/gov/국가인권위원회/고시/2018/0314.hwpx"
+        ],
+        "intendedExit": 0,
+        "intended": {
+          "source": "samples/gov/국가인권위원회/고시/2018/0314.hwpx",
+          "replacedCount": 5,
+          "dryRun": false,
+          "verify": {
+            "identical": true,
+            "diffCount": 0
+          },
+          "exitClass": 0
+        }
+      },
+      "k": 5,
+      "check": {
+        "name": "replacedCount",
+        "kind": "envelopeField",
+        "valueKind": "u64",
+        "path": "replacedCount"
+      },
+      "trials": [
+        {
+          "seed": 0,
+          "exitClass": 0,
+          "observed": "5",
+          "envelope": {
+            "source": "samples/gov/국가인권위원회/고시/2018/0314.hwpx",
+            "replacedCount": 5,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 1,
+          "exitClass": 3,
+          "observed": "6",
+          "envelope": {
+            "source": "samples/gov/국가인권위원회/고시/2018/0314.hwpx",
+            "replacedCount": 6,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 2,
+          "exitClass": 4,
+          "observed": "6",
+          "envelope": {
+            "source": "samples/gov/국가인권위원회/고시/2018/0314.hwpx",
+            "replacedCount": 6,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 4
+          }
+        },
+        {
+          "seed": 3,
+          "exitClass": 0,
+          "observed": "5",
+          "envelope": {
+            "source": "samples/gov/국가인권위원회/고시/2018/0314.hwpx",
+            "replacedCount": 5,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 4,
+          "exitClass": 3,
+          "observed": "6",
+          "envelope": {
+            "source": "samples/gov/국가인권위원회/고시/2018/0314.hwpx",
+            "replacedCount": 6,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 3
+          }
+        }
+      ],
+      "votes": {
+        "counts": {
+          "5": 2,
+          "6": 3
+        },
+        "majority": "6",
+        "plurality": "6",
+        "majorityCount": 3,
+        "isTie": false,
+        "majorityFrac": 0.6
+      },
+      "variance": {
+        "n": 5,
+        "distinct": 2,
+        "disagreement": 0.4,
+        "sampleVariance": 0.3,
+        "mean": 5.6,
+        "min": 5.0,
+        "max": 6.0
+      },
+      "finalValue": {
+        "reduce": "mean",
+        "value": "5.6",
+        "tie": false,
+        "pass": false,
+        "numeric": 5.6
+      },
+      "profile": "three_way"
+    },
+    {
+      "schemaVersion": "v-repeat.1.0",
+      "claim": "V-repeat",
+      "kind": "repeatEvaluation",
+      "recordId": "rep-000965",
+      "uniquenessKey": "4475fa6a43e641a8|k=7|replacedCount",
+      "artifact": {
+        "artifactId": "4475fa6a43e641a8",
+        "command": "replace-text",
+        "sample": "samples/gov/국가인권위원회/고시/2018/0314.hwpx",
+        "argv": [
+          "edit",
+          "replace-text",
+          "--verify",
+          "--json",
+          "samples/gov/국가인권위원회/고시/2018/0314.hwpx"
+        ],
+        "intendedExit": 0,
+        "intended": {
+          "source": "samples/gov/국가인권위원회/고시/2018/0314.hwpx",
+          "replacedCount": 5,
+          "dryRun": false,
+          "verify": {
+            "identical": true,
+            "diffCount": 0
+          },
+          "exitClass": 0
+        }
+      },
+      "k": 7,
+      "check": {
+        "name": "replacedCount",
+        "kind": "envelopeField",
+        "valueKind": "u64",
+        "path": "replacedCount"
+      },
+      "trials": [
+        {
+          "seed": 0,
+          "exitClass": 0,
+          "observed": "5",
+          "envelope": {
+            "source": "samples/gov/국가인권위원회/고시/2018/0314.hwpx",
+            "replacedCount": 5,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 1,
+          "exitClass": 3,
+          "observed": "6",
+          "envelope": {
+            "source": "samples/gov/국가인권위원회/고시/2018/0314.hwpx",
+            "replacedCount": 6,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 2,
+          "exitClass": 4,
+          "observed": "6",
+          "envelope": {
+            "source": "samples/gov/국가인권위원회/고시/2018/0314.hwpx",
+            "replacedCount": 6,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 4
+          }
+        },
+        {
+          "seed": 3,
+          "exitClass": 0,
+          "observed": "5",
+          "envelope": {
+            "source": "samples/gov/국가인권위원회/고시/2018/0314.hwpx",
+            "replacedCount": 5,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 4,
+          "exitClass": 3,
+          "observed": "6",
+          "envelope": {
+            "source": "samples/gov/국가인권위원회/고시/2018/0314.hwpx",
+            "replacedCount": 6,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 5,
+          "exitClass": 4,
+          "observed": "6",
+          "envelope": {
+            "source": "samples/gov/국가인권위원회/고시/2018/0314.hwpx",
+            "replacedCount": 6,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 4
+          }
+        },
+        {
+          "seed": 6,
+          "exitClass": 0,
+          "observed": "5",
+          "envelope": {
+            "source": "samples/gov/국가인권위원회/고시/2018/0314.hwpx",
+            "replacedCount": 5,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        }
+      ],
+      "votes": {
+        "counts": {
+          "5": 3,
+          "6": 4
+        },
+        "majority": "6",
+        "plurality": "6",
+        "majorityCount": 4,
+        "isTie": false,
+        "majorityFrac": 0.5714285714285714
+      },
+      "variance": {
+        "n": 7,
+        "distinct": 2,
+        "disagreement": 0.4285714285714286,
+        "sampleVariance": 0.2857142857142857,
+        "mean": 5.571428571428571,
+        "min": 5.0,
+        "max": 6.0
+      },
+      "finalValue": {
+        "reduce": "mean",
+        "value": "5.571429",
+        "tie": false,
+        "pass": false,
+        "numeric": 5.571428571428571
+      },
+      "profile": "three_way"
+    },
+    {
+      "schemaVersion": "v-repeat.1.0",
+      "claim": "V-repeat",
+      "kind": "repeatEvaluation",
+      "recordId": "rep-000966",
+      "uniquenessKey": "4475fa6a43e641a8|k=11|replacedCount",
+      "artifact": {
+        "artifactId": "4475fa6a43e641a8",
+        "command": "replace-text",
+        "sample": "samples/gov/국가인권위원회/고시/2018/0314.hwpx",
+        "argv": [
+          "edit",
+          "replace-text",
+          "--verify",
+          "--json",
+          "samples/gov/국가인권위원회/고시/2018/0314.hwpx"
+        ],
+        "intendedExit": 0,
+        "intended": {
+          "source": "samples/gov/국가인권위원회/고시/2018/0314.hwpx",
+          "replacedCount": 5,
+          "dryRun": false,
+          "verify": {
+            "identical": true,
+            "diffCount": 0
+          },
+          "exitClass": 0
+        }
+      },
+      "k": 11,
+      "check": {
+        "name": "replacedCount",
+        "kind": "envelopeField",
+        "valueKind": "u64",
+        "path": "replacedCount"
+      },
+      "trials": [
+        {
+          "seed": 0,
+          "exitClass": 0,
+          "observed": "5",
+          "envelope": {
+            "source": "samples/gov/국가인권위원회/고시/2018/0314.hwpx",
+            "replacedCount": 5,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 1,
+          "exitClass": 3,
+          "observed": "6",
+          "envelope": {
+            "source": "samples/gov/국가인권위원회/고시/2018/0314.hwpx",
+            "replacedCount": 6,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 2,
+          "exitClass": 4,
+          "observed": "6",
+          "envelope": {
+            "source": "samples/gov/국가인권위원회/고시/2018/0314.hwpx",
+            "replacedCount": 6,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 4
+          }
+        },
+        {
+          "seed": 3,
+          "exitClass": 0,
+          "observed": "5",
+          "envelope": {
+            "source": "samples/gov/국가인권위원회/고시/2018/0314.hwpx",
+            "replacedCount": 5,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 4,
+          "exitClass": 3,
+          "observed": "6",
+          "envelope": {
+            "source": "samples/gov/국가인권위원회/고시/2018/0314.hwpx",
+            "replacedCount": 6,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 5,
+          "exitClass": 4,
+          "observed": "6",
+          "envelope": {
+            "source": "samples/gov/국가인권위원회/고시/2018/0314.hwpx",
+            "replacedCount": 6,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 4
+          }
+        },
+        {
+          "seed": 6,
+          "exitClass": 0,
+          "observed": "5",
+          "envelope": {
+            "source": "samples/gov/국가인권위원회/고시/2018/0314.hwpx",
+            "replacedCount": 5,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 7,
+          "exitClass": 3,
+          "observed": "6",
+          "envelope": {
+            "source": "samples/gov/국가인권위원회/고시/2018/0314.hwpx",
+            "replacedCount": 6,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 8,
+          "exitClass": 4,
+          "observed": "6",
+          "envelope": {
+            "source": "samples/gov/국가인권위원회/고시/2018/0314.hwpx",
+            "replacedCount": 6,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 4
+          }
+        },
+        {
+          "seed": 9,
+          "exitClass": 0,
+          "observed": "5",
+          "envelope": {
+            "source": "samples/gov/국가인권위원회/고시/2018/0314.hwpx",
+            "replacedCount": 5,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 10,
+          "exitClass": 3,
+          "observed": "6",
+          "envelope": {
+            "source": "samples/gov/국가인권위원회/고시/2018/0314.hwpx",
+            "replacedCount": 6,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 3
+          }
+        }
+      ],
+      "votes": {
+        "counts": {
+          "5": 4,
+          "6": 7
+        },
+        "majority": "6",
+        "plurality": "6",
+        "majorityCount": 7,
+        "isTie": false,
+        "majorityFrac": 0.6363636363636364
+      },
+      "variance": {
+        "n": 11,
+        "distinct": 2,
+        "disagreement": 0.36363636363636365,
+        "sampleVariance": 0.2545454545454545,
+        "mean": 5.636363636363637,
+        "min": 5.0,
+        "max": 6.0
+      },
+      "finalValue": {
+        "reduce": "mean",
+        "value": "5.636364",
+        "tie": false,
+        "pass": false,
+        "numeric": 5.636363636363637
+      },
+      "profile": "three_way"
+    },
+    {
+      "schemaVersion": "v-repeat.1.0",
+      "claim": "V-repeat",
+      "kind": "repeatEvaluation",
+      "recordId": "rep-000967",
+      "uniquenessKey": "98fbf44264efa04a|k=5|verify.identical",
+      "artifact": {
+        "artifactId": "98fbf44264efa04a",
+        "command": "redact",
+        "sample": "samples/gov/중소벤처기업부/고시/2018/0325.hwp",
+        "argv": [
+          "edit",
+          "redact",
+          "--verify",
+          "--json",
+          "samples/gov/중소벤처기업부/고시/2018/0325.hwp"
+        ],
+        "intendedExit": 0,
+        "intended": {
+          "source": "samples/gov/중소벤처기업부/고시/2018/0325.hwp",
+          "redactedCount": 3,
+          "dryRun": false,
+          "verify": {
+            "identical": true,
+            "diffCount": 0
+          },
+          "exitClass": 0
+        }
+      },
+      "k": 5,
+      "check": {
+        "name": "verify.identical",
+        "kind": "envelopeField",
+        "valueKind": "bool",
+        "path": "verify.identical"
+      },
+      "trials": [
+        {
+          "seed": 0,
+          "exitClass": 3,
+          "observed": "false",
+          "envelope": {
+            "source": "samples/gov/중소벤처기업부/고시/2018/0325.hwp",
+            "redactedCount": 3,
+            "dryRun": false,
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 1,
+          "exitClass": 0,
+          "observed": "true",
+          "envelope": {
+            "source": "samples/gov/중소벤처기업부/고시/2018/0325.hwp",
+            "redactedCount": 3,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 2,
+          "exitClass": 0,
+          "observed": "true",
+          "envelope": {
+            "source": "samples/gov/중소벤처기업부/고시/2018/0325.hwp",
+            "redactedCount": 3,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 3,
+          "exitClass": 0,
+          "observed": "true",
+          "envelope": {
+            "source": "samples/gov/중소벤처기업부/고시/2018/0325.hwp",
+            "redactedCount": 3,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 4,
+          "exitClass": 0,
+          "observed": "true",
+          "envelope": {
+            "source": "samples/gov/중소벤처기업부/고시/2018/0325.hwp",
+            "redactedCount": 3,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        }
+      ],
+      "votes": {
+        "counts": {
+          "false": 1,
+          "true": 4
+        },
+        "majority": "true",
+        "plurality": "true",
+        "majorityCount": 4,
+        "isTie": false,
+        "majorityFrac": 0.8
+      },
+      "variance": {
+        "n": 5,
+        "distinct": 2,
+        "disagreement": 0.19999999999999996
+      },
+      "finalValue": {
+        "reduce": "majority",
+        "value": "true",
+        "tie": false,
+        "pass": true
+      },
+      "profile": "jitter_pm1"
+    },
+    {
+      "schemaVersion": "v-repeat.1.0",
+      "claim": "V-repeat",
+      "kind": "repeatEvaluation",
+      "recordId": "rep-000968",
+      "uniquenessKey": "98fbf44264efa04a|k=7|verify.identical",
+      "artifact": {
+        "artifactId": "98fbf44264efa04a",
+        "command": "redact",
+        "sample": "samples/gov/중소벤처기업부/고시/2018/0325.hwp",
+        "argv": [
+          "edit",
+          "redact",
+          "--verify",
+          "--json",
+          "samples/gov/중소벤처기업부/고시/2018/0325.hwp"
+        ],
+        "intendedExit": 0,
+        "intended": {
+          "source": "samples/gov/중소벤처기업부/고시/2018/0325.hwp",
+          "redactedCount": 3,
+          "dryRun": false,
+          "verify": {
+            "identical": true,
+            "diffCount": 0
+          },
+          "exitClass": 0
+        }
+      },
+      "k": 7,
+      "check": {
+        "name": "verify.identical",
+        "kind": "envelopeField",
+        "valueKind": "bool",
+        "path": "verify.identical"
+      },
+      "trials": [
+        {
+          "seed": 0,
+          "exitClass": 3,
+          "observed": "false",
+          "envelope": {
+            "source": "samples/gov/중소벤처기업부/고시/2018/0325.hwp",
+            "redactedCount": 3,
+            "dryRun": false,
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 1,
+          "exitClass": 0,
+          "observed": "true",
+          "envelope": {
+            "source": "samples/gov/중소벤처기업부/고시/2018/0325.hwp",
+            "redactedCount": 3,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 2,
+          "exitClass": 0,
+          "observed": "true",
+          "envelope": {
+            "source": "samples/gov/중소벤처기업부/고시/2018/0325.hwp",
+            "redactedCount": 3,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 3,
+          "exitClass": 0,
+          "observed": "true",
+          "envelope": {
+            "source": "samples/gov/중소벤처기업부/고시/2018/0325.hwp",
+            "redactedCount": 3,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 4,
+          "exitClass": 0,
+          "observed": "true",
+          "envelope": {
+            "source": "samples/gov/중소벤처기업부/고시/2018/0325.hwp",
+            "redactedCount": 3,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 5,
+          "exitClass": 0,
+          "observed": "true",
+          "envelope": {
+            "source": "samples/gov/중소벤처기업부/고시/2018/0325.hwp",
+            "redactedCount": 3,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 6,
+          "exitClass": 0,
+          "observed": "true",
+          "envelope": {
+            "source": "samples/gov/중소벤처기업부/고시/2018/0325.hwp",
+            "redactedCount": 3,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        }
+      ],
+      "votes": {
+        "counts": {
+          "false": 1,
+          "true": 6
+        },
+        "majority": "true",
+        "plurality": "true",
+        "majorityCount": 6,
+        "isTie": false,
+        "majorityFrac": 0.8571428571428571
+      },
+      "variance": {
+        "n": 7,
+        "distinct": 2,
+        "disagreement": 0.1428571428571429
+      },
+      "finalValue": {
+        "reduce": "majority",
+        "value": "true",
+        "tie": false,
+        "pass": true
+      },
+      "profile": "jitter_pm1"
+    },
+    {
+      "schemaVersion": "v-repeat.1.0",
+      "claim": "V-repeat",
+      "kind": "repeatEvaluation",
+      "recordId": "rep-000969",
+      "uniquenessKey": "98fbf44264efa04a|k=11|verify.identical",
+      "artifact": {
+        "artifactId": "98fbf44264efa04a",
+        "command": "redact",
+        "sample": "samples/gov/중소벤처기업부/고시/2018/0325.hwp",
+        "argv": [
+          "edit",
+          "redact",
+          "--verify",
+          "--json",
+          "samples/gov/중소벤처기업부/고시/2018/0325.hwp"
+        ],
+        "intendedExit": 0,
+        "intended": {
+          "source": "samples/gov/중소벤처기업부/고시/2018/0325.hwp",
+          "redactedCount": 3,
+          "dryRun": false,
+          "verify": {
+            "identical": true,
+            "diffCount": 0
+          },
+          "exitClass": 0
+        }
+      },
+      "k": 11,
+      "check": {
+        "name": "verify.identical",
+        "kind": "envelopeField",
+        "valueKind": "bool",
+        "path": "verify.identical"
+      },
+      "trials": [
+        {
+          "seed": 0,
+          "exitClass": 3,
+          "observed": "false",
+          "envelope": {
+            "source": "samples/gov/중소벤처기업부/고시/2018/0325.hwp",
+            "redactedCount": 3,
+            "dryRun": false,
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 1,
+          "exitClass": 0,
+          "observed": "true",
+          "envelope": {
+            "source": "samples/gov/중소벤처기업부/고시/2018/0325.hwp",
+            "redactedCount": 3,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 2,
+          "exitClass": 0,
+          "observed": "true",
+          "envelope": {
+            "source": "samples/gov/중소벤처기업부/고시/2018/0325.hwp",
+            "redactedCount": 3,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 3,
+          "exitClass": 0,
+          "observed": "true",
+          "envelope": {
+            "source": "samples/gov/중소벤처기업부/고시/2018/0325.hwp",
+            "redactedCount": 3,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 4,
+          "exitClass": 0,
+          "observed": "true",
+          "envelope": {
+            "source": "samples/gov/중소벤처기업부/고시/2018/0325.hwp",
+            "redactedCount": 3,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 5,
+          "exitClass": 0,
+          "observed": "true",
+          "envelope": {
+            "source": "samples/gov/중소벤처기업부/고시/2018/0325.hwp",
+            "redactedCount": 3,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 6,
+          "exitClass": 0,
+          "observed": "true",
+          "envelope": {
+            "source": "samples/gov/중소벤처기업부/고시/2018/0325.hwp",
+            "redactedCount": 3,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 7,
+          "exitClass": 0,
+          "observed": "true",
+          "envelope": {
+            "source": "samples/gov/중소벤처기업부/고시/2018/0325.hwp",
+            "redactedCount": 3,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 8,
+          "exitClass": 0,
+          "observed": "true",
+          "envelope": {
+            "source": "samples/gov/중소벤처기업부/고시/2018/0325.hwp",
+            "redactedCount": 3,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 9,
+          "exitClass": 0,
+          "observed": "true",
+          "envelope": {
+            "source": "samples/gov/중소벤처기업부/고시/2018/0325.hwp",
+            "redactedCount": 3,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 10,
+          "exitClass": 0,
+          "observed": "true",
+          "envelope": {
+            "source": "samples/gov/중소벤처기업부/고시/2018/0325.hwp",
+            "redactedCount": 3,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        }
+      ],
+      "votes": {
+        "counts": {
+          "false": 1,
+          "true": 10
+        },
+        "majority": "true",
+        "plurality": "true",
+        "majorityCount": 10,
+        "isTie": false,
+        "majorityFrac": 0.9090909090909091
+      },
+      "variance": {
+        "n": 11,
+        "distinct": 2,
+        "disagreement": 0.09090909090909094
+      },
+      "finalValue": {
+        "reduce": "majority",
+        "value": "true",
+        "tie": false,
+        "pass": true
+      },
+      "profile": "jitter_pm1"
+    },
+    {
+      "schemaVersion": "v-repeat.1.0",
+      "claim": "V-repeat",
+      "kind": "repeatEvaluation",
+      "recordId": "rep-000970",
+      "uniquenessKey": "8b0f8b26a6a782f6|k=5|exitClass",
+      "artifact": {
+        "artifactId": "8b0f8b26a6a782f6",
+        "command": "set-cell",
+        "sample": "samples/gov/보건복지부/훈령/2018/0336.hwpx",
+        "argv": [
+          "edit",
+          "set-cell",
+          "--verify",
+          "--json",
+          "samples/gov/보건복지부/훈령/2018/0336.hwpx"
+        ],
+        "intendedExit": 0,
+        "intended": {
+          "source": "samples/gov/보건복지부/훈령/2018/0336.hwpx",
+          "changedCount": 1,
+          "dryRun": false,
+          "verify": {
+            "identical": true,
+            "diffCount": 0
+          },
+          "exitClass": 0
+        }
+      },
+      "k": 5,
+      "check": {
+        "name": "exitClass",
+        "kind": "exitClass",
+        "valueKind": "exit"
+      },
+      "trials": [
+        {
+          "seed": 0,
+          "exitClass": 3,
+          "observed": "3",
+          "envelope": {
+            "source": "samples/gov/보건복지부/훈령/2018/0336.hwpx",
+            "changedCount": 1,
+            "dryRun": false,
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 1,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/보건복지부/훈령/2018/0336.hwpx",
+            "changedCount": 1,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 2,
+          "exitClass": 3,
+          "observed": "3",
+          "envelope": {
+            "source": "samples/gov/보건복지부/훈령/2018/0336.hwpx",
+            "changedCount": 1,
+            "dryRun": false,
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 3,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/보건복지부/훈령/2018/0336.hwpx",
+            "changedCount": 1,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 4,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/보건복지부/훈령/2018/0336.hwpx",
+            "changedCount": 1,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        }
+      ],
+      "votes": {
+        "counts": {
+          "0": 3,
+          "3": 2
+        },
+        "majority": "0",
+        "plurality": "0",
+        "majorityCount": 3,
+        "isTie": false,
+        "majorityFrac": 0.6
+      },
+      "variance": {
+        "n": 5,
+        "distinct": 2,
+        "disagreement": 0.4
+      },
+      "finalValue": {
+        "reduce": "majority",
+        "value": "0",
+        "tie": false,
+        "pass": true
+      },
+      "profile": "jitter_pm2"
+    },
+    {
+      "schemaVersion": "v-repeat.1.0",
+      "claim": "V-repeat",
+      "kind": "repeatEvaluation",
+      "recordId": "rep-000971",
+      "uniquenessKey": "8b0f8b26a6a782f6|k=7|exitClass",
+      "artifact": {
+        "artifactId": "8b0f8b26a6a782f6",
+        "command": "set-cell",
+        "sample": "samples/gov/보건복지부/훈령/2018/0336.hwpx",
+        "argv": [
+          "edit",
+          "set-cell",
+          "--verify",
+          "--json",
+          "samples/gov/보건복지부/훈령/2018/0336.hwpx"
+        ],
+        "intendedExit": 0,
+        "intended": {
+          "source": "samples/gov/보건복지부/훈령/2018/0336.hwpx",
+          "changedCount": 1,
+          "dryRun": false,
+          "verify": {
+            "identical": true,
+            "diffCount": 0
+          },
+          "exitClass": 0
+        }
+      },
+      "k": 7,
+      "check": {
+        "name": "exitClass",
+        "kind": "exitClass",
+        "valueKind": "exit"
+      },
+      "trials": [
+        {
+          "seed": 0,
+          "exitClass": 3,
+          "observed": "3",
+          "envelope": {
+            "source": "samples/gov/보건복지부/훈령/2018/0336.hwpx",
+            "changedCount": 1,
+            "dryRun": false,
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 1,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/보건복지부/훈령/2018/0336.hwpx",
+            "changedCount": 1,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 2,
+          "exitClass": 3,
+          "observed": "3",
+          "envelope": {
+            "source": "samples/gov/보건복지부/훈령/2018/0336.hwpx",
+            "changedCount": 1,
+            "dryRun": false,
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 3,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/보건복지부/훈령/2018/0336.hwpx",
+            "changedCount": 1,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 4,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/보건복지부/훈령/2018/0336.hwpx",
+            "changedCount": 1,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 5,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/보건복지부/훈령/2018/0336.hwpx",
+            "changedCount": 1,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 6,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/보건복지부/훈령/2018/0336.hwpx",
+            "changedCount": 1,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        }
+      ],
+      "votes": {
+        "counts": {
+          "0": 5,
+          "3": 2
+        },
+        "majority": "0",
+        "plurality": "0",
+        "majorityCount": 5,
+        "isTie": false,
+        "majorityFrac": 0.7142857142857143
+      },
+      "variance": {
+        "n": 7,
+        "distinct": 2,
+        "disagreement": 0.2857142857142857
+      },
+      "finalValue": {
+        "reduce": "majority",
+        "value": "0",
+        "tie": false,
+        "pass": true
+      },
+      "profile": "jitter_pm2"
+    },
+    {
+      "schemaVersion": "v-repeat.1.0",
+      "claim": "V-repeat",
+      "kind": "repeatEvaluation",
+      "recordId": "rep-000972",
+      "uniquenessKey": "8b0f8b26a6a782f6|k=11|exitClass",
+      "artifact": {
+        "artifactId": "8b0f8b26a6a782f6",
+        "command": "set-cell",
+        "sample": "samples/gov/보건복지부/훈령/2018/0336.hwpx",
+        "argv": [
+          "edit",
+          "set-cell",
+          "--verify",
+          "--json",
+          "samples/gov/보건복지부/훈령/2018/0336.hwpx"
+        ],
+        "intendedExit": 0,
+        "intended": {
+          "source": "samples/gov/보건복지부/훈령/2018/0336.hwpx",
+          "changedCount": 1,
+          "dryRun": false,
+          "verify": {
+            "identical": true,
+            "diffCount": 0
+          },
+          "exitClass": 0
+        }
+      },
+      "k": 11,
+      "check": {
+        "name": "exitClass",
+        "kind": "exitClass",
+        "valueKind": "exit"
+      },
+      "trials": [
+        {
+          "seed": 0,
+          "exitClass": 3,
+          "observed": "3",
+          "envelope": {
+            "source": "samples/gov/보건복지부/훈령/2018/0336.hwpx",
+            "changedCount": 1,
+            "dryRun": false,
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 1,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/보건복지부/훈령/2018/0336.hwpx",
+            "changedCount": 1,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 2,
+          "exitClass": 3,
+          "observed": "3",
+          "envelope": {
+            "source": "samples/gov/보건복지부/훈령/2018/0336.hwpx",
+            "changedCount": 1,
+            "dryRun": false,
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 3,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/보건복지부/훈령/2018/0336.hwpx",
+            "changedCount": 1,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 4,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/보건복지부/훈령/2018/0336.hwpx",
+            "changedCount": 1,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 5,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/보건복지부/훈령/2018/0336.hwpx",
+            "changedCount": 1,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 6,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/보건복지부/훈령/2018/0336.hwpx",
+            "changedCount": 1,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 7,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/보건복지부/훈령/2018/0336.hwpx",
+            "changedCount": 1,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 8,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/보건복지부/훈령/2018/0336.hwpx",
+            "changedCount": 1,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 9,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/보건복지부/훈령/2018/0336.hwpx",
+            "changedCount": 1,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 10,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/보건복지부/훈령/2018/0336.hwpx",
+            "changedCount": 1,
+            "dryRun": false,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        }
+      ],
+      "votes": {
+        "counts": {
+          "0": 9,
+          "3": 2
+        },
+        "majority": "0",
+        "plurality": "0",
+        "majorityCount": 9,
+        "isTie": false,
+        "majorityFrac": 0.8181818181818182
+      },
+      "variance": {
+        "n": 11,
+        "distinct": 2,
+        "disagreement": 0.18181818181818177
+      },
+      "finalValue": {
+        "reduce": "majority",
+        "value": "0",
+        "tie": false,
+        "pass": true
+      },
+      "profile": "jitter_pm2"
+    },
+    {
+      "schemaVersion": "v-repeat.1.0",
+      "claim": "V-repeat",
+      "kind": "repeatEvaluation",
+      "recordId": "rep-000973",
+      "uniquenessKey": "5861489fd17a7f75|k=5|changedCount",
+      "artifact": {
+        "artifactId": "5861489fd17a7f75",
+        "command": "csv-to-table",
+        "sample": "samples/gov/통계청/훈령/2018/0347.hwpx",
+        "argv": [
+          "csv-to-table",
+          "--verify",
+          "--json",
+          "samples/gov/통계청/훈령/2018/0347.hwpx"
+        ],
+        "intendedExit": 0,
+        "intended": {
+          "source": "samples/gov/통계청/훈령/2018/0347.hwpx",
+          "csv": "samples/gov/통계청/훈령/2018/0347.csvx",
+          "changedCount": 6,
+          "invalid": [],
+          "rowCount": 17,
+          "colCount": 6,
+          "verify": {
+            "identical": true,
+            "diffCount": 0
+          },
+          "exitClass": 0
+        }
+      },
+      "k": 5,
+      "check": {
+        "name": "changedCount",
+        "kind": "envelopeField",
+        "valueKind": "u64",
+        "path": "changedCount"
+      },
+      "trials": [
+        {
+          "seed": 0,
+          "exitClass": 0,
+          "observed": "6",
+          "envelope": {
+            "source": "samples/gov/통계청/훈령/2018/0347.hwpx",
+            "csv": "samples/gov/통계청/훈령/2018/0347.csvx",
+            "changedCount": 6,
+            "invalid": [],
+            "rowCount": 17,
+            "colCount": 6,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 1,
+          "exitClass": 0,
+          "observed": "7",
+          "envelope": {
+            "source": "samples/gov/통계청/훈령/2018/0347.hwpx",
+            "csv": "samples/gov/통계청/훈령/2018/0347.csvx",
+            "changedCount": 7,
+            "invalid": [],
+            "rowCount": 17,
+            "colCount": 6,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 2,
+          "exitClass": 0,
+          "observed": "8",
+          "envelope": {
+            "source": "samples/gov/통계청/훈령/2018/0347.hwpx",
+            "csv": "samples/gov/통계청/훈령/2018/0347.csvx",
+            "changedCount": 8,
+            "invalid": [],
+            "rowCount": 17,
+            "colCount": 6,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 3,
+          "exitClass": 0,
+          "observed": "9",
+          "envelope": {
+            "source": "samples/gov/통계청/훈령/2018/0347.hwpx",
+            "csv": "samples/gov/통계청/훈령/2018/0347.csvx",
+            "changedCount": 9,
+            "invalid": [],
+            "rowCount": 17,
+            "colCount": 6,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 4,
+          "exitClass": 0,
+          "observed": "10",
+          "envelope": {
+            "source": "samples/gov/통계청/훈령/2018/0347.hwpx",
+            "csv": "samples/gov/통계청/훈령/2018/0347.csvx",
+            "changedCount": 10,
+            "invalid": [],
+            "rowCount": 17,
+            "colCount": 6,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        }
+      ],
+      "votes": {
+        "counts": {
+          "10": 1,
+          "6": 1,
+          "7": 1,
+          "8": 1,
+          "9": 1
+        },
+        "majority": null,
+        "plurality": "10",
+        "majorityCount": 1,
+        "isTie": true,
+        "majorityFrac": 0.2
+      },
+      "variance": {
+        "n": 5,
+        "distinct": 5,
+        "disagreement": 0.8,
+        "sampleVariance": 2.5,
+        "mean": 8.0,
+        "min": 6.0,
+        "max": 10.0
+      },
+      "finalValue": {
+        "reduce": "mean",
+        "value": "8",
+        "tie": false,
+        "pass": false,
+        "numeric": 8.0
+      },
+      "profile": "high_jitter"
+    },
+    {
+      "schemaVersion": "v-repeat.1.0",
+      "claim": "V-repeat",
+      "kind": "repeatEvaluation",
+      "recordId": "rep-000974",
+      "uniquenessKey": "5861489fd17a7f75|k=7|changedCount",
+      "artifact": {
+        "artifactId": "5861489fd17a7f75",
+        "command": "csv-to-table",
+        "sample": "samples/gov/통계청/훈령/2018/0347.hwpx",
+        "argv": [
+          "csv-to-table",
+          "--verify",
+          "--json",
+          "samples/gov/통계청/훈령/2018/0347.hwpx"
+        ],
+        "intendedExit": 0,
+        "intended": {
+          "source": "samples/gov/통계청/훈령/2018/0347.hwpx",
+          "csv": "samples/gov/통계청/훈령/2018/0347.csvx",
+          "changedCount": 6,
+          "invalid": [],
+          "rowCount": 17,
+          "colCount": 6,
+          "verify": {
+            "identical": true,
+            "diffCount": 0
+          },
+          "exitClass": 0
+        }
+      },
+      "k": 7,
+      "check": {
+        "name": "changedCount",
+        "kind": "envelopeField",
+        "valueKind": "u64",
+        "path": "changedCount"
+      },
+      "trials": [
+        {
+          "seed": 0,
+          "exitClass": 0,
+          "observed": "6",
+          "envelope": {
+            "source": "samples/gov/통계청/훈령/2018/0347.hwpx",
+            "csv": "samples/gov/통계청/훈령/2018/0347.csvx",
+            "changedCount": 6,
+            "invalid": [],
+            "rowCount": 17,
+            "colCount": 6,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 1,
+          "exitClass": 0,
+          "observed": "7",
+          "envelope": {
+            "source": "samples/gov/통계청/훈령/2018/0347.hwpx",
+            "csv": "samples/gov/통계청/훈령/2018/0347.csvx",
+            "changedCount": 7,
+            "invalid": [],
+            "rowCount": 17,
+            "colCount": 6,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 2,
+          "exitClass": 0,
+          "observed": "8",
+          "envelope": {
+            "source": "samples/gov/통계청/훈령/2018/0347.hwpx",
+            "csv": "samples/gov/통계청/훈령/2018/0347.csvx",
+            "changedCount": 8,
+            "invalid": [],
+            "rowCount": 17,
+            "colCount": 6,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 3,
+          "exitClass": 0,
+          "observed": "9",
+          "envelope": {
+            "source": "samples/gov/통계청/훈령/2018/0347.hwpx",
+            "csv": "samples/gov/통계청/훈령/2018/0347.csvx",
+            "changedCount": 9,
+            "invalid": [],
+            "rowCount": 17,
+            "colCount": 6,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 4,
+          "exitClass": 0,
+          "observed": "10",
+          "envelope": {
+            "source": "samples/gov/통계청/훈령/2018/0347.hwpx",
+            "csv": "samples/gov/통계청/훈령/2018/0347.csvx",
+            "changedCount": 10,
+            "invalid": [],
+            "rowCount": 17,
+            "colCount": 6,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 5,
+          "exitClass": 0,
+          "observed": "6",
+          "envelope": {
+            "source": "samples/gov/통계청/훈령/2018/0347.hwpx",
+            "csv": "samples/gov/통계청/훈령/2018/0347.csvx",
+            "changedCount": 6,
+            "invalid": [],
+            "rowCount": 17,
+            "colCount": 6,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 6,
+          "exitClass": 0,
+          "observed": "7",
+          "envelope": {
+            "source": "samples/gov/통계청/훈령/2018/0347.hwpx",
+            "csv": "samples/gov/통계청/훈령/2018/0347.csvx",
+            "changedCount": 7,
+            "invalid": [],
+            "rowCount": 17,
+            "colCount": 6,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        }
+      ],
+      "votes": {
+        "counts": {
+          "10": 1,
+          "6": 2,
+          "7": 2,
+          "8": 1,
+          "9": 1
+        },
+        "majority": null,
+        "plurality": "7",
+        "majorityCount": 2,
+        "isTie": true,
+        "majorityFrac": 0.2857142857142857
+      },
+      "variance": {
+        "n": 7,
+        "distinct": 5,
+        "disagreement": 0.7142857142857143,
+        "sampleVariance": 2.285714285714286,
+        "mean": 7.571428571428571,
+        "min": 6.0,
+        "max": 10.0
+      },
+      "finalValue": {
+        "reduce": "mean",
+        "value": "7.571429",
+        "tie": false,
+        "pass": false,
+        "numeric": 7.571428571428571
+      },
+      "profile": "high_jitter"
+    },
+    {
+      "schemaVersion": "v-repeat.1.0",
+      "claim": "V-repeat",
+      "kind": "repeatEvaluation",
+      "recordId": "rep-000975",
+      "uniquenessKey": "5861489fd17a7f75|k=11|changedCount",
+      "artifact": {
+        "artifactId": "5861489fd17a7f75",
+        "command": "csv-to-table",
+        "sample": "samples/gov/통계청/훈령/2018/0347.hwpx",
+        "argv": [
+          "csv-to-table",
+          "--verify",
+          "--json",
+          "samples/gov/통계청/훈령/2018/0347.hwpx"
+        ],
+        "intendedExit": 0,
+        "intended": {
+          "source": "samples/gov/통계청/훈령/2018/0347.hwpx",
+          "csv": "samples/gov/통계청/훈령/2018/0347.csvx",
+          "changedCount": 6,
+          "invalid": [],
+          "rowCount": 17,
+          "colCount": 6,
+          "verify": {
+            "identical": true,
+            "diffCount": 0
+          },
+          "exitClass": 0
+        }
+      },
+      "k": 11,
+      "check": {
+        "name": "changedCount",
+        "kind": "envelopeField",
+        "valueKind": "u64",
+        "path": "changedCount"
+      },
+      "trials": [
+        {
+          "seed": 0,
+          "exitClass": 0,
+          "observed": "6",
+          "envelope": {
+            "source": "samples/gov/통계청/훈령/2018/0347.hwpx",
+            "csv": "samples/gov/통계청/훈령/2018/0347.csvx",
+            "changedCount": 6,
+            "invalid": [],
+            "rowCount": 17,
+            "colCount": 6,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 1,
+          "exitClass": 0,
+          "observed": "7",
+          "envelope": {
+            "source": "samples/gov/통계청/훈령/2018/0347.hwpx",
+            "csv": "samples/gov/통계청/훈령/2018/0347.csvx",
+            "changedCount": 7,
+            "invalid": [],
+            "rowCount": 17,
+            "colCount": 6,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 2,
+          "exitClass": 0,
+          "observed": "8",
+          "envelope": {
+            "source": "samples/gov/통계청/훈령/2018/0347.hwpx",
+            "csv": "samples/gov/통계청/훈령/2018/0347.csvx",
+            "changedCount": 8,
+            "invalid": [],
+            "rowCount": 17,
+            "colCount": 6,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 3,
+          "exitClass": 0,
+          "observed": "9",
+          "envelope": {
+            "source": "samples/gov/통계청/훈령/2018/0347.hwpx",
+            "csv": "samples/gov/통계청/훈령/2018/0347.csvx",
+            "changedCount": 9,
+            "invalid": [],
+            "rowCount": 17,
+            "colCount": 6,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 4,
+          "exitClass": 0,
+          "observed": "10",
+          "envelope": {
+            "source": "samples/gov/통계청/훈령/2018/0347.hwpx",
+            "csv": "samples/gov/통계청/훈령/2018/0347.csvx",
+            "changedCount": 10,
+            "invalid": [],
+            "rowCount": 17,
+            "colCount": 6,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 5,
+          "exitClass": 0,
+          "observed": "6",
+          "envelope": {
+            "source": "samples/gov/통계청/훈령/2018/0347.hwpx",
+            "csv": "samples/gov/통계청/훈령/2018/0347.csvx",
+            "changedCount": 6,
+            "invalid": [],
+            "rowCount": 17,
+            "colCount": 6,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 6,
+          "exitClass": 0,
+          "observed": "7",
+          "envelope": {
+            "source": "samples/gov/통계청/훈령/2018/0347.hwpx",
+            "csv": "samples/gov/통계청/훈령/2018/0347.csvx",
+            "changedCount": 7,
+            "invalid": [],
+            "rowCount": 17,
+            "colCount": 6,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 7,
+          "exitClass": 0,
+          "observed": "8",
+          "envelope": {
+            "source": "samples/gov/통계청/훈령/2018/0347.hwpx",
+            "csv": "samples/gov/통계청/훈령/2018/0347.csvx",
+            "changedCount": 8,
+            "invalid": [],
+            "rowCount": 17,
+            "colCount": 6,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 8,
+          "exitClass": 0,
+          "observed": "9",
+          "envelope": {
+            "source": "samples/gov/통계청/훈령/2018/0347.hwpx",
+            "csv": "samples/gov/통계청/훈령/2018/0347.csvx",
+            "changedCount": 9,
+            "invalid": [],
+            "rowCount": 17,
+            "colCount": 6,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 9,
+          "exitClass": 0,
+          "observed": "10",
+          "envelope": {
+            "source": "samples/gov/통계청/훈령/2018/0347.hwpx",
+            "csv": "samples/gov/통계청/훈령/2018/0347.csvx",
+            "changedCount": 10,
+            "invalid": [],
+            "rowCount": 17,
+            "colCount": 6,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 10,
+          "exitClass": 0,
+          "observed": "6",
+          "envelope": {
+            "source": "samples/gov/통계청/훈령/2018/0347.hwpx",
+            "csv": "samples/gov/통계청/훈령/2018/0347.csvx",
+            "changedCount": 6,
+            "invalid": [],
+            "rowCount": 17,
+            "colCount": 6,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        }
+      ],
+      "votes": {
+        "counts": {
+          "10": 2,
+          "6": 3,
+          "7": 2,
+          "8": 2,
+          "9": 2
+        },
+        "majority": null,
+        "plurality": "6",
+        "majorityCount": 3,
+        "isTie": false,
+        "majorityFrac": 0.2727272727272727
+      },
+      "variance": {
+        "n": 11,
+        "distinct": 5,
+        "disagreement": 0.7272727272727273,
+        "sampleVariance": 2.3636363636363638,
+        "mean": 7.818181818181818,
+        "min": 6.0,
+        "max": 10.0
+      },
+      "finalValue": {
+        "reduce": "mean",
+        "value": "7.818182",
+        "tie": false,
+        "pass": false,
+        "numeric": 7.818181818181818
+      },
+      "profile": "high_jitter"
+    },
+    {
+      "schemaVersion": "v-repeat.1.0",
+      "claim": "V-repeat",
+      "kind": "repeatEvaluation",
+      "recordId": "rep-000976",
+      "uniquenessKey": "7dd4b01bff885024|k=5|verify.identical",
+      "artifact": {
+        "artifactId": "7dd4b01bff885024",
+        "command": "sanitize",
+        "sample": "samples/gov/과학기술정보통신부/훈령/2018/0358.hwp",
+        "argv": [
+          "edit",
+          "sanitize",
+          "--verify",
+          "--json",
+          "samples/gov/과학기술정보통신부/훈령/2018/0358.hwp"
+        ],
+        "intendedExit": 0,
+        "intended": {
+          "source": "samples/gov/과학기술정보통신부/훈령/2018/0358.hwp",
+          "removedCount": 2,
+          "wasDistribution": true,
+          "verify": {
+            "identical": true,
+            "diffCount": 0
+          },
+          "exitClass": 0
+        }
+      },
+      "k": 5,
+      "check": {
+        "name": "verify.identical",
+        "kind": "envelopeField",
+        "valueKind": "bool",
+        "path": "verify.identical"
+      },
+      "trials": [
+        {
+          "seed": 0,
+          "exitClass": 0,
+          "observed": "true",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/훈령/2018/0358.hwp",
+            "removedCount": 2,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 1,
+          "exitClass": 3,
+          "observed": "false",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/훈령/2018/0358.hwp",
+            "removedCount": 2,
+            "wasDistribution": true,
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 2,
+          "exitClass": 0,
+          "observed": "true",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/훈령/2018/0358.hwp",
+            "removedCount": 2,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 3,
+          "exitClass": 3,
+          "observed": "false",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/훈령/2018/0358.hwp",
+            "removedCount": 2,
+            "wasDistribution": true,
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 4,
+          "exitClass": 0,
+          "observed": "true",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/훈령/2018/0358.hwp",
+            "removedCount": 2,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        }
+      ],
+      "votes": {
+        "counts": {
+          "false": 2,
+          "true": 3
+        },
+        "majority": "true",
+        "plurality": "true",
+        "majorityCount": 3,
+        "isTie": false,
+        "majorityFrac": 0.6
+      },
+      "variance": {
+        "n": 5,
+        "distinct": 2,
+        "disagreement": 0.4
+      },
+      "finalValue": {
+        "reduce": "majority",
+        "value": "true",
+        "tie": false,
+        "pass": true
+      },
+      "profile": "text_split"
+    },
+    {
+      "schemaVersion": "v-repeat.1.0",
+      "claim": "V-repeat",
+      "kind": "repeatEvaluation",
+      "recordId": "rep-000977",
+      "uniquenessKey": "7dd4b01bff885024|k=7|verify.identical",
+      "artifact": {
+        "artifactId": "7dd4b01bff885024",
+        "command": "sanitize",
+        "sample": "samples/gov/과학기술정보통신부/훈령/2018/0358.hwp",
+        "argv": [
+          "edit",
+          "sanitize",
+          "--verify",
+          "--json",
+          "samples/gov/과학기술정보통신부/훈령/2018/0358.hwp"
+        ],
+        "intendedExit": 0,
+        "intended": {
+          "source": "samples/gov/과학기술정보통신부/훈령/2018/0358.hwp",
+          "removedCount": 2,
+          "wasDistribution": true,
+          "verify": {
+            "identical": true,
+            "diffCount": 0
+          },
+          "exitClass": 0
+        }
+      },
+      "k": 7,
+      "check": {
+        "name": "verify.identical",
+        "kind": "envelopeField",
+        "valueKind": "bool",
+        "path": "verify.identical"
+      },
+      "trials": [
+        {
+          "seed": 0,
+          "exitClass": 0,
+          "observed": "true",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/훈령/2018/0358.hwp",
+            "removedCount": 2,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 1,
+          "exitClass": 3,
+          "observed": "false",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/훈령/2018/0358.hwp",
+            "removedCount": 2,
+            "wasDistribution": true,
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 2,
+          "exitClass": 0,
+          "observed": "true",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/훈령/2018/0358.hwp",
+            "removedCount": 2,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 3,
+          "exitClass": 3,
+          "observed": "false",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/훈령/2018/0358.hwp",
+            "removedCount": 2,
+            "wasDistribution": true,
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 4,
+          "exitClass": 0,
+          "observed": "true",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/훈령/2018/0358.hwp",
+            "removedCount": 2,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 5,
+          "exitClass": 3,
+          "observed": "false",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/훈령/2018/0358.hwp",
+            "removedCount": 2,
+            "wasDistribution": true,
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 6,
+          "exitClass": 0,
+          "observed": "true",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/훈령/2018/0358.hwp",
+            "removedCount": 2,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        }
+      ],
+      "votes": {
+        "counts": {
+          "false": 3,
+          "true": 4
+        },
+        "majority": "true",
+        "plurality": "true",
+        "majorityCount": 4,
+        "isTie": false,
+        "majorityFrac": 0.5714285714285714
+      },
+      "variance": {
+        "n": 7,
+        "distinct": 2,
+        "disagreement": 0.4285714285714286
+      },
+      "finalValue": {
+        "reduce": "majority",
+        "value": "true",
+        "tie": false,
+        "pass": true
+      },
+      "profile": "text_split"
+    },
+    {
+      "schemaVersion": "v-repeat.1.0",
+      "claim": "V-repeat",
+      "kind": "repeatEvaluation",
+      "recordId": "rep-000978",
+      "uniquenessKey": "7dd4b01bff885024|k=11|verify.identical",
+      "artifact": {
+        "artifactId": "7dd4b01bff885024",
+        "command": "sanitize",
+        "sample": "samples/gov/과학기술정보통신부/훈령/2018/0358.hwp",
+        "argv": [
+          "edit",
+          "sanitize",
+          "--verify",
+          "--json",
+          "samples/gov/과학기술정보통신부/훈령/2018/0358.hwp"
+        ],
+        "intendedExit": 0,
+        "intended": {
+          "source": "samples/gov/과학기술정보통신부/훈령/2018/0358.hwp",
+          "removedCount": 2,
+          "wasDistribution": true,
+          "verify": {
+            "identical": true,
+            "diffCount": 0
+          },
+          "exitClass": 0
+        }
+      },
+      "k": 11,
+      "check": {
+        "name": "verify.identical",
+        "kind": "envelopeField",
+        "valueKind": "bool",
+        "path": "verify.identical"
+      },
+      "trials": [
+        {
+          "seed": 0,
+          "exitClass": 0,
+          "observed": "true",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/훈령/2018/0358.hwp",
+            "removedCount": 2,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 1,
+          "exitClass": 3,
+          "observed": "false",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/훈령/2018/0358.hwp",
+            "removedCount": 2,
+            "wasDistribution": true,
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 2,
+          "exitClass": 0,
+          "observed": "true",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/훈령/2018/0358.hwp",
+            "removedCount": 2,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 3,
+          "exitClass": 3,
+          "observed": "false",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/훈령/2018/0358.hwp",
+            "removedCount": 2,
+            "wasDistribution": true,
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 4,
+          "exitClass": 0,
+          "observed": "true",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/훈령/2018/0358.hwp",
+            "removedCount": 2,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 5,
+          "exitClass": 3,
+          "observed": "false",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/훈령/2018/0358.hwp",
+            "removedCount": 2,
+            "wasDistribution": true,
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 6,
+          "exitClass": 0,
+          "observed": "true",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/훈령/2018/0358.hwp",
+            "removedCount": 2,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 7,
+          "exitClass": 3,
+          "observed": "false",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/훈령/2018/0358.hwp",
+            "removedCount": 2,
+            "wasDistribution": true,
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 8,
+          "exitClass": 0,
+          "observed": "true",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/훈령/2018/0358.hwp",
+            "removedCount": 2,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 9,
+          "exitClass": 3,
+          "observed": "false",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/훈령/2018/0358.hwp",
+            "removedCount": 2,
+            "wasDistribution": true,
+            "verify": {
+              "identical": false,
+              "diffCount": 1
+            },
+            "exitClass": 3
+          }
+        },
+        {
+          "seed": 10,
+          "exitClass": 0,
+          "observed": "true",
+          "envelope": {
+            "source": "samples/gov/과학기술정보통신부/훈령/2018/0358.hwp",
+            "removedCount": 2,
+            "wasDistribution": true,
+            "verify": {
+              "identical": true,
+              "diffCount": 0
+            },
+            "exitClass": 0
+          }
+        }
+      ],
+      "votes": {
+        "counts": {
+          "false": 5,
+          "true": 6
+        },
+        "majority": "true",
+        "plurality": "true",
+        "majorityCount": 6,
+        "isTie": false,
+        "majorityFrac": 0.5454545454545454
+      },
+      "variance": {
+        "n": 11,
+        "distinct": 2,
+        "disagreement": 0.4545454545454546
+      },
+      "finalValue": {
+        "reduce": "majority",
+        "value": "true",
+        "tie": false,
+        "pass": true
+      },
+      "profile": "text_split"
+    },
+    {
+      "schemaVersion": "v-repeat.1.0",
+      "claim": "V-repeat",
+      "kind": "repeatEvaluation",
+      "recordId": "rep-000979",
+      "uniquenessKey": "15535e866a537159|k=5|exitClass",
+      "artifact": {
+        "artifactId": "15535e866a537159",
+        "command": "info",
+        "sample": "samples/gov/국토교통부/예규/2018/0369.hwpx",
+        "argv": [
+          "info",
+          "--json",
+          "samples/gov/국토교통부/예규/2018/0369.hwpx"
+        ],
+        "intendedExit": 0,
+        "intended": {
+          "schemaVersion": "1.0",
+          "source": "samples/gov/국토교통부/예규/2018/0369.hwpx",
+          "format": "hwpx",
+          "pageCount": 3,
+          "paraCount": 41,
+          "sectionCount": 1,
+          "untrustedContent": false,
+          "warnings": [],
+          "exitClass": 0
+        }
+      },
+      "k": 5,
+      "check": {
+        "name": "exitClass",
+        "kind": "exitClass",
+        "valueKind": "exit"
+      },
+      "trials": [
+        {
+          "seed": 0,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "samples/gov/국토교통부/예규/2018/0369.hwpx",
+            "format": "hwpx",
+            "pageCount": 3,
+            "paraCount": 41,
+            "sectionCount": 1,
+            "untrustedContent": false,
+            "warnings": [],
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 1,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "samples/gov/국토교통부/예규/2018/0369.hwpx",
+            "format": "hwpx",
+            "pageCount": 3,
+            "paraCount": 41,
+            "sectionCount": 1,
+            "untrustedContent": false,
+            "warnings": [],
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 2,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "samples/gov/국토교통부/예규/2018/0369.hwpx",
+            "format": "hwpx",
+            "pageCount": 3,
+            "paraCount": 41,
+            "sectionCount": 1,
+            "untrustedContent": false,
+            "warnings": [],
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 3,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "samples/gov/국토교통부/예규/2018/0369.hwpx",
+            "format": "hwpx",
+            "pageCount": 3,
+            "paraCount": 41,
+            "sectionCount": 1,
+            "untrustedContent": false,
+            "warnings": [],
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 4,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "samples/gov/국토교통부/예규/2018/0369.hwpx",
+            "format": "hwpx",
+            "pageCount": 3,
+            "paraCount": 41,
+            "sectionCount": 1,
+            "untrustedContent": false,
+            "warnings": [],
+            "exitClass": 0
+          }
+        }
+      ],
+      "votes": {
+        "counts": {
+          "0": 5
+        },
+        "majority": "0",
+        "plurality": "0",
+        "majorityCount": 5,
+        "isTie": false,
+        "majorityFrac": 1.0
+      },
+      "variance": {
+        "n": 5,
+        "distinct": 1,
+        "disagreement": 0.0
+      },
+      "finalValue": {
+        "reduce": "majority",
+        "value": "0",
+        "tie": false,
+        "pass": true
+      },
+      "profile": "unanimous"
+    },
+    {
+      "schemaVersion": "v-repeat.1.0",
+      "claim": "V-repeat",
+      "kind": "repeatEvaluation",
+      "recordId": "rep-000980",
+      "uniquenessKey": "15535e866a537159|k=7|exitClass",
+      "artifact": {
+        "artifactId": "15535e866a537159",
+        "command": "info",
+        "sample": "samples/gov/국토교통부/예규/2018/0369.hwpx",
+        "argv": [
+          "info",
+          "--json",
+          "samples/gov/국토교통부/예규/2018/0369.hwpx"
+        ],
+        "intendedExit": 0,
+        "intended": {
+          "schemaVersion": "1.0",
+          "source": "samples/gov/국토교통부/예규/2018/0369.hwpx",
+          "format": "hwpx",
+          "pageCount": 3,
+          "paraCount": 41,
+          "sectionCount": 1,
+          "untrustedContent": false,
+          "warnings": [],
+          "exitClass": 0
+        }
+      },
+      "k": 7,
+      "check": {
+        "name": "exitClass",
+        "kind": "exitClass",
+        "valueKind": "exit"
+      },
+      "trials": [
+        {
+          "seed": 0,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "samples/gov/국토교통부/예규/2018/0369.hwpx",
+            "format": "hwpx",
+            "pageCount": 3,
+            "paraCount": 41,
+            "sectionCount": 1,
+            "untrustedContent": false,
+            "warnings": [],
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 1,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "samples/gov/국토교통부/예규/2018/0369.hwpx",
+            "format": "hwpx",
+            "pageCount": 3,
+            "paraCount": 41,
+            "sectionCount": 1,
+            "untrustedContent": false,
+            "warnings": [],
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 2,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "samples/gov/국토교통부/예규/2018/0369.hwpx",
+            "format": "hwpx",
+            "pageCount": 3,
+            "paraCount": 41,
+            "sectionCount": 1,
+            "untrustedContent": false,
+            "warnings": [],
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 3,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "samples/gov/국토교통부/예규/2018/0369.hwpx",
+            "format": "hwpx",
+            "pageCount": 3,
+            "paraCount": 41,
+            "sectionCount": 1,
+            "untrustedContent": false,
+            "warnings": [],
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 4,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "samples/gov/국토교통부/예규/2018/0369.hwpx",
+            "format": "hwpx",
+            "pageCount": 3,
+            "paraCount": 41,
+            "sectionCount": 1,
+            "untrustedContent": false,
+            "warnings": [],
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 5,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "samples/gov/국토교통부/예규/2018/0369.hwpx",
+            "format": "hwpx",
+            "pageCount": 3,
+            "paraCount": 41,
+            "sectionCount": 1,
+            "untrustedContent": false,
+            "warnings": [],
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 6,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "samples/gov/국토교통부/예규/2018/0369.hwpx",
+            "format": "hwpx",
+            "pageCount": 3,
+            "paraCount": 41,
+            "sectionCount": 1,
+            "untrustedContent": false,
+            "warnings": [],
+            "exitClass": 0
+          }
+        }
+      ],
+      "votes": {
+        "counts": {
+          "0": 7
+        },
+        "majority": "0",
+        "plurality": "0",
+        "majorityCount": 7,
+        "isTie": false,
+        "majorityFrac": 1.0
+      },
+      "variance": {
+        "n": 7,
+        "distinct": 1,
+        "disagreement": 0.0
+      },
+      "finalValue": {
+        "reduce": "majority",
+        "value": "0",
+        "tie": false,
+        "pass": true
+      },
+      "profile": "unanimous"
+    },
+    {
+      "schemaVersion": "v-repeat.1.0",
+      "claim": "V-repeat",
+      "kind": "repeatEvaluation",
+      "recordId": "rep-000981",
+      "uniquenessKey": "15535e866a537159|k=11|exitClass",
+      "artifact": {
+        "artifactId": "15535e866a537159",
+        "command": "info",
+        "sample": "samples/gov/국토교통부/예규/2018/0369.hwpx",
+        "argv": [
+          "info",
+          "--json",
+          "samples/gov/국토교통부/예규/2018/0369.hwpx"
+        ],
+        "intendedExit": 0,
+        "intended": {
+          "schemaVersion": "1.0",
+          "source": "samples/gov/국토교통부/예규/2018/0369.hwpx",
+          "format": "hwpx",
+          "pageCount": 3,
+          "paraCount": 41,
+          "sectionCount": 1,
+          "untrustedContent": false,
+          "warnings": [],
+          "exitClass": 0
+        }
+      },
+      "k": 11,
+      "check": {
+        "name": "exitClass",
+        "kind": "exitClass",
+        "valueKind": "exit"
+      },
+      "trials": [
+        {
+          "seed": 0,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "samples/gov/국토교통부/예규/2018/0369.hwpx",
+            "format": "hwpx",
+            "pageCount": 3,
+            "paraCount": 41,
+            "sectionCount": 1,
+            "untrustedContent": false,
+            "warnings": [],
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 1,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "samples/gov/국토교통부/예규/2018/0369.hwpx",
+            "format": "hwpx",
+            "pageCount": 3,
+            "paraCount": 41,
+            "sectionCount": 1,
+            "untrustedContent": false,
+            "warnings": [],
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 2,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "samples/gov/국토교통부/예규/2018/0369.hwpx",
+            "format": "hwpx",
+            "pageCount": 3,
+            "paraCount": 41,
+            "sectionCount": 1,
+            "untrustedContent": false,
+            "warnings": [],
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 3,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "samples/gov/국토교통부/예규/2018/0369.hwpx",
+            "format": "hwpx",
+            "pageCount": 3,
+            "paraCount": 41,
+            "sectionCount": 1,
+            "untrustedContent": false,
+            "warnings": [],
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 4,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "samples/gov/국토교통부/예규/2018/0369.hwpx",
+            "format": "hwpx",
+            "pageCount": 3,
+            "paraCount": 41,
+            "sectionCount": 1,
+            "untrustedContent": false,
+            "warnings": [],
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 5,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "samples/gov/국토교통부/예규/2018/0369.hwpx",
+            "format": "hwpx",
+            "pageCount": 3,
+            "paraCount": 41,
+            "sectionCount": 1,
+            "untrustedContent": false,
+            "warnings": [],
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 6,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "samples/gov/국토교통부/예규/2018/0369.hwpx",
+            "format": "hwpx",
+            "pageCount": 3,
+            "paraCount": 41,
+            "sectionCount": 1,
+            "untrustedContent": false,
+            "warnings": [],
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 7,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "samples/gov/국토교통부/예규/2018/0369.hwpx",
+            "format": "hwpx",
+            "pageCount": 3,
+            "paraCount": 41,
+            "sectionCount": 1,
+            "untrustedContent": false,
+            "warnings": [],
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 8,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "samples/gov/국토교통부/예규/2018/0369.hwpx",
+            "format": "hwpx",
+            "pageCount": 3,
+            "paraCount": 41,
+            "sectionCount": 1,
+            "untrustedContent": false,
+            "warnings": [],
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 9,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "samples/gov/국토교통부/예규/2018/0369.hwpx",
+            "format": "hwpx",
+            "pageCount": 3,
+            "paraCount": 41,
+            "sectionCount": 1,
+            "untrustedContent": false,
+            "warnings": [],
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 10,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "schemaVersion": "1.0",
+            "source": "samples/gov/국토교통부/예규/2018/0369.hwpx",
+            "format": "hwpx",
+            "pageCount": 3,
+            "paraCount": 41,
+            "sectionCount": 1,
+            "untrustedContent": false,
+            "warnings": [],
+            "exitClass": 0
+          }
+        }
+      ],
+      "votes": {
+        "counts": {
+          "0": 11
+        },
+        "majority": "0",
+        "plurality": "0",
+        "majorityCount": 11,
+        "isTie": false,
+        "majorityFrac": 1.0
+      },
+      "variance": {
+        "n": 11,
+        "distinct": 1,
+        "disagreement": 0.0
+      },
+      "finalValue": {
+        "reduce": "majority",
+        "value": "0",
+        "tie": false,
+        "pass": true
+      },
+      "profile": "unanimous"
+    },
+    {
+      "schemaVersion": "v-repeat.1.0",
+      "claim": "V-repeat",
+      "kind": "repeatEvaluation",
+      "recordId": "rep-000982",
+      "uniquenessKey": "d7a626c3d6f008a5|k=5|failCount",
+      "artifact": {
+        "artifactId": "d7a626c3d6f008a5",
+        "command": "verify",
+        "sample": "samples/gov/기상청/예규/2018/0380.hwpx",
+        "argv": [
+          "verify",
+          "--json",
+          "samples/gov/기상청/예규/2018/0380.hwpx"
+        ],
+        "intendedExit": 0,
+        "intended": {
+          "source": "samples/gov/기상청/예규/2018/0380.hwpx",
+          "verdict": "pass",
+          "passCount": 6,
+          "failCount": 0,
+          "expectations": [
+            "pageCount",
+            "paraCount",
+            "sectionCount"
+          ],
+          "exitClass": 0
+        }
+      },
+      "k": 5,
+      "check": {
+        "name": "failCount",
+        "kind": "envelopeField",
+        "valueKind": "u64",
+        "path": "failCount"
+      },
+      "trials": [
+        {
+          "seed": 0,
+          "exitClass": 0,
+          "observed": "1",
+          "envelope": {
+            "source": "samples/gov/기상청/예규/2018/0380.hwpx",
+            "verdict": "pass",
+            "passCount": 6,
+            "failCount": 1,
+            "expectations": [
+              "pageCount",
+              "paraCount",
+              "sectionCount"
+            ],
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 1,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/기상청/예규/2018/0380.hwpx",
+            "verdict": "pass",
+            "passCount": 6,
+            "failCount": 0,
+            "expectations": [
+              "pageCount",
+              "paraCount",
+              "sectionCount"
+            ],
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 2,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/기상청/예규/2018/0380.hwpx",
+            "verdict": "pass",
+            "passCount": 6,
+            "failCount": 0,
+            "expectations": [
+              "pageCount",
+              "paraCount",
+              "sectionCount"
+            ],
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 3,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/기상청/예규/2018/0380.hwpx",
+            "verdict": "pass",
+            "passCount": 6,
+            "failCount": 0,
+            "expectations": [
+              "pageCount",
+              "paraCount",
+              "sectionCount"
+            ],
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 4,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/기상청/예규/2018/0380.hwpx",
+            "verdict": "pass",
+            "passCount": 6,
+            "failCount": 0,
+            "expectations": [
+              "pageCount",
+              "paraCount",
+              "sectionCount"
+            ],
+            "exitClass": 0
+          }
+        }
+      ],
+      "votes": {
+        "counts": {
+          "0": 4,
+          "1": 1
+        },
+        "majority": "0",
+        "plurality": "0",
+        "majorityCount": 4,
+        "isTie": false,
+        "majorityFrac": 0.8
+      },
+      "variance": {
+        "n": 5,
+        "distinct": 2,
+        "disagreement": 0.19999999999999996,
+        "sampleVariance": 0.20000000000000004,
+        "mean": 0.2,
+        "min": 0.0,
+        "max": 1.0
+      },
+      "finalValue": {
+        "reduce": "mean",
+        "value": "0.2",
+        "tie": false,
+        "pass": true,
+        "numeric": 0.2
+      },
+      "profile": "flip_one"
+    },
+    {
+      "schemaVersion": "v-repeat.1.0",
+      "claim": "V-repeat",
+      "kind": "repeatEvaluation",
+      "recordId": "rep-000983",
+      "uniquenessKey": "d7a626c3d6f008a5|k=7|failCount",
+      "artifact": {
+        "artifactId": "d7a626c3d6f008a5",
+        "command": "verify",
+        "sample": "samples/gov/기상청/예규/2018/0380.hwpx",
+        "argv": [
+          "verify",
+          "--json",
+          "samples/gov/기상청/예규/2018/0380.hwpx"
+        ],
+        "intendedExit": 0,
+        "intended": {
+          "source": "samples/gov/기상청/예규/2018/0380.hwpx",
+          "verdict": "pass",
+          "passCount": 6,
+          "failCount": 0,
+          "expectations": [
+            "pageCount",
+            "paraCount",
+            "sectionCount"
+          ],
+          "exitClass": 0
+        }
+      },
+      "k": 7,
+      "check": {
+        "name": "failCount",
+        "kind": "envelopeField",
+        "valueKind": "u64",
+        "path": "failCount"
+      },
+      "trials": [
+        {
+          "seed": 0,
+          "exitClass": 0,
+          "observed": "1",
+          "envelope": {
+            "source": "samples/gov/기상청/예규/2018/0380.hwpx",
+            "verdict": "pass",
+            "passCount": 6,
+            "failCount": 1,
+            "expectations": [
+              "pageCount",
+              "paraCount",
+              "sectionCount"
+            ],
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 1,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/기상청/예규/2018/0380.hwpx",
+            "verdict": "pass",
+            "passCount": 6,
+            "failCount": 0,
+            "expectations": [
+              "pageCount",
+              "paraCount",
+              "sectionCount"
+            ],
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 2,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/기상청/예규/2018/0380.hwpx",
+            "verdict": "pass",
+            "passCount": 6,
+            "failCount": 0,
+            "expectations": [
+              "pageCount",
+              "paraCount",
+              "sectionCount"
+            ],
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 3,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/기상청/예규/2018/0380.hwpx",
+            "verdict": "pass",
+            "passCount": 6,
+            "failCount": 0,
+            "expectations": [
+              "pageCount",
+              "paraCount",
+              "sectionCount"
+            ],
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 4,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/기상청/예규/2018/0380.hwpx",
+            "verdict": "pass",
+            "passCount": 6,
+            "failCount": 0,
+            "expectations": [
+              "pageCount",
+              "paraCount",
+              "sectionCount"
+            ],
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 5,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/기상청/예규/2018/0380.hwpx",
+            "verdict": "pass",
+            "passCount": 6,
+            "failCount": 0,
+            "expectations": [
+              "pageCount",
+              "paraCount",
+              "sectionCount"
+            ],
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 6,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/기상청/예규/2018/0380.hwpx",
+            "verdict": "pass",
+            "passCount": 6,
+            "failCount": 0,
+            "expectations": [
+              "pageCount",
+              "paraCount",
+              "sectionCount"
+            ],
+            "exitClass": 0
+          }
+        }
+      ],
+      "votes": {
+        "counts": {
+          "0": 6,
+          "1": 1
+        },
+        "majority": "0",
+        "plurality": "0",
+        "majorityCount": 6,
+        "isTie": false,
+        "majorityFrac": 0.8571428571428571
+      },
+      "variance": {
+        "n": 7,
+        "distinct": 2,
+        "disagreement": 0.1428571428571429,
+        "sampleVariance": 0.14285714285714288,
+        "mean": 0.14285714285714285,
+        "min": 0.0,
+        "max": 1.0
+      },
+      "finalValue": {
+        "reduce": "mean",
+        "value": "0.142857",
+        "tie": false,
+        "pass": true,
+        "numeric": 0.14285714285714285
+      },
+      "profile": "flip_one"
+    },
+    {
+      "schemaVersion": "v-repeat.1.0",
+      "claim": "V-repeat",
+      "kind": "repeatEvaluation",
+      "recordId": "rep-000984",
+      "uniquenessKey": "d7a626c3d6f008a5|k=11|failCount",
+      "artifact": {
+        "artifactId": "d7a626c3d6f008a5",
+        "command": "verify",
+        "sample": "samples/gov/기상청/예규/2018/0380.hwpx",
+        "argv": [
+          "verify",
+          "--json",
+          "samples/gov/기상청/예규/2018/0380.hwpx"
+        ],
+        "intendedExit": 0,
+        "intended": {
+          "source": "samples/gov/기상청/예규/2018/0380.hwpx",
+          "verdict": "pass",
+          "passCount": 6,
+          "failCount": 0,
+          "expectations": [
+            "pageCount",
+            "paraCount",
+            "sectionCount"
+          ],
+          "exitClass": 0
+        }
+      },
+      "k": 11,
+      "check": {
+        "name": "failCount",
+        "kind": "envelopeField",
+        "valueKind": "u64",
+        "path": "failCount"
+      },
+      "trials": [
+        {
+          "seed": 0,
+          "exitClass": 0,
+          "observed": "1",
+          "envelope": {
+            "source": "samples/gov/기상청/예규/2018/0380.hwpx",
+            "verdict": "pass",
+            "passCount": 6,
+            "failCount": 1,
+            "expectations": [
+              "pageCount",
+              "paraCount",
+              "sectionCount"
+            ],
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 1,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/기상청/예규/2018/0380.hwpx",
+            "verdict": "pass",
+            "passCount": 6,
+            "failCount": 0,
+            "expectations": [
+              "pageCount",
+              "paraCount",
+              "sectionCount"
+            ],
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 2,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/기상청/예규/2018/0380.hwpx",
+            "verdict": "pass",
+            "passCount": 6,
+            "failCount": 0,
+            "expectations": [
+              "pageCount",
+              "paraCount",
+              "sectionCount"
+            ],
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 3,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/기상청/예규/2018/0380.hwpx",
+            "verdict": "pass",
+            "passCount": 6,
+            "failCount": 0,
+            "expectations": [
+              "pageCount",
+              "paraCount",
+              "sectionCount"
+            ],
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 4,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/기상청/예규/2018/0380.hwpx",
+            "verdict": "pass",
+            "passCount": 6,
+            "failCount": 0,
+            "expectations": [
+              "pageCount",
+              "paraCount",
+              "sectionCount"
+            ],
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 5,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/기상청/예규/2018/0380.hwpx",
+            "verdict": "pass",
+            "passCount": 6,
+            "failCount": 0,
+            "expectations": [
+              "pageCount",
+              "paraCount",
+              "sectionCount"
+            ],
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 6,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/기상청/예규/2018/0380.hwpx",
+            "verdict": "pass",
+            "passCount": 6,
+            "failCount": 0,
+            "expectations": [
+              "pageCount",
+              "paraCount",
+              "sectionCount"
+            ],
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 7,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/기상청/예규/2018/0380.hwpx",
+            "verdict": "pass",
+            "passCount": 6,
+            "failCount": 0,
+            "expectations": [
+              "pageCount",
+              "paraCount",
+              "sectionCount"
+            ],
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 8,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/기상청/예규/2018/0380.hwpx",
+            "verdict": "pass",
+            "passCount": 6,
+            "failCount": 0,
+            "expectations": [
+              "pageCount",
+              "paraCount",
+              "sectionCount"
+            ],
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 9,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/기상청/예규/2018/0380.hwpx",
+            "verdict": "pass",
+            "passCount": 6,
+            "failCount": 0,
+            "expectations": [
+              "pageCount",
+              "paraCount",
+              "sectionCount"
+            ],
+            "exitClass": 0
+          }
+        },
+        {
+          "seed": 10,
+          "exitClass": 0,
+          "observed": "0",
+          "envelope": {
+            "source": "samples/gov/기상청/예규/2018/0380.hwpx",
+            "verdict": "pass",
+            "passCount": 6,
+            "failCount": 0,
+            "expectations": [
+              "pageCount",
+              "paraCount",
+              "sectionCount"
+            ],
+            "exitClass": 0
+          }
+        }
+      ],
+      "votes": {
+        "counts": {
+          "0": 10,
+          "1": 1
+        },
+        "majority": "0",
+        "plurality": "0",
+        "majorityCount": 10,
+        "isTie": false,
+        "majorityFrac": 0.9090909090909091
+      },
+      "variance": {
+        "n": 11,
+        "distinct": 2,
+        "disagreement": 0.09090909090909094,
+        "sampleVariance": 0.0909090909090909,
+        "mean": 0.09090909090909091,
+        "min": 0.0,
+        "max": 1.0
+      },
+      "finalValue": {
+        "reduce": "mean",
+        "value": "0.090909",
+        "tie": false,
+        "pass": true,
+        "numeric": 0.09090909090909091
+      },
+      "profile": "flip_one"
+    }
+  ]
+}

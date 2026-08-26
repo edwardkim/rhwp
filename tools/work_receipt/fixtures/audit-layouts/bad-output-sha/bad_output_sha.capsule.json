@@ -1,0 +1,30 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workCapsule",
+  "parent": null,
+  "plan": {
+    "planVersion": "1.0",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "output": "out/law-ref.hwp",
+    "steps": [
+      {
+        "action": "replace_text",
+        "find": "국가공무원법 제69조",
+        "replace": "국가공무원법 제68조"
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"samples/basic/issue2007_nested_cell_pagination_42065.hwp\",\"output\":\"out/law-ref.hwp\",\"steps\":[{\"action\":\"replace_text\",\"find\":\"국가공무원법 제69조\",\"replace\":\"국가공무원법 제68조\"}]}",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "inputSha256": "b28a37b72998999fa839ef984ecbaab3445c808b29808bf1c21940b954bd21e4",
+    "planSha256": "dcbda5c1c43b5172129ec2222c4323e3e69c54976839a51a0a315c4580f8188c",
+    "outputSha256": "xyz",
+    "toolVersion": "fixture-0.0.0-not-a-release",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null
+  }
+}

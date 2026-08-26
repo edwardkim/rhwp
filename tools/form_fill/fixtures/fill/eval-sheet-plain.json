@@ -1,0 +1,65 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.form_fill.fill_case.v1",
+  "id": "eval-sheet-fill-plain",
+  "axis": "fill-fields",
+  "claim": "M-fill",
+  "generator": "tools/form_fill/fatten_form_fill.py",
+  "form": "eval-sheet",
+  "title": "평가표 고유 이름 채움",
+  "family": "평가",
+  "genre": "채점",
+  "sample": "fixtures/forms/평가표.hwp",
+  "format": "hwp5",
+  "relatedIssue": "#3476",
+  "why": "순번 없는 고유 이름은 단건 채움. notFound/ambiguous 가 비어야 완료.",
+  "firstFieldName": "평가회차",
+  "fieldCount": 29,
+  "argv": [
+    "edit",
+    "fill-fields",
+    "fixtures/forms/평가표.hwp",
+    "--data",
+    "{\"평가회차\": \"1차\", \"평가대상\": \"시범 산출물\", \"평가자\": \"정평가\"}",
+    "-o",
+    "out/eval-sheet-plain.hwp",
+    "--json"
+  ],
+  "existingCliOnly": true,
+  "data": {
+    "평가회차": "1차",
+    "평가대상": "시범 산출물",
+    "평가자": "정평가"
+  },
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "fixtures/forms/평가표.hwp",
+    "dryRun": false,
+    "filledCount": 3,
+    "filled": [
+      {
+        "name": "평가회차",
+        "occurrence": 0,
+        "value": "1차"
+      },
+      {
+        "name": "평가대상",
+        "occurrence": 0,
+        "value": "시범 산출물"
+      },
+      {
+        "name": "평가자",
+        "occurrence": 0,
+        "value": "정평가"
+      }
+    ],
+    "notFound": [],
+    "ambiguous": [],
+    "confusable": [],
+    "verify": null,
+    "output": "out/eval-sheet-plain.hwp",
+    "outputFormat": "hwp5"
+  },
+  "exit": 0,
+  "gate": true
+}

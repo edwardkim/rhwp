@@ -1,0 +1,60 @@
+{
+  "id": "BO01",
+  "tier": 3,
+  "title": "서식 1개 + 데이터 3행 → 메일머지 문서 3부 (batch fill 대량 처리)",
+  "input": "samples/hwpx/form-01.hwpx",
+  "instructions": "이 서식에는 누름틀 'myMsg01' 이 하나 있다. gym/packs/batch-ops/assets/BO01-data.csv 는 헤더 한 줄(myMsg01)과 데이터 3행이다. 서식 1개에 데이터 3행을 병합해 문서 3부를 out/ 폴더에 만들어라. 순번 이름(0001.hwpx·0002.hwpx·0003.hwpx)이어야 하고, 각 문서에 해당 행의 값이 들어가야 한다. 힌트: rhwp batch fill --form samples/hwpx/form-01.hwpx --data gym/packs/batch-ops/assets/BO01-data.csv --out-dir out --json (batch fill 은 stdin 이 아니라 --data 로 행을 받고, --name-field 를 생략하면 4자리 순번으로 이름이 붙는다).",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "out/0001.hwpx",
+      "out/0002.hwpx",
+      "out/0003.hwpx"
+    ]
+  },
+  "checks": [
+    {
+      "name": "1부 산출 존재",
+      "op": "file_exists",
+      "file": "out/0001.hwpx",
+      "minBytes": 1
+    },
+    {
+      "name": "3부 산출 존재 (단건이 아니라 대량)",
+      "op": "file_exists",
+      "file": "out/0003.hwpx",
+      "minBytes": 1
+    },
+    {
+      "name": "원본 서식과 다름 (무편집 복사 거부)",
+      "op": "differs_from_input",
+      "file": "out/0001.hwpx"
+    },
+    {
+      "name": "1행 병합값이 1부에 들어감",
+      "op": "value_ge",
+      "path": "matchCount",
+      "value": 1,
+      "cmd": [
+        "search",
+        "{file:out/0001.hwpx}",
+        "--json",
+        "--",
+        "계약서"
+      ]
+    },
+    {
+      "name": "3행 병합값이 3부에 들어감 (행별 서로 다른 데이터)",
+      "op": "value_ge",
+      "path": "matchCount",
+      "value": 1,
+      "cmd": [
+        "search",
+        "{file:out/0003.hwpx}",
+        "--json",
+        "--",
+        "신규"
+      ]
+    }
+  ]
+}

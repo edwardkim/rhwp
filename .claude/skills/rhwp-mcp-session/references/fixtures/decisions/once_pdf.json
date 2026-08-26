@@ -1,0 +1,10 @@
+{
+  "id": "once_pdf",
+  "task": "제출용 PDF",
+  "choice": "stateless",
+  "first_tool": "hwp_export_pdf",
+  "why": "세션에 PDF 도구가 없다.",
+  "forbidden": [
+    "hwp_open"
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "id": "ht-clean-sample-hwp3-sample4.hwp",
+  "issue": 5476,
+  "axis": "hidden-text",
+  "family": "clean-corpus",
+  "polarity": "negative",
+  "sourceRule": {
+    "file": "tests/hidden_text_contract.rs",
+    "symbol": "CLEAN_SAMPLES",
+    "note": "CharShape::default().shade_color=0 을 검정 음영으로 읽는 회귀를 막는다."
+  },
+  "cli": {
+    "argv": [
+      "inspect",
+      "hidden-text",
+      "samples/hwp3-sample4.hwp",
+      "--json"
+    ],
+    "exitCode": 0,
+    "stdoutKind": "json-object",
+    "detectionIsNotFailure": true
+  },
+  "consume": {
+    "branch": "clean == true",
+    "emptyArrayNotMissing": true
+  },
+  "pair": null,
+  "why": "실문서 음성 코퍼스. samples/hwp3-sample4.hwp",
+  "note": "HWP3 다수는 의도. shade_color=0 오탐이 나면 통째로 깨진다.",
+  "human": "은닉 텍스트 없음: samples/hwp3-sample4.hwp (탐지 0건)\n",
+  "inventedRule": false,
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "samples/hwp3-sample4.hwp",
+    "thresholdPt": 1.0,
+    "includeOffPage": false,
+    "hiddenText": [],
+    "hiddenCharCount": 0,
+    "clean": true
+  }
+}

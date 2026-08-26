@@ -1,0 +1,12 @@
+{
+  "id": "TC19",
+  "steps": [
+    {
+      "answer": {
+        "changed": {
+          "const": 0
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "id": "p2-textfile-plain",
+  "title": "GetTextFile — para-001.hwp",
+  "ledger": [
+    "HwpCtrl.method.GetTextFile"
+  ],
+  "open": "samples/para-001.hwp",
+  "calls": [
+    [
+      "GetTextFile",
+      [
+        "UNICODE",
+        ""
+      ]
+    ],
+    [
+      "GetTextFile",
+      [
+        "UNICODE",
+        "saveblock"
+      ]
+    ]
+  ]
+}

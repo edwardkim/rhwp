@@ -1,0 +1,39 @@
+{
+  "id": "RT05",
+  "tier": 2,
+  "title": "가로 문서 1쪽 렌더 트리",
+  "input": "samples/landscape-001.hwp",
+  "instructions": "입력 문서의 0번 쪽(0-기준 페이지 0) 렌더 트리를 export-render-tree 로 추출해 제출 폴더의 _rt/render_tree_001.json 로 제출하라. 용지 방향이 가로여도 루트 type 은 Page 다. bbox 축만 다르다. 원본 HWP 를 그 자리에 복사하거나 info 봉투를 JSON 으로 저장하지 마라. 파일 번호는 쪽+1 이다. -p 0 는 render_tree_001.json 이다. 힌트: rhwp export-render-tree <문서> -p 0 -o _rt.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "_rt/render_tree_001.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "렌더 트리 산출 존재",
+      "op": "file_exists",
+      "file": "_rt/render_tree_001.json",
+      "minBytes": 200
+    },
+    {
+      "name": "루트 type 이 Page",
+      "op": "json_value_eq",
+      "file": "_rt/render_tree_001.json",
+      "path": "type",
+      "value": "Page"
+    },
+    {
+      "name": "쪽수 일치",
+      "op": "answer_eq",
+      "answer": "pages",
+      "cmd": [
+        "info",
+        "{input}",
+        "--json"
+      ],
+      "path": "pageCount"
+    }
+  ]
+}

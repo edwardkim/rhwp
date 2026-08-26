@@ -1,0 +1,19 @@
+{
+  "id": "SR47",
+  "steps": [
+    {
+      "answer": {
+        "pages": {
+          "cmd": [
+            "export-markdown",
+            "{input}",
+            "-o",
+            "{sub:md}",
+            "--json"
+          ],
+          "path": "pageCount"
+        }
+      }
+    }
+  ]
+}

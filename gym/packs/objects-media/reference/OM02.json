@@ -1,0 +1,17 @@
+{
+  "id": "OM02",
+  "steps": [
+    {
+      "run": [
+        "edit",
+        "fill-fields",
+        "{input}",
+        "--data",
+        "{\"작성자\": \"지목채움\"}",
+        "-o",
+        "{sub:second.hwp}",
+        "--json"
+      ]
+    }
+  ]
+}

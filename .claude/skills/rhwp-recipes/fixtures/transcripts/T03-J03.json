@@ -1,0 +1,24 @@
+{
+  "id": "T03-J03",
+  "recipe": "03",
+  "kind": "json",
+  "sourceFile": "mydocs/manual/recipes/03_redact_before_sharing.md",
+  "excerpted": true,
+  "fabricatedLive": false,
+  "raw": "{\"caseSensitive\":true,\"matchCount\":0,\"matches\":[],\"omittedCount\":0,\"query\":\"010-1234-5678\",\"schemaVersion\":\"1.0\",\"source\":\"output/pii-demo_공개.hwp\",\"totalMatchCount\":0,\"truncated\":false,\"untrustedContent\":false,\"untrustedFields\":[]}",
+  "parsed": {
+    "caseSensitive": true,
+    "matchCount": 0,
+    "matches": [],
+    "omittedCount": 0,
+    "query": "010-1234-5678",
+    "schemaVersion": "1.0",
+    "source": "output/pii-demo_공개.hwp",
+    "totalMatchCount": 0,
+    "truncated": false,
+    "untrustedContent": false,
+    "untrustedFields": []
+  },
+  "parseable": true,
+  "notGym": true
+}

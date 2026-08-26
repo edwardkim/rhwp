@@ -80,8 +80,6 @@ const AXES: &[SchemaAxis] = &[
         bump_together: &[
             "src/ir_schema.rs — pub const IR_SCHEMA_VERSION",
             "src/ir_schema.rs ir_schema() — \"$id\" 꼬리 …/schema/ir/<버전> (리터럴)",
-            "bindings/python/src/rhwp/ir.py — IR_SCHEMA_VERSION (tools/gen_models.py 로 재생성)",
-            "bindings/node/src/ir.ts — IR_SCHEMA_VERSION (tools/gen-types.ts 로 재생성)",
         ],
     },
     SchemaAxis {

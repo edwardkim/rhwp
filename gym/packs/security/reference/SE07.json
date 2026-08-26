@@ -1,0 +1,18 @@
+{
+  "id": "SE07",
+  "steps": [
+    {
+      "answer": {
+        "files": {
+          "cmd": [
+            "scan",
+            "samples/hml",
+            "--json"
+          ],
+          "path": "files",
+          "len": true
+        }
+      }
+    }
+  ]
+}

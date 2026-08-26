@@ -1,0 +1,23 @@
+{
+  "id": "TB38",
+  "steps": [
+    {
+      "run": [
+        "edit",
+        "set-cell",
+        "{input}",
+        "--table",
+        "0",
+        "--row",
+        "0",
+        "--col",
+        "0",
+        "--text",
+        "현장표지",
+        "-o",
+        "{sub:field_mark.hwp}",
+        "--json"
+      ]
+    }
+  ]
+}

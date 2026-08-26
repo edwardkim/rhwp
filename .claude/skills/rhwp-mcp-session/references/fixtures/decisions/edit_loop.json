@@ -1,0 +1,11 @@
+{
+  "id": "edit_loop",
+  "task": "채우고 고치고 눈검증",
+  "choice": "session",
+  "first_tool": "hwp_open",
+  "why": "changedPages 쪽만 렌더.",
+  "forbidden": [
+    "invented_tools",
+    "relative_paths"
+  ]
+}

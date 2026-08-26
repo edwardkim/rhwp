@@ -1,0 +1,69 @@
+{
+  "id": "uni-filter-confusable",
+  "issue": 5476,
+  "axis": "unicode",
+  "family": "kind-filter",
+  "polarity": "filter",
+  "sourceRule": {
+    "file": "src/document_core/text_security.rs",
+    "symbol": "DeceptionKind::from_filter",
+    "note": "confusable"
+  },
+  "cli": {
+    "argv": [
+      "inspect",
+      "unicode",
+      "synth:unicode/mixed/all-kinds.hwp",
+      "--json",
+      "--kind",
+      "confusable"
+    ],
+    "exitCode": 0,
+    "stdoutKind": "json-object",
+    "detectionIsNotFailure": true
+  },
+  "consume": {
+    "branch": "kindFilter",
+    "kept": "confusable"
+  },
+  "pair": "uni-filter-all-mixed",
+  "why": "--kind confusable 는 다른 축을 보고하지 않는다.",
+  "note": "필터는 탐지 규칙을 바꾸지 않는다.",
+  "human": "축 confusable — 탐지 1건\n",
+  "inventedRule": false,
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "synth:unicode/mixed/all-kinds.hwp",
+    "kindFilter": "confusable",
+    "scannedChars": 40,
+    "findings": [
+      {
+        "kind": "confusable",
+        "codepoint": "U+0422",
+        "severity": "medium",
+        "section": 0,
+        "paragraph": 0,
+        "location": "body",
+        "charOffset": 0,
+        "runLength": 1,
+        "excerpt": "Тotal",
+        "rendered": "Тotal",
+        "raw": "Тotal",
+        "why": "라틴 낱말에 다른 스크립트의 동형자가 섞였습니다 — 화면상 구별되지 않습니다"
+      }
+    ],
+    "findingCount": 1,
+    "clean": false,
+    "severityCounts": {
+      "high": 0,
+      "medium": 1,
+      "low": 0
+    },
+    "kindCounts": {
+      "zero_width": 0,
+      "bidi_override": 0,
+      "tag_char": 0,
+      "confusable": 1
+    }
+  }
+}

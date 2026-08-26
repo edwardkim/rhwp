@@ -1,0 +1,11 @@
+{
+  "id": "T09",
+  "utterance": "이 페이지 배치",
+  "steps": [
+    {
+      "command": "dump-pages",
+      "pageZeroBased": true
+    }
+  ],
+  "stop": "디버그 2단"
+}

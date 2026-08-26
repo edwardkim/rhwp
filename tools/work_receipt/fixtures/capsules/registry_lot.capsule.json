@@ -1,0 +1,30 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workCapsule",
+  "parent": null,
+  "plan": {
+    "planVersion": "1.0",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "output": "out/registry-lot.hwp",
+    "steps": [
+      {
+        "action": "replace_text",
+        "find": "지번 123-4",
+        "replace": "지번 123-5"
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"samples/basic/issue2007_nested_cell_pagination_42065.hwp\",\"output\":\"out/registry-lot.hwp\",\"steps\":[{\"action\":\"replace_text\",\"find\":\"지번 123-4\",\"replace\":\"지번 123-5\"}]}",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "inputSha256": "c083b1089026a9e4af3a5ac9f39bd29fe1fa7ace53e88b7940712ffd9998b5c9",
+    "planSha256": "46dcd89232ad6f0719cb73d926da2242fa28f81b64b6e0887f17c09d720fd467",
+    "outputSha256": "c6141fe3bcf2e77ebb4d9aedaee86181af0b2f62da44ad557157eae1c7a9730f",
+    "toolVersion": "fixture-0.0.0-not-a-release",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null
+  }
+}

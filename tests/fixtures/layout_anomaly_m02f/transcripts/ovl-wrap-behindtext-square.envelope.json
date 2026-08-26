@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "1.0",
+  "mode": "single",
+  "source": "ovl-wrap-behindtext-square.synth",
+  "pageCount": 3,
+  "pageFilter": null,
+  "overflowTolerancePx": 1.0,
+  "overlapTolerancePx": 2.0,
+  "types": null,
+  "strict": false,
+  "overflowCount": 0,
+  "offCanvasCount": 0,
+  "overlapCount": 0,
+  "textOverlapCount": 0,
+  "emptyPageCount": 0,
+  "hasSignal": false,
+  "pages": [],
+  "hypothesis": "도형 wrap=BehindText 와 wrap=Square 가 30x30 겹친다. Square/Tight/TopAndBottom 만 overlap 후보다. BehindText/InFrontOfText/Through/없음 은 겹치라고 있는 배치다.",
+  "fixtureId": "ovl-wrap-behindtext-square"
+}

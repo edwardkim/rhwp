@@ -1,0 +1,62 @@
+{
+  "id": "TB31",
+  "tier": 4,
+  "title": "세 칸 지목 교정",
+  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "instructions": "첫 번째 표의 (0행,0열) 을 '가' · (0행,1열) 을 '나' · (1행,0열) 을 '다'으로 바꾼 triple.hwp 를 제출하라. 채점은 그 좌표만 대조한다. 힌트: rhwp edit set-cell.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "triple.hwp"
+    ]
+  },
+  "checks": [
+    {
+      "name": "(0,0) == 가",
+      "op": "cell_text_eq",
+      "table": 0,
+      "row": 0,
+      "col": 0,
+      "value": "가",
+      "path": "tables",
+      "cmd": [
+        "export-tables",
+        "{file:triple.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "(0,1) == 나",
+      "op": "cell_text_eq",
+      "table": 0,
+      "row": 0,
+      "col": 1,
+      "value": "나",
+      "path": "tables",
+      "cmd": [
+        "export-tables",
+        "{file:triple.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "(1,0) == 다",
+      "op": "cell_text_eq",
+      "table": 0,
+      "row": 1,
+      "col": 0,
+      "value": "다",
+      "path": "tables",
+      "cmd": [
+        "export-tables",
+        "{file:triple.hwp}",
+        "--json"
+      ]
+    },
+    {
+      "name": "원본과 다름",
+      "op": "differs_from_input",
+      "file": "triple.hwp"
+    }
+  ]
+}

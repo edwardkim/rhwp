@@ -1,0 +1,29 @@
+{
+  "id": "OM42",
+  "tier": 2,
+  "title": "실문서 썸네일 MIME",
+  "input": "samples/143E433F503322BD33.hwp",
+  "instructions": "실문서 썸네일의 MIME 형식을 answer.json 에 {\"mime\": \"...\"} 으로 제출하라. 힌트: rhwp thumbnail 의 mime.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "MIME 형식",
+      "op": "answer_eq",
+      "answer": "mime",
+      "path": "mime",
+      "cmd": [
+        "thumbnail",
+        "{input}",
+        "-o",
+        "{file:t.png}",
+        "--json"
+      ]
+    }
+  ],
+  "axis": "조사"
+}

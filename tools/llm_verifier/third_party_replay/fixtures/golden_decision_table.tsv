@@ -1,0 +1,13 @@
+case_id	plan	expect_sha	reproduced	tool_version	mode	source	expected_tool_version	expected_verdict_class
+G-accept	{"planVersion":"1.0","input":"a.hwp","output":"b.hwp","steps":[{"action":"sanitize"}]}	3c1c839b9b750e90a88239cf7052f46858ebefac8d4e2f985d4fac7699c7a5b3	1	0.8.4	verify	replay	0.8.4	LABOR_ACCEPTED
+G-reject	{"planVersion":"1.0","input":"a.hwp","output":"b.hwp","steps":[{"action":"sanitize"}]}	0000000000000000000000000000000000000000000000000000000000000000	0	0.8.4	verify	replay	0.8.4	LABOR_REJECTED
+G-capsule-accept	{"planVersion":"1.0","input":"a.hwp","output":"b.hwp","steps":[{"action":"sanitize"}]}	ee72bb89e84f5eb57cd397f1a796db6d7e289515db16dda5f3bada86cada33b4	1	0.8.4	verify	capsule	0.8.4	LABOR_ACCEPTED
+G-attest	{"planVersion":"1.0","input":"a.hwp","output":"b.hwp","steps":[{"action":"sanitize"}]}			0.8.4	attest	replay	0.8.4	ATTEST_NOT_THIRD_PARTY
+G-prose	로컬에서 재실행했고 성공했습니다.				absent	prose		PROSE_NOT_EVIDENCE
+G-no-expect	{"planVersion":"1.0","input":"a.hwp","output":"b.hwp","steps":[{"action":"sanitize"}]}			0.8.4	verify	replay	0.8.4	NO_EXPECT_SHA
+G-bad-sha	{"planVersion":"1.0","input":"a.hwp","output":"b.hwp","steps":[{"action":"sanitize"}]}	deadbeef	0	0.8.4	verify	replay	0.8.4	INVALID_EXPECT_SHA
+G-no-tool	{"planVersion":"1.0","input":"a.hwp","output":"b.hwp","steps":[{"action":"sanitize"}]}	3c1c839b9b750e90a88239cf7052f46858ebefac8d4e2f985d4fac7699c7a5b3	1		verify	replay		TOOL_VERSION_MISSING
+G-tool-mismatch	{"planVersion":"1.0","input":"a.hwp","output":"b.hwp","steps":[{"action":"sanitize"}]}	3c1c839b9b750e90a88239cf7052f46858ebefac8d4e2f985d4fac7699c7a5b3	1	0.7.15	verify	replay	0.8.4	TOOL_VERSION_MISMATCH
+G-no-plan		3c1c839b9b750e90a88239cf7052f46858ebefac8d4e2f985d4fac7699c7a5b3	1	0.8.4	verify	replay	0.8.4	NO_PLAN
+G-prose-wins-even-if-sha	구현자가 끝났다고 썼다	3c1c839b9b750e90a88239cf7052f46858ebefac8d4e2f985d4fac7699c7a5b3	1	0.8.4	absent	prose	0.8.4	PROSE_NOT_EVIDENCE
+G-uppercase-ok	{"planVersion":"1.0","input":"a.hwp","output":"b.hwp","steps":[{"action":"sanitize"}]}	3C1C839B9B750E90A88239CF7052F46858EBEFAC8D4E2F985D4FAC7699C7A5B3	1	0.8.4	verify	replay	0.8.4	LABOR_ACCEPTED

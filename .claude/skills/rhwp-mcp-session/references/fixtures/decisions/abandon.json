@@ -1,0 +1,11 @@
+{
+  "id": "abandon",
+  "task": "미리보기만 하고 폐기",
+  "choice": "session",
+  "first_tool": "hwp_open",
+  "why": "save 없이 close.",
+  "forbidden": [
+    "invented_tools",
+    "relative_paths"
+  ]
+}

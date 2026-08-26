@@ -1,0 +1,13 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5329,
+  "notGym": true,
+  "noNewCli": true,
+  "id": "T27",
+  "title": "border clip",
+  "stop": "F02",
+  "steps": [
+    "candidate"
+  ],
+  "tool": "tools/fidelity_compare/fidelity_compare.py"
+}

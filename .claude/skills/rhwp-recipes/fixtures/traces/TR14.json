@@ -1,0 +1,11 @@
+{
+  "id": "TR14",
+  "recipe": "02",
+  "transcript": "T02-B06",
+  "argvLine": "rhwp csv-to-table samples/hwp_table_test.hwp --csv table0_edited.csv --table 0 --dry-run --json \\",
+  "usesExistingCommand": true,
+  "notGym": true,
+  "noNewCli": true,
+  "sourceFile": "mydocs/manual/recipes/02_table_csv_roundtrip.md",
+  "fabricatedLive": false
+}

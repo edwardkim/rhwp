@@ -1,0 +1,141 @@
+{
+  "id": "pG-pageimage",
+  "title": "쪽 그림 만들기 — 쪽 번호는 0부터, 범위 밖은 false",
+  "ledger": [
+    "HwpCtrl.method.CreatePageImage"
+  ],
+  "open": "samples/20250130-hongbo.hwp",
+  "paths": {
+    "page1": {
+      "win": "{out}\\pG-pi1.bmp",
+      "posix": "{out}/pG-pi1.bmp"
+    },
+    "page2": {
+      "win": "{out}\\pG-pi2.bmp",
+      "posix": "{out}/pG-pi2.bmp"
+    },
+    "page3": {
+      "win": "{out}\\pG-pi3.bmp",
+      "posix": "{out}/pG-pi3.bmp"
+    },
+    "page4": {
+      "win": "{out}\\pG-pi4.bmp",
+      "posix": "{out}/pG-pi4.bmp"
+    },
+    "page5": {
+      "win": "{out}\\pG-pi5.bmp",
+      "posix": "{out}/pG-pi5.bmp"
+    },
+    "page6": {
+      "win": "{out}\\pG-pi6.bmp",
+      "posix": "{out}/pG-pi6.bmp"
+    },
+    "missingDirectory": {
+      "win": "{out}\\없는폴더xyz\\a.bmp",
+      "posix": "{out}/없는폴더xyz/a.bmp"
+    }
+  },
+  "calls": [
+    [
+      "PageCount",
+      [],
+      {
+        "expect": 4
+      }
+    ],
+    [
+      "CreatePageImage",
+      [
+        {
+          "$path": "page1"
+        },
+        0
+      ],
+      {
+        "expect": true
+      }
+    ],
+    [
+      "CreatePageImage",
+      [
+        {
+          "$path": "page2"
+        },
+        3
+      ],
+      {
+        "expect": true
+      }
+    ],
+    [
+      "CreatePageImage",
+      [
+        {
+          "$path": "page3"
+        },
+        4
+      ],
+      {
+        "expect": false
+      }
+    ],
+    [
+      "CreatePageImage",
+      [
+        {
+          "$path": "page4"
+        },
+        9
+      ],
+      {
+        "expect": false
+      }
+    ],
+    [
+      "CreatePageImage",
+      [
+        {
+          "$path": "missingDirectory"
+        },
+        0
+      ],
+      {
+        "expect": false
+      }
+    ],
+    [
+      "CreatePageImage",
+      [
+        "",
+        0
+      ],
+      {
+        "expect": false
+      }
+    ],
+    [
+      "CreatePageImage",
+      [
+        {
+          "$path": "page5"
+        },
+        0,
+        0
+      ],
+      {
+        "expect": false
+      }
+    ],
+    [
+      "CreatePageImage",
+      [
+        {
+          "$path": "page6"
+        }
+      ],
+      {
+        "expect": false
+      }
+    ]
+  ]
+}

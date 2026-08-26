@@ -1,0 +1,21 @@
+{
+  "id": "p4-caretstart2",
+  "title": "개체 사이 한 칸이 진짜 글자인가",
+  "ledger": [],
+  "open": "samples/mix-shape-01.hwp",
+  "calls": [
+    ["GetTextFile", ["TEXT", ""]],
+    ["SetPos", [0, 0, 24]],
+    ["GetPos", []],
+    ["SelectText", [0, 24, 0, 25]],
+    ["GetSelectedPos", []],
+    ["GetSelText", []],
+    ["SetPos", [0, 0, 24]],
+    ["SelectText", [0, 24, 0, 43]],
+    ["GetSelText", []],
+    ["InitScan", [255, 3, 0, 0, 0, 0]],
+    ["GetText", []],
+    ["GetText", []],
+    ["ReleaseScan", []]
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "id": "TR03",
+  "recipe": "01",
+  "transcript": "T01-B03",
+  "argvLine": "echo '{\"myMsg01\":\"파일에서 읽은 값\"}' > data.json",
+  "usesExistingCommand": true,
+  "notGym": true,
+  "noNewCli": true,
+  "sourceFile": "mydocs/manual/recipes/01_fill_form_and_submit.md",
+  "fabricatedLive": false
+}

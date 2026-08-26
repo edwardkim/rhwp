@@ -1,0 +1,16 @@
+{
+  "id": "T09_parent_hash",
+  "kind": "parent_hash_mismatch",
+  "judgmentNotCrash": true,
+  "exit": 3,
+  "steps": [
+    {
+      "argv": [
+        "rhwp",
+        "lineage",
+        "output/handoff/t-ord/session.capsule.json",
+        "--json"
+      ]
+    }
+  ]
+}

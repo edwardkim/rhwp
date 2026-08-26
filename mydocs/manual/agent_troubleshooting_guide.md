@@ -1306,105 +1306,12 @@ MCP 는 실패를 **세 층**으로 나눈다. 어느 층인지 먼저 가려라
 `rhwp://docs/agent_knowledge_map.md`, `rhwp://docs/agent_troubleshooting_guide.md`.
 **이 사전을 MCP 로 그대로 읽을 수 있다** — 별도 파일 접근 권한이 없어도 된다.
 
-## 15. 바인딩 (Python / Node)
+## 15. 외부 언어 래퍼
 
-바인딩은 새 판정 표면이 아니라 **종료 코드를 예외 체계로 옮긴 재포장**이다
-(설계 근거는 [파이썬 바인딩 가이드](python_binding_guide.md) §3).
-
-| 상황 | exit | Python |
-|---|---|---|
-| 성공 | 0 | 정상 반환 |
-| 런타임 실패 | 1 | `RhwpRuntimeError` |
-| 사용법 오류 | 2 | `UsageError` |
-| 검증 단언 실패 | 3 | **반환값의 판정 필드** (예외 아님) |
-| 쪽수 불일치 | 4 | **반환값의 판정 필드** (예외 아님) |
-
-### `BinaryNotFoundError: RHWP_BIN 가 가리키는 실행 파일을 쓸 수 없습니다: <경로>`
-
-```console
-$ RHWP_BIN=C:/nope/rhwp.exe python -c "import rhwp; rhwp.info('문서.hwp')"
-BinaryNotFoundError: RHWP_BIN 가 가리키는 실행 파일을 쓸 수 없습니다: C:/nope/rhwp.exe
-  (존재하지 않거나, 파일이 아니거나, 실행 권한이 없습니다)
-```
-
-- **원인 아님(보호 동작)**: 환경변수를 **줬는데 못 쓴다.** 조용히 다른 바이너리로
-  넘어가지 않는 것이 의도다 — 그러면 어느 바이너리가 돌았는지 알 수 없게 된다.
-
-### `BinaryNotFoundError: rhwp 실행 파일을 찾지 못했습니다. 다음 순서로 탐색했습니다:`
-
-```
-BinaryNotFoundError: rhwp 실행 파일을 찾지 못했습니다. 다음 순서로 탐색했습니다:
-  1. RHWP_BIN (미설정)
-  2. 패키지 동봉 (<저장소>/bindings/python/src/rhwp/_bin/rhwp.exe)
-  3. PATH (rhwp.exe 없음)
-
-해결: rhwp 를 설치해 PATH 에 두거나, RHWP_BIN 로 경로를 지정하세요.
-```
-
-- **처방**: 메시지가 세 후보를 다 적어 준다. CI 라면 `RHWP_BIN` 을 명시하는 편이
-  재현 가능하다. 탐색은 프로세스 수명 동안 캐시되므로, 테스트에서 환경변수를 바꿀
-  때는 `rhwp._binary.clear_cache()` 를 부른다.
-
-### `RhwpRuntimeError` / `UsageError` — 원문 메시지가 그대로 붙는다
-
-```console
-RhwpRuntimeError: 문서 처리에 실패했습니다 (exit 1) — 오류: 파일을 읽을 수 없습니다 - 없는파일.hwp: 지정된 파일을 찾을 수 없습니다. (os error 2)
-UsageError:       호출 인자가 올바르지 않습니다 (exit 2) — 오류: 페이지 번호가 범위를 벗어났습니다 (0~3)
-```
-
-- **읽는 법**: `—` 뒤가 CLI 원문이다. 이 사전의 §3~§6 을 그대로 찾아보면 된다.
-
-### `SessionClosedError: 닫힌 문서 핸들입니다 (doc-1)`
-
-```console
->>> d = rhwp.open('보도자료.hwp'); d.close(); d.text()
-SessionClosedError: 닫힌 문서 핸들입니다 (doc-1)
-```
-
-- **처방**: `with rhwp.open(path) as doc:` 로 수명을 명시한다.
-
-### `TypeError: search() missing 1 required positional argument: 'query'`
-
-- **원인**: 바인딩은 필수 인자를 **파이썬 시그니처 수준**에서 막는다 — rhwp 프로세스가
-  뜨기 전에 실패한다. 그래서 `UsageError` 가 아니라 `TypeError` 다.
-- **처방**: 이 예외는 rhwp 문제가 아니라 호출 코드 문제다. 사전을 뒤지지 말고
-  함수 시그니처를 봐라.
-
-### exit 3/4 를 예외로 받고 싶다
-
-기본값은 예외가 **아니다** — `--verify` 불일치는 "도구가 정상 동작한 결과"이므로
-반환값의 판정 필드로 온다. 예외가 필요하면 `raise_on_verdict=True` 로 **명시**한다.
-
-```python
-result = rhwp.export_hwpx("원본.hwp", out="변환본.hwpx", verify=True)
-if not result.verify.identical:
-    print(f"차이 {result.verify.diff_count}건")   # 근거를 읽고 판단
-```
-
-### 이름이 안 맞는다 (`page_count` vs `pageCount`)
-
-세 가지가 **같은 값**을 가리킨다 — 원문 키를 계속 쓸 수 있다:
-
-```python
-meta.page_count      # 속성 (스네이크 변환)
-meta["pageCount"]    # 원문 키
-meta["page_count"]   # 변환 키
-```
-
-### 계획 층(Plan) API
-
-`rhwp.Plan(...)` 은 `.fill_fields()` · `.replace_text()` · `.set_cell()` ·
-`.set_checkbox()` · `.require_all_fields_found()` · `.verify()` 로 조립하고
-`.check()`(dry-run) / `.run()` 으로 실행한다 — §9 의 계획서와 같은 계약이다.
-
-### Node 바인딩
-
-- 예외 클래스는 소스 기준 `RhwpError` / `BinaryNotFoundError` / `UsageError` /
-  `RhwpRuntimeError` / `VerdictFailed` / `ProtocolError` / `SessionClosedError` /
-  `RhwpTimeoutError` (`bindings/node/src/errors.ts`).
-- **재현 실패**: 이 환경에는 `bindings/node/node_modules`·`dist` 가 없어 실제 실행
-  메시지를 확보하지 못했다. 위 이름은 **소스에서 읽은 것**이며 실행 문자열이 아니다.
-  Node 쪽 정확한 문구가 필요하면 `npm i && npm run build` 후 이 절을 갱신하라.
+공식 Python·Node 바인딩은 v0.8.4에서 철회됐다
+([#4655](https://github.com/edwardkim/rhwp/issues/4655)). 이 저장소의 지원 대상은 CLI,
+MCP, WASM과 기존 공식 npm 패키지다. 다운스트림 래퍼의 오류는 해당 프로젝트에서
+확인하고, rhwp 자체 종료 코드와 JSON 봉투는 이 문서의 §2~§9를 기준으로 진단한다.
 
 ## 16. 흔한 조립 실수 — 명령 표면 대조표
 

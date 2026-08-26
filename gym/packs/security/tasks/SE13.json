@@ -1,0 +1,33 @@
+{
+  "id": "SE13",
+  "tier": 2,
+  "title": "쪽 밖 은닉 포함 스윕",
+  "input": "samples/2025 행정업무운영 편람(최종).hwp",
+  "instructions": "쪽 밖 문단까지 포함해 조판 은닉 글자가 몇 자인지 answer.json 에 {\"hidden\": N} 으로 제출하라. 힌트: rhwp inspect hidden-text --include-offpage.",
+  "submit": {
+    "kind": "answer",
+    "files": [
+      "answer.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "쪽 밖 포함 은닉 글자 수",
+      "op": "answer_eq",
+      "answer": "hidden",
+      "path": "hiddenCharCount",
+      "cmd": [
+        "inspect",
+        "hidden-text",
+        "{input}",
+        "--include-offpage",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    }
+  ],
+  "axis": "조사"
+}

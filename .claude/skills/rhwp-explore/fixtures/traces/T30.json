@@ -1,0 +1,25 @@
+{
+  "id": "T30",
+  "title": "주입 1건 high",
+  "scenario": "S35",
+  "argv": [
+    "explore",
+    "untrusted/one-inject.hwp",
+    "--json"
+  ],
+  "envelope": "envelopes/S35.json",
+  "expect": {
+    "schemaVersion": "1.0",
+    "encrypted": false,
+    "menuIds": [
+      "security-sweep",
+      "triage-overview"
+    ],
+    "first": "security-sweep",
+    "firstCommand": "rhwp inspect injection <file> --json",
+    "untrustedContent": false
+  },
+  "stop": "X03",
+  "notGym": true,
+  "usesExistingCommand": true
+}

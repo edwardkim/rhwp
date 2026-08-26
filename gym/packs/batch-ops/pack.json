@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "gymPack",
+  "id": "batch-ops",
+  "title": "다문서 대량 처리 (batch)",
+  "axis": "자동화 (다문서 대량 처리)",
+  "description": "서식 1개와 데이터 N행으로 문서 N부를 한 번에 만드는 진짜 메일머지(batch fill)를 채점한다. batch 는 NDJSON(행당 레코드 1개)을 내므로 단일 봉투 모델로는 값을 길을 수 없어 산출물 축으로 채점한다 — 기준풀이가 batch fill 로 out-dir 를 채우고, 채점은 산출 파일 존재와 각 문서에 그 행의 병합값이 실제로 들어갔는지를 단건 명령으로 재검증한다. batch fill 은 stdin 목록을 읽지 않는 유일한 batch 축이라 gym 러너가 그대로 구동한다.",
+  "requires": {
+    "commands": [
+      "batch",
+      "search"
+    ]
+  },
+  "runner": {
+    "rhwpVersion": "0.8.4",
+    "rhwpCommit": "4324eb0e4cf1a65f7efb305993a79ac44859a7ca",
+    "capabilitiesSha256": "4767e61c3af751bb2f97af9d0b3e5ffa5cbb5dc70a89cf3ae85987132fa5473d"
+  }
+}

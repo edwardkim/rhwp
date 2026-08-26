@@ -1,0 +1,112 @@
+{
+  "version": "1",
+  "page_size": {
+    "width_mm": 210.0,
+    "height_mm": 297.0
+  },
+  "default_font": "함초롬바탕",
+  "questions": [
+    {
+      "number": 1,
+      "stem": "윗글의 주제로 가장 적절한 것은?",
+      "choices": [
+        {
+          "label": "①",
+          "text": "환경 보호의 중요성을 강조하는 글"
+        },
+        {
+          "label": "②",
+          "text": "도시 생활의 편리함을 설명하는 글"
+        },
+        {
+          "label": "③",
+          "text": "전통 음식의 역사를 소개하는 글"
+        },
+        {
+          "label": "④",
+          "text": "최신 기술의 발전 동향을 분석하는 글"
+        },
+        {
+          "label": "⑤",
+          "text": "청소년 진로 탐색의 필요성을 논하는 글"
+        }
+      ],
+      "auto_number": true,
+      "passage_ref": "p1-3"
+    },
+    {
+      "number": 2,
+      "stem": "밑줄 친 부분의 역할로 적절한 것은?",
+      "choices": [
+        {
+          "label": "①",
+          "text": "주장의 근거"
+        },
+        {
+          "label": "②",
+          "text": "반박의 제시"
+        },
+        {
+          "label": "③",
+          "text": "화제 전환"
+        },
+        {
+          "label": "④",
+          "text": "정의의 도입"
+        },
+        {
+          "label": "⑤",
+          "text": "비유의 확대"
+        }
+      ],
+      "auto_number": true,
+      "passage_ref": "p1-3"
+    },
+    {
+      "number": 3,
+      "stem": "글쓴이의 태도로 가장 적절한 것은?",
+      "choices": [
+        {
+          "label": "①",
+          "text": "비판적"
+        },
+        {
+          "label": "②",
+          "text": "냉소적"
+        },
+        {
+          "label": "③",
+          "text": "예찬적"
+        },
+        {
+          "label": "④",
+          "text": "해학적"
+        },
+        {
+          "label": "⑤",
+          "text": "관조적"
+        }
+      ],
+      "auto_number": true,
+      "passage_ref": "p1-3"
+    }
+  ],
+  "header_text": "국어 영역",
+  "footer_text": "1/20",
+  "form_label": "홀수형",
+  "passages": [
+    {
+      "id": "p1-3",
+      "blocks": [
+        {
+          "type": "text",
+          "text": "[1~3] 다음 글을 읽고 물음에 답하시오."
+        },
+        {
+          "type": "text",
+          "text": "환경 오염은 현대 사회의 중요한 문제 중 하나이다. 특히 미세먼지로 인한 공기 질 저하는 우리의 건강에 큰 영향을 미친다. 정부는 배출 규제를 강화하고 대중교통 이용을 장려하고 있으나, 개인의 실천 없이 구조만 바꾸기는 어렵다."
+        }
+      ]
+    }
+  ]
+}

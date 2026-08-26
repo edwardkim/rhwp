@@ -1,0 +1,13 @@
+{
+  "schema": 1,
+  "id": "s000-empty",
+  "width": 400.0,
+  "height": 300.0,
+  "contract": "빈 페이지도 begin/end 경계를 남긴다",
+  "ops": [],
+  "expectedKinds": [],
+  "expectedTrace": [
+    "begin_page 400.00x300.00",
+    "end_page ops=0"
+  ]
+}

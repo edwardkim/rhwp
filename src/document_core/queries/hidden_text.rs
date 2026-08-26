@@ -39,25 +39,6 @@ pub const DEFAULT_THRESHOLD_PT: f64 = 1.0;
 /// 보고 쪽에서 먼저 자른다 — `charCount` 는 자르기 전 실제 길이를 그대로 알린다.
 pub const DEFAULT_EXCERPT_LIMIT: usize = 200;
 
-/// 글자 음영 "없음" sentinel — 흰색. HWP5 파서의 `shade_color` 기본값이자
-/// `paint::text_v2` 의 textVisualEffect 판정이 쓰는 상수다.
-const NO_SHADE_WHITE: ColorRef = 0x00FF_FFFF;
-
-/// 글자 음영 "없음" 두 번째 sentinel — 검정(= `CharShape::default()` 값).
-///
-/// **이 값을 음영으로 믿으면 안 된다.** `CharShape` 의 `Default` 가 0이고
-/// HWP3 변환 경로(`parser::hwp3::convert_char_shape` 이전 단계)·HML 파서
-/// (`ShadeColor` 미지정 시 `unwrap_or(0)`)·HWPX 파서(`shadeColor` 속성 부재)가
-/// 모두 이 자리를 0으로 남긴다. 검정 글자는 문서의 압도적 다수이므로, 0을 "검정 음영"
-/// 으로 읽으면 **정상 문서의 거의 모든 글자가 은닉으로 보고된다**(실측: 351개 표본 중
-/// HWP3 문서 17개에서 31,907건 오탐).
-///
-/// 근거는 추측이 아니라 rhwp 자신의 렌더 계약이다 — SVG(`renderer::svg`)와
-/// Skia(`renderer::skia::text_replay`) 백엔드가 똑같이
-/// `shade_rgb != 0x00FF_FFFF && shade_rgb != 0` 일 때만 형광펜 사각형을 그린다.
-/// 즉 rhwp 는 0을 아예 칠하지 않으므로, 0은 "검정 배경"이 아니라 "음영 없음"이다.
-const NO_SHADE_BLACK: ColorRef = 0x0000_0000;
-
 /// 채우기가 없는 쪽의 바탕. 한컴은 흰 종이를 그린다
 /// (`renderer::layout` 의 `hide_fill` 경로도 같은 값으로 되돌린다).
 const PAPER_WHITE: ColorRef = 0x00FF_FFFF;
@@ -239,28 +220,11 @@ fn hex(color: ColorRef) -> String {
     )
 }
 
-/// 확정된 불투명 RGB 만 돌려준다.
-///
-/// 상위 바이트가 0이 아니면 한컴/Windows COLORREF 규약상 "색 없음/자동"이다
-/// (`0xFFFFFFFF` = CLR_INVALID/CLR_DEFAULT). `renderer::style_resolver` 의
-/// 채우기 해소가 쓰는 판정과 같다 — **모르는 색으로는 아무것도 단정하지 않는다.**
-fn opaque_rgb(color: ColorRef) -> Option<ColorRef> {
-    if (color >> 24) != 0 {
-        None
-    } else {
-        Some(color & 0x00FF_FFFF)
-    }
-}
-
-/// 글자 음영색 → 배경. 자동색과 두 "없음" sentinel(흰색·검정)은 `None`.
-///
-/// 판정 조건을 렌더러(`renderer::svg`·`renderer::skia::text_replay`)의 형광펜 그리기
-/// 조건과 **글자 그대로 일치**시킨다. 판정기가 렌더러보다 더 많은 것을 배경으로 세면
-/// 그 차이가 곧 오탐이다.
-fn char_shade(color: ColorRef) -> Option<ColorRef> {
-    let rgb = opaque_rgb(color)?;
-    (rgb != NO_SHADE_WHITE && rgb != NO_SHADE_BLACK).then_some(rgb)
-}
+// [#4155] `opaque_rgb`·`char_shade` 는 여기서 정의하지 않는다. 같은 질문을 렌더 백엔드
+// 5곳이 각자 재구현하고 있었고 그중 둘은 서로 어긋나 있었다 — 정본을 `model::color` 로
+// 올렸다. 판정기와 렌더러가 **글자 그대로 같은 술어**를 쓴다는 이 모듈의 원칙은 이제
+// 문서가 아니라 타입으로 강제된다.
+use crate::model::color::{char_shade, opaque_rgb};
 
 // ── 판정 코어 (합성 입력으로 단위 테스트 가능) ─────────────────────────────
 
@@ -954,7 +918,8 @@ mod tests {
     use super::*;
 
     /// 음영 없음(흰색 sentinel) — 대다수 HWP5 문서의 실제 값.
-    const NO_SHADE: ColorRef = NO_SHADE_WHITE;
+    /// `model::color::char_shade` 가 "없음"으로 보는 세 값 중 하나다 (#4155).
+    const NO_SHADE: ColorRef = 0x00FF_FFFF;
 
     fn shape(base_size: i32, text_color: ColorRef, shade_color: ColorRef) -> CharShape {
         CharShape {
@@ -1001,7 +966,7 @@ mod tests {
     fn white_shade_sentinel_is_not_a_white_background() {
         // 흰색 sentinel 은 "음영 없음"이므로 음영 근거로는 잡지 않는다. 다만 쪽 바탕이
         // 흰 종이로 확정되면 그 근거(source=page)로 잡힌다 — 근거가 뒤바뀌지 않아야 한다.
-        let cs = shape(1000, 0x00FF_FFFF, NO_SHADE_WHITE);
+        let cs = shape(1000, 0x00FF_FFFF, NO_SHADE);
         assert_eq!(char_shade(cs.shade_color), None);
         let v = classify_char(&cs, PAGE_WHITE, DEFAULT_THRESHOLD_PT);
         assert!(

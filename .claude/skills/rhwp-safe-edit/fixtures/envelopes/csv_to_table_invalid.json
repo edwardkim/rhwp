@@ -1,0 +1,33 @@
+{
+  "changed": [],
+  "changedCount": 0,
+  "colCount": 9,
+  "rowCount": 19,
+  "invalid": [
+    {
+      "actual": 2,
+      "expected": 19,
+      "reason": "rowCountMismatch",
+      "message": "CSV 행 수 2 가 표 0 의 행 수 19 와 다릅니다 — 표 크기는 바꾸지 않습니다."
+    },
+    {
+      "actual": 2,
+      "expected": 9,
+      "reason": "colCountMismatch",
+      "row": 0
+    },
+    {
+      "actual": 2,
+      "expected": 9,
+      "reason": "colCountMismatch",
+      "row": 1
+    }
+  ],
+  "schemaVersion": "1.0",
+  "_skillMeta": {
+    "exit": 2,
+    "branch": "FixPlan",
+    "outputKept": false,
+    "layer": "csv-to-table"
+  }
+}

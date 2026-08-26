@@ -1,0 +1,11 @@
+case_id	command	exit	identical	has_signal	reproduced	page_count_a	page_count_b	page_count_mismatch	struct_status	struct_node	page_count_node	verify_identical	verify_diff_count	diff_count	fail_count	verdict	overflow_count	expected	contradiction_id
+g-identical-signal	layout-anomaly	0	1	1														abstain	identical_and_has_signal
+g-reproduced-exit3	replay	3			1													abstain	reproduced_and_exit3
+g-page-struct-same	render-diff	1				6	6	0	STRUCT_MISMATCH	page/2/table/0	page/2/table/0							abstain	pagecount_match_and_struct_same_node
+g-page-struct-other	render-diff	1				6	6	0	STRUCT_MISMATCH	page/2/table/0	document							fail	
+g-verify-diff	fill-fields	3										1	3					abstain	verify_identical_and_diffcount
+g-pass-ir	ir-diff	0	1			3	3	0	PASS			1	0	0	0			pass	
+g-fail-ir	ir-diff	3	0											4	4	fail		fail	
+g-exit0-identical-false	ir-diff	0	0															abstain	exit0_and_identical_false
+g-has-signal-false-overflow	layout-anomaly	0		0													2	abstain	has_signal_false_and_counts
+g-reproduced-identical-false	replay	1	0		1													abstain	reproduced_and_identical_false

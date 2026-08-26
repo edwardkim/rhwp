@@ -8,6 +8,11 @@
 - 작업 브랜치: `task-1667-rust-cache-strategy`
 - 1차 구현 대상: CodeQL Rust cargo cache restore/save 분리
 
+> **후속 상태(2026-08-11)**: 아래 cache·수동 prebuild 계약은 #1667 당시 구현 기록이다. #3790
+> Stage 5A PR #4341에서 기본 CodeQL build mode와 내부 autobuild는 유지한 채 `Linux-codeql-rust-*`
+> cache restore/save와 수동 `cargo build`를 제거했다. 아래 namespace 유지 문구와 측정값은 현행
+> workflow 계약이 아니라 역사적 기준선으로 읽는다.
+
 ## 결정사항
 
 1차 구현 PR은 "PR restore-only"와 "restore/save 분리" 중 하나를 고르는 작업이 아니다.

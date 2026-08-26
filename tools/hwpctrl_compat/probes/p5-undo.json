@@ -1,0 +1,23 @@
+{
+  "id": "p5-undo",
+  "title": "되돌리기 — 고친 뒤에 걸어야 보인다",
+  "ledger": [],
+  "open": "samples/issue-986-receipt.hwp",
+  "calls": [
+    ["MoveToField", ["pt_nm", true, true, false]],
+    ["GetCurFieldName", [0]],
+    ["Run", ["Undo"]],
+    ["GetCurFieldName", [0]],
+    ["SetCurFieldName", ["새이름", 0, "", ""]],
+    ["GetCurFieldName", [0]],
+    ["FieldExist", ["pt_nm"]],
+    ["Run", ["Undo"]],
+    ["GetCurFieldName", [0]],
+    ["FieldExist", ["pt_nm"]],
+    ["FieldExist", ["새이름"]],
+    ["Run", ["Redo"]],
+    ["GetCurFieldName", [0]],
+    ["FieldExist", ["새이름"]],
+    ["GetPos", []]
+  ]
+}

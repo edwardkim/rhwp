@@ -1,0 +1,30 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workCapsule",
+  "parent": null,
+  "plan": {
+    "planVersion": "1.0",
+    "input": "samples/exam_kor.hwpx",
+    "output": "out/exam-year.hwpx",
+    "steps": [
+      {
+        "action": "replace_text",
+        "find": "2025학년도",
+        "replace": "2026학년도"
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"samples/exam_kor.hwpx\",\"output\":\"out/exam-year.hwpx\",\"steps\":[{\"action\":\"replace_text\",\"find\":\"2025학년도\",\"replace\":\"2026학년도\"}]}",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "samples/exam_kor.hwpx",
+    "inputSha256": "2adc69409a1657aea63fe14bfbf0e5daef483495b810dd4ac013e94b4a54d026",
+    "planSha256": "3adf4063d44a904fb8088bb671978fb817796df82cdd2325a74a0ee7120c9148",
+    "outputSha256": "4cd7adf0f6a673a70f7a1f2aee3f8be25a27b66bf2796d406066116fd1023639",
+    "toolVersion": "fixture-0.0.0-not-a-release",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null
+  }
+}

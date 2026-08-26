@@ -1,0 +1,27 @@
+{
+  "schema": 1,
+  "id": "s809-rect-y-289",
+  "width": 400.0,
+  "height": 300.0,
+  "contract": "사각형 y=289",
+  "ops": [
+    {
+      "kind": "rectangle",
+      "x": 40.0,
+      "y": 289.0,
+      "w": 10.0,
+      "h": 10.0,
+      "text": null,
+      "gradient": false,
+      "image": false
+    }
+  ],
+  "expectedKinds": [
+    "rectangle"
+  ],
+  "expectedTrace": [
+    "begin_page 400.00x300.00",
+    "  rectangle bbox=40.00,289.00,10.00,10.00",
+    "end_page ops=1"
+  ]
+}

@@ -1,0 +1,233 @@
+[
+  {
+    "id": "vis-table-vistrue-edfalse",
+    "family": "visibility",
+    "hypothesis": "visible=false 이거나 editor_only=true 이면 그 서브트리는 걷지 않는다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 0.0,
+        "y": 0.0,
+        "w": 250.0,
+        "h": 80.0
+      }
+    ],
+    "expect": {
+      "overflow": 1,
+      "offCanvas": 1,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": true,
+      "overflowTypes": [
+        "Table"
+      ],
+      "offCanvasTypes": [
+        "Table"
+      ],
+      "overflowPaths": [
+        "Page/Body/Table0"
+      ],
+      "offCanvasPaths": [
+        "Page/Body/Table0"
+      ],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 10.0,
+      "overTop": 20.0,
+      "overRight": 60.0,
+      "overBottom": 0.0,
+      "maxOver": 60.0,
+      "reportLines": [
+        "  [OVERFLOW] page   0    60.00px  Page/Body/Table0 (Table)",
+        "  [OFF-CANVAS] page   0    50.00px  Page/Body/Table0 (Table)"
+      ],
+      "status": "ANOMALY"
+    }
+  },
+  {
+    "id": "vis-table-vistrue-edtrue",
+    "family": "visibility",
+    "hypothesis": "visible=false 이거나 editor_only=true 이면 그 서브트리는 걷지 않는다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 0.0,
+        "y": 0.0,
+        "w": 250.0,
+        "h": 80.0,
+        "editorOnly": true
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "vis-table-visfalse-edfalse",
+    "family": "visibility",
+    "hypothesis": "visible=false 이거나 editor_only=true 이면 그 서브트리는 걷지 않는다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 0.0,
+        "y": 0.0,
+        "w": 250.0,
+        "h": 80.0,
+        "visible": false
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  },
+  {
+    "id": "vis-table-visfalse-edtrue",
+    "family": "visibility",
+    "hypothesis": "visible=false 이거나 editor_only=true 이면 그 서브트리는 걷지 않는다.",
+    "page": {
+      "x": 0.0,
+      "y": 0.0,
+      "w": 200.0,
+      "h": 300.0
+    },
+    "body": {
+      "x": 10.0,
+      "y": 20.0,
+      "w": 180.0,
+      "h": 260.0
+    },
+    "pageIndex": 0,
+    "pageCount": 3,
+    "opts": {
+      "overflowTol": 1.0,
+      "overlapTol": 2.0,
+      "types": null
+    },
+    "nodes": [
+      {
+        "t": "Table",
+        "x": 0.0,
+        "y": 0.0,
+        "w": 250.0,
+        "h": 80.0,
+        "visible": false,
+        "editorOnly": true
+      }
+    ],
+    "expect": {
+      "overflow": 0,
+      "offCanvas": 0,
+      "overlap": 0,
+      "textOverlap": 0,
+      "empty": false,
+      "signal": false,
+      "overflowTypes": [],
+      "offCanvasTypes": [],
+      "overflowPaths": [],
+      "offCanvasPaths": [],
+      "overlapPairs": [],
+      "textOverlapPairs": [],
+      "overLeft": 0.0,
+      "overTop": 0.0,
+      "overRight": 0.0,
+      "overBottom": 0.0,
+      "maxOver": 0.0,
+      "reportLines": [],
+      "status": "CLEAN"
+    }
+  }
+]

@@ -1,0 +1,63 @@
+{
+  "id": "owner-late-07-manual-article",
+  "schema": "rhwp.fidelity_compare.text_layer_case.v1",
+  "schemaVersion": "1.0",
+  "claim": "M-fid",
+  "generator": "tools/fidelity_compare/fatten_text_layer.py",
+  "kind": "loss",
+  "classification": "loss",
+  "family": "owner_shift",
+  "genre": "장문 편람",
+  "registeredKey": "manual",
+  "title": "조문 본문 지연",
+  "why": "조문 번호와 본문. 번호만 전각으로 바뀌면 치환. 방향=rhwp_later_than_reference.",
+  "page": 37,
+  "page1based": 38,
+  "referenceText": "본문고정영역ABCDEFGH이번쪽공통제12조(문서의 성립) 문서는 해당 문서에 대한 결재가 있음으로써 성립한다.",
+  "svgText": "본문고정영역ABCDEFGH이번쪽공통",
+  "referenceNfc": "본문고정영역ABCDEFGH이번쪽공통제12조(문서의 성립) 문서는 해당 문서에 대한 결재가 있음으로써 성립한다.",
+  "svgNfc": "본문고정영역ABCDEFGH이번쪽공통",
+  "referenceSequence": "본문고정영역ABCDEFGH이번쪽공통제12조(문서의성립)문서는해당문서에대한결재가있음으로써성립한다.",
+  "svgSequence": "본문고정영역ABCDEFGH이번쪽공통",
+  "referenceOnly": 34,
+  "svgOnly": 0,
+  "referenceOnlyChars": "U+0028:(×1,U+0029:)×1,U+002E:.×1,U+0031:1×1,U+0032:2×1,U+AC00:\\uac00×1,U+ACB0:\\uacb0×1,U+B294:\\ub294×1,U+B2E4:\\ub2e4×1,U+B2F9:\\ub2f9×1,U+B300:\\ub300×1,U+B85C:\\ub85c×1,U+B9BD:\\ub9bd×2,U+BB38:\\ubb38×3,U+C11C:\\uc11c×3,U+C131:\\uc131×2,U+C368:\\uc368×1,U+C5D0:\\uc5d0×1,U+C73C:\\uc73c×1,U+C74C:\\uc74c×1,U+C758:\\uc758×1,U+C788:\\uc788×1,U+C7AC:\\uc7ac×1,U+C81C:\\uc81c×1,U+C870:\\uc870×1,U+D55C:\\ud55c×2,U+D574:\\ud574×1",
+  "svgOnlyChars": "",
+  "glyphRiskCount": 0,
+  "glyphRisks": "",
+  "referenceGlyphRiskCount": 0,
+  "referenceGlyphRisks": "",
+  "ownerShift": [
+    {
+      "page": 37,
+      "next_page": 38,
+      "direction": "rhwp_later_than_reference",
+      "shared_count": 34,
+      "source_coverage": 1.0,
+      "target_coverage": 1.0,
+      "shared": "U+0028:(×1,U+0029:)×1,U+002E:.×1,U+0031:1×1,U+0032:2×1,U+AC00:\\uac00×1,U+ACB0:\\uacb0×1,U+B294:\\ub294×1,U+B2E4:\\ub2e4×1,U+B2F9:\\ub2f9×1,U+B300:\\ub300×1,U+B85C:\\ub85c×1,U+B9BD:\\ub9bd×2,U+BB38:\\ubb38×3,U+C11C:\\uc11c×3,U+C131:\\uc131×2,U+C368:\\uc368×1,U+C5D0:\\uc5d0×1,U+C73C:\\uc73c×1,U+C74C:\\uc74c×1,U+C758:\\uc758×1,U+C788:\\uc788×1,U+C7AC:\\uc7ac×1,U+C81C:\\uc81c×1,U+C870:\\uc870×1,U+D55C:\\ud55c×2,U+D574:\\ud574×1"
+    }
+  ],
+  "sequence": [
+    {
+      "page": 37,
+      "next_page": 38,
+      "direction": "rhwp_later_than_reference",
+      "chars": 34,
+      "sequence": "제12조(문서의성립)문서는해당문서에대한결재가있음으로써성립한다."
+    }
+  ],
+  "visibleExcess": [],
+  "clipExcludedChars": 0,
+  "nextReferenceText": "본문고정영역ABCDEFGH이번쪽공통",
+  "nextSvgText": "본문고정영역ABCDEFGH이번쪽공통제12조(문서의 성립) 문서는 해당 문서에 대한 결재가 있음으로써 성립한다.",
+  "textOnly": true,
+  "chromeRequired": false,
+  "pypdfRequired": true,
+  "pypdfium2Required": false,
+  "candidateNotVerdict": true,
+  "reviewHint": "PDF 쪽이 한 쪽 앞선 후보. 시트 없이 확정 금지.",
+  "relatedIssue": "#3389",
+  "notes": "rhwp_later_than_reference",
+  "digest": "366fcfd911b7"
+}

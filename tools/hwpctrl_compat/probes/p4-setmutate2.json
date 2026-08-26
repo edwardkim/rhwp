@@ -1,0 +1,20 @@
+{
+  "id": "p4-setmutate2",
+  "title": "고치기 멤버 2차 — RemoveAll 인자·Clone 단독·셋이 새것인가",
+  "ledger": [],
+  "open": "samples/table-001.hwp",
+  "calls": [
+    ["CreateSet(\"CharShape\").Item", ["Height"]],
+    ["CreateSet(\"CharShape\").SetItem", ["Height", 1000]],
+    ["CreateSet(\"CharShape\").Item", ["Height"]],
+    ["CreateSet(\"CharShape\").Count", []],
+    ["CreateSet(\"CharShape\").RemoveAll", [0]],
+    ["CreateSet(\"CharShape\").RemoveAll", [1]],
+    ["CreateSet(\"CharShape\").Count", []],
+    ["CreateSet(\"CharShape\").CreateItemArray(\"Items\", 3).Clone", []],
+    ["CreateSet(\"CharShape\").CreateItemArray(\"Items\", 3).Count", []],
+    ["CreateSet(\"CharShape\").IsEquivalent", [{"$obj": "CreateSet(\"ParaShape\")"}]],
+    ["CreateSet(\"CharShape\").Merge", [{"$obj": "CreateSet(\"ParaShape\")"}]],
+    ["CreateSet(\"CharShape\").Count", []]
+  ]
+}

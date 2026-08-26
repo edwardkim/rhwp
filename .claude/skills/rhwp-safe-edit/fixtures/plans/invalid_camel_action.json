@@ -1,0 +1,13 @@
+{
+  "planVersion": "1.0",
+  "input": "samples/field-01.hwp",
+  "output": "out/plan_result.hwp",
+  "steps": [
+    {
+      "action": "fillFields",
+      "data": {
+        "회사명": "X"
+      }
+    }
+  ]
+}

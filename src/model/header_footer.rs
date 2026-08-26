@@ -3,7 +3,7 @@
 use super::paragraph::Paragraph;
 
 /// 머리말 ('head' 컨트롤)
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, Clone, serde::Serialize)]
 pub struct Header {
     /// 적용 범위
     pub apply_to: HeaderFooterApply,
@@ -26,7 +26,7 @@ pub struct Header {
 }
 
 /// 꼬리말 ('foot' 컨트롤)
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, Clone, serde::Serialize)]
 pub struct Footer {
     /// 적용 범위
     pub apply_to: HeaderFooterApply,
@@ -49,7 +49,7 @@ pub struct Footer {
 }
 
 /// 머리말/꼬리말 적용 범위
-#[derive(Debug, Clone, Copy, Default, PartialEq)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, serde::Serialize)]
 pub enum HeaderFooterApply {
     #[default]
     /// 양쪽 (모든 페이지)
@@ -64,7 +64,7 @@ pub enum HeaderFooterApply {
 ///
 /// 구역 단위 페이지 템플릿. 양쪽/홀수/짝수 3종류 설정 가능.
 /// SectionDef의 자식 LIST_HEADER 레코드에서 파싱.
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Default, Clone, serde::Serialize)]
 pub struct MasterPage {
     /// 적용 범위 (양쪽/홀수/짝수)
     pub apply_to: HeaderFooterApply,

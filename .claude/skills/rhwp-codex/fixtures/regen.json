@@ -1,0 +1,32 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5318,
+  "generate": [
+    "python",
+    "tools/gen_agent_codex.py"
+  ],
+  "check": [
+    "python",
+    "tools/gen_agent_codex.py",
+    "--check"
+  ],
+  "staleExit": 3,
+  "staleIsData": true,
+  "coverageGuard": "tests/agent_codex_contract.rs",
+  "neverHandEdit": [
+    "10_조회.md",
+    "20_표와_데이터.md",
+    "30_편집과_계획.md",
+    "40_변환과_렌더.md",
+    "50_검증_사다리.md",
+    "60_보안.md",
+    "70_자기서술.md",
+    "80_대량과_상주.md",
+    "85_진단_프로브.md"
+  ],
+  "mayHandEdit": [
+    "README.md",
+    "00_서문.md",
+    "01_판단트리.md"
+  ]
+}

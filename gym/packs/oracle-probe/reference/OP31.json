@@ -1,0 +1,18 @@
+{
+  "id": "OP31",
+  "steps": [
+    {
+      "answer": {
+        "tableLen": {
+          "cmd": [
+            "export-tables",
+            "{input}",
+            "--json"
+          ],
+          "path": "tables",
+          "len": true
+        }
+      }
+    }
+  ]
+}

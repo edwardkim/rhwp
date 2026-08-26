@@ -1,0 +1,18 @@
+{
+  "id": "SR51",
+  "steps": [
+    {
+      "answer": {
+        "format": {
+          "cmd": [
+            "export-hwpx",
+            "{input}",
+            "{sub:conv.hwpx}",
+            "--json"
+          ],
+          "path": "format"
+        }
+      }
+    }
+  ]
+}

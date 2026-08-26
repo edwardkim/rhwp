@@ -1,0 +1,18 @@
+corpus	source_kind	page_index	human_page	locked_count	residual	isolation	ink_budget_ppm	hist_l1	bbox_hu	font_env	wrap_risk	glyph_risk	table_risk	stage	note
+issue4090	hwpx	0	1	17	none	independent	1200	80	32	0	0	0	0	s71	issue4090 sandbox wrap isolation p1
+issue4090	hwpx	1	2	17	none	independent	1250	90	40	0	0	0	0	s71	issue4090 sandbox wrap isolation p2
+issue4090	hwpx	2	3	17	none	independent	1300	100	48	0	0	0	0	s71	issue4090 sandbox wrap isolation p3
+issue4090	hwpx	3	4	17	none	independent	1350	110	32	0	0	0	0	s71	issue4090 sandbox wrap isolation p4
+issue4090	hwpx	4	5	17	wrap_flow	independent	1400	120	40	0	1	0	0	s71	right square table left strip
+issue4090	hwpx	5	6	17	none	independent	1450	80	48	0	0	0	0	s71	issue4090 sandbox wrap isolation p6
+issue4090	hwpx	6	7	17	wrap_flow	independent	1500	90	32	0	1	0	0	s71	right square table left strip
+issue4090	hwpx	7	8	17	none	independent	1200	100	40	0	0	0	0	s71	issue4090 sandbox wrap isolation p8
+issue4090	hwpx	8	9	17	none	independent	1250	110	48	0	0	0	0	s71	issue4090 sandbox wrap isolation p9
+issue4090	hwpx	9	10	17	none	independent	1300	120	32	0	0	0	0	s71	issue4090 sandbox wrap isolation p10
+issue4090	hwpx	10	11	17	none	independent	1350	80	40	0	0	0	0	s71	issue4090 sandbox wrap isolation p11
+issue4090	hwpx	11	12	17	none	independent	1400	90	48	0	0	0	0	s71	issue4090 sandbox wrap isolation p12
+issue4090	hwpx	12	13	17	none	independent	1450	100	32	0	0	0	0	s71	issue4090 sandbox wrap isolation p13
+issue4090	hwpx	13	14	17	none	independent	1500	110	40	0	0	0	0	s71	issue4090 sandbox wrap isolation p14
+issue4090	hwpx	14	15	17	wrap_flow	independent	1200	120	48	0	1	0	0	s71	right square table left strip
+issue4090	hwpx	15	16	17	none	independent	1250	80	32	0	0	0	0	s71	issue4090 sandbox wrap isolation p16
+issue4090	hwpx	16	17	17	wrap_flow	independent	1300	90	40	0	1	0	0	s71	right square table left strip

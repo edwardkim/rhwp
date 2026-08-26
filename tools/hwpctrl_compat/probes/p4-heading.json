@@ -1,0 +1,18 @@
+{
+  "id": "p4-heading",
+  "title": "개요 문자열·선택 위치 셋 — 개요가 있는 문서에서",
+  "ledger": [],
+  "open": "samples/21868765_별표2_보건소_분장사무.hwp",
+  "calls": [
+    ["SetPos", [0, 0, 0]],
+    ["GetHeadingString", []],
+    ["MovePos", [3, 0, 0]],
+    ["GetHeadingString", []],
+    ["MovePos", [3, 0, 0]],
+    ["GetHeadingString", []],
+    ["GetPos", []],
+    ["GetSelectedPosBySet", [{"$obj": "CreateSet(\"ListParaPos\")"}, {"$obj": "CreateSet(\"ListParaPos\")"}]],
+    ["GetSelectedPos", []],
+    ["Insert", [{"$obj": "CreateSet(\"InsertText\")"}]]
+  ]
+}

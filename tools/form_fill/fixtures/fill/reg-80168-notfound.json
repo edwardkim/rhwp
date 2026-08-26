@@ -1,0 +1,45 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "rhwp.form_fill.fill_case.v1",
+  "id": "reg-80168-notfound",
+  "axis": "notFound",
+  "claim": "M-fill",
+  "generator": "tools/form_fill/fatten_form_fill.py",
+  "form": "reg-80168",
+  "title": "규제영향분석서 80168 없는 이름",
+  "family": "규제",
+  "genre": "반복 필드",
+  "sample": "samples/80168_regulatory_analysis.hwp",
+  "format": "hwp5",
+  "relatedIssue": "#3476",
+  "why": "없는 이름은 조용히 무시하지 않는다. notFound 에 호출자 키.",
+  "firstFieldName": "서식명",
+  "fieldCount": 28,
+  "argv": [
+    "edit",
+    "fill-fields",
+    "samples/80168_regulatory_analysis.hwp",
+    "--data",
+    "{\"존재하지않는필드XYZ\": \"값\"}",
+    "--dry-run",
+    "--json"
+  ],
+  "existingCliOnly": true,
+  "data": {
+    "존재하지않는필드XYZ": "값"
+  },
+  "envelope": {
+    "schemaVersion": "1.0",
+    "source": "samples/80168_regulatory_analysis.hwp",
+    "dryRun": true,
+    "filledCount": 0,
+    "filled": [],
+    "notFound": [
+      "존재하지않는필드XYZ"
+    ],
+    "ambiguous": [],
+    "confusable": [],
+    "verify": null
+  },
+  "exit": 0
+}

@@ -1,0 +1,10 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5329,
+  "notGym": true,
+  "noNewCli": true,
+  "mode": "pixel-and-text",
+  "error": "chrome missing",
+  "exit": 2,
+  "stop": "F10"
+}

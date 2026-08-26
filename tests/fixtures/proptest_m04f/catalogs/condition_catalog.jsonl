@@ -1,0 +1,81 @@
+{"condition":{"fieldExists":"이름"},"family":"field_exists","id":"cond-0001-field_exists","schema":"ok","why":"한 키"}
+{"condition":{"fieldExists":"이름[0]"},"family":"field_exists_indexed","id":"cond-0002-field_exists_indexed","schema":"ok","why":"이름[0]"}
+{"condition":{"fieldExists":"이름[13]"},"family":"field_exists_indexed","id":"cond-0003-field_exists_indexed","schema":"ok","why":"이름[13]"}
+{"condition":{"fieldEquals":{"name":"이름","value":"홍길동"}},"family":"field_equals","id":"cond-0004-field_equals","schema":"ok","why":"현재 값 일치"}
+{"condition":{"fieldEquals":{"name":"이름","value":""}},"family":"field_equals","id":"cond-0005-field_equals","schema":"ok","why":"빈 값 일치"}
+{"condition":{"fieldExists":""},"family":"field_exists_empty","id":"cond-0006-field_exists_empty","schema":"reject","why":"minLength=1"}
+{"condition":{"textFound":""},"family":"text_found_empty","id":"cond-0007-text_found_empty","schema":"reject","why":"minLength=1"}
+{"condition":{"fieldExists":"이름","textFound":"한글"},"family":"multi","id":"cond-0008-multi","schema":"reject","why":"maxProperties=1"}
+{"condition":{"fieldEquals":{"name":"이름","value":"x"},"fieldExists":"이름"},"family":"multi","id":"cond-0009-multi","schema":"reject","why":"두 조건"}
+{"condition":{"fieldExists":"주소"},"family":"field_exists","id":"cond-0010-field_exists","schema":"ok","why":"한 키"}
+{"condition":{"fieldExists":"주소[0]"},"family":"field_exists_indexed","id":"cond-0011-field_exists_indexed","schema":"ok","why":"이름[0]"}
+{"condition":{"fieldExists":"주소[13]"},"family":"field_exists_indexed","id":"cond-0012-field_exists_indexed","schema":"ok","why":"이름[13]"}
+{"condition":{"fieldEquals":{"name":"주소","value":"홍길동"}},"family":"field_equals","id":"cond-0013-field_equals","schema":"ok","why":"현재 값 일치"}
+{"condition":{"fieldEquals":{"name":"주소","value":""}},"family":"field_equals","id":"cond-0014-field_equals","schema":"ok","why":"빈 값 일치"}
+{"condition":{"fieldExists":""},"family":"field_exists_empty","id":"cond-0015-field_exists_empty","schema":"reject","why":"minLength=1"}
+{"condition":{"textFound":""},"family":"text_found_empty","id":"cond-0016-text_found_empty","schema":"reject","why":"minLength=1"}
+{"condition":{"fieldExists":"주소","textFound":"한글"},"family":"multi","id":"cond-0017-multi","schema":"reject","why":"maxProperties=1"}
+{"condition":{"fieldEquals":{"name":"주소","value":"x"},"fieldExists":"주소"},"family":"multi","id":"cond-0018-multi","schema":"reject","why":"두 조건"}
+{"condition":{"fieldExists":"신청인"},"family":"field_exists","id":"cond-0019-field_exists","schema":"ok","why":"한 키"}
+{"condition":{"fieldExists":"신청인[0]"},"family":"field_exists_indexed","id":"cond-0020-field_exists_indexed","schema":"ok","why":"이름[0]"}
+{"condition":{"fieldExists":"신청인[13]"},"family":"field_exists_indexed","id":"cond-0021-field_exists_indexed","schema":"ok","why":"이름[13]"}
+{"condition":{"fieldEquals":{"name":"신청인","value":"홍길동"}},"family":"field_equals","id":"cond-0022-field_equals","schema":"ok","why":"현재 값 일치"}
+{"condition":{"fieldEquals":{"name":"신청인","value":""}},"family":"field_equals","id":"cond-0023-field_equals","schema":"ok","why":"빈 값 일치"}
+{"condition":{"fieldExists":""},"family":"field_exists_empty","id":"cond-0024-field_exists_empty","schema":"reject","why":"minLength=1"}
+{"condition":{"textFound":""},"family":"text_found_empty","id":"cond-0025-text_found_empty","schema":"reject","why":"minLength=1"}
+{"condition":{"fieldExists":"신청인","textFound":"한글"},"family":"multi","id":"cond-0026-multi","schema":"reject","why":"maxProperties=1"}
+{"condition":{"fieldEquals":{"name":"신청인","value":"x"},"fieldExists":"신청인"},"family":"multi","id":"cond-0027-multi","schema":"reject","why":"두 조건"}
+{"condition":{"fieldExists":"피규제집단명"},"family":"field_exists","id":"cond-0028-field_exists","schema":"ok","why":"한 키"}
+{"condition":{"fieldExists":"피규제집단명[0]"},"family":"field_exists_indexed","id":"cond-0029-field_exists_indexed","schema":"ok","why":"이름[0]"}
+{"condition":{"fieldExists":"피규제집단명[13]"},"family":"field_exists_indexed","id":"cond-0030-field_exists_indexed","schema":"ok","why":"이름[13]"}
+{"condition":{"fieldEquals":{"name":"피규제집단명","value":"홍길동"}},"family":"field_equals","id":"cond-0031-field_equals","schema":"ok","why":"현재 값 일치"}
+{"condition":{"fieldEquals":{"name":"피규제집단명","value":""}},"family":"field_equals","id":"cond-0032-field_equals","schema":"ok","why":"빈 값 일치"}
+{"condition":{"fieldExists":""},"family":"field_exists_empty","id":"cond-0033-field_exists_empty","schema":"reject","why":"minLength=1"}
+{"condition":{"textFound":""},"family":"text_found_empty","id":"cond-0034-text_found_empty","schema":"reject","why":"minLength=1"}
+{"condition":{"fieldExists":"피규제집단명","textFound":"한글"},"family":"multi","id":"cond-0035-multi","schema":"reject","why":"maxProperties=1"}
+{"condition":{"fieldEquals":{"name":"피규제집단명","value":"x"},"fieldExists":"피규제집단명"},"family":"multi","id":"cond-0036-multi","schema":"reject","why":"두 조건"}
+{"condition":{"fieldExists":"title"},"family":"field_exists","id":"cond-0037-field_exists","schema":"ok","why":"한 키"}
+{"condition":{"fieldExists":"title[0]"},"family":"field_exists_indexed","id":"cond-0038-field_exists_indexed","schema":"ok","why":"이름[0]"}
+{"condition":{"fieldExists":"title[13]"},"family":"field_exists_indexed","id":"cond-0039-field_exists_indexed","schema":"ok","why":"이름[13]"}
+{"condition":{"fieldEquals":{"name":"title","value":"홍길동"}},"family":"field_equals","id":"cond-0040-field_equals","schema":"ok","why":"현재 값 일치"}
+{"condition":{"fieldEquals":{"name":"title","value":""}},"family":"field_equals","id":"cond-0041-field_equals","schema":"ok","why":"빈 값 일치"}
+{"condition":{"fieldExists":""},"family":"field_exists_empty","id":"cond-0042-field_exists_empty","schema":"reject","why":"minLength=1"}
+{"condition":{"textFound":""},"family":"text_found_empty","id":"cond-0043-text_found_empty","schema":"reject","why":"minLength=1"}
+{"condition":{"fieldExists":"title","textFound":"한글"},"family":"multi","id":"cond-0044-multi","schema":"reject","why":"maxProperties=1"}
+{"condition":{"fieldEquals":{"name":"title","value":"x"},"fieldExists":"title"},"family":"multi","id":"cond-0045-multi","schema":"reject","why":"두 조건"}
+{"condition":{"fieldExists":"name"},"family":"field_exists","id":"cond-0046-field_exists","schema":"ok","why":"한 키"}
+{"condition":{"fieldExists":"name[0]"},"family":"field_exists_indexed","id":"cond-0047-field_exists_indexed","schema":"ok","why":"이름[0]"}
+{"condition":{"fieldExists":"name[13]"},"family":"field_exists_indexed","id":"cond-0048-field_exists_indexed","schema":"ok","why":"이름[13]"}
+{"condition":{"fieldEquals":{"name":"name","value":"홍길동"}},"family":"field_equals","id":"cond-0049-field_equals","schema":"ok","why":"현재 값 일치"}
+{"condition":{"fieldEquals":{"name":"name","value":""}},"family":"field_equals","id":"cond-0050-field_equals","schema":"ok","why":"빈 값 일치"}
+{"condition":{"fieldExists":""},"family":"field_exists_empty","id":"cond-0051-field_exists_empty","schema":"reject","why":"minLength=1"}
+{"condition":{"textFound":""},"family":"text_found_empty","id":"cond-0052-text_found_empty","schema":"reject","why":"minLength=1"}
+{"condition":{"fieldExists":"name","textFound":"한글"},"family":"multi","id":"cond-0053-multi","schema":"reject","why":"maxProperties=1"}
+{"condition":{"fieldEquals":{"name":"name","value":"x"},"fieldExists":"name"},"family":"multi","id":"cond-0054-multi","schema":"reject","why":"두 조건"}
+{"condition":{"fieldExists":"myMsg01"},"family":"field_exists","id":"cond-0055-field_exists","schema":"ok","why":"한 키"}
+{"condition":{"fieldExists":"myMsg01[0]"},"family":"field_exists_indexed","id":"cond-0056-field_exists_indexed","schema":"ok","why":"이름[0]"}
+{"condition":{"fieldExists":"myMsg01[13]"},"family":"field_exists_indexed","id":"cond-0057-field_exists_indexed","schema":"ok","why":"이름[13]"}
+{"condition":{"fieldEquals":{"name":"myMsg01","value":"홍길동"}},"family":"field_equals","id":"cond-0058-field_equals","schema":"ok","why":"현재 값 일치"}
+{"condition":{"fieldEquals":{"name":"myMsg01","value":""}},"family":"field_equals","id":"cond-0059-field_equals","schema":"ok","why":"빈 값 일치"}
+{"condition":{"fieldExists":""},"family":"field_exists_empty","id":"cond-0060-field_exists_empty","schema":"reject","why":"minLength=1"}
+{"condition":{"textFound":""},"family":"text_found_empty","id":"cond-0061-text_found_empty","schema":"reject","why":"minLength=1"}
+{"condition":{"fieldExists":"myMsg01","textFound":"한글"},"family":"multi","id":"cond-0062-multi","schema":"reject","why":"maxProperties=1"}
+{"condition":{"fieldEquals":{"name":"myMsg01","value":"x"},"fieldExists":"myMsg01"},"family":"multi","id":"cond-0063-multi","schema":"reject","why":"두 조건"}
+{"condition":{"textFound":"한글"},"family":"text_found","id":"cond-0064-text_found","schema":"ok","why":"본문 한 건"}
+{"condition":{"textFound":"기관명"},"family":"text_found","id":"cond-0065-text_found","schema":"ok","why":"본문 한 건"}
+{"condition":{"textFound":"2024"},"family":"text_found","id":"cond-0066-text_found","schema":"ok","why":"본문 한 건"}
+{"condition":{"textFound":"TODO"},"family":"text_found","id":"cond-0067-text_found","schema":"ok","why":"본문 한 건"}
+{"condition":{"textFound":"example"},"family":"text_found","id":"cond-0068-text_found","schema":"ok","why":"본문 한 건"}
+{"condition":{"textFound":"안녕"},"family":"text_found","id":"cond-0069-text_found","schema":"ok","why":"본문 한 건"}
+{"condition":{"textFound":"Hello"},"family":"text_found","id":"cond-0070-text_found","schema":"ok","why":"본문 한 건"}
+{"condition":{"textFound":"123"},"family":"text_found","id":"cond-0071-text_found","schema":"ok","why":"본문 한 건"}
+{"condition":{"textFound":"오호라"},"family":"text_found","id":"cond-0072-text_found","schema":"ok","why":"본문 한 건"}
+{"condition":{"textFound":"乾坤"},"family":"text_found","id":"cond-0073-text_found","schema":"ok","why":"본문 한 건"}
+{"condition":{"textFound":"구궁산"},"family":"text_found","id":"cond-0074-text_found","schema":"ok","why":"본문 한 건"}
+{"condition":{"textFound":"품질"},"family":"text_found","id":"cond-0075-text_found","schema":"ok","why":"본문 한 건"}
+{"condition":{"textFound":"5월"},"family":"text_found","id":"cond-0076-text_found","schema":"ok","why":"본문 한 건"}
+{"condition":{"textFound":"평가"},"family":"text_found","id":"cond-0077-text_found","schema":"ok","why":"본문 한 건"}
+{"condition":{},"family":"empty_object","id":"cond-0078-empty_object","schema":"reject","why":"minProperties=1"}
+{"condition":{"fieldMissing":"이름"},"family":"unknown","id":"cond-0079-unknown","schema":"reject","why":"additionalProperties false"}
+{"condition":{"equals":"x"},"family":"unknown","id":"cond-0080-unknown","schema":"reject","why":"모르는 키"}
+{"condition":{"text_found":"한글"},"family":"unknown","id":"cond-0081-unknown","schema":"reject","why":"snake_case 키 아님"}

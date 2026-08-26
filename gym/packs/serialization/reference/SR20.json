@@ -1,0 +1,22 @@
+{
+  "id": "SR20",
+  "steps": [
+    {
+      "answer": {
+        "diffs": {
+          "cmd": [
+            "ir-diff",
+            "{input}",
+            "samples/pic2.hwpx",
+            "--json"
+          ],
+          "path": "diffCount",
+          "allowExits": [
+            0,
+            3
+          ]
+        }
+      }
+    }
+  ]
+}

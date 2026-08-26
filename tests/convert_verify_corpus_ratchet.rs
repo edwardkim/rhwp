@@ -33,6 +33,12 @@ const EXPECTED_FAILURES: &[(&str, &str)] = &[
     // 네 칸 조였다. 뒤집힘의 근인은 HWPX→HWP5 어댑터가 공통 속성 bit 13 을 무조건 OR 한
     // 것이었고, 한글 2022 는 같은 변환에서 원본 `0` 을 그대로 둔다(실측 13문서 표 84개).
     // issue1891_external_bindata_link.hwpx 는 #3528 수정으로 통과한다 — 래칫을 한 칸 조였다.
+    // hwp3-sample10-hwpx.hwpx 는 제목 차례 표시(`<hp:titleMark/>`) 보존으로 통과한다 —
+    // 래칫을 한 칸 더 조였다. 등재 당시 "lineseg 를 어긋나게 만든 상류를 고쳐야 한다"고
+    // 적어 둔 그 상류가 이것이었다: 파서가 표시를 흘려 문단 축이 표시 하나당 8유닛씩
+    // 짧아졌고, 그래서 둘째 lineseg 의 `text_start` 가 PARA_TEXT 끝을 넘어섰다
+    // (문단 15487: char_count=37 인데 text_start=40 — 표시 하나를 되찾으면 45 가 된다).
+    // 이 픽스처에는 표시가 290 개 들어 있다.
 ];
 
 /// 게이트에서 제외하는 문서 — 크기에 비해 변환이 지나치게 오래 걸린다(각 2분+).
@@ -55,6 +61,27 @@ const PARTITIONS: usize = 4;
 
 fn samples_dir() -> std::path::PathBuf {
     std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("samples")
+}
+
+/// 디렉터리 아래 `.hwp`/`.hwpx` 를 재귀로 모은다 (#4099).
+///
+/// 파일명이 조각 분배와 등재 목록의 키다. `samples/chart/**` 56건은 최상위 355건과
+/// 이름이 겹치지 않고 자기들끼리도 유일함을 확인했다.
+fn collect_recursive(dir: &std::path::Path, out: &mut Vec<std::path::PathBuf>) {
+    let Ok(entries) = std::fs::read_dir(dir) else {
+        return;
+    };
+    for entry in entries.filter_map(|e| e.ok()) {
+        let path = entry.path();
+        if path.is_dir() {
+            collect_recursive(&path, out);
+        } else if matches!(
+            path.extension().and_then(|s| s.to_str()),
+            Some("hwp") | Some("hwpx")
+        ) {
+            out.push(path);
+        }
+    }
 }
 
 /// `convert --verify` 와 같은 판정: 변환 → 재파싱 → IR 비교.
@@ -102,6 +129,17 @@ fn run_partition(part: usize) {
             )
         })
         .collect();
+    // [#4099] 차트 코퍼스를 재귀로 합친다.
+    //
+    // 위 수집은 비재귀라 하위 디렉터리가 통째로 빠진다(디렉터리는 확장자가 없어
+    // 필터에서 탈락한다). 그래서 `samples/chart/**` 28종 × 2포맷이 이 게이트 밖에
+    // 있었고, HWPX→HWP5 변환이 차트 참조를 끊는 결함(#4099)이 `--verify` 로 처음부터
+    // exit 3 를 내고 있었는데도 아무도 보지 못했다.
+    //
+    // `samples/` 전체를 재귀로 열지 않고 `chart` 만 합치는 이유는 범위 통제다 —
+    // 나머지 하위 디렉터리 68개는 이 이슈가 다루는 축이 아니고, 한꺼번에 넣으면
+    // 무관한 신규 실패를 이 PR 에서 등재해야 한다. 필요하면 별도 이슈로 넓힌다.
+    collect_recursive(&samples_dir().join("chart"), &mut entries);
     // 크기 내림차순으로 정렬한 뒤 인덱스로 나눈다 — 큰 문서가 한 조각에 몰리면 그 조각이
     // 전체 벽시계를 지배한다(실측: 이름순 분배 시 42/50/134/191초로 4.5배 편차).
     // 이름을 2차 키로 둬서 크기가 같아도 순서가 결정적이다.

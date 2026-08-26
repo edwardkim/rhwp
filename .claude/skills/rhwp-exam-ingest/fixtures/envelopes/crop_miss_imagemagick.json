@@ -1,0 +1,7 @@
+{
+  "schemaVersion": "1.0",
+  "helper": "crop_image.sh",
+  "ok": false,
+  "code": "CROP_MISS_IMAGEMAGICK",
+  "message": "오류: ImageMagick (magick 또는 convert)이 필요합니다"
+}

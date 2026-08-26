@@ -1,0 +1,51 @@
+{
+  "schemaVersion": "1.0",
+  "issue": 5311,
+  "skill": "rhwp-bulk-pipeline",
+  "notGym": true,
+  "noNewCli": true,
+  "classes": [
+    {
+      "id": "R-PATH",
+      "signal": "os error 2",
+      "retry": false,
+      "action": "목록 경로 수정"
+    },
+    {
+      "id": "R-PERM",
+      "signal": "os error 13 / Access is denied",
+      "retry": false,
+      "action": "권한·잠금 해제"
+    },
+    {
+      "id": "R-PASS",
+      "signal": "암호 / encrypted",
+      "retry": false,
+      "action": "단건 --password 로 분리. batch 플래그 금지"
+    },
+    {
+      "id": "R-PARSE",
+      "signal": "문서를 열 수 없습니다 (파서)",
+      "retry": false,
+      "action": "손상 파일. 코퍼스에서 격리"
+    },
+    {
+      "id": "R-TRANSIENT",
+      "signal": "일시적 IO / sharing violation",
+      "retry": true,
+      "action": "같은 축으로 실패 목록만 재시도"
+    },
+    {
+      "id": "R-USAGE",
+      "signal": "exit 2, 레코드 없음",
+      "retry": false,
+      "action": "플래그·이름 예약·쿼리부터 수정"
+    },
+    {
+      "id": "R-VERIFY",
+      "signal": "exit 3/4, error 키 없음",
+      "retry": false,
+      "action": "행별 verify 봉투. 재시도로 해결되지 않음"
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "id": "SD19",
+  "steps": [
+    {
+      "answer": {
+        "axis": {
+          "cmd": [
+            "capabilities"
+          ],
+          "path": "schemaRegistry.axes[2].axis"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "alg": "ed25519",
+  "capsuleSha256": "4868d6df890298ebf9f23051380643ea5c948dbdb1e8c84a4c56a6f958823105",
+  "keyId": "gym/novice-starter",
+  "kind": "capsuleSignature",
+  "schemaVersion": "1.0",
+  "signature": "rerLT+23XX8kTuZJioAQ9vf2uYAP9kBRllLydG6LlRrV+9WfEX9D+/s7/NcYOAZYOmTKsjFMr22kVWcSH9gpCg==",
+  "signedAt": "2026-08-12T00:46:12Z"
+}

@@ -1,0 +1,35 @@
+{
+  "id": "SH06",
+  "tier": 4,
+  "title": "🎢 작업 영수증 — 재현 가능한 노동",
+  "input": "samples/table-001.hwp",
+  "instructions": "rhwp 는 편집을 '작업 캡슐'(입력·계획·산출의 SHA-256 3종 영수증)로 봉인해, 제3자가 그 영수증만으로 노동을 재현·검증하게 한다 — 다른 문서 도구엔 없는 증명 가능성이다. 편집 계획을 replay 로 실행해 작업 캡슐(work.capsule.json)을 만들고, 재현을 요구하는 반입 정책(policy.json)을 함께 제출하라. 채점기는 rhwp gate --deep 한 호출로 캡슐을 되돌려 실행해(재현) verdict:allow 를 판정한다. 힌트: rhwp replay --plan-json '<계획>' --capsule work.capsule.json --json, 그리고 정책은 {\"reproduced\":{\"eq\":true}} 규칙을 담는다.",
+  "submit": {
+    "kind": "artifact",
+    "files": [
+      "work.capsule.json",
+      "policy.json"
+    ]
+  },
+  "checks": [
+    {
+      "name": "반입 관문 allow(재현 확인)",
+      "op": "value_eq",
+      "value": "allow",
+      "path": "verdict",
+      "cmd": [
+        "gate",
+        "{file:work.capsule.json}",
+        "--policy",
+        "{file:policy.json}",
+        "--deep",
+        "--json"
+      ],
+      "expect_exits": [
+        0,
+        3
+      ]
+    }
+  ],
+  "axis": "자동화"
+}

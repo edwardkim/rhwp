@@ -15,6 +15,8 @@
  *   `SaveAs` 는 다운로드다. Node 에서 돌릴 때는 호스트가 넣어 준 `onSave` 싱크를 쓴다.
  */
 
+import { lunarToSolar, solarToLunar } from './lunar.mjs';
+
 /** 필드 목록 구분자 — 규격 §8.3.9. 마지막 필드에는 붙지 않는다. */
 const SEP = String.fromCharCode(2);
 
@@ -23,6 +25,12 @@ const FIELD_VIEW_DEFAULT = 0;
 
 /** 확장 컨트롤 하나가 문단 안에서 차지하는 코드 유닛 수 — 한글의 `pos` 는 글자 수가 아니다. */
 const CONTROL_CODE_UNITS = 8;
+
+/**
+ * 되돌리기 더미의 깊이. 문서를 통째로 찍어 두는 방식이라 무한정 쌓으면 메모리를 먹는다.
+ * 한글의 실제 깊이는 못 쟀다 — 여기서 정한 값이지 실측이 아니다.
+ */
+const HISTORY_DEPTH = 32;
 
 /** `EditMode` 기본값 — 일반 편집(규격 §8.2.4). */
 const EDIT_MODE_NORMAL = 1;
@@ -111,7 +119,35 @@ const MOVE = {
  * `item` 은 지금 상태를 읽을 파라미터셋 항목, `prop`·`props` 는 코어 서식 API 의 키다.
  * 색은 CSS 문자열로 준다 — 코어가 한글의 BGR 로 옮긴다(빨강 `#FF0000` → 255).
  */
+/**
+ * 문서를 안 고치는 액션 갈래 — 되돌리기 목록에 안 쌓는다.
+ *
+ * 캐럿을 옮기거나 블록을 잡는 것뿐이라 되돌릴 것이 없다. 한글도 그렇다(실측: 이동·고르기
+ * 다음에 `Undo` 를 걸면 그 앞의 **고침**이 되돌아온다).
+ */
+const NON_MUTATING_KINDS = new Set([
+  'move',
+  'movePara',
+  'select',
+  'selectAll',
+  'selectColumn',
+  'cancel',
+  'tableMove',
+  'tableBlock',
+  'tableBlockExtend',
+  'objectSelect',
+  'objectCellSelect',
+  'history',
+]);
+
 const ACTIONS = {
+  // 되돌리기·다시 하기. 문서를 통째로 찍어 두고 되돌린다 — 코어에 되돌리기가 없어서다.
+  // 찍는 매체는 **HWPX** 다. HWP5 저장은 무손실이 아닌 것으로 밝혀져 있고(그림 스트림이
+  // 빠진다) HWPX 왕복은 10k 표본에서 IR 차이 0 으로 닫힌 축이라, 되돌리기가 문서를 조용히
+  // 깎지 않게 하려면 이쪽이어야 한다.
+  Undo: { kind: 'history', redo: false },
+  Redo: { kind: 'history', redo: true },
+
   // 글자 모양 토글
   CharShapeBold: { kind: 'toggle', item: 'Bold', prop: 'bold' },
   CharShapeItalic: { kind: 'toggle', item: 'Italic', prop: 'italic' },
@@ -294,6 +330,20 @@ const ACTIONS = {
   // 탐색이라(실측: 셀 10 → 15 → 20) 아직 다루지 않는다.
   MoveLineBegin: { kind: 'move', moveID: MOVE.START_OF_LINE },
   MoveLineEnd: { kind: 'move', moveID: MOVE.END_OF_LINE },
+  MoveSelLineBegin: { kind: 'move', moveID: MOVE.START_OF_LINE, sel: true },
+  MoveSelLineEnd: { kind: 'move', moveID: MOVE.END_OF_LINE, sel: true },
+
+  // 쪽 이동. 쪽 경계는 **파일이 안 알려 준다** — 저장 vpos 되돌아감으로는 표가 쪽을 넘는
+  // 자리를 못 짚는다(셀 안 vpos 는 셀 기준이다). 그래서 rhwp 조판기가 답하고, 그만큼
+  // **조판 정밀도를 물려받는다**.
+  //
+  // `Up` 은 지금 쪽의 시작에 서 있을 때만 앞 쪽으로 간다 — 아니면 지금 쪽의 시작이다(실측).
+  MovePageBegin: { kind: 'page', to: 'begin' },
+  MovePageEnd: { kind: 'page', to: 'end' },
+  MovePageUp: { kind: 'page', to: 'up' },
+  MovePageDown: { kind: 'page', to: 'down' },
+  MoveSelPageUp: { kind: 'page', to: 'up', sel: true },
+  MoveSelPageDown: { kind: 'page', to: 'down', sel: true },
 
   // 단어 이동. 단어는 공백으로 나뉜 덩어리이고 누름틀이 그 자체로 경계를 만든다.
   MoveNextWord: { kind: 'move', moveID: MOVE.NEXT_WORD },
@@ -348,9 +398,60 @@ const ACTIONS = {
   ShapeObjNextObject: { kind: 'objectMove', step: 1 },
   ShapeObjPrevObject: { kind: 'objectMove', step: -1 },
   ShapeObjTextBoxEdit: { kind: 'objectTextEdit' },
+  // 표를 고른 채로 걸면 그 표의 **첫 칸을 칸 블록**으로 잡는다(모드 3).
+  ShapeObjTableSelCell: { kind: 'objectCellSelect' },
 
   // 잠금은 고른 개체 하나에 걸고, 풀기는 본문 전체를 푼다. 둘 다 **고르기를 놓는다**(모드 0)
   // — 캐럿은 그 개체 자리에 남는다(실측: 0/0/16 그대로).
+  // 크기 조절 — 걸음은 **283 HWPUNIT**(≈1mm)로 일정하고 결정적이다(실측). 방향 이름이
+  // **가장자리를 미는 쪽**이라 `Left`·`Up` 은 줄인다. 표의 크기 조절과 달리 판정이 된다.
+  // 옮기기 걸음은 **56 HWPUNIT**(≈0.2mm)다 — 크기 조절의 283 과 **다르다**. 같은 개체
+  // 액션이라고 같은 걸음일 것이라 넘겨짚으면 틀린다. 글자처럼 배치는 안 움직인다.
+  ShapeObjMoveRight: { kind: 'objectMoveBy', dx: 56, dy: 0 },
+  ShapeObjMoveLeft: { kind: 'objectMoveBy', dx: -56, dy: 0 },
+  ShapeObjMoveDown: { kind: 'objectMoveBy', dx: 0, dy: 56 },
+  ShapeObjMoveUp: { kind: 'objectMoveBy', dx: 0, dy: -56 },
+
+  // 캡션 붙이기·떼기 — 붙이면 캐럿이 **캡션 리스트 안**으로 들어가고(자리 12), 떼면 개체
+  // 앵커로 돌아온다. 한글은 빈 캡션을 만들지 않는다 — `그림 ` + 번호 + 공백이 이미 들어 있다.
+  ShapeObjAttachCaption: { kind: 'objectCaption', attach: true },
+  ShapeObjDetachCaption: { kind: 'objectCaption', attach: false },
+
+  // 글상자는 캡션과 달리 **빈 채로** 생긴다 — 붙이면 캐럿이 그 안 자리 0 에 선다.
+  ShapeObjAttachTextBox: { kind: 'objectTextBox', attach: true },
+  ShapeObjDetachTextBox: { kind: 'objectTextBox', attach: false },
+
+  // 묶음 풀기 — 사슬이 통째로 달라져서 보인다. `그리기` 하나가 자식 개체 여럿으로 풀린다
+  // (실측: 그리기 → 그림·그림·그림). 뒤집기와 달리 이 계열은 반환값 쪽에도 관측창이 있다.
+  ShapeObjUngroup: { kind: 'objectUngroup' },
+
+  // ── 앞뒤 순서 ──
+  //
+  // 어느 API 도 결과를 안 비춘다. **저장본에는 적힌다** — 앞뒤 두 벌을 견줘 규칙을 실측했다
+  // (`probes/pZ2-*.json`, 계획서 §4.19). 맨 앞/뒤는 나머지가 한 칸씩 밀리고, 한 칸은
+  // 이웃과 맞바꾼다. 마지막 둘은 이름과 달리 **순서가 아니라 배치**(`text_wrap`)다.
+  // ── 뒤집기 ──
+  //
+  // 순서와 마찬가지로 반환값에는 안 비치고 저장본에만 남는다. `OrgState` 는 토글이 아니라
+  // **원래대로 되돌리기**다(켜져 있을 때만 끈다). 한글이 함께 세우는 표시 비트(0x30000)는
+  // 세션 부산물이라 흉내 내지 않는다 — 근거는 계획서 §4.20·§4.22.
+  ShapeObjHorzFlip: { kind: 'objectFlip', vertical: false, orgState: false },
+  ShapeObjVertFlip: { kind: 'objectFlip', vertical: true, orgState: false },
+  ShapeObjHorzFlipOrgState: { kind: 'objectFlip', vertical: false, orgState: true },
+  ShapeObjVertFlipOrgState: { kind: 'objectFlip', vertical: true, orgState: true },
+
+  ShapeObjBringToFront: { kind: 'objectZOrder', mode: 'front' },
+  ShapeObjSendToBack: { kind: 'objectZOrder', mode: 'back' },
+  ShapeObjBringForward: { kind: 'objectZOrder', mode: 'forward' },
+  ShapeObjSendBack: { kind: 'objectZOrder', mode: 'backward' },
+  ShapeObjBringInFrontOfText: { kind: 'objectZOrder', mode: 'inFrontOfText' },
+  ShapeObjCtrlSendBehindText: { kind: 'objectZOrder', mode: 'behindText' },
+
+  ShapeObjResizeRight: { kind: 'objectResize', dw: 283, dh: 0 },
+  ShapeObjResizeLeft: { kind: 'objectResize', dw: -283, dh: 0 },
+  ShapeObjResizeDown: { kind: 'objectResize', dw: 0, dh: 283 },
+  ShapeObjResizeUp: { kind: 'objectResize', dw: 0, dh: -283 },
+
   ShapeObjLock: { kind: 'objectLock', locked: true },
   ShapeObjUnlockAll: { kind: 'objectLock', locked: false, all: true },
 
@@ -386,14 +487,16 @@ const ACTIONS = {
   // ── 지우기 ──
   //
   // 블록이 있으면 넷 다 블록을 지운다. 없으면 저마다 다른 범위다(전부 실측).
-  // `DeleteLine`·`DeleteLineEnd` 는 여기 없다 — "줄"은 조판이 정하는 것이라 파일만
-  // 보고는 알 수 없다(§4.18 과 같은 이유).
   // 블록을 지운다. 블록이 없을 때는 안 재 봤다 — 시나리오도 블록이 있는 경우만 건다.
   Erase: { kind: 'delete', to: 'blockOnly' },
   Delete: { kind: 'delete', to: 'nextChar' },
   DeleteBack: { kind: 'delete', to: 'prevChar' },
   DeleteWord: { kind: 'delete', to: 'nextWord' },
   DeleteWordBack: { kind: 'delete', to: 'prevWord' },
+  // 줄 단위 지우기. "줄"은 조판이 정하지만 그 나눔은 **파일이 들고 있고**(`LineSeg`) 한글이
+  // 답하는 값과 같다 — 캐럿에서 줄 끝까지(실측 46자)와 줄 통째로.
+  DeleteLineEnd: { kind: 'delete', to: 'lineEnd' },
+  DeleteLine: { kind: 'delete', to: 'wholeLine' },
 
   // ── 표 셀 이동 ──
   //
@@ -423,11 +526,39 @@ const ACTIONS = {
   TableSplitCellRow2: { kind: 'tableEdit', op: 'splitRow2' },
   TableSplitCellCol2: { kind: 'tableEdit', op: 'splitCol2' },
   TableMergeCell: { kind: 'tableMerge' },
+  // 이름과 달리 칸을 지우지 않는다 — **블록이 덮은 칸들의 글을 비운다**(실측, 계획서 §4.21).
+  // 격자·캐럿은 그대로고, 블록이 없으면 무동작이다(저장본 차이 0).
+  TableDeleteCell: { kind: 'tableClear' },
 
   TableInsertUpperRow: { kind: 'tableEdit', op: 'insertRowAbove' },
   TableInsertLowerRow: { kind: 'tableEdit', op: 'insertRowBelow' },
   TableInsertLeftColumn: { kind: 'tableEdit', op: 'insertColLeft' },
   TableInsertRightColumn: { kind: 'tableEdit', op: 'insertColRight' },
+  // ── 칸 크기 조절 열둘 ──
+  //
+  // 어느 API 도 결과를 안 비춘다. 저장본 앞뒤 차분으로 규칙을 실측했다(계획서 §4.21).
+  // 평범한 것은 캐럿 칸의 **열/행 전체**가 ±283, `Line` 은 오른쪽·아래 이웃과 짝으로
+  // **경계를 옮긴다**. `Ex` 는 평범한 것과 자취가 **완전히 같아** 같은 갈래로 보낸다 —
+  // 이름만 보면 다른 일을 할 것 같은데 아니다.
+  // `Cell` 갈래는 **그 칸 하나만** 경계를 옮긴다 — 다른 행·열은 그대로라 격자가 갈라진다
+  // (147행 3열에서 한 칸 폭을 늘리면 열이 넷이 된다, 실측 §4.21).
+  TableResizeCellRight: { kind: 'tableEdit', op: 'resizeCellRight' },
+  TableResizeCellLeft: { kind: 'tableEdit', op: 'resizeCellLeft' },
+  TableResizeCellDown: { kind: 'tableEdit', op: 'resizeCellDown' },
+  TableResizeCellUp: { kind: 'tableEdit', op: 'resizeCellUp' },
+  TableResizeRight: { kind: 'tableEdit', op: 'resizeRight' },
+  TableResizeLeft: { kind: 'tableEdit', op: 'resizeLeft' },
+  TableResizeDown: { kind: 'tableEdit', op: 'resizeDown' },
+  TableResizeUp: { kind: 'tableEdit', op: 'resizeUp' },
+  TableResizeExRight: { kind: 'tableEdit', op: 'resizeRight' },
+  TableResizeExLeft: { kind: 'tableEdit', op: 'resizeLeft' },
+  TableResizeExDown: { kind: 'tableEdit', op: 'resizeDown' },
+  TableResizeExUp: { kind: 'tableEdit', op: 'resizeUp' },
+  TableResizeLineRight: { kind: 'tableEdit', op: 'resizeLineRight' },
+  TableResizeLineLeft: { kind: 'tableEdit', op: 'resizeLineLeft' },
+  TableResizeLineDown: { kind: 'tableEdit', op: 'resizeLineDown' },
+  TableResizeLineUp: { kind: 'tableEdit', op: 'resizeLineUp' },
+
   TableDeleteRow: { kind: 'tableEdit', op: 'deleteRow' },
   TableDeleteColumn: { kind: 'tableEdit', op: 'deleteCol' },
 
@@ -439,6 +570,10 @@ const ACTIONS = {
   // **마지막 칸**까지 넓힌다. `ExtendAbs` 는 켜기만 하고 되풀이해도 그대로다.
   TableCellBlockExtend: { kind: 'tableBlockExtend', abs: false },
   TableCellBlockExtendAbs: { kind: 'tableBlockExtend', abs: true },
+
+  // 이름과 달리 쪽과 무관하다 — 같은 열의 첫 칸·마지막 칸으로 간다(실측).
+  TableColPageUp: { kind: 'tableColEdge', to: 'first' },
+  TableColPageDown: { kind: 'tableColEdge', to: 'last' },
 
   TableCellBlock: { kind: 'tableBlock', span: 'cell' },
   TableCellBlockRow: { kind: 'tableBlock', span: 'row' },
@@ -460,17 +595,23 @@ const ACTIONS = {
  * 한글은 아는 이름이면 그 이름을 단 셋을, 모르는 이름이면 빈 이름을 준다. 규격 전체 목록이
  * 아니므로 여기 없는 이름을 한글이 받아 줄 수 있다 — 확인하면 그때 넣는다.
  */
+/**
+ * `CreateSet` 이 아는 이름들 — **한글2022 에 하나씩 물어 받은 목록**이다(49개 전수 확인).
+ *
+ * 아는 이름이면 그 이름을, 모르면 빈 이름을 단 셋을 준다. 규격 목록을 그대로 옮기지 않는다 —
+ * 규격에 있는 `DrawLayout` 은 이 빌드에 **없고**(빈 이름을 준다) 반대 경우도 있을 수 있다.
+ * `Style` 은 앞서 실측으로 확인한 것이라 남긴다.
+ */
 const KNOWN_SET_IDS = new Set([
-  'CharShape',
-  'ParaShape',
-  'SecDef',
-  'Table',
-  'TableCreation',
-  'InsertText',
-  'FindReplace',
-  'Style',
-  'CellBorderFill',
-  'ShapeObject',
+  'BorderFill', 'BorderFillExt', 'BulletShape', 'Caption', 'Cell', 'CellBorderFill',
+  'CharShape', 'CodeTable', 'ColDef', 'CtrlData', 'DocumentInfo', 'DrawArcType',
+  'DrawFillAttr', 'DrawImageAttr', 'DrawLineAttr', 'DrawRotate', 'DrawShadow', 'DrawShear',
+  'EngineProperties', 'FileSetSecurity', 'FindReplace', 'FootnoteShape', 'HeaderFooter',
+  'HyperLink', 'InsertFieldTemplate', 'InsertFile', 'InsertText', 'ListParaPos',
+  'ListProperties', 'MemoShape', 'NumberingShape', 'PageBorderFill', 'PageDef',
+  'PageHiding', 'PageNumCtrl', 'PageNumPos', 'ParaShape', 'SecDef', 'ShapeObject',
+  'SpellingCheck', 'Style', 'SummaryInfo', 'TabDef', 'Table', 'TableCreation',
+  'TableDeleteLine', 'TableInsertLine', 'TableSplitCell', 'TableStrToTbl', 'ViewProperties',
 ]);
 
 /** 개체 갈래 → 컨트롤 네 글자 코드. `CurSelectedCtrl` 이 사슬에서 짚을 때 쓴다. */
@@ -483,7 +624,10 @@ const CTRL_ID_BY_KIND = { shape: 'gso', picture: 'gso', equation: 'eqed', table:
  * 같은 개체는 11(오라클 실측). `UserDesc` 는 사람이 읽는 이름이고 그리기는 갈래마다 다르다
  * ("사각형"·"타원").
  */
-class CtrlCode {
+// 규격이 부르는 이름은 `CtrlCode` 인데 컨트롤이 내보이는 **형 이름**은 `IDHwpCtrlCode` 다
+// (실측: `InsertCtrl` 이 돌려주는 객체의 형이 그렇다). 형 이름도 관측되는 표면이라 그쪽에
+// 맞추고, 규격 이름은 아래에서 별칭으로 남긴다.
+class IDHwpCtrlCode {
   #at;
   #index;
   #chain;
@@ -521,7 +665,7 @@ class CtrlCode {
    * 셀 안의 표는 그 문단의 글자 자리 그대로).
    */
   GetAnchorPos() {
-    return new ParameterSet('AnchorPos', {
+    return new IDHwpParameterSet('AnchorPos', {
       List: this.#at.list,
       Para: this.#at.para,
       Pos: this.#at.pos,
@@ -535,7 +679,10 @@ class CtrlCode {
    * `attr` 비트를 풀어야 하는 항목(`TextWrap`·`VertRelTo` …)은 아직 안 넣는다.
    */
   get Properties() {
-    return new ParameterSet('Ctrl', this.#at.props ?? {});
+    // 속성 셋의 이름은 **컨트롤 갈래마다 다르다**(실측: 표는 `Table`, 그리기·그림은
+    // `ShapeObject`). 나머지 갈래는 아직 안 쟀으므로 예전 이름을 그대로 둔다.
+    const byKind = { tbl: 'Table', gso: 'ShapeObject' };
+    return new IDHwpParameterSet(byKind[this.#at.ctrlId] ?? 'Ctrl', this.#at.props ?? {});
   }
 
   /** 이 컨트롤이 문서 어디에 있는지 — `DeleteCtrl` 이 쓰는 내부 값이다(규격 API 아님). */
@@ -612,13 +759,26 @@ function ocxFieldOrder(fields) {
  * 없는 항목을 물으면 `undefined` 를 돌려준다. 0 으로 채우지 않는다 — "모른다"와 "0이다"를
  * 뭉개면 서식이 틀린 것을 못 잡는다.
  */
-export class ParameterSet {
+// `IDHwpCtrlCode` 와 같은 이유로 **형 이름**을 한글이 내보이는 것에 맞춘다 — 실측:
+// `SolarToLunarBySet` 이 돌려주는 객체의 형이 `IDHwpParameterSet` 이다. 규격이 부르는
+// 이름(`ParameterSet`)은 아래에서 별칭으로 남긴다.
+class IDHwpParameterSet {
   #setId;
   #items;
+  #countOverride;
 
-  constructor(setId, items = {}) {
+  /**
+   * `countOverride` 는 **이름을 못 밝힌 항목이 있는 셋**에만 쓴다.
+   *
+   * `ViewProperties`·`EngineProperties` 가 그렇다 — 한글은 `Count` 12 를 주는데 이름을 물어
+   * 환경과 무관하게 값이 나온 것은 둘(`ZoomType`·`ZoomRatio`)뿐이다. 후보 이름 70여 개를 훑어도
+   * 더 안 나왔고, 이 컨트롤에는 항목을 **열거하는 길이 없다**. 아는 것만 담고 개수는 실측값을
+   * 그대로 주는 것이, 모르는 이름을 지어내 채우는 것보다 정직하다.
+   */
+  constructor(setId, items = {}, countOverride = null) {
     this.#setId = String(setId ?? '');
     this.#items = { ...items };
+    this.#countOverride = countOverride;
   }
 
   /** 규격 §9 — 이 셋의 ID. */
@@ -628,12 +788,35 @@ export class ParameterSet {
 
   /** 규격 §9 — 담긴 항목 수. */
   get Count() {
-    return Object.keys(this.#items).length;
+    return this.#countOverride ?? Object.keys(this.#items).length;
+  }
+
+  /**
+   * 규격 §9 — 이것이 **셋**인가(배열이 아니라). 셋은 늘 `true` 다(실측 49종 전수).
+   *
+   * 배열([`ParameterArray`])은 `false` 를 준다 — 둘을 가르는 유일한 표지다.
+   */
+  get IsSet() {
+    return true;
   }
 
   /** 규격 §9 — 항목 값. 없으면 `undefined`. */
   Item(name) {
     return this.#items[name];
+  }
+
+  /** 규격 §9 — 이름 붙은 **하위 셋**을 만들어 담는다. 만든 셋은 비어 있다(실측 `Count` 0). */
+  CreateItemSet(name, setId) {
+    const child = new IDHwpParameterSet(setId);
+    this.#items[name] = child;
+    return child;
+  }
+
+  /** 규격 §9 — 이름 붙은 **배열**을 만들어 담는다. 칸 수만큼 자리를 잡는다(실측 `Count` 3). */
+  CreateItemArray(name, count) {
+    const child = new ParameterArray(Number(count) || 0);
+    this.#items[name] = child;
+    return child;
   }
 
   /** 규격 §9 — 항목 값 설정. */
@@ -651,19 +834,96 @@ export class ParameterSet {
     delete this.#items[name];
   }
 
-  /** 규격 §9 — 전부 제거. */
-  RemoveAll() {
+  /**
+   * 규격 §9 — 전부 제거. **인자를 하나 받는다.**
+   *
+   * 규격에는 인자가 없는데 한글은 인자 없이 부르면 `필수 매개 변수입니다` 로 죽는다(실측).
+   * 값이 무엇인지는 가릴 수 없었다 — 0 이든 1 이든 똑같이 받고 똑같이 다 지운다. 그래도
+   * **없으면 죽는다**는 것은 판별되므로 그대로 옮긴다.
+   */
+  RemoveAll(depth) {
+    if (depth === undefined) throw new Error('RemoveAll: 필수 매개 변수입니다');
     this.#items = {};
+  }
+
+  /**
+   * 규격 §9 — 다른 셋을 합친다. 실측 반환은 **늘 `true`** 다.
+   *
+   * 셋 ID 가 달라도(CharShape ← ParaShape) `true` 를 준다 — 성공 여부를 가리는 값이 아니다.
+   */
+  Merge(other) {
+    if (other && typeof other.toObject === 'function') {
+      Object.assign(this.#items, other.toObject());
+    }
+    return true;
+  }
+
+  /**
+   * 규격 §9 — 같은 셋인가. 실측은 **셋 ID 만 본다** — 같은 ID 면 `true`, 다르면 `false`.
+   *
+   * 담긴 항목은 안 본다(양쪽 다 빈 CharShape ↔ ParaShape 가 `false`).
+   */
+  IsEquivalent(other) {
+    return Boolean(other) && other.SetID === this.#setId;
   }
 
   /** 규격 §9 — 같은 내용의 새 셋. */
   Clone() {
-    return new ParameterSet(this.#setId, this.#items);
+    return new IDHwpParameterSet(this.#setId, this.#items);
   }
 
   /** 내부: 담긴 항목 전부. 호스트와 이 층이 쓴다. */
   toObject() {
     return { ...this.#items };
+  }
+}
+
+export { IDHwpParameterSet as ParameterSet };
+
+/**
+ * 규격 §9 의 ParameterArray — 셋 안에 담기는 **자리 배열**이다.
+ *
+ * 셋과 갈리는 표지는 `IsSet` 이다 — 셋은 `true`, 배열은 **`false`**(실측). `Count` 는 만들 때
+ * 준 칸 수 그대로다(3 을 주면 3).
+ */
+export class ParameterArray {
+  #items;
+
+  constructor(count = 0) {
+    this.#items = new Array(count).fill(undefined);
+  }
+
+  get Count() {
+    return this.#items.length;
+  }
+
+  get IsSet() {
+    return false;
+  }
+
+  Item(index) {
+    return this.#items[index];
+  }
+
+  SetItem(index, value) {
+    this.#items[index] = value;
+  }
+
+  /**
+   * 규격 §9 에는 있으나 한글은 **죽는다**(실측: 서버에서 예외 오류). 셋 쪽 `Clone` 은 멀쩡히
+   * 도는데 배열 쪽만 그렇다 — 규격이 아니라 실물을 옮기는 자리라 죽는 것까지 옮긴다.
+   */
+  Clone() {
+    throw new Error('ParameterArray.Clone: 서버에서 예외 오류가 발생했습니다');
+  }
+
+  /**
+   * 규격 §9 에는 있으나 실물 양쪽이 다 죽는다(3자 실측 2026-08-10): 데스크톱 한글2022 는
+   * RPC 붕괴(한글 프로세스가 무너진다), 기안기는 API 자체가 없다. 멀쩡히 받아 주던 첫
+   * 구현이 3자 대조의 유일한 IMPL_GAP 이었다 — `Clone` 과 같은 이유로 죽는 것까지 옮긴다.
+   */
+  Copy() {
+    throw new Error('ParameterArray.Copy: 실물이 받지 않는 호출입니다');
   }
 }
 
@@ -693,7 +953,7 @@ export class HwpAction {
 
   /** 이 액션이 쓸 빈 셋. 셋을 안 쓰는 액션이면 이름 없는 셋이다. */
   get CreateSet() {
-    return new ParameterSet(this.SetID);
+    return new IDHwpParameterSet(this.SetID);
   }
 
   /** 셋에 이 액션의 기본값을 채운다. 아직 채울 값이 없어 셋은 그대로 둔다. */
@@ -721,16 +981,35 @@ export class HwpCtrl {
   #wasm;
   #doc;
   #onSave;
+  /**
+   * 호스트의 **파일 읽기** 고리. `InsertPicture` 처럼 규격이 **경로**를 받는 API 에 필요하다 —
+   * OCX 는 바탕화면에서 돌아 경로가 곧 파일이지만 이 층은 브라우저에서도 돌아 파일을 못 연다.
+   * 없으면 그 API 는 아무 일도 하지 않는다(거짓말하지 않는다).
+   */
+  #onReadFile;
+  /**
+   * 호스트의 **그림 쓰기** 고리 — `CreatePageImage` 용. 이 층은 픽셀을 만들지 않는다. rhwp 는
+   * 원래 그렇게 생겼다: 코어가 쪽을 그려 내주면 **호스트가 화면·파일로 옮긴다**(studio 도
+   * CanvasKit 으로 그런다). 그래서 쪽의 SVG 를 코어에서 받아 호스트에 넘기고, 파일로 어떻게
+   * 앉힐지는 호스트가 정한다. 고리가 없으면 `false` 를 준다 — 못 한 것을 했다고 하지 않는다.
+   */
+  #onCreatePageImage;
   #cursor = { list: 0, para: 0, pos: 0 };
   /** 리스트 표 캐시 — 문서를 새로 열 때 버린다. */
   #listModel = null;
   #sections = null;
+  /** 열려 있는 글 훑기 — `InitScan` 이 만들고 `ReleaseScan` 이 지운다. */
+  #scan = null;
   #fieldViewOption = FIELD_VIEW_DEFAULT;
   #modified = false;
   #editMode = EDIT_MODE_NORMAL;
   #selectionMode = SELECTION_NONE;
   /** 글자 블록의 범위 `{start, end}` (둘 다 커서 좌표). 셀 블록·블록 없음이면 null. */
   #selection = null;
+
+  /** 되돌리기·다시 하기 더미. 코어에 되돌리기가 없어 이 층이 문서를 통째로 들고 있는다. */
+  #undoStack = [];
+  #redoStack = [];
 
   /** 선택 확장 이동의 닻. 블록이 풀려도 남아서 반대쪽으로 다시 잡히게 한다. */
   #selAnchor = null;
@@ -750,18 +1029,38 @@ export class HwpCtrl {
   /** 잠긴 액션 이름들 — `LockCommand` 가 넣고 `Run` 이 본다. */
   #lockedCommands = new Set();
   #version = PACKAGE_VERSION;
+  /** 문서 교체 위임 훅(plugin 모드). null 이면 이 층이 직접 만든다. */
+  #adoptDocument = null;
   #listeners = new Map();
 
-  constructor({ wasm, doc, onSave, version } = {}) {
+  constructor({ wasm, doc, onSave, onReadFile, onCreatePageImage, version, adoptDocument } = {}) {
     this.#wasm = wasm;
     this.#doc = doc ?? (wasm ? wasm.HwpDocument.createEmpty() : null);
+    // 문서를 **누가 만드는가**를 가르는 유일한 자리.
+    //  - standalone: 이 층이 직접 만든다(기본값 — 오늘 동작 그대로).
+    //  - plugin: 호스트에 위임한다. 그래야 studio 와 같은 문서를 보고, 원자 교체·세대 증가·
+    //    이전 문서 해제가 studio 계약대로 일어난다. 위임하지 않으면 두 문서가 조용히 갈라진다.
+    this.#adoptDocument = typeof adoptDocument === 'function' ? adoptDocument : null;
     this.#onSave = onSave;
+    this.#onReadFile = onReadFile;
+    this.#onCreatePageImage = onCreatePageImage;
     if (typeof version === 'string') this.#version = version;
   }
 
   /** 내부: 현재 문서. 하니스와 호스트가 쓴다. */
   getWasmDoc() {
     return this.#doc;
+  }
+
+  /**
+   * 내부: 문서를 갈아끼운다. **plugin 모드에서 호스트가 문서를 교체했을 때만** 쓴다.
+   *
+   * 이 층이 문서를 만들지 않고 받아 쓰는 모드에서는, studio 가 문서를 바꾸면 여기도 새 핸들을
+   * 받아야 한다. 안 받으면 이 층만 옛 문서를 계속 만진다.
+   */
+  setDocument(doc) {
+    this.#doc = doc;
+    this.#resetForNewDocument();
   }
 
   // ── 문서 관리 (규격 §8.3.1, 8.3.22, 8.3.33, 8.3.39, 8.3.50~52) ──
@@ -783,13 +1082,31 @@ export class HwpCtrl {
         // File 은 비동기로만 읽을 수 있다 — 규격이 콜백을 둔 이유다.
         source
           .arrayBuffer()
-          .then((buf) => {
-            this.#doc = new this.#wasm.HwpDocument(new Uint8Array(buf));
+          .then(async (buf) => {
+            const next = new Uint8Array(buf);
+            this.#doc = this.#adoptDocument
+              ? await this.#adoptDocument({ bytes: next })
+              : new this.#wasm.HwpDocument(next);
             this.#resetForNewDocument();
             callback?.(true, callbackUserData);
           })
           .catch((e) => {
             console.warn('[hwpctrl] Open 실패:', e);
+            callback?.(false, callbackUserData);
+          });
+        return true;
+      }
+      if (this.#adoptDocument) {
+        // 위임 경로는 비동기다(studio 의 열기 흐름이 저장 확인·복구를 포함한다).
+        // 규격상 반환값은 "인자가 제대로 들어왔는가" 이고 성패는 콜백이 알린다(§8.3.33).
+        Promise.resolve(this.#adoptDocument({ bytes }))
+          .then((handle) => {
+            this.#doc = handle;
+            this.#resetForNewDocument();
+            callback?.(true, callbackUserData);
+          })
+          .catch((e) => {
+            console.warn('[hwpctrl] Open 위임 실패:', e);
             callback?.(false, callbackUserData);
           });
         return true;
@@ -840,14 +1157,137 @@ export class HwpCtrl {
     return this.SaveAs(fileName, format, '', callback);
   }
 
-  /** 규격 §8.3.1 — 문서를 닫고 빈 문서로 만든다. */
+  /**
+   * 규격 §8.3.1 — 문서를 닫고 빈 문서로 만든다.
+   *
+   * 빈 문서는 **번들 템플릿**으로 만든다. `createEmpty` 가 주는 문서는 첫 문단에 구역·단
+   * 정의가 없어 실물 HWP 와 다르고, 그러면 캐럿이 0 에 서서 한글(16)과 어긋난다.
+   */
   Clear(option) {
     try {
-      this.#doc = this.#wasm.HwpDocument.createEmpty();
+      if (this.#adoptDocument) {
+        Promise.resolve(this.#adoptDocument({ blank: true }))
+          .then((handle) => { this.#doc = handle; this.#resetForNewDocument(); })
+          .catch((e) => console.warn('[hwpctrl] Clear 위임 실패:', e));
+        return true;
+      }
+      const fresh = this.#wasm.HwpDocument.createEmpty();
+      // 템플릿이 있으면 그것으로 채운다 — 실패하면 빈 문서라도 남긴다.
+      try {
+        fresh.createBlankDocument();
+      } catch (e) {
+        console.warn('[hwpctrl] Clear: 템플릿 빈 문서 실패, 최소 문서로 간다:', e);
+      }
+      this.#doc = fresh;
       this.#resetForNewDocument();
     } catch (e) {
       console.warn('[hwpctrl] Clear 실패:', e);
     }
+  }
+
+  /**
+   * 규격 §8.3 — 글 훑기를 연다. 인자 없이도 열린다(실측).
+   *
+   * 인자를 준 꼴(`InitScan(0x0007, 0)`)은 **다른 범위**를 잡는다 — 블록이 없으면 곧바로
+   * 마른다. 그 갈래는 아직 안 재서 여기서는 문서 전체만 다룬다.
+   */
+  InitScan(option, range) {
+    const raw = parseJson(this.#doc?.getScanItems?.() ?? '', null);
+    this.#scan = { items: Array.isArray(raw) ? raw : [], at: 0, scoped: option != null };
+    return true;
+  }
+
+  /**
+   * 규격 §8.3 — 훑기의 다음 조각. `{result, text}` 객체를 준다(기안기 실측 2026-08-10,
+   * 10.80.0.2862 — COM 은 out 파라미터 튜플이지만 웹 계약은 객체다).
+   *
+   * `result` 는 **앞 조각과의 관계**다(§4.54 실측): 2 이어짐/리스트 바뀜 · 3 다음 문단 ·
+   * 4 개체로 들어감 · 5 개체에서 나옴. 스캔이 안 열려 있으면 `{result: 101}` 이다.
+   */
+  GetText() {
+    if (!this.#scan) return { result: 101, text: '' };
+    // 범위를 준 스캔은 아직 못 재서 한 조각만 주고 마른다(실측과 같은 꼴).
+    if (this.#scan.scoped) {
+      if (this.#scan.at > 0) return { result: 0, text: '' };
+      this.#scan.at = 1;
+      return { result: 2, text: '\r\n' };
+    }
+    const item = this.#scan.items[this.#scan.at];
+    if (!item) return { result: 0, text: '' };
+    this.#scan.at += 1;
+    return { result: item.state, text: item.text };
+  }
+
+  /** 규격 §8.3 — 훑기를 닫는다. */
+  ReleaseScan() {
+    this.#scan = null;
+  }
+
+  /**
+   * 규격 §8.3 — 문서 글 전체를 한 덩이로.
+   *
+   * 훑기(`GetText`)와 **같은 뿌리**다: 훑기가 주는 조각들에서 **표식 항목**(구역·단 정의)만
+   * 빼고, 각 조각이 줄 끝으로 끝나도록 보장해 이어 붙인다(실측: 표식 둘이 든 문서의 글이
+   * `\r\n` 둘로 시작하지 넷이 아니다).
+   *
+   * `option` 이 `saveblock` 일 때 **잰 것은 "블록이 없으면 `null`" 하나뿐이다.** 블록이
+   * 있을 때 무엇을 주는지는 아직 안 쟀고, 지금 구현은 그 경우 문서 전체를 준다 — 즉 이
+   * 가지는 **검증 범위 밖**이다. 주석이 실측보다 넓게 읽히지 않도록 여기 못박아 둔다.
+   */
+  /**
+   * 규격 §8.3.45 — 글을 문서에 **밀어 넣는다**. 반환은 `true` 다(기안기 실측 2026-08-10 —
+   * COM 은 1 을 주지만 웹 계약은 bool. 단 기안기의 삽입 **의미**는 아직 미검증이다:
+   * 데모에서 true 뒤에도 본문이 안 변했다 — 서버 콜백 경로일 수 있어 재측정 대상).
+   *
+   * 이름과 달리 캐럿 자리에 넣지 않는다 — **문서 맨 앞**에 붙인다(실측: 캐럿을 20 에 두고
+   * `가나다` 를 넣으면 본문이 `가나다오호라…` 가 되고, 다시 30 에서 `라마` 를 넣으면
+   * `라마가나다오호라…` 가 된다). 캐럿은 그 자리를 지키므로 **넣은 글자 수만큼 밀린다**
+   * (20 → 23, 30 → 32).
+   */
+  SetTextFile(text, format, option) {
+    const body = String(text ?? '');
+    if (!body) return true;
+    try {
+      // `insertText` 의 셋째 인자는 **글자 번호**다(스트림 자리가 아니다) — 맨 앞은 0 이다.
+      // 앞머리 자리차지 뒤 자리(16)를 넘기면 글 한가운데에 꽂힌다.
+      this.#doc.insertText(0, 0, 0, body);
+    } catch (e) {
+      console.warn('[hwpctrl] SetTextFile 실패:', e);
+      return true;
+    }
+    this.#listModel = null;
+    this.#ctrls = null;
+    this.#modified = true;
+    // 캐럿은 제자리인데 앞에 글자가 들어와 그만큼 밀린다.
+    const grew = [...body].length;
+    if (this.#cursor.list === 0 && this.#cursor.para === 0) {
+      this.#cursor = { ...this.#cursor, pos: this.#cursor.pos + grew };
+    }
+    return true;
+  }
+
+  /**
+   * 규격 §8.3.20 — 쪽 하나의 글. **본문 문단만** 담고 표 안 글은 안 들어간다(표만 있는
+   * 문단은 빈 줄이 된다). 쪽 경계에서 문단을 자른다 — 실측으로 1쪽이 `…현장 문` 으로 끝나고
+   * 2쪽이 `화로…` 로 시작한다.
+   */
+  GetPageText(pageNo = 0, option = 0) {
+    return parseJson(this.#doc?.getPageText?.(pageNo) ?? '""', '');
+  }
+
+  GetTextFile(format, option) {
+    if (String(option ?? '').includes('saveblock') && !this.#selection) return null;
+    if (String(format ?? '').trim().toUpperCase() === 'UNICODE') {
+      return parseJson(this.#doc?.getTextFileUnicode?.() ?? '""', '');
+    }
+    // 이어 붙이기는 코어가 한다. 코어는 COM 실측대로 CP949 밖 글자를 `&#N;` 로 escape
+    // 하지만 **기안기 실물은 원문 유니코드를 그대로 준다**(2026-08-10, `◦`·`ḁǄↀ⿰` 실측)
+    // — 웹 계약이 이기므로 여기서 기계적으로 되돌린다. 문서에 날 `&#숫자;` 글이 있으면
+    // 함께 풀리는 모호함이 있으나 COM 산출물에도 같은 모호함이 있어 대조는 공평하다.
+    const text = parseJson(this.#doc?.getTextFileText?.() ?? '""', '');
+    return typeof text === 'string'
+      ? text.replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(Number(n)))
+      : text;
   }
 
   /** 규격 §8.3.22 — 문서 끼워넣기. 아직 구현하지 않았다. */
@@ -959,8 +1399,14 @@ export class HwpCtrl {
     return cell ? cell.name : '';
   }
 
-  /** 규격 §8.3.41 — 캐럿 위치의 필드 이름을 바꾼다(없으면 만든다). */
+  /**
+   * 규격 §8.3.41 — 캐럿 위치의 필드 이름을 바꾼다(없으면 만든다).
+   *
+   * **인자 넷을 다 줘야 한다.** 셋 이하로 부르면 한글이 `필수 매개 변수입니다` 로 죽는다(실측).
+   * 규격에는 뒤 셋이 선택으로 적혀 있는데 실물은 그렇지 않아 그대로 옮긴다.
+   */
   SetCurFieldName(fieldname, option, direction, memo) {
+    if (arguments.length < 4) throw new Error('SetCurFieldName: 필수 매개 변수입니다');
     const current = this.GetCurFieldName(0);
     if (current) return this.#renameField(current, fieldname);
     return this.CreateField(direction ?? '', memo ?? '', fieldname);
@@ -1051,7 +1497,7 @@ export class HwpCtrl {
    * 집어 간다.
    */
   CreateSet(setId) {
-    return new ParameterSet(setId);
+    return new IDHwpParameterSet(setId);
   }
 
   /**
@@ -1066,13 +1512,85 @@ export class HwpCtrl {
       this.#cursor.para,
       this.#cursor.pos,
     );
-    return new ParameterSet('CharShape', parseJson(raw ?? '', {}) ?? {});
+    return new IDHwpParameterSet('CharShape', parseJson(raw ?? '', {}) ?? {});
+  }
+
+  /**
+   * 규격 §8.2 — 보기 상태. **이 층에는 창이 없어 정규화한 값만 제공한다.**
+   *
+   * `ViewZoomNormal` 뒤에도 안정적인 항목은 둘이다(`ZoomType` 5 · `ZoomRatio` 100).
+   * `OptionFlag`는 한컴 버전·사용자 상태에 따라 0과 8192가 모두 관측돼 알려진 값에서 뺐다.
+   * `Count` 는 한글이 주는 12 를 그대로 준다 — 나머지는 이름을 못 밝혔고 열거할 길도 없다.
+   */
+  get ViewProperties() {
+    return new IDHwpParameterSet('ViewProperties', { ZoomType: 5, ZoomRatio: 100 }, 12);
+  }
+
+  /**
+   * 규격 §8.2 — 엔진 상태. **항목 이름을 하나도 못 밝혔다.**
+   *
+   * `SetID` 와 `Count`(12)만 실측이라 그 둘만 답한다. 후보 이름 30여 개를 훑어도 값이 나온 것이
+   * 없다 — 지어내 채우지 않는다.
+   */
+  get EngineProperties() {
+    return new IDHwpParameterSet('EngineProperties', {}, 12);
+  }
+
+  // ── 음·양력 (규격 §8.3.57~§8.3.60) ──
+  //
+  // 표와 그 한계는 `lunar.mjs` 머리에 적었다. **한글과 어긋나는 날이 35개 있고 일부러 그렇게
+  // 두었다** — 한글의 표가 국가 기관이 펴낸 달력과 다르다. 그래서 이 넷은 오라클이 판정자가
+  // 될 수 없는 항목이다.
+
+  /**
+   * 규격 §8.3.57 — 양력을 음력으로. 웹 규약이라 **객체**를 돌려준다.
+   *
+   * 표 밖이면 한글은 날짜를 0 으로 채우면서도 `result` 는 **true** 로 답한다(실측 —
+   * `probes/pC-lunar-edge.json`). 음→양 쪽만 `false` 다. 어긋난 규약이지만 그대로 맞춘다.
+   */
+  SolarToLunar(solarYear, solarMonth, solarDay) {
+    const at = solarToLunar(solarYear, solarMonth, solarDay);
+    if (!at) return { result: true, year: 0, month: 0, day: 0, leap: false };
+    return { result: true, year: at.year, month: at.month, day: at.day, leap: at.leap };
+  }
+
+  /** 규격 §8.3.59 — 음력을 양력으로. 실패하면 `result` 가 `false` 다(실측). */
+  LunarToSolar(lunarYear, lunarMonth, lunarDay, leap) {
+    const at = lunarToSolar(lunarYear, lunarMonth, lunarDay, Boolean(leap));
+    if (!at) return { result: false, year: 0, month: 0, day: 0 };
+    return { result: true, year: at.year, month: at.month, day: at.day };
+  }
+
+  /**
+   * 규격 §8.3.58 — 같은 값을 ParameterSet 으로.
+   *
+   * 셋 ID 와 항목 이름은 실측이다(`probes/pC-lunar-set.json`): `SolarToLunar` 에 네 항목
+   * `Year`·`Month`·`Day`·`Leap` 이고 `Leap` 은 0/1 이다. `result` 는 담기지 않는다.
+   */
+  SolarToLunarBySet(solarYear, solarMonth, solarDay) {
+    const at = this.SolarToLunar(solarYear, solarMonth, solarDay);
+    return new IDHwpParameterSet('SolarToLunar', {
+      Year: at.year,
+      Month: at.month,
+      Day: at.day,
+      Leap: at.leap ? 1 : 0,
+    });
+  }
+
+  /** 규격 §8.3.60 — 셋 ID `LunarToSolar`, 항목 셋(`Year`·`Month`·`Day`) — 실측. */
+  LunarToSolarBySet(lunarYear, lunarMonth, lunarDay, leap) {
+    const at = this.LunarToSolar(lunarYear, lunarMonth, lunarDay, leap);
+    return new IDHwpParameterSet('LunarToSolar', {
+      Year: at.year,
+      Month: at.month,
+      Day: at.day,
+    });
   }
 
   /** 규격 §8.2.11 — 캐럿이 놓인 문단의 문단 모양. */
   get ParaShape() {
     const raw = this.#doc?.getParaShapeSet?.(this.#cursor.list, this.#cursor.para);
-    return new ParameterSet('ParaShape', parseJson(raw ?? '', {}) ?? {});
+    return new IDHwpParameterSet('ParaShape', parseJson(raw ?? '', {}) ?? {});
   }
 
   // ── 문서 속성 (규격 §8.2) ──
@@ -1158,6 +1676,173 @@ export class HwpCtrl {
     return this.#ctrlChain()[0] ?? null;
   }
 
+  /**
+   * 규격 §8.3.9 — 쪽 하나를 그림 파일로 만든다.
+   *
+   * 실측한 계약(`20250130-hongbo`, 4쪽):
+   *
+   * | 건 것 | 답 |
+   * | --- | --- |
+   * | 인자 **정확히 둘**, 쪽 번호 0~3 | `true` — 파일이 실제로 생긴다 |
+   * | 쪽 번호 4·9(쪽수 밖) | `false` |
+   * | 쪽 번호 **음수** | **예외** |
+   * | 없는 폴더·빈 경로 | `false` |
+   * | 인자 하나·셋 | `false` |
+   *
+   * 쪽 번호는 **0부터**다. 한글은 확장자를 **`.bmp` 로 강제**하고 33×47 4bpp 미리보기를 쓴다
+   * (쪽마다 내용이 다르다 — 빈 그림이 아니다).
+   *
+   * **픽셀과 파일 갈래는 이 층이 약속하지 않는다.** 코어에서 그 쪽의 SVG 를 받아 호스트에
+   * 넘기고, 어떤 형식으로 앉힐지는 호스트가 정한다 — rhwp 는 원래 그렇게 생겼다(코어가 그리고
+   * 호스트가 옮긴다). 대조하는 것은 위 표의 **반환값**이다.
+   */
+  CreatePageImage(path, pageNo) {
+    if (arguments.length !== 2) return false;
+    const page = Number(pageNo);
+    if (!Number.isFinite(page) || page < 0) {
+      throw new Error('CreatePageImage: 쪽 번호가 음수다');
+    }
+    const target = String(path ?? '');
+    if (!target) return false;
+    if (typeof this.#onCreatePageImage !== 'function') {
+      console.warn('[hwpctrl] CreatePageImage: 호스트 그림 쓰기 고리가 없다');
+      return false;
+    }
+    let svg;
+    try {
+      if (page >= (this.#doc?.pageCount?.() ?? 0)) return false;
+      svg = this.#doc.renderPageSvg(page);
+    } catch (e) {
+      console.warn('[hwpctrl] CreatePageImage: 쪽을 못 그렸다:', e);
+      return false;
+    }
+    try {
+      return this.#onCreatePageImage({ path: target, pageNo: page, svg }) === true;
+    } catch (e) {
+      console.warn('[hwpctrl] CreatePageImage: 호스트가 못 썼다:', e);
+      return false;
+    }
+  }
+
+  /**
+   * 규격 §8.3.23 — 캐럿 자리에 그림을 넣는다. 반환은 **넣은 컨트롤**이다.
+   *
+   * **경로는 절대 경로여야 한다.** 상대 경로를 주면 한글이 조용히 아무 일도 안 한다 —
+   * `Open` 이 상대 경로로 되니 여기도 될 것이라 여겼다가 "무동작"으로 잘못 적었었다(§4.71).
+   *
+   * 실측한 계약: 컨트롤은 `gso`/`그림` 이고 속성 셋은 `ShapeObject`(항목 33)다. 크기는
+   * **1픽셀 = 75 HWPUNIT**(96 DPI)로 앉는다 — 164×152 인 jpg 이 12300×11400 이다. 배치는
+   * **글자처럼**(`TreatAsChar` 1)이고 앵커는 넣은 자리 그대로이며 캐럿은 **8** 밀린다.
+   *
+   * 파일은 호스트가 읽어 준다(`onReadFile`). 그 고리가 없으면 아무 일도 하지 않는다 — 이 층은
+   * 브라우저에서도 돌아 스스로 파일을 열 수 없기 때문이다.
+   */
+  InsertPicture(path, embed = true, sizeOption = 0) {
+    if (typeof this.#onReadFile !== 'function') {
+      console.warn('[hwpctrl] InsertPicture: 호스트 파일 읽기 고리(onReadFile)가 없다');
+      return null;
+    }
+    const { list, para, pos } = this.#cursor;
+    if (list !== 0) return null;
+    let bytes;
+    try {
+      bytes = this.#onReadFile(String(path ?? ''));
+    } catch (e) {
+      console.warn('[hwpctrl] InsertPicture: 파일을 못 읽었다:', e);
+      return null;
+    }
+    if (!bytes || !bytes.length) return null;
+    const size = imagePixelSize(bytes);
+    if (!size || !size.width || !size.height) {
+      console.warn('[hwpctrl] InsertPicture: 그림 크기를 못 읽었다');
+      return null;
+    }
+    const ext = String(path).slice(String(path).lastIndexOf('.') + 1).toLowerCase();
+    let placedAt;
+    try {
+      const raw = this.#doc.getCharIndexAtStreamPos?.(list, para, pos);
+      const charOffset = parseJson(raw ?? '', { charIndex: 0 })?.charIndex ?? 0;
+      placedAt = this.#insertedLocation(
+        this.#doc.insertPicture(
+          0,
+          para,
+          charOffset,
+          '[]',
+          bytes,
+          size.width * HWPUNIT_PER_PIXEL,
+          size.height * HWPUNIT_PER_PIXEL,
+          size.width,
+          size.height,
+          ext,
+          '',
+        ),
+        para,
+      );
+    } catch (e) {
+      console.warn('[hwpctrl] InsertPicture 실패:', e);
+      return null;
+    }
+    this.#ctrls = null;
+    // 코어는 그림을 **자리차지**로 넣는데(studio 는 끌어다 놓으므로 그쪽이 맞다) 한글의
+    // `InsertPicture` 는 **글자처럼** 앉힌다(실측 `TreatAsChar` 1). 코어 기본값을 바꾸면
+    // studio 가 달라지므로 여기서 넣은 그 컨트롤만 되돌린다.
+    try {
+      this.#doc.setPictureProperties(0, placedAt.para, placedAt.controlIndex, '{"treatAsChar":true}');
+    } catch (e) {
+      console.warn('[hwpctrl] InsertPicture: 글자처럼으로 못 돌렸다:', e);
+    }
+    this.#listModel = null;
+    this.#ctrls = null;
+    this.#modified = true;
+    this.#cursor = { list, para, pos: pos + CONTROL_CODE_UNITS };
+    return this.#ctrlAt(placedAt);
+  }
+
+  /**
+   * 규격 §8.3.24 — 캐럿 자리에 컨트롤을 끼운다. 반환은 **끼운 컨트롤**이다.
+   *
+   * 지금 다루는 것은 표(`tbl`)뿐이다. 빈 `Table` 셋을 주면 한글은 **5행 5열**을 넣는다(실측:
+   * 칸 리스트가 2~26 으로 25 개고, `TableColEnd` 가 6 · `TableColPageDown` 이 22 라 5×5 다).
+   * 캐럿은 컨트롤 한 칸만큼(**8**) 밀린다.
+   *
+   * 표의 크기는 대조하지 않는다 — 한글의 기본 폭·높이(30610 × 6410)는 표 만들기 쪽 규칙이라
+   * 이 API 의 계약이 아니다.
+   */
+  InsertCtrl(ctrlId, paramSet) {
+    if (String(ctrlId ?? '') !== 'tbl') {
+      console.warn(`[hwpctrl] InsertCtrl("${ctrlId}")는 아직 다루지 않는다`);
+      return null;
+    }
+    const { list, para, pos } = this.#cursor;
+    if (list !== 0) return null;
+    let placedAt;
+    try {
+      const raw = this.#doc.getCharIndexAtStreamPos?.(list, para, pos);
+      const charOffset = parseJson(raw ?? '', { charIndex: 0 })?.charIndex ?? 0;
+      // **글자처럼 넣어야 한다.** 보통 경로(`createTable`)는 표를 제 문단으로 떼어 내는데,
+      // 한글은 캐럿이 있던 문단에 그대로 앉힌다 — 같은 문단에 둘을 넣으면 오라클은 둘 다
+      // 문단 0 이라고 답한다(우리는 1·3 이었다). `createTableEx` 의 `treatAsChar` 가 문단을
+      // 안 쪼개는 인라인 경로다.
+      const opts = JSON.stringify({
+        sectionIdx: 0,
+        paraIdx: para,
+        charOffset,
+        rowCount: 5,
+        colCount: 5,
+        treatAsChar: true,
+      });
+      placedAt = this.#insertedLocation(this.#doc.createTableEx(opts), para);
+    } catch (e) {
+      console.warn('[hwpctrl] InsertCtrl 실패:', e);
+      return null;
+    }
+    this.#listModel = null;
+    this.#ctrls = null;
+    this.#modified = true;
+    this.#cursor = { list, para, pos: pos + CONTROL_CODE_UNITS };
+    return this.#ctrlAt(placedAt);
+  }
+
   /** 규격 §8.4 — 문서가 담은 마지막 컨트롤. */
   get LastCtrl() {
     const chain = this.#ctrlChain();
@@ -1178,6 +1863,39 @@ export class HwpCtrl {
       chain.find((c) => c.CtrlID === CTRL_ID_BY_KIND[obj.kind]) ??
       null
     );
+  }
+
+  /**
+   * 규격 §8.4 — 캐럿이 든 리스트를 **담고 있는** 컨트롤. 본문이면 `null`.
+   *
+   * 실측: 셀 안에서는 그 표(`tbl`·"표"), 본문에서는 `null`. 개체를 골랐다고 달라지지 않는다 —
+   * 이건 고르기가 아니라 **캐럿이 어디 리스트에 있느냐**를 묻는 것이다.
+   */
+  get ParentCtrl() {
+    const list = this.#cursor.list;
+    if (list === 0) return null;
+    const entry = this.#cursorModel().byId.get(list);
+    if (!entry) return null;
+    return (
+      this.#ctrlChain().find(
+        (c) =>
+          c.location.list === entry.hostListId &&
+          c.location.para === entry.hostPara &&
+          c.location.controlIndex === entry.controlIndex,
+      ) ?? null
+    );
+  }
+
+  /**
+   * 규격 §8.2 — 캐럿이 든 셀의 모양.
+   *
+   * `Width` 는 **셀 폭이 아니라 표 폭 계열**이다(§4.33 실측: 폭 다른 두 칸이 같은 값을 주고,
+   * 칸을 갈라도 안 바뀐다). 이름만 보고 셀 폭으로 쓰면 안 된다.
+   */
+  get CellShape() {
+    const { list, para, pos } = this.#cursor;
+    const raw = this.#doc?.getCellShapeSet?.(list, para, pos);
+    return new IDHwpParameterSet('CellShape', parseJson(raw, {}));
   }
 
   /** 어느 리스트든 그것을 담은 **본문 문단** 번호로 올라간다. 본문이면 그대로다. */
@@ -1201,12 +1919,44 @@ export class HwpCtrl {
     return this.#sections;
   }
 
+  /**
+   * 방금 끼운 컨트롤의 자리 — 코어가 삽입 결과로 준 `paraIdx`·`controlIdx` 를 읽는다.
+   *
+   * 예전에는 "그 문단의 첫 그림"·"문서의 첫 표"를 찾았다. 처음 넣을 때는 맞지만 **두 번째부터
+   * 틀린다** — 같은 문단에 두 번 넣으면 둘 다 첫 그림을 가리켜, 실제로 생긴 둘째 그림은
+   * 글자처럼 되돌리기에서 빠지고 반환값도 남의 것이 됐다(#4274 리뷰). 코어가 이미 정확한
+   * 자리를 돌려주고 있었으므로 그것을 쓴다.
+   */
+  #insertedLocation(raw, fallbackPara) {
+    const placed = parseJson(raw ?? '', null);
+    if (!placed || typeof placed.controlIdx !== 'number') {
+      throw new Error('삽입 결과에 컨트롤 자리가 없다');
+    }
+    return {
+      list: 0,
+      para: typeof placed.paraIdx === 'number' ? placed.paraIdx : fallbackPara,
+      controlIndex: placed.controlIdx,
+    };
+  }
+
+  /** 자리로 컨트롤 사슬에서 그 컨트롤을 짚는다. */
+  #ctrlAt({ list, para, controlIndex }) {
+    return (
+      this.#ctrlChain().find(
+        (c) =>
+          c.location.list === list &&
+          c.location.para === para &&
+          c.location.controlIndex === controlIndex,
+      ) ?? null
+    );
+  }
+
   /** 컨트롤 사슬 — 코어가 문서 순서로 준다. 문서가 바뀌면 다시 만든다. */
   #ctrlChain() {
     if (this.#ctrls) return this.#ctrls;
     const raw = parseJson(this.#doc?.getControls?.() ?? '', null);
     const items = Array.isArray(raw) ? raw : [];
-    this.#ctrls = items.map((it, i) => new CtrlCode(it, i, () => this.#ctrls));
+    this.#ctrls = items.map((it, i) => new IDHwpCtrlCode(it, i, () => this.#ctrls));
     return this.#ctrls;
   }
 
@@ -1226,7 +1976,7 @@ export class HwpCtrl {
    */
   GetPosBySet() {
     const { list, para, pos } = this.#cursor;
-    return new ParameterSet('Pos', { List: list, Para: para, Pos: pos });
+    return new IDHwpParameterSet('Pos', { List: list, Para: para, Pos: pos });
   }
 
   /** 규격 §8.3 — 파라미터셋으로 캐럿을 옮긴다. `SetPos` 와 같은 자를 쓴다. */
@@ -1243,7 +1993,7 @@ export class HwpCtrl {
    * 아니다. 확인한 적 없는 이름을 넣으면 "모른다"가 사라진다.
    */
   CreateSet(setId) {
-    return new ParameterSet(KNOWN_SET_IDS.has(setId) ? setId : '', {});
+    return new IDHwpParameterSet(KNOWN_SET_IDS.has(setId) ? setId : '', {});
   }
 
   /**
@@ -1320,6 +2070,10 @@ export class HwpCtrl {
     // 문단 밖을 찍으면 문단 안으로 자른다 — 한글도 그렇다(59칸 문단에 60을 주면 59,
     // 앞머리 자리차지가 있는 문단에 0 을 주면 그 뒤 자리로 민다).
     const bounds = this.#paraBounds(list, para);
+    // 자른 자리가 **컨트롤 한가운데**여도 그대로 둔다. 한글은 그때 다음 글자 자리로 미는데
+    // (캡션 문단에서 4~10 이 전부 11 로 간다), 그 규칙을 `char_offsets` 로 옮겨 전역에 걸었더니
+    // 이미 검증된 95건이 어긋났다 — 자리표 글자가 있는 문단에서는 한글이 다르게 민다. 아직
+    // 안 밝힌 규칙이라 흉내내지 않는다.
     this.#cursor = { list, para, pos: Math.min(Math.max(pos, bounds.start), bounds.end) };
     if (anchor) this.#applyExtendedSelection(anchor);
     return true;
@@ -1333,6 +2087,16 @@ export class HwpCtrl {
    */
   MovePos(moveID = MOVE.CUR_LIST, para = 0, pos = 0) {
     const model = this.#cursorModel();
+    // **칸 블록이 잡혀 있으면 리스트를 벗어나는 이동이 안 먹는다**(실측: 칸 블록에서
+    // `MoveRootList` 가 제자리다). 선택을 풀기 **전에** 봐야 한다 — 아래에서 풀고 나면
+    // 이 상태를 알 수 없다.
+    const inCellBlock = this.#selectionMode === SELECTION_TABLE;
+    if (
+      inCellBlock &&
+      (moveID === MOVE.ROOT_LIST || moveID === MOVE.PARENT_LIST || moveID === MOVE.TOP_LEVEL_LIST)
+    ) {
+      return true;
+    }
     this.#clearSelection(); // 규격 §8.3.30 — 위치 이동 시 셀렉션은 무조건 풀린다
     switch (moveID) {
       case MOVE.MAIN: // 루트 리스트의 특정 위치
@@ -1404,7 +2168,13 @@ export class HwpCtrl {
           null,
         );
         const bounds = this.#paraBounds(this.#cursor.list, this.#cursor.para);
-        const lines = Array.isArray(starts) && starts.length ? starts : [bounds.start];
+        // 저장된 줄 시작을 **문단이 시작할 수 있는 자리로 자른다.** 첫 줄의 `text_start` 는
+        // 0 인데 캐럿은 앞머리 자리차지 뒤(구역·단 정의가 있으면 16)에 선다 — 자르지 않으면
+        // `MoveLineBegin` 만 0 을 준다(한글은 16). 둘째 줄부터는 자르는 일이 없다.
+        const lines =
+          Array.isArray(starts) && starts.length
+            ? starts.map((s) => Math.max(s, bounds.start))
+            : [bounds.start];
         const pos = this.#cursor.pos;
         this.#cursor = {
           ...this.#cursor,
@@ -1521,16 +2291,16 @@ export class HwpCtrl {
   /**
    * 규격 §8.3.14 — 블록의 시작·끝 위치.
    *
-   * 규격의 속성 목록에는 `result` 가 없지만 컨트롤은 그것을 함께 준다(오라클 실측). 셀 블록은
-   * **글자 범위가 아니라서** `result:false` 에 전부 0 이다 — 그 구분이 실제 정보다.
+   * 규격의 속성 목록대로 **`result` 는 없다** — COM 은 그것을 함께 주지만 기안기 실물은
+   * 여섯 키만 준다(2026-08-10 실측, 10.80.0.2862). 블록이 없거나 셀 블록(글자 범위가
+   * 아님)이면 전부 0 이다.
    */
   GetSelectedPos() {
     const sel = this.#selection;
     if (!sel) {
-      return { result: false, slist: 0, spara: 0, spos: 0, elist: 0, epara: 0, epos: 0 };
+      return { slist: 0, spara: 0, spos: 0, elist: 0, epara: 0, epos: 0 };
     }
     return {
-      result: true,
       slist: sel.start.list,
       spara: sel.start.para,
       spos: sel.start.pos,
@@ -1538,6 +2308,28 @@ export class HwpCtrl {
       epara: sel.end.para,
       epos: sel.end.pos,
     };
+  }
+
+  /**
+   * 규격 §8.3.15 — 블록의 시작·끝 위치를 **주어진 셋 둘에 담는다**. 반환은 블록이 있는가다.
+   *
+   * 담긴 값은 되읽을 수 없다 — `CreateSet` 이 부를 때마다 새 셋을 주고 이 컨트롤에는 상태가
+   * 남는 셋이 없어서, 넘긴 셋을 다시 잡을 길이 없다. 그래서 판별되는 것은 **반환값뿐**이고
+   * 그것만 대조한다(블록 없으면 `false`, 있으면 `true`).
+   */
+  GetSelectedPosBySet(sset, eset) {
+    const pos = this.GetSelectedPos();
+    if (sset && typeof sset.SetItem === 'function') {
+      sset.SetItem('List', pos.slist);
+      sset.SetItem('Para', pos.spara);
+      sset.SetItem('Pos', pos.spos);
+    }
+    if (eset && typeof eset.SetItem === 'function') {
+      eset.SetItem('List', pos.elist);
+      eset.SetItem('Para', pos.epara);
+      eset.SetItem('Pos', pos.epos);
+    }
+    return this.#selection != null;
   }
 
   /**
@@ -1561,6 +2353,18 @@ export class HwpCtrl {
       callback?.(null, false, callbackUserData);
       return;
     }
+    if (action.kind === 'history') {
+      const done = this.#runHistory(action.redo === true);
+      callback?.(null, done, callbackUserData);
+      return;
+    }
+    // 고치는 액션은 걸기 **전에** 문서를 찍어 둔다 — 되돌리기가 그 자리로 돌아간다.
+    if (!NON_MUTATING_KINDS.has(action.kind)) this.#pushHistory();
+    if (action.kind === 'page') {
+      const moved = this.#runPageAction(action);
+      callback?.(null, moved, callbackUserData);
+      return;
+    }
     if (action.kind === 'move' || action.kind === 'movePara') {
       const moved = this.#runMoveAction(action);
       callback?.(null, moved, callbackUserData);
@@ -1581,18 +2385,25 @@ export class HwpCtrl {
     if (
       action.kind === 'tableMove' ||
       action.kind === 'tableBlock' ||
-      action.kind === 'tableBlockExtend'
+      action.kind === 'tableBlockExtend' ||
+      action.kind === 'tableColEdge'
     ) {
       const done = this.#runTableAction(action);
       if (done && action.kind === 'tableMove') this.#modified = this.#modified || false;
       callback?.(null, done, callbackUserData);
       return;
     }
-    if (action.kind === 'tableEdit' || action.kind === 'tableMerge') {
+    if (
+      action.kind === 'tableEdit' ||
+      action.kind === 'tableMerge' ||
+      action.kind === 'tableClear'
+    ) {
       const done =
         action.kind === 'tableMerge'
           ? this.#runTableMerge(actionID)
-          : this.#runTableEdit(actionID, action);
+          : action.kind === 'tableClear'
+            ? this.#runTableClear(actionID)
+            : this.#runTableEdit(actionID, action);
       if (done) this.#modified = true;
       callback?.(null, done, callbackUserData);
       return;
@@ -1620,13 +2431,159 @@ export class HwpCtrl {
       callback?.(null, ok, callbackUserData);
       return;
     }
+    if (action.kind === 'objectResize' || action.kind === 'objectMoveBy') {
+      const here = this.#selectedObject;
+      let ok = false;
+      if (here) {
+        try {
+          const raw =
+            action.kind === 'objectResize'
+              ? this.#doc.resizeControlAt(here.para, here.controlIndex, action.dw, action.dh)
+              : this.#doc.moveControlAt(here.para, here.controlIndex, action.dx, action.dy);
+          ok = parseJson(raw, { ok: false }).ok !== false;
+        } catch (e) {
+          console.warn(`[hwpctrl] Run("${actionID}") 실패:`, e);
+        }
+      }
+      if (ok) {
+        this.#ctrls = null; // 크기가 바뀌었다 — 사슬의 Properties 를 다시 읽는다
+        this.#modified = true;
+      }
+      callback?.(null, ok, callbackUserData);
+      return;
+    }
+    if (action.kind === 'objectTextBox') {
+      const here = this.#selectedObject;
+      let ok = false;
+      if (here) {
+        try {
+          const raw = this.#doc.setTextBoxAt(here.para, here.controlIndex, action.attach);
+          ok = parseJson(raw, { ok: false }).ok === true;
+        } catch (e) {
+          console.warn(`[hwpctrl] Run("${actionID}") 실패:`, e);
+        }
+      }
+      if (ok) {
+        this.#listModel = null;
+        this.#ctrls = null;
+        this.#modified = true;
+        if (action.attach) {
+          // 붙이면 캐럿이 **글상자 안**으로 들어간다(빈 채라 자리 0). 리스트 번호는 표에서 찾는다.
+          const list = (this.#cursorModel().lists ?? []).find(
+            (l) => l.hostPara === here.para && l.controlIndex === here.controlIndex && !l.isCell,
+          );
+          if (list) {
+            this.#clearSelection();
+            this.#cursor = { list: list.listId, para: 0, pos: 0 };
+          }
+        }
+        // 떼기는 고르기를 안 푼다 — 캡션과 같다.
+      }
+      callback?.(null, ok, callbackUserData);
+      return;
+    }
+    if (action.kind === 'objectCaption') {
+      const here = this.#selectedObject;
+      let ok = false;
+      if (here) {
+        try {
+          const raw = action.attach
+            ? this.#doc.attachCaptionAt(here.para, here.controlIndex)
+            : this.#doc.detachCaptionAt(here.para, here.controlIndex);
+          ok = parseJson(raw, { ok: false }).ok === true;
+        } catch (e) {
+          console.warn(`[hwpctrl] Run("${actionID}") 실패:`, e);
+        }
+      }
+      if (ok) {
+        // 리스트 표가 달라진다 — 캡션이 새 리스트로 생기거나 사라진다.
+        this.#listModel = null;
+        this.#ctrls = null;
+        this.#modified = true;
+        if (action.attach) {
+          // 캐럿은 **캡션 안**으로 들어간다. 리스트 번호는 박지 않고 표에서 찾는다 — 문서마다
+          // 다르다(이 표본에서만 2 다).
+          const list = (this.#cursorModel().lists ?? []).find(
+            (l) => l.hostPara === here.para && l.controlIndex === here.controlIndex && !l.isCell,
+          );
+          if (list) {
+            this.#clearSelection();
+            this.#cursor = { list: list.listId, para: 0, pos: this.#paraBounds(list.listId, 0).end };
+          }
+        }
+        // 떼기는 고르기를 **안 푼다**(모드 4 그대로, 캐럿도 개체 앵커에 그대로) — 실측이다.
+      }
+      callback?.(null, ok, callbackUserData);
+      return;
+    }
+    if (action.kind === 'objectUngroup') {
+      const here = this.#selectedObject;
+      let ok = false;
+      if (here) {
+        try {
+          this.#doc.ungroupShape(0, here.para, here.controlIndex);
+          ok = true;
+        } catch (e) {
+          console.warn(`[hwpctrl] Run("${actionID}") 실패:`, e);
+        }
+      }
+      if (ok) {
+        // 사슬이 통째로 달라진다 — 묶음 하나가 자식 여럿으로 풀린다.
+        this.#ctrls = null;
+        this.#modified = true;
+      }
+      callback?.(null, ok, callbackUserData);
+      return;
+    }
+    if (action.kind === 'objectFlip') {
+      const here = this.#selectedObject;
+      let ok = false;
+      if (here) {
+        try {
+          const raw = this.#doc.setControlFlipAt(
+            here.para,
+            here.controlIndex,
+            action.vertical,
+            action.orgState,
+          );
+          ok = parseJson(raw, { ok: false }).ok !== false;
+        } catch (e) {
+          console.warn(`[hwpctrl] Run("${actionID}") 실패:`, e);
+        }
+      }
+      if (ok) this.#modified = true;
+      callback?.(null, ok, callbackUserData);
+      return;
+    }
+    if (action.kind === 'objectZOrder') {
+      const here = this.#selectedObject;
+      let ok = false;
+      if (here) {
+        try {
+          const raw = this.#doc.setControlZOrderAt(here.para, here.controlIndex, action.mode);
+          ok = parseJson(raw, { ok: false }).ok !== false;
+        } catch (e) {
+          console.warn(`[hwpctrl] Run("${actionID}") 실패:`, e);
+        }
+      }
+      if (ok) {
+        this.#ctrls = null; // 순서가 바뀌었다 — 사슬의 Properties 를 다시 읽는다
+        this.#modified = true;
+      }
+      callback?.(null, ok, callbackUserData);
+      return;
+    }
     if (action.kind === 'objectLock') {
       const done = this.#runObjectLock(action);
       if (done) this.#modified = true;
       callback?.(null, done, callbackUserData);
       return;
     }
-    if (action.kind === 'objectMove' || action.kind === 'objectTextEdit') {
+    if (
+      action.kind === 'objectMove' ||
+      action.kind === 'objectTextEdit' ||
+      action.kind === 'objectCellSelect'
+    ) {
       const done = this.#runObjectAction(action);
       callback?.(null, done, callbackUserData);
       return;
@@ -1675,10 +2632,73 @@ export class HwpCtrl {
     this.#modified = false;
     this.#clearSelection();
     const stored = parseJson(this.#doc?.getStoredCaret?.() ?? '', null);
-    this.#cursor =
+    const at =
       stored && typeof stored.list === 'number'
         ? { list: storedListToRuntime(stored.list), para: stored.para, pos: stored.pos }
         : { list: 0, para: 0, pos: 0 };
+    // 캐럿은 문단 시작보다 앞에 설 수 없다 — `SetPos` 와 같은 규칙이다. `Clear` 로 만든 빈
+    // 문서가 이 갈래인데, 그 문서에도 구역·단 정의가 있어 시작이 0 이 아니라 **16** 이다.
+    const bounds = this.#paraBounds(at.list, at.para);
+    this.#cursor = { ...at, pos: Math.min(Math.max(at.pos, bounds.start), bounds.end) };
+  }
+
+  /**
+   * 지금 문서를 통째로 찍는다 — 되돌리기용. 캐럿과 고르기까지 함께 담는다.
+   *
+   * 실측에서 `InsertTab` 을 되돌리면 캐럿이 **끼우기 전 자리**(20)로 돌아온다. 글자만 되돌리고
+   * 캐럿을 그대로 두면 그 한 줄이 어긋난다.
+   */
+  #snapshot() {
+    const bytes = this.#doc?.exportHwpx?.();
+    if (!bytes) return null;
+    return {
+      bytes,
+      cursor: { ...this.#cursor },
+      selectionMode: this.#selectionMode,
+      selection: this.#selection ? JSON.parse(JSON.stringify(this.#selection)) : null,
+      modified: this.#modified,
+    };
+  }
+
+  #restore(shot) {
+    if (!shot) return false;
+    try {
+      this.#doc = new this.#wasm.HwpDocument(shot.bytes);
+    } catch (e) {
+      console.warn('[hwpctrl] 되돌리기 실패:', e);
+      return false;
+    }
+    this.#listModel = null;
+    this.#sections = null;
+    this.#ctrls = null;
+    this.#cursor = { ...shot.cursor };
+    this.#selectionMode = shot.selectionMode;
+    this.#selection = shot.selection;
+    this.#selAnchor = null;
+    this.#tableBlock = null;
+    this.#selectedObject = null;
+    this.#modified = shot.modified;
+    return true;
+  }
+
+  /** 고치기 전에 부른다. 새 고침이 생기면 **다시 하기** 목록은 버린다 — 한글도 그렇다. */
+  #pushHistory() {
+    const shot = this.#snapshot();
+    if (!shot) return;
+    this.#undoStack.push(shot);
+    if (this.#undoStack.length > HISTORY_DEPTH) this.#undoStack.shift();
+    this.#redoStack.length = 0;
+  }
+
+  #runHistory(isRedo) {
+    const from = isRedo ? this.#redoStack : this.#undoStack;
+    const to = isRedo ? this.#undoStack : this.#redoStack;
+    if (!from.length) return false;
+    const here = this.#snapshot();
+    const shot = from.pop();
+    if (!this.#restore(shot)) return false;
+    if (here) to.push(here);
+    return true;
   }
 
   /** 리스트 표는 문서가 바뀌지 않는 한 그대로다 — 호출마다 다시 만들지 않는다. */
@@ -1797,27 +2817,66 @@ export class HwpCtrl {
    * 문서 순서로 돌아간다(끝에서 처음으로 감긴다). 고른 개체가 없으면 첫 개체부터다.
    */
   #runObjectAction(action) {
-    const objects = parseJson(this.#doc?.getObjects?.() ?? '', null);
-    if (!Array.isArray(objects) || !objects.length) return false;
+    // 차례는 **컨트롤 사슬**이 정한다 — 문서 자리 순서가 아니다(실측: 개체 셋을 도는 순서가
+    // 문단 0 → 5 → 2 라 자리 순서와 다르다). 사슬은 한글이 스스로 매긴 차례다.
+    const chain = this.#ctrlChain().filter((c) => c.location.list === 0 && c.CtrlCh === 11);
+    if (!chain.length) return false;
 
-    if (action.kind === 'objectTextEdit') {
-      const here = this.#selectedObject;
-      if (!here || here.listId == null) return false;
-      this.#selectionMode = SELECTION_NONE;
+    const here = this.#selectedObject;
+    const at = here
+      ? chain.findIndex(
+          (c) => c.location.para === here.para && c.location.controlIndex === here.controlIndex,
+        )
+      : -1;
+
+    if (action.kind === 'objectTextEdit' || action.kind === 'objectCellSelect') {
+      // 고른 개체가 담은 **글 리스트**로 들어간다. 그 번호는 리스트 표에서 찾는다 —
+      // `SelectCtrlFront` 는 종류도 리스트도 안 남기므로 자리로 되짚어야 한다.
+      if (at < 0) return false;
+      const host = chain[at].location;
+      const model = this.#cursorModel();
+      const child = (model.lists ?? []).find(
+        (l) => l.hostListId === 0 && l.hostPara === host.para && l.controlIndex === host.controlIndex,
+      );
+      if (!child) return false;
+      this.#selectedObject = null;
       this.#selection = null;
-      this.#cursor = { list: here.listId, para: 0, pos: 0 };
+      // 칸 고르기는 **칸 블록**(모드 3)으로, 글상자 편집은 보통 캐럿(모드 0)으로 들어간다.
+      this.#selectionMode = action.kind === 'objectCellSelect' ? SELECTION_TABLE : SELECTION_NONE;
+      this.#cursor = { list: child.listId, para: 0, pos: 0 };
       return true;
     }
 
-    const at = this.#selectedObject
-      ? objects.findIndex(
-          (o) =>
-            o.para === this.#selectedObject.para &&
-            o.controlIndex === this.#selectedObject.controlIndex,
-        )
-      : -1;
-    const next = objects[(at + action.step + objects.length * 2) % objects.length];
-    this.#selectObject(next);
+    // **쪽 안에서만 돈다.** 실측(`20250130-hongbo`): 1쪽에서 걸면 문단 0 → 5 → 2 → 0 만,
+    // 3쪽에서 걸면 26 ↔ 29 만 돈다. 문서 전체를 도는 것이 아니다 — 앞서 "일곱 중 셋만 돈다"고
+    // 적힌 수수께끼가 이것이었다. 쪽 안의 차례는 문단 순서가 아니라 **z 순서**다.
+    const cycle = parseJson(this.#doc?.getObjectCycle?.() ?? '', null);
+    let ring = chain;
+    if (Array.isArray(cycle) && cycle.length && at >= 0) {
+      const key = (o) => `${o.para}:${o.controlIndex}`;
+      const info = new Map(cycle.map((o) => [key(o), o]));
+      const mine = info.get(key(chain[at].location));
+      if (mine) {
+        ring = chain
+          .filter((c) => info.get(key(c.location))?.page === mine.page)
+          .sort((a, b) => info.get(key(a.location)).z - info.get(key(b.location)).z);
+      }
+    }
+    if (!ring.length) return false;
+    const from = ring.findIndex(
+      (c) =>
+        at >= 0 &&
+        c.location.para === chain[at].location.para &&
+        c.location.controlIndex === chain[at].location.controlIndex,
+    );
+    const next = ring[(from + action.step + ring.length * 2) % ring.length];
+    const anchor = next.GetAnchorPos().toObject();
+    this.#selectedObject = { ...next.location, kind: null };
+    this.#selectionMode = SELECTION_OBJECT;
+    this.#selection = null;
+    this.#selAnchor = null;
+    this.#tableBlock = null;
+    this.#cursor = { list: 0, para: anchor.Para, pos: anchor.Pos };
     return true;
   }
 
@@ -1844,6 +2903,16 @@ export class HwpCtrl {
         (c) => c.location.para === here.para && c.location.controlIndex === here.controlIndex,
       );
       target = at >= 0 ? eligible[at + 1] : undefined;
+    } else if (this.#cursor.list !== 0) {
+      // **자식 리스트 안에서 부르면 그 리스트를 담은 개체**를 고른다(실측: 글상자 안에서
+      // `SelectCtrlFront` 를 걸면 그 사각형이 잡힌다). 본문 자리로 되짚으면 엉뚱한 개체를
+      // 고르게 된다 — 캐럿의 문단·자리가 본문 것이 아니기 때문이다.
+      const host = (this.#cursorModel().lists ?? []).find((l) => l.listId === this.#cursor.list);
+      target = host
+        ? eligible.find(
+            (c) => c.location.para === host.hostPara && c.location.controlIndex === host.controlIndex,
+          )
+        : undefined;
     } else {
       const { para, pos } = this.#cursor;
       target = eligible.find((c) => {
@@ -1967,6 +3036,21 @@ export class HwpCtrl {
     if (to === 'blockOnly') return [pos, pos]; // 블록이 없으면 지울 것이 없다
     if (to === 'nextChar') return [pos, this.#stepCaret(1)];
     if (to === 'prevChar') return [this.#stepCaret(-1), pos];
+    if (to === 'lineEnd' || to === 'wholeLine') {
+      // 줄 나눔은 파일이 들고 있다(`LineSeg`) — `MoveLineBegin`/`End` 와 같은 눈금을 쓴다.
+      const starts = parseJson(
+        this.#doc?.getLineStarts?.(this.#cursor.list, this.#cursor.para) ?? '',
+        null,
+      );
+      const bounds = this.#paraBounds(this.#cursor.list, this.#cursor.para);
+      const lines =
+        Array.isArray(starts) && starts.length
+          ? starts.map((s) => Math.max(s, bounds.start))
+          : [bounds.start];
+      const begin = lines.filter((s) => s <= pos).pop() ?? lines[0];
+      const end = lines.find((s) => s > pos) ?? bounds.end;
+      return to === 'lineEnd' ? [pos, end] : [begin, end];
+    }
     if (to === 'nextWord') {
       const starts = this.#wordStarts();
       const next = starts.find((s) => s > pos);
@@ -2006,6 +3090,17 @@ export class HwpCtrl {
       return true;
     }
 
+    if (action.kind === 'tableColEdge') {
+      // 이름은 `ColPage` 인데 쪽과 무관하다 — **같은 열의 첫 칸·마지막 칸**으로 간다(실측:
+      // 147행 3열 표에서 0행 1열 → 146행 1열, 두 번째로 걸어도 제자리). 조판이 필요 없다.
+      const inCol = siblings.filter((c) => c.col === here.col);
+      const target = action.to === 'last' ? inCol[inCol.length - 1] : inCol[0];
+      if (!target || target === here) return true;
+      this.#clearSelection();
+      this.#cursor = { list: target.listId, para: 0, pos: 0 };
+      return true;
+    }
+
     if (action.kind === 'tableMove') {
       if (action.to === 'nextOrAppend' && siblings.indexOf(here) === siblings.length - 1) {
         // 마지막 칸이면 줄을 붙이고 그 첫 칸으로 간다.
@@ -2013,6 +3108,14 @@ export class HwpCtrl {
       }
       const target = this.#tableMoveTarget(action.to, here, siblings, at);
       if (!target || target === here) return true; // 표 가장자리 — 제자리
+      // 셀 블록을 **넓히는 중**이면 이동이 블록 끝을 끌고 간다(실측: Extend → 오른쪽 →
+      // 아래로 가면 `SelectionMode` 가 19 로 남고 그 뒤 `TableDeleteCell` 이 (0,0)~(1,1)
+      // 네 칸을 비운다). 캐럿 규칙은 보통 이동과 같다 — 간 칸의 처음.
+      if (this.#selectionMode === SELECTION_TABLE_EXTEND && this.#tableBlock) {
+        this.#tableBlock = { from: this.#tableBlock.from, to: target };
+        this.#cursor = { list: target.listId, para: 0, pos: 0 };
+        return true;
+      }
       this.#clearSelection();
       // **앞으로 가면 그 칸의 처음, 뒤로 가면 그 칸의 끝**이다(Tab·Shift+Tab 과 같다).
       // 실측: 9 → 오른쪽 10/0/0(끝은 24), 9 → 왼쪽 8/0/0·7/0/19, 9 → 위 6/0/2(끝이 2).
@@ -2075,6 +3178,34 @@ export class HwpCtrl {
       (l) => this.#sameTable(l, table) && l.row === first.row && l.col === first.col,
     );
     if (target) this.#cursor = { list: target.listId, para: 0, pos: 0 };
+    return true;
+  }
+
+  /**
+   * 셀 블록이 덮은 칸들의 글을 비운다 — `TableDeleteCell` 의 실제 동작이다(실측).
+   *
+   * 한 칸 블록도 된다(merge 와 달리 `from === to` 를 막지 않는다). 캐럿과 블록은 그대로
+   * 둔다 — 오라클의 `GetPos` 가 블록 끝 칸을 그대로 가리켰다. 블록이 없으면 무동작이다.
+   */
+  #runTableClear(actionID) {
+    const block = this.#tableBlock;
+    if (!block) return false;
+    let ok = false;
+    try {
+      const raw = this.#doc.clearTableCellsAtCursor(
+        block.from.listId,
+        block.to.row,
+        block.to.col,
+      );
+      ok = parseJson(raw, { ok: false }).ok !== false;
+    } catch (e) {
+      console.warn(`[hwpctrl] Run("${actionID}") 실패:`, e);
+      return false;
+    }
+    if (!ok) return false;
+    // 리스트 번호는 안 변하지만 문단 수·내용이 변했다 — 모델을 다시 읽는다.
+    this.#listModel = null;
+    this.#sections = null;
     return true;
   }
 
@@ -2191,6 +3322,73 @@ export class HwpCtrl {
       end: { list, para: last, pos: tail.end },
     };
     this.#cursor = { list, para: last, pos: tail.end };
+  }
+
+  /**
+   * 쪽 이동 넷. 쪽마다 **캐럿이 설 첫 자리**를 코어에서 받아 그 목록 위를 걷는다.
+   *
+   * 실측한 규칙(`20250130-hongbo`, 쪽 시작 0/16 · 15/122 · 26/0 · 30/0):
+   *
+   * | 건 것 | 하는 일 |
+   * | --- | --- |
+   * | `Begin` | 지금 쪽의 시작 |
+   * | `End` | **다음 쪽 시작 바로 앞** — 같은 문단이면 자리 −1, 문단이 바뀌면 앞 문단의 끝 |
+   * | `Down` | 다음 쪽의 시작(마지막 쪽이면 제자리) |
+   * | `Up` | 지금 쪽의 시작에 서 있으면 **앞 쪽**, 아니면 지금 쪽의 시작 |
+   *
+   * 본문(리스트 0) 밖에서는 아무 일도 하지 않는다 — 쪽 목록이 본문 좌표라서다.
+   */
+  #runPageAction(action) {
+    if (this.#cursor.list !== 0) return false;
+    const starts = parseJson(this.#doc?.getPageCaretStarts?.() ?? '', null);
+    if (!Array.isArray(starts) || !starts.length) return false;
+    const { para, pos } = this.#cursor;
+    // **제 시작이 없는 쪽**(이어지는 표뿐인 쪽)은 `null` 이다. 캐럿이 든 쪽을 찾을 때는 그런
+    // 쪽을 건너뛴다 — 한글이 그 캐럿을 앞 쪽에 속한 것으로 다룬다(실측). 다음 쪽을 볼 때는
+    // 건너뛰지 않는다: 그리로 내려가면 **실패**해서 캐럿이 0/0 에 놓인다.
+    const before = (s) =>
+      s && s.list === 0 && (s.para < para || (s.para === para && s.pos <= pos));
+    const at = starts.reduce((k, s, i) => (before(s) ? i : k), 0);
+    const here = starts[at] ?? { para: 0, pos: 0 };
+    const next = starts[at + 1];
+
+    let dest;
+    if (action.to === 'begin') {
+      dest = here;
+    } else if (action.to === 'down') {
+      // 다음 쪽이 아예 없으면 제자리. 있으면 그 쪽의 첫 자리인데, **본문이 아니라 칸 안**일
+      // 수 있다(이어지는 표만 있는 쪽) — 그때는 그 칸 리스트로 들어간다.
+      dest = at + 1 >= starts.length ? here : (next ?? { list: 0, para: 0, pos: 0 });
+    } else if (action.to === 'up') {
+      const atStart = here.para === para && here.pos === pos;
+      dest = atStart ? (starts.slice(0, at).filter(Boolean).pop() ?? here) : here;
+    } else {
+      // end — 다음 쪽 시작 **바로 앞**. 문단이 바뀌면 앞 문단의 끝이다.
+      // 다음 쪽에 설 자리가 없으면(null) **캐럿을 그대로 둔다** — 내려가기가 0/0 으로
+      // 떨어지는 것과 달리 이쪽은 제자리다(실측).
+      if (at + 1 < starts.length && (!next || next.list !== 0)) {
+        // 다음 쪽의 첫 자리가 본문에 없으면(칸 안이거나 아예 없으면) **캐럿을 그대로 둔다** —
+        // 내려가기가 그 칸으로 들어가는 것과 달리 이쪽은 제자리다(실측).
+        dest = { para, pos };
+      } else if (!next) {
+        const last = this.#cursorModel().root;
+        dest = { para: last.endPara, pos: last.endPos };
+      } else if (next.pos > 0) {
+        dest = { para: next.para, pos: next.pos - 1 };
+      } else {
+        const prev = next.para - 1;
+        dest = { para: prev, pos: this.#paraBounds(0, prev).end };
+      }
+    }
+
+    const extending = action.sel || this.#selectMode;
+    const anchor = extending ? (this.#selAnchor ?? { ...this.#cursor }) : null;
+    const wasSelectMode = this.#selectMode;
+    this.#clearSelection();
+    this.#selectMode = wasSelectMode;
+    this.#cursor = { list: dest.list ?? 0, para: dest.para, pos: dest.pos };
+    if (anchor) this.#applyExtendedSelection(anchor);
+    return true;
   }
 
   #runMoveAction(action) {
@@ -2420,8 +3618,16 @@ export class HwpCtrl {
       console.warn('[hwpctrl] 여러 문단에 걸친 블록은 아직 다루지 않는다');
       return [];
     }
+    // **블록의 끝 글자도 포함이다.** `SelectText(0,16,0,21)` 뒤 굵게를 걸면 한글은 자리
+    // 16~21 을 굵게 하고(캐럿 22 에서 0 으로 떨어진다) 우리는 16~20 만 했다 — 끝에서 한 글자가
+    // 빠졌다. 블록 자체(`GetSelectedPos`)는 양쪽이 같으므로 어긋난 곳은 서식이 덮는 범위다.
     return [
-      { list: sel.start.list, para: sel.start.para, start: sel.start.pos, end: sel.end.pos },
+      {
+        list: sel.start.list,
+        para: sel.start.para,
+        start: sel.start.pos,
+        end: sel.end.pos + 1,
+      },
     ];
   }
 
@@ -2514,6 +3720,55 @@ export class HwpCtrl {
 }
 
 /** 하니스·호스트 공통 진입점. */
+
+/**
+ * 그림 파일의 **본디 픽셀 크기**를 머리말에서 읽는다. JPEG·PNG·GIF·BMP 만 본다.
+ *
+ * 왜 필요한가: 한글은 넣은 그림을 **1픽셀 = 75 HWPUNIT**(96 DPI)로 앉힌다(실측: 164×152 인
+ * jpg 이 12300×11400). 그 수를 맞추려면 픽셀 크기를 알아야 하는데, 코어의 `insertPicture` 는
+ * 크기를 받기만 하고 스스로 재지 않는다.
+ */
+function imagePixelSize(bytes) {
+  const b = bytes;
+  if (!b || b.length < 24) return null;
+  // PNG: IHDR 의 폭·높이(빅엔디언 4바이트씩)
+  if (b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4e && b[3] === 0x47) {
+    const rd = (o) => (b[o] << 24) | (b[o + 1] << 16) | (b[o + 2] << 8) | b[o + 3];
+    return { width: rd(16) >>> 0, height: rd(20) >>> 0 };
+  }
+  // GIF: 논리 화면 크기(리틀엔디언 2바이트씩)
+  if (b[0] === 0x47 && b[1] === 0x49 && b[2] === 0x46) {
+    return { width: b[6] | (b[7] << 8), height: b[8] | (b[9] << 8) };
+  }
+  // BMP: DIB 머리말의 폭·높이(리틀엔디언 4바이트, 높이는 음수일 수 있다)
+  if (b[0] === 0x42 && b[1] === 0x4d) {
+    const rd = (o) => (b[o] | (b[o + 1] << 8) | (b[o + 2] << 16) | (b[o + 3] << 24)) | 0;
+    return { width: Math.abs(rd(18)), height: Math.abs(rd(22)) };
+  }
+  // JPEG: SOF 표식(0xC0~0xCF 중 0xC4·0xC8·0xCC 는 아니다)에서 읽는다.
+  if (b[0] === 0xff && b[1] === 0xd8) {
+    let i = 2;
+    while (i + 9 < b.length) {
+      if (b[i] !== 0xff) { i += 1; continue; }
+      const marker = b[i + 1];
+      if (marker === 0xd8 || marker === 0xd9 || marker === 0x01 || (marker >= 0xd0 && marker <= 0xd7)) {
+        i += 2;
+        continue;
+      }
+      const len = (b[i + 2] << 8) | b[i + 3];
+      if (marker >= 0xc0 && marker <= 0xcf && marker !== 0xc4 && marker !== 0xc8 && marker !== 0xcc) {
+        return { height: (b[i + 5] << 8) | b[i + 6], width: (b[i + 7] << 8) | b[i + 8] };
+      }
+      if (len <= 0) return null;
+      i += 2 + len;
+    }
+  }
+  return null;
+}
+
+/** 한글이 그림을 앉히는 자 — 1픽셀에 이만큼이다(96 DPI, 실측). */
+const HWPUNIT_PER_PIXEL = 75;
+
 export function createHwpCtrl(options = {}) {
   return new HwpCtrl(options);
 }

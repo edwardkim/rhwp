@@ -1,0 +1,69 @@
+{
+  "schemaVersion": "1.0",
+  "kind": "workReceiptReplayCase",
+  "ident": "contract_period",
+  "claim": "M-rcpt",
+  "issue": 5478,
+  "family": "계약",
+  "genre": "기간",
+  "title": "계약기간 종료일 연장",
+  "why": "2026-12-31→2027-06-30. 고시 유효기간과 다른 문서 가족.",
+  "notes": "계약기간 축",
+  "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+  "output": "out/contract-period.hwp",
+  "ext": "hwp",
+  "actions": [
+    "replace_text"
+  ],
+  "stepCount": 1,
+  "plan": {
+    "planVersion": "1.0",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "output": "out/contract-period.hwp",
+    "steps": [
+      {
+        "action": "replace_text",
+        "find": "계약기간 2026-01-01 ~ 2026-12-31",
+        "replace": "계약기간 2026-01-01 ~ 2027-06-30"
+      }
+    ]
+  },
+  "planText": "{\"planVersion\":\"1.0\",\"input\":\"samples/basic/issue2007_nested_cell_pagination_42065.hwp\",\"output\":\"out/contract-period.hwp\",\"steps\":[{\"action\":\"replace_text\",\"find\":\"계약기간 2026-01-01 ~ 2026-12-31\",\"replace\":\"계약기간 2026-01-01 ~ 2027-06-30\"}]}",
+  "planSha256": "11df42e2712f881ed903baa40e5e2804a918b8052a7fa2897d6d90f42e4503c1",
+  "command": "replay",
+  "receipt": {
+    "schemaVersion": "1.0",
+    "mode": "attest",
+    "input": "samples/basic/issue2007_nested_cell_pagination_42065.hwp",
+    "inputSha256": "604e2c3be4054da9444a343a675bd692afb589819be2c83ba8b8603cc452434b",
+    "planSha256": "11df42e2712f881ed903baa40e5e2804a918b8052a7fa2897d6d90f42e4503c1",
+    "outputSha256": "28597e49574a636dee3a55326c4f3d59f947d280074c43e7287f455fbd4082a2",
+    "toolVersion": "fixture-0.0.0-not-a-release",
+    "steps": 1,
+    "reproduced": null,
+    "expectedOutputSha256": null
+  },
+  "expected": {
+    "attest": {
+      "exit": 0,
+      "mode": "attest",
+      "reproduced": null,
+      "userOutputCreated": false
+    },
+    "verify_ok": {
+      "exit": 0,
+      "mode": "verify",
+      "reproduced": true,
+      "expectedOutputSha256": "28597e49574a636dee3a55326c4f3d59f947d280074c43e7287f455fbd4082a2"
+    },
+    "verify_mismatch": {
+      "exit": 3,
+      "mode": "verify",
+      "reproduced": false,
+      "expectedOutputSha256": "0000000000000000000000000000000000000000000000000000000000000000",
+      "judgment": true
+    }
+  },
+  "claimedOutputPathUntouched": true,
+  "generator": "tools/work_receipt/fatten_work_receipt.py"
+}

@@ -1,0 +1,12 @@
+{
+  "id": "tool_missing_path",
+  "layer": "isError",
+  "code": null,
+  "symptom": "path 가 필요합니다",
+  "retry": false,
+  "fix": "필수 인자를 채운다. 같은 호출을 재시도하지 않는다.",
+  "tools": [
+    "hwp_open"
+  ],
+  "policy": "종료 코드 2/필수 인자 = 재시도 금지. 닫힌 핸들만 nextCall 로 재발급."
+}

@@ -1,0 +1,19 @@
+{
+  "id": "p4-insert2",
+  "title": "Insert·SetCurFieldName 인자 수·개요 문자열 2차",
+  "ledger": [],
+  "open": "samples/para-001.hwp",
+  "calls": [
+    ["SetPos", [0, 0, 0]],
+    ["GetPos", []],
+    ["Insert", ["가"]],
+    ["GetPos", []],
+    ["GetTextFile", ["TEXT", ""]],
+    ["SetCurFieldName", ["새이름", 0]],
+    ["SetCurFieldName", ["새이름", 0, 0]],
+    ["SetCurFieldName", ["새이름", 0, "", ""]],
+    ["GetCurFieldName", [0]],
+    ["GetFieldList", [0, 0]],
+    ["GetHeadingString", []]
+  ]
+}

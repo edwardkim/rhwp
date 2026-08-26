@@ -1,0 +1,23 @@
+{
+  "id": "p4-ungroup",
+  "title": "묶음 풀기 — 사슬이 통째로 달라진다",
+  "ledger": [
+    "Action.ShapeObjUngroup"
+  ],
+  "open": "samples/draw-group.hwp",
+  "calls": [
+    ["SetPos", [0, 0, 0]],
+    ["Run", ["SelectCtrlFront"]],
+    ["CurSelectedCtrl.UserDesc", []],
+    ["HeadCtrl.Next.Next.UserDesc", []],
+    ["HeadCtrl.Next.Next.CtrlID", []],
+    ["HeadCtrl.Next.Next.Next.UserDesc", []],
+    ["Run", ["ShapeObjUngroup"]],
+    ["HeadCtrl.Next.Next.UserDesc", []],
+    ["HeadCtrl.Next.Next.CtrlID", []],
+    ["HeadCtrl.Next.Next.Next.UserDesc", []],
+    ["HeadCtrl.Next.Next.Next.CtrlID", []],
+    ["HeadCtrl.Next.Next.Next.Next.UserDesc", []],
+    ["HeadCtrl.Next.Next.Next.Next.Next.UserDesc", []]
+  ]
+}

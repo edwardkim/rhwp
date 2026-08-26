@@ -1,0 +1,7 @@
+{
+  "command": "export-tables",
+  "required": [
+    "tableCount",
+    "tables"
+  ]
+}
