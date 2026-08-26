@@ -5,6 +5,7 @@ import { assertRemoteDocumentBytes } from '@/core/document-signature';
 import { CanvasView } from '@/view/canvas-view';
 import { InputHandler } from '@/engine/input-handler';
 import { Toolbar } from '@/ui/toolbar';
+import { initStyleToolbarOverflow } from '@/ui/style-toolbar-overflow';
 import { MenuBar } from '@/ui/menu-bar';
 import { loadWebFonts, resolveCanvasKitFontPlan } from '@/core/font-loader';
 import { withCanvasKitSurfaceBlockers } from '@/core/canvaskit-document-preflight';
@@ -110,6 +111,7 @@ initThemeSync((effective, mode) => {
 // 저장된 도구 상자(기본/서식) 보이기·숨기기 복원 — 문서 로드와 무관하고, WASM 초기화보다
 // 먼저 반영해야 숨긴 도구 모음이 잠깐 보였다 사라지지 않는다(모듈 스크립트라 DOM 은 이미 파싱됨).
 syncToolboxMenu();
+initStyleToolbarOverflow(document.getElementById('style-bar')!);
 
 /**
  * 호스트 저장 완료 통지 (#2660).

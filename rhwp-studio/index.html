@@ -582,64 +582,73 @@
         <span class="sb-ribbon-label">글꼴 및 간격</span>
       </div>
 
-      <div class="sb-command-band sb-character-band">
-        <div class="sb-ribbon-group sb-character-ribbon-group">
-          <div class="sb-command-group sb-character-group">
-            <!-- 글자 서식 -->
-            <button id="btn-bold" class="sb-btn" title="굵게 (Ctrl+B)"><span class="sb-ga sb-bold">가</span></button>
-            <button id="btn-italic" class="sb-btn" title="기울임 (Ctrl+I)"><span class="sb-ga sb-italic">가</span></button>
-            <button id="btn-underline" class="sb-btn" title="밑줄 (Ctrl+U)"><span class="sb-ga sb-underline">간</span></button>
-            <button id="btn-strike" class="sb-btn" title="취소선"><span class="sb-ga sb-strike">가</span></button>
-            <div class="sb-dropdown" id="charfx-dropdown">
-              <button class="sb-btn sb-has-arrow" id="btn-charfx" title="글자 효과">
-                <span class="sb-ga sb-effect-icon" id="charfx-icon">가</span><span class="sb-dd">▾</span>
-              </button>
-              <div class="sb-dropdown-menu" id="charfx-menu">
-                <button class="sb-dropdown-item" data-format="emboss"><span class="sb-ga sb-emboss">가</span>양각</button>
-                <button class="sb-dropdown-item" data-format="engrave"><span class="sb-ga sb-engrave">가</span>음각</button>
-                <button class="sb-dropdown-item" data-format="outline"><span class="sb-ga sb-outline">가</span>외곽선</button>
-                <button class="sb-dropdown-item" data-format="superscript"><span class="sb-ga sb-sup">가</span>위 첨자</button>
-                <button class="sb-dropdown-item" data-format="subscript"><span class="sb-ga sb-sub">가</span>아래 첨자</button>
+      <div class="sb-command-track">
+        <div class="sb-command-band sb-character-band">
+          <div class="sb-ribbon-group sb-character-ribbon-group">
+            <div class="sb-command-group sb-character-group">
+              <!-- 글자 서식 -->
+              <button id="btn-bold" class="sb-btn" title="굵게 (Ctrl+B)"><span class="sb-ga sb-bold">가</span></button>
+              <button id="btn-italic" class="sb-btn" title="기울임 (Ctrl+I)"><span class="sb-ga sb-italic">가</span></button>
+              <button id="btn-underline" class="sb-btn" title="밑줄 (Ctrl+U)"><span class="sb-ga sb-underline">간</span></button>
+              <button id="btn-strike" class="sb-btn" title="취소선"><span class="sb-ga sb-strike">가</span></button>
+              <div class="sb-dropdown" id="charfx-dropdown">
+                <button class="sb-btn sb-has-arrow" id="btn-charfx" title="글자 효과">
+                  <span class="sb-ga sb-effect-icon" id="charfx-icon">가</span><span class="sb-dd">▾</span>
+                </button>
+                <div class="sb-dropdown-menu" id="charfx-menu">
+                  <button class="sb-dropdown-item" data-format="emboss"><span class="sb-ga sb-emboss">가</span>양각</button>
+                  <button class="sb-dropdown-item" data-format="engrave"><span class="sb-ga sb-engrave">가</span>음각</button>
+                  <button class="sb-dropdown-item" data-format="outline"><span class="sb-ga sb-outline">가</span>외곽선</button>
+                  <button class="sb-dropdown-item" data-format="superscript"><span class="sb-ga sb-sup">가</span>위 첨자</button>
+                  <button class="sb-dropdown-item" data-format="subscript"><span class="sb-ga sb-sub">가</span>아래 첨자</button>
+                </div>
+              </div>
+            </div>
+            <span class="sb-ribbon-label">글자 모양</span>
+          </div>
+          <div class="sb-ribbon-group sb-color-ribbon-group">
+            <div class="sb-command-group sb-color-group">
+              <!-- 글자색 -->
+              <span class="sb-color-wrap">
+                <button id="btn-text-color" class="sb-btn sb-has-arrow" title="글자 색">
+                  <span class="sb-color-visual"><span class="sb-ga">가</span><span id="color-bar"></span></span>
+                  <span class="sb-dd">▾</span>
+                </button>
+                <input id="text-color-picker" type="color" value="#000000" aria-label="글자 색 선택" />
+              </span>
+              <!-- 형광펜 -->
+              <span id="highlight-dropdown" class="sb-dropdown">
+                <button id="btn-highlight" class="sb-btn sb-has-arrow" title="형광펜">
+                  <span class="sb-highlight-visual"><span class="sb-highlight-icon">✏</span><span id="highlight-bar"></span></span>
+                  <span class="sb-dd">▾</span>
+                </button>
+                <div id="highlight-palette" class="sb-hl-palette"></div>
+              </span>
+            </div>
+            <span class="sb-ribbon-label">색</span>
+          </div>
+        </div>
+
+        <div class="sb-overflow-host">
+          <button type="button" id="btn-style-overflow" class="sb-btn sb-has-arrow" aria-controls="style-overflow-panel" aria-expanded="false" aria-label="문단 정렬 더보기" title="문단 정렬 더보기">
+            <span class="sb-overflow-icon" aria-hidden="true">⋯</span><span class="sb-dd" aria-hidden="true">▾</span>
+          </button>
+          <div id="style-overflow-panel" class="sb-overflow-panel" role="group" aria-label="문단 정렬">
+            <div class="sb-command-band sb-paragraph-band">
+              <div class="sb-ribbon-group sb-paragraph-ribbon-group">
+                <div class="sb-command-group sb-align-group">
+                  <!-- 문단 정렬 -->
+                  <button id="btn-align-left" class="sb-btn" title="왼쪽 정렬"><span class="sb-align sb-al-left"></span></button>
+                  <button id="btn-align-center" class="sb-btn" title="가운데 정렬"><span class="sb-align sb-al-center"></span></button>
+                  <button id="btn-align-right" class="sb-btn" title="오른쪽 정렬"><span class="sb-align sb-al-right"></span></button>
+                  <button id="btn-align-justify" class="sb-btn" title="양쪽 정렬"><span class="sb-align sb-al-justify"></span></button>
+                  <button id="btn-align-distribute" class="sb-btn" title="배분 정렬"><span class="sb-align sb-al-distribute"></span></button>
+                  <button id="btn-align-split" class="sb-btn" title="나눔 정렬"><span class="sb-align sb-al-split"></span></button>
+                </div>
+                <span class="sb-ribbon-label">문단</span>
               </div>
             </div>
           </div>
-          <span class="sb-ribbon-label">글자 모양</span>
-        </div>
-        <div class="sb-ribbon-group sb-color-ribbon-group">
-          <div class="sb-command-group sb-color-group">
-            <!-- 글자색 -->
-            <span class="sb-color-wrap">
-              <button id="btn-text-color" class="sb-btn sb-has-arrow" title="글자 색">
-                <span class="sb-color-visual"><span class="sb-ga">가</span><span id="color-bar"></span></span>
-                <span class="sb-dd">▾</span>
-              </button>
-              <input id="text-color-picker" type="color" value="#000000" aria-label="글자 색 선택" />
-            </span>
-            <!-- 형광펜 -->
-            <span id="highlight-dropdown" class="sb-dropdown">
-              <button id="btn-highlight" class="sb-btn sb-has-arrow" title="형광펜">
-                <span class="sb-highlight-visual"><span class="sb-highlight-icon">✏</span><span id="highlight-bar"></span></span>
-                <span class="sb-dd">▾</span>
-              </button>
-              <div id="highlight-palette" class="sb-hl-palette"></div>
-            </span>
-          </div>
-          <span class="sb-ribbon-label">색</span>
-        </div>
-      </div>
-
-      <div class="sb-command-band sb-paragraph-band">
-        <div class="sb-ribbon-group sb-paragraph-ribbon-group">
-          <div class="sb-command-group sb-align-group">
-            <!-- 문단 정렬 -->
-            <button id="btn-align-left" class="sb-btn" title="왼쪽 정렬"><span class="sb-align sb-al-left"></span></button>
-            <button id="btn-align-center" class="sb-btn" title="가운데 정렬"><span class="sb-align sb-al-center"></span></button>
-            <button id="btn-align-right" class="sb-btn" title="오른쪽 정렬"><span class="sb-align sb-al-right"></span></button>
-            <button id="btn-align-justify" class="sb-btn" title="양쪽 정렬"><span class="sb-align sb-al-justify"></span></button>
-            <button id="btn-align-distribute" class="sb-btn" title="배분 정렬"><span class="sb-align sb-al-distribute"></span></button>
-            <button id="btn-align-split" class="sb-btn" title="나눔 정렬"><span class="sb-align sb-al-split"></span></button>
-          </div>
-          <span class="sb-ribbon-label">문단</span>
         </div>
       </div>
     </div>

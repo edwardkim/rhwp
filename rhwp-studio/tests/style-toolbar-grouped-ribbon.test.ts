@@ -4,7 +4,6 @@ import test from 'node:test';
 
 const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 const styles = readFileSync(new URL('../src/styles/style-bar.css', import.meta.url), 'utf8');
-const responsive = readFileSync(new URL('../src/styles/responsive.css', import.meta.url), 'utf8');
 
 const buttonMarkup = (id: string): string => {
   const match = html.match(new RegExp(`<button[^>]*id="${id}"[\\s\\S]*?<\\/button>`));
@@ -14,10 +13,13 @@ const buttonMarkup = (id: string): string => {
 
 test('style toolbar uses ordered field and command groups', () => {
   const fields = html.indexOf('class="sb-field-grid"');
+  const commandTrack = html.indexOf('class="sb-command-track"');
   const characters = html.indexOf('class="sb-command-band sb-character-band"');
   const paragraphs = html.indexOf('class="sb-command-band sb-paragraph-band"');
 
   assert.ok(fields >= 0);
+  assert.ok(fields < commandTrack);
+  assert.ok(commandTrack < characters);
   assert.ok(fields < characters);
   assert.ok(characters < paragraphs);
   assert.match(html, /class="sb-command-group sb-character-group"/);
@@ -37,7 +39,7 @@ test('style toolbar shows its default before a document is loaded', () => {
   );
 });
 
-test('desktop formatting surface exposes visible ribbon hierarchy', () => {
+test('formatting surface preserves ribbon hierarchy while captions stay visually compact', () => {
   assert.match(html, /class="sb-ribbon-group sb-field-ribbon-group"/);
   assert.match(html, /class="sb-ribbon-group sb-character-ribbon-group"/);
   assert.match(html, /class="sb-ribbon-group sb-color-ribbon-group"/);
@@ -47,13 +49,35 @@ test('desktop formatting surface exposes visible ribbon hierarchy', () => {
     assert.match(html, new RegExp(`<span class="sb-ribbon-label">${label}<\\/span>`));
   }
 
-  assert.match(styles, /#style-bar\s*\{[^}]*min-height:\s*68px;[^}]*align-items:\s*stretch;/s);
+  assert.match(styles, /#style-bar\s*\{[^}]*display:\s*grid;[^}]*min-height:\s*0;/s);
   assert.match(styles, /\.sb-ribbon-group\s*\{[^}]*flex-direction:\s*column;/s);
-  assert.match(styles, /\.sb-ribbon-label\s*\{[^}]*display:\s*block;/s);
+  assert.match(styles, /\.sb-ribbon-label\s*\{[^}]*display:\s*none;/s);
   assert.match(
     styles,
     /\.sb-field-ribbon-group \.sb-field\s*\{[^}]*flex-direction:\s*column;/s,
   );
+});
+
+test('paragraph commands keep one DOM authority across inline and overflow layouts', () => {
+  assert.match(html, /class="sb-overflow-host"/);
+  assert.match(
+    buttonMarkup('btn-style-overflow'),
+    /aria-controls="style-overflow-panel"[^>]*aria-expanded="false"/,
+  );
+  assert.match(
+    html,
+    /id="style-overflow-panel"[^>]*role="group"[^>]*aria-label="문단 정렬"/,
+  );
+  for (const id of [
+    'btn-align-left',
+    'btn-align-center',
+    'btn-align-right',
+    'btn-align-justify',
+    'btn-align-distribute',
+    'btn-align-split',
+  ]) {
+    assert.equal(html.match(new RegExp(`id="${id}"`, 'g'))?.length, 1, `${id} must be unique`);
+  }
 });
 
 test('only real menus retain dropdown affordances', () => {
@@ -71,44 +95,45 @@ test('only real menus retain dropdown affordances', () => {
   assert.match(buttonMarkup('btn-highlight'), /sb-highlight-visual/);
 });
 
-test('mobile ribbon is compact without hiding command glyphs', () => {
-  assert.match(responsive, /#style-bar\s*\{[^}]*flex-direction:\s*column;/s);
+test('two-row ribbon uses the measured 375px field and 460px command contracts', () => {
   assert.match(
-    responsive,
-    /\.sb-field-grid\s*\{[^}]*grid-template-columns:\s*68px 54px minmax\(96px,\s*1fr\) 72px 72px;/s,
+    styles,
+    /\.sb-field-grid\s*\{[^}]*minmax\(68px,\s*88px\)[^}]*minmax\(54px,\s*64px\)[^}]*minmax\(81px,\s*160px\)[^}]*minmax\(72px,\s*86px\)[^}]*minmax\(72px,\s*86px\);/s,
   );
-  assert.match(responsive, /#style-bar \.sb-btn\s*\{[^}]*width:\s*29px;[^}]*height:\s*29px;/s);
-  assert.match(responsive, /#style-bar \.sb-has-arrow\s*\{[^}]*width:\s*38px;/s);
-  assert.doesNotMatch(responsive, /\.sb-ga\s*\{\s*display:\s*none;/);
+  assert.match(styles, /\.sb-command-track\s*\{[^}]*width:\s*max-content;[^}]*flex-wrap:\s*nowrap;/s);
+  assert.match(styles, /\.sb-btn\s*\{[^}]*width:\s*29px;[^}]*height:\s*29px;/s);
+  assert.match(styles, /\.sb-has-arrow\s*\{[^}]*width:\s*38px;/s);
+  assert.match(styles, /@media\s*\(max-width:\s*459px\)/);
+  assert.doesNotMatch(styles, /\.sb-ga\s*\{\s*display:\s*none;/);
 });
 
 test('mobile font size field uses one cohesive control shell', () => {
   assert.match(
-    responsive,
+    styles,
     /\.sb-field-grid \.sb-size-group\s*\{[^}]*border:\s*1px solid var\(--ui-border-light\);[^}]*border-radius:\s*var\(--radius-sm\);[^}]*overflow:\s*hidden;/s,
   );
   assert.match(
-    responsive,
+    styles,
     /\.sb-field-grid \.sb-size\s*\{[^}]*height:\s*100%;[^}]*border:\s*0;[^}]*border-radius:\s*0;/s,
   );
   assert.match(
-    responsive,
+    styles,
     /\.sb-field-grid \.sb-size-unit\s*\{[^}]*height:\s*100%;[^}]*border:\s*0;[^}]*border-left:\s*1px solid var\(--ui-border-light\);/s,
   );
   assert.match(
-    responsive,
+    styles,
     /\.sb-field-grid \.sb-size-arrows\s*\{[^}]*height:\s*100%;[^}]*border-left:\s*1px solid var\(--ui-border-light\);/s,
   );
   assert.match(
-    responsive,
+    styles,
     /\.sb-field-grid \.sb-size-arrows \.sb-arrow\s*\{[^}]*height:\s*50%;[^}]*border:\s*0;[^}]*border-radius:\s*0;/s,
   );
   assert.match(
-    responsive,
+    styles,
     /\.sb-field-grid \.sb-size-arrows \.sb-arrow \+ \.sb-arrow\s*\{[^}]*border-top:\s*1px solid var\(--ui-border-light\);/s,
   );
   assert.match(
-    responsive,
+    styles,
     /#style-bar #btn-size-up,\s*#style-bar #btn-size-down\s*\{[^}]*border-radius:\s*0;/s,
   );
 });

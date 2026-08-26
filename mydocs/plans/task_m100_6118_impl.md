@@ -5,7 +5,7 @@
 - **작성일**: 2026-08-26 KST
 - **작업 브랜치**: `codex/issue-6118-responsive-style-bar`
 - **통합 기준**: `upstream/devel@6b5c4f871972380c0866e2a8d27ac2bc67d257e6`
-- **구현 상태**: Stage 1 계측 완료, Stage 2 승인 대기, 제품 코드 변경 0건
+- **구현 상태**: Stage 2 구현·범위 내 자동 검증 완료, Stage 3 승인 대기
 
 ## 1. 구현 불변식
 
@@ -189,5 +189,6 @@ PDF/SVG visual sweep과 Rust 전체 회귀는 기본 게이트가 아니다.
 
 ## 10. 승인 게이트
 
-Stage 1 계측과 콘텐츠 경계 고정을 완료했으며 현재 구현 상태는 **Stage 2 승인 대기**다. 다음 승인 전에는
-위 제품·test·E2E 파일을 수정하지 않고 원격 push·PR도 수행하지 않는다.
+Stage 2에서 DOM wrapper, 1·2행 CSS, paragraph 더보기 controller, 정적 계약과 responsive E2E를
+구현했다. 현재 구현 상태는 **Stage 3 승인 대기**다. 다음 승인 전에는 테마 전수 시각 검증·최종 보고서와
+원격 push·PR을 수행하지 않는다.
