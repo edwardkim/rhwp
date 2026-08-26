@@ -759,7 +759,6 @@ fn compose_lines(para: &Paragraph) -> Vec<ComposedLine> {
         if text_end < text_start {
             text_end = text_start;
         }
-
         // 이 줄의 텍스트 추출
         let line_text: String = para
             .text
@@ -1788,10 +1787,46 @@ pub(crate) fn stored_rows_are_stale(
     // 1줄 ≈4.5× 과밀). **이 경계는 압축 상한에서 나온 값이지 맞춰 넣은 상수가
     // 아니다.** 빈 문단은 run 이 없어 이 판정이 발화하지 않는데, 폭을 넘길 텍스트
     // 자체가 없으므로 정상이다(전체 run-less 조합 8,345건 중 99.6%가 빈 문단).
-    composed
+    if composed
         .lines
         .iter()
         .any(|l| estimate_composed_line_width(l, styles) > inner_width_px * 1.8)
+    {
+        return true;
+    }
+    // [#6102] **비말미** 저장 줄의 과밀: 이어지는 줄이 있는데도 자기 폭(저장
+    // segment_width 와 내폭 둘 다)을 넘는 텍스트를 담았다고 주장하는 줄은
+    // 물리적으로 성립하지 않는다 — 한글은 줄을 다 채우기 **전에** 끊는다.
+    // 결재문서본문 계열(36360328 외 2건)의 저장 textpos 축이 파서 보정폭과
+    // 어긋나 첫 줄이 6자 늦게 끊기고 본문 우단을 71~99px 넘던 결함의 관측식.
+    // 0.5× advance 클램프 마스킹 코호트(#2525)는 **단일 줄**이라 비말미 조건에
+    // 걸리지 않고, 말미 줄은 초과분이 다음 줄로 갈 수 없으므로 제외한다.
+    // 여유는 6% + 12px — 정당한 Justify 줄은 말미 공백 overhang(≤반각 한 칸)
+    // 까지 포함해도 이 밑에 있다.
+    //
+    // **범위는 자리차지 표 host 문단 한정** — 종전에 프레임 소유자가 아예 없던
+    // 계보라 이 판정에 기대던 기존 핀이 없다. 일반 문단까지 넓히면 확정된
+    // 쪽수 핀 5건(#2006/#3930/#3931/#2559/#5801)이 흔들린다(전량 게이트 실측).
+    if !para
+        .controls
+        .iter()
+        .any(|c| matches!(c, crate::model::control::Control::Table(t)
+            if !t.common.treat_as_char
+                && matches!(t.common.text_wrap, crate::model::shape::TextWrap::TopAndBottom)))
+    {
+        return false;
+    }
+    let non_last_overfull = |line: &ComposedLine, seg: &crate::model::paragraph::LineSeg| {
+        let est = estimate_composed_line_width(line, styles);
+        let seg_width_px = crate::renderer::hwpunit_to_px(seg.segment_width, 96.0);
+        est > inner_width_px * 1.06 + 12.0 && est > seg_width_px * 1.06 + 12.0
+    };
+    composed
+        .lines
+        .iter()
+        .zip(para.line_segs.iter())
+        .take(composed.lines.len().saturating_sub(1))
+        .any(|(line, seg)| non_last_overfull(line, seg))
 }
 
 /// Resolve a paragraph's rows through the physical frame its own geometry
@@ -1854,6 +1889,11 @@ pub(crate) fn recompose_stored_lines_in_frame(
             // they become `LineSeg` again.
             let mut reflowed_para = para.clone();
             reflowed_para.line_segs = frame.project_line_segs();
+            // [#6102] 프레임이 새로 새긴 행 경계는 이미 HWP5 문단 축이다 —
+            // 원본의 [#5961] 보정폭을 물려받으면 fresh 경계가 이중 보정되어
+            // 줄이 보정폭만큼 늦게 끊긴다(36360328: fill 이 char 51(=raw 83)에
+            // 끊었는데 +8 재보정으로 59가 되어 첫 줄이 우단 밖 +75px).
+            reflowed_para.hwpx_axis_shift = 0;
             let mut reflowed = compose_paragraph(&reflowed_para);
             preserve_context_resolved_runs(composed, &mut reflowed);
             let mut reconciled = composed.clone();
