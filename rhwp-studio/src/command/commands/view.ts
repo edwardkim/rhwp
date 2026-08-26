@@ -405,6 +405,7 @@ export const viewCommands: CommandDef[] = [
   {
     id: 'view:toolbox-basic',
     label: '기본',
+    shortcutLabel: 'Ctrl+F1',
     execute() {
       userSettings.setToolbarBasic(!userSettings.getViewSettings().toolbarBasic);
       syncToolboxMenu();

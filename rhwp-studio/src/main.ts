@@ -778,10 +778,11 @@ function setupModalFocusRestore(): void {
 
 /** 포커스 주인과 무관하게 문서를 움직여야 하는 키 — 편집기 경로로 넘긴다. */
 const DOCUMENT_NAVIGATION_KEYS = new Set(['PageUp', 'PageDown', 'Home', 'End']);
-const GLOBAL_ZOOM_SHORTCUTS = new Set([
+const GLOBAL_VIEW_SHORTCUTS = new Set([
   'view:zoom-in',
   'view:zoom-out',
   'view:zoom-100',
+  'view:toolbox-basic',
 ]);
 
 /**
@@ -815,10 +816,10 @@ function setupGlobalShortcuts(): void {
         return;
       }
     }
-    // 배율 키는 편집 textarea에서는 InputHandler가 소유하고, 그 밖의 포커스에서는
+    // 배율·도구 상자 키는 편집 textarea에서는 InputHandler가 소유하고, 그 밖의 포커스에서는
     // 이 전역 경로가 같은 커맨드를 한 번만 실행한다. 브라우저 기본 페이지 줌은 막는다.
     const globalShortcutId = matchShortcut(e, defaultShortcuts);
-    if (globalShortcutId && GLOBAL_ZOOM_SHORTCUTS.has(globalShortcutId)) {
+    if (globalShortcutId && GLOBAL_VIEW_SHORTCUTS.has(globalShortcutId)) {
       e.preventDefault();
       dispatcher.dispatch(globalShortcutId);
       return;
