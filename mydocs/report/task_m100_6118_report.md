@@ -10,8 +10,8 @@
 
 기존 device breakpoint 중심의 1·2·3행 서식 바를 콘텐츠 폭 중심의 두 구조로 정리했다.
 
-- 976px 이상: field와 모든 command를 높이 36px의 단일 행으로 표시
-- 975~460px: field 1행과 command 1행의 83px 압축 2행
+- 992px 이상: field와 모든 command를 높이 36px의 단일 행으로 표시하고 첫 콤보를 메뉴 텍스트 축에 정렬
+- 991~460px: field 1행과 command 1행의 83px 압축 2행
 - 459~375px: 같은 2행을 유지하고 paragraph 명령만 더보기 panel로 표시
 - 모든 구간에서 `#style-bar`와 page-level 가로 overflow 0
 - 기존 field/command ID, 순서, listener, label, active/disabled authority 재사용
@@ -27,15 +27,15 @@
 | 단계 | 산출물 | 핵심 결정 |
 | --- | --- | --- |
 | 계획 | [수행계획](../plans/task_m100_6118.md), [구현계획](../plans/task_m100_6118_impl.md) | 최대 2행, paragraph만 동적 더보기 |
-| Stage 1 | [경계 계측](../working/task_m100_6118_stage1.md) | 976px, 460px, 지원 최소 375px |
+| Stage 1 | [경계 계측](../working/task_m100_6118_stage1.md) | 초기 976px + 시작축 16px = 최종 992px, 460px, 최소 375px |
 | Stage 2 | [구현 결과](../working/task_m100_6118_stage2.md) | 단일 DOM authority와 1·2행 CSS/controller |
 | Stage 3 | [검증 결과](../working/task_m100_6118_stage3.md) | 12 viewport, 18 theme cases, 실제 상호작용 |
 
 ## 3. 시각 결과
 
-| 976px 전체 1행 | 460px 2행 inline | 375px 2행 더보기 |
+| 992px 전체 1행 | 460px 2행 inline | 375px 2행 더보기 |
 | --- | --- | --- |
-| ![976px 전체 1행](assets/task_m100_6118/stylebar-full-976.png) | ![460px 2행 inline](assets/task_m100_6118/stylebar-inline-460.png) | ![375px 더보기](assets/task_m100_6118/stylebar-overflow-375.png) |
+| ![992px 전체 1행](assets/task_m100_6118/stylebar-full-992.png) | ![460px 2행 inline](assets/task_m100_6118/stylebar-inline-460.png) | ![375px 더보기](assets/task_m100_6118/stylebar-overflow-375.png) |
 
 default/flat/oldschool × light/dark의 18개 경계 화면도 같은 E2E가 생성하며, 배경·경계와 icon/panel
 대비가 모두 3:1 이상이다. oldschool 상·하 베벨에서만 단일 행이 37px이던 문제를 발견해 36px로
@@ -46,9 +46,9 @@ default/flat/oldschool × light/dark의 18개 경계 화면도 같은 E2E가 생
 | 게이트 | 결과 |
 | --- | --- |
 | TypeScript | 통과 |
-| Studio 전체 test | 1,141 passed, 0 failed, 1 skipped |
+| Studio 전체 test | 1,149 passed, 0 failed, 1 skipped |
 | Studio production build | 통과 |
-| responsive/theme browser E2E | 388 passed, 0 failed |
+| responsive/theme browser E2E | 626 passed, 0 failed |
 | 실제 인앱 브라우저 375px smoke | panel 열림·첫 명령 focus·overflow 0 |
 | Markdown 상대 링크·diff whitespace | 603문서 이상 없음·통과 |
 
@@ -65,6 +65,6 @@ checkout의 Rust manifest와 필수 `cargo fmt --all`·`cargo fmt --all -- --che
 - #6138: 위쪽 `#icon-toolbar`의 한 줄 그룹 스크롤 정책
 
 혼동을 줄이기 위해 이슈·계획·커밋·테스트는 분리하되 PR은 하나로 제출한다. #6138 구현 뒤 두 영역을
-동시에 포함하는 12개 viewport·18개 theme 매트릭스를 다시 실행했고 609개 판정이 통과했다. 상세 근거는
+동시에 포함하는 12개 viewport·18개 theme 매트릭스를 다시 실행했고 최종 626개 판정이 통과했다. 상세 근거는
 [#6138 통합 Stage 3](../working/task_m100_6138_stage3.md)에 있다. 현재 단계에서는 remote push와 PR 생성
 모두 수행하지 않았다.

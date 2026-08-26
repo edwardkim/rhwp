@@ -74,7 +74,8 @@ listener와 active state의 authority가 하나로 유지된다.
 
 ### 4.2 전체 압축 1행
 
-Stage 1에서 고정한 `FULL_ROW_MIN=976px` 이상에 하나의 media/container 경계를 둔다.
+Stage 1의 콘텐츠 경계에 사용자 시각 검토에서 결정한 시작축 여백을 더한 `FULL_ROW_MIN=992px` 이상에
+하나의 media/container 경계를 둔다.
 
 - `#style-bar`: flex row, nowrap, 중앙 정렬, 높이 36px 이하
 - field group과 command track을 같은 행에 배치
@@ -83,8 +84,10 @@ Stage 1에서 고정한 `FULL_ROW_MIN=976px` 이상에 하나의 media/container
 - 1행 경계에서는 `scrollWidth <= clientWidth`와 모든 group top 좌표 동일을 검사
 
 `FULL_ROW_MIN`은 1280/1024 같은 device 이름으로 선택하지 않았다. field/character/color/paragraph의
-실측 콘텐츠 949.84px, bar padding과 group border 16px, 안전 여백 10.16px을 합한 976px이며 975/976px
-E2E를 둔다. 상세 근거는 [Stage 1 보고서](../working/task_m100_6118_stage1.md)를 따른다.
+실측 콘텐츠 949.84px에 데스크톱 첫 콤보를 메뉴 텍스트 축에 맞추는 좌측 22px, 우측 8px과 12.16px
+안전 여백을 합한 992px이며 991/992px E2E를 둔다. 2행·더보기 구조는 지원 최소 폭을 보존하도록 기존
+6px 양쪽 padding을 유지한다. 상세 초기 계측은 [Stage 1 보고서](../working/task_m100_6118_stage1.md)를
+따른다.
 
 ### 4.3 좁은 field 행
 
@@ -139,7 +142,7 @@ Stage 1에서 정한 `COMMAND_INLINE_MIN=460px` 아래에서만 다음을 적용
 | viewport | 핵심 판정 |
 | --- | --- |
 | 1920×1080 / 1280×900 / 1024×768 | 전체 압축 1행, 모든 command inline |
-| 975px / 976px | 정확히 2행↔1행 전환, overflow 없음 |
+| 991px / 992px | 정확히 2행↔1행 전환, overflow 없음·데스크톱 시작축 정렬 |
 | 883×900 / 768×1024 / 460×900 | field+command 2행, 모든 command inline, track 비확장 |
 | 459px / 460px | paragraph 더보기↔inline 전환 |
 | 459×900 / 412×915 / 390×844 / 375×812 | 최대 2행, field 무 overflow, 더보기 command 실행 |

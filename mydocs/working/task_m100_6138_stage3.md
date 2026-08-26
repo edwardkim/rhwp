@@ -13,8 +13,8 @@
 | viewport | 기본 도구 상자 | 이동 버튼 | 서식 바 |
 | ---: | --- | --- | --- |
 | 1920, 1280px | 56px·1행·label 표시 | 숨김 | 36px·1행 |
-| 1024, 976px | 56px·1행·label 표시 | 표시 | 36px·1행 |
-| 975, 883, 768, 460px | 56px·1행·label 표시 | 표시 | 83px·2행 inline |
+| 1024, 992px | 56px·1행·label 표시 | 표시 | 36px·1행 |
+| 991, 883, 768, 460px | 56px·1행·label 표시 | 표시 | 83px·2행 inline |
 | 459, 412, 390, 375px | 56px·1행·label 표시 | 표시 | 83px·2행 더보기 |
 
 모든 구간에서 document root와 두 toolbar 외부의 가로 overflow는 0이다. 기본 도구 상자의 1219px track만
@@ -33,7 +33,7 @@
 
 ## 3. 테마·스킨 매트릭스
 
-`default`, `flat`, `oldschool` 각각에 light/dark를 적용하고 976px, 460px, 375px 세 경계를 전수
+`default`, `flat`, `oldschool` 각각에 light/dark를 적용하고 992px, 460px, 375px 세 경계를 전수
 검사했다. 총 18개 조합에서 기본 도구 상자는 56px·1행, 서식 바는 예정된 1·2행을 유지했다. nav의
 배경·경계·edge hidden 표현과 toolbar 배경 대비는 모두 자동 판정을 통과했으며 최소 대비는 4.10이다.
 
@@ -52,11 +52,11 @@ Studio chrome의 DOM/CSS/접근성 변경이며 renderer·layout·typeset·paint
 
 | 검증 | 결과 |
 | --- | --- |
-| focused source/controller/theme 계약 | 35 passed, 0 failed |
+| focused source/controller/theme 계약 | 27 passed, 0 failed |
 | `npx tsc --noEmit` | 통과 |
-| `npm test` | 1,148 passed, 0 failed, 1 skipped |
+| `npm test` | 1,149 passed, 0 failed, 1 skipped |
 | `npm run build` | 통과(230 modules transformed) |
-| responsive/theme/#6118 통합 E2E | 610 passed, 0 failed |
+| responsive/theme/#6118 통합 E2E | 626 passed, 0 failed |
 | Markdown 상대 링크·`git diff --check` | 603문서 이상 없음·통과 |
 | review checkout Rust suite manifest | 942 sources·32 harnesses·9 exceptions, 통과 |
 | `cargo fmt --all`·`cargo fmt --all -- --check` | 통과 |
@@ -81,9 +81,10 @@ E2E는 `http://127.0.0.1:7718/`, 설치된 Chrome, DPR 1에서 수행했다. E2E
 정규화한 뒤 첫 이동은 실제 두 번째 group 경계 191px, 다음 이동은 332px로 일치하며 목표 group의 첫
 버튼이 잘리지 않는다.
 
-또한 시작 `이전 숨김·다음 표시`, 중간 `양쪽 표시`, 끝 `이전 표시·다음 숨김`을 고정했다. 숨긴 24px
-slot은 양 끝 padding으로 남아 이동 중 viewport 폭과 최대 scroll 값이 변하지 않는다. focused 계약 11건,
-전체 Studio test 1,148건, TypeScript, build와 통합 E2E 610건이 다시 통과했다.
+또한 시작 `이전 숨김·다음 표시`, 중간 `양쪽 표시`, 끝 `이전 표시·다음 숨김`을 고정했다. 후속 보정으로
+숨긴 24px slot도 0으로 접어 시작·끝 track을 root의 8px padding에 맞췄다. 실제 viewport는 1024px에서
+984px, 375px에서 335px으로 넓어졌고 중간에서는 양쪽 버튼이 각각 24px을 차지한다. End/Home 전환 뒤
+최대 scroll과 양끝 정렬도 다시 계산한다. focused 계약 27건, TypeScript와 통합 E2E 626건이 통과했다.
 
 #6138의 로컬 구현과 Stage 3는 완료했다. #6118과 #6138은 이슈·계획·stage·커밋·검증을 분리해
 추적성을 유지하고, 원격에는 두 작업을 함께 설명하는 PR 한 건으로 제출한다. push와 PR 생성은 사용자

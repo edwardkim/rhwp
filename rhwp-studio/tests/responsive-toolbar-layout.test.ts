@@ -38,7 +38,7 @@ test('style ribbon has only measured one-row and two-row structures', () => {
   assert.match(styleBar, /#style-bar\s*\{[^}]*overflow:\s*visible;/s);
   assert.match(
     styleBar,
-    /@media\s*\(min-width:\s*976px\)\s*\{[\s\S]*?#style-bar\s*\{[^}]*display:\s*flex;[^}]*flex-wrap:\s*nowrap;/,
+    /@media\s*\(min-width:\s*992px\)\s*\{[\s\S]*?#style-bar\s*\{[^}]*display:\s*flex;[^}]*flex-wrap:\s*nowrap;/,
   );
   assert.match(
     styleBar,
@@ -50,7 +50,7 @@ test('style ribbon has only measured one-row and two-row structures', () => {
 test('style ribbon boundaries are content-derived and paragraph overflow never adds a third row', () => {
   assert.match(
     styleBar,
-    /@media\s*\(min-width:\s*976px\)/,
+    /@media\s*\(min-width:\s*992px\)/,
   );
   assert.match(
     styleBar,
@@ -62,4 +62,12 @@ test('style ribbon boundaries are content-derived and paragraph overflow never a
   );
   assert.doesNotMatch(responsive, /@media\s*\(min-width:\s*768px\) and \(max-width:\s*1023px\)/);
   assert.doesNotMatch(responsive, /#style-bar\s*\{[^}]*(?:flex-direction|grid-template-columns)/s);
+});
+
+test('desktop style ribbon uses the menu text visual anchor without spending compact width', () => {
+  assert.match(
+    styleBar,
+    /@media\s*\(min-width:\s*992px\)[\s\S]*?#style-bar\s*\{[^}]*padding:\s*var\(--style-bar-full-padding-top, 3px\) 8px 3px 22px;/,
+  );
+  assert.match(styleBar, /#style-bar\s*\{[^}]*padding:\s*4px 6px 5px;/s);
 });

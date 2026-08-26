@@ -63,8 +63,13 @@
   display: none;
 }
 
-/* 끝에서는 해당 방향 버튼만 감추고 24px slot은 padding처럼 남겨 viewport 폭을 안정시킨다. */
+/* 끝에서는 해당 방향 버튼의 slot까지 접어 toolbar 고유 8px padding을 복원한다. */
 .tb-scroll-nav.tb-scroll-nav-edge-hidden {
+  flex-basis: 0;
+  width: 0;
+  min-width: 0;
+  overflow: hidden;
+  border-width: 0;
   visibility: hidden;
   pointer-events: none;
 }

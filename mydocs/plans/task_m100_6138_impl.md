@@ -50,15 +50,16 @@
 ## 4. DOM·CSS 계약
 
 - root: `display:flex`, `flex-wrap:nowrap`, `height/min-height:56px`, `overflow:hidden`
-- nav: overflow가 있을 때만 `hidden=false`, 고정 폭, theme token hover/focus/disabled. 시작·끝 해당 방향은
-  24px slot을 유지한 채 `visibility:hidden`으로 감춘다.
+- nav: overflow가 있을 때만 `hidden=false`, 보일 때 24px 고정 폭과 theme token hover/focus/disabled를
+  사용한다. 시작·끝 해당 방향은 `visibility:hidden`과 함께 flex basis·width·min-width를 0으로 접는다.
 - viewport: `flex:1`, `min-width:0`, `overflow-x:auto`, `overflow-y:hidden`, `touch-action:pan-x`
 - track: `display:flex`, `width:max-content`, `min-width:100%`, `height:100%`, `flex-wrap:nowrap`
 - group: `flex:0 0 auto`
 - scrollbar: Firefox·WebKit에서 시각적으로만 감추고 scroll 기능은 유지
 
-nav가 숨겨진 상태의 전체 폭으로 먼저 overflow를 판정한다. overflow면 두 nav가 공간을 차지하고
-ResizeObserver가 줄어든 viewport를 다시 측정해 안정된 최대 scroll 값을 만든다.
+nav가 숨겨진 상태의 전체 폭으로 먼저 overflow를 판정한다. overflow면 현재 이동 가능한 방향의 nav만
+공간을 차지하고 ResizeObserver가 viewport 변화와 최대 scroll 값을 다시 측정한다. 시작·중간·끝 전환으로
+viewport 폭이 바뀌어도 track 기준 group anchor를 사용하므로 목표 command는 잘리지 않는다.
 
 ## 5. 접근성 계약
 
@@ -66,8 +67,8 @@ ResizeObserver가 줄어든 viewport를 다시 측정해 안정된 최대 scroll
 - overflow가 없을 때 nav는 `hidden`이라 접근성 트리와 Tab 순서에서 제외한다.
 - viewport는 `aria-label="기본 도구 상자 명령"`을 제공한다.
 - 기존 button Tab 순서와 accessible name은 DOM 순서를 그대로 따른다.
-- 시작·끝 disabled·`aria-hidden`·시각 숨김은 화면 위치와 항상 일치하고, slot은 padding처럼 남아 viewport
-  폭이 바뀌지 않는다.
+- 시작·끝 disabled·`aria-hidden`·시각 숨김은 화면 위치와 항상 일치하고, 숨긴 slot은 0으로 접혀 root의
+  8px padding과 track 끝이 직접 맞닿는다.
 - #6115로 root가 숨겨지면 nav를 포함한 전체 껍데기가 함께 사라진다.
 
 ## 6. 테스트 설계
@@ -85,7 +86,7 @@ ResizeObserver가 줄어든 viewport를 다시 측정해 안정된 최대 scroll
 | viewport | 판정 |
 | --- | --- |
 | 1920, 1280px | 56px 한 줄, nav 숨김, 전체 group 표시 |
-| 1024, 976, 883, 768px | 56px 한 줄, nav 표시, label 유지, 그룹 버튼 이동 |
+| 1024, 992, 991, 883, 768px | 56px 한 줄, nav 표시, label 유지, 그룹 버튼 이동 |
 | 412, 375px | 56px 한 줄, 첫→끝→첫 group 도달, page overflow 없음 |
 
 overflow viewport에서 다음/이전 클릭, track 기준 `scrollLeft`, 시작·중간·끝 버튼 표시, horizontal wheel,

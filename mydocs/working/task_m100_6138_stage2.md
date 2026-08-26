@@ -46,12 +46,12 @@ split menu와 `aria-expanded`를 함께 닫는다.
 | ---: | --- | ---: | --- | --- | ---: |
 | 1920px | 56px | 1 | 표시 | 숨김 | 1904/1904px |
 | 1280px | 56px | 1 | 표시 | 숨김 | 1264/1264px |
-| 1024px | 56px | 1 | 표시 | 표시 | 1219/960px |
-| 976px | 56px | 1 | 표시 | 표시 | 1219/912px |
-| 883px | 56px | 1 | 표시 | 표시 | 1219/819px |
-| 768px | 56px | 1 | 표시 | 표시 | 1219/704px |
-| 412px | 56px | 1 | 표시 | 표시 | 1219/348px |
-| 375px | 56px | 1 | 표시 | 표시 | 1219/311px |
+| 1024px | 56px | 1 | 표시 | 표시 | 1219/984px |
+| 992px | 56px | 1 | 표시 | 표시 | 1219/952px |
+| 883px | 56px | 1 | 표시 | 표시 | 1219/843px |
+| 768px | 56px | 1 | 표시 | 표시 | 1219/728px |
+| 412px | 56px | 1 | 표시 | 표시 | 1219/372px |
+| 375px | 56px | 1 | 표시 | 표시 | 1219/335px |
 
 내부 viewport만 overflow하며 각 viewport의 document root와 외부 toolbar `scrollWidth <= clientWidth`다.
 
@@ -87,6 +87,7 @@ Stage 2는 완료했다. 다음 단계는 전체 Studio test/build, 대표 scree
 191px 대신 32px에 멈춰 첫 버튼을 잘랐다. group과 track의 bounding rect 차로 좌표를 정규화해 실제
 경계 `0, 191, 332…`를 사용하도록 수정했다.
 
-한글 2024 참고 동작에 맞춰 시작에서는 이전 버튼, 끝에서는 다음 버튼을 각각 감춘다. `display:none`으로
-slot을 없애면 viewport 폭이 24px 변하므로 고정 slot은 양 끝 padding처럼 유지하고 버튼만
-`visibility:hidden`, disabled, `aria-hidden=true`로 처리한다. 중간에서는 양쪽 버튼이 보인다.
+한글 2024 참고 동작에 맞춰 시작에서는 이전 버튼, 끝에서는 다음 버튼을 각각 감춘다. 후속 시각 검토에서
+고정 slot 때문에 root 8px과 합쳐진 32px 가장자리가 위·아래 행과 어긋남을 확인했다. 숨긴 버튼은
+`visibility:hidden`, disabled, `aria-hidden=true`와 함께 flex basis·width·min-width를 0으로 접는다.
+중간에서는 양쪽 버튼이 각각 24px로 보이고, 시작·끝에서는 track이 root의 8px padding에 정렬된다.

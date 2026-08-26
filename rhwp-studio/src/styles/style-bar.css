@@ -746,8 +746,8 @@
   border-radius: 0;
 }
 
-/* 모든 콘텐츠가 들어가는 경계: 949.84px 콘텐츠 + chrome/safety = 976px. */
-@media (min-width: 976px) {
+/* 949.84px 콘텐츠 + 좌측 시각축 22px + 우측 8px + safety = 992px. */
+@media (min-width: 992px) {
   #style-bar {
     display: flex;
     flex-wrap: nowrap;
@@ -756,7 +756,7 @@
     align-content: center;
     justify-content: flex-start;
     gap: 0;
-    padding: var(--style-bar-full-padding-top, 3px) 6px 3px;
+    padding: var(--style-bar-full-padding-top, 3px) 8px 3px 22px;
   }
 
   .sb-field-ribbon-group {

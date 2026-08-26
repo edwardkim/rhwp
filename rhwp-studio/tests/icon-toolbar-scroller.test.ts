@@ -49,9 +49,12 @@ test('controller owns resize, mode, focus, keyboard, and end-state synchronizati
   assert.match(source, /dispose\(\): void/);
 });
 
-test('edge navigation keeps its slot while disappearing visually', () => {
+test('edge navigation collapses its slot while disappearing visually', () => {
   assert.match(toolbarCss, /\.tb-scroll-nav\.tb-scroll-nav-edge-hidden\s*\{[^}]*visibility:\s*hidden;/s);
   assert.match(toolbarCss, /\.tb-scroll-nav\.tb-scroll-nav-edge-hidden\s*\{[^}]*pointer-events:\s*none;/s);
+  assert.match(toolbarCss, /\.tb-scroll-nav\.tb-scroll-nav-edge-hidden\s*\{[^}]*flex-basis:\s*0;/s);
+  assert.match(toolbarCss, /\.tb-scroll-nav\.tb-scroll-nav-edge-hidden\s*\{[^}]*width:\s*0;/s);
+  assert.match(toolbarCss, /\.tb-scroll-nav\.tb-scroll-nav-edge-hidden\s*\{[^}]*min-width:\s*0;/s);
   assert.doesNotMatch(toolbarCss, /\.tb-scroll-nav\.tb-scroll-nav-edge-hidden\s*\{[^}]*display:\s*none;/s);
 });
 

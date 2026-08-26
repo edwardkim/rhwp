@@ -12,16 +12,16 @@ Stage 2의 7개 viewport를 12개로 늘려 콘텐츠 경계와 일반 구간을
 
 | 구간 | viewport | 결과 |
 | --- | --- | --- |
-| 전체 압축 1행 | 1920, 1280, 1024, 976px | 1행, 36px, paragraph inline, root/style overflow 0 |
-| 압축 2행 inline | 975, 883, 768, 460px | 2행, 83px, paragraph inline, root/style overflow 0 |
+| 전체 압축 1행 | 1920, 1280, 1024, 992px | 1행, 36px, paragraph inline, root/style overflow 0 |
+| 압축 2행 inline | 991, 883, 768, 460px | 2행, 83px, paragraph inline, root/style overflow 0 |
 | 압축 2행 더보기 | 459, 412, 390, 375px | 2행, 83px, paragraph panel, root/style overflow 0 |
 
-경계 ±1px은 976/975px과 460/459px에서 정확히 전환됐다. 375px에서도 field 행이 내부 폭을 넘지
+경계 ±1px은 992/991px과 460/459px에서 정확히 전환됐다. 375px에서도 field 행이 내부 폭을 넘지
 않았고, 문단 명령은 더보기로 모두 도달 가능했다.
 
 ## 2. 테마·스킨 매트릭스
 
-`default`, `flat`, `oldschool` 각각에 light/dark를 적용하고 976px 단일 행, 460px inline 2행,
+`default`, `flat`, `oldschool` 각각에 light/dark를 적용하고 992px 단일 행, 460px inline 2행,
 375px 더보기 2행을 전수 검사했다. 총 18개 조합 모두 배경·경계·아이콘 대비와 panel 대비가 판정
 기준을 통과했다.
 
@@ -37,7 +37,7 @@ Stage 2의 7개 viewport를 12개로 늘려 콘텐츠 경계와 일반 구간을
 
 ## 3. 상호작용 검증
 
-- 976px에서 글자 크기 입력, 글자 효과 dropdown, 형광펜 palette, 글자색 input을 실제로 조작했다.
+- 992px에서 글자 크기 입력, 글자 효과 dropdown, 형광펜 palette, 글자색 input을 실제로 조작했다.
 - 459~375px에서 click·ArrowDown 열기, 첫 명령 focus, Escape 닫기와 trigger focus 복귀를 확인했다.
 - 외부 pointer와 문단 명령 실행으로 panel이 닫히고, 명령 실행 뒤 trigger로 focus가 복귀했다.
 - paragraph active 상태와 전체 disabled 상태가 더보기 trigger에 반영됐다.
@@ -48,7 +48,7 @@ Stage 2의 7개 viewport를 12개로 늘려 콘텐츠 경계와 일반 구간을
 
 | 모드 | 증적 |
 | --- | --- |
-| 976px 전체 압축 1행 | [stylebar-full-976.png](../report/assets/task_m100_6118/stylebar-full-976.png) |
+| 992px 전체 압축 1행 | [stylebar-full-992.png](../report/assets/task_m100_6118/stylebar-full-992.png) |
 | 460px 압축 2행 inline | [stylebar-inline-460.png](../report/assets/task_m100_6118/stylebar-inline-460.png) |
 | 375px 압축 2행 더보기 | [stylebar-overflow-375.png](../report/assets/task_m100_6118/stylebar-overflow-375.png) |
 
@@ -61,9 +61,9 @@ Studio chrome의 DOM/CSS/접근성 변경이며 renderer·layout·typeset·paint
 | --- | --- |
 | `npx tsc --noEmit` | 통과 |
 | Stage 3 focused 정적 계약 | 27 passed, 0 failed |
-| `npm test` | 1,141 passed, 0 failed, 1 skipped |
+| `npm test` | 1,149 passed, 0 failed, 1 skipped |
 | `npm run build` | 통과 |
-| responsive/theme E2E | 388 passed, 0 failed |
+| responsive/theme E2E | 626 passed, 0 failed |
 | `git diff --check` | 통과 |
 
 E2E는 `http://127.0.0.1:7718/`, Puppeteer headless shell, DPR 1에서 수행했다. 저장소 전체 E2E manifest
@@ -87,9 +87,20 @@ E2E는 `http://127.0.0.1:7718/`, Puppeteer headless shell, DPR 1에서 수행했
 시각 검토를 반영해 기존 정렬 SVG mask를 재사용한 `현재 문단 정렬 아이콘 + ▾`로 교체했다. 활성 정렬이
 바뀌면 trigger 아이콘과 `aria-label`·title이 함께 바뀌며, panel이 열리면 화살표와 버튼 표면도 열린
 상태를 표시한다. 문단 명령 실행 뒤 다음 frame에 trigger focus를 확정해 편집기 focus 갱신과의 경쟁도
-막았다. focused 28건, TypeScript, build와 전체 responsive/theme E2E 388건이 다시 통과했다.
+막았다. 이후 #6138 및 시작축 보정을 포함한 focused 27건, TypeScript, build와 전체 responsive/theme
+E2E 626건이 다시 통과했다.
 
 #6118의 로컬 구현과 Stage 3에 이어 #6138도 같은 브랜치에서 별도 계획·구현·커밋으로 완료했다.
 [통합 Stage 3](task_m100_6138_stage3.md)의 12개 viewport·18개 theme 매트릭스에서 두 영역을 다시
 검증했다. 최종 PR 하나에서 `#style-bar`와 `#icon-toolbar`의 책임을 각각 설명하고 두 이슈를 함께
 연결한다.
+
+## 8. 사용자 시각 검토 후속 — 데스크톱 시작축
+
+넓은 한 줄 모드에서 메뉴의 `파일` 텍스트와 첫 기본 도구 아이콘은 약 22~23px의 같은 시각적 시작축을
+가졌지만 서식 바의 `바탕글` 콤보만 6px에서 시작했다. 992px 이상에서 서식 바를 좌측 22px·우측 8px로
+조정해 첫 콤보 테두리를 메뉴 텍스트 축에 맞췄다. 증가한 16px을 콘텐츠 경계에 반영해 992/991px에서
+1행↔2행이 전환되며, 991px 이하의 2행과 375px 최소 field는 기존 6px 여백을 유지한다.
+
+실제 Chrome에서 1920·1280·1024·992px의 `파일` 텍스트와 첫 콤보 시작점 차이가 1px 이내이고,
+992/991px 경계 및 전체 테마 매트릭스에서 가로 overflow가 없음을 E2E로 확인했다.
