@@ -11,7 +11,9 @@
  * 상태는 DOM 이 아니라 `GridModel` 이 쥔다 — 재렌더가 무손실이어야 구조 연산이 성립한다.
  * 페이로드가 코어 B1 검증의 네 거부를 건드릴 때만 `structure: true` 를 켠다(`needsStructure`).
  *
- * 사전 비활성은 **봉투에서 유도되는 것만** 한다(다층·비공유 라벨, 마지막 행·열, 캔들 양끝).
+ * 사전 비활성은 **봉투에서 유도되는 것만** 한다 — 다층·비공유 라벨, 마지막 행·열, 캔들 양끝,
+ * 그리고 주식형의 역할 계열 수(3·4). 앞 셋은 코어가 거부하는 편집이고, 마지막 하나는 코어가
+ * 허용하지만 **렌더러가 선형으로 폴백해 그림이 깨지는** 편집이다(`stockRoleCountBroken`).
  * 그 밖의 거부(빈 값 자리 이동, `c:tx` 부재 등)는 막지 않고 코어 dryRun 이 판정한다 —
  * 코어 규칙을 UI 가 재현하기 시작하면 둘이 어긋나고, 과잉 차단이 미달 차단보다 나쁘다.
  */
@@ -25,6 +27,7 @@ import {
   cellInputIssue,
   hasAnyEdit,
   needsStructure,
+  stockRoleCountBroken,
   unsafeTextIssue,
   type ChartContainerRefJson,
   type ChartDataResult,
@@ -55,6 +58,9 @@ const PIE_EXTRA_SERIES_NOTE =
   '원형 차트는 첫 계열만 그리므로, 추가한 계열은 화면에 나타나지 않습니다.';
 const CANDLE_NOTE =
   '주식형 캔들은 첫·끝 계열을 몸통으로 삼습니다 — 양끝을 바꾸면 그림이 깨집니다.';
+const STOCK_ROLE_NOTE =
+  '주식형은 계열의 뜻이 순서로 정해져 3계열(고·저·종) 또는 4계열(시·고·저·종)에서만 캔들로 '
+  + '그려집니다 — 계열 수를 바꾸면 평범한 꺾은선이 됩니다.';
 
 /** 주소 동일성 — 재열거 결과에서 같은 차트를 다시 찾는 기준(순번은 흔들려도 주소는 남는다). */
 function sameChartAddress(a: ChartRefJson, b: ChartRefJson): boolean {
@@ -314,19 +320,28 @@ export class ChartDataDialog extends ModalDialog {
       const candle = data.hasUpDownBars === true;
       // 원형은 첫 계열만 그린다 — 파손이 아니라 무효과라 막지 않고 알려만 준다(#6037).
       const pieNote = data.plot === 'pie' || data.plot === 'ofPie' ? PIE_EXTRA_SERIES_NOTE : undefined;
+      // [#6053] 주식형은 계열의 뜻이 XML 순서로 정해져 3·4계열에만 역할이 있다. 그 밖으로
+      // 나가면 렌더러가 선형으로 폴백해 캔들·고저선이 통째로 사라진다 — 캔들 양끝 가드와
+      // 다른 축이라 중간 삽입도 여기서 걸린다.
+      const addBreaksStock = stockRoleCountBroken(data, model.series.length + 1)
+        ? STOCK_ROLE_NOTE
+        : undefined;
+      const deleteBreaksStock = stockRoleCountBroken(data, model.series.length - 1)
+        ? STOCK_ROLE_NOTE
+        : undefined;
 
       items.push(
         {
           type: 'command',
           label: '왼쪽에 계열 추가',
-          disabledReason: candle && series === 0 ? CANDLE_NOTE : undefined,
+          disabledReason: (candle && series === 0 ? CANDLE_NOTE : undefined) ?? addBreaksStock,
           note: pieNote,
           run: () => this.applyModel(insertColumn(model, series)),
         },
         {
           type: 'command',
           label: '오른쪽에 계열 추가',
-          disabledReason: candle && series === last ? CANDLE_NOTE : undefined,
+          disabledReason: (candle && series === last ? CANDLE_NOTE : undefined) ?? addBreaksStock,
           note: pieNote,
           run: () => this.applyModel(insertColumn(model, series + 1)),
         },
@@ -338,7 +353,7 @@ export class ChartDataDialog extends ModalDialog {
               ? '마지막 계열은 지울 수 없습니다.'
               : candle && (series === 0 || series === last)
                 ? CANDLE_NOTE
-                : undefined,
+                : deleteBreaksStock,
           run: () => this.applyModel(deleteColumn(model, series)),
         },
       );
