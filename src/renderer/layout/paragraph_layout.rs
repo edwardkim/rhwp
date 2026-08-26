@@ -4562,6 +4562,10 @@ impl LayoutEngine {
                     para_index,
                     &cell_ctx,
                     char_offset,
+                    composed
+                        .lines
+                        .get(line_idx + 1)
+                        .is_some_and(|next| next.char_start == char_offset),
                     x,
                     y,
                     line_height,
@@ -6102,6 +6106,10 @@ impl LayoutEngine {
         para_index: usize,
         cell_ctx: &Option<CellContext>,
         line_char_end: usize,
+        // [#6111] 다음 줄이 이 줄의 끝 문자에서 시작하는가. 그렇다면 그 경계
+        // 문자에 걸린 누름틀은 **다음 줄**이 소유한다 — 같은 파일의 TAC 계약
+        // (`next_line_starts_at_run_end`)과 같은 규칙이다.
+        next_line_starts_at_line_end: bool,
         x: f64,
         y: f64,
         line_height: f64,
@@ -6135,6 +6143,9 @@ impl LayoutEngine {
             node: RenderNode,
         }
         let mut markers: Vec<MarkerInsert> = Vec::new();
+        // [#6111] 접힌 안내문의 둘째 조각부터는 마커 shift 대상이 아니다 —
+        // shift 를 끝낸 뒤 원래 x 그대로 얹는다.
+        let mut wrapped_guide_overlays: Vec<RenderNode> = Vec::new();
 
         for fr in &p.field_ranges {
             if let Some(Control::Field(field)) = p.controls.get(fr.control_idx) {
@@ -6142,10 +6153,21 @@ impl LayoutEngine {
                     continue;
                 }
                 let is_empty = fr.start_char_idx == fr.end_char_idx;
-                let start_in_line =
-                    fr.start_char_idx >= line_char_start && fr.start_char_idx <= line_char_end;
-                let end_in_line =
-                    fr.end_char_idx >= line_char_start && fr.end_char_idx <= line_char_end;
+                // [#6111] 줄 경계 문자에 걸린 누름틀은 **다음 줄**이 소유한다.
+                //
+                // 줄 끝 문자는 다음 줄의 시작 문자이기도 해서, 두 줄이 같은
+                // 누름틀을 각자 그렸다 — 56345 7쪽은 빈 누름틀 안내문이 두 줄에
+                // 중복되고, 그중 앞 줄은 **배분 정렬된 줄의 마지막 문자**라
+                // char_x_map 이 본문 우단(718.6px)을 돌려줘 안내문이 쪽 밖으로
+                // 나갔다. 같은 파일의 TAC 계약(`next_line_starts_at_run_end`)과
+                // 같은 규칙으로 앞 줄의 소유권을 넘긴다.
+                let owns_boundary = !next_line_starts_at_line_end;
+                let start_in_line = fr.start_char_idx >= line_char_start
+                    && (fr.start_char_idx < line_char_end
+                        || (fr.start_char_idx == line_char_end && owns_boundary));
+                let end_in_line = fr.end_char_idx >= line_char_start
+                    && (fr.end_char_idx < line_char_end
+                        || (fr.end_char_idx == line_char_end && owns_boundary));
 
                 if !start_in_line && !end_in_line {
                     continue;
@@ -6262,9 +6284,61 @@ impl LayoutEngine {
                         let mut guide_style = base_style.clone();
                         guide_style.color = 0x0000FF; // BGR: 빨간색
                         guide_style.italic = true;
-                        let guide_width = estimate_text_width(guide, &guide_style);
                         // 안내문은 [누름틀 시작] 마커 뒤에 위치
                         let guide_x = find_x_for_char(fr.start_char_idx);
+                        // [#6111] 긴 안내문을 한 줄로 그리면 본문·용지 밖까지 나간다
+                        // (56345 7쪽: 49자 안내문이 x 93.7 → 943.7px, 용지 폭 794).
+                        // 한글 편집기는 안내문을 누름틀 줄 상자 안에서 접는다. 안내문은
+                        // 흐름에 영향이 없는 편집 전용 표시라(아래 `with_editor_only`),
+                        // 접힌 뒤 줄들은 순수 오버레이로 아래에 쌓는다 — 첫 조각만
+                        // 마커 shift 폭에 계상한다. 셀 안은 가용 폭 기준이 다르므로
+                        // 종전대로 한 줄에 둔다.
+                        let (body_x, _, body_w, _) = self.current_body_area.get();
+                        let wrap_limit = if cell_ctx.is_none() && body_w > 0.0 {
+                            (body_x + body_w - guide_x).max(0.0)
+                        } else {
+                            0.0
+                        };
+                        let guide_chunks =
+                            split_guide_text_to_width(guide, &guide_style, wrap_limit);
+                        let guide_width = guide_chunks
+                            .first()
+                            .map(|chunk| estimate_text_width(chunk, &guide_style))
+                            .unwrap_or(0.0);
+                        for (idx, chunk) in guide_chunks.iter().enumerate().skip(1) {
+                            let extra_id = tree.next_id();
+                            let extra = RenderNode::new(
+                                extra_id,
+                                RenderNodeType::TextRun(TextRunNode {
+                                    text: (*chunk).to_string(),
+                                    style: guide_style.clone(),
+                                    char_shape_id: None,
+                                    para_shape_id: Some(para_style_id),
+                                    section_index: Some(section_index),
+                                    para_index: Some(para_index),
+                                    char_start: None,
+                                    cell_context: cell_ctx.clone(),
+                                    is_para_end: false,
+                                    is_line_break_end: false,
+                                    rotation: 0.0,
+                                    is_vertical: false,
+                                    char_overlap: None,
+                                    border_fill_id: 0,
+                                    baseline,
+                                    field_marker: FieldMarkerType::None,
+                                    display_text: None,
+                                }),
+                                BoundingBox::new(
+                                    guide_x,
+                                    y + line_height * idx as f64,
+                                    estimate_text_width(chunk, &guide_style),
+                                    line_height,
+                                ),
+                            )
+                            .with_editor_only();
+                            wrapped_guide_overlays.push(extra);
+                        }
+                        let guide = guide_chunks.first().copied().unwrap_or(guide);
                         let guide_id = tree.next_id();
                         let guide_node = RenderNode::new(
                             guide_id,
@@ -6425,6 +6499,9 @@ impl LayoutEngine {
             accumulated_shift += mw;
         }
         // 모든 마커 노드를 children에 추가
+        for overlay in wrapped_guide_overlays {
+            line_node.children.push(overlay);
+        }
         for mi in markers {
             line_node.children.push(mi.node);
         }
@@ -8125,6 +8202,52 @@ pub fn map_pua_bullet_char(ch: char) -> char {
 }
 
 /// HWP COLORREF (0x00BBGGRR) → CSS 색상 문자열 변환
+/// [#6111] 누름틀 안내문을 가용 폭에 맞춰 조각낸다.
+///
+/// 안내문은 흐름에 영향이 없는 편집 전용 표시라 조판 줄바꿈 경로를 타지 않는다.
+/// 그래서 한 줄로 그리면 본문·용지 밖까지 나간다 — 한글 편집기가 누름틀 줄 상자
+/// 안에서 접는 것과 같도록 여기서 폭 기준으로만 자른다. `limit` 이 0 이하면(폭을
+/// 알 수 없는 셀 등) 자르지 않는다.
+fn split_guide_text_to_width<'a>(guide: &'a str, style: &TextStyle, limit: f64) -> Vec<&'a str> {
+    if limit <= 0.0 || estimate_text_width(guide, style) <= limit {
+        return vec![guide];
+    }
+    let mut chunks = Vec::new();
+    let mut rest = guide;
+    while !rest.is_empty() {
+        let mut end = rest.len();
+        let mut cut = None;
+        for (idx, _) in rest.char_indices().skip(1) {
+            if estimate_text_width(&rest[..idx], style) > limit {
+                end = idx;
+                break;
+            }
+            cut = Some(idx);
+        }
+        // 폭 안에 들어가는 마지막 경계까지 자른다. 한 글자도 안 들어가면 한 글자.
+        let take = match cut {
+            Some(idx) if idx < rest.len() => idx,
+            _ => end,
+        };
+        let take = if take == 0 {
+            rest.char_indices()
+                .nth(1)
+                .map(|(i, _)| i)
+                .unwrap_or(rest.len())
+        } else {
+            take
+        };
+        let (head, tail) = rest.split_at(take);
+        chunks.push(head);
+        rest = tail;
+        if chunks.len() > 64 {
+            chunks.push(rest);
+            break;
+        }
+    }
+    chunks
+}
+
 fn form_color_to_css(color: u32) -> String {
     let b = (color >> 16) & 0xFF;
     let g = (color >> 8) & 0xFF;
