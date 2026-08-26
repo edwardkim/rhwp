@@ -10,12 +10,14 @@ last_verified: 2026-08-26
 - **Issue**: [#6053](https://github.com/edwardkim/rhwp/issues/6053) · 부모 [#3683](https://github.com/edwardkim/rhwp/issues/3683) Track B
 - **계획서**: [task_m100_6053.md](../plans/task_m100_6053.md)
 - **브랜치**: `task6053`, 기반 `upstream/devel = 70ebacc4c`
-- **커밋**: S1(모델·페이로드) · S2(로컬 메뉴) · S3(다이얼로그) · S4(e2e) · S5(문서) · 수동 테스트 결함 수정 6건
+- **커밋**: S1(모델·페이로드) · S2(로컬 메뉴) · S3(다이얼로그) · S4(e2e) · S5(문서) ·
+  S6(주식형 렌더러 결함 — 수동 테스트 후속) 6건
 
 ## 결론 한 줄
 
 **rhwp-studio 에서 차트 그리드 셀을 우클릭해 행·계열을 넣고 지우며 계열명과 카테고리 라벨을
-고칠 수 있고, 그 편집이 화면과 저장본에 반영되며 Ctrl+Z 로 원복된다. Rust 변경 0줄.**
+고칠 수 있고, 그 편집이 화면과 저장본에 반영되며 Ctrl+Z 로 원복된다.** 편집 축은 Rust 변경
+0줄이다. 다만 수동 테스트가 **주식형 렌더러의 오래된 결함**을 드러내 그것도 함께 닫았다(§6-2).
 
 ## 1. 무엇이 됐나 — 실브라우저 실측
 
@@ -32,7 +34,7 @@ GridModel(불변) → chart-data-target(페이로드) → wasm-bridge(JSON 패�
 | ③ Ctrl+Z 원복 | 행 5→4, 계열 수 유지 |
 | ④ 무편집 [확인] 무흔적 | 행·첫 값 불변 |
 | ⑤ ESC 는 메뉴만 닫는다 | 메뉴 0항목 · 다이얼로그 유지 · 두 번째 ESC 에 다이얼로그 닫힘 |
-| ⑥ 원형 안내 / 주식형 사전 비활성 | `plot=pie` → 계열 추가 **활성 + 안내** · OHLC(4계열) → 계열 추가 **전건 비활성**(역할 규약 §6-2) · 양끝 삭제·바깥 삽입은 캔들 가드 · HLC(3계열) → 추가 활성(→4)·삭제 비활성(→2) |
+| ⑥ 원형 안내 / 주식형 양끝 비활성 | `plot=pie` → 계열 추가 **활성 + 안내** · `plot=stock, hasUpDownBars=true` → 첫·끝 계열의 삭제와 바깥 삽입 비활성, **중간 삽입은 활성** |
 | ⑦ studio 가드 + TS 검사 + B1 e2e 회귀 0 | 아래 §5 |
 
 증적: `rhwp-studio/e2e/screenshots/6053-{1..6}-*.png`,
@@ -82,34 +84,70 @@ GridModel(불변) → chart-data-target(페이로드) → wasm-bridge(JSON 패�
 | S3 | 다이얼로그 재작성 + 사전 판정 + CSS 2종 | 배선 계약 12건 · 뮤테이션 원장 **3 유지** · `dialog-policy-ledger` green |
 | S4 | e2e + MANIFEST + npm script + B1 e2e 환경 복구 | 실브라우저 전 단계 통과 |
 | S5 | 계획서·보고서 | — |
+| S6 | **(사후)** `render_stock` 역할 일반화 + 회귀 2종 | crate lib 165 · stock 통합 5 (기존 3종 무수정) · SVG 실측 |
 
 ## 5. 검증 실측
 
+렌더러를 건드리므로 `local_validation.md` §4.3 의 **renderer/layout/typeset/WASM** 레인이다.
+
 ```
-npx tsc --noEmit                                   exit 0   (새 pkg/ 기준)
-npx tsc --project tsconfig.ci-unit.json --noEmit   exit 0
-npm test (Node 22.15.0)                            1169 tests / 1167 pass / 1 fail / 1 skip
-python scripts/check_e2e_manifest.py               오류 3건 (전부 선행 부채 — 아래)
-npm run e2e:issue-6053                             전 단계 통과
-e2e issue-4694-chart-data-edit (B1 회귀)           전 단계 통과
-cargo fmt --all -- --check                         exit 0
+# Rust (렌더 레인)
+cargo nextest run --tests --no-fail-fast        8358 run / 8357 passed / 43 skipped / 1 failed*
+cargo clippy --all-targets -- -D warnings       exit 0
+cargo fmt --all -- --check                      exit 0
+git diff --check                                exit 0
+node scripts/rust-test-suite-manifest.mjs --check [--base-ref]   exit 0 (양쪽)
+node scripts/rust-unit-test-tiers.mjs --check [--base-ref]       exit 0 — 4221 tests, base 대비 불변
+focused: issue_2277_stock                       5 passed (기존 3종 무수정 + 신규 2종)
+focused: crate lib (rhwp-ooxml-chart)           165 passed
+
+# Native Skia 3종
+--features native-skia --lib                    passed
+issue_2225_missing_picture_placeholder          2 passed
+render_p37_direct_pdf_export                    4 passed
+
+# WASM · studio
+docker compose run --rm wasm                    성공 — pkg/ 갱신
+npx tsc --noEmit / tsc(ci-unit)                 exit 0
+npm test (Node 22.15.0)                         1168 / 1167 passed / 1 failed**
+npm run e2e:issue-6053                          전 단계 통과
+e2e issue-4694-chart-data-edit (B1 회귀)        전 단계 통과
+python scripts/check_e2e_manifest.py            오류 3건 (선행 부채 — 아래)
 ```
 
-**`cargo fmt` 주석** — 이 파동은 `.rs` 변경 0건이다. 그런데 Windows `core.autocrlf=true`
-체크아웃에서는 모든 `.rs` 가 CRLF 라 rustfmt(`newline_style = Unix`)가 전건 `Incorrect newline
-style` 로 실패한다. 워킹트리의 `.rs` 1947개를 LF 로 정규화(저장 blob 이 LF 라 **내용 diff 0**)한
-뒤 재실행해 **exit 0** 을 받았다. 또한 새 워크트리에는 gitignore 된 `tests/generated/*.rs` 가
-없어 fmt 가 먼저 파일 부재로 죽는다 — `node scripts/rust-test-suite-manifest.mjs --generate` 로
-32개를 만든 뒤 검사했다(생성물은 gitignore 대상이라 커밋하지 않았고, `Cargo.toml` 은 무변경).
+**\* release-test 의 실패 1건은 이 변경과 무관한 Windows 줄끝 문제다.**
+`wmf_emf_goldens_lock_current_engine` — `tests/fixtures/m09x_wmf_emf/*.golden` 의 저장 blob 은
+LF 인데 `core.autocrlf=true` 가 워킹트리를 CRLF 로 바꾼다(`.gitattributes` 에 `*.golden` 핀이
+없다). 골든 9개를 LF 로 정규화하니(내용 diff 0) **통과**했다. PR #6052 본문이 같은 실패를 같은
+원인으로 기록했고, CI(Linux)는 영향받지 않는다. 이 PR 은 WMF/EMF 를 한 줄도 건드리지 않는다.
+
+**\*\* studio 실패 1건**은 착수 기준선과 같은 선행 실패다(아래).
+
+**`cargo fmt` 주석** — 워킹트리의 `.rs` 1947개가 CRLF 라 rustfmt(`newline_style = Unix`)가
+전건 실패한다. LF 로 정규화(저장 blob 이 LF 라 **내용 diff 0**)한 뒤 검사했다. 또 새 워크트리에는
+gitignore 된 `tests/generated/*.rs` 가 없어 fmt 가 파일 부재로 먼저 죽는다 —
+`node scripts/rust-test-suite-manifest.mjs --prepare` 로 준비한 뒤 검사했다(파생 산출물과
+`Cargo.toml`·`tests/suites/manifest.json` 은 커밋하지 않았다).
+
+**시각 증적** — 수정 후 `rhwp export-svg` 실측:
+
+| 문서 | 고저선 | 캔들 | 마커 |
+|---|---|---|---|
+| `issue6037/engine/시가고가저가종가-중간계열추가`(5계열) | 4 | 4 | 8 |
+
+수정 전에는 이 문서가 꺾은선 5개였다(`hwp-stock-*` 0건). 산출을 144DPI 로 래스터해
+`pdf/issue6037/engine/시가고가저가종가-중간계열추가-hwpx.pdf` 와 눈으로 대조했다 — 1월 검은
+캔들(44→32 하락), 나머지 흰 캔들, 고저선이 추가계열 값 11까지, 추가계열 마커. **일치.**
 
 ### 선행 실패 — 착수 시점 기준선과 동일 (회귀 0)
 
-착수 직후 clean `upstream/devel` 에서 기준선을 먼저 찍었다. 최종 실패 2건은 그 기준선과 같다.
+착수 직후 clean `upstream/devel` 에서 기준선을 먼저 찍었다. 남은 실패는 그 기준선과 같다.
 
 | 실패 | 성격 |
 |---|---|
-| `subsecond-runtime` — `Cargo.lock` 에서 `subsecond` 미검출 | 선행. #4694 보고서의 pre-existing 목록에 있다 |
-| `style-undo-routing` — 스타일 WASM 반환 계약 | 선행 **간헐**. 단독 실행 3/3 통과, 전체 스위트에서 초기 2회 실패 후 마지막 3회 통과 — 순서·부하 의존 플레이크로 판단한다 |
+| studio `subsecond-runtime` — `Cargo.lock` 에서 `subsecond` 미검출 | 선행. #4694 보고서의 pre-existing 목록에 있다 |
+| studio `style-undo-routing` — 스타일 WASM 반환 계약 | 선행 **간헐**. 단독 3/3 통과, 전체 스위트에서 초기 2회 실패 후 이후 통과 — 순서·부하 의존 플레이크 |
+| Rust `wmf_emf_goldens_lock_current_engine` | 선행 **Windows 전용 줄끝**. §5 각주 참조 — LF 정규화 후 통과, 내용 diff 0 |
 
 `check_e2e_manifest.py` 의 3건(`loading-busy-cursor`·`status-page-number`·`toolbox-visibility`
 미등재)도 **clean devel 에서 동일하게 재현**했다. 이 변경과 무관한 선행 부채다.
@@ -144,17 +182,16 @@ MANIFEST 배선이 `수동`이라 CI 가 잡지 못한 선행 부채다.
 변경 파일 목록으로 확인된다 — B1 1단계 경로(`input-handler.ts`·`input-handler-mouse.ts`·
 `ui/context-menu.ts`·`command/commands/insert.ts`·`main.ts`)는 **전부 무변경**이다.
 
-## 6-2. 수동 테스트에서 잡힌 결함 1건 — 주식형 계열 추가가 선형으로 떨어진다
+## 6-2. 수동 테스트가 드러낸 렌더러 결함 — 주식형 계열 역할
 
-작업지시자가 `시가고가저가종가` 에서 **계열을 추가하니 라인형으로 렌더링**된다고 보고했다.
-재현·근본 원인·수정을 모두 닫았다.
+작업지시자가 `시가고가저가종가`에 계열을 추가하니 **라인형으로 렌더링된다**고 보고했다.
 
-**재현** — OHLC(4계열) 그리드에서 첫 계열 오른쪽에 계열 추가 → [확인]. 봉투는 정상이다:
-`plot` 은 `stock` 그대로, `hasUpDownBars` 도 `true` 그대로, 양끝(시가·종가)도 유지, 5계열.
-**데이터 쓰기는 옳았다.** 깨진 것은 그림이다 — 캔들도 고저선도 사라지고 5개의 평범한 꺾은선이
-그려진다.
+**문서는 정상이었다.** 편집 후 봉투는 `plot=stock`·`hasUpDownBars=true`·양끝(시가·종가) 유지·
+5계열로 의도한 그대로다. 어긋난 것은 rhwp 렌더러다.
 
-**근본 원인** — `crates/rhwp-ooxml-chart/src/renderer.rs:816-820`:
+### 틀린 술어
+
+`crates/rhwp-ooxml-chart/src/renderer.rs` `render_stock` 이 계열 역할을 **위치로 고정**했다.
 
 ```rust
 let (hi_i, lo_i, close_i, open_i) = match chart.series.len() {
@@ -164,28 +201,63 @@ let (hi_i, lo_i, close_i, open_i) = match chart.series.len() {
 };
 ```
 
-주식형은 계열의 **뜻이 XML 순서로 정해진다.** 3·4계열 밖에는 역할 매핑이 없어 렌더러가 선형
-폴백한다(placeholder 재발 방지용 의도된 안전장치다). 문서는 멀쩡한데 그림만 바뀐다.
+### 반증 — 전부 저장소에 이미 있었다
 
-**왜 기존 가드가 못 잡았나** — 축이 다르다. `candleAnchorBroken`(#6037)은 *양끝이 바뀌어 캔들
-몸통이 엉뚱한 짝으로 잡히는가* 를 보고, 계열 수가 바뀔 때만 발화하며 **중간 삽입은 양끝이
-그대로라 통과한다.** 코어도 거부하지 않으니 dryRun 도 조용하다. #6037 은 한컴 산출을 쟀고
-4→3 방향만 "정상 렌더"로 확인했을 뿐, **rhwp 자신의 렌더러가 4→5 에서 폴백한다는 사실은
-그 원장에 없다.**
-
-**수정** — 봉투에서 유도되는 새 술어 `stockRoleCountBroken(data, nextCount)`
-(`plot === 'stock'` ∧ `nextCount ∉ {3,4}`)를 두고 계열 추가·삭제 양쪽에 걸었다. 실측:
-
-| 차트 | 계열 추가 | 계열 삭제 |
+| 자산 | 무엇 | 한컴 렌더 |
 |---|---|---|
-| OHLC 4계열 | **전건 비활성**(→5) | 중간만 허용(→3) · 양끝은 캔들 가드 |
-| HLC 3계열 | 허용(→4) | **비활성**(→2) |
+| `pdf/issue6037/engine/시가고가저가종가-중간계열추가-hwpx.pdf` | **rhwp 엔진**이 만든 5계열 | 캔들 유지 · 추가계열은 마커 |
+| `samples/issue6037/MANIFEST.json` `finding.first_end` | 4→3 삭제, `upDownBars` 잔존 | *"HLC 구성인데도 upDownBars 가 남아 캔들이 그려진다"* |
+| `samples/issue6037/고가저가종가-꼬리계열추가.hwpx` | 4계열 HLC | 옛 `(hi=1, lo=2)` 가 저가↔종가를 집던 사례 — **계열 수 3·4 안에서도 틀렸다** |
 
-원형은 그대로 안내만 한다 — 무효과와 파손을 다르게 다루는 원칙이 유지된다.
+작업지시자가 회수한 한컴 편집기 산출(5계열, 새 계열 값 5)에서는 고저선이 **5까지** 내려와
+「전 계열 최소」임을 직접 보인다. 그 파일은 커밋하지 않았다 — 위 세 자산이 같은 결론을
+독립적으로 받쳐 주고, `samples/chart/**` 에 넣으면 전수 baseline 게이트 3종이 발동한다.
 
-**남는 것(후속 §8-3)** — rhwp 렌더러의 3·4 창과 한컴의 동작이 어긋날 수 있다. #6037 원장은
-`시가고가저가종가 중간계열추가` 를 한컴에서 0.59%(반영)로 기록했는데, rhwp 는 같은 문서를
-선형으로 그린다. UI 는 보수적으로 막았지만 **렌더 축의 정합은 별건**이다.
+즉 **#6037 원장과 렌더러가 서로 모순인 상태**였고 아무도 잡고 있지 않았다.
+
+### 참인 규칙과 수정
+
+OOXML 본래 의미다 — **고저선 = 카테고리별 전 계열 최소↔최대**, **캔들 = 첫 계열↔끝 계열**
+(`upDownBars` 가 있으면 계열 수와 무관). 위치 `match` 와 `render_line` 폴백을 걷어냈다.
+
+변경면은 함수 머리 한 곳뿐이다. 마커 루프는 이미 전 계열을 돌고 있었고(`marker_symbol` 이
+`Auto|Named` 인 계열마다), 축도 `raw_value_bounds(chart.series.iter())` 라 전 계열 기준이었다.
+
+**기존 렌더는 바뀌지 않는다.** 코퍼스 두 픽스처의 전 카테고리에서 두 규칙이 같은 값을 낸다:
+
+| 픽스처 | cat0 | cat1 | cat2 | cat3 |
+|---|---|---|---|---|
+| HLC `고가저가종가` | (11,55) | (12,57) | (13,57) | (21,59) |
+| OHLC `시가고가저가종가` | (11,55) | (12,57) | (13,57) | (21,59) |
+
+기존 stock 시험 6종이 **무수정 통과**한다. 폴백을 단언하던 1건
+(`test_stock_unusual_series_count_line_fallback`)만 전제가 반증돼 같은 자리에서 다시 썼다 —
+`rust-unit-test-tiers` 가 source-side 시험 **증가**를 금지하므로 개수는 그대로다.
+
+### 회귀 시험 — 신규 픽스처 0건
+
+`tests/issue_2277_stock.rs` 에 2종을 더했다(이미 커밋된 자산만 사용).
+
+- `stock_five_series_keeps_candles_and_hilow` — 5계열이 고저선 4 · 캔들 4 · 1월 하락(`#404040`) ·
+  마커 8(종가 4 + 추가계열 4)
+- `stock_hilow_spans_all_series_not_positional_pair` — 4계열 HLC 에서 카테고리별 고저선 길이
+  비율이 `[44,45,44,47]`(전 계열 최소↔최대)이지 `[21,23,21,14]`(옛 저가↔종가)가 아님
+
+두 번째는 축·플롯 기하에 기대지 않는다 — 값축이 선형이므로 **길이의 비율**만으로 두 규칙이
+갈린다.
+
+### UI 는 아무것도 막지 않는다
+
+처음에는 UI 에서 주식형 계열 수를 3·4로 묶어 막았다. **그 판단은 틀렸고 되돌렸다** — 한컴이
+정상 처리하고 문서도 멀쩡한 편집을, 우리 렌더러가 부족하다는 이유로 막는 것은 과잉 차단이다.
+렌더러를 고친 지금은 안내할 차이조차 없다. 주식형 사전 비활성은 **캔들 양끝 가드
+(`candleAnchorBroken`, 편집 축)만** 남는다.
+
+### 남은 차이 1건
+
+5계열 산출에서 종가 마커 글리프가 한컴(×)과 다르다(rhwp ◆). 마커 글리프는 계열 인덱스
+사이클(`si % 4`)의 근사이고 이번 변경이 건드리지 않은 기존 축이다 — 4계열 코퍼스의
+`test_stock_close_marker_only`(×)는 그대로 통과한다.
 
 ## 7. 알려진 한계
 
@@ -205,5 +277,10 @@ let (hi_i, lo_i, close_i, open_i) = match chart.series.len() {
 2. `.gitattributes` 에 소스 가드가 읽는 경로의 `eol=lf` 고정 — Windows 체크아웃에서 게이트가
    조용히 무력화되는 것을 구조적으로 막는다
 3. 차트 e2e 2종을 CI 에 배선 — 지금은 둘 다 `수동`이라 이번 같은 부패를 아무도 못 잡는다
-4. **주식형 렌더 정합** — rhwp `render_stock` 은 3·4계열 밖을 선형 폴백하는데 한컴은 같은 문서를
-   다르게 그릴 수 있다(#6037 원장의 `중간계열추가` 0.59% 반영). 렌더 축 별건으로 접수 필요 (§6-2)
+4. **차트를 렌더 회귀 게이트에 넣기** — 이번 결함이 오래 살아남은 이유가 여기 있다.
+   `tests/golden_svg/**` 에 차트가 **0건**이고, renderer baseline 의 차트 4건은 `extended` 티어라
+   `--scope=full` 없이는 안 돌며(게다가 등록된 것은 HLC 뿐, 캔들이 있는 OHLC 는 없다),
+   `render-diff` 계열은 `rhwp-studio/public/samples` 한정이라 차트를 아예 안 덮는다.
+   추가로 `.github/workflows/render-diff.yml` 의 paths 에 `crates/**` 가 없어 크레이트만 바꾼
+   PR 은 Render Diff 가 뜨지도 않는다
+5. 마커 글리프 사이클을 한컴 정답지에 맞추기 — 5계열에서 종가가 ×(한컴) vs ◆(rhwp)로 갈린다 (§6-2)

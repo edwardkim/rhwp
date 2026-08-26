@@ -806,17 +806,22 @@ fn render_line(svg: &mut String, chart: &OoxmlChart, px: f64, py: f64, pw: f64, 
 
 // ---------------- Stock (주식형, hiLowLines/upDownBars) ----------------
 
-/// stock (주식형). 계열 역할 = XML 순서 규약: 3계열=고/저/종, 4계열=시/고/저/종
-/// (코퍼스 실측 — 그 외 계열 수는 render_line 폴백으로 placeholder 재발 방지).
-/// 정답지 정합: 검정 고저선 + (OHLC) 시가↔종가 캔들(하락=진회색 채움/상승=흰
-/// 채움+검정 테두리) + 종가 마커(마커 사이클·팔레트 폴백이 ▲회색/×노랑을 자동
-/// 결정 — 시/고/저는 `c:symbol val="none"`이라 무마커). (C2a #2277)
+/// stock (주식형). 계열 역할은 **위치가 아니라 그리기 장치가 정한다** — OOXML 본래 의미:
+/// `c:hiLowLines` 는 그 카테고리의 **전 계열 최소↔최대**, `c:upDownBars` 는 **첫 계열↔끝 계열**.
+/// 정답지 정합: 검정 고저선 + 캔들(하락=진회색 채움/상승=흰 채움+검정 테두리) + 마커
+/// (마커 사이클·팔레트 폴백이 ▲회색/×노랑을 자동 결정 — `c:symbol val="none"` 계열은 무마커).
+///
+/// [#6053] 예전에는 역할을 순서로 고정했다(3계열=고/저/종, 4계열=시/고/저/종, 그 밖은
+/// `render_line` 폴백). 한컴 실측이 그 규약을 반증한다:
+/// - 5계열에서도 캔들·고저선이 남고 고저선이 **추가 계열의 낮은 값까지** 내려온다
+///   (`pdf/issue6037/engine/시가고가저가종가-중간계열추가-hwpx.pdf`).
+/// - 3계열이어도 `upDownBars` 가 남아 있으면 몸통이 **첫↔끝**으로 다시 잡힌다
+///   (`samples/issue6037/MANIFEST.json` `finding.first_end`).
+/// - 4계열 HLC(`고가저가종가-꼬리계열추가`)는 옛 `(hi=1, lo=2)` 가 저가↔종가를 집어 **틀렸다**.
+///
+/// 코퍼스 3·4계열(`고가저가종가`·`시가고가저가종가`)에서는 이 규칙이 옛 위치 매핑과 카테고리마다
+/// **같은 값**을 낸다 — 그래서 기존 정답지 정합이 그대로 유지된다. (C2a #2277)
 fn render_stock(svg: &mut String, chart: &OoxmlChart, px: f64, py: f64, pw: f64, ph: f64) {
-    let (hi_i, lo_i, close_i, open_i) = match chart.series.len() {
-        3 => (0usize, 1usize, 2usize, None),
-        4 => (1, 2, 3, Some(0usize)),
-        _ => return render_line(svg, chart, px, py, pw, ph),
-    };
     let cat_count = chart.categories.len().max(
         chart
             .series
@@ -863,8 +868,23 @@ fn render_stock(svg: &mut String, chart: &OoxmlChart, px: f64, py: f64, pw: f64,
         };
         py + ph - ph * t
     };
-    let val = |si: usize, ci: usize| -> Option<f64> {
-        chart.series.get(si).and_then(|s| s.values.get(ci)).copied()
+    // 고저선의 양끝 — 그 카테고리에 값을 가진 **전 계열**의 최소·최대.
+    let hi_lo = |ci: usize| -> Option<(f64, f64)> {
+        let mut vals = chart
+            .series
+            .iter()
+            .filter_map(|s| s.values.get(ci).copied());
+        let first = vals.next()?;
+        Some(vals.fold((first, first), |(lo, hi), v| (lo.min(v), hi.max(v))))
+    };
+    // 캔들 몸통 — 첫 계열↔끝 계열. 계열이 하나면 짝이 없어 몸통을 세울 수 없다.
+    let open_close = |ci: usize| -> Option<(f64, f64)> {
+        if chart.series.len() < 2 {
+            return None;
+        }
+        let open = chart.series.first()?.values.get(ci).copied()?;
+        let close = chart.series.last()?.values.get(ci).copied()?;
+        Some((open, close))
     };
     let cat_span = pw / cat_count as f64;
     // 캔들 폭 = cat_span / (1 + gapWidth/100) — 정답지 gapWidth=150 → 슬롯의 40%
@@ -874,7 +894,7 @@ fn render_stock(svg: &mut String, chart: &OoxmlChart, px: f64, py: f64, pw: f64,
     for ci in 0..cat_count {
         let x = px + cat_span * (ci as f64 + 0.5);
         if chart.has_hi_low_lines {
-            if let (Some(hi), Some(lo)) = (val(hi_i, ci), val(lo_i, ci)) {
+            if let Some((lo, hi)) = hi_lo(ci) {
                 svg.push_str(&format!(
                     "<line class=\"hwp-stock-hilow\" x1=\"{:.2}\" y1=\"{:.2}\" x2=\"{:.2}\" y2=\"{:.2}\" stroke=\"#000000\" stroke-width=\"1\"/>\n",
                     x,
@@ -885,8 +905,7 @@ fn render_stock(svg: &mut String, chart: &OoxmlChart, px: f64, py: f64, pw: f64,
             }
         }
         if chart.has_up_down_bars {
-            if let (Some(open), Some(close)) = (open_i.and_then(|oi| val(oi, ci)), val(close_i, ci))
-            {
+            if let Some((open, close)) = open_close(ci) {
                 let top = y_of(open.max(close));
                 let bot = y_of(open.min(close));
                 // 하락(종<시)=진회색 채움(#404040 근사 — 시각판정에서 픽셀 실측 확정),
@@ -2975,13 +2994,20 @@ mod tests {
     }
 
     #[test]
-    fn test_stock_unusual_series_count_line_fallback() {
-        // 계열 수 3/4 외 → render_line 폴백 (placeholder 재발 방지)
+    fn test_stock_unusual_series_count_still_draws_hilow() {
+        // [#6053] 계열 수는 역할을 정하지 않는다 — 고저선은 전 계열 최소↔최대라 3·4 밖에서도
+        // 그려진다. 예전에는 여기서 render_line 으로 폴백했는데, 한컴은 5계열에서도 주식형으로
+        // 그린다는 실측이 그 규약을 반증했다(pdf/issue6037/engine/시가고가저가종가-중간계열추가).
         let mut chart = stock_chart(3);
-        chart.series.truncate(2);
+        chart.series.truncate(2); // [고가, 저가]
         let svg = render_chart_svg(&chart, 0.0, 0.0, 400.0, 300.0);
-        assert_eq!(svg.matches("hwp-stock-hilow").count(), 0);
-        assert!(!data_line_paths(&svg).is_empty(), "라인 폴백으로 렌더");
+        assert_eq!(
+            svg.matches("hwp-stock-hilow").count(),
+            4,
+            "카테고리당 고저선 1 — 선형 폴백이 아니다",
+        );
+        // upDownBars 가 없는 픽스처(n != 4)라 몸통은 서지 않는다.
+        assert_eq!(svg.matches("hwp-stock-candle").count(), 0);
         assert!(!svg.contains("hwp-ooxml-chart-fallback"));
     }
 
