@@ -9591,9 +9591,19 @@ impl LayoutEngine {
                             // 리셋 실재 + 사다리 전체 선형-정확. 이 증거가 없는
                             // 셀(issue3637 계열)에 문단 등식만으로 계상하면 조각
                             // 경계가 한 줄 밀린다(로컬 게이트 실측).
-                            if self.profile.get().hwpx_stored_layout()
+                            // [#6126] 같은 계상 결손이 native HWP5 에도 있다 —
+                            // 3171199 별표 1 3쪽 조각은 중첩 표 host 하나당 ls
+                            // (9.6px)씩 컷 회계가 짧아, 마지막 한 줄이 조각 상자
+                            // 밖(칸 하단 +7.6px)에 그려진다. HWPX 갈래가 요구하는
+                            // 사다리 전제(쪽 스케일 리셋·선형-정확)는 HWPX 저장
+                            // 형상에만 있는 것이라, HWP5 는 **문단 델타 등식**
+                            // 증거만으로 계상한다(등식 없는 host 는 종전대로).
+                            let native_stored_ladder =
+                                self.profile.get().hwp5_stored_pagination_layout();
+                            if (self.profile.get().hwpx_stored_layout()
                                 && cell_has_page_scale_frame_reset
-                                && cell_ladder_uniform_exact
+                                && cell_ladder_uniform_exact)
+                                || native_stored_ladder
                             {
                                 if let Some(seg) =
                                     p.line_segs.iter().find(|seg| !line_seg_is_synthetic(seg))
@@ -9625,7 +9635,9 @@ impl LayoutEngine {
                                         && table.col_count == 1;
                                     let charge = match evidence {
                                         Some(delta) if delta >= 0 => (delta - slot).abs() <= 2,
-                                        _ => wrapper_shape,
+                                        // 증거가 없을 때의 1×1 래퍼 폴백은 HWPX
+                                        // 저장 형상 전용이다 — HWP5 는 등식만 본다.
+                                        _ => wrapper_shape && !native_stored_ladder,
                                     };
                                     if charge {
                                         uh += hwpunit_to_px(seg.line_spacing.max(0), self.dpi);
