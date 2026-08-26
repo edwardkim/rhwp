@@ -5,7 +5,7 @@
 - **브랜치**: `codex/issue-6112-toolbox-collapse`
 - **구현 commit**: `d707d4cf2b4efef757420381b6a460f1b325482e`
 - **작성일**: 2026-08-26 KST
-- **현재 상태**: 로컬 구현·검증·사후 문서 승인 완료, PR 준비 진행
+- **현재 상태**: 최신 devel 동기화·로컬 PR 검증 완료, 원격 push·PR 생성 대기
 
 ## 결과 요약
 
@@ -22,7 +22,7 @@
 | 저장된 표시값 복원 | 충족 | 버튼·단축키 저장 후 리로드 E2E |
 | 버튼·메뉴·단축키 단일 커맨드 | 충족 | `data-cmd`, shortcut map, dispatcher 계약 테스트 |
 | 버튼 접근성 상태 동기화 | 충족 | 단위 테스트와 브라우저 `aria-expanded`·label·title 확인 |
-| 첫 페인트 깜빡임 없음 | 충족 | 숨김 상태 리로드 `0/35` visible frames |
+| 첫 페인트 깜빡임 없음 | 충족 | 최신 devel 병합 뒤 숨김 상태 리로드 `0/37` visible frames |
 | Studio 전체 회귀 | 충족 | 1,138 tests, 1,137 pass, 1 skip, 0 fail |
 | 타입·프로덕션 빌드 | 충족 | `tsc && vite build` 성공 |
 
@@ -47,7 +47,9 @@
 - Studio 전체: 1,137 pass / 0 fail / 1 skip
 - TypeScript·Vite production build: 통과
 - 실제 브라우저 버튼 클릭, Ctrl+F1, 저장·리로드: 통과
-- 숨김 첫 페인트: visible frame 0/35
+- 숨김 첫 페인트: 초기 0/35, 최신 devel 병합 뒤 0/37 visible frames
+- `cargo fmt --all`, `cargo fmt --all -- --check`: 통과
+- Markdown 링크: 603개 문서, 상대 링크 이상 없음
 - `git diff --check`: 통과
 
 ## 절차 감사
@@ -61,6 +63,6 @@
 
 1. 완료 — 작업지시자가 수행·구현 계획, 단계 보고, 최종 보고와 절차 복구 문서를 검토하고 PR
    게이트 진입을 승인했다.
-2. 최신 `upstream/devel`을 동기화하고 push 직전 공통 포맷·문서 검사를 실행한다.
+2. 완료 — 최신 `upstream/devel@6b5c4f871`을 merge하고 공통 포맷·문서·Studio 검사를 통과했다.
 3. 원격 branch push와 `devel` 대상 PR을 생성한다.
 4. PR CI·리뷰·사용자 판정 뒤 merge와 #6112 close를 별도 승인으로 처리한다.
