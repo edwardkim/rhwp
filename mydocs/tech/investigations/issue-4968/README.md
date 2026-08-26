@@ -37,3 +37,29 @@ python3 scripts/font_kerning_cohort.py \
 
 공개 정본의 canonical SHA-256은
 `95309e457f78de38f2b1470b05e6f0fe97f00684ffff5eddd4d82c6438fb71e6`이다.
+
+## Stage W9-Q1
+
+- 공개 정본: [`kerning_q1_baseline.json`](kerning_q1_baseline.json)
+- 기준선 도구: [`scripts/kerning_q1_baseline.mjs`](../../../../scripts/kerning_q1_baseline.mjs)
+- 계약 테스트:
+  [`scripts/tests/kerning_q1_baseline.test.mjs`](../../../../scripts/tests/kerning_q1_baseline.test.mjs)
+- 수행 보고서: [`task_m100_4968_w9_q1.md`](../../../working/task_m100_4968_w9_q1.md)
+
+W5 공개 fixture의 kerning-off body matrix 9개 run에서 native와 Docker WASM positions가 전항 일치했고,
+SVG는 400,536 bytes로 byte-exact 일치했다. layer-tree 원문에는 synthetic paragraph sentinel의 target
+pointer-width 표현 차이가 20건 존재한다. 양쪽 raw hash를 보존하고 그 sentinel만 `para:MAX`로 정규화했을
+때 전체 tree가 일치해야 통과하도록 했다.
+
+Q1은 제품 조판을 바꾸지 않는다. request·capability·disposition·source provenance·fallback reason의 최소
+계약과 32 MiB/4,096 상한을 동결하고, `rustybuzz`를 Q2·Q3 검증 조건이 붙은 공통 엔진 후보로 선택했다.
+
+```bash
+docker compose --env-file .env.docker run --rm wasm
+cargo build --release --bin rhwp --bin rhwp-q-kit
+node --test scripts/tests/kerning_q1_baseline.test.mjs
+node scripts/kerning_q1_baseline.mjs
+```
+
+공개 정본의 canonical SHA-256은
+`74f0310aa61cb4464b7176a4f53b4154aab3b828bbf5608ed7ebc9644689d499`다.
