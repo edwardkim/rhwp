@@ -4206,7 +4206,14 @@ impl LayoutEngine {
                     .runs
                     .iter()
                     .any(|r| r.text.chars().any(|c| c != ' '));
-            let trailing_ws_width = if (alignment == Alignment::Right && cell_ctx.is_none())
+            // [#5820] 글상자(drawText) 안 문단은 표 셀이 아니다 — 한글은 글상자
+            // 안에서도 오른쪽 정렬의 말미 공백을 제외한다(156560092 글상자:
+            // [로고A][로고B][공백5] RIGHT 문단 — 한글 로고 우변 여백 4.1px,
+            // 포함 시 공백 폭 32.7px 만큼 좌측 이탈). 셀 내부 포함-정렬 계약
+            // (issue_1285)은 in_textbox=false 로 그대로 유지된다.
+            let right_align_excludes_trailing_ws =
+                alignment == Alignment::Right && cell_ctx.as_ref().is_none_or(|c| c.in_textbox);
+            let trailing_ws_width = if right_align_excludes_trailing_ws
                 || center_excludes_trailing_ws
             {
                 // 말미 공백이 서로 다른 글꼴/글자 크기의 run 경계를 넘을 수 있다.

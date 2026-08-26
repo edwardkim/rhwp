@@ -655,6 +655,7 @@ impl LayoutEngine {
             };
 
             let cell_ctx = super::CellContext {
+                in_textbox: false,
                 parent_para_index: para_index,
                 path: vec![super::CellPathEntry {
                     control_index,
