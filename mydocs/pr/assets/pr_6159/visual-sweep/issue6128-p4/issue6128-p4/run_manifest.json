@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "key": "issue6128-p4",
+  "provenance": {
+    "hwp": {
+      "path": "samples/issue6128/156653004_privacy_day_ceremony.hwpx",
+      "sha256": "57472073c82bb6f1db2f214cddadf04ae219b26db188917b33d1211fb4abefd5"
+    },
+    "pdf": {
+      "path": "output/review-planet6897-6125-6153-6155-20260827/baseline/issue6128/issue6128-hwp2020.pdf",
+      "sha256": "35f2d6db2854acc9292ad2d8057ce4e81993fece6bcd02f214596428d98331ac"
+    },
+    "git_head": "a6616441b21c6127999039419625a622f86db982",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "f438924fe2a8654d2a6560313971832470a54792bf423ff920a46ae493a98a43"
+    },
+    "rhwp_binary": {
+      "configured": "target/pr-review-planet6897-6125-6153-6155/release-test/rhwp",
+      "path": "target/pr-review-planet6897-6125-6153-6155/release-test/rhwp",
+      "sha256": "2aefca93a0f8e6a8e1ce124731094bd281eba4dd24f5051f92e47d0578f4e1aa"
+    }
+  },
+  "dpi": 96,
+  "pixel_diff_threshold": 32,
+  "requested_pages": [
+    4
+  ],
+  "requested_page_shards": [
+    [
+      4
+    ]
+  ],
+  "run_state": "complete"
+}
