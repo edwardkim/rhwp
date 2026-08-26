@@ -1154,6 +1154,58 @@ impl HeightMeasurer {
         total
     }
 
+    /// [#6124] 비례 축소로 내용 아래까지 눌린 세로 병합 묶음을 되돌린다.
+    ///
+    /// TAC 표 축소(#5748)의 행별 내용 하한은 `row_span == 1` 셀만 세운다. 세로
+    /// 병합 칸은 그 하한에 잡히지 않아, 걸친 행들이 각자 여유만큼 줄어들면
+    /// 묶음 전체가 칸 내용보다 짧아질 수 있다. 이때 마지막 걸침 행에 부족분을
+    /// 되돌려 준다 — 배분은 그대로 두므로, 눌리지 않은 표의 기하는 불변이다.
+    fn restore_shrunk_merged_cells(
+        table: &Table,
+        row_count: usize,
+        row_heights: &mut [f64],
+        cell_spacing: f64,
+        dpi: f64,
+    ) {
+        for cell in &table.cells {
+            let r = cell.row as usize;
+            let span = cell.row_span as usize;
+            if span <= 1 || r >= row_count || cell.paragraphs.is_empty() {
+                continue;
+            }
+            let end = (r + span).min(row_count);
+            if end <= r
+                || cell
+                    .paragraphs
+                    .iter()
+                    .any(crate::renderer::para_has_no_stored_line_segs)
+            {
+                continue;
+            }
+            let content_hu = cell
+                .paragraphs
+                .iter()
+                .flat_map(|p| p.line_segs.iter())
+                .map(|seg| i64::from(seg.vertical_pos) + i64::from(seg.line_height))
+                .max()
+                .unwrap_or(0);
+            if content_hu <= 0 {
+                continue;
+            }
+            let pad = hwpunit_to_px(
+                (cell.padding.top as i32).saturating_add(cell.padding.bottom as i32),
+                dpi,
+            );
+            let needed = hwpunit_to_px(content_hu as i32, dpi) + pad;
+            // 걸친 행 사이의 칸 간격도 내용이 쓸 수 있는 높이다.
+            let spanned: f64 = row_heights[r..end].iter().sum::<f64>()
+                + cell_spacing * (end - r).saturating_sub(1) as f64;
+            if needed > spanned + 0.5 {
+                row_heights[end - 1] += needed - spanned;
+            }
+        }
+    }
+
     /// 표의 높이를 측정한다.
     /// layout_table과 동일한 방식으로 셀 내용 높이를 고려한다.
     fn measure_table(
@@ -2588,7 +2640,21 @@ impl HeightMeasurer {
                     let slack = (*h - f).max(0.0);
                     *h -= deficit * slack / total_slack;
                 }
-                common_h
+                // [#6124] 위 하한은 `row_span == 1` 셀만 본다 — 세로 병합 칸은
+                // 여유가 무제한인 것처럼 취급돼 그 묶음이 내용 아래로 눌린다
+                // (2737927 별표 1 8쪽: 4행 병합 평가방법 칸이 179.5 → 164.4px,
+                // 내용은 여백까지 178.0px 이라 마지막 줄 "정정 필요함 **" 이
+                // 칸 하단 괘선에 잘렸다). 배분 자체는 건드리지 않고, 눌린
+                // 묶음만 마지막 걸침 행으로 되돌린다 — #6030 과 같은 손질로,
+                // 한글은 이때 표를 선언보다 키운다.
+                Self::restore_shrunk_merged_cells(
+                    table,
+                    row_count,
+                    &mut row_heights,
+                    cell_spacing,
+                    self.dpi,
+                );
+                row_heights.iter().sum::<f64>() + cell_spacing * row_count.saturating_sub(1) as f64
             } else if deficit <= TAC_FLOOR_OVERFLOW_NOSHRINK_CAP_PX {
                 // [#6030] 선택지·심사서식처럼 하한 합이 선언을 반 줄 미만으로
                 // 넘는 표는 균일 축소하지 않는다. 거대 overfill 표는 종전
@@ -2599,7 +2665,16 @@ impl HeightMeasurer {
                 for h in &mut row_heights {
                     *h *= scale;
                 }
-                common_h
+                // [#6124] 균일 축소도 같은 사각을 갖는다 — 세로 병합 묶음은
+                // 행별 내용 하한에 잡히지 않아 내용 아래로 눌린다.
+                Self::restore_shrunk_merged_cells(
+                    table,
+                    row_count,
+                    &mut row_heights,
+                    cell_spacing,
+                    self.dpi,
+                );
+                row_heights.iter().sum::<f64>() + cell_spacing * row_count.saturating_sub(1) as f64
             }
         } else if !table.common.treat_as_char
             && common_h > 0.0

@@ -12,7 +12,7 @@ use super::border_rendering::{
 };
 use super::table_layout::{
     calc_nested_split_rows, effective_margin_left_line, extend_completed_nested_table_border_clips,
-    native_terminal_child_host_line_spacing, NestedTableSplit,
+    native_terminal_child_host_line_spacing, NestedTableSplit, INLINE_WRAP_WIDTH_EPSILON_PX,
 };
 use super::text_measurement::{estimate_text_width, resolved_to_text_style};
 use super::utils::find_bin_data;
@@ -1785,12 +1785,42 @@ impl LayoutEngine {
                         .unwrap_or(Alignment::Left);
 
                     // 인라인 컨트롤의 시작 X 위치 (정렬 기반)
+                    //
+                    // [#6122] 개체 폭 합이 칸 내폭을 넘으면 아래 배치 루프가 저장
+                    // lineseg 에 맞춰 줄을 나눈다 — 그때 첫 줄의 폭은 합이 아니라 첫
+                    // 개체의 폭이다. 합으로 잡으면 `.max(0.0)` 이 0 이 되어 가운데
+                    // 정렬 그림이 칸 왼쪽 끝에 붙었다.
+                    let first_inline_width = para
+                        .controls
+                        .iter()
+                        .find_map(|ctrl| match ctrl {
+                            Control::Picture(pic) if pic.common.treat_as_char => {
+                                Some(hwpunit_to_px(pic.common.width as i32, self.dpi))
+                            }
+                            Control::Shape(shape) if shape.common().treat_as_char => {
+                                Some(hwpunit_to_px(shape.common().width as i32, self.dpi))
+                            }
+                            Control::Equation(eq) => {
+                                Some(hwpunit_to_px(eq.common.width as i32, self.dpi))
+                            }
+                            _ => None,
+                        })
+                        .map(|width| width.min(inner_area.width))
+                        .unwrap_or(total_inline_width);
+                    let inline_align_width = if total_inline_width
+                        > inner_area.width + INLINE_WRAP_WIDTH_EPSILON_PX
+                        && para.line_segs.len() > 1
+                    {
+                        first_inline_width
+                    } else {
+                        total_inline_width
+                    };
                     let mut inline_x = match para_alignment {
                         Alignment::Center | Alignment::Distribute => {
-                            inner_area.x + (inner_area.width - total_inline_width).max(0.0) / 2.0
+                            inner_area.x + (inner_area.width - inline_align_width).max(0.0) / 2.0
                         }
                         Alignment::Right => {
-                            inner_area.x + (inner_area.width - total_inline_width).max(0.0)
+                            inner_area.x + (inner_area.width - inline_align_width).max(0.0)
                         }
                         _ => inner_area.x,
                     };
@@ -1829,6 +1859,14 @@ impl LayoutEngine {
                         }
                     };
                     let mut empty_tac_y = para_y_before_compose;
+                    // [#6122] 텍스트를 가진 문단의 인라인 TAC 개체 폴백은 저장 lineseg 를
+                    // 보지 않고 x 만 누적해 왔다 — 폭 초과 개행을 위해 현재 줄과 그 줄의
+                    // 흐름 y 를 함께 들고 간다.
+                    let mut inline_tac_line = 0usize;
+                    let mut inline_tac_y = para_y_before_compose;
+                    // 폭 초과로 줄을 내린 개체의 하단 — composed 는 그 개체를 줄 높이에
+                    // 계상하지 않아(첫 줄이 글꼴 줄높이 그대로다) 흐름이 모자란다.
+                    let mut wrapped_tac_flow_bottom: Option<f64> = None;
                     let mut rendered_top_and_bottom_non_inline = false;
 
                     for (ctrl_idx, ctrl) in para.controls.iter().enumerate() {
@@ -1956,9 +1994,61 @@ impl LayoutEngine {
                                         } else {
                                             pic_h
                                         };
+                                        // [#6122] 이미 이 줄에 개체가 있고 폭 합이 칸 내폭을
+                                        // 넘으면 한글은 다음 줄로 내린다 — 저장 lineseg 가
+                                        // 그 증거다(2181727 6쪽 [그림 7]: 줄 2개의 높이가
+                                        // 각 그림 높이와 정확히 같다). 이 폴백은 저장 줄을
+                                        // 보지 않고 x 만 누적해 둘째 그림이 칸·용지 밖으로
+                                        // 나갔다(#4370·#6101 과 같은 인라인 개체 폭 초과
+                                        // 미개행 계열).
+                                        if inline_x > inner_area.x + INLINE_WRAP_WIDTH_EPSILON_PX
+                                            && inline_x + clamped_w
+                                                > inner_area.x
+                                                    + inner_area.width
+                                                    + INLINE_WRAP_WIDTH_EPSILON_PX
+                                            && inline_tac_line + 1 < para.line_segs.len()
+                                        {
+                                            inline_tac_line += 1;
+                                            let line_margin = effective_margin_left_line(
+                                                para_margin_left,
+                                                para_indent,
+                                                inline_tac_line,
+                                            );
+                                            inline_x = match para_alignment {
+                                                Alignment::Center | Alignment::Distribute => {
+                                                    inner_area.x
+                                                        + (inner_area.width - clamped_w).max(0.0)
+                                                            / 2.0
+                                                }
+                                                Alignment::Right => {
+                                                    inner_area.x
+                                                        + (inner_area.width - clamped_w).max(0.0)
+                                                }
+                                                _ => inner_area.x + line_margin,
+                                            };
+                                            let first_vpos = para
+                                                .line_segs
+                                                .first()
+                                                .map(|line| line.vertical_pos)
+                                                .unwrap_or(0);
+                                            if let Some(segment) =
+                                                para.line_segs.get(inline_tac_line)
+                                            {
+                                                inline_tac_y = para_y_before_compose
+                                                    + hwpunit_to_px(
+                                                        segment.vertical_pos - first_vpos,
+                                                        self.dpi,
+                                                    );
+                                            }
+                                            wrapped_tac_flow_bottom = Some(
+                                                wrapped_tac_flow_bottom
+                                                    .unwrap_or(f64::MIN)
+                                                    .max(inline_tac_y + clamped_h),
+                                            );
+                                        }
                                         let pic_area = LayoutRect {
                                             x: inline_x,
-                                            y: para_y_before_compose,
+                                            y: inline_tac_y,
                                             width: clamped_w,
                                             height: clamped_h,
                                         };
@@ -2669,6 +2759,11 @@ impl LayoutEngine {
                     if rendered_top_and_bottom_non_inline {
                         para_y +=
                             self.paragraph_top_and_bottom_non_inline_flow_height(&para.controls);
+                    }
+                    // [#6122] 폭 초과로 내린 개체는 composed 줄 높이에 없다 — 그 아래로
+                    // 흐름을 밀지 않으면 다음 문단(캡션)이 그림 위에 겹쳐 그려진다.
+                    if let Some(bottom) = wrapped_tac_flow_bottom {
+                        para_y = para_y.max(bottom);
                     }
                 }
 

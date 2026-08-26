@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "key": "issue6124",
+  "provenance": {
+    "hwp": {
+      "path": "samples/issue6124/2737927_housing_evaluation_guideline.hwpx",
+      "sha256": "2421db10c9ac4a4fcb6a60d2dc7bab3ed28c0e81ba11ccddeaeccdf20af6752f"
+    },
+    "pdf": {
+      "path": "pdf/issue6124-2020.pdf",
+      "sha256": "3b8a5deb8c10d828d0c6da5b66b8dd1e47ae7300a49877a184b548aa42e9e99c"
+    },
+    "git_head": "f90d68922ad0fd52ed132184eb260d61568dd664",
+    "sweep_script": {
+      "path": "scripts/visual_sweep.py",
+      "sha256": "f438924fe2a8654d2a6560313971832470a54792bf423ff920a46ae493a98a43"
+    },
+    "rhwp_binary": {
+      "configured": "target/pr-review-planet6897/release/rhwp",
+      "path": "target/pr-review-planet6897/release/rhwp",
+      "sha256": "a13102adb6c081368be2ed23e54fb0c5c6ef6e6f8bf300bce61c530c7c2f9ecc"
+    }
+  },
+  "dpi": 144,
+  "pixel_diff_threshold": 32,
+  "requested_pages": [
+    8
+  ],
+  "requested_page_shards": [
+    [
+      8
+    ]
+  ],
+  "run_state": "complete"
+}

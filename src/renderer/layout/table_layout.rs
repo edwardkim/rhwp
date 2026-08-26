@@ -397,6 +397,10 @@ fn extend_table_horizontal_bbox_to_direct_cell_paint(table_node: &mut RenderNode
     table_node.bbox.width = (right - left).max(0.0);
 }
 
+/// [#6122] 칸 안 인라인(TAC) 개체를 다음 줄로 내릴지 판정할 때의 폭 여유.
+/// 저장 폭과 렌더 폭의 반올림 차이로 한 줄에 딱 맞는 개체가 밀려나지 않게 한다.
+pub(super) const INLINE_WRAP_WIDTH_EPSILON_PX: f64 = 0.5;
+
 const NESTED_FRAGMENT_EDGE_EPSILON_PX: f64 = 0.5;
 /// [#5587] 중첩표가 부모 셀보다 이만큼 넘게 넓으면 "부모보다 넓게 저장된 표"로
 /// 본다. 42065의 padding 이동 케이스는 저장 폭이 부모 셀 이하라 걸리지 않는다.
@@ -5056,7 +5060,8 @@ impl LayoutEngine {
                                 .is_some();
                             if !will_render_inline {
                                 // LINE_SEG 기반 줄 판별
-                                let target_line = if all_runs_empty && para.line_segs.len() > 1 {
+                                let mut target_line = if all_runs_empty && para.line_segs.len() > 1
+                                {
                                     // 빈 문단: TAC 순번으로 LINE_SEG에 1:1 매핑
                                     let li = tac_seq_index.min(para.line_segs.len() - 1);
                                     tac_seq_index += 1;
@@ -5080,11 +5085,41 @@ impl LayoutEngine {
                                         .unwrap_or(0)
                                 };
 
+                                // [#6122] 한 문단의 TAC 그림 여러 장이 같은 composed 줄로
+                                // 판정됐는데 폭 합이 칸 내폭을 넘으면 한글은 다음 줄로
+                                // 내린다. 저장 lineseg 가 그 증거다 — 2181727 6쪽 [그림 7]
+                                // 은 줄 2개(lh 15693·10010)가 각 그림 높이와 정확히 같다.
+                                // composed 는 칸 내폭 재래핑에서 TAC 개체 폭을 계상하지
+                                // 않아 두 장을 한 줄로 보고, 둘째가 칸·용지 밖으로 나갔다
+                                // (#4370·#6101 과 같은 "인라인 개체 폭 초과 미개행" 계열).
+                                let width_overflows_line = inline_x > inner_area.x + 0.5
+                                    && inline_x + pic_w
+                                        > inner_area.x
+                                            + inner_area.width
+                                            + INLINE_WRAP_WIDTH_EPSILON_PX;
+                                let stored_line_available =
+                                    current_tac_line + 1 < para.line_segs.len();
+                                let wrapped_by_width = target_line <= current_tac_line
+                                    && width_overflows_line
+                                    && stored_line_available;
+                                if wrapped_by_width {
+                                    target_line = current_tac_line + 1;
+                                }
+
                                 if target_line > current_tac_line {
                                     // 줄이 바뀜: inline_x 리셋, y를 LINE_SEG vpos 기준으로 이동
                                     current_tac_line = target_line;
-                                    let line_w =
-                                        tac_line_widths.get(target_line).copied().unwrap_or(0.0);
+                                    // 폭 초과로 내린 줄은 composed 에 대응 줄이 없다 —
+                                    // 정렬 계산의 줄 너비는 이 그림 자신의 폭으로 본다.
+                                    let line_w = tac_line_widths
+                                        .get(target_line)
+                                        .copied()
+                                        .filter(|_| !wrapped_by_width)
+                                        .unwrap_or(if wrapped_by_width {
+                                            pic_w.min(inner_area.width)
+                                        } else {
+                                            0.0
+                                        });
                                     // [Task #548] target_line 의 effective_margin_left 적용
                                     let line_margin = effective_margin_left_line(
                                         para_margin_left_px,
