@@ -2,7 +2,9 @@
 
 - **이슈**: [#6112](https://github.com/edwardkim/rhwp/issues/6112)
 - **일자**: 2026-08-26 KST
-- **대상 commit**: `d707d4cf2b4efef757420381b6a460f1b325482e`
+- **기능 commit**: `d707d4cf2b4efef757420381b6a460f1b325482e`
+- **최종 동기화 기준**: `upstream/devel` `6b5c4f871972380c0866e2a8d27ac2bc67d257e6`
+- **검증 대상 merge commit**: `93dc5773f`
 - **문서 성격**: 작업 뒤 실행 로그를 대사한 감사 증거
 
 ## 단위 회귀
@@ -41,13 +43,20 @@ CanvasKit의 브라우저 호환 externalize 및 기존 chunk size 경고는 있
 5. 버튼 포커스 상태에서 실제 `Ctrl+F1` 키 입력으로 다시 접음
 6. 저장값을 유지한 채 리로드해 숨김 복원과 초기 프레임을 측정
 
-결과는 모든 단언 통과다. 리로드 첫 35프레임에서 숨긴 도구 상자가 보인 프레임은 `0/35`였다.
+초기 구현 검증은 리로드 첫 35프레임에서 숨긴 도구 상자가 보인 프레임 `0/35`였다. 최신 devel
+병합 뒤 같은 E2E를 다시 실행했고 모든 단언 통과, `0/37` visible frames를 확인했다.
 
 ## 정적 점검
 
 - `git diff --check`: 통과
+- `cargo fmt --all`, `cargo fmt --all -- --check`: 통과
+- `python3 scripts/check_markdown_links.py`: 603개 문서, 상대 링크 이상 없음
 - 별도 작업트리 상태: 기능·테스트 파일만 변경 후 커밋, 임시 `pkg/` 제거 확인
 - 원래 작업트리의 사용자 변경: 미수정
+
+최초 `cargo fmt --all`은 review 전용 `tests/generated/regression_suite_*`가 없는 상태라 포맷 전에
+중단됐다. `node scripts/rust-test-suite-manifest.mjs --prepare`로 파생 suite를 준비한 뒤 두 fmt 명령을
+재실행해 통과했다. 생성 suite는 검증 산출물이며 PR source에 포함하지 않는다.
 
 ## 시각 검증 판정
 
@@ -57,5 +66,5 @@ sweep 대신 실제 브라우저의 버튼 클릭 가능성, 펼침·접힘 disp
 
 ## 잔여 게이트
 
-PR push 직전 저장소 공통 필수인 `cargo fmt --all`, `cargo fmt --all -- --check`와 문서 링크 검사를
-실행해야 한다. 최신 `upstream/devel` 동기화와 원격 CI는 PR 준비 승인 뒤 수행한다.
+최신 `upstream/devel` 동기화와 로컬 필수 검증은 완료했다. 원격 branch push와 PR 생성 뒤 GitHub CI는
+PR head에서 별도로 판정한다.
