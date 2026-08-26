@@ -1381,3 +1381,149 @@ fn issue_4968_line_boundary_remeasurement_shares_the_segment_budget() {
     );
     assert_eq!(line_measurement.find_fitting_end(0, 2, 20.0), None);
 }
+
+#[cfg(not(target_arch = "wasm32"))]
+fn public_edit_reflow_line_starts(with_exact_source: bool, body_width_hwp: u32) -> Vec<u32> {
+    use rhwp::document_core::DocumentCore;
+    use rhwp::model::paragraph::{CharShapeRef, Paragraph};
+
+    let mut core = DocumentCore::new_empty();
+    core.create_blank_document_native()
+        .expect("public blank template");
+    let mut document = core.document().clone();
+    let mut char_shape = document.doc_info.char_shapes[0].clone();
+    char_shape.raw_data = None;
+    char_shape.kerning = true;
+    char_shape.base_size = 1_500;
+    let char_shape_id = document.doc_info.char_shapes.len() as u32;
+    document.doc_info.char_shapes.push(char_shape);
+    let mut paragraph = Paragraph::new_empty();
+    paragraph.char_shapes = vec![CharShapeRef {
+        start_pos: 0,
+        char_shape_id,
+    }];
+    document.sections[0].paragraphs = vec![paragraph];
+    document.sections[0].section_def.page_def.width = body_width_hwp + 2_000;
+    document.sections[0].section_def.page_def.height = 200_000;
+    document.sections[0].section_def.page_def.margin_left = 1_000;
+    document.sections[0].section_def.page_def.margin_right = 1_000;
+    document.sections[0].section_def.page_def.margin_top = 1_000;
+    document.sections[0].section_def.page_def.margin_bottom = 1_000;
+    core.set_document(document);
+    if with_exact_source {
+        core.register_exact_font_source_native(char_shape_id, 1, EXACT_KERNING_SMOKE, 0)
+            .expect("register exact public face");
+    }
+    core.insert_text_native(0, 0, 0, &"AV".repeat(40))
+        .expect("edit reflow");
+    core.document().sections[0].paragraphs[0]
+        .line_segs
+        .iter()
+        .map(|segment| segment.text_start)
+        .collect()
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+#[test]
+fn issue_4968_edit_reflow_consumes_exact_boundary_measurement() {
+    let (body_width_hwp, k0, k1) = (7_000..=13_000)
+        .step_by(100)
+        .find_map(|body_width_hwp| {
+            let k0 = public_edit_reflow_line_starts(false, body_width_hwp);
+            let k1 = public_edit_reflow_line_starts(true, body_width_hwp);
+            (k1 != k0).then_some((body_width_hwp, k0, k1))
+        })
+        .expect("bounded public width ladder must expose an exact AV boundary change");
+    assert_eq!(
+        k1,
+        public_edit_reflow_line_starts(true, body_width_hwp),
+        "same exact generation must produce deterministic edit boundaries"
+    );
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+fn public_fresh_render_av_run_lengths(with_exact_source: bool, body_width_hwp: u32) -> Vec<usize> {
+    use rhwp::document_core::DocumentCore;
+    use rhwp::model::paragraph::{CharShapeRef, Paragraph};
+
+    let text = "AV".repeat(40);
+    let mut core = DocumentCore::new_empty();
+    core.create_blank_document_native()
+        .expect("public blank template");
+    let mut document = core.document().clone();
+    let mut char_shape = document.doc_info.char_shapes[0].clone();
+    char_shape.raw_data = None;
+    char_shape.kerning = true;
+    char_shape.base_size = 1_500;
+    let char_shape_id = document.doc_info.char_shapes.len() as u32;
+    document.doc_info.char_shapes.push(char_shape);
+    let mut paragraph = Paragraph::new_empty();
+    paragraph.text = text.clone();
+    paragraph.char_offsets = (0..text.chars().count() as u32).collect();
+    paragraph.char_shapes = vec![CharShapeRef {
+        start_pos: 0,
+        char_shape_id,
+    }];
+    paragraph.line_segs.clear();
+    document.sections[0].paragraphs = vec![paragraph];
+    document.sections[0].section_def.page_def.width = body_width_hwp + 2_000;
+    document.sections[0].section_def.page_def.height = 200_000;
+    document.sections[0].section_def.page_def.margin_left = 1_000;
+    document.sections[0].section_def.page_def.margin_right = 1_000;
+    document.sections[0].section_def.page_def.margin_top = 1_000;
+    document.sections[0].section_def.page_def.margin_bottom = 1_000;
+    core.set_document(document);
+    if with_exact_source {
+        core.register_exact_font_source_native(char_shape_id, 1, EXACT_KERNING_SMOKE, 0)
+            .expect("register exact public face");
+    }
+
+    fn collect(node: &serde_json::Value, lengths: &mut Vec<usize>) {
+        if node.get("type").and_then(|value| value.as_str()) == Some("TextRun") {
+            if let Some(text) = node.get("text").and_then(|value| value.as_str()) {
+                let av_count = text
+                    .chars()
+                    .filter(|character| matches!(character, 'A' | 'V'))
+                    .count();
+                if av_count > 0 {
+                    lengths.push(av_count);
+                }
+            }
+        }
+        if let Some(children) = node.get("children").and_then(|value| value.as_array()) {
+            for child in children {
+                collect(child, lengths);
+            }
+        }
+    }
+
+    let mut lengths = Vec::new();
+    for page_number in 0..core.page_count() {
+        let page = core
+            .build_page_render_tree(page_number as u32)
+            .expect("fresh public page tree");
+        let root: serde_json::Value =
+            serde_json::from_str(&page.root.to_json()).expect("page tree JSON");
+        collect(&root, &mut lengths);
+    }
+    lengths
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+#[test]
+fn issue_4968_fresh_pagination_and_page_tree_share_exact_boundaries() {
+    let (body_width_hwp, k0, k1) = (7_000..=13_000)
+        .step_by(100)
+        .find_map(|body_width_hwp| {
+            let k0 = public_fresh_render_av_run_lengths(false, body_width_hwp);
+            let k1 = public_fresh_render_av_run_lengths(true, body_width_hwp);
+            (!k0.is_empty() && k1 != k0).then_some((body_width_hwp, k0, k1))
+        })
+        .expect("bounded public width ladder must expose a fresh exact boundary change");
+    assert!(!k0.is_empty() && !k1.is_empty());
+    assert_eq!(
+        k1,
+        public_fresh_render_av_run_lengths(true, body_width_hwp),
+        "fresh exact page-tree boundaries must be deterministic"
+    );
+}

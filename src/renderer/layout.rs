@@ -2623,6 +2623,19 @@ impl LayoutEngine {
         crate::renderer::kerning::KerningLayoutSession::new(&self.exact_font_sources)
     }
 
+    /// HeightMeasurer, TypesetEngine, page-tree LayoutEngine, edit reflow가 한
+    /// transaction에서 같은 slot/source 결정을 읽도록 immutable snapshot을 만든다.
+    /// Source payload는 Arc라 복제되지 않는다.
+    pub(crate) fn kerning_measurement_context_snapshot(
+        &self,
+    ) -> Option<std::sync::Arc<crate::renderer::kerning::KerningMeasurementContext>> {
+        (self.exact_font_sources.slot_count() > 0).then(|| {
+            std::sync::Arc::new(crate::renderer::kerning::KerningMeasurementContext::new(
+                self.exact_font_sources.clone(),
+            ))
+        })
+    }
+
     pub(crate) fn exact_font_source_registry_counts(&self) -> (usize, usize, usize, u64) {
         (
             self.exact_font_sources.slot_count(),

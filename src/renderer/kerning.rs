@@ -112,12 +112,24 @@ impl ExactFontRegistryError {
 /// slot은 payload 없는 handle만 가리키고 source table이 immutable bytes를 소유한다.
 /// 동일 handle을 여러 slot이 공유할 때 bytes는 한 번만 보존한다. 같은 slot을 다른
 /// source로 덮어쓰는 동작은 selection provenance를 숨길 수 있으므로 fail-closed한다.
-#[derive(Default)]
+#[derive(Clone, Default)]
 pub(crate) struct ExactFontSourceRegistry {
     slots: HashMap<ExactFontSlot, ExactFontSourceHandle>,
-    sources: HashMap<ExactFontSourceHandle, Box<[u8]>>,
+    sources: HashMap<ExactFontSourceHandle, std::sync::Arc<[u8]>>,
     total_source_bytes: usize,
     generation: u64,
+}
+
+impl std::fmt::Debug for ExactFontSourceRegistry {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        formatter
+            .debug_struct("ExactFontSourceRegistry")
+            .field("slot_count", &self.slots.len())
+            .field("source_count", &self.sources.len())
+            .field("total_source_bytes", &self.total_source_bytes)
+            .field("generation", &self.generation)
+            .finish()
+    }
 }
 
 impl ExactFontSourceRegistry {
@@ -162,8 +174,10 @@ impl ExactFontSourceRegistry {
             if next_total > MAX_KERNING_REGISTRY_BYTES {
                 return Err(ExactFontRegistryError::TotalByteLimitExceeded);
             }
-            self.sources
-                .insert(handle.clone(), source.bytes.to_vec().into_boxed_slice());
+            self.sources.insert(
+                handle.clone(),
+                std::sync::Arc::<[u8]>::from(source.bytes.to_vec()),
+            );
             self.total_source_bytes = next_total;
         }
         self.slots.insert(slot, handle);
@@ -213,6 +227,104 @@ impl ExactFontSourceProvider for ExactFontSourceRegistry {
             bytes,
             face_index: handle.face_index,
         })
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+struct KerningParagraphCacheKey {
+    text: String,
+    base_position_bits: Vec<u64>,
+    scalar_styles: Vec<(ExactFontSlot, bool, u64, u64)>,
+    hard_boundaries: Vec<bool>,
+}
+
+/// 한 pagination/edit transaction의 네 fresh-layout 소비자가 공유하는 exact
+/// source generation과 owned paragraph measurement cache다.
+///
+/// Cache key는 측정 입력 전체를 보존하므로 hash 충돌만으로 다른 문단 결과를
+/// 재사용하지 않는다. 원문과 position 입력은 메모리에만 있고 trace/직렬화에는
+/// 노출되지 않으며 문단 상한(4,096 scalar)에 묶인다.
+pub(crate) struct KerningMeasurementContext {
+    registry: ExactFontSourceRegistry,
+    paragraph_measurements: std::sync::Mutex<
+        HashMap<KerningParagraphCacheKey, std::sync::Arc<KerningParagraphMeasurement>>,
+    >,
+}
+
+impl std::fmt::Debug for KerningMeasurementContext {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        formatter
+            .debug_struct("KerningMeasurementContext")
+            .field("registry", &self.registry)
+            .field(
+                "cached_paragraph_count",
+                &self
+                    .paragraph_measurements
+                    .lock()
+                    .map(|cache| cache.len())
+                    .unwrap_or_default(),
+            )
+            .finish()
+    }
+}
+
+impl KerningMeasurementContext {
+    pub(crate) fn new(registry: ExactFontSourceRegistry) -> Self {
+        Self {
+            registry,
+            paragraph_measurements: std::sync::Mutex::new(HashMap::new()),
+        }
+    }
+
+    pub(crate) fn layout_session(&self) -> KerningLayoutSession<'_> {
+        KerningLayoutSession::new(&self.registry)
+    }
+
+    pub(crate) fn paragraph_measurement(
+        &self,
+        text: &str,
+        base_positions: Vec<f64>,
+        scalar_styles: &[KerningParagraphScalarStyle],
+        hard_boundaries: &[bool],
+    ) -> std::sync::Arc<KerningParagraphMeasurement> {
+        let key = KerningParagraphCacheKey {
+            text: text.to_owned(),
+            base_position_bits: base_positions.iter().map(|value| value.to_bits()).collect(),
+            scalar_styles: scalar_styles
+                .iter()
+                .map(|style| {
+                    (
+                        style.slot,
+                        style.requested,
+                        style.effective_font_size_px.to_bits(),
+                        style.width_ratio.to_bits(),
+                    )
+                })
+                .collect(),
+            hard_boundaries: hard_boundaries.to_vec(),
+        };
+        if let Ok(cache) = self.paragraph_measurements.lock() {
+            if let Some(measurement) = cache.get(&key) {
+                return std::sync::Arc::clone(measurement);
+            }
+        }
+
+        let mut transaction = self.layout_session();
+        let measurement = std::sync::Arc::new(measure_kerning_paragraph_segments(
+            text,
+            base_positions,
+            scalar_styles,
+            hard_boundaries,
+            &mut transaction,
+        ));
+        if let Ok(mut cache) = self.paragraph_measurements.lock() {
+            return std::sync::Arc::clone(
+                cache
+                    .entry(key)
+                    .or_insert_with(|| std::sync::Arc::clone(&measurement)),
+            );
+        }
+        measurement
     }
 }
 

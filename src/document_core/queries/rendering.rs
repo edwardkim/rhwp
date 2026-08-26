@@ -977,6 +977,7 @@ impl DocumentCore {
     /// 동일하며, 초과·손상 source는 추측 없이 등록하지 않는다.
     pub(crate) fn rebuild_embedded_exact_font_sources(&mut self) {
         self.layout_engine.clear_exact_font_sources();
+        self.styles.kerning_measurement_context = None;
         let has_embedded_source = self
             .document
             .doc_info
@@ -1112,6 +1113,8 @@ impl DocumentCore {
                 }
             }
         }
+        self.styles.kerning_measurement_context =
+            self.layout_engine.kerning_measurement_context_snapshot();
     }
 
     /// 페이지 렌더 트리를 생성하여 반환한다 (native bridge / 외부 렌더러용).
@@ -4468,6 +4471,10 @@ impl DocumentCore {
     }
 
     fn paginate_pass(&mut self, force_breaks: &[std::collections::HashSet<usize>]) {
+        // [#4968 R4C-3] 이번 pass의 모든 fresh-layout 경로가 동일한 exact-source
+        // generation을 읽는다. 등록 source가 없으면 None으로 K0 fast path를 고정한다.
+        self.styles.kerning_measurement_context =
+            self.layout_engine.kerning_measurement_context_snapshot();
         #[cfg(not(target_arch = "wasm32"))]
         let issue2424_profile_enabled =
             std::env::var("RHWP_2424_PROFILE").is_ok_and(|value| !value.is_empty() && value != "0");

@@ -1953,6 +1953,10 @@ impl DocumentCore {
                     reason.as_str()
                 ))
             })?;
+        // Batch mode에서는 paginate가 지연되더라도 뒤따르는 edit reflow가 방금
+        // 등록한 generation을 즉시 읽어야 한다.
+        self.styles.kerning_measurement_context =
+            self.layout_engine.kerning_measurement_context_snapshot();
         let handle = self
             .layout_engine
             .exact_font_source_handle(slot)
