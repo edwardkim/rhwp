@@ -47,6 +47,7 @@ import { isPointNearBoxBorder } from './table-border-hit';
 import { DeferredPaginationRunner } from './deferred-pagination-runner';
 import { tableObjectClipboardTarget } from './table-object-clipboard-target';
 import { clearObjectEditingPage } from './object-selection-page';
+import { showInitialCaretAndPublishFocus } from './initial-caret-focus';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const DRAG_SCROLL_EDGE_PX = 48;
@@ -3742,9 +3743,15 @@ export class InputHandler {
       this.active = true;
 
       const rect = this.cursor.getRect();
-      if (rect) {
-        this.caret.show(rect, this.viewportManager.getZoom());
-      }
+      // 문서 초기화 직후에도 실제 캐럿 쪽을 편집 focus로 확정한다. 이 발행이 없으면
+      // CanvasView는 첫 쪽을 viewport fallback으로만 알고, 줌으로 배치가 바뀔 때
+      // 눈금자 대상도 뷰포트 중심의 다른 쪽으로 이동한다.
+      showInitialCaretAndPublishFocus(
+        rect,
+        this.viewportManager.getZoom(),
+        this.caret,
+        this.eventBus,
+      );
       this.emitCursorFormatState();
       this.focusTextarea();
     } catch (e) {
@@ -3753,9 +3760,12 @@ export class InputHandler {
       this.cursor.moveTo({ sectionIndex: 0, paragraphIndex: 0, charOffset: 0 });
       this.active = true;
       const rect = this.cursor.getRect();
-      if (rect) {
-        this.caret.show(rect, this.viewportManager.getZoom());
-      }
+      showInitialCaretAndPublishFocus(
+        rect,
+        this.viewportManager.getZoom(),
+        this.caret,
+        this.eventBus,
+      );
       this.focusTextarea();
     }
   }
