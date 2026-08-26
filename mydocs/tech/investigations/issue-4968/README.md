@@ -96,3 +96,18 @@ OpenType 경계, 한컴 판정, 통합 Q2 baseline의 canonical SHA-256은 각�
 `4d628135329b82ed401453eef709783329840a5d1e22068afd83a7d2e7927576`,
 `8fce761f58c742a9a6d4fcf1cbfdf7a3037acd8f14f028e5f2c5cd41f64ff1ee`,
 `8ad6b8562bfb19fc9c751d1d74012c334d821028640a1459e27a0b0b6bbbbda1`이다.
+
+## Stage W9-Q3
+
+- 의도 전달 보고서: [`task_m100_4968_w9_q3_1.md`](../../../working/task_m100_4968_w9_q3_1.md)
+- capability provider 보고서:
+  [`task_m100_4968_w9_q3_2.md`](../../../working/task_m100_4968_w9_q3_2.md)
+- integration 원본:
+  `tests/cases/issue_4968_kerning_intent_plumbing.rs`,
+  `tests/cases/issue_4968_kerning_capability_provider.rs`
+
+Q3-1은 `ResolvedCharStyle.kerning`을 `TextStyle`과 공개 layer-tree 관측 경계까지 전달했다. false는
+직렬화에서 생략하고 true만 노출하므로 K0 schema·position은 유지된다. Q3-2는 선택 완료된 exact face
+bytes만 받는 bounded capability provider를 추가했다. GPOS `kern` pair lookup, horizontal legacy kern
+format 0, unsupported를 기능 탐지하고 GPOS를 우선한다. source 없음·malformed·32 MiB 초과는 구조화된
+이유로 fail-closed한다. 두 절편 모두 실제 pair advance는 아직 바꾸지 않는다.
