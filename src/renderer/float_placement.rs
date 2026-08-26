@@ -175,6 +175,83 @@ pub(crate) fn native_empty_host_rowbreak_line_advance_hu(
     Some(advance)
 }
 
+/// [#6147] 저장 사다리가 "빈 앵커 문단의 줄 하나"만 증언하는 자리차지 밴드의 host 줄 계약.
+///
+/// 한글은 자리차지(TopAndBottom) 개체를 매단 **빈 앵커 문단**도 개체 아래에 자기 줄
+/// 상자(`lh + ls`)를 차지한다. rhwp 는 #1147 이래 이 줄을 일괄 억제해 왔고(빈 앵커 vpos 가
+/// 이미 갭을 인코딩한다는 전제), 그래서 밴드 바로 아래 첫 본문 문단이 개체에 딱 붙는다.
+///
+/// 억제가 옳은 문단과 아닌 문단은 **저장 사다리가 가른다** — `next.vpos - host.vpos` 가
+/// 정확히 `lh + max(ls, 0)` 이면 한글이 개체 높이를 접고 host 줄 advance 만 흐름에
+/// 계상했다는 뜻이라, 그 줄은 별도로 더해야 할 실 흐름이다(= #1147 의 "vpos 가 이미
+/// 갭을 인코딩" 전제가 성립하지 않는 문단). 델타가 개체 높이를 품은 일반 물리 사다리는
+/// 등식이 깨져 자연 배제된다 — #2439 의 [#2808] 판별자와 같은 축이다.
+///
+/// #2439(`native_empty_host_rowbreak_line_advance_hu`)는 이 계약의 **단일 표·양수 offset·
+/// RowBreak·native HWP5** 특수형이고, 이 함수는 같은 증거를 HWPX 저장 레이아웃과 다중
+/// 자리차지 개체(보도자료 서식의 머리표 2~3개)로 넓힌다. 개체가 여럿이면 마지막 자리차지
+/// 개체에서만 계상해 밴드마다 중복 가산되지 않게 한다.
+pub(crate) fn stored_empty_anchor_band_host_line_advance_hu(
+    stored_layout: bool,
+    para: &Paragraph,
+    control_index: usize,
+    next_para: Option<&Paragraph>,
+) -> Option<i32> {
+    // host 글자가 **한 자도 없어야** 한다. 공백 한 칸이라도 있으면 #1147 억제가
+    // 애초에 걸리지 않아 조판이 이미 host 줄을 계상하고 있고(156272593 pi=44:
+    // `text=" "` → `PartialParagraph` 항목 존재), 여기서 또 더하면 이중 계상이라
+    // 쪽이 하나 늘어난다(코퍼스 4,000 표본 유일 회귀). 판정을 #1147 의 조판 술어
+    // (`para.text.is_empty()`)와 정확히 같은 축에 둔다.
+    if !stored_layout || !para.text.is_empty() {
+        return None;
+    }
+    // 문단의 가시 개체가 전부 비-TAC 자리차지(vert=문단) float 이어야 한다 — 인라인
+    // 내용이 섞이면 host 줄이 그 내용의 줄이지 앵커 줄이 아니다.
+    let mut last_float = None;
+    for (index, control) in para.controls.iter().enumerate() {
+        let common = match control {
+            Control::Table(table) => &table.common,
+            Control::Picture(picture) => &picture.common,
+            Control::Shape(shape) => shape.common(),
+            _ => continue,
+        };
+        if !is_para_topbottom_float(common) {
+            return None;
+        }
+        last_float = Some(index);
+    }
+    if last_float != Some(control_index) {
+        return None;
+    }
+    // 다음이 개체 없는 일반 본문 문단일 때만 — 앵커 스택(다음도 빈 앵커)의 줄간격은
+    // 개체-개체 간격이라 이미 #1133 이 보존한다.
+    if !next_para.is_some_and(|next| para_has_non_whitespace_text(next) && next.controls.is_empty())
+    {
+        return None;
+    }
+
+    fn stored_seg(paragraph: &Paragraph) -> Option<&crate::model::paragraph::LineSeg> {
+        paragraph
+            .line_segs
+            .iter()
+            .find(|seg| seg.tag & 0x8000_0000 == 0 && seg.line_height > 0)
+    }
+    let host_seg = stored_seg(para)?;
+    let advance = host_seg.line_height + host_seg.line_spacing.max(0);
+    if advance <= 0 {
+        return None;
+    }
+    let next_vpos = next_para.and_then(stored_seg)?.vertical_pos;
+    ((next_vpos - host_seg.vertical_pos - advance).abs() <= 1).then_some(advance)
+}
+
+/// 문단에 공백·개체 마커가 아닌 실제 글자가 있는가.
+fn para_has_non_whitespace_text(para: &Paragraph) -> bool {
+    para.text
+        .chars()
+        .any(|ch| ch > '\u{001F}' && ch != '\u{FFFC}' && !ch.is_whitespace())
+}
+
 /// [#5922] native HWP5 CellBreak 자리차지 표의 연속 조각 바깥 여백 재개방 계약.
 ///
 /// 한글은 다쪽으로 이어지는 CellBreak 조각을 쪽마다 표 바깥 여백(상·하)을 다시
