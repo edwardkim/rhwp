@@ -113,7 +113,7 @@ test('CanvasView and ruler consume the stable horizontal coordinate', () => {
   assert.match(canvasSource, /getCenteredScrollLeft\(/);
   assert.match(
     rulerSource,
-    /getPageLeftResolved\(\s*0,\s*this\.virtualScroll\.getTotalWidth\(\),?\s*\)/,
+    /getPageLeftResolved\(\s*pageIdx,\s*this\.virtualScroll\.getTotalWidth\(\),?\s*\)/,
   );
   assert.doesNotMatch(rulerSource, /contentOffsetX/);
 });

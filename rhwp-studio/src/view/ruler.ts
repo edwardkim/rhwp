@@ -14,6 +14,11 @@ import {
 } from './ruler-pin-geometry';
 // 편집 용지 대화상자와 같은 한도를 쓴다 — 한쪽만 막으면 같은 문서를 다른 입력으로 만들 수 있다.
 import { MIN_BODY_MM } from '@/core/page-body-limits';
+import {
+  hasRulerEditingContext,
+  resolveRulerPageIndex,
+  type ActivePageSnapshot,
+} from './active-page.ts';
 
 export type { RulerPinCommit };
 
@@ -65,13 +70,18 @@ export class Ruler {
   /** 커서의 x 좌표 (px, zoom=1, 페이지 좌표 기준) — 다단에서 현재 단 결정용 */
   private cursorColumnX = 0;
 
+  /** CanvasView가 캐럿·개체·viewport를 함께 해석한 현재 활성 페이지. focus가 없을 때만 fallback이다. */
+  private activePageSnapshot: ActivePageSnapshot | null = null;
+  /** 마지막 캐럿·클릭·개체 선택 페이지. 순수 스크롤로는 바뀌지 않는다. */
+  private focusedPageIndex: number | null = null;
+
   /** 히트테스트용 — 마지막 프레임에서 draw*가 기록한 핀 위치 (화면 px). y는 삼각형이
    * 실제로 그려진 세로 위치(▽=0, △=canvasH). */
   private hPins: { kind: HPinKind; x: number; y: number }[] = [];
   /** ▽ 핀이 놓인 영역의 좌우 (화면 px) — 셀 안이면 셀, 다단이면 현재 단, 아니면 본문 */
   private hRefLeft = 0;
   private hRefRight = 0;
-  /** △ 핀이 커밋할 쪽 — 가로 눈금자는 보이는 첫 페이지를 기준으로 삼는다 */
+  /** △ 핀이 커밋할 쪽 — 마지막 프레임의 활성 페이지와 일치한다. */
   private hPageIdx = 0;
   /** 기준 페이지의 왼쪽 끝과 표시 너비 (화면 px) — △ 드롭 위치를 쪽 여백으로 되돌리는 데 쓴다 */
   private hPageLeft = 0;
@@ -86,7 +96,12 @@ export class Ruler {
    * 잡을 때 박는 건 "무엇을 잡았는가"(kind·pageIdx)와 시작 좌표뿐이다. 허용 범위는 매 이동
    * 때 다시 구한다 — 범위를 화면 px로 얼려 두면, 드래그 중 스크롤·확대로 기준 좌표가 바뀔 때
    * 클램프는 옛 화면을, 커밋은 새 화면을 보게 되어 상한이 통째로 무력해진다. */
-  private hDrag: { kind: HPinKind; x: number; startX: number } | null = null;
+  private hDrag: {
+    kind: HPinKind;
+    pageIdx: number;
+    x: number;
+    startX: number;
+  } | null = null;
   private vDrag: { kind: 'top' | 'bottom'; pageIdx: number; y: number; startY: number } | null = null;
 
   private onHPinDownBound: (e: MouseEvent) => void;
@@ -141,6 +156,23 @@ export class Ruler {
           this.scheduleUpdate();
         }
       }),
+      eventBus.on('active-page-changed', (payload) => {
+        const value = payload as Partial<ActivePageSnapshot> | null;
+        this.activePageSnapshot = value
+          && Number.isInteger(value.pageIndex)
+          && (value.source === 'editing' || value.source === 'viewport')
+          ? { pageIndex: value.pageIndex as number, source: value.source }
+          : null;
+        this.scheduleUpdate();
+      }),
+      eventBus.on('focused-page-changed', (payload) => {
+        this.focusedPageIndex = typeof payload === 'number'
+          && Number.isInteger(payload)
+          && payload >= 0
+          ? payload
+          : null;
+        this.scheduleUpdate();
+      }),
     );
 
     this.resize();
@@ -191,15 +223,34 @@ export class Ruler {
   }
 
   /** 페이지 좌측 화면 좌표를 계산한다 (scroll-container 뷰포트 기준). */
-  private getPageScreenLeft(scrollX: number): number {
+  private getPageScreenLeft(pageIdx: number, scrollX: number): number {
     // getPageLeftResolved 는 scroll-content 내부 좌표를 준다. 콘텐츠가 컨테이너보다
     // 좁으면 `margin: 0 auto` 가 콘텐츠를 중앙으로 밀어내므로(offsetLeft > 0),
     // 그 오프셋을 더해야 눈금자(컨테이너 기준)와 편집 용지가 일치한다.
     const contentLeft = this.scrollContent?.offsetLeft ?? 0;
     return contentLeft + this.virtualScroll.getPageLeftResolved(
-      0,
+      pageIdx,
       this.virtualScroll.getTotalWidth(),
     ) - scrollX;
+  }
+
+  /** 드래그 중에는 잡은 핀을, 평상시에는 마지막 편집 focus를 사용한다. focus가 없을 때만 viewport로 초기화한다. */
+  private rulerPageIndex(): number | null {
+    const pageCount = Math.min(this.wasm.pageCount, this.virtualScroll.pageCount);
+    const draggedPageIndex = this.hDrag?.pageIdx
+      ?? this.vDrag?.pageIdx
+      ?? null;
+    if (draggedPageIndex !== null) {
+      return draggedPageIndex >= 0 && draggedPageIndex < pageCount
+        ? draggedPageIndex
+        : null;
+    }
+    return resolveRulerPageIndex({
+      documentPageCount: this.wasm.pageCount,
+      layoutPageCount: this.virtualScroll.pageCount,
+      focusedPageIndex: this.focusedPageIndex,
+      activePageIndex: this.activePageSnapshot?.pageIndex ?? null,
+    });
   }
 
   /** 커서가 위치한 문단 속성이 변경되었을 때 호출 */
@@ -242,7 +293,7 @@ export class Ruler {
       (p) => Math.abs(p.x - x) <= PIN_HIT_RADIUS && Math.abs(p.y - y) <= PIN_HIT_RADIUS,
     );
     if (!hit) return;
-    this.hDrag = { kind: hit.kind, x, startX: x };
+    this.hDrag = { kind: hit.kind, pageIdx: this.hPageIdx, x, startX: x };
     document.addEventListener('mousemove', this.onPinDragMoveBound);
     document.addEventListener('mouseup', this.onPinDragUpBound);
   }
@@ -358,14 +409,16 @@ export class Ruler {
   /** 가로 핀 드롭 → 문서 변경. 소유 규칙(△=쪽 여백, ▽=문단 들여쓰기)과 좌표 역함수는
    * ruler-pin-geometry가 그리는 식과 짝으로 갖고 있다 — 여기서는 마지막 프레임의 기준
    * 좌표만 넘긴다. */
-  private commitHDrag(drag: { kind: HPinKind; x: number }): void {
-    this.onCommitPin?.(horizontalPinCommit(drag.kind, drag.x, this.hDropContext()));
+  private commitHDrag(drag: { kind: HPinKind; pageIdx: number; x: number }): void {
+    this.onCommitPin?.(
+      horizontalPinCommit(drag.kind, drag.x, this.hDropContext(drag.pageIdx)),
+    );
   }
 
-  private hDropContext(): HPinDropContext {
+  private hDropContext(pageIdx: number): HPinDropContext {
     return {
       zoom: this.viewportManager.getZoom(),
-      pageIdx: this.hPageIdx,
+      pageIdx,
       pageLeft: this.hPageLeft,
       pageDisplayWidth: this.hPageDisplayWidth,
       refLeft: this.hRefLeft,
@@ -432,7 +485,8 @@ export class Ruler {
 
     // 문서를 닫아도 지난 문서의 핀이 배열에 남아 있으면 hover·드래그가 계속 걸리고,
     // 커밋이 getPageInfo 로 들어가 던진다.
-    if (this.wasm.pageCount === 0) {
+    const pageIdx = this.rulerPageIndex();
+    if (pageIdx === null) {
       this.hPins = [];
       ctx.restore();
       return;
@@ -440,18 +494,13 @@ export class Ruler {
 
     const zoom = this.viewportManager.getZoom();
     const scrollX = this.viewportManager.getScrollX();
-    // 기준 쪽은 "지금 보고 있는 쪽" — 구역마다 쪽 여백이 다를 수 있어 0번 쪽으로 고정하면
-    // 다른 구역을 보는 동안 눈금이 용지와 어긋나고 △ 드래그가 엉뚱한 구역을 고친다.
-    const visiblePages = this.virtualScroll.getVisiblePages(
-      this.viewportManager.getScrollY(),
-      this.container.clientHeight,
-    );
-    const pageIdx = visiblePages.length > 0 ? visiblePages[0] : 0;
     const pageInfo = this.wasm.getPageInfo(pageIdx);
 
     // 페이지 화면 좌표 (편집 용지와 정확히 일치)
-    const pageScreenLeft = this.getPageScreenLeft(scrollX);
+    const pageScreenLeft = this.getPageScreenLeft(pageIdx, scrollX);
     const pageDisplayWidth = pageInfo.width * zoom;
+    const editingContext = hasRulerEditingContext(pageIdx, this.focusedPageIndex)
+      || (this.hDrag?.kind === 'paraIndent' && this.hDrag.pageIdx === pageIdx);
 
     // 본문 영역 = 쪽 여백 안쪽. 드래그 중이면 잡은 △만 마우스 위치로 대체해 배경과 핀이
     // 함께 움직이게 한다 (라이브 프리뷰).
@@ -463,13 +512,13 @@ export class Ruler {
     const pageLeftPinX = this.hDrag?.kind === 'pageMarginLeft' ? this.hDrag.x : bodyLeftPx;
     const pageRightPinX = this.hDrag?.kind === 'pageMarginRight' ? this.hDrag.x : bodyRightPx;
 
-    if (this.inCell) {
+    if (editingContext && this.inCell) {
       // 셀 모드: 셀 영역만 본문 톤, 나머지는 여백 톤
       const cellLeftPx = pageScreenLeft + this.cellX * zoom;
       const cellRightPx = pageScreenLeft + (this.cellX + this.cellWidth) * zoom;
       ctx.fillStyle = palette.bgBody;
       ctx.fillRect(cellLeftPx, 0, cellRightPx - cellLeftPx, canvasH);
-    } else if (pageInfo.columns && pageInfo.columns.length > 1) {
+    } else if (editingContext && pageInfo.columns && pageInfo.columns.length > 1) {
       // 다단 모드: 현재 커서가 위치한 단만 본문 톤으로 표시
       const cursorX = this.cursorColumnX;
       let activeCol = 0;
@@ -532,14 +581,8 @@ export class Ruler {
     // 나눠 가지면 어느 쪽이 움직였는지 눈금자만 봐서는 알 수 없다. 문단 좌우 여백은
     // 문단 모양 대화상자 전용으로 두고, 눈금자 △는 세로 눈금자의 쪽 위/아래 여백 핀과
     // 같은 소유·같은 커밋 경로(PageDef)를 쓴다.
-    // 격자 보기에서는 핀을 두지 않는다. 가로 눈금자는 하나인데 한 행에 여러 쪽이 늘어서
-    // 있어 어느 쪽의 여백인지 가리킬 수 없고(기준은 늘 행의 첫 쪽이 된다), 세로 핀은 같은
-    // 행의 쪽마다 같은 y에 겹쳐 그려져 첫 쪽만 잡힌다. 쪽 여백은 편집 용지 대화상자에서.
+    // 한 행에 여러 쪽이 있어도 CanvasView가 고른 활성 페이지 한 쪽만 핀의 소유자가 된다.
     this.hPins = [];
-    if (this.virtualScroll.isGridMode()) {
-      ctx.restore();
-      return;
-    }
     ctx.fillStyle = palette.marker;
 
     this.hPageIdx = pageIdx;
@@ -554,7 +597,9 @@ export class Ruler {
     this.drawTriangleUp(ctx, pageLeftPinX, canvasH, MARKER_SIZE);
     this.drawTriangleUp(ctx, pageRightPinX, canvasH, MARKER_SIZE);
 
-    if (this.hasParaInfo) {
+    // viewport fallback에서는 화면 밖 캐럿의 문단·셀·다단 정보를 다른 페이지 속성처럼
+    // 보이지 않는다. 쪽 여백 핀은 페이지 소유이므로 계속 표시한다.
+    if (this.hasParaInfo && editingContext) {
       // 문단이 놓인 영역 — 셀 안이면 셀 경계, 다단이면 현재 단 경계, 아니면 본문 영역.
       // ▽의 기준점이자 ▽가 벗어날 수 없는 범위다.
       let refLeft: number;
@@ -591,7 +636,7 @@ export class Ruler {
     ctx.restore();
   }
 
-  /** 세로 눈금자 그리기 — 보이는 모든 페이지의 눈금을 각각 표시 */
+  /** 세로 눈금자 그리기 — 활성 페이지 한 쪽의 눈금만 표시 */
   private drawVertical(): void {
     const ctx = this.vCtx;
     if (!ctx) return;
@@ -607,7 +652,8 @@ export class Ruler {
     ctx.fillStyle = palette.bgMargin;
     ctx.fillRect(0, 0, canvasW, canvasH);
 
-    if (this.wasm.pageCount === 0) {
+    const pageIdx = this.rulerPageIndex();
+    if (pageIdx === null) {
       this.vPins = [];
       ctx.restore();
       return;
@@ -617,83 +663,78 @@ export class Ruler {
     const scrollY = this.viewportManager.getScrollY();
     const mmPx = PX_PER_MM * zoom;
 
-    // 보이는 페이지 범위에서만 그리기
-    const vpHeight = canvasH;
-    const visiblePages = this.virtualScroll.getVisiblePages(scrollY, vpHeight);
     this.vPins = [];
-    // 격자 보기: 같은 행의 쪽들이 같은 y를 공유해 핀이 겹친다 (가로 눈금자와 같은 이유).
-    const gridMode = this.virtualScroll.isGridMode();
 
-    for (const pageIdx of visiblePages) {
-      // 페이지 상단의 화면 좌표 (scroll-container 뷰포트 기준)
-      const pageScreenTop = this.virtualScroll.getPageOffset(pageIdx) - scrollY;
-      const pageInfo = this.wasm.getPageInfo(pageIdx);
+    // 페이지 상단의 화면 좌표 (scroll-container 뷰포트 기준)
+    const pageScreenTop = this.virtualScroll.getPageOffset(pageIdx) - scrollY;
+    const pageInfo = this.wasm.getPageInfo(pageIdx);
 
-      // 핀은 자기가 쓰는 여백의 경계에 선다 — 용지 끝에서 marginTop/marginBottom 만큼.
-      // 본문 위 끝(= marginTop + marginHeader)에 그리면 핀 위치와 커밋 값이 머리말만큼
-      // 어긋나, marginTop 이 0 이 되는 자리에서 더 못 올라가고 그 위 머리말 폭은 눈금자로
-      // 손댈 수단이 없었다.
-      const marginTopPx = pageScreenTop + pageInfo.marginTop * zoom;
-      const marginBottomPx = pageScreenTop + (pageInfo.height - pageInfo.marginBottom) * zoom;
-      // 밝은 띠 = 쪽 여백 안쪽. 핀 두 개가 그 띠의 양 끝이다 — 가로 눈금자와 같은 읽는 법이다
-      // (가로는 머리말이 없어 "여백 안쪽"이 곧 본문이다). 머리말/꼬리말을 세 번째 톤으로
-      // 나누는 안은 버렸다: 어두운 테마의 여백↔본문 색차가 rgb 9 뿐이라 그 사이에 낀 톤은
-      // 보이지 않고, 핀이 무엇을 가리키는지만 흐려진다.
-      ctx.fillStyle = palette.bgBody;
-      ctx.fillRect(0, marginTopPx, canvasW, marginBottomPx - marginTopPx);
+    // 핀은 자기가 쓰는 여백의 경계에 선다 — 용지 끝에서 marginTop/marginBottom 만큼.
+    // 본문 위 끝(= marginTop + marginHeader)에 그리면 핀 위치와 커밋 값이 머리말만큼
+    // 어긋나, marginTop 이 0 이 되는 자리에서 더 못 올라가고 그 위 머리말 폭은 눈금자로
+    // 손댈 수단이 없었다.
+    const marginTopPx = pageScreenTop + pageInfo.marginTop * zoom;
+    const marginBottomPx = pageScreenTop + (pageInfo.height - pageInfo.marginBottom) * zoom;
+    // 밝은 띠 = 쪽 여백 안쪽. 핀 두 개가 그 띠의 양 끝이다 — 가로 눈금자와 같은 읽는 법이다
+    // (가로는 머리말이 없어 "여백 안쪽"이 곧 본문이다). 머리말/꼬리말을 세 번째 톤으로
+    // 나누는 안은 버렸다: 어두운 테마의 여백↔본문 색차가 rgb 9 뿐이라 그 사이에 낀 톤은
+    // 보이지 않고, 핀이 무엇을 가리키는지만 흐려진다.
+    ctx.fillStyle = palette.bgBody;
+    ctx.fillRect(0, marginTopPx, canvasW, marginBottomPx - marginTopPx);
 
-      // 드래그 중이면 잡은 핀만 마우스 위치로 대체 (라이브 프리뷰)
-      const topY = (this.vDrag?.kind === 'top' && this.vDrag.pageIdx === pageIdx) ? this.vDrag.y : marginTopPx;
-      const bottomY = (this.vDrag?.kind === 'bottom' && this.vDrag.pageIdx === pageIdx) ? this.vDrag.y : marginBottomPx;
-      if (!gridMode) {
-        this.vPins.push({ kind: 'top', y: topY, pageIdx }, { kind: 'bottom', y: bottomY, pageIdx });
-      }
+    // 드래그 중이면 잡은 핀만 마우스 위치로 대체 (라이브 프리뷰)
+    const topY = this.vDrag?.kind === 'top' && this.vDrag.pageIdx === pageIdx
+      ? this.vDrag.y
+      : marginTopPx;
+    const bottomY = this.vDrag?.kind === 'bottom' && this.vDrag.pageIdx === pageIdx
+      ? this.vDrag.y
+      : marginBottomPx;
+    this.vPins.push({ kind: 'top', y: topY, pageIdx }, { kind: 'bottom', y: bottomY, pageIdx });
 
-      // mm 눈금 그리기
-      const pageHeightMm = Math.ceil(pageInfo.height / PX_PER_MM);
+    // mm 눈금 그리기
+    const pageHeightMm = Math.ceil(pageInfo.height / PX_PER_MM);
 
-      ctx.strokeStyle = palette.tick;
-      ctx.fillStyle = palette.text;
-      ctx.lineWidth = 0.5;
-      ctx.font = '9px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
+    ctx.strokeStyle = palette.tick;
+    ctx.fillStyle = palette.text;
+    ctx.lineWidth = 0.5;
+    ctx.font = '9px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
 
-      for (let mm = 0; mm <= pageHeightMm; mm++) {
-        const y = pageScreenTop + mm * mmPx;
+    for (let mm = 0; mm <= pageHeightMm; mm++) {
+      const y = pageScreenTop + mm * mmPx;
 
-        // 화면 밖 스킵
-        if (y < -10 || y > canvasH + 10) continue;
+      // 화면 밖 스킵
+      if (y < -10 || y > canvasH + 10) continue;
 
-        let tickW: number;
-        if (mm % 10 === 0) {
-          tickW = 10;
-          // 10mm 단위 숫자 (cm 단위, 세로 텍스트)
-          const cm = mm / 10;
-          if (cm > 0) {
-            ctx.save();
-            ctx.translate(canvasW / 2 - 2, y);
-            ctx.rotate(-Math.PI / 2);
-            ctx.fillText(`${cm}`, 0, 0);
-            ctx.restore();
-          }
-        } else if (mm % 5 === 0) {
-          tickW = 6;
-        } else {
-          tickW = 3;
+      let tickW: number;
+      if (mm % 10 === 0) {
+        tickW = 10;
+        // 10mm 단위 숫자 (cm 단위, 세로 텍스트)
+        const cm = mm / 10;
+        if (cm > 0) {
+          ctx.save();
+          ctx.translate(canvasW / 2 - 2, y);
+          ctx.rotate(-Math.PI / 2);
+          ctx.fillText(`${cm}`, 0, 0);
+          ctx.restore();
         }
-
-        ctx.beginPath();
-        ctx.moveTo(canvasW, y);
-        ctx.lineTo(canvasW - tickW, y);
-        ctx.stroke();
+      } else if (mm % 5 === 0) {
+        tickW = 6;
+      } else {
+        tickW = 3;
       }
 
-      // 위/아래 여백 핀 — 본문 시작(▽)과 끝(△)을 표시 (가로 눈금자 마커와 동일 팔레트)
-      ctx.fillStyle = palette.marker;
-      this.drawTriangleDown(ctx, canvasW / 2, topY, MARKER_SIZE);
-      this.drawTriangleUp(ctx, canvasW / 2, bottomY, MARKER_SIZE);
+      ctx.beginPath();
+      ctx.moveTo(canvasW, y);
+      ctx.lineTo(canvasW - tickW, y);
+      ctx.stroke();
     }
+
+    // 위/아래 여백 핀 — 활성 페이지의 본문 시작(▽)과 끝(△)만 표시한다.
+    ctx.fillStyle = palette.marker;
+    this.drawTriangleDown(ctx, canvasW / 2, topY, MARKER_SIZE);
+    this.drawTriangleUp(ctx, canvasW / 2, bottomY, MARKER_SIZE);
 
     ctx.restore();
   }

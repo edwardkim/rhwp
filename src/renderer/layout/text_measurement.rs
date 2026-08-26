@@ -975,6 +975,12 @@ pub(crate) struct CharWidthDecision<'a> {
     pub(crate) negative_spacing_clamped: bool,
 }
 
+/// 측정이 전각 글리프를 반각 advance 로 눌렀을 때의 `width_source`.
+///
+/// 페인트(`forces_halfwidth_cjk_quote`)가 같은 판정을 되묻는 데 쓰므로 문자열
+/// literal 로 흩어 두지 않는다.
+const HALFWIDTH_PUNCTUATION_WIDTH_SOURCE: &str = "metricHalfwidthPunctuationOverlay";
+
 #[derive(Debug, Clone, Copy)]
 struct EmbeddedWidthDecision<'a> {
     width_px: Option<f64>,
@@ -990,7 +996,13 @@ fn measure_char_width_embedded_decision<'a>(
     c: char,
     font_size: f64,
 ) -> EmbeddedWidthDecision<'a> {
-    let primary_name = font_family.split(',').next().unwrap_or(font_family).trim();
+    let primary_name = font_family
+        .split(',')
+        .next()
+        .unwrap_or(font_family)
+        .trim()
+        .trim_matches('\'')
+        .trim_matches('"');
     if let Some(w) = kopub_char_width(primary_name, c, font_size) {
         return EmbeddedWidthDecision {
             width_px: Some(w),
@@ -1032,9 +1044,11 @@ fn measure_char_width_embedded_decision<'a>(
                 (mm.metric.em_size as f64 * 0.3) as u16,
                 "metricNarrowPunctuationOverlay",
             )
-        } else if (is_halfwidth_punct || is_halfwidth_cjk_quote(c)) && glyph_w >= mm.metric.em_size
+        } else if (is_halfwidth_punct
+            || (is_halfwidth_cjk_quote(c) && is_monospace_metric(mm.metric)))
+            && glyph_w >= mm.metric.em_size
         {
-            (mm.metric.em_size / 2, "metricHalfwidthPunctuationOverlay")
+            (mm.metric.em_size / 2, HALFWIDTH_PUNCTUATION_WIDTH_SOURCE)
         } else {
             (glyph_w, "embeddedMetric")
         }
@@ -1394,9 +1408,40 @@ fn is_unicode_halfwidth_form(c: char) -> bool {
 /// 한컴이 수평 조판에서 반각 advance 로 처리하는 CJK 낫표.
 ///
 /// 일부 등록 폰트는 `「」` glyph advance 를 전각으로 제공하지만, 한컴 PDF 기준
-/// 본문 조판에서는 법령명 낫표 뒤에 전각 공백처럼 보이는 간격이 생기지 않는다.
+/// 본문 조판에서는 법령명 낫표 뒤에 전각 공백처럼 보이는 간격이 생기지 않는다
+/// (#2020 돋움체 여권신청서).
+///
+/// 다만 휴먼명조·HY헤드라인M 에서는 한글이 전폭을 쓴다 (#6060). 메트릭 DB 의
+/// 「 폭은 두 계열 모두 `em_size` 이므로 일괄 반각 오버레이가 아니라 글꼴별로
+/// 갈라야 한다.
 pub(crate) fn is_halfwidth_cjk_quote(c: char) -> bool {
     matches!(c, '\u{300C}' | '\u{300D}')
+}
+
+/// 페인트가 「」 글리프를 반각 공간에 눌러 그려야 하는지 — **측정과 같은 판정**이어야 한다.
+///
+/// 측정은 고정폭 메트릭(`is_monospace_metric`)이고 글리프 advance 가 `em_size` 이상일 때만
+/// 반각 오버레이를 적용한다. 페인트가 폰트 **이름 목록**으로 따로 판정하면 두 경로가 갈린다.
+///
+/// - 이름 목록 밖 고정폭(바탕체·궁서체·D2Coding): advance 는 반각인데 글리프는 전각으로
+///   그려져 다음 글자와 겹친다.
+/// - 이름에 `돋움체` 를 포함하지만 메트릭 DB 밖(KoPub돋움체): advance 는 전각인데 글리프만
+///   반각으로 눌려 오른쪽에 빈 공간이 남는다.
+///
+/// 그래서 판정을 이름이 아니라 측정 결정 하나로 통일한다. 돋움체 반각(#2020)과
+/// 휴먼명조·HY헤드라인M 전폭(#6060)은 메트릭만으로 그대로 갈린다.
+pub fn forces_halfwidth_cjk_quote(
+    font_family: &str,
+    bold: bool,
+    italic: bool,
+    c: char,
+    font_size: f64,
+) -> bool {
+    if !is_halfwidth_cjk_quote(c) {
+        return false;
+    }
+    measure_char_width_embedded_decision(font_family, bold, italic, c, font_size).width_source
+        == HALFWIDTH_PUNCTUATION_WIDTH_SOURCE
 }
 
 /// 3 개 이상 연속하는 dash leader 시퀀스의 일부 여부 (Task #352).

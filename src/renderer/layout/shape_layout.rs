@@ -414,15 +414,16 @@ fn should_reflow_matrix_textbox_lines(
     let has_axis_scale =
         (sa.render_sx.abs() - 1.0).abs() > 0.001 || (sa.render_sy.abs() - 1.0).abs() > 0.001;
     let has_rotation_or_shear = sa.render_b.abs() > 1e-6 || sa.render_c.abs() > 1e-6;
-    let compressed_group_child = sa.group_level > 0
-        && sa.render_sx > 0.0
-        && sa.render_sy > 0.0
-        && (sa.render_sx < 0.99 || sa.render_sy < 0.99);
+    // Y-only 축소(sy<1, sx≈1)는 저장 줄의 가로폭을 바꾸지 않는다. groupLevel>0 만으로
+    // 재래핑하면 행정업무운영편람 바탕쪽 "업무관리시스템"처럼 저장 1글자×7줄이
+    // 가용 폭(lastWidth 2374 HU) 기준 2글자 줄로 합쳐져 세로 제목이 깨진다.
+    let width_compressed_group_child =
+        sa.group_level > 0 && sa.render_sx > 0.0 && sa.render_sx < 0.99;
     has_axis_scale
         && !has_rotation_or_shear
         && text_box.paragraphs.iter().any(|para| {
             matrix_textbox_lines_need_reflow(para)
-                && (compressed_group_child
+                && (width_compressed_group_child
                     || matrix_textbox_lines_overflow_height(para, available_height, dpi))
         })
 }
