@@ -3364,6 +3364,11 @@ fn saved_rowbreak_first_fragment_flow_overflow_allowance(
     (fragment_flow_bottom - source_flow_bottom).max(0.0)
 }
 
+/// [#6123] 저장 프레임 바닥이 **저장 행 경계**와 같다고 볼 수 있는 허용치.
+/// 저장 높이는 HWPUNIT→px 변환에서 행마다 반올림 오차를 남기므로 행 수에
+/// 비례하는 몫을 더해 쓴다(호출부).
+const SAVED_FRAME_ROW_END_STORED_TOLERANCE_PX: f64 = 1.0;
+
 /// 저장된 첫 RowBreak 조각 높이에 가장 가까운 행 경계를 찾는다.
 ///
 /// 저장 프레임의 남은 물리 공간은 글꼴 측정 drift를 흡수할 수 있지만, 다음 행까지
@@ -3372,6 +3377,7 @@ fn saved_rowbreak_first_fragment_flow_overflow_allowance(
 fn nearest_saved_rowbreak_frame_row_end(
     frame_height: f64,
     row_heights: &[f64],
+    stored_row_heights: &[f64],
     cell_spacing: f64,
 ) -> Option<usize> {
     if !frame_height.is_finite() || frame_height <= 0.0 {
@@ -3379,18 +3385,58 @@ fn nearest_saved_rowbreak_frame_row_end(
     }
 
     let mut bottom = 0.0;
-    let mut nearest: Option<(usize, f64)> = None;
+    let mut nearest: Option<(usize, f64, f64)> = None;
     for (row, height) in row_heights.iter().enumerate() {
         if row > 0 {
             bottom += cell_spacing;
         }
         bottom += height;
         let distance = (bottom - frame_height).abs();
-        if nearest.is_none_or(|(_, best)| distance < best) {
-            nearest = Some((row + 1, distance));
+        if nearest.is_none_or(|(_, best, _)| distance < best) {
+            nearest = Some((row + 1, distance, bottom));
         }
     }
-    nearest.map(|(end_row, _)| end_row)
+    let (end_row, _, row_bottom) = nearest?;
+
+    // [#6123] 프레임이 그 행 경계를 **닿지 못하면** 그 행을 소유하지 않는다.
+    //
+    // 최근접 스냅에는 거리 제한이 없어, 프레임 바닥이 어떤 행 한복판에 떨어져도
+    // 그 행의 끝으로 끌려갔다 — 3112461 7쪽은 프레임 388.0px 이 행 1(측정
+    // 36.0~573.1)의 65% 지점인데 행 끝(573.1)으로 스냅돼 그 행을 통째로 앞
+    // 쪽에 얹었고, 표가 본문 하단을 174px 넘겼다. 한글은 그 행을 줄 단위로
+    // 가른다.
+    //
+    // 프레임이 경계를 **넘어서는**(frame ≥ 누적) 경우는 종전 그대로다 — 21298295
+    // 별표 5 는 프레임이 행 13 경계를 22.6px 지나며, 그 초과는 다음 행의 측정↔
+    // 저장 drift 다. 반대로 **모자라는** 쪽은 그 행을 다 담지 못했다는 뜻이므로,
+    // 흡수 가능한 drift(관련 행들의 |측정 − 저장| 합 + 행별 px 변환 반올림)
+    // 안에서만 허용한다. 저장 높이를 못 읽는 행은 그 행의 측정 높이가 곧 상한이
+    // 되어 종전 스냅이 그대로 남는다.
+    let shortfall = row_bottom - frame_height;
+    if shortfall <= 0.0 {
+        return Some(end_row);
+    }
+    // 모자란 몫이 **조각이 될 수 없는 크기**(`MIN_TOP_KEEP_PX`)면 그 잔여를 다음
+    // 쪽으로 옮길 수 없으므로 행을 통째로 두는 것이 맞다 — 1790387 PrEP 보고서는
+    // 프레임이 행 3 경계에 16.8px 못 미친다. 그보다 크게 모자라면 흡수 가능한
+    // drift(관련 행들의 |측정 − 저장| 합 + 행별 px 변환 반올림) 안에서만 허용한다.
+    // 저장 높이를 못 읽는 행은 그 행의 측정 높이가 곧 상한이 되어 종전 스냅이
+    // 그대로 남는다.
+    let drift_budget: f64 = row_heights
+        .iter()
+        .take(end_row)
+        .enumerate()
+        .map(|(row, measured)| {
+            let stored = stored_row_heights.get(row).copied().unwrap_or(0.0);
+            if stored > 0.0 && stored.is_finite() {
+                (measured - stored).abs()
+            } else {
+                *measured
+            }
+        })
+        .sum::<f64>()
+        + SAVED_FRAME_ROW_END_STORED_TOLERANCE_PX * end_row as f64;
+    (shortfall <= drift_budget.max(MIN_TOP_KEEP_PX)).then_some(end_row)
 }
 
 /// Visible host text that is structurally a numbered table caption.
@@ -23957,9 +24003,30 @@ impl TypesetEngine {
             } else {
                 None
             };
+            // [#6123] 저장 행 높이(행 안 row_span==1 셀의 최대 저장 높이). 프레임
+            // 바닥이 진짜 행 경계인지 저장 좌표계에서 검산하는 데 쓴다.
+            let stored_row_heights: Vec<f64> = (0..row_count)
+                .map(|row| {
+                    table
+                        .cells
+                        .iter()
+                        .filter(|cell| {
+                            cell.row as usize == row
+                                && cell.row_span == 1
+                                && cell.height < 0x8000_0000
+                        })
+                        .map(|cell| hwpunit_to_px(cell.height as i32, self.dpi))
+                        .fold(0.0f64, f64::max)
+                })
+                .collect();
             let source_first_fragment_row_end = saved_first_fragment_source_frame
                 .and_then(|(frame_height, _)| {
-                    nearest_saved_rowbreak_frame_row_end(frame_height, cut_row_h, cs)
+                    nearest_saved_rowbreak_frame_row_end(
+                        frame_height,
+                        cut_row_h,
+                        &stored_row_heights,
+                        cs,
+                    )
                 });
             // 기존 각주가 이미 이 page의 body tail을 예약했으면 object frame만으로
             // whole row를 수용할 수 없다. 그 마지막 행의 cell-unit partial cut은
@@ -25531,9 +25598,63 @@ mod issue_3820_saved_rowbreak_first_fragment_frame_contract {
     #[test]
     fn frame_slack_stops_at_its_nearest_row_boundary() {
         assert_eq!(
-            nearest_saved_rowbreak_frame_row_end(87.0, &[30.0, 55.0, 60.0], 0.0),
+            nearest_saved_rowbreak_frame_row_end(
+                87.0,
+                &[30.0, 55.0, 60.0],
+                &[30.0, 56.0, 60.0],
+                0.0
+            ),
             Some(2),
             "saved-frame slack may absorb measurement drift at row 2, but not admit row 3"
+        );
+    }
+
+    /// [#6123] 프레임이 행 경계에 **닿지 못하면** 그 행을 소유하지 않는다 —
+    /// 행 경계 신호가 아니라 행 안에서 끊으라는 신호다(3112461 7쪽: 프레임 388 이
+    /// 행 1(36~573)의 65% 지점인데 573 으로 스냅돼 행이 통째로 앞 쪽에 얹혔다).
+    #[test]
+    fn frame_falling_short_of_a_row_boundary_does_not_own_that_row() {
+        assert_eq!(
+            nearest_saved_rowbreak_frame_row_end(388.0, &[36.0, 537.0], &[36.0, 472.0], 0.0),
+            None,
+            "모자란 몫(185.1)이 흡수 가능한 drift(65.0)를 넘으면 행 경계가 아니다"
+        );
+    }
+
+    /// 경계를 **넘어서는** 프레임은 종전대로 그 행 끝을 소유한다 — 초과분은
+    /// 다음 행의 측정↔저장 drift 다(21298295 별표 5: 행 13 경계를 22.6px 초과).
+    #[test]
+    fn frame_past_a_row_boundary_still_owns_that_row() {
+        assert_eq!(
+            nearest_saved_rowbreak_frame_row_end(112.6, &[30.0, 60.0], &[30.0, 60.0], 0.0),
+            Some(2),
+            "프레임이 경계를 지나면 그 행까지는 확실히 첫 조각 소유다"
+        );
+    }
+
+    /// 조각이 될 수 없는 크기(25px)만큼 모자란 프레임은 그 행을 그대로 소유한다 —
+    /// 그 잔여는 어차피 다음 쪽으로 옮길 수 없다(1790387 PrEP 보고서: 16.8px).
+    #[test]
+    fn frame_short_by_less_than_an_orphan_still_owns_that_row() {
+        assert_eq!(
+            nearest_saved_rowbreak_frame_row_end(
+                405.8,
+                &[28.4, 103.5, 163.5, 127.3],
+                &[28.4, 103.5, 163.5, 127.3],
+                0.0
+            ),
+            Some(4),
+            "16.8px 잔여는 독립 조각이 될 수 없으므로 행을 통째로 둔다"
+        );
+    }
+
+    /// 저장 행 높이를 못 읽는 표(전부 0)는 종전 최근접 스냅을 유지한다.
+    #[test]
+    fn frame_snap_survives_without_stored_row_heights() {
+        assert_eq!(
+            nearest_saved_rowbreak_frame_row_end(87.0, &[30.0, 55.0, 60.0], &[0.0, 0.0, 0.0], 0.0),
+            Some(2),
+            "저장 높이가 없으면 측정 최근접 스냅이 유일한 신호다"
         );
     }
 }
