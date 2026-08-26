@@ -106,7 +106,8 @@ Stage 1에서 정한 `COMMAND_INLINE_MIN=460px` 아래에서만 다음을 적용
 - paragraph group은 `#style-overflow-panel` 안에서 표시
 - panel은 기존 paragraph icon button을 한 행 또는 명확한 grid로 표시
 - `#btn-style-overflow`는 `aria-expanded`, `aria-controls`, 명확한 title/label을 제공
-- panel 내부 active paragraph command가 있으면 더보기 버튼에도 active 포함 상태를 표시
+- panel 내부 active paragraph command는 더보기 버튼의 현재 정렬 아이콘과 접근성 설명에만 반영
+- 더보기 버튼 표면은 panel이 열린 동안에만 활성 상태로 표시
 - 외부 click·Escape·command 실행 후 닫고 trigger로 focus 복귀
 - viewport가 넓어져 paragraph가 inline으로 돌아가면 열린 panel을 닫고 `aria-expanded=false`로 동기화
 
@@ -172,7 +173,7 @@ PDF/SVG visual sweep과 Rust 전체 회귀는 기본 게이트가 아니다.
 | --- | --- |
 | 전체 1행 경계가 skin/font마다 흔들림 | 가장 넓은 실측과 안전 여백을 사용하고 세 skin 경계 E2E를 둔다. |
 | `display:contents`가 focus/popup을 깨뜨림 | wrapper를 유지한 grid/flex 방식으로 전환하고 실제 button DOM은 복제하지 않는다. |
-| 더보기에서 active 상태가 보이지 않음 | trigger에 active 포함 표시와 명확한 accessible label을 제공한다. |
+| 더보기에서 현재 정렬 상태가 보이지 않음 | trigger 아이콘과 accessible label에 현재 정렬을 표시하되 닫힌 버튼을 선택 상태로 오인시키지 않는다. |
 | 375px field가 맞지 않음 | touch height를 줄이지 않고 style/language gap과 font min-width만 재조정한다. |
 | paragraph 외 group까지 숨겨야 함 | 측정 근거를 stage 보고서에 남기고 group 단위 2차 후보만 추가한다. |
 | #6115·#6138 충돌 | `#icon-toolbar`와 toolbox visibility 파일을 수정하지 않고 별도 통합 검토로 남긴다. |

@@ -25,7 +25,8 @@ Stage 1에서 고정한 콘텐츠 경계 세 개를 그대로 제품 계약으�
 - 기존 paragraph button 여섯 개의 ID와 순서를 한 번만 유지했다.
 - 460px 이상에서는 overflow host/panel을 `display:contents`로 풀어 기존 명령을 inline에 둔다.
 - 459px 이하에서는 같은 paragraph DOM을 panel로 표시하며 command clone과 runtime reparent는 없다.
-- trigger는 `aria-controls`, `aria-expanded`, active 포함 label과 disabled 상태를 동기화한다.
+- trigger는 `aria-controls`, `aria-expanded`, 현재 정렬을 포함한 label·아이콘과 disabled 상태를 동기화한다.
+- trigger 표면은 panel이 열린 동안에만 활성 상태로 표시한다.
 - click·ArrowDown으로 열고 첫 사용 가능한 명령으로 focus를 옮긴다.
 - Escape·외부 pointer·명령 실행으로 닫으며 Escape와 명령 실행 뒤 trigger로 focus를 돌린다.
 - viewport가 460px 이상으로 넓어지면 열린 상태를 해제하고 paragraph 명령을 즉시 inline으로 복귀시킨다.
@@ -75,7 +76,7 @@ Rust source 변경은 0건이다. PR/push 전 review 준비 checkout에서 파�
 - [x] 460/459px에서 paragraph inline↔더보기 전환이 일어난다.
 - [x] 375px에서 page/style bar 가로 overflow가 없다.
 - [x] 기존 명령 ID·순서·listener와 접근성 이름을 유지한다.
-- [x] 더보기 focus·Escape·외부 click·active/disabled 계약을 구현했다.
+- [x] 더보기 focus·Escape·외부 click·현재 정렬 표시/disabled 계약을 구현했다.
 - [x] #6115·#6138의 `#icon-toolbar` 범위를 변경하지 않았다.
 
 Stage 2는 완료했다. 다음 단계는 사용자 승인 뒤 1920~375px 확대 검증과 default/flat/oldschool ×

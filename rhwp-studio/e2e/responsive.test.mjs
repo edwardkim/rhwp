@@ -192,8 +192,8 @@ async function run() {
           const focusReturned = document.activeElement === trigger;
 
           const triggerIcon = document.getElementById('style-overflow-current-icon');
-          const activeMirrored = selectionCommand?.classList.contains('active') === true
-            && trigger?.classList.contains('active') === true
+          const currentAlignmentMirrored = selectionCommand?.classList.contains('active') === true
+            && trigger?.classList.contains('active') === false
             && trigger?.getAttribute('aria-label')?.includes('현재 가운데 정렬') === true
             && triggerIcon?.classList.contains('sb-al-center') === true;
           for (const button of paragraphButtons) button.disabled = true;
@@ -208,7 +208,7 @@ async function run() {
             openedByClick,
             closedByCommand: trigger?.getAttribute('aria-expanded') === 'false' && panel?.hidden === true,
             focusReturned,
-            activeMirrored,
+            currentAlignmentMirrored,
             disabledMirrored,
           };
         });
@@ -218,7 +218,7 @@ async function run() {
         check(tc, interaction.openedByClick, 'click 열기와 첫 명령 focus');
         check(tc, interaction.closedByCommand, '명령 실행 뒤 panel 닫힘');
         check(tc, interaction.focusReturned, '명령 실행 뒤 trigger focus 복귀');
-        check(tc, interaction.activeMirrored, 'paragraph active 상태를 trigger에 표시');
+        check(tc, interaction.currentAlignmentMirrored, '현재 paragraph 정렬은 표시하되 닫힌 trigger는 중립 유지');
         check(tc, interaction.disabledMirrored, 'paragraph disabled 상태를 trigger에 표시');
       }
 

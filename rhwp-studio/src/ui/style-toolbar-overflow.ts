@@ -123,7 +123,6 @@ export class StyleToolbarOverflowController {
 
     this.triggerIcon.classList.remove(...ALIGNMENT_ICON_CLASSES);
     this.triggerIcon.classList.add(activeIconClass);
-    this.trigger.classList.toggle('active', !!activeCommand);
     this.trigger.disabled = allCommandsDisabled;
     const currentAlignment = activeCommand?.title;
     const accessibleLabel = currentAlignment

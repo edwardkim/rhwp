@@ -43,6 +43,7 @@ test('overflow controller owns keyboard, outside-click, focus, and active-state 
   assert.match(source, /new MutationObserver/);
   assert.match(source, /button\.classList\.contains\('active'\)/);
   assert.match(source, /this\.triggerIcon\.classList\.remove\(\.\.\.ALIGNMENT_ICON_CLASSES\)/);
+  assert.doesNotMatch(source, /this\.trigger\.classList\.toggle\('active'/);
   assert.match(source, /문단 정렬 더보기, 현재 \$\{currentAlignment\}/);
   assert.match(source, /dispose\(\): void/);
 });
