@@ -1,10 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { createServer } from 'node:http';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { subsecondWasmPlugin } from '../vite/subsecond-wasm-plugin.ts';
 
 type RuntimeModule = typeof import('../src/core/subsecond-runtime.ts');
 
@@ -1039,4 +1041,52 @@ test('hot-patch dev wiring is declared in the manifests and the vite config', ()
   assert.match(studioPackage, /"subsecond:install"\s*:\s*"node \.\.\/scripts\/install-dioxus-cli\.mjs"/);
   assert.match(studioPackage, /"subsecond:serve"[\s\S]*--package rhwp-subsecond[\s\S]*--hot-patch/);
   assert.match(studioPackage, /"dev:subsecond"\s*:\s*"RHWP_SUBSECOND=1 vite"/);
+});
+
+test('the copied Subsecond WASM stays loadable while dx is offline', async () => {
+  const directory = mkdtempSync(path.join(tmpdir(), 'rhwp-subsecond-wasm-'));
+  const base = Uint8Array.from([0, 97, 115, 109]);
+  writeFileSync(path.join(directory, 'rhwp-subsecond_bg.wasm'), base);
+  writeFileSync(path.join(directory, 'librhwp-subsecond-patch-7.wasm'), Uint8Array.of(7));
+
+  let middleware: ((req: any, res: any, next: () => void) => void) | null = null;
+  const plugin = subsecondWasmPlugin(directory);
+  (plugin.configureServer as Function)({
+    middlewares: {
+      use(prefix: string, handler: typeof middleware) {
+        assert.equal(prefix, '/wasm');
+        middleware = handler;
+      },
+    },
+  });
+  const server = createServer((req, res) => {
+    req.url = req.url?.replace(/^\/wasm/, '') || '/';
+    middleware!(req, res, () => {
+      res.statusCode = 404;
+      res.end();
+    });
+  });
+  await new Promise<void>((resolve, reject) => {
+    server.once('error', reject);
+    server.listen(0, '127.0.0.1', resolve);
+  });
+  try {
+    const address = server.address();
+    assert.ok(address && typeof address !== 'string');
+    const origin = `http://127.0.0.1:${address.port}`;
+    const response = await fetch(`${origin}/wasm/rhwp-subsecond_bg.wasm`);
+    assert.equal(response.status, 200);
+    assert.equal(response.headers.get('content-type'), 'application/wasm');
+    assert.deepEqual(new Uint8Array(await response.arrayBuffer()), base);
+    assert.equal(response.headers.get('cache-control'), 'no-store');
+    const patchResponse = await fetch(`${origin}/wasm/librhwp-subsecond-patch-7.wasm`);
+    assert.equal(patchResponse.status, 200);
+    assert.equal(patchResponse.headers.get('content-type'), 'application/wasm');
+    assert.equal(patchResponse.headers.get('cache-control'), 'no-store');
+    assert.deepEqual(new Uint8Array(await patchResponse.arrayBuffer()), Uint8Array.of(7));
+    assert.equal((await fetch(`${origin}/wasm/rhwp-subsecond_bg.js`)).status, 404);
+  } finally {
+    await new Promise<void>(resolve => server.close(() => resolve()));
+    rmSync(directory, { recursive: true, force: true });
+  }
 });
