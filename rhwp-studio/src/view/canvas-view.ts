@@ -1059,6 +1059,7 @@ export class CanvasView {
 
   /** 리소스를 정리한다 */
   private reset(): void {
+    const hadActivePage = this.activePageSnapshot !== null;
     this.cancelPendingTextEditRefresh();
     this.cancelTextEditStaticLayerVerification();
     this.cancelPendingPrefetch();
@@ -1067,6 +1068,7 @@ export class CanvasView {
     this.currentVisiblePages = [];
     this.editingPageIndex = null;
     this.activePageSnapshot = null;
+    if (hadActivePage) this.eventBus.emit('active-page-changed', null);
     this.pages = [];
     this.scrollContent.replaceChildren();
     this.blankPagePlaceholder = null;

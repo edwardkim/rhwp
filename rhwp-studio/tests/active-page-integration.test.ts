@@ -83,3 +83,12 @@ test('그림·표 개체 선택도 선택된 실제 페이지를 활성 페이�
   assert.match(pictureRender, /this\.eventBus\.emit\('editing-page-changed', pageIndex\)/);
   assert.match(pictureRender, /this\.eventBus\.emit\('editing-page-changed', p\)/);
 });
+
+test('문서를 교체할 때 이전 활성 페이지 snapshot을 소비처에서 지운다', () => {
+  const view = source('src/view/canvas-view.ts');
+  const reset = section(view, '  private reset(): void {', '\n  private releaseAllRenderedPages');
+
+  assert.match(reset, /const hadActivePage = this\.activePageSnapshot !== null/);
+  assert.match(reset, /this\.activePageSnapshot = null/);
+  assert.match(reset, /this\.eventBus\.emit\('active-page-changed', null\)/);
+});
