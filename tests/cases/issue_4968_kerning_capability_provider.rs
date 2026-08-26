@@ -793,7 +793,8 @@ fn issue_4968_common_run_measurement_applies_pair_delta_after_ratio_and_spacing(
     }
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn issue_4968_common_run_measurement_preserves_k0_and_fail_closed_positions() {
     let text = "AV";
     let base_positions = vec![0.0, 9.25, 18.5];
@@ -880,7 +881,8 @@ fn issue_4968_common_run_measurement_preserves_k0_and_fail_closed_positions() {
     );
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn issue_4968_layout_transaction_pins_slot_generation_and_reuses_face_cache() {
     let slot = ExactFontSlot::new(4968, 1);
     let mut registry = ExactFontSourceRegistry::default();
@@ -936,7 +938,8 @@ fn issue_4968_layout_transaction_pins_slot_generation_and_reuses_face_cache() {
     assert!(k0.session.is_none());
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn issue_4968_paragraph_measurement_commits_segments_to_one_position_map() {
     let slot = ExactFontSlot::new(4968, 1);
     let mut registry = ExactFontSourceRegistry::default();
@@ -1000,7 +1003,8 @@ fn issue_4968_paragraph_measurement_commits_segments_to_one_position_map() {
     }
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn issue_4968_paragraph_measurement_rolls_back_k0_and_segment_limit() {
     let slot = ExactFontSlot::new(4968, 1);
     let registry = ExactFontSourceRegistry::default();
@@ -1052,7 +1056,8 @@ fn paragraph_scalar_style(slot: ExactFontSlot, requested: bool) -> KerningParagr
     }
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn issue_4968_paragraph_segmentation_honors_slot_control_and_inline_boundaries() {
     let slot_a = ExactFontSlot::new(4968, 1);
     let slot_b = ExactFontSlot::new(4969, 1);
@@ -1131,7 +1136,8 @@ fn issue_4968_paragraph_segmentation_honors_slot_control_and_inline_boundaries()
         .cache_hit));
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn issue_4968_paragraph_segmentation_retries_nominal_identity_failure_by_word() {
     let slot = ExactFontSlot::new(4968, 1);
     let mut registry = ExactFontSourceRegistry::default();
@@ -1194,7 +1200,8 @@ fn issue_4968_paragraph_segmentation_retries_nominal_identity_failure_by_word() 
     assert!(paragraph.range_width(4, 6).expect("AV width") < 20.0);
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn issue_4968_paragraph_segmentation_rolls_back_execution_budget_atomically() {
     let text = "A".repeat(MAX_KERNING_PARAGRAPH_SEGMENTS + 1);
     let code_points = text.chars().count();
@@ -1256,7 +1263,8 @@ fn issue_4968_paragraph_segmentation_rolls_back_execution_budget_atomically() {
     assert_eq!(oversized.positions(), oversized_positions);
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn issue_4968_long_word_and_line_boundary_consume_one_paragraph_measurement() {
     let slot = ExactFontSlot::new(4968, 1);
     let mut registry = ExactFontSourceRegistry::default();
@@ -1334,7 +1342,8 @@ fn issue_4968_long_word_and_line_boundary_consume_one_paragraph_measurement() {
     }
 }
 
-#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
 fn issue_4968_line_boundary_remeasurement_shares_the_segment_budget() {
     let text = "A".repeat(MAX_KERNING_PARAGRAPH_SEGMENTS);
     let code_points = text.chars().count();
@@ -1442,6 +1451,53 @@ fn issue_4968_edit_reflow_consumes_exact_boundary_measurement() {
 }
 
 #[cfg(not(target_arch = "wasm32"))]
+fn collect_public_av_run_lengths(core: &mut rhwp::document_core::DocumentCore) -> Vec<usize> {
+    fn collect(node: &serde_json::Value, lengths: &mut Vec<usize>) {
+        if node.get("type").and_then(|value| value.as_str()) == Some("TextRun") {
+            if let Some(text) = node.get("text").and_then(|value| value.as_str()) {
+                let av_count = text
+                    .chars()
+                    .filter(|character| matches!(character, 'A' | 'V'))
+                    .count();
+                if av_count > 0 {
+                    lengths.push(av_count);
+                }
+            }
+        }
+        if let Some(children) = node.get("children").and_then(|value| value.as_array()) {
+            for child in children {
+                collect(child, lengths);
+            }
+        }
+    }
+
+    let mut lengths = Vec::new();
+    for page_number in 0..core.page_count() {
+        let page = core
+            .build_page_render_tree(page_number as u32)
+            .expect("fresh public page tree");
+        let root: serde_json::Value =
+            serde_json::from_str(&page.root.to_json()).expect("page tree JSON");
+        collect(&root, &mut lengths);
+    }
+    lengths
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+fn set_public_av_paragraph(paragraph: &mut rhwp::model::paragraph::Paragraph, char_shape_id: u32) {
+    use rhwp::model::paragraph::CharShapeRef;
+
+    let text = "AV".repeat(40);
+    paragraph.text = text.clone();
+    paragraph.char_offsets = (0..text.chars().count() as u32).collect();
+    paragraph.char_shapes = vec![CharShapeRef {
+        start_pos: 0,
+        char_shape_id,
+    }];
+    paragraph.line_segs.clear();
+}
+
+#[cfg(not(target_arch = "wasm32"))]
 fn public_fresh_render_av_run_lengths(with_exact_source: bool, body_width_hwp: u32) -> Vec<usize> {
     use rhwp::document_core::DocumentCore;
     use rhwp::model::paragraph::{CharShapeRef, Paragraph};
@@ -1478,35 +1534,7 @@ fn public_fresh_render_av_run_lengths(with_exact_source: bool, body_width_hwp: u
             .expect("register exact public face");
     }
 
-    fn collect(node: &serde_json::Value, lengths: &mut Vec<usize>) {
-        if node.get("type").and_then(|value| value.as_str()) == Some("TextRun") {
-            if let Some(text) = node.get("text").and_then(|value| value.as_str()) {
-                let av_count = text
-                    .chars()
-                    .filter(|character| matches!(character, 'A' | 'V'))
-                    .count();
-                if av_count > 0 {
-                    lengths.push(av_count);
-                }
-            }
-        }
-        if let Some(children) = node.get("children").and_then(|value| value.as_array()) {
-            for child in children {
-                collect(child, lengths);
-            }
-        }
-    }
-
-    let mut lengths = Vec::new();
-    for page_number in 0..core.page_count() {
-        let page = core
-            .build_page_render_tree(page_number as u32)
-            .expect("fresh public page tree");
-        let root: serde_json::Value =
-            serde_json::from_str(&page.root.to_json()).expect("page tree JSON");
-        collect(&root, &mut lengths);
-    }
-    lengths
+    collect_public_av_run_lengths(&mut core)
 }
 
 #[cfg(not(target_arch = "wasm32"))]
@@ -1526,4 +1554,171 @@ fn issue_4968_fresh_pagination_and_page_tree_share_exact_boundaries() {
         public_fresh_render_av_run_lengths(true, body_width_hwp),
         "fresh exact page-tree boundaries must be deterministic"
     );
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+fn public_fresh_table_cell_av_run_lengths(
+    with_exact_source: bool,
+    content_width_hwp: u32,
+) -> Vec<usize> {
+    use rhwp::document_core::DocumentCore;
+    use rhwp::model::control::Control;
+    use rhwp::model::paragraph::CharShapeRef;
+
+    let mut core = DocumentCore::new_empty();
+    core.create_blank_document_native()
+        .expect("public blank template");
+    let mut document = core.document().clone();
+    let mut char_shape = document.doc_info.char_shapes[0].clone();
+    char_shape.raw_data = None;
+    char_shape.kerning = true;
+    char_shape.base_size = 1_500;
+    let char_shape_id = document.doc_info.char_shapes.len() as u32;
+    document.doc_info.char_shapes.push(char_shape);
+    document.sections[0].paragraphs[0].char_shapes = vec![CharShapeRef {
+        start_pos: 0,
+        char_shape_id,
+    }];
+    document.sections[0].section_def.page_def.width = 50_000;
+    document.sections[0].section_def.page_def.height = 200_000;
+    document.sections[0].section_def.page_def.margin_left = 1_000;
+    document.sections[0].section_def.page_def.margin_right = 1_000;
+    document.sections[0].section_def.page_def.margin_top = 1_000;
+    document.sections[0].section_def.page_def.margin_bottom = 1_000;
+    core.set_document(document);
+
+    let cell_width = content_width_hwp + 1_020;
+    core.create_table_ex_native(0, 0, 0, 1, 1, false, Some(&[cell_width]), None)
+        .expect("public one-cell table");
+    let mut document = core.document().clone();
+    let table = document.sections[0]
+        .paragraphs
+        .iter_mut()
+        .find_map(|paragraph| {
+            paragraph
+                .controls
+                .iter_mut()
+                .find_map(|control| match control {
+                    Control::Table(table) => Some(table.as_mut()),
+                    _ => None,
+                })
+        })
+        .expect("created public table");
+    let cell = table.cells.first_mut().expect("created public cell");
+    cell.width = cell_width;
+    set_public_av_paragraph(
+        cell.paragraphs.first_mut().expect("created cell paragraph"),
+        char_shape_id,
+    );
+    core.set_document(document);
+    if with_exact_source {
+        core.register_exact_font_source_native(char_shape_id, 1, EXACT_KERNING_SMOKE, 0)
+            .expect("register exact public face");
+    }
+    collect_public_av_run_lengths(&mut core)
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+fn public_fresh_text_box_av_run_lengths(
+    with_exact_source: bool,
+    content_width_hwp: u32,
+) -> Vec<usize> {
+    use rhwp::document_core::DocumentCore;
+    use rhwp::model::control::Control;
+    use rhwp::model::paragraph::CharShapeRef;
+
+    let mut core = DocumentCore::new_empty();
+    core.create_blank_document_native()
+        .expect("public blank template");
+    let mut document = core.document().clone();
+    let mut char_shape = document.doc_info.char_shapes[0].clone();
+    char_shape.raw_data = None;
+    char_shape.kerning = true;
+    char_shape.base_size = 1_500;
+    let char_shape_id = document.doc_info.char_shapes.len() as u32;
+    document.doc_info.char_shapes.push(char_shape);
+    document.sections[0].paragraphs[0].char_shapes = vec![CharShapeRef {
+        start_pos: 0,
+        char_shape_id,
+    }];
+    document.sections[0].section_def.page_def.width = 50_000;
+    document.sections[0].section_def.page_def.height = 200_000;
+    document.sections[0].section_def.page_def.margin_left = 1_000;
+    document.sections[0].section_def.page_def.margin_right = 1_000;
+    document.sections[0].section_def.page_def.margin_top = 1_000;
+    document.sections[0].section_def.page_def.margin_bottom = 1_000;
+    core.set_document(document);
+
+    core.create_shape_control_native(
+        0,
+        0,
+        0,
+        content_width_hwp + 1_020,
+        80_000,
+        0,
+        0,
+        false,
+        "InFrontOfText",
+        "textbox",
+        false,
+        false,
+        &[],
+    )
+    .expect("public text box");
+    let mut document = core.document().clone();
+    let text_box = document.sections[0]
+        .paragraphs
+        .iter_mut()
+        .find_map(|paragraph| {
+            paragraph
+                .controls
+                .iter_mut()
+                .find_map(|control| match control {
+                    Control::Shape(shape) => shape
+                        .drawing_mut()
+                        .and_then(|drawing| drawing.text_box.as_mut()),
+                    _ => None,
+                })
+        })
+        .expect("created public text box");
+    set_public_av_paragraph(
+        text_box
+            .paragraphs
+            .first_mut()
+            .expect("created text-box paragraph"),
+        char_shape_id,
+    );
+    core.set_document(document);
+    if with_exact_source {
+        core.register_exact_font_source_native(char_shape_id, 1, EXACT_KERNING_SMOKE, 0)
+            .expect("register exact public face");
+    }
+    collect_public_av_run_lengths(&mut core)
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+#[test]
+fn issue_4968_fresh_table_cell_and_text_box_share_exact_boundaries() {
+    type ContainerRunLengths = fn(bool, u32) -> Vec<usize>;
+    let containers: [(&str, ContainerRunLengths); 2] = [
+        ("table-cell", public_fresh_table_cell_av_run_lengths),
+        ("text-box", public_fresh_text_box_av_run_lengths),
+    ];
+
+    for (label, run_lengths) in containers {
+        let (content_width_hwp, k0, k1) = (7_000..=13_000)
+            .step_by(100)
+            .find_map(|content_width_hwp| {
+                let k0 = run_lengths(false, content_width_hwp);
+                let k1 = run_lengths(true, content_width_hwp);
+                (!k0.is_empty() && k1 != k0).then_some((content_width_hwp, k0, k1))
+            })
+            .unwrap_or_else(|| panic!("{label} width ladder must expose an exact AV boundary"));
+        assert!(!k0.is_empty() && !k1.is_empty(), "{label} must render text");
+        assert_eq!(
+            k1,
+            run_lengths(true, content_width_hwp),
+            "{label} exact boundary must be deterministic"
+        );
+    }
 }

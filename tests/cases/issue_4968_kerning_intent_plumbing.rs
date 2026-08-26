@@ -77,7 +77,10 @@ fn issue_4968_kerning_intent_reaches_text_style_without_changing_positions() {
         } else {
             (runs[1], runs[0])
         };
-        assert_eq!(off["positions"], on["positions"], "plumbing moved K1: {key}");
+        assert_eq!(
+            off["positions"], on["positions"],
+            "plumbing moved K1: {key}"
+        );
         let off_style = off["style"].clone();
         let mut on_style = on["style"].clone();
         on_style

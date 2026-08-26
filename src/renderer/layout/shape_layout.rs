@@ -2834,7 +2834,41 @@ impl LayoutEngine {
 
         let mut composed_paras: Vec<_> = textbox_paragraphs[..para_count]
             .iter()
-            .map(|p| compose_paragraph(p))
+            .map(|para| {
+                let composed = compose_paragraph(para);
+                if !para.line_segs.is_empty() {
+                    return composed;
+                }
+
+                // [#4968 R4C-4] 저장 LINE_SEG가 없는 가로 글상자는 본문·표 셀과
+                // 같은 fresh paragraph measurement를 사용한다. 종전에는 여기서
+                // compose_paragraph의 45자 fallback을 그대로 렌더해 exact kerning
+                // registry가 있어도 K0/K1 줄 경계가 항상 같았다. 저장 조판은 위에서
+                // 그대로 반환해 기존 feature-detection 계약을 건드리지 않는다.
+                let para_style = styles.para_styles.get(composed.para_style_id as usize);
+                let margin_left = para_style.map(|style| style.margin_left).unwrap_or(0.0);
+                let margin_right = para_style.map(|style| style.margin_right).unwrap_or(0.0);
+                let inner_width = (inner_area.width - margin_left - margin_right).max(0.0);
+                if inner_width <= 0.0 {
+                    return composed;
+                }
+                let paragraph_box = crate::renderer::composer::ParagraphBox::body_for_style(
+                    inner_area.width,
+                    para_style,
+                    self.dpi,
+                );
+                crate::renderer::composer::recompose_stored_lines_in_frame(
+                    &composed,
+                    para,
+                    paragraph_box,
+                    inner_width,
+                    styles,
+                    self.dpi,
+                    self.profile.get().legacy_hwp3_stored_geometry(),
+                    crate::renderer::composer::StoredRowMissPolicy::Reflow,
+                )
+                .unwrap_or(composed)
+            })
             .collect();
 
         // AutoNumber(Page) 치환: 글상자 안의 쪽번호 필드를 현재 페이지 번호로 변환
