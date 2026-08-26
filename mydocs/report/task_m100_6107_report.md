@@ -3,6 +3,7 @@
 - **이슈**: [#6107](https://github.com/edwardkim/rhwp/issues/6107)
 - **브랜치**: `codex/issue-6107-active-page-ruler`
 - **기준 commit**: `upstream/devel` `70ebacc4c9589e8c778907e179a6dab18cce8eb0`
+- **제출 기준**: `upstream/devel` `6b5c4f871972380c0866e2a8d27ac2bc67d257e6` 통합
 - **완료일**: 2026-08-26 KST
 - **검증 서버**: `http://127.0.0.1:7700/` (Vite 8.2.2)
 
@@ -85,7 +86,9 @@ exit 0
 ```
 
 빌드의 500 kB 초과 chunk 안내는 기존 Vite 크기 경고이며 빌드는 성공했다. 브라우저 검증 뒤 수집한
-console `error`/`warn`은 0건이었다.
+console `error`/`warn`은 0건이었다. 단계별 commit SHA를 보존한 채 최신 `upstream/devel`을 merge한
+제출 head에서도 TypeScript, Studio 전체 1,156건, 프로덕션 빌드, PageUp/PageDown E2E,
+`cargo fmt --all -- --check`와 `git diff --check`를 다시 통과했다.
 
 ## 실제 브라우저 검증
 
@@ -124,5 +127,5 @@ Chrome E2E에서 `samples/biz_plan.hwp` 6쪽을 사용했다.
 
 ## 작업 상태
 
-#6107의 로컬 구현과 계획된 4단계 검증은 완료했다. 원격 push와 PR 생성은 저장소 규칙에 따라 별도
-작업지시자 승인을 받은 뒤 수행한다.
+#6107의 로컬 구현, 계획된 4단계 검증, 작업지시자의 실제 동작 확인과 최신 `upstream/devel` 통합 head
+재검증을 완료했다. 작업지시자가 다음 제출 게이트 진행을 승인해 원격 push와 PR 생성을 준비한다.
