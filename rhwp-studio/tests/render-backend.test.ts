@@ -462,7 +462,19 @@ test('PageRenderer splits flow static images before the first Canvas2D flow rend
   // 좁은 질의 경로의 신원 키별 object URL 이든 조립부는 분기하지 않는다.
   assert.match(source, /element\.src = image\.src/);
   assert.match(source, /HWP_UNITS_PER_CSS_PIXEL = 75/);
-  assert.match(source, /applyFlowImageCrop\(element, image, displayScale\)/);
+  // [#6099] 90/270° 프레임은 회전 전 치수로 만들어지므로 crop 사영도 프레임
+  // 치수를 받는다.
+  assert.match(source, /applyFlowImageCrop\(element, image, displayScale, frameWidth, frameHeight\)/);
+});
+
+// [#6099] 90° 회전 그림: image.bbox 는 회전 후 외접 상자다. 프레임을 그 크기로
+// 만들고 rotate 를 다시 걸면 이중 회전이 된다 — 프레임은 회전 전 치수(swap)로
+// 만들고 같은 중심에서 rotate 해야 한다(2197981: 한글 712×506 vs 503×452 정사각형).
+test('PageRenderer builds quarter-turned flow image frames with pre-rotation dims (#6099)', () => {
+  const source = readFileSync(new URL('../src/view/page-renderer.ts', import.meta.url), 'utf8');
+  assert.match(source, /quarterTurned \? image\.bbox\.height : image\.bbox\.width/);
+  assert.match(source, /image\.bbox\.x \+ \(image\.bbox\.width - frameWidth\) \/ 2/);
+  assert.match(source, /frameX - \(needsClipWrapper \? visibleBbox\.x : 0\)/);
 });
 
 // [#3315] 편집마다 전체 레이어 트리(그림 1장에 6.6MB)를 받던 자리를 좁은 질의가 대체한다.
