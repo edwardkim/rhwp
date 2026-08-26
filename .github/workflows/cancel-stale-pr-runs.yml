@@ -61,6 +61,7 @@ jobs:
             ]);
             const retryableForceCancelStatuses = new Set([502, 503, 504]);
             const forceCancelRetryDelaysMs = [1_000, 2_000, 4_000];
+            const completionPollDelaysMs = [0, 500, 1_000, 2_000];
 
             function sleep(milliseconds) {
               return new Promise((resolve) => setTimeout(resolve, milliseconds));
@@ -91,6 +92,24 @@ jobs:
                 }
               }
               throw lastError;
+            }
+
+            async function getWorkflowRun(runId) {
+              const { data } = await github.rest.actions.getWorkflowRun({
+                owner,
+                repo,
+                run_id: runId,
+              });
+              return data;
+            }
+
+            async function waitForCompletedRun(runId) {
+              for (const delay of completionPollDelaysMs) {
+                if (delay > 0) await sleep(delay);
+                const currentRun = await getWorkflowRun(runId);
+                if (currentRun.status === 'completed') return currentRun;
+              }
+              return null;
             }
 
             async function getLivePull() {
@@ -152,17 +171,21 @@ jobs:
               try {
                 await forceCancelWithRetry(run.id);
               } catch (error) {
-                // 대상이 취소되거나 스스로 끝난 뒤 GitHub API가 409뿐 아니라 5xx를
-                // 반환할 수 있다. 응답 코드를 성공으로 간주하지 말고, 대상 run을 다시
-                // 읽어 실제로 completed인 경우만 정상 경과로 취급한다.
-                const { data: currentRun } = await github.rest.actions.getWorkflowRun({
-                  owner,
-                  repo,
-                  run_id: run.id,
-                });
-                if (currentRun.status !== 'completed') throw error;
+                // 대상이 취소되거나 스스로 끝난 뒤 GitHub API가 오류를 반환할 수 있다.
+                // 응답 코드를 성공으로 간주하지 않고, 짧은 bounded polling 안에서 실제
+                // completed를 확인한 경우만 eventual-consistency race로 취급한다.
+                let completedRun;
+                try {
+                  completedRun = await waitForCompletedRun(run.id);
+                } catch (statusError) {
+                  core.warning(
+                    `Failed to poll stale run ${run.id} after force-cancel error ${error.status ?? 'unknown'}: ${statusError.message}`,
+                  );
+                  throw error;
+                }
+                if (!completedRun) throw error;
                 core.info(
-                  `Skip stale run ${run.id} (${run.name}): already completed after force-cancel error ${error.status ?? 'unknown'} (${currentRun.conclusion ?? 'unknown'}).`,
+                  `Skip stale run ${run.id} (${run.name}): already completed after force-cancel error ${error.status ?? 'unknown'} (${completedRun.conclusion ?? 'unknown'}).`,
                 );
                 continue;
               }
