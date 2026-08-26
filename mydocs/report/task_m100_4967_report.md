@@ -5,7 +5,7 @@ canonical: mydocs/report/task_m100_4967_report.md
 last_verified: 2026-08-26
 ---
 
-# Task M100 #4967 최종 보고서 — W8 rank 8·rank 1 face 교정 qualification
+# Task M100 #4967 최종 보고서 — W8 rank 8·rank 1·rank 7 face 교정 qualification
 
 ## 1. 최종 판정
 
@@ -19,11 +19,16 @@ runtime miss는 실제지만, 가상 relation과 exact `MT.TTF hmtx`가 전체 l
 advance와 동치여서 layout 이득이 없다. 이름 match metadata만 만들고 조판을 바꾸지 않는 제품 rule은
 추가하지 않는다.
 
-두 판정은 rank 8·rank 1 lane의 종결이다. #4967은 여러 face를 순차 판정하는 tracker이며 rank 7과
-evidence-reopen lane이 남아 있으므로 **이슈는 닫지 않는다**. rank 1 착수 시점의 2026-08-26 재확인에서는
-#4967이 `OPEN`, 담당자 `edwardkim`, milestone `v1.0.0`이고 rank 1 연결 PR은 없었다. 이후 rank 1
-code candidate는 [PR #6081](https://github.com/edwardkim/rhwp/pull/6081)로 제출됐다. rank 8 결과는
-[PR #6069](https://github.com/edwardkim/rhwp/pull/6069)이며 tracker 상태는 계속 `OPEN`이다.
+rank 7 `KoPubWorld돋움체 Light`의 일괄 exact `layout-metric` 후보도 **`no-change`**다. 공개 fixture에서는
+fixed-frame 비회귀 가능성이 있었지만 동결된 5문서의 same-snapshot 판정에서 HWPX table-cell admitted
+stored-row에 current 0px → candidate 0.707px 신규 overflow가 생기는 한 modelled boundary signature를
+확인했다. 평균 폭 감소와 다른 line의 개선으로 이 회귀를 상쇄하지 않는다.
+
+세 qualification 가능한 rank 1·7·8은 모두 종결됐다. 나머지 14개 rank는 W5에서 source unavailable,
+protected partial 또는 capability mismatch의 terminal disposition과 명시적 재개 조건을 받았다. 빈
+evidence 대기열을 영구 OPEN 작업으로 유지하지 않고, 현재 W8 scope는 완료로 닫은 뒤 새 evidence가 실제로
+생기면 #4967을 reopen하는 운영을 권고한다. 실제 close·#4960 checklist·sub-issue 관계 변경은 현재 code
+candidate 병합 뒤 별도 승인으로 수행한다.
 
 ## 2. 판정 계보
 
@@ -154,8 +159,8 @@ manifest·Markdown 링크·fmt·diff 검사와 Docker WASM 5분 56초도 통과�
 W8 rank 8 qualification은 메인테이너의 최종 보고서 승인으로 `no-change` 완료됐고, code candidate는
 PR #6069로 제출됐다. self-review 기록, 최신 trailing head 검증과 merge는 각각 별도 gate로 유지한다.
 
-#4967 tracker의 다음 face 작업은 rank 8·rank 1 결과를 rank 7에 추정 적용하지 않고, 해당 face의 기존
-증거와 실사용 cohort를 독립적으로 확인하는 새 절편으로 시작한다.
+#4967 tracker의 rank 7 작업은 section 10에서 독립 판정했다. rank 8·rank 1 결과를 같은 family·다른
+localized face에 추정 적용하지 않았으며 세 face 모두 서로 다른 원인과 증거로 `no-change`에 도달했다.
 
 ## 9. rank 1 `문체부 바탕체` 최종 disposition
 
@@ -219,8 +224,9 @@ rank 1 evidence-reopen 조건은 현재와 다른 layout 이득 또는 다른 �
 
 ### 9.4 tracker 상태와 보호 불변식
 
-- #4967은 2026-08-26 기준 `OPEN`, 담당자 `edwardkim`, milestone `v1.0.0`이다.
-- rank 7 `KoPubWorld돋움체 Light` qualification과 evidence-reopen lane이 남아 있어 이슈를 닫지 않는다.
+- rank 1 판정 시점의 #4967은 `OPEN`, 담당자 `edwardkim`, milestone `v1.0.0`이었다.
+- 당시에는 rank 7 qualification이 남아 있어 이슈를 닫지 않았다. rank 7 완료 뒤의 최종 tracker 판정은
+  section 11을 따른다.
 - W4 계측은 runtime miss와 일치하므로 정정하지 않는다.
 - metric compatibility를 font identity·paint identity·재배포 권한으로 승격하지 않는다.
 - private corpus identity·본문·hash와 font bytes를 공개하지 않는다.
@@ -267,3 +273,96 @@ PR #6081의 code candidate `b83d9d08e`에서 Full CI·CodeQL·Proptest·Adapter 
 따라서 review 기록만을 위해 base merge·rebase를 수행하지 않는다. self-review와 현재 상태 정정은 녹색
 code candidate 뒤의 `mydocs/` 한정 single-parent trailing commit으로 제출하고, push 뒤 review-only
 fast-pass의 최신 required aggregate와 `MERGEABLE/CLEAN`을 다시 확인한다.
+
+## 10. rank 7 `KoPubWorld돋움체 Light` 최종 disposition
+
+### 10.1 판정 계보
+
+| Stage | 질문 | 결과 |
+| --- | --- | --- |
+| W8-R7-Q0 | 기존 W3·W4·W5·W7.5 증거와 cohort를 재사용할 수 있는가 | 5문서·위험 63,732자 재선정, exact TTF·supply-only registry 확인 |
+| W8-R7-Q1 | HWP/HWPX current runtime의 첫 divergence는 어디인가 | 두 형식 layout projection 동치, metric entry 전건 `null`, `layout-metric` 확정 |
+| W8-R7-Q2 | exact TTF와 CDN source가 metric-compatible하고 공개 fixture가 비회귀인가 | 공통 cmap 25,973자 mismatch 0, fixed-frame 6축 앞당김·신규 crossing 0, Q3 진입 |
+| W8-R7-Q3 | 실제 5문서에서 개선과 모든 modelled line 비악화를 증명하는가 | HWPX admitted table-cell에 신규 0.707px overflow, `no-change` |
+| W8-R7-Q4 | backend·portable·시각 정책을 설계할 것인가 | 제품 후보가 Q3에서 기각돼 미진입 |
+| W8-R7-Q5 | 제품 교정과 tracker 후속을 제안할 것인가 | product-correction 0, tracker 완료·close 제안 |
+
+단계별 local commit은 `331eb2366`, `3a6d97b5d`, `884e71be3`, `b6728a31f`에 고정했고 Q5 문서와 tracker
+판정은 `3e705d120`에 고정했다. 이 code candidate는 PR #6106으로 제출됐으며 같은 SHA의 Full CI·CodeQL·
+Proptest·Adapter inter-diff가 모두 성공했다. self-review 기록 뒤의 review-only fast-pass와 merge는 별도
+gate로 유지한다. 제품 font rule·metric DB·fallback·paint·supply는 변경하지 않았다.
+
+### 10.2 exact source와 runtime 경계
+
+exact TTF와 현행 CDN OTF·WOFF2는 bytes·name·outline identity가 아니지만 공통 cmap 25,973자의 advance가
+같다. 이 결과는 layout metric 비교를 허용할 뿐 font·paint identity나 재배포 권한을 승인하지 않는다.
+
+HWPX는 document `substFont=KoPubWorld바탕체 Light`를 paint 후보에 보존하고 HWP5는 보존하지 않는다.
+그러나 두 형식의 current source+layoutMetric projection과 실제 layout geometry는 같다. 따라서 substitution
+metadata를 layout fallback으로 승격하지 않고 exact metric과 current heuristic만 비교했다.
+
+### 10.3 공개 fixture와 실사용 결과의 차이
+
+공개 fixture 1,556건의 current total 847,977 HWPUNIT는 exact 후보에서 807,233으로 40,744 줄었다.
+fixed-frame 6축에서도 crossing 앞당김·신규 발생은 없었다. 하지만 record 726건은 개별적으로 넓어졌으므로
+fixture 평균만으로 제품 변경을 승인하지 않고 실제 cohort로 진입했다.
+
+Q3의 source usage 63,858자와 render observation 74,969자는 반복 story 때문에 다른 회계다. exact metric은
+74,132자에 적용됐고 current transform replay mismatch는 0이었다. 개선 관찰도 있었지만 regression 171
+line은 모두 table-cell이었다. 이 중 판단 가능한 51개 render observation은 다음 한 signature다.
+
+```text
+HWPX + table-cell + stored-row admitted
+current overflow 0px -> candidate overflow 0.707px
+line advance delta +162 HWPUNIT
+bold false
+```
+
+51을 서로 다른 원본 결함 수로 해석하지 않는다. 동일 signature의 반복이어도 실제 modelled line에 신규
+overflow가 발생했다는 사실은 일괄 exact metric 후보를 기각하기에 충분하다. cache-unmodelled 55,461자와
+style 미조인 63,465자를 더 해석해도 이미 관찰한 결정적 회귀는 사라지지 않는다.
+
+### 10.4 style과 보호 불변식
+
+Q0 source usage의 bold 노출은 4,468자, italic은 0자다. render에서 style을 조인한 bold 1,269자에는
+modelled regression이 없었고 결정적 signature도 non-bold였다. nested style 미조인 때문에 bold 전체의
+dynamic completion을 주장하지 않지만, 이 open gap을 non-bold modelled regression보다 우선시키지 않는다.
+
+rank 7 최종 disposition은 `no-change`다. qualified 전용 product-correction 자식 이슈, registry operation,
+acceptance matrix와 Q4 시각 검증을 만들지 않는다. 재개하려면 일괄 face rule과 다른 좁은 feature-detected
+cohort 또는 현재 회귀를 만들지 않는 새로운 한 decision-plane 가설이 필요하다.
+
+공개 정본은
+[`rank7_qualification_baseline.json`](../tech/investigations/issue-4967/rank7_qualification_baseline.json),
+[`rank7_runtime_boundary.json`](../tech/investigations/issue-4967/rank7_runtime_boundary.json),
+[`rank7_metric_hypothesis.json`](../tech/investigations/issue-4967/rank7_metric_hypothesis.json),
+[`rank7_private_qualification.json`](../tech/investigations/issue-4967/rank7_private_qualification.json)이다.
+
+## 11. #4967 tracker 운영 판정
+
+2026-08-26 Q5 감사에서 #4967은 `OPEN`, 담당자 `edwardkim`, milestone `v1.0.0`이며 연결된 GitHub
+sub-issue는 0개였다. 상위 #4960 본문은 #4967을 W8 실행 이슈로 가리키지만 실제 sub-issue 관계는 설정되지
+않아 상위 완료 조건과 불일치한다.
+
+현재 queue는 다음과 같다.
+
+| lane | 상태 |
+| --- | --- |
+| rank 1·7·8 correction qualification | 모두 `no-change` 완료 |
+| product-correction | qualified face 0, 후속 이슈 0 |
+| 나머지 14개 rank | terminal disposition, 외부 evidence 변화 때만 재개 |
+| W9 #4968 / W10 #4969 | 독립 OPEN, #4967 영구 OPEN 불필요 |
+
+evidence-reopen은 현재 수행할 작업이 아니라 이벤트 기반 재개 조건이다. 이를 이유로 빈 tracker를 계속
+OPEN으로 두면 완료된 W8과 실제 대기 작업을 구분하기 어렵다. 권고 후속은 현재 변경의 병합과 최종 comment
+뒤에 다음 순서로 수행한다.
+
+1. #4967을 #4960의 GitHub sub-issue로 연결해 계보를 정정한다.
+2. #4960 본문의 W8 checkbox를 완료로 바꾼다.
+3. #4967에 rank 1·7·8 `no-change`, product mutation 0과 명시적 reopen 조건을 남긴다.
+4. #4967을 completed로 close한다.
+5. 새 source·provider·localized identity·capability evidence가 실제로 생기면 #4967을 reopen하거나 해당
+   face의 새 자식 이슈를 등록한다.
+
+이 권고는 기여자의 제안 권리나 future evidence 제출을 제한하지 않는다. 현재 승인된 작업이 완료됐다는
+상태 정산이며, GitHub mutation은 메인테이너의 별도 승인 전에는 수행하지 않는다.

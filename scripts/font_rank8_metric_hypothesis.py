@@ -116,7 +116,13 @@ def _outline_digest(font: TTFont, glyph_name: str) -> str:
     return sha256_bytes(canonical_json_bytes(_normalize_pen_value(pen.value)))
 
 
-def inspect_font(path: Path, *, label: str, fixture_codepoints: set[int]) -> dict[str, Any]:
+def inspect_font(
+    path: Path,
+    *,
+    label: str,
+    fixture_codepoints: set[int],
+    target_face: str = TARGET_FACE,
+) -> dict[str, Any]:
     try:
         font = TTFont(path, lazy=False, recalcBBoxes=False, recalcTimestamp=False)
     except Exception as error:
@@ -163,7 +169,7 @@ def inspect_font(path: Path, *, label: str, fixture_codepoints: set[int]) -> dic
             "cmapCodepointCount": len(cmap),
             "os2FsType": font["OS/2"].fsType,
             "nameTable": names,
-            "requestedNameExact": TARGET_FACE in identity_names,
+            "requestedNameExact": target_face in identity_names,
             "fixture": {
                 "codepointCount": len(fixture_codepoints),
                 "missingCodepoints": 0,
@@ -349,6 +355,12 @@ def build_projection(
     package: dict[str, Any],
     registry: dict[str, Any],
     paths: dict[str, Path],
+    target_face: str = TARGET_FACE,
+    target_rank: int = 8,
+    kind: str = "font-rank8-metric-hypothesis",
+    stage: str = "W8-Q2",
+    fixture_sha256: str = FIXTURE_SHA256,
+    expected_urls: dict[str, str] | None = None,
 ) -> dict[str, Any]:
     records = trace.get("records")
     if (
@@ -359,7 +371,7 @@ def build_projection(
         or trace.get("counts", {}).get("recordsOmitted") != 0
     ):
         raise Rank8MetricError("current trace is incomplete")
-    if not all(record.get("document", {}).get("face") == TARGET_FACE for record in records):
+    if not all(record.get("document", {}).get("face") == target_face for record in records):
         raise Rank8MetricError("current trace contains another face")
     layout_runs = layout.get("runs")
     if layout.get("tool") != "rhwp-q-text-layout" or not isinstance(layout_runs, list):
@@ -529,17 +541,18 @@ def build_projection(
     active_rules = [
         rule
         for rule in registry.get("rules", [])
-        if rule.get("status") == "active" and rule.get("sourceFace") == TARGET_FACE
+        if rule.get("status") == "active" and rule.get("sourceFace") == target_face
     ]
     if registry.get("schemaVersion") != "2.0" or len(active_rules) != 2:
         raise Rank8MetricError("current registry target rules drifted")
     rules_by_projection = {
         rule["projections"][0]["id"]: rule for rule in active_rules if len(rule["projections"]) == 1
     }
-    expected_urls = {
-        "canvas2d-webfont": "https://cdn.jsdelivr.net/npm/font-kopubworld@1.0.3/fonts/KoPubWorld-Batang-Light.woff2",
-        "canvaskit-sfnt": "https://cdn.jsdelivr.net/npm/font-kopubworld@1.0.3/fonts/KoPubWorld-Batang-Light.otf",
-    }
+    if expected_urls is None:
+        expected_urls = {
+            "canvas2d-webfont": "https://cdn.jsdelivr.net/npm/font-kopubworld@1.0.3/fonts/KoPubWorld-Batang-Light.woff2",
+            "canvaskit-sfnt": "https://cdn.jsdelivr.net/npm/font-kopubworld@1.0.3/fonts/KoPubWorld-Batang-Light.otf",
+        }
     if set(rules_by_projection) != set(expected_urls):
         raise Rank8MetricError("current registry projection set drifted")
     canvas_rule = rules_by_projection["canvas2d-webfont"]
@@ -558,12 +571,12 @@ def build_projection(
     candidate_total = sum(candidate_by_record.values())
     public = {
         "schemaVersion": 1,
-        "kind": "font-rank8-metric-hypothesis",
+        "kind": kind,
         "issue": 4967,
-        "stage": "W8-Q2",
-        "target": {"documentFace": TARGET_FACE, "queueRank": 8},
+        "stage": stage,
+        "target": {"documentFace": target_face, "queueRank": target_rank},
         "inputs": {
-            "fixture": {"sha256": FIXTURE_SHA256},
+            "fixture": {"sha256": fixture_sha256},
             "q1Baseline": {
                 "canonicalSha256": q1["canonicalSha256"],
                 "traceSha256": q1["trace"]["canonicalTraceSha256"],

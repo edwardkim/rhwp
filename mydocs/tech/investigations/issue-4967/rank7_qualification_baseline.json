@@ -1,0 +1,357 @@
+{
+  "canonicalSha256": "a3be826dda103dd7ec69b3db9cb3b1529e82d55520bcdbeadd1bc7ddfaae1c42",
+  "cohort": {
+    "aggregateUsageRows": 174,
+    "categoryRiskCharacters": {
+      "char-miss": 0,
+      "face-miss": 63732,
+      "heuristic": 0
+    },
+    "compressedCharacters": 63082,
+    "compressedFixedContextRiskCharacters": 51924,
+    "compressedRiskCharacters": 62960,
+    "contextCharacters": {
+      "body": 11504,
+      "footer": 30,
+      "header": 175,
+      "table-cell": 52149
+    },
+    "documentUsageRows": 174,
+    "documents": 5,
+    "documentsByFormat": {
+      "hwp": 3,
+      "hwpx": 2
+    },
+    "formatCharacters": {
+      "hwp": 3159,
+      "hwpx": 60699
+    },
+    "freshRiskCharacters": 0,
+    "riskCharacters": 63732,
+    "storedRiskCharacters": 63732,
+    "styleDomain": {
+      "axes": [
+        {
+          "bold": false,
+          "characters": 48173,
+          "italic": false,
+          "ratio": 95,
+          "rows": 13,
+          "spacing": -9
+        },
+        {
+          "bold": false,
+          "characters": 5213,
+          "italic": false,
+          "ratio": 100,
+          "rows": 11,
+          "spacing": -3
+        },
+        {
+          "bold": false,
+          "characters": 3569,
+          "italic": false,
+          "ratio": 100,
+          "rows": 11,
+          "spacing": -2
+        },
+        {
+          "bold": true,
+          "characters": 3053,
+          "italic": false,
+          "ratio": 95,
+          "rows": 4,
+          "spacing": -9
+        },
+        {
+          "bold": false,
+          "characters": 708,
+          "italic": false,
+          "ratio": 100,
+          "rows": 30,
+          "spacing": 0
+        },
+        {
+          "bold": true,
+          "characters": 679,
+          "italic": false,
+          "ratio": 100,
+          "rows": 13,
+          "spacing": -5
+        },
+        {
+          "bold": false,
+          "characters": 523,
+          "italic": false,
+          "ratio": 100,
+          "rows": 17,
+          "spacing": -5
+        },
+        {
+          "bold": true,
+          "characters": 331,
+          "italic": false,
+          "ratio": 100,
+          "rows": 15,
+          "spacing": -2
+        },
+        {
+          "bold": false,
+          "characters": 287,
+          "italic": false,
+          "ratio": 95,
+          "rows": 3,
+          "spacing": -5
+        },
+        {
+          "bold": true,
+          "characters": 261,
+          "italic": false,
+          "ratio": 100,
+          "rows": 5,
+          "spacing": -6
+        },
+        {
+          "bold": false,
+          "characters": 217,
+          "italic": false,
+          "ratio": 95,
+          "rows": 7,
+          "spacing": 0
+        },
+        {
+          "bold": false,
+          "characters": 217,
+          "italic": false,
+          "ratio": 100,
+          "rows": 9,
+          "spacing": -6
+        },
+        {
+          "bold": false,
+          "characters": 166,
+          "italic": false,
+          "ratio": 100,
+          "rows": 5,
+          "spacing": -8
+        },
+        {
+          "bold": false,
+          "characters": 71,
+          "italic": false,
+          "ratio": 100,
+          "rows": 5,
+          "spacing": -15
+        },
+        {
+          "bold": true,
+          "characters": 66,
+          "italic": false,
+          "ratio": 100,
+          "rows": 4,
+          "spacing": -11
+        },
+        {
+          "bold": true,
+          "characters": 62,
+          "italic": false,
+          "ratio": 100,
+          "rows": 3,
+          "spacing": 1
+        },
+        {
+          "bold": false,
+          "characters": 58,
+          "italic": false,
+          "ratio": 100,
+          "rows": 7,
+          "spacing": -11
+        },
+        {
+          "bold": false,
+          "characters": 55,
+          "italic": false,
+          "ratio": 95,
+          "rows": 1,
+          "spacing": -15
+        },
+        {
+          "bold": false,
+          "characters": 54,
+          "italic": false,
+          "ratio": 100,
+          "rows": 3,
+          "spacing": -1
+        },
+        {
+          "bold": false,
+          "characters": 43,
+          "italic": false,
+          "ratio": 100,
+          "rows": 3,
+          "spacing": -12
+        },
+        {
+          "bold": false,
+          "characters": 36,
+          "italic": false,
+          "ratio": 100,
+          "rows": 2,
+          "spacing": -10
+        },
+        {
+          "bold": true,
+          "characters": 10,
+          "italic": false,
+          "ratio": 100,
+          "rows": 1,
+          "spacing": -10
+        },
+        {
+          "bold": true,
+          "characters": 6,
+          "italic": false,
+          "ratio": 100,
+          "rows": 2,
+          "spacing": 0
+        }
+      ],
+      "boldCharacters": 4468,
+      "italicCharacters": 0
+    },
+    "totalCharacters": 63858
+  },
+  "currentRegistry": {
+    "decisionPlanes": [
+      "supply"
+    ],
+    "projectionIds": [
+      "canvas2d-webfont",
+      "canvaskit-sfnt"
+    ],
+    "rawSha256": "fbab4413007a29600e5d667503e80b861ec4096827a8936943bdf74e58a5ae16",
+    "rulesSha256": "bd9469aa16156a16ea262f608015cb0b78e925700ae7df69c38602ba6670c029",
+    "supplyUrls": [
+      "https://cdn.jsdelivr.net/npm/font-kopubworld@1.0.3/fonts/KoPubWorld-Dotum-Light.woff2",
+      "https://cdn.jsdelivr.net/npm/font-kopubworld@1.0.3/fonts/KoPubWorld-Dotum-Light.otf"
+    ],
+    "targetRuleIds": [
+      "rule.studio-supply.b4a81472cc52c505ee6d.canvas2d",
+      "rule.studio-supply.b4a81472cc52c505ee6d.canvaskit"
+    ]
+  },
+  "exactSource": {
+    "cmapCodepoints": 25974,
+    "embeddingDisposition": "editable-embedding",
+    "faceIndex": 0,
+    "familyNames": [
+      "KoPubWorldDotum",
+      "KoPubWorldDotum Light",
+      "KoPubWorld돋움체",
+      "KoPubWorld돋움체 Light"
+    ],
+    "fullNames": [
+      "KoPubWorldDotum Light",
+      "KoPubWorld돋움체 Light"
+    ],
+    "glyphs": 31556,
+    "horizontalMetrics": 31537,
+    "os2FsType": 8,
+    "postScriptNames": [
+      "KoPubWorldDotumLight"
+    ],
+    "sfntCount": 1,
+    "sha256": "069494cce21a4222c88e537f256b6f46fee209375aba769f82431b2d382bc84f",
+    "unitsPerEm": 1000
+  },
+  "executionPolicy": {
+    "fullCorpusRerun": false,
+    "hyperVOracleRerun": false,
+    "nextStage": "public-fixture-and-current-runtime-boundary",
+    "productMutation": false
+  },
+  "gates": {
+    "freshLaneIsNonTargetGuard": true,
+    "layoutProjectionAbsent": true,
+    "localizedAndEnglishNamesShareExactSfnt": true,
+    "privateCohortSeparated": true,
+    "registrySupplyOnly": true,
+    "w4CountsReconciled": true,
+    "w5LadderHashBound": true
+  },
+  "inputs": {
+    "fontRuleProjectionBaseline": {
+      "artifact": "mydocs/tech/investigations/issue-4966/font_rule_projection_baseline.json",
+      "sha256": "1b05ace839408178681ce89af2c58311958e9b42b73d59e6b6fae2bab553a3b9"
+    },
+    "fontRuleRegistryV2": {
+      "artifact": "assets/font-rules/font_rule_registry_v2.json",
+      "sha256": "fbab4413007a29600e5d667503e80b861ec4096827a8936943bdf74e58a5ae16"
+    },
+    "w4Ranking": {
+      "artifact": "mydocs/report/assets/task_m100_4962/font_typesetting_risk_rank.json",
+      "sha256": "6947e9e8a6c67a60a54b04dc6f1abf75e3cc66d9096a978d301ba2c10bb4ee3a"
+    },
+    "w5Rank7Ladder": {
+      "artifact": "mydocs/tech/investigations/issue-4963/oracle_stage4_rank7_acceptance_ladder.json",
+      "sha256": "d6f217f4ce544ee8808d30e4357b7a3b79e5dc6fc5b8921aa88d0973a8ffb83f"
+    },
+    "w5SourceReadiness": {
+      "artifact": "mydocs/tech/investigations/issue-4963/font_oracle_readiness.json",
+      "sha256": "76338ef972a7a279e6cd499d103b9e5c8836ad942dd4ce9134c5142a669e91db"
+    }
+  },
+  "issue": 4967,
+  "kind": "font-rank7-qualification-baseline",
+  "officialSource": {
+    "downloadSha256": "a2bd6195594ae91a8bf75b94e23bcccc8268ab140857b5b0a17b9549e947a604",
+    "fontSha256": "069494cce21a4222c88e537f256b6f46fee209375aba769f82431b2d382bc84f",
+    "licenseDecision": "local-analysis-only-no-font-redistribution",
+    "record": "https://gongu.copyright.or.kr/gongu/wrt/wrt/view.do?menuNo=200023&wrtSn=13287211",
+    "uci": "G905-13287211"
+  },
+  "privacy": {
+    "absolutePathIncluded": false,
+    "fontBytesIncluded": false,
+    "privateDocumentHashIncluded": false,
+    "privateDocumentIdentityIncluded": false,
+    "privateDocumentNameIncluded": false
+  },
+  "projectionInventory": {
+    "canvasKitSfntRules": 1,
+    "projectionBundleSha256": "0b6d3b50586099063df0ef4c3039dd572e75aa0343b00dc4c01eac0cc42d7ee9",
+    "rustLayoutMetricRules": 0,
+    "rustLayoutNameRules": 0,
+    "webfontSupplyRules": 1
+  },
+  "schemaVersion": 1,
+  "stage": "W8-R7-Q0",
+  "target": {
+    "baseRank": 7,
+    "documentFace": "KoPubWorld돋움체 Light",
+    "empiricalRiskBand": "B",
+    "englishFace": "KoPubWorldDotum Light",
+    "postScriptName": "KoPubWorldDotumLight",
+    "queueRank": 7
+  },
+  "w3LocalAttestation": {
+    "aggregateSha256": "378671053ae94c02cda4caf8b8a4a1ac7866c3711fdf72c14aa527f8d9bc2888",
+    "checkpointChainSha256": "94d9bbe3cce4218728ff29def8ab24abb51ffc434ec395d8be663fdab6b03649",
+    "checkpointPolicySha256": "b71c1c29b0e6dd120260f97e5632d7d7ab4c09e156078b185f28bfceadccf5dd",
+    "documentCount": 10000,
+    "journalSha256": "89d376705c706771ec745b85319409982625e451157e67eede501284941efc46",
+    "sourceHead": "c1ec759f97eab0152fe8b38cef2e9fbbc50a5c6c"
+  },
+  "w5Oracle": {
+    "disposition": "complete-acceptance-ladder",
+    "exactProfileSha256": "e1952e4136b6ad756c9b51f424e56db032389f4848960f7e75342a322794beca",
+    "fixtureSha256": "1cc8062c6fd0da39cfddc4182115226717516d4250e693b43596293374236f9e",
+    "officialSuccessor": "not-provided",
+    "physicalStates": [
+      "exact-only",
+      "subst-only",
+      "none-related"
+    ],
+    "substitutionIsObservedFallback": false
+  }
+}
