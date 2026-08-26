@@ -266,6 +266,7 @@ hwp5rb	issue6060/30307_local_service_reform.hwp	sections[].paragraphs[].controls
 hwp5rb	issue6086/30098_resident_registration_reform.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	124
 hwp5rb	issue6111/56345_regulatory_impact_analysis.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	374
 hwp5rb	issue6111/56345_regulatory_impact_analysis.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	20
+hwp5rb	issue6117/52690_higher_education_decree.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	3
 hwp5rb	issue6122/2181727_press_guard_test_method.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	88
 hwp5rb	issue6122/2181727_press_guard_test_method.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	1
 hwp5rb	issue6126/3171199_design_capability_criteria.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	6
