@@ -1,6 +1,7 @@
 # Task M100 #6107 — 활성 페이지·눈금자 2D 정합성 최종 보고서
 
 - **이슈**: [#6107](https://github.com/edwardkim/rhwp/issues/6107)
+- **PR**: [#6116](https://github.com/edwardkim/rhwp/pull/6116)
 - **브랜치**: `codex/issue-6107-active-page-ruler`
 - **기준 commit**: `upstream/devel` `70ebacc4c9589e8c778907e179a6dab18cce8eb0`
 - **제출 기준**: `upstream/devel` `6b5c4f871972380c0866e2a8d27ac2bc67d257e6` 통합
@@ -128,4 +129,5 @@ Chrome E2E에서 `samples/biz_plan.hwp` 6쪽을 사용했다.
 ## 작업 상태
 
 #6107의 로컬 구현, 계획된 4단계 검증, 작업지시자의 실제 동작 확인과 최신 `upstream/devel` 통합 head
-재검증을 완료했다. 작업지시자가 다음 제출 게이트 진행을 승인해 원격 push와 PR 생성을 준비한다.
+재검증을 완료했다. 검증 완료 head를 원격에 push하고 한국어 제목의 PR #6116을 `devel` 대상으로
+생성했다.
