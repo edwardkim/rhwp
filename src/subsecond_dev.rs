@@ -323,7 +323,7 @@ pub fn end_subsecond_trace(token: u32, retain: bool) -> String {
     })
 }
 
-fn register_tracing() {
+pub(crate) fn register_tracing() {
     #[cfg(target_arch = "wasm32")]
     REGISTER_TRACING.call_once(|| {
         use tracing_subscriber::prelude::*;

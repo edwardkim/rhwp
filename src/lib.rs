@@ -56,6 +56,8 @@ pub use serializer::{serialize_document, DocumentSerializer};
 pub fn init_panic_hook() {
     #[cfg(feature = "console_error_panic_hook")]
     console_error_panic_hook::set_once();
+    #[cfg(feature = "subsecond-dev")]
+    subsecond_dev::register_tracing();
 }
 
 #[wasm_bindgen]
