@@ -5,17 +5,31 @@ mod kerning;
 
 use kerning::{
     compute_kerning_pair_candidate, decide_kerning_run_gate, inspect_exact_font_kerning,
-    prepare_kerning_pair_engine, ExactFontSource, KerningCapability,
-    KerningCapabilityFallbackReason, KerningPairCandidateFallbackReason,
-    KerningPairCandidateStatus, KerningRequest, KerningRunFallbackReason, KerningRunGate,
-    MAX_KERNING_ADJACENT_PAIRS, MAX_KERNING_FONT_BYTES, MAX_KERNING_RUN_CODE_POINTS,
-    MAX_KERNING_RUN_GLYPHS,
+    identify_exact_font_source, prepare_kerning_pair_engine, resolve_exact_font_source,
+    ExactFontSource, ExactFontSourceHandle, ExactFontSourceProvider,
+    ExactFontSourceResolutionReason, KerningCapability, KerningCapabilityFallbackReason,
+    KerningPairCandidateFallbackReason, KerningPairCandidateStatus, KerningRequest,
+    KerningRunFallbackReason, KerningRunGate, MAX_KERNING_ADJACENT_PAIRS,
+    MAX_KERNING_FONT_BYTES, MAX_KERNING_RUN_CODE_POINTS, MAX_KERNING_RUN_GLYPHS,
 };
 
 const NOTO_REGULAR: &[u8] =
     include_bytes!("../../ttfs/opensource/NotoSansKR-Regular.ttf");
 const NO_PAIR_TABLE: &[u8] =
     include_bytes!("../fixtures/fonts/RHWPBitmapSvgGlyphSmoke.ttf");
+
+struct BorrowedSourceProvider<'a> {
+    source: Option<ExactFontSource<'a>>,
+}
+
+impl ExactFontSourceProvider for BorrowedSourceProvider<'_> {
+    fn source_for_handle<'a>(
+        &'a self,
+        _handle: &ExactFontSourceHandle,
+    ) -> Option<ExactFontSource<'a>> {
+        self.source
+    }
+}
 
 fn read_u16(bytes: &[u8], offset: usize) -> u16 {
     u16::from_be_bytes([bytes[offset], bytes[offset + 1]])
@@ -127,6 +141,91 @@ fn issue_4968_capability_precedence_and_failure_reasons_are_structured() {
         Some(KerningCapabilityFallbackReason::FontByteLimitExceeded)
     );
     assert_eq!(oversized.font_source_sha256, None);
+}
+
+#[test]
+fn issue_4968_exact_source_handle_resolves_without_carrying_font_payload() {
+    let source = ExactFontSource {
+        bytes: NOTO_REGULAR,
+        face_index: 0,
+    };
+    let handle = identify_exact_font_source(source).expect("bounded exact source identity");
+    assert_eq!(handle.font_bytes, NOTO_REGULAR.len());
+    assert_eq!(handle.face_index, 0);
+    assert_eq!(
+        handle.font_source_sha256,
+        "6e06a7fe5d696ca719894a23f36bb2b1be8c816a5937cd4ad0f23ca67780dd74"
+    );
+
+    let handle_json = serde_json::to_value(&handle).expect("source handle JSON");
+    assert_eq!(handle_json["fontBytes"], NOTO_REGULAR.len());
+    assert_eq!(handle_json["faceIndex"], 0);
+    assert!(handle_json.get("bytes").is_none());
+    assert!(handle_json.get("path").is_none());
+    assert!(handle_json.get("fontFamily").is_none());
+
+    let provider = BorrowedSourceProvider {
+        source: Some(source),
+    };
+    let resolved = resolve_exact_font_source(&provider, &handle).expect("exact source resolves");
+    assert_eq!(resolved.bytes.as_ptr(), NOTO_REGULAR.as_ptr());
+    assert_eq!(resolved.bytes.len(), NOTO_REGULAR.len());
+
+    let missing = BorrowedSourceProvider { source: None };
+    assert_eq!(
+        resolve_exact_font_source(&missing, &handle).unwrap_err(),
+        ExactFontSourceResolutionReason::SourceUnavailable
+    );
+
+    let wrong_face = BorrowedSourceProvider {
+        source: Some(ExactFontSource {
+            bytes: NOTO_REGULAR,
+            face_index: 1,
+        }),
+    };
+    assert_eq!(
+        resolve_exact_font_source(&wrong_face, &handle).unwrap_err(),
+        ExactFontSourceResolutionReason::FaceIndexMismatch
+    );
+
+    let shorter = BorrowedSourceProvider {
+        source: Some(ExactFontSource {
+            bytes: NO_PAIR_TABLE,
+            face_index: 0,
+        }),
+    };
+    assert_eq!(
+        resolve_exact_font_source(&shorter, &handle).unwrap_err(),
+        ExactFontSourceResolutionReason::ByteLengthMismatch
+    );
+
+    let small_source = ExactFontSource {
+        bytes: NO_PAIR_TABLE,
+        face_index: 0,
+    };
+    let small_handle = identify_exact_font_source(small_source).expect("small source identity");
+    let mut same_length_different_bytes = NO_PAIR_TABLE.to_vec();
+    same_length_different_bytes[0] ^= 0x01;
+    let wrong_digest = BorrowedSourceProvider {
+        source: Some(ExactFontSource {
+            bytes: &same_length_different_bytes,
+            face_index: 0,
+        }),
+    };
+    assert_eq!(
+        resolve_exact_font_source(&wrong_digest, &small_handle).unwrap_err(),
+        ExactFontSourceResolutionReason::Sha256Mismatch
+    );
+
+    let oversized = vec![0; MAX_KERNING_FONT_BYTES + 1];
+    assert_eq!(
+        identify_exact_font_source(ExactFontSource {
+            bytes: &oversized,
+            face_index: 0,
+        })
+        .unwrap_err(),
+        ExactFontSourceResolutionReason::FontByteLimitExceeded
+    );
 }
 
 #[test]

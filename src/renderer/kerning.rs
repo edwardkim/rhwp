@@ -23,6 +23,40 @@ pub(crate) struct ExactFontSource<'a> {
     pub face_index: u32,
 }
 
+/// Font selection이 확정한 exact face의 source identity다.
+///
+/// bytes, 파일 경로, family 이름을 보존하지 않는다. layout과 host/document source
+/// provider 사이에서 동일 source를 재확인하기 위한 handle이며 직렬화해도 font
+/// payload나 private path가 노출되지 않는다.
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct ExactFontSourceHandle {
+    pub font_source_sha256: String,
+    pub font_bytes: usize,
+    pub face_index: u32,
+}
+
+/// Document/native/WASM host가 소유한 font bytes를 handle 수명 동안 빌려주는 경계다.
+///
+/// provider의 반환값은 신뢰하지 않는다. 반드시 [`resolve_exact_font_source`]가
+/// byte length, face index, SHA-256을 다시 대사한 뒤 capability/shaping에 전달한다.
+pub(crate) trait ExactFontSourceProvider {
+    fn source_for_handle<'a>(
+        &'a self,
+        handle: &ExactFontSourceHandle,
+    ) -> Option<ExactFontSource<'a>>;
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub(crate) enum ExactFontSourceResolutionReason {
+    SourceUnavailable,
+    FontByteLimitExceeded,
+    FaceIndexMismatch,
+    ByteLengthMismatch,
+    Sha256Mismatch,
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "kebab-case")]
 pub(crate) enum KerningCapability {
@@ -186,6 +220,51 @@ impl KerningCapabilityDecision {
     }
 }
 
+fn font_source_sha256(bytes: &[u8]) -> String {
+    let mut digest = String::with_capacity(64);
+    for byte in Sha256::digest(bytes) {
+        write!(&mut digest, "{byte:02x}").expect("String formatting cannot fail");
+    }
+    digest
+}
+
+/// Selection 시점의 exact source에서 payload 없는 identity handle을 만든다.
+pub(crate) fn identify_exact_font_source(
+    source: ExactFontSource<'_>,
+) -> Result<ExactFontSourceHandle, ExactFontSourceResolutionReason> {
+    if source.bytes.len() > MAX_KERNING_FONT_BYTES {
+        return Err(ExactFontSourceResolutionReason::FontByteLimitExceeded);
+    }
+    Ok(ExactFontSourceHandle {
+        font_source_sha256: font_source_sha256(source.bytes),
+        font_bytes: source.bytes.len(),
+        face_index: source.face_index,
+    })
+}
+
+/// Provider가 반환한 source가 selection handle과 정확히 같은지 bounded하게 대사한다.
+pub(crate) fn resolve_exact_font_source<'a>(
+    provider: &'a dyn ExactFontSourceProvider,
+    handle: &ExactFontSourceHandle,
+) -> Result<ExactFontSource<'a>, ExactFontSourceResolutionReason> {
+    let source = provider
+        .source_for_handle(handle)
+        .ok_or(ExactFontSourceResolutionReason::SourceUnavailable)?;
+    if source.bytes.len() > MAX_KERNING_FONT_BYTES {
+        return Err(ExactFontSourceResolutionReason::FontByteLimitExceeded);
+    }
+    if source.face_index != handle.face_index {
+        return Err(ExactFontSourceResolutionReason::FaceIndexMismatch);
+    }
+    if source.bytes.len() != handle.font_bytes {
+        return Err(ExactFontSourceResolutionReason::ByteLengthMismatch);
+    }
+    if font_source_sha256(source.bytes) != handle.font_source_sha256 {
+        return Err(ExactFontSourceResolutionReason::Sha256Mismatch);
+    }
+    Ok(source)
+}
+
 /// 선택이 끝난 exact face source의 kerning capability를 bounded하게 판정한다.
 ///
 /// `None`은 시스템 font 이름만 있거나 fallback 결과의 bytes를 증명할 수 없는 경우다. source가
@@ -210,10 +289,7 @@ pub(crate) fn inspect_exact_font_kerning(
         );
     }
 
-    let mut digest = String::with_capacity(64);
-    for byte in Sha256::digest(source.bytes) {
-        write!(&mut digest, "{byte:02x}").expect("String formatting cannot fail");
-    }
+    let digest = font_source_sha256(source.bytes);
     let Ok(face) = Face::parse(source.bytes, source.face_index) else {
         return KerningCapabilityDecision::fail_closed(
             KerningCapabilityFallbackReason::MalformedSfnt,
