@@ -30,6 +30,7 @@ PageUp/PageDown E2E도 통과했다.
 | 3 | `11aa581c1` | 가로·세로 눈금과 여백 핀을 활성 페이지 좌표계에 정렬 |
 | 4 | `266976e64` | 전체 회귀·빌드·실제 브라우저 검증 |
 | 후속 UX 정합 | 이 보고서 갱신 commit | 순수 스크롤과 눈금자 편집 focus 분리 |
+| 5 | `f16b1fed8` | PR #6116 리뷰의 2D 가시성·선택 lifecycle·테스트 보정 |
 
 ## 최종 동작 계약
 
@@ -66,10 +67,10 @@ $ cd rhwp-studio && npx tsc --noEmit
 exit 0
 
 $ cd rhwp-studio && npm test
-tests 1157, pass 1156, fail 0, skipped 1
+tests 1152, pass 1151, fail 0, skipped 1
 
 $ cd rhwp-studio && npm run build
-229 modules transformed, build success
+230 modules transformed, build success
 
 $ cd rhwp-studio && npm run e2e:page-key-scroll
 PASS: 6쪽 문서, TC1~TC7 전체 통과
@@ -88,7 +89,8 @@ exit 0
 
 빌드의 500 kB 초과 chunk 안내는 기존 Vite 크기 경고이며 빌드는 성공했다. 브라우저 검증 뒤 수집한
 console `error`/`warn`은 0건이었다. 단계별 commit SHA를 보존한 채 최신 `upstream/devel`을 merge한
-제출 head에서도 TypeScript, Studio 전체 1,156건, 프로덕션 빌드, PageUp/PageDown E2E,
+제출 head와 리뷰 보정 code candidate에서도 TypeScript, Studio 전체 1,151건, 프로덕션 빌드,
+PageUp/PageDown E2E,
 `cargo fmt --all -- --check`와 `git diff --check`를 다시 통과했다.
 
 ## 실제 브라우저 검증
@@ -130,4 +132,5 @@ Chrome E2E에서 `samples/biz_plan.hwp` 6쪽을 사용했다.
 
 #6107의 로컬 구현, 계획된 4단계 검증, 작업지시자의 실제 동작 확인과 최신 `upstream/devel` 통합 head
 재검증을 완료했다. 검증 완료 head를 원격에 push하고 한국어 제목의 PR #6116을 `devel` 대상으로
-생성했다.
+생성했다. PR 리뷰 10건은 5단계에서 반영·부분 반영·의도된 계약 유지로 분류했고, 보정 code candidate
+`f16b1fed8`은 focused 36건, Studio 전체 1,151건, TypeScript, build, Chrome E2E와 포맷 gate를 통과했다.
