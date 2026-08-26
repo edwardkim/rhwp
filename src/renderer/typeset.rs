@@ -18,8 +18,8 @@ use crate::model::shape::CaptionDirection;
 use crate::renderer::composer::{compose_paragraph, first_text_line, ComposedParagraph};
 use crate::renderer::float_placement::{
     horizontal_range, is_page_bottom_fixed_float, is_para_topbottom_float,
-    native_empty_host_rowbreak_line_advance_hu, signed_hwpunit, FloatLaneSet,
-    FloatPlacementContext,
+    native_empty_host_rowbreak_line_advance_hu, signed_hwpunit,
+    stored_empty_anchor_band_host_line_advance_hu, FloatLaneSet, FloatPlacementContext,
 };
 use crate::renderer::height_cursor::HeightCursor;
 use crate::renderer::height_measurer::{
@@ -17693,7 +17693,27 @@ impl TypesetEngine {
         } else {
             (if !is_column_top { sb } else { 0.0 }) + outer_top
         };
-        let after = sa + outer_bottom + host_line_spacing + positive_empty_host_rowbreak_tail;
+        // [#6147] layout `stored_empty_anchor_band_host_tail_px` 와 대칭 — 저장 사다리가
+        // host 줄 advance 만 증언하는 빈 앵커 밴드는 그 줄을 흐름에 계상한다. `outer_bottom`
+        // 은 위에서 이미 더해지므로 여기서는 줄 advance 만 얹는다.
+        let stored_empty_anchor_host_line_tail = if positive_empty_host_rowbreak_tail > 0.0 {
+            0.0
+        } else {
+            stored_empty_anchor_band_host_line_advance_hu(
+                self.profile.get().hwp5_stored_pagination_layout()
+                    || self.profile.get().hwpx_stored_layout(),
+                para,
+                ctrl_idx,
+                next_para,
+            )
+            .map(|line_advance| hwpunit_to_px(line_advance, self.dpi))
+            .unwrap_or(0.0)
+        };
+        let after = sa
+            + outer_bottom
+            + host_line_spacing
+            + positive_empty_host_rowbreak_tail
+            + stored_empty_anchor_host_line_tail;
         let host_spacing = HostSpacing {
             before,
             after,

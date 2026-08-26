@@ -9,7 +9,8 @@ use super::composer::{
 use super::float_placement::{
     empty_host_physical_ladder_extras_hu, horizontal_range, is_para_topbottom_float,
     native_empty_host_physical_outer_box_paint_inset, native_empty_host_rowbreak_line_advance_hu,
-    signed_hwpunit, FloatLaneSet, FloatPlacementContext,
+    signed_hwpunit, stored_empty_anchor_band_host_line_advance_hu, FloatLaneSet,
+    FloatPlacementContext,
 };
 use super::font_metrics_data;
 use super::height_cursor::HeightCursor;
@@ -10085,6 +10086,34 @@ impl LayoutEngine {
                         .map(|line_advance| (table.as_ref(), line_advance)),
                         _ => None,
                     });
+                // [#6147] #2439 의 특수형이 아닌 빈 앵커 밴드도 저장 사다리가
+                // host 줄 advance 만 증언하면 그 줄을 흐름에 계상한다.
+                let stored_empty_anchor_band_host_tail_px =
+                    (single_positive_empty_float_before_plain_text.is_none())
+                        .then(|| {
+                            stored_empty_anchor_band_host_line_advance_hu(
+                                self.profile.get().hwp5_stored_pagination_layout()
+                                    || self.profile.get().hwpx_stored_layout(),
+                                para,
+                                control_index,
+                                paragraphs.get(para_index + 1),
+                            )
+                            .map(|line_advance| {
+                                let outer_bottom = match para.controls.get(control_index) {
+                                    Some(Control::Table(table)) => table.outer_margin_bottom as i32,
+                                    Some(Control::Picture(picture)) => {
+                                        i32::from(picture.common.margin.bottom)
+                                    }
+                                    Some(Control::Shape(shape)) => {
+                                        i32::from(shape.common().margin.bottom)
+                                    }
+                                    _ => 0,
+                                };
+                                hwpunit_to_px(line_advance, self.dpi)
+                                    + hwpunit_to_px(outer_bottom, self.dpi)
+                            })
+                        })
+                        .flatten();
                 let lane_flow_bottom = if let Some((table, line_advance)) =
                     single_positive_empty_float_before_plain_text
                 {
@@ -10095,6 +10124,11 @@ impl LayoutEngine {
                     let stored_rowbreak_host_tail = hwpunit_to_px(line_advance, self.dpi)
                         + hwpunit_to_px(table.outer_margin_bottom as i32, self.dpi);
                     lanes.max_bottom() + stored_rowbreak_host_tail
+                } else if let Some(host_tail) = stored_empty_anchor_band_host_tail_px {
+                    // [#6147] 저장 사다리가 host 줄 advance 만 증언하는 빈 앵커 밴드는
+                    // 그 줄 상자를 개체 아래에 실제로 차지한다 — #2439 와 같은 꼬리
+                    // (줄 advance + 바깥 아래 여백)를 페인트 lane 하단에 얹는다.
+                    lanes.max_bottom() + host_tail
                 } else if is_current_empty_square_sibling_float {
                     // 두 Square 표는 x lane이 겹치지 않으면 같은 raw top을 사용한다.
                     // 첫 표의 전역 cursor를 둘째 표의 base로 더하지 않아야 가로 pair가
