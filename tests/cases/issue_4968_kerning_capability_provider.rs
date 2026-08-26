@@ -6,17 +6,18 @@ mod kerning;
 use kerning::{
     compose_kerning_paragraph_measurement, compute_kerning_pair_candidate,
     compute_kerning_run_measurement, decide_kerning_run_gate, inspect_exact_font_kerning,
-    identify_exact_font_source, prepare_kerning_pair_engine, resolve_exact_font_source,
+    identify_exact_font_source, measure_kerning_paragraph_segments, prepare_kerning_pair_engine,
+    resolve_exact_font_source,
     ExactFontRegistryError, ExactFontRegistryRegistration, ExactFontSlot, ExactFontSource,
     ExactFontSourceHandle, ExactFontSourceProvider, ExactFontSourceRegistry,
     ExactFontSourceResolutionReason, KerningCapability, KerningCapabilityFallbackReason,
     KerningLayoutSession, KerningPairCandidateFallbackReason, KerningPairCandidateStatus,
     KerningParagraphMeasurementDisposition, KerningParagraphMeasurementFallbackReason,
-    KerningParagraphSegmentMeasurement, KerningRequest, KerningRunFallbackReason, KerningRunGate,
-    KerningRunMeasurementDisposition, KerningRunMeasurementFallbackReason, KerningSourceSession,
-    KerningSourceSessionStatus, MAX_KERNING_ADJACENT_PAIRS, MAX_KERNING_FONT_BYTES,
-    MAX_KERNING_PARAGRAPH_SEGMENTS, MAX_KERNING_REGISTRY_FACES,
-    MAX_KERNING_RUN_CODE_POINTS, MAX_KERNING_RUN_GLYPHS,
+    KerningParagraphScalarStyle, KerningParagraphSegmentMeasurement, KerningRequest,
+    KerningRunFallbackReason, KerningRunGate, KerningRunMeasurementDisposition,
+    KerningRunMeasurementFallbackReason, KerningSourceSession, KerningSourceSessionStatus,
+    MAX_KERNING_ADJACENT_PAIRS, MAX_KERNING_FONT_BYTES, MAX_KERNING_PARAGRAPH_SEGMENTS,
+    MAX_KERNING_REGISTRY_FACES, MAX_KERNING_RUN_CODE_POINTS, MAX_KERNING_RUN_GLYPHS,
 };
 use std::cell::Cell;
 #[cfg(target_arch = "wasm32")]
@@ -1085,4 +1086,217 @@ fn issue_4968_paragraph_measurement_rolls_back_k0_and_segment_limit() {
     assert_eq!(over_limit.bounded_segment_count, MAX_KERNING_PARAGRAPH_SEGMENTS);
     assert_eq!(over_limit.positions(), [0.0, 9.25, 18.5]);
     assert!(over_limit.pair_adjusted_positions.is_none());
+}
+
+fn paragraph_scalar_style(slot: ExactFontSlot, requested: bool) -> KerningParagraphScalarStyle {
+    KerningParagraphScalarStyle {
+        slot,
+        requested,
+        effective_font_size_px: 20.0,
+        width_ratio: 1.0,
+    }
+}
+
+#[test]
+fn issue_4968_paragraph_segmentation_honors_slot_control_and_inline_boundaries() {
+    let slot_a = ExactFontSlot::new(4968, 1);
+    let slot_b = ExactFontSlot::new(4969, 1);
+    let mut registry = ExactFontSourceRegistry::default();
+    for slot in [slot_a, slot_b] {
+        registry
+            .register(
+                slot,
+                ExactFontSource {
+                    bytes: EXACT_KERNING_SMOKE,
+                    face_index: 0,
+                },
+            )
+            .expect("public exact source");
+    }
+    let mut transaction = KerningLayoutSession::new(&registry);
+    let text = "AVAV\tAV\nAVAV";
+    let code_points = text.chars().count();
+    let mut scalar_styles = vec![paragraph_scalar_style(slot_a, true); code_points];
+    scalar_styles[2] = paragraph_scalar_style(slot_b, true);
+    scalar_styles[3] = paragraph_scalar_style(slot_b, true);
+    let mut hard_boundaries = vec![false; code_points + 1];
+    hard_boundaries[10] = true; // visible text 사이의 inline control 위치
+    let base_positions = linear_positions(code_points, 10.0);
+
+    let paragraph = measure_kerning_paragraph_segments(
+        text,
+        base_positions.clone(),
+        &scalar_styles,
+        &hard_boundaries,
+        &mut transaction,
+    );
+
+    assert_eq!(
+        paragraph.disposition,
+        KerningParagraphMeasurementDisposition::PairAdjusted
+    );
+    assert_eq!(paragraph.fallback_reason, None);
+    assert_eq!(paragraph.bounded_segment_count, 5);
+    assert_eq!(paragraph.attempted_segment_count, 5);
+    assert_eq!(paragraph.whitespace_fallback_run_count, 0);
+    let ranges: Vec<(usize, usize, ExactFontSlot)> = paragraph
+        .segments
+        .iter()
+        .map(|segment| (segment.start_index, segment.end_index, segment.slot))
+        .collect();
+    assert_eq!(
+        ranges,
+        vec![
+            (0, 2, slot_a),
+            (2, 4, slot_b),
+            (5, 7, slot_a),
+            (8, 10, slot_a),
+            (10, 12, slot_a),
+        ]
+    );
+    assert_eq!(paragraph.base_positions, base_positions);
+    assert!(paragraph
+        .segments
+        .iter()
+        .all(|segment| segment.measurement.disposition
+            == KerningRunMeasurementDisposition::PairAdjusted));
+    assert!(!paragraph.segments[0]
+        .measurement
+        .session
+        .as_ref()
+        .expect("first source trace")
+        .cache_hit);
+    assert!(paragraph.segments[1..].iter().all(|segment| segment
+        .measurement
+        .session
+        .as_ref()
+        .expect("cached source trace")
+        .cache_hit));
+}
+
+#[test]
+fn issue_4968_paragraph_segmentation_retries_nominal_identity_failure_by_word() {
+    let slot = ExactFontSlot::new(4968, 1);
+    let mut registry = ExactFontSourceRegistry::default();
+    registry
+        .register(
+            slot,
+            ExactFontSource {
+                bytes: NOTO_REGULAR,
+                face_index: 0,
+            },
+        )
+        .expect("public exact source");
+    let mut transaction = KerningLayoutSession::new(&registry);
+    let text = "ffi AV";
+    let code_points = text.chars().count();
+    let scalar_styles = vec![paragraph_scalar_style(slot, true); code_points];
+    let hard_boundaries = vec![false; code_points + 1];
+
+    let paragraph = measure_kerning_paragraph_segments(
+        text,
+        linear_positions(code_points, 10.0),
+        &scalar_styles,
+        &hard_boundaries,
+        &mut transaction,
+    );
+
+    assert_eq!(
+        paragraph.disposition,
+        KerningParagraphMeasurementDisposition::PairAdjusted
+    );
+    assert_eq!(paragraph.attempted_segment_count, 3);
+    assert_eq!(paragraph.whitespace_fallback_run_count, 1);
+    assert_eq!(paragraph.bounded_segment_count, 2);
+    assert_eq!(
+        paragraph
+            .segments
+            .iter()
+            .map(|segment| (segment.start_index, segment.end_index))
+            .collect::<Vec<_>>(),
+        vec![(0, 3), (4, 6)]
+    );
+    assert_eq!(
+        paragraph.segments[0].measurement.disposition,
+        KerningRunMeasurementDisposition::FailClosed
+    );
+    assert_eq!(
+        paragraph.segments[0]
+            .measurement
+            .candidate
+            .as_ref()
+            .expect("nominal identity trace")
+            .fallback_reason,
+        Some(KerningPairCandidateFallbackReason::NominalGlyphIdentityChanged)
+    );
+    assert_eq!(
+        paragraph.segments[1].measurement.disposition,
+        KerningRunMeasurementDisposition::PairAdjusted
+    );
+    assert_eq!(paragraph.range_width(0, 3), Some(30.0));
+    assert!(paragraph.range_width(4, 6).expect("AV width") < 20.0);
+}
+
+#[test]
+fn issue_4968_paragraph_segmentation_rolls_back_execution_budget_atomically() {
+    let text = "A".repeat(MAX_KERNING_PARAGRAPH_SEGMENTS + 1);
+    let code_points = text.chars().count();
+    let slot_a = ExactFontSlot::new(4968, 1);
+    let slot_b = ExactFontSlot::new(4969, 1);
+    let scalar_styles: Vec<_> = (0..code_points)
+        .map(|index| {
+            paragraph_scalar_style(if index % 2 == 0 { slot_a } else { slot_b }, false)
+        })
+        .collect();
+    let hard_boundaries = vec![false; code_points + 1];
+    let base_positions = linear_positions(code_points, 10.0);
+    let registry = ExactFontSourceRegistry::default();
+    let mut transaction = KerningLayoutSession::new(&registry);
+
+    let paragraph = measure_kerning_paragraph_segments(
+        &text,
+        base_positions.clone(),
+        &scalar_styles,
+        &hard_boundaries,
+        &mut transaction,
+    );
+
+    assert_eq!(
+        paragraph.disposition,
+        KerningParagraphMeasurementDisposition::FailClosed
+    );
+    assert_eq!(
+        paragraph.fallback_reason,
+        Some(KerningParagraphMeasurementFallbackReason::SegmentExecutionLimitExceeded)
+    );
+    assert!(paragraph.segment_limit_exceeded);
+    assert_eq!(
+        paragraph.attempted_segment_count,
+        MAX_KERNING_PARAGRAPH_SEGMENTS
+    );
+    assert_eq!(paragraph.bounded_segment_count, 0);
+    assert!(paragraph.segments.is_empty(), "partial K0/K1 result leaked");
+    assert_eq!(paragraph.positions(), base_positions);
+    assert!(paragraph.pair_adjusted_positions.is_none());
+
+    let oversized_text = "A".repeat(MAX_KERNING_RUN_CODE_POINTS + 1);
+    let oversized_styles =
+        vec![paragraph_scalar_style(slot_a, true); MAX_KERNING_RUN_CODE_POINTS + 1];
+    let oversized_boundaries = vec![false; MAX_KERNING_RUN_CODE_POINTS + 2];
+    let oversized_positions = linear_positions(MAX_KERNING_RUN_CODE_POINTS + 1, 10.0);
+    let oversized = measure_kerning_paragraph_segments(
+        &oversized_text,
+        oversized_positions.clone(),
+        &oversized_styles,
+        &oversized_boundaries,
+        &mut transaction,
+    );
+    assert_eq!(
+        oversized.fallback_reason,
+        Some(KerningParagraphMeasurementFallbackReason::CodePointLimitExceeded)
+    );
+    assert!(oversized.code_point_limit_exceeded);
+    assert_eq!(oversized.code_point_count, MAX_KERNING_RUN_CODE_POINTS);
+    assert_eq!(oversized.attempted_segment_count, 0);
+    assert_eq!(oversized.positions(), oversized_positions);
 }

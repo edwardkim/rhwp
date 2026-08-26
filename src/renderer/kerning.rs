@@ -390,6 +390,20 @@ pub(crate) struct KerningParagraphSegmentMeasurement {
     pub measurement: KerningRunMeasurement,
 }
 
+/// 문단의 Unicode scalar 하나가 사용할 exact slot과 pair scale이다.
+///
+/// `char_shape_id`와 language는 `slot`에 들어 있고, 기존 scalar advance는
+/// paragraph base positions가 소유한다. pair delta 환산에 실제로 필요한 request,
+/// effective font size, 장평만 여기서 다시 고정한다.
+#[derive(Debug, Clone, Copy, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct KerningParagraphScalarStyle {
+    pub slot: ExactFontSlot,
+    pub requested: bool,
+    pub effective_font_size_px: f64,
+    pub width_ratio: f64,
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "kebab-case")]
 pub(crate) enum KerningParagraphMeasurementDisposition {
@@ -407,7 +421,10 @@ pub(crate) enum KerningParagraphMeasurementDisposition {
 #[serde(rename_all = "kebab-case")]
 pub(crate) enum KerningParagraphMeasurementFallbackReason {
     CodePointLimitExceeded,
+    ScalarStyleCountMismatch,
+    HardBoundaryCountMismatch,
     SegmentLimitExceeded,
+    SegmentExecutionLimitExceeded,
     BasePositionCountMismatch,
     BasePositionNonFinite,
     BasePositionNonMonotonic,
@@ -433,6 +450,10 @@ pub(crate) struct KerningParagraphMeasurement {
     pub code_point_count: usize,
     pub code_point_limit_exceeded: bool,
     pub bounded_segment_count: usize,
+    /// 최초 homogeneous run과 공백 fallback run을 실제 측정한 횟수다.
+    pub attempted_segment_count: usize,
+    /// nominal identity 실패 때문에 공백 경계 fallback을 실행한 homogeneous run 수다.
+    pub whitespace_fallback_run_count: usize,
     pub segment_limit_exceeded: bool,
     pub base_positions: Vec<f64>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -467,8 +488,29 @@ pub(crate) fn compose_kerning_paragraph_measurement(
     base_positions: Vec<f64>,
     segments: Vec<KerningParagraphSegmentMeasurement>,
 ) -> KerningParagraphMeasurement {
+    let attempted_segment_count = segments.len();
+    compose_kerning_paragraph_measurement_accounted(
+        code_point_count,
+        base_positions,
+        segments,
+        attempted_segment_count,
+        0,
+        false,
+    )
+}
+
+fn compose_kerning_paragraph_measurement_accounted(
+    code_point_count: usize,
+    base_positions: Vec<f64>,
+    segments: Vec<KerningParagraphSegmentMeasurement>,
+    attempted_segment_count: usize,
+    whitespace_fallback_run_count: usize,
+    execution_limit_exceeded: bool,
+) -> KerningParagraphMeasurement {
     let code_point_limit_exceeded = code_point_count > MAX_KERNING_RUN_CODE_POINTS;
-    let segment_limit_exceeded = segments.len() > MAX_KERNING_PARAGRAPH_SEGMENTS;
+    let segment_limit_exceeded = execution_limit_exceeded
+        || segments.len() > MAX_KERNING_PARAGRAPH_SEGMENTS
+        || attempted_segment_count > MAX_KERNING_PARAGRAPH_SEGMENTS;
     let bounded_segment_count = segments.len().min(MAX_KERNING_PARAGRAPH_SEGMENTS);
 
     macro_rules! rollback {
@@ -479,6 +521,9 @@ pub(crate) fn compose_kerning_paragraph_measurement(
                 code_point_count,
                 code_point_limit_exceeded,
                 bounded_segment_count,
+                attempted_segment_count: attempted_segment_count
+                    .min(MAX_KERNING_PARAGRAPH_SEGMENTS),
+                whitespace_fallback_run_count,
                 segment_limit_exceeded,
                 base_positions,
                 pair_adjusted_positions: None,
@@ -491,7 +536,11 @@ pub(crate) fn compose_kerning_paragraph_measurement(
         rollback!(KerningParagraphMeasurementFallbackReason::CodePointLimitExceeded);
     }
     if segment_limit_exceeded {
-        rollback!(KerningParagraphMeasurementFallbackReason::SegmentLimitExceeded);
+        rollback!(if execution_limit_exceeded {
+            KerningParagraphMeasurementFallbackReason::SegmentExecutionLimitExceeded
+        } else {
+            KerningParagraphMeasurementFallbackReason::SegmentLimitExceeded
+        });
     }
     if base_positions.len() != code_point_count.saturating_add(1) {
         rollback!(KerningParagraphMeasurementFallbackReason::BasePositionCountMismatch);
@@ -563,6 +612,8 @@ pub(crate) fn compose_kerning_paragraph_measurement(
             code_point_count,
             code_point_limit_exceeded: false,
             bounded_segment_count,
+            attempted_segment_count,
+            whitespace_fallback_run_count,
             segment_limit_exceeded: false,
             base_positions,
             pair_adjusted_positions: None,
@@ -595,6 +646,8 @@ pub(crate) fn compose_kerning_paragraph_measurement(
         code_point_count,
         code_point_limit_exceeded: false,
         bounded_segment_count,
+        attempted_segment_count,
+        whitespace_fallback_run_count,
         segment_limit_exceeded: false,
         base_positions,
         pair_adjusted_positions: Some(adjusted_positions),
@@ -1095,6 +1148,276 @@ impl<'a> KerningLayoutSession<'a> {
             &mut self.source_session,
         )
     }
+}
+
+fn paragraph_measurement_fail_closed(
+    code_point_count: usize,
+    code_point_limit_exceeded: bool,
+    base_positions: Vec<f64>,
+    reason: KerningParagraphMeasurementFallbackReason,
+    attempted_segment_count: usize,
+    whitespace_fallback_run_count: usize,
+    segment_limit_exceeded: bool,
+) -> KerningParagraphMeasurement {
+    KerningParagraphMeasurement {
+        disposition: KerningParagraphMeasurementDisposition::FailClosed,
+        fallback_reason: Some(reason),
+        code_point_count,
+        code_point_limit_exceeded,
+        bounded_segment_count: 0,
+        attempted_segment_count: attempted_segment_count.min(MAX_KERNING_PARAGRAPH_SEGMENTS),
+        whitespace_fallback_run_count,
+        segment_limit_exceeded,
+        base_positions,
+        pair_adjusted_positions: None,
+        segments: Vec::new(),
+    }
+}
+
+fn same_kerning_scalar_style(
+    left: KerningParagraphScalarStyle,
+    right: KerningParagraphScalarStyle,
+) -> bool {
+    left.slot == right.slot
+        && left.requested == right.requested
+        && left.effective_font_size_px.to_bits() == right.effective_font_size_px.to_bits()
+        && left.width_ratio.to_bits() == right.width_ratio.to_bits()
+}
+
+fn needs_whitespace_identity_fallback(measurement: &KerningRunMeasurement) -> bool {
+    matches!(
+        measurement
+            .candidate
+            .as_ref()
+            .and_then(|candidate| candidate.fallback_reason),
+        Some(
+            KerningPairCandidateFallbackReason::NominalGlyphIdentityChanged
+                | KerningPairCandidateFallbackReason::NominalClusterChanged
+        )
+    )
+}
+
+#[allow(clippy::too_many_arguments)]
+fn measure_kerning_paragraph_range(
+    text: &str,
+    byte_offsets: &[usize],
+    base_positions: &[f64],
+    start_index: usize,
+    end_index: usize,
+    style: KerningParagraphScalarStyle,
+    transaction: &mut KerningLayoutSession<'_>,
+    attempted_segment_count: &mut usize,
+) -> Option<KerningParagraphSegmentMeasurement> {
+    if *attempted_segment_count >= MAX_KERNING_PARAGRAPH_SEGMENTS {
+        return None;
+    }
+    *attempted_segment_count += 1;
+    let segment_text = &text[byte_offsets[start_index]..byte_offsets[end_index]];
+    let measurement = transaction.measure_run(
+        style.slot,
+        segment_text,
+        style.requested,
+        base_positions[start_index..=end_index].to_vec(),
+        style.effective_font_size_px,
+        style.width_ratio,
+    );
+    Some(KerningParagraphSegmentMeasurement {
+        start_index,
+        end_index,
+        slot: style.slot,
+        measurement,
+    })
+}
+
+/// 문단을 style/language/control 경계에서 한 번 분할하고 R4B 측정을 실행한다.
+///
+/// `scalar_styles`는 Unicode scalar와 1:1이고 `hard_boundaries`는 `N+1` 문자
+/// 경계와 1:1이다. inline control이 scalar 사이에 있으면 그 위치를 `true`로
+/// 넘긴다. 탭과 강제 줄바꿈은 문자 자체로 차단한다. nominal glyph/cluster identity
+/// 실패 run만 공백 경계의 비공백 sub-run으로 한 번 재분할한다.
+///
+/// 최초 run과 fallback sub-run을 합쳐 256회까지만 측정한다. 다음 측정이 필요하면
+/// 이미 계산한 일부 결과를 버리고 문단 전체를 base positions로 rollback한다.
+pub(crate) fn measure_kerning_paragraph_segments(
+    text: &str,
+    base_positions: Vec<f64>,
+    scalar_styles: &[KerningParagraphScalarStyle],
+    hard_boundaries: &[bool],
+    transaction: &mut KerningLayoutSession<'_>,
+) -> KerningParagraphMeasurement {
+    let observed_code_points = text.chars().take(MAX_KERNING_RUN_CODE_POINTS + 1).count();
+    let code_point_limit_exceeded = observed_code_points > MAX_KERNING_RUN_CODE_POINTS;
+    let code_point_count = observed_code_points.min(MAX_KERNING_RUN_CODE_POINTS);
+    if code_point_limit_exceeded {
+        return paragraph_measurement_fail_closed(
+            code_point_count,
+            true,
+            base_positions,
+            KerningParagraphMeasurementFallbackReason::CodePointLimitExceeded,
+            0,
+            0,
+            false,
+        );
+    }
+    if scalar_styles.len() != code_point_count {
+        return paragraph_measurement_fail_closed(
+            code_point_count,
+            false,
+            base_positions,
+            KerningParagraphMeasurementFallbackReason::ScalarStyleCountMismatch,
+            0,
+            0,
+            false,
+        );
+    }
+    if hard_boundaries.len() != code_point_count.saturating_add(1) {
+        return paragraph_measurement_fail_closed(
+            code_point_count,
+            false,
+            base_positions,
+            KerningParagraphMeasurementFallbackReason::HardBoundaryCountMismatch,
+            0,
+            0,
+            false,
+        );
+    }
+    if base_positions.len() != code_point_count.saturating_add(1) {
+        return paragraph_measurement_fail_closed(
+            code_point_count,
+            false,
+            base_positions,
+            KerningParagraphMeasurementFallbackReason::BasePositionCountMismatch,
+            0,
+            0,
+            false,
+        );
+    }
+    if base_positions.iter().any(|position| !position.is_finite()) {
+        return paragraph_measurement_fail_closed(
+            code_point_count,
+            false,
+            base_positions,
+            KerningParagraphMeasurementFallbackReason::BasePositionNonFinite,
+            0,
+            0,
+            false,
+        );
+    }
+    if base_positions.windows(2).any(|pair| pair[1] < pair[0]) {
+        return paragraph_measurement_fail_closed(
+            code_point_count,
+            false,
+            base_positions,
+            KerningParagraphMeasurementFallbackReason::BasePositionNonMonotonic,
+            0,
+            0,
+            false,
+        );
+    }
+
+    let mut characters = Vec::with_capacity(code_point_count);
+    let mut byte_offsets = Vec::with_capacity(code_point_count.saturating_add(1));
+    for (byte_offset, character) in text.char_indices() {
+        byte_offsets.push(byte_offset);
+        characters.push(character);
+    }
+    byte_offsets.push(text.len());
+
+    let mut segments = Vec::new();
+    let mut attempted_segment_count = 0usize;
+    let mut whitespace_fallback_run_count = 0usize;
+    let mut start_index = 0usize;
+    while start_index < code_point_count {
+        if matches!(characters[start_index], '\t' | '\n' | '\r') {
+            start_index += 1;
+            continue;
+        }
+
+        let style = scalar_styles[start_index];
+        let mut end_index = start_index + 1;
+        while end_index < code_point_count
+            && !hard_boundaries[end_index]
+            && !matches!(characters[end_index], '\t' | '\n' | '\r')
+            && same_kerning_scalar_style(style, scalar_styles[end_index])
+        {
+            end_index += 1;
+        }
+
+        let Some(initial) = measure_kerning_paragraph_range(
+            text,
+            &byte_offsets,
+            &base_positions,
+            start_index,
+            end_index,
+            style,
+            transaction,
+            &mut attempted_segment_count,
+        ) else {
+            return paragraph_measurement_fail_closed(
+                code_point_count,
+                false,
+                base_positions,
+                KerningParagraphMeasurementFallbackReason::SegmentExecutionLimitExceeded,
+                attempted_segment_count,
+                whitespace_fallback_run_count,
+                true,
+            );
+        };
+
+        let has_whitespace = characters[start_index..end_index]
+            .iter()
+            .any(|character| character.is_whitespace());
+        if needs_whitespace_identity_fallback(&initial.measurement) && has_whitespace {
+            whitespace_fallback_run_count += 1;
+            let mut fallback_start = start_index;
+            while fallback_start < end_index {
+                while fallback_start < end_index && characters[fallback_start].is_whitespace() {
+                    fallback_start += 1;
+                }
+                if fallback_start == end_index {
+                    break;
+                }
+                let mut fallback_end = fallback_start + 1;
+                while fallback_end < end_index && !characters[fallback_end].is_whitespace() {
+                    fallback_end += 1;
+                }
+                let Some(fallback) = measure_kerning_paragraph_range(
+                    text,
+                    &byte_offsets,
+                    &base_positions,
+                    fallback_start,
+                    fallback_end,
+                    style,
+                    transaction,
+                    &mut attempted_segment_count,
+                ) else {
+                    return paragraph_measurement_fail_closed(
+                        code_point_count,
+                        false,
+                        base_positions,
+                        KerningParagraphMeasurementFallbackReason::SegmentExecutionLimitExceeded,
+                        attempted_segment_count,
+                        whitespace_fallback_run_count,
+                        true,
+                    );
+                };
+                segments.push(fallback);
+                fallback_start = fallback_end;
+            }
+        } else {
+            segments.push(initial);
+        }
+        start_index = end_index;
+    }
+
+    compose_kerning_paragraph_measurement_accounted(
+        code_point_count,
+        base_positions,
+        segments,
+        attempted_segment_count,
+        whitespace_fallback_run_count,
+        false,
+    )
 }
 
 /// 기존 문자 경계값과 exact source session을 하나의 owned run 측정으로 결합한다.
