@@ -23,7 +23,7 @@ import {
   sendDocumentErrorLine,
 } from '../src/dev/document-error-log.ts';
 import { nextDiagnosticRenderGeneration } from '../src/view/page-reference-layer.ts';
-import { PdfReferenceOverlay } from '../src/dev/pdf-reference-overlay.ts';
+import { LayoutTraceMailbox, PdfReferenceOverlay } from '../src/dev/pdf-reference-overlay.ts';
 
 test('a line-break failure yields one detailed first-error CLI line', () => {
   assert.equal(formatFirstLineBreakError(3, [{
@@ -279,6 +279,16 @@ const observation = (pageIndex: number, mismatchRatio = 0): FidelityPageObservat
   pdfInkRows: emptyBands,
 });
 
+test('a superseded trace batch cannot cross render revisions and the mailbox stays bounded', () => {
+  let revision = 'R1';
+  const mailbox = new LayoutTraceMailbox(() => revision);
+  mailbox.push('r1-failed');
+  revision = 'R2';
+  for (let index = 0; index < 6; index++) mailbox.push(`r2-${index}`);
+  assert.deepEqual(mailbox.takeCurrent(), ['r2-2', 'r2-3', 'r2-4', 'r2-5']);
+  assert.deepEqual(mailbox.takeCurrent(), []);
+});
+
 test('a render change during reference loading cannot publish stale evidence', async () => {
   const previousWindow = (globalThis as any).window;
   const browser: Record<string, unknown> = {};
@@ -286,8 +296,11 @@ test('a render change during reference loading cannot publish stale evidence', a
   let renderGeneration = 1;
   let referenceReady!: (value: unknown) => void;
   let loadingStarted!: () => void;
+  let errorDelivered!: () => void;
   const reference = new Promise(resolve => { referenceReady = resolve; });
   const started = new Promise<void>(resolve => { loadingStarted = resolve; });
+  const deliveredCurrent = new Promise<void>(resolve => { errorDelivered = resolve; });
+  let captures = 0;
   const overlay = new PdfReferenceOverlay('/__rhwp_harness/pdf-page/token', 1, 1, 'ref.pdf', {
     errorLogCapability: 'a'.repeat(43),
     documentDigest: 'digest',
@@ -296,7 +309,20 @@ test('a render change during reference loading cannot publish stale evidence', a
     getDocumentDigest: () => 'digest',
     getDocumentGeneration: () => 1,
     getHwpPageCount: () => 1,
-    capturePage: async () => ({ width: 1, height: 1, pixels: new Uint8ClampedArray(4) }),
+    capturePage: async () => {
+      const functionName = captures++ === 0 ? 'stale_page_only' : 'current_page_only';
+      return {
+        width: 1,
+        height: 1,
+        pixels: new Uint8ClampedArray(4),
+        layoutTrace: JSON.stringify([{
+          function: functionName,
+          args: {},
+          durationMs: 1,
+          depth: 0,
+        }]),
+      };
+    },
     getRenderGeneration: () => renderGeneration,
   });
   const internal = overlay as any;
@@ -308,20 +334,26 @@ test('a render change during reference loading cannot publish stale evidence', a
       loadingStarted();
       return reference;
     }
-    return new Promise(() => {});
+    return Promise.resolve({
+      width: 1, height: 1, surfaceHeight: 1, pixels: new Uint8ClampedArray(4),
+    });
   };
   internal.observePage = () => observation(0, 0.1);
-  internal.deliverDocumentError = (line: string) => delivered.push(line);
+  internal.deliverDocumentError = (line: string) => {
+    delivered.push(line);
+    errorDelivered();
+  };
   try {
     const scan = (browser.__rhwpFidelityHarness as any).scan();
     await started;
     renderGeneration = 2;
     referenceReady({ width: 1, height: 1, surfaceHeight: 1, pixels: new Uint8ClampedArray(4) });
     assert.equal(await scan, null);
-    assert.deepEqual(delivered, []);
-    await Promise.resolve();
-    await Promise.resolve();
+    await deliveredCurrent;
     assert.equal(loads, 2, 'the stale scan is replaced with a current-generation scan');
+    assert.equal(delivered.length, 1);
+    assert.match(delivered[0], /current_page_only/);
+    assert.doesNotMatch(delivered[0], /stale_page_only/);
   } finally {
     await overlay.destroy();
     if (previousWindow === undefined) delete (globalThis as any).window;
@@ -329,8 +361,9 @@ test('a render change during reference loading cannot publish stale evidence', a
   }
 });
 
-test('line-break evidence is reported even when pixel drift is non-structural', async () => {
+test('the page layout trace accompanies both semantic and paint failures', async () => {
   const previousWindow = (globalThis as any).window;
+  let hasLineBreak = true;
   const browser: any = {
     setTimeout: globalThis.setTimeout,
     clearTimeout: globalThis.clearTimeout,
@@ -338,7 +371,7 @@ test('line-break evidence is reported even when pixel drift is non-structural', 
       lineBreakVisible: () => ({
         total: 1,
         nextOffset: null,
-        items: [{
+        items: hasLineBreak ? [{
           coordinates: { sectionIdx: 0, paragraphIdx: 4 },
           comparison: {
             comparable: true,
@@ -353,16 +386,33 @@ test('line-break evidence is reported even when pixel drift is non-structural', 
             freshStartsTruncated: false,
             freshUtf16Starts: [0, 13],
           },
-        }],
+        }] : [],
       }),
     },
   };
   (globalThis as any).window = browser;
+  const traceLifecycle: string[] = [];
+  const semanticTrace = JSON.stringify([{
+    function: 'layout_frame_commit_row',
+    args: { top: 12, line_height: 20, result_top: 32 },
+    durationMs: 2,
+    depth: 0,
+  }]);
+  const traces = ['[]', semanticTrace];
   const overlay = new PdfReferenceOverlay('/__rhwp_harness/pdf-page/token', 1, 1, 'ref.pdf', {
     errorLogCapability: 'a'.repeat(43),
     documentDigest: 'digest', documentGeneration: 1, referenceGeneration: 1,
     getDocumentDigest: () => 'digest', getDocumentGeneration: () => 1,
     getHwpPageCount: () => 1,
+    traceLayout: (run) => {
+      traceLifecycle.push('begin:7');
+      try {
+        return run();
+      } finally {
+        traceLifecycle.push('end:7:true');
+      }
+    },
+    takeLayoutTrace: () => [traces.shift() ?? '[]'],
     capturePage: async () => ({ width: 1, height: 1, pixels: new Uint8ClampedArray(4) }),
     getRenderGeneration: () => 1,
   });
@@ -371,13 +421,23 @@ test('line-break evidence is reported even when pixel drift is non-structural', 
   internal.loadReferencePixels = async () => ({
     width: 1, height: 1, surfaceHeight: 1, pixels: new Uint8ClampedArray(4),
   });
-  internal.observePage = () => observation(0, 0.01);
+  let mismatchRatio = 0.01;
+  internal.observePage = () => observation(0, mismatchRatio);
   internal.deliverDocumentError = (line: string) => delivered.push(line);
   try {
     await browser.__rhwpFidelityHarness.scan();
     assert.deepEqual(delivered, [
-      'line-break: [page=1 target=s0/p4 at=1 expected=12:single actual=13:single]',
+      'line-break: [page=1 target=s0/p4 at=1 expected=12:single actual=13:single] ' +
+      'trace=[{"function":"layout_frame_commit_row","args":{"top":12,"line_height":20,' +
+      '"result_top":32},"durationMs":2,"depth":0}]',
     ]);
+    assert.deepEqual(traceLifecycle, ['begin:7', 'end:7:true']);
+    hasLineBreak = false;
+    mismatchRatio = 0.1;
+    traces.push('[]', semanticTrace);
+    await browser.__rhwpFidelityHarness.scan();
+    assert.match(delivered[1], /^paint: \[page=1 /);
+    assert.match(delivered[1], /"function":"layout_frame_commit_row"/);
   } finally {
     await overlay.destroy();
     if (previousWindow === undefined) delete (globalThis as any).window;

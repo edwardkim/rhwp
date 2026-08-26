@@ -140,6 +140,14 @@ test('wiring guard: layout tracing never owns a browser await', () => {
     main,
     /capturePage: async[\s\S]*beginLayoutTraceSession\(\)[\s\S]*capturePageForDiagnostics\([\s\S]*session\.run[\s\S]*retain = true[\s\S]*finally \{[\s\S]*session\.end\(retain\)/,
   );
+  assert.match(
+    main,
+    /const observeRenderCodeRevision = \(current = currentRenderCodeRevision\(\)\)[\s\S]*revision === null\) revision = current[\s\S]*revision !== current\) stable = false/,
+  );
+  assert.match(
+    main,
+    /new LayoutTraceMailbox\(currentRenderCodeRevision\)[\s\S]*push\(initialLayoutTrace\.serialized, initialLayoutTrace\.renderCodeRevision\)/,
+  );
   assert.doesNotMatch(main, /withLayoutTraceAsync|SubsecondTraceQueue/);
 
   const capture = view.slice(
@@ -191,6 +199,84 @@ test('a final-only diagnostic render failure takes the same Canvas2D fallback', 
   assert.deepEqual(render('canvas'), { renderedCanvas: 'first' });
   assert.equal(render('first'), null);
   assert.equal(commits.length, 1);
+});
+
+test('a first-document trace is discarded when a patch lands before page layout', async () => {
+  const main = source('src/main.ts');
+  const start = main.indexOf('function beginLayoutTraceSession()');
+  const end = main.indexOf('\n\nfunction withLayoutTrace', start);
+  const declaration = main.slice(start, end)
+    .replace(/function beginLayoutTraceSession\(\): \{[\s\S]*?\n\} \{/, 'function beginLayoutTraceSession() {')
+    .replace('let revision: string | null = null;', 'let revision = null;');
+  let revision: string | null = null;
+  let retained: boolean | null = null;
+  const begin = Function(
+    'subsecondTraceExports',
+    'currentRenderCodeRevision',
+    `${declaration}; return beginLayoutTraceSession;`,
+  )(
+    () => ({
+      beginSubsecondTrace: () => 7,
+      activateSubsecondTrace: () => {},
+      deactivateSubsecondTrace: () => {},
+      endSubsecondTrace: (_token: number, retain: boolean) => {
+        retained = retain;
+        return retain ? '[{"function":"old"}]' : '[]';
+      },
+    }),
+    () => revision,
+  ) as () => {
+    run<T>(operation: () => T): T;
+    observeRenderCodeRevision(revision: string | null): void;
+    end(retain: boolean): string;
+    renderCodeRevision(): string | null;
+  };
+
+  assert.match(
+    main,
+    /const \[docInfo, openedRenderCodeRevision\] = await loadDocumentForOpen\(data, fileName\);\n\s*traceSession\?\.observeRenderCodeRevision\(openedRenderCodeRevision\);/,
+  );
+  const session = begin();
+  revision = 'R1';
+  session.observeRenderCodeRevision(revision);
+  revision = 'R2';
+  session.run(() => {});
+  assert.equal(session.renderCodeRevision(), null);
+  assert.equal(session.end(true), '[]');
+  assert.equal(retained, false);
+
+  const unknown = begin();
+  unknown.observeRenderCodeRevision(null);
+  revision = 'R2';
+  unknown.run(() => {});
+  assert.equal(unknown.renderCodeRevision(), null);
+  assert.equal(unknown.end(true), '[]');
+  assert.equal(retained, false);
+
+  const passwordLoader = main.slice(
+    main.indexOf('async function loadPasswordProtectedDocument'),
+    main.indexOf('\n\nasync function loadDocumentForOpen'),
+  )
+    .replace(/async function loadPasswordProtectedDocument\([\s\S]*?\): Promise<readonly \[DocumentInfo, string \| null\]> \{/, 'async function loadPasswordProtectedDocument(data, fileName) {')
+    .replace('let retryMessage: string | undefined;', 'let retryMessage;')
+    .replace('let documentInfo: DocumentInfo;', 'let documentInfo;')
+    .replaceAll(' as const', '');
+  let derivedUnder: string | null = null;
+  revision = 'R1';
+  const open = Function(
+    'showHwpPasswordDialog', 'DocumentOpenCancelledError', 'wasm',
+    'isPasswordRejectedError', 'passwordOpenFailure', 'currentRenderCodeRevision',
+    `${passwordLoader}; return loadPasswordProtectedDocument;`,
+  )(
+    async () => 'secret', class extends Error {},
+    { loadDocumentWithPassword: () => { derivedUnder = revision; return { pageCount: 1 }; } },
+    () => false, (error: unknown) => error, () => revision,
+  ) as (data: Uint8Array, fileName: string) => Promise<readonly [unknown, string | null]>;
+  const opening = open(new Uint8Array(), 'secret.hwp');
+  queueMicrotask(() => { revision = 'R2'; });
+  const [, owner] = await opening;
+  assert.equal(derivedUnder, 'R1');
+  assert.equal(owner, 'R1');
 });
 
 test('비활성화된 자동 투명선 경로의 고아 이벤트를 남기지 않는다', () => {

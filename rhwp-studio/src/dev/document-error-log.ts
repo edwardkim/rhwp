@@ -30,6 +30,16 @@ export interface LineBreakVisibleResult {
   items?: LineBreakDiagnostic[];
 }
 
+export interface LayoutTraceEntry {
+  function: string;
+  args: Record<string, string | number | boolean>;
+  durationMs: number;
+  depth: number;
+}
+
+const MAX_DOCUMENT_ERROR_LENGTH = 4_096;
+const MAX_LAYOUT_TRACE_ENTRIES = 16;
+
 const isIndex = (value: unknown): value is number => Number.isSafeInteger(value) && Number(value) >= 0;
 const isRowPart = (value: unknown): value is string =>
   value === 'single' || value === 'first' || value === 'middle' || value === 'last';
@@ -112,13 +122,100 @@ export function findFirstLineBreakError(
   return null;
 }
 
+function isLayoutTraceEntry(entry: unknown): entry is LayoutTraceEntry {
+  if (!entry || typeof entry !== 'object') return false;
+  const value = entry as Partial<LayoutTraceEntry>;
+  return typeof value.function === 'string'
+    && /^[a-z][a-z0-9_]*$/.test(value.function)
+    && !!value.args
+    && typeof value.args === 'object'
+    && Object.keys(value.args).length <= 8
+    && Object.entries(value.args).every(([name, field]) =>
+      /^[a-z][a-z0-9_]*$/.test(name)
+      && (typeof field === 'number' && Number.isFinite(field)
+        || typeof field === 'boolean'
+        || typeof field === 'string' && field.length <= 256))
+    && typeof value.durationMs === 'number'
+    && Number.isFinite(value.durationMs)
+    && value.durationMs >= 0
+    && isIndex(value.depth)
+    && value.depth <= 16;
+}
+
+export function parseLayoutTrace(serialized: string): LayoutTraceEntry[] {
+  try {
+    const trace = JSON.parse(serialized);
+    if (!Array.isArray(trace)) return [];
+    return trace
+      .filter(isLayoutTraceEntry)
+      .slice(-MAX_LAYOUT_TRACE_ENTRIES)
+      .map(entry => ({ ...entry, durationMs: Number(entry.durationMs.toFixed(3)) }));
+  } catch {
+    return [];
+  }
+}
+
+export function attachDocumentErrorTrace(
+  line: string,
+  trace: readonly LayoutTraceEntry[],
+): string {
+  const bounded: LayoutTraceEntry[] = [];
+  for (const entry of trace.slice(-MAX_LAYOUT_TRACE_ENTRIES)) {
+    if (!isLayoutTraceEntry(entry)) continue;
+    const candidate = [...bounded, entry];
+    if (`${line} trace=${JSON.stringify(candidate)}`.length > MAX_DOCUMENT_ERROR_LENGTH) break;
+    bounded.push(entry);
+  }
+  return bounded.length ? `${line} trace=${JSON.stringify(bounded)}` : line;
+}
+
 export function isDocumentErrorLine(line: string): boolean {
-  if (line.length === 0 || line.length > 4_096 || /[\r\n]/.test(line)) return false;
-  const match = /^(line-break|page-count|paint): \[([^\[\]]+)\]$/.exec(line);
+  if (line.length === 0 || line.length > MAX_DOCUMENT_ERROR_LENGTH || /[\r\n]/.test(line)) return false;
+  const match = /^(line-break|page-count|paint): \[([^\[\]]+)\](?: trace=(.*))?$/.exec(line);
   if (!match) return false;
   const attributes = match[2].split(' ');
-  return attributes.some(attribute => /^page=\d+$/.test(attribute))
-    && attributes.every(attribute => /^[a-z][a-zA-Z]*=[\x21-\x5a\x5c\x5e-\x7e]+$/.test(attribute));
+  if (!attributes.some(attribute => /^page=\d+$/.test(attribute))
+    || !attributes.every(attribute => /^[a-z][a-zA-Z]*=[\x21-\x5a\x5c\x5e-\x7e]+$/.test(attribute))) {
+    return false;
+  }
+  if (match[3] === undefined) return true;
+  try {
+    const trace = JSON.parse(match[3]);
+    return Array.isArray(trace)
+      && trace.length > 0
+      && trace.length <= MAX_LAYOUT_TRACE_ENTRIES
+      && trace.every(isLayoutTraceEntry);
+  } catch {
+    return false;
+  }
+}
+
+export function formatDocumentErrorForTerminal(line: string): string | null {
+  if (!isDocumentErrorLine(line)) return null;
+  const traceAt = line.indexOf(' trace=');
+  if (traceAt < 0) return line;
+  const error = line.slice(0, traceAt);
+  const trace = JSON.parse(line.slice(traceAt + ' trace='.length)) as LayoutTraceEntry[];
+  const field = (value: string | number | boolean): string => typeof value === 'string'
+    ? JSON.stringify(value)
+    : typeof value === 'number' ? String(Number(value.toFixed(3))) : String(value);
+  return [
+    error,
+    'trace:',
+    ...trace.map(entry => {
+      const fields = Object.entries(entry.args);
+      const args = fields
+        .filter(([name]) => !name.startsWith('result_'))
+        .map(([name, value]) => `${name}=${field(value)}`)
+        .join(', ');
+      const results = fields
+        .filter(([name]) => name.startsWith('result_'))
+        .map(([name, value]) => `${name.slice(7)}=${field(value)}`)
+        .join(', ');
+      const indent = '  '.repeat(entry.depth + 1);
+      return `${indent}${entry.function}(${args})${results ? ` => ${results}` : ''} ${entry.durationMs}ms`;
+    }),
+  ].join('\n');
 }
 
 export async function sendDocumentErrorLine(

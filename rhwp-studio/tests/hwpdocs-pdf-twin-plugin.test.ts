@@ -8,6 +8,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { Readable } from 'node:stream';
 import test from 'node:test';
+import { stripVTControlCharacters } from 'node:util';
 import {
   BoundedWorkQueue,
   MAX_SOURCE_BYTES,
@@ -175,7 +176,9 @@ function response(): {
 }
 
 test('the document-error endpoint prints one typed Vite error', async () => {
-  const line = 'paint: [page=3 ratio=0.1 pdfOnly=1 rhwpOnly=2 colorOnly=0 bounds=0,0,1,1]';
+  const line = 'paint: [page=3 ratio=0.1 pdfOnly=1 rhwpOnly=2 colorOnly=0 bounds=0,0,1,1] ' +
+    'trace=[{"function":"layout_body_picture","args":{"para_index":4,"y_offset":32,' +
+    '"result_frame_height":200,"result_y":232},"durationMs":2,"depth":0}]';
   const capability = 'a'.repeat(43);
   const printed: unknown[] = [];
   const send = async (value: string, provided = capability) => {
@@ -185,7 +188,9 @@ test('the document-error endpoint prints one typed Vite error', async () => {
     });
     const res = response();
     await serveDocumentErrorLog(req as never, res as never, {
-      error(message, options) { printed.push({ message, options }); },
+      error(message, options) {
+        printed.push({ message: stripVTControlCharacters(message), options });
+      },
     }, capability);
     return res;
   };
@@ -196,24 +201,52 @@ test('the document-error endpoint prints one typed Vite error', async () => {
   assert.deepEqual(printed, []);
   const accepted = await send(line);
   assert.equal(accepted.statusCode, 202);
-  assert.deepEqual(printed, [{ message: line, options: { timestamp: true, error: null } }]);
+  assert.deepEqual(printed, [{
+    message: 'paint: [page=3 ratio=0.1 pdfOnly=1 rhwpOnly=2 colorOnly=0 bounds=0,0,1,1]\n' +
+      'trace:\n  layout_body_picture(para_index=4, y_offset=32) ' +
+      '=> frame_height=200, y=232 2ms',
+    options: { timestamp: true, error: null },
+  }]);
 });
 
 test('Vite displays the typed document error in red', () => {
-  const line = 'line-break: [page=3 target=s0/p4 at=1 expected=0,7 actual=0]';
+  const line = 'paint: [page=3 ratio=0.1 pdfOnly=1 rhwpOnly=2 colorOnly=0 bounds=0,0,1,1] ' +
+    'trace=[{"function":"layout_body_picture","args":{"para_index":4,"result_y":232},' +
+    '"durationMs":2,"depth":0}]';
+  const script = `
+    import { Readable } from 'node:stream';
+    import { createLogger } from 'vite';
+    import { serveDocumentErrorLog } from './vite/hwpdocs-pdf-twin-plugin.ts';
+    const capability = 'a'.repeat(43);
+    const req = Object.assign(Readable.from([${JSON.stringify(line)}]), {
+      method: 'POST', headers: { 'x-rhwp-harness-capability': capability },
+    });
+    const res = { statusCode: 0, setHeader() {}, end() {} };
+    await serveDocumentErrorLog(req, res, createLogger('info', { allowClearScreen: false }), capability);
+  `;
   const env = { ...process.env, FORCE_COLOR: '1' };
   delete env.NO_COLOR;
   const result = spawnSync(process.execPath, [
     '--input-type=module',
     '--eval',
-    `import { createLogger } from 'vite'; createLogger('info', { allowClearScreen: false }).error(${JSON.stringify(line)}, { timestamp: true, error: null });`,
+    script,
   ], { cwd: new URL('../', import.meta.url), env, encoding: 'utf8' });
   assert.equal(result.status, 0, result.stderr);
-  assert.match(result.stderr, /\u001b\[31m/);
+  assert.match(result.stderr, /\u001b\[31mpaint:[\s\S]*layout_body_picture[\s\S]*\u001b\[39m/);
   assert.match(
     result.stderr.replace(/\u001b\[[0-9;]*m/g, '').trimEnd(),
-    /\[vite\] line-break: \[page=3 target=s0\/p4 at=1 expected=0,7 actual=0\]$/,
+    /\[vite\] paint: \[page=3[\s\S]*trace:\n  layout_body_picture\(para_index=4\) => y=232 2ms$/,
   );
+
+  const noColorEnv = { ...process.env, NO_COLOR: '1' };
+  delete noColorEnv.FORCE_COLOR;
+  const noColor = spawnSync(process.execPath, [
+    '--input-type=module',
+    '--eval',
+    script,
+  ], { cwd: new URL('../', import.meta.url), env: noColorEnv, encoding: 'utf8' });
+  assert.equal(noColor.status, 0, noColor.stderr);
+  assert.doesNotMatch(noColor.stderr, /\u001b\[/);
 });
 
 test('PDF twin lookup selects the same-directory PDF by document bytes', async (t) => {

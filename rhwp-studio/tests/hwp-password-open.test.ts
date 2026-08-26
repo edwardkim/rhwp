@@ -20,7 +20,11 @@ test('암호 문서는 명시적인 암호 필요 오류에서만 입력 UI로 �
   const plainAttemptBody = openPath.match(
     /try \{(?<body>[\s\S]*?)\n\s*\} catch \(error\) \{/,
   )?.groups?.body.trim();
-  assert.equal(plainAttemptBody, 'return wasm.loadDocument(data, fileName);', '일반 문서도 generic 진단 콜백 없이 연다');
+  assert.equal(
+    plainAttemptBody,
+    'return [wasm.loadDocument(data, fileName), currentRenderCodeRevision()] as const;',
+    '일반 문서도 generic 진단 콜백 없이 연다',
+  );
   const passwordFallbackBody = openPath.match(
     /\} catch \(error\) \{(?<body>[\s\S]*?)\n\s*\}\n\}/,
   )?.groups?.body.trim();
@@ -50,7 +54,7 @@ test('암호 입력은 단일 시도에만 쓰고, 취소와 오입력은 영속
   assert.deepEqual(passwordPath.split('\n').map(line => line.trim()).filter(line => /\bpassword\b/.test(line)), [
     'let password = await showHwpPasswordDialog(fileName, retryMessage);',
     'if (password === null) throw new DocumentOpenCancelledError();',
-    'return wasm.loadDocumentWithPassword(data, password, fileName);',
+    'documentInfo = wasm.loadDocumentWithPassword(data, password, fileName);',
     "password = '';",
   ]);
   const attemptBody = passwordPath.match(
@@ -58,9 +62,10 @@ test('암호 입력은 단일 시도에만 쓰고, 취소와 오입력은 영속
   )?.groups?.body.trim();
   assert.equal(
     attemptBody,
-    'return wasm.loadDocumentWithPassword(data, password, fileName);',
+    'documentInfo = wasm.loadDocumentWithPassword(data, password, fileName);',
     '암호 시도는 generic 진단 콜백 없이 WASM을 직접 호출한다',
   );
+  assert.match(passwordPath, /finally \{[\s\S]*password = '';[\s\S]*\}\n\s*return \[documentInfo, currentRenderCodeRevision\(\)\] as const;/);
   assert.doesNotMatch(passwordPath, /localStorage|sessionStorage|addRecentDoc|autosave|documentDigest|console\./, '암호값을 영속/로그 경로로 보내지 않는다');
   assert.match(passwordPath, /암호가 일치하지 않거나 문서가 손상되었습니다\. 다시 입력하세요\./, '오입력/암호문 손상은 재입력 상태로 설명한다');
 });

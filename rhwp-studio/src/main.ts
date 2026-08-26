@@ -4,7 +4,7 @@ import type { DocumentInfo, PageInfo } from '@/core/types';
 import { EventBus } from '@/core/event-bus';
 import { assertRemoteDocumentBytes } from '@/core/document-signature';
 import { CanvasView } from '@/view/canvas-view';
-import type { PageReferenceLayer } from '@/view/page-reference-layer';
+import type { DiagnosticPageCapture, PageReferenceLayer } from '@/view/page-reference-layer';
 import type { PdfTwinLookupResult } from '@/dev/pdf-twin-client';
 import { InputHandler } from '@/engine/input-handler';
 import { Toolbar } from '@/ui/toolbar';
@@ -189,18 +189,45 @@ type SubsecondTraceExports = {
   beginSubsecondTrace?: () => number;
   activateSubsecondTrace?: (token: number) => void;
   deactivateSubsecondTrace?: (token: number) => void;
-  endSubsecondTrace?: (token: number, retain: boolean) => void;
+  endSubsecondTrace?: (token: number, retain: boolean) => string;
 };
 type LayoutTraceRun = <T>(run: () => T) => T;
 const withoutLayoutTrace: LayoutTraceRun = run => run();
+let layoutTraceSink: (trace: string) => void = () => {};
+
+type DocumentLayoutTrace = { serialized: string; renderCodeRevision: string | null };
+
+function currentRenderCodeRevision(): string | null {
+  const document = wasm.borrowDocumentHandle() as { getRenderCodeRevision?: () => string } | null;
+  try {
+    return document?.getRenderCodeRevision?.() ?? null;
+  } catch {
+    return null;
+  }
+}
 
 function subsecondTraceExports(): SubsecondTraceExports {
   return wasm.getWasmModuleExports() as SubsecondTraceExports;
 }
 
-function beginLayoutTraceSession(): { run: LayoutTraceRun; end(retain: boolean): void } {
+function beginLayoutTraceSession(): {
+  run: LayoutTraceRun;
+  observeRenderCodeRevision(revision: string | null): void;
+  end(retain: boolean): string;
+  renderCodeRevision(): string | null;
+} {
   const trace = subsecondTraceExports();
   const token = trace.beginSubsecondTrace?.() ?? 0;
+  let revision: string | null = null;
+  let stable = true;
+  const observeRenderCodeRevision = (current = currentRenderCodeRevision()) => {
+    if (current === null) {
+      stable = false;
+      return;
+    }
+    if (revision === null) revision = current;
+    else if (revision !== current) stable = false;
+  };
   return {
     run: (operation) => {
       trace.activateSubsecondTrace?.(token);
@@ -208,9 +235,12 @@ function beginLayoutTraceSession(): { run: LayoutTraceRun; end(retain: boolean):
         return operation();
       } finally {
         trace.deactivateSubsecondTrace?.(token);
+        observeRenderCodeRevision();
       }
     },
-    end: retain => trace.endSubsecondTrace?.(token, retain),
+    observeRenderCodeRevision,
+    end: retain => trace.endSubsecondTrace?.(token, retain && stable) ?? '[]',
+    renderCodeRevision: () => stable ? revision : null,
   };
 }
 
@@ -222,7 +252,8 @@ function withLayoutTrace<T>(run: () => T): T {
     retain = true;
     return result;
   } finally {
-    trace.end(retain);
+    const serialized = trace.end(retain);
+    if (serialized !== '[]') layoutTraceSink(serialized);
   }
 }
 
@@ -250,6 +281,7 @@ function beginPdfTwinLookup(
 
 function beginPdfReferenceDocument(): number {
   const generation = ++pdfReferenceGeneration;
+  layoutTraceSink = () => {};
   canvasView?.setPageReferenceLayer(null);
   const previous = activePdfReference;
   activePdfReference = null;
@@ -260,6 +292,7 @@ function beginPdfReferenceDocument(): number {
 async function activatePdfReference(
   lookup: Promise<PdfTwinLookupResult> | null,
   generation: number,
+  initialLayoutTrace: DocumentLayoutTrace,
 ): Promise<void> {
   try {
     if (!import.meta.env.DEV) return;
@@ -277,7 +310,10 @@ async function activatePdfReference(
       return;
     }
 
-    const { PdfReferenceOverlay } = await import('@/dev/pdf-reference-overlay');
+    const { LayoutTraceMailbox, PdfReferenceOverlay } = await import('@/dev/pdf-reference-overlay');
+    const layoutTraces = new LayoutTraceMailbox(currentRenderCodeRevision);
+    layoutTraces.push(initialLayoutTrace.serialized, initialLayoutTrace.renderCodeRevision);
+    const pushLayoutTrace = (trace: string): void => layoutTraces.push(trace);
     const overlay = new PdfReferenceOverlay(
       result.pdfPageUrl,
       result.pdfPageWidth,
@@ -291,22 +327,26 @@ async function activatePdfReference(
         getDocumentDigest: () => wasm.documentDigest,
         getDocumentGeneration: () => wasm.documentGeneration,
         getHwpPageCount: () => wasm.pageCount,
+        traceLayout: withLayoutTrace,
+        takeLayoutTrace: () => layoutTraces.takeCurrent(),
         capturePage: async (pageIndex, sampleWidth, signal) => {
           if (!canvasView) throw new Error('CanvasView is unavailable');
           const session = beginLayoutTraceSession();
           let retain = false;
+          let layoutTrace = '[]';
+          let capture!: DiagnosticPageCapture;
           try {
-            const capture = await canvasView.capturePageForDiagnostics(
+            capture = await canvasView.capturePageForDiagnostics(
               pageIndex,
               sampleWidth,
               signal,
               session.run,
             );
             retain = true;
-            return capture;
           } finally {
-            session.end(retain);
+            layoutTrace = session.end(retain);
           }
+          return { ...capture, layoutTrace };
         },
         getRenderGeneration: () => canvasView?.getDiagnosticRenderGeneration() ?? 0,
       },
@@ -316,6 +356,7 @@ async function activatePdfReference(
       return;
     }
     activePdfReference = overlay;
+    layoutTraceSink = pushLayoutTrace;
     canvasView.setPageReferenceLayer(overlay);
     overlay.startBaselineScan();
     sbMessage().textContent += ' · diff 빨강=PDF 청록=HWP 주황=색상';
@@ -1599,15 +1640,16 @@ function passwordOpenFailure(error: unknown): Error {
 async function loadPasswordProtectedDocument(
   data: Uint8Array,
   fileName: string,
-): Promise<DocumentInfo> {
+): Promise<readonly [DocumentInfo, string | null]> {
   let retryMessage: string | undefined;
 
   while (true) {
     let password = await showHwpPasswordDialog(fileName, retryMessage);
     if (password === null) throw new DocumentOpenCancelledError();
+    let documentInfo: DocumentInfo;
 
     try {
-      return wasm.loadDocumentWithPassword(data, password, fileName);
+      documentInfo = wasm.loadDocumentWithPassword(data, password, fileName);
     } catch (error) {
       // CFB 암호문은 인증 태그가 없으므로 오입력과 암호화 데이터 손상을 완전히 구분할 수
       // 없다. 두 경우만 재입력 상태로 안내하고, 지원하지 않는 암호화/DRM 등은 원래의
@@ -1622,15 +1664,16 @@ async function loadPasswordProtectedDocument(
       // 시도 직후 해제한다. 최근 문서·URL·저장소·문서 메타데이터에는 전달하지 않는다.
       password = '';
     }
+    return [documentInfo, currentRenderCodeRevision()] as const;
   }
 }
 
 async function loadDocumentForOpen(
   data: Uint8Array,
   fileName: string,
-): Promise<DocumentInfo> {
+): Promise<readonly [DocumentInfo, string | null]> {
   try {
-    return wasm.loadDocument(data, fileName);
+    return [wasm.loadDocument(data, fileName), currentRenderCodeRevision()] as const;
   } catch (error) {
     if (!isPasswordRequiredError(error)) throw error;
     return loadPasswordProtectedDocument(data, fileName);
@@ -1693,6 +1736,10 @@ async function loadBytes(
   const traceSession = pdfTwinLookup ? beginLayoutTraceSession() : null;
   const traceLayout = traceSession?.run ?? withoutLayoutTrace;
   let retainTrace = false;
+  let documentLayoutTrace: DocumentLayoutTrace = {
+    serialized: '[]',
+    renderCodeRevision: null,
+  };
   let pdfReferenceDocumentGeneration: number | null = null;
   // 바이트로 여는 모든 경로(파일 열기 · ?url= · 자동저장 복구 · 호스트 API)의 공통 깔때기다.
   // 파싱·쪽 계산 동안 빈 화면만 보이므로 여기서 대기 커서를 든다.
@@ -1705,7 +1752,8 @@ async function loadBytes(
         await updateLoadProgress(0, '문서 데이터 준비 중...');
       }
       await updateLoadProgress(25, '문서 파싱 및 쪽 계산 중...');
-      const docInfo = await loadDocumentForOpen(data, fileName);
+      const [docInfo, openedRenderCodeRevision] = await loadDocumentForOpen(data, fileName);
+      traceSession?.observeRenderCodeRevision(openedRenderCodeRevision);
       pdfReferenceDocumentGeneration = beginPdfReferenceDocument();
       prepareCanvasRendererDocument();
       // 문서가 갈렸다 — 빌린 핸들을 쥔 플러그인에 새 lease 를 준다. 알리지 않으면 그쪽만 옛
@@ -1741,10 +1789,14 @@ async function loadBytes(
     });
     retainTrace = true;
   } finally {
-    traceSession?.end(retainTrace);
+    const serialized = traceSession?.end(retainTrace) ?? '[]';
+    documentLayoutTrace = {
+      serialized,
+      renderCodeRevision: traceSession?.renderCodeRevision() ?? null,
+    };
   }
   if (pdfReferenceDocumentGeneration !== null) {
-    void activatePdfReference(pdfTwinLookup, pdfReferenceDocumentGeneration);
+    void activatePdfReference(pdfTwinLookup, pdfReferenceDocumentGeneration, documentLayoutTrace);
   }
 }
 

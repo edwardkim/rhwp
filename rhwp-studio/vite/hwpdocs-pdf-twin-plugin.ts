@@ -11,9 +11,10 @@ import { homedir } from 'node:os';
 import { basename, delimiter, dirname, extname, join, relative, resolve } from 'node:path';
 import { Transform } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
+import { styleText } from 'node:util';
 import { fileURLToPath } from 'node:url';
 import type { Logger, Plugin } from 'vite';
-import { isDocumentErrorLine } from '../src/dev/document-error-log.ts';
+import { formatDocumentErrorForTerminal } from '../src/dev/document-error-log.ts';
 import { boundedPageRasterSize } from '../src/dev/page-raster-budget.ts';
 import {
   DOCUMENT_ERROR_LOG_PATH,
@@ -593,8 +594,12 @@ export async function serveDocumentErrorLog(
   if (!hasCapability(req, capability)) return json(res, 403, { status: 'error' });
   try {
     const line = await body(req);
-    if (!isDocumentErrorLine(line)) return json(res, 400, { status: 'error' });
-    logger.error(line, { timestamp: true, error: null });
+    const display = formatDocumentErrorForTerminal(line);
+    if (!display) return json(res, 400, { status: 'error' });
+    logger.error(styleText('red', display, { stream: process.stderr }), {
+      timestamp: true,
+      error: null,
+    });
     json(res, 202, { status: 'accepted' });
   } catch {
     json(res, 400, { status: 'error' });

@@ -18,9 +18,12 @@ import {
   type FidelityScanSummary,
 } from './fidelity-scan.ts';
 import {
+  attachDocumentErrorTrace,
   formatDocumentError,
   findFirstLineBreakError,
+  parseLayoutTrace,
   sendDocumentErrorLine,
+  type LayoutTraceEntry,
   type LineBreakVisibleResult,
 } from './document-error-log.ts';
 import { DiagnosticPauseGate, yieldToInteractiveWork } from './fidelity-yield.ts';
@@ -29,6 +32,31 @@ import { fetchWithBusyRetry } from './pdf-reference-fetch.ts';
 const DIFF_SAMPLE_WIDTH = 512;
 const WHOLE_SCAN_SAMPLE_WIDTH = 256;
 const DIFF_THRESHOLD = 24;
+const MAX_PENDING_LAYOUT_TRACE_BATCHES = 4;
+
+export class LayoutTraceMailbox {
+  private readonly getRenderCodeRevision: () => string | null;
+  private batches: Array<{ serialized: string; renderCodeRevision: string }> = [];
+
+  constructor(getRenderCodeRevision: () => string | null) {
+    this.getRenderCodeRevision = getRenderCodeRevision;
+  }
+
+  push(serialized: string, renderCodeRevision = this.getRenderCodeRevision()): void {
+    if (serialized === '[]' || renderCodeRevision === null) return;
+    if (this.batches.length === MAX_PENDING_LAYOUT_TRACE_BATCHES) this.batches.shift();
+    this.batches.push({ serialized, renderCodeRevision });
+  }
+
+  takeCurrent(): string[] {
+    const current = this.getRenderCodeRevision();
+    const batches = this.batches
+      .filter(batch => batch.renderCodeRevision === current)
+      .map(batch => batch.serialized);
+    this.batches = [];
+    return batches;
+  }
+}
 
 export interface PdfReferenceHarnessOptions {
   errorLogCapability: string;
@@ -38,11 +66,13 @@ export interface PdfReferenceHarnessOptions {
   getDocumentDigest(): string | null;
   getDocumentGeneration(): number;
   getHwpPageCount(): number;
+  traceLayout?<T>(run: () => T): T;
+  takeLayoutTrace?(): readonly string[];
   capturePage(
     pageIndex: number,
     sampleWidth: number,
     signal?: AbortSignal,
-  ): Promise<DiagnosticPageCapture>;
+  ): Promise<DiagnosticPageCapture & { layoutTrace?: string }>;
   getRenderGeneration(): number;
 }
 
@@ -113,6 +143,7 @@ export class PdfReferenceOverlay implements PageReferenceLayer {
   private scanSerial = 0;
   private scanAbortController: AbortController | null = null;
   private diffLogDeliveryFailed = false;
+  private pendingLayoutTrace: LayoutTraceEntry[] = [];
   private readonly diagnosticsPause = new DiagnosticPauseGate();
   private readonly harnessState: FidelityHarnessState;
   private readonly harnessApi: FidelityHarnessApi;
@@ -175,6 +206,7 @@ export class PdfReferenceOverlay implements PageReferenceLayer {
   }
 
   onRenderCodePatched(): void {
+    this.pendingLayoutTrace = [];
     void this.scanWholeDocument('subsecond-patch');
   }
 
@@ -207,13 +239,26 @@ export class PdfReferenceOverlay implements PageReferenceLayer {
 
   private documentErrorLine(
     report: FidelityScanReport,
+    pageTrace: readonly LayoutTraceEntry[] = [],
   ): string | null {
     const first = firstDocumentDivergence(report);
+    if (first?.kind !== 'page-count' && report.pages.length === 1) {
+      this.pendingLayoutTrace = [];
+      if (pageTrace.length === 0) this.takeLayoutTrace();
+      else {
+        this.retainLayoutTrace();
+        this.pendingLayoutTrace = this.mergeLayoutTrace(this.pendingLayoutTrace, pageTrace);
+      }
+    } else {
+      this.retainLayoutTrace();
+      this.pendingLayoutTrace = this.mergeLayoutTrace(this.pendingLayoutTrace, pageTrace);
+    }
     for (const page of report.pages) {
       if (first?.kind === 'page-count' && page.pageIndex >= first.pageIndex) break;
+      let semanticTrace: LayoutTraceEntry[] = [];
       try {
         const inspect = (window as FidelityHarnessWindow).rhwpDev?.lineBreakVisible;
-        const lineBreak = inspect ? findFirstLineBreakError(
+        const lineBreak = this.withLayoutTrace(() => inspect ? findFirstLineBreakError(
           page.pageIndex + 1,
           start => inspect(page.pageIndex, {
             start,
@@ -221,30 +266,61 @@ export class PdfReferenceOverlay implements PageReferenceLayer {
             geometry: false,
             measurement: false,
           }),
-        ) : null;
-        if (lineBreak) return lineBreak;
+        ) : null);
+        semanticTrace = this.takeLayoutTrace();
+        if (lineBreak) return attachDocumentErrorTrace(lineBreak, this.consumeLayoutTrace(semanticTrace));
       } catch {
+        this.takeLayoutTrace();
         // A semantic inspector failure must not suppress proven paint/page-count evidence.
       }
       if (page.pageIndex !== report.firstStructuralDivergencePage) continue;
       const bounds = page.bounds;
-      return formatDocumentError('paint', [
+      return attachDocumentErrorTrace(formatDocumentError('paint', [
         ['page', page.pageIndex + 1],
         ['ratio', page.mismatchRatio],
         ['pdfOnly', page.pdfOnlyPixels],
         ['rhwpOnly', page.hwpOnlyPixels],
         ['colorOnly', page.colorMismatchPixels],
         ['bounds', bounds ? `${bounds.x},${bounds.y},${bounds.width},${bounds.height}` : 'none'],
-      ]);
+      ]), this.consumeLayoutTrace(semanticTrace));
     }
     if (first?.kind === 'page-count') {
-      return formatDocumentError('page-count', [
+      return attachDocumentErrorTrace(formatDocumentError('page-count', [
         ['page', first.pageIndex + 1],
         ['expected', report.pdfPageCount ?? 0],
         ['actual', report.hwpPageCount],
-      ]);
+      ]), this.consumeLayoutTrace());
     }
     return null;
+  }
+
+  private takeLayoutTrace(): LayoutTraceEntry[] {
+    return this.mergeLayoutTrace(
+      ...(this.harness.takeLayoutTrace?.() ?? []).map(parseLayoutTrace),
+    );
+  }
+
+  private retainLayoutTrace(): void {
+    this.pendingLayoutTrace = this.mergeLayoutTrace(this.pendingLayoutTrace, this.takeLayoutTrace());
+  }
+
+  private consumeLayoutTrace(extra: readonly LayoutTraceEntry[] = []): LayoutTraceEntry[] {
+    const trace = this.mergeLayoutTrace(this.pendingLayoutTrace, extra);
+    this.pendingLayoutTrace = [];
+    return trace;
+  }
+
+  private mergeLayoutTrace(...groups: readonly (readonly LayoutTraceEntry[])[]): LayoutTraceEntry[] {
+    const merged = new Map<string, LayoutTraceEntry>();
+    for (const entry of groups.flat()) {
+      merged.delete(entry.function);
+      merged.set(entry.function, entry);
+    }
+    return [...merged.values()].slice(-16);
+  }
+
+  private withLayoutTrace<T>(run: () => T): T {
+    return this.harness.traceLayout ? this.harness.traceLayout(run) : run();
   }
 
   private deliverDocumentError(line: string): void {
@@ -316,9 +392,10 @@ export class PdfReferenceOverlay implements PageReferenceLayer {
       completedAt: performance.now(),
     });
     let errorDelivered = false;
+    let latestPageTrace: LayoutTraceEntry[] = [];
     const deliverFirstError = (report: FidelityScanReport): void => {
       if (errorDelivered) return;
-      const line = this.documentErrorLine(report);
+      const line = this.documentErrorLine(report, latestPageTrace);
       if (!line) return;
       this.deliverDocumentError(line);
       errorDelivered = true;
@@ -343,6 +420,7 @@ export class PdfReferenceOverlay implements PageReferenceLayer {
         );
         if (abandonIfStale()) return null;
         const observation = this.observePage(pageIndex, capture, reference);
+        latestPageTrace = parseLayoutTrace(capture.layoutTrace ?? '[]');
         observations.push(observation);
         this.harnessState.completedPages = pageIndex + 1;
         deliverFirstError(buildReport([observation], false));
