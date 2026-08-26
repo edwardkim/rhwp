@@ -25842,35 +25842,26 @@ mod issue_3820_saved_rowbreak_first_fragment_frame_contract {
             Some(2),
             "saved-frame slack may absorb measurement drift at row 2, but not admit row 3"
         );
-    }
 
-    /// [#6123] 프레임이 행 경계에 **닿지 못하면** 그 행을 소유하지 않는다 —
-    /// 행 경계 신호가 아니라 행 안에서 끊으라는 신호다(3112461 7쪽: 프레임 388 이
-    /// 행 1(36~573)의 65% 지점인데 573 으로 스냅돼 행이 통째로 앞 쪽에 얹혔다).
-    #[test]
-    fn frame_falling_short_of_a_row_boundary_does_not_own_that_row() {
+        // [#6123] 프레임이 행 경계에 **닿지 못하면** 그 행을 소유하지 않는다 —
+        // 행 경계 신호가 아니라 행 안에서 끊으라는 신호다(3112461 7쪽: 프레임 388 이
+        // 행 1(36~573)의 65% 지점인데 573 으로 스냅돼 행이 통째로 앞 쪽에 얹혔다).
         assert_eq!(
             nearest_saved_rowbreak_frame_row_end(388.0, &[36.0, 537.0], &[36.0, 472.0], 0.0),
             None,
             "모자란 몫(185.1)이 흡수 가능한 drift(65.0)를 넘으면 행 경계가 아니다"
         );
-    }
 
-    /// 경계를 **넘어서는** 프레임은 종전대로 그 행 끝을 소유한다 — 초과분은
-    /// 다음 행의 측정↔저장 drift 다(21298295 별표 5: 행 13 경계를 22.6px 초과).
-    #[test]
-    fn frame_past_a_row_boundary_still_owns_that_row() {
+        // 경계를 **넘어서는** 프레임은 종전대로 그 행 끝을 소유한다 — 초과분은
+        // 다음 행의 측정↔저장 drift 다(21298295 별표 5: 행 13 경계를 22.6px 초과).
         assert_eq!(
             nearest_saved_rowbreak_frame_row_end(112.6, &[30.0, 60.0], &[30.0, 60.0], 0.0),
             Some(2),
             "프레임이 경계를 지나면 그 행까지는 확실히 첫 조각 소유다"
         );
-    }
 
-    /// 조각이 될 수 없는 크기(25px)만큼 모자란 프레임은 그 행을 그대로 소유한다 —
-    /// 그 잔여는 어차피 다음 쪽으로 옮길 수 없다(1790387 PrEP 보고서: 16.8px).
-    #[test]
-    fn frame_short_by_less_than_an_orphan_still_owns_that_row() {
+        // 조각이 될 수 없는 크기(25px)만큼 모자란 프레임은 그 행을 그대로 소유한다 —
+        // 그 잔여는 어차피 다음 쪽으로 옮길 수 없다(1790387 PrEP 보고서: 16.8px).
         assert_eq!(
             nearest_saved_rowbreak_frame_row_end(
                 405.8,
@@ -25881,11 +25872,8 @@ mod issue_3820_saved_rowbreak_first_fragment_frame_contract {
             Some(4),
             "16.8px 잔여는 독립 조각이 될 수 없으므로 행을 통째로 둔다"
         );
-    }
 
-    /// 저장 행 높이를 못 읽는 표(전부 0)는 종전 최근접 스냅을 유지한다.
-    #[test]
-    fn frame_snap_survives_without_stored_row_heights() {
+        // 저장 행 높이를 못 읽는 표(전부 0)는 종전 최근접 스냅을 유지한다.
         assert_eq!(
             nearest_saved_rowbreak_frame_row_end(87.0, &[30.0, 55.0, 60.0], &[0.0, 0.0, 0.0], 0.0),
             Some(2),
