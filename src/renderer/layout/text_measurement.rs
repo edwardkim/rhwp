@@ -973,6 +973,12 @@ pub(crate) struct CharWidthDecision<'a> {
     pub(crate) negative_spacing_clamped: bool,
 }
 
+/// 측정이 전각 글리프를 반각 advance 로 눌렀을 때의 `width_source`.
+///
+/// 페인트(`forces_halfwidth_cjk_quote`)가 같은 판정을 되묻는 데 쓰므로 문자열
+/// literal 로 흩어 두지 않는다.
+const HALFWIDTH_PUNCTUATION_WIDTH_SOURCE: &str = "metricHalfwidthPunctuationOverlay";
+
 #[derive(Debug, Clone, Copy)]
 struct EmbeddedWidthDecision<'a> {
     width_px: Option<f64>,
@@ -1040,7 +1046,7 @@ fn measure_char_width_embedded_decision<'a>(
             || (is_halfwidth_cjk_quote(c) && is_monospace_metric(mm.metric)))
             && glyph_w >= mm.metric.em_size
         {
-            (mm.metric.em_size / 2, "metricHalfwidthPunctuationOverlay")
+            (mm.metric.em_size / 2, HALFWIDTH_PUNCTUATION_WIDTH_SOURCE)
         } else {
             (glyph_w, "embeddedMetric")
         }
@@ -1386,23 +1392,30 @@ pub(crate) fn is_halfwidth_cjk_quote(c: char) -> bool {
     matches!(c, '\u{300C}' | '\u{300D}')
 }
 
-/// 돋움체 계열은 한컴이 「」 를 반각으로 조판한다 (#2020).
-/// 휴먼명조·HY헤드라인M 같은 비례 글꼴은 전폭이다 (#6060).
-pub(crate) fn forces_halfwidth_cjk_quote(font_family: &str, c: char) -> bool {
+/// 페인트가 「」 글리프를 반각 공간에 눌러 그려야 하는지 — **측정과 같은 판정**이어야 한다.
+///
+/// 측정은 고정폭 메트릭(`is_monospace_metric`)이고 글리프 advance 가 `em_size` 이상일 때만
+/// 반각 오버레이를 적용한다. 페인트가 폰트 **이름 목록**으로 따로 판정하면 두 경로가 갈린다.
+///
+/// - 이름 목록 밖 고정폭(바탕체·궁서체·D2Coding): advance 는 반각인데 글리프는 전각으로
+///   그려져 다음 글자와 겹친다.
+/// - 이름에 `돋움체` 를 포함하지만 메트릭 DB 밖(KoPub돋움체): advance 는 전각인데 글리프만
+///   반각으로 눌려 오른쪽에 빈 공간이 남는다.
+///
+/// 그래서 판정을 이름이 아니라 측정 결정 하나로 통일한다. 돋움체 반각(#2020)과
+/// 휴먼명조·HY헤드라인M 전폭(#6060)은 메트릭만으로 그대로 갈린다.
+pub fn forces_halfwidth_cjk_quote(
+    font_family: &str,
+    bold: bool,
+    italic: bool,
+    c: char,
+    font_size: f64,
+) -> bool {
     if !is_halfwidth_cjk_quote(c) {
         return false;
     }
-    let primary = font_family
-        .split(',')
-        .next()
-        .unwrap_or(font_family)
-        .trim()
-        .trim_matches('\'')
-        .trim_matches('"');
-    primary.contains("돋움체")
-        || primary.contains("DotumChe")
-        || primary.contains("굴림체")
-        || primary.contains("GulimChe")
+    measure_char_width_embedded_decision(font_family, bold, italic, c, font_size).width_source
+        == HALFWIDTH_PUNCTUATION_WIDTH_SOURCE
 }
 
 /// 3 개 이상 연속하는 dash leader 시퀀스의 일부 여부 (Task #352).

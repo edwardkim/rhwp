@@ -2392,7 +2392,13 @@ impl Renderer for WebCanvasRenderer {
 
                 // 반각 강제 구두점: 폰트 글리프가 전각이지만 반각 공간에 배치
                 let needs_halfwidth_scale = (matches!(ch, '\u{2018}'..='\u{2027}' | '\u{00B7}')
-                    || forces_halfwidth_cjk_quote(&style.font_family, ch))
+                    || forces_halfwidth_cjk_quote(
+                        &style.font_family,
+                        style.bold,
+                        style.italic,
+                        ch,
+                        style.font_size,
+                    ))
                     && !has_ratio;
 
                 if needs_halfwidth_scale {

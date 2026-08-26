@@ -447,7 +447,13 @@ impl SkiaTextReplay<'_> {
                             // 내장 협폭 글리프로 렌더 — 오라클 PDF Type3 실측).
                             let needs_halfwidth_scale = cluster.chars().next().is_some_and(|ch| {
                                 matches!(ch, '\u{2018}'..='\u{2027}')
-                                    || forces_halfwidth_cjk_quote(&style.font_family, ch)
+                                    || forces_halfwidth_cjk_quote(
+                                        &style.font_family,
+                                        style.bold,
+                                        style.italic,
+                                        ch,
+                                        style.font_size,
+                                    )
                             }) && !has_ratio;
                             if needs_halfwidth_scale {
                                 canvas.save();
