@@ -8063,7 +8063,23 @@ impl LayoutEngine {
                             para.line_segs.first(),
                             para_start_y.get(para_index).copied(),
                         ) {
-                            para_top + hwpunit_to_px(seg.vertical_pos - seg0.vertical_pos, self.dpi)
+                            // [#5700] 되감긴 꼬리(저장 vpos 가 첫 줄보다 작음 — 한글이
+                            // 표 뒤에서 쪽을 끊은 흔적)에는 이 리셋을 적용하지 않는다.
+                            // 델타가 음수라 PP 가 문단 시작 위(쪽 상단·심하면 쪽 밖
+                            // 음수 y)로 튀어 그리기 순서가 역전된다(해양경찰청 p139:
+                            // pi759 꼬리 y 1004.9→100.1 로 리셋되어 앞 문단 위에
+                            // 그려짐 · 문화예술산업 p327: y −421). 순차 흐름(표 바닥)
+                            // 을 유지한다 — #677 의 이중 누적 방지는 정방향 델타
+                            // 케이스에만 해당한다.
+                            if seg.vertical_pos >= seg0.vertical_pos {
+                                para_top
+                                    + hwpunit_to_px(
+                                        seg.vertical_pos - seg0.vertical_pos,
+                                        self.dpi,
+                                    )
+                            } else {
+                                y_offset
+                            }
                         } else {
                             y_offset
                         }
