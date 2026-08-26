@@ -8223,10 +8223,7 @@ impl LayoutEngine {
                             // 케이스에만 해당한다.
                             if seg.vertical_pos >= seg0.vertical_pos {
                                 para_top
-                                    + hwpunit_to_px(
-                                        seg.vertical_pos - seg0.vertical_pos,
-                                        self.dpi,
-                                    )
+                                    + hwpunit_to_px(seg.vertical_pos - seg0.vertical_pos, self.dpi)
                             } else {
                                 y_offset
                             }
