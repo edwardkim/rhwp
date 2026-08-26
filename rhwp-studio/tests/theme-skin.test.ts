@@ -97,3 +97,13 @@ test('올드스쿨 스킨은 다크 모드용 베벨 토큰을 별도로 정의�
     assert.match(darkBlock[1], new RegExp(`${token}\\s*:`), `다크 블록에 ${token} 누락`);
   }
 });
+
+test('올드스쿨 스킨의 단일 행 서식 바는 양쪽 베벨을 포함해 36px을 유지한다', () => {
+  const oldschool = source('src/styles/theme-oldschool.css');
+  const styleBar = source('src/styles/style-bar.css');
+  assert.match(oldschool, /--style-bar-full-padding-top:\s*2px/);
+  assert.match(
+    styleBar,
+    /@media \(min-width: 976px\)[\s\S]*padding:\s*var\(--style-bar-full-padding-top, 3px\) 6px 3px/,
+  );
+});

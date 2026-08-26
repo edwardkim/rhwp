@@ -5,7 +5,7 @@
 - **작성일**: 2026-08-26 KST
 - **작업 브랜치**: `codex/issue-6118-responsive-style-bar`
 - **통합 기준**: `upstream/devel@6b5c4f871972380c0866e2a8d27ac2bc67d257e6`
-- **구현 상태**: Stage 2 구현·범위 내 자동 검증 완료, Stage 3 승인 대기
+- **구현 상태**: Stage 3·최종 보고 완료, #6138 통합 구현 대기
 
 ## 1. 구현 불변식
 
@@ -183,12 +183,14 @@ PDF/SVG visual sweep과 Rust 전체 회귀는 기본 게이트가 아니다.
 2. Stage 1 커밋: 기준선·콘텐츠 경계 보고서
 3. Stage 2 커밋: DOM/CSS/controller/test/E2E와 구현 보고서
 4. Stage 3 커밋: 검증·대표 증적·최종 보고서
+5. #6138 후속 커밋: 별도 계획·구현·검증을 유지하되 최종 PR은 #6118과 통합
 
-각 stage를 local commit으로 고정한 뒤 다음 단계로 간다. remote push와 PR 생성은 전체 로컬 검증 뒤
-사용자에게 별도로 승인받는다.
+각 stage를 local commit으로 고정한 뒤 다음 단계로 간다. #6118과 #6138의 이슈·문서·커밋·검증 범위는
+분리하지만, 두 작업 완료 뒤 통합 반응형 검증을 한 번 더 수행해 PR 한 건으로 제출한다. remote push와
+PR 생성은 그때 사용자에게 별도로 승인받는다.
 
 ## 10. 승인 게이트
 
-Stage 2에서 DOM wrapper, 1·2행 CSS, paragraph 더보기 controller, 정적 계약과 responsive E2E를
-구현했다. 현재 구현 상태는 **Stage 3 승인 대기**다. 다음 승인 전에는 테마 전수 시각 검증·최종 보고서와
-원격 push·PR을 수행하지 않는다.
+Stage 3에서 12개 viewport와 세 스킨의 light/dark 전수 검증, 실제 control 조작, 대표 화면과 최종
+보고서를 완료했다. #6118 구현은 로컬 완료다. 다음 단계는 #6138을 같은 브랜치의 별도 작업 단위로
+진행하는 것이며, 완료 전에는 원격 push와 PR을 수행하지 않는다.

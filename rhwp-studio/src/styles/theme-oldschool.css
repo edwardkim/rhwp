@@ -78,6 +78,8 @@
   --shadow-dropdown: 2px 2px 0 rgba(0, 0, 0, 0.35);
   --shadow-dialog: 3px 3px 0 rgba(0, 0, 0, 0.4);
   --shadow-light: 1px 1px 0 rgba(0, 0, 0, 0.3);
+  /* 단일 행 서식 바는 상·하 베벨 2px을 포함해도 36px을 유지한다. */
+  --style-bar-full-padding-top: 2px;
   /* UI 크롬 글꼴만 바꾼다 — 문서 본문 렌더링 글꼴과 무관하다. */
   --font-family-ui: Gulim, '굴림', Dotum, '돋움', 'Malgun Gothic', sans-serif;
 }

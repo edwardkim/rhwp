@@ -5,14 +5,39 @@ import { launchBrowser, loadApp, screenshot, closeBrowser, closePage, createPage
 import { TestReporter } from './report-generator.mjs';
 
 const VIEWPORTS = [
+  { name: 'wide-desktop', width: 1920, height: 1080, styleMode: 'full' },
   { name: 'desktop', width: 1280, height: 900, styleMode: 'full' },
+  { name: 'narrow-desktop', width: 1024, height: 768, styleMode: 'full' },
   { name: 'full-boundary', width: 976, height: 900, styleMode: 'full' },
   { name: 'two-row-boundary', width: 975, height: 900, styleMode: 'inline' },
+  { name: 'compact-desktop', width: 883, height: 900, styleMode: 'inline' },
   { name: 'tablet', width: 768, height: 1024, styleMode: 'inline' },
   { name: 'command-inline-boundary', width: 460, height: 900, styleMode: 'inline' },
   { name: 'command-overflow-boundary', width: 459, height: 900, styleMode: 'overflow' },
+  { name: 'mobile-wide', width: 412, height: 915, styleMode: 'overflow' },
+  { name: 'mobile-medium', width: 390, height: 844, styleMode: 'overflow' },
   { name: 'mobile', width: 375, height: 812, styleMode: 'overflow' },
 ];
+
+const THEME_LAYOUTS = [
+  { name: 'full', width: 976, height: 900, styleMode: 'full' },
+  { name: 'inline', width: 460, height: 900, styleMode: 'inline' },
+  { name: 'overflow', width: 375, height: 812, styleMode: 'overflow' },
+];
+
+const THEME_CASES = ['default', 'flat', 'oldschool'].flatMap(skin =>
+  ['light', 'dark'].flatMap(theme =>
+    THEME_LAYOUTS.map(layout => ({ ...layout, skin, theme })),
+  ),
+);
+
+async function primeTheme(page, skin = 'default', mode = 'light') {
+  await page.evaluateOnNewDocument(({ selectedSkin, selectedMode }) => {
+    localStorage.setItem('rhwp-settings', JSON.stringify({
+      theme: { mode: selectedMode, skin: selectedSkin, skinChosen: true },
+    }));
+  }, { selectedSkin: skin, selectedMode: mode });
+}
 
 async function run() {
   console.log('=== E2E: 반응형 레이아웃 테스트 ===\n');
@@ -41,6 +66,7 @@ async function run() {
     const page = await createPage(browser, vp.width, vp.height);
 
     try {
+      await primeTheme(page);
       await loadApp(page);
       await page.evaluate(() => window.__eventBus?.emit('create-new-document'));
       await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 1000)));
@@ -128,22 +154,114 @@ async function run() {
           const trigger = document.getElementById('btn-style-overflow');
           const panel = document.getElementById('style-overflow-panel');
           const command = document.getElementById('btn-align-left');
+          const paragraphButtons = Array.from(panel?.querySelectorAll('.sb-btn') ?? []);
+          const nextFrame = () => new Promise(resolve => requestAnimationFrame(resolve));
+
+          trigger?.focus();
+          trigger?.dispatchEvent(new KeyboardEvent('keydown', {
+            key: 'ArrowDown', bubbles: true, cancelable: true,
+          }));
+          await nextFrame();
+          const openedByKeyboard = trigger?.getAttribute('aria-expanded') === 'true'
+            && panel?.hidden === false
+            && document.activeElement === command;
+          window.dispatchEvent(new KeyboardEvent('keydown', {
+            key: 'Escape', bubbles: true, cancelable: true,
+          }));
+          const closedByEscape = trigger?.getAttribute('aria-expanded') === 'false'
+            && panel?.hidden === true
+            && document.activeElement === trigger;
+
+          trigger?.click();
+          await nextFrame();
+          document.body.dispatchEvent(new PointerEvent('pointerdown', {
+            bubbles: true, cancelable: true,
+          }));
+          const closedByOutside = trigger?.getAttribute('aria-expanded') === 'false'
+            && panel?.hidden === true;
+
           trigger?.click();
           await new Promise(resolve => requestAnimationFrame(resolve));
-          const opened = trigger?.getAttribute('aria-expanded') === 'true'
+          const openedByClick = trigger?.getAttribute('aria-expanded') === 'true'
             && panel?.hidden === false
             && document.activeElement === command;
           command?.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
           command?.click();
+
+          command?.classList.add('active');
+          await new Promise(resolve => setTimeout(resolve, 0));
+          const activeMirrored = trigger?.classList.contains('active') === true
+            && trigger?.getAttribute('aria-label')?.includes('현재 정렬 포함') === true;
+          command?.classList.remove('active');
+          for (const button of paragraphButtons) button.disabled = true;
+          await new Promise(resolve => setTimeout(resolve, 0));
+          const disabledMirrored = trigger?.disabled === true;
+          for (const button of paragraphButtons) button.disabled = false;
+
           return {
-            opened,
-            closed: trigger?.getAttribute('aria-expanded') === 'false' && panel?.hidden === true,
+            openedByKeyboard,
+            closedByEscape,
+            closedByOutside,
+            openedByClick,
+            closedByCommand: trigger?.getAttribute('aria-expanded') === 'false' && panel?.hidden === true,
             focusReturned: document.activeElement === trigger,
+            activeMirrored,
+            disabledMirrored,
           };
         });
-        check(tc, interaction.opened, '더보기 열기와 첫 명령 focus');
-        check(tc, interaction.closed, '명령 실행 뒤 panel 닫힘');
+        check(tc, interaction.openedByKeyboard, 'ArrowDown 열기와 첫 명령 focus');
+        check(tc, interaction.closedByEscape, 'Escape 닫기와 trigger focus 복귀');
+        check(tc, interaction.closedByOutside, '외부 pointer로 panel 닫힘');
+        check(tc, interaction.openedByClick, 'click 열기와 첫 명령 focus');
+        check(tc, interaction.closedByCommand, '명령 실행 뒤 panel 닫힘');
         check(tc, interaction.focusReturned, '명령 실행 뒤 trigger focus 복귀');
+        check(tc, interaction.activeMirrored, 'paragraph active 상태를 trigger에 표시');
+        check(tc, interaction.disabledMirrored, 'paragraph disabled 상태를 trigger에 표시');
+      }
+
+      if (vp.name === 'full-boundary') {
+        const formatting = await page.evaluate(async () => {
+          const fontSize = document.getElementById('font-size');
+          const charfxButton = document.getElementById('btn-charfx');
+          const charfxDropdown = document.getElementById('charfx-dropdown');
+          const charfxItem = document.querySelector('#charfx-menu .sb-dropdown-item');
+          const highlightButton = document.getElementById('btn-highlight');
+          const highlightDropdown = document.getElementById('highlight-dropdown');
+          const highlightSwatch = document.querySelector('#highlight-palette .sb-hl-swatch');
+          const highlightBar = document.getElementById('highlight-bar');
+          const colorPicker = document.getElementById('text-color-picker');
+          const colorBar = document.getElementById('color-bar');
+
+          fontSize.value = '12';
+          fontSize.dispatchEvent(new KeyboardEvent('keydown', {
+            key: 'Enter', bubbles: true, cancelable: true,
+          }));
+
+          charfxButton.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
+          const charfxOpened = charfxDropdown.classList.contains('open');
+          charfxItem.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
+
+          highlightButton.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
+          const highlightOpened = highlightDropdown.classList.contains('open');
+          highlightSwatch.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
+
+          colorPicker.value = '#123456';
+          colorPicker.dispatchEvent(new Event('input', { bubbles: true }));
+          await new Promise(resolve => setTimeout(resolve, 0));
+
+          return {
+            fontSizeApplied: fontSize.value === '12',
+            charfxOpened,
+            charfxClosed: !charfxDropdown.classList.contains('open'),
+            highlightOpened,
+            highlightClosed: !highlightDropdown.classList.contains('open'),
+            highlightChanged: getComputedStyle(highlightBar).backgroundColor !== 'rgb(255, 240, 0)',
+            colorChanged: getComputedStyle(colorBar).backgroundColor === 'rgb(18, 52, 86)',
+          };
+        });
+        for (const [label, value] of Object.entries(formatting)) {
+          check(tc, value, `서식 control 상호작용: ${label}`);
+        }
       }
 
       if (vp.name === 'desktop') check(tc, result.toolbarVisible, '도구 상자 표시');
@@ -157,6 +275,101 @@ async function run() {
       if (tcResults.length > 0) {
         tcResults[tcResults.length - 1].screenshot = `responsive-${vp.name}.png`;
       }
+    } catch (err) {
+      console.error(`  ERROR: ${err.message}`);
+      reporter.fail(tc, err.message);
+      failed++;
+    } finally {
+      await closePage(page);
+    }
+  }
+
+  for (const themeCase of THEME_CASES) {
+    const { skin, theme, name, width, height, styleMode } = themeCase;
+    const tc = `theme ${skin}/${theme}/${name} (${width}x${height})`;
+    console.log(`\n[theme] ${skin}/${theme}/${name} ${width}x${height}...`);
+    const page = await createPage(browser, width, height);
+
+    try {
+      await primeTheme(page, skin, theme);
+      await loadApp(page);
+      await page.evaluate(() => window.__eventBus?.emit('create-new-document'));
+      await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 400)));
+
+      const result = await page.evaluate(async (expectedStyleMode) => {
+        const root = document.documentElement;
+        const styleBar = document.getElementById('style-bar');
+        const field = styleBar.querySelector('.sb-field-ribbon-group');
+        const command = styleBar.querySelector('.sb-command-track');
+        const trigger = document.getElementById('btn-style-overflow');
+        const panel = document.getElementById('style-overflow-panel');
+        const firstParagraph = document.getElementById('btn-align-left');
+        const button = document.getElementById('btn-bold');
+        const top = element => Math.round(element.getBoundingClientRect().top);
+        const rows = new Set([top(field), top(command)]).size;
+        const parseRgb = value => (value.match(/[\d.]+/g) ?? []).slice(0, 3).map(Number);
+        const luminance = ([r, g, b]) => {
+          const linear = [r, g, b].map(channel => {
+            const normalized = channel / 255;
+            return normalized <= 0.03928
+              ? normalized / 12.92
+              : ((normalized + 0.055) / 1.055) ** 2.4;
+          });
+          return 0.2126 * linear[0] + 0.7152 * linear[1] + 0.0722 * linear[2];
+        };
+        const contrast = (foreground, background) => {
+          const a = luminance(parseRgb(foreground));
+          const b = luminance(parseRgb(background));
+          return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+        };
+        const barStyle = getComputedStyle(styleBar);
+        const buttonStyle = getComputedStyle(button);
+        let panelState = null;
+        if (expectedStyleMode === 'overflow') {
+          trigger.click();
+          await new Promise(resolve => requestAnimationFrame(resolve));
+          const panelStyle = getComputedStyle(panel);
+          panelState = {
+            visible: panel.hidden === false && panel.getClientRects().length > 0,
+            focused: document.activeElement === firstParagraph,
+            background: panelStyle.backgroundColor,
+            borderWidth: parseFloat(panelStyle.borderTopWidth),
+            textContrast: contrast(getComputedStyle(firstParagraph).color, panelStyle.backgroundColor),
+          };
+        }
+        return {
+          themeMode: root.dataset.themeMode,
+          effectiveTheme: root.dataset.themeEffective,
+          skin: root.dataset.themeSkin ?? 'default',
+          rows,
+          barHeight: styleBar.offsetHeight,
+          rootOverflow: root.scrollWidth - root.clientWidth,
+          styleOverflow: styleBar.scrollWidth - styleBar.clientWidth,
+          barBackground: barStyle.backgroundColor,
+          barBorderWidth: parseFloat(barStyle.borderBottomWidth),
+          iconContrast: contrast(buttonStyle.color, barStyle.backgroundColor),
+          panelState,
+        };
+      }, styleMode);
+
+      check(tc, result.themeMode === theme, `theme mode=${result.themeMode}`);
+      check(tc, result.effectiveTheme === theme, `effective theme=${result.effectiveTheme}`);
+      check(tc, result.skin === skin, `skin=${result.skin}`);
+      check(tc, result.rows === (styleMode === 'full' ? 1 : 2), `행 수=${result.rows}`);
+      check(tc, styleMode !== 'full' || result.barHeight <= 36, `전체 압축 높이=${result.barHeight}px`);
+      check(tc, result.rootOverflow <= 0 && result.styleOverflow <= 0, '가로 overflow 없음');
+      check(tc, result.barBackground !== 'rgba(0, 0, 0, 0)', `bar 배경=${result.barBackground}`);
+      check(tc, result.barBorderWidth >= 1, `bar 경계=${result.barBorderWidth}px`);
+      check(tc, result.iconContrast >= 3, `icon contrast=${result.iconContrast.toFixed(2)}`);
+      if (styleMode === 'overflow') {
+        check(tc, result.panelState?.visible, '더보기 panel 표시');
+        check(tc, result.panelState?.focused, '더보기 첫 명령 focus');
+        check(tc, result.panelState?.background !== 'rgba(0, 0, 0, 0)', `panel 배경=${result.panelState?.background}`);
+        check(tc, result.panelState?.borderWidth >= 1, `panel 경계=${result.panelState?.borderWidth}px`);
+        check(tc, result.panelState?.textContrast >= 3, `panel contrast=${result.panelState?.textContrast.toFixed(2)}`);
+      }
+
+      await screenshot(page, `responsive-theme-${skin}-${theme}-${name}`);
     } catch (err) {
       console.error(`  ERROR: ${err.message}`);
       reporter.fail(tc, err.message);

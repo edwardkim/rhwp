@@ -749,7 +749,7 @@
     align-content: center;
     justify-content: flex-start;
     gap: 0;
-    padding: 3px 6px;
+    padding: var(--style-bar-full-padding-top, 3px) 6px 3px;
   }
 
   .sb-field-ribbon-group {
