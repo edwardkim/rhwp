@@ -494,6 +494,15 @@ fn handle_start(e: &quick_xml::events::BytesStart, chart: &mut OoxmlChart, st: &
         b"spPr" => st.in_sp_pr = true,
         b"solidFill" => st.in_solid_fill = true,
         b"ln" => st.in_ln = true,
+        // [#6053] `c:spPr > a:ln > a:noFill` — 선 없음. `a:ln` 안일 때만 본다
+        // (`spPr > noFill` 은 면 채움 없음이라 뜻이 다르다). 주식형 렌더러가 소비한다.
+        b"noFill" => {
+            if st.in_sp_pr && st.in_ln {
+                if let Some(ser) = st.cur_series.as_mut() {
+                    ser.line_none = true;
+                }
+            }
+        }
         b"srgbClr" => {
             if st.in_sp_pr && (st.in_solid_fill || st.in_ln) {
                 if let Some(val) = attr_val(e, "val") {

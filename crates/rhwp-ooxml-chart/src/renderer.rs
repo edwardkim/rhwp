@@ -928,6 +928,27 @@ fn render_stock(svg: &mut String, chart: &OoxmlChart, px: f64, py: f64, pw: f64,
         }
     }
 
+    // [#6053] 계열 선: `a:ln > a:noFill` 이 없는 계열만. 코퍼스 주식형은 계열 전건이
+    // noFill 이라 아무것도 안 그려지고(기존 그림 불변), 한컴 편집기가 새로 더한 계열처럼
+    // 표기가 없는 계열만 선을 얻는다 — 한컴이 그 계열을 선으로 그리는 것과 같다.
+    // 고저선·캔들 위, 마커 아래에 둔다.
+    for (si, ser) in chart.series.iter().enumerate() {
+        if ser.line_none || ser.values.is_empty() {
+            continue;
+        }
+        let points: Vec<(f64, f64)> = ser
+            .values
+            .iter()
+            .enumerate()
+            .map(|(ci, &v)| (px + cat_span * (ci as f64 + 0.5), y_of(v)))
+            .collect();
+        svg.push_str(&format!(
+            "<path d=\"{}\" fill=\"none\" stroke=\"{}\" stroke-width=\"2\"/>\n",
+            polyline_path(&points),
+            series_color(ser, si)
+        ));
+    }
+
     // 마커: Auto/Named 계열만 (코퍼스 = 종가만 Auto). 고저선/캔들 위에 그린다.
     for (si, ser) in chart.series.iter().enumerate() {
         if !matches!(
@@ -2894,6 +2915,9 @@ mod tests {
             values,
             marker_symbol: marker,
             series_type: OoxmlChartType::Stock,
+            // [#6053] 코퍼스 주식형은 계열 전건이 `a:ln > a:noFill` 이라 선이 없다.
+            // 픽스처가 이를 빠뜨리면 실물과 달라져 선이 그려진다.
+            line_none: true,
             ..Default::default()
         };
         let mut series = Vec::new();
@@ -2994,8 +3018,8 @@ mod tests {
     }
 
     #[test]
-    fn test_stock_unusual_series_count_still_draws_hilow() {
-        // [#6053] 계열 수는 역할을 정하지 않는다 — 고저선은 전 계열 최소↔최대라 3·4 밖에서도
+    fn test_stock_series_count_and_line_are_independent() {
+        // [#6053] ① 계열 수는 역할을 정하지 않는다 — 고저선은 전 계열 최소↔최대라 3·4 밖에서도
         // 그려진다. 예전에는 여기서 render_line 으로 폴백했는데, 한컴은 5계열에서도 주식형으로
         // 그린다는 실측이 그 규약을 반증했다(pdf/issue6037/engine/시가고가저가종가-중간계열추가).
         let mut chart = stock_chart(3);
@@ -3009,6 +3033,28 @@ mod tests {
         // upDownBars 가 없는 픽스처(n != 4)라 몸통은 서지 않는다.
         assert_eq!(svg.matches("hwp-stock-candle").count(), 0);
         assert!(!svg.contains("hwp-ooxml-chart-fallback"));
+
+        // ② 계열 선은 `a:ln > a:noFill` 표기가 가른다. 코퍼스 주식형은 전건이 그 표기를 달고
+        // 있어 선이 없고(고저선·캔들이 그림을 만든다), 표기가 없는 계열 — 한컴 편집기가 새로
+        // 더한 계열이 그렇다 — 만 선을 얻는다. 한컴이 그 계열을 선으로 그리는 것과 같다.
+        let mut with_line = stock_chart(4);
+        assert_eq!(
+            data_line_paths(&render_chart_svg(&with_line, 0.0, 0.0, 400.0, 300.0)).len(),
+            0,
+            "코퍼스 구성(전건 noFill)은 계열 선이 없다",
+        );
+        with_line.series.push(OoxmlSeries {
+            name: "새 계열".into(),
+            values: vec![11.0, 11.0, 11.0, 11.0],
+            series_type: OoxmlChartType::Stock,
+            line_none: false,
+            ..Default::default()
+        });
+        assert_eq!(
+            data_line_paths(&render_chart_svg(&with_line, 0.0, 0.0, 400.0, 300.0)).len(),
+            1,
+            "noFill 표기가 없는 계열만 선을 얻는다",
+        );
     }
 
     // --- C2a (#2277) stage3: 범례 순서 규칙 (정답지 28종 전수 실측 — 예외 0) ---
