@@ -67,6 +67,9 @@ export const defaultShortcuts: [ShortcutDef, string][] = [
   [{ key: '-', ctrl: true }, 'view:zoom-out'],
   [{ key: '0', ctrl: true }, 'view:zoom-100'],
 
+  // 도구 상자 (한글 2024 호환)
+  [{ key: 'f1', ctrl: true }, 'view:toolbox-basic'],
+
   // 검색
   [{ key: 'f', ctrl: true }, 'edit:find'],
   [{ key: 'f2', ctrl: true }, 'edit:find-replace'],

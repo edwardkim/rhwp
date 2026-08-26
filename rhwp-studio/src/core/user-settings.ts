@@ -170,7 +170,7 @@ function defaultSettings(): AppSettings {
       showParagraphMarks: false,
       showControlCodes: false,
       clipView: true,
-      toolbarBasic: true,
+      toolbarBasic: false,
       toolbarFormat: true,
       pageArrangement: { kind: 'auto' },
       pageMovement: { ...DEFAULT_PAGE_MOVEMENT },
