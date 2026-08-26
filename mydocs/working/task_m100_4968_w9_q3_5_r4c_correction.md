@@ -4,8 +4,8 @@
 - 최종 갱신: 2026-08-27 KST
 - 작업 브랜치: `task_m100_4968`
 - 선행 커밋: `9f8eb7f16` R4B common exact kerning run measurement
-- 통합 기준: `upstream/devel@381785208d6c`, merge `828d0a8ab`
-- 상태: **R4C-0..R4C-3 완료, R4C-4 검증·보고 완료·결과 승인 대기**
+- 최신 통합 기준: `upstream/devel@9be8b0562`, merge `dda3eb075`
+- 상태: **R4C-0..R4C-4 단계 커밋·최신 devel 병합 후 재검증 결과 승인, 증적 마감**
 - 이번 감사의 제품 source 변경: 0
 
 ## 1. 결론
