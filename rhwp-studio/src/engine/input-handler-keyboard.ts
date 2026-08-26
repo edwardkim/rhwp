@@ -432,7 +432,15 @@ export function scrollByPageKey(
   const beforeRect: CursorRect | null = caretRectForPageScroll.call(this);
   const result = scrollByPageStep(this.virtualScroll, this.viewportManager, direction);
   if (!result.moved) return false;
-  if (beforeRect) moveCaretWithPageScroll.call(this, beforeRect, result.delta, extendSelection);
+  if (beforeRect) {
+    moveCaretWithPageScroll.call(
+      this,
+      beforeRect,
+      result.deltaX,
+      result.deltaY,
+      extendSelection,
+    );
+  }
   return true;
 }
 
@@ -474,15 +482,17 @@ function caretRectForPageScroll(this: any): CursorRect | null {
 
 /**
  * 스크롤 뒤, 스크롤 전 캐럿이 있던 **화면 위치**에 해당하는 문서 위치로 캐럿을 옮긴다.
- * 내용이 `delta` 만큼 위로 흘렀으니, 같은 화면 자리는 문서 좌표로 `delta` 만큼 아래다.
+ * 내용이 `deltaX`/`deltaY` 만큼 왼쪽/위로 흘렀으니, 같은 화면 자리는 문서 좌표로
+ * 각각 그 변화량만큼 오른쪽/아래다.
  */
 function moveCaretWithPageScroll(
   this: any,
   beforeRect: CursorRect,
-  delta: number,
+  deltaX: number,
+  deltaY: number,
   extendSelection: boolean,
 ): void {
-  const hit = hitTestAfterPageScroll.call(this, beforeRect, delta);
+  const hit = hitTestAfterPageScroll.call(this, beforeRect, deltaX, deltaY);
   // hit 이 없으면(여백·빈 쪽에 떨어짐) 캐럿을 그대로 둔다 — 화면 이동만으로도
   // 읽기는 되고, 엉뚱한 위치로 옮기는 것보다 낫다.
   if (!hit) return;
@@ -500,11 +510,12 @@ function moveCaretWithPageScroll(
   if (extendSelection) this.updateSelection();
 }
 
-/** 스크롤 전 캐럿 rect + 스크롤 변화량 → 스크롤 후 같은 화면 자리의 문서 위치. */
+/** 스크롤 전 캐럿 rect + X/Y 스크롤 변화량 → 스크롤 후 같은 화면 자리의 문서 위치. */
 function hitTestAfterPageScroll(
   this: any,
   beforeRect: CursorRect,
-  delta: number,
+  deltaX: number,
+  deltaY: number,
 ): DocumentPosition | null {
   const scrollContent = this.container.querySelector('#scroll-content');
   if (!scrollContent) return null;
@@ -523,8 +534,8 @@ function hitTestAfterPageScroll(
   // 스크롤 후의 화면 좌표가 된다.
   const contentRect = scrollContent.getBoundingClientRect();
   return this.hitTestFromClientPoint(
-    contentRect.left + contentX,
-    contentRect.top + contentY + delta,
+    contentRect.left + contentX + deltaX,
+    contentRect.top + contentY + deltaY,
   );
 }
 

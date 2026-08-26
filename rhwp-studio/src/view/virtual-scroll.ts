@@ -259,27 +259,24 @@ export class VirtualScroll {
     scrollX = 0,
     viewportWidth = 0,
   ): number[] {
-    if (this.horizontalMode) {
-      const vpLeft = scrollX;
-      const vpRight = viewportWidth > 0 ? scrollX + viewportWidth : Infinity;
-      const visible: number[] = [];
-      for (let pageIdx = 0; pageIdx < this.pageLefts.length; pageIdx++) {
-        const pageLeft = this.pageLefts[pageIdx];
-        const pageRight = pageLeft + this.pageWidths[pageIdx];
-        if (pageLeft < vpRight && pageRight > vpLeft) visible.push(pageIdx);
-      }
-      return visible;
-    }
-
     const vpTop = scrollY;
     const vpBottom = scrollY + viewportHeight;
+    const vpLeft = scrollX;
+    const vpRight = viewportWidth > 0 ? scrollX + viewportWidth : Infinity;
     const visible: number[] = [];
 
     for (let i = 0; i < this.pageOffsets.length; i++) {
       const pageTop = this.pageOffsets[i];
       const pageBottom = pageTop + this.pageHeights[i];
+      const pageLeft = this.getPageLeftResolved(i, this.totalWidth);
+      const pageRight = pageLeft + this.pageWidths[i];
 
-      if (pageTop < vpBottom && pageBottom > vpTop) {
+      if (
+        pageTop < vpBottom
+        && pageBottom > vpTop
+        && pageLeft < vpRight
+        && pageRight > vpLeft
+      ) {
         visible.push(i);
       }
     }

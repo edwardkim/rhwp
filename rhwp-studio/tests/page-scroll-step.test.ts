@@ -26,11 +26,26 @@ function pages(n: number, width = 800, height = PAGE_HEIGHT) {
 /** setScrollTop/getScrollY 만 쓰는 ViewportManager 대역. */
 function fakeViewport(height = VIEWPORT_HEIGHT) {
   let scrollY = 0;
+  let scrollX = 0;
   return {
     getScrollY: () => scrollY,
+    getScrollX: () => scrollX,
     getViewportSize: () => ({ width: 1000, height }),
     setScrollTop: (y: number) => { scrollY = y; },
-  } as unknown as ViewportManager & { getScrollY(): number };
+    setScrollLeft: (x: number) => { scrollX = x; },
+  } as unknown as ViewportManager & { getScrollY(): number; getScrollX(): number };
+}
+
+function fakeHorizontalViewport(width: number, height = VIEWPORT_HEIGHT) {
+  let scrollY = 0;
+  let scrollX = 0;
+  return {
+    getScrollY: () => scrollY,
+    getScrollX: () => scrollX,
+    getViewportSize: () => ({ width, height }),
+    setScrollTop: (y: number) => { scrollY = y; },
+    setScrollLeft: (x: number) => { scrollX = x; },
+  } as unknown as ViewportManager & { getScrollY(): number; getScrollX(): number };
 }
 
 /** 단일 컬럼(zoom 1.0). 쪽 높이 1000 > 뷰포트 700 이라 쪽이 화면보다 크다. */
@@ -51,6 +66,9 @@ function pageFitsViewport(pageCount: number) {
 
 /** 행 위쪽 여백이 시작되는 문서 Y — 화면을 여기 맞추면 그 쪽 머리부터 보인다. */
 const rowTop = (vs: VirtualScroll, page: number) => vs.getPageOffset(page) - GAP;
+const pageLeft = (vs: VirtualScroll, page: number) => (
+  vs.getPageLeftResolved(page, vs.getTotalWidth()) - GAP
+);
 
 test('쪽이 화면 안에 들어오면 한 번에 다음 쪽 머리로 간다', () => {
   const vs = pageFitsViewport(5);
@@ -148,7 +166,11 @@ test('문서 끝에서는 마지막 쪽 아래까지 붙이고 멈춘다', () =>
   const bottom = vs.getTotalHeight() - VIEWPORT_HEIGHT;
   for (let i = 0; i < 30 && scrollByPageStep(vs, vm, 1).moved; i++) { /* 끝까지 */ }
   assert.equal(vm.getScrollY(), bottom, '마지막 쪽의 안 보인 아래쪽까지 보여준다');
-  assert.deepEqual(scrollByPageStep(vs, vm, 1), { moved: false, delta: 0 });
+  assert.deepEqual(scrollByPageStep(vs, vm, 1), {
+    moved: false,
+    deltaX: 0,
+    deltaY: 0,
+  });
 });
 
 test('문서 처음에서는 맨 위까지만 간다', () => {
@@ -157,7 +179,11 @@ test('문서 처음에서는 맨 위까지만 간다', () => {
   scrollByPageStep(vs, vm, 1);
   assert.equal(scrollByPageStep(vs, vm, -1).moved, true);
   assert.equal(vm.getScrollY(), 0, '첫 쪽 위쪽 여백까지 되돌아온다');
-  assert.deepEqual(scrollByPageStep(vs, vm, -1), { moved: false, delta: 0 });
+  assert.deepEqual(scrollByPageStep(vs, vm, -1), {
+    moved: false,
+    deltaX: 0,
+    deltaY: 0,
+  });
 });
 
 test('그리드 모드는 쪽이 아니라 행 단위로 움직인다 (#2560)', () => {
@@ -186,22 +212,98 @@ test('맞쪽 PageDown은 첫 빈 슬롯과 마지막 단독 행을 포함한 모
   }
 });
 
-test('delta 는 실제 스크롤 변화량이다 — 캐럿을 같은 화면 자리에 붙이는 근거', () => {
+test('세로 이동 delta는 실제 Y 스크롤 변화량이다 — 캐럿을 같은 화면 자리에 붙이는 근거', () => {
   const vs = singleColumn(5);
   const vm = fakeViewport();
   const before = vm.getScrollY();
   const result = scrollByPageStep(vs, vm, 1);
-  assert.equal(result.delta, vm.getScrollY() - before);
+  assert.equal(result.deltaX, 0);
+  assert.equal(result.deltaY, vm.getScrollY() - before);
 
   const beforeUp = vm.getScrollY();
   const up = scrollByPageStep(vs, vm, -1);
-  assert.equal(up.delta, vm.getScrollY() - beforeUp);
-  assert.ok(up.delta < 0, 'PgUp 의 delta 는 음수다');
+  assert.equal(up.deltaX, 0);
+  assert.equal(up.deltaY, vm.getScrollY() - beforeUp);
+  assert.ok(up.deltaY < 0, 'PgUp 의 deltaY 는 음수다');
+});
+
+test('가로 이동은 X축 페이지 경계와 화면 폭을 따라 이동한다', () => {
+  const viewportWidth = 600;
+  const vs = new VirtualScroll(GAP);
+  vs.setPageDimensions(
+    pages(3, 800, 1000),
+    1,
+    viewportWidth,
+    { kind: 'single' },
+    'horizontal',
+    VIEWPORT_HEIGHT,
+  );
+  assert.equal(vs.isHorizontalMode(), true);
+
+  const vm = fakeHorizontalViewport(viewportWidth);
+  const visited = new Set<number>([vm.getScrollX()]);
+  let previous = vm.getScrollX();
+  for (let i = 0; i < 20; i++) {
+    const result = scrollByPageStep(vs, vm, 1);
+    if (!result.moved) break;
+    assert.equal(result.deltaY, 0);
+    assert.equal(result.deltaX, vm.getScrollX() - previous);
+    assert.ok(result.deltaX > 0 && result.deltaX <= viewportWidth + 0.5);
+    visited.add(vm.getScrollX());
+    previous = vm.getScrollX();
+  }
+
+  for (let page = 0; page < vs.pageCount; page++) {
+    assert.ok(visited.has(pageLeft(vs, page)), `${page + 1}쪽 왼쪽 경계를 지나야 한다`);
+  }
+  assert.equal(vm.getScrollX(), vs.getTotalWidth() - viewportWidth);
+  assert.deepEqual(scrollByPageStep(vs, vm, 1), {
+    moved: false,
+    deltaX: 0,
+    deltaY: 0,
+  });
+});
+
+test('가로 PageUp은 한 화면 이내로 이동하며 모든 페이지 왼쪽 경계를 지난다', () => {
+  const viewportWidth = 600;
+  const vs = new VirtualScroll(GAP);
+  vs.setPageDimensions(
+    pages(4, 800, 1000),
+    1,
+    viewportWidth,
+    { kind: 'single' },
+    'horizontal',
+    VIEWPORT_HEIGHT,
+  );
+  const vm = fakeHorizontalViewport(viewportWidth);
+  while (scrollByPageStep(vs, vm, 1).moved) { /* 문서 오른쪽 끝까지 */ }
+
+  const visited = new Set<number>([vm.getScrollX()]);
+  let previous = vm.getScrollX();
+  for (let i = 0; i < 30; i++) {
+    const result = scrollByPageStep(vs, vm, -1);
+    if (!result.moved) break;
+    assert.equal(result.deltaY, 0);
+    assert.equal(result.deltaX, vm.getScrollX() - previous);
+    assert.ok(result.deltaX < 0 && -result.deltaX <= viewportWidth + 0.5);
+    visited.add(vm.getScrollX());
+    previous = vm.getScrollX();
+  }
+
+  assert.equal(vm.getScrollX(), 0);
+  for (let page = 0; page < vs.pageCount; page++) {
+    assert.ok(visited.has(pageLeft(vs, page)), `${page + 1}쪽 왼쪽 경계를 지나야 한다`);
+  }
+  assert.equal(vm.getScrollY(), 0, '가로 이동 PageUp은 Y overflow를 섞지 않는다');
 });
 
 test('문서가 없으면 아무 것도 하지 않는다', () => {
   const vs = new VirtualScroll(GAP);
   const vm = fakeViewport();
-  assert.deepEqual(scrollByPageStep(vs, vm, 1), { moved: false, delta: 0 });
+  assert.deepEqual(scrollByPageStep(vs, vm, 1), {
+    moved: false,
+    deltaX: 0,
+    deltaY: 0,
+  });
   assert.equal(vm.getScrollY(), 0);
 });

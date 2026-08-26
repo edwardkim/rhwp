@@ -34,6 +34,10 @@ import {
   type ZoomAnchor,
   type ZoomPageBox,
 } from './zoom-anchor.ts';
+import {
+  resolveActivePage,
+  type ActivePageSnapshot,
+} from './active-page.ts';
 
 /** 문서 교체 중 보여줄 빈 쪽 기본 크기(A4, zoom 1 기준 CSS px). 이전 문서 쪽 크기를 모를 때만 쓴다. */
 const BLANK_PAGE_FALLBACK_SIZE = { width: 794, height: 1123 };
@@ -62,6 +66,8 @@ export class CanvasView {
   private pageMovement: PageMovementSettings;
   private pages: PageInfo[] = [];
   private currentVisiblePages: number[] = [];
+  private editingPageIndex: number | null = null;
+  private activePageSnapshot: ActivePageSnapshot | null = null;
   private unsubscribers: (() => void)[] = [];
   private pendingTextEditRefreshes = new Map<number, PageRenderContext>();
   private textEditRefreshRafId: number | null = null;
@@ -135,6 +141,19 @@ export class CanvasView {
         void this.refreshPagesForRevision();
       }),
       eventBus.on('grid-view-changed', () => this.refreshGridOverlays()),
+      eventBus.on('cursor-rect-updated', (payload) => {
+        const pageIndex = this.pageIndexFromPayload(payload);
+        if (pageIndex !== null) this.setEditingPageIndex(pageIndex);
+      }),
+      eventBus.on('editing-page-changed', (payload) => {
+        this.setEditingPageIndex(this.pageIndexFromPayload(payload));
+      }),
+      eventBus.on('picture-object-selection-changed', (selected) => {
+        if (selected === false) this.setEditingPageIndex(null);
+      }),
+      eventBus.on('table-object-selection-changed', (selected) => {
+        if (selected === false) this.setEditingPageIndex(null);
+      }),
     );
   }
 
@@ -284,8 +303,14 @@ export class CanvasView {
     }
     this.refreshPages();
     const scrollY = this.viewportManager.getScrollY();
+    const scrollX = this.viewportManager.getScrollX();
     const viewport = this.viewportManager.getViewportSize();
-    const visiblePages = this.virtualScroll.getVisiblePages(scrollY, viewport.height);
+    const visiblePages = this.virtualScroll.getVisiblePages(
+      scrollY,
+      viewport.height,
+      scrollX,
+      viewport.width,
+    );
     const failed = visiblePages.filter(pageIndex => !this.canvasPool.has(pageIndex));
     if (visiblePages.length === 0 || failed.length > 0) {
       throw new Error(`document-agent visible page render 실패: ${failed.join(',') || 'none'}`);
@@ -486,22 +511,57 @@ export class CanvasView {
     }
     this.schedulePrefetchPages(prefetchPages.filter((pageIdx) => !visibleSet.has(pageIdx)));
 
-    // 현재 페이지 번호 갱신
-    if (visiblePages.length > 0) {
-      const vpCenter = scrollY + vpHeight / 2;
-      // [#2560] 그리드 모드에서 getPageAtY 는 행의 마지막 쪽을 준다. 상태바가
-      // 3열이면 첫 행에서 "3 / N" 으로 표시되고 1·2쪽은 현재 쪽이 될 수 없었다.
-      const currentPage = this.virtualScroll.isHorizontalMode()
-        ? this.virtualScroll.getPageAtPoint(scrollX + vpWidth / 2, vpCenter)
-        : this.virtualScroll.getRowFirstPageAtY(vpCenter);
+    this.currentVisiblePages = visiblePages;
+    this.updateActivePageSnapshot();
+  }
+
+  private pageIndexFromPayload(payload: unknown): number | null {
+    const value = typeof payload === 'object' && payload !== null && 'pageIndex' in payload
+      ? (payload as { pageIndex?: unknown }).pageIndex
+      : payload;
+    if (typeof value !== 'number' || !Number.isInteger(value) || value < 0) return null;
+    return value;
+  }
+
+  private setEditingPageIndex(pageIndex: number | null): void {
+    if (this.editingPageIndex === pageIndex) return;
+    this.editingPageIndex = pageIndex;
+    this.updateActivePageSnapshot();
+    // 눈금자는 순수 스크롤의 viewport fallback이 아니라 마지막 편집 focus를 따른다.
+    // current-page-changed와 렌더 가시성은 위 active snapshot 계약을 계속 사용한다.
+    this.eventBus.emit('focused-page-changed', pageIndex);
+  }
+
+  /** 캐럿·개체 선택과 스크롤이 공유하는 활성 페이지 판정·발행 관문. */
+  private updateActivePageSnapshot(): void {
+    const viewport = this.viewportManager.getViewportSize();
+    const viewportCenterX = this.viewportManager.getScrollX() + viewport.width / 2;
+    const viewportCenterY = this.viewportManager.getScrollY() + viewport.height / 2;
+    const viewportPageIndex = this.currentVisiblePages.length > 0
+      ? this.virtualScroll.getPageAtPoint(viewportCenterX, viewportCenterY)
+      : null;
+    const next = resolveActivePage({
+      pageCount: this.virtualScroll.pageCount,
+      visiblePages: this.currentVisiblePages,
+      editingPageIndex: this.editingPageIndex,
+      viewportPageIndex,
+    });
+    const snapshotChanged = !(
+      next?.pageIndex === this.activePageSnapshot?.pageIndex
+      && next?.source === this.activePageSnapshot?.source
+    );
+
+    this.activePageSnapshot = next;
+    if (snapshotChanged) this.eventBus.emit('active-page-changed', next);
+    // 전체 쪽 수·구역 쪽번호가 pagination으로 바뀔 수 있으므로 snapshot이 같아도
+    // 기존 상태 표시줄 이벤트는 매 visible-page 갱신마다 유지한다.
+    if (next) {
       this.eventBus.emit(
         'current-page-changed',
-        currentPage,
+        next.pageIndex,
         this.virtualScroll.pageCount,
       );
     }
-
-    this.currentVisiblePages = visiblePages;
   }
 
   /** 스크롤 중에는 다음 페이지의 선렌더를 idle time으로 미룬다. */
@@ -1003,12 +1063,18 @@ export class CanvasView {
 
   /** 리소스를 정리한다 */
   private reset(): void {
+    const hadActivePage = this.activePageSnapshot !== null;
+    const hadFocusedPage = this.editingPageIndex !== null;
     this.cancelPendingTextEditRefresh();
     this.cancelTextEditStaticLayerVerification();
     this.cancelPendingPrefetch();
     this.pageRenderer.cancelAll();
     this.releaseAllRenderedPages();
     this.currentVisiblePages = [];
+    this.editingPageIndex = null;
+    this.activePageSnapshot = null;
+    if (hadActivePage) this.eventBus.emit('active-page-changed', null);
+    if (hadFocusedPage) this.eventBus.emit('focused-page-changed', null);
     this.pages = [];
     this.scrollContent.replaceChildren();
     this.blankPagePlaceholder = null;
