@@ -5,7 +5,7 @@
 - **작성일**: 2026-08-26 KST
 - **작업 브랜치**: `codex/issue-6118-responsive-style-bar`
 - **통합 기준**: `upstream/devel@6b5c4f871972380c0866e2a8d27ac2bc67d257e6`
-- **구현 상태**: 재작성 계획 승인 대기, 제품 코드 변경 0건
+- **구현 상태**: Stage 1 계측 완료, Stage 2 승인 대기, 제품 코드 변경 0건
 
 ## 1. 구현 불변식
 
@@ -74,7 +74,7 @@ listener와 active state의 authority가 하나로 유지된다.
 
 ### 4.2 전체 압축 1행
 
-Stage 1에서 정한 `FULL_ROW_MIN` 이상에 하나의 media/container 경계를 둔다.
+Stage 1에서 고정한 `FULL_ROW_MIN=976px` 이상에 하나의 media/container 경계를 둔다.
 
 - `#style-bar`: flex row, nowrap, 중앙 정렬, 높이 36px 이하
 - field group과 command track을 같은 행에 배치
@@ -82,23 +82,25 @@ Stage 1에서 정한 `FULL_ROW_MIN` 이상에 하나의 media/container 경계�
 - 기존 27px field와 button 밀도를 우선 재사용
 - 1행 경계에서는 `scrollWidth <= clientWidth`와 모든 group top 좌표 동일을 검사
 
-`FULL_ROW_MIN`은 1280/1024 같은 device 이름으로 선택하지 않는다. 압축한 모든 group의 실제
-`getBoundingClientRect()` union width에 theme border와 안전 여백을 더한 정수로 고정하고 ±1px E2E를 둔다.
+`FULL_ROW_MIN`은 1280/1024 같은 device 이름으로 선택하지 않았다. field/character/color/paragraph의
+실측 콘텐츠 949.84px, bar padding과 group border 16px, 안전 여백 10.16px을 합한 976px이며 975/976px
+E2E를 둔다. 상세 근거는 [Stage 1 보고서](../working/task_m100_6118_stage1.md)를 따른다.
 
 ### 4.3 좁은 field 행
 
 지원 최소 375px에서 다음 순서로 폭을 줄인다.
 
-1. 글꼴 field를 `minmax()`의 유연 열로 사용
-2. style/language의 고정 폭과 grid gap을 소폭 축소
+1. 글꼴 field를 `minmax(81px, 1fr)`의 유연 열로 사용
+2. style/language track 68/54px과 4px gap은 유지하고 child control을 track 폭에 맞춤
 3. size/line-spacing의 현재 cohesive control shell은 유지
 4. label은 ellipsis를 허용하되 input의 접근성 이름은 유지
 
-375px에서 `#style-bar.scrollWidth <= clientWidth`를 통과해야 하며 page 전체에 수평 scrollbar를 만들지 않는다.
+375px의 내부 363px은 `68 + 54 + 81 + 72 + 72 + 16px gaps`로 정확히 맞춘다. 이때
+`#style-bar.scrollWidth <= clientWidth`를 통과해야 하며 page 전체에 수평 scrollbar를 만들지 않는다.
 
 ### 4.4 command 더보기
 
-Stage 1에서 정한 `COMMAND_INLINE_MIN` 아래에서만 다음을 적용한다.
+Stage 1에서 정한 `COMMAND_INLINE_MIN=460px` 아래에서만 다음을 적용한다.
 
 - character/color group과 더보기 버튼은 둘째 행에 유지
 - paragraph group은 `#style-overflow-panel` 안에서 표시
@@ -108,9 +110,8 @@ Stage 1에서 정한 `COMMAND_INLINE_MIN` 아래에서만 다음을 적용한다
 - 외부 click·Escape·command 실행 후 닫고 trigger로 focus 복귀
 - viewport가 넓어져 paragraph가 inline으로 돌아가면 열린 panel을 닫고 `aria-expanded=false`로 동기화
 
-지원 최소 375px에서는 character/color 약 251px과 더보기 버튼이 한 행에 들어가므로 paragraph group 하나를
-overflow 후보로 두는 것으로 충분한지 Stage 1에서 재확인한다. 부족하면 command를 개별 복제하지 않고
-color group을 두 번째 후보로 추가한다.
+지원 최소 375px에서 character/color 251px, gap 5px, 더보기 38px, bar padding 12px의 합은 306px이다.
+따라서 paragraph group 하나만 overflow 후보로 두는 것으로 충분하며 color group은 inline에 유지한다.
 
 ## 5. 접근성·상태 계약
 
@@ -136,12 +137,11 @@ color group을 두 번째 후보로 추가한다.
 
 | viewport | 핵심 판정 |
 | --- | --- |
-| 1920×1080 | 전체 압축 1행, 모든 command inline |
-| 1280×900 | 전체 압축 1행 또는 측정 경계 결과 |
-| `FULL_ROW_MIN ±1` | 정확히 1행↔2행 전환, overflow 없음 |
-| 1024×768 / 883×900 / 768×1024 | field+command 2행, track 비확장 |
-| `COMMAND_INLINE_MIN ±1` | paragraph inline↔더보기 전환 |
-| 460×900 / 412×915 / 390×844 / 375×812 | 최대 2행, field 무 overflow, 더보기 command 실행 |
+| 1920×1080 / 1280×900 / 1024×768 | 전체 압축 1행, 모든 command inline |
+| 975px / 976px | 정확히 2행↔1행 전환, overflow 없음 |
+| 883×900 / 768×1024 / 460×900 | field+command 2행, 모든 command inline, track 비확장 |
+| 459px / 460px | paragraph 더보기↔inline 전환 |
+| 459×900 / 412×915 / 390×844 / 375×812 | 최대 2행, field 무 overflow, 더보기 command 실행 |
 
 각 viewport에서 style bar height, group top 좌표 수, `scrollWidth/clientWidth`, field/command 가시성,
 더보기 `aria-expanded`와 paragraph command 실행을 기록한다. default skin은 전 viewport, 1행·2행·더보기
@@ -189,4 +189,5 @@ PDF/SVG visual sweep과 Rust 전체 회귀는 기본 게이트가 아니다.
 
 ## 10. 승인 게이트
 
-현재 구현 상태는 **재작성 계획 승인 대기**다. 승인 전에는 위 제품·test·E2E 파일을 수정하지 않는다.
+Stage 1 계측과 콘텐츠 경계 고정을 완료했으며 현재 구현 상태는 **Stage 2 승인 대기**다. 다음 승인 전에는
+위 제품·test·E2E 파일을 수정하지 않고 원격 push·PR도 수행하지 않는다.
