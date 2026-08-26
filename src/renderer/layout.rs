@@ -9399,6 +9399,24 @@ impl LayoutEngine {
                         y_offset = host_text_bottom;
                     }
                 }
+                // [#6128] host 뿐 아니라 **뒤따르는 어울림 문단**도 표보다 아래까지
+                // 내려올 수 있다. 그 문단들은 저장 vpos 로 배치되는데(아래 띠 경로),
+                // 흐름은 표 바닥에서 멈춰 다음 일반 문단이 그 줄 위에 겹쳐 그려졌다
+                // (156653004 4쪽: "산·학·관 관계자 400명 내외*" 둘째 줄 위에
+                // "* 대통령실 …"). 조판(typeset)은 같은 계약을
+                // `extend_square_band_to_source_bottom` 으로 이미 갖고 있다 —
+                // 페인트도 같은 저장 좌표로 흐름을 끌어올린다.
+                if let Some(wrap_bottom) = Self::square_wrap_paras_source_bottom(
+                    paragraphs,
+                    wrap_around_paras,
+                    para_index,
+                    self.dpi,
+                ) {
+                    let wrap_text_bottom = table_y_before + wrap_bottom;
+                    if wrap_text_bottom > y_offset {
+                        y_offset = wrap_text_bottom;
+                    }
+                }
             }
         }
         TableControlOut {
@@ -11521,6 +11539,52 @@ impl LayoutEngine {
     }
 
     #[allow(clippy::too_many_arguments)]
+    /// [#6128] Square 어울림 표에 딸린 문단들이 저장 좌표에서 표 앵커보다
+    /// 얼마나 아래까지 내려오는지(px). 조판의
+    /// `extend_square_band_to_source_bottom` 과 같은 식이다 — 그쪽은 흐름 예산,
+    /// 이쪽은 페인트 커서를 같은 값으로 맞춘다.
+    fn square_wrap_paras_source_bottom(
+        paragraphs: &[Paragraph],
+        wrap_around_paras: &[super::pagination::WrapAroundPara],
+        table_para_index: usize,
+        dpi: f64,
+    ) -> Option<f64> {
+        let anchor_top = paragraphs
+            .get(table_para_index)?
+            .line_segs
+            .iter()
+            .find(|seg| {
+                seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+            })?
+            .vertical_pos;
+        let mut bottom: Option<i32> = None;
+        for wp in wrap_around_paras
+            .iter()
+            .filter(|wp| wp.table_para_index == table_para_index && wp.has_text)
+        {
+            let Some(para) = paragraphs.get(wp.para_index) else {
+                continue;
+            };
+            let para_bottom = para
+                .line_segs
+                .iter()
+                .filter(|seg| {
+                    seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                })
+                .map(|seg| {
+                    seg.vertical_pos
+                        .saturating_add(seg.line_height)
+                        .saturating_add(seg.line_spacing)
+                })
+                .max();
+            if let Some(para_bottom) = para_bottom {
+                bottom = Some(bottom.map_or(para_bottom, |best: i32| best.max(para_bottom)));
+            }
+        }
+        let bottom = bottom?;
+        (bottom > anchor_top).then(|| hwpunit_to_px(bottom - anchor_top, dpi))
+    }
+
     fn layout_wrap_around_paras(
         &self,
         tree: &mut PageLayoutContext,
