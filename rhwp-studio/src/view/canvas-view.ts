@@ -521,6 +521,9 @@ export class CanvasView {
     if (this.editingPageIndex === pageIndex) return;
     this.editingPageIndex = pageIndex;
     this.updateActivePageSnapshot();
+    // 눈금자는 순수 스크롤의 viewport fallback이 아니라 마지막 편집 focus를 따른다.
+    // current-page-changed와 렌더 가시성은 위 active snapshot 계약을 계속 사용한다.
+    this.eventBus.emit('focused-page-changed', pageIndex);
   }
 
   /** 캐럿·개체 선택과 스크롤이 공유하는 활성 페이지 판정·발행 관문. */
@@ -1060,6 +1063,7 @@ export class CanvasView {
   /** 리소스를 정리한다 */
   private reset(): void {
     const hadActivePage = this.activePageSnapshot !== null;
+    const hadFocusedPage = this.editingPageIndex !== null;
     this.cancelPendingTextEditRefresh();
     this.cancelTextEditStaticLayerVerification();
     this.cancelPendingPrefetch();
@@ -1069,6 +1073,7 @@ export class CanvasView {
     this.editingPageIndex = null;
     this.activePageSnapshot = null;
     if (hadActivePage) this.eventBus.emit('active-page-changed', null);
+    if (hadFocusedPage) this.eventBus.emit('focused-page-changed', null);
     this.pages = [];
     this.scrollContent.replaceChildren();
     this.blankPagePlaceholder = null;

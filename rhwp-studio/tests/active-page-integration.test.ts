@@ -28,9 +28,14 @@ test('일반 캐럿과 드래그 캐럿 이벤트가 모두 pageIndex를 전달�
   assert.match(emissions[1], /cursorRect\.pageIndex/);
 });
 
-test('CanvasView는 캐럿·개체와 스크롤을 하나의 활성 페이지 관문으로 합친다', () => {
+test('CanvasView는 캐럿·개체 focus와 스크롤 활성 페이지를 분리해 발행한다', () => {
   const view = source('src/view/canvas-view.ts');
   const constructor = section(view, '  constructor(', '\n  /** 문서 로드 후 호출');
+  const setEditing = section(
+    view,
+    '  private setEditingPageIndex(pageIndex: number | null): void {',
+    '\n  /** 캐럿·개체 선택과 스크롤이 공유하는',
+  );
   const update = section(
     view,
     '  private updateActivePageSnapshot(): void {',
@@ -39,6 +44,7 @@ test('CanvasView는 캐럿·개체와 스크롤을 하나의 활성 페이지 �
 
   assert.match(constructor, /eventBus\.on\('cursor-rect-updated'/);
   assert.match(constructor, /eventBus\.on\('editing-page-changed'/);
+  assert.match(setEditing, /this\.eventBus\.emit\('focused-page-changed', pageIndex\)/);
   assert.match(update, /resolveActivePage\(\{/);
   assert.match(update, /visiblePages: this\.currentVisiblePages/);
   assert.match(update, /editingPageIndex: this\.editingPageIndex/);
@@ -91,4 +97,5 @@ test('문서를 교체할 때 이전 활성 페이지 snapshot을 소비처에�
   assert.match(reset, /const hadActivePage = this\.activePageSnapshot !== null/);
   assert.match(reset, /this\.activePageSnapshot = null/);
   assert.match(reset, /this\.eventBus\.emit\('active-page-changed', null\)/);
+  assert.match(reset, /this\.eventBus\.emit\('focused-page-changed', null\)/);
 });

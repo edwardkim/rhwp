@@ -12,6 +12,12 @@ export interface ActivePageCandidates {
   viewportPageIndex: number | null;
 }
 
+export interface RulerPageCandidates {
+  pageCount: number;
+  focusedPageIndex: number | null;
+  activePageIndex: number | null;
+}
+
 function isValidPageIndex(pageIndex: number | null, pageCount: number): pageIndex is number {
   return pageIndex !== null
     && Number.isInteger(pageIndex)
@@ -56,4 +62,20 @@ export function resolveActivePage({
   }
 
   return { pageIndex: visible[0], source: 'viewport' };
+}
+
+/**
+ * 눈금자는 뷰포트 표시기가 아니라 마지막 편집 focus의 조작 표면이다.
+ * 순수 스크롤로 활성(가시) 페이지가 바뀌어도 focus가 유효하면 그 페이지를 유지하고,
+ * 아직 편집 focus가 없을 때만 뷰포트 활성 페이지를 초기 fallback으로 쓴다.
+ */
+export function resolveRulerPageIndex({
+  pageCount,
+  focusedPageIndex,
+  activePageIndex,
+}: RulerPageCandidates): number | null {
+  if (!Number.isInteger(pageCount) || pageCount <= 0) return null;
+  if (isValidPageIndex(focusedPageIndex, pageCount)) return focusedPageIndex;
+  if (isValidPageIndex(activePageIndex, pageCount)) return activePageIndex;
+  return null;
 }

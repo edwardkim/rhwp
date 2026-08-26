@@ -11,13 +11,26 @@ function section(startMarker: string, endMarker: string): string {
   return ruler.slice(start, end);
 }
 
-test('Ruler는 CanvasView의 활성 페이지 snapshot을 직접 구독한다', () => {
+test('Ruler는 편집 focus와 뷰포트 fallback을 서로 다른 이벤트로 구독한다', () => {
   const constructor = section('  constructor(', '\n  private palette()');
 
   assert.match(constructor, /eventBus\.on\('active-page-changed'/);
+  assert.match(constructor, /eventBus\.on\('focused-page-changed'/);
   assert.match(constructor, /value\.source === 'editing'/);
   assert.match(constructor, /value\.source === 'viewport'/);
   assert.match(constructor, /this\.activePageSnapshot = value/);
+  assert.match(constructor, /this\.focusedPageIndex = typeof payload === 'number'/);
+});
+
+test('눈금자 페이지는 마지막 편집 focus를 우선하고 활성 페이지는 초기 fallback으로만 쓴다', () => {
+  const resolver = section(
+    '  private rulerPageIndex(): number | null {',
+    '\n  /** 커서가 위치한 문단 속성이',
+  );
+
+  assert.match(resolver, /resolveRulerPageIndex\(\{/);
+  assert.match(resolver, /focusedPageIndex: this\.focusedPageIndex/);
+  assert.match(resolver, /activePageIndex: this\.activePageSnapshot\?\.pageIndex \?\? null/);
 });
 
 test('가로 눈금 좌표와 용지 정보는 활성 pageIdx 하나에서 나온다', () => {

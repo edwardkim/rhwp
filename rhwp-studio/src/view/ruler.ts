@@ -14,7 +14,10 @@ import {
 } from './ruler-pin-geometry';
 // 편집 용지 대화상자와 같은 한도를 쓴다 — 한쪽만 막으면 같은 문서를 다른 입력으로 만들 수 있다.
 import { MIN_BODY_MM } from '@/core/page-body-limits';
-import type { ActivePageSnapshot } from './active-page.ts';
+import {
+  resolveRulerPageIndex,
+  type ActivePageSnapshot,
+} from './active-page.ts';
 
 export type { RulerPinCommit };
 
@@ -66,8 +69,10 @@ export class Ruler {
   /** 커서의 x 좌표 (px, zoom=1, 페이지 좌표 기준) — 다단에서 현재 단 결정용 */
   private cursorColumnX = 0;
 
-  /** CanvasView가 캐럿·개체·viewport를 함께 해석한 현재 활성 페이지. */
+  /** CanvasView가 캐럿·개체·viewport를 함께 해석한 현재 활성 페이지. focus가 없을 때만 fallback이다. */
   private activePageSnapshot: ActivePageSnapshot | null = null;
+  /** 마지막 캐럿·클릭·개체 선택 페이지. 순수 스크롤로는 바뀌지 않는다. */
+  private focusedPageIndex: number | null = null;
 
   /** 히트테스트용 — 마지막 프레임에서 draw*가 기록한 핀 위치 (화면 px). y는 삼각형이
    * 실제로 그려진 세로 위치(▽=0, △=canvasH). */
@@ -159,6 +164,14 @@ export class Ruler {
           : null;
         this.scheduleUpdate();
       }),
+      eventBus.on('focused-page-changed', (payload) => {
+        this.focusedPageIndex = typeof payload === 'number'
+          && Number.isInteger(payload)
+          && payload >= 0
+          ? payload
+          : null;
+        this.scheduleUpdate();
+      }),
     );
 
     this.resize();
@@ -220,18 +233,21 @@ export class Ruler {
     ) - scrollX;
   }
 
-  /** 드래그 중에는 잡은 핀의 페이지를, 평상시에는 CanvasView 활성 페이지를 사용한다. */
+  /** 드래그 중에는 잡은 핀을, 평상시에는 마지막 편집 focus를 사용한다. focus가 없을 때만 viewport로 초기화한다. */
   private rulerPageIndex(): number | null {
-    const pageIdx = this.hDrag?.pageIdx
+    const draggedPageIndex = this.hDrag?.pageIdx
       ?? this.vDrag?.pageIdx
-      ?? this.activePageSnapshot?.pageIndex
       ?? null;
-    return pageIdx !== null
-      && Number.isInteger(pageIdx)
-      && pageIdx >= 0
-      && pageIdx < this.wasm.pageCount
-      ? pageIdx
-      : null;
+    if (draggedPageIndex !== null) {
+      return draggedPageIndex >= 0 && draggedPageIndex < this.wasm.pageCount
+        ? draggedPageIndex
+        : null;
+    }
+    return resolveRulerPageIndex({
+      pageCount: this.wasm.pageCount,
+      focusedPageIndex: this.focusedPageIndex,
+      activePageIndex: this.activePageSnapshot?.pageIndex ?? null,
+    });
   }
 
   /** 커서가 위치한 문단 속성이 변경되었을 때 호출 */

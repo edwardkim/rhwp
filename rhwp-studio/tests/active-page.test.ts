@@ -1,6 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { resolveActivePage } from '../src/view/active-page.ts';
+import {
+  resolveActivePage,
+  resolveRulerPageIndex,
+} from '../src/view/active-page.ts';
 
 test('보이는 편집 페이지가 뷰포트 중심 페이지보다 우선한다', () => {
   assert.deepEqual(resolveActivePage({
@@ -51,4 +54,38 @@ test('0번 페이지도 유효한 편집 페이지로 보존한다', () => {
     editingPageIndex: 0,
     viewportPageIndex: 1,
   }), { pageIndex: 0, source: 'editing' });
+});
+
+test('눈금자는 순수 스크롤로 활성 페이지가 바뀌어도 마지막 편집 focus를 유지한다', () => {
+  assert.equal(resolveRulerPageIndex({
+    pageCount: 6,
+    focusedPageIndex: 1,
+    activePageIndex: 4,
+  }), 1);
+});
+
+test('편집 focus가 아직 없을 때만 활성 뷰포트 페이지로 눈금자를 초기화한다', () => {
+  assert.equal(resolveRulerPageIndex({
+    pageCount: 6,
+    focusedPageIndex: null,
+    activePageIndex: 4,
+  }), 4);
+  assert.equal(resolveRulerPageIndex({
+    pageCount: 6,
+    focusedPageIndex: 8,
+    activePageIndex: 2,
+  }), 2);
+});
+
+test('focus와 활성 페이지가 모두 무효하면 눈금자 대상도 없다', () => {
+  assert.equal(resolveRulerPageIndex({
+    pageCount: 0,
+    focusedPageIndex: 0,
+    activePageIndex: 0,
+  }), null);
+  assert.equal(resolveRulerPageIndex({
+    pageCount: 3,
+    focusedPageIndex: null,
+    activePageIndex: null,
+  }), null);
 });
