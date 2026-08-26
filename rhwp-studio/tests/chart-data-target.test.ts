@@ -10,6 +10,7 @@ import {
   labelsStructurallyEditable,
   matchChartRef,
   needsStructure,
+  stockRoleCountBroken,
   unsafeTextIssue,
   type ChartDataResult,
   type ChartRefJson,
@@ -350,6 +351,22 @@ test('structure 페이로드의 name — null 자리는 싣지 않는다(c:tx �
   });
   assert.deepEqual(edits.series[0], { name: '새 이름', values: ['4.30', '2.5'] });
   assert.equal('name' in edits.series[1], false, 'c:tx 없는 계열에는 name 을 싣지 않는다');
+});
+
+test('주식형 계열 수가 렌더러 역할 규약(3·4)을 벗어나면 그림이 선형으로 깨진다', () => {
+  // renderer.rs `render_stock` 은 3계열(고·저·종)·4계열(시·고·저·종)만 역할을 정의하고
+  // 그 밖은 `render_line` 폴백이다 — 문서는 멀쩡한데 캔들·고저선이 통째로 사라진다.
+  const ohlc: ChartDataResult = { ...CATEGORY_DATA, plot: 'stock', hasUpDownBars: true };
+  const hlc: ChartDataResult = { ...CATEGORY_DATA, plot: 'stock', hasUpDownBars: false };
+
+  assert.equal(stockRoleCountBroken(ohlc, 5), true, 'OHLC 4→5 는 선형으로 떨어진다');
+  assert.equal(stockRoleCountBroken(ohlc, 3), false, 'OHLC 4→3 은 HLC 로 계속 그려진다');
+  assert.equal(stockRoleCountBroken(hlc, 4), false, 'HLC 3→4 는 OHLC 규약 안이다');
+  assert.equal(stockRoleCountBroken(hlc, 2), true, 'HLC 3→2 는 선형으로 떨어진다');
+
+  // 주식형이 아니면 계열 수에 규약이 없다.
+  assert.equal(stockRoleCountBroken(CATEGORY_DATA, 9), false);
+  assert.equal(stockRoleCountBroken({ ...CATEGORY_DATA, plot: 'pie' }, 9), false);
 });
 
 test('hasAnyEdit 는 계열명 변경도 편집으로 센다', () => {

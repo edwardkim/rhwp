@@ -100,6 +100,9 @@ test('사전 비활성은 봉투에서 유도되는 것만 — 캔들 양끝·�
   assert.match(body, /labelsUsable/, '다층·비공유 라벨은 행 연산을 막는다');
   assert.match(body, /rowCount <= 1/, 'lastPointDeleteRefused 예방');
   assert.match(body, /series\.length <= 1/, 'lastSeriesDeleteRefused 예방');
+  // [#6053] 코어는 허용하지만 렌더러가 선형으로 폴백하는 축 — 추가·삭제 양쪽에 걸어야 한다.
+  assert.match(body, /stockRoleCountBroken\(data, model\.series\.length \+ 1\)/);
+  assert.match(body, /stockRoleCountBroken\(data, model\.series\.length - 1\)/);
   // 원형은 파손이 아니라 무효과다(#6037) — 막지 않고 알려만 준다.
   assert.match(body, /note: pieNote/, '원형은 안내만 한다');
   assert.doesNotMatch(body, /disabledReason:\s*pieNote/, '원형 계열 추가를 막으면 안 된다');

@@ -88,7 +88,7 @@ GridModel(불변) → chart-data-target(페이로드) → wasm-bridge(JSON 패�
 ```
 npx tsc --noEmit                                   exit 0   (새 pkg/ 기준)
 npx tsc --project tsconfig.ci-unit.json --noEmit   exit 0
-npm test (Node 22.15.0)                            1168 tests / 1165 pass / 2 fail / 1 skip
+npm test (Node 22.15.0)                            1169 tests / 1167 pass / 1 fail / 1 skip
 python scripts/check_e2e_manifest.py               오류 3건 (전부 선행 부채 — 아래)
 npm run e2e:issue-6053                             전 단계 통과
 e2e issue-4694-chart-data-edit (B1 회귀)           전 단계 통과
@@ -108,8 +108,8 @@ style` 로 실패한다. 워킹트리의 `.rs` 1947개를 LF 로 정규화(저�
 
 | 실패 | 성격 |
 |---|---|
-| `style-undo-routing` — 스타일 WASM 반환 계약 | 선행. #4694 보고서의 pre-existing 목록에 있다 |
-| `subsecond-runtime` — `Cargo.lock` 에서 `subsecond` 미검출 | 선행. 동일 |
+| `subsecond-runtime` — `Cargo.lock` 에서 `subsecond` 미검출 | 선행. #4694 보고서의 pre-existing 목록에 있다 |
+| `style-undo-routing` — 스타일 WASM 반환 계약 | 선행 **간헐**. 단독 실행 3/3 통과, 전체 스위트에서 초기 2회 실패 후 마지막 3회 통과 — 순서·부하 의존 플레이크로 판단한다 |
 
 `check_e2e_manifest.py` 의 3건(`loading-busy-cursor`·`status-page-number`·`toolbox-visibility`
 미등재)도 **clean devel 에서 동일하게 재현**했다. 이 변경과 무관한 선행 부채다.
@@ -144,6 +144,49 @@ MANIFEST 배선이 `수동`이라 CI 가 잡지 못한 선행 부채다.
 변경 파일 목록으로 확인된다 — B1 1단계 경로(`input-handler.ts`·`input-handler-mouse.ts`·
 `ui/context-menu.ts`·`command/commands/insert.ts`·`main.ts`)는 **전부 무변경**이다.
 
+## 6-2. 수동 테스트에서 잡힌 결함 1건 — 주식형 계열 추가가 선형으로 떨어진다
+
+작업지시자가 `시가고가저가종가` 에서 **계열을 추가하니 라인형으로 렌더링**된다고 보고했다.
+재현·근본 원인·수정을 모두 닫았다.
+
+**재현** — OHLC(4계열) 그리드에서 첫 계열 오른쪽에 계열 추가 → [확인]. 봉투는 정상이다:
+`plot` 은 `stock` 그대로, `hasUpDownBars` 도 `true` 그대로, 양끝(시가·종가)도 유지, 5계열.
+**데이터 쓰기는 옳았다.** 깨진 것은 그림이다 — 캔들도 고저선도 사라지고 5개의 평범한 꺾은선이
+그려진다.
+
+**근본 원인** — `crates/rhwp-ooxml-chart/src/renderer.rs:816-820`:
+
+```rust
+let (hi_i, lo_i, close_i, open_i) = match chart.series.len() {
+    3 => (0usize, 1usize, 2usize, None),      // 고·저·종
+    4 => (1, 2, 3, Some(0usize)),             // 시·고·저·종
+    _ => return render_line(svg, chart, px, py, pw, ph),
+};
+```
+
+주식형은 계열의 **뜻이 XML 순서로 정해진다.** 3·4계열 밖에는 역할 매핑이 없어 렌더러가 선형
+폴백한다(placeholder 재발 방지용 의도된 안전장치다). 문서는 멀쩡한데 그림만 바뀐다.
+
+**왜 기존 가드가 못 잡았나** — 축이 다르다. `candleAnchorBroken`(#6037)은 *양끝이 바뀌어 캔들
+몸통이 엉뚱한 짝으로 잡히는가* 를 보고, 계열 수가 바뀔 때만 발화하며 **중간 삽입은 양끝이
+그대로라 통과한다.** 코어도 거부하지 않으니 dryRun 도 조용하다. #6037 은 한컴 산출을 쟀고
+4→3 방향만 "정상 렌더"로 확인했을 뿐, **rhwp 자신의 렌더러가 4→5 에서 폴백한다는 사실은
+그 원장에 없다.**
+
+**수정** — 봉투에서 유도되는 새 술어 `stockRoleCountBroken(data, nextCount)`
+(`plot === 'stock'` ∧ `nextCount ∉ {3,4}`)를 두고 계열 추가·삭제 양쪽에 걸었다. 실측:
+
+| 차트 | 계열 추가 | 계열 삭제 |
+|---|---|---|
+| OHLC 4계열 | **전건 비활성**(→5) | 중간만 허용(→3) · 양끝은 캔들 가드 |
+| HLC 3계열 | 허용(→4) | **비활성**(→2) |
+
+원형은 그대로 안내만 한다 — 무효과와 파손을 다르게 다루는 원칙이 유지된다.
+
+**남는 것(후속 §8-3)** — rhwp 렌더러의 3·4 창과 한컴의 동작이 어긋날 수 있다. #6037 원장은
+`시가고가저가종가 중간계열추가` 를 한컴에서 0.59%(반영)로 기록했는데, rhwp 는 같은 문서를
+선형으로 그린다. UI 는 보수적으로 막았지만 **렌더 축의 정합은 별건**이다.
+
 ## 7. 알려진 한계
 
 - **중간 삽입·삭제는 원본 모양에 따라 코어가 거부할 수 있다.** 엔진이 위치 기반이라 아래·오른쪽
@@ -162,3 +205,5 @@ MANIFEST 배선이 `수동`이라 CI 가 잡지 못한 선행 부채다.
 2. `.gitattributes` 에 소스 가드가 읽는 경로의 `eol=lf` 고정 — Windows 체크아웃에서 게이트가
    조용히 무력화되는 것을 구조적으로 막는다
 3. 차트 e2e 2종을 CI 에 배선 — 지금은 둘 다 `수동`이라 이번 같은 부패를 아무도 못 잡는다
+4. **주식형 렌더 정합** — rhwp `render_stock` 은 3·4계열 밖을 선형 폴백하는데 한컴은 같은 문서를
+   다르게 그릴 수 있다(#6037 원장의 `중간계열추가` 0.59% 반영). 렌더 축 별건으로 접수 필요 (§6-2)
