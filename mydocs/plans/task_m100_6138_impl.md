@@ -5,7 +5,7 @@
 - **작성일**: 2026-08-26 KST
 - **작업 브랜치**: `codex/issue-6118-responsive-style-bar`
 - **통합 기준**: `upstream/devel@1011a8947`
-- **구현 상태**: Stage 2 완료, Stage 3 검증 대기
+- **구현 상태**: Stage 3·최종 보고 완료, #6118 통합 PR 승인 대기
 
 ## 1. 구현 불변식
 

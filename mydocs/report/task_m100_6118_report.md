@@ -4,7 +4,7 @@
 - **작업 브랜치**: `codex/issue-6118-responsive-style-bar`
 - **기준**: `upstream/devel@6b5c4f871972380c0866e2a8d27ac2bc67d257e6`
 - **완료일**: 2026-08-26 KST
-- **판정**: #6118 로컬 완료, #6138과 통합 PR 대기
+- **판정**: #6118·#6138 통합 검증 완료, 통합 PR 승인 대기
 
 ## 1. 결과
 
@@ -54,8 +54,8 @@ default/flat/oldschool × light/dark의 18개 경계 화면도 같은 E2E가 생
 
 이 변경은 Studio chrome만 대상으로 하고 renderer 출력을 바꾸지 않으므로 PDF/SVG visual sweep 대상이
 아니다. E2E manifest 전체 게이트의 기존 미등재 세 파일과 source checkout의 generated Rust suite 부재는
-#6118 변경 밖의 저장소 상태로 분리한다. 최종 통합 PR 준비 시 review/CI 파생 suite를 준비한 checkout에서
-필수 `cargo fmt --all`과 `cargo fmt --all -- --check`를 다시 실행한다.
+#6118 변경 밖의 저장소 상태로 분리한다. #6138 통합 Stage 3에서 review/CI 파생 suite를 준비한 별도
+checkout의 Rust manifest와 필수 `cargo fmt --all`·`cargo fmt --all -- --check`까지 통과했다.
 
 ## 5. 통합 제출 전략
 
@@ -65,5 +65,6 @@ default/flat/oldschool × light/dark의 18개 경계 화면도 같은 E2E가 생
 - #6138: 위쪽 `#icon-toolbar`의 한 줄 그룹 스크롤 정책
 
 혼동을 줄이기 위해 이슈·계획·커밋·테스트는 분리하되 PR은 하나로 제출한다. #6138 구현 뒤 두 영역을
-동시에 포함하는 12개 viewport 매트릭스를 다시 실행하고, PR 본문에서 각 커밋과 검증 근거를 별도 절로
-설명한다. 현재 단계에서는 remote push와 PR 생성 모두 수행하지 않았다.
+동시에 포함하는 12개 viewport·18개 theme 매트릭스를 다시 실행했고 609개 판정이 통과했다. 상세 근거는
+[#6138 통합 Stage 3](../working/task_m100_6138_stage3.md)에 있다. 현재 단계에서는 remote push와 PR 생성
+모두 수행하지 않았다.

@@ -4,7 +4,7 @@
 - **기준**: `upstream/devel@6b5c4f871972380c0866e2a8d27ac2bc67d257e6`
 - **작업 브랜치**: `codex/issue-6118-responsive-style-bar`
 - **검증일**: 2026-08-26 KST
-- **상태**: Stage 3 완료, #6138 통합 구현 대기
+- **상태**: Stage 3 완료, #6138 통합 검증 완료·통합 PR 승인 대기
 
 ## 1. 확대 반응형 검증
 
@@ -69,8 +69,9 @@ Studio chrome의 DOM/CSS/접근성 변경이며 renderer·layout·typeset·paint
 E2E는 `http://127.0.0.1:7718/`, Puppeteer headless shell, DPR 1에서 수행했다. 저장소 전체 E2E manifest
 검사는 이 변경과 무관한 기존 미등재 파일 세 개(`loading-busy-cursor`, `status-page-number`,
 `toolbox-visibility`)만 보고한다. Rust source 변경은 0건이며 source 작업 트리에 review/CI 파생
-`tests/generated/regression_suite_001.rs`~`032.rs`가 없어 `cargo fmt --all` 게이트는 최종 통합 PR 준비
-checkout에서 파생 suite 준비 후 다시 실행한다.
+`tests/generated/regression_suite_001.rs`~`032.rs`가 없는 source checkout에서는 `cargo fmt --all`을
+실행하지 않았다. #6138 통합 Stage 3에서 파생 suite를 준비한 별도 review checkout의 Rust manifest와
+`cargo fmt --all`·`cargo fmt --all -- --check`가 모두 통과했다.
 
 ## 6. Stage 3 종료 판정과 #6138 통합 원칙
 
@@ -88,6 +89,7 @@ checkout에서 파생 suite 준비 후 다시 실행한다.
 상태를 표시한다. 문단 명령 실행 뒤 다음 frame에 trigger focus를 확정해 편집기 focus 갱신과의 경쟁도
 막았다. focused 28건, TypeScript, build와 전체 responsive/theme E2E 388건이 다시 통과했다.
 
-#6118의 로컬 구현과 Stage 3는 완료했다. 다만 원격 PR은 지금 만들지 않는다. 다음 작업인 #6138은 같은
-브랜치에서 별도 계획·구현·커밋으로 구분하고, 완료 뒤 12개 viewport 통합 매트릭스를 다시 실행한다.
-최종 PR 하나에서 `#style-bar`와 `#icon-toolbar`의 책임을 각각 설명하고 두 이슈를 함께 연결한다.
+#6118의 로컬 구현과 Stage 3에 이어 #6138도 같은 브랜치에서 별도 계획·구현·커밋으로 완료했다.
+[통합 Stage 3](task_m100_6138_stage3.md)의 12개 viewport·18개 theme 매트릭스에서 두 영역을 다시
+검증했다. 최종 PR 하나에서 `#style-bar`와 `#icon-toolbar`의 책임을 각각 설명하고 두 이슈를 함께
+연결한다.
