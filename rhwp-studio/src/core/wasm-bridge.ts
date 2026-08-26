@@ -26,6 +26,7 @@ import {
   type DocumentExportArtifact,
   type WasmDocumentExport,
 } from './export-content-loss';
+import { initializeWasmOnce } from './wasm-init';
 
 /** fresh WASM binding의 reported export 표면. 구버전 모듈은 런타임 가드에서 거부한다. */
 interface ReportedWasmDocument {
@@ -275,7 +276,7 @@ export class WasmBridge {
     this.installMeasureTextWidth();
     // @wasm path alias는 개발 glue를 가리킬 수 있어 init 반환값을 unknown으로 추론한다.
     // wasm-bindgen의 InitOutput memory만 선택적으로 읽고, 개발 glue의 memory 부재는 허용한다.
-    const wasmModule = await init() as { memory?: WebAssembly.Memory };
+    const wasmModule = await initializeWasmOnce(() => init()) as { memory?: WebAssembly.Memory };
     this.wasmLinearMemory = wasmModule.memory ?? null;
     this.initialized = true;
     console.log(`[WasmBridge] WASM 초기화 완료 (rhwp ${version()})`);

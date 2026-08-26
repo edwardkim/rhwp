@@ -64,6 +64,53 @@ test('handled browser runtime signals do not become uncaught diagnostics', async
   assert.deepEqual([...listeners.keys()], ['error']);
 });
 
+test('WasmBridge reuses dx eager initialization instead of creating another instance', async () => {
+  const { initializeWasmOnce } = await import('../src/core/wasm-init.ts');
+  const instance = { memory: 'dx-memory' };
+  let fallbackCalls = 0;
+  assert.equal(
+    await initializeWasmOnce(
+      async () => (fallbackCalls += 1, { memory: 'fallback-memory' }),
+      { __dx_mainPromise: Promise.resolve(instance) },
+    ),
+    instance,
+  );
+  assert.equal(fallbackCalls, 0);
+
+  let resolveFallback!: (value: { memory: string }) => void;
+  const fallbackScope = {};
+  const fallback = () => {
+    fallbackCalls += 1;
+    return new Promise<{ memory: string }>(resolve => { resolveFallback = resolve; });
+  };
+  const first = initializeWasmOnce(fallback, fallbackScope);
+  const second = initializeWasmOnce(fallback, fallbackScope);
+  assert.equal(first, second);
+  assert.equal(fallbackCalls, 1);
+  resolveFallback({ memory: 'fallback-memory' });
+  assert.deepEqual(await Promise.all([first, second]), [
+    { memory: 'fallback-memory' },
+    { memory: 'fallback-memory' },
+  ]);
+  assert.equal(initializeWasmOnce(fallback, fallbackScope), first);
+
+  const retryScope = {};
+  const failure = new Error('initialization failed');
+  const rejected = () => (fallbackCalls += 1, Promise.reject(failure));
+  const rejectedFirst = initializeWasmOnce(rejected, retryScope);
+  const rejectedSecond = initializeWasmOnce(rejected, retryScope);
+  assert.equal(rejectedFirst, rejectedSecond);
+  assert.deepEqual(
+    (await Promise.allSettled([rejectedFirst, rejectedSecond])).map(result => result.status),
+    ['rejected', 'rejected'],
+  );
+  assert.deepEqual(
+    await initializeWasmOnce(async () => (fallbackCalls += 1, { memory: 'retry-memory' }), retryScope),
+    { memory: 'retry-memory' },
+  );
+  assert.equal(fallbackCalls, 3);
+});
+
 test('일반 Studio 클래스는 개발용 소켓과 감시자를 소유하지 않는다', () => {
   const bridge = source('src/core/wasm-bridge.ts');
   const canvasView = source('src/view/canvas-view.ts');

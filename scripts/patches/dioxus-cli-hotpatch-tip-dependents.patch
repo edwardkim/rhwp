@@ -82,6 +82,15 @@ index dcd5d5b1..38aac157 100644
 @@ -3135 +3135 @@ impl BuildRequest {
 -    fn workspace_crate_dep_names(&self) -> Vec<String> {
 +    pub(crate) fn workspace_crate_dep_names(&self) -> Vec<String> {
+diff --git a/packages/cli/src/build/web.rs b/packages/cli/src/build/web.rs
+index 677ee7bb..a7dd97ed 100644
+--- a/packages/cli/src/build/web.rs
++++ b/packages/cli/src/build/web.rs
+@@ -297 +297 @@ globalThis.__wasm_split_main_initSync = initSync;
+-__wbg_init({{module_or_path: "/{}/{wasm_path}"}}).then((wasm) => {{
++globalThis.__dx_mainPromise = __wbg_init({{module_or_path: "/{}/{wasm_path}"}}).then((wasm) => {{
+@@ -306,0 +307 @@ __wbg_init({{module_or_path: "/{}/{wasm_path}"}}).then((wasm) => {{
++    return wasm;
 diff --git a/packages/cli/src/serve/mod.rs b/packages/cli/src/serve/mod.rs
 index f632956b..0233eb39 100644
 --- a/packages/cli/src/serve/mod.rs

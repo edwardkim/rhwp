@@ -1039,6 +1039,7 @@ test('hot-patch dev wiring is declared in the manifests and the vite config', ()
   assert.match(vite, /target[\s\S]*dx[\s\S]*rhwp-subsecond[\s\S]*public[\s\S]*wasm/);
   assert.match(vite, /rhwp-subsecond\.js/);
   assert.match(dxPatch, /RhwpFullRebuild[\s\S]*builder\.full_rebuild\(\)/);
+  assert.match(dxPatch, /globalThis\.__dx_mainPromise\s*=\s*__wbg_init[\s\S]{0,500}?return wasm;/);
   assert.match(studioPackage, /"subsecond:install"\s*:\s*"node \.\.\/scripts\/install-dioxus-cli\.mjs"/);
   assert.match(studioPackage, /"subsecond:serve"[\s\S]*--package rhwp-subsecond[\s\S]*--hot-patch/);
   assert.match(studioPackage, /"dev:subsecond"\s*:\s*"RHWP_SUBSECOND=1 vite"/);
