@@ -1,11 +1,13 @@
-//! Issue #4968 W9-Q3-2: exact font capability detection must be bounded and fail-closed.
+//! Issue #4968 W9-Q3-2/Q3-3: exact capability and run gating must be bounded and fail-closed.
 
 #[path = "../../src/renderer/kerning.rs"]
 mod kerning;
 
 use kerning::{
-    inspect_exact_font_kerning, ExactFontSource, KerningCapability,
-    KerningCapabilityFallbackReason, MAX_KERNING_FONT_BYTES,
+    decide_kerning_run_gate, inspect_exact_font_kerning, ExactFontSource, KerningCapability,
+    KerningCapabilityFallbackReason, KerningRequest, KerningRunFallbackReason, KerningRunGate,
+    MAX_KERNING_ADJACENT_PAIRS, MAX_KERNING_FONT_BYTES, MAX_KERNING_RUN_CODE_POINTS,
+    MAX_KERNING_RUN_GLYPHS,
 };
 
 const NOTO_REGULAR: &[u8] =
@@ -123,4 +125,68 @@ fn issue_4968_capability_precedence_and_failure_reasons_are_structured() {
         Some(KerningCapabilityFallbackReason::FontByteLimitExceeded)
     );
     assert_eq!(oversized.font_source_sha256, None);
+}
+
+#[test]
+fn issue_4968_run_gate_is_bounded_and_does_not_claim_pair_application() {
+    let gpos = inspect_exact_font_kerning(Some(ExactFontSource {
+        bytes: NOTO_REGULAR,
+        face_index: 0,
+    }));
+    let eligible = decide_kerning_run_gate(true, "AV To WA HH", 11, &gpos);
+    assert_eq!(eligible.request, KerningRequest::Enabled);
+    assert_eq!(eligible.capability, KerningCapability::GposKern);
+    assert_eq!(eligible.gate, KerningRunGate::Eligible);
+    assert_eq!(eligible.candidate_pair_count, 10);
+    assert_eq!(eligible.fallback_reason, None);
+    let eligible_json = serde_json::to_value(&eligible).expect("run gate JSON");
+    assert_eq!(eligible_json["request"], "enabled");
+    assert_eq!(eligible_json["capability"], "gpos-kern");
+    assert_eq!(eligible_json["gate"], "eligible");
+    assert!(eligible_json.get("text").is_none(), "trace must omit source text");
+
+    let disabled = decide_kerning_run_gate(false, "AV", 2, &gpos);
+    assert_eq!(disabled.request, KerningRequest::Disabled);
+    assert_eq!(disabled.gate, KerningRunGate::NotRequested);
+
+    let unsupported_capability = inspect_exact_font_kerning(Some(ExactFontSource {
+        bytes: NO_PAIR_TABLE,
+        face_index: 0,
+    }));
+    let unsupported = decide_kerning_run_gate(true, "AV", 2, &unsupported_capability);
+    assert_eq!(unsupported.gate, KerningRunGate::FailClosed);
+    assert_eq!(
+        unsupported.fallback_reason,
+        Some(KerningRunFallbackReason::PairTableUnsupported)
+    );
+
+    let oversized_text = "A".repeat(MAX_KERNING_RUN_CODE_POINTS + 50_000);
+    let code_points = decide_kerning_run_gate(
+        true,
+        &oversized_text,
+        MAX_KERNING_RUN_GLYPHS,
+        &gpos,
+    );
+    assert_eq!(code_points.gate, KerningRunGate::FailClosed);
+    assert_eq!(code_points.code_point_count, MAX_KERNING_RUN_CODE_POINTS);
+    assert!(code_points.code_point_limit_exceeded);
+    assert_eq!(code_points.glyph_count, MAX_KERNING_RUN_GLYPHS);
+    assert_eq!(
+        code_points.candidate_pair_count,
+        MAX_KERNING_ADJACENT_PAIRS
+    );
+    assert_eq!(
+        code_points.fallback_reason,
+        Some(KerningRunFallbackReason::RunCodePointLimitExceeded)
+    );
+
+    let glyphs = decide_kerning_run_gate(true, "AV", MAX_KERNING_RUN_GLYPHS + 1, &gpos);
+    assert_eq!(glyphs.gate, KerningRunGate::FailClosed);
+    assert_eq!(glyphs.glyph_count, MAX_KERNING_RUN_GLYPHS);
+    assert!(glyphs.glyph_limit_exceeded);
+    assert_eq!(glyphs.candidate_pair_count, MAX_KERNING_ADJACENT_PAIRS);
+    assert_eq!(
+        glyphs.fallback_reason,
+        Some(KerningRunFallbackReason::RunGlyphLimitExceeded)
+    );
 }

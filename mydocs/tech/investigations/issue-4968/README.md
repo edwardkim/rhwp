@@ -102,6 +102,8 @@ OpenType 경계, 한컴 판정, 통합 Q2 baseline의 canonical SHA-256은 각�
 - 의도 전달 보고서: [`task_m100_4968_w9_q3_1.md`](../../../working/task_m100_4968_w9_q3_1.md)
 - capability provider 보고서:
   [`task_m100_4968_w9_q3_2.md`](../../../working/task_m100_4968_w9_q3_2.md)
+- bounded run gate 보고서:
+  [`task_m100_4968_w9_q3_3.md`](../../../working/task_m100_4968_w9_q3_3.md)
 - integration 원본:
   `tests/cases/issue_4968_kerning_intent_plumbing.rs`,
   `tests/cases/issue_4968_kerning_capability_provider.rs`
@@ -110,4 +112,6 @@ Q3-1은 `ResolvedCharStyle.kerning`을 `TextStyle`과 공개 layer-tree 관측 �
 직렬화에서 생략하고 true만 노출하므로 K0 schema·position은 유지된다. Q3-2는 선택 완료된 exact face
 bytes만 받는 bounded capability provider를 추가했다. GPOS `kern` pair lookup, horizontal legacy kern
 format 0, unsupported를 기능 탐지하고 GPOS를 우선한다. source 없음·malformed·32 MiB 초과는 구조화된
-이유로 fail-closed한다. 두 절편 모두 실제 pair advance는 아직 바꾸지 않는다.
+이유로 fail-closed한다. Q3-3은 request와 capability를 결합하되 code point·glyph 4,096, 인접 pair
+4,095 상한 안에서만 pair engine 진입을 허용한다. `eligible`은 최종 적용 판정이 아니며 원문은 trace에
+남기지 않는다. 세 절편 모두 실제 pair advance는 아직 바꾸지 않는다.

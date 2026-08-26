@@ -11,6 +11,9 @@ use ttf_parser::{gpos::PositioningSubtable, kern, Face, Tag};
 
 /// Q1에서 portable font blob 경계와 맞춰 동결한 exact source 상한.
 pub(crate) const MAX_KERNING_FONT_BYTES: usize = 32 * 1024 * 1024;
+pub(crate) const MAX_KERNING_RUN_CODE_POINTS: usize = 4_096;
+pub(crate) const MAX_KERNING_RUN_GLYPHS: usize = 4_096;
+pub(crate) const MAX_KERNING_ADJACENT_PAIRS: usize = 4_095;
 
 #[derive(Debug, Clone, Copy)]
 pub(crate) struct ExactFontSource<'a> {
@@ -44,6 +47,63 @@ pub(crate) struct KerningCapabilityDecision {
     pub font_bytes: usize,
     pub face_index: u32,
     pub units_per_em: Option<u16>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub(crate) enum KerningRequest {
+    Disabled,
+    Enabled,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub(crate) enum KerningRunGate {
+    NotRequested,
+    Eligible,
+    FailClosed,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub(crate) enum KerningRunFallbackReason {
+    FontSourceUnavailable,
+    FontByteLimitExceeded,
+    MalformedSfnt,
+    PairTableUnsupported,
+    RunCodePointLimitExceeded,
+    RunGlyphLimitExceeded,
+}
+
+impl From<KerningCapabilityFallbackReason> for KerningRunFallbackReason {
+    fn from(value: KerningCapabilityFallbackReason) -> Self {
+        match value {
+            KerningCapabilityFallbackReason::FontSourceUnavailable => Self::FontSourceUnavailable,
+            KerningCapabilityFallbackReason::FontByteLimitExceeded => Self::FontByteLimitExceeded,
+            KerningCapabilityFallbackReason::MalformedSfnt => Self::MalformedSfnt,
+            KerningCapabilityFallbackReason::PairTableUnsupported => Self::PairTableUnsupported,
+        }
+    }
+}
+
+/// Pair engine 전 단계의 bounded run 판정이다. `Eligible`은 적용 완료가 아니며,
+/// 후속 pair 비교가 `applied` 또는 `no-pair-adjustment`를 결정해야 한다.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct KerningRunGateDecision {
+    pub request: KerningRequest,
+    pub capability: KerningCapability,
+    pub gate: KerningRunGate,
+    pub font_source_sha256: Option<String>,
+    pub font_bytes: usize,
+    pub face_index: u32,
+    pub units_per_em: Option<u16>,
+    pub code_point_count: usize,
+    pub code_point_limit_exceeded: bool,
+    pub glyph_count: usize,
+    pub glyph_limit_exceeded: bool,
+    pub candidate_pair_count: usize,
+    pub fallback_reason: Option<KerningRunFallbackReason>,
 }
 
 impl KerningCapabilityDecision {
@@ -116,6 +176,73 @@ pub(crate) fn inspect_exact_font_kerning(
         font_bytes: source.bytes.len(),
         face_index: source.face_index,
         units_per_em: Some(face.units_per_em()),
+    }
+}
+
+/// 문서 request와 exact-font capability를 결합해 pair engine 진입 가능 여부를 판정한다.
+///
+/// code point는 `MAX + 1`까지만 순회하고 trace 수치는 상한으로 clamp한다. 따라서 공격자가 긴
+/// 문자열이나 비정상 glyph count를 주더라도 이 단계의 시간·출력 크기는 bounded하다.
+pub(crate) fn decide_kerning_run_gate(
+    requested: bool,
+    text: &str,
+    glyph_count: usize,
+    capability: &KerningCapabilityDecision,
+) -> KerningRunGateDecision {
+    let observed_code_points = text.chars().take(MAX_KERNING_RUN_CODE_POINTS + 1).count();
+    let code_point_limit_exceeded = observed_code_points > MAX_KERNING_RUN_CODE_POINTS;
+    let bounded_code_points = observed_code_points.min(MAX_KERNING_RUN_CODE_POINTS);
+    let glyph_limit_exceeded = glyph_count > MAX_KERNING_RUN_GLYPHS;
+    let bounded_glyphs = glyph_count.min(MAX_KERNING_RUN_GLYPHS);
+    let candidate_pair_count = bounded_glyphs
+        .saturating_sub(1)
+        .min(MAX_KERNING_ADJACENT_PAIRS);
+    let request = if requested {
+        KerningRequest::Enabled
+    } else {
+        KerningRequest::Disabled
+    };
+
+    let (gate, fallback_reason) = if !requested {
+        (KerningRunGate::NotRequested, None)
+    } else if code_point_limit_exceeded {
+        (
+            KerningRunGate::FailClosed,
+            Some(KerningRunFallbackReason::RunCodePointLimitExceeded),
+        )
+    } else if glyph_limit_exceeded {
+        (
+            KerningRunGate::FailClosed,
+            Some(KerningRunFallbackReason::RunGlyphLimitExceeded),
+        )
+    } else if capability.capability == KerningCapability::Unsupported {
+        (
+            KerningRunGate::FailClosed,
+            Some(
+                capability
+                    .fallback_reason
+                    .map(KerningRunFallbackReason::from)
+                    .unwrap_or(KerningRunFallbackReason::PairTableUnsupported),
+            ),
+        )
+    } else {
+        (KerningRunGate::Eligible, None)
+    };
+
+    KerningRunGateDecision {
+        request,
+        capability: capability.capability,
+        gate,
+        font_source_sha256: capability.font_source_sha256.clone(),
+        font_bytes: capability.font_bytes,
+        face_index: capability.face_index,
+        units_per_em: capability.units_per_em,
+        code_point_count: bounded_code_points,
+        code_point_limit_exceeded,
+        glyph_count: bounded_glyphs,
+        glyph_limit_exceeded,
+        candidate_pair_count,
+        fallback_reason,
     }
 }
 
