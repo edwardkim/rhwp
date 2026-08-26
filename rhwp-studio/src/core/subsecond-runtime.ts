@@ -87,6 +87,7 @@ type AnimationFrameScheduler = {
 export type DevelopmentRenderRuntimeOptions = {
   measureHeapBytes?: () => number | null;
   scheduler?: AnimationFrameScheduler;
+  withRebuildTrace?: (rebuild: () => boolean) => boolean;
 };
 
 type WebSocketConnection = {
@@ -331,6 +332,7 @@ export class RenderCodeReloadWatcher {
   private capabilities: RenderCodeReload;
   private onPatched: (revision: string) => void;
   private scheduler: AnimationFrameScheduler;
+  private withRebuildTrace: (rebuild: () => boolean) => boolean;
 
   constructor(
     capabilities: RenderCodeReload,
@@ -339,10 +341,12 @@ export class RenderCodeReloadWatcher {
       requestAnimationFrame: callback => requestAnimationFrame(callback),
       cancelAnimationFrame: id => cancelAnimationFrame(id),
     },
+    withRebuildTrace: (rebuild: () => boolean) => boolean = rebuild => rebuild(),
   ) {
     this.capabilities = capabilities;
     this.onPatched = onPatched;
     this.scheduler = scheduler;
+    this.withRebuildTrace = withRebuildTrace;
   }
 
   start(): boolean {
@@ -394,7 +398,7 @@ export class RenderCodeReloadWatcher {
     // 아래 재구성 자체가 계속 트랩하면 어느 리비전도 그리지 못하지만, 그건 핫패치 경계 밖의
     // 고장이라 새 패치로도 안 고쳐진다 — 보고는 #4578, 경계는 #4577 의 몫이다.
     this.lastRevision = revision;
-    if (this.capabilities.rebuildDerivedState()) {
+    if (this.withRebuildTrace(() => this.capabilities.rebuildDerivedState())) {
       this.onPatched(revision);
     }
   }
@@ -429,7 +433,12 @@ export function startDevelopmentRenderRuntime(
       }),
     },
   );
-  const watcher = new RenderCodeReloadWatcher(capabilities, onPatched, options.scheduler);
+  const watcher = new RenderCodeReloadWatcher(
+    capabilities,
+    onPatched,
+    options.scheduler,
+    options.withRebuildTrace,
+  );
   if (!watcher.start()) {
     disconnectDevtools?.();
     return null;

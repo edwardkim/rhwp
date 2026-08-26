@@ -19,6 +19,8 @@ use crate::renderer::layout_frame::{FrameRowMetrics, LayoutFrame, ParagraphBox, 
 use crate::renderer::px_to_hwpunit;
 use crate::renderer::style_resolver::{detect_lang_category, ResolvedStyleSet};
 #[cfg(feature = "subsecond-dev")]
+use crate::subsecond_dev::{hot_trace_checkpoint, restore_hot_trace, HotTraceCheckpoint};
+#[cfg(feature = "subsecond-dev")]
 use std::cell::{Cell, RefCell};
 use std::ops::Range;
 
@@ -114,6 +116,7 @@ fn restore_measurement_trace(checkpoint: Option<MeasurementTraceCheckpoint>) {
 struct LineBreakTraceTransaction {
     measurement: Option<MeasurementTraceCheckpoint>,
     frame: Option<FrameTraceCheckpoint>,
+    hot: Option<HotTraceCheckpoint>,
     committed: bool,
 }
 
@@ -122,9 +125,11 @@ impl LineBreakTraceTransaction {
     fn new() -> Option<Self> {
         let measurement = measurement_trace_checkpoint();
         let frame = frame_trace_checkpoint();
-        (measurement.is_some() || frame.is_some()).then_some(Self {
+        let hot = hot_trace_checkpoint();
+        (measurement.is_some() || frame.is_some() || hot.is_some()).then_some(Self {
             measurement,
             frame,
+            hot,
             committed: false,
         })
     }
@@ -140,6 +145,7 @@ impl Drop for LineBreakTraceTransaction {
         if !self.committed {
             restore_measurement_trace(self.measurement);
             restore_frame_trace(self.frame);
+            restore_hot_trace(self.hot.take());
         }
     }
 }
@@ -4507,6 +4513,32 @@ mod frame_reflow_tests {
             });
             assert_eq!(outer.total_records, 2);
             assert_eq!(outer.records.len(), 2);
+
+            use tracing_subscriber::prelude::*;
+            let subscriber =
+                tracing_subscriber::registry().with(crate::subsecond_dev::HotTraceLayer);
+            let serialized = tracing::subscriber::with_default(subscriber, || {
+                let token = crate::subsecond_dev::begin_subsecond_trace();
+                crate::subsecond_dev::activate_subsecond_trace(token);
+                let transaction = LineBreakTraceTransaction::new().expect("active hot trace");
+                drop(tracing::trace_span!(
+                    target: "rhwp::layout",
+                    "layout_frame_carve",
+                    attempt = "kerning",
+                ));
+                drop(transaction);
+                drop(tracing::trace_span!(
+                    target: "rhwp::layout",
+                    "layout_frame_carve",
+                    attempt = "scalar-retry",
+                ));
+                crate::subsecond_dev::deactivate_subsecond_trace(token);
+                crate::subsecond_dev::end_subsecond_trace(token, true)
+            });
+            let entries: Vec<serde_json::Value> =
+                serde_json::from_str(&serialized).expect("hot trace JSON");
+            assert_eq!(entries.len(), 1);
+            assert_eq!(entries[0]["args"]["attempt"], "scalar-retry");
         }
     }
 

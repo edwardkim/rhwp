@@ -452,6 +452,23 @@ impl LayoutEngine {
         // 진행하지 않는다. 이중 계상(gap + draw-advance) 방지.
         vpos_accounts_for_height: bool,
     ) -> f64 {
+        #[cfg(feature = "subsecond-dev")]
+        let trace = crate::subsecond_dev::hot_trace_enabled().then(|| {
+            tracing::trace_span!(
+                target: "rhwp::layout",
+                "layout_body_picture",
+                page_index = tree.page_index() as u64,
+                para_index = para_index as u64,
+                control_index = control_index as u64,
+                y_offset,
+                text_wrap = ?picture.common.text_wrap,
+                vpos_accounts_for_height,
+                result_frame_height = tracing::field::Empty,
+                result_y = tracing::field::Empty,
+            )
+        });
+        #[cfg(feature = "subsecond-dev")]
+        let _entered = trace.as_ref().map(|span| span.enter());
         // 그림 크기 (HWPUNIT → 픽셀)
         // [Issue #1230] 측면흐름 wrap 은 common(개체 틀) 프레임으로 그린다.
         let (pic_width_hu, pic_height_hu) = super::utils::picture_flow_frame_size_hu(picture);
@@ -692,14 +709,20 @@ impl LayoutEngine {
             } else {
                 0.0
             };
-        match (picture.common.vert_rel_to, picture.common.text_wrap) {
+        let result_y = match (picture.common.vert_rel_to, picture.common.text_wrap) {
             (VertRelTo::Para, TextWrap::BehindText | TextWrap::InFrontOfText) => y_offset,
             // [Task #1079] 파일 vpos 가 그림 공간을 이미 반영하면 그림은 gap 안에 그려졌고
             // 후속 문단은 파일 vpos(그림 para 줄)로 흐르므로 추가 진행 없이 base_y 반환.
             (VertRelTo::Para, _) if vpos_accounts_for_height => base_y,
             (VertRelTo::Para, _) => base_y + total_height,
             (VertRelTo::Page | VertRelTo::Paper, _) => y_offset,
+        };
+        #[cfg(feature = "subsecond-dev")]
+        if let Some(trace) = &trace {
+            trace.record("result_frame_height", total_height);
+            trace.record("result_y", result_y);
         }
+        result_y
     }
 
     /// 캡션의 총 높이를 계산한다.

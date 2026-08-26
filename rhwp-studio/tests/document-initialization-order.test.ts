@@ -88,7 +88,7 @@ test('로컬 글꼴 감지는 Canvas2D 문서를 전체 재로딩하지 않는�
 test('저장된 local-font snapshot은 Canvas2D 첫 문서 paint보다 먼저 준비한다', () => {
   const initializeDocument = initializeDocumentSource();
   const storedIndex = initializeDocument.indexOf('await loadStoredLocalFonts();');
-  const canvasIndex = initializeDocument.indexOf('await canvasView?.loadDocument();');
+  const canvasIndex = initializeDocument.indexOf('await canvasView?.loadDocument(options.traceLayout);');
 
   assert.ok(storedIndex >= 0, '문서 초기화가 저장 snapshot을 로드해야 한다');
   assert.ok(canvasIndex > storedIndex, '저장 snapshot을 첫 Canvas paint보다 먼저 로드해야 한다');

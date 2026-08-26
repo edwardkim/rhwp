@@ -1,12 +1,340 @@
 use serde_json::Value;
+use std::cell::RefCell;
+use std::collections::{BTreeMap, VecDeque};
 use std::sync::{Arc, Once};
 use subsecond::{HotFn, JumpTable};
+use tracing::field::{Field, Visit};
+use tracing_subscriber::{layer::Context, registry::LookupSpan, Layer};
 use wasm_bindgen::prelude::*;
 
 static REGISTER_PATCH_HANDLER: Once = Once::new();
+#[cfg(target_arch = "wasm32")]
+static REGISTER_TRACING: Once = Once::new();
 const PATCH_COMMIT_EVENT: &str = "rhwp-subsecond-commit";
+const HOT_TRACE_TARGET: &str = "rhwp::layout";
+const HOT_TRACE_LIMIT: usize = 16;
+const HOT_TRACE_SESSION_LIMIT: usize = 4;
+const HOT_TRACE_DISABLED_TOKEN: u32 = 1 << 31;
+
+#[derive(Clone, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
+struct HotTraceEntry {
+    function: String,
+    args: BTreeMap<String, Value>,
+    duration_ms: f64,
+    depth: usize,
+    #[serde(skip)]
+    sequence: u64,
+}
+
+struct HotTraceSession {
+    token: u32,
+    entries: VecDeque<HotTraceEntry>,
+    next_sequence: u64,
+}
+
+#[derive(Default)]
+struct HotTraceState {
+    sessions: Vec<HotTraceSession>,
+    active: Vec<u32>,
+    next_token: u32,
+}
+
+struct HotTraceSpan {
+    function: &'static str,
+    args: BTreeMap<String, Value>,
+    started_at: f64,
+    depth: usize,
+    sequence: u64,
+    token: u32,
+}
+
+#[derive(Default)]
+struct HotTraceFields(BTreeMap<String, Value>);
+
+impl Visit for HotTraceFields {
+    fn record_f64(&mut self, field: &Field, value: f64) {
+        if let Some(value) = serde_json::Number::from_f64(value) {
+            self.0.insert(field.name().to_owned(), Value::Number(value));
+        }
+    }
+
+    fn record_i64(&mut self, field: &Field, value: i64) {
+        self.0.insert(field.name().to_owned(), Value::from(value));
+    }
+
+    fn record_u64(&mut self, field: &Field, value: u64) {
+        self.0.insert(field.name().to_owned(), Value::from(value));
+    }
+
+    fn record_bool(&mut self, field: &Field, value: bool) {
+        self.0.insert(field.name().to_owned(), Value::from(value));
+    }
+
+    fn record_str(&mut self, field: &Field, value: &str) {
+        self.0.insert(
+            field.name().to_owned(),
+            Value::from(value.chars().take(256).collect::<String>()),
+        );
+    }
+
+    fn record_debug(&mut self, field: &Field, value: &dyn std::fmt::Debug) {
+        self.record_str(field, &format!("{value:?}"));
+    }
+}
+
+pub(crate) struct HotTraceLayer;
+
+impl<S> Layer<S> for HotTraceLayer
+where
+    S: tracing::Subscriber + for<'lookup> LookupSpan<'lookup>,
+{
+    fn on_new_span(
+        &self,
+        attrs: &tracing::span::Attributes<'_>,
+        id: &tracing::Id,
+        ctx: Context<'_, S>,
+    ) {
+        if attrs.metadata().target() != HOT_TRACE_TARGET {
+            return;
+        }
+        let Some((token, sequence)) = HOT_TRACE.with(|state| {
+            let mut state = state.borrow_mut();
+            let token = *state.active.last()?;
+            let session = state
+                .sessions
+                .iter_mut()
+                .find(|session| session.token == token)?;
+            let sequence = session.next_sequence;
+            session.next_sequence = session.next_sequence.wrapping_add(1);
+            Some((session.token, sequence))
+        }) else {
+            return;
+        };
+        let mut fields = HotTraceFields::default();
+        attrs.record(&mut fields);
+        let parent = attrs
+            .parent()
+            .and_then(|parent| ctx.span(parent))
+            .or_else(|| {
+                attrs
+                    .is_contextual()
+                    .then(|| ctx.lookup_current())
+                    .flatten()
+            });
+        let depth = parent
+            .as_ref()
+            .and_then(|parent| {
+                let extensions = parent.extensions();
+                extensions
+                    .get::<HotTraceSpan>()
+                    .filter(|trace| trace.token == token)
+                    .map(|trace| trace.depth + 1)
+            })
+            .unwrap_or(0);
+        if let Some(span) = ctx.span(id) {
+            span.extensions_mut().insert(HotTraceSpan {
+                function: attrs.metadata().name(),
+                args: fields.0,
+                started_at: trace_now_ms(),
+                depth,
+                sequence,
+                token,
+            });
+        }
+    }
+
+    fn on_record(&self, id: &tracing::Id, values: &tracing::span::Record<'_>, ctx: Context<'_, S>) {
+        let Some(span) = ctx.span(id) else { return };
+        let mut extensions = span.extensions_mut();
+        let Some(trace) = extensions.get_mut::<HotTraceSpan>() else {
+            return;
+        };
+        let mut fields = HotTraceFields(std::mem::take(&mut trace.args));
+        values.record(&mut fields);
+        trace.args = fields.0;
+    }
+
+    fn on_close(&self, id: tracing::Id, ctx: Context<'_, S>) {
+        let Some(span) = ctx.span(&id) else { return };
+        let extensions = span.extensions();
+        let Some(trace) = extensions.get::<HotTraceSpan>() else {
+            return;
+        };
+        let entry = HotTraceEntry {
+            function: trace.function.to_owned(),
+            args: trace.args.clone(),
+            duration_ms: (trace_now_ms() - trace.started_at).max(0.0),
+            depth: trace.depth,
+            sequence: trace.sequence,
+        };
+        retain_hot_trace(trace.token, entry);
+    }
+}
+
+fn retain_hot_trace(token: u32, entry: HotTraceEntry) {
+    HOT_TRACE.with(|state| {
+        let mut state = state.borrow_mut();
+        let Some(session) = state
+            .sessions
+            .iter_mut()
+            .find(|session| session.token == token)
+        else {
+            return;
+        };
+        retain_trace_entry(&mut session.entries, entry);
+    });
+}
+
+fn retain_trace_entry(entries: &mut VecDeque<HotTraceEntry>, entry: HotTraceEntry) {
+    if let Some(index) = entries
+        .iter()
+        .position(|existing| existing.function == entry.function)
+    {
+        entries.remove(index);
+    } else if entries.len() == HOT_TRACE_LIMIT {
+        entries.pop_front();
+    }
+    entries.push_back(entry);
+}
+
+thread_local! {
+    static HOT_TRACE: RefCell<HotTraceState> = RefCell::new(HotTraceState::default());
+}
+
+#[derive(Clone)]
+pub(crate) struct HotTraceCheckpoint {
+    token: u32,
+    entries: VecDeque<HotTraceEntry>,
+}
+
+pub(crate) fn hot_trace_checkpoint() -> Option<HotTraceCheckpoint> {
+    HOT_TRACE.with(|state| {
+        let state = state.borrow();
+        let token = *state.active.last()?;
+        let session = state
+            .sessions
+            .iter()
+            .find(|session| session.token == token)?;
+        Some(HotTraceCheckpoint {
+            token,
+            entries: session.entries.clone(),
+        })
+    })
+}
+
+pub(crate) fn restore_hot_trace(checkpoint: Option<HotTraceCheckpoint>) {
+    let Some(checkpoint) = checkpoint else { return };
+    HOT_TRACE.with(|state| {
+        if let Some(session) = state
+            .borrow_mut()
+            .sessions
+            .iter_mut()
+            .find(|session| session.token == checkpoint.token)
+        {
+            session.entries = checkpoint.entries;
+        }
+    });
+}
+
+#[cfg(target_arch = "wasm32")]
+fn trace_now_ms() -> f64 {
+    js_sys::Date::now()
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+fn trace_now_ms() -> f64 {
+    use std::sync::OnceLock;
+    use std::time::Instant;
+    static START: OnceLock<Instant> = OnceLock::new();
+    START.get_or_init(Instant::now).elapsed().as_secs_f64() * 1_000.0
+}
+
+pub(crate) fn hot_trace_enabled() -> bool {
+    HOT_TRACE.with(|state| {
+        let state = state.borrow();
+        state
+            .active
+            .last()
+            .is_some_and(|token| state.sessions.iter().any(|session| session.token == *token))
+    })
+}
+
+#[wasm_bindgen(js_name = beginSubsecondTrace)]
+pub fn begin_subsecond_trace() -> u32 {
+    HOT_TRACE.with(|state| {
+        let mut state = state.borrow_mut();
+        state.next_token = state.next_token.wrapping_add(1) & !HOT_TRACE_DISABLED_TOKEN;
+        state.next_token = state.next_token.max(1);
+        let token = state.next_token;
+        if state.sessions.len() == HOT_TRACE_SESSION_LIMIT {
+            return token | HOT_TRACE_DISABLED_TOKEN;
+        }
+        state.sessions.push(HotTraceSession {
+            token,
+            entries: VecDeque::new(),
+            next_sequence: 0,
+        });
+        token
+    })
+}
+
+#[wasm_bindgen(js_name = activateSubsecondTrace)]
+pub fn activate_subsecond_trace(token: u32) {
+    HOT_TRACE.with(|state| {
+        let mut state = state.borrow_mut();
+        if token & HOT_TRACE_DISABLED_TOKEN != 0
+            || state.sessions.iter().any(|session| session.token == token)
+        {
+            state.active.push(token);
+        }
+    });
+}
+
+#[wasm_bindgen(js_name = deactivateSubsecondTrace)]
+pub fn deactivate_subsecond_trace(token: u32) {
+    HOT_TRACE.with(|state| {
+        let mut state = state.borrow_mut();
+        if let Some(index) = state.active.iter().rposition(|active| *active == token) {
+            state.active.remove(index);
+        }
+    });
+}
+
+#[wasm_bindgen(js_name = endSubsecondTrace)]
+pub fn end_subsecond_trace(token: u32, retain: bool) -> String {
+    HOT_TRACE.with(|state| {
+        let mut state = state.borrow_mut();
+        state.active.retain(|active| *active != token);
+        let Some(index) = state
+            .sessions
+            .iter()
+            .position(|session| session.token == token)
+        else {
+            return "[]".to_owned();
+        };
+        let session = state.sessions.remove(index);
+        if !retain || session.entries.is_empty() {
+            return "[]".to_owned();
+        }
+        let mut entries = session.entries.into_iter().collect::<Vec<_>>();
+        entries.sort_by_key(|entry| entry.sequence);
+        serde_json::to_string(&entries).unwrap_or_else(|_| "[]".to_owned())
+    })
+}
+
+fn register_tracing() {
+    #[cfg(target_arch = "wasm32")]
+    REGISTER_TRACING.call_once(|| {
+        use tracing_subscriber::prelude::*;
+        let _ = tracing::subscriber::set_global_default(
+            tracing_subscriber::registry().with(HotTraceLayer),
+        );
+    });
+}
 
 fn register_patch_handler() {
+    register_tracing();
     REGISTER_PATCH_HANDLER.call_once(|| {
         subsecond::register_handler(Arc::new(|| {
             #[cfg(target_arch = "wasm32")]
@@ -137,8 +465,12 @@ mod tests {
         "aslr_reference":0,"new_base_address":0,"ifunc_count":0}}}"#;
 
     #[test]
-    fn probe_calls_the_current_function_body() {
+    fn probe_and_layout_trace_contracts_hold() {
         assert_eq!(subsecond_probe(), 41);
+        layout_trace_is_capture_gated_and_keeps_only_the_latest_frames();
+        layout_frame_trace_contains_true_inputs_and_computed_height();
+        interleaved_sessions_attribute_each_sync_segment_to_its_token();
+        empty_or_discarded_capture_cannot_return_older_evidence();
     }
 
     #[test]
@@ -210,5 +542,247 @@ mod tests {
             DevtoolsMessageOutcome::PatchDispatched.code(),
             "patch-dispatched"
         );
+    }
+
+    fn layout_trace_is_capture_gated_and_keeps_only_the_latest_frames() {
+        use tracing_subscriber::prelude::*;
+
+        HOT_TRACE.with(|state| *state.borrow_mut() = HotTraceState::default());
+        let mut serialized = String::new();
+        let subscriber = tracing_subscriber::registry().with(HotTraceLayer);
+        tracing::subscriber::with_default(subscriber, || {
+            drop(tracing::trace_span!(
+                target: HOT_TRACE_TARGET,
+                "ordinary_render",
+                page = 0_u64,
+            ));
+            assert!(!hot_trace_enabled());
+
+            let token = begin_subsecond_trace();
+            activate_subsecond_trace(token);
+            for para_index in 0_u64..24 {
+                let span = tracing::trace_span!(
+                    target: HOT_TRACE_TARGET,
+                    "flow_advance_height",
+                    para_index,
+                    result_height = tracing::field::Empty,
+                );
+                span.record("result_height", para_index as f64 + 0.5);
+                drop(span);
+            }
+            deactivate_subsecond_trace(token);
+            serialized = end_subsecond_trace(token, true);
+        });
+
+        let trace: Vec<Value> = serde_json::from_str(&serialized).unwrap();
+        assert_eq!(
+            trace.len(),
+            1,
+            "repeated rows keep the latest function frame"
+        );
+        assert_eq!(trace[0]["function"], "flow_advance_height");
+        assert_eq!(trace[0]["args"]["para_index"], 23);
+        assert_eq!(trace[0]["args"]["result_height"], 23.5);
+
+        let token = begin_subsecond_trace();
+        for index in 0_u64..24 {
+            retain_hot_trace(
+                token,
+                HotTraceEntry {
+                    function: format!("layout_{index}"),
+                    args: BTreeMap::new(),
+                    duration_ms: 0.0,
+                    depth: 0,
+                    sequence: index,
+                },
+            );
+        }
+        let bounded: Vec<Value> = serde_json::from_str(&end_subsecond_trace(token, true)).unwrap();
+        assert_eq!(bounded.len(), HOT_TRACE_LIMIT);
+        assert_eq!(bounded[0]["function"], "layout_8");
+        assert_eq!(bounded[15]["function"], "layout_23");
+        nested_capture_cannot_clear_or_disable_its_outer_owner();
+        saturated_capture_cannot_write_into_an_existing_owner();
+    }
+
+    fn layout_frame_trace_contains_true_inputs_and_computed_height() {
+        use crate::model::paragraph::LineSeg;
+        use crate::renderer::layout_frame::{FrameRowMetrics, LayoutFrame, RowSegment};
+        use tracing_subscriber::prelude::*;
+
+        HOT_TRACE.with(|state| *state.borrow_mut() = HotTraceState::default());
+        let mut serialized = String::new();
+        let subscriber = tracing_subscriber::registry().with(HotTraceLayer);
+        tracing::subscriber::with_default(subscriber, || {
+            let token = begin_subsecond_trace();
+            activate_subsecond_trace(token);
+            let mut frame = LayoutFrame::new(100..500, 40, Vec::new());
+            let interval = frame.carve(30)[0].clone();
+            assert_eq!(
+                frame.commit_carved_row(
+                    FrameRowMetrics {
+                        vertical_pos: 0,
+                        line_height: 30,
+                        text_height: 20,
+                        baseline_distance: 20,
+                        line_spacing: 5,
+                    },
+                    vec![RowSegment::new(
+                        0..4,
+                        interval,
+                        LineSeg::TAG_SINGLE_SEGMENT_LINE,
+                    )],
+                ),
+                Some(0)
+            );
+            deactivate_subsecond_trace(token);
+            serialized = end_subsecond_trace(token, true);
+        });
+
+        let trace: Vec<Value> = serde_json::from_str(&serialized).unwrap();
+        assert_eq!(trace[0]["function"], "layout_frame_carve");
+        assert_eq!(trace[0]["args"]["top"], 40);
+        assert_eq!(trace[0]["args"]["band_height"], 30);
+        assert_eq!(trace[0]["args"]["result_interval_count"], 1);
+        assert_eq!(trace[1]["function"], "layout_frame_commit_row");
+        assert_eq!(trace[1]["args"]["line_height"], 30);
+        assert_eq!(trace[1]["args"]["line_spacing"], 5);
+        assert_eq!(trace[1]["args"]["result_top"], 75);
+        assert_eq!(trace[1]["args"]["result_accepted"], true);
+    }
+
+    fn nested_capture_cannot_clear_or_disable_its_outer_owner() {
+        use tracing_subscriber::prelude::*;
+
+        HOT_TRACE.with(|state| *state.borrow_mut() = HotTraceState::default());
+        let mut outer_serialized = String::new();
+        let subscriber = tracing_subscriber::registry().with(HotTraceLayer);
+        tracing::subscriber::with_default(subscriber, || {
+            let outer = begin_subsecond_trace();
+            activate_subsecond_trace(outer);
+            drop(tracing::trace_span!(target: HOT_TRACE_TARGET, "outer_before"));
+
+            let rebuild = begin_subsecond_trace();
+            activate_subsecond_trace(rebuild);
+            drop(tracing::trace_span!(target: HOT_TRACE_TARGET, "nested_rebuild"));
+            deactivate_subsecond_trace(rebuild);
+            let rebuild: Vec<Value> =
+                serde_json::from_str(&end_subsecond_trace(rebuild, true)).unwrap();
+            assert_eq!(rebuild[0]["function"], "nested_rebuild");
+
+            assert!(hot_trace_enabled(), "the outer owner remains active");
+            drop(tracing::trace_span!(target: HOT_TRACE_TARGET, "outer_after"));
+            deactivate_subsecond_trace(outer);
+            outer_serialized = end_subsecond_trace(outer, true);
+        });
+
+        let outer: Vec<Value> = serde_json::from_str(&outer_serialized).unwrap();
+        assert_eq!(outer[0]["function"], "outer_before");
+        assert_eq!(outer[1]["function"], "outer_after");
+    }
+
+    fn saturated_capture_cannot_write_into_an_existing_owner() {
+        use tracing_subscriber::prelude::*;
+
+        HOT_TRACE.with(|state| *state.borrow_mut() = HotTraceState::default());
+        let mut owner_serialized = String::new();
+        let subscriber = tracing_subscriber::registry().with(HotTraceLayer);
+        tracing::subscriber::with_default(subscriber, || {
+            let owners = (0..HOT_TRACE_SESSION_LIMIT)
+                .map(|_| begin_subsecond_trace())
+                .collect::<Vec<_>>();
+            activate_subsecond_trace(owners[0]);
+            drop(tracing::trace_span!(target: HOT_TRACE_TARGET, "owner_before"));
+            let disabled = (0..100)
+                .map(|_| begin_subsecond_trace())
+                .collect::<Vec<_>>();
+            HOT_TRACE
+                .with(|state| assert_eq!(state.borrow().sessions.len(), HOT_TRACE_SESSION_LIMIT));
+            let saturated = *disabled.last().unwrap();
+            assert_ne!(saturated & HOT_TRACE_DISABLED_TOKEN, 0);
+            activate_subsecond_trace(saturated);
+            assert!(
+                !hot_trace_enabled(),
+                "the disabled top owner blocks attribution"
+            );
+            drop(tracing::trace_span!(target: HOT_TRACE_TARGET, "must_not_leak"));
+            deactivate_subsecond_trace(saturated);
+            assert!(hot_trace_enabled());
+            drop(tracing::trace_span!(target: HOT_TRACE_TARGET, "owner_after"));
+            deactivate_subsecond_trace(owners[0]);
+            for token in disabled {
+                assert_eq!(end_subsecond_trace(token, true), "[]");
+            }
+            for (index, token) in owners.into_iter().enumerate() {
+                let serialized = end_subsecond_trace(token, true);
+                if index == 0 {
+                    owner_serialized = serialized;
+                } else {
+                    assert_eq!(serialized, "[]");
+                }
+            }
+            HOT_TRACE.with(|state| {
+                let state = state.borrow();
+                assert!(state.sessions.is_empty());
+                assert!(state.active.is_empty());
+            });
+        });
+
+        let owner: Vec<Value> = serde_json::from_str(&owner_serialized).unwrap();
+        assert_eq!(owner[0]["function"], "owner_before");
+        assert_eq!(owner[1]["function"], "owner_after");
+    }
+
+    fn interleaved_sessions_attribute_each_sync_segment_to_its_token() {
+        use tracing_subscriber::prelude::*;
+
+        HOT_TRACE.with(|state| *state.borrow_mut() = HotTraceState::default());
+        let mut a_serialized = String::new();
+        let mut b_serialized = String::new();
+        let subscriber = tracing_subscriber::registry().with(HotTraceLayer);
+        tracing::subscriber::with_default(subscriber, || {
+            let a = begin_subsecond_trace();
+            let b = begin_subsecond_trace();
+            activate_subsecond_trace(a);
+            drop(tracing::trace_span!(target: HOT_TRACE_TARGET, "a_after_await"));
+            deactivate_subsecond_trace(a);
+            activate_subsecond_trace(b);
+            drop(tracing::trace_span!(target: HOT_TRACE_TARGET, "b_after_await"));
+            deactivate_subsecond_trace(b);
+            a_serialized = end_subsecond_trace(a, true);
+            b_serialized = end_subsecond_trace(b, true);
+        });
+
+        let a: Vec<Value> = serde_json::from_str(&a_serialized).unwrap();
+        let b: Vec<Value> = serde_json::from_str(&b_serialized).unwrap();
+        assert_eq!(a[0]["function"], "a_after_await");
+        assert_eq!(b[0]["function"], "b_after_await");
+    }
+
+    fn empty_or_discarded_capture_cannot_return_older_evidence() {
+        use tracing_subscriber::prelude::*;
+
+        HOT_TRACE.with(|state| *state.borrow_mut() = HotTraceState::default());
+        let subscriber = tracing_subscriber::registry().with(HotTraceLayer);
+        tracing::subscriber::with_default(subscriber, || {
+            let old = begin_subsecond_trace();
+            activate_subsecond_trace(old);
+            drop(tracing::trace_span!(target: HOT_TRACE_TARGET, "old_page"));
+            deactivate_subsecond_trace(old);
+
+            let empty = begin_subsecond_trace();
+            activate_subsecond_trace(empty);
+            deactivate_subsecond_trace(empty);
+            assert_eq!(end_subsecond_trace(empty, true), "[]");
+
+            let discarded = begin_subsecond_trace();
+            activate_subsecond_trace(discarded);
+            drop(tracing::trace_span!(target: HOT_TRACE_TARGET, "aborted_page"));
+            deactivate_subsecond_trace(discarded);
+            assert_eq!(end_subsecond_trace(discarded, false), "[]");
+
+            let old: Vec<Value> = serde_json::from_str(&end_subsecond_trace(old, true)).unwrap();
+            assert_eq!(old[0]["function"], "old_page");
+        });
     }
 }

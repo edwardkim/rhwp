@@ -6,7 +6,7 @@
 //! base 모듈의 export 를 직접 부르면 그 아래 호출은 끝까지 옛 코드다.
 //!
 //! 그래서 "무엇이 핫패치되는가"는 export 마다 흩어진 `#[cfg]` 블록이 아니라 아래
-//! `hot_render_boundaries!` **목록 하나**가 정한다. 한 줄을 더하면 세 가지가 함께 생긴다.
+//! `hot_boundaries!` **목록 하나**가 정한다. 한 줄을 더하면 세 가지가 함께 생긴다.
 //!
 //! 1. 그 경계의 dispatcher — `#[cfg(feature = "subsecond-dev")]` 분기는 이 파일의 매크로
 //!    안에 **한 벌만** 있다. 복사할 `#[cfg]` 블록이 없으니 빠뜨릴 것도 없다.
@@ -39,7 +39,7 @@ use web_sys::HtmlCanvasElement;
 /// 항목 문법은 `exports [...] fn <dispatcher>(<인자>) -> <반환> = <패치 대상>;` 이다.
 /// `#[cfg(...)]` 만 항목 앞에 붙일 수 있다 — 설명은 `//` 주석으로 적는다(문서 주석은
 /// 아래 집계 함수의 문장 자리에 붙을 수 없다).
-macro_rules! hot_render_boundaries {
+macro_rules! hot_boundaries {
     (
         $(
             $(#[cfg($cfg:meta)])?
@@ -121,7 +121,7 @@ macro_rules! hot_render_boundaries {
     };
 }
 
-hot_render_boundaries! {
+hot_boundaries! {
     // 전체 재도색. 본문·overlay·static plane 을 각각 그린다 — `renderer::web_canvas` 와
     // `renderer::layer_renderer` 의 페인트 전부가 이 아래에 있다.
     #[cfg(target_arch = "wasm32")]
@@ -205,7 +205,7 @@ hot_render_boundaries! {
 /// 일부러 경계 밖에 둔 export 와 그 이유. 위 목록과 한 쌍이라 붙여 둔다.
 ///
 /// "아직 안 했다"가 아니라 **경계를 두어도 얻는 것이 없거나 오히려 어긋난다**는 판단이다.
-/// 판단이 바뀌면 여기서 빼고 위 `hot_render_boundaries!` 로 옮기면 된다.
+/// 판단이 바뀌면 여기서 빼고 위 `hot_boundaries!` 로 옮기면 된다.
 #[cfg(test)]
 const DELIBERATELY_COLD_EXPORTS: &[(&str, &str)] = &[
     (

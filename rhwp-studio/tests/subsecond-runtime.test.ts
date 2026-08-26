@@ -357,6 +357,7 @@ test('development render runtime owns one watcher and releases it for a later re
   let revision = 'baseline';
   let rebuilds = 0;
   const repaints: string[] = [];
+  const trace: string[] = [];
   const document = {
     getRenderCodeRevision: () => revision,
     rebuildDerivedState: () => {
@@ -368,6 +369,14 @@ test('development render runtime owns one watcher and releases it for a later re
     scheduler: {
       requestAnimationFrame: frames.request,
       cancelAnimationFrame: frames.cancel,
+    },
+    withRebuildTrace: (rebuild: () => boolean) => {
+      trace.push('begin');
+      try {
+        return rebuild();
+      } finally {
+        trace.push('end');
+      }
     },
   };
 
@@ -383,6 +392,7 @@ test('development render runtime owns one watcher and releases it for a later re
   frames.flush();
   assert.equal(rebuilds, 1);
   assert.deepEqual(repaints, ['patched']);
+  assert.deepEqual(trace, ['begin', 'end'], 'layout capture owns the complete rebuild call');
 
   stop();
   assert.equal(frames.pendingCount, 0, '해제선은 감시 프레임을 남기면 안 된다');
@@ -1022,7 +1032,10 @@ test('hot-patch dev wiring is declared in the manifests and the vite config', ()
   const studioPackage = readFileSync(new URL('../package.json', import.meta.url), 'utf8');
   const dxPatch = readFileSync(new URL('../../scripts/patches/dioxus-cli-hotpatch-tip-dependents.patch', import.meta.url), 'utf8');
 
-  assert.match(cargo, /subsecond-dev\s*=\s*\["dep:subsecond"\]/);
+  assert.match(
+    cargo,
+    /subsecond-dev\s*=\s*\["dep:subsecond",\s*"dep:tracing",\s*"dep:tracing-subscriber"\]/,
+  );
   // 버전 숫자는 여기 적지 않는다 — 사본이 하나 더 생기면 그것이 #4580 이 없앤 드리프트다.
   // 정확 핀이라는 사실만 본다. 그 핀에서 유도한 값의 정합은 아래 전용 테스트가 확인한다.
   assert.match(cargo, /subsecond\s*=\s*\{[^}]*git\s*=\s*"[^"]+"[^}]*rev\s*=\s*"[a-f0-9]{40}"[^}]*optional\s*=\s*true/);

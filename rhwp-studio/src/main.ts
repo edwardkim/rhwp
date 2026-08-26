@@ -185,6 +185,47 @@ type ActivePdfReference = PageReferenceLayer & {
 let activePdfReference: ActivePdfReference | null = null;
 let pdfReferenceGeneration = 0;
 
+type SubsecondTraceExports = {
+  beginSubsecondTrace?: () => number;
+  activateSubsecondTrace?: (token: number) => void;
+  deactivateSubsecondTrace?: (token: number) => void;
+  endSubsecondTrace?: (token: number, retain: boolean) => void;
+};
+type LayoutTraceRun = <T>(run: () => T) => T;
+const withoutLayoutTrace: LayoutTraceRun = run => run();
+
+function subsecondTraceExports(): SubsecondTraceExports {
+  return wasm.getWasmModuleExports() as SubsecondTraceExports;
+}
+
+function beginLayoutTraceSession(): { run: LayoutTraceRun; end(retain: boolean): void } {
+  const trace = subsecondTraceExports();
+  const token = trace.beginSubsecondTrace?.() ?? 0;
+  return {
+    run: (operation) => {
+      trace.activateSubsecondTrace?.(token);
+      try {
+        return operation();
+      } finally {
+        trace.deactivateSubsecondTrace?.(token);
+      }
+    },
+    end: retain => trace.endSubsecondTrace?.(token, retain),
+  };
+}
+
+function withLayoutTrace<T>(run: () => T): T {
+  const trace = beginLayoutTraceSession();
+  let retain = false;
+  try {
+    const result = trace.run(run);
+    retain = true;
+    return result;
+  } finally {
+    trace.end(retain);
+  }
+}
+
 function supportsPdfReferenceHarness(fileName: string): boolean {
   if (!import.meta.env.DEV || !/\.(hwp|hwpx)$/i.test(fileName)) return false;
   const exports = wasm.getWasmModuleExports();
@@ -250,9 +291,22 @@ async function activatePdfReference(
         getDocumentDigest: () => wasm.documentDigest,
         getDocumentGeneration: () => wasm.documentGeneration,
         getHwpPageCount: () => wasm.pageCount,
-        capturePage: (pageIndex, sampleWidth, signal) => {
+        capturePage: async (pageIndex, sampleWidth, signal) => {
           if (!canvasView) throw new Error('CanvasView is unavailable');
-          return canvasView.capturePageForDiagnostics(pageIndex, sampleWidth, signal);
+          const session = beginLayoutTraceSession();
+          let retain = false;
+          try {
+            const capture = await canvasView.capturePageForDiagnostics(
+              pageIndex,
+              sampleWidth,
+              signal,
+              session.run,
+            );
+            retain = true;
+            return capture;
+          } finally {
+            session.end(retain);
+          }
         },
         getRenderGeneration: () => canvasView?.getDiagnosticRenderGeneration() ?? 0,
       },
@@ -298,7 +352,10 @@ async function startDevelopmentRenderRuntime(): Promise<void> {
         refreshPatchedRender();
         activePdfReference?.onRenderCodePatched();
       },
-      { measureHeapBytes: () => wasm.getWasmLinearMemoryBytes() },
+      {
+        measureHeapBytes: () => wasm.getWasmLinearMemoryBytes(),
+        withRebuildTrace: rebuild => withLayoutTrace(rebuild),
+      },
     );
   } catch (error) {
     // 개발 편의 기능 실패가 문서 편집기 초기화를 막으면 안 된다.
@@ -1398,7 +1455,7 @@ function applySavedTextMarkSettings(): void {
 async function initializeDocument(
   docInfo: DocumentInfo,
   displayName: string,
-  options: { suppressDialogs?: boolean } = {},
+  options: { suppressDialogs?: boolean; traceLayout?: LayoutTraceRun } = {},
 ): Promise<void> {
   const msg = sbMessage();
   try {
@@ -1426,7 +1483,7 @@ async function initializeDocument(
     console.log('[initDoc] 4. canvasView loadDocument');
     await updateLoadProgress(82, '페이지 렌더 준비 중...');
     const savedZoomFitMode = userSettings.getViewSettings().zoomFitMode;
-    await canvasView?.loadDocument();
+    await canvasView?.loadDocument(options.traceLayout);
     // 쪽 크기를 알 수 있는 첫 시점이다 — 저장된 맞춤은 이 문서의 쪽으로 다시 계산한다.
     applySavedZoomFitMode(savedZoomFitMode);
     prepareCanvasKitLocalFonts(docInfo.fontsUsed);
@@ -1539,7 +1596,10 @@ function passwordOpenFailure(error: unknown): Error {
  * 일반 열기를 먼저 시도하고, 지원되는 HWP3/HWP5 암호 문서가 감지된 경우에만 암호
  * 입력 UI로 전환한다. 암호 문자열은 이 함수의 단일 시도 범위를 벗어나 보관하지 않는다.
  */
-async function loadPasswordProtectedDocument(data: Uint8Array, fileName: string): Promise<DocumentInfo> {
+async function loadPasswordProtectedDocument(
+  data: Uint8Array,
+  fileName: string,
+): Promise<DocumentInfo> {
   let retryMessage: string | undefined;
 
   while (true) {
@@ -1565,7 +1625,10 @@ async function loadPasswordProtectedDocument(data: Uint8Array, fileName: string)
   }
 }
 
-async function loadDocumentForOpen(data: Uint8Array, fileName: string): Promise<DocumentInfo> {
+async function loadDocumentForOpen(
+  data: Uint8Array,
+  fileName: string,
+): Promise<DocumentInfo> {
   try {
     return wasm.loadDocument(data, fileName);
   } catch (error) {
@@ -1627,50 +1690,59 @@ async function loadBytes(
   options: { dataReadProgressShown?: boolean; skipRecent?: boolean; suppressDialogs?: boolean } = {},
 ): Promise<void> {
   const pdfTwinLookup = beginPdfTwinLookup(fileName, data);
+  const traceSession = pdfTwinLookup ? beginLayoutTraceSession() : null;
+  const traceLayout = traceSession?.run ?? withoutLayoutTrace;
+  let retainTrace = false;
   let pdfReferenceDocumentGeneration: number | null = null;
   // 바이트로 여는 모든 경로(파일 열기 · ?url= · 자동저장 복구 · 호스트 API)의 공통 깔때기다.
   // 파싱·쪽 계산 동안 빈 화면만 보이므로 여기서 대기 커서를 든다.
-  await withBusyCursor(document.documentElement, async () => {
-    // 파싱 전에 먼저 빈 쪽 상태로 만든다 — 이전 문서를 붙잡고 있다가 한 번에 갈아치우면
-    // 화면이 튀어 보인다. 파싱이 실패하면 아래 catch가 이전 문서 뷰를 되살린다.
-    canvasView?.showBlankPage();
-    if (!options.dataReadProgressShown) {
-      await updateLoadProgress(0, '문서 데이터 준비 중...');
-    }
-    await updateLoadProgress(25, '문서 파싱 및 쪽 계산 중...');
-    const docInfo = await loadDocumentForOpen(data, fileName);
-    pdfReferenceDocumentGeneration = beginPdfReferenceDocument();
-    prepareCanvasRendererDocument();
-    // 문서가 갈렸다 — 빌린 핸들을 쥔 플러그인에 새 lease 를 준다. 알리지 않으면 그쪽만 옛
-    // 문서를 계속 만진다(세대 검사가 잡아 DOCUMENT_RELEASED 로 끊긴다).
-    plugins.notifyDocumentSwap();
-    await updateLoadProgress(45, '자동 저장 준비 중...');
-    forgetConvertedHmlSaveHandle(fileHandle);
-    wasm.currentFileHandle = fileHandle;
+  try {
+    await withBusyCursor(document.documentElement, async () => {
+      // 파싱 전에 먼저 빈 쪽 상태로 만든다 — 이전 문서를 붙잡고 있다가 한 번에 갈아치우면
+      // 화면이 튀어 보인다. 파싱이 실패하면 아래 catch가 이전 문서 뷰를 되살린다.
+      canvasView?.showBlankPage();
+      if (!options.dataReadProgressShown) {
+        await updateLoadProgress(0, '문서 데이터 준비 중...');
+      }
+      await updateLoadProgress(25, '문서 파싱 및 쪽 계산 중...');
+      const docInfo = await loadDocumentForOpen(data, fileName);
+      pdfReferenceDocumentGeneration = beginPdfReferenceDocument();
+      prepareCanvasRendererDocument();
+      // 문서가 갈렸다 — 빌린 핸들을 쥔 플러그인에 새 lease 를 준다. 알리지 않으면 그쪽만 옛
+      // 문서를 계속 만진다(세대 검사가 잡아 DOCUMENT_RELEASED 로 끊긴다).
+      plugins.notifyDocumentSwap();
+      await updateLoadProgress(45, '자동 저장 준비 중...');
+      forgetConvertedHmlSaveHandle(fileHandle);
+      wasm.currentFileHandle = fileHandle;
 
-    // 최근 문서 기록 — 문서 로드 성공 직후, 폰트/모달 등 블로킹 UI 단계 이전에 기록한다.
-    // 핸들이 있으면 라이브 재열기용으로 함께 기록하고, 없으면(드롭/input/URL 로드)
-    // 메타-only 로 기록한다 — 목록에는 남기되 자동 재열기는 핸들 있는 항목만 가능하다.
-    // 자동저장 복구본은 options.skipRecent 로 제외.
-    if (!options.skipRecent) {
-      recentSubmenuExpanded = false;
-      void addRecentDoc({
-        fileName: wasm.fileName,
-        sourceFormat: wasm.getSourceFormat(),
-        handle: fileHandle,
-      }).catch((err) => console.warn('[recent] 최근 문서 기록 실패:', err));
-    }
+      // 최근 문서 기록 — 문서 로드 성공 직후, 폰트/모달 등 블로킹 UI 단계 이전에 기록한다.
+      // 핸들이 있으면 라이브 재열기용으로 함께 기록하고, 없으면(드롭/input/URL 로드)
+      // 메타-only 로 기록한다 — 목록에는 남기되 자동 재열기는 핸들 있는 항목만 가능하다.
+      // 자동저장 복구본은 options.skipRecent 로 제외.
+      if (!options.skipRecent) {
+        recentSubmenuExpanded = false;
+        void addRecentDoc({
+          fileName: wasm.fileName,
+          sourceFormat: wasm.getSourceFormat(),
+          handle: fileHandle,
+        }).catch((err) => console.warn('[recent] 최근 문서 기록 실패:', err));
+      }
 
-    await autosaveManager.beginDocument(
-      { fileName: wasm.fileName, sourceFormat: wasm.getSourceFormat() },
-      { discardPreviousDraft: true },
-    );
-    await updateLoadProgress(50, '문서 초기화 중...');
-    const elapsed = performance.now() - startTime;
-    await initializeDocument(docInfo, `${fileName} — ${docInfo.pageCount}페이지 (${elapsed.toFixed(1)}ms)`, {
-      suppressDialogs: options.suppressDialogs,
+      await autosaveManager.beginDocument(
+        { fileName: wasm.fileName, sourceFormat: wasm.getSourceFormat() },
+        { discardPreviousDraft: true },
+      );
+      await updateLoadProgress(50, '문서 초기화 중...');
+      const elapsed = performance.now() - startTime;
+      await initializeDocument(docInfo, `${fileName} — ${docInfo.pageCount}페이지 (${elapsed.toFixed(1)}ms)`, {
+        suppressDialogs: options.suppressDialogs,
+        traceLayout,
+      });
     });
-  });
+    retainTrace = true;
+  } finally {
+    traceSession?.end(retainTrace);
+  }
   if (pdfReferenceDocumentGeneration !== null) {
     void activatePdfReference(pdfTwinLookup, pdfReferenceDocumentGeneration);
   }

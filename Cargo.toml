@@ -263,6 +263,8 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 ttf-parser = "0.25"
 rustybuzz = "0.20"
+tracing = { version = "0.1.44", optional = true }
+tracing-subscriber = { version = "0.3.23", optional = true }
 
 console_error_panic_hook = { version = "0.1", optional = true }
 # [#4580] 핫패치 source의 **유일한** 사본. `dx` 가 만든 점프 테이블을 이 크레이트가 역직렬화하므로
@@ -273,7 +275,7 @@ subsecond = { git = "https://github.com/DioxusLabs/dioxus.git", rev = "24f6a829d
 [features]
 default = ["console_error_panic_hook"]
 native-skia = ["dep:resvg", "dep:skia-safe"]
-subsecond-dev = ["dep:subsecond"]
+subsecond-dev = ["dep:subsecond", "dep:tracing", "dep:tracing-subscriber"]
 # [gym_gpu_raster] GPU 가속 SVG 래스터화 경로 (네이티브 전용). native-skia 와 같은 방식으로
 # 선택 게이팅한다 — CI 는 GPU 없이도 컴파일되고, 실제 GPU 실행은 로컬에서만 일어난다.
 # vello(+vello_svg)로 SVG 를 GPU 래스터화하고, resvg(CPU)를 같은 usvg 트리로 돌려 정직한

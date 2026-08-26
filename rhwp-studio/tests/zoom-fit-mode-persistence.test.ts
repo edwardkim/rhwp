@@ -166,12 +166,12 @@ test('문서를 열면 저장된 맞춤을 그 문서 쪽 크기로 되돌린다
   // 쪽 크기를 알 수 있는 첫 시점 = canvasView.loadDocument() 직후다.
   assert.match(
     main,
-    /await canvasView\?\.loadDocument\(\);[\s\S]{0,200}?applySavedZoomFitMode\(savedZoomFitMode\);/,
+    /await canvasView\?\.loadDocument\(options\.traceLayout\);[\s\S]{0,200}?applySavedZoomFitMode\(savedZoomFitMode\);/,
   );
   // 되돌릴 맞춤은 로드 전에 읽는다 — 좁은 창 자동 폭 맞춤이 로드 중에 저장값을 지운다.
   assert.match(
     main,
-    /const savedZoomFitMode = userSettings\.getViewSettings\(\)\.zoomFitMode;\n\s*await canvasView\?\.loadDocument\(\);/,
+    /const savedZoomFitMode = userSettings\.getViewSettings\(\)\.zoomFitMode;\n\s*await canvasView\?\.loadDocument\(options\.traceLayout\);/,
   );
   // 뷰포트가 알려주는 맞춤 변화는 그대로 저장으로 흘러야 다음 문서에서 되살아난다.
   assert.match(main, /eventBus\.on\('zoom-fit-mode-changed'/);

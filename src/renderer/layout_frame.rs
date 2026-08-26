@@ -520,6 +520,23 @@ impl LayoutFrame {
 
     /// Carve the current physical row into ordered horizontal intervals.
     pub(crate) fn carve(&mut self, band_height: i32) -> &[Range<i32>] {
+        #[cfg(feature = "subsecond-dev")]
+        let trace = crate::subsecond_dev::hot_trace_enabled().then(|| {
+            tracing::trace_span!(
+                target: "rhwp::layout",
+                "layout_frame_carve",
+                top = self.top,
+                band_height,
+                frame_start = self.horizontal.start,
+                frame_end = self.horizontal.end,
+                exclusion_count = self.exclusions.len() as u64,
+                result_top = tracing::field::Empty,
+                result_interval_count = tracing::field::Empty,
+                result_max_width = tracing::field::Empty,
+            )
+        });
+        #[cfg(feature = "subsecond-dev")]
+        let _entered = trace.as_ref().map(|span| span.enter());
         let old_max = self.next_geometry_event.map(|_| {
             self.current_intervals
                 .iter()
@@ -628,6 +645,19 @@ impl LayoutFrame {
             self.top = candidate_top;
             self.current_intervals = intervals;
             self.next_geometry_event = next_geometry_event;
+            #[cfg(feature = "subsecond-dev")]
+            if let Some(trace) = &trace {
+                trace.record("result_top", self.top);
+                trace.record("result_interval_count", self.current_intervals.len() as u64);
+                trace.record(
+                    "result_max_width",
+                    self.current_intervals
+                        .iter()
+                        .map(|interval| interval.end - interval.start)
+                        .max()
+                        .unwrap_or(0),
+                );
+            }
             return &self.current_intervals;
         }
     }
@@ -827,13 +857,33 @@ impl LayoutFrame {
         mut metrics: FrameRowMetrics,
         segments: Vec<RowSegment>,
     ) -> Option<usize> {
-        if !self.carved_row_is_usable()
-            || segments.len() != self.current_intervals.len()
-            || segments
+        #[cfg(feature = "subsecond-dev")]
+        let trace = crate::subsecond_dev::hot_trace_enabled().then(|| {
+            tracing::trace_span!(
+                target: "rhwp::layout",
+                "layout_frame_commit_row",
+                top = self.top,
+                line_height = metrics.line_height,
+                line_spacing = metrics.line_spacing,
+                segment_count = segments.len() as u64,
+                result_accepted = tracing::field::Empty,
+                result_row_index = tracing::field::Empty,
+                result_top = tracing::field::Empty,
+            )
+        });
+        #[cfg(feature = "subsecond-dev")]
+        let _entered = trace.as_ref().map(|span| span.enter());
+        let accepted = self.carved_row_is_usable()
+            && segments.len() == self.current_intervals.len()
+            && !segments
                 .iter()
                 .zip(&self.current_intervals)
-                .any(|(segment, interval)| segment.horizontal != *interval)
-        {
+                .any(|(segment, interval)| segment.horizontal != *interval);
+        #[cfg(feature = "subsecond-dev")]
+        if let Some(trace) = &trace {
+            trace.record("result_accepted", accepted);
+        }
+        if !accepted {
             return None;
         }
 
@@ -846,6 +896,11 @@ impl LayoutFrame {
             .top
             .saturating_add(metrics.line_height)
             .saturating_add(metrics.line_spacing);
+        #[cfg(feature = "subsecond-dev")]
+        if let Some(trace) = &trace {
+            trace.record("result_row_index", row_index as u64);
+            trace.record("result_top", self.top);
+        }
         // A carved interval belongs only to the row just committed. Requiring
         // a new carve prevents a caller from advancing this frame twice with
         // stale geometry.

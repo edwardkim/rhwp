@@ -183,7 +183,7 @@ export class CanvasView {
   }
 
   /** 문서 로드 후 호출 — 페이지 정보 수집 및 가상 스크롤 초기화 */
-  async loadDocument(): Promise<void> {
+  async loadDocument(trace: <T>(run: () => T) => T = run => run()): Promise<void> {
     if (this.disposed) return;
     this.diagnosticRenderGeneration += 1;
     if (!this.documentLoadPrepared) this.prepareDocumentLoad();
@@ -191,11 +191,27 @@ export class CanvasView {
     this.documentLoadPrepared = false;
     if (this.disposed) return;
     const selection = await this.rendererSession.resolve(this.wasm);
+    const pageCount = trace(() => this.finishDocumentLoad(epoch, selection));
+    if (pageCount === null) return;
+    // 초기 replay가 예약한 document fallback을 load 완료 전에 확정한다.
+    await Promise.resolve();
+
+    console.log(`[CanvasView] ${this.pages.length}/${pageCount}페이지 로드, 총 높이: ${this.virtualScroll.getTotalHeight()}px`);
+
+    // 문서 화면이 새로 섰다 — 쪽 정보를 스스로 그리는 바깥 소비자(눈금자)에게 알린다.
+    // 지금까지 눈금자는 캐럿·스크롤·확대 이벤트에 얹혀 갱신됐다. 그 셋은 값이 그대로면
+    // 오지 않는다(문단 여백이 같은 문서를 잇달아 열기, 이미 맨 위인 문서의 scrollTop=0,
+    // 배율 그대로) — 그때 눈금자는 빈 쪽 단계에서 그린 눈금 없는 회색 띠로 남았다.
+    this.eventBus.emit('document-view-loaded');
+  }
+
+  /** Renderer 선택 await 이후의 동기 WASM/layout 구간. */
+  private finishDocumentLoad(epoch: number, selection: RendererSessionSelection): number | null {
     if (
       this.disposed
       || epoch !== this.rendererSelectionEpoch
       || !this.rendererSession.isCurrent(selection)
-    ) return;
+    ) return null;
     this.applyRendererSelection(selection);
 
     const pageCount = this.wasm.pageCount;
@@ -210,7 +226,7 @@ export class CanvasView {
 
     if (this.pages.length === 0) {
       console.error('[CanvasView] 로드된 페이지가 없습니다');
-      return;
+      return null;
     }
 
     // 모바일: 문서 로드 시 폭 맞춤 줌 자동 적용
@@ -232,16 +248,7 @@ export class CanvasView {
     this.lastPageSize = { width: this.pages[0].width, height: this.pages[0].height };
     this.updateVisiblePages();
     this.clearBlankPagePlaceholder();
-    // 초기 replay가 예약한 document fallback을 load 완료 전에 확정한다.
-    await Promise.resolve();
-
-    console.log(`[CanvasView] ${this.pages.length}/${pageCount}페이지 로드, 총 높이: ${this.virtualScroll.getTotalHeight()}px`);
-
-    // 문서 화면이 새로 섰다 — 쪽 정보를 스스로 그리는 바깥 소비자(눈금자)에게 알린다.
-    // 지금까지 눈금자는 캐럿·스크롤·확대 이벤트에 얹혀 갱신됐다. 그 셋은 값이 그대로면
-    // 오지 않는다(문단 여백이 같은 문서를 잇달아 열기, 이미 맨 위인 문서의 scrollTop=0,
-    // 배율 그대로) — 그때 눈금자는 빈 쪽 단계에서 그린 눈금 없는 회색 띠로 남았다.
-    this.eventBus.emit('document-view-loaded');
+    return pageCount;
   }
 
   /**
@@ -453,10 +460,11 @@ export class CanvasView {
     pageIdx: number,
     sampleWidth: number,
     signal?: AbortSignal,
+    trace: <T>(run: () => T) => T = run => run(),
   ): Promise<DiagnosticPageCapture> {
     if (!import.meta.env.DEV) throw new Error('diagnostic page capture is development-only');
     if (signal?.aborted) throw new DOMException('capture aborted', 'AbortError');
-    const pageInfo = this.pages[pageIdx] ?? this.wasm.getPageInfo(pageIdx);
+    const pageInfo = this.pages[pageIdx] ?? trace(() => this.wasm.getPageInfo(pageIdx));
     const { width, height } = boundedPageRasterSize(
       pageInfo,
       Math.round(sampleWidth),
@@ -489,38 +497,42 @@ export class CanvasView {
       document.body.appendChild(host);
 
       try {
-        let first: PageRenderResult;
-        try {
-          first = diagnosticPageRenderer.renderPage(
-            pageIdx,
-            canvas,
-            renderScale,
-            1,
-            renderScale,
-            { diagnosticComposite: true },
-          );
-        } catch (error) {
-          const fallback = this.diagnosticRenderBackend === 'canvaskit'
-            && this.activeRendererDecisionKey
-            && this.rendererSession.isAutoRequest()
-            ? this.rendererSession.fallbackFromResourceFailure(
-                error,
-                this.activeRendererDecisionKey,
-              )
-            : null;
-          if (fallback) {
+        const render = (target: HTMLCanvasElement): PageRenderResult | null => {
+          try {
+            return trace(() => diagnosticPageRenderer.renderPage(
+              pageIdx,
+              target,
+              renderScale,
+              1,
+              renderScale,
+              { diagnosticComposite: true },
+            ));
+          } catch (error) {
+            const fallback = this.diagnosticRenderBackend === 'canvaskit'
+              && this.activeRendererDecisionKey
+              && this.rendererSession.isAutoRequest()
+              ? this.rendererSession.fallbackFromResourceFailure(
+                  error,
+                  this.activeRendererDecisionKey,
+                )
+              : null;
+            if (!fallback) throw error;
             this.commitCanvasKitFallback(fallback);
-            continue;
+            return null;
           }
-          throw error;
-        }
-        const renderedCanvas = first.renderedCanvas ?? canvas;
+        };
+        const first = render(canvas);
+        if (!first) continue;
+        let renderedCanvas = first.renderedCanvas ?? canvas;
         await waitForFontsOrAbort(document.fonts.ready, signal);
         if (signal?.aborted) throw new DOMException('capture aborted', 'AbortError');
         const settlement = await diagnosticPageRenderer.waitForReRender(pageIdx, signal);
         if (settlement === 'aborted' || signal?.aborted) {
           throw new DOMException('capture aborted', 'AbortError');
         }
+        const final = render(renderedCanvas);
+        if (!final) continue;
+        renderedCanvas = final.renderedCanvas ?? renderedCanvas;
         const canvaskitDiagnostics = diagnosticPageRenderer.getBackend() === 'canvaskit'
           ? diagnosticPageRenderer.getCanvasKitRenderDiagnostics(pageIdx)
           : null;

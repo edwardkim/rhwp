@@ -5212,8 +5212,34 @@ impl FormattedParagraph {
         ladder_dirty: bool,
         lazy_base: bool,
     ) -> f64 {
+        #[cfg(feature = "subsecond-dev")]
+        let trace = crate::subsecond_dev::hot_trace_enabled().then(|| {
+            tracing::trace_span!(
+                target: "rhwp::layout",
+                "flow_advance_height",
+                col_count = col_count as u64,
+                allow_spacing_before_only,
+                ladder_dirty,
+                lazy_base,
+                total_height = self.total_height,
+                height_for_fit = self.height_for_fit,
+                result_height = tracing::field::Empty,
+            )
+        });
+        #[cfg(feature = "subsecond-dev")]
+        let _entered = trace.as_ref().map(|span| span.enter());
+        macro_rules! traced {
+            ($height:expr) => {{
+                let height = $height;
+                #[cfg(feature = "subsecond-dev")]
+                if let Some(trace) = &trace {
+                    trace.record("result_height", height);
+                }
+                height
+            }};
+        }
         if col_count > 1 {
-            return self.height_for_fit;
+            return traced!(self.height_for_fit);
         }
         // [#2279 ①] spacing 트림은 **비합성(authoritative) 저장 lineseg** 문단에만.
         // 저장 ladder 가 spacing 을 이미 반영하고 vpos-snap 이 좌표를 복원하는
@@ -5251,9 +5277,9 @@ impl FormattedParagraph {
             && self.height_for_fit > 0.0
             && self.height_for_fit + 0.5 < self.total_height
         {
-            return self.height_for_fit.min(self.total_height);
+            return traced!(self.height_for_fit.min(self.total_height));
         }
-        self.total_height
+        traced!(self.total_height)
     }
 }
 

@@ -120,6 +120,79 @@ test('일반 Studio 클래스는 개발용 소켓과 감시자를 소유하지 �
   assert.match(source('src/main.ts'), /refreshPages\(\{ throwOnPageInfoError: true \}\)/);
 });
 
+test('wiring guard: layout tracing never owns a browser await', () => {
+  const view = source('src/view/canvas-view.ts');
+  const main = source('src/main.ts');
+  const load = view.slice(
+    view.indexOf('async loadDocument('),
+    view.indexOf('/**\n   * PgUp/PgDn', view.indexOf('async loadDocument(')),
+  );
+  const resolved = load.indexOf('await this.rendererSession.resolve(this.wasm)');
+  const traced = load.indexOf('trace(() => this.finishDocumentLoad(epoch, selection))');
+  assert.ok(resolved >= 0 && traced > resolved);
+  assert.doesNotMatch(load, /trace\(async/);
+  assert.match(load, /finishDocumentLoad[\s\S]*this\.wasm\.getPageInfo[\s\S]*this\.updateVisiblePages/);
+  assert.match(
+    main,
+    /run: \(operation\) => \{[\s\S]*activateSubsecondTrace[\s\S]*return operation\(\)[\s\S]*deactivateSubsecondTrace/,
+  );
+  assert.match(
+    main,
+    /capturePage: async[\s\S]*beginLayoutTraceSession\(\)[\s\S]*capturePageForDiagnostics\([\s\S]*session\.run[\s\S]*retain = true[\s\S]*finally \{[\s\S]*session\.end\(retain\)/,
+  );
+  assert.doesNotMatch(main, /withLayoutTraceAsync|SubsecondTraceQueue/);
+
+  const capture = view.slice(
+    view.indexOf('async capturePageForDiagnostics('),
+    view.indexOf('/** DEV 정답지 레이어', view.indexOf('async capturePageForDiagnostics(')),
+  );
+  const tracedRender = capture.indexOf('return trace(() => diagnosticPageRenderer.renderPage');
+  const first = capture.indexOf('const first = render(canvas)');
+  const settled = capture.indexOf('await diagnosticPageRenderer.waitForReRender');
+  const final = capture.indexOf('const final = render(renderedCanvas)');
+  const composite = capture.indexOf("const composite = document.createElement('canvas')");
+  assert.ok(tracedRender >= 0 && tracedRender < first && first < settled && settled < final && final < composite);
+  assert.match(capture, /const render[\s\S]*fallbackFromResourceFailure[\s\S]*const first = render/);
+});
+
+test('a final-only diagnostic render failure takes the same Canvas2D fallback', () => {
+  const view = source('src/view/canvas-view.ts');
+  const start = view.indexOf('const render = (target: HTMLCanvasElement)');
+  const end = view.indexOf('\n        const first = render(canvas);', start);
+  const expression = view.slice(start, end)
+    .replace('const render = ', '')
+    .replace('(target: HTMLCanvasElement): PageRenderResult | null =>', '(target) =>')
+    .replace(/;\s*$/, '');
+  let renders = 0;
+  const commits: unknown[] = [];
+  const owner = {
+    diagnosticRenderBackend: 'canvaskit',
+    activeRendererDecisionKey: 'decision',
+    rendererSession: {
+      isAutoRequest: () => true,
+      fallbackFromResourceFailure: (error: unknown, key: string) => ({ error, key }),
+    },
+    commitCanvasKitFallback: (fallback: unknown) => commits.push(fallback),
+  };
+  const render = Function(
+    'trace',
+    'diagnosticPageRenderer',
+    'pageIdx',
+    'renderScale',
+    `return (${expression});`,
+  ).call(
+    owner,
+    (run: () => unknown) => run(),
+    { renderPage: () => (++renders === 1 ? { renderedCanvas: 'first' } : (() => { throw new Error('final'); })()) },
+    0,
+    1,
+  ) as (target: unknown) => unknown;
+
+  assert.deepEqual(render('canvas'), { renderedCanvas: 'first' });
+  assert.equal(render('first'), null);
+  assert.equal(commits.length, 1);
+});
+
 test('비활성화된 자동 투명선 경로의 고아 이벤트를 남기지 않는다', () => {
   assert.doesNotMatch(source('src/engine/input-handler.ts'), /transparent-borders-changed/);
   assert.doesNotMatch(source('src/command/commands/view.ts'), /transparent-borders-changed/);

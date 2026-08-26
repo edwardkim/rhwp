@@ -9,14 +9,19 @@ const canvasView = readFileSync(
 const ruler = readFileSync(new URL('../src/view/ruler.ts', import.meta.url), 'utf8');
 
 test('문서 화면이 새로 서면 눈금자에게 알린다', () => {
-  // loadDocument 안, 쪽 정보를 다 세운 뒤여야 한다 — 그 전에 알리면 눈금자가 빈 쪽을 읽는다.
+  // 동기 finish가 쪽 정보를 다 세운 뒤에만 바깥 loadDocument가 알림을 보낸다.
   const body = canvasView.match(
-    /async loadDocument\(\): Promise<void> \{(?<body>[\s\S]*?)\n  \}\n/,
+    /async loadDocument[^{]*\{(?<body>[\s\S]*?)\n  \}\n\n  \/\*\*/,
   )?.groups?.body;
   assert.ok(body, 'loadDocument 본문을 찾지 못했다');
+  const finish = canvasView.match(
+    /private finishDocumentLoad[^{]*\{(?<body>[\s\S]*?)\n  \}\n\n  \/\*\*/,
+  )?.groups?.body;
+  assert.ok(finish, 'finishDocumentLoad 본문을 찾지 못했다');
+  assert.match(finish, /this\.updateVisiblePages\(\)/);
   assert.match(body, /document-view-loaded/);
   assert.ok(
-    body.indexOf('this.updateVisiblePages()') < body.indexOf('document-view-loaded'),
+    body.indexOf('this.finishDocumentLoad(') < body.indexOf('document-view-loaded'),
     '쪽 배치를 마친 뒤에 알려야 한다',
   );
 });

@@ -16,9 +16,18 @@ function between(source: string, start: string, end: string): string {
 
 test('암호 문서는 명시적인 암호 필요 오류에서만 입력 UI로 전환한다', () => {
   const openPath = between(mainSource, 'async function loadDocumentForOpen', 'function showLoadErrorUnlessCancelled');
-  assert.match(openPath, /wasm\.loadDocument\(data, fileName\)/, '일반 문서 열기를 유지한다');
-  assert.match(openPath, /if \(!isPasswordRequiredError\(error\)\) throw error;/, '다른 파싱/DRM/지원 불가 오류는 숨기지 않는다');
-  assert.match(openPath, /return loadPasswordProtectedDocument\(data, fileName\);/, '암호 필요일 때만 대화상자로 전환한다');
+  assert.match(openPath, /^async function loadDocumentForOpen\(\s*data: Uint8Array,\s*fileName: string,?\s*\)/);
+  const plainAttemptBody = openPath.match(
+    /try \{(?<body>[\s\S]*?)\n\s*\} catch \(error\) \{/,
+  )?.groups?.body.trim();
+  assert.equal(plainAttemptBody, 'return wasm.loadDocument(data, fileName);', '일반 문서도 generic 진단 콜백 없이 연다');
+  const passwordFallbackBody = openPath.match(
+    /\} catch \(error\) \{(?<body>[\s\S]*?)\n\s*\}\n\}/,
+  )?.groups?.body.trim();
+  assert.equal(passwordFallbackBody, [
+    'if (!isPasswordRequiredError(error)) throw error;',
+    'return loadPasswordProtectedDocument(data, fileName);',
+  ].join('\n    '));
 });
 
 test('드롭 문서도 파일 메뉴와 같은 암호 열기 경로를 쓰며 File System Access handle을 capture하지 않는다', () => {
@@ -37,9 +46,21 @@ test('드롭 문서도 파일 메뉴와 같은 암호 열기 경로를 쓰며 Fi
 test('암호 입력은 단일 시도에만 쓰고, 취소와 오입력은 영속 경로에 도달하지 않는다', () => {
   const passwordPath = between(mainSource, 'async function loadPasswordProtectedDocument', 'async function loadDocumentForOpen');
   assert.match(passwordPath, /showHwpPasswordDialog\(fileName, retryMessage\)/, '문서 이름만 대화상자에 전달한다');
-  assert.match(passwordPath, /if \(password === null\) throw new DocumentOpenCancelledError\(\);/, '취소를 별도 상태로 전달한다');
-  assert.match(passwordPath, /wasm\.loadDocumentWithPassword\(data, password, fileName\)/, 'WASM 암호 열기 API를 사용한다');
-  assert.match(passwordPath, /password = '';/, '시도 뒤 지역 암호 참조를 비운다');
+  assert.match(passwordPath, /^async function loadPasswordProtectedDocument\(\s*data: Uint8Array,\s*fileName: string,?\s*\)/);
+  assert.deepEqual(passwordPath.split('\n').map(line => line.trim()).filter(line => /\bpassword\b/.test(line)), [
+    'let password = await showHwpPasswordDialog(fileName, retryMessage);',
+    'if (password === null) throw new DocumentOpenCancelledError();',
+    'return wasm.loadDocumentWithPassword(data, password, fileName);',
+    "password = '';",
+  ]);
+  const attemptBody = passwordPath.match(
+    /try \{(?<body>[\s\S]*?)\n\s*\} catch \(error\) \{/,
+  )?.groups?.body.trim();
+  assert.equal(
+    attemptBody,
+    'return wasm.loadDocumentWithPassword(data, password, fileName);',
+    '암호 시도는 generic 진단 콜백 없이 WASM을 직접 호출한다',
+  );
   assert.doesNotMatch(passwordPath, /localStorage|sessionStorage|addRecentDoc|autosave|documentDigest|console\./, '암호값을 영속/로그 경로로 보내지 않는다');
   assert.match(passwordPath, /암호가 일치하지 않거나 문서가 손상되었습니다\. 다시 입력하세요\./, '오입력/암호문 손상은 재입력 상태로 설명한다');
 });

@@ -8510,7 +8510,22 @@ impl LayoutEngine {
                 para_index,
                 control_index,
             } => {
-                return self.layout_table_item(
+                #[cfg(feature = "subsecond-dev")]
+                let trace = crate::subsecond_dev::hot_trace_enabled().then(|| {
+                    tracing::trace_span!(
+                        target: "rhwp::layout",
+                        "layout_table_item",
+                        page_index = ctx.page_content.page_index as u64,
+                        para_index = *para_index as u64,
+                        control_index = *control_index as u64,
+                        y_offset,
+                        result_y = tracing::field::Empty,
+                        result_tac_segment_applied = tracing::field::Empty,
+                    )
+                });
+                #[cfg(feature = "subsecond-dev")]
+                let _entered = trace.as_ref().map(|span| span.enter());
+                let result = self.layout_table_item(
                     tree,
                     col_node,
                     paper_images,
@@ -8522,6 +8537,12 @@ impl LayoutEngine {
                     &ctx,
                     y_offset,
                 );
+                #[cfg(feature = "subsecond-dev")]
+                if let Some(trace) = &trace {
+                    trace.record("result_y", result.0);
+                    trace.record("result_tac_segment_applied", result.1);
+                }
+                return result;
             }
             PageItem::PartialTable {
                 para_index,
@@ -11152,6 +11173,20 @@ impl LayoutEngine {
         ctx: &ColumnItemCtx,
         y_offset: f64,
     ) -> f64 {
+        #[cfg(feature = "subsecond-dev")]
+        let trace = crate::subsecond_dev::hot_trace_enabled().then(|| {
+            tracing::trace_span!(
+                target: "rhwp::layout",
+                "layout_shape_item",
+                page_index = ctx.page_content.page_index as u64,
+                para_index = para_index as u64,
+                control_index = control_index as u64,
+                y_offset,
+                result_y = tracing::field::Empty,
+            )
+        });
+        #[cfg(feature = "subsecond-dev")]
+        let _entered = trace.as_ref().map(|span| span.enter());
         let ColumnItemCtx {
             page_content,
             paragraphs,
@@ -12058,6 +12093,10 @@ impl LayoutEngine {
                     }
                 }
             }
+        }
+        #[cfg(feature = "subsecond-dev")]
+        if let Some(trace) = &trace {
+            trace.record("result_y", result_y);
         }
         result_y
     }
