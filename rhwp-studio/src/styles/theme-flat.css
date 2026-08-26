@@ -83,11 +83,13 @@
   border-bottom: 1px solid var(--ui-border-subtle);
 }
 
-[data-theme-skin="flat"] #icon-toolbar .tb-btn {
+[data-theme-skin="flat"] #icon-toolbar .tb-btn,
+[data-theme-skin="flat"] #icon-toolbar .tb-scroll-nav {
   border-radius: var(--radius-md);
 }
 
-[data-theme-skin="flat"] #icon-toolbar .tb-btn:hover {
+[data-theme-skin="flat"] #icon-toolbar .tb-btn:hover,
+[data-theme-skin="flat"] #icon-toolbar .tb-scroll-nav:hover:not(:disabled) {
   background: var(--ui-hover-strong);
 }
 

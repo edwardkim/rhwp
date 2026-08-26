@@ -414,7 +414,12 @@
     </nav>
 
     <!-- 아이콘 툴바 -->
-    <div id="icon-toolbar">
+    <div id="icon-toolbar" role="toolbar" aria-label="기본 도구 상자">
+      <button type="button" id="icon-toolbar-prev" class="tb-scroll-nav" aria-controls="icon-toolbar-viewport" aria-label="이전 도구 그룹" title="이전 도구 그룹" hidden disabled>
+        <span class="tb-scroll-nav-icon" aria-hidden="true">«</span>
+      </button>
+      <div id="icon-toolbar-viewport" class="tb-scroll-viewport" aria-label="기본 도구 상자 명령" tabindex="0">
+        <div class="tb-scroll-track">
       <div class="tb-group">
         <button class="tb-btn" title="오려두기 (Ctrl+X)"><span class="tb-sprite icon-cut"></span><span class="tb-label">오려<br/>두기</span></button>
         <button class="tb-btn" title="복사하기 (Ctrl+C)"><span class="tb-sprite icon-copy"></span><span class="tb-label">복사<br/>하기</span></button>
@@ -506,6 +511,11 @@
         <span class="tb-sep"></span>
         <button class="tb-btn tb-note-close" data-cmd="insert:note-close" title="닫기 (Shift+Esc)"><span class="tb-icon-text">×</span><span class="tb-label">닫기</span></button>
       </div>
+        </div>
+      </div>
+      <button type="button" id="icon-toolbar-next" class="tb-scroll-nav" aria-controls="icon-toolbar-viewport" aria-label="다음 도구 그룹" title="다음 도구 그룹" hidden disabled>
+        <span class="tb-scroll-nav-icon" aria-hidden="true">»</span>
+      </button>
       <!-- 파일 열기 (숨김) -->
       <input type="file" id="file-input" accept=".hwp,.hwpx,.hml,application/xml,text/xml" style="display:none" />
     </div>

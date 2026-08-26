@@ -3,16 +3,87 @@
    ================================================================ */
 #icon-toolbar {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: stretch;
-  align-content: flex-start;
   padding: 2px 8px;
   background: linear-gradient(to bottom, var(--ui-toolbar-bg-start), var(--ui-toolbar-bg-end));
   border-bottom: 1px solid var(--ui-border);
   flex-shrink: 0;
-  height: auto;
+  height: 56px;
   min-height: 56px;
-  overflow: visible;
+  overflow: hidden;
+}
+
+.tb-scroll-viewport {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  overscroll-behavior-x: contain;
+  touch-action: pan-x;
+}
+
+.tb-scroll-viewport::-webkit-scrollbar {
+  display: none;
+}
+
+.tb-scroll-viewport:focus-visible {
+  outline: 1px solid var(--color-focus-border);
+  outline-offset: -1px;
+}
+
+.tb-scroll-track {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  width: max-content;
+  min-width: 100%;
+  height: 100%;
+}
+
+.tb-scroll-nav {
+  display: flex;
+  flex: 0 0 24px;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  min-width: 24px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+.tb-scroll-nav[hidden] {
+  display: none;
+}
+
+.tb-scroll-nav:hover:not(:disabled) {
+  background: var(--ui-hover-strong);
+  border-color: var(--ui-border-light);
+}
+
+.tb-scroll-nav:focus-visible {
+  border-color: var(--color-focus-border);
+  outline: 1px solid var(--color-focus-border);
+  outline-offset: -2px;
+}
+
+.tb-scroll-nav:disabled {
+  color: var(--color-text-muted);
+  cursor: default;
+  opacity: 0.45;
+}
+
+.tb-scroll-nav-icon {
+  font-size: var(--font-size-lg);
+  line-height: 1;
+  transform: translateY(-1px);
 }
 
 .tb-group {
@@ -182,9 +253,7 @@
 
 .tb-split-menu {
   display: none;
-  position: absolute;
-  top: 100%;
-  left: 0;
+  position: fixed;
   min-width: 180px;
   background: var(--color-surface-raised);
   border: 1px solid var(--ui-border-light);

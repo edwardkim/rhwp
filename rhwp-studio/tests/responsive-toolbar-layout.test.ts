@@ -5,30 +5,30 @@ import test from 'node:test';
 const toolbar = readFileSync(new URL('../src/styles/toolbar.css', import.meta.url), 'utf8');
 const styleBar = readFileSync(new URL('../src/styles/style-bar.css', import.meta.url), 'utf8');
 const responsive = readFileSync(new URL('../src/styles/responsive.css', import.meta.url), 'utf8');
+const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 
-test('icon toolbar wraps complete groups and grows to its row count', () => {
-  assert.match(toolbar, /#icon-toolbar\s*\{[^}]*flex-wrap:\s*wrap;/s);
-  assert.match(toolbar, /#icon-toolbar\s*\{[^}]*height:\s*auto;/s);
+test('icon toolbar keeps one desktop-density row around a single command track', () => {
+  assert.match(toolbar, /#icon-toolbar\s*\{[^}]*flex-wrap:\s*nowrap;/s);
+  assert.match(toolbar, /#icon-toolbar\s*\{[^}]*height:\s*56px;/s);
   assert.match(toolbar, /#icon-toolbar\s*\{[^}]*min-height:\s*56px;/s);
+  assert.match(toolbar, /#icon-toolbar\s*\{[^}]*overflow:\s*hidden;/s);
+  assert.match(toolbar, /\.tb-scroll-track\s*\{[^}]*flex-wrap:\s*nowrap;/s);
+  assert.match(toolbar, /\.tb-scroll-track\s*\{[^}]*width:\s*max-content;/s);
   assert.match(toolbar, /\.tb-group\s*\{[^}]*flex-shrink:\s*0;/s);
+  assert.match(toolbar, /\.tb-btn\s*\{[^}]*min-width:\s*44px;/s);
 });
 
-test('constrained layouts hide top-level separators and do not scroll the toolbar', () => {
-  assert.match(
-    responsive,
-    /@media\s*\(max-width:\s*1279px\)[\s\S]*?#icon-toolbar\s*>\s*\.tb-sep\s*\{[^}]*display:\s*none;/,
-  );
-  assert.match(
-    responsive,
-    /@media\s*\(max-width:\s*1023px\)[\s\S]*?#icon-toolbar\s*\{[^}]*min-height:\s*40px;/,
-  );
-
-  const mobileToolbar = responsive.match(
-    /@media\s*\(max-width:\s*767px\)[\s\S]*?#icon-toolbar\s*\{([^}]*)\}/,
-  );
-  assert.ok(mobileToolbar);
-  assert.doesNotMatch(mobileToolbar[1], /overflow-x:\s*auto/);
-  assert.doesNotMatch(mobileToolbar[1], /-webkit-overflow-scrolling/);
+test('icon toolbar reuses one DOM authority inside a native horizontal viewport', () => {
+  assert.match(html, /id="icon-toolbar-prev"[^>]*aria-controls="icon-toolbar-viewport"[^>]*hidden disabled/);
+  assert.match(html, /id="icon-toolbar-viewport"[^>]*class="tb-scroll-viewport"[^>]*tabindex="0"/);
+  assert.match(html, /class="tb-scroll-track"/);
+  assert.match(html, /id="icon-toolbar-next"[^>]*aria-controls="icon-toolbar-viewport"[^>]*hidden disabled/);
+  assert.match(toolbar, /\.tb-scroll-viewport\s*\{[^}]*overflow-x:\s*auto;/s);
+  assert.match(toolbar, /\.tb-scroll-viewport\s*\{[^}]*touch-action:\s*pan-x;/s);
+  assert.match(toolbar, /\.tb-scroll-nav\[hidden\]\s*\{[^}]*display:\s*none;/s);
+  assert.doesNotMatch(responsive, /#icon-toolbar\s*>\s*\.tb-sep/);
+  assert.doesNotMatch(responsive, /\.tb-btn\s+\.tb-label\s*\{[^}]*display:\s*none;/s);
+  assert.doesNotMatch(responsive, /\.tb-btn\s*\{[^}]*min-width:\s*36px;/s);
 });
 
 test('style ribbon has only measured one-row and two-row structures', () => {

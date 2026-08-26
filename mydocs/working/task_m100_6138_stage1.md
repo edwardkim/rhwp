@@ -4,7 +4,7 @@
 - **기준**: `upstream/devel@1011a8947`
 - **작업 브랜치**: `codex/issue-6118-responsive-style-bar`
 - **계측일**: 2026-08-26 KST
-- **결론**: desktop 밀도 1179px, 한 줄 56px, 동적 overflow와 group 경계 이동
+- **결론**: desktop track 1219px, 한 줄 56px, 동적 overflow와 group 경계 이동
 
 ## 1. 재현 조건
 
@@ -25,8 +25,10 @@ headless에서 기본 문서·default/light 상태를 계측했다. 각 viewport
 | 976, 883, 768px | 53px | 2 | 144/108/72/144/108/108/288 | icon-only 36px |
 | 412, 375px | 77px | 3 | 144/108/72/144/108/108/288 | icon-only 36px |
 
-separator와 좌우 padding을 포함한 desktop 밀도 콘텐츠 폭은 1179px, icon-only 콘텐츠 폭은 988px이다.
-현재는 콘텐츠보다 `1023px`과 `767px` media query가 label·폭을 바꾸고 flex wrap이 1~3행을 만든다.
+desktop group 1156px에 가시 separator의 width·margin 63px을 합한 단일 track 폭은 1219px이고, root 좌우
+padding까지 포함한 전체 필요 폭은 1235px이다. 1024px 이하에서는 media query가 separator를 숨겨
+desktop group과 root padding만 합한 1172px을 사용한다. icon-only group과 root padding은 988px이다.
+현재는 이 콘텐츠보다 `1023px`과 `767px` media query가 label·폭을 바꾸고 flex wrap이 1~3행을 만든다.
 
 ## 3. 고정한 구조·상태 계약
 
@@ -46,7 +48,7 @@ viewport는 device breakpoint가 아니라 실제 `scrollWidth > clientWidth`로
 ## 4. Stage 1 종료 판정
 
 - [x] 현행 1920~375px의 높이·행·밀도를 동일 방식으로 계측했다.
-- [x] desktop 밀도 콘텐츠 폭 1179px과 한 줄 높이 56px을 고정했다.
+- [x] desktop track 폭 1219px, root 필요 폭 1235px과 한 줄 높이 56px을 고정했다.
 - [x] 외부 ID, 명령 DOM·순서, mode·visibility 보존 계약을 확정했다.
 - [x] 동적 overflow, group 경계 이동, native scroll과 접근성 계약을 확정했다.
 - [x] `rhwp-studio` 제품 source·test·E2E 변경은 0건이다.

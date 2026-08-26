@@ -5,6 +5,7 @@ import { assertRemoteDocumentBytes } from '@/core/document-signature';
 import { CanvasView } from '@/view/canvas-view';
 import { InputHandler } from '@/engine/input-handler';
 import { Toolbar } from '@/ui/toolbar';
+import { initIconToolbarScroller } from '@/ui/icon-toolbar-scroller';
 import { initStyleToolbarOverflow } from '@/ui/style-toolbar-overflow';
 import { MenuBar } from '@/ui/menu-bar';
 import { loadWebFonts, resolveCanvasKitFontPlan } from '@/core/font-loader';
@@ -111,6 +112,7 @@ initThemeSync((effective, mode) => {
 // 저장된 도구 상자(기본/서식) 보이기·숨기기 복원 — 문서 로드와 무관하고, WASM 초기화보다
 // 먼저 반영해야 숨긴 도구 모음이 잠깐 보였다 사라지지 않는다(모듈 스크립트라 DOM 은 이미 파싱됨).
 syncToolboxMenu();
+initIconToolbarScroller(document.getElementById('icon-toolbar')!);
 initStyleToolbarOverflow(document.getElementById('style-bar')!);
 
 /**
@@ -677,24 +679,49 @@ async function initialize(): Promise<void> {
       });
     });
 
-    // 스플릿 버튼 드롭다운 메뉴
+    // 스플릿 버튼 드롭다운 메뉴. 아이콘 도구 상자의 가로 viewport에 잘리지 않도록
+    // 열린 panel만 viewport 기준 fixed 좌표로 둔다(도형 picker와 같은 위치 계약).
+    const setToolbarSplitOpen = (split: Element, open: boolean): void => {
+      split.classList.toggle('open', open);
+      const arrow = split.querySelector<HTMLElement>('.tb-split-arrow');
+      const menu = split.querySelector<HTMLElement>('.tb-split-menu');
+      arrow?.setAttribute('aria-expanded', String(open));
+      if (!open || !menu) return;
+
+      const anchorRect = split.getBoundingClientRect();
+      const menuRect = menu.getBoundingClientRect();
+      const gutter = 4;
+      const left = Math.min(
+        Math.max(gutter, anchorRect.left),
+        Math.max(gutter, window.innerWidth - menuRect.width - gutter),
+      );
+      const below = anchorRect.bottom + 2;
+      const top = below + menuRect.height <= window.innerHeight - gutter
+        ? below
+        : Math.max(gutter, anchorRect.top - menuRect.height - 2);
+      menu.style.left = `${left}px`;
+      menu.style.top = `${top}px`;
+    };
+
     document.querySelectorAll('.tb-split').forEach(split => {
       const arrow = split.querySelector('.tb-split-arrow');
       if (arrow) {
+        arrow.setAttribute('aria-haspopup', 'menu');
+        arrow.setAttribute('aria-expanded', 'false');
         arrow.addEventListener('mousedown', (e) => {
           e.preventDefault();
           e.stopPropagation();
           // 다른 열린 메뉴 닫기
           document.querySelectorAll('.tb-split.open').forEach(s => {
-            if (s !== split) s.classList.remove('open');
+            if (s !== split) setToolbarSplitOpen(s, false);
           });
-          split.classList.toggle('open');
+          setToolbarSplitOpen(split, !split.classList.contains('open'));
         });
       }
       split.querySelectorAll('.tb-split-item[data-cmd]').forEach(item => {
         item.addEventListener('mousedown', (e) => {
           e.preventDefault();
-          split.classList.remove('open');
+          setToolbarSplitOpen(split, false);
           const cmd = (item as HTMLElement).dataset.cmd;
           if (cmd) dispatcher.dispatch(cmd, { anchorEl: item as HTMLElement });
         });
@@ -702,7 +729,7 @@ async function initialize(): Promise<void> {
     });
     // 외부 클릭 시 스플릿 메뉴 닫기
     document.addEventListener('mousedown', () => {
-      document.querySelectorAll('.tb-split.open').forEach(s => s.classList.remove('open'));
+      document.querySelectorAll('.tb-split.open').forEach(s => setToolbarSplitOpen(s, false));
     });
 
     // #780: 도구 모음/서식 도구 모음 영역 mousedown 시 focus 이동 방지
@@ -1146,7 +1173,7 @@ function setupEventListeners(): void {
   const hfGroup = document.querySelector('.tb-headerfooter-group') as HTMLElement | null;
   const hfLabel = hfGroup?.querySelector('.tb-hf-label') as HTMLElement | null;
   const noteGroup = document.querySelector('.tb-note-group') as HTMLElement | null;
-  const defaultTbGroups = document.querySelectorAll('#icon-toolbar > .tb-group:not(.tb-headerfooter-group):not(.tb-note-group):not(.tb-rotate-group), #icon-toolbar > .tb-sep');
+  const defaultTbGroups = document.querySelectorAll('#icon-toolbar .tb-scroll-track > .tb-group:not(.tb-headerfooter-group):not(.tb-note-group):not(.tb-rotate-group), #icon-toolbar .tb-scroll-track > .tb-sep');
   const scrollContainer = document.getElementById('scroll-container');
   const styleBar = document.getElementById('style-bar');
 

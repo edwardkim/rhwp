@@ -7,29 +7,8 @@
      데스크톱: 1024px~
    ================================================================ */
 
-/* ─── 좁은 데스크톱 이하 (~1279px) ───────────────────── */
-@media (max-width: 1279px) {
-  /* 행 경계에 구분선만 남지 않도록 최상위 구분선을 숨긴다. */
-  #icon-toolbar > .tb-sep {
-    display: none;
-  }
-}
-
 /* ─── 태블릿 (768~1023px) ────────────────────────────── */
 @media (max-width: 1023px) {
-  /* 도구 상자: 높이 축소, 라벨 숨김 */
-  #icon-toolbar {
-    min-height: 40px;
-    padding: 2px 4px;
-  }
-  .tb-btn {
-    min-width: 36px;
-    padding: 2px;
-  }
-  .tb-btn .tb-label {
-    display: none;
-  }
-
   /* 눈금자 숨김: grid 대신 display로 처리하여 iOS WebKit 호환 */
   #ruler-corner, #h-ruler, #v-ruler {
     display: none;
@@ -87,12 +66,6 @@
   #menu-bar.mobile-open {
     flex-wrap: wrap;
     height: auto;
-  }
-
-  /* ── 도구 상자: 논리 그룹 단위 여러 행 ── */
-  #icon-toolbar {
-    min-height: 40px;
-    padding: 2px 4px;
   }
 
   /* ── 편집 영역: 전체 화면 (grid→flex 전환으로 iOS 호환) ── */
