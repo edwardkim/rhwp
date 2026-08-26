@@ -61,7 +61,7 @@ Studio chrome의 DOM/CSS/접근성 변경이며 renderer·layout·typeset·paint
 | --- | --- |
 | `npx tsc --noEmit` | 통과 |
 | Stage 3 focused 정적 계약 | 27 passed, 0 failed |
-| `npm test` | 1,140 passed, 0 failed, 1 skipped |
+| `npm test` | 1,141 passed, 0 failed, 1 skipped |
 | `npm run build` | 통과 |
 | responsive/theme E2E | 388 passed, 0 failed |
 | `git diff --check` | 통과 |
@@ -79,6 +79,14 @@ checkout에서 파생 suite 준비 후 다시 실행한다.
 - [x] field·dropdown·color·paragraph 더보기를 실제로 조작했다.
 - [x] oldschool 37px 회귀를 36px로 수정하고 회귀 테스트를 추가했다.
 - [x] 대표 화면과 재현 가능한 자동 검증 근거를 남겼다.
+
+## 7. 사용자 시각 검토 후속 — 문단 정렬형 더보기
+
+초기 `⋯ + ▾` 트리거는 일반 overflow와 dropdown 의미가 겹쳐 숨겨진 명령을 설명하지 못했다. 사용자
+시각 검토를 반영해 기존 정렬 SVG mask를 재사용한 `현재 문단 정렬 아이콘 + ▾`로 교체했다. 활성 정렬이
+바뀌면 trigger 아이콘과 `aria-label`·title이 함께 바뀌며, panel이 열리면 화살표와 버튼 표면도 열린
+상태를 표시한다. 문단 명령 실행 뒤 다음 frame에 trigger focus를 확정해 편집기 focus 갱신과의 경쟁도
+막았다. focused 28건, TypeScript, build와 전체 responsive/theme E2E 388건이 다시 통과했다.
 
 #6118의 로컬 구현과 Stage 3는 완료했다. 다만 원격 PR은 지금 만들지 않는다. 다음 작업인 #6138은 같은
 브랜치에서 별도 계획·구현·커밋으로 구분하고, 완료 뒤 12개 viewport 통합 매트릭스를 다시 실행한다.

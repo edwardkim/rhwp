@@ -124,10 +124,17 @@
   display: none;
 }
 
-.sb-overflow-icon {
-  font-size: var(--font-size-xl);
-  line-height: 1;
-  transform: translateY(-2px);
+.sb-overflow-current-icon {
+  flex: none;
+}
+
+.sb-overflow-host.open > #btn-style-overflow {
+  background: var(--ui-active);
+  border-color: var(--ui-border-strong);
+}
+
+.sb-overflow-host.open > #btn-style-overflow .sb-dd {
+  transform: rotate(180deg);
 }
 
 /* 구분선 */

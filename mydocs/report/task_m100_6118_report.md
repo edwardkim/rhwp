@@ -15,10 +15,12 @@
 - 459~375px: 같은 2행을 유지하고 paragraph 명령만 더보기 panel로 표시
 - 모든 구간에서 `#style-bar`와 page-level 가로 overflow 0
 - 기존 field/command ID, 순서, listener, label, active/disabled authority 재사용
+- 좁은 화면의 모호한 `⋯ + ▾`를 현재 문단 정렬 아이콘과 `▾` 조합으로 교체
 
 더보기는 paragraph command를 복제하지 않는다. 같은 DOM을 inline 또는 panel에 표시하므로 상태와
 명령 wiring이 분기되지 않는다. click·ArrowDown·Escape·외부 pointer·명령 실행과 focus 복귀 계약도
-고정했다.
+고정했다. 활성 정렬에 맞춰 trigger 아이콘과 접근성 설명이 바뀌고 panel이 열린 동안에는 화살표와 버튼
+표면이 열린 상태를 표시한다.
 
 ## 2. 단계별 산출물
 
@@ -44,7 +46,7 @@ default/flat/oldschool × light/dark의 18개 경계 화면도 같은 E2E가 생
 | 게이트 | 결과 |
 | --- | --- |
 | TypeScript | 통과 |
-| Studio 전체 test | 1,140 passed, 0 failed, 1 skipped |
+| Studio 전체 test | 1,141 passed, 0 failed, 1 skipped |
 | Studio production build | 통과 |
 | responsive/theme browser E2E | 388 passed, 0 failed |
 | 실제 인앱 브라우저 375px smoke | panel 열림·첫 명령 focus·overflow 0 |

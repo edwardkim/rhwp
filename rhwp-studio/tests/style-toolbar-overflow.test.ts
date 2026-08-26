@@ -5,6 +5,7 @@ import test from 'node:test';
 const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
 const styles = readFileSync(new URL('../src/styles/style-bar.css', import.meta.url), 'utf8');
 const source = readFileSync(new URL('../src/ui/style-toolbar-overflow.ts', import.meta.url), 'utf8');
+const toolbar = readFileSync(new URL('../src/ui/toolbar.ts', import.meta.url), 'utf8');
 
 test('style toolbar breakpoints share the measured Stage 1 constants', () => {
   assert.match(source, /STYLE_TOOLBAR_FULL_ROW_MIN = 976/);
@@ -38,7 +39,19 @@ test('overflow controller owns keyboard, outside-click, focus, and active-state 
   assert.match(source, /event\.key !== 'Escape'/);
   assert.match(source, /document\.addEventListener\('pointerdown'/);
   assert.match(source, /requestAnimationFrame\(\(\) => this\.paragraphButtons/);
+  assert.match(source, /requestAnimationFrame\(\(\) => this\.trigger\.focus\(\)\)/);
   assert.match(source, /new MutationObserver/);
   assert.match(source, /button\.classList\.contains\('active'\)/);
+  assert.match(source, /this\.triggerIcon\.classList\.remove\(\.\.\.ALIGNMENT_ICON_CLASSES\)/);
+  assert.match(source, /문단 정렬 더보기, 현재 \$\{currentAlignment\}/);
   assert.match(source, /dispose\(\): void/);
+});
+
+test('cursor paragraph alignment selects the source button mirrored by the overflow trigger', () => {
+  assert.match(toolbar, /private alignButtons: Array<\{ button: HTMLButtonElement; alignment: string \}>/);
+  assert.match(toolbar, /this\.alignButtons\.push\(\{ button: btn, alignment \}\)/);
+  assert.match(
+    toolbar,
+    /for \(const \{ button, alignment \} of this\.alignButtons\) \{\s*this\.setActive\(button, props\.alignment === alignment\);/,
+  );
 });

@@ -3,6 +3,15 @@ export const STYLE_TOOLBAR_COMMAND_INLINE_MIN = 460;
 export const STYLE_TOOLBAR_OVERFLOW_QUERY = `(max-width: ${STYLE_TOOLBAR_COMMAND_INLINE_MIN - 1}px)`;
 
 const PARAGRAPH_BUTTON_SELECTOR = '.sb-paragraph-ribbon-group .sb-btn';
+const DEFAULT_ALIGNMENT_ICON = 'sb-al-left';
+const ALIGNMENT_ICON_CLASSES = [
+  'sb-al-left',
+  'sb-al-center',
+  'sb-al-right',
+  'sb-al-justify',
+  'sb-al-distribute',
+  'sb-al-split',
+] as const;
 
 /**
  * 좁은 화면에서 문단 명령을 같은 DOM 그대로 더보기 panel에 노출한다.
@@ -29,7 +38,9 @@ export class StyleToolbarOverflowController {
   private readonly onPanelClick = (event: MouseEvent): void => {
     const target = event.target;
     if (!(target instanceof Element) || !target.closest(PARAGRAPH_BUTTON_SELECTOR)) return;
-    this.setOpen(false, false, true);
+    this.setOpen(false);
+    // 문단 명령의 mousedown dispatch가 편집기 focus를 갱신한 뒤 trigger로 복귀시킨다.
+    requestAnimationFrame(() => this.trigger.focus());
   };
 
   private readonly onDocumentPointerDown = (event: PointerEvent): void => {
@@ -52,6 +63,7 @@ export class StyleToolbarOverflowController {
   constructor(
     private readonly host: HTMLElement,
     private readonly trigger: HTMLButtonElement,
+    private readonly triggerIcon: HTMLElement,
     private readonly panel: HTMLElement,
     matchMedia: (query: string) => MediaQueryList = window.matchMedia.bind(window),
   ) {
@@ -99,18 +111,28 @@ export class StyleToolbarOverflowController {
   }
 
   private syncIndicator(): void {
-    const hasActiveCommand = this.paragraphButtons.some(button =>
+    const activeCommand = this.paragraphButtons.find(button =>
       button.classList.contains('active') || button.getAttribute('aria-pressed') === 'true',
     );
+    const activeCommandIcon = activeCommand?.querySelector<HTMLElement>('.sb-align');
+    const activeIconClass = ALIGNMENT_ICON_CLASSES.find(iconClass =>
+      activeCommandIcon?.classList.contains(iconClass),
+    ) ?? DEFAULT_ALIGNMENT_ICON;
     const allCommandsDisabled = this.paragraphButtons.length > 0
       && this.paragraphButtons.every(button => button.disabled);
 
-    this.trigger.classList.toggle('active', hasActiveCommand);
+    this.triggerIcon.classList.remove(...ALIGNMENT_ICON_CLASSES);
+    this.triggerIcon.classList.add(activeIconClass);
+    this.trigger.classList.toggle('active', !!activeCommand);
     this.trigger.disabled = allCommandsDisabled;
-    this.trigger.setAttribute(
-      'aria-label',
-      hasActiveCommand ? '문단 정렬 더보기, 현재 정렬 포함' : '문단 정렬 더보기',
-    );
+    const currentAlignment = activeCommand?.title;
+    const accessibleLabel = currentAlignment
+      ? `문단 정렬 더보기, 현재 ${currentAlignment}`
+      : '문단 정렬 더보기';
+    this.trigger.setAttribute('aria-label', accessibleLabel);
+    this.trigger.title = currentAlignment
+      ? `문단 정렬 더보기 (현재 ${currentAlignment})`
+      : '문단 정렬 더보기';
   }
 
   dispose(): void {
@@ -128,9 +150,10 @@ export class StyleToolbarOverflowController {
 export function initStyleToolbarOverflow(container: HTMLElement): StyleToolbarOverflowController {
   const host = container.querySelector<HTMLElement>('.sb-overflow-host');
   const trigger = container.querySelector<HTMLButtonElement>('#btn-style-overflow');
+  const triggerIcon = container.querySelector<HTMLElement>('#style-overflow-current-icon');
   const panel = container.querySelector<HTMLElement>('#style-overflow-panel');
-  if (!host || !trigger || !panel) {
+  if (!host || !trigger || !triggerIcon || !panel) {
     throw new Error('서식 도구 모음 더보기 DOM 계약이 누락되었습니다.');
   }
-  return new StyleToolbarOverflowController(host, trigger, panel);
+  return new StyleToolbarOverflowController(host, trigger, triggerIcon, panel);
 }

@@ -64,6 +64,10 @@ test('paragraph commands keep one DOM authority across inline and overflow layou
     buttonMarkup('btn-style-overflow'),
     /aria-controls="style-overflow-panel"[^>]*aria-expanded="false"/,
   );
+  assert.match(buttonMarkup('btn-style-overflow'), /id="style-overflow-current-icon"/);
+  assert.match(buttonMarkup('btn-style-overflow'), /class="sb-align sb-al-left sb-overflow-current-icon"/);
+  assert.match(buttonMarkup('btn-style-overflow'), /class="sb-dd"/);
+  assert.doesNotMatch(buttonMarkup('btn-style-overflow'), /⋯/);
   assert.match(
     html,
     /id="style-overflow-panel"[^>]*role="group"[^>]*aria-label="문단 정렬"/,

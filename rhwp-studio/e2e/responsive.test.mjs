@@ -154,6 +154,7 @@ async function run() {
           const trigger = document.getElementById('btn-style-overflow');
           const panel = document.getElementById('style-overflow-panel');
           const command = document.getElementById('btn-align-left');
+          const selectionCommand = document.getElementById('btn-align-center');
           const paragraphButtons = Array.from(panel?.querySelectorAll('.sb-btn') ?? []);
           const nextFrame = () => new Promise(resolve => requestAnimationFrame(resolve));
 
@@ -185,14 +186,16 @@ async function run() {
           const openedByClick = trigger?.getAttribute('aria-expanded') === 'true'
             && panel?.hidden === false
             && document.activeElement === command;
-          command?.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
-          command?.click();
+          selectionCommand?.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
+          selectionCommand?.click();
+          await nextFrame();
+          const focusReturned = document.activeElement === trigger;
 
-          command?.classList.add('active');
-          await new Promise(resolve => setTimeout(resolve, 0));
-          const activeMirrored = trigger?.classList.contains('active') === true
-            && trigger?.getAttribute('aria-label')?.includes('현재 정렬 포함') === true;
-          command?.classList.remove('active');
+          const triggerIcon = document.getElementById('style-overflow-current-icon');
+          const activeMirrored = selectionCommand?.classList.contains('active') === true
+            && trigger?.classList.contains('active') === true
+            && trigger?.getAttribute('aria-label')?.includes('현재 가운데 정렬') === true
+            && triggerIcon?.classList.contains('sb-al-center') === true;
           for (const button of paragraphButtons) button.disabled = true;
           await new Promise(resolve => setTimeout(resolve, 0));
           const disabledMirrored = trigger?.disabled === true;
@@ -204,7 +207,7 @@ async function run() {
             closedByOutside,
             openedByClick,
             closedByCommand: trigger?.getAttribute('aria-expanded') === 'false' && panel?.hidden === true,
-            focusReturned: document.activeElement === trigger,
+            focusReturned,
             activeMirrored,
             disabledMirrored,
           };
