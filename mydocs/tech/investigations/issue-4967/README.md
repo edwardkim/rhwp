@@ -65,6 +65,27 @@ current layout의 첫 divergence는 `layout-metric`이다. Stage W8-R7-Q2는 제
 TTF와 CDN OTF·WOFF2의 `hmtx` identity, current heuristic 대비 누적 advance와 첫 frame crossing을 제한
 비교한다. HWPX의 substitution을 layout fallback으로 승격하지 않는다.
 
+## Stage W8-R7-Q2 exact metric 제한 비교
+
+재현 도구는 `scripts/font_rank7_metric_hypothesis.py`, 계약 테스트는
+`scripts/tests/test_font_rank7_metric_hypothesis.py`다. 공개 정본은
+[`rank7_metric_hypothesis.json`](rank7_metric_hypothesis.json)이다. CDN bytes는 local-only cache에만 두고
+tracked 결과에는 hash·size·SFNT aggregate만 기록한다.
+
+- exact TTF와 CDN OTF·WOFF2는 bytes·name·outline identity가 아니지만 공통 cmap 25,973자의 advance
+  mismatch가 0이고 fixture 53자도 metric-compatible하다.
+- current transform 1,556건을 mismatch 0으로 재생한 뒤 exact base를 적용하면 847,977 → 807,233
+  HWPUNIT로 40,744 감소한다. narrower 778, wider 726, equal 52라 평균만으로 판정하지 않는다.
+- actual fixed-frame 6축에서는 crossing 앞당김·신규 발생 0, 지연 3, 제거 1, 불변 2다.
+- Q0 style domain 63,858자의 ratio·spacing 축은 모두 modelled지만 aggregate에는 codepoint 분포가 없어
+  weighted delta를 주장하지 않는다.
+- bold 노출 4,468자는 regular metric + synthetic bold가 advance를 바꾸지 않는 source 불변식을 확인했으나,
+  공개 fixture에 bold record가 없으므로 Q3에서 동적으로 재확인한다.
+
+Q2 판정은 `qualified-for-q3`이며 target은 `layout-metric` 한 plane이다. font·paint identity, 배포 권한,
+제품 registry·metric DB·fallback·supply 변경은 승인되지 않았다. Q3는 Q0에서 동결한 5문서만 대상으로
+same-snapshot actual geometry와 stored-row admission을 판정한다.
+
 ## Stage W8-R1-Q0 경계
 
 rank 1 `문체부 바탕체`는 rank 8 결론을 재사용하지 않고 기존 W3·W4·W5·W7.5 증거를 독립 대사한다.
