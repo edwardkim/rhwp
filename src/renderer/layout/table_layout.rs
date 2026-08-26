@@ -9428,7 +9428,34 @@ impl LayoutEngine {
                                         && !hard_break_before
                                     {
                                         if let Some(seg) = p.line_segs.first() {
-                                            let target_top = normalized_vpos_px(seg.vertical_pos);
+                                            let mut target_top =
+                                                normalized_vpos_px(seg.vertical_pos);
+                                            // [#6095] 중첩 표 호스트의 저장 vpos 가 표
+                                            // **아래** host 줄 좌표면(점프가 중첩 표 선언
+                                            // 높이 규모) 표 상단 목표는 vpos − 표 높이다.
+                                            // 그대로 gap 에 넣으면 표 높이가 gap 유닛과
+                                            // 중첩 행 유닛으로 이중 계상되어 조각 회계가
+                                            // 페인트보다 커지고 컷이 일러진다(3090867:
+                                            // gap 328 + nested 286, used 953 vs 페인트
+                                            // 744). table_partial 의 페인트측 스냅 억제와
+                                            // 같은 판별을 쓴다.
+                                            let nested_total_px: f64 = p
+                                                .controls
+                                                .iter()
+                                                .filter_map(|control| match control {
+                                                    Control::Table(nested) => Some(hwpunit_to_px(
+                                                        nested.common.height.min(i32::MAX as u32)
+                                                            as i32,
+                                                        self.dpi,
+                                                    )),
+                                                    _ => None,
+                                                })
+                                                .sum();
+                                            if nested_total_px > 0.0
+                                                && target_top - unit_cum >= nested_total_px - 24.0
+                                            {
+                                                target_top -= nested_total_px;
+                                            }
                                             if target_top > unit_cum {
                                                 uh += target_top - unit_cum;
                                                 vpos_gap_before = true;
@@ -9474,7 +9501,31 @@ impl LayoutEngine {
                         let mut vpos_gap_before = vpos_gap_before_para && ri == 0;
                         if use_vpos_unit_positions && ri == 0 && !hard_break_before {
                             if let Some(seg) = p.line_segs.first() {
-                                let target_top = normalized_vpos_px(seg.vertical_pos);
+                                let mut target_top = normalized_vpos_px(seg.vertical_pos);
+                                // [#6095] 중첩 표 호스트의 저장 vpos 가 표 **아래**
+                                // host 줄 좌표면(직전 흐름에서의 점프가 중첩 표 선언
+                                // 높이 규모) 표 상단 목표는 vpos − 표 높이다. 그대로
+                                // gap 에 넣으면 표 높이가 gap 과 중첩 행 유닛으로
+                                // 이중 계상되어 조각 회계가 페인트보다 커지고 컷이
+                                // 일러진다(3090867: gap 328 + rows 302, used 953 vs
+                                // 페인트 744 — 본문 2문단이 2쪽으로 밀림).
+                                // table_partial 의 페인트측 스냅 억제와 같은 판별.
+                                let nested_total_px: f64 = p
+                                    .controls
+                                    .iter()
+                                    .filter_map(|control| match control {
+                                        Control::Table(nested) => Some(hwpunit_to_px(
+                                            nested.common.height.min(i32::MAX as u32) as i32,
+                                            self.dpi,
+                                        )),
+                                        _ => None,
+                                    })
+                                    .sum();
+                                if nested_total_px > 0.0
+                                    && target_top - unit_cum >= nested_total_px - 24.0
+                                {
+                                    target_top -= nested_total_px;
+                                }
                                 if target_top > unit_cum {
                                     uh += target_top - unit_cum;
                                     vpos_gap_before = true;
