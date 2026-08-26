@@ -10,7 +10,7 @@ last_verified: 2026-08-26
 - **Issue**: [#6053](https://github.com/edwardkim/rhwp/issues/6053) · 부모 [#3683](https://github.com/edwardkim/rhwp/issues/3683) Track B
 - **계획서**: [task_m100_6053.md](../plans/task_m100_6053.md)
 - **브랜치**: `task6053`, 기반 `upstream/devel = 70ebacc4c`
-- **커밋**: S1(모델·페이로드) · S2(로컬 메뉴) · S3(다이얼로그) · S4(e2e) · S5(문서) 5건
+- **커밋**: S1(모델·페이로드) · S2(로컬 메뉴) · S3(다이얼로그) · S4(e2e) · S5(문서) · 수동 테스트 결함 수정 6건
 
 ## 결론 한 줄
 
@@ -32,7 +32,7 @@ GridModel(불변) → chart-data-target(페이로드) → wasm-bridge(JSON 패�
 | ③ Ctrl+Z 원복 | 행 5→4, 계열 수 유지 |
 | ④ 무편집 [확인] 무흔적 | 행·첫 값 불변 |
 | ⑤ ESC 는 메뉴만 닫는다 | 메뉴 0항목 · 다이얼로그 유지 · 두 번째 ESC 에 다이얼로그 닫힘 |
-| ⑥ 원형 안내 / 주식형 양끝 비활성 | `plot=pie` → 계열 추가 **활성 + 안내** · `plot=stock, hasUpDownBars=true` → 첫·끝 계열의 삭제와 바깥 삽입 비활성, **중간 삽입은 활성** |
+| ⑥ 원형 안내 / 주식형 사전 비활성 | `plot=pie` → 계열 추가 **활성 + 안내** · OHLC(4계열) → 계열 추가 **전건 비활성**(역할 규약 §6-2) · 양끝 삭제·바깥 삽입은 캔들 가드 · HLC(3계열) → 추가 활성(→4)·삭제 비활성(→2) |
 | ⑦ studio 가드 + TS 검사 + B1 e2e 회귀 0 | 아래 §5 |
 
 증적: `rhwp-studio/e2e/screenshots/6053-{1..6}-*.png`,
