@@ -4,15 +4,17 @@
 mod kerning;
 
 use kerning::{
-    compute_kerning_pair_candidate, decide_kerning_run_gate, inspect_exact_font_kerning,
-    identify_exact_font_source, prepare_kerning_pair_engine, resolve_exact_font_source,
+    compute_kerning_pair_candidate, compute_kerning_run_measurement, decide_kerning_run_gate,
+    inspect_exact_font_kerning, identify_exact_font_source, prepare_kerning_pair_engine,
+    resolve_exact_font_source,
     ExactFontRegistryError, ExactFontRegistryRegistration, ExactFontSlot, ExactFontSource,
     ExactFontSourceHandle, ExactFontSourceProvider, ExactFontSourceRegistry,
     ExactFontSourceResolutionReason, KerningCapability, KerningCapabilityFallbackReason,
     KerningPairCandidateFallbackReason, KerningPairCandidateStatus, KerningRequest,
-    KerningRunFallbackReason, KerningRunGate, KerningSourceSession,
-    KerningSourceSessionStatus, MAX_KERNING_ADJACENT_PAIRS, MAX_KERNING_FONT_BYTES,
-    MAX_KERNING_REGISTRY_FACES, MAX_KERNING_RUN_CODE_POINTS, MAX_KERNING_RUN_GLYPHS,
+    KerningRunFallbackReason, KerningRunGate, KerningRunMeasurementDisposition,
+    KerningRunMeasurementFallbackReason, KerningSourceSession, KerningSourceSessionStatus,
+    MAX_KERNING_ADJACENT_PAIRS, MAX_KERNING_FONT_BYTES, MAX_KERNING_REGISTRY_FACES,
+    MAX_KERNING_RUN_CODE_POINTS, MAX_KERNING_RUN_GLYPHS,
 };
 use std::cell::Cell;
 #[cfg(target_arch = "wasm32")]
@@ -705,4 +707,185 @@ fn issue_4968_pair_candidate_honors_legacy_and_gpos_precedence() {
     let both = compute_kerning_pair_candidate("AV", &both_engine, &both_gate);
     assert_eq!(both.capability, KerningCapability::GposKern);
     assert_eq!(both.total_x_advance_delta, -18);
+}
+
+fn linear_positions(code_points: usize, advance: f64) -> Vec<f64> {
+    (0..=code_points)
+        .map(|index| index as f64 * advance)
+        .collect()
+}
+
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
+fn issue_4968_common_run_measurement_applies_pair_delta_after_ratio_and_spacing() {
+    let text = "AV To WA HH";
+    let code_points = text.chars().count();
+    let mut registry = ExactFontSourceRegistry::default();
+    let slot = ExactFontSlot::new(4968, 1);
+    registry
+        .register(
+            slot,
+            ExactFontSource {
+                bytes: EXACT_KERNING_SMOKE,
+                face_index: 0,
+            },
+        )
+        .expect("public exact source");
+    let handle = registry
+        .handle_for_slot(slot)
+        .expect("registered handle")
+        .clone();
+    let mut session = KerningSourceSession::new(&registry);
+
+    for (ratio, letter_spacing) in [(1.0, 0.0), (0.9, -1.0), (0.8, -2.0)] {
+        // base advance는 기존 측정 계층이 이미 장평과 glyph-relative 자간을
+        // 적용한 값이다. pair 계층에는 자간 자체를 넘기지 않는다.
+        let base_advance = 10.0 * ratio + letter_spacing;
+        let base_positions = linear_positions(code_points, base_advance);
+        let base_width = *base_positions.last().expect("base width");
+        let measurement = compute_kerning_run_measurement(
+            text,
+            true,
+            base_positions.clone(),
+            20.0,
+            ratio,
+            Some(&handle),
+            &mut session,
+        );
+
+        assert_eq!(
+            measurement.disposition,
+            KerningRunMeasurementDisposition::PairAdjusted
+        );
+        assert_eq!(measurement.fallback_reason, None);
+        assert_eq!(measurement.base_positions, base_positions);
+        assert_eq!(measurement.code_point_count, code_points);
+        assert!(!measurement.code_point_limit_exceeded);
+        assert_eq!(measurement.bounded_segment_count, 1);
+        assert_eq!(measurement.advance_deltas.len(), code_points);
+        let expected_pair_delta = -120.0 * 20.0 * ratio / 1_000.0;
+        let actual_pair_delta: f64 = measurement.advance_deltas.iter().sum();
+        assert!((actual_pair_delta - expected_pair_delta).abs() < 1e-12);
+        let replay_pair_delta: f64 = measurement
+            .glyph_position_deltas
+            .iter()
+            .map(|delta| delta.x_advance)
+            .sum();
+        assert!((replay_pair_delta - expected_pair_delta).abs() < 1e-12);
+        assert!(measurement.glyph_position_deltas.iter().all(|delta| {
+            delta.x_advance.is_finite()
+                && delta.y_advance.is_finite()
+                && delta.x_offset.is_finite()
+                && delta.y_offset.is_finite()
+        }));
+        assert!((measurement.total_width - (base_width + expected_pair_delta)).abs() < 1e-12);
+        assert_eq!(
+            measurement.positions(),
+            measurement
+                .pair_adjusted_positions
+                .as_deref()
+                .expect("adjusted positions")
+        );
+        assert_eq!(
+            measurement
+                .candidate
+                .as_ref()
+                .expect("candidate trace")
+                .total_x_advance_delta,
+            -120
+        );
+    }
+
+    let trace = serde_json::to_value(compute_kerning_run_measurement(
+        text,
+        true,
+        linear_positions(code_points, 10.0),
+        20.0,
+        1.0,
+        Some(&handle),
+        &mut session,
+    ))
+    .expect("measurement JSON");
+    for forbidden in ["text", "bytes", "path", "fontFamily"] {
+        assert!(trace.get(forbidden).is_none(), "trace leaked {forbidden}");
+    }
+}
+
+#[test]
+fn issue_4968_common_run_measurement_preserves_k0_and_fail_closed_positions() {
+    let text = "AV";
+    let base_positions = vec![0.0, 9.25, 18.5];
+    let source = ExactFontSource {
+        bytes: EXACT_KERNING_SMOKE,
+        face_index: 0,
+    };
+    let handle = identify_exact_font_source(source).expect("exact source handle");
+    let provider = CountingSourceProvider {
+        source: Some(source),
+        calls: Cell::new(0),
+    };
+    let mut session = KerningSourceSession::new(&provider);
+
+    let k0 = compute_kerning_run_measurement(
+        text,
+        false,
+        base_positions.clone(),
+        f64::NAN,
+        f64::NAN,
+        Some(&handle),
+        &mut session,
+    );
+    assert_eq!(
+        k0.disposition,
+        KerningRunMeasurementDisposition::ExistingPositions
+    );
+    assert_eq!(k0.positions(), base_positions);
+    assert!(k0.pair_adjusted_positions.is_none());
+    assert!(k0.glyph_position_deltas.is_empty());
+    assert!(k0.session.is_none());
+    assert!(k0.candidate.is_none());
+    assert_eq!(provider.calls.get(), 0, "K0 must not resolve source");
+
+    let missing = compute_kerning_run_measurement(
+        text,
+        true,
+        base_positions.clone(),
+        20.0,
+        1.0,
+        None,
+        &mut session,
+    );
+    assert_eq!(
+        missing.disposition,
+        KerningRunMeasurementDisposition::ExactSourceUnavailable
+    );
+    assert_eq!(
+        missing.fallback_reason,
+        Some(KerningRunMeasurementFallbackReason::ExactSourceUnavailable)
+    );
+    assert_eq!(missing.positions(), base_positions);
+    assert_eq!(provider.calls.get(), 0, "missing handle must not query provider");
+
+    let oversized_text = "A".repeat(MAX_KERNING_RUN_CODE_POINTS + 1);
+    let oversized_positions = linear_positions(oversized_text.len(), 5.0);
+    let oversized = compute_kerning_run_measurement(
+        &oversized_text,
+        true,
+        oversized_positions.clone(),
+        20.0,
+        1.0,
+        Some(&handle),
+        &mut session,
+    );
+    assert_eq!(
+        oversized.disposition,
+        KerningRunMeasurementDisposition::FailClosed
+    );
+    assert_eq!(
+        oversized.fallback_reason,
+        Some(KerningRunMeasurementFallbackReason::RunCodePointLimitExceeded)
+    );
+    assert_eq!(oversized.positions(), oversized_positions);
+    assert!(oversized.advance_deltas.is_empty());
+    assert_eq!(provider.calls.get(), 0, "oversized run must stop before source");
 }

@@ -302,6 +302,78 @@ pub(crate) enum KerningPairCandidateFallbackReason {
     TraceRecordLimitExceeded,
 }
 
+/// 기존 문자 경계값에 exact pair delta를 반영한 공통 run 측정의 최종 상태다.
+///
+/// `PairAdjusted`만 기존 positions와 다른 좌표를 소유한다. 나머지 상태는
+/// `base_positions`를 그대로 소비하므로 kerning-off와 fail-closed 경로가 기존
+/// 측정값을 bit-for-bit 보존한다.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub(crate) enum KerningRunMeasurementDisposition {
+    ExistingPositions,
+    ExactSourceUnavailable,
+    NoPairAdjustment,
+    PairAdjusted,
+    FailClosed,
+}
+
+/// Pair candidate를 기존 문자 경계값에 투영하지 못한 이유다.
+///
+/// 원문과 font payload는 남기지 않는다. source/capability/candidate의 더 세부적인
+/// 원인은 각각 payload-free handle과 bounded trace에 보존한다.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub(crate) enum KerningRunMeasurementFallbackReason {
+    ExactSourceUnavailable,
+    RunCodePointLimitExceeded,
+    BasePositionCountMismatch,
+    BasePositionNonFinite,
+    SourceSessionFailClosed,
+    PairEngineUnavailable,
+    PairCandidateFailClosed,
+    InvalidStyleScale,
+    InvalidUnitsPerEm,
+    CandidateAccountingMismatch,
+    CandidateGlyphIndexOutOfRange,
+    AdjustedPositionNonFinite,
+    AdjustedPositionNonMonotonic,
+}
+
+/// 기존 run 측정과 exact-font pair candidate를 합친 owned 결과다.
+///
+/// `pair_adjusted_positions`는 실제 delta 적용 때만 할당한다. K0, source 부재,
+/// unsupported/malformed source는 `positions()`가 소유한 base slice를 그대로
+/// 반환한다. 이 구조로 불필요한 대형 복제를 피하면서도 R4C/R4D가 동일 측정값을
+/// line decision과 backend replay에 전달할 수 있다.
+#[derive(Debug, Clone, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct KerningRunMeasurement {
+    pub disposition: KerningRunMeasurementDisposition,
+    pub fallback_reason: Option<KerningRunMeasurementFallbackReason>,
+    pub source_handle: Option<ExactFontSourceHandle>,
+    pub code_point_count: usize,
+    pub code_point_limit_exceeded: bool,
+    pub bounded_segment_count: usize,
+    pub base_positions: Vec<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub pair_adjusted_positions: Option<Vec<f64>>,
+    pub advance_deltas: Vec<f64>,
+    pub glyph_position_deltas: Vec<KerningGlyphPositionDeltaPx>,
+    pub total_width: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub session: Option<KerningSourceSessionTrace>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub candidate: Option<KerningPairCandidateDecision>,
+}
+
+impl KerningRunMeasurement {
+    pub(crate) fn positions(&self) -> &[f64] {
+        self.pair_adjusted_positions
+            .as_deref()
+            .unwrap_or(&self.base_positions)
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct KerningGlyphPositionDelta {
@@ -312,6 +384,19 @@ pub(crate) struct KerningGlyphPositionDelta {
     pub y_advance: i64,
     pub x_offset: i64,
     pub y_offset: i64,
+}
+
+/// Backend가 design-unit 환산을 다시 하지 않고 재생할 수 있는 px delta다.
+#[derive(Debug, Clone, Copy, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct KerningGlyphPositionDeltaPx {
+    pub glyph_index: usize,
+    pub glyph_id: u32,
+    pub cluster: u32,
+    pub x_advance: f64,
+    pub y_advance: f64,
+    pub x_offset: f64,
+    pub y_offset: f64,
 }
 
 /// `kern=0/1` shaping 차이를 보존한 bounded 후보다. 이 결과는 아직 layout 적용 판정이 아니다.
@@ -726,6 +811,296 @@ impl<'a> KerningSourceSession<'a> {
     pub(crate) fn engine(&self, handle: &ExactFontSourceHandle) -> Option<&KerningPairEngine<'a>> {
         self.entries.get(handle)?.engine.as_ref()
     }
+}
+
+/// 기존 문자 경계값과 exact source session을 하나의 owned run 측정으로 결합한다.
+///
+/// 호출자는 기존 measurement가 이미 script scale, 장평, glyph-relative 자간과
+/// extra spacing을 적용한 `base_positions`를 넘긴다. 이 함수는 마지막 단계에서만
+/// pair design unit을 `effective_font_size_px * width_ratio / units_per_em`으로
+/// 환산한다. 따라서 pair delta에는 letter spacing이 다시 곱해지지 않는다.
+pub(crate) fn compute_kerning_run_measurement(
+    text: &str,
+    requested: bool,
+    base_positions: Vec<f64>,
+    effective_font_size_px: f64,
+    width_ratio: f64,
+    source_handle: Option<&ExactFontSourceHandle>,
+    session: &mut KerningSourceSession<'_>,
+) -> KerningRunMeasurement {
+    let observed_code_points = text.chars().take(MAX_KERNING_RUN_CODE_POINTS + 1).count();
+    let code_point_limit_exceeded = observed_code_points > MAX_KERNING_RUN_CODE_POINTS;
+    let code_point_count = observed_code_points.min(MAX_KERNING_RUN_CODE_POINTS);
+    let bounded_segment_count = usize::from(code_point_count > 0);
+    let source_handle = source_handle.cloned();
+
+    let baseline = |disposition, fallback_reason, session, candidate, base_positions: Vec<f64>| {
+        let total_width = positions_width(&base_positions);
+        KerningRunMeasurement {
+            disposition,
+            fallback_reason,
+            source_handle: source_handle.clone(),
+            code_point_count,
+            code_point_limit_exceeded,
+            bounded_segment_count,
+            advance_deltas: if code_point_limit_exceeded {
+                Vec::new()
+            } else {
+                vec![0.0; code_point_count]
+            },
+            glyph_position_deltas: Vec::new(),
+            total_width,
+            base_positions,
+            pair_adjusted_positions: None,
+            session,
+            candidate,
+        }
+    };
+
+    // K0는 source 조회, parse, shaping, base positions 검증을 전부 건너뛴다.
+    if !requested {
+        return baseline(
+            KerningRunMeasurementDisposition::ExistingPositions,
+            None,
+            None,
+            None,
+            base_positions,
+        );
+    }
+    if code_point_limit_exceeded {
+        return baseline(
+            KerningRunMeasurementDisposition::FailClosed,
+            Some(KerningRunMeasurementFallbackReason::RunCodePointLimitExceeded),
+            None,
+            None,
+            base_positions,
+        );
+    }
+    if base_positions.len() != code_point_count.saturating_add(1) {
+        return baseline(
+            KerningRunMeasurementDisposition::FailClosed,
+            Some(KerningRunMeasurementFallbackReason::BasePositionCountMismatch),
+            None,
+            None,
+            base_positions,
+        );
+    }
+    if base_positions.iter().any(|position| !position.is_finite()) {
+        return baseline(
+            KerningRunMeasurementDisposition::FailClosed,
+            Some(KerningRunMeasurementFallbackReason::BasePositionNonFinite),
+            None,
+            None,
+            base_positions,
+        );
+    }
+
+    let Some(handle) = source_handle.as_ref() else {
+        return baseline(
+            KerningRunMeasurementDisposition::ExactSourceUnavailable,
+            Some(KerningRunMeasurementFallbackReason::ExactSourceUnavailable),
+            None,
+            None,
+            base_positions,
+        );
+    };
+    let session_trace = session.prepare(handle);
+    if session_trace.status != KerningSourceSessionStatus::Ready {
+        return baseline(
+            KerningRunMeasurementDisposition::FailClosed,
+            Some(KerningRunMeasurementFallbackReason::SourceSessionFailClosed),
+            Some(session_trace),
+            None,
+            base_positions,
+        );
+    }
+    let Some(engine) = session.engine(handle) else {
+        return baseline(
+            KerningRunMeasurementDisposition::FailClosed,
+            Some(KerningRunMeasurementFallbackReason::PairEngineUnavailable),
+            Some(session_trace),
+            None,
+            base_positions,
+        );
+    };
+    let gate =
+        decide_kerning_run_gate(requested, text, code_point_count, &session_trace.capability);
+    let candidate = compute_kerning_pair_candidate(text, engine, &gate);
+    match candidate.status {
+        KerningPairCandidateStatus::NotEligible | KerningPairCandidateStatus::FailClosed => {
+            baseline(
+                KerningRunMeasurementDisposition::FailClosed,
+                Some(KerningRunMeasurementFallbackReason::PairCandidateFailClosed),
+                Some(session_trace),
+                Some(candidate),
+                base_positions,
+            )
+        }
+        KerningPairCandidateStatus::NoAdjustmentCandidate => baseline(
+            KerningRunMeasurementDisposition::NoPairAdjustment,
+            None,
+            Some(session_trace),
+            Some(candidate),
+            base_positions,
+        ),
+        KerningPairCandidateStatus::AdjustmentCandidate => apply_pair_candidate(
+            base_positions,
+            effective_font_size_px,
+            width_ratio,
+            source_handle,
+            code_point_count,
+            bounded_segment_count,
+            session_trace,
+            candidate,
+        ),
+    }
+}
+
+fn apply_pair_candidate(
+    base_positions: Vec<f64>,
+    effective_font_size_px: f64,
+    width_ratio: f64,
+    source_handle: Option<ExactFontSourceHandle>,
+    code_point_count: usize,
+    bounded_segment_count: usize,
+    session: KerningSourceSessionTrace,
+    candidate: KerningPairCandidateDecision,
+) -> KerningRunMeasurement {
+    let fail_closed = |reason, candidate, base_positions: Vec<f64>| KerningRunMeasurement {
+        disposition: KerningRunMeasurementDisposition::FailClosed,
+        fallback_reason: Some(reason),
+        source_handle: source_handle.clone(),
+        code_point_count,
+        code_point_limit_exceeded: false,
+        bounded_segment_count,
+        advance_deltas: vec![0.0; code_point_count],
+        glyph_position_deltas: Vec::new(),
+        total_width: positions_width(&base_positions),
+        base_positions,
+        pair_adjusted_positions: None,
+        session: Some(session.clone()),
+        candidate: Some(candidate),
+    };
+
+    if !effective_font_size_px.is_finite()
+        || effective_font_size_px <= 0.0
+        || !width_ratio.is_finite()
+        || width_ratio <= 0.0
+    {
+        return fail_closed(
+            KerningRunMeasurementFallbackReason::InvalidStyleScale,
+            candidate,
+            base_positions,
+        );
+    }
+    let Some(units_per_em) = candidate.units_per_em.filter(|units| *units > 0) else {
+        return fail_closed(
+            KerningRunMeasurementFallbackReason::InvalidUnitsPerEm,
+            candidate,
+            base_positions,
+        );
+    };
+    let observed_total = candidate
+        .position_deltas
+        .iter()
+        .try_fold(0_i64, |total, delta| total.checked_add(delta.x_advance));
+    if observed_total != Some(candidate.total_x_advance_delta) {
+        return fail_closed(
+            KerningRunMeasurementFallbackReason::CandidateAccountingMismatch,
+            candidate,
+            base_positions,
+        );
+    }
+
+    let scale = effective_font_size_px * width_ratio / f64::from(units_per_em);
+    if !scale.is_finite() {
+        return fail_closed(
+            KerningRunMeasurementFallbackReason::InvalidStyleScale,
+            candidate,
+            base_positions,
+        );
+    }
+    let mut advance_deltas = vec![0.0; code_point_count];
+    let mut glyph_position_deltas = Vec::with_capacity(candidate.position_deltas.len());
+    for delta in &candidate.position_deltas {
+        let Some(advance) = advance_deltas.get_mut(delta.glyph_index) else {
+            return fail_closed(
+                KerningRunMeasurementFallbackReason::CandidateGlyphIndexOutOfRange,
+                candidate,
+                base_positions,
+            );
+        };
+        *advance += delta.x_advance as f64 * scale;
+        let scaled = KerningGlyphPositionDeltaPx {
+            glyph_index: delta.glyph_index,
+            glyph_id: delta.glyph_id,
+            cluster: delta.cluster,
+            x_advance: delta.x_advance as f64 * scale,
+            y_advance: delta.y_advance as f64 * scale,
+            x_offset: delta.x_offset as f64 * scale,
+            y_offset: delta.y_offset as f64 * scale,
+        };
+        if !advance.is_finite()
+            || !scaled.x_advance.is_finite()
+            || !scaled.y_advance.is_finite()
+            || !scaled.x_offset.is_finite()
+            || !scaled.y_offset.is_finite()
+        {
+            return fail_closed(
+                KerningRunMeasurementFallbackReason::AdjustedPositionNonFinite,
+                candidate,
+                base_positions,
+            );
+        }
+        glyph_position_deltas.push(scaled);
+    }
+
+    let mut pair_adjusted_positions = Vec::with_capacity(base_positions.len());
+    pair_adjusted_positions.push(base_positions[0]);
+    let mut cumulative_delta = 0.0;
+    for (index, base) in base_positions.iter().copied().enumerate().skip(1) {
+        cumulative_delta += advance_deltas[index - 1];
+        let adjusted = base + cumulative_delta;
+        if !adjusted.is_finite() {
+            return fail_closed(
+                KerningRunMeasurementFallbackReason::AdjustedPositionNonFinite,
+                candidate,
+                base_positions,
+            );
+        }
+        if adjusted < *pair_adjusted_positions.last().expect("initial position") {
+            return fail_closed(
+                KerningRunMeasurementFallbackReason::AdjustedPositionNonMonotonic,
+                candidate,
+                base_positions,
+            );
+        }
+        pair_adjusted_positions.push(adjusted);
+    }
+
+    KerningRunMeasurement {
+        disposition: KerningRunMeasurementDisposition::PairAdjusted,
+        fallback_reason: None,
+        source_handle,
+        code_point_count,
+        code_point_limit_exceeded: false,
+        bounded_segment_count,
+        total_width: positions_width(&pair_adjusted_positions),
+        base_positions,
+        pair_adjusted_positions: Some(pair_adjusted_positions),
+        advance_deltas,
+        glyph_position_deltas,
+        session: Some(session),
+        candidate: Some(candidate),
+    }
+}
+
+fn positions_width(positions: &[f64]) -> f64 {
+    positions
+        .first()
+        .zip(positions.last())
+        .map(|(first, last)| last - first)
+        .unwrap_or(0.0)
 }
 
 fn capability_for_resolution_failure(
