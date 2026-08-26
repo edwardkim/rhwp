@@ -194,22 +194,6 @@ export function unsafeTextIssue(text: string): 'unsafeText' | null {
   return /[<>&]|\p{Cc}/u.test(text) ? 'unsafeText' : null;
 }
 
-/**
- * [#6053] 결과 계열 수가 주식형 **렌더러의 역할 규약**을 벗어나는가.
- *
- * 주식형은 계열의 뜻이 XML 순서로 정해진다 — 3계열=고·저·종, 4계열=시·고·저·종
- * (`crates/rhwp-ooxml-chart/src/renderer.rs` `render_stock`). 그 밖의 계열 수에는 역할
- * 매핑이 없어 렌더러가 `render_line` 으로 폴백한다. 문서는 멀쩡하지만 캔들도 고저선도
- * 사라지고 **평범한 꺾은선으로 그려진다.**
- *
- * `candleAnchorBroken`(#6037)이 막는 것과 다른 축이다. 그쪽은 양끝이 바뀌어 캔들 몸통이
- * 엉뚱한 짝으로 잡히는 것을 보고, 이쪽은 계열 수 자체가 규약 밖으로 나가는 것을 본다 —
- * OHLC 중간 삽입은 양끝이 그대로라 그 가드를 통과하지만 5계열이 되어 선형으로 떨어진다.
- */
-export function stockRoleCountBroken(data: ChartDataResult, nextSeriesCount: number): boolean {
-  return data.plot === 'stock' && (nextSeriesCount < 3 || nextSeriesCount > 4);
-}
-
 /** `buildChartEdits` 의 구조 편집 확장 — 주지 않으면 B1 페이로드 그대로다. */
 export interface ChartEditsOptions {
   /** 목표 행렬로 해석시킨다. `needsStructure` 가 판정한 값을 그대로 넘긴다. */

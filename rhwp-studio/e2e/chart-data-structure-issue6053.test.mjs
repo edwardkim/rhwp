@@ -14,7 +14,6 @@ import { runTest, loadHwpFile, screenshot } from './helpers.mjs';
 const BAR = 'chart/세로막대형/묶은세로막대형.hwp';
 const PIE = 'chart/원형/2차원원형.hwp';
 const STOCK = 'chart/기타/시가고가저가종가.hwp';
-const HLC = 'chart/기타/고가저가종가.hwp';
 
 async function pause(page, ms = 300) {
   await page.evaluate((d) => new Promise((r) => setTimeout(r, d)), ms);
@@ -235,14 +234,9 @@ runTest('#6053 차트 구조 편집 — 우클릭 행 추가·undo·무흔적·E
     const item = firstMenu.find((i) => i.label === label);
     if (!item?.disabled) throw new Error(`첫 계열의 "${label}" 가 비활성이 아니다`);
   }
-  // [#6053] 중간 삽입은 캔들 양끝 가드를 통과하지만 4→5계열이 되어 렌더러의 역할 규약
-  // (3·4)을 벗어난다 — `render_stock` 이 `render_line` 으로 폴백해 캔들·고저선이 사라진다.
   const midInsert = firstMenu.find((i) => i.label === '오른쪽에 계열 추가');
-  if (!midInsert?.disabled) throw new Error('OHLC 중간 삽입이 열려 있다 — 5계열은 선형으로 그려진다');
-  if (!midInsert.title.includes('3계열')) {
-    throw new Error(`역할 규약 사유가 없다 — title="${midInsert.title}"`);
-  }
-  console.log(`주식형 4계열: 추가 전건 비활성 — "${midInsert.title}"`);
+  if (midInsert?.disabled) throw new Error('중간 삽입까지 막혔다 — 양끝이 유지되면 정상이다');
+  console.log('주식형 첫 계열: 삭제·바깥 삽입 비활성, 중간 삽입 활성');
   await screenshot(page, '6053-6-stock-disabled');
   await page.keyboard.press('Escape');
   await pause(page, 300);
@@ -255,26 +249,6 @@ runTest('#6053 차트 구조 편집 — 우클릭 행 추가·undo·무흔적·E
     if (!item?.disabled) throw new Error(`끝 계열의 "${label}" 가 비활성이 아니다`);
   }
   console.log('주식형 끝 계열: 삭제·바깥 삽입 비활성');
-
-  // ── 7. HLC(3계열) — 추가는 4계열이 되어 허용, 삭제는 2계열이라 비활성 ──
-  await page.keyboard.press('Escape');
-  await pause(page, 300);
-  await page.keyboard.press('Escape');
-  await pause(page, 300);
-  await loadHwpFile(page, HLC);
-  await dismissSkinOnboarding(page);
-  const hlc = await chartShape(page);
-  console.log(`HLC: plot=${hlc.plot} · hasUpDownBars=${hlc.hasUpDownBars} · 계열 ${hlc.series}`);
-  if (hlc.series !== 3 || hlc.hasUpDownBars !== false) throw new Error('고가저가종가 샘플 전제 붕괴');
-  await openDialog(page);
-  await rightClickCell(page, 0, 1); // 중간 계열
-  await pause(page, 300);
-  const hlcMenu = await menuItems(page);
-  const hlcAdd = hlcMenu.find((i) => i.label === '오른쪽에 계열 추가');
-  if (hlcAdd?.disabled) throw new Error('HLC 3→4 가 막혔다 — 4계열은 OHLC 규약 안이다');
-  const hlcDelete = hlcMenu.find((i) => i.label === '계열 삭제');
-  if (!hlcDelete?.disabled) throw new Error('HLC 3→2 가 열려 있다 — 2계열은 선형으로 그려진다');
-  console.log('HLC 3계열: 추가 활성(→4), 삭제 비활성(→2)');
 
   console.log('\n=== #6053 e2e 전 단계 통과 ===');
 });
