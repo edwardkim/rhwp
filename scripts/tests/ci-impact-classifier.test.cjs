@@ -219,6 +219,7 @@ test('frontend font assets and render tooling do not over-enable the Rust lane',
   for (const filename of [
     'assets/fonts/NotoSansKR-Regular.woff2',
     'scripts/generate_exact_face_collection_fixture.py',
+    'scripts/generate_exact_kerning_fixture.py',
     'docs/text-ir-v2.md',
   ]) {
     const result = classifyChanges({

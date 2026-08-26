@@ -14,11 +14,15 @@ use kerning::{
     MAX_KERNING_RUN_CODE_POINTS, MAX_KERNING_RUN_GLYPHS,
 };
 use std::cell::Cell;
+#[cfg(target_arch = "wasm32")]
+use wasm_bindgen_test::wasm_bindgen_test;
 
 const NOTO_REGULAR: &[u8] =
     include_bytes!("../../ttfs/opensource/NotoSansKR-Regular.ttf");
 const NO_PAIR_TABLE: &[u8] =
     include_bytes!("../fixtures/fonts/RHWPBitmapSvgGlyphSmoke.ttf");
+const EXACT_KERNING_SMOKE: &[u8] =
+    include_bytes!("../fixtures/fonts/RHWPExactKerningSmoke.ttf");
 
 struct BorrowedSourceProvider<'a> {
     source: Option<ExactFontSource<'a>>,
@@ -354,6 +358,48 @@ fn issue_4968_layout_session_caches_resolution_failures_closed() {
     assert!(mismatch_second.cache_hit);
     assert_eq!(mismatch_provider.calls.get(), 1);
     assert!(mismatch_session.engine(&handle).is_none());
+}
+
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
+#[cfg_attr(not(target_arch = "wasm32"), test)]
+fn issue_4968_public_exact_source_fixture_is_native_wasm_portable() {
+    let source = ExactFontSource {
+        bytes: EXACT_KERNING_SMOKE,
+        face_index: 0,
+    };
+    let handle = identify_exact_font_source(source).expect("bounded public fixture identity");
+    assert_eq!(handle.font_bytes, 1_236);
+    assert_eq!(
+        handle.font_source_sha256,
+        "775667d1980cd734e331f01e9390e02191bc35d669325291c842968cb0a4a9fc"
+    );
+
+    let provider = BorrowedSourceProvider {
+        source: Some(source),
+    };
+    let mut session = KerningSourceSession::new(&provider);
+    let trace = session.prepare(&handle);
+    assert_eq!(trace.status, KerningSourceSessionStatus::Ready);
+    assert_eq!(trace.capability.capability, KerningCapability::GposKern);
+
+    let text = "AV To WA HH";
+    let gate = decide_kerning_run_gate(
+        true,
+        text,
+        text.chars().count(),
+        &trace.capability,
+    );
+    let candidate = compute_kerning_pair_candidate(
+        text,
+        session.engine(&handle).expect("public fixture pair engine"),
+        &gate,
+    );
+    assert_eq!(
+        candidate.status,
+        KerningPairCandidateStatus::AdjustmentCandidate
+    );
+    assert_eq!(candidate.total_x_advance_delta, -120);
+    assert_eq!(candidate.fallback_reason, None);
 }
 
 #[test]

@@ -67,6 +67,7 @@ const RENDER_TOOL_PATHS = new Set([
   'scripts/renderer_baseline_manifest.json',
   'scripts/generate_font_glyph_payload_fixture.py',
   'scripts/generate_exact_face_collection_fixture.py',
+  'scripts/generate_exact_kerning_fixture.py',
   'scripts/generate_font_native_hwpx_fixture.py',
   'scripts/requirements-font-fixtures.txt',
   'samples/render-p35-font-native-bitmap.hwpx',
