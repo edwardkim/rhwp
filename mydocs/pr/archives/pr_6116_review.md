@@ -91,5 +91,5 @@ focus routing이므로 실제 Chrome E2E와 함수 수준 2D 배치 테스트를
 
 외부 리뷰의 재현 가능한 정확성·lifecycle 항목은 보정됐고, 두 의도된 계약은 사용자 혼란을 줄이는 기존
 결정을 유지한다. 보정 code candidate와 이 review 기록을 push하고 10개 스레드에 항목별 근거를 남겨
-resolve할 수 있다. 최신 head의 Frontend package gate와 required aggregate가 성공하고
+모두 resolve했다. 최신 head의 Frontend package gate와 required aggregate가 성공하고
 `MERGEABLE/CLEAN`을 다시 확인하기 전에는 merge하지 않는다.

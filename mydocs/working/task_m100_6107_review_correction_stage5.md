@@ -73,8 +73,8 @@ Vite allow list를 벗어나 중단됐다. 설치된 Chrome 경로를 지정하�
 복사해 서버를 다시 띄운 최종 실행은 TC1~TC7이 모두 통과했다. 검증용 `pkg/`, generated suite와 E2E
 산출물은 PR source에 포함하지 않는다.
 
-## 남은 게이트
+## 원격 처리와 남은 게이트
 
-보정 commit과 이 문서를 PR head에 push한 뒤 각 리뷰 스레드에 판정 근거를 답변하고 resolve한다. 최신
-head의 CI는 코드 변경이므로 review-only fast-pass가 아니라 Frontend package gate를 포함한 일반 CI로
-판정하며, merge는 별도 승인 전 수행하지 않는다.
+보정 commit과 이 문서를 PR head에 push하고 10개 리뷰 스레드에 반영·부분 반영·미반영 판정과 근거를
+각각 답변한 뒤 모두 resolve했다. 최신 head의 CI는 코드 변경을 포함하므로 Frontend package gate를
+포함한 일반 CI로 판정하며, merge는 별도 승인 전 수행하지 않는다.
