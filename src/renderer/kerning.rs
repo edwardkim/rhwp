@@ -425,6 +425,8 @@ pub(crate) enum KerningParagraphMeasurementFallbackReason {
     HardBoundaryCountMismatch,
     SegmentLimitExceeded,
     SegmentExecutionLimitExceeded,
+    LineBoundaryRangeInvalid,
+    LineWidthInvalid,
     BasePositionCountMismatch,
     BasePositionNonFinite,
     BasePositionNonMonotonic,
@@ -1418,6 +1420,286 @@ pub(crate) fn measure_kerning_paragraph_segments(
         whitespace_fallback_run_count,
         false,
     )
+}
+
+/// 긴 단어의 최초 후보와 boundary-safe 재측정 결과다.
+///
+/// 원문이나 source payload 없이 문자 경계와 폭, bounded 실행 회계만 남긴다.
+#[derive(Debug, Clone, Copy, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct KerningLineBoundaryDecision {
+    pub initial_end_index: usize,
+    pub final_end_index: usize,
+    pub final_width: f64,
+    pub overflow_forced: bool,
+    pub attempted_segment_count: usize,
+}
+
+/// R4C-1 문단 측정과 같은 transaction에서 token·긴 단어·line boundary를 읽는다.
+///
+/// 최초 후보는 문단의 owned positions를 소비한다. 실제 줄 경계는 잘린 앞/뒤 glyph
+/// pair가 같은 run에 남지 않도록 해당 substring을 R4B로 다시 측정한다. 재측정도
+/// 최초 segmentation과 같은 256회 예산을 이어받는다.
+pub(crate) struct KerningParagraphBreakSession<'input, 'registry, 'transaction> {
+    text: &'input str,
+    characters: Vec<char>,
+    byte_offsets: Vec<usize>,
+    base_positions: &'input [f64],
+    scalar_styles: &'input [KerningParagraphScalarStyle],
+    hard_boundaries: &'input [bool],
+    paragraph: &'input KerningParagraphMeasurement,
+    transaction: &'transaction mut KerningLayoutSession<'registry>,
+    attempted_segment_count: usize,
+    failed_reason: Option<KerningParagraphMeasurementFallbackReason>,
+    boundary_width_cache: HashMap<(usize, usize), f64>,
+}
+
+impl<'input, 'registry, 'transaction>
+    KerningParagraphBreakSession<'input, 'registry, 'transaction>
+{
+    pub(crate) fn new(
+        text: &'input str,
+        scalar_styles: &'input [KerningParagraphScalarStyle],
+        hard_boundaries: &'input [bool],
+        paragraph: &'input KerningParagraphMeasurement,
+        transaction: &'transaction mut KerningLayoutSession<'registry>,
+    ) -> Result<Self, KerningParagraphMeasurementFallbackReason> {
+        if paragraph.disposition == KerningParagraphMeasurementDisposition::FailClosed {
+            return Err(paragraph
+                .fallback_reason
+                .unwrap_or(KerningParagraphMeasurementFallbackReason::LineBoundaryRangeInvalid));
+        }
+        let characters: Vec<char> = text.chars().take(MAX_KERNING_RUN_CODE_POINTS + 1).collect();
+        if characters.len() > MAX_KERNING_RUN_CODE_POINTS
+            || characters.len() != paragraph.code_point_count
+        {
+            return Err(KerningParagraphMeasurementFallbackReason::CodePointLimitExceeded);
+        }
+        if scalar_styles.len() != characters.len() {
+            return Err(KerningParagraphMeasurementFallbackReason::ScalarStyleCountMismatch);
+        }
+        if hard_boundaries.len() != characters.len().saturating_add(1) {
+            return Err(KerningParagraphMeasurementFallbackReason::HardBoundaryCountMismatch);
+        }
+        if paragraph.base_positions.len() != characters.len().saturating_add(1) {
+            return Err(KerningParagraphMeasurementFallbackReason::BasePositionCountMismatch);
+        }
+
+        let mut byte_offsets = Vec::with_capacity(characters.len().saturating_add(1));
+        byte_offsets.extend(text.char_indices().map(|(offset, _)| offset));
+        byte_offsets.push(text.len());
+        Ok(Self {
+            text,
+            characters,
+            byte_offsets,
+            base_positions: &paragraph.base_positions,
+            scalar_styles,
+            hard_boundaries,
+            paragraph,
+            transaction,
+            attempted_segment_count: paragraph.attempted_segment_count,
+            failed_reason: None,
+            boundary_width_cache: HashMap::new(),
+        })
+    }
+
+    /// Token total과 최초 긴 단어 후보가 읽는 공통 문단 position range다.
+    pub(crate) fn range_width(&self, start_index: usize, end_index: usize) -> Option<f64> {
+        self.paragraph.range_width(start_index, end_index)
+    }
+
+    pub(crate) fn attempted_segment_count(&self) -> usize {
+        self.attempted_segment_count
+    }
+
+    pub(crate) fn failed_reason(&self) -> Option<KerningParagraphMeasurementFallbackReason> {
+        self.failed_reason
+    }
+
+    fn fail(&mut self, reason: KerningParagraphMeasurementFallbackReason) -> Option<f64> {
+        self.failed_reason.get_or_insert(reason);
+        None
+    }
+
+    fn measure_boundary_segment(
+        &mut self,
+        start_index: usize,
+        end_index: usize,
+        style: KerningParagraphScalarStyle,
+    ) -> Option<KerningParagraphSegmentMeasurement> {
+        measure_kerning_paragraph_range(
+            self.text,
+            &self.byte_offsets,
+            self.base_positions,
+            start_index,
+            end_index,
+            style,
+            self.transaction,
+            &mut self.attempted_segment_count,
+        )
+    }
+
+    /// 실제 줄 substring을 다시 측정해 경계를 가로지르던 pair adjustment를 제거한다.
+    pub(crate) fn boundary_width(&mut self, start_index: usize, end_index: usize) -> Option<f64> {
+        if self.failed_reason.is_some() {
+            return None;
+        }
+        if start_index > end_index || end_index > self.characters.len() {
+            return self.fail(KerningParagraphMeasurementFallbackReason::LineBoundaryRangeInvalid);
+        }
+        if let Some(width) = self
+            .boundary_width_cache
+            .get(&(start_index, end_index))
+            .copied()
+        {
+            return Some(width);
+        }
+        if start_index == end_index {
+            self.boundary_width_cache
+                .insert((start_index, end_index), 0.0);
+            return Some(0.0);
+        }
+
+        let mut pair_delta = 0.0;
+        let mut run_start = start_index;
+        while run_start < end_index {
+            if matches!(self.characters[run_start], '\t' | '\n' | '\r') {
+                run_start += 1;
+                continue;
+            }
+            let style = self.scalar_styles[run_start];
+            let mut run_end = run_start + 1;
+            while run_end < end_index
+                && !self.hard_boundaries[run_end]
+                && !matches!(self.characters[run_end], '\t' | '\n' | '\r')
+                && same_kerning_scalar_style(style, self.scalar_styles[run_end])
+            {
+                run_end += 1;
+            }
+
+            let Some(initial) = self.measure_boundary_segment(run_start, run_end, style) else {
+                return self.fail(
+                    KerningParagraphMeasurementFallbackReason::SegmentExecutionLimitExceeded,
+                );
+            };
+            let has_whitespace = self.characters[run_start..run_end]
+                .iter()
+                .any(|character| character.is_whitespace());
+            if needs_whitespace_identity_fallback(&initial.measurement) && has_whitespace {
+                let mut fallback_start = run_start;
+                while fallback_start < run_end {
+                    while fallback_start < run_end
+                        && self.characters[fallback_start].is_whitespace()
+                    {
+                        fallback_start += 1;
+                    }
+                    if fallback_start == run_end {
+                        break;
+                    }
+                    let mut fallback_end = fallback_start + 1;
+                    while fallback_end < run_end && !self.characters[fallback_end].is_whitespace() {
+                        fallback_end += 1;
+                    }
+                    let Some(fallback) =
+                        self.measure_boundary_segment(fallback_start, fallback_end, style)
+                    else {
+                        return self.fail(
+                            KerningParagraphMeasurementFallbackReason::SegmentExecutionLimitExceeded,
+                        );
+                    };
+                    pair_delta += fallback.measurement.total_width
+                        - positions_width(&fallback.measurement.base_positions);
+                    fallback_start = fallback_end;
+                }
+            } else {
+                pair_delta += initial.measurement.total_width
+                    - positions_width(&initial.measurement.base_positions);
+            }
+            run_start = run_end;
+        }
+
+        let base_width = self.base_positions[end_index] - self.base_positions[start_index];
+        let width = base_width + pair_delta;
+        if !width.is_finite() || width < 0.0 {
+            return self.fail(KerningParagraphMeasurementFallbackReason::LineWidthInvalid);
+        }
+        self.boundary_width_cache
+            .insert((start_index, end_index), width);
+        Some(width)
+    }
+
+    /// 기존 base width에 더할 boundary-safe pair delta만 반환한다.
+    pub(crate) fn boundary_pair_adjustment(
+        &mut self,
+        start_index: usize,
+        end_index: usize,
+    ) -> Option<f64> {
+        let width = self.boundary_width(start_index, end_index)?;
+        Some(width - (self.base_positions[end_index] - self.base_positions[start_index]))
+    }
+
+    /// 같은 positions에서 최초 후보를 고른 뒤 boundary-safe width로 bounded 재탐색한다.
+    pub(crate) fn find_fitting_end(
+        &mut self,
+        start_index: usize,
+        end_index: usize,
+        available_width: f64,
+    ) -> Option<KerningLineBoundaryDecision> {
+        if start_index >= end_index
+            || end_index > self.characters.len()
+            || !available_width.is_finite()
+            || available_width < 0.0
+        {
+            self.fail(if !available_width.is_finite() || available_width < 0.0 {
+                KerningParagraphMeasurementFallbackReason::LineWidthInvalid
+            } else {
+                KerningParagraphMeasurementFallbackReason::LineBoundaryRangeInvalid
+            });
+            return None;
+        }
+
+        let mut initial_low = start_index;
+        let mut initial_high = end_index;
+        while initial_low < initial_high {
+            let mid = initial_low + (initial_high - initial_low).div_ceil(2);
+            let width = self.range_width(start_index, mid)?;
+            if width <= available_width {
+                initial_low = mid;
+            } else {
+                initial_high = mid - 1;
+            }
+        }
+        let initial_end_index = initial_low;
+
+        // 반드시 실제 후보 substring을 한 번 재측정한다. 아래 binary search는
+        // cache를 공유하므로 같은 경계를 다시 shape하지 않는다.
+        let _ = self.boundary_width(start_index, initial_end_index)?;
+        let mut low = start_index;
+        let mut high = end_index;
+        while low < high {
+            let mid = low + (high - low).div_ceil(2);
+            let width = self.boundary_width(start_index, mid)?;
+            if width <= available_width {
+                low = mid;
+            } else {
+                high = mid - 1;
+            }
+        }
+
+        let (final_end_index, overflow_forced) = if low == start_index {
+            (start_index + 1, true)
+        } else {
+            (low, false)
+        };
+        let final_width = self.boundary_width(start_index, final_end_index)?;
+        Some(KerningLineBoundaryDecision {
+            initial_end_index,
+            final_end_index,
+            final_width,
+            overflow_forced,
+            attempted_segment_count: self.attempted_segment_count,
+        })
+    }
 }
 
 /// 기존 문자 경계값과 exact source session을 하나의 owned run 측정으로 결합한다.

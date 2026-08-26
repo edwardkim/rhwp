@@ -5,13 +5,13 @@ mod kerning;
 
 use kerning::{
     compose_kerning_paragraph_measurement, compute_kerning_pair_candidate,
-    compute_kerning_run_measurement, decide_kerning_run_gate, inspect_exact_font_kerning,
-    identify_exact_font_source, measure_kerning_paragraph_segments, prepare_kerning_pair_engine,
-    resolve_exact_font_source,
-    ExactFontRegistryError, ExactFontRegistryRegistration, ExactFontSlot, ExactFontSource,
-    ExactFontSourceHandle, ExactFontSourceProvider, ExactFontSourceRegistry,
-    ExactFontSourceResolutionReason, KerningCapability, KerningCapabilityFallbackReason,
-    KerningLayoutSession, KerningPairCandidateFallbackReason, KerningPairCandidateStatus,
+    compute_kerning_run_measurement, decide_kerning_run_gate, identify_exact_font_source,
+    inspect_exact_font_kerning, measure_kerning_paragraph_segments, prepare_kerning_pair_engine,
+    resolve_exact_font_source, ExactFontRegistryError, ExactFontRegistryRegistration,
+    ExactFontSlot, ExactFontSource, ExactFontSourceHandle, ExactFontSourceProvider,
+    ExactFontSourceRegistry, ExactFontSourceResolutionReason, KerningCapability,
+    KerningCapabilityFallbackReason, KerningLayoutSession, KerningPairCandidateFallbackReason,
+    KerningPairCandidateStatus, KerningParagraphBreakSession,
     KerningParagraphMeasurementDisposition, KerningParagraphMeasurementFallbackReason,
     KerningParagraphScalarStyle, KerningParagraphSegmentMeasurement, KerningRequest,
     KerningRunFallbackReason, KerningRunGate, KerningRunMeasurementDisposition,
@@ -23,12 +23,9 @@ use std::cell::Cell;
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen_test::wasm_bindgen_test;
 
-const NOTO_REGULAR: &[u8] =
-    include_bytes!("../../ttfs/opensource/NotoSansKR-Regular.ttf");
-const NO_PAIR_TABLE: &[u8] =
-    include_bytes!("../fixtures/fonts/RHWPBitmapSvgGlyphSmoke.ttf");
-const EXACT_KERNING_SMOKE: &[u8] =
-    include_bytes!("../fixtures/fonts/RHWPExactKerningSmoke.ttf");
+const NOTO_REGULAR: &[u8] = include_bytes!("../../ttfs/opensource/NotoSansKR-Regular.ttf");
+const NO_PAIR_TABLE: &[u8] = include_bytes!("../fixtures/fonts/RHWPBitmapSvgGlyphSmoke.ttf");
+const EXACT_KERNING_SMOKE: &[u8] = include_bytes!("../fixtures/fonts/RHWPExactKerningSmoke.ttf");
 
 #[test]
 fn issue_4968_exact_slot_registry_roundtrips_provider_and_session() {
@@ -186,7 +183,10 @@ fn replace_table_with_legacy_kern(font: &[u8], replace_tag: &[u8; 4]) -> Vec<u8>
         .expect("replaceable optional table");
     let table_offset = read_u32(&output, record + 8) as usize;
     let table_len = read_u32(&output, record + 12) as usize;
-    assert!(table_len >= kern_table.len(), "replacement table is too small");
+    assert!(
+        table_len >= kern_table.len(),
+        "replacement table is too small"
+    );
     output[record..record + 4].copy_from_slice(b"kern");
     output[record + 4..record + 8].fill(0); // parser does not consume checksums
     output[record + 12..record + 16].copy_from_slice(&(kern_table.len() as u32).to_be_bytes());
@@ -234,10 +234,7 @@ fn issue_4968_capability_precedence_and_failure_reasons_are_structured() {
     );
     let unsupported_json = serde_json::to_value(&unsupported).expect("capability JSON");
     assert_eq!(unsupported_json["capability"], "unsupported");
-    assert_eq!(
-        unsupported_json["fallbackReason"],
-        "pair-table-unsupported"
-    );
+    assert_eq!(unsupported_json["fallbackReason"], "pair-table-unsupported");
     assert_eq!(unsupported_json["fontBytes"], NO_PAIR_TABLE.len());
     assert_eq!(unsupported_json["faceIndex"], 0);
 
@@ -381,12 +378,7 @@ fn issue_4968_layout_session_caches_exact_engine_without_payload_trace() {
     assert_eq!(provider.calls.get(), 1, "cache hit must not query provider");
 
     let text = "AV To WA HH";
-    let gate = decide_kerning_run_gate(
-        true,
-        text,
-        text.chars().count(),
-        &second.capability,
-    );
+    let gate = decide_kerning_run_gate(true, text, text.chars().count(), &second.capability);
     let candidate = compute_kerning_pair_candidate(
         text,
         session.engine(&handle).expect("cached pair engine"),
@@ -429,10 +421,7 @@ fn issue_4968_layout_session_caches_resolution_failures_closed() {
     let mut missing_session = KerningSourceSession::new(&missing_provider);
     let missing_first = missing_session.prepare(&handle);
     let missing_second = missing_session.prepare(&handle);
-    assert_eq!(
-        missing_first.status,
-        KerningSourceSessionStatus::FailClosed
-    );
+    assert_eq!(missing_first.status, KerningSourceSessionStatus::FailClosed);
     assert!(!missing_first.cache_hit);
     assert!(missing_second.cache_hit);
     assert_eq!(
@@ -488,12 +477,7 @@ fn issue_4968_public_exact_source_fixture_is_native_wasm_portable() {
     assert_eq!(trace.capability.capability, KerningCapability::GposKern);
 
     let text = "AV To WA HH";
-    let gate = decide_kerning_run_gate(
-        true,
-        text,
-        text.chars().count(),
-        &trace.capability,
-    );
+    let gate = decide_kerning_run_gate(true, text, text.chars().count(), &trace.capability);
     let candidate = compute_kerning_pair_candidate(
         text,
         session.engine(&handle).expect("public fixture pair engine"),
@@ -523,7 +507,10 @@ fn issue_4968_run_gate_is_bounded_and_does_not_claim_pair_application() {
     assert_eq!(eligible_json["request"], "enabled");
     assert_eq!(eligible_json["capability"], "gpos-kern");
     assert_eq!(eligible_json["gate"], "eligible");
-    assert!(eligible_json.get("text").is_none(), "trace must omit source text");
+    assert!(
+        eligible_json.get("text").is_none(),
+        "trace must omit source text"
+    );
 
     let disabled = decide_kerning_run_gate(false, "AV", 2, &gpos);
     assert_eq!(disabled.request, KerningRequest::Disabled);
@@ -541,20 +528,12 @@ fn issue_4968_run_gate_is_bounded_and_does_not_claim_pair_application() {
     );
 
     let oversized_text = "A".repeat(MAX_KERNING_RUN_CODE_POINTS + 50_000);
-    let code_points = decide_kerning_run_gate(
-        true,
-        &oversized_text,
-        MAX_KERNING_RUN_GLYPHS,
-        &gpos,
-    );
+    let code_points = decide_kerning_run_gate(true, &oversized_text, MAX_KERNING_RUN_GLYPHS, &gpos);
     assert_eq!(code_points.gate, KerningRunGate::FailClosed);
     assert_eq!(code_points.code_point_count, MAX_KERNING_RUN_CODE_POINTS);
     assert!(code_points.code_point_limit_exceeded);
     assert_eq!(code_points.glyph_count, MAX_KERNING_RUN_GLYPHS);
-    assert_eq!(
-        code_points.candidate_pair_count,
-        MAX_KERNING_ADJACENT_PAIRS
-    );
+    assert_eq!(code_points.candidate_pair_count, MAX_KERNING_ADJACENT_PAIRS);
     assert_eq!(
         code_points.fallback_reason,
         Some(KerningRunFallbackReason::RunCodePointLimitExceeded)
@@ -581,12 +560,10 @@ fn issue_4968_pair_candidate_is_exact_bounded_and_not_applied() {
     let engine = prepare_kerning_pair_engine(source, &capability).expect("exact Noto engine");
 
     let pair_text = "AV To WA HH";
-    let pair_gate = decide_kerning_run_gate(true, pair_text, pair_text.chars().count(), &capability);
+    let pair_gate =
+        decide_kerning_run_gate(true, pair_text, pair_text.chars().count(), &capability);
     let pair = compute_kerning_pair_candidate(pair_text, &engine, &pair_gate);
-    assert_eq!(
-        pair.status,
-        KerningPairCandidateStatus::AdjustmentCandidate
-    );
+    assert_eq!(pair.status, KerningPairCandidateStatus::AdjustmentCandidate);
     assert_eq!(pair.capability, KerningCapability::GposKern);
     assert_eq!(pair.glyph_count, 11);
     assert_eq!(pair.examined_pair_count, 10);
@@ -595,15 +572,22 @@ fn issue_4968_pair_candidate_is_exact_bounded_and_not_applied() {
     assert_eq!(pair.fallback_reason, None);
     let pair_json = serde_json::to_value(&pair).expect("pair candidate JSON");
     assert_eq!(pair_json["status"], "adjustment-candidate");
-    assert!(pair_json.get("text").is_none(), "trace must omit source text");
+    assert!(
+        pair_json.get("text").is_none(),
+        "trace must omit source text"
+    );
     assert!(
         pair_json.get("applied").is_none(),
         "candidate must not claim application"
     );
 
     let no_pair_text = "HH";
-    let no_pair_gate =
-        decide_kerning_run_gate(true, no_pair_text, no_pair_text.chars().count(), &capability);
+    let no_pair_gate = decide_kerning_run_gate(
+        true,
+        no_pair_text,
+        no_pair_text.chars().count(),
+        &capability,
+    );
     let no_pair = compute_kerning_pair_candidate(no_pair_text, &engine, &no_pair_gate);
     assert_eq!(
         no_pair.status,
@@ -641,8 +625,7 @@ fn issue_4968_pair_candidate_is_exact_bounded_and_not_applied() {
     );
 
     let rtl_text = "אב";
-    let rtl_gate =
-        decide_kerning_run_gate(true, rtl_text, rtl_text.chars().count(), &capability);
+    let rtl_gate = decide_kerning_run_gate(true, rtl_text, rtl_text.chars().count(), &capability);
     let rtl = compute_kerning_pair_candidate(rtl_text, &engine, &rtl_gate);
     assert_eq!(rtl.status, KerningPairCandidateStatus::FailClosed);
     assert_eq!(
@@ -665,12 +648,8 @@ fn issue_4968_pair_candidate_is_exact_bounded_and_not_applied() {
     );
 
     let bounded_text = "A".repeat(MAX_KERNING_RUN_CODE_POINTS);
-    let bounded_gate = decide_kerning_run_gate(
-        true,
-        &bounded_text,
-        MAX_KERNING_RUN_GLYPHS,
-        &capability,
-    );
+    let bounded_gate =
+        decide_kerning_run_gate(true, &bounded_text, MAX_KERNING_RUN_GLYPHS, &capability);
     let bounded = compute_kerning_pair_candidate(&bounded_text, &engine, &bounded_gate);
     assert_ne!(bounded.status, KerningPairCandidateStatus::FailClosed);
     assert_eq!(bounded.glyph_count, MAX_KERNING_RUN_GLYPHS);
@@ -867,7 +846,11 @@ fn issue_4968_common_run_measurement_preserves_k0_and_fail_closed_positions() {
         Some(KerningRunMeasurementFallbackReason::ExactSourceUnavailable)
     );
     assert_eq!(missing.positions(), base_positions);
-    assert_eq!(provider.calls.get(), 0, "missing handle must not query provider");
+    assert_eq!(
+        provider.calls.get(),
+        0,
+        "missing handle must not query provider"
+    );
 
     let oversized_text = "A".repeat(MAX_KERNING_RUN_CODE_POINTS + 1);
     let oversized_positions = linear_positions(oversized_text.len(), 5.0);
@@ -890,7 +873,11 @@ fn issue_4968_common_run_measurement_preserves_k0_and_fail_closed_positions() {
     );
     assert_eq!(oversized.positions(), oversized_positions);
     assert!(oversized.advance_deltas.is_empty());
-    assert_eq!(provider.calls.get(), 0, "oversized run must stop before source");
+    assert_eq!(
+        provider.calls.get(),
+        0,
+        "oversized run must stop before source"
+    );
 }
 
 #[test]
@@ -916,28 +903,14 @@ fn issue_4968_layout_transaction_pins_slot_generation_and_reuses_face_cache() {
     assert_eq!(transaction.registry_generation(), generation);
     assert_eq!(transaction.source_handle(slot), Some(&expected_handle));
 
-    let first = transaction.measure_run(
-        slot,
-        "AV",
-        true,
-        vec![0.0, 10.0, 20.0],
-        20.0,
-        1.0,
-    );
+    let first = transaction.measure_run(slot, "AV", true, vec![0.0, 10.0, 20.0], 20.0, 1.0);
     assert_eq!(
         first.disposition,
         KerningRunMeasurementDisposition::PairAdjusted
     );
     assert!(!first.session.as_ref().expect("first trace").cache_hit);
 
-    let second = transaction.measure_run(
-        slot,
-        "AV",
-        true,
-        vec![0.0, 10.0, 20.0],
-        20.0,
-        1.0,
-    );
+    let second = transaction.measure_run(slot, "AV", true, vec![0.0, 10.0, 20.0], 20.0, 1.0);
     assert_eq!(
         second.disposition,
         KerningRunMeasurementDisposition::PairAdjusted
@@ -978,22 +951,8 @@ fn issue_4968_paragraph_measurement_commits_segments_to_one_position_map() {
         .expect("public exact source");
     let mut transaction = KerningLayoutSession::new(&registry);
     let base_positions = vec![0.0, 10.0, 20.0, 30.0, 40.0];
-    let left = transaction.measure_run(
-        slot,
-        "AV",
-        true,
-        vec![0.0, 10.0, 20.0],
-        20.0,
-        1.0,
-    );
-    let right = transaction.measure_run(
-        slot,
-        "AV",
-        true,
-        vec![0.0, 10.0, 20.0],
-        20.0,
-        1.0,
-    );
+    let left = transaction.measure_run(slot, "AV", true, vec![0.0, 10.0, 20.0], 20.0, 1.0);
+    let right = transaction.measure_run(slot, "AV", true, vec![0.0, 10.0, 20.0], 20.0, 1.0);
     let left_width = left.total_width;
     let right_width = right.total_width;
     let paragraph = compose_kerning_paragraph_measurement(
@@ -1034,7 +993,10 @@ fn issue_4968_paragraph_measurement_commits_segments_to_one_position_map() {
 
     let trace = serde_json::to_string(&paragraph).expect("paragraph measurement JSON");
     for forbidden in ["AV", "fontFamily", "fontPath", "sourcePath"] {
-        assert!(!trace.contains(forbidden), "paragraph trace leaked {forbidden}");
+        assert!(
+            !trace.contains(forbidden),
+            "paragraph trace leaked {forbidden}"
+        );
     }
 }
 
@@ -1043,25 +1005,15 @@ fn issue_4968_paragraph_measurement_rolls_back_k0_and_segment_limit() {
     let slot = ExactFontSlot::new(4968, 1);
     let registry = ExactFontSourceRegistry::default();
     let mut transaction = KerningLayoutSession::new(&registry);
-    let k0_run = transaction.measure_run(
-        slot,
-        "AV",
-        false,
-        vec![0.0, 9.25, 18.5],
-        f64::NAN,
-        f64::NAN,
-    );
+    let k0_run =
+        transaction.measure_run(slot, "AV", false, vec![0.0, 9.25, 18.5], f64::NAN, f64::NAN);
     let segment = KerningParagraphSegmentMeasurement {
         start_index: 0,
         end_index: 2,
         slot,
         measurement: k0_run,
     };
-    let k0 = compose_kerning_paragraph_measurement(
-        2,
-        vec![0.0, 9.25, 18.5],
-        vec![segment.clone()],
-    );
+    let k0 = compose_kerning_paragraph_measurement(2, vec![0.0, 9.25, 18.5], vec![segment.clone()]);
     assert_eq!(
         k0.disposition,
         KerningParagraphMeasurementDisposition::ExistingPositions
@@ -1083,7 +1035,10 @@ fn issue_4968_paragraph_measurement_rolls_back_k0_and_segment_limit() {
         Some(KerningParagraphMeasurementFallbackReason::SegmentLimitExceeded)
     );
     assert!(over_limit.segment_limit_exceeded);
-    assert_eq!(over_limit.bounded_segment_count, MAX_KERNING_PARAGRAPH_SEGMENTS);
+    assert_eq!(
+        over_limit.bounded_segment_count,
+        MAX_KERNING_PARAGRAPH_SEGMENTS
+    );
     assert_eq!(over_limit.positions(), [0.0, 9.25, 18.5]);
     assert!(over_limit.pair_adjusted_positions.is_none());
 }
@@ -1160,12 +1115,14 @@ fn issue_4968_paragraph_segmentation_honors_slot_control_and_inline_boundaries()
         .iter()
         .all(|segment| segment.measurement.disposition
             == KerningRunMeasurementDisposition::PairAdjusted));
-    assert!(!paragraph.segments[0]
-        .measurement
-        .session
-        .as_ref()
-        .expect("first source trace")
-        .cache_hit);
+    assert!(
+        !paragraph.segments[0]
+            .measurement
+            .session
+            .as_ref()
+            .expect("first source trace")
+            .cache_hit
+    );
     assert!(paragraph.segments[1..].iter().all(|segment| segment
         .measurement
         .session
@@ -1244,9 +1201,7 @@ fn issue_4968_paragraph_segmentation_rolls_back_execution_budget_atomically() {
     let slot_a = ExactFontSlot::new(4968, 1);
     let slot_b = ExactFontSlot::new(4969, 1);
     let scalar_styles: Vec<_> = (0..code_points)
-        .map(|index| {
-            paragraph_scalar_style(if index % 2 == 0 { slot_a } else { slot_b }, false)
-        })
+        .map(|index| paragraph_scalar_style(if index % 2 == 0 { slot_a } else { slot_b }, false))
         .collect();
     let hard_boundaries = vec![false; code_points + 1];
     let base_positions = linear_positions(code_points, 10.0);
@@ -1299,4 +1254,130 @@ fn issue_4968_paragraph_segmentation_rolls_back_execution_budget_atomically() {
     assert_eq!(oversized.code_point_count, MAX_KERNING_RUN_CODE_POINTS);
     assert_eq!(oversized.attempted_segment_count, 0);
     assert_eq!(oversized.positions(), oversized_positions);
+}
+
+#[test]
+fn issue_4968_long_word_and_line_boundary_consume_one_paragraph_measurement() {
+    let slot = ExactFontSlot::new(4968, 1);
+    let mut registry = ExactFontSourceRegistry::default();
+    registry
+        .register(
+            slot,
+            ExactFontSource {
+                bytes: EXACT_KERNING_SMOKE,
+                face_index: 0,
+            },
+        )
+        .expect("public exact source");
+    let mut transaction = KerningLayoutSession::new(&registry);
+    let text = "AVAV";
+    let code_points = text.chars().count();
+    let scalar_styles = vec![paragraph_scalar_style(slot, true); code_points];
+    let hard_boundaries = vec![false; code_points + 1];
+    let paragraph = measure_kerning_paragraph_segments(
+        text,
+        linear_positions(code_points, 10.0),
+        &scalar_styles,
+        &hard_boundaries,
+        &mut transaction,
+    );
+    assert_eq!(
+        paragraph.disposition,
+        KerningParagraphMeasurementDisposition::PairAdjusted
+    );
+
+    let initial_prefix_width = paragraph.range_width(0, 3).expect("initial prefix");
+    let mut line_measurement = KerningParagraphBreakSession::new(
+        text,
+        &scalar_styles,
+        &hard_boundaries,
+        &paragraph,
+        &mut transaction,
+    )
+    .expect("same paragraph transaction");
+    assert_eq!(
+        line_measurement.range_width(0, 4),
+        paragraph.range_width(0, 4),
+        "token total must read the paragraph-owned positions"
+    );
+    assert_eq!(
+        line_measurement.boundary_width(0, 1),
+        Some(10.0),
+        "a pair split after A must remove the crossing adjustment"
+    );
+    assert_eq!(line_measurement.boundary_pair_adjustment(0, 1), Some(0.0));
+    let boundary_prefix_width = line_measurement
+        .boundary_width(0, 3)
+        .expect("boundary-safe prefix");
+    assert!(boundary_prefix_width > initial_prefix_width);
+    let available_width = (initial_prefix_width + boundary_prefix_width) / 2.0;
+
+    let decision = line_measurement
+        .find_fitting_end(0, 4, available_width)
+        .expect("bounded line decision");
+    assert_eq!(decision.initial_end_index, 3);
+    assert_eq!(decision.final_end_index, 2);
+    assert!(!decision.overflow_forced);
+    assert!(decision.final_width <= available_width);
+    assert_eq!(
+        decision.final_width,
+        line_measurement.boundary_width(0, 2).unwrap()
+    );
+    assert_eq!(line_measurement.failed_reason(), None);
+
+    let trace = serde_json::to_string(&decision).expect("boundary decision JSON");
+    for forbidden in ["AVAV", "fontFamily", "fontPath", "sourcePath"] {
+        assert!(
+            !trace.contains(forbidden),
+            "boundary trace leaked {forbidden}"
+        );
+    }
+}
+
+#[test]
+fn issue_4968_line_boundary_remeasurement_shares_the_segment_budget() {
+    let text = "A".repeat(MAX_KERNING_PARAGRAPH_SEGMENTS);
+    let code_points = text.chars().count();
+    let slot_a = ExactFontSlot::new(4968, 1);
+    let slot_b = ExactFontSlot::new(4969, 1);
+    let scalar_styles: Vec<_> = (0..code_points)
+        .map(|index| paragraph_scalar_style(if index % 2 == 0 { slot_a } else { slot_b }, false))
+        .collect();
+    let hard_boundaries = vec![false; code_points + 1];
+    let registry = ExactFontSourceRegistry::default();
+    let mut transaction = KerningLayoutSession::new(&registry);
+    let paragraph = measure_kerning_paragraph_segments(
+        &text,
+        linear_positions(code_points, 10.0),
+        &scalar_styles,
+        &hard_boundaries,
+        &mut transaction,
+    );
+    assert_eq!(
+        paragraph.attempted_segment_count,
+        MAX_KERNING_PARAGRAPH_SEGMENTS
+    );
+    assert_eq!(
+        paragraph.disposition,
+        KerningParagraphMeasurementDisposition::ExistingPositions
+    );
+
+    let mut line_measurement = KerningParagraphBreakSession::new(
+        &text,
+        &scalar_styles,
+        &hard_boundaries,
+        &paragraph,
+        &mut transaction,
+    )
+    .expect("bounded paragraph measurement");
+    assert_eq!(line_measurement.boundary_width(0, 1), None);
+    assert_eq!(
+        line_measurement.failed_reason(),
+        Some(KerningParagraphMeasurementFallbackReason::SegmentExecutionLimitExceeded)
+    );
+    assert_eq!(
+        line_measurement.attempted_segment_count(),
+        MAX_KERNING_PARAGRAPH_SEGMENTS
+    );
+    assert_eq!(line_measurement.find_fitting_end(0, 2, 20.0), None);
 }
