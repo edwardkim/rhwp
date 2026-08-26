@@ -13,6 +13,7 @@ import concurrent.futures
 import json
 import math
 import os
+import re
 import statistics
 import subprocess
 from collections import Counter, defaultdict
@@ -51,10 +52,53 @@ OVERFLOW_TOLERANCE_PX = 0.5
 DELTA_TOLERANCE_PX = 0.1
 HWPUNIT_PER_INCH = 7200.0
 LAYOUT_DPI = 96.0
+PUBLIC_KIND = "font-rank8-private-qualification-projection"
+PRIVATE_KIND = "font-rank8-private-qualification-detail"
+STAGE = "W8-Q3R"
+COHORT_KIND = "font-rank8-private-cohort"
+COHORT_DOCUMENTS = 6
+STYLE_LINE = re.compile(
+    rb"\[CS\].*?id=(\d+) bold=(true|false) spacing=(-?\d+)% ratio=(\d+)% "
+    rb"base=(\d+) attr=0x([0-9A-Fa-f]+)"
+)
 
 
 class Rank8PrivateQualificationError(OracleStage2Error):
     """A fail-closed W8-Q3 contract violation."""
+
+
+def document_style_map(
+    rhwp_bin: Path, source: Path, cohort_id: str
+) -> dict[int, dict[str, Any]]:
+    """Read document-global CharShape attributes without retaining document text."""
+
+    payload = _run_private([str(rhwp_bin), "dump", str(source)], f"{cohort_id} style dump", 180)
+    return parse_document_style_dump(payload, cohort_id)
+
+
+def parse_document_style_dump(
+    payload: bytes, cohort_id: str = "fixture"
+) -> dict[int, dict[str, Any]]:
+    styles: dict[int, dict[str, Any]] = {}
+    for match in STYLE_LINE.finditer(payload):
+        char_shape_id = int(match.group(1))
+        attr = int(match.group(6), 16)
+        style = {
+            "ratio": int(match.group(4)),
+            "spacing": int(match.group(3)),
+            "bold": match.group(2) == b"true",
+            "italic": bool(attr & 0x01),
+            "baseSizeHwpunit": int(match.group(5)),
+        }
+        existing = styles.get(char_shape_id)
+        if existing is not None and existing != style:
+            raise Rank8PrivateQualificationError(
+                f"{cohort_id} char-shape style mapping is inconsistent"
+            )
+        styles[char_shape_id] = style
+    if not styles:
+        raise Rank8PrivateQualificationError(f"{cohort_id} style dump is empty")
+    return styles
 
 
 def require_equal(actual: Any, expected: Any, label: str) -> None:
@@ -271,13 +315,27 @@ def _evidence_page(
         evidence, dict
     ):
         raise Rank8PrivateQualificationError(f"{cohort_id} page evidence identity mismatch")
+    completeness = {
+        "status": evidence.get("status"),
+        "pageTreeBuilds": evidence.get("scope", {}).get("pageTreeBuilds"),
+        "sameSnapshot": evidence.get("scope", {}).get("sameSnapshot"),
+        "unframedRuns": evidence.get("counts", {}).get("unframedRuns"),
+    }
+    unframed_run_indices = evidence.get("unframedRunIndices")
     if (
-        evidence.get("status") != "complete"
-        or evidence.get("scope", {}).get("pageTreeBuilds") != 1
-        or evidence.get("scope", {}).get("sameSnapshot") is not True
-        or evidence.get("counts", {}).get("unframedRuns") != 0
+        completeness["status"] not in {"complete", "unmodelled"}
+        or completeness["pageTreeBuilds"] != 1
+        or completeness["sameSnapshot"] is not True
+        or not isinstance(completeness["unframedRuns"], int)
+        or completeness["unframedRuns"] < 0
+        or not isinstance(unframed_run_indices, list)
+        or len(unframed_run_indices) != completeness["unframedRuns"]
+        or (completeness["unframedRuns"] == 0)
+        != (completeness["status"] == "complete")
     ):
-        raise Rank8PrivateQualificationError(f"{cohort_id} page evidence is incomplete")
+        raise Rank8PrivateQualificationError(
+            f"{cohort_id} page {page} evidence is incomplete: {completeness}"
+        )
     trace = evidence.get("trace", {})
     counts = trace.get("counts", {})
     if (
@@ -285,7 +343,10 @@ def _evidence_page(
         or counts.get("recordsOmitted") != 0
         or counts.get("charactersSeen") != counts.get("recordsEmitted")
     ):
-        raise Rank8PrivateQualificationError(f"{cohort_id} page trace is incomplete")
+        raise Rank8PrivateQualificationError(
+            f"{cohort_id} page {page} trace is incomplete: "
+            f"status={trace.get('status')} counts={counts}"
+        )
     return page, evidence
 
 
@@ -330,11 +391,12 @@ def _document_input(
 
 def _candidate_advances(
     trace: dict[str, Any], units_per_em: int, exact_advances: dict[int, int]
-) -> tuple[dict[int, int], Counter[str], Counter[str], int]:
+) -> tuple[dict[int, int], dict[str, int], Counter[str], Counter[str], int]:
     by_run: dict[int, list[dict[str, Any]]] = defaultdict(list)
     for record in trace["records"]:
         by_run[record["source"]["runIndex"]].append(record)
     run_delta: dict[int, int] = defaultdict(int)
+    record_delta: dict[str, int] = {}
     signs: Counter[str] = Counter()
     coverage: Counter[str] = Counter()
     replay_mismatches = 0
@@ -356,6 +418,7 @@ def _candidate_advances(
         if not eligible:
             signs["equal"] += len(target)
             coverage["special-preserved"] += len(target)
+            record_delta.update((record["recordId"], 0) for record in target)
             continue
         applicable = [
             record
@@ -366,6 +429,7 @@ def _candidate_advances(
             signs["equal"] += len(target)
             coverage["cmap-miss-preserved"] += len(eligible)
             coverage["special-preserved"] += len(target) - len(eligible)
+            record_delta.update((record["recordId"], 0) for record in target)
             continue
         font_size_hwpunit = resolve_font_size_hwpunit(applicable)
         for record in target:
@@ -374,11 +438,13 @@ def _candidate_advances(
             if record not in eligible:
                 signs["equal"] += 1
                 coverage["special-preserved"] += 1
+                record_delta[record["recordId"]] = 0
                 continue
             codepoint = record["source"]["codePoint"]
             if codepoint not in exact_advances:
                 signs["equal"] += 1
                 coverage["cmap-miss-preserved"] += 1
+                record_delta[record["recordId"]] = 0
                 continue
             replay = apply_metric_transform_precise(
                 record,
@@ -396,9 +462,10 @@ def _candidate_advances(
             )
             delta = candidate - current
             run_delta[run_index] += delta
+            record_delta[record["recordId"]] = delta
             signs["narrower" if delta < 0 else "wider" if delta > 0 else "equal"] += 1
             coverage["exact-metric-applied"] += 1
-    return dict(run_delta), signs, coverage, replay_mismatches
+    return dict(run_delta), record_delta, signs, coverage, replay_mismatches
 
 
 def _page_projection(
@@ -406,6 +473,7 @@ def _page_projection(
     units_per_em: int,
     exact_advances: dict[int, int],
     page: int,
+    style_map: dict[int, dict[str, Any]] | None,
 ) -> dict[str, Any]:
     trace = evidence["trace"]
     lines = evidence["lines"]
@@ -416,13 +484,33 @@ def _page_projection(
     for record in trace["records"]:
         records_by_run[record["source"]["runIndex"]].append(record)
 
-    run_delta, signs, coverage, replay_mismatches = _candidate_advances(
+    run_delta, record_delta, signs, coverage, replay_mismatches = _candidate_advances(
         trace, units_per_em, exact_advances
     )
     target_records = [
         record for record in trace["records"] if record["document"]["face"] == TARGET_FACE
     ]
     line_rows = []
+    style_axes: dict[tuple[int, int, bool, bool], Counter[str]] = defaultdict(Counter)
+    style_unmodelled_target_characters = 0
+    if style_map is not None:
+        for record in target_records:
+            style = style_map.get(record["source"]["charShapeId"])
+            if style is None:
+                style_unmodelled_target_characters += 1
+                continue
+            delta = record_delta[record["recordId"]]
+            axis = (
+                style["ratio"],
+                style["spacing"],
+                style["bold"],
+                style["italic"],
+            )
+            style_axes[axis]["characters"] += 1
+            style_axes[axis]["advanceDeltaHwpunit"] += delta
+            style_axes[axis][
+                "narrower" if delta < 0 else "wider" if delta > 0 else "equal"
+            ] += 1
     invalid_frame_target_characters = 0
     invalid_frame_target_lines = 0
     first_metric = None
@@ -445,6 +533,23 @@ def _page_projection(
         )
         if target_count == 0:
             continue
+        line_target_records = [
+            record
+            for run_index in layout_indexes
+            for record in records_by_run[run_index]
+            if record["document"]["face"] == TARGET_FACE
+        ]
+        bold_target_characters = 0
+        italic_target_characters = 0
+        if style_map is not None:
+            bold_target_characters = sum(
+                style_map.get(record["source"]["charShapeId"], {}).get("bold") is True
+                for record in line_target_records
+            )
+            italic_target_characters = sum(
+                style_map.get(record["source"]["charShapeId"], {}).get("italic") is True
+                for record in line_target_records
+            )
         bbox = line["frame"]
         if not isinstance(bbox, dict) or bbox.get("width", 0) <= 0:
             invalid_frame_target_lines += 1
@@ -466,6 +571,8 @@ def _page_projection(
                 "storedRowDisposition": line["storedRow"]["disposition"],
                 "storedRowReason": line["storedRow"]["reason"],
                 "targetCharacters": target_count,
+                "boldTargetCharacters": bold_target_characters,
+                "italicTargetCharacters": italic_target_characters,
                 "frameWidthPx": round(bbox["width"], 1),
                 "currentOverflowPx": round(current_overflow, 3),
                 "candidateOverflowPx": round(candidate_overflow, 3),
@@ -509,6 +616,17 @@ def _page_projection(
         "unframedTargetCharacters": unframed_target,
         "invalidFrameTargetCharacters": invalid_frame_target_characters,
         "invalidFrameTargetLines": invalid_frame_target_lines,
+        "styleUnmodelledTargetCharacters": style_unmodelled_target_characters,
+        "styleAxes": [
+            {
+                "ratio": key[0],
+                "spacing": key[1],
+                "bold": key[2],
+                "italic": key[3],
+                **dict(sorted(value.items())),
+            }
+            for key, value in sorted(style_axes.items())
+        ],
         "lines": line_rows,
     }
 
@@ -522,7 +640,11 @@ def project_document(
     units_per_em: int,
     exact_advances: dict[int, int],
     workers: int,
+    rhwp_bin: Path | None = None,
 ) -> dict[str, Any]:
+    style_map = (
+        document_style_map(rhwp_bin, source, cohort_id) if rhwp_bin is not None else None
+    )
     first_page, first_evidence = _evidence_page(evidence_bin, source, 0, cohort_id)
     require_equal(first_page, 0, "first evidence page")
     page_count = first_evidence.get("scope", {}).get("pageCount")
@@ -540,7 +662,7 @@ def project_document(
     evidences = {page: evidence for page, evidence in [(0, first_evidence), *remaining]}
     require_equal(len(evidences), page_count, "same-snapshot evidence page count")
     pages = [
-        _page_projection(evidences[page], units_per_em, exact_advances, page)
+        _page_projection(evidences[page], units_per_em, exact_advances, page, style_map)
         for page in range(page_count)
     ]
 
@@ -589,14 +711,21 @@ def project_document(
     )
     cache_target_characters = Counter()
     cache_target_lines = Counter()
+    style_axes: dict[tuple[int, int, bool, bool], Counter[str]] = defaultdict(Counter)
     for line in lines:
         cache_target_characters[line["storedRowDisposition"]] += line["targetCharacters"]
         cache_target_lines[line["storedRowDisposition"]] += 1
+    for page in pages:
+        for axis in page["styleAxes"]:
+            key = (axis["ratio"], axis["spacing"], axis["bold"], axis["italic"])
+            for field in ("characters", "advanceDeltaHwpunit", "narrower", "wider", "equal"):
+                style_axes[key][field] += axis.get(field, 0)
     classification = (
         "unmodelled"
         if unframed_target_characters
         + invalid_frame_target_characters
         + cache_unmodelled_target_characters
+        + sum(page["styleUnmodelledTargetCharacters"] for page in pages)
         else classify_document(dispositions)
     )
     return {
@@ -605,6 +734,7 @@ def project_document(
         "format": document["format"],
         "sourceSha256": sha256_file(source),
         "sourceUsageCharacters": document["summary"]["totalCharacters"],
+        "styleMeasured": style_map is not None,
         "renderPages": len(pages),
         "targetRenderPages": sum(page["targetCharacters"] > 0 for page in pages),
         "renderObservedCharacters": sum(page["targetCharacters"] for page in pages),
@@ -620,6 +750,9 @@ def project_document(
             page["invalidFrameTargetLines"] for page in pages
         ),
         "cacheUnmodelledTargetCharacters": cache_unmodelled_target_characters,
+        "styleUnmodelledTargetCharacters": sum(
+            page["styleUnmodelledTargetCharacters"] for page in pages
+        ),
         "cacheTargetCharacters": dict(sorted(cache_target_characters.items())),
         "cacheTargetLines": dict(sorted(cache_target_lines.items())),
         "recordDeltaCounts": dict(sorted(delta_signs.items())),
@@ -627,6 +760,34 @@ def project_document(
         "targetLines": len(lines),
         "contextLines": dict(sorted(Counter(line["context"] for line in lines).items())),
         "lineDispositions": dict(sorted(dispositions.items())),
+        "boldLineDispositions": dict(
+            sorted(
+                Counter(
+                    line["disposition"]
+                    for line in lines
+                    if line["boldTargetCharacters"] > 0
+                ).items()
+            )
+        ),
+        "italicLineDispositions": dict(
+            sorted(
+                Counter(
+                    line["disposition"]
+                    for line in lines
+                    if line["italicTargetCharacters"] > 0
+                ).items()
+            )
+        ),
+        "styleAxes": [
+            {
+                "ratio": key[0],
+                "spacing": key[1],
+                "bold": key[2],
+                "italic": key[3],
+                **dict(sorted(value.items())),
+            }
+            for key, value in sorted(style_axes.items())
+        ],
         "classification": classification,
         "firstMetricDivergence": first_metric,
         "firstCapacityDivergence": first_capacity,
@@ -643,6 +804,15 @@ def build_public(private: dict[str, Any], q0: dict[str, Any], q2: dict[str, Any]
     coverage: Counter[str] = Counter()
     cache_target_characters: Counter[str] = Counter()
     cache_target_lines: Counter[str] = Counter()
+    by_format: dict[str, Counter[str]] = defaultdict(Counter)
+    by_context: dict[str, Counter[str]] = defaultdict(Counter)
+    bold_line_dispositions: Counter[str] = Counter()
+    italic_line_dispositions: Counter[str] = Counter()
+    style_axes: dict[tuple[int, int, bool, bool], Counter[str]] = defaultdict(Counter)
+    regression_rows: list[dict[str, Any]] = []
+    style_measured = all(document.get("styleMeasured") is True for document in documents)
+    if any(document.get("styleMeasured") is True for document in documents) != style_measured:
+        raise Rank8PrivateQualificationError("style measurement is partial")
     for document in documents:
         line_dispositions.update(document["lineDispositions"])
         contexts.update(document["contextLines"])
@@ -650,6 +820,28 @@ def build_public(private: dict[str, Any], q0: dict[str, Any], q2: dict[str, Any]
         coverage.update(document["candidateCoverage"])
         cache_target_characters.update(document["cacheTargetCharacters"])
         cache_target_lines.update(document["cacheTargetLines"])
+        by_format[document["format"]].update(document["lineDispositions"])
+        bold_line_dispositions.update(document["boldLineDispositions"])
+        italic_line_dispositions.update(document["italicLineDispositions"])
+        for line in document["lines"]:
+            by_context[line["context"]][line["disposition"]] += 1
+            if line["disposition"] in {"overflow-introduced", "overflow-increased"}:
+                regression_rows.append(
+                    {
+                        "format": document["format"],
+                        "context": line["context"],
+                        "cache": line["storedRowDisposition"],
+                        "disposition": line["disposition"],
+                        "bold": line["boldTargetCharacters"] > 0,
+                        "currentOverflowPx": line["currentOverflowPx"],
+                        "candidateOverflowPx": line["candidateOverflowPx"],
+                        "advanceDeltaHwpunit": line["advanceDeltaHwpunit"],
+                    }
+                )
+        for axis in document["styleAxes"]:
+            key = (axis["ratio"], axis["spacing"], axis["bold"], axis["italic"])
+            for field in ("characters", "advanceDeltaHwpunit", "narrower", "wider", "equal"):
+                style_axes[key][field] += axis.get(field, 0)
     improved = bool(
         line_dispositions["overflow-removed"]
         or line_dispositions["overflow-reduced"]
@@ -662,22 +854,34 @@ def build_public(private: dict[str, Any], q0: dict[str, Any], q2: dict[str, Any]
         and line["disposition"] in {"overflow-introduced", "overflow-increased"}
     )
     non_worsening = decisive_modelled_regressions == 0
-    unmodelled = sum(
+    layout_unmodelled = sum(
         document["unframedTargetCharacters"]
         + document["invalidFrameTargetCharacters"]
         + document["cacheUnmodelledTargetCharacters"]
         for document in documents
     )
+    style_unmodelled = sum(
+        document.get("styleUnmodelledTargetCharacters", 0) for document in documents
+    )
+    unmodelled = layout_unmodelled + style_unmodelled
+    observed_bold = sum(
+        value.get("characters", 0) for key, value in style_axes.items() if key[2]
+    )
+    bold_evidence_gap = (
+        style_measured
+        and q0["cohort"].get("styleDomain", {}).get("boldCharacters", 0) > 0
+        and observed_bold == 0
+    )
     status = qualification_status(
         improved=improved and non_worsening,
         decisive_modelled_regressions=decisive_modelled_regressions,
-        unmodelled_characters=unmodelled,
+        unmodelled_characters=unmodelled + int(bold_evidence_gap),
     )
     result = {
         "schemaVersion": 1,
-        "kind": "font-rank8-private-qualification-projection",
+        "kind": PUBLIC_KIND,
         "issue": 4967,
-        "stage": "W8-Q3R",
+        "stage": STAGE,
         "target": {"face": TARGET_FACE, "targetDecisionPlane": "layout-metric"},
         "inputs": {
             "q0CanonicalSha256": q0["canonicalSha256"],
@@ -742,23 +946,23 @@ def build_public(private: dict[str, Any], q0: dict[str, Any], q2: dict[str, Any]
             "detector": "same-snapshot-production-cache-key-probe",
             "samePartitionProjection": True,
             "cacheAdmissionObserved": True,
-            "validityClaim": unmodelled == 0,
+            "validityClaim": layout_unmodelled == 0,
             "reason": (
                 None
-                if unmodelled == 0
-                else "at least one target character remains in a fail-closed unmodelled frame"
+                if layout_unmodelled == 0
+                else "at least one target character remains outside the cache-admission model"
             ),
         },
         "decision": {
             "status": status,
             "actualDocumentImprovementObserved": improved,
             "allDocumentsNonWorsening": non_worsening,
-            "evidenceComplete": unmodelled == 0,
+            "evidenceComplete": unmodelled == 0 and not bold_evidence_gap,
             "terminalReason": (
                 "modelled-regression"
                 if decisive_modelled_regressions
                 else "unmodelled-evidence"
-                if unmodelled
+                if unmodelled or bold_evidence_gap
                 else None
             ),
             "productMutationAuthorized": False,
@@ -782,6 +986,87 @@ def build_public(private: dict[str, Any], q0: dict[str, Any], q2: dict[str, Any]
             "absolutePathIncluded": False,
         },
     }
+    if style_measured:
+        result["accounting"]["styleUnmodelledTargetCharacters"] = sum(
+            document["styleUnmodelledTargetCharacters"] for document in documents
+        )
+        result["projection"]["byFormatLineDispositions"] = {
+            key: dict(sorted(value.items())) for key, value in sorted(by_format.items())
+        }
+        result["projection"]["byContextLineDispositions"] = {
+            key: dict(sorted(value.items())) for key, value in sorted(by_context.items())
+        }
+        result["projection"]["styleAxes"] = [
+            {
+                "ratio": key[0],
+                "spacing": key[1],
+                "bold": key[2],
+                "italic": key[3],
+                **dict(sorted(value.items())),
+            }
+            for key, value in sorted(style_axes.items())
+        ]
+        result["projection"]["boldAudit"] = {
+            "sourceUsageCharacters": q0["cohort"]["styleDomain"]["boldCharacters"],
+            "renderObservedCharacters": observed_bold,
+            "lineDispositions": dict(sorted(bold_line_dispositions.items())),
+            "dynamicConfirmationComplete": observed_bold > 0 and unmodelled == 0,
+        }
+        result["projection"]["italicAudit"] = {
+            "sourceUsageCharacters": q0["cohort"]["styleDomain"]["italicCharacters"],
+            "renderObservedCharacters": sum(
+                value.get("characters", 0) for key, value in style_axes.items() if key[3]
+            ),
+            "lineDispositions": dict(sorted(italic_line_dispositions.items())),
+        }
+        modelled_regressions = [
+            row for row in regression_rows if row["cache"] in {"admitted", "rejected"}
+        ]
+
+        def counted(rows: list[dict[str, Any]], field: str) -> dict[str, int]:
+            return dict(sorted(Counter(row[field] for row in rows).items()))
+
+        result["projection"]["regressionAudit"] = {
+            "observations": len(regression_rows),
+            "modelledObservations": len(modelled_regressions),
+            "byFormat": counted(regression_rows, "format"),
+            "byContext": counted(regression_rows, "context"),
+            "byCacheDisposition": counted(regression_rows, "cache"),
+            "byBoundaryDisposition": counted(regression_rows, "disposition"),
+            "modelledByFormat": counted(modelled_regressions, "format"),
+            "modelledByContext": counted(modelled_regressions, "context"),
+            "modelledByCacheDisposition": counted(modelled_regressions, "cache"),
+            "modelledBoldLines": sum(row["bold"] for row in modelled_regressions),
+            "maximumOverflowIncreasePx": round(
+                max(
+                    row["candidateOverflowPx"] - row["currentOverflowPx"]
+                    for row in regression_rows
+                ),
+                3,
+            ),
+            "modelledMaximumOverflowIncreasePx": round(
+                max(
+                    row["candidateOverflowPx"] - row["currentOverflowPx"]
+                    for row in modelled_regressions
+                ),
+                3,
+            ),
+            "modelledDistinctBoundarySignatures": len(
+                {
+                    (
+                        row["format"],
+                        row["context"],
+                        row["cache"],
+                        row["disposition"],
+                        row["bold"],
+                        row["currentOverflowPx"],
+                        row["candidateOverflowPx"],
+                        row["advanceDeltaHwpunit"],
+                    )
+                    for row in modelled_regressions
+                }
+            ),
+        }
     result["canonicalSha256"] = sha256_bytes(canonical_json_bytes(result))
     reject_absolute_paths(result)
     return result
@@ -796,6 +1081,7 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument("--font-root", required=True)
     parser.add_argument("--ttf", required=True)
     parser.add_argument("--font-layout-evidence-bin", required=True)
+    parser.add_argument("--rhwp-bin")
     parser.add_argument("--private-output", required=True)
     parser.add_argument("--public-output", required=True)
     parser.add_argument("--workers", type=int, default=4)
@@ -817,6 +1103,11 @@ def main() -> int:
     evidence_bin = regular_input(
         ROOT, args.font_layout_evidence_bin, 512 * 1024 * 1024
     )
+    rhwp_bin = (
+        regular_input(ROOT, args.rhwp_bin, 512 * 1024 * 1024)
+        if args.rhwp_bin
+        else None
+    )
     font_root = Path(args.font_root).resolve(strict=True)
     ttf_path = regular_input(font_root, args.ttf, 64 * 1024 * 1024)
     require_equal(sha256_file(q0_path), Q0_SHA256, "Q0 raw")
@@ -829,9 +1120,9 @@ def main() -> int:
         raise Rank8PrivateQualificationError("Q2 did not qualify Q3")
     cohort = read_json(cohort_path)
     if (
-        cohort.get("kind") != "font-rank8-private-cohort"
+        cohort.get("kind") != COHORT_KIND
         or cohort.get("issue") != 4967
-        or len(cohort.get("documents", [])) != 6
+        or len(cohort.get("documents", [])) != COHORT_DOCUMENTS
         or cohort.get("privacy", {}).get("localOnly") is not True
     ):
         raise Rank8PrivateQualificationError("private cohort identity mismatch")
@@ -851,13 +1142,14 @@ def main() -> int:
                 units_per_em=units_per_em,
                 exact_advances=exact_advances,
                 workers=args.workers,
+                rhwp_bin=rhwp_bin,
             )
         )
     private = {
         "schemaVersion": 1,
-        "kind": "font-rank8-private-qualification-detail",
+        "kind": PRIVATE_KIND,
         "issue": 4967,
-        "stage": "W8-Q3R",
+        "stage": STAGE,
         "localOnly": True,
         "privateCohortRawSha256": sha256_file(cohort_path),
         "documents": documents,

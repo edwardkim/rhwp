@@ -86,6 +86,27 @@ Q2 판정은 `qualified-for-q3`이며 target은 `layout-metric` 한 plane이다.
 제품 registry·metric DB·fallback·supply 변경은 승인되지 않았다. Q3는 Q0에서 동결한 5문서만 대상으로
 same-snapshot actual geometry와 stored-row admission을 판정한다.
 
+## Stage W8-R7-Q3 bounded same-snapshot qualification
+
+재현 도구는 `scripts/font_rank7_private_qualification.py`, 공용 projector는
+`scripts/font_rank8_private_qualification.py`, 계약 테스트는
+`scripts/tests/test_font_rank7_private_qualification.py`다. 공개 정본은
+[`rank7_private_qualification.json`](rank7_private_qualification.json), 상세 결과는 local-only
+`output/4967/w8-r7-q3/` mode `0600`이다.
+
+- Q0 동결 5문서만 읽었고 source usage 63,858자와 render observation 74,969자를 별도 회계로 유지했다.
+- exact metric 74,132자 적용, current transform mismatch 0, trace truncated page 0이다.
+- overflow 제거·감소 301 line과 함께 신규·증가 171 line이 관찰됐으며 모두 table-cell이다.
+- modelled 51건은 모두 HWPX admitted stored-row의 동일 signature다. current 0px → candidate 0.707px,
+  line advance +162 HWPUNIT로 신규 overflow가 생겼다.
+- bold render 1,269자에는 modelled regression이 없지만 nested style 63,465자가 미조인이라 Q0 bold
+  4,468자 전체의 dynamic completion은 주장하지 않는다.
+- cache-unmodelled 55,461자도 제품 이득·회귀 근거로 승격하지 않는다.
+
+결정적 modelled regression은 open evidence gap보다 우선한다. 따라서 Q3 판정은 `no-change`이고 Q4의
+backend·portable·시각 정책에는 진입하지 않는다. 제품 registry·metric DB·fallback·paint·supply 변경도
+없다. 다음 gate는 Q5 최종 disposition과 #4967 tracker evidence-reopen lane 감사다.
+
 ## Stage W8-R1-Q0 경계
 
 rank 1 `문체부 바탕체`는 rank 8 결론을 재사용하지 않고 기존 W3·W4·W5·W7.5 증거를 독립 대사한다.
