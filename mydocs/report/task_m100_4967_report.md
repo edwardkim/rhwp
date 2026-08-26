@@ -287,9 +287,10 @@ fast-pass의 최신 required aggregate와 `MERGEABLE/CLEAN`을 다시 확인한�
 | W8-R7-Q4 | backend·portable·시각 정책을 설계할 것인가 | 제품 후보가 Q3에서 기각돼 미진입 |
 | W8-R7-Q5 | 제품 교정과 tracker 후속을 제안할 것인가 | product-correction 0, tracker 완료·close 제안 |
 
-단계별 local commit은 `331eb2366`, `3a6d97b5d`, `884e71be3`, `b6728a31f`에 고정했다. Q5 문서
-candidate는 뒤이은 stage commit에서 고정한다. 제품 font rule·metric DB·fallback·paint·supply는 변경하지
-않았다.
+단계별 local commit은 `331eb2366`, `3a6d97b5d`, `884e71be3`, `b6728a31f`에 고정했고 Q5 문서와 tracker
+판정은 `3e705d120`에 고정했다. 이 code candidate는 PR #6106으로 제출됐으며 같은 SHA의 Full CI·CodeQL·
+Proptest·Adapter inter-diff가 모두 성공했다. self-review 기록 뒤의 review-only fast-pass와 merge는 별도
+gate로 유지한다. 제품 font rule·metric DB·fallback·paint·supply는 변경하지 않았다.
 
 ### 10.2 exact source와 runtime 경계
 
