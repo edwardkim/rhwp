@@ -3163,6 +3163,7 @@ impl LayoutEngine {
                 };
                 let cap_cell_ctx = table_meta
                     .map(|(pi, ci)| CellContext {
+                        in_textbox: false,
                         parent_para_index: pi,
                         path: vec![CellPathEntry {
                             control_index: ci,
@@ -4763,6 +4764,7 @@ impl LayoutEngine {
                 Some(new_ctx)
             } else {
                 table_meta.map(|(pi, ci)| CellContext {
+                    in_textbox: false,
                     parent_para_index: pi,
                     path: vec![CellPathEntry {
                         control_index: ci,

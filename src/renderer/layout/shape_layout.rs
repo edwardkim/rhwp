@@ -148,6 +148,7 @@ fn ole_cell_context(
     para_index: usize,
 ) -> Option<crate::renderer::layout::CellContext> {
     (!parent_cell_path.is_empty()).then(|| crate::renderer::layout::CellContext {
+        in_textbox: false,
         parent_para_index: para_index,
         path: parent_cell_path.to_vec(),
     })
@@ -2721,6 +2722,7 @@ impl LayoutEngine {
                         ..inner_area
                     };
                     let cell_ctx = CellContext {
+                        in_textbox: true,
                         parent_para_index: para_index,
                         path: {
                             let mut p = parent_cell_path.to_vec();
@@ -2959,6 +2961,7 @@ impl LayoutEngine {
                 ..inner_area
             };
             let cell_ctx = CellContext {
+                in_textbox: true,
                 parent_para_index: para_index,
                 path: {
                     let mut p = parent_cell_path.to_vec();
@@ -3085,7 +3088,38 @@ impl LayoutEngine {
             } else {
                 0.0
             };
-            let total_line_width = total_inline_width + first_line_text_width;
+            // [#5820 축3] 한글은 오른쪽 정렬 폭에서 말미 공백을 제외한다 — 글상자
+            // [로고A][로고B][공백5] RIGHT 문단에서 포함하면 로고가 말미 공백 폭
+            // (32.7px)만큼 좌측 이탈한다(156560092 실측: 한글 로고 B 우변 여백
+            // 4.1px vs rhwp 36.8). paragraph_layout 의 셀-밖 Right 제외 규칙과
+            // 같은 계약이다.
+            let trailing_ws_width: f64 = if para_alignment == Alignment::Right
+                && pi < composed_paras.len()
+            {
+                composed_paras[pi]
+                    .lines
+                    .first()
+                    .map(|line| {
+                        let mut width = 0.0;
+                        for run in line.runs.iter().rev() {
+                            let n = run.text.chars().rev().take_while(|c| *c == ' ').count();
+                            if n == 0 {
+                                break;
+                            }
+                            let ts =
+                                resolved_to_text_style(styles, run.char_style_id, run.lang_index);
+                            width += estimate_text_width(&" ".repeat(n), &ts);
+                            if n != run.text.chars().count() {
+                                break;
+                            }
+                        }
+                        width
+                    })
+                    .unwrap_or(0.0)
+            } else {
+                0.0
+            };
+            let total_line_width = total_inline_width + first_line_text_width - trailing_ws_width;
             let mut inline_x = match para_alignment {
                 Alignment::Center | Alignment::Distribute => {
                     inner_area.x + (inner_area.width - total_line_width).max(0.0) / 2.0
@@ -3187,6 +3221,7 @@ impl LayoutEngine {
                         // 식별자: (바깥 Shape control_index, cell_index=0, 글상자 문단 pi). innerControlIdx 는
                         // layout_picture 의 control_index 인자(= ctrl_idx_in_para)로 별도 전달된다.
                         let pic_cell_ctx = CellContext {
+                            in_textbox: true,
                             parent_para_index: para_index,
                             path: {
                                 let mut p = parent_cell_path.to_vec();
@@ -3269,6 +3304,7 @@ impl LayoutEngine {
                         // (시험지 page 2 문14 <보기> textbox 의 6개 inline 수식이
                         //  paragraph_layout + 본 분기 양쪽에서 각각 emit → 중복).
                         let equiv_cell_ctx = CellContext {
+                            in_textbox: true,
                             parent_para_index: para_index,
                             path: {
                                 let mut p = parent_cell_path.to_vec();
@@ -3625,6 +3661,7 @@ impl LayoutEngine {
                 };
 
                 let cell_ctx = CellContext {
+                    in_textbox: true,
                     parent_para_index: para_index,
                     path: {
                         let mut p = parent_cell_path.to_vec();

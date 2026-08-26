@@ -1611,6 +1611,7 @@ impl LayoutEngine {
                     context
                 } else {
                     CellContext {
+                        in_textbox: false,
                         parent_para_index: para_index,
                         path: vec![CellPathEntry {
                             control_index,
@@ -3699,6 +3700,7 @@ impl LayoutEngine {
             context
         } else {
             CellContext {
+                in_textbox: false,
                 parent_para_index: para_index,
                 path: vec![CellPathEntry {
                     control_index,

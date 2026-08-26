@@ -319,6 +319,7 @@ impl LayoutEngine {
                             Some(new_ctx)
                         } else {
                             table_meta.map(|(pi, ctrl_ci)| CellContext {
+                                in_textbox: false,
                                 parent_para_index: pi,
                                 path: vec![CellPathEntry {
                                     control_index: ctrl_ci,
@@ -571,6 +572,7 @@ impl LayoutEngine {
                         None
                     } else {
                         Some(CellContext {
+                            in_textbox: false,
                             parent_para_index: para_idx,
                             path: parent_path.to_vec(),
                         })
@@ -772,6 +774,7 @@ impl LayoutEngine {
                         sec_idx,
                         para_idx,
                         CellContext {
+                            in_textbox: false,
                             parent_para_index: para_idx,
                             path,
                         },
@@ -864,6 +867,7 @@ impl LayoutEngine {
                                         text_direction: cell.text_direction,
                                     });
                                     CellContext {
+                                        in_textbox: false,
                                         parent_para_index: outer_pi,
                                         path,
                                     }

@@ -712,6 +712,9 @@ pub struct CellContext {
     pub parent_para_index: usize,
     /// 표 경로 (depth 1=단일 표, depth 2+=중첩 표)
     pub path: Vec<CellPathEntry>,
+    /// [#5820] 글상자(drawText) 내부 문단 여부 — 표 셀과 달리 한글은 글상자
+    /// 안에서도 셀 밖 규칙(오른쪽 정렬 말미 공백 제외)을 적용한다.
+    pub in_textbox: bool,
 }
 
 /// [#2091] 표 컨트롤 블록 배치 결과 — early_return 은 원본의 함수 조기 return 신호.
@@ -11028,6 +11031,7 @@ impl LayoutEngine {
                                 );
                             }
                             let cell_ctx = CellContext {
+                                in_textbox: false,
                                 parent_para_index: para_index,
                                 path: vec![CellPathEntry {
                                     control_index,
