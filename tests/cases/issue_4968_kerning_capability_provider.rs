@@ -9,9 +9,11 @@ use kerning::{
     ExactFontSource, ExactFontSourceHandle, ExactFontSourceProvider,
     ExactFontSourceResolutionReason, KerningCapability, KerningCapabilityFallbackReason,
     KerningPairCandidateFallbackReason, KerningPairCandidateStatus, KerningRequest,
-    KerningRunFallbackReason, KerningRunGate, MAX_KERNING_ADJACENT_PAIRS,
-    MAX_KERNING_FONT_BYTES, MAX_KERNING_RUN_CODE_POINTS, MAX_KERNING_RUN_GLYPHS,
+    KerningRunFallbackReason, KerningRunGate, KerningSourceSession,
+    KerningSourceSessionStatus, MAX_KERNING_ADJACENT_PAIRS, MAX_KERNING_FONT_BYTES,
+    MAX_KERNING_RUN_CODE_POINTS, MAX_KERNING_RUN_GLYPHS,
 };
+use std::cell::Cell;
 
 const NOTO_REGULAR: &[u8] =
     include_bytes!("../../ttfs/opensource/NotoSansKR-Regular.ttf");
@@ -27,6 +29,21 @@ impl ExactFontSourceProvider for BorrowedSourceProvider<'_> {
         &'a self,
         _handle: &ExactFontSourceHandle,
     ) -> Option<ExactFontSource<'a>> {
+        self.source
+    }
+}
+
+struct CountingSourceProvider<'a> {
+    source: Option<ExactFontSource<'a>>,
+    calls: Cell<usize>,
+}
+
+impl ExactFontSourceProvider for CountingSourceProvider<'_> {
+    fn source_for_handle<'a>(
+        &'a self,
+        _handle: &ExactFontSourceHandle,
+    ) -> Option<ExactFontSource<'a>> {
+        self.calls.set(self.calls.get() + 1);
         self.source
     }
 }
@@ -226,6 +243,117 @@ fn issue_4968_exact_source_handle_resolves_without_carrying_font_payload() {
         .unwrap_err(),
         ExactFontSourceResolutionReason::FontByteLimitExceeded
     );
+}
+
+#[test]
+fn issue_4968_layout_session_caches_exact_engine_without_payload_trace() {
+    let source = ExactFontSource {
+        bytes: NOTO_REGULAR,
+        face_index: 0,
+    };
+    let handle = identify_exact_font_source(source).expect("bounded exact source identity");
+    let provider = CountingSourceProvider {
+        source: Some(source),
+        calls: Cell::new(0),
+    };
+    let mut session = KerningSourceSession::new(&provider);
+
+    let first = session.prepare(&handle);
+    assert_eq!(first.status, KerningSourceSessionStatus::Ready);
+    assert!(!first.cache_hit);
+    assert_eq!(first.capability.capability, KerningCapability::GposKern);
+    assert_eq!(first.resolution_reason, None);
+    assert_eq!(first.pair_engine_reason, None);
+    assert_eq!(provider.calls.get(), 1);
+
+    let second = session.prepare(&handle);
+    assert_eq!(second.status, KerningSourceSessionStatus::Ready);
+    assert!(second.cache_hit);
+    assert_eq!(provider.calls.get(), 1, "cache hit must not query provider");
+
+    let text = "AV To WA HH";
+    let gate = decide_kerning_run_gate(
+        true,
+        text,
+        text.chars().count(),
+        &second.capability,
+    );
+    let candidate = compute_kerning_pair_candidate(
+        text,
+        session.engine(&handle).expect("cached pair engine"),
+        &gate,
+    );
+    assert_eq!(
+        candidate.status,
+        KerningPairCandidateStatus::AdjustmentCandidate
+    );
+    assert_eq!(candidate.total_x_advance_delta, -94);
+
+    let trace = serde_json::to_value(&second).expect("session trace JSON");
+    assert_eq!(trace["status"], "ready");
+    assert_eq!(trace["cacheHit"], true);
+    for forbidden in ["bytes", "path", "text", "fontFamily"] {
+        assert!(trace.get(forbidden).is_none(), "trace leaked {forbidden}");
+        assert!(
+            trace["handle"].get(forbidden).is_none(),
+            "handle leaked {forbidden}"
+        );
+        assert!(
+            trace["capability"].get(forbidden).is_none(),
+            "capability leaked {forbidden}"
+        );
+    }
+}
+
+#[test]
+fn issue_4968_layout_session_caches_resolution_failures_closed() {
+    let handle = identify_exact_font_source(ExactFontSource {
+        bytes: NOTO_REGULAR,
+        face_index: 0,
+    })
+    .expect("bounded exact source identity");
+
+    let missing_provider = CountingSourceProvider {
+        source: None,
+        calls: Cell::new(0),
+    };
+    let mut missing_session = KerningSourceSession::new(&missing_provider);
+    let missing_first = missing_session.prepare(&handle);
+    let missing_second = missing_session.prepare(&handle);
+    assert_eq!(
+        missing_first.status,
+        KerningSourceSessionStatus::FailClosed
+    );
+    assert!(!missing_first.cache_hit);
+    assert!(missing_second.cache_hit);
+    assert_eq!(
+        missing_first.resolution_reason,
+        Some(ExactFontSourceResolutionReason::SourceUnavailable)
+    );
+    assert_eq!(
+        missing_first.capability.fallback_reason,
+        Some(KerningCapabilityFallbackReason::FontSourceUnavailable)
+    );
+    assert_eq!(missing_provider.calls.get(), 1);
+    assert!(missing_session.engine(&handle).is_none());
+
+    let mismatch_provider = CountingSourceProvider {
+        source: Some(ExactFontSource {
+            bytes: NO_PAIR_TABLE,
+            face_index: 0,
+        }),
+        calls: Cell::new(0),
+    };
+    let mut mismatch_session = KerningSourceSession::new(&mismatch_provider);
+    let mismatch_first = mismatch_session.prepare(&handle);
+    let mismatch_second = mismatch_session.prepare(&handle);
+    assert_eq!(
+        mismatch_first.resolution_reason,
+        Some(ExactFontSourceResolutionReason::ByteLengthMismatch)
+    );
+    assert!(mismatch_second.cache_hit);
+    assert_eq!(mismatch_provider.calls.get(), 1);
+    assert!(mismatch_session.engine(&handle).is_none());
 }
 
 #[test]

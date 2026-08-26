@@ -7,6 +7,7 @@
 use rustybuzz::{shape, Direction, Feature, GlyphBuffer, UnicodeBuffer};
 use serde::Serialize;
 use sha2::{Digest, Sha256};
+use std::collections::HashMap;
 use std::fmt::Write as _;
 use ttf_parser::{gpos::PositioningSubtable, kern, Face, Tag};
 
@@ -171,6 +172,40 @@ pub(crate) struct KerningPairEngine<'a> {
     capability: KerningCapabilityDecision,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub(crate) enum KerningSourceSessionStatus {
+    Ready,
+    FailClosed,
+}
+
+/// Layout session이 exact handle을 준비한 결과다. payload와 원문은 남기지 않는다.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct KerningSourceSessionTrace {
+    pub status: KerningSourceSessionStatus,
+    pub cache_hit: bool,
+    pub handle: ExactFontSourceHandle,
+    pub capability: KerningCapabilityDecision,
+    pub resolution_reason: Option<ExactFontSourceResolutionReason>,
+    pub pair_engine_reason: Option<KerningPairCandidateFallbackReason>,
+}
+
+struct KerningSourceSessionEntry<'a> {
+    trace: KerningSourceSessionTrace,
+    engine: Option<KerningPairEngine<'a>>,
+}
+
+/// 한 번의 layout/reflow가 공유하는 exact-source capability·pair-engine cache다.
+///
+/// provider가 bytes를 소유하고 session은 그 수명 안에서만 face를 빌린다. host의
+/// font registry가 바뀌면 새 session을 만들어야 하므로 unavailable 결과도 한
+/// session 안에서는 결정적으로 cache된다.
+pub(crate) struct KerningSourceSession<'a> {
+    provider: &'a dyn ExactFontSourceProvider,
+    entries: HashMap<ExactFontSourceHandle, KerningSourceSessionEntry<'a>>,
+}
+
 impl From<KerningCapabilityFallbackReason> for KerningRunFallbackReason {
     fn from(value: KerningCapabilityFallbackReason) -> Self {
         match value {
@@ -290,6 +325,14 @@ pub(crate) fn inspect_exact_font_kerning(
     }
 
     let digest = font_source_sha256(source.bytes);
+    inspect_verified_exact_font_kerning(source, digest)
+}
+
+/// Handle 대사가 끝난 source를 parse한다. 이 경로에서는 SHA-256을 다시 계산하지 않는다.
+fn inspect_verified_exact_font_kerning(
+    source: ExactFontSource<'_>,
+    digest: String,
+) -> KerningCapabilityDecision {
     let Ok(face) = Face::parse(source.bytes, source.face_index) else {
         return KerningCapabilityDecision::fail_closed(
             KerningCapabilityFallbackReason::MalformedSfnt,
@@ -420,9 +463,127 @@ pub(crate) fn prepare_kerning_pair_engine<'a>(
     {
         return Err(KerningPairCandidateFallbackReason::FontSourceMismatch);
     }
+    prepare_verified_kerning_pair_engine(source, capability)
+}
+
+/// 이미 exact-source 대사와 capability parse가 끝난 source로 pair engine을 만든다.
+fn prepare_verified_kerning_pair_engine<'a>(
+    source: ExactFontSource<'a>,
+    capability: KerningCapabilityDecision,
+) -> Result<KerningPairEngine<'a>, KerningPairCandidateFallbackReason> {
     let face = rustybuzz::Face::from_slice(source.bytes, source.face_index)
         .ok_or(KerningPairCandidateFallbackReason::ShapingUnavailable)?;
     Ok(KerningPairEngine { face, capability })
+}
+
+impl<'a> KerningSourceSession<'a> {
+    pub(crate) fn new(provider: &'a dyn ExactFontSourceProvider) -> Self {
+        Self {
+            provider,
+            entries: HashMap::new(),
+        }
+    }
+
+    /// Exact handle 하나를 session에 준비한다.
+    ///
+    /// 최초 호출만 provider 조회, SHA-256 대사, SFNT parse를 수행한다. 성공과 실패를 모두
+    /// cache하므로 동일 layout/reflow 중 host 상태 변화가 결과를 비결정적으로 바꾸지 않는다.
+    pub(crate) fn prepare(&mut self, handle: &ExactFontSourceHandle) -> KerningSourceSessionTrace {
+        if let Some(entry) = self.entries.get(handle) {
+            let mut trace = entry.trace.clone();
+            trace.cache_hit = true;
+            return trace;
+        }
+
+        let provider: &'a dyn ExactFontSourceProvider = self.provider;
+        let entry = match resolve_exact_font_source(provider, handle) {
+            Err(reason) => KerningSourceSessionEntry {
+                trace: KerningSourceSessionTrace {
+                    status: KerningSourceSessionStatus::FailClosed,
+                    cache_hit: false,
+                    handle: handle.clone(),
+                    capability: capability_for_resolution_failure(handle, reason),
+                    resolution_reason: Some(reason),
+                    pair_engine_reason: None,
+                },
+                engine: None,
+            },
+            Ok(source) => {
+                let capability =
+                    inspect_verified_exact_font_kerning(source, handle.font_source_sha256.clone());
+                if capability.capability == KerningCapability::Unsupported {
+                    KerningSourceSessionEntry {
+                        trace: KerningSourceSessionTrace {
+                            status: KerningSourceSessionStatus::FailClosed,
+                            cache_hit: false,
+                            handle: handle.clone(),
+                            capability,
+                            resolution_reason: None,
+                            pair_engine_reason: None,
+                        },
+                        engine: None,
+                    }
+                } else {
+                    match prepare_verified_kerning_pair_engine(source, capability.clone()) {
+                        Ok(engine) => KerningSourceSessionEntry {
+                            trace: KerningSourceSessionTrace {
+                                status: KerningSourceSessionStatus::Ready,
+                                cache_hit: false,
+                                handle: handle.clone(),
+                                capability,
+                                resolution_reason: None,
+                                pair_engine_reason: None,
+                            },
+                            engine: Some(engine),
+                        },
+                        Err(reason) => KerningSourceSessionEntry {
+                            trace: KerningSourceSessionTrace {
+                                status: KerningSourceSessionStatus::FailClosed,
+                                cache_hit: false,
+                                handle: handle.clone(),
+                                capability,
+                                resolution_reason: None,
+                                pair_engine_reason: Some(reason),
+                            },
+                            engine: None,
+                        },
+                    }
+                }
+            }
+        };
+
+        let trace = entry.trace.clone();
+        self.entries.insert(handle.clone(), entry);
+        trace
+    }
+
+    /// `prepare`가 성공한 exact handle의 engine만 빌려준다.
+    pub(crate) fn engine(&self, handle: &ExactFontSourceHandle) -> Option<&KerningPairEngine<'a>> {
+        self.entries.get(handle)?.engine.as_ref()
+    }
+}
+
+fn capability_for_resolution_failure(
+    handle: &ExactFontSourceHandle,
+    reason: ExactFontSourceResolutionReason,
+) -> KerningCapabilityDecision {
+    let fallback_reason = match reason {
+        ExactFontSourceResolutionReason::FontByteLimitExceeded => {
+            KerningCapabilityFallbackReason::FontByteLimitExceeded
+        }
+        ExactFontSourceResolutionReason::SourceUnavailable
+        | ExactFontSourceResolutionReason::FaceIndexMismatch
+        | ExactFontSourceResolutionReason::ByteLengthMismatch
+        | ExactFontSourceResolutionReason::Sha256Mismatch => {
+            KerningCapabilityFallbackReason::FontSourceUnavailable
+        }
+    };
+    KerningCapabilityDecision::fail_closed(
+        fallback_reason,
+        handle.font_bytes,
+        handle.face_index,
+        Some(handle.font_source_sha256.clone()),
+    )
 }
 
 /// 동일 exact face를 `kern=0`과 `kern=1`로 shaping해 위치 delta 후보만 계산한다.
