@@ -102,3 +102,23 @@ commit이다. push 뒤 review-only fast-pass가 정확한 후보를 재사용하
 self-review는 **완료 / 조건부 merge 권고**다. code candidate의 GitHub Actions 성공, review-only trailing
 head의 fast-pass, 최신 `MERGEABLE/CLEAN`과 작업지시자의 별도 merge 승인을 확인하기 전에는 merge하지
 않는다.
+
+## 2026-08-26 통합 후보 재검증
+
+#6115는 최신 `upstream/devel@1011a89475c9` (#6142 merge 포함) 기준의
+`review/open-prs-20260826-r1` 통합 후보에 포함했다. 원 PR은 non-draft이고 source CI가 녹색이며,
+comments/reviews는 0건이었다.
+
+통합 후보에서 `rhwp-studio/e2e/toolbox-visibility.test.mjs`가 tracked 파일인데 manifest에 누락되어
+`npm run e2e:manifest-check`가 실패할 수 있음을 확인했다. 메인터너 보정으로
+`rhwp-studio/e2e/MANIFEST.md`에 `toolbox-visibility.test.mjs` 행을 추가했고, 함께 누락된 e2e 3건도
+현재 tracked 목록에 맞춰 정리했다.
+
+재검증 결과:
+
+- Studio unit focused set 100 tests pass
+- `npm run build` 통과
+- `npm run e2e:manifest-check` 통과, tracked 116개 / manifest 116개
+- `node e2e/run-with-vite.mjs -- node e2e/toolbox-visibility.test.mjs --mode=headless` 통과
+- 전체 Rust nextest 8,399 pass / 43 skip
+- rustfmt, clippy, WASM build, native-Skia 공식 범위 통과

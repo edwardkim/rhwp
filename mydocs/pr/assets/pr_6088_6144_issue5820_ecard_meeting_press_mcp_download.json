@@ -1,0 +1,25 @@
+{
+  "status": "success",
+  "job_id": "7bbd5243-dd65-434d-b874-77391196b48d",
+  "output_path": "/home/tsjang/rhwp/pdf/pr_6088_6144/hancom2020/pr_6088_6144_issue5820_ecard_meeting_press_156560092_ecard_meeting_press-2020.pdf",
+  "output_filename": "pr_6088_6144_issue5820_ecard_meeting_press_156560092_ecard_meeting_press-2020.pdf",
+  "size": 111587,
+  "sha256": "f4f395675f301ae57bcc7bdf918a5aae5cb8b052ff063e68bbadb0406145825b",
+  "server": {
+    "job_id": "7bbd5243-dd65-434d-b874-77391196b48d",
+    "status": "success",
+    "target": "pdf",
+    "input_filename": "156560092_ecard_meeting_press.hwpx",
+    "output_filename": "pr_6088_6144_issue5820_ecard_meeting_press_156560092_ecard_meeting_press-2020.pdf",
+    "size": 111587,
+    "sha256": "f4f395675f301ae57bcc7bdf918a5aae5cb8b052ff063e68bbadb0406145825b",
+    "mime_type": "application/pdf",
+    "engine": "2020",
+    "engine_profile": "2020",
+    "hancom_version": "12.0.0.4605",
+    "backend": "hwp-managed-direct-dll-host",
+    "elapsed_ms": 14614,
+    "worker_elapsed_ms": 13674,
+    "worker_bits": 32
+  }
+}

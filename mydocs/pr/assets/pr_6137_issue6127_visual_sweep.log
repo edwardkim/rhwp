@@ -1,0 +1,11 @@
+== pr_6137_issue6127 ==
++ target/pr-review/release-test/rhwp dump-note-shape /home/tsjang/rhwp/samples/issue6127/2599643_vessel_pass_application.hwp
++ target/pr-review/release-test/rhwp export-svg /home/tsjang/rhwp/samples/issue6127/2599643_vessel_pass_application.hwp --font-style -o /home/tsjang/rhwp/output/pr_6088_6144_visual_sweep/local_hancom2020/pr_6137_issue6127/svg
++ target/pr-review/release-test/rhwp export-render-tree /home/tsjang/rhwp/samples/issue6127/2599643_vessel_pass_application.hwp -o /home/tsjang/rhwp/output/pr_6088_6144_visual_sweep/local_hancom2020/pr_6137_issue6127/render_tree
+SVG export pages: 1
++ pdftoppm -f 1 -l 1 -r 96 -png /home/tsjang/rhwp/pdf/pr_6088_6144/local_hancom2020/pr_6137_issue6127_vessel_pass_application-local2020.pdf /home/tsjang/rhwp/output/pr_6088_6144_visual_sweep/local_hancom2020/pr_6137_issue6127/pdf_png/pdf
++ pdftotext -bbox-layout /home/tsjang/rhwp/pdf/pr_6088_6144/local_hancom2020/pr_6137_issue6127_vessel_pass_application-local2020.pdf /home/tsjang/rhwp/output/pr_6088_6144_visual_sweep/local_hancom2020/pr_6137_issue6127/pdf_bbox.html
+Selected page singleton fallback: 산출물 파일명 숫자가 선택 페이지와 다르지만 모든 비교 그룹이 단일 페이지라 1:1로 매칭합니다.
+Selected pages: [1]
+Raster PNG pages: rhwp=1, pdf=1
+summary: /home/tsjang/rhwp/output/pr_6088_6144_visual_sweep/local_hancom2020/summary.json
