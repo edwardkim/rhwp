@@ -6599,6 +6599,40 @@ impl LayoutEngine {
                 hcursor.prev_layout_para = None;
                 hcursor.vpos_page_base = None;
                 hcursor.vpos_lazy_base = None;
+                // [#5820] 단, 쪽/단의 **첫 항목**이 이어지는 partial 이면 스냅
+                // 기준(base)을 여기서 그 연속 줄의 저장 vpos 로 직접 세운다 —
+                // 완전 리셋로 남기면 뒤의 lazy 역산이 빈 문단 trailing-ls bridge
+                // 로 base 를 ls 만큼 낮춰 쪽 전체 스냅이 +ls 밀린다(156560092
+                // 2쪽: 역산 base 67062 vs 저장 67902, 글상자 y +11.2px — 조판
+                // 패스는 같은 자리에서 텍스트-연속 역산으로 67902 를 얻어 두
+                // 패스가 발산했다). 순차-y 원칙(위 주석)은 유지된다 — 첫 항목의
+                // 배치 y 와 저장 vpos 를 같은 자리에 놓는 base 라 partial 직후
+                // 항목의 보정이 순차 y 와 일치한다.
+                if item_ordinal == 0 {
+                    if let PageItem::PartialParagraph {
+                        para_index,
+                        start_line,
+                        ..
+                    } = item
+                    {
+                        if *start_line > 0 {
+                            let seed = paragraphs
+                                .get(*para_index)
+                                .and_then(|p| p.line_segs.get(*start_line))
+                                .filter(|seg| {
+                                    seg.tag
+                                        & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                                        == 0
+                                })
+                                .map(|seg| {
+                                    seg.vertical_pos
+                                        - ((y_offset - visual_col_y) / self.dpi * 7200.0).round()
+                                            as i32
+                                });
+                            hcursor.vpos_lazy_base = seed;
+                        }
+                    }
+                }
             } else {
                 hcursor.prev_layout_para = Some(item_para);
             }
