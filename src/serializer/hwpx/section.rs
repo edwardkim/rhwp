@@ -2556,13 +2556,19 @@ fn render_header_footer(
     let mut out = format!(
         concat!(
             r#"<hp:ctrl><hp:{tag} id="{id}" applyPageType="{apply}">"#,
-            r#"<hp:subList id="" textDirection="HORIZONTAL" lineWrap="BREAK" vertAlign="TOP" "#,
+            r#"<hp:subList id="" textDirection="HORIZONTAL" lineWrap="BREAK" vertAlign="{va}" "#,
             r#"linkListIDRef="0" linkListNextIDRef="0" textWidth="{tw}" textHeight="{th}" "#,
             r#"hasTextRef="{tr}" hasNumRef="{nr}">"#
         ),
         tag = tag,
         id = h.id,
         apply = apply_page_type_to_str(h.apply_to),
+        // [#6186] 종전에는 늘 "TOP" 으로 굳혀 저장해 세로 정렬이 왕복에서 유실됐다.
+        va = match (h.list_attr >> 21) & 0b11 {
+            1 => "CENTER",
+            2 => "BOTTOM",
+            _ => "TOP",
+        },
         tw = h.text_width,
         th = h.text_height,
         tr = h.text_ref,
@@ -2587,6 +2593,8 @@ fn render_header_footer(
 struct HeaderFooterFields<'a> {
     id: u32,
     apply_to: HeaderFooterApply,
+    /// HWPX subList list_attr — 세로 정렬(비트 21~22) 보존용.
+    list_attr: u32,
     text_width: u32,
     text_height: u32,
     text_ref: u8,
@@ -2607,6 +2615,7 @@ fn render_header(h: &Header, ctx: &mut SerializeContext) -> String {
         HeaderFooterFields {
             id: hwpx_header_footer_id(&h.raw_ctrl_extra),
             apply_to: h.apply_to,
+            list_attr: h.list_attr,
             text_width: h.text_width,
             text_height: h.text_height,
             text_ref: h.text_ref,
@@ -2623,6 +2632,7 @@ fn render_footer(f: &Footer, ctx: &mut SerializeContext) -> String {
         HeaderFooterFields {
             id: hwpx_header_footer_id(&f.raw_ctrl_extra),
             apply_to: f.apply_to,
+            list_attr: f.list_attr,
             text_width: f.text_width,
             text_height: f.text_height,
             text_ref: f.text_ref,
