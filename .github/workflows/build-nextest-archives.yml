@@ -20,6 +20,11 @@ on:
         description: Cargo test target group assigned to this archive.
         required: true
         type: string
+      duration_policy_sha:
+        description: Pinned ci-metrics policy commit for integration B/C selection.
+        required: false
+        type: string
+        default: ''
 jobs:
   build:
     name: Build test archive (${{ inputs.archive_label }})
@@ -149,11 +154,26 @@ jobs:
               cargo_target_args+=(--lib)
               ;;
             integration-b|integration-c)
+              duration_policy='tests/suites/nextest-target-duration-policy.json'
+              if [[ -n "${{ inputs.duration_policy_sha }}" ]]; then
+                candidate_policy='target/nextest-duration-policy.json'
+                mkdir -p "$(dirname "${candidate_policy}")"
+                if git fetch --depth=1 origin "${{ inputs.duration_policy_sha }}" \
+                  && git show FETCH_HEAD:nextest-target-duration-policy.json > "${candidate_policy}"; then
+                  duration_policy="${candidate_policy}"
+                  printf 'duration_policy_sha=%s\n' "${{ inputs.duration_policy_sha }}"
+                else
+                  echo "::warning::Duration policy ${{ inputs.duration_policy_sha }} could not be fetched; using the committed fallback."
+                fi
+              else
+                echo 'duration_policy_sha=fallback:committed'
+              fi
+
               mapfile -t selected_targets < <(
                 cargo metadata --no-deps --format-version 1 \
                   | node scripts/select-nextest-archive-targets.mjs \
                     --group "${{ inputs.target_group }}" \
-                    --policy tests/suites/nextest-target-duration-policy.json
+                    --policy "${duration_policy}"
               )
               if (( ${#selected_targets[@]} == 0 )); then
                 echo "::error::integration target group selected no targets: ${{ inputs.target_group }}"

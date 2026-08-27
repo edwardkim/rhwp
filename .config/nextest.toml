@@ -11,7 +11,7 @@ priority = 100
 # report is uploaded only from successful devel runs and becomes a reviewed input
 # for the next duration-policy update PR.
 [profile.ci-duration-observation.junit]
-path = "target/nextest/ci-duration-observation/junit.xml"
+path = "junit.xml"
 report-name = "rhwp-nextest-duration-observation"
 store-success-output = false
 store-failure-output = true

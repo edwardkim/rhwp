@@ -271,6 +271,21 @@ class NextestArchiveWorkflowTests(unittest.TestCase):
         )
         self.assertIn("wasm-pack build --target web --release", self.ci)
 
+    def test_duration_policy_is_pinned_for_prs_and_refreshed_only_from_devel(self) -> None:
+        nextest = (root / ".config/nextest.toml").read_text()
+
+        self.assertIn('[profile.ci-duration-observation.junit]\npath = "junit.xml"', nextest)
+        self.assertNotIn('path = "target/nextest/ci-duration-observation/junit.xml"', nextest)
+        self.assertIn("resolve-nextest-duration-policy:", self.ci)
+        self.assertIn("refresh-nextest-target-duration-data:", self.ci)
+        self.assertIn("ci-metrics/nextest-target-durations", self.ci)
+        self.assertIn("github.ref == 'refs/heads/devel'", self.ci)
+        self.assertIn("duration_policy_sha:", self.builder)
+        self.assertIn(
+            'git fetch --depth=1 origin "${{ inputs.duration_policy_sha }}"',
+            self.builder,
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
