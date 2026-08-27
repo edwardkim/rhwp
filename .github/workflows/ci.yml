@@ -811,8 +811,8 @@ jobs:
 
   # [#2393] 기본 테스트 병렬화 — CI impact preflight가 frontend·Rust·Native Skia
   # gate와 worker 조건을 나누는 경계다.
-  # [#5737] archive A는 source-side lib test, B/C는 integration target을 교차 분배해
-  # 각각 compile/link한다. A는 두 hash worker, B/C는 각각 한 worker가 소비한다.
+  # [#6251] archive A는 source-side lib test를 단일 worker가 소비하고, B/C/D는
+  # integration target을 시간 기준으로 분배해 각각 compile/link한다.
   # required check 는 집계 job "Build & Test" 로 불변이다.
   # [#5388] M04-4: tests/cases/prop_*_roundtrip.rs 는 정규 shard 가 archive 에서
   # 자동 실행한다. 전용 싼 job 은 .github/workflows/proptest-roundtrip.yml
@@ -875,6 +875,27 @@ jobs:
       timeout_minutes: ${{ fromJSON(needs.preflight.outputs.test_archive_timeout_minutes || '60') }}
       archive_label: c
       target_group: integration-c
+      duration_policy_sha: ${{ needs.resolve-nextest-duration-policy.outputs.duration_policy_sha }}
+
+
+  build-test-archive-d:
+    uses: ./.github/workflows/build-nextest-archives.yml
+    needs: [preflight, resolve-nextest-duration-policy]
+    if: >-
+      ${{
+        always()
+        && needs.preflight.result == 'success'
+        && needs.preflight.outputs.fast_pass != 'true'
+        && needs.preflight.outputs.rust_required == 'true'
+        && needs.resolve-nextest-duration-policy.result == 'success'
+      }}
+    permissions:
+      contents: read
+    with:
+      cargo_profile: ${{ needs.preflight.outputs.test_profile || 'release' }}
+      timeout_minutes: ${{ fromJSON(needs.preflight.outputs.test_archive_timeout_minutes || '60') }}
+      archive_label: d
+      target_group: integration-d
       duration_policy_sha: ${{ needs.resolve-nextest-duration-policy.outputs.duration_policy_sha }}
 
   lint:
@@ -1382,32 +1403,11 @@ jobs:
     permissions:
       contents: read
     with:
-      label: Archive A shard 1
+      label: Archive A
       count_label: a-1
       archive_label: a
       filterset: "all()"
-      partition: "hash:1/2"
-
-
-  test-archive-a-shard-2:
-    uses: ./.github/workflows/run-nextest-archives.yml
-    needs: [preflight, build-test-archive-a]
-    if: >-
-      ${{
-        always()
-        && needs.preflight.result == 'success'
-        && needs.preflight.outputs.fast_pass != 'true'
-        && needs.preflight.outputs.rust_required == 'true'
-        && needs['build-test-archive-a'].result == 'success'
-      }}
-    permissions:
-      contents: read
-    with:
-      label: Archive A shard 2
-      count_label: a-2
-      archive_label: a
-      filterset: "all()"
-      partition: "hash:2/2"
+      partition: "hash:1/1"
 
 
   test-archive-b-shard-1:
@@ -1452,7 +1452,28 @@ jobs:
       partition: "hash:1/1"
 
 
-  # B/C duration data is refreshed from this devel run, or from the exact green
+  test-archive-d-shard-1:
+    uses: ./.github/workflows/run-nextest-archives.yml
+    needs: [preflight, build-test-archive-d]
+    if: >-
+      ${{
+        always()
+        && needs.preflight.result == 'success'
+        && needs.preflight.outputs.fast_pass != 'true'
+        && needs.preflight.outputs.rust_required == 'true'
+        && needs['build-test-archive-d'].result == 'success'
+      }}
+    permissions:
+      contents: read
+    with:
+      label: Archive D
+      count_label: d-1
+      archive_label: d
+      filterset: "all()"
+      partition: "hash:1/1"
+
+
+  # B/C/D duration data is refreshed from this devel run, or from the exact green
   # same-repository PR run accepted by trusted_postmerge_reuse.
   refresh-nextest-target-duration-data:
     name: Refresh nextest target duration data
@@ -1461,6 +1482,7 @@ jobs:
       - preflight
       - test-archive-b-shard-1
       - test-archive-c-shard-1
+      - test-archive-d-shard-1
     if: >-
       ${{
         always()
@@ -1474,6 +1496,7 @@ jobs:
             && needs.preflight.outputs.fast_pass != 'true'
             && needs.test-archive-b-shard-1.result == 'success'
             && needs.test-archive-c-shard-1.result == 'success'
+            && needs.test-archive-d-shard-1.result == 'success'
           )
           || (
             needs.preflight.outputs.postmerge_reuse == 'true'
@@ -1507,6 +1530,13 @@ jobs:
           name: nextest-target-durations-${{ github.run_id }}-c
           path: duration-c
 
+      - name: Download Archive D duration measurement
+        if: ${{ needs.preflight.outputs.postmerge_reuse != 'true' }}
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: nextest-target-durations-${{ github.run_id }}-d
+          path: duration-d
+
       - name: Download trusted PR Archive B duration measurement
         if: ${{ needs.preflight.outputs.postmerge_reuse == 'true' }}
         env:
@@ -1524,6 +1554,15 @@ jobs:
         run: >-
           gh run download "${SOURCE_RUN_ID}" --repo "${GITHUB_REPOSITORY}"
           --name "nextest-target-durations-${SOURCE_RUN_ID}-c" --dir duration-c
+
+      - name: Download trusted PR Archive D duration measurement
+        if: ${{ needs.preflight.outputs.postmerge_reuse == 'true' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SOURCE_RUN_ID: ${{ needs.preflight.outputs.postmerge_source_run_id }}
+        run: >-
+          gh run download "${SOURCE_RUN_ID}" --repo "${GITHUB_REPOSITORY}"
+          --name "nextest-target-durations-${SOURCE_RUN_ID}-d" --dir duration-d
 
       - name: Refresh duration policy data branch
         shell: bash
@@ -1543,6 +1582,7 @@ jobs:
             --policy tests/suites/nextest-target-duration-policy.json \
             --measurement duration-b/target-durations-b.json \
             --measurement duration-c/target-durations-c.json \
+            --measurement duration-d/target-durations-d.json \
             --output "${OUTPUT_POLICY}"
 
           if git ls-remote --exit-code origin "refs/heads/${METRICS_BRANCH}" >/dev/null 2>&1; then
@@ -1576,10 +1616,11 @@ jobs:
       - build-test-archive-a
       - build-test-archive-b
       - build-test-archive-c
+      - build-test-archive-d
       - test-archive-a-shard-1
-      - test-archive-a-shard-2
       - test-archive-b-shard-1
       - test-archive-c-shard-1
+      - test-archive-d-shard-1
       - lint
       - native-skia-tests
       - frontend-unit-gates
@@ -1595,9 +1636,9 @@ jobs:
             needs.preflight.outputs.fast_pass != 'true'
             && needs.preflight.outputs.rust_required == 'true'
             && needs['test-archive-a-shard-1'].result == 'success'
-            && needs['test-archive-a-shard-2'].result == 'success'
             && needs['test-archive-b-shard-1'].result == 'success'
             && needs['test-archive-c-shard-1'].result == 'success'
+            && needs['test-archive-d-shard-1'].result == 'success'
           }}
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
@@ -1609,9 +1650,9 @@ jobs:
             needs.preflight.outputs.fast_pass != 'true'
             && needs.preflight.outputs.rust_required == 'true'
             && needs['test-archive-a-shard-1'].result == 'success'
-            && needs['test-archive-a-shard-2'].result == 'success'
             && needs['test-archive-b-shard-1'].result == 'success'
             && needs['test-archive-c-shard-1'].result == 'success'
+            && needs['test-archive-d-shard-1'].result == 'success'
           }}
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
@@ -1623,23 +1664,38 @@ jobs:
             needs.preflight.outputs.fast_pass != 'true'
             && needs.preflight.outputs.rust_required == 'true'
             && needs['test-archive-a-shard-1'].result == 'success'
-            && needs['test-archive-a-shard-2'].result == 'success'
             && needs['test-archive-b-shard-1'].result == 'success'
             && needs['test-archive-c-shard-1'].result == 'success'
+            && needs['test-archive-d-shard-1'].result == 'success'
           }}
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: archive-expected-${{ github.run_id }}-c
           path: archive-expected-c
+
+      - name: Download archive D expected count
+        if: >-
+          ${{
+            needs.preflight.outputs.fast_pass != 'true'
+            && needs.preflight.outputs.rust_required == 'true'
+            && needs['test-archive-a-shard-1'].result == 'success'
+            && needs['test-archive-b-shard-1'].result == 'success'
+            && needs['test-archive-c-shard-1'].result == 'success'
+            && needs['test-archive-d-shard-1'].result == 'success'
+          }}
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: archive-expected-${{ github.run_id }}-d
+          path: archive-expected-d
       - name: Download shard counts
         if: >-
           ${{
             needs.preflight.outputs.fast_pass != 'true'
             && needs.preflight.outputs.rust_required == 'true'
             && needs['test-archive-a-shard-1'].result == 'success'
-            && needs['test-archive-a-shard-2'].result == 'success'
             && needs['test-archive-b-shard-1'].result == 'success'
             && needs['test-archive-c-shard-1'].result == 'success'
+            && needs['test-archive-d-shard-1'].result == 'success'
           }}
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
@@ -1651,24 +1707,25 @@ jobs:
             needs.preflight.outputs.fast_pass != 'true'
             && needs.preflight.outputs.rust_required == 'true'
             && needs['test-archive-a-shard-1'].result == 'success'
-            && needs['test-archive-a-shard-2'].result == 'success'
             && needs['test-archive-b-shard-1'].result == 'success'
             && needs['test-archive-c-shard-1'].result == 'success'
+            && needs['test-archive-d-shard-1'].result == 'success'
           }}
         run: |
           read -r expected_a < archive-expected-a/archive-expected-total.txt
           read -r expected_b < archive-expected-b/archive-expected-total.txt
           read -r expected_c < archive-expected-c/archive-expected-total.txt
+          read -r expected_d < archive-expected-d/archive-expected-total.txt
           read -r a1 < shard-counts/shard-count-a-1/shard-count-a-1.txt
-          read -r a2 < shard-counts/shard-count-a-2/shard-count-a-2.txt
           read -r b1 < shard-counts/shard-count-b-1/shard-count-b-1.txt
           read -r c1 < shard-counts/shard-count-c-1/shard-count-c-1.txt
-          if ! [[ "$expected_a" =~ ^[0-9]+$ && "$expected_b" =~ ^[0-9]+$ && "$expected_c" =~ ^[0-9]+$ && "$a1" =~ ^[0-9]+$ && "$a2" =~ ^[0-9]+$ && "$b1" =~ ^[0-9]+$ && "$c1" =~ ^[0-9]+$ ]]; then
+          read -r d1 < shard-counts/shard-count-d-1/shard-count-d-1.txt
+          if ! [[ "$expected_a" =~ ^[0-9]+$ && "$expected_b" =~ ^[0-9]+$ && "$expected_c" =~ ^[0-9]+$ && "$expected_d" =~ ^[0-9]+$ && "$a1" =~ ^[0-9]+$ && "$b1" =~ ^[0-9]+$ && "$c1" =~ ^[0-9]+$ && "$d1" =~ ^[0-9]+$ ]]; then
             echo "::error::archive expected counts and shard counts must be non-negative integers"
             exit 1
           fi
-          if (( a1 + a2 != expected_a )); then
-            echo "::error::Archive A shard total mismatch: $a1 + $a2 != $expected_a"
+          if (( a1 != expected_a )); then
+            echo "::error::Archive A shard total mismatch: $a1 != $expected_a"
             exit 1
           fi
           if (( b1 != expected_b )); then
@@ -1679,7 +1736,11 @@ jobs:
             echo "::error::Archive C shard total mismatch: $c1 != $expected_c"
             exit 1
           fi
-          printf 'archive_total=%s shard_total=%s\n' "$((expected_a + expected_b + expected_c))" "$((a1 + a2 + b1 + c1))"
+          if (( d1 != expected_d )); then
+            echo "::error::Archive D shard total mismatch: $d1 != $expected_d"
+            exit 1
+          fi
+          printf 'archive_total=%s shard_total=%s\n' "$((expected_a + expected_b + expected_c + expected_d))" "$((a1 + b1 + c1 + d1))"
       - name: Check Build & Test worker results
         env:
           PREFLIGHT_RESULT: ${{ needs.preflight.result }}
@@ -1690,10 +1751,11 @@ jobs:
           BUILD_ARCHIVE_A_RESULT: ${{ needs['build-test-archive-a'].result }}
           BUILD_ARCHIVE_B_RESULT: ${{ needs['build-test-archive-b'].result }}
           BUILD_ARCHIVE_C_RESULT: ${{ needs['build-test-archive-c'].result }}
+          BUILD_ARCHIVE_D_RESULT: ${{ needs['build-test-archive-d'].result }}
           TEST_ARCHIVE_A_1_RESULT: ${{ needs['test-archive-a-shard-1'].result }}
-          TEST_ARCHIVE_A_2_RESULT: ${{ needs['test-archive-a-shard-2'].result }}
           TEST_ARCHIVE_B_1_RESULT: ${{ needs['test-archive-b-shard-1'].result }}
           TEST_ARCHIVE_C_1_RESULT: ${{ needs['test-archive-c-shard-1'].result }}
+          TEST_ARCHIVE_D_1_RESULT: ${{ needs['test-archive-d-shard-1'].result }}
           LINT_RESULT: ${{ needs.lint.result }}
           NATIVE_SKIA_RESULT: ${{ needs['native-skia-tests'].result }}
           FRONTEND_UNIT_RESULT: ${{ needs['frontend-unit-gates'].result }}
@@ -1708,10 +1770,10 @@ jobs:
             exit 0
           fi
           failed=0
-          rust_results="${LINT_RESULT}/${BUILD_ARCHIVE_A_RESULT}/${BUILD_ARCHIVE_B_RESULT}/${BUILD_ARCHIVE_C_RESULT}/${TEST_ARCHIVE_A_1_RESULT}/${TEST_ARCHIVE_A_2_RESULT}/${TEST_ARCHIVE_B_1_RESULT}/${TEST_ARCHIVE_C_1_RESULT}"
+          rust_results="${LINT_RESULT}/${BUILD_ARCHIVE_A_RESULT}/${BUILD_ARCHIVE_B_RESULT}/${BUILD_ARCHIVE_C_RESULT}/${BUILD_ARCHIVE_D_RESULT}/${TEST_ARCHIVE_A_1_RESULT}/${TEST_ARCHIVE_B_1_RESULT}/${TEST_ARCHIVE_C_1_RESULT}/${TEST_ARCHIVE_D_1_RESULT}"
           case "${RUST_REQUIRED}" in
-            true) [[ "$rust_results" == "success/success/success/success/success/success/success/success" ]] || { echo "::error::Rust lane expected success for lint/three builders/four workers, got: $rust_results"; failed=1; } ;;
-            false) [[ "$rust_results" == "skipped/skipped/skipped/skipped/skipped/skipped/skipped/skipped" ]] || { echo "::error::Rust lane expected skipped, got: $rust_results"; failed=1; } ;;
+            true) [[ "$rust_results" == "success/success/success/success/success/success/success/success/success" ]] || { echo "::error::Rust lane expected success for lint/four builders/four workers, got: $rust_results"; failed=1; } ;;
+            false) [[ "$rust_results" == "skipped/skipped/skipped/skipped/skipped/skipped/skipped/skipped/skipped" ]] || { echo "::error::Rust lane expected skipped, got: $rust_results"; failed=1; } ;;
             *) echo "::error::Unknown rust_required: ${RUST_REQUIRED}"; failed=1 ;;
           esac
           case "${NATIVE_SKIA_REQUIRED}" in

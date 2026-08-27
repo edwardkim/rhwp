@@ -21,7 +21,7 @@ on:
         required: true
         type: string
       duration_policy_sha:
-        description: Pinned ci-metrics policy commit for integration B/C selection.
+        description: Pinned ci-metrics policy commit for integration B/C/D selection.
         required: false
         type: string
         default: ''
@@ -53,7 +53,7 @@ jobs:
           esac
 
           case "${TARGET_GROUP}" in
-            lib|integration-b|integration-c)
+            lib|integration-b|integration-c|integration-d)
               ;;
             *)
               echo "::error::invalid test archive target group: ${TARGET_GROUP}"
@@ -139,7 +139,7 @@ jobs:
             printf "| cache_save_eligible | \`%s\` |\n" "${CACHE_SAVE_ELIGIBLE}"
           } >> "${GITHUB_STEP_SUMMARY}"
 
-      # [#5737] lib는 별도 archive로, integration target은 두 archive로 교차 배정해
+      # [#6251] lib는 별도 archive로, integration target은 B/C/D 세 archive에 시간 기준으로 배정해
       # compile/link 임계 경로를 병렬화한다. integration 목록은 파생 suite 준비 뒤
       # metadata에서 구한다.
       - name: Build default-feature test archive
@@ -153,7 +153,7 @@ jobs:
             lib)
               cargo_target_args+=(--lib)
               ;;
-            integration-b|integration-c)
+            integration-b|integration-c|integration-d)
               duration_policy='tests/suites/nextest-target-duration-policy.json'
               duration_policy_ref='ci-metrics/nextest-target-durations'
               if [[ -n "${{ inputs.duration_policy_sha }}" ]]; then
