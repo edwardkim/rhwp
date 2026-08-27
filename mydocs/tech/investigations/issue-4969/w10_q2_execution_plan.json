@@ -3,7 +3,7 @@
   "kind": "font-w10-q2-horizontal-common-shaping-plan",
   "issue": 4969,
   "stage": "W10-Q2",
-  "status": "q2-c-qualified-awaiting-q2-d-activation-approval",
+  "status": "q2-c-qualified-q2-d-plan-awaiting-approval",
   "productMutation": false,
   "firstActivationSubset": {
     "writingMode": "horizontal-tb",
@@ -57,6 +57,8 @@
       "id": "Q2-D",
       "name": "emitted-run-and-rejected-trace-handoff",
       "productOutputChange": true,
+      "result": "owner-audit-and-revised-plan-ready",
+      "plan": "w10_q2_d_execution_plan.json",
       "schemaMinorChangesOnlyWithRealPublicValues": true
     },
     {
@@ -96,5 +98,5 @@
     "localFontPath": false,
     "privateCorpusIdentity": false
   },
-  "approvalScope": "Q2-C dormant transaction is qualified; Q2-D product activation requires separate maintainer approval"
+  "approvalScope": "Q2-D revised plan awaits approval; approval opens Q2-D0 only"
 }
