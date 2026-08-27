@@ -3725,6 +3725,15 @@ fn font_local_aliases(font_family: &str) -> Vec<&'static str> {
         // 휴먼명조의 EBDT 문제를 이 face까지 확대해 원 글꼴 fidelity를 잃지 않는다.
         "한양신명조" => vec!["한양신명조", "HY신명조", "HYSinMyeongJo-Medium"],
         "HY신명조" => vec!["HY신명조", "HYSinMyeongJo-Medium"],
+        // [#6171] H2GTRE.TTF / H2MJRE.TTF 도 한양신명조와 같은 정상 outline 배포본이라
+        // 원 face 를 먼저 쓴다. arm 이 없어 `vec![]` 를 돌려주던 탓에 `@font-face` src 가
+        // `local("한양견고딕")` 한 줄이 되어, 레지스트리에 `HY견고딕`으로 등록된 설치본을
+        // 찾지 못했다. family/full name 은 Windows 글꼴 실측(H2GTRE.TTF=`HYGothic-Extra`,
+        // H2MJRE.TTF=`HYMyeongJo-Extra`).
+        "한양견고딕" => vec!["한양견고딕", "HY견고딕", "HYGothic-Extra"],
+        "HY견고딕" => vec!["HY견고딕", "HYGothic-Extra"],
+        "한양견명조" => vec!["한양견명조", "HY견명조", "HYMyeongJo-Extra"],
+        "HY견명조" => vec!["HY견명조", "HYMyeongJo-Extra"],
         _ => vec![],
     }
 }
@@ -3763,9 +3772,15 @@ fn known_font_filenames(font_name: &str) -> Vec<&'static str> {
         // SVG의 full embed도 같은 대체 face를 넣어야 local() 미설치/Snap sandbox
         // 환경에서 기준 PDF와 다른 HYGothic·Noto 폭으로 재조판하지 않는다.
         "한양중고딕" => vec!["HANDotum.ttf", "HDOTUM.TTF", "H2GTRM.TTF"],
-        "HY견고딕" | "HYGothic-Extra" | "한양견고딕" => vec!["HYGTRE.TTF"],
+        // [#6171] 한컴 Windows 설치본의 실제 파일명은 형제 항목(H2GTRM/H2MJSM)과 같은
+        // `H2*` 계열이다 — Windows 글꼴 레지스트리 실측:
+        //   HY견고딕 → H2GTRE.TTF(family `HYGothic-Extra`)
+        //   HY견명조 → H2MJRE.TTF(family `HYMyeongJo-Extra`)
+        // 종전의 `HYGTRE.TTF`·`HYMJRE.TTF` 는 이 PC 에 존재하지 않아 full embed 가
+        // 매번 실패했다. 다른 배포본에 그 이름이 있을 수 있으므로 뒤 후보로 남긴다.
+        "HY견고딕" | "HYGothic-Extra" | "한양견고딕" => vec!["H2GTRE.TTF", "HYGTRE.TTF"],
         "HY그래픽" | "HYGraphic-Medium" => vec!["HYGPRM.TTF"],
-        "HY견명조" | "HYMyeongJo-Extra" | "한양견명조" => vec!["HYMJRE.TTF"],
+        "HY견명조" | "HYMyeongJo-Extra" | "한양견명조" => vec!["H2MJRE.TTF", "HYMJRE.TTF"],
         // [#2430] 한양신명조: 종전 HY신명조 치환과 동일 임베드 유지.
         // (휴먼명조는 아래 기존 전용 arm 이 담당)
         "HY신명조" | "한양신명조" => {
