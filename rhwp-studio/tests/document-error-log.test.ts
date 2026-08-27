@@ -4,6 +4,7 @@ import {
   attachDocumentErrorTrace,
   formatDocumentError,
   formatDocumentErrorForTerminal,
+  formatFirstLineBreakError,
   isDocumentErrorLine,
   parseLayoutTrace,
 } from '../src/dev/document-error-log.ts';
@@ -16,6 +17,85 @@ test('a broken document formats as one recognizable CLI error line', () => {
     ['expected', '0,37,77,114'],
     ['actual', '0,39,80,119'],
   ]), 'line-break: [page=3 target=s0/p4/c0.0.0/g2 at=1 expected=0,37,77,114 actual=0,39,80,119]');
+});
+
+test('the first physical-row difference names its comparison lane and value', () => {
+  const row = (segmentWidth: number) => ({
+    segmentCount: 2,
+    textStarts: [0, 20],
+    segmentFrames: [
+      { columnStart: 0, segmentWidth: 300 },
+      { columnStart: 320, segmentWidth },
+    ],
+    segmentsTruncated: false,
+  });
+  assert.equal(formatFirstLineBreakError(2, [{
+    coordinates: { sectionIdx: 0, paragraphIdx: 4 },
+    comparison: {
+      comparable: true,
+      matches: false,
+      firstMismatchKind: 'horizontalFrame',
+      firstMismatchField: 'segmentWidth',
+      firstMismatchRowIndex: 0,
+      firstMismatchSegmentIndex: 1,
+      storedMismatchRow: row(400),
+      freshMismatchRow: row(399),
+    },
+  }]), 'line-break: [page=2 target=s0/p4 kind=horizontalFrame field=segmentWidth ' +
+    'row=0 segment=1 stored=400 fresh=399]');
+});
+
+test('unsupported or unproven row evidence falls back safely', () => {
+  const unsupported = {
+    comparable: true,
+    matches: false,
+    firstMismatchKind: 'metrics',
+    firstMismatchField: 'lineHeight',
+    firstMismatchRowIndex: 0,
+    firstMismatchSegmentIndex: 0,
+  } as any;
+  assert.equal(formatFirstLineBreakError(2, [{
+    coordinates: { sectionIdx: 0, paragraphIdx: 4 },
+    comparison: {
+      ...unsupported,
+      firstMismatchIndex: 1,
+      storedMismatchUtf16Start: 12,
+      freshMismatchUtf16Start: 13,
+      storedMismatchRowPart: 'single',
+      freshMismatchRowPart: 'single',
+    },
+  }]), 'line-break: [page=2 target=s0/p4 at=1 expected=12:single actual=13:single]');
+  assert.equal(formatFirstLineBreakError(2, [{
+    coordinates: { sectionIdx: 0, paragraphIdx: 4 },
+    comparison: unsupported,
+  }]), null);
+
+  const row = (columnStart: number) => ({
+    segmentCount: 1,
+    textStarts: [0],
+    segmentFrames: [{ columnStart, segmentWidth: 400 }],
+    segmentsTruncated: false,
+  });
+  const unprovenOrigin = {
+    comparable: true,
+    matches: false,
+    firstMismatchKind: 'horizontalFrame' as const,
+    firstMismatchField: 'columnStart' as const,
+    firstMismatchRowIndex: 0,
+    firstMismatchSegmentIndex: 0,
+    storedMismatchRow: row(100),
+    freshMismatchRow: row(0),
+    horizontalOriginIdentityProven: false,
+  };
+  assert.equal(formatFirstLineBreakError(2, [{
+    coordinates: { sectionIdx: 0, paragraphIdx: 4 },
+    comparison: unprovenOrigin,
+  }]), null);
+  assert.equal(formatFirstLineBreakError(2, [{
+    coordinates: { sectionIdx: 0, paragraphIdx: 4 },
+    comparison: { ...unprovenOrigin, horizontalOriginIdentityProven: true },
+  }]), 'line-break: [page=2 target=s0/p4 kind=horizontalFrame field=columnStart ' +
+    'row=0 segment=0 stored=100 fresh=0]');
 });
 
 test('document text cannot inject extra terminal output into the error line', () => {

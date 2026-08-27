@@ -1,6 +1,23 @@
 import { DOCUMENT_ERROR_LOG_PATH } from './pdf-twin-contract.ts';
 
 export type DocumentErrorType = 'line-break' | 'page-count' | 'paint';
+type LineBreakMismatchKind =
+  | 'topology'
+  | 'textStart'
+  | 'horizontalFrame';
+type LineBreakMismatchField =
+  | 'rowCount'
+  | 'segmentCount'
+  | 'textStart'
+  | 'columnStart'
+  | 'segmentWidth';
+interface LineSegRowDiagnostic {
+  segmentCount: number;
+  segmentWindowStart?: number;
+  textStarts: number[];
+  segmentFrames: Array<{ columnStart: number; segmentWidth: number }>;
+  segmentsTruncated: boolean;
+}
 export interface LineBreakDiagnostic {
   textUtf16Length?: number;
   coordinates?: {
@@ -13,6 +30,13 @@ export interface LineBreakDiagnostic {
   comparison?: {
     comparable?: boolean;
     matches?: boolean | null;
+    firstMismatchKind?: LineBreakMismatchKind | null;
+    firstMismatchField?: LineBreakMismatchField | null;
+    firstMismatchRowIndex?: number | null;
+    firstMismatchSegmentIndex?: number | null;
+    storedMismatchRow?: LineSegRowDiagnostic | null;
+    freshMismatchRow?: LineSegRowDiagnostic | null;
+    horizontalOriginIdentityProven?: boolean;
     firstMismatchIndex?: number | null;
     storedMismatchUtf16Start?: number | null;
     freshMismatchUtf16Start?: number | null;
@@ -43,8 +67,42 @@ const MAX_DOCUMENT_ERROR_LENGTH = 16_384;
 export const MAX_LAYOUT_TRACE_ENTRIES = 64;
 
 const isIndex = (value: unknown): value is number => Number.isSafeInteger(value) && Number(value) >= 0;
+const isInteger = (value: unknown): value is number => Number.isSafeInteger(value);
 const isRowPart = (value: unknown): value is string =>
   value === 'single' || value === 'first' || value === 'middle' || value === 'last';
+const isLineBreakMismatchKind = (value: unknown): value is LineBreakMismatchKind =>
+  value === 'topology'
+  || value === 'textStart'
+  || value === 'horizontalFrame';
+const mismatchFields: Record<LineBreakMismatchKind, readonly LineBreakMismatchField[]> = {
+  topology: ['rowCount', 'segmentCount'],
+  textStart: ['textStart'],
+  horizontalFrame: ['columnStart', 'segmentWidth'],
+};
+
+function mismatchValue(
+  row: LineSegRowDiagnostic | null | undefined,
+  field: LineBreakMismatchField,
+  segmentIndex: number | null,
+): string | null {
+  if (row === null) return '-';
+  if (!row || typeof row !== 'object') return null;
+  if (field === 'rowCount') return 'present';
+  if (field === 'segmentCount') return isIndex(row.segmentCount) ? String(row.segmentCount) : null;
+  const windowStart = isIndex(row.segmentWindowStart) ? row.segmentWindowStart : 0;
+  const windowIndex = segmentIndex === null ? null : segmentIndex - windowStart;
+  if (field === 'textStart') {
+    const value = windowIndex === null || windowIndex < 0 ? undefined : row.textStarts?.[windowIndex];
+    return isIndex(value) ? String(value) : null;
+  }
+  if (field === 'columnStart' || field === 'segmentWidth') {
+    const value = windowIndex === null || windowIndex < 0
+      ? undefined
+      : row.segmentFrames?.[windowIndex]?.[field];
+    return isInteger(value) ? String(value) : null;
+  }
+  return null;
+}
 /** Render one CLI-stable document error as `type: [flat document attributes]`. */
 export function formatDocumentError(
   type: DocumentErrorType,
@@ -65,10 +123,6 @@ export function formatFirstLineBreakError(
   if (!Number.isSafeInteger(page) || page < 1) return null;
   for (const { coordinates, comparison } of diagnostics) {
     const paragraph = coordinates?.parentParaIdx ?? coordinates?.paragraphIdx;
-    const stored = comparison?.storedMismatchUtf16Start;
-    const fresh = comparison?.freshMismatchUtf16Start;
-    const storedPart = comparison?.storedMismatchRowPart;
-    const freshPart = comparison?.freshMismatchRowPart;
     if (
       !coordinates
       || !comparison
@@ -76,10 +130,6 @@ export function formatFirstLineBreakError(
       || comparison.matches !== false
       || !isIndex(coordinates.sectionIdx)
       || !isIndex(paragraph)
-      || !isIndex(comparison.firstMismatchIndex)
-      || !(stored === null ? storedPart === null : isIndex(stored) && isRowPart(storedPart))
-      || !(fresh === null ? freshPart === null : isIndex(fresh) && isRowPart(freshPart))
-      || (stored === null && fresh === null)
       || !(coordinates.cellPath ?? []).every(entry =>
         isIndex(entry.controlIndex) && isIndex(entry.cellIndex) && isIndex(entry.cellParaIndex))
       || !(coordinates.groupPath ?? []).every(isIndex)
@@ -91,12 +141,64 @@ export function formatFirstLineBreakError(
         `c${controlIndex}.${cellIndex}.${cellParaIndex}`),
       ...(coordinates.groupPath?.length ? [`g${coordinates.groupPath.join('.')}`] : []),
     ].join('/');
+
+    const kind = comparison.firstMismatchKind;
+    const field = comparison.firstMismatchField;
+    const rowIndex = comparison.firstMismatchRowIndex;
+    const segmentIndex = comparison.firstMismatchSegmentIndex;
+    const storedRow = comparison.storedMismatchRow;
+    const freshRow = comparison.freshMismatchRow;
+    const recognized = isLineBreakMismatchKind(kind)
+      && mismatchFields[kind].includes(field as LineBreakMismatchField);
+    const storedValue = recognized && field
+      ? mismatchValue(storedRow, field, segmentIndex ?? null)
+      : null;
+    const freshValue = recognized && field
+      ? mismatchValue(freshRow, field, segmentIndex ?? null)
+      : null;
+    const enriched = recognized
+      && isIndex(rowIndex)
+      && (segmentIndex === null || isIndex(segmentIndex))
+      && (field !== 'columnStart' || comparison.horizontalOriginIdentityProven === true)
+      && storedValue !== null
+      && freshValue !== null
+      ? {
+          kind,
+          field: field as LineBreakMismatchField,
+          rowIndex,
+          segmentIndex: segmentIndex as number | null,
+          stored: storedValue,
+          fresh: freshValue,
+        }
+      : null;
+
+    const stored = comparison.storedMismatchUtf16Start;
+    const fresh = comparison.freshMismatchUtf16Start;
+    const storedPart = comparison.storedMismatchRowPart;
+    const freshPart = comparison.freshMismatchRowPart;
+    const legacy = !enriched
+      && isIndex(comparison.firstMismatchIndex)
+      && (stored === null ? storedPart === null : isIndex(stored) && isRowPart(storedPart))
+      && (fresh === null ? freshPart === null : isIndex(fresh) && isRowPart(freshPart))
+      && (stored !== null || fresh !== null);
+    if (!enriched && !legacy) continue;
+
     const line = formatDocumentError('line-break', [
       ['page', page],
       ['target', target],
-      ['at', comparison.firstMismatchIndex],
-      ['expected', stored === null ? '-' : `${stored}:${storedPart}`],
-      ['actual', fresh === null ? '-' : `${fresh}:${freshPart}`],
+      ...(enriched ? [
+        ['kind', enriched.kind],
+        ['field', enriched.field],
+        ['row', enriched.rowIndex],
+        ['segment', enriched.segmentIndex ?? '-'],
+        ['stored', enriched.stored],
+        ['fresh', enriched.fresh],
+      ] as const : []),
+      ...(legacy ? [
+        ['at', comparison.firstMismatchIndex!],
+        ['expected', stored === null ? '-' : `${stored}:${storedPart}`],
+        ['actual', fresh === null ? '-' : `${fresh}:${freshPart}`],
+      ] as const : []),
     ]);
     return isDocumentErrorLine(line) ? line : null;
   }
