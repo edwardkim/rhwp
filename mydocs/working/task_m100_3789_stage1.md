@@ -1,10 +1,12 @@
-# Stage 1 완료 보고 — Task M100 #3789: 계약과 소유 경계 고정
+# Stage 1 사후 감사 보고 — Task M100 #3789: 계약과 소유 경계 고정
 
 - **일자**: 2026-08-27 KST
 - **브랜치**: `task_m100_3789-render-boundary`
 - **기준 commit**: `upstream/devel` `1b91c2025`
 - **이슈**: [#3789](https://github.com/edwardkim/rhwp/issues/3789)
 - **계획 commit**: `fcaff2afd`
+- **보고 작성 commit**: `3c509c7d1`
+- **문서 성격**: 최종 검증 뒤 실제 이력을 대사해 작성한 사후 보고
 
 ## 확인한 기준선
 
@@ -22,5 +24,6 @@ caption 명령은 mutation 순서, page 순회, SVG 파일명, stdout/stderr와 
 
 ## 종료 판단
 
-수행계획과 구현계획을 `fcaff2afd`로 구현 전에 고정했고 작업지시자의 `진행해줘` 승인 뒤 Stage 2에
-진입했다.
+수행계획과 구현계획은 `fcaff2afd`로 구현 전에 고정됐고 작업지시자의 `진행해줘` 승인 뒤 Stage 2에
+진입했다. 계획 작성·승인 순서는 준수했지만, 이 Stage 1 보고 자체는 당시 작성·승인되지 않았다. Stage
+2·3 구현과 Stage 4 검증이 끝난 뒤 `3c509c7d1`에서 다른 Stage 보고와 함께 사후 작성됐다.

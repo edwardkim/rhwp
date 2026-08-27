@@ -4,7 +4,8 @@
 - **기준**: `upstream/devel` `1b91c2025`
 - **브랜치**: `task_m100_3789-render-boundary`
 - **완료일**: 2026-08-27 KST
-- **상태**: 로컬 구현·검증 완료, remote push·PR 승인 대기
+- **상태**: 로컬 구현·검증·절차 감사 보정 완료, 최신 `devel` 재기준화와 remote push·PR 승인 대기
+- **절차 판정**: 기술 게이트 준수, 단계별 보고·승인 게이트 부분 미준수
 
 ## 결과
 
@@ -30,6 +31,7 @@ Render Diff와 Native Skia가 필요한 변경으로 분류된다. #5776이 고�
 | `fcaff2afd` | 수행·구현 계획과 기준선 |
 | `17fa14198` | caption render와 structure query source 소유권 분리 |
 | `514ff74bc` | Render Diff false-positive 경계와 CI 계약 보정 |
+| `3c509c7d1` | Stage 1~4 사후 보고와 최종 검증 기록 |
 
 ## 계획 대비 실제
 
@@ -72,7 +74,29 @@ caller의 소유 파일만 이동한다. golden baseline도 변경하지 않았�
 build와 시각 baseline 재생성은 로컬 추가 게이트에서 제외했다. 다만 새 caption 파일이 앞으로 변경되면
 CI classifier가 Render Diff와 Native Skia를 모두 활성화하도록 positive 계약을 고정했다.
 
+## 하이퍼 워터폴 절차 감사
+
+2026-08-27 작업지시자의 요청으로 canonical 절차와 실제 commit 계보를 대사했다.
+
+| 게이트 | 실제 | 판정 |
+| --- | --- | --- |
+| 이슈·담당자·착수 잠금 | #3789 담당자와 착수 comment를 구현 전에 고정 | 준수 |
+| 최신 기준 branch | 착수 당시 `upstream/devel@1b91c2025`에서 생성 | 준수 |
+| 수행·구현 계획 | 구현 전 `fcaff2afd`로 작성·commit | 준수 |
+| 계획 승인 | 작업지시자의 `진행해줘` 뒤 구현 착수 | 준수 |
+| source·CI 단계 commit | `17fa14198`, `514ff74bc`로 분리 | 준수 |
+| 단계별 완료 보고 | Stage 1~4 문서를 최종 검증 뒤 `3c509c7d1`에서 함께 작성 | 미준수 |
+| 단계별 작업지시자 승인 | Stage 2·3 종료와 Stage 4 진입 사이 별도 승인 없음 | 미준수 |
+| 로컬 검증·제출 경계 | 필수 검증 통과, remote push·PR 미수행 | 준수 |
+
+작업지시자는 감사 결과를 확인한 뒤 사후 보정을 승인했다. Stage 문서에 사후 작성 사실을 명시하고
+[절차 복구 피드백](../feedback/task_m100_3789_hyper_waterfall_recovery.md)을 추가한다. 원 구현 commit을
+재작성하거나 과거 승인 이력을 만든 것처럼 표현하지 않는다. 이 보정은 감사 가능성을 회복하지만 생략된
+중간 승인 게이트를 소급해 완전 준수로 바꾸지 않는다.
+
 ## 제출 상태
 
 로컬 구현과 필수 검증은 완료했다. generated integration suite·manifest는 제출 대상에 포함하지 않았다.
-remote push, PR 생성과 실제 PR CI는 작업지시자의 별도 승인 전까지 남아 있다.
+감사 시점에는 `upstream/devel`이 착수 기준보다 진전했으므로 PR 준비 전에 최신 기준으로 재기준화하고
+충돌·관련 검증을 다시 확인해야 한다. remote push, PR 생성과 실제 PR CI는 작업지시자의 별도 승인 전까지
+남아 있다.
