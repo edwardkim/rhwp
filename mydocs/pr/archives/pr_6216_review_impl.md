@@ -12,6 +12,7 @@
 - PR head의 verifier 또는 workflow를 checkout하거나 실행하지 않는다.
 - 검증 정보가 누락되거나 모순되면 성공으로 추정하지 않고 전체 CI를 수행한다.
 - B/C target-duration 측정은 빈 map, 서로 다른 run, ref, SHA를 허용하지 않는다.
+- 새 workflow 계약 테스트는 `ci.yml`의 `Validate workflow contracts` 단계에 명시적으로 배선한다.
 
 ## 롤백 경로
 

@@ -979,6 +979,7 @@ jobs:
           python3 -m unittest scripts/tests/test_gym_release_gate_workflow.py
           python3 -m unittest scripts/tests/test_proptest_roundtrip_workflow.py
           python3 -m unittest scripts/tests/test_adapter_diff_workflow.py
+          python3 -m unittest scripts/tests/test_trusted_postmerge_ci_reuse_workflow.py
           python3 -m unittest scripts/tests/test_llm_verifier_workflow.py
           python3 -m unittest scripts/tests/test_undo_depth_e2e_workflow.py
           python3 -m unittest scripts/tests/test_workflow_contract_wiring.py

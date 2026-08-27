@@ -30,10 +30,17 @@
 - `node scripts/rust-test-suite-manifest.mjs --check`
 - `git diff --check`
 
+## CI 발견 보정
+
+- 최초 head CI의 `Validate workflow contracts`가 새
+  `test_trusted_postmerge_ci_reuse_workflow.py` 호출 누락을 fail-closed로 발견했다.
+- 같은 단계의 호출 목록에 테스트를 추가했고, workflow 관련 Python 계약 86건과
+  `git diff --check`를 다시 통과했다.
+
 ## 시각 증적
 
 이 PR은 GitHub Actions workflow, CI 정책 스크립트와 계약 테스트만 변경한다. 문서 렌더링 또는 Studio 화면 동작을 변경하지 않으므로 visual sweep 대상이 아니다.
 
 ## 결론
 
-로컬 계약 검증은 통과했다. 최신 head의 필수 CI가 성공하고, 첫 배포가 기대대로 전체 CI fallback으로 완료되는 것을 확인한 뒤 merge한다.
+로컬 계약 검증은 통과했다. 보정된 최신 head의 필수 CI가 성공하고, 첫 배포가 기대대로 전체 CI fallback으로 완료되는 것을 확인한 뒤 merge한다.
