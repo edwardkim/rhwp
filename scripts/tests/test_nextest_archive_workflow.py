@@ -130,7 +130,11 @@ class NextestArchiveWorkflowTests(unittest.TestCase):
         self.assertIn("target_group: lib", ci); self.assertIn("target_group: integration-b", ci); self.assertIn("target_group: integration-c", ci)
         self.assertIn("cargo metadata --no-deps --format-version 1", builder)
         self.assertIn("scripts/select-nextest-archive-targets.mjs", builder)
-        self.assertIn("--policy tests/suites/nextest-target-duration-policy.json", builder)
+        self.assertIn(
+            "duration_policy='tests/suites/nextest-target-duration-policy.json'",
+            builder,
+        )
+        self.assertIn('--policy "${duration_policy}"', builder)
         self.assertNotIn("index % 2", builder)
         self.assertIn("cargo_target_args+=(--lib)", builder)
         self.assertIn('cargo_target_args+=(--test "${target}")', builder)
@@ -272,7 +276,7 @@ class NextestArchiveWorkflowTests(unittest.TestCase):
         self.assertIn("wasm-pack build --target web --release", self.ci)
 
     def test_duration_policy_is_pinned_for_prs_and_refreshed_only_from_devel(self) -> None:
-        nextest = (root / ".config/nextest.toml").read_text()
+        nextest = (REPO_ROOT / ".config/nextest.toml").read_text()
 
         self.assertIn('[profile.ci-duration-observation.junit]\npath = "junit.xml"', nextest)
         self.assertNotIn('path = "target/nextest/ci-duration-observation/junit.xml"', nextest)
