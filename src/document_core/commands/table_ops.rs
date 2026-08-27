@@ -3152,7 +3152,7 @@ impl DocumentCore {
                     .cells
                     .iter()
                     .filter(|c| c.row == 0)
-                    .map(|c| c.width as u32)
+                    .map(|c| c.width)
                     .sum();
                 cap.max_width = total_width;
                 // LineSeg의 segment_width를 표 폭으로 설정 (텍스트 레이아웃 폭)
