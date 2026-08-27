@@ -167,7 +167,7 @@ impl DocumentCore {
         let table = self.get_table_mut(section_idx, parent_para_idx, control_idx)?;
         table
             .delete_column(col_idx)
-            .map_err(|e| HwpError::RenderError(e))?;
+            .map_err(HwpError::RenderError)?;
         table.dirty = true;
         let row_count = table.row_count;
         let col_count = table.col_count;
