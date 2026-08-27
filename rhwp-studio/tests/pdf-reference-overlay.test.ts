@@ -4,17 +4,13 @@ import test from 'node:test';
 import { lookupPdfTwin, sha256Hex } from '../src/dev/pdf-twin-client.ts';
 import { fetchWithBusyRetry } from '../src/dev/pdf-reference-fetch.ts';
 import { DOCUMENT_ERROR_LOG_PATH } from '../src/dev/pdf-twin-contract.ts';
-import {
-  computeReferencePixelDiff,
-  detectHorizontalRuleBands,
-} from '../src/dev/pdf-reference-diff.ts';
+import { computeReferencePixelDiff } from '../src/dev/pdf-reference-diff.ts';
 import {
   buildFidelityScanReport,
-  compareDiagnosticBands,
   firstDocumentDivergence,
   isFidelityDocumentCurrent,
   isFidelityScanCurrent,
-  isStructuralPageDivergence,
+  isPdfPaintError,
   type FidelityPageObservation,
 } from '../src/dev/fidelity-scan.ts';
 import {
@@ -25,58 +21,6 @@ import {
 } from '../src/dev/document-error-log.ts';
 import { nextDiagnosticRenderGeneration } from '../src/view/page-reference-layer.ts';
 import { LayoutTraceMailbox, PdfReferenceOverlay } from '../src/dev/pdf-reference-overlay.ts';
-
-const ruleBands = (centers: number[]) => ({
-  totalBands: centers.length,
-  truncated: false,
-  bands: centers.map(centerY => ({
-    startY: centerY,
-    endY: centerY,
-    centerY,
-    thickness: 1,
-    peakInkCoverage: 1,
-    peakSpanRatio: 1,
-  })),
-});
-
-const truncatedRuleBands = (centers: number[], totalBands: number) => ({
-  ...ruleBands(centers),
-  totalBands,
-  truncated: true,
-});
-
-test('horizontal-rule evidence identifies leading, middle, and trailing unmatched bands', () => {
-  for (const [hwp, pdf, expected] of [
-    [[50, 100, 400], [100, 400], [[50], []]],
-    [[100, 250, 400], [100, 400], [[250], []]],
-    [[100, 400, 500], [100, 400], [[500], []]],
-    [[100, 400], [50, 100, 400], [[], [50]]],
-  ] as const) {
-    const delta = compareDiagnosticBands(ruleBands([...hwp]), ruleBands([...pdf]));
-    assert.deepEqual([delta.hwpEvidenceCenters, delta.pdfEvidenceCenters], expected);
-  }
-  const ambiguous = compareDiagnosticBands(ruleBands([100, 400]), ruleBands([115]));
-  assert.deepEqual([ambiguous.hwpEvidenceCenters, ambiguous.pdfEvidenceCenters], [[], []]);
-  for (const [hwp, pdf, expected] of [
-    [[50, 75, 100, 400], [100, 400], [[50, 75], []]],
-    [[100, 200, 250, 400], [100, 400], [[200, 250], []]],
-    [[100, 400, 500, 550], [100, 400], [[500, 550], []]],
-    [[100, 400], [50, 75, 100, 400], [[], [50, 75]]],
-  ] as const) {
-    const multiple = compareDiagnosticBands(ruleBands([...hwp]), ruleBands([...pdf]));
-    assert.deepEqual([multiple.hwpEvidenceCenters, multiple.pdfEvidenceCenters], expected);
-  }
-  const truncated = compareDiagnosticBands(
-    truncatedRuleBands([100, 400], 3),
-    truncatedRuleBands([100, 400], 2),
-  );
-  assert.deepEqual([truncated.hwpEvidenceCenters, truncated.pdfEvidenceCenters], [[], []]);
-  const shifted = compareDiagnosticBands(ruleBands([100, 400]), ruleBands([100, 415]));
-  assert.deepEqual(
-    [shifted.hwpEvidenceCenters, shifted.pdfEvidenceCenters, shifted.maxCenterDelta],
-    [[400], [415], 15],
-  );
-});
 
 test('a line-break failure yields one detailed first-error CLI line', () => {
   assert.equal(formatFirstLineBreakError(3, [{
@@ -205,7 +149,7 @@ test('bounded line traversal finds the first mismatch in a later result batch', 
   assert.equal(line, 'line-break: [page=3 target=s0/p101 at=1 expected=12:single actual=13:single]');
 });
 
-test('minor glyph noise stays quiet while a shifted line is reported as broken layout', () => {
+test('PDF paint becomes an error only at five percent render difference', () => {
   const page = {
     pageIndex: 0,
     hwpSize: { width: 256, height: 346 },
@@ -216,46 +160,16 @@ test('minor glyph noise stays quiet while a shifted line is reported as broken l
     hwpOnlyPixels: 1000,
     colorMismatchPixels: 85,
     comparedPixels: 88832,
-    mismatchRatio: 0.023471,
+    mismatchRatio: 0.049999,
     meanAbsoluteError: 4,
     maxAbsoluteError: 255,
     bounds: { x: 29, y: 27, width: 223, height: 316 },
-    horizontalRuleDelta: {
-      hwpCount: 0,
-      pdfCount: 0,
-      countDelta: 0,
-      pairedCount: 0,
-      maxCenterDelta: null,
-      meanCenterDelta: null,
-      hwpEvidenceCenters: [],
-      pdfEvidenceCenters: [],
-    },
-    inkRowDelta: {
-      hwpCount: 20,
-      pdfCount: 20,
-      countDelta: 0,
-      pairedCount: 20,
-      maxCenterDelta: 0.5,
-      meanCenterDelta: 0.2,
-      hwpEvidenceCenters: [100],
-      pdfEvidenceCenters: [100.5],
-    },
   } as const;
 
-  assert.equal(isStructuralPageDivergence(page), false);
-  assert.equal(isStructuralPageDivergence({
-    ...page,
-    horizontalRuleDelta: { ...page.horizontalRuleDelta, countDelta: -1 },
-  }), true);
-  assert.equal(isStructuralPageDivergence({
-    ...page,
-    mismatchRatio: 0.058526,
-    inkRowDelta: {
-      ...page.inkRowDelta,
-      countDelta: 1,
-      maxCenterDelta: 3.5,
-    },
-  }), true);
+  assert.equal(isPdfPaintError(page), false);
+  assert.equal(isPdfPaintError({ ...page, mismatchRatio: 0.0499999 }), false);
+  assert.equal(isPdfPaintError({ ...page, mismatchRatio: 0.05 }), true);
+  assert.equal(isPdfPaintError({ ...page, referenceHeightDelta: 20 }), false);
 });
 
 test('browser document identity uses SHA-256 bytes', async () => {
@@ -296,7 +210,7 @@ test('busy PDF lookup retries finitely and reference retry obeys abort', async (
   assert.equal(abortedAttempts, 1);
 });
 
-test('pixel and line evidence distinguish the direction and location of drift', () => {
+test('pixel evidence distinguishes the direction and location of drift', () => {
   const mask = new Uint8ClampedArray(4);
   const metrics = computeReferencePixelDiff(
     new Uint8ClampedArray([255, 255, 255, 255]),
@@ -308,13 +222,7 @@ test('pixel and line evidence distinguish the direction and location of drift', 
   );
   assert.equal(metrics.pdfOnlyPixels, 1);
   assert.deepEqual(Array.from(mask.slice(0, 3)), [220, 53, 69]);
-
-  const pixels = new Uint8ClampedArray(4 * 3 * 4).fill(255);
-  for (let x = 0; x < 4; x++) pixels.set([0, 0, 0, 255], (4 + x) * 4);
-  assert.equal(detectHorizontalRuleBands(pixels, 4, 3).bands[0]?.centerY, 1);
 });
-
-const emptyBands = { totalBands: 0, truncated: false, bands: [] };
 const observation = (pageIndex: number, mismatchRatio = 0): FidelityPageObservation => ({
   pageIndex,
   hwpSize: { width: 10, height: 10 },
@@ -330,10 +238,6 @@ const observation = (pageIndex: number, mismatchRatio = 0): FidelityPageObservat
     maxAbsoluteError: 0,
     bounds: mismatchRatio ? { x: 0, y: 0, width: 1, height: 1 } : null,
   },
-  hwpHorizontalRules: emptyBands,
-  pdfHorizontalRules: emptyBands,
-  hwpInkRows: emptyBands,
-  pdfInkRows: emptyBands,
 });
 
 test('a superseded trace batch cannot cross render revisions and the mailbox stays bounded', () => {
@@ -500,6 +404,8 @@ test('the scan sends semantic row evidence before PDF fallbacks to the Vite log'
   let renderGeneration = 1;
   let staleSemantic = true;
   let pendingTrace = '[]';
+  let semanticEnabled = true;
+  let mismatchRatios = [0.1, 0];
   let tracing = false;
   let failExactOnce = true;
   let contradictExact = false;
@@ -547,6 +453,9 @@ test('the scan sends semantic row evidence before PDF fallbacks to the Vite log'
           durationMs: 1,
           depth: 0,
         }]);
+        if (!semanticEnabled) {
+          return { total: 0, nextOffset: null, items: [], itemOffsets: [] };
+        }
         if (pageIndex === 1 && options.start === 0 && staleSemantic) {
           staleSemantic = false;
           renderGeneration = 2;
@@ -634,7 +543,7 @@ test('the scan sends semantic row evidence before PDF fallbacks to the Vite log'
   internal.loadReferencePixels = async () => ({
     width: 1, height: 1, surfaceHeight: 1, pixels: new Uint8ClampedArray(4),
   });
-  internal.observePage = (pageIndex: number) => observation(pageIndex, pageIndex === 0 ? 0.1 : 0);
+  internal.observePage = (pageIndex: number) => observation(pageIndex, mismatchRatios[pageIndex]);
   try {
     assert.equal(await browser.__rhwpFidelityHarness.scan(), null);
     await midPagePaused;
@@ -651,12 +560,24 @@ test('the scan sends semantic row evidence before PDF fallbacks to the Vite log'
 
     contradictExact = true;
     internal.pageCount = 2;
-    internal.observePage = (pageIndex: number) => observation(pageIndex, 0);
+    mismatchRatios = [0, 0];
     await browser.__rhwpFidelityHarness.scan();
     assert.equal(delivered.length, 2);
     assert.match(delivered[1], /^line-break: \[page=2 target=s0\/p5 /);
     assert.match(delivered[1], /"function":"stable_target"/);
     assert.doesNotMatch(delivered[1], /target=s0\/p4/);
+
+    semanticEnabled = false;
+    mismatchRatios = [0.049999, 0.049999];
+    await browser.__rhwpFidelityHarness.scan();
+    assert.equal(delivered.length, 2, '4.9999% paint stays silent');
+
+    mismatchRatios = [0.05, 0];
+    await browser.__rhwpFidelityHarness.scan();
+    assert.equal(
+      delivered[2],
+      'paint: [page=1 ratio=0.05 pdfOnly=0 rhwpOnly=0 colorOnly=0 bounds=0,0,1,1]',
+    );
   } finally {
     await overlay.destroy();
     (globalThis as any).fetch = previousFetch;
@@ -818,7 +739,8 @@ test('the report names the first broken page and a missing final page', () => {
     startedAt: 0,
     completedAt: 1,
   });
-  assert.equal(paint.firstStructuralDivergencePage, 1);
+  assert.equal(paint.schemaVersion, 2);
+  assert.equal(paint.firstPaintErrorPage, 1);
 
   const missing = buildFidelityScanReport({
     ...paint,
@@ -829,17 +751,19 @@ test('the report names the first broken page and a missing final page', () => {
     observations: [0, 1, 2].map(page => observation(page)),
   });
   assert.equal(missing.firstDivergentPage, 3);
+  assert.equal(missing.firstPaintErrorPage, null);
+  assert.deepEqual(firstDocumentDivergence(missing), { kind: 'page-count', pageIndex: 3 });
 });
 
 test('the earliest broken page wins even when a later error has another kind', () => {
   assert.deepEqual(firstDocumentDivergence({
-    firstStructuralDivergencePage: 0,
+    firstPaintErrorPage: 0,
     hwpPageCount: 390,
     pdfPageCount: 383,
     pageCountDelta: 7,
-  }), { kind: 'structural', pageIndex: 0 });
+  }), { kind: 'paint', pageIndex: 0 });
   assert.deepEqual(firstDocumentDivergence({
-    firstStructuralDivergencePage: 400,
+    firstPaintErrorPage: 400,
     hwpPageCount: 390,
     pdfPageCount: 383,
     pageCountDelta: 7,

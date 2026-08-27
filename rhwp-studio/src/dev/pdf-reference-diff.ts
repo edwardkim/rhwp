@@ -17,137 +17,12 @@ export interface PixelDiffMetrics {
   bounds: PixelDiffBounds | null;
 }
 
-export interface HorizontalRuleBand {
-  startY: number;
-  endY: number;
-  centerY: number;
-  thickness: number;
-  peakInkCoverage: number;
-  peakSpanRatio: number;
-}
-
-export interface HorizontalRuleDiagnostics {
-  totalBands: number;
-  truncated: boolean;
-  bands: HorizontalRuleBand[];
-}
-
-export interface HorizontalRuleDetectionOptions {
-  inkThreshold?: number;
-  minSpanRatio?: number;
-  minCoverageRatio?: number;
-  maxBands?: number;
-}
-
-const DEFAULT_HORIZONTAL_RULE_OPTIONS = {
-  inkThreshold: 96,
-  minSpanRatio: 0.35,
-  minCoverageRatio: 0.55,
-  maxBands: 96,
-} as const;
+export const REFERENCE_PIXEL_DIFF_THRESHOLD = 24;
 const DIFF_COLORS = [
   [220, 53, 69],
   [15, 118, 110],
   [217, 119, 6],
 ] as const;
-
-function roundedRatio(value: number): number {
-  return Number(value.toFixed(4));
-}
-
-/**
- * 합성된 페이지 RGBA에서 긴 가로 괘선을 찾는다.
- *
- * 외부 이미지 도구로 사후 crop/평균을 만들지 않고 diff와 정확히 같은 샘플 좌표를 쓴다.
- * 텍스트가 빽빽한 행은 ink 총량이 커질 수 있으므로, 연속 run과 전체 coverage 중 하나가
- * 충분히 긴 경우만 후보로 삼는다. 연속된 후보 Y행은 선 두께 하나로 묶는다.
- */
-export function detectHorizontalRuleBands(
-  pixels: Uint8ClampedArray,
-  width: number,
-  height: number,
-  options: HorizontalRuleDetectionOptions = {},
-): HorizontalRuleDiagnostics {
-  const required = width * height * 4;
-  if (!Number.isSafeInteger(width) || !Number.isSafeInteger(height) || width <= 0 || height <= 0) {
-    throw new Error('horizontal rule surface dimensions must be positive integers');
-  }
-  if (pixels.length < required) {
-    throw new Error('pixel buffer is smaller than the requested horizontal rule surface');
-  }
-
-  const inkThreshold = options.inkThreshold ?? DEFAULT_HORIZONTAL_RULE_OPTIONS.inkThreshold;
-  const minSpanRatio = options.minSpanRatio ?? DEFAULT_HORIZONTAL_RULE_OPTIONS.minSpanRatio;
-  const minCoverageRatio = options.minCoverageRatio
-    ?? DEFAULT_HORIZONTAL_RULE_OPTIONS.minCoverageRatio;
-  const maxBands = Math.max(
-    1,
-    Math.floor(options.maxBands ?? DEFAULT_HORIZONTAL_RULE_OPTIONS.maxBands),
-  );
-  const detected: HorizontalRuleBand[] = [];
-  let open: HorizontalRuleBand | null = null;
-
-  for (let y = 0; y < height; y++) {
-    let inkPixels = 0;
-    let run = 0;
-    let longestRun = 0;
-    for (let x = 0; x < width; x++) {
-      const offset = (y * width + x) * 4;
-      const alpha = pixels[offset + 3] / 255;
-      const red = pixels[offset] * alpha + 255 * (1 - alpha);
-      const green = pixels[offset + 1] * alpha + 255 * (1 - alpha);
-      const blue = pixels[offset + 2] * alpha + 255 * (1 - alpha);
-      const ink = 255 - Math.min(red, green, blue);
-      if (ink >= inkThreshold) {
-        inkPixels += 1;
-        run += 1;
-        longestRun = Math.max(longestRun, run);
-      } else {
-        run = 0;
-      }
-    }
-
-    const coverage = inkPixels / width;
-    const spanRatio = longestRun / width;
-    const qualifies = spanRatio >= minSpanRatio || coverage >= minCoverageRatio;
-    if (qualifies) {
-      if (!open) {
-        open = {
-          startY: y,
-          endY: y,
-          centerY: y,
-          thickness: 1,
-          peakInkCoverage: roundedRatio(coverage),
-          peakSpanRatio: roundedRatio(spanRatio),
-        };
-      } else {
-        open.endY = y;
-        open.centerY = Number(((open.startY + y) / 2).toFixed(2));
-        open.thickness = y - open.startY + 1;
-        open.peakInkCoverage = Math.max(open.peakInkCoverage, roundedRatio(coverage));
-        open.peakSpanRatio = Math.max(open.peakSpanRatio, roundedRatio(spanRatio));
-      }
-    } else if (open) {
-      detected.push(open);
-      open = null;
-    }
-  }
-  if (open) detected.push(open);
-
-  if (detected.length <= maxBands) {
-    return { totalBands: detected.length, truncated: false, bands: detected };
-  }
-  const leading = Math.ceil(maxBands / 2);
-  const trailing = maxBands - leading;
-  return {
-    totalBands: detected.length,
-    truncated: true,
-    bands: [
-      ...detected.slice(0, leading),
-      ...(trailing > 0 ? detected.slice(-trailing) : []),
-    ],
-  };
-}
 
 /** HWP와 Ghostscript PDF RGBA를 각각 흰 종이 위에 합성한 뒤 RGB 최대 오차로 비교한다. */
 export function computeReferencePixelDiff(
@@ -155,7 +30,7 @@ export function computeReferencePixelDiff(
   reference: Uint8ClampedArray,
   width: number,
   height: number,
-  threshold = 24,
+  threshold = REFERENCE_PIXEL_DIFF_THRESHOLD,
   mismatchMask?: Uint8ClampedArray,
 ): PixelDiffMetrics {
   const comparedPixels = width * height;

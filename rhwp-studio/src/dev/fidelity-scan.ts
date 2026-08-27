@@ -1,25 +1,10 @@
-import type { HorizontalRuleDiagnostics, PixelDiffMetrics } from './pdf-reference-diff';
-
-export interface DiagnosticBandDelta {
-  hwpCount: number;
-  pdfCount: number;
-  countDelta: number;
-  pairedCount: number;
-  maxCenterDelta: number | null;
-  meanCenterDelta: number | null;
-  hwpEvidenceCenters: number[];
-  pdfEvidenceCenters: number[];
-}
+import type { PixelDiffMetrics } from './pdf-reference-diff.ts';
 
 export interface FidelityPageObservation {
   pageIndex: number;
   hwpSize: { width: number; height: number };
   referenceSize: { width: number; height: number };
   mismatch: PixelDiffMetrics;
-  hwpHorizontalRules: HorizontalRuleDiagnostics;
-  pdfHorizontalRules: HorizontalRuleDiagnostics;
-  hwpInkRows: HorizontalRuleDiagnostics;
-  pdfInkRows: HorizontalRuleDiagnostics;
 }
 
 export interface FidelityPageReport extends PixelDiffMetrics {
@@ -27,8 +12,6 @@ export interface FidelityPageReport extends PixelDiffMetrics {
   hwpSize: { width: number; height: number };
   referenceSize: { width: number; height: number };
   referenceHeightDelta: number;
-  horizontalRuleDelta: DiagnosticBandDelta;
-  inkRowDelta: DiagnosticBandDelta;
 }
 
 export interface FidelityScanIdentity {
@@ -41,7 +24,7 @@ export interface FidelityScanIdentity {
 }
 
 export interface FidelityScanReport {
-  schemaVersion: 1;
+  schemaVersion: 2;
   scanId: number;
   status: 'ready';
   trigger: 'baseline' | 'subsecond-patch' | 'manual';
@@ -50,14 +33,14 @@ export interface FidelityScanReport {
   pdfPageCount: number | null;
   pageCountDelta: number | null;
   firstDivergentPage: number | null;
-  firstStructuralDivergencePage: number | null;
+  firstPaintErrorPage: number | null;
   pages: FidelityPageReport[];
   startedAt: number;
   completedAt: number;
 }
 
 export type FidelityScanSummary = Omit<FidelityScanReport, 'pages'> & { reportedPages: number };
-export type FirstDocumentDivergence = { kind: 'structural' | 'page-count'; pageIndex: number };
+export type FirstDocumentDivergence = { kind: 'paint' | 'page-count'; pageIndex: number };
 
 const round = (value: number, digits: number): number => Number(value.toFixed(digits));
 
@@ -71,16 +54,16 @@ export function isFidelityDocumentCurrent(
 
 export function firstDocumentDivergence(report: Pick<
   FidelityScanReport,
-  'firstStructuralDivergencePage' | 'hwpPageCount' | 'pdfPageCount' | 'pageCountDelta'
+  'firstPaintErrorPage' | 'hwpPageCount' | 'pdfPageCount' | 'pageCountDelta'
 >): FirstDocumentDivergence | null {
-  const structural = report.firstStructuralDivergencePage;
+  const paint = report.firstPaintErrorPage;
   const countBoundary = report.pageCountDelta && report.pdfPageCount !== null
     ? Math.min(report.hwpPageCount, report.pdfPageCount)
     : null;
-  if (countBoundary !== null && (structural === null || countBoundary <= structural)) {
+  if (countBoundary !== null && (paint === null || countBoundary <= paint)) {
     return { kind: 'page-count', pageIndex: countBoundary };
   }
-  return structural === null ? null : { kind: 'structural', pageIndex: structural };
+  return paint === null ? null : { kind: 'paint', pageIndex: paint };
 }
 
 export function isFidelityScanCurrent(
@@ -91,77 +74,15 @@ export function isFidelityScanCurrent(
 }
 
 const STRUCTURAL_MISMATCH_RATIO = 0.05;
-const STRUCTURAL_BAND_DRIFT_PX = 2;
 
-/** Ignore glyph raster/color noise and retain page-scale layout evidence. */
-export function isStructuralPageDivergence(page: FidelityPageReport): boolean {
-  return page.referenceHeightDelta !== 0
-    || page.mismatchRatio >= STRUCTURAL_MISMATCH_RATIO
-    || page.horizontalRuleDelta.countDelta !== 0
-    || (page.horizontalRuleDelta.maxCenterDelta ?? 0) >= STRUCTURAL_BAND_DRIFT_PX
-    || Math.abs(page.inkRowDelta.countDelta) >= 1
-    || (page.inkRowDelta.maxCenterDelta ?? 0) >= STRUCTURAL_BAND_DRIFT_PX;
+/** PDF paint is an automatic error only when at least 5% of the sampled page differs. */
+export function isPdfPaintError(page: Pick<PixelDiffMetrics, 'mismatchRatio'>): boolean {
+  return page.mismatchRatio >= STRUCTURAL_MISMATCH_RATIO;
 }
 
 export function summarizeFidelityScan(report: FidelityScanReport): FidelityScanSummary {
   const { pages, ...summary } = report;
   return { ...summary, reportedPages: pages.length };
-}
-
-export function compareDiagnosticBands(
-  hwp: HorizontalRuleDiagnostics,
-  pdf: HorizontalRuleDiagnostics,
-): DiagnosticBandDelta {
-  const equalCount = hwp.totalBands === pdf.totalBands
-    && hwp.bands.length === pdf.bands.length;
-  const completeCountMismatch = hwp.totalBands !== pdf.totalBands
-    && !hwp.truncated
-    && !pdf.truncated;
-  const pairs: Array<[number, number]> = [];
-  const unmatchedHwp: number[] = [];
-  const unmatchedPdf: number[] = [];
-  if (equalCount) {
-    for (let index = 0; index < hwp.bands.length; index++) pairs.push([index, index]);
-  } else if (completeCountMismatch) {
-    let hwpIndex = 0;
-    let pdfIndex = 0;
-    while (hwpIndex < hwp.bands.length && pdfIndex < pdf.bands.length) {
-      const hwpCenter = hwp.bands[hwpIndex].centerY;
-      const pdfCenter = pdf.bands[pdfIndex].centerY;
-      if (Math.abs(hwpCenter - pdfCenter) < 2) {
-        pairs.push([hwpIndex++, pdfIndex++]);
-      } else if (hwpCenter < pdfCenter) {
-        unmatchedHwp.push(hwpIndex++);
-      } else {
-        unmatchedPdf.push(pdfIndex++);
-      }
-    }
-    while (hwpIndex < hwp.bands.length) unmatchedHwp.push(hwpIndex++);
-    while (pdfIndex < pdf.bands.length) unmatchedPdf.push(pdfIndex++);
-  }
-  const deltas = pairs.map(([hwpIndex, pdfIndex]) =>
-    Math.abs(hwp.bands[hwpIndex].centerY - pdf.bands[pdfIndex].centerY));
-  const mean = deltas.reduce((sum, value) => sum + value, 0) / deltas.length;
-  const maxDeltaIndex = deltas.length
-    ? deltas.reduce((best, value, index) => value > deltas[best] ? index : best, 0)
-    : -1;
-  const evidencePair = maxDeltaIndex >= 0 ? pairs[maxDeltaIndex] : null;
-  const onlyHwpUnmatched = unmatchedHwp.length > 0 && unmatchedPdf.length === 0;
-  const onlyPdfUnmatched = unmatchedPdf.length > 0 && unmatchedHwp.length === 0;
-  return {
-    hwpCount: hwp.totalBands,
-    pdfCount: pdf.totalBands,
-    countDelta: hwp.totalBands - pdf.totalBands,
-    pairedCount: pairs.length,
-    maxCenterDelta: deltas.length ? round(Math.max(...deltas), 3) : null,
-    meanCenterDelta: deltas.length ? round(mean, 3) : null,
-    hwpEvidenceCenters: onlyHwpUnmatched
-      ? unmatchedHwp.map(index => hwp.bands[index].centerY)
-      : equalCount && evidencePair ? [hwp.bands[evidencePair[0]].centerY] : [],
-    pdfEvidenceCenters: onlyPdfUnmatched
-      ? unmatchedPdf.map(index => pdf.bands[index].centerY)
-      : equalCount && evidencePair ? [pdf.bands[evidencePair[1]].centerY] : [],
-  };
 }
 
 export function buildFidelityScanReport(input: {
@@ -183,13 +104,14 @@ export function buildFidelityScanReport(input: {
     mismatchRatio: round(page.mismatch.mismatchRatio, 6),
     meanAbsoluteError: round(page.mismatch.meanAbsoluteError, 3),
     maxAbsoluteError: round(page.mismatch.maxAbsoluteError, 3),
-    horizontalRuleDelta: compareDiagnosticBands(page.hwpHorizontalRules, page.pdfHorizontalRules),
-    inkRowDelta: compareDiagnosticBands(page.hwpInkRows, page.pdfInkRows),
   }));
   const sharedCount = Math.min(input.hwpPageCount, input.pdfPageCount ?? input.hwpPageCount);
   const countMismatch = input.pdfPageCount !== null && input.hwpPageCount !== input.pdfPageCount;
+  const firstPaintPage = input.observations
+    .find(page => isPdfPaintError(page.mismatch))
+    ?.pageIndex ?? null;
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     scanId: input.scanId,
     status: 'ready',
     trigger: input.trigger,
@@ -199,8 +121,7 @@ export function buildFidelityScanReport(input: {
     pageCountDelta: input.pdfPageCount === null ? null : input.hwpPageCount - input.pdfPageCount,
     firstDivergentPage: pages.find(page => page.mismatchPixels > 0)?.pageIndex
       ?? (countMismatch ? sharedCount : null),
-    firstStructuralDivergencePage: pages.find(isStructuralPageDivergence)?.pageIndex
-      ?? (countMismatch ? sharedCount : null),
+    firstPaintErrorPage: firstPaintPage,
     pages,
     startedAt: input.startedAt,
     completedAt: input.completedAt,

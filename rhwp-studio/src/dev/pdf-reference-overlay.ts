@@ -5,7 +5,7 @@ import type {
 } from '@/view/page-reference-layer';
 import {
   computeReferencePixelDiff,
-  detectHorizontalRuleBands,
+  REFERENCE_PIXEL_DIFF_THRESHOLD,
 } from './pdf-reference-diff.ts';
 import {
   buildFidelityScanReport,
@@ -32,7 +32,6 @@ import { fetchWithBusyRetry } from './pdf-reference-fetch.ts';
 
 const DIFF_SAMPLE_WIDTH = 512;
 const WHOLE_SCAN_SAMPLE_WIDTH = 256;
-const DIFF_THRESHOLD = 24;
 const MAX_PENDING_LAYOUT_TRACE_BATCHES = 4;
 
 export class LayoutTraceMailbox {
@@ -87,7 +86,7 @@ interface FidelityHarnessState {
 }
 
 export type FidelityHarnessSnapshot = Omit<FidelityHarnessState, 'status' | 'latestReport'> & {
-  schemaVersion: 1;
+  schemaVersion: 2;
   owner: string;
   status: FidelityHarnessState['status'] | 'stale';
   current: boolean;
@@ -95,7 +94,7 @@ export type FidelityHarnessSnapshot = Omit<FidelityHarnessState, 'status' | 'lat
 };
 
 export interface FidelityHarnessApi {
-  readonly schemaVersion: 1;
+  readonly schemaVersion: 2;
   snapshot(): FidelityHarnessSnapshot;
   scan(): Promise<FidelityScanSummary | null>;
 }
@@ -173,7 +172,7 @@ export class PdfReferenceOverlay implements PageReferenceLayer {
       lastError: null,
     };
     this.harnessApi = {
-      schemaVersion: 1,
+      schemaVersion: 2,
       snapshot: () => this.harnessSnapshot(),
       scan: async () => {
         const report = await this.scanWholeDocument('manual');
@@ -187,7 +186,7 @@ export class PdfReferenceOverlay implements PageReferenceLayer {
   private harnessSnapshot(): FidelityHarnessSnapshot {
     const current = this.latestReportIsCurrent();
     return structuredClone({
-      schemaVersion: 1,
+      schemaVersion: 2,
       owner: this.ownerKey(),
       status: this.harnessState.status === 'ready' && !current
         ? 'stale'
@@ -340,7 +339,6 @@ export class PdfReferenceOverlay implements PageReferenceLayer {
     const page = report.pages.find(candidate => candidate.pageIndex === first.pageIndex);
     if (!page) return null;
     const bounds = page.bounds;
-    const ruleDelta = page.horizontalRuleDelta;
     return attachDocumentErrorTrace(formatDocumentError('paint', [
       ['page', page.pageIndex + 1],
       ['ratio', page.mismatchRatio],
@@ -348,12 +346,6 @@ export class PdfReferenceOverlay implements PageReferenceLayer {
       ['rhwpOnly', page.hwpOnlyPixels],
       ['colorOnly', page.colorMismatchPixels],
       ['bounds', bounds ? `${bounds.x},${bounds.y},${bounds.width},${bounds.height}` : 'none'],
-      ['ruleDelta', [
-        ruleDelta.countDelta,
-        ruleDelta.maxCenterDelta ?? '-',
-        ruleDelta.hwpEvidenceCenters.join(':') || '-',
-        ruleDelta.pdfEvidenceCenters.join(':') || '-',
-      ].join(',')],
     ]), selectedTrace);
   }
 
@@ -486,7 +478,7 @@ export class PdfReferenceOverlay implements PageReferenceLayer {
         observations.push(observation);
         if (fallbackTracePage === null) {
           const first = firstDocumentDivergence(buildReport([observation]));
-          if (first?.kind === 'structural' && first.pageIndex === pageIndex) {
+          if (first?.kind === 'paint' && first.pageIndex === pageIndex) {
             fallbackTracePage = pageIndex;
             fallbackTrace = parseLayoutTrace(capture.layoutTrace ?? '[]');
           }
@@ -568,23 +560,17 @@ export class PdfReferenceOverlay implements PageReferenceLayer {
     };
     const hwpPixels = pad(capture.pixels);
     const referencePixels = pad(reference.pixels);
-    const bands = (pixels: Uint8ClampedArray, rows = false) => detectHorizontalRuleBands(
-      pixels,
-      width,
-      height,
-      rows
-        ? { inkThreshold: 96, minSpanRatio: 1.1, minCoverageRatio: 0.012, maxBands: 96 }
-        : { inkThreshold: 96, minSpanRatio: 0.35, minCoverageRatio: 0.55, maxBands: 96 },
-    );
     return {
       pageIndex,
       hwpSize: { width: capture.width, height: capture.height },
       referenceSize: { width: reference.width, height: reference.height },
-      mismatch: computeReferencePixelDiff(hwpPixels, referencePixels, width, height, DIFF_THRESHOLD),
-      hwpHorizontalRules: bands(hwpPixels),
-      pdfHorizontalRules: bands(referencePixels),
-      hwpInkRows: bands(hwpPixels, true),
-      pdfInkRows: bands(referencePixels, true),
+      mismatch: computeReferencePixelDiff(
+        hwpPixels,
+        referencePixels,
+        width,
+        height,
+        REFERENCE_PIXEL_DIFF_THRESHOLD,
+      ),
     };
   }
 
@@ -842,7 +828,7 @@ export class PdfReferenceOverlay implements PageReferenceLayer {
         referencePixels,
         sampleWidth,
         sampleHeight,
-        DIFF_THRESHOLD,
+        REFERENCE_PIXEL_DIFF_THRESHOLD,
         mismatchMask,
       );
       mounted.diffCanvas.width = sampleWidth;
