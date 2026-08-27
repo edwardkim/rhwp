@@ -68,8 +68,11 @@ export function evaluateTrustedPostMergeReuse(input) {
   const parents = Array.isArray(input.mergeCommit.parents)
     ? input.mergeCommit.parents.map((parent) => parent?.sha || parent).filter(validSha)
     : [];
-  if (parents.length !== 2 || new Set(parents).size !== 2) {
-    return denied("merge-commit-must-have-two-parents");
+  if (
+    (parents.length !== 1 && parents.length !== 2)
+    || new Set(parents).size !== parents.length
+  ) {
+    return denied("merge-commit-must-have-one-or-two-parents");
   }
 
   const pullRequests = (Array.isArray(input.pullRequests) ? input.pullRequests : []).filter((pullRequest) => (
@@ -84,12 +87,17 @@ export function evaluateTrustedPostMergeReuse(input) {
     return denied("merge-commit-must-map-to-one-merged-same-repository-pr");
   }
   const pullRequest = pullRequests[0];
-  if (!parents.includes(pullRequest.head.sha)) {
+  if (parents.length === 2 && !parents.includes(pullRequest.head.sha)) {
     return denied("merge-parent-does-not-match-pr-head");
   }
-  const baseParent = parents.find((parent) => parent !== pullRequest.head.sha);
+  const baseParent = parents.length === 1
+    ? parents[0]
+    : parents.find((parent) => parent !== pullRequest.head.sha);
   if (!baseParent || input.mergeBaseSha !== baseParent) {
     return denied("pr-head-does-not-contain-merge-base");
+  }
+  if (input.sourceCommit?.sha !== pullRequest.head.sha) {
+    return denied("source-commit-does-not-match-pr-head");
   }
   if (
     input.mergeCommit?.commit?.tree?.sha !== input.sourceCommit?.commit?.tree?.sha

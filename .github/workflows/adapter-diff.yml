@@ -33,6 +33,9 @@ jobs:
       pull-requests: read
     with:
       workflow_file: adapter-diff.yml
+      caller_event_name: ${{ github.event_name }}
+      caller_ref: ${{ github.ref }}
+      caller_sha: ${{ github.sha }}
 
   adapter-impact:
     name: adapter inter-diff preflight

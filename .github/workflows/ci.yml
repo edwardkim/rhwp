@@ -71,6 +71,9 @@ jobs:
     with:
       workflow_file: ci.yml
       require_duration_artifacts: true
+      caller_event_name: ${{ github.event_name }}
+      caller_ref: ${{ github.ref }}
+      caller_sha: ${{ github.sha }}
 
   preflight:
     name: CI preflight
@@ -990,6 +993,8 @@ jobs:
       # 추가하면 그 테스트가 실패하므로 여기 한 줄을 같이 넣어야 한다.
       - name: Validate workflow contracts
         run: |
+          node --test scripts/tests/verify-trusted-postmerge-ci-reuse.test.mjs
+          node --test scripts/tests/verify-trusted-postmerge-ci-reuse-squash.test.mjs
           python3 -m unittest scripts/tests/test_cache_sweep_workflow.py
           python3 -m unittest scripts/tests/test_cancel_stale_pr_runs_workflow.py
           python3 -m unittest scripts/tests/test_ci_impact_policy_workflow.py
