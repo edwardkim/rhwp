@@ -831,6 +831,61 @@ fn tac_offsets_for_line(
 ///
 /// 다음 composed line이 정확히 같은 run 끝 위치에서 시작하면 그 TAC는 다음 줄 선두다.
 /// #1219의 줄 경계 수식 중복·폭 오포함을 막기 위해 이 경우에는 추가하지 않는다.
+/// [#5820 → Issue #6173] 오른쪽/가운데 정렬이 폭에서 제외할 **줄 말미 공백** 폭 (px).
+///
+/// 말미 공백이 서로 다른 글꼴·글자 크기의 run 경계를 넘을 수 있으므로, 전체 공백을
+/// 마지막 run 의 style 로 재측정하지 않고 뒤에서부터 각 run 의 실제 style 폭을 더한다.
+///
+/// **[Issue #6173] 자리차지(TAC) 개체 앞 공백은 말미 공백이 아니다.** 인라인 개체는
+/// run 을 쪼개지 않고 run 안 char 위치에 놓이므로 `[그림A][공백4][그림B][공백2]` 가
+/// 공백 6칸짜리 run **하나**로 합성된다. run 만 보고 뒤에서 공백을 세면 그림 사이 4칸까지
+/// 말미로 걷어내 오른쪽 앵커가 그만큼(26.7px) 우측으로 밀리고, 마지막 그림이 글상자
+/// 우단을 넘어 잘린다(156740495 2쪽). 줄의 **마지막 개체 위치 뒤** 공백만 말미다.
+///
+/// - `last_inline_object_pos`: 이 줄이 소유한 TAC 개체 중 마지막 것의 절대 char 위치.
+///   개체가 없으면 `None` — 종전 동작 그대로.
+/// - `stop_on_underline`: 밑줄 친 말미 공백에서 멈춘다(가운데 정렬 전용 규칙).
+pub(crate) fn trailing_space_width_after_last_inline_object(
+    line: &ComposedLine,
+    last_inline_object_pos: Option<usize>,
+    styles: &ResolvedStyleSet,
+    stop_on_underline: bool,
+) -> f64 {
+    let run_chars = |r: &crate::renderer::composer::ComposedTextRun| -> usize {
+        if r.char_overlap.is_some() {
+            let chars: Vec<char> = r.text.chars().collect();
+            crate::renderer::composer::char_overlap_advance_units(&chars)
+        } else {
+            r.text.chars().count()
+        }
+    };
+    let mut run_end_pos = line.char_start + line.runs.iter().map(run_chars).sum::<usize>();
+    let mut width = 0.0;
+    for run in line.runs.iter().rev() {
+        let run_char_count = run_chars(run);
+        let run_start_pos = run_end_pos.saturating_sub(run_char_count);
+        let mut trailing_spaces = run.text.chars().rev().take_while(|c| *c == ' ').count();
+        if let Some(obj_pos) = last_inline_object_pos {
+            // 마지막 개체 뒤로 자른다 — 개체 자리 이전 공백은 콘텐츠다.
+            let floor = obj_pos.max(run_start_pos);
+            trailing_spaces = trailing_spaces.min(run_end_pos.saturating_sub(floor));
+        }
+        if trailing_spaces == 0 {
+            break;
+        }
+        let ts = resolved_to_text_style(styles, run.char_style_id, run.lang_index);
+        if stop_on_underline && ts.underline != crate::renderer::UnderlineType::None {
+            break;
+        }
+        width += estimate_text_width(&" ".repeat(trailing_spaces), &ts);
+        if trailing_spaces != run_char_count {
+            break;
+        }
+        run_end_pos = run_start_pos;
+    }
+    width
+}
+
 fn tac_offsets_for_line_width(
     comp: &ComposedParagraph,
     tac_offsets_px: &[(usize, f64, usize)],
@@ -4515,35 +4570,22 @@ impl LayoutEngine {
             // (issue_1285)은 in_textbox=false 로 그대로 유지된다.
             let right_align_excludes_trailing_ws =
                 alignment == Alignment::Right && cell_ctx.as_ref().is_none_or(|c| c.in_textbox);
-            let trailing_ws_width = if right_align_excludes_trailing_ws
-                || center_excludes_trailing_ws
-            {
-                // 말미 공백이 서로 다른 글꼴/글자 크기의 run 경계를 넘을 수 있다.
-                // 전체 공백을 마지막 run의 style로 재측정하면 그만큼 오른쪽 앵커를
-                // 틀리게 복원하므로, 뒤에서부터 각 run의 실제 style 폭을 더한다.
-                let mut width = 0.0;
-                for run in comp_line.runs.iter().rev() {
-                    let trailing_spaces = run.text.chars().rev().take_while(|c| *c == ' ').count();
-                    if trailing_spaces == 0 {
-                        break;
-                    }
-                    let ts = resolved_to_text_style(styles, run.char_style_id, run.lang_index);
-                    // ④ 밑줄 친 말미 공백은 보이는 콘텐츠 — Center 는 제외 대상에서
-                    // 뺀다(Right 는 기존 검증 동작 유지).
-                    if center_excludes_trailing_ws
-                        && ts.underline != crate::renderer::UnderlineType::None
-                    {
-                        break;
-                    }
-                    width += estimate_text_width(&" ".repeat(trailing_spaces), &ts);
-                    if trailing_spaces != run.text.chars().count() {
-                        break;
-                    }
-                }
-                width
-            } else {
-                0.0
-            };
+            let trailing_ws_width =
+                if right_align_excludes_trailing_ws || center_excludes_trailing_ws {
+                    trailing_space_width_after_last_inline_object(
+                        comp_line,
+                        line_tac_offsets_for_width
+                            .iter()
+                            .map(|(pos, _, _)| *pos)
+                            .max(),
+                        styles,
+                        // ④ 밑줄 친 말미 공백은 보이는 콘텐츠 — Center 는 제외 대상에서
+                        // 뺀다(Right 는 기존 검증 동작 유지).
+                        center_excludes_trailing_ws,
+                    )
+                } else {
+                    0.0
+                };
             let x_start = match alignment {
                 Alignment::Center => {
                     let align_offset = if center_packed_cell_label_as_right {
