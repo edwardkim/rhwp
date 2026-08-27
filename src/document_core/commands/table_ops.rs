@@ -125,9 +125,7 @@ impl DocumentCore {
         row_idx: u16,
     ) -> Result<String, HwpError> {
         let table = self.get_table_mut(section_idx, parent_para_idx, control_idx)?;
-        table
-            .delete_row(row_idx)
-            .map_err(|e| HwpError::RenderError(e))?;
+        table.delete_row(row_idx).map_err(HwpError::RenderError)?;
         table.dirty = true;
         let row_count = table.row_count;
         let col_count = table.col_count;
