@@ -1484,6 +1484,48 @@ fn collect_public_av_run_lengths(core: &mut rhwp::document_core::DocumentCore) -
 }
 
 #[cfg(not(target_arch = "wasm32"))]
+#[derive(Debug)]
+struct PublicAvLayoutRun {
+    scalar_count: usize,
+    bbox_width: f64,
+    layout_positions: Option<Vec<f64>>,
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+fn collect_public_av_layout_runs(
+    core: &mut rhwp::document_core::DocumentCore,
+) -> Vec<PublicAvLayoutRun> {
+    fn collect(node: &rhwp::renderer::render_tree::RenderNode, runs: &mut Vec<PublicAvLayoutRun>) {
+        if let rhwp::renderer::render_tree::RenderNodeType::TextRun(run) = &node.node_type {
+            let replay_text = run.display_or_text();
+            let scalar_count = replay_text
+                .chars()
+                .filter(|character| matches!(character, 'A' | 'V'))
+                .count();
+            if scalar_count > 0 {
+                runs.push(PublicAvLayoutRun {
+                    scalar_count,
+                    bbox_width: node.bbox.width,
+                    layout_positions: run.layout_positions.clone(),
+                });
+            }
+        }
+        for child in &node.children {
+            collect(child, runs);
+        }
+    }
+
+    let mut runs = Vec::new();
+    for page_number in 0..core.page_count() {
+        let page = core
+            .build_page_render_tree(page_number as u32)
+            .expect("fresh public page tree");
+        collect(&page.root, &mut runs);
+    }
+    runs
+}
+
+#[cfg(not(target_arch = "wasm32"))]
 fn set_public_av_paragraph(paragraph: &mut rhwp::model::paragraph::Paragraph, char_shape_id: u32) {
     use rhwp::model::paragraph::CharShapeRef;
 
@@ -1498,7 +1540,10 @@ fn set_public_av_paragraph(paragraph: &mut rhwp::model::paragraph::Paragraph, ch
 }
 
 #[cfg(not(target_arch = "wasm32"))]
-fn public_fresh_render_av_run_lengths(with_exact_source: bool, body_width_hwp: u32) -> Vec<usize> {
+fn public_fresh_render_av_core(
+    with_exact_source: bool,
+    body_width_hwp: u32,
+) -> rhwp::document_core::DocumentCore {
     use rhwp::document_core::DocumentCore;
     use rhwp::model::paragraph::{CharShapeRef, Paragraph};
 
@@ -1534,6 +1579,12 @@ fn public_fresh_render_av_run_lengths(with_exact_source: bool, body_width_hwp: u
             .expect("register exact public face");
     }
 
+    core
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+fn public_fresh_render_av_run_lengths(with_exact_source: bool, body_width_hwp: u32) -> Vec<usize> {
+    let mut core = public_fresh_render_av_core(with_exact_source, body_width_hwp);
     collect_public_av_run_lengths(&mut core)
 }
 
@@ -1557,10 +1608,43 @@ fn issue_4968_fresh_pagination_and_page_tree_share_exact_boundaries() {
 }
 
 #[cfg(not(target_arch = "wasm32"))]
-fn public_fresh_table_cell_av_run_lengths(
+#[test]
+fn issue_4968_final_emitted_runs_publish_exact_positions_once() {
+    let body_width_hwp = (7_000..=13_000)
+        .step_by(100)
+        .find(|body_width_hwp| {
+            public_fresh_render_av_run_lengths(false, *body_width_hwp)
+                != public_fresh_render_av_run_lengths(true, *body_width_hwp)
+        })
+        .expect("bounded public width ladder must expose an exact AV boundary change");
+
+    let mut k0_core = public_fresh_render_av_core(false, body_width_hwp);
+    let k0_runs = collect_public_av_layout_runs(&mut k0_core);
+    assert!(!k0_runs.is_empty());
+    assert!(k0_runs.iter().all(|run| run.layout_positions.is_none()));
+
+    let mut k1_core = public_fresh_render_av_core(true, body_width_hwp);
+    let k1_runs = collect_public_av_layout_runs(&mut k1_core);
+    let adjusted: Vec<&PublicAvLayoutRun> = k1_runs
+        .iter()
+        .filter(|run| run.layout_positions.is_some())
+        .collect();
+    assert!(!adjusted.is_empty(), "K1 must publish final run positions");
+    for run in adjusted {
+        let positions = run.layout_positions.as_deref().expect("K1 positions");
+        assert_eq!(positions.len(), run.scalar_count + 1);
+        assert_eq!(positions.first().copied(), Some(0.0));
+        assert!(positions.windows(2).all(|pair| pair[0] <= pair[1]));
+        let final_position = positions.last().copied().expect("final position");
+        assert!((final_position - run.bbox_width).abs() < 1e-9);
+    }
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+fn public_fresh_table_cell_av_core(
     with_exact_source: bool,
     content_width_hwp: u32,
-) -> Vec<usize> {
+) -> rhwp::document_core::DocumentCore {
     use rhwp::document_core::DocumentCore;
     use rhwp::model::control::Control;
     use rhwp::model::paragraph::CharShapeRef;
@@ -1615,14 +1699,23 @@ fn public_fresh_table_cell_av_run_lengths(
         core.register_exact_font_source_native(char_shape_id, 1, EXACT_KERNING_SMOKE, 0)
             .expect("register exact public face");
     }
+    core
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+fn public_fresh_table_cell_av_run_lengths(
+    with_exact_source: bool,
+    content_width_hwp: u32,
+) -> Vec<usize> {
+    let mut core = public_fresh_table_cell_av_core(with_exact_source, content_width_hwp);
     collect_public_av_run_lengths(&mut core)
 }
 
 #[cfg(not(target_arch = "wasm32"))]
-fn public_fresh_text_box_av_run_lengths(
+fn public_fresh_text_box_av_core(
     with_exact_source: bool,
     content_width_hwp: u32,
-) -> Vec<usize> {
+) -> rhwp::document_core::DocumentCore {
     use rhwp::document_core::DocumentCore;
     use rhwp::model::control::Control;
     use rhwp::model::paragraph::CharShapeRef;
@@ -1693,6 +1786,15 @@ fn public_fresh_text_box_av_run_lengths(
         core.register_exact_font_source_native(char_shape_id, 1, EXACT_KERNING_SMOKE, 0)
             .expect("register exact public face");
     }
+    core
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+fn public_fresh_text_box_av_run_lengths(
+    with_exact_source: bool,
+    content_width_hwp: u32,
+) -> Vec<usize> {
+    let mut core = public_fresh_text_box_av_core(with_exact_source, content_width_hwp);
     collect_public_av_run_lengths(&mut core)
 }
 
@@ -1700,12 +1802,21 @@ fn public_fresh_text_box_av_run_lengths(
 #[test]
 fn issue_4968_fresh_table_cell_and_text_box_share_exact_boundaries() {
     type ContainerRunLengths = fn(bool, u32) -> Vec<usize>;
-    let containers: [(&str, ContainerRunLengths); 2] = [
-        ("table-cell", public_fresh_table_cell_av_run_lengths),
-        ("text-box", public_fresh_text_box_av_run_lengths),
+    type ContainerCore = fn(bool, u32) -> rhwp::document_core::DocumentCore;
+    let containers: [(&str, ContainerRunLengths, ContainerCore); 2] = [
+        (
+            "table-cell",
+            public_fresh_table_cell_av_run_lengths,
+            public_fresh_table_cell_av_core,
+        ),
+        (
+            "text-box",
+            public_fresh_text_box_av_run_lengths,
+            public_fresh_text_box_av_core,
+        ),
     ];
 
-    for (label, run_lengths) in containers {
+    for (label, run_lengths, build_core) in containers {
         let (content_width_hwp, k0, k1) = (7_000..=13_000)
             .step_by(100)
             .find_map(|content_width_hwp| {
@@ -1720,5 +1831,21 @@ fn issue_4968_fresh_table_cell_and_text_box_share_exact_boundaries() {
             run_lengths(true, content_width_hwp),
             "{label} exact boundary must be deterministic"
         );
+        let mut k1_core = build_core(true, content_width_hwp);
+        let k1_layout_runs = collect_public_av_layout_runs(&mut k1_core);
+        let adjusted: Vec<&PublicAvLayoutRun> = k1_layout_runs
+            .iter()
+            .filter(|run| run.layout_positions.is_some())
+            .collect();
+        assert!(!adjusted.is_empty(), "{label} must publish exact positions");
+        for run in adjusted {
+            let positions = run.layout_positions.as_deref().expect("K1 positions");
+            assert_eq!(positions.len(), run.scalar_count + 1, "{label}");
+            assert!(positions.windows(2).all(|pair| pair[0] <= pair[1]));
+            assert!(
+                (positions.last().copied().expect("end") - run.bbox_width).abs() < 1e-9,
+                "{label} bbox must consume final positions"
+            );
+        }
     }
 }
