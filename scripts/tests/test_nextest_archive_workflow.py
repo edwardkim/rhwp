@@ -119,15 +119,15 @@ class NextestArchiveWorkflowTests(unittest.TestCase):
             preflight,
         )
 
-    def test_two_archive_builders_split_lib_and_integration_targets(self):
+    def test_archive_builders_split_lib_and_three_integration_targets(self):
         from pathlib import Path
         root = Path(__file__).resolve().parents[2]
         ci = (root / ".github/workflows/ci.yml").read_text()
         builder = (root / ".github/workflows/build-nextest-archives.yml").read_text()
         runner = (root / ".github/workflows/run-nextest-archives.yml").read_text()
-        self.assertIn("build-test-archive-a:", ci); self.assertIn("build-test-archive-b:", ci); self.assertIn("build-test-archive-c:", ci)
-        self.assertNotIn("test-slow-shard:", ci); self.assertEqual(1, ci.count('partition: "hash:1/2"')); self.assertEqual(1, ci.count('partition: "hash:2/2"')); self.assertEqual(2, ci.count('partition: "hash:1/1"'))
-        self.assertIn("target_group: lib", ci); self.assertIn("target_group: integration-b", ci); self.assertIn("target_group: integration-c", ci)
+        self.assertIn("build-test-archive-a:", ci); self.assertIn("build-test-archive-b:", ci); self.assertIn("build-test-archive-c:", ci); self.assertIn("build-test-archive-d:", ci)
+        self.assertNotIn("test-slow-shard:", ci); self.assertNotIn('partition: "hash:1/2"', ci); self.assertNotIn('partition: "hash:2/2"', ci); self.assertEqual(4, ci.count('partition: "hash:1/1"'))
+        self.assertIn("target_group: lib", ci); self.assertIn("target_group: integration-b", ci); self.assertIn("target_group: integration-c", ci); self.assertIn("target_group: integration-d", ci)
         self.assertIn("cargo metadata --no-deps --format-version 1", builder)
         self.assertIn("scripts/select-nextest-archive-targets.mjs", builder)
         self.assertIn(
@@ -143,7 +143,7 @@ class NextestArchiveWorkflowTests(unittest.TestCase):
         self.assertIn("scripts/collect-nextest-target-durations.mjs", runner)
         self.assertIn("nextest-target-durations-${{ github.run_id }}-${{ inputs.archive_label }}", runner)
 
-    def test_duration_policy_collects_devel_and_same_repository_pr_b_and_c_measurements(self):
+    def test_duration_policy_collects_devel_and_same_repository_pr_b_c_d_measurements(self):
         from pathlib import Path
         root = Path(__file__).resolve().parents[2]
         policy = (root / "tests/suites/nextest-target-duration-policy.json").read_text()
@@ -165,12 +165,13 @@ class NextestArchiveWorkflowTests(unittest.TestCase):
         )
         self.assertIn("inputs.archive_label == 'b'", runner)
         self.assertIn("inputs.archive_label == 'c'", runner)
+        self.assertIn("inputs.archive_label == 'd'", runner)
         self.assertIn("retention-days: 3", runner)
         self.assertIn("retention-days: 30", runner)
         self.assertIn("estimatedSeconds", selector)
         self.assertIn("<testcase", collector)
         self.assertIn("JUnit report contains no target durations", collector)
-        self.assertIn("exactly one B report and one C report", refresh)
+        self.assertIn("exactly one B, C, and D report", refresh)
         self.assertIn("identical run, ref, and sha provenance", refresh)
 
     def test_native_skia_uses_the_same_test_profile_policy(self) -> None:
@@ -210,9 +211,9 @@ class NextestArchiveWorkflowTests(unittest.TestCase):
         ci = (root / ".github/workflows/ci.yml").read_text()
         builder = (root / ".github/workflows/build-nextest-archives.yml").read_text()
         runner = (root / ".github/workflows/run-nextest-archives.yml").read_text()
-        for name in ("test-archive-a-shard-1:", "test-archive-a-shard-2:", "test-archive-b-shard-1:", "test-archive-c-shard-1:"):
+        for name in ("test-archive-a-shard-1:", "test-archive-b-shard-1:", "test-archive-c-shard-1:", "test-archive-d-shard-1:"):
             self.assertIn(name, ci)
-        self.assertIn("Archive A shard total mismatch", ci); self.assertIn("Archive B shard total mismatch", ci); self.assertIn("Archive C shard total mismatch", ci)
+        self.assertIn("Archive A shard total mismatch", ci); self.assertIn("Archive B shard total mismatch", ci); self.assertIn("Archive C shard total mismatch", ci); self.assertIn("Archive D shard total mismatch", ci)
         self.assertIn("name: Build & Test", ci)
 
     def test_reusable_builder_rejects_profile_timeout_mismatches(self) -> None:
@@ -224,6 +225,7 @@ class NextestArchiveWorkflowTests(unittest.TestCase):
             ("release-test", "30", "lib", 0),
             ("release", "60", "integration-b", 0),
             ("release", "60", "integration-c", 0),
+            ("release", "60", "integration-d", 0),
             ("release-test", "60", "lib", 1),
             ("release", "30", "integration-b", 1),
             ("debug", "60", "lib", 1),

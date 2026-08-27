@@ -514,10 +514,11 @@ class CiImpactWorkflowTests(unittest.TestCase):
             "BUILD_ARCHIVE_A_RESULT": "skipped",
             "BUILD_ARCHIVE_B_RESULT": "skipped",
             "BUILD_ARCHIVE_C_RESULT": "skipped",
+            "BUILD_ARCHIVE_D_RESULT": "skipped",
             "TEST_ARCHIVE_A_1_RESULT": "skipped",
-            "TEST_ARCHIVE_A_2_RESULT": "skipped",
             "TEST_ARCHIVE_B_1_RESULT": "skipped",
             "TEST_ARCHIVE_C_1_RESULT": "skipped",
+            "TEST_ARCHIVE_D_1_RESULT": "skipped",
             "LINT_RESULT": "skipped",
             "NATIVE_SKIA_RESULT": "skipped",
             "FRONTEND_UNIT_RESULT": "success",
@@ -648,6 +649,11 @@ class CiImpactWorkflowTests(unittest.TestCase):
             (
                 "build-test-archive-c",
                 "integration-c",
+                "needs: [preflight, resolve-nextest-duration-policy]",
+            ),
+            (
+                "build-test-archive-d",
+                "integration-d",
                 "needs: [preflight, resolve-nextest-duration-policy]",
             ),
         ):
@@ -969,10 +975,10 @@ mod support;
 
     def test_rust_workers_wait_only_for_their_archive_partition(self) -> None:
         for archive_label, index, partition in (
-            ("a", 1, "hash:1/2"),
-            ("a", 2, "hash:2/2"),
+            ("a", 1, "hash:1/1"),
             ("b", 1, "hash:1/1"),
             ("c", 1, "hash:1/1"),
+            ("d", 1, "hash:1/1"),
         ):
             job_name = f"test-archive-{archive_label}-shard-{index}"
             with self.subTest(job=job_name):
@@ -1016,6 +1022,7 @@ mod support;
             "Download archive A expected count",
             "Download archive B expected count",
             "Download archive C expected count",
+            "Download archive D expected count",
             "Download shard counts",
             "Verify archive shard totals",
         ):
@@ -1032,10 +1039,11 @@ mod support;
             "BUILD_ARCHIVE_A_RESULT": "success",
             "BUILD_ARCHIVE_B_RESULT": "success",
             "BUILD_ARCHIVE_C_RESULT": "success",
+            "BUILD_ARCHIVE_D_RESULT": "success",
             "TEST_ARCHIVE_A_1_RESULT": "success",
-            "TEST_ARCHIVE_A_2_RESULT": "success",
             "TEST_ARCHIVE_B_1_RESULT": "success",
             "TEST_ARCHIVE_C_1_RESULT": "success",
+            "TEST_ARCHIVE_D_1_RESULT": "success",
         }
         cases = {
             "frontend-only": {},
