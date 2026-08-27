@@ -72,9 +72,11 @@
   mix-blend-mode: multiply;
 }
 
-#scroll-content.grid-mode canvas,
-#scroll-content.horizontal-page-movement canvas {
-  box-shadow: 0 1px 4px var(--overlay-bg);
+#scroll-content canvas.document-page-canvas,
+#scroll-content .page-placeholder {
+  box-shadow:
+    0 0 0 1px var(--ui-border-strong),
+    0 1px 4px var(--overlay-bg);
 }
 
 /* Drag & Drop */
