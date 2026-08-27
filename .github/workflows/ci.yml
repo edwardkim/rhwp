@@ -1274,6 +1274,13 @@ jobs:
           VITE_PORT: '7700'
         run: npm run e2e:undo-depth
 
+      - name: Run Studio responsive toolbar gate (#6118, #6138)
+        # CI wiring: rhwp-studio/e2e/responsive.test.mjs via npm e2e:responsive.
+        working-directory: rhwp-studio
+        env:
+          VITE_PORT: '7720'
+        run: npm run e2e:responsive
+
       - name: Build Studio
         run: npm --prefix rhwp-studio run build
 

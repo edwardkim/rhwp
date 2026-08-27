@@ -49,6 +49,7 @@ export class Toolbar {
   private btnLsUp: HTMLButtonElement;
   private btnLsDown: HTMLButtonElement;
   private fontLang: HTMLSelectElement;
+  private alignButtons: Array<{ button: HTMLButtonElement; alignment: string }> = [];
 
   private enabled = false;
   private styleDropdownInitialized = false;
@@ -129,6 +130,10 @@ export class Toolbar {
       btn.addEventListener('mousedown', (e) => {
         e.preventDefault();
         this.dispatcher.dispatch(cmdId);
+      });
+      btn.addEventListener('click', (event) => {
+        // 키보드 Enter/Space가 만드는 click에는 선행 mousedown이 없다.
+        if (event.detail === 0) this.dispatcher.dispatch(cmdId);
       });
     }
   }
@@ -437,20 +442,24 @@ export class Toolbar {
 
   /** 문단 정렬 버튼 이벤트 → 커맨드 디스패치 */
   private setupAlignButtons(): void {
-    const aligns: [string, string][] = [
-      ['#btn-align-left', 'format:align-left'],
-      ['#btn-align-center', 'format:align-center'],
-      ['#btn-align-right', 'format:align-right'],
-      ['#btn-align-justify', 'format:align-justify'],
-      ['#btn-align-distribute', 'format:align-distribute'],
-      ['#btn-align-split', 'format:align-split'],
+    const aligns: [string, string, string][] = [
+      ['#btn-align-left', 'left', 'format:align-left'],
+      ['#btn-align-center', 'center', 'format:align-center'],
+      ['#btn-align-right', 'right', 'format:align-right'],
+      ['#btn-align-justify', 'justify', 'format:align-justify'],
+      ['#btn-align-distribute', 'distribute', 'format:align-distribute'],
+      ['#btn-align-split', 'split', 'format:align-split'],
     ];
-    for (const [sel, cmdId] of aligns) {
+    for (const [sel, alignment, cmdId] of aligns) {
       const btn = this.container.querySelector(sel) as HTMLButtonElement;
       if (btn) {
+        this.alignButtons.push({ button: btn, alignment });
         btn.addEventListener('mousedown', (e) => {
           e.preventDefault();
           this.dispatcher.dispatch(cmdId);
+        });
+        btn.addEventListener('click', (event) => {
+          if (event.detail === 0) this.dispatcher.dispatch(cmdId);
         });
       }
     }
@@ -565,6 +574,10 @@ export class Toolbar {
 
   /** 커서 위치의 문단 속성(줄간격 등)을 도구 모음에 반영한다 */
   private updateParaState(props: ParaProperties): void {
+    for (const { button, alignment } of this.alignButtons) {
+      this.setActive(button, props.alignment === alignment);
+    }
+
     if (props.lineSpacingType === 'Percent' && props.lineSpacing !== undefined) {
       const val = Math.round(props.lineSpacing);
       this.ensureLsOption(val);
@@ -645,6 +658,8 @@ export class Toolbar {
     const opacity = enabled ? '1' : '0.5';
     this.container.style.opacity = opacity;
     this.container.style.pointerEvents = enabled ? 'auto' : 'none';
+    this.container.setAttribute('aria-disabled', String(!enabled));
+    this.container.inert = !enabled;
   }
 
   /** 선택된 언어 카테고리에 해당하는 글꼴명을 반환한다 */
