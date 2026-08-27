@@ -40,7 +40,7 @@ impl FontMetric {
     pub fn get_width(&self, ch: char) -> Option<u16> {
         let code = ch as u32;
         // 한글 음절 (U+AC00~U+D7A3)
-        if code >= 0xAC00 && code <= 0xD7A3 {
+        if (0xAC00..=0xD7A3).contains(&code) {
             if let Some(h) = self.hangul {
                 let idx = code - 0xAC00;
                 let cho = (idx / (21 * 28)) as usize;
