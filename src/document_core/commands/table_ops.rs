@@ -647,7 +647,7 @@ impl DocumentCore {
         let table = self.get_table_mut(section_idx, parent_para_idx, control_idx)?;
         table
             .merge_cells(start_row, start_col, end_row, end_col)
-            .map_err(|e| HwpError::RenderError(e))?;
+            .map_err(HwpError::RenderError)?;
         table.dirty = true;
         let cell_count = table.cells.len();
 
