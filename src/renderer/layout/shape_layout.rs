@@ -8,6 +8,7 @@ use super::super::pagination::PageItem;
 use super::super::render_tree::*;
 use super::super::style_resolver::ResolvedStyleSet;
 use super::super::{hwpunit_to_px, px_to_hwpunit, PathCommand, ShapeStyle, TextStyle};
+use super::paragraph_layout::trailing_space_width_after_last_inline_object;
 use super::text_measurement::{
     estimate_text_width, is_cjk_char, is_vertical_rotate_char, resolved_to_text_style,
     vertical_substitute_char,
@@ -3161,27 +3162,32 @@ impl LayoutEngine {
             // (32.7px)만큼 좌측 이탈한다(156560092 실측: 한글 로고 B 우변 여백
             // 4.1px vs rhwp 36.8). paragraph_layout 의 셀-밖 Right 제외 규칙과
             // 같은 계약이다.
+            //
+            // [Issue #6173] 말미 판정은 **마지막 인라인 개체 뒤**부터다 —
+            // `[로고A][공백4][로고B][공백2]` 는 공백 6칸 run 하나로 합성되므로
+            // run 만 보고 뒤에서 세면 로고 사이 4칸(26.7px)까지 걷어내 로고가
+            // 그만큼 우측으로 밀리고 마지막 로고가 글상자 밖으로 잘린다.
+            // paragraph_layout 의 셀-밖 Right 경로와 **같은 헬퍼**를 쓴다.
             let trailing_ws_width: f64 = if para_alignment == Alignment::Right
                 && pi < composed_paras.len()
             {
-                composed_paras[pi]
-                    .lines
+                let comp = &composed_paras[pi];
+                comp.lines
                     .first()
                     .map(|line| {
-                        let mut width = 0.0;
-                        for run in line.runs.iter().rev() {
-                            let n = run.text.chars().rev().take_while(|c| *c == ' ').count();
-                            if n == 0 {
-                                break;
-                            }
-                            let ts =
-                                resolved_to_text_style(styles, run.char_style_id, run.lang_index);
-                            width += estimate_text_width(&" ".repeat(n), &ts);
-                            if n != run.text.chars().count() {
-                                break;
-                            }
-                        }
-                        width
+                        let line_end = line.char_start
+                            + line
+                                .runs
+                                .iter()
+                                .map(|r| r.text.chars().count())
+                                .sum::<usize>();
+                        let last_obj = comp
+                            .tac_controls
+                            .iter()
+                            .map(|(pos, _, _)| *pos)
+                            .filter(|pos| *pos >= line.char_start && *pos <= line_end)
+                            .max();
+                        trailing_space_width_after_last_inline_object(line, last_obj, styles, false)
                     })
                     .unwrap_or(0.0)
             } else {
