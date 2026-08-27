@@ -78,6 +78,7 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `local-font-partial-enumeration-issue4741.test.mjs` | 상시 | active | #4741 Local Font Access 부분 열거를 강제해 raw probe·exact Canvas2D face·폭·cache·편람 383쪽 계약 검증 | 2025 행정업무운영 편람(최종).hwp | npm e2e:issue-4741 | KoPub바탕체 Light 설치 호스트 Chrome 전용 |
 | `issue-595.test.mjs` | 진단 | hold | Issue #595 진단 e2e | exam_math.hwp | 수동 | legacy-name · #595 진단 (assertion 0) |
 | `issue-6099-probe.mjs` | 진단 | active | #6099 90° 회전 그림 DOM frame/img 실측과 스크린샷 생성 프로브 | samples 하위 지정 파일 | 수동 | legacy-name · 일회성 실측 프로브 |
+| `issue-6117-cell-underline-canvas2d.test.mjs` | 상시 | active | #6117 표 셀의 줄 끝 공백 밑줄이 오른쪽 괘선을 넘지 않는 Canvas2D 회귀 | issue6117/52690_higher_education_decree.hwp | 수동 |  |
 | `line-spacing.test.mjs` | 상시 | active | 줄간격 변경에 따른 페이지 넘김 검증 | — | 수동 |  |
 | `loading-busy-cursor.test.mjs` | 상시 | active | #5740 대형 문서 로딩 중 busy 상태와 wait cursor 표시 계약 | 2025 행정업무운영 편람(최종).hwp | npm e2e:loading-busy-cursor |  |
 | `navigation-shortcuts.test.mjs` | 상시 | active | 플랫폼별 navigation shortcut | — | 수동 |  |
