@@ -103,6 +103,7 @@ mod tests {
         let page_content = PageContent {
             page_index: 0,
             page_number: 0,
+            page_number_restarted: false,
             section_index: 0,
             layout,
             column_contents: vec![ColumnContent {

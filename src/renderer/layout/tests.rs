@@ -37,6 +37,7 @@ fn test_build_empty_page() {
     let page_content = PageContent {
         page_index: 0,
         page_number: 0,
+        page_number_restarted: false,
         section_index: 0,
         layout,
         column_contents: Vec::new(),
@@ -576,6 +577,7 @@ fn test_build_page_with_paragraph() {
     let page_content = PageContent {
         page_index: 0,
         page_number: 0,
+        page_number_restarted: false,
         section_index: 0,
         layout,
         column_contents: vec![ColumnContent {
@@ -654,6 +656,7 @@ fn partial_paragraph_start_line_beyond_lines_does_not_panic() {
     let page_content = PageContent {
         page_index: 0,
         page_number: 0,
+        page_number_restarted: false,
         section_index: 0,
         layout,
         column_contents: vec![ColumnContent {
@@ -761,6 +764,7 @@ fn test_layout_with_composed_styles() {
     let page_content = PageContent {
         page_index: 0,
         page_number: 0,
+        page_number_restarted: false,
         section_index: 0,
         layout,
         column_contents: vec![ColumnContent {
@@ -893,6 +897,7 @@ fn test_layout_multi_run_x_position() {
     let page_content = PageContent {
         page_index: 0,
         page_number: 0,
+        page_number_restarted: false,
         section_index: 0,
         layout,
         column_contents: vec![ColumnContent {
@@ -1273,6 +1278,7 @@ fn test_layout_table_basic() {
     let page_content = PageContent {
         page_index: 0,
         page_number: 0,
+        page_number_restarted: false,
         section_index: 0,
         layout,
         column_contents: vec![ColumnContent {
@@ -1427,6 +1433,7 @@ fn test_layout_table_cell_positions() {
     let page_content = PageContent {
         page_index: 0,
         page_number: 0,
+        page_number_restarted: false,
         section_index: 0,
         layout,
         column_contents: vec![ColumnContent {
@@ -2660,6 +2667,7 @@ fn render_tree_with_header_control(control: Control) -> PageRenderTree {
     let page_content = PageContent {
         page_index: 0,
         page_number: 1,
+        page_number_restarted: false,
         section_index: 0,
         layout,
         column_contents: Vec::new(),
@@ -2765,6 +2773,7 @@ fn page_bg_color_and_image_present(is_section_first: bool) -> (bool, bool) {
     let page_content = PageContent {
         page_index: 0,
         page_number: 0,
+        page_number_restarted: false,
         section_index: 0,
         layout,
         column_contents: Vec::new(),
