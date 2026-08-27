@@ -389,7 +389,7 @@ fn scan_records_for_overrun(stream_label: &str, data: &[u8], col: &mut Collector
         let header = u32::from_le_bytes([data[pos], data[pos + 1], data[pos + 2], data[pos + 3]]);
         pos += 4;
         let tag_id = (header & 0x3FF) as u16;
-        let mut size = (header >> 20) as u32;
+        let mut size = (header >> 20);
         if size == 0xFFF {
             if pos + 4 > data.len() {
                 col.push(
