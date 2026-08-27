@@ -384,6 +384,10 @@ pub struct WebCanvasRenderer {
     /// svg.rs 와 같은 계약(밑줄/취소선 길이에서 제외). 문단 마지막 줄·강제
     /// 줄바꿈 줄(서명란 밑줄 공백)은 대상 아님.
     soft_wrap_decoration_trim: Option<(u32, usize)>,
+    /// [#6117] layer tree 재생 경로의 트림 대상 — 줄 그룹이 정하고 그 run 에만
+    /// 적용한다. RenderNode 경로가 node.id 로 짝짓는 것을 여기서는 run 주소로
+    /// 짝짓는다(한 번의 트리 순회 안에서만 유효하며 그 범위에서 안정적이다).
+    layer_decoration_trim: Option<(usize, usize)>,
     active_decoration_trim: usize,
 }
 
@@ -410,6 +414,7 @@ impl WebCanvasRenderer {
             partial_clip: None,
             partial_context_saved: false,
             soft_wrap_decoration_trim: None,
+            layer_decoration_trim: None,
             active_decoration_trim: 0,
         })
     }
@@ -668,7 +673,15 @@ impl WebCanvasRenderer {
                 self.render_page_background(bbox, background);
             }
             PaintOp::TextRun { bbox, run } => {
+                // [#6117] 줄 그룹이 정한 트림을 이 run 에 적용한다(RenderNode
+                // 경로의 `render_node` 와 같은 배선).
+                let key = (&**run) as *const TextRunNode as usize;
+                self.active_decoration_trim = match self.layer_decoration_trim {
+                    Some((run_key, trim)) if run_key == key => trim,
+                    _ => 0,
+                };
                 self.render_text_run(bbox, run);
+                self.active_decoration_trim = 0;
             }
             PaintOp::FootnoteMarker { bbox, marker } => {
                 self.render_footnote_marker(bbox, marker);
@@ -1271,8 +1284,25 @@ impl WebCanvasRenderer {
                 group_kind,
                 ..
             } => {
+                // [#6117] soft-wrap 줄-말미 공백 트림(#6028)은 RenderNode 경로에만
+                // 배선돼 있었다. studio 는 **layer tree** 를 재생하므로 그 경로에서
+                // 트림이 서지 않아 밑줄이 배분 정렬로 늘어난 말미 공백까지 그어져
+                // 칸 우측 괘선을 넘었다(교육부 법령안 4문서 4~20px). 줄 그룹이
+                // layer tree 에도 보존되므로(`GroupKind::TextLine`) 같은 규칙을
+                // 여기서 세운다 — 판별·값 모두 svg.rs·RenderNode 경로와 같다.
+                let restore_trim = if let GroupKind::TextLine(_) = group_kind {
+                    let prev = self.layer_decoration_trim;
+                    self.layer_decoration_trim =
+                        crate::renderer::layer_renderer::line_decoration_trim_target(children);
+                    Some(prev)
+                } else {
+                    None
+                };
                 for child in children {
                     self.render_layer_node(child, active_layer);
+                }
+                if let Some(prev) = restore_trim {
+                    self.layer_decoration_trim = prev;
                 }
                 if self.should_render_group_label(active_layer) {
                     let label = match group_kind {
