@@ -3577,8 +3577,61 @@ impl LayoutEngine {
         outer_section_index: Option<usize>,
         outer_hf_ref: Option<crate::renderer::render_tree::HeaderFooterImageRef>,
         is_header: bool,
+        list_attr: u32,
+        band_height_hu: u32,
     ) {
-        let mut y_offset = area.y;
+        // [#6186] 머리말/꼬리말 subList 의 `vertAlign`(HWPX) = LIST_HEADER list_attr
+        // 비트 21~22 (0=TOP, 1=CENTER, 2=BOTTOM). 파서는 이미 값을 싣는데
+        // 레이아웃이 읽지 않아 늘 밴드 맨 위에 놓였다 — 156755659 는 BOTTOM 이라
+        // 쪽번호가 21.8px 위에 붙어, 같은 자리에 겹쳐 놓인 글상자와 두 줄로 갈렸다.
+        // 내용 높이를 **줄 높이 합으로 정확히 알 수 있을 때만** 정렬한다 — 표·도형·
+        // 그림이 든 꼬리말은 이 합이 과소평가라 과잉 이동한다(exam_kor: 꼬리말에
+        // 상자가 들어 있어 17.97px 더 내려가 한글과 멀어졌다 — 한글 A4 실측 쪽 하단
+        // 82.1px 위 = A3 환산 116.2, 종전 118.5 가 맞고 변경값 100.6 은 틀림).
+        // 쪽번호 같은 인라인 필드는 줄 안에서 자리를 차지하므로 줄 높이에 이미 들어
+        // 있다 — 배제 대상은 **자기 높이를 갖는 개체**(표·도형·그림)뿐이다.
+        let text_only_footer = !hf_paragraphs.is_empty()
+            && hf_paragraphs.iter().all(|para| {
+                !para.line_segs.is_empty()
+                    && !para.controls.iter().any(|c| {
+                        matches!(
+                            c,
+                            Control::Table(_) | Control::Shape(_) | Control::Picture(_)
+                        )
+                    })
+            });
+        let vert_align = if text_only_footer {
+            (list_attr >> 21) & 0b11
+        } else {
+            0
+        };
+        let content_h: f64 = hf_paragraphs
+            .iter()
+            .filter_map(|para| para.line_segs.iter().map(|seg| seg.line_height).max())
+            .map(|lh| hwpunit_to_px(lh, self.dpi))
+            .sum();
+        // 정렬 기준은 **문서가 선언한 밴드 높이**(HWPX subList `textHeight`)다.
+        // 공유 `layout.footer_area` 는 아래 여백까지 품고 있고(그 rect 는 쪽 계산에도
+        // 쓰여 건드리면 쪽수가 흔들린다 — issue_1733 등 8핀 실측), 한글의 세로 정렬은
+        // 꼬리말 밴드 안에서만 일어난다. 선언값이 없으면(HWP5 등) 종전대로 area 전체.
+        //
+        // **선언값이 없으면(HWP5 등) 정렬을 적용하지 않는다.** `area.height` 로 물러서면
+        // 밴드가 아래 여백까지 품고 있어 과잉 이동한다 — exam_kor(HWP5, A3 렌더)에서
+        // 꼬리말 상자가 17.97px 더 내려가 한글과 멀어졌다(한글 A4 기준 쪽 하단에서
+        // 82.1px 위 = A3 환산 116.2px; 종전 118.5px 가 맞고 변경 후 100.6px 는 틀림).
+        // HWPX subList 가 `textHeight` 로 밴드를 명시할 때만 그 안에서 정렬한다.
+        let slack = if band_height_hu > 0 {
+            let band_h = hwpunit_to_px(band_height_hu as i32, self.dpi).min(area.height);
+            (band_h - content_h).max(0.0)
+        } else {
+            0.0
+        };
+        let mut y_offset = area.y
+            + match vert_align {
+                1 => slack / 2.0,
+                2 => slack,
+                _ => 0.0,
+            };
         for (i, para) in hf_paragraphs.iter().enumerate() {
             // 테이블 컨트롤이 있으면 테이블 렌더링
             let has_table = para.controls.iter().any(|c| matches!(c, Control::Table(_)));
@@ -4794,6 +4847,8 @@ impl LayoutEngine {
                                 Some(hf_ref.source_section_index),
                                 Some(outer_ref),
                                 true,
+                                header.list_attr,
+                                header.text_height,
                             );
                         }
                     }
@@ -4929,6 +4984,8 @@ impl LayoutEngine {
                                 Some(hf_ref.source_section_index),
                                 Some(outer_ref),
                                 false,
+                                footer.list_attr,
+                                footer.text_height,
                             );
                         }
                     }
@@ -10061,11 +10118,21 @@ impl LayoutEngine {
                 }
             }
             // ── 호스트 문단 텍스트 렌더링 ──
-            let text_already_laid_out = page_content.column_contents.iter().any(|cc| {
-                cc.items.iter().any(|it| {
-                    matches!(it, PageItem::PartialParagraph { para_index: pi, .. } if *pi == para_index)
-                })
-            });
+            // [#6184] 이 가드는 **현재 쪽**의 항목만 훑는다. typeset 이 host 줄을
+            // 이월 전 쪽에 pre-emit 한 경우(`pre_emit_visible_rowbreak_host_text`)
+            // 그 항목은 앞 쪽에 있어 여기서 안 보이고, 같은 줄이 두 쪽에 그려진다
+            // (156489124 pi=324: 12쪽 1030.3 과 13쪽 75.6). pre-emit 기록은 쪽을
+            // 넘어 남으므로 함께 본다 — 분할 표 경로의 `host_pre_emitted` 가드와
+            // 같은 계약을 통짜 표 경로에도 둔다.
+            let text_already_laid_out = self
+                .pre_emitted_host_paras
+                .borrow()
+                .contains(&para_index)
+                || page_content.column_contents.iter().any(|cc| {
+                    cc.items.iter().any(|it| {
+                        matches!(it, PageItem::PartialParagraph { para_index: pi, .. } if *pi == para_index)
+                    })
+                });
             if !is_tac && !text_already_laid_out {
                 let host_is_not_square =
                     if let Some(Control::Table(ht)) = para.controls.get(control_index) {
