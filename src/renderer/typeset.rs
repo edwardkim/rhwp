@@ -6992,6 +6992,52 @@ impl TypesetEngine {
             if st.prefilled_paras.contains(&para_idx) {
                 continue;
             }
+            // [#6132] 저장 vpos 가 쪽 본문을 넘고 바로 다음 문단이 되감기면,
+            // 한글은 이 문단부터 다음 쪽에 둔 것이다. 두 신호를 **함께** 요구한다 —
+            // 되감김이 "이 사다리는 쪽마다 리셋된다"를 증명하므로, 구역 누적
+            // 사다리(리셋 없는 문서)를 초과로 오판하지 않는다.
+            //
+            // 156482639 7쪽: pi=102 '참고3' 표 vpos=73760 은 본문 73,335HU(977.8px)를
+            // 넘고 pi=103 이 3790 으로 되감긴다. 한글은 둘 다 8쪽 첫머리에 두는데
+            // rhwp 는 7쪽 잔여(974.5px)에 욱여넣어 8쪽이 56.8px 비었다.
+            //
+            // 기존 #3837 되감김 규칙은 되감긴 **다음** 문단(pi=103)에만 걸리고, 그마저
+            // 그 문단이 잔여에 들어가면 분할 루프가 그대로 현재 쪽에 놓는다. 넘긴
+            // 주체인 pi=102 자신은 표 경로라 그 판정을 아예 지나지 않는다.
+            if st.col_count == 1 && !st.current_items.is_empty() {
+                let own_stored_vpos = para
+                    .line_segs
+                    .iter()
+                    .find(|seg| !is_synthetic_line_seg(seg))
+                    .map(|seg| seg.vertical_pos);
+                let next_stored_vpos = paragraphs
+                    .get(para_idx + 1)
+                    .and_then(|next| {
+                        next.line_segs
+                            .iter()
+                            .find(|seg| !is_synthetic_line_seg(seg))
+                    })
+                    .map(|seg| seg.vertical_pos);
+                if let (Some(own), Some(next)) = (own_stored_vpos, next_stored_vpos) {
+                    let overflows_body =
+                        own > 0 && hwpunit_to_px(own, self.dpi) > st.base_available_height();
+                    if overflows_body && next < own {
+                        if std::env::var("RHWP_DIAG_VPOS_OVF").is_ok() {
+                            eprintln!(
+                                "[VPOS_OVF] pi={} own={} ({:.1}px) next={} avail={:.1} cur_h={:.1} items={}",
+                                para_idx,
+                                own,
+                                hwpunit_to_px(own, self.dpi),
+                                next,
+                                st.base_available_height(),
+                                st.current_height,
+                                st.current_items.len()
+                            );
+                        }
+                        st.advance_column_or_new_page();
+                    }
+                }
+            }
             // [#4533 HWP3] 자리차지 밴드 비예약 판별용 — 표 경로 포함 전 문단 공통.
             st.next_para_first_stored_vpos = paragraphs
                 .get(para_idx + 1)
