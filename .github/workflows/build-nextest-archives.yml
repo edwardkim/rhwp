@@ -155,18 +155,29 @@ jobs:
               ;;
             integration-b|integration-c)
               duration_policy='tests/suites/nextest-target-duration-policy.json'
+              duration_policy_ref='ci-metrics/nextest-target-durations'
               if [[ -n "${{ inputs.duration_policy_sha }}" ]]; then
                 candidate_policy='target/nextest-duration-policy.json'
                 mkdir -p "$(dirname "${candidate_policy}")"
-                if git fetch --depth=1 origin "${{ inputs.duration_policy_sha }}" \
-                  && git show FETCH_HEAD:nextest-target-duration-policy.json > "${candidate_policy}"; then
+                # GitHub does not promise arbitrary SHA fetches. Fetch the advertised
+                # metrics ref instead, then require the PR-pinned SHA to be in its
+                # append-only history before reading the policy blob from that SHA.
+                if git fetch --no-tags origin \
+                  "refs/heads/${duration_policy_ref}:refs/remotes/origin/${duration_policy_ref}" \
+                  && git merge-base --is-ancestor "${{ inputs.duration_policy_sha }}" \
+                    "refs/remotes/origin/${duration_policy_ref}" \
+                  && git show "${{ inputs.duration_policy_sha }}:nextest-target-duration-policy.json" \
+                    > "${candidate_policy}"; then
                   duration_policy="${candidate_policy}"
                   printf 'duration_policy_sha=%s\n' "${{ inputs.duration_policy_sha }}"
+                  printf 'duration_policy_source=metrics-ref\n'
                 else
-                  echo "::warning::Duration policy ${{ inputs.duration_policy_sha }} could not be fetched; using the committed fallback."
+                  echo "::warning::Duration policy ${{ inputs.duration_policy_sha }} is unavailable from ${duration_policy_ref}; using the committed fallback."
+                  printf 'duration_policy_source=fallback:metrics-policy-unavailable\n'
                 fi
               else
                 echo 'duration_policy_sha=fallback:committed'
+                echo 'duration_policy_source=fallback:no-pinned-policy'
               fi
 
               mapfile -t selected_targets < <(

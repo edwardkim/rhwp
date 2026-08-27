@@ -295,6 +295,27 @@ class NextestArchiveWorkflowTests(unittest.TestCase):
         self.assertIn("github.ref == 'refs/heads/devel'", self.ci)
         self.assertIn("duration_policy_sha:", self.builder)
         self.assertIn(
+            "duration_policy_ref='ci-metrics/nextest-target-durations'",
+            self.builder,
+        )
+        self.assertIn(
+            'refs/heads/${duration_policy_ref}:refs/remotes/origin/${duration_policy_ref}',
+            self.builder,
+        )
+        self.assertIn(
+            'git merge-base --is-ancestor "${{ inputs.duration_policy_sha }}"',
+            self.builder,
+        )
+        self.assertIn(
+            'git show "${{ inputs.duration_policy_sha }}:nextest-target-duration-policy.json"',
+            self.builder,
+        )
+        self.assertIn("duration_policy_source=metrics-ref", self.builder)
+        self.assertIn(
+            "duration_policy_source=fallback:metrics-policy-unavailable",
+            self.builder,
+        )
+        self.assertNotIn(
             'git fetch --depth=1 origin "${{ inputs.duration_policy_sha }}"',
             self.builder,
         )
