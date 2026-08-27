@@ -5,10 +5,13 @@ import {
   existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, truncateSync, writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { dirname, join } from 'node:path';
 import { Readable } from 'node:stream';
 import test from 'node:test';
 import { stripVTControlCharacters } from 'node:util';
+import {
+  PDF_PAGE_PATH_PREFIX,
+} from '../src/dev/pdf-twin-contract.ts';
 import {
   BoundedWorkQueue,
   MAX_SOURCE_BYTES,
@@ -191,6 +194,47 @@ test('one cache owner cannot reset or reclaim a live peer root', (t) => {
   reclaimDeadCacheRoots(parent, pid => pid !== 111);
   assert.equal(existsSync(deadRoot), false);
   assert.equal(existsSync(liveRoot), true);
+});
+
+test('PDF page responses never make a rasterizer result immutable in the browser', async (t) => {
+  const root = mkdtempSync(join(tmpdir(), 'rhwp-pdf-page-response-'));
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+  let middleware!: (req: unknown, res: unknown, next: () => void) => Promise<void>;
+  let close = () => {};
+  const plugin = hwpdocsPdfTwinPlugin({ root });
+  (plugin.configureServer as any)({
+    config: { logger: { error() {} } },
+    httpServer: { once(_event: string, listener: () => void) { close = listener; } },
+    middlewares: { use(handler: typeof middleware) { middleware = handler; } },
+  });
+  t.after(() => close());
+
+  const pdf = join(root, 'reference.pdf');
+  writeFileSync(pdf, '%PDF cached route fixture');
+  const snapshot = await snapshotPdf(pdf);
+  t.after(() => snapshot.release());
+  const png = Buffer.from('current raster bytes');
+  const raster = join(dirname(dirname(snapshot.path)), 'pages', snapshot.token, '0-128.png');
+  mkdirSync(dirname(raster), { recursive: true });
+  writeFileSync(raster, png);
+
+  let nextCalled = false;
+  const headers: Record<string, string> = {};
+  let body = Buffer.alloc(0);
+  const res = {
+    statusCode: 0,
+    setHeader(name: string, value: string) { headers[name] = String(value); },
+    end(value: Buffer) { body = value; },
+  };
+  await middleware({
+    method: 'GET',
+    url: `${PDF_PAGE_PATH_PREFIX}${snapshot.token}/0.png?width=128`,
+  }, res, () => { nextCalled = true; });
+  assert.equal(res.statusCode, 200);
+  assert.equal(headers['Content-Type'], 'image/png');
+  assert.equal(headers['Cache-Control'], 'no-store');
+  assert.deepEqual(body, png);
+  assert.equal(nextCalled, false);
 });
 
 function response(): {

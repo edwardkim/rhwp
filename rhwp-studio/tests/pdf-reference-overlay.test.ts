@@ -346,6 +346,74 @@ test('a superseded trace batch cannot cross render revisions and the mailbox sta
   assert.deepEqual(mailbox.takeCurrent(), []);
 });
 
+test('a new reference session cannot reuse an older browser raster URL', async (t) => {
+  const globalDescriptors = new Map(
+    ['window', 'document', 'fetch', 'createImageBitmap'].map(name =>
+      [name, Object.getOwnPropertyDescriptor(globalThis, name)] as const),
+  );
+  let first: PdfReferenceOverlay | undefined;
+  let second: PdfReferenceOverlay | undefined;
+  t.after(async () => {
+    await first?.destroy();
+    await second?.destroy();
+    for (const [name, descriptor] of globalDescriptors) {
+      if (descriptor) Object.defineProperty(globalThis, name, descriptor);
+      else delete (globalThis as any)[name];
+    }
+  });
+  (globalThis as any).window = { clearTimeout, setTimeout };
+  const fetched: string[] = [];
+  (globalThis as any).fetch = async (input: RequestInfo | URL) => {
+    fetched.push(String(input));
+    return new Response(new Blob());
+  };
+  (globalThis as any).createImageBitmap = async () => ({ width: 256, height: 1, close() {} });
+  const context = {
+    fillStyle: '', fillRect() {}, drawImage() {},
+    getImageData: () => ({ data: new Uint8ClampedArray(256 * 4) }),
+  };
+  (globalThis as any).document = {
+    createElement: () => ({
+      className: '', children: [], dataset: {}, style: {},
+      appendChild(child: unknown) { this.children.push(child); },
+      getContext: () => context, remove() {}, setAttribute() {},
+    }),
+  };
+  const harness = (referenceGeneration: number) => ({
+    errorLogCapability: 'a'.repeat(43),
+    documentDigest: 'digest',
+    documentGeneration: 1,
+    referenceGeneration,
+    getDocumentDigest: () => 'digest',
+    getDocumentGeneration: () => 1,
+    getHwpPageCount: () => 1,
+    capturePage: async () => ({ width: 1, height: 1, pixels: new Uint8ClampedArray(4) }),
+    getRenderGeneration: () => 1,
+  });
+  first = new PdfReferenceOverlay('/__rhwp_harness/pdf-page/token', 2_048, 1, 'ref.pdf', harness(1));
+  second = new PdfReferenceOverlay('/__rhwp_harness/pdf-page/token', 2_048, 1, 'ref.pdf', harness(2));
+  const mounted: string[] = [];
+  for (const overlay of [first, second]) {
+    (overlay as any).loadReplacement = (
+      _pageIndex: number, _mounted: unknown, src: string,
+    ) => mounted.push(src);
+    overlay.syncPage({
+      pageIndex: 0, pageInfo: {} as any, zoom: 1, dpr: 1,
+      sourceCanvas: {
+        height: 1, width: 1,
+        parentElement: { appendChild() {} },
+        style: { height: '1px', left: '0', top: '0', transform: 'none', width: '1px' },
+      } as any,
+    });
+    await (overlay as any).loadReferencePixels(0, 256, 1, new AbortController().signal);
+  }
+  assert.match(mounted[0], /\/0\.png\?width=2048&session=\d+-1$/);
+  assert.match(mounted[1], /\/0\.png\?width=2048&session=\d+-2$/);
+  assert.equal(fetched[0], mounted[0].replace('width=2048', 'width=256'));
+  assert.equal(fetched[1], mounted[1].replace('width=2048', 'width=256'));
+  assert.notEqual(mounted[0], mounted[1]);
+});
+
 test('a render change during reference loading cannot publish stale evidence', async () => {
   const previousWindow = (globalThis as any).window;
   const browser: Record<string, unknown> = {};

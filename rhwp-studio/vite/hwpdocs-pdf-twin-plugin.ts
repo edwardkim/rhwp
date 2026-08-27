@@ -762,7 +762,7 @@ export function hwpdocsPdfTwinPlugin(options: { root?: string; additionalRoots?:
               const png = readFileSync(path);
               res.statusCode = 200;
               res.setHeader('Content-Type', 'image/png');
-              res.setHeader('Cache-Control', 'private, max-age=31536000, immutable');
+              res.setHeader('Cache-Control', 'no-store');
               res.end(png);
             });
           } catch (error) {

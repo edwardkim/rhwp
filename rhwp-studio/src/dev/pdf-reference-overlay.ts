@@ -140,6 +140,7 @@ export class PdfReferenceOverlay implements PageReferenceLayer {
   private readonly harness: PdfReferenceHarnessOptions;
   private readonly mounted = new Map<number, MountedReferencePage>();
   private readonly referenceKey: string;
+  private readonly rasterSession: string;
   private destroyed = false;
   private scanSerial = 0;
   private scanAbortController: AbortController | null = null;
@@ -161,6 +162,7 @@ export class PdfReferenceOverlay implements PageReferenceLayer {
     this.pageCount = pageCount;
     this.pdfName = pdfName;
     this.harness = harness;
+    this.rasterSession = `${Math.trunc(performance.timeOrigin)}-${harness.referenceGeneration}`;
     const segments = pageImageBaseUrl.split('/').filter(Boolean);
     this.referenceKey = segments.at(-2) ?? pageImageBaseUrl;
     this.harnessState = {
@@ -461,7 +463,7 @@ export class PdfReferenceOverlay implements PageReferenceLayer {
     signal: AbortSignal,
   ): Promise<ReferencePixelCapture> {
     if (signal.aborted) throw new DOMException('reference image load aborted', 'AbortError');
-    const src = `${this.pageImageBaseUrl}/${pageIndex}.png?width=${width}`;
+    const src = this.pageRasterUrl(pageIndex, width);
     const response = await fetchWithBusyRetry(src, { signal });
     if (!response.ok) throw new Error(`reference page ${pageIndex} failed to load (${response.status})`);
     const image = await createImageBitmap(await response.blob());
@@ -485,6 +487,10 @@ export class PdfReferenceOverlay implements PageReferenceLayer {
     } finally {
       image.close();
     }
+  }
+
+  private pageRasterUrl(pageIndex: number, width: number): string {
+    return `${this.pageImageBaseUrl}/${pageIndex}.png?width=${width}&session=${this.rasterSession}`;
   }
 
   private observePage(
@@ -527,7 +533,7 @@ export class PdfReferenceOverlay implements PageReferenceLayer {
       this.removePage(request.pageIndex);
       return;
     }
-    const src = `${this.pageImageBaseUrl}/${request.pageIndex}.png?width=${this.pixelWidth}`;
+    const src = this.pageRasterUrl(request.pageIndex, this.pixelWidth);
     let mounted = this.mounted.get(request.pageIndex);
     if (!mounted) {
       const host = document.createElement('div');
