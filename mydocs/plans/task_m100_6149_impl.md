@@ -3,7 +3,11 @@
 - **이슈**: [#6149](https://github.com/edwardkim/rhwp/issues/6149)
 - **브랜치**: `codex/issue-6149-low-zoom-ruler`
 - **기준 commit**: `upstream/devel` `9be8b0562`
-- **문서 성격**: 구현 전 파일 단위 설계
+- **문서 성격**: 사후 재구성한 파일 단위 설계, 정정 계획 승인 완료, Stage 1 재검증 진입
+
+> 이 문서는 실제 구현 전에 승인된 설계가 아니다. 현재 5개 WIP 커밋의 동작 계약과 변경 경계를
+> 감사 가능한 형태로 재구성한 문서다. 작업지시자는 이 설계와 기존 WIP의 검증 후보 채택을 승인했지만,
+> 각 Stage 결과는 재검증 보고 뒤 별도로 승인한다.
 
 ## 표시 계약
 
@@ -67,9 +71,12 @@
 - 기존 zoom anchor, PageUp/PageDown, page arrangement 전체 회귀
 - `render-backend.test.ts`: Rust와 Studio의 저배율 render scale 하한 일치
 
-## 예상 커밋 경계
+## 사후 확인한 WIP 커밋 경계
 
 1. `docs(test): #6149 저배율 표시 계약`
 2. `fix(studio): 눈금자 밀도와 focus 쪽 경계 정합`
 3. `fix(studio): 배율별 페이지 간격과 외곽선 정합`
 4. `docs(test): #6149 통합 회귀와 시각 검증`
+
+이 경계는 이미 생성된 로컬 이력을 설명할 뿐, 단계별 사전 승인을 받았다는 뜻이 아니다. 기존 WIP는
+삭제하거나 재작성하지 않고 계획 승인 뒤 각 단계의 검증 후보로만 사용한다.
