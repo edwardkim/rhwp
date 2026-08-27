@@ -971,6 +971,7 @@ impl SkiaLayerRenderer {
                                 is_marker,
                                 run.is_para_end,
                                 run.is_line_break_end,
+                                run.validated_layout_positions_for(run.display_or_text()),
                             );
                         }
                         PaintOp::GlyphRun { run, .. } => {
@@ -999,6 +1000,7 @@ impl SkiaLayerRenderer {
                                 false,
                                 false,
                                 false,
+                                None,
                             );
                         }
                         PaintOp::Line { bbox, line } => {

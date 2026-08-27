@@ -3297,7 +3297,6 @@ impl DocumentCore {
 
     /// 텍스트 레이아웃 정보 (네이티브 에러 타입)
     pub fn get_page_text_layout_native(&self, page_num: u32) -> Result<String, HwpError> {
-        use crate::renderer::layout::compute_char_positions;
         use crate::renderer::render_tree::{RenderNode, RenderNodeType};
 
         let tree = self.build_page_tree(page_num)?;
@@ -3305,7 +3304,7 @@ impl DocumentCore {
         // 렌더 트리에서 TextRun 노드를 재귀적으로 수집
         fn collect_text_runs(node: &RenderNode, runs: &mut Vec<String>) {
             if let RenderNodeType::TextRun(ref text_run) = node.node_type {
-                let positions = compute_char_positions(&text_run.text, &text_run.style);
+                let positions = text_run.replay_positions_for(&text_run.text);
                 let char_x: Vec<String> = positions.iter().map(|v| format!("{:.1}", v)).collect();
 
                 let escaped_text = super::super::helpers::json_escape(&text_run.text);

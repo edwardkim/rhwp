@@ -587,7 +587,7 @@ impl PaintOp {
                     if display_text.is_empty() {
                         buf.push_str("[]");
                     } else {
-                        write_text_positions_for_text(buf, display_text, &run.style);
+                        write_text_positions_for_text(buf, run, display_text);
                     }
                 }
                 if !run.style.tab_leaders.is_empty() {
@@ -1554,11 +1554,11 @@ fn write_paint_text_style(buf: &mut String, style: &PaintTextStyle) {
 }
 
 fn write_text_positions(buf: &mut String, run: &TextRunNode) {
-    write_text_positions_for_text(buf, &run.text, &run.style);
+    write_text_positions_for_text(buf, run, &run.text);
 }
 
-fn write_text_positions_for_text(buf: &mut String, text: &str, style: &TextStyle) {
-    let positions = compute_char_positions(text, style);
+fn write_text_positions_for_text(buf: &mut String, run: &TextRunNode, text: &str) {
+    let positions = run.replay_positions_for(text);
     write_position_values(buf, &positions);
 }
 
@@ -1627,7 +1627,7 @@ fn write_tab_leaders(buf: &mut String, leaders: &[TabLeaderInfo]) {
 
 fn write_clamped_tab_leaders(buf: &mut String, run: &TextRunNode) -> bool {
     let (display_text, text_complete) = bounded_display_text_for_run(run);
-    let positions = compute_char_positions(&display_text, &run.style);
+    let positions = run.replay_positions_for(&display_text);
     let (font_size, _) = effective_text_font_size_and_baseline(run);
     let leaders_complete =
         run.style.tab_leaders.len() <= crate::paint::MAX_POSITIONED_CONTROL_MARKS_PER_RUN;
@@ -1655,7 +1655,7 @@ fn write_clamped_tab_leaders(buf: &mut String, run: &TextRunNode) -> bool {
 
 fn write_text_control_marks(buf: &mut String, bbox: BoundingBox, run: &TextRunNode) -> bool {
     let (bounded_text, mut complete) = bounded_text_prefix(&run.text);
-    let positions = compute_char_positions(&bounded_text, &run.style);
+    let positions = run.replay_positions_for(&bounded_text);
     let font_size = if run.style.font_size > 0.0 {
         run.style.font_size
     } else {
@@ -1896,7 +1896,7 @@ fn write_affine_transform(buf: &mut String, transform: LayerAffineTransform) {
 }
 
 fn write_text_clusters(buf: &mut String, run: &TextRunNode) {
-    let positions = compute_char_positions(&run.text, &run.style);
+    let positions = run.replay_positions_for(&run.text);
     let mut utf16_start = 0_u32;
     let chars = run
         .text
@@ -2578,7 +2578,7 @@ fn write_text_decoration(buf: &mut String, kind: TextDecorationKind, run: &TextR
     };
     let (font_size, baseline) = effective_text_font_size_and_baseline(run);
     let (bounded_text, complete) = bounded_display_text_for_run(run);
-    let positions = compute_char_positions(&bounded_text, &run.style);
+    let positions = run.replay_positions_for(&bounded_text);
     let _ = write!(
         buf,
         "{{\"kind\":{},\"baseline\":{:.3},\"rotation\":{:.3},\"isVertical\":{},\"fontSize\":{:.3},\"ratio\":{:.6},\"color\":{},\"shape\":{},\"underline\":{},\"emphasisDot\":{},\"positions\":[",

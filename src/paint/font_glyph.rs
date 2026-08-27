@@ -18,7 +18,6 @@ use crate::paint::{
     TextDirection, TextSourceId, TextSourceRange, TextSourceSpan, TextVariantKind,
     TextVariantQuality, WritingMode, RESOURCE_KEY_ALGORITHM,
 };
-use crate::renderer::layout::compute_char_positions;
 use crate::renderer::render_tree::BoundingBox;
 use crate::renderer::style_resolver::detect_lang_category;
 use unicode_properties::{GeneralCategory, UnicodeGeneralCategory};
@@ -605,7 +604,7 @@ impl FontGlyphLowerer<'_, '_> {
             return None;
         };
         let face = &cached_font.face;
-        let producer_positions = compute_char_positions(&run.text, &run.style);
+        let producer_positions = run.replay_positions_for(&run.text);
         if producer_positions.len() != characters.len() + 1
             || producer_positions
                 .iter()

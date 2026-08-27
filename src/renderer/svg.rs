@@ -41,7 +41,7 @@ fn expand_pua_old_hangul(text: &str) -> String {
     }
     out
 }
-use super::layout::{compute_char_positions, is_halfwidth_cjk_quote, split_into_clusters};
+use super::layout::{is_halfwidth_cjk_quote, split_into_clusters};
 use crate::model::control::FormType;
 use crate::model::style::{ImageFillMode, UnderlineType};
 use base64::Engine;
@@ -418,11 +418,12 @@ impl SvgRenderer {
                         Some((id, trim)) if id == node.id => trim,
                         _ => 0,
                     };
-                    self.draw_text(
+                    self.draw_text_positioned(
                         run.display_or_text(),
                         node.bbox.x,
                         node.bbox.y + run.baseline,
                         &run.style,
+                        run.validated_layout_positions_for(run.display_or_text()),
                     );
                     self.active_decoration_trim = 0;
                 }
@@ -439,7 +440,7 @@ impl SvgRenderer {
                     };
                     // 공백·탭 기호: 각 문자 위치에 오버레이
                     if !run.text.is_empty() && !is_marker {
-                        let char_positions = compute_char_positions(&run.text, &run.style);
+                        let char_positions = run.replay_positions_for(&run.text);
                         let mark_font_size = font_size * 0.5;
                         for (i, c) in run.text.chars().enumerate() {
                             if c == ' ' {
@@ -2875,6 +2876,17 @@ impl Renderer for SvgRenderer {
     }
 
     fn draw_text(&mut self, text: &str, x: f64, y: f64, style: &TextStyle) {
+        self.draw_text_positioned(text, x, y, style, None);
+    }
+
+    fn draw_text_positioned(
+        &mut self,
+        text: &str,
+        x: f64,
+        y: f64,
+        style: &TextStyle,
+        layout_positions: Option<&[f64]>,
+    ) {
         // [Task #1067] inline 컨트롤 placeholder (U+FFFC OBJECT REPLACEMENT CHARACTER) 를
         // 보이지 않게 처리. HWP/HWPX 의 inline 도형/표/그림 등 treat_as_char 컨트롤이
         // paragraph text 자체에 U+FFFC 로 표현됨 — 도형 path 는 별도 emit 되므로 본
@@ -2956,7 +2968,7 @@ impl Renderer for SvgRenderer {
         };
 
         // 클러스터 단위 렌더링: 옛한글 자모 조합 시퀀스를 하나의 <text>로 묶음
-        let char_positions = compute_char_positions(text, style);
+        let char_positions = super::replay_positions_or_compute(text, style, layout_positions);
         let clusters = split_into_clusters(text);
 
         // 형광펜 배경 (CharShape.shade_color 기반 — web_canvas.rs와 동일 로직)

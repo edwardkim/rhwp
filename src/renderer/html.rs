@@ -6,7 +6,6 @@
 use super::image_resolver::{
     bmp_bytes_to_png_bytes, detect_image_mime_type, pcx_bytes_to_png_bytes, tiff_bytes_to_png_bytes,
 };
-use super::layout::compute_char_positions;
 use super::render_tree::{PageRenderTree, RenderNode, RenderNodeType};
 use super::svg::convert_wmf_to_svg;
 use super::{LineStyle, PathCommand, Renderer, ShapeStyle, TextStyle};
@@ -126,7 +125,13 @@ impl HtmlRenderer {
                 return;
             }
             RenderNodeType::TextRun(run) => {
-                self.draw_text(run.display_or_text(), node.bbox.x, node.bbox.y, &run.style);
+                self.draw_text_positioned(
+                    run.display_or_text(),
+                    node.bbox.x,
+                    node.bbox.y,
+                    &run.style,
+                    run.validated_layout_positions_for(run.display_or_text()),
+                );
                 if self.show_paragraph_marks || self.show_control_codes {
                     let font_size = if run.style.font_size > 0.0 {
                         run.style.font_size
@@ -135,7 +140,7 @@ impl HtmlRenderer {
                     };
                     // 공백·탭 기호
                     if !run.text.is_empty() {
-                        let char_positions = compute_char_positions(&run.text, &run.style);
+                        let char_positions = run.replay_positions_for(&run.text);
                         let mark_font_size = font_size * 0.5;
                         for (i, c) in run.text.chars().enumerate() {
                             if c == ' ' {
@@ -278,6 +283,17 @@ impl Renderer for HtmlRenderer {
     }
 
     fn draw_text(&mut self, text: &str, x: f64, y: f64, style: &TextStyle) {
+        self.draw_text_positioned(text, x, y, style, None);
+    }
+
+    fn draw_text_positioned(
+        &mut self,
+        text: &str,
+        x: f64,
+        y: f64,
+        style: &TextStyle,
+        layout_positions: Option<&[f64]>,
+    ) {
         // [Task #509] 한컴은 폰트 지정과 상관없이 PUA 를 자체 처리. 지정 폰트에 글리프
         // 부재 시 한컴 내부 매핑이 발행. rhwp 도 동일 동작 모방 (PR #251 정합).
         let text = &crate::renderer::composer::expand_pua_render_text(text);
@@ -383,11 +399,24 @@ impl Renderer for HtmlRenderer {
             ));
         }
 
-        self.output.push_str(&format!(
-            "<span class=\"text-run\" style=\"{}\">{}</span>\n",
-            css,
-            escape_html(text),
-        ));
+        if let Some(positions) = super::validated_replay_positions(text, layout_positions) {
+            let left_token = format!("left:{}px;", x);
+            for (index, character) in text.chars().enumerate() {
+                let positioned_left = format!("left:{}px;", x + positions[index]);
+                let positioned_css = css.replacen(&left_token, &positioned_left, 1);
+                self.output.push_str(&format!(
+                    "<span class=\"text-run text-run-positioned\" style=\"{}\">{}</span>\n",
+                    positioned_css,
+                    escape_html(&character.to_string()),
+                ));
+            }
+        } else {
+            self.output.push_str(&format!(
+                "<span class=\"text-run\" style=\"{}\">{}</span>\n",
+                css,
+                escape_html(text),
+            ));
+        }
     }
 
     fn draw_rect(

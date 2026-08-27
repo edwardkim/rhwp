@@ -859,24 +859,7 @@ impl TextRunNode {
     /// scalar 수가 달라져 `None`이 된다. 호출자는 이 경우 기존 scalar
     /// `compute_char_positions` 경로로 fail-closed해야 한다.
     pub(crate) fn validated_layout_positions_for(&self, replay_text: &str) -> Option<&[f64]> {
-        let positions = self.layout_positions.as_deref()?;
-        let max_scalars = super::kerning::MAX_KERNING_RUN_CODE_POINTS;
-        if positions.len() > max_scalars.saturating_add(1) {
-            return None;
-        }
-        let scalar_count = replay_text.chars().take(max_scalars + 1).count();
-        if scalar_count > max_scalars || positions.len() != scalar_count.saturating_add(1) {
-            return None;
-        }
-        if positions.first().copied() != Some(0.0)
-            || positions
-                .iter()
-                .any(|position| !position.is_finite() || *position < 0.0)
-            || positions.windows(2).any(|pair| pair[0] > pair[1])
-        {
-            return None;
-        }
-        Some(positions)
+        super::validated_replay_positions(replay_text, self.layout_positions.as_deref())
     }
 
     /// 검증된 layout positions를 우선하고, 없거나 손상됐으면 기존 K0 계산을 쓴다.
@@ -884,14 +867,11 @@ impl TextRunNode {
         &'a self,
         replay_text: &str,
     ) -> std::borrow::Cow<'a, [f64]> {
-        if let Some(positions) = self.validated_layout_positions_for(replay_text) {
-            std::borrow::Cow::Borrowed(positions)
-        } else {
-            std::borrow::Cow::Owned(super::layout::compute_char_positions(
-                replay_text,
-                &self.style,
-            ))
-        }
+        super::replay_positions_or_compute(
+            replay_text,
+            &self.style,
+            self.layout_positions.as_deref(),
+        )
     }
 }
 

@@ -1486,6 +1486,8 @@ fn collect_public_av_run_lengths(core: &mut rhwp::document_core::DocumentCore) -
 #[cfg(not(target_arch = "wasm32"))]
 #[derive(Debug)]
 struct PublicAvLayoutRun {
+    text: String,
+    bbox_x: f64,
     scalar_count: usize,
     bbox_width: f64,
     layout_positions: Option<Vec<f64>>,
@@ -1504,6 +1506,8 @@ fn collect_public_av_layout_runs(
                 .count();
             if scalar_count > 0 {
                 runs.push(PublicAvLayoutRun {
+                    text: replay_text.to_string(),
+                    bbox_x: node.bbox.x,
                     scalar_count,
                     bbox_width: node.bbox.width,
                     layout_positions: run.layout_positions.clone(),
@@ -1638,6 +1642,165 @@ fn issue_4968_final_emitted_runs_publish_exact_positions_once() {
         let final_position = positions.last().copied().expect("final position");
         assert!((final_position - run.bbox_width).abs() < 1e-9);
     }
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+#[test]
+fn issue_4968_visual_consumers_replay_the_published_positions() {
+    use rhwp::renderer::canvas::{CanvasCommand, CanvasRenderer};
+    use rhwp::renderer::html::HtmlRenderer;
+    use rhwp::renderer::svg::SvgRenderer;
+    use rhwp::renderer::{Renderer, TextStyle};
+
+    let mut malformed_canvas = CanvasRenderer::new();
+    malformed_canvas.draw_text_positioned(
+        "AV",
+        0.0,
+        0.0,
+        &TextStyle::default(),
+        Some(&[0.0, f64::NAN, 12.0]),
+    );
+    assert!(matches!(
+        malformed_canvas.commands(),
+        [CanvasCommand::FillText(text, 0.0, 0.0)] if text == "AV"
+    ));
+
+    let body_width_hwp = 10_000;
+    let mut k0_core = public_fresh_render_av_core(false, body_width_hwp);
+    let k0_tree = k0_core
+        .build_page_render_tree(0)
+        .expect("K0 public page tree");
+    let mut k0_canvas = CanvasRenderer::new();
+    k0_canvas.render_tree(&k0_tree);
+    assert!(k0_canvas
+        .commands()
+        .iter()
+        .all(|command| !matches!(command, CanvasCommand::FillTextPositioned(..))));
+
+    let mut k1_core = public_fresh_render_av_core(true, body_width_hwp);
+    let k1_runs = collect_public_av_layout_runs(&mut k1_core);
+    let adjusted = k1_runs
+        .iter()
+        .find(|run| run.layout_positions.is_some())
+        .expect("K1 adjusted public run");
+    let expected_positions = adjusted
+        .layout_positions
+        .as_deref()
+        .expect("K1 published positions");
+
+    let k1_tree = k1_core
+        .build_page_render_tree(0)
+        .expect("K1 public page tree");
+    let mut k1_canvas = CanvasRenderer::new();
+    k1_canvas.render_tree(&k1_tree);
+    assert!(k1_canvas.commands().iter().any(|command| matches!(
+        command,
+        CanvasCommand::FillTextPositioned(text, _, _, positions)
+            if text == &adjusted.text && positions == expected_positions
+    )));
+
+    let mut svg = SvgRenderer::new();
+    svg.render_tree(&k1_tree);
+    let second_scalar_x = adjusted.bbox_x + expected_positions[1];
+    assert!(
+        svg.output().contains(&format!("x=\"{second_scalar_x}\"")),
+        "SVG must consume the second published scalar position"
+    );
+
+    let mut html = HtmlRenderer::new();
+    html.render_tree(&k1_tree);
+    assert!(html.output().contains("text-run-positioned"));
+    let second_scalar_left = adjusted.bbox_x + expected_positions[1];
+    assert!(
+        html.output()
+            .contains(&format!("left:{second_scalar_left}px;")),
+        "HTML must consume the second published scalar position"
+    );
+
+    let k1_layer = k1_core
+        .build_page_layer_tree(0)
+        .expect("K1 public layer tree");
+    let mut layer_canvas = CanvasRenderer::new();
+    layer_canvas.render_layer_tree(&k1_layer);
+    assert!(layer_canvas.commands().iter().any(|command| matches!(
+        command,
+        CanvasCommand::FillTextPositioned(text, _, _, positions)
+            if text == &adjusted.text && positions == expected_positions
+    )));
+
+    let expected_json_positions = expected_positions
+        .iter()
+        .map(|position| format!("{position:.3}"))
+        .collect::<Vec<_>>()
+        .join(",");
+    assert!(k1_layer
+        .to_json()
+        .contains(&format!("\"positions\":[{expected_json_positions}]")));
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+#[test]
+fn issue_4968_portable_glyph_run_reuses_the_published_positions() {
+    use rhwp::paint::{
+        lower_font_native_glyph_sidecars, EmbeddedFontFace, LayerNode, LayerNodeKind, PaintOp,
+        ResourceArena,
+    };
+    use rhwp::renderer::render_tree::{BoundingBox, FieldMarkerType, TextRunNode};
+    use rhwp::renderer::TextStyle;
+
+    let published = vec![0.0, 7.0, 13.0];
+    let bbox = BoundingBox::new(10.0, 20.0, 13.0, 16.0);
+    let run = TextRunNode {
+        text: "AV".to_string(),
+        style: TextStyle {
+            font_family: "RHWP Exact Kerning Smoke".to_string(),
+            font_size: 16.0,
+            ..Default::default()
+        },
+        char_shape_id: Some(7),
+        para_shape_id: None,
+        section_index: None,
+        para_index: None,
+        char_start: None,
+        cell_context: None,
+        is_para_end: false,
+        is_line_break_end: false,
+        rotation: 0.0,
+        is_vertical: false,
+        char_overlap: None,
+        border_fill_id: 0,
+        baseline: 12.0,
+        field_marker: FieldMarkerType::None,
+        layout_positions: Some(published.clone()),
+        display_text: None,
+    };
+    let mut root = LayerNode::leaf(bbox, None, vec![PaintOp::text_run(bbox, run)]);
+    let mut resources = ResourceArena::default();
+    let report = lower_font_native_glyph_sidecars(
+        &mut root,
+        &mut resources,
+        &[EmbeddedFontFace {
+            char_shape_id: 7,
+            language_index: 1,
+            family: "RHWP Exact Kerning Smoke",
+            alternate_family: None,
+            bytes: EXACT_KERNING_SMOKE,
+            face_index: 0,
+        }],
+    );
+    assert_eq!(report.emitted_glyph_runs, 1);
+
+    let LayerNodeKind::Leaf { ops } = root.kind else {
+        panic!("expected portable leaf");
+    };
+    let PaintOp::GlyphRun { run, .. } = &ops[1] else {
+        panic!("expected portable GlyphRun");
+    };
+    assert_eq!(run.positions[0].x, published[0]);
+    assert_eq!(run.positions[1].x, published[1]);
+    let advances = run.advances.as_ref().expect("portable advances");
+    assert_eq!(advances[0].dx, published[1] - published[0]);
+    assert_eq!(advances[1].dx, published[2] - published[1]);
 }
 
 #[cfg(not(target_arch = "wasm32"))]

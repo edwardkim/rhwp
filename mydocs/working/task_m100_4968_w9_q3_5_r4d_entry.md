@@ -4,7 +4,7 @@
 - 작업 브랜치: `task_m100_4968`
 - 기준 커밋: `838d78145` R4C 증적 마감
 - 최신 통합 기준: `upstream/devel@9be8b0562455`, merge `dda3eb075`
-- 상태: **R4D-0 승인·커밋, R4D-1 결과 승인 대기**
+- 상태: **R4D-0·R4D-1 승인·커밋, R4D-2 결과 승인 대기**
 - 이번 감사의 제품 source 변경: 0
 - remote push·PR·comment: 수행하지 않음
 
@@ -227,5 +227,6 @@ R4D-0 → R4D-1 → R4D-2 → R4D-3 순서로 진행한다. 각 절편은 focuse
 넘어간다. 메인테이너가 이 수정 수행계획을 승인했으므로 R4D-0의 positions 계약과 K0 무변화 구현부터
 시작했다. R4D-0 구현·focused gate 결과는
 [`task_m100_4968_w9_q3_5_r4d0.md`](task_m100_4968_w9_q3_5_r4d0.md), R4D-1 단일 producer 결과는
-[`task_m100_4968_w9_q3_5_r4d1.md`](task_m100_4968_w9_q3_5_r4d1.md)에 기록했다. R4D-1 결과 승인 전에는
-visual consumer를 전환하는 R4D-2에 진입하지 않는다.
+[`task_m100_4968_w9_q3_5_r4d1.md`](task_m100_4968_w9_q3_5_r4d1.md), R4D-2 visual consumer 전환 결과는
+[`task_m100_4968_w9_q3_5_r4d2.md`](task_m100_4968_w9_q3_5_r4d2.md)에 기록했다. R4D-2 결과 승인 전에는
+bounded-work와 최종 교차 검증을 닫는 R4D-3에 진입하지 않는다.

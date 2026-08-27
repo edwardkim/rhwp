@@ -131,6 +131,47 @@ pub(crate) fn clamp_tab_leader_end_x(
         .unwrap_or(leader.end_x)
 }
 
+/// Backend replay 직전의 optional scalar positions를 한 번 더 검증한다.
+///
+/// `TextRunNode` accessor와 positioned `Renderer` 직접 호출이 같은 bounded
+/// 계약을 소비하도록 하는 단일 판정이다. 문자열 projection으로 scalar 수가
+/// 달라지거나 payload가 손상되면 해당 run 전체를 K0로 되돌린다.
+pub(crate) fn validated_replay_positions<'a>(
+    replay_text: &str,
+    positions: Option<&'a [f64]>,
+) -> Option<&'a [f64]> {
+    let positions = positions?;
+    let max_scalars = kerning::MAX_KERNING_RUN_CODE_POINTS;
+    if positions.len() > max_scalars.saturating_add(1) {
+        return None;
+    }
+    let scalar_count = replay_text.chars().take(max_scalars + 1).count();
+    if scalar_count > max_scalars || positions.len() != scalar_count.saturating_add(1) {
+        return None;
+    }
+    if positions.first().copied() != Some(0.0)
+        || positions
+            .iter()
+            .any(|position| !position.is_finite() || *position < 0.0)
+        || positions.windows(2).any(|pair| pair[0] > pair[1])
+    {
+        return None;
+    }
+    Some(positions)
+}
+
+pub(crate) fn replay_positions_or_compute<'a>(
+    replay_text: &str,
+    style: &TextStyle,
+    positions: Option<&'a [f64]>,
+) -> std::borrow::Cow<'a, [f64]> {
+    validated_replay_positions(replay_text, positions)
+        .map(std::borrow::Cow::Borrowed)
+        .unwrap_or_else(|| {
+            std::borrow::Cow::Owned(layout::compute_char_positions(replay_text, style))
+        })
+}
+
 /// 텍스트 렌더링 스타일
 #[derive(Debug, Clone, Serialize)]
 pub struct TextStyle {
@@ -680,6 +721,21 @@ pub trait Renderer {
 
     /// 텍스트 그리기
     fn draw_text(&mut self, text: &str, x: f64, y: f64, style: &TextStyle);
+    /// Layout owner가 확정한 run-relative 문자 경계값으로 텍스트를 그린다.
+    ///
+    /// K0와 positioned replay를 지원하지 않는 보조 renderer는 기존 `draw_text`를
+    /// 그대로 쓴다. K1 visual backend만 이 메서드를 override하며 font lookup이나
+    /// shaping을 다시 수행하지 않는다.
+    fn draw_text_positioned(
+        &mut self,
+        text: &str,
+        x: f64,
+        y: f64,
+        style: &TextStyle,
+        _positions: Option<&[f64]>,
+    ) {
+        self.draw_text(text, x, y, style);
+    }
     /// 사각형 그리기 (corner_radius > 0이면 둥근 모서리)
     fn draw_rect(&mut self, x: f64, y: f64, w: f64, h: f64, corner_radius: f64, style: &ShapeStyle);
     /// 선 그리기
