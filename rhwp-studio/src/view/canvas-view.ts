@@ -658,6 +658,7 @@ export class CanvasView {
         renderedCanvas = renderResult.renderedCanvas;
         this.canvasPool.replace(pageIdx, canvas, renderedCanvas);
       }
+      renderedCanvas.classList.add('document-page-canvas');
       const canvaskitDiagnostics = this.pageRenderer.getBackend() === 'canvaskit'
         ? this.pageRenderer.getCanvasKitRenderDiagnostics(pageIdx)
         : null;

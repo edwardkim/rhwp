@@ -72,7 +72,7 @@ test('크기가 다른 페이지는 동일 슬롯 안에서 가운데 정렬된�
   scroll.setPageDimensions(mixed, 0.5, 1200, { kind: 'double' });
 
   const firstSlotLeft = scroll.getPageLeft(0);
-  const secondSlotLeft = firstSlotLeft + scroll.getPageWidth(0) + 10;
+  const secondSlotLeft = firstSlotLeft + scroll.getPageWidth(0) + scroll.getPageGap();
   assert.equal(
     scroll.getPageLeft(1),
     secondSlotLeft + (scroll.getPageWidth(0) - scroll.getPageWidth(1)) / 2,
@@ -123,4 +123,47 @@ test('가로 쪽 이동은 가로 가시 범위만 렌더하고 양옆 한 쪽�
   assert.deepEqual(scroll.getPrefetchPages(0, 400, 0, 200), [0, 1]);
   assert.deepEqual(scroll.getVisiblePages(0, 400, 430, 200), [2]);
   assert.deepEqual(scroll.getPrefetchPages(0, 400, 430, 200), [1, 2, 3]);
+});
+
+test('저배율 페이지 간격은 모든 배치에서 같은 CSS px 하한을 사용한다', () => {
+  const layouts = [
+    { arrangement: { kind: 'single' } as const, firstNextRow: 1 },
+    { arrangement: { kind: 'double' } as const, firstNextRow: 2 },
+    { arrangement: { kind: 'facing' } as const, firstNextRow: 1 },
+    { arrangement: { kind: 'multiple', columns: 3, rows: 2 } as const, firstNextRow: 3 },
+  ];
+
+  for (const { arrangement, firstNextRow } of layouts) {
+    const scroll = new VirtualScroll(10);
+    scroll.setPageDimensions(pages(8, 200, 300), 0.1, 1000, arrangement);
+    assert.equal(scroll.getPageGap(), 6, `${arrangement.kind}의 최소 gap`);
+    assert.equal(
+      scroll.getPageOffset(firstNextRow) - scroll.getPageOffset(0),
+      300 * 0.1 + 6,
+      `${arrangement.kind}의 행 간격`,
+    );
+  }
+
+  const horizontal = new VirtualScroll(10);
+  horizontal.setPageDimensions(
+    pages(3, 200, 300),
+    0.1,
+    1000,
+    { kind: 'single' },
+    'horizontal',
+    500,
+  );
+  assert.equal(horizontal.getPageGap(), 6);
+  assert.equal(
+    horizontal.getPageLeft(1) - horizontal.getPageLeft(0),
+    200 * 0.1 + 6,
+  );
+});
+
+test('고배율 페이지 간격은 모든 배치 좌표에 배율 비례값으로 반영된다', () => {
+  const scroll = new VirtualScroll(10);
+  scroll.setPageDimensions(pages(4, 200, 300), 2, 1200, { kind: 'double' });
+  assert.equal(scroll.getPageGap(), 20);
+  assert.equal(scroll.getPageLeft(1) - scroll.getPageLeft(0), 200 * 2 + 20);
+  assert.equal(scroll.getPageOffset(2) - scroll.getPageOffset(0), 300 * 2 + 20);
 });

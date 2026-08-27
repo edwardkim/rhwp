@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
 import {
+  clampRenderScale,
   resolveCanvasKitRenderMode,
   resolveCanvasKitRenderModeRequest,
   resolveCanvasKitSurfaceRequest,
@@ -10,6 +11,7 @@ import {
   resolveRenderBackendRequest,
   resolveRenderProfile,
 } from '../src/view/render-backend.ts';
+import type { PageInfo } from '../src/core/types.ts';
 import {
   boundedCanvasKitSourceImageKey,
   canvasKitImageCacheKey,
@@ -75,6 +77,14 @@ test('render backend module does not expose a persistent CanvasKit opt-in path',
   const source = readFileSync(new URL('../src/view/render-backend.ts', import.meta.url), 'utf8');
   assert.equal(source.includes('rhwp.renderBackend'), false);
   assert.equal(source.includes('persistRenderBackend'), false);
+});
+
+test('render scale mirrors the Rust canvas lower bound at low zoom', () => {
+  const pageInfo = { width: 1122.5, height: 1587.4 } as PageInfo;
+
+  assert.equal(clampRenderScale(pageInfo, 0.1), 0.25);
+  assert.equal(clampRenderScale(pageInfo, 0.2), 0.25);
+  assert.equal(clampRenderScale(pageInfo, 0.5), 0.5);
 });
 
 test('CanvasKit readiness classification keeps new diagnostic suffixes unexpected', () => {

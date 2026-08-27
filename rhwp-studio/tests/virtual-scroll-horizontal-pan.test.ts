@@ -72,8 +72,8 @@ test('grid layout keeps its own centering when no pan space is applied', () => {
   assert.ok(left0 >= 0 && left1 > left0, '그리드는 명시 left 를 유지');
   assert.equal(
     left1 - left0,
-    scroll.getPageWidth(0) + 10,
-    '열 간격은 페이지 폭 + gap(10)',
+    scroll.getPageWidth(0) + scroll.getPageGap(),
+    '열 간격은 페이지 폭 + 현재 배율의 gap',
   );
 });
 
