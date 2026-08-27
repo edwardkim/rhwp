@@ -6566,6 +6566,7 @@ impl LayoutEngine {
                                     border_fill_id: 0,
                                     baseline,
                                     field_marker: FieldMarkerType::None,
+                                    layout_positions: None,
                                     display_text: None,
                                 }),
                                 BoundingBox::new(
