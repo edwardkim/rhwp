@@ -1588,7 +1588,7 @@ fn format_footnote_number(
             }
         }
         NumberFormat::UpperAlpha => {
-            if number >= 1 && number <= 26 {
+            if (1..=26).contains(&number) {
                 char::from_u32(b'A' as u32 + (number - 1) as u32)
                     .map(|c| c.to_string())
                     .unwrap_or_else(|| number.to_string())
