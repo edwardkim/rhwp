@@ -6586,6 +6586,7 @@ impl DocumentCore {
                     border_fill_id: run_border_fill_id,
                     baseline: template.baseline,
                     field_marker: FieldMarkerType::None,
+                    layout_positions: None,
                     display_text: None,
                 },
                 BoundingBox::new(x, template.run_y, width, template.run_height),

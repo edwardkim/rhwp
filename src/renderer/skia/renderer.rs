@@ -2873,6 +2873,7 @@ mod tests {
             border_fill_id: 0,
             baseline: 20.0,
             field_marker: Default::default(),
+            layout_positions: None,
             display_text: None,
         };
         let marker = FootnoteMarkerNode {
@@ -2931,6 +2932,7 @@ mod tests {
             border_fill_id: 0,
             baseline: 22.0,
             field_marker: Default::default(),
+            layout_positions: None,
             display_text: None,
         };
         let tree = PageLayerTree::new(
@@ -2981,6 +2983,7 @@ mod tests {
             border_fill_id: 0,
             baseline: 22.0,
             field_marker: Default::default(),
+            layout_positions: None,
             display_text: None,
         };
         let tree = PageLayerTree::new(
@@ -3026,6 +3029,7 @@ mod tests {
             border_fill_id: 0,
             baseline: 22.0,
             field_marker: Default::default(),
+            layout_positions: None,
             display_text: None,
         };
         let tree = PageLayerTree::new(
@@ -3079,6 +3083,7 @@ mod tests {
             border_fill_id: 0,
             baseline: 24.0,
             field_marker: Default::default(),
+            layout_positions: None,
             display_text: None,
         };
         let tree = PageLayerTree::new(
@@ -3130,6 +3135,7 @@ mod tests {
                 border_fill_id: 0,
                 baseline: 32.0,
                 field_marker: Default::default(),
+                layout_positions: None,
                 display_text: None,
             };
             let tree = PageLayerTree::new(

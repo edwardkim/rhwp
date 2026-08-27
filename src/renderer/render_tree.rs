@@ -827,6 +827,14 @@ pub struct TextRunNode {
     pub baseline: f64,
     /// 누름틀 필드 마커: 이 TextRun 위치에 표시할 필드 경계 마커
     pub field_marker: FieldMarkerType,
+    /// Layout owner가 확정한 run-relative 문자 경계값.
+    ///
+    /// 보이는 문자열 N개 scalar에 N+1개 값을 보존한다. exact kerning이 실제로
+    /// 적용된 K1 run에서만 `Some`이며 K0·미지원·fail-closed에서는 필드를
+    /// 직렬화하지 않아 기존 layer-tree byte 계약을 유지한다. Font payload나
+    /// source provenance는 이 필드에 들어가지 않는다.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub layout_positions: Option<Vec<f64>>,
     /// 표시 텍스트 (`Some` 이면 그리기·폭 계산은 본 필드를 쓴다).
     ///
     /// `text` 는 모델과 같은 문자 수를 유지해 `char_start` 와 같은 공간에 있도록 한다.
@@ -843,6 +851,47 @@ impl TextRunNode {
     /// N자인 런에서 둘은 길이가 다르다.
     pub fn display_or_text(&self) -> &str {
         self.display_text.as_deref().unwrap_or(&self.text)
+    }
+
+    /// Replay 대상 문자열에 대해 layout positions가 안전한 경우에만 빌려준다.
+    ///
+    /// Backend가 PUA 확장·inline placeholder 제거 등으로 다른 문자열을 그리면
+    /// scalar 수가 달라져 `None`이 된다. 호출자는 이 경우 기존 scalar
+    /// `compute_char_positions` 경로로 fail-closed해야 한다.
+    pub(crate) fn validated_layout_positions_for(&self, replay_text: &str) -> Option<&[f64]> {
+        let positions = self.layout_positions.as_deref()?;
+        let max_scalars = super::kerning::MAX_KERNING_RUN_CODE_POINTS;
+        if positions.len() > max_scalars.saturating_add(1) {
+            return None;
+        }
+        let scalar_count = replay_text.chars().take(max_scalars + 1).count();
+        if scalar_count > max_scalars || positions.len() != scalar_count.saturating_add(1) {
+            return None;
+        }
+        if positions.first().copied() != Some(0.0)
+            || positions
+                .iter()
+                .any(|position| !position.is_finite() || *position < 0.0)
+            || positions.windows(2).any(|pair| pair[0] > pair[1])
+        {
+            return None;
+        }
+        Some(positions)
+    }
+
+    /// 검증된 layout positions를 우선하고, 없거나 손상됐으면 기존 K0 계산을 쓴다.
+    pub(crate) fn replay_positions_for<'a>(
+        &'a self,
+        replay_text: &str,
+    ) -> std::borrow::Cow<'a, [f64]> {
+        if let Some(positions) = self.validated_layout_positions_for(replay_text) {
+            std::borrow::Cow::Borrowed(positions)
+        } else {
+            std::borrow::Cow::Owned(super::layout::compute_char_positions(
+                replay_text,
+                &self.style,
+            ))
+        }
     }
 }
 
@@ -1908,6 +1957,29 @@ impl DerefMut for PageRenderTree {
 mod tests {
     use super::*;
 
+    fn replay_contract_text_run(text: &str) -> TextRunNode {
+        TextRunNode {
+            text: text.to_owned(),
+            style: TextStyle::default(),
+            char_shape_id: None,
+            para_shape_id: None,
+            section_index: None,
+            para_index: None,
+            char_start: None,
+            cell_context: None,
+            is_para_end: false,
+            is_line_break_end: false,
+            rotation: 0.0,
+            is_vertical: false,
+            char_overlap: None,
+            border_fill_id: 0,
+            baseline: 0.0,
+            field_marker: FieldMarkerType::None,
+            layout_positions: None,
+            display_text: None,
+        }
+    }
+
     #[test]
     fn test_bounding_box_intersects() {
         let a = BoundingBox::new(0.0, 0.0, 100.0, 100.0);
@@ -1933,6 +2005,56 @@ mod tests {
     }
 
     #[test]
+    fn text_run_layout_positions_validate_against_replay_text() {
+        let mut run = replay_contract_text_run("AV");
+        run.layout_positions = Some(vec![0.0, 7.5, 14.0]);
+
+        assert_eq!(
+            run.validated_layout_positions_for("AV"),
+            Some(&[0.0, 7.5, 14.0][..])
+        );
+        assert!(matches!(
+            run.replay_positions_for("AV"),
+            std::borrow::Cow::Borrowed(_)
+        ));
+        assert_eq!(run.validated_layout_positions_for("A"), None);
+    }
+
+    #[test]
+    fn text_run_layout_positions_fail_closed_on_malformed_payload() {
+        let mut run = replay_contract_text_run("AV");
+        let base = super::super::layout::compute_char_positions("AV", &run.style);
+        for malformed in [
+            vec![1.0, 7.5, 14.0],
+            vec![0.0, f64::NAN, 14.0],
+            vec![0.0, 8.0, 7.0],
+            vec![0.0, 7.5],
+        ] {
+            run.layout_positions = Some(malformed);
+            assert_eq!(run.validated_layout_positions_for("AV"), None);
+            assert_eq!(run.replay_positions_for("AV").as_ref(), base.as_slice());
+        }
+
+        let oversized_text = "A".repeat(super::super::kerning::MAX_KERNING_RUN_CODE_POINTS + 1);
+        run.layout_positions = Some(vec![
+            0.0;
+            super::super::kerning::MAX_KERNING_RUN_CODE_POINTS + 2
+        ]);
+        assert_eq!(run.validated_layout_positions_for(&oversized_text), None);
+    }
+
+    #[test]
+    fn text_run_k0_serialization_omits_layout_positions() {
+        let mut run = replay_contract_text_run("AV");
+        let k0 = serde_json::to_string(&run).expect("serialize K0 text run");
+        assert!(!k0.contains("layout_positions"));
+
+        run.layout_positions = Some(vec![0.0, 7.5, 14.0]);
+        let k1 = serde_json::to_string(&run).expect("serialize K1 text run");
+        assert!(k1.contains("\"layout_positions\":[0.0,7.5,14.0]"));
+    }
+
+    #[test]
     fn legacy_hancom_product_projection_covers_direct_text_runs_only() {
         fn text_run(id: NodeId, text: &str) -> RenderNode {
             RenderNode::new(
@@ -1954,6 +2076,7 @@ mod tests {
                     border_fill_id: 0,
                     baseline: 0.0,
                     field_marker: FieldMarkerType::None,
+                    layout_positions: None,
                     display_text: None,
                 }),
                 BoundingBox::new(0.0, 0.0, 1.0, 1.0),
@@ -2005,6 +2128,7 @@ mod tests {
                 border_fill_id: 0,
                 baseline: 0.0,
                 field_marker: FieldMarkerType::None,
+                layout_positions: None,
                 display_text: Some("ᄒᆞᆫ글".to_owned()),
             }),
             BoundingBox::new(0.0, 0.0, 1.0, 1.0),

@@ -3185,6 +3185,7 @@ mod tests {
                 border_fill_id: 0,
                 baseline: 13.0,
                 field_marker: FieldMarkerType::FieldBegin,
+                layout_positions: None,
                 display_text: None,
             },
         );
@@ -3326,6 +3327,7 @@ mod tests {
                 border_fill_id: 0,
                 baseline: 13.0,
                 field_marker: FieldMarkerType::None,
+                layout_positions: None,
                 display_text: None,
             },
         );
@@ -3389,6 +3391,7 @@ mod tests {
                 border_fill_id: 0,
                 baseline: 13.0,
                 field_marker: FieldMarkerType::None,
+                layout_positions: None,
                 display_text: None,
             },
         );
@@ -3443,6 +3446,7 @@ mod tests {
             border_fill_id: 0,
             baseline: 11.0,
             field_marker: FieldMarkerType::FieldEnd,
+            layout_positions: None,
             display_text: None,
         };
         let bbox = BoundingBox::new(10.0, 20.0, 40.0, 16.0);
@@ -3536,6 +3540,7 @@ mod tests {
             border_fill_id: 0,
             baseline: 20.0,
             field_marker: FieldMarkerType::None,
+            layout_positions: None,
             display_text: None,
         };
         let bbox = BoundingBox::new(0.0, 0.0, 80.0, 24.0);
@@ -3589,6 +3594,7 @@ mod tests {
             border_fill_id: 0,
             baseline: 13.0,
             field_marker: FieldMarkerType::None,
+            layout_positions: None,
             display_text: None,
         };
         let tree = PageLayerTree::new(
@@ -3651,6 +3657,7 @@ mod tests {
             border_fill_id: 0,
             baseline: 10.0,
             field_marker: FieldMarkerType::None,
+            layout_positions: None,
             display_text: None,
         };
         let bbox = BoundingBox::new(0.0, 0.0, 100.0, 14.0);
@@ -3764,6 +3771,7 @@ mod tests {
                 border_fill_id: 0,
                 baseline: 12.0,
                 field_marker: FieldMarkerType::None,
+                layout_positions: None,
                 display_text: None,
             },
         );
@@ -3946,6 +3954,7 @@ mod tests {
                 border_fill_id: 0,
                 baseline: 12.0,
                 field_marker: FieldMarkerType::None,
+                layout_positions: None,
                 display_text: None,
             },
         );

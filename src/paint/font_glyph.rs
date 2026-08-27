@@ -1263,6 +1263,7 @@ mod tests {
             border_fill_id: 0,
             baseline: 12.0,
             field_marker: Default::default(),
+            layout_positions: None,
             display_text: None,
         }
     }
