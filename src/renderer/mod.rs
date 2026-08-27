@@ -1781,7 +1781,7 @@ fn format_circled_digit(n: u16) -> String {
         '①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧', '⑨', '⑩', '⑪', '⑫', '⑬', '⑭', '⑮', '⑯', '⑰', '⑱',
         '⑲', '⑳',
     ];
-    if n >= 1 && n <= 20 {
+    if (1..=20).contains(&n) {
         CIRCLED[(n - 1) as usize].to_string()
     } else {
         n.to_string()
