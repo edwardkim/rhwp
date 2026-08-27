@@ -1220,6 +1220,45 @@ pub(crate) fn right_tab_block_width(
     w
 }
 
+/// [Issue #6179] 오른쪽 탭 뒤에 오는 **자리차지(TAC) 개체**까지 포함한 정렬 블록 폭.
+///
+/// `auto_tab_right` 오른쪽 탭은 "탭 뒤 블록의 **오른쪽 변**을 우단에 맞춘다"는 뜻이고,
+/// 그 되밀기 폭은 `text_measurement` 가 탭 뒤 **글자**만 재서 구한다. 그런데 run 은
+/// TAC 개체 위치에서 조각으로 쪼개져 측정되므로, 탭 바로 뒤가 개체면 측정 대상 조각에
+/// 남는 글자가 없어 되밀기 폭이 0 이 된다 → 개체의 **왼쪽** 변이 우단에 놓여, 개체는
+/// 정확히 제 폭만큼 우측(용지 밖)으로 밀린다.
+///
+/// 여기서 탭 뒤 잔여 글자 폭 + 탭 뒤 TAC 개체 폭을 합해
+/// `right_tab_block_width_override` 로 주입한다. 탭 뒤에 또 탭이 있으면
+/// (`has_more_tabs_after`) 측정 쪽이 override 를 쓰지 않으므로 `None` 을 돌려준다.
+///
+/// - `run_chars`: run 전체 문자열 (조각이 아니라 run 단위 — 탭 뒤 잔여가 다음 조각에
+///   있을 수 있다)
+/// - `tab_rel`: run 안 마지막 탭의 문자 인덱스
+/// - `run_tacs`: run 안 TAC 목록 `(rel_pos, width_px, control_index)`
+fn right_tab_block_width_with_tac(
+    run_chars: &[char],
+    tab_rel: usize,
+    run_tacs: &[(usize, f64, usize)],
+    style: &TextStyle,
+) -> Option<f64> {
+    if run_chars[tab_rel + 1..].contains(&'\t') {
+        return None;
+    }
+    let tac_w: f64 = run_tacs
+        .iter()
+        .filter(|(rel, _, _)| *rel > tab_rel)
+        .map(|(_, w, _)| *w)
+        .sum();
+    if tac_w <= 0.0 {
+        return None;
+    }
+    let tail: String = run_chars[tab_rel + 1..].iter().collect();
+    let mut ts = style.clone();
+    ts.right_tab_block_width_override = None;
+    Some(estimate_text_width(&tail, &ts) + tac_w)
+}
+
 /// [Task #2067] 정렬(양쪽/배분/나눔)·오버플로우·셀 underflow 에 따른 여분 간격 계산.
 /// 반환 = (extra_word_sp, extra_char_sp, extra_dash_sp). Task #352 dash leader 분배 포함.
 #[allow(clippy::too_many_arguments)]
@@ -5998,6 +6037,20 @@ impl LayoutEngine {
                         let seg_text: String = run_chars[seg_start..tac_rel].iter().collect();
                         let mut seg_style = text_style.clone();
                         seg_style.line_x_offset = x - col_area.x;
+                        // [Issue #6179] 이 조각의 마지막 탭 뒤에 TAC 개체가 오면,
+                        // 되밀기 폭에 그 개체 폭을 포함시킨다 (조각 경계로 잘려
+                        // 측정 쪽에서는 보이지 않는다).
+                        if auto_tab_right && seg_text.contains('\t') {
+                            let tab_rel = seg_start
+                                + run_chars[seg_start..tac_rel]
+                                    .iter()
+                                    .rposition(|c| *c == '\t')
+                                    .expect("seg_text 가 탭을 포함한다");
+                            seg_style.right_tab_block_width_override =
+                                right_tab_block_width_with_tac(
+                                    &run_chars, tab_rel, &run_tacs, &seg_style,
+                                );
+                        }
                         // 탭 리더 계산
                         if has_tabs && seg_text.contains('\t') {
                             let positions = compute_char_positions(&seg_text, &seg_style);
