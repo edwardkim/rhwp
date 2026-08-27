@@ -1950,12 +1950,15 @@ impl HeightMeasurer {
                                 .first()
                                 .map(|seg| hwpunit_to_px(seg.vertical_pos, self.dpi))
                                 .unwrap_or(0.0);
-                            cell.paragraphs[i + 1..].iter().any(|later| {
-                                later.line_segs.first().is_some_and(|seg| {
+                            // 바로 뒤의 실제 줄만 증거로 쓴다. 여러 문단 뒤의 누적 vpos까지
+                            // 허용하면 긴 셀의 자연스러운 줄 흐름도 개체 흡수로 오인할 수 있다.
+                            cell.paragraphs[i + 1..]
+                                .iter()
+                                .find_map(|later| later.line_segs.first())
+                                .is_some_and(|seg| {
                                     hwpunit_to_px(seg.vertical_pos, self.dpi) + 0.5
                                         >= own_top + obj_h
                                 })
-                            })
                         });
                     let trust_stored = (depth > 0 || table.common.treat_as_char)
                         && non_inline_h > 0.0
