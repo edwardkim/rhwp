@@ -294,14 +294,84 @@ OOXML 본래 의미다 — **고저선 = 카테고리별 전 계열 최소↔최
 올바르게 하려면 엔진이 **어느 계열이 새것인지** 알아야 하는데, `structure` 계약은 그것을 일부러
 모델링하지 않는다(목표 행렬만 받는다). UI 는 알고 있으므로(`GridModel` 의 `source: null`)
 페이로드에 그 표지를 더하는 확장이 필요하다 — 3면 계약(코어 JSON·CLI CSV·MCP)을 넓히는 일이고,
-CSV 는 행렬뿐이라 표현할 수도 없다. **별건으로 접수한다**(§8-6).
+CSV 는 행렬뿐이라 표현할 수도 없다. **별건으로 접수한다**(§8-6). → **§6-4 에서 재정정 — 표지
+없이 추론으로 이 파동에서 해결했다.**
+
+## 6-4. 재정정 — 정체 추론이 명시 표지 없이 §6-3 을 닫았다
+
+§6-3 은 "새 계열 표지는 3면 계약 확장이 필요하고 CSV 는 표현 불가"로 접수했다. 코드 전수
+실측이 그 결론의 절반을 뒤집었다 — **명시 채널은 3면 동형을 깨므로 기각이 맞지만, 표지는
+필요 없다.** 캔들 가드 `ends_kept` 가 이미 쓰던 이중 술어(비어 있지 않은 이름 일치 **또는**
+값 벡터 일치)를 전 위치로 확장하면 목표 행렬만으로 원본↔목표 계열 대응이 서고, 대응 안 된
+목표 자리가 곧 "새 계열"이다. 계약은 한 글자도 안 바꿨다.
+
+**확정 스코프 — 비꼬리만.** 꼬리 삽입·꼬리 삭제·제자리 개명은 레거시 `appendSeries`/
+`truncateSeries`/`renameSeries` 그대로다(바이트·op 불변 — CSV 계약 3시나리오·ooxml 구조
+계약·원형 5종/막대 계열추가 원장 SHA 가 무수정 통과로 증명). 정체가 실제로 깨지는 것은
+비꼬리 삽입·삭제뿐이고, 주식형 OHLC 는 캔들 가드 때문에 허용되는 삽입이 전부 중간이다 —
+사용자가 본 결함이 정확히 이 경로였다.
+
+구현 4축:
+
+- **`data.rs`** — `ChartSeries.sp_pr_span`(계열 최상위 `c:spPr`)·`symbol_span`(`c:marker` 안
+  `c:symbol`) 스캔. 깊이 카운터로 marker 하위 spPr 을 가르고, `dPt`/`dLbls` 는 기존
+  SKIPPED_SUBTREES 가 이미 막는다.
+- **`patch.rs`** — `InsertSeries{at,…}`(최종 문서 자리)·`RemoveSeries{at}`(원본 자리) 신설.
+  복제 기계는 `append_series` 에서 추출한 `clone_series` 공유 — `strip_style` 이면 복제본의
+  `sp_pr_span`·`symbol_span` 을 들어내 **기본 스타일**(Auto 마커·기본 선)로 되돌린다(한컴
+  편집기가 더한 계열에는 둘 다 없다 — OHLC 실측). 앵커·재번호는 `finish()` 일괄 패스
+  (복수 삽입/삭제 지원, `SeriesNotRenumberable` fail-closed). 레거시 꼬리 연산과는 상호
+  배제(`OverlappingStructureEdits`).
+- **`chart.rs`** — `infer_series_mapping`(단사 + 상대 순서 보존 + 삽입만/삭제만일 때만
+  대응, 모호하면 전부 `None`) + `plan_identity_edits`(대응쌍은 원본 좌표 편집, 신설은
+  `insertSeries`, 삭제는 `removeSeries`). `plan_edits` 머리에서 먼저 시도하고 실패하면
+  현행 위치 기반으로 폴백 — R1(모호하면 무조건 폴백) 그대로.
+- **봉투** — `changed[]` op 2종 추가: `insertSeries{at,name}`·`removeSeries{at,name}`.
+  기존 op 단언은 전부 존재 단언이라 추가만으로는 깨지지 않았다(검증됨).
+
+**판정 기준(§2 표) 실측 통과** — OHLC 위치 1 삽입 후 시가/고가/저가 `symbol none`+`a:ln
+noFill`, 새 계열 spPr·symbol 없음(Auto·기본 선), 종가 Auto, idx/order 0..4. 한컴을 부르지
+않고 `tests/cases/issue_6053_chart_series_identity_contract.rs` 4시험이 ①·② 양 표현에서
+고정한다. `issue_4100` 의 중간 삽입·삭제 시험에도 스타일 단언을 추가했다.
+
+**S5 동치의 반전** — 계열삭제 2종의 엔진 산출이 이제 스파이크 수술(`b2_remove_series`:
+요소째 삭제 + 재번호)과 **바이트 동일**하다. "위치 기반이라 바이트가 다르다"던
+`engine_documents_match_spike_documents_except_positional_series_delete` 는 전제가 사라져
+`…_byte_for_byte`(24/24 동일)로 다시 썼다. 스파이크 산출은 #5447 이 이미 한컴 판정을 받은
+모양이라, 정체 경로는 "판정받은 그 바이트"로 수렴한 것이다.
+
+**원장 파급 — 정밀히 8파일.** `samples/issue6037/engine/시가고가저가종가-중간계열{추가,삭제}`
+·`samples/issue5652/{묶은,누적}세로막대형-계열삭제` × 2포맷을 재생성해 반영하고 MANIFEST
+2종의 `original_sha256` 8건을 갱신했다(판정 단위 13/8·자산 32 불변). 재생성 대조에서 그 외
+hwpx 10건이 걸렸으나 전부 zip `version made by` 호스트 바이트(UNIX 03↔DOS 00, 엔트리당
+1B)뿐 — 내용 동일이라 반영하지 않았다. issue5652 원장은 UNIX(03) 관례라 반영분 hwpx 2건은
+03 으로 정규화했고, issue6037/engine 원장은 DOS(00) 관례라 그대로 뒀다.
+
+**한컴 재판정 대기(R6).** MANIFEST 의 `hancom_pdf_*`·`raster`·`verdict` 는 이전 회차(위치
+기반 바이트) 기준으로 남아 있다 — `output/issue6053_rejudgment/`(8파일 + PANJEONG.md)를
+핸드오프하고 PDF 회수 후 갱신한다. issue5652 판정표의 "잔여 계열 색이 밀려도 정상" 문구는
+이 결함을 정상으로 선언한 것이었으므로 "자기 색을 지킨다 — 밀리면 결함"으로 바로잡았다.
+
+**검증 실측** — 최신 upstream/devel(6b5c4f871) 리베이스 후: release-test nextest 8373 전건
+(재생성 자산의 렌더 계약 갱신 포함) · chart 크레이트 lib 165 · Native Skia(lib 3946+165 등
+4패키지, issue_2225 2, render_p37 4) · clippy -D warnings · fmt · tier/suite-manifest 게이트 ·
+CLI CSV 왕복 실측이 §2 표와 전칸 일치 · WASM Docker 재빌드 · studio 단위 1168 전건(선행
+실패 1 도 해소) · e2e 2종(issue-6053·issue-4694) 전 단계 통과. 시각 실측 — 재생성
+`중간계열추가` 의 rhwp 렌더에서 추가계열이 선+마커로 서고 캔들·고저선·종가 마커가 유지된다.
+
+**검증 중 잡은 환경 함정(커밋 없음)** — 이 워크트리 체크아웃이 CRLF 로 재번짐(smudge)되어
+소스·픽스처를 텍스트로 스캔하는 게이트들이 거짓 실패했다: wmf/emf 골든 9건, studio 원장·
+소스 스캔 시험 6건(`\n` 정규식), `subsecond` Cargo.lock 스캔, Docker 가 실행하는
+`wasm-pack-locked.sh` 의 shebang(`sh\r`). 전부 스캔 대상 LF 정규화로 해소했다 — 내용
+불변이라 커밋할 것이 없고, §8-2(.gitattributes `eol=lf`) 제안이 유효함을 재확인한다.
 
 ## 7. 알려진 한계
 
-- **중간 삽입·삭제는 원본 모양에 따라 코어가 거부할 수 있다.** 엔진이 위치 기반이라 아래·오른쪽
-  칸이 제자리 치환 대상이 되고, 빈 값이나 `c:tx` 부재를 만나면 `valueNotPatchable`/
-  `seriesNameNotPatchable` 이 선다. UI 는 막지 않고 코어의 한국어 `message` 를 그대로 보여준다.
-  엔진 한계이며 이 파동에서 엔진을 고치지 않았다.
+- **중간 행 삽입·삭제는 원본 모양에 따라 코어가 거부할 수 있다.** 행 축은 여전히 위치
+  기반이라 아래 칸이 제자리 치환 대상이 되고, 빈 값을 만나면 `valueNotPatchable` 이 선다.
+  UI 는 막지 않고 코어의 한국어 `message` 를 그대로 보여준다. **계열 축은 §6-4 정체 경로가
+  닫았다** — 다만 대응이 모호한 입력(중복 이름·값, 삽입·삭제 동시, 순서 역전)은 위치 기반으로
+  폴백하므로 그 경로의 스타일 상속은 남는다(설계 — 모호하면 무조건 폴백).
 - **`name === '' ⟺ c:tx 부재` 추론에 기대지 않는다.** 봉투의 `name === null` 만 "이름 칸 없음"으로
   읽고, 그 계열은 입력을 열지 않는다. 빈 문자열 이름은 코어 판정에 맡긴다.
 - **한컴 재판정은 하지 않았다.** 쓰기 경로가 엔진 `set_chart_data_*` 와 동일 바이트이고 #5652 S5
@@ -321,7 +391,6 @@ CSV 는 행렬뿐이라 표현할 수도 없다. **별건으로 접수한다**(�
    추가로 `.github/workflows/render-diff.yml` 의 paths 에 `crates/**` 가 없어 크레이트만 바꾼
    PR 은 Render Diff 가 뜨지도 않는다
 5. 마커 글리프 사이클을 한컴 정답지에 맞추기 — 5계열에서 종가가 ×(한컴) vs ◆(rhwp)로 갈린다 (§6-2)
-6. **새 계열의 스타일** — `structure` 는 위치 기반이라 "새 계열"을 표현하지 못한다. rhwp 에서
-   추가한 계열은 템플릿(마지막 계열)의 `a:ln > a:noFill` 을 물려받아 주식형에서 선이 없다.
-   올바른 계열에 기본 스타일을 주려면 페이로드에 "이 위치는 신설" 표지가 필요하다 — 3면 계약
-   확장이며 CSV 는 표현 불가다. 설계 판단이 필요한 별건 (§6-3)
+6. ~~**새 계열의 스타일** — 페이로드에 "이 위치는 신설" 표지가 필요하다~~ → **해결 (§6-4)** —
+   표지 없이 정체 추론(이름·값 대응)으로 이 파동에서 닫았다. 계약은 한 글자도 안 바꿨다.
+   남은 후속은 재생성 8파일의 한컴 재판정 회수(`output/issue6053_rejudgment/`)뿐이다.
