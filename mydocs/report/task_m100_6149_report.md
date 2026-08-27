@@ -2,10 +2,12 @@
 
 - **이슈**: [#6149](https://github.com/edwardkim/rhwp/issues/6149)
 - **브랜치**: `codex/issue-6149-low-zoom-ruler`
-- **기준 commit**: `upstream/devel` `9be8b0562`
+- **기준 commit**: `upstream/devel` `1b91c2025` (PR #6176 병합)
+- **최초 검증 기준**: `upstream/devel` `9be8b0562`
 - **검증일**: 2026-08-27 KST
 - **검증 서버**: `http://127.0.0.1:7720/`
-- **절차 상태**: 정정 계획·Stage 1~3·통합 검증 범위와 결과 승인 완료, 원격 작업 승인 대기
+- **절차 상태**: 정정 계획·Stage 1~3·최초 통합 결과 승인 완료,
+  PR #6176 반영 재검증 통과·결과 승인 대기
 
 > 이 문서는 최초에는 계획·단계 승인 없이 작성된 WIP 검증 증적이었다. 기존 이력을 보존한 채 정정
 > 계획과 Stage 1~3, 통합 검증 범위·결과를 순서대로 재검증·승인받아 현재 최종 검증 보고서로
@@ -31,7 +33,7 @@ Studio 화면 변경 범위이므로 Rust/WASM 전체 테스트, integration man
 
 ## 승인 범위 통합 자동 재검증
 
-- **검증 기준**: `b8845584f` (`docs(test): #6149 Stage 3 재검증 승인`)
+- **검증 기준**: `9b6227346` (`docs(test): #6149 Stage 3 재검증 승인`, 최신 devel 재배치 후 SHA)
 - **실행일**: 2026-08-27 KST
 - **소스 변경**: 없음
 
@@ -111,6 +113,68 @@ chunk 메시지는 기존 Vite 경고이고 산출물 생성은 성공했다. `c
 
 이 승인은 통합 검증 결과와 최종 보고서를 확정해 로컬 commit하라는 승인이다. push·PR 생성 등
 원격 작업은 포함하지 않는다.
+
+## PR #6176 병합 후 PR 전 재기준화
+
+최초 통합 결과 승인 뒤 PR #6176이 `devel`에 병합됐다. 작업지시자는 #6149 PR 생성 전에 해당
+변경을 반영하고 같은 범위를 다시 검증하라고 승인했다. 브랜치를 `upstream/devel@1b91c2025` 위로
+재배치했으며 충돌이나 #6149 소스의 추가 보정은 없었다.
+
+- **재검증 후보**: `1accaa446` (`docs(test): #6149 통합 검증 결과 승인`, 재배치 후 SHA)
+- **실행일**: 2026-08-27 KST
+- **원격 변경**: 없음
+
+### 자동 검증
+
+```text
+$ cd rhwp-studio && npx tsc --noEmit
+exit 0
+
+$ cd rhwp-studio && npm test
+tests 1190, pass 1189, fail 0, skipped 1
+duration_ms 2983.505542
+
+$ cd rhwp-studio && npm run build
+236 modules transformed, build success
+
+$ cd rhwp-studio && npm run e2e:manifest-check
+tracked 116, MANIFEST 116, pass
+
+$ cd rhwp-studio && \
+  CHROME_PATH="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
+  VITE_PORT=7722 npm run e2e:responsive
+943 passed, 0 failed
+
+$ cargo fmt --all
+exit 0
+
+$ cargo fmt --all -- --check
+exit 0
+
+$ git diff --check
+exit 0
+```
+
+전체 test의 skip 1건과 build의 browser externalization·500kB 초과 chunk 메시지는 기존 계약·경고다.
+반응형 E2E 최초 실행은 로컬 Chrome 경로가 설정되지 않아 테스트 시작 전에 종료됐고, 저장소가
+요구하는 `CHROME_PATH`를 지정한 재실행에서 943건이 모두 통과했다.
+
+### 실제 브라우저 결합 검증
+
+- **환경**: macOS Codex in-app browser, `exam_kor.hwp` 20쪽, 10% 자동 배치
+- 1024×768에서 가로 눈금자는 `1004×20px`, 세로 눈금자는 `20×662px`로 표시됐다.
+- 같은 조건의 페이지는 `112.398×158.797px`, 인접 gap은 가로 `5.85px`, 세로 `5.93px`였고
+  테마 외곽선·그림자가 유지됐다.
+- 1023×768에서는 기존 반응형 정책대로 두 눈금자가 숨겨지고 editor가 flex 배치로 전환됐다.
+  문서 canvas는 계속 표시됐으며 body `scrollWidth`와 viewport 폭이 같아 페이지 수준 가로
+  오버플로가 없었다.
+- 10%에서 1쪽을 클릭한 뒤 50%로 전환하고 350px 순수 스크롤해도 눈금자는 왼쪽 열에 유지됐다.
+  보이는 오른쪽 18쪽을 클릭한 뒤에만 눈금자가 오른쪽 열로 이동했다.
+- 검증 뒤 1280×720·밝은 테마·10%·자동 배치로 복원했고 브라우저 error log는 0건이었다.
+
+PR #6176이 추가한 1024/1023px 반응형 경계와 #6149의 저배율 LOD·페이지 간격 계약이 함께
+동작함을 확인했다. 반응형 너비에서 눈금자를 숨기는 정책 자체와 창 확대 중 깜빡임은 이 타스크의
+범위 밖으로 유지한다. 이 최신 재검증 결과는 작업지시자 승인 전이며 push·PR 생성은 중지한다.
 
 ## 결론
 
@@ -210,7 +274,8 @@ macOS Codex in-app browser 1280×720에서 `samples/exam_kor.hwp` 20쪽을 URL �
 
 ## 작업 상태
 
-정정 수행·구현 계획, Stage 1~3 결과와 통합 검증 범위 승인을 받은 뒤 Studio 전체 회귀·프로덕션
-빌드·대표 배율·배치·테마·focus 브라우저 검증이 모두 통과했고 작업지시자가 최종 결과를 승인했다.
-이 보고서를 로컬 commit해 최종 검증을 확정한다. push·PR 생성은 별도 원격 작업 승인 전까지
+정정 수행·구현 계획, Stage 1~3 결과와 최초 통합 검증 범위 승인을 받은 뒤 Studio 전체
+회귀·프로덕션 빌드·대표 배율·배치·테마·focus 브라우저 검증이 모두 통과했고 작업지시자가 최초
+결과를 승인했다. 이어 PR #6176을 반영한 최신 `devel` 기준 자동·반응형 E2E·실브라우저 결합
+검증도 통과했다. 최신 결과의 작업지시자 승인과 별도 원격 작업 승인 전까지 push·PR 생성은
 중지한다.

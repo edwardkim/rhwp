@@ -2,7 +2,8 @@
 
 - **이슈**: [#6149](https://github.com/edwardkim/rhwp/issues/6149)
 - **단계**: 저배율 표시 순수 계약
-- **기준 commit**: `upstream/devel` `9be8b0562`
+- **최초 재검증 기준**: `upstream/devel` `9be8b0562`
+- **PR 전 통합 기준**: `upstream/devel` `1b91c2025` (PR #6176 병합)
 - **WIP 실측일**: 2026-08-27 KST
 - **절차 상태**: 정정 계획 승인 후 재검증 통과, Stage 1 결과 승인 완료
 
@@ -36,7 +37,7 @@ tests 6, pass 6, fail 0
 
 ## 정정 계획 승인 후 재검증
 
-- **검증 기준**: `2f0f1106a` (`docs: #6149 Hyper-Waterfall 절차 복구`)
+- **검증 기준**: `2f275d2ca` (`docs: #6149 Hyper-Waterfall 절차 복구`, 최신 devel 재배치 후 SHA)
 - **실행일**: 2026-08-27 KST
 - **소스 변경**: 없음
 
