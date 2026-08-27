@@ -207,7 +207,7 @@ pub(crate) fn expand_numbering_format(
                 Some(&digit) if digit.is_ascii_digit() => {
                     chars.next();
                     let level_ref = (digit as u8 - b'0') as usize;
-                    if level_ref >= 1 && level_ref <= 7 {
+                    if (1..=7).contains(&level_ref) {
                         result.push_str(&format_level(level_ref - 1));
                     }
                     continue;
