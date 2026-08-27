@@ -6993,9 +6993,11 @@ impl TypesetEngine {
                 continue;
             }
             // [#6132] 저장 vpos 가 쪽 본문을 넘고 바로 다음 문단이 되감기면,
-            // 한글은 이 문단부터 다음 쪽에 둔 것이다. 두 신호를 **함께** 요구한다 —
-            // 되감김이 "이 사다리는 쪽마다 리셋된다"를 증명하므로, 구역 누적
-            // 사다리(리셋 없는 문서)를 초과로 오판하지 않는다.
+            // 한글은 이 문단부터 다음 쪽에 둔 것이다. 다만 그 형상만으로는 부족하다 —
+            // 같은 형상이 문단을 쪽 안에 그대로 두는 문서들에도 흔하게 나온다
+            // (실측 후보: 2025 행정업무편람 26곳 · 2070 시장구조조사 13곳 ·
+            // 2019 벤처투자 3곳 · hwp3-sample16 10곳). 그래서 세 신호를 **함께**
+            // 요구한다.
             //
             // 156482639 7쪽: pi=102 '참고3' 표 vpos=73760 은 본문 73,335HU(977.8px)를
             // 넘고 pi=103 이 3790 으로 되감긴다. 한글은 둘 다 8쪽 첫머리에 두는데
@@ -7019,17 +7021,37 @@ impl TypesetEngine {
                     })
                     .map(|seg| seg.vertical_pos);
                 if let (Some(own), Some(next)) = (own_stored_vpos, next_stored_vpos) {
-                    let overflows_body =
-                        own > 0 && hwpunit_to_px(own, self.dpi) > st.base_available_height();
-                    if overflows_body && next < own {
+                    // ① **표를 단 문단**만. #3837 되감김 규칙이 닿지 못하는 계보가
+                    //    정확히 이것이고(표 경로는 그 판정을 지나지 않는다), 위 네
+                    //    문서의 후보 52곳 중 표를 단 문단은 sample16 한 곳뿐이다.
+                    let hosts_table = para
+                        .controls
+                        .iter()
+                        .any(|c| matches!(c, crate::model::control::Control::Table(_)));
+                    // ② 저장 자리가 본문 바닥을 **근소하게** 넘을 것. 크게 넘는 사다리는
+                    //    쪽 리셋이 아니라 구역 누적 좌표계라 판정의 전제가 깨진다
+                    //    (sample16 pi=738: 3567.4px / 가용 971.3px).
+                    let own_px = hwpunit_to_px(own, self.dpi);
+                    let body_bottom = st.base_available_height();
+                    let overflows_body_narrowly =
+                        own > 0 && own_px > body_bottom && own_px - body_bottom <= MIN_TOP_KEEP_PX;
+                    // ③ 이 쪽에 조각이 될 만한 잔여가 남아 있을 것. 잔여가 그보다 작으면
+                    //    통상 fit 이 어차피 다음 쪽으로 넘긴다 — 거기서 또 끊으면 빈 쪽이
+                    //    하나 더 생긴다(3075729 #1880: 잔여 10.4px, 13쪽 → 14쪽).
+                    let page_room_left = body_bottom - st.current_height;
+                    if hosts_table
+                        && overflows_body_narrowly
+                        && next < own
+                        && page_room_left > MIN_TOP_KEEP_PX
+                    {
                         if std::env::var("RHWP_DIAG_VPOS_OVF").is_ok() {
                             eprintln!(
                                 "[VPOS_OVF] pi={} own={} ({:.1}px) next={} avail={:.1} cur_h={:.1} items={}",
                                 para_idx,
                                 own,
-                                hwpunit_to_px(own, self.dpi),
+                                own_px,
                                 next,
-                                st.base_available_height(),
+                                body_bottom,
                                 st.current_height,
                                 st.current_items.len()
                             );
