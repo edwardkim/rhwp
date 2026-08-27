@@ -9,6 +9,34 @@ use crate::model::paragraph::LineSeg;
 const SEGMENT_BOUNDARY_TAGS: u32 = LineSeg::TAG_FIRST_SEGMENT | LineSeg::TAG_LAST_SEGMENT;
 const MINIMUM_USABLE_INTERVAL_HWP: i32 = 1_440;
 
+/// Parse flattened FIRST..LAST records into strict physical rows.
+pub(crate) fn physical_row_ranges(line_segs: &[LineSeg]) -> Option<Vec<Range<usize>>> {
+    if line_segs.is_empty() {
+        return None;
+    }
+    let mut rows = Vec::new();
+    let mut start = 0;
+    while start < line_segs.len() {
+        if !line_segs[start].is_first_segment() {
+            return None;
+        }
+        let mut end = start;
+        loop {
+            let segment = line_segs.get(end)?;
+            if end > start && segment.is_first_segment() {
+                return None;
+            }
+            end += 1;
+            if segment.is_last_segment() {
+                break;
+            }
+        }
+        rows.push(start..end);
+        start = end;
+    }
+    Some(rows)
+}
+
 #[cfg(feature = "subsecond-dev")]
 #[derive(Debug, Clone, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -766,17 +794,9 @@ impl LayoutFrame {
             return None;
         }
 
-        let mut consumed = 0usize;
-        while consumed < line_segs.len() {
-            if !line_segs[consumed].is_first_segment() {
-                return None;
-            }
-            // One physical row is FIRST..LAST, however many slots that spans.
-            let count = line_segs[consumed..]
-                .iter()
-                .position(LineSeg::is_last_segment)?
-                + 1;
-            let stored_row = &line_segs[consumed..consumed + count];
+        for range in physical_row_ranges(line_segs)? {
+            let stored_row = &line_segs[range];
+            let count = stored_row.len();
 
             let metrics = metrics_for(stored_row)?;
             if metrics.line_height <= 0 {
@@ -815,7 +835,6 @@ impl LayoutFrame {
                 })
                 .collect();
             self.commit_carved_row(metrics, segments)?;
-            consumed += count;
         }
         Some(())
     }
@@ -1432,6 +1451,16 @@ mod tests {
                 vertical: 0..1_000,
                 policy: FrameExclusionPolicy::BothSides,
             }],
+        );
+
+        let mut nested_first = stored.clone();
+        nested_first[1].tag |= LineSeg::TAG_FIRST_SEGMENT;
+        assert!(physical_row_ranges(&nested_first).is_none());
+        let mut rejected = original.clone();
+        assert!(!rejected.try_admit_stored_rows(&nested_first, echo_metrics));
+        assert_eq!(
+            rejected, original,
+            "malformed rows restore the frame checkpoint"
         );
 
         let mut frame = original.clone();

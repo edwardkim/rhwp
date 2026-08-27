@@ -2896,7 +2896,7 @@ fn test_table_transpose_paste_as_new_table_native_api() {
 }
 
 #[test]
-fn test_cell_text_edit_invalid_indices() {
+fn test_cell_text_api_rejects_invalid_paths_and_reports_layout_coordinates() {
     let mut doc = create_doc_with_table();
 
     let result = doc.insert_text_in_cell_native(0, 0, 0, 99, 0, 0, "X");
@@ -2907,15 +2907,10 @@ fn test_cell_text_edit_invalid_indices() {
 
     let result = doc.insert_text_in_cell_native(99, 0, 0, 0, 0, 0, "X");
     assert!(result.is_err());
-}
 
-#[test]
-fn test_cell_text_layout_contains_cell_info() {
-    let doc = create_doc_with_table();
-    let layout = doc.get_page_text_layout_native(0);
-    assert!(layout.is_ok());
-    let json = layout.unwrap();
-
+    let json = doc
+        .get_page_text_layout_native(0)
+        .expect("cell text layout");
     assert!(json.contains("\"parentParaIdx\":"));
     assert!(json.contains("\"controlIdx\":"));
     assert!(json.contains("\"cellIdx\":"));
@@ -2932,13 +2927,14 @@ fn test_cell_text_layout_contains_cell_info() {
 
     let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/group-box.hwp");
     let bytes = std::fs::read(path).expect("read group-box fixture");
-    let doc = HwpDocument::from_bytes(&bytes).expect("parse group-box fixture");
-    let json = doc
+    let grouped = HwpDocument::from_bytes(&bytes).expect("parse group-box fixture");
+    let json = grouped
         .get_page_text_layout_native(0)
         .expect("group-box text layout");
     let value: serde_json::Value = serde_json::from_str(&json).expect("text layout JSON");
-    let runs = value["runs"].as_array().expect("text runs");
-    let grouped = runs
+    let run = value["runs"]
+        .as_array()
+        .expect("text runs")
         .iter()
         .find(|run| {
             run["groupPath"]
@@ -2946,138 +2942,431 @@ fn test_cell_text_layout_contains_cell_info() {
                 .is_some_and(|path| !path.is_empty())
         })
         .expect("grouped TextBox run");
-    assert_eq!(grouped["groupPath"][0], 0);
-    assert!(grouped["lineContainerWidthHwp"]
+    assert_eq!(run["groupPath"][0], 0);
+    assert!(run["lineContainerWidthHwp"]
         .as_i64()
         .is_some_and(|width| width > 0));
-    assert_eq!(grouped["flowContext"], "body");
-
+    assert_eq!(run["flowContext"], "body");
     #[cfg(feature = "subsecond-dev")]
     {
-        use crate::document_core::queries::line_break_provenance::{
-            compare_boundaries, paragraph_stream_range,
-        };
+        assert!(run["streamStartUtf16"].is_u64());
+        assert!(run["streamEndUtf16"].is_u64());
+    }
+}
 
-        assert!(grouped["streamStartUtf16"].is_u64());
-        assert!(grouped["streamEndUtf16"].is_u64());
-        for (text, char_offsets, expected) in [
-            ("😀A", vec![0, 2], [(0, 2), (2, 3)]),
-            ("AB", vec![0, 8], [(0, 8), (8, 9)]),
-        ] {
-            let paragraph = Paragraph {
-                text: text.into(),
-                char_offsets,
-                char_count: expected[1].1 + 1,
+#[cfg(feature = "subsecond-dev")]
+#[test]
+fn test_subsecond_provenance_compares_physical_rows() {
+    use crate::document_core::queries::line_break_provenance::{
+        compare_boundaries, paragraph_stream_range,
+    };
+    use crate::renderer::composer::stored_row_metrics;
+
+    for (text, char_offsets, expected) in [
+        ("😀A", vec![0, 2], [(0, 2), (2, 3)]),
+        ("AB", vec![0, 8], [(0, 8), (8, 9)]),
+    ] {
+        let paragraph = Paragraph {
+            text: text.into(),
+            char_offsets,
+            char_count: expected[1].1 + 1,
+            ..Default::default()
+        };
+        assert_eq!(paragraph_stream_range(&paragraph, 0, 1), expected[0]);
+        assert_eq!(paragraph_stream_range(&paragraph, 1, 2), expected[1]);
+    }
+    let prefixed = Paragraph {
+        text: "AB".into(),
+        char_offsets: vec![8, 9],
+        char_count: 11,
+        ..Default::default()
+    };
+    assert_eq!(paragraph_stream_range(&prefixed, 0, 1), (0, 9));
+    assert_eq!(paragraph_stream_range(&prefixed, 1, 2), (9, 10));
+    let paragraph = |starts: &[u32], shift| Paragraph {
+        line_segs: starts
+            .iter()
+            .map(|&text_start| LineSeg {
+                text_start,
+                tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
                 ..Default::default()
-            };
-            assert_eq!(paragraph_stream_range(&paragraph, 0, 1), expected[0]);
-            assert_eq!(paragraph_stream_range(&paragraph, 1, 2), expected[1]);
+            })
+            .collect(),
+        hwpx_axis_shift: shift,
+        char_count: 512,
+        ..Default::default()
+    };
+    let compare = |stored: &Paragraph, fresh: &Paragraph| {
+        serde_json::to_value(compare_boundaries(stored, fresh, true, true, 128)).unwrap()
+    };
+    assert_eq!(
+        compare(&paragraph(&[0, 1], 8), &paragraph(&[0, 9], 0))["matches"],
+        true
+    );
+    let mut stored_metrics = paragraph(&[0, 1], 0);
+    let mut fresh_metrics = stored_metrics.clone();
+    for (index, segment) in stored_metrics.line_segs.iter_mut().enumerate() {
+        segment.vertical_pos = 1_200 + index as i32 * 1_200;
+        segment.line_height = 900;
+        segment.line_spacing = 300;
+        segment.segment_width = 4_000;
+    }
+    for (index, segment) in fresh_metrics.line_segs.iter_mut().enumerate() {
+        // A diagnostic LayoutFrame starts at its own origin. The same
+        // ladder must compare equal after normalization.
+        segment.vertical_pos = index as i32 * 1_200;
+        segment.line_height = 900;
+        segment.line_spacing = 300;
+        segment.segment_width = 4_000;
+    }
+    assert_eq!(compare(&stored_metrics, &fresh_metrics)["matches"], true);
+    fresh_metrics.line_segs[0].line_height = 920;
+    fresh_metrics.line_segs[0].line_spacing = 320;
+    // A later text mismatch has priority over an earlier metric drift.
+    fresh_metrics.line_segs[1].text_start = 2;
+    let metric_diff = compare(&stored_metrics, &fresh_metrics);
+    assert_eq!(metric_diff["matches"], false);
+    assert_eq!(metric_diff["firstMismatchKind"], "textStart");
+    assert_eq!(metric_diff["firstMismatchField"], "textStart");
+    assert_eq!(metric_diff["firstMismatchRowIndex"], 1);
+    assert_eq!(metric_diff["firstMismatchSegmentIndex"], 0);
+    fresh_metrics.line_segs[1].text_start = 1;
+    let metric_observation = compare(&stored_metrics, &fresh_metrics);
+    assert_eq!(metric_observation["matches"], true);
+    assert_eq!(
+        metric_observation["metricObservation"]["field"],
+        "lineHeight"
+    );
+    assert_eq!(
+        metric_observation["metricObservation"]["storedRow"]["metrics"]["lineHeight"],
+        900
+    );
+    assert_eq!(
+        metric_observation["metricObservation"]["freshRow"]["metrics"]["lineHeight"],
+        920
+    );
+    fresh_metrics.line_segs[0].line_height = 900;
+    fresh_metrics.line_segs[0].line_spacing = 300;
+    fresh_metrics.line_segs[1].vertical_pos = 1_260;
+    let vertical_observation = compare(&stored_metrics, &fresh_metrics);
+    assert_eq!(vertical_observation["matches"], true);
+    assert_eq!(
+        vertical_observation["verticalFlowObservation"]["field"],
+        "deltaFromPrevious"
+    );
+    assert_eq!(
+        vertical_observation["verticalFlowObservation"]["storedRow"]["verticalFlow"]
+            ["deltaFromPrevious"],
+        1_200
+    );
+    assert_eq!(
+        vertical_observation["verticalFlowObservation"]["freshRow"]["verticalFlow"]
+            ["deltaFromPrevious"],
+        1_260
+    );
+    let mut one_hu_frame = stored_metrics.clone();
+    one_hu_frame.line_segs[0].segment_width += 1;
+    let frame_diff = compare(&stored_metrics, &one_hu_frame);
+    assert_eq!(frame_diff["firstMismatchKind"], "horizontalFrame");
+    assert_eq!(frame_diff["firstMismatchField"], "segmentWidth");
+
+    let mut one_sided_rewind = stored_metrics.clone();
+    one_sided_rewind.line_segs[0].vertical_pos = 0;
+    one_sided_rewind.line_segs[1].vertical_pos = -1;
+    let rewind = compare(&stored_metrics, &one_sided_rewind);
+    assert_eq!(rewind["comparable"], false);
+    assert!(rewind["matches"].is_null());
+    for (stored, fresh, expected) in [
+        ((&[0, 1][..], 8), (&[0, 10][..], 0), (Some(9), Some(10))),
+        ((&[0][..], 8), (&[0, 9][..], 0), (None, Some(9))),
+        ((&[0, 1][..], 8), (&[0][..], 0), (Some(9), None)),
+    ] {
+        let value = compare(&paragraph(stored.0, stored.1), &paragraph(fresh.0, fresh.1));
+        assert_eq!(value["storedMismatchUtf16Start"].as_u64(), expected.0);
+        assert_eq!(value["freshMismatchUtf16Start"].as_u64(), expected.1);
+    }
+    let starts = (0..130).collect::<Vec<_>>();
+    let stored = paragraph(&starts, 0);
+    for (change, expected) in [(false, (128, 129, "single")), (true, (129, 129, "last"))] {
+        let mut fresh = paragraph(&starts, 0);
+        if change {
+            fresh.line_segs[128].tag = LineSeg::TAG_FIRST_SEGMENT;
+            fresh.line_segs[129].tag = LineSeg::TAG_LAST_SEGMENT;
+        } else {
+            fresh.line_segs[128].text_start += 1;
         }
-        let prefixed = Paragraph {
-            text: "AB".into(),
-            char_offsets: vec![8, 9],
-            char_count: 11,
-            ..Default::default()
-        };
-        assert_eq!(paragraph_stream_range(&prefixed, 0, 1), (0, 9));
-        assert_eq!(paragraph_stream_range(&prefixed, 1, 2), (9, 10));
-        let paragraph = |starts: &[u32], shift| Paragraph {
-            line_segs: starts
-                .iter()
-                .map(|&text_start| LineSeg {
-                    text_start,
-                    tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
-                    ..Default::default()
-                })
-                .collect(),
-            hwpx_axis_shift: shift,
-            char_count: 512,
-            ..Default::default()
-        };
-        let compare = |stored: &Paragraph, fresh: &Paragraph| {
-            serde_json::to_value(compare_boundaries(stored, fresh, true, 128)).unwrap()
-        };
-        assert_eq!(
-            compare(&paragraph(&[0, 1], 8), &paragraph(&[0, 9], 0))["matches"],
-            true
-        );
-        for (stored, fresh, expected) in [
-            ((&[0, 1][..], 8), (&[0, 10][..], 0), (Some(9), Some(10))),
-            ((&[0][..], 8), (&[0, 9][..], 0), (None, Some(9))),
-            ((&[0, 1][..], 8), (&[0][..], 0), (Some(9), None)),
-        ] {
-            let value = compare(&paragraph(stored.0, stored.1), &paragraph(fresh.0, fresh.1));
-            assert_eq!(value["storedMismatchUtf16Start"].as_u64(), expected.0);
-            assert_eq!(value["freshMismatchUtf16Start"].as_u64(), expected.1);
-        }
-        let starts = (0..130).collect::<Vec<_>>();
-        let stored = paragraph(&starts, 0);
-        for (change, expected) in [(false, (129, "single")), (true, (128, "first"))] {
-            let mut fresh = paragraph(&starts, 0);
-            if change {
-                fresh.line_segs[128].tag = LineSeg::TAG_FIRST_SEGMENT;
-            } else {
-                fresh.line_segs[128].text_start += 1;
+        let value = compare(&stored, &fresh);
+        assert_eq!(value["firstMismatchIndex"], expected.0);
+        assert_eq!(value["freshMismatchUtf16Start"], expected.1);
+        assert_eq!(value["freshMismatchRowPart"], expected.2);
+        assert_eq!(value["storedStartsTruncated"], true);
+        assert_eq!(value["freshStartsTruncated"], true);
+    }
+    let report = |core: &DocumentCore| {
+        serde_json::from_str::<Value>(
+            &core
+                .line_break_provenance_native(
+                    0,
+                    0,
+                    &[],
+                    r#"{"geometry":true,"measurement":true,"pageIndex":0}"#,
+                )
+                .expect("line-break report"),
+        )
+        .expect("line-break JSON")
+    };
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/calc-cell.hwp");
+    let bytes = std::fs::read(path).expect("read fixture");
+    let mut core = DocumentCore::from_bytes(&bytes).expect("parse fixture");
+    for segment in &mut core.document.sections[0].paragraphs[0].line_segs {
+        segment.column_start = 0;
+        segment.segment_width = 1_200;
+        segment.tag = LineSeg::TAG_SINGLE_SEGMENT_LINE;
+    }
+    let original = core.document.sections[0].paragraphs[0].line_segs.clone();
+    let value = report(&core);
+    assert_eq!(value["schemaVersion"], 5);
+    assert!(value["comparison"]["storedUtf16Starts"].is_array());
+    assert!(value["comparison"]["freshUtf16Starts"].is_array());
+    assert!(value["geometry"]["records"].is_array());
+    assert!(value["measurement"]["records"]["records"].is_array());
+    let stored_geometry = serde_json::from_str::<Value>(
+        &core
+            .line_break_provenance_native(0, 0, &[], r#"{"geometryMode":"stored-lineseg"}"#)
+            .expect("self-derived geometry report"),
+    )
+    .expect("self-derived geometry JSON");
+    assert!(stored_geometry["comparison"]["matches"].is_null());
+    assert_eq!(
+        stored_geometry["comparison"]["horizontalOriginIdentityProven"],
+        false
+    );
+
+    // Exercise the actual query path with an unchanged paragraph whose
+    // stored rows use a nonzero origin. Local fresh rows start at zero; a
+    // raw vpos comparison would reject this paragraph at its first row.
+    let mut shifted = HwpDocument::create_empty();
+    shifted
+        .insert_text_native(0, 0, 0, "origin-independent line ladder")
+        .expect("insert query-path text");
+    let paragraph = &mut shifted.document.sections[0].paragraphs[0];
+    let mut stored_rows = paragraph.line_segs.clone();
+    assert!(!stored_rows.is_empty());
+    for segment in &mut stored_rows {
+        segment.tag &= !LineSeg::TAG_IMPLEMENTATION_PROPERTY;
+        segment.vertical_pos = segment.vertical_pos.saturating_add(1_200);
+    }
+    let source_vertical_pos = stored_rows
+        .iter()
+        .map(|segment| segment.vertical_pos)
+        .collect();
+    paragraph.replace_line_segs(stored_rows);
+    paragraph.source_line_seg_vertical_pos = Some(source_vertical_pos);
+    let shifted_report = report(&shifted.core);
+    assert_eq!(shifted_report["freshGeometryComplete"], true);
+    assert_eq!(shifted_report["comparison"]["matches"], true);
+    assert_eq!(
+        shifted_report["comparison"]["verticalOriginIdentityProven"],
+        false
+    );
+
+    // A real edit can publish the same number of rows. The old file-vpos
+    // snapshot must still retire with the replaced row identities instead
+    // of being compared against the new partition by length alone.
+    let paragraph = &mut shifted.document.sections[0].paragraphs[0];
+    let row_count = paragraph.line_segs.len();
+    paragraph.source_line_seg_vertical_pos = Some(vec![i32::MAX; row_count]);
+    let end = paragraph.text.chars().count();
+    shifted
+        .insert_text_native(0, 0, end, "!")
+        .expect("same-row-count edit");
+    let paragraph = &shifted.document.sections[0].paragraphs[0];
+    assert_eq!(paragraph.line_segs.len(), row_count);
+    assert!(paragraph.source_line_seg_vertical_pos.is_none());
+    assert_eq!(report(&shifted.core)["comparison"]["matches"], true);
+
+    // field-01 contains production-admitted rows whose stored spacing is
+    // 452HU while the Frame recomputes 450HU. That characterized residual
+    // is evidence, not a semantic document error.
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/field-01.hwp");
+    let bytes = std::fs::read(path).expect("read metric residual fixture");
+    let field = HwpDocument::from_bytes(&bytes).expect("parse metric residual fixture");
+    let mut admitted_residual = None;
+    'sections: for section in &field.document.sections {
+        for paragraph in &section.paragraphs {
+            let mut start = 0;
+            while start < paragraph.line_segs.len() {
+                let Some(relative_end) = paragraph.line_segs[start..]
+                    .iter()
+                    .position(LineSeg::is_last_segment)
+                else {
+                    break;
+                };
+                let end = start + relative_end + 1;
+                let row = &paragraph.line_segs[start..end];
+                if let Some(computed) = stored_row_metrics(paragraph, &field.styles, field.dpi, row)
+                {
+                    if row[0].line_spacing == 452 && computed.line_spacing == 450 {
+                        let mut fresh = paragraph.clone();
+                        for segment in &mut fresh.line_segs[start..end] {
+                            segment.line_height = computed.line_height;
+                            segment.text_height = computed.text_height;
+                            segment.baseline_distance = computed.baseline_distance;
+                            segment.line_spacing = computed.line_spacing;
+                        }
+                        admitted_residual = Some(compare(paragraph, &fresh));
+                        break 'sections;
+                    }
+                }
+                start = end;
             }
-            let value = compare(&stored, &fresh);
-            assert_eq!(value["firstMismatchIndex"], 128);
-            assert_eq!(value["freshMismatchUtf16Start"], expected.0);
-            assert_eq!(value["freshMismatchRowPart"], expected.1);
-            assert_eq!(value["storedStartsTruncated"], true);
-            assert_eq!(value["freshStartsTruncated"], true);
         }
-        let report = |core: &DocumentCore| {
-            serde_json::from_str::<Value>(
-                &core
-                    .line_break_provenance_native(
-                        0,
-                        0,
-                        &[],
-                        r#"{"geometry":true,"measurement":true,"geometryMode":"stored-lineseg"}"#,
-                    )
-                    .expect("line-break report"),
-            )
-            .expect("line-break JSON")
-        };
-        let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/calc-cell.hwp");
-        let bytes = std::fs::read(path).expect("read fixture");
-        let mut core = DocumentCore::from_bytes(&bytes).expect("parse fixture");
-        for segment in &mut core.document.sections[0].paragraphs[0].line_segs {
-            segment.column_start = 0;
-            segment.segment_width = 1_200;
-            segment.tag = LineSeg::TAG_SINGLE_SEGMENT_LINE;
-        }
-        let original = core.document.sections[0].paragraphs[0].line_segs.clone();
-        let value = report(&core);
-        assert!(value["comparison"]["storedUtf16Starts"].is_array());
-        assert!(value["comparison"]["freshUtf16Starts"].is_array());
-        assert!(value["geometry"]["records"].is_array());
-        assert!(value["measurement"]["records"]["records"].is_array());
+    }
+    let admitted_residual = admitted_residual.expect("field-01 452HU/450HU residual");
+    assert_eq!(admitted_residual["matches"], true);
+    assert_eq!(
+        admitted_residual["metricObservation"]["storedRow"]["metrics"]["lineSpacing"],
+        452
+    );
+    assert_eq!(
+        admitted_residual["metricObservation"]["freshRow"]["metrics"]["lineSpacing"],
+        450
+    );
 
-        let mut synthetic = original.clone();
-        synthetic
-            .iter_mut()
-            .for_each(|segment| segment.tag |= LineSeg::TAG_IMPLEMENTATION_PROPERTY);
-        let descending = vec![
-            LineSeg {
-                tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
-                text_start: 8,
-                ..Default::default()
-            },
-            LineSeg {
-                tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
-                text_start: 4,
-                ..Default::default()
-            },
-        ];
-        for lines in [Vec::new(), synthetic, descending] {
-            core.document.sections[0].paragraphs[0].line_segs = lines;
-            assert!(report(&core)["comparison"]["matches"].is_null());
-        }
-        core.document.sections[0].paragraphs[0].line_segs = original;
-        core.document.sections[0].paragraphs[0].invalidate_layout_inputs();
+    // Prove the same tolerated metric residual through the real query with
+    // a following row. Production admission keeps the stored +2HU spacing;
+    // the diagnostic Frame recomputes the next local top without it.
+    let mut multi_row = HwpDocument::create_empty();
+    multi_row
+        .insert_text_native(0, 0, 0, &"가".repeat(400))
+        .expect("insert wrapping text");
+    let paragraph = &mut multi_row.document.sections[0].paragraphs[0];
+    assert!(
+        paragraph.line_segs.len() > 1,
+        "fixture must wrap to multiple rows"
+    );
+    paragraph.line_segs[0].line_spacing += 2;
+    for segment in &mut paragraph.line_segs[1..] {
+        segment.vertical_pos += 2;
+    }
+    paragraph.source_line_seg_vertical_pos = Some(
+        paragraph
+            .line_segs
+            .iter()
+            .map(|segment| segment.vertical_pos)
+            .collect(),
+    );
+    let residual_report = report(&multi_row.core);
+    let comparison = &residual_report["comparison"];
+    assert_eq!(comparison["matches"], true);
+    assert_eq!(
+        comparison["metricObservation"]["storedRow"]["metrics"]["lineSpacing"],
+        comparison["metricObservation"]["freshRow"]["metrics"]["lineSpacing"]
+            .as_i64()
+            .expect("fresh spacing")
+            + 2
+    );
+    assert_eq!(
+        comparison["verticalFlowObservation"]["storedRow"]["verticalFlow"]["deltaFromPrevious"]
+            .as_i64()
+            .expect("stored delta"),
+        comparison["verticalFlowObservation"]["freshRow"]["verticalFlow"]["deltaFromPrevious"]
+            .as_i64()
+            .expect("fresh delta")
+            + 2
+    );
+
+    // A list marker withholds only the horizontal origin. The actual list
+    // fixture must still compare every other physical-row lane, including
+    // the Frame-owned segment width.
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("rhwp-studio/public/samples/para-head-num-2.hwp");
+    let bytes = std::fs::read(path).expect("read list paragraph fixture");
+    let mut list = HwpDocument::from_bytes(&bytes).expect("parse list paragraph fixture");
+    let list_report = |document: &HwpDocument| {
+        serde_json::from_str::<Value>(
+            &document
+                .core
+                .line_break_provenance_native(
+                    0,
+                    1,
+                    &[],
+                    r#"{"geometry":true,"measurement":false,"pageIndex":0}"#,
+                )
+                .expect("list paragraph report"),
+        )
+        .expect("list paragraph JSON")
+    };
+    let value = list_report(&list);
+    assert_eq!(value["freshGeometryComplete"], true);
+    assert_eq!(value["paragraphBox"]["originIsDerivable"], false);
+    assert_eq!(value["comparison"]["horizontalOriginIdentityProven"], false);
+    assert!(value["comparison"]["matches"].is_boolean());
+    list.document.sections[0].paragraphs[1].line_segs[0].segment_width += 1;
+    let width_mismatch = list_report(&list);
+    assert_eq!(
+        width_mismatch["comparison"]["firstMismatchField"],
+        "segmentWidth"
+    );
+
+    // issue4090 p5/pi45 has six narrowed rows beside a Square table and a
+    // full-width tail below it. The scalar diagnostic Frame does not own that
+    // exclusion and must not reinterpret the stored partition as an error.
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("samples/issue4090/156492236_규제샌드박스_min.hwpx");
+    let bytes = std::fs::read(path).expect("read Square-table fixture");
+    let square = HwpDocument::from_bytes(&bytes).expect("parse Square-table fixture");
+    let square_report = serde_json::from_str::<Value>(
+        &square
+            .core
+            .line_break_provenance_native(
+                0,
+                45,
+                &[],
+                r#"{"geometry":true,"measurement":false,"pageIndex":4}"#,
+            )
+            .expect("Square-table paragraph report"),
+    )
+    .expect("Square-table paragraph JSON");
+    assert!(square_report["comparison"]["matches"].is_null());
+
+    let mut synthetic = original.clone();
+    synthetic
+        .iter_mut()
+        .for_each(|segment| segment.tag |= LineSeg::TAG_IMPLEMENTATION_PROPERTY);
+    let descending = vec![
+        LineSeg {
+            tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
+            text_start: 8,
+            ..Default::default()
+        },
+        LineSeg {
+            tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
+            text_start: 4,
+            ..Default::default()
+        },
+    ];
+    let malformed = vec![LineSeg {
+        tag: LineSeg::TAG_FIRST_SEGMENT,
+        ..Default::default()
+    }];
+    let nested_first = vec![
+        LineSeg {
+            tag: LineSeg::TAG_FIRST_SEGMENT,
+            ..Default::default()
+        },
+        LineSeg {
+            tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
+            ..Default::default()
+        },
+    ];
+    for lines in [Vec::new(), synthetic, descending, malformed, nested_first] {
+        core.document.sections[0].paragraphs[0].line_segs = lines;
         assert!(report(&core)["comparison"]["matches"].is_null());
     }
+    core.document.sections[0].paragraphs[0].line_segs = original;
+    core.document.sections[0].paragraphs[0].invalidate_layout_inputs();
+    assert!(report(&core)["comparison"]["matches"].is_null());
 }
 
 #[test]

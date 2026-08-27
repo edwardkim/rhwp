@@ -517,6 +517,7 @@ impl DocumentCore {
                 })?
             };
             if should_migrate_to_inline {
+                para.retire_source_line_seg_vertical_pos();
                 let crate::model::paragraph::Paragraph {
                     line_segs,
                     controls,
@@ -676,6 +677,7 @@ impl DocumentCore {
             // 머리말/꼬리말 경로도 같은 tac 토글 마이그레이션을 수행한다 (Issue #3781).
             crate::serializer::control::sync_anchor_bits(&mut pic.common);
             if !was_tac && now_tac {
+                inner_para.retire_source_line_seg_vertical_pos();
                 if let crate::model::control::Control::Picture(pic_box) =
                     &mut inner_para.controls[inner_control_idx]
                 {
@@ -780,7 +782,7 @@ impl DocumentCore {
             .collect::<Vec<_>>();
 
         if tac_heights.is_empty() {
-            para.line_segs = vec![crate::model::paragraph::LineSeg {
+            para.replace_line_segs(vec![crate::model::paragraph::LineSeg {
                 text_start: 0,
                 vertical_pos: reserved_hu,
                 line_height: 1000,
@@ -790,7 +792,7 @@ impl DocumentCore {
                 segment_width: old_seg.segment_width,
                 column_start: old_seg.column_start,
                 tag: old_seg.tag,
-            }];
+            }]);
             return;
         }
 
@@ -811,7 +813,7 @@ impl DocumentCore {
             });
             vpos += line_height + line_spacing;
         }
-        para.line_segs = rebuilt;
+        para.replace_line_segs(rebuilt);
     }
     fn tac_control_height_for_empty_picture_para(ctrl: &Control) -> Option<i32> {
         match ctrl {
@@ -3407,17 +3409,35 @@ mod issue_1151_v2_tac_toggle_tests {
             let para = &mut core.document.sections[0].paragraphs[0];
             push_body_floating_picture(para, 5000, pic_h, 1000, 1000, 1)
         };
+        if core.document.sections[0].paragraphs[0].line_segs.is_empty() {
+            core.document.sections[0].paragraphs[0]
+                .line_segs
+                .push(crate::model::paragraph::LineSeg::default());
+        }
+        let row_count = core.document.sections[0].paragraphs[0].line_segs.len();
+        core.document.sections[0].paragraphs[0].source_line_seg_vertical_pos =
+            Some(vec![i32::MAX; row_count]);
         // 먼저 tac=true 로
         core.set_picture_properties_native(0, 0, ctrl_idx, r#"{"treatAsChar":true}"#)
             .expect("forward migration");
+        assert_eq!(
+            core.document.sections[0].paragraphs[0].line_segs.len(),
+            row_count
+        );
+        assert!(core.document.sections[0].paragraphs[0]
+            .source_line_seg_vertical_pos
+            .is_none());
         let lh_after_forward = core.document.sections[0].paragraphs[0].line_segs[0].line_height;
         assert_eq!(lh_after_forward, pic_h as i32);
 
         // tac=false 로 — 빈 그림 전용 문단에는 더 이상 inline 슬롯이 없으므로 기본 빈 줄로 복원.
+        core.document.sections[0].paragraphs[0].source_line_seg_vertical_pos =
+            Some(vec![i32::MAX; row_count]);
         core.set_picture_properties_native(0, 0, ctrl_idx, r#"{"treatAsChar":false}"#)
             .expect("reverse toggle");
         let para = &core.document.sections[0].paragraphs[0];
         assert_eq!(para.line_segs.len(), 1);
+        assert!(para.source_line_seg_vertical_pos.is_none());
         assert_eq!(
             para.line_segs[0].line_height, 1000,
             "남은 TAC 개체가 없으면 기본 빈 줄 높이로 복원"

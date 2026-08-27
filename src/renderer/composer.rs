@@ -3234,7 +3234,8 @@ pub mod lineseg_compare;
 pub(crate) use line_breaking::trace_paragraph_scope;
 #[cfg(feature = "subsecond-dev")]
 pub(crate) use line_breaking::{
-    capture_line_break_measurement, stored_rows_reproduce_frame_expectation,
+    capture_line_break_measurement, layout_paragraph_in_frame, stored_row_metrics,
+    stored_rows_reproduce_frame_expectation, stored_rows_require_external_geometry,
     LineBreakMeasurementTrace,
 };
 pub(crate) use line_breaking::{

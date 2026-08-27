@@ -7,11 +7,13 @@ use crate::model::control::Control;
 use crate::model::paragraph::{LineSeg, Paragraph};
 use crate::model::shape::ShapeObject;
 use crate::renderer::composer::{
-    capture_line_break_measurement, layout_picture_band, reflow_line_segs, trace_paragraph_scope,
-    LineBreakMeasurementTrace,
+    capture_line_break_measurement, layout_paragraph_in_frame, layout_picture_band,
+    stored_rows_require_external_geometry, trace_paragraph_scope, LineBreakMeasurementTrace,
 };
 use crate::renderer::hwpunit_to_px;
-use crate::renderer::layout_frame::{capture_frame_carves, FrameCarveTrace, ParagraphBox};
+use crate::renderer::layout_frame::{
+    capture_frame_carves, physical_row_ranges, FrameCarveTrace, ParagraphBox,
+};
 use crate::renderer::page_layout::PageLayoutInfo;
 
 fn enabled_by_default() -> bool {
@@ -107,23 +109,6 @@ struct ParagraphBoxTrace {
     width_px: f64,
 }
 
-pub(super) fn first_partition_mismatch(stored: &Paragraph, fresh: &Paragraph) -> Option<usize> {
-    stored
-        .line_segs
-        .iter()
-        .zip(&fresh.line_segs)
-        .enumerate()
-        .position(|(index, (stored_segment, fresh_segment))| {
-            stored.line_seg_text_start(index) != fresh.line_seg_text_start(index)
-                || stored_segment.is_first_segment() != fresh_segment.is_first_segment()
-                || stored_segment.is_last_segment() != fresh_segment.is_last_segment()
-        })
-        .or_else(|| {
-            (stored.line_segs.len() != fresh.line_segs.len())
-                .then_some(stored.line_segs.len().min(fresh.line_segs.len()))
-        })
-}
-
 fn stored_cache_is_eligible(paragraph: &Paragraph) -> bool {
     !paragraph.line_segs.is_empty()
         && paragraph.layout_only_fill_lines == 0
@@ -134,22 +119,26 @@ fn stored_cache_is_eligible(paragraph: &Paragraph) -> bool {
             .all(|segment| segment.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0)
 }
 
-fn stored_rows_are_well_formed(line_segs: &[LineSeg]) -> bool {
-    if line_segs.is_empty() {
+fn stored_rows_are_well_formed(paragraph: &Paragraph) -> bool {
+    let line_segs = &paragraph.line_segs;
+    let Some(rows) = physical_row_ranges(line_segs) else {
         return false;
-    }
-    let mut expects_first = true;
-    let mut previous_text_start = None;
-    for segment in line_segs {
-        if previous_text_start.is_some_and(|previous| segment.text_start < previous)
-            || segment.is_first_segment() != expects_first
-        {
-            return false;
-        }
-        previous_text_start = Some(segment.text_start);
-        expects_first = segment.is_last_segment();
-    }
-    expects_first
+    };
+    line_segs
+        .windows(2)
+        .all(|pair| pair[0].text_start <= pair[1].text_start)
+        && rows.into_iter().all(|row| {
+            let first = &line_segs[row.start];
+            let first_vpos = comparison_vertical_pos(paragraph, row.start, true);
+            row.clone().all(|index| {
+                let segment = &line_segs[index];
+                comparison_vertical_pos(paragraph, index, true) == first_vpos
+                    && segment.line_height == first.line_height
+                    && segment.text_height == first.text_height
+                    && segment.baseline_distance == first.baseline_distance
+                    && segment.line_spacing == first.line_spacing
+            })
+        })
 }
 
 pub(crate) fn paragraph_stream_range(
@@ -206,16 +195,89 @@ pub(super) fn descend_group_path_segment<'a>(
     Ok(target)
 }
 
+const ROW_SNAPSHOT_SEGMENT_LIMIT: usize = 16;
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct SegmentFrameCalculation {
+    column_start: i32,
+    segment_width: i32,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct RowMetricsCalculation {
+    line_height: i32,
+    text_height: i32,
+    baseline_distance: i32,
+    line_spacing: i32,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct VerticalFlowCalculation {
+    /// Origin-independent position in this paragraph's physical-row ladder.
+    delta_from_first: i64,
+    /// Origin-independent advance from the preceding physical row.
+    delta_from_previous: Option<i64>,
+    /// Stored-domain observation. A one-sided reset makes the local vertical
+    /// lane unmodelled; it is never promoted to an absolute-origin mismatch.
+    reset: bool,
+    /// Strict backward movement is invariant under a constant origin shift.
+    rewind: bool,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct PhysicalRowCalculation {
+    segment_count: usize,
+    segment_window_start: usize,
+    text_starts: Vec<u32>,
+    segment_frames: Vec<SegmentFrameCalculation>,
+    segments_truncated: bool,
+    metrics: RowMetricsCalculation,
+    vertical_flow: VerticalFlowCalculation,
+}
+
+#[derive(Debug, Clone, Copy)]
+struct OrderedMismatch {
+    kind: &'static str,
+    field: &'static str,
+    row_index: usize,
+    segment_index: Option<usize>,
+    legacy_segment_index: usize,
+}
+
+#[derive(Debug, Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct RowDifferenceObservation {
+    field: &'static str,
+    row_index: usize,
+    segment_index: Option<usize>,
+    stored_row: PhysicalRowCalculation,
+    fresh_row: PhysicalRowCalculation,
+}
+
 #[derive(Debug, Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub(crate) struct BoundaryComparison {
     comparable: bool,
     matches: Option<bool>,
+    first_mismatch_kind: Option<&'static str>,
+    first_mismatch_field: Option<&'static str>,
+    first_mismatch_row_index: Option<usize>,
+    first_mismatch_segment_index: Option<usize>,
     first_mismatch_index: Option<usize>,
     stored_mismatch_utf16_start: Option<u32>,
     fresh_mismatch_utf16_start: Option<u32>,
     stored_mismatch_row_part: Option<&'static str>,
     fresh_mismatch_row_part: Option<&'static str>,
+    stored_mismatch_row: Option<PhysicalRowCalculation>,
+    fresh_mismatch_row: Option<PhysicalRowCalculation>,
+    metric_observation: Option<RowDifferenceObservation>,
+    vertical_flow_observation: Option<RowDifferenceObservation>,
+    horizontal_origin_identity_proven: bool,
+    vertical_origin_identity_proven: bool,
     stored_starts_truncated: bool,
     stored_utf16_starts: Vec<u32>,
     fresh_starts_truncated: bool,
@@ -231,30 +293,462 @@ fn row_part(segment: &LineSeg) -> &'static str {
     }
 }
 
+fn row_segment_index(
+    rows: &[std::ops::Range<usize>],
+    row_index: usize,
+    segment_index: Option<usize>,
+) -> Option<usize> {
+    let row = rows.get(row_index)?;
+    let index = segment_index.unwrap_or(0);
+    (index < row.len()).then_some(row.start + index)
+}
+
+fn comparison_vertical_pos(paragraph: &Paragraph, index: usize, source: bool) -> Option<i32> {
+    if source {
+        if let Some(values) = &paragraph.source_line_seg_vertical_pos {
+            return values.get(index).copied();
+        }
+    }
+    paragraph
+        .line_segs
+        .get(index)
+        .map(|segment| segment.vertical_pos)
+}
+
+fn vertical_flow_calculations(
+    paragraph: &Paragraph,
+    rows: &[std::ops::Range<usize>],
+    source: bool,
+) -> Option<Vec<VerticalFlowCalculation>> {
+    let mut calculations = Vec::with_capacity(rows.len());
+    let mut previous = None;
+    let mut epoch_first = None;
+    for (row_index, row) in rows.iter().enumerate() {
+        let current = comparison_vertical_pos(paragraph, row.start, source)?;
+        let reset = row_index > 0 && current == 0;
+        let rewind = previous.is_some_and(|value| current < value);
+        let at_epoch_start = row_index == 0 || reset || rewind;
+        if at_epoch_start {
+            epoch_first = Some(current);
+        }
+        calculations.push(VerticalFlowCalculation {
+            delta_from_first: i64::from(current) - i64::from(epoch_first?),
+            delta_from_previous: (!at_epoch_start)
+                .then(|| previous.map(|value| i64::from(current) - i64::from(value)))
+                .flatten(),
+            reset,
+            rewind,
+        });
+        previous = Some(current);
+    }
+    Some(calculations)
+}
+
+fn physical_row_calculation(
+    paragraph: &Paragraph,
+    rows: &[std::ops::Range<usize>],
+    vertical_flow: &[VerticalFlowCalculation],
+    row_index: usize,
+    sample_segment_index: Option<usize>,
+) -> Option<PhysicalRowCalculation> {
+    let row = rows.get(row_index)?;
+    let sampled = sample_segment_index
+        .filter(|index| *index < row.len())
+        .unwrap_or(0);
+    let sampled_segment = paragraph.line_segs.get(row.start + sampled)?;
+    let snapshot_len = row.len().min(ROW_SNAPSHOT_SEGMENT_LIMIT);
+    let segment_window_start = sample_segment_index
+        .filter(|index| *index >= snapshot_len)
+        .map(|index| {
+            index
+                .saturating_sub(snapshot_len / 2)
+                .min(row.len().saturating_sub(snapshot_len))
+        })
+        .unwrap_or(0);
+    let snapshot =
+        row.start + segment_window_start..row.start + segment_window_start + snapshot_len;
+    let vertical_flow = *vertical_flow.get(row_index)?;
+    Some(PhysicalRowCalculation {
+        segment_count: row.len(),
+        segment_window_start,
+        text_starts: snapshot
+            .clone()
+            .map(|index| paragraph.line_seg_text_start(index))
+            .collect(),
+        segment_frames: snapshot
+            .map(|index| {
+                let segment = &paragraph.line_segs[index];
+                SegmentFrameCalculation {
+                    column_start: segment.column_start,
+                    segment_width: segment.segment_width,
+                }
+            })
+            .collect(),
+        segments_truncated: row.len() > ROW_SNAPSHOT_SEGMENT_LIMIT,
+        metrics: RowMetricsCalculation {
+            line_height: sampled_segment.line_height,
+            text_height: sampled_segment.text_height,
+            baseline_distance: sampled_segment.baseline_distance,
+            line_spacing: sampled_segment.line_spacing,
+        },
+        vertical_flow,
+    })
+}
+
+fn mismatch_at(
+    kind: &'static str,
+    field: &'static str,
+    row_index: usize,
+    segment_index: Option<usize>,
+    stored_rows: &[std::ops::Range<usize>],
+    fresh_rows: &[std::ops::Range<usize>],
+    stored_len: usize,
+    fresh_len: usize,
+) -> OrderedMismatch {
+    let stored_index = row_segment_index(stored_rows, row_index, segment_index);
+    let fresh_index = row_segment_index(fresh_rows, row_index, segment_index);
+    OrderedMismatch {
+        kind,
+        field,
+        row_index,
+        segment_index,
+        legacy_segment_index: stored_index
+            .into_iter()
+            .chain(fresh_index)
+            .min()
+            .unwrap_or_else(|| stored_len.min(fresh_len)),
+    }
+}
+
+/// Compare physical rows in causal order rather than in flattened field order.
+///
+/// A later text-boundary mismatch is more useful than a row's metric residual,
+/// because it establishes that the two calculations no longer describe the
+/// same rows. Horizontal Frame geometry comes next. Metrics and the
+/// origin-independent vertical ladder remain in each row snapshot as
+/// observations: the production admission path deliberately retains valid
+/// stored metric residuals, which also shift the next fresh row's local top.
+fn first_ordered_mismatch(
+    stored: &Paragraph,
+    fresh: &Paragraph,
+    stored_rows: &[std::ops::Range<usize>],
+    fresh_rows: &[std::ops::Range<usize>],
+    compare_column_start: bool,
+) -> Option<OrderedMismatch> {
+    let common_rows = stored_rows.len().min(fresh_rows.len());
+    let make = |kind, field, row_index, segment_index| {
+        mismatch_at(
+            kind,
+            field,
+            row_index,
+            segment_index,
+            stored_rows,
+            fresh_rows,
+            stored.line_segs.len(),
+            fresh.line_segs.len(),
+        )
+    };
+
+    // 1. Physical-row topology, then logical text starts.
+    for row_index in 0..common_rows {
+        let stored_count = stored_rows[row_index].len();
+        let fresh_count = fresh_rows[row_index].len();
+        if stored_count != fresh_count {
+            return Some(make(
+                "topology",
+                "segmentCount",
+                row_index,
+                Some(stored_count.min(fresh_count)),
+            ));
+        }
+    }
+    if stored_rows.len() != fresh_rows.len() {
+        return Some(make("topology", "rowCount", common_rows, None));
+    }
+    for row_index in 0..common_rows {
+        let stored_row = &stored_rows[row_index];
+        let fresh_row = &fresh_rows[row_index];
+        for segment_index in 0..stored_row.len() {
+            if stored.line_seg_text_start(stored_row.start + segment_index)
+                != fresh.line_seg_text_start(fresh_row.start + segment_index)
+            {
+                return Some(make(
+                    "textStart",
+                    "textStart",
+                    row_index,
+                    Some(segment_index),
+                ));
+            }
+        }
+    }
+
+    // 2. The Frame's exact horizontal cache key.
+    for row_index in 0..common_rows {
+        let stored_row = &stored_rows[row_index];
+        let fresh_row = &fresh_rows[row_index];
+        for segment_index in 0..stored_row.len() {
+            let stored_segment = &stored.line_segs[stored_row.start + segment_index];
+            let fresh_segment = &fresh.line_segs[fresh_row.start + segment_index];
+            if compare_column_start && stored_segment.column_start != fresh_segment.column_start {
+                return Some(make(
+                    "horizontalFrame",
+                    "columnStart",
+                    row_index,
+                    Some(segment_index),
+                ));
+            }
+            if stored_segment.segment_width != fresh_segment.segment_width {
+                return Some(make(
+                    "horizontalFrame",
+                    "segmentWidth",
+                    row_index,
+                    Some(segment_index),
+                ));
+            }
+        }
+    }
+
+    // Vertical flow is not an error predicate while absolute origin ownership
+    // is unavailable. Even relative deltas inherit valid metric residuals from
+    // the preceding row. The epoch-pattern argument still fail-closes the
+    // enclosing comparison on an unreplayed reset/rewind boundary.
+    None
+}
+
+fn first_metric_difference(
+    stored: &Paragraph,
+    fresh: &Paragraph,
+    stored_rows: &[std::ops::Range<usize>],
+    fresh_rows: &[std::ops::Range<usize>],
+) -> Option<OrderedMismatch> {
+    for (row_index, (stored_row, fresh_row)) in stored_rows.iter().zip(fresh_rows).enumerate() {
+        for segment_index in 0..stored_row.len() {
+            let stored_segment = &stored.line_segs[stored_row.start + segment_index];
+            let fresh_segment = &fresh.line_segs[fresh_row.start + segment_index];
+            for (field, differs) in [
+                (
+                    "lineHeight",
+                    stored_segment.line_height != fresh_segment.line_height,
+                ),
+                (
+                    "textHeight",
+                    stored_segment.text_height != fresh_segment.text_height,
+                ),
+                (
+                    "baselineDistance",
+                    stored_segment.baseline_distance != fresh_segment.baseline_distance,
+                ),
+                (
+                    "lineSpacing",
+                    stored_segment.line_spacing != fresh_segment.line_spacing,
+                ),
+            ] {
+                if differs {
+                    return Some(mismatch_at(
+                        "metrics",
+                        field,
+                        row_index,
+                        Some(segment_index),
+                        stored_rows,
+                        fresh_rows,
+                        stored.line_segs.len(),
+                        fresh.line_segs.len(),
+                    ));
+                }
+            }
+        }
+    }
+    None
+}
+
+fn first_vertical_flow_difference(
+    stored: &Paragraph,
+    fresh: &Paragraph,
+    stored_rows: &[std::ops::Range<usize>],
+    fresh_rows: &[std::ops::Range<usize>],
+    stored_flow: &[VerticalFlowCalculation],
+    fresh_flow: &[VerticalFlowCalculation],
+) -> Option<OrderedMismatch> {
+    for (row_index, (stored_flow, fresh_flow)) in stored_flow.iter().zip(fresh_flow).enumerate() {
+        let field = if stored_flow.delta_from_previous != fresh_flow.delta_from_previous {
+            "deltaFromPrevious"
+        } else if stored_flow.delta_from_first != fresh_flow.delta_from_first {
+            "deltaFromFirst"
+        } else {
+            continue;
+        };
+        return Some(mismatch_at(
+            "verticalFlow",
+            field,
+            row_index,
+            None,
+            stored_rows,
+            fresh_rows,
+            stored.line_segs.len(),
+            fresh.line_segs.len(),
+        ));
+    }
+    None
+}
+
+fn observe_row_difference(
+    difference: OrderedMismatch,
+    stored: &Paragraph,
+    fresh: &Paragraph,
+    stored_rows: &[std::ops::Range<usize>],
+    fresh_rows: &[std::ops::Range<usize>],
+    stored_flow: &[VerticalFlowCalculation],
+    fresh_flow: &[VerticalFlowCalculation],
+) -> Option<RowDifferenceObservation> {
+    Some(RowDifferenceObservation {
+        field: difference.field,
+        row_index: difference.row_index,
+        segment_index: difference.segment_index,
+        stored_row: physical_row_calculation(
+            stored,
+            stored_rows,
+            stored_flow,
+            difference.row_index,
+            difference.segment_index,
+        )?,
+        fresh_row: physical_row_calculation(
+            fresh,
+            fresh_rows,
+            fresh_flow,
+            difference.row_index,
+            difference.segment_index,
+        )?,
+    })
+}
+
 pub(crate) fn compare_boundaries(
     stored: &Paragraph,
     fresh: &Paragraph,
     comparable: bool,
+    compare_column_start: bool,
     limit: usize,
 ) -> BoundaryComparison {
-    let mismatch = first_partition_mismatch(stored, fresh);
-    let reported = comparable.then_some(mismatch).flatten();
+    let stored_rows = physical_row_ranges(&stored.line_segs);
+    let fresh_rows = physical_row_ranges(&fresh.line_segs);
+    let structurally_comparable = comparable && stored_rows.is_some() && fresh_rows.is_some();
+    let stored_rows = stored_rows.unwrap_or_default();
+    let fresh_rows = fresh_rows.unwrap_or_default();
+    let stored_flow = structurally_comparable
+        .then(|| vertical_flow_calculations(stored, &stored_rows, true))
+        .flatten();
+    let fresh_flow = structurally_comparable
+        .then(|| vertical_flow_calculations(fresh, &fresh_rows, false))
+        .flatten();
+    let vertical_epochs_comparable = stored_flow
+        .as_deref()
+        .zip(fresh_flow.as_deref())
+        .is_some_and(|(stored, fresh)| {
+            stored.len() == fresh.len()
+                && stored.iter().zip(fresh).all(|(stored, fresh)| {
+                    stored.reset == fresh.reset && stored.rewind == fresh.rewind
+                })
+        });
+    let mismatch = structurally_comparable
+        .then(|| {
+            first_ordered_mismatch(
+                stored,
+                fresh,
+                &stored_rows,
+                &fresh_rows,
+                compare_column_start,
+            )
+        })
+        .flatten();
+    let observations_are_comparable = structurally_comparable && mismatch.is_none();
+    let flows = stored_flow.as_deref().zip(fresh_flow.as_deref());
+    let metric_observation = flows.and_then(|(stored_flow, fresh_flow)| {
+        observations_are_comparable
+            .then(|| first_metric_difference(stored, fresh, &stored_rows, &fresh_rows))
+            .flatten()
+            .and_then(|difference| {
+                observe_row_difference(
+                    difference,
+                    stored,
+                    fresh,
+                    &stored_rows,
+                    &fresh_rows,
+                    stored_flow,
+                    fresh_flow,
+                )
+            })
+    });
+    let vertical_flow_observation = flows.and_then(|(stored_flow, fresh_flow)| {
+        (observations_are_comparable && vertical_epochs_comparable)
+            .then(|| {
+                first_vertical_flow_difference(
+                    stored,
+                    fresh,
+                    &stored_rows,
+                    &fresh_rows,
+                    stored_flow,
+                    fresh_flow,
+                )
+            })
+            .flatten()
+            .and_then(|difference| {
+                observe_row_difference(
+                    difference,
+                    stored,
+                    fresh,
+                    &stored_rows,
+                    &fresh_rows,
+                    stored_flow,
+                    fresh_flow,
+                )
+            })
+    });
+    // A one-sided reset/rewind is a page/column-owner boundary that the local
+    // frame did not replay. Earlier semantic mismatches remain reportable; if
+    // all earlier lanes match, fail closed instead of comparing across epochs.
+    let comparable = structurally_comparable && (mismatch.is_some() || vertical_epochs_comparable);
+    let reported_index = mismatch.map(|value| value.legacy_segment_index);
     BoundaryComparison {
         comparable,
         matches: comparable.then_some(mismatch.is_none()),
-        first_mismatch_index: reported,
-        stored_mismatch_utf16_start: reported
+        first_mismatch_kind: mismatch.map(|value| value.kind),
+        first_mismatch_field: mismatch.map(|value| value.field),
+        first_mismatch_row_index: mismatch.map(|value| value.row_index),
+        first_mismatch_segment_index: mismatch.and_then(|value| value.segment_index),
+        first_mismatch_index: reported_index,
+        stored_mismatch_utf16_start: reported_index
             .filter(|&index| index < stored.line_segs.len())
             .map(|index| stored.line_seg_text_start(index)),
-        fresh_mismatch_utf16_start: reported
+        fresh_mismatch_utf16_start: reported_index
             .filter(|&index| index < fresh.line_segs.len())
             .map(|index| fresh.line_seg_text_start(index)),
-        stored_mismatch_row_part: reported
+        stored_mismatch_row_part: reported_index
             .and_then(|index| stored.line_segs.get(index))
             .map(row_part),
-        fresh_mismatch_row_part: reported
+        fresh_mismatch_row_part: reported_index
             .and_then(|index| fresh.line_segs.get(index))
             .map(row_part),
+        stored_mismatch_row: mismatch.and_then(|value| {
+            physical_row_calculation(
+                stored,
+                &stored_rows,
+                stored_flow.as_deref()?,
+                value.row_index,
+                value.segment_index,
+            )
+        }),
+        fresh_mismatch_row: mismatch.and_then(|value| {
+            physical_row_calculation(
+                fresh,
+                &fresh_rows,
+                fresh_flow.as_deref()?,
+                value.row_index,
+                value.segment_index,
+            )
+        }),
+        metric_observation,
+        vertical_flow_observation,
+        horizontal_origin_identity_proven: compare_column_start,
+        vertical_origin_identity_proven: false,
         stored_starts_truncated: stored.line_segs.len() > limit,
         stored_utf16_starts: stored
             .line_segs
@@ -365,7 +859,7 @@ impl DocumentCore {
         let mut fresh_paragraph = paragraph.clone();
         fresh_paragraph.line_segs.clear();
         let _trace_scope = trace_paragraph_scope(Some(parent_para_idx));
-        let (((), measurement), carves) =
+        let ((fresh_rows_supported, measurement), carves) =
             capture_frame_carves(options.geometry, max_carves, Some(parent_para_idx), || {
                 capture_line_break_measurement(
                     options.measurement,
@@ -388,28 +882,46 @@ impl DocumentCore {
                         );
                         if let Some(lines) = band_lines {
                             fresh_paragraph.replace_line_segs(lines);
+                            true
                         } else {
-                            reflow_line_segs(
-                                &mut fresh_paragraph,
-                                paragraph_box.clone(),
+                            // The query owns this diagnostic-only frame. Its
+                            // zero top is intentionally local: ParagraphBox
+                            // proves the horizontal coordinate system, not a
+                            // page/column vpos origin. The resulting rows still
+                            // traverse the production carve -> fill -> commit
+                            // -> projection hooks used by stored admission.
+                            let mut frame = paragraph_box.frame(0);
+                            layout_paragraph_in_frame(
+                                &fresh_paragraph,
+                                &mut frame,
                                 &self.styles,
                                 self.dpi,
-                            );
+                            )
+                            .is_some_and(|lines| {
+                                fresh_paragraph.replace_line_segs(lines);
+                                true
+                            })
                         }
                     },
                 )
             });
+        fresh_geometry_complete &= fresh_rows_supported;
         let carve_count = carves.total_records;
         let carves_truncated = carves.truncated;
         let carve_records = carves.records;
 
         let declared = paragraph_box.declared_horizontal();
         let effective = paragraph_box.effective();
+        let external_geometry_replayed = geometry_source == "visible-picture-band-frame";
+        let requires_external_geometry =
+            stored_rows_require_external_geometry(paragraph, &paragraph_box.frame(0));
         let frame_comparable = stored_cache_is_eligible(paragraph)
-            && stored_rows_are_well_formed(&paragraph.line_segs)
-            && fresh_geometry_complete;
+            && stored_rows_are_well_formed(paragraph)
+            && fresh_geometry_complete
+            && (!requires_external_geometry || external_geometry_replayed)
+            && options.geometry_mode.as_deref() != Some("stored-lineseg");
         let report = LineBreakProvenanceReport {
-            schema_version: 3,
+            schema_version: 5,
             coordinates: ParagraphCoordinates {
                 section_idx,
                 paragraph_idx: cell_path.is_empty().then_some(parent_para_idx),
@@ -444,6 +956,7 @@ impl DocumentCore {
                 paragraph,
                 &fresh_paragraph,
                 frame_comparable,
+                frame_comparable && paragraph_box.origin_is_derivable(),
                 max_records,
             ),
             geometry: TraceLane {

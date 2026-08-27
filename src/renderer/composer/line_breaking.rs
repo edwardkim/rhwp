@@ -3046,7 +3046,7 @@ pub(crate) fn resolve_stored_line_segs_in_frame(
 /// single-slot rows with different horizontal extents is equivalent evidence:
 /// a scalar frame has one immutable horizontal range, so it cannot produce the
 /// transition without an exclusion entering or leaving the row band.
-fn stored_rows_require_external_geometry(para: &Paragraph, frame: &LayoutFrame) -> bool {
+pub(crate) fn stored_rows_require_external_geometry(para: &Paragraph, frame: &LayoutFrame) -> bool {
     let line_segs = &para.line_segs;
     let split_or_varying = line_segs
         .iter()

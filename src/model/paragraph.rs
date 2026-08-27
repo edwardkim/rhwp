@@ -711,9 +711,19 @@ impl Paragraph {
         self.single_line_overflow_memo.stored_partition_is_dirty()
     }
 
+    /// Retire the file-vpos snapshot before changing a stored row in place.
+    #[inline]
+    pub(crate) fn retire_source_line_seg_vertical_pos(&mut self) {
+        self.source_line_seg_vertical_pos = None;
+    }
+
     /// Replace stored rows and their validity state at one owner boundary.
     pub(crate) fn replace_line_segs(&mut self, line_segs: Vec<LineSeg>) {
         self.line_segs = line_segs;
+        // The file snapshot describes the superseded row identities. Keeping
+        // it across an edit/reflow can pair old vertical positions with a new
+        // same-length row set in both diagnostics and HWPX serialization.
+        self.retire_source_line_seg_vertical_pos();
         // [#5961] 새로 계산한 줄은 `char_offsets` 와 같은 HWP5 축에서 나온다. 파일에서
         // 읽은 줄에만 붙던 보정폭을 그대로 두면 다음 투영에서 이중으로 더해진다.
         self.hwpx_axis_shift = 0;
