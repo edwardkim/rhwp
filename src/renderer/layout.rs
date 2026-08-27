@@ -1079,6 +1079,32 @@ fn preceding_topbottom_band_height_px(para: &Paragraph, control_index: usize, dp
         .sum()
 }
 
+/// [#6133] `control_index` 앞에 놓인 비-TAC 자리차지(TopAndBottom, vert=문단) 개체의
+/// 양수 세로 오프셋이 host 글줄 높이 이상인가.
+fn host_line_fits_above_offset_float(para: &Paragraph, control_index: usize, dpi: f64) -> bool {
+    let Some(line_height) = para
+        .line_segs
+        .iter()
+        .find(|seg| seg.tag & 0x8000_0000 == 0 && seg.line_height > 0)
+        .map(|seg| hwpunit_to_px(seg.line_height, dpi))
+    else {
+        return false;
+    };
+    para.controls
+        .iter()
+        .take(control_index)
+        .filter_map(|ctrl| match ctrl {
+            Control::Table(table) => Some(&table.common),
+            Control::Picture(picture) => Some(&picture.common),
+            Control::Shape(shape) => Some(shape.common()),
+            _ => None,
+        })
+        .filter(|common| is_para_topbottom_float(common))
+        .any(|common| {
+            hwpunit_to_px(signed_hwpunit(common.vertical_offset), dpi) >= line_height - 0.5
+        })
+}
+
 fn para_is_empty_topbottom_table_anchor(para: &Paragraph) -> bool {
     !para_has_visible_text(para)
         && para
@@ -9740,8 +9766,11 @@ impl LayoutEngine {
         let is_current_empty_square_sibling_float = paragraphs
             .get(para_index)
             .is_some_and(para_is_empty_square_sibling_table_anchor);
+        let tac_line_fits_above_offset_float = paragraphs
+            .get(para_index)
+            .is_some_and(|para| host_line_fits_above_offset_float(para, control_index, self.dpi));
         if let Some(existing_y) = para_start_y.get(&para_index) {
-            if is_current_tac && y_offset > *existing_y + 1.0 {
+            if is_current_tac && y_offset > *existing_y + 1.0 && !tac_line_fits_above_offset_float {
                 para_start_y.insert(para_index, y_offset);
             }
         } else {
@@ -9977,6 +10006,12 @@ impl LayoutEngine {
                     }
                 }
             }
+            let tac_above_offset_float_flow =
+                (is_tac && tac_line_fits_above_offset_float && y_offset > para_y_for_table + 1.0)
+                    .then_some(y_offset);
+            if tac_above_offset_float_flow.is_some() {
+                y_offset = para_y_for_table;
+            }
             // ── 표 레이아웃 ──
             let tac_table_y_before = y_offset; // Task #9: 표 렌더 전 y 보존
             let table_ctl_out = self.layout_table_control_block(
@@ -10003,6 +10038,9 @@ impl LayoutEngine {
                 },
             );
             y_offset = table_ctl_out.y_offset;
+            if let Some(restore) = tac_above_offset_float_flow {
+                y_offset = restore.max(y_offset);
+            }
             let tac_seg_applied = table_ctl_out.tac_seg_applied;
             let para_float_lane_info = table_ctl_out.para_float_lane_info;
             if let Some(ret) = table_ctl_out.early_return {
