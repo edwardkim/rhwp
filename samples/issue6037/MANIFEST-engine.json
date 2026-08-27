@@ -205,15 +205,15 @@
       "original_path": "samples/issue6037/engine/시가고가저가종가-중간계열추가.hwpx",
       "original_sha256": "c191ff3749bb6c5a9d8b8563c6852fd57703edbce9e7f2ae03f76535152c1b93",
       "hancom_pdf_path": "pdf/issue6037/engine/시가고가저가종가-중간계열추가-hwpx.pdf",
-      "hancom_pdf_sha256": "03adeda454e4fe08f6090c1a6bfca29836f404e178d10a467fb63675c1b4d6d2",
+      "hancom_pdf_sha256": "70838b9e74b6d80ad3b438b550f628cdca0163d7a2b3a4aef7e007bd4d0996e9",
       "raster": {
-        "pymupdf_144dpi_rgb_sha256": "b49b3e225dac82e8081590a4b33e0f16176f802f03a33ece807abb98f0e63a1f",
+        "pymupdf_144dpi_rgb_sha256": "b6bd06948a1911a5a3d5de2cbbdccb8c74c28b1ea837078fef6feaf1de9c7f7b",
         "width": 1190,
         "height": 1682,
         "pages": 1
       },
       "verdict": "반영",
-      "editor_observation": "끝 계열(종가) 유지 — 캔들이 살아 있고 추가계열이 마커로 붙음. 술어가 통과시킨 대로"
+      "editor_observation": "끝 계열(종가) 유지 — 캔들·고저선이 살아 있고, 추가계열이 기본 스타일(선+마커)로 그려짐. rhwp 렌더와 동형 (#6053 정체 경로)"
     },
     {
       "name": "시가고가저가종가-중간계열추가.hwp",
@@ -227,15 +227,15 @@
       "original_path": "samples/issue6037/engine/시가고가저가종가-중간계열추가.hwp",
       "original_sha256": "35365f0544afd623c62c7d70da76db075040425df924aec6b94c6013f70e9673",
       "hancom_pdf_path": "pdf/issue6037/engine/시가고가저가종가-중간계열추가.pdf",
-      "hancom_pdf_sha256": "b39efe42f3601172c2ed77184d06b19aac804d8eaf59bb3ebf3751f321d6e20d",
+      "hancom_pdf_sha256": "9a77ac1d75a306eee6be18f91728cf110e902a58d56de07372e70e09d21d300d",
       "raster": {
-        "pymupdf_144dpi_rgb_sha256": "b49b3e225dac82e8081590a4b33e0f16176f802f03a33ece807abb98f0e63a1f",
+        "pymupdf_144dpi_rgb_sha256": "b6bd06948a1911a5a3d5de2cbbdccb8c74c28b1ea837078fef6feaf1de9c7f7b",
         "width": 1190,
         "height": 1682,
         "pages": 1
       },
       "verdict": "반영",
-      "editor_observation": "끝 계열(종가) 유지 — 캔들이 살아 있고 추가계열이 마커로 붙음. 술어가 통과시킨 대로"
+      "editor_observation": "끝 계열(종가) 유지 — 캔들·고저선이 살아 있고, 추가계열이 기본 스타일(선+마커)로 그려짐. rhwp 렌더와 동형 (#6053 정체 경로)"
     },
     {
       "name": "시가고가저가종가-중간계열삭제.hwpx",
@@ -249,15 +249,15 @@
       "original_path": "samples/issue6037/engine/시가고가저가종가-중간계열삭제.hwpx",
       "original_sha256": "d8b4fbe262e37acac2fae8c5c31306eff1efce6aeb97c81b960898a5ff3916ce",
       "hancom_pdf_path": "pdf/issue6037/engine/시가고가저가종가-중간계열삭제-hwpx.pdf",
-      "hancom_pdf_sha256": "814afa09b0ac86d60c804d919b8040ca61644f08fed95ac53def13034efa4893",
+      "hancom_pdf_sha256": "97fb973622221e307a725bd2e0a57dcc1122fae6fcbca03f57a7a9813a8b97d4",
       "raster": {
-        "pymupdf_144dpi_rgb_sha256": "ff78f489fecbbc7e36d8e93cdba647e9aaa2e693b828e0fd83e18dfa0a068e37",
+        "pymupdf_144dpi_rgb_sha256": "b93190788f55fa5994f74f724cfa29fe52eadb0e1701613d1c22a59ca736571a",
         "width": 1190,
         "height": 1682,
         "pages": 1
       },
       "verdict": "반영",
-      "editor_observation": "4→3계열(시가·고가·종가). **한컴 편집기가 같은 편집을 한 산출과 래스터 0.02% 차이** — 엔진이 한컴과 같은 그림을 만든다"
+      "editor_observation": "캔들 유지 + 종가가 자기 Auto 마커를 지킴(이전 회차는 저가 요소 상속으로 마커 소실). 이전 회차 대비 래스터 0.021% (#6053 정체 경로)"
     },
     {
       "name": "시가고가저가종가-중간계열삭제.hwp",
@@ -271,15 +271,15 @@
       "original_path": "samples/issue6037/engine/시가고가저가종가-중간계열삭제.hwp",
       "original_sha256": "553e2a9fe0e17b77be485c9ab4ed746ebcbc579dc5cb3402e7666bb409c74eb6",
       "hancom_pdf_path": "pdf/issue6037/engine/시가고가저가종가-중간계열삭제.pdf",
-      "hancom_pdf_sha256": "cfb3660bee5907f0b6e81c303edc84f3e73a3b1e3a1ec91ee5a1744a932c6e52",
+      "hancom_pdf_sha256": "ce99eae248753ea0969779ac7f80e3d25045ab2da723ea6fc77cd1bd9feb45cf",
       "raster": {
-        "pymupdf_144dpi_rgb_sha256": "ff78f489fecbbc7e36d8e93cdba647e9aaa2e693b828e0fd83e18dfa0a068e37",
+        "pymupdf_144dpi_rgb_sha256": "b93190788f55fa5994f74f724cfa29fe52eadb0e1701613d1c22a59ca736571a",
         "width": 1190,
         "height": 1682,
         "pages": 1
       },
       "verdict": "반영",
-      "editor_observation": "4→3계열(시가·고가·종가). **한컴 편집기가 같은 편집을 한 산출과 래스터 0.02% 차이** — 엔진이 한컴과 같은 그림을 만든다"
+      "editor_observation": "캔들 유지 + 종가가 자기 Auto 마커를 지킴(이전 회차는 저가 요소 상속으로 마커 소실). 이전 회차 대비 래스터 0.021% (#6053 정체 경로)"
     },
     {
       "name": "고가저가종가-꼬리계열추가.hwpx",
