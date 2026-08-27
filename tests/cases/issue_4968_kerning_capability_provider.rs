@@ -213,6 +213,130 @@ fn issue_4968_r4e_positions_for_key(
 }
 
 #[cfg(not(target_arch = "wasm32"))]
+fn issue_4968_r4e_registration_attempt(
+    core: &mut rhwp::document_core::DocumentCore,
+    char_shape_id: u32,
+    language_index: usize,
+    font_bytes: &[u8],
+    face_index: u32,
+) -> serde_json::Value {
+    match core.register_exact_font_source_native(
+        char_shape_id,
+        language_index,
+        font_bytes,
+        face_index,
+    ) {
+        Ok(value) => serde_json::json!({
+            "ok": true,
+            "value": serde_json::from_str::<serde_json::Value>(&value)
+                .expect("R4E registration JSON"),
+        }),
+        Err(error) => serde_json::json!({
+            "ok": false,
+            "error": error.to_string(),
+        }),
+    }
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+fn issue_4968_r4e_registration_failure_case(
+    name: &str,
+    font_bytes: &[u8],
+    face_index: u32,
+    language_index: usize,
+) -> serde_json::Value {
+    let mut core = rhwp::document_core::DocumentCore::from_bytes(R4E_RUNTIME_FIXTURE)
+        .expect("R4E failure fixture");
+    let before = issue_4968_r4e_runtime_snapshot(&core);
+    let registration = issue_4968_r4e_registration_attempt(
+        &mut core,
+        8,
+        language_index,
+        font_bytes,
+        face_index,
+    );
+    let after = issue_4968_r4e_runtime_snapshot(&core);
+    serde_json::json!({
+        "case": name,
+        "registration": registration,
+        "before": before,
+        "after": after,
+    })
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+fn issue_4968_r4e_registration_failure_matrix() -> Vec<serde_json::Value> {
+    let oversized = vec![0; MAX_KERNING_FONT_BYTES + 1];
+    let mut cases = vec![
+        issue_4968_r4e_registration_failure_case("malformed-sfnt", b"not-an-sfnt", 0, 1),
+        issue_4968_r4e_registration_failure_case(
+            "pair-table-unsupported",
+            NO_PAIR_TABLE,
+            0,
+            1,
+        ),
+        issue_4968_r4e_registration_failure_case(
+            "unavailable-face-index",
+            EXACT_KERNING_SMOKE,
+            1,
+            1,
+        ),
+        issue_4968_r4e_registration_failure_case(
+            "invalid-language-index",
+            EXACT_KERNING_SMOKE,
+            0,
+            7,
+        ),
+        issue_4968_r4e_registration_failure_case(
+            "font-byte-limit-exceeded",
+            &oversized,
+            0,
+            1,
+        ),
+    ];
+
+    let mut conflict_core = rhwp::document_core::DocumentCore::from_bytes(R4E_RUNTIME_FIXTURE)
+        .expect("R4E conflict fixture");
+    issue_4968_r4e_registration_attempt(&mut conflict_core, 8, 1, EXACT_KERNING_SMOKE, 0);
+    let before = issue_4968_r4e_runtime_snapshot(&conflict_core);
+    let registration =
+        issue_4968_r4e_registration_attempt(&mut conflict_core, 8, 1, NO_PAIR_TABLE, 0);
+    let after = issue_4968_r4e_runtime_snapshot(&conflict_core);
+    cases.push(serde_json::json!({
+        "case": "slot-conflict",
+        "registration": registration,
+        "before": before,
+        "after": after,
+    }));
+
+    for case in &cases {
+        assert_eq!(
+            case.get("before"),
+            case.get("after"),
+            "failure matrix must preserve the pre-attempt render state: {}",
+            case.get("case")
+                .and_then(serde_json::Value::as_str)
+                .unwrap_or("unknown")
+        );
+    }
+    for index in 0..3 {
+        assert_eq!(cases[index].pointer("/registration/ok"), Some(&serde_json::json!(true)));
+    }
+    for (index, reason) in [
+        (3, "invalid-language-index"),
+        (4, "font-byte-limit-exceeded"),
+        (5, "slot-conflict"),
+    ] {
+        assert_eq!(cases[index].pointer("/registration/ok"), Some(&serde_json::json!(false)));
+        assert!(cases[index]
+            .pointer("/registration/error")
+            .and_then(serde_json::Value::as_str)
+            .is_some_and(|error| error.contains(reason)));
+    }
+    cases
+}
+
+#[cfg(not(target_arch = "wasm32"))]
 #[test]
 fn issue_4968_r4e_native_runtime_probe_registers_exact_slots_and_changes_only_k1() {
     let manifest: serde_json::Value =
@@ -313,6 +437,7 @@ fn issue_4968_r4e_native_runtime_probe_registers_exact_slots_and_changes_only_k1
         "registration": registrations,
         "k0": k0,
         "k1": k1,
+        "failureMatrix": issue_4968_r4e_registration_failure_matrix(),
     });
     if let Some(path) = std::env::var_os("RHWP_4968_R4E_NATIVE_PROBE") {
         let mut bytes = serde_json::to_vec_pretty(&probe).expect("R4E native probe JSON");

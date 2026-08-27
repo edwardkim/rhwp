@@ -49,7 +49,7 @@ function digest(bytes) {
   return { bytes: bytes.length, sha256: sha256(bytes) };
 }
 
-function snapshotWasm(document) {
+export function snapshotWasm(document) {
   const svg = document.renderPageSvg(0);
   return {
     pageCount: document.pageCount(),
@@ -237,6 +237,38 @@ function assertK0IdentityAndK1Effect(projection) {
   if (unchangedOffRows !== 11) throw new Error(`expected 11 unchanged off rows, got ${unchangedOffRows}`);
   if (changedOnRows === 0) throw new Error('exact registration changed no kerning-requested row');
   return { unchangedOffRows, changedOnRows };
+}
+
+export function assertBodyAxisScaling(projection) {
+  const rows = projection.k1.rows.filter((row) => row.context === 'body');
+  const deltas = [];
+  for (const ratio of [100, 90, 80]) {
+    const spacingDeltas = [];
+    for (const spacing of [0, -5, -10]) {
+      const off = rows.find((row) => row.ratio === ratio
+        && row.spacing === spacing && row.kerningRequested === false);
+      const on = rows.find((row) => row.ratio === ratio
+        && row.spacing === spacing && row.kerningRequested === true);
+      if (!off || !on) throw new Error(`missing body axis R${ratio} S${spacing}`);
+      spacingDeltas.push(
+        Math.round(off.measurement.totalWidth * 1000)
+          - Math.round(on.measurement.totalWidth * 1000),
+      );
+    }
+    if (!spacingDeltas.every((delta) => delta === spacingDeltas[0])) {
+      throw new Error(`spacing changed pair delta at ratio ${ratio}: ${spacingDeltas.join(',')}`);
+    }
+    deltas.push({ ratio, pairDeltaMilliPx: spacingDeltas[0] });
+  }
+  const expected = [
+    { ratio: 100, pairDeltaMilliPx: 1600 },
+    { ratio: 90, pairDeltaMilliPx: 1440 },
+    { ratio: 80, pairDeltaMilliPx: 1280 },
+  ];
+  if (canonicalJson(deltas) !== canonicalJson(expected)) {
+    throw new Error(`ratio scaling mismatch: ${JSON.stringify(deltas)}`);
+  }
+  return { unit: 'layer-milli-px', deltas };
 }
 
 function snapshotDiagnostics(nativeSnapshot, wasmSnapshot) {

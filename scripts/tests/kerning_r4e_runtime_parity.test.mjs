@@ -4,6 +4,7 @@ import path from 'node:path';
 import test from 'node:test';
 
 import {
+  assertBodyAxisScaling,
   compareRuntimeParity,
   projectRuntimeProbe,
 } from '../kerning_r4e_runtime_parity.mjs';
@@ -114,4 +115,28 @@ test('native64 and wasm32 sentinels normalize without hiding layout drift', () =
     () => compareRuntimeParity(nativeProbe, wasmProbe, manifest),
     /canonical projection mismatch/,
   );
+});
+
+test('body axes apply pair delta once after ratio and independently of spacing', () => {
+  const projection = projectRuntimeProbe(probe('18446744073709551615'), manifest);
+  for (const row of projection.k1.rows.filter((item) => item.context === 'body')) {
+    if (!row.kerningRequested) continue;
+    const expectedDelta = { 100: 1.6, 90: 1.44, 80: 1.28 }[row.ratio];
+    row.measurement.totalWidth = 1 - expectedDelta;
+  }
+  for (const row of projection.k1.rows.filter((item) => item.context === 'body')) {
+    if (!row.kerningRequested) row.measurement.totalWidth = 1;
+  }
+  assert.deepEqual(assertBodyAxisScaling(projection), {
+    unit: 'layer-milli-px',
+    deltas: [
+      { ratio: 100, pairDeltaMilliPx: 1600 },
+      { ratio: 90, pairDeltaMilliPx: 1440 },
+      { ratio: 80, pairDeltaMilliPx: 1280 },
+    ],
+  });
+
+  projection.k1.rows.find((row) => row.context === 'body'
+    && row.ratio === 100 && row.spacing === -5 && row.kerningRequested).measurement.totalWidth = -0.5;
+  assert.throws(() => assertBodyAxisScaling(projection), /spacing changed pair delta/);
 });
