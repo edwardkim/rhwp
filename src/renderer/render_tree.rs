@@ -8,6 +8,10 @@ use std::ops::{Deref, DerefMut};
 
 use super::composer::{legacy_hancom_product_display_text, CharOverlapInfo};
 use super::layout::CellContext;
+use super::shaping_publication::{
+    HorizontalShapingPageSidecars, HorizontalShapingRunDecision, HorizontalShapingRunRange,
+    HorizontalShapingSidecarRejectReason,
+};
 use super::{GradientFillInfo, LineStyle, PathCommand, ShapeStyle, TextStyle};
 use crate::model::image::ImageEffect;
 use crate::model::shape::TextWrap;
@@ -1583,6 +1587,8 @@ pub struct PageLayoutContext {
     page_index: u32,
     /// 페이지 bbox. 재귀가 페인트 root 의 bbox 에서 읽던 값 — 레이아웃 도중 불변이다.
     page_bbox: BoundingBox,
+    /// Q2-D horizontal shaping terminal decisions. PageRenderTree.frame 전체가 직렬화 제외된다.
+    horizontal_shaping_sidecars: HorizontalShapingPageSidecars,
 }
 
 impl PageLayoutContext {
@@ -1593,6 +1599,7 @@ impl PageLayoutContext {
             inline_shape_positions: std::collections::HashMap::new(),
             page_index,
             page_bbox: BoundingBox::new(0.0, 0.0, width, height),
+            horizontal_shaping_sidecars: HorizontalShapingPageSidecars::default(),
         }
     }
 
@@ -1672,6 +1679,32 @@ impl PageLayoutContext {
         let id = self.next_id;
         self.next_id += 1;
         id
+    }
+
+    /// Attach one terminal shaping decision to the final emitted node without publishing it.
+    pub(crate) fn attach_horizontal_shaping_sidecar(
+        &mut self,
+        node_id: NodeId,
+        expected_range: HorizontalShapingRunRange,
+        decision: std::sync::Arc<HorizontalShapingRunDecision>,
+    ) -> Result<(), HorizontalShapingSidecarRejectReason> {
+        self.horizontal_shaping_sidecars
+            .attach(node_id, expected_range, decision)
+    }
+
+    pub(crate) fn horizontal_shaping_sidecar(
+        &self,
+        node_id: NodeId,
+    ) -> Option<&std::sync::Arc<HorizontalShapingRunDecision>> {
+        self.horizontal_shaping_sidecars.get(node_id)
+    }
+
+    pub(crate) fn horizontal_shaping_sidecar_count(&self) -> usize {
+        self.horizontal_shaping_sidecars.len()
+    }
+
+    pub(crate) fn horizontal_shaping_sidecar_registry_generation(&self) -> Option<u64> {
+        self.horizontal_shaping_sidecars.registry_generation()
     }
 }
 

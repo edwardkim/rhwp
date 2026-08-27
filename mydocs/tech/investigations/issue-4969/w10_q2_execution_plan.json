@@ -3,7 +3,7 @@
   "kind": "font-w10-q2-horizontal-common-shaping-plan",
   "issue": 4969,
   "stage": "W10-Q2",
-  "status": "q2-c-qualified-q2-d-plan-awaiting-approval",
+  "status": "q2-d0-qualified-awaiting-d1-approval",
   "productMutation": false,
   "firstActivationSubset": {
     "writingMode": "horizontal-tb",
@@ -57,7 +57,7 @@
       "id": "Q2-D",
       "name": "emitted-run-and-rejected-trace-handoff",
       "productOutputChange": true,
-      "result": "owner-audit-and-revised-plan-ready",
+      "result": "d0-qualified-d1-awaiting-approval",
       "plan": "w10_q2_d_execution_plan.json",
       "schemaMinorChangesOnlyWithRealPublicValues": true
     },

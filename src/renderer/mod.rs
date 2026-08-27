@@ -53,6 +53,7 @@ pub mod scheduler;
 pub(crate) mod shaping;
 pub(crate) mod shaping_context;
 pub(crate) mod shaping_paragraph;
+pub(crate) mod shaping_publication;
 #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
 pub mod skia;
 pub(crate) mod static_svg;
