@@ -1923,7 +1923,39 @@ impl HeightMeasurer {
                         && stored_extent > 0.0
                         && stored_extent + 0.5 < additive
                         && wrap_bottom <= stored_extent + 0.5;
+                    // [#6135] 반대 방향 — 저장 ladder 가 additive 보다 **큰** 경우.
+                    // 순수 텍스트 셀의 첫 줄 `vertical_pos > 0` 은 한글이 그 줄 위에
+                    // 자리를 잡아 뒀다는 뜻이고, layout 은 그 vpos 를 그대로 존중해
+                    // 줄을 내려 그린다(156544683 pi=21 r0: cell_top + pad_top 3.0 +
+                    // vpos 9.3 = 렌더 692.7). 측정이 줄높이 합만 세면 행이 그만큼
+                    // 모자라 **다음 행 칸이 제목 글자 위를 덮는다**.
+                    //
+                    // 게이트는 저장 ladder 자신이 증인이 되게 좁힌다 — 개체 없는
+                    // 텍스트 전용 셀 + 전 문단 저장 보유 + 첫 줄 vpos > 0 +
+                    // ladder extent 가 additive 와 **선언 셀높이**를 모두 넘을 때만.
+                    // 선언 안에 들어가는 ladder 는 종전 회계를 그대로 둔다.
+                    let ladder_exceeds_declared_text_cell = non_inline_h <= 0.0
+                        && wrap_bottom <= 0.0
+                        && stored_extent > additive + 0.5
+                        && cell.height < 0x8000_0000
+                        // 첫 줄이 **셀 안에서** 시작해야 한다 — 별지 서식처럼 저장
+                        // vpos 가 셀 상대가 아니라 **표 누적**인 문서가 있고
+                        // (74312 pi=73: 셀 48.6px 인데 vpos 22390HU=298.5px),
+                        // 그 값을 extent 로 쓰면 행이 수백 px 로 부푼다.
+                        && cell
+                            .paragraphs
+                            .first()
+                            .and_then(|pp| pp.line_segs.first())
+                            .is_some_and(|seg| {
+                                seg.vertical_pos > 0
+                                    && hwpunit_to_px(seg.vertical_pos, self.dpi)
+                                        < hwpunit_to_px(cell.height as i32, self.dpi)
+                            })
+                        && stored_extent + pad_top + pad_bottom
+                            > hwpunit_to_px(cell.height as i32, self.dpi) + 0.5;
                     if trust_stored {
+                        stored_extent
+                    } else if ladder_exceeds_declared_text_cell {
                         stored_extent
                     } else {
                         additive.max(wrap_bottom)
