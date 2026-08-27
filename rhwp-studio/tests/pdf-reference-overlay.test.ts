@@ -416,7 +416,10 @@ test('a new reference session cannot reuse an older browser raster URL', async (
 
 test('a render change during reference loading cannot publish stale evidence', async () => {
   const previousWindow = (globalThis as any).window;
-  const browser: Record<string, unknown> = {};
+  const browser: Record<string, unknown> = {
+    setTimeout: globalThis.setTimeout,
+    clearTimeout: globalThis.clearTimeout,
+  };
   (globalThis as any).window = browser;
   let renderGeneration = 1;
   let referenceReady!: (value: unknown) => void;
@@ -489,6 +492,179 @@ test('a render change during reference loading cannot publish stale evidence', a
   }
 });
 
+test('the scan sends semantic row evidence before PDF fallbacks to the Vite log', async () => {
+  const previousWindow = (globalThis as any).window;
+  const previousFetch = globalThis.fetch;
+  const events: string[] = [];
+  const delivered: string[] = [];
+  let renderGeneration = 1;
+  let staleSemantic = true;
+  let pendingTrace = '[]';
+  let tracing = false;
+  let failExactOnce = true;
+  let contradictExact = false;
+  let pauseTriggered = false;
+  let pauseStarted!: () => void;
+  const midPagePaused = new Promise<void>(resolve => { pauseStarted = resolve; });
+  let captureStarted!: () => void;
+  const currentCapture = new Promise<void>(resolve => { captureStarted = resolve; });
+  const row = (segmentWidth: number) => ({
+    segmentCount: 1,
+    segmentWindowStart: 0,
+    textStarts: [12],
+    segmentFrames: [{ columnStart: 0, segmentWidth }],
+    segmentsTruncated: false,
+  });
+  const mismatch = (paragraphIdx: number, freshWidth: number) => ({
+    coordinates: { sectionIdx: 0, paragraphIdx },
+    comparison: {
+      comparable: true,
+      matches: false,
+      firstMismatchKind: 'horizontalFrame',
+      firstMismatchField: 'segmentWidth',
+      firstMismatchRowIndex: 0,
+      firstMismatchSegmentIndex: 0,
+      storedMismatchRow: row(1_200),
+      freshMismatchRow: row(freshWidth),
+      horizontalOriginIdentityProven: false,
+    },
+  });
+  let overlay!: PdfReferenceOverlay;
+  const browser: any = {
+    setTimeout: globalThis.setTimeout,
+    clearTimeout: globalThis.clearTimeout,
+    rhwpDev: {
+      lineBreakVisible: (pageIndex: number, options: { start: number }) => {
+        const generation = renderGeneration;
+        events.push(`semantic:${pageIndex}:${options.start}:R${generation}`);
+        pendingTrace = JSON.stringify([{
+          id: options.start + 1,
+          parentId: null,
+          function: options.start === 2
+            ? 'stable_target'
+            : options.start === 1 ? 'failing_target' : 'matching_target',
+          args: { page_index: pageIndex, start: options.start },
+          durationMs: 1,
+          depth: 0,
+        }]);
+        if (pageIndex === 1 && options.start === 0 && staleSemantic) {
+          staleSemantic = false;
+          renderGeneration = 2;
+        }
+        if (pageIndex === 1 && options.start === 0 && generation === 2 && !pauseTriggered) {
+          pauseTriggered = true;
+          overlay.setDiagnosticsPaused(true);
+          pauseStarted();
+        }
+        if (pageIndex === 1 && options.start === 1 && tracing && failExactOnce) {
+          failExactOnce = false;
+          return {
+            available: true,
+            errors: [{ status: 'error', error: 'exact trace unavailable' }],
+            total: 2,
+            nextOffset: null,
+            items: [],
+            itemOffsets: [],
+          };
+        }
+        if (pageIndex === 1 && options.start === 1 && tracing && contradictExact) {
+          return {
+            total: 3,
+            nextOffset: null,
+            items: [{ comparison: { matches: true } }],
+            itemOffsets: [1],
+          };
+        }
+        if (pageIndex !== 1) {
+          return { total: 0, nextOffset: null, items: [], itemOffsets: [] };
+        }
+        if (options.start === 0) return {
+          total: contradictExact ? 3 : 2,
+          nextOffset: 1,
+          items: [{ comparison: { matches: true } }],
+          itemOffsets: [0],
+        };
+        if (options.start === 1 && contradictExact && !tracing) return {
+          total: 3,
+          nextOffset: null,
+          items: [mismatch(4, 1_180), mismatch(5, 1_160)],
+          itemOffsets: [1, 2],
+        };
+        return {
+          total: contradictExact ? 3 : 2,
+          nextOffset: null,
+          items: [options.start === 2 ? mismatch(5, 1_160) : mismatch(4, 1_180)],
+          itemOffsets: [options.start],
+        };
+      },
+    },
+  };
+  (globalThis as any).window = browser;
+  (globalThis as any).fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
+    assert.equal(String(input), DOCUMENT_ERROR_LOG_PATH);
+    delivered.push(String(init?.body));
+    return new Response(null, { status: 204 });
+  };
+  overlay = new PdfReferenceOverlay('/__rhwp_harness/pdf-page/token', 1, 1, 'ref.pdf', {
+    errorLogCapability: 'a'.repeat(43),
+    documentDigest: 'digest', documentGeneration: 1, referenceGeneration: 1,
+    getDocumentDigest: () => 'digest', getDocumentGeneration: () => 1,
+    getHwpPageCount: () => 2,
+    traceLayout: run => {
+      tracing = true;
+      try {
+        return run();
+      } finally {
+        tracing = false;
+      }
+    },
+    takeLayoutTrace: () => {
+      const trace = pendingTrace;
+      pendingTrace = '[]';
+      return [trace];
+    },
+    capturePage: async (pageIndex) => {
+      events.push(`capture:${pageIndex}`);
+      if (pageIndex === 0) captureStarted();
+      return { width: 1, height: 1, pixels: new Uint8ClampedArray(4) };
+    },
+    getRenderGeneration: () => renderGeneration,
+  });
+  const internal = overlay as any;
+  internal.loadReferencePixels = async () => ({
+    width: 1, height: 1, surfaceHeight: 1, pixels: new Uint8ClampedArray(4),
+  });
+  internal.observePage = (pageIndex: number) => observation(pageIndex, pageIndex === 0 ? 0.1 : 0);
+  try {
+    assert.equal(await browser.__rhwpFidelityHarness.scan(), null);
+    await midPagePaused;
+    assert.equal(events.includes('semantic:1:1:R2'), false);
+    overlay.setDiagnosticsPaused(false);
+    await currentCapture;
+    assert.equal(delivered.length, 1);
+    assert.match(delivered[0], /^line-break: \[page=2 target=s0\/p4 kind=horizontalFrame /);
+    assert.doesNotMatch(delivered[0], / trace=/);
+    assert.doesNotMatch(delivered[0], /matching_target/);
+    assert.ok(events.indexOf('semantic:1:1:R2') < events.indexOf('capture:0'));
+    assert.equal(events.filter(event => event === 'semantic:1:1:R2').length, 2);
+    assert.equal(events.includes('semantic:1:1:R1'), false);
+
+    contradictExact = true;
+    internal.pageCount = 2;
+    internal.observePage = (pageIndex: number) => observation(pageIndex, 0);
+    await browser.__rhwpFidelityHarness.scan();
+    assert.equal(delivered.length, 2);
+    assert.match(delivered[1], /^line-break: \[page=2 target=s0\/p5 /);
+    assert.match(delivered[1], /"function":"stable_target"/);
+    assert.doesNotMatch(delivered[1], /target=s0\/p4/);
+  } finally {
+    await overlay.destroy();
+    (globalThis as any).fetch = previousFetch;
+    if (previousWindow === undefined) delete (globalThis as any).window;
+    else (globalThis as any).window = previousWindow;
+  }
+});
+
 test('the page layout trace accompanies both semantic and paint failures', async () => {
   const previousWindow = (globalThis as any).window;
   let hasLineBreak = true;
@@ -515,11 +691,14 @@ test('the page layout trace accompanies both semantic and paint failures', async
             freshUtf16Starts: [0, 13],
           },
         }] : [],
+        itemOffsets: hasLineBreak ? [0] : [],
       }),
     },
   };
   (globalThis as any).window = browser;
   const traceLifecycle: string[] = [];
+  let pageCount = 1;
+  let mismatchPage = 0;
   const semanticTrace = JSON.stringify([
     {
       id: 6,
@@ -538,12 +717,12 @@ test('the page layout trace accompanies both semantic and paint failures', async
       depth: 0,
     },
   ]);
-  const traces = ['[]', semanticTrace];
+  const traces = ['[]', '[]', '[]', semanticTrace];
   const overlay = new PdfReferenceOverlay('/__rhwp_harness/pdf-page/token', 1, 1, 'ref.pdf', {
     errorLogCapability: 'a'.repeat(43),
     documentDigest: 'digest', documentGeneration: 1, referenceGeneration: 1,
     getDocumentDigest: () => 'digest', getDocumentGeneration: () => 1,
-    getHwpPageCount: () => 1,
+    getHwpPageCount: () => pageCount,
     traceLayout: (run) => {
       traceLifecycle.push('begin:7');
       try {
@@ -553,7 +732,19 @@ test('the page layout trace accompanies both semantic and paint failures', async
       }
     },
     takeLayoutTrace: () => [traces.shift() ?? '[]'],
-    capturePage: async () => ({ width: 1, height: 1, pixels: new Uint8ClampedArray(4) }),
+    capturePage: async (pageIndex) => ({
+      width: 1,
+      height: 1,
+      pixels: new Uint8ClampedArray(4),
+      layoutTrace: hasLineBreak ? undefined : pageCount === 1 ? semanticTrace : JSON.stringify([{
+        id: 100 + pageIndex,
+        parentId: null,
+        function: 'capture_page',
+        args: { page_index: pageIndex },
+        durationMs: 1,
+        depth: 0,
+      }]),
+    }),
     getRenderGeneration: () => 1,
   });
   const internal = overlay as any;
@@ -562,7 +753,8 @@ test('the page layout trace accompanies both semantic and paint failures', async
     width: 1, height: 1, surfaceHeight: 1, pixels: new Uint8ClampedArray(4),
   });
   let mismatchRatio = 0.01;
-  internal.observePage = () => observation(0, mismatchRatio);
+  internal.observePage = (pageIndex: number) =>
+    observation(pageIndex, pageIndex === mismatchPage ? mismatchRatio : 0);
   internal.deliverDocumentError = (line: string) => delivered.push(line);
   try {
     await browser.__rhwpFidelityHarness.scan();
@@ -576,10 +768,29 @@ test('the page layout trace accompanies both semantic and paint failures', async
     assert.deepEqual(traceLifecycle, ['begin:7', 'end:7:true']);
     hasLineBreak = false;
     mismatchRatio = 0.1;
-    traces.push('[]', semanticTrace);
+    traces.push('[]', '[]');
     await browser.__rhwpFidelityHarness.scan();
     assert.match(delivered[1], /^paint: \[page=1 /);
     assert.match(delivered[1], /"function":"layout_frame_commit_row"/);
+
+    pageCount = 20;
+    mismatchPage = pageCount - 1;
+    internal.pageCount = pageCount;
+    for (let pageIndex = 0; pageIndex < pageCount; pageIndex++) {
+      traces.push('[]', JSON.stringify([{
+        id: 1_000 + pageIndex,
+        parentId: null,
+        function: 'semantic_probe',
+        args: { page_index: pageIndex },
+        durationMs: 1,
+        depth: 0,
+      }]));
+    }
+    await browser.__rhwpFidelityHarness.scan();
+    assert.match(delivered[2], /^paint: \[page=20 /);
+    assert.match(delivered[2], /"function":"capture_page"/);
+    assert.match(delivered[2], /"page_index":19/);
+    assert.doesNotMatch(delivered[2], /semantic_probe/);
   } finally {
     await overlay.destroy();
     if (previousWindow === undefined) delete (globalThis as any).window;

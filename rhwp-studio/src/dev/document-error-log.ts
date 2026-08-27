@@ -49,9 +49,12 @@ export interface LineBreakDiagnostic {
   };
 }
 export interface LineBreakVisibleResult {
+  available?: boolean;
+  errors?: unknown[];
   total?: number;
   nextOffset?: number | null;
   items?: LineBreakDiagnostic[];
+  itemOffsets?: number[];
 }
 
 export interface LayoutTraceEntry {

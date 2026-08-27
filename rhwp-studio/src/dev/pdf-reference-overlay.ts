@@ -19,8 +19,8 @@ import {
 } from './fidelity-scan.ts';
 import {
   attachDocumentErrorTrace,
+  formatFirstLineBreakError,
   formatDocumentError,
-  findFirstLineBreakError,
   MAX_LAYOUT_TRACE_ENTRIES,
   parseLayoutTrace,
   sendDocumentErrorLine,
@@ -145,7 +145,6 @@ export class PdfReferenceOverlay implements PageReferenceLayer {
   private scanSerial = 0;
   private scanAbortController: AbortController | null = null;
   private diffLogDeliveryFailed = false;
-  private pendingLayoutTrace: LayoutTraceEntry[] = [];
   private readonly diagnosticsPause = new DiagnosticPauseGate();
   private readonly harnessState: FidelityHarnessState;
   private readonly harnessApi: FidelityHarnessApi;
@@ -209,7 +208,6 @@ export class PdfReferenceOverlay implements PageReferenceLayer {
   }
 
   onRenderCodePatched(): void {
-    this.pendingLayoutTrace = [];
     void this.scanWholeDocument('subsecond-patch');
   }
 
@@ -240,85 +238,129 @@ export class PdfReferenceOverlay implements PageReferenceLayer {
     this.harnessState.activeScanId = null;
   }
 
-  private documentErrorLine(
-    report: FidelityScanReport,
-    pageTrace: readonly LayoutTraceEntry[] = [],
-  ): string | null {
-    const first = firstDocumentDivergence(report);
-    if (first?.kind !== 'page-count' && report.pages.length === 1) {
-      this.pendingLayoutTrace = [];
-      if (pageTrace.length === 0) this.takeLayoutTrace();
-      else {
-        this.retainLayoutTrace();
-        this.pendingLayoutTrace = this.mergeLayoutTrace(this.pendingLayoutTrace, pageTrace);
-      }
-    } else {
-      this.retainLayoutTrace();
-      this.pendingLayoutTrace = this.mergeLayoutTrace(this.pendingLayoutTrace, pageTrace);
-    }
-    for (const page of report.pages) {
-      if (first?.kind === 'page-count' && page.pageIndex >= first.pageIndex) break;
-      let semanticTrace: LayoutTraceEntry[] = [];
+  private async inspectLineBreak(
+    pageIndex: number,
+    stale: () => boolean,
+    signal: AbortSignal,
+  ): Promise<{ line: string | null; stale: boolean }> {
+    const inspect = (window as FidelityHarnessWindow).rhwpDev?.lineBreakVisible;
+    if (!inspect) return { line: null, stale: false };
+    const visited = new Set<number>();
+    let start = 0;
+    let total: number | null = null;
+    while (!visited.has(start) && (total === null || visited.size <= total)) {
+      await this.diagnosticsPause.wait(signal);
+      if (stale()) return { line: null, stale: true };
+      visited.add(start);
+      this.takeLayoutTrace();
+      let result: LineBreakVisibleResult | undefined;
       try {
-        const inspect = (window as FidelityHarnessWindow).rhwpDev?.lineBreakVisible;
-        const lineBreak = this.withLayoutTrace(() => inspect ? findFirstLineBreakError(
-          page.pageIndex + 1,
-          start => inspect(page.pageIndex, {
-            start,
-            limit: 100,
-            geometry: false,
-            measurement: false,
-          }),
-        ) : null);
-        semanticTrace = this.takeLayoutTrace();
-        if (lineBreak) return attachDocumentErrorTrace(lineBreak, this.consumeLayoutTrace(semanticTrace));
+        result = inspect(pageIndex, {
+          start,
+          limit: 100,
+          geometry: false,
+          measurement: false,
+        });
       } catch {
         this.takeLayoutTrace();
-        // A semantic inspector failure must not suppress proven paint/page-count evidence.
+        return { line: null, stale: false };
       }
-      if (page.pageIndex !== report.firstStructuralDivergencePage) continue;
-      const bounds = page.bounds;
-      const ruleDelta = page.horizontalRuleDelta;
-      const trace = this.consumeLayoutTrace(semanticTrace);
-      return attachDocumentErrorTrace(formatDocumentError('paint', [
-        ['page', page.pageIndex + 1],
-        ['ratio', page.mismatchRatio],
-        ['pdfOnly', page.pdfOnlyPixels],
-        ['rhwpOnly', page.hwpOnlyPixels],
-        ['colorOnly', page.colorMismatchPixels],
-        ['bounds', bounds ? `${bounds.x},${bounds.y},${bounds.width},${bounds.height}` : 'none'],
-        ['ruleDelta', [
-          ruleDelta.countDelta,
-          ruleDelta.maxCenterDelta ?? '-',
-          ruleDelta.hwpEvidenceCenters.join(':') || '-',
-          ruleDelta.pdfEvidenceCenters.join(':') || '-',
-        ].join(',')],
-      ]), trace);
+      this.takeLayoutTrace();
+      if (stale()) return { line: null, stale: true };
+      const mismatches: Array<{ line: string; offset: number | null }> = [];
+      for (let index = 0; index < (result?.items?.length ?? 0); index++) {
+        const line = formatFirstLineBreakError(pageIndex + 1, [result!.items![index]]);
+        if (!line) continue;
+        const offset = result?.itemOffsets?.[index];
+        mismatches.push({
+          line,
+          offset: Number.isSafeInteger(offset) && Number(offset) >= 0 ? Number(offset) : null,
+        });
+      }
+      for (const mismatch of mismatches) {
+        const mismatchOffset = mismatch.offset;
+        if (mismatchOffset === null) return { line: mismatch.line, stale: false };
+        await this.diagnosticsPause.wait(signal);
+        if (stale()) return { line: null, stale: true };
+        this.takeLayoutTrace();
+        let exact: LineBreakVisibleResult | undefined;
+        try {
+          exact = this.withLayoutTrace(() => inspect(pageIndex, {
+            start: mismatchOffset,
+            limit: 1,
+            geometry: false,
+            measurement: false,
+          }));
+        } catch {
+          this.takeLayoutTrace();
+          return stale()
+            ? { line: null, stale: true }
+            : { line: mismatch.line, stale: false };
+        }
+        const trace = this.takeLayoutTrace();
+        if (stale()) return { line: null, stale: true };
+        if (!exact || exact.available === false || (exact.errors?.length ?? 0) > 0) {
+          return { line: mismatch.line, stale: false };
+        }
+        const line = formatFirstLineBreakError(pageIndex + 1, exact.items ?? []);
+        if (line) return { line: attachDocumentErrorTrace(line, trace), stale: false };
+        await yieldToInteractiveWork(signal);
+        if (stale()) return { line: null, stale: true };
+      }
+      const reportedTotal = result?.total;
+      total ??= Number.isSafeInteger(reportedTotal) && Number(reportedTotal) >= 0
+        ? Number(reportedTotal)
+        : 0;
+      const next = result?.nextOffset;
+      if (!Number.isSafeInteger(next) || Number(next) <= start) {
+        return { line: null, stale: false };
+      }
+      start = Number(next);
+      await yieldToInteractiveWork(signal);
+      if (stale()) return { line: null, stale: true };
     }
-    if (first?.kind === 'page-count') {
+    return { line: null, stale: false };
+  }
+
+  private fallbackDocumentErrorLine(
+    report: FidelityScanReport,
+    tracePageIndex: number | null,
+    trace: readonly LayoutTraceEntry[],
+  ): string | null {
+    const first = firstDocumentDivergence(report);
+    if (!first) return null;
+    const selectedTrace = first.pageIndex === tracePageIndex ? trace : [];
+    if (first.kind === 'page-count') {
       return attachDocumentErrorTrace(formatDocumentError('page-count', [
         ['page', first.pageIndex + 1],
         ['expected', report.pdfPageCount ?? 0],
         ['actual', report.hwpPageCount],
-      ]), this.consumeLayoutTrace());
+      ]), selectedTrace);
     }
-    return null;
+    const page = report.pages.find(candidate => candidate.pageIndex === first.pageIndex);
+    if (!page) return null;
+    const bounds = page.bounds;
+    const ruleDelta = page.horizontalRuleDelta;
+    return attachDocumentErrorTrace(formatDocumentError('paint', [
+      ['page', page.pageIndex + 1],
+      ['ratio', page.mismatchRatio],
+      ['pdfOnly', page.pdfOnlyPixels],
+      ['rhwpOnly', page.hwpOnlyPixels],
+      ['colorOnly', page.colorMismatchPixels],
+      ['bounds', bounds ? `${bounds.x},${bounds.y},${bounds.width},${bounds.height}` : 'none'],
+      ['ruleDelta', [
+        ruleDelta.countDelta,
+        ruleDelta.maxCenterDelta ?? '-',
+        ruleDelta.hwpEvidenceCenters.join(':') || '-',
+        ruleDelta.pdfEvidenceCenters.join(':') || '-',
+      ].join(',')],
+    ]), selectedTrace);
   }
 
   private takeLayoutTrace(): LayoutTraceEntry[] {
     return this.mergeLayoutTrace(
       ...(this.harness.takeLayoutTrace?.() ?? []).map(parseLayoutTrace),
     );
-  }
-
-  private retainLayoutTrace(): void {
-    this.pendingLayoutTrace = this.mergeLayoutTrace(this.pendingLayoutTrace, this.takeLayoutTrace());
-  }
-
-  private consumeLayoutTrace(extra: readonly LayoutTraceEntry[] = []): LayoutTraceEntry[] {
-    const trace = this.mergeLayoutTrace(this.pendingLayoutTrace, extra);
-    this.pendingLayoutTrace = [];
-    return trace;
   }
 
   private mergeLayoutTrace(...groups: readonly (readonly LayoutTraceEntry[])[]): LayoutTraceEntry[] {
@@ -381,10 +423,8 @@ export class PdfReferenceOverlay implements PageReferenceLayer {
       return true;
     };
 
-    const buildReport = (
-      observations: FidelityPageObservation[],
-      scanComplete: boolean,
-    ): FidelityScanReport => buildFidelityScanReport({
+    const buildReport = (observations: FidelityPageObservation[]): FidelityScanReport =>
+      buildFidelityScanReport({
       scanId,
       trigger,
       identity: {
@@ -395,23 +435,36 @@ export class PdfReferenceOverlay implements PageReferenceLayer {
         renderGeneration,
         pdfName: this.pdfName,
       },
-      hwpPageCount: scanComplete ? hwpPageCount : sharedPageCount,
-      pdfPageCount: scanComplete ? this.pageCount : sharedPageCount,
+      hwpPageCount,
+      pdfPageCount: this.pageCount,
       observations,
       startedAt,
       completedAt: performance.now(),
     });
-    let errorDelivered = false;
-    let latestPageTrace: LayoutTraceEntry[] = [];
-    const deliverFirstError = (report: FidelityScanReport): void => {
-      if (errorDelivered) return;
-      const line = this.documentErrorLine(report, latestPageTrace);
-      if (!line) return;
-      this.deliverDocumentError(line);
-      errorDelivered = true;
-    };
 
     try {
+      let fallbackTracePage: number | null = null;
+      let fallbackTrace: LayoutTraceEntry[] = [];
+      let semanticErrorDelivered = false;
+      if ((window as FidelityHarnessWindow).rhwpDev?.lineBreakVisible) {
+        for (let pageIndex = 0; pageIndex < hwpPageCount; pageIndex++) {
+          await this.diagnosticsPause.wait(abortController.signal);
+          if (abandonIfStale()) return null;
+          const semantic = await this.inspectLineBreak(
+            pageIndex,
+            abandonIfStale,
+            abortController.signal,
+          );
+          if (semantic.stale) return null;
+          if (semantic.line) {
+            this.deliverDocumentError(semantic.line);
+            semanticErrorDelivered = true;
+            break;
+          }
+          await yieldToInteractiveWork(abortController.signal);
+        }
+      }
+
       const observations: FidelityPageObservation[] = [];
       for (let pageIndex = 0; pageIndex < sharedPageCount; pageIndex++) {
         await this.diagnosticsPause.wait(abortController.signal);
@@ -430,17 +483,25 @@ export class PdfReferenceOverlay implements PageReferenceLayer {
         );
         if (abandonIfStale()) return null;
         const observation = this.observePage(pageIndex, capture, reference);
-        latestPageTrace = parseLayoutTrace(capture.layoutTrace ?? '[]');
         observations.push(observation);
+        if (fallbackTracePage === null) {
+          const first = firstDocumentDivergence(buildReport([observation]));
+          if (first?.kind === 'structural' && first.pageIndex === pageIndex) {
+            fallbackTracePage = pageIndex;
+            fallbackTrace = parseLayoutTrace(capture.layoutTrace ?? '[]');
+          }
+        }
         this.harnessState.completedPages = pageIndex + 1;
-        deliverFirstError(buildReport([observation], false));
         await yieldToInteractiveWork(abortController.signal);
       }
       if (abandonIfStale()) return null;
-      const report = buildReport(observations, true);
+      const report = buildReport(observations);
       this.harnessState.latestReport = report;
       this.endScan('ready');
-      deliverFirstError(report);
+      if (!semanticErrorDelivered) {
+        const line = this.fallbackDocumentErrorLine(report, fallbackTracePage, fallbackTrace);
+        if (line) this.deliverDocumentError(line);
+      }
       return report;
     } catch (error) {
       if (abortController.signal.aborted || this.destroyed || scanId !== this.scanSerial) return null;

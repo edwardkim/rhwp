@@ -336,9 +336,11 @@ export function initRhwpDev(wasm: WasmBridge, devOptions: RhwpDevOptions = {}): 
       const available = lineBreakInspectorAvailable();
       const targetList = Array.from(targets.values());
       const reports: unknown[] = [];
+      const itemOffsets: number[] = [];
       let cursor = offset;
       let processed = 0;
       while (available && cursor < targetList.length && processed < limit) {
+        const targetOffset = cursor;
         const target = targetList[cursor];
         const report = inspectLineBreak(target, {
           geometry: options.geometry ?? false,
@@ -376,6 +378,7 @@ export function initRhwpDev(wasm: WasmBridge, devOptions: RhwpDevOptions = {}): 
                   && value === diagnostic.textUtf16Length)))) continue;
           }
           reports.push(report);
+          itemOffsets.push(targetOffset);
         }
       }
       return {
@@ -385,6 +388,7 @@ export function initRhwpDev(wasm: WasmBridge, devOptions: RhwpDevOptions = {}): 
         total: targets.size,
         nextOffset: available && cursor < targets.size ? cursor : null,
         items: reports,
+        itemOffsets,
       };
     },
 
