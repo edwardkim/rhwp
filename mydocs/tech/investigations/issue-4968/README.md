@@ -1,3 +1,10 @@
+---
+kind: investigation
+status: active
+canonical: mydocs/tech/font_fallback_strategy.md
+last_verified: 2026-08-27
+---
+
 # Issue #4968 W9 kerning 조사 증적
 
 이 디렉터리는 kerning flag의 measurement·shaping end-to-end 연결을 위한 공개·비식별 증적만 보존한다.
@@ -119,3 +126,38 @@ format 0, unsupported를 기능 탐지하고 GPOS를 우선한다. source 없음
 `kern=0/1`의 nominal·glyph·cluster identity가 모두 안정적인 LTR run만 bounded position delta 후보로
 만든다. `eligible`과 `adjustment-candidate`는 최종 적용 판정이 아니며 원문은 trace에 남기지 않는다.
 네 절편 모두 실제 pair advance는 아직 바꾸지 않는다.
+
+## Stage W9-Q3-5R4E-0
+
+- 공개 runtime fixture: [`kerning_runtime_fixture.hwpx`](fixtures/kerning_runtime_fixture.hwpx)
+- fixture·projection 계약:
+  [`kerning_runtime_fixture.manifest.json`](fixtures/kerning_runtime_fixture.manifest.json)
+- 생성기: [`scripts/generate_kerning_runtime_fixture.py`](../../../../scripts/generate_kerning_runtime_fixture.py)
+- 계약 테스트:
+  [`scripts/tests/test_kerning_r4e_runtime_fixture.py`](../../../../scripts/tests/test_kerning_r4e_runtime_fixture.py)
+- 수행계획:
+  [`task_m100_4968_w9_q3_5_r4e_entry.md`](../../../working/task_m100_4968_w9_q3_5_r4e_entry.md)
+
+R4E fixture는 역사적 Q2 fixture를 바꾸지 않고 1,236-byte `RHWPExactKerningSmoke.ttf`를 exact source로
+등록하는 native·Docker WASM 공통 입력이다. body 18개와 table-cell·text-box 4개가 ratio 100/90/80,
+spacing 0/-5/-10, K0/K1, stored/fresh lane을 교차한다. smoke face가 지원하지 않는 라벨이나 한글이 한 run에
+섞이면 nominal identity gate가 의도대로 fail-closed하므로, 가시 텍스트는 `AV To WA HH`만 두고 case identity는
+manifest의 paragraph·char-shape 좌표에 보존한다.
+
+manifest는 char shape 7~24의 Latin slot(`languageIndex=1`, `faceIndex=0`)과 native/WASM 등록 API를
+명시한다. canonical projection은 allowlist 방식이며 원문·font bytes·source path·문서 hash·파일명·private
+identity를 금지한다. target pointer-width 차이는 기존 Q1 규칙과 같은 `para:MAX` 하나로만 정규화하고,
+그 밖의 결과는 canonical JSON byte identity로 비교한다.
+
+```bash
+python3 scripts/generate_kerning_runtime_fixture.py \
+  --output-root mydocs/tech/investigations/issue-4968/fixtures
+python3 -m unittest -v \
+  scripts.tests.test_kerning_r4e_runtime_fixture \
+  scripts.tests.test_kerning_q2
+```
+
+fixture SHA-256은 `369dbea8562a5f0ddaee41c21319e06645250d854090a5dd1e04c006ddbe0485`,
+manifest file SHA-256은 `4f9dbc95738dc3e964661fb40728826f3d6c40203a4c0c2e49c002c181ba15d1`,
+projection contract canonical SHA-256은
+`aeebaac86e90ff0bb95c603c88ef51c15ce93c0076742d9488ced09d95d5e2e6`이다.
