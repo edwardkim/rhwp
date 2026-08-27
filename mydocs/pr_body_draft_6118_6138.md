@@ -47,8 +47,21 @@ Closes #6138
 
 ## 스크린샷
 
-- [#6118 대표 화면](https://github.com/edwardkim/rhwp/blob/b6e734d99a1d87ddd3626a9c88eaf7952961df29/mydocs/report/task_m100_6118_report.md#3-시각-결과)
-- [#6138 대표 화면](https://github.com/edwardkim/rhwp/blob/b6e734d99a1d87ddd3626a9c88eaf7952961df29/mydocs/report/task_m100_6138_report.md#3-시각-결과)
+### #6118 서식 도구 모음
+
+| 992px 전체 1행 | 460px 2행 inline | 375px 2행 더보기 |
+| --- | --- | --- |
+| ![992px 전체 1행](https://raw.githubusercontent.com/edwardkim/rhwp/b6e734d99a1d87ddd3626a9c88eaf7952961df29/mydocs/report/assets/task_m100_6118/stylebar-full-992.png) | ![460px 2행 inline](https://raw.githubusercontent.com/edwardkim/rhwp/b6e734d99a1d87ddd3626a9c88eaf7952961df29/mydocs/report/assets/task_m100_6118/stylebar-inline-460.png) | ![375px 2행 더보기](https://raw.githubusercontent.com/edwardkim/rhwp/b6e734d99a1d87ddd3626a9c88eaf7952961df29/mydocs/report/assets/task_m100_6118/stylebar-overflow-375.png) |
+
+[#6118 상세 시각 결과](https://github.com/edwardkim/rhwp/blob/b6e734d99a1d87ddd3626a9c88eaf7952961df29/mydocs/report/task_m100_6118_report.md#3-시각-결과)
+
+### #6138 기본 도구 상자
+
+| 1280px 전체 표시 | 1024px group scroll | 375px group scroll |
+| --- | --- | --- |
+| ![1280px 전체 표시](https://raw.githubusercontent.com/edwardkim/rhwp/b6e734d99a1d87ddd3626a9c88eaf7952961df29/mydocs/report/assets/task_m100_6138/toolbar-wide-1280.png) | ![1024px 한 줄 스크롤](https://raw.githubusercontent.com/edwardkim/rhwp/b6e734d99a1d87ddd3626a9c88eaf7952961df29/mydocs/report/assets/task_m100_6138/toolbar-scroll-1024.png) | ![375px 한 줄 스크롤](https://raw.githubusercontent.com/edwardkim/rhwp/b6e734d99a1d87ddd3626a9c88eaf7952961df29/mydocs/report/assets/task_m100_6138/toolbar-scroll-375.png) |
+
+[#6138 상세 시각 결과](https://github.com/edwardkim/rhwp/blob/b6e734d99a1d87ddd3626a9c88eaf7952961df29/mydocs/report/task_m100_6138_report.md#3-시각-결과)
 
 Studio chrome의 DOM/CSS/접근성 변경이며 renderer 출력은 바꾸지 않아 PDF/SVG visual sweep은 적용하지
 않았습니다.
