@@ -3887,8 +3887,45 @@ impl LayoutEngine {
             // - 보통(ind=0): 모든 줄 margin_left
             // - 들여쓰기(ind>0): 첫줄 margin_left+indent, 다음줄 margin_left
             // - 내어쓰기(ind<0): 첫줄 margin_left, 다음줄 margin_left+|indent|
-            let line_indent =
-                crate::renderer::equation_tac_flow::paragraph_line_indent(indent, line_idx);
+            //
+            // [Issue #6190] **저장 LINE_SEG 의 `TAG_INDENTATION`(bit 20)이 정답지다.**
+            // 이 비트는 "이 줄에 들여쓰기가 적용됐다"는 한글의 줄별 기록이다. 비트가
+            // 꺼진 줄에 우리가 들여쓰기를 얹으면 그 줄과, 그 문단이 호스트하는 표까지
+            // 함께 밀린다(156458354 3쪽 `경 력 사 항` +68.1px, 마지막 표는 용지 밖 36px).
+            //
+            // 한글 통제 실험으로 확인했다 — 같은 문단의 `indent` 만 바꿔 한글로 PDF 를
+            // 떠서 재면:
+            //
+            // | 문서 | ls[0].tag | indent 0→20445 스윕 | 한글 x |
+            // |---|---|---|---|
+            // | 156458354 pi=28 | `0x60000` (bit20 꺼짐) | 0 · 2000 · 6000 · 10000 · 20445 | **전부 345.60 (불변)** |
+            // | 36313646 pi=2 | `0x160000` (bit20 켜짐) | 0 · 660 · 4000 · 10000 · 20445 | 352.77 → 420.89 (**정확히 indent/4 씩**) |
+            //
+            // 내어쓰기 문단이 `ls[0]=0x60000, ls[1..]=0x160000` 인 것도 같은 의미다 —
+            // 내어쓰기는 둘째 줄부터 적용되고, 비트가 줄마다 그것을 기록한다.
+            // 합성 사다리(`TAG_IMPLEMENTATION_PROPERTY`)는 이 증언이 없으므로 제외한다.
+            //
+            // 편집으로 줄 수가 달라진 문단은 저장 사다리가 더는 이 조판을 설명하지
+            // 못한다 — 그때는 비트도 낡은 기록이다(#6204 계열). `composed.lines` 와
+            // 저장 세그 수가 같을 때만 증언으로 쓴다.
+            //
+            // **본문 흐름 한정**이다 — 표 셀 안 문단은 한글이 들여쓰기를 적용한다
+            // (오라클 7문서: 2777015 · 156548319 · 156658621 · 156428389 등 모두 셀 안
+            // Center 문단이고 한글 x 가 `indent/2` 반영값과 0.0~0.4px 로 일치).
+            let stored_ladder_covers_lines = cell_ctx.is_none()
+                && para.is_some_and(|p| p.line_segs.len() == composed.lines.len());
+            let stored_seg_denies_indent = stored_ladder_covers_lines
+                && para
+                    .and_then(|p| p.line_segs.get(line_idx))
+                    .is_some_and(|seg| {
+                        seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                            && seg.tag & LineSeg::TAG_INDENTATION == 0
+                    });
+            let line_indent = if stored_seg_denies_indent {
+                0.0
+            } else {
+                crate::renderer::equation_tac_flow::paragraph_line_indent(indent, line_idx)
+            };
             let styled_margin_left = margin_left + line_indent;
 
             // [Task #489] Picture/Shape Square wrap (어울림) 시 LINE_SEG.cs/sw 적용.
