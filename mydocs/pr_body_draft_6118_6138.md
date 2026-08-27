@@ -19,8 +19,8 @@ Closes #6138
 
 상세 설계와 검증 근거:
 
-- [#6118 최종 보고서](report/task_m100_6118_report.md)
-- [#6138 최종 보고서](report/task_m100_6138_report.md)
+- [#6118 최종 보고서](https://github.com/edwardkim/rhwp/blob/b6e734d99a1d87ddd3626a9c88eaf7952961df29/mydocs/report/task_m100_6118_report.md)
+- [#6138 최종 보고서](https://github.com/edwardkim/rhwp/blob/b6e734d99a1d87ddd3626a9c88eaf7952961df29/mydocs/report/task_m100_6138_report.md)
 
 ## 테스트
 
@@ -47,8 +47,8 @@ Closes #6138
 
 ## 스크린샷
 
-- [#6118 대표 화면](report/task_m100_6118_report.md#3-시각-결과)
-- [#6138 대표 화면](report/task_m100_6138_report.md#3-시각-결과)
+- [#6118 대표 화면](https://github.com/edwardkim/rhwp/blob/b6e734d99a1d87ddd3626a9c88eaf7952961df29/mydocs/report/task_m100_6118_report.md#3-시각-결과)
+- [#6138 대표 화면](https://github.com/edwardkim/rhwp/blob/b6e734d99a1d87ddd3626a9c88eaf7952961df29/mydocs/report/task_m100_6138_report.md#3-시각-결과)
 
 Studio chrome의 DOM/CSS/접근성 변경이며 renderer 출력은 바꾸지 않아 PDF/SVG visual sweep은 적용하지
 않았습니다.
