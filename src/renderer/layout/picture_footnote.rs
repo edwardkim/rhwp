@@ -1570,7 +1570,7 @@ fn format_footnote_number(
         NumberFormat::Digit => number.to_string(),
         NumberFormat::CircledDigit => {
             // ① ~ ⑳
-            if number >= 1 && number <= 20 {
+            if (1..=20).contains(&number) {
                 char::from_u32(0x2460 + (number - 1) as u32)
                     .map(|c| c.to_string())
                     .unwrap_or_else(|| number.to_string())
