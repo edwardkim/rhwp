@@ -369,7 +369,7 @@ test('compact status description round-trips workflow and impact axes', () => {
   assert.ok(policy.status_description.length <= 140);
   assert.deepEqual(parseStatusDescription(policy.status_description), {
     v: '5',
-    cv: '4',
+    cv: '5',
     mode: 'selective',
     rfp: '0',
     wf: '111',
@@ -425,10 +425,13 @@ test('mirrored trigger contracts match CI, CodeQL, and Render Diff workflows', (
   assert.equal(workflowRunExpected('CI', [{ filename: 'samples/new-reference.hwp' }]), true);
   assert.equal(workflowRunExpected('CodeQL', [{ filename: 'samples/new-reference.hwp' }]), true);
   assert.equal(workflowRunExpected('Render Diff', [{ filename: 'rhwp-studio/tests/a.ts' }]), true);
+  assert.equal(workflowRunExpected('Render Diff', [{ filename: 'src/cli/commands/caption_validation.rs' }]), true);
   assert.equal(workflowRunExpected('Render Diff', [{ filename: 'src/cli/outputs/mod.rs' }]), true);
   assert.equal(workflowRunExpected('Render Diff', [{ filename: 'src/cli/outputs/pdf.rs' }]), true);
   assert.equal(workflowRunExpected('Render Diff', [{ filename: 'src/cli/outputs/raster.rs' }]), false);
   assert.equal(workflowRunExpected('Render Diff', [{ filename: 'src/cli/outputs/vector.rs' }]), false);
+  assert.equal(workflowRunExpected('Render Diff', [{ filename: 'src/cli/queries/structure.rs' }]), false);
+  assert.equal(workflowRunExpected('Render Diff', [{ filename: 'src/main.rs' }]), false);
 });
 
 test('every classified render-impacting tracked path starts Render Diff', () => {

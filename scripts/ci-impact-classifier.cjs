@@ -2,7 +2,7 @@
 
 const fs = require('node:fs');
 
-const CLASSIFIER_VERSION = '4';
+const CLASSIFIER_VERSION = '5';
 const CODEQL_LANGUAGE_ORDER = ['javascript-typescript', 'python', 'rust'];
 const FRONTEND_MODE_RANK = { none: 0, unit: 1, package: 2 };
 
@@ -19,6 +19,8 @@ const RENDER_RUST_PREFIXES = [
 ];
 
 const RENDER_RUST_FILES = new Set([
+  // [#3789] test-caption의 문서 mutation 뒤 SVG 출력 경계를 root에서 분리했다.
+  'src/cli/commands/caption_validation.rs',
   // [#5776] Render Diff의 PDF report가 native CLI export-pdf를 직접 실행한다.
   // outputs/mod.rs의 sibling-resource 판정도 같은 PDF 입력 경계다.
   'src/cli/outputs/mod.rs',
@@ -151,9 +153,6 @@ function failClosedPathReason(filename) {
   }
   if (filename === 'rust-toolchain.toml' || filename.startsWith('.cargo/')) {
     return 'rust-toolchain-contract';
-  }
-  if (filename === 'src/main.rs') {
-    return 'main-render-boundary';
   }
   if (filename === 'src/wasm_api.rs' || filename.startsWith('src/wasm_api/')) {
     return 'wasm-contract';
