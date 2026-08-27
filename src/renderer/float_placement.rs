@@ -175,6 +175,83 @@ pub(crate) fn native_empty_host_rowbreak_line_advance_hu(
     Some(advance)
 }
 
+/// [#6147] 저장 사다리가 "빈 앵커 문단의 줄 하나"만 증언하는 자리차지 밴드의 host 줄 계약.
+///
+/// 한글은 자리차지(TopAndBottom) 개체를 매단 **빈 앵커 문단**도 개체 아래에 자기 줄
+/// 상자(`lh + ls`)를 차지한다. rhwp 는 #1147 이래 이 줄을 일괄 억제해 왔고(빈 앵커 vpos 가
+/// 이미 갭을 인코딩한다는 전제), 그래서 밴드 바로 아래 첫 본문 문단이 개체에 딱 붙는다.
+///
+/// 억제가 옳은 문단과 아닌 문단은 **저장 사다리가 가른다** — `next.vpos - host.vpos` 가
+/// 정확히 `lh + max(ls, 0)` 이면 한글이 개체 높이를 접고 host 줄 advance 만 흐름에
+/// 계상했다는 뜻이라, 그 줄은 별도로 더해야 할 실 흐름이다(= #1147 의 "vpos 가 이미
+/// 갭을 인코딩" 전제가 성립하지 않는 문단). 델타가 개체 높이를 품은 일반 물리 사다리는
+/// 등식이 깨져 자연 배제된다 — #2439 의 [#2808] 판별자와 같은 축이다.
+///
+/// #2439(`native_empty_host_rowbreak_line_advance_hu`)는 이 계약의 **단일 표·양수 offset·
+/// RowBreak·native HWP5** 특수형이고, 이 함수는 같은 증거를 HWPX 저장 레이아웃과 다중
+/// 자리차지 개체(보도자료 서식의 머리표 2~3개)로 넓힌다. 개체가 여럿이면 마지막 자리차지
+/// 개체에서만 계상해 밴드마다 중복 가산되지 않게 한다.
+pub(crate) fn stored_empty_anchor_band_host_line_advance_hu(
+    stored_layout: bool,
+    para: &Paragraph,
+    control_index: usize,
+    next_para: Option<&Paragraph>,
+) -> Option<i32> {
+    // host 글자가 **한 자도 없어야** 한다. 공백 한 칸이라도 있으면 #1147 억제가
+    // 애초에 걸리지 않아 조판이 이미 host 줄을 계상하고 있고(156272593 pi=44:
+    // `text=" "` → `PartialParagraph` 항목 존재), 여기서 또 더하면 이중 계상이라
+    // 쪽이 하나 늘어난다(코퍼스 4,000 표본 유일 회귀). 판정을 #1147 의 조판 술어
+    // (`para.text.is_empty()`)와 정확히 같은 축에 둔다.
+    if !stored_layout || !para.text.is_empty() {
+        return None;
+    }
+    // 문단의 가시 개체가 전부 비-TAC 자리차지(vert=문단) float 이어야 한다 — 인라인
+    // 내용이 섞이면 host 줄이 그 내용의 줄이지 앵커 줄이 아니다.
+    let mut last_float = None;
+    for (index, control) in para.controls.iter().enumerate() {
+        let common = match control {
+            Control::Table(table) => &table.common,
+            Control::Picture(picture) => &picture.common,
+            Control::Shape(shape) => shape.common(),
+            _ => continue,
+        };
+        if !is_para_topbottom_float(common) {
+            return None;
+        }
+        last_float = Some(index);
+    }
+    if last_float != Some(control_index) {
+        return None;
+    }
+    // 다음이 개체 없는 일반 본문 문단일 때만 — 앵커 스택(다음도 빈 앵커)의 줄간격은
+    // 개체-개체 간격이라 이미 #1133 이 보존한다.
+    if !next_para.is_some_and(|next| para_has_non_whitespace_text(next) && next.controls.is_empty())
+    {
+        return None;
+    }
+
+    fn stored_seg(paragraph: &Paragraph) -> Option<&crate::model::paragraph::LineSeg> {
+        paragraph
+            .line_segs
+            .iter()
+            .find(|seg| seg.tag & 0x8000_0000 == 0 && seg.line_height > 0)
+    }
+    let host_seg = stored_seg(para)?;
+    let advance = host_seg.line_height + host_seg.line_spacing.max(0);
+    if advance <= 0 {
+        return None;
+    }
+    let next_vpos = next_para.and_then(stored_seg)?.vertical_pos;
+    ((next_vpos - host_seg.vertical_pos - advance).abs() <= 1).then_some(advance)
+}
+
+/// 문단에 공백·개체 마커가 아닌 실제 글자가 있는가.
+fn para_has_non_whitespace_text(para: &Paragraph) -> bool {
+    para.text
+        .chars()
+        .any(|ch| ch > '\u{001F}' && ch != '\u{FFFC}' && !ch.is_whitespace())
+}
+
 /// [#5922] native HWP5 CellBreak 자리차지 표의 연속 조각 바깥 여백 재개방 계약.
 ///
 /// 한글은 다쪽으로 이어지는 CellBreak 조각을 쪽마다 표 바깥 여백(상·하)을 다시
@@ -668,6 +745,44 @@ pub(crate) fn ranges_overlap(a_start: f64, a_end: f64, b_start: f64, b_end: f64)
     let b0 = b_start.min(b_end);
     let b1 = b_start.max(b_end);
     a0 < b1 && b0 < a1
+}
+
+/// [#6143] 문단 기준 양수 오프셋이 **쪽 경계에서 이미 소진**됐는지 판정한다.
+///
+/// 오프셋의 기준점은 앵커 문단이 놓인 자리다. 저장 사다리가 준 앵커 자리에 오프셋을
+/// 얹었을 때 표 상단이 이 쪽 바닥에서 최소 조각(`MIN_FRAGMENT_KEEP_PX`)도 남기지 못하는
+/// 자리에 떨어진다면, 그 자리는 **앞 쪽 바닥**이고 오프셋은 거기서 이미 쓰였다. 그런
+/// 조각을 이 쪽 최상단에서 다시 오프셋만큼 밀면 쪽 상단에 빈 띠가 생기고, 그만큼 조각이
+/// 짧아져 표가 한 쪽 더 갈라진다(156555538 9쪽: 앵커 vpos=32514(433.5px) + off=41592
+/// (554.6px) = 988.1px 로 가용 990.3px 의 바닥. 한글 17쪽 ↔ rhwp 18쪽).
+///
+/// 반대로 앵커 자리 + 오프셋이 쪽 안에 여유 있게 들어가면 그 오프셋은 이 쪽에서 유효한
+/// 통상적인 미세 이동이므로 그대로 둔다(1342000 교육부 맵 p25: 200.0 + 10.0 ≪ 585.9).
+pub(crate) fn para_offset_consumed_by_page_break(
+    para: &Paragraph,
+    common: &CommonObjAttr,
+    available_height: f64,
+    dpi: f64,
+) -> bool {
+    /// 오프셋을 적용한 자리에 이만큼도 안 남으면 그 자리에서는 조각이 시작될 수 없다.
+    const MIN_FRAGMENT_KEEP_PX: f64 = 25.0;
+
+    if common.treat_as_char || !matches!(common.vert_rel_to, VertRelTo::Para) {
+        return false;
+    }
+    let offset = signed_hwpunit(common.vertical_offset);
+    if offset <= 0 {
+        return false;
+    }
+    if !available_height.is_finite() || available_height <= 0.0 {
+        return false;
+    }
+    let anchor_top = para
+        .line_segs
+        .first()
+        .map(|seg| hwpunit_to_px(seg.vertical_pos, dpi))
+        .unwrap_or(0.0);
+    anchor_top + hwpunit_to_px(offset, dpi) + MIN_FRAGMENT_KEEP_PX >= available_height
 }
 
 #[cfg(test)]

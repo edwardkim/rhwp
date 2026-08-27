@@ -5,6 +5,7 @@ import {
   type PageArrangement,
 } from './page-arrangement.ts';
 import type { PageMovementDirection } from './page-movement.ts';
+import { resolvePageGap } from './page-gap.ts';
 
 /** 그리드 모드 전환 줌 임계값 */
 const GRID_ZOOM_THRESHOLD = 0.5;
@@ -28,10 +29,12 @@ export class VirtualScroll {
   private columns = 1;
   private gridMode = false;
   private horizontalMode = false;
-  private readonly pageGap: number;
+  private readonly pageGapAt100Percent: number;
+  private pageGap: number;
 
-  constructor(pageGap = 10) {
-    this.pageGap = pageGap;
+  constructor(pageGapAt100Percent = 10) {
+    this.pageGapAt100Percent = pageGapAt100Percent;
+    this.pageGap = resolvePageGap(1, pageGapAt100Percent);
   }
 
   /** 페이지 크기 정보로 오프셋 배열을 구축한다 */
@@ -43,6 +46,7 @@ export class VirtualScroll {
     movement: PageMovementDirection = 'vertical',
     viewportHeight = 0,
   ): void {
+    this.pageGap = resolvePageGap(zoom, this.pageGapAt100Percent);
     this.pageHeights = pages.map((p) => p.height * zoom);
     this.pageWidths = pages.map((p) => p.width * zoom);
     this.maxPageWidth = Math.max(...this.pageWidths, 0);

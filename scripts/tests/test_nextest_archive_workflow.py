@@ -129,9 +129,40 @@ class NextestArchiveWorkflowTests(unittest.TestCase):
         self.assertNotIn("test-slow-shard:", ci); self.assertEqual(1, ci.count('partition: "hash:1/2"')); self.assertEqual(1, ci.count('partition: "hash:2/2"')); self.assertEqual(2, ci.count('partition: "hash:1/1"'))
         self.assertIn("target_group: lib", ci); self.assertIn("target_group: integration-b", ci); self.assertIn("target_group: integration-c", ci)
         self.assertIn("cargo metadata --no-deps --format-version 1", builder)
+        self.assertIn("scripts/select-nextest-archive-targets.mjs", builder)
+        self.assertIn(
+            "duration_policy='tests/suites/nextest-target-duration-policy.json'",
+            builder,
+        )
+        self.assertIn('--policy "${duration_policy}"', builder)
+        self.assertNotIn("index % 2", builder)
         self.assertIn("cargo_target_args+=(--lib)", builder)
         self.assertIn('cargo_target_args+=(--test "${target}")', builder)
         self.assertNotIn("--tests", builder)
+        self.assertIn("--profile ci-duration-observation", runner)
+        self.assertIn("scripts/collect-nextest-target-durations.mjs", runner)
+        self.assertIn("nextest-target-durations-${{ github.run_id }}-${{ inputs.archive_label }}", runner)
+
+    def test_duration_policy_collects_only_successful_devel_b_and_c_measurements(self):
+        from pathlib import Path
+        root = Path(__file__).resolve().parents[2]
+        policy = (root / "tests/suites/nextest-target-duration-policy.json").read_text()
+        config = (root / ".config/nextest.toml").read_text()
+        runner = (root / ".github/workflows/run-nextest-archives.yml").read_text()
+        selector = (root / "scripts/select-nextest-archive-targets.mjs").read_text()
+        collector = (root / "scripts/collect-nextest-target-durations.mjs").read_text()
+        refresh = (root / "scripts/refresh-nextest-target-duration-policy.mjs").read_text()
+
+        self.assertIn('"schema_version": 1', policy)
+        self.assertIn('"fallback_seconds": 1', policy)
+        self.assertIn("[profile.ci-duration-observation.junit]", config)
+        self.assertIn("github.event_name == 'push'", runner)
+        self.assertIn("github.ref == 'refs/heads/devel'", runner)
+        self.assertIn("inputs.archive_label == 'b'", runner)
+        self.assertIn("inputs.archive_label == 'c'", runner)
+        self.assertIn("estimatedSeconds", selector)
+        self.assertIn("<testsuite", collector)
+        self.assertIn("exactly one B report and one C report", refresh)
 
     def test_native_skia_uses_the_same_test_profile_policy(self) -> None:
         native = job_body(self.ci, "native-skia-tests")
@@ -243,6 +274,21 @@ class NextestArchiveWorkflowTests(unittest.TestCase):
             self.release_binary,
         )
         self.assertIn("wasm-pack build --target web --release", self.ci)
+
+    def test_duration_policy_is_pinned_for_prs_and_refreshed_only_from_devel(self) -> None:
+        nextest = (REPO_ROOT / ".config/nextest.toml").read_text()
+
+        self.assertIn('[profile.ci-duration-observation.junit]\npath = "junit.xml"', nextest)
+        self.assertNotIn('path = "target/nextest/ci-duration-observation/junit.xml"', nextest)
+        self.assertIn("resolve-nextest-duration-policy:", self.ci)
+        self.assertIn("refresh-nextest-target-duration-data:", self.ci)
+        self.assertIn("ci-metrics/nextest-target-durations", self.ci)
+        self.assertIn("github.ref == 'refs/heads/devel'", self.ci)
+        self.assertIn("duration_policy_sha:", self.builder)
+        self.assertIn(
+            'git fetch --depth=1 origin "${{ inputs.duration_policy_sha }}"',
+            self.builder,
+        )
 
 
 if __name__ == "__main__":

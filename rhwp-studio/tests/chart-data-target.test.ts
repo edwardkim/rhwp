@@ -7,7 +7,10 @@ import {
   chartTargetFromSelection,
   hasAnyEdit,
   labelsEditable,
+  labelsStructurallyEditable,
   matchChartRef,
+  needsStructure,
+  unsafeTextIssue,
   type ChartDataResult,
   type ChartRefJson,
 } from '../src/core/chart-data-target.ts';
@@ -276,4 +279,80 @@ test('hasAnyEdit — 값·라벨 어느 쪽 변경도 감지하고, 무변경이
   assert.equal(hasAnyEdit(CATEGORY_DATA, [['4.3', '2.5'], ['1', '']]), true); // 표기 변경도 편집이다
   assert.equal(hasAnyEdit(SCATTER_DATA, same, ['0.7', '1.8']), false);
   assert.equal(hasAnyEdit(SCATTER_DATA, same, ['0.9', '1.8']), true);
+});
+
+// ── 구조 편집 (#6053 S1) ──────────────────────────────────
+
+const SAME_GRID: string[][] = [['4.30', '2.5'], ['1', '']];
+
+test('계열명·라벨 텍스트 검증 — 코어 is_safe_text 와 같은 문자 집합', () => {
+  assert.equal(unsafeTextIssue('계열 1'), null);
+  assert.equal(unsafeTextIssue(''), null, '빈 이름은 안전한 텍스트다 — 별개로 코어가 판정한다');
+  assert.equal(unsafeTextIssue('a < b'), 'unsafeText');
+  assert.equal(unsafeTextIssue('a > b'), 'unsafeText');
+  assert.equal(unsafeTextIssue('AT&T'), 'unsafeText');
+  assert.equal(unsafeTextIssue('줄\n바꿈'), 'unsafeText', '제어문자도 거부 대상이다');
+});
+
+test('구조용 라벨 판정은 카테고리도 연다 — B1 판정(labelsEditable)은 그대로 둔다', () => {
+  assert.equal(labelsStructurallyEditable(CATEGORY_DATA), true);
+  assert.equal(labelsEditable(CATEGORY_DATA), false, 'B1 술어는 한 글자도 안 바뀐다');
+  assert.equal(labelsStructurallyEditable(SCATTER_DATA), true);
+  assert.equal(labelsStructurallyEditable({ ...CATEGORY_DATA, labelsShared: false }), false);
+  assert.equal(labelsStructurallyEditable({ ...CATEGORY_DATA, labelsMultiLevel: true }), false);
+  assert.equal(labelsStructurallyEditable({ ...CATEGORY_DATA, labels: [] }), false);
+});
+
+test('needsStructure — 코어 네 거부가 설 때만 true, 값 편집은 B1 그대로', () => {
+  // 무편집·값편집은 B1 페이로드로 나가야 한다 — 그래야 네 거부가 그물로 계속 선다.
+  assert.equal(needsStructure(CATEGORY_DATA, SAME_GRID), false);
+  assert.equal(needsStructure(CATEGORY_DATA, [['9', '2.5'], ['1', '']]), false);
+  // ① seriesCountMismatch  ② valueCountMismatch
+  assert.equal(needsStructure(CATEGORY_DATA, [['4.30', '2.5']]), true);
+  assert.equal(needsStructure(CATEGORY_DATA, [['4.30', '2.5', '7'], ['1', '', '8']]), true);
+});
+
+test('needsStructure ③ — 계열명은 c:tx 부재와 빈 이름을 같게 보고, null 자리는 안 본다', () => {
+  // series[1].name === null. 코어도 unwrap_or_default() 로 빈 이름과 같게 본다.
+  assert.equal(needsStructure(CATEGORY_DATA, SAME_GRID, undefined, ['계열 1', '']), false);
+  assert.equal(needsStructure(CATEGORY_DATA, SAME_GRID, undefined, ['계열 1', null]), false);
+  assert.equal(needsStructure(CATEGORY_DATA, SAME_GRID, undefined, ['다른 이름', '']), true);
+  assert.equal(needsStructure(CATEGORY_DATA, SAME_GRID, undefined, ['계열 1', '이름 생김']), true);
+});
+
+test('needsStructure ④ — 카테고리 라벨은 텍스트 차이도, 분산형은 개수만 구조다', () => {
+  assert.equal(needsStructure(CATEGORY_DATA, SAME_GRID, ['항목 1', '항목 2']), false);
+  assert.equal(needsStructure(CATEGORY_DATA, SAME_GRID, ['항목 1', '바뀜']), true);
+  // 분산형 X 텍스트 편집은 B1 범위다 — 개수가 같으면 구조가 아니다.
+  assert.equal(needsStructure(SCATTER_DATA, SAME_GRID, ['0.9', '1.8']), false);
+  assert.equal(needsStructure(SCATTER_DATA, SAME_GRID, ['0.7', '1.8', '2.9']), true);
+});
+
+test('opts 없는 buildChartEdits 는 B1 페이로드와 같다 — structure 키조차 없다', () => {
+  const edits = buildChartEdits(CATEGORY_DATA, SAME_GRID);
+  assert.equal('structure' in edits, false, '무편집 왕복이 B1 과 글자 단위로 같아야 한다');
+});
+
+test('structure 페이로드는 라벨을 원본과 같아도 항상 싣는다 — 빠지면 labelsRequired 로 거부된다', () => {
+  const grid: string[][] = [['4.30', '2.5', '0'], ['1', '', '0']];
+  const edits = buildChartEdits(CATEGORY_DATA, grid, ['항목 1', '항목 2', ''], {
+    structure: true,
+    names: ['계열 1', null],
+  });
+  assert.equal(edits.structure, true);
+  assert.deepEqual(edits.labels, ['항목 1', '항목 2', ''], '원본과 같아도 목표 상태로 실린다');
+});
+
+test('structure 페이로드의 name — null 자리는 싣지 않는다(c:tx 부재에 이름을 주면 거부)', () => {
+  const edits = buildChartEdits(CATEGORY_DATA, SAME_GRID, undefined, {
+    structure: true,
+    names: ['새 이름', null],
+  });
+  assert.deepEqual(edits.series[0], { name: '새 이름', values: ['4.30', '2.5'] });
+  assert.equal('name' in edits.series[1], false, 'c:tx 없는 계열에는 name 을 싣지 않는다');
+});
+
+test('hasAnyEdit 는 계열명 변경도 편집으로 센다', () => {
+  assert.equal(hasAnyEdit(CATEGORY_DATA, SAME_GRID, undefined, ['계열 1', '']), false);
+  assert.equal(hasAnyEdit(CATEGORY_DATA, SAME_GRID, undefined, ['계열 하나', '']), true);
 });

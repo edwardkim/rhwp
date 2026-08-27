@@ -264,11 +264,16 @@ hwp5rb	issue6057/29494.hwp	sections[].paragraphs[].controls[].section_def.raw_ct
 hwp5rb	issue6057/29494.hwp	sections[].section_def.raw_ctrl_extra.len	1
 hwp5rb	issue6060/30307_local_service_reform.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	14
 hwp5rb	issue6086/30098_resident_registration_reform.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	124
+hwp5rb	issue6111/56345_regulatory_impact_analysis.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	374
+hwp5rb	issue6111/56345_regulatory_impact_analysis.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	20
+hwp5rb	issue6117/52690_higher_education_decree.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	3
 hwp5rb	issue6122/2181727_press_guard_test_method.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	88
 hwp5rb	issue6122/2181727_press_guard_test_method.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	1
 hwp5rb	issue6126/3171199_design_capability_criteria.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	6
 hwp5rb	issue6126/3171199_design_capability_criteria.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	30
 hwp5rb	issue6127/2599643_vessel_pass_application.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	18
+hwp5rb	issue6132/156482639_startup_ir_contest.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	46
+hwp5rb	issue6140/156462405_smart_expo.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	182
 hwp5rb	issue_1133.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	15
 hwp5rb	issues/2809/jubo_20260104.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	174
 hwp5rb	k-water-rfp-2024.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	457

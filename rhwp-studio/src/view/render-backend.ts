@@ -155,7 +155,13 @@ export function persistRenderProfile(value: LayerRenderProfile): void {
 }
 
 export function clampRenderScale(pageInfo: PageInfo, requestedScale: number): number {
-  const scale = Number.isFinite(requestedScale) && requestedScale > 0 ? requestedScale : 1;
+  // Rust Canvas2D 경로의 normalize_canvas_scale()도 같은 하한을 적용한다.
+  // Studio가 더 작은 값을 DPR 계산에 쓰면, 렌더러가 0.25로 올린 bitmap을
+  // 원래 DPR로 나눠 저배율 페이지의 CSS 크기가 레이아웃 슬롯보다 커진다.
+  const scale = Math.max(
+    0.25,
+    Number.isFinite(requestedScale) && requestedScale > 0 ? requestedScale : 1,
+  );
   const maxPixels = 67_108_864;
   const pixels = pageInfo.width * scale * pageInfo.height * scale;
   if (pixels <= maxPixels) return scale;

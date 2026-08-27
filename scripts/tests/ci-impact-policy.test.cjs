@@ -468,6 +468,8 @@ test('every impact-conditioned CI job is covered by the audit allowlist', () => 
     CI_NATIVE_JOB,
     ...CI_FRONTEND_JOBS,
     'Build & Test',
+    'resolve-nextest-duration-policy',
+    'refresh-nextest-target-duration-data',
   ]);
   assert.deepEqual(
     [...new Set(Object.values(CI_AUDITED_JOB_IDS))].sort(),

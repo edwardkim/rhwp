@@ -19,6 +19,7 @@ import {
   resolveRulerPageIndex,
   type ActivePageSnapshot,
 } from './active-page.ts';
+import { resolveRulerScale } from './ruler-scale.ts';
 
 export type { RulerPinCommit };
 
@@ -563,9 +564,24 @@ export class Ruler {
       ctx.fillRect(pageLeftPinX, 0, pageRightPinX - pageLeftPinX, canvasH);
     }
 
-    // mm 눈금 그리기
+    // 용지 전체 범위. 본문 띠만으로는 저배율에서 눈금자가 용지보다 짧아 보이므로
+    // 시작·끝을 명시한다. 문서 좌표는 바꾸지 않는 화면 표시선이다.
+    ctx.strokeStyle = palette.tick;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(pageScreenLeft, 0);
+    ctx.lineTo(pageScreenLeft, canvasH);
+    ctx.moveTo(pageScreenLeft + pageDisplayWidth, 0);
+    ctx.lineTo(pageScreenLeft + pageDisplayWidth, canvasH);
+    ctx.stroke();
+
+    // 화면 밀도에 맞춘 mm 눈금 그리기
     const mmPx = PX_PER_MM * zoom;
     const pageWidthMm = Math.ceil(pageInfo.width / PX_PER_MM);
+    const scale = resolveRulerScale(zoom);
+    const labelEvery = Math.max(1, Math.round(scale.labelStepMm / scale.tickStepMm));
+    const middleEvery = Math.max(1, Math.round(labelEvery / 2));
+    const tickCount = Math.floor(pageWidthMm / scale.tickStepMm);
 
     ctx.strokeStyle = palette.tick;
     ctx.fillStyle = palette.text;
@@ -574,21 +590,22 @@ export class Ruler {
     ctx.textAlign = 'center';
     ctx.textBaseline = 'top';
 
-    for (let mm = 0; mm <= pageWidthMm; mm++) {
+    for (let tickIndex = 0; tickIndex <= tickCount; tickIndex++) {
+      const mm = tickIndex * scale.tickStepMm;
       const x = pageScreenLeft + mm * mmPx;
 
       // 화면 밖 스킵
       if (x < -10 || x > canvasW + 10) continue;
 
       let tickH: number;
-      if (mm % 10 === 0) {
+      if (tickIndex % labelEvery === 0) {
         tickH = 10;
-        // 10mm 단위 숫자 (cm 단위로 표시)
+        // 숫자는 cm 단위. 저배율에서는 5cm·10cm처럼 더 큰 단계만 남는다.
         const cm = mm / 10;
         if (cm > 0) {
           ctx.fillText(`${cm}`, x, 1);
         }
-      } else if (mm % 5 === 0) {
+      } else if (tickIndex % middleEvery === 0) {
         tickH = 6;
       } else {
         tickH = 3;
@@ -660,7 +677,7 @@ export class Ruler {
     ctx.restore();
   }
 
-  /** 세로 눈금자 그리기 — 보이는 페이지 범위의 눈금을 표시 */
+  /** 세로 눈금자 그리기 — 마지막 편집 focus 페이지의 눈금을 표시 */
   private drawVertical(): void {
     const ctx = this.vCtx;
     if (!ctx) return;
@@ -686,92 +703,105 @@ export class Ruler {
     const zoom = this.viewportManager.getZoom();
     const scrollY = this.viewportManager.getScrollY();
     const mmPx = PX_PER_MM * zoom;
+    const scale = resolveRulerScale(zoom);
+    const labelEvery = Math.max(1, Math.round(scale.labelStepMm / scale.tickStepMm));
+    const middleEvery = Math.max(1, Math.round(labelEvery / 2));
 
-    // 보이는 페이지 범위에서만 그리되, 문서 전환 직후 visible page 계산이 비어 있으면
-    // 활성 페이지로 한 번 더 그린다.
-    const vpHeight = canvasH;
-    const visiblePages = this.virtualScroll.getVisiblePages(scrollY, vpHeight);
-    const pagesToDraw = visiblePages.length > 0 ? visiblePages : [activePageIdx];
+    // 가로 눈금자와 같은 마지막 편집 focus 쪽 한 장만 그린다. 저배율에서 보이는 모든
+    // 페이지의 숫자를 반복하면 세로 눈금자가 다시 한 덩어리로 뭉치고 #6107 focus 계약도 깨진다.
+    const pageIdx = activePageIdx;
     this.vPins = [];
     // 격자 보기: 같은 행의 쪽들이 같은 y를 공유해 핀이 겹친다 (가로 눈금자와 같은 이유).
     const gridMode = this.virtualScroll.isGridMode();
 
-    for (const pageIdx of pagesToDraw) {
-      // 페이지 상단의 화면 좌표 (scroll-container 뷰포트 기준)
-      const pageScreenTop = this.virtualScroll.getPageOffset(pageIdx) - scrollY;
-      const pageInfo = this.pageInfoOrNull(pageIdx);
-      if (!pageInfo) continue;
+    // 페이지 상단의 화면 좌표 (scroll-container 뷰포트 기준)
+    const pageScreenTop = this.virtualScroll.getPageOffset(pageIdx) - scrollY;
+    const pageInfo = this.pageInfoOrNull(pageIdx);
+    if (!pageInfo) {
+      ctx.restore();
+      return;
+    }
 
-      // 핀은 자기가 쓰는 여백의 경계에 선다 — 용지 끝에서 marginTop/marginBottom 만큼.
-      // 본문 위 끝(= marginTop + marginHeader)에 그리면 핀 위치와 커밋 값이 머리말만큼
-      // 어긋나, marginTop 이 0 이 되는 자리에서 더 못 올라가고 그 위 머리말 폭은 눈금자로
-      // 손댈 수단이 없었다.
-      const marginTopPx = pageScreenTop + pageInfo.marginTop * zoom;
-      const marginBottomPx = pageScreenTop + (pageInfo.height - pageInfo.marginBottom) * zoom;
-      // 밝은 띠 = 쪽 여백 안쪽. 핀 두 개가 그 띠의 양 끝이다 — 가로 눈금자와 같은 읽는 법이다
-      // (가로는 머리말이 없어 "여백 안쪽"이 곧 본문이다). 머리말/꼬리말을 세 번째 톤으로
-      // 나누는 안은 버렸다: 어두운 테마의 여백↔본문 색차가 rgb 9 뿐이라 그 사이에 낀 톤은
-      // 보이지 않고, 핀이 무엇을 가리키는지만 흐려진다.
-      ctx.fillStyle = palette.bgBody;
-      ctx.fillRect(0, marginTopPx, canvasW, marginBottomPx - marginTopPx);
+    // 핀은 자기가 쓰는 여백의 경계에 선다 — 용지 끝에서 marginTop/marginBottom 만큼.
+    // 본문 위 끝(= marginTop + marginHeader)에 그리면 핀 위치와 커밋 값이 머리말만큼
+    // 어긋나, marginTop 이 0 이 되는 자리에서 더 못 올라가고 그 위 머리말 폭은 눈금자로
+    // 손댈 수단이 없었다.
+    const marginTopPx = pageScreenTop + pageInfo.marginTop * zoom;
+    const marginBottomPx = pageScreenTop + (pageInfo.height - pageInfo.marginBottom) * zoom;
+    // 밝은 띠 = 쪽 여백 안쪽. 핀 두 개가 그 띠의 양 끝이다 — 가로 눈금자와 같은 읽는 법이다
+    // (가로는 머리말이 없어 "여백 안쪽"이 곧 본문이다). 머리말/꼬리말을 세 번째 톤으로
+    // 나누는 안은 버렸다: 어두운 테마의 여백↔본문 색차가 rgb 9 뿐이라 그 사이에 낀 톤은
+    // 보이지 않고, 핀이 무엇을 가리키는지만 흐려진다.
+    ctx.fillStyle = palette.bgBody;
+    ctx.fillRect(0, marginTopPx, canvasW, marginBottomPx - marginTopPx);
 
-      // 드래그 중이면 잡은 핀만 마우스 위치로 대체 (라이브 프리뷰)
-      const topY = this.vDrag?.kind === 'top' && this.vDrag.pageIdx === pageIdx
-        ? this.vDrag.y
-        : marginTopPx;
-      const bottomY = this.vDrag?.kind === 'bottom' && this.vDrag.pageIdx === pageIdx
-        ? this.vDrag.y
-        : marginBottomPx;
-      if (!gridMode) {
-        this.vPins.push({ kind: 'top', y: topY, pageIdx }, { kind: 'bottom', y: bottomY, pageIdx });
-      }
+    const pageDisplayHeight = pageInfo.height * zoom;
+    ctx.strokeStyle = palette.tick;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(0, pageScreenTop);
+    ctx.lineTo(canvasW, pageScreenTop);
+    ctx.moveTo(0, pageScreenTop + pageDisplayHeight);
+    ctx.lineTo(canvasW, pageScreenTop + pageDisplayHeight);
+    ctx.stroke();
 
-      // mm 눈금 그리기
-      const pageHeightMm = Math.ceil(pageInfo.height / PX_PER_MM);
+    // 드래그 중이면 잡은 핀만 마우스 위치로 대체 (라이브 프리뷰)
+    const topY = this.vDrag?.kind === 'top' && this.vDrag.pageIdx === pageIdx
+      ? this.vDrag.y
+      : marginTopPx;
+    const bottomY = this.vDrag?.kind === 'bottom' && this.vDrag.pageIdx === pageIdx
+      ? this.vDrag.y
+      : marginBottomPx;
+    if (!gridMode) {
+      this.vPins.push({ kind: 'top', y: topY, pageIdx }, { kind: 'bottom', y: bottomY, pageIdx });
+    }
 
-      ctx.strokeStyle = palette.tick;
-      ctx.fillStyle = palette.text;
-      ctx.lineWidth = 0.5;
-      ctx.font = '9px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
+    // mm 눈금 그리기
+    const pageHeightMm = Math.ceil(pageInfo.height / PX_PER_MM);
+    const tickCount = Math.floor(pageHeightMm / scale.tickStepMm);
 
-      for (let mm = 0; mm <= pageHeightMm; mm++) {
-        const y = pageScreenTop + mm * mmPx;
+    ctx.strokeStyle = palette.tick;
+    ctx.fillStyle = palette.text;
+    ctx.lineWidth = 0.5;
+    ctx.font = '9px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
 
-        // 화면 밖 스킵
-        if (y < -10 || y > canvasH + 10) continue;
+    for (let tickIndex = 0; tickIndex <= tickCount; tickIndex++) {
+      const mm = tickIndex * scale.tickStepMm;
+      const y = pageScreenTop + mm * mmPx;
 
-        let tickW: number;
-        if (mm % 10 === 0) {
-          tickW = 10;
-          // 10mm 단위 숫자 (cm 단위, 세로 텍스트)
-          const cm = mm / 10;
-          if (cm > 0) {
-            ctx.save();
-            ctx.translate(canvasW / 2 - 2, y);
-            ctx.rotate(-Math.PI / 2);
-            ctx.fillText(`${cm}`, 0, 0);
-            ctx.restore();
-          }
-        } else if (mm % 5 === 0) {
-          tickW = 6;
-        } else {
-          tickW = 3;
+      // 화면 밖 스킵
+      if (y < -10 || y > canvasH + 10) continue;
+
+      let tickW: number;
+      if (tickIndex % labelEvery === 0) {
+        tickW = 10;
+        const cm = mm / 10;
+        if (cm > 0) {
+          ctx.save();
+          ctx.translate(canvasW / 2 - 2, y);
+          ctx.rotate(-Math.PI / 2);
+          ctx.fillText(`${cm}`, 0, 0);
+          ctx.restore();
         }
-
-        ctx.beginPath();
-        ctx.moveTo(canvasW, y);
-        ctx.lineTo(canvasW - tickW, y);
-        ctx.stroke();
+      } else if (tickIndex % middleEvery === 0) {
+        tickW = 6;
+      } else {
+        tickW = 3;
       }
 
-      // 위/아래 여백 핀 — 본문 시작(▽)과 끝(△)을 표시한다.
-      if (!gridMode) {
-        ctx.fillStyle = palette.marker;
-        this.drawTriangleDown(ctx, canvasW / 2, topY, MARKER_SIZE);
-        this.drawTriangleUp(ctx, canvasW / 2, bottomY, MARKER_SIZE);
-      }
+      ctx.beginPath();
+      ctx.moveTo(canvasW, y);
+      ctx.lineTo(canvasW - tickW, y);
+      ctx.stroke();
+    }
+
+    // 위/아래 여백 핀 — 본문 시작(▽)과 끝(△)을 표시한다.
+    if (!gridMode) {
+      ctx.fillStyle = palette.marker;
+      this.drawTriangleDown(ctx, canvasW / 2, topY, MARKER_SIZE);
+      this.drawTriangleUp(ctx, canvasW / 2, bottomY, MARKER_SIZE);
     }
 
     ctx.restore();

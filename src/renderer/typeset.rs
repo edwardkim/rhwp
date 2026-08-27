@@ -18,8 +18,8 @@ use crate::model::shape::CaptionDirection;
 use crate::renderer::composer::{compose_paragraph, first_text_line, ComposedParagraph};
 use crate::renderer::float_placement::{
     horizontal_range, is_page_bottom_fixed_float, is_para_topbottom_float,
-    native_empty_host_rowbreak_line_advance_hu, signed_hwpunit, FloatLaneSet,
-    FloatPlacementContext,
+    native_empty_host_rowbreak_line_advance_hu, signed_hwpunit,
+    stored_empty_anchor_band_host_line_advance_hu, FloatLaneSet, FloatPlacementContext,
 };
 use crate::renderer::height_cursor::HeightCursor;
 use crate::renderer::height_measurer::{
@@ -1119,6 +1119,9 @@ struct TypesetState {
     hidden_empty_page_idx: usize,
     /// [Task #362] hide_empty_line 으로 감춘 paragraph 인덱스 (PaginationResult 에 포함).
     hidden_empty_paras: std::collections::HashSet<usize>,
+    /// [#6146] 저장 vpos 리셋으로 다음 쪽에 넘어가는 문단의 **자리차지 밴드**를 떠나는
+    /// 쪽의 흐름 말미에 남긴 (문단, 컨트롤) 집합. 컨트롤 순회에서 다시 배치하지 않는다.
+    page_tail_spilled_floats: std::collections::HashSet<(usize, usize)>,
     /// [Task #836] 미주 목록 (섹션별 수집, 문서 끝에 렌더).
     endnotes: Vec<EndnoteRef>,
     endnote_paragraphs: Vec<Paragraph>,
@@ -4392,6 +4395,7 @@ impl TypesetState {
             hidden_empty_lines: 0,
             hidden_empty_page_idx: usize::MAX,
             hidden_empty_paras: std::collections::HashSet::new(),
+            page_tail_spilled_floats: std::collections::HashSet::new(),
             endnotes: Vec::new(),
             endnote_paragraphs: Vec::new(),
             endnote_para_sources: Vec::new(),
@@ -4916,6 +4920,54 @@ impl TypesetState {
     }
 
     /// 다음 단 또는 새 페이지
+    /// [#6146] 저장 vpos 리셋으로 다음 쪽에 넘어가는 문단의 **자리차지 밴드**를 떠나는
+    /// 쪽의 흐름 말미에 남긴다.
+    ///
+    /// 한글은 보도자료 꼬리의 로고 글상자처럼 쪽 말미에 걸린 비-TAC 자리차지
+    /// (TopAndBottom, vert=문단) 개체를 다음 쪽으로 옮기지 않고 본문 아래 여백으로
+    /// 흘려 그 쪽에 남긴다 — 한글 2024 PDF 실측 4/4 (156583583 1쪽 y 1029.4..1079.5
+    /// vs 본문 하단 1039.3, 156597957·156535759·156742932 동형). 옮기면 다음 쪽
+    /// 상단의 제목 표와 겹쳐 글자가 가려진다(#6146).
+    ///
+    /// 판별은 물리적으로 — **개체 아래끝이 용지 안에 남을 때만** 흘린다. 쪽을 넘겨야
+    /// 하는 큰 개체(#1156 의 80mm 차트 OLE 계열)는 아래끝이 용지를 벗어나 제외된다.
+    /// 밴드 뒤의 줄·표는 리셋대로 다음 쪽에 놓이므로 쪽수는 바뀌지 않는다.
+    fn spill_page_tail_floats(&mut self, para_idx: usize, para: &Paragraph) {
+        use crate::model::shape::{TextWrap, VertRelTo};
+        if self.current_items.is_empty() || self.col_count > 1 {
+            return;
+        }
+        let dpi = self.layout.dpi;
+        for (ctrl_idx, ctrl) in para.controls.iter().enumerate() {
+            let common = match ctrl {
+                Control::Picture(picture) => &picture.common,
+                Control::Shape(shape) => shape.common(),
+                // 표는 자기 배치 경로(place_table_with_text)가 있으므로 제외한다.
+                _ => continue,
+            };
+            if common.treat_as_char
+                || !matches!(common.text_wrap, TextWrap::TopAndBottom)
+                || !matches!(common.vert_rel_to, VertRelTo::Para)
+            {
+                continue;
+            }
+            let height = hwpunit_to_px(common.height as i32, dpi)
+                + hwpunit_to_px(i32::from(common.margin.bottom), dpi);
+            if height <= 0.0
+                || self.layout.body_area.y + self.current_height + height
+                    > self.layout.page_height + 0.5
+            {
+                continue;
+            }
+            self.current_items.push(PageItem::Shape {
+                para_index: para_idx,
+                control_index: ctrl_idx,
+            });
+            self.current_height += height;
+            self.page_tail_spilled_floats.insert((para_idx, ctrl_idx));
+        }
+    }
+
     fn advance_column_or_new_page(&mut self) {
         self.flush_column();
         self.visible_float_exclusions.clear();
@@ -6940,6 +6992,74 @@ impl TypesetEngine {
             if st.prefilled_paras.contains(&para_idx) {
                 continue;
             }
+            // [#6132] 저장 vpos 가 쪽 본문을 넘고 바로 다음 문단이 되감기면,
+            // 한글은 이 문단부터 다음 쪽에 둔 것이다. 다만 그 형상만으로는 부족하다 —
+            // 같은 형상이 문단을 쪽 안에 그대로 두는 문서들에도 흔하게 나온다
+            // (실측 후보: 2025 행정업무편람 26곳 · 2070 시장구조조사 13곳 ·
+            // 2019 벤처투자 3곳 · hwp3-sample16 10곳). 그래서 세 신호를 **함께**
+            // 요구한다.
+            //
+            // 156482639 7쪽: pi=102 '참고3' 표 vpos=73760 은 본문 73,335HU(977.8px)를
+            // 넘고 pi=103 이 3790 으로 되감긴다. 한글은 둘 다 8쪽 첫머리에 두는데
+            // rhwp 는 7쪽 잔여(974.5px)에 욱여넣어 8쪽이 56.8px 비었다.
+            //
+            // 기존 #3837 되감김 규칙은 되감긴 **다음** 문단(pi=103)에만 걸리고, 그마저
+            // 그 문단이 잔여에 들어가면 분할 루프가 그대로 현재 쪽에 놓는다. 넘긴
+            // 주체인 pi=102 자신은 표 경로라 그 판정을 아예 지나지 않는다.
+            if st.col_count == 1 && !st.current_items.is_empty() {
+                let own_stored_vpos = para
+                    .line_segs
+                    .iter()
+                    .find(|seg| !is_synthetic_line_seg(seg))
+                    .map(|seg| seg.vertical_pos);
+                let next_stored_vpos = paragraphs
+                    .get(para_idx + 1)
+                    .and_then(|next| {
+                        next.line_segs
+                            .iter()
+                            .find(|seg| !is_synthetic_line_seg(seg))
+                    })
+                    .map(|seg| seg.vertical_pos);
+                if let (Some(own), Some(next)) = (own_stored_vpos, next_stored_vpos) {
+                    // ① **표를 단 문단**만. #3837 되감김 규칙이 닿지 못하는 계보가
+                    //    정확히 이것이고(표 경로는 그 판정을 지나지 않는다), 위 네
+                    //    문서의 후보 52곳 중 표를 단 문단은 sample16 한 곳뿐이다.
+                    let hosts_table = para
+                        .controls
+                        .iter()
+                        .any(|c| matches!(c, crate::model::control::Control::Table(_)));
+                    // ② 저장 자리가 본문 바닥을 **근소하게** 넘을 것. 크게 넘는 사다리는
+                    //    쪽 리셋이 아니라 구역 누적 좌표계라 판정의 전제가 깨진다
+                    //    (sample16 pi=738: 3567.4px / 가용 971.3px).
+                    let own_px = hwpunit_to_px(own, self.dpi);
+                    let body_bottom = st.base_available_height();
+                    let overflows_body_narrowly =
+                        own > 0 && own_px > body_bottom && own_px - body_bottom <= MIN_TOP_KEEP_PX;
+                    // ③ 이 쪽에 조각이 될 만한 잔여가 남아 있을 것. 잔여가 그보다 작으면
+                    //    통상 fit 이 어차피 다음 쪽으로 넘긴다 — 거기서 또 끊으면 빈 쪽이
+                    //    하나 더 생긴다(3075729 #1880: 잔여 10.4px, 13쪽 → 14쪽).
+                    let page_room_left = body_bottom - st.current_height;
+                    if hosts_table
+                        && overflows_body_narrowly
+                        && next < own
+                        && page_room_left > MIN_TOP_KEEP_PX
+                    {
+                        if std::env::var("RHWP_DIAG_VPOS_OVF").is_ok() {
+                            eprintln!(
+                                "[VPOS_OVF] pi={} own={} ({:.1}px) next={} avail={:.1} cur_h={:.1} items={}",
+                                para_idx,
+                                own,
+                                own_px,
+                                next,
+                                body_bottom,
+                                st.current_height,
+                                st.current_items.len()
+                            );
+                        }
+                        st.advance_column_or_new_page();
+                    }
+                }
+            }
             // [#4533 HWP3] 자리차지 밴드 비예약 판별용 — 표 경로 포함 전 문단 공통.
             st.next_para_first_stored_vpos = paragraphs
                 .get(para_idx + 1)
@@ -7412,6 +7532,11 @@ impl TypesetEngine {
                             // 조각(들)과 빈 필러 문단만 담고 있을 때만 건너뛴다 — 실
                             // 내용이 함께 놓인 쪽의 저장 경계는 그대로 존중한다.
                             if !page_holds_only_fresh_table_continuation(&st, paragraphs) {
+                                // [#6146] 저장 리셋은 이 문단의 **줄**이 다음 쪽이라는
+                                // 신호지 자리차지 밴드까지 옮기라는 신호가 아니다.
+                                // 한글은 밴드를 떠나는 쪽의 흐름 말미에 남기고 본문 아래
+                                // 여백으로 흘린다.
+                                st.spill_page_tail_floats(para_idx, para);
                                 st.advance_column_or_new_page();
                             }
                         }
@@ -8331,6 +8456,11 @@ impl TypesetEngine {
                 }
                 match ctrl {
                     Control::Shape(_) | Control::Picture(_) | Control::Equation(_) => {
+                        // [#6146] 저장 리셋 경계에서 떠나는 쪽의 흐름 말미에 이미 흘려
+                        // 놓은 자리차지 밴드는 다시 배치하지 않는다.
+                        if st.page_tail_spilled_floats.contains(&(para_idx, ctrl_idx)) {
+                            continue;
+                        }
                         if !has_table {
                             // [#3738 Stage 22] page-tail Square picture는 anchor 본문을
                             // 현재 쪽에 남기되 그림만 다음 physical page의 narrow wrap
@@ -17693,7 +17823,27 @@ impl TypesetEngine {
         } else {
             (if !is_column_top { sb } else { 0.0 }) + outer_top
         };
-        let after = sa + outer_bottom + host_line_spacing + positive_empty_host_rowbreak_tail;
+        // [#6147] layout `stored_empty_anchor_band_host_tail_px` 와 대칭 — 저장 사다리가
+        // host 줄 advance 만 증언하는 빈 앵커 밴드는 그 줄을 흐름에 계상한다. `outer_bottom`
+        // 은 위에서 이미 더해지므로 여기서는 줄 advance 만 얹는다.
+        let stored_empty_anchor_host_line_tail = if positive_empty_host_rowbreak_tail > 0.0 {
+            0.0
+        } else {
+            stored_empty_anchor_band_host_line_advance_hu(
+                self.profile.get().hwp5_stored_pagination_layout()
+                    || self.profile.get().hwpx_stored_layout(),
+                para,
+                ctrl_idx,
+                next_para,
+            )
+            .map(|line_advance| hwpunit_to_px(line_advance, self.dpi))
+            .unwrap_or(0.0)
+        };
+        let after = sa
+            + outer_bottom
+            + host_line_spacing
+            + positive_empty_host_rowbreak_tail
+            + stored_empty_anchor_host_line_tail;
         let host_spacing = HostSpacing {
             before,
             after,
@@ -18615,6 +18765,11 @@ impl TypesetEngine {
                     }
                 }
                 Control::Shape(_) | Control::Picture(_) | Control::Equation(_) => {
+                    // [#6146] 저장 리셋 경계에서 떠나는 쪽의 흐름 말미에 이미 흘려
+                    // 놓은 자리차지 밴드는 다시 배치하지 않는다.
+                    if st.page_tail_spilled_floats.contains(&(para_idx, ctrl_idx)) {
+                        continue;
+                    }
                     // Task #402: 같은 paragraph의 선행 TAC 컨트롤이 있는 TAC 그림은
                     // 자기 line_seg에 위치하므로 그 line의 높이를 페이지 누적에 반영해야 함.
                     // 누락 시 후속 항목이 페이지 끝을 넘어 그려져 겹침/오버플로 발생 (#402).
@@ -24092,7 +24247,30 @@ impl TypesetEngine {
                     ),
                     self.dpi,
                 );
-            let vert_offset_overhead = if is_continuation {
+            // [#6143] 오프셋이 쪽 경계에서 이미 소진된 첫 조각은 예산에서도 빼지
+            // 않는다. 앵커 문단이 이 쪽에 아무것도 내지 않았고(항목 0 · host 선방출 0)
+            // 표가 쪽 최상단에서 시작하면 오프셋의 기준점(문단 자리)이 이 쪽에 없다 —
+            // 앵커는 앞 쪽에 있고 오프셋은 거기서 쓰였다. 그래도 예산에서 빼면 조각이
+            // 오프셋만큼 짧아져 표가 한 쪽 더 갈라진다(156555538 9쪽: page_avail
+            // 990.3−1.9−554.6=433.8 → 행 1 을 20줄에서 자르고 나머지를 10쪽으로,
+            // 총 18쪽. 한글은 17쪽). layout(table_partial.rs) 의 같은 게이트와
+            // 대칭이어야 컷과 배치가 어긋나지 않는다(#2015 감액과 같은 이유).
+            let para_offset_consumed_by_page_break = !is_continuation
+                && st.current_items.is_empty()
+                && st.current_height < 1.0
+                && st
+                    .pre_emitted_host_heights
+                    .get(&para_idx)
+                    .copied()
+                    .unwrap_or(0.0)
+                    <= 0.0
+                && crate::renderer::float_placement::para_offset_consumed_by_page_break(
+                    para,
+                    &table.common,
+                    base_available,
+                    self.dpi,
+                );
+            let vert_offset_overhead = if is_continuation || para_offset_consumed_by_page_break {
                 0.0
             } else {
                 use crate::model::shape::VertRelTo as VR3;
