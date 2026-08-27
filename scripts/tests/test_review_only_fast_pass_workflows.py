@@ -18,14 +18,14 @@ WORKFLOWS = {
 WORKER_PREFLIGHTS = {
     "proptest": (
         ROOT / ".github/workflows/proptest-roundtrip.yml",
-        "\n\n      - name: Finalize fast pass",
+        "\n\n      # 기준선 병합을 fast-pass bridge로",
         "fast_pass",
         "true",
         "false",
     ),
     "adapter": (
         ROOT / ".github/workflows/adapter-diff.yml",
-        "\n\n  adapter-diff:",
+        "\n\n      # 기준선 병합을 fast-pass bridge로",
         "adapter_required",
         "false",
         "true",
@@ -238,6 +238,59 @@ class ReviewOnlyFastPassWorkflowTests(unittest.TestCase):
                 )
                 self.assertEqual(output[output_name], skip_value)
 
+    def test_worker_preflights_require_a_verified_base_merge_bridge(self) -> None:
+        base_sha = "b" * 40
+        code_candidate = "c" * 40
+        merge_sha = "m" * 40
+        files = [
+            {"filename": "src/renderer/layout.rs", "status": "modified"},
+            {"filename": "mydocs/orders/20260827.md", "status": "modified"},
+        ]
+        commits = [
+            {
+                "sha": code_candidate,
+                "parents": [{"sha": "d" * 40}],
+                "files": [{"filename": "src/renderer/layout.rs", "status": "modified"}],
+            },
+            {
+                "sha": merge_sha,
+                "parents": [{"sha": code_candidate}, {"sha": base_sha}],
+                "files": files,
+            },
+        ]
+        runs = [
+            {
+                "event": "pull_request",
+                "head_sha": code_candidate,
+                "head_branch": "fix/bughunt-batch-r3",
+                "head_repository": {"id": 7},
+                "status": "completed",
+                "conclusion": "success",
+                "created_at": "2026-08-20T12:00:00Z",
+            }
+        ]
+        for name, (_, _, output_name, _, _) in WORKER_PREFLIGHTS.items():
+            with self.subTest(workflow=name):
+                output = self._run_worker_preflight(
+                    name, files=files, commits=commits, runs=runs, base_sha=base_sha
+                )
+                self.assertEqual(output[output_name], "pending-base-merge-tree")
+                self.assertEqual(output["base_merge_sha"], merge_sha)
+                self.assertEqual(output["source_parent_sha"], code_candidate)
+
+    def test_worker_base_merge_fast_passes_fail_closed_for_execution_changes(self) -> None:
+        for name, (workflow_path, _, _, _, _) in WORKER_PREFLIGHTS.items():
+            with self.subTest(workflow=name):
+                workflow = workflow_path.read_text(encoding="utf-8")
+                self.assertIn("isCurrentBaseUpdateMerge", workflow)
+                self.assertIn("pending-base-merge-tree", workflow)
+                self.assertIn("multiple-current-base-update-merges", workflow)
+                self.assertIn("git merge-tree --write-tree", workflow)
+                self.assertIn("verify_review_only_merge_resolution.py", workflow)
+                self.assertIn("current-base-merge-resolution-not-mydocs", workflow)
+                self.assertIn("persist-credentials: false", workflow)
+                self.assertIn("ExecutionPath(file.filename)", workflow)
+
     def test_worker_preflights_reuse_a_green_review_only_candidate_head(
         self,
     ) -> None:
@@ -415,6 +468,7 @@ class ReviewOnlyFastPassWorkflowTests(unittest.TestCase):
         files: list[dict[str, object]],
         commits: list[dict[str, object]] | None = None,
         runs: list[dict[str, object]] | None = None,
+        base_sha: str = "b" * 40,
     ) -> dict[str, str]:
         workflow_path, end_marker, _, _, _ = WORKER_PREFLIGHTS[name]
         workflow = workflow_path.read_text(encoding="utf-8")
@@ -439,7 +493,7 @@ class ReviewOnlyFastPassWorkflowTests(unittest.TestCase):
               rest: {
                 pulls: { listFiles, listCommits },
                 repos: {
-                  getCommit: async ({ ref }) => ({ data: { files: commits.get(ref).files } }),
+                  getCommit: async ({ ref }) => ({ data: commits.get(ref) }),
                 },
                 actions: { listWorkflowRuns },
               },
@@ -457,7 +511,7 @@ class ReviewOnlyFastPassWorkflowTests(unittest.TestCase):
                 pull_request: {
                   number: 5772,
                   created_at: '2026-08-20T00:00:00Z',
-                  base: { ref: 'devel' },
+                  base: { ref: 'devel', sha: %(base_sha)s },
                   head: { ref: 'fix/bughunt-batch-r3', repo: { id: 7 } },
                 },
               },
@@ -473,7 +527,11 @@ class ReviewOnlyFastPassWorkflowTests(unittest.TestCase):
               (error) => { process.stderr.write(String(error.stack || error)); process.exitCode = 1; },
             );
             """
-        ) % {"fixture": json.dumps(fixture), "script": textwrap.indent(script, "  ")}
+        ) % {
+            "fixture": json.dumps(fixture),
+            "script": textwrap.indent(script, "  "),
+            "base_sha": json.dumps(base_sha),
+        }
         completed = subprocess.run(
             ["node"],
             input=harness,
