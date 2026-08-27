@@ -115,6 +115,23 @@ fn legacy_hanyang_faces_have_portable_local_aliases() {
         Some(&"H2MJSM.TTF"),
         "Windows 설치본의 실제 한양신명조 파일을 먼저 찾아야 함"
     );
+    // [#6171] 견고딕/견명조도 형제 항목과 같은 `H2*` 파일명이다(Windows 글꼴 실측).
+    // 종전의 `HYGTRE.TTF`·`HYMJRE.TTF` 는 설치본에 없어 full embed 가 매번 실패했다.
+    assert_eq!(
+        known_font_filenames("한양견고딕").first(),
+        Some(&"H2GTRE.TTF"),
+        "Windows 설치본의 실제 한양견고딕 파일(H2GTRE.TTF)을 먼저 찾아야 함"
+    );
+    assert_eq!(
+        known_font_filenames("한양견명조").first(),
+        Some(&"H2MJRE.TTF"),
+        "Windows 설치본의 실제 한양견명조 파일(H2MJRE.TTF)을 먼저 찾아야 함"
+    );
+    assert_eq!(
+        font_local_aliases("한양견고딕"),
+        vec!["한양견고딕", "HY견고딕", "HYGothic-Extra"],
+        "정상 outline인 HY견고딕은 원 face를 먼저 유지해야 함"
+    );
     assert_eq!(
         font_local_bold_aliases("휴먼명조").first(),
         Some(&"HCR Batang Bold"),
