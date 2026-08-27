@@ -1778,12 +1778,40 @@ impl LayoutEngine {
 
         // 6. 줄 높이 계산 (line_seg 기반)
         // line_seg[0]은 표를 포함한 줄 (표 높이 반영), line_seg[1]은 텍스트 줄
-        let line_height = if let Some(ls) = para.line_segs.first() {
+        //
+        // [#6078] 단, 그 순서는 **가정이 아니라 조회**여야 한다. HWP3 국세청 납세담보
+        // 확인서는 반대로 저장한다 — `ls[0] lh=1300`(제목 텍스트 줄), `ls[1] lh=67616`
+        // (표 줄). 0/1 을 고정하면 `￼` 자리표시 조각이 **표 줄의 baseline**(57473HU
+        // =766.3px)을 텍스트 줄 높이로 받아 문단 바닥을 표 높이만큼 한 번 더 밀고,
+        // 뒤 문단(용지 규격 줄)이 용지 밖(+827px)으로 나가 소실된다. 표가 실제로 속한
+        // seg 는 `control_line_seg_index` 가 안다.
+        //
+        // 판별은 **기하**로 한다 — 표를 담을 수 있는 줄 높이를 가진 seg 가 표 줄이다.
+        // (`control_line_seg_index` 는 선행 컨트롤에서 0 대신 1 을 돌려준다: 컨트롤이
+        // 문자 0 이고 첫 글자 offset 이 8 이면 `p >= start_txt` 가 0 >= 0 으로 참이 된다.
+        // 정책연구용역사업 중간진도보고서 pi=428 이 그 형상 — 표 h=13956 이 ls[0]
+        // lh=16086 에 담기는데 seg 1(lh=1000)을 표 줄로 오인해 되레 깨진다.)
+        let table_seg_index = inline_tables
+            .first()
+            .and_then(|(_, tbl)| {
+                let need = tbl.common.height;
+                para.line_segs
+                    .iter()
+                    .enumerate()
+                    .filter(|(_, seg)| seg.line_height as u32 >= need)
+                    .map(|(idx, _)| idx)
+                    .next()
+            })
+            .unwrap_or(0);
+        let text_seg_index = (0..para.line_segs.len()).find(|idx| *idx != table_seg_index);
+        let table_seg = para.line_segs.get(table_seg_index);
+        let text_seg = text_seg_index.and_then(|idx| para.line_segs.get(idx));
+        let line_height = if let Some(ls) = table_seg {
             hwpunit_to_px(ls.line_height, self.dpi)
         } else {
             hwpunit_to_px(400, self.dpi)
         };
-        let line_spacing = if let Some(ls) = para.line_segs.first() {
+        let line_spacing = if let Some(ls) = table_seg {
             hwpunit_to_px(ls.line_spacing, self.dpi)
         } else {
             0.0
@@ -1802,7 +1830,7 @@ impl LayoutEngine {
                 12.0
             }
         };
-        let baseline_dist = if let Some(ls) = para.line_segs.first() {
+        let baseline_dist = if let Some(ls) = table_seg {
             ensure_min_baseline(
                 hwpunit_to_px(ls.baseline_distance, self.dpi),
                 para_max_font_size,
@@ -1810,8 +1838,8 @@ impl LayoutEngine {
         } else {
             line_height * 0.8
         };
-        // 텍스트 줄(표 아래) 전용 메트릭: line_seg[1]이 있으면 사용
-        let text_line_baseline = if let Some(ls) = para.line_segs.get(1) {
+        // 텍스트 줄(표 아래) 전용 메트릭: 표 줄이 아닌 seg 가 있으면 사용
+        let text_line_baseline = if let Some(ls) = text_seg {
             ensure_min_baseline(
                 hwpunit_to_px(ls.baseline_distance, self.dpi),
                 para_max_font_size,
@@ -1819,12 +1847,12 @@ impl LayoutEngine {
         } else {
             baseline_dist
         };
-        let text_line_height = if let Some(ls) = para.line_segs.get(1) {
+        let text_line_height = if let Some(ls) = text_seg {
             hwpunit_to_px(ls.line_height, self.dpi)
         } else {
             line_height
         };
-        let text_line_spacing = if let Some(ls) = para.line_segs.get(1) {
+        let text_line_spacing = if let Some(ls) = text_seg {
             hwpunit_to_px(ls.line_spacing, self.dpi)
         } else {
             line_spacing
@@ -1835,8 +1863,7 @@ impl LayoutEngine {
         let line_start_x = col_area.x + margin_left;
         // 텍스트 줄바꿈 시 줄 높이: line_seg[0]은 표 높이를 포함하므로
         // line_seg[1]이 있으면 사용 (텍스트 줄 높이), 없으면 baseline_dist 기반
-        let line_step = if para.line_segs.len() > 1 {
-            let ls = &para.line_segs[1];
+        let line_step = if let Some(ls) = text_seg {
             hwpunit_to_px(ls.line_height, self.dpi) + hwpunit_to_px(ls.line_spacing, self.dpi)
         } else if let Some(ls) = para.line_segs.first() {
             hwpunit_to_px(ls.line_height, self.dpi) + hwpunit_to_px(ls.line_spacing, self.dpi)
