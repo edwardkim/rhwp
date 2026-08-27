@@ -47,7 +47,7 @@ impl Record {
 
             let tag_id = (header & 0x3FF) as u16;
             let level = ((header >> 10) & 0x3FF) as u16;
-            let mut size = (header >> 20) as u32;
+            let mut size = (header >> 20);
 
             // 확장 크기: 크기 필드가 4095(0xFFF)이면 다음 4바이트가 실제 크기
             if size == 0xFFF {
