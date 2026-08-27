@@ -2997,7 +2997,7 @@ fn test_subsecond_provenance_compares_physical_rows() {
         ..Default::default()
     };
     let compare = |stored: &Paragraph, fresh: &Paragraph| {
-        serde_json::to_value(compare_boundaries(stored, fresh, true, true, 128)).unwrap()
+        serde_json::to_value(compare_boundaries(stored, fresh, true, true, false, 128)).unwrap()
     };
     assert_eq!(
         compare(&paragraph(&[0, 1], 8), &paragraph(&[0, 9], 0))["matches"],
@@ -3076,6 +3076,122 @@ fn test_subsecond_provenance_compares_physical_rows() {
     let rewind = compare(&stored_metrics, &one_sided_rewind);
     assert_eq!(rewind["comparable"], false);
     assert!(rewind["matches"].is_null());
+
+    let proven_origin_paragraph = |source: &[i32], current: &[i32], line_spacing: i32| {
+        assert_eq!(source.len(), current.len());
+        let mut paragraph = Paragraph {
+            line_segs: current
+                .iter()
+                .enumerate()
+                .map(|(index, &vertical_pos)| LineSeg {
+                    text_start: index as u32,
+                    vertical_pos,
+                    line_height: 900,
+                    text_height: 800,
+                    baseline_distance: 700,
+                    line_spacing,
+                    segment_width: 4_000,
+                    tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
+                    ..Default::default()
+                })
+                .collect(),
+            char_count: 512,
+            source_line_seg_vertical_pos: Some(source.to_vec()),
+            ..Default::default()
+        };
+        paragraph.whole_section_reflow_line_seg_proof =
+            Some(crate::model::paragraph::LineSegReflowProof {
+                owner: crate::model::paragraph::LineSegReflowProofOwner::LoadSectionVposReflow,
+                current_line_seg_digest: paragraph.line_seg_digest(),
+                source_vertical_pos_digest: Paragraph::vertical_pos_ladder_digest(source),
+            });
+        paragraph
+    };
+    let compare_origin = |stored: &Paragraph, fresh: &Paragraph| {
+        serde_json::to_value(compare_boundaries(stored, fresh, true, true, true, 128)).unwrap()
+    };
+
+    // Absolute origin is later, independent evidence: keep the accepted
+    // metric and local-flow residuals beside the standalone origin mismatch.
+    let stored_origin = proven_origin_paragraph(&[1_200, 2_400], &[0, 1_200], 452);
+    let mut local_fresh = stored_origin.clone();
+    local_fresh.source_line_seg_vertical_pos = None;
+    local_fresh.whole_section_reflow_line_seg_proof = None;
+    local_fresh.line_segs[0].line_spacing = 450;
+    local_fresh.line_segs[1].vertical_pos = 1_198;
+    let origin = compare_origin(&stored_origin, &local_fresh);
+    assert_eq!(origin["firstMismatchKind"], "verticalOrigin");
+    assert_eq!(origin["verticalOriginOwner"], "load-section-vpos-reflow");
+    assert_eq!(origin["firstMismatchRowIndex"], 0);
+    assert_eq!(origin["storedMismatchRow"]["verticalFlow"]["origin"], 1_200);
+    assert_eq!(origin["freshMismatchRow"]["verticalFlow"]["origin"], 0);
+    assert_eq!(
+        origin["metricObservation"]["storedRow"]["metrics"]["lineSpacing"],
+        452
+    );
+    assert_eq!(
+        origin["metricObservation"]["freshRow"]["metrics"]["lineSpacing"],
+        450
+    );
+    assert_eq!(
+        origin["verticalFlowObservation"]["storedRow"]["verticalFlow"]["deltaFromPrevious"],
+        1_200
+    );
+    assert_eq!(
+        origin["verticalFlowObservation"]["freshRow"]["verticalFlow"]["deltaFromPrevious"],
+        1_198
+    );
+
+    // A raw offset with unequal within-epoch advances is not an origin.
+    let unequal = proven_origin_paragraph(&[1_200, 2_400], &[0, 1_260], 300);
+    let mut unequal_fresh = unequal.clone();
+    unequal_fresh.source_line_seg_vertical_pos = None;
+    unequal_fresh.whole_section_reflow_line_seg_proof = None;
+    let unequal = compare_origin(&unequal, &unequal_fresh);
+    assert_eq!(unequal["verticalOriginIdentityProven"], false);
+    assert!(unequal["firstMismatchKind"].is_null());
+
+    // Each rewind opens a new epoch; only its first row carries that epoch's
+    // absolute offset.
+    let epochs = proven_origin_paragraph(&[0, 1_000, 500, 1_500], &[0, 1_000, 400, 1_400], 300);
+    let mut epochs_fresh = epochs.clone();
+    epochs_fresh.source_line_seg_vertical_pos = None;
+    epochs_fresh.whole_section_reflow_line_seg_proof = None;
+    let epochs = compare_origin(&epochs, &epochs_fresh);
+    assert_eq!(epochs["firstMismatchKind"], "verticalOrigin");
+    assert_eq!(epochs["firstMismatchRowIndex"], 2);
+    assert_eq!(epochs["storedMismatchRow"]["verticalFlow"]["origin"], 500);
+    assert_eq!(epochs["freshMismatchRow"]["verticalFlow"]["origin"], 400);
+
+    // An in-place downstream vpos shift leaves the load seal stale and cannot
+    // be promoted even when the serializer snapshot remains.
+    let mut stale = proven_origin_paragraph(&[1_200, 2_400], &[0, 1_200], 300);
+    stale.line_segs[1].vertical_pos += 10;
+    let mut stale_fresh = stale.clone();
+    stale_fresh.source_line_seg_vertical_pos = None;
+    stale_fresh.whole_section_reflow_line_seg_proof = None;
+    let stale = compare_origin(&stale, &stale_fresh);
+    assert_eq!(stale["verticalOriginIdentityProven"], false);
+    assert!(stale["firstMismatchKind"].is_null());
+
+    // The serializer ladder is mutable independently of current LineSegs;
+    // changing only that vector must also invalidate the paired proof.
+    let mut source_stale = proven_origin_paragraph(&[1_200, 2_400], &[0, 1_200], 300);
+    for value in source_stale
+        .source_line_seg_vertical_pos
+        .as_mut()
+        .expect("source ladder")
+    {
+        *value += 100;
+    }
+    let mut source_stale_fresh = source_stale.clone();
+    source_stale_fresh.source_line_seg_vertical_pos = None;
+    source_stale_fresh.whole_section_reflow_line_seg_proof = None;
+    let source_stale = compare_origin(&source_stale, &source_stale_fresh);
+    assert_eq!(source_stale["verticalOriginIdentityProven"], false);
+    assert!(source_stale["verticalOriginOwner"].is_null());
+    assert!(source_stale["firstMismatchKind"].is_null());
+
     for (stored, fresh, expected) in [
         ((&[0, 1][..], 8), (&[0, 10][..], 0), (Some(9), Some(10))),
         ((&[0][..], 8), (&[0, 9][..], 0), (None, Some(9))),
@@ -3125,7 +3241,7 @@ fn test_subsecond_provenance_compares_physical_rows() {
     }
     let original = core.document.sections[0].paragraphs[0].line_segs.clone();
     let value = report(&core);
-    assert_eq!(value["schemaVersion"], 5);
+    assert_eq!(value["schemaVersion"], 6);
     assert!(value["comparison"]["storedUtf16Starts"].is_array());
     assert!(value["comparison"]["freshUtf16Starts"].is_array());
     assert!(value["geometry"]["records"].is_array());
@@ -3156,12 +3272,7 @@ fn test_subsecond_provenance_compares_physical_rows() {
         segment.tag &= !LineSeg::TAG_IMPLEMENTATION_PROPERTY;
         segment.vertical_pos = segment.vertical_pos.saturating_add(1_200);
     }
-    let source_vertical_pos = stored_rows
-        .iter()
-        .map(|segment| segment.vertical_pos)
-        .collect();
     paragraph.replace_line_segs(stored_rows);
-    paragraph.source_line_seg_vertical_pos = Some(source_vertical_pos);
     let shifted_report = report(&shifted.core);
     assert_eq!(shifted_report["freshGeometryComplete"], true);
     assert_eq!(shifted_report["comparison"]["matches"], true);
@@ -3169,6 +3280,8 @@ fn test_subsecond_provenance_compares_physical_rows() {
         shifted_report["comparison"]["verticalOriginIdentityProven"],
         false
     );
+    assert!(shifted_report["comparison"]["verticalOriginOwner"].is_null());
+    assert!(shifted_report["comparison"]["firstMismatchKind"].is_null());
 
     // A real edit can publish the same number of rows. The old file-vpos
     // snapshot must still retire with the replaced row identities instead
@@ -3176,6 +3289,17 @@ fn test_subsecond_provenance_compares_physical_rows() {
     let paragraph = &mut shifted.document.sections[0].paragraphs[0];
     let row_count = paragraph.line_segs.len();
     paragraph.source_line_seg_vertical_pos = Some(vec![i32::MAX; row_count]);
+    paragraph.whole_section_reflow_line_seg_proof =
+        Some(crate::model::paragraph::LineSegReflowProof {
+            owner: crate::model::paragraph::LineSegReflowProofOwner::LoadSectionVposReflow,
+            current_line_seg_digest: paragraph.line_seg_digest(),
+            source_vertical_pos_digest: Paragraph::vertical_pos_ladder_digest(
+                paragraph
+                    .source_line_seg_vertical_pos
+                    .as_deref()
+                    .expect("test source ladder"),
+            ),
+        });
     let end = paragraph.text.chars().count();
     shifted
         .insert_text_native(0, 0, end, "!")
@@ -3183,7 +3307,14 @@ fn test_subsecond_provenance_compares_physical_rows() {
     let paragraph = &shifted.document.sections[0].paragraphs[0];
     assert_eq!(paragraph.line_segs.len(), row_count);
     assert!(paragraph.source_line_seg_vertical_pos.is_none());
-    assert_eq!(report(&shifted.core)["comparison"]["matches"], true);
+    assert!(paragraph.whole_section_reflow_line_seg_proof.is_none());
+    let retired_report = report(&shifted.core);
+    assert_eq!(retired_report["comparison"]["matches"], true);
+    assert_eq!(
+        retired_report["comparison"]["verticalOriginIdentityProven"],
+        false
+    );
+    assert!(retired_report["comparison"]["firstMismatchKind"].is_null());
 
     // field-01 contains production-admitted rows whose stored spacing is
     // 452HU while the Frame recomputes 450HU. That characterized residual
@@ -3329,6 +3460,124 @@ fn test_subsecond_provenance_compares_physical_rows() {
     )
     .expect("Square-table paragraph JSON");
     assert!(square_report["comparison"]["matches"].is_null());
+
+    // #5847 records the exact owner transition this diagnostic may call an
+    // absolute origin: section-wide HWPX reflow preserved file vpos in
+    // `source_line_seg_vertical_pos` before publishing the recomputed ladder.
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("samples/issue5847/x2x_lineseg_vertpos_cumulative.hwpx");
+    let bytes = std::fs::read(path).expect("read authoritative-vpos fixture");
+    let mut authoritative =
+        DocumentCore::from_bytes(&bytes).expect("parse authoritative-vpos fixture");
+    let (section_index, paragraph_index) = (0, 0);
+    let paragraph = &authoritative.document.sections[section_index].paragraphs[paragraph_index];
+    assert_eq!(
+        paragraph
+            .source_line_seg_vertical_pos
+            .as_deref()
+            .and_then(|source| source.first()),
+        Some(&48_240)
+    );
+    assert_eq!(
+        paragraph
+            .line_segs
+            .first()
+            .map(|segment| segment.vertical_pos),
+        Some(0)
+    );
+    let origin_report = serde_json::from_str::<Value>(
+        &authoritative
+            .line_break_provenance_native(section_index, paragraph_index, &[], "{}")
+            .expect("authoritative origin report"),
+    )
+    .expect("authoritative origin JSON");
+    let comparison = &origin_report["comparison"];
+    assert_eq!(comparison["comparable"], true);
+    assert_eq!(comparison["matches"], false);
+    assert_eq!(comparison["firstMismatchKind"], "verticalOrigin");
+    assert_eq!(comparison["firstMismatchField"], "origin");
+    assert_eq!(comparison["firstMismatchRowIndex"], 0);
+    assert!(comparison["firstMismatchSegmentIndex"].is_null());
+    assert_eq!(comparison["verticalOriginIdentityProven"], true);
+    assert_eq!(
+        comparison["verticalOriginOwner"],
+        "load-section-vpos-reflow"
+    );
+    assert_eq!(
+        comparison["storedMismatchRow"]["verticalFlow"]["origin"],
+        48_240
+    );
+    assert_eq!(comparison["freshMismatchRow"]["verticalFlow"]["origin"], 0);
+
+    let downstream = &authoritative.document.sections[0].paragraphs[1];
+    assert_eq!(
+        downstream.line_segs.first().map(|line| line.vertical_pos),
+        Some(2_520)
+    );
+    assert_eq!(
+        downstream
+            .source_line_seg_vertical_pos
+            .as_ref()
+            .and_then(|source| source.first())
+            .copied(),
+        Some(50_760)
+    );
+    assert!(downstream
+        .whole_section_reflow_line_seg_proof
+        .is_some_and(|proof| {
+            proof.current_line_seg_digest == downstream.line_seg_digest()
+                && proof.source_vertical_pos_digest
+                    == Paragraph::vertical_pos_ladder_digest(
+                        downstream
+                            .source_line_seg_vertical_pos
+                            .as_deref()
+                            .expect("downstream source ladder"),
+                    )
+        }));
+    let edit_at = authoritative.document.sections[0].paragraphs[0]
+        .text
+        .chars()
+        .count();
+    authoritative
+        .insert_text_native(0, 0, edit_at, &"가".repeat(400))
+        .expect("grow first paragraph");
+    let downstream = &authoritative.document.sections[0].paragraphs[1];
+    assert_eq!(
+        downstream.line_segs.first().map(|line| line.vertical_pos),
+        Some(35_280)
+    );
+    assert_eq!(
+        downstream
+            .source_line_seg_vertical_pos
+            .as_ref()
+            .and_then(|source| source.first())
+            .copied(),
+        Some(50_760)
+    );
+    assert!(downstream
+        .whole_section_reflow_line_seg_proof
+        .is_some_and(|proof| {
+            proof.current_line_seg_digest != downstream.line_seg_digest()
+                && proof.source_vertical_pos_digest
+                    == Paragraph::vertical_pos_ladder_digest(
+                        downstream
+                            .source_line_seg_vertical_pos
+                            .as_deref()
+                            .expect("downstream source ladder"),
+                    )
+        }));
+    let downstream_report = serde_json::from_str::<Value>(
+        &authoritative
+            .line_break_provenance_native(0, 1, &[], "{}")
+            .expect("downstream report"),
+    )
+    .expect("downstream report JSON");
+    assert_eq!(
+        downstream_report["comparison"]["verticalOriginIdentityProven"],
+        false
+    );
+    assert!(downstream_report["comparison"]["verticalOriginOwner"].is_null());
+    assert!(downstream_report["comparison"]["firstMismatchKind"].is_null());
 
     let mut synthetic = original.clone();
     synthetic

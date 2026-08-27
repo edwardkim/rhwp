@@ -553,6 +553,8 @@ impl DocumentCore {
             // 저장한 HWPX의 vertpos까지 덮어써 page sequence가 어긋난다 (#949 Stage 32).
             if body_line_seg_changed {
                 let mut running_vpos: i32 = 0;
+                #[cfg(feature = "subsecond-dev")]
+                let mut proof_captured_this_pass = vec![false; section.paragraphs.len()];
                 // [Issue #1920] 직전까지 본 "원본(비합성) lineseg 보유 문단"의 마지막 저장
                 // vpos. 결재문서류 생성기는 새 쪽 시작 문단(발신명의 틀 host)에 vpos=0 을
                 // 저장하는데, 이 재계산이 연속 좌표로 덮어쓰면 typeset 의 vpos-reset 쪽나눔
@@ -657,6 +659,10 @@ impl DocumentCore {
                     {
                         para.source_line_seg_vertical_pos =
                             Some(para.line_segs.iter().map(|s| s.vertical_pos).collect());
+                        #[cfg(feature = "subsecond-dev")]
+                        {
+                            proof_captured_this_pass[pi] = true;
+                        }
                     }
                     // 문단의 첫 LINE_SEG vpos를 running_vpos로 갱신
                     if let Some(first_seg) = para.line_segs.first_mut() {
@@ -756,6 +762,26 @@ impl DocumentCore {
                     running_vpos = inner_vpos;
                     if let Some(v) = original_last_vpos {
                         prev_stored_last_vpos = v;
+                    }
+                }
+                #[cfg(feature = "subsecond-dev")]
+                {
+                    // Seal only snapshots captured by this load pass, and only
+                    // after every paragraph's absolute ladder has been published.
+                    // A pre-existing serializer snapshot is not fresh proof of a
+                    // direct/test re-entry through this routine.
+                    for (pi, para) in section.paragraphs.iter_mut().enumerate() {
+                        para.whole_section_reflow_line_seg_proof = proof_captured_this_pass[pi]
+                            .then(|| crate::model::paragraph::LineSegReflowProof {
+                                owner: crate::model::paragraph::LineSegReflowProofOwner::LoadSectionVposReflow,
+                                current_line_seg_digest: para.line_seg_digest(),
+                                source_vertical_pos_digest:
+                                    crate::model::paragraph::Paragraph::vertical_pos_ladder_digest(
+                                        para.source_line_seg_vertical_pos
+                                            .as_deref()
+                                            .expect("captured load reflow source ladder"),
+                                    ),
+                            });
                     }
                 }
             }

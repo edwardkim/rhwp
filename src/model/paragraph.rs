@@ -2,6 +2,29 @@
 
 use super::control::{Control, CTRL_CHAR_CODE_UNITS};
 use serde::{Deserialize, Serialize};
+#[cfg(feature = "subsecond-dev")]
+use sha2::{Digest, Sha256};
+
+/// Owner that published a digest-backed absolute LineSeg ladder.
+#[cfg(feature = "subsecond-dev")]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum LineSegReflowProofOwner {
+    /// HWPX load normalized a whole body section, then published its final
+    /// absolute vpos ladder. The HWPX serializer remains the separate owner of
+    /// `source_line_seg_vertical_pos`.
+    LoadSectionVposReflow,
+}
+
+/// Provenance for the current nine-field LineSeg partition.
+#[cfg(feature = "subsecond-dev")]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) struct LineSegReflowProof {
+    pub(crate) owner: LineSegReflowProofOwner,
+    /// Digest of the completed current nine-field LineSeg partition.
+    pub(crate) current_line_seg_digest: [u8; 32],
+    /// Digest of the serializer-owned file-vpos ladder paired with it.
+    pub(crate) source_vertical_pos_digest: [u8; 32],
+}
 
 /// 문단 (HWPTAG_PARA_HEADER + 하위 레코드)
 #[derive(Debug, Default, Clone, serde::Serialize)]
@@ -73,6 +96,16 @@ pub struct Paragraph {
     /// (`serde(skip)` — IR dump/ir-sweep 축의 필드 집합을 바꾸지 않는다.)
     #[serde(skip_serializing)]
     pub source_line_seg_vertical_pos: Option<Vec<i32>>,
+    /// Proof for the exact nine-field `line_segs` published by the completed
+    /// whole-section reflow that captured/retained the source-vpos snapshot.
+    ///
+    /// This is diagnostic provenance, not file data. A later in-place vpos
+    /// shift leaves the digest stale, so it cannot be mistaken for that
+    /// authoritative publication even when `source_line_seg_vertical_pos`
+    /// legitimately remains available for HWPX serialization.
+    #[cfg(feature = "subsecond-dev")]
+    #[serde(skip_serializing)]
+    pub(crate) whole_section_reflow_line_seg_proof: Option<LineSegReflowProof>,
     /// 영역 태그 정보
     pub range_tags: Vec<RangeTag>,
     /// 필드 텍스트 범위 (0x03~0x04 사이 텍스트 인덱스 + 컨트롤 인덱스)
@@ -715,6 +748,40 @@ impl Paragraph {
     #[inline]
     pub(crate) fn retire_source_line_seg_vertical_pos(&mut self) {
         self.source_line_seg_vertical_pos = None;
+        #[cfg(feature = "subsecond-dev")]
+        {
+            self.whole_section_reflow_line_seg_proof = None;
+        }
+    }
+
+    /// Canonical SHA-256 over every persisted `LineSeg` field in row order.
+    #[cfg(feature = "subsecond-dev")]
+    pub(crate) fn line_seg_digest(&self) -> [u8; 32] {
+        let mut digest = Sha256::new();
+        digest.update((self.line_segs.len() as u64).to_le_bytes());
+        for segment in &self.line_segs {
+            digest.update(segment.text_start.to_le_bytes());
+            digest.update(segment.vertical_pos.to_le_bytes());
+            digest.update(segment.line_height.to_le_bytes());
+            digest.update(segment.text_height.to_le_bytes());
+            digest.update(segment.baseline_distance.to_le_bytes());
+            digest.update(segment.line_spacing.to_le_bytes());
+            digest.update(segment.column_start.to_le_bytes());
+            digest.update(segment.segment_width.to_le_bytes());
+            digest.update(segment.tag.to_le_bytes());
+        }
+        digest.finalize().into()
+    }
+
+    /// Canonical SHA-256 over an ordered absolute-vpos ladder.
+    #[cfg(feature = "subsecond-dev")]
+    pub(crate) fn vertical_pos_ladder_digest(values: &[i32]) -> [u8; 32] {
+        let mut digest = Sha256::new();
+        digest.update((values.len() as u64).to_le_bytes());
+        for value in values {
+            digest.update(value.to_le_bytes());
+        }
+        digest.finalize().into()
     }
 
     /// Replace stored rows and their validity state at one owner boundary.
@@ -1432,6 +1499,8 @@ impl Paragraph {
             layout_only_fill_lines: 0,
             // 편집으로 갈라진 문단의 원본 vertpos 스냅샷은 무효다 (#5847).
             source_line_seg_vertical_pos: None,
+            #[cfg(feature = "subsecond-dev")]
+            whole_section_reflow_line_seg_proof: None,
             // 새로 계산된 줄은 `char_offsets` 와 같은 HWP5 축에서 나오므로 보정이 없다 (#5961).
             hwpx_axis_shift: 0,
             range_tags: new_range_tags,

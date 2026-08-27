@@ -45,6 +45,73 @@ test('the first physical-row difference names its comparison lane and value', ()
     'row=0 segment=1 stored=400 fresh=399]');
 });
 
+test('absolute vertical origin is standalone and requires proven safe values', () => {
+  const row = (origin: unknown) => ({
+    segmentCount: 1,
+    textStarts: [0],
+    segmentFrames: [{ columnStart: 0, segmentWidth: 400 }],
+    segmentsTruncated: false,
+    verticalFlow: { origin },
+  });
+  const comparison = {
+    comparable: true,
+    matches: false,
+    firstMismatchKind: 'verticalOrigin' as const,
+    firstMismatchField: 'origin' as const,
+    firstMismatchRowIndex: 3,
+    firstMismatchSegmentIndex: null,
+    storedMismatchRow: row(1_200),
+    freshMismatchRow: row(1_260),
+    verticalOriginIdentityProven: true,
+    verticalOriginOwner: 'load-section-vpos-reflow' as const,
+    firstMismatchIndex: 4,
+    storedMismatchUtf16Start: 20,
+    freshMismatchUtf16Start: 20,
+    storedMismatchRowPart: 'single' as const,
+    freshMismatchRowPart: 'single' as const,
+  };
+  const diagnostic = (value: object, schemaVersion?: number) => [{
+    schemaVersion,
+    coordinates: { sectionIdx: 0, paragraphIdx: 4 },
+    comparison: value,
+  }] as any;
+
+  assert.equal(formatFirstLineBreakError(2, diagnostic(comparison, 6)),
+    'line-break: [page=2 target=s0/p4 kind=verticalOrigin field=origin row=3 ' +
+    'originOwner=load-section-vpos-reflow expectedOrigin=1200 actualOrigin=1260]');
+  assert.equal(formatFirstLineBreakError(2, diagnostic(comparison)), null);
+  assert.equal(formatFirstLineBreakError(2, diagnostic(comparison, 5)), null);
+  assert.equal(formatFirstLineBreakError(2, diagnostic(comparison, 7)), null);
+  assert.equal(formatFirstLineBreakError(2, diagnostic({
+    ...comparison,
+    verticalOriginIdentityProven: undefined,
+  }, 6)), null);
+  assert.equal(formatFirstLineBreakError(2, diagnostic({
+    ...comparison,
+    storedMismatchRow: row(null),
+  }, 6)), null);
+  assert.equal(formatFirstLineBreakError(2, diagnostic({
+    ...comparison,
+    verticalOriginOwner: undefined,
+  }, 6)), null);
+  assert.equal(formatFirstLineBreakError(2, diagnostic({
+    ...comparison,
+    verticalOriginOwner: 'paragraph-local-reflow',
+  }, 6)), null);
+  assert.equal(formatFirstLineBreakError(2, diagnostic({
+    comparable: true,
+    matches: false,
+    firstMismatchKind: 'verticalOrigin',
+    firstMismatchField: 'origin',
+    firstMismatchRowIndex: 3,
+    firstMismatchSegmentIndex: null,
+    storedMismatchRow: row(Number.MAX_SAFE_INTEGER + 1),
+    freshMismatchRow: row(1_260),
+    verticalOriginIdentityProven: true,
+    verticalOriginOwner: 'load-section-vpos-reflow',
+  }, 6)), null);
+});
+
 test('unsupported or unproven row evidence falls back safely', () => {
   const unsupported = {
     comparable: true,

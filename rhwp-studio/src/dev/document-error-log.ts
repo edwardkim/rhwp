@@ -4,21 +4,25 @@ export type DocumentErrorType = 'line-break' | 'page-count' | 'paint';
 type LineBreakMismatchKind =
   | 'topology'
   | 'textStart'
-  | 'horizontalFrame';
+  | 'horizontalFrame'
+  | 'verticalOrigin';
 type LineBreakMismatchField =
   | 'rowCount'
   | 'segmentCount'
   | 'textStart'
   | 'columnStart'
-  | 'segmentWidth';
+  | 'segmentWidth'
+  | 'origin';
 interface LineSegRowDiagnostic {
   segmentCount: number;
   segmentWindowStart?: number;
   textStarts: number[];
   segmentFrames: Array<{ columnStart: number; segmentWidth: number }>;
   segmentsTruncated: boolean;
+  verticalFlow?: { origin?: number | null };
 }
 export interface LineBreakDiagnostic {
+  schemaVersion?: number;
   textUtf16Length?: number;
   coordinates?: {
     sectionIdx?: number;
@@ -37,6 +41,8 @@ export interface LineBreakDiagnostic {
     storedMismatchRow?: LineSegRowDiagnostic | null;
     freshMismatchRow?: LineSegRowDiagnostic | null;
     horizontalOriginIdentityProven?: boolean;
+    verticalOriginIdentityProven?: boolean;
+    verticalOriginOwner?: 'load-section-vpos-reflow' | null;
     firstMismatchIndex?: number | null;
     storedMismatchUtf16Start?: number | null;
     freshMismatchUtf16Start?: number | null;
@@ -76,11 +82,13 @@ const isRowPart = (value: unknown): value is string =>
 const isLineBreakMismatchKind = (value: unknown): value is LineBreakMismatchKind =>
   value === 'topology'
   || value === 'textStart'
-  || value === 'horizontalFrame';
+  || value === 'horizontalFrame'
+  || value === 'verticalOrigin';
 const mismatchFields: Record<LineBreakMismatchKind, readonly LineBreakMismatchField[]> = {
   topology: ['rowCount', 'segmentCount'],
   textStart: ['textStart'],
   horizontalFrame: ['columnStart', 'segmentWidth'],
+  verticalOrigin: ['origin'],
 };
 
 function mismatchValue(
@@ -88,6 +96,10 @@ function mismatchValue(
   field: LineBreakMismatchField,
   segmentIndex: number | null,
 ): string | null {
+  if (field === 'origin') {
+    const value = row && typeof row === 'object' ? row.verticalFlow?.origin : undefined;
+    return isInteger(value) ? String(value) : null;
+  }
   if (row === null) return '-';
   if (!row || typeof row !== 'object') return null;
   if (field === 'rowCount') return 'present';
@@ -124,7 +136,7 @@ export function formatFirstLineBreakError(
   diagnostics: readonly LineBreakDiagnostic[],
 ): string | null {
   if (!Number.isSafeInteger(page) || page < 1) return null;
-  for (const { coordinates, comparison } of diagnostics) {
+  for (const { schemaVersion, coordinates, comparison } of diagnostics) {
     const paragraph = coordinates?.parentParaIdx ?? coordinates?.paragraphIdx;
     if (
       !coordinates
@@ -163,6 +175,12 @@ export function formatFirstLineBreakError(
       && isIndex(rowIndex)
       && (segmentIndex === null || isIndex(segmentIndex))
       && (field !== 'columnStart' || comparison.horizontalOriginIdentityProven === true)
+      && (field !== 'origin'
+        || schemaVersion === 6
+          && comparison.verticalOriginIdentityProven === true
+          && comparison.verticalOriginOwner === 'load-section-vpos-reflow'
+          && segmentIndex === null
+          && storedValue !== freshValue)
       && storedValue !== null
       && freshValue !== null
       ? {
@@ -179,6 +197,7 @@ export function formatFirstLineBreakError(
     const fresh = comparison.freshMismatchUtf16Start;
     const storedPart = comparison.storedMismatchRowPart;
     const freshPart = comparison.freshMismatchRowPart;
+    if (kind === 'verticalOrigin' && field === 'origin' && !enriched) continue;
     const legacy = !enriched
       && isIndex(comparison.firstMismatchIndex)
       && (stored === null ? storedPart === null : isIndex(stored) && isRowPart(storedPart))
@@ -193,9 +212,15 @@ export function formatFirstLineBreakError(
         ['kind', enriched.kind],
         ['field', enriched.field],
         ['row', enriched.rowIndex],
-        ['segment', enriched.segmentIndex ?? '-'],
-        ['stored', enriched.stored],
-        ['fresh', enriched.fresh],
+        ...(enriched.kind === 'verticalOrigin' ? [
+          ['originOwner', comparison.verticalOriginOwner!],
+          ['expectedOrigin', enriched.stored],
+          ['actualOrigin', enriched.fresh],
+        ] as const : [
+          ['segment', enriched.segmentIndex ?? '-'],
+          ['stored', enriched.stored],
+          ['fresh', enriched.fresh],
+        ] as const),
       ] as const : []),
       ...(legacy ? [
         ['at', comparison.firstMismatchIndex!],

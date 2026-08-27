@@ -635,6 +635,9 @@ fn sweep_paragraph(base: &str, a: &Paragraph, b: &Paragraph, out: &mut Divergenc
         page_break_synthesized: _,
         // [#5847] reflow 이전 원본 vertpos 스냅샷 — IR 전용 부수 채널, 비교 대상 아님.
         source_line_seg_vertical_pos: _,
+        // load-section-vpos-reflow 완료 seal — 진단 provenance이며 IR/file 필드가 아님.
+        #[cfg(feature = "subsecond-dev")]
+            whole_section_reflow_line_seg_proof: _,
         // [#5961] 저장 lineseg 의 축 보정폭 — 출처 컨테이너가 결정하는 IR 전용 부수
         // 채널이라 비교 대상 아님. 같은 문서를 HWPX/HWP5 로 읽으면 이 값은 정당하게
         // 다르므로(8 vs 0), 비교에 넣으면 x2h ir-diff 가 없는 차이를 만든다.
