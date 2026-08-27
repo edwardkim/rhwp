@@ -4960,6 +4960,11 @@ impl LayoutEngine {
             .hidden_header_footer
             .borrow()
             .contains(&(page_content.page_index, false));
+        // [#6186] 꼬리말 subList 의 세로 정렬.
+        // LIST_HEADER `list_attr` bit 21~22 (0=위 1=가운데 2=아래) — 표 셀과 같은 규약이며
+        // HWP5(`parser/control.rs`)·HWPX(`parser/hwpx/section.rs` 의 `2 << 21`) 양쪽이
+        // 같은 자리에 싣는다.
+        let mut footer_valign: u32 = 0;
         if !hidden {
             if let Some(hf_ref) = &page_content.active_footer {
                 {
@@ -4967,6 +4972,7 @@ impl LayoutEngine {
                         paragraphs, hf_ref,
                     ) {
                         if let Control::Footer(footer) = ctrl {
+                            footer_valign = (footer.list_attr >> 21) & 0x03;
                             // [Task #825] 꼬리말 그림 hit-test marker.
                             let outer_ref = crate::renderer::render_tree::HeaderFooterImageRef {
                                 outer_para_index: hf_ref.para_index,
@@ -4999,6 +5005,41 @@ impl LayoutEngine {
                             );
                         }
                     }
+                }
+            }
+        }
+        // [#6186] 꼬리말 글을 밴드 안에서 세로 정렬한다. 종전에는 `y_offset = area.y` 로
+        // 무조건 밴드 맨 위에 놓아, `vertAlign="BOTTOM"` 문서의 쪽번호가 21.8px 위에
+        // 그려졌다(156755659: 겹쳐 놓인 글상자 `2 - 2` 와 두 줄로 갈라져 보인다).
+        //
+        // 글이 놓이는 밴드의 **아래끝은 아래쪽 여백 선**이다. `footer_area` 는 본문
+        // 하단부터 **꼬리말 여백 선**까지라 아래쪽 여백만큼 더 길다(이 문서: 56.7px 대
+        // 실제 37.8px — 용지 84188 / footer 2834 / bottom 4251 HU). 그 아래끝으로
+        // 정렬하면 19px 더 내려간다. `margin_footer` 는 `footer_page_number_y`
+        // (Task #1728)가 쓰는 것과 같은 관용구로 되찾는다.
+        if footer_valign > 0 && !footer_node.children.is_empty() {
+            let margin_footer =
+                (layout.page_height - (layout.footer_area.y + layout.footer_area.height)).max(0.0);
+            let band_bottom = layout.footer_area.y + margin_footer;
+            let content_bottom = footer_node
+                .children
+                .iter()
+                .map(|c| c.bbox.y + c.bbox.height)
+                .fold(f64::MIN, f64::max);
+            let slack = band_bottom - content_bottom;
+            // 내용이 밴드보다 크면 종전대로 위에서 시작한다 — 위로 밀어 올리지 않는다.
+            let dy = if slack > 0.0 {
+                if footer_valign == 1 {
+                    slack / 2.0
+                } else {
+                    slack
+                }
+            } else {
+                0.0
+            };
+            if dy > 0.05 {
+                for child in footer_node.children.iter_mut() {
+                    Self::translate_subtree_y(child, dy);
                 }
             }
         }
