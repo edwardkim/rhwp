@@ -712,9 +712,7 @@ impl DocumentCore {
         col: u16,
     ) -> Result<String, HwpError> {
         let table = self.get_table_mut(section_idx, parent_para_idx, control_idx)?;
-        table
-            .split_cell(row, col)
-            .map_err(|e| HwpError::RenderError(e))?;
+        table.split_cell(row, col).map_err(HwpError::RenderError)?;
         table.dirty = true;
         let cell_count = table.cells.len();
 
