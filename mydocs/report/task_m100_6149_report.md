@@ -57,6 +57,15 @@ $ node --test \
     rhwp-studio/tests/page-scroll-step.test.ts
 tests 99, pass 99, fail 0
 
+$ node scripts/rust-test-suite-manifest.mjs --prepare
+32 harnesses, 9 exceptions 생성·확인 완료
+
+$ cargo fmt --all
+exit 0
+
+$ cargo fmt --all -- --check
+exit 0
+
 $ git diff --check
 exit 0
 ```
