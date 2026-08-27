@@ -190,7 +190,7 @@
       "variant": "계열삭제",
       "control": "누적세로막대형-대조군.hwpx",
       "original_path": "samples/issue5652/누적세로막대형-계열삭제.hwp",
-      "original_sha256": "6e805ea4fd2c08854d49b47a3b67cf709cd1e3fcb7e70a469f185b54f653c371",
+      "original_sha256": "2a76d9703440b88b4a1cf0b58c17dc27dd4c45ee5a77edc415a67c2889607911",
       "hancom_pdf_path": "pdf/issue5652/누적세로막대형-계열삭제-hwp-2022.pdf",
       "hancom_pdf_sha256": "0b114414f1a0585390eb9e7370380ea16c4c2f35949d806c507cc48c84346994",
       "raster": {
@@ -213,7 +213,7 @@
       "variant": "계열삭제",
       "control": "누적세로막대형-대조군.hwpx",
       "original_path": "samples/issue5652/누적세로막대형-계열삭제.hwpx",
-      "original_sha256": "81b77d4a278c1d47fd761f057041380d46e25409d087ae2719f4cb92d3f65fa3",
+      "original_sha256": "5f99f8dd6928a512caa72aad7989871f6e66168e0ed8c609e6988c3743c3262c",
       "hancom_pdf_path": "pdf/issue5652/누적세로막대형-계열삭제-hwpx-2022.pdf",
       "hancom_pdf_sha256": "655a88a33e13c1b6da1f08a0fe01bc4b6e31c582dfdb709fc06871d7062d1347",
       "raster": {
@@ -374,7 +374,7 @@
       "variant": "계열삭제",
       "control": "묶은세로막대형-대조군.hwpx",
       "original_path": "samples/issue5652/묶은세로막대형-계열삭제.hwp",
-      "original_sha256": "6e9a7b8621507c6b9203176c24f7bf9e877b55d974c7c3a359ea846b49157a9c",
+      "original_sha256": "1d8fbae6d0a3830cdfe72ab31cdf8e9ece663da045fc439b1059d94e2f13dc94",
       "hancom_pdf_path": "pdf/issue5652/묶은세로막대형-계열삭제-hwp-2022.pdf",
       "hancom_pdf_sha256": "5baffb53a94d7e00f42e2c4770cf1ca442a7513a3718c762df3919badcd8d049",
       "raster": {
@@ -397,7 +397,7 @@
       "variant": "계열삭제",
       "control": "묶은세로막대형-대조군.hwpx",
       "original_path": "samples/issue5652/묶은세로막대형-계열삭제.hwpx",
-      "original_sha256": "ccacef69e64f7da246d53361f4f80ae358a1d341d1e8fd791360da4d3c47ac55",
+      "original_sha256": "547675c64fceb26cc1ad86804ef161e6bdb3e48d7c8a275d21f83bc2a4c473fc",
       "hancom_pdf_path": "pdf/issue5652/묶은세로막대형-계열삭제-hwpx-2022.pdf",
       "hancom_pdf_sha256": "a23267da98d49ec8ae3689388cee0c2f17a0dd9a380c2a7fb951ed0210368f0d",
       "raster": {
