@@ -1026,6 +1026,59 @@ fn para_has_visible_inline_control(para: &Paragraph) -> bool {
     })
 }
 
+/// [#6134] `control_index` 앞에 놓인 같은 문단의 비-TAC 자리차지(TopAndBottom) 개체가
+/// 차지하는 밴드 높이(px, 바깥 아래 여백 포함).
+///
+/// 한글은 자리차지 개체를 문단 글줄 **위**에 놓는다 — 그래서 그 문단의 글줄은 밴드
+/// 아래로 내려가고, 저장 lineseg 의 vpos 도 그 자리를 가리킨다. 같은 문단에 매달린
+/// 다른 개체가 "문단 기준" 세로 오프셋을 쓰면 그 기준점은 문단 상단(=밴드 상단)이
+/// 아니라 **그 글줄**이다. rhwp 는 문단 상단으로 잡아 로고 글상자를 담당부서 표
+/// 위에 얹었다(156731730 8쪽: 로고 y 765.1, 한글 1010.7 — 표 753.7~993.0 위).
+///
+/// 밴드 자신(=`control_index` 이하)은 제외한다 — 자기 기준점은 문단 상단이 맞다.
+///
+/// 대상은 **글앞으로/글뒤로 개체**로 한정한다. 자리차지 개체끼리의 세로 쌓기는 이미
+/// 자기 계약(#2097 가로-컬럼 모델)이 있어 여기서 다시 더하면 이중 계상이고, 어울림
+/// (Square)은 본문 흐름과 함께 배치되는 별개 축이다.
+fn preceding_topbottom_band_height_px(para: &Paragraph, control_index: usize, dpi: f64) -> f64 {
+    use crate::model::shape::TextWrap;
+    let current_is_overlay = para
+        .controls
+        .get(control_index)
+        .and_then(|ctrl| match ctrl {
+            Control::Table(table) => Some(&table.common),
+            Control::Picture(picture) => Some(&picture.common),
+            Control::Shape(shape) => Some(shape.common()),
+            _ => None,
+        })
+        .is_some_and(|common| {
+            !common.treat_as_char
+                && matches!(
+                    common.text_wrap,
+                    TextWrap::InFrontOfText | TextWrap::BehindText
+                )
+                && matches!(common.vert_rel_to, crate::model::shape::VertRelTo::Para)
+        });
+    if !current_is_overlay {
+        return 0.0;
+    }
+    para.controls
+        .iter()
+        .take(control_index)
+        .filter_map(|ctrl| match ctrl {
+            Control::Table(table) => Some(&table.common),
+            Control::Picture(picture) => Some(&picture.common),
+            Control::Shape(shape) => Some(shape.common()),
+            _ => None,
+        })
+        .filter(|common| is_para_topbottom_float(common))
+        .map(|common| {
+            hwpunit_to_px(common.height as i32, dpi)
+                + hwpunit_to_px(i32::from(common.margin.bottom), dpi)
+        })
+        .sum()
+}
+
 fn para_is_empty_topbottom_table_anchor(para: &Paragraph) -> bool {
     !para_has_visible_text(para)
         && para
@@ -12173,6 +12226,16 @@ impl LayoutEngine {
             } = item
             {
                 let para_y = para_start_y.get(para_index).copied().unwrap_or(col_area.y);
+                // [#6134] 같은 문단에 앞선 자리차지(TopAndBottom) 개체가 있으면 문단의
+                // 글줄은 그 밴드 **아래**로 내려간다. "문단 기준" 세로 오프셋을 가진
+                // 뒤 개체의 기준점도 문단 상단(=밴드 상단)이 아니라 그 글줄이다.
+                let para_y = para_y
+                    + paragraphs
+                        .get(*para_index)
+                        .map(|para| {
+                            preceding_topbottom_band_height_px(para, *control_index, self.dpi)
+                        })
+                        .unwrap_or(0.0);
                 let comp = composed.get(*para_index);
                 let para_style_id = if let Some(para) = paragraphs.get(*para_index) {
                     comp.map(|c| c.para_style_id as usize)
