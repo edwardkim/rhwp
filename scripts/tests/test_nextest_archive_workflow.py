@@ -143,7 +143,7 @@ class NextestArchiveWorkflowTests(unittest.TestCase):
         self.assertIn("scripts/collect-nextest-target-durations.mjs", runner)
         self.assertIn("nextest-target-durations-${{ github.run_id }}-${{ inputs.archive_label }}", runner)
 
-    def test_duration_policy_collects_only_successful_devel_b_and_c_measurements(self):
+    def test_duration_policy_collects_devel_and_same_repository_pr_b_and_c_measurements(self):
         from pathlib import Path
         root = Path(__file__).resolve().parents[2]
         policy = (root / "tests/suites/nextest-target-duration-policy.json").read_text()
@@ -158,11 +158,20 @@ class NextestArchiveWorkflowTests(unittest.TestCase):
         self.assertIn("[profile.ci-duration-observation.junit]", config)
         self.assertIn("github.event_name == 'push'", runner)
         self.assertIn("github.ref == 'refs/heads/devel'", runner)
+        self.assertIn("github.event_name == 'pull_request'", runner)
+        self.assertIn(
+            "github.event.pull_request.head.repo.full_name == github.repository",
+            runner,
+        )
         self.assertIn("inputs.archive_label == 'b'", runner)
         self.assertIn("inputs.archive_label == 'c'", runner)
+        self.assertIn("retention-days: 3", runner)
+        self.assertIn("retention-days: 30", runner)
         self.assertIn("estimatedSeconds", selector)
-        self.assertIn("<testsuite", collector)
+        self.assertIn("<testcase", collector)
+        self.assertIn("JUnit report contains no target durations", collector)
         self.assertIn("exactly one B report and one C report", refresh)
+        self.assertIn("identical run, ref, and sha provenance", refresh)
 
     def test_native_skia_uses_the_same_test_profile_policy(self) -> None:
         native = job_body(self.ci, "native-skia-tests")

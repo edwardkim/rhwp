@@ -92,12 +92,13 @@ test("CLI consumes streamed cargo metadata without synchronous stdin reads", () 
   assert.match(result.stderr, /integration_targets=2 selected_targets=1/);
 });
 
-test("JUnit collection aggregates one duration per test binary and skips setup suites", () => {
+test("JUnit collection aggregates testcase durations per binary and skips setup suites", () => {
   const durations = collectTargetDurations([
-    '<testsuite name="rhwp::issue_1" time="1.25">',
-    '<testsuite name="@setup-script:seed" time="5.00">',
-    '<testsuite name="rhwp::issue_1" time="0.75">',
-    '<testsuite name="rhwp::issue_2" time="2.00">',
+    '<testsuite name="rhwp::issue_1">',
+    '<testcase name="first" classname="rhwp::issue_1" time="1.25" />',
+    '<testcase name="setup" classname="@setup-script:seed" time="5.00" />',
+    '<testcase name="second" classname="rhwp::issue_1" time="0.75" />',
+    '<testcase name="third" classname="rhwp::issue_2" time="2.00" />',
   ].join("\n"));
 
   assert.deepEqual(durations, { issue_1: 2, issue_2: 2 });
@@ -109,13 +110,31 @@ test("policy refresh accepts one successful B and C measurement", () => {
     fallback_seconds: 1,
     targets: { existing: 3 },
   }, [
-    { schema_version: 1, archive_label: "b", run_id: "10", ref: "refs/heads/devel", sha: "b-sha", targets: { beta: 4 } },
-    { schema_version: 1, archive_label: "c", run_id: "10", ref: "refs/heads/devel", sha: "c-sha", targets: { alpha: 2 } },
+    { schema_version: 1, archive_label: "b", run_id: "10", ref: "refs/heads/devel", sha: "same-sha", targets: { beta: 4 } },
+    { schema_version: 1, archive_label: "c", run_id: "10", ref: "refs/heads/devel", sha: "same-sha", targets: { alpha: 2 } },
   ]);
 
   assert.deepEqual(refreshed.targets, { alpha: 2, beta: 4, existing: 3 });
   assert.deepEqual(refreshed.measurement_sources, {
-    b: { run_id: "10", ref: "refs/heads/devel", sha: "b-sha" },
-    c: { run_id: "10", ref: "refs/heads/devel", sha: "c-sha" },
+    b: { run_id: "10", ref: "refs/heads/devel", sha: "same-sha" },
+    c: { run_id: "10", ref: "refs/heads/devel", sha: "same-sha" },
   });
+});
+
+test("policy refresh rejects empty or mismatched B/C measurements", () => {
+  const basePolicy = { schema_version: 1, fallback_seconds: 1, targets: {} };
+  assert.throws(
+    () => refreshDurationPolicy(basePolicy, [
+      { schema_version: 1, archive_label: "b", run_id: "10", ref: "refs/heads/devel", sha: "same-sha", targets: {} },
+      { schema_version: 1, archive_label: "c", run_id: "10", ref: "refs/heads/devel", sha: "same-sha", targets: { alpha: 2 } },
+    ]),
+    /must contain target durations: b/,
+  );
+  assert.throws(
+    () => refreshDurationPolicy(basePolicy, [
+      { schema_version: 1, archive_label: "b", run_id: "10", ref: "refs/heads/devel", sha: "first", targets: { beta: 4 } },
+      { schema_version: 1, archive_label: "c", run_id: "10", ref: "refs/heads/devel", sha: "second", targets: { alpha: 2 } },
+    ]),
+    /identical run, ref, and sha provenance/,
+  );
 });

@@ -48,9 +48,9 @@ function parseAttributes(raw) {
 
 export function collectTargetDurations(junitXml) {
   const durations = new Map();
-  for (const match of junitXml.matchAll(/<testsuite\b([^>]*)>/g)) {
+  for (const match of junitXml.matchAll(/<testcase\b([^>]*)>/g)) {
     const attributes = parseAttributes(match[1]);
-    const suiteName = attributes.get("name");
+    const suiteName = attributes.get("classname");
     const seconds = Number(attributes.get("time"));
     if (!suiteName || suiteName.startsWith("@setup-script:") || !Number.isFinite(seconds) || seconds < 0) {
       continue;
@@ -77,6 +77,9 @@ function main() {
   }
 
   const targets = collectTargetDurations(fs.readFileSync(options.input, "utf8"));
+  if (Object.keys(targets).length === 0) {
+    fail("JUnit report contains no target durations");
+  }
   const report = {
     schema_version: 1,
     archive_label: options["archive-label"],
