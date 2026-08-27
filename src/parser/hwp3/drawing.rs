@@ -958,7 +958,7 @@ fn map_to_shape_object(
             // line_width가 남아 있어도 HWP3 무색 sentinel은 선을 그리지 않는다.
             0
         } else {
-            let raw_attr = header.basic_attr.line_style as u32;
+            let raw_attr = header.basic_attr.line_style;
             let line_type = raw_attr & 0x3F;
             if line_type == 0 && header.basic_attr.line_width > 0 {
                 raw_attr | 0x01
