@@ -12,25 +12,24 @@ static REGISTER_PATCH_HANDLER: Once = Once::new();
 static REGISTER_TRACING: Once = Once::new();
 const PATCH_COMMIT_EVENT: &str = "rhwp-subsecond-commit";
 const HOT_TRACE_TARGET: &str = "rhwp::layout";
-const HOT_TRACE_LIMIT: usize = 16;
+const HOT_TRACE_LIMIT: usize = 64;
 const HOT_TRACE_SESSION_LIMIT: usize = 4;
 const HOT_TRACE_DISABLED_TOKEN: u32 = 1 << 31;
 
 #[derive(Clone, serde::Serialize)]
 #[serde(rename_all = "camelCase")]
 struct HotTraceEntry {
+    id: u64,
+    parent_id: Option<u64>,
     function: String,
     args: BTreeMap<String, Value>,
     duration_ms: f64,
     depth: usize,
-    #[serde(skip)]
-    sequence: u64,
 }
 
 struct HotTraceSession {
     token: u32,
     entries: VecDeque<HotTraceEntry>,
-    next_sequence: u64,
 }
 
 #[derive(Default)]
@@ -38,14 +37,16 @@ struct HotTraceState {
     sessions: Vec<HotTraceSession>,
     active: Vec<u32>,
     next_token: u32,
+    next_span_id: u64,
 }
 
 struct HotTraceSpan {
+    id: u64,
+    parent_id: Option<u64>,
     function: &'static str,
     args: BTreeMap<String, Value>,
     started_at: f64,
     depth: usize,
-    sequence: u64,
     token: u32,
 }
 
@@ -98,16 +99,14 @@ where
         if attrs.metadata().target() != HOT_TRACE_TARGET {
             return;
         }
-        let Some((token, sequence)) = HOT_TRACE.with(|state| {
+        let Some((token, span_id)) = HOT_TRACE.with(|state| {
             let mut state = state.borrow_mut();
             let token = *state.active.last()?;
-            let session = state
-                .sessions
-                .iter_mut()
-                .find(|session| session.token == token)?;
-            let sequence = session.next_sequence;
-            session.next_sequence = session.next_sequence.wrapping_add(1);
-            Some((session.token, sequence))
+            if !state.sessions.iter().any(|session| session.token == token) {
+                return None;
+            }
+            state.next_span_id = state.next_span_id.wrapping_add(1).max(1);
+            Some((token, state.next_span_id))
         }) else {
             return;
         };
@@ -122,23 +121,21 @@ where
                     .then(|| ctx.lookup_current())
                     .flatten()
             });
-        let depth = parent
-            .as_ref()
-            .and_then(|parent| {
-                let extensions = parent.extensions();
-                extensions
-                    .get::<HotTraceSpan>()
-                    .filter(|trace| trace.token == token)
-                    .map(|trace| trace.depth + 1)
-            })
-            .unwrap_or(0);
+        let parent = parent.as_ref().and_then(|parent| {
+            let extensions = parent.extensions();
+            extensions
+                .get::<HotTraceSpan>()
+                .filter(|trace| trace.token == token)
+                .map(|trace| (trace.id, trace.depth + 1))
+        });
         if let Some(span) = ctx.span(id) {
             span.extensions_mut().insert(HotTraceSpan {
+                id: span_id,
+                parent_id: parent.map(|(id, _)| id),
                 function: attrs.metadata().name(),
                 args: fields.0,
                 started_at: trace_now_ms(),
-                depth,
-                sequence,
+                depth: parent.map_or(0, |(_, depth)| depth),
                 token,
             });
         }
@@ -162,11 +159,12 @@ where
             return;
         };
         let entry = HotTraceEntry {
+            id: trace.id,
+            parent_id: trace.parent_id,
             function: trace.function.to_owned(),
             args: trace.args.clone(),
             duration_ms: (trace_now_ms() - trace.started_at).max(0.0),
             depth: trace.depth,
-            sequence: trace.sequence,
         };
         retain_hot_trace(trace.token, entry);
     }
@@ -187,12 +185,7 @@ fn retain_hot_trace(token: u32, entry: HotTraceEntry) {
 }
 
 fn retain_trace_entry(entries: &mut VecDeque<HotTraceEntry>, entry: HotTraceEntry) {
-    if let Some(index) = entries
-        .iter()
-        .position(|existing| existing.function == entry.function)
-    {
-        entries.remove(index);
-    } else if entries.len() == HOT_TRACE_LIMIT {
+    if entries.len() == HOT_TRACE_LIMIT {
         entries.pop_front();
     }
     entries.push_back(entry);
@@ -273,7 +266,6 @@ pub fn begin_subsecond_trace() -> u32 {
         state.sessions.push(HotTraceSession {
             token,
             entries: VecDeque::new(),
-            next_sequence: 0,
         });
         token
     })
@@ -318,7 +310,7 @@ pub fn end_subsecond_trace(token: u32, retain: bool) -> String {
             return "[]".to_owned();
         }
         let mut entries = session.entries.into_iter().collect::<Vec<_>>();
-        entries.sort_by_key(|entry| entry.sequence);
+        entries.sort_by_key(|entry| entry.id);
         serde_json::to_string(&entries).unwrap_or_else(|_| "[]".to_owned())
     })
 }
@@ -452,6 +444,12 @@ pub fn link_wasm_exports() {
     register_patch_handler();
     let _ = crate::version();
     let _ = subsecond_probe();
+    std::hint::black_box((
+        begin_subsecond_trace as fn() -> u32,
+        activate_subsecond_trace as fn(u32),
+        deactivate_subsecond_trace as fn(u32),
+        end_subsecond_trace as fn(u32, bool) -> String,
+    ));
 }
 
 #[cfg(test)]
@@ -469,6 +467,7 @@ mod tests {
         assert_eq!(subsecond_probe(), 41);
         layout_trace_is_capture_gated_and_keeps_only_the_latest_frames();
         layout_frame_trace_contains_true_inputs_and_computed_height();
+        table_layout_trace_matches_frontend_schema();
         interleaved_sessions_attribute_each_sync_segment_to_its_token();
         empty_or_discarded_capture_cannot_return_older_evidence();
     }
@@ -560,7 +559,7 @@ mod tests {
 
             let token = begin_subsecond_trace();
             activate_subsecond_trace(token);
-            for para_index in 0_u64..24 {
+            for para_index in 0_u64..80 {
                 let span = tracing::trace_span!(
                     target: HOT_TRACE_TARGET,
                     "flow_advance_height",
@@ -575,32 +574,35 @@ mod tests {
         });
 
         let trace: Vec<Value> = serde_json::from_str(&serialized).unwrap();
-        assert_eq!(
-            trace.len(),
-            1,
-            "repeated rows keep the latest function frame"
-        );
+        assert_eq!(trace.len(), HOT_TRACE_LIMIT);
+        let first_para = 80_u64 - HOT_TRACE_LIMIT as u64;
         assert_eq!(trace[0]["function"], "flow_advance_height");
-        assert_eq!(trace[0]["args"]["para_index"], 23);
-        assert_eq!(trace[0]["args"]["result_height"], 23.5);
+        assert_eq!(trace[0]["id"], first_para + 1);
+        assert_eq!(trace[0]["parentId"], Value::Null);
+        assert_eq!(trace[0]["args"]["para_index"], first_para);
+        assert_eq!(trace[0]["args"]["result_height"], first_para as f64 + 0.5);
+        assert_eq!(trace.last().unwrap()["function"], "flow_advance_height");
+        assert_eq!(trace.last().unwrap()["args"]["para_index"], 79);
+        assert_eq!(trace.last().unwrap()["args"]["result_height"], 79.5);
 
         let token = begin_subsecond_trace();
-        for index in 0_u64..24 {
+        for index in 0_u64..80 {
             retain_hot_trace(
                 token,
                 HotTraceEntry {
+                    id: index,
+                    parent_id: None,
                     function: format!("layout_{index}"),
                     args: BTreeMap::new(),
                     duration_ms: 0.0,
                     depth: 0,
-                    sequence: index,
                 },
             );
         }
         let bounded: Vec<Value> = serde_json::from_str(&end_subsecond_trace(token, true)).unwrap();
         assert_eq!(bounded.len(), HOT_TRACE_LIMIT);
-        assert_eq!(bounded[0]["function"], "layout_8");
-        assert_eq!(bounded[15]["function"], "layout_23");
+        assert_eq!(bounded[0]["function"], format!("layout_{first_para}"));
+        assert_eq!(bounded.last().unwrap()["function"], "layout_79");
         nested_capture_cannot_clear_or_disable_its_outer_owner();
         saturated_capture_cannot_write_into_an_existing_owner();
     }
@@ -649,6 +651,58 @@ mod tests {
         assert_eq!(trace[1]["args"]["line_spacing"], 5);
         assert_eq!(trace[1]["args"]["result_top"], 75);
         assert_eq!(trace[1]["args"]["result_accepted"], true);
+    }
+
+    fn table_layout_trace_matches_frontend_schema() {
+        use tracing_subscriber::prelude::*;
+
+        HOT_TRACE.with(|state| *state.borrow_mut() = HotTraceState::default());
+        let mut serialized = String::new();
+        let document = crate::wasm_api::HwpDocument::from_bytes(include_bytes!(
+            "../samples/issue5929/table_below_square_pic.hwpx"
+        ))
+        .expect("floating table fixture layout");
+        let subscriber = tracing_subscriber::registry().with(HotTraceLayer);
+        tracing::subscriber::with_default(subscriber, || {
+            let token = begin_subsecond_trace();
+            activate_subsecond_trace(token);
+            document
+                .build_page_render_tree(0)
+                .expect("floating table render tree");
+            deactivate_subsecond_trace(token);
+            serialized = end_subsecond_trace(token, true);
+        });
+
+        let trace: Vec<Value> = serde_json::from_str(&serialized).unwrap();
+        let table = trace
+            .iter()
+            .find(|entry| entry["function"] == "layout_table_control_block")
+            .unwrap_or_else(|| {
+                panic!("the actual table layout span must survive serialization: {serialized}")
+            });
+        let args = table["args"].as_object().unwrap();
+        let keys = args.keys().map(String::as_str).collect::<Vec<_>>();
+        assert_eq!(
+            keys,
+            [
+                "blocking_bottom",
+                "control_index",
+                "flow_y",
+                "outer_margin_top",
+                "page_index",
+                "para_index",
+                "result_table_bottom",
+                "result_table_top",
+                "spacing_before",
+            ]
+        );
+        let parent_id = table["parentId"].as_u64().expect("table call parent id");
+        let parent = trace
+            .iter()
+            .find(|entry| entry["id"] == parent_id)
+            .expect("table call parent frame");
+        assert_eq!(parent["function"], "layout_table_item");
+        assert_eq!(table["depth"], parent["depth"].as_u64().unwrap() + 1);
     }
 
     fn nested_capture_cannot_clear_or_disable_its_outer_owner() {

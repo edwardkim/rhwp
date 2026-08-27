@@ -8725,6 +8725,49 @@ impl LayoutEngine {
         } = v;
         let mut tac_seg_applied = false;
         let mut para_float_lane_info: Option<(f64, f64, f64, f64, f64)> = None;
+        #[cfg(feature = "subsecond-dev")]
+        let placement_trace = crate::subsecond_dev::hot_trace_enabled().then(|| {
+            let para_style_id = composed
+                .get(para_index)
+                .map(|c| c.para_style_id as usize)
+                .unwrap_or(para.para_shape_id as usize);
+            let spacing_before = styles
+                .para_styles
+                .get(para_style_id)
+                .map(|style| style.spacing_before)
+                .unwrap_or(0.0);
+            let outer_margin_top = para
+                .controls
+                .get(control_index)
+                .and_then(|control| match control {
+                    Control::Table(table) => {
+                        Some(hwpunit_to_px(table.outer_margin_top as i32, self.dpi))
+                    }
+                    _ => None,
+                })
+                .unwrap_or(0.0);
+            let blocking_bottom = visible_float_exclusions
+                .iter()
+                .filter(|zone| y_offset + 0.5 >= zone.top && y_offset < zone.bottom)
+                .map(|zone| zone.bottom)
+                .reduce(f64::max)
+                .unwrap_or(-1.0);
+            tracing::trace_span!(
+                target: "rhwp::layout",
+                "layout_table_control_block",
+                page_index = page_content.page_index as u64,
+                para_index = para_index as u64,
+                control_index = control_index as u64,
+                flow_y = y_offset,
+                spacing_before,
+                outer_margin_top,
+                blocking_bottom,
+                result_table_top = tracing::field::Empty,
+                result_table_bottom = tracing::field::Empty,
+            )
+        });
+        #[cfg(feature = "subsecond-dev")]
+        let _placement_entered = placement_trace.as_ref().map(|span| span.enter());
         if let Some(Control::Table(t)) = para.controls.get(control_index) {
             let raw_mt = measured_tables
                 .iter()
@@ -9376,6 +9419,11 @@ impl LayoutEngine {
                         physical_outer_box_paint_inset,
                     )
                 };
+                #[cfg(feature = "subsecond-dev")]
+                if let Some(trace) = &placement_trace {
+                    trace.record("result_table_top", table_y_start);
+                    trace.record("result_table_bottom", table_visual_end);
+                }
                 let table_flow_end = table_visual_end - physical_outer_box_paint_inset_y;
                 if is_tac {
                     let marker_x = tbl_inline_x.unwrap_or(col_area.x + effective_margin);

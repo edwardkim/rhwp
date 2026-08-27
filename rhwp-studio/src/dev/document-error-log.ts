@@ -31,14 +31,16 @@ export interface LineBreakVisibleResult {
 }
 
 export interface LayoutTraceEntry {
+  id: number;
+  parentId: number | null;
   function: string;
   args: Record<string, string | number | boolean>;
   durationMs: number;
   depth: number;
 }
 
-const MAX_DOCUMENT_ERROR_LENGTH = 4_096;
-const MAX_LAYOUT_TRACE_ENTRIES = 16;
+const MAX_DOCUMENT_ERROR_LENGTH = 16_384;
+export const MAX_LAYOUT_TRACE_ENTRIES = 64;
 
 const isIndex = (value: unknown): value is number => Number.isSafeInteger(value) && Number(value) >= 0;
 const isRowPart = (value: unknown): value is string =>
@@ -125,11 +127,13 @@ export function findFirstLineBreakError(
 function isLayoutTraceEntry(entry: unknown): entry is LayoutTraceEntry {
   if (!entry || typeof entry !== 'object') return false;
   const value = entry as Partial<LayoutTraceEntry>;
-  return typeof value.function === 'string'
+  return isIndex(value.id)
+    && (value.parentId === null || isIndex(value.parentId) && value.parentId < value.id)
+    && typeof value.function === 'string'
     && /^[a-z][a-z0-9_]*$/.test(value.function)
     && !!value.args
     && typeof value.args === 'object'
-    && Object.keys(value.args).length <= 8
+    && Object.keys(value.args).length <= 10
     && Object.entries(value.args).every(([name, field]) =>
       /^[a-z][a-z0-9_]*$/.test(name)
       && (typeof field === 'number' && Number.isFinite(field)
@@ -160,11 +164,11 @@ export function attachDocumentErrorTrace(
   trace: readonly LayoutTraceEntry[],
 ): string {
   const bounded: LayoutTraceEntry[] = [];
-  for (const entry of trace.slice(-MAX_LAYOUT_TRACE_ENTRIES)) {
+  for (const entry of trace.slice(-MAX_LAYOUT_TRACE_ENTRIES).reverse()) {
     if (!isLayoutTraceEntry(entry)) continue;
-    const candidate = [...bounded, entry];
+    const candidate = [entry, ...bounded];
     if (`${line} trace=${JSON.stringify(candidate)}`.length > MAX_DOCUMENT_ERROR_LENGTH) break;
-    bounded.push(entry);
+    bounded.unshift(entry);
   }
   return bounded.length ? `${line} trace=${JSON.stringify(bounded)}` : line;
 }
@@ -213,7 +217,7 @@ export function formatDocumentErrorForTerminal(line: string): string | null {
         .map(([name, value]) => `${name.slice(7)}=${field(value)}`)
         .join(', ');
       const indent = '  '.repeat(entry.depth + 1);
-      return `${indent}${entry.function}(${args})${results ? ` => ${results}` : ''} ${entry.durationMs}ms`;
+      return `${indent}#${entry.id} ${entry.function}(${args})${results ? ` => ${results}` : ''} ${entry.durationMs}ms`;
     }),
   ].join('\n');
 }

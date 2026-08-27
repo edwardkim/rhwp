@@ -211,7 +211,7 @@ function response(): {
 
 test('the document-error endpoint prints one typed Vite error', async () => {
   const line = 'paint: [page=3 ratio=0.1 pdfOnly=1 rhwpOnly=2 colorOnly=0 bounds=0,0,1,1] ' +
-    'trace=[{"function":"layout_body_picture","args":{"para_index":4,"y_offset":32,' +
+    'trace=[{"id":1,"parentId":null,"function":"layout_body_picture","args":{"para_index":4,"y_offset":32,' +
     '"result_frame_height":200,"result_y":232},"durationMs":2,"depth":0}]';
   const capability = 'a'.repeat(43);
   const printed: unknown[] = [];
@@ -237,7 +237,7 @@ test('the document-error endpoint prints one typed Vite error', async () => {
   assert.equal(accepted.statusCode, 202);
   assert.deepEqual(printed, [{
     message: 'paint: [page=3 ratio=0.1 pdfOnly=1 rhwpOnly=2 colorOnly=0 bounds=0,0,1,1]\n' +
-      'trace:\n  layout_body_picture(para_index=4, y_offset=32) ' +
+      'trace:\n  #1 layout_body_picture(para_index=4, y_offset=32) ' +
       '=> frame_height=200, y=232 2ms',
     options: { timestamp: true, error: null },
   }]);
@@ -245,7 +245,7 @@ test('the document-error endpoint prints one typed Vite error', async () => {
 
 test('Vite displays the typed document error in red', () => {
   const line = 'paint: [page=3 ratio=0.1 pdfOnly=1 rhwpOnly=2 colorOnly=0 bounds=0,0,1,1] ' +
-    'trace=[{"function":"layout_body_picture","args":{"para_index":4,"result_y":232},' +
+    'trace=[{"id":1,"parentId":null,"function":"layout_body_picture","args":{"para_index":4,"result_y":232},' +
     '"durationMs":2,"depth":0}]';
   const script = `
     import { Readable } from 'node:stream';
@@ -269,7 +269,7 @@ test('Vite displays the typed document error in red', () => {
   assert.match(result.stderr, /\u001b\[31mpaint:[\s\S]*layout_body_picture[\s\S]*\u001b\[39m/);
   assert.match(
     result.stderr.replace(/\u001b\[[0-9;]*m/g, '').trimEnd(),
-    /\[vite\] paint: \[page=3[\s\S]*trace:\n  layout_body_picture\(para_index=4\) => y=232 2ms$/,
+    /\[vite\] paint: \[page=3[\s\S]*trace:\n  #1 layout_body_picture\(para_index=4\) => y=232 2ms$/,
   );
 
   const noColorEnv = { ...process.env, NO_COLOR: '1' };

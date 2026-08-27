@@ -10,6 +10,7 @@ import {
 } from '../src/dev/pdf-reference-diff.ts';
 import {
   buildFidelityScanReport,
+  compareDiagnosticBands,
   firstDocumentDivergence,
   isFidelityDocumentCurrent,
   isFidelityScanCurrent,
@@ -24,6 +25,58 @@ import {
 } from '../src/dev/document-error-log.ts';
 import { nextDiagnosticRenderGeneration } from '../src/view/page-reference-layer.ts';
 import { LayoutTraceMailbox, PdfReferenceOverlay } from '../src/dev/pdf-reference-overlay.ts';
+
+const ruleBands = (centers: number[]) => ({
+  totalBands: centers.length,
+  truncated: false,
+  bands: centers.map(centerY => ({
+    startY: centerY,
+    endY: centerY,
+    centerY,
+    thickness: 1,
+    peakInkCoverage: 1,
+    peakSpanRatio: 1,
+  })),
+});
+
+const truncatedRuleBands = (centers: number[], totalBands: number) => ({
+  ...ruleBands(centers),
+  totalBands,
+  truncated: true,
+});
+
+test('horizontal-rule evidence identifies leading, middle, and trailing unmatched bands', () => {
+  for (const [hwp, pdf, expected] of [
+    [[50, 100, 400], [100, 400], [[50], []]],
+    [[100, 250, 400], [100, 400], [[250], []]],
+    [[100, 400, 500], [100, 400], [[500], []]],
+    [[100, 400], [50, 100, 400], [[], [50]]],
+  ] as const) {
+    const delta = compareDiagnosticBands(ruleBands([...hwp]), ruleBands([...pdf]));
+    assert.deepEqual([delta.hwpEvidenceCenters, delta.pdfEvidenceCenters], expected);
+  }
+  const ambiguous = compareDiagnosticBands(ruleBands([100, 400]), ruleBands([115]));
+  assert.deepEqual([ambiguous.hwpEvidenceCenters, ambiguous.pdfEvidenceCenters], [[], []]);
+  for (const [hwp, pdf, expected] of [
+    [[50, 75, 100, 400], [100, 400], [[50, 75], []]],
+    [[100, 200, 250, 400], [100, 400], [[200, 250], []]],
+    [[100, 400, 500, 550], [100, 400], [[500, 550], []]],
+    [[100, 400], [50, 75, 100, 400], [[], [50, 75]]],
+  ] as const) {
+    const multiple = compareDiagnosticBands(ruleBands([...hwp]), ruleBands([...pdf]));
+    assert.deepEqual([multiple.hwpEvidenceCenters, multiple.pdfEvidenceCenters], expected);
+  }
+  const truncated = compareDiagnosticBands(
+    truncatedRuleBands([100, 400], 3),
+    truncatedRuleBands([100, 400], 2),
+  );
+  assert.deepEqual([truncated.hwpEvidenceCenters, truncated.pdfEvidenceCenters], [[], []]);
+  const shifted = compareDiagnosticBands(ruleBands([100, 400]), ruleBands([100, 415]));
+  assert.deepEqual(
+    [shifted.hwpEvidenceCenters, shifted.pdfEvidenceCenters, shifted.maxCenterDelta],
+    [[400], [415], 15],
+  );
+});
 
 test('a line-break failure yields one detailed first-error CLI line', () => {
   assert.equal(formatFirstLineBreakError(3, [{
@@ -174,6 +227,8 @@ test('minor glyph noise stays quiet while a shifted line is reported as broken l
       pairedCount: 0,
       maxCenterDelta: null,
       meanCenterDelta: null,
+      hwpEvidenceCenters: [],
+      pdfEvidenceCenters: [],
     },
     inkRowDelta: {
       hwpCount: 20,
@@ -182,6 +237,8 @@ test('minor glyph noise stays quiet while a shifted line is reported as broken l
       pairedCount: 20,
       maxCenterDelta: 0.5,
       meanCenterDelta: 0.2,
+      hwpEvidenceCenters: [100],
+      pdfEvidenceCenters: [100.5],
     },
   } as const;
 
@@ -310,12 +367,15 @@ test('a render change during reference loading cannot publish stale evidence', a
     getDocumentGeneration: () => 1,
     getHwpPageCount: () => 1,
     capturePage: async () => {
-      const functionName = captures++ === 0 ? 'stale_page_only' : 'current_page_only';
+      const id = ++captures;
+      const functionName = id === 1 ? 'stale_page_only' : 'current_page_only';
       return {
         width: 1,
         height: 1,
         pixels: new Uint8ClampedArray(4),
         layoutTrace: JSON.stringify([{
+          id,
+          parentId: null,
           function: functionName,
           args: {},
           durationMs: 1,
@@ -392,12 +452,24 @@ test('the page layout trace accompanies both semantic and paint failures', async
   };
   (globalThis as any).window = browser;
   const traceLifecycle: string[] = [];
-  const semanticTrace = JSON.stringify([{
-    function: 'layout_frame_commit_row',
-    args: { top: 12, line_height: 20, result_top: 32 },
-    durationMs: 2,
-    depth: 0,
-  }]);
+  const semanticTrace = JSON.stringify([
+    {
+      id: 6,
+      parentId: null,
+      function: 'layout_frame_commit_row',
+      args: { top: 10, line_height: 20, result_top: 30 },
+      durationMs: 1,
+      depth: 0,
+    },
+    {
+      id: 7,
+      parentId: null,
+      function: 'layout_frame_commit_row',
+      args: { top: 12, line_height: 20, result_top: 32 },
+      durationMs: 2,
+      depth: 0,
+    },
+  ]);
   const traces = ['[]', semanticTrace];
   const overlay = new PdfReferenceOverlay('/__rhwp_harness/pdf-page/token', 1, 1, 'ref.pdf', {
     errorLogCapability: 'a'.repeat(43),
@@ -428,7 +500,9 @@ test('the page layout trace accompanies both semantic and paint failures', async
     await browser.__rhwpFidelityHarness.scan();
     assert.deepEqual(delivered, [
       'line-break: [page=1 target=s0/p4 at=1 expected=12:single actual=13:single] ' +
-      'trace=[{"function":"layout_frame_commit_row","args":{"top":12,"line_height":20,' +
+      'trace=[{"id":6,"parentId":null,"function":"layout_frame_commit_row","args":{"top":10,"line_height":20,' +
+      '"result_top":30},"durationMs":1,"depth":0},{"id":7,"parentId":null,' +
+      '"function":"layout_frame_commit_row","args":{"top":12,"line_height":20,' +
       '"result_top":32},"durationMs":2,"depth":0}]',
     ]);
     assert.deepEqual(traceLifecycle, ['begin:7', 'end:7:true']);

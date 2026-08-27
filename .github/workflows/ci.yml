@@ -1088,6 +1088,12 @@ jobs:
       - name: Check WASM target
         run: cargo check --target wasm32-unknown-unknown --lib
 
+      - name: Verify Subsecond trace exports
+        run: |
+          cargo build --locked -p rhwp-subsecond --features subsecond-dev --target wasm32-unknown-unknown
+          RHWP_SUBSECOND_WASM=target/wasm32-unknown-unknown/debug/rhwp-subsecond.wasm \
+            node --test scripts/subsecond-wasm-exports.test.mjs
+
   native-skia-tests:
     name: Native Skia tests
     runs-on: ubuntu-latest

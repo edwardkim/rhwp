@@ -7,6 +7,8 @@ export interface DiagnosticBandDelta {
   pairedCount: number;
   maxCenterDelta: number | null;
   meanCenterDelta: number | null;
+  hwpEvidenceCenters: number[];
+  pdfEvidenceCenters: number[];
 }
 
 export interface FidelityPageObservation {
@@ -110,17 +112,55 @@ export function compareDiagnosticBands(
   hwp: HorizontalRuleDiagnostics,
   pdf: HorizontalRuleDiagnostics,
 ): DiagnosticBandDelta {
-  const pairedCount = Math.min(hwp.bands.length, pdf.bands.length);
-  const deltas = Array.from({ length: pairedCount }, (_, index) =>
-    Math.abs(hwp.bands[index].centerY - pdf.bands[index].centerY));
+  const equalCount = hwp.totalBands === pdf.totalBands
+    && hwp.bands.length === pdf.bands.length;
+  const completeCountMismatch = hwp.totalBands !== pdf.totalBands
+    && !hwp.truncated
+    && !pdf.truncated;
+  const pairs: Array<[number, number]> = [];
+  const unmatchedHwp: number[] = [];
+  const unmatchedPdf: number[] = [];
+  if (equalCount) {
+    for (let index = 0; index < hwp.bands.length; index++) pairs.push([index, index]);
+  } else if (completeCountMismatch) {
+    let hwpIndex = 0;
+    let pdfIndex = 0;
+    while (hwpIndex < hwp.bands.length && pdfIndex < pdf.bands.length) {
+      const hwpCenter = hwp.bands[hwpIndex].centerY;
+      const pdfCenter = pdf.bands[pdfIndex].centerY;
+      if (Math.abs(hwpCenter - pdfCenter) < 2) {
+        pairs.push([hwpIndex++, pdfIndex++]);
+      } else if (hwpCenter < pdfCenter) {
+        unmatchedHwp.push(hwpIndex++);
+      } else {
+        unmatchedPdf.push(pdfIndex++);
+      }
+    }
+    while (hwpIndex < hwp.bands.length) unmatchedHwp.push(hwpIndex++);
+    while (pdfIndex < pdf.bands.length) unmatchedPdf.push(pdfIndex++);
+  }
+  const deltas = pairs.map(([hwpIndex, pdfIndex]) =>
+    Math.abs(hwp.bands[hwpIndex].centerY - pdf.bands[pdfIndex].centerY));
   const mean = deltas.reduce((sum, value) => sum + value, 0) / deltas.length;
+  const maxDeltaIndex = deltas.length
+    ? deltas.reduce((best, value, index) => value > deltas[best] ? index : best, 0)
+    : -1;
+  const evidencePair = maxDeltaIndex >= 0 ? pairs[maxDeltaIndex] : null;
+  const onlyHwpUnmatched = unmatchedHwp.length > 0 && unmatchedPdf.length === 0;
+  const onlyPdfUnmatched = unmatchedPdf.length > 0 && unmatchedHwp.length === 0;
   return {
     hwpCount: hwp.totalBands,
     pdfCount: pdf.totalBands,
     countDelta: hwp.totalBands - pdf.totalBands,
-    pairedCount,
+    pairedCount: pairs.length,
     maxCenterDelta: deltas.length ? round(Math.max(...deltas), 3) : null,
     meanCenterDelta: deltas.length ? round(mean, 3) : null,
+    hwpEvidenceCenters: onlyHwpUnmatched
+      ? unmatchedHwp.map(index => hwp.bands[index].centerY)
+      : equalCount && evidencePair ? [hwp.bands[evidencePair[0]].centerY] : [],
+    pdfEvidenceCenters: onlyPdfUnmatched
+      ? unmatchedPdf.map(index => pdf.bands[index].centerY)
+      : equalCount && evidencePair ? [pdf.bands[evidencePair[1]].centerY] : [],
   };
 }
 

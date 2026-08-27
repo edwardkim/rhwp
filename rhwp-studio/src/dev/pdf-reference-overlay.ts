@@ -21,6 +21,7 @@ import {
   attachDocumentErrorTrace,
   formatDocumentError,
   findFirstLineBreakError,
+  MAX_LAYOUT_TRACE_ENTRIES,
   parseLayoutTrace,
   sendDocumentErrorLine,
   type LayoutTraceEntry,
@@ -275,6 +276,8 @@ export class PdfReferenceOverlay implements PageReferenceLayer {
       }
       if (page.pageIndex !== report.firstStructuralDivergencePage) continue;
       const bounds = page.bounds;
+      const ruleDelta = page.horizontalRuleDelta;
+      const trace = this.consumeLayoutTrace(semanticTrace);
       return attachDocumentErrorTrace(formatDocumentError('paint', [
         ['page', page.pageIndex + 1],
         ['ratio', page.mismatchRatio],
@@ -282,7 +285,13 @@ export class PdfReferenceOverlay implements PageReferenceLayer {
         ['rhwpOnly', page.hwpOnlyPixels],
         ['colorOnly', page.colorMismatchPixels],
         ['bounds', bounds ? `${bounds.x},${bounds.y},${bounds.width},${bounds.height}` : 'none'],
-      ]), this.consumeLayoutTrace(semanticTrace));
+        ['ruleDelta', [
+          ruleDelta.countDelta,
+          ruleDelta.maxCenterDelta ?? '-',
+          ruleDelta.hwpEvidenceCenters.join(':') || '-',
+          ruleDelta.pdfEvidenceCenters.join(':') || '-',
+        ].join(',')],
+      ]), trace);
     }
     if (first?.kind === 'page-count') {
       return attachDocumentErrorTrace(formatDocumentError('page-count', [
@@ -311,12 +320,11 @@ export class PdfReferenceOverlay implements PageReferenceLayer {
   }
 
   private mergeLayoutTrace(...groups: readonly (readonly LayoutTraceEntry[])[]): LayoutTraceEntry[] {
-    const merged = new Map<string, LayoutTraceEntry>();
+    const merged = new Map<number, LayoutTraceEntry>();
     for (const entry of groups.flat()) {
-      merged.delete(entry.function);
-      merged.set(entry.function, entry);
+      merged.set(entry.id, entry);
     }
-    return [...merged.values()].slice(-16);
+    return [...merged.values()].sort((a, b) => a.id - b.id).slice(-MAX_LAYOUT_TRACE_ENTRIES);
   }
 
   private withLayoutTrace<T>(run: () => T): T {
