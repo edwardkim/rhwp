@@ -3063,7 +3063,27 @@ impl LayoutEngine {
         // `raw_y.max(y_start)` 클램프가 있어 음수 무력화. Partial 경로에는
         // 클램프가 없으므로 게이트를 signed 비교로 정정해 동등 효과.
         let vert_off_signed = table.common.vertical_offset as i32;
+        // [#6143] 문단 기준 오프셋이 쪽 경계에서 이미 소진된 조각.
+        //
+        // 오프셋의 기준점은 **앵커 문단이 놓인 자리**다. 앵커가 이 쪽에 아무것도
+        // 내지 않았는데(형제 노드 0 · host 선방출 0) 표 조각이 본문 최상단에서
+        // 시작한다면, 그 기준점은 이 쪽에 없다 — 앵커는 앞 쪽에 있고 오프셋은
+        // 거기서 이미 쓰였다. 그대로 다시 더하면 쪽 상단에 오프셋만큼 빈 띠가
+        // 생기고, 그만큼 조각이 짧아져 표가 한 쪽 더 갈라진다(156555538 9쪽:
+        // 저장 사다리는 앵커 vpos=32514 + off=41592 = 74106HU(988.1px)로 표
+        // 상단을 앞 쪽 바닥에 두는데, 한 행도 안 들어가 표는 다음 쪽으로 넘어간다.
+        // 한글은 그 쪽 상단에 붙여 그리고 17쪽으로 끝내는데 rhwp 는 630.1px 에서
+        // 시작해 18쪽이 된다).
+        //
+        // 게이트는 좁다 — 코퍼스 140문서 34개 조각 중 발화 0건이고, 첫 조각 &
+        // 양수 오프셋 5건은 모두 형제가 있고(쪽 중간) 오프셋도 1.7~17.6px 인
+        // 통상적인 미세 이동이라 그대로 남는다.
+        let para_offset_consumed_by_page_break = col_node.children.is_empty()
+            && start_cut.is_empty()
+            && pre_emitted_host_height <= 0.0
+            && (y_start - col_area.y).abs() <= 0.5;
         let effective_vertical_offset = if !is_continuation
+            && !para_offset_consumed_by_page_break
             && !table.common.treat_as_char
             && matches!(
                 table.common.vert_rel_to,
