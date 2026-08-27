@@ -802,25 +802,25 @@ struct TableControlVars {
 }
 
 impl CellContext {
-    /// 최외곽 표의 컨트롤 인덱스
-    pub fn outermost_control(&self) -> usize {
-        self.path[0].control_index
+    /// 최외곽 표의 컨트롤 인덱스 — 빈 경로면 None (HWP 변조/편집 API로 빈 경로 생성 가능).
+    pub fn outermost_control(&self) -> Option<usize> {
+        self.path.first().map(|e| e.control_index)
     }
-    /// 최외곽 표의 셀 인덱스
-    pub fn outermost_cell(&self) -> usize {
-        self.path[0].cell_index
+    /// 최외곽 표의 셀 인덱스 — 빈 경로면 None.
+    pub fn outermost_cell(&self) -> Option<usize> {
+        self.path.first().map(|e| e.cell_index)
     }
-    /// 최외곽 표의 셀 문단 인덱스
-    pub fn outermost_cell_para(&self) -> usize {
-        self.path[0].cell_para_index
+    /// 최외곽 표의 셀 문단 인덱스 — 빈 경로면 None.
+    pub fn outermost_cell_para(&self) -> Option<usize> {
+        self.path.first().map(|e| e.cell_para_index)
     }
-    /// 최내곽 레벨의 엔트리
-    pub fn innermost(&self) -> &CellPathEntry {
-        self.path.last().unwrap()
+    /// 최내곽 레벨의 엔트리 — 빈 경로면 None.
+    pub fn innermost(&self) -> Option<&CellPathEntry> {
+        self.path.last()
     }
-    /// 텍스트 방향 (최내곽 기준)
-    pub fn text_direction(&self) -> u8 {
-        self.innermost().text_direction
+    /// 텍스트 방향 (최내곽 기준) — 빈 경로면 None.
+    pub fn text_direction(&self) -> Option<u8> {
+        self.innermost().map(|e| e.text_direction)
     }
 
     /// [#4334] 이 경로가 가리키는 **중첩 표 자신의** `(para_index, control_index)` —
