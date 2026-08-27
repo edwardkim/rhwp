@@ -4894,7 +4894,7 @@ impl DocumentCore {
                 if let (Some(marker_para), Some(marker_section)) =
                     (text_run.para_index, text_run.section_index)
                 {
-                    if marker_para >= (usize::MAX - 3000) && marker_para < (usize::MAX - 1000) {
+                    if ((usize::MAX - 3000)..(usize::MAX - 1000)).contains(&marker_para) {
                         let fn_para_idx = usize::MAX - 2000 - marker_para;
                         if let Some(cs) = text_run.char_start {
                             // 본문 텍스트 TextRun
