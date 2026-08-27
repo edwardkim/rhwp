@@ -867,7 +867,7 @@ impl DocumentCore {
                 m_cols,
                 equal_row_height,
             )
-            .map_err(|e| HwpError::RenderError(e))?;
+            .map_err(HwpError::RenderError)?;
         table.dirty = true;
         let cell_count = table.cells.len();
 
