@@ -2105,6 +2105,56 @@ fn issue_4968_bounded_positions_replay_and_canvaskit_work_are_fail_closed() {
         PageLayerTree::new(100.0, 100.0, LayerNode::leaf(bbox, None, vec![op]))
     }
 
+    let k0_json =
+        serde_json::to_string(&text_run("AV".to_string(), None)).expect("serialize K0 text run");
+    assert!(!k0_json.contains("layout_positions"));
+    let valid_positions = vec![0.0, 7.5, 14.0];
+    let k1_json = serde_json::to_string(&text_run("AV".to_string(), Some(valid_positions.clone())))
+        .expect("serialize K1 text run");
+    assert!(k1_json.contains("\"layout_positions\":[0.0,7.5,14.0]"));
+
+    let mut valid_tree_canvas = CanvasRenderer::new();
+    valid_tree_canvas.render_tree(&page_tree(text_run(
+        "AV".to_string(),
+        Some(valid_positions.clone()),
+    )));
+    assert!(valid_tree_canvas.commands().iter().any(|command| matches!(
+        command,
+        CanvasCommand::FillTextPositioned(text, _, _, positions)
+            if text == "AV" && positions == &valid_positions
+    )));
+
+    for malformed in [
+        vec![1.0, 7.5, 14.0],
+        vec![0.0, f64::NAN, 14.0],
+        vec![0.0, 8.0, 7.0],
+        vec![0.0, 7.5],
+    ] {
+        let mut malformed_tree_canvas = CanvasRenderer::new();
+        malformed_tree_canvas.render_tree(&page_tree(text_run("AV".to_string(), Some(malformed))));
+        assert!(malformed_tree_canvas
+            .commands()
+            .iter()
+            .any(|command| matches!(command, CanvasCommand::FillText(text, _, _) if text == "AV")));
+        assert!(malformed_tree_canvas
+            .commands()
+            .iter()
+            .all(|command| !matches!(command, CanvasCommand::FillTextPositioned(..))));
+    }
+
+    let mut mismatched_run = text_run("AV".to_string(), Some(valid_positions));
+    mismatched_run.display_text = Some("A".to_string());
+    let mut mismatched_tree_canvas = CanvasRenderer::new();
+    mismatched_tree_canvas.render_tree(&page_tree(mismatched_run));
+    assert!(mismatched_tree_canvas
+        .commands()
+        .iter()
+        .any(|command| matches!(command, CanvasCommand::FillText(text, _, _) if text == "A")));
+    assert!(mismatched_tree_canvas
+        .commands()
+        .iter()
+        .all(|command| !matches!(command, CanvasCommand::FillTextPositioned(..))));
+
     let max_text = "A".repeat(MAX_KERNING_RUN_CODE_POINTS);
     let max_positions = (0..=MAX_KERNING_RUN_CODE_POINTS)
         .map(|value| value as f64)

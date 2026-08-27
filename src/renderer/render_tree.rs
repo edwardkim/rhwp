@@ -1968,29 +1968,6 @@ impl DerefMut for PageRenderTree {
 mod tests {
     use super::*;
 
-    fn replay_contract_text_run(text: &str) -> TextRunNode {
-        TextRunNode {
-            text: text.to_owned(),
-            style: TextStyle::default(),
-            char_shape_id: None,
-            para_shape_id: None,
-            section_index: None,
-            para_index: None,
-            char_start: None,
-            cell_context: None,
-            is_para_end: false,
-            is_line_break_end: false,
-            rotation: 0.0,
-            is_vertical: false,
-            char_overlap: None,
-            border_fill_id: 0,
-            baseline: 0.0,
-            field_marker: FieldMarkerType::None,
-            layout_positions: None,
-            display_text: None,
-        }
-    }
-
     #[test]
     fn test_bounding_box_intersects() {
         let a = BoundingBox::new(0.0, 0.0, 100.0, 100.0);
@@ -2013,56 +1990,6 @@ mod tests {
         let mut tree = PageRenderTree::new(0, 793.7, 1122.5);
         assert_eq!(tree.next_id(), 1);
         assert_eq!(tree.next_id(), 2);
-    }
-
-    #[test]
-    fn text_run_layout_positions_validate_against_replay_text() {
-        let mut run = replay_contract_text_run("AV");
-        run.layout_positions = Some(vec![0.0, 7.5, 14.0]);
-
-        assert_eq!(
-            run.validated_layout_positions_for("AV"),
-            Some(&[0.0, 7.5, 14.0][..])
-        );
-        assert!(matches!(
-            run.replay_positions_for("AV"),
-            std::borrow::Cow::Borrowed(_)
-        ));
-        assert_eq!(run.validated_layout_positions_for("A"), None);
-    }
-
-    #[test]
-    fn text_run_layout_positions_fail_closed_on_malformed_payload() {
-        let mut run = replay_contract_text_run("AV");
-        let base = super::super::layout::compute_char_positions("AV", &run.style);
-        for malformed in [
-            vec![1.0, 7.5, 14.0],
-            vec![0.0, f64::NAN, 14.0],
-            vec![0.0, 8.0, 7.0],
-            vec![0.0, 7.5],
-        ] {
-            run.layout_positions = Some(malformed);
-            assert_eq!(run.validated_layout_positions_for("AV"), None);
-            assert_eq!(run.replay_positions_for("AV").as_ref(), base.as_slice());
-        }
-
-        let oversized_text = "A".repeat(super::super::kerning::MAX_KERNING_RUN_CODE_POINTS + 1);
-        run.layout_positions = Some(vec![
-            0.0;
-            super::super::kerning::MAX_KERNING_RUN_CODE_POINTS + 2
-        ]);
-        assert_eq!(run.validated_layout_positions_for(&oversized_text), None);
-    }
-
-    #[test]
-    fn text_run_k0_serialization_omits_layout_positions() {
-        let mut run = replay_contract_text_run("AV");
-        let k0 = serde_json::to_string(&run).expect("serialize K0 text run");
-        assert!(!k0.contains("layout_positions"));
-
-        run.layout_positions = Some(vec![0.0, 7.5, 14.0]);
-        let k1 = serde_json::to_string(&run).expect("serialize K1 text run");
-        assert!(k1.contains("\"layout_positions\":[0.0,7.5,14.0]"));
     }
 
     #[test]
