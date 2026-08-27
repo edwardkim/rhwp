@@ -6,6 +6,12 @@ import {
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { dioxusCliSource } from './dioxus-cli-version.mjs';
+import {
+  findSubsecondPdfTool,
+  subsecondPdfToolSpecs,
+} from './subsecond-pdf-tools.mjs';
+
+export { subsecondPdfToolSpecs } from './subsecond-pdf-tools.mjs';
 
 const ROOT = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
 const PATCH_NAME = 'dioxus-cli-hotpatch-tip-dependents.patch';
@@ -22,6 +28,43 @@ function run(command, args, options = {}) {
     throw new Error(`${command} ${args.join(' ')} failed\n${result.stderr || result.stdout || ''}`);
   }
   return result.stdout?.trim() ?? '';
+}
+
+function pdfToolInstallHint(platform) {
+  if (platform === 'darwin') return 'macOS: brew install ghostscript poppler';
+  if (platform === 'win32') {
+    return [
+      'Windows: install Ghostscript from https://ghostscript.com/releases/',
+      'and Poppler (including pdfinfo.exe), then add their bin directories to PATH.',
+    ].join(' ');
+  }
+  if (platform === 'linux') {
+    return 'Linux: install the ghostscript and poppler-utils packages with your distribution package manager.';
+  }
+  return [
+    'Install Ghostscript from https://ghostscript.com/releases/ and Poppler from',
+    'https://poppler.freedesktop.org/, then add their command-line tools to PATH.',
+  ].join(' ');
+}
+
+export function assertSubsecondPdfTools(
+  platform = process.platform,
+  probe,
+) {
+  const specs = subsecondPdfToolSpecs(platform);
+  const missing = [];
+  if (!findSubsecondPdfTool('ghostscript', platform, probe)) {
+    missing.push(`Ghostscript (${specs.ghostscript.commands.join(' or ')})`);
+  }
+  if (!findSubsecondPdfTool('pdfinfo', platform, probe)) {
+    missing.push('Poppler pdfinfo (pdfinfo)');
+  }
+  if (missing.length === 0) return;
+  throw new Error([
+    `Subsecond PDF reference tools are missing: ${missing.join(', ')}.`,
+    pdfToolInstallHint(platform),
+    'After installation, open a new terminal and rerun pnpm subsecond:install.',
+  ].join('\n'));
 }
 
 function trackedSourceState(directory) {
@@ -137,12 +180,21 @@ export function dioxusCliInstallArgs(source, root = ROOT, prepared = null) {
   ];
 }
 
-if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  const source = dioxusCliSource();
-  const result = spawnSync('cargo', dioxusCliInstallArgs(source, ROOT), {
+export function installDioxusCli({
+  checkPdfTools = assertSubsecondPdfTools,
+  loadSource = dioxusCliSource,
+  spawn = spawnSync,
+} = {}) {
+  checkPdfTools();
+  const source = loadSource();
+  const result = spawn('cargo', dioxusCliInstallArgs(source, ROOT), {
     cwd: ROOT,
     stdio: 'inherit',
   });
   if (result.error) throw result.error;
-  process.exitCode = result.status ?? 1;
+  return result.status ?? 1;
+}
+
+if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  process.exitCode = installDioxusCli();
 }

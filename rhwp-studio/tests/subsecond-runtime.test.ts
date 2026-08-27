@@ -932,6 +932,45 @@ test('the dioxus-cli version is derived from the crate, so it cannot drift', asy
   assert.equal(installScript, 'node ../scripts/install-dioxus-cli.mjs');
 });
 
+test('subsecond install names every missing PDF tool with cross-platform setup guidance', async () => {
+  const {
+    assertSubsecondPdfTools,
+    installDioxusCli,
+    subsecondPdfToolSpecs,
+  } = await import('../../scripts/install-dioxus-cli.mjs');
+  assert.deepEqual(subsecondPdfToolSpecs('win32').ghostscript.commands, [
+    'gswin64c', 'gswin32c', 'gs',
+  ]);
+  assert.doesNotThrow(() => assertSubsecondPdfTools(
+    'win32',
+    command => ({ status: command === 'gswin64c' || command === 'pdfinfo' ? 0 : 1 }),
+  ));
+  assert.throws(
+    () => assertSubsecondPdfTools('darwin', () => ({ status: 1 })),
+    /Ghostscript \(gs\).*Poppler pdfinfo.*brew install ghostscript poppler.*rerun pnpm subsecond:install/s,
+  );
+  assert.throws(
+    () => assertSubsecondPdfTools('win32', command => ({ status: command === 'pdfinfo' ? 0 : 1 })),
+    /gswin64c or gswin32c or gs.*ghostscript\.com\/releases.*PATH/s,
+  );
+  const reached: string[] = [];
+  assert.throws(() => installDioxusCli({
+    checkPdfTools: () => {
+      reached.push('preflight');
+      assertSubsecondPdfTools('linux', () => ({ status: 1 }));
+    },
+    loadSource: () => {
+      reached.push('source');
+      throw new Error('source preparation must not run');
+    },
+    spawn: () => {
+      reached.push('cargo');
+      throw new Error('cargo must not run');
+    },
+  }), /Subsecond PDF reference tools are missing/);
+  assert.deepEqual(reached, ['preflight']);
+});
+
 test('changing the reviewed dx patch prepares a fresh source checkout', async () => {
   const { dioxusCliSourceDir } = await import('../../scripts/install-dioxus-cli.mjs');
   const source = { kind: 'git' as const, rev: 'a'.repeat(40) };

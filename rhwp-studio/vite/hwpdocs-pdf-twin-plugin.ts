@@ -14,6 +14,10 @@ import { pipeline } from 'node:stream/promises';
 import { styleText } from 'node:util';
 import { fileURLToPath } from 'node:url';
 import type { Logger, Plugin } from 'vite';
+import {
+  findSubsecondPdfTool,
+  subsecondPdfToolSpecs,
+} from '../../scripts/subsecond-pdf-tools.mjs';
 import { formatDocumentErrorForTerminal } from '../src/dev/document-error-log.ts';
 import { boundedPageRasterSize } from '../src/dev/page-raster-budget.ts';
 import {
@@ -445,6 +449,48 @@ const commandQueue = new BoundedWorkQueue(2, 8);
 const run = (command: string, args: string[]): Promise<string> =>
   commandQueue.run(() => runCommand(command, args));
 
+type PdfReferenceTool = 'ghostscript' | 'pdfinfo';
+type PdfToolProbeResult = { error?: Error; status: number | null };
+
+export class PdfToolRunner {
+  private readonly resolved = new Map<PdfReferenceTool, string>();
+  private readonly platform: string;
+  private readonly execute: (command: string, args: string[]) => Promise<string>;
+  private readonly probe?: (command: string, args: string[]) => PdfToolProbeResult;
+
+  constructor(
+    platform = process.platform,
+    execute: (command: string, args: string[]) => Promise<string> = run,
+    probe?: (command: string, args: string[]) => PdfToolProbeResult,
+  ) {
+    this.platform = platform;
+    this.execute = execute;
+    this.probe = probe;
+  }
+
+  async run(tool: PdfReferenceTool, args: string[]): Promise<string> {
+    const candidates = subsecondPdfToolSpecs(this.platform)[tool].commands;
+    const command = this.resolved.get(tool)
+      ?? findSubsecondPdfTool(tool, this.platform, this.probe);
+    if (!command) throw new Error(
+      `Missing ${tool} command (${candidates.join(' or ')}); run pnpm subsecond:install for setup instructions.`,
+    );
+    this.resolved.set(tool, command);
+    try {
+      return await this.execute(command, args);
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
+      this.resolved.delete(tool);
+      const replacement = findSubsecondPdfTool(tool, this.platform, this.probe);
+      if (!replacement) throw error;
+      this.resolved.set(tool, replacement);
+      return this.execute(replacement, args);
+    }
+  }
+}
+
+const pdfTools = new PdfToolRunner();
+
 const pageCounts = new Map<string, number>();
 const pageSizes = new Map<string, { width: number; height: number }>();
 
@@ -457,7 +503,7 @@ function remember<K, V>(map: Map<K, V>, key: K, value: V, limit: number): void {
 async function pdfPageCount(path: string, token: string): Promise<number> {
   const cached = pageCounts.get(token);
   if (cached !== undefined) return cached;
-  const match = /^Pages:\s+(\d+)$/m.exec(await run('pdfinfo', [path]));
+  const match = /^Pages:\s+(\d+)$/m.exec(await pdfTools.run('pdfinfo', [path]));
   const count = Number(match?.[1]);
   if (!Number.isSafeInteger(count) || count <= 0) throw new Error('pdfinfo did not report page count');
   remember(pageCounts, token, count, 64);
@@ -487,7 +533,10 @@ async function pdfPageSize(path: string, token: string, pageIndex: number): Prom
   const cached = pageSizes.get(cacheKey);
   if (cached) return cached;
   const page = pageIndex + 1;
-  const size = parsePdfPageSize(await run('pdfinfo', ['-box', '-f', String(page), '-l', String(page), path]), page);
+  const size = parsePdfPageSize(
+    await pdfTools.run('pdfinfo', ['-box', '-f', String(page), '-l', String(page), path]),
+    page,
+  );
   remember(pageSizes, cacheKey, size, 512);
   return size;
 }
@@ -526,7 +575,10 @@ async function rasterize(token: string, pageIndex: number, width: number): Promi
     mkdirSync(directory, { recursive: true });
     const temporary = `${output}.${process.pid}.${Date.now()}.tmp`;
     try {
-      await run('gs', ghostscriptRasterArgs(pdfPath, pageIndex + 1, size, temporary));
+      await pdfTools.run(
+        'ghostscript',
+        ghostscriptRasterArgs(pdfPath, pageIndex + 1, size, temporary),
+      );
       renameSync(temporary, output);
       referenceCache.track(output, token, false);
       return output;

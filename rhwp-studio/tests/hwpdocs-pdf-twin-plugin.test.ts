@@ -21,6 +21,7 @@ import {
   ghostscriptRasterArgs,
   hwpdocsPdfTwinPlugin,
   parsePdfPageSize,
+  PdfToolRunner,
   reclaimDeadCacheRoots,
   registerCacheRoot,
   rejectOperationalFailure,
@@ -32,6 +33,39 @@ const digest = (path: string): string => createHash('sha256').update(readFileSyn
 
 test('the Vite harness accepts more than one corpus root', () => {
   assert.equal(hwpdocsPdfTwinPlugin({ root: '/tmp/a', additionalRoots: ['/tmp/b'] }).apply, 'serve');
+});
+
+test('the PDF harness caches a healthy native command and replaces a vanished one once', async () => {
+  const healthy = new Set(['gswin64c', 'gswin32c']);
+  const probes: string[] = [];
+  const executed: string[] = [];
+  const windows = new PdfToolRunner(
+    'win32',
+    async (command) => {
+      executed.push(command);
+      if (command === 'gswin64c') {
+        healthy.delete(command);
+        throw Object.assign(new Error('vanished'), { code: 'ENOENT' });
+      }
+      return '10.0';
+    },
+    command => { probes.push(command); return { status: healthy.has(command) ? 0 : 1 }; },
+  );
+  assert.equal(await windows.run('ghostscript', []), '10.0');
+  assert.equal(await windows.run('ghostscript', []), '10.0');
+  assert.deepEqual(executed, ['gswin64c', 'gswin32c', 'gswin32c']);
+  assert.deepEqual(probes, ['gswin64c', 'gswin64c', 'gswin32c']);
+
+  const linux: string[] = [];
+  await new PdfToolRunner(
+    'linux', async command => { linux.push(command); return '10.0'; }, () => ({ status: 0 }),
+  ).run('ghostscript', []);
+  assert.deepEqual(linux, ['gs']);
+
+  const fatal = new PdfToolRunner(
+    'win32', async () => { throw new Error('bad PDF'); }, () => ({ status: 0 }),
+  );
+  await assert.rejects(fatal.run('ghostscript', []), /bad PDF/);
 });
 
 test('distinct PDF jobs stay inside the shared running and waiting limits', async () => {
