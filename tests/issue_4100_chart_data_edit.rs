@@ -3435,6 +3435,33 @@ fn stock_middle_series_edits_are_allowed() {
             "{}: 끝 계열은 종가로 유지돼야 캔들이 산다",
             path.display()
         );
+        // [#6053] 정체 보존 — 새 계열(3)만 기본 스타일(spPr·명시 symbol 없음 = Auto 마커·
+        // 기본 선)이고, 저가(2)는 자기 `symbol none` 을, 종가(4)는 Auto 를 지킨다.
+        // 위치 기반이었다면 새 자리(3)에 온 것은 밀려난 종가 스타일의 사본이었다 — 사용자가
+        // 본 "새 계열이 안 보인다" 결함이 그것이다.
+        let (zip, nested) = b2_representations(&core);
+        for xml in zip.iter().chain([&nested]) {
+            let data = scan_chart_values(xml.as_bytes()).expect("재스캔");
+            assert_eq!(
+                data.series[3].sp_pr_span,
+                None,
+                "{}: 새 계열이 템플릿 스타일을 물려받았다",
+                path.display()
+            );
+            assert_eq!(data.series[3].symbol_span, None, "{}", path.display());
+            let sym = data.series[2].symbol_span.clone().expect("저가 symbol");
+            assert!(
+                xml[sym].contains(r#"val="none""#),
+                "{}: 저가의 symbol none 이 사라졌다",
+                path.display()
+            );
+            assert_eq!(
+                data.series[4].symbol_span,
+                None,
+                "{}: 종가는 Auto 마커여야 한다",
+                path.display()
+            );
+        }
 
         // 중간 삭제 — 저가(index 2)를 지운다. 한컴 실측에서 정상 렌더였다.
         let mut core = core_of(&path);
@@ -3446,6 +3473,19 @@ fn stock_middle_series_edits_are_allowed() {
         let after = chart_data(&core, 0);
         assert_eq!(after["series"].as_array().unwrap().len(), 3);
         assert_eq!(after["series"][2]["name"], "종가");
+        // [#6053] 정체 보존 — 저가의 요소가 통째로 사라지고 종가는 자기 스타일(Auto 마커)을
+        // 지킨다. 위치 기반이었다면 저가의 요소가 종가의 값을 실은 채 끝 계열이 됐다.
+        let (zip, nested) = b2_representations(&core);
+        for xml in zip.iter().chain([&nested]) {
+            let data = scan_chart_values(xml.as_bytes()).expect("재스캔");
+            assert_eq!(
+                data.series[2].symbol_span,
+                None,
+                "{}: 종가가 저가의 symbol 을 물려받았다",
+                path.display()
+            );
+            assert!(data.series[2].sp_pr_span.is_some(), "{}", path.display());
+        }
     }
 }
 
@@ -3601,7 +3641,8 @@ fn b2_engine_edits(core: &DocumentCore, stem: &str, label: &str) -> Option<serde
             }));
         }
         ("묶은세로막대형", "계열삭제") | ("누적세로막대형", "계열삭제") => {
-            // 「계열 2」 삭제 — 위치 기반이라 뒤 계열이 앞으로 당겨지고 꼬리가 지워진다.
+            // 「계열 2」 삭제 — [#6053] 정체 경로가 그 계열의 요소를 통째로 들어내고 뒤
+            // 계열을 재번호한다. 잔여 계열이 자기 스타일(색)을 지킨다.
             e["series"].as_array_mut().unwrap().remove(1);
         }
         (_, "계열명변경") => {
@@ -3794,8 +3835,8 @@ fn generate_b2_engine_judgment_bundle() {
          (b) 차트가 **기대 모양대로** 그려지는가\n   \
          (c) 차트를 더블클릭하면 편집기가 열리는가\n   \
          (d) **편집기(데이터 편집)의 행·열 수가 기대 모양과 일치하는가**\n\n\
-         계열삭제 변종은 위치 기반(뒤 계열이 앞으로 당겨지고 꼬리가 지워짐)이라 잔여 계열의\n\
-         색이 원래 2번째 계열 색일 수 있습니다 — 이름·값이 맞으면 정상입니다.\n\n",
+         계열삭제 변종은 지운 계열의 요소를 통째로 들어내고 잔여 계열을 재번호합니다(#6053\n\
+         정체 경로) — 잔여 계열은 **자기 색을 지킵니다**. 색이 밀려 보이면 결함입니다.\n\n",
     );
     sheet.push_str("## 산출물\n\n");
     sheet.push_str("| 파일 | 종류 | 무엇을 바꿨나 | 기대 모양 | 낡게 남긴 것 |\n");
@@ -3877,16 +3918,17 @@ fn generate_b2_engine_judgment_bundle() {
 }
 
 /// [#5652 S5] **문서 바이트 수준** 동치 — 엔진 경로(`set_chart_data_by_index_native`, structure)와
-/// 스파이크 경로(문자열 수술 + 표현 주입)가 같은 현재 라이터로 저장하면, 계열삭제 2종을 뺀
-/// 12변종 × 2포맷 전건이 **바이트 동일**하다. 계열삭제는 위치 기반(뒤 계열을 앞으로 당겨 쓰고 꼬리
-/// 삭제)이라 바이트는 다르되 논리 데이터(이름·라벨·값)는 같다.
+/// 스파이크 경로(문자열 수술 + 표현 주입)가 같은 현재 라이터로 저장하면 12변종 × 2포맷 전건이
+/// **바이트 동일**하다.
 ///
-/// 이것이 S5 한컴 재판정의 근거다 — 10종은 #5447 이 판정한 것과 같은 차트 XML 을 엔진이 만들고,
-/// 계열삭제 2종만 새 바이트다.
+/// [#6053] 계열삭제 2종도 이제 동일하다 — 정체 경로가 스파이크 수술(`b2_remove_series`:
+/// 요소째 삭제 + 잔여 계열 재번호)과 같은 바이트를 만든다. 위치 기반이던 시절에는 이 2종만
+/// "바이트 상이·논리 동일"이었고(뒤 계열을 앞으로 당겨 쓰고 꼬리 삭제), 그 옛 바이트가
+/// issue5652 원장의 재판정 대상이었다. 지금은 전건이 #5447 이 판정한 스파이크 산출과 같은
+/// 차트 XML 이다.
 #[test]
-fn engine_documents_match_spike_documents_except_positional_series_delete() {
+fn engine_documents_match_spike_documents_byte_for_byte() {
     let mut same = 0usize;
-    let mut logical_only = 0usize;
     for v in b2_variants() {
         for ext in ["hwpx", "hwp"] {
             let src = manifest(&format!("samples/chart/{}/{}.{ext}", v.folder, v.stem));
@@ -3919,33 +3961,14 @@ fn engine_documents_match_spike_documents_except_positional_series_delete() {
                 spike.export_hwp_native().expect("저장")
             };
 
-            if v.label == "계열삭제" {
-                assert_ne!(
-                    engine_bytes, spike_bytes,
-                    "{name}: 위치 기반 계열삭제는 바이트가 달라야 정상"
-                );
-                let e = b2_envelope(&DocumentCore::from_bytes(&engine_bytes).expect("재개방"));
-                let s = b2_envelope(&DocumentCore::from_bytes(&spike_bytes).expect("재개방"));
-                assert_eq!(b2_series_names(&e), b2_series_names(&s), "{name}");
-                assert_eq!(b2_labels(&e), b2_labels(&s), "{name}");
-                for i in 0..b2_series_names(&e).len() {
-                    assert_eq!(b2_values(&e, i), b2_values(&s, i), "{name} 계열 {i}");
-                }
-                logical_only += 1;
-            } else {
-                assert_eq!(
-                    engine_bytes, spike_bytes,
-                    "{name}: 엔진 산출 ≠ 스파이크 산출"
-                );
-                same += 1;
-            }
+            assert_eq!(
+                engine_bytes, spike_bytes,
+                "{name}: 엔진 산출 ≠ 스파이크 산출"
+            );
+            same += 1;
         }
     }
-    assert_eq!(
-        (same, logical_only),
-        (20, 4),
-        "변종 10종 × 2 바이트 동일 + 계열삭제 2종 × 2 논리 동일"
-    );
+    assert_eq!(same, 24, "12변종 × 2포맷 전건 바이트 동일");
 }
 
 /// [#5652 S5] 엔진 판정 원장(`samples/issue5652/MANIFEST.json`)이 가리키는 자산이 지금도 그 바이트인가.

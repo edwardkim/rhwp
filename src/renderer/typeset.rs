@@ -6992,6 +6992,74 @@ impl TypesetEngine {
             if st.prefilled_paras.contains(&para_idx) {
                 continue;
             }
+            // [#6132] 저장 vpos 가 쪽 본문을 넘고 바로 다음 문단이 되감기면,
+            // 한글은 이 문단부터 다음 쪽에 둔 것이다. 다만 그 형상만으로는 부족하다 —
+            // 같은 형상이 문단을 쪽 안에 그대로 두는 문서들에도 흔하게 나온다
+            // (실측 후보: 2025 행정업무편람 26곳 · 2070 시장구조조사 13곳 ·
+            // 2019 벤처투자 3곳 · hwp3-sample16 10곳). 그래서 세 신호를 **함께**
+            // 요구한다.
+            //
+            // 156482639 7쪽: pi=102 '참고3' 표 vpos=73760 은 본문 73,335HU(977.8px)를
+            // 넘고 pi=103 이 3790 으로 되감긴다. 한글은 둘 다 8쪽 첫머리에 두는데
+            // rhwp 는 7쪽 잔여(974.5px)에 욱여넣어 8쪽이 56.8px 비었다.
+            //
+            // 기존 #3837 되감김 규칙은 되감긴 **다음** 문단(pi=103)에만 걸리고, 그마저
+            // 그 문단이 잔여에 들어가면 분할 루프가 그대로 현재 쪽에 놓는다. 넘긴
+            // 주체인 pi=102 자신은 표 경로라 그 판정을 아예 지나지 않는다.
+            if st.col_count == 1 && !st.current_items.is_empty() {
+                let own_stored_vpos = para
+                    .line_segs
+                    .iter()
+                    .find(|seg| !is_synthetic_line_seg(seg))
+                    .map(|seg| seg.vertical_pos);
+                let next_stored_vpos = paragraphs
+                    .get(para_idx + 1)
+                    .and_then(|next| {
+                        next.line_segs
+                            .iter()
+                            .find(|seg| !is_synthetic_line_seg(seg))
+                    })
+                    .map(|seg| seg.vertical_pos);
+                if let (Some(own), Some(next)) = (own_stored_vpos, next_stored_vpos) {
+                    // ① **표를 단 문단**만. #3837 되감김 규칙이 닿지 못하는 계보가
+                    //    정확히 이것이고(표 경로는 그 판정을 지나지 않는다), 위 네
+                    //    문서의 후보 52곳 중 표를 단 문단은 sample16 한 곳뿐이다.
+                    let hosts_table = para
+                        .controls
+                        .iter()
+                        .any(|c| matches!(c, crate::model::control::Control::Table(_)));
+                    // ② 저장 자리가 본문 바닥을 **근소하게** 넘을 것. 크게 넘는 사다리는
+                    //    쪽 리셋이 아니라 구역 누적 좌표계라 판정의 전제가 깨진다
+                    //    (sample16 pi=738: 3567.4px / 가용 971.3px).
+                    let own_px = hwpunit_to_px(own, self.dpi);
+                    let body_bottom = st.base_available_height();
+                    let overflows_body_narrowly =
+                        own > 0 && own_px > body_bottom && own_px - body_bottom <= MIN_TOP_KEEP_PX;
+                    // ③ 이 쪽에 조각이 될 만한 잔여가 남아 있을 것. 잔여가 그보다 작으면
+                    //    통상 fit 이 어차피 다음 쪽으로 넘긴다 — 거기서 또 끊으면 빈 쪽이
+                    //    하나 더 생긴다(3075729 #1880: 잔여 10.4px, 13쪽 → 14쪽).
+                    let page_room_left = body_bottom - st.current_height;
+                    if hosts_table
+                        && overflows_body_narrowly
+                        && next < own
+                        && page_room_left > MIN_TOP_KEEP_PX
+                    {
+                        if std::env::var("RHWP_DIAG_VPOS_OVF").is_ok() {
+                            eprintln!(
+                                "[VPOS_OVF] pi={} own={} ({:.1}px) next={} avail={:.1} cur_h={:.1} items={}",
+                                para_idx,
+                                own,
+                                own_px,
+                                next,
+                                body_bottom,
+                                st.current_height,
+                                st.current_items.len()
+                            );
+                        }
+                        st.advance_column_or_new_page();
+                    }
+                }
+            }
             // [#4533 HWP3] 자리차지 밴드 비예약 판별용 — 표 경로 포함 전 문단 공통.
             st.next_para_first_stored_vpos = paragraphs
                 .get(para_idx + 1)
