@@ -1117,6 +1117,18 @@ pub(crate) fn char_width_decision<'a>(
     {
         (w, "areaDotFallback", None, "notApplicable")
     } else {
+        // [#6172] 사각 안 숫자 PUA(U+F02B0~F02C4) 는 폰트 글리프가 아니라 렌더러가
+        // 사각형+숫자로 합성해 그린다(#6127 / PR #6137, `boxed_pua_number`).
+        // 그러면 전진폭도 폰트의 (있을 수도 없을 수도 있는) PUA 글리프가 아니라 **합성물이
+        // 닮은 `□`(U+25A1) 의 전진폭**으로 재야, 같은 줄에 이어지는 진짜 `□` 와 상자
+        // 간격이 균일해진다. 종전에는 이 대역이 아래 어느 분기에도 안 걸려 마지막
+        // 폴백(0.5em)으로 떨어졌고, 상자 폭(0.72em)보다 전진폭이 좁아 상자끼리
+        // 4.4pt 씩 겹쳤다 — 2599643 1쪽 "󰊲󰊰󰊰□-□□□" (20pt 에서 10.00pt vs □ 20.04pt).
+        let c = if crate::renderer::boxed_pua_number(c).is_some() {
+            '\u{25A1}'
+        } else {
+            c
+        };
         let embedded = measure_char_width_embedded_decision(
             &style.font_family,
             style.bold,
