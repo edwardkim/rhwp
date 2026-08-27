@@ -1764,7 +1764,7 @@ impl DocumentCore {
         let name = style.local_name.trim();
         let rest = name.strip_prefix("개요")?.trim();
         let level_num = rest.parse::<u8>().ok()?;
-        if level_num >= 1 && level_num <= 10 {
+        if (1..=10).contains(&level_num) {
             Some(level_num - 1)
         } else {
             None
