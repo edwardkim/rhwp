@@ -145,15 +145,9 @@ fn issue_4968_r4e_sha256_hex(bytes: &[u8]) -> String {
 }
 
 #[cfg(not(target_arch = "wasm32"))]
-fn issue_4968_r4e_runtime_snapshot(
-    core: &rhwp::document_core::DocumentCore,
-) -> serde_json::Value {
-    let render_tree = core
-        .build_page_render_tree(0)
-        .expect("R4E render tree");
-    let layer_tree = core
-        .build_page_layer_tree(0)
-        .expect("R4E layer tree");
+fn issue_4968_r4e_runtime_snapshot(core: &rhwp::document_core::DocumentCore) -> serde_json::Value {
+    let render_tree = core.build_page_render_tree(0).expect("R4E render tree");
+    let layer_tree = core.build_page_layer_tree(0).expect("R4E layer tree");
     let svg = core.render_page_svg_native(0).expect("R4E SVG");
     let canvas_command_count = core
         .render_page_canvas_native(0)
@@ -248,13 +242,8 @@ fn issue_4968_r4e_registration_failure_case(
     let mut core = rhwp::document_core::DocumentCore::from_bytes(R4E_RUNTIME_FIXTURE)
         .expect("R4E failure fixture");
     let before = issue_4968_r4e_runtime_snapshot(&core);
-    let registration = issue_4968_r4e_registration_attempt(
-        &mut core,
-        8,
-        language_index,
-        font_bytes,
-        face_index,
-    );
+    let registration =
+        issue_4968_r4e_registration_attempt(&mut core, 8, language_index, font_bytes, face_index);
     let after = issue_4968_r4e_runtime_snapshot(&core);
     serde_json::json!({
         "case": name,
@@ -269,12 +258,7 @@ fn issue_4968_r4e_registration_failure_matrix() -> Vec<serde_json::Value> {
     let oversized = vec![0; MAX_KERNING_FONT_BYTES + 1];
     let mut cases = vec![
         issue_4968_r4e_registration_failure_case("malformed-sfnt", b"not-an-sfnt", 0, 1),
-        issue_4968_r4e_registration_failure_case(
-            "pair-table-unsupported",
-            NO_PAIR_TABLE,
-            0,
-            1,
-        ),
+        issue_4968_r4e_registration_failure_case("pair-table-unsupported", NO_PAIR_TABLE, 0, 1),
         issue_4968_r4e_registration_failure_case(
             "unavailable-face-index",
             EXACT_KERNING_SMOKE,
@@ -287,12 +271,7 @@ fn issue_4968_r4e_registration_failure_matrix() -> Vec<serde_json::Value> {
             0,
             7,
         ),
-        issue_4968_r4e_registration_failure_case(
-            "font-byte-limit-exceeded",
-            &oversized,
-            0,
-            1,
-        ),
+        issue_4968_r4e_registration_failure_case("font-byte-limit-exceeded", &oversized, 0, 1),
     ];
 
     let mut conflict_core = rhwp::document_core::DocumentCore::from_bytes(R4E_RUNTIME_FIXTURE)
@@ -320,14 +299,20 @@ fn issue_4968_r4e_registration_failure_matrix() -> Vec<serde_json::Value> {
         );
     }
     for index in 0..3 {
-        assert_eq!(cases[index].pointer("/registration/ok"), Some(&serde_json::json!(true)));
+        assert_eq!(
+            cases[index].pointer("/registration/ok"),
+            Some(&serde_json::json!(true))
+        );
     }
     for (index, reason) in [
         (3, "invalid-language-index"),
         (4, "font-byte-limit-exceeded"),
         (5, "slot-conflict"),
     ] {
-        assert_eq!(cases[index].pointer("/registration/ok"), Some(&serde_json::json!(false)));
+        assert_eq!(
+            cases[index].pointer("/registration/ok"),
+            Some(&serde_json::json!(false))
+        );
         assert!(cases[index]
             .pointer("/registration/error")
             .and_then(serde_json::Value::as_str)
@@ -344,7 +329,9 @@ fn issue_4968_r4e_native_runtime_probe_registers_exact_slots_and_changes_only_k1
     let fixture_sha256 = issue_4968_r4e_sha256_hex(R4E_RUNTIME_FIXTURE);
     let font_sha256 = issue_4968_r4e_sha256_hex(EXACT_KERNING_SMOKE);
     assert_eq!(
-        manifest.get("inputSha256").and_then(serde_json::Value::as_str),
+        manifest
+            .get("inputSha256")
+            .and_then(serde_json::Value::as_str),
         Some(fixture_sha256.as_str())
     );
     assert_eq!(
@@ -2061,9 +2048,7 @@ fn issue_4968_visual_consumers_replay_the_published_positions() {
 #[cfg(not(target_arch = "wasm32"))]
 #[test]
 fn issue_4968_bounded_positions_replay_and_canvaskit_work_are_fail_closed() {
-    use rhwp::paint::{
-        LayerNode, PageLayerTree, PaintOp, RenderProfile, TextDecorationKind,
-    };
+    use rhwp::paint::{LayerNode, PageLayerTree, PaintOp, RenderProfile, TextDecorationKind};
     use rhwp::renderer::canvas::{CanvasCommand, CanvasRenderer};
     use rhwp::renderer::canvaskit_policy::{
         analyze_canvaskit_document_preflight, estimate_canvaskit_page_lowering_work,
@@ -2104,11 +2089,9 @@ fn issue_4968_bounded_positions_replay_and_canvaskit_work_are_fail_closed() {
     fn page_tree(run: TextRunNode) -> PageRenderTree {
         let bbox = BoundingBox::new(0.0, 0.0, 100.0, 20.0);
         let mut tree = PageRenderTree::new(0, 100.0, 100.0);
-        tree.root.children.push(RenderNode::new(
-            1,
-            RenderNodeType::TextRun(run),
-            bbox,
-        ));
+        tree.root
+            .children
+            .push(RenderNode::new(1, RenderNodeType::TextRun(run), bbox));
         tree
     }
 
@@ -2163,13 +2146,7 @@ fn issue_4968_bounded_positions_replay_and_canvaskit_work_are_fail_closed() {
     ));
     for malformed in &malformed_positions {
         let mut canvas = CanvasRenderer::new();
-        canvas.draw_text_positioned(
-            "AV",
-            0.0,
-            0.0,
-            &TextStyle::default(),
-            Some(malformed),
-        );
+        canvas.draw_text_positioned("AV", 0.0, 0.0, &TextStyle::default(), Some(malformed));
         assert!(matches!(
             canvas.commands(),
             [CanvasCommand::FillText(_, 0.0, 0.0)]
@@ -2229,11 +2206,7 @@ fn issue_4968_bounded_positions_replay_and_canvaskit_work_are_fail_closed() {
     );
     assert!(positioned_preflight.scanned_work_units > baseline_preflight.scanned_work_units);
 
-    let bounded_json = layer_tree(
-        text_run(max_text, Some(max_positions)),
-        true,
-    )
-    .to_json();
+    let bounded_json = layer_tree(text_run(max_text, Some(max_positions)), true).to_json();
     let bounded_value: serde_json::Value =
         serde_json::from_str(&bounded_json).expect("bounded positions JSON");
     let bounded_decoration = &bounded_value["root"]["ops"][0]["decoration"];
