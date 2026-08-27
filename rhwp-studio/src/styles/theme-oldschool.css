@@ -103,22 +103,36 @@
 }
 
 /* 도구 상자 버튼: 평평하다가 hover 시 튀어나오고 누르면 들어가는 고전 동작 */
-[data-theme-skin="oldschool"] #icon-toolbar .tb-btn,
-[data-theme-skin="oldschool"] #icon-toolbar .tb-scroll-nav {
+[data-theme-skin="oldschool"] #icon-toolbar .tb-btn {
   border: 1px solid transparent;
 }
 
-[data-theme-skin="oldschool"] #icon-toolbar .tb-btn:hover,
-[data-theme-skin="oldschool"] #icon-toolbar .tb-scroll-nav:hover:not(:disabled) {
+[data-theme-skin="oldschool"] #icon-toolbar .tb-btn:hover {
   background: var(--os-chrome);
   border-color: var(--os-bevel-light) var(--os-bevel-dark)
     var(--os-bevel-dark) var(--os-bevel-light);
 }
 
-[data-theme-skin="oldschool"] #icon-toolbar .tb-btn:active,
-[data-theme-skin="oldschool"] #icon-toolbar .tb-scroll-nav:active:not(:disabled) {
+[data-theme-skin="oldschool"] #icon-toolbar .tb-btn:active {
   border-color: var(--os-bevel-dark) var(--os-bevel-light)
     var(--os-bevel-light) var(--os-bevel-dark);
+}
+
+[data-theme-skin="oldschool"] #icon-toolbar .tb-scroll-nav {
+  border: 0;
+  border-radius: 0;
+  background: var(--os-chrome);
+  box-shadow: none;
+}
+
+[data-theme-skin="oldschool"] #icon-toolbar .tb-scroll-nav:hover:not(:disabled) {
+  background: var(--os-chrome);
+}
+
+[data-theme-skin="oldschool"] #icon-toolbar .tb-scroll-nav:hover:not(:disabled)::before {
+  background: var(--ui-hover-strong);
+  border-color: var(--os-bevel-light) var(--os-bevel-dark)
+    var(--os-bevel-dark) var(--os-bevel-light);
 }
 
 [data-theme-skin="oldschool"] #icon-toolbar .tb-sep {

@@ -1,6 +1,7 @@
-export const STYLE_TOOLBAR_FULL_ROW_MIN = 992;
+export const STYLE_TOOLBAR_FULL_ROW_MIN = 962;
 export const STYLE_TOOLBAR_COMMAND_INLINE_MIN = 460;
-export const STYLE_TOOLBAR_OVERFLOW_QUERY = `(max-width: ${STYLE_TOOLBAR_COMMAND_INLINE_MIN - 1}px)`;
+export const STYLE_TOOLBAR_ONE_ROW_MIN = 808;
+export const STYLE_TOOLBAR_OVERFLOW_QUERY = `(max-width: ${STYLE_TOOLBAR_COMMAND_INLINE_MIN - 1}px), (min-width: ${STYLE_TOOLBAR_ONE_ROW_MIN}px) and (max-width: ${STYLE_TOOLBAR_FULL_ROW_MIN - 1}px)`;
 
 const PARAGRAPH_BUTTON_SELECTOR = '.sb-paragraph-ribbon-group .sb-btn';
 const DEFAULT_ALIGNMENT_ICON = 'sb-al-left';
@@ -14,10 +15,10 @@ const ALIGNMENT_ICON_CLASSES = [
 ] as const;
 
 /**
- * 좁은 화면에서 문단 명령을 같은 DOM 그대로 더보기 panel에 노출한다.
+ * 한 줄에서 문단 명령까지 담기 어렵거나 아주 좁은 화면일 때 같은 DOM을 더보기 panel에 노출한다.
  *
- * CSS가 460px 이상에서는 host/panel을 display:contents로 풀기 때문에 runtime reparent나
- * command 복제가 필요 없다. controller는 좁은 화면의 open/focus/접근성 상태만 소유한다.
+ * CSS가 inline 구간에서는 host/panel을 display:contents로 풀기 때문에 runtime reparent나 command
+ * 복제가 필요 없다. controller는 compact 구간의 open/focus/접근성 상태만 소유한다.
  */
 export class StyleToolbarOverflowController {
   private readonly mediaQuery: MediaQueryList;

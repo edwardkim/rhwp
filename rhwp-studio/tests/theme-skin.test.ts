@@ -104,6 +104,6 @@ test('올드스쿨 스킨의 단일 행 서식 바는 양쪽 베벨을 포함해
   assert.match(oldschool, /--style-bar-full-padding-top:\s*2px/);
   assert.match(
     styleBar,
-    /@media \(min-width: 992px\)[\s\S]*padding:\s*var\(--style-bar-full-padding-top, 3px\) 8px 3px 22px/,
+    /@media \(min-width: 808px\)[\s\S]*padding:\s*var\(--style-bar-full-padding-top, 3px\) 8px 3px 14px/,
   );
 });

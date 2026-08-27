@@ -8,9 +8,11 @@ const VIEWPORTS = [
   { name: 'wide-desktop', width: 1920, height: 1080, styleMode: 'full' },
   { name: 'desktop', width: 1280, height: 900, styleMode: 'full' },
   { name: 'narrow-desktop', width: 1024, height: 768, styleMode: 'full' },
-  { name: 'full-boundary', width: 992, height: 900, styleMode: 'full' },
-  { name: 'two-row-boundary', width: 991, height: 900, styleMode: 'inline' },
-  { name: 'compact-desktop', width: 883, height: 900, styleMode: 'inline' },
+  { name: 'full-boundary', width: 962, height: 900, styleMode: 'full' },
+  { name: 'compact-boundary', width: 961, height: 900, styleMode: 'compact' },
+  { name: 'compact-desktop', width: 883, height: 900, styleMode: 'compact' },
+  { name: 'one-row-boundary', width: 808, height: 900, styleMode: 'compact' },
+  { name: 'two-row-boundary', width: 807, height: 900, styleMode: 'inline' },
   { name: 'tablet', width: 768, height: 1024, styleMode: 'inline' },
   { name: 'command-inline-boundary', width: 460, height: 900, styleMode: 'inline' },
   { name: 'command-overflow-boundary', width: 459, height: 900, styleMode: 'overflow' },
@@ -20,7 +22,8 @@ const VIEWPORTS = [
 ];
 
 const THEME_LAYOUTS = [
-  { name: 'full', width: 992, height: 900, styleMode: 'full' },
+  { name: 'full', width: 962, height: 900, styleMode: 'full' },
+  { name: 'compact', width: 808, height: 900, styleMode: 'compact' },
   { name: 'inline', width: 460, height: 900, styleMode: 'inline' },
   { name: 'overflow', width: 375, height: 812, styleMode: 'overflow' },
 ];
@@ -110,8 +113,14 @@ async function run() {
         const fileTextRange = document.createRange();
         if (fileTitle) fileTextRange.selectNodeContents(fileTitle);
         const fileTextLeft = fileTitle ? fileTextRange.getBoundingClientRect().left : -1;
+        const styleNameStyle = styleName ? getComputedStyle(styleName) : null;
+        const styleNameTextLeft = styleName && styleNameStyle
+          ? styleName.getBoundingClientRect().left
+            + parseFloat(styleNameStyle.borderLeftWidth)
+            + parseFloat(styleNameStyle.paddingLeft)
+          : -1;
         const styleLeadingAligned = !!styleName && fileTextLeft >= 0
-          && Math.abs(styleName.getBoundingClientRect().left - fileTextLeft) <= 1;
+          && Math.abs(styleNameTextLeft - fileTextLeft) <= 2;
 
         return {
           hasCanvas: !!canvas,
@@ -216,7 +225,8 @@ async function run() {
         check(tc, result.paragraphVisible, '문단 명령 inline 표시');
         check(tc, !result.overflowButtonVisible, '더보기 숨김');
       } else {
-        check(tc, result.styleRows === 2, `필드+명령 2행 (rows=${result.styleRows})`);
+        const expectedRows = vp.styleMode === 'compact' ? 1 : 2;
+        check(tc, result.styleRows === expectedRows, `문단 접힘 ${expectedRows}행 (rows=${result.styleRows})`);
         check(tc, !result.paragraphVisible, '닫힌 panel의 문단 명령 숨김');
         check(tc, result.overflowButtonVisible, '문단 더보기 표시');
         check(tc, result.overflowExpanded === 'false', '더보기 초기 접힘');
@@ -346,8 +356,8 @@ async function run() {
           const track = root.querySelector('.tb-scroll-track');
           const previous = document.getElementById('icon-toolbar-prev');
           const next = document.getElementById('icon-toolbar-next');
-          const visibleGroups = () => Array.from(track.querySelectorAll(':scope > .tb-group'))
-            .filter(group => getComputedStyle(group).display !== 'none' && group.offsetWidth > 0);
+          const visibleDividers = () => Array.from(track.querySelectorAll(':scope > .tb-sep'))
+            .filter(divider => getComputedStyle(divider).display !== 'none' && divider.offsetWidth > 0);
           const settle = () => new Promise(resolve => {
             let previousLeft = viewport.scrollLeft;
             let stableFrames = 0;
@@ -366,9 +376,10 @@ async function run() {
           next.click();
           await settle();
           const firstTarget = viewport.scrollLeft;
-          const viewportLeft = viewport.getBoundingClientRect().left;
-          const alignedToGroup = firstTarget > 1 && visibleGroups().some(group => (
-            Math.abs(group.getBoundingClientRect().left - viewportLeft) <= 1
+          const nextRect = next.getBoundingClientRect();
+          const edgeGap = parseFloat(getComputedStyle(root).getPropertyValue('--tb-scroll-nav-edge-gap'));
+          const alignedToDivider = firstTarget > 1 && visibleDividers().some(divider => (
+            Math.abs(divider.getBoundingClientRect().right - (nextRect.left - edgeGap)) <= 1
           ));
           const middleNavigationVisible = getComputedStyle(previous).visibility !== 'hidden'
             && getComputedStyle(next).visibility !== 'hidden'
@@ -378,6 +389,9 @@ async function run() {
           viewport.dispatchEvent(new KeyboardEvent('keydown', {
             key: 'End', bubbles: true, cancelable: true,
           }));
+          const maximumBeforeSettle = viewport.scrollWidth - viewport.clientWidth;
+          const exitSynchronizedAtStart = next.classList.contains('tb-scroll-nav-transitioning-out')
+            && viewport.scrollLeft < maximumBeforeSettle - 1;
           await settle();
           const maximum = viewport.scrollWidth - viewport.clientWidth;
           const rootRect = root.getBoundingClientRect();
@@ -386,10 +400,11 @@ async function run() {
           const endedByKeyboard = Math.abs(viewport.scrollLeft - maximum) <= 1
             && next.disabled === true && previous.disabled === false
             && next.getAttribute('aria-hidden') === 'true'
-            && next.offsetWidth === 0
+            && next.offsetWidth === 24
             && getComputedStyle(next).visibility === 'hidden'
             && getComputedStyle(previous).visibility !== 'hidden'
-            && Math.abs(trackRectAtEnd.right - (rootRect.right - rootPaddingRight)) <= 1;
+            && Math.abs(trackRectAtEnd.right - (rootRect.right - rootPaddingRight)) <= 1
+            && !next.classList.contains('tb-scroll-nav-transitioning-out');
 
           const splitArrow = track.querySelector('.tb-split-arrow');
           splitArrow?.focus();
@@ -414,15 +429,23 @@ async function run() {
           const startedByKeyboard = viewport.scrollLeft <= 1
             && previous.disabled === true && next.disabled === false
             && previous.getAttribute('aria-hidden') === 'true'
-            && previous.offsetWidth === 0
+            && previous.offsetWidth === 24
             && getComputedStyle(previous).visibility === 'hidden'
             && getComputedStyle(next).visibility !== 'hidden';
 
-          return { alignedToGroup, middleNavigationVisible, endedByKeyboard, splitMenuVisible, startedByKeyboard };
+          return {
+            alignedToDivider,
+            middleNavigationVisible,
+            exitSynchronizedAtStart,
+            endedByKeyboard,
+            splitMenuVisible,
+            startedByKeyboard,
+          };
         });
-        check(tc, toolbarInteraction.alignedToGroup, '다음 버튼은 track 기준 group 경계로 이동');
+        check(tc, toolbarInteraction.alignedToDivider, '다음 버튼은 nav 간격을 포함한 divider 경계로 이동');
         check(tc, toolbarInteraction.middleNavigationVisible, '중간 위치는 양쪽 24px 이동 버튼 표시');
-        check(tc, toolbarInteraction.endedByKeyboard, 'End로 마지막 group 도달·다음 slot 접힘·오른쪽 padding 정렬');
+        check(tc, toolbarInteraction.exitSynchronizedAtStart, '끝 버튼 퇴장은 scroll 시작과 동시에 시작');
+        check(tc, toolbarInteraction.endedByKeyboard, 'End로 마지막 경계 도달·다음 버튼 퇴장·오른쪽 padding 정렬');
         check(tc, toolbarInteraction.splitMenuVisible, '가로 viewport 밖에도 split menu가 잘리지 않음');
         check(tc, toolbarInteraction.startedByKeyboard, 'Home으로 첫 group 복귀·이전 slot 접힘');
 
@@ -472,7 +495,7 @@ async function run() {
             && viewport.scrollLeft <= 1;
 
           window.__eventBus?.emit('headerFooterModeChanged', 'none');
-          await waitFrames();
+          await new Promise(resolve => setTimeout(resolve, 300));
           const defaultRestored = getComputedStyle(defaultGroup).display !== 'none'
             && viewport.scrollLeft <= 1
             && !next.hidden && previous.disabled && !next.disabled
@@ -573,7 +596,7 @@ async function run() {
         const toolbarGroups = Array.from(toolbarTrack.querySelectorAll(':scope > .tb-group'))
           .filter(group => getComputedStyle(group).display !== 'none');
         let panelState = null;
-        if (expectedStyleMode === 'overflow') {
+        if (expectedStyleMode === 'compact' || expectedStyleMode === 'overflow') {
           trigger.click();
           await new Promise(resolve => requestAnimationFrame(resolve));
           const panelStyle = getComputedStyle(panel);
@@ -613,7 +636,11 @@ async function run() {
       check(tc, result.themeMode === theme, `theme mode=${result.themeMode}`);
       check(tc, result.effectiveTheme === theme, `effective theme=${result.effectiveTheme}`);
       check(tc, result.skin === skin, `skin=${result.skin}`);
-      check(tc, result.rows === (styleMode === 'full' ? 1 : 2), `행 수=${result.rows}`);
+      check(
+        tc,
+        result.rows === (styleMode === 'full' || styleMode === 'compact' ? 1 : 2),
+        `행 수=${result.rows}`,
+      );
       check(tc, styleMode !== 'full' || result.barHeight <= 36, `전체 압축 높이=${result.barHeight}px`);
       check(tc, result.rootOverflow <= 0 && result.styleOverflow <= 0, '가로 overflow 없음');
       check(tc, result.toolbarHeight === 56 && result.toolbarRows === 1, `기본 도구 한 줄=${result.toolbarHeight}px`);
@@ -625,7 +652,7 @@ async function run() {
       check(tc, result.barBackground !== 'rgba(0, 0, 0, 0)', `bar 배경=${result.barBackground}`);
       check(tc, result.barBorderWidth >= 1, `bar 경계=${result.barBorderWidth}px`);
       check(tc, result.iconContrast >= 3, `icon contrast=${result.iconContrast.toFixed(2)}`);
-      if (styleMode === 'overflow') {
+      if (styleMode === 'compact' || styleMode === 'overflow') {
         check(tc, result.panelState?.visible, '더보기 panel 표시');
         check(tc, result.panelState?.focused, '더보기 첫 명령 focus');
         check(tc, result.panelState?.background !== 'rgba(0, 0, 0, 0)', `panel 배경=${result.panelState?.background}`);

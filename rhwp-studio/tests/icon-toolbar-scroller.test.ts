@@ -2,9 +2,8 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import {
-  adjacentIconToolbarGroupTarget,
+  adjacentIconToolbarDividerTarget,
   hasIconToolbarOverflow,
-  iconToolbarGroupBoundary,
 } from '../src/ui/icon-toolbar-scroller.ts';
 
 const source = readFileSync(new URL('../src/ui/icon-toolbar-scroller.ts', import.meta.url), 'utf8');
@@ -17,20 +16,14 @@ test('overflow uses measured content with a one-pixel rounding tolerance', () =>
   assert.equal(hasIconToolbarOverflow(1219, 1217), true);
 });
 
-test('navigation resolves the next and previous visible group boundaries', () => {
+test('navigation resolves the next and previous visible divider boundaries', () => {
   const boundaries = [0, 182, 314, 402, 578, 710, 842];
-  assert.equal(adjacentIconToolbarGroupTarget(boundaries, 0, 1, 700), 182);
-  assert.equal(adjacentIconToolbarGroupTarget(boundaries, 200, 1, 700), 314);
-  assert.equal(adjacentIconToolbarGroupTarget(boundaries, 500, -1, 700), 402);
-  assert.equal(adjacentIconToolbarGroupTarget(boundaries, 700, 1, 700), 700);
-  assert.equal(adjacentIconToolbarGroupTarget(boundaries, 0, -1, 700), 0);
-  assert.equal(adjacentIconToolbarGroupTarget(boundaries, 710, -1, 700), 578);
-});
-
-test('group anchors are normalized from the outer toolbar to the scroll track', () => {
-  assert.equal(iconToolbarGroupBoundary(32, 32), 0);
-  assert.equal(iconToolbarGroupBoundary(223, 32), 191);
-  assert.equal(iconToolbarGroupBoundary(364, 32), 332);
+  assert.equal(adjacentIconToolbarDividerTarget(boundaries, 0, 1, 700), 182);
+  assert.equal(adjacentIconToolbarDividerTarget(boundaries, 200, 1, 700), 314);
+  assert.equal(adjacentIconToolbarDividerTarget(boundaries, 500, -1, 700), 402);
+  assert.equal(adjacentIconToolbarDividerTarget(boundaries, 700, 1, 700), 700);
+  assert.equal(adjacentIconToolbarDividerTarget(boundaries, 0, -1, 700), 0);
+  assert.equal(adjacentIconToolbarDividerTarget(boundaries, 710, -1, 700), 578);
 });
 
 test('controller owns resize, mode, focus, keyboard, and end-state synchronization', () => {
@@ -40,21 +33,31 @@ test('controller owns resize, mode, focus, keyboard, and end-state synchronizati
   assert.match(source, /attributeFilter: \['style', 'hidden'\]/);
   assert.match(source, /availableWithoutNavigation/);
   assert.match(source, /this\.previousButton\.hidden = !overflowing/);
-  assert.match(source, /group\.getBoundingClientRect\(\)\.left, trackLeft/);
+  assert.match(source, /querySelectorAll<HTMLElement>\(DIVIDER_SELECTOR\)/);
+  assert.match(source, /rect\.right - trackLeft - targetBoundary/);
+  assert.match(source, /rect\.left - trackLeft - targetBoundary/);
   assert.match(source, /classList\.toggle\('tb-scroll-nav-edge-hidden', atStart\)/);
   assert.match(source, /setAttribute\('aria-hidden', atEnd \? 'true' : 'false'\)/);
   assert.match(source, /event\.key === 'ArrowLeft'/);
   assert.match(source, /event\.key === 'End'/);
-  assert.match(source, /commandRect\.right > viewportRect\.right/);
+  assert.match(source, /commandRect\.right > visibleRight/);
+  assert.match(source, /SCROLL_ANIMATION_DURATION_MS = 240/);
+  assert.match(source, /classList\.add\(SCROLL_EXIT_CLASS\)/);
+  assert.match(source, /requestAnimationFrame\(animate\)/);
+  assert.match(source, /matchMedia\('\(prefers-reduced-motion: reduce\)'\)/);
   assert.match(source, /dispose\(\): void/);
 });
 
-test('edge navigation collapses its slot while disappearing visually', () => {
+test('edge navigation overlays the track and synchronizes its exit with scrolling', () => {
+  assert.match(toolbarCss, /\.tb-scroll-nav\s*\{[^}]*position:\s*absolute;/s);
+  assert.match(toolbarCss, /\.tb-scroll-nav\s*\{[^}]*background:\s*linear-gradient/s);
   assert.match(toolbarCss, /\.tb-scroll-nav\.tb-scroll-nav-edge-hidden\s*\{[^}]*visibility:\s*hidden;/s);
+  assert.match(toolbarCss, /\.tb-scroll-nav\.tb-scroll-nav-edge-hidden\s*\{[^}]*opacity:\s*0;/s);
   assert.match(toolbarCss, /\.tb-scroll-nav\.tb-scroll-nav-edge-hidden\s*\{[^}]*pointer-events:\s*none;/s);
-  assert.match(toolbarCss, /\.tb-scroll-nav\.tb-scroll-nav-edge-hidden\s*\{[^}]*flex-basis:\s*0;/s);
-  assert.match(toolbarCss, /\.tb-scroll-nav\.tb-scroll-nav-edge-hidden\s*\{[^}]*width:\s*0;/s);
-  assert.match(toolbarCss, /\.tb-scroll-nav\.tb-scroll-nav-edge-hidden\s*\{[^}]*min-width:\s*0;/s);
+  assert.match(
+    toolbarCss,
+    /\.tb-scroll-nav\.tb-scroll-nav-transitioning-out\s*\{[^}]*--tb-scroll-exit-duration/s,
+  );
   assert.doesNotMatch(toolbarCss, /\.tb-scroll-nav\.tb-scroll-nav-edge-hidden\s*\{[^}]*display:\s*none;/s);
 });
 

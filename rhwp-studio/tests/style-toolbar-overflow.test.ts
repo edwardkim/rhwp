@@ -8,11 +8,13 @@ const source = readFileSync(new URL('../src/ui/style-toolbar-overflow.ts', impor
 const toolbar = readFileSync(new URL('../src/ui/toolbar.ts', import.meta.url), 'utf8');
 
 test('style toolbar breakpoints share the measured Stage 1 constants', () => {
-  assert.match(source, /STYLE_TOOLBAR_FULL_ROW_MIN = 992/);
+  assert.match(source, /STYLE_TOOLBAR_FULL_ROW_MIN = 962/);
   assert.match(source, /STYLE_TOOLBAR_COMMAND_INLINE_MIN = 460/);
+  assert.match(source, /STYLE_TOOLBAR_ONE_ROW_MIN = 808/);
   assert.match(source, /STYLE_TOOLBAR_COMMAND_INLINE_MIN - 1/);
-  assert.match(styles, /@media \(min-width: 992px\)/);
-  assert.match(styles, /@media \(max-width: 459px\)/);
+  assert.match(source, /STYLE_TOOLBAR_FULL_ROW_MIN - 1/);
+  assert.match(styles, /@media \(min-width: 808px\)/);
+  assert.match(styles, /@media \(max-width: 459px\), \(min-width: 808px\) and \(max-width: 961px\)/);
 });
 
 test('overflow controller keeps the existing paragraph button authority', () => {

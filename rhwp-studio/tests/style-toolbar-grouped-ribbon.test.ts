@@ -99,15 +99,20 @@ test('only real menus retain dropdown affordances', () => {
   assert.match(buttonMarkup('btn-highlight'), /sb-highlight-visual/);
 });
 
-test('two-row ribbon uses the measured 375px field and 460px command contracts', () => {
+test('two-row ribbon keeps the fixed 136px font field and 460px command contract', () => {
   assert.match(
     styles,
-    /\.sb-field-grid\s*\{[^}]*minmax\(68px,\s*88px\)[^}]*minmax\(54px,\s*64px\)[^}]*minmax\(81px,\s*160px\)[^}]*minmax\(72px,\s*86px\)[^}]*minmax\(72px,\s*86px\);/s,
+    /\.sb-field-grid\s*\{[^}]*minmax\(68px,\s*88px\)[^}]*minmax\(54px,\s*64px\)[^}]*136px[^}]*minmax\(72px,\s*86px\)[^}]*minmax\(72px,\s*86px\);/s,
   );
+  assert.match(styles, /\.sb-font\s*\{[^}]*width:\s*136px;[^}]*text-overflow:\s*ellipsis;/s);
   assert.match(styles, /\.sb-command-track\s*\{[^}]*width:\s*max-content;[^}]*flex-wrap:\s*nowrap;/s);
   assert.match(styles, /\.sb-btn\s*\{[^}]*width:\s*29px;[^}]*height:\s*29px;/s);
   assert.match(styles, /\.sb-has-arrow\s*\{[^}]*width:\s*38px;/s);
   assert.match(styles, /@media\s*\(max-width:\s*459px\)/);
+  assert.match(
+    styles,
+    /@media\s*\(max-width:\s*459px\)\s*\{\s*\.sb-field-grid\s*\{[^}]*minmax\(54px,\s*1fr\)[^}]*minmax\(40px,\s*0\.75fr\)[^}]*136px[^}]*minmax\(54px,\s*0\.95fr\)[^}]*minmax\(54px,\s*0\.95fr\);/s,
+  );
   assert.doesNotMatch(styles, /\.sb-ga\s*\{\s*display:\s*none;/);
 });
 

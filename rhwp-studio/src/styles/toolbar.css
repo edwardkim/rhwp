@@ -2,10 +2,14 @@
    2행: 아이콘 툴바
    ================================================================ */
 #icon-toolbar {
+  --tb-resting-inline-padding: 8px;
+  --tb-scroll-nav-size: 24px;
+  --tb-scroll-nav-edge-gap: 4px;
+  position: relative;
   display: flex;
   flex-wrap: nowrap;
   align-items: stretch;
-  padding: 2px 8px;
+  padding: 2px var(--tb-resting-inline-padding);
   background: linear-gradient(to bottom, var(--ui-toolbar-bg-start), var(--ui-toolbar-bg-end));
   border-bottom: 1px solid var(--ui-border);
   flex-shrink: 0;
@@ -44,57 +48,126 @@
 }
 
 .tb-scroll-nav {
+  position: absolute;
+  z-index: 4;
+  top: 0;
+  bottom: 0;
   display: flex;
-  flex: 0 0 24px;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  min-width: 24px;
+  width: var(--tb-scroll-nav-size);
+  min-width: var(--tb-scroll-nav-size);
   margin: 0;
   padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: linear-gradient(to bottom, var(--ui-toolbar-bg-start), var(--ui-toolbar-bg-end));
+  box-shadow: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  opacity: 1;
+  transform: translateX(0);
+  visibility: visible;
+  transition:
+    opacity 120ms cubic-bezier(0.3, 0, 1, 1),
+    transform 120ms cubic-bezier(0.3, 0, 1, 1),
+    visibility 0s linear 0s;
+}
+
+.tb-scroll-nav::before {
+  content: '';
+  position: absolute;
+  inset: var(--tb-scroll-nav-edge-gap) 0;
   border: 1px solid transparent;
   border-radius: var(--radius-md);
   background: transparent;
-  color: var(--color-text-secondary);
-  cursor: pointer;
+  box-shadow: none;
+  pointer-events: none;
+}
+
+#icon-toolbar-prev {
+  left: var(--tb-scroll-nav-edge-gap);
+}
+
+#icon-toolbar-next {
+  right: var(--tb-scroll-nav-edge-gap);
 }
 
 .tb-scroll-nav[hidden] {
   display: none;
 }
 
-/* 끝에서는 해당 방향 버튼의 slot까지 접어 toolbar 고유 8px padding을 복원한다. */
+/* 직접 스크롤로 끝점에 닿았을 때 사용하는 기본 퇴장 상태. */
 .tb-scroll-nav.tb-scroll-nav-edge-hidden {
-  flex-basis: 0;
-  width: 0;
-  min-width: 0;
-  overflow: hidden;
-  border-width: 0;
-  visibility: hidden;
+  opacity: 0;
   pointer-events: none;
+  visibility: hidden;
+  transition:
+    opacity 120ms cubic-bezier(0.3, 0, 1, 1),
+    transform 120ms cubic-bezier(0.3, 0, 1, 1),
+    visibility 0s linear 120ms;
+}
+
+/* 끝점으로 이동할 때 scroll과 같은 순간 시작하고 같은 시간에 끝나는 퇴장 상태. */
+.tb-scroll-nav.tb-scroll-nav-transitioning-out {
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
+  transition:
+    opacity var(--tb-scroll-exit-duration, 240ms) cubic-bezier(0.3, 0, 1, 1),
+    transform var(--tb-scroll-exit-duration, 240ms) cubic-bezier(0.3, 0, 1, 1),
+    visibility 0s linear var(--tb-scroll-exit-duration, 240ms);
+}
+
+#icon-toolbar-prev.tb-scroll-nav-edge-hidden,
+#icon-toolbar-prev.tb-scroll-nav-transitioning-out {
+  transform: translateX(-3px);
+}
+
+#icon-toolbar-next.tb-scroll-nav-edge-hidden,
+#icon-toolbar-next.tb-scroll-nav-transitioning-out {
+  transform: translateX(3px);
 }
 
 .tb-scroll-nav:hover:not(:disabled) {
-  background: var(--ui-hover-strong);
+  background: linear-gradient(to bottom, var(--ui-toolbar-bg-start), var(--ui-toolbar-bg-end));
+}
+
+.tb-scroll-nav:hover:not(:disabled)::before {
   border-color: var(--ui-border-light);
+  background: var(--ui-hover-strong);
 }
 
 .tb-scroll-nav:focus-visible {
+  outline: none;
+}
+
+.tb-scroll-nav:focus-visible::before {
   border-color: var(--color-focus-border);
   outline: 1px solid var(--color-focus-border);
   outline-offset: -2px;
 }
 
-.tb-scroll-nav:disabled {
+.tb-scroll-nav:disabled:not(.tb-scroll-nav-edge-hidden) {
   color: var(--color-text-muted);
   cursor: default;
   opacity: 0.45;
 }
 
 .tb-scroll-nav-icon {
+  position: relative;
+  z-index: 1;
   font-size: var(--font-size-lg);
   line-height: 1;
   transform: translateY(-1px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tb-scroll-nav,
+  .tb-scroll-nav.tb-scroll-nav-edge-hidden,
+  .tb-scroll-nav.tb-scroll-nav-transitioning-out {
+    transition: none;
+  }
 }
 
 .tb-group {
@@ -114,6 +187,12 @@
   margin: 4px 4px;
   background: var(--ui-border);
   flex-shrink: 0;
+}
+
+/* 숨겨진 회전/대칭 contextual group 양쪽의 separator가 나란히 남지 않게 한다. */
+.tb-rotate-group[style*="display:none"] + .tb-sep,
+.tb-rotate-group[style*="display: none"] + .tb-sep {
+  display: none !important;
 }
 
 .tb-btn {

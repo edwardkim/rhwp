@@ -35,39 +35,6 @@
     height: 100dvh;
   }
 
-  /* ── 메뉴바: 햄버거 메뉴 전환 ── */
-  #menu-bar {
-    height: 40px;
-    padding: 0 4px;
-  }
-  #menu-bar .menu-item {
-    display: none; /* 기본 숨김 */
-  }
-  #menu-bar .menu-item:first-child,
-  #menu-bar .menu-item[data-menu="edit"] {
-    display: block; /* 파일 + 편집 (비교/이력 등은 편집 메뉴에 있음) */
-  }
-  /* 햄버거 버튼 (JS에서 .mobile-menu-toggle 추가 시 표시) */
-  .mobile-menu-toggle {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: var(--touch-target-min);
-    height: var(--touch-target-min);
-    border: none;
-    background: transparent;
-    cursor: pointer;
-    font-size: 20px;
-  }
-  /* 메뉴 펼쳐진 상태 */
-  #menu-bar.mobile-open .menu-item {
-    display: block;
-  }
-  #menu-bar.mobile-open {
-    flex-wrap: wrap;
-    height: auto;
-  }
-
   /* ── 편집 영역: 전체 화면 (grid→flex 전환으로 iOS 호환) ── */
   #editor-area {
     display: flex;
@@ -175,6 +142,39 @@
     min-height: var(--touch-target-min);
     padding: 8px 16px 8px 32px;
     font-size: var(--font-size-md);
+  }
+}
+
+/* 작은 viewport라도 마우스 기반 데스크톱이면 28px 메뉴행을 유지한다. */
+@media (max-width: 767px) and (hover: none) and (pointer: coarse) {
+  #menu-bar {
+    height: 40px;
+    padding: 0 4px;
+  }
+  #menu-bar .menu-item {
+    display: none;
+  }
+  #menu-bar .menu-item:first-child,
+  #menu-bar .menu-item[data-menu="edit"] {
+    display: block;
+  }
+  .mobile-menu-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--touch-target-min);
+    height: var(--touch-target-min);
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    font-size: 20px;
+  }
+  #menu-bar.mobile-open .menu-item {
+    display: block;
+  }
+  #menu-bar.mobile-open {
+    flex-wrap: wrap;
+    height: auto;
   }
 }
 
