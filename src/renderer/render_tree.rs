@@ -827,6 +827,14 @@ pub struct TextRunNode {
     pub baseline: f64,
     /// 누름틀 필드 마커: 이 TextRun 위치에 표시할 필드 경계 마커
     pub field_marker: FieldMarkerType,
+    /// Layout owner가 확정한 run-relative 문자 경계값.
+    ///
+    /// 보이는 문자열 N개 scalar에 N+1개 값을 보존한다. exact kerning이 실제로
+    /// 적용된 K1 run에서만 `Some`이며 K0·미지원·fail-closed에서는 필드를
+    /// 직렬화하지 않아 기존 layer-tree byte 계약을 유지한다. Font payload나
+    /// source provenance는 이 필드에 들어가지 않는다.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub layout_positions: Option<Vec<f64>>,
     /// 표시 텍스트 (`Some` 이면 그리기·폭 계산은 본 필드를 쓴다).
     ///
     /// `text` 는 모델과 같은 문자 수를 유지해 `char_start` 와 같은 공간에 있도록 한다.
@@ -843,6 +851,58 @@ impl TextRunNode {
     /// N자인 런에서 둘은 길이가 다르다.
     pub fn display_or_text(&self) -> &str {
         self.display_text.as_deref().unwrap_or(&self.text)
+    }
+
+    /// Replay 대상 문자열에 대해 layout positions가 안전한 경우에만 빌려준다.
+    ///
+    /// Backend가 PUA 확장·inline placeholder 제거 등으로 다른 문자열을 그리면
+    /// scalar 수가 달라져 `None`이 된다. 호출자는 이 경우 기존 scalar
+    /// `compute_char_positions` 경로로 fail-closed해야 한다.
+    pub(crate) fn validated_layout_positions_for(&self, replay_text: &str) -> Option<&[f64]> {
+        super::validated_replay_positions(replay_text, self.layout_positions.as_deref())
+    }
+
+    /// 검증된 layout positions를 우선하고, 없거나 손상됐으면 기존 K0 계산을 쓴다.
+    pub(crate) fn replay_positions_for<'a>(
+        &'a self,
+        replay_text: &str,
+    ) -> std::borrow::Cow<'a, [f64]> {
+        super::replay_positions_or_compute(
+            replay_text,
+            &self.style,
+            self.layout_positions.as_deref(),
+        )
+    }
+
+    /// Bounded sidecar가 전체 positions를 복제하지 않고 검증된 prefix만 빌린다.
+    ///
+    /// `prefix_replay_text`가 실제 replay 문자열의 scalar prefix가 아니거나 전체
+    /// positions가 손상됐으면 해당 sidecar만 기존 K0 계산으로 닫는다.
+    pub(crate) fn replay_positions_prefix_for<'a>(
+        &'a self,
+        full_replay_text: &str,
+        prefix_replay_text: &str,
+    ) -> std::borrow::Cow<'a, [f64]> {
+        let max_scalars = super::kerning::MAX_KERNING_RUN_CODE_POINTS;
+        let prefix_scalar_count = prefix_replay_text.chars().take(max_scalars + 1).count();
+        let prefix_matches = prefix_scalar_count <= max_scalars
+            && full_replay_text
+                .chars()
+                .take(prefix_scalar_count)
+                .eq(prefix_replay_text.chars());
+
+        if prefix_matches {
+            if let Some(positions) = self.validated_layout_positions_for(full_replay_text) {
+                if let Some(prefix) = positions.get(..=prefix_scalar_count) {
+                    return std::borrow::Cow::Borrowed(prefix);
+                }
+            }
+        }
+
+        std::borrow::Cow::Owned(super::layout::compute_char_positions(
+            prefix_replay_text,
+            &self.style,
+        ))
     }
 }
 
@@ -1954,6 +2014,7 @@ mod tests {
                     border_fill_id: 0,
                     baseline: 0.0,
                     field_marker: FieldMarkerType::None,
+                    layout_positions: None,
                     display_text: None,
                 }),
                 BoundingBox::new(0.0, 0.0, 1.0, 1.0),
@@ -2005,6 +2066,7 @@ mod tests {
                 border_fill_id: 0,
                 baseline: 0.0,
                 field_marker: FieldMarkerType::None,
+                layout_positions: None,
                 display_text: Some("ᄒᆞᆫ글".to_owned()),
             }),
             BoundingBox::new(0.0, 0.0, 1.0, 1.0),

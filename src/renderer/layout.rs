@@ -430,6 +430,7 @@ fn push_tac_receipt_seal_line(
             border_fill_id: 0,
             baseline,
             field_marker: FieldMarkerType::None,
+            layout_positions: None,
             display_text: None,
         }),
         BoundingBox::new(
@@ -2216,6 +2217,7 @@ fn push_empty_para_end_mark(
             border_fill_id: 0,
             baseline,
             field_marker: FieldMarkerType::None,
+            layout_positions: None,
             display_text: None,
         }),
         BoundingBox::new(x, y, 0.0, line_height),
@@ -2413,6 +2415,9 @@ pub(crate) fn para_is_floating_overlay_anchor(para: &Paragraph) -> bool {
 pub struct LayoutEngine {
     /// DPI
     dpi: f64,
+    /// Font selection이 확정한 slot→exact source를 layout session 수명에 공급한다.
+    /// face parser는 보존하지 않고 immutable bytes만 소유해 self-reference를 피한다.
+    exact_font_sources: crate::renderer::kerning::ExactFontSourceRegistry,
     /// 자동 번호 카운터
     auto_counter: std::cell::RefCell<AutoNumberCounter>,
     /// 문단 번호 상태
@@ -2608,6 +2613,7 @@ impl LayoutEngine {
     pub fn new(dpi: f64) -> Self {
         Self {
             dpi,
+            exact_font_sources: crate::renderer::kerning::ExactFontSourceRegistry::default(),
             auto_counter: std::cell::RefCell::new(AutoNumberCounter::new()),
             numbering_state: std::cell::RefCell::new(NumberingState::default()),
             show_transparent_borders: std::cell::Cell::new(false),
@@ -2662,6 +2668,66 @@ impl LayoutEngine {
         self.cell_units_cache.borrow_mut().clear();
         self.table_nested_text_flag_cache.borrow_mut().clear();
         self.cursor_probe_block_cache.borrow_mut().clear();
+    }
+
+    pub(crate) fn register_exact_font_source(
+        &mut self,
+        slot: crate::renderer::kerning::ExactFontSlot,
+        bytes: &[u8],
+        face_index: u32,
+    ) -> Result<
+        crate::renderer::kerning::ExactFontRegistryRegistration,
+        crate::renderer::kerning::ExactFontRegistryError,
+    > {
+        self.exact_font_sources.register(
+            slot,
+            crate::renderer::kerning::ExactFontSource { bytes, face_index },
+        )
+    }
+
+    pub(crate) fn clear_exact_font_sources(&mut self) -> bool {
+        self.exact_font_sources.clear()
+    }
+
+    pub(crate) fn exact_font_source_handle(
+        &self,
+        slot: crate::renderer::kerning::ExactFontSlot,
+    ) -> Option<&crate::renderer::kerning::ExactFontSourceHandle> {
+        self.exact_font_sources.handle_for_slot(slot)
+    }
+
+    pub(crate) fn exact_font_source_session(
+        &self,
+    ) -> crate::renderer::kerning::KerningSourceSession<'_> {
+        crate::renderer::kerning::KerningSourceSession::new(&self.exact_font_sources)
+    }
+
+    pub(crate) fn exact_font_layout_session(
+        &self,
+    ) -> crate::renderer::kerning::KerningLayoutSession<'_> {
+        crate::renderer::kerning::KerningLayoutSession::new(&self.exact_font_sources)
+    }
+
+    /// HeightMeasurer, TypesetEngine, page-tree LayoutEngine, edit reflow가 한
+    /// transaction에서 같은 slot/source 결정을 읽도록 immutable snapshot을 만든다.
+    /// Source payload는 Arc라 복제되지 않는다.
+    pub(crate) fn kerning_measurement_context_snapshot(
+        &self,
+    ) -> Option<std::sync::Arc<crate::renderer::kerning::KerningMeasurementContext>> {
+        (self.exact_font_sources.slot_count() > 0).then(|| {
+            std::sync::Arc::new(crate::renderer::kerning::KerningMeasurementContext::new(
+                self.exact_font_sources.clone(),
+            ))
+        })
+    }
+
+    pub(crate) fn exact_font_source_registry_counts(&self) -> (usize, usize, usize, u64) {
+        (
+            self.exact_font_sources.slot_count(),
+            self.exact_font_sources.source_count(),
+            self.exact_font_sources.total_source_bytes(),
+            self.exact_font_sources.generation(),
+        )
     }
 
     pub(crate) fn set_render_normalization_overlay(
@@ -5059,6 +5125,7 @@ impl LayoutEngine {
                     border_fill_id: 0,
                     baseline: font_size,
                     field_marker: FieldMarkerType::None,
+                    layout_positions: None,
                     display_text: None,
                 }),
                 BoundingBox::new(x, y, text_width, font_size),
@@ -12149,6 +12216,7 @@ impl LayoutEngine {
                         border_fill_id: 0,
                         baseline,
                         field_marker: FieldMarkerType::None,
+                        layout_positions: None,
                         display_text: None,
                     }),
                     BoundingBox::new(wrap_text_x, table_y_start, 0.0, line_height),
@@ -12274,6 +12342,7 @@ impl LayoutEngine {
                         border_fill_id: 0,
                         baseline,
                         field_marker: FieldMarkerType::None,
+                        layout_positions: None,
                         display_text: None,
                     }),
                     BoundingBox::new(mark_x, para_y, 0.0, line_height),

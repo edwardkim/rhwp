@@ -971,6 +971,7 @@ impl SkiaLayerRenderer {
                                 is_marker,
                                 run.is_para_end,
                                 run.is_line_break_end,
+                                run.validated_layout_positions_for(run.display_or_text()),
                             );
                         }
                         PaintOp::GlyphRun { run, .. } => {
@@ -999,6 +1000,7 @@ impl SkiaLayerRenderer {
                                 false,
                                 false,
                                 false,
+                                None,
                             );
                         }
                         PaintOp::Line { bbox, line } => {
@@ -2873,6 +2875,7 @@ mod tests {
             border_fill_id: 0,
             baseline: 20.0,
             field_marker: Default::default(),
+            layout_positions: None,
             display_text: None,
         };
         let marker = FootnoteMarkerNode {
@@ -2931,6 +2934,7 @@ mod tests {
             border_fill_id: 0,
             baseline: 22.0,
             field_marker: Default::default(),
+            layout_positions: None,
             display_text: None,
         };
         let tree = PageLayerTree::new(
@@ -2981,6 +2985,7 @@ mod tests {
             border_fill_id: 0,
             baseline: 22.0,
             field_marker: Default::default(),
+            layout_positions: None,
             display_text: None,
         };
         let tree = PageLayerTree::new(
@@ -3026,6 +3031,7 @@ mod tests {
             border_fill_id: 0,
             baseline: 22.0,
             field_marker: Default::default(),
+            layout_positions: None,
             display_text: None,
         };
         let tree = PageLayerTree::new(
@@ -3079,6 +3085,7 @@ mod tests {
             border_fill_id: 0,
             baseline: 24.0,
             field_marker: Default::default(),
+            layout_positions: None,
             display_text: None,
         };
         let tree = PageLayerTree::new(
@@ -3130,6 +3137,7 @@ mod tests {
                 border_fill_id: 0,
                 baseline: 32.0,
                 field_marker: Default::default(),
+                layout_positions: None,
                 display_text: None,
             };
             let tree = PageLayerTree::new(

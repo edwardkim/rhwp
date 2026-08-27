@@ -16,6 +16,13 @@ use crate::renderer::px_to_hwpunit;
 use crate::renderer::style_resolver::{detect_lang_category, ResolvedStyleSet};
 use std::ops::Range;
 
+struct PreparedParagraphKerning {
+    context: std::sync::Arc<crate::renderer::kerning::KerningMeasurementContext>,
+    scalar_styles: Vec<crate::renderer::kerning::KerningParagraphScalarStyle>,
+    hard_boundaries: Vec<bool>,
+    measurement: std::sync::Arc<crate::renderer::kerning::KerningParagraphMeasurement>,
+}
+
 /// A complete, source-independent projection of one supported Picture wrap
 /// band. The document layer owns the one-shot publication of every paragraph
 /// in this range.
@@ -73,8 +80,13 @@ pub(crate) enum BreakToken {
     Text {
         start_idx: usize,
         end_idx: usize,
+        /// K0 scalar pen width. Dynamic space/tab accounting and boundary
+        /// pair correction are applied against this invariant base.
+        base_width: f64,
+        /// Owned paragraph-position token total. K0에서는 base_width와 같다.
         width: f64,
         max_font_size: f64,
+        base_char_widths: Vec<f64>,
         char_widths: Vec<f64>,
     },
     /// 공백 (줄 바꿈 가능 지점, 줄 끝에서 흡수)
@@ -478,8 +490,10 @@ fn tokenize_paragraph_with_regenerated_space_metric(
                     tokens.push(BreakToken::Text {
                         start_idx: start,
                         end_idx: i,
+                        base_width: width,
                         width,
                         max_font_size: max_fs,
+                        base_char_widths: char_widths.clone(),
                         char_widths,
                     });
                 }
@@ -504,8 +518,10 @@ fn tokenize_paragraph_with_regenerated_space_metric(
                 tokens.push(BreakToken::Text {
                     start_idx: i,
                     end_idx: i + 1,
+                    base_width: w,
                     width: w,
                     max_font_size: fs,
+                    base_char_widths: vec![],
                     char_widths: vec![],
                 });
                 i += 1;
@@ -606,8 +622,10 @@ fn tokenize_paragraph_with_regenerated_space_metric(
                     tokens.push(BreakToken::Text {
                         start_idx: start,
                         end_idx: i,
+                        base_width: width,
                         width,
                         max_font_size: max_fs,
+                        base_char_widths: cw.clone(),
                         char_widths: cw,
                     });
                 }
@@ -632,8 +650,10 @@ fn tokenize_paragraph_with_regenerated_space_metric(
                 tokens.push(BreakToken::Text {
                     start_idx: i,
                     end_idx: i + 1,
+                    base_width: w,
                     width: w,
                     max_font_size: fs,
+                    base_char_widths: vec![],
                     char_widths: vec![],
                 });
                 i += 1;
@@ -661,8 +681,10 @@ fn tokenize_paragraph_with_regenerated_space_metric(
             tokens.push(BreakToken::Text {
                 start_idx: i,
                 end_idx: i + 1,
+                base_width: w,
                 width: w,
                 max_font_size: fs,
+                base_char_widths: vec![],
                 char_widths: vec![],
             });
             i += 1;
@@ -695,8 +717,10 @@ fn tokenize_paragraph_with_regenerated_space_metric(
             tokens.push(BreakToken::Text {
                 start_idx: i,
                 end_idx: i + 1,
+                base_width: w,
                 width: w,
                 max_font_size: fs,
+                base_char_widths: vec![],
                 char_widths: vec![],
             });
             i += 1;
@@ -780,6 +804,140 @@ fn has_inline_control_in_range(
     inline_controls
         .iter()
         .any(|control| (start..end).contains(&control.char_position))
+}
+
+/// 기존 scalar tokenization과 같은 문자별 base pen을 만든 뒤, 그 입력 전체를
+/// transaction-shared paragraph measurement cache에 건넨다.
+fn prepare_paragraph_kerning(
+    para: &Paragraph,
+    text_chars: &[char],
+    styles: &ResolvedStyleSet,
+    space_metric: SpaceMetric,
+    inline_controls: &[FlowInlineControl],
+) -> Option<PreparedParagraphKerning> {
+    if text_chars.is_empty() {
+        return None;
+    }
+    let paragraph_requests_kerning = if para.char_shapes.is_empty() {
+        styles
+            .char_styles
+            .first()
+            .is_some_and(|style| style.kerning)
+    } else {
+        para.char_shapes.iter().any(|shape| {
+            styles
+                .char_styles
+                .get(shape.char_shape_id as usize)
+                .is_some_and(|style| style.kerning)
+        })
+    };
+    if !paragraph_requests_kerning {
+        return None;
+    }
+    let context = styles.kerning_measurement_context.as_ref()?.clone();
+
+    let mut current_lang = 0usize;
+    let mut base_positions = Vec::with_capacity(text_chars.len().saturating_add(1));
+    let mut scalar_styles = Vec::with_capacity(text_chars.len());
+    let mut hard_boundaries = vec![false; text_chars.len().saturating_add(1)];
+    let mut pen = 0.0f64;
+    base_positions.push(pen);
+    let mut any_requested = false;
+
+    for (index, character) in text_chars.iter().copied().enumerate() {
+        let language_index = if is_lang_neutral(character) {
+            current_lang
+        } else {
+            let detected = detect_lang_category(character);
+            current_lang = detected;
+            detected
+        };
+        let utf16_pos = para
+            .char_offsets
+            .get(index)
+            .copied()
+            .unwrap_or(index as u32);
+        let char_shape_id = find_active_char_shape(&para.char_shapes, utf16_pos);
+        let text_style = resolved_to_text_style(styles, char_shape_id, language_index);
+        let base_font_size = if text_style.font_size > 0.0 {
+            text_style.font_size
+        } else {
+            12.0
+        };
+        let effective_font_size_px = if text_style.superscript || text_style.subscript {
+            base_font_size * crate::renderer::SCRIPT_FONT_SCALE
+        } else {
+            base_font_size
+        };
+        let width_ratio = if text_style.ratio > 0.0 {
+            text_style.ratio
+        } else {
+            1.0
+        };
+        any_requested |= text_style.kerning;
+        scalar_styles.push(crate::renderer::kerning::KerningParagraphScalarStyle {
+            slot: crate::renderer::kerning::ExactFontSlot::new(char_shape_id, language_index),
+            requested: text_style.kerning,
+            effective_font_size_px,
+            width_ratio,
+        });
+
+        let scalar_width = match character {
+            '\t' | '\n' | '\r' => 0.0,
+            ' ' => space_metric.space_advance(&text_style),
+            _ => estimate_text_width_unrounded(&character.to_string(), &text_style),
+        } + inline_width_px_at(inline_controls, index);
+        pen += scalar_width.max(0.0);
+        base_positions.push(pen);
+    }
+    if !any_requested {
+        return None;
+    }
+
+    for control in inline_controls {
+        let boundary = control.char_position.min(text_chars.len());
+        hard_boundaries[boundary] = true;
+        if boundary < text_chars.len() {
+            hard_boundaries[boundary + 1] = true;
+        }
+    }
+    let measurement =
+        context.paragraph_measurement(&para.text, base_positions, &scalar_styles, &hard_boundaries);
+    if measurement.disposition
+        != crate::renderer::kerning::KerningParagraphMeasurementDisposition::PairAdjusted
+    {
+        return None;
+    }
+
+    Some(PreparedParagraphKerning {
+        context,
+        scalar_styles,
+        hard_boundaries,
+        measurement,
+    })
+}
+
+fn apply_paragraph_kerning_to_tokens(
+    tokens: &mut [BreakToken],
+    measurement: &crate::renderer::kerning::KerningParagraphMeasurement,
+) -> Option<()> {
+    for token in tokens {
+        let BreakToken::Text {
+            start_idx,
+            end_idx,
+            width,
+            char_widths,
+            ..
+        } = token
+        else {
+            continue;
+        };
+        *width = measurement.range_width(*start_idx, *end_idx)?;
+        *char_widths = (*start_idx..*end_idx)
+            .map(|index| measurement.range_width(index, index + 1))
+            .collect::<Option<Vec<_>>>()?;
+    }
+    Some(())
 }
 
 /// px를 HWPUNIT(i32)로 변환 (내림, DPI=96 기준: px * 75)
@@ -955,6 +1113,7 @@ fn fill_lines(
     letter_spacing_px: &[f64],
     initial_start_idx: usize,
     initial_is_first_line: bool,
+    mut kerning: Option<&mut crate::renderer::kerning::KerningParagraphBreakSession<'_, '_, '_>>,
 ) -> Vec<LineBreakResult> {
     let mut cursor = FillCursor::new(initial_start_idx, initial_is_first_line);
     let mut results = Vec::new();
@@ -969,6 +1128,7 @@ fn fill_lines(
         condense_min_space,
         letter_spacing_px,
         &mut cursor,
+        kerning.as_deref_mut(),
     ) {
         results.push(interval.line);
     }
@@ -987,6 +1147,7 @@ fn fill_one_interval(
     condense_min_space: u8,
     letter_spacing_px: &[f64],
     cursor: &mut FillCursor,
+    mut kerning: Option<&mut crate::renderer::kerning::KerningParagraphBreakSession<'_, '_, '_>>,
 ) -> Option<FilledInterval> {
     if cursor.finished {
         return None;
@@ -1169,16 +1330,17 @@ fn fill_one_interval(
             BreakToken::Text {
                 start_idx,
                 end_idx,
-                width,
+                base_width,
                 max_font_size,
-                char_widths,
+                base_char_widths,
+                ..
             } => {
                 if let Some(next_char_idx) = cursor.fallback_char_idx {
                     debug_assert!(*start_idx <= next_char_idx && next_char_idx <= *end_idx);
                     let mut ci = next_char_idx;
                     while ci < *end_idx {
                         let rel_idx = ci - *start_idx;
-                        let char_w = char_widths
+                        let char_w = base_char_widths
                             .get(rel_idx)
                             .map(|width| to_hwp(*width))
                             .unwrap_or_else(|| {
@@ -1191,7 +1353,17 @@ fn fill_one_interval(
                                 to_hwp(char_w_px)
                             });
                         let current_width = eff_w(cursor.is_first_line);
-                        if cursor.lw + char_w > current_width && ci > cursor.line_start_idx {
+                        let candidate_base = cursor.lw + char_w;
+                        let candidate_width = if let Some(session) = kerning.as_deref_mut() {
+                            candidate_base
+                                + to_hwp(
+                                    session
+                                        .boundary_pair_adjustment(cursor.line_start_idx, ci + 1)?,
+                                )
+                        } else {
+                            candidate_base
+                        };
+                        if candidate_width > current_width && ci > cursor.line_start_idx {
                             let result = LineBreakResult {
                                 start_idx: cursor.line_start_idx,
                                 end_idx: ci,
@@ -1220,15 +1392,20 @@ fn fill_one_interval(
                     cursor.line_max_fs = *max_font_size;
                 }
 
-                let w_hwp = to_hwp(*width);
+                let w_hwp = to_hwp(*base_width);
                 let effective_width = eff_w(cursor.is_first_line);
                 // The pen keeps the full width; only the comparison drops the
                 // candidate's trailing letter space.
                 let w_hwp_fit =
                     w_hwp - fit_test_letter_spacing_trim_hwp(letter_spacing_px, *end_idx);
+                let pair_adjustment_hwp = if let Some(session) = kerning.as_deref_mut() {
+                    to_hwp(session.boundary_pair_adjustment(cursor.line_start_idx, *end_idx)?)
+                } else {
+                    0
+                };
                 let token_fits = text_token_fits_line_hwp(
                     cursor.lw,
-                    w_hwp_fit,
+                    w_hwp_fit + pair_adjustment_hwp,
                     cursor.line_space_savings,
                     effective_width,
                     *max_font_size,
@@ -1308,7 +1485,15 @@ fn fill_one_interval(
                             // 건너뛰었다.
                             if text_token_fits_line_hwp(
                                 cursor.lw,
-                                w_hwp,
+                                w_hwp
+                                    + if let Some(session) = kerning.as_deref_mut() {
+                                        to_hwp(session.boundary_pair_adjustment(
+                                            cursor.line_start_idx,
+                                            *end_idx,
+                                        )?)
+                                    } else {
+                                        0
+                                    },
                                 cursor.line_space_savings,
                                 eff_w(false),
                                 *max_font_size,
@@ -1495,6 +1680,7 @@ fn fill_lines_before_cursor(
                 width,
                 max_font_size,
                 ref char_widths,
+                ..
             } => {
                 if *max_font_size > line_max_fs {
                     line_max_fs = *max_font_size;
@@ -1651,9 +1837,11 @@ fn recalc_width_hwp(tokens: &[BreakToken], current_token_idx: usize, new_line_st
     for t in &tokens[..current_token_idx] {
         match t {
             BreakToken::Text {
-                start_idx, width, ..
+                start_idx,
+                base_width,
+                ..
             } if *start_idx >= new_line_start => {
-                w += to_hwp(*width);
+                w += to_hwp(*base_width);
             }
             BreakToken::Space { idx, width, .. } if *idx >= new_line_start => {
                 w += to_hwp(*width);
@@ -2089,6 +2277,16 @@ pub(crate) fn layout_paragraph_in_frame(
     styles: &ResolvedStyleSet,
     dpi: f64,
 ) -> Option<Vec<LineSeg>> {
+    layout_paragraph_in_frame_impl(para, frame, styles, dpi, true)
+}
+
+fn layout_paragraph_in_frame_impl(
+    para: &Paragraph,
+    frame: &mut LayoutFrame,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+    allow_kerning: bool,
+) -> Option<Vec<LineSeg>> {
     // [#6102] 폭-중립 자리차지 표 host 도 fill 대상 — 표는 줄 폭을 소비하지
     // 않으므로(자기 레이아웃 소유자가 따로 배치) 텍스트만 재래핑하면 된다.
     if !supports_picture_band_frame_controls(para) && !supports_cached_body_frame_controls(para) {
@@ -2126,7 +2324,7 @@ pub(crate) fn layout_paragraph_in_frame(
         } else {
             SpaceMetric::Stored
         };
-    let tokens = tokenize_paragraph_with_regenerated_space_metric(
+    let mut tokens = tokenize_paragraph_with_regenerated_space_metric(
         &text_chars,
         &para.char_offsets,
         &para.char_shapes,
@@ -2136,6 +2334,27 @@ pub(crate) fn layout_paragraph_in_frame(
         space_metric,
         &inline_controls,
     );
+    let prepared_kerning = allow_kerning
+        .then(|| {
+            prepare_paragraph_kerning(para, &text_chars, styles, space_metric, &inline_controls)
+        })
+        .flatten()
+        .and_then(|prepared| {
+            apply_paragraph_kerning_to_tokens(&mut tokens, &prepared.measurement).map(|_| prepared)
+        });
+    let mut kerning_transaction = prepared_kerning
+        .as_ref()
+        .map(|prepared| prepared.context.layout_session());
+    let mut kerning_break_session = prepared_kerning.as_ref().and_then(|prepared| {
+        crate::renderer::kerning::KerningParagraphBreakSession::new(
+            &para.text,
+            &prepared.scalar_styles,
+            &prepared.hard_boundaries,
+            &prepared.measurement,
+            kerning_transaction.as_mut()?,
+        )
+        .ok()
+    });
     let letter_spacing_px =
         resolved_letter_spacing_px(&text_chars, &para.char_offsets, &para.char_shapes, styles);
     let fallback_font_size = if para.text.is_empty() {
@@ -2242,6 +2461,7 @@ pub(crate) fn layout_paragraph_in_frame(
                         condense_min_space,
                         &letter_spacing_px,
                         &mut cursor,
+                        kerning_break_session.as_mut(),
                     )?;
                     let line = &filled.line;
                     maximum_font_size = maximum_font_size.max(line.max_font_size);
@@ -2323,8 +2543,19 @@ pub(crate) fn layout_paragraph_in_frame(
         Some(frame.project_line_segs_since(first_row))
     })();
 
+    let kerning_failed = kerning_break_session
+        .as_ref()
+        .and_then(|session| session.failed_reason())
+        .is_some();
     if result.is_none() {
         frame.restore_checkpoint(frame_checkpoint);
+    }
+    drop(kerning_break_session);
+    drop(kerning_transaction);
+    if kerning_failed {
+        // 한 boundary라도 예산/범위 검증에 실패하면 일부 K1 row를 게시하지
+        // 않고 문단 전체를 원래 scalar transaction으로 다시 실행한다.
+        return layout_paragraph_in_frame_impl(para, frame, styles, dpi, false);
     }
     result
 }
@@ -2992,7 +3223,12 @@ fn reflow_line_segs_impl(
     let tab_width = para_style.map(|s| s.default_tab_width).unwrap_or(0.0);
 
     // 토큰화 → 줄 채움 → LineSeg 생성
-    let tokens = tokenize_paragraph_with_regenerated_space_metric(
+    let reflow_space_metric = if split_stale_cell_reflow {
+        SpaceMetric::HancomRegenerated
+    } else {
+        SpaceMetric::Stored
+    };
+    let mut tokens = tokenize_paragraph_with_regenerated_space_metric(
         &text_chars,
         &para.char_offsets,
         &para.char_shapes,
@@ -3000,13 +3236,19 @@ fn reflow_line_segs_impl(
         english_break_unit,
         korean_break_unit,
         // 종전 동작 보존: 이 인자가 곧 공백 규칙이었다.
-        if split_stale_cell_reflow {
-            SpaceMetric::HancomRegenerated
-        } else {
-            SpaceMetric::Stored
-        },
+        reflow_space_metric,
         &inline_controls,
     );
+    let prepared_kerning = prepare_paragraph_kerning(
+        para,
+        &text_chars,
+        styles,
+        reflow_space_metric,
+        &inline_controls,
+    )
+    .and_then(|prepared| {
+        apply_paragraph_kerning_to_tokens(&mut tokens, &prepared.measurement).map(|_| prepared)
+    });
     // 저장 LINE_SEG 기반 incremental edit는 앞선 줄을 유지한다. LINE_SEG start가 현재
     // char_offsets와 token 경계 모두에 정확히 대응할 때만 suffix reflow를 허용한다.
     // 그렇지 않으면 (HWPX 합성 boundary, inline control, token 내부 boundary 등) full
@@ -3101,7 +3343,20 @@ fn reflow_line_segs_impl(
         }
     }
 
-    let line_breaks = fill_lines(
+    let mut kerning_transaction = prepared_kerning
+        .as_ref()
+        .map(|prepared| prepared.context.layout_session());
+    let mut kerning_break_session = prepared_kerning.as_ref().and_then(|prepared| {
+        crate::renderer::kerning::KerningParagraphBreakSession::new(
+            &para.text,
+            &prepared.scalar_styles,
+            &prepared.hard_boundaries,
+            &prepared.measurement,
+            kerning_transaction.as_mut()?,
+        )
+        .ok()
+    });
+    let mut line_breaks = fill_lines(
         &tokens[token_start..],
         &text_chars,
         available_width_px,
@@ -3112,7 +3367,29 @@ fn reflow_line_segs_impl(
         &resolved_letter_spacing_px(&text_chars, &para.char_offsets, &para.char_shapes, styles),
         reflow_start_idx,
         reflow_is_first_line,
+        kerning_break_session.as_mut(),
     );
+    let kerning_failed = kerning_break_session
+        .as_ref()
+        .and_then(|session| session.failed_reason())
+        .is_some();
+    drop(kerning_break_session);
+    drop(kerning_transaction);
+    if kerning_failed {
+        line_breaks = fill_lines(
+            &tokens[token_start..],
+            &text_chars,
+            available_width_px,
+            indent_px,
+            tab_width,
+            korean_break_unit,
+            condense_min_space,
+            &resolved_letter_spacing_px(&text_chars, &para.char_offsets, &para.char_shapes, styles),
+            reflow_start_idx,
+            reflow_is_first_line,
+            None,
+        );
+    }
     let forced_inline_line = split_stale_cell_reflow
         .then(|| {
             inline_control_requires_own_line(
@@ -3496,6 +3773,7 @@ mod fill_cursor_tests {
             condense_min_space,
             &[],
             &mut cursor,
+            None,
         ) {
             results.push(result.line);
         }
@@ -3535,6 +3813,7 @@ mod fill_cursor_tests {
             &[],
             initial_start_idx,
             initial_is_first_line,
+            None,
         );
         let resumed = collect_one_interval_at_a_time(
             tokens,
@@ -3559,8 +3838,10 @@ mod fill_cursor_tests {
         let tokens = vec![BreakToken::Text {
             start_idx: 0,
             end_idx: text_chars.len(),
+            base_width: 100.0,
             width: 100.0,
             max_font_size: 12.0,
+            base_char_widths: vec![10.0; text_chars.len()],
             char_widths: vec![10.0; text_chars.len()],
         }];
 
@@ -3598,8 +3879,10 @@ mod fill_cursor_tests {
             BreakToken::Text {
                 start_idx: 0,
                 end_idx: 2,
+                base_width: 20.0,
                 width: 20.0,
                 max_font_size: 12.0,
+                base_char_widths: vec![10.0, 10.0],
                 char_widths: vec![10.0, 10.0],
             },
             BreakToken::Space {
@@ -3610,8 +3893,10 @@ mod fill_cursor_tests {
             BreakToken::Text {
                 start_idx: 3,
                 end_idx: 4,
+                base_width: 10.0,
                 width: 10.0,
                 max_font_size: 12.0,
+                base_char_widths: vec![10.0],
                 char_widths: vec![10.0],
             },
             BreakToken::Tab {
@@ -3621,16 +3906,20 @@ mod fill_cursor_tests {
             BreakToken::Text {
                 start_idx: 5,
                 end_idx: 6,
+                base_width: 10.0,
                 width: 10.0,
                 max_font_size: 12.0,
+                base_char_widths: vec![10.0],
                 char_widths: vec![10.0],
             },
             BreakToken::LineBreak { idx: 6 },
             BreakToken::Text {
                 start_idx: 7,
                 end_idx: 9,
+                base_width: 20.0,
                 width: 20.0,
                 max_font_size: 12.0,
+                base_char_widths: vec![10.0, 10.0],
                 char_widths: vec![10.0, 10.0],
             },
         ];

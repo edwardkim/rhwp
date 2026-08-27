@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "issue": 4968,
+  "stage": "W9-Q3-5R4E-3",
+  "wasm": {
+    "bytes": 9604623,
+    "sha256": "87380c7a43e086013a1c9e041a38417fe198b3c1d5c075117d2996082c042ce2"
+  },
+  "inputs": {
+    "noto": {
+      "bytes": 2519996,
+      "sha256": "6e06a7fe5d696ca719894a23f36bb2b1be8c816a5937cd4ad0f23ca67780dd74"
+    },
+    "smoke": {
+      "bytes": 1236,
+      "sha256": "775667d1980cd734e331f01e9390e02191bc35d669325291c842968cb0a4a9fc"
+    },
+    "fixture": {
+      "bytes": 8645,
+      "sha256": "369dbea8562a5f0ddaee41c21319e06645250d854090a5dd1e04c006ddbe0485"
+    }
+  },
+  "embedding": {
+    "status": "pass",
+    "probeCount": 9,
+    "probes": [
+      {
+        "name": "full-noto-bytes",
+        "present": false
+      },
+      {
+        "name": "full-smoke-face-bytes",
+        "present": false
+      },
+      {
+        "name": "runtime-fixture-bytes",
+        "present": false
+      },
+      {
+        "name": "smoke-fixture-file-name",
+        "present": false
+      },
+      {
+        "name": "runtime-fixture-file-name",
+        "present": false
+      },
+      {
+        "name": "smoke-fixture-sha256",
+        "present": false
+      },
+      {
+        "name": "private-home-marker",
+        "present": false
+      },
+      {
+        "name": "private-corpus-marker",
+        "present": false
+      },
+      {
+        "name": "private-samples-marker",
+        "present": false
+      }
+    ]
+  },
+  "evidenceCanonicalSha256": "6af6421f500455a81a8a0ab0901d28831e54e4d78dc34be5ebac9a32ea33f9f6"
+}

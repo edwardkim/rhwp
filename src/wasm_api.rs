@@ -629,6 +629,25 @@ impl HwpDocument {
         self.create_blank_document_native().map_err(|e| e.into())
     }
 
+    /// Browser/host font selection이 확정한 face bytes를 exact layout slot에 등록한다.
+    /// family 이름 재탐색 없이 `(charShapeId, languageIndex)`에 직접 결합한다.
+    #[wasm_bindgen(js_name = registerExactFontSource)]
+    pub fn register_exact_font_source(
+        &mut self,
+        char_shape_id: u32,
+        language_index: u32,
+        font_bytes: &[u8],
+        face_index: u32,
+    ) -> Result<String, JsValue> {
+        self.register_exact_font_source_native(
+            char_shape_id,
+            language_index as usize,
+            font_bytes,
+            face_index,
+        )
+        .map_err(JsValue::from)
+    }
+
     /// 문단부호(¶) 표시 여부를 설정한다.
     #[wasm_bindgen(js_name = setShowParagraphMarks)]
     pub fn set_show_paragraph_marks(&mut self, enabled: bool) {
