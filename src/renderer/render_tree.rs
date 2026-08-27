@@ -873,6 +873,37 @@ impl TextRunNode {
             self.layout_positions.as_deref(),
         )
     }
+
+    /// Bounded sidecar가 전체 positions를 복제하지 않고 검증된 prefix만 빌린다.
+    ///
+    /// `prefix_replay_text`가 실제 replay 문자열의 scalar prefix가 아니거나 전체
+    /// positions가 손상됐으면 해당 sidecar만 기존 K0 계산으로 닫는다.
+    pub(crate) fn replay_positions_prefix_for<'a>(
+        &'a self,
+        full_replay_text: &str,
+        prefix_replay_text: &str,
+    ) -> std::borrow::Cow<'a, [f64]> {
+        let max_scalars = super::kerning::MAX_KERNING_RUN_CODE_POINTS;
+        let prefix_scalar_count = prefix_replay_text.chars().take(max_scalars + 1).count();
+        let prefix_matches = prefix_scalar_count <= max_scalars
+            && full_replay_text
+                .chars()
+                .take(prefix_scalar_count)
+                .eq(prefix_replay_text.chars());
+
+        if prefix_matches {
+            if let Some(positions) = self.validated_layout_positions_for(full_replay_text) {
+                if let Some(prefix) = positions.get(..=prefix_scalar_count) {
+                    return std::borrow::Cow::Borrowed(prefix);
+                }
+            }
+        }
+
+        std::borrow::Cow::Owned(super::layout::compute_char_positions(
+            prefix_replay_text,
+            &self.style,
+        ))
+    }
 }
 
 /// 누름틀 필드 조판부호 마커 유형

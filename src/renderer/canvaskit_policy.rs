@@ -559,9 +559,13 @@ fn render_node_prelower_work_units(node_type: &RenderNodeType) -> Option<usize> 
 }
 
 fn text_run_payload_bytes(run: &TextRunNode) -> Option<usize> {
+    let positions_bytes = run.layout_positions.as_ref().map_or(Some(0), |positions| {
+        positions.len().checked_mul(std::mem::size_of::<f64>())
+    })?;
     run.text
         .len()
         .checked_add(run.display_text.as_ref().map_or(0, String::len))
+        .and_then(|bytes| bytes.checked_add(positions_bytes))
 }
 
 fn count_layer_tree_work_units(

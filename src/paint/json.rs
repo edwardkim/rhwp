@@ -1627,7 +1627,7 @@ fn write_tab_leaders(buf: &mut String, leaders: &[TabLeaderInfo]) {
 
 fn write_clamped_tab_leaders(buf: &mut String, run: &TextRunNode) -> bool {
     let (display_text, text_complete) = bounded_display_text_for_run(run);
-    let positions = run.replay_positions_for(&display_text);
+    let positions = run.replay_positions_prefix_for(run.display_or_text(), &display_text);
     let (font_size, _) = effective_text_font_size_and_baseline(run);
     let leaders_complete =
         run.style.tab_leaders.len() <= crate::paint::MAX_POSITIONED_CONTROL_MARKS_PER_RUN;
@@ -1655,7 +1655,7 @@ fn write_clamped_tab_leaders(buf: &mut String, run: &TextRunNode) -> bool {
 
 fn write_text_control_marks(buf: &mut String, bbox: BoundingBox, run: &TextRunNode) -> bool {
     let (bounded_text, mut complete) = bounded_text_prefix(&run.text);
-    let positions = run.replay_positions_for(&bounded_text);
+    let positions = run.replay_positions_prefix_for(&run.text, &bounded_text);
     let font_size = if run.style.font_size > 0.0 {
         run.style.font_size
     } else {
@@ -2578,7 +2578,7 @@ fn write_text_decoration(buf: &mut String, kind: TextDecorationKind, run: &TextR
     };
     let (font_size, baseline) = effective_text_font_size_and_baseline(run);
     let (bounded_text, complete) = bounded_display_text_for_run(run);
-    let positions = run.replay_positions_for(&bounded_text);
+    let positions = run.replay_positions_prefix_for(run.display_or_text(), &bounded_text);
     let _ = write!(
         buf,
         "{{\"kind\":{},\"baseline\":{:.3},\"rotation\":{:.3},\"isVertical\":{},\"fontSize\":{:.3},\"ratio\":{:.6},\"color\":{},\"shape\":{},\"underline\":{},\"emphasisDot\":{},\"positions\":[",

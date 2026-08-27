@@ -1740,6 +1740,212 @@ fn issue_4968_visual_consumers_replay_the_published_positions() {
 
 #[cfg(not(target_arch = "wasm32"))]
 #[test]
+fn issue_4968_bounded_positions_replay_and_canvaskit_work_are_fail_closed() {
+    use rhwp::paint::{
+        LayerNode, PageLayerTree, PaintOp, RenderProfile, TextDecorationKind,
+    };
+    use rhwp::renderer::canvas::{CanvasCommand, CanvasRenderer};
+    use rhwp::renderer::canvaskit_policy::{
+        analyze_canvaskit_document_preflight, estimate_canvaskit_page_lowering_work,
+        CanvasKitBoundedWorkCount, CanvasKitPreflightPageBuild, CanvasKitReplayMode,
+    };
+    use rhwp::renderer::render_tree::{
+        BoundingBox, FieldMarkerType, PageRenderTree, RenderNode, RenderNodeType, TextRunNode,
+    };
+    use rhwp::renderer::{Renderer, TextStyle};
+
+    fn text_run(text: String, layout_positions: Option<Vec<f64>>) -> TextRunNode {
+        TextRunNode {
+            text,
+            style: TextStyle {
+                font_family: "RHWP bounded replay fixture".to_string(),
+                font_size: 12.0,
+                ..Default::default()
+            },
+            char_shape_id: None,
+            para_shape_id: None,
+            section_index: None,
+            para_index: None,
+            char_start: None,
+            cell_context: None,
+            is_para_end: false,
+            is_line_break_end: false,
+            rotation: 0.0,
+            is_vertical: false,
+            char_overlap: None,
+            border_fill_id: 0,
+            baseline: 12.0,
+            field_marker: FieldMarkerType::None,
+            layout_positions,
+            display_text: None,
+        }
+    }
+
+    fn page_tree(run: TextRunNode) -> PageRenderTree {
+        let bbox = BoundingBox::new(0.0, 0.0, 100.0, 20.0);
+        let mut tree = PageRenderTree::new(0, 100.0, 100.0);
+        tree.root.children.push(RenderNode::new(
+            1,
+            RenderNodeType::TextRun(run),
+            bbox,
+        ));
+        tree
+    }
+
+    fn layer_tree(run: TextRunNode, decoration_only: bool) -> PageLayerTree {
+        let bbox = BoundingBox::new(0.0, 0.0, 100.0, 20.0);
+        let op = if decoration_only {
+            PaintOp::text_decoration(bbox, run, TextDecorationKind::Underline)
+        } else {
+            PaintOp::text_run(bbox, run)
+        };
+        PageLayerTree::new(100.0, 100.0, LayerNode::leaf(bbox, None, vec![op]))
+    }
+
+    let max_text = "A".repeat(MAX_KERNING_RUN_CODE_POINTS);
+    let max_positions = (0..=MAX_KERNING_RUN_CODE_POINTS)
+        .map(|value| value as f64)
+        .collect::<Vec<_>>();
+    let mut max_canvas = CanvasRenderer::new();
+    max_canvas.draw_text_positioned(
+        &max_text,
+        0.0,
+        0.0,
+        &TextStyle::default(),
+        Some(&max_positions),
+    );
+    assert!(matches!(
+        max_canvas.commands(),
+        [CanvasCommand::FillTextPositioned(_, 0.0, 0.0, positions)]
+            if positions.len() == MAX_KERNING_RUN_CODE_POINTS + 1
+    ));
+
+    let over_text = "A".repeat(MAX_KERNING_RUN_CODE_POINTS + 1);
+    let over_positions = (0..=MAX_KERNING_RUN_CODE_POINTS + 1)
+        .map(|value| value as f64)
+        .collect::<Vec<_>>();
+    let malformed_positions = [
+        vec![0.0, f64::INFINITY, 2.0],
+        vec![0.0, 2.0, 1.0],
+        vec![0.0, 1.0],
+    ];
+    let mut over_canvas = CanvasRenderer::new();
+    over_canvas.draw_text_positioned(
+        &over_text,
+        0.0,
+        0.0,
+        &TextStyle::default(),
+        Some(&over_positions),
+    );
+    assert!(matches!(
+        over_canvas.commands(),
+        [CanvasCommand::FillText(_, 0.0, 0.0)]
+    ));
+    for malformed in &malformed_positions {
+        let mut canvas = CanvasRenderer::new();
+        canvas.draw_text_positioned(
+            "AV",
+            0.0,
+            0.0,
+            &TextStyle::default(),
+            Some(malformed),
+        );
+        assert!(matches!(
+            canvas.commands(),
+            [CanvasCommand::FillText(_, 0.0, 0.0)]
+        ));
+    }
+
+    let baseline_tree = page_tree(text_run(max_text.clone(), None));
+    let positioned_tree = page_tree(text_run(max_text.clone(), Some(max_positions.clone())));
+    let CanvasKitBoundedWorkCount::Complete(baseline_work) =
+        estimate_canvaskit_page_lowering_work(&baseline_tree, u32::MAX)
+    else {
+        panic!("bounded baseline pre-lowering work");
+    };
+    let CanvasKitBoundedWorkCount::Complete(positioned_work) =
+        estimate_canvaskit_page_lowering_work(&positioned_tree, u32::MAX)
+    else {
+        panic!("bounded positioned pre-lowering work");
+    };
+    assert!(positioned_work > baseline_work);
+    assert_eq!(
+        estimate_canvaskit_page_lowering_work(&positioned_tree, baseline_work),
+        CanvasKitBoundedWorkCount::Exceeded
+    );
+
+    let oversized_tree = page_tree(text_run("A".to_string(), Some(vec![0.0; 140_000])));
+    assert_eq!(
+        estimate_canvaskit_page_lowering_work(&oversized_tree, u32::MAX),
+        CanvasKitBoundedWorkCount::Exceeded
+    );
+
+    let baseline_layer = layer_tree(text_run(max_text.clone(), None), false);
+    let positioned_layer = layer_tree(
+        text_run(max_text.clone(), Some(max_positions.clone())),
+        false,
+    );
+    let baseline_preflight = analyze_canvaskit_document_preflight(
+        1,
+        CanvasKitReplayMode::Default,
+        RenderProfile::Screen,
+        move |_, _| {
+            Ok::<_, &'static str>(CanvasKitPreflightPageBuild::Complete {
+                tree: Box::new(baseline_layer.clone()),
+                prelower_work_units: 0,
+            })
+        },
+    );
+    let positioned_preflight = analyze_canvaskit_document_preflight(
+        1,
+        CanvasKitReplayMode::Default,
+        RenderProfile::Screen,
+        move |_, _| {
+            Ok::<_, &'static str>(CanvasKitPreflightPageBuild::Complete {
+                tree: Box::new(positioned_layer.clone()),
+                prelower_work_units: 0,
+            })
+        },
+    );
+    assert!(positioned_preflight.scanned_work_units > baseline_preflight.scanned_work_units);
+
+    let bounded_json = layer_tree(
+        text_run(max_text, Some(max_positions)),
+        true,
+    )
+    .to_json();
+    let bounded_value: serde_json::Value =
+        serde_json::from_str(&bounded_json).expect("bounded positions JSON");
+    let bounded_decoration = &bounded_value["root"]["ops"][0]["decoration"];
+    assert_eq!(bounded_decoration["positionsComplete"], true);
+    assert_eq!(
+        bounded_decoration["positions"]
+            .as_array()
+            .expect("bounded positions")
+            .len(),
+        MAX_KERNING_RUN_CODE_POINTS + 1
+    );
+    assert_eq!(
+        bounded_decoration["positions"][MAX_KERNING_RUN_CODE_POINTS],
+        MAX_KERNING_RUN_CODE_POINTS as f64
+    );
+
+    let oversized_json = layer_tree(text_run(over_text, Some(over_positions)), true).to_json();
+    let oversized_value: serde_json::Value =
+        serde_json::from_str(&oversized_json).expect("oversized positions JSON");
+    let oversized_decoration = &oversized_value["root"]["ops"][0]["decoration"];
+    assert_eq!(oversized_decoration["positionsComplete"], false);
+    assert_eq!(
+        oversized_decoration["positions"]
+            .as_array()
+            .expect("bounded oversized positions")
+            .len(),
+        MAX_KERNING_RUN_CODE_POINTS + 1
+    );
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+#[test]
 fn issue_4968_portable_glyph_run_reuses_the_published_positions() {
     use rhwp::paint::{
         lower_font_native_glyph_sidecars, EmbeddedFontFace, LayerNode, LayerNodeKind, PaintOp,
