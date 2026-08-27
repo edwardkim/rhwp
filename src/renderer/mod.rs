@@ -1422,6 +1422,14 @@ fn installed_render_font_aliases(font_family: &str) -> &'static [&'static str] {
     match font_family {
         "한양중고딕" => &["HY중고딕"],
         "HY중고딕" => &["Malgun Gothic"],
+        // [#6171] 견고딕/견명조도 같은 legacy ↔ 설치 face 짝이다. 이 arm 이 없으면
+        // 체인이 `'한양견고딕'` 하나 뒤에 바로 generic(=Malgun Gothic)으로 떨어져,
+        // `HY견고딕`이 설치된 호스트에서도 Malgun Regular 로 그려진다 — 3146683 1쪽
+        // `『별표 7』`의 `별표` 획이 견고딕(Extra)보다 가늘어지는 원인.
+        // Windows 글꼴 레지스트리 실측: `HY견고딕`=H2GTRE.TTF(family `HYGothic-Extra`),
+        // `HY견명조`=H2MJRE.TTF(family `HYMyeongJo-Extra`).
+        "한양견고딕" => &["HY견고딕", "HYGothic-Extra"],
+        "한양견명조" => &["HY견명조", "HYMyeongJo-Extra"],
         // #4739: 구형 정부상징 부처명 face가 없을 때 현재 공식 배포 face를 찾는다.
         // 동일 alias가 아니라 availability 기반 successor이므로 exact legacy 뒤에만 둔다.
         "정부상징 부처명_16040911" | "Government_16040911" => &[
@@ -2462,6 +2470,24 @@ mod tests {
         assert_eq!(
             render_font_family_chain("한양중고딕"),
             format!("'한양중고딕','HY중고딕',{}", generic_fallback("한양중고딕"))
+        );
+
+        // [#6171] 견고딕/견명조도 legacy name 뒤에 설치 face 이름이 와야 한다. 이 arm 이
+        // 없으면 체인이 곧바로 generic 으로 떨어져 `HY견고딕` 설치본이 있어도 Malgun
+        // Gothic 이 잡힌다 — 3146683 1쪽 `『별표 7』`의 `별표` 획 굵기 회귀.
+        assert_eq!(
+            render_font_family_chain("한양견고딕"),
+            format!(
+                "'한양견고딕','HY견고딕','HYGothic-Extra',{}",
+                generic_fallback("한양견고딕")
+            )
+        );
+        assert_eq!(
+            render_font_family_chain("한양견명조"),
+            format!(
+                "'한양견명조','HY견명조','HYMyeongJo-Extra',{}",
+                generic_fallback("한양견명조")
+            )
         );
 
         assert_eq!(

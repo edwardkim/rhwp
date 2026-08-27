@@ -7953,8 +7953,33 @@ impl LayoutEngine {
                         let ladder_verdict = has_ladder_float
                             .then(|| textless_host_ladder_line_advance(paragraphs, *para_index))
                             .flatten();
+                        // [#5929] 사다리가 **아예 없는** 문서(합성 lineseg 뿐인 기계
+                        // 생성본)에서는 위 증언 경로가 통째로 침묵한다. 그때는 조판을
+                        // 따라야 한다 — typeset 은 이 빈 어울림 host 문단에 제 줄을
+                        // 그대로 계상한다(`dump-pages`: pi=8 h=54.1). 페인트만 0 으로
+                        // 두면 뒤따르는 자리차지 표가 그 한 줄만큼 위로 올라와 그림과
+                        // 겹친다(사용자 보고: 표가 이미지와 겹침).
+                        //
+                        // 게이트를 저장 증거 부재로 좁힌다 — 사다리가 있는 문서는
+                        // #5809 의 증언 경로가 그대로 답한다(issue_2069 편집 반례 포함).
+                        let no_stored_ladder_square_host = ladder_verdict.is_none()
+                            && crate::renderer::para_has_no_stored_line_segs(para)
+                            && para.controls.iter().any(|c| {
+                                let cm = match c {
+                                    Control::Picture(pic) => &pic.common,
+                                    Control::Shape(shape) => shape.common(),
+                                    _ => return false,
+                                };
+                                !cm.treat_as_char
+                                    && matches!(
+                                        cm.text_wrap,
+                                        TextWrap::Square | TextWrap::Tight | TextWrap::Through
+                                    )
+                                    && matches!(cm.vert_rel_to, VertRelTo::Para)
+                            });
                         let advance_line = ladder_verdict.unwrap_or_else(|| {
-                            textless_infront_para_host_requires_line_advance(para)
+                            no_stored_ladder_square_host
+                                || textless_infront_para_host_requires_line_advance(para)
                         });
                         if advance_line {
                             // [#5809] 사다리가 예약을 증언한 케이스는 저장 델타
@@ -7974,7 +7999,29 @@ impl LayoutEngine {
                                 })
                                 .flatten();
                             let advance = ladder_delta_px.unwrap_or_else(|| {
-                                paragraph_line_advance_px(para, composed.get(*para_index), self.dpi)
+                                let lines = paragraph_line_advance_px(
+                                    para,
+                                    composed.get(*para_index),
+                                    self.dpi,
+                                );
+                                if no_stored_ladder_square_host {
+                                    // [#5929] 사다리가 없으면 조판이 기준이다 — typeset 은
+                                    // 이 문단을 `sb + lines + sa` 로 계상한다(형제 빈 문단과
+                                    // 같은 54.1px). 줄 부분만 주면 문단 앞뒤 간격(20px)이
+                                    // 유실돼 표가 그만큼 위로 올라온다.
+                                    let style_id = composed
+                                        .get(*para_index)
+                                        .map(|c| c.para_style_id as usize)
+                                        .unwrap_or(para.para_shape_id as usize);
+                                    let (sb, sa) = styles
+                                        .para_styles
+                                        .get(style_id)
+                                        .map(|st| (st.spacing_before, st.spacing_after))
+                                        .unwrap_or((0.0, 0.0));
+                                    lines + sb.max(0.0) + sa.max(0.0)
+                                } else {
+                                    lines
+                                }
                             });
                             return (y_offset + advance, false);
                         }

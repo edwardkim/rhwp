@@ -999,6 +999,299 @@ fn apply_value_edits_is_an_unchanged_wrapper() {
 }
 
 // ---------------------------------------------------------------------------
+// [#6053] 정체 경로 — 스캐너의 스타일 구간과 패처의 비꼬리 삽입·삭제·재번호
+// ---------------------------------------------------------------------------
+
+/// 계열마다 스타일(`c:spPr`·`c:marker`)을 단 3계열 꺾은선 — 정체 경로 픽스처.
+/// 코퍼스 주식형(전 계열 `spPr > ln > noFill` + `symbol none`)과 같은 골격이다.
+fn styled_line_xml() -> String {
+    let mut xml = String::from(r#"<c:chartSpace><c:chart><c:plotArea><c:lineChart>"#);
+    for (i, (name, v0, v1)) in [("첫째", "1", "2"), ("둘째", "3", "4"), ("셋째", "5", "6")]
+        .iter()
+        .enumerate()
+    {
+        xml.push_str(&format!(
+            concat!(
+                r#"<c:ser><c:idx val="{i}"/><c:order val="{i}"/>"#,
+                r#"<c:tx><c:strRef><c:f>Sheet1!$B$1</c:f><c:strCache><c:ptCount val="1"/>"#,
+                r#"<c:pt idx="0"><c:v>{name}</c:v></c:pt></c:strCache></c:strRef></c:tx>"#,
+                r#"<c:spPr><a:ln><a:noFill/></a:ln></c:spPr>"#,
+                r#"<c:marker><c:symbol val="none"/><c:spPr><a:solidFill/></c:spPr></c:marker>"#,
+                r#"<c:cat><c:strRef><c:strCache><c:ptCount val="2"/>"#,
+                r#"<c:pt idx="0"><c:v>항목 1</c:v></c:pt><c:pt idx="1"><c:v>항목 2</c:v></c:pt>"#,
+                r#"</c:strCache></c:strRef></c:cat>"#,
+                r#"<c:val><c:numRef><c:numCache><c:ptCount val="2"/>"#,
+                r#"<c:pt idx="0"><c:v>{v0}</c:v></c:pt><c:pt idx="1"><c:v>{v1}</c:v></c:pt>"#,
+                r#"</c:numCache></c:numRef></c:val></c:ser>"#,
+            ),
+            i = i,
+            name = name,
+            v0 = v0,
+            v1 = v1
+        ));
+    }
+    xml.push_str(r#"</c:lineChart></c:plotArea></c:chart></c:chartSpace>"#);
+    xml
+}
+
+/// 계열 최상위 `c:spPr` 구간은 요소 전체를 감싸고, marker 안 `c:spPr` 은 섞이지 않는다.
+#[test]
+fn series_top_sp_pr_span_wraps_the_element_and_skips_marker_sp_pr() {
+    let xml = styled_line_xml();
+    let data = scan_chart_values(xml.as_bytes()).expect("스캔");
+    for series in &data.series {
+        let span = series.sp_pr_span.clone().expect("계열 spPr 구간");
+        assert_eq!(
+            slice(&xml, &span),
+            r#"<c:spPr><a:ln><a:noFill/></a:ln></c:spPr>"#
+        );
+    }
+}
+
+/// `c:marker` 안 `c:symbol` 구간은 자기닫힘 요소 전체다.
+#[test]
+fn marker_symbol_span_wraps_the_empty_element() {
+    let xml = styled_line_xml();
+    let data = scan_chart_values(xml.as_bytes()).expect("스캔");
+    for series in &data.series {
+        let span = series.symbol_span.clone().expect("symbol 구간");
+        assert_eq!(slice(&xml, &span), r#"<c:symbol val="none"/>"#);
+    }
+}
+
+/// 스타일이 없는 계열은 두 구간 다 `None` 이고, 확장꼴 `<c:symbol …></c:symbol>` 도 잡는다.
+#[test]
+fn style_spans_are_none_without_style_and_cover_the_expanded_symbol_form() {
+    let data = scan_chart_values(TWO_SERIES_BAR.as_bytes()).expect("스캔");
+    for series in &data.series {
+        assert_eq!(series.sp_pr_span, None);
+        assert_eq!(series.symbol_span, None);
+    }
+
+    let expanded = concat!(
+        r#"<c:chartSpace><c:chart><c:plotArea><c:lineChart><c:ser>"#,
+        r#"<c:marker><c:symbol val="circle"></c:symbol></c:marker>"#,
+        r#"<c:val><c:numLit><c:ptCount val="1"/><c:pt idx="0"><c:v>1</c:v></c:pt></c:numLit></c:val>"#,
+        r#"</c:ser></c:lineChart></c:plotArea></c:chart></c:chartSpace>"#,
+    );
+    let data = scan_chart_values(expanded.as_bytes()).expect("스캔");
+    assert_eq!(
+        slice(
+            expanded,
+            data.series[0].symbol_span.as_ref().expect("확장꼴 구간")
+        ),
+        r#"<c:symbol val="circle"></c:symbol>"#
+    );
+}
+
+/// `c:dLbls` 안의 `c:spPr` 은 서브트리째 건너뛰므로 계열 스타일로 잡히지 않는다.
+#[test]
+fn dlbls_sp_pr_is_not_the_series_sp_pr() {
+    let xml = concat!(
+        r#"<c:chartSpace><c:chart><c:plotArea><c:barChart><c:ser>"#,
+        r#"<c:dLbls><c:spPr><a:noFill/></c:spPr></c:dLbls>"#,
+        r#"<c:val><c:numLit><c:ptCount val="1"/><c:pt idx="0"><c:v>1</c:v></c:pt></c:numLit></c:val>"#,
+        r#"</c:ser></c:barChart></c:plotArea></c:chart></c:chartSpace>"#,
+    );
+    let data = scan_chart_values(xml.as_bytes()).expect("스캔");
+    assert_eq!(data.series[0].sp_pr_span, None);
+}
+
+/// 비꼬리 삽입 — 복제본이 `at` 자리에 놓이고 스타일이 벗겨지며 뒤 계열이 재번호된다.
+#[test]
+fn insert_series_places_a_style_stripped_clone_and_renumbers() {
+    let xml = styled_line_xml();
+    let out = apply(
+        &xml,
+        &[ChartEdit::InsertSeries {
+            at: 1,
+            name: Some("새 계열".to_string()),
+            labels: None,
+            values: strs(&["7", "8"]),
+        }],
+    )
+    .expect("패치");
+    let data = scan_chart_values(out.as_bytes()).expect("재스캔");
+    assert_eq!(
+        data.series
+            .iter()
+            .map(|s| s.name.clone().unwrap())
+            .collect::<Vec<_>>(),
+        ["첫째", "새 계열", "둘째", "셋째"]
+    );
+    // 재번호 — idx/order 가 0..n-1 로 연속이다(재스캔 자체가 fail-closed 검사).
+    for i in 0..4 {
+        assert!(
+            out.contains(&format!(r#"<c:idx val="{i}"/><c:order val="{i}"/>"#)),
+            "idx/order {i} 가 없다"
+        );
+    }
+    // 새 계열만 스타일이 없다 — 계열 spPr 3(원본), symbol 3(원본), marker spPr 는 남는다.
+    assert_eq!(data.series[1].sp_pr_span, None, "새 계열에 spPr 이 남았다");
+    assert_eq!(
+        data.series[1].symbol_span, None,
+        "새 계열에 symbol 이 남았다"
+    );
+    for i in [0usize, 2, 3] {
+        assert!(
+            data.series[i].sp_pr_span.is_some(),
+            "계열 {i} 스타일이 사라졌다"
+        );
+        assert!(data.series[i].symbol_span.is_some());
+    }
+    assert_eq!(
+        data.series[1]
+            .values
+            .iter()
+            .map(|p| p.text.as_str())
+            .collect::<Vec<_>>(),
+        ["7", "8"]
+    );
+}
+
+/// 삽입 여럿 — 최종 자리 계산과 앵커가 함께 성립한다.
+#[test]
+fn multiple_inserts_land_on_their_final_positions() {
+    let xml = styled_line_xml();
+    let out = apply(
+        &xml,
+        &[
+            ChartEdit::InsertSeries {
+                at: 1,
+                name: Some("사이 1".to_string()),
+                labels: None,
+                values: strs(&["7", "8"]),
+            },
+            ChartEdit::InsertSeries {
+                at: 3,
+                name: Some("사이 2".to_string()),
+                labels: None,
+                values: strs(&["9", "10"]),
+            },
+        ],
+    )
+    .expect("패치");
+    let data = scan_chart_values(out.as_bytes()).expect("재스캔");
+    assert_eq!(
+        data.series
+            .iter()
+            .map(|s| s.name.clone().unwrap())
+            .collect::<Vec<_>>(),
+        ["첫째", "사이 1", "둘째", "사이 2", "셋째"]
+    );
+}
+
+/// 비꼬리 삭제 — 요소가 사라지고 뒤 계열이 재번호되며, 남은 계열의 스타일은 그대로다.
+#[test]
+fn remove_series_drops_the_element_and_renumbers() {
+    let xml = styled_line_xml();
+    let out = apply(&xml, &[ChartEdit::RemoveSeries { at: 1 }]).expect("패치");
+    assert!(!out.contains("둘째"), "지운 계열이 남았다");
+    let data = scan_chart_values(out.as_bytes()).expect("재스캔");
+    assert_eq!(
+        data.series
+            .iter()
+            .map(|s| s.name.clone().unwrap())
+            .collect::<Vec<_>>(),
+        ["첫째", "셋째"]
+    );
+    for series in &data.series {
+        assert!(series.sp_pr_span.is_some(), "남은 계열의 스타일이 사라졌다");
+        assert!(series.symbol_span.is_some());
+    }
+}
+
+/// 정체 연산과 레거시 꼬리 연산은 한 목록에 섞이지 않는다 — 좌표계가 다르다.
+#[test]
+fn identity_and_tail_series_edits_do_not_mix() {
+    let xml = styled_line_xml();
+    for edits in [
+        vec![
+            ChartEdit::InsertSeries {
+                at: 1,
+                name: None,
+                labels: None,
+                values: strs(&["7", "8"]),
+            },
+            ChartEdit::AppendSeries {
+                name: None,
+                labels: None,
+                values: strs(&["9", "10"]),
+            },
+        ],
+        vec![
+            ChartEdit::RemoveSeries { at: 1 },
+            ChartEdit::TruncateSeries { keep: 1 },
+        ],
+        vec![
+            ChartEdit::InsertSeries {
+                at: 1,
+                name: None,
+                labels: None,
+                values: strs(&["7", "8"]),
+            },
+            ChartEdit::RemoveSeries { at: 0 },
+        ],
+        vec![
+            ChartEdit::RemoveSeries { at: 0 },
+            ChartEdit::RemoveSeries { at: 0 },
+        ],
+    ] {
+        assert!(
+            matches!(
+                apply(&xml, &edits),
+                Err(PatchError::OverlappingStructureEdits { .. })
+            ),
+            "{edits:?} 는 섞임 거부여야 한다"
+        );
+    }
+}
+
+/// 삽입 자리가 최종 범위 밖이거나 전 계열을 지우면 거부한다.
+#[test]
+fn identity_edit_bounds_are_refused() {
+    let xml = styled_line_xml();
+    assert_eq!(
+        apply(
+            &xml,
+            &[ChartEdit::InsertSeries {
+                at: 9,
+                name: None,
+                labels: None,
+                values: strs(&["7", "8"]),
+            }]
+        ),
+        Err(PatchError::SeriesOutOfRange { series: 9, len: 4 })
+    );
+    assert_eq!(
+        apply(
+            &xml,
+            &[
+                ChartEdit::RemoveSeries { at: 0 },
+                ChartEdit::RemoveSeries { at: 1 },
+                ChartEdit::RemoveSeries { at: 2 },
+            ]
+        ),
+        Err(PatchError::EmptySeriesRefused)
+    );
+}
+
+/// 자리가 밀리는 계열에 `c:idx`/`c:order` 가 없으면 재번호할 수 없다.
+#[test]
+fn shifted_series_without_idx_cannot_be_renumbered() {
+    let xml = concat!(
+        r#"<c:chartSpace><c:chart><c:plotArea><c:barChart>"#,
+        r#"<c:ser><c:val><c:numLit><c:ptCount val="1"/><c:pt idx="0"><c:v>1</c:v></c:pt></c:numLit></c:val></c:ser>"#,
+        r#"<c:ser><c:val><c:numLit><c:ptCount val="1"/><c:pt idx="0"><c:v>2</c:v></c:pt></c:numLit></c:val></c:ser>"#,
+        r#"</c:barChart></c:plotArea></c:chart></c:chartSpace>"#,
+    );
+    assert_eq!(
+        apply(xml, &[ChartEdit::RemoveSeries { at: 0 }]),
+        Err(PatchError::SeriesNotRenumberable { series: 1 })
+    );
+}
+
+// ---------------------------------------------------------------------------
 // [#6037] 캔들 장치 — upDownBars 스캔
 // ---------------------------------------------------------------------------
 

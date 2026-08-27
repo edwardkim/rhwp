@@ -66,8 +66,17 @@ jobs:
           if [[ -n "${PARTITION}" ]]; then
             partition_args=(--partition "${PARTITION}")
           fi
+          profile_args=()
+          duration_report=""
+          case "${{ inputs.archive_label }}" in
+            b|c)
+              profile_args=(--profile ci-duration-observation)
+              duration_report="target/nextest/ci-duration-observation/junit.xml"
+              ;;
+          esac
           log="nextest-${COUNT_LABEL}.log"
           cargo nextest run \
+            "${profile_args[@]}" \
             --archive-file tests.tar.zst \
             --workspace-remap . \
             --extract-to . \
@@ -84,6 +93,12 @@ jobs:
           echo "worker=${COUNT_LABEL} filter=${FILTERSET} partition=${PARTITION:-none} run=${run}"
           echo "$run" > "shard-count-${COUNT_LABEL}.txt"
           cat "shard-count-${COUNT_LABEL}.txt"
+          if [[ -n "${duration_report}" ]]; then
+            node scripts/collect-nextest-target-durations.mjs \
+              --archive-label "${{ inputs.archive_label }}" \
+              --input "${duration_report}" \
+              --output "target-durations-${{ inputs.archive_label }}.json"
+          fi
 
       - name: Upload ${{ inputs.label }} count
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -91,4 +106,15 @@ jobs:
           name: shard-count-${{ inputs.count_label }}
           path: shard-count-${{ inputs.count_label }}.txt
           retention-days: 1
+          if-no-files-found: error
+
+      # 신뢰 가능한 duration profile은 성공한 devel 실행에서만 수집한다. PR은
+      # 이 artifact를 정책 파일로 자동 반영하지 않으며, 별도 검토 PR이 필요하다.
+      - name: Upload B/C target durations
+        if: ${{ success() && github.event_name == 'push' && github.ref == 'refs/heads/devel' && (inputs.archive_label == 'b' || inputs.archive_label == 'c') }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: nextest-target-durations-${{ github.run_id }}-${{ inputs.archive_label }}
+          path: target-durations-${{ inputs.archive_label }}.json
+          retention-days: 30
           if-no-files-found: error

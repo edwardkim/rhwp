@@ -189,6 +189,8 @@ const CI_AUDITED_JOB_IDS = {
   'build-test-archive-a': 'build-test-archive-a',
   'build-test-archive-b': 'build-test-archive-b',
   'build-test-archive-c': 'build-test-archive-c',
+  'resolve-nextest-duration-policy': 'resolve-nextest-duration-policy',
+  'refresh-nextest-target-duration-data': 'refresh-nextest-target-duration-data',
   'test-archive-a-shard-1': 'test-archive-a-shard-1',
   'test-archive-a-shard-2': 'test-archive-a-shard-2',
   'test-archive-b-shard-1': 'test-archive-b-shard-1',

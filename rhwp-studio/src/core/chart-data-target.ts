@@ -44,6 +44,24 @@ export interface ChartDataResult {
   /** 1-based 표시 번호 — CLI `--chart N` 과 같은 값. */
   chart?: number;
   axis?: 'scatter' | 'category';
+  /**
+   * [#6037] 둘러싼 plot 요소의 종류 — `axis` 와 같이 **첫 계열 기준**이다.
+   * 표면이 "이 편집이 화면에 나타나는가"를 사전에 판단할 근거다(원형은 첫 계열만 그린다).
+   */
+  plot?:
+    | 'bar'
+    | 'line'
+    | 'area'
+    | 'pie'
+    | 'ofPie'
+    | 'doughnut'
+    | 'radar'
+    | 'scatter'
+    | 'bubble'
+    | 'stock'
+    | 'other';
+  /** [#6037] `c:upDownBars` 캔들 장치 — 있으면 양끝 계열을 바꾸는 구조 편집이 거부된다. */
+  hasUpDownBars?: boolean;
   source?: 'zipPart' | 'nestedCopy';
   representations?: { zipPart: boolean; nestedCopy: boolean };
   labelsShared?: boolean;
@@ -58,11 +76,25 @@ export interface ChartDataResult {
  * 값은 **문자열**이어야 한다(숫자로 보내면 `4.3`→`4.30` 되쓰기로 무편집 왕복이 깨진다).
  */
 export interface ChartEditsInput {
-  /** 분산형 X 라벨 — 편집할 때만 싣는다. category 라벨은 B1 범위 밖. */
+  /**
+   * 라벨. `structure` 가 없으면 편집할 때만 싣는다(코어는 분산형에서만 기록).
+   * `structure: true` 면 **목표 라벨**이라 행 수가 바뀌면 필수다.
+   */
   labels?: string[];
-  /** name 은 싣지 않는다 — B1 은 계열명을 바꾸지 않고, 대조 함정(c:tx 부재)만 만든다. */
+  /**
+   * `structure` 가 없으면 `name` 을 싣지 않는다 — B1 은 계열명을 바꾸지 않고, 대조 함정
+   * (`c:tx` 부재)만 만든다. `structure: true` 면 `name` 은 목표 계열명이다.
+   */
   series: { name?: string; values: string[] }[];
   dryRun?: boolean;
+  /**
+   * [#5652] 구조 편집 의도. 켜면 행렬이 **목표 상태**로 해석돼 개수·이름·라벨이 달라도 되고,
+   * 치수 차이는 위치 기반 꼬리 증감으로 적용된다.
+   *
+   * 의도 없이 켜지 않는다 — 켜는 순간 개수 불일치가 "의도"로 읽혀, 그리드 조립 버그가
+   * 거부 대신 **조용한 계열 절단**이 된다. B1 의 네 거부가 그 사고를 막는 마지막 그물이다.
+   */
+  structure?: boolean;
 }
 
 /** setChartData/setChartDataByIndex 응답. */
@@ -138,6 +170,78 @@ export function labelsEditable(data: ChartDataResult): boolean {
 }
 
 /**
+ * [#6053] 라벨 열의 **구조** 편집 가능성 — 코어 라벨 규칙(`labels_shared` ∧ 다층 아님)과 동형.
+ *
+ * `labelsEditable`(B1, 분산형 전용)과 다른 술어다. 코어는 카테고리 라벨도 `structure: true`
+ * 에서는 기록하므로(`plan_edits` 의 `apply_labels = scatter || structure`), 축 조건을 벗긴다.
+ * B1 판정은 의미가 그대로 유효하므로 위 함수를 건드리지 않고 따로 세운다.
+ */
+export function labelsStructurallyEditable(data: ChartDataResult): boolean {
+  return (
+    data.labelsShared === true &&
+    data.labelsMultiLevel !== true &&
+    (data.labels?.length ?? 0) > 0
+  );
+}
+
+/**
+ * [#6053] 계열명·카테고리 라벨의 선제 텍스트 검증 — 코어 `is_safe_text` 와 동형.
+ *
+ * 수치가 아니므로 `cellInputIssue` 를 쓸 수 없다. 코어는 이스케이프하지 않고 거부하므로
+ * (`unsafeText`) 같은 문자 집합을 미리 잡는다.
+ */
+export function unsafeTextIssue(text: string): 'unsafeText' | null {
+  return /[<>&]|\p{Cc}/u.test(text) ? 'unsafeText' : null;
+}
+
+/** `buildChartEdits` 의 구조 편집 확장 — 주지 않으면 B1 페이로드 그대로다. */
+export interface ChartEditsOptions {
+  /** 목표 행렬로 해석시킨다. `needsStructure` 가 판정한 값을 그대로 넘긴다. */
+  structure?: boolean;
+  /** 목표 계열명. `null`/`undefined` 인 자리는 `name` 을 싣지 않는다(`c:tx` 부재 자리). */
+  names?: (string | null)[];
+}
+
+/**
+ * [#6053] 이 페이로드가 `structure: true` 를 필요로 하는가.
+ *
+ * 규칙을 새로 발명하지 않는다 — 코어 `validate_values` 의 네 거부
+ * (`seriesCountMismatch`·`valueCountMismatch`·`seriesNameMismatch`·`categoryMismatch`)가
+ * 하나라도 설 페이로드면 true, 그 넷의 **부정**으로만 정의한다. 그래야 무편집·값편집은
+ * B1 과 글자 단위로 같은 페이로드가 나가고(`structure` 키조차 없다), B1 의 네 거부가
+ * 그리드 조립 버그를 잡는 그물로 계속 선다.
+ */
+export function needsStructure(
+  data: ChartDataResult,
+  values: string[][],
+  labels?: string[],
+  names?: (string | null)[],
+): boolean {
+  const series = data.series ?? [];
+  // ① seriesCountMismatch
+  if (values.length !== series.length) return true;
+  // ② valueCountMismatch
+  for (let i = 0; i < values.length; i++) {
+    if (values[i].length !== series[i].values.length) return true;
+  }
+  // ③ seriesNameMismatch — 코어는 `c:tx` 부재(null)와 빈 이름을 같은 무편집 값으로 본다.
+  if (names) {
+    for (let i = 0; i < values.length; i++) {
+      const want = names[i];
+      if (want === null || want === undefined) continue;
+      if (want !== (series[i].name ?? '')) return true;
+    }
+  }
+  if (labels) {
+    const have = data.labels ?? [];
+    // 분산형은 개수만 어긋나도 거부(valueCountMismatch), 카테고리는 텍스트 차이도 거부.
+    if (labels.length !== have.length) return true;
+    if (data.axis !== 'scatter' && !sameStrings(labels, have)) return true;
+  }
+  return false;
+}
+
+/**
  * 그리드 상태를 코어 `ChartEdits` 페이로드로 조립한다.
  *
  * - 값은 **원본 문자열 그대로**(정규화 금지) — 코어가 문자열 diff 로 미변경 셀을
@@ -147,29 +251,63 @@ export function labelsEditable(data: ChartDataResult): boolean {
  * - `labels` 는 원본과 다를 때만 싣는다(코어는 분산형에서만 기록).
  *
  * `values` 는 계열-major — `values[seriesIdx][pointIdx]`.
+ *
+ * [#6053] `opts.structure` 면 두 규칙이 뒤집힌다:
+ * - `labels` 를 **원본과 같아도 항상** 싣는다. 구조 편집에서 `labels` 는 목표 상태라,
+ *   행 수가 바뀌는데 빠지면 `labelsRequired`/`scatterXYMismatch` 로 반드시 거부된다.
+ * - `name` 을 싣는다. `null` 자리는 여전히 싣지 않는다 — `c:tx` 가 없는 계열에 빈 아닌
+ *   이름을 주면 `seriesNameNotPatchable`, 빈 이름을 주면 기존 이름을 지우게 된다.
+ *
+ * `opts` 를 주지 않으면 B1 페이로드와 글자 단위로 같다(기존 호출부 무변경).
  */
 export function buildChartEdits(
   data: ChartDataResult,
   values: string[][],
   labels?: string[],
+  opts?: ChartEditsOptions,
 ): ChartEditsInput {
+  const structure = opts?.structure === true;
+  const names = opts?.names;
   const edits: ChartEditsInput = {
-    series: values.map((v) => ({ values: [...v] })),
+    series: values.map((v, i) => {
+      const name = structure ? names?.[i] : undefined;
+      return name === null || name === undefined
+        ? { values: [...v] }
+        : { name, values: [...v] };
+    }),
   };
-  if (labels && !sameStrings(labels, data.labels ?? [])) {
+  if (labels && (structure || !sameStrings(labels, data.labels ?? []))) {
     edits.labels = [...labels];
   }
+  if (structure) edits.structure = true;
   return edits;
 }
 
-/** 그리드/라벨 어느 쪽이든 원본과 다른가 — 무변경이면 쓰기·undo 기록 없이 닫기 위한 판정. */
-export function hasAnyEdit(data: ChartDataResult, values: string[][], labels?: string[]): boolean {
+/**
+ * 그리드/라벨 어느 쪽이든 원본과 다른가 — 무변경이면 쓰기·undo 기록 없이 닫기 위한 판정.
+ *
+ * [#6053] `names` 를 주면 계열명 변경도 편집으로 센다. 코어와 같이 `c:tx` 부재(null)와
+ * 빈 이름을 같은 값으로 보고, `null` 자리(싣지 않을 이름)는 대조하지 않는다.
+ */
+export function hasAnyEdit(
+  data: ChartDataResult,
+  values: string[][],
+  labels?: string[],
+  names?: (string | null)[],
+): boolean {
   const series = data.series ?? [];
   if (values.length !== series.length) return true;
   for (let i = 0; i < values.length; i++) {
     if (!sameStrings(values[i], series[i].values)) return true;
   }
   if (labels && !sameStrings(labels, data.labels ?? [])) return true;
+  if (names) {
+    for (let i = 0; i < values.length; i++) {
+      const want = names[i];
+      if (want === null || want === undefined) continue;
+      if (want !== (series[i].name ?? '')) return true;
+    }
+  }
   return false;
 }
 

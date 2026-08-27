@@ -55,7 +55,7 @@ pub(super) fn extend(tools: &mut Vec<serde_json::Value>) {
         ),
         tool_with_optional_args(
             "hwp_set_chart_data",
-            "문서 순번 차트의 숫자 데이터를 JSON 으로 바꾼다. 코어 set_chart_data_by_index_native 배선. chart 는 문서 순서 1부터. data.structure=true 면 행렬이 목표 상태다 — 행·열 추가·삭제(꼬리 기준), 계열명·라벨 변경까지 쓴다(원형 계열 1 고정·주식형 계열 수 고정·마지막 1점/1계열 삭제 거부). 없으면 값만 바꾸고 치수·이름·라벨 불일치는 invalid 로 거부. dryRun 도 코어 검증을 거쳐 거부 사유와 changed[].op 를 돌려준다.",
+            "문서 순번 차트의 숫자 데이터를 JSON 으로 바꾼다. 코어 set_chart_data_by_index_native 배선. chart 는 문서 순서 1부터. data.structure=true 면 행렬이 목표 상태다 — 행 추가·삭제(꼬리 기준), 계열 추가·삭제(이름·값 대응이 서면 정체 보존: insertSeries 가 새 계열을 지정 자리에 기본 스타일로 끼우고 removeSeries 가 요소째 들어내 잔여 계열이 자기 스타일을 지킨다. 대응이 모호하면 꼬리 기준 폴백), 계열명·라벨 변경까지 쓴다(주식형 캔들 양끝 계열 고정·마지막 1점/1계열 삭제 거부). 없으면 값만 바꾸고 치수·이름·라벨 불일치는 invalid 로 거부. dryRun 도 코어 검증을 거쳐 거부 사유와 changed[].op 를 돌려준다.",
             serde_json::json!({
                 "type": "object",
                 "properties": {

@@ -65,9 +65,11 @@ function pageFitsViewport(pageCount: number) {
 }
 
 /** 행 위쪽 여백이 시작되는 문서 Y — 화면을 여기 맞추면 그 쪽 머리부터 보인다. */
-const rowTop = (vs: VirtualScroll, page: number) => vs.getPageOffset(page) - GAP;
+const rowTop = (vs: VirtualScroll, page: number) => (
+  vs.getPageOffset(page) - vs.getPageGap()
+);
 const pageLeft = (vs: VirtualScroll, page: number) => (
-  vs.getPageLeftResolved(page, vs.getTotalWidth()) - GAP
+  vs.getPageLeftResolved(page, vs.getTotalWidth()) - vs.getPageGap()
 );
 
 test('쪽이 화면 안에 들어오면 한 번에 다음 쪽 머리로 간다', () => {
