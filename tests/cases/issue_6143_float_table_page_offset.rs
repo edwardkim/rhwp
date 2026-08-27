@@ -34,7 +34,11 @@ fn issue_6143_deferred_float_table_starts_at_page_top() {
 
     // 한글 2020 오라클 17쪽. 결함 상태는 18쪽이었다 — 오프셋을 두 번 세면서
     // 조각 예산이 짧아져 표가 한 번 더 갈라진 몫이다.
-    assert_eq!(core.page_count(), 17, "한글 2020 오라클과 같은 17쪽이어야 한다");
+    assert_eq!(
+        core.page_count(),
+        17,
+        "한글 2020 오라클과 같은 17쪽이어야 한다"
+    );
 
     let page = core.build_page_render_tree(PAGE).expect("9쪽 render tree");
     let mut table_tops: Vec<f64> = Vec::new();

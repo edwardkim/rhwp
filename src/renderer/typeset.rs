@@ -24108,7 +24108,13 @@ impl TypesetEngine {
                     .get(&para_idx)
                     .copied()
                     .unwrap_or(0.0)
-                    <= 0.0;
+                    <= 0.0
+                && crate::renderer::float_placement::para_offset_consumed_by_page_break(
+                    para,
+                    &table.common,
+                    base_available,
+                    self.dpi,
+                );
             let vert_offset_overhead = if is_continuation || para_offset_consumed_by_page_break {
                 0.0
             } else {

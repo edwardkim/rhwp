@@ -3081,7 +3081,15 @@ impl LayoutEngine {
         let para_offset_consumed_by_page_break = col_node.children.is_empty()
             && start_cut.is_empty()
             && pre_emitted_host_height <= 0.0
-            && (y_start - col_area.y).abs() <= 0.5;
+            && (y_start - col_area.y).abs() <= 0.5
+            && host.paragraphs.get(host.para_index).is_some_and(|anchor| {
+                crate::renderer::float_placement::para_offset_consumed_by_page_break(
+                    anchor,
+                    &table.common,
+                    col_area.height,
+                    self.dpi,
+                )
+            });
         let effective_vertical_offset = if !is_continuation
             && !para_offset_consumed_by_page_break
             && !table.common.treat_as_char
