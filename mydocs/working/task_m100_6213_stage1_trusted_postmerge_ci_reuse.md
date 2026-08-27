@@ -18,8 +18,9 @@ data branch의 target map이 모두 비어 있었다. 따라서 green job 결론
 - 저장소의 기본 브랜치는 `main`이다. 새 `workflow_run` 또는
   `workflow_dispatch` workflow를 `devel`에만 추가해 post-merge worker를 분리하면
   GitHub가 실행하지 않는다.
-- write 권한 경로는 trusted `devel` 코드만 실행하며, PR head의 코드나 script를
-  checkout 또는 실행하면 안 된다.
+- verifier는 merge의 pre-PR `devel` source parent에서만 실행한다. 첫 배포는 base에
+  verifier가 없으므로 full CI로 fallback하며, PR head의 코드나 script를 checkout 또는
+  실행하면 안 된다.
 
 ## 설계 결정
 
@@ -29,8 +30,10 @@ data branch의 target map이 모두 비어 있었다. 따라서 green job 결론
 3. 다음 조건이 모두 충족될 때만 해당 workflow worker를 재사용한다.
    - 현재 `devel` tip이 merge commit이다.
    - merge commit의 source parent, PR head, 대상 `devel` base 계보가 일치한다.
+   - PR head가 merge의 base parent를 조상으로 포함하고, merge tree가 PR head tree와 같다.
    - 같은 PR head의 해당 workflow 최종 candidate가 완료·성공했다.
-   - 후보가 stale, fork, direct push, 재실행 중, 누락 또는 실패가 아니다.
+   - PR이 workflow·action·duration 정책 등 CI enforcement surface를 바꾸지 않았고,
+     후보가 stale, fork, direct push, 재실행 중, 누락 또는 실패가 아니다.
 4. 어느 하나라도 불명확하면 worker를 skip하지 않고 기존 전체 CI로 fail-closed 한다.
 5. CI의 duration 갱신은 재사용한 PR run ID의 B/C artifact만 읽는다. 두 artifact는
    같은 run/head 출처여야 하며, B/C target map이 비어 있거나 현재 integration
