@@ -19,7 +19,7 @@ use super::body_text::serialize_section;
 use super::content_loss::{
     ContentLoss, ContentLossReason, ContentLossReport, SerializedDocument, SerializedFormat,
 };
-use super::doc_info::serialize_doc_info;
+use super::doc_info::{serialize_doc_info, surgical_update_section_count};
 use super::header::serialize_file_header;
 use super::mini_cfb;
 use super::SerializeError;
@@ -170,15 +170,31 @@ fn serialize_hwp_inner(
         }
     }
 
-    // 2. DocInfo 직렬화 — 구역 분할로 스트림 수가 IR 구역 수와 달라지면
-    // DOCUMENT_PROPERTIES.section_count 도 실제 스트림 수로 맞춘다.
-    let doc_info_bytes = if section_bytes_list.len() != doc.sections.len() {
-        let mut props = doc.doc_properties.clone();
-        props.section_count = section_bytes_list.len() as u16;
-        serialize_doc_info(&doc.doc_info, &props)
-    } else {
-        serialize_doc_info(&doc.doc_info, &doc.doc_properties)
-    };
+    // 2. DocInfo 직렬화 — DOCUMENT_PROPERTIES.section_count 는 **실제로 방출한
+    // BodyText/SectionN 스트림 수**로 확정한다 (#6156).
+    //
+    // 한글은 이 값을 구역 스트림 탐색의 상한으로 읽으므로, 선언값이 실제보다
+    // 크면 없는 구역에서 손상 판정을 내고(forceopen 도 실패) 작으면 뒤쪽 구역이
+    // 렌더링되지 않는다. 어느 쪽이든 이 값의 권위는 입력 모델이 아니라 이 자리 —
+    // "몇 개를 실제로 썼는가" 를 아는 유일한 지점이다.
+    //
+    // 종전에는 `section_bytes_list.len() != doc.sections.len()` 일 때만 보정해서
+    // #5142 분할로 스트림이 늘어난 경우만 잡았고, 입력이 이미 어긋난 경우
+    // (선언 2 / IR 구역 1)는 두 값이 같아 원본 선언값이 그대로 실려 나갔다.
+    // HWP5 네이티브 왕복은 DOCUMENT_PROPERTIES 를 raw 로 통과시키므로 불일치가
+    // 왕복해도 남는다 — 그래서 모델이 아니라 방출 바이트를 고친다.
+    let emitted_sections = section_bytes_list.len().min(u16::MAX as usize) as u16;
+    let mut doc_info_bytes = serialize_doc_info(&doc.doc_info, &doc.doc_properties);
+    if doc.doc_properties.section_count != emitted_sections {
+        // raw 통과(스트림·레코드) 경로에서도 다른 바이트를 건드리지 않도록 국소 패치.
+        // 레코드가 없는 병리적 스트림에서만 모델 writer 로 재생성한다.
+        if surgical_update_section_count(&mut doc_info_bytes, emitted_sections).is_err() {
+            let mut props = doc.doc_properties.clone();
+            props.section_count = emitted_sections;
+            props.raw_data = None;
+            doc_info_bytes = serialize_doc_info(&doc.doc_info, &props);
+        }
+    }
 
     // 4. 압축 여부 결정
     let compressed = doc.header.compressed;
