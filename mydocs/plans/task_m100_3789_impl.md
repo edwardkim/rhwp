@@ -5,7 +5,7 @@
 - **작성일**: 2026-08-27 KST
 - **작업 브랜치**: `task_m100_3789-render-boundary`
 - **통합 기준**: `upstream/devel@1b91c2025`
-- **구현 상태**: 로컬 구현·검증·절차 감사 보정 완료, 최신 `devel` 재기준화와 remote push·PR 승인 대기
+- **구현 상태**: 최신 `devel@2166f4065` merge·focused 검증 완료, Stage 6 전체 회귀 승인 대기
 
 ## 1. 구현 불변식
 
@@ -158,3 +158,6 @@ git diff --check
 - Stage 1~4 보고는 각 단계 전환 시점이 아니라 최종 검증 뒤 `3c509c7d1`에서 함께 작성됐다. 이 실제
   계보와 중간 승인 생략은 [절차 복구 피드백](../feedback/task_m100_3789_hyper_waterfall_recovery.md)에
   기록하며, 원 구현 commit을 재작성하지 않는다.
+- 기존 구현 SHA를 보존하기 위해 rebase 대신 current-base merge를 사용했다. merge commit은
+  `39d6aa1dd`이며, 겹친 CI policy 파일은 #3789 render 경계와 #6205 duration-policy job 계약을 모두
+  보존한다. 세부 focused 결과는 [Stage 5 보고](../working/task_m100_3789_stage5.md)에 기록한다.

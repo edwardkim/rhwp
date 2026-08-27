@@ -56,3 +56,11 @@ commit을 단계별로 나누는 데에는 충분했지만, 각 단계 보고를
 감사 시점에는 `upstream/devel`이 착수 기준보다 진전했다. 문서 보정 commit 뒤 최신 `devel`로
 재기준화하고 충돌·관련 검증을 다시 확인한다. remote push와 PR 생성은 그 결과를 공유한 뒤 별도 승인을
 받는다. PR 번호가 확정된 뒤에만 collaborator self-review와 필요한 오늘할일을 trailing 기록으로 추가한다.
+
+## 보정 후 실행
+
+작업지시자는 절차 보정 결과를 확인하고 다음 Stage 진행을 승인했다. 최신 `upstream/devel@2166f4065`의
+자동 merge tree가 충돌 없음을 확인한 뒤 `39d6aa1dd`로 current-base merge했다. #3789 focused Rust
+113개, CI policy Node 67개, workflow Python 70개와 format·manifest·문서 게이트가 통과했다. 이 결과를
+[Stage 5 보고](../working/task_m100_3789_stage5.md)로 먼저 공유하고, 전체 release-test·clippy는 다음
+승인 게이트로 분리한다.

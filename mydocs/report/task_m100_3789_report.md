@@ -4,7 +4,7 @@
 - **기준**: `upstream/devel` `1b91c2025`
 - **브랜치**: `task_m100_3789-render-boundary`
 - **완료일**: 2026-08-27 KST
-- **상태**: 로컬 구현·검증·절차 감사 보정 완료, 최신 `devel` 재기준화와 remote push·PR 승인 대기
+- **상태**: 최신 `devel` 재기준화·focused 검증 완료, Stage 6 전체 회귀 승인 대기
 - **절차 판정**: 기술 게이트 준수, 단계별 보고·승인 게이트 부분 미준수
 
 ## 결과
@@ -32,6 +32,8 @@ Render Diff와 Native Skia가 필요한 변경으로 분류된다. #5776이 고�
 | `17fa14198` | caption render와 structure query source 소유권 분리 |
 | `514ff74bc` | Render Diff false-positive 경계와 CI 계약 보정 |
 | `3c509c7d1` | Stage 1~4 사후 보고와 최종 검증 기록 |
+| `212fa79a4` | 하이퍼 워터폴 절차 감사 보정 |
+| `39d6aa1dd` | `upstream/devel@2166f4065` current-base merge |
 
 ## 계획 대비 실제
 
@@ -74,6 +76,31 @@ caller의 소유 파일만 이동한다. golden baseline도 변경하지 않았�
 build와 시각 baseline 재생성은 로컬 추가 게이트에서 제외했다. 다만 새 caption 파일이 앞으로 변경되면
 CI classifier가 Render Diff와 Native Skia를 모두 활성화하도록 positive 계약을 고정했다.
 
+## 최신 `devel` 재기준화
+
+절차 보정 승인 뒤 `upstream/devel`을 다시 fetch했다. 작업 branch는 5커밋 ahead, 63커밋 behind였고 최신
+기준은 `2166f4065`였다. 계획·보고 문서가 원 구현 SHA를 감사 증거로 참조하므로 rebase로 이력을 바꾸지
+않고, `git merge-tree --write-tree HEAD upstream/devel`의 무충돌 결과를 확인한 뒤 `39d6aa1dd`로
+current-base merge했다.
+
+양쪽이 함께 바꾼 `scripts/ci-impact-policy.cjs`와 그 Node test는 서로 다른 hunk에서 자동 병합됐다.
+#3789의 caption positive/main negative 경계와 #6205의 duration-policy audit job 등록이 모두 남아 있음을
+확인했다.
+
+### Stage 5 focused 재검증
+
+- caption·structure·MCP·batch·exit·ownership Rust 계약: 113/113 통과
+- classifier·policy Node 계약: 67/67 통과
+- CI workflow Python 계약: 70/70 통과
+- `actionlint .github/workflows/render-diff.yml`: 통과
+- Cargo format: 통과
+- integration suite manifest: 981 sources, 4,399 static test attrs 확인
+- source unit tier: 4,221 tests, 299 modules 확인
+- Markdown 603개 링크와 branch diff 검사: 통과
+
+전체 release-test와 clippy는 최신 기준에서 아직 다시 실행하지 않았다. Stage 5 결과를 작업지시자에게
+공유하고 승인받은 뒤 Stage 6에서 실행한다. 초기 기준 `1b91c2025`에서 통과한 전체 결과와 혼동하지 않는다.
+
 ## 하이퍼 워터폴 절차 감사
 
 2026-08-27 작업지시자의 요청으로 canonical 절차와 실제 commit 계보를 대사했다.
@@ -97,6 +124,5 @@ CI classifier가 Render Diff와 Native Skia를 모두 활성화하도록 positiv
 ## 제출 상태
 
 로컬 구현과 필수 검증은 완료했다. generated integration suite·manifest는 제출 대상에 포함하지 않았다.
-감사 시점에는 `upstream/devel`이 착수 기준보다 진전했으므로 PR 준비 전에 최신 기준으로 재기준화하고
-충돌·관련 검증을 다시 확인해야 한다. remote push, PR 생성과 실제 PR CI는 작업지시자의 별도 승인 전까지
-남아 있다.
+최신 `upstream/devel@2166f4065` merge와 focused 검증은 완료했다. Stage 6 전체 release-test·clippy,
+remote push, PR 생성과 실제 PR CI는 각각 필요한 작업지시자 승인 전까지 남아 있다.
