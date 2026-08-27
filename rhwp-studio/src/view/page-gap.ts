@@ -12,4 +12,3 @@ export function resolvePageGap(
     : DEFAULT_PAGE_GAP_AT_100_PERCENT;
   return Math.max(MIN_PAGE_GAP_CSS_PX, safeBaseGap * safeZoom);
 }
-

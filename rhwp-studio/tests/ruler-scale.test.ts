@@ -30,7 +30,6 @@ test('대표 배율의 숫자와 세부 눈금은 최소 화면 간격을 지킨
     assertNiceStep(scale.tickStepMm);
   }
 });
-
 test('배율을 높이면 눈금 단위는 같거나 더 촘촘해진다', () => {
   const scales = [0.1, 0.2, 0.25, 0.5, 1, 5].map(resolveRulerScale);
   for (let i = 1; i < scales.length; i++) {
@@ -46,4 +45,3 @@ test('잘못된 배율도 유한한 표시 단계로 정규화한다', () => {
     assert.ok(Number.isFinite(scale.tickStepMm) && scale.tickStepMm > 0);
   }
 });
-

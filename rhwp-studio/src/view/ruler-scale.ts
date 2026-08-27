@@ -7,7 +7,6 @@ export interface RulerScale {
   labelStepMm: number;
   tickStepMm: number;
 }
-
 /** 주어진 값 이상인 가장 가까운 `1·2·5 × 10ⁿ` 단계를 고른다. */
 export function niceStepCeil(value: number): number {
   const safeValue = Number.isFinite(value) && value > 0 ? value : 1;
@@ -33,4 +32,3 @@ export function resolveRulerScale(zoom: number): RulerScale {
     tickStepMm: niceStepCeil(MIN_TICK_SPACING_PX / pixelsPerMm),
   };
 }
-
