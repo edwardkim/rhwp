@@ -125,7 +125,6 @@ const RENDER_DIFF_PULL_REQUEST_PATHS = [
   'scripts/ci-impact-classifier.cjs',
   'scripts/generate_font_glyph_payload_fixture.py',
   'scripts/generate_exact_face_collection_fixture.py',
-  'scripts/generate_exact_kerning_fixture.py',
   'scripts/generate_font_native_hwpx_fixture.py',
   'scripts/requirements-font-fixtures.txt',
   'samples/render-p35-font-native-bitmap.hwpx',
