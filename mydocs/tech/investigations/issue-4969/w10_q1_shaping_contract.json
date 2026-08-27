@@ -1,0 +1,144 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q1-shaping-entry-contract",
+  "issue": 4969,
+  "stage": "W10-Q1",
+  "status": "canonical-identity-and-bounded-output-implemented",
+  "productMutation": false,
+  "limits": {
+    "fontBytes": 33554432,
+    "textCodePoints": 4096,
+    "derivedMaxTextUtf8Bytes": 16384,
+    "glyphs": 4096,
+    "features": 64,
+    "variationAxes": 16,
+    "traceRecords": 4096
+  },
+  "requestIdentity": [
+    "fontSourceSha256",
+    "fontBytes",
+    "faceIndex",
+    "direction",
+    "writingMode",
+    "script",
+    "language",
+    "orderedFeatures",
+    "variationAxesSortedByTag"
+  ],
+  "identitySemantics": {
+    "settingsSha256Encoding": "sha256-length-delimited-v1",
+    "axisOrderSemantic": false,
+    "featureOrderSemantic": true,
+    "floatEncoding": "normalized-negative-zero-f32-bits",
+    "rawTextSerialized": false,
+    "textIncludedInSettingsIdentity": false,
+    "canonicalOracleSha256": "fc9df3bfa6a6d8f2f59728372603bafd8147ad12be7a7981ab3ee7c530615f3a"
+  },
+  "dispositions": [
+    "requested",
+    "applied",
+    "unsupported",
+    "malformed",
+    "bounded-limit",
+    "non-portable"
+  ],
+  "oracles": [
+    {
+      "id": "noto-office-liga-off",
+      "sourceSha256": "6e06a7fe5d696ca719894a23f36bb2b1be8c816a5937cd4ad0f23ca67780dd74",
+      "text": "office",
+      "direction": "ltr",
+      "features": [{"tag": "liga", "value": 0}],
+      "glyphs": [80, 71, 71, 74, 68, 70],
+      "clustersUtf8": [0, 1, 2, 3, 4, 5],
+      "xAdvances": [601, 325, 325, 275, 483, 554]
+    },
+    {
+      "id": "noto-office-liga-on",
+      "sourceSha256": "6e06a7fe5d696ca719894a23f36bb2b1be8c816a5937cd4ad0f23ca67780dd74",
+      "text": "office",
+      "direction": "ltr",
+      "features": [{"tag": "liga", "value": 1}],
+      "glyphs": [80, 11819, 68, 70],
+      "clustersUtf8": [0, 1, 4, 5],
+      "xAdvances": [606, 918, 483, 554]
+    },
+    {
+      "id": "source-han-old-hangul",
+      "sourceSha256": "2f86ef9a52acb6d1dad9d915843239123b635d97edd88fd0573a88ffcb4e16f1",
+      "text": "ᄒᆞᆫ글",
+      "direction": "ltr",
+      "features": [],
+      "glyphs": [614, 1230, 1497, 2085],
+      "clustersUtf8": [0, 9, 9, 9],
+      "xAdvances": [966, 966, 0, 0]
+    },
+    {
+      "id": "happiness-axis-boundaries",
+      "sourceSha256": "3bbd254dcc5780f7524f9d07af4aa981ba5e3e84cf32d7d4e04301b3943e8694",
+      "text": "가변 Typography",
+      "direction": "ltr",
+      "instances": [
+        {
+          "axes": [{"tag": "wght", "value": 400.0}, {"tag": "opsz", "value": 400.0}],
+          "glyphs": [221, 1359, 1, 53, 90, 81, 80, 72, 83, 66, 81, 73, 90],
+          "xAdvances": [920, 920, 230, 579, 496, 578, 597, 536, 462, 561, 578, 586, 496]
+        },
+        {
+          "axes": [{"tag": "wght", "value": 900.0}, {"tag": "opsz", "value": 900.0}],
+          "glyphs": [221, 1359, 1, 53, 90, 81, 80, 72, 83, 66, 81, 73, 90],
+          "xAdvances": [930, 930, 240, 598, 563, 614, 633, 611, 500, 612, 614, 608, 563]
+        }
+      ]
+    }
+  ],
+  "protectedObservations": {
+    "gsubMayChangeGlyphCount": true,
+    "clustersAreUtf8ByteOffsets": true,
+    "clusterToCharacterIsNotOneToOne": true,
+    "variationMayChangeAdvanceWithoutChangingGlyphId": true,
+    "clusterOffsetType": "u32-utf8-byte-offset",
+    "clusterOverflowReachableUnderTextLimit": false,
+    "maximumObservedInputClusterOffset": 16380,
+    "backendReshapingAllowed": false
+  },
+  "implementation": {
+    "module": "src/renderer/shaping.rs",
+    "integrationSource": "tests/cases/issue_4969_shaping_request_contract.rs",
+    "rendererApplicationEnabled": false,
+    "canonicalIdentityEnabled": true,
+    "boundedGlyphOracleEnabled": true,
+    "glyphRecordFields": [
+      "glyphId",
+      "clusterUtf8",
+      "xAdvance",
+      "yAdvance",
+      "xOffset",
+      "yOffset"
+    ],
+    "focusedTests": {
+      "passed": 9,
+      "failed": 0
+    },
+    "negativeCases": [
+      "source-unavailable",
+      "font-byte-limit-exceeded",
+      "malformed-sfnt",
+      "non-portable-source",
+      "text-code-point-limit-exceeded",
+      "feature-limit-exceeded",
+      "variation-axis-limit-exceeded",
+      "direction-writing-mode-mismatch",
+      "malformed-script-tag",
+      "malformed-language-tag",
+      "malformed-feature-tag",
+      "duplicate-feature-tag",
+      "duplicate-variation-axis",
+      "variation-value-non-finite",
+      "variation-axis-unsupported",
+      "variation-value-out-of-range",
+      "vertical-metrics-unavailable"
+    ]
+  },
+  "next": "Q1 complete; design the bounded rejected-attempt sidecar before W10-Q2 layout integration"
+}

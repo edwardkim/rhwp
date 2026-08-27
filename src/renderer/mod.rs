@@ -50,6 +50,9 @@ pub mod pua_oldhangul;
 pub mod render_normalization;
 pub mod render_tree;
 pub mod scheduler;
+pub(crate) mod shaping;
+pub(crate) mod shaping_context;
+pub(crate) mod shaping_paragraph;
 #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
 pub mod skia;
 pub(crate) mod static_svg;

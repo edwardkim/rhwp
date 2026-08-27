@@ -1,0 +1,654 @@
+//! W10-Q2 horizontal shaping의 transaction-local face cache와 bounded shadow measurement.
+//!
+//! W9 exact-source registry를 그대로 빌리고, cluster-aware px 결과를 현행 layout 옆에서만
+//! 계산한다. composer, render tree, paint는 이 모듈을 아직 소비하지 않는다.
+
+use super::kerning::{
+    resolve_exact_font_source, ExactFontSlot, ExactFontSourceHandle, ExactFontSourceRegistry,
+    ExactFontSourceResolutionReason,
+};
+use super::shaping::{
+    canonicalize_shaping_request, shape_canonical_request_with_face,
+    terminal_shaping_attempt_from_output, AppliedShapingRun, ShapingAttemptTrace, ShapingDirection,
+    ShapingExactSource, ShapingFeature, ShapingOutputDecision, ShapingRejectReason, ShapingRequest,
+    ShapingWritingMode, TerminalShapingAttempt, TerminalShapingDisposition, MAX_SHAPING_GLYPHS,
+    MAX_SHAPING_TEXT_CODE_POINTS,
+};
+use serde::Serialize;
+use std::collections::HashMap;
+use std::sync::{Arc, Mutex};
+
+pub(crate) const MAX_HORIZONTAL_SHAPING_CACHE_ENTRIES: usize = 4_096;
+pub(crate) const MAX_HORIZONTAL_SHAPING_CLUSTERS: usize = 4_096;
+pub(crate) const MAX_HORIZONTAL_SHAPING_CACHE_TEXT_BYTES: usize = 1024 * 1024;
+pub(crate) const MAX_HORIZONTAL_SHAPING_CACHE_GLYPHS: usize = 262_144;
+pub(crate) const MAX_HORIZONTAL_SHAPING_CACHE_CLUSTERS: usize = 262_144;
+
+#[derive(Debug, Clone)]
+pub(crate) struct HorizontalShapingRequest<'a> {
+    pub attempt_id: u32,
+    pub slot: ExactFontSlot,
+    pub text: &'a str,
+    pub effective_font_size_px: f64,
+    pub width_ratio: f64,
+    pub script: Option<&'a str>,
+    pub language: Option<&'a str>,
+    pub features: &'a [ShapingFeature],
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+struct HorizontalShapingCacheKey {
+    registry_generation: u64,
+    source_handle: ExactFontSourceHandle,
+    text: String,
+    effective_font_size_bits: u64,
+    width_ratio_bits: u64,
+    script: Option<String>,
+    language: Option<String>,
+    features: Vec<(String, u32)>,
+}
+
+impl HorizontalShapingCacheKey {
+    fn new(
+        registry_generation: u64,
+        source_handle: ExactFontSourceHandle,
+        request: &HorizontalShapingRequest<'_>,
+    ) -> Self {
+        Self {
+            registry_generation,
+            source_handle,
+            text: request.text.to_owned(),
+            effective_font_size_bits: request.effective_font_size_px.to_bits(),
+            width_ratio_bits: request.width_ratio.to_bits(),
+            script: request.script.map(str::to_owned),
+            language: request.language.map(str::to_owned),
+            features: request
+                .features
+                .iter()
+                .map(|feature| (feature.tag.clone(), feature.value))
+                .collect(),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct HorizontalShapingGlyphPx {
+    pub glyph_id: u32,
+    pub cluster_utf8: u32,
+    pub x: f64,
+    pub y: f64,
+    pub advance_x: f64,
+    pub advance_y: f64,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct HorizontalShapingCluster {
+    pub utf8_start: usize,
+    pub utf8_end: usize,
+    pub scalar_start: usize,
+    pub scalar_end: usize,
+    pub glyph_start: usize,
+    pub glyph_end: usize,
+    pub advance_px: f64,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub(crate) struct HorizontalShapingMeasurement {
+    pub registry_generation: u64,
+    pub source_handle: ExactFontSourceHandle,
+    pub code_point_count: usize,
+    pub units_per_em: u16,
+    pub total_advance_px: f64,
+    pub glyphs_px: Vec<HorizontalShapingGlyphPx>,
+    pub clusters: Vec<HorizontalShapingCluster>,
+    pub applied: Arc<AppliedShapingRun>,
+}
+
+impl HorizontalShapingMeasurement {
+    /// Unicode scalar 범위가 shaping cluster 경계에 정확히 맞을 때만 폭을 반환한다.
+    pub(crate) fn range_width(&self, scalar_start: usize, scalar_end: usize) -> Option<f64> {
+        if scalar_start > scalar_end || scalar_end > self.code_point_count {
+            return None;
+        }
+        let is_boundary = |index: usize| {
+            index == 0
+                || index == self.code_point_count
+                || self
+                    .clusters
+                    .iter()
+                    .any(|cluster| cluster.scalar_start == index || cluster.scalar_end == index)
+        };
+        if !is_boundary(scalar_start) || !is_boundary(scalar_end) {
+            return None;
+        }
+        if scalar_start == scalar_end {
+            return Some(0.0);
+        }
+
+        let mut cursor = scalar_start;
+        let mut width = 0.0;
+        for cluster in self.clusters.iter().filter(|cluster| {
+            cluster.scalar_end > scalar_start && cluster.scalar_start < scalar_end
+        }) {
+            if cluster.scalar_start != cursor || cluster.scalar_end > scalar_end {
+                return None;
+            }
+            width += cluster.advance_px;
+            cursor = cluster.scalar_end;
+        }
+        (cursor == scalar_end && width.is_finite()).then_some(width)
+    }
+}
+
+#[derive(Debug, Clone)]
+pub(crate) struct HorizontalShapingShadowOutcome {
+    pub trace: ShapingAttemptTrace,
+    pub cache_hit: bool,
+    pub measurement: Option<Arc<HorizontalShapingMeasurement>>,
+}
+
+impl HorizontalShapingShadowOutcome {
+    pub(crate) fn is_applied(&self) -> bool {
+        self.trace.disposition == TerminalShapingDisposition::Applied && self.measurement.is_some()
+    }
+}
+
+#[derive(Default)]
+struct HorizontalShapingResultCache {
+    entries: HashMap<HorizontalShapingCacheKey, Arc<HorizontalShapingMeasurement>>,
+    text_bytes: usize,
+    glyphs: usize,
+    clusters: usize,
+}
+
+pub(crate) struct HorizontalShapingContext {
+    registry: ExactFontSourceRegistry,
+    cache_limit: usize,
+    result_cache: Mutex<HorizontalShapingResultCache>,
+}
+
+impl std::fmt::Debug for HorizontalShapingContext {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        formatter
+            .debug_struct("HorizontalShapingContext")
+            .field("registry_generation", &self.registry.generation())
+            .field("cache_limit", &self.cache_limit)
+            .field("cached_result_count", &self.cached_result_count())
+            .finish()
+    }
+}
+
+impl HorizontalShapingContext {
+    pub(crate) fn new(registry: ExactFontSourceRegistry) -> Self {
+        Self::with_cache_limit(registry, MAX_HORIZONTAL_SHAPING_CACHE_ENTRIES)
+    }
+
+    pub(crate) fn with_cache_limit(registry: ExactFontSourceRegistry, cache_limit: usize) -> Self {
+        Self {
+            registry,
+            cache_limit: cache_limit.min(MAX_HORIZONTAL_SHAPING_CACHE_ENTRIES),
+            result_cache: Mutex::new(HorizontalShapingResultCache::default()),
+        }
+    }
+
+    pub(crate) fn transaction(&self) -> HorizontalShapingTransaction<'_> {
+        HorizontalShapingTransaction::new(self)
+    }
+
+    pub(crate) fn registry_generation(&self) -> u64 {
+        self.registry.generation()
+    }
+
+    pub(crate) fn cached_result_count(&self) -> usize {
+        self.result_cache
+            .lock()
+            .map(|cache| cache.entries.len())
+            .unwrap_or_default()
+    }
+}
+
+pub(crate) struct HorizontalShapingTransaction<'a> {
+    context: &'a HorizontalShapingContext,
+    registry_generation: u64,
+    faces: HashMap<ExactFontSourceHandle, rustybuzz::Face<'a>>,
+    parsed_face_count: usize,
+    result_cache_hit_count: usize,
+    result_cache_miss_count: usize,
+}
+
+impl<'a> HorizontalShapingTransaction<'a> {
+    fn new(context: &'a HorizontalShapingContext) -> Self {
+        Self {
+            context,
+            registry_generation: context.registry.generation(),
+            faces: HashMap::new(),
+            parsed_face_count: 0,
+            result_cache_hit_count: 0,
+            result_cache_miss_count: 0,
+        }
+    }
+
+    pub(crate) fn registry_generation(&self) -> u64 {
+        self.registry_generation
+    }
+
+    pub(crate) fn parsed_face_count(&self) -> usize {
+        self.parsed_face_count
+    }
+
+    pub(crate) fn result_cache_hit_count(&self) -> usize {
+        self.result_cache_hit_count
+    }
+
+    pub(crate) fn result_cache_miss_count(&self) -> usize {
+        self.result_cache_miss_count
+    }
+
+    pub(crate) fn shadow_measure(
+        &mut self,
+        request: &HorizontalShapingRequest<'_>,
+    ) -> HorizontalShapingShadowOutcome {
+        if !valid_scale(request.effective_font_size_px, request.width_ratio) {
+            return rejected_outcome(
+                request.attempt_id,
+                TerminalShapingDisposition::Malformed,
+                ShapingRejectReason::InvalidHorizontalScale,
+            );
+        }
+        let observed_code_points = request
+            .text
+            .chars()
+            .take(MAX_SHAPING_TEXT_CODE_POINTS + 1)
+            .count();
+        if observed_code_points > MAX_SHAPING_TEXT_CODE_POINTS {
+            return rejected_outcome(
+                request.attempt_id,
+                TerminalShapingDisposition::BoundedLimit,
+                ShapingRejectReason::TextCodePointLimitExceeded,
+            );
+        }
+
+        let Some(handle) = self.context.registry.handle_for_slot(request.slot).cloned() else {
+            return rejected_outcome(
+                request.attempt_id,
+                TerminalShapingDisposition::Unsupported,
+                ShapingRejectReason::SourceUnavailable,
+            );
+        };
+        let key = HorizontalShapingCacheKey::new(self.registry_generation, handle.clone(), request);
+        let cache = match self.context.result_cache.lock() {
+            Ok(cache) => cache,
+            Err(_) => {
+                return rejected_outcome(
+                    request.attempt_id,
+                    TerminalShapingDisposition::Unsupported,
+                    ShapingRejectReason::ShapingUnavailable,
+                );
+            }
+        };
+        if let Some(measurement) = cache.entries.get(&key) {
+            self.result_cache_hit_count = self.result_cache_hit_count.saturating_add(1);
+            return cached_outcome(request.attempt_id, Arc::clone(measurement));
+        }
+        if cache.entries.len() >= self.context.cache_limit {
+            return rejected_outcome(
+                request.attempt_id,
+                TerminalShapingDisposition::BoundedLimit,
+                ShapingRejectReason::CacheEntryLimitExceeded,
+            );
+        }
+        drop(cache);
+        self.result_cache_miss_count = self.result_cache_miss_count.saturating_add(1);
+
+        let registry: &'a ExactFontSourceRegistry = &self.context.registry;
+        let source = match resolve_exact_font_source(registry, &handle) {
+            Ok(source) => source,
+            Err(reason) => return resolution_rejected_outcome(request.attempt_id, reason),
+        };
+        let shaping_request = ShapingRequest {
+            source: Some(ShapingExactSource {
+                bytes: source.bytes,
+                face_index: source.face_index,
+                portable: true,
+            }),
+            text: request.text,
+            direction: ShapingDirection::LeftToRight,
+            writing_mode: ShapingWritingMode::HorizontalTb,
+            script: request.script,
+            language: request.language,
+            features: request.features,
+            variations: &[],
+        };
+        let identity = match canonicalize_shaping_request(&shaping_request) {
+            Ok(identity) => identity,
+            Err(decision) => {
+                return terminal_outcome(terminal_shaping_attempt_from_output(
+                    request.attempt_id,
+                    ShapingOutputDecision {
+                        disposition: decision.disposition,
+                        reason: decision.reason,
+                        identity: None,
+                        glyph_count: 0,
+                        glyphs: Vec::new(),
+                    },
+                ));
+            }
+        };
+
+        if !self.faces.contains_key(&handle) {
+            let Some(face) = rustybuzz::Face::from_slice(source.bytes, source.face_index) else {
+                return rejected_outcome(
+                    request.attempt_id,
+                    TerminalShapingDisposition::Unsupported,
+                    ShapingRejectReason::ShapingUnavailable,
+                );
+            };
+            self.faces.insert(handle.clone(), face);
+            self.parsed_face_count = self.parsed_face_count.saturating_add(1);
+        }
+        let face = self.faces.get_mut(&handle).expect("prepared exact face");
+        let Ok(units_per_em) = u16::try_from(face.units_per_em()) else {
+            return rejected_outcome(
+                request.attempt_id,
+                TerminalShapingDisposition::Malformed,
+                ShapingRejectReason::ShapingUnavailable,
+            );
+        };
+        if units_per_em == 0 {
+            return rejected_outcome(
+                request.attempt_id,
+                TerminalShapingDisposition::Malformed,
+                ShapingRejectReason::ShapingUnavailable,
+            );
+        }
+        let attempt = terminal_shaping_attempt_from_output(
+            request.attempt_id,
+            shape_canonical_request_with_face(&shaping_request, identity, face),
+        );
+        let Some(applied) = attempt.applied.as_ref().map(Arc::clone) else {
+            return terminal_outcome(attempt);
+        };
+        let measurement = match build_measurement(
+            self.registry_generation,
+            handle,
+            request,
+            units_per_em,
+            applied,
+        ) {
+            Ok(measurement) => Arc::new(measurement),
+            Err(reason) => {
+                return rejected_applied_outcome(request.attempt_id, &attempt, reason);
+            }
+        };
+
+        let mut cache = match self.context.result_cache.lock() {
+            Ok(cache) => cache,
+            Err(_) => {
+                return rejected_outcome(
+                    request.attempt_id,
+                    TerminalShapingDisposition::Unsupported,
+                    ShapingRejectReason::ShapingUnavailable,
+                );
+            }
+        };
+        if let Some(existing) = cache.entries.get(&key) {
+            self.result_cache_hit_count = self.result_cache_hit_count.saturating_add(1);
+            return cached_outcome(request.attempt_id, Arc::clone(existing));
+        }
+        let next_text_bytes = cache.text_bytes.checked_add(key.text.len());
+        let next_glyphs = cache.glyphs.checked_add(measurement.glyphs_px.len());
+        let next_clusters = cache.clusters.checked_add(measurement.clusters.len());
+        if cache.entries.len() >= self.context.cache_limit
+            || next_text_bytes.is_none_or(|value| value > MAX_HORIZONTAL_SHAPING_CACHE_TEXT_BYTES)
+            || next_glyphs.is_none_or(|value| value > MAX_HORIZONTAL_SHAPING_CACHE_GLYPHS)
+            || next_clusters.is_none_or(|value| value > MAX_HORIZONTAL_SHAPING_CACHE_CLUSTERS)
+        {
+            return rejected_outcome(
+                request.attempt_id,
+                TerminalShapingDisposition::BoundedLimit,
+                ShapingRejectReason::CacheEntryLimitExceeded,
+            );
+        }
+        cache.text_bytes = next_text_bytes.expect("bounded text bytes");
+        cache.glyphs = next_glyphs.expect("bounded glyph count");
+        cache.clusters = next_clusters.expect("bounded cluster count");
+        cache.entries.insert(key, Arc::clone(&measurement));
+        drop(cache);
+        HorizontalShapingShadowOutcome {
+            trace: attempt.trace,
+            cache_hit: false,
+            measurement: Some(measurement),
+        }
+    }
+}
+
+fn valid_scale(font_size_px: f64, width_ratio: f64) -> bool {
+    font_size_px.is_finite()
+        && font_size_px > 0.0
+        && font_size_px <= 4_096.0
+        && width_ratio.is_finite()
+        && width_ratio > 0.0
+        && width_ratio <= 16.0
+}
+
+fn terminal_outcome(attempt: TerminalShapingAttempt) -> HorizontalShapingShadowOutcome {
+    HorizontalShapingShadowOutcome {
+        trace: attempt.trace,
+        cache_hit: false,
+        measurement: None,
+    }
+}
+
+fn rejected_outcome(
+    attempt_id: u32,
+    disposition: TerminalShapingDisposition,
+    reason: ShapingRejectReason,
+) -> HorizontalShapingShadowOutcome {
+    HorizontalShapingShadowOutcome {
+        trace: ShapingAttemptTrace {
+            attempt_id,
+            disposition,
+            reason: Some(reason),
+            settings_sha256: None,
+            font_source_sha256: None,
+            glyph_count: 0,
+        },
+        cache_hit: false,
+        measurement: None,
+    }
+}
+
+fn resolution_rejected_outcome(
+    attempt_id: u32,
+    reason: ExactFontSourceResolutionReason,
+) -> HorizontalShapingShadowOutcome {
+    let shaping_reason = match reason {
+        ExactFontSourceResolutionReason::SourceUnavailable => {
+            ShapingRejectReason::SourceUnavailable
+        }
+        ExactFontSourceResolutionReason::FontByteLimitExceeded => {
+            ShapingRejectReason::FontByteLimitExceeded
+        }
+        ExactFontSourceResolutionReason::FaceIndexMismatch
+        | ExactFontSourceResolutionReason::ByteLengthMismatch
+        | ExactFontSourceResolutionReason::Sha256Mismatch => {
+            ShapingRejectReason::ExactSourceIdentityMismatch
+        }
+    };
+    rejected_outcome(
+        attempt_id,
+        TerminalShapingDisposition::Unsupported,
+        shaping_reason,
+    )
+}
+
+fn cached_outcome(
+    attempt_id: u32,
+    measurement: Arc<HorizontalShapingMeasurement>,
+) -> HorizontalShapingShadowOutcome {
+    HorizontalShapingShadowOutcome {
+        trace: ShapingAttemptTrace {
+            attempt_id,
+            disposition: TerminalShapingDisposition::Applied,
+            reason: None,
+            settings_sha256: Some(measurement.applied.identity.settings_sha256.clone()),
+            font_source_sha256: Some(measurement.applied.identity.font_source_sha256.clone()),
+            glyph_count: measurement.applied.glyphs.len(),
+        },
+        cache_hit: true,
+        measurement: Some(measurement),
+    }
+}
+
+fn rejected_applied_outcome(
+    attempt_id: u32,
+    attempt: &TerminalShapingAttempt,
+    reason: ShapingRejectReason,
+) -> HorizontalShapingShadowOutcome {
+    HorizontalShapingShadowOutcome {
+        trace: ShapingAttemptTrace {
+            attempt_id,
+            disposition: TerminalShapingDisposition::Malformed,
+            reason: Some(reason),
+            settings_sha256: attempt.trace.settings_sha256.clone(),
+            font_source_sha256: attempt.trace.font_source_sha256.clone(),
+            glyph_count: 0,
+        },
+        cache_hit: false,
+        measurement: None,
+    }
+}
+
+fn build_measurement(
+    registry_generation: u64,
+    source_handle: ExactFontSourceHandle,
+    request: &HorizontalShapingRequest<'_>,
+    units_per_em: u16,
+    applied: Arc<AppliedShapingRun>,
+) -> Result<HorizontalShapingMeasurement, ShapingRejectReason> {
+    let horizontal_scale =
+        request.effective_font_size_px * request.width_ratio / f64::from(units_per_em);
+    let vertical_scale = request.effective_font_size_px / f64::from(units_per_em);
+    if !horizontal_scale.is_finite() || !vertical_scale.is_finite() {
+        return Err(ShapingRejectReason::InvalidHorizontalScale);
+    }
+
+    let mut pen_x = 0.0;
+    let mut glyphs_px = Vec::with_capacity(applied.glyphs.len());
+    for glyph in &applied.glyphs {
+        let x = pen_x + f64::from(glyph.x_offset) * horizontal_scale;
+        let y = f64::from(glyph.y_offset) * vertical_scale;
+        let advance_x = f64::from(glyph.x_advance) * horizontal_scale;
+        let advance_y = f64::from(glyph.y_advance) * vertical_scale;
+        if !x.is_finite() || !y.is_finite() || !advance_x.is_finite() || !advance_y.is_finite() {
+            return Err(ShapingRejectReason::InvalidHorizontalScale);
+        }
+        glyphs_px.push(HorizontalShapingGlyphPx {
+            glyph_id: glyph.glyph_id,
+            cluster_utf8: glyph.cluster_utf8,
+            x,
+            y,
+            advance_x,
+            advance_y,
+        });
+        pen_x += advance_x;
+    }
+    if !pen_x.is_finite() || pen_x < 0.0 || glyphs_px.len() > MAX_SHAPING_GLYPHS {
+        return Err(ShapingRejectReason::ClusterMappingInvalid);
+    }
+    let clusters = build_clusters(request.text, &glyphs_px)?;
+    if clusters.len() > MAX_HORIZONTAL_SHAPING_CLUSTERS {
+        return Err(ShapingRejectReason::ClusterMappingInvalid);
+    }
+    let cluster_advance = clusters
+        .iter()
+        .map(|cluster| cluster.advance_px)
+        .sum::<f64>();
+    if !cluster_advance.is_finite() || (cluster_advance - pen_x).abs() > 1.0e-9 {
+        return Err(ShapingRejectReason::ClusterMappingInvalid);
+    }
+
+    Ok(HorizontalShapingMeasurement {
+        registry_generation,
+        source_handle,
+        code_point_count: request.text.chars().count(),
+        units_per_em,
+        total_advance_px: pen_x,
+        glyphs_px,
+        clusters,
+        applied,
+    })
+}
+
+fn build_clusters(
+    text: &str,
+    glyphs: &[HorizontalShapingGlyphPx],
+) -> Result<Vec<HorizontalShapingCluster>, ShapingRejectReason> {
+    if glyphs.is_empty() {
+        return if text.is_empty() {
+            Ok(Vec::new())
+        } else {
+            Err(ShapingRejectReason::ClusterMappingInvalid)
+        };
+    }
+    let mut groups = Vec::<(usize, usize, usize)>::new();
+    for (glyph_index, glyph) in glyphs.iter().enumerate() {
+        let cluster_start = usize::try_from(glyph.cluster_utf8)
+            .map_err(|_| ShapingRejectReason::ClusterMappingInvalid)?;
+        if cluster_start > text.len() || !text.is_char_boundary(cluster_start) {
+            return Err(ShapingRejectReason::ClusterMappingInvalid);
+        }
+        match groups.last_mut() {
+            Some((last_start, _, glyph_end)) if *last_start == cluster_start => {
+                *glyph_end = glyph_index + 1;
+            }
+            Some((last_start, _, _)) if *last_start > cluster_start => {
+                return Err(ShapingRejectReason::ClusterMappingInvalid);
+            }
+            _ => groups.push((cluster_start, glyph_index, glyph_index + 1)),
+        }
+    }
+    if groups.first().map(|group| group.0) != Some(0) {
+        return Err(ShapingRejectReason::ClusterMappingInvalid);
+    }
+
+    let scalar_by_utf8 = text
+        .char_indices()
+        .enumerate()
+        .map(|(scalar_index, (utf8_index, _))| (utf8_index, scalar_index))
+        .chain(std::iter::once((text.len(), text.chars().count())))
+        .collect::<HashMap<_, _>>();
+    let mut clusters = Vec::with_capacity(groups.len());
+    for (group_index, (utf8_start, glyph_start, glyph_end)) in groups.iter().copied().enumerate() {
+        let utf8_end = groups
+            .get(group_index + 1)
+            .map(|group| group.0)
+            .unwrap_or(text.len());
+        if utf8_end <= utf8_start || !text.is_char_boundary(utf8_end) {
+            return Err(ShapingRejectReason::ClusterMappingInvalid);
+        }
+        let advance_px = glyphs[glyph_start..glyph_end]
+            .iter()
+            .map(|glyph| glyph.advance_x)
+            .sum::<f64>();
+        if !advance_px.is_finite() || advance_px < 0.0 {
+            return Err(ShapingRejectReason::ClusterMappingInvalid);
+        }
+        clusters.push(HorizontalShapingCluster {
+            utf8_start,
+            utf8_end,
+            scalar_start: *scalar_by_utf8
+                .get(&utf8_start)
+                .ok_or(ShapingRejectReason::ClusterMappingInvalid)?,
+            scalar_end: *scalar_by_utf8
+                .get(&utf8_end)
+                .ok_or(ShapingRejectReason::ClusterMappingInvalid)?,
+            glyph_start,
+            glyph_end,
+            advance_px,
+        });
+    }
+    Ok(clusters)
+}

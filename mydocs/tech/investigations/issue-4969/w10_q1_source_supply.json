@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q1-exact-source-supply",
+  "issue": 4969,
+  "stage": "W10-Q1",
+  "sourceCommit": "6415047a4dfdb71fe96239eced0017559f699c81",
+  "runtimeWoff2Decoder": false,
+  "automaticProductEmbedding": false,
+  "sources": [
+    {
+      "id": "source-han-serif-k-old-hangul-subset",
+      "policy": "ofl-deterministic-lossless-decompression",
+      "input": {
+        "path": "assets/fonts/SourceHanSerifK-OldHangul-subset.woff2",
+        "bytes": 239628,
+        "sha256": "9e419cd16df2ea3b220aa7751320d956ac2493440ba412484d98325078f09d43"
+      },
+      "output": {
+        "path": "ttfs/opensource/SourceHanSerifK-OldHangul-subset.otf",
+        "bytes": 456688,
+        "sha256": "2f86ef9a52acb6d1dad9d915843239123b635d97edd88fd0573a88ffcb4e16f1",
+        "rustybuzzParseable": true
+      },
+      "toolchain": {
+        "fontTools": "4.62.1",
+        "brotli": "1.2.0",
+        "command": "fonttools ttLib.woff2 decompress assets/fonts/SourceHanSerifK-OldHangul-subset.woff2 -o ttfs/opensource/SourceHanSerifK-OldHangul-subset.otf"
+      },
+      "equivalence": {
+        "tableSetsEqual": true,
+        "glyphOrderEqual": true,
+        "glyphCount": 2215,
+        "outlineMismatchCount": 0,
+        "outlineCanonicalSha256": "1acbf3beaa5fc89482271c9653f709655a483a8124f2adcd070c323117b08bc8",
+        "expectedContainerDifference": ["head.checkSumAdjustment"]
+      },
+      "license": {
+        "spdx": "OFL-1.1",
+        "path": "assets/fonts/SourceHanSerifK-OFL.txt"
+      }
+    },
+    {
+      "id": "happiness-sans-vf",
+      "policy": "official-sfnt-verbatim-extraction",
+      "archive": {
+        "url": "https://thehyundaifont.com/assets/fonts/HappinessSans-Screen.zip",
+        "bytes": 6354097,
+        "sha256": "1defb001694a8bd3fd5c7a15c45377e82e654569177c6995016ae321223fb041"
+      },
+      "output": {
+        "archiveMember": "screen/otf/HappinessSansVF.ttf",
+        "path": "ttfs/redistributable/happiness-sans/HappinessSansVF.ttf",
+        "bytes": 1503064,
+        "sha256": "3bbd254dcc5780f7524f9d07af4aa981ba5e3e84cf32d7d4e04301b3943e8694",
+        "rustybuzzParseable": true,
+        "modified": false
+      },
+      "equivalence": {
+        "comparedTo": "assets/fonts/HappinessSansVF.woff2",
+        "tableSetsEqual": true,
+        "glyphOrderEqual": true,
+        "glyphCount": 3889,
+        "outlineMismatchCount": 0,
+        "outlineCanonicalSha256": "8c213a9e959b0305bf6201dedbea39c1cfd3545cff817ec0b00fa8ca4e26b5b5",
+        "semanticTablesEqual": ["GDEF", "GPOS", "GSUB", "fvar", "gvar", "cmap", "hhea", "hmtx", "maxp", "name", "OS/2", "post", "STAT"]
+      },
+      "license": {
+        "kind": "Hyundai-Happiness-Sans-free-distribution",
+        "archiveMember": "screen/HapinessSans_License.pdf",
+        "path": "ttfs/redistributable/happiness-sans/HapinessSans_License.pdf",
+        "sha256": "f5bd344131ee034f3425517ea376ab6acea9126310e7b2cd74cd18673991b055",
+        "fontModification": "not-permitted-by-project-policy",
+        "paidFontFileSale": "prohibited"
+      }
+    }
+  ],
+  "disposition": {
+    "exactSfntSourcesReady": true,
+    "sourceIdentityFrozen": true,
+    "productMutation": false,
+    "next": "shape-request-capability-disposition-contract"
+  }
+}
