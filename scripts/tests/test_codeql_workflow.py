@@ -77,6 +77,12 @@ class CodeQLWorkflowTests(unittest.TestCase):
             workflow.index("return { state: 'green' };"),
         )
 
+    def test_trusted_postmerge_reuse_receives_original_caller_identity(self) -> None:
+        trusted_reuse = job_body(self.workflow, "trusted_postmerge_reuse")
+        self.assertIn("caller_event_name: ${{ github.event_name }}", trusted_reuse)
+        self.assertIn("caller_ref: ${{ github.ref }}", trusted_reuse)
+        self.assertIn("caller_sha: ${{ github.sha }}", trusted_reuse)
+
     def test_green_analyze_jobs_cannot_reuse_a_failed_security_check(self) -> None:
         outputs = self._run_preflight("failure")
         self.assertEqual(outputs["fast_pass"], "false")
