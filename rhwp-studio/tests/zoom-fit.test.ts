@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import {
+  calculateArrangementFitPageZoom,
   calculateArrangementFitWidthZoom,
   calculateFitPageZoom,
   calculateFitWidthZoom,
@@ -48,6 +49,62 @@ test('fit width uses the visible page row width for fixed arrangements', () => {
       arrangement: { kind: 'multiple', columns: 3, rows: 2 },
     }),
     823 / 2400,
+  );
+});
+
+test('쪽 맞춤은 선택한 쪽 배치의 전체 가로·세로 블록을 기준으로 계산한다', () => {
+  const metrics = {
+    containerWidth: 1600,
+    containerHeight: 900,
+    pageWidth: 800,
+    pageHeight: 1000,
+    pageGap: 10,
+  };
+
+  for (const arrangement of [{ kind: 'auto' }, { kind: 'single' }] as const) {
+    assert.equal(calculateArrangementFitPageZoom({ ...metrics, arrangement }), 0.88);
+  }
+  for (const arrangement of [{ kind: 'double' }, { kind: 'facing' }] as const) {
+    assert.equal(calculateArrangementFitPageZoom({ ...metrics, arrangement }), 0.88);
+  }
+  assert.equal(
+    calculateArrangementFitPageZoom({
+      ...metrics,
+      arrangement: { kind: 'multiple', columns: 2, rows: 2 },
+    }),
+    870 / 2000,
+  );
+  assert.equal(
+    calculateArrangementFitPageZoom({
+      ...metrics,
+      arrangement: { kind: 'multiple', columns: 4, rows: 1 },
+    }),
+    1530 / 3200,
+  );
+});
+
+test('모든 맞춤 계산은 한컴 화면 배율 범위 10~500%를 공유한다', () => {
+  assert.equal(
+    calculateArrangementFitPageZoom({
+      containerWidth: 120,
+      containerHeight: 120,
+      pageWidth: 800,
+      pageHeight: 1000,
+      arrangement: { kind: 'multiple', columns: 8, rows: 8 },
+      pageGap: 10,
+    }),
+    0.1,
+  );
+  assert.equal(
+    calculateArrangementFitPageZoom({
+      containerWidth: 10_000,
+      containerHeight: 10_000,
+      pageWidth: 100,
+      pageHeight: 100,
+      arrangement: { kind: 'single' },
+      pageGap: 10,
+    }),
+    5,
   );
 });
 

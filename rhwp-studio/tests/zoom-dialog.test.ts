@@ -55,6 +55,11 @@ test('고정·맞춤 배율 선택을 실제 문서 배율로 계산한다', () 
     arrangement: { kind: 'single' },
     ...metrics,
   }), 0.88);
+  assert.equal(resolveZoomDialogZoom({
+    zoomChoice: { kind: 'fitPage' },
+    arrangement: { kind: 'double' },
+    ...metrics,
+  }), 0.88);
 });
 
 test('폭 맞춤은 자동은 한 쪽, 두 쪽은 한 행의 두 쪽을 기준으로 계산한다', () => {
@@ -88,4 +93,13 @@ test('여러 쪽은 별도 비율 선택보다 지정한 가로×세로 맞춤�
     pageHeight: 1000,
     pageGap: 10,
   }), 0.435);
+  assert.equal(resolveZoomDialogZoom({
+    zoomChoice: { kind: 'preset', percent: 200 },
+    arrangement: { kind: 'multiple', columns: 4, rows: 1 },
+    viewportWidth: 1600,
+    viewportHeight: 900,
+    pageWidth: 800,
+    pageHeight: 1000,
+    pageGap: 10,
+  }), 1530 / 3200);
 });

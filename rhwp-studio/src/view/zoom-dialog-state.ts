@@ -1,18 +1,18 @@
 import {
-  calculateMultiplePagesZoom,
+  MAX_DOCUMENT_ZOOM,
+  MIN_DOCUMENT_ZOOM,
   normalizePageArrangement,
   type PageArrangement,
 } from './page-arrangement.ts';
 import {
-  calculateArrangementFitWidthZoom,
-  calculateFitPageZoom,
+  resolveZoomFitZoom,
   type ZoomFitMode,
 } from './zoom-fit.ts';
 import type { PageMovementSettings } from './page-movement.ts';
 
 export const ZOOM_PRESET_PERCENTAGES = [100, 125, 150, 200, 300, 500] as const;
-export const MIN_CUSTOM_ZOOM_PERCENT = 10;
-export const MAX_CUSTOM_ZOOM_PERCENT = 500;
+export const MIN_CUSTOM_ZOOM_PERCENT = MIN_DOCUMENT_ZOOM * 100;
+export const MAX_CUSTOM_ZOOM_PERCENT = MAX_DOCUMENT_ZOOM * 100;
 const ZOOM_CHOICE_TOLERANCE = 0.005;
 
 export type ZoomChoice =
@@ -72,32 +72,27 @@ export function zoomFitModeFromChoice(choice: ZoomChoice): ZoomFitMode {
 export function resolveZoomDialogZoom(input: ResolveZoomDialogInput): number {
   const arrangement = normalizePageArrangement(input.arrangement);
   if (arrangement.kind === 'multiple') {
-    return calculateMultiplePagesZoom({
-      viewportWidth: input.viewportWidth,
-      viewportHeight: input.viewportHeight,
+    return resolveZoomFitZoom('fitPage', {
+      containerWidth: input.viewportWidth,
+      containerHeight: input.viewportHeight,
       pageWidth: input.pageWidth,
       pageHeight: input.pageHeight,
-      columns: arrangement.columns,
-      rows: arrangement.rows,
+      arrangement,
       pageGap: input.pageGap,
-    });
+    }) ?? 1;
   }
 
   switch (input.zoomChoice.kind) {
     case 'fitWidth':
-      return calculateArrangementFitWidthZoom({
+    case 'fitPage':
+      return resolveZoomFitZoom(input.zoomChoice.kind, {
         containerWidth: input.viewportWidth,
+        containerHeight: input.viewportHeight,
         pageWidth: input.pageWidth,
+        pageHeight: input.pageHeight,
         arrangement,
         pageGap: input.pageGap,
-      });
-    case 'fitPage':
-      return calculateFitPageZoom(
-        input.viewportWidth,
-        input.viewportHeight,
-        input.pageWidth,
-        input.pageHeight,
-      );
+      }) ?? 1;
     case 'preset':
     case 'custom':
       return clampCustomZoomPercent(input.zoomChoice.percent) / 100;

@@ -88,6 +88,28 @@ test('폭 맞춤은 저장된 쪽 배치의 한 행을 기준으로 되돌린다
   );
 });
 
+test('쪽 맞춤은 저장된 두 쪽·여러 쪽 배치의 전체 블록을 기준으로 되돌린다', () => {
+  const metrics = {
+    containerWidth: 1600,
+    containerHeight: 900,
+    pageWidth: 800,
+    pageHeight: 1000,
+    pageGap: 10,
+  };
+
+  assert.equal(
+    resolveZoomFitZoom('fitPage', { ...metrics, arrangement: { kind: 'double' } }),
+    0.88,
+  );
+  assert.equal(
+    resolveZoomFitZoom('fitPage', {
+      ...metrics,
+      arrangement: { kind: 'multiple', columns: 4, rows: 1 },
+    }),
+    1530 / 3200,
+  );
+});
+
 test('저장값 정규화는 맞춤 두 가지만 통과시킨다', () => {
   assert.equal(normalizeZoomFitMode('fitWidth'), 'fitWidth');
   assert.equal(normalizeZoomFitMode('fitPage'), 'fitPage');
