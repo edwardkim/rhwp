@@ -1,3 +1,5 @@
+import { closeToolbarSplitMenus } from './toolbar-split-menu.ts';
+
 const SCROLL_EPSILON = 1;
 const SCROLL_ANIMATION_DURATION_MS = 240;
 const SCROLL_EXIT_CLASS = 'tb-scroll-nav-transitioning-out';
@@ -7,6 +9,25 @@ type ScrollDirection = -1 | 1;
 
 export function hasIconToolbarOverflow(contentWidth: number, availableWidth: number): boolean {
   return contentWidth - availableWidth > SCROLL_EPSILON;
+}
+
+export function clampIconToolbarScroll(
+  current: number,
+  maximum: number,
+  overflowing: boolean,
+): number {
+  return overflowing ? Math.max(0, Math.min(current, maximum)) : 0;
+}
+
+export function iconToolbarNavigationState(
+  current: number,
+  maximum: number,
+  navigationHidden: boolean,
+): { atStart: boolean; atEnd: boolean } {
+  return {
+    atStart: navigationHidden || current <= SCROLL_EPSILON,
+    atEnd: navigationHidden || current >= maximum - SCROLL_EPSILON,
+  };
 }
 
 export function adjacentIconToolbarDividerTarget(
@@ -46,7 +67,7 @@ export class IconToolbarScroller {
   private animationFrame: number | null = null;
   private scrollAnimationFrame: number | null = null;
   private exitingButton: HTMLButtonElement | null = null;
-  private resetOnRefresh = false;
+  private overflowing = false;
 
   private readonly onResize = (): void => {
     this.scheduleRefresh();
@@ -60,27 +81,33 @@ export class IconToolbarScroller {
         && (target.classList.contains('tb-group') || target.classList.contains('tb-sep'))
         && (record.attributeName === 'style' || record.attributeName === 'hidden');
     });
-    if (modeChanged) this.scheduleRefresh(true);
+    if (modeChanged) this.scheduleRefresh();
   };
 
   private readonly onScroll = (): void => {
-    this.track.querySelectorAll('.tb-split.open').forEach((split) => {
-      split.classList.remove('open');
-      split.querySelector('.tb-split-arrow')?.setAttribute('aria-expanded', 'false');
-    });
+    if (!this.overflowing) {
+      if (Math.abs(this.viewport.scrollLeft) > SCROLL_EPSILON) {
+        this.viewport.scrollLeft = 0;
+      }
+      return;
+    }
+    closeToolbarSplitMenus(this.track);
     this.updateNavigationState();
   };
 
   private readonly onPreviousClick = (): void => {
+    if (this.previousButton.getAttribute('aria-disabled') === 'true') return;
     this.scrollToAdjacentDivider(-1);
   };
 
   private readonly onNextClick = (): void => {
+    if (this.nextButton.getAttribute('aria-disabled') === 'true') return;
     this.scrollToAdjacentDivider(1);
   };
 
   private readonly onViewportKeyDown = (event: KeyboardEvent): void => {
     if (event.target !== this.viewport) return;
+    if (!this.overflowing) return;
     if (event.key === 'ArrowLeft') {
       event.preventDefault();
       this.scrollToAdjacentDivider(-1);
@@ -97,10 +124,13 @@ export class IconToolbarScroller {
   };
 
   private readonly onViewportFocusIn = (event: FocusEvent): void => {
+    if (!this.overflowing) return;
     const target = event.target;
     if (!(target instanceof Element)) return;
     const command = target.closest('.tb-btn') as HTMLElement | null;
     if (!command || !this.track.contains(command)) return;
+
+    this.cancelScrollAnimation();
 
     const viewportRect = this.viewport.getBoundingClientRect();
     const commandRect = command.getBoundingClientRect();
@@ -149,38 +179,35 @@ export class IconToolbarScroller {
       attributeFilter: ['style', 'hidden'],
     });
 
-    this.refresh(true);
+    this.refresh();
   }
 
-  private scheduleRefresh(reset = false): void {
-    this.resetOnRefresh ||= reset;
+  private scheduleRefresh(): void {
     if (this.animationFrame !== null) return;
     this.animationFrame = requestAnimationFrame(() => {
       this.animationFrame = null;
-      const shouldReset = this.resetOnRefresh;
-      this.resetOnRefresh = false;
-      this.refresh(shouldReset);
+      this.refresh();
     });
   }
 
-  private refresh(reset: boolean): void {
-    if (reset) this.viewport.scrollLeft = 0;
-
-    // overlay nav의 표시 여부와 무관하게 평상시 양끝 padding을 기준으로 overflow를 판정한다.
-    const restingInlinePadding = Number.parseFloat(
-      getComputedStyle(this.root).getPropertyValue('--tb-resting-inline-padding'),
-    ) || 0;
-    const availableWithoutNavigation = Math.max(
-      0,
-      this.root.clientWidth - (restingInlinePadding * 2),
+  private refresh(): void {
+    // 실제 native scroll viewport보다 콘텐츠가 넓을 때만 입력과 이동 버튼을 활성화한다.
+    const overflowing = hasIconToolbarOverflow(
+      this.track.scrollWidth,
+      this.viewport.clientWidth,
     );
-    const overflowing = hasIconToolbarOverflow(this.track.scrollWidth, availableWithoutNavigation);
+    this.overflowing = overflowing;
+    this.viewport.classList.toggle('tb-scroll-viewport-enabled', overflowing);
 
-    this.root.classList.toggle('tb-scroll-overflowing', overflowing);
     this.previousButton.hidden = !overflowing;
     this.nextButton.hidden = !overflowing;
-    if (!overflowing) this.viewport.scrollLeft = 0;
-    this.updateNavigationState();
+    const maximum = this.maxScrollLeft();
+    this.viewport.scrollLeft = clampIconToolbarScroll(
+      this.viewport.scrollLeft,
+      maximum,
+      overflowing,
+    );
+    this.updateNavigationState(maximum);
   }
 
   private visibleDividerBoundaries(direction: ScrollDirection): number[] {
@@ -212,6 +239,7 @@ export class IconToolbarScroller {
   }
 
   private scrollToAdjacentDivider(direction: ScrollDirection): void {
+    if (!this.overflowing) return;
     const current = this.viewport.scrollLeft;
     const boundaries = this.visibleDividerBoundaries(direction);
     const target = adjacentIconToolbarDividerTarget(
@@ -224,6 +252,11 @@ export class IconToolbarScroller {
   }
 
   private scrollTo(left: number): void {
+    if (!this.overflowing) {
+      this.viewport.scrollLeft = 0;
+      this.updateNavigationState(0);
+      return;
+    }
     const target = Math.max(0, Math.min(left, this.maxScrollLeft()));
     const start = this.viewport.scrollLeft;
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -231,7 +264,7 @@ export class IconToolbarScroller {
 
     if (reducedMotion || Math.abs(target - start) <= SCROLL_EPSILON) {
       this.viewport.scrollLeft = target;
-      this.updateNavigationState();
+      this.updateNavigationState(this.maxScrollLeft());
       return;
     }
 
@@ -257,7 +290,7 @@ export class IconToolbarScroller {
       const progress = Math.min(1, (timestamp - startedAt) / SCROLL_ANIMATION_DURATION_MS);
       const eased = 1 - ((1 - progress) ** 3);
       this.viewport.scrollLeft = start + (distance * eased);
-      this.updateNavigationState();
+      this.updateNavigationState(maximum);
 
       if (progress < 1) {
         this.scrollAnimationFrame = requestAnimationFrame(animate);
@@ -265,7 +298,7 @@ export class IconToolbarScroller {
       }
 
       this.viewport.scrollLeft = target;
-      this.updateNavigationState();
+      this.updateNavigationState(maximum);
       this.scrollAnimationFrame = null;
       this.finishScrollExit();
     };
@@ -291,19 +324,34 @@ export class IconToolbarScroller {
     return Math.max(0, this.viewport.scrollWidth - this.viewport.clientWidth);
   }
 
-  private updateNavigationState(): void {
+  private syncNavigationButton(button: HTMLButtonElement, atEdge: boolean): void {
+    if (atEdge && document.activeElement === button) {
+      this.viewport.focus({ preventScroll: true });
+    }
+    button.tabIndex = atEdge ? -1 : 0;
+    button.classList.toggle('tb-scroll-nav-edge-hidden', atEdge);
+    const nextValue = atEdge ? 'true' : 'false';
+    if (button.getAttribute('aria-disabled') !== nextValue) {
+      button.setAttribute('aria-disabled', nextValue);
+    }
+    if (button.getAttribute('aria-hidden') !== nextValue) {
+      button.setAttribute('aria-hidden', nextValue);
+    }
+  }
+
+  private updateNavigationState(maximum = this.maxScrollLeft()): void {
     const navigationHidden = this.previousButton.hasAttribute('hidden')
       || this.nextButton.hasAttribute('hidden');
     const current = this.viewport.scrollLeft;
-    const maximum = this.maxScrollLeft();
-    const atStart = navigationHidden || current <= SCROLL_EPSILON;
-    const atEnd = navigationHidden || current >= maximum - SCROLL_EPSILON;
-    this.previousButton.disabled = atStart;
-    this.nextButton.disabled = atEnd;
-    this.previousButton.classList.toggle('tb-scroll-nav-edge-hidden', atStart);
-    this.nextButton.classList.toggle('tb-scroll-nav-edge-hidden', atEnd);
-    this.previousButton.setAttribute('aria-hidden', atStart ? 'true' : 'false');
-    this.nextButton.setAttribute('aria-hidden', atEnd ? 'true' : 'false');
+    const { atStart, atEnd } = iconToolbarNavigationState(current, maximum, navigationHidden);
+    this.syncNavigationButton(this.previousButton, atStart);
+    this.syncNavigationButton(this.nextButton, atEnd);
+  }
+
+  resetToStart(): void {
+    this.cancelScrollAnimation();
+    this.viewport.scrollLeft = 0;
+    this.scheduleRefresh();
   }
 
   dispose(): void {
@@ -319,7 +367,8 @@ export class IconToolbarScroller {
   }
 }
 
-export function initIconToolbarScroller(root: HTMLElement): IconToolbarScroller | null {
+export function initIconToolbarScroller(root: HTMLElement | null): IconToolbarScroller | null {
+  if (!root) return null;
   const viewport = root.querySelector<HTMLElement>('#icon-toolbar-viewport');
   const track = root.querySelector<HTMLElement>('.tb-scroll-track');
   const previousButton = root.querySelector<HTMLButtonElement>('#icon-toolbar-prev');

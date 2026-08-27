@@ -121,7 +121,7 @@ test('메뉴바 우측 버튼은 기본 도구 상자 커맨드와 접근성 상
 
   assert.match(
     html,
-    /<button[^>]*id="toolbox-basic-toggle"[^>]*class="menu-command menu-toolbox-toggle"[^>]*data-cmd="view:toolbox-basic"[^>]*aria-controls="icon-toolbar"[^>]*aria-expanded="false"/,
+    /<button[^>]*id="toolbox-basic-toggle"[^>]*class="menu-command menu-toolbox-toggle active"[^>]*data-cmd="view:toolbox-basic"[^>]*aria-controls="icon-toolbar"[^>]*aria-expanded="true"/,
   );
   assert.match(
     menuBar,
@@ -147,6 +147,6 @@ test('숨김 규칙과 첫 페인트 초기화는 같은 data 속성을 쓴다',
     );
   }
   // 저장 키(user-settings 의 view.toolbar*)를 theme-init 이 그대로 읽어야 복원이 맞다.
-  assert.match(init, /view\.toolbarBasic === true/);
+  assert.match(init, /view\.toolbarBasic === false/);
   assert.match(init, /view\.toolbarFormat === false/);
 });

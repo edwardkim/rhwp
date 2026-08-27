@@ -78,11 +78,16 @@ async function run() {
       const result = await page.evaluate(() => {
         const canvas = document.querySelector('canvas');
         const menuBar = document.getElementById('menu-bar');
+        const menuTitles = Array.from(menuBar?.querySelectorAll('.menu-title') ?? []);
+        const toolboxToggle = document.getElementById('toolbox-basic-toggle');
         const toolbar = document.getElementById('icon-toolbar');
         const toolbarViewport = document.getElementById('icon-toolbar-viewport');
         const toolbarTrack = toolbar?.querySelector('.tb-scroll-track');
         const toolbarPrevious = document.getElementById('icon-toolbar-prev');
         const toolbarNext = document.getElementById('icon-toolbar-next');
+        const splitArrow = toolbarTrack?.querySelector('.tb-split-arrow');
+        const splitMenu = toolbarTrack?.querySelector('.tb-split-menu');
+        const splitItems = Array.from(splitMenu?.querySelectorAll('.tb-split-item') ?? []);
         const toolbarGroups = Array.from(toolbarTrack?.querySelectorAll(':scope > .tb-group') ?? [])
           .filter(group => getComputedStyle(group).display !== 'none');
         const toolbarLabels = Array.from(toolbarTrack?.querySelectorAll('.tb-label') ?? []);
@@ -122,12 +127,27 @@ async function run() {
           : -1;
         const styleLeadingAligned = !!styleName && fileTextLeft >= 0
           && Math.abs(styleNameTextLeft - fileTextLeft) <= 2;
+        const menuRows = new Set(menuTitles.map(top)).size;
+        const menuBarRect = menuBar?.getBoundingClientRect();
+        const toolboxToggleRect = toolboxToggle?.getBoundingClientRect();
+        const toolboxToggleInViewport = !!menuBarRect && !!toolboxToggleRect
+          && toolboxToggleRect.left >= menuBarRect.left
+          && toolboxToggleRect.right <= menuBarRect.right;
 
         return {
           hasCanvas: !!canvas,
           menuBarVisible: isVisible(menuBar),
           menuBarHeight: menuBar?.offsetHeight ?? 0,
+          menuRows,
+          allMenuTitlesVisible: menuTitles.length === 8 && menuTitles.every(isVisible),
+          toolboxToggleInViewport,
           toolbarVisible: isVisible(toolbar),
+          toolbarRole: toolbar?.getAttribute('role'),
+          toolbarViewportRole: toolbarViewport?.getAttribute('role'),
+          splitArrowHasPopup: splitArrow?.getAttribute('aria-haspopup'),
+          splitMenuRole: splitMenu?.getAttribute('role'),
+          splitItemsAreMenuItems: splitItems.length > 0
+            && splitItems.every(item => item.getAttribute('role') === 'menuitem'),
           toolbarHeight: toolbar?.offsetHeight ?? 0,
           toolbarRows,
           toolbarLabelsVisible: toolbarLabels.some(isVisible),
@@ -135,12 +155,16 @@ async function run() {
           toolbarNextVisible: isVisible(toolbarNext),
           toolbarPreviousDisabled: toolbarPrevious?.disabled ?? null,
           toolbarNextDisabled: toolbarNext?.disabled ?? null,
+          toolbarPreviousAriaDisabled: toolbarPrevious?.getAttribute('aria-disabled'),
+          toolbarNextAriaDisabled: toolbarNext?.getAttribute('aria-disabled'),
           toolbarPreviousAriaHidden: toolbarPrevious?.getAttribute('aria-hidden'),
           toolbarNextAriaHidden: toolbarNext?.getAttribute('aria-hidden'),
           toolbarClientWidth: toolbar?.clientWidth ?? 0,
           toolbarScrollWidth: toolbar?.scrollWidth ?? 0,
           toolbarViewportClientWidth: toolbarViewport?.clientWidth ?? 0,
           toolbarViewportScrollWidth: toolbarViewport?.scrollWidth ?? 0,
+          toolbarNativeScrollEnabled: toolbarViewport?.classList.contains('tb-scroll-viewport-enabled') ?? false,
+          toolbarViewportOverflowX: toolbarViewport ? getComputedStyle(toolbarViewport).overflowX : null,
           toolbarStartPaddingAligned,
           styleBarVisible: isVisible(styleBar),
           styleBarHeight: styleBar?.offsetHeight ?? 0,
@@ -164,7 +188,19 @@ async function run() {
       check(tc, result.editorVisible, '편집 영역 표시');
       check(tc, result.pageCount >= 1, `페이지 수: ${result.pageCount}`);
       check(tc, result.menuBarVisible, '메뉴바 표시');
+      check(tc, result.menuBarHeight === 28, `마우스 메뉴바 28px 한 줄 높이 (h=${result.menuBarHeight})`);
+      check(tc, result.menuRows === 1, `전체 메뉴 한 줄 유지 (rows=${result.menuRows})`);
+      check(tc, result.allMenuTitlesVisible, '파일–도구 전체 메뉴 표시');
+      check(tc, result.toolboxToggleInViewport, '기본 도구 상자 토글이 viewport 안에 표시');
       check(tc, result.toolbarVisible, '기본 도구 상자 표시');
+      check(tc, result.toolbarRole === 'region' && result.toolbarViewportRole === 'group', '도구 상자 ARIA 영역 계약');
+      check(
+        tc,
+        result.splitArrowHasPopup === 'menu'
+          && result.splitMenuRole === 'menu'
+          && result.splitItemsAreMenuItems,
+        'split button menu/menuitem ARIA 계약',
+      );
       check(tc, result.toolbarHeight === 56, `기본 도구 상자 한 줄 높이 (h=${result.toolbarHeight})`);
       check(tc, result.toolbarRows === 1, `기본 도구 그룹 한 줄 (rows=${result.toolbarRows})`);
       check(tc, result.toolbarLabelsVisible, '기본 도구 label 밀도 유지');
@@ -193,12 +229,12 @@ async function run() {
         check(tc, !result.toolbarPreviousVisible && result.toolbarNextVisible, '시작 위치는 다음 이동 버튼만 표시');
         check(
           tc,
-          result.toolbarPreviousDisabled === true && result.toolbarPreviousAriaHidden === 'true',
-          '시작 위치 이전 버튼과 slot을 접고 접근성 트리에서 숨김',
+          result.toolbarPreviousAriaDisabled === 'true' && result.toolbarPreviousAriaHidden === 'true',
+          '시작 위치 이전 버튼 slot을 접고 접근성 트리에서 숨김',
         );
         check(
           tc,
-          result.toolbarNextDisabled === false && result.toolbarNextAriaHidden === 'false',
+          result.toolbarNextAriaDisabled === 'false' && result.toolbarNextAriaHidden === 'false',
           '시작 위치 다음 버튼 enabled',
         );
         check(
@@ -206,12 +242,22 @@ async function run() {
           result.toolbarViewportScrollWidth > result.toolbarViewportClientWidth,
           `기본 도구 내부 scroll (${result.toolbarViewportScrollWidth}/${result.toolbarViewportClientWidth})`,
         );
+        check(
+          tc,
+          result.toolbarNativeScrollEnabled && result.toolbarViewportOverflowX === 'auto',
+          '내용이 넘칠 때만 native 가로 스크롤 활성화',
+        );
       } else {
         check(tc, !result.toolbarPreviousVisible && !result.toolbarNextVisible, '내용이 맞으면 이동 버튼 숨김');
         check(
           tc,
           result.toolbarViewportScrollWidth <= result.toolbarViewportClientWidth,
           '내용이 맞으면 내부 overflow 없음',
+        );
+        check(
+          tc,
+          !result.toolbarNativeScrollEnabled && result.toolbarViewportOverflowX === 'hidden',
+          '내용이 맞으면 native 가로 스크롤 차단',
         );
       }
 
@@ -238,8 +284,15 @@ async function run() {
           const panel = document.getElementById('style-overflow-panel');
           const command = document.getElementById('btn-align-left');
           const selectionCommand = document.getElementById('btn-align-center');
-          const paragraphButtons = Array.from(panel?.querySelectorAll('.sb-btn') ?? []);
+          const styleBar = document.getElementById('style-bar');
+          const editor = document.getElementById('scroll-container');
           const nextFrame = () => new Promise(resolve => requestAnimationFrame(resolve));
+          const pointerClick = (element) => {
+            element?.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true }));
+            element?.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true, detail: 1 }));
+            element?.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true, detail: 1 }));
+            element?.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, detail: 1 }));
+          };
 
           trigger?.focus();
           trigger?.dispatchEvent(new KeyboardEvent('keydown', {
@@ -264,33 +317,33 @@ async function run() {
           const closedByOutside = trigger?.getAttribute('aria-expanded') === 'false'
             && panel?.hidden === true;
 
-          trigger?.click();
+          editor?.focus();
+          pointerClick(trigger);
           await new Promise(resolve => requestAnimationFrame(resolve));
-          const openedByClick = trigger?.getAttribute('aria-expanded') === 'true'
+          const openedByPointer = trigger?.getAttribute('aria-expanded') === 'true'
             && panel?.hidden === false
-            && document.activeElement === command;
-          selectionCommand?.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
-          selectionCommand?.click();
+            && document.activeElement === editor;
+          pointerClick(selectionCommand);
           await nextFrame();
-          const focusReturned = document.activeElement === trigger;
+          const editorFocusPreserved = document.activeElement === editor;
 
           const triggerIcon = document.getElementById('style-overflow-current-icon');
           const currentAlignmentMirrored = selectionCommand?.classList.contains('active') === true
             && trigger?.classList.contains('active') === false
             && trigger?.getAttribute('aria-label')?.includes('현재 가운데 정렬') === true
             && triggerIcon?.classList.contains('sb-al-center') === true;
-          for (const button of paragraphButtons) button.disabled = true;
+          styleBar?.setAttribute('aria-disabled', 'true');
           await new Promise(resolve => setTimeout(resolve, 0));
           const disabledMirrored = trigger?.disabled === true;
-          for (const button of paragraphButtons) button.disabled = false;
+          styleBar?.setAttribute('aria-disabled', 'false');
 
           return {
             openedByKeyboard,
             closedByEscape,
             closedByOutside,
-            openedByClick,
+            openedByPointer,
             closedByCommand: trigger?.getAttribute('aria-expanded') === 'false' && panel?.hidden === true,
-            focusReturned,
+            editorFocusPreserved,
             currentAlignmentMirrored,
             disabledMirrored,
           };
@@ -298,9 +351,9 @@ async function run() {
         check(tc, interaction.openedByKeyboard, 'ArrowDown 열기와 첫 명령 focus');
         check(tc, interaction.closedByEscape, 'Escape 닫기와 trigger focus 복귀');
         check(tc, interaction.closedByOutside, '외부 pointer로 panel 닫힘');
-        check(tc, interaction.openedByClick, 'click 열기와 첫 명령 focus');
+        check(tc, interaction.openedByPointer, 'pointer 열기와 편집기 focus 유지');
         check(tc, interaction.closedByCommand, '명령 실행 뒤 panel 닫힘');
-        check(tc, interaction.focusReturned, '명령 실행 뒤 trigger focus 복귀');
+        check(tc, interaction.editorFocusPreserved, 'pointer 명령 실행 뒤 편집기 focus 유지');
         check(tc, interaction.currentAlignmentMirrored, '현재 paragraph 정렬은 표시하되 닫힌 trigger는 중립 유지');
         check(tc, interaction.disabledMirrored, 'paragraph disabled 상태를 trigger에 표시');
       }
@@ -399,7 +452,8 @@ async function run() {
           const rootPaddingRight = parseFloat(getComputedStyle(root).paddingRight);
           const trackRectAtEnd = track.getBoundingClientRect();
           const endedByKeyboard = Math.abs(viewport.scrollLeft - maximum) <= 1
-            && next.disabled === true && previous.disabled === false
+            && next.getAttribute('aria-disabled') === 'true'
+            && previous.getAttribute('aria-disabled') === 'false'
             && next.getAttribute('aria-hidden') === 'true'
             && next.offsetWidth === 24
             && getComputedStyle(next).visibility === 'hidden'
@@ -410,9 +464,12 @@ async function run() {
           const splitArrow = track.querySelector('.tb-split-arrow');
           splitArrow?.focus();
           await settle();
-          splitArrow?.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
+          splitArrow?.dispatchEvent(new KeyboardEvent('keydown', {
+            key: 'ArrowDown', bubbles: true, cancelable: true,
+          }));
           await new Promise(resolve => requestAnimationFrame(resolve));
           const splitMenu = track.querySelector('.tb-split-menu');
+          const firstSplitItem = splitMenu?.querySelector('.tb-split-item');
           const scrollViewportRect = viewport.getBoundingClientRect();
           const splitMenuRect = splitMenu?.getBoundingClientRect();
           const splitMenuVisible = !!splitMenuRect
@@ -421,18 +478,35 @@ async function run() {
             && splitMenuRect.left >= 0
             && splitMenuRect.right <= window.innerWidth
             && splitMenuRect.bottom <= window.innerHeight;
-          document.body.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+          const splitMenuKeyboardFocus = document.activeElement === firstSplitItem;
+          splitMenu?.dispatchEvent(new KeyboardEvent('keydown', {
+            key: 'Escape', bubbles: true, cancelable: true,
+          }));
+          await new Promise(resolve => requestAnimationFrame(resolve));
+          const splitMenuEscapeReturned = document.activeElement === splitArrow
+            && splitArrow?.getAttribute('aria-expanded') === 'false';
 
           viewport.dispatchEvent(new KeyboardEvent('keydown', {
             key: 'Home', bubbles: true, cancelable: true,
           }));
           await settle();
           const startedByKeyboard = viewport.scrollLeft <= 1
-            && previous.disabled === true && next.disabled === false
+            && previous.getAttribute('aria-disabled') === 'true'
+            && next.getAttribute('aria-disabled') === 'false'
             && previous.getAttribute('aria-hidden') === 'true'
             && previous.offsetWidth === 24
             && getComputedStyle(previous).visibility === 'hidden'
             && getComputedStyle(next).visibility !== 'hidden';
+
+          viewport.scrollLeft = Math.max(0, maximum - 10);
+          viewport.dispatchEvent(new Event('scroll'));
+          await new Promise(resolve => requestAnimationFrame(resolve));
+          next.focus();
+          next.click();
+          await settle();
+          const endpointFocusPreserved = document.activeElement === viewport
+            && document.activeElement !== document.body
+            && next.getAttribute('aria-disabled') === 'true';
 
           return {
             alignedToDivider,
@@ -440,7 +514,10 @@ async function run() {
             exitSynchronizedAtStart,
             endedByKeyboard,
             splitMenuVisible,
+            splitMenuKeyboardFocus,
+            splitMenuEscapeReturned,
             startedByKeyboard,
+            endpointFocusPreserved,
           };
         });
         check(tc, toolbarInteraction.alignedToDivider, '다음 버튼은 nav 간격을 포함한 divider 경계로 이동');
@@ -448,7 +525,10 @@ async function run() {
         check(tc, toolbarInteraction.exitSynchronizedAtStart, '끝 버튼 퇴장은 scroll 시작과 동시에 시작');
         check(tc, toolbarInteraction.endedByKeyboard, 'End로 마지막 경계 도달·다음 버튼 퇴장·오른쪽 padding 정렬');
         check(tc, toolbarInteraction.splitMenuVisible, '가로 viewport 밖에도 split menu가 잘리지 않음');
+        check(tc, toolbarInteraction.splitMenuKeyboardFocus, 'split menu ArrowDown 첫 항목 focus');
+        check(tc, toolbarInteraction.splitMenuEscapeReturned, 'split menu Escape 닫기와 arrow focus 복귀');
         check(tc, toolbarInteraction.startedByKeyboard, 'Home으로 첫 group 복귀·이전 slot 접힘');
+        check(tc, toolbarInteraction.endpointFocusPreserved, '끝점 버튼 퇴장 뒤 viewport로 focus 보존');
 
         const toolbarViewport = await page.$('#icon-toolbar-viewport');
         const viewportBox = await toolbarViewport?.boundingBox();
@@ -478,8 +558,10 @@ async function run() {
             .filter(group => getComputedStyle(group).display !== 'none')
             .at(-1);
           const lastCommand = Array.from(lastGroup?.querySelectorAll('.tb-btn') ?? []).at(-1);
+          viewport.scrollLeft = 0;
+          next.click();
           lastCommand?.focus();
-          await waitFrames();
+          await waitFrames(20);
           const viewportRect = viewport.getBoundingClientRect();
           const commandRect = lastCommand?.getBoundingClientRect();
           const focusedCommandVisible = !!commandRect
@@ -499,9 +581,28 @@ async function run() {
           await new Promise(resolve => setTimeout(resolve, 300));
           const defaultRestored = getComputedStyle(defaultGroup).display !== 'none'
             && viewport.scrollLeft <= 1
-            && !next.hidden && previous.disabled && !next.disabled
+            && !next.hidden
+            && previous.getAttribute('aria-disabled') === 'true'
+            && next.getAttribute('aria-disabled') === 'false'
             && getComputedStyle(previous).visibility === 'hidden'
             && getComputedStyle(next).visibility !== 'hidden';
+
+          viewport.scrollLeft = Math.min(120, viewport.scrollWidth - viewport.clientWidth);
+          const beforePictureMode = viewport.scrollLeft;
+          window.__eventBus?.emit('picture-object-selection-changed', true);
+          await waitFrames();
+          const afterPictureMode = viewport.scrollLeft;
+          window.__eventBus?.emit('picture-object-selection-changed', false);
+          await waitFrames();
+          const pictureModePreserved = Math.abs(afterPictureMode - beforePictureMode) <= 1
+            && Math.abs(viewport.scrollLeft - beforePictureMode) <= 1;
+          const visibleTrackChildren = Array.from(track.children)
+            .filter(element => !element.hidden && getComputedStyle(element).display !== 'none');
+          const noAdjacentSeparators = visibleTrackChildren.every((element, index) => (
+            index === 0
+            || !element.classList.contains('tb-sep')
+            || !visibleTrackChildren[index - 1].classList.contains('tb-sep')
+          ));
 
           document.documentElement.dataset.toolboxBasic = 'hidden';
           const hiddenWithShell = getComputedStyle(root).display === 'none';
@@ -510,11 +611,21 @@ async function run() {
           const restoredWithNavigation = getComputedStyle(root).display === 'flex'
             && root.offsetHeight === 56 && !next.hidden;
 
-          return { focusedCommandVisible, modeReset, defaultRestored, hiddenWithShell, restoredWithNavigation };
+          return {
+            focusedCommandVisible,
+            modeReset,
+            defaultRestored,
+            pictureModePreserved,
+            noAdjacentSeparators,
+            hiddenWithShell,
+            restoredWithNavigation,
+          };
         });
         check(tc, toolbarModeAndVisibility.focusedCommandVisible, 'offscreen command focus를 viewport 안에 표시');
         check(tc, toolbarModeAndVisibility.modeReset, '머리말 mode 전환 뒤 시작 위치 재계산');
         check(tc, toolbarModeAndVisibility.defaultRestored, '기본 mode 복귀 뒤 이동 상태 재계산');
+        check(tc, toolbarModeAndVisibility.pictureModePreserved, '그림 선택 전환에도 현재 scroll 위치 보존');
+        check(tc, toolbarModeAndVisibility.noAdjacentSeparators, 'contextual mode 전환 뒤 중복 divider 없음');
         check(tc, toolbarModeAndVisibility.hiddenWithShell, '기본 도구 상자 숨김은 이동 버튼까지 포함');
         check(tc, toolbarModeAndVisibility.restoredWithNavigation, '기본 도구 상자 복귀 뒤 overflow 재계산');
       }
@@ -528,6 +639,82 @@ async function run() {
       if (tcResults.length > 0) {
         tcResults[tcResults.length - 1].screenshot = `responsive-${vp.name}.png`;
       }
+    } catch (err) {
+      console.error(`  ERROR: ${err.message}`);
+      reporter.fail(tc, err.message);
+      failed++;
+    } finally {
+      await closePage(page);
+    }
+  }
+
+  for (const width of [520, 500, 480]) {
+    const tc = `narrow-menu (${width}x812)`;
+    console.log(`\n[narrow-menu] ${width}x812...`);
+    const page = await createPage(browser, width, 812);
+    try {
+      await primeTheme(page);
+      await loadApp(page);
+      const result = await page.evaluate(() => {
+        const menuBar = document.getElementById('menu-bar');
+        const titles = Array.from(menuBar?.querySelectorAll('.menu-title') ?? []);
+        const toggle = document.getElementById('toolbox-basic-toggle');
+        const barRect = menuBar?.getBoundingClientRect();
+        const toggleRect = toggle?.getBoundingClientRect();
+        return {
+          height: menuBar?.offsetHeight ?? 0,
+          rows: new Set(titles.map(title => Math.round(title.getBoundingClientRect().top))).size,
+          allVisible: titles.length === 8 && titles.every(title => (
+            getComputedStyle(title).display !== 'none' && title.getClientRects().length > 0
+          )),
+          toggleVisible: !!barRect && !!toggleRect
+            && toggleRect.left >= barRect.left && toggleRect.right <= barRect.right,
+          noOverflow: (menuBar?.scrollWidth ?? 0) <= (menuBar?.clientWidth ?? 0),
+        };
+      });
+      check(tc, result.height === 28, `마우스 메뉴 높이 28px (h=${result.height})`);
+      check(tc, result.rows === 1, `파일–도구 한 줄 유지 (rows=${result.rows})`);
+      check(tc, result.allVisible, '파일–도구 전체 메뉴 표시');
+      check(tc, result.toggleVisible, '기본 도구 상자 토글 표시');
+      check(tc, result.noOverflow, '메뉴바 가로 overflow 없음');
+    } catch (err) {
+      console.error(`  ERROR: ${err.message}`);
+      reporter.fail(tc, err.message);
+      failed++;
+    } finally {
+      await closePage(page);
+    }
+  }
+
+  {
+    const tc = 'touch-menu (375x812)';
+    console.log('\n[touch-menu] 375x812...');
+    const page = await createPage(browser, 375, 812);
+    try {
+      await page.setViewport({ width: 375, height: 812, isMobile: true, hasTouch: true });
+      await primeTheme(page);
+      await loadApp(page);
+      const result = await page.evaluate(() => {
+        const menuBar = document.getElementById('menu-bar');
+        const titles = Array.from(menuBar?.querySelectorAll('.menu-title') ?? []);
+        const toggle = document.getElementById('toolbox-basic-toggle');
+        const topRows = new Set(titles.map(title => Math.round(title.getBoundingClientRect().top)));
+        const barRect = menuBar?.getBoundingClientRect();
+        const toggleRect = toggle?.getBoundingClientRect();
+        return {
+          height: menuBar?.offsetHeight ?? 0,
+          rows: topRows.size,
+          allVisible: titles.length === 8 && titles.every(title => (
+            getComputedStyle(title).display !== 'none' && title.getClientRects().length > 0
+          )),
+          toggleVisible: !!barRect && !!toggleRect
+            && toggleRect.left >= barRect.left && toggleRect.right <= barRect.right,
+        };
+      });
+      check(tc, result.height === 40, `터치 메뉴 클릭 높이 40px (h=${result.height})`);
+      check(tc, result.rows === 1, `터치 메뉴 한 줄 유지 (rows=${result.rows})`);
+      check(tc, result.allVisible, '터치 환경 파일–도구 전체 메뉴 접근 가능');
+      check(tc, result.toggleVisible, '터치 환경 기본 도구 상자 토글 표시');
     } catch (err) {
       console.error(`  ERROR: ${err.message}`);
       reporter.fail(tc, err.message);

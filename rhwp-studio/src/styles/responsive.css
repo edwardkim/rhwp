@@ -145,36 +145,46 @@
   }
 }
 
-/* 작은 viewport라도 마우스 기반 데스크톱이면 28px 메뉴행을 유지한다. */
+/*
+ * 데스크톱 브라우저의 실사용 최소 너비보다 작은 embedded/mobile viewport에서는
+ * 14px 메뉴 title padding을 줄이지 않고 메뉴 행 자체만 가로 이동시킨다.
+ * toggle은 항상 오른쪽에 남기고, 열린 메뉴는 scroll clip 밖(viewport)에 표시한다.
+ */
+@media (max-width: 479px) {
+  #menu-bar {
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+  }
+
+  #menu-bar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .menu-toolbox-toggle {
+    position: sticky;
+    right: 0;
+    z-index: 2;
+    background: var(--color-bg-light);
+  }
+
+  .menu-item.open > .menu-dropdown {
+    position: fixed;
+    top: 28px;
+    left: 8px;
+  }
+}
+
+/* 터치 화면은 클릭 범위만 키우고 모든 메뉴를 같은 한 줄에 유지한다. */
 @media (max-width: 767px) and (hover: none) and (pointer: coarse) {
   #menu-bar {
     height: 40px;
     padding: 0 4px;
   }
-  #menu-bar .menu-item {
-    display: none;
-  }
-  #menu-bar .menu-item:first-child,
-  #menu-bar .menu-item[data-menu="edit"] {
-    display: block;
-  }
-  .mobile-menu-toggle {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: var(--touch-target-min);
-    height: var(--touch-target-min);
-    border: none;
-    background: transparent;
-    cursor: pointer;
-    font-size: 20px;
-  }
-  #menu-bar.mobile-open .menu-item {
-    display: block;
-  }
-  #menu-bar.mobile-open {
-    flex-wrap: wrap;
-    height: auto;
+
+  .menu-item.open > .menu-dropdown {
+    top: 40px;
   }
 }
 

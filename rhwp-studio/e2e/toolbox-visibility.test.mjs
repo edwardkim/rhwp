@@ -2,7 +2,7 @@
  * E2E 테스트 — 기본 도구 상자 접기/펴기와 표시 상태 저장·복원
  *
  * 검증 항목:
- * 1. 저장값이 없으면 기본 도구 상자는 접힘, 서식 도구 상자는 보임
+ * 1. 저장값이 없으면 기본/서식 도구 상자는 모두 보임
  * 2. 메뉴·우측 버튼·Ctrl+F1이 같은 커맨드와 상태를 공유한다
  * 3. 토글이 rhwp-settings 의 view.toolbarBasic / view.toolbarFormat 에 저장된다
  * 4. 숨기기로 저장한 뒤 리로드하면 첫 페인트부터 숨겨져 깜빡임이 없다
@@ -40,7 +40,7 @@ const readToggleButton = () => {
 };
 
 runTest('도구 상자 표시 상태 저장·복원', async ({ page }) => {
-  // ── TC1: 저장값 없음 → 기본은 접힘, 서식은 보임 ─────────────
+  // ── TC1: 저장값 없음 → 기본/서식 모두 보임 ─────────────────
   await page.evaluate(() => {
     // 스킨 온보딩은 이미 마쳤지만 view.toolbar* 키는 전혀 없는 상태를 만든다.
     localStorage.setItem('rhwp-settings', JSON.stringify({
@@ -49,23 +49,23 @@ runTest('도구 상자 표시 상태 저장·복원', async ({ page }) => {
   });
   await loadApp(page);
   const first = await page.evaluate(readBars);
-  assert(first.rootBasic === 'hidden' && first.rootFormat === 'shown',
-    `TC1: 저장값이 없으면 기본은 접힘, 서식은 보임 (${first.rootBasic}/${first.rootFormat})`);
-  assert(first.icon === 'none' && first.style !== 'none',
-    `TC1: 기본 도구 모음만 숨겨짐 (${first.icon}/${first.style})`);
+  assert(first.rootBasic === 'shown' && first.rootFormat === 'shown',
+    `TC1: 저장값이 없으면 두 도구 상자가 보임 (${first.rootBasic}/${first.rootFormat})`);
+  assert(first.icon !== 'none' && first.style !== 'none',
+    `TC1: 두 도구 모음이 모두 표시됨 (${first.icon}/${first.style})`);
 
   // ── TC2: 메뉴와 우측 버튼이 같은 상태를 표시한다 ───────────
   const menuShown = await page.evaluate(readMenu);
   assert(menuShown.every(m => m.disabled === false),
     'TC2: 두 메뉴 항목이 비활성이 아님');
-  assert(menuShown[0].active === false && menuShown[0].checked === 'false'
+  assert(menuShown[0].active === true && menuShown[0].checked === 'true'
       && menuShown[1].active === true && menuShown[1].checked === 'true',
     `TC2: 각 표시 상태가 체크로 표시됨 (${JSON.stringify(menuShown)})`);
-  const buttonCollapsed = await page.evaluate(readToggleButton);
-  assert(buttonCollapsed.active === false && buttonCollapsed.expanded === 'false'
-      && buttonCollapsed.label === '기본 도구 상자 펴기'
-      && buttonCollapsed.title === '기본 도구 상자 펴기 (Ctrl+F1)',
-    `TC2: 접힌 버튼 상태와 설명이 맞음 (${JSON.stringify(buttonCollapsed)})`);
+  const buttonExpanded = await page.evaluate(readToggleButton);
+  assert(buttonExpanded.active === true && buttonExpanded.expanded === 'true'
+      && buttonExpanded.label === '기본 도구 상자 접기'
+      && buttonExpanded.title === '기본 도구 상자 접기 (Ctrl+F1)',
+    `TC2: 펼친 버튼 상태와 설명이 맞음 (${JSON.stringify(buttonExpanded)})`);
 
   // ── TC3: 우측 버튼도 기존 커맨드를 실행하고 설정에 저장한다 ─
   await page.click('#toolbox-basic-toggle');
@@ -85,14 +85,14 @@ runTest('도구 상자 표시 상태 저장·복원', async ({ page }) => {
       },
     };
   });
-  assert(toggled.stored.toolbarBasic === true && toggled.stored.toolbarFormat === false,
+  assert(toggled.stored.toolbarBasic === false && toggled.stored.toolbarFormat === false,
     `TC3: 버튼 토글이 rhwp-settings 에 저장됨 (${JSON.stringify(toggled.stored)})`);
-  assert(toggled.bars.icon !== 'none' && toggled.bars.style === 'none',
-    `TC3: 버튼으로 기본만 펴짐 (${JSON.stringify(toggled.bars)})`);
-  assert(toggled.button.expanded === 'true' && toggled.button.label === '기본 도구 상자 접기',
-    `TC3: 펼친 버튼 상태와 설명이 맞음 (${JSON.stringify(toggled.button)})`);
+  assert(toggled.bars.icon === 'none' && toggled.bars.style === 'none',
+    `TC3: 버튼으로 두 도구 상자가 숨겨짐 (${JSON.stringify(toggled.bars)})`);
+  assert(toggled.button.expanded === 'false' && toggled.button.label === '기본 도구 상자 펴기',
+    `TC3: 접힌 버튼 상태와 설명이 맞음 (${JSON.stringify(toggled.button)})`);
 
-  // ── TC4: Ctrl+F1도 같은 커맨드로 다시 접는다 ───────────────
+  // ── TC4: Ctrl+F1도 같은 커맨드로 다시 편다 ─────────────────
   await page.keyboard.down('Control');
   await page.keyboard.press('F1');
   await page.keyboard.up('Control');
@@ -107,13 +107,16 @@ runTest('도구 상자 표시 상태 저장·복원', async ({ page }) => {
       button: { expanded: toggle?.getAttribute('aria-expanded') },
     };
   });
-  assert(shortcut.stored.toolbarBasic === false && shortcut.stored.toolbarFormat === false,
+  assert(shortcut.stored.toolbarBasic === true && shortcut.stored.toolbarFormat === false,
     `TC4: Ctrl+F1 토글이 같은 설정에 저장됨 (${JSON.stringify(shortcut.stored)})`);
-  assert(shortcut.bars.icon === 'none' && shortcut.bars.style === 'none'
-      && shortcut.button.expanded === 'false',
-    `TC4: Ctrl+F1로 기본 도구 상자가 접힘 (${JSON.stringify(shortcut)})`);
+  assert(shortcut.bars.icon !== 'none' && shortcut.bars.style === 'none'
+      && shortcut.button.expanded === 'true',
+    `TC4: Ctrl+F1로 기본 도구 상자가 펼쳐짐 (${JSON.stringify(shortcut)})`);
 
   // ── TC5: 리로드 복원 + 첫 페인트부터 숨김(깜빡임 없음) ─────
+  await page.evaluate(async () => {
+    await window.rhwpStudio?.automation.execute('view:toolbox-basic');
+  });
   await page.evaluateOnNewDocument(() => {
     window.__toolboxSamples = [];
     const sample = () => {

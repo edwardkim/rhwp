@@ -131,6 +131,10 @@ export class Toolbar {
         e.preventDefault();
         this.dispatcher.dispatch(cmdId);
       });
+      btn.addEventListener('click', (event) => {
+        // 키보드 Enter/Space가 만드는 click에는 선행 mousedown이 없다.
+        if (event.detail === 0) this.dispatcher.dispatch(cmdId);
+      });
     }
   }
 
@@ -454,6 +458,9 @@ export class Toolbar {
           e.preventDefault();
           this.dispatcher.dispatch(cmdId);
         });
+        btn.addEventListener('click', (event) => {
+          if (event.detail === 0) this.dispatcher.dispatch(cmdId);
+        });
       }
     }
   }
@@ -651,6 +658,8 @@ export class Toolbar {
     const opacity = enabled ? '1' : '0.5';
     this.container.style.opacity = opacity;
     this.container.style.pointerEvents = enabled ? 'auto' : 'none';
+    this.container.setAttribute('aria-disabled', String(!enabled));
+    this.container.inert = !enabled;
   }
 
   /** 선택된 언어 카테고리에 해당하는 글꼴명을 반환한다 */

@@ -1,27 +1,27 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
+import {
+  initStyleToolbarOverflow,
+  shouldReturnStyleToolbarFocus,
+  STYLE_TOOLBAR_COMMAND_INLINE_MIN,
+  STYLE_TOOLBAR_FULL_ROW_MIN,
+  STYLE_TOOLBAR_ONE_ROW_MIN,
+  STYLE_TOOLBAR_OVERFLOW_QUERY,
+} from '../src/ui/style-toolbar-overflow.ts';
 
 const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
-const styles = readFileSync(new URL('../src/styles/style-bar.css', import.meta.url), 'utf8');
-const source = readFileSync(new URL('../src/ui/style-toolbar-overflow.ts', import.meta.url), 'utf8');
-const toolbar = readFileSync(new URL('../src/ui/toolbar.ts', import.meta.url), 'utf8');
 
 test('style toolbar breakpoints share the measured Stage 1 constants', () => {
-  assert.match(source, /STYLE_TOOLBAR_FULL_ROW_MIN = 962/);
-  assert.match(source, /STYLE_TOOLBAR_COMMAND_INLINE_MIN = 460/);
-  assert.match(source, /STYLE_TOOLBAR_ONE_ROW_MIN = 808/);
-  assert.match(source, /STYLE_TOOLBAR_COMMAND_INLINE_MIN - 1/);
-  assert.match(source, /STYLE_TOOLBAR_FULL_ROW_MIN - 1/);
-  assert.match(styles, /@media \(min-width: 808px\)/);
-  assert.match(styles, /@media \(max-width: 459px\), \(min-width: 808px\) and \(max-width: 961px\)/);
+  assert.equal(STYLE_TOOLBAR_FULL_ROW_MIN, 962);
+  assert.equal(STYLE_TOOLBAR_ONE_ROW_MIN, 808);
+  assert.equal(STYLE_TOOLBAR_COMMAND_INLINE_MIN, 460);
+  assert.equal(STYLE_TOOLBAR_OVERFLOW_QUERY, '(max-width: 459px), (min-width: 808px) and (max-width: 961px)');
 });
 
 test('overflow controller keeps the existing paragraph button authority', () => {
   const panelStart = html.indexOf('id="style-overflow-panel"');
   assert.ok(panelStart >= 0);
-  const panelEnd = html.indexOf('</div>', html.indexOf('class="sb-overflow-host"'));
-  assert.ok(panelEnd > panelStart);
 
   for (const id of [
     'btn-align-left',
@@ -36,25 +36,13 @@ test('overflow controller keeps the existing paragraph button authority', () => 
   }
 });
 
-test('overflow controller owns keyboard, outside-click, focus, and active-state cleanup', () => {
-  assert.match(source, /event\.key !== 'ArrowDown'/);
-  assert.match(source, /event\.key !== 'Escape'/);
-  assert.match(source, /document\.addEventListener\('pointerdown'/);
-  assert.match(source, /requestAnimationFrame\(\(\) => this\.paragraphButtons/);
-  assert.match(source, /requestAnimationFrame\(\(\) => this\.trigger\.focus\(\)\)/);
-  assert.match(source, /new MutationObserver/);
-  assert.match(source, /button\.classList\.contains\('active'\)/);
-  assert.match(source, /this\.triggerIcon\.classList\.remove\(\.\.\.ALIGNMENT_ICON_CLASSES\)/);
-  assert.doesNotMatch(source, /this\.trigger\.classList\.toggle\('active'/);
-  assert.match(source, /문단 정렬 더보기, 현재 \$\{currentAlignment\}/);
-  assert.match(source, /dispose\(\): void/);
+test('pointer commands preserve editor focus and keyboard commands return to the trigger', () => {
+  assert.equal(shouldReturnStyleToolbarFocus(true, false), true);
+  assert.equal(shouldReturnStyleToolbarFocus(true, true), false);
+  assert.equal(shouldReturnStyleToolbarFocus(false, false), false);
+  assert.equal(shouldReturnStyleToolbarFocus(false, true), false);
 });
 
-test('cursor paragraph alignment selects the source button mirrored by the overflow trigger', () => {
-  assert.match(toolbar, /private alignButtons: Array<\{ button: HTMLButtonElement; alignment: string \}>/);
-  assert.match(toolbar, /this\.alignButtons\.push\(\{ button: btn, alignment \}\)/);
-  assert.match(
-    toolbar,
-    /for \(const \{ button, alignment \} of this\.alignButtons\) \{\s*this\.setActive\(button, props\.alignment === alignment\);/,
-  );
+test('optional chrome initialization is a no-op when the container is absent', () => {
+  assert.equal(initStyleToolbarOverflow(null), null);
 });

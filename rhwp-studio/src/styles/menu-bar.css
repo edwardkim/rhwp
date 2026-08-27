@@ -15,6 +15,7 @@
 
 .menu-item {
   position: relative;
+  flex: 0 0 auto;
   user-select: none;
 }
 
@@ -32,6 +33,7 @@
   background: transparent;
   color: var(--color-text-muted);
   cursor: pointer;
+  flex: 0 0 24px;
 }
 
 .menu-toolbox-toggle:hover,
@@ -63,6 +65,8 @@
   color: var(--color-text);
   line-height: 20px;
   border: 1px solid transparent;
+  box-sizing: border-box;
+  white-space: nowrap;
 }
 
 .menu-title:hover {

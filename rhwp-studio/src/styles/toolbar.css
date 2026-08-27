@@ -22,11 +22,15 @@
   flex: 1 1 auto;
   min-width: 0;
   height: 100%;
-  overflow-x: auto;
+  overflow-x: hidden;
   overflow-y: hidden;
   scrollbar-width: none;
   overscroll-behavior-x: contain;
   touch-action: pan-x;
+}
+
+.tb-scroll-viewport.tb-scroll-viewport-enabled {
+  overflow-x: auto;
 }
 
 .tb-scroll-viewport::-webkit-scrollbar {
@@ -129,11 +133,11 @@
   transform: translateX(3px);
 }
 
-.tb-scroll-nav:hover:not(:disabled) {
+.tb-scroll-nav:hover:not([aria-disabled="true"]) {
   background: linear-gradient(to bottom, var(--ui-toolbar-bg-start), var(--ui-toolbar-bg-end));
 }
 
-.tb-scroll-nav:hover:not(:disabled)::before {
+.tb-scroll-nav:hover:not([aria-disabled="true"])::before {
   border-color: var(--ui-border-light);
   background: var(--ui-hover-strong);
 }
@@ -148,7 +152,7 @@
   outline-offset: -2px;
 }
 
-.tb-scroll-nav:disabled:not(.tb-scroll-nav-edge-hidden) {
+.tb-scroll-nav[aria-disabled="true"]:not(.tb-scroll-nav-edge-hidden) {
   color: var(--color-text-muted);
   cursor: default;
   opacity: 0.45;
@@ -177,6 +181,11 @@
   flex-shrink: 0;
 }
 
+.tb-group[hidden],
+.tb-sep[hidden] {
+  display: none;
+}
+
 .tb-mode-group {
   align-items: stretch;
   min-width: 0;
@@ -187,12 +196,6 @@
   margin: 4px 4px;
   background: var(--ui-border);
   flex-shrink: 0;
-}
-
-/* 숨겨진 회전/대칭 contextual group 양쪽의 separator가 나란히 남지 않게 한다. */
-.tb-rotate-group[style*="display:none"] + .tb-sep,
-.tb-rotate-group[style*="display: none"] + .tb-sep {
-  display: none !important;
 }
 
 .tb-btn {
@@ -358,15 +361,26 @@
 }
 
 .tb-split-item {
+  width: 100%;
+  border: 0;
   padding: 5px 12px;
+  background: transparent;
+  color: var(--color-text);
   cursor: pointer;
   display: flex;
+  font: inherit;
   justify-content: space-between;
   align-items: center;
   white-space: nowrap;
 }
 
 .tb-split-item:hover {
+  background: var(--ui-hover-strong);
+}
+
+.tb-split-item:focus-visible {
+  outline: 1px solid var(--color-focus-border);
+  outline-offset: -1px;
   background: var(--ui-hover-strong);
 }
 

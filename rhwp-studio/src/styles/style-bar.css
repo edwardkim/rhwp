@@ -680,15 +680,6 @@
   border-radius: 0 0 2px 0;
 }
 
-/* 필드 행은 500px의 고유 폭을 가지되 375px viewport의 내부 363px까지 유연하게 줄어든다. */
-#style-bar #style-name,
-.sb-field-grid .sb-combo,
-.sb-field-grid .sb-size-group,
-.sb-field-grid .sb-ls-group {
-  width: 100%;
-  min-width: 0;
-}
-
 .sb-field-grid .sb-size-group {
   height: 27px;
   border: 1px solid var(--ui-border-light);

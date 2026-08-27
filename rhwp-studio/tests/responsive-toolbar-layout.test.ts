@@ -19,11 +19,21 @@ test('icon toolbar keeps one desktop-density row around a single command track',
 });
 
 test('icon toolbar reuses one DOM authority inside a native horizontal viewport', () => {
-  assert.match(html, /id="icon-toolbar-prev"[^>]*aria-controls="icon-toolbar-viewport"[^>]*hidden disabled/);
+  assert.match(
+    html,
+    /id="icon-toolbar-prev"[^>]*aria-controls="icon-toolbar-viewport"[^>]*hidden aria-disabled="true" aria-hidden="true" tabindex="-1"/,
+  );
   assert.match(html, /id="icon-toolbar-viewport"[^>]*class="tb-scroll-viewport"[^>]*tabindex="0"/);
   assert.match(html, /class="tb-scroll-track"/);
-  assert.match(html, /id="icon-toolbar-next"[^>]*aria-controls="icon-toolbar-viewport"[^>]*hidden disabled/);
-  assert.match(toolbar, /\.tb-scroll-viewport\s*\{[^}]*overflow-x:\s*auto;/s);
+  assert.match(
+    html,
+    /id="icon-toolbar-next"[^>]*aria-controls="icon-toolbar-viewport"[^>]*hidden aria-disabled="true" aria-hidden="true" tabindex="-1"/,
+  );
+  assert.match(toolbar, /\.tb-scroll-viewport\s*\{[^}]*overflow-x:\s*hidden;/s);
+  assert.match(
+    toolbar,
+    /\.tb-scroll-viewport\.tb-scroll-viewport-enabled\s*\{[^}]*overflow-x:\s*auto;/s,
+  );
   assert.match(toolbar, /\.tb-scroll-viewport\s*\{[^}]*touch-action:\s*pan-x;/s);
   assert.match(toolbar, /\.tb-scroll-nav\[hidden\]\s*\{[^}]*display:\s*none;/s);
   assert.doesNotMatch(responsive, /#icon-toolbar\s*>\s*\.tb-sep/);
