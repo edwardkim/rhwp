@@ -1025,6 +1025,40 @@ fn para_has_visible_inline_control(para: &Paragraph) -> bool {
     })
 }
 
+/// [#6133] `control_index` 앞에 놓인 비-TAC 자리차지(TopAndBottom, vert=문단) 개체의
+/// **양수 세로 오프셋이 host 글줄 높이 이상**인가.
+///
+/// 한글은 그 개체를 문단 상단에서 오프셋만큼 내려 그리므로 그 위에 host 글줄이 그대로
+/// 들어간다 — 즉 "개체가 먼저, 글줄이 그 아래"가 아니라 **글줄이 먼저**다. 저장 사다리도
+/// 같은 말을 한다(156483831 pi=43: 글줄 `vpos=0 lh=2831`(37.7px), 그림 오프셋
+/// 3518HU(46.9px) — 줄 높이보다 크다).
+///
+/// 오프셋이 줄 높이보다 작으면(개체가 줄과 겹치도록 놓이면) 종전대로 줄이 개체 뒤로
+/// 간다 — #2813 이 다루는 "앵커 줄이 스택 아래를 인코딩" 형상이 그쪽이다.
+fn host_line_fits_above_offset_float(para: &Paragraph, control_index: usize, dpi: f64) -> bool {
+    let Some(line_height) = para
+        .line_segs
+        .iter()
+        .find(|seg| seg.tag & 0x8000_0000 == 0 && seg.line_height > 0)
+        .map(|seg| hwpunit_to_px(seg.line_height, dpi))
+    else {
+        return false;
+    };
+    para.controls
+        .iter()
+        .take(control_index)
+        .filter_map(|ctrl| match ctrl {
+            Control::Table(table) => Some(&table.common),
+            Control::Picture(picture) => Some(&picture.common),
+            Control::Shape(shape) => Some(shape.common()),
+            _ => None,
+        })
+        .filter(|common| is_para_topbottom_float(common))
+        .any(|common| {
+            hwpunit_to_px(signed_hwpunit(common.vertical_offset), dpi) >= line_height - 0.5
+        })
+}
+
 fn para_is_empty_topbottom_table_anchor(para: &Paragraph) -> bool {
     !para_has_visible_text(para)
         && para
@@ -9686,8 +9720,16 @@ impl LayoutEngine {
         let is_current_empty_square_sibling_float = paragraphs
             .get(para_index)
             .is_some_and(para_is_empty_square_sibling_table_anchor);
+        // [#6133] 단, 앞선 자리차지(TopAndBottom) 개체의 **양수 세로 오프셋이 host
+        // 글줄 높이 이상**이면 한글은 그 글줄을 개체 **위**(문단 상단)에 그린다 —
+        // 개체가 오프셋만큼 내려가 자리를 비워 주기 때문이다. 이 경우 개체가 진행시킨
+        // y_offset 으로 TAC 글줄을 재등록하면 줄이 개체 아래(용지 밖)로 밀린다
+        // (156483831 4쪽: '붙임2 행사 포스터' 제목 표 y=1089.1, 한글 89.6).
+        let tac_line_fits_above_offset_float = paragraphs
+            .get(para_index)
+            .is_some_and(|para| host_line_fits_above_offset_float(para, control_index, self.dpi));
         if let Some(existing_y) = para_start_y.get(&para_index) {
-            if is_current_tac && y_offset > *existing_y + 1.0 {
+            if is_current_tac && y_offset > *existing_y + 1.0 && !tac_line_fits_above_offset_float {
                 para_start_y.insert(para_index, y_offset);
             }
         } else {
@@ -9923,6 +9965,15 @@ impl LayoutEngine {
                     }
                 }
             }
+            // [#6133] host 글줄이 앞선 오프셋 float **위**에 들어가는 문단이면, TAC
+            // 글줄은 float 이 진행시킨 흐름이 아니라 문단 상단에 그린다. 흐름 자체는
+            // float 아래로 계속돼야 하므로 호출 뒤 되돌린다.
+            let tac_above_offset_float_flow =
+                (is_tac && tac_line_fits_above_offset_float && y_offset > para_y_for_table + 1.0)
+                    .then_some(y_offset);
+            if tac_above_offset_float_flow.is_some() {
+                y_offset = para_y_for_table;
+            }
             // ── 표 레이아웃 ──
             let tac_table_y_before = y_offset; // Task #9: 표 렌더 전 y 보존
             let table_ctl_out = self.layout_table_control_block(
@@ -9949,6 +10000,10 @@ impl LayoutEngine {
                 },
             );
             y_offset = table_ctl_out.y_offset;
+            if let Some(restore) = tac_above_offset_float_flow {
+                // [#6133] 글줄만 위로 올리고 흐름 커서는 float 아래를 유지한다.
+                y_offset = restore.max(y_offset);
+            }
             let tac_seg_applied = table_ctl_out.tac_seg_applied;
             let para_float_lane_info = table_ctl_out.para_float_lane_info;
             if let Some(ret) = table_ctl_out.early_return {
