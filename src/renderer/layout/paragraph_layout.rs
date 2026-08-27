@@ -2568,14 +2568,15 @@ impl LayoutEngine {
                     if let Some(Control::Form(f)) = p.controls.get(tac_ci) {
                         let form_h = hwpunit_to_px(f.height as i32, self.dpi);
                         let form_y = (y + baseline - form_h).max(y);
-                        let cell_location = cell_ctx.map(|ctx| {
-                            let e = &ctx.path[0];
-                            (
-                                ctx.parent_para_index,
-                                e.control_index,
-                                e.cell_index,
-                                e.cell_para_index,
-                            )
+                        let cell_location = cell_ctx.and_then(|ctx| {
+                            ctx.path.first().map(|e| {
+                                (
+                                    ctx.parent_para_index,
+                                    e.control_index,
+                                    e.cell_index,
+                                    e.cell_para_index,
+                                )
+                            })
                         });
                         let form_node = RenderNode::new(
                             tree.next_id(),
@@ -2797,8 +2798,8 @@ impl LayoutEngine {
                     };
                     let (eq_cell_idx, eq_cell_para_idx) = if let Some(ref ctx) = cell_ctx {
                         (
-                            Some(ctx.path[0].cell_index),
-                            Some(ctx.path[0].cell_para_index),
+                            ctx.path.first().map(|e| e.cell_index),
+                            ctx.path.first().map(|e| e.cell_para_index),
                         )
                     } else {
                         (None, None)
@@ -2827,7 +2828,7 @@ impl LayoutEngine {
                                 Some(para_index)
                             },
                             control_index: if let Some(ref ctx) = cell_ctx {
-                                Some(ctx.path[0].control_index)
+                                ctx.path.first().map(|e| e.control_index).or(Some(tac_ci))
                             } else {
                                 Some(tac_ci)
                             },
@@ -5824,8 +5825,8 @@ impl LayoutEngine {
                             };
                             let (eq_cell_idx, eq_cell_para_idx) = if let Some(ref ctx) = cell_ctx {
                                 (
-                                    Some(ctx.path[0].cell_index),
-                                    Some(ctx.path[0].cell_para_index),
+                                    ctx.path.first().map(|e| e.cell_index),
+                                    ctx.path.first().map(|e| e.cell_para_index),
                                 )
                             } else {
                                 (None, None)
@@ -5855,7 +5856,10 @@ impl LayoutEngine {
                                             Some(para_index)
                                         },
                                         control_index: if let Some(ref ctx) = cell_ctx {
-                                            Some(ctx.path[0].control_index)
+                                            ctx.path
+                                                .first()
+                                                .map(|e| e.control_index)
+                                                .or(Some(tac_ci))
                                         } else {
                                             Some(tac_ci)
                                         },
@@ -5985,15 +5989,16 @@ impl LayoutEngine {
                         if let Some(Control::Form(f)) = p.controls.get(tac_ci) {
                             let form_h = hwpunit_to_px(f.height as i32, self.dpi);
                             let form_y = (y + baseline - form_h).max(y);
-                            // 셀 내부인 경우 cell_location 채우기
-                            let cell_location = cell_ctx.as_ref().map(|ctx| {
-                                let e = &ctx.path[0];
-                                (
-                                    ctx.parent_para_index,
-                                    e.control_index,
-                                    e.cell_index,
-                                    e.cell_para_index,
-                                )
+                            // 셀 내부인 경우 cell_location 채우기 — 빈 경로면 None
+                            let cell_location = cell_ctx.as_ref().and_then(|ctx| {
+                                ctx.path.first().map(|e| {
+                                    (
+                                        ctx.parent_para_index,
+                                        e.control_index,
+                                        e.cell_index,
+                                        e.cell_para_index,
+                                    )
+                                })
                             });
                             let form_node = RenderNode::new(
                                 tree.next_id(),
