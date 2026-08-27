@@ -108,9 +108,21 @@ jobs:
           retention-days: 1
           if-no-files-found: error
 
-      # 신뢰 가능한 duration profile은 성공한 devel 실행에서만 수집한다. PR은
-      # 이 artifact를 정책 파일로 자동 반영하지 않으며, 별도 검토 PR이 필요하다.
-      - name: Upload B/C target durations
+      # Same-repository PR artifact is only a short-lived candidate. It cannot
+      # update the policy until a trusted post-merge verifier accepts its exact
+      # workflow run, merge lineage, and artifact provenance.
+      - name: Upload same-repository PR B/C target durations
+        if: ${{ success() && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && (inputs.archive_label == 'b' || inputs.archive_label == 'c') }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: nextest-target-durations-${{ github.run_id }}-${{ inputs.archive_label }}
+          path: target-durations-${{ inputs.archive_label }}.json
+          retention-days: 3
+          if-no-files-found: error
+
+      # Only successful devel B/C measurements are baseline candidates. They are
+      # retained longer so their provenance can be audited after policy refresh.
+      - name: Upload devel B/C target durations
         if: ${{ success() && github.event_name == 'push' && github.ref == 'refs/heads/devel' && (inputs.archive_label == 'b' || inputs.archive_label == 'c') }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:

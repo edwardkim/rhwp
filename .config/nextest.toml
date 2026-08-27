@@ -7,9 +7,9 @@ nextest-version = { required = "0.9.91", recommended = "0.9.140" }
 filter = "test(/(^|::)overflow_cell_baseline::/)"
 priority = 100
 
-# B/C archive workers use this profile only to emit a compact JUnit report. The
-# report is uploaded only from successful devel runs and becomes a reviewed input
-# for the next duration-policy update PR.
+# B/C archive workers use this profile only to emit a compact JUnit report.
+# Successful devel runs retain it for the baseline; same-repository PRs retain a
+# short-lived candidate that a later trusted post-merge verifier may consume.
 [profile.ci-duration-observation.junit]
 path = "junit.xml"
 report-name = "rhwp-nextest-duration-observation"

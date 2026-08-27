@@ -25,13 +25,23 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
+  trusted_postmerge_reuse:
+    uses: ./.github/workflows/trusted-postmerge-ci-reuse.yml
+    permissions:
+      actions: read
+      contents: read
+      pull-requests: read
+    with:
+      workflow_file: adapter-diff.yml
+
   adapter-impact:
     name: adapter inter-diff preflight
     runs-on: ubuntu-latest
+    needs: [trusted_postmerge_reuse]
     timeout-minutes: 3
     outputs:
-      adapter_required: ${{ steps.finalize.outputs.adapter_required || 'true' }}
-      reason: ${{ steps.finalize.outputs.reason || 'preflight-unavailable' }}
+      adapter_required: ${{ needs.trusted_postmerge_reuse.outputs.reuse == 'true' && 'false' || steps.finalize.outputs.adapter_required || 'true' }}
+      reason: ${{ needs.trusted_postmerge_reuse.outputs.reuse == 'true' && needs.trusted_postmerge_reuse.outputs.reason || steps.finalize.outputs.reason || 'preflight-unavailable' }}
     steps:
       # 문서 전용 PR 또는 검증된 코드 후보 뒤의 review-only tail에서는 stable check
       # 이름을 유지하고 worker만 skip한다. API·계보·후보 run 판정은 fail-closed다.

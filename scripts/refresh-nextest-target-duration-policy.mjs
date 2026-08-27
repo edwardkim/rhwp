@@ -37,6 +37,7 @@ function parseArgs(args) {
 export function refreshDurationPolicy(policy, measurements) {
   parseDurationPolicy(policy);
   const durations = { ...policy.targets };
+  const sourceKeys = new Set();
   for (const measurement of measurements) {
     if (!measurement || measurement.schema_version !== 1 || !["b", "c"].includes(measurement.archive_label)) {
       fail("measurement must be a B or C schema_version 1 report");
@@ -44,12 +45,24 @@ export function refreshDurationPolicy(policy, measurements) {
     if (!measurement.targets || typeof measurement.targets !== "object" || Array.isArray(measurement.targets)) {
       fail("measurement targets must be an object");
     }
-    for (const [target, seconds] of Object.entries(measurement.targets)) {
+    const entries = Object.entries(measurement.targets);
+    if (entries.length === 0) {
+      fail(`measurement must contain target durations: ${measurement.archive_label}`);
+    }
+    const source = [measurement.run_id, measurement.ref, measurement.sha];
+    if (!source.every((value) => typeof value === "string" && value.length > 0)) {
+      fail(`measurement must identify its run, ref, and sha: ${measurement.archive_label}`);
+    }
+    sourceKeys.add(JSON.stringify(source));
+    for (const [target, seconds] of entries) {
       if (!target || !Number.isFinite(seconds) || seconds <= 0) {
         fail(`measurement target must have a positive duration: ${target}`);
       }
       durations[target] = seconds;
     }
+  }
+  if (sourceKeys.size !== 1) {
+    fail("B and C measurements must have identical run, ref, and sha provenance");
   }
 
   return {
