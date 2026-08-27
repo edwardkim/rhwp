@@ -8735,7 +8735,15 @@ impl LayoutEngine {
             let alignment = para_style.map(|s| s.alignment).unwrap_or(Alignment::Left);
             let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
             let indent = para_style.map(|s| s.indent).unwrap_or(0.0);
-            let effective_margin = if indent > 0.0 {
+            // [Issue #6190] 저장 LINE_SEG 의 `TAG_INDENTATION`(bit 20)이 꺼진 첫 줄에는
+            // 들여쓰기를 얹지 않는다 — `paragraph_layout` 의 본문 줄과 같은 계약이다.
+            // 이 계약이 없으면 표 호스트 문단이 들여쓰기만큼 밀려 표가 용지 밖으로
+            // 나간다(156458354 3쪽: 표 우변 829.8, 용지 793.7).
+            let stored_first_seg_denies_indent = para.line_segs.first().is_some_and(|seg| {
+                seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                    && seg.tag & crate::model::paragraph::LineSeg::TAG_INDENTATION == 0
+            });
+            let effective_margin = if indent > 0.0 && !stored_first_seg_denies_indent {
                 margin_left + indent
             } else {
                 margin_left
