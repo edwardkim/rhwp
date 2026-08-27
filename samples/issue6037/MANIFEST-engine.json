@@ -203,7 +203,7 @@
       "variant": "중간계열추가",
       "control": "시가고가저가종가-대조군",
       "original_path": "samples/issue6037/engine/시가고가저가종가-중간계열추가.hwpx",
-      "original_sha256": "fb75985541ee508544abb86937ffd6e063480621c485f1543143a648cb9999eb",
+      "original_sha256": "c191ff3749bb6c5a9d8b8563c6852fd57703edbce9e7f2ae03f76535152c1b93",
       "hancom_pdf_path": "pdf/issue6037/engine/시가고가저가종가-중간계열추가-hwpx.pdf",
       "hancom_pdf_sha256": "03adeda454e4fe08f6090c1a6bfca29836f404e178d10a467fb63675c1b4d6d2",
       "raster": {
@@ -225,7 +225,7 @@
       "variant": "중간계열추가",
       "control": "시가고가저가종가-대조군",
       "original_path": "samples/issue6037/engine/시가고가저가종가-중간계열추가.hwp",
-      "original_sha256": "c2327f7be2ddda9ff39deecca80db3617a7a47a752816837d919ead531110826",
+      "original_sha256": "35365f0544afd623c62c7d70da76db075040425df924aec6b94c6013f70e9673",
       "hancom_pdf_path": "pdf/issue6037/engine/시가고가저가종가-중간계열추가.pdf",
       "hancom_pdf_sha256": "b39efe42f3601172c2ed77184d06b19aac804d8eaf59bb3ebf3751f321d6e20d",
       "raster": {
@@ -247,7 +247,7 @@
       "variant": "중간계열삭제",
       "control": "시가고가저가종가-대조군",
       "original_path": "samples/issue6037/engine/시가고가저가종가-중간계열삭제.hwpx",
-      "original_sha256": "f2e82a9d4eeb8200a2be78898f42e261697f551433bbb21a5e73bdd24fe03c9d",
+      "original_sha256": "d8b4fbe262e37acac2fae8c5c31306eff1efce6aeb97c81b960898a5ff3916ce",
       "hancom_pdf_path": "pdf/issue6037/engine/시가고가저가종가-중간계열삭제-hwpx.pdf",
       "hancom_pdf_sha256": "814afa09b0ac86d60c804d919b8040ca61644f08fed95ac53def13034efa4893",
       "raster": {
@@ -269,7 +269,7 @@
       "variant": "중간계열삭제",
       "control": "시가고가저가종가-대조군",
       "original_path": "samples/issue6037/engine/시가고가저가종가-중간계열삭제.hwp",
-      "original_sha256": "2733ba4c8c7661f389e4fba8eeb22c90bca25dd1bfe254fe97cca29cad3fbb76",
+      "original_sha256": "553e2a9fe0e17b77be485c9ab4ed746ebcbc579dc5cb3402e7666bb409c74eb6",
       "hancom_pdf_path": "pdf/issue6037/engine/시가고가저가종가-중간계열삭제.pdf",
       "hancom_pdf_sha256": "cfb3660bee5907f0b6e81c303edc84f3e73a3b1e3a1ec91ee5a1744a932c6e52",
       "raster": {
