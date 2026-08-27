@@ -725,15 +725,38 @@ impl LayoutEngine {
         };
 
         let common = shape.common();
-        let adjusted_common;
-        let common_for_position = if clamp_negative_para_offset
-            && !common.treat_as_char
+        // [#6185] 세로 오프셋이 **자기 높이의 정확한 음수**인 자리차지 글상자는 그
+        // 값이 배치 의도가 아니라 자기 변위 잔재다 — 한글은 무시하고 문단 자리에
+        // 그린다(156570535 2쪽: offset -3736 = -(높이 3736), 한글 글상자 상단
+        // 514.7 로 표 하단 499.5 아래. 적용하면 465.5 로 49.8px 올라가 표 둘째
+        // 행을 통째로 덮는다). #6110 의 `vpos == 그림 높이` 자기-변위 지문과 같은 축.
+        //
+        // 지문이 **정확 일치**일 때만 발동한다 — 임의의 음수 오프셋은 실제 위치
+        // 지정이므로 종전대로 적용한다.
+        let self_displacement_offset = !common.treat_as_char
+            && matches!(
+                common.text_wrap,
+                crate::model::shape::TextWrap::TopAndBottom
+            )
             && matches!(common.vert_rel_to, crate::model::shape::VertRelTo::Para)
             && matches!(
                 common.vert_align,
                 crate::model::shape::VertAlign::Top | crate::model::shape::VertAlign::Inside
             )
-            && (common.vertical_offset as i32) < 0
+            && common.height > 0
+            && i64::from(crate::renderer::float_placement::signed_hwpunit(
+                common.vertical_offset,
+            )) == -i64::from(common.height as i32);
+        let adjusted_common;
+        let common_for_position = if self_displacement_offset
+            || clamp_negative_para_offset
+                && !common.treat_as_char
+                && matches!(common.vert_rel_to, crate::model::shape::VertRelTo::Para)
+                && matches!(
+                    common.vert_align,
+                    crate::model::shape::VertAlign::Top | crate::model::shape::VertAlign::Inside
+                )
+                && (common.vertical_offset as i32) < 0
         {
             adjusted_common = {
                 let mut common = common.clone();
