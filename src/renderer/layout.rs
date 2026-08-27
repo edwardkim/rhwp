@@ -8841,7 +8841,14 @@ impl LayoutEngine {
                                 .unwrap_or(false)
                     })
                     .unwrap_or(false);
-                let leading = if line0_has_real_text {
+                // [Issue #6167] 저장 사다리가 표에 자기 줄(`horzpos=0`)을 줬으면 앞 줄의
+                // 공백은 표의 x 가 아니다. 113424 38쪽 `[별지 제5호 서식]` 표는 앞 공백
+                // 18자(120.0px)만큼 밀려 본문 우단 83.6px·용지 8.0px 밖으로 잘렸다 —
+                // 한글 2020·2024 모두 표를 좌단(75.32)에 둔다.
+                let stored_own_line = paragraphs
+                    .get(para_index)
+                    .is_some_and(|p| stored_ladder_gives_tac_table_its_own_line(p, control_index));
+                let leading = if line0_has_real_text || stored_own_line {
                     0.0
                 } else {
                     composed
@@ -12900,6 +12907,32 @@ fn compute_square_wrap_tbl_x_right(
         _ => col_area.x + h_offset,
     };
     tbl_x + tbl_w
+}
+
+/// [Issue #6167] 저장 사다리가 자리차지(TAC) 표에 **자기 줄**을 준 문단인지.
+///
+/// 한글이 `linesegarray` 에 `textpos = 표의 char 위치` · `horzpos = 0` 인 줄을 적어
+/// 두었다면, 그 표는 **그 줄 머리**에서 시작한다 — 앞 줄에 있던 공백은 표의 x 에
+/// 실리지 않는다. 이 증거가 없으면 종전대로 선행 텍스트 폭을 leading 으로 쓴다.
+///
+/// **통제군(`samples/복학원서.hwp` pi=16)** 과 값으로 갈린다:
+///
+/// | | 표 char 위치 | `ls[1].text_start` | 판정 |
+/// |---|---|---|---|
+/// | 113424 pi=441 | 18 | **18** (`col_start=0`) | 자기 줄 → leading 0 |
+/// | 복학원서 pi=16 | 99 | 198 | 표가 `ls[0]` **안** → 종전 leading |
+///
+/// 복학원서는 한컴이 표 폭만큼 필러(U+F081C)를 채워 줄바꿈시킨 형상이라 표가 첫 줄
+/// 안에 있고, `#1195` 로 보정된 leading 축이 그대로 유효하다.
+fn stored_ladder_gives_tac_table_its_own_line(para: &Paragraph, control_index: usize) -> bool {
+    let Some(&ctrl_pos) = para.control_text_positions().get(control_index) else {
+        return false;
+    };
+    para.line_segs.iter().enumerate().skip(1).any(|(idx, seg)| {
+        seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+            && seg.column_start == 0
+            && para.line_seg_text_start(idx) as usize == ctrl_pos
+    })
 }
 
 fn compute_tac_leading_width(
