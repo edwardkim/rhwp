@@ -274,6 +274,7 @@ hwp5rb	issue6126/3171199_design_capability_criteria.hwp	sections[].paragraphs[].
 hwp5rb	issue6127/2599643_vessel_pass_application.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	18
 hwp5rb	issue6132/156482639_startup_ir_contest.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	46
 hwp5rb	issue6140/156462405_smart_expo.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	182
+hwp5rb	issue6172/2599643_port_call_form.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	18
 hwp5rb	issue_1133.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	15
 hwp5rb	issues/2809/jubo_20260104.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	174
 hwp5rb	k-water-rfp-2024.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	457
