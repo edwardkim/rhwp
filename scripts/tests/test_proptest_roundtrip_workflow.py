@@ -57,7 +57,7 @@ class ProptestRoundtripWorkflowTests(unittest.TestCase):
 
     def test_review_only_preflight_script_parses(self) -> None:
         script = self.wf.split("script: |\n", maxsplit=1)[1].split(
-            "\n\n      - name: Finalize fast pass", maxsplit=1
+            "\n\n      # 기준선 병합을 fast-pass bridge로", maxsplit=1
         )[0]
         script = "\n".join(
             line.removeprefix("            ") for line in script.splitlines()

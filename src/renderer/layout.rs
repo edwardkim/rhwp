@@ -9,7 +9,8 @@ use super::composer::{
 use super::float_placement::{
     empty_host_physical_ladder_extras_hu, horizontal_range, is_para_topbottom_float,
     native_empty_host_physical_outer_box_paint_inset, native_empty_host_rowbreak_line_advance_hu,
-    signed_hwpunit, FloatLaneSet, FloatPlacementContext,
+    signed_hwpunit, stored_empty_anchor_band_host_line_advance_hu, FloatLaneSet,
+    FloatPlacementContext,
 };
 use super::font_metrics_data;
 use super::height_cursor::HeightCursor;
@@ -1024,6 +1025,85 @@ fn para_has_visible_inline_control(para: &Paragraph) -> bool {
         Control::Form(_) => true,
         _ => false,
     })
+}
+
+/// [#6134] `control_index` 앞에 놓인 같은 문단의 비-TAC 자리차지(TopAndBottom) 개체가
+/// 차지하는 밴드 높이(px, 바깥 아래 여백 포함).
+///
+/// 한글은 자리차지 개체를 문단 글줄 **위**에 놓는다 — 그래서 그 문단의 글줄은 밴드
+/// 아래로 내려가고, 저장 lineseg 의 vpos 도 그 자리를 가리킨다. 같은 문단에 매달린
+/// 다른 개체가 "문단 기준" 세로 오프셋을 쓰면 그 기준점은 문단 상단(=밴드 상단)이
+/// 아니라 **그 글줄**이다. rhwp 는 문단 상단으로 잡아 로고 글상자를 담당부서 표
+/// 위에 얹었다(156731730 8쪽: 로고 y 765.1, 한글 1010.7 — 표 753.7~993.0 위).
+///
+/// 밴드 자신(=`control_index` 이하)은 제외한다 — 자기 기준점은 문단 상단이 맞다.
+///
+/// 대상은 **글앞으로/글뒤로 개체**로 한정한다. 자리차지 개체끼리의 세로 쌓기는 이미
+/// 자기 계약(#2097 가로-컬럼 모델)이 있어 여기서 다시 더하면 이중 계상이고, 어울림
+/// (Square)은 본문 흐름과 함께 배치되는 별개 축이다.
+fn preceding_topbottom_band_height_px(para: &Paragraph, control_index: usize, dpi: f64) -> f64 {
+    use crate::model::shape::TextWrap;
+    let current_is_overlay = para
+        .controls
+        .get(control_index)
+        .and_then(|ctrl| match ctrl {
+            Control::Table(table) => Some(&table.common),
+            Control::Picture(picture) => Some(&picture.common),
+            Control::Shape(shape) => Some(shape.common()),
+            _ => None,
+        })
+        .is_some_and(|common| {
+            !common.treat_as_char
+                && matches!(
+                    common.text_wrap,
+                    TextWrap::InFrontOfText | TextWrap::BehindText
+                )
+                && matches!(common.vert_rel_to, crate::model::shape::VertRelTo::Para)
+        });
+    if !current_is_overlay {
+        return 0.0;
+    }
+    para.controls
+        .iter()
+        .take(control_index)
+        .filter_map(|ctrl| match ctrl {
+            Control::Table(table) => Some(&table.common),
+            Control::Picture(picture) => Some(&picture.common),
+            Control::Shape(shape) => Some(shape.common()),
+            _ => None,
+        })
+        .filter(|common| is_para_topbottom_float(common))
+        .map(|common| {
+            hwpunit_to_px(common.height as i32, dpi)
+                + hwpunit_to_px(i32::from(common.margin.bottom), dpi)
+        })
+        .sum()
+}
+
+/// [#6133] `control_index` 앞에 놓인 비-TAC 자리차지(TopAndBottom, vert=문단) 개체의
+/// 양수 세로 오프셋이 host 글줄 높이 이상인가.
+fn host_line_fits_above_offset_float(para: &Paragraph, control_index: usize, dpi: f64) -> bool {
+    let Some(line_height) = para
+        .line_segs
+        .iter()
+        .find(|seg| seg.tag & 0x8000_0000 == 0 && seg.line_height > 0)
+        .map(|seg| hwpunit_to_px(seg.line_height, dpi))
+    else {
+        return false;
+    };
+    para.controls
+        .iter()
+        .take(control_index)
+        .filter_map(|ctrl| match ctrl {
+            Control::Table(table) => Some(&table.common),
+            Control::Picture(picture) => Some(&picture.common),
+            Control::Shape(shape) => Some(shape.common()),
+            _ => None,
+        })
+        .filter(|common| is_para_topbottom_float(common))
+        .any(|common| {
+            hwpunit_to_px(signed_hwpunit(common.vertical_offset), dpi) >= line_height - 0.5
+        })
 }
 
 fn para_is_empty_topbottom_table_anchor(para: &Paragraph) -> bool {
@@ -9753,8 +9833,11 @@ impl LayoutEngine {
         let is_current_empty_square_sibling_float = paragraphs
             .get(para_index)
             .is_some_and(para_is_empty_square_sibling_table_anchor);
+        let tac_line_fits_above_offset_float = paragraphs
+            .get(para_index)
+            .is_some_and(|para| host_line_fits_above_offset_float(para, control_index, self.dpi));
         if let Some(existing_y) = para_start_y.get(&para_index) {
-            if is_current_tac && y_offset > *existing_y + 1.0 {
+            if is_current_tac && y_offset > *existing_y + 1.0 && !tac_line_fits_above_offset_float {
                 para_start_y.insert(para_index, y_offset);
             }
         } else {
@@ -9990,6 +10073,12 @@ impl LayoutEngine {
                     }
                 }
             }
+            let tac_above_offset_float_flow =
+                (is_tac && tac_line_fits_above_offset_float && y_offset > para_y_for_table + 1.0)
+                    .then_some(y_offset);
+            if tac_above_offset_float_flow.is_some() {
+                y_offset = para_y_for_table;
+            }
             // ── 표 레이아웃 ──
             let tac_table_y_before = y_offset; // Task #9: 표 렌더 전 y 보존
             let table_ctl_out = self.layout_table_control_block(
@@ -10016,6 +10105,9 @@ impl LayoutEngine {
                 },
             );
             y_offset = table_ctl_out.y_offset;
+            if let Some(restore) = tac_above_offset_float_flow {
+                y_offset = restore.max(y_offset);
+            }
             let tac_seg_applied = table_ctl_out.tac_seg_applied;
             let para_float_lane_info = table_ctl_out.para_float_lane_info;
             if let Some(ret) = table_ctl_out.early_return {
@@ -10152,6 +10244,34 @@ impl LayoutEngine {
                         .map(|line_advance| (table.as_ref(), line_advance)),
                         _ => None,
                     });
+                // [#6147] #2439 의 특수형이 아닌 빈 앵커 밴드도 저장 사다리가
+                // host 줄 advance 만 증언하면 그 줄을 흐름에 계상한다.
+                let stored_empty_anchor_band_host_tail_px =
+                    (single_positive_empty_float_before_plain_text.is_none())
+                        .then(|| {
+                            stored_empty_anchor_band_host_line_advance_hu(
+                                self.profile.get().hwp5_stored_pagination_layout()
+                                    || self.profile.get().hwpx_stored_layout(),
+                                para,
+                                control_index,
+                                paragraphs.get(para_index + 1),
+                            )
+                            .map(|line_advance| {
+                                let outer_bottom = match para.controls.get(control_index) {
+                                    Some(Control::Table(table)) => table.outer_margin_bottom as i32,
+                                    Some(Control::Picture(picture)) => {
+                                        i32::from(picture.common.margin.bottom)
+                                    }
+                                    Some(Control::Shape(shape)) => {
+                                        i32::from(shape.common().margin.bottom)
+                                    }
+                                    _ => 0,
+                                };
+                                hwpunit_to_px(line_advance, self.dpi)
+                                    + hwpunit_to_px(outer_bottom, self.dpi)
+                            })
+                        })
+                        .flatten();
                 let lane_flow_bottom = if let Some((table, line_advance)) =
                     single_positive_empty_float_before_plain_text
                 {
@@ -10162,6 +10282,11 @@ impl LayoutEngine {
                     let stored_rowbreak_host_tail = hwpunit_to_px(line_advance, self.dpi)
                         + hwpunit_to_px(table.outer_margin_bottom as i32, self.dpi);
                     lanes.max_bottom() + stored_rowbreak_host_tail
+                } else if let Some(host_tail) = stored_empty_anchor_band_host_tail_px {
+                    // [#6147] 저장 사다리가 host 줄 advance 만 증언하는 빈 앵커 밴드는
+                    // 그 줄 상자를 개체 아래에 실제로 차지한다 — #2439 와 같은 꼬리
+                    // (줄 advance + 바깥 아래 여백)를 페인트 lane 하단에 얹는다.
+                    lanes.max_bottom() + host_tail
                 } else if is_current_empty_square_sibling_float {
                     // 두 Square 표는 x lane이 겹치지 않으면 같은 raw top을 사용한다.
                     // 첫 표의 전역 cursor를 둘째 표의 base로 더하지 않아야 가로 pair가
@@ -12208,6 +12333,16 @@ impl LayoutEngine {
             } = item
             {
                 let para_y = para_start_y.get(para_index).copied().unwrap_or(col_area.y);
+                // [#6134] 같은 문단에 앞선 자리차지(TopAndBottom) 개체가 있으면 문단의
+                // 글줄은 그 밴드 **아래**로 내려간다. "문단 기준" 세로 오프셋을 가진
+                // 뒤 개체의 기준점도 문단 상단(=밴드 상단)이 아니라 그 글줄이다.
+                let para_y = para_y
+                    + paragraphs
+                        .get(*para_index)
+                        .map(|para| {
+                            preceding_topbottom_band_height_px(para, *control_index, self.dpi)
+                        })
+                        .unwrap_or(0.0);
                 let comp = composed.get(*para_index);
                 let para_style_id = if let Some(para) = paragraphs.get(*para_index) {
                     comp.map(|c| c.para_style_id as usize)
