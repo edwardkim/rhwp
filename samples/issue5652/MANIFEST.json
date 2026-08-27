@@ -192,7 +192,7 @@
       "original_path": "samples/issue5652/누적세로막대형-계열삭제.hwp",
       "original_sha256": "2a76d9703440b88b4a1cf0b58c17dc27dd4c45ee5a77edc415a67c2889607911",
       "hancom_pdf_path": "pdf/issue5652/누적세로막대형-계열삭제-hwp-2022.pdf",
-      "hancom_pdf_sha256": "0b114414f1a0585390eb9e7370380ea16c4c2f35949d806c507cc48c84346994",
+      "hancom_pdf_sha256": "68f2e36a8f304d3257d8d23fe0599b50b26bd72d0cf8395624a256f4ac34d3fa",
       "raster": {
         "pymupdf_144dpi_rgb_sha256": "35b9ecddf10c6c3c2c62f23543427eda772e24996d2712dee3ffc2bd9e707740",
         "pdftoppm_144dpi_ppm_sha256": "a13f5e51f9d646e9b30b64f0c02a19975de61273866d33eb4976fc156443cd9d",
@@ -215,7 +215,7 @@
       "original_path": "samples/issue5652/누적세로막대형-계열삭제.hwpx",
       "original_sha256": "5f99f8dd6928a512caa72aad7989871f6e66168e0ed8c609e6988c3743c3262c",
       "hancom_pdf_path": "pdf/issue5652/누적세로막대형-계열삭제-hwpx-2022.pdf",
-      "hancom_pdf_sha256": "655a88a33e13c1b6da1f08a0fe01bc4b6e31c582dfdb709fc06871d7062d1347",
+      "hancom_pdf_sha256": "baa7a38f1ed6db42e22a435e922597d50b5b573968add96163b79b7bb059ede2",
       "raster": {
         "pymupdf_144dpi_rgb_sha256": "35b9ecddf10c6c3c2c62f23543427eda772e24996d2712dee3ffc2bd9e707740",
         "pdftoppm_144dpi_ppm_sha256": "a13f5e51f9d646e9b30b64f0c02a19975de61273866d33eb4976fc156443cd9d",
@@ -376,7 +376,7 @@
       "original_path": "samples/issue5652/묶은세로막대형-계열삭제.hwp",
       "original_sha256": "1d8fbae6d0a3830cdfe72ab31cdf8e9ece663da045fc439b1059d94e2f13dc94",
       "hancom_pdf_path": "pdf/issue5652/묶은세로막대형-계열삭제-hwp-2022.pdf",
-      "hancom_pdf_sha256": "5baffb53a94d7e00f42e2c4770cf1ca442a7513a3718c762df3919badcd8d049",
+      "hancom_pdf_sha256": "caebe6f2ab9c0b88c7f77be314aa07f85e25487db27acffba7cc4fd76e0a2261",
       "raster": {
         "pymupdf_144dpi_rgb_sha256": "fe289457ee30d874c4a8ef327b2a188a09c0b94f5f7571c44f2555d00b1021f2",
         "pdftoppm_144dpi_ppm_sha256": "bcd3507a4f052dbadf8ed09a0a349e7887cca6fd09bde66834c8f925c7a309c1",
@@ -399,7 +399,7 @@
       "original_path": "samples/issue5652/묶은세로막대형-계열삭제.hwpx",
       "original_sha256": "547675c64fceb26cc1ad86804ef161e6bdb3e48d7c8a275d21f83bc2a4c473fc",
       "hancom_pdf_path": "pdf/issue5652/묶은세로막대형-계열삭제-hwpx-2022.pdf",
-      "hancom_pdf_sha256": "a23267da98d49ec8ae3689388cee0c2f17a0dd9a380c2a7fb951ed0210368f0d",
+      "hancom_pdf_sha256": "ec10ddce4a2ae68d4f5285b37f69625ac63a0a835c75e817ed0e27d248c84a94",
       "raster": {
         "pymupdf_144dpi_rgb_sha256": "fe289457ee30d874c4a8ef327b2a188a09c0b94f5f7571c44f2555d00b1021f2",
         "pdftoppm_144dpi_ppm_sha256": "bcd3507a4f052dbadf8ed09a0a349e7887cca6fd09bde66834c8f925c7a309c1",
