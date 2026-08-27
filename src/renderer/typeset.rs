@@ -24092,7 +24092,24 @@ impl TypesetEngine {
                     ),
                     self.dpi,
                 );
-            let vert_offset_overhead = if is_continuation {
+            // [#6143] 오프셋이 쪽 경계에서 이미 소진된 첫 조각은 예산에서도 빼지
+            // 않는다. 앵커 문단이 이 쪽에 아무것도 내지 않았고(항목 0 · host 선방출 0)
+            // 표가 쪽 최상단에서 시작하면 오프셋의 기준점(문단 자리)이 이 쪽에 없다 —
+            // 앵커는 앞 쪽에 있고 오프셋은 거기서 쓰였다. 그래도 예산에서 빼면 조각이
+            // 오프셋만큼 짧아져 표가 한 쪽 더 갈라진다(156555538 9쪽: page_avail
+            // 990.3−1.9−554.6=433.8 → 행 1 을 20줄에서 자르고 나머지를 10쪽으로,
+            // 총 18쪽. 한글은 17쪽). layout(table_partial.rs) 의 같은 게이트와
+            // 대칭이어야 컷과 배치가 어긋나지 않는다(#2015 감액과 같은 이유).
+            let para_offset_consumed_by_page_break = !is_continuation
+                && st.current_items.is_empty()
+                && st.current_height < 1.0
+                && st
+                    .pre_emitted_host_heights
+                    .get(&para_idx)
+                    .copied()
+                    .unwrap_or(0.0)
+                    <= 0.0;
+            let vert_offset_overhead = if is_continuation || para_offset_consumed_by_page_break {
                 0.0
             } else {
                 use crate::model::shape::VertRelTo as VR3;
