@@ -1026,7 +1026,7 @@ fn parse_column_def_ctrl(ctrl_data: &[u8]) -> ColumnDef {
         _ => ColumnType::Normal,
     };
     // bit 2-9: 단 개수 (1-255)
-    cd.column_count = ((attr >> 2) & 0xFF) as u16;
+    cd.column_count = ((attr >> 2) & 0xFF);
     // bit 10-11: 단 방향
     cd.direction = match (attr >> 10) & 0x03 {
         1 => ColumnDirection::RightToLeft,
