@@ -2,7 +2,7 @@
 kind: pr-review
 status: accepted
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-08-27
+last_verified: 2026-08-28
 ---
 
 # PR #6203 review - #6185 자기 높이 음수 오프셋 무시
@@ -13,7 +13,8 @@ last_verified: 2026-08-27
 - 작성자: `planet6897`
 - 원 PR head: `926848c3026a`
 - 통합 검토 브랜치: `review/planet6897-6199-6217-20260827`
-- 기준: `upstream/devel@584320e0ee02`
+- 최신 기준: `upstream/devel@9d6f69b4d1a0`
+- 검증 실행 기준: `upstream/devel@584320e0ee02`
 - 원 PR 상태: non-draft, source CI green, comments/reviews 0건
 - 관련 이슈: #6185
 
@@ -33,6 +34,8 @@ last_verified: 2026-08-27
   중복 적용하지 않았다.
 - 공통 검증: fmt, suite manifest, unit tier, clippy, 전체 nextest, Native Skia 3종, WASM build 통과.
   상세 명령과 숫자는 통합 구현 문서에 기록했다.
+- 2026-08-28 최신 `upstream/devel@9d6f69b4d1a0`로 충돌 없이 rebase했다. 사용자 지시에 따라 별도
+  중복 테스트는 수행하지 않았다.
 
 ## 후속
 
