@@ -638,19 +638,36 @@ class CiImpactWorkflowTests(unittest.TestCase):
         lint = self._job("lint")
         self.assertIn("needs.preflight.outputs.rust_required == 'true'", lint)
 
-        for archive_name, target_group in (
-            ("build-test-archive-a", "lib"),
-            ("build-test-archive-b", "integration-b"),
-            ("build-test-archive-c", "integration-c"),
+        for archive_name, target_group, expected_needs in (
+            ("build-test-archive-a", "lib", "needs: [preflight]"),
+            (
+                "build-test-archive-b",
+                "integration-b",
+                "needs: [preflight, resolve-nextest-duration-policy]",
+            ),
+            (
+                "build-test-archive-c",
+                "integration-c",
+                "needs: [preflight, resolve-nextest-duration-policy]",
+            ),
         ):
             with self.subTest(archive=archive_name):
                 archive = self._job(archive_name)
                 self.assertIn("needs.preflight.outputs.rust_required == 'true'", archive)
-                self.assertIn("needs: [preflight]", archive)
+                self.assertIn(expected_needs, archive)
                 self.assertNotIn("needs.lint.result", archive)
                 self.assertNotIn("frontend-unit-gates", archive)
                 self.assertNotIn("frontend-package-gates", archive)
                 self.assertIn(f"target_group: {target_group}", archive)
+                if archive_name != "build-test-archive-a":
+                    self.assertIn(
+                        "needs.resolve-nextest-duration-policy.result == 'success'",
+                        archive,
+                    )
+                    self.assertIn(
+                        "duration_policy_sha: ${{ needs.resolve-nextest-duration-policy.outputs.duration_policy_sha }}",
+                        archive,
+                    )
 
     def test_lint_prepares_derived_test_targets_before_cargo_commands(self) -> None:
         lint = self._job("lint")
