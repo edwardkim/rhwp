@@ -5102,7 +5102,7 @@ impl DocumentCore {
             if let RenderNodeType::TextRun(ref tr) = node.node_type {
                 if tr.section_index == Some(footnote_index) {
                     if let (Some(marker_para), Some(cs)) = (tr.para_index, tr.char_start) {
-                        if marker_para >= (usize::MAX - 3000) && marker_para < (usize::MAX - 1000) {
+                        if ((usize::MAX - 3000)..(usize::MAX - 1000)).contains(&marker_para) {
                             let fn_para_idx = usize::MAX - 2000 - marker_para;
                             runs.push(FnRunInfo {
                                 fn_para_idx,
