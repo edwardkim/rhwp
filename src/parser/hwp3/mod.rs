@@ -3004,7 +3004,7 @@ pub(crate) fn parse_paragraph_list(
                     hwp3_inline_shapes.push((22usize, bold_id));
                     // 제목 끝 + ' ' 직후 ■ 부터 rep_char_shape (regular) 로 복귀
                     let after_title = 22 + visible_char_count + 1; // +1 for ' '
-                    hwp3_inline_shapes.push((after_title, rep_char_shape_id as u16));
+                    hwp3_inline_shapes.push((after_title, rep_char_shape_id));
                 }
                 // hwp3_char_to_utf16_pos 는 하단 char_shapes 빌드 시 idx → utf16_pos 변환에 사용.
                 // 신규 위치 22, after_title 도 직접 utf16 pos 이므로 1:1 매핑 추가.
