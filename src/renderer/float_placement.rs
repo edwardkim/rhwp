@@ -747,6 +747,44 @@ pub(crate) fn ranges_overlap(a_start: f64, a_end: f64, b_start: f64, b_end: f64)
     a0 < b1 && b0 < a1
 }
 
+/// [#6143] 문단 기준 양수 오프셋이 **쪽 경계에서 이미 소진**됐는지 판정한다.
+///
+/// 오프셋의 기준점은 앵커 문단이 놓인 자리다. 저장 사다리가 준 앵커 자리에 오프셋을
+/// 얹었을 때 표 상단이 이 쪽 바닥에서 최소 조각(`MIN_FRAGMENT_KEEP_PX`)도 남기지 못하는
+/// 자리에 떨어진다면, 그 자리는 **앞 쪽 바닥**이고 오프셋은 거기서 이미 쓰였다. 그런
+/// 조각을 이 쪽 최상단에서 다시 오프셋만큼 밀면 쪽 상단에 빈 띠가 생기고, 그만큼 조각이
+/// 짧아져 표가 한 쪽 더 갈라진다(156555538 9쪽: 앵커 vpos=32514(433.5px) + off=41592
+/// (554.6px) = 988.1px 로 가용 990.3px 의 바닥. 한글 17쪽 ↔ rhwp 18쪽).
+///
+/// 반대로 앵커 자리 + 오프셋이 쪽 안에 여유 있게 들어가면 그 오프셋은 이 쪽에서 유효한
+/// 통상적인 미세 이동이므로 그대로 둔다(1342000 교육부 맵 p25: 200.0 + 10.0 ≪ 585.9).
+pub(crate) fn para_offset_consumed_by_page_break(
+    para: &Paragraph,
+    common: &CommonObjAttr,
+    available_height: f64,
+    dpi: f64,
+) -> bool {
+    /// 오프셋을 적용한 자리에 이만큼도 안 남으면 그 자리에서는 조각이 시작될 수 없다.
+    const MIN_FRAGMENT_KEEP_PX: f64 = 25.0;
+
+    if common.treat_as_char || !matches!(common.vert_rel_to, VertRelTo::Para) {
+        return false;
+    }
+    let offset = signed_hwpunit(common.vertical_offset);
+    if offset <= 0 {
+        return false;
+    }
+    if !available_height.is_finite() || available_height <= 0.0 {
+        return false;
+    }
+    let anchor_top = para
+        .line_segs
+        .first()
+        .map(|seg| hwpunit_to_px(seg.vertical_pos, dpi))
+        .unwrap_or(0.0);
+    anchor_top + hwpunit_to_px(offset, dpi) + MIN_FRAGMENT_KEEP_PX >= available_height
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
