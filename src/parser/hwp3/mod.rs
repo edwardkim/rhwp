@@ -3073,7 +3073,7 @@ pub(crate) fn parse_paragraph_list(
         }
         if let Some(para_shape) = doc_para_shapes.get(para_shape_id as usize) {
             if para_shape.line_spacing_type == crate::model::style::LineSpacingType::Percent {
-                line_spacing_ratio = para_shape.line_spacing as i32;
+                line_spacing_ratio = para_shape.line_spacing;
             } else {
                 fixed_line_spacing = Some(para_shape.line_spacing);
             }
