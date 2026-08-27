@@ -4427,8 +4427,25 @@ impl LayoutEngine {
                         .count()
                 })
                 .sum();
-            let suppress_cell_overflow_spacing =
-                cell_ctx.is_some() && total_text_width > available_width * 1.15;
+            // [Issue #6196] 저장 사다리가 이 셀 문단을 **한 줄**로, 그것도 **셀 안쪽 폭
+            // 그대로** 적어 두었으면 "한글이 이 문장을 이 폭에 담았다"는 증언이다.
+            // 우리 폰트 메트릭의 자연 폭이 그보다 넓다고 압축을 억제하면 문장 꼬리가
+            // 칸 밖으로 나가 잘린다(156543798 4쪽 `우수 내용` 칸 9행 중 7행 소실 —
+            // 자연 폭 290~331px vs 저장 줄폭 229.2px).
+            let stored_single_line_fits_cell = cell_ctx.is_some()
+                && composed.lines.len() == 1
+                && para.is_some_and(|p| {
+                    p.line_segs.len() == 1
+                        && p.line_segs[0].tag
+                            & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                            == 0
+                        && (hwpunit_to_px(p.line_segs[0].segment_width, self.dpi) - available_width)
+                            .abs()
+                            <= 2.0
+                });
+            let suppress_cell_overflow_spacing = cell_ctx.is_some()
+                && total_text_width > available_width * 1.15
+                && !stored_single_line_fits_cell;
             let is_hancom_company_pua_logo_line =
                 is_hancom_company_pua_logo_line(comp_line, alignment);
 
