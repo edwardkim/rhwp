@@ -1,4 +1,7 @@
 import assert from "node:assert/strict";
+import { spawnSync } from "node:child_process";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import test from "node:test";
 
 import {
@@ -7,6 +10,10 @@ import {
 } from "../select-nextest-archive-targets.mjs";
 import { collectTargetDurations } from "../collect-nextest-target-durations.mjs";
 import { refreshDurationPolicy } from "../refresh-nextest-target-duration-policy.mjs";
+
+const selectorPath = fileURLToPath(new URL("../select-nextest-archive-targets.mjs", import.meta.url));
+const policyPath = fileURLToPath(new URL("../../tests/suites/nextest-target-duration-policy.json", import.meta.url));
+const repoRoot = fileURLToPath(new URL("../../", import.meta.url));
 
 const policy = {
   schema_version: 1,
@@ -59,6 +66,30 @@ test("metadata selection uses only root integration targets", () => {
   }, "/repo/Cargo.toml");
 
   assert.deepEqual(targets, ["case-a", "case-b"]);
+});
+
+test("CLI consumes streamed cargo metadata without synchronous stdin reads", () => {
+  const result = spawnSync(process.execPath, [
+    selectorPath,
+    "--group", "integration-b",
+    "--policy", policyPath,
+  ], {
+    cwd: repoRoot,
+    encoding: "utf8",
+    input: JSON.stringify({
+      packages: [{
+        manifest_path: path.join(repoRoot, "Cargo.toml"),
+        targets: [
+          { name: "case-b", kind: ["test"] },
+          { name: "case-a", kind: ["test"] },
+        ],
+      }],
+    }),
+  });
+
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(result.stdout, "case-a\n");
+  assert.match(result.stderr, /integration_targets=2 selected_targets=1/);
 });
 
 test("JUnit collection aggregates one duration per test binary and skips setup suites", () => {

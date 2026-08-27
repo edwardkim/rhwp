@@ -48,6 +48,15 @@ function readJson(filePath, description) {
   }
 }
 
+async function readStandardInput() {
+  let source = "";
+  process.stdin.setEncoding("utf8");
+  for await (const chunk of process.stdin) {
+    source += chunk;
+  }
+  return source;
+}
+
 export function parseDurationPolicy(policy) {
   if (!policy || policy.schema_version !== 1) {
     fail("duration policy schema_version must be 1");
@@ -125,7 +134,7 @@ export function assignIntegrationTargets(targets, policy) {
   return assignments;
 }
 
-function main() {
+async function main() {
   const options = parseArgs(process.argv.slice(2));
   if (options.help) {
     process.stdout.write(`${usage()}\n`);
@@ -135,7 +144,7 @@ function main() {
     fail(usage());
   }
 
-  const metadata = JSON.parse(fs.readFileSync(0, "utf8"));
+  const metadata = JSON.parse(await readStandardInput());
   const policy = readJson(options.policy, "duration policy");
   const targets = integrationTargetsFromMetadata(metadata, path.join(process.cwd(), "Cargo.toml"));
   const assignments = assignIntegrationTargets(targets, policy);
@@ -150,5 +159,8 @@ function main() {
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
-  main();
+  main().catch((error) => {
+    process.stderr.write(`${error.stack ?? error.message}\n`);
+    process.exitCode = 1;
+  });
 }
