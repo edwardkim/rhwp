@@ -192,7 +192,7 @@ impl DocumentCore {
         self.document.doc_properties.caret_list_id = caret.0;
         self.document.doc_properties.caret_para_id = caret.1;
 
-        // 파생 상태 재구성 — 스냅샷 복원과 동일 경로(compose·paginate·캐시 비움).
+        // 같은 문서의 파생 상태 재구성 — host exact-font source는 유지한다.
         // 여기서 recalculate_section_vpos 를 다시 돌리지 않는다 — 원본 캐시 좌표가
         // 이미 조각으로 복원됐으므로 재계산은 오히려 바이트를 어긋나게 한다.
         self.rebuild_derived_state();

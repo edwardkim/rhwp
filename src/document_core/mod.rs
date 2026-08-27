@@ -115,6 +115,13 @@ pub(crate) struct RenderNormalizationState {
     pub(crate) overlay: Arc<RenderNormalizationOverlay>,
 }
 
+#[derive(Clone)]
+pub(crate) struct DocumentSnapshot {
+    pub(crate) id: u32,
+    pub(crate) document: Document,
+    pub(crate) exact_font_sources: crate::renderer::kerning::ExactFontSourceRegistrySnapshot,
+}
+
 /// HWP 문서 핵심 도메인 모델
 ///
 /// 문서 데이터, 레이아웃 상태, 설정, 캐시를 포함한다.
@@ -202,7 +209,7 @@ pub struct DocumentCore {
     pub(crate) overflow_links_cache:
         RefCell<HashMap<usize, Vec<queries::doc_tree_nav::OverflowLink>>>,
     /// Undo/Redo용 Document 스냅샷 저장소 (ID → Document 클론)
-    pub(crate) snapshot_store: Vec<(u32, Document)>,
+    pub(crate) snapshot_store: Vec<DocumentSnapshot>,
     /// 다음 스냅샷 ID
     pub(crate) next_snapshot_id: u32,
     /// [#5769] Undo/Redo용 삭제 조각 저장소 (ID → DeleteFragment).

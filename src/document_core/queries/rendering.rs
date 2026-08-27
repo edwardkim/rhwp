@@ -2912,7 +2912,8 @@ impl DocumentCore {
             .iter()
             .map(|s| compose_section(s))
             .collect();
-        self.rebuild_embedded_exact_font_sources();
+        self.styles.kerning_measurement_context =
+            self.layout_engine.kerning_measurement_context_snapshot();
         self.mark_all_sections_dirty();
         self.paginate();
         self.page_count()
@@ -4188,11 +4189,11 @@ impl DocumentCore {
         self.render_normalization.path_revisions.clear();
     }
 
-    /// 원본 IR 은 그대로 두고, 거기서 파생된 렌더 상태를 전부 원본에서 다시 만든다.
+    /// 현재 원본 IR은 유지한 채 렌더 파생 상태를 다시 만든다.
     ///
     /// `document` 는 읽기만 한다 — 편집이 아니라 **메모된 파생본이 더는 원본과 대응하지
-    /// 않게 된 순간**에 부르는 연산이다. 문서를 통째로 갈아끼운 직후(`set_document`,
-    /// 스냅샷 복원), 그리고 파생본을 만든 코드 자체가 교체된 직후(핫패치)가 그 순간이다.
+    /// 않게 된 순간**에 부르는 연산이다. 파생본을 만든 코드 자체가 교체된 직후(핫패치)가
+    /// 그 순간이다. 같은 문서에 host가 등록한 exact-font source는 보존한다.
     ///
     /// 증분 게이트(`dirty_sections`·`section_revisions`·`measured_sections`·`table.dirty`)는
     /// 모두 "원본이 그대로면 파생본을 재사용한다"는 한 가지 규칙이라, 원본이 그대로인 채
@@ -4204,6 +4205,19 @@ impl DocumentCore {
     /// 페이지 트리. 앞 단계를 뒤 단계보다 늦게 만들면 같은 패스 안에서 옛 값이 섞인다.
     pub(crate) fn rebuild_derived_state(&mut self) {
         self.rebuild_resolved_styles();
+        self.styles.kerning_measurement_context =
+            self.layout_engine.kerning_measurement_context_snapshot();
+        self.rebuild_layout_state();
+    }
+
+    /// 문서 객체가 교체된 뒤 registry와 파생 상태를 새 문서 소유로 다시 만든다.
+    pub(crate) fn rebuild_replaced_document_state(&mut self) {
+        self.rebuild_resolved_styles();
+        self.rebuild_embedded_exact_font_sources();
+        self.rebuild_layout_state();
+    }
+
+    fn rebuild_layout_state(&mut self) {
         self.composed = self
             .document
             .sections

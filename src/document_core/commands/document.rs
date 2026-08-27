@@ -1350,7 +1350,6 @@ impl DocumentCore {
         self.para_column_map = Vec::new();
         self.page_tree_cache.borrow_mut().clear();
         self.snapshot_store.clear();
-        self.next_snapshot_id = 0;
         self.source_format = crate::parser::FileFormat::Hwp;
         self.validation_report = ValidationReport::new();
 
@@ -1919,13 +1918,14 @@ impl DocumentCore {
     /// 문서 IR을 직접 설정한다 (테스트/네이티브 전용).
     ///
     /// [#4582] 이미 문서가 들어 있던 core 에도 쓸 수 있으므로 파생 상태는 손으로 고르지 않고
-    /// [`DocumentCore::rebuild_derived_state`] 에 통째로 맡긴다. 종전에는 스타일·문단 구성·
+    /// [`DocumentCore::rebuild_replaced_document_state`] 에 통째로 맡긴다. 종전에는 스타일·문단 구성·
     /// dirty 표시만 다시 만들고 측정 캐시를 그대로 뒀다 — 그러면 새 문서의 `!table.dirty` 인 표와
     /// clean 으로 남은 문단이 **이전 문서의 측정값**을 재사용했다.
     pub fn set_document(&mut self, doc: Document) {
         self.document = doc;
         self.bump_bin_data_epoch();
-        self.rebuild_derived_state();
+        self.snapshot_store.clear();
+        self.rebuild_replaced_document_state();
     }
 
     /// Host font selection이 확정한 exact face를 글자모양·언어 slot에 등록한다.
@@ -2015,20 +2015,41 @@ impl DocumentCore {
 
     // ─── Undo/Redo 스냅샷 API ──────────────────────────
 
+    fn reconcile_snapshot_exact_font_sources(&mut self) {
+        let changed = self.layout_engine.reconcile_exact_font_source_snapshots(
+            self.snapshot_store
+                .iter()
+                .map(|snapshot| &snapshot.exact_font_sources),
+        );
+        if changed {
+            self.styles.kerning_measurement_context =
+                self.layout_engine.kerning_measurement_context_snapshot();
+        }
+    }
+
     /// 현재 Document를 클론하여 스냅샷 저장소에 보관한다.
     /// 반환값: 스냅샷 ID (u32)
     pub fn save_snapshot_native(&mut self) -> u32 {
         let id = self.next_snapshot_id;
         self.next_snapshot_id += 1;
-        self.snapshot_store.push((id, self.document.clone()));
+        self.snapshot_store.push(super::super::DocumentSnapshot {
+            id,
+            document: self.document.clone(),
+            exact_font_sources: self.layout_engine.exact_font_source_registry_snapshot(),
+        });
         // 최대 100개 제한 — 초과 시 가장 오래된 스냅샷 제거.
         // [Task #2328] studio 히스토리(rhwp-studio/src/engine/history.ts 의
         // WASM_MAX_SNAPSHOTS)와 양방향 결합. 이 값을 studio 예산(MAX-2)보다 낮추면
         // studio 가 참조 중인 오래된 undo 스냅샷이 무통보 축출돼 undo 예외가
         // 재발한다. 변경 시 반드시 studio 상수도 함께 갱신한다.
         const MAX_SNAPSHOTS: usize = 100;
+        let mut evicted = false;
         while self.snapshot_store.len() > MAX_SNAPSHOTS {
             self.snapshot_store.remove(0);
+            evicted = true;
+        }
+        if evicted {
+            self.reconcile_snapshot_exact_font_sources();
         }
         id
     }
@@ -2058,19 +2079,26 @@ impl DocumentCore {
         let idx = self
             .snapshot_store
             .iter()
-            .position(|(sid, _)| *sid == id)
+            .position(|snapshot| snapshot.id == id)
             .ok_or_else(|| HwpError::RenderError(format!("스냅샷 {} 없음", id)))?;
-        let (_, doc) = self.snapshot_store[idx].clone();
-        self.document = doc;
+        let snapshot = self.snapshot_store[idx].clone();
+        self.document = snapshot.document;
+        self.layout_engine
+            .restore_exact_font_source_registry(snapshot.exact_font_sources);
+        self.reconcile_snapshot_exact_font_sources();
         self.bump_bin_data_epoch();
-        // 문서를 통째로 갈아끼웠으므로 파생 상태는 전부 새 원본에서 다시 만든다.
+        // 같은 Studio 문서 세션의 undo/redo다. Host exact-font source는 유지한다.
         self.rebuild_derived_state();
         Ok(super::super::helpers::json_ok())
     }
 
     /// 지정 ID의 스냅샷을 저장소에서 제거하여 메모리를 해제한다.
     pub fn discard_snapshot_native(&mut self, id: u32) {
-        self.snapshot_store.retain(|(sid, _)| *sid != id);
+        let previous = self.snapshot_store.len();
+        self.snapshot_store.retain(|snapshot| snapshot.id != id);
+        if self.snapshot_store.len() != previous {
+            self.reconcile_snapshot_exact_font_sources();
+        }
     }
 
     pub fn measure_width_diagnostic_native(
@@ -3304,7 +3332,7 @@ mod set_document_tests {
     /// 판정 기준은 "빈 core 에 같은 문서를 넣었을 때의 측정값" 이다 — 문서가 같으면
     /// core 이력과 무관하게 같은 높이가 나와야 한다.
     #[test]
-    fn set_document_does_not_reuse_previous_documents_measured_table() {
+    fn set_document_rebuilds_table_and_paragraph_measurements() {
         let mut reused = DocumentCore::new_empty();
         reused.set_document(doc_with_table_rows(6));
         let six_row_height = first_table_height(&reused);
@@ -3323,11 +3351,122 @@ mod set_document_tests {
             after_swap, expected,
             "set_document 뒤 표 높이가 이전 문서의 측정값({six_row_height})을 재사용했다"
         );
+        assert_paragraph_measurement_is_rebuilt();
+    }
+
+    fn assert_exact_font_lifecycle() {
+        let mut exact = DocumentCore::new_empty();
+        exact
+            .create_blank_document_native()
+            .expect("blank exact-font document");
+        let font = include_bytes!("../../../tests/fixtures/fonts/RHWPExactKerningSmoke.ttf");
+        exact
+            .register_exact_font_source_native(0, 1, font, 0)
+            .expect("host exact source");
+        let registered = exact.layout_engine.exact_font_source_registry_counts();
+        exact.rebuild_derived_state();
+        assert_eq!(
+            exact.layout_engine.exact_font_source_registry_counts(),
+            registered,
+            "same-document hot rebuild must preserve host sources"
+        );
+        assert!(exact.styles.kerning_measurement_context.is_some());
+
+        exact
+            .set_section_def_native(0, "{}")
+            .expect("same-document section edit");
+        assert_eq!(
+            exact.layout_engine.exact_font_source_registry_counts(),
+            registered,
+            "section/page edits must preserve host sources"
+        );
+        assert!(exact.styles.kerning_measurement_context.is_some());
+
+        let snapshot = exact.save_snapshot_native();
+        exact
+            .insert_text_native(0, 0, 0, "undo")
+            .expect("mutate snapshot document");
+        let replacement_font =
+            include_bytes!("../../../tests/fixtures/fonts/RHWPBitmapSvgGlyphSmoke.ttf");
+        exact
+            .register_exact_font_source_native(1, 1, replacement_font, 0)
+            .expect("post-snapshot slot");
+        let redo_snapshot = exact.save_snapshot_native();
+        exact
+            .restore_snapshot_native(snapshot)
+            .expect("restore same-document snapshot");
+        let restored = exact.layout_engine.exact_font_source_registry_counts();
+        assert_eq!(
+            restored.0, registered.0,
+            "undo restores the active slot map"
+        );
+        assert_eq!(
+            restored.1, 2,
+            "redo history keeps its distinct source available"
+        );
+        assert_eq!(restored.2, font.len() + replacement_font.len());
+        assert!(
+            restored.3 > registered.3,
+            "restored slot identity starts a new generation"
+        );
+        assert!(exact.styles.kerning_measurement_context.is_some());
+        exact.discard_snapshot_native(redo_snapshot);
+        let pruned = exact.layout_engine.exact_font_source_registry_counts();
+        assert_eq!((pruned.0, pruned.1, pruned.2), (1, 1, font.len()));
+        exact
+            .register_exact_font_source_native(1, 1, replacement_font, 0)
+            .expect("restored snapshot releases reused numeric slots");
+        for _ in 0..99 {
+            exact.save_snapshot_native();
+        }
+        assert_eq!(exact.snapshot_store.len(), 100);
+        let retained = exact.layout_engine.exact_font_source_registry_counts();
+        assert_eq!(
+            (retained.0, retained.1, retained.2),
+            (2, 2, font.len() + replacement_font.len()),
+            "100 handle-only snapshots must not grow the production source registry"
+        );
+
+        exact.set_document(doc_with_table_rows(1));
+        assert!(exact.snapshot_store.is_empty());
+        let replacement_snapshot = exact.save_snapshot_native();
+        assert_ne!(replacement_snapshot, snapshot);
+        assert!(exact.restore_snapshot_native(snapshot).is_err());
+        let replaced = exact.layout_engine.exact_font_source_registry_counts();
+        assert_eq!((replaced.0, replaced.1, replaced.2), (0, 0, 0));
+        assert!(exact.styles.kerning_measurement_context.is_none());
+
+        let mut eviction = DocumentCore::new_empty();
+        eviction
+            .create_blank_document_native()
+            .expect("blank eviction document");
+        let empty_snapshot = eviction.save_snapshot_native();
+        eviction
+            .register_exact_font_source_native(0, 1, font, 0)
+            .expect("oldest snapshot source");
+        let evicted_id = eviction.save_snapshot_native();
+        eviction
+            .restore_snapshot_native(empty_snapshot)
+            .expect("restore empty slot map");
+        eviction.discard_snapshot_native(empty_snapshot);
+        eviction
+            .register_exact_font_source_native(0, 1, replacement_font, 0)
+            .expect("active replacement source");
+        for _ in 0..100 {
+            eviction.save_snapshot_native();
+        }
+        assert_eq!(eviction.snapshot_store.len(), 100);
+        let after_eviction = eviction.layout_engine.exact_font_source_registry_counts();
+        assert_eq!(
+            (after_eviction.0, after_eviction.1, after_eviction.2),
+            (1, 1, replacement_font.len())
+        );
+        assert!(eviction.styles.kerning_measurement_context.is_some());
+        assert!(eviction.restore_snapshot_native(evicted_id).is_err());
     }
 
     /// 표뿐 아니라 문단 측정값도 이전 문서 것이 남는다 — 같은 누락의 다른 얼굴이다.
-    #[test]
-    fn set_document_does_not_reuse_previous_documents_measured_paragraph() {
+    fn assert_paragraph_measurement_is_rebuilt() {
         let long_text = "이 문단은 여러 줄로 접히도록 충분히 길게 만든 한국어 문장이다. \
                          줄 수가 달라지면 측정 높이도 달라진다."
             .repeat(4);
@@ -3368,5 +3507,10 @@ mod set_document_tests {
             after_swap, expected,
             "set_document 뒤 문단 높이가 이전 문서의 측정값({long_height})을 재사용했다"
         );
+    }
+
+    #[test]
+    fn exact_font_sources_follow_document_and_snapshot_lifecycles() {
+        assert_exact_font_lifecycle();
     }
 }

@@ -120,6 +120,17 @@ pub(crate) struct ExactFontSourceRegistry {
     generation: u64,
 }
 
+#[derive(Clone)]
+pub(crate) struct ExactFontSourceRegistrySnapshot {
+    slots: HashMap<ExactFontSlot, ExactFontSourceHandle>,
+}
+
+impl ExactFontSourceRegistrySnapshot {
+    fn source_handles(&self) -> impl Iterator<Item = &ExactFontSourceHandle> {
+        self.slots.values()
+    }
+}
+
 impl std::fmt::Debug for ExactFontSourceRegistry {
     fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         formatter
@@ -133,6 +144,47 @@ impl std::fmt::Debug for ExactFontSourceRegistry {
 }
 
 impl ExactFontSourceRegistry {
+    pub(crate) fn snapshot(&self) -> ExactFontSourceRegistrySnapshot {
+        ExactFontSourceRegistrySnapshot {
+            slots: self.slots.clone(),
+        }
+    }
+
+    pub(crate) fn restore_snapshot(&mut self, snapshot: ExactFontSourceRegistrySnapshot) {
+        debug_assert!(snapshot
+            .slots
+            .values()
+            .all(|handle| self.sources.contains_key(handle)));
+        self.slots = snapshot
+            .slots
+            .into_iter()
+            .filter(|(_, handle)| self.sources.contains_key(handle))
+            .collect();
+        self.generation = self.generation.wrapping_add(1);
+    }
+
+    pub(crate) fn reconcile_snapshots<'a>(
+        &mut self,
+        snapshots: impl IntoIterator<Item = &'a ExactFontSourceRegistrySnapshot>,
+    ) -> bool {
+        let mut retained = self
+            .slots
+            .values()
+            .cloned()
+            .collect::<std::collections::HashSet<_>>();
+        for snapshot in snapshots {
+            retained.extend(snapshot.source_handles().cloned());
+        }
+        let previous = self.sources.len();
+        self.sources.retain(|handle, _| retained.contains(handle));
+        self.total_source_bytes = self.sources.values().map(|bytes| bytes.len()).sum();
+        let changed = self.sources.len() != previous;
+        if changed {
+            self.generation = self.generation.wrapping_add(1);
+        }
+        changed
+    }
+
     pub(crate) fn register(
         &mut self,
         slot: ExactFontSlot,

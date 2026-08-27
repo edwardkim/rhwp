@@ -2689,6 +2689,28 @@ impl LayoutEngine {
         self.exact_font_sources.clear()
     }
 
+    pub(crate) fn exact_font_source_registry_snapshot(
+        &self,
+    ) -> crate::renderer::kerning::ExactFontSourceRegistrySnapshot {
+        self.exact_font_sources.snapshot()
+    }
+
+    pub(crate) fn restore_exact_font_source_registry(
+        &mut self,
+        snapshot: crate::renderer::kerning::ExactFontSourceRegistrySnapshot,
+    ) {
+        self.exact_font_sources.restore_snapshot(snapshot);
+    }
+
+    pub(crate) fn reconcile_exact_font_source_snapshots<'a>(
+        &mut self,
+        snapshots: impl IntoIterator<
+            Item = &'a crate::renderer::kerning::ExactFontSourceRegistrySnapshot,
+        >,
+    ) -> bool {
+        self.exact_font_sources.reconcile_snapshots(snapshots)
+    }
+
     pub(crate) fn exact_font_source_handle(
         &self,
         slot: crate::renderer::kerning::ExactFontSlot,
