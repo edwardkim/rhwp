@@ -1119,6 +1119,9 @@ struct TypesetState {
     hidden_empty_page_idx: usize,
     /// [Task #362] hide_empty_line 으로 감춘 paragraph 인덱스 (PaginationResult 에 포함).
     hidden_empty_paras: std::collections::HashSet<usize>,
+    /// [#6146] 저장 vpos 리셋으로 다음 쪽에 넘어가는 문단의 **자리차지 밴드**를 떠나는
+    /// 쪽의 흐름 말미에 남긴 (문단, 컨트롤) 집합. 컨트롤 순회에서 다시 배치하지 않는다.
+    page_tail_spilled_floats: std::collections::HashSet<(usize, usize)>,
     /// [Task #836] 미주 목록 (섹션별 수집, 문서 끝에 렌더).
     endnotes: Vec<EndnoteRef>,
     endnote_paragraphs: Vec<Paragraph>,
@@ -4392,6 +4395,7 @@ impl TypesetState {
             hidden_empty_lines: 0,
             hidden_empty_page_idx: usize::MAX,
             hidden_empty_paras: std::collections::HashSet::new(),
+            page_tail_spilled_floats: std::collections::HashSet::new(),
             endnotes: Vec::new(),
             endnote_paragraphs: Vec::new(),
             endnote_para_sources: Vec::new(),
@@ -4916,6 +4920,54 @@ impl TypesetState {
     }
 
     /// 다음 단 또는 새 페이지
+    /// [#6146] 저장 vpos 리셋으로 다음 쪽에 넘어가는 문단의 **자리차지 밴드**를 떠나는
+    /// 쪽의 흐름 말미에 남긴다.
+    ///
+    /// 한글은 보도자료 꼬리의 로고 글상자처럼 쪽 말미에 걸린 비-TAC 자리차지
+    /// (TopAndBottom, vert=문단) 개체를 다음 쪽으로 옮기지 않고 본문 아래 여백으로
+    /// 흘려 그 쪽에 남긴다 — 한글 2024 PDF 실측 4/4 (156583583 1쪽 y 1029.4..1079.5
+    /// vs 본문 하단 1039.3, 156597957·156535759·156742932 동형). 옮기면 다음 쪽
+    /// 상단의 제목 표와 겹쳐 글자가 가려진다(#6146).
+    ///
+    /// 판별은 물리적으로 — **개체 아래끝이 용지 안에 남을 때만** 흘린다. 쪽을 넘겨야
+    /// 하는 큰 개체(#1156 의 80mm 차트 OLE 계열)는 아래끝이 용지를 벗어나 제외된다.
+    /// 밴드 뒤의 줄·표는 리셋대로 다음 쪽에 놓이므로 쪽수는 바뀌지 않는다.
+    fn spill_page_tail_floats(&mut self, para_idx: usize, para: &Paragraph) {
+        use crate::model::shape::{TextWrap, VertRelTo};
+        if self.current_items.is_empty() || self.col_count > 1 {
+            return;
+        }
+        let dpi = self.layout.dpi;
+        for (ctrl_idx, ctrl) in para.controls.iter().enumerate() {
+            let common = match ctrl {
+                Control::Picture(picture) => &picture.common,
+                Control::Shape(shape) => shape.common(),
+                // 표는 자기 배치 경로(place_table_with_text)가 있으므로 제외한다.
+                _ => continue,
+            };
+            if common.treat_as_char
+                || !matches!(common.text_wrap, TextWrap::TopAndBottom)
+                || !matches!(common.vert_rel_to, VertRelTo::Para)
+            {
+                continue;
+            }
+            let height = hwpunit_to_px(common.height as i32, dpi)
+                + hwpunit_to_px(i32::from(common.margin.bottom), dpi);
+            if height <= 0.0
+                || self.layout.body_area.y + self.current_height + height
+                    > self.layout.page_height + 0.5
+            {
+                continue;
+            }
+            self.current_items.push(PageItem::Shape {
+                para_index: para_idx,
+                control_index: ctrl_idx,
+            });
+            self.current_height += height;
+            self.page_tail_spilled_floats.insert((para_idx, ctrl_idx));
+        }
+    }
+
     fn advance_column_or_new_page(&mut self) {
         self.flush_column();
         self.visible_float_exclusions.clear();
@@ -7412,6 +7464,11 @@ impl TypesetEngine {
                             // 조각(들)과 빈 필러 문단만 담고 있을 때만 건너뛴다 — 실
                             // 내용이 함께 놓인 쪽의 저장 경계는 그대로 존중한다.
                             if !page_holds_only_fresh_table_continuation(&st, paragraphs) {
+                                // [#6146] 저장 리셋은 이 문단의 **줄**이 다음 쪽이라는
+                                // 신호지 자리차지 밴드까지 옮기라는 신호가 아니다.
+                                // 한글은 밴드를 떠나는 쪽의 흐름 말미에 남기고 본문 아래
+                                // 여백으로 흘린다.
+                                st.spill_page_tail_floats(para_idx, para);
                                 st.advance_column_or_new_page();
                             }
                         }
@@ -8331,6 +8388,11 @@ impl TypesetEngine {
                 }
                 match ctrl {
                     Control::Shape(_) | Control::Picture(_) | Control::Equation(_) => {
+                        // [#6146] 저장 리셋 경계에서 떠나는 쪽의 흐름 말미에 이미 흘려
+                        // 놓은 자리차지 밴드는 다시 배치하지 않는다.
+                        if st.page_tail_spilled_floats.contains(&(para_idx, ctrl_idx)) {
+                            continue;
+                        }
                         if !has_table {
                             // [#3738 Stage 22] page-tail Square picture는 anchor 본문을
                             // 현재 쪽에 남기되 그림만 다음 physical page의 narrow wrap
@@ -18615,6 +18677,11 @@ impl TypesetEngine {
                     }
                 }
                 Control::Shape(_) | Control::Picture(_) | Control::Equation(_) => {
+                    // [#6146] 저장 리셋 경계에서 떠나는 쪽의 흐름 말미에 이미 흘려
+                    // 놓은 자리차지 밴드는 다시 배치하지 않는다.
+                    if st.page_tail_spilled_floats.contains(&(para_idx, ctrl_idx)) {
+                        continue;
+                    }
                     // Task #402: 같은 paragraph의 선행 TAC 컨트롤이 있는 TAC 그림은
                     // 자기 line_seg에 위치하므로 그 line의 높이를 페이지 누적에 반영해야 함.
                     // 누락 시 후속 항목이 페이지 끝을 넘어 그려져 겹침/오버플로 발생 (#402).
