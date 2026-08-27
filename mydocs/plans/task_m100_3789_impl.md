@@ -5,7 +5,7 @@
 - **작성일**: 2026-08-27 KST
 - **작업 브랜치**: `task_m100_3789-render-boundary`
 - **통합 기준**: `upstream/devel@1b91c2025`
-- **구현 상태**: 미착수, 계획 승인 대기
+- **구현 상태**: 로컬 구현·검증 완료, remote push·PR 승인 대기
 
 ## 1. 구현 불변식
 
@@ -48,6 +48,7 @@ workflow·classifier·policy mirror가 추적해야 한다.
 | [`src/cli/queries/mod.rs`](../../src/cli/queries/mod.rs) | structure query wiring | query API 범위 |
 | [`src/cli/outputs/vector.rs`](../../src/cli/outputs/vector.rs) | structure export와 root helper import 제거 | SVG·render-tree 출력 |
 | [`src/cli/batch/query.rs`](../../src/cli/batch/query.rs) | structure helper의 새 소유 경로 import | batch JSON 결과 |
+| [`src/mcp_serve.rs`](../../src/mcp_serve.rs) | 조사 중 확인한 세 번째 structure helper 소비자를 새 authority로 연결 | MCP structure JSON 결과 |
 | [`.github/workflows/render-diff.yml`](../../.github/workflows/render-diff.yml) | root 대신 caption render source 추적 | #5776 PDF/shared trigger |
 | [`scripts/ci-impact-classifier.cjs`](../../scripts/ci-impact-classifier.cjs) | `main-render-boundary` 제거, caption path 분류 | adapter별 영향 matrix |
 | [`scripts/ci-impact-policy.cjs`](../../scripts/ci-impact-policy.cjs) | workflow와 같은 path mirror | path 순서·일치 계약 |
@@ -142,3 +143,15 @@ git diff --check
 - `src/main.rs` 제거 뒤 render-positive path가 workflow 추적에서 빠지면 CI 변경을 완료로 보지 않는다.
 - 실제 Render Diff consumer가 계획과 다르면 path 이름으로 추정하지 않고 workflow 실행 그래프를 다시 확인한다.
 - 구현 중 renderer 알고리즘, CLI schema 또는 #3790 범위 변경이 필요해지면 별도 승인을 받는다.
+
+## 9. 구현 결과
+
+- caption 전용 파일명은 `src/cli/commands/caption_validation.rs`로 확정했다.
+- structure JSON 단일 authority는 `src/cli/queries/structure.rs`로 옮겼다.
+- 계획에 없던 `src/mcp_serve.rs` 소비자를 컴파일 단계에서 발견해 같은 authority를 참조하도록 보정했다.
+- source 책임 이동은 `17fa14198`, CI 경계 보정은 `514ff74bc`로 각각 고정했다.
+- classifier schema version은 새 경계 fixture와 함께 4에서 5로 올렸다.
+- `src/main.rs`는 2,101줄에서 1,930줄로 줄었고 직접 `render_page_svg` 호출과 구조 JSON 생성 구현이 없다.
+- renderer 알고리즘·출력 schema·golden baseline은 변경하지 않았다.
+- 전체 로컬 결과와 계획 대비 차이는
+  [최종 보고서](../report/task_m100_3789_report.md)에 기록한다.
