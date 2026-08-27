@@ -149,38 +149,12 @@ jobs:
               cargo_target_args+=(--lib)
               ;;
             integration-b|integration-c)
-              mapfile -t integration_targets < <(
-                cargo metadata --no-deps --format-version 1 | node -e '
-                  let source = "";
-                  process.stdin.setEncoding("utf8");
-                  process.stdin.on("data", (chunk) => { source += chunk; });
-                  process.stdin.on("end", () => {
-                    const metadata = JSON.parse(source);
-                    const manifestPath = `${process.cwd()}/Cargo.toml`;
-                    const root = metadata.packages.find((pkg) => pkg.manifest_path === manifestPath);
-                    if (!root) {
-                      throw new Error(`root package not found for ${manifestPath}`);
-                    }
-                    root.targets
-                      .filter((target) => target.kind.length === 1 && target.kind[0] === "test")
-                      .map((target) => target.name)
-                      .sort()
-                      .forEach((name) => console.log(name));
-                  });
-                '
+              mapfile -t selected_targets < <(
+                cargo metadata --no-deps --format-version 1 \
+                  | node scripts/select-nextest-archive-targets.mjs \
+                    --group "${{ inputs.target_group }}" \
+                    --policy tests/suites/nextest-target-duration-policy.json
               )
-              if (( ${#integration_targets[@]} == 0 )); then
-                echo "::error::integration test target discovery returned no targets"
-                exit 1
-              fi
-              selected_targets=()
-              for index in "${!integration_targets[@]}"; do
-                if [[ "${{ inputs.target_group }}" == "integration-b" ]] && (( index % 2 == 0 )); then
-                  selected_targets+=("${integration_targets[index]}")
-                elif [[ "${{ inputs.target_group }}" == "integration-c" ]] && (( index % 2 == 1 )); then
-                  selected_targets+=("${integration_targets[index]}")
-                fi
-              done
               if (( ${#selected_targets[@]} == 0 )); then
                 echo "::error::integration target group selected no targets: ${{ inputs.target_group }}"
                 exit 1
@@ -188,7 +162,7 @@ jobs:
               for target in "${selected_targets[@]}"; do
                 cargo_target_args+=(--test "${target}")
               done
-              printf 'integration_targets=%s selected_targets=%s\n' "${#integration_targets[@]}" "${#selected_targets[@]}"
+              printf 'selected_targets=%s\n' "${#selected_targets[@]}"
               ;;
           esac
 
