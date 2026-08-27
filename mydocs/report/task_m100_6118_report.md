@@ -49,16 +49,17 @@ default/flat/oldschool × light/dark의 24개 경계 화면도 같은 E2E가 생
 | 게이트 | 결과 |
 | --- | --- |
 | TypeScript | 통과 |
-| Studio 전체 test | 1,148 passed, 0 failed, 1 skipped |
+| Studio 전체 test | 1,181 passed, 0 failed, 1 skipped |
 | Studio production build | 통과 |
+| E2E manifest | 116 tracked, 116 manifest |
 | responsive/theme browser E2E | 821 passed, 0 failed |
 | 실제 인앱 브라우저 375px smoke | panel 열림·첫 명령 focus·overflow 0 |
 | Markdown 상대 링크·diff whitespace | 603문서 이상 없음·통과 |
 
 이 변경은 Studio chrome만 대상으로 하고 renderer 출력을 바꾸지 않으므로 PDF/SVG visual sweep 대상이
-아니다. E2E manifest 전체 게이트의 기존 미등재 세 파일과 source checkout의 generated Rust suite 부재는
-#6118 변경 밖의 저장소 상태로 분리한다. #6138 통합 Stage 3에서 review/CI 파생 suite를 준비한 별도
-checkout의 Rust manifest와 필수 `cargo fmt --all`·`cargo fmt --all -- --check`까지 통과했다.
+아니다. E2E manifest는 tracked 116개와 manifest 116개가 일치한다. source checkout의 generated Rust
+suite 부재는 #6118 변경 밖의 저장소 상태로 분리한다. #6138 통합 Stage 3에서 review/CI 파생 suite를
+준비한 별도 checkout의 Rust manifest와 필수 `cargo fmt --all`·`cargo fmt --all -- --check`까지 통과했다.
 
 ## 5. 통합 제출 전략
 

@@ -47,16 +47,17 @@
 | 게이트 | 결과 |
 | --- | --- |
 | TypeScript | 통과 |
-| Studio 전체 test | 1,148 passed, 0 failed, 1 skipped |
+| Studio 전체 test | 1,181 passed, 0 failed, 1 skipped |
 | Studio production build | 통과 |
+| E2E manifest | 116 tracked, 116 manifest |
 | responsive/theme/#6118 통합 E2E | 821 passed, 0 failed |
 | 대표 화면 육안 검토 | 1280·1024·375px 통과 |
 | Markdown 상대 링크·diff whitespace | 603문서 이상 없음·통과 |
 | review checkout Rust manifest·format | 942 sources·32 harnesses·9 exceptions, fmt 통과 |
 
-이 변경은 Studio chrome만 대상으로 하므로 renderer PDF/SVG visual sweep 대상이 아니다. 최신 기준선의
-E2E manifest 미등재 세 파일은 이번 변경 밖의 기존 상태다. Rust source 변경은 없으며 파생 suite를
-준비한 별도 review checkout에서 Rust manifest와 필수 format 게이트까지 통과했다.
+이 변경은 Studio chrome만 대상으로 하므로 renderer PDF/SVG visual sweep 대상이 아니다. E2E manifest는
+tracked 116개와 manifest 116개가 일치한다. Rust source 변경은 없으며 파생 suite를 준비한 별도 review
+checkout에서 Rust manifest와 필수 format 게이트까지 통과했다.
 
 ## 5. 통합 제출 전략
 

@@ -26,8 +26,9 @@ Closes #6138
 
 - [x] `npx tsc --noEmit`
 - [x] focused Studio 계약: 35 passed, 0 failed
-- [x] `npm --prefix rhwp-studio test`: 1,148 passed, 0 failed, 1 skipped
+- [x] `npm --prefix rhwp-studio test`: 1,181 passed, 0 failed, 1 skipped
 - [x] `npm --prefix rhwp-studio run build`
+- [x] `npm --prefix rhwp-studio run e2e:manifest-check`: 116 tracked, 116 manifest
 - [x] 실제 Chrome responsive/theme E2E: 821 passed, 0 failed
 - [x] 14개 viewport와 default/flat/oldschool × light/dark 24개 테마 조합
 - [x] `git diff --check`
@@ -38,10 +39,6 @@ Closes #6138
 `cargo fmt --all`이 target 경로 확인 단계에서 중단됩니다. Rust source 변경은 없고, 파생 suite를 준비한
 별도 review checkout에서 동일 format 게이트를 통과했습니다. 파생 suite와 manifest는 PR에 포함하지
 않습니다.
-
-`npm --prefix rhwp-studio run e2e:manifest-check`는 기준선부터 미등재인
-`loading-busy-cursor.test.mjs`, `status-page-number.test.mjs`, `toolbox-visibility.test.mjs` 세 파일만
-보고합니다. 이번 변경의 `responsive.test.mjs` 행은 manifest에 반영했습니다.
 
 ## 성능 영향 및 측정 결과
 

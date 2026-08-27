@@ -38,6 +38,7 @@ async function primeTheme(page, skin = 'default', mode = 'light') {
   await page.evaluateOnNewDocument(({ selectedSkin, selectedMode }) => {
     localStorage.setItem('rhwp-settings', JSON.stringify({
       theme: { mode: selectedMode, skin: selectedSkin, skinChosen: true },
+      view: { toolbarBasic: true, toolbarFormat: true },
     }));
   }, { selectedSkin: skin, selectedMode: mode });
 }

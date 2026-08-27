@@ -56,16 +56,16 @@ Studio chrome의 DOM/CSS/접근성 변경이며 renderer·layout·typeset·paint
 | --- | --- |
 | focused source/controller/theme 계약 | 27 passed, 0 failed |
 | `npx tsc --noEmit` | 통과 |
-| `npm test` | 1,148 passed, 0 failed, 1 skipped |
+| `npm test` | 1,181 passed, 0 failed, 1 skipped |
 | `npm run build` | 통과(230 modules transformed) |
+| `npm run e2e:manifest-check` | 116 tracked, 116 manifest |
 | responsive/theme/#6118 통합 E2E | 821 passed, 0 failed |
 | Markdown 상대 링크·`git diff --check` | 603문서 이상 없음·통과 |
 | review checkout Rust suite manifest | 942 sources·32 harnesses·9 exceptions, 통과 |
 | `cargo fmt --all`·`cargo fmt --all -- --check` | 통과 |
 
-E2E는 `http://127.0.0.1:7718/`, 설치된 Chrome, DPR 1에서 수행했다. E2E manifest 전체 검사는 최신
-기준선의 기존 미등재 파일 세 개(`loading-busy-cursor`, `status-page-number`, `toolbox-visibility`)만
-보고하며 이번 변경의 `responsive.test.mjs` 항목은 등록되어 있다.
+E2E는 임시 Vite 로컬 서버, 설치된 Chrome headless, DPR 1에서 수행했다. E2E manifest는 tracked
+116개와 manifest 116개가 일치하며 이번 변경의 `responsive.test.mjs` 항목도 등록되어 있다.
 
 ## 6. Stage 3 종료 판정
 

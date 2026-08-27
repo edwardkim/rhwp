@@ -62,14 +62,14 @@ Studio chrome의 DOM/CSS/접근성 변경이며 renderer·layout·typeset·paint
 | --- | --- |
 | `npx tsc --noEmit` | 통과 |
 | Stage 3 focused 정적 계약 | 27 passed, 0 failed |
-| `npm test` | 1,148 passed, 0 failed, 1 skipped |
+| `npm test` | 1,181 passed, 0 failed, 1 skipped |
 | `npm run build` | 통과 |
+| `npm run e2e:manifest-check` | 116 tracked, 116 manifest |
 | responsive/theme E2E | 821 passed, 0 failed |
 | `git diff --check` | 통과 |
 
-E2E는 `http://127.0.0.1:7718/`, Puppeteer headless shell, DPR 1에서 수행했다. 저장소 전체 E2E manifest
-검사는 이 변경과 무관한 기존 미등재 파일 세 개(`loading-busy-cursor`, `status-page-number`,
-`toolbox-visibility`)만 보고한다. Rust source 변경은 0건이며 source 작업 트리에 review/CI 파생
+E2E는 임시 Vite 로컬 서버, 설치된 Chrome headless, DPR 1에서 수행했다. 저장소 전체 E2E manifest는
+tracked 116개와 manifest 116개가 일치한다. Rust source 변경은 0건이며 source 작업 트리에 review/CI 파생
 `tests/generated/regression_suite_001.rs`~`032.rs`가 없는 source checkout에서는 `cargo fmt --all`을
 실행하지 않았다. #6138 통합 Stage 3에서 파생 suite를 준비한 별도 review checkout의 Rust manifest와
 `cargo fmt --all`·`cargo fmt --all -- --check`가 모두 통과했다.
