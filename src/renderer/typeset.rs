@@ -20050,11 +20050,16 @@ impl TypesetEngine {
         // 중복 방지: 이전 표가 이미 같은 문단의 pre-text(start_line=0)를 추가했으면 건너뜀
         // (engine.rs:1418-1421 와 동일한 가드 — 다중 TopAndBottom 표 문단에서
         //  같은 line 범위가 두 번 emit되어 본문이 두 번 렌더되는 문제 차단)
+        // [#6184] 이 가드는 `current_items` 만 보는데, 표가 쪽을 넘긴 뒤에는 그것이
+        // **새 쪽**의 항목이라 앞 쪽에 pre-emit 해 둔 host 줄을 못 본다. 그러면 같은
+        // 줄이 두 쪽에 모두 그려진다(156489124 pi=324: 12쪽 1030.3 과 13쪽 75.6).
+        // pre-emit 기록은 쪽을 넘어 남으므로 함께 본다.
         let pre_text_exists = post_table_start == 0
-            && st.current_items.iter().any(|item| {
-                matches!(item, PageItem::PartialParagraph { para_index, start_line, .. }
-                if *para_index == para_idx && *start_line == 0)
-            });
+            && (st.pre_emitted_host_paras.contains(&para_idx)
+                || st.current_items.iter().any(|item| {
+                    matches!(item, PageItem::PartialParagraph { para_index, start_line, .. }
+                    if *para_index == para_idx && *start_line == 0)
+                }));
         let has_substantive_text = para_has_non_whitespace_text(para);
         let whitespace_only_single_tac_host_line = !has_substantive_text
             && !para.text.is_empty()
@@ -20218,7 +20223,16 @@ impl TypesetEngine {
         let host_h = host_fmt.line_advances_sum(0..host_lines);
         // [Task #1763] 저장 flow 로 같은 쪽 후보임이 확인된 경우와 동일하게, host
         // 줄 자체는 추가 안전마진 없이 본문 가용 높이로 판정한다.
-        if host_lines == 0 || st.current_height + host_h > st.available_height() {
+        //
+        // [#6184] 단 **fit 판정에는 말미 줄간격을 빼고** 잰다 — 쪽 마지막 줄 뒤에는
+        // 다음 줄이 없으므로 그 간격은 쪽을 채우지 않는다(#359 의 `height_for_fit`
+        // 규약이고, 바로 아래 후속 문단 루프도 이미 그 값을 쓴다). 포함해서 재면
+        // 156489124 pi=324 가 24.0px 로 잡혀 잔여 16.6px 를 넘겨 탈락하고, 줄이
+        // 표와 함께 다음 쪽으로 밀려 그 쪽 흐름표 위에 겹쳐 그려진다. 한글은 같은
+        // 줄을 1031.2..1047.2 로 본문 하단(1046.9)을 0.3px 넘겨 놓는다 — 말미
+        // 간격을 요구하지 않는다는 뜻이다. 누적(advance)은 종전대로 전량.
+        let host_fit = host_fmt.height_for_fit.min(host_h);
+        if host_lines == 0 || st.current_height + host_fit > st.available_height() {
             return false;
         }
         st.current_items.push(PageItem::PartialParagraph {
@@ -20261,7 +20275,6 @@ impl TypesetEngine {
         }
         if !para_has_visible_text(para)
             || !crate::renderer::float_placement::is_para_topbottom_float(&table.common)
-            || signed_hwpunit(table.common.vertical_offset) < 0
             || !matches!(
                 table.page_break,
                 crate::model::table::TablePageBreak::RowBreak
@@ -20269,15 +20282,29 @@ impl TypesetEngine {
         {
             return;
         }
-        let Some(host_vpos) = para
-            .line_segs
-            .iter()
-            .find(|ls| !is_synthetic_line_seg(ls))
-            .map(|ls| ls.vertical_pos)
-        else {
+        let Some(host_seg) = para.line_segs.iter().find(|ls| !is_synthetic_line_seg(ls)) else {
             return;
         };
+        let host_vpos = host_seg.vertical_pos;
         let body_h_hu = crate::renderer::px_to_hwpunit(st.layout.body_area.height, self.dpi);
+        // [#6184] 음수 세로 오프셋은 표를 host 줄 **위**로 들어올리므로 종전에는
+        // pre-emit 자체를 막았다. 그러나 저장 사다리가 "이 줄은 이 쪽 본문 안에서
+        // 끝난다"고 증언하면 한글은 그 줄을 이 쪽 마지막 줄로 두고 표만 넘긴다
+        // (156489124 pi=324: host vpos 71604 + lh 1200 = 72804 ≤ 본문 72847,
+        // 다음 문단 vpos 6863 으로 리셋 — 한글 실측도 그 줄이 12쪽 1031.2).
+        // 막아 두면 줄이 표와 함께 넘어가 다음 쪽 흐름표 위에 겹쳐 그려진다.
+        // 증거 없는 음수(줄이 본문을 넘거나 다음 문단이 이어지는 경우)는 종전대로.
+        if signed_hwpunit(table.common.vertical_offset) < 0 {
+            let line_ends_inside = host_vpos >= 0
+                && i64::from(host_vpos) + i64::from(host_seg.line_height) <= i64::from(body_h_hu);
+            let next_resets = paragraphs_all
+                .get(para_idx + 1)
+                .and_then(|next| next.line_segs.iter().find(|ls| !is_synthetic_line_seg(ls)))
+                .is_some_and(|seg| seg.vertical_pos < host_vpos);
+            if !(line_ends_inside && next_resets) {
+                return;
+            }
+        }
         // [Task #1811] HWPX 의 누적좌표 RowBreak 문서는 host 줄 pre-emit 자체를
         // 저장 vpos 가드보다 먼저 수행한다. 쪽 내부 vpos 를 가진 HWP/HWP3/일반 HWPX
         // 경로는 기존처럼 같은 쪽 저장 flow 확인 뒤에만 pre-emit 한다.
