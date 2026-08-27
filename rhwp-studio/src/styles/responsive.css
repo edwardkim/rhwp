@@ -7,30 +7,8 @@
      데스크톱: 1024px~
    ================================================================ */
 
-/* ─── 좁은 데스크톱 이하 (~1279px) ───────────────────── */
-@media (max-width: 1279px) {
-  /* 행 경계에 구분선만 남지 않도록 최상위 구분선을 숨긴다. */
-  #icon-toolbar > .tb-sep,
-  #style-bar > .sb-sep {
-    display: none;
-  }
-}
-
 /* ─── 태블릿 (768~1023px) ────────────────────────────── */
 @media (max-width: 1023px) {
-  /* 도구 상자: 높이 축소, 라벨 숨김 */
-  #icon-toolbar {
-    min-height: 40px;
-    padding: 2px 4px;
-  }
-  .tb-btn {
-    min-width: 36px;
-    padding: 2px;
-  }
-  .tb-btn .tb-label {
-    display: none;
-  }
-
   /* 눈금자 숨김: grid 대신 display로 처리하여 iOS WebKit 호환 */
   #ruler-corner, #h-ruler, #v-ruler {
     display: none;
@@ -45,52 +23,6 @@
   }
 }
 
-/* ─── 태블릿 서식 리본: 필드 1행 + 명령 1행 ─────────── */
-@media (min-width: 768px) and (max-width: 1023px) {
-  #style-bar {
-    display: grid;
-    grid-template-columns: max-content max-content;
-    min-height: 0;
-    align-items: start;
-    align-content: start;
-    justify-content: start;
-    gap: 4px 0;
-    padding: 4px 6px 5px;
-  }
-
-  .sb-field-ribbon-group {
-    grid-column: 1 / -1;
-  }
-
-  .sb-character-band {
-    grid-column: 1;
-  }
-
-  .sb-paragraph-band {
-    grid-column: 2;
-  }
-
-  .sb-ribbon-group {
-    min-height: 0;
-    padding: 0;
-    border-right: 0;
-  }
-
-  .sb-ribbon-label {
-    display: none;
-  }
-
-  .sb-character-ribbon-group,
-  .sb-color-ribbon-group {
-    padding: 0 7px;
-    border-right: 1px solid var(--ui-border);
-  }
-
-  .sb-paragraph-ribbon-group {
-    padding: 0 7px;
-  }
-}
-
 /* ─── 모바일 (~767px) ────────────────────────────────── */
 @media (max-width: 767px) {
   /* 전체 레이아웃: 편집 영역 최대화 */
@@ -102,219 +34,6 @@
     height: 100vh;
     height: 100dvh;
   }
-
-  /* ── 메뉴바: 햄버거 메뉴 전환 ── */
-  #menu-bar {
-    height: 40px;
-    padding: 0 4px;
-  }
-  #menu-bar .menu-item {
-    display: none; /* 기본 숨김 */
-  }
-  #menu-bar .menu-item:first-child,
-  #menu-bar .menu-item[data-menu="edit"] {
-    display: block; /* 파일 + 편집 (비교/이력 등은 편집 메뉴에 있음) */
-  }
-  /* 햄버거 버튼 (JS에서 .mobile-menu-toggle 추가 시 표시) */
-  .mobile-menu-toggle {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: var(--touch-target-min);
-    height: var(--touch-target-min);
-    border: none;
-    background: transparent;
-    cursor: pointer;
-    font-size: 20px;
-  }
-  /* 메뉴 펼쳐진 상태 */
-  #menu-bar.mobile-open .menu-item {
-    display: block;
-  }
-  #menu-bar.mobile-open {
-    flex-wrap: wrap;
-    height: auto;
-  }
-
-  /* ── 도구 상자: 논리 그룹 단위 여러 행 ── */
-  #icon-toolbar {
-    min-height: 40px;
-    padding: 2px 4px;
-  }
-
-  /* ── 서식 도구 모음: 필드 + 글자 + 문단 리본 ── */
-  #style-bar {
-    min-height: 40px;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 5px;
-    padding: 5px 6px 6px;
-  }
-
-  .sb-ribbon-group {
-    min-height: 0;
-    padding: 0;
-    border-right: 0;
-  }
-
-  .sb-ribbon-label {
-    display: none;
-  }
-
-  .sb-field-ribbon-group,
-  .sb-paragraph-ribbon-group {
-    width: 100%;
-  }
-
-  .sb-field-grid {
-    display: grid;
-    grid-template-columns: 68px 54px minmax(96px, 1fr) 72px 72px;
-    gap: 4px;
-    width: 100%;
-  }
-
-  .sb-field-grid .sb-field {
-    min-width: 0;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 2px;
-  }
-
-  .sb-field-grid .sb-field-label {
-    overflow: hidden;
-    color: var(--color-text-secondary);
-    font-size: 9px;
-    line-height: 1;
-    text-overflow: ellipsis;
-  }
-
-  .sb-field-grid .sb-combo,
-  .sb-field-grid .sb-size-group,
-  .sb-field-grid .sb-ls-group {
-    width: 100%;
-    height: 27px;
-    min-width: 0;
-    box-sizing: border-box;
-  }
-
-  .sb-field-grid .sb-size-group {
-    border: 1px solid var(--ui-border-light);
-    border-radius: var(--radius-sm);
-    overflow: hidden;
-    background: var(--color-surface);
-  }
-
-  .sb-field-grid .sb-size-group:focus-within {
-    border-color: var(--color-focus-border);
-  }
-
-  .sb-field-grid .sb-combo,
-  .sb-field-grid .sb-size,
-  .sb-field-grid .sb-size-unit,
-  .sb-field-grid .sb-ls-select {
-    height: 27px;
-    box-sizing: border-box;
-    font-size: var(--font-size-sm);
-  }
-
-  .sb-field-grid .sb-size,
-  .sb-field-grid .sb-ls-select {
-    min-width: 0;
-    flex: 1 1 auto;
-    width: auto;
-  }
-
-  .sb-field-grid .sb-size {
-    height: 100%;
-    border: 0;
-    border-radius: 0;
-    background: transparent;
-    font-variant-numeric: tabular-nums;
-  }
-
-  .sb-field-grid .sb-size-unit {
-    flex: 0 0 auto;
-    height: 100%;
-    padding: 0 2px;
-    line-height: 25px;
-    border: 0;
-    border-left: 1px solid var(--ui-border-light);
-    background: transparent;
-  }
-
-  .sb-field-grid .sb-size-arrows,
-  .sb-field-grid .sb-ls-arrows {
-    flex: 0 0 14px;
-    height: 27px;
-  }
-
-  .sb-field-grid .sb-size-arrows {
-    height: 100%;
-    border-left: 1px solid var(--ui-border-light);
-  }
-
-  .sb-field-grid .sb-arrow {
-    width: 14px;
-    height: 13.5px;
-    min-height: 0;
-  }
-
-  .sb-field-grid .sb-size-arrows .sb-arrow {
-    height: 50%;
-    border: 0;
-    border-radius: 0;
-    background: transparent;
-  }
-
-  .sb-field-grid .sb-size-arrows .sb-arrow + .sb-arrow {
-    border-top: 1px solid var(--ui-border-light);
-  }
-
-  #style-bar #btn-size-up,
-  #style-bar #btn-size-down {
-    border-radius: 0;
-  }
-
-  .sb-command-band {
-    width: 100%;
-    min-width: 0;
-    gap: 5px;
-    padding: 0;
-    border-left: 0;
-  }
-
-  .sb-command-group {
-    gap: 2px;
-  }
-
-  .sb-color-ribbon-group {
-    padding-left: 5px;
-    border-left: 1px solid var(--ui-border);
-  }
-
-  .sb-paragraph-band {
-    padding-top: 4px;
-    border-top: 1px solid var(--ui-border);
-  }
-
-  #style-bar .sb-btn {
-    width: 29px;
-    min-width: 29px;
-    height: 29px;
-    min-height: 29px;
-    padding: 0;
-  }
-
-  #style-bar .sb-has-arrow {
-    width: 38px;
-    min-width: 38px;
-  }
-
-  #style-bar .sb-ga {
-    display: inline-block;
-  }
-
-  .sb-sep { display: none; }
 
   /* ── 편집 영역: 전체 화면 (grid→flex 전환으로 iOS 호환) ── */
   #editor-area {
@@ -423,6 +142,49 @@
     min-height: var(--touch-target-min);
     padding: 8px 16px 8px 32px;
     font-size: var(--font-size-md);
+  }
+}
+
+/*
+ * 데스크톱 브라우저의 실사용 최소 너비보다 작은 embedded/mobile viewport에서는
+ * 14px 메뉴 title padding을 줄이지 않고 메뉴 행 자체만 가로 이동시킨다.
+ * toggle은 항상 오른쪽에 남기고, 열린 메뉴는 scroll clip 밖(viewport)에 표시한다.
+ */
+@media (max-width: 479px) {
+  #menu-bar {
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+  }
+
+  #menu-bar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .menu-toolbox-toggle {
+    position: sticky;
+    right: 0;
+    z-index: 2;
+    background: var(--color-bg-light);
+  }
+
+  .menu-item.open > .menu-dropdown {
+    position: fixed;
+    top: 28px;
+    left: 8px;
+  }
+}
+
+/* 터치 화면은 클릭 범위만 키우고 모든 메뉴를 같은 한 줄에 유지한다. */
+@media (max-width: 767px) and (hover: none) and (pointer: coarse) {
+  #menu-bar {
+    height: 40px;
+    padding: 0 4px;
+  }
+
+  .menu-item.open > .menu-dropdown {
+    top: 40px;
   }
 }
 

@@ -2,17 +2,176 @@
    2행: 아이콘 툴바
    ================================================================ */
 #icon-toolbar {
+  --tb-resting-inline-padding: 8px;
+  --tb-scroll-nav-size: 24px;
+  --tb-scroll-nav-edge-gap: 4px;
+  position: relative;
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: stretch;
-  align-content: flex-start;
-  padding: 2px 8px;
+  padding: 2px var(--tb-resting-inline-padding);
   background: linear-gradient(to bottom, var(--ui-toolbar-bg-start), var(--ui-toolbar-bg-end));
   border-bottom: 1px solid var(--ui-border);
   flex-shrink: 0;
-  height: auto;
+  height: 56px;
   min-height: 56px;
-  overflow: visible;
+  overflow: hidden;
+}
+
+.tb-scroll-viewport {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  overscroll-behavior-x: contain;
+  touch-action: pan-x;
+}
+
+.tb-scroll-viewport.tb-scroll-viewport-enabled {
+  overflow-x: auto;
+}
+
+.tb-scroll-viewport::-webkit-scrollbar {
+  display: none;
+}
+
+.tb-scroll-viewport:focus-visible {
+  outline: 1px solid var(--color-focus-border);
+  outline-offset: -1px;
+}
+
+.tb-scroll-track {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  width: max-content;
+  min-width: 100%;
+  height: 100%;
+}
+
+.tb-scroll-nav {
+  position: absolute;
+  z-index: 4;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--tb-scroll-nav-size);
+  min-width: var(--tb-scroll-nav-size);
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: linear-gradient(to bottom, var(--ui-toolbar-bg-start), var(--ui-toolbar-bg-end));
+  box-shadow: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  opacity: 1;
+  transform: translateX(0);
+  visibility: visible;
+  transition:
+    opacity 120ms cubic-bezier(0.3, 0, 1, 1),
+    transform 120ms cubic-bezier(0.3, 0, 1, 1),
+    visibility 0s linear 0s;
+}
+
+.tb-scroll-nav::before {
+  content: '';
+  position: absolute;
+  inset: var(--tb-scroll-nav-edge-gap) 0;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  background: transparent;
+  box-shadow: none;
+  pointer-events: none;
+}
+
+#icon-toolbar-prev {
+  left: var(--tb-scroll-nav-edge-gap);
+}
+
+#icon-toolbar-next {
+  right: var(--tb-scroll-nav-edge-gap);
+}
+
+.tb-scroll-nav[hidden] {
+  display: none;
+}
+
+/* 직접 스크롤로 끝점에 닿았을 때 사용하는 기본 퇴장 상태. */
+.tb-scroll-nav.tb-scroll-nav-edge-hidden {
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
+  transition:
+    opacity 120ms cubic-bezier(0.3, 0, 1, 1),
+    transform 120ms cubic-bezier(0.3, 0, 1, 1),
+    visibility 0s linear 120ms;
+}
+
+/* 끝점으로 이동할 때 scroll과 같은 순간 시작하고 같은 시간에 끝나는 퇴장 상태. */
+.tb-scroll-nav.tb-scroll-nav-transitioning-out {
+  opacity: 0;
+  pointer-events: none;
+  visibility: hidden;
+  transition:
+    opacity var(--tb-scroll-exit-duration, 240ms) cubic-bezier(0.3, 0, 1, 1),
+    transform var(--tb-scroll-exit-duration, 240ms) cubic-bezier(0.3, 0, 1, 1),
+    visibility 0s linear var(--tb-scroll-exit-duration, 240ms);
+}
+
+#icon-toolbar-prev.tb-scroll-nav-edge-hidden,
+#icon-toolbar-prev.tb-scroll-nav-transitioning-out {
+  transform: translateX(-3px);
+}
+
+#icon-toolbar-next.tb-scroll-nav-edge-hidden,
+#icon-toolbar-next.tb-scroll-nav-transitioning-out {
+  transform: translateX(3px);
+}
+
+.tb-scroll-nav:hover:not([aria-disabled="true"]) {
+  background: linear-gradient(to bottom, var(--ui-toolbar-bg-start), var(--ui-toolbar-bg-end));
+}
+
+.tb-scroll-nav:hover:not([aria-disabled="true"])::before {
+  border-color: var(--ui-border-light);
+  background: var(--ui-hover-strong);
+}
+
+.tb-scroll-nav:focus-visible {
+  outline: none;
+}
+
+.tb-scroll-nav:focus-visible::before {
+  border-color: var(--color-focus-border);
+  outline: 1px solid var(--color-focus-border);
+  outline-offset: -2px;
+}
+
+.tb-scroll-nav[aria-disabled="true"]:not(.tb-scroll-nav-edge-hidden) {
+  color: var(--color-text-muted);
+  cursor: default;
+  opacity: 0.45;
+}
+
+.tb-scroll-nav-icon {
+  position: relative;
+  z-index: 1;
+  font-size: var(--font-size-lg);
+  line-height: 1;
+  transform: translateY(-1px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tb-scroll-nav,
+  .tb-scroll-nav.tb-scroll-nav-edge-hidden,
+  .tb-scroll-nav.tb-scroll-nav-transitioning-out {
+    transition: none;
+  }
 }
 
 .tb-group {
@@ -20,6 +179,11 @@
   align-items: stretch;
   gap: 0;
   flex-shrink: 0;
+}
+
+.tb-group[hidden],
+.tb-sep[hidden] {
+  display: none;
 }
 
 .tb-mode-group {
@@ -182,9 +346,7 @@
 
 .tb-split-menu {
   display: none;
-  position: absolute;
-  top: 100%;
-  left: 0;
+  position: fixed;
   min-width: 180px;
   background: var(--color-surface-raised);
   border: 1px solid var(--ui-border-light);
@@ -199,15 +361,26 @@
 }
 
 .tb-split-item {
+  width: 100%;
+  border: 0;
   padding: 5px 12px;
+  background: transparent;
+  color: var(--color-text);
   cursor: pointer;
   display: flex;
+  font: inherit;
   justify-content: space-between;
   align-items: center;
   white-space: nowrap;
 }
 
 .tb-split-item:hover {
+  background: var(--ui-hover-strong);
+}
+
+.tb-split-item:focus-visible {
+  outline: 1px solid var(--color-focus-border);
+  outline-offset: -1px;
   background: var(--ui-hover-strong);
 }
 

@@ -5,6 +5,14 @@ import { assertRemoteDocumentBytes } from '@/core/document-signature';
 import { CanvasView } from '@/view/canvas-view';
 import { InputHandler } from '@/engine/input-handler';
 import { Toolbar } from '@/ui/toolbar';
+import { initIconToolbarScroller } from '@/ui/icon-toolbar-scroller';
+import { initStyleToolbarOverflow } from '@/ui/style-toolbar-overflow';
+import {
+  closeToolbarSplitMenus,
+  moveToolbarSplitFocus,
+  setToolbarSplitOpen,
+  toolbarSplitItems,
+} from '@/ui/toolbar-split-menu';
 import { MenuBar } from '@/ui/menu-bar';
 import { loadWebFonts, resolveCanvasKitFontPlan } from '@/core/font-loader';
 import { withCanvasKitSurfaceBlockers } from '@/core/canvaskit-document-preflight';
@@ -110,6 +118,8 @@ initThemeSync((effective, mode) => {
 // 저장된 도구 상자(기본/서식) 보이기·숨기기 복원 — 문서 로드와 무관하고, WASM 초기화보다
 // 먼저 반영해야 숨긴 도구 모음이 잠깐 보였다 사라지지 않는다(모듈 스크립트라 DOM 은 이미 파싱됨).
 syncToolboxMenu();
+const iconToolbarScroller = initIconToolbarScroller(document.getElementById('icon-toolbar'));
+initStyleToolbarOverflow(document.getElementById('style-bar'));
 
 /**
  * 호스트 저장 완료 통지 (#2660).
@@ -673,34 +683,65 @@ async function initialize(): Promise<void> {
         const cmd = (btn as HTMLElement).dataset.cmd;
         if (cmd) dispatcher.dispatch(cmd, { anchorEl: btn as HTMLElement });
       });
+      btn.addEventListener('click', (event) => {
+        if ((event as MouseEvent).detail !== 0) return;
+        const cmd = (btn as HTMLElement).dataset.cmd;
+        if (cmd) dispatcher.dispatch(cmd, { anchorEl: btn as HTMLElement });
+      });
     });
 
-    // 스플릿 버튼 드롭다운 메뉴
     document.querySelectorAll('.tb-split').forEach(split => {
-      const arrow = split.querySelector('.tb-split-arrow');
+      const arrow = split.querySelector<HTMLButtonElement>('.tb-split-arrow');
+      const menu = split.querySelector<HTMLElement>('.tb-split-menu');
       if (arrow) {
-        arrow.addEventListener('mousedown', (e) => {
+        arrow.setAttribute('aria-haspopup', 'menu');
+        arrow.setAttribute('aria-expanded', 'false');
+        arrow.addEventListener('click', (e) => {
           e.preventDefault();
           e.stopPropagation();
-          // 다른 열린 메뉴 닫기
-          document.querySelectorAll('.tb-split.open').forEach(s => {
-            if (s !== split) s.classList.remove('open');
+          closeToolbarSplitMenus(document, split);
+          const open = !split.classList.contains('open');
+          setToolbarSplitOpen(split, open, {
+            focus: open && (e as MouseEvent).detail === 0 ? 'first' : undefined,
           });
-          split.classList.toggle('open');
+        });
+        arrow.addEventListener('keydown', (event) => {
+          if (event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
+          event.preventDefault();
+          closeToolbarSplitMenus(document, split);
+          setToolbarSplitOpen(split, true, {
+            focus: event.key === 'ArrowDown' ? 'first' : 'last',
+          });
         });
       }
       split.querySelectorAll('.tb-split-item[data-cmd]').forEach(item => {
-        item.addEventListener('mousedown', (e) => {
+        item.addEventListener('click', (e) => {
           e.preventDefault();
-          split.classList.remove('open');
+          setToolbarSplitOpen(split, false, { returnFocus: (e as MouseEvent).detail === 0 });
           const cmd = (item as HTMLElement).dataset.cmd;
           if (cmd) dispatcher.dispatch(cmd, { anchorEl: item as HTMLElement });
         });
       });
+      menu?.addEventListener('keydown', (event) => {
+        const target = event.target;
+        if (!(target instanceof Element)) return;
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          event.stopPropagation();
+          setToolbarSplitOpen(split, false, { returnFocus: true });
+        } else if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+          event.preventDefault();
+          moveToolbarSplitFocus(split, target, event.key === 'ArrowDown' ? 1 : -1);
+        } else if (event.key === 'Home' || event.key === 'End') {
+          event.preventDefault();
+          const items = toolbarSplitItems(split);
+          (event.key === 'Home' ? items[0] : items.at(-1))?.focus({ preventScroll: true });
+        }
+      });
     });
     // 외부 클릭 시 스플릿 메뉴 닫기
     document.addEventListener('mousedown', () => {
-      document.querySelectorAll('.tb-split.open').forEach(s => s.classList.remove('open'));
+      closeToolbarSplitMenus(document);
     });
 
     // #780: 도구 모음/서식 도구 모음 영역 mousedown 시 focus 이동 방지
@@ -1134,9 +1175,17 @@ function setupEventListeners(): void {
   // 개체 선택 시 회전/대칭 버튼 그룹 표시/숨김
   const rotateGroup = document.querySelector('.tb-rotate-group') as HTMLElement | null;
   let noteToolbarActive = false;
+  let headerFooterToolbarActive = false;
+  let pictureObjectSelected = false;
+  const syncRotateGroup = (): void => {
+    if (rotateGroup) {
+      rotateGroup.hidden = !pictureObjectSelected || noteToolbarActive || headerFooterToolbarActive;
+    }
+  };
   if (rotateGroup) {
     eventBus.on('picture-object-selection-changed', (selected) => {
-      rotateGroup.style.display = (selected as boolean) && !noteToolbarActive ? '' : 'none';
+      pictureObjectSelected = selected as boolean;
+      syncRotateGroup();
     });
   }
 
@@ -1144,22 +1193,25 @@ function setupEventListeners(): void {
   const hfGroup = document.querySelector('.tb-headerfooter-group') as HTMLElement | null;
   const hfLabel = hfGroup?.querySelector('.tb-hf-label') as HTMLElement | null;
   const noteGroup = document.querySelector('.tb-note-group') as HTMLElement | null;
-  const defaultTbGroups = document.querySelectorAll('#icon-toolbar > .tb-group:not(.tb-headerfooter-group):not(.tb-note-group):not(.tb-rotate-group), #icon-toolbar > .tb-sep');
+  const defaultTbGroups = document.querySelectorAll('#icon-toolbar .tb-scroll-track > .tb-group:not(.tb-headerfooter-group):not(.tb-note-group):not(.tb-rotate-group), #icon-toolbar .tb-scroll-track > .tb-sep');
   const scrollContainer = document.getElementById('scroll-container');
   const styleBar = document.getElementById('style-bar');
 
   eventBus.on('headerFooterModeChanged', (mode) => {
     const isActive = (mode as string) !== 'none';
+    headerFooterToolbarActive = isActive;
+    iconToolbarScroller?.resetToStart();
     // 도구상자 전환
     if (hfGroup) {
-      hfGroup.style.display = isActive ? '' : 'none';
+      hfGroup.hidden = !isActive;
     }
     if (hfLabel) {
       hfLabel.textContent = (mode as string) === 'header' ? '머리말' : (mode as string) === 'footer' ? '꼬리말' : '';
     }
     defaultTbGroups.forEach((el) => {
-      (el as HTMLElement).style.display = isActive ? 'none' : '';
+      (el as HTMLElement).hidden = isActive;
     });
+    syncRotateGroup();
     // 서식 도구 모음은 머리말/꼬리말 편집 시에도 유지 (문단/글자 모양 설정 필요)
     // 본문 dimming
     if (scrollContainer) {
@@ -1174,15 +1226,14 @@ function setupEventListeners(): void {
   eventBus.on('footnoteModeChanged', (active) => {
     const isActive = active as boolean;
     noteToolbarActive = isActive;
+    iconToolbarScroller?.resetToStart();
     if (noteGroup) {
-      noteGroup.style.display = isActive ? '' : 'none';
-    }
-    if (rotateGroup && isActive) {
-      rotateGroup.style.display = 'none';
+      noteGroup.hidden = !isActive;
     }
     defaultTbGroups.forEach((el) => {
-      (el as HTMLElement).style.display = isActive ? 'none' : '';
+      (el as HTMLElement).hidden = isActive;
     });
+    syncRotateGroup();
   });
 }
 

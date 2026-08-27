@@ -1,28 +1,66 @@
 /**
- * E2E 테스트: 반응형 레이아웃 검증
- *
- * 데스크톱 / 태블릿 / 모바일 뷰포트에서 레이아웃을 확인한다.
+ * E2E 테스트: 반응형 레이아웃과 #6118 서식 바 콘텐츠 경계 검증
  */
-import { launchBrowser, loadApp, screenshot, closeBrowser, closePage, createPage, createNewDocument } from './helpers.mjs';
+import { launchBrowser, loadApp, screenshot, closeBrowser, closePage, createPage } from './helpers.mjs';
 import { TestReporter } from './report-generator.mjs';
 
 const VIEWPORTS = [
-  { name: 'desktop', width: 1280, height: 900 },
-  { name: 'tablet', width: 768, height: 1024 },
-  { name: 'mobile', width: 375, height: 812 },
-  { name: 'mobile-landscape', width: 812, height: 375 },
+  { name: 'wide-desktop', width: 1920, height: 1080, styleMode: 'full' },
+  { name: 'desktop', width: 1280, height: 900, styleMode: 'full' },
+  { name: 'narrow-desktop', width: 1024, height: 768, styleMode: 'full' },
+  { name: 'full-boundary', width: 962, height: 900, styleMode: 'full' },
+  { name: 'compact-boundary', width: 961, height: 900, styleMode: 'compact' },
+  { name: 'compact-desktop', width: 883, height: 900, styleMode: 'compact' },
+  { name: 'one-row-boundary', width: 808, height: 900, styleMode: 'compact' },
+  { name: 'two-row-boundary', width: 807, height: 900, styleMode: 'inline' },
+  { name: 'tablet', width: 768, height: 1024, styleMode: 'inline' },
+  { name: 'command-inline-boundary', width: 460, height: 900, styleMode: 'inline' },
+  { name: 'command-overflow-boundary', width: 459, height: 900, styleMode: 'overflow' },
+  { name: 'mobile-wide', width: 412, height: 915, styleMode: 'overflow' },
+  { name: 'mobile-medium', width: 390, height: 844, styleMode: 'overflow' },
+  { name: 'mobile', width: 375, height: 812, styleMode: 'overflow' },
 ];
+
+const THEME_LAYOUTS = [
+  { name: 'full', width: 962, height: 900, styleMode: 'full' },
+  { name: 'compact', width: 808, height: 900, styleMode: 'compact' },
+  { name: 'inline', width: 460, height: 900, styleMode: 'inline' },
+  { name: 'overflow', width: 375, height: 812, styleMode: 'overflow' },
+];
+
+const THEME_CASES = ['default', 'flat', 'oldschool'].flatMap(skin =>
+  ['light', 'dark'].flatMap(theme =>
+    THEME_LAYOUTS.map(layout => ({ ...layout, skin, theme })),
+  ),
+);
+
+async function primeTheme(page, skin = 'default', mode = 'light') {
+  await page.evaluateOnNewDocument(({ selectedSkin, selectedMode }) => {
+    localStorage.setItem('rhwp-settings', JSON.stringify({
+      theme: { mode: selectedMode, skin: selectedSkin, skinChosen: true },
+      view: { toolbarBasic: true, toolbarFormat: true },
+    }));
+  }, { selectedSkin: skin, selectedMode: mode });
+}
 
 async function run() {
   console.log('=== E2E: 반응형 레이아웃 테스트 ===\n');
 
   const browser = await launchBrowser();
   const reporter = new TestReporter('반응형 레이아웃 테스트');
-  let passed = 0, failed = 0;
+  let passed = 0;
+  let failed = 0;
 
   const check = (tc, cond, msg) => {
-    if (cond) { passed++; console.log(`  PASS: ${msg}`); reporter.pass(tc, msg); }
-    else { failed++; console.error(`  FAIL: ${msg}`); reporter.fail(tc, msg); }
+    if (cond) {
+      passed++;
+      console.log(`  PASS: ${msg}`);
+      reporter.pass(tc, msg);
+    } else {
+      failed++;
+      console.error(`  FAIL: ${msg}`);
+      reporter.fail(tc, msg);
+    }
   };
 
   for (const vp of VIEWPORTS) {
@@ -32,69 +70,785 @@ async function run() {
     const page = await createPage(browser, vp.width, vp.height);
 
     try {
+      await primeTheme(page);
       await loadApp(page);
       await page.evaluate(() => window.__eventBus?.emit('create-new-document'));
-      await page.evaluate(() => new Promise(r => setTimeout(r, 1000)));
+      await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 1000)));
 
-      // 기본 렌더링 확인
-      const result = await page.evaluate((vpName) => {
+      const result = await page.evaluate(() => {
         const canvas = document.querySelector('canvas');
         const menuBar = document.getElementById('menu-bar');
+        const menuTitles = Array.from(menuBar?.querySelectorAll('.menu-title') ?? []);
+        const toolboxToggle = document.getElementById('toolbox-basic-toggle');
         const toolbar = document.getElementById('icon-toolbar');
+        const toolbarViewport = document.getElementById('icon-toolbar-viewport');
+        const toolbarTrack = toolbar?.querySelector('.tb-scroll-track');
+        const toolbarPrevious = document.getElementById('icon-toolbar-prev');
+        const toolbarNext = document.getElementById('icon-toolbar-next');
+        const splitArrow = toolbarTrack?.querySelector('.tb-split-arrow');
+        const splitMenu = toolbarTrack?.querySelector('.tb-split-menu');
+        const splitItems = Array.from(splitMenu?.querySelectorAll('.tb-split-item') ?? []);
+        const toolbarGroups = Array.from(toolbarTrack?.querySelectorAll(':scope > .tb-group') ?? [])
+          .filter(group => getComputedStyle(group).display !== 'none');
+        const toolbarLabels = Array.from(toolbarTrack?.querySelectorAll('.tb-label') ?? []);
         const styleBar = document.getElementById('style-bar');
+        const styleName = document.getElementById('style-name');
+        const fileTitle = menuBar?.querySelector('[data-menu="file"] .menu-title');
         const statusBar = document.getElementById('status-bar');
         const editor = document.getElementById('editor-area');
+        const field = styleBar?.querySelector('.sb-field-ribbon-group');
+        const command = styleBar?.querySelector('.sb-command-track');
+        const paragraph = styleBar?.querySelector('.sb-paragraph-ribbon-group');
+        const overflowButton = document.getElementById('btn-style-overflow');
+        const overflowPanel = document.getElementById('style-overflow-panel');
 
-        const isVisible = (el) => {
-          if (!el) return false;
-          const style = getComputedStyle(el);
-          return style.display !== 'none' && style.visibility !== 'hidden' && el.offsetHeight > 0;
+        const isVisible = (element) => {
+          if (!element) return false;
+          const style = getComputedStyle(element);
+          return style.display !== 'none' && style.visibility !== 'hidden'
+            && element.getClientRects().length > 0;
         };
+        const top = element => Math.round(element?.getBoundingClientRect().top ?? -1);
+        const styleRows = new Set([top(field), top(command)]).size;
+        const toolbarRows = new Set(toolbarGroups.map(top)).size;
+        const toolbarRect = toolbar?.getBoundingClientRect();
+        const toolbarTrackRect = toolbarTrack?.getBoundingClientRect();
+        const toolbarPaddingLeft = toolbar ? parseFloat(getComputedStyle(toolbar).paddingLeft) : 0;
+        const toolbarStartPaddingAligned = !!toolbarRect && !!toolbarTrackRect
+          && Math.abs(toolbarTrackRect.left - (toolbarRect.left + toolbarPaddingLeft)) <= 1;
+        const fileTextRange = document.createRange();
+        if (fileTitle) fileTextRange.selectNodeContents(fileTitle);
+        const fileTextLeft = fileTitle ? fileTextRange.getBoundingClientRect().left : -1;
+        const styleNameStyle = styleName ? getComputedStyle(styleName) : null;
+        const styleNameTextLeft = styleName && styleNameStyle
+          ? styleName.getBoundingClientRect().left
+            + parseFloat(styleNameStyle.borderLeftWidth)
+            + parseFloat(styleNameStyle.paddingLeft)
+          : -1;
+        const styleLeadingAligned = !!styleName && fileTextLeft >= 0
+          && Math.abs(styleNameTextLeft - fileTextLeft) <= 2;
+        const menuRows = new Set(menuTitles.map(top)).size;
+        const menuBarRect = menuBar?.getBoundingClientRect();
+        const toolboxToggleRect = toolboxToggle?.getBoundingClientRect();
+        const toolboxToggleInViewport = !!menuBarRect && !!toolboxToggleRect
+          && toolboxToggleRect.left >= menuBarRect.left
+          && toolboxToggleRect.right <= menuBarRect.right;
 
         return {
           hasCanvas: !!canvas,
-          canvasWidth: canvas?.offsetWidth ?? 0,
-          canvasHeight: canvas?.offsetHeight ?? 0,
           menuBarVisible: isVisible(menuBar),
           menuBarHeight: menuBar?.offsetHeight ?? 0,
+          menuRows,
+          allMenuTitlesVisible: menuTitles.length === 8 && menuTitles.every(isVisible),
+          toolboxToggleInViewport,
           toolbarVisible: isVisible(toolbar),
+          toolbarRole: toolbar?.getAttribute('role'),
+          toolbarViewportRole: toolbarViewport?.getAttribute('role'),
+          splitArrowHasPopup: splitArrow?.getAttribute('aria-haspopup'),
+          splitMenuRole: splitMenu?.getAttribute('role'),
+          splitItemsAreMenuItems: splitItems.length > 0
+            && splitItems.every(item => item.getAttribute('role') === 'menuitem'),
           toolbarHeight: toolbar?.offsetHeight ?? 0,
+          toolbarRows,
+          toolbarLabelsVisible: toolbarLabels.some(isVisible),
+          toolbarPreviousVisible: isVisible(toolbarPrevious),
+          toolbarNextVisible: isVisible(toolbarNext),
+          toolbarPreviousDisabled: toolbarPrevious?.disabled ?? null,
+          toolbarNextDisabled: toolbarNext?.disabled ?? null,
+          toolbarPreviousAriaDisabled: toolbarPrevious?.getAttribute('aria-disabled'),
+          toolbarNextAriaDisabled: toolbarNext?.getAttribute('aria-disabled'),
+          toolbarPreviousAriaHidden: toolbarPrevious?.getAttribute('aria-hidden'),
+          toolbarNextAriaHidden: toolbarNext?.getAttribute('aria-hidden'),
+          toolbarClientWidth: toolbar?.clientWidth ?? 0,
+          toolbarScrollWidth: toolbar?.scrollWidth ?? 0,
+          toolbarViewportClientWidth: toolbarViewport?.clientWidth ?? 0,
+          toolbarViewportScrollWidth: toolbarViewport?.scrollWidth ?? 0,
+          toolbarNativeScrollEnabled: toolbarViewport?.classList.contains('tb-scroll-viewport-enabled') ?? false,
+          toolbarViewportOverflowX: toolbarViewport ? getComputedStyle(toolbarViewport).overflowX : null,
+          toolbarStartPaddingAligned,
           styleBarVisible: isVisible(styleBar),
           styleBarHeight: styleBar?.offsetHeight ?? 0,
+          styleRows,
+          paragraphVisible: isVisible(paragraph),
+          overflowButtonVisible: isVisible(overflowButton),
+          overflowExpanded: overflowButton?.getAttribute('aria-expanded'),
+          overflowPanelHidden: overflowPanel?.hidden ?? null,
           statusBarVisible: isVisible(statusBar),
           editorVisible: isVisible(editor),
           pageCount: window.__wasm?.pageCount ?? 0,
+          rootClientWidth: document.documentElement.clientWidth,
+          rootScrollWidth: document.documentElement.scrollWidth,
+          styleClientWidth: styleBar?.clientWidth ?? 0,
+          styleScrollWidth: styleBar?.scrollWidth ?? 0,
+          styleLeadingAligned,
         };
-      }, vp.name);
+      });
 
-      check(tc, result.hasCanvas, `캔버스 존재`);
-      check(tc, result.editorVisible, `편집 영역 표시`);
+      check(tc, result.hasCanvas, '캔버스 존재');
+      check(tc, result.editorVisible, '편집 영역 표시');
       check(tc, result.pageCount >= 1, `페이지 수: ${result.pageCount}`);
+      check(tc, result.menuBarVisible, '메뉴바 표시');
+      check(tc, result.menuBarHeight === 28, `마우스 메뉴바 28px 한 줄 높이 (h=${result.menuBarHeight})`);
+      check(tc, result.menuRows === 1, `전체 메뉴 한 줄 유지 (rows=${result.menuRows})`);
+      check(tc, result.allMenuTitlesVisible, '파일–도구 전체 메뉴 표시');
+      check(tc, result.toolboxToggleInViewport, '기본 도구 상자 토글이 viewport 안에 표시');
+      check(tc, result.toolbarVisible, '기본 도구 상자 표시');
+      check(tc, result.toolbarRole === 'region' && result.toolbarViewportRole === 'group', '도구 상자 ARIA 영역 계약');
+      check(
+        tc,
+        result.splitArrowHasPopup === 'menu'
+          && result.splitMenuRole === 'menu'
+          && result.splitItemsAreMenuItems,
+        'split button menu/menuitem ARIA 계약',
+      );
+      check(tc, result.toolbarHeight === 56, `기본 도구 상자 한 줄 높이 (h=${result.toolbarHeight})`);
+      check(tc, result.toolbarRows === 1, `기본 도구 그룹 한 줄 (rows=${result.toolbarRows})`);
+      check(tc, result.toolbarLabelsVisible, '기본 도구 label 밀도 유지');
+      check(tc, result.toolbarStartPaddingAligned, '시작 위치 도구 track은 고유 왼쪽 padding에 정렬');
+      check(tc, result.styleBarVisible, '서식 도구 표시');
+      check(tc, result.statusBarVisible, '상태 표시줄 표시');
+      check(tc, result.styleRows <= 2, `서식 바 최대 2행 (rows=${result.styleRows})`);
+      check(
+        tc,
+        result.rootScrollWidth <= result.rootClientWidth,
+        `page 가로 overflow 없음 (${result.rootScrollWidth}/${result.rootClientWidth})`,
+      );
+      check(
+        tc,
+        result.styleScrollWidth <= result.styleClientWidth,
+        `서식 바 가로 overflow 없음 (${result.styleScrollWidth}/${result.styleClientWidth})`,
+      );
+      check(
+        tc,
+        result.toolbarScrollWidth <= result.toolbarClientWidth,
+        `기본 도구 외부 overflow 없음 (${result.toolbarScrollWidth}/${result.toolbarClientWidth})`,
+      );
 
-      if (vp.name === 'desktop') {
-        check(tc, result.menuBarVisible, `메뉴바 표시`);
-        check(tc, result.toolbarVisible, `도구 상자 표시`);
-        check(tc, result.styleBarVisible, `서식 도구 표시`);
-        check(tc, result.statusBarVisible, `상태 표시줄 표시`);
-      } else if (vp.name === 'tablet') {
-        check(tc, result.menuBarVisible, `메뉴바 표시`);
-        check(tc, result.toolbarHeight <= 44,
-          `도구 상자 축소 또는 숨김 (h=${result.toolbarHeight})`);
-        check(tc, result.styleBarVisible, `서식 도구 표시 (스크롤)`);
-      } else if (vp.name === 'mobile') {
-        check(tc, result.menuBarVisible, `메뉴바 표시`);
-        check(tc, !result.toolbarVisible, `도구 상자 숨김`);
-        check(tc, result.styleBarVisible, `서식 도구 표시 (터치)`);
-        check(tc, result.statusBarVisible, `상태 표시줄 표시`);
+      const toolbarOverflowExpected = vp.width <= 1024;
+      if (toolbarOverflowExpected) {
+        check(tc, !result.toolbarPreviousVisible && result.toolbarNextVisible, '시작 위치는 다음 이동 버튼만 표시');
+        check(
+          tc,
+          result.toolbarPreviousAriaDisabled === 'true' && result.toolbarPreviousAriaHidden === 'true',
+          '시작 위치 이전 버튼 slot을 접고 접근성 트리에서 숨김',
+        );
+        check(
+          tc,
+          result.toolbarNextAriaDisabled === 'false' && result.toolbarNextAriaHidden === 'false',
+          '시작 위치 다음 버튼 enabled',
+        );
+        check(
+          tc,
+          result.toolbarViewportScrollWidth > result.toolbarViewportClientWidth,
+          `기본 도구 내부 scroll (${result.toolbarViewportScrollWidth}/${result.toolbarViewportClientWidth})`,
+        );
+        check(
+          tc,
+          result.toolbarNativeScrollEnabled && result.toolbarViewportOverflowX === 'auto',
+          '내용이 넘칠 때만 native 가로 스크롤 활성화',
+        );
+      } else {
+        check(tc, !result.toolbarPreviousVisible && !result.toolbarNextVisible, '내용이 맞으면 이동 버튼 숨김');
+        check(
+          tc,
+          result.toolbarViewportScrollWidth <= result.toolbarViewportClientWidth,
+          '내용이 맞으면 내부 overflow 없음',
+        );
+        check(
+          tc,
+          !result.toolbarNativeScrollEnabled && result.toolbarViewportOverflowX === 'hidden',
+          '내용이 맞으면 native 가로 스크롤 차단',
+        );
       }
 
-      console.log(`  Layout: menu=${result.menuBarHeight}px toolbar=${result.toolbarHeight}px style=${result.styleBarHeight}px`);
+      if (vp.styleMode === 'full') {
+        check(tc, result.styleRows === 1, `전체 압축 1행 (rows=${result.styleRows})`);
+        check(tc, result.styleBarHeight <= 36, `전체 압축 높이 36px 이하 (h=${result.styleBarHeight})`);
+        check(tc, result.styleLeadingAligned, '첫 서식 콤보와 파일 텍스트의 시각적 시작축 일치');
+        check(tc, result.paragraphVisible, '문단 명령 inline 표시');
+        check(tc, !result.overflowButtonVisible, '더보기 숨김');
+      } else if (vp.styleMode === 'inline') {
+        check(tc, result.styleRows === 2, `필드+명령 2행 (rows=${result.styleRows})`);
+        check(tc, result.paragraphVisible, '문단 명령 inline 표시');
+        check(tc, !result.overflowButtonVisible, '더보기 숨김');
+      } else {
+        const expectedRows = vp.styleMode === 'compact' ? 1 : 2;
+        check(tc, result.styleRows === expectedRows, `문단 접힘 ${expectedRows}행 (rows=${result.styleRows})`);
+        check(tc, !result.paragraphVisible, '닫힌 panel의 문단 명령 숨김');
+        check(tc, result.overflowButtonVisible, '문단 더보기 표시');
+        check(tc, result.overflowExpanded === 'false', '더보기 초기 접힘');
+        check(tc, result.overflowPanelHidden === true, '닫힌 panel 접근성 트리 제외');
+
+        const interaction = await page.evaluate(async () => {
+          const trigger = document.getElementById('btn-style-overflow');
+          const panel = document.getElementById('style-overflow-panel');
+          const command = document.getElementById('btn-align-left');
+          const selectionCommand = document.getElementById('btn-align-center');
+          const styleBar = document.getElementById('style-bar');
+          const editor = document.getElementById('scroll-container');
+          const nextFrame = () => new Promise(resolve => requestAnimationFrame(resolve));
+          const pointerClick = (element) => {
+            element?.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, cancelable: true }));
+            element?.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true, detail: 1 }));
+            element?.dispatchEvent(new MouseEvent('mouseup', { bubbles: true, cancelable: true, detail: 1 }));
+            element?.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, detail: 1 }));
+          };
+
+          trigger?.focus();
+          trigger?.dispatchEvent(new KeyboardEvent('keydown', {
+            key: 'ArrowDown', bubbles: true, cancelable: true,
+          }));
+          await nextFrame();
+          const openedByKeyboard = trigger?.getAttribute('aria-expanded') === 'true'
+            && panel?.hidden === false
+            && document.activeElement === command;
+          window.dispatchEvent(new KeyboardEvent('keydown', {
+            key: 'Escape', bubbles: true, cancelable: true,
+          }));
+          const closedByEscape = trigger?.getAttribute('aria-expanded') === 'false'
+            && panel?.hidden === true
+            && document.activeElement === trigger;
+
+          trigger?.click();
+          await nextFrame();
+          document.body.dispatchEvent(new PointerEvent('pointerdown', {
+            bubbles: true, cancelable: true,
+          }));
+          const closedByOutside = trigger?.getAttribute('aria-expanded') === 'false'
+            && panel?.hidden === true;
+
+          editor?.focus();
+          pointerClick(trigger);
+          await new Promise(resolve => requestAnimationFrame(resolve));
+          const openedByPointer = trigger?.getAttribute('aria-expanded') === 'true'
+            && panel?.hidden === false
+            && document.activeElement === editor;
+          pointerClick(selectionCommand);
+          await nextFrame();
+          const editorFocusPreserved = document.activeElement === editor;
+
+          const triggerIcon = document.getElementById('style-overflow-current-icon');
+          const currentAlignmentMirrored = selectionCommand?.classList.contains('active') === true
+            && trigger?.classList.contains('active') === false
+            && trigger?.getAttribute('aria-label')?.includes('현재 가운데 정렬') === true
+            && triggerIcon?.classList.contains('sb-al-center') === true;
+          styleBar?.setAttribute('aria-disabled', 'true');
+          await new Promise(resolve => setTimeout(resolve, 0));
+          const disabledMirrored = trigger?.disabled === true;
+          styleBar?.setAttribute('aria-disabled', 'false');
+
+          return {
+            openedByKeyboard,
+            closedByEscape,
+            closedByOutside,
+            openedByPointer,
+            closedByCommand: trigger?.getAttribute('aria-expanded') === 'false' && panel?.hidden === true,
+            editorFocusPreserved,
+            currentAlignmentMirrored,
+            disabledMirrored,
+          };
+        });
+        check(tc, interaction.openedByKeyboard, 'ArrowDown 열기와 첫 명령 focus');
+        check(tc, interaction.closedByEscape, 'Escape 닫기와 trigger focus 복귀');
+        check(tc, interaction.closedByOutside, '외부 pointer로 panel 닫힘');
+        check(tc, interaction.openedByPointer, 'pointer 열기와 편집기 focus 유지');
+        check(tc, interaction.closedByCommand, '명령 실행 뒤 panel 닫힘');
+        check(tc, interaction.editorFocusPreserved, 'pointer 명령 실행 뒤 편집기 focus 유지');
+        check(tc, interaction.currentAlignmentMirrored, '현재 paragraph 정렬은 표시하되 닫힌 trigger는 중립 유지');
+        check(tc, interaction.disabledMirrored, 'paragraph disabled 상태를 trigger에 표시');
+      }
+
+      if (vp.name === 'full-boundary') {
+        const formatting = await page.evaluate(async () => {
+          const fontSize = document.getElementById('font-size');
+          const charfxButton = document.getElementById('btn-charfx');
+          const charfxDropdown = document.getElementById('charfx-dropdown');
+          const charfxItem = document.querySelector('#charfx-menu .sb-dropdown-item');
+          const highlightButton = document.getElementById('btn-highlight');
+          const highlightDropdown = document.getElementById('highlight-dropdown');
+          const highlightSwatch = document.querySelector('#highlight-palette .sb-hl-swatch');
+          const highlightBar = document.getElementById('highlight-bar');
+          const colorPicker = document.getElementById('text-color-picker');
+          const colorBar = document.getElementById('color-bar');
+
+          fontSize.value = '12';
+          fontSize.dispatchEvent(new KeyboardEvent('keydown', {
+            key: 'Enter', bubbles: true, cancelable: true,
+          }));
+
+          charfxButton.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
+          const charfxOpened = charfxDropdown.classList.contains('open');
+          charfxItem.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
+
+          highlightButton.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
+          const highlightOpened = highlightDropdown.classList.contains('open');
+          highlightSwatch.dispatchEvent(new MouseEvent('mousedown', { bubbles: true, cancelable: true }));
+
+          colorPicker.value = '#123456';
+          colorPicker.dispatchEvent(new Event('input', { bubbles: true }));
+          await new Promise(resolve => setTimeout(resolve, 0));
+
+          return {
+            fontSizeApplied: fontSize.value === '12',
+            charfxOpened,
+            charfxClosed: !charfxDropdown.classList.contains('open'),
+            highlightOpened,
+            highlightClosed: !highlightDropdown.classList.contains('open'),
+            highlightChanged: getComputedStyle(highlightBar).backgroundColor !== 'rgb(255, 240, 0)',
+            colorChanged: getComputedStyle(colorBar).backgroundColor === 'rgb(18, 52, 86)',
+          };
+        });
+        for (const [label, value] of Object.entries(formatting)) {
+          check(tc, value, `서식 control 상호작용: ${label}`);
+        }
+      }
+
+      if (vp.name === 'mobile') {
+        const toolbarInteraction = await page.evaluate(async () => {
+          const root = document.getElementById('icon-toolbar');
+          const viewport = document.getElementById('icon-toolbar-viewport');
+          const track = root.querySelector('.tb-scroll-track');
+          const previous = document.getElementById('icon-toolbar-prev');
+          const next = document.getElementById('icon-toolbar-next');
+          const visibleDividers = () => Array.from(track.querySelectorAll(':scope > .tb-sep'))
+            .filter(divider => getComputedStyle(divider).display !== 'none' && divider.offsetWidth > 0);
+          const settle = () => new Promise(resolve => {
+            let previousLeft = viewport.scrollLeft;
+            let stableFrames = 0;
+            let frames = 0;
+            const tick = () => {
+              const current = viewport.scrollLeft;
+              stableFrames = Math.abs(current - previousLeft) < 0.5 ? stableFrames + 1 : 0;
+              previousLeft = current;
+              frames++;
+              if (stableFrames >= 4 || frames >= 90) resolve();
+              else requestAnimationFrame(tick);
+            };
+            requestAnimationFrame(tick);
+          });
+
+          next.click();
+          await settle();
+          const firstTarget = viewport.scrollLeft;
+          const nextRect = next.getBoundingClientRect();
+          const edgeGap = parseFloat(getComputedStyle(root).getPropertyValue('--tb-scroll-nav-edge-gap'));
+          const alignedToDivider = firstTarget > 1 && visibleDividers().some(divider => (
+            Math.abs(divider.getBoundingClientRect().right - (nextRect.left - edgeGap)) <= 1
+          ));
+          const middleNavigationVisible = getComputedStyle(previous).visibility !== 'hidden'
+            && getComputedStyle(next).visibility !== 'hidden'
+            && previous.offsetWidth === 24 && next.offsetWidth === 24;
+
+          viewport.focus();
+          viewport.dispatchEvent(new KeyboardEvent('keydown', {
+            key: 'End', bubbles: true, cancelable: true,
+          }));
+          const maximumBeforeSettle = viewport.scrollWidth - viewport.clientWidth;
+          const exitSynchronizedAtStart = next.classList.contains('tb-scroll-nav-transitioning-out')
+            && viewport.scrollLeft < maximumBeforeSettle - 1;
+          await settle();
+          const maximum = viewport.scrollWidth - viewport.clientWidth;
+          const rootRect = root.getBoundingClientRect();
+          const rootPaddingRight = parseFloat(getComputedStyle(root).paddingRight);
+          const trackRectAtEnd = track.getBoundingClientRect();
+          const endedByKeyboard = Math.abs(viewport.scrollLeft - maximum) <= 1
+            && next.getAttribute('aria-disabled') === 'true'
+            && previous.getAttribute('aria-disabled') === 'false'
+            && next.getAttribute('aria-hidden') === 'true'
+            && next.offsetWidth === 24
+            && getComputedStyle(next).visibility === 'hidden'
+            && getComputedStyle(previous).visibility !== 'hidden'
+            && Math.abs(trackRectAtEnd.right - (rootRect.right - rootPaddingRight)) <= 1
+            && !next.classList.contains('tb-scroll-nav-transitioning-out');
+
+          const splitArrow = track.querySelector('.tb-split-arrow');
+          splitArrow?.focus();
+          await settle();
+          splitArrow?.dispatchEvent(new KeyboardEvent('keydown', {
+            key: 'ArrowDown', bubbles: true, cancelable: true,
+          }));
+          await new Promise(resolve => requestAnimationFrame(resolve));
+          const splitMenu = track.querySelector('.tb-split-menu');
+          const firstSplitItem = splitMenu?.querySelector('.tb-split-item');
+          const scrollViewportRect = viewport.getBoundingClientRect();
+          const splitMenuRect = splitMenu?.getBoundingClientRect();
+          const splitMenuVisible = !!splitMenuRect
+            && getComputedStyle(splitMenu).display === 'block'
+            && splitMenuRect.top >= scrollViewportRect.bottom
+            && splitMenuRect.left >= 0
+            && splitMenuRect.right <= window.innerWidth
+            && splitMenuRect.bottom <= window.innerHeight;
+          const splitMenuKeyboardFocus = document.activeElement === firstSplitItem;
+          splitMenu?.dispatchEvent(new KeyboardEvent('keydown', {
+            key: 'Escape', bubbles: true, cancelable: true,
+          }));
+          await new Promise(resolve => requestAnimationFrame(resolve));
+          const splitMenuEscapeReturned = document.activeElement === splitArrow
+            && splitArrow?.getAttribute('aria-expanded') === 'false';
+
+          viewport.dispatchEvent(new KeyboardEvent('keydown', {
+            key: 'Home', bubbles: true, cancelable: true,
+          }));
+          await settle();
+          const startedByKeyboard = viewport.scrollLeft <= 1
+            && previous.getAttribute('aria-disabled') === 'true'
+            && next.getAttribute('aria-disabled') === 'false'
+            && previous.getAttribute('aria-hidden') === 'true'
+            && previous.offsetWidth === 24
+            && getComputedStyle(previous).visibility === 'hidden'
+            && getComputedStyle(next).visibility !== 'hidden';
+
+          viewport.scrollLeft = Math.max(0, maximum - 10);
+          viewport.dispatchEvent(new Event('scroll'));
+          await new Promise(resolve => requestAnimationFrame(resolve));
+          next.focus();
+          next.click();
+          await settle();
+          const endpointFocusPreserved = document.activeElement === viewport
+            && document.activeElement !== document.body
+            && next.getAttribute('aria-disabled') === 'true';
+
+          return {
+            alignedToDivider,
+            middleNavigationVisible,
+            exitSynchronizedAtStart,
+            endedByKeyboard,
+            splitMenuVisible,
+            splitMenuKeyboardFocus,
+            splitMenuEscapeReturned,
+            startedByKeyboard,
+            endpointFocusPreserved,
+          };
+        });
+        check(tc, toolbarInteraction.alignedToDivider, '다음 버튼은 nav 간격을 포함한 divider 경계로 이동');
+        check(tc, toolbarInteraction.middleNavigationVisible, '중간 위치는 양쪽 24px 이동 버튼 표시');
+        check(tc, toolbarInteraction.exitSynchronizedAtStart, '끝 버튼 퇴장은 scroll 시작과 동시에 시작');
+        check(tc, toolbarInteraction.endedByKeyboard, 'End로 마지막 경계 도달·다음 버튼 퇴장·오른쪽 padding 정렬');
+        check(tc, toolbarInteraction.splitMenuVisible, '가로 viewport 밖에도 split menu가 잘리지 않음');
+        check(tc, toolbarInteraction.splitMenuKeyboardFocus, 'split menu ArrowDown 첫 항목 focus');
+        check(tc, toolbarInteraction.splitMenuEscapeReturned, 'split menu Escape 닫기와 arrow focus 복귀');
+        check(tc, toolbarInteraction.startedByKeyboard, 'Home으로 첫 group 복귀·이전 slot 접힘');
+        check(tc, toolbarInteraction.endpointFocusPreserved, '끝점 버튼 퇴장 뒤 viewport로 focus 보존');
+
+        const toolbarViewport = await page.$('#icon-toolbar-viewport');
+        const viewportBox = await toolbarViewport?.boundingBox();
+        if (viewportBox) {
+          await page.mouse.move(viewportBox.x + viewportBox.width / 2, viewportBox.y + viewportBox.height / 2);
+          await page.mouse.wheel({ deltaX: 180 });
+          await new Promise(resolve => setTimeout(resolve, 150));
+        }
+        const nativeWheelMoved = await page.evaluate(
+          () => document.getElementById('icon-toolbar-viewport')?.scrollLeft > 1,
+        );
+        check(tc, nativeWheelMoved, 'trackpad 수평 wheel로 내부 이동');
+
+        const toolbarModeAndVisibility = await page.evaluate(async () => {
+          const root = document.getElementById('icon-toolbar');
+          const viewport = document.getElementById('icon-toolbar-viewport');
+          const track = root.querySelector('.tb-scroll-track');
+          const previous = document.getElementById('icon-toolbar-prev');
+          const next = document.getElementById('icon-toolbar-next');
+          const waitFrames = async (count = 4) => {
+            for (let index = 0; index < count; index++) {
+              await new Promise(resolve => requestAnimationFrame(resolve));
+            }
+          };
+
+          const lastGroup = Array.from(track.querySelectorAll('.tb-group'))
+            .filter(group => getComputedStyle(group).display !== 'none')
+            .at(-1);
+          const lastCommand = Array.from(lastGroup?.querySelectorAll('.tb-btn') ?? []).at(-1);
+          viewport.scrollLeft = 0;
+          next.click();
+          lastCommand?.focus();
+          await waitFrames(20);
+          const viewportRect = viewport.getBoundingClientRect();
+          const commandRect = lastCommand?.getBoundingClientRect();
+          const focusedCommandVisible = !!commandRect
+            && commandRect.left >= viewportRect.left - 1
+            && commandRect.right <= viewportRect.right + 1;
+
+          viewport.scrollLeft = viewport.scrollWidth;
+          window.__eventBus?.emit('headerFooterModeChanged', 'header');
+          await waitFrames();
+          const headerFooter = track.querySelector('.tb-headerfooter-group');
+          const defaultGroup = track.querySelector('.tb-group:not(.tb-headerfooter-group):not(.tb-note-group):not(.tb-rotate-group)');
+          const modeReset = getComputedStyle(headerFooter).display !== 'none'
+            && getComputedStyle(defaultGroup).display === 'none'
+            && viewport.scrollLeft <= 1;
+
+          window.__eventBus?.emit('headerFooterModeChanged', 'none');
+          await new Promise(resolve => setTimeout(resolve, 300));
+          const defaultRestored = getComputedStyle(defaultGroup).display !== 'none'
+            && viewport.scrollLeft <= 1
+            && !next.hidden
+            && previous.getAttribute('aria-disabled') === 'true'
+            && next.getAttribute('aria-disabled') === 'false'
+            && getComputedStyle(previous).visibility === 'hidden'
+            && getComputedStyle(next).visibility !== 'hidden';
+
+          viewport.scrollLeft = Math.min(120, viewport.scrollWidth - viewport.clientWidth);
+          const beforePictureMode = viewport.scrollLeft;
+          window.__eventBus?.emit('picture-object-selection-changed', true);
+          await waitFrames();
+          const afterPictureMode = viewport.scrollLeft;
+          window.__eventBus?.emit('picture-object-selection-changed', false);
+          await waitFrames();
+          const pictureModePreserved = Math.abs(afterPictureMode - beforePictureMode) <= 1
+            && Math.abs(viewport.scrollLeft - beforePictureMode) <= 1;
+          const visibleTrackChildren = Array.from(track.children)
+            .filter(element => !element.hidden && getComputedStyle(element).display !== 'none');
+          const noAdjacentSeparators = visibleTrackChildren.every((element, index) => (
+            index === 0
+            || !element.classList.contains('tb-sep')
+            || !visibleTrackChildren[index - 1].classList.contains('tb-sep')
+          ));
+
+          document.documentElement.dataset.toolboxBasic = 'hidden';
+          const hiddenWithShell = getComputedStyle(root).display === 'none';
+          document.documentElement.dataset.toolboxBasic = 'shown';
+          await waitFrames();
+          const restoredWithNavigation = getComputedStyle(root).display === 'flex'
+            && root.offsetHeight === 56 && !next.hidden;
+
+          return {
+            focusedCommandVisible,
+            modeReset,
+            defaultRestored,
+            pictureModePreserved,
+            noAdjacentSeparators,
+            hiddenWithShell,
+            restoredWithNavigation,
+          };
+        });
+        check(tc, toolbarModeAndVisibility.focusedCommandVisible, 'offscreen command focus를 viewport 안에 표시');
+        check(tc, toolbarModeAndVisibility.modeReset, '머리말 mode 전환 뒤 시작 위치 재계산');
+        check(tc, toolbarModeAndVisibility.defaultRestored, '기본 mode 복귀 뒤 이동 상태 재계산');
+        check(tc, toolbarModeAndVisibility.pictureModePreserved, '그림 선택 전환에도 현재 scroll 위치 보존');
+        check(tc, toolbarModeAndVisibility.noAdjacentSeparators, 'contextual mode 전환 뒤 중복 divider 없음');
+        check(tc, toolbarModeAndVisibility.hiddenWithShell, '기본 도구 상자 숨김은 이동 버튼까지 포함');
+        check(tc, toolbarModeAndVisibility.restoredWithNavigation, '기본 도구 상자 복귀 뒤 overflow 재계산');
+      }
+
+      console.log(
+        `  Layout: menu=${result.menuBarHeight}px toolbar=${result.toolbarHeight}px style=${result.styleBarHeight}px rows=${result.styleRows}`,
+      );
 
       await screenshot(page, `responsive-${vp.name}`);
-      // reporter에 스크린샷 연결
-      const tcResults = reporter.results.filter(r => r.tc === tc);
-      if (tcResults.length > 0) tcResults[tcResults.length - 1].screenshot = `responsive-${vp.name}.png`;
+      const tcResults = reporter.results.filter(entry => entry.tc === tc);
+      if (tcResults.length > 0) {
+        tcResults[tcResults.length - 1].screenshot = `responsive-${vp.name}.png`;
+      }
+    } catch (err) {
+      console.error(`  ERROR: ${err.message}`);
+      reporter.fail(tc, err.message);
+      failed++;
+    } finally {
+      await closePage(page);
+    }
+  }
 
+  for (const width of [520, 500, 480]) {
+    const tc = `narrow-menu (${width}x812)`;
+    console.log(`\n[narrow-menu] ${width}x812...`);
+    const page = await createPage(browser, width, 812);
+    try {
+      await primeTheme(page);
+      await loadApp(page);
+      const result = await page.evaluate(() => {
+        const menuBar = document.getElementById('menu-bar');
+        const titles = Array.from(menuBar?.querySelectorAll('.menu-title') ?? []);
+        const toggle = document.getElementById('toolbox-basic-toggle');
+        const barRect = menuBar?.getBoundingClientRect();
+        const toggleRect = toggle?.getBoundingClientRect();
+        return {
+          height: menuBar?.offsetHeight ?? 0,
+          rows: new Set(titles.map(title => Math.round(title.getBoundingClientRect().top))).size,
+          allVisible: titles.length === 8 && titles.every(title => (
+            getComputedStyle(title).display !== 'none' && title.getClientRects().length > 0
+          )),
+          toggleVisible: !!barRect && !!toggleRect
+            && toggleRect.left >= barRect.left && toggleRect.right <= barRect.right,
+          noOverflow: (menuBar?.scrollWidth ?? 0) <= (menuBar?.clientWidth ?? 0),
+        };
+      });
+      check(tc, result.height === 28, `마우스 메뉴 높이 28px (h=${result.height})`);
+      check(tc, result.rows === 1, `파일–도구 한 줄 유지 (rows=${result.rows})`);
+      check(tc, result.allVisible, '파일–도구 전체 메뉴 표시');
+      check(tc, result.toggleVisible, '기본 도구 상자 토글 표시');
+      check(tc, result.noOverflow, '메뉴바 가로 overflow 없음');
+    } catch (err) {
+      console.error(`  ERROR: ${err.message}`);
+      reporter.fail(tc, err.message);
+      failed++;
+    } finally {
+      await closePage(page);
+    }
+  }
+
+  {
+    const tc = 'touch-menu (375x812)';
+    console.log('\n[touch-menu] 375x812...');
+    const page = await createPage(browser, 375, 812);
+    try {
+      await page.setViewport({ width: 375, height: 812, isMobile: true, hasTouch: true });
+      await primeTheme(page);
+      await loadApp(page);
+      const result = await page.evaluate(() => {
+        const menuBar = document.getElementById('menu-bar');
+        const titles = Array.from(menuBar?.querySelectorAll('.menu-title') ?? []);
+        const toggle = document.getElementById('toolbox-basic-toggle');
+        const topRows = new Set(titles.map(title => Math.round(title.getBoundingClientRect().top)));
+        const barRect = menuBar?.getBoundingClientRect();
+        const toggleRect = toggle?.getBoundingClientRect();
+        return {
+          height: menuBar?.offsetHeight ?? 0,
+          rows: topRows.size,
+          allVisible: titles.length === 8 && titles.every(title => (
+            getComputedStyle(title).display !== 'none' && title.getClientRects().length > 0
+          )),
+          toggleVisible: !!barRect && !!toggleRect
+            && toggleRect.left >= barRect.left && toggleRect.right <= barRect.right,
+        };
+      });
+      check(tc, result.height === 40, `터치 메뉴 클릭 높이 40px (h=${result.height})`);
+      check(tc, result.rows === 1, `터치 메뉴 한 줄 유지 (rows=${result.rows})`);
+      check(tc, result.allVisible, '터치 환경 파일–도구 전체 메뉴 접근 가능');
+      check(tc, result.toggleVisible, '터치 환경 기본 도구 상자 토글 표시');
+    } catch (err) {
+      console.error(`  ERROR: ${err.message}`);
+      reporter.fail(tc, err.message);
+      failed++;
+    } finally {
+      await closePage(page);
+    }
+  }
+
+  for (const themeCase of THEME_CASES) {
+    const { skin, theme, name, width, height, styleMode } = themeCase;
+    const tc = `theme ${skin}/${theme}/${name} (${width}x${height})`;
+    console.log(`\n[theme] ${skin}/${theme}/${name} ${width}x${height}...`);
+    const page = await createPage(browser, width, height);
+
+    try {
+      await primeTheme(page, skin, theme);
+      await loadApp(page);
+      await page.evaluate(() => window.__eventBus?.emit('create-new-document'));
+      await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 400)));
+
+      const result = await page.evaluate(async (expectedStyleMode) => {
+        const root = document.documentElement;
+        const styleBar = document.getElementById('style-bar');
+        const toolbar = document.getElementById('icon-toolbar');
+        const toolbarTrack = toolbar.querySelector('.tb-scroll-track');
+        const toolbarViewport = document.getElementById('icon-toolbar-viewport');
+        const toolbarNext = document.getElementById('icon-toolbar-next');
+        const field = styleBar.querySelector('.sb-field-ribbon-group');
+        const command = styleBar.querySelector('.sb-command-track');
+        const trigger = document.getElementById('btn-style-overflow');
+        const panel = document.getElementById('style-overflow-panel');
+        const firstParagraph = document.getElementById('btn-align-left');
+        const button = document.getElementById('btn-bold');
+        const top = element => Math.round(element.getBoundingClientRect().top);
+        const rows = new Set([top(field), top(command)]).size;
+        const parseRgb = value => (value.match(/[\d.]+/g) ?? []).slice(0, 3).map(Number);
+        const luminance = ([r, g, b]) => {
+          const linear = [r, g, b].map(channel => {
+            const normalized = channel / 255;
+            return normalized <= 0.03928
+              ? normalized / 12.92
+              : ((normalized + 0.055) / 1.055) ** 2.4;
+          });
+          return 0.2126 * linear[0] + 0.7152 * linear[1] + 0.0722 * linear[2];
+        };
+        const contrast = (foreground, background) => {
+          const a = luminance(parseRgb(foreground));
+          const b = luminance(parseRgb(background));
+          return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+        };
+        const resolveCssColor = (value) => {
+          const probe = document.createElement('span');
+          probe.style.color = value;
+          document.body.appendChild(probe);
+          const resolved = getComputedStyle(probe).color;
+          probe.remove();
+          return resolved;
+        };
+        const barStyle = getComputedStyle(styleBar);
+        const buttonStyle = getComputedStyle(button);
+        const toolbarStyle = getComputedStyle(toolbar);
+        const toolbarNextStyle = getComputedStyle(toolbarNext);
+        const toolbarBackground = toolbarStyle.backgroundColor !== 'rgba(0, 0, 0, 0)'
+          ? toolbarStyle.backgroundColor
+          : resolveCssColor(getComputedStyle(root).getPropertyValue('--ui-toolbar-bg-start'));
+        const toolbarGroups = Array.from(toolbarTrack.querySelectorAll(':scope > .tb-group'))
+          .filter(group => getComputedStyle(group).display !== 'none');
+        let panelState = null;
+        if (expectedStyleMode === 'compact' || expectedStyleMode === 'overflow') {
+          trigger.click();
+          await new Promise(resolve => requestAnimationFrame(resolve));
+          const panelStyle = getComputedStyle(panel);
+          panelState = {
+            visible: panel.hidden === false && panel.getClientRects().length > 0,
+            focused: document.activeElement === firstParagraph,
+            background: panelStyle.backgroundColor,
+            borderWidth: parseFloat(panelStyle.borderTopWidth),
+            textContrast: contrast(getComputedStyle(firstParagraph).color, panelStyle.backgroundColor),
+          };
+        }
+        return {
+          themeMode: root.dataset.themeMode,
+          effectiveTheme: root.dataset.themeEffective,
+          skin: root.dataset.themeSkin ?? 'default',
+          rows,
+          barHeight: styleBar.offsetHeight,
+          rootOverflow: root.scrollWidth - root.clientWidth,
+          styleOverflow: styleBar.scrollWidth - styleBar.clientWidth,
+          toolbarHeight: toolbar.offsetHeight,
+          toolbarRows: new Set(toolbarGroups.map(top)).size,
+          toolbarOverflow: toolbar.scrollWidth - toolbar.clientWidth,
+          toolbarViewportOverflow: toolbarViewport.scrollWidth - toolbarViewport.clientWidth,
+          toolbarNavigationVisible: toolbarNext.hidden === false,
+          toolbarBackground,
+          toolbarPainted: toolbarStyle.backgroundColor !== 'rgba(0, 0, 0, 0)'
+            || toolbarStyle.backgroundImage !== 'none',
+          toolbarBorderWidth: parseFloat(toolbarStyle.borderBottomWidth),
+          toolbarNavigationContrast: contrast(toolbarNextStyle.color, toolbarBackground),
+          barBackground: barStyle.backgroundColor,
+          barBorderWidth: parseFloat(barStyle.borderBottomWidth),
+          iconContrast: contrast(buttonStyle.color, barStyle.backgroundColor),
+          panelState,
+        };
+      }, styleMode);
+
+      check(tc, result.themeMode === theme, `theme mode=${result.themeMode}`);
+      check(tc, result.effectiveTheme === theme, `effective theme=${result.effectiveTheme}`);
+      check(tc, result.skin === skin, `skin=${result.skin}`);
+      check(
+        tc,
+        result.rows === (styleMode === 'full' || styleMode === 'compact' ? 1 : 2),
+        `행 수=${result.rows}`,
+      );
+      check(tc, styleMode !== 'full' || result.barHeight <= 36, `전체 압축 높이=${result.barHeight}px`);
+      check(tc, result.rootOverflow <= 0 && result.styleOverflow <= 0, '가로 overflow 없음');
+      check(tc, result.toolbarHeight === 56 && result.toolbarRows === 1, `기본 도구 한 줄=${result.toolbarHeight}px`);
+      check(tc, result.toolbarOverflow <= 0 && result.toolbarViewportOverflow > 0, '기본 도구 내부 overflow 격리');
+      check(tc, result.toolbarNavigationVisible, '기본 도구 이동 버튼 표시');
+      check(tc, result.toolbarPainted, `toolbar 배경=${result.toolbarBackground}`);
+      check(tc, result.toolbarBorderWidth >= 1, `toolbar 경계=${result.toolbarBorderWidth}px`);
+      check(tc, result.toolbarNavigationContrast >= 3, `toolbar nav contrast=${result.toolbarNavigationContrast.toFixed(2)}`);
+      check(tc, result.barBackground !== 'rgba(0, 0, 0, 0)', `bar 배경=${result.barBackground}`);
+      check(tc, result.barBorderWidth >= 1, `bar 경계=${result.barBorderWidth}px`);
+      check(tc, result.iconContrast >= 3, `icon contrast=${result.iconContrast.toFixed(2)}`);
+      if (styleMode === 'compact' || styleMode === 'overflow') {
+        check(tc, result.panelState?.visible, '더보기 panel 표시');
+        check(tc, result.panelState?.focused, '더보기 첫 명령 focus');
+        check(tc, result.panelState?.background !== 'rgba(0, 0, 0, 0)', `panel 배경=${result.panelState?.background}`);
+        check(tc, result.panelState?.borderWidth >= 1, `panel 경계=${result.panelState?.borderWidth}px`);
+        check(tc, result.panelState?.textContrast >= 3, `panel contrast=${result.panelState?.textContrast.toFixed(2)}`);
+      }
+
+      await screenshot(page, `responsive-theme-${skin}-${theme}-${name}`);
     } catch (err) {
       console.error(`  ERROR: ${err.message}`);
       reporter.fail(tc, err.message);
