@@ -434,11 +434,17 @@ CSV 내용으로 기존 차트 N 의 숫자 값을 덮어쓴다. `chart-to-csv` 
 - `--csv <경로.csv>` (필수) — UTF-8 CSV(선두 BOM 허용). `chart-to-csv` 산출을 고쳐 쓰는 것이 안전하다.
 - `--chart <번호>` (필수) — 문서 순서 1부터.
 - `--structure` (#5652) — **CSV 를 목표 상태로 본다.** 행(카테고리)·열(계열) 추가·삭제, 계열명·
-  카테고리 라벨(분산형은 X) 변경까지 ①② 에 함께 쓴다. 치수 차이는 **위치 기반 꼬리 증감**이다 —
+  카테고리 라벨(분산형은 X) 변경까지 ①② 에 함께 쓴다. **행 치수 차이는 위치 기반 꼬리 증감**이다 —
   행이 늘면 각 블록 꼬리에 점이 붙고(`c:ptCount` 재계산, `c:pt idx` 는 `0..n-1` 유지), 줄면 꼬리
-  점이 지워진다; 계열이 늘면 마지막 계열을 복제해 뒤에 붙이고(`c:idx`/`c:order` 채번, `c:f` 는
-  복제분 그대로 — 한컴은 캐시만 읽는다 #5447), 줄면 꼬리 계열이 지워진다. 따라서 "중간 행 삭제"는
-  뒤 행이 앞으로 당겨지고 마지막 행이 지워지는 것과 같다(계열 색 같은 위치 서식은 위치를 따른다).
+  점이 지워진다. 따라서 "중간 행 삭제"는 뒤 행이 앞으로 당겨지고 마지막 행이 지워지는 것과 같다.
+  **계열 증감은 정체 보존**이다(#6053) — 원본↔목표 계열을 비어 있지 않은 이름 일치 또는 값 벡터
+  일치로 대응시켜, 대응이 서면 새 열은 지정 자리에 **기본 스타일**(계열 `c:spPr`·명시 `c:symbol`
+  없음 — 한컴 편집기가 더한 계열과 같은 모양)로 끼어들고(`insertSeries`), 사라진 열의 계열은
+  요소째 지워지며(`removeSeries`), 잔여 계열은 `c:idx`/`c:order` 재번호만 되어 **자기 스타일
+  (색·마커)을 지킨다**. 대응이 모호하거나(중복 이름·값, 삽입·삭제 동시, 순서 역전) 증감이
+  꼬리뿐이면 종전대로 꼬리 증감이다 — 계열이 늘면 마지막 계열을 복제해 뒤에 붙이고
+  (`c:idx`/`c:order` 채번, `c:f` 는 복제분 그대로 — 한컴은 캐시만 읽는다 #5447), 줄면 꼬리
+  계열이 지워진다.
   `c:f`·레거시 `Contents`(③)·EMF 프리뷰(④)·`c:extLst`·`ho:hncChartStyle` 은 바이트 그대로다.
   - 종류별 가드(한컴이 막지 않아 코어가 fail-closed 로 막는다 — #5447·#6037 실측): 주식형 캔들
     (`c:upDownBars`, OHLC)은 **첫 계열과 끝 계열**을 몸통으로 삼아 그 둘이 바뀌면 캔들이 엉뚱한
@@ -457,8 +463,11 @@ CSV 내용으로 기존 차트 N 의 숫자 값을 덮어쓴다. `chart-to-csv` 
     (`pointsNotInsertable`·`seriesNotClonable`).
   - 쓰기 전에 산출을 다시 읽어 목표와 같을 때만 쓴다(`selfCheckFailed` 면 한 바이트도 안 씀).
     봉투 `changed[]` 에 구조 항목 `{"op":"appendPoints"|"truncatePoints"|"renameSeries"|"relabel"|
-    "appendSeries"|"truncateSeries", …}` 이 값 항목과 함께 실린다 — 개수 변경 op 는 `before`/`after`(엔진 개수),
-    `renameSeries`·`relabel` 은 `from`/`to`(문서 파생 — 출처 표지 `changed[].from`).
+    "appendSeries"|"truncateSeries"|"insertSeries"|"removeSeries", …}` 이 값 항목과 함께 실린다 —
+    개수 변경 op 는 `before`/`after`(엔진 개수), `renameSeries`·`relabel` 은 `from`/`to`(문서
+    파생 — 출처 표지 `changed[].from`), [#6053] `insertSeries`·`removeSeries` 는 `at`·`name`
+    (`insertSeries.at` 은 최종 문서 자리·`name` 은 목표 입력, `removeSeries.at` 은 원본 자리·
+    `name` 은 문서 파생).
 - **값 하나가 OOXML 두 표현에 중복 저장돼 있어 각 원본에 독립적으로 쓴다** — HWPX zip 파트
   `Chart/chartN.xml`(①)과 중첩 CFB 의 `OOXMLChartContents`(②). ①만 쓰면 HWP 변환에서 편집이
   조용히 사라진다(#4055 한컴 실측). 두 표현의 계열·라벨·값이 다르면
