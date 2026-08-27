@@ -26,6 +26,14 @@ use wasm_bindgen_test::wasm_bindgen_test;
 const NOTO_REGULAR: &[u8] = include_bytes!("../../ttfs/opensource/NotoSansKR-Regular.ttf");
 const NO_PAIR_TABLE: &[u8] = include_bytes!("../fixtures/fonts/RHWPBitmapSvgGlyphSmoke.ttf");
 const EXACT_KERNING_SMOKE: &[u8] = include_bytes!("../fixtures/fonts/RHWPExactKerningSmoke.ttf");
+#[cfg(not(target_arch = "wasm32"))]
+const R4E_RUNTIME_FIXTURE: &[u8] = include_bytes!(
+    "../../mydocs/tech/investigations/issue-4968/fixtures/kerning_runtime_fixture.hwpx"
+);
+#[cfg(not(target_arch = "wasm32"))]
+const R4E_RUNTIME_MANIFEST: &str = include_str!(
+    "../../mydocs/tech/investigations/issue-4968/fixtures/kerning_runtime_fixture.manifest.json"
+);
 
 #[test]
 fn issue_4968_exact_slot_registry_roundtrips_provider_and_session() {
@@ -124,6 +132,193 @@ fn issue_4968_external_exact_source_registration_keeps_k0_svg_identical() {
     assert!(registration.contains("\"status\":\"registered\""));
     let after = core.render_page_svg_native(0).expect("registered SVG");
     assert_eq!(after, before);
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+fn issue_4968_r4e_sha256_hex(bytes: &[u8]) -> String {
+    use sha2::{Digest, Sha256};
+
+    Sha256::digest(bytes)
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect()
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+fn issue_4968_r4e_runtime_snapshot(
+    core: &rhwp::document_core::DocumentCore,
+) -> serde_json::Value {
+    let render_tree = core
+        .build_page_render_tree(0)
+        .expect("R4E render tree");
+    let layer_tree = core
+        .build_page_layer_tree(0)
+        .expect("R4E layer tree");
+    let svg = core.render_page_svg_native(0).expect("R4E SVG");
+    let canvas_command_count = core
+        .render_page_canvas_native(0)
+        .expect("R4E Canvas commands");
+    let canvaskit: serde_json::Value = serde_json::from_str(
+        &core
+            .get_canvaskit_replay_plan_native(0, "default")
+            .expect("R4E CanvasKit plan"),
+    )
+    .expect("R4E CanvasKit JSON");
+
+    serde_json::json!({
+        "pageCount": core.page_count(),
+        "renderTree": serde_json::from_str::<serde_json::Value>(&render_tree.root.to_json())
+            .expect("R4E render tree JSON"),
+        "layerTree": serde_json::from_str::<serde_json::Value>(&layer_tree.to_json())
+            .expect("R4E layer tree JSON"),
+        "svg": {
+            "bytes": svg.len(),
+            "sha256": issue_4968_r4e_sha256_hex(svg.as_bytes()),
+        },
+        "canvasCommandCount": canvas_command_count,
+        "canvasKit": canvaskit,
+    })
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+fn issue_4968_r4e_positions_for_key(
+    value: &serde_json::Value,
+    stable_source_key: &str,
+) -> Option<Vec<serde_json::Value>> {
+    if value.get("type").and_then(serde_json::Value::as_str) == Some("textRun")
+        && value
+            .pointer("/source/stableSourceKey")
+            .and_then(serde_json::Value::as_str)
+            == Some(stable_source_key)
+    {
+        return value
+            .get("positions")
+            .and_then(serde_json::Value::as_array)
+            .cloned();
+    }
+    if let Some(array) = value.as_array() {
+        for child in array {
+            if let Some(positions) = issue_4968_r4e_positions_for_key(child, stable_source_key) {
+                return Some(positions);
+            }
+        }
+    } else if let Some(object) = value.as_object() {
+        for child in object.values() {
+            if let Some(positions) = issue_4968_r4e_positions_for_key(child, stable_source_key) {
+                return Some(positions);
+            }
+        }
+    }
+    None
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+#[test]
+fn issue_4968_r4e_native_runtime_probe_registers_exact_slots_and_changes_only_k1() {
+    let manifest: serde_json::Value =
+        serde_json::from_str(R4E_RUNTIME_MANIFEST).expect("R4E manifest JSON");
+    let fixture_sha256 = issue_4968_r4e_sha256_hex(R4E_RUNTIME_FIXTURE);
+    let font_sha256 = issue_4968_r4e_sha256_hex(EXACT_KERNING_SMOKE);
+    assert_eq!(
+        manifest.get("inputSha256").and_then(serde_json::Value::as_str),
+        Some(fixture_sha256.as_str())
+    );
+    assert_eq!(
+        manifest
+            .pointer("/semantic/fontSource/sha256")
+            .and_then(serde_json::Value::as_str),
+        Some(font_sha256.as_str())
+    );
+
+    let mut core = rhwp::document_core::DocumentCore::from_bytes(R4E_RUNTIME_FIXTURE)
+        .expect("R4E runtime fixture");
+    let k0 = issue_4968_r4e_runtime_snapshot(&core);
+    let slots = manifest
+        .pointer("/semantic/exactSourceRegistration/slots")
+        .and_then(serde_json::Value::as_array)
+        .expect("R4E exact slots");
+    let mut registrations = Vec::with_capacity(slots.len());
+    for slot in slots {
+        let char_shape_id = slot
+            .get("charShapeId")
+            .and_then(serde_json::Value::as_u64)
+            .expect("R4E char shape id") as u32;
+        let language_index = slot
+            .get("languageIndex")
+            .and_then(serde_json::Value::as_u64)
+            .expect("R4E language index") as usize;
+        let registration = core
+            .register_exact_font_source_native(
+                char_shape_id,
+                language_index,
+                EXACT_KERNING_SMOKE,
+                0,
+            )
+            .expect("R4E exact source registration");
+        registrations.push(
+            serde_json::from_str::<serde_json::Value>(&registration)
+                .expect("R4E registration JSON"),
+        );
+    }
+    let k1 = issue_4968_r4e_runtime_snapshot(&core);
+
+    assert_eq!(slots.len(), 18);
+    assert_eq!(k0.get("pageCount"), Some(&serde_json::json!(1)));
+    assert_eq!(k1.get("pageCount"), Some(&serde_json::json!(1)));
+    assert_eq!(k0.get("canvasCommandCount"), k1.get("canvasCommandCount"));
+    assert_eq!(
+        registrations
+            .last()
+            .and_then(|value| value.pointer("/registry/slotCount")),
+        Some(&serde_json::json!(18))
+    );
+    assert_eq!(
+        registrations
+            .last()
+            .and_then(|value| value.pointer("/registry/sourceCount")),
+        Some(&serde_json::json!(1))
+    );
+    assert_eq!(
+        registrations
+            .last()
+            .and_then(|value| value.pointer("/registry/totalSourceBytes")),
+        Some(&serde_json::json!(EXACT_KERNING_SMOKE.len()))
+    );
+
+    let k0_layer = k0.get("layerTree").expect("R4E K0 layer tree");
+    let k1_layer = k1.get("layerTree").expect("R4E K1 layer tree");
+    let off_key = "section:0/para:1/char:0";
+    let on_key = "section:0/para:2/char:0";
+    assert_eq!(
+        issue_4968_r4e_positions_for_key(k0_layer, off_key),
+        issue_4968_r4e_positions_for_key(k1_layer, off_key),
+        "K0 row must remain identical after exact registration"
+    );
+    assert_ne!(
+        issue_4968_r4e_positions_for_key(k0_layer, on_key),
+        issue_4968_r4e_positions_for_key(k1_layer, on_key),
+        "K1 row must consume the registered exact pair positions"
+    );
+    assert_ne!(k0.get("svg"), k1.get("svg"));
+    assert_eq!(
+        k1.pointer("/canvasKit/summary/hiddenOverlayViolations"),
+        Some(&serde_json::json!(0))
+    );
+
+    let probe = serde_json::json!({
+        "schemaVersion": 1,
+        "issue": 4968,
+        "stage": "W9-Q3-5R4E-1",
+        "projectionContractSha256": manifest.get("projectionContractSha256"),
+        "registration": registrations,
+        "k0": k0,
+        "k1": k1,
+    });
+    if let Some(path) = std::env::var_os("RHWP_4968_R4E_NATIVE_PROBE") {
+        let mut bytes = serde_json::to_vec_pretty(&probe).expect("R4E native probe JSON");
+        bytes.push(b'\n');
+        std::fs::write(path, bytes).expect("write R4E native probe");
+    }
 }
 
 struct BorrowedSourceProvider<'a> {
