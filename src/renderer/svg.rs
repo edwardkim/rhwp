@@ -3630,7 +3630,7 @@ fn parse_image_dimensions(data: &[u8]) -> Option<(u32, u32)> {
             let marker = data[i + 1];
             // SOF0-SOF3 (0xC0-0xC3), SOF5-SOF7 (0xC5-0xC7),
             // SOF9-SOF11 (0xC9-0xCB), SOF13-SOF15 (0xCD-0xCF)
-            if (marker >= 0xC0 && marker <= 0xCF)
+            if ((0xC0..=0xCF).contains(&marker))
                 && marker != 0xC4
                 && marker != 0xC8
                 && marker != 0xCC
