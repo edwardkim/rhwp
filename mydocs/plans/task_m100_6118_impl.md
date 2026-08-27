@@ -74,8 +74,8 @@ listener와 active state의 authority가 하나로 유지된다.
 
 ### 4.2 전체 압축 1행
 
-Stage 1의 콘텐츠 경계에 사용자 시각 검토에서 결정한 시작축 여백을 더한 `FULL_ROW_MIN=992px` 이상에
-하나의 media/container 경계를 둔다.
+최종 실측 `FULL_ROW_MIN=962px` 이상에서는 모든 명령을 한 행에 두고, 808~961px에서는 paragraph 정렬을
+panel로 접어 같은 36px 한 행을 유지한다.
 
 - `#style-bar`: flex row, nowrap, 중앙 정렬, 높이 36px 이하
 - field group과 command track을 같은 행에 배치
@@ -83,22 +83,21 @@ Stage 1의 콘텐츠 경계에 사용자 시각 검토에서 결정한 시작축
 - 기존 27px field와 button 밀도를 우선 재사용
 - 1행 경계에서는 `scrollWidth <= clientWidth`와 모든 group top 좌표 동일을 검사
 
-`FULL_ROW_MIN`은 1280/1024 같은 device 이름으로 선택하지 않았다. field/character/color/paragraph의
-실측 콘텐츠 949.84px에 데스크톱 첫 콤보를 메뉴 텍스트 축에 맞추는 좌측 22px, 우측 8px과 12.16px
-안전 여백을 합한 992px이며 991/992px E2E를 둔다. 2행·더보기 구조는 지원 최소 폭을 보존하도록 기존
-6px 양쪽 padding을 유지한다. 상세 초기 계측은 [Stage 1 보고서](../working/task_m100_6118_stage1.md)를
+`FULL_ROW_MIN`은 1280/1024 같은 device 이름으로 선택하지 않았다. 136px 고정 글꼴 field와 command의
+실측 콘텐츠, 첫 option 텍스트의 시작축과 안전 여백으로 962px을 정했다. 962/961px과 808/807px E2E로
+전체 1행→접힌 1행→2행 전환을 고정한다. 상세 초기 계측은 [Stage 1 보고서](../working/task_m100_6118_stage1.md)를
 따른다.
 
 ### 4.3 좁은 field 행
 
 지원 최소 375px에서 다음 순서로 폭을 줄인다.
 
-1. 글꼴 field를 `minmax(81px, 1fr)`의 유연 열로 사용
-2. style/language track 68/54px과 4px gap은 유지하고 child control을 track 폭에 맞춤
+1. 글꼴 field는 모든 구간에서 136px로 고정
+2. 459px 이하에서 style/language/size/line-spacing 열만 54/40/54/54px까지 축소
 3. size/line-spacing의 현재 cohesive control shell은 유지
 4. label은 ellipsis를 허용하되 input의 접근성 이름은 유지
 
-375px의 내부 363px은 `68 + 54 + 81 + 72 + 72 + 16px gaps`로 정확히 맞춘다. 이때
+375px의 내부 폭에는 `54 + 40 + 136 + 54 + 54 + 16px gaps` 최소 합을 맞춘다. 이때
 `#style-bar.scrollWidth <= clientWidth`를 통과해야 하며 page 전체에 수평 scrollbar를 만들지 않는다.
 
 ### 4.4 command 더보기
@@ -142,8 +141,10 @@ Stage 1에서 정한 `COMMAND_INLINE_MIN=460px` 아래에서만 다음을 적용
 | viewport | 핵심 판정 |
 | --- | --- |
 | 1920×1080 / 1280×900 / 1024×768 | 전체 압축 1행, 모든 command inline |
-| 991px / 992px | 정확히 2행↔1행 전환, overflow 없음·데스크톱 시작축 정렬 |
-| 883×900 / 768×1024 / 460×900 | field+command 2행, 모든 command inline, track 비확장 |
+| 961px / 962px | 전체 1행↔paragraph 접힌 1행 전환, overflow 없음·데스크톱 시작축 정렬 |
+| 807px / 808px | paragraph 접힌 1행↔field+command 2행 전환 |
+| 883×900 | paragraph 접힌 1행, track 비확장 |
+| 768×1024 / 460×900 | field+command 2행, 모든 command inline, track 비확장 |
 | 459px / 460px | paragraph 더보기↔inline 전환 |
 | 459×900 / 412×915 / 390×844 / 375×812 | 최대 2행, field 무 overflow, 더보기 command 실행 |
 
@@ -195,6 +196,6 @@ PR 생성은 그때 사용자에게 별도로 승인받는다.
 
 ## 10. 승인 게이트
 
-Stage 3에서 12개 viewport와 세 스킨의 light/dark 전수 검증, 실제 control 조작, 대표 화면과 최종
+Stage 3에서 14개 viewport와 세 스킨의 light/dark 24개 조합, 실제 control 조작, 대표 화면과 최종
 보고서를 완료했다. #6118 구현은 로컬 완료다. 다음 단계는 #6138을 같은 브랜치의 별도 작업 단위로
 진행하는 것이며, 완료 전에는 원격 push와 PR을 수행하지 않는다.

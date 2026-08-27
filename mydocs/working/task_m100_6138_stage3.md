@@ -3,28 +3,30 @@
 - **이슈**: [#6138](https://github.com/edwardkim/rhwp/issues/6138)
 - **기준**: `upstream/devel@1011a8947`
 - **작업 브랜치**: `codex/issue-6118-responsive-style-bar`
-- **검증일**: 2026-08-26 KST
+- **검증일**: 2026-08-27 KST
 - **상태**: Stage 3 완료, #6118 통합 PR 승인 대기
 
 ## 1. 반응형 통합 검증
 
-#6118의 서식 바 경계를 유지한 채 #6138 기본 도구 상자를 같은 12개 viewport에서 다시 검증했다.
+#6118의 서식 바 경계를 유지한 채 #6138 기본 도구 상자를 같은 14개 viewport에서 다시 검증했다.
 
 | viewport | 기본 도구 상자 | 이동 버튼 | 서식 바 |
 | ---: | --- | --- | --- |
 | 1920, 1280px | 56px·1행·label 표시 | 숨김 | 36px·1행 |
-| 1024, 992px | 56px·1행·label 표시 | 표시 | 36px·1행 |
-| 991, 883, 768, 460px | 56px·1행·label 표시 | 표시 | 83px·2행 inline |
-| 459, 412, 390, 375px | 56px·1행·label 표시 | 표시 | 83px·2행 더보기 |
+| 1024, 962px | 56px·1행·label 표시 | 표시 | 36px·1행 inline |
+| 961, 883, 808px | 56px·1행·label 표시 | 표시 | 36px·1행 더보기 |
+| 807, 768, 460px | 56px·1행·label 표시 | 표시 | 70px·2행 inline |
+| 459, 412, 390, 375px | 56px·1행·label 표시 | 표시 | 70px·2행 더보기 |
 
-모든 구간에서 document root와 두 toolbar 외부의 가로 overflow는 0이다. 기본 도구 상자의 1219px track만
+모든 구간에서 document root와 두 toolbar 외부의 가로 overflow는 0이다. 기본 도구 상자의 1210px track만
 내부 viewport에서 수평 이동하며 viewport 너비나 #6118 모드에 따라 button 폭·label·명령 순서가 바뀌지
 않는다.
 
 ## 2. 이동·상태·접근성 검증
 
-- 다음/이전 버튼은 track 기준 인접 가시 `.tb-group` 경계로 이동한다. 시작에서는 이전, 끝에서는 다음
-  버튼을 감추고 중간에서는 양쪽을 표시한다.
+- 다음/이전 버튼은 track 기준 인접 가시 divider 경계와 4px nav 간격으로 이동한다. 시작에서는 이전,
+  끝에서는 다음 버튼을 감추고 중간에서는 양쪽을 표시한다.
+- 끝점 이동은 240ms scroll과 목적지 버튼의 opacity·3px 퇴장을 같은 frame에 시작해 함께 끝낸다.
 - ArrowLeft/ArrowRight·Home·End, trackpad 수평 wheel, touch pan과 offscreen command focus를 지원한다.
 - 머리말/꼬리말 mode 전환 때 시작 위치와 overflow를 다시 계산한다.
 - #6115의 기본 도구 상자 숨김은 nav·viewport를 포함한 외부 `#icon-toolbar` 전체에 적용된다.
@@ -33,8 +35,8 @@
 
 ## 3. 테마·스킨 매트릭스
 
-`default`, `flat`, `oldschool` 각각에 light/dark를 적용하고 992px, 460px, 375px 세 경계를 전수
-검사했다. 총 18개 조합에서 기본 도구 상자는 56px·1행, 서식 바는 예정된 1·2행을 유지했다. nav의
+`default`, `flat`, `oldschool` 각각에 light/dark를 적용하고 962px, 808px, 460px, 375px 네 경계를 전수
+검사했다. 총 24개 조합에서 기본 도구 상자는 56px·1행, 서식 바는 예정된 1·2행을 유지했다. nav의
 배경·경계·edge hidden 표현과 toolbar 배경 대비는 모두 자동 판정을 통과했으며 최소 대비는 4.10이다.
 
 ## 4. 대표 화면
@@ -54,9 +56,9 @@ Studio chrome의 DOM/CSS/접근성 변경이며 renderer·layout·typeset·paint
 | --- | --- |
 | focused source/controller/theme 계약 | 27 passed, 0 failed |
 | `npx tsc --noEmit` | 통과 |
-| `npm test` | 1,149 passed, 0 failed, 1 skipped |
+| `npm test` | 1,148 passed, 0 failed, 1 skipped |
 | `npm run build` | 통과(230 modules transformed) |
-| responsive/theme/#6118 통합 E2E | 626 passed, 0 failed |
+| responsive/theme/#6118 통합 E2E | 821 passed, 0 failed |
 | Markdown 상대 링크·`git diff --check` | 603문서 이상 없음·통과 |
 | review checkout Rust suite manifest | 942 sources·32 harnesses·9 exceptions, 통과 |
 | `cargo fmt --all`·`cargo fmt --all -- --check` | 통과 |
@@ -67,8 +69,8 @@ E2E는 `http://127.0.0.1:7718/`, 설치된 Chrome, DPR 1에서 수행했다. E2E
 
 ## 6. Stage 3 종료 판정
 
-- [x] 12개 viewport와 #6118의 두 콘텐츠 경계를 함께 검증했다.
-- [x] 세 스킨의 light/dark 18개 조합을 검증했다.
+- [x] 14개 viewport와 #6118의 세 콘텐츠 경계를 함께 검증했다.
+- [x] 세 스킨의 light/dark 24개 조합을 검증했다.
 - [x] group 버튼·keyboard·wheel·focus·mode·visibility·split menu를 실제로 조작했다.
 - [x] 1280, 1024, 375px 대표 화면을 추적 가능한 증적으로 남겼다.
 - [x] Studio test/build, TypeScript, E2E와 문서·diff 게이트를 통과했다.
@@ -82,9 +84,9 @@ E2E는 `http://127.0.0.1:7718/`, 설치된 Chrome, DPR 1에서 수행했다. E2E
 버튼이 잘리지 않는다.
 
 또한 시작 `이전 숨김·다음 표시`, 중간 `양쪽 표시`, 끝 `이전 표시·다음 숨김`을 고정했다. 후속 보정으로
-숨긴 24px slot도 0으로 접어 시작·끝 track을 root의 8px padding에 맞췄다. 실제 viewport는 1024px에서
-984px, 375px에서 335px으로 넓어졌고 중간에서는 양쪽 버튼이 각각 24px을 차지한다. End/Home 전환 뒤
-최대 scroll과 양끝 정렬도 다시 계산한다. focused 계약 27건, TypeScript와 통합 E2E 626건이 통과했다.
+nav는 absolute 24px 표면으로 track을 밀지 않고 시작·끝 track을 root의 8px padding에 맞춘다. toolbar와
+같은 불투명 배경으로 뒤 명령을 가리며 hover/focus에서만 테두리와 강조 표면을 표시한다. End/Home 전환 뒤
+최대 scroll과 양끝 정렬도 다시 계산한다. focused 계약 36건, TypeScript와 통합 E2E 821건이 통과했다.
 
 #6138의 로컬 구현과 Stage 3는 완료했다. #6118과 #6138은 이슈·계획·stage·커밋·검증을 분리해
 추적성을 유지하고, 원격에는 두 작업을 함께 설명하는 PR 한 건으로 제출한다. push와 PR 생성은 사용자
