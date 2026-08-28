@@ -2177,7 +2177,8 @@ fn inline_control_size_hwp(ctrl: &Control) -> Option<(i32, i32)> {
             shape.flow_height_hu(),
         ),
         Control::Table(table) if table.common.treat_as_char => {
-            let width = table.get_column_widths().iter().sum::<u32>() as i32;
+            // [#5785 후속] 선언 폭 우선 — 원시 열 합은 행별 구획이 다른 표에서 과대집계된다.
+            let width = table.flow_width_hu() as i32;
             (width, table.common.height as i32)
         }
         Control::Equation(eq) if eq.common.treat_as_char => {

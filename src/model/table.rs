@@ -1209,6 +1209,27 @@ impl Table {
     }
 
     /// 열별 폭을 추출한다 (col_span==1인 셀 기준).
+    /// 흐름에서 이 표가 차지하는 가로 폭(HWPUNIT).
+    ///
+    /// [#5785] `get_column_widths()` 의 합을 쓰면 안 된다. 그 합은 전역 그리드에서
+    /// `col_span == 1` 인 셀의 **열별 최대값** 합이라, 행마다 열 구획이 다른 표에서
+    /// 실제 폭보다 커진다(3049001 약장 실측 12,872 vs 17,299 HU). 선언 폭
+    /// `common.width` 가 있으면 그것이 이 표의 폭이다.
+    ///
+    /// 선언 폭이 0 인 합성 표에서만 열 합으로 폴백한다.
+    ///
+    /// 이 규칙은 종전에 `is_tac_table_inline` 한 자리에만 있었고, 나머지 흐름 폭
+    /// 호출부 셋은 원시 합을 그대로 써서 같은 결함이 남아 있었다 — 표가 선언보다
+    /// 넓게 배치돼 본문 오른쪽 여백을 넘었다(samples 전수에서 12문서).
+    /// 규칙을 모델로 올려 호출부가 고를 수 없게 한다.
+    pub fn flow_width_hu(&self) -> HwpUnit {
+        if self.common.width > 0 {
+            self.common.width
+        } else {
+            self.get_column_widths().iter().sum()
+        }
+    }
+
     pub fn get_column_widths(&self) -> Vec<HwpUnit> {
         let mut widths = vec![0u32; self.col_count as usize];
         for cell in &self.cells {
