@@ -2540,6 +2540,11 @@ pub struct LayoutEngine {
     /// 앞 간격이 통째로 유실된다(00451 제목 −26px). 이 토글이 켜진 문단은
     /// column-top 트림을 우회해 전량 재가산하고, 읽는 즉시 clear 된다.
     reapply_snap_anchored_spacing_before: std::cell::Cell<bool>,
+    /// [#6267] 지금 배치하는 자리차지(TopAndBottom) 표의 호스트 문단이 **이미 그린
+    /// 본문 텍스트를 가지고 있는지**. body_bottom 클램프 해제(#5699 J3)의 판별자다 —
+    /// 하단 고정 틀(#1658/#1858)은 빈 host 라 클램프가 흐름을 넘어도 겹칠 텍스트가
+    /// 없지만, 글이 있는 host 는 클램프가 곧 겹침이다.
+    para_float_host_has_text: std::cell::Cell<bool>,
     /// HWPX `Preview/PrvImage.png` 원본. HMapsi OLE처럼 일반 preview stream이 없는
     /// legacy 객체의 제한적 첫 페이지 fallback에 사용한다.
     hwpx_page_preview: std::cell::RefCell<Option<PagePreviewImage>>,
@@ -2653,6 +2658,7 @@ impl LayoutEngine {
             )),
             keep_continuation_column_top_spacing_before: std::cell::Cell::new(false),
             reapply_snap_anchored_spacing_before: std::cell::Cell::new(false),
+            para_float_host_has_text: std::cell::Cell::new(false),
             hwpx_page_preview: std::cell::RefCell::new(None),
             cell_units_cache: std::cell::RefCell::new(std::collections::HashMap::new()),
             table_nested_text_flag_cache: std::cell::RefCell::new(std::collections::HashMap::new()),
@@ -10075,6 +10081,8 @@ impl LayoutEngine {
                     )
                 })
                 .unwrap_or(false);
+            self.para_float_host_has_text
+                .set(is_current_visible_para_float);
             let is_first_empty_para_float_control = is_current_empty_para_float
                 && para.controls.iter().position(|c| {
                     matches!(
@@ -10176,7 +10184,15 @@ impl LayoutEngine {
                             }
                         }
                     }
-                } else if !is_current_empty_para_float {
+                } else if !is_current_empty_para_float && !is_current_visible_para_float {
+                    // [#6267] 자리차지(para-float) 표는 흐름을 소비하지 않고
+                    // compute_table_y_position 이 sb 이전 앵커(para_y_for_table)로
+                    // 따로 앉힌다. 그러므로 여기서 y_offset 에 더한 sb 는 표에는
+                    // 닿지 않고 **호스트 문단 텍스트만** 밀어내는데, 그 텍스트를 그리는
+                    // layout_composed_paragraph 는 (!is_column_top 이면) sb 를 다시
+                    // 가산한다 — 이중 계상이다. 156726353 1쪽 문단 8: 저장 사다리 대비
+                    // 문단 5~7 은 +75.6px 인데 문단 8 만 +91.6px(=sb 16.0px)로 튀어
+                    // 자리차지 표와 18pt 겹쳤다.
                     if let Some(ps) = styles.para_styles.get(ps_id) {
                         if ps.spacing_before > 0.0 && !is_column_top {
                             y_offset += ps.spacing_before;
