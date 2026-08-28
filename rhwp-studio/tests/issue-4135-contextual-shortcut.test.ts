@@ -11,6 +11,14 @@ type CellBlockLetterResolver = (
   context: { inCellSelectionMode: boolean },
 ) => { kind: 'dispatch'; commandId: 'table:cell-split' | 'table:cell-merge' } | null;
 
+type CellBlockLetterImeGuardLike = {
+  arm: (event: KeyboardEvent) => boolean;
+  consume: (eventType: 'compositionstart' | 'input' | 'compositionend') => boolean;
+  reset: () => void;
+};
+
+type CellBlockLetterImeGuardConstructor = new () => CellBlockLetterImeGuardLike;
+
 function cellBlockLetterResolver(): CellBlockLetterResolver {
   const resolver = (contextualShortcut as unknown as {
     resolveCellBlockLetterShortcut?: CellBlockLetterResolver;
@@ -23,6 +31,18 @@ function cellBlockLetterResolver(): CellBlockLetterResolver {
   return resolver;
 }
 
+function cellBlockLetterImeGuardConstructor(): CellBlockLetterImeGuardConstructor {
+  const Guard = (contextualShortcut as unknown as {
+    CellBlockLetterImeGuard?: CellBlockLetterImeGuardConstructor;
+  }).CellBlockLetterImeGuard;
+  assert.equal(
+    typeof Guard,
+    'function',
+    'Recovery R4 corrective RED: 셀 문자 단축키의 후속 IME 입력 guard가 필요하다',
+  );
+  return Guard;
+}
+
 function key(input: Partial<KeyboardEvent>): KeyboardEvent {
   return {
     key: input.key ?? '',
@@ -31,6 +51,8 @@ function key(input: Partial<KeyboardEvent>): KeyboardEvent {
     ctrlKey: input.ctrlKey ?? false,
     metaKey: input.metaKey ?? false,
     altKey: input.altKey ?? false,
+    isComposing: input.isComposing ?? false,
+    keyCode: input.keyCode ?? 0,
   } as KeyboardEvent;
 }
 
@@ -164,4 +186,36 @@ test('Recovery R1: 물리 S/M 셀 명령은 IME 조기 반환보다 먼저 처�
 
   assert.ok(contextual >= 0, '셀 블록 S/M 문맥 단축키 호출이 있어야 한다');
   assert.ok(ime > contextual, '한글 IME 조기 반환보다 먼저 S/M을 처리해야 한다');
+});
+
+test('Recovery R4 corrective RED: 한글 셀 문자 단축키의 후속 조합 입력을 끝까지 소비한다', () => {
+  const Guard = cellBlockLetterImeGuardConstructor();
+  const guard = new Guard();
+
+  assert.equal(guard.arm(key({ key: 'ㄴ', code: 'KeyS' })), true);
+  assert.equal(guard.consume('compositionstart'), true);
+  assert.equal(guard.consume('input'), true);
+  assert.equal(guard.consume('compositionend'), true);
+  assert.equal(guard.consume('input'), false, '조합 종료 뒤의 정상 입력은 통과해야 한다');
+});
+
+test('Recovery R4 corrective RED: Process 입력은 input-only 폴백도 한 번만 소비한다', () => {
+  const Guard = cellBlockLetterImeGuardConstructor();
+  const guard = new Guard();
+
+  assert.equal(guard.arm(key({ key: 'Process', code: 'KeyM', isComposing: true, keyCode: 229 })), true);
+  assert.equal(guard.consume('input'), true);
+  assert.equal(guard.consume('input'), false, 'composition 이벤트가 없으면 첫 input만 소비해야 한다');
+});
+
+test('Recovery R4 corrective RED: 영문 S/M은 후속 정상 입력을 억제하지 않는다', () => {
+  const Guard = cellBlockLetterImeGuardConstructor();
+  const guard = new Guard();
+
+  assert.equal(guard.arm(key({ key: 's', code: 'KeyS' })), false);
+  assert.equal(guard.consume('compositionstart'), false);
+  assert.equal(guard.consume('input'), false);
+
+  assert.equal(guard.arm(key({ key: 'M', code: 'KeyM', shiftKey: true })), false);
+  assert.equal(guard.consume('input'), false);
 });
