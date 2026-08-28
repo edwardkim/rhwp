@@ -8122,8 +8122,13 @@ impl TypesetEngine {
                     .get(st.current_column as usize)
                     .map(|a| a.width)
                     .unwrap_or(st.layout.body_area.width);
-                let formatted =
-                    self.format_paragraph(para, composed.get(para_idx), styles, Some(col_w));
+                let formatted = self.format_paragraph_with_known_square_band(
+                    para,
+                    composed.get(para_idx),
+                    styles,
+                    Some(col_w),
+                    st.wrap_around_derived_band,
+                );
                 native_hwp5_footnote_break =
                     native_hwp5_first_footnote_overlap_break_line(&st, para, &formatted, self.dpi);
                 let is_last_in_section = para_idx + 1 == paragraphs.len();
@@ -16032,7 +16037,32 @@ impl TypesetEngine {
         styles: &ResolvedStyleSet,
         column_width_px: Option<f64>,
     ) -> FormattedParagraph {
-        self.format_paragraph_for_flow(para, composed, styles, column_width_px, styles.hwp3_variant)
+        self.format_paragraph_for_flow(
+            para,
+            composed,
+            styles,
+            column_width_px,
+            styles.hwp3_variant,
+            false,
+        )
+    }
+
+    fn format_paragraph_with_known_square_band(
+        &self,
+        para: &Paragraph,
+        composed: Option<&ComposedParagraph>,
+        styles: &ResolvedStyleSet,
+        column_width_px: Option<f64>,
+        known_square_band: bool,
+    ) -> FormattedParagraph {
+        self.format_paragraph_for_flow(
+            para,
+            composed,
+            styles,
+            column_width_px,
+            styles.hwp3_variant,
+            known_square_band,
+        )
     }
 
     /// 미주는 저장 LineSeg가 쪽/단 흐름의 정본이므로, HWP3 본문 orphan tail을
@@ -16044,7 +16074,7 @@ impl TypesetEngine {
         styles: &ResolvedStyleSet,
         column_width_px: Option<f64>,
     ) -> FormattedParagraph {
-        self.format_paragraph_for_flow(para, composed, styles, column_width_px, false)
+        self.format_paragraph_for_flow(para, composed, styles, column_width_px, false, false)
     }
 
     fn format_paragraph_for_flow(
@@ -16054,6 +16084,7 @@ impl TypesetEngine {
         styles: &ResolvedStyleSet,
         column_width_px: Option<f64>,
         hwp3_body_reflow: bool,
+        known_square_band: bool,
     ) -> FormattedParagraph {
         let para_style_id = composed.map(|c| c.para_style_id as usize).unwrap_or(0);
         let para_style = styles.para_styles.get(para_style_id);
@@ -16081,7 +16112,7 @@ impl TypesetEngine {
                 );
                 // NO_LS 와 저장분할 both go to the frame.
                 if inner > 0.0 {
-                    crate::renderer::composer::recompose_stored_lines_in_frame(
+                    crate::renderer::composer::recompose_stored_lines_in_frame_with_known_square_band(
                         c,
                         para,
                         paragraph_box,
@@ -16091,6 +16122,7 @@ impl TypesetEngine {
                         self.profile.get().legacy_hwp3_stored_geometry(),
                         crate::renderer::composer::StoredRowMissPolicy::Reflow,
                         &self.float_carve_evidence.borrow(),
+                        known_square_band,
                     )
                 } else {
                     None

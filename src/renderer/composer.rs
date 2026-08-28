@@ -1968,6 +1968,42 @@ pub(crate) fn recompose_stored_lines_in_frame(
     // 함수를 타므로 두 경로가 갈리지 않는다.
     float_carve_evidence: &[crate::renderer::float_placement::FloatCarveEvidence],
 ) -> Option<ComposedParagraph> {
+    recompose_stored_lines_in_frame_with_known_square_band(
+        composed,
+        para,
+        paragraph_box,
+        inner_width_px,
+        styles,
+        dpi,
+        legacy_hwp3_stored_geometry,
+        miss_policy,
+        float_carve_evidence,
+        false,
+    )
+}
+
+/// Resolve stored rows when the caller has already proven that the paragraph
+/// belongs to a non-TAC Square Picture/Shape wrap band.
+///
+/// A uniformly narrow stored ladder is not generally float evidence: ordinary
+/// paragraph indentation has the same local shape. Only the pagination and
+/// render paths that carry a real Square-wrap anchor may preserve that ladder
+/// as externally owned geometry.
+#[allow(clippy::too_many_arguments)]
+pub(crate) fn recompose_stored_lines_in_frame_with_known_square_band(
+    composed: &ComposedParagraph,
+    para: &Paragraph,
+    paragraph_box: ParagraphBox,
+    inner_width_px: f64,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+    legacy_hwp3_stored_geometry: bool,
+    miss_policy: line_breaking::StoredRowMissPolicy,
+    // [#6175] 용지/쪽 기준 float 증거는 uniform ladder의 결손 폭과 세로 band를
+    // 함께 설명할 때만 저장 기하를 유지한다.
+    float_carve_evidence: &[crate::renderer::float_placement::FloatCarveEvidence],
+    known_square_band: bool,
+) -> Option<ComposedParagraph> {
     // A degenerate box, or controls with their own layout owner, means there is
     // no frame to build. The composition stands as it is — there is no second
     // owner to hand it to.
@@ -1991,6 +2027,7 @@ pub(crate) fn recompose_stored_lines_in_frame(
         miss_policy,
         stale,
         float_carve_evidence,
+        known_square_band,
     ) {
         // Stale — the row cannot hold its own text — so the rebuilt row is the
         // frame's. Its fill tokenizes through `para.char_shapes`
@@ -2089,6 +2126,7 @@ pub(crate) fn probe_stored_row_disposition(
         stale,
         // 증거 프로브는 단 문맥을 갖지 않는다 — 개체 증거 없이 판정한다.
         &[],
+        false,
     ) {
         Some(line_breaking::StoredRowResolution::Stored) => StoredRowProbeDisposition::Admitted,
         Some(line_breaking::StoredRowResolution::Reflowed) => StoredRowProbeDisposition::Rejected,

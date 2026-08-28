@@ -2687,7 +2687,7 @@ impl LayoutEngine {
                 // NO_LS 와 저장분할 both go to the frame: no stored record means
                 // the rebuild case outright, and the frame's fill owns it.
                 if column_inner_width > 0.0 {
-                    crate::renderer::composer::recompose_stored_lines_in_frame(
+                    crate::renderer::composer::recompose_stored_lines_in_frame_with_known_square_band(
                         comp,
                         para,
                         paragraph_box,
@@ -2697,6 +2697,7 @@ impl LayoutEngine {
                         self.profile.get().legacy_hwp3_stored_geometry(),
                         crate::renderer::composer::StoredRowMissPolicy::Reflow,
                         &self.body_float_carve_evidence.borrow(),
+                        wrap_anchor.is_some(),
                     )
                 } else {
                     None

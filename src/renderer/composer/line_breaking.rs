@@ -2822,6 +2822,7 @@ pub(crate) fn resolve_stored_line_segs_in_frame(
     // [#6175] 같은 세로 band의 용지/쪽 기준 어울림 개체 증거(HWPUNIT).
     // 저장 행의 결손 폭과 세로 위치가 함께 맞으면 좁음의 출처가 외부 기하다.
     float_carve_evidence: &[crate::renderer::float_placement::FloatCarveEvidence],
+    known_square_band: bool,
 ) -> Option<StoredRowResolution> {
     // [#6102] 폭-중립 float 표 host 는 본문 프레임 게이트가 이미 통과시킨
     // 문단이다 — picture-band 게이트만으로 사양하면 저장 textpos 의
@@ -2882,7 +2883,12 @@ pub(crate) fn resolve_stored_line_segs_in_frame(
     // geometry that originally produced it. The multi-slot comparison becomes
     // live when a caller supplies those exclusions.
     if !frame.models_exclusions()
-        && stored_rows_require_external_geometry(para, frame, float_carve_evidence)
+        && stored_rows_require_external_geometry(
+            para,
+            frame,
+            float_carve_evidence,
+            known_square_band,
+        )
     {
         return None;
     }
@@ -2923,6 +2929,11 @@ pub(crate) fn resolve_stored_line_segs_in_frame(
 /// 크지 않게 잡아 서로 다른 폭의 개체를 우연히 맞추지 않는다.
 const FLOAT_CARVE_MATCH_TOLERANCE_HU: i32 = 1200;
 
+/// A one-unit layout quantum is enough to distinguish a real narrowed lane
+/// from a full-width row after integer projection. Keep this local to stored
+/// row provenance rather than exposing layout-frame internals.
+const UNIFORM_INSET_MIN_DELTA_HU: i32 = 4;
+
 /// Whether stored physical rows prove that their frame changed by vertical
 /// band and therefore required exclusion geometry.
 ///
@@ -2934,6 +2945,7 @@ fn stored_rows_require_external_geometry(
     para: &Paragraph,
     frame: &LayoutFrame,
     float_carve_evidence: &[crate::renderer::float_placement::FloatCarveEvidence],
+    known_square_band: bool,
 ) -> bool {
     let line_segs = &para.line_segs;
     let split_or_varying = line_segs
@@ -3005,20 +3017,11 @@ fn stored_rows_require_external_geometry(
         return line_segs.iter().any(differs_from_frame);
     }
 
-    // [#6175] The same argument holds for a text paragraph whose every stored
-    // row is one complete slot *inset inside* this frame. A scalar frame has
-    // one horizontal range and applies the paragraph's own indents inside it,
-    // so it cannot derive an inset narrower than its own carve — the inset
-    // came from an owner this frame does not model, and the only float band
-    // that produces a uniform inset is a side-wrap (Square) object anchored
-    // where the paragraph's first row already starts. Reflowing full width
-    // there runs the text under the object (156518601 p1: four stored
-    // `0+29138` rows reflowed to three `0+48188` rows, 246px of each line
-    // hidden behind the picture).
-    //
-    // Bounded by the frame's own geometry pitch so a rounding-scale
-    // disagreement — which the frame *can* explain — still reflows: only an
-    // inset wider than one pitch counts as evidence of a second owner.
+    // A uniform inset by itself is not proof of an unmodelled exclusion: it
+    // can also be ordinary paragraph indentation. Preserve it only when the
+    // caller carries a real non-TAC Square Picture/Shape anchor. #6175's
+    // GroupShape path validates the anchor and lane width before it sets this
+    // flag; every ordinary body frame leaves the rows eligible for reflow.
     let inset_inside_frame = |segment: &crate::model::paragraph::LineSeg| {
         let end = match segment.column_start.checked_add(segment.segment_width) {
             Some(end) => end,
@@ -3027,9 +3030,11 @@ fn stored_rows_require_external_geometry(
         segment.column_start >= frame.horizontal.start
             && end <= frame.horizontal.end
             && (frame.horizontal.end - frame.horizontal.start) - segment.segment_width
-                > crate::renderer::layout_frame::COLUMN_WIDTH_QUANTUM_HWP
+                > UNIFORM_INSET_MIN_DELTA_HU
     };
-    line_segs.iter().any(differs_from_frame) && line_segs.iter().all(inset_inside_frame)
+    known_square_band
+        && line_segs.iter().any(differs_from_frame)
+        && line_segs.iter().all(inset_inside_frame)
 }
 
 /// Whether the frame's own carve reproduces every stored row — §1.4.1's
