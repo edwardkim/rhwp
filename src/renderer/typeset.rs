@@ -4235,27 +4235,6 @@ fn hwpx_saved_reset_fragment_matches_current_flow(
         .is_some_and(|seg| !is_synthetic_line_seg(seg) && seg.vertical_pos == 0)
 }
 
-/// HWPX 내부 vpos 되감김을 흐름 앵커 불일치로 버릴 때, 문단 전체를 현재 쪽에
-/// 붙이면 본문을 넘는 경우에만 저장 쪽 경계를 살린다.
-///
-/// 저장 쪽 경계가 **첫 줄 뒤**(break_line=1)이고, 남은 칸이 한 줄 남짓일 때만
-/// 승격한다. 2줄 이상 머리의 중간 되감김(3075729 2쪽 제4조 br=2)이나 여유가
-/// 남은 하단 문단까지 올리면 Linux CI 에서도 13→14쪽이 된다. issue1880 5쪽
-/// 제10조는 br=1, 남은 칸 ≈24px.
-fn keep_hwpx_internal_page_break_on_body_overflow(
-    current_height: f64,
-    para_fit_height: f64,
-    available: f64,
-    break_line: usize,
-) -> bool {
-    if break_line != 1 || available <= 0.0 {
-        return false;
-    }
-    let remaining = available - current_height;
-    let overflow = current_height + para_fit_height - available;
-    overflow > 16.0 && remaining > 0.0 && remaining < 32.0
-}
-
 fn paragraph_text_looks_like_list_continuation_tail(para: &Paragraph) -> bool {
     let text = para.text.trim_start();
     text.starts_with('.') || text.starts_with('-') || text.starts_with('·') || text.starts_with('•')
@@ -16716,8 +16695,6 @@ impl TypesetEngine {
         .filter(|break_line| {
             // HWPX의 reset은 local writer cursor도 재사용한다. 현재 flow와
             // anchor가 맞지 않는 reset은 physical page 경계로 승격하지 않는다.
-            // 다만 되감긴 꼬리를 현재 쪽에 붙이면 본문을 넘는 경우에는 그 저장
-            // 쪽 경계가 넘침의 증거이므로 흐름 드리프트로 버리지 않는다.
             !st.profile.hwpx_stored_layout()
                 || st.current_items.is_empty()
                 || hwpx_saved_reset_fragment_matches_current_flow(
@@ -16727,12 +16704,6 @@ impl TypesetEngine {
                     *break_line,
                     current_page_vpos_base.unwrap_or(0),
                     self.dpi,
-                )
-                || keep_hwpx_internal_page_break_on_body_overflow(
-                    st.current_height,
-                    fmt.height_for_fit,
-                    available,
-                    *break_line,
                 )
         });
         let forced_page_break_line = internal_forced_page_break_line
