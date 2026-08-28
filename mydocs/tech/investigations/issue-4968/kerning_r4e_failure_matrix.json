@@ -1,0 +1,268 @@
+{
+  "schemaVersion": 1,
+  "issue": 4968,
+  "stage": "W9-Q3-5R4E-2",
+  "status": "pass",
+  "inputs": {
+    "fixture": {
+      "bytes": 8645,
+      "sha256": "369dbea8562a5f0ddaee41c21319e06645250d854090a5dd1e04c006ddbe0485"
+    },
+    "manifest": {
+      "bytes": 12077,
+      "sha256": "4f9dbc95738dc3e964661fb40728826f3d6c40203a4c0c2e49c002c181ba15d1"
+    },
+    "exactFont": {
+      "bytes": 1236,
+      "sha256": "775667d1980cd734e331f01e9390e02191bc35d669325291c842968cb0a4a9fc"
+    },
+    "unsupportedFont": {
+      "bytes": 2044,
+      "sha256": "ba3121428c49e4ce8d2bf06e9977e126ee08e51dc6b4a840701a1945df3b2e84"
+    },
+    "projectionContractSha256": "aeebaac86e90ff0bb95c603c88ef51c15ce93c0076742d9488ced09d95d5e2e6"
+  },
+  "runtimeParityCanonicalSha256": "aaca1249d096965c662043bf3ed09a0aafdc9f9d85f9cefb24382f70695d85a7",
+  "axisScaling": {
+    "unit": "layer-milli-px",
+    "deltas": [
+      {
+        "ratio": 100,
+        "pairDeltaMilliPx": 1600
+      },
+      {
+        "ratio": 90,
+        "pairDeltaMilliPx": 1440
+      },
+      {
+        "ratio": 80,
+        "pairDeltaMilliPx": 1280
+      }
+    ]
+  },
+  "failureMatrix": [
+    {
+      "case": "malformed-sfnt",
+      "registration": {
+        "ok": true,
+        "status": "registered",
+        "slot": {
+          "charShapeId": 8,
+          "languageIndex": 1
+        },
+        "handle": {
+          "faceIndex": 0,
+          "bytes": 11,
+          "fontSourceSha256": "3771f96f628c2685031ece514a25c679b21f24dd577b2b30d57afc0c28d0f815"
+        },
+        "registry": {
+          "slotCount": 1,
+          "sourceCount": 1,
+          "totalSourceBytes": 11
+        }
+      },
+      "renderState": {
+        "pageCount": 1,
+        "renderTree": {
+          "sha256": "9b24d0aa98523ee20562e22300902c042241173dbc46be78d1a4eb8dabe6372a",
+          "sentinelCount": 0
+        },
+        "layerTree": {
+          "sha256": "9caf860b87f4d164c9dc45be0c411bbfaf93fdd4eef2bc7ebf356e95da0c78ce",
+          "sentinelCount": 0
+        },
+        "svg": {
+          "bytes": 109960,
+          "sha256": "2c3feb6f71bf6d056144aa120458927ce67293ce6f9e6d454c96ad7f24e9c981"
+        },
+        "canvasCommandCount": 29,
+        "canvasKit": {
+          "sha256": "d8c29dc6a322e594a451943f1e89e3b2f5cb9a98e45fccadd6df0dc676f5dfd2",
+          "sentinelCount": 0
+        },
+        "directReplayRequired": true,
+        "hiddenOverlayViolations": 0
+      },
+      "unchanged": true
+    },
+    {
+      "case": "pair-table-unsupported",
+      "registration": {
+        "ok": true,
+        "status": "registered",
+        "slot": {
+          "charShapeId": 8,
+          "languageIndex": 1
+        },
+        "handle": {
+          "faceIndex": 0,
+          "bytes": 2044,
+          "fontSourceSha256": "ba3121428c49e4ce8d2bf06e9977e126ee08e51dc6b4a840701a1945df3b2e84"
+        },
+        "registry": {
+          "slotCount": 1,
+          "sourceCount": 1,
+          "totalSourceBytes": 2044
+        }
+      },
+      "renderState": {
+        "pageCount": 1,
+        "renderTree": {
+          "sha256": "9b24d0aa98523ee20562e22300902c042241173dbc46be78d1a4eb8dabe6372a",
+          "sentinelCount": 0
+        },
+        "layerTree": {
+          "sha256": "9caf860b87f4d164c9dc45be0c411bbfaf93fdd4eef2bc7ebf356e95da0c78ce",
+          "sentinelCount": 0
+        },
+        "svg": {
+          "bytes": 109960,
+          "sha256": "2c3feb6f71bf6d056144aa120458927ce67293ce6f9e6d454c96ad7f24e9c981"
+        },
+        "canvasCommandCount": 29,
+        "canvasKit": {
+          "sha256": "d8c29dc6a322e594a451943f1e89e3b2f5cb9a98e45fccadd6df0dc676f5dfd2",
+          "sentinelCount": 0
+        },
+        "directReplayRequired": true,
+        "hiddenOverlayViolations": 0
+      },
+      "unchanged": true
+    },
+    {
+      "case": "unavailable-face-index",
+      "registration": {
+        "ok": true,
+        "status": "registered",
+        "slot": {
+          "charShapeId": 8,
+          "languageIndex": 1
+        },
+        "handle": {
+          "faceIndex": 1,
+          "bytes": 1236,
+          "fontSourceSha256": "775667d1980cd734e331f01e9390e02191bc35d669325291c842968cb0a4a9fc"
+        },
+        "registry": {
+          "slotCount": 1,
+          "sourceCount": 1,
+          "totalSourceBytes": 1236
+        }
+      },
+      "renderState": {
+        "pageCount": 1,
+        "renderTree": {
+          "sha256": "9b24d0aa98523ee20562e22300902c042241173dbc46be78d1a4eb8dabe6372a",
+          "sentinelCount": 0
+        },
+        "layerTree": {
+          "sha256": "9caf860b87f4d164c9dc45be0c411bbfaf93fdd4eef2bc7ebf356e95da0c78ce",
+          "sentinelCount": 0
+        },
+        "svg": {
+          "bytes": 109960,
+          "sha256": "2c3feb6f71bf6d056144aa120458927ce67293ce6f9e6d454c96ad7f24e9c981"
+        },
+        "canvasCommandCount": 29,
+        "canvasKit": {
+          "sha256": "d8c29dc6a322e594a451943f1e89e3b2f5cb9a98e45fccadd6df0dc676f5dfd2",
+          "sentinelCount": 0
+        },
+        "directReplayRequired": true,
+        "hiddenOverlayViolations": 0
+      },
+      "unchanged": true
+    },
+    {
+      "case": "invalid-language-index",
+      "registration": {
+        "ok": false,
+        "reason": "invalid-language-index"
+      },
+      "renderState": {
+        "pageCount": 1,
+        "renderTree": {
+          "sha256": "9b24d0aa98523ee20562e22300902c042241173dbc46be78d1a4eb8dabe6372a",
+          "sentinelCount": 0
+        },
+        "layerTree": {
+          "sha256": "9caf860b87f4d164c9dc45be0c411bbfaf93fdd4eef2bc7ebf356e95da0c78ce",
+          "sentinelCount": 0
+        },
+        "svg": {
+          "bytes": 109960,
+          "sha256": "2c3feb6f71bf6d056144aa120458927ce67293ce6f9e6d454c96ad7f24e9c981"
+        },
+        "canvasCommandCount": 29,
+        "canvasKit": {
+          "sha256": "d8c29dc6a322e594a451943f1e89e3b2f5cb9a98e45fccadd6df0dc676f5dfd2",
+          "sentinelCount": 0
+        },
+        "directReplayRequired": true,
+        "hiddenOverlayViolations": 0
+      },
+      "unchanged": true
+    },
+    {
+      "case": "font-byte-limit-exceeded",
+      "registration": {
+        "ok": false,
+        "reason": "font-byte-limit-exceeded"
+      },
+      "renderState": {
+        "pageCount": 1,
+        "renderTree": {
+          "sha256": "9b24d0aa98523ee20562e22300902c042241173dbc46be78d1a4eb8dabe6372a",
+          "sentinelCount": 0
+        },
+        "layerTree": {
+          "sha256": "9caf860b87f4d164c9dc45be0c411bbfaf93fdd4eef2bc7ebf356e95da0c78ce",
+          "sentinelCount": 0
+        },
+        "svg": {
+          "bytes": 109960,
+          "sha256": "2c3feb6f71bf6d056144aa120458927ce67293ce6f9e6d454c96ad7f24e9c981"
+        },
+        "canvasCommandCount": 29,
+        "canvasKit": {
+          "sha256": "d8c29dc6a322e594a451943f1e89e3b2f5cb9a98e45fccadd6df0dc676f5dfd2",
+          "sentinelCount": 0
+        },
+        "directReplayRequired": true,
+        "hiddenOverlayViolations": 0
+      },
+      "unchanged": true
+    },
+    {
+      "case": "slot-conflict",
+      "registration": {
+        "ok": false,
+        "reason": "slot-conflict"
+      },
+      "renderState": {
+        "pageCount": 1,
+        "renderTree": {
+          "sha256": "4aaa106ccfa6011d1416170d3f6fded249d1f186d6f0fd02af6b11278c2c4fd7",
+          "sentinelCount": 0
+        },
+        "layerTree": {
+          "sha256": "85e05652a6496d879816f4ba3f070586bac7673751abc964f1392903727399eb",
+          "sentinelCount": 0
+        },
+        "svg": {
+          "bytes": 109948,
+          "sha256": "c1a135fe5637a7504401d488892c30fd8635530203f2c547ff517eba20dbdc56"
+        },
+        "canvasCommandCount": 29,
+        "canvasKit": {
+          "sha256": "d8c29dc6a322e594a451943f1e89e3b2f5cb9a98e45fccadd6df0dc676f5dfd2",
+          "sentinelCount": 0
+        },
+        "directReplayRequired": true,
+        "hiddenOverlayViolations": 0
+      },
+      "unchanged": true
+    }
+  ],
+  "evidenceCanonicalSha256": "f16df3a02d7028e742673d319b44eefa2f7456c61e2c9fb113e9a0f67ad54f7b"
+}

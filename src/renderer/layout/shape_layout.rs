@@ -267,6 +267,7 @@ fn push_ole_empty_para_end_anchor(
             border_fill_id: 0,
             baseline,
             field_marker: FieldMarkerType::None,
+            layout_positions: None,
             display_text: None,
         }),
         BoundingBox::new(anchor_x, anchor_y, 0.0, line_height),
@@ -724,15 +725,38 @@ impl LayoutEngine {
         };
 
         let common = shape.common();
-        let adjusted_common;
-        let common_for_position = if clamp_negative_para_offset
-            && !common.treat_as_char
+        // [#6185] 세로 오프셋이 **자기 높이의 정확한 음수**인 자리차지 글상자는 그
+        // 값이 배치 의도가 아니라 자기 변위 잔재다 — 한글은 무시하고 문단 자리에
+        // 그린다(156570535 2쪽: offset -3736 = -(높이 3736), 한글 글상자 상단
+        // 514.7 로 표 하단 499.5 아래. 적용하면 465.5 로 49.8px 올라가 표 둘째
+        // 행을 통째로 덮는다). #6110 의 `vpos == 그림 높이` 자기-변위 지문과 같은 축.
+        //
+        // 지문이 **정확 일치**일 때만 발동한다 — 임의의 음수 오프셋은 실제 위치
+        // 지정이므로 종전대로 적용한다.
+        let self_displacement_offset = !common.treat_as_char
+            && matches!(
+                common.text_wrap,
+                crate::model::shape::TextWrap::TopAndBottom
+            )
             && matches!(common.vert_rel_to, crate::model::shape::VertRelTo::Para)
             && matches!(
                 common.vert_align,
                 crate::model::shape::VertAlign::Top | crate::model::shape::VertAlign::Inside
             )
-            && (common.vertical_offset as i32) < 0
+            && common.height > 0
+            && i64::from(crate::renderer::float_placement::signed_hwpunit(
+                common.vertical_offset,
+            )) == -i64::from(common.height as i32);
+        let adjusted_common;
+        let common_for_position = if self_displacement_offset
+            || clamp_negative_para_offset
+                && !common.treat_as_char
+                && matches!(common.vert_rel_to, crate::model::shape::VertRelTo::Para)
+                && matches!(
+                    common.vert_align,
+                    crate::model::shape::VertAlign::Top | crate::model::shape::VertAlign::Inside
+                )
+                && (common.vertical_offset as i32) < 0
         {
             adjusted_common = {
                 let mut common = common.clone();
@@ -2834,7 +2858,41 @@ impl LayoutEngine {
 
         let mut composed_paras: Vec<_> = textbox_paragraphs[..para_count]
             .iter()
-            .map(|p| compose_paragraph(p))
+            .map(|para| {
+                let composed = compose_paragraph(para);
+                if !para.line_segs.is_empty() {
+                    return composed;
+                }
+
+                // [#4968 R4C-4] 저장 LINE_SEG가 없는 가로 글상자는 본문·표 셀과
+                // 같은 fresh paragraph measurement를 사용한다. 종전에는 여기서
+                // compose_paragraph의 45자 fallback을 그대로 렌더해 exact kerning
+                // registry가 있어도 K0/K1 줄 경계가 항상 같았다. 저장 조판은 위에서
+                // 그대로 반환해 기존 feature-detection 계약을 건드리지 않는다.
+                let para_style = styles.para_styles.get(composed.para_style_id as usize);
+                let margin_left = para_style.map(|style| style.margin_left).unwrap_or(0.0);
+                let margin_right = para_style.map(|style| style.margin_right).unwrap_or(0.0);
+                let inner_width = (inner_area.width - margin_left - margin_right).max(0.0);
+                if inner_width <= 0.0 {
+                    return composed;
+                }
+                let paragraph_box = crate::renderer::composer::ParagraphBox::body_for_style(
+                    inner_area.width,
+                    para_style,
+                    self.dpi,
+                );
+                crate::renderer::composer::recompose_stored_lines_in_frame(
+                    &composed,
+                    para,
+                    paragraph_box,
+                    inner_width,
+                    styles,
+                    self.dpi,
+                    self.profile.get().legacy_hwp3_stored_geometry(),
+                    crate::renderer::composer::StoredRowMissPolicy::Reflow,
+                )
+                .unwrap_or(composed)
+            })
             .collect();
 
         // AutoNumber(Page) 치환: 글상자 안의 쪽번호 필드를 현재 페이지 번호로 변환
@@ -3743,6 +3801,7 @@ impl LayoutEngine {
                             .unwrap_or(0),
                         baseline: advance * 0.85,
                         field_marker: FieldMarkerType::None,
+                        layout_positions: None,
                         display_text: None,
                     }),
                     BoundingBox::new(char_x, char_y, char_width, advance),

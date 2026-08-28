@@ -110,6 +110,7 @@ fn text_run_node(n: &serde_json::Value, bbox: BoundingBox) -> RenderNode {
             border_fill_id: 0,
             baseline: 0.0,
             field_marker: Default::default(),
+            layout_positions: None,
             display_text: None,
         }),
         bbox,

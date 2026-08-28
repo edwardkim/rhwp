@@ -28,12 +28,25 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
+  trusted_postmerge_reuse:
+    uses: ./.github/workflows/trusted-postmerge-ci-reuse.yml
+    permissions:
+      actions: read
+      contents: read
+      pull-requests: read
+    with:
+      workflow_file: proptest-roundtrip.yml
+      caller_event_name: ${{ github.event_name }}
+      caller_ref: ${{ github.ref }}
+      caller_sha: ${{ github.sha }}
+
   preflight:
     name: Proptest preflight
     runs-on: ubuntu-latest
+    needs: [trusted_postmerge_reuse]
     outputs:
-      fast_pass: ${{ steps.finalize.outputs.fast_pass || 'false' }}
-      reason: ${{ steps.finalize.outputs.reason || 'preflight-unavailable' }}
+      fast_pass: ${{ needs.trusted_postmerge_reuse.outputs.reuse == 'true' && 'true' || steps.finalize.outputs.fast_pass || 'false' }}
+      reason: ${{ needs.trusted_postmerge_reuse.outputs.reuse == 'true' && needs.trusted_postmerge_reuse.outputs.reason || steps.finalize.outputs.reason || 'preflight-unavailable' }}
     steps:
       # 문서 전용 devel PR과 검증된 코드 후보 뒤의 review-only tail도 `prop roundtrip`
       # check 이름은 남겨야 한다. workflow-level paths-ignore를 쓰면 required check가

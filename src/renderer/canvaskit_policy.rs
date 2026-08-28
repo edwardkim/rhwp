@@ -21,7 +21,6 @@ use crate::renderer::layer_renderer::{
     analyze_text_variant_selection, TextVariantSelectionOptions, VariantSelectedReason,
     VariantSelectionBackend,
 };
-use crate::renderer::layout::compute_char_positions;
 use crate::renderer::render_tree::{
     EllipseNode, ImageNode, LineNode, PageBackgroundNode, PageRenderTree, PathNode, RectangleNode,
     RenderLayerInfo, RenderNodeType, TextRunNode,
@@ -560,9 +559,13 @@ fn render_node_prelower_work_units(node_type: &RenderNodeType) -> Option<usize> 
 }
 
 fn text_run_payload_bytes(run: &TextRunNode) -> Option<usize> {
+    let positions_bytes = run.layout_positions.as_ref().map_or(Some(0), |positions| {
+        positions.len().checked_mul(std::mem::size_of::<f64>())
+    })?;
     run.text
         .len()
         .checked_add(run.display_text.as_ref().map_or(0, String::len))
+        .and_then(|bytes| bytes.checked_add(positions_bytes))
 }
 
 fn count_layer_tree_work_units(
@@ -805,15 +808,15 @@ fn text_visual_geometry_is_valid(
         && bbox.height >= 0.0
         && run.style.font_size > 0.0
         && run.style.ratio > 0.0
-        && compute_char_positions(
-            &replay_text
-                .chars()
-                .take(crate::paint::MAX_POSITIONED_CONTROL_MARKS_PER_RUN)
-                .collect::<String>(),
-            &run.style,
-        )
-        .iter()
-        .all(|position| position.is_finite())
+        && run
+            .replay_positions_for(
+                &replay_text
+                    .chars()
+                    .take(crate::paint::MAX_POSITIONED_CONTROL_MARKS_PER_RUN)
+                    .collect::<String>(),
+            )
+            .iter()
+            .all(|position| position.is_finite())
 }
 
 fn minimum_work_exceeds_limit(
@@ -2257,6 +2260,7 @@ mod tests {
             border_fill_id: 0,
             baseline: 12.0,
             field_marker: FieldMarkerType::None,
+            layout_positions: None,
             display_text: None,
         }
     }

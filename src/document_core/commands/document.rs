@@ -213,6 +213,7 @@ impl DocumentCore {
             validation_report,
         };
 
+        doc.rebuild_embedded_exact_font_sources();
         doc.paginate();
 
         // [#4488/#4495] 로드 픽스업(손상 lineseg 제거·빈 문단 reflow·안내문 제거)과
@@ -1354,6 +1355,7 @@ impl DocumentCore {
         self.validation_report = ValidationReport::new();
 
         self.convert_to_editable_native()?;
+        self.rebuild_embedded_exact_font_sources();
         self.paginate();
 
         Ok(self.get_document_info())
@@ -1924,6 +1926,74 @@ impl DocumentCore {
         self.document = doc;
         self.bump_bin_data_epoch();
         self.rebuild_derived_state();
+    }
+
+    /// Host font selection이 확정한 exact face를 글자모양·언어 slot에 등록한다.
+    ///
+    /// family 이름으로 source를 재탐색하지 않는다. 동일 slot/source 재등록은 멱등이고,
+    /// 다른 source로의 암묵적 덮어쓰기는 fail-closed한다. 실제 위치 반영은 후속 kerning
+    /// measurement 단계가 담당하며, 여기서는 다음 layout session을 위해 파생 캐시만
+    /// 무효화한다.
+    pub fn register_exact_font_source_native(
+        &mut self,
+        char_shape_id: u32,
+        language_index: usize,
+        font_bytes: &[u8],
+        face_index: u32,
+    ) -> Result<String, HwpError> {
+        use crate::renderer::kerning::{ExactFontRegistryRegistration, ExactFontSlot};
+
+        let slot = ExactFontSlot::new(char_shape_id, language_index);
+        let registration = self
+            .layout_engine
+            .register_exact_font_source(slot, font_bytes, face_index)
+            .map_err(|reason| {
+                HwpError::RenderError(format!(
+                    "exact font source registration failed: {}",
+                    reason.as_str()
+                ))
+            })?;
+        // Batch mode에서는 paginate가 지연되더라도 뒤따르는 edit reflow가 방금
+        // 등록한 generation을 즉시 읽어야 한다.
+        self.styles.kerning_measurement_context =
+            self.layout_engine.kerning_measurement_context_snapshot();
+        let handle = self
+            .layout_engine
+            .exact_font_source_handle(slot)
+            .cloned()
+            .ok_or_else(|| {
+                HwpError::RenderError("exact font source registration lost its handle".to_string())
+            })?;
+
+        if registration == ExactFontRegistryRegistration::Registered {
+            self.mark_all_sections_dirty();
+            self.measured_tables.clear();
+            self.measured_sections.clear();
+            self.dirty_paragraphs.clear();
+            self.para_column_map.clear();
+            self.invalidate_page_tree_cache();
+            self.paginate_if_needed();
+        }
+
+        let status = match registration {
+            ExactFontRegistryRegistration::Registered => "registered",
+            ExactFontRegistryRegistration::AlreadyRegistered => "already-registered",
+        };
+        let (slot_count, source_count, total_source_bytes, generation) =
+            self.layout_engine.exact_font_source_registry_counts();
+        Ok(serde_json::json!({
+            "ok": true,
+            "status": status,
+            "slot": slot,
+            "handle": handle,
+            "registry": {
+                "slotCount": slot_count,
+                "sourceCount": source_count,
+                "totalSourceBytes": total_source_bytes,
+                "generation": generation,
+            }
+        })
+        .to_string())
     }
 
     /// Batch 모드를 시작한다. 이후 Command 호출 시 paginate()를 건너뛴다.

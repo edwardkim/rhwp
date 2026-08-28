@@ -10,9 +10,7 @@ use crate::renderer::composer::{
     char_overlap_display_text, char_overlap_size_ratio, decode_pua_overlap_number,
     expand_pua_render_text, CharOverlapInfo,
 };
-use crate::renderer::layout::{
-    compute_char_positions, forces_halfwidth_cjk_quote, split_into_clusters,
-};
+use crate::renderer::layout::{forces_halfwidth_cjk_quote, split_into_clusters};
 use crate::renderer::render_tree::BoundingBox;
 use crate::renderer::{boxed_pua_char_overlap_semantics, clamp_tab_leader_end_x, TextStyle};
 
@@ -44,6 +42,7 @@ impl SkiaTextReplay<'_> {
         is_marker: bool,
         is_para_end: bool,
         is_line_break_end: bool,
+        layout_positions: Option<&[f64]>,
     ) {
         let canvas = self.canvas;
         let output_options = self.output_options;
@@ -293,7 +292,8 @@ impl SkiaTextReplay<'_> {
 
                 let text = expand_pua_render_text(text);
                 let text = text.as_str();
-                let char_positions = compute_char_positions(text, style);
+                let char_positions =
+                    crate::renderer::replay_positions_or_compute(text, style, layout_positions);
                 let clusters = split_into_clusters(text);
                 let text_width = *char_positions.last().unwrap_or(&0.0) as f32;
                 // [#5821] 압축 장평은 세로도 √r — SSOT 는 condensed_ratio_draw_params.
@@ -763,7 +763,8 @@ impl SkiaTextReplay<'_> {
                 );
             }
             if !text.is_empty() && !is_marker {
-                let char_positions = compute_char_positions(text, style);
+                let char_positions =
+                    crate::renderer::replay_positions_or_compute(text, style, layout_positions);
                 for (index, ch) in text.chars().enumerate() {
                     if ch == ' ' {
                         let x = bbox.x + char_positions.get(index).copied().unwrap_or(0.0);

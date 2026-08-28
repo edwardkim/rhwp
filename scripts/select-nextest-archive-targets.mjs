@@ -4,7 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
 
-const GROUPS = new Set(["integration-b", "integration-c"]);
+const GROUPS = ["integration-b", "integration-c", "integration-d"];
 
 function fail(message) {
   throw new Error(`[NextestTargetDuration] ${message}`);
@@ -35,7 +35,7 @@ function usage() {
   return [
     "Usage: cargo metadata --no-deps --format-version 1 |",
     "  node scripts/select-nextest-archive-targets.mjs",
-    "    --group integration-b|integration-c",
+    "    --group integration-b|integration-c|integration-d",
     "    --policy tests/suites/nextest-target-duration-policy.json",
   ].join(" ");
 }
@@ -107,10 +107,9 @@ export function integrationTargetsFromMetadata(metadata, workspaceManifestPath) 
 
 export function assignIntegrationTargets(targets, policy) {
   const parsedPolicy = parseDurationPolicy(policy);
-  const assignments = {
-    "integration-b": { estimatedSeconds: 0, targets: [] },
-    "integration-c": { estimatedSeconds: 0, targets: [] },
-  };
+  const assignments = Object.fromEntries(
+    GROUPS.map((group) => [group, { estimatedSeconds: 0, targets: [] }]),
+  );
 
   const weightedTargets = [...new Set(targets)]
     .map((name) => ({
@@ -120,10 +119,15 @@ export function assignIntegrationTargets(targets, policy) {
     .sort((left, right) => right.seconds - left.seconds || left.name.localeCompare(right.name));
 
   for (const target of weightedTargets) {
-    const destination = assignments["integration-b"].estimatedSeconds
-      <= assignments["integration-c"].estimatedSeconds
-      ? "integration-b"
-      : "integration-c";
+    const destination = GROUPS.reduce((shortest, group) => (
+      assignments[group].estimatedSeconds < assignments[shortest].estimatedSeconds
+      || (
+        assignments[group].estimatedSeconds === assignments[shortest].estimatedSeconds
+        && group.localeCompare(shortest) < 0
+      )
+        ? group
+        : shortest
+    ));
     assignments[destination].targets.push(target.name);
     assignments[destination].estimatedSeconds += target.seconds;
   }
@@ -140,7 +144,7 @@ async function main() {
     process.stdout.write(`${usage()}\n`);
     return;
   }
-  if (!GROUPS.has(options.group) || !options.policy) {
+  if (!GROUPS.includes(options.group) || !options.policy) {
     fail(usage());
   }
 

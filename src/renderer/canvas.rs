@@ -30,6 +30,9 @@ pub enum CanvasCommand {
     FillRect(f64, f64, f64, f64, String),
     StrokeRect(f64, f64, f64, f64, String),
     FillText(String, f64, f64),
+    /// K1 layout owner가 확정한 run-relative scalar positions를 보존한다.
+    /// K0는 기존 `FillText`를 유지해 command 형식과 count가 변하지 않는다.
+    FillTextPositioned(String, f64, f64, Vec<f64>),
     DrawLine(f64, f64, f64, f64),
     DrawEllipse(f64, f64, f64, f64),
     DrawImage(f64, f64, f64, f64),
@@ -113,11 +116,12 @@ impl CanvasRenderer {
                 }
             }
             RenderNodeType::TextRun(run) => {
-                self.draw_text(
+                self.draw_text_positioned(
                     run.display_or_text(),
                     node.bbox.x,
                     node.bbox.y + node.bbox.height,
                     &run.style,
+                    run.validated_layout_positions_for(run.display_or_text()),
                 );
             }
             RenderNodeType::Rectangle(rect) => {
@@ -204,11 +208,12 @@ impl CanvasRenderer {
                             }
                         }
                         PaintOp::TextRun { bbox, run } => {
-                            self.draw_text(
+                            self.draw_text_positioned(
                                 run.display_or_text(),
                                 bbox.x,
                                 bbox.y + bbox.height,
                                 &run.style,
+                                run.validated_layout_positions_for(run.display_or_text()),
                             );
                         }
                         PaintOp::Rectangle { bbox, rect } => {
@@ -349,6 +354,27 @@ impl Renderer for CanvasRenderer {
     fn draw_text(&mut self, text: &str, x: f64, y: f64, _style: &TextStyle) {
         let text = crate::renderer::composer::expand_pua_render_text(text);
         self.commands.push(CanvasCommand::FillText(text, x, y));
+    }
+
+    fn draw_text_positioned(
+        &mut self,
+        text: &str,
+        x: f64,
+        y: f64,
+        _style: &TextStyle,
+        positions: Option<&[f64]>,
+    ) {
+        let text = crate::renderer::composer::expand_pua_render_text(text);
+        if let Some(positions) = super::validated_replay_positions(&text, positions) {
+            self.commands.push(CanvasCommand::FillTextPositioned(
+                text,
+                x,
+                y,
+                positions.to_vec(),
+            ));
+        } else {
+            self.commands.push(CanvasCommand::FillText(text, x, y));
+        }
     }
 
     fn draw_rect(
@@ -765,6 +791,7 @@ mod tests {
             border_fill_id: 0,
             baseline: 12.0,
             field_marker: Default::default(),
+            layout_positions: None,
             display_text: None,
         }
     }

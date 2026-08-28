@@ -48,9 +48,9 @@ function parseAttributes(raw) {
 
 export function collectTargetDurations(junitXml) {
   const durations = new Map();
-  for (const match of junitXml.matchAll(/<testsuite\b([^>]*)>/g)) {
+  for (const match of junitXml.matchAll(/<testcase\b([^>]*)>/g)) {
     const attributes = parseAttributes(match[1]);
-    const suiteName = attributes.get("name");
+    const suiteName = attributes.get("classname");
     const seconds = Number(attributes.get("time"));
     if (!suiteName || suiteName.startsWith("@setup-script:") || !Number.isFinite(seconds) || seconds < 0) {
       continue;
@@ -69,14 +69,17 @@ export function collectTargetDurations(junitXml) {
 function main() {
   const options = parseArgs(process.argv.slice(2));
   if (options.help) {
-    process.stdout.write("Usage: node scripts/collect-nextest-target-durations.mjs --archive-label b|c --input junit.xml --output target-durations.json\n");
+    process.stdout.write("Usage: node scripts/collect-nextest-target-durations.mjs --archive-label b|c|d --input junit.xml --output target-durations.json\n");
     return;
   }
-  if (!["b", "c"].includes(options["archive-label"]) || !options.input || !options.output) {
-    fail("--archive-label b|c, --input, and --output are required");
+  if (!["b", "c", "d"].includes(options["archive-label"]) || !options.input || !options.output) {
+    fail("--archive-label b|c|d, --input, and --output are required");
   }
 
   const targets = collectTargetDurations(fs.readFileSync(options.input, "utf8"));
+  if (Object.keys(targets).length === 0) {
+    fail("JUnit report contains no target durations");
+  }
   const report = {
     schema_version: 1,
     archive_label: options["archive-label"],

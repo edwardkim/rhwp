@@ -1257,6 +1257,7 @@ mod tests {
                 border_fill_id: 0,
                 baseline: 0.0,
                 field_marker: Default::default(),
+                layout_positions: None,
                 display_text: None,
             }),
             BoundingBox::new(0.0, 0.0, 10.0, 10.0),

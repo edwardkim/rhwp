@@ -147,6 +147,7 @@ fn text_run_at(text: &str, x: f64, y: f64, w: f64, h: f64) -> RenderNode {
             border_fill_id: 0,
             baseline: 0.0,
             field_marker: Default::default(),
+            layout_positions: None,
             display_text: None,
         }),
         BoundingBox::new(x, y, w, h),

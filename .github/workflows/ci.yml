@@ -62,9 +62,23 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  trusted_postmerge_reuse:
+    uses: ./.github/workflows/trusted-postmerge-ci-reuse.yml
+    permissions:
+      actions: read
+      contents: read
+      pull-requests: read
+    with:
+      workflow_file: ci.yml
+      require_duration_artifacts: true
+      caller_event_name: ${{ github.event_name }}
+      caller_ref: ${{ github.ref }}
+      caller_sha: ${{ github.sha }}
+
   preflight:
     name: CI preflight
     runs-on: ubuntu-latest
+    needs: [trusted_postmerge_reuse]
     # [#3284] 러너 hang 을 실패로 드러내는 상한 (성능 목표 아님) — 실험 종료 후에도 유지
     timeout-minutes: 10
     permissions:
@@ -74,9 +88,11 @@ jobs:
       pull-requests: read
       statuses: read
     outputs:
-      fast_pass: ${{ steps.finalize.outputs.fast_pass || 'false' }}
-      reason: ${{ steps.finalize.outputs.reason || 'preflight-unavailable' }}
+      fast_pass: ${{ needs.trusted_postmerge_reuse.outputs.reuse == 'true' && 'true' || steps.finalize.outputs.fast_pass || 'false' }}
+      reason: ${{ needs.trusted_postmerge_reuse.outputs.reuse == 'true' && needs.trusted_postmerge_reuse.outputs.reason || steps.finalize.outputs.reason || 'preflight-unavailable' }}
       candidate_sha: ${{ steps.finalize.outputs.candidate_sha || '' }}
+      postmerge_reuse: ${{ needs.trusted_postmerge_reuse.outputs.reuse || 'false' }}
+      postmerge_source_run_id: ${{ needs.trusted_postmerge_reuse.outputs.source_run_id || '' }}
       # [#3790 Stage 4·5B] frontend_mode·render_required·rust_required·
       # native_skia_required는 이 workflow의 worker 조건에 사용한다. codeql_languages는
       # codeql.yml이 같은 trusted-base 판정으로 소비한다. 모든 기본값은 full lane이다.
@@ -798,8 +814,8 @@ jobs:
 
   # [#2393] 기본 테스트 병렬화 — CI impact preflight가 frontend·Rust·Native Skia
   # gate와 worker 조건을 나누는 경계다.
-  # [#5737] archive A는 source-side lib test, B/C는 integration target을 교차 분배해
-  # 각각 compile/link한다. A는 두 hash worker, B/C는 각각 한 worker가 소비한다.
+  # [#6251] archive A는 source-side lib test를 단일 worker가 소비하고, B/C/D는
+  # integration target을 시간 기준으로 분배해 각각 compile/link한다.
   # required check 는 집계 job "Build & Test" 로 불변이다.
   # [#5388] M04-4: tests/cases/prop_*_roundtrip.rs 는 정규 shard 가 archive 에서
   # 자동 실행한다. 전용 싼 job 은 .github/workflows/proptest-roundtrip.yml
@@ -862,6 +878,27 @@ jobs:
       timeout_minutes: ${{ fromJSON(needs.preflight.outputs.test_archive_timeout_minutes || '60') }}
       archive_label: c
       target_group: integration-c
+      duration_policy_sha: ${{ needs.resolve-nextest-duration-policy.outputs.duration_policy_sha }}
+
+
+  build-test-archive-d:
+    uses: ./.github/workflows/build-nextest-archives.yml
+    needs: [preflight, resolve-nextest-duration-policy]
+    if: >-
+      ${{
+        always()
+        && needs.preflight.result == 'success'
+        && needs.preflight.outputs.fast_pass != 'true'
+        && needs.preflight.outputs.rust_required == 'true'
+        && needs.resolve-nextest-duration-policy.result == 'success'
+      }}
+    permissions:
+      contents: read
+    with:
+      cargo_profile: ${{ needs.preflight.outputs.test_profile || 'release' }}
+      timeout_minutes: ${{ fromJSON(needs.preflight.outputs.test_archive_timeout_minutes || '60') }}
+      archive_label: d
+      target_group: integration-d
       duration_policy_sha: ${{ needs.resolve-nextest-duration-policy.outputs.duration_policy_sha }}
 
   lint:
@@ -956,6 +993,8 @@ jobs:
       # 추가하면 그 테스트가 실패하므로 여기 한 줄을 같이 넣어야 한다.
       - name: Validate workflow contracts
         run: |
+          node --test scripts/tests/verify-trusted-postmerge-ci-reuse.test.mjs
+          node --test scripts/tests/verify-trusted-postmerge-ci-reuse-squash.test.mjs
           python3 -m unittest scripts/tests/test_cache_sweep_workflow.py
           python3 -m unittest scripts/tests/test_cancel_stale_pr_runs_workflow.py
           python3 -m unittest scripts/tests/test_ci_impact_policy_workflow.py
@@ -966,6 +1005,7 @@ jobs:
           python3 -m unittest scripts/tests/test_gym_release_gate_workflow.py
           python3 -m unittest scripts/tests/test_proptest_roundtrip_workflow.py
           python3 -m unittest scripts/tests/test_adapter_diff_workflow.py
+          python3 -m unittest scripts/tests/test_trusted_postmerge_ci_reuse_workflow.py
           python3 -m unittest scripts/tests/test_llm_verifier_workflow.py
           python3 -m unittest scripts/tests/test_undo_depth_e2e_workflow.py
           python3 -m unittest scripts/tests/test_workflow_contract_wiring.py
@@ -1368,32 +1408,11 @@ jobs:
     permissions:
       contents: read
     with:
-      label: Archive A shard 1
+      label: Archive A
       count_label: a-1
       archive_label: a
       filterset: "all()"
-      partition: "hash:1/2"
-
-
-  test-archive-a-shard-2:
-    uses: ./.github/workflows/run-nextest-archives.yml
-    needs: [preflight, build-test-archive-a]
-    if: >-
-      ${{
-        always()
-        && needs.preflight.result == 'success'
-        && needs.preflight.outputs.fast_pass != 'true'
-        && needs.preflight.outputs.rust_required == 'true'
-        && needs['build-test-archive-a'].result == 'success'
-      }}
-    permissions:
-      contents: read
-    with:
-      label: Archive A shard 2
-      count_label: a-2
-      archive_label: a
-      filterset: "all()"
-      partition: "hash:2/2"
+      partition: "hash:1/1"
 
 
   test-archive-b-shard-1:
@@ -1438,8 +1457,29 @@ jobs:
       partition: "hash:1/1"
 
 
-  # [#6205] B/C가 성공한 devel run만 data branch로 기록한다. protected devel에는
-  # 직접 쓰지 않으며, 다음 PR은 이 branch의 고정 SHA를 사용한다.
+  test-archive-d-shard-1:
+    uses: ./.github/workflows/run-nextest-archives.yml
+    needs: [preflight, build-test-archive-d]
+    if: >-
+      ${{
+        always()
+        && needs.preflight.result == 'success'
+        && needs.preflight.outputs.fast_pass != 'true'
+        && needs.preflight.outputs.rust_required == 'true'
+        && needs['build-test-archive-d'].result == 'success'
+      }}
+    permissions:
+      contents: read
+    with:
+      label: Archive D
+      count_label: d-1
+      archive_label: d
+      filterset: "all()"
+      partition: "hash:1/1"
+
+
+  # B/C/D duration data is refreshed from this devel run, or from the exact green
+  # same-repository PR run accepted by trusted_postmerge_reuse.
   refresh-nextest-target-duration-data:
     name: Refresh nextest target duration data
     runs-on: ubuntu-latest
@@ -1447,16 +1487,27 @@ jobs:
       - preflight
       - test-archive-b-shard-1
       - test-archive-c-shard-1
+      - test-archive-d-shard-1
     if: >-
       ${{
         always()
         && github.event_name == 'push'
         && github.ref == 'refs/heads/devel'
         && needs.preflight.result == 'success'
-        && needs.preflight.outputs.fast_pass != 'true'
         && needs.preflight.outputs.rust_required == 'true'
-        && needs.test-archive-b-shard-1.result == 'success'
-        && needs.test-archive-c-shard-1.result == 'success'
+        && (
+          (
+            needs.preflight.outputs.postmerge_reuse != 'true'
+            && needs.preflight.outputs.fast_pass != 'true'
+            && needs.test-archive-b-shard-1.result == 'success'
+            && needs.test-archive-c-shard-1.result == 'success'
+            && needs.test-archive-d-shard-1.result == 'success'
+          )
+          || (
+            needs.preflight.outputs.postmerge_reuse == 'true'
+            && needs.preflight.outputs.postmerge_source_run_id != ''
+          )
+        )
       }}
     permissions:
       actions: read
@@ -1471,16 +1522,52 @@ jobs:
           fetch-depth: 1
 
       - name: Download Archive B duration measurement
+        if: ${{ needs.preflight.outputs.postmerge_reuse != 'true' }}
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: nextest-target-durations-${{ github.run_id }}-b
           path: duration-b
 
       - name: Download Archive C duration measurement
+        if: ${{ needs.preflight.outputs.postmerge_reuse != 'true' }}
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: nextest-target-durations-${{ github.run_id }}-c
           path: duration-c
+
+      - name: Download Archive D duration measurement
+        if: ${{ needs.preflight.outputs.postmerge_reuse != 'true' }}
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: nextest-target-durations-${{ github.run_id }}-d
+          path: duration-d
+
+      - name: Download trusted PR Archive B duration measurement
+        if: ${{ needs.preflight.outputs.postmerge_reuse == 'true' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SOURCE_RUN_ID: ${{ needs.preflight.outputs.postmerge_source_run_id }}
+        run: >-
+          gh run download "${SOURCE_RUN_ID}" --repo "${GITHUB_REPOSITORY}"
+          --name "nextest-target-durations-${SOURCE_RUN_ID}-b" --dir duration-b
+
+      - name: Download trusted PR Archive C duration measurement
+        if: ${{ needs.preflight.outputs.postmerge_reuse == 'true' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SOURCE_RUN_ID: ${{ needs.preflight.outputs.postmerge_source_run_id }}
+        run: >-
+          gh run download "${SOURCE_RUN_ID}" --repo "${GITHUB_REPOSITORY}"
+          --name "nextest-target-durations-${SOURCE_RUN_ID}-c" --dir duration-c
+
+      - name: Download trusted PR Archive D duration measurement
+        if: ${{ needs.preflight.outputs.postmerge_reuse == 'true' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SOURCE_RUN_ID: ${{ needs.preflight.outputs.postmerge_source_run_id }}
+        run: >-
+          gh run download "${SOURCE_RUN_ID}" --repo "${GITHUB_REPOSITORY}"
+          --name "nextest-target-durations-${SOURCE_RUN_ID}-d" --dir duration-d
 
       - name: Refresh duration policy data branch
         shell: bash
@@ -1500,6 +1587,7 @@ jobs:
             --policy tests/suites/nextest-target-duration-policy.json \
             --measurement duration-b/target-durations-b.json \
             --measurement duration-c/target-durations-c.json \
+            --measurement duration-d/target-durations-d.json \
             --output "${OUTPUT_POLICY}"
 
           if git ls-remote --exit-code origin "refs/heads/${METRICS_BRANCH}" >/dev/null 2>&1; then
@@ -1533,10 +1621,11 @@ jobs:
       - build-test-archive-a
       - build-test-archive-b
       - build-test-archive-c
+      - build-test-archive-d
       - test-archive-a-shard-1
-      - test-archive-a-shard-2
       - test-archive-b-shard-1
       - test-archive-c-shard-1
+      - test-archive-d-shard-1
       - lint
       - native-skia-tests
       - frontend-unit-gates
@@ -1552,9 +1641,9 @@ jobs:
             needs.preflight.outputs.fast_pass != 'true'
             && needs.preflight.outputs.rust_required == 'true'
             && needs['test-archive-a-shard-1'].result == 'success'
-            && needs['test-archive-a-shard-2'].result == 'success'
             && needs['test-archive-b-shard-1'].result == 'success'
             && needs['test-archive-c-shard-1'].result == 'success'
+            && needs['test-archive-d-shard-1'].result == 'success'
           }}
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
@@ -1566,9 +1655,9 @@ jobs:
             needs.preflight.outputs.fast_pass != 'true'
             && needs.preflight.outputs.rust_required == 'true'
             && needs['test-archive-a-shard-1'].result == 'success'
-            && needs['test-archive-a-shard-2'].result == 'success'
             && needs['test-archive-b-shard-1'].result == 'success'
             && needs['test-archive-c-shard-1'].result == 'success'
+            && needs['test-archive-d-shard-1'].result == 'success'
           }}
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
@@ -1580,23 +1669,38 @@ jobs:
             needs.preflight.outputs.fast_pass != 'true'
             && needs.preflight.outputs.rust_required == 'true'
             && needs['test-archive-a-shard-1'].result == 'success'
-            && needs['test-archive-a-shard-2'].result == 'success'
             && needs['test-archive-b-shard-1'].result == 'success'
             && needs['test-archive-c-shard-1'].result == 'success'
+            && needs['test-archive-d-shard-1'].result == 'success'
           }}
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: archive-expected-${{ github.run_id }}-c
           path: archive-expected-c
+
+      - name: Download archive D expected count
+        if: >-
+          ${{
+            needs.preflight.outputs.fast_pass != 'true'
+            && needs.preflight.outputs.rust_required == 'true'
+            && needs['test-archive-a-shard-1'].result == 'success'
+            && needs['test-archive-b-shard-1'].result == 'success'
+            && needs['test-archive-c-shard-1'].result == 'success'
+            && needs['test-archive-d-shard-1'].result == 'success'
+          }}
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: archive-expected-${{ github.run_id }}-d
+          path: archive-expected-d
       - name: Download shard counts
         if: >-
           ${{
             needs.preflight.outputs.fast_pass != 'true'
             && needs.preflight.outputs.rust_required == 'true'
             && needs['test-archive-a-shard-1'].result == 'success'
-            && needs['test-archive-a-shard-2'].result == 'success'
             && needs['test-archive-b-shard-1'].result == 'success'
             && needs['test-archive-c-shard-1'].result == 'success'
+            && needs['test-archive-d-shard-1'].result == 'success'
           }}
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
@@ -1608,24 +1712,25 @@ jobs:
             needs.preflight.outputs.fast_pass != 'true'
             && needs.preflight.outputs.rust_required == 'true'
             && needs['test-archive-a-shard-1'].result == 'success'
-            && needs['test-archive-a-shard-2'].result == 'success'
             && needs['test-archive-b-shard-1'].result == 'success'
             && needs['test-archive-c-shard-1'].result == 'success'
+            && needs['test-archive-d-shard-1'].result == 'success'
           }}
         run: |
           read -r expected_a < archive-expected-a/archive-expected-total.txt
           read -r expected_b < archive-expected-b/archive-expected-total.txt
           read -r expected_c < archive-expected-c/archive-expected-total.txt
+          read -r expected_d < archive-expected-d/archive-expected-total.txt
           read -r a1 < shard-counts/shard-count-a-1/shard-count-a-1.txt
-          read -r a2 < shard-counts/shard-count-a-2/shard-count-a-2.txt
           read -r b1 < shard-counts/shard-count-b-1/shard-count-b-1.txt
           read -r c1 < shard-counts/shard-count-c-1/shard-count-c-1.txt
-          if ! [[ "$expected_a" =~ ^[0-9]+$ && "$expected_b" =~ ^[0-9]+$ && "$expected_c" =~ ^[0-9]+$ && "$a1" =~ ^[0-9]+$ && "$a2" =~ ^[0-9]+$ && "$b1" =~ ^[0-9]+$ && "$c1" =~ ^[0-9]+$ ]]; then
+          read -r d1 < shard-counts/shard-count-d-1/shard-count-d-1.txt
+          if ! [[ "$expected_a" =~ ^[0-9]+$ && "$expected_b" =~ ^[0-9]+$ && "$expected_c" =~ ^[0-9]+$ && "$expected_d" =~ ^[0-9]+$ && "$a1" =~ ^[0-9]+$ && "$b1" =~ ^[0-9]+$ && "$c1" =~ ^[0-9]+$ && "$d1" =~ ^[0-9]+$ ]]; then
             echo "::error::archive expected counts and shard counts must be non-negative integers"
             exit 1
           fi
-          if (( a1 + a2 != expected_a )); then
-            echo "::error::Archive A shard total mismatch: $a1 + $a2 != $expected_a"
+          if (( a1 != expected_a )); then
+            echo "::error::Archive A shard total mismatch: $a1 != $expected_a"
             exit 1
           fi
           if (( b1 != expected_b )); then
@@ -1636,7 +1741,11 @@ jobs:
             echo "::error::Archive C shard total mismatch: $c1 != $expected_c"
             exit 1
           fi
-          printf 'archive_total=%s shard_total=%s\n' "$((expected_a + expected_b + expected_c))" "$((a1 + a2 + b1 + c1))"
+          if (( d1 != expected_d )); then
+            echo "::error::Archive D shard total mismatch: $d1 != $expected_d"
+            exit 1
+          fi
+          printf 'archive_total=%s shard_total=%s\n' "$((expected_a + expected_b + expected_c + expected_d))" "$((a1 + b1 + c1 + d1))"
       - name: Check Build & Test worker results
         env:
           PREFLIGHT_RESULT: ${{ needs.preflight.result }}
@@ -1647,10 +1756,11 @@ jobs:
           BUILD_ARCHIVE_A_RESULT: ${{ needs['build-test-archive-a'].result }}
           BUILD_ARCHIVE_B_RESULT: ${{ needs['build-test-archive-b'].result }}
           BUILD_ARCHIVE_C_RESULT: ${{ needs['build-test-archive-c'].result }}
+          BUILD_ARCHIVE_D_RESULT: ${{ needs['build-test-archive-d'].result }}
           TEST_ARCHIVE_A_1_RESULT: ${{ needs['test-archive-a-shard-1'].result }}
-          TEST_ARCHIVE_A_2_RESULT: ${{ needs['test-archive-a-shard-2'].result }}
           TEST_ARCHIVE_B_1_RESULT: ${{ needs['test-archive-b-shard-1'].result }}
           TEST_ARCHIVE_C_1_RESULT: ${{ needs['test-archive-c-shard-1'].result }}
+          TEST_ARCHIVE_D_1_RESULT: ${{ needs['test-archive-d-shard-1'].result }}
           LINT_RESULT: ${{ needs.lint.result }}
           NATIVE_SKIA_RESULT: ${{ needs['native-skia-tests'].result }}
           FRONTEND_UNIT_RESULT: ${{ needs['frontend-unit-gates'].result }}
@@ -1665,10 +1775,10 @@ jobs:
             exit 0
           fi
           failed=0
-          rust_results="${LINT_RESULT}/${BUILD_ARCHIVE_A_RESULT}/${BUILD_ARCHIVE_B_RESULT}/${BUILD_ARCHIVE_C_RESULT}/${TEST_ARCHIVE_A_1_RESULT}/${TEST_ARCHIVE_A_2_RESULT}/${TEST_ARCHIVE_B_1_RESULT}/${TEST_ARCHIVE_C_1_RESULT}"
+          rust_results="${LINT_RESULT}/${BUILD_ARCHIVE_A_RESULT}/${BUILD_ARCHIVE_B_RESULT}/${BUILD_ARCHIVE_C_RESULT}/${BUILD_ARCHIVE_D_RESULT}/${TEST_ARCHIVE_A_1_RESULT}/${TEST_ARCHIVE_B_1_RESULT}/${TEST_ARCHIVE_C_1_RESULT}/${TEST_ARCHIVE_D_1_RESULT}"
           case "${RUST_REQUIRED}" in
-            true) [[ "$rust_results" == "success/success/success/success/success/success/success/success" ]] || { echo "::error::Rust lane expected success for lint/three builders/four workers, got: $rust_results"; failed=1; } ;;
-            false) [[ "$rust_results" == "skipped/skipped/skipped/skipped/skipped/skipped/skipped/skipped" ]] || { echo "::error::Rust lane expected skipped, got: $rust_results"; failed=1; } ;;
+            true) [[ "$rust_results" == "success/success/success/success/success/success/success/success/success" ]] || { echo "::error::Rust lane expected success for lint/four builders/four workers, got: $rust_results"; failed=1; } ;;
+            false) [[ "$rust_results" == "skipped/skipped/skipped/skipped/skipped/skipped/skipped/skipped/skipped" ]] || { echo "::error::Rust lane expected skipped, got: $rust_results"; failed=1; } ;;
             *) echo "::error::Unknown rust_required: ${RUST_REQUIRED}"; failed=1 ;;
           esac
           case "${NATIVE_SKIA_REQUIRED}" in

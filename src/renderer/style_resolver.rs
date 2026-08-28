@@ -298,6 +298,11 @@ pub struct ResolvedStyleSet {
     /// [#2070] HWP3 → HWP5 변환본 여부 (Document::is_hwp3_variant 전파).
     /// 변환본 한정 레거시 폭 규칙(전체 폭) 게이트에 사용.
     pub hwp3_variant: bool,
+    /// 한 pagination/edit transaction의 모든 fresh-layout 소비자가 함께 읽는
+    /// exact-font source snapshot. Font payload는 registry의 Arc에 한 번만 있고,
+    /// 스타일 복제는 snapshot owner만 공유한다.
+    pub(crate) kerning_measurement_context:
+        Option<std::sync::Arc<crate::renderer::kerning::KerningMeasurementContext>>,
 }
 
 /// DocInfo 참조 테이블을 해소된 스타일 목록으로 변환한다.
@@ -334,6 +339,7 @@ pub fn resolve_styles_with_variant(
         numberings,
         bullets,
         hwp3_variant: is_hwp3_variant,
+        kerning_measurement_context: None,
     }
 }
 

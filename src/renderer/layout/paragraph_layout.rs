@@ -4,6 +4,9 @@ use super::super::composer::{
     compose_paragraph, effective_text_for_metrics, ComposedLine, ComposedParagraph, ComposedTextRun,
 };
 use super::super::height_measurer::MeasuredTable;
+use super::super::kerning::{
+    ExactFontSlot, KerningLayoutSession, KerningRunMeasurementDisposition,
+};
 use super::super::page_layout::LayoutRect;
 use super::super::render_tree::*;
 use super::super::style_resolver::ResolvedStyleSet;
@@ -31,6 +34,77 @@ use crate::model::style::{Alignment, HeadType, LineSpacingType, Numbering, Under
 use crate::model::table::Table;
 
 const CAPTION_CELL_SENTINEL: usize = 65534;
+
+/// 최종 emitted text run에서만 exact pair positions를 게시한다.
+///
+/// `fallback_width`는 K0의 기존 반올림·field projection·줄-말미 공백 회수 계약을
+/// 그대로 보존한다. exact pair가 실제 적용된 경우에만 최종 positions의 끝값을
+/// bbox/다음 run advance로 사용한다.
+#[allow(clippy::too_many_arguments)]
+fn emitted_run_layout_positions(
+    session: &mut KerningLayoutSession<'_>,
+    slot: ExactFontSlot,
+    replay_text: &str,
+    style: &TextStyle,
+    fallback_width: f64,
+    trailing_space_count: usize,
+    eligible: bool,
+) -> (f64, Option<Vec<f64>>) {
+    if !eligible
+        || !style.kerning
+        || replay_text.is_empty()
+        || session.source_handle(slot).is_none()
+    {
+        return (fallback_width, None);
+    }
+
+    let mut base_positions = compute_char_positions(replay_text, style);
+    let scalar_count = replay_text.chars().count();
+    let trailing_space_count = trailing_space_count.min(scalar_count);
+    if trailing_space_count > 0 && style.extra_word_spacing != 0.0 {
+        let trailing_start = scalar_count - trailing_space_count;
+        for (index, position) in base_positions
+            .iter_mut()
+            .enumerate()
+            .skip(trailing_start + 1)
+        {
+            *position -= style.extra_word_spacing * (index - trailing_start) as f64;
+        }
+    }
+
+    let base_font_size = if style.font_size > 0.0 {
+        style.font_size
+    } else {
+        12.0
+    };
+    let effective_font_size_px = if style.superscript || style.subscript {
+        base_font_size * crate::renderer::SCRIPT_FONT_SCALE
+    } else {
+        base_font_size
+    };
+    let width_ratio = if style.ratio > 0.0 { style.ratio } else { 1.0 };
+    let measurement = session.measure_run(
+        slot,
+        replay_text,
+        true,
+        base_positions,
+        effective_font_size_px,
+        width_ratio,
+    );
+    if measurement.disposition != KerningRunMeasurementDisposition::PairAdjusted {
+        return (fallback_width, None);
+    }
+    let Some(positions) = measurement.pair_adjusted_positions else {
+        return (fallback_width, None);
+    };
+    let Some(width) = positions.last().copied() else {
+        return (fallback_width, None);
+    };
+    if !width.is_finite() || width < 0.0 {
+        return (fallback_width, None);
+    }
+    (width, Some(positions))
+}
 
 /// `RHWP_LAYOUT_DEBUG=1` 로 활성화되는 layout 디버그 로깅 여부.
 /// Phase 1 (#517) — 본질 정정 (#467/#491/#496) 시 결함 측정·재현 자동화에 사용.
@@ -1960,6 +2034,7 @@ impl LayoutEngine {
                                             .unwrap_or(0),
                                         baseline: run_bbox_h,
                                         field_marker: FieldMarkerType::None,
+                                        layout_positions: None,
                                         display_text: None,
                                     }),
                                     BoundingBox::new(line_run_x, current_y, run_width, run_bbox_h),
@@ -2075,6 +2150,7 @@ impl LayoutEngine {
                                         .unwrap_or(0),
                                     baseline: run_bbox_h,
                                     field_marker: FieldMarkerType::None,
+                                    layout_positions: None,
                                     display_text: None,
                                 }),
                                 BoundingBox::new(line_run_x, current_y, run_width, run_bbox_h),
@@ -2143,6 +2219,7 @@ impl LayoutEngine {
                                     .unwrap_or(0),
                                 baseline: remaining_bbox_h,
                                 field_marker: FieldMarkerType::None,
+                                layout_positions: None,
                                 display_text: None,
                             }),
                             BoundingBox::new(line_run_x, current_y, run_width, remaining_bbox_h),
@@ -2885,6 +2962,7 @@ impl LayoutEngine {
                     border_fill_id: 0,
                     baseline,
                     field_marker: FieldMarkerType::None,
+                    layout_positions: None,
                     display_text: None,
                 }),
                 BoundingBox::new(marker_x, marker_y, 0.0, line_height),
@@ -2916,6 +2994,9 @@ impl LayoutEngine {
     ) -> f64 {
         let mut y = y_start;
         let end = end_line.min(composed.lines.len());
+        // [#4968 R4D-1] 한 문단의 모든 최종 emitted run이 같은 registry
+        // generation과 per-face parse cache를 소비한다.
+        let mut kerning_layout_session = self.exact_font_layout_session();
 
         // 문단 스타일에서 여백 및 정렬 정보
         let para_style = styles.para_styles.get(composed.para_style_id as usize);
@@ -3200,6 +3281,7 @@ impl LayoutEngine {
                                     self.dpi,
                                 ),
                                 field_marker: FieldMarkerType::None,
+                                layout_positions: None,
                                 display_text: None,
                             }),
                             BoundingBox::new(
@@ -4328,6 +4410,7 @@ impl LayoutEngine {
                             border_fill_id: 0,
                             baseline,
                             field_marker: FieldMarkerType::None,
+                            layout_positions: None,
                             display_text: None,
                         }),
                         BoundingBox::new(x, y, num_width, line_height),
@@ -4375,6 +4458,7 @@ impl LayoutEngine {
                 &mut char_x_map,
                 para_topbottom_line_vpos_base,
                 col_area,
+                &mut kerning_layout_session,
                 RunEmitVars {
                     baseline,
                     raw_lh,
@@ -4449,6 +4533,7 @@ impl LayoutEngine {
                             border_fill_id: 0,
                             baseline,
                             field_marker: FieldMarkerType::ShapeMarker(*spos),
+                            layout_positions: None,
                             display_text: None,
                         }),
                         BoundingBox::new(x, y, mw, line_height),
@@ -4885,6 +4970,7 @@ impl LayoutEngine {
                     border_fill_id: 0,
                     baseline: default_height * 0.85,
                     field_marker: FieldMarkerType::None,
+                    layout_positions: None,
                     display_text: None,
                 }),
                 BoundingBox::new(col_area.x, y, col_area.width, default_height),
@@ -4928,6 +5014,7 @@ impl LayoutEngine {
         char_x_map: &mut Vec<(usize, f64)>,
         para_topbottom_line_vpos_base: Option<(i32, f64)>,
         col_area: &LayoutRect,
+        kerning_layout_session: &mut KerningLayoutSession<'_>,
         vars: RunEmitVars,
         st: RunEmitState,
     ) -> RunEmitState {
@@ -5034,6 +5121,7 @@ impl LayoutEngine {
                             border_fill_id: 0,
                             baseline,
                             field_marker: FieldMarkerType::ShapeMarker(*spos),
+                            layout_positions: None,
                             display_text: None,
                         }),
                         BoundingBox::new(x, y, mw, line_height),
@@ -5226,6 +5314,38 @@ impl LayoutEngine {
             // est 가 말미 공백을 제외했으므로 동일하게 회수한다.
             let full_width =
                 full_width - extra_word_sp * line_trailing_space_by_run[run_idx] as f64;
+            // 각주/TAC/탭은 최종 TextRun 경계를 추가로 만든다. whole-run pair를
+            // 먼저 적용하면 그 경계를 가로지르는 delta가 남으므로, sub-run
+            // producer가 연결될 때까지 이 특수 run은 원자적으로 K0로 닫는다.
+            let run_char_count_for_boundary = if run.char_overlap.is_some() {
+                let chars: Vec<char> = run.text.chars().collect();
+                crate::renderer::composer::char_overlap_advance_units(&chars)
+            } else {
+                run.text.chars().count()
+            };
+            let run_char_end_for_boundary = run_char_pos + run_char_count_for_boundary;
+            let has_tac_boundary = tac_offsets_px.iter().any(|(position, _, _)| {
+                *position >= run_char_pos && *position <= run_char_end_for_boundary
+            });
+            let has_note_boundary = fn_positions.iter().any(|(position, _, _)| {
+                *position >= run_char_pos && *position <= run_char_end_for_boundary
+            });
+            let exact_replay_eligible = run.char_overlap.is_none()
+                && !run
+                    .text
+                    .chars()
+                    .any(|character| matches!(character, '\t' | '\n' | '\r'))
+                && !has_tac_boundary
+                && !has_note_boundary;
+            let (full_width, layout_positions) = emitted_run_layout_positions(
+                kerning_layout_session,
+                ExactFontSlot::new(run.char_style_id, run.lang_index),
+                effective_text_for_metrics(run),
+                &text_style,
+                full_width,
+                line_trailing_space_by_run[run_idx],
+                exact_replay_eligible,
+            );
             // 탭 리더 계산: 탭이 포함된 run에서 채움 기호 정보 추출
             // inline_tabs를 일시 제거하여 tab_stops 기반 위치 계산과 일관되게 함
             if has_tabs && run.text.contains('\t') {
@@ -5333,8 +5453,20 @@ impl LayoutEngine {
 
                 // 글자 테두리/배경: bbox 계산용 run_x, run_w
                 let (run_x, run_w) = if !leading_spaces.is_empty() && !content.is_empty() {
-                    let sw = estimate_text_width(&leading_spaces, &text_style);
-                    (x + sw, estimate_text_width(content, &text_style))
+                    let leading_count = leading_spaces.chars().count();
+                    if let Some(positions) = layout_positions.as_deref() {
+                        let leading_end = positions.get(leading_count).copied();
+                        let run_end = positions.last().copied();
+                        if let (Some(leading_end), Some(run_end)) = (leading_end, run_end) {
+                            (x + leading_end, run_end - leading_end)
+                        } else {
+                            let sw = estimate_text_width(&leading_spaces, &text_style);
+                            (x + sw, estimate_text_width(content, &text_style))
+                        }
+                    } else {
+                        let sw = estimate_text_width(&leading_spaces, &text_style);
+                        (x + sw, estimate_text_width(content, &text_style))
+                    }
                 } else {
                     (x, full_width)
                 };
@@ -5386,8 +5518,25 @@ impl LayoutEngine {
                                 continue;
                             }
                             let hl_color = rt.tag & 0x00FFFFFF;
-                            let hl_x = run_x + (overlap_start - run_char_pos) as f64 * char_w;
-                            let hl_w = (overlap_end - overlap_start) as f64 * char_w;
+                            let relative_start = overlap_start - run_char_pos;
+                            let relative_end = overlap_end - run_char_pos;
+                            let exact_range = layout_positions.as_deref().and_then(|positions| {
+                                if positions.len() != run.text.chars().count().saturating_add(1) {
+                                    return None;
+                                }
+                                Some((
+                                    *positions.get(relative_start)?,
+                                    *positions.get(relative_end)?,
+                                ))
+                            });
+                            let (hl_x, hl_w) = if let Some((start, end)) = exact_range {
+                                (x + start, end - start)
+                            } else {
+                                (
+                                    run_x + relative_start as f64 * char_w,
+                                    (relative_end - relative_start) as f64 * char_w,
+                                )
+                            };
                             let rect_id = tree.next_id();
                             let rect_node = RenderNode::new(
                                 rect_id,
@@ -5409,6 +5558,7 @@ impl LayoutEngine {
                 }
 
                 let mut fn_split_extra = 0.0f64; // 각주 마커 삽입으로 인한 추가 폭
+                let mut emitted_text_width = full_width;
                 {
                     // run 내 각주 위치 수집 (run 내 상대 위치, 각주 번호, fn_positions 인덱스, control 인덱스)
                     // 마지막 run에서는 run_char_end 위치의 각주도 포함 (문단 끝 각주)
@@ -5464,6 +5614,7 @@ impl LayoutEngine {
                                 border_fill_id: run_border_fill_id,
                                 baseline,
                                 field_marker: FieldMarkerType::None,
+                                layout_positions,
                             }),
                             BoundingBox::new(run_x, y, full_width, line_height),
                         );
@@ -5474,6 +5625,7 @@ impl LayoutEngine {
                         let mut seg_start = 0usize; // run 내 상대 문자 인덱스
                         let mut sub_x = x;
                         let mut sub_char_offset = char_offset;
+                        emitted_text_width = 0.0;
 
                         for &(rel_pos, fnum, fni, ctrl_idx) in &run_fn_markers {
                             fn_marker_inserted[fni] = true;
@@ -5482,6 +5634,18 @@ impl LayoutEngine {
                                 let seg_text: String =
                                     run_chars[seg_start..rel_pos].iter().collect();
                                 let seg_w = estimate_text_width(&seg_text, &text_style);
+                                let (seg_w, seg_layout_positions) = emitted_run_layout_positions(
+                                    kerning_layout_session,
+                                    ExactFontSlot::new(run.char_style_id, run.lang_index),
+                                    &seg_text,
+                                    &text_style,
+                                    seg_w,
+                                    0,
+                                    run.char_overlap.is_none()
+                                        && !seg_text.chars().any(|character| {
+                                            matches!(character, '\t' | '\n' | '\r')
+                                        }),
+                                );
                                 let seg_id = tree.next_id();
                                 let seg_node = RenderNode::new(
                                     seg_id,
@@ -5502,12 +5666,14 @@ impl LayoutEngine {
                                         border_fill_id: run_border_fill_id,
                                         baseline,
                                         field_marker: FieldMarkerType::None,
+                                        layout_positions: seg_layout_positions,
                                         display_text: None,
                                     }),
                                     BoundingBox::new(sub_x, y, seg_w, line_height),
                                 );
                                 line_node.children.push(seg_node);
                                 sub_x += seg_w;
+                                emitted_text_width += seg_w;
                                 sub_char_offset += rel_pos - seg_start;
                             }
                             // FootnoteMarker 노드
@@ -5548,6 +5714,20 @@ impl LayoutEngine {
                         if seg_start < run_chars.len() {
                             let seg_text: String = run_chars[seg_start..].iter().collect();
                             let seg_w = estimate_text_width(&seg_text, &text_style);
+                            let trailing_space_count = line_trailing_space_by_run[run_idx]
+                                .min(run_chars.len().saturating_sub(seg_start));
+                            let (seg_w, seg_layout_positions) = emitted_run_layout_positions(
+                                kerning_layout_session,
+                                ExactFontSlot::new(run.char_style_id, run.lang_index),
+                                &seg_text,
+                                &text_style,
+                                seg_w - extra_word_sp * trailing_space_count as f64,
+                                trailing_space_count,
+                                run.char_overlap.is_none()
+                                    && !seg_text
+                                        .chars()
+                                        .any(|character| matches!(character, '\t' | '\n' | '\r')),
+                            );
                             let seg_id = tree.next_id();
                             let seg_node = RenderNode::new(
                                 seg_id,
@@ -5568,11 +5748,13 @@ impl LayoutEngine {
                                     border_fill_id: run_border_fill_id,
                                     baseline,
                                     field_marker: FieldMarkerType::None,
+                                    layout_positions: seg_layout_positions,
                                     display_text: None,
                                 }),
                                 BoundingBox::new(sub_x, y, seg_w, line_height),
                             );
                             line_node.children.push(seg_node);
+                            emitted_text_width += seg_w;
                         }
                     }
                 }
@@ -5602,7 +5784,7 @@ impl LayoutEngine {
                     }
                 }
 
-                x += full_width + fn_split_extra;
+                x += emitted_text_width + fn_split_extra;
             } else {
                 // tac 있음: 분기점마다 하위 텍스트 런 생성 (이미지는 layout.rs에서 별도 렌더링)
                 let run_chars: Vec<char> = run.text.chars().collect();
@@ -5637,6 +5819,18 @@ impl LayoutEngine {
                             );
                         }
                         let seg_w = estimate_text_width(&seg_text, &seg_style);
+                        let (seg_w, seg_layout_positions) = emitted_run_layout_positions(
+                            kerning_layout_session,
+                            ExactFontSlot::new(run.char_style_id, run.lang_index),
+                            &seg_text,
+                            &seg_style,
+                            seg_w,
+                            0,
+                            run.char_overlap.is_none()
+                                && !seg_text
+                                    .chars()
+                                    .any(|character| matches!(character, '\t' | '\n' | '\r')),
+                        );
                         let seg_char_count = tac_rel - seg_start;
                         {
                             let sub_run_id = tree.next_id();
@@ -5659,6 +5853,7 @@ impl LayoutEngine {
                                     border_fill_id: run_border_fill_id,
                                     baseline,
                                     field_marker: FieldMarkerType::None,
+                                    layout_positions: seg_layout_positions,
                                     display_text: None,
                                 }),
                                 BoundingBox::new(x, y, seg_w, line_height),
@@ -6037,6 +6232,20 @@ impl LayoutEngine {
                         );
                     }
                     let seg_w = estimate_text_width(&remaining, &seg_style);
+                    let trailing_space_count =
+                        line_trailing_space_by_run[run_idx].min(remaining.chars().count());
+                    let (seg_w, seg_layout_positions) = emitted_run_layout_positions(
+                        kerning_layout_session,
+                        ExactFontSlot::new(run.char_style_id, run.lang_index),
+                        &remaining,
+                        &seg_style,
+                        seg_w - extra_word_sp * trailing_space_count as f64,
+                        trailing_space_count,
+                        run.char_overlap.is_none()
+                            && !remaining
+                                .chars()
+                                .any(|character| matches!(character, '\t' | '\n' | '\r')),
+                    );
                     {
                         let sub_run_id = tree.next_id();
                         let sub_run_node = RenderNode::new(
@@ -6058,6 +6267,7 @@ impl LayoutEngine {
                                 border_fill_id: run_border_fill_id,
                                 baseline,
                                 field_marker: FieldMarkerType::None,
+                                layout_positions: seg_layout_positions,
                                 display_text: None,
                             }),
                             BoundingBox::new(x, y, seg_w, line_height),
@@ -6089,6 +6299,7 @@ impl LayoutEngine {
                             border_fill_id: 0,
                             baseline,
                             field_marker: FieldMarkerType::None,
+                            layout_positions: None,
                             display_text: None,
                         }),
                         BoundingBox::new(x, y, 0.0, line_height),
@@ -6259,6 +6470,7 @@ impl LayoutEngine {
                             border_fill_id: 0,
                             baseline,
                             field_marker: FieldMarkerType::FieldBegin,
+                            layout_positions: None,
                             display_text: None,
                         }),
                         BoundingBox::new(marker_x, y, marker_w, line_height),
@@ -6294,6 +6506,7 @@ impl LayoutEngine {
                             border_fill_id: 0,
                             baseline,
                             field_marker: FieldMarkerType::None,
+                            layout_positions: None,
                             display_text: None,
                         }),
                         BoundingBox::new(anchor_x, y, 0.0, line_height),
@@ -6353,6 +6566,7 @@ impl LayoutEngine {
                                     border_fill_id: 0,
                                     baseline,
                                     field_marker: FieldMarkerType::None,
+                                    layout_positions: None,
                                     display_text: None,
                                 }),
                                 BoundingBox::new(
@@ -6386,6 +6600,7 @@ impl LayoutEngine {
                                 border_fill_id: 0,
                                 baseline,
                                 field_marker: FieldMarkerType::None,
+                                layout_positions: None,
                                 display_text: None,
                             }),
                             BoundingBox::new(guide_x, y, guide_width, line_height),
@@ -6431,6 +6646,7 @@ impl LayoutEngine {
                             border_fill_id: 0,
                             baseline,
                             field_marker: FieldMarkerType::FieldEnd,
+                            layout_positions: None,
                             display_text: None,
                         }),
                         BoundingBox::new(marker_x, y, marker_w, line_height),
@@ -6483,6 +6699,7 @@ impl LayoutEngine {
                                 border_fill_id: 0,
                                 baseline,
                                 field_marker: FieldMarkerType::None,
+                                layout_positions: None,
                                 display_text: None,
                             }),
                             BoundingBox::new(marker_x, y, marker_w, line_height),
@@ -7033,6 +7250,7 @@ impl LayoutEngine {
                 border_fill_id: 0,
                 baseline: vars.baseline,
                 field_marker: FieldMarkerType::None,
+                layout_positions: None,
                 display_text: None,
             }),
             BoundingBox::new(
@@ -7108,6 +7326,7 @@ impl LayoutEngine {
                         border_fill_id: 0,
                         baseline: line_height * 0.85,
                         field_marker: FieldMarkerType::None,
+                        layout_positions: None,
                         display_text: None,
                     }),
                     BoundingBox::new(col_area.x, y_clamped, col_area.width, line_height),
@@ -7151,6 +7370,7 @@ impl LayoutEngine {
                         border_fill_id: 0,
                         baseline: default_height * 0.8,
                         field_marker: FieldMarkerType::None,
+                        layout_positions: None,
                         display_text: None,
                     }),
                     BoundingBox::new(col_area.x, y, col_area.width, default_height),

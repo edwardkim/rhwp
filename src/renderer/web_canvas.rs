@@ -87,7 +87,7 @@ use super::composer::{
 };
 use super::form_caption::display_form_caption;
 #[cfg(target_arch = "wasm32")]
-use super::layout::{compute_char_positions, forces_halfwidth_cjk_quote, split_into_clusters};
+use super::layout::{forces_halfwidth_cjk_quote, split_into_clusters};
 use crate::model::control::FormType;
 
 // 이미지 캐시: data 해시 → HtmlImageElement
@@ -839,11 +839,12 @@ impl WebCanvasRenderer {
             let _ = self.ctx.fill_text(run.display_or_text(), 0.0, 0.0);
             self.ctx.restore();
         } else {
-            self.draw_text(
+            self.draw_text_positioned(
                 run.display_or_text(),
                 bbox.x,
                 bbox.y + run.baseline,
                 &run.style,
+                run.validated_layout_positions_for(run.display_or_text()),
             );
         }
         if self.show_paragraph_marks || self.show_control_codes {
@@ -857,7 +858,7 @@ impl WebCanvasRenderer {
                 12.0
             };
             if !run.text.is_empty() && !is_marker {
-                let char_positions = compute_char_positions(&run.text, &run.style);
+                let char_positions = run.replay_positions_for(&run.text);
                 let mark_font_size = font_size * 0.5;
                 self.ctx.set_fill_style_str("#0066FF");
                 self.ctx
@@ -2276,6 +2277,17 @@ impl Renderer for WebCanvasRenderer {
     }
 
     fn draw_text(&mut self, text: &str, x: f64, y: f64, style: &TextStyle) {
+        self.draw_text_positioned(text, x, y, style, None);
+    }
+
+    fn draw_text_positioned(
+        &mut self,
+        text: &str,
+        x: f64,
+        y: f64,
+        style: &TextStyle,
+        layout_positions: Option<&[f64]>,
+    ) {
         // [Task #1067] inline 컨트롤 placeholder (U+FFFC OBJECT REPLACEMENT CHARACTER) skip.
         // svg.rs::draw_text 와 동일 정합.
         let text: String = text.chars().filter(|&c| c != '\u{FFFC}').collect();
@@ -2319,7 +2331,7 @@ impl Renderer for WebCanvasRenderer {
         let clusters = split_into_clusters(text);
 
         // 레이아웃 메트릭 기준으로 글자 위치 계산 (줄바꿈 결정과 동일한 메트릭 사용)
-        let char_positions = compute_char_positions(text, style);
+        let char_positions = super::replay_positions_or_compute(text, style, layout_positions);
 
         // 형광펜 배경 (CharShape.shade_color 기반 — 편집기에서 적용한 형광펜)
         if crate::model::color::char_shade(style.shade_color).is_some() {

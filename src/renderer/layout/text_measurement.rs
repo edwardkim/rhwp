@@ -1,6 +1,7 @@
 //! 텍스트 폭 측정, 문자 클러스터 분할, CJK 판별 관련 함수
 
 use super::super::font_metrics_data;
+use super::super::kerning::{ExactFontSourceHandle, KerningRunMeasurement, KerningSourceSession};
 use super::super::style_resolver::ResolvedStyleSet;
 use super::super::{hwpunit_to_px, TabLeaderInfo, TabStop, TextStyle};
 use crate::model::style::UnderlineType;
@@ -774,6 +775,7 @@ pub(crate) fn resolved_to_text_style(
             italic: cs.italic,
             underline: cs.underline,
             strikethrough: cs.strikethrough,
+            kerning: cs.kerning,
             letter_spacing: cs.letter_spacing_for_lang(lang_index),
             ratio: cs.ratio_for_lang(lang_index),
             default_tab_width: 0.0,
@@ -1117,6 +1119,18 @@ pub(crate) fn char_width_decision<'a>(
     {
         (w, "areaDotFallback", None, "notApplicable")
     } else {
+        // [#6172] 사각 안 숫자 PUA(U+F02B0~F02C4) 는 폰트 글리프가 아니라 렌더러가
+        // 사각형+숫자로 합성해 그린다(#6127 / PR #6137, `boxed_pua_number`).
+        // 그러면 전진폭도 폰트의 (있을 수도 없을 수도 있는) PUA 글리프가 아니라 **합성물이
+        // 닮은 `□`(U+25A1) 의 전진폭**으로 재야, 같은 줄에 이어지는 진짜 `□` 와 상자
+        // 간격이 균일해진다. 종전에는 이 대역이 아래 어느 분기에도 안 걸려 마지막
+        // 폴백(0.5em)으로 떨어졌고, 상자 폭(0.72em)보다 전진폭이 좁아 상자끼리
+        // 4.4pt 씩 겹쳤다 — 2599643 1쪽 "󰊲󰊰󰊰□-□□□" (20pt 에서 10.00pt vs □ 20.04pt).
+        let c = if crate::renderer::boxed_pua_number(c).is_some() {
+            '\u{25A1}'
+        } else {
+            c
+        };
         let embedded = measure_char_width_embedded_decision(
             &style.font_family,
             style.bold,
@@ -1280,6 +1294,30 @@ pub(crate) fn hancom_regenerated_space_width(style: &TextStyle) -> Option<f64> {
 /// run 내부 상대 좌표이며, 절대 좌표는 run.bbox.x + charX[i]로 계산한다.
 pub(crate) fn compute_char_positions(text: &str, style: &TextStyle) -> Vec<f64> {
     default_measurer().compute_char_positions(text, style)
+}
+
+/// 기존 문자 경계값과 exact-font pair positioning을 한 번만 계산하는 공통 진입점.
+///
+/// R4C의 line/token 소비자와 R4D의 backend replay가 같은 owned measurement를
+/// 공유하기 위한 경계다. K0와 exact source 부재에서는 기존
+/// [`compute_char_positions`] 결과를 그대로 보존한다.
+pub(crate) fn compute_kerning_run_measurement(
+    text: &str,
+    style: &TextStyle,
+    source_handle: Option<&ExactFontSourceHandle>,
+    session: &mut KerningSourceSession<'_>,
+) -> KerningRunMeasurement {
+    let (effective_font_size_px, width_ratio, _) = style_params(style);
+    let base_positions = compute_char_positions(text, style);
+    super::super::kerning::compute_kerning_run_measurement(
+        text,
+        style.kerning,
+        base_positions,
+        effective_font_size_px,
+        width_ratio,
+        source_handle,
+        session,
+    )
 }
 
 /// 실제 글자 위치 계산과 같은 경로를 사용해 관측 가능한 폭 결정을 반환한다.

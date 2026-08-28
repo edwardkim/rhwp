@@ -84,7 +84,7 @@ enum Exempt {
 
 /// 무효화하지 않는 `pub fn (&mut self)` 전수 목록 — (파일, 함수, 분류, 근거).
 ///
-/// 파일 경로는 [`SCAN_ROOT`] 기준 상대 경로다. `devel` 기준 42건(2026-07-23 동결).
+/// 파일 경로는 [`SCAN_ROOT`] 기준 상대 경로다. `devel` 기준 43건(2026-08-27 동결).
 const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
     // ── 세션/캐시 상태만 변경 (문서 IR 비변경) ──────────────────────────────
     (
@@ -178,6 +178,12 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
         "end_batch_native",
         Exempt::SessionState,
         "`batch_mode` 해제 + 재페이지네이션 + 이벤트 로그 직렬화.",
+    ),
+    (
+        "commands/document.rs",
+        "register_exact_font_source_native",
+        Exempt::SessionState,
+        "[#4968] exact font source registry·kerning measurement context·layout caches만 갱신. 문서 IR·직렬화 대상 무변경.",
     ),
     (
         "commands/document.rs",
