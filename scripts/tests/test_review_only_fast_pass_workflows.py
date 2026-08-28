@@ -143,7 +143,7 @@ class ReviewOnlyFastPassWorkflowTests(unittest.TestCase):
                     workflow.index("github.rest.pulls.listCommits"),
                 )
 
-    def test_render_diff_allows_prior_base_only_for_direct_source_parent(self) -> None:
+    def test_render_diff_allows_prior_base_only_for_verified_merge_paths(self) -> None:
         workflow = WORKFLOWS["render-diff"].read_text(encoding="utf-8")
         self.assertIn(
             "async function renderDiffResult(candidateSha, pr, allowPriorPrBase = false)",
@@ -151,6 +151,10 @@ class ReviewOnlyFastPassWorkflowTests(unittest.TestCase):
         )
         self.assertIn("allowPriorPrBase\n                  ? step.name.startsWith(identityPrefix)", workflow)
         self.assertIn("await renderDiffResult(sourceParent.sha, pr, true)", workflow)
+        self.assertIn(
+            "await renderDiffResult(candidateSha, pr, Boolean(baseMergeBridge))",
+            workflow,
+        )
 
     def test_render_diff_trailing_bridge_reuses_prior_base_identity(self) -> None:
         base_sha = "b" * 40

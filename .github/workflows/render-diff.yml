@@ -441,7 +441,7 @@ jobs:
             }
 
             for (const candidateSha of reviewOnlyCandidates) {
-              const result = await renderDiffResult(candidateSha, pr);
+              const result = await renderDiffResult(candidateSha, pr, Boolean(baseMergeBridge));
               if (result.state === 'green') {
                 if (baseMergeBridge) {
                   setPendingBaseMergeResult(
