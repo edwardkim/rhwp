@@ -48,7 +48,7 @@ function classificationFor(files) {
 
 function policyInput(overrides = {}) {
   const files = overrides.files || [
-    { filename: 'rhwp-studio/src/command/shortcut-map.ts', status: 'modified' },
+    { filename: 'rhwp-studio/tests/shortcut-map.test.ts', status: 'modified' },
   ];
   return {
     repository: 'edwardkim/rhwp',

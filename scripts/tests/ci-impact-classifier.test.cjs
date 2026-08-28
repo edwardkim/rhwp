@@ -299,10 +299,27 @@ test('Studio package configuration and broad runtime sources remain render-impac
   }
 });
 
-test('known command sources and non-render tests stay on the unit lane', () => {
+test('command-layer sources require the package lane for the undo depth gate', () => {
+  // [#6330] undo depth 게이트(#5769)는 frontend-package-gates 에서만 돈다 —
+  // 스냅샷 진입점이 밀집한 command 층이 unit 으로 분류되면 게이트가 skip 된다.
   for (const filename of [
     'rhwp-studio/src/command/shortcut-map.ts',
+    'rhwp-studio/src/command/commands/table.ts',
+    'rhwp-studio/src/command/commands/page.ts',
     'rhwp-studio/src/engine/command.ts',
+  ]) {
+    const result = classifyChanges({
+      eventName: 'pull_request',
+      files: [{ filename, status: 'modified' }],
+    });
+    assert.equal(result.frontend_mode, 'package', filename);
+    assert.equal(result.render_required, 'false', filename);
+    assert.equal(result.reason, 'classified:studio-undo-package', filename);
+  }
+});
+
+test('studio test-only changes stay on the unit lane', () => {
+  for (const filename of [
     'rhwp-studio/tests/shortcut-map.test.ts',
     'rhwp-studio/tests/canvaskit-readiness.test.ts',
     'rhwp-studio/tests/render-page.test.ts',
