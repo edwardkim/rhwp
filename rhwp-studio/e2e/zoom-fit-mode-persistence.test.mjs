@@ -232,6 +232,23 @@ runTest('쪽/폭 맞춤 저장과 복원', async ({ page }) => {
       && multipleFit.arrangement.rows === 2,
     `TC6: 여러 쪽 2×2 배치가 저장됨 (${JSON.stringify(multipleFit.arrangement)})`,
   );
+  assert(multipleFit.fitMode === 'fitPage',
+    `TC6: 여러 쪽 전체 맞춤 규칙이 저장됨 (${multipleFit.fitMode})`);
   assert(Math.abs(multipleFit.zoom - fitPageZoom(multipleFit)) < 0.005,
     `TC6: 여러 쪽 2×2 전체 블록을 쪽 맞춤 (${multipleFit.zoom.toFixed(3)} vs ${fitPageZoom(multipleFit).toFixed(3)})`);
+
+  setTestCase('TC6 여러 쪽 2×2 새 세션 복원');
+  await startFresh(page);
+  await openDocument(page, DOC_B);
+  const restoredMultiple = await page.evaluate(readZoomState);
+  assert(
+    restoredMultiple.arrangement?.kind === 'multiple'
+      && restoredMultiple.arrangement.columns === 2
+      && restoredMultiple.arrangement.rows === 2,
+    `TC6: 새 세션에서 여러 쪽 2×2 배치가 복원됨 (${JSON.stringify(restoredMultiple.arrangement)})`,
+  );
+  assert(restoredMultiple.fitMode === 'fitPage',
+    `TC6: 새 세션에서 여러 쪽 맞춤 규칙이 복원됨 (${restoredMultiple.fitMode})`);
+  assert(Math.abs(restoredMultiple.zoom - fitPageZoom(restoredMultiple)) < 0.005,
+    `TC6: 새 문서 쪽 크기로 2×2 전체 맞춤을 다시 계산 (${restoredMultiple.zoom.toFixed(3)} vs ${fitPageZoom(restoredMultiple).toFixed(3)})`);
 });

@@ -18,7 +18,10 @@ import type { PageArrangement } from '../../view/page-arrangement';
 import { CENTER_ZOOM_ANCHOR } from '../../view/zoom-anchor';
 import { applyToolboxVisibility } from '../../view/toolbox-visibility';
 import { ZoomDialog } from '../../ui/zoom-dialog';
-import { resolveZoomDialogZoom, zoomFitModeFromChoice } from '../../view/zoom-dialog-state';
+import {
+  resolveZoomDialogFitMode,
+  resolveZoomDialogZoom,
+} from '../../view/zoom-dialog-state';
 
 const PX_TO_MM = 25.4 / 96;
 const PAGE_GAP = 10;
@@ -270,7 +273,7 @@ export const viewCommands: CommandDef[] = [
             arrangement: view.pageArrangement,
             pageMovement: view.pageMovement,
           });
-          vm.setZoom(zoom, CENTER_ZOOM_ANCHOR, zoomFitModeFromChoice(value.zoomChoice));
+          vm.setZoom(zoom, CENTER_ZOOM_ANCHOR, resolveZoomDialogFitMode(value));
           services.eventBus.emit('command-state-changed');
         },
       }).show();

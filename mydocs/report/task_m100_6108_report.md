@@ -3,7 +3,7 @@
 - **이슈**: [#6108](https://github.com/edwardkim/rhwp/issues/6108)
 - **브랜치**: `codex/issue-6108-zoom-fit`
 - **최초 작업 기준**: `upstream/devel@2166f4065`
-- **최종 통합 기준**: `upstream/devel@1fe0d1480`
+- **최종 통합 기준**: `upstream/devel@94ff48d2b8`
 - **보고일**: 2026-08-28 KST
 - **절차 상태**: 로컬 구현·최신 devel 통합·재검증 완료, native stack 게시 준비
 
@@ -17,13 +17,15 @@
 - 보기 명령·상태 표시줄·확대/축소 대화상자·저장된 맞춤 복원이 같은 resolver를 사용한다.
 - 여러 쪽에서는 적용되지 않는 고정·폭·쪽·사용자 정의 비율 선택을 비활성화하고, 지정 배열 전체 맞춤을
   강제한다.
-- 소비되지 않던 쪽 배치 이벤트·CanvasView wrapper·슬라이더 class toggle을 제거했다.
+- 소비되지 않던 쪽 배치 이벤트·CanvasView wrapper·슬라이더 class toggle과 남은 HTML literal을 제거했다.
+- 여러 쪽은 비활성 비율 선택값과 무관하게 `fitPage` 규칙을 저장해 새 세션·다른 쪽 크기에서도 지정
+  배열 전체 맞춤을 다시 계산한다.
 
 ## 단계별 변경
 
 ### Stage 1 — 순수 계산 계약
 
-- commit: `9b8cc77d0 fix(studio): 쪽 배치별 맞춤 계산을 단일화한다`
+- commit: `d5a4cfc77 fix(studio): 쪽 배치별 맞춤 계산을 단일화한다`
 - 쪽 배치별 columns·rows, frame padding, 내부 page gap, 10~500% clamp를
   `zoom-fit.ts`의 공통 계산으로 고정했다.
 - 여러 쪽 전용 중복 계산을 제거하고 대화상자 상태 계산도 공통 resolver로 위임했다.
@@ -31,7 +33,7 @@
 
 ### Stage 2 — 진입점 단일화와 무사용 경로 정리
 
-- commit: `1c75c49ca refactor(studio): 맞춤 배율 진입점을 단일화한다`
+- commit: `ef07ae664 refactor(studio): 맞춤 배율 진입점을 단일화한다`
 - `view.ts`의 `getZoomFitMetrics()`를 메뉴·상태 표시줄·대화상자가 공유한다.
 - 대화상자 확인 시점에 현재 metrics를 다시 읽어 최종 배율을 계산한다.
 - 여러 쪽 비율 입력 잠금과 legacy 이벤트·wrapper·class toggle 정리를 완료했다.
@@ -47,7 +49,9 @@
 - 여러 쪽 2×2 선택 시 모든 비율 radio·사용자 정의 입력 잠금
 - 여러 쪽의 가로·세로 쪽 수 입력 활성화와 2×2 전체 블록 맞춤
 
-Chrome E2E 28개 assertion이 모두 통과했다. 측정값은 다음과 같다.
+PR review에서 여러 쪽의 계산 결과는 맞지만 저장 규칙이 `none`이 될 수 있는 결함을 확인했다.
+`resolveZoomDialogFitMode()`로 여러 쪽의 `fitPage` 저장 계약을 고정하고 새 세션 복원·다른 쪽 크기 재계산을
+추가했다. Chrome E2E 32개 assertion이 모두 통과했다. 측정값은 다음과 같다.
 
 | 배치·모드 | 실제 zoom | 기대 zoom | 결과 |
 | --- | ---: | ---: | --- |
@@ -56,6 +60,7 @@ Chrome E2E 28개 assertion이 모두 통과했다. 측정값은 다음과 같다
 | 두 쪽 폭 맞춤 | 0.762 | 0.762 | 통과 |
 | 맞쪽 폭 맞춤 | 0.762 | 0.762 | 통과 |
 | 여러 쪽 2×2 전체 맞춤 | 0.315 | 0.315 | 통과 |
+| 여러 쪽 2×2 새 문서 재계산 | 0.446 | 0.446 | 통과 |
 
 로컬 HTML 보고서는 `output/e2e/zoom-fit-mode-persistence-report.html`, 화면은
 `rhwp-studio/e2e/screenshots/issue-6108-*.png`에 생성했다. 두 경로는 재현 가능한 검증 산출물이며
@@ -66,9 +71,9 @@ gitignore 대상으로 PR에는 포함하지 않는다. 한 쪽·두 쪽·맞쪽
 
 | 명령 | 결과 |
 | --- | --- |
-| `npm test` (`rhwp-studio`) | 1225 tests, 1224 pass, 1 skip, 0 fail |
+| `npm test` (`rhwp-studio`) | 1226 tests, 1225 pass, 1 skip, 0 fail |
 | `npm run build` (`rhwp-studio`) | TypeScript + Vite production build 통과, 238 modules |
-| `npm run e2e:zoom-fit-mode` (`VITE_URL=http://127.0.0.1:7728`) | 28/28 assertion 통과 |
+| `npm run e2e:zoom-fit-mode` (격리 Vite 서버) | 32/32 assertion 통과 |
 | `node --check rhwp-studio/e2e/zoom-fit-mode-persistence.test.mjs` | 통과 |
 | `cargo fmt --all` | 파생 regression suite 준비 후 통과 |
 | `cargo fmt --all -- --check` | 통과 |
@@ -88,9 +93,10 @@ Cargo registry는 변경하지 않았다.
 - Stage 3 결과 승인 뒤 4개 커밋을 최신 `upstream/devel@1a43a507c` 위로 rebase했다. 충돌은 양쪽에서
   생성한 `mydocs/orders/20260828.md` 한 파일뿐이었고, devel의 CI·#4969 기록과 #6108·#6109 행을 모두
   보존했다.
-- 통합된 exact head `4912c9024`에서 Studio 전체 test·production build·Chrome E2E 28/28을 다시 통과했다.
+- 통합된 후보에서 Studio 전체 test·production build·Chrome E2E를 다시 통과했다.
 - 게시 승인 뒤 공식 `gh-stack`에 기존 #6108·#6109 브랜치를 등록하고 최신
   `upstream/devel@1fe0d1480` 위로 cascading rebase했다. 정확한 #6108 하단 head `c6d9063bc`에서
   Studio 1,225건(1,224 pass·1 skip), production build 238 modules, Chrome E2E 28/28을 재통과했다.
 - #6108을 bottom, #6109를 top으로 하는 native stacked PR의 로컬 분기 조건을 충족했다.
-- remote push·PR 생성은 아직 수행하지 않았다.
+- native stack은 PR #6289(하단)·#6290(상단)으로 게시했다. PR review 보정 뒤 최신 stack head를 다시
+  제출하며 GitHub Actions 완료 확인은 작업지시자에게 인계한다.

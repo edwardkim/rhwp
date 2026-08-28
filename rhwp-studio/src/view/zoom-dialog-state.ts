@@ -68,6 +68,15 @@ export function zoomFitModeFromChoice(choice: ZoomChoice): ZoomFitMode {
   return choice.kind === 'fitWidth' || choice.kind === 'fitPage' ? choice.kind : 'none';
 }
 
+/** 여러 쪽은 비율 선택과 무관하게 지정 배열 전체의 쪽 맞춤 규칙을 저장한다. */
+export function resolveZoomDialogFitMode(
+  input: Pick<ZoomDialogValue, 'zoomChoice' | 'arrangement'>,
+): ZoomFitMode {
+  return normalizePageArrangement(input.arrangement).kind === 'multiple'
+    ? 'fitPage'
+    : zoomFitModeFromChoice(input.zoomChoice);
+}
+
 /** 대화상자 선택을 수치 배율로 바꾼다. 여러 쪽은 지정한 가로×세로 맞춤을 우선한다. */
 export function resolveZoomDialogZoom(input: ResolveZoomDialogInput): number {
   const arrangement = normalizePageArrangement(input.arrangement);

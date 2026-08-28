@@ -173,6 +173,7 @@ test('통합 배율 버튼은 좌우 확대 아이콘과 같은 18px SVG 돋보�
 });
 
 test('배율 슬라이더 손잡이와 100% 눈금은 같은 12px 크기이며 눈금이 뒤에 놓인다', () => {
+  const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
   const css = readFileSync(
     new URL('../src/styles/status-bar.css', import.meta.url),
     'utf8',
@@ -216,5 +217,6 @@ test('배율 슬라이더 손잡이와 100% 눈금은 같은 12px 크기이며 �
   assert.match(firefoxTrack, /height:\s*var\(--stb-zoom-track-size\)/);
   assert.match(firefoxTrack, /background:\s*var\(--ui-border-strong\)/);
   assert.doesNotMatch(css, /\.stb-zoom-range-wrap\.is-neutral[\s\S]*?visibility:\s*hidden/);
+  assert.doesNotMatch(html, /stb-zoom-range-wrap is-neutral/);
   assert.doesNotMatch(main, /classList\.toggle\('is-neutral'/);
 });

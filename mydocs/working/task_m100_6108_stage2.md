@@ -2,7 +2,7 @@
 
 - **이슈**: [#6108](https://github.com/edwardkim/rhwp/issues/6108)
 - **브랜치**: `codex/issue-6108-zoom-fit`
-- **선행 Stage**: `9b8cc77d0` — 쪽 배치별 맞춤 계산 계약 단일화
+- **선행 Stage**: `d5a4cfc77` — 쪽 배치별 맞춤 계산 계약 단일화
 - **Stage 범위**: 명령·대화상자 진입점, 여러 쪽 비율 UI, 무사용 보기 경로
 
 ## 구현 결과
@@ -75,3 +75,6 @@ tests 42, pass 42, fail 0
 3. 필수 format·diff gate와 최종 보고서 작성
 
 #6109의 사용자 입력 오류 표시와 원자 view-settings transaction은 분리 상태를 유지한다.
+
+PR review에서 HTML에 남은 `is-neutral` literal과 여러 쪽 맞춤 규칙 저장 누락을 확인해 Stage 3에서
+추가 보정했다.

@@ -7,7 +7,10 @@ import {
   resolveZoomFitZoom,
   type ZoomFitMode,
 } from '../src/view/zoom-fit.ts';
-import { zoomFitModeFromChoice } from '../src/view/zoom-dialog-state.ts';
+import {
+  resolveZoomDialogFitMode,
+  zoomFitModeFromChoice,
+} from '../src/view/zoom-dialog-state.ts';
 import { ViewportManager } from '../src/view/viewport-manager.ts';
 import type { EventBus } from '../src/core/event-bus.ts';
 import { userSettings } from '../src/core/user-settings.ts';
@@ -123,6 +126,21 @@ test('대화상자에서 고른 수치 배율은 맞춤을 푼다', () => {
   assert.equal(zoomFitModeFromChoice({ kind: 'fitPage' }), 'fitPage');
   assert.equal(zoomFitModeFromChoice({ kind: 'preset', percent: 150 }), 'none');
   assert.equal(zoomFitModeFromChoice({ kind: 'custom', percent: 137 }), 'none');
+});
+
+test('여러 쪽은 비활성 비율 선택과 무관하게 전체 배열 쪽 맞춤을 저장한다', () => {
+  assert.equal(resolveZoomDialogFitMode({
+    zoomChoice: { kind: 'preset', percent: 100 },
+    arrangement: { kind: 'multiple', columns: 2, rows: 2 },
+  }), 'fitPage');
+  assert.equal(resolveZoomDialogFitMode({
+    zoomChoice: { kind: 'custom', percent: 137 },
+    arrangement: { kind: 'multiple', columns: 4, rows: 1 },
+  }), 'fitPage');
+  assert.equal(resolveZoomDialogFitMode({
+    zoomChoice: { kind: 'custom', percent: 137 },
+    arrangement: { kind: 'single' },
+  }), 'none');
 });
 
 test('맞춤으로 정한 배율만 맞춤으로 남고, 수치 배율은 맞춤을 푼다', () => {
