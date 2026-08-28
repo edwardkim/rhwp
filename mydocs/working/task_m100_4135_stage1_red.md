@@ -45,4 +45,3 @@ node --test tests/issue-4135-contextual-shortcut.test.ts tests/shortcut-map.test
 - 한글 IME `ㄴ` 및 `Process/KeyS`: 위와 같은 문맥 규칙
 - modifier 없는 `S`: 기존 `table:cell-split`
 - embed 모드: 파일/표 명령으로 fall-through하지 않고 이벤트만 소비
-
