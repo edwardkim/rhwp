@@ -3395,6 +3395,38 @@ impl LayoutEngine {
                         | RenderNodeType::RawSvg(_)
                 )
             }
+            // [#6269] clip 확장에 쓰는 노드의 **가로로 칠해지는** 범위.
+            //
+            // 선 노드의 bbox 는 `create_single_line` 계열이 `(x2-x1).abs().max(width)` 로
+            // 잡아, 세로선이면 `x .. x+width` 처럼 획을 오른쪽으로만 세운다. 그런데 실제
+            // 획은 경로 중심 기준이라 `x-width/2 .. x+width/2` 를 덮는다. body clip 은 이
+            // bbox 합집합으로 정해지므로 본문 좌단(`body_area.x`)에 붙은 세로선은 획의
+            // 왼쪽 절반이 clip 밖에 놓여 잘렸다. clip 을 적용하지 않는 직접 PDF 출력만
+            // 온전했고 clip 을 지키는 studio(CanvasKit)·SVG·Canvas 는 잉크가 절반이 됐다
+            // (156739836 2·3쪽: studio 51 vs PDF 94).
+            //
+            // 세로축(위/아래)은 건드리지 않는다. 본문 **상단**의 같은 잘림은 #3820 이
+            // 이미 테두리 paint 를 안쪽으로 미는 방식으로 고쳤고 그 계약이 body clip 의
+            // y 를 기준으로 못박혀 있다. 여기서 y 까지 넓히면 그 보정과 이중으로 겹친다.
+            //
+            // 회전 변환이 걸린 선까지 안전하도록 선분 좌표를 다시 풀지 않고 bbox 를 획
+            // 두께의 절반만큼 좌우로 부풀린다. clip 은 상한일 뿐이고 여유분이 선 자신의
+            // 획 두께를 넘지 않으므로 다른 콘텐츠를 더 보이게 하지는 않는다.
+            fn clip_paint_extent(node: &RenderNode) -> BoundingBox {
+                let RenderNodeType::Line(line) = &node.node_type else {
+                    return node.bbox;
+                };
+                let half = line.style.width / 2.0;
+                if !half.is_finite() || half <= 0.0 {
+                    return node.bbox;
+                }
+                BoundingBox {
+                    x: node.bbox.x - half,
+                    y: node.bbox.y,
+                    width: node.bbox.width + half * 2.0,
+                    height: node.bbox.height,
+                }
+            }
             // clip 을 **가시** 자식 bbox 로 확장. `float_subtree` 가 참이면 그 서브트리는
             // 부동 그림으로 취급해 상한 적용 대상 clip 만 넓힌다.
             //
@@ -3408,7 +3440,7 @@ impl LayoutEngine {
                 node: &RenderNode,
                 float_subtree: bool,
             ) {
-                let cb = &node.bbox;
+                let cb = clip_paint_extent(node);
                 let is_float = float_subtree || is_floating_object(node);
                 let target: &mut BoundingBox = if is_float { &mut *float } else { &mut *flow };
                 let child_bottom = cb.y + cb.height;
