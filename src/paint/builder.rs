@@ -145,9 +145,20 @@ impl LayerBuilder {
                     self.cache_hint_for(&node.node_type),
                     GroupKind::Body,
                 );
+                // [#6269] 경계에 붙은 선의 획 절반이 잘리지 않게 **방출하는 clip 만**
+                // 잉크 범위로 넓힌다(SVG 경로와 같은 규칙). `clip_rect` 자체는 좌표
+                // 기준점이라 안 건드린다.
+                let painted_clip =
+                    crate::renderer::render_tree::clip_rect_padded_for_line_ink(node, *clip);
                 Some(
-                    LayerNode::clip_rect(node.bbox, Some(node.id), *clip, child, ClipKind::Body)
-                        .with_layer(node.layer),
+                    LayerNode::clip_rect(
+                        node.bbox,
+                        Some(node.id),
+                        painted_clip,
+                        child,
+                        ClipKind::Body,
+                    )
+                    .with_layer(node.layer),
                 )
             }
             RenderNodeType::TableCell(cell) if cell.clip => {

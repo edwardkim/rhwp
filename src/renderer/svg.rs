@@ -631,6 +631,9 @@ impl SvgRenderer {
                 } else {
                     0.0
                 };
+                // [#6269] 경계에 붙은 선의 획 절반이 잘리지 않게 **방출하는 clip 만**
+                // 잉크 범위로 넓힌다. `clip_rect` 자체는 좌표 기준점이라 안 건드린다.
+                let cr = crate::renderer::render_tree::clip_rect_padded_for_line_ink(node, *cr);
                 self.defs.push(format!(
                     "<clipPath id=\"{}\"><rect x=\"{}\" y=\"{}\" width=\"{}\" height=\"{}\"/></clipPath>\n",
                     clip_id,

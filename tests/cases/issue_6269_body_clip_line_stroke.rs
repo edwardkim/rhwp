@@ -3,8 +3,7 @@
 //!
 //! 선의 **잉크는 bbox 밖으로 나간다.** bbox 는 `[경로, 경로+획]` 인데 백엔드는
 //! `line.x1/y1` 을 경로로 삼아 획을 **중심 정렬**로 칠하므로 실제 잉크는
-//! `[경로-획/2, 경로+획/2]` 다. body clip 은 자식 **bbox** 로만 넓어지므로, 경계에
-//! 붙은 선은 획의 바깥 절반이 잘린다.
+//! `[경로-획/2, 경로+획/2]` 다. 경계에 붙은 선은 그 바깥 절반이 잘린다.
 //!
 //! ```text
 //! body clip      x = 75.5867            (본문 좌단)
@@ -16,79 +15,83 @@
 //! 정확히 절반이다. 수정 후 왼쪽 **188** 로, 이슈가 실측한 rhwp PDF 값(94×2=188)과
 //! 같아진다.
 //!
-//! 잠금은 픽셀이 아니라 **불변식**을 건다 — body clip 은 자기 자식 선의 잉크를
-//! 자르지 않는다.
+//! **`Body::clip_rect` 자체는 건드리지 않는다** — 그 값은 여러 잠금 테스트가 좌표
+//! 기준점으로 쓴다(`issue_3820_*`, `issue_2007_*`). 완화는 clip 을 **방출하는
+//! 지점**에서만 하므로, 이 잠금도 방출된 SVG 의 `clipPath` 를 본다.
 #![cfg(not(target_arch = "wasm32"))]
 
+use std::fs;
 use std::path::Path;
-
-use rhwp::document_core::DocumentCore;
-use rhwp::renderer::render_tree::{BoundingBox, RenderNode, RenderNodeType};
 
 const SAMPLE: &str = "samples/issue6269/156739836_public_sector_jobs_stats.hwpx";
 /// 결함이 나타나는 쪽(0-based). 3쪽도 같은 틀을 쓴다.
 const PAGE: u32 = 1;
 
 #[test]
-fn issue_6269_body_clip_contains_line_ink() {
+fn issue_6269_painted_body_clip_contains_line_ink() {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
-    let core = DocumentCore::from_bytes(&std::fs::read(path).expect("read sample")).expect("open");
-    let page = core
-        .build_page_render_tree(PAGE)
-        .expect("page 2 render tree");
+    let bytes = fs::read(&path).expect("read sample");
+    let doc = rhwp::wasm_api::HwpDocument::from_bytes(&bytes).expect("parse sample");
+    let svg = doc.render_page_svg_native(PAGE).expect("render page 2 svg");
 
-    let (clip, body) = find_body_clip(&page.root).expect("body clip_rect");
-    let mut lines = Vec::new();
-    collect_lines(body, &mut lines);
-    assert!(!lines.is_empty(), "2쪽에 테두리 선이 있어야 한다");
+    let clip = body_clip_rect(&svg).expect("body-clip rect");
+    let lines = vertical_hairlines(&svg);
+    assert!(!lines.is_empty(), "2쪽에 세로 테두리 선이 있어야 한다");
 
-    let clip_left = clip.x;
-    let clip_top = clip.y;
-    let clip_right = clip.x + clip.width;
-    let clip_bottom = clip.y + clip.height;
-
-    for bb in lines {
-        // 잉크 범위 = bbox 를 획 절반만큼 부풀린 것 (백엔드가 경로 중심으로 칠한다).
-        let half = bb.width.min(bb.height) / 2.0;
+    for (x, stroke) in lines {
+        let half = stroke / 2.0;
         assert!(
-            bb.x - half >= clip_left - 0.01,
-            "선의 잉크 왼쪽({:.2})이 body clip({clip_left:.2}) 밖이다 — 획이 잘린다",
-            bb.x - half
+            x - half >= clip.0 - 0.01,
+            "세로선 잉크 왼끝({:.3})이 방출된 body clip({:.3}) 밖이라 획이 잘린다",
+            x - half,
+            clip.0,
         );
         assert!(
-            bb.y - half >= clip_top - 0.01,
-            "선의 잉크 위쪽({:.2})이 body clip({clip_top:.2}) 밖이다",
-            bb.y - half
-        );
-        assert!(
-            bb.x + bb.width + half <= clip_right + 0.01,
-            "선의 잉크 오른쪽({:.2})이 body clip({clip_right:.2}) 밖이다",
-            bb.x + bb.width + half
-        );
-        assert!(
-            bb.y + bb.height + half <= clip_bottom + 0.01,
-            "선의 잉크 아래쪽({:.2})이 body clip({clip_bottom:.2}) 밖이다",
-            bb.y + bb.height + half
+            x + half <= clip.1 + 0.01,
+            "세로선 잉크 오른끝({:.3})이 방출된 body clip({:.3}) 밖이라 획이 잘린다",
+            x + half,
+            clip.1,
         );
     }
 }
 
-/// `Body` 의 clip_rect 과 그 노드를 찾는다.
-fn find_body_clip(node: &RenderNode) -> Option<(BoundingBox, &RenderNode)> {
-    if let RenderNodeType::Body {
-        clip_rect: Some(cr),
-    } = &node.node_type
-    {
-        return Some((*cr, node));
-    }
-    node.children.iter().find_map(find_body_clip)
+/// 방출된 `body-clip-*` 사각형의 (좌단, 우단).
+fn body_clip_rect(svg: &str) -> Option<(f64, f64)> {
+    let at = svg.find("<clipPath id=\"body-clip-")?;
+    let rest = &svg[at..];
+    let end = rest.find("/></clipPath>")?;
+    let rect = &rest[..end];
+    let x = attr(rect, " x=\"")?;
+    let w = attr(rect, " width=\"")?;
+    Some((x, x + w))
 }
 
-fn collect_lines(node: &RenderNode, out: &mut Vec<BoundingBox>) {
-    if matches!(node.node_type, RenderNodeType::Line(_)) {
-        out.push(node.bbox);
+/// 세로 hairline 들의 (x, 획 두께).
+fn vertical_hairlines(svg: &str) -> Vec<(f64, f64)> {
+    let mut out = Vec::new();
+    for chunk in svg.split("<line ").skip(1) {
+        let Some(end) = chunk.find("/>") else {
+            continue;
+        };
+        let tag = &chunk[..end];
+        let (Some(x1), Some(x2), Some(w)) = (
+            attr(tag, "x1=\""),
+            attr(tag, "x2=\""),
+            attr(tag, " stroke-width=\""),
+        ) else {
+            continue;
+        };
+        // 세로선만 — 가로선은 이 잠금의 대상이 아니다(같은 규칙이 y 축에도 걸린다).
+        if (x1 - x2).abs() <= 0.01 && w > 0.0 {
+            out.push((x1, w));
+        }
     }
-    for child in &node.children {
-        collect_lines(child, out);
-    }
+    out
+}
+
+fn attr(tag: &str, key: &str) -> Option<f64> {
+    let at = tag.find(key)? + key.len();
+    let rest = &tag[at..];
+    let end = rest.find('"')?;
+    rest[..end].parse().ok()
 }

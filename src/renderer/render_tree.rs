@@ -604,6 +604,48 @@ pub struct FormObjectNode {
     pub cell_location: Option<(usize, usize, usize, usize)>,
 }
 
+/// [#6269] 칠하기 시점의 clip 사각형을 **자식 선의 잉크**까지 넓힌다.
+///
+/// 선의 잉크는 bbox 밖으로 나간다 — bbox 는 `[경로, 경로+획]` 인데 백엔드는
+/// `line.x1/y1` 을 경로로 삼아 획을 **중심 정렬**로 칠하므로 실제 잉크는
+/// `[경로-획/2, 경로+획/2]` 다. 경계에 붙은 선은 그 바깥 절반이 잘린다 —
+/// 156739836 2·3쪽 `일러두기` 틀의 왼쪽 세로선(x=75.59, 획 1.5)은 본문 좌단
+/// (= clip 좌단)과 x 가 같아 잉크가 절반으로 떨어진다(102 대 PDF 188).
+///
+/// **`Body::clip_rect` 자체는 건드리지 않는다.** 그 값은 여러 잠금 테스트가 좌표
+/// **기준점**으로 쓴다 — `issue_3820_body_top_table_border_clip` 의
+/// `expected_paint_top = clip.y + inset`, `issue_3820_stored_reset_fragment_geometry`
+/// 의 `painted_top >= clip.y`, `issue_2007_nested_cell_pagination` 의 `clip_bottom`.
+/// 그래서 완화는 clip 을 **방출하는 지점**에서만 한다.
+///
+/// 넓히는 양은 그 변이 **실제로 잉크를 자를 때만** 그 초과분이다 — 경계에 걸친 선이
+/// 없는 문서는 값이 그대로라 산출이 바이트 동일하다.
+pub(crate) fn clip_rect_padded_for_line_ink(node: &RenderNode, clip: BoundingBox) -> BoundingBox {
+    // [left, top, right, bottom]
+    fn walk(n: &RenderNode, clip: &BoundingBox, pad: &mut [f64; 4]) {
+        if matches!(n.node_type, RenderNodeType::Line(_)) {
+            let half = n.bbox.width.min(n.bbox.height) / 2.0;
+            if half > 0.0 {
+                pad[0] = pad[0].max(clip.x - (n.bbox.x - half));
+                pad[1] = pad[1].max(clip.y - (n.bbox.y - half));
+                pad[2] = pad[2].max((n.bbox.x + n.bbox.width + half) - (clip.x + clip.width));
+                pad[3] = pad[3].max((n.bbox.y + n.bbox.height + half) - (clip.y + clip.height));
+            }
+        }
+        for child in &n.children {
+            walk(child, clip, pad);
+        }
+    }
+    let mut pad = [0.0f64; 4];
+    walk(node, &clip, &mut pad);
+    BoundingBox {
+        x: clip.x - pad[0],
+        y: clip.y - pad[1],
+        width: clip.width + pad[0] + pad[2],
+        height: clip.height + pad[1] + pad[3],
+    }
+}
+
 /// 바운딩 박스 (위치 + 크기, 픽셀 단위)
 #[derive(Debug, Clone, Copy, Default, Serialize)]
 pub struct BoundingBox {
