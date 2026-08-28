@@ -323,6 +323,45 @@ fn type_allowed(label: &str, opts: &AnomalyOptions) -> bool {
 /// 밀어내는 wrap)일 때만 후보로 본다. BehindText/InFrontOfText 는 애초에 다른
 /// 콘텐츠와 겹치라고 있는 wrap 이라 후보에서 뺀다. 바탕쪽(master page) 유래
 /// 개체도 항상 배경에 깔릴 뿐이라 제외한다.
+/// 흐름 겹침 판정에 쓰는 상자.
+///
+/// `TextLine` 은 줄 상자(줄높이)를 bbox 로 갖는다. 줄높이는 줄 간격을 포함하므로,
+/// 줄 간격이 줄높이보다 좁은 문단에서는 **연속된 두 줄의 상자가 자동으로 겹친다** —
+/// 글자는 안 겹치는데도. 수식이 섞인 줄에서 특히 잦다(위첨자·분수가 줄 상자를 키운다).
+///
+/// 실측(2026-08-28): `3-11월_실전_통합_2022.hwp` 의 겹침 8건이 전부 연속 줄 쌍이고,
+/// 줄 상자 27.6px 에 줄 간격 20.4px 이라 7.2px 이 겹친다. 렌더에는 겹친 글자가 없다.
+///
+/// 그래서 `TextLine` 은 자식 `TextRun` 들의 **글자 상자 합집합**으로 잰다. 글자가 실제로
+/// 차지하는 범위이고, `text_overlap` 이 런 단위로 쓰는 것과 같은 기준이다 — 같은 질문에
+/// 두 개의 답을 두지 않는다. 줄이 정말로 포개지면 그 합집합도 겹치므로 검출은 잃지 않는다.
+///
+/// `TextLine` 이 아닌 노드(표·그림·도형)는 자기 bbox 가 곧 차지하는 범위다.
+fn flow_extent_bbox(node: &RenderNode) -> BoundingBox {
+    if !matches!(node.node_type, RenderNodeType::TextLine(_)) {
+        return node.bbox;
+    }
+    let mut union: Option<BoundingBox> = None;
+    for child in &node.children {
+        if !matches!(&child.node_type, RenderNodeType::TextRun(tr) if has_visible_text(&tr.text)) {
+            continue;
+        }
+        let band = glyph_band_bbox(child);
+        union = Some(match union {
+            None => band,
+            Some(u) => {
+                let x = u.x.min(band.x);
+                let y = u.y.min(band.y);
+                let right = (u.x + u.width).max(band.x + band.width);
+                let bottom = (u.y + u.height).max(band.y + band.height);
+                BoundingBox::new(x, y, right - x, bottom - y)
+            }
+        });
+    }
+    // 보이는 런이 없으면 줄 상자를 그대로 쓴다 — 판정 대상에서 조용히 빠지지 않게 한다.
+    union.unwrap_or(node.bbox)
+}
+
 fn is_overlap_candidate(node: &RenderNode) -> bool {
     match &node.node_type {
         RenderNodeType::TextLine(_) => node.children.iter().any(
@@ -590,7 +629,7 @@ fn walk(
                 flow_out.push(FlowCandidate {
                     path: path.clone(),
                     node_type: label,
-                    bbox: node.bbox,
+                    bbox: flow_extent_bbox(node),
                     column,
                 });
             }
@@ -1437,6 +1476,49 @@ mod tests {
             RenderNodeType::TextLine(TextLineNode::new(h, h * 0.8)),
             BoundingBox::new(x, y, w, h),
         )
+    }
+
+    /// [흐름 범위] `TextLine` 은 자식 런들의 글자 상자 합집합으로 잰다.
+    #[test]
+    fn flow_extent_unions_child_glyph_bands() {
+        let mut line = text_line(10.0, 100.0, 200.0, 28.0);
+        let mut a = text_run("가");
+        a.bbox = BoundingBox::new(10.0, 100.0, 50.0, 28.0);
+        let mut b = text_run("나");
+        b.bbox = BoundingBox::new(120.0, 100.0, 40.0, 28.0);
+        for run in [&mut a, &mut b] {
+            if let RenderNodeType::TextRun(r) = &mut run.node_type {
+                r.style.font_size = 20.0;
+            }
+        }
+        line.children = vec![a, b];
+        let e = flow_extent_bbox(&line);
+        // 세로는 글자 상자(20) 로 좁고, 가로는 두 런을 합친 10..160.
+        assert_eq!(e.height, 20.0);
+        assert_eq!(e.y, 104.0);
+        assert_eq!(e.x, 10.0);
+        assert_eq!(e.width, 150.0);
+    }
+
+    /// 보이는 런이 없으면 줄 상자를 그대로 쓴다 — 판정에서 조용히 빠지지 않는다.
+    #[test]
+    fn flow_extent_falls_back_to_line_box_without_runs() {
+        let line = text_line(0.0, 0.0, 100.0, 28.0);
+        let e = flow_extent_bbox(&line);
+        assert_eq!(e.height, 28.0);
+        assert_eq!(e.width, 100.0);
+    }
+
+    /// 표·그림 등은 자기 bbox 가 곧 차지하는 범위다.
+    #[test]
+    fn flow_extent_leaves_non_text_nodes_alone() {
+        let node = RenderNode::new(
+            1,
+            RenderNodeType::TextBox,
+            BoundingBox::new(5.0, 6.0, 70.0, 80.0),
+        );
+        let e = flow_extent_bbox(&node);
+        assert_eq!((e.x, e.y, e.width, e.height), (5.0, 6.0, 70.0, 80.0));
     }
 
     /// [글자 상자] 줄 상자에서 줄 간격을 뺀 em 상자로 좁힌다.
