@@ -77,6 +77,36 @@ last_verified: 2026-08-28
 
 ## 시각 증적
 
+### 통합 head 기준 MCP/visual sweep
+
+- 최종 기준 PDF와 visual sweep은 2026-08-28 14:25 빌드된
+  `target/pr-review/release-test/rhwp`로 산출했다. `target/pr-review/release/rhwp`는
+  2026-08-23 빌드된 stale 바이너리였으므로 초기 확인 결과를 최종 증적으로 쓰지 않는다.
+- `rhwp info --json`의 `lastSavedWith.product`에 따라 `hancom-office-2024`만 MCP `engine 2024`와
+  `-2024.pdf`를 사용하고, `null` 또는 2010/2018/2020/2022 계열은 MCP `engine 2020`과
+  `-2020.pdf`를 사용했다.
+- 전체 matrix: `mydocs/pr/assets/pr_6275_visual_sweep_matrix.tsv`
+
+| PR | issue | 대상 | 저장 제품 | engine | 기준 PDF | sweep 결과 | 대표 asset |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| #6245 | #6194 | p1 | 2018 `10.0.0.11529` | 2020 | `pdf/pr_6275/by_saved_version/pr6275_issue6194_agri_press_release-2020.pdf` | flagged 0, pixel `90.73707%`, visual proxy `14.76016%` | `mydocs/pr/assets/pr_6275_issue6194_visual_review_p1.png` |
+| #6246 | #6186 | p2 | 2018 `10.0.0.12409` | 2020 | `pdf/pr_6275/by_saved_version/pr6275_issue6186_defense_press_release-2020.pdf` | flagged 0, pixel `93.02684%`, visual proxy `20.36145%` | `mydocs/pr/assets/pr_6275_issue6186_visual_review_p2.png` |
+| #6248 | #6179 | p1 | 2018 `10.0.0.9139` | 2020 | `pdf/pr_6275/by_saved_version/pr6275_issue6179_right_tab_footer_logo-2020.pdf` | flagged 0, pixel `99.18781%`, visual proxy `28.21174%` | `mydocs/pr/assets/pr_6275_issue6179_visual_review_p1.png` |
+| #6252 | #6174 | p1 | 2018 `10.0.0.13015` | 2020 | `pdf/pr_6275/by_saved_version/pr6275_issue6174_police_press_release-2020.pdf` | flagged 0, pixel `91.58762%`, visual proxy `18.61601%` | `mydocs/pr/assets/pr_6275_issue6174_visual_review_p1.png` |
+| #6254 | #6173 | p2 | 2020 `11.0.0.8969` | 2020 | `pdf/pr_6275/by_saved_version/pr6275_issue6173_textbox_right_align_logos-2020.pdf` | flagged 0, pixel `99.40067%`, visual proxy `45.36346%` | `mydocs/pr/assets/pr_6275_issue6173_visual_review_p2.png` |
+| #6259 | #6167 | slice p1 / 원 PR p38 | 2024 `13.0.0.1053` | 2024 | `pdf/pr_6275/by_saved_version/pr6275_issue6167_leading_space_tac_table-2024.pdf` | flagged 0, pixel `96.11433%`, visual proxy `38.92434%` | `mydocs/pr/assets/pr_6275_issue6167_visual_review_p1.png` |
+| #6260 | #6196 | p1 | 2020 `11.0.0.4585` | 2020 | `pdf/pr_6275/by_saved_version/pr6275_issue6196_cell_char_spacing_fit-2020.pdf` | flagged 0, pixel `91.90489%`, visual proxy `28.76852%` | `mydocs/pr/assets/pr_6275_issue6196_visual_review_p1.png` |
+| #6261 | #6206 | securities p2 | 2020 `11.0.0.6402` | 2020 | `pdf/pr_6275/by_saved_version/pr6275_issue6206_securities_settlement_review-2020.pdf` | flagged 1 `render_tree_frame_tail_overflow`, pixel `87.91134%`, visual proxy `29.94235%` | `mydocs/pr/assets/pr_6275_issue6206_securities_visual_review_p2.png` |
+| #6261 | #6206 | ACRC p7 | 2024 `13.0.0.1053` | 2024 | `pdf/pr_6275/by_saved_version/pr6275_issue6206_acrc_113424_review-2024.pdf` | flagged 0, pixel `86.45204%`, visual proxy `15.49589%` | `mydocs/pr/assets/pr_6275_issue6206_acrc_visual_review_p7.png` |
+| #6262 | #6190 | slice p1 / 원 PR p3 | 2020 `11.0.0.2129` | 2020 | `pdf/pr_6275/by_saved_version/pr6275_issue6190_center_align_first_line_indent-2020.pdf` | flagged 0, pixel `96.25901%`, visual proxy `5.20078%` | `mydocs/pr/assets/pr_6275_issue6190_visual_review_p1.png` |
+| #6265 | #6192 | slice p2 / 원 PR p4 | 2020 `11.0.0.7571` | 2020 | `pdf/pr_6275/by_saved_version/pr6275_issue6192_cell_behind_text_para_anchor-2020.pdf` | flagged 0, pixel `99.31622%`, visual proxy `35.97606%` | `mydocs/pr/assets/pr_6275_issue6192_visual_review_p2.png` |
+| #6268 | #6208 | p1 | 2020 `11.0.0.2129` | 2020 | `pdf/pr_6275/by_saved_version/pr6275_issue6208_print_method_nup-2020.pdf` | flagged 0, pixel `99.40392%`, visual proxy `4.86844%` | `mydocs/pr/assets/pr_6275_issue6208_visual_review_p1.png` |
+
+사람 판정: #6261 securities p2의 자동 후보는 footer `- 1 -`의 frame-tail overflow 신호이며,
+이번 PR의 핵심 주장인 "표 셀 안 `newNum` 수집 후 쪽번호가 `- 1 -`로 재시작"과는 분리된다.
+나머지 대표 페이지는 자동 후보 0건이다. 낮은 `visual_accuracy_proxy_percent`는 글꼴·라스터·전체
+위치 차이까지 포함한 보조값이므로, 각 PR의 사용자-visible 주장 지점과 분리해 판단한다.
+
 - #6245/#6194: `mydocs/report/header-row-picture-height-6194/after_p1.png`와 `oracle_p1.png`를 직접
   확인했다. 머리 표 높이와 아래 표 분리가 기준과 가까워졌고 겹침이 보이지 않는다.
 - #6246/#6186: `mydocs/report/footer-band-valign-6186/after_p2.png`와 `oracle_p2.png`를 직접 확인했다.

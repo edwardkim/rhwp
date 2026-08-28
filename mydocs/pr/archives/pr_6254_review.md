@@ -27,7 +27,20 @@ last_verified: 2026-08-28
 
 - 원 PR 시각 보고서:
   `mydocs/report/right-align-inline-object-space-6173/{p2_textbox_before,p2_textbox_after}.png`
+- 통합 head 기준 MCP/visual sweep:
+  - `rhwp info --json`: `mydocs/pr/assets/pr_6275_issue6173_info.json`
+  - 저장 제품: `hancom-office-2020 11.0.0.8969` -> MCP `engine 2020`
+  - 기준 PDF: `pdf/pr_6275/by_saved_version/pr6275_issue6173_textbox_right_align_logos-2020.pdf`
+    (2 pages)
+  - visual sweep: `pr6275-issue6173-p2`, p2, flagged 0, pixel match `99.40067%`,
+    visual accuracy proxy `45.36346%`
+  - 장기 asset:
+    `mydocs/pr/assets/pr_6275_issue6173_visual_review_p2.png`,
+    `mydocs/pr/assets/pr_6275_issue6173_visual_sweep_summary.json`,
+    `mydocs/pr/assets/pr_6275_issue6173_visual_overlay_metrics.json`
 - 검토자가 직접 확인한 대표 after: 글상자 안 두 로고가 우단 안에 들어오며 잘림이 보이지 않는다.
+  통합 head visual sweep review PNG에서도 오른쪽 정렬 말미 공백 때문에 로고가 밖으로 밀리는 원 결함은
+  재현되지 않았다.
 - focused test: `issue_6173_right_align_space_before_inline_object` 1 pass
 - #6259 추가 뒤 재검증: 1 pass
 - 통합 head 공통 검증: fmt, unit tier, suite manifest, clippy, 전체 nextest, Native Skia 3종,
@@ -36,8 +49,9 @@ last_verified: 2026-08-28
 ## 코멘트 처리
 
 merge 후 원 PR/issue 코멘트에는 `p2_textbox_after.png` 기준으로 글상자 안 로고가 우단 안에
-배치된다는 직접 확인 결과와 focused test 통과를 적는다. 추가 visual sweep이 필요하면 대표 review
-PNG와 summary를 `mydocs/pr/assets`에 보존하고 merge SHA raw URL로 표시한다.
+배치된다는 직접 확인 결과와 focused test 통과를 적는다. `pr_6275_issue6173_visual_review_p2.png`를
+merge commit SHA 고정 raw URL로 표시하고, "내용 픽셀 중심 자동 일치율 보조값 = 약 45.36%" 및
+자동값의 한계를 함께 둔다.
 
 ## 후속
 

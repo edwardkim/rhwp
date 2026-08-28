@@ -26,6 +26,9 @@ query가 panic하던 경로를 `Option` 기반 API로 바꾸고, 호출부를 `f
 
 - 원 PR 보고서:
   `mydocs/report/bug-layout-empty-path/{before,after}.png`
+- PR 설명은 특정 한컴 기준 PDF와의 fidelity 개선이 아니라 빈 `CellContext.path`에서의 panic
+  방어를 주장한다. 따라서 버전별 MCP 기준 PDF/visual sweep을 별도로 만들 대상은 아니며, 판단
+  중심은 `Option` API 전환과 통합 head의 compile/clippy/전체 nextest 결과다.
 - 검토자가 직접 확인한 대표 after: 빈 경로 상황 설명과 after 산출물이 포함되어 있고, panic 대신
   `None` 경로로 내려가는 설계가 코드와 맞는다.
 - 관련 focused/unit 검증: `cursor_rect` lib tests 16 pass / 5 ignored
@@ -35,9 +38,8 @@ query가 panic하던 경로를 `Option` 기반 API로 바꾸고, 호출부를 `f
 ## 코멘트 처리
 
 merge 후 코멘트에는 `CellContext` 빈 경로가 panic 대신 `Option` 흐름으로 처리된다는 코드 판단과
-`mydocs/report/bug-layout-empty-path/after.png` 확인 사실을 적는다. 별도 visual sweep 산출이 필요한
-renderer 비교 사안으로 확대되면 `visual_sweep_guide.md#github-merge-comment`에 따라 대표 PNG와
-summary를 `mydocs/pr/assets`에 보존한 뒤 merge SHA 고정 raw URL을 사용한다.
+`mydocs/report/bug-layout-empty-path/after.png` 확인 사실을 적는다. 이 PR은 특정 HWP 기준 PDF
+비교가 아니라 panic 방어이므로 visual sweep 이미지는 코멘트 필수 증적에서 제외한다.
 
 ## 후속
 

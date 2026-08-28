@@ -30,8 +30,20 @@ lineSeg 1개만** 확인하도록 좁혔다.
 
 - 원 PR 시각 보고서:
   `mydocs/report/header-row-picture-height-6194/{before_p1,after_p1,oracle_p1}.png`
+- 통합 head 기준 MCP/visual sweep:
+  - `rhwp info --json`: `mydocs/pr/assets/pr_6275_issue6194_info.json`
+  - 저장 제품: `hancom-office-2018 10.0.0.11529` -> MCP `engine 2020`
+  - 기준 PDF: `pdf/pr_6275/by_saved_version/pr6275_issue6194_agri_press_release-2020.pdf`
+    (2 pages)
+  - visual sweep: `pr6275-issue6194-p1`, p1, flagged 0, pixel match `90.73707%`,
+    visual accuracy proxy `14.76016%`
+  - 장기 asset:
+    `mydocs/pr/assets/pr_6275_issue6194_visual_review_p1.png`,
+    `mydocs/pr/assets/pr_6275_issue6194_visual_sweep_summary.json`,
+    `mydocs/pr/assets/pr_6275_issue6194_visual_overlay_metrics.json`
 - 검토자가 직접 확인한 대표 after: 머리 표가 한컴 2020 oracle과 유사한 높이로 내려오고, 아래
-  `보도 일시` 표와 겹치지 않는다.
+  `보도 일시` 표와 겹치지 않는다. 통합 head visual sweep review PNG에서도 머리 표와 다음 표의
+  관통 겹침은 재현되지 않았다.
 - focused test: `issue_6194_header_row_picture_height` 1 pass
 - 메인터너 보정 후 focused 재검증: 1 pass
 - 통합 head 공통 검증: fmt, unit tier, suite manifest, focused regressions, clippy, 전체 nextest,
@@ -39,11 +51,11 @@ lineSeg 1개만** 확인하도록 좁혔다.
 
 ## 코멘트 처리
 
-merge 후 원 PR/issue 코멘트에는 메인터너 보정 사유와 대표 시각 증적을 함께 적는다. 추가 증적
-산출이 필요하면 `mydocs/manual/verification/visual_sweep_guide.md#github-merge-comment` 기준으로
-`scripts/visual_sweep.py`를 실행하고, 대표 `review_*.png`와 summary를 `mydocs/pr/assets` 아래에
-보존한 뒤 merge commit SHA 고정 raw URL을 Markdown image로 사용한다. 이번 검토에서 직접 확인한
-대표 증적은 `after_p1.png`와 `oracle_p1.png`다.
+merge 후 원 PR/issue 코멘트에는 메인터너 보정 사유와 대표 시각 증적을 함께 적는다. comment에는
+`mydocs/manual/verification/visual_sweep_guide.md#github-merge-comment`를 정본으로 링크하고,
+`pr_6275_issue6194_visual_review_p1.png`를 merge commit SHA 고정 raw URL로 표시한다.
+수치 문구는 "내용 픽셀 중심 자동 일치율 보조값 = 약 14.76%"로 적고, 자동값이 사람 판정을
+대체하지 않는다는 설명을 함께 둔다.
 
 ## 후속
 

@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-08-26
+last_verified: 2026-08-28
 ---
 
 # 시각·fixture 증적
@@ -70,17 +70,19 @@ PR에 기준 PDF가 없지만 원본 HWP/HWPX가 있으면, PDF 업로드 요청
 rhwp info --json <원본 HWP 또는 HWPX>
 ```
 
-`lastSavedWith.product`가 `hancom-office-2010`·`hancom-office-2018`·`hancom-office-2020`·
-`hancom-office-2022`이면 [HWP 2024 MCP 사용법](../mcp_hwp2024Convert_usage.md)의 통합 Windows
-service에서 engine `2020`을, `hancom-office-2024`이면 같은 service의 engine `2024`를 사용한다.
+`lastSavedWith.product`가 `hancom-office-2024`이면 [HWP 2024 MCP 사용법](../mcp_hwp2024Convert_usage.md)의
+통합 Windows service에서 engine `2024`를 사용한다. `lastSavedWith`가 `null`이거나 product가 `null`,
+또는 `hancom-office-2010`·`hancom-office-2018`·`hancom-office-2020`·`hancom-office-2022`이면 같은
+service의 engine `2020`을 사용한다.
 이 판정은 HWP5 `HwpSummaryInformation.revisionNumber`와 HWPX `version.xml/appVersion`의 마지막 저장
 메타데이터를 사용한다. 확장자와 파일 포맷 `version`만으로 서비스를 선택하지 않는다.
 
-`lastSavedWith`가 `null`이거나 `product`가 `null`이면 서비스를 자동 선택하지 않는다. 기준 PDF, 제출자·원
-저장 환경의 확인 등 별도 근거를 확보하고 그 판단을 review 문서에 기록한다. 이 메타데이터는 원 작성 제품의
-증명이 아니며 재저장·삭제·변조될 수 있다.
+PR review 기준 PDF 파일명은 engine bucket 기준으로 끝낸다. `hancom-office-2024` 저장본은
+`-2024.pdf`, `null` 또는 2022 이하 저장본은 `-2020.pdf`를 사용한다. 이 메타데이터는 원 작성 제품의
+증명이 아니며 재저장·삭제·변조될 수 있으므로, `null` 또는 product 미상 파일은 review 문서에
+그 사실을 함께 기록한다.
 
-- 최종 기준 PDF는 output에만 두지 않고 2020 계열은 `pdf/{원본 stem}-2020.pdf`, 2024 계열은
+- 최종 기준 PDF는 output에만 두지 않고 2020 bucket은 `pdf/{원본 stem}-2020.pdf`, 2024 bucket은
   `pdf/{원본 stem}-2024.pdf`에 저장한다.
 - 50MB 미만 MCP 산출 PDF는 commit 가능한 장기 증적이다. 큰 PDF는 pdf-large와 Git LFS 정책을 따른다.
 - 서버 URL, IP, 인증 token, .env.local 내용은 GitHub issue·PR·review 문서·로그에 기록하지 않는다.
@@ -91,8 +93,9 @@ service에서 engine `2020`을, `hancom-office-2024`이면 같은 service의 eng
 
 통합 Windows MCP는 동기 `status: success` 또는 비동기 `succeeded → success`, 요청한 `--engine`과
 비동기 `start`·`status` 응답의 `engine` 일치, client/server byte 수와 SHA-256 일치를 확인한다.
-2022 이하 저장본에는 `--engine 2020`, 2024 저장본에는 `--engine 2024`를 명시한다. `server.engine`은
-concrete backend 식별자일 수 있으므로 저장 버전별 engine 선택의 판정 기준으로 사용하지 않는다.
+`null` 또는 2022 이하 저장본에는 `--engine 2020`, 2024 저장본에는 `--engine 2024`를 명시한다.
+`server.engine`은 concrete backend 식별자일 수 있으므로 저장 버전별 engine 선택의 판정 기준으로
+사용하지 않는다.
 `engine_profile`과 `hancom_version`은 서버가 제공할 때만 추가 증적으로 기록하며, 부재만으로 실패로
 판단하지 않는다.
 공통으로 `pdf/` 아래 실제 PDF 존재와 `file` 또는 `pdfinfo` 확인이 필요하다.

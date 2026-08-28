@@ -26,6 +26,9 @@ last_verified: 2026-08-28
 
 - 원 PR 시각 보고서:
   `mydocs/report/bug-font-border/{before,after}.png`
+- PR 설명은 특정 한컴 기준 PDF와의 페이지 fidelity가 아니라 font/border 인덱스 OOB 방어다.
+  따라서 버전별 MCP 기준 PDF/visual sweep을 별도 산출할 대상은 아니며, `.get()`/fallback 경계
+  방어와 통합 head 검증을 판단 중심으로 둔다.
 - 검토자가 직접 확인한 대표 after: 전체 페이지 이미지에서 font/border OOB 방어가 의도한 입력 방어
   성격과 맞고, 눈에 띄는 렌더 회귀는 확인되지 않았다.
 - focused/unit 검증:
@@ -37,8 +40,8 @@ last_verified: 2026-08-28
 ## 코멘트 처리
 
 merge 후 코멘트에는 font/border OOB 방어 성격, focused/unit 검증 통과, `bug-font-border/after.png`
-직접 확인 결과를 함께 남긴다. 추가 visual sweep 증적이 필요하면 대표 PNG와 summary를
-`mydocs/pr/assets`에 안정 파일명으로 보존하고 merge commit SHA 고정 raw URL로 표시한다.
+직접 확인 결과를 함께 남긴다. 이 PR은 기준 PDF 대조가 수용 판단의 중심이 아니므로 visual sweep
+이미지는 코멘트 필수 증적에서 제외한다.
 
 ## 후속
 

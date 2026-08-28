@@ -28,8 +28,21 @@ layout 설정이 아니라 provenance로 취급하는 방향이 적절하다.
 - 원 PR 증적:
   `mydocs/report/print-method-nup-6208/oracle_2up_vs_rhwp_portrait.png`,
   `samples/issue6208/print_method_nup.hwp`
+- 통합 head 기준 MCP/visual sweep:
+  - `rhwp info --json`: `mydocs/pr/assets/pr_6275_issue6208_info.json`
+  - 저장 제품: `hancom-office-2020 11.0.0.2129` -> MCP `engine 2020`
+  - 기준 PDF: `pdf/pr_6275/by_saved_version/pr6275_issue6208_print_method_nup-2020.pdf`
+    (1 page)
+  - visual sweep: `pr6275-issue6208-p1`, p1, flagged 0, pixel match `99.40392%`,
+    visual accuracy proxy `4.86844%`
+  - 장기 asset:
+    `mydocs/pr/assets/pr_6275_issue6208_visual_review_p1.png`,
+    `mydocs/pr/assets/pr_6275_issue6208_visual_sweep_summary.json`,
+    `mydocs/pr/assets/pr_6275_issue6208_visual_overlay_metrics.json`
 - 검토자가 직접 확인한 대표 증적: PNG는 2-up 문서 provenance 보조 자료이며, 수용 판단 중심은
-  `rhwp info --json`/contract test의 인쇄 방식 노출이다.
+  `rhwp info --json`/contract test의 인쇄 방식 노출이다. 통합 head 기준 PDF와 visual sweep도
+  보존했지만, 이 PR은 n-up 출력 구현이 아니라 `printMethod`/`printMethodImpliesNup` 노출까지가
+  범위이므로 낮은 자동 일치율을 출력 fidelity 실패로 판정하지 않는다.
 - focused tests:
   - `issue_6208_hwp5_doc_data_carries_print_method` 1 pass
   - `issue_6208_only_four_and_five_imply_nup` 1 pass
@@ -39,10 +52,10 @@ layout 설정이 아니라 provenance로 취급하는 방향이 적절하다.
 
 ## 코멘트 처리
 
-merge 후 원 PR/issue 코멘트에는 `rhwp info --json` 계약과 focused tests를 중심으로 설명하고, PNG는
-provenance 보조 증적으로만 언급한다. 만약 PDF/시각 비교를 추가로 요구받으면 문서 버전에 맞는 MCP로
-기준 PDF를 만들고 `visual_sweep_guide.md#github-merge-comment` 절차에 따라 대표 review PNG와 summary를
-`mydocs/pr/assets`에 보존한 뒤 merge SHA raw URL로 표시한다.
+merge 후 원 PR/issue 코멘트에는 `rhwp info --json` 계약과 focused tests를 중심으로 설명하고, PNG와
+`pr_6275_issue6208_visual_review_p1.png`는 provenance 보조 증적으로만 언급한다. 수치 문구는
+"내용 픽셀 중심 자동 일치율 보조값 = 약 4.87%"로 적되, 이 값은 미구현 n-up 출력 차이를 포함하므로
+이번 PR의 `printMethod` 노출 수용 판단과 분리한다고 명시한다.
 
 ## 후속
 

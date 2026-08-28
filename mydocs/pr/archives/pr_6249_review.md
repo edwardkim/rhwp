@@ -27,6 +27,9 @@ last_verified: 2026-08-28
 - 원 PR 보고서: `mydocs/report/bug-circled/README.md`
 - 원 PR SVG 증적:
   `mydocs/report/bug-circled/{before,after,before_p2,after_p2}.svg`
+- PR 설명은 특정 기준 PDF와의 시각 fidelity 개선이 아니라 손상 자동번호 값의 OOB panic 방어다.
+  따라서 버전별 MCP 기준 PDF/visual sweep 산출 대상에서 제외하고, 숫자 포맷 fallback 계약과
+  focused lib test를 판단 중심으로 둔다.
 - focused lib test: `cargo test --locked --lib test_format_number --target-dir target/pr-review` 5 pass
 - 통합 head 공통 검증: fmt, unit tier, suite manifest, clippy, 전체 nextest, Native Skia 3종,
   WASM build 통과.
@@ -34,8 +37,8 @@ last_verified: 2026-08-28
 ## 코멘트 처리
 
 merge 후 코멘트에는 OOB 방어 PR이라 정상 문서 렌더 변화가 기대되는 사안은 아니며, 숫자 포맷
-fallback 계약과 `bug-circled` SVG 증적을 확인했다는 점을 남긴다. 렌더 차이를 근거로 판단해야 하는
-추가 사안이 생기면 visual sweep 정본 절차에 따라 대표 asset을 보존한 뒤 댓글에 표시한다.
+fallback 계약과 `bug-circled` SVG 증적을 확인했다는 점을 남긴다. visual sweep 이미지는 이 PR의
+필수 코멘트 증적에서 제외한다.
 
 ## 후속
 

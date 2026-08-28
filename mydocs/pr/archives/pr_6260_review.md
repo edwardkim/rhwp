@@ -27,8 +27,20 @@ last_verified: 2026-08-28
 
 - 원 PR 시각 보고서:
   `mydocs/report/cell-overflow-spacing-6196/{p4_cell_before,p4_cell_after}.png`
+- 통합 head 기준 MCP/visual sweep:
+  - `rhwp info --json`: `mydocs/pr/assets/pr_6275_issue6196_info.json`
+  - 저장 제품: `hancom-office-2020 11.0.0.4585` -> MCP `engine 2020`
+  - 기준 PDF: `pdf/pr_6275/by_saved_version/pr6275_issue6196_cell_char_spacing_fit-2020.pdf`
+    (1 page)
+  - visual sweep: `pr6275-issue6196-p1`, p1, flagged 0, pixel match `91.90489%`,
+    visual accuracy proxy `28.76852%`
+  - 장기 asset:
+    `mydocs/pr/assets/pr_6275_issue6196_visual_review_p1.png`,
+    `mydocs/pr/assets/pr_6275_issue6196_visual_sweep_summary.json`,
+    `mydocs/pr/assets/pr_6275_issue6196_visual_overlay_metrics.json`
 - 검토자가 직접 확인한 대표 after: before에서 `우수 내용` 셀 오른쪽 경계를 넘던 내용이 after에서
-  셀 내부에 들어온다.
+  셀 내부에 들어온다. 통합 head visual sweep review PNG에서도 해당 단일 줄 셀의 우측 경계 침범
+  원 결함은 재현되지 않았다.
 - focused test: `issue_6196_stored_single_line_cell_compresses_to_fit` 1 pass
 - 통합 head 공통 검증: fmt, unit tier, suite manifest, focused regressions, clippy, 전체 nextest,
   Native Skia 3종, WASM build 통과.
@@ -36,8 +48,9 @@ last_verified: 2026-08-28
 ## 코멘트 처리
 
 merge 후 원 PR/issue 코멘트에는 `p4_cell_before.png`/`p4_cell_after.png` 비교로 fixture-specific
-개선임을 명확히 적고, 전체 corpus의 광범위 개선처럼 과장하지 않는다. 추가 visual sweep이 필요하면
-대표 PNG와 summary를 `mydocs/pr/assets`에 보존하고 merge SHA raw URL로 댓글에 표시한다.
+개선임을 명확히 적고, 전체 corpus의 광범위 개선처럼 과장하지 않는다.
+`pr_6275_issue6196_visual_review_p1.png`를 merge commit SHA 고정 raw URL로 표시하고,
+"내용 픽셀 중심 자동 일치율 보조값 = 약 28.77%" 및 자동값의 한계를 함께 둔다.
 
 ## 후속
 

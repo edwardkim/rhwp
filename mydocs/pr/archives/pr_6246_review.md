@@ -32,8 +32,20 @@ head의 stale helper 형태가 남아 있었으므로 메인터너 정렬 커밋
 
 - 원 PR 시각 보고서:
   `mydocs/report/footer-band-valign-6186/{before_p2,after_p2,oracle_p2}.png`
+- 통합 head 기준 MCP/visual sweep:
+  - `rhwp info --json`: `mydocs/pr/assets/pr_6275_issue6186_info.json`
+  - 저장 제품: `hancom-office-2018 10.0.0.12409` -> MCP `engine 2020`
+  - 기준 PDF: `pdf/pr_6275/by_saved_version/pr6275_issue6186_defense_press_release-2020.pdf`
+    (2 pages)
+  - visual sweep: `pr6275-issue6186-p2`, p2, flagged 0, pixel match `93.02684%`,
+    visual accuracy proxy `20.36145%`
+  - 장기 asset:
+    `mydocs/pr/assets/pr_6275_issue6186_visual_review_p2.png`,
+    `mydocs/pr/assets/pr_6275_issue6186_visual_sweep_summary.json`,
+    `mydocs/pr/assets/pr_6275_issue6186_visual_overlay_metrics.json`
 - 검토자가 직접 확인한 대표 after/oracle: 꼬리말 쪽번호 `2 - 2`가 band 안에서 한컴 oracle과 같은
-  아래쪽 정렬 위치로 내려온다.
+  아래쪽 정렬 위치로 내려온다. 통합 head visual sweep review PNG에서도 꼬리말 쪽번호가 별도
+  윗줄로 갈라지는 원 결함은 재현되지 않았다.
 - focused test: `issue_6186_footer_page_number_sits_on_the_textbox_line`,
   `issue_6186_footer_vert_align_survives_hwpx_roundtrip` 2 pass
 - 최신 head 정렬 후 focused 재검증: 2 pass / 8,527 skipped
@@ -43,10 +55,9 @@ head의 stale helper 형태가 남아 있었으므로 메인터너 정렬 커밋
 ## 코멘트 처리
 
 merge 후 원 PR/issue 코멘트에는 force-push 이후 stale helper 흔적을 제거했고 최신 직렬화 commit의
-test/golden 산출물과 focused 검증을 확인했다는 점, 그리고 `after_p2.png`/`oracle_p2.png` 직접 확인
-결과를 적는다. 추가 visual sweep이 필요하면
-`mydocs/manual/verification/visual_sweep_guide.md#github-merge-comment`에 따라 대표 `review_*.png`를
-`mydocs/pr/assets`에 보존하고, merge commit SHA 고정 raw URL로 댓글에 표시한다.
+test/golden 산출물과 focused 검증을 확인했다는 점을 적는다. 또한
+`pr_6275_issue6186_visual_review_p2.png`를 merge commit SHA 고정 raw URL로 표시하고,
+"내용 픽셀 중심 자동 일치율 보조값 = 약 20.36%" 및 자동값의 한계를 함께 남긴다.
 
 ## 후속
 
