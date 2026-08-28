@@ -7,8 +7,8 @@ use super::tokenizer::{tokenize, DirectionKind, Token};
 pub enum FormulaNode {
     /// 숫자 리터럴
     Number(f64),
-    /// 셀 참조 (col: 'A'-'Z' 또는 '?', row: 1~ 또는 0=와일드카드)
-    CellRef { col: char, row: u32 },
+    /// 셀 참조 (col: "A"-"Z", "AA"... 또는 "?", row: 1~ 또는 와일드카드)
+    CellRef { col: String, row: u32 },
     /// 범위 참조 (시작 셀 : 끝 셀)
     Range {
         start: Box<FormulaNode>,
@@ -246,8 +246,20 @@ mod tests {
                 left,
                 right,
             } => {
-                assert_eq!(*left, FormulaNode::CellRef { col: 'A', row: 1 });
-                assert_eq!(*right, FormulaNode::CellRef { col: 'B', row: 3 });
+                assert_eq!(
+                    *left,
+                    FormulaNode::CellRef {
+                        col: "A".into(),
+                        row: 1
+                    }
+                );
+                assert_eq!(
+                    *right,
+                    FormulaNode::CellRef {
+                        col: "B".into(),
+                        row: 3
+                    }
+                );
             }
             _ => panic!("expected BinOp"),
         }
@@ -262,8 +274,20 @@ mod tests {
                 assert_eq!(args.len(), 1);
                 match &args[0] {
                     FormulaNode::Range { start, end } => {
-                        assert_eq!(**start, FormulaNode::CellRef { col: 'A', row: 1 });
-                        assert_eq!(**end, FormulaNode::CellRef { col: 'B', row: 5 });
+                        assert_eq!(
+                            **start,
+                            FormulaNode::CellRef {
+                                col: "A".into(),
+                                row: 1
+                            }
+                        );
+                        assert_eq!(
+                            **end,
+                            FormulaNode::CellRef {
+                                col: "B".into(),
+                                row: 5
+                            }
+                        );
                     }
                     _ => panic!("expected Range"),
                 }
@@ -311,7 +335,13 @@ mod tests {
         let ast = parse_formula("=-A1").unwrap();
         match ast {
             FormulaNode::Negate(inner) => {
-                assert_eq!(*inner, FormulaNode::CellRef { col: 'A', row: 1 });
+                assert_eq!(
+                    *inner,
+                    FormulaNode::CellRef {
+                        col: "A".into(),
+                        row: 1
+                    }
+                );
             }
             _ => panic!("expected Negate"),
         }

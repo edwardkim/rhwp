@@ -6,6 +6,13 @@ import { CellSplitDialog } from '@/ui/cell-split-dialog';
 import { CellBorderBgDialog } from '@/ui/cell-border-bg-dialog';
 import { FormulaDialog } from '@/ui/formula-dialog';
 import {
+  planBlockCalculation,
+  preflightBlockCalculationJobs,
+  type BlockCalculationCellState,
+  type BlockCalculationFunction,
+  type BlockCalculationJob,
+} from '@/command/block-calculation-plan';
+import {
   TableDeleteRowColumnDialog,
   TableInsertRowColumnDialog,
   type TableDeleteRowColumnMode,
@@ -26,6 +33,66 @@ type TableCellCommandContext = {
 
 function safeTableOp(fn: () => void, label: string): void {
   try { fn(); } catch (e) { console.error(`[table] ${label} 실패:`, e); }
+}
+
+function isTopLevelTableCellEmpty(
+  wasm: CommandServices['wasm'],
+  sec: number,
+  ppi: number,
+  ci: number,
+  cellIdx: number,
+): boolean {
+  const paragraphCount = wasm.getCellParagraphCount(sec, ppi, ci, cellIdx);
+  for (let cellParaIdx = 0; cellParaIdx < paragraphCount; cellParaIdx += 1) {
+    if (wasm.getCellParagraphLength(sec, ppi, ci, cellIdx, cellParaIdx) > 0) return false;
+  }
+  return true;
+}
+
+function selectedBlockCalculationCells(
+  wasm: CommandServices['wasm'],
+  sec: number,
+  ppi: number,
+  ci: number,
+  range: CellRange,
+  dims: TableDimensions,
+): BlockCalculationCellState[][] | null {
+  if (range.startRow < 0 || range.startCol < 0 ||
+      range.endRow >= dims.rowCount || range.endCol >= dims.colCount) return null;
+
+  const byCoordinate = new Map<string, {
+    cellIdx: number;
+    rowSpan: number;
+    colSpan: number;
+  }>();
+  for (let cellIdx = 0; cellIdx < dims.cellCount; cellIdx += 1) {
+    const info = wasm.getCellInfo(sec, ppi, ci, cellIdx);
+    if (!isCellInRange(info, range)) continue;
+    const key = `${info.row}:${info.col}`;
+    if (byCoordinate.has(key)) return null;
+    byCoordinate.set(key, {
+      cellIdx,
+      rowSpan: info.rowSpan,
+      colSpan: info.colSpan,
+    });
+  }
+
+  const cells: BlockCalculationCellState[][] = [];
+  for (let row = range.startRow; row <= range.endRow; row += 1) {
+    const cellRow: BlockCalculationCellState[] = [];
+    for (let col = range.startCol; col <= range.endCol; col += 1) {
+      const cell = byCoordinate.get(`${row}:${col}`);
+      // 병합 셀이 덮은 비-anchor 좌표도 여기서 빠지므로 fail-closed한다.
+      if (!cell) return null;
+      cellRow.push({
+        empty: isTopLevelTableCellEmpty(wasm, sec, ppi, ci, cell.cellIdx),
+        rowSpan: cell.rowSpan,
+        colSpan: cell.colSpan,
+      });
+    }
+    cells.push(cellRow);
+  }
+  return cells;
 }
 
 function equalizeTargetRange(ih: ReturnType<CommandServices['getInputHandler']>, dims: TableDimensions): CellRange {
@@ -63,7 +130,12 @@ function stub(id: string, label: string, icon?: string, shortcut?: string): Comm
   };
 }
 
-function blockCalcCommand(id: string, label: string, func: string, shortcut: string): CommandDef {
+function blockCalcCommand(
+  id: string,
+  label: string,
+  func: BlockCalculationFunction,
+  shortcut: string,
+): CommandDef {
   return {
     id,
     label,
@@ -75,22 +147,48 @@ function blockCalcCommand(id: string, label: string, func: string, shortcut: str
       const pos = ih.getCursorPosition();
       if (pos.parentParaIndex === undefined || pos.controlIndex === undefined || pos.cellIndex === undefined) return;
       try {
-        const cellInfo = services.wasm.getCellInfo(pos.sectionIndex, pos.parentParaIndex, pos.controlIndex, pos.cellIndex);
-        const row = cellInfo.row;
-        const col = cellInfo.col;
-        const formula = `=${func}(above)`;
-        // [블록계산 이관] write=true 는 결과를 셀에 써서 문자 수를 바꾼다 — 미기록 시 후속
-        // undo 오프셋 오염(#2344 셀 숫자 서식과 동일 계열). dry-run(write=false)으로 ok 를
-        // 확인한 뒤 commit 을 snapshot 으로 라우팅한다(라우터가 refresh → 수동 emit 제거).
-        const check = JSON.parse(services.wasm.evaluateTableFormula(
-          pos.sectionIndex, pos.parentParaIndex, pos.controlIndex, row, col, formula, false,
+        const tableContext = ih.getCellTableContext();
+        const range = ih.getSelectedCellRange();
+        if (!tableContext || !range || !ih.isInCellSelectionMode()) return;
+        const nested = (tableContext.cellPath?.length ?? 0) > 1;
+        if (nested || ih.hasExcludedCellSelection()) return;
+
+        const { sec, ppi, ci } = tableContext;
+        const dims = services.wasm.getTableDimensions(sec, ppi, ci);
+        const cells = selectedBlockCalculationCells(services.wasm, sec, ppi, ci, range, dims);
+        if (!cells) return;
+        const plan = planBlockCalculation({
+          range,
+          cells,
+          functionName: func,
+          hasExcludedCells: false,
+          nested: false,
+        });
+        if (!plan) return;
+
+        const evaluate = (
+          wasm: CommandServices['wasm'],
+          job: BlockCalculationJob,
+          writeResult: boolean,
+        ): { ok: boolean } => JSON.parse(wasm.evaluateTableFormula(
+          sec, ppi, ci, job.targetRow, job.targetCol, job.formula, writeResult,
         ));
-        if (!check.ok) return;
+        const preflightOk = preflightBlockCalculationJobs(
+          plan.jobs,
+          (job, writeResult) => evaluate(services.wasm, job, writeResult),
+        );
+        if (!preflightOk) return;
+
+        // 모든 결과를 먼저 dry-run한 뒤 하나의 snapshot에서 기록한다. write 중 예외가 나면
+        // SnapshotCommand가 before snapshot으로 전체 rollback한다.
         safeTableOp(() => ih.executeOperation({
           kind: 'snapshot',
           operationType: 'tableBlockCalc',
           operation: (wasm) => {
-            wasm.evaluateTableFormula(pos.sectionIndex, pos.parentParaIndex!, pos.controlIndex!, row, col, formula, true);
+            for (const job of plan.jobs) {
+              const result = evaluate(wasm, job, true);
+              if (!result.ok) throw new Error(`블록 계산 쓰기 실패: ${job.formula}`);
+            }
             return pos;
           },
         }), '블록 계산');
