@@ -1,0 +1,43 @@
+{
+  "summary": {
+    "compared_pages": 1,
+    "pixel_diff_threshold": 32,
+    "average_pixel_match_percent": 87.91134,
+    "worst_pixel_match_percent": 87.91134,
+    "average_ink_match_percent": 29.94235,
+    "worst_ink_match_percent": 29.94235,
+    "average_visual_accuracy_proxy_percent": 29.94235,
+    "worst_visual_accuracy_proxy_percent": 29.94235,
+    "worst_pages": [
+      2
+    ]
+  },
+  "pages": [
+    {
+      "page": 2,
+      "rhwp_png": "/home/tsjang/rhwp/output/visual_sweep_pr6275_current/issue6206_securities_p2/pr6275-issue6206-securities-p2/rhwp_png/rhwp_002.png",
+      "pdf_png": "/home/tsjang/rhwp/output/visual_sweep_pr6275_current/issue6206_securities_p2/pr6275-issue6206-securities-p2/pdf_png/pdf-02.png",
+      "overlay_png": "/home/tsjang/rhwp/output/visual_sweep_pr6275_current/issue6206_securities_p2/pr6275-issue6206-securities-p2/overlay/overlay_002.png",
+      "width": 794,
+      "height": 1123,
+      "pixel_diff_threshold": 32,
+      "total_pixels": 891662,
+      "diff_pixels": 107790,
+      "diff_ratio": 0.12088661,
+      "pixel_match_percent": 87.91134,
+      "ink_union_pixels": 153859,
+      "ink_diff_pixels": 107790,
+      "ink_diff_ratio": 0.7005765,
+      "ink_match_percent": 29.94235,
+      "visual_accuracy_proxy_percent": 29.94235,
+      "mean_abs_channel_delta": 17.448,
+      "max_channel_delta": 255,
+      "diff_bbox": [
+        94,
+        75,
+        693,
+        1092
+      ]
+    }
+  ]
+}

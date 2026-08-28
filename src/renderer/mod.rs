@@ -50,6 +50,11 @@ pub mod pua_oldhangul;
 pub mod render_normalization;
 pub mod render_tree;
 pub mod scheduler;
+pub(crate) mod shaping;
+pub(crate) mod shaping_composition;
+pub(crate) mod shaping_context;
+pub(crate) mod shaping_paragraph;
+pub(crate) mod shaping_publication;
 #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
 pub mod skia;
 pub(crate) mod static_svg;
@@ -1846,11 +1851,10 @@ fn format_circled_digit(n: u16) -> String {
         '①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧', '⑨', '⑩', '⑪', '⑫', '⑬', '⑭', '⑮', '⑯', '⑰', '⑱',
         '⑲', '⑳',
     ];
-    if n >= 1 && n <= 20 {
-        CIRCLED[(n - 1) as usize].to_string()
-    } else {
-        n.to_string()
-    }
+    n.checked_sub(1)
+        .and_then(|idx| CIRCLED.get(idx as usize))
+        .map(|c| c.to_string())
+        .unwrap_or_else(|| n.to_string())
 }
 
 /// 로마 숫자 변환
@@ -1911,11 +1915,10 @@ fn format_hangul_ganada(n: u16) -> String {
     const GANADA: [char; 14] = [
         '가', '나', '다', '라', '마', '바', '사', '아', '자', '차', '카', '타', '파', '하',
     ];
-    if n >= 1 && n <= 14 {
-        GANADA[(n - 1) as usize].to_string()
-    } else {
-        n.to_string()
-    }
+    n.checked_sub(1)
+        .and_then(|idx| GANADA.get(idx as usize))
+        .map(|c| c.to_string())
+        .unwrap_or_else(|| n.to_string())
 }
 
 /// 한글 숫자 변환 (일, 이, 삼, ...)

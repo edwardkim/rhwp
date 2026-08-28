@@ -203,6 +203,19 @@ pub struct DocInfo {
     pub styles: Vec<Style>,
     /// 파서가 모델링하지 않는 추가 레코드 (DOC_DATA, FORBIDDEN_CHAR 등)
     pub extra_records: Vec<RawRecord>,
+    /// [Issue #6208] 문서에 실린 **인쇄 방식**(모아 찍기 등).
+    ///
+    /// HWP5 는 `DocInfo`/`HWPTAG_DOC_DATA`(tag 27)의 `(u32 key, u32 value)` 목록 중
+    /// 키 `0x0006_4006`, HWPX 는 `settings.xml` 의
+    /// `<config:config-item name="PrintMethod">` 에 같은 값을 싣는다.
+    /// 원본에 항목이 없으면 `None`.
+    ///
+    /// **rhwp 는 이 값을 출력에 반영하지 않는다** — 파싱·노출 전용이다.
+    /// 한글 오라클 PDF 와 대조할 때 이 값이 [`print_method_implies_nup`] 이면
+    /// 한글 쪽 장 수·용지 방향이 rhwp 와 다르므로, 좌표를 그대로 견주면 오판한다.
+    /// 저장은 `extra_records` / `raw_stream` 의 원본 바이트가 담당하므로 이 필드는
+    /// 직렬화에 쓰이지 않는다(파생 값).
+    pub print_method: Option<u32>,
     /// 원본 DocInfo 레코드 스트림 바이트 (직렬화 시 원본 복원용)
     pub raw_stream: Option<Vec<u8>>,
     /// Bullet 개수 (ID_MAPPINGS에 포함, bullets.len()과 동기화)
@@ -233,6 +246,28 @@ pub struct DocInfo {
     /// 원본 바이트의 다이제스트 쌍. 저장 시 둘 다 일치할 때만 raw 를 재사용한다.
     /// 계약 전문은 `model::raw_provenance` 모듈 주석.
     pub raw_provenance: Option<crate::model::raw_provenance::DocInfoSeal>,
+}
+
+/// HWP5 `HWPTAG_DOC_DATA` 안에서 인쇄 방식을 담는 키.
+///
+/// 레코드는 `(u32 key, u32 value)` 의 평평한 목록이고 **키 순서가 문서마다 다르다** —
+/// 인덱스가 아니라 키로 찾아야 한다(156458354 는 3번째, 156543798 은 3번째지만
+/// 뒤쪽 항목들의 순서가 서로 다르다).
+pub const HWP5_DOC_DATA_KEY_PRINT_METHOD: u32 = 0x0006_4006;
+
+/// 이 인쇄 방식이 **모아 찍기**(한 장에 여러 쪽)인지.
+///
+/// 한글 2020 실측(코퍼스 표본 1건씩, COM `FileSaveAs` PDF):
+///
+/// | 값 | 한글 출력 | rhwp 출력 |
+/// |---|---|---|
+/// | 0 · 1 · 3 | 세로, 쪽수 일치 | 일치 |
+/// | **4** | **2쪽 841×595 가로** | 4쪽 세로 |
+/// | **5** | **1쪽 841×595 가로** | 3쪽 세로 |
+///
+/// 즉 0·1·3 은 용지 기하에 영향이 없고 4·5 만 장 수·방향을 바꾼다.
+pub fn print_method_implies_nup(print_method: Option<u32>) -> bool {
+    matches!(print_method, Some(4) | Some(5))
 }
 
 /// 본문의 구역 (Section)

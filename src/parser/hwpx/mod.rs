@@ -348,6 +348,21 @@ fn attach_hwpx_master_page(
 }
 
 /// HWPX 파일 바이트 데이터를 파싱하여 Document IR로 변환
+/// [Issue #6208] HWPX `settings.xml` 의 인쇄 방식.
+///
+/// ```xml
+/// <config:config-item-set name="PrintInfo">
+///   <config:config-item name="PrintMethod" type="short">4</config:config-item>
+/// ```
+///
+/// HWP5 `HWPTAG_DOC_DATA` 키 `0x0006_4006` 과 같은 값이다. 항목이 없으면 `None`.
+fn parse_settings_print_method(xml: &str) -> Option<u32> {
+    let at = xml.find(r#"name="PrintMethod""#)?;
+    let close = xml[at..].find('>')? + at + 1;
+    let end = xml[close..].find('<')? + close;
+    xml[close..end].trim().parse().ok()
+}
+
 pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
     // 1. ZIP 컨테이너 열기
     let mut reader = reader::HwpxReader::open(data)?;
@@ -427,6 +442,14 @@ pub fn parse_hwpx(data: &[u8]) -> Result<Document, HwpxError> {
     let hwpml_version = header::parse_hwpx_hwpml_version(&header_xml);
     // 무손실: 원본 HWPML 버전을 보존해 직렬화 때 그대로 재방출(하드코딩 금지).
     doc_info.hwpml_version = hwpml_version.clone();
+    // [Issue #6208] 인쇄 방식(모아 찍기 등)을 **파생**으로 읽는다 — 보존은 위
+    // `settings.xml` aux passthrough 가 그대로 담당한다. HWP5 는 같은 값을
+    // `HWPTAG_DOC_DATA` 의 키 `0x0006_4006` 에 싣는다.
+    doc_info.print_method = hwpx_aux_entries
+        .iter()
+        .find(|(path, _)| path == "settings.xml")
+        .and_then(|(_, bytes)| std::str::from_utf8(bytes).ok())
+        .and_then(parse_settings_print_method);
 
     // BinData 목록을 DocInfo에 등록
     // [Task #873] isEmbeded="0" 인 외부 file 참조 (예: HWP3 → HWPX 변환본 의 절대 경로)

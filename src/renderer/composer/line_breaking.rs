@@ -3,7 +3,7 @@
 //! 문단 텍스트를 토큰화하고 줄 나눔을 수행한다.
 //! 한글 어절/글자, 영어 단어/하이픈, CJK 개별 분할을 지원한다.
 
-use super::{find_active_char_shape, is_lang_neutral};
+use super::{find_active_char_shape, is_lang_neutral, ComposedParagraph};
 use crate::model::control::{Control, CTRL_CHAR_CODE_UNITS};
 use crate::model::paragraph::{CharShapeRef, ColumnBreakType, LineSeg, Paragraph};
 use crate::model::style::LineSpacingType;
@@ -12,8 +12,8 @@ use crate::renderer::layout::{
     is_cjk_char, resolved_to_text_style,
 };
 use crate::renderer::layout_frame::{FrameRowMetrics, LayoutFrame, ParagraphBox, RowSegment};
-use crate::renderer::px_to_hwpunit;
 use crate::renderer::style_resolver::{detect_lang_category, ResolvedStyleSet};
+use crate::renderer::{hwpunit_to_px, px_to_hwpunit};
 use std::ops::Range;
 
 struct PreparedParagraphKerning {
@@ -21,6 +21,14 @@ struct PreparedParagraphKerning {
     scalar_styles: Vec<crate::renderer::kerning::KerningParagraphScalarStyle>,
     hard_boundaries: Vec<bool>,
     measurement: std::sync::Arc<crate::renderer::kerning::KerningParagraphMeasurement>,
+}
+
+struct PreparedParagraphProjection {
+    base_positions: Vec<f64>,
+    kerning_scalar_styles: Vec<crate::renderer::kerning::KerningParagraphScalarStyle>,
+    shaping_scalar_styles:
+        Vec<crate::renderer::shaping_paragraph::HorizontalShapingParagraphScalarStyle>,
+    hard_boundaries: Vec<bool>,
 }
 
 /// A complete, source-independent projection of one supported Picture wrap
@@ -808,41 +816,23 @@ fn has_inline_control_in_range(
 
 /// 기존 scalar tokenization과 같은 문자별 base pen을 만든 뒤, 그 입력 전체를
 /// transaction-shared paragraph measurement cache에 건넨다.
-fn prepare_paragraph_kerning(
+fn prepare_paragraph_projection(
     para: &Paragraph,
     text_chars: &[char],
     styles: &ResolvedStyleSet,
     space_metric: SpaceMetric,
     inline_controls: &[FlowInlineControl],
-) -> Option<PreparedParagraphKerning> {
+) -> Option<PreparedParagraphProjection> {
     if text_chars.is_empty() {
         return None;
     }
-    let paragraph_requests_kerning = if para.char_shapes.is_empty() {
-        styles
-            .char_styles
-            .first()
-            .is_some_and(|style| style.kerning)
-    } else {
-        para.char_shapes.iter().any(|shape| {
-            styles
-                .char_styles
-                .get(shape.char_shape_id as usize)
-                .is_some_and(|style| style.kerning)
-        })
-    };
-    if !paragraph_requests_kerning {
-        return None;
-    }
-    let context = styles.kerning_measurement_context.as_ref()?.clone();
-
     let mut current_lang = 0usize;
     let mut base_positions = Vec::with_capacity(text_chars.len().saturating_add(1));
-    let mut scalar_styles = Vec::with_capacity(text_chars.len());
+    let mut kerning_scalar_styles = Vec::with_capacity(text_chars.len());
+    let mut shaping_scalar_styles = Vec::with_capacity(text_chars.len());
     let mut hard_boundaries = vec![false; text_chars.len().saturating_add(1)];
     let mut pen = 0.0f64;
     base_positions.push(pen);
-    let mut any_requested = false;
 
     for (index, character) in text_chars.iter().copied().enumerate() {
         let language_index = if is_lang_neutral(character) {
@@ -874,13 +864,26 @@ fn prepare_paragraph_kerning(
         } else {
             1.0
         };
-        any_requested |= text_style.kerning;
-        scalar_styles.push(crate::renderer::kerning::KerningParagraphScalarStyle {
-            slot: crate::renderer::kerning::ExactFontSlot::new(char_shape_id, language_index),
+        let slot = crate::renderer::kerning::ExactFontSlot::new(char_shape_id, language_index);
+        kerning_scalar_styles.push(crate::renderer::kerning::KerningParagraphScalarStyle {
+            slot,
             requested: text_style.kerning,
             effective_font_size_px,
             width_ratio,
         });
+        shaping_scalar_styles.push(
+            crate::renderer::shaping_paragraph::HorizontalShapingParagraphScalarStyle {
+                slot,
+                effective_font_size_px,
+                width_ratio,
+                letter_spacing_px: text_style.letter_spacing,
+                kerning: text_style.kerning,
+                bold: text_style.bold,
+                italic: text_style.italic,
+                superscript: text_style.superscript,
+                subscript: text_style.subscript,
+            },
+        );
 
         let scalar_width = match character {
             '\t' | '\n' | '\r' => 0.0,
@@ -890,9 +893,6 @@ fn prepare_paragraph_kerning(
         pen += scalar_width.max(0.0);
         base_positions.push(pen);
     }
-    if !any_requested {
-        return None;
-    }
 
     for control in inline_controls {
         let boundary = control.char_position.min(text_chars.len());
@@ -901,8 +901,53 @@ fn prepare_paragraph_kerning(
             hard_boundaries[boundary + 1] = true;
         }
     }
-    let measurement =
-        context.paragraph_measurement(&para.text, base_positions, &scalar_styles, &hard_boundaries);
+    Some(PreparedParagraphProjection {
+        base_positions,
+        kerning_scalar_styles,
+        shaping_scalar_styles,
+        hard_boundaries,
+    })
+}
+
+fn prepare_paragraph_kerning(
+    para: &Paragraph,
+    text_chars: &[char],
+    styles: &ResolvedStyleSet,
+    space_metric: SpaceMetric,
+    inline_controls: &[FlowInlineControl],
+) -> Option<PreparedParagraphKerning> {
+    let paragraph_requests_kerning = if para.char_shapes.is_empty() {
+        styles
+            .char_styles
+            .first()
+            .is_some_and(|style| style.kerning)
+    } else {
+        para.char_shapes.iter().any(|shape| {
+            styles
+                .char_styles
+                .get(shape.char_shape_id as usize)
+                .is_some_and(|style| style.kerning)
+        })
+    };
+    if !paragraph_requests_kerning {
+        return None;
+    }
+    let context = styles.kerning_measurement_context.as_ref()?.clone();
+    let projection =
+        prepare_paragraph_projection(para, text_chars, styles, space_metric, inline_controls)?;
+    if !projection
+        .kerning_scalar_styles
+        .iter()
+        .any(|style| style.requested)
+    {
+        return None;
+    }
+    let measurement = context.paragraph_measurement(
+        &para.text,
+        projection.base_positions,
+        &projection.kerning_scalar_styles,
+        &projection.hard_boundaries,
+    );
     if measurement.disposition
         != crate::renderer::kerning::KerningParagraphMeasurementDisposition::PairAdjusted
     {
@@ -911,10 +956,145 @@ fn prepare_paragraph_kerning(
 
     Some(PreparedParagraphKerning {
         context,
-        scalar_styles,
-        hard_boundaries,
+        scalar_styles: projection.kerning_scalar_styles,
+        hard_boundaries: projection.hard_boundaries,
         measurement,
     })
+}
+
+fn has_rtl_or_bidi_control(text: &str) -> bool {
+    text.chars().any(|character| {
+        matches!(
+            character as u32,
+            0x0590..=0x08FF
+                | 0xFB1D..=0xFDFF
+                | 0xFE70..=0xFEFF
+                | 0x10800..=0x10FFF
+                | 0x1E800..=0x1EEFF
+                | 0x200E..=0x200F
+                | 0x202A..=0x202E
+                | 0x2066..=0x2069
+        )
+    })
+}
+
+/// Run Q2-C only at the opt-in composition boundary and retain the exact Arc
+/// returned by the transaction.  Every malformed or unsupported input maps to
+/// `None`; the legacy `ComposedParagraph` fields are never rewritten here.
+pub(super) fn compose_horizontal_shaping_handoff(
+    para: &Paragraph,
+    composed: &ComposedParagraph,
+    styles: &ResolvedStyleSet,
+) -> Option<std::sync::Arc<crate::renderer::shaping_paragraph::HorizontalShapingLineOutcome>> {
+    let kerning_context = styles.kerning_measurement_context.as_ref()?;
+    let shaping_context = styles.horizontal_shaping_context.as_ref()?;
+    if kerning_context.registry_generation() != shaping_context.registry_generation() {
+        return None;
+    }
+    if !crate::renderer::shaping_paragraph::is_bounded_horizontal_shaping_candidate_text(&para.text)
+    {
+        return None;
+    }
+
+    let text_chars = para.text.chars().collect::<Vec<_>>();
+    let inline_controls = flow_inline_controls(para);
+    let projection = prepare_paragraph_projection(
+        para,
+        &text_chars,
+        styles,
+        SpaceMetric::Stored,
+        &inline_controls,
+    )?;
+    let kerning_measurement = kerning_context.paragraph_measurement(
+        &para.text,
+        projection.base_positions.clone(),
+        &projection.kerning_scalar_styles,
+        &projection.hard_boundaries,
+    );
+    let (fallback_positions, fallback_owner) = if kerning_measurement.disposition
+        == crate::renderer::kerning::KerningParagraphMeasurementDisposition::PairAdjusted
+    {
+        (
+            kerning_measurement.positions(),
+            crate::renderer::shaping_paragraph::HorizontalShapingFallbackOwner::W9K1,
+        )
+    } else {
+        (
+            projection.base_positions.as_slice(),
+            crate::renderer::shaping_paragraph::HorizontalShapingFallbackOwner::ExistingK0,
+        )
+    };
+
+    let code_point_count = text_chars.len();
+    let mut candidate_boundaries = composed
+        .lines
+        .iter()
+        .map(|line| line.char_start)
+        .chain(std::iter::once(code_point_count))
+        .collect::<Vec<_>>();
+    candidate_boundaries.sort_unstable();
+    candidate_boundaries.dedup();
+    if candidate_boundaries
+        .iter()
+        .any(|index| *index > code_point_count)
+    {
+        return None;
+    }
+    let available_widths_px = composed
+        .lines
+        .iter()
+        .map(|line| hwpunit_to_px(line.segment_width, 96.0))
+        .collect::<Vec<_>>();
+    if available_widths_px.is_empty()
+        || available_widths_px
+            .iter()
+            .any(|width| !width.is_finite() || *width <= 0.0)
+    {
+        return None;
+    }
+
+    let composed_text = composed
+        .lines
+        .iter()
+        .flat_map(|line| line.runs.iter())
+        .map(|run| run.text.as_str())
+        .collect::<String>();
+    let has_char_overlap = composed
+        .lines
+        .iter()
+        .flat_map(|line| line.runs.iter())
+        .any(|run| run.char_overlap.is_some());
+    let para_style = styles.para_styles.get(para.para_shape_id as usize);
+    let paragraph = crate::renderer::shaping_paragraph::HorizontalShapingParagraphRequest {
+        attempt_id_base: 1,
+        text: &para.text,
+        fallback_positions,
+        scalar_styles: &projection.shaping_scalar_styles,
+        hard_boundaries: &projection.hard_boundaries,
+        fallback_owner,
+        model_text_matches_shaping_text: composed_text == para.text,
+        horizontal_ltr_bidi0: !has_rtl_or_bidi_control(&para.text),
+        condense_min_space: para_style
+            .map(|style| style.condense_min_space)
+            .unwrap_or(0),
+        has_inline_controls: !para.controls.is_empty(),
+        has_tabs: para.text.contains('\t'),
+        has_rotation: false,
+        has_char_overlap,
+    };
+    let request = crate::renderer::shaping_paragraph::HorizontalShapingLineRequest {
+        paragraph,
+        candidate_boundaries: &candidate_boundaries,
+        available_widths_px: &available_widths_px,
+    };
+    let mut transaction = shaping_context.transaction();
+    let outcome = std::sync::Arc::new(
+        crate::renderer::shaping_paragraph::run_horizontal_shaping_line_transaction(
+            &mut transaction,
+            &request,
+        ),
+    );
+    crate::renderer::shaping_composition::retain_qualified_horizontal_shaping_outcome(outcome)
 }
 
 fn apply_paragraph_kerning_to_tokens(

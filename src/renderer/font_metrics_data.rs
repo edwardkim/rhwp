@@ -55,10 +55,14 @@ impl FontMetric {
         }
         // Latin 및 기타 범위
         for range in self.latin_ranges {
-            if code >= range.start && code <= range.end {
-                let w = range.widths[(code - range.start) as usize];
-                return if w > 0 { Some(w) } else { None };
+            if code < range.start || code > range.end {
+                continue;
             }
+            let idx = (code - range.start) as usize;
+            let Some(&w) = range.widths.get(idx) else {
+                continue;
+            };
+            return if w > 0 { Some(w) } else { None };
         }
         None
     }

@@ -1,0 +1,25 @@
+{
+  "status": "success",
+  "job_id": "be42991c-c2c2-4272-9866-3dfbcd4bd03f",
+  "output_path": "/home/tsjang/rhwp/pdf/pr_6275/by_saved_version/pr6275_issue6186_defense_press_release-2020.pdf",
+  "output_filename": "pr6275_issue6186_defense_press_release-2020.pdf",
+  "size": 97720,
+  "sha256": "3c428a8133aa465a6bef81428855589a318cdac9a31dcc51fd368d5da40aa507",
+  "server": {
+    "job_id": "be42991c-c2c2-4272-9866-3dfbcd4bd03f",
+    "status": "success",
+    "target": "pdf",
+    "input_filename": "156755659_defense_press_release.hwpx",
+    "output_filename": "pr6275_issue6186_defense_press_release-2020.pdf",
+    "size": 97720,
+    "sha256": "3c428a8133aa465a6bef81428855589a318cdac9a31dcc51fd368d5da40aa507",
+    "mime_type": "application/pdf",
+    "engine": "2020",
+    "engine_profile": "2020",
+    "hancom_version": "12.0.0.4605",
+    "backend": "hwp-managed-direct-dll-host",
+    "elapsed_ms": 17899,
+    "worker_elapsed_ms": 15804,
+    "worker_bits": 32
+  }
+}
