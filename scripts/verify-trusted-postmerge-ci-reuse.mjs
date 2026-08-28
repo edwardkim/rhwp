@@ -33,16 +33,88 @@ function enforcementPathChanged(files) {
   ));
 }
 
-function latestCandidateRun(runs, pullRequest, repository) {
+function allowedReviewOnlyFile(file) {
+  if (!file || typeof file.filename !== "string") {
+    return false;
+  }
+  if (file.filename.startsWith("mydocs/")) {
+    return true;
+  }
+  if (file.status !== "added") {
+    return false;
+  }
+
+  const filename = file.filename;
+  const lowerName = filename.toLowerCase();
+  const sampleReference = filename.startsWith("samples/")
+    && [".hwp", ".hwpx", ".pdf", ".png"].some((extension) => lowerName.endsWith(extension));
+  const pdfReference = ["pdf/", "pdf-2020/", "pdf-large/"]
+    .some((prefix) => filename.startsWith(prefix))
+    && lowerName.endsWith(".pdf");
+  return sampleReference || pdfReference;
+}
+
+export function classifyReviewOnlyCommit(commit) {
+  if (!validSha(commit?.sha) || !Array.isArray(commit?.files)) {
+    return { kind: "invalid" };
+  }
+  if (
+    commit.files.length === 0
+    || commit.files.length >= 300
+    || !Array.isArray(commit.parents)
+  ) {
+    return { kind: "code" };
+  }
+  if (!commit.files.every(allowedReviewOnlyFile)) {
+    return { kind: "code" };
+  }
+  if (commit.parents.length !== 1 || !validSha(commit.parents[0]?.sha)) {
+    return { kind: "code" };
+  }
+  return { kind: "review", parentSha: commit.parents[0].sha };
+}
+
+export function selectTrustedPostMergeCandidate(pullRequest, prCommits) {
+  if (!validSha(pullRequest?.head?.sha) || !Array.isArray(prCommits) || prCommits.length === 0) {
+    return null;
+  }
+
+  let expectedSha = pullRequest.head.sha;
+  let hasReviewOnlyTail = false;
+  for (let index = prCommits.length - 1; index >= 0; index -= 1) {
+    const commit = prCommits[index];
+    if (commit?.sha !== expectedSha) {
+      return null;
+    }
+    const classification = classifyReviewOnlyCommit(commit);
+    if (classification.kind === "invalid") {
+      return null;
+    }
+    if (classification.kind === "code") {
+      return { sha: commit.sha, hasReviewOnlyTail };
+    }
+    hasReviewOnlyTail = true;
+    expectedSha = classification.parentSha;
+  }
+
+  return null;
+}
+
+function latestCandidateRun(runs, pullRequest, repository, candidateSha) {
   const createdAt = timestamp(pullRequest.created_at);
   const mergedAt = timestamp(pullRequest.merged_at);
-  if (!Number.isFinite(createdAt) || !Number.isFinite(mergedAt) || mergedAt < createdAt) {
+  if (
+    !validSha(candidateSha)
+    || !Number.isFinite(createdAt)
+    || !Number.isFinite(mergedAt)
+    || mergedAt < createdAt
+  ) {
     return null;
   }
 
   const matches = (Array.isArray(runs) ? runs : []).filter((run) => (
     run?.event === "pull_request"
-    && run?.head_sha === pullRequest.head?.sha
+    && run?.head_sha === candidateSha
     && run?.head_branch === pullRequest.head?.ref
     && run?.head_repository?.full_name === repository
     && timestamp(run.created_at) >= createdAt
@@ -109,7 +181,16 @@ export function evaluateTrustedPostMergeReuse(input) {
     return denied("pr-changes-ci-enforcement-surface");
   }
 
-  const candidate = latestCandidateRun(input.workflowRuns, pullRequest, input.repository);
+  const candidateSource = selectTrustedPostMergeCandidate(pullRequest, input.prCommits);
+  if (!candidateSource) {
+    return denied("review-tail-evidence-unavailable");
+  }
+  const candidate = latestCandidateRun(
+    input.workflowRuns,
+    pullRequest,
+    input.repository,
+    candidateSource.sha,
+  );
   if (!candidate) {
     return denied("no-current-pr-workflow-candidate");
   }
@@ -121,7 +202,9 @@ export function evaluateTrustedPostMergeReuse(input) {
   }
   return {
     reuse: true,
-    reason: "exact-green-pr-workflow-reused",
+    reason: candidateSource.hasReviewOnlyTail
+      ? "review-tail-green-pr-workflow-reused"
+      : "exact-green-pr-workflow-reused",
     sourceRunId: String(candidate.id),
     pullNumber: String(pullRequest.number),
   };

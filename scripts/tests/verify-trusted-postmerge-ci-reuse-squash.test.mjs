@@ -49,6 +49,11 @@ function input(overrides = {}) {
       created_at: "2026-08-27T10:00:00Z",
     }],
     pullFiles: [{ filename: "src/lib.rs" }],
+    prCommits: [{
+      sha: head,
+      parents: [{ sha: base }],
+      files: [{ filename: "src/lib.rs", status: "modified" }],
+    }],
     workflowRuns: [candidate()],
     ...overrides,
   };
