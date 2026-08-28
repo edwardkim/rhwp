@@ -100,22 +100,18 @@ test('수정자 없는 S와 다른 물리 키는 문맥 라우터가 소유하�
   );
 });
 
-test('InputHandler는 IME와 수정자 없는 S 분기보다 먼저 셀 블록 문맥 단축키를 처리한다', () => {
+test('InputHandler는 IME보다 먼저 Ctrl/Cmd+Shift+S와 수정자 없는 S/M을 순서대로 처리한다', () => {
   const source = readFileSync(
     new URL('../src/engine/input-handler-keyboard.ts', import.meta.url),
     'utf8',
   );
   const contextual = source.indexOf('dispatchCellBlockCtrlShiftS.call(this, e)');
+  const cellLetters = source.indexOf('dispatchCellBlockLetterShortcut.call(this, e)');
   const ime = source.indexOf('if (e.isComposing || e.keyCode === 229) {');
-  const plainS = source.indexOf("this.dispatcher?.dispatch('table:cell-split')");
 
   assert.ok(contextual >= 0, '셀 블록 문맥 단축키 호출이 있어야 한다');
-  assert.ok(ime > contextual, 'IME 조기 반환보다 먼저 처리해야 한다');
-  assert.ok(plainS > contextual, '수정자 없는 S 셀 나누기보다 먼저 처리해야 한다');
-  assert.match(
-    source,
-    /if \(!e\.ctrlKey && !e\.metaKey && !e\.altKey && \(e\.key === 's' \|\| e\.key === 'S'\)\)/,
-  );
+  assert.ok(cellLetters > contextual, 'Ctrl/Cmd+Shift+S 뒤에 수정자 없는 S/M을 판정해야 한다');
+  assert.ok(ime > cellLetters, '두 셀 블록 resolver 모두 IME 조기 반환보다 먼저 처리해야 한다');
 });
 
 test('Recovery R1: 영문·한글·Process KeyS는 모두 셀 나누기를 소유한다', () => {

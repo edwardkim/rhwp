@@ -8,7 +8,7 @@
 >
 > 브랜치: `codex/issue-4135-contextual-shortcut`
 >
-> 상태: **Recovery R2 구현·focused 검증 완료, 결과 승인 대기 — R3 제품 소스 변경 금지**
+> 상태: **Recovery R3 구현·focused 검증 완료, 결과 승인 대기 — R4 통합 검증 미착수**
 
 ## 1. 문제를 다시 정의한다
 
