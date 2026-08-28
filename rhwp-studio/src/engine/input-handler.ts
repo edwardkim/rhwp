@@ -3421,7 +3421,18 @@ export class InputHandler {
       }
       const zoom = this.viewportManager.getZoom();
       const excluded = this.cursor.getExcludedCells();
-      this.cellSelectionRenderer.render(bboxes, range, zoom, excluded.size > 0 ? excluded : undefined);
+      // 보호 셀 클릭의 내부 선택은 F5 학습 상태가 아니다. 기존 하이라이트만 유지한다.
+      const showPhase = !this.cursor.isProtectedCellSelectionMode();
+      const phase = showPhase ? this.cursor.getCellSelectionPhase() : undefined;
+      const focus = showPhase ? this.cursor.getCellSelectionFocus() ?? undefined : undefined;
+      this.cellSelectionRenderer.render(
+        bboxes,
+        range,
+        zoom,
+        excluded.size > 0 ? excluded : undefined,
+        phase,
+        focus,
+      );
     } catch (e) {
       console.warn('[InputHandler] updateCellSelection 실패:', e);
       this.cellSelectionRenderer.clear();

@@ -54,6 +54,8 @@
   --ui-icon-sprite-url: url(/images/icon_small_ko.svg);
   --table-selection-fill: rgba(51, 122, 183, 0.25);
   --table-selection-stroke: #337ab7;
+  --table-selection-marker-single: #74777c;
+  --table-selection-marker-range: #ef754b;
 
   /* 눈금자 */
   --ruler-bg: #d0d0d0;
@@ -197,6 +199,8 @@
   --ui-icon-sprite-url: url(/images/icon_small_ko_dark.svg);
   --table-selection-fill: rgba(139, 184, 255, 0.28);
   --table-selection-stroke: #8bb8ff;
+  --table-selection-marker-single: #aeb4bd;
+  --table-selection-marker-range: #ff8a65;
 
   --ruler-bg: #2d333b;
   --ruler-body: var(--ui-surface-raised);
