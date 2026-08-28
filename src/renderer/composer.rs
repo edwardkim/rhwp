@@ -1963,10 +1963,10 @@ pub(crate) fn recompose_stored_lines_in_frame(
     dpi: f64,
     legacy_hwp3_stored_geometry: bool,
     miss_policy: line_breaking::StoredRowMissPolicy,
-    // [#6175] 같은 단의 어울림 개체 흐름 폭(HWPUNIT) — 저장 행이 남긴 결손 폭을
-    // 설명하면 재래핑하지 않고 저장 행을 그대로 둔다. 측정·페인트가 같은 함수를
-    // 타므로 두 경로가 갈리지 않는다.
-    float_carve_widths: &[i32],
+    // [#6175] 같은 세로 band의 용지/쪽 기준 어울림 개체 증거(HWPUNIT) — 저장 행이
+    // 남긴 결손 폭과 위치를 함께 설명할 때만 재래핑하지 않는다. 측정·페인트가 같은
+    // 함수를 타므로 두 경로가 갈리지 않는다.
+    float_carve_evidence: &[crate::renderer::float_placement::FloatCarveEvidence],
 ) -> Option<ComposedParagraph> {
     // A degenerate box, or controls with their own layout owner, means there is
     // no frame to build. The composition stands as it is — there is no second
@@ -1990,7 +1990,7 @@ pub(crate) fn recompose_stored_lines_in_frame(
         legacy_hwp3_stored_geometry,
         miss_policy,
         stale,
-        float_carve_widths,
+        float_carve_evidence,
     ) {
         // Stale — the row cannot hold its own text — so the rebuilt row is the
         // frame's. Its fill tokenizes through `para.char_shapes`

@@ -583,9 +583,9 @@ pub struct HeightMeasurer {
     use_hwp3_origin_flow_spacing_before: bool,
     render_normalization:
         std::sync::Arc<crate::renderer::render_normalization::RenderNormalizationOverlay>,
-    /// [#6175] 이 구역의 어울림 개체 흐름 폭 — 저장 행 admission 의 외부-기하 증거.
-    /// 측정과 렌더가 같은 증거를 써야 두 경로가 갈리지 않는다.
-    float_carve_widths: Vec<i32>,
+    /// [#6175] 이 구역의 용지/쪽 기준 어울림 개체 흐름 증거 — 저장 행 admission의
+    /// 외부-기하 증거. 측정과 렌더가 같은 증거를 써야 두 경로가 갈리지 않는다.
+    float_carve_evidence: Vec<crate::renderer::float_placement::FloatCarveEvidence>,
 }
 
 impl HeightMeasurer {
@@ -599,13 +599,16 @@ impl HeightMeasurer {
             render_normalization: std::sync::Arc::new(
                 crate::renderer::render_normalization::RenderNormalizationOverlay::default(),
             ),
-            float_carve_widths: Vec::new(),
+            float_carve_evidence: Vec::new(),
         }
     }
 
-    /// [#6175] 구역 문단에서 모은 어울림 개체 흐름 폭을 싣는다.
-    pub fn with_float_carve_widths(mut self, widths: Vec<i32>) -> Self {
-        self.float_carve_widths = widths;
+    /// [#6175] 구역 문단에서 모은 용지/쪽 기준 어울림 개체 흐름 증거를 싣는다.
+    pub(crate) fn with_float_carve_evidence(
+        mut self,
+        evidence: Vec<crate::renderer::float_placement::FloatCarveEvidence>,
+    ) -> Self {
+        self.float_carve_evidence = evidence;
         self
     }
 
@@ -859,7 +862,7 @@ impl HeightMeasurer {
                         self.dpi,
                         self.legacy_hwp3_stored_geometry,
                         crate::renderer::composer::StoredRowMissPolicy::Reflow,
-                        &self.float_carve_widths,
+                        &self.float_carve_evidence,
                     )
                 } else {
                     None

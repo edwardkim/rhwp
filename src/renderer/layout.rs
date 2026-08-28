@@ -2431,9 +2431,10 @@ pub struct LayoutEngine {
     /// 셀 문단 줄이 저장 LINE_SEG cs/sw(wrap 배제 인코딩)를 존중할지 판정하는
     /// 셀-범위 신호 — layout_horizontal_cell_paragraphs 가 설정/복원한다.
     cell_has_square_float: std::cell::Cell<bool>,
-    /// [#6175] 현재 구역의 어울림 개체 흐름 폭 — 본문 저장 행 admission 의 외부 증거.
-    /// 조판(TypesetEngine)과 같은 값을 써야 측정·페인트가 갈리지 않는다.
-    body_float_carve_widths: std::cell::RefCell<Vec<i32>>,
+    /// [#6175] 현재 구역의 용지/쪽 기준 어울림 개체 흐름 증거 — 본문 저장 행 admission의
+    /// 외부 증거. 조판(TypesetEngine)과 같은 값을 써야 측정·페인트가 갈리지 않는다.
+    body_float_carve_evidence:
+        std::cell::RefCell<Vec<super::float_placement::FloatCarveEvidence>>,
     /// 총 쪽수 (머리말/꼬리말 필드 치환용)
     total_pages: std::cell::Cell<u32>,
     /// 현재 페이지 번호 (바탕쪽 글상자 쪽번호 치환용)
@@ -2627,7 +2628,7 @@ impl LayoutEngine {
             clip_enabled: std::cell::Cell::new(true),
             hidden_header_footer: std::cell::RefCell::new(std::collections::HashSet::new()),
             cell_has_square_float: std::cell::Cell::new(false),
-            body_float_carve_widths: std::cell::RefCell::new(Vec::new()),
+            body_float_carve_evidence: std::cell::RefCell::new(Vec::new()),
             total_pages: std::cell::Cell::new(0),
             current_page_number: std::cell::Cell::new(0),
             current_page_is_section_first: std::cell::Cell::new(true),
@@ -3281,10 +3282,10 @@ impl LayoutEngine {
         wrap_around_paras: &[super::pagination::WrapAroundPara],
     ) -> PageRenderTree {
         let layout = &page_content.layout;
-        // [#6175] 본문 저장 행 admission 의 외부-기하 증거 — 조판이 구역당 한 번
+        // [#6175] 본문 저장 행 admission의 외부-기하 증거 — 조판이 구역당 한 번
         // 계산하는 것과 **같은 함수·같은 입력**이라 두 경로가 갈리지 않는다.
-        *self.body_float_carve_widths.borrow_mut() =
-            super::float_placement::column_float_carve_widths(paragraphs);
+        *self.body_float_carve_evidence.borrow_mut() =
+            super::float_placement::paper_or_page_float_carve_evidence(paragraphs);
         let mut tree = PageRenderTree::new(
             page_content.page_index,
             layout.page_width,
