@@ -9,6 +9,48 @@ use crate::model::event::DocumentEvent;
 use crate::model::paragraph::Paragraph;
 use crate::model::shape::{common_obj_offsets, ShapeObject};
 
+/// [Issue #6204] 어울림 배제 밴드를 결정하는 개체 기하의 지문.
+///
+/// 이 값이 그대로면 밴드도 그대로이므로 저장 `LINE_SEG` 를 다시 새길 필요가 없다.
+/// 밴드는 **위치·크기·기준·정렬·어울림 종류·바깥 여백**이 함께 정하므로 전부 넣는다.
+/// 글자처럼 취급(`treat_as_char`)은 밴드를 만들지 않지만, 그 토글 자체가 밴드의
+/// 유무를 바꾸므로 포함한다.
+#[derive(PartialEq, Eq)]
+struct PictureBandGeometry {
+    horizontal_offset: i32,
+    vertical_offset: i32,
+    width: u32,
+    height: u32,
+    horz_rel_to: u8,
+    vert_rel_to: u8,
+    horz_align: u8,
+    vert_align: u8,
+    treat_as_char: bool,
+    text_wrap: u8,
+    margin: (i16, i16, i16, i16),
+}
+
+fn picture_band_geometry(common: &crate::model::shape::CommonObjAttr) -> PictureBandGeometry {
+    PictureBandGeometry {
+        horizontal_offset: common.horizontal_offset as i32,
+        vertical_offset: common.vertical_offset as i32,
+        width: common.width,
+        height: common.height,
+        horz_rel_to: common.horz_rel_to as u8,
+        vert_rel_to: common.vert_rel_to as u8,
+        horz_align: common.horz_align as u8,
+        vert_align: common.vert_align as u8,
+        treat_as_char: common.treat_as_char,
+        text_wrap: common.text_wrap as u8,
+        margin: (
+            common.margin.left,
+            common.margin.right,
+            common.margin.top,
+            common.margin.bottom,
+        ),
+    }
+}
+
 impl DocumentCore {
     fn resolve_picture_control_ref(
         &self,
@@ -460,6 +502,14 @@ impl DocumentCore {
     ) -> Result<String, HwpError> {
         // JSON 파싱 (serde_json 사용 대신 수동 파싱 — 기존 패턴)
         // [Task #825] 픽쳐 속성 mutation 은 helper 로 분리 (머리말/꼬리말 path 와 공유).
+        // [Issue #6204] 개체의 **배제 밴드 기하**를 변경 전에 찍어 둔다. 위치·크기가
+        // 바뀌면 그 개체가 만드는 어울림 배제 밴드도 바뀌므로, 그 밴드에 되감긴 본문
+        // 문단의 저장 `LINE_SEG` 는 더는 유효하지 않다.
+        let band_geometry_before = self
+            .resolve_picture_control_ref(section_idx, parent_para_idx, control_idx)
+            .ok()
+            .map(|pic| picture_band_geometry(&pic.common));
+
         let (
             caption_created,
             caption_removed,
@@ -574,6 +624,28 @@ impl DocumentCore {
             para.char_offsets = vec![0, 1, 2, 11];
             para.char_count = 13;
         }
+        // [Issue #6204] 배제 밴드 기하가 바뀌었으면 그 밴드에 되감긴 문단들의 저장
+        // `LINE_SEG` 를 새 위치 기준으로 다시 새긴다.
+        //
+        // 종전에는 `horzOffset` 만 바뀌고 사다리는 그대로 남아, 본문이 **옛 그림
+        // 위치**에 되감긴 채 굳었다(156483689 1쪽: 그림을 297.7px 로 옮겨도 줄 우단이
+        // 564.5 그대로 → 그림이 글자를 덮음). 게다가 그 사다리가 파일에 실려
+        // **저장 → 새로 열기로도 재현**됐다.
+        //
+        // 텍스트 편집이 쓰는 picture-band 재투영 경로를 그대로 태운다 — 속성 변경은
+        // 이미 문서에 적용됐으므로 편집 클로저는 no-op 이고, `layout_picture_band` 가
+        // **새 기하**로 밴드를 다시 계산한다. 밴드를 못 만드는 형상(그림 없음/미지원)
+        // 이면 `Ok(false)` 로 조용히 지나가 종전 경로가 그대로 남는다.
+        let band_geometry_after = self
+            .resolve_picture_control_ref(section_idx, parent_para_idx, control_idx)
+            .ok()
+            .map(|pic| picture_band_geometry(&pic.common));
+        if band_geometry_before != band_geometry_after {
+            // 재투영 실패는 이 편집의 실패가 아니다 — 밴드를 만들 수 없는 형상이면
+            // 종전대로 recompose 에 맡긴다.
+            let _ = self.apply_body_edit_through_picture_band(section_idx, parent_para_idx, |_| {});
+        }
+
         // 리플로우
         let section = &mut self.document.sections[section_idx];
         section.raw_stream = None;

@@ -574,7 +574,7 @@ impl DocumentCore {
     /// another physical column. Stage that bounded re-projection sequence on
     /// a complete derived-state copy, then commit it only after every width
     /// accepts the band.
-    fn apply_body_edit_through_picture_band<F>(
+    pub(crate) fn apply_body_edit_through_picture_band<F>(
         &mut self,
         section_idx: usize,
         para_idx: usize,

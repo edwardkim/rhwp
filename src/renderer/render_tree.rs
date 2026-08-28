@@ -1060,7 +1060,36 @@ impl LineNode {
             outer_table_control_index: None,
         }
     }
+
+    /// 이 선이 실제로 칠하는 **잉크**의 경계 상자. (#6269)
+    ///
+    /// 백엔드(SVG·Canvas·Skia)는 `x1/y1`–`x2/y2` 를 경로로 삼아 획을 **중심 정렬**로
+    /// 칠하므로 잉크는 경로에서 획의 절반만큼 양쪽으로 번진다. bbox 를 경로 원점에서
+    /// 시작하게 잡으면(`[경로, 경로+획]`) 상자가 잉크보다 반 획 밀려, clip 확장·겹침
+    /// 판정처럼 bbox 를 소비하는 쪽이 경계에 붙은 선의 바깥 절반을 놓친다.
+    ///
+    /// 획 방향은 캡이 butt 라 경로 끝에서 더 번지지 않는다. 그래서 축 정렬 선은
+    /// **가로지르는 축으로만** 넓히고, 대각선만 두 축 모두 넓힌다.
+    pub fn ink_bbox(&self) -> BoundingBox {
+        let stroke = self.style.width.max(0.0);
+        let half = stroke / 2.0;
+        let x_min = self.x1.min(self.x2);
+        let y_min = self.y1.min(self.y2);
+        let dx = (self.x2 - self.x1).abs();
+        let dy = (self.y2 - self.y1).abs();
+        if dy <= LINE_AXIS_EPSILON_PX && dx > LINE_AXIS_EPSILON_PX {
+            BoundingBox::new(x_min, y_min - half, dx, stroke)
+        } else if dx <= LINE_AXIS_EPSILON_PX && dy > LINE_AXIS_EPSILON_PX {
+            BoundingBox::new(x_min - half, y_min, stroke, dy)
+        } else {
+            BoundingBox::new(x_min - half, y_min - half, dx + stroke, dy + stroke)
+        }
+    }
 }
+
+/// 선을 축 정렬로 볼지 가르는 허용치 (px). 저장 좌표가 정수 HWPUNIT 에서 오므로
+/// 변환 잔차만 흡수하면 된다.
+const LINE_AXIS_EPSILON_PX: f64 = 0.01;
 
 /// 사각형 노드
 #[derive(Debug, Clone, Serialize)]

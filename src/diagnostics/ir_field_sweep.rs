@@ -847,6 +847,7 @@ fn sweep_form(
     out: &mut DivergenceCollector,
 ) {
     let crate::model::control::FormObject {
+        common,
         form_type,
         name,
         caption,
@@ -865,6 +866,7 @@ fn sweep_form(
             cmp_debug(&format!("{base}.{}", stringify!($n)), $n, &b.$n, out)
         };
     }
+    f!(common);
     f!(form_type);
     f!(name);
     f!(caption);

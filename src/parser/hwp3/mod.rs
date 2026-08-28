@@ -2124,6 +2124,10 @@ fn parse_object_control_char(
             form.form_type = crate::model::control::FormType::PushButton;
             form.enabled = true;
             if let Some(table) = parsed_table {
+                // [#6266] 원본 개체의 배치(기준·정렬·어울림·오프셋)를 그대로 옮긴다.
+                // 종전에는 width/height 만 읽어 배치를 버렸고, 그 결과 렌더러가 이
+                // 개체를 인라인 말고는 놓을 수 없었다.
+                form.common = table.common.clone();
                 form.width = table.common.width;
                 form.height = table.common.height;
                 if let Some(cell) = table.cells.first() {
