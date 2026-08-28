@@ -16,7 +16,7 @@ issue: 6318
   - `collect_text_outside_body` — `MasterPage`·`Header`·`Footer`·`FootnoteArea` 에서
     `TextRun` 후보만 모은다
   - `text_columns_can_overlap` — "다른 단"과 "단 밖"을 구분한다
-  - 단위 테스트 3종
+- `tests/cases/issue_6318_outside_body_text_overlap.rs` — 편람 69쪽 실물 회귀 2종
 - `tests/fixtures/text_overlap_baseline.tsv` — 넓힌 범위로 재측정
 
 ## 왜
@@ -122,13 +122,40 @@ B: Page/MasterPage5/Table1/Cell0/TextLine0/TextRun0    겹침 18.0 x 15.3px
 별건으로 남긴다** — 이 PR 은 판정 범위만 넓히고, 그 결과 드러난 형상은 baseline 에
 기록해 둔다.
 
+## 시험을 `tests/cases/` 로 옮긴 이유 — CI 가 잡은 규약
+
+처음에는 단위 시험 3종을 `src/diagnostics/layout_anomaly.rs` 의 `#[cfg(test)]` 에 넣었다.
+CI `Lint` 의 `Validate Rust test suite manifest` 가 이를 거부했다.
+
+```
+PR base 대비 source-side test 총량 증가 금지: 4224 > 4221
+PR base 대비 source unit test 증가 금지: src/diagnostics/layout_anomaly.rs::tests#1 (15 > 12)
+```
+
+로컬 `--check` 는 통과했는데 CI 는 실패했다. CI 는 `--base-ref <PR base sha>` 를 붙여
+**PR base 대비 증가**를 보기 때문이다(`ci.yml:948-959`). 이 옵션 없이 돌린 로컬 검사는
+같은 판정을 하지 않는다. 앞으로 로컬 게이트에도 `--base-ref` 를 붙인다.
+
+옮기면서 합성 렌더 트리를 버리고 **실물 편람 69쪽** 기준으로 다시 썼다. `TextRunNode` 는
+필드가 21 개고 `Default` 가 없어 손으로 지으면 구조 변경마다 시험이 깨지며, 무엇보다 이
+결함은 실제 조판에서 나온 것이라 실물로 고정하는 편이 회귀를 정확히 막는다.
+
+애초 단위 시험이 지키려던 두 성질은 더 넓게 커버된다.
+
+| 성질 | 어디서 지키나 |
+| --- | --- |
+| 다른 단 짝짓기 제외 | 코퍼스 래칫의 `Body x Body` 합계가 4,371 로 변경 전후 동일 |
+| 바탕쪽 전면 배경의 컨테이너 오탐 | 편람 69쪽 `overlap == 0` 고정 (그 쪽 바탕쪽이 실제로 전면 배경 이미지를 가짐) |
+
 ## 검증
 
 | 명령 | 결과 |
 | --- | --- |
 | `cargo fmt --all -- --check` | 통과 |
 | `cargo clippy --profile release-test --all-targets -- -D warnings` | 통과 (2분 12초, 경고 0) |
-| `cargo test --lib diagnostics::layout_anomaly` | 16 통과 (신규 3 포함) |
+| `cargo clippy -p rhwp --lib --target wasm32-unknown-unknown -- -D warnings` | 통과 (2분 08초) |
+| `node scripts/rust-unit-test-tiers.mjs --check --base-ref <base>` | (아래 실측) |
+| `tests/cases/issue_6318_outside_body_text_overlap.rs` | (아래 실측) |
 | 래칫 테스트 (갱신 baseline) | 통과 (207.49s, 945 건 스캔 / 스킵 3) |
 
 ## 적층
