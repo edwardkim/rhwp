@@ -6,7 +6,7 @@
   [`task_m100_4969_w10_q2_d5_resource_audit.md`](../working/task_m100_4969_w10_q2_d5_resource_audit.md)
 - **기계 판독 계획**:
   [`w10_q2_d5_revised_execution_plan.json`](../tech/investigations/issue-4969/w10_q2_d5_revised_execution_plan.json)
-- **상태**: 수정 수행계획 승인 대기
+- **상태**: 수행계획 승인, R0 `qualified-red`; R1 승인 대기
 - **제품 변경**: R0·R1은 0, R2는 opt-in transport에서만 있음, N0은 0, N1부터 승인된 NO_LS lane에 있음
 
 ## 1. 수정 이유
@@ -185,7 +185,8 @@ classification은 별도 다음 단계에서 확정한다.
 
 ## 9. 승인 게이트
 
-이 문서의 승인은 전체 D5 구현을 한 번에 여는 승인이 아니다. 첫 구현 승인은 제품 출력을 바꾸지 않는
-`Q2-D5-R0` red 계약만 연다. R0·R1·R2·R3·N0·N1·N2는 각 결과 보고와 메인테이너 승인 뒤 다음 절편으로
+이 문서의 승인은 전체 D5 구현을 한 번에 여는 승인이 아니다. 첫 구현 승인으로 제품 출력을 바꾸지 않는
+`Q2-D5-R0` red 계약을 qualified-red로 고정했다. 다음 승인은 `Q2-D5-R1` unique-source prepared identity cache만
+연다. R1·R2·R3·N0·N1·N2는 각 결과 보고와 메인테이너 승인 뒤 다음 절편으로
 넘어간다. R3가 resource-qualified가 아니면 N0/N1을 시작하지 않는다. commit·remote push·PR 생성·GitHub
 comment·merge는 기존 별도 승인 경계를 유지한다.

@@ -3,7 +3,7 @@
   "kind": "font-w10-q2-d5-resource-qualified-no-lineseg-activation-plan",
   "issue": 4969,
   "stage": "W10-Q2-D5",
-  "status": "awaiting-maintainer-approval",
+  "status": "r0-qualified-red-r1-awaiting-approval",
   "baseMerge": "1a43a507c",
   "resourceAuditCheckpoint": "ae36a8786",
   "productOutputChangeBeforeR2": false,
@@ -117,6 +117,16 @@
     "nonTargetOutputHash": true,
     "failClosedMatrix": true
   },
+  "executionResult": {
+    "r0": "qualified-red",
+    "r0Artifact": "mydocs/tech/investigations/issue-4969/w10_q2_d5_r0_red_contract.json",
+    "pageLocalDedupPreserved": true,
+    "uniqueSourcePreparationRed": true,
+    "fontByKeyTransportRed": true,
+    "productOutputChanged": false,
+    "nextSlice": "Q2-D5-R1",
+    "nextSliceApproved": false
+  },
   "deferred": [
     "multi-interval-frame",
     "general-edit-reflow",
@@ -133,5 +143,5 @@
     "public-rejected-attempt-annotation",
     "private-corpus-or-hyper-v-oracle-rerun"
   ],
-  "approvalScope": "plan approval opens Q2-D5-R0 only; each later slice, commit, push, PR, comment, and merge remains separately gated"
+  "approvalScope": "plan and Q2-D5-R0 are complete; maintainer approval opens Q2-D5-R1 only, and each later slice, commit, push, PR, comment, and merge remains separately gated"
 }

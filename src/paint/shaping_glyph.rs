@@ -72,6 +72,11 @@ pub(crate) struct HorizontalShapingGlyphLoweringReport {
     pub source_node_id: Option<u32>,
     pub glyph_run: Option<LayerGlyphRunPaint>,
     pub reject_reason: Option<HorizontalShapingGlyphLoweringRejectReason>,
+    /// Successful-attempt work that scans or parses the exact portable font.
+    /// D5 uses this internal-only counter to prove that resource preparation is
+    /// charged to a unique source rather than to every emitted run. It is not
+    /// serialized and does not change renderer selection.
+    pub portable_source_work: HorizontalShapingPortableSourceWork,
     /// A successful common run owns the one GlyphRun alternative. D4 must use
     /// this bit to skip the nominal lowerer for the same TextRun fallback.
     pub claims_glyph_run_slot: bool,
@@ -86,18 +91,33 @@ impl HorizontalShapingGlyphLoweringReport {
             source_node_id,
             glyph_run: None,
             reject_reason: Some(reason),
+            portable_source_work: HorizontalShapingPortableSourceWork::default(),
             claims_glyph_run_slot: false,
         }
     }
 
-    fn emitted(source_node_id: u32, glyph_run: LayerGlyphRunPaint) -> Self {
+    fn emitted(
+        source_node_id: u32,
+        glyph_run: LayerGlyphRunPaint,
+        portable_source_work: HorizontalShapingPortableSourceWork,
+    ) -> Self {
         Self {
             source_node_id: Some(source_node_id),
             glyph_run: Some(glyph_run),
             reject_reason: None,
+            portable_source_work,
             claims_glyph_run_slot: true,
         }
     }
+}
+
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub(crate) struct HorizontalShapingPortableSourceWork {
+    /// Explicit BLAKE3 passes in the common-shaping lowerer. This excludes the
+    /// arena's own fingerprinting pass so the counter has one narrow owner.
+    pub explicit_blake3_digest_passes: usize,
+    pub face_parse_attempts: usize,
+    pub arena_intern_attempts: usize,
 }
 
 fn same_f64(left: f64, right: f64) -> bool {
@@ -176,6 +196,7 @@ fn text_run_placement(bbox: BoundingBox, run: &TextRunNode) -> TextRunPlacement 
 
 fn certified_replay_face<'a>(
     decision: &'a HorizontalShapingRunDecision,
+    portable_source_work: &mut HorizontalShapingPortableSourceWork,
 ) -> Result<(&'a [u8], u32, ttf_parser::Face<'a>), HorizontalShapingGlyphLoweringRejectReason> {
     let measurement = decision
         .measurement()
@@ -195,6 +216,8 @@ fn certified_replay_face<'a>(
     if bytes.len() > MAX_PORTABLE_FONT_BLOB_BYTES {
         return Err(HorizontalShapingGlyphLoweringRejectReason::ResourceLimitExceeded);
     }
+    portable_source_work.face_parse_attempts =
+        portable_source_work.face_parse_attempts.saturating_add(1);
     let face = ttf_parser::Face::parse(bytes, source.face_index)
         .map_err(|_| HorizontalShapingGlyphLoweringRejectReason::ReplaySourceFaceInvalid)?;
     if face.units_per_em() != measurement.units_per_em {
@@ -449,7 +472,11 @@ fn register_portable_face(
     family: &str,
     face: &ttf_parser::Face<'_>,
     resources: &mut ResourceArena,
+    portable_source_work: &mut HorizontalShapingPortableSourceWork,
 ) -> FontFaceKey {
+    portable_source_work.explicit_blake3_digest_passes = portable_source_work
+        .explicit_blake3_digest_passes
+        .saturating_add(1);
     let digest_value = resource_digest_hex(bytes);
     let resource_key = font_blob_resource_key(bytes.len(), &digest_value);
     let blob_key = FontBlobKey(resource_key.clone());
@@ -462,6 +489,8 @@ fn register_portable_face(
         kind: BinaryResourceKind::FontBlob,
         id: resource_key,
     };
+    portable_source_work.arena_intern_attempts =
+        portable_source_work.arena_intern_attempts.saturating_add(1);
     resources.intern_font_blob_bytes(bytes);
     if !resources
         .font_resources()
@@ -569,12 +598,14 @@ fn lower_horizontal_shaping_source_shadow(
         );
     }
 
-    let (font_bytes, face_index, face) = match certified_replay_face(decision) {
-        Ok(value) => value,
-        Err(reason) => {
-            return HorizontalShapingGlyphLoweringReport::rejected(Some(source_node_id), reason)
-        }
-    };
+    let mut portable_source_work = HorizontalShapingPortableSourceWork::default();
+    let (font_bytes, face_index, face) =
+        match certified_replay_face(decision, &mut portable_source_work) {
+            Ok(value) => value,
+            Err(reason) => {
+                return HorizontalShapingGlyphLoweringReport::rejected(Some(source_node_id), reason)
+            }
+        };
     if let Err(reason) = validate_measurement(decision, run, &face) {
         return HorizontalShapingGlyphLoweringReport::rejected(Some(source_node_id), reason);
     }
@@ -600,6 +631,9 @@ fn lower_horizontal_shaping_source_shadow(
         .collect();
     // All validation precedes resource mutation, so a rejected attempt cannot
     // leave a partial portable-font publication behind.
+    portable_source_work.explicit_blake3_digest_passes = portable_source_work
+        .explicit_blake3_digest_passes
+        .saturating_add(1);
     let digest_value = resource_digest_hex(font_bytes);
     let data_ref = BinaryResourceRef {
         kind: BinaryResourceKind::FontBlob,
@@ -631,6 +665,7 @@ fn lower_horizontal_shaping_source_shadow(
         &run.style.font_family,
         &face,
         resources,
+        &mut portable_source_work,
     );
     let equivalence_group = format!("text-{text_source_id}");
     let mut variant = PaintVariantMeta::text_run_default(equivalence_group.clone());
@@ -703,7 +738,7 @@ fn lower_horizontal_shaping_source_shadow(
             reason: Some("q2CommonShapingCondensedDrawProjectionV1".to_string()),
         },
     };
-    HorizontalShapingGlyphLoweringReport::emitted(source_node_id, glyph_run)
+    HorizontalShapingGlyphLoweringReport::emitted(source_node_id, glyph_run, portable_source_work)
 }
 
 /// Page-local common shaping sidecar를 TextRun 순서와 같은 text_source_id로

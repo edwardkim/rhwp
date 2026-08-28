@@ -554,3 +554,52 @@ fn issue_4969_q2_d4_a_reject_reason_names_are_stable_and_non_sensitive() {
         "sourceIdentityMismatch"
     );
 }
+
+#[test]
+fn issue_4969_q2_d5_r0_prepares_one_portable_source_once_for_1_2_8_runs() {
+    let mut observations = Vec::new();
+    for run_count in [1usize, 2, 8] {
+        let (sidecars, measurement, _) = prepared_sidecar();
+        let run = text_run();
+        let bbox = BoundingBox::new(3.0, 5.0, measurement.total_advance_px, 14.0);
+        let node = LayerNode::leaf(bbox, Some(17), Vec::new());
+        let mut resources = ResourceArena::default();
+        let mut digest_passes = 0usize;
+        let mut face_parses = 0usize;
+        let mut arena_intern_attempts = 0usize;
+
+        for text_source_id in 0..run_count {
+            let report = lower_horizontal_shaping_layer_node_shadow(
+                &node,
+                bbox,
+                &run,
+                u32::try_from(text_source_id).expect("bounded text source id"),
+                &sidecars,
+                &mut resources,
+            );
+            assert!(report.glyph_run.is_some());
+            digest_passes += report.portable_source_work.explicit_blake3_digest_passes;
+            face_parses += report.portable_source_work.face_parse_attempts;
+            arena_intern_attempts += report.portable_source_work.arena_intern_attempts;
+        }
+
+        observations.push((
+            run_count,
+            digest_passes,
+            face_parses,
+            arena_intern_attempts,
+            resources.font_blob_count(),
+            resources.font_resources().faces.len(),
+        ));
+    }
+
+    assert_eq!(
+        observations,
+        vec![
+            (1, 1, 1, 1, 1, 1),
+            (2, 1, 1, 1, 1, 1),
+            (8, 1, 1, 1, 1, 1),
+        ],
+        "font-wide digest, face preparation, and arena registration must scale with one unique exact source, not emitted run count",
+    );
+}
