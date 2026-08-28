@@ -22,6 +22,7 @@ import {
   resolveZoomDialogFitMode,
   resolveZoomDialogZoom,
 } from '../../view/zoom-dialog-state';
+import type { PageViewSettingsChange } from '../../view/page-view-settings-change';
 
 const PX_TO_MM = 25.4 / 96;
 const PAGE_GAP = 10;
@@ -266,14 +267,23 @@ export const viewCommands: CommandDef[] = [
             pageHeight: currentMetrics.pageHeight,
             pageGap: currentMetrics.pageGap,
           });
-          userSettings.setPageMovement(value.pageMovement);
-          userSettings.setPageArrangement(value.arrangement);
+          const zoomFitMode = resolveZoomDialogFitMode(value);
+          userSettings.setPageViewSettings(
+            value.arrangement,
+            value.pageMovement,
+            zoomFitMode,
+          );
           const view = userSettings.getViewSettings();
-          services.eventBus.emit('page-view-settings-changed', {
+          const transaction: PageViewSettingsChange = {
             arrangement: view.pageArrangement,
             pageMovement: view.pageMovement,
-          });
-          vm.setZoom(zoom, CENTER_ZOOM_ANCHOR, resolveZoomDialogFitMode(value));
+            zoom: {
+              value: zoom,
+              fitMode: view.zoomFitMode,
+              anchor: CENTER_ZOOM_ANCHOR,
+            },
+          };
+          services.eventBus.emit('page-view-settings-changed', transaction);
           services.eventBus.emit('command-state-changed');
         },
       }).show();

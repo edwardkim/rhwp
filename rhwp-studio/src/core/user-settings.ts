@@ -427,11 +427,7 @@ class UserSettingsService {
 
   /** 페이지 화면 배치 설정 */
   setPageArrangement(value: PageArrangement): void {
-    this.data.view.pageArrangement = resolvePageViewSettings(
-      value,
-      this.data.view.pageMovement,
-    ).arrangement;
-    this.save();
+    this.setPageViewSettings(value, this.data.view.pageMovement);
   }
 
   /** 마지막으로 고른 쪽 맞춤/폭 맞춤을 저장한다 ('none' 이면 수치 배율). */
@@ -444,9 +440,19 @@ class UserSettingsService {
 
   /** 페이지를 세로/가로 어느 방향으로 이어 볼지 저장한다. */
   setPageMovement(value: PageMovementSettings): void {
-    const pageView = resolvePageViewSettings(this.data.view.pageArrangement, value);
+    this.setPageViewSettings(this.data.view.pageArrangement, value);
+  }
+
+  /** 쪽 배치·이동·맞춤 모드를 하나의 정규화된 보기 snapshot으로 저장한다. */
+  setPageViewSettings(
+    arrangement: PageArrangement,
+    movement: PageMovementSettings,
+    zoomFitMode: ZoomFitMode = this.data.view.zoomFitMode,
+  ): void {
+    const pageView = resolvePageViewSettings(arrangement, movement);
     this.data.view.pageArrangement = pageView.arrangement;
     this.data.view.pageMovement = pageView.movement;
+    this.data.view.zoomFitMode = normalizeZoomFitMode(zoomFitMode);
     this.save();
   }
 

@@ -26,6 +26,7 @@ import {
   resolvePageViewSettings,
   type PageMovementSettings,
 } from './page-movement.ts';
+import { resolvePageViewSettingsChange } from './page-view-settings-change.ts';
 import {
   calculateAnchoredScroll,
   CENTER_ZOOM_ANCHOR,
@@ -58,6 +59,7 @@ export class CanvasView {
   private canvasPool: CanvasPool;
   private pageRenderer: PageRenderer;
   private viewportManager: ViewportManager;
+  private applyingPageViewSettingsTransaction = false;
   private coordinateSystem: CoordinateSystem;
 
   private scrollContent: HTMLElement;
@@ -112,17 +114,14 @@ export class CanvasView {
       }),
       eventBus.on('viewport-resize', () => this.onViewportResize()),
       eventBus.on('zoom-changed', (zoom, anchor) => {
+        if (this.applyingPageViewSettingsTransaction) return;
         this.onZoomChanged(
           zoom as number,
           normalizeZoomAnchor(anchor as Partial<ZoomAnchor> | undefined),
         );
       }),
       eventBus.on('page-view-settings-changed', (payload) => {
-        const value = payload as {
-          arrangement?: unknown;
-          pageMovement?: unknown;
-        };
-        this.setPageViewSettings(value.arrangement, value.pageMovement);
+        this.setPageViewSettings(payload);
       }),
       eventBus.on('document-page-invalidated', (payload) => {
         void this.refreshInvalidatedPageForMutation(payload);
@@ -1181,64 +1180,103 @@ export class CanvasView {
    * 중심 쪽을 전환 전후 같은 뷰포트 앵커에 놓고, 실제 행·열 슬롯 토폴로지가 달라진 경우에만
    * Canvas 내용을 버린다. 좌표만 달라지면 recalcLayout()의 reposition 경로로 기존 Canvas를 쓴다.
    */
-  private setPageViewSettings(
-    arrangementValue: unknown,
-    movementValue: unknown,
-  ): boolean {
+  private setPageViewSettings(changeValue: unknown): boolean {
     if (this.disposed) return false;
-    const next = resolvePageViewSettings(arrangementValue, movementValue);
-    const movementUnchanged = this.pageMovement.direction === next.movement.direction
-      && this.pageMovement.wheelHorizontal === next.movement.wheelHorizontal;
-    if (pageArrangementsEqual(this.pageArrangement, next.arrangement) && movementUnchanged) {
-      return false;
-    }
+    const next = resolvePageViewSettingsChange(changeValue);
+    const movementUnchanged = this.pageMovement.direction === next.pageMovement.direction
+      && this.pageMovement.wheelHorizontal === next.pageMovement.wheelHorizontal;
+    const viewChanged = !pageArrangementsEqual(this.pageArrangement, next.arrangement)
+      || !movementUnchanged;
+    if (!viewChanged && !next.zoom) return false;
 
     if (this.pages.length === 0) {
       this.pageArrangement = next.arrangement;
-      this.pageMovement = next.movement;
+      this.pageMovement = next.pageMovement;
       this.viewportManager.setPageMovement(this.pageMovement);
+      if (next.zoom) {
+        this.applyingPageViewSettingsTransaction = true;
+        try {
+          this.viewportManager.setZoom(
+            next.zoom.value,
+            next.zoom.anchor,
+            next.zoom.fitMode,
+          );
+        } finally {
+          this.applyingPageViewSettingsTransaction = false;
+        }
+        this.eventBus.emit('zoom-level-display', this.viewportManager.getZoom());
+      }
       return true;
     }
 
     const scrollTop = this.viewportManager.getScrollY();
     const scrollLeft = this.viewportManager.getScrollX();
     const { width: viewportWidth, height: viewportHeight } = this.viewportManager.getViewportSize();
+    const anchor = next.zoom?.anchor ?? CENTER_ZOOM_ANCHOR;
     const focusPage = this.virtualScroll.getPageAtPoint(
-      scrollLeft + viewportWidth / 2,
-      scrollTop + viewportHeight / 2,
+      scrollLeft + viewportWidth * anchor.x,
+      scrollTop + viewportHeight * anchor.y,
     );
     const oldBox = this.getZoomPageBox(focusPage, viewportWidth);
     const previousTopology = this.virtualScroll.getLayoutTopologyKey();
+    const previousZoom = this.viewportManager.getZoom();
 
     this.pageArrangement = next.arrangement;
-    this.pageMovement = next.movement;
+    this.pageMovement = next.pageMovement;
     this.viewportManager.setPageMovement(this.pageMovement);
-    this.recalcLayout();
+    let zoomEventFailure: { error: unknown } | null = null;
+    if (next.zoom) {
+      this.applyingPageViewSettingsTransaction = true;
+      try {
+        this.viewportManager.setZoom(
+          next.zoom.value,
+          next.zoom.anchor,
+          next.zoom.fitMode,
+        );
+      } catch (error) {
+        // EventBus는 모든 구독자에게 배달한 뒤 첫 오류를 되던진다. 최종 레이아웃 commit까지
+        // 끝낸 다음 같은 오류를 다시 던져 transaction guard나 화면 상태가 반쪽으로 남지 않게 한다.
+        zoomEventFailure = { error };
+      } finally {
+        this.applyingPageViewSettingsTransaction = false;
+      }
+    }
+    const zoomChanged = this.viewportManager.getZoom() !== previousZoom;
+    const layoutChanged = viewChanged || zoomChanged;
+
+    if (layoutChanged) this.recalcLayout();
 
     const nextTopology = this.virtualScroll.getLayoutTopologyKey();
-    const newBox = this.getZoomPageBox(focusPage, viewportWidth);
-    const nextScroll = calculateAnchoredScroll(
-      oldBox,
-      newBox,
-      {
-        width: viewportWidth,
-        height: viewportHeight,
-        scrollLeft,
-        scrollTop,
-      },
-      CENTER_ZOOM_ANCHOR,
-    );
-    this.viewportManager.setScrollLeft(this.clampScrollLeft(nextScroll.scrollLeft));
-    this.viewportManager.setScrollTop(nextScroll.scrollTop);
+    if (layoutChanged) {
+      const newBox = this.getZoomPageBox(focusPage, viewportWidth);
+      const nextScroll = calculateAnchoredScroll(
+        oldBox,
+        newBox,
+        {
+          width: viewportWidth,
+          height: viewportHeight,
+          scrollLeft,
+          scrollTop,
+        },
+        anchor,
+      );
+      this.viewportManager.setScrollLeft(this.clampScrollLeft(nextScroll.scrollLeft));
+      this.viewportManager.setScrollTop(nextScroll.scrollTop);
+    }
 
-    if (previousTopology !== nextTopology) {
+    if (next.zoom) {
+      this.eventBus.emit('zoom-level-display', this.viewportManager.getZoom());
+    }
+
+    if (layoutChanged && (zoomChanged || previousTopology !== nextTopology)) {
       this.cancelPendingTextEditRefresh();
       this.cancelTextEditStaticLayerVerification();
       this.cancelPendingPrefetch();
       this.releaseAllRenderedPages();
       this.pageRenderer.cancelAll();
     }
-    this.updateVisiblePages();
+    if (layoutChanged) this.updateVisiblePages();
+    if (zoomEventFailure) throw zoomEventFailure.error;
     return true;
   }
 

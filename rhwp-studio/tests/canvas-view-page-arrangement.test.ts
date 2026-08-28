@@ -79,6 +79,30 @@ test('배치 전환은 중심 앵커를 복원하고 토폴로지가 달라질 �
   assert.match(method, /releaseAllRenderedPages\(\)/);
 });
 
+test('배치와 배율 transaction은 표준 zoom 이벤트를 유지하고 최종 레이아웃만 한 번 계산한다', () => {
+  assert.match(
+    canvasViewSource,
+    /eventBus\.on\('zoom-changed',[\s\S]*?if \(this\.applyingPageViewSettingsTransaction\) return;/,
+  );
+  const method = classMethodSource('setPageViewSettings', 'getViewportManager');
+  assert.match(method, /resolvePageViewSettingsChange\(changeValue\)/);
+  assert.match(method, /this\.viewportManager\.setZoom\(/);
+  assert.match(
+    method,
+    /try \{[\s\S]*?setZoom\([\s\S]*?finally \{[\s\S]*?applyingPageViewSettingsTransaction = false/,
+  );
+  assert.equal(
+    method.match(/this\.recalcLayout\(\)/g)?.length,
+    1,
+    'transaction method에는 최종 recalcLayout 호출이 하나만 있어야 한다',
+  );
+  assert.match(method, /zoomChanged \|\| previousTopology !== nextTopology/);
+  assert.match(
+    method,
+    /eventBus\.emit\('zoom-level-display', this\.viewportManager\.getZoom\(\)\)/,
+  );
+});
+
 test('가로 쪽 이동은 배치와 함께 한 번에 전환하고 가로 가시 범위를 사용한다', () => {
   assert.match(
     canvasViewSource,

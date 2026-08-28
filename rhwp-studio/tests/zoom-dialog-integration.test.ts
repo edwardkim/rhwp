@@ -69,9 +69,13 @@ test('확대/축소 적용은 사용자 보기 설정과 보기 이벤트만 바
   const start = commands.indexOf("id: 'view:zoom-dialog'");
   const end = commands.indexOf("id: 'view:zoom-fit-page'", start);
   const command = commands.slice(start, end);
-  assert.match(command, /userSettings\.setPageArrangement/);
-  assert.match(command, /userSettings\.setPageMovement/);
+  assert.match(command, /userSettings\.setPageViewSettings/);
   assert.match(command, /eventBus\.emit\('page-view-settings-changed'/);
+  assert.match(
+    command,
+    /zoom:\s*\{[\s\S]*?value:\s*zoom[\s\S]*?fitMode:[\s\S]*?anchor:\s*CENTER_ZOOM_ANCHOR/,
+  );
+  assert.doesNotMatch(command, /vm\.setZoom\(/);
   assert.doesNotMatch(command, /document-(?:changed|mutated)/);
 });
 
