@@ -1,0 +1,25 @@
+{
+  "status": "success",
+  "job_id": "c05c0f88-5640-4b65-9d4f-f0fbc3322f58",
+  "output_path": "/home/tsjang/rhwp/pdf/pr_6275/by_saved_version/pr6275_issue6196_cell_char_spacing_fit-2020.pdf",
+  "output_filename": "pr6275_issue6196_cell_char_spacing_fit-2020.pdf",
+  "size": 59765,
+  "sha256": "0e34965ba7e04528e27448354ee326ea1557646e3721b460810a37420cf1b2d1",
+  "server": {
+    "job_id": "c05c0f88-5640-4b65-9d4f-f0fbc3322f58",
+    "status": "success",
+    "target": "pdf",
+    "input_filename": "cell_char_spacing_fit.hwp",
+    "output_filename": "pr6275_issue6196_cell_char_spacing_fit-2020.pdf",
+    "size": 59765,
+    "sha256": "0e34965ba7e04528e27448354ee326ea1557646e3721b460810a37420cf1b2d1",
+    "mime_type": "application/pdf",
+    "engine": "2020",
+    "engine_profile": "2020",
+    "hancom_version": "12.0.0.4605",
+    "backend": "hwp-managed-direct-dll-host",
+    "elapsed_ms": 19453,
+    "worker_elapsed_ms": 18867,
+    "worker_bits": 32
+  }
+}

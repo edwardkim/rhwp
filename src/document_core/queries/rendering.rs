@@ -771,6 +771,7 @@ fn insert_hwp3_title_filler_page(result: &mut PaginationResult, section_index: u
     let blank = PageContent {
         page_index: 0,
         page_number: 1,
+        page_number_restarted: false,
         section_index,
         layout: first_page.layout.clone(),
         column_contents: Vec::new(),
@@ -5023,7 +5024,14 @@ impl DocumentCore {
                     p.controls.iter().any(|c| matches!(c, Control::NewNumber(nn) if nn.number_type == AutoNumberType::Page))
                 );
                 if !has_new_number {
+                    // [Issue #6206] 표 셀 안 `newNum` 은 위 최상위 스캔(`has_new_number`)에
+                    // 걸리지 않는다. 그런 구역에도 carry 를 더하되, 재시작이 발화한 쪽부터는
+                    // 멈춘다 — `새 번호로 시작` 값은 절대값이라 carry 를 얹으면 안 된다.
+                    // (재시작 앞 쪽들은 종전대로 앞 구역에서 이어져야 한다.)
                     for page in &mut result.pages {
+                        if page.page_number_restarted {
+                            break;
+                        }
                         page.page_number += carry_last_page_number;
                     }
                 }

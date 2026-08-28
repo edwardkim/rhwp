@@ -2,7 +2,7 @@
 kind: pr-review
 status: rework-requested
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-08-26
+last_verified: 2026-08-28
 ---
 
 # PR #6083 review - 셀 저장 2줄이 1줄로 접힌 유의사항 상자 재래핑 (#5952)
@@ -16,7 +16,7 @@ last_verified: 2026-08-26
 | base | `devel` |
 | 원 head | `cfb2646ee19ffb794fbb389779d56114c6f97807` |
 | 규모 | +283 / -4, 6 files, 3 commits |
-| GitHub 상태 | non-draft, `MERGEABLE/CLEAN`, Build & Test success (작성 시점 참고값) |
+| GitHub 상태 | 2026-08-28 재확인: non-draft, `DIRTY`, 실패·진행 check 0건 |
 | 원 PR CI | [run 32890821000](https://github.com/edwardkim/rhwp/actions/runs/32890821000/job/97947096558) |
 | 판정 | **재작업 요청 — 통합에서 제외** |
 
@@ -84,3 +84,9 @@ Linux 전용 관측이며, 그 사실 자체가 기록되지 않았다.
    PR 본문에 남긴다.
 
 #5952 재현과 원인 분석(`저장 horzsize=37560HU 2줄인데 화면은 1줄 maxx≈680`)은 정확했다.
+
+## 2026-08-28 재확인
+
+open PR 목록을 다시 확인했을 때 #6083은 draft가 아니고 실패 check는 없었지만, `mergeStateStatus=DIRTY`
+상태였다. 또한 2026-08-26 메인터너 코멘트가 현 상태 통합 보류와 재작업 요청을 명확히 남겼다.
+따라서 #6245/#6247/#6248/#6249/#6250/#6254/#6259 통합 검토에는 포함하지 않았다.

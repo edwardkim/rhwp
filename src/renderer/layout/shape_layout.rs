@@ -8,6 +8,7 @@ use super::super::pagination::PageItem;
 use super::super::render_tree::*;
 use super::super::style_resolver::ResolvedStyleSet;
 use super::super::{hwpunit_to_px, px_to_hwpunit, PathCommand, ShapeStyle, TextStyle};
+use super::paragraph_layout::trailing_space_width_after_last_inline_object;
 use super::text_measurement::{
     estimate_text_width, is_cjk_char, is_vertical_rotate_char, resolved_to_text_style,
     vertical_substitute_char,
@@ -2531,6 +2532,41 @@ impl LayoutEngine {
         })
     }
 
+    fn min_descendant_top(node: &RenderNode) -> Option<f64> {
+        node.children.iter().fold(None, |acc, child| {
+            let descendant_top = Self::min_descendant_top(child).unwrap_or(child.bbox.y);
+            Some(acc.map_or(descendant_top, |current: f64| current.min(descendant_top)))
+        })
+    }
+
+    /// [#6174] 글상자 clip 이 **자기 내용을** 세로로 자르지 않게 한다.
+    ///
+    /// `TextBox` 노드의 bbox 를 두 백엔드가 그대로 clip 사각형으로 쓴다
+    /// (SVG `textbox-clip-*`, paint `ClipKind::TextBox`). 그 값은 상자 − `textMargin`
+    /// 이라 줄 높이가 안쪽 영역보다 크면 글자가 잘린다 — 156661338·156601658 1쪽의
+    /// 기관명 글상자는 clip 11.41px 안에 16px 줄이 놓여, baseline(130.69)이 clip
+    /// 하단(128.51) 밖으로 2.19px 나가고 `경 찰 청` 받침이 통째로 지워졌다.
+    ///
+    /// 한글은 이 글상자에서 세로로 자르지 않는다 — 잉크가 상자 하단(132.28)보다
+    /// 아래인 132.81 까지 그려진다. 그래서 clip 을 상자 크기로 넓히는 것만으로는
+    /// 부족하고, 세로 clip 을 **내용까지** 놓아 주어야 오라클과 맞는다.
+    ///
+    /// 가로 clip 은 그대로 둔다 — 줄바꿈 폭 경계라 의미가 있다. 그리는 상자
+    /// (`shape_node`)도 건드리지 않는다 — 한글도 상자는 그대로 두고 잉크만 넘긴다.
+    /// 이 점이 `expand_inline_textbox_to_content`(상자까지 키운다)와 다르다.
+    fn relax_textbox_clip_to_content(textbox_node: &mut RenderNode) {
+        let (Some(content_top), Some(content_bottom)) = (
+            Self::min_descendant_top(textbox_node),
+            Self::max_descendant_bottom(textbox_node),
+        ) else {
+            return;
+        };
+        let new_top = textbox_node.bbox.y.min(content_top);
+        let new_bottom = (textbox_node.bbox.y + textbox_node.bbox.height).max(content_bottom);
+        textbox_node.bbox.y = new_top;
+        textbox_node.bbox.height = new_bottom - new_top;
+    }
+
     fn expand_inline_textbox_to_content(
         shape_node: &mut RenderNode,
         textbox_node: &mut RenderNode,
@@ -2790,6 +2826,8 @@ impl LayoutEngine {
                         &mut textbox_node,
                         margin_bottom,
                     );
+                } else {
+                    Self::relax_textbox_clip_to_content(&mut textbox_node);
                 }
                 shape_node.children.push(textbox_node);
             }
@@ -2850,6 +2888,8 @@ impl LayoutEngine {
                         &mut textbox_node,
                         margin_bottom,
                     );
+                } else {
+                    Self::relax_textbox_clip_to_content(&mut textbox_node);
                 }
                 shape_node.children.push(textbox_node);
             }
@@ -3184,27 +3224,32 @@ impl LayoutEngine {
             // (32.7px)만큼 좌측 이탈한다(156560092 실측: 한글 로고 B 우변 여백
             // 4.1px vs rhwp 36.8). paragraph_layout 의 셀-밖 Right 제외 규칙과
             // 같은 계약이다.
+            //
+            // [Issue #6173] 말미 판정은 **마지막 인라인 개체 뒤**부터다 —
+            // `[로고A][공백4][로고B][공백2]` 는 공백 6칸 run 하나로 합성되므로
+            // run 만 보고 뒤에서 세면 로고 사이 4칸(26.7px)까지 걷어내 로고가
+            // 그만큼 우측으로 밀리고 마지막 로고가 글상자 밖으로 잘린다.
+            // paragraph_layout 의 셀-밖 Right 경로와 **같은 헬퍼**를 쓴다.
             let trailing_ws_width: f64 = if para_alignment == Alignment::Right
                 && pi < composed_paras.len()
             {
-                composed_paras[pi]
-                    .lines
+                let comp = &composed_paras[pi];
+                comp.lines
                     .first()
                     .map(|line| {
-                        let mut width = 0.0;
-                        for run in line.runs.iter().rev() {
-                            let n = run.text.chars().rev().take_while(|c| *c == ' ').count();
-                            if n == 0 {
-                                break;
-                            }
-                            let ts =
-                                resolved_to_text_style(styles, run.char_style_id, run.lang_index);
-                            width += estimate_text_width(&" ".repeat(n), &ts);
-                            if n != run.text.chars().count() {
-                                break;
-                            }
-                        }
-                        width
+                        let line_end = line.char_start
+                            + line
+                                .runs
+                                .iter()
+                                .map(|r| r.text.chars().count())
+                                .sum::<usize>();
+                        let last_obj = comp
+                            .tac_controls
+                            .iter()
+                            .map(|(pos, _, _)| *pos)
+                            .filter(|pos| *pos >= line.char_start && *pos <= line_end)
+                            .max();
+                        trailing_space_width_after_last_inline_object(line, last_obj, styles, false)
                     })
                     .unwrap_or(0.0)
             } else {
@@ -3514,6 +3559,8 @@ impl LayoutEngine {
                     &mut textbox_node,
                     margin_bottom,
                 );
+            } else {
+                Self::relax_textbox_clip_to_content(&mut textbox_node);
             }
             shape_node.children.push(textbox_node);
         }
