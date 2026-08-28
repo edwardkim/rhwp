@@ -337,6 +337,36 @@ fn has_visible_text(s: &str) -> bool {
     s.chars().any(|c| !c.is_whitespace())
 }
 
+/// `TextRun` bbox 를 **글자 상자**로 좁힌다.
+///
+/// 노드 bbox 는 줄 상자(전진폭 × 줄높이)이지 글리프 잉크가 아니다. 줄높이는 줄 간격을
+/// 포함하므로, 행 간격이 줄높이보다 좁은 표에서는 위아래 줄의 **상자**가 자동으로 겹친다 —
+/// 글자는 안 겹치는데도.
+///
+/// 실측(2026-08-28): `hwpx/hancom-hwp/hwpx-02.hwp` 2쪽은 이 검출기가 71건을 보고하는데
+/// 렌더에는 겹친 글자가 하나도 없다. 예 — 줄 상자 높이 16.0px, 행 간격 11.73px,
+/// 보고된 세로 겹침 4.27px. 그 4.27 은 줄 간격이지 글자가 아니다.
+///
+/// 보이는 세로 범위는 글리프의 em 상자이고 그 높이는 `font_size` 다. 줄 상자보다 크지
+/// 않으므로 중앙 기준으로 좁힌다 — baseline 위치를 가정하지 않으려는 선택이다
+/// (렌더 트리에 baseline 필드가 없다). 가로는 그대로 둔다: 전진폭은 글자가 실제로
+/// 차지하는 가로 범위와 사실상 같다.
+///
+/// 이것은 근사다. 정확히 하려면 폰트 메트릭의 ascent/descent 로 잉크 상자를 계산해야
+/// 한다. 다만 지금 근사는 "줄 간격을 글자 겹침으로 세지 않는다" 는 점에서 종전보다
+/// 엄밀하고, 방향이 한쪽(위양성 감소)이라 결함을 놓치는 쪽으로는 틀리지 않는다.
+fn glyph_band_bbox(node: &RenderNode) -> BoundingBox {
+    let RenderNodeType::TextRun(run) = &node.node_type else {
+        return node.bbox;
+    };
+    let em = run.style.font_size;
+    if !(em > 0.0) || em >= node.bbox.height {
+        return node.bbox;
+    }
+    let inset = (node.bbox.height - em) / 2.0;
+    BoundingBox::new(node.bbox.x, node.bbox.y + inset, node.bbox.width, em)
+}
+
 /// text-overlap 후보 — 보이는 글자가 있는 `TextRun` 이고, 한컴 글자겹침
 /// 컨트롤이 아니며, 면적이 있는 bbox 를 가진다. 표·이미지·도형은 여기
 /// 들어오지 않는다(그건 일반 overlap).
@@ -526,7 +556,7 @@ fn walk(
         text_out.push(FlowCandidate {
             path: path.clone(),
             node_type: "TextRun",
-            bbox: node.bbox,
+            bbox: glyph_band_bbox(node),
             column,
         });
     }
@@ -1235,6 +1265,62 @@ mod tests {
             RenderNodeType::TextLine(TextLineNode::new(h, h * 0.8)),
             BoundingBox::new(x, y, w, h),
         )
+    }
+
+    /// [글자 상자] 줄 상자에서 줄 간격을 뺀 em 상자로 좁힌다.
+    #[test]
+    fn glyph_band_strips_line_leading() {
+        let mut node = text_run("가");
+        node.bbox = BoundingBox::new(10.0, 100.0, 50.0, 16.0);
+        if let RenderNodeType::TextRun(run) = &mut node.node_type {
+            run.style.font_size = 12.0;
+        }
+        let band = glyph_band_bbox(&node);
+        // 16 − 12 = 4 을 위아래로 2 씩 — baseline 위치를 가정하지 않는다.
+        assert_eq!(band.y, 102.0);
+        assert_eq!(band.height, 12.0);
+        assert_eq!(band.x, 10.0, "가로는 건드리지 않는다");
+        assert_eq!(band.width, 50.0);
+    }
+
+    /// 줄 간격이 없는(줄 상자 = em 상자) 런은 그대로 둔다.
+    #[test]
+    fn glyph_band_keeps_box_without_leading() {
+        let mut node = text_run("가");
+        node.bbox = BoundingBox::new(0.0, 0.0, 50.0, 16.0);
+        if let RenderNodeType::TextRun(run) = &mut node.node_type {
+            run.style.font_size = 16.0;
+        }
+        assert_eq!(glyph_band_bbox(&node).height, 16.0);
+    }
+
+    /// font_size 가 줄 상자보다 크면 좁히지 않는다 — 넓히는 방향으로는 틀리지 않는다.
+    #[test]
+    fn glyph_band_never_grows_the_box() {
+        let mut node = text_run("가");
+        node.bbox = BoundingBox::new(0.0, 0.0, 50.0, 10.0);
+        if let RenderNodeType::TextRun(run) = &mut node.node_type {
+            run.style.font_size = 40.0;
+        }
+        assert_eq!(glyph_band_bbox(&node).height, 10.0);
+    }
+
+    /// font_size 가 0 이면 근거가 없으므로 그대로 둔다.
+    #[test]
+    fn glyph_band_needs_a_font_size() {
+        let mut node = text_run("가");
+        node.bbox = BoundingBox::new(0.0, 0.0, 50.0, 16.0);
+        if let RenderNodeType::TextRun(run) = &mut node.node_type {
+            run.style.font_size = 0.0;
+        }
+        assert_eq!(glyph_band_bbox(&node).height, 16.0);
+    }
+
+    /// TextRun 이 아닌 노드는 손대지 않는다.
+    #[test]
+    fn glyph_band_only_applies_to_text_runs() {
+        let node = text_line(0.0, 0.0, 50.0, 16.0);
+        assert_eq!(glyph_band_bbox(&node).height, 16.0);
     }
 
     fn text_run(text: &str) -> RenderNode {
