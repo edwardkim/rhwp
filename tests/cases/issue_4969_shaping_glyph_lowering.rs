@@ -59,8 +59,10 @@ use shaping_context::{
     HorizontalShapingReplaySourceCertificateRejectReason,
 };
 use shaping_glyph::{
-    lower_horizontal_shaping_layer_node_shadow, lower_horizontal_shaping_page_sidecars,
-    HorizontalShapingGlyphLoweringRejectReason,
+    lower_horizontal_shaping_layer_node_shadow,
+    lower_horizontal_shaping_layer_node_shadow_with_prepared_sources,
+    lower_horizontal_shaping_page_sidecars, HorizontalShapingGlyphLoweringRejectReason,
+    HorizontalShapingPreparedSourceCache,
 };
 use shaping_paragraph::{
     run_horizontal_shaping_line_transaction, HorizontalShapingFallbackOwner,
@@ -564,18 +566,20 @@ fn issue_4969_q2_d5_r0_prepares_one_portable_source_once_for_1_2_8_runs() {
         let bbox = BoundingBox::new(3.0, 5.0, measurement.total_advance_px, 14.0);
         let node = LayerNode::leaf(bbox, Some(17), Vec::new());
         let mut resources = ResourceArena::default();
+        let mut prepared_sources = HorizontalShapingPreparedSourceCache::default();
         let mut digest_passes = 0usize;
         let mut face_parses = 0usize;
         let mut arena_intern_attempts = 0usize;
 
         for text_source_id in 0..run_count {
-            let report = lower_horizontal_shaping_layer_node_shadow(
+            let report = lower_horizontal_shaping_layer_node_shadow_with_prepared_sources(
                 &node,
                 bbox,
                 &run,
                 u32::try_from(text_source_id).expect("bounded text source id"),
                 &sidecars,
                 &mut resources,
+                &mut prepared_sources,
             );
             assert!(report.glyph_run.is_some());
             digest_passes += report.portable_source_work.explicit_blake3_digest_passes;
@@ -590,16 +594,112 @@ fn issue_4969_q2_d5_r0_prepares_one_portable_source_once_for_1_2_8_runs() {
             arena_intern_attempts,
             resources.font_blob_count(),
             resources.font_resources().faces.len(),
+            prepared_sources.entry_count(),
+            prepared_sources.total_source_bytes(),
         ));
     }
 
     assert_eq!(
         observations,
         vec![
-            (1, 1, 1, 1, 1, 1),
-            (2, 1, 1, 1, 1, 1),
-            (8, 1, 1, 1, 1, 1),
+            (1, 1, 1, 1, 1, 1, 1, SOURCE_HAN.len()),
+            (2, 1, 1, 1, 1, 1, 1, SOURCE_HAN.len()),
+            (8, 1, 1, 1, 1, 1, 1, SOURCE_HAN.len()),
         ],
         "font-wide digest, face preparation, and arena registration must scale with one unique exact source, not emitted run count",
     );
+}
+
+#[test]
+fn issue_4969_q2_d5_r1_cache_limit_rejects_before_resource_mutation() {
+    let (sidecars, measurement, _) = prepared_sidecar();
+    let run = text_run();
+    let bbox = BoundingBox::new(3.0, 5.0, measurement.total_advance_px, 14.0);
+    let node = LayerNode::leaf(bbox, Some(17), Vec::new());
+    let mut resources = ResourceArena::default();
+    let mut prepared_sources = HorizontalShapingPreparedSourceCache::with_limits(0, 0);
+
+    let report = lower_horizontal_shaping_layer_node_shadow_with_prepared_sources(
+        &node,
+        bbox,
+        &run,
+        0,
+        &sidecars,
+        &mut resources,
+        &mut prepared_sources,
+    );
+
+    assert_eq!(
+        report.reject_reason,
+        Some(HorizontalShapingGlyphLoweringRejectReason::ResourceLimitExceeded)
+    );
+    assert!(report.glyph_run.is_none());
+    assert!(!report.claims_glyph_run_slot);
+    assert_eq!(report.portable_source_work, Default::default());
+    assert_eq!(prepared_sources.entry_count(), 0);
+    assert_eq!(prepared_sources.total_source_bytes(), 0);
+    assert_eq!(resources.font_blob_count(), 0);
+    assert!(resources.font_resources().blobs.is_empty());
+    assert!(resources.font_resources().faces.is_empty());
+}
+
+#[test]
+fn issue_4969_q2_d5_r1_product_page_lowering_reuses_one_prepared_source() {
+    let (sidecars, measurement, _) = prepared_sidecar();
+    let run = text_run();
+    let bbox = BoundingBox::new(3.0, 5.0, measurement.total_advance_px, 14.0);
+    let ops = (0..8)
+        .map(|_| PaintOp::text_run(bbox, run.clone()))
+        .collect();
+    let mut node = LayerNode::leaf(bbox, Some(17), ops);
+    let mut resources = ResourceArena::default();
+
+    let claimed = lower_horizontal_shaping_page_sidecars(&mut node, &sidecars, &mut resources);
+
+    assert_eq!(claimed.len(), 8);
+    assert!((0..8).all(|text_source_id| claimed.contains(&text_source_id)));
+    let rhwp::paint::LayerNodeKind::Leaf { ops } = &node.kind else {
+        panic!("fixture node must remain a leaf");
+    };
+    assert_eq!(
+        ops.iter()
+            .filter(|op| matches!(op, PaintOp::TextRun { .. }))
+            .count(),
+        8
+    );
+    assert_eq!(
+        ops.iter()
+            .filter(|op| matches!(op, PaintOp::GlyphRun { .. }))
+            .count(),
+        8
+    );
+    assert_eq!(resources.font_blob_count(), 1);
+    assert_eq!(resources.font_resources().blobs.len(), 1);
+    assert_eq!(resources.font_resources().faces.len(), 1);
+}
+
+#[test]
+fn issue_4969_q2_d5_r1_prepared_cache_debug_excludes_font_bytes() {
+    let (sidecars, measurement, _) = prepared_sidecar();
+    let run = text_run();
+    let bbox = BoundingBox::new(3.0, 5.0, measurement.total_advance_px, 14.0);
+    let node = LayerNode::leaf(bbox, Some(17), Vec::new());
+    let mut resources = ResourceArena::default();
+    let mut prepared_sources = HorizontalShapingPreparedSourceCache::default();
+    let report = lower_horizontal_shaping_layer_node_shadow_with_prepared_sources(
+        &node,
+        bbox,
+        &run,
+        0,
+        &sidecars,
+        &mut resources,
+        &mut prepared_sources,
+    );
+
+    assert!(report.glyph_run.is_some());
+    let debug = format!("{prepared_sources:?}");
+    assert!(debug.contains("entry_count: 1"));
+    assert!(debug.contains(&format!("total_source_bytes: {}", SOURCE_HAN.len())));
+    assert!(!debug.contains("OTTO"));
+    assert!(!debug.contains("Source Han Serif"));
 }
