@@ -3411,21 +3411,39 @@ impl LayoutEngine {
                 let cb = &node.bbox;
                 let is_float = float_subtree || is_floating_object(node);
                 let target: &mut BoundingBox = if is_float { &mut *float } else { &mut *flow };
-                let child_bottom = cb.y + cb.height;
-                let child_right = cb.x + cb.width;
+                // [#6269] 선의 **잉크는 bbox 밖으로 나간다.** bbox 는 `[경로, 경로+획]`
+                // 인데 백엔드는 `line.x1/y1` 을 경로로 삼아 획을 **중심 정렬**로 칠하므로
+                // 실제 잉크는 `[경로-획/2, 경로+획/2]` 다. 그래서 bbox 로만 clip 을 넓히면
+                // 경계에 붙은 선의 획 절반이 잘린다 — 156739836 2·3쪽 `일러두기` 틀의
+                // 왼쪽 세로선은 x=75.59 로 본문 좌단(=clip 좌단)과 같아 왼쪽 0.75px 가
+                // 깎이고, 잉크가 51 로 떨어져(PDF 94) 흰 배경에서 거의 안 보인다.
+                // 같은 굵기의 오른쪽 세로선(x=703.03)은 clip 안쪽이라 온전하다.
+                //
+                // bbox 자체를 잉크 범위로 바꾸는 편이 더 옳지만 layout-anomaly ·
+                // render_geom_diff · 겹침 판정이 모두 bbox 를 소비한다. clip 확장은
+                // 소비자가 여기 하나뿐이라, 이 지점에서만 잉크 범위로 본다.
+                let ink_pad = if matches!(node.node_type, RenderNodeType::Line(_)) {
+                    cb.width.min(cb.height) / 2.0
+                } else {
+                    0.0
+                };
+                let cb_x = cb.x - ink_pad;
+                let cb_y = cb.y - ink_pad;
+                let child_bottom = cb.y + cb.height + ink_pad;
+                let child_right = cb.x + cb.width + ink_pad;
                 if child_bottom > target.y + target.height {
                     target.height = child_bottom - target.y;
                 }
                 if child_right > target.x + target.width {
                     target.width = child_right - target.x;
                 }
-                if cb.x < target.x {
-                    target.width += target.x - cb.x;
-                    target.x = cb.x;
+                if cb_x < target.x {
+                    target.width += target.x - cb_x;
+                    target.x = cb_x;
                 }
-                if cb.y < target.y {
-                    target.height += target.y - cb.y;
-                    target.y = cb.y;
+                if cb_y < target.y {
+                    target.height += target.y - cb_y;
+                    target.y = cb_y;
                 }
                 let clips_descendants = matches!(
                     node.node_type,
