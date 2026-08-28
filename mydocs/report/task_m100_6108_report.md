@@ -2,9 +2,10 @@
 
 - **이슈**: [#6108](https://github.com/edwardkim/rhwp/issues/6108)
 - **브랜치**: `codex/issue-6108-zoom-fit`
-- **작업 기준**: `upstream/devel@2166f4065`
+- **최초 작업 기준**: `upstream/devel@2166f4065`
+- **최종 통합 기준**: `upstream/devel@1a43a507c`
 - **보고일**: 2026-08-28 KST
-- **절차 상태**: Stage 3 결과 승인 대기
+- **절차 상태**: 로컬 구현·최신 devel 통합·재검증 완료, #6109 stack 분기 준비
 
 ## 결과
 
@@ -84,7 +85,9 @@ Cargo registry는 변경하지 않았다.
 - 쪽 배치와 배율의 원자 view-settings transaction도 #6109에 남겼다.
 - 핀치/슬라이더 preview·render scale·페이지 LRU는 #6040·#6041·#6042 범위다.
 - 반응형 눈금자 정책과 resize 깜빡임은 #6187 범위다.
-- 작업 중 `upstream/devel`이 67 commits 전진했다. Stage 3 결과 승인과 commit 뒤 최신 devel을 통합하고
-  동일 게이트를 다시 통과해야 #6108 bottom PR과 #6109 top PR을 안전하게 게시할 수 있다.
+- Stage 3 결과 승인 뒤 4개 커밋을 최신 `upstream/devel@1a43a507c` 위로 rebase했다. 충돌은 양쪽에서
+  생성한 `mydocs/orders/20260828.md` 한 파일뿐이었고, devel의 CI·#4969 기록과 #6108·#6109 행을 모두
+  보존했다.
+- 통합된 exact head `4912c9024`에서 Studio 전체 test·production build·Chrome E2E 28/28을 다시 통과했다.
+- #6108을 bottom, #6109를 top으로 하는 native stacked PR의 로컬 분기 조건을 충족했다.
 - remote push·PR 생성은 아직 수행하지 않았다.
-
