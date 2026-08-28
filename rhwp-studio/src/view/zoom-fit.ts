@@ -1,26 +1,53 @@
 import {
+  MAX_DOCUMENT_ZOOM,
+  MIN_DOCUMENT_ZOOM,
   normalizePageArrangement,
   type PageArrangement,
 } from './page-arrangement.ts';
 
-const MIN_REQUESTED_ZOOM = 0.1;
-const MAX_REQUESTED_ZOOM = 4;
 const HORIZONTAL_FRAME_PADDING = 40;
 const VERTICAL_FRAME_PADDING = 20;
 const DEFAULT_PAGE_GAP = 10;
 
 function clampRequestedZoom(zoom: number): number {
-  return Math.max(MIN_REQUESTED_ZOOM, Math.min(MAX_REQUESTED_ZOOM, zoom));
+  return Math.max(MIN_DOCUMENT_ZOOM, Math.min(MAX_DOCUMENT_ZOOM, zoom));
+}
+
+function isPositiveFinite(value: number): boolean {
+  return Number.isFinite(value) && value > 0;
+}
+
+function normalizePageGap(pageGap: number | undefined): number {
+  return Number.isFinite(pageGap)
+    ? Math.max(0, pageGap ?? 0)
+    : DEFAULT_PAGE_GAP;
+}
+
+function pageGridForArrangement(
+  arrangement: PageArrangement,
+): { columns: number; rows: number } {
+  const normalized = normalizePageArrangement(arrangement);
+  switch (normalized.kind) {
+    case 'double':
+    case 'facing':
+      return { columns: 2, rows: 1 };
+    case 'multiple':
+      return { columns: normalized.columns, rows: normalized.rows };
+    case 'auto':
+    case 'single':
+      return { columns: 1, rows: 1 };
+  }
 }
 
 export function calculateFitWidthZoom(
   containerWidth: number,
   pageWidth: number,
 ): number {
-  if (pageWidth <= 0) return 1;
-  return clampRequestedZoom(
-    (containerWidth - HORIZONTAL_FRAME_PADDING) / pageWidth,
-  );
+  return calculateArrangementFitWidthZoom({
+    containerWidth,
+    pageWidth,
+    arrangement: { kind: 'auto' },
+  });
 }
 
 export interface ArrangementFitWidthInput {
@@ -34,20 +61,46 @@ export interface ArrangementFitWidthInput {
 export function calculateArrangementFitWidthZoom(
   input: ArrangementFitWidthInput,
 ): number {
-  if (input.pageWidth <= 0) return 1;
-  const arrangement = normalizePageArrangement(input.arrangement);
-  const columns = arrangement.kind === 'multiple'
-    ? arrangement.columns
-    : arrangement.kind === 'double' || arrangement.kind === 'facing'
-      ? 2
-      : 1;
-  const pageGap = Number.isFinite(input.pageGap)
-    ? Math.max(0, input.pageGap ?? 0)
-    : DEFAULT_PAGE_GAP;
+  if (
+    !isPositiveFinite(input.containerWidth)
+    || !isPositiveFinite(input.pageWidth)
+  ) return 1;
+  const { columns } = pageGridForArrangement(input.arrangement);
+  const pageGap = normalizePageGap(input.pageGap);
   const availableWidth = input.containerWidth
     - HORIZONTAL_FRAME_PADDING
     - pageGap * (columns - 1);
   return clampRequestedZoom(availableWidth / (input.pageWidth * columns));
+}
+
+export interface ArrangementFitPageInput extends ArrangementFitWidthInput {
+  containerHeight: number;
+  pageHeight: number;
+}
+
+/** 현재 쪽 배치의 가로×세로 블록 전체가 문서 창 안에 들어오도록 배율을 계산한다. */
+export function calculateArrangementFitPageZoom(
+  input: ArrangementFitPageInput,
+): number {
+  if (
+    !isPositiveFinite(input.containerWidth)
+    || !isPositiveFinite(input.containerHeight)
+    || !isPositiveFinite(input.pageWidth)
+    || !isPositiveFinite(input.pageHeight)
+  ) return 1;
+
+  const { columns, rows } = pageGridForArrangement(input.arrangement);
+  const pageGap = normalizePageGap(input.pageGap);
+  const availableWidth = input.containerWidth
+    - HORIZONTAL_FRAME_PADDING
+    - pageGap * (columns - 1);
+  const availableHeight = input.containerHeight
+    - VERTICAL_FRAME_PADDING
+    - pageGap * (rows - 1);
+  return clampRequestedZoom(Math.min(
+    availableWidth / (input.pageWidth * columns),
+    availableHeight / (input.pageHeight * rows),
+  ));
 }
 
 export function calculateFitPageZoom(
@@ -56,11 +109,13 @@ export function calculateFitPageZoom(
   pageWidth: number,
   pageHeight: number,
 ): number {
-  if (pageWidth <= 0 || pageHeight <= 0) return 1;
-  return clampRequestedZoom(Math.min(
-    (containerWidth - HORIZONTAL_FRAME_PADDING) / pageWidth,
-    (containerHeight - VERTICAL_FRAME_PADDING) / pageHeight,
-  ));
+  return calculateArrangementFitPageZoom({
+    containerWidth,
+    containerHeight,
+    pageWidth,
+    pageHeight,
+    arrangement: { kind: 'auto' },
+  });
 }
 
 /** 사용자가 마지막으로 고른 맞춤 배율. 'none' 은 수치 배율(사용자 지정)이다. */
@@ -98,12 +153,7 @@ export function resolveZoomFitZoom(
         pageGap: metrics.pageGap,
       });
     case 'fitPage':
-      return calculateFitPageZoom(
-        metrics.containerWidth,
-        metrics.containerHeight,
-        metrics.pageWidth,
-        metrics.pageHeight,
-      );
+      return calculateArrangementFitPageZoom(metrics);
     case 'none':
       return null;
   }
