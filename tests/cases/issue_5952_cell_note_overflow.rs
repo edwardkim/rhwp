@@ -92,6 +92,27 @@ fn glyph_x(svg: &str) -> Vec<(f64, f64, String)> {
     out
 }
 
+fn text_rows(svg: &str) -> Vec<(f64, String)> {
+    let mut rows: std::collections::BTreeMap<i32, Vec<(f64, String)>> =
+        std::collections::BTreeMap::new();
+    for (x, y, text) in glyph_x(svg) {
+        if (70.0..=690.0).contains(&x) {
+            rows.entry((y * 10.0).round() as i32)
+                .or_default()
+                .push((x, text));
+        }
+    }
+    rows.into_iter()
+        .map(|(key, mut cells)| {
+            cells.sort_by(|a, b| a.0.total_cmp(&b.0));
+            (
+                key as f64 / 10.0,
+                cells.into_iter().map(|(_, text)| text).collect::<String>(),
+            )
+        })
+        .collect()
+}
+
 #[test]
 fn note_box_lines_do_not_overlap_the_gongmunseo_sidebar() {
     let svg = render_page_svg();
@@ -116,6 +137,36 @@ fn note_box_lines_do_not_overlap_the_gongmunseo_sidebar() {
         overflow.is_empty(),
         "유의사항 상자 글자가 셀 오른쪽(>{BOX_RIGHT_LIMIT})으로 넘어 사이드바와 겹친다: {:?}",
         overflow.iter().take(12).collect::<Vec<_>>()
+    );
+}
+
+#[test]
+fn note_box_bottom_stays_separate_from_following_body_heading() {
+    let svg = render_page_svg();
+    let rows = text_rows(&svg);
+    let note_bottom_y = rows
+        .iter()
+        .filter_map(|(y, row)| {
+            ((200.0..500.0).contains(y)
+                && (row.contains('※')
+                    || row.contains("붙임")
+                    || row.contains("문서보안")
+                    || row.contains("개인정보")
+                    || row.contains("전자기록")))
+            .then_some(*y)
+        })
+        .reduce(f64::max)
+        .expect("유의사항 상자 본문 줄");
+    let following_heading_y = rows
+        .iter()
+        .find_map(|(y, row)| {
+            (*y > note_bottom_y && row.contains("4)") && row.contains("문서")).then_some(*y)
+        })
+        .expect("상자 아래의 '4) 문서의 끝 표시' 본문 줄");
+
+    assert!(
+        following_heading_y - note_bottom_y >= 45.0,
+        "유의사항 상자 하단이 다음 본문 줄과 분리되어야 함: note_bottom_y={note_bottom_y:.1}, following_heading_y={following_heading_y:.1}"
     );
 }
 

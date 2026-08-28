@@ -1878,6 +1878,39 @@ fn reflow_cell_line_ignoring_stored_segs(
     );
 }
 
+/// 가로쓰기 셀의 렌더/측정 공통 재구성 경로.
+///
+/// `recompose_cell_lines_in_frame`만 적용하면 저장 다줄 문단이 실제로는 셀 폭을
+/// 넘쳐 fresh 재래핑되는 경우(#5952)를 높이 계산이 놓칠 수 있다. 호출자는
+/// 세로쓰기 셀을 이미 제외해야 한다.
+pub(crate) fn recompose_horizontal_cell_lines_for_width(
+    composed: &mut ComposedParagraph,
+    para: &Paragraph,
+    cell_inner_width_px: f64,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+    legacy_hwp3_stored_geometry: bool,
+    repair_stored_overflow: bool,
+) {
+    recompose_cell_lines_in_frame(
+        composed,
+        para,
+        ParagraphBox::content_width_px(cell_inner_width_px, dpi),
+        styles,
+        dpi,
+        legacy_hwp3_stored_geometry,
+    );
+    if repair_stored_overflow {
+        recompose_stored_single_line_if_overflowing(
+            composed,
+            para,
+            cell_inner_width_px,
+            styles,
+            dpi,
+        );
+    }
+}
+
 /// [#2279] 저장 lineseg 분할의 실폭-과잉 판정 (본문 판, 줄수 무관).
 ///
 /// 저장(비합성) 분할의 어떤 줄이든 추정 실폭이 단 내폭을 명백히(×1.05)
