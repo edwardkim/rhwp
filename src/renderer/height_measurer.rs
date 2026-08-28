@@ -1917,9 +1917,71 @@ impl HeightMeasurer {
                                     || matches!(c, Control::Shape(sh) if !sh.common().treat_as_char)
                             })
                     });
+                    // [#6280] 세 번째 증인 — 텍스트 없는 셀 문단의 **저장 줄 높이
+                    // 자체**가 흡수의 증거다. 그 문단이 품은 비-TAC 자리차지 개체의
+                    // 흐름 높이(개체 높이 + 양수 세로 오프셋)를 저장 사다리가 이미
+                    // 덮고 있으면 개체는 그 줄 안에 들어가 있다 — 또 더하면 이중이다.
+                    //
+                    // 앞선 두 증인은 이 형상을 못 본다. #2226 증인은 「자기 첫 seg
+                    // vpos > 0」인데 이 셀은 vpos=0 이고, #6194 증인은 「개체 문단
+                    // **뒤의 줄**이 개체 바닥까지 내려옴」인데 문단이 하나뿐이다.
+                    //
+                    // ⚠ 경계는 코드가 이미 적어 둔 #1282 반례와 **정확히 같은 선**이다
+                    // — 저장 높이가 그림보다 **작으면** 한글이 행을 그림만큼 키우므로
+                    // 종전(additive) 회계를 유지해야 한다. 156742029 21쪽이 같은 쪽
+                    // 안에 두 형상을 다 갖고 있어 통제군이 된다: 타기관 파견 등은
+                    // lh 18.7px < 그림 30.2px(흡수 아님, 선언 43.8px 유지), 의원면직은
+                    // lh 40.0px ≥ 그림 흐름 36.7px(흡수 — 종전엔 additive 76.7px 를
+                    // 써 행이 선언의 1.84배로 부풀고 제목이 장식 막대를 덮었다).
+                    let stored_line_covers_own_objects = cell.paragraphs.iter().any(|pp| {
+                        if !pp.text.trim().is_empty() {
+                            return false;
+                        }
+                        let object_flow = pp
+                            .controls
+                            .iter()
+                            .filter_map(|c| match c {
+                                Control::Picture(pic) => Some(&pic.common),
+                                Control::Shape(sh) => Some(sh.common()),
+                                _ => None,
+                            })
+                            .filter(|common| {
+                                !common.treat_as_char
+                                    && matches!(
+                                        common.text_wrap,
+                                        crate::model::shape::TextWrap::TopAndBottom
+                                    )
+                            })
+                            .map(|common| {
+                                hwpunit_to_px(common.height as i32, self.dpi)
+                                    + hwpunit_to_px(
+                                        crate::renderer::float_placement::signed_hwpunit(
+                                            common.vertical_offset,
+                                        )
+                                        .max(0),
+                                        self.dpi,
+                                    )
+                            })
+                            .fold(0.0f64, f64::max);
+                        if object_flow <= 0.0 {
+                            return false;
+                        }
+                        let stored_line = pp
+                            .line_segs
+                            .iter()
+                            .filter(|seg| seg.vertical_pos >= 0 && seg.line_height > 0)
+                            .map(|seg| {
+                                hwpunit_to_px(
+                                    seg.vertical_pos.saturating_add(seg.line_height),
+                                    self.dpi,
+                                )
+                            })
+                            .fold(0.0f64, f64::max);
+                        stored_line + 0.5 >= object_flow
+                    });
                     let trust_stored = (depth > 0 || table.common.treat_as_char)
                         && non_inline_h > 0.0
-                        && ladder_absorbed_objects
+                        && (ladder_absorbed_objects || stored_line_covers_own_objects)
                         && stored_extent > 0.0
                         && stored_extent + 0.5 < additive
                         && wrap_bottom <= stored_extent + 0.5;
