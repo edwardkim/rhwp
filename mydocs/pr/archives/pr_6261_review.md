@@ -14,7 +14,7 @@ last_verified: 2026-08-28
 - 원 PR head: `91776e11acc3`
 - 통합 검토 브랜치: `review/open-ci-green-20260828`
 - 최신 기준: `upstream/devel@1a43a507c9da`
-- 원 PR 상태: non-draft, `CLEAN`, 실패·진행 check 0건
+- 원 PR 상태: non-draft, 실패·진행 check 0건
 - 관련 이슈: #6206
 
 ## 검토 판단
