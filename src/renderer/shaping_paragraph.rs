@@ -325,6 +325,22 @@ fn is_old_hangul_jamo(character: char) -> bool {
     )
 }
 
+/// D1 composition fast-path gate. It never scans beyond the Q2 shaping text
+/// bound, so ordinary paragraphs and hostile oversized input do not allocate a
+/// scalar projection merely to discover that they are not candidates.
+pub(crate) fn is_bounded_horizontal_shaping_candidate_text(text: &str) -> bool {
+    let mut code_point_count = 0usize;
+    let mut has_old_hangul = false;
+    for character in text
+        .chars()
+        .take(super::shaping::MAX_SHAPING_TEXT_CODE_POINTS + 1)
+    {
+        code_point_count += 1;
+        has_old_hangul |= is_old_hangul_jamo(character);
+    }
+    code_point_count <= super::shaping::MAX_SHAPING_TEXT_CODE_POINTS && has_old_hangul
+}
+
 fn is_initial_hangul_scalar(character: char) -> bool {
     matches!(
         character as u32,

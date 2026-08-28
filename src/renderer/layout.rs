@@ -2711,14 +2711,24 @@ impl LayoutEngine {
     /// HeightMeasurer, TypesetEngine, page-tree LayoutEngine, edit reflow가 한
     /// transaction에서 같은 slot/source 결정을 읽도록 immutable snapshot을 만든다.
     /// Source payload는 Arc라 복제되지 않는다.
-    pub(crate) fn kerning_measurement_context_snapshot(
+    pub(crate) fn exact_font_measurement_context_snapshots(
         &self,
-    ) -> Option<std::sync::Arc<crate::renderer::kerning::KerningMeasurementContext>> {
-        (self.exact_font_sources.slot_count() > 0).then(|| {
-            std::sync::Arc::new(crate::renderer::kerning::KerningMeasurementContext::new(
-                self.exact_font_sources.clone(),
-            ))
-        })
+    ) -> (
+        Option<std::sync::Arc<crate::renderer::kerning::KerningMeasurementContext>>,
+        Option<std::sync::Arc<crate::renderer::shaping_context::HorizontalShapingContext>>,
+    ) {
+        if self.exact_font_sources.slot_count() == 0 {
+            return (None, None);
+        }
+        let registry = self.exact_font_sources.clone();
+        (
+            Some(std::sync::Arc::new(
+                crate::renderer::kerning::KerningMeasurementContext::new(registry.clone()),
+            )),
+            Some(std::sync::Arc::new(
+                crate::renderer::shaping_context::HorizontalShapingContext::new(registry),
+            )),
+        )
     }
 
     pub(crate) fn exact_font_source_registry_counts(&self) -> (usize, usize, usize, u64) {

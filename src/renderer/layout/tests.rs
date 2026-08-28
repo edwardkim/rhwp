@@ -755,6 +755,7 @@ fn test_layout_with_composed_styles() {
         numberings: Vec::new(),
         bullets: Vec::new(),
         kerning_measurement_context: None,
+        horizontal_shaping_context: None,
     };
 
     let page_content = PageContent {
@@ -886,6 +887,7 @@ fn test_layout_multi_run_x_position() {
         numberings: Vec::new(),
         bullets: Vec::new(),
         kerning_measurement_context: None,
+        horizontal_shaping_context: None,
     };
 
     let page_content = PageContent {
@@ -972,6 +974,7 @@ fn test_resolved_to_text_style() {
         numberings: Vec::new(),
         bullets: Vec::new(),
         kerning_measurement_context: None,
+        horizontal_shaping_context: None,
     };
 
     let ts = resolved_to_text_style(&styles, 0, 0);
@@ -1002,6 +1005,7 @@ fn test_resolved_to_text_style_with_ratio() {
         numberings: Vec::new(),
         bullets: Vec::new(),
         kerning_measurement_context: None,
+        horizontal_shaping_context: None,
     };
 
     let ts = resolved_to_text_style(&styles, 0, 0);
@@ -1986,6 +1990,7 @@ fn test_tac_leading_width_block_table_full_line() {
         tac_controls: Vec::new(), // block 취급이라 비어있음
         footnote_positions: Vec::new(),
         tab_extended: Vec::new(),
+        horizontal_shaping: None,
     };
     let styles = ResolvedStyleSet {
         hwp3_variant: false,
@@ -2081,6 +2086,7 @@ fn test_tac_leading_width_inline_table_partial() {
         tac_controls: vec![(2, 1000, 0)], // pos=2 (ab 뒤), control_index=0
         footnote_positions: Vec::new(),
         tab_extended: Vec::new(),
+        horizontal_shaping: None,
     };
     let styles = ResolvedStyleSet {
         hwp3_variant: false,

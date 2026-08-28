@@ -157,18 +157,12 @@ impl DocumentCore {
         // (한컴에서 메모 추가 시 안내문 텍스트가 필드 값으로 삽입됨 — compose 전에 제거해야 정합성 유지)
         Self::clear_initial_field_texts(&mut document);
 
-        let composed = document
-            .sections
-            .iter()
-            .map(|s| compose_section(s))
-            .collect();
-
         let sec_count = document.sections.len();
         let mut doc = DocumentCore {
             document,
             pagination: Vec::new(),
             styles,
-            composed,
+            composed: Vec::new(),
             render_normalization: super::super::RenderNormalizationState::default(),
             dpi: DEFAULT_DPI,
             fallback_font: DEFAULT_FALLBACK_FONT.to_string(),
@@ -214,6 +208,7 @@ impl DocumentCore {
         };
 
         doc.rebuild_embedded_exact_font_sources();
+        doc.recompose_all_with_horizontal_shaping();
         doc.paginate();
 
         // [#4488/#4495] 로드 픽스업(손상 lineseg 제거·빈 문단 reflow·안내문 제거)과
@@ -1309,12 +1304,8 @@ impl DocumentCore {
         if reflowed > 0 {
             // 재구성 · 페이지네이션 재실행 필요
             self.rebuild_resolved_styles();
-            self.composed = self
-                .document
-                .sections
-                .iter()
-                .map(|s| compose_section(s))
-                .collect();
+            self.rebuild_embedded_exact_font_sources();
+            self.recompose_all_with_horizontal_shaping();
             let sec_count = self.document.sections.len();
             self.dirty_sections = vec![true; sec_count];
             self.paginate();
@@ -1356,6 +1347,7 @@ impl DocumentCore {
 
         self.convert_to_editable_native()?;
         self.rebuild_embedded_exact_font_sources();
+        self.recompose_all_with_horizontal_shaping();
         self.paginate();
 
         Ok(self.get_document_info())
@@ -1955,8 +1947,7 @@ impl DocumentCore {
             })?;
         // Batch mode에서는 paginate가 지연되더라도 뒤따르는 edit reflow가 방금
         // 등록한 generation을 즉시 읽어야 한다.
-        self.styles.kerning_measurement_context =
-            self.layout_engine.kerning_measurement_context_snapshot();
+        self.refresh_exact_font_measurement_contexts();
         let handle = self
             .layout_engine
             .exact_font_source_handle(slot)
@@ -1966,6 +1957,7 @@ impl DocumentCore {
             })?;
 
         if registration == ExactFontRegistryRegistration::Registered {
+            self.recompose_all_with_horizontal_shaping();
             self.mark_all_sections_dirty();
             self.measured_tables.clear();
             self.measured_sections.clear();

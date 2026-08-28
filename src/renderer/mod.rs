@@ -51,6 +51,7 @@ pub mod render_normalization;
 pub mod render_tree;
 pub mod scheduler;
 pub(crate) mod shaping;
+pub(crate) mod shaping_composition;
 pub(crate) mod shaping_context;
 pub(crate) mod shaping_paragraph;
 pub(crate) mod shaping_publication;

@@ -3,7 +3,7 @@
   "kind": "font-w10-q2-d-emitted-run-handoff-plan",
   "issue": 4969,
   "stage": "W10-Q2-D",
-  "status": "d0-qualified-awaiting-d1-approval",
+  "status": "d1-qualified-awaiting-d2-approval",
   "checkpoint": "452b6b741",
   "ownerCorrection": {
     "rejected": "new-public-field-on-TextRunNode",
@@ -51,6 +51,7 @@
       "id": "Q2-D1",
       "name": "composition-owner-handoff",
       "productOutputChange": false,
+      "result": "qualified",
       "approvalAfter": true
     },
     {
@@ -106,5 +107,5 @@
     "variation",
     "vertical"
   ],
-  "approvalScope": "Q2-D0 qualified; maintainer approval required before Q2-D1"
+  "approvalScope": "Q2-D1 qualified; maintainer approval required before Q2-D2"
 }

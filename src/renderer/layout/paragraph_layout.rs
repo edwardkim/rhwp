@@ -8089,6 +8089,7 @@ mod trailing_tac_width_tests {
             tac_controls: Vec::new(),
             footnote_positions: Vec::new(),
             tab_extended: Vec::new(),
+            horizontal_shaping: None,
         }
     }
 

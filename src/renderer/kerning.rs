@@ -280,6 +280,10 @@ impl KerningMeasurementContext {
         KerningLayoutSession::new(&self.registry)
     }
 
+    pub(crate) fn registry_generation(&self) -> u64 {
+        self.registry.generation()
+    }
+
     pub(crate) fn paragraph_measurement(
         &self,
         text: &str,
