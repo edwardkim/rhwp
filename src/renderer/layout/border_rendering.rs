@@ -90,13 +90,18 @@ pub(crate) fn build_row_col_x(
     // 셀 너비 그리드 구축 (O(cells) 탐색 1회)
     let mut cell_width_grid = vec![vec![None::<f64>; col_count]; row_count];
     for cell in &table.cells {
-        if cell.col_span == 1
-            && cell.width > 0
-            && (cell.col as usize) < col_count
-            && (cell.row as usize) < row_count
-        {
-            cell_width_grid[cell.row as usize][cell.col as usize] =
-                Some(hwpunit_to_px(cell.width as i32, dpi) * width_scale);
+        if cell.col_span != 1 || cell.width == 0 {
+            continue;
+        }
+        let r = cell.row as usize;
+        let c = cell.col as usize;
+        if r >= row_count || c >= col_count {
+            continue;
+        }
+        if let Some(row) = cell_width_grid.get_mut(r) {
+            if let Some(slot) = row.get_mut(c) {
+                *slot = Some(hwpunit_to_px(cell.width as i32, dpi) * width_scale);
+            }
         }
     }
     let mut base_rx = vec![0.0f64; col_count + 1];
@@ -1165,8 +1170,8 @@ pub(crate) fn border_width_to_px(width: u8) -> f64 {
         15.1, // 14: 4.0mm
         18.9, // 15: 5.0mm
     ];
-    if (width as usize) < WIDTHS_PX.len() {
-        WIDTHS_PX[width as usize]
+    if let Some(&px) = WIDTHS_PX.get(width as usize) {
+        px
     } else {
         (width as f64 * 1.2).max(0.4).min(20.0)
     }

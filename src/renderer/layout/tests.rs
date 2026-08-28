@@ -37,6 +37,7 @@ fn test_build_empty_page() {
     let page_content = PageContent {
         page_index: 0,
         page_number: 0,
+        page_number_restarted: false,
         section_index: 0,
         layout,
         column_contents: Vec::new(),
@@ -576,6 +577,7 @@ fn test_build_page_with_paragraph() {
     let page_content = PageContent {
         page_index: 0,
         page_number: 0,
+        page_number_restarted: false,
         section_index: 0,
         layout,
         column_contents: vec![ColumnContent {
@@ -654,6 +656,7 @@ fn partial_paragraph_start_line_beyond_lines_does_not_panic() {
     let page_content = PageContent {
         page_index: 0,
         page_number: 0,
+        page_number_restarted: false,
         section_index: 0,
         layout,
         column_contents: vec![ColumnContent {
@@ -755,11 +758,13 @@ fn test_layout_with_composed_styles() {
         numberings: Vec::new(),
         bullets: Vec::new(),
         kerning_measurement_context: None,
+        horizontal_shaping_context: None,
     };
 
     let page_content = PageContent {
         page_index: 0,
         page_number: 0,
+        page_number_restarted: false,
         section_index: 0,
         layout,
         column_contents: vec![ColumnContent {
@@ -886,11 +891,13 @@ fn test_layout_multi_run_x_position() {
         numberings: Vec::new(),
         bullets: Vec::new(),
         kerning_measurement_context: None,
+        horizontal_shaping_context: None,
     };
 
     let page_content = PageContent {
         page_index: 0,
         page_number: 0,
+        page_number_restarted: false,
         section_index: 0,
         layout,
         column_contents: vec![ColumnContent {
@@ -972,6 +979,7 @@ fn test_resolved_to_text_style() {
         numberings: Vec::new(),
         bullets: Vec::new(),
         kerning_measurement_context: None,
+        horizontal_shaping_context: None,
     };
 
     let ts = resolved_to_text_style(&styles, 0, 0);
@@ -1002,6 +1010,7 @@ fn test_resolved_to_text_style_with_ratio() {
         numberings: Vec::new(),
         bullets: Vec::new(),
         kerning_measurement_context: None,
+        horizontal_shaping_context: None,
     };
 
     let ts = resolved_to_text_style(&styles, 0, 0);
@@ -1269,6 +1278,7 @@ fn test_layout_table_basic() {
     let page_content = PageContent {
         page_index: 0,
         page_number: 0,
+        page_number_restarted: false,
         section_index: 0,
         layout,
         column_contents: vec![ColumnContent {
@@ -1423,6 +1433,7 @@ fn test_layout_table_cell_positions() {
     let page_content = PageContent {
         page_index: 0,
         page_number: 0,
+        page_number_restarted: false,
         section_index: 0,
         layout,
         column_contents: vec![ColumnContent {
@@ -1986,6 +1997,7 @@ fn test_tac_leading_width_block_table_full_line() {
         tac_controls: Vec::new(), // block 취급이라 비어있음
         footnote_positions: Vec::new(),
         tab_extended: Vec::new(),
+        horizontal_shaping: None,
     };
     let styles = ResolvedStyleSet {
         hwp3_variant: false,
@@ -2081,6 +2093,7 @@ fn test_tac_leading_width_inline_table_partial() {
         tac_controls: vec![(2, 1000, 0)], // pos=2 (ab 뒤), control_index=0
         footnote_positions: Vec::new(),
         tab_extended: Vec::new(),
+        horizontal_shaping: None,
     };
     let styles = ResolvedStyleSet {
         hwp3_variant: false,
@@ -2654,6 +2667,7 @@ fn render_tree_with_header_control(control: Control) -> PageRenderTree {
     let page_content = PageContent {
         page_index: 0,
         page_number: 1,
+        page_number_restarted: false,
         section_index: 0,
         layout,
         column_contents: Vec::new(),
@@ -2759,6 +2773,7 @@ fn page_bg_color_and_image_present(is_section_first: bool) -> (bool, bool) {
     let page_content = PageContent {
         page_index: 0,
         page_number: 0,
+        page_number_restarted: false,
         section_index: 0,
         layout,
         column_contents: Vec::new(),

@@ -204,6 +204,16 @@ impl ExactFontSourceRegistry {
         self.sources.len()
     }
 
+    /// Return another owner of the exact immutable source already retained by
+    /// this registry. The bytes are not copied; callers must still validate
+    /// the handle through [`resolve_exact_font_source`] before using the Arc.
+    pub(crate) fn source_arc_for_handle(
+        &self,
+        handle: &ExactFontSourceHandle,
+    ) -> Option<std::sync::Arc<[u8]>> {
+        self.sources.get(handle).cloned()
+    }
+
     pub(crate) fn slot_count(&self) -> usize {
         self.slots.len()
     }
@@ -278,6 +288,10 @@ impl KerningMeasurementContext {
 
     pub(crate) fn layout_session(&self) -> KerningLayoutSession<'_> {
         KerningLayoutSession::new(&self.registry)
+    }
+
+    pub(crate) fn registry_generation(&self) -> u64 {
+        self.registry.generation()
     }
 
     pub(crate) fn paragraph_measurement(

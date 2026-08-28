@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/mcp_hwp2024Convert_usage.md
-last_verified: 2026-08-26
+last_verified: 2026-08-28
 ---
 
 # HWP 2024 변환 MCP client 사용법
@@ -11,12 +11,32 @@ last_verified: 2026-08-26
 service로 보내고 변환 결과를 다시 같은 client PC에 저장하는 방법을 설명한다. 변환 service는
 Windows에서 HOffice120과 HOffice130 profile을 선택해 실행하지만 client OS에는 종속되지 않는다.
 
-한컴오피스 2022 이하 저장본은 `engine: 2020`, 한컴오피스 2024 저장본은 `engine: 2024`를 사용한다.
+한컴오피스 2024 저장본은 `engine: 2024`, 그 외 저장본은 `engine: 2020`을 사용한다. PR review 기준
+PDF 산출에서는 저장 제품을 세분화해 `-2018.pdf`, `-2022.pdf`처럼 이름 붙이지 않는다.
+`rhwp info --json <파일>`의 `lastSavedWith.product`가 `hancom-office-2024`이면 결과 파일명을
+`<원본-stem>-2024.pdf`로 끝내고, `null`이거나 `hancom-office-2010`·`hancom-office-2018`·
+`hancom-office-2020`·`hancom-office-2022`이면 `engine: 2020`으로 변환해 `<원본-stem>-2020.pdf`로
+끝낸다.
+
 `2020`은 이 service에 등록된 Windows HOffice120 호환 profile의 공개 식별자이며 폐기된 Linux 한컴
-2020 beta service를 호출한다는 뜻이 아니다. 확장자만으로 engine을 선택하지 않는다.
-별도 “HWP 2020 MCP” server나 client artifact는 제공하지 않으며, 이 client의 `engine: 2020`만 사용한다.
-`rhwp info --json <파일>`의 `lastSavedWith.product`가 `hancom-office-2024`이면 `2024`,
-`hancom-office-2022`이면 `2020`을 사용하고, 필드가 `null`이면 저장 환경을 별도로 확인한다.
+2020 beta service를 호출한다는 뜻이 아니다. 확장자만으로 engine을 선택하지 않는다. 별도
+“HWP 2020 MCP” server나 client artifact는 제공하지 않으며, 이 client의 `engine: 2020`만 사용한다.
+
+PR review 기준 PDF를 만들 때는 기본 engine 값에 의존하지 않고 항상 `--engine`과
+`--output-filename`을 명시한다.
+
+| `rhwp info --json`의 `lastSavedWith.product` | 요청 engine | 기준 PDF 파일명 |
+| --- | --- | --- |
+| `hancom-office-2024` | `2024` | `<원본-stem>-2024.pdf` |
+| `null` 또는 `lastSavedWith: null` | `2020` | `<원본-stem>-2020.pdf` |
+| `hancom-office-2010` | `2020` | `<원본-stem>-2020.pdf` |
+| `hancom-office-2018` | `2020` | `<원본-stem>-2020.pdf` |
+| `hancom-office-2020` | `2020` | `<원본-stem>-2020.pdf` |
+| `hancom-office-2022` | `2020` | `<원본-stem>-2020.pdf` |
+| 그 밖의 product 미상 구버전 | `2020` | `<원본-stem>-2020.pdf` |
+
+즉 PR review 증적에는 `-2018.pdf`, `-2022.pdf`를 만들지 않는다. `2024`로 확인된 저장본만
+`-2024.pdf`를 사용하고, 나머지는 `-2020.pdf`로 통일한다.
 
 ## 개요
 
@@ -29,6 +49,8 @@ Windows에서 HOffice120과 HOffice130 profile을 선택해 실행하지만 clie
 - 지원 출력: `pdf`, `hwp`, `hwpx`
 - 지원 방향: `.hwp → pdf|hwp|hwpx`, `.hwpx → pdf|hwp`
 - 지원 engine: `2020`(HOffice120 호환 profile), `2024`(HOffice130), 기본값 `2024`
+- PR review 기준 PDF 이름: `lastSavedWith.product`가 `hancom-office-2024`이면 `-2024.pdf`,
+  그 외(`null`, 2010, 2018, 2020, 2022, 알 수 없는 구버전)는 `-2020.pdf`
 - 선택적 암호 문서: MCP tool의 `password` 또는 CLI의 비공개 `--password-file`
 - 동기 tool: `convert_local_document`
 - 비동기 tool: `start_local_document_conversion`, `get_local_conversion_status`,
@@ -456,8 +478,10 @@ input preflight rejected the document: corrupt HWP document: <손상 원인>
 변환 결과에서 다음을 확인한다.
 
 - `status: success`
-- `engine`: `start`와 `status` 응답에서 요청한 engine과 일치해야 한다. 2022 이하 저장본은
-  `2020`, 2024 저장본은 `2024`를 명시한다.
+- `engine`: `start`와 `status` 응답에서 요청한 engine과 일치해야 한다. PR review 기준 PDF에서는
+  `lastSavedWith.product`가 `hancom-office-2024`인 파일만 `2024`를 명시하고, `null` 또는 2022 이하
+  저장본은 `2020`을 명시한다. 결과 PDF 파일명도 같은 bucket을 따라 각각 `-2024.pdf`,
+  `-2020.pdf`로 끝낸다.
 - `server.engine`: 서버가 반환할 수 있는 concrete backend 식별자다. 요청한 engine과의 일치 여부를
   판정하는 값으로 사용하지 않는다. 현재 배포의 2024 backend는
   `hancom-2024-direct-host`를 반환한다.

@@ -108,11 +108,28 @@ pub struct ComposedParagraph {
     /// 탭 확장 데이터 (HWP tab_extended / HWPX 인라인 탭)
     /// ext[0]=width, ext[1]=leader/fill_type, ext[2]=tab_type
     pub tab_extended: Vec<[u16; 7]>,
+    /// Q2-C에서 qualified된 dormant shaping 결과. D1은 수명만 composition
+    /// owner로 넘기며 line breaking·layout·paint는 아직 이 값을 소비하지 않는다.
+    pub(crate) horizontal_shaping:
+        Option<std::sync::Arc<crate::renderer::shaping_paragraph::HorizontalShapingLineOutcome>>,
 }
 
 /// 구역의 문단 목록을 구성한다.
 pub fn compose_section(section: &Section) -> Vec<ComposedParagraph> {
     section.paragraphs.iter().map(compose_paragraph).collect()
+}
+
+/// Exact-font contexts가 준비된 DocumentCore 파생-state 경계만 사용하는 opt-in
+/// composition path. 기존 공개 composition 경로의 결과는 그대로 유지한다.
+pub(crate) fn compose_section_with_horizontal_shaping(
+    section: &Section,
+    styles: &ResolvedStyleSet,
+) -> Vec<ComposedParagraph> {
+    section
+        .paragraphs
+        .iter()
+        .map(|paragraph| compose_paragraph_with_horizontal_shaping(paragraph, styles))
+        .collect()
 }
 
 /// [Task #991] HWP5 parser 가 extended ctrl (1-3, 11-12, 14-18, 21-23) 의
@@ -412,6 +429,7 @@ pub fn compose_paragraph(para: &Paragraph) -> ComposedParagraph {
         tac_controls,
         footnote_positions,
         tab_extended: para.tab_extended.clone(),
+        horizontal_shaping: None,
     };
 
     // CharOverlap 글자를 조합된 텍스트에 삽입
@@ -423,6 +441,19 @@ pub fn compose_paragraph(para: &Paragraph) -> ComposedParagraph {
     // Hanyang-PUA 옛한글 / 한컴 PUA와 legacy 제품명 표시 문자열 변환 (렌더링·측정용)
     convert_pua_display_text(&mut composed);
 
+    composed
+}
+
+/// Legacy composition을 먼저 완성한 뒤 Q2-C shadow transaction의 qualified
+/// 결과만 같은 paragraph owner에 붙인다. 실패·상한·range mismatch는 기존
+/// `compose_paragraph()` 결과를 그대로 반환한다.
+pub(crate) fn compose_paragraph_with_horizontal_shaping(
+    para: &Paragraph,
+    styles: &ResolvedStyleSet,
+) -> ComposedParagraph {
+    let mut composed = compose_paragraph(para);
+    composed.horizontal_shaping =
+        line_breaking::compose_horizontal_shaping_handoff(para, &composed, styles);
     composed
 }
 

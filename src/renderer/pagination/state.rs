@@ -281,6 +281,7 @@ impl PaginationState {
         PageContent {
             page_index: self.pages.len() as u32,
             page_number: 0,
+            page_number_restarted: false,
             section_index: self.section_index,
             layout: self.layout.clone(),
             column_contents,
