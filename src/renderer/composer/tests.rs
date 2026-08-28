@@ -388,6 +388,7 @@ fn modest_field_fill_reflows_a_geometry_matching_stored_partition() {
             StoredRowMissPolicy::Reflow,
             false,
             &[],
+            false,
         ),
         Some(line_breaking::StoredRowResolution::Stored)
     ));
@@ -408,6 +409,7 @@ fn modest_field_fill_reflows_a_geometry_matching_stored_partition() {
             StoredRowMissPolicy::Reflow,
             stale,
             &[],
+            false,
         ),
         Some(line_breaking::StoredRowResolution::Reflowed)
     ));

@@ -4503,6 +4503,7 @@ mod frame_reflow_tests {
             StoredRowMissPolicy::Reflow,
             false,
             &[],
+            false,
         )
         .expect("a scalar cached paragraph is frame-resolvable");
         assert_eq!(resolution, StoredRowResolution::Stored);
@@ -4620,6 +4621,7 @@ mod frame_reflow_tests {
                 StoredRowMissPolicy::Reflow,
                 false,
                 &[],
+                false,
             ),
             Some(StoredRowResolution::Stored)
         ));
@@ -4649,6 +4651,7 @@ mod frame_reflow_tests {
             StoredRowMissPolicy::Reflow,
             true,
             &[],
+            false,
         )
         .is_none());
         assert_eq!(specialized_frame, checkpoint);
@@ -4686,6 +4689,7 @@ mod frame_reflow_tests {
             StoredRowMissPolicy::Reflow,
             false,
             &[],
+            false,
         )
         .is_none());
         assert_eq!(scalar_frame, scalar_checkpoint);
@@ -4713,6 +4717,7 @@ mod frame_reflow_tests {
             StoredRowMissPolicy::Reflow,
             false,
             &[],
+            false,
         )
         .is_none());
         assert_eq!(carrier_frame, carrier_checkpoint);
@@ -4795,6 +4800,7 @@ mod frame_reflow_tests {
                 StoredRowMissPolicy::Reflow,
                 false,
                 &[],
+                false,
             ),
             Some(StoredRowResolution::Reflowed)
         ));
@@ -4810,6 +4816,7 @@ mod frame_reflow_tests {
                 StoredRowMissPolicy::Reflow,
                 false,
                 &[],
+                false,
             )
             .is_none(),
             "untouched HWP3 stored origin remains outside the common Frame's jurisdiction"
@@ -4858,6 +4865,7 @@ mod frame_reflow_tests {
             StoredRowMissPolicy::Reflow,
             false,
             &[],
+            false,
         )
         .expect("a scalar cached paragraph is frame-resolvable");
 
