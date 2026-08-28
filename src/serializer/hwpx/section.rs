@@ -2563,12 +2563,7 @@ fn render_header_footer(
         tag = tag,
         id = h.id,
         apply = apply_page_type_to_str(h.apply_to),
-        // [#6186] 종전에는 늘 "TOP" 으로 굳혀 저장해 세로 정렬이 왕복에서 유실됐다.
-        va = match (h.list_attr >> 21) & 0b11 {
-            1 => "CENTER",
-            2 => "BOTTOM",
-            _ => "TOP",
-        },
+        va = sublist_vert_align_str(h.list_attr),
         tw = h.text_width,
         th = h.text_height,
         tr = h.text_ref,
@@ -2589,12 +2584,26 @@ fn render_header_footer(
     out
 }
 
+/// LIST_HEADER `list_attr` 의 세로 정렬(bit 21~22, 0=위 1=가운데 2=아래)을 HWPX
+/// `hp:subList/@vertAlign` 문자열로 되돌린다.
+///
+/// 종전에는 `"TOP"` 을 박아 내보내, `vertAlign="BOTTOM"` 꼬리말이 왕복 후 위로 올라갔다
+/// (exam_social·k-water-rfp: 원본 `list_attr=0x00400000` → 저장본 `0x00000000`).
+/// 파서(`parser/hwpx/section.rs`)가 `CENTER => 1 << 21`, `BOTTOM => 2 << 21` 로 읽으므로
+/// 그 역사상이다.
+fn sublist_vert_align_str(list_attr: u32) -> &'static str {
+    match (list_attr >> 21) & 0x03 {
+        1 => "CENTER",
+        2 => "BOTTOM",
+        _ => "TOP",
+    }
+}
+
 /// render_header_footer 공통 인자 묶음 (Header/Footer가 동일 필드를 가짐).
 struct HeaderFooterFields<'a> {
     id: u32,
-    apply_to: HeaderFooterApply,
-    /// HWPX subList list_attr — 세로 정렬(비트 21~22) 보존용.
     list_attr: u32,
+    apply_to: HeaderFooterApply,
     text_width: u32,
     text_height: u32,
     text_ref: u8,
@@ -2614,8 +2623,8 @@ fn render_header(h: &Header, ctx: &mut SerializeContext) -> String {
         "header",
         HeaderFooterFields {
             id: hwpx_header_footer_id(&h.raw_ctrl_extra),
-            apply_to: h.apply_to,
             list_attr: h.list_attr,
+            apply_to: h.apply_to,
             text_width: h.text_width,
             text_height: h.text_height,
             text_ref: h.text_ref,
@@ -2631,8 +2640,8 @@ fn render_footer(f: &Footer, ctx: &mut SerializeContext) -> String {
         "footer",
         HeaderFooterFields {
             id: hwpx_header_footer_id(&f.raw_ctrl_extra),
-            apply_to: f.apply_to,
             list_attr: f.list_attr,
+            apply_to: f.apply_to,
             text_width: f.text_width,
             text_height: f.text_height,
             text_ref: f.text_ref,
