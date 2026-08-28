@@ -4,18 +4,15 @@
 //! that the final `LayerNode::source_node_id` can recover one exact sidecar and
 //! losslessly express its glyph geometry with the existing glyph-run schema.
 
-use sha2::{Digest, Sha256};
-
 use crate::paint::{
     font_blob_resource_key, resource_digest_hex, BinaryResourceKind, BinaryResourceRef,
-    EmbeddedFontFace, FontBlobKey, FontBlobResource, FontDigest, FontFaceKey, FontFaceResource,
-    FontFallbackPolicyId, FontInstanceKey, FontPortability, FontResourceSource, GlyphCluster,
-    GlyphClusterFlag, GlyphRange, GlyphRunDiagnostics, GlyphRunOrientation,
-    GlyphRunReplayEligibility, GlyphTransform, LanguageTag, LayerAffineTransform,
-    LayerGlyphRunPaint, LayerNode, LayerPoint, LayerVector, LocalizedName, OpenTypeFeatureSetting,
-    PaintTextStyle, PaintVariantMeta, ResourceArena, ScriptTag, ShapeKey, ShapingEngineId,
-    TextDirection, TextRunPlacement, TextSourceId, TextSourceRange, TextSourceSpan,
-    TextVariantKind, TextVariantQuality, WritingMode, MAX_PORTABLE_FONT_BLOB_BYTES,
+    FontBlobKey, FontBlobResource, FontDigest, FontFaceKey, FontFaceResource, FontFallbackPolicyId,
+    FontInstanceKey, FontPortability, FontResourceSource, GlyphCluster, GlyphClusterFlag,
+    GlyphRange, GlyphRunDiagnostics, GlyphRunOrientation, GlyphRunReplayEligibility, LanguageTag,
+    LayerAffineTransform, LayerGlyphRunPaint, LayerNode, LayerPoint, LayerVector, LocalizedName,
+    OpenTypeFeatureSetting, PaintTextStyle, PaintVariantMeta, ResourceArena, ScriptTag, ShapeKey,
+    ShapingEngineId, TextDirection, TextRunPlacement, TextSourceId, TextSourceRange,
+    TextSourceSpan, TextVariantKind, TextVariantQuality, WritingMode, MAX_PORTABLE_FONT_BLOB_BYTES,
     MAX_PORTABLE_GLYPHS_PER_RUN, RESOURCE_KEY_ALGORITHM,
 };
 use crate::renderer::render_tree::{BoundingBox, FieldMarkerType, TextRunNode};
@@ -30,13 +27,16 @@ pub(crate) enum HorizontalShapingGlyphLoweringRejectReason {
     MissingSourceNode,
     MissingSidecar,
     RejectedDecision,
+    MissingReplaySourceCertificate,
     UnsupportedRunSurface,
+    UnsupportedReplayRatio,
     RunRangeMismatch,
     MeasurementIdentityMismatch,
-    EmbeddedFaceNotFound,
-    EmbeddedFaceAmbiguous,
-    EmbeddedFaceInvalid,
+    ReplaySourceIdentityMismatch,
+    ReplaySourceFaceInvalid,
+    VerticalPositioningAuthorityPending,
     MeasurementGeometryInvalid,
+    ReplayProjectionMismatch,
     ClusterMappingInvalid,
     ResourceLimitExceeded,
 }
@@ -47,13 +47,16 @@ impl HorizontalShapingGlyphLoweringRejectReason {
             Self::MissingSourceNode => "missingSourceNode",
             Self::MissingSidecar => "missingSidecar",
             Self::RejectedDecision => "rejectedDecision",
+            Self::MissingReplaySourceCertificate => "missingReplaySourceCertificate",
             Self::UnsupportedRunSurface => "unsupportedRunSurface",
+            Self::UnsupportedReplayRatio => "unsupportedReplayRatio",
             Self::RunRangeMismatch => "runRangeMismatch",
             Self::MeasurementIdentityMismatch => "measurementIdentityMismatch",
-            Self::EmbeddedFaceNotFound => "embeddedFaceNotFound",
-            Self::EmbeddedFaceAmbiguous => "embeddedFaceAmbiguous",
-            Self::EmbeddedFaceInvalid => "embeddedFaceInvalid",
+            Self::ReplaySourceIdentityMismatch => "replaySourceIdentityMismatch",
+            Self::ReplaySourceFaceInvalid => "replaySourceFaceInvalid",
+            Self::VerticalPositioningAuthorityPending => "verticalPositioningAuthorityPending",
             Self::MeasurementGeometryInvalid => "measurementGeometryInvalid",
+            Self::ReplayProjectionMismatch => "replayProjectionMismatch",
             Self::ClusterMappingInvalid => "clusterMappingInvalid",
             Self::ResourceLimitExceeded => "resourceLimitExceeded",
         }
@@ -101,18 +104,14 @@ fn same_f64(left: f64, right: f64) -> bool {
         && (left - right).abs() <= 1.0e-9 * left.abs().max(right.abs()).max(1.0)
 }
 
-fn sha256_hex(bytes: &[u8]) -> String {
-    Sha256::digest(bytes)
-        .iter()
-        .fold(String::with_capacity(64), |mut value, byte| {
-            use std::fmt::Write;
-            write!(&mut value, "{byte:02x}").expect("String formatting cannot fail");
-            value
-        })
-}
-
 fn run_surface_supported(run: &TextRunNode) -> bool {
     let style = &run.style;
+    let homogeneous_language = run.text.chars().next().is_some_and(|first| {
+        let language_index = crate::renderer::style_resolver::detect_lang_category(first);
+        run.text.chars().all(|character| {
+            crate::renderer::style_resolver::detect_lang_category(character) == language_index
+        })
+    });
     !run.text.is_empty()
         && run
             .text
@@ -122,6 +121,8 @@ fn run_surface_supported(run: &TextRunNode) -> bool {
             <= MAX_PORTABLE_GLYPHS_PER_RUN
         && run.layout_positions.is_none()
         && run.display_text.is_none()
+        && run.char_shape_id.is_some()
+        && homogeneous_language
         && !run.is_vertical
         && run.rotation.abs() <= f64::EPSILON
         && run.char_overlap.is_none()
@@ -131,6 +132,7 @@ fn run_surface_supported(run: &TextRunNode) -> bool {
         && !style.italic
         && style.font_size.is_finite()
         && style.font_size > 0.0
+        && style.font_size <= 4_096.0
         && style.ratio.is_finite()
         && style.ratio > 0.0
         && style.ratio <= 16.0
@@ -170,52 +172,33 @@ fn text_run_placement(bbox: BoundingBox, run: &TextRunNode) -> TextRunPlacement 
     }
 }
 
-fn matching_embedded_face<'a>(
-    decision: &HorizontalShapingRunDecision,
-    run: &TextRunNode,
-    fonts: &'a [EmbeddedFontFace<'a>],
-) -> Result<(EmbeddedFontFace<'a>, ttf_parser::Face<'a>), HorizontalShapingGlyphLoweringRejectReason>
-{
+fn certified_replay_face<'a>(
+    decision: &'a HorizontalShapingRunDecision,
+) -> Result<(&'a [u8], u32, ttf_parser::Face<'a>), HorizontalShapingGlyphLoweringRejectReason> {
     let measurement = decision
         .measurement()
         .ok_or(HorizontalShapingGlyphLoweringRejectReason::RejectedDecision)?;
-    let char_shape_id = run
-        .char_shape_id
-        .ok_or(HorizontalShapingGlyphLoweringRejectReason::UnsupportedRunSurface)?;
-    let first = run
-        .text
-        .chars()
-        .next()
-        .ok_or(HorizontalShapingGlyphLoweringRejectReason::UnsupportedRunSurface)?;
-    let language_index = crate::renderer::style_resolver::detect_lang_category(first);
-    if run.text.chars().any(|character| {
-        crate::renderer::style_resolver::detect_lang_category(character) != language_index
-    }) {
-        return Err(HorizontalShapingGlyphLoweringRejectReason::UnsupportedRunSurface);
-    }
+    let certificate = decision
+        .replay_source_certificate()
+        .ok_or(HorizontalShapingGlyphLoweringRejectReason::MissingReplaySourceCertificate)?;
     let source = &measurement.source_handle;
-    let mut matching = fonts.iter().copied().filter(|font| {
-        font.char_shape_id == char_shape_id
-            && font.language_index == language_index
-            && font.face_index == source.face_index
-            && font.bytes.len() == source.font_bytes
-            && sha256_hex(font.bytes) == source.font_source_sha256
-    });
-    let font = matching
-        .next()
-        .ok_or(HorizontalShapingGlyphLoweringRejectReason::EmbeddedFaceNotFound)?;
-    if matching.next().is_some() {
-        return Err(HorizontalShapingGlyphLoweringRejectReason::EmbeddedFaceAmbiguous);
+    if certificate.registry_generation() != measurement.registry_generation
+        || certificate.source_handle() != source
+        || certificate.units_per_em() != measurement.units_per_em
+        || certificate.source_bytes().len() != source.font_bytes
+    {
+        return Err(HorizontalShapingGlyphLoweringRejectReason::ReplaySourceIdentityMismatch);
     }
-    if font.bytes.len() > MAX_PORTABLE_FONT_BLOB_BYTES {
+    let bytes = certificate.source_bytes();
+    if bytes.len() > MAX_PORTABLE_FONT_BLOB_BYTES {
         return Err(HorizontalShapingGlyphLoweringRejectReason::ResourceLimitExceeded);
     }
-    let face = ttf_parser::Face::parse(font.bytes, font.face_index)
-        .map_err(|_| HorizontalShapingGlyphLoweringRejectReason::EmbeddedFaceInvalid)?;
+    let face = ttf_parser::Face::parse(bytes, source.face_index)
+        .map_err(|_| HorizontalShapingGlyphLoweringRejectReason::ReplaySourceFaceInvalid)?;
     if face.units_per_em() != measurement.units_per_em {
-        return Err(HorizontalShapingGlyphLoweringRejectReason::EmbeddedFaceInvalid);
+        return Err(HorizontalShapingGlyphLoweringRejectReason::ReplaySourceFaceInvalid);
     }
-    Ok((font, face))
+    Ok((bytes, source.face_index, face))
 }
 
 fn validate_measurement(
@@ -363,15 +346,112 @@ fn lower_clusters(
     Ok(lowered)
 }
 
+struct HorizontalShapingReplayProjection {
+    draw_font_size_px: f64,
+    positions: Vec<LayerPoint>,
+    advances: Vec<LayerVector>,
+    placement: TextRunPlacement,
+    max_origin_delta_px: f64,
+    max_advance_delta_px: f64,
+}
+
+fn project_replay_geometry(
+    decision: &HorizontalShapingRunDecision,
+    bbox: BoundingBox,
+    run: &TextRunNode,
+) -> Result<HorizontalShapingReplayProjection, HorizontalShapingGlyphLoweringRejectReason> {
+    let measurement = decision
+        .measurement()
+        .ok_or(HorizontalShapingGlyphLoweringRejectReason::RejectedDecision)?;
+    if !(0.0..0.999).contains(&run.style.ratio) {
+        return Err(HorizontalShapingGlyphLoweringRejectReason::UnsupportedReplayRatio);
+    }
+    if measurement
+        .applied
+        .glyphs
+        .iter()
+        .any(|glyph| glyph.y_offset != 0 || glyph.y_advance != 0)
+    {
+        return Err(
+            HorizontalShapingGlyphLoweringRejectReason::VerticalPositioningAuthorityPending,
+        );
+    }
+
+    let (draw_font_size_px, draw_x_scale) =
+        crate::renderer::condensed_ratio_draw_params(run.style.font_size, run.style.ratio);
+    if !draw_font_size_px.is_finite()
+        || draw_font_size_px <= 0.0
+        || !draw_x_scale.is_finite()
+        || draw_x_scale <= 0.0
+    {
+        return Err(HorizontalShapingGlyphLoweringRejectReason::ReplayProjectionMismatch);
+    }
+    let local_scale = draw_font_size_px / f64::from(measurement.units_per_em);
+    if !local_scale.is_finite() || local_scale <= 0.0 {
+        return Err(HorizontalShapingGlyphLoweringRejectReason::ReplayProjectionMismatch);
+    }
+
+    let mut local_pen_x = 0.0;
+    let mut positions = Vec::with_capacity(measurement.applied.glyphs.len());
+    let mut advances = Vec::with_capacity(measurement.applied.glyphs.len());
+    let mut max_origin_delta_px: f64 = 0.0;
+    let mut max_advance_delta_px: f64 = 0.0;
+    for (design, page) in measurement
+        .applied
+        .glyphs
+        .iter()
+        .zip(&measurement.glyphs_px)
+    {
+        let local_x = local_pen_x + f64::from(design.x_offset) * local_scale;
+        let local_advance_x = f64::from(design.x_advance) * local_scale;
+        if !local_x.is_finite() || !local_advance_x.is_finite() {
+            return Err(HorizontalShapingGlyphLoweringRejectReason::ReplayProjectionMismatch);
+        }
+        let origin_delta = (local_x * draw_x_scale - page.x).abs();
+        let advance_delta = (local_advance_x * draw_x_scale - page.advance_x).abs();
+        max_origin_delta_px = max_origin_delta_px.max(origin_delta);
+        max_advance_delta_px = max_advance_delta_px.max(advance_delta);
+        if !same_f64(local_x * draw_x_scale, page.x)
+            || !same_f64(local_advance_x * draw_x_scale, page.advance_x)
+            || !same_f64(page.y, 0.0)
+            || !same_f64(page.advance_y, 0.0)
+        {
+            return Err(HorizontalShapingGlyphLoweringRejectReason::ReplayProjectionMismatch);
+        }
+        positions.push(LayerPoint { x: local_x, y: 0.0 });
+        advances.push(LayerVector {
+            dx: local_advance_x,
+            dy: 0.0,
+        });
+        local_pen_x += local_advance_x;
+    }
+    if !same_f64(local_pen_x * draw_x_scale, measurement.total_advance_px) {
+        return Err(HorizontalShapingGlyphLoweringRejectReason::ReplayProjectionMismatch);
+    }
+
+    let mut placement = text_run_placement(bbox, run);
+    placement.run_to_page.a = draw_x_scale;
+    Ok(HorizontalShapingReplayProjection {
+        draw_font_size_px,
+        positions,
+        advances,
+        placement,
+        max_origin_delta_px,
+        max_advance_delta_px,
+    })
+}
+
 fn register_portable_face(
-    font: EmbeddedFontFace<'_>,
+    bytes: &[u8],
+    face_index: u32,
+    family: &str,
     face: &ttf_parser::Face<'_>,
     resources: &mut ResourceArena,
 ) -> FontFaceKey {
-    let digest_value = resource_digest_hex(font.bytes);
-    let resource_key = font_blob_resource_key(font.bytes.len(), &digest_value);
+    let digest_value = resource_digest_hex(bytes);
+    let resource_key = font_blob_resource_key(bytes.len(), &digest_value);
     let blob_key = FontBlobKey(resource_key.clone());
-    let face_key = FontFaceKey(format!("{resource_key}:face:{}", font.face_index));
+    let face_key = FontFaceKey(format!("{resource_key}:face:{face_index}"));
     let digest = FontDigest {
         algorithm: RESOURCE_KEY_ALGORITHM.to_string(),
         value: digest_value,
@@ -380,7 +460,7 @@ fn register_portable_face(
         kind: BinaryResourceKind::FontBlob,
         id: resource_key,
     };
-    resources.intern_font_blob_bytes(font.bytes);
+    resources.intern_font_blob_bytes(bytes);
     if !resources
         .font_resources()
         .blobs
@@ -404,20 +484,14 @@ fn register_portable_face(
         .iter()
         .any(|registered| registered.id == face_key)
     {
-        let mut family_names = vec![LocalizedName {
+        let family_names = vec![LocalizedName {
             locale: None,
-            value: font.family.to_string(),
+            value: family.to_string(),
         }];
-        if let Some(alternate) = font.alternate_family.filter(|name| *name != font.family) {
-            family_names.push(LocalizedName {
-                locale: None,
-                value: alternate.to_string(),
-            });
-        }
         resources.font_resources_mut().faces.push(FontFaceResource {
             id: face_key.clone(),
             blob_key,
-            face_index: font.face_index,
+            face_index,
             postscript_name: None,
             family_names,
             style_names: Vec::new(),
@@ -437,7 +511,6 @@ pub(crate) fn lower_horizontal_shaping_layer_node_shadow(
     run: &TextRunNode,
     text_source_id: u32,
     sidecars: &HorizontalShapingPageSidecars,
-    fonts: &[EmbeddedFontFace<'_>],
     resources: &mut ResourceArena,
 ) -> HorizontalShapingGlyphLoweringReport {
     let Some(source_node_id) = node.source_node_id else {
@@ -476,7 +549,7 @@ pub(crate) fn lower_horizontal_shaping_layer_node_shadow(
         );
     }
 
-    let (font, face) = match matching_embedded_face(decision, run, fonts) {
+    let (font_bytes, face_index, face) = match certified_replay_face(decision) {
         Ok(value) => value,
         Err(reason) => {
             return HorizontalShapingGlyphLoweringReport::rejected(Some(source_node_id), reason)
@@ -485,6 +558,12 @@ pub(crate) fn lower_horizontal_shaping_layer_node_shadow(
     if let Err(reason) = validate_measurement(decision, run, &face) {
         return HorizontalShapingGlyphLoweringReport::rejected(Some(source_node_id), reason);
     }
+    let projection = match project_replay_geometry(decision, bbox, run) {
+        Ok(value) => value,
+        Err(reason) => {
+            return HorizontalShapingGlyphLoweringReport::rejected(Some(source_node_id), reason)
+        }
+    };
     let clusters = match lower_clusters(decision, run) {
         Ok(value) => value,
         Err(reason) => {
@@ -499,42 +578,12 @@ pub(crate) fn lower_horizontal_shaping_layer_node_shadow(
         .iter()
         .map(|glyph| glyph.glyph_id)
         .collect();
-    let positions = measurement
-        .glyphs_px
-        .iter()
-        .map(|glyph| LayerPoint {
-            x: glyph.x,
-            y: glyph.y,
-        })
-        .collect();
-    let advances = measurement
-        .glyphs_px
-        .iter()
-        .map(|glyph| LayerVector {
-            dx: glyph.advance_x,
-            dy: glyph.advance_y,
-        })
-        .collect();
-    let glyph_transforms = ((run.style.ratio - 1.0).abs() > f64::EPSILON).then(|| {
-        vec![
-            GlyphTransform {
-                xx: run.style.ratio as f32,
-                xy: 0.0,
-                yx: 0.0,
-                yy: 1.0,
-                tx: 0.0,
-                ty: 0.0,
-            };
-            measurement.glyphs_px.len()
-        ]
-    });
-
     // All validation precedes resource mutation, so a rejected attempt cannot
     // leave a partial portable-font publication behind.
-    let digest_value = resource_digest_hex(font.bytes);
+    let digest_value = resource_digest_hex(font_bytes);
     let data_ref = BinaryResourceRef {
         kind: BinaryResourceKind::FontBlob,
-        id: font_blob_resource_key(font.bytes.len(), &digest_value),
+        id: font_blob_resource_key(font_bytes.len(), &digest_value),
     };
     if resources.font_blob_bytes_for_ref(&data_ref).is_none() {
         let Some(existing_bytes) = resources
@@ -547,7 +596,7 @@ pub(crate) fn lower_horizontal_shaping_layer_node_shadow(
             );
         };
         if existing_bytes
-            .checked_add(font.bytes.len())
+            .checked_add(font_bytes.len())
             .is_none_or(|total| total > MAX_COMMON_SHAPING_FONT_BYTES_PER_PAGE)
         {
             return HorizontalShapingGlyphLoweringReport::rejected(
@@ -556,7 +605,13 @@ pub(crate) fn lower_horizontal_shaping_layer_node_shadow(
             );
         }
     }
-    let face_key = register_portable_face(font, &face, resources);
+    let face_key = register_portable_face(
+        font_bytes,
+        face_index,
+        &run.style.font_family,
+        &face,
+        resources,
+    );
     let equivalence_group = format!("text-{text_source_id}");
     let mut variant = PaintVariantMeta::text_run_default(equivalence_group.clone());
     variant.variant_id = "glyphRun".to_string();
@@ -575,6 +630,9 @@ pub(crate) fn lower_horizontal_shaping_layer_node_shadow(
             value: Some(feature.value),
         })
         .collect();
+    let mut paint_style = PaintTextStyle::from(&run.style);
+    paint_style.font_size = projection.draw_font_size_px;
+    paint_style.ratio = 1.0;
     let glyph_run = LayerGlyphRunPaint {
         source: TextSourceSpan {
             id: TextSourceId(text_source_id),
@@ -583,11 +641,11 @@ pub(crate) fn lower_horizontal_shaping_layer_node_shadow(
             stable_source_key: None,
         },
         variant,
-        paint_style: PaintTextStyle::from(&run.style),
+        paint_style,
         shape_key: ShapeKey {
             font_instance: FontInstanceKey {
                 face_key,
-                size_px: run.style.font_size,
+                size_px: projection.draw_font_size_px,
                 variations: Vec::new(),
                 synthetic_bold: false,
                 synthetic_italic: false,
@@ -600,30 +658,29 @@ pub(crate) fn lower_horizontal_shaping_layer_node_shadow(
             shaping_engine: ShapingEngineId("rustybuzz-q2-v1".to_string()),
             fallback_policy: FontFallbackPolicyId("none".to_string()),
         },
-        placement: text_run_placement(bbox, run),
+        placement: projection.placement,
         glyph_ids,
-        positions,
-        advances: Some(advances),
+        positions: projection.positions,
+        advances: Some(projection.advances),
         clusters,
         direction: TextDirection::Ltr,
         bidi_level: Some(0),
         writing_mode: WritingMode::HorizontalTb,
         orientation: GlyphRunOrientation::Horizontal,
-        glyph_transforms,
+        glyph_transforms: None,
         diagnostics: GlyphRunDiagnostics {
             quality: TextVariantQuality::Exact,
             replay_eligibility: GlyphRunReplayEligibility::Portable,
-            // The payload geometry is exact, but #5821 compressed-ratio draw
-            // authority must be reconciled before any strict replay selector
-            // may publish this shadow run in Q2-D4.
-            strict_visual_eligible: false,
-            max_origin_delta_px: 0.0,
-            max_advance_delta_px: 0.0,
-            max_residual_after_adjustment_px: 0.0,
+            strict_visual_eligible: true,
+            max_origin_delta_px: projection.max_origin_delta_px,
+            max_advance_delta_px: projection.max_advance_delta_px,
+            max_residual_after_adjustment_px: projection
+                .max_origin_delta_px
+                .max(projection.max_advance_delta_px),
             cluster_mismatch_count: 0,
             missing_glyph_count: 0,
             used_fallback_font_count: 0,
-            reason: Some("q2CommonShapingReplayAuthorityPending".to_string()),
+            reason: Some("q2CommonShapingCondensedDrawProjectionV1".to_string()),
         },
     };
     HorizontalShapingGlyphLoweringReport::emitted(source_node_id, glyph_run)

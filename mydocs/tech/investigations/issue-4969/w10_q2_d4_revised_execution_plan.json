@@ -3,7 +3,7 @@
   "kind": "font-w10-q2-d4-revised-same-boundary-activation-plan",
   "issue": 4969,
   "stage": "W10-Q2-D4",
-  "status": "planned-awaiting-d4-a-implementation-approval",
+  "status": "d4-a-qualified-awaiting-d4-b-approval",
   "checkpoint": "be88ec57e",
   "productOutputChangeBeforeD4B": false,
   "authorityDecision": {
@@ -22,6 +22,8 @@
     "compressedDrawFontSize": "font-size-times-sqrt-ratio",
     "compressedPlacementScaleX": "sqrt-ratio",
     "localGlyphScale": "draw-font-size-div-units-per-em",
+    "verticalDesignPositioning": "zero-offset-and-zero-advance-only",
+    "nonzeroVerticalRejectReason": "verticalPositioningAuthorityPending",
     "pageGlyphScaleX": "local-x-times-placement-scale-x",
     "paintStyleRatio": 1.0,
     "glyphTransforms": null,
@@ -70,6 +72,7 @@
     "directOldHangulRequired": true,
     "exactEmbeddedPortableSource": true,
     "compressedRatioOnly": true,
+    "zeroDesignYOffsetAndAdvanceOnly": true,
     "writingMode": "horizontal-tb",
     "direction": "ltr",
     "bidiLevel": 0,
@@ -138,6 +141,7 @@
     "rtl",
     "vertical",
     "variation",
+    "nonzero-gpos-y-offset-or-advance",
     "public-rejected-attempt-annotation"
   ],
   "approvalScope": "maintainer approval opens Q2-D4-A shadow implementation only; no product activation"

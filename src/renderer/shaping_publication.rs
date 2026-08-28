@@ -6,7 +6,9 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 use super::shaping::{ShapingAttemptTrace, TerminalShapingDisposition};
-use super::shaping_context::HorizontalShapingMeasurement;
+use super::shaping_context::{
+    HorizontalShapingMeasurement, HorizontalShapingReplaySourceCertificate,
+};
 
 /// A single page cannot retain more shaping decisions than it can reasonably emit as text runs.
 pub(crate) const MAX_HORIZONTAL_SHAPING_PAGE_SIDECARS: usize = 4_096;
@@ -40,6 +42,7 @@ pub(crate) enum HorizontalShapingRunPayload {
     Applied {
         trace: ShapingAttemptTrace,
         measurement: Arc<HorizontalShapingMeasurement>,
+        replay_source_certificate: Option<Arc<HorizontalShapingReplaySourceCertificate>>,
     },
     Rejected {
         trace: ShapingAttemptTrace,
@@ -63,7 +66,28 @@ impl HorizontalShapingRunDecision {
         Self {
             registry_generation: measurement.registry_generation,
             range,
-            payload: HorizontalShapingRunPayload::Applied { trace, measurement },
+            payload: HorizontalShapingRunPayload::Applied {
+                trace,
+                measurement,
+                replay_source_certificate: None,
+            },
+        }
+    }
+
+    pub(crate) fn applied_with_replay_source_certificate(
+        range: HorizontalShapingRunRange,
+        trace: ShapingAttemptTrace,
+        measurement: Arc<HorizontalShapingMeasurement>,
+        replay_source_certificate: Arc<HorizontalShapingReplaySourceCertificate>,
+    ) -> Self {
+        Self {
+            registry_generation: measurement.registry_generation,
+            range,
+            payload: HorizontalShapingRunPayload::Applied {
+                trace,
+                measurement,
+                replay_source_certificate: Some(replay_source_certificate),
+            },
         }
     }
 
@@ -100,6 +124,18 @@ impl HorizontalShapingRunDecision {
             HorizontalShapingRunPayload::Rejected { .. } => None,
         }
     }
+
+    pub(crate) fn replay_source_certificate(
+        &self,
+    ) -> Option<&Arc<HorizontalShapingReplaySourceCertificate>> {
+        match &self.payload {
+            HorizontalShapingRunPayload::Applied {
+                replay_source_certificate,
+                ..
+            } => replay_source_certificate.as_ref(),
+            HorizontalShapingRunPayload::Rejected { .. } => None,
+        }
+    }
 }
 
 /// Typed fail-closed reasons for building the page-local ownership table.
@@ -110,6 +146,7 @@ pub(crate) enum HorizontalShapingSidecarRejectReason {
     DispositionMismatch,
     AttemptIdentityMismatch,
     MeasurementRangeMismatch,
+    ReplaySourceCertificateMismatch,
     StaleRegistryGeneration,
     DuplicateNode,
     EntryLimitExceeded,
@@ -145,7 +182,11 @@ impl HorizontalShapingPageSidecars {
             return Err(HorizontalShapingSidecarRejectReason::RangeMismatch);
         }
         match &decision.payload {
-            HorizontalShapingRunPayload::Applied { trace, measurement } => {
+            HorizontalShapingRunPayload::Applied {
+                trace,
+                measurement,
+                replay_source_certificate,
+            } => {
                 if trace.disposition != TerminalShapingDisposition::Applied {
                     return Err(HorizontalShapingSidecarRejectReason::DispositionMismatch);
                 }
@@ -165,6 +206,20 @@ impl HorizontalShapingPageSidecars {
                     || measurement.code_point_count != decision.range().scalar_len()
                 {
                     return Err(HorizontalShapingSidecarRejectReason::MeasurementRangeMismatch);
+                }
+                if replay_source_certificate
+                    .as_ref()
+                    .is_some_and(|certificate| {
+                        certificate.registry_generation() != measurement.registry_generation
+                            || certificate.source_handle() != &measurement.source_handle
+                            || certificate.source_bytes().len()
+                                != measurement.source_handle.font_bytes
+                            || certificate.units_per_em() != measurement.units_per_em
+                    })
+                {
+                    return Err(
+                        HorizontalShapingSidecarRejectReason::ReplaySourceCertificateMismatch,
+                    );
                 }
             }
             HorizontalShapingRunPayload::Rejected { trace } => {

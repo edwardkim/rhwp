@@ -106,6 +106,72 @@ pub(crate) struct HorizontalShapingMeasurement {
     pub applied: Arc<AppliedShapingRun>,
 }
 
+/// Page-local proof that replay uses the exact immutable source selected for
+/// shaping. Its Debug form is deliberately redacted so font bytes cannot enter
+/// traces or diagnostics accidentally.
+#[derive(Clone)]
+pub(crate) struct HorizontalShapingReplaySourceCertificate {
+    registry_generation: u64,
+    source_handle: ExactFontSourceHandle,
+    source_bytes: Arc<[u8]>,
+    units_per_em: u16,
+}
+
+impl std::fmt::Debug for HorizontalShapingReplaySourceCertificate {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        formatter
+            .debug_struct("HorizontalShapingReplaySourceCertificate")
+            .field("registry_generation", &self.registry_generation)
+            .field("source_handle", &self.source_handle)
+            .field("source_bytes_len", &self.source_bytes.len())
+            .field("units_per_em", &self.units_per_em)
+            .finish()
+    }
+}
+
+impl HorizontalShapingReplaySourceCertificate {
+    pub(crate) fn registry_generation(&self) -> u64 {
+        self.registry_generation
+    }
+
+    pub(crate) fn source_handle(&self) -> &ExactFontSourceHandle {
+        &self.source_handle
+    }
+
+    pub(crate) fn source_bytes(&self) -> &[u8] {
+        &self.source_bytes
+    }
+
+    pub(crate) fn source_bytes_arc(&self) -> &Arc<[u8]> {
+        &self.source_bytes
+    }
+
+    pub(crate) fn units_per_em(&self) -> u16 {
+        self.units_per_em
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum HorizontalShapingReplaySourceCertificateRejectReason {
+    StaleRegistryGeneration,
+    SourceUnavailable,
+    SourceIdentityMismatch,
+    FaceInvalid,
+    UnitsPerEmMismatch,
+}
+
+impl HorizontalShapingReplaySourceCertificateRejectReason {
+    pub(crate) fn as_str(self) -> &'static str {
+        match self {
+            Self::StaleRegistryGeneration => "staleRegistryGeneration",
+            Self::SourceUnavailable => "sourceUnavailable",
+            Self::SourceIdentityMismatch => "sourceIdentityMismatch",
+            Self::FaceInvalid => "faceInvalid",
+            Self::UnitsPerEmMismatch => "unitsPerEmMismatch",
+        }
+    }
+}
+
 impl HorizontalShapingMeasurement {
     /// Unicode scalar 범위가 shaping cluster 경계에 정확히 맞을 때만 폭을 반환한다.
     pub(crate) fn range_width(&self, scalar_start: usize, scalar_end: usize) -> Option<f64> {
@@ -206,6 +272,48 @@ impl HorizontalShapingContext {
             .lock()
             .map(|cache| cache.entries.len())
             .unwrap_or_default()
+    }
+
+    /// Certify the exact registry-owned bytes for one completed measurement.
+    /// Validation is repeated at this ownership boundary, then only the Arc is
+    /// cloned so the page sidecar does not duplicate the font payload.
+    pub(crate) fn certify_replay_source(
+        &self,
+        measurement: &HorizontalShapingMeasurement,
+    ) -> Result<
+        Arc<HorizontalShapingReplaySourceCertificate>,
+        HorizontalShapingReplaySourceCertificateRejectReason,
+    > {
+        use HorizontalShapingReplaySourceCertificateRejectReason as Reject;
+
+        if measurement.registry_generation != self.registry.generation() {
+            return Err(Reject::StaleRegistryGeneration);
+        }
+        resolve_exact_font_source(&self.registry, &measurement.source_handle).map_err(
+            |reason| match reason {
+                ExactFontSourceResolutionReason::SourceUnavailable => Reject::SourceUnavailable,
+                ExactFontSourceResolutionReason::FontByteLimitExceeded
+                | ExactFontSourceResolutionReason::FaceIndexMismatch
+                | ExactFontSourceResolutionReason::ByteLengthMismatch
+                | ExactFontSourceResolutionReason::Sha256Mismatch => Reject::SourceIdentityMismatch,
+            },
+        )?;
+        let source_bytes = self
+            .registry
+            .source_arc_for_handle(&measurement.source_handle)
+            .ok_or(Reject::SourceUnavailable)?;
+        let face = ttf_parser::Face::parse(&source_bytes, measurement.source_handle.face_index)
+            .map_err(|_| Reject::FaceInvalid)?;
+        let units_per_em = face.units_per_em();
+        if units_per_em != measurement.units_per_em {
+            return Err(Reject::UnitsPerEmMismatch);
+        }
+        Ok(Arc::new(HorizontalShapingReplaySourceCertificate {
+            registry_generation: measurement.registry_generation,
+            source_handle: measurement.source_handle.clone(),
+            source_bytes,
+            units_per_em,
+        }))
     }
 }
 

@@ -5,7 +5,7 @@
   [`task_m100_4969_w10_q2_d3.md`](../working/task_m100_4969_w10_q2_d3.md)
 - **기계 판독 계획**:
   [`w10_q2_d4_revised_execution_plan.json`](../tech/investigations/issue-4969/w10_q2_d4_revised_execution_plan.json)
-- **상태**: revised plan qualified, D4-A 구현 승인 대기
+- **상태**: D4-A qualified, D4-B 제품 activation 승인 대기
 - **제품 변경**: D4-A는 0, D4-B의 승인된 최초 lane에서만 있음
 
 ## 1. 수정 이유
@@ -48,6 +48,12 @@ page(replay x)     = replay local x × draw_x_scale
 압축 장평 `0 < r < 0.999`에서는 `draw_fs=fs×√r`, `draw_x_scale=√r`이므로 glyph 높이는 `×√r`, 최종 폭은
 `×r`이다. `r>=0.999` 확대·항등의 기존 TextRun 규칙도 같은 SSOT가 반환하지만, 최초 D4-B lane은 오라클이 있는
 압축 장평만 연다.
+
+다만 D3 measurement의 y offset·advance는 `font_size / unitsPerEm`으로 환산하고 #5821 replay-local y는
+`draw_fs / unitsPerEm`을 사용하므로, 비영(非零) GPOS y positioning에는 아직 두 좌표계 사이의 승인된 authority가
+없다. D4-A/B 최초 lane은 raw design-unit `y_offset=0 && y_advance=0`을 기능 탐지하고, 하나라도 0이 아니면
+`verticalPositioningAuthorityPending`으로 fail-closed한다. 이는 값을 버리는 보정이 아니라 mark positioning의
+세로 의미를 후속 오라클 전까지 보류하는 보호 불변식이다.
 
 GlyphRun에는 이미 소비된 장평을 다시 적용하지 않도록 다음을 고정한다.
 
@@ -104,6 +110,7 @@ D4-B는 다음 상태를 모두 feature-detect한 문단만 연다.
 - direct old-Hangul target이며 text 전체가 target이다.
 - embedded exact portable source, 한 slot·한 face·한 style·한 registry generation이다.
 - `0 < ratio < 0.999`, horizontal-tb, LTR, bidi level 0, left alignment이다.
+- raw shaping glyph 전부의 `y_offset=0`, `y_advance=0`이다.
 - `layout_positions=None`, model text와 replay text가 같고 display projection이 없다.
 - numbering/prefix, TAC, footnote/endnote, field, tab/control, CharOverlap, rotation, border/background,
   underline/strike/emphasis, synthetic bold/italic, super/sub, 자간·분배·condense가 없다.
@@ -118,12 +125,14 @@ mixed target는 이 절편에서 fail-closed하고 후속 matrix로 넘긴다.
 
 1. `condensed_ratio_draw_params`를 사용하는 bounded internal replay projection을 만든다.
 2. Q2 raw design-unit result에서 local position·advance와 draw font size·affine을 한 번 계산한다.
+   최초 lane은 raw y offset·advance가 모두 0일 때만 계산한다.
 3. affine round-trip을 D3 page-space position·advance·total width와 대사한다.
 4. exact registry의 source `Arc`를 handle·generation과 대사해 non-serialized certificate에 연결한다.
 5. D3 lowerer를 projection output으로 전환하되 제품 caller는 계속 0으로 유지한다.
 6. ratio가 이미 투영된 paint style, transform 없음, strict eligibility 조건을 Rust·TypeScript selector와 대사한다.
 
-**종료 게이트**: Source Han fixed oracle의 native·Node WASM round-trip mismatch 0, source byte copy 0,
+**종료 게이트**: Source Han fixed oracle의 native·Node WASM round-trip mismatch 0, nonzero-y typed rejection,
+source byte copy 0,
 제품 layout·LayerBuilder caller 0, 출력 변화 0.
 
 ### Q2-D4-B — one-line/one-run atomic activation
@@ -158,6 +167,7 @@ line width = bbox width = next origin delta = affine round-trip advance. reject 
 | paragraph/range/surface preflight 거부 | legacy width·bbox·x, TextRun만 유지, sidecar 0 |
 | source handle/generation/digest/face 대사 실패 | geometry 게시 전 rollback, resource 0 |
 | projection/round-trip malformed | geometry 게시 전 rollback, strict false |
+| raw y offset/advance가 0이 아님 | `verticalPositioningAuthorityPending`, resource 0, TextRun 유지 |
 | sidecar capacity/duplicate/generation attach 실패 | geometry 게시 전 rollback, partial publication 0 |
 | common lowerer가 certificate와 불일치 | common GlyphRun을 선택하지 않고 TextRun 보존, typed report; invariant failure로 D4 lane 중단 |
 | CanvasKit resource/typeface/selector 실패 | TextRun fallback 선택, 빈 텍스트 출력 금지 |
@@ -170,7 +180,7 @@ line width = bbox width = next origin delta = affine round-trip advance. reject 
 - D4-A source integration: fixed glyph IDs, page/local position·advance, draw fs, affine, cluster, source identity
 - D4-B source integration: single-line/run activation, bbox·next origin, sidecar, TextRun/common GlyphRun/nominal count
 - 음성 matrix: multi-line/run, mixed prefix/suffix, center/right/justify/distribute, ratio>=0.999, layout positions,
-  source mismatch, stale generation, capacity exhaustion, decoration/control/TAC/note
+  source mismatch, stale generation, nonzero design y offset/advance, capacity exhaustion, decoration/control/TAC/note
 - native·Node WASM parity와 native/WASM lib clippy
 - Rust variant selection: CanvasKit strict GlyphRun, NativeSkia TextRun fallback
 - studio unit/E2E: `replayStatus`, `drawGlyphs` local position과 `concat` affine, embedded face digest
@@ -186,6 +196,7 @@ line width = bbox width = next origin delta = affine round-trip advance. reject 
 - line boundary가 하나라도 다르면 D5로 넘기며 D4에서 재조판하지 않는다.
 - native Skia blob typeface construction, vertical/RTL/variation, expansion ratio, multi-line/multi-run batch activation은
   본 절편에 포함하지 않는다.
+- GPOS mark positioning처럼 nonzero y offset/advance가 필요한 run은 별도 세로 authority 오라클 전까지 포함하지 않는다.
 - rejected attempt의 public annotation이 필요하면 schema minor 계획을 별도 등록한다.
 
 ## 9. 승인 게이트
