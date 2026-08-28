@@ -2696,6 +2696,7 @@ impl LayoutEngine {
                         self.dpi,
                         self.profile.get().legacy_hwp3_stored_geometry(),
                         crate::renderer::composer::StoredRowMissPolicy::Reflow,
+                        &self.body_float_carve_widths.borrow(),
                     )
                 } else {
                     None
@@ -4011,10 +4012,32 @@ impl LayoutEngine {
                 && comp_line.column_start > 0
                 && comp_line.segment_width > 0
                 && comp_line.segment_width < col_area_w_hu;
+            // [#6175] 문단 **전체**가 개체 옆에 들어가면 같은 문단 안에 넓은 줄이
+            // 없어 `precomputed_body_wrap_line`(혼합 폭)이 발화하지 않는다. 그때는
+            // 문서에 실재하는 어울림 개체가 증거다 — 저장 행이 남긴 결손 폭을 그
+            // 개체의 흐름 폭이 설명하면 좁음의 출처는 외부 기하다.
+            //
+            // ⚠ "균일하게 좁다"만으로 켜면 문단 테두리 박스의 inset 을 어울림으로
+            // 오인해 #547·#1440 핀이 깨진다(#6129 반증). 판별은 **개체 폭 대조**다 —
+            // 셀의 #5818 계약("같은 셀에 Square float 실재")과 같은 원리의 본문 판.
+            // 컴포저의 `stored_rows_require_external_geometry` 가 같은 증거로 저장
+            // 행을 지켜 두므로, 두 층이 같은 판정을 공유한다.
+            let body_square_wrap_stored_line = cell_ctx.is_none()
+                && !para_has_mixed_segment_widths
+                && comp_line.column_start == 0
+                && comp_line.segment_width > 0
+                && {
+                    let widths = self.body_float_carve_widths.borrow();
+                    let missing = col_area_w_hu.saturating_sub(line_avail_hu);
+                    !widths.is_empty()
+                        && missing > 1200
+                        && widths.iter().any(|w| (missing - w).abs() <= 1200)
+                };
             let uses_stored_segment_geometry = (has_picture_shape_square_wrap
                 || line_has_inline_tac_table
                 || precomputed_body_wrap_line
                 || empty_stored_wrap_line
+                || body_square_wrap_stored_line
                 || cell_square_wrap_stored_line)
                 && comp_line.segment_width > 0
                 && (line_avail_hu < col_area_w_hu - 200 || cs_significant);

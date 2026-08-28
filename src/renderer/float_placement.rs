@@ -29,6 +29,47 @@ pub(crate) fn signed_hwpunit(value: HwpUnit) -> i32 {
 /// uncaptained, non-TAC Picture with `Square` and the two recovered side-wrap
 /// flows has a physical-row representation. Every other object shape remains
 /// with its existing owner.
+/// [#6175] 한 단(구역)에 있는 어울림 개체들의 **흐름 폭**(HWPUNIT, 바깥 여백 포함).
+///
+/// `stored_rows_require_external_geometry` 가 "저장 행이 남긴 결손 폭"을 이 값들과
+/// 대조해, 균일하게 좁은 저장 행의 좁음이 **문단 자신**(테두리 박스 inset)에서 온
+/// 것인지 **외부 개체**에서 온 것인지 가른다. 셀에서는 #5818 이 같은 혼동을
+/// "같은 셀에 Square float 실재"로 갈랐고, 이것은 그 계약의 본문 판이다.
+///
+/// 개체가 어느 기준(용지·쪽·단·문단)에 걸려 있든 **폭은 같으므로**, 이 판별자는
+/// `resolve_picture_exclusion` 이 지원하지 못하는 용지 기준 개체에도 쓸 수 있다.
+pub(crate) fn column_float_carve_widths(
+    paragraphs: &[crate::model::paragraph::Paragraph],
+) -> Vec<i32> {
+    use crate::model::control::Control;
+    let mut widths = Vec::new();
+    for para in paragraphs {
+        for control in &para.controls {
+            let common = match control {
+                Control::Picture(picture) => &picture.common,
+                Control::Shape(shape) => shape.common(),
+                Control::Table(table) => &table.common,
+                _ => continue,
+            };
+            if common.treat_as_char
+                || !matches!(
+                    common.text_wrap,
+                    TextWrap::Square | TextWrap::Tight | TextWrap::Through
+                )
+            {
+                continue;
+            }
+            let width = (common.width as i32)
+                .saturating_add(i32::from(common.margin.left))
+                .saturating_add(i32::from(common.margin.right));
+            if width > 0 && !widths.contains(&width) {
+                widths.push(width);
+            }
+        }
+    }
+    widths
+}
+
 pub(crate) fn resolve_picture_exclusion(
     picture: &Picture,
     column_horizontal: Range<i32>,

@@ -719,6 +719,10 @@ pub struct TypesetEngine {
     /// [#5854] 현재 구역의 저장 LINE_SEG 사다리가 통짜 합성값인지 — 구역 진입 시 set.
     /// 참이면 줄 metrics 를 저장값이 아니라 글꼴·문단 스타일에서 다시 뽑는다.
     uniform_filler_ladder: std::cell::Cell<bool>,
+    /// [#6175] 현재 구역의 어울림 개체 흐름 폭 — 구역 진입 시 set.
+    /// 저장 행 admission 이 "균일하게 좁은 저장 행"의 좁음을 문단 자신의
+    /// 테두리 inset 과 가르는 외부 증거다.
+    float_carve_widths: std::cell::RefCell<Vec<i32>>,
 }
 
 /// 조판 중 현재 페이지/단 상태
@@ -5707,6 +5711,7 @@ impl TypesetEngine {
             dpi,
             profile: std::cell::Cell::new(Default::default()),
             uniform_filler_ladder: std::cell::Cell::new(false),
+            float_carve_widths: std::cell::RefCell::new(Vec::new()),
         }
     }
 
@@ -6889,6 +6894,9 @@ impl TypesetEngine {
             .set(crate::renderer::stored_line_ladder_is_uniform_filler(
                 paragraphs, styles,
             ));
+        // [#6175] 어울림 개체 흐름 폭 — 구역당 한 번.
+        *self.float_carve_widths.borrow_mut() =
+            crate::renderer::float_placement::column_float_carve_widths(paragraphs);
         let col_count = column_def.column_count.max(1);
         let default_footnote_shape = FootnoteShape::default();
         let footnote_shape = footnote_shape.unwrap_or(&default_footnote_shape);
@@ -16009,6 +16017,7 @@ impl TypesetEngine {
                         self.dpi,
                         self.profile.get().legacy_hwp3_stored_geometry(),
                         crate::renderer::composer::StoredRowMissPolicy::Reflow,
+                        &self.float_carve_widths.borrow(),
                     )
                 } else {
                     None

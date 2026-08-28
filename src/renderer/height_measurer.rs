@@ -583,6 +583,9 @@ pub struct HeightMeasurer {
     use_hwp3_origin_flow_spacing_before: bool,
     render_normalization:
         std::sync::Arc<crate::renderer::render_normalization::RenderNormalizationOverlay>,
+    /// [#6175] 이 구역의 어울림 개체 흐름 폭 — 저장 행 admission 의 외부-기하 증거.
+    /// 측정과 렌더가 같은 증거를 써야 두 경로가 갈리지 않는다.
+    float_carve_widths: Vec<i32>,
 }
 
 impl HeightMeasurer {
@@ -596,7 +599,14 @@ impl HeightMeasurer {
             render_normalization: std::sync::Arc::new(
                 crate::renderer::render_normalization::RenderNormalizationOverlay::default(),
             ),
+            float_carve_widths: Vec::new(),
         }
+    }
+
+    /// [#6175] 구역 문단에서 모은 어울림 개체 흐름 폭을 싣는다.
+    pub fn with_float_carve_widths(mut self, widths: Vec<i32>) -> Self {
+        self.float_carve_widths = widths;
+        self
     }
 
     pub fn with_hwp3_variant(mut self, enabled: bool) -> Self {
@@ -849,6 +859,7 @@ impl HeightMeasurer {
                         self.dpi,
                         self.legacy_hwp3_stored_geometry,
                         crate::renderer::composer::StoredRowMissPolicy::Reflow,
+                        &self.float_carve_widths,
                     )
                 } else {
                     None
