@@ -8,7 +8,7 @@
 >
 > 브랜치: `codex/issue-4135-contextual-shortcut`
 >
-> 상태: **Recovery R4 corrective 구현·자동 재검증 GREEN, macOS 한글 IME 재확인·결과 승인 대기**
+> 상태: **Recovery R4 수동 승인 완료, Recovery R5 F5 선택 단계 UX RED 계약 고정**
 
 ## 1. 문제를 다시 정의한다
 
@@ -76,7 +76,7 @@
 ## 4. Recovery 단계별 구현과 승인 게이트
 
 기존 수행계획의 Stage 1~4는 단축키 라우팅 WIP의 역사적 단계명으로 그대로 보존한다.
-아래 후속 작업은 그 번호를 재사용하지 않고 `Recovery R1~R4`로 구분한다.
+아래 후속 작업은 그 번호를 재사용하지 않고 `Recovery R1~R5`로 구분한다.
 
 ### Recovery R1 — 누락된 RED 계약과 공식 기준선 고정
 
@@ -131,6 +131,20 @@ focused 22건, Studio 전체 1,247건, production build, embed E2E 17건과 영�
 통과했으며, 최신 `127.0.0.1:7716`에서 같은 한글 IME 수동 여정을 다시 통과해야 한다. 상세 증적과 절차는
 [`task_m100_4135_recovery_r4.md`](../working/task_m100_4135_recovery_r4.md)에 기록한다.
 
+작업지시자가 corrective 빌드의 실제 macOS 한글 IME에서 셀 나누기 대화상자만 열리고 `ㄴ`이 남지
+않는 것을 확인해 `수정이 반영되었어.`로 R4를 승인했다.
+
+### Recovery R5 — F5 셀 선택 단계 UX
+
+- F5 1회는 포커스 셀 중앙의 회색 마커, F5 2회는 주황 마커로 현재 단계를 공간적으로 표시한다.
+- F5 3회 표 전체 선택은 별도 마커를 두지 않고 전체 선택 하이라이트 자체를 주 표시로 삼는다.
+- 하단에는 기존 일시 메시지와 분리된 전용 live status로 `셀 선택 · 방향키로 이동`,
+  `셀 범위 선택 · 방향키로 확장`, `표 전체 선택`을 보조 표시한다.
+- Escape, 일반 입력, 마우스 전환, undo를 포함해 기존 renderer clear 경로에서 마커와 하단 상태를
+  함께 해제한다.
+- 작업지시자가 한컴 마커와 하단 문구를 병용하는 안을 승인했다. RED·구현·focused/전체/build·실브라우저
+  검증은 [`task_m100_4135_recovery_r5.md`](../working/task_m100_4135_recovery_r5.md)에 기록한다.
+
 ## 5. 예상 변경 파일
 
 | Recovery | 파일 | 변경 |
@@ -142,6 +156,8 @@ focused 22건, Studio 전체 1,247건, production build, embed E2E 17건과 영�
 | R3/R4 corrective | `rhwp-studio/src/command/contextual-shortcut.ts`, `rhwp-studio/src/engine/input-handler-{keyboard,text}.ts`, `rhwp-studio/src/engine/input-handler.ts` | IME 물리 `S`/`M` 라우팅과 후속 조합 입력 억제 |
 | R4 | `src/document_core/commands/{table_ops,text_editing}.rs`, `src/wasm_api/tests.rs` | 실브라우저에서 발견한 두 자릿수 결과 렌더링 회귀 보정 |
 | R4 | `mydocs/working/**`, `mydocs/report/**`, `mydocs/orders/20260828.md` | 검증·최종 판정 기록 |
+| R5 | `rhwp-studio/src/engine/{cursor,cell-selection-renderer,cell-selection-phase,input-handler}.ts` | focus 기반 단계 마커·상태 모델 |
+| R5 | `rhwp-studio/{index.html,src/main.ts,src/styles/**,tests/**}` | 전용 하단 상태·테마·RED/GREEN 계약 |
 
 ## 6. 리스크와 중단 조건
 
