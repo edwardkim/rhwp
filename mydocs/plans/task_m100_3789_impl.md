@@ -5,7 +5,7 @@
 - **작성일**: 2026-08-27 KST
 - **작업 브랜치**: `task_m100_3789-render-boundary`
 - **착수 기준**: `upstream/devel@1b91c2025`
-- **구현 상태**: 최신 `devel@5645e1f5b` 전체 회귀·필수 clippy 완료, remote 제출 승인 대기
+- **구현 상태**: 최신 `devel@1a43a507c` 전체 회귀·필수 clippy 완료, remote 제출 승인 확인
 
 ## 1. 구현 불변식
 
@@ -174,3 +174,6 @@ git diff --check
 - 작업지시자의 별도 승인 뒤 전체 nextest 8,473개와 필수 clippy를 통과했다. 제거된 wrapper와 추가
   `--all-features` 진단의 upstream GPU dependency 불일치는 필수 결과와 분리해
   [Stage 7 보고](../working/task_m100_3789_stage7.md)에 기록한다.
+- remote 제출 승인 뒤 다시 진전한 `upstream/devel@1a43a507c`를 `7c6ee5461` current-base merge로
+  반영했다. 새 shaping 통합을 포함한 focused Rust 113개, 전체 nextest 8,519개와 필수 clippy를 통과했고
+  [Stage 8 보고](../working/task_m100_3789_stage8.md)에 기록한다.

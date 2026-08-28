@@ -5,7 +5,7 @@
 - **브랜치**: `task_m100_3789-render-boundary`
 - **구현 완료일**: 2026-08-27 KST
 - **최신 갱신일**: 2026-08-28 KST
-- **상태**: 최신 `devel` 전체 회귀·필수 clippy 완료, remote 제출 승인 대기
+- **상태**: 제출 직전 최신 `devel` 전체 회귀·필수 clippy 완료, remote 제출 승인 확인
 - **절차 판정**: 기술 게이트 준수, 단계별 보고·승인 게이트 부분 미준수
 
 ## 결과
@@ -142,6 +142,22 @@ release-test와 clippy는 아직 실행하지 않았으며, Stage 7 별도 승�
 현재 권위 문서의 필수 clippy 범위는 통과했다. 상세 명령과 판정은
 [Stage 7 보고](../working/task_m100_3789_stage7.md)에 기록한다.
 
+### Stage 8 pre-push refresh
+
+remote push와 PR 생성 승인을 받은 직후 fetch에서 `upstream/devel`이 `1a43a507c`까지 15커밋 진전한 것을
+확인했다. 이 변경은 #4969의 렌더 shaping 통합으로 83개 파일을 바꾸지만 #3789 경계와 dry merge tree는
+충돌하지 않았다. `7c6ee5461` current-base merge 뒤 branch 관계는 `ahead 11 / behind 0`이다.
+
+- #3789 focused Rust: 113/113 통과
+- classifier·policy Node: 67/67 통과
+- CI workflow Python: 71/71 통과
+- 전체 nextest: 8,519/8,519 통과, 43 skip, 5 slow, 실패 0
+- 필수 clippy, actionlint, format, manifest, unit-tier, Markdown 링크와 diff: 통과
+- manifest: 995 sources, 4,469 static test attrs, 48/48 integration targets
+
+세부 내용은 [Stage 8 보고](../working/task_m100_3789_stage8.md)에 기록한다. 이 보고 commit까지를 최초
+원격 code candidate로 제출하고, PR 번호 기반 self-review·오늘할일은 후속 review-only commit으로 추가한다.
+
 ## 하이퍼 워터폴 절차 감사
 
 2026-08-27 작업지시자의 요청으로 canonical 절차와 실제 commit 계보를 대사했다.
@@ -165,5 +181,8 @@ release-test와 clippy는 아직 실행하지 않았으며, Stage 7 별도 승�
 ## 제출 상태
 
 로컬 구현과 필수 검증은 완료했다. generated integration suite·manifest는 제출 대상에 포함하지 않았다.
-최신 기준 `upstream/devel@5645e1f5b`에서 Stage 7 전체 회귀와 필수 clippy까지 완료했다. remote push,
-PR 생성과 실제 PR CI는 각각 필요한 작업지시자 승인 전까지 남아 있다.
+Stage 7 시점에는 `upstream/devel@5645e1f5b` 전체 회귀와 필수 clippy까지 완료하고 remote 제출을 별도
+승인 게이트로 남겼다.
+제출 직전 기준을 `upstream/devel@1a43a507c`로 다시 갱신하고 Stage 8 전체 회귀까지 완료했다. 작업지시자가
+remote push와 PR 생성을 승인했으며, 실제 PR 번호·최신 head·GitHub CI 상태는 제출 뒤 번호 기반
+self-review에서 기록한다.

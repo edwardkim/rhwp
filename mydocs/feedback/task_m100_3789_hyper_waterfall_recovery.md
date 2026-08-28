@@ -79,3 +79,10 @@ Python 71개와 정적 게이트를 재검증했다. 이 결과는 [Stage 6 보�
 권위 문서의 필수 clippy가 통과한 뒤 [Stage 7 보고](../working/task_m100_3789_stage7.md)를 작성했다. 제거된
 과거 wrapper와 필수 범위 밖 `--all-features` 진단 실패도 생략하지 않고 별도 관찰로 기록했다. remote
 push와 PR 생성은 자동으로 이어가지 않고 다음 승인 게이트로 남긴다.
+
+## Stage 8 제출 직전 재최신화
+
+작업지시자가 remote push와 PR 생성을 승인한 뒤 fetch에서 최신 `devel`의 15커밋 진전을 확인했다. 제출
+승인을 오래된 base push의 근거로 쓰지 않고 `upstream/devel@1a43a507c`를 current-base merge한 뒤 focused와
+전체 회귀를 다시 실행했다. [Stage 8 보고](../working/task_m100_3789_stage8.md)를 최초 원격 candidate에
+포함하고, PR 번호가 생긴 뒤에만 self-review와 오늘할일을 trailing commit으로 작성한다.
