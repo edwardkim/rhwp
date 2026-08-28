@@ -54,7 +54,12 @@ fn issue_6196_stored_single_line_cell_compresses_to_fit() {
 }
 
 /// 마지막 열 칸 안 TextRun 중 칸 우변을 넘는 것을 모은다.
-fn walk(node: &RenderNode, cell: Option<f64>, checked: &mut usize, out: &mut Vec<(String, String)>) {
+fn walk(
+    node: &RenderNode,
+    cell: Option<f64>,
+    checked: &mut usize,
+    out: &mut Vec<(String, String)>,
+) {
     let cell = match &node.node_type {
         RenderNodeType::TableCell(_) if node.bbox.x >= LAST_COL_MIN_X => {
             Some(node.bbox.x + node.bbox.width)
