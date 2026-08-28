@@ -5243,7 +5243,16 @@ impl LayoutEngine {
                             // 줄은 flow 그림에 밀려난 위치다 — 그림 오프셋의 원점은
                             // 문단 시작이므로 앵커에 vpos 를 더하면 그림이 셀 아래로
                             // 이탈한다 (주보 p2 로고 표 붓글씨 셀: line vpos 51.3px).
-                            let displaced_empty_line_para = para.text.trim().is_empty()
+                            //
+                            // [Issue #6192] **글 뒤로/글 앞으로(overlay) 그림은 이 분기의
+                            // 대상이 아니다.** #2226 이 겨냥한 형상은 "그림이 글줄을 밀어
+                            // 그 줄의 vpos 가 그림 자신의 변위인" 경우인데, overlay 그림은
+                            // 흐름을 밀지 않으므로 빈 호스트 문단의 vpos 는 진짜 흐름
+                            // 위치다. 셀 콘텐츠 상단으로 되돌리면 말풍선이 감싸야 할 문장
+                            // 위로 올라가 앞 줄을 덮는다(156602560 참고2·참고4, 6개 전부
+                            // −28.4~−30.8px, 참고4 는 최대 −79.1px).
+                            let displaced_empty_line_para = !overlay_para
+                                && para.text.trim().is_empty()
                                 && para
                                     .line_segs
                                     .first()
@@ -5251,9 +5260,16 @@ impl LayoutEngine {
                             let anchor_y = if displaced_empty_line_para {
                                 // Square 포함 모든 비인라인 그림 — 원점은 문단 시작.
                                 content_cell_y + pad_top
-                            } else if non_inline_para && !top_and_bottom_para && !overlay_para {
+                            } else if non_inline_para && !top_and_bottom_para {
                                 // Square·Tight·Through — 흐름을 미는 wrap. 기준점은 셀
                                 // 콘텐츠 상단이 아니라 **실제 문단 top** 이다(valign 반영).
+                                //
+                                // [Issue #6192] overlay(글 뒤로/글 앞으로)도 같다 — 기준점은
+                                // 호스트 문단 top 이다. 한글 오라클 실측: 호스트 문단 top
+                                // 285.30 + vOffset 6.37 = 291.67 ↔ 한글 291.36(0.31px).
+                                // 저장 vpos 를 셀 상단에 더하는 갈래(280.39+6.37=286.76)는
+                                // 4.6px 어긋난다 — 그 갈래는 문단 top 이 곧 셀 상단인
+                                // 형상의 계약이다.
                                 para_y_before_compose
                             } else if non_inline_para {
                                 para.line_segs
