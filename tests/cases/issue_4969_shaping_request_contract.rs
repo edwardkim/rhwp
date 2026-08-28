@@ -1,0 +1,573 @@
+//! Issue #4969 W10-Q1: exact-source shaping request는 bounded하고 fail-closed해야 한다.
+
+#[path = "../../src/renderer/shaping.rs"]
+mod shaping;
+
+use shaping::{
+    canonicalize_shaping_request, shape_bounded_request, terminal_shaping_attempt,
+    validate_shaping_request, BoundedShapingAttemptLedger, ShapingAttemptLedgerStatus,
+    ShapingDirection, ShapingDisposition, ShapingExactSource, ShapingFeature, ShapingRejectReason,
+    ShapingRequest, ShapingVariation, ShapingWritingMode, TerminalShapingDisposition,
+    MAX_SHAPING_ATTEMPT_TRACE_RECORDS, MAX_SHAPING_FEATURES, MAX_SHAPING_FONT_BYTES,
+    MAX_SHAPING_TEXT_CODE_POINTS, MAX_SHAPING_VARIATION_AXES,
+};
+
+const NOTO: &[u8] = include_bytes!("../../ttfs/opensource/NotoSansKR-Regular.ttf");
+const SOURCE_HAN: &[u8] =
+    include_bytes!("../../ttfs/opensource/SourceHanSerifK-OldHangul-subset.otf");
+const HAPPINESS: &[u8] =
+    include_bytes!("../../ttfs/redistributable/happiness-sans/HappinessSansVF.ttf");
+
+fn request<'a>(bytes: &'a [u8], text: &'a str) -> ShapingRequest<'a> {
+    ShapingRequest {
+        source: Some(ShapingExactSource {
+            bytes,
+            face_index: 0,
+            portable: true,
+        }),
+        text,
+        direction: ShapingDirection::LeftToRight,
+        writing_mode: ShapingWritingMode::HorizontalTb,
+        script: Some("Hang"),
+        language: Some("ko"),
+        features: &[],
+        variations: &[],
+    }
+}
+
+fn assert_rejected(
+    request: &ShapingRequest<'_>,
+    disposition: ShapingDisposition,
+    reason: ShapingRejectReason,
+) {
+    let decision = validate_shaping_request(request);
+    assert_eq!(decision.disposition, disposition);
+    assert_eq!(decision.reason, Some(reason));
+}
+
+#[test]
+fn issue_4969_exact_sources_expose_only_proven_capabilities() {
+    let noto = validate_shaping_request(&request(NOTO, "office"));
+    assert_eq!(noto.disposition, ShapingDisposition::Requested);
+    assert!(noto.has_gsub && noto.has_gpos && noto.has_vertical_metrics);
+    assert!(!noto.has_variations);
+
+    let mut rtl = request(NOTO, "abc");
+    rtl.direction = ShapingDirection::RightToLeft;
+    assert_eq!(
+        validate_shaping_request(&rtl).disposition,
+        ShapingDisposition::Requested
+    );
+
+    let mut source_han = request(SOURCE_HAN, "ᄒᆞᆫ글");
+    source_han.direction = ShapingDirection::TopToBottom;
+    source_han.writing_mode = ShapingWritingMode::VerticalRl;
+    let source_han = validate_shaping_request(&source_han);
+    assert_eq!(source_han.disposition, ShapingDisposition::Requested);
+    assert!(source_han.has_vertical_metrics && source_han.has_vorg);
+
+    let axes = [
+        ShapingVariation {
+            tag: "wght".into(),
+            value: 400.0,
+        },
+        ShapingVariation {
+            tag: "opsz".into(),
+            value: 900.0,
+        },
+    ];
+    let mut happiness = request(HAPPINESS, "가변 Typography");
+    happiness.variations = &axes;
+    let happiness = validate_shaping_request(&happiness);
+    assert_eq!(happiness.disposition, ShapingDisposition::Requested);
+    assert!(happiness.has_variations);
+    assert!(!happiness.has_vertical_metrics);
+}
+
+#[test]
+fn issue_4969_source_and_orientation_fail_closed() {
+    let mut missing = request(NOTO, "가");
+    missing.source = None;
+    assert_rejected(
+        &missing,
+        ShapingDisposition::Unsupported,
+        ShapingRejectReason::SourceUnavailable,
+    );
+
+    assert_rejected(
+        &request(b"not-a-font", "가"),
+        ShapingDisposition::Malformed,
+        ShapingRejectReason::MalformedSfnt,
+    );
+
+    let mut local = request(NOTO, "가");
+    local.source.as_mut().expect("source").portable = false;
+    assert_rejected(
+        &local,
+        ShapingDisposition::NonPortable,
+        ShapingRejectReason::NonPortableSource,
+    );
+
+    let mut mismatched = request(NOTO, "가");
+    mismatched.direction = ShapingDirection::TopToBottom;
+    assert_rejected(
+        &mismatched,
+        ShapingDisposition::Malformed,
+        ShapingRejectReason::DirectionWritingModeMismatch,
+    );
+
+    let mut no_vertical = request(HAPPINESS, "가");
+    no_vertical.direction = ShapingDirection::TopToBottom;
+    no_vertical.writing_mode = ShapingWritingMode::VerticalLr;
+    assert_rejected(
+        &no_vertical,
+        ShapingDisposition::Unsupported,
+        ShapingRejectReason::VerticalMetricsUnavailable,
+    );
+}
+
+#[test]
+fn issue_4969_tags_and_axes_are_canonical_and_unambiguous() {
+    let mut malformed_script = request(NOTO, "가");
+    malformed_script.script = Some("Korean");
+    assert_rejected(
+        &malformed_script,
+        ShapingDisposition::Malformed,
+        ShapingRejectReason::MalformedScriptTag,
+    );
+
+    let mut malformed_language = request(NOTO, "가");
+    malformed_language.language = Some("ko_kr");
+    assert_rejected(
+        &malformed_language,
+        ShapingDisposition::Malformed,
+        ShapingRejectReason::MalformedLanguageTag,
+    );
+
+    let duplicate_features = [
+        ShapingFeature {
+            tag: "liga".into(),
+            value: 1,
+        },
+        ShapingFeature {
+            tag: "liga".into(),
+            value: 0,
+        },
+    ];
+    let mut duplicate_feature = request(NOTO, "office");
+    duplicate_feature.features = &duplicate_features;
+    assert_rejected(
+        &duplicate_feature,
+        ShapingDisposition::Malformed,
+        ShapingRejectReason::DuplicateFeatureTag,
+    );
+
+    let malformed_features = [ShapingFeature {
+        tag: "lig".into(),
+        value: 1,
+    }];
+    let mut malformed_feature = request(NOTO, "office");
+    malformed_feature.features = &malformed_features;
+    assert_rejected(
+        &malformed_feature,
+        ShapingDisposition::Malformed,
+        ShapingRejectReason::MalformedFeatureTag,
+    );
+
+    for (axes, disposition, reason) in [
+        (
+            vec![
+                ShapingVariation {
+                    tag: "wght".into(),
+                    value: 400.0,
+                },
+                ShapingVariation {
+                    tag: "wght".into(),
+                    value: 900.0,
+                },
+            ],
+            ShapingDisposition::Malformed,
+            ShapingRejectReason::DuplicateVariationAxis,
+        ),
+        (
+            vec![ShapingVariation {
+                tag: "wght".into(),
+                value: f32::NAN,
+            }],
+            ShapingDisposition::Malformed,
+            ShapingRejectReason::VariationValueNonFinite,
+        ),
+        (
+            vec![ShapingVariation {
+                tag: "wdth".into(),
+                value: 100.0,
+            }],
+            ShapingDisposition::Unsupported,
+            ShapingRejectReason::VariationAxisUnsupported,
+        ),
+        (
+            vec![ShapingVariation {
+                tag: "wght".into(),
+                value: 901.0,
+            }],
+            ShapingDisposition::Malformed,
+            ShapingRejectReason::VariationValueOutOfRange,
+        ),
+    ] {
+        let mut invalid = request(HAPPINESS, "가변");
+        invalid.variations = &axes;
+        assert_rejected(&invalid, disposition, reason);
+    }
+}
+
+#[test]
+fn issue_4969_payload_counts_are_bounded_before_shaping() {
+    let oversized_font = vec![0_u8; MAX_SHAPING_FONT_BYTES + 1];
+    assert_rejected(
+        &request(&oversized_font, "가"),
+        ShapingDisposition::BoundedLimit,
+        ShapingRejectReason::FontByteLimitExceeded,
+    );
+
+    let oversized_text = "가".repeat(MAX_SHAPING_TEXT_CODE_POINTS + 1);
+    assert_rejected(
+        &request(NOTO, &oversized_text),
+        ShapingDisposition::BoundedLimit,
+        ShapingRejectReason::TextCodePointLimitExceeded,
+    );
+
+    let features = (0..=MAX_SHAPING_FEATURES)
+        .map(|_| ShapingFeature {
+            tag: "liga".into(),
+            value: 1,
+        })
+        .collect::<Vec<_>>();
+    let mut feature_limit = request(NOTO, "office");
+    feature_limit.features = &features;
+    assert_rejected(
+        &feature_limit,
+        ShapingDisposition::BoundedLimit,
+        ShapingRejectReason::FeatureLimitExceeded,
+    );
+
+    let axes = (0..=MAX_SHAPING_VARIATION_AXES)
+        .map(|_| ShapingVariation {
+            tag: "wght".into(),
+            value: 400.0,
+        })
+        .collect::<Vec<_>>();
+    let mut axis_limit = request(HAPPINESS, "가변");
+    axis_limit.variations = &axes;
+    assert_rejected(
+        &axis_limit,
+        ShapingDisposition::BoundedLimit,
+        ShapingRejectReason::VariationAxisLimitExceeded,
+    );
+}
+
+#[test]
+fn issue_4969_identity_sorts_axes_but_preserves_feature_order() {
+    let axes_forward = [
+        ShapingVariation {
+            tag: "wght".into(),
+            value: 400.0,
+        },
+        ShapingVariation {
+            tag: "opsz".into(),
+            value: 900.0,
+        },
+    ];
+    let axes_reverse = [axes_forward[1].clone(), axes_forward[0].clone()];
+    let features_forward = [
+        ShapingFeature {
+            tag: "liga".into(),
+            value: 1,
+        },
+        ShapingFeature {
+            tag: "kern".into(),
+            value: 0,
+        },
+    ];
+    let features_reverse = [features_forward[1].clone(), features_forward[0].clone()];
+
+    let mut forward = request(HAPPINESS, "가변 Typography");
+    forward.language = Some("KO-KR");
+    forward.features = &features_forward;
+    forward.variations = &axes_forward;
+    let forward = canonicalize_shaping_request(&forward).expect("canonical request");
+
+    let mut reordered_axes = request(HAPPINESS, "다른 원문");
+    reordered_axes.language = Some("ko-kr");
+    reordered_axes.features = &features_forward;
+    reordered_axes.variations = &axes_reverse;
+    let reordered_axes = canonicalize_shaping_request(&reordered_axes).expect("canonical request");
+    assert_eq!(forward, reordered_axes);
+    assert_eq!(
+        forward.settings_sha256,
+        "fc9df3bfa6a6d8f2f59728372603bafd8147ad12be7a7981ab3ee7c530615f3a"
+    );
+    assert_eq!(forward.language.as_deref(), Some("ko-kr"));
+    assert_eq!(forward.variations[0].tag, "opsz");
+    assert_eq!(forward.variations[1].tag, "wght");
+
+    let mut reordered_features = request(HAPPINESS, "가변 Typography");
+    reordered_features.language = Some("ko-kr");
+    reordered_features.features = &features_reverse;
+    reordered_features.variations = &axes_forward;
+    let reordered_features =
+        canonicalize_shaping_request(&reordered_features).expect("canonical request");
+    assert_ne!(forward.settings_sha256, reordered_features.settings_sha256);
+    assert_eq!(reordered_features.features[0].tag, "kern");
+    assert_eq!(reordered_features.features[1].tag, "liga");
+}
+
+fn glyph_ids(output: &shaping::ShapingOutputDecision) -> Vec<u32> {
+    output.glyphs.iter().map(|glyph| glyph.glyph_id).collect()
+}
+
+fn clusters(output: &shaping::ShapingOutputDecision) -> Vec<u32> {
+    output
+        .glyphs
+        .iter()
+        .map(|glyph| glyph.cluster_utf8)
+        .collect()
+}
+
+fn x_advances(output: &shaping::ShapingOutputDecision) -> Vec<i32> {
+    output.glyphs.iter().map(|glyph| glyph.x_advance).collect()
+}
+
+#[test]
+fn issue_4969_bounded_output_matches_horizontal_and_old_hangul_oracles() {
+    let liga_off = [ShapingFeature {
+        tag: "liga".into(),
+        value: 0,
+    }];
+    let mut office_off = request(NOTO, "office");
+    office_off.script = Some("Latn");
+    office_off.language = Some("en");
+    office_off.features = &liga_off;
+    let office_off = shape_bounded_request(&office_off);
+    assert_eq!(office_off.disposition, ShapingDisposition::Applied);
+    assert_eq!(glyph_ids(&office_off), [80, 71, 71, 74, 68, 70]);
+    assert_eq!(clusters(&office_off), [0, 1, 2, 3, 4, 5]);
+    assert_eq!(x_advances(&office_off), [601, 325, 325, 275, 483, 554]);
+
+    let liga_on = [ShapingFeature {
+        tag: "liga".into(),
+        value: 1,
+    }];
+    let mut office_on = request(NOTO, "office");
+    office_on.script = Some("Latn");
+    office_on.language = Some("en");
+    office_on.features = &liga_on;
+    let office_on = shape_bounded_request(&office_on);
+    assert_eq!(office_on.disposition, ShapingDisposition::Applied);
+    assert_eq!(glyph_ids(&office_on), [80, 11819, 68, 70]);
+    assert_eq!(clusters(&office_on), [0, 1, 4, 5]);
+    assert_eq!(x_advances(&office_on), [606, 918, 483, 554]);
+    assert!(!serde_json::to_string(&office_on)
+        .expect("serialize output")
+        .contains("office"));
+
+    let source_han = shape_bounded_request(&request(SOURCE_HAN, "ᄒᆞᆫ글"));
+    assert_eq!(source_han.disposition, ShapingDisposition::Applied);
+    assert_eq!(glyph_ids(&source_han), [614, 1230, 1497, 2085]);
+    assert_eq!(clusters(&source_han), [0, 9, 9, 9]);
+    assert_eq!(x_advances(&source_han), [966, 966, 0, 0]);
+}
+
+#[test]
+fn issue_4969_variation_changes_advances_without_changing_glyph_ids() {
+    let axes_400 = [
+        ShapingVariation {
+            tag: "wght".into(),
+            value: 400.0,
+        },
+        ShapingVariation {
+            tag: "opsz".into(),
+            value: 400.0,
+        },
+    ];
+    let axes_900 = [
+        ShapingVariation {
+            tag: "opsz".into(),
+            value: 900.0,
+        },
+        ShapingVariation {
+            tag: "wght".into(),
+            value: 900.0,
+        },
+    ];
+    let mut request_400 = request(HAPPINESS, "가변 Typography");
+    request_400.variations = &axes_400;
+    let output_400 = shape_bounded_request(&request_400);
+    let mut request_900 = request(HAPPINESS, "가변 Typography");
+    request_900.variations = &axes_900;
+    let output_900 = shape_bounded_request(&request_900);
+
+    let expected_glyphs = [221, 1359, 1, 53, 90, 81, 80, 72, 83, 66, 81, 73, 90];
+    assert_eq!(output_400.disposition, ShapingDisposition::Applied);
+    assert_eq!(output_900.disposition, ShapingDisposition::Applied);
+    assert_eq!(glyph_ids(&output_400), expected_glyphs);
+    assert_eq!(glyph_ids(&output_900), expected_glyphs);
+    assert_eq!(
+        x_advances(&output_400),
+        [920, 920, 230, 579, 496, 578, 597, 536, 462, 561, 578, 586, 496]
+    );
+    assert_eq!(
+        x_advances(&output_900),
+        [930, 930, 240, 598, 563, 614, 633, 611, 500, 612, 614, 608, 563]
+    );
+    assert_ne!(
+        output_400
+            .identity
+            .as_ref()
+            .expect("identity")
+            .settings_sha256,
+        output_900
+            .identity
+            .as_ref()
+            .expect("identity")
+            .settings_sha256
+    );
+}
+
+#[test]
+fn issue_4969_output_preserves_structured_rejection() {
+    let mut missing = request(NOTO, "가");
+    missing.source = None;
+    let output = shape_bounded_request(&missing);
+    assert_eq!(output.disposition, ShapingDisposition::Unsupported);
+    assert_eq!(output.reason, Some(ShapingRejectReason::SourceUnavailable));
+    assert!(output.identity.is_none());
+    assert_eq!(output.glyph_count, 0);
+    assert!(output.glyphs.is_empty());
+}
+
+#[test]
+fn issue_4969_utf8_cluster_offset_is_bounded_by_code_point_limit() {
+    let max_width_text = "\u{10ffff}".repeat(MAX_SHAPING_TEXT_CODE_POINTS);
+    assert_eq!(max_width_text.len(), MAX_SHAPING_TEXT_CODE_POINTS * 4);
+    let output = shape_bounded_request(&request(NOTO, &max_width_text));
+    assert_eq!(output.disposition, ShapingDisposition::Applied);
+    assert_eq!(output.glyph_count, MAX_SHAPING_TEXT_CODE_POINTS);
+    assert_eq!(
+        output
+            .glyphs
+            .last()
+            .expect("last bounded glyph")
+            .cluster_utf8,
+        16_380
+    );
+}
+
+#[test]
+fn issue_4969_terminal_attempt_owns_applied_output_without_text_trace() {
+    let attempt = terminal_shaping_attempt(17, &request(SOURCE_HAN, "ᄒᆞᆫ글"));
+    assert!(attempt.is_applied());
+    assert_eq!(attempt.trace.attempt_id, 17);
+    assert_eq!(
+        attempt.trace.disposition,
+        TerminalShapingDisposition::Applied
+    );
+    assert_eq!(attempt.trace.reason, None);
+    assert_eq!(attempt.trace.glyph_count, 4);
+    assert!(attempt.trace.settings_sha256.is_some());
+    assert_eq!(
+        attempt.trace.font_source_sha256.as_deref(),
+        Some("2f86ef9a52acb6d1dad9d915843239123b635d97edd88fd0573a88ffcb4e16f1")
+    );
+    let applied = attempt.applied.as_ref().expect("applied payload");
+    assert_eq!(applied.glyphs.len(), attempt.trace.glyph_count);
+    assert_eq!(applied.glyphs[0].glyph_id, 614);
+    assert_eq!(
+        applied.identity.settings_sha256,
+        attempt
+            .trace
+            .settings_sha256
+            .as_deref()
+            .expect("settings hash")
+    );
+
+    let trace_json = serde_json::to_string(&attempt.trace).expect("terminal trace JSON");
+    for forbidden in ["ᄒᆞᆫ글", "SourceHanSerif", "fontBytes", "glyphs", "/home/"] {
+        assert!(!trace_json.contains(forbidden), "trace leaked {forbidden}");
+    }
+}
+
+#[test]
+fn issue_4969_terminal_rejections_keep_typed_disposition_and_optional_hashes() {
+    let mut missing = request(NOTO, "가");
+    missing.source = None;
+    let missing = terminal_shaping_attempt(1, &missing);
+    assert_eq!(
+        missing.trace.disposition,
+        TerminalShapingDisposition::Unsupported
+    );
+    assert_eq!(
+        missing.trace.reason,
+        Some(ShapingRejectReason::SourceUnavailable)
+    );
+    assert!(missing.trace.settings_sha256.is_none());
+    assert!(missing.trace.font_source_sha256.is_none());
+    assert!(missing.applied.is_none());
+
+    let malformed = terminal_shaping_attempt(2, &request(b"not-a-font", "가"));
+    assert_eq!(
+        malformed.trace.disposition,
+        TerminalShapingDisposition::Malformed
+    );
+    assert_eq!(
+        malformed.trace.reason,
+        Some(ShapingRejectReason::MalformedSfnt)
+    );
+
+    let mut non_portable_request = request(NOTO, "가");
+    non_portable_request
+        .source
+        .as_mut()
+        .expect("source")
+        .portable = false;
+    let non_portable = terminal_shaping_attempt(3, &non_portable_request);
+    assert_eq!(
+        non_portable.trace.disposition,
+        TerminalShapingDisposition::NonPortable
+    );
+
+    let oversized_text = "가".repeat(MAX_SHAPING_TEXT_CODE_POINTS + 1);
+    let bounded = terminal_shaping_attempt(4, &request(NOTO, &oversized_text));
+    assert_eq!(
+        bounded.trace.disposition,
+        TerminalShapingDisposition::BoundedLimit
+    );
+    assert_eq!(
+        bounded.trace.reason,
+        Some(ShapingRejectReason::TextCodePointLimitExceeded)
+    );
+    assert_eq!(bounded.trace.glyph_count, 0);
+}
+
+#[test]
+fn issue_4969_attempt_ledger_truncates_without_retaining_applied_payload() {
+    let attempt = terminal_shaping_attempt(9, &request(NOTO, "office"));
+    let mut ledger = BoundedShapingAttemptLedger::default();
+    for _ in 0..MAX_SHAPING_ATTEMPT_TRACE_RECORDS {
+        ledger.record(&attempt.trace);
+    }
+    assert_eq!(ledger.status(), ShapingAttemptLedgerStatus::Complete);
+    assert_eq!(ledger.record_count(), MAX_SHAPING_ATTEMPT_TRACE_RECORDS);
+    ledger.record(&attempt.trace);
+    ledger.record(&attempt.trace);
+    assert_eq!(ledger.status(), ShapingAttemptLedgerStatus::Truncated);
+    assert_eq!(ledger.record_count(), MAX_SHAPING_ATTEMPT_TRACE_RECORDS);
+    assert_eq!(ledger.omitted_record_count(), 2);
+    assert_eq!(ledger.record_limit(), MAX_SHAPING_ATTEMPT_TRACE_RECORDS);
+
+    let mut one = BoundedShapingAttemptLedger::default();
+    one.record(&attempt.trace);
+    let ledger_json = serde_json::to_string(&one).expect("ledger JSON");
+    assert!(!ledger_json.contains("office"));
+    assert!(!ledger_json.contains("glyphs"));
+    assert!(ledger_json.contains("\"status\":\"complete\""));
+}

@@ -26246,6 +26246,7 @@ mod tests {
             tac_controls: vec![(0, 20000, 0)],
             footnote_positions: Vec::new(),
             tab_extended: Vec::new(),
+            horizontal_shaping: None,
         };
 
         // 조판(페이지네이션)이 이 줄에 예약하는 인라인 개체 높이.

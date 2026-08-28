@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q2-d0-page-sidecar-result",
+  "issue": 4969,
+  "stage": "W10-Q2-D0",
+  "status": "qualified",
+  "productOutputChange": false,
+  "productConsumerCount": 0,
+  "ownership": {
+    "pageOwner": "PageRenderTree.frame.horizontal_shaping_sidecars",
+    "key": "NodeId",
+    "value": "Arc<HorizontalShapingRunDecision>",
+    "appliedPayload": "Arc<HorizontalShapingMeasurement>",
+    "rejectedPayload": "ShapingAttemptTrace",
+    "cloneSharesArc": true
+  },
+  "rangeCoordinates": ["unicode-scalar", "utf8-byte", "utf16-code-unit"],
+  "limits": {
+    "entriesPerPage": 4096,
+    "emptyTableRetainedMeasurements": 0,
+    "partialAttachAllowed": false
+  },
+  "typedRejectReasons": [
+    "malformed-range",
+    "range-mismatch",
+    "disposition-mismatch",
+    "attempt-identity-mismatch",
+    "measurement-range-mismatch",
+    "stale-registry-generation",
+    "duplicate-node",
+    "entry-limit-exceeded"
+  ],
+  "serialization": {
+    "pageFrameSerdeSkipped": true,
+    "serdeJsonFieldChange": 0,
+    "legacyToJsonFieldChange": 0,
+    "publicTextRunSchemaChange": false
+  },
+  "privacy": {
+    "rawTextInTrace": false,
+    "fontPayloadInTrace": false,
+    "localPathInTrace": false,
+    "privateCorpusUsed": false
+  },
+  "validation": {
+    "nativeFocused": {
+      "passed": 4,
+      "failed": 0,
+      "runtimeSeconds": 0.06
+    },
+    "nodeWasmFocused": {
+      "passed": 4,
+      "failed": 0,
+      "runtimeSeconds": 0.33,
+      "isolatedHarnessTrashed": true
+    },
+    "nativeWasmParityMismatches": 0,
+    "cargoCheckLib": "pass",
+    "cargoClippyLibDenyWarnings": "pass",
+    "cargoClippyWasm32LibDenyWarnings": "pass",
+    "integrationManifestPolicy": {
+      "passed": 18,
+      "failed": 0
+    },
+    "focusedRustfmt": "pass",
+    "diffCheck": "pass",
+    "generatedIntegrationArtifacts": 0
+  },
+  "next": "maintainer approval required before Q2-D1 composition owner handoff"
+}

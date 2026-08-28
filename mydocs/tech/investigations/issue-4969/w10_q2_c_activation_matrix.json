@@ -1,0 +1,110 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q2-c-activation-matrix",
+  "issue": 4969,
+  "stage": "W10-Q2-C",
+  "status": "approved-and-dormant-implementation-qualified",
+  "productOutputChange": false,
+  "planCorrection": {
+    "q2cStandaloneProductActivation": "rejected",
+    "reason": "line-decision-owner-would-differ-from-emitted-run-owner-before-q2d",
+    "activationWith": "Q2-D emitted-run Arc sidecar"
+  },
+  "firstEligibleSubset": {
+    "featureDetection": "direct-old-hangul-jamo-present",
+    "allowedCodePointRanges": [
+      "1100-11FF",
+      "A960-A97F",
+      "D7B0-D7FF",
+      "AC00-D7A3"
+    ],
+    "writingMode": "horizontal-tb",
+    "direction": "ltr",
+    "bidiLevel": 0,
+    "exactPortableSource": true,
+    "homogeneousSegment": [
+      "slot",
+      "source-handle",
+      "font-size",
+      "width-ratio"
+    ],
+    "modelTextEqualsShapingText": true,
+    "variationAxes": [],
+    "syntheticBold": false,
+    "syntheticItalic": false,
+    "superscript": false,
+    "subscript": false,
+    "letterSpacingPx": 0.0,
+    "condenseMinSpace": 0,
+    "inlineControls": false,
+    "tabs": false,
+    "rotation": false,
+    "charOverlap": false,
+    "latinDefaultLiga": false
+  },
+  "featureMapping": {
+    "gsubOwner": "common-shaper",
+    "kernFeatureFromHwpFlag": true,
+    "w9PairAdjustmentAfterAppliedShaping": false
+  },
+  "limits": {
+    "textCodePointsPerRun": 4096,
+    "glyphsPerRun": 4096,
+    "clustersPerRun": 4096,
+    "lineDecisionRetries": 2,
+    "cacheEntries": 4096,
+    "cacheTextBytes": 1048576,
+    "cacheGlyphs": 262144,
+    "cacheClusters": 262144
+  },
+  "rollback": {
+    "unit": "whole-approved-paragraph-transaction",
+    "fallbackOrder": [
+      "w9-k1",
+      "existing-k0"
+    ],
+    "reuseMutatedTokensAfterFailure": false,
+    "partialSegmentCommit": false,
+    "typedReasons": [
+      "publication-owner-pending",
+      "latin-default-liga-not-approved",
+      "bidi-authority-pending",
+      "display-projection-not-supported",
+      "synthetic-style-not-supported",
+      "letter-spacing-semantics-pending",
+      "condense-semantics-pending",
+      "hard-boundary-crossed",
+      "cluster-boundary-mismatch",
+      "missing-glyph",
+      "line-decision-not-converged"
+    ]
+  },
+  "implementationSlices": [
+    {
+      "id": "Q2-C0",
+      "name": "paragraph-segmentation-and-eligibility",
+      "productConsumerCount": 0
+    },
+    {
+      "id": "Q2-C1",
+      "name": "cluster-aware-width-owner",
+      "productConsumerCount": 0
+    },
+    {
+      "id": "Q2-C2",
+      "name": "dormant-line-transaction-and-convergence",
+      "productConsumerCount": 0
+    }
+  ],
+  "productActivation": {
+    "stage": "Q2-D",
+    "requiresSameArcFor": [
+      "line-selection",
+      "text-run-bbox",
+      "next-run-origin",
+      "layer-glyph-run"
+    ],
+    "separateMaintainerApproval": true
+  },
+  "approvalScope": "Q2-C0 through Q2-C2 dormant implementation only"
+}

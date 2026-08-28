@@ -16,6 +16,7 @@ pub mod profile;
 pub mod replay_order;
 pub mod resources;
 pub mod schema;
+pub(crate) mod shaping_glyph;
 pub mod text_shape;
 pub mod text_v2;
 pub mod text_variants;

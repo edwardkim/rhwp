@@ -1,10 +1,12 @@
 use crate::model::style::UnderlineType;
+use crate::paint::font_glyph::lower_font_native_glyph_sidecars_excluding;
 use crate::paint::layer_tree::{
     CacheHint, ClipKind, GroupKind, LayerNode, LayerNodeKind, LayerOutputOptions, PageLayerTree,
 };
 use crate::paint::paint_op::{PaintOp, TextDecorationKind};
 use crate::paint::profile::RenderProfile;
-use crate::paint::{lower_font_native_glyph_sidecars, EmbeddedFontFace};
+use crate::paint::shaping_glyph::lower_horizontal_shaping_page_sidecars;
+use crate::paint::EmbeddedFontFace;
 use crate::renderer::render_tree::{PageRenderTree, RenderNode, RenderNodeType};
 
 /// semantic render tree를 visual layer tree로 내린다.
@@ -60,7 +62,17 @@ impl LayerBuilder {
             PageLayerTree::with_profile(page_width, page_height, root, self.profile)
                 .with_output_options(self.output_options)
                 .with_bin_data_epoch(self.bin_data_epoch);
-        lower_font_native_glyph_sidecars(&mut layer_tree.root, &mut layer_tree.resources, fonts);
+        let claimed_glyph_run_sources = lower_horizontal_shaping_page_sidecars(
+            &mut layer_tree.root,
+            tree.frame.horizontal_shaping_sidecars(),
+            &mut layer_tree.resources,
+        );
+        lower_font_native_glyph_sidecars_excluding(
+            &mut layer_tree.root,
+            &mut layer_tree.resources,
+            fonts,
+            &claimed_glyph_run_sources,
+        );
         layer_tree
     }
 
