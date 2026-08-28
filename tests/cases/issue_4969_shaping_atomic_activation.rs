@@ -1,24 +1,19 @@
 //! Issue #4969 W10-Q2-D4-B: the first product lane activates atomically.
 
-#[cfg(not(target_arch = "wasm32"))]
 use rhwp::document_core::DocumentCore;
-#[cfg(not(target_arch = "wasm32"))]
 use rhwp::model::paragraph::{CharShapeRef, LineSeg, Paragraph};
-#[cfg(not(target_arch = "wasm32"))]
 use rhwp::model::style::Alignment;
-#[cfg(not(target_arch = "wasm32"))]
 use rhwp::paint::{LayerNode, LayerNodeKind, PaintOp};
+#[cfg(target_arch = "wasm32")]
+use wasm_bindgen_test::wasm_bindgen_test;
 
-#[cfg(not(target_arch = "wasm32"))]
 const SOURCE_HAN: &[u8] =
     include_bytes!("../../ttfs/opensource/SourceHanSerifK-OldHangul-subset.otf");
-#[cfg(not(target_arch = "wasm32"))]
 // `ᄒᆞᆫ글`은 legacy 제품명 display projection 대상이므로 최초 direct-text lane의
 // 양성 fixture로 쓰지 않는다. 이 문자열은 같은 옛한글 자모 shaping을 요구하지만
 // model text와 replay text가 동일하다.
 const TEXT: &str = "ᄒᆞᆫ말";
 
-#[cfg(not(target_arch = "wasm32"))]
 fn core_with_surface(text: &str, alignment: Alignment, char_border_fill_id: u16) -> DocumentCore {
     let mut core = DocumentCore::new_empty();
     core.create_blank_document_native()
@@ -71,7 +66,6 @@ fn core_with_surface(text: &str, alignment: Alignment, char_border_fill_id: u16)
     core
 }
 
-#[cfg(not(target_arch = "wasm32"))]
 fn collect_text_ops<'a>(node: &'a LayerNode, ops: &mut Vec<&'a PaintOp>) {
     match &node.kind {
         LayerNodeKind::Group { children, .. } => {
@@ -88,8 +82,8 @@ fn collect_text_ops<'a>(node: &'a LayerNode, ops: &mut Vec<&'a PaintOp>) {
     }
 }
 
-#[cfg(not(target_arch = "wasm32"))]
 #[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
 fn issue_4969_q2_d4_b_one_line_run_publishes_one_common_alternative() {
     let core = core_with_surface(TEXT, Alignment::Left, 0);
     let layer_tree = core
@@ -149,10 +143,42 @@ fn issue_4969_q2_d4_b_one_line_run_publishes_one_common_alternative() {
     assert_eq!(layer_tree.resources.font_blob_count(), 1);
     assert_eq!(layer_tree.resources.font_resources().blobs.len(), 1);
     assert_eq!(layer_tree.resources.font_resources().faces.len(), 1);
+
+    let serialized: serde_json::Value =
+        serde_json::from_str(&layer_tree.to_json()).expect("serialized product layer tree");
+    assert_eq!(
+        serialized["fontResources"]["blobs"]
+            .as_array()
+            .expect("font blob metadata")
+            .len(),
+        1
+    );
+    assert_eq!(
+        serialized["fontResources"]["faces"]
+            .as_array()
+            .expect("font face metadata")
+            .len(),
+        1
+    );
+    assert_eq!(
+        serialized["resources"]["fontBlobs"]
+            .as_array()
+            .expect("portable font payload")
+            .len(),
+        1
+    );
+    let serialized_text = serialized.to_string();
+    assert_eq!(
+        serialized_text
+            .matches("q2CommonShapingCondensedDrawProjectionV1")
+            .count(),
+        1,
+        "the product JSON must carry exactly one common replay alternative"
+    );
 }
 
-#[cfg(not(target_arch = "wasm32"))]
 #[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
 fn issue_4969_q2_d4_b_rejected_surfaces_keep_only_legacy_text() {
     let cases = [
         (TEXT, Alignment::Center, 0),

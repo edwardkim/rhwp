@@ -10,6 +10,8 @@ mod shaping_composition;
 mod shaping_context;
 #[path = "../../src/renderer/shaping_paragraph.rs"]
 mod shaping_paragraph;
+#[path = "../../src/renderer/shaping_publication.rs"]
+mod shaping_publication;
 
 use std::sync::Arc;
 
