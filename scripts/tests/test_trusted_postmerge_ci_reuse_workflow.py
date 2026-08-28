@@ -39,6 +39,8 @@ class TrustedPostmergeReuseWorkflowTests(unittest.TestCase):
         self.assertIn("compareCommits", workflow)
         self.assertIn("listWorkflowRuns", workflow)
         self.assertIn("listFiles", workflow)
+        self.assertIn("listCommits", workflow)
+        self.assertIn("classifyReviewOnlyCommit", workflow)
         self.assertIn("listWorkflowRunArtifacts", workflow)
         self.assertIn("never checks out or executes", workflow)
         self.assertIn("the merged PR head", workflow)

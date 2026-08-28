@@ -143,9 +143,10 @@ jobs:
             const path = require('node:path');
             const { pathToFileURL } = require('node:url');
             const { owner, repo } = context.repo;
+            let classifyReviewOnlyCommit;
             let evaluateTrustedPostMergeReuse;
             try {
-              ({ evaluateTrustedPostMergeReuse } = await import(pathToFileURL(path.join(
+              ({ classifyReviewOnlyCommit, evaluateTrustedPostMergeReuse } = await import(pathToFileURL(path.join(
                 process.env.GITHUB_WORKSPACE,
                 'scripts/verify-trusted-postmerge-ci-reuse.mjs',
               )).href));
@@ -201,12 +202,29 @@ jobs:
                   per_page: 100,
                 }),
               ]);
+              const prCommitHeaders = await github.paginate(
+                github.rest.pulls.listCommits,
+                { owner, repo, pull_number: pr.number, per_page: 100 },
+              );
+              const prCommits = [];
+              for (let index = prCommitHeaders.length - 1; index >= 0; index -= 1) {
+                const commit = (await github.rest.repos.getCommit({
+                  owner,
+                  repo,
+                  ref: prCommitHeaders[index].sha,
+                })).data;
+                prCommits.unshift(commit);
+                if (classifyReviewOnlyCommit(commit).kind !== "review") {
+                  break;
+                }
+              }
               return {
                 mergeCommit,
                 pullRequests,
                 sourceCommit,
                 mergeBaseSha: comparison.merge_base_commit?.sha || '',
                 pullFiles,
+                prCommits,
                 workflowRuns,
               };
             }
