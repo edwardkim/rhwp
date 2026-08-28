@@ -8,7 +8,7 @@
 >
 > 브랜치: `codex/issue-4135-contextual-shortcut`
 >
-> 상태: **Recovery R4 macOS 한글 IME 수동 확인 실패, 후속 composition/input 억제 corrective RED 고정**
+> 상태: **Recovery R4 corrective 구현·자동 재검증 GREEN, macOS 한글 IME 재확인·결과 승인 대기**
 
 ## 1. 문제를 다시 정의한다
 
@@ -126,8 +126,9 @@ R4 실브라우저 첫 실행에서 `10+20+30`의 계산 결과 JSON은 `60`인�
 경로로 통합하고 SVG 회귀 계약을 추가한 뒤 전체 게이트와 WASM을 다시 통과시켰다. 자동화
 브라우저가 macOS 입력 소스의 실제 한글 IME 물리 키 이벤트를 만들 수 없어 작업지시자가 수동
 확인했고, 셀 나누기 대화상자와 `ㄴ` 입력이 동시에 발생해 R4를 승인하지 않았다. 명령 라우팅 뒤
-후속 composition/input 스트림을 좁게 소비하는 corrective RED 3건을 추가했으며, 구현·전체 재검증
-후 같은 수동 여정을 다시 통과해야 한다. 상세 증적과 절차는
+후속 composition/input 스트림을 좁게 소비하는 corrective RED 3건을 추가하고 guard를 구현했다.
+focused 22건, Studio 전체 1,247건, production build, embed E2E 17건과 영문 실브라우저를 다시
+통과했으며, 최신 `127.0.0.1:7716`에서 같은 한글 IME 수동 여정을 다시 통과해야 한다. 상세 증적과 절차는
 [`task_m100_4135_recovery_r4.md`](../working/task_m100_4135_recovery_r4.md)에 기록한다.
 
 ## 5. 예상 변경 파일
@@ -138,7 +139,7 @@ R4 실브라우저 첫 실행에서 `10+20+30`의 계산 결과 JSON은 `60`인�
 | R2 | `src/document_core/table_calc/{tokenizer,parser,evaluator}.rs` | 다중 문자 열 참조 |
 | R2 | `rhwp-studio/src/command/block-calculation-plan.ts` | 선택 범위→계산 job 순수 planner |
 | R2 | `rhwp-studio/src/command/commands/table.ts` | multi-cell·dry-run·snapshot 실행 |
-| R3 | `rhwp-studio/src/command/contextual-shortcut.ts`, `rhwp-studio/src/engine/input-handler-keyboard.ts` | IME 물리 `S`/`M` 라우팅 |
+| R3/R4 corrective | `rhwp-studio/src/command/contextual-shortcut.ts`, `rhwp-studio/src/engine/input-handler-{keyboard,text}.ts`, `rhwp-studio/src/engine/input-handler.ts` | IME 물리 `S`/`M` 라우팅과 후속 조합 입력 억제 |
 | R4 | `src/document_core/commands/{table_ops,text_editing}.rs`, `src/wasm_api/tests.rs` | 실브라우저에서 발견한 두 자릿수 결과 렌더링 회귀 보정 |
 | R4 | `mydocs/working/**`, `mydocs/report/**`, `mydocs/orders/20260828.md` | 검증·최종 판정 기록 |
 

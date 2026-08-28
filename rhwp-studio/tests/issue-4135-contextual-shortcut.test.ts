@@ -13,7 +13,10 @@ type CellBlockLetterResolver = (
 
 type CellBlockLetterImeGuardLike = {
   arm: (event: KeyboardEvent) => boolean;
-  consume: (eventType: 'compositionstart' | 'input' | 'compositionend') => boolean;
+  consume: (
+    eventType: 'compositionstart' | 'input' | 'compositionend',
+    text?: string,
+  ) => boolean;
   reset: () => void;
 };
 
@@ -204,8 +207,8 @@ test('Recovery R4 corrective RED: Process 입력은 input-only 폴백도 한 번
   const guard = new Guard();
 
   assert.equal(guard.arm(key({ key: 'Process', code: 'KeyM', isComposing: true, keyCode: 229 })), true);
-  assert.equal(guard.consume('input'), true);
-  assert.equal(guard.consume('input'), false, 'composition 이벤트가 없으면 첫 input만 소비해야 한다');
+  assert.equal(guard.consume('input', 'ㅡ'), true);
+  assert.equal(guard.consume('input', 'ㅡ'), false, 'composition 이벤트가 없으면 첫 input만 소비해야 한다');
 });
 
 test('Recovery R4 corrective RED: 영문 S/M은 후속 정상 입력을 억제하지 않는다', () => {
@@ -218,4 +221,35 @@ test('Recovery R4 corrective RED: 영문 S/M은 후속 정상 입력을 억제�
 
   assert.equal(guard.arm(key({ key: 'M', code: 'KeyM', shiftKey: true })), false);
   assert.equal(guard.consume('input'), false);
+});
+
+test('Recovery R4 corrective: compositionend 뒤 같은 유령 input만 추가로 소비한다', () => {
+  const Guard = cellBlockLetterImeGuardConstructor();
+  const guard = new Guard();
+
+  guard.arm(key({ key: 'ㄴ', code: 'KeyS' }));
+  assert.equal(guard.consume('compositionstart'), true);
+  assert.equal(guard.consume('input', 'ㄴ'), true);
+  assert.equal(guard.consume('compositionend'), true);
+  assert.equal(guard.consume('input', 'ㄴ'), true, '동일 조합 텍스트의 유령 input은 소비해야 한다');
+  assert.equal(guard.consume('input', 'ㄴ'), false, '유령 input 억제는 한 번으로 끝나야 한다');
+});
+
+test('Recovery R4 corrective: guard가 입력 경로 세 지점과 dispatcher 전에 연결된다', () => {
+  const keyboardSource = readFileSync(
+    new URL('../src/engine/input-handler-keyboard.ts', import.meta.url),
+    'utf8',
+  );
+  const textSource = readFileSync(
+    new URL('../src/engine/input-handler-text.ts', import.meta.url),
+    'utf8',
+  );
+  const arm = keyboardSource.indexOf('this._cellBlockLetterImeGuard?.arm(e)');
+  const dispatch = keyboardSource.indexOf('this.dispatcher.dispatch(resolution.commandId)', arm);
+
+  assert.ok(arm >= 0, '셀 문자 단축키가 후속 IME guard를 arm해야 한다');
+  assert.ok(dispatch > arm, 'focus 이동 전에 guard를 arm하고 대화상자 명령을 실행해야 한다');
+  assert.match(textSource, /\?\.consume\('compositionstart'\)/);
+  assert.match(textSource, /\?\.consume\('input', this\.textarea\.value\)/);
+  assert.match(textSource, /\?\.consume\('compositionend', this\.textarea\.value\)/);
 });

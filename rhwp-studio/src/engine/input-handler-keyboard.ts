@@ -100,6 +100,9 @@ function dispatchCellBlockLetterShortcut(this: any, e: KeyboardEvent): boolean {
   });
   if (!resolution) return false;
 
+  // macOS 한글 IME는 keydown을 막아도 동일 물리 키의 composition/input을 이어서 낼 수 있다.
+  // 대화상자를 열기 전에 arm해야 focus 이동 중 발생하는 후속 이벤트도 놓치지 않는다.
+  this._cellBlockLetterImeGuard?.arm(e);
   e.preventDefault();
   this.dispatcher.dispatch(resolution.commandId);
   return true;
@@ -592,6 +595,10 @@ function hitTestAfterPageScroll(
  */
 export function onKeyDown(this: any, e: KeyboardEvent): void {
   if (!this.active) return;
+
+  // 이전 셀 문자 단축키의 compositionend가 브라우저 focus 이동으로 누락됐더라도 다음
+  // 물리 입력까지 억제 상태가 새지 않게 한다. 현재 S/M이면 아래 resolver가 다시 arm한다.
+  this._cellBlockLetterImeGuard?.reset();
 
   // ─── 1. 코드 단축키 2번째 키 처리 (Ctrl+K → ? / Ctrl+M → ?) ───
   if (this._pendingChordK) {

@@ -13,6 +13,57 @@ export type CellBlockLetterShortcutResolution =
   | { kind: 'dispatch'; commandId: 'table:cell-split' | 'table:cell-merge' }
   | null;
 
+type CellBlockLetterImeGuardState = 'idle' | 'armed' | 'composition';
+type CellBlockLetterImeFollowupEvent = 'compositionstart' | 'input' | 'compositionend';
+
+/**
+ * 한글 IME의 물리 S/M keydown은 preventDefault 뒤에도 composition/input을 이어서 낼 수 있다.
+ * 셀 명령으로 소비한 IME keydown만 arm하고, 그 한 조합 스트림을 문서 입력 경로에서 격리한다.
+ */
+export class CellBlockLetterImeGuard {
+  private state: CellBlockLetterImeGuardState = 'idle';
+  private ghostText = '';
+
+  arm(
+    event: Pick<KeyboardEvent, 'key' | 'isComposing' | 'keyCode'>,
+  ): boolean {
+    const imeOwned = event.key === 'ㄴ'
+      || event.key === 'ㅡ'
+      || event.key === 'Process'
+      || event.isComposing
+      || event.keyCode === 229;
+    this.state = imeOwned ? 'armed' : 'idle';
+    this.ghostText = '';
+    return imeOwned;
+  }
+
+  consume(eventType: CellBlockLetterImeFollowupEvent, text = ''): boolean {
+    if (this.state === 'idle') {
+      if (eventType === 'input' && this.ghostText && text === this.ghostText) {
+        this.ghostText = '';
+        return true;
+      }
+      if (eventType === 'input') this.ghostText = '';
+      return false;
+    }
+
+    if (this.state === 'armed') {
+      this.state = eventType === 'compositionstart' ? 'composition' : 'idle';
+      if (eventType === 'compositionend' && text) this.ghostText = text;
+      return true;
+    }
+
+    if (text) this.ghostText = text;
+    if (eventType === 'compositionend') this.state = 'idle';
+    return true;
+  }
+
+  reset(): void {
+    this.state = 'idle';
+    this.ghostText = '';
+  }
+}
+
 /**
  * Ctrl/Cmd+Shift+S는 일반 문맥에서는 다른 이름으로 저장이지만, F5 셀 블록에서는
  * 한컴 호환 블록 합계다. embed처럼 Save As 소유권이 없는 프로파일에서는 후순위

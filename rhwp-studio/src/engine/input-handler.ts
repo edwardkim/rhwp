@@ -48,6 +48,7 @@ import { DeferredPaginationRunner } from './deferred-pagination-runner';
 import { tableObjectClipboardTarget } from './table-object-clipboard-target';
 import { clearObjectEditingPage } from './object-selection-page';
 import { showInitialCaretAndPublishFocus } from './initial-caret-focus';
+import { CellBlockLetterImeGuard } from '@/command/contextual-shortcut';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const DRAG_SCROLL_EDGE_PX = 48;
@@ -516,6 +517,7 @@ export class InputHandler {
   private _lastCompositionText = '';
   private _lastComposedText = '';
   private _pendingNavAfterIME: NavigationKeyInput | null = null;
+  private _cellBlockLetterImeGuard = new CellBlockLetterImeGuard();
   // iOS 폴백: composition 이벤트 없이 input만으로 한글 조합 처리
   private _iosComposing = false;
   private _iosAnchor: DocumentPosition | null = null;
@@ -3794,6 +3796,7 @@ export class InputHandler {
     this._lastCompositionText = '';
     this._lastComposedText = '';
     this._pendingNavAfterIME = null;
+    this._cellBlockLetterImeGuard.reset();
     if (this._iosInputTimer) {
       clearTimeout(this._iosInputTimer);
       this._iosInputTimer = null;
@@ -3843,6 +3846,7 @@ export class InputHandler {
     this._lastCompositionText = '';
     this._lastComposedText = '';
     this._pendingNavAfterIME = null;
+    this._cellBlockLetterImeGuard.reset();
     if (this._iosInputTimer) {
       clearTimeout(this._iosInputTimer);
       this._iosInputTimer = null;
