@@ -37,41 +37,69 @@ fn count_editor_only_lines(node: &RenderNode) -> usize {
     n
 }
 
-#[test]
-fn issue_6301_merged_cell_interior_has_no_transparent_border_guide() {
-    let mut doc = HwpDocument::create_empty();
+fn create_table(doc: &mut HwpDocument, rows: u32, cols: u32) -> (u32, u32) {
+    let create_json = doc.create_table(0, 0, 0, rows, cols).expect("표 생성");
+    let value: serde_json::Value = serde_json::from_str(&create_json).expect("표 생성 JSON 파싱");
+    (
+        value["paraIdx"].as_u64().expect("paraIdx") as u32,
+        value["controlIdx"].as_u64().expect("controlIdx") as u32,
+    )
+}
 
-    let create_json = doc.create_table(0, 0, 0, 1, 3).expect("1x3 표 생성");
-    let v: serde_json::Value = serde_json::from_str(&create_json).expect("표 생성 JSON 파싱");
-    let para_idx = v["paraIdx"].as_u64().expect("paraIdx") as u32;
-    let ctrl_idx = v["controlIdx"].as_u64().expect("controlIdx") as u32;
+fn editor_only_line_count(doc: &HwpDocument, para_idx: u32) -> usize {
+    let tree = doc.build_page_render_tree(0).expect("페이지 렌더 트리");
+    let table = table_for_paragraph(&tree.root, para_idx as usize).expect("표 노드");
+    count_editor_only_lines(table)
+}
+
+#[test]
+fn issue_6301_merged_cell_span_interiors_have_no_transparent_border_guides() {
+    let mut doc = HwpDocument::create_empty();
+    let (para_idx, ctrl_idx) = create_table(&mut doc, 2, 3);
 
     doc.set_show_transparent_borders(true);
 
     // 병합 전: 기본 실선 테두리 표라 편집 전용 안내선이 없어야 한다 (기준선).
-    let before_tree = doc
-        .build_page_render_tree(0)
-        .expect("병합 전 페이지 렌더 트리");
-    let before_table =
-        table_for_paragraph(&before_tree.root, para_idx as usize).expect("표 노드(병합 전)");
-    let before_count = count_editor_only_lines(before_table);
     assert_eq!(
-        before_count, 0,
+        editor_only_line_count(&doc, para_idx),
+        0,
         "병합 전 기본 실선 표에 편집 전용 안내선이 있으면 테스트 전제가 틀림"
     );
 
-    // (0,0)~(0,1) 셀 병합: 옛 col0/col1 경계가 병합 셀 내부로 사라진다.
+    // 가로·세로 병합 모두 각 방향의 옛 내부 경계를 제거한다.
     doc.merge_table_cells(0, para_idx, ctrl_idx, 0, 0, 0, 1)
-        .expect("셀 병합");
-
-    let after_tree = doc
-        .build_page_render_tree(0)
-        .expect("병합 후 페이지 렌더 트리");
-    let after_table =
-        table_for_paragraph(&after_tree.root, para_idx as usize).expect("표 노드(병합 후)");
-    let after_count = count_editor_only_lines(after_table);
+        .expect("가로 셀 병합");
+    doc.merge_table_cells(0, para_idx, ctrl_idx, 0, 2, 1, 2)
+        .expect("세로 셀 병합");
     assert_eq!(
-        after_count, 0,
-        "병합으로 사라진 셀 내부 경계에 투명선 안내선이 남아있음 (회귀)"
+        editor_only_line_count(&doc, para_idx),
+        0,
+        "병합으로 사라진 셀 span 내부 경계에 투명선 안내선이 남아있음 (회귀)"
+    );
+}
+
+#[test]
+fn issue_6301_real_none_border_keeps_transparent_border_guide() {
+    let mut doc = HwpDocument::create_empty();
+    let (para_idx, ctrl_idx) = create_table(&mut doc, 1, 2);
+
+    doc.set_show_transparent_borders(true);
+    doc.set_cell_properties(
+        0,
+        para_idx,
+        ctrl_idx,
+        0,
+        r##"{
+            "borderLeft":{"type":1,"width":1,"color":"#000000"},
+            "borderRight":{"type":0,"width":0,"color":"#000000"},
+            "borderTop":{"type":1,"width":1,"color":"#000000"},
+            "borderBottom":{"type":1,"width":1,"color":"#000000"}
+        }"##,
+    )
+    .expect("셀 오른쪽 테두리를 없음으로 설정");
+
+    assert!(
+        editor_only_line_count(&doc, para_idx) > 0,
+        "실제 테두리 없음 경계에도 투명선 안내선이 유지되어야 함"
     );
 }
