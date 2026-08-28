@@ -130,6 +130,14 @@ function latestCandidateRun(runs, pullRequest, repository, candidateSha) {
   ))[0];
 }
 
+function hasFullLaneEvidence(input, run) {
+  if (!Array.isArray(input?.fullLaneRunIds)) {
+    return true;
+  }
+  const runId = String(run?.id || "");
+  return runId !== "" && input.fullLaneRunIds.some((id) => String(id) === runId);
+}
+
 export function evaluateTrustedPostMergeReuse(input) {
   if (input?.eventName !== "push" || input?.ref !== "refs/heads/devel") {
     return denied("not-a-devel-push");
@@ -185,6 +193,29 @@ export function evaluateTrustedPostMergeReuse(input) {
   if (!candidateSource) {
     return denied("review-tail-evidence-unavailable");
   }
+
+  const finalHeadCandidate = latestCandidateRun(
+    input.workflowRuns,
+    pullRequest,
+    input.repository,
+    pullRequest.head.sha,
+  );
+  if (
+    finalHeadCandidate
+    && finalHeadCandidate.status === "completed"
+    && finalHeadCandidate.conclusion === "success"
+    && hasFullLaneEvidence(input, finalHeadCandidate)
+  ) {
+    return {
+      reuse: true,
+      reason: candidateSource.hasReviewOnlyTail
+        ? "review-tail-final-head-green-pr-workflow-reused"
+        : "exact-green-pr-workflow-reused",
+      sourceRunId: String(finalHeadCandidate.id),
+      pullNumber: String(pullRequest.number),
+    };
+  }
+
   const candidate = latestCandidateRun(
     input.workflowRuns,
     pullRequest,
@@ -193,6 +224,9 @@ export function evaluateTrustedPostMergeReuse(input) {
   );
   if (!candidate) {
     return denied("no-current-pr-workflow-candidate");
+  }
+  if (!hasFullLaneEvidence(input, candidate)) {
+    return denied("candidate-full-lane-evidence-unavailable");
   }
   if (candidate.status !== "completed" || candidate.conclusion !== "success") {
     return denied("latest-pr-workflow-candidate-not-successful");
