@@ -118,3 +118,23 @@ R5는 Studio UI 오버레이 변경이며 문서 renderer/layout·저장 출력�
 승인했다. 이에 따라 R5에는 남은 제품 구현이나 UX 판정 항목이 없다. 후속은 새 Recovery 단계를 만들지
 않고 최신 `upstream/devel` 통합, 변경 범위별 전체 로컬 게이트, 최종 보고서·PR 본문 초안 작성의 PR 준비
 절차로 전환한다. 원격 push와 PR 생성은 계속 별도 승인 대상이다.
+
+## 8. PR 준비 일시 중단 체크포인트
+
+작업지시자의 이동 요청에 따라 PR 준비를 안전하게 일시 중단했다. 제품 코드와 원본 브랜치는 변경하지
+않았고, 실행 중이던 `cargo build --locked --release --target-dir target/pr-review`만 `SIGINT`로 정상
+중단했다. 중단은 테스트 실패가 아니다.
+
+- 기준 후보: `bab8ac532` (`upstream/devel@96da78a9c3e5` 통합 완료)
+- source 브랜치: clean, `upstream/devel`보다 15 commits ahead
+- source-side unit tier: 4,225 tests / 299 modules, PASS
+- review worktree suite prepare/check: 1,014 sources / 48 integration targets, PASS
+- Rust focused: `issue_4135` 5/5, `document_core::table_calc` 33/33, PASS
+- Studio focused: 56/56, PASS
+- release 전체 게이트: 콜드 release LTO 빌드 도중 사용자 요청으로 중단, 미판정
+- 보존된 review worktree: `/private/tmp/rhwp-4135-review.fc4y8Z/worktree`
+
+재개 시 review worktree가 남아 있으면 suite `--check` 뒤 release 빌드부터 다시 실행한다. macOS 임시
+폴더 정리로 사라졌다면 현재 source HEAD에서 새 review worktree를 만들고 suite `--prepare`/`--check`를
+거친다. 이후 lib 전체, nextest 전체, Native Skia 3종, fmt/clippy/doc, Studio 전체/build, 표준 Docker
+WASM, embed E2E와 실브라우저 재검증을 순서대로 수행한다. 파생 harness는 source PR에 포함하지 않는다.
