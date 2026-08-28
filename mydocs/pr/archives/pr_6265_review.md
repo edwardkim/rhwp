@@ -13,7 +13,7 @@ last_verified: 2026-08-28
 - 작성자: `planet6897`
 - 원 PR head: `17fa0f782d0`
 - 통합 검토 브랜치: `review/open-ci-green-20260828`
-- 최신 기준: `upstream/devel@5645e1f5b`
+- 최신 기준: `upstream/devel@1a43a507c9da`
 - 원 PR 상태: non-draft, `CLEAN`, 실패·진행 check 0건
 - 관련 이슈: #6192
 

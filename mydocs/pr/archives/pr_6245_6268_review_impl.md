@@ -10,7 +10,7 @@ last_verified: 2026-08-28
 ## 기준과 포함 범위
 
 - 통합 브랜치: `review/open-ci-green-20260828`
-- 최신 기준: `upstream/devel@5645e1f5b`
+- 최신 기준: `upstream/devel@1a43a507c9da`
 - 포함 PR:
   - #6245 `9c53276c37c8` - #6194 머리 표 행 높이 과대 계상 보정
   - #6246 `37abb2599dca` - #6186 꼬리말 세로 정렬과 HWPX 왕복 보존
