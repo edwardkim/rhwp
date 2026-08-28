@@ -13028,6 +13028,27 @@ fn compute_tac_leading_width(
         .find(|(_, _, ci)| *ci == target_control_index)
         .map(|(pos, _, _)| *pos);
 
+    // [SBS 제출서류 표 오른쪽 밀림] 블록 취급 TAC 표(tac_pos_opt=None) 앞 텍스트가
+    // 탭(U+0009)뿐이면 그 폭을 leading 으로 합산하지 않는다. 스페이스는 일반 문자
+    // 처럼 고정폭 없이 실측 폭만큼 흐름에 남는 반면(Task #146 v3 text-align.hwp
+    // 문단 0.2 — 스페이스 4개 실측 leading 36.8px, 아래 단위 테스트로 고정),
+    // 탭은 "다음 탭 위치로 점프"라는 그리드 스냅 의미라 뒤에 오는 내용이 곧바로
+    // 자기 줄을 차지하는 block 표일 때는 그 점프 목표 자체가 무의미해진다 — 한글도
+    // 이런 표를 자기 줄 좌단에 그린다. SBS미디어넷 참여기업 모집공고 10쪽 "제출서류"
+    // 표(문단 텍스트가 탭 한 글자뿐)가 탭 폭만큼 밀려 용지 오른쪽 끝을 넘어가던
+    // 결함의 근본 원인 — `복학원서.hwp` pi=16(PUA 필러 U+F081C 기반 leading)이나
+    // 스페이스 기반 leading 은 이 조건에 해당하지 않아 그대로 보존된다.
+    if tac_pos_opt.is_none() {
+        let only_tabs = first_line
+            .runs
+            .iter()
+            .flat_map(|run| run.text.chars())
+            .all(|ch| ch == '\t');
+        if only_tabs {
+            return 0.0;
+        }
+    }
+
     let mut char_pos = first_line.char_start;
     let mut width = 0.0;
     for run in &first_line.runs {
