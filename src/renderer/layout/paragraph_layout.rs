@@ -4034,11 +4034,7 @@ impl LayoutEngine {
                         && missing > 1200
                         && para.is_some_and(|paragraph| {
                             evidence.iter().any(|candidate| {
-                                candidate.matches_stored_rows(
-                                    missing,
-                                    &paragraph.line_segs,
-                                    1200,
-                                )
+                                candidate.matches_stored_rows(missing, &paragraph.line_segs, 1200)
                             })
                         })
                 };

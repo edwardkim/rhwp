@@ -2433,8 +2433,7 @@ pub struct LayoutEngine {
     cell_has_square_float: std::cell::Cell<bool>,
     /// [#6175] 현재 구역의 용지/쪽 기준 어울림 개체 흐름 증거 — 본문 저장 행 admission의
     /// 외부 증거. 조판(TypesetEngine)과 같은 값을 써야 측정·페인트가 갈리지 않는다.
-    body_float_carve_evidence:
-        std::cell::RefCell<Vec<super::float_placement::FloatCarveEvidence>>,
+    body_float_carve_evidence: std::cell::RefCell<Vec<super::float_placement::FloatCarveEvidence>>,
     /// 총 쪽수 (머리말/꼬리말 필드 치환용)
     total_pages: std::cell::Cell<u32>,
     /// 현재 페이지 번호 (바탕쪽 글상자 쪽번호 치환용)

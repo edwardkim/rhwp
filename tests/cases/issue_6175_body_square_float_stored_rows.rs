@@ -88,7 +88,9 @@ struct TempSample {
 
 impl TempSample {
     fn path(&self) -> &str {
-        self.path.to_str().expect("임시 HWPX 경로는 UTF-8이어야 한다")
+        self.path
+            .to_str()
+            .expect("임시 HWPX 경로는 UTF-8이어야 한다")
     }
 }
 
@@ -119,7 +121,9 @@ fn sample_with_square_float_below_body_rows() -> TempSample {
         let name = entry.name().to_owned();
         let options = SimpleFileOptions::default().compression_method(entry.compression());
         if name.ends_with('/') {
-            writer.add_directory(name, options).expect("zip 디렉터리 쓰기");
+            writer
+                .add_directory(name, options)
+                .expect("zip 디렉터리 쓰기");
             continue;
         }
         let mut bytes = Vec::new();
@@ -170,7 +174,10 @@ fn stored_rows_are_not_dropped_by_reflow() {
 fn square_float_outside_stored_row_band_does_not_preserve_narrow_rows() {
     let shifted = sample_with_square_float_below_body_rows();
     let rows = body_line_widths(shifted.path(), 5);
-    assert!(!rows.is_empty(), "이동한 fixture에서 pi=5 본문 줄을 찾지 못했다");
+    assert!(
+        !rows.is_empty(),
+        "이동한 fixture에서 pi=5 본문 줄을 찾지 못했다"
+    );
     assert!(
         rows.iter().any(|(_, width)| *width > 600.0),
         "본문 행과 겹치지 않는 같은 폭의 square float 때문에 pi=5가 좁은 폭으로 남았다: {rows:?}"

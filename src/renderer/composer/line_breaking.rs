@@ -2984,15 +2984,9 @@ fn stored_rows_require_external_geometry(
                 .saturating_add(line_segs[0].segment_width);
             let missing = frame.horizontal.end.saturating_sub(occupied);
             if missing > FLOAT_CARVE_MATCH_TOLERANCE_HU
-                && float_carve_evidence
-                    .iter()
-                    .any(|evidence| {
-                        evidence.matches_stored_rows(
-                            missing,
-                            line_segs,
-                            FLOAT_CARVE_MATCH_TOLERANCE_HU,
-                        )
-                    })
+                && float_carve_evidence.iter().any(|evidence| {
+                    evidence.matches_stored_rows(missing, line_segs, FLOAT_CARVE_MATCH_TOLERANCE_HU)
+                })
             {
                 return true;
             }
