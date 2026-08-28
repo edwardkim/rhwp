@@ -5,7 +5,7 @@
 - **브랜치**: `task_m100_3789-render-boundary`
 - **구현 완료일**: 2026-08-27 KST
 - **최신 갱신일**: 2026-08-28 KST
-- **상태**: 제출 직전 최신 `devel` 전체 회귀·필수 clippy 완료, remote 제출 승인 확인
+- **상태**: PR #6276 생성, self-review trailing head CI 대기
 - **절차 판정**: 기술 게이트 준수, 단계별 보고·승인 게이트 부분 미준수
 
 ## 결과
@@ -186,3 +186,8 @@ Stage 7 시점에는 `upstream/devel@5645e1f5b` 전체 회귀와 필수 clippy�
 제출 직전 기준을 `upstream/devel@1a43a507c`로 다시 갱신하고 Stage 8 전체 회귀까지 완료했다. 작업지시자가
 remote push와 PR 생성을 승인했으며, 실제 PR 번호·최신 head·GitHub CI 상태는 제출 뒤 번호 기반
 self-review에서 기록한다.
+
+Open PR [#6276](https://github.com/edwardkim/rhwp/pull/6276)을 `devel` 대상으로 생성했다. 최초 remote code
+candidate는 `764439a15`이고 작성자 본인 PR이므로 reviewer를 지정하지 않는다. 번호 기반
+[self-review](../pr/archives/pr_6276_review.md)와 오늘할일을 trailing commit으로 추가한 뒤 최신 head의
+GitHub Actions·mergeability와 별도 merge 승인을 확인한다.
