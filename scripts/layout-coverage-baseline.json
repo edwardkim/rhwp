@@ -5,16 +5,12 @@
     "이 수는 내려갈 수 없다. 올리는 것이 목표다."
   ],
   "documents": 887,
-  "clean": 580,
+  "clean": 696,
   "errors": 3,
   "signals": {
     "off_canvas": {
       "documents": 72,
       "nodes": 414
-    },
-    "overflow": {
-      "documents": 270,
-      "nodes": 2765
     },
     "overlap": {
       "documents": 74,
@@ -24,10 +20,14 @@
       "documents": 146,
       "nodes": 4727
     },
+    "overflow": {
+      "documents": 270,
+      "nodes": 2765
+    },
     "empty_page": {
       "documents": 30,
       "nodes": 124
     }
   },
-  "coveragePercent": 65.39
+  "coveragePercent": 78.47
 }
