@@ -3,7 +3,10 @@
 
 import { InsertTextCommand, InsertLineBreakCommand, InsertTabCommand, SplitParagraphCommand, SplitParagraphInCellCommand, InsertTextInHeaderFooterCommand, SplitParagraphInHeaderFooterCommand, SplitParagraphInFootnoteCommand, DeleteTextInFootnoteCommand, MergeParagraphInFootnoteCommand, cellParaIndexOf } from './command';
 import { matchShortcut, defaultShortcuts } from '@/command/shortcut-map';
-import { resolveCellBlockCtrlShiftS } from '@/command/contextual-shortcut';
+import {
+  resolveCellBlockCtrlShiftS,
+  resolveCellBlockLetterShortcut,
+} from '@/command/contextual-shortcut';
 import * as _connector from './input-handler-connector';
 import {
   detectPlatformKind,
@@ -87,6 +90,18 @@ function dispatchCellBlockCtrlShiftS(this: any, e: KeyboardEvent): boolean {
   if (resolution.kind === 'dispatch') {
     this.dispatcher.dispatch(resolution.commandId);
   }
+  return true;
+}
+
+function dispatchCellBlockLetterShortcut(this: any, e: KeyboardEvent): boolean {
+  if (!this.dispatcher) return false;
+  const resolution = resolveCellBlockLetterShortcut(e, {
+    inCellSelectionMode: this.cursor.isInCellSelectionMode(),
+  });
+  if (!resolution) return false;
+
+  e.preventDefault();
+  this.dispatcher.dispatch(resolution.commandId);
   return true;
 }
 
@@ -674,6 +689,7 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
   }
 
   if (dispatchCellBlockCtrlShiftS.call(this, e)) return;
+  if (dispatchCellBlockLetterShortcut.call(this, e)) return;
 
   // IME 조합 중 처리 (한국어 IME에서 e.key는 항상 'Process'이므로 e.code로 판별)
   if (e.isComposing || e.keyCode === 229) {
@@ -1169,17 +1185,7 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
       this.updateCellSelection();
       return;
     }
-    // M: 셀 합치기, S: 셀 나누기
-    if (!e.ctrlKey && !e.metaKey && !e.altKey && (e.key === 'm' || e.key === 'M')) {
-      e.preventDefault();
-      this.dispatcher?.dispatch('table:cell-merge');
-      return;
-    }
-    if (!e.ctrlKey && !e.metaKey && !e.altKey && (e.key === 's' || e.key === 'S')) {
-      e.preventDefault();
-      this.dispatcher?.dispatch('table:cell-split');
-      return;
-    }
+    // M/S 셀 명령은 한글 IME의 Process/물리 code를 보존하기 위해 조기 resolver가 소유한다.
     if (e.altKey && !e.ctrlKey && !e.metaKey) {
       const cmdId = matchShortcut(e, defaultShortcuts);
       if (cmdId === 'edit:format-copy') {
