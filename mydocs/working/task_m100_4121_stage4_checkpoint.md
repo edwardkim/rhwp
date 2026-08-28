@@ -41,16 +41,19 @@ cargo nextest run --locked \
 
 ## 재개 순서
 
-1. 위 전체 nextest를 완료한다.
-2. `npm --prefix rhwp-studio test`와 `npm --prefix rhwp-studio run build`를 실행한다.
-3. 필요하면 아래 서버를 다시 실행해 사용자 수동 확인을 받는다.
+1. 중단 시점 `git status`는 `upstream/devel`보다 9커밋 뒤였다. 최신 upstream을 다시 fetch하고
+   clean 상태를 확인한 뒤 계획대로 `upstream/devel`을 merge한다. base가 바뀌므로 아래 검증은
+   merge된 head에서 다시 판정한다.
+2. 위 전체 nextest를 완료한다.
+3. `npm --prefix rhwp-studio test`와 `npm --prefix rhwp-studio run build`를 실행한다.
+4. 필요하면 아래 서버를 다시 실행해 사용자 수동 확인을 받는다.
 
    ```bash
    cd rhwp-studio
    npm run dev -- --host 127.0.0.1 --port 7700
    ```
 
-4. 수동 확인 결과와 전체 게이트를 `mydocs/report/task_m100_4121_report.md`에 기록한다.
-5. 오늘할일을 갱신하고 Stage 4 최종 커밋을 만든다.
+5. 수동 확인 결과와 전체 게이트를 `mydocs/report/task_m100_4121_report.md`에 기록한다.
+6. 오늘할일을 갱신하고 Stage 4 최종 커밋을 만든다.
 
 원격 push, PR 생성 및 #4121 close는 아직 수행하지 않는다.
