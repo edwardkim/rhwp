@@ -192,9 +192,9 @@ fn issue_4969_q2_d4_b_rejected_surfaces_keep_only_legacy_text() {
             .expect("build rejected surface layer tree");
         let mut ops = Vec::new();
         collect_text_ops(&layer_tree.root, &mut ops);
-        assert!(ops.iter().any(|op| {
-            matches!(op, PaintOp::TextRun { run, .. } if run.text == text)
-        }));
+        assert!(ops
+            .iter()
+            .any(|op| { matches!(op, PaintOp::TextRun { run, .. } if run.text == text) }));
         assert!(!ops.iter().any(|op| {
             matches!(op, PaintOp::GlyphRun { run, .. }
                 if run.diagnostics.reason.as_deref()
