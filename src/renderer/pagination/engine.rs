@@ -1226,7 +1226,12 @@ impl Paginator {
                         }
                     }
                     Control::Table(table) => {
-                        Self::collect_pagehide_in_table(table, pi, &mut page_hides);
+                        Self::collect_page_controls_in_table(
+                            table,
+                            pi,
+                            &mut page_hides,
+                            &mut new_page_numbers,
+                        );
                         crate::renderer::pagination::collect_nested_header_footer_controls(
                             table,
                             pi,
@@ -1244,12 +1249,18 @@ impl Paginator {
         (hf_entries, page_number_pos, page_hides, new_page_numbers)
     }
 
-    /// 표 셀 안 paragraph 의 PageHide 를 재귀 수집.
+    /// 표 셀 안 paragraph 의 PageHide·NewNumber(쪽 번호)를 재귀 수집.
     /// 외부 paragraph index `pi` 를 그대로 사용해 페이지 매핑 정합성 유지.
-    fn collect_pagehide_in_table(
+    ///
+    /// [Issue #6206] `새 번호로 시작`(`hp:newNum numType="PAGE"`)이 표 셀 안에 있으면
+    /// 최상위 문단만 훑는 위 루프가 통째로 놓쳐 쪽 번호가 재시작하지 않았다. PageHide 와
+    /// 같은 경로로 함께 걷어 올린다 — 바깥 `pi` 를 그대로 쓰므로 어시스턴트가 기대하는
+    /// "소유 문단 인덱스 오름차순"도 유지된다.
+    fn collect_page_controls_in_table(
         table: &crate::model::table::Table,
         pi: usize,
         page_hides: &mut Vec<(usize, crate::model::control::PageHide)>,
+        new_page_numbers: &mut Vec<(usize, u16)>,
     ) {
         for cell in &table.cells {
             for cp in &cell.paragraphs {
@@ -1258,8 +1269,18 @@ impl Paginator {
                         Control::PageHide(ph) => {
                             page_hides.push((pi, ph.clone()));
                         }
+                        Control::NewNumber(nn) => {
+                            if nn.number_type == crate::model::control::AutoNumberType::Page {
+                                new_page_numbers.push((pi, nn.number));
+                            }
+                        }
                         Control::Table(inner) => {
-                            Self::collect_pagehide_in_table(inner, pi, page_hides);
+                            Self::collect_page_controls_in_table(
+                                inner,
+                                pi,
+                                page_hides,
+                                new_page_numbers,
+                            );
                         }
                         _ => {}
                     }
@@ -3000,6 +3021,7 @@ impl Paginator {
 
             let page_num_u32 = assigner.assign(page);
             page.page_number = page_num_u32;
+            page.page_number_restarted = assigner.last_restarted();
 
             let (active_header, active_footer) = active_hf.active(page_num_u32);
             page.active_header = active_header;

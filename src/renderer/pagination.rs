@@ -193,6 +193,12 @@ pub struct PageContent {
     pub active_header: Option<HeaderFooterRef>,
     /// 이 페이지에 적용할 꼬리말 (None이면 꼬리말 없음)
     pub active_footer: Option<HeaderFooterRef>,
+    /// 이 페이지에서 `새 번호로 시작`(NewNumber)이 발화해 `page_number` 가 재설정됐는지.
+    ///
+    /// 재시작 값은 절대값이므로 이 페이지부터는 구역 간 쪽번호 carry 를 더하면 안 된다
+    /// (Issue #6206 — 표 셀 안 `newNum` 이 carry 판정에서도 누락돼 재시작 값에 carry 가
+    /// 얹혔다).
+    pub page_number_restarted: bool,
     /// 쪽 번호 위치 (None이면 쪽 번호 표시 안 함)
     pub page_number_pos: Option<crate::model::control::PageNumberPos>,
     /// 감추기 설정 (None이면 감추기 없음)
@@ -890,6 +896,7 @@ impl PaginationResult {
             let mut new_page = PageContent {
                 page_index: old_page.page_index,
                 page_number: old_page.page_number,
+                page_number_restarted: old_page.page_number_restarted,
                 section_index: old_page.section_index,
                 layout: old_page.layout.clone(),
                 column_contents: old_page

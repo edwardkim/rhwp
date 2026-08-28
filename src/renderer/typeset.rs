@@ -5139,6 +5139,7 @@ impl TypesetState {
         PageContent {
             page_index: self.pages.len() as u32,
             page_number: 0,
+            page_number_restarted: false,
             section_index: self.section_index,
             layout: self.layout.clone(),
             column_contents,
@@ -22137,9 +22138,16 @@ impl TypesetEngine {
                     st.current_items.last(),
                     Some(PageItem::PartialParagraph { start_line, .. }) if *start_line > 0
                 );
+                // 저장 줄이 표보다 **앞선** 줄일 때만 snap 한다. host 문단의 단일
+                // lineseg 가 표 **아래**의 꼬리 줄(vpos ≈ 표 하단)인 문서에서 그
+                // vpos 로 snap 하면 표 배치 전에 페이지가 소진돼(잔여 ≈ 꼬리 여백)
+                // whole-fit 이 깨지고, 선언높이가 본문에 들어가는 표가 행 단위로
+                // 과분할된다 (#6271: 1쪽 문서가 2쪽, 1쪽에는 머리 행 조각만 잔존).
+                let snap_keeps_table_fitting = target_y + declared_object_total <= available;
                 if !previous_item_is_continued_paragraph
                     && target_y > st.current_height
                     && target_y < available
+                    && snap_keeps_table_fitting
                 {
                     st.current_height = target_y;
                 }
@@ -25543,7 +25551,12 @@ impl TypesetEngine {
                         page_hides.push((pi, ph.clone()));
                     }
                     Control::Table(table) => {
-                        Self::collect_pagehide_in_table(table, pi, &mut page_hides);
+                        Self::collect_page_controls_in_table(
+                            table,
+                            pi,
+                            &mut page_hides,
+                            &mut new_page_numbers,
+                        );
                         // 표 셀 안에 정의된 머리말/꼬리말도 수집한다 (수능 수학 선택과목
                         // 소책자의 4쪽 머리말이 제목표 셀 안에 있는 사례).
                         crate::renderer::pagination::collect_nested_header_footer_controls(
@@ -25563,12 +25576,16 @@ impl TypesetEngine {
         (hf_entries, page_number_pos, new_page_numbers, page_hides)
     }
 
-    /// 표 셀 안 paragraph 의 PageHide 를 재귀 수집.
+    /// 표 셀 안 paragraph 의 PageHide·NewNumber(쪽 번호)를 재귀 수집.
     /// 외부 paragraph index `pi` 를 그대로 사용해 페이지 매핑 정합성 유지.
-    fn collect_pagehide_in_table(
+    ///
+    /// [Issue #6206] 조판 경로도 페이지네이션 경로(`pagination::engine`)와 같은 규칙을
+    /// 써야 두 경로의 쪽 번호가 어긋나지 않는다. 두 벌이 따로 놀지 않도록 함께 고친다.
+    fn collect_page_controls_in_table(
         table: &crate::model::table::Table,
         pi: usize,
         page_hides: &mut Vec<(usize, crate::model::control::PageHide)>,
+        new_page_numbers: &mut Vec<(usize, u16)>,
     ) {
         for cell in &table.cells {
             for cp in &cell.paragraphs {
@@ -25577,8 +25594,18 @@ impl TypesetEngine {
                         Control::PageHide(ph) => {
                             page_hides.push((pi, ph.clone()));
                         }
+                        Control::NewNumber(nn) => {
+                            if nn.number_type == crate::model::control::AutoNumberType::Page {
+                                new_page_numbers.push((pi, nn.number));
+                            }
+                        }
                         Control::Table(inner) => {
-                            Self::collect_pagehide_in_table(inner, pi, page_hides);
+                            Self::collect_page_controls_in_table(
+                                inner,
+                                pi,
+                                page_hides,
+                                new_page_numbers,
+                            );
                         }
                         _ => {}
                     }
@@ -25680,6 +25707,7 @@ impl TypesetEngine {
             }
 
             page.page_number = page_num;
+            page.page_number_restarted = assigner.last_restarted();
             let (current_header, current_footer) = active_hf.active(page_num);
             page.active_header = current_header;
             page.active_footer = current_footer;
@@ -27184,6 +27212,7 @@ mod tests {
         PageContent {
             page_index: 0,
             page_number: 0,
+            page_number_restarted: false,
             section_index: 0,
             layout: PageLayoutInfo::from_page_def(
                 &a4_page_def(),

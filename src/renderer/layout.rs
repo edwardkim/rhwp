@@ -802,25 +802,25 @@ struct TableControlVars {
 }
 
 impl CellContext {
-    /// 최외곽 표의 컨트롤 인덱스
-    pub fn outermost_control(&self) -> usize {
-        self.path[0].control_index
+    /// 최외곽 표의 컨트롤 인덱스 — 빈 경로면 None (HWP 변조/편집 API로 빈 경로 생성 가능).
+    pub fn outermost_control(&self) -> Option<usize> {
+        self.path.first().map(|e| e.control_index)
     }
-    /// 최외곽 표의 셀 인덱스
-    pub fn outermost_cell(&self) -> usize {
-        self.path[0].cell_index
+    /// 최외곽 표의 셀 인덱스 — 빈 경로면 None.
+    pub fn outermost_cell(&self) -> Option<usize> {
+        self.path.first().map(|e| e.cell_index)
     }
-    /// 최외곽 표의 셀 문단 인덱스
-    pub fn outermost_cell_para(&self) -> usize {
-        self.path[0].cell_para_index
+    /// 최외곽 표의 셀 문단 인덱스 — 빈 경로면 None.
+    pub fn outermost_cell_para(&self) -> Option<usize> {
+        self.path.first().map(|e| e.cell_para_index)
     }
-    /// 최내곽 레벨의 엔트리
-    pub fn innermost(&self) -> &CellPathEntry {
-        self.path.last().unwrap()
+    /// 최내곽 레벨의 엔트리 — 빈 경로면 None.
+    pub fn innermost(&self) -> Option<&CellPathEntry> {
+        self.path.last()
     }
-    /// 텍스트 방향 (최내곽 기준)
-    pub fn text_direction(&self) -> u8 {
-        self.innermost().text_direction
+    /// 텍스트 방향 (최내곽 기준) — 빈 경로면 None.
+    pub fn text_direction(&self) -> Option<u8> {
+        self.innermost().map(|e| e.text_direction)
     }
 
     /// [#4334] 이 경로가 가리키는 **중첩 표 자신의** `(para_index, control_index)` —
@@ -4960,6 +4960,11 @@ impl LayoutEngine {
             .hidden_header_footer
             .borrow()
             .contains(&(page_content.page_index, false));
+        // [#6186] 꼬리말 subList 의 세로 정렬.
+        // LIST_HEADER `list_attr` bit 21~22 (0=위 1=가운데 2=아래) — 표 셀과 같은 규약이며
+        // HWP5(`parser/control.rs`)·HWPX(`parser/hwpx/section.rs` 의 `2 << 21`) 양쪽이
+        // 같은 자리에 싣는다.
+        let mut footer_valign: u32 = 0;
         if !hidden {
             if let Some(hf_ref) = &page_content.active_footer {
                 {
@@ -4967,6 +4972,7 @@ impl LayoutEngine {
                         paragraphs, hf_ref,
                     ) {
                         if let Control::Footer(footer) = ctrl {
+                            footer_valign = (footer.list_attr >> 21) & 0x03;
                             // [Task #825] 꼬리말 그림 hit-test marker.
                             let outer_ref = crate::renderer::render_tree::HeaderFooterImageRef {
                                 outer_para_index: hf_ref.para_index,
@@ -4999,6 +5005,41 @@ impl LayoutEngine {
                             );
                         }
                     }
+                }
+            }
+        }
+        // [#6186] 꼬리말 글을 밴드 안에서 세로 정렬한다. 종전에는 `y_offset = area.y` 로
+        // 무조건 밴드 맨 위에 놓아, `vertAlign="BOTTOM"` 문서의 쪽번호가 21.8px 위에
+        // 그려졌다(156755659: 겹쳐 놓인 글상자 `2 - 2` 와 두 줄로 갈라져 보인다).
+        //
+        // 글이 놓이는 밴드의 **아래끝은 아래쪽 여백 선**이다. `footer_area` 는 본문
+        // 하단부터 **꼬리말 여백 선**까지라 아래쪽 여백만큼 더 길다(이 문서: 56.7px 대
+        // 실제 37.8px — 용지 84188 / footer 2834 / bottom 4251 HU). 그 아래끝으로
+        // 정렬하면 19px 더 내려간다. `margin_footer` 는 `footer_page_number_y`
+        // (Task #1728)가 쓰는 것과 같은 관용구로 되찾는다.
+        if footer_valign > 0 && !footer_node.children.is_empty() {
+            let margin_footer =
+                (layout.page_height - (layout.footer_area.y + layout.footer_area.height)).max(0.0);
+            let band_bottom = layout.footer_area.y + margin_footer;
+            let content_bottom = footer_node
+                .children
+                .iter()
+                .map(|c| c.bbox.y + c.bbox.height)
+                .fold(f64::MIN, f64::max);
+            let slack = band_bottom - content_bottom;
+            // 내용이 밴드보다 크면 종전대로 위에서 시작한다 — 위로 밀어 올리지 않는다.
+            let dy = if slack > 0.0 {
+                if footer_valign == 1 {
+                    slack / 2.0
+                } else {
+                    slack
+                }
+            } else {
+                0.0
+            };
+            if dy > 0.05 {
+                for child in footer_node.children.iter_mut() {
+                    Self::translate_subtree_y(child, dy);
                 }
             }
         }
@@ -5653,6 +5694,7 @@ impl LayoutEngine {
         let page_content = PageContent {
             page_index: 0,
             page_number: 0,
+            page_number_restarted: false,
             section_index,
             layout: layout_info.clone(),
             column_contents: Vec::new(),
@@ -8745,7 +8787,15 @@ impl LayoutEngine {
             let alignment = para_style.map(|s| s.alignment).unwrap_or(Alignment::Left);
             let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
             let indent = para_style.map(|s| s.indent).unwrap_or(0.0);
-            let effective_margin = if indent > 0.0 {
+            // [Issue #6190] 저장 LINE_SEG 의 `TAG_INDENTATION`(bit 20)이 꺼진 첫 줄에는
+            // 들여쓰기를 얹지 않는다 — `paragraph_layout` 의 본문 줄과 같은 계약이다.
+            // 이 계약이 없으면 표 호스트 문단이 들여쓰기만큼 밀려 표가 용지 밖으로
+            // 나간다(156458354 3쪽: 표 우변 829.8, 용지 793.7).
+            let stored_first_seg_denies_indent = para.line_segs.first().is_some_and(|seg| {
+                seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                    && seg.tag & crate::model::paragraph::LineSeg::TAG_INDENTATION == 0
+            });
+            let effective_margin = if indent > 0.0 && !stored_first_seg_denies_indent {
                 margin_left + indent
             } else {
                 margin_left
@@ -8851,7 +8901,14 @@ impl LayoutEngine {
                                 .unwrap_or(false)
                     })
                     .unwrap_or(false);
-                let leading = if line0_has_real_text {
+                // [Issue #6167] 저장 사다리가 표에 자기 줄(`horzpos=0`)을 줬으면 앞 줄의
+                // 공백은 표의 x 가 아니다. 113424 38쪽 `[별지 제5호 서식]` 표는 앞 공백
+                // 18자(120.0px)만큼 밀려 본문 우단 83.6px·용지 8.0px 밖으로 잘렸다 —
+                // 한글 2020·2024 모두 표를 좌단(75.32)에 둔다.
+                let stored_own_line = paragraphs
+                    .get(para_index)
+                    .is_some_and(|p| stored_ladder_gives_tac_table_its_own_line(p, control_index));
+                let leading = if line0_has_real_text || stored_own_line {
                     0.0
                 } else {
                     composed
@@ -12910,6 +12967,32 @@ fn compute_square_wrap_tbl_x_right(
         _ => col_area.x + h_offset,
     };
     tbl_x + tbl_w
+}
+
+/// [Issue #6167] 저장 사다리가 자리차지(TAC) 표에 **자기 줄**을 준 문단인지.
+///
+/// 한글이 `linesegarray` 에 `textpos = 표의 char 위치` · `horzpos = 0` 인 줄을 적어
+/// 두었다면, 그 표는 **그 줄 머리**에서 시작한다 — 앞 줄에 있던 공백은 표의 x 에
+/// 실리지 않는다. 이 증거가 없으면 종전대로 선행 텍스트 폭을 leading 으로 쓴다.
+///
+/// **통제군(`samples/복학원서.hwp` pi=16)** 과 값으로 갈린다:
+///
+/// | | 표 char 위치 | `ls[1].text_start` | 판정 |
+/// |---|---|---|---|
+/// | 113424 pi=441 | 18 | **18** (`col_start=0`) | 자기 줄 → leading 0 |
+/// | 복학원서 pi=16 | 99 | 198 | 표가 `ls[0]` **안** → 종전 leading |
+///
+/// 복학원서는 한컴이 표 폭만큼 필러(U+F081C)를 채워 줄바꿈시킨 형상이라 표가 첫 줄
+/// 안에 있고, `#1195` 로 보정된 leading 축이 그대로 유효하다.
+fn stored_ladder_gives_tac_table_its_own_line(para: &Paragraph, control_index: usize) -> bool {
+    let Some(&ctrl_pos) = para.control_text_positions().get(control_index) else {
+        return false;
+    };
+    para.line_segs.iter().enumerate().skip(1).any(|(idx, seg)| {
+        seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+            && seg.column_start == 0
+            && para.line_seg_text_start(idx) as usize == ctrl_pos
+    })
 }
 
 fn compute_tac_leading_width(
