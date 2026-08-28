@@ -1003,22 +1003,20 @@ impl LayoutEngine {
             let line_width = border_width_to_px(shape.separator_line_width).max(0.5);
 
             let sep_id = tree.next_id();
-            let sep_node = RenderNode::new(
-                sep_id,
-                RenderNodeType::Line(LineNode::new(
-                    fn_area.x,
-                    y,
-                    fn_area.x + sep_length,
-                    y,
-                    LineStyle {
-                        color: shape.separator_color,
-                        width: line_width,
-                        dash: StrokeDash::Solid,
-                        ..Default::default()
-                    },
-                )),
-                BoundingBox::new(fn_area.x, y - line_width / 2.0, sep_length, line_width),
+            let sep_line = LineNode::new(
+                fn_area.x,
+                y,
+                fn_area.x + sep_length,
+                y,
+                LineStyle {
+                    color: shape.separator_color,
+                    width: line_width,
+                    dash: StrokeDash::Solid,
+                    ..Default::default()
+                },
             );
+            let sep_bbox = sep_line.ink_bbox();
+            let sep_node = RenderNode::new(sep_id, RenderNodeType::Line(sep_line), sep_bbox);
             fn_node.children.push(sep_node);
             y += line_width;
 

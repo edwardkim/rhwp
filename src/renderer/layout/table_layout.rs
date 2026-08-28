@@ -432,16 +432,19 @@ fn push_fragment_border_line(
     y2: f64,
     style: crate::renderer::LineStyle,
 ) {
-    let width = style.width.max(NESTED_FRAGMENT_EDGE_EPSILON_PX);
+    let line = LineNode::new(x1, y1, x2, y2, style);
+    // [#6269] 상자는 잉크 범위로 잡되, 종전처럼 축 길이가 0 에 가까운 조각도
+    // 최소 한 획은 차지하게 바닥을 둔다.
+    let ink = line.ink_bbox();
     let bbox = BoundingBox::new(
-        x1.min(x2),
-        y1.min(y2),
-        (x2 - x1).abs().max(width),
-        (y2 - y1).abs().max(width),
+        ink.x,
+        ink.y,
+        ink.width.max(NESTED_FRAGMENT_EDGE_EPSILON_PX),
+        ink.height.max(NESTED_FRAGMENT_EDGE_EPSILON_PX),
     );
     table_node.children.push(RenderNode::new(
         tree.next_id(),
-        RenderNodeType::Line(LineNode::new(x1, y1, x2, y2, style)),
+        RenderNodeType::Line(line),
         bbox,
     ));
 }

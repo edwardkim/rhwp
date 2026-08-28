@@ -543,11 +543,10 @@ fn push_tac_post_f081c_line(
     line.para_index = Some(para_index);
 
     let id = tree.next_id();
-    col_node.children.push(RenderNode::new(
-        id,
-        RenderNodeType::Line(line),
-        BoundingBox::new(marker_x, line_y - stroke_width / 2.0, width, stroke_width),
-    ));
+    let bbox = line.ink_bbox();
+    col_node
+        .children
+        .push(RenderNode::new(id, RenderNodeType::Line(line), bbox));
 }
 
 fn table_has_detached_para_flow_object(table: &crate::model::table::Table) -> bool {
@@ -5617,27 +5616,20 @@ impl LayoutEngine {
             let right = &zone_layout.column_areas[i + 1];
             let sep_x = (left.x + left.width + right.x) / 2.0;
             let sep_id = tree.next_id();
-            let sep_node = RenderNode::new(
-                sep_id,
-                RenderNodeType::Line(LineNode::new(
-                    sep_x,
-                    y_start,
-                    sep_x,
-                    y_end,
-                    LineStyle {
-                        color: zone_layout.separator_color,
-                        width: line_width,
-                        dash,
-                        ..Default::default()
-                    },
-                )),
-                BoundingBox::new(
-                    sep_x - line_width / 2.0,
-                    y_start,
-                    line_width,
-                    y_end - y_start,
-                ),
+            let sep_line = LineNode::new(
+                sep_x,
+                y_start,
+                sep_x,
+                y_end,
+                LineStyle {
+                    color: zone_layout.separator_color,
+                    width: line_width,
+                    dash,
+                    ..Default::default()
+                },
             );
+            let sep_bbox = sep_line.ink_bbox();
+            let sep_node = RenderNode::new(sep_id, RenderNodeType::Line(sep_line), sep_bbox);
             body_node.children.push(sep_node);
         }
     }
@@ -8686,27 +8678,20 @@ impl LayoutEngine {
             let line_width = border_width_to_px(line_width_raw).max(0.5);
             let sep_length = note_separator_length_px(separator_length, col_area.width, self.dpi);
             let line_id = tree.next_id();
-            let line_node = RenderNode::new(
-                line_id,
-                RenderNodeType::Line(LineNode::new(
-                    col_area.x,
-                    y_offset,
-                    col_area.x + sep_length,
-                    y_offset,
-                    LineStyle {
-                        color,
-                        width: line_width,
-                        dash: StrokeDash::Solid,
-                        ..Default::default()
-                    },
-                )),
-                BoundingBox::new(
-                    col_area.x,
-                    y_offset - line_width / 2.0,
-                    sep_length,
-                    line_width,
-                ),
+            let sep_line = LineNode::new(
+                col_area.x,
+                y_offset,
+                col_area.x + sep_length,
+                y_offset,
+                LineStyle {
+                    color,
+                    width: line_width,
+                    dash: StrokeDash::Solid,
+                    ..Default::default()
+                },
             );
+            let sep_bbox = sep_line.ink_bbox();
+            let line_node = RenderNode::new(line_id, RenderNodeType::Line(sep_line), sep_bbox);
             col_node.children.push(line_node);
             line_width
         } else {

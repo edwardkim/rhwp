@@ -1326,8 +1326,11 @@ fn issue_4159_svg_terminal_bottom_border_is_visible_inside_outer_cell_clip() {
         .expect("physical page 3 terminal nested bottom SVG line");
 
     let clip_bottom = svg_number_attr(outer_clip, "y") + svg_number_attr(outer_clip, "height");
+    // [#6269] 획은 경로에 **중심 정렬**로 칠해지므로 잉크 하단은 `y1 + 획/2` 다.
+    // 종전에는 전체 획을 더해 잉크를 반 획 아래로 잡았고, clip 도 같은 만큼 헐겁게
+    // 잡혀 있어 우연히 맞아떨어졌다. 잉크 정의를 바로잡아 실제 경계를 잠근다.
     let line_bottom =
-        svg_number_attr(bottom_line, "y1") + svg_number_attr(bottom_line, "stroke-width");
+        svg_number_attr(bottom_line, "y1") + svg_number_attr(bottom_line, "stroke-width") / 2.0;
     assert!(
         clip_bottom + 0.01 >= line_bottom,
         "SVG bottom stroke가 outer cell clip에 잘린다: line_bottom={line_bottom:.3}, clip_bottom={clip_bottom:.3}\n{outer_clip}\n{bottom_line}"
