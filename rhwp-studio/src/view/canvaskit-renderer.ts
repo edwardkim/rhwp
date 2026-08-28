@@ -92,6 +92,7 @@ import {
 } from './glyph-outline-payload-status';
 import { parseStaticSvgPathLayers, type StaticSvgPathLayer } from './static-svg-path-layers';
 import { loadLocalFontBytesFor, localFontFaceKey, resolveLocalFont, type LocalFontRecord } from '@/core/local-fonts';
+import { projectedSubstituteTargets } from '@/core/font-rule-runtime';
 import type { CanvasKitBundledFontSource } from '@/core/font-loader';
 import type { FontDecisionTraceRecordV1 } from '@/core/font-decision-trace';
 import { readBoundedResponseArrayBuffer } from './canvaskit/bounded-response';
@@ -550,7 +551,12 @@ export class CanvasKitLayerRenderer {
     if (this.disposed || !fontNames?.length) return 0;
     const generation = this.documentGeneration;
     const pendingRecords = new Map<string, LocalFontRecord>();
-    for (const fontName of fontNames) {
+    // legacy 이름(`한양중고딕`)은 설치 face 이름이 아니므로 치환 대상(`HY중고딕`)까지 함께 본다.
+    const candidateNames = [
+      ...fontNames,
+      ...fontNames.flatMap(name => projectedSubstituteTargets(name).map(target => target.face)),
+    ];
+    for (const fontName of candidateNames) {
       const record = resolveLocalFont(fontName);
       const faceKey = record ? localFontFaceKey(record) : '';
       if (!record || !faceKey || this.localTypefaces.has(faceKey)

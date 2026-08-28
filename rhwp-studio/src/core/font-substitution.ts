@@ -10,13 +10,14 @@
  *   3. 최종 fallback → generic serif/sans-serif
  */
 
-import { REGISTERED_FONTS } from './font-loader.ts';
+import { getDetectedOSFonts, REGISTERED_FONTS } from './font-loader.ts';
 import { resolveLocalFont } from './local-fonts.ts';
 
 import {
   FONT_RULE_DISPLAY_CHAIN_POLICY_IDS,
   FONT_RULE_GOVERNMENT_SUCCESSORS,
   FONT_RULE_SUBSTITUTION_TABLES,
+  projectedSubstituteTargets,
 } from './font-rule-runtime.ts';
 
 interface SubstitutionTarget {
@@ -160,6 +161,63 @@ function resolveGovernmentFontSuccessorWithRule(
     }
   }
   return { fontName: null, ruleId: null };
+}
+
+let detectedOSFontIndexCache: Map<string, string> | null = null;
+let detectedOSFontIndexSize = -1;
+
+/** 감지 결과가 늘어날 때만 다시 색인해 paint 경로의 문자열 정규화를 줄인다. */
+function detectedOSFontIndex(): ReadonlyMap<string, string> {
+  const detected = getDetectedOSFonts();
+  if (detectedOSFontIndexCache !== null && detectedOSFontIndexSize === detected.size) {
+    return detectedOSFontIndexCache;
+  }
+  const index = new Map<string, string>();
+  for (const name of detected) index.set(normalizedFamilyKey(name), name);
+  detectedOSFontIndexCache = index;
+  detectedOSFontIndexSize = detected.size;
+  return index;
+}
+
+/**
+ * 이 호스트에 실제 face가 있는 이름인지 판정하고 CSS에 쓸 canonical 이름을 돌려준다.
+ *
+ * 번들 stand-in 웹폰트 등록(`REGISTERED_FONTS`)은 실제 face 보유로 보지 않는다.
+ * legacy 이름은 stand-in만 있고 실제 face는 다른 이름으로 설치돼 있기 때문이다.
+ */
+function installedFaceName(
+  fontName: string,
+  confirmedLocalFonts: readonly string[] | undefined,
+): string | null {
+  if (!fontName) return null;
+  if (confirmedLocalFonts === undefined) {
+    const record = resolveLocalFont(fontName);
+    if (record) return localRecordCssFamily(fontName, record);
+  } else {
+    const confirmed = confirmedFontName([fontName], confirmedLocalFonts);
+    if (confirmed) return confirmed;
+  }
+  return detectedOSFontIndex().get(normalizedFamilyKey(fontName)) ?? null;
+}
+
+/**
+ * legacy 이름의 공급이 stand-in 웹폰트뿐일 때, 이 호스트에 설치된 치환 대상 face를 찾는다.
+ *
+ * `한양중고딕`은 studio 공급 카탈로그에 있으므로 `resolveFont`가 체인을 타지 않고
+ * 그대로 돌려준다. 그 공급은 번들 `NotoSansKR-Regular.woff2` stand-in이라 실제로
+ * 설치된 `HY중고딕`이 있어도 산세리프로 그려진다. 설치 face를 체인 앞에 둬 이를 막는다.
+ */
+function installedSubstituteFace(
+  fontName: string,
+  altType: number,
+  langId: number,
+  confirmedLocalFonts: readonly string[] | undefined,
+): { fontName: string; ruleId: string } | null {
+  for (const target of projectedSubstituteTargets(fontName, altType, langId)) {
+    const installed = installedFaceName(target.face, confirmedLocalFonts);
+    if (installed) return { fontName: installed, ruleId: target.ruleId };
+  }
+  return null;
 }
 
 function quoteCssFontFamily(fontName: string): string {
@@ -329,6 +387,17 @@ export function fontFamilyCandidatesForDisplayWithRules(
     options.includeUnconfirmedOriginal === true ||
     REGISTERED_FONTS.has(fontName) ||
     confirmedLocalFontSet.has(fontName.toLocaleLowerCase('en-US'));
+
+  if (!localRecord) {
+    const substitute = installedFaceName(fontName, options.confirmedLocalFonts) === null
+      ? installedSubstituteFace(fontName, altType, langId, options.confirmedLocalFonts)
+      : null;
+    if (substitute) {
+      pushUniqueFontFamily(families, substitute.fontName);
+      ruleIds.push(substitute.ruleId);
+      ruleIds.push(FONT_RULE_DISPLAY_CHAIN_POLICY_IDS['paint-substitute']);
+    }
+  }
 
   if (localRecord) {
     pushUniqueFontFamily(families, localRecordCssFamily(fontName, localRecord));
