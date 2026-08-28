@@ -7,12 +7,23 @@
 // 흐름 요소끼리 겹치면 어떤 기준으로도 틀렸다. 그래서 오라클 없이도 개선을 측정할 수 있다.
 //
 //   off_canvas    용지 상자 밖 또는 y<0        — 보이지 않는 콘텐츠
-//   overflow      본문 여백(Body) 밖
 //   overlap       겹치면 안 되는 흐름 요소끼리 겹침
 //   text_overlap  텍스트 런 bbox 교차
-//   empty_page    콘텐츠 없는 중간 쪽
 //
-// 커버리지 = 신호가 하나도 없는 문서(CLEAN)의 비율.
+// 위 셋만 CLEAN 판정에 센다. 아래 둘은 재되 세지 않는다.
+//
+//   overflow      본문 여백(Body) 밖 — **결함이 아닌 경우가 많다**
+//   empty_page    콘텐츠 없는 중간 쪽 — 도구 자신이 "항상 가능성 신호" 로 정의
+//
+// `overflow` 를 뺀 근거 (2026-08-28 실측):
+// 이상 노드가 하나뿐인 문서 48건이 전부 `overflow` 였다. 그 48건이 지나가는 표 148개에
+// 대해 `layout_table` 이 계산한 렌더 폭과 문서가 선언한 `common.width` 를 맞대니
+// **148개 전부 0.5px 이내로 일치**했다. 표는 선언대로 그려지고 있고, 본문 여백보다
+// 넓은 것은 문서가 그렇게 저장한 것이다(예: 셀보호2 선언 575.9px 대 본문 566.9px).
+// 이걸 CLEAN 판정에 넣으면 충실한 렌더가 실패로 잡히고, 숫자를 올리려면 맞는 동작을
+// 고쳐야 한다.
+//
+// 커버리지 = 결함 확실 신호가 하나도 없는 문서(CLEAN)의 비율.
 //
 // 사용:
 //   node scripts/layout-coverage-sweep.mjs              기준선과 비교, 회귀면 exit 1
@@ -31,11 +42,14 @@ export const BASELINE_PATH = path.join(SCRIPT_DIR, 'layout-coverage-baseline.jso
 /** 신호 종류와 NDJSON 필드 이름. 문서 수와 노드 수를 둘 다 센다. */
 export const SIGNALS = [
   ['off_canvas', 'offCanvasCount'],
-  ['overflow', 'overflowCount'],
   ['overlap', 'overlapCount'],
   ['text_overlap', 'textOverlapCount'],
+  ['overflow', 'overflowCount'],
   ['empty_page', 'emptyPageCount'],
 ];
+
+/** CLEAN 판정에 세는 신호. 나머지는 보고만 한다 — 위 주석의 근거 참고. */
+export const DEFECT_CERTAIN = ['off_canvas', 'overlap', 'text_overlap'];
 
 /**
  * `layout-anomaly --batch --json` 의 NDJSON 을 집계한다.
@@ -61,14 +75,16 @@ export function tallySweep(ndjson) {
       continue;
     }
     totals.documents += 1;
-    if (!record.hasSignal) totals.clean += 1;
+    let defect = false;
     for (const [name, field] of SIGNALS) {
       const n = record[field] ?? 0;
       if (n > 0) {
         totals.signals[name].documents += 1;
         totals.signals[name].nodes += n;
+        if (DEFECT_CERTAIN.includes(name)) defect = true;
       }
     }
+    if (!defect) totals.clean += 1;
   }
   return totals;
 }
@@ -94,7 +110,7 @@ export function compareCoverage(actual, baseline) {
     improvements.push({ what: 'CLEAN 문서', now: actual.clean, was: baseline.clean });
   }
 
-  for (const [name] of SIGNALS) {
+  for (const name of DEFECT_CERTAIN) {
     const now = actual.signals[name]?.documents ?? 0;
     const was = baseline.signals[name]?.documents ?? 0;
     if (now > was) regressions.push({ what: `${name} 문서`, now, was });
@@ -127,8 +143,12 @@ function report(totals) {
   console.log(`  CLEAN ${totals.clean}  =  ${coveragePercent(totals).toFixed(1)}%`);
   for (const [name] of SIGNALS) {
     const s = totals.signals[name];
-    console.log(`    ${name.padEnd(13)} 문서 ${String(s.documents).padStart(4)}  노드 ${s.nodes}`);
+    const counted = DEFECT_CERTAIN.includes(name) ? ' ' : '·';
+    console.log(
+      `   ${counted}${name.padEnd(13)} 문서 ${String(s.documents).padStart(4)}  노드 ${s.nodes}`,
+    );
   }
+  console.log('    (· 표시는 CLEAN 판정에 세지 않는 신호)');
 }
 
 function main() {

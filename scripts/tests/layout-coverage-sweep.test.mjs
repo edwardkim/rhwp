@@ -4,6 +4,7 @@ import test from 'node:test';
 
 import {
   BASELINE_PATH,
+  DEFECT_CERTAIN,
   SIGNALS,
   compareCoverage,
   coveragePercent,
@@ -63,13 +64,30 @@ test('문서가 0 이면 커버리지는 0 이다 — NaN 을 만들지 않는�
 
 test('CLEAN 이 줄면 회귀다', () => {
   const base = tallySweep([doc(), doc()].join('\n'));
-  const now = tallySweep([doc(), doc({ overflowCount: 1, hasSignal: true })].join('\n'));
+  const now = tallySweep([doc(), doc({ overlapCount: 1, hasSignal: true })].join('\n'));
   const { regressions } = compareCoverage(now, base);
   assert.ok(regressions.some((r) => r.what === 'CLEAN 문서'));
 });
 
+test('overflow 만 있는 문서는 CLEAN 이다 — 선언대로 그린 표가 대부분이다', () => {
+  // 근거: 이상 노드 1개짜리 48문서가 지나가는 표 148개 전부 렌더 폭 = 선언 폭.
+  const t = tallySweep([doc({ overflowCount: 3, hasSignal: true })].join('\n'));
+  assert.equal(t.clean, 1);
+  assert.equal(t.signals.overflow.documents, 1, 'CLEAN 이어도 신호는 계속 센다');
+});
+
+test('empty_page 도 CLEAN 판정에서 빠진다 — 도구가 가능성 신호로 정의한다', () => {
+  assert.equal(tallySweep([doc({ emptyPageCount: 2 })].join('\n')).clean, 1);
+});
+
+test('결함 확실 신호 목록이 SIGNALS 의 부분집합이다', () => {
+  const names = SIGNALS.map(([n]) => n);
+  for (const n of DEFECT_CERTAIN) assert.ok(names.includes(n), `${n} 이 SIGNALS 에 없다`);
+  assert.deepEqual(DEFECT_CERTAIN, ['off_canvas', 'overlap', 'text_overlap']);
+});
+
 test('CLEAN 이 늘면 개선으로 잡고 실패시키지 않는다', () => {
-  const base = tallySweep([doc({ overflowCount: 1, hasSignal: true })].join('\n'));
+  const base = tallySweep([doc({ overlapCount: 1, hasSignal: true })].join('\n'));
   const now = tallySweep([doc()].join('\n'));
   const { regressions, improvements } = compareCoverage(now, base);
   assert.deepEqual(regressions, []);
@@ -78,16 +96,16 @@ test('CLEAN 이 늘면 개선으로 잡고 실패시키지 않는다', () => {
 
 test('CLEAN 이 같아도 특정 신호 문서가 늘면 회귀다', () => {
   // 한 문서가 나아지고 다른 문서가 나빠져 총합이 같은 경우를 놓치지 않는다.
-  const base = tallySweep([doc({ overflowCount: 2, hasSignal: true }), doc()].join('\n'));
+  const base = tallySweep([doc({ overlapCount: 2, hasSignal: true }), doc()].join('\n'));
   const now = tallySweep(
-    [doc({ overflowCount: 1, hasSignal: true }), doc({ offCanvasCount: 1, hasSignal: true })].join('\n'),
+    [doc({ overlapCount: 1, hasSignal: true }), doc({ offCanvasCount: 1, hasSignal: true })].join('\n'),
   );
   const { regressions } = compareCoverage(now, base);
   assert.ok(regressions.some((r) => r.what === 'off_canvas 문서'));
 });
 
 test('파싱 오류가 늘면 회귀다 — 모수에서 빠져 커버리지가 착시로 오른다', () => {
-  const base = tallySweep([doc({ overflowCount: 1, hasSignal: true })].join('\n'));
+  const base = tallySweep([doc({ overlapCount: 1, hasSignal: true })].join('\n'));
   const now = tallySweep(['{"error":"broken"}'].join('\n'));
   const { regressions } = compareCoverage(now, base);
   assert.ok(regressions.some((r) => r.what === '파싱 오류'));
