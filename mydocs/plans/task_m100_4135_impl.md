@@ -150,6 +150,11 @@ Studio 전체 1,251건, production build 241 modules를 통과했고, 실제 2×
 라이트·다크 테마를 확인했다. 작업지시자도 `확인되었어.`로 같은 UX를 승인했다. 결과와 DOM 계측은 R5
 결과 문서에 고정하고, 이후에는 새 Recovery 구현이 아니라 PR 준비 절차로 진행한다.
 
+PR 준비는 최신 `upstream/devel@96da78a9c3e5` 통합과 focused 재검증까지 마쳤다. 별도 review
+worktree의 suite prepare/check, Rust 5+33건, Studio 56건이 통과했고, release LTO 빌드 중 작업지시자의
+이동 요청으로 안전하게 중단했다. 이는 실패 판정이 아니며 재개 지점과 남은 게이트는
+[`task_m100_4135_recovery_r5.md`](../working/task_m100_4135_recovery_r5.md)의 8절을 따른다.
+
 ## 5. 예상 변경 파일
 
 | Recovery | 파일 | 변경 |
