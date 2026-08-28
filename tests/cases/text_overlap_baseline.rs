@@ -152,12 +152,25 @@ fn text_overlaps_do_not_grow() {
             _ => {}
         }
     }
+    if !regressions.is_empty() {
+        // 실패한 환경의 **전체** 현재값을 남긴다. 증가분만 찍으면 그 환경의 baseline 을
+        // 다시 만들려고 실패를 여러 번 반복해야 한다 — 조판이 환경에 따라 갈리는
+        // 문서가 있어(로컬과 CI 의 표 높이가 다른 사례 실측) 이 정보가 실제로 필요하다.
+        // 아래 블록을 그대로 `tests/fixtures/text_overlap_baseline.tsv` 로 쓰면 된다.
+        eprintln!("---8<--- 현재값 전체 (baseline TSV 형식) ---8<---");
+        for (rel, n) in &nonzero {
+            eprintln!("{rel}\t{n}");
+        }
+        eprintln!("--->8--- 현재값 전체 끝 --->8---");
+    }
     assert!(
         regressions.is_empty(),
-        "보이는 글자끼리 겹치는 회귀(text-overlap)가 늘었다.\n\
-         겹친 두 글자는 **모두** 읽을 수 없게 되므로 확정 결함이다(#5372 판정).\n\
-         `rhwp layout-anomaly <파일> -p <쪽> --json` 으로 짝을 확인할 수 있다.\n\
-         원인 정정이 원칙이고, 의도된 변화만 baseline 에 반영한다(4.3.1 규약 준용).\n{}",
+        "보이는 글자끼리 겹치는 사건(layout-anomaly text-overlap)이 늘었다.\n\
+         한 글자 위에 다른 글자가 그려지면 두 글자 모두 읽을 수 없는 확정 결함이다.\n\
+         원인 정정이 원칙이고, 의도된 변화만 baseline 에 반영한다(4.3.1 규약 준용).\n\
+         현재값 전체는 위 `---8<---` 블록에 TSV 형식으로 찍혀 있다.\n\
+         로컬 파일로 받으려면: RHWP_TEXT_OVERLAP_DUMP=<path> 로 재실행.\n\
+         쪽 단위 위치 확인: rhwp layout-anomaly \"<문서>\" -p <쪽> --json\n{}",
         regressions.join("\n")
     );
 

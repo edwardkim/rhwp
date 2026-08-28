@@ -5,106 +5,215 @@
 //! 사이드바를 덮어도 짝이 애초에 후보가 아니라 신호가 0 이었고, 사람이 렌더 이미지를
 //! 봐야만 알 수 있었다(#5952 의 "사이드바와 겹친다", PR #6083 검토 실사례).
 //!
-//! 두 축을 함께 고정한다.
+//! # 왜 합성 렌더 트리인가 — 실물 문서로 고정하려다 물러섰다
 //!
-//! 1. **잡아야 하는 것** — 편람 69쪽에서 본문 줄이 바탕쪽 "제1절" 라벨 위에 얹힌다.
-//! 2. **건드리지 말아야 하는 것** — 같은 쪽의 컨테이너 판정(overflow·off-canvas·
-//!    overlap)은 종전 수치 그대로다.
+//! 처음에는 편람 69쪽을 렌더해 "본문 x 바탕쪽 겹침 3건" 을 고정했다. 로컬(Windows)에서는
+//! 통과했지만 **CI(Linux)에서는 같은 커밋이 0 건**이었다. 원인은 이 판정기가 아니라 그
+//! 아래 조판이다 — 같은 문서·같은 커밋에서 첫 표의 높이가 로컬 248.547px 대 CI
+//! 352.013px 로 갈리고(+103.467), 그 아래 요소가 통째로 같은 양만큼 밀린다. 그래서
+//! 겹치던 짝이 CI 에서는 아예 만나지 않는다.
 //!
-//! 합성 렌더 트리를 만들지 않고 실제 샘플로 판정한다. `TextRunNode` 는 필드가 21 개라
-//! 손으로 지으면 시험이 구조 변경마다 깨지고, 무엇보다 이 결함은 **실제 문서의
-//! 조판에서** 나온 것이라 실물로 고정하는 편이 회귀를 정확히 막는다.
-//!
-//! 이 시험이 다루지 않는 두 성질은 코퍼스 래칫이 더 넓게 지킨다
-//! (`tests/cases/text_overlap_baseline.rs`, samples 945 건).
-//!
-//! - **다른 단(column) 짝짓기 제외**: 규칙이 풀리면 다단 문서 전반에서 겹침이
-//!   폭증한다. 래칫의 `Body x Body` 합계가 4,371 로 이 변경 전후 동일하다.
-//! - **바탕쪽 전면 배경의 컨테이너 오탐**: 편람 바탕쪽은 종이 전체를 덮는
-//!   `Image x=0..740.8 y=0..1014.4` 를 갖는다. 아래 컨테이너 시험이 같은 쪽에서
-//!   `overlap == 0` 을 고정하므로 배경이 흐름 후보로 새면 바로 실패한다.
+//! 이 판정기의 계약은 "겹치면 잡는다" 이지 "이 문서 이 쪽이 겹친다" 가 아니다. 조판이
+//! 플랫폼별로 갈리는 문제는 별도 축이므로, 규칙 자체는 조판에 의존하지 않는 합성
+//! 트리로 고정한다. 실제 코퍼스에서의 건수는 `tests/cases/text_overlap_baseline.rs`
+//! 래칫이 945 건 전수로 지킨다.
 #![cfg(not(target_arch = "wasm32"))]
 
-use rhwp::diagnostics::layout_anomaly::{scan_page, AnomalyOptions, PageAnomalies};
-use rhwp::document_core::DocumentCore;
+use rhwp::diagnostics::layout_anomaly::{scan_page, AnomalyOptions};
+use rhwp::renderer::render_tree::{
+    BoundingBox, PageNode, RectangleNode, RenderNode, RenderNodeType, TextLineNode, TextRunNode,
+};
 
-const HANDBOOK: &str = "samples/2025 행정업무운영 편람(최종).hwp";
-/// `-p` 는 0 기준. 한글 인쇄 쪽번호 61 은 rhwp 69쪽(-p 68)이다.
-const HANDBOOK_PAGE: u32 = 68;
-
-fn scan_handbook_page() -> PageAnomalies {
-    let path = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(HANDBOOK);
-    let bytes = std::fs::read(&path).expect("편람 샘플 읽기");
-    let doc = DocumentCore::from_bytes(&bytes).expect("편람 파싱");
-    let tree = doc
-        .build_page_render_tree(HANDBOOK_PAGE)
-        .expect("편람 69쪽 렌더 트리");
-    scan_page(
-        HANDBOOK_PAGE,
-        &tree.root,
-        doc.page_count(),
-        &AnomalyOptions::default(),
+fn text_run(text: &str, x: f64, y: f64, w: f64, h: f64) -> RenderNode {
+    RenderNode::new(
+        100,
+        RenderNodeType::TextRun(TextRunNode {
+            text: text.to_string(),
+            style: Default::default(),
+            char_shape_id: None,
+            para_shape_id: None,
+            section_index: None,
+            para_index: None,
+            char_start: None,
+            cell_context: None,
+            is_para_end: false,
+            is_line_break_end: false,
+            rotation: 0.0,
+            is_vertical: false,
+            char_overlap: None,
+            border_fill_id: 0,
+            baseline: h * 0.8,
+            field_marker: Default::default(),
+            layout_positions: None,
+            display_text: None,
+        }),
+        BoundingBox::new(x, y, w, h),
     )
 }
 
-/// 본문 글자가 바탕쪽 글자를 덮으면 잡는다 — 이 변경 전에는 0 건이었다.
-#[test]
-fn body_text_overlapping_master_page_is_detected() {
-    let pa = scan_handbook_page();
-
-    let cross: Vec<_> = pa
-        .text_overlap
-        .iter()
-        .filter(|t| t.path_a.contains("/MasterPage") != t.path_b.contains("/MasterPage"))
-        .collect();
-
-    assert!(
-        !cross.is_empty(),
-        "본문 x 바탕쪽 글자 겹침이 잡혀야 한다. 전체 text_overlap={:?}",
-        pa.text_overlap
+fn text_line(x: f64, y: f64, w: f64, h: f64, runs: Vec<RenderNode>) -> RenderNode {
+    let mut n = RenderNode::new(
+        99,
+        RenderNodeType::TextLine(TextLineNode::new(h, h * 0.8)),
+        BoundingBox::new(x, y, w, h),
     );
-    // 실측(devel b1485e0a14 + 이 변경): 3 건, 겹침 폭 7~8px.
-    // 0 으로 되돌아가는 회귀만 막고 상한은 두지 않는다 — 조판이 바뀌면 건수는
-    // 정당하게 움직일 수 있다.
-    assert!(
-        cross.len() >= 3,
-        "본문 x 바탕쪽 겹침이 3 건 미만이다({}). 후보 수집 범위가 좁아졌는지 확인할 것: {cross:?}",
-        cross.len()
-    );
-    for t in &cross {
-        assert!(
-            t.overlap_w > 0.0 && t.overlap_h > 0.0,
-            "겹침 폭·높이는 양수여야 한다: {t:?}"
-        );
-    }
+    n.children = runs;
+    n
 }
 
-/// 같은 쪽의 컨테이너 판정은 이 변경의 영향을 받지 않는다.
-///
-/// 넓힌 것은 **글자 겹침 후보 수집 하나**다. overflow 는 본문 여백, off-canvas 는
-/// 페이지 상자라는 기준이 그대로여야 하고, 컨테이너 overlap 은 종전 단(column)
-/// 짝짓기 규칙을 유지해야 한다. 편람 바탕쪽의 전면 배경 이미지가 흐름 후보로
-/// 새어 들어가면 `overlap` 이 즉시 0 을 넘는다.
-#[test]
-fn container_verdicts_are_unchanged_on_the_same_page() {
-    let pa = scan_handbook_page();
-    // devel 실측: overflow 2(Table 2 건), overlap 0, off_canvas 0.
-    assert_eq!(
-        pa.overlap.len(),
+fn body(bbox: BoundingBox, children: Vec<RenderNode>) -> RenderNode {
+    let mut n = RenderNode::new(1, RenderNodeType::Body { clip_rect: None }, bbox);
+    n.children = children;
+    n
+}
+
+fn column(index: u16, bbox: BoundingBox, children: Vec<RenderNode>) -> RenderNode {
+    let mut n = RenderNode::new(60 + u32::from(index), RenderNodeType::Column(index), bbox);
+    n.children = children;
+    n
+}
+
+fn page(width: f64, height: f64, children: Vec<RenderNode>) -> RenderNode {
+    let mut root = RenderNode::new(
         0,
-        "컨테이너 겹침이 새로 생겼다 — 본문 밖 노드가 flow 후보로 새어 들어갔는지 확인: {:?}",
+        RenderNodeType::Page(PageNode {
+            page_index: 0,
+            width,
+            height,
+            section_index: 0,
+        }),
+        BoundingBox::new(0.0, 0.0, width, height),
+    );
+    root.children = children;
+    root
+}
+
+fn master_page(width: f64, height: f64, children: Vec<RenderNode>) -> RenderNode {
+    let mut n = RenderNode::new(
+        50,
+        RenderNodeType::MasterPage,
+        BoundingBox::new(0.0, 0.0, width, height),
+    );
+    n.children = children;
+    n
+}
+
+/// 본문 글자가 바탕쪽 글자를 덮으면 잡는다 — 이 변경 전에는 후보조차 아니었다.
+///
+/// 편람 69쪽의 형상을 그대로 옮긴 것이다: 본문 줄이 오른쪽으로 넘쳐 오른쪽 여백의
+/// 바탕쪽 세로 탭 글자와 같은 자리에 놓인다.
+#[test]
+fn body_text_overlapping_master_page_text_is_flagged() {
+    let root = page(
+        300.0,
+        300.0,
+        vec![
+            body(
+                BoundingBox::new(0.0, 0.0, 200.0, 300.0),
+                vec![text_line(
+                    10.0,
+                    100.0,
+                    180.0,
+                    12.0,
+                    vec![text_run("본문", 10.0, 100.0, 180.0, 12.0)],
+                )],
+            ),
+            // 오른쪽 여백의 바탕쪽 사이드바 — 본문 줄 끝(190)과 x 170..190 에서 겹친다.
+            master_page(300.0, 300.0, vec![text_run("탭", 170.0, 100.0, 50.0, 12.0)]),
+        ],
+    );
+
+    let pa = scan_page(0, &root, 3, &AnomalyOptions::default());
+    assert_eq!(
+        pa.text_overlap.len(),
+        1,
+        "본문 글자와 바탕쪽 글자의 겹침이 잡혀야 한다: {:?}",
+        pa.text_overlap
+    );
+    assert!(
+        (pa.text_overlap[0].overlap_w - 20.0).abs() < 1e-9,
+        "겹침 폭은 20px 여야 한다: {:?}",
+        pa.text_overlap[0]
+    );
+    assert!(pa.has_signal());
+}
+
+/// 서로 다른 단의 글자는 종전대로 짝짓지 않는다 — 넓힌 것은 "단 밖" 뿐이다.
+///
+/// 다단 조판에서 단끼리는 x 축이 나뉘어 있어 정상 조판에서도 나란히 놓인다.
+/// 이 규칙이 풀리면 다단 문서 전반이 오탐으로 덮인다.
+#[test]
+fn different_columns_still_do_not_pair() {
+    let make_column = |index: u16, text: &str| {
+        column(
+            index,
+            BoundingBox::new(0.0, 0.0, 100.0, 300.0),
+            vec![text_line(
+                10.0,
+                10.0,
+                80.0,
+                12.0,
+                vec![text_run(text, 10.0, 10.0, 80.0, 12.0)],
+            )],
+        )
+    };
+    // 두 단의 글자가 완전히 같은 자리에 있어도 단이 다르면 짝이 아니다.
+    let root = page(
+        200.0,
+        300.0,
+        vec![body(
+            BoundingBox::new(0.0, 0.0, 200.0, 300.0),
+            vec![make_column(0, "가"), make_column(1, "나")],
+        )],
+    );
+
+    let pa = scan_page(0, &root, 3, &AnomalyOptions::default());
+    assert!(
+        pa.text_overlap.is_empty(),
+        "다른 단의 글자는 종전대로 제외해야 한다: {:?}",
+        pa.text_overlap
+    );
+}
+
+/// 본문 밖에서는 글자만 모은다 — 바탕쪽 배경이 컨테이너 겹침 오탐을 만들지 않는다.
+///
+/// 바탕쪽은 종이 전체를 덮는 배경을 갖는 일이 흔하다(편람 바탕쪽의
+/// `Image x=0..740.8 y=0..1014.4`). 컨테이너 후보(`flow`)로 넣으면 그 배경이 본문
+/// 요소 전부와 겹치는 오탐이 된다.
+#[test]
+fn master_page_background_does_not_create_container_overlap() {
+    let background = RenderNode::new(
+        51,
+        RenderNodeType::Rectangle(RectangleNode::new(0.0, Default::default(), None)),
+        BoundingBox::new(0.0, 0.0, 300.0, 300.0),
+    );
+    let root = page(
+        300.0,
+        300.0,
+        vec![
+            body(
+                BoundingBox::new(0.0, 0.0, 200.0, 300.0),
+                vec![text_line(
+                    10.0,
+                    10.0,
+                    80.0,
+                    12.0,
+                    vec![text_run("본문", 10.0, 10.0, 80.0, 12.0)],
+                )],
+            ),
+            master_page(300.0, 300.0, vec![background]),
+        ],
+    );
+
+    let pa = scan_page(0, &root, 3, &AnomalyOptions::default());
+    assert!(
+        pa.overlap.is_empty(),
+        "바탕쪽 배경이 컨테이너 겹침으로 잡히면 안 된다: {:?}",
         pa.overlap
     );
-    assert_eq!(
-        pa.off_canvas.len(),
-        0,
-        "off-canvas 가 새로 생겼다: {:?}",
-        pa.off_canvas
-    );
-    assert_eq!(
-        pa.overflow.len(),
-        2,
-        "overflow 건수가 devel 실측(2)과 다르다: {:?}",
-        pa.overflow
+    assert!(
+        pa.text_overlap.is_empty(),
+        "글자가 아닌 배경은 글자 겹침 후보도 아니다: {:?}",
+        pa.text_overlap
     );
 }
