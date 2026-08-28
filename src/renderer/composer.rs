@@ -311,7 +311,7 @@ pub fn compose_paragraph(para: &Paragraph) -> ComposedParagraph {
                     // HWP 저장값을 사용 — 한컴 편집기가 실제 폰트로 계산한 정확한 너비
                     Some((pos, eq.common.width as i32, i))
                 }
-                Control::Form(f) => Some((pos, f.width as i32, i)),
+                Control::Form(f) if f.common.treat_as_char => Some((pos, f.width as i32, i)),
                 Control::Table(t)
                     if t.common.treat_as_char
                         && super::height_measurer::is_tac_table_inline_in_para(
@@ -1380,7 +1380,8 @@ fn is_render_inline_control(ctrl: &Control) -> bool {
         Control::Shape(shape) => shape.common().treat_as_char,
         Control::Table(table) => table.common.treat_as_char,
         Control::Equation(eq) => eq.common.treat_as_char,
-        Control::Form(_) => true,
+        // [#6266] 양식 개체도 자기 배치를 갖는다 — 비-TAC 은 인라인이 아니다.
+        Control::Form(form) => form.common.treat_as_char,
         _ => false,
     }
 }

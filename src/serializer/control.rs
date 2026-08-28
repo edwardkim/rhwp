@@ -2987,16 +2987,44 @@ fn serialize_form_control(form: &FormObject, level: u16, records: &mut Vec<Recor
     //   28..36 zero (8 bytes)
     //   36..40 instance_id (u32, 0x7dcd59d6 + order)
     //   40..46 zero (6 bytes)
+    // [#6266] 이 헤더의 0..40 바이트 배치는 `parse_common_obj_attr` 이 읽는
+    // `CommonObjAttr` 와 정확히 같다(24..28=z_order, 28..36=바깥 여백,
+    // 36..40=instance_id). 그래서 원본에서 읽은 배치를 여기서 되쓴다 — 종전처럼
+    // 고정값만 쓰면 왕복에서 배치가 소실된다. 배치를 갖지 않는 원본(HWPX 유래
+    // 등)에서는 정답지 고정값으로 떨어져 종전 산출을 유지한다.
+    let c = &form.common;
+    // 원본이 HWP5 form 헤더를 갖고 있었는지의 판별자는 `attr` 이다 — 그 헤더에서
+    // 읽었다면 attr 은 0 이 아니다. z_order·instance_id 는 **0 도 원본 값**일 수
+    // 있으므로 값 자체가 아니라 이 판별자로 갈라야 왕복이 무손실이다.
+    let from_hwp5_header = c.attr != 0;
+    let attr = if from_hwp5_header {
+        c.attr
+    } else {
+        0x002a_6211
+    };
+    let z_order = if from_hwp5_header {
+        c.z_order
+    } else {
+        order as i32
+    };
+    let instance_id = if from_hwp5_header {
+        c.instance_id
+    } else {
+        0x7dcd_59d6u32.wrapping_add(order)
+    };
     let mut hdr = Vec::with_capacity(46);
     hdr.extend_from_slice(b"mrof"); // ctrl_id "form" little-endian
-    hdr.extend_from_slice(&0x002a_6211u32.to_le_bytes());
-    hdr.extend_from_slice(&0i32.to_le_bytes()); // y_offset
-    hdr.extend_from_slice(&0i32.to_le_bytes()); // x_offset
+    hdr.extend_from_slice(&attr.to_le_bytes());
+    hdr.extend_from_slice(&c.vertical_offset.to_le_bytes());
+    hdr.extend_from_slice(&c.horizontal_offset.to_le_bytes());
     hdr.extend_from_slice(&form.width.to_le_bytes());
     hdr.extend_from_slice(&form.height.to_le_bytes());
-    hdr.extend_from_slice(&order.to_le_bytes());
-    hdr.extend_from_slice(&[0u8; 8]);
-    hdr.extend_from_slice(&(0x7dcd_59d6u32.wrapping_add(order)).to_le_bytes());
+    hdr.extend_from_slice(&z_order.to_le_bytes());
+    hdr.extend_from_slice(&c.margin.left.to_le_bytes());
+    hdr.extend_from_slice(&c.margin.right.to_le_bytes());
+    hdr.extend_from_slice(&c.margin.top.to_le_bytes());
+    hdr.extend_from_slice(&c.margin.bottom.to_le_bytes());
+    hdr.extend_from_slice(&instance_id.to_le_bytes());
     hdr.extend_from_slice(&[0u8; 6]);
     debug_assert_eq!(hdr.len(), 46);
     records.push(Record {

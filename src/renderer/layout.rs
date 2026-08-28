@@ -1022,7 +1022,7 @@ fn para_has_visible_inline_control(para: &Paragraph) -> bool {
         Control::Shape(shape) => shape.common().treat_as_char,
         Control::Table(table) => table.common.treat_as_char,
         Control::Equation(eq) => eq.common.treat_as_char,
-        Control::Form(_) => true,
+        Control::Form(form) => form.common.treat_as_char,
         _ => false,
     })
 }
@@ -12558,6 +12558,7 @@ impl LayoutEngine {
                     .map(|ctrl| match ctrl {
                         Control::Shape(shape) => shape.z_order(),
                         Control::Table(table) => table.common.z_order,
+                        Control::Form(form) => form.common.z_order,
                         _ => 0,
                     })
                     .unwrap_or(0);
@@ -12577,6 +12578,8 @@ impl LayoutEngine {
                     let common = match ctrl {
                         Control::Shape(s) => Some(s.common()),
                         Control::Table(t) => Some(&t.common),
+                        // [#6266] 양식 개체도 용지/쪽 기준 배치를 가질 수 있다.
+                        Control::Form(f) => Some(&f.common),
                         _ => None,
                     };
                     common
@@ -12749,6 +12752,11 @@ impl LayoutEngine {
                     )),
                     Control::Table(table) => Some(Self::render_layer_from_common(
                         &table.common,
+                        para_index,
+                        control_index,
+                    )),
+                    Control::Form(form) => Some(Self::render_layer_from_common(
+                        &form.common,
                         para_index,
                         control_index,
                     )),
