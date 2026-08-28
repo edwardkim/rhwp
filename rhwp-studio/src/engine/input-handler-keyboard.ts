@@ -3,6 +3,7 @@
 
 import { InsertTextCommand, InsertLineBreakCommand, InsertTabCommand, SplitParagraphCommand, SplitParagraphInCellCommand, InsertTextInHeaderFooterCommand, SplitParagraphInHeaderFooterCommand, SplitParagraphInFootnoteCommand, DeleteTextInFootnoteCommand, MergeParagraphInFootnoteCommand, cellParaIndexOf } from './command';
 import { matchShortcut, defaultShortcuts } from '@/command/shortcut-map';
+import { resolveCellBlockCtrlShiftS } from '@/command/contextual-shortcut';
 import * as _connector from './input-handler-connector';
 import {
   detectPlatformKind,
@@ -70,6 +71,22 @@ function dispatchSubmodeGlobalShortcut(this: any, e: KeyboardEvent): boolean {
 
   e.preventDefault();
   this.dispatcher.dispatch(commandId);
+  return true;
+}
+
+function dispatchCellBlockCtrlShiftS(this: any, e: KeyboardEvent): boolean {
+  if (!this.dispatcher) return false;
+  const resolution = resolveCellBlockCtrlShiftS(e, {
+    inCellSelectionMode: this.cursor.isInCellSelectionMode(),
+    blockSumEnabled: this.dispatcher.isEnabled('table:block-sum'),
+    saveAsEnabled: this.dispatcher.isEnabled('file:save-as'),
+  });
+  if (!resolution) return false;
+
+  e.preventDefault();
+  if (resolution.kind === 'dispatch') {
+    this.dispatcher.dispatch(resolution.commandId);
+  }
   return true;
 }
 
@@ -656,6 +673,8 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
     return;
   }
 
+  if (dispatchCellBlockCtrlShiftS.call(this, e)) return;
+
   // IME 조합 중 처리 (한국어 IME에서 e.key는 항상 'Process'이므로 e.code로 판별)
   if (e.isComposing || e.keyCode === 229) {
     // [PR #786 후속] Ctrl+M chord 1번째/2번째 키 영역 영역 IME 합성 중 영역 영역도 활성화.
@@ -1151,12 +1170,12 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
       return;
     }
     // M: 셀 합치기, S: 셀 나누기
-    if (e.key === 'm' || e.key === 'M') {
+    if (!e.ctrlKey && !e.metaKey && !e.altKey && (e.key === 'm' || e.key === 'M')) {
       e.preventDefault();
       this.dispatcher?.dispatch('table:cell-merge');
       return;
     }
-    if (e.key === 's' || e.key === 'S') {
+    if (!e.ctrlKey && !e.metaKey && !e.altKey && (e.key === 's' || e.key === 'S')) {
       e.preventDefault();
       this.dispatcher?.dispatch('table:cell-split');
       return;

@@ -314,10 +314,10 @@ const plugins = new PluginHostRegistry({
 // registerAll이 메뉴 클릭·단축키·전역 단축키·커맨드 팔레트가 모두 지나는 choke point라
 // 이 필터 하나로 충분하다. 파일 수명주기 커맨드에 더해 edit:compare-documents도 거른다:
 // 비교 실행이 오른쪽 문서를 현재 에디터에 로드하는, 호스트가 감지할 수 없는 문서 교체
-// 진입점이다. shortcut-map은 그대로 둔다: 매핑이 남아야 Ctrl+S/Ctrl+P가 preventDefault로
-// 계속 삼켜져 브라우저 저장/인쇄 대화상자로 빠지지 않고, Ctrl+Shift+S가 후순위
-// table:block-sum 매핑으로 폴스루하지 않는다. 미등록 커맨드 dispatch는 무해하게 false를
-// 반환한다.
+// 진입점이다. shortcut-map의 파일 매핑은 그대로 둔다: 매핑이 남아야 Ctrl+S/Ctrl+P가
+// preventDefault로 계속 삼켜져 브라우저 저장/인쇄 대화상자로 빠지지 않는다.
+// Ctrl+Shift+S의 셀 블록 문맥 라우터도 Save As가 미등록이면 이벤트만 소비하므로
+// table:block-sum으로 폴스루하지 않는다. 미등록 커맨드 dispatch는 무해하게 false를 반환한다.
 registry.registerAll(
   chromeMode === 'embed'
     ? fileCommands.filter((cmd) => !EMBED_HIDDEN_FILE_COMMAND_IDS.includes(cmd.id))
