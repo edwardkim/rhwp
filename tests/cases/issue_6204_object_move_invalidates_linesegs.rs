@@ -49,7 +49,8 @@ fn horz_offset(core: &DocumentCore) -> Option<i32> {
 #[test]
 fn issue_6204_moving_a_square_picture_reflows_its_band() {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
-    let mut core = DocumentCore::from_bytes(&std::fs::read(path).expect("read sample")).expect("open");
+    let mut core =
+        DocumentCore::from_bytes(&std::fs::read(path).expect("read sample")).expect("open");
 
     let before = stored_segment_widths(&core);
     assert_eq!(
