@@ -214,6 +214,54 @@ export class CursorState {
   }
 
   /**
+   * history가 보관한 HF 선택을 현재 문서에 복원한다.
+   *
+   * target과 양 끝의 문단/오프셋을 모두 확인한 뒤에만 상태를 바꾼다. 조회 실패나 stale
+   * 범위는 false로 거절하며, 호출부가 history jump 직후 해제된 상태를 그대로 유지하게 한다.
+   */
+  selectHeaderFooterRange(
+    start: HeaderFooterTextPosition,
+    end: HeaderFooterTextPosition,
+    preferredPage: number,
+  ): boolean {
+    if (this._headerFooterMode === 'none') return false;
+    const current = this.currentHeaderFooterTextPosition();
+    if (
+      !CursorState.sameHeaderFooterTarget(start, end)
+      || !CursorState.sameHeaderFooterTarget(start, current)
+    ) return false;
+
+    const valid = (pos: HeaderFooterTextPosition): boolean => {
+      if (
+        !Number.isInteger(pos.paraIdx)
+        || !Number.isInteger(pos.charOffset)
+        || pos.paraIdx < 0
+        || pos.charOffset < 0
+      ) return false;
+      try {
+        const info = JSON.parse(this.wasm.getHeaderFooterParaInfo(
+          pos.sectionIdx,
+          pos.isHeader,
+          pos.applyTo,
+          pos.paraIdx,
+        ));
+        return pos.paraIdx < Number(info.paraCount)
+          && pos.charOffset <= Number(info.charCount);
+      } catch {
+        return false;
+      }
+    };
+    if (!valid(start) || !valid(end)) return false;
+
+    this.hfAnchor = { ...start };
+    this._hfParaIdx = end.paraIdx;
+    this._hfCharOffset = end.charOffset;
+    if (preferredPage >= 0) this._hfPreferredPage = preferredPage;
+    this.updateRect();
+    return true;
+  }
+
+  /**
    * 선택 범위를 명시적으로 세운다 — anchor 는 `start`, 커서는 `end` (Task #3416).
    *
    * `setAnchor()` 는 "현재 위치에서 선택을 시작한다" 이고 이미 anchor 가 있으면 아무것도 하지

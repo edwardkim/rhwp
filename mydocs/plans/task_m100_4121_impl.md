@@ -7,7 +7,7 @@
 - 기준: `upstream/devel` @ `b1485e0a1` (Stage 2 시작 전 merge)
 - 수행계획: `mydocs/plans/task_m100_4121.md` 승인 및 로컬 체크포인트
   `e0622c2c7`
-- 현재 단계: Stage 2 선택 생성·반복 페이지 투영 완료, Stage 3 승인 대기
+- 현재 단계: Stage 3 선택 소비자·history 계약 완료, Stage 4 승인 대기
 
 이 문서가 승인되기 전에는 제품 소스를 수정하지 않는다. 승인 뒤에도 Hyper-Waterfall에
 따라 각 Stage의 코드·테스트·완료보고서를 한 묶음으로 검토하고 커밋한 뒤 다음 Stage로
@@ -358,6 +358,7 @@ Stage commit을 되돌릴 수 있게 파일과 테스트를 함께 묶는다.
 
 ## 11. 다음 승인 요청
 
-Stage 2 승인 범위인 HF 선택 생성·반복 페이지 투영과 실제 Chrome E2E까지 완료했다.
-다음 승인은 Stage 3의 선택 소비자와 history 계약에 한정한다. Stage 3 승인 전에는
-입력 치환·삭제·copy/cut·부분 서식·Undo/Redo 선택 복원 제품 경로를 수정하지 않는다.
+Stage 3 승인 범위인 HF 선택 삭제·치환·copy/cut·부분 서식과 연산별 Undo/Redo 선택 계약을
+구현하고 실제 Chrome E2E까지 완료했다. 다음 승인은 Stage 4의 통합 검증과 최종 보고에
+한정한다. Stage 4 승인 전에는 전체 Rust/Studio/WASM 게이트와 4페이지 Both/Odd/Even
+Header/Footer 최종 사용자 여정을 시작하지 않는다.

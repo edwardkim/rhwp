@@ -90,7 +90,12 @@ function insertHfField(
   const cursor = (ih as any).cursor;
   if (!cursor || !cursor.isInHeaderFooter()) return;
   const isHeader = cursor.headerFooterMode === 'header';
-  const target = { sectionIdx: cursor.hfSectionIdx, isHeader, applyTo: cursor.hfApplyTo };
+  const target = {
+    sectionIdx: cursor.hfSectionIdx,
+    isHeader,
+    applyTo: cursor.hfApplyTo,
+    preferredPage: cursor.hfPreferredPage,
+  };
   const paraIdx = cursor.hfParaIdx;
   const charOffset = cursor.hfCharOffset;
   try {
