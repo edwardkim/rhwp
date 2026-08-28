@@ -8,7 +8,7 @@
 >
 > 브랜치: `codex/issue-4135-contextual-shortcut`
 >
-> 상태: **Recovery R4 수동 승인 완료, Recovery R5 F5 선택 단계 UX RED 계약 고정**
+> 상태: **Recovery R4 수동 승인 완료, Recovery R5 F5 선택 단계 UX 구현·검증 GREEN**
 
 ## 1. 문제를 다시 정의한다
 
@@ -144,6 +144,10 @@ focused 22건, Studio 전체 1,247건, production build, embed E2E 17건과 영�
   함께 해제한다.
 - 작업지시자가 한컴 마커와 하단 문구를 병용하는 안을 승인했다. RED·구현·focused/전체/build·실브라우저
   검증은 [`task_m100_4135_recovery_r5.md`](../working/task_m100_4135_recovery_r5.md)에 기록한다.
+
+R5는 RED 4건을 제품 코드 전에 고정한 뒤 focus 기반 마커와 전용 live status를 구현했다. focused 29건,
+Studio 전체 1,251건, production build 241 modules를 통과했고, 실제 2×2 표에서 F5 1·2·3회와 Escape,
+라이트·다크 테마를 확인했다. 결과와 DOM 계측은 R5 결과 문서에 고정한다.
 
 ## 5. 예상 변경 파일
 

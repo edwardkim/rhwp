@@ -7,7 +7,7 @@
 - **선행 결과**: [`task_m100_4135_recovery_r4.md`](task_m100_4135_recovery_r4.md)
 - **승인**: 작업지시자가 R4 한글 IME 재검증을 `수정이 반영되었어.`로 승인한 뒤,
   한컴의 셀 안 단계 마커와 하단 문구를 함께 쓰는 하이브리드 UX를 `그렇게 진행해줘.`로 승인
-- **현재 판정**: R5 UX 계약 RED 4건 확인, 구현 전 checkpoint 대상
+- **현재 판정**: R5 구현·자동·실브라우저 검증 GREEN, 단계 checkpoint 대상
 
 ## 1. 사용자 결과와 범위
 
@@ -59,3 +59,55 @@ node --test tests/cell-selection-phase-ux.test.ts
 
 R5는 #4135의 기존 계산·IME 동작을 바꾸지 않는다. 원격 push, PR 생성, GitHub 코멘트는 별도 승인 전에는
 수행하지 않는다.
+
+## 4. 구현 결과
+
+- `cell-selection-phase.ts`가 1·2·3단계 타입과 하단 사용자 문구를 단일 소유한다.
+- CursorState는 복사된 focus 좌표만 공개하고 anchor·내부 가변 상태는 노출하지 않는다.
+- renderer는 1·2단계에서 focus를 포함하는 bbox 중앙에 10px 원 마커를 추가한다. 3단계는 전체 셀
+  하이라이트가 충분한 주 표시라 마커를 만들지 않는다.
+- renderer의 public `clear()`가 마커·하이라이트 제거와 `onPhaseChange(null)`을 함께 소유한다. 기존
+  Escape, 일반 입력, 마우스 전환, 개체 선택, undo 경로의 clear 호출을 각각 고쳐 복제하지 않았다.
+- main은 callback을 `cell-selection-phase-changed` EventBus 이벤트로 연결한다. 전용
+  `#sb-cell-selection`은 같은 label을 다시 쓰지 않아 zoom·방향키 재렌더 때 live region이 반복 발화하지
+  않는다.
+- 라이트·다크 테마에 각각 회색/주황 마커 토큰을 두고 기존 파란 셀 선택 배경은 보존했다.
+- 보호 셀 클릭으로 생기는 내부 선택은 F5 단계가 아니므로 기존 파란 하이라이트만 유지한다.
+
+## 5. 자동 검증
+
+```text
+node --test \
+  tests/cell-selection-phase-ux.test.ts \
+  tests/cell-selection-caret-sync.test.ts \
+  tests/issue-4135-contextual-shortcut.test.ts \
+  tests/issue-4135-block-calculation-plan.test.ts
+29 pass / 0 fail
+
+npm test
+1,251 tests / 1,250 pass / 1 skip / 0 fail
+
+npm run build
+PASS — TypeScript + Vite, 241 modules transformed
+```
+
+R5는 Studio UI 오버레이 변경이며 문서 renderer/layout·저장 출력은 바꾸지 않는다. 시각 검증 거버넌스의
+`studio/확장 UI (렌더 엔진 무관)` 경로에 따라 PDF/SVG visual sweep 대신 실제 기능 스모크와 라이트·다크
+브라우저 화면 확인을 적용했다.
+
+## 6. 실브라우저 검증
+
+기존 미저장 문서가 있는 `7715` 탭은 건드리지 않고 `http://127.0.0.1:7716/?r5-phase-ux=1`의 새 탭에서
+빈 문서에 2×2 표를 만들었다.
+
+| 조작 | DOM 계측 | 시각 판정 |
+| --- | --- | --- |
+| F5 1회 | single marker 1, range marker 0, highlight 1 | focus 셀 중앙 회색 원, `셀 선택 · 방향키로 이동` |
+| F5 2회 | single marker 0, range marker 1, highlight 1 | focus 셀 중앙 주황 원, `셀 범위 선택 · 방향키로 확장` |
+| 2단계에서 오른쪽 방향키 | range marker 1, highlight 2 | 주황 원이 오른쪽 focus 셀로 이동 |
+| F5 3회 | marker 0, highlight 4 | 2×2 전체 파란 선택, `표 전체 선택` |
+| Escape | marker 0, highlight 0, status hidden·빈 문자열 | 셀 선택 표시 완전 제거 |
+
+위 전이를 다크 테마에서 순서대로 확인하고, 라이트 테마에서도 1단계 회색·2단계 주황 마커와 하단 문구의
+가독성을 다시 확인했다. 한컴 실측의 주 표시를 차용하면서도 하단 텍스트로 색상 외 상태 정보를 함께
+제공한다.

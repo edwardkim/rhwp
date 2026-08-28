@@ -73,6 +73,7 @@ import { clearAutosaveDrafts, deleteAutosaveDraft, listAutosaveDrafts, type Auto
 import { recoveryFileName } from '@/recovery/recovery-format';
 import { showAutosaveRecoveryDialog } from '@/recovery/recovery-ui';
 import { CellSelectionRenderer } from '@/engine/cell-selection-renderer';
+import { cellSelectionPhaseLabel, type CellSelectionPhase } from '@/engine/cell-selection-phase';
 import { TableObjectRenderer } from '@/engine/table-object-renderer';
 import { TableResizeRenderer } from '@/engine/table-resize-renderer';
 import { Ruler } from '@/view/ruler';
@@ -658,7 +659,11 @@ async function initialize(): Promise<void> {
     inputHandler.setContextMenu(new ContextMenu(dispatcher, registry));
     inputHandler.setCommandPalette(new CommandPalette(registry, dispatcher));
     inputHandler.setCellSelectionRenderer(
-      new CellSelectionRenderer(container, canvasView.getVirtualScroll()),
+      new CellSelectionRenderer(
+        container,
+        canvasView.getVirtualScroll(),
+        (phase) => eventBus.emit('cell-selection-phase-changed', phase),
+      ),
     );
     inputHandler.setTableObjectRenderer(
       new TableObjectRenderer(container, canvasView.getVirtualScroll()),
@@ -1107,6 +1112,15 @@ function setupEventListeners(): void {
   // 삽입/수정 모드 토글
   eventBus.on('insert-mode-changed', (insertMode) => {
     document.getElementById('sb-mode')!.textContent = (insertMode as boolean) ? '삽입' : '수정';
+  });
+
+  eventBus.on('cell-selection-phase-changed', (nextPhase) => {
+    const selectionStatus = document.getElementById('sb-cell-selection')!;
+    const phase = nextPhase as CellSelectionPhase | null;
+    selectionStatus.hidden = phase === null;
+    const nextLabel = phase === null ? '' : cellSelectionPhaseLabel(phase);
+    // zoom·방향키로 동일 단계를 다시 그릴 때 live region을 반복 발화하지 않는다.
+    if (selectionStatus.textContent !== nextLabel) selectionStatus.textContent = nextLabel;
   });
 
   eventBus.on('document-mutated', (reason) => {
