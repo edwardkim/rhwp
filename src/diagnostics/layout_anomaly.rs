@@ -33,6 +33,15 @@
 //! 렌더러가 이미 만들어 내는 [`RenderNode`] 트리를 **읽기만** 한다 — 렌더러·레이아웃
 //! 엔진 코드는 건드리지 않는다. `document_core::DocumentCore::build_page_render_tree`
 //! 가 유일한 진입점이고, 이 모듈은 그 산출물의 소비자다.
+//!
+//! # 판정별 스캔 범위
+//!
+//! overflow·off-canvas·overlap(컨테이너)·empty_page 는 `Body` 서브트리를 순회하고
+//! 본문 여백(`Body::bbox`)·페이지 상자를 기준으로 잰다. **text-overlap 만** 범위가
+//! 넓다 — `MasterPage`(바탕쪽)·`Header`·`Footer`·`FootnoteArea` 의 글자까지 후보로
+//! 모은다. 본문 글자가 바탕쪽 사이드바를 덮으면 사용자에게는 글자 두 개가 겹쳐
+//! 보이는데, `Body` 안만 보면 그 짝이 애초에 후보가 아니기 때문이다
+//! (편람 69쪽 실측 4건). 자세한 근거는 [`collect_text_outside_body`].
 
 use serde_json::{json, Value};
 
@@ -581,13 +590,45 @@ fn walk(
     }
 }
 
+/// 흐름 요소(표·이미지 등)의 짝짓기 규칙 — 단이 다르면 짝짓지 않는다.
+/// 단 밖(`None`)도 서로 다른 값으로 취급하는 종전 동작을 그대로 둔다.
+fn flow_columns_can_overlap(a: Option<u16>, b: Option<u16>) -> bool {
+    a == b
+}
+
+/// 글자 짝짓기 규칙 — "다른 단"과 "단 밖"을 구분한다.
+///
+/// 서로 다른 단은 x 축이 나뉘어 있어 정상 조판에서도 나란히 놓이므로 제외한다.
+/// 그러나 **단 밖**(`None`) 은 다른 단이 아니라 단 개념이 없는 자리다 — 바탕쪽
+/// 사이드바·머리말·꼬리말처럼 쪽에 고정된 글자가 여기 해당하고, 이들은 어느 단의
+/// 본문과도 같은 자리에 놓일 수 있다. 종전 규칙(`a.column != b.column`)은 이 짝을
+/// 통째로 버려서, 본문 글자가 바탕쪽 글자를 덮어도 신호가 0 이었다.
+fn text_columns_can_overlap(a: Option<u16>, b: Option<u16>) -> bool {
+    match (a, b) {
+        (Some(x), Some(y)) => x == y,
+        _ => true,
+    }
+}
+
 fn find_overlaps(candidates: &[FlowCandidate], opts: &AnomalyOptions) -> Vec<OverlapAnomaly> {
+    find_overlaps_with(candidates, opts, flow_columns_can_overlap)
+}
+
+fn find_text_overlaps(candidates: &[FlowCandidate], opts: &AnomalyOptions) -> Vec<OverlapAnomaly> {
+    find_overlaps_with(candidates, opts, text_columns_can_overlap)
+}
+
+fn find_overlaps_with(
+    candidates: &[FlowCandidate],
+    opts: &AnomalyOptions,
+    pair_allowed: fn(Option<u16>, Option<u16>) -> bool,
+) -> Vec<OverlapAnomaly> {
     let mut out = Vec::new();
     for i in 0..candidates.len() {
         for j in (i + 1)..candidates.len() {
             let a = &candidates[i];
             let b = &candidates[j];
-            if a.column != b.column {
+            if !pair_allowed(a.column, b.column) {
                 continue;
             }
             if let Some((ow, oh)) = intersection(&a.bbox, &b.bbox) {
@@ -607,6 +648,52 @@ fn find_overlaps(candidates: &[FlowCandidate], opts: &AnomalyOptions) -> Vec<Ove
         }
     }
     out
+}
+
+/// 본문(`Body`) **밖** 영역에서 글자 겹침 후보만 모은다.
+///
+/// 페이지 트리의 직계 자식은 `Body` 하나가 아니다 — `MasterPage`(바탕쪽),
+/// `Header`, `Footer`, `FootnoteArea` 가 함께 있고, 이들이 그리는 글자도 본문과
+/// 같은 종이 위에 놓인다. 본문 글자가 바탕쪽 사이드바를 덮으면 사용자에게는 두 글자가
+/// 겹쳐 보이는데, 종전에는 `Body` 서브트리만 순회해 이 짝이 애초에 후보가 아니었다.
+///
+/// 모으는 것은 **`TextRun` 후보뿐**이다. 컨테이너 overlap 후보(`flow`)에는 넣지 않는다 —
+/// 바탕쪽은 전면 배경 이미지를 갖는 일이 흔해(편람 `Image x=0..740.8 y=0..1014.4`)
+/// 컨테이너로 넣으면 그 이미지가 모든 것과 겹치는 오탐이 된다. overflow·off-canvas 의
+/// 기준 상자(본문 여백·페이지 상자)도 그대로 둔다 — 이 함수는 판정 기준을 바꾸지 않고
+/// 겹침 후보의 수집 범위만 넓힌다.
+///
+/// 단(column) 은 본문 개념이라 여기서 모은 후보는 모두 `column: None` 이다.
+/// 짝짓기는 [`text_columns_can_overlap`] 이 "단 밖은 어느 단과도 짝이 된다"로 받는다.
+fn collect_text_outside_body(node: &RenderNode, path: String, out: &mut Vec<FlowCandidate>) {
+    if !node.visible || node.editor_only {
+        return;
+    }
+    if is_text_overlap_candidate(node) {
+        out.push(FlowCandidate {
+            path: path.clone(),
+            node_type: "TextRun",
+            bbox: node.bbox,
+            column: None,
+        });
+    }
+    for (i, child) in node.children.iter().enumerate() {
+        let child_path = format!("{path}/{}{i}", node_type_label(&child.node_type));
+        collect_text_outside_body(child, child_path, out);
+    }
+}
+
+/// 글자 겹침 후보를 모으는 본문 밖 영역인가.
+///
+/// `PageBackground` 는 종이 자체의 배경·테두리라 글자를 담지 않으므로 제외한다.
+fn is_outside_body_text_area(t: &RenderNodeType) -> bool {
+    matches!(
+        t,
+        RenderNodeType::MasterPage
+            | RenderNodeType::Header
+            | RenderNodeType::Footer
+            | RenderNodeType::FootnoteArea
+    )
 }
 
 /// 한 페이지 렌더 트리를 스캔한다. `page_count` 는 `empty_page` 가 "문서 중간"인지
@@ -643,8 +730,17 @@ pub fn scan_page(
         );
     }
 
+    // 본문 밖(바탕쪽·머리말·꼬리말·각주 영역)의 글자도 겹침 후보에 넣는다.
+    // 본문 서브트리는 위에서 이미 순회했으므로 여기서 건너뛴다.
+    for (i, child) in root.children.iter().enumerate() {
+        if is_outside_body_text_area(&child.node_type) {
+            let path = format!("Page/{}{i}", node_type_label(&child.node_type));
+            collect_text_outside_body(child, path, &mut text);
+        }
+    }
+
     let overlap = find_overlaps(&flow, opts);
-    let text_overlap = find_overlaps(&text, opts);
+    let text_overlap = find_text_overlaps(&text, opts);
 
     // 문서 중간(첫·마지막 제외)이고 콘텐츠가 전혀 없을 때만 "가능성 신호"로 남긴다.
     let empty_page = if page_count >= 3 && page > 0 && page < page_count - 1 && !has_content {
@@ -1391,6 +1487,91 @@ mod tests {
         assert_eq!(pa.text_overlap[0].type_a, "TextRun");
         assert_eq!(pa.text_overlap[0].type_b, "TextRun");
         assert!(pa.has_signal());
+    }
+
+    /// 바탕쪽(사이드바 등) 글자를 본문 글자가 덮으면 잡는다.
+    ///
+    /// 편람 69쪽의 실제 형상이다 — 본문 줄이 오른쪽으로 넘쳐 `MasterPage` 의 세로
+    /// 탭 글자와 같은 자리에 놓인다. 종전에는 `Body` 서브트리만 순회해 이 짝이
+    /// 후보가 아니었고, 사람이 렌더 이미지를 봐야만 알 수 있었다.
+    #[test]
+    fn body_text_overlapping_master_page_text_is_flagged() {
+        let mut body_line = text_line(10.0, 100.0, 180.0, 12.0);
+        body_line
+            .children
+            .push(text_run_at("본문", 10.0, 100.0, 180.0, 12.0));
+        let body = body_node(BoundingBox::new(0.0, 0.0, 200.0, 300.0), vec![body_line]);
+        let mut root = page_root(300.0, 300.0, body);
+
+        // 오른쪽 여백의 바탕쪽 사이드바 — 본문 줄 끝(190)과 x 170..220 에서 겹친다.
+        let mut master = RenderNode::new(50, RenderNodeType::MasterPage, root.bbox);
+        master
+            .children
+            .push(text_run_at("탭", 170.0, 100.0, 50.0, 12.0));
+        root.children.push(master);
+
+        let pa = scan_page(0, &root, 3, &AnomalyOptions::default());
+        assert_eq!(
+            pa.text_overlap.len(),
+            1,
+            "본문 글자와 바탕쪽 글자의 겹침이 잡혀야 한다: {:?}",
+            pa.text_overlap
+        );
+        assert!((pa.text_overlap[0].overlap_w - 20.0).abs() < 1e-9);
+        assert!(pa.has_signal());
+    }
+
+    /// 바탕쪽의 전면 배경 이미지는 컨테이너 겹침 오탐을 만들지 않는다.
+    ///
+    /// 본문 밖에서 모으는 것은 `TextRun` 후보뿐이라, 종이 전체를 덮는 배경이
+    /// 본문 요소 전부와 겹치는 일이 생기지 않는다.
+    #[test]
+    fn master_page_background_image_does_not_create_overlap_noise() {
+        let t = table(0.0, 0.0, 50.0, 50.0, vec![]);
+        let body = body_node(BoundingBox::new(0.0, 0.0, 200.0, 300.0), vec![t]);
+        let mut root = page_root(300.0, 300.0, body);
+
+        let mut master = RenderNode::new(50, RenderNodeType::MasterPage, root.bbox);
+        // 종이 전체를 덮는 바탕쪽 배경 도형.
+        master
+            .children
+            .push(floating_shape(0.0, 0.0, 300.0, 300.0, TextWrap::BehindText));
+        root.children.push(master);
+
+        let pa = scan_page(0, &root, 3, &AnomalyOptions::default());
+        assert!(
+            pa.overlap.is_empty(),
+            "바탕쪽 배경이 컨테이너 겹침으로 잡히면 안 된다: {:?}",
+            pa.overlap
+        );
+        assert!(pa.text_overlap.is_empty());
+    }
+
+    /// 서로 다른 단의 글자는 종전대로 짝짓지 않는다 — 단 밖만 예외다.
+    #[test]
+    fn different_columns_still_do_not_pair() {
+        let mut col0 = RenderNode::new(
+            60,
+            RenderNodeType::Column(0),
+            BoundingBox::new(0.0, 0.0, 100.0, 300.0),
+        );
+        col0.children.push(text_run_at("a", 10.0, 10.0, 80.0, 12.0));
+        let mut col1 = RenderNode::new(
+            61,
+            RenderNodeType::Column(1),
+            BoundingBox::new(0.0, 0.0, 100.0, 300.0),
+        );
+        // col0 의 글자와 같은 자리 — 단이 다르면 짝이 아니다.
+        col1.children.push(text_run_at("b", 10.0, 10.0, 80.0, 12.0));
+
+        let body = body_node(BoundingBox::new(0.0, 0.0, 200.0, 300.0), vec![col0, col1]);
+        let root = page_root(200.0, 300.0, body);
+        let pa = scan_page(0, &root, 3, &AnomalyOptions::default());
+        assert!(
+            pa.text_overlap.is_empty(),
+            "다른 단은 종전대로 제외한다: {:?}",
+            pa.text_overlap
+        );
     }
 
     #[test]
