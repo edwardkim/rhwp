@@ -5,7 +5,7 @@
 - **브랜치**: `task_m100_3789-render-boundary`
 - **구현 완료일**: 2026-08-27 KST
 - **최신 갱신일**: 2026-08-28 KST
-- **상태**: 최신 `devel` 재최신화·focused 검증 완료, Stage 7 전체 회귀 승인 대기
+- **상태**: 최신 `devel` 전체 회귀·필수 clippy 완료, remote 제출 승인 대기
 - **절차 판정**: 기술 게이트 준수, 단계별 보고·승인 게이트 부분 미준수
 
 ## 결과
@@ -127,6 +127,21 @@ review 계약이 함께 남아 있다.
 release-test와 clippy는 아직 실행하지 않았으며, Stage 7 별도 승인 뒤 수행한다. 초기 기준과 Stage 5의
 전체·focused 결과를 최신 기준 결과로 간주하지 않는다.
 
+### Stage 7 full regression
+
+작업지시자의 별도 승인 뒤 최신 기준에서 현재 권위 문서의 전체 회귀를 실행했다.
+
+- `cargo nextest run --locked --cargo-profile release-test --target-dir target/pr-review --tests
+  --no-fail-fast`: 8,473/8,473 통과, 43 skip, 10 slow, 실패 0
+- `cargo clippy --locked --all-targets --target-dir target/pr-review -- -D warnings`: 통과
+
+착수 계획에 있던 `scripts/release-test.mjs`는 최신 upstream에서 제거돼 호출 즉시 `MODULE_NOT_FOUND`로
+종료됐다. 테스트 실패로 계산하지 않고 현재 canonical 직접 nextest 명령으로 대체했다. 필수 범위를 넘는
+`--workspace --all-targets --all-features` 추가 clippy 진단은 `vello 0.9/0.10`의 `Scene` 타입 불일치로
+컴파일되지 않았다. #3789 branch는 관련 `Cargo.toml`, `Cargo.lock`, `src/renderer/gpu.rs`를 변경하지 않으며,
+현재 권위 문서의 필수 clippy 범위는 통과했다. 상세 명령과 판정은
+[Stage 7 보고](../working/task_m100_3789_stage7.md)에 기록한다.
+
 ## 하이퍼 워터폴 절차 감사
 
 2026-08-27 작업지시자의 요청으로 canonical 절차와 실제 commit 계보를 대사했다.
@@ -150,5 +165,5 @@ release-test와 clippy는 아직 실행하지 않았으며, Stage 7 별도 승�
 ## 제출 상태
 
 로컬 구현과 필수 검증은 완료했다. generated integration suite·manifest는 제출 대상에 포함하지 않았다.
-최신 기준은 다시 `upstream/devel@5645e1f5b`로 갱신됐고 Stage 6 focused 검증까지 완료했다. Stage 7 전체
-release-test·clippy, remote push, PR 생성과 실제 PR CI는 각각 필요한 작업지시자 승인 전까지 남아 있다.
+최신 기준 `upstream/devel@5645e1f5b`에서 Stage 7 전체 회귀와 필수 clippy까지 완료했다. remote push,
+PR 생성과 실제 PR CI는 각각 필요한 작업지시자 승인 전까지 남아 있다.

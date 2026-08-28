@@ -5,7 +5,7 @@
 - **작성일**: 2026-08-27 KST
 - **작업 브랜치**: `task_m100_3789-render-boundary`
 - **착수 기준**: `upstream/devel@1b91c2025`
-- **구현 상태**: 최신 `devel@5645e1f5b` merge·focused 검증 완료, Stage 7 전체 회귀 승인 대기
+- **구현 상태**: 최신 `devel@5645e1f5b` 전체 회귀·필수 clippy 완료, remote 제출 승인 대기
 
 ## 1. 구현 불변식
 
@@ -114,13 +114,20 @@ actionlint .github/workflows/render-diff.yml
 ### 6.3 Rust·제출 게이트
 
 ```bash
-node scripts/release-test.mjs
-cargo clippy --workspace --all-targets --all-features -- -D warnings
+cargo nextest run --locked \
+  --cargo-profile release-test \
+  --target-dir target/pr-review \
+  --tests --no-fail-fast
+cargo clippy --locked --all-targets --target-dir target/pr-review -- -D warnings
 cargo fmt --all
 cargo fmt --all -- --check
 python3 scripts/check_markdown_links.py
 git diff --check
 ```
+
+착수 당시 사용한 `scripts/release-test.mjs` wrapper는 최신 `devel@5645e1f5b`에 존재하지 않는다. Stage 7은
+현재 권위 문서인 `mydocs/manual/pr_review/local_validation.md`의 직접 nextest·clippy 명령으로 실행한다.
+`--all-features` GPU 조합은 필수 clippy 게이트 밖의 추가 진단으로 구분한다.
 
 `src/**`의 `#[cfg(test)]`를 변경하게 되면 추가로
 `node scripts/rust-unit-test-tiers.mjs --check`를 실행한다. integration test case를 새로 추가하면 원본만
@@ -164,3 +171,6 @@ git diff --check
 - Stage 5 뒤 다시 진전한 `upstream/devel@5645e1f5b`도 같은 이유로 `3db893274` current-base merge로
   반영했다. 자동 병합된 CI policy에서 #3789 경계와 upstream Archive D·duration-policy 계약을 모두
   보존했고, 세부 focused 결과는 [Stage 6 보고](../working/task_m100_3789_stage6.md)에 기록한다.
+- 작업지시자의 별도 승인 뒤 전체 nextest 8,473개와 필수 clippy를 통과했다. 제거된 wrapper와 추가
+  `--all-features` 진단의 upstream GPU dependency 불일치는 필수 결과와 분리해
+  [Stage 7 보고](../working/task_m100_3789_stage7.md)에 기록한다.
