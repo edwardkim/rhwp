@@ -1,4 +1,5 @@
 import test from 'node:test';
+import { codeOnly } from './support/source-guard.ts';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
@@ -7,7 +8,7 @@ const inputHandler = readFileSync(new URL('../src/engine/input-handler.ts', impo
 
 test('표 셀 IME 조합창은 Canvas clip과 별도로 cellBounds 안에 제한한다', () => {
   assert.match(caretRenderer, /private clampCompositionBox\(/);
-  assert.match(caretRenderer, /const bounds = rect\.cellBounds;/);
+  assert.match(codeOnly(caretRenderer), /const bounds = rect\.cellBounds;/);
   assert.match(caretRenderer, /w = Math\.min\(w, Math\.max\(0, bounds\.w\)\);/);
   assert.match(caretRenderer, /x = Math\.min\(Math\.max\(x, bounds\.x\), maxX\);/);
   assert.match(caretRenderer, /y = Math\.min\(Math\.max\(y, bounds\.y\), maxY\);/);

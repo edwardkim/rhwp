@@ -1,4 +1,5 @@
 import test from 'node:test';
+import { codeOnly } from './support/source-guard.ts';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
@@ -67,11 +68,11 @@ test('WasmBridge는 다음 문서를 모두 준비한 뒤에만 기존 문서를
 });
 
 test('암호 대화상자는 마스킹·접근성·취소 시 DOM 값 제거를 제공한다', () => {
-  assert.match(dialogSource, /this\.input\.type = 'password';/, '암호 입력을 마스킹한다');
-  assert.match(dialogSource, /this\.input\.autocomplete = 'off';/, '브라우저 암호 자동완성을 요청하지 않는다');
-  assert.match(dialogSource, /label\.htmlFor = 'hwp-password-input';/, '입력 레이블을 연결한다');
+  assert.match(codeOnly(dialogSource), /this\.input\.type = 'password';/, '암호 입력을 마스킹한다');
+  assert.match(codeOnly(dialogSource), /this\.input\.autocomplete = 'off';/, '브라우저 암호 자동완성을 요청하지 않는다');
+  assert.match(codeOnly(dialogSource), /label\.htmlFor = 'hwp-password-input';/, '입력 레이블을 연결한다');
   assert.match(dialogSource, /this\.dialog\.setAttribute\('role', 'dialog'\)/, '대화상자 역할을 선언한다');
   assert.match(dialogSource, /this\.dialog\.setAttribute\('aria-modal', 'true'\)/, '모달 상태를 알린다');
-  assert.match(dialogSource, /if \(this\.input\) this\.input\.value = '';/, '닫을 때 DOM의 입력값을 비운다');
-  assert.match(dialogSource, /event\.key === 'Enter'/, 'Enter 확인을 지원한다');
+  assert.match(codeOnly(dialogSource), /if \(this\.input\) this\.input\.value = '';/, '닫을 때 DOM의 입력값을 비운다');
+  assert.match(codeOnly(dialogSource), /event\.key === 'Enter'/, 'Enter 확인을 지원한다');
 });
