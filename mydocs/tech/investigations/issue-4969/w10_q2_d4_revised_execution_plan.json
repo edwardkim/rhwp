@@ -1,0 +1,144 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q2-d4-revised-same-boundary-activation-plan",
+  "issue": 4969,
+  "stage": "W10-Q2-D4",
+  "status": "planned-awaiting-d4-a-implementation-approval",
+  "checkpoint": "be88ec57e",
+  "productOutputChangeBeforeD4B": false,
+  "authorityDecision": {
+    "layoutOwner": "HorizontalShapingMeasurement page-space total advance",
+    "replayOwner": "same shaping result projected by condensed_ratio_draw_params",
+    "doubleRatioInterpretationAllowed": false,
+    "versionBranching": false,
+    "rejected": [
+      "page-space-glyph-plus-per-glyph-ratio-transform",
+      "replace-layout-measurement-with-replay-local-coordinates",
+      "consumer-side-ratio-reinterpretation"
+    ]
+  },
+  "projection": {
+    "drawParamsSsot": "renderer::condensed_ratio_draw_params",
+    "compressedDrawFontSize": "font-size-times-sqrt-ratio",
+    "compressedPlacementScaleX": "sqrt-ratio",
+    "localGlyphScale": "draw-font-size-div-units-per-em",
+    "pageGlyphScaleX": "local-x-times-placement-scale-x",
+    "paintStyleRatio": 1.0,
+    "glyphTransforms": null,
+    "strictVisualEligibleOnlyAfterRoundTrip": true,
+    "diagnosticReason": "q2CommonShapingCondensedDrawProjectionV1"
+  },
+  "sourceHanOracle": {
+    "fontSizePx": 10.0,
+    "ratio": 0.8,
+    "drawFontSizePx": 8.94427190999916,
+    "placementScaleX": 0.8944271909999159,
+    "glyphIds": [614, 1230, 1497, 2085],
+    "pagePositionsX": [0.0, 7.728, 15.456, 15.456],
+    "pageAdvancesX": [7.728, 7.728, 0.0, 0.0],
+    "localPositionsX": [
+      0.0,
+      8.640166665059187,
+      17.280333330118374,
+      17.280333330118374
+    ],
+    "localAdvancesX": [8.640166665059187, 8.640166665059187, 0.0, 0.0],
+    "pageRoundTripAdvancePx": 15.456,
+    "clustersUnchanged": true
+  },
+  "sourceCertificate": {
+    "bytesOwner": "ExactFontSourceRegistry Arc<[u8]>",
+    "byteCopy": false,
+    "identity": [
+      "registry-generation",
+      "sha256",
+      "byte-length",
+      "face-index",
+      "units-per-em"
+    ],
+    "serialized": false,
+    "rawTextInTrace": false,
+    "fontBytesInTrace": false,
+    "hostPathInTrace": false,
+    "fontBytesPerFaceLimit": 33554432,
+    "uniqueFontBytesPerPageLimit": 67108864
+  },
+  "firstActivationSubset": {
+    "paragraphLines": 1,
+    "lineRuns": 1,
+    "fullRunIsOneTarget": true,
+    "directOldHangulRequired": true,
+    "exactEmbeddedPortableSource": true,
+    "compressedRatioOnly": true,
+    "writingMode": "horizontal-tb",
+    "direction": "ltr",
+    "bidiLevel": 0,
+    "alignment": "left",
+    "layoutPositions": false,
+    "displayProjection": false,
+    "numberingOrPrefix": false,
+    "controlsTabsTacNotesFields": false,
+    "decorationsOrEffects": false,
+    "syntheticStyle": false,
+    "distributedSpacingOrCondense": false
+  },
+  "slices": [
+    {
+      "id": "Q2-D4-A",
+      "name": "replay-projection-and-source-certificate-shadow",
+      "productOutputChange": false,
+      "approvalAfter": true
+    },
+    {
+      "id": "Q2-D4-B",
+      "name": "one-line-one-run-atomic-activation",
+      "productOutputChange": true,
+      "approvalAfter": true
+    },
+    {
+      "id": "Q2-D4-C",
+      "name": "cross-backend-performance-and-final-qualification",
+      "productOutputChange": false,
+      "approvalAfter": true
+    }
+  ],
+  "atomicPublication": {
+    "paragraphPreflightBeforeRunMutation": true,
+    "sidecarAttachBeforeGeometryMutation": true,
+    "partialTargetPublication": false,
+    "textRunFallbackPreserved": true,
+    "commonGlyphRunsPerTextSource": 1,
+    "nominalDuplicate": false,
+    "blankTextOnReplayFailure": false
+  },
+  "backendSelection": {
+    "canvasKit": "strict-common-glyph-run",
+    "canvasKitBrowser": "strict-common-glyph-run",
+    "canvas2d": "text-run-fallback",
+    "legacySvg": "text-run-fallback",
+    "nativeSkia": "text-run-fallback-until-blob-typeface-construction"
+  },
+  "validation": {
+    "nativeNodeWasmProjectionParity": true,
+    "rustVariantSelection": true,
+    "studioReplayStatusAndDrawMatrix": true,
+    "issue5821GlyphHeightRegression": true,
+    "sourceHanCanvasKitPixelOracle": true,
+    "nonTargetRenderLayerJsonHash": true,
+    "w9AndD0ThroughD3Regression": true,
+    "generatedIntegrationArtifactsInSourcePr": false
+  },
+  "deferred": [
+    "multi-line-or-multi-run-batch-activation",
+    "center-right-justify-distribute",
+    "ratio-identity-and-expansion",
+    "mixed-target-run-splitting",
+    "no-lineseg-boundary-change",
+    "native-skia-blob-typeface-replay",
+    "rtl",
+    "vertical",
+    "variation",
+    "public-rejected-attempt-annotation"
+  ],
+  "approvalScope": "maintainer approval opens Q2-D4-A shadow implementation only; no product activation"
+}

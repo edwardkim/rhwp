@@ -3,7 +3,7 @@
   "kind": "font-w10-q2-d-emitted-run-handoff-plan",
   "issue": 4969,
   "stage": "W10-Q2-D",
-  "status": "d3-qualified-awaiting-d4-plan-revision-and-approval",
+  "status": "d4-revised-plan-qualified-awaiting-d4-a-approval",
   "checkpoint": "452b6b741",
   "ownerCorrection": {
     "rejected": "new-public-field-on-TextRunNode",
@@ -88,12 +88,14 @@
     "duplicateGlyphRun": false
   },
   "d4ActivationPrecondition": {
-    "status": "blocked-pending-revised-plan",
+    "status": "resolved-by-revised-plan-awaiting-d4-a-approval",
     "q2MeasurementScale": "x-font-size-times-ratio-y-font-size",
     "issue5821CompressedTextRunDraw": "glyph-size-font-size-times-sqrt-ratio-x-scale-sqrt-ratio",
     "d3PreservedTransform": "xx-ratio-yy-one",
     "currentStrictSelectorAcceptsRatioOrTransform": false,
-    "requiredDecision": "choose-one-final-replay-authority-and-lock-native-wasm-oracle-before-wiring"
+    "selectedDecision": "keep-page-layout-owner-and-project-local-replay-from-same-shaping-result",
+    "revisedPlan": "mydocs/plans/task_m100_4969_w10_q2_d4_revised.md",
+    "machinePlan": "mydocs/tech/investigations/issue-4969/w10_q2_d4_revised_execution_plan.json"
   },
   "invariants": {
     "w9LayoutPositionsTypeUnchanged": true,
@@ -117,5 +119,5 @@
     "variation",
     "vertical"
   ],
-  "approvalScope": "Q2-D3 qualified; maintainer approval may open revised Q2-D4 planning only, not product activation"
+  "approvalScope": "revised Q2-D4 plan qualified; maintainer approval may open Q2-D4-A shadow implementation only, not product activation"
 }
