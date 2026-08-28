@@ -36,6 +36,33 @@ export interface ResolveZoomDialogInput
   pageGap?: number;
 }
 
+export type CustomZoomValidationResult =
+  | { valid: true; percent: number }
+  | { valid: false; message: string };
+
+/** 사용자 정의 배율 입력은 조용히 보정하지 않고 제출 가능한 정수 백분율만 받는다. */
+export function validateCustomZoomPercent(rawValue: string): CustomZoomValidationResult {
+  const value = rawValue.trim();
+  if (value === '') {
+    return { valid: false, message: '사용자 정의 배율을 입력하세요.' };
+  }
+
+  const percent = Number(value);
+  if (!Number.isFinite(percent)) {
+    return { valid: false, message: '사용자 정의 배율은 숫자로 입력하세요.' };
+  }
+  if (!Number.isInteger(percent)) {
+    return { valid: false, message: '사용자 정의 배율은 정수로 입력하세요.' };
+  }
+  if (percent < MIN_CUSTOM_ZOOM_PERCENT || percent > MAX_CUSTOM_ZOOM_PERCENT) {
+    return {
+      valid: false,
+      message: `${MIN_CUSTOM_ZOOM_PERCENT}~${MAX_CUSTOM_ZOOM_PERCENT}% 사이의 배율을 입력하세요.`,
+    };
+  }
+  return { valid: true, percent };
+}
+
 export function clampCustomZoomPercent(value: number): number {
   if (!Number.isFinite(value)) return 100;
   return Math.max(

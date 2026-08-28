@@ -71,6 +71,22 @@
   opacity: 0.72;
 }
 
+.zoom-dialog-number[aria-invalid='true'] {
+  border-color: var(--color-danger, #b91c1c);
+  outline-color: var(--color-danger, #b91c1c);
+}
+
+.zoom-dialog-custom-error {
+  margin: 2px 0 3px 22px;
+  color: var(--color-danger, #b91c1c);
+  font-size: var(--font-size-sm);
+  line-height: 1.35;
+}
+
+.zoom-dialog-custom-error[hidden] {
+  display: none;
+}
+
 .zoom-dialog-multiply {
   color: var(--color-text-secondary);
   font-size: var(--font-size-sm);
