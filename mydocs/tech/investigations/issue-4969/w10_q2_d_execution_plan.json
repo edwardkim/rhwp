@@ -3,7 +3,7 @@
   "kind": "font-w10-q2-d-emitted-run-handoff-plan",
   "issue": 4969,
   "stage": "W10-Q2-D",
-  "status": "d2-qualified-awaiting-d3-approval",
+  "status": "d3-qualified-awaiting-d4-plan-revision-and-approval",
   "checkpoint": "452b6b741",
   "ownerCorrection": {
     "rejected": "new-public-field-on-TextRunNode",
@@ -65,6 +65,7 @@
       "id": "Q2-D3",
       "name": "glyph-run-lowering-shadow",
       "productOutputChange": false,
+      "result": "qualified",
       "approvalAfter": true
     },
     {
@@ -85,6 +86,14 @@
     "lineDecisionRetries": 2,
     "partialTargetPublication": false,
     "duplicateGlyphRun": false
+  },
+  "d4ActivationPrecondition": {
+    "status": "blocked-pending-revised-plan",
+    "q2MeasurementScale": "x-font-size-times-ratio-y-font-size",
+    "issue5821CompressedTextRunDraw": "glyph-size-font-size-times-sqrt-ratio-x-scale-sqrt-ratio",
+    "d3PreservedTransform": "xx-ratio-yy-one",
+    "currentStrictSelectorAcceptsRatioOrTransform": false,
+    "requiredDecision": "choose-one-final-replay-authority-and-lock-native-wasm-oracle-before-wiring"
   },
   "invariants": {
     "w9LayoutPositionsTypeUnchanged": true,
@@ -108,5 +117,5 @@
     "variation",
     "vertical"
   ],
-  "approvalScope": "Q2-D2 qualified; maintainer approval required before Q2-D3"
+  "approvalScope": "Q2-D3 qualified; maintainer approval may open revised Q2-D4 planning only, not product activation"
 }
