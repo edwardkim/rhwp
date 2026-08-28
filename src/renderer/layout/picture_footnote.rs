@@ -98,7 +98,6 @@ fn footnote_composed_line_count(
 
 impl LayoutEngine {
     #[allow(clippy::too_many_arguments)]
-    #[allow(clippy::too_many_arguments)]
     pub(crate) fn layout_picture(
         &self,
         tree: &mut PageLayoutContext,
