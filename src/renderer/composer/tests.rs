@@ -70,6 +70,7 @@ fn the_frame_splits_a_fallback_run_by_char_shapes_on_both_the_body_and_the_cell_
         96.0,
         false,
         StoredRowMissPolicy::Reflow,
+        &[],
     )
     .expect("the frame owns the NO_LS rebuild");
     let body_run_ids: Vec<u32> = body_variant.lines[0]
@@ -296,6 +297,7 @@ fn context_display_overlay_preserves_frame_style_partitions_around_the_field() {
         96.0,
         false,
         StoredRowMissPolicy::Reflow,
+        &[],
     )
     .expect("Frame owns the NO_LS rebuild");
 
@@ -385,6 +387,7 @@ fn modest_field_fill_reflows_a_geometry_matching_stored_partition() {
             false,
             StoredRowMissPolicy::Reflow,
             false,
+            &[],
         ),
         Some(line_breaking::StoredRowResolution::Stored)
     ));
@@ -404,6 +407,7 @@ fn modest_field_fill_reflows_a_geometry_matching_stored_partition() {
             false,
             StoredRowMissPolicy::Reflow,
             stale,
+            &[],
         ),
         Some(line_breaking::StoredRowResolution::Reflowed)
     ));
@@ -478,6 +482,7 @@ fn a_field_paragraph_whose_stored_row_cannot_hold_its_text_is_rewrapped() {
         96.0,
         false,
         StoredRowMissPolicy::Reflow,
+        &[],
     )
     .expect("필드를 가진 본문 문단도 프레임이 소유한다");
     assert!(
@@ -563,6 +568,7 @@ fn an_impossible_paragraph_box_publishes_nothing_on_either_route() {
             96.0,
             false,
             StoredRowMissPolicy::Reflow,
+            &[],
         )
         .is_none(),
         "렌더 경로도 같은 규칙을 따른다"

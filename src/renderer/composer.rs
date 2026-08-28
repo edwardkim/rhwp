@@ -1963,6 +1963,10 @@ pub(crate) fn recompose_stored_lines_in_frame(
     dpi: f64,
     legacy_hwp3_stored_geometry: bool,
     miss_policy: line_breaking::StoredRowMissPolicy,
+    // [#6175] 같은 단의 어울림 개체 흐름 폭(HWPUNIT) — 저장 행이 남긴 결손 폭을
+    // 설명하면 재래핑하지 않고 저장 행을 그대로 둔다. 측정·페인트가 같은 함수를
+    // 타므로 두 경로가 갈리지 않는다.
+    float_carve_widths: &[i32],
 ) -> Option<ComposedParagraph> {
     // A degenerate box, or controls with their own layout owner, means there is
     // no frame to build. The composition stands as it is — there is no second
@@ -1986,6 +1990,7 @@ pub(crate) fn recompose_stored_lines_in_frame(
         legacy_hwp3_stored_geometry,
         miss_policy,
         stale,
+        float_carve_widths,
     ) {
         // Stale — the row cannot hold its own text — so the rebuilt row is the
         // frame's. Its fill tokenizes through `para.char_shapes`
@@ -2082,6 +2087,8 @@ pub(crate) fn probe_stored_row_disposition(
         legacy_hwp3_stored_geometry,
         miss_policy,
         stale,
+        // 증거 프로브는 단 문맥을 갖지 않는다 — 개체 증거 없이 판정한다.
+        &[],
     ) {
         Some(line_breaking::StoredRowResolution::Stored) => StoredRowProbeDisposition::Admitted,
         Some(line_breaking::StoredRowResolution::Reflowed) => StoredRowProbeDisposition::Rejected,
@@ -2331,6 +2338,8 @@ pub fn recompose_cell_lines_in_frame(
             dpi,
             legacy_hwp3_stored_geometry,
             line_breaking::StoredRowMissPolicy::UnmodelledUnlessStale,
+            // 셀 줄의 어울림 배제는 #5818 셀 계약이 따로 소유한다.
+            &[],
         )
     } else {
         // NO_LS is the arm this owner normally serves. A synthetic single row
@@ -2346,6 +2355,7 @@ pub fn recompose_cell_lines_in_frame(
             dpi,
             legacy_hwp3_stored_geometry,
             line_breaking::StoredRowMissPolicy::Reflow,
+            &[],
         )
     };
     if let Some(rebuilt) = rebuilt {

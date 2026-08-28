@@ -2819,6 +2819,9 @@ pub(crate) fn resolve_stored_line_segs_in_frame(
     legacy_hwp3_stored_geometry: bool,
     miss_policy: StoredRowMissPolicy,
     stale: bool,
+    // [#6175] 같은 단에 있는 어울림 개체들의 흐름 폭(HWPUNIT).
+    // 저장 행의 결손 폭이 이 중 하나와 맞으면 좁음의 출처가 외부 기하다.
+    float_carve_widths: &[i32],
 ) -> Option<StoredRowResolution> {
     // [#6102] 폭-중립 float 표 host 는 본문 프레임 게이트가 이미 통과시킨
     // 문단이다 — picture-band 게이트만으로 사양하면 저장 textpos 의
@@ -2878,7 +2881,9 @@ pub(crate) fn resolve_stored_line_segs_in_frame(
     // reflow from flattening a split row when this frame lacks the exclusion
     // geometry that originally produced it. The multi-slot comparison becomes
     // live when a caller supplies those exclusions.
-    if !frame.models_exclusions() && stored_rows_require_external_geometry(para, frame) {
+    if !frame.models_exclusions()
+        && stored_rows_require_external_geometry(para, frame, float_carve_widths)
+    {
         return None;
     }
 
@@ -2911,6 +2916,13 @@ pub(crate) fn resolve_stored_line_segs_in_frame(
         .map(|_| StoredRowResolution::Reflowed)
 }
 
+/// [#6175] 저장 행의 결손 폭이 어울림 개체의 흐름 폭과 같다고 볼 허용 오차(HWPUNIT).
+///
+/// 개체와 본문 사이의 간격(한컴이 넣는 여백)이 이 안에 든다 — 156655489 실측 284,
+/// 156647303 실측 도 같은 자릿수다. 1200HU ≈ 16px 로, 글자 한 칸(약 1000HU)보다
+/// 크지 않게 잡아 서로 다른 폭의 개체를 우연히 맞추지 않는다.
+const FLOAT_CARVE_MATCH_TOLERANCE_HU: i32 = 1200;
+
 /// Whether stored physical rows prove that their frame changed by vertical
 /// band and therefore required exclusion geometry.
 ///
@@ -2918,7 +2930,11 @@ pub(crate) fn resolve_stored_line_segs_in_frame(
 /// single-slot rows with different horizontal extents is equivalent evidence:
 /// a scalar frame has one immutable horizontal range, so it cannot produce the
 /// transition without an exclusion entering or leaving the row band.
-fn stored_rows_require_external_geometry(para: &Paragraph, frame: &LayoutFrame) -> bool {
+fn stored_rows_require_external_geometry(
+    para: &Paragraph,
+    frame: &LayoutFrame,
+    float_carve_widths: &[i32],
+) -> bool {
     let line_segs = &para.line_segs;
     let split_or_varying = line_segs
         .iter()
@@ -2929,6 +2945,40 @@ fn stored_rows_require_external_geometry(para: &Paragraph, frame: &LayoutFrame) 
         });
     if split_or_varying {
         return true;
+    }
+
+    // [#6175] 문단 **전체**가 개체 옆에 들어가면 폭 변화가 사라져 위 증거가
+    // 소멸한다. 그때는 문서에 실재하는 어울림 개체가 증거다 — 저장 행이 남긴
+    // 결손 폭을 그 개체의 흐름 폭이 설명하면, 좁음의 출처는 이 문단 자신이
+    // 아니라 외부 기하다.
+    //
+    // ⚠ 이 판별자는 **개체 폭 대조**여야 한다. "균일하게 좁다"만으로는 문단
+    // 테두리 박스의 inset 과 구별되지 않아 #547·#1440 핀이 깨진다(#6129 에서
+    // 국소 판별자 2종이 그렇게 반증됐다). 셀에서는 #5818 이 같은 혼동을 "같은
+    // 셀에 Square float 실재"로 이미 갈랐고, 이것은 그 계약의 본문 판이다.
+    //
+    // 156655489 1쪽 실측: 본문 폭 48188, 저장 cs=0·sw=26692 → 결손 21496.
+    // 용지 기준 Square 그림 폭 21212 (offset 32361 → 프레임 좌표 26692) 로,
+    // 저장 사다리의 끝이 개체 왼쪽 변과 단위까지 맞는다.
+    if !float_carve_widths.is_empty() && !line_segs.is_empty() {
+        let uniform_narrow = line_segs.iter().all(|segment| {
+            segment.column_start == frame.horizontal.start && segment.segment_width > 0
+        }) && line_segs
+            .windows(2)
+            .all(|pair| pair[0].segment_width == pair[1].segment_width);
+        if uniform_narrow {
+            let occupied = line_segs[0]
+                .column_start
+                .saturating_add(line_segs[0].segment_width);
+            let missing = frame.horizontal.end.saturating_sub(occupied);
+            if missing > FLOAT_CARVE_MATCH_TOLERANCE_HU
+                && float_carve_widths
+                    .iter()
+                    .any(|width| (missing - width).abs() <= FLOAT_CARVE_MATCH_TOLERANCE_HU)
+            {
+                return true;
+            }
+        }
     }
 
     // Empty carrier rows can hold a narrowed origin supplied by a surrounding
@@ -4420,6 +4470,7 @@ mod frame_reflow_tests {
             false,
             StoredRowMissPolicy::Reflow,
             false,
+            &[],
         )
         .expect("a scalar cached paragraph is frame-resolvable");
         assert_eq!(resolution, StoredRowResolution::Stored);
@@ -4535,7 +4586,8 @@ mod frame_reflow_tests {
                 96.0,
                 false,
                 StoredRowMissPolicy::Reflow,
-                false
+                false,
+                &[],
             ),
             Some(StoredRowResolution::Stored)
         ));
@@ -4563,7 +4615,8 @@ mod frame_reflow_tests {
             96.0,
             false,
             StoredRowMissPolicy::Reflow,
-            true
+            true,
+            &[],
         )
         .is_none());
         assert_eq!(specialized_frame, checkpoint);
@@ -4599,7 +4652,8 @@ mod frame_reflow_tests {
             96.0,
             false,
             StoredRowMissPolicy::Reflow,
-            false
+            false,
+            &[],
         )
         .is_none());
         assert_eq!(scalar_frame, scalar_checkpoint);
@@ -4625,7 +4679,8 @@ mod frame_reflow_tests {
             96.0,
             false,
             StoredRowMissPolicy::Reflow,
-            false
+            false,
+            &[],
         )
         .is_none());
         assert_eq!(carrier_frame, carrier_checkpoint);
@@ -4706,7 +4761,8 @@ mod frame_reflow_tests {
                 96.0,
                 false,
                 StoredRowMissPolicy::Reflow,
-                false
+                false,
+                &[],
             ),
             Some(StoredRowResolution::Reflowed)
         ));
@@ -4720,7 +4776,8 @@ mod frame_reflow_tests {
                 96.0,
                 true,
                 StoredRowMissPolicy::Reflow,
-                false
+                false,
+                &[],
             )
             .is_none(),
             "untouched HWP3 stored origin remains outside the common Frame's jurisdiction"
@@ -4768,6 +4825,7 @@ mod frame_reflow_tests {
             false,
             StoredRowMissPolicy::Reflow,
             false,
+            &[],
         )
         .expect("a scalar cached paragraph is frame-resolvable");
 
