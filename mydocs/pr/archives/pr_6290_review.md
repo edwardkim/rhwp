@@ -15,7 +15,7 @@ last_verified: 2026-08-28
 - loaded documents: `pr_review_workflow.md`, `pr_review/README.md`, 위 기본·보조 문서와
   `docs_and_git_workflow.md`
 - 작성자 본인 self-review이므로 reviewer를 지정하지 않는다.
-- local code candidate: `4a84bc05c2019f2eeb9f6fcc7e415e74fc53f33e`
+- local code candidate: `2e150de6e0f88ab914bac11f00dcbf557d1c099d`
 
 대화상자 오류 상태와 쪽 배치·이동·배율 transaction은 실제 사용자 상호작용이 제품 계약이므로
 `visual_fixture_evidence.md`의 증거 원칙을 적용해 실제 Chrome E2E와 HTML 보고서·오류 화면을 사용했다.
@@ -31,8 +31,8 @@ last_verified: 2026-08-28
 | stack | 하단 [#6289](https://github.com/edwardkim/rhwp/pull/6289) → 상단 #6290 |
 | base / head | `codex/issue-6108-zoom-fit` / `codex/issue-6109-zoom-dialog-transaction` |
 | local 규모 | 22 files, +1,355 / -56, 4 commits |
-| local base | `codex/issue-6108-zoom-fit@711365b35` |
-| remote 상태 | Open, non-draft, 기존 remote candidate CI 성공 |
+| local base | `codex/issue-6108-zoom-fit@1276bb431` |
+| remote 상태 | Open, non-draft, 기존 remote candidate CI 성공; 새 local stack은 push 전 |
 
 이 문서의 local candidate는 review 보정과 최신 하단 head 재기반화를 더 포함하므로 push 뒤 GitHub 상태가
 다시 계산된다. 작업지시자가 원격 CI를 직접 확인하므로 이 작업에서는 CI 완료를 기다리거나 merge하지 않는다.
@@ -58,7 +58,8 @@ rebase 충돌을 해결할 때 상단의 원자 transaction과 하단의 `resolv
 ### 수정 완료 — Stage 3 문서 계보
 
 누락됐던 `mydocs/working/task_m100_6109_stage3.md`를 원래 Stage 3 통합검증 커밋에 autosquash했다.
-Stage 1·2 문서와 최종 보고서의 stack base도 현재 하단 head `711365b35`로 현행화했다.
+최신 `devel` 충돌 해소 뒤 상단을 하단 review head `1276bb431` 위로 다시 재기반화했다. range-diff와
+`rhwp-studio` tree 비교에서 상단 제품 변경은 이전 candidate와 동일함을 확인했다.
 
 ### 설명 보완 — E2E MANIFEST 세 행
 
