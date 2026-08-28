@@ -155,6 +155,18 @@ test('[결함1] 스냅샷 예산은 WASM 상한에서 순간 여유를 뺀 값�
     'WASM MAX_SNAPSHOTS(document.rs) 미러 상수가 있어야 함');
   assert.match(history, /const SNAPSHOT_ID_BUDGET = WASM_MAX_SNAPSHOTS - 2;/,
     '예산은 MAX - 2 (순간 +2 여유) 여야 함 — MAX 와 같으면 orphan 회귀');
+  // [#6332] 상수 결합의 studio 레인 절반 — 리터럴 pin 만으로는 결합 자체가 검증되지
+  // 않아, Rust store 상한이 studio 피크 참조 수(예산 + 순간 2 = WASM_MAX_SNAPSHOTS)를
+  // 항상 덮는지 document.rs 를 직접 읽어 기계 검증한다. rust 레인 절반(순 Rust 변경은
+  // 이 파일이 안 돎)은 tests/cases/issue_6332_snapshot_budget_coupling.rs 가 담당한다.
+  const documentRs = source('../src/document_core/commands/document.rs');
+  const rustMax = Number(/const MAX_SNAPSHOTS: usize = (\d+);/.exec(documentRs)?.[1]);
+  const wasmMax = Number(/const WASM_MAX_SNAPSHOTS = (\d+);/.exec(history)?.[1]);
+  assert.ok(Number.isInteger(rustMax),
+    'document.rs 의 MAX_SNAPSHOTS 선언을 찾지 못함 — 선언 형태가 바뀌었으면 이 가드를 갱신');
+  assert.ok(Number.isInteger(wasmMax), 'WASM_MAX_SNAPSHOTS 선언을 찾지 못함');
+  assert.ok(rustMax >= wasmMax,
+    `Rust MAX_SNAPSHOTS(${rustMax}) < studio 피크 참조 수(${wasmMax}) — 참조 중 스냅샷 무통보 축출 (#2328/#6332)`);
   // 예산 강제 헬퍼: 예산 초과 시 undo 스택 front 를 shift + discard.
   const block = methodBlock(history, 'enforceSnapshotBudget(wasm: WasmBridge): void {');
   assert.match(block, /liveSnapshotIds\(\)\s*>\s*SNAPSHOT_ID_BUDGET/, '예산 초과 판정');
