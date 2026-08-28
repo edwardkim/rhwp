@@ -1594,16 +1594,14 @@ impl HeightMeasurer {
                             // [Task #671] line_segs 비어 있는 셀 paragraph 의 단일 ComposedLine
                             // 압축 결과를 셀 가용 너비에 맞춰 다중 ComposedLine 으로 재분할.
                             // 측정/렌더링 일관성 (layout 의 같은 프레임 호출과 동일).
-                            crate::renderer::composer::recompose_cell_lines_in_frame(
+                            crate::renderer::composer::recompose_horizontal_cell_lines_for_width(
                                 &mut comp,
                                 p,
-                                crate::renderer::composer::ParagraphBox::content_width_px(
-                                    cell_inner_width,
-                                    self.dpi,
-                                ),
+                                cell_inner_width,
                                 styles,
                                 self.dpi,
                                 self.legacy_hwp3_stored_geometry,
+                                self.is_native_hwp5,
                             );
                             let para_style = styles.para_styles.get(p.para_shape_id as usize);
                             let is_last_para = pidx + 1 == cell_para_count;
@@ -2145,16 +2143,14 @@ impl HeightMeasurer {
                         .last()
                         .map(|p| {
                             let mut comp = compose_paragraph(p);
-                            crate::renderer::composer::recompose_cell_lines_in_frame(
+                            crate::renderer::composer::recompose_horizontal_cell_lines_for_width(
                                 &mut comp,
                                 p,
-                                crate::renderer::composer::ParagraphBox::content_width_px(
-                                    cell_inner_width,
-                                    self.dpi,
-                                ),
+                                cell_inner_width,
                                 styles,
                                 self.dpi,
                                 self.legacy_hwp3_stored_geometry,
+                                self.is_native_hwp5,
                             );
                             comp.lines
                                 .last()
@@ -2226,16 +2222,14 @@ impl HeightMeasurer {
                     {
                         for (cell_para_index, cell_para) in cell.paragraphs.iter().enumerate() {
                             let mut comp = compose_paragraph(cell_para);
-                            crate::renderer::composer::recompose_cell_lines_in_frame(
+                            crate::renderer::composer::recompose_horizontal_cell_lines_for_width(
                                 &mut comp,
                                 cell_para,
-                                crate::renderer::composer::ParagraphBox::content_width_px(
-                                    cell_inner_width,
-                                    self.dpi,
-                                ),
+                                cell_inner_width,
                                 styles,
                                 self.dpi,
                                 self.legacy_hwp3_stored_geometry,
+                                self.is_native_hwp5,
                             );
                             let para_style =
                                 styles.para_styles.get(cell_para.para_shape_id as usize);
@@ -2449,16 +2443,14 @@ impl HeightMeasurer {
                             let mut comp = compose_paragraph(p);
                             // [Task #671] line_segs 비어 있는 셀 paragraph 의 단일 ComposedLine
                             // 압축 결과를 셀 가용 너비에 맞춰 다중 ComposedLine 으로 재분할.
-                            crate::renderer::composer::recompose_cell_lines_in_frame(
+                            crate::renderer::composer::recompose_horizontal_cell_lines_for_width(
                                 &mut comp,
                                 p,
-                                crate::renderer::composer::ParagraphBox::content_width_px(
-                                    cell_inner_width,
-                                    self.dpi,
-                                ),
+                                cell_inner_width,
                                 styles,
                                 self.dpi,
                                 self.legacy_hwp3_stored_geometry,
+                                self.is_native_hwp5,
                             );
                             let para_style = styles.para_styles.get(p.para_shape_id as usize);
                             let is_last_para = pidx + 1 == cell_para_count;
