@@ -1557,7 +1557,7 @@ impl HeightMeasurer {
                 };
                 // [#2279 axis B 보류] 측정 shrink 폭은 80168 r7(한글 8줄) 회귀로 보류
                 // — table_layout::cell_units_uncached 의 [#2279 axis B 보류] 참조.
-                let cell_inner_width = (cell_w_px - pad_left - pad_right).max(0.0);
+                let cell_inner_width = crate::renderer::composer::cell_inner_text_width(cell_w_px, pad_left, pad_right, self.dpi);
 
                 // 셀 내 문단들의 실제 높이 합산
                 let text_height: f64 = if cell.text_direction != 0 {
@@ -2411,7 +2411,7 @@ impl HeightMeasurer {
                 } else {
                     0.0
                 };
-                let cell_inner_width = (cell_w_px - pad_left - pad_right).max(0.0);
+                let cell_inner_width = crate::renderer::composer::cell_inner_text_width(cell_w_px, pad_left, pad_right, self.dpi);
                 let text_height: f64 = if cell.text_direction != 0 {
                     // 세로쓰기: max(segment_width)
                     let mut max_h: f64 = 0.0;
