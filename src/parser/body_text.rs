@@ -974,11 +974,23 @@ fn parse_master_pages_from_raw(raw_records: &[RawRecord], section_flags: u32) ->
         let para_records = &records[start + 1..end];
         let paragraphs = parse_paragraph_list(para_records);
 
+        // [#6334] 확장 바탕쪽(마지막 쪽·임의 쪽)은 기본 홀/짝 바탕쪽을 **대체**한다.
+        //
+        // HWPX 는 `pageDuplicate` 로 "겹치게 하기" 의도를 명시하지만 HWP5 에는 그 속성이
+        // 없고 overlap 비트만 있다. 그런데 그 비트는 의도를 구분하지 못한다 — 한컴의
+        // HWPX -> HWP5 저장본은 `pageDuplicate="0"`(겹치지 않음)인 바탕쪽도 overlap 비트를
+        // 함께 세운다(`parser/hwpx/section.rs` 의 같은 지점 주석). 그래서 종전처럼
+        // `replace_base: false` 로 두면 확장 바탕쪽이 `rendering.rs` 의 `replace_exts`
+        // 필터(`!overlap || replace_base`)에 **절대 들어가지 못하고** 항상 덧그려진다.
+        //
+        // 한컴 정답지가 대체임을 보인다 — `pdf/exam_science-2022.pdf` 4쪽의 바탕쪽 글자는
+        // `32 32`·`* 확인 사항` 뿐이고 기본 짝수 바탕쪽의 `31` 이 없다. 종전 rhwp 는 두 겹을
+        // 그려 `['31','32']` 와 `['32','32', …]` 가 18.0 x 15.3px 겹쳤다.
         master_pages.push(MasterPage {
             apply_to,
             is_extension,
             overlap,
-            replace_base: false,
+            replace_base: is_extension,
             ext_flags,
             page_front: false, // HWP5 바이너리 바탕쪽엔 pageFront 개념 없음
             text_direction: 0, // HWP5 바이너리 바탕쪽엔 textDirection 개념 없음
