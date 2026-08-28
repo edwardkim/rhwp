@@ -1980,6 +1980,7 @@ impl LayoutEngine {
                                                 Some(cell_context.parent_para_index),
                                                 Some(ctrl_idx),
                                                 Some(&cell_context),
+                                                styles,
                                             );
                                             empty_tac_x += clamped_w;
                                             continue;
@@ -2064,6 +2065,7 @@ impl LayoutEngine {
                                             Some(cell_context.parent_para_index),
                                             Some(ctrl_idx),
                                             Some(&cell_context),
+                                            styles,
                                         );
                                         inline_x += clamped_w;
                                         continue;
@@ -2249,6 +2251,7 @@ impl LayoutEngine {
                                             Some(cell_context.parent_para_index),
                                             Some(ctrl_idx),
                                             Some(&cell_context),
+                                            styles,
                                         );
                                     } else {
                                         self.layout_picture(
@@ -2262,6 +2265,7 @@ impl LayoutEngine {
                                             Some(cell_context.parent_para_index),
                                             Some(ctrl_idx),
                                             Some(&cell_context),
+                                            styles,
                                         );
                                     }
                                     if matches!(

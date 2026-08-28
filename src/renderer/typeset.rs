@@ -8456,6 +8456,15 @@ impl TypesetEngine {
                     continue;
                 }
                 match ctrl {
+                    // [#6266] 비-TAC 양식 개체는 자기 배치(기준·정렬·오프셋)를 갖는
+                    // 개체다. 종전에는 IR 에 배치가 없어 무조건 인라인으로 흘렀고,
+                    // 쪽 하단 가운데 서식 번호가 제목 줄 안에 그려졌다.
+                    Control::Form(form) if !form.common.treat_as_char => {
+                        st.current_items.push(PageItem::Shape {
+                            para_index: para_idx,
+                            control_index: ctrl_idx,
+                        });
+                    }
                     Control::Shape(_) | Control::Picture(_) | Control::Equation(_) => {
                         // [#6146] 저장 리셋 경계에서 떠나는 쪽의 흐름 말미에 이미 흘려
                         // 놓은 자리차지 밴드는 다시 배치하지 않는다.

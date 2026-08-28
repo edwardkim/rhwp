@@ -6746,8 +6746,15 @@ fn parse_form_object(
                         // <hp:sz width="..." widthRelTo="..." height="..." heightRelTo="..." protect="..."/>
                         for attr in ce.attributes().flatten() {
                             match attr.key.as_ref() {
-                                b"width" => form.width = parse_u32(&attr),
-                                b"height" => form.height = parse_u32(&attr),
+                                b"width" => {
+                                    form.width = parse_u32(&attr);
+                                    // [#6266] 배치 산식은 `common` 을 본다.
+                                    form.common.width = form.width;
+                                }
+                                b"height" => {
+                                    form.height = parse_u32(&attr);
+                                    form.common.height = form.height;
+                                }
                                 b"widthRelTo" => {
                                     form.properties
                                         .insert("SzWidthRelTo".to_string(), attr_str(&attr));
@@ -6781,6 +6788,52 @@ fn parse_form_object(
                                 b"horzOffset" => "PosHorzOffset",
                                 _ => continue,
                             };
+                            // [#6266] 배치를 `common` 에도 싣는다 — 문자열
+                            // properties 는 왕복 보존용이라 렌더러가 읽지 않는다.
+                            match attr.key.as_ref() {
+                                b"treatAsChar" => form.common.treat_as_char = parse_bool(&attr),
+                                b"vertRelTo" => {
+                                    form.common.vert_rel_to = match attr_str(&attr).as_str() {
+                                        "PAPER" => VertRelTo::Paper,
+                                        "PAGE" => VertRelTo::Page,
+                                        _ => VertRelTo::Para,
+                                    };
+                                }
+                                b"horzRelTo" => {
+                                    form.common.horz_rel_to = match attr_str(&attr).as_str() {
+                                        "PAPER" => HorzRelTo::Paper,
+                                        "PAGE" => HorzRelTo::Page,
+                                        "COLUMN" => HorzRelTo::Column,
+                                        _ => HorzRelTo::Para,
+                                    };
+                                }
+                                b"vertAlign" => {
+                                    form.common.vert_align = match attr_str(&attr).as_str() {
+                                        "CENTER" => VertAlign::Center,
+                                        "BOTTOM" => VertAlign::Bottom,
+                                        "INSIDE" => VertAlign::Inside,
+                                        "OUTSIDE" => VertAlign::Outside,
+                                        _ => VertAlign::Top,
+                                    };
+                                }
+                                b"horzAlign" => {
+                                    form.common.horz_align = match attr_str(&attr).as_str() {
+                                        "CENTER" => HorzAlign::Center,
+                                        "RIGHT" => HorzAlign::Right,
+                                        "INSIDE" => HorzAlign::Inside,
+                                        "OUTSIDE" => HorzAlign::Outside,
+                                        _ => HorzAlign::Left,
+                                    };
+                                }
+                                b"vertOffset" => {
+                                    form.common.vertical_offset = parse_i32_wrapping(&attr) as u32;
+                                }
+                                b"horzOffset" => {
+                                    form.common.horizontal_offset =
+                                        parse_i32_wrapping(&attr) as u32;
+                                }
+                                _ => {}
+                            }
                             form.properties.insert(key.to_string(), attr_str(&attr));
                         }
                     }
@@ -6794,6 +6847,17 @@ fn parse_form_object(
                                 b"bottom" => "OutMarginBottom",
                                 _ => continue,
                             };
+                            // [#6266] 가장자리 정렬은 바깥 여백만큼 안쪽으로 들어간다.
+                            let v = parse_i32_wrapping(&attr)
+                                .clamp(i32::from(i16::MIN), i32::from(i16::MAX))
+                                as i16;
+                            match attr.key.as_ref() {
+                                b"left" => form.common.margin.left = v,
+                                b"right" => form.common.margin.right = v,
+                                b"top" => form.common.margin.top = v,
+                                b"bottom" => form.common.margin.bottom = v,
+                                _ => {}
+                            }
                             form.properties.insert(key.to_string(), attr_str(&attr));
                         }
                     }

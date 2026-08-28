@@ -1002,7 +1002,14 @@ fn parse_form_control(ctrl_data: &[u8], child_records: &[Record]) -> Control {
         ..Default::default()
     };
 
-    // ctrl_data에서 width/height 추출 (bytes 12-19)
+    // [#6266] ctrl_data 는 다른 개체와 같은 `CommonObjAttr` 다 — 종전에는 앞
+    // 12바이트(attr·세로/가로 오프셋)를 버리고 width/height 만 읽어 배치를
+    // 잃었고, 그래서 렌더러가 양식 개체를 인라인 말고는 놓을 수 없었다.
+    if !ctrl_data.is_empty() {
+        form.common = parse_common_obj_attr(ctrl_data);
+    }
+    // width/height 는 종전 오프셋(12..20)을 그대로 유지한다 — 이 두 필드는
+    // 직렬화·왕복이 이미 참조하고 있어 값의 출처를 바꾸지 않는다.
     if ctrl_data.len() >= 20 {
         let mut r = ByteReader::new(ctrl_data);
         let _attr = r.read_u32().unwrap_or(0);
