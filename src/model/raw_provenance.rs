@@ -126,6 +126,11 @@ pub fn doc_info_model_digest(doc_info: &DocInfo, doc_props: &DocProperties) -> [
         para_shapes,
         styles,
         extra_records,
+        // [Issue #6208] `print_method` 는 `extra_records` 의 `HWPTAG_DOC_DATA`
+        // (HWPX 는 aux `settings.xml`)에서 **읽어 낸 파생값**이라 저장 산출물에
+        // 스스로 실리지 않는다 — 권위 바이트는 이미 `extra_records` 로 봉인된다.
+        // 여기에 넣으면 같은 정보를 두 번 세어 raw 재사용을 근거 없이 깬다.
+        print_method: _,
         raw_stream: _,
         bullet_count,
         memo_shape_count,

@@ -1684,7 +1684,11 @@ impl DocumentCore {
                 current_table_meta.map(|(si, _, _)| si)
             };
             let table_meta = if let Some(ref ctx) = table_ctx {
-                table_section_index.map(|si| (si, ctx.parent_para_index, ctx.path[0].control_index))
+                table_section_index.and_then(|si| {
+                    ctx.path
+                        .first()
+                        .map(|e| (si, ctx.parent_para_index, e.control_index))
+                })
             } else if let RenderNodeType::Table(ref tn) = node.node_type {
                 match (tn.section_index, tn.para_index, tn.control_index) {
                     (Some(si), Some(pi), Some(ci)) => Some((si, pi, ci)),
@@ -1855,7 +1859,7 @@ impl DocumentCore {
                 page_num, cursor_x, run.bbox_y, run.bbox_h
             );
             if let Some(ref ctx) = run.cell_context {
-                let outer = &ctx.path[0];
+                let outer = ctx.path.first();
                 let tb = if run.is_textbox {
                     ",\"isTextBox\":true"
                 } else {
@@ -1873,9 +1877,13 @@ impl DocumentCore {
                     })
                     .collect();
                 let cell_path = format!(",\"cellPath\":[{}]", path_entries.join(","));
-                format!("{{{},\"parentParaIndex\":{},\"controlIndex\":{},\"cellIndex\":{},\"cellParaIndex\":{}{}{}{}}}",
-                    base, ctx.parent_para_index, outer.control_index, outer.cell_index, outer.cell_para_index,
-                    cell_path, tb, cursor_rect)
+                if let Some(outer) = outer {
+                    format!("{{{},\"parentParaIndex\":{},\"controlIndex\":{},\"cellIndex\":{},\"cellParaIndex\":{}{}{}{}}}",
+                        base, ctx.parent_para_index, outer.control_index, outer.cell_index, outer.cell_para_index,
+                        cell_path, tb, cursor_rect)
+                } else {
+                    format!("{{{}{}}}", base, cursor_rect)
+                }
             } else {
                 format!("{{{}{}}}", base, cursor_rect)
             }
@@ -1917,7 +1925,9 @@ impl DocumentCore {
             let Some(ctx) = run.cell_context.as_ref() else {
                 return false;
             };
-            let outer = &ctx.path[0];
+            let Some(outer) = ctx.path.first() else {
+                return false;
+            };
             textbox_bboxes.iter().any(|tb| {
                 tb.section_index == run.section_index
                     && tb.parent_para_index == ctx.parent_para_index
@@ -2034,10 +2044,10 @@ impl DocumentCore {
         for cb in &mut cell_bboxes {
             let same_cell_run = runs.iter().find(|r| {
                 r.table_id == cb.table_id
-                    && r.cell_context
-                        .as_ref()
-                        .map(|ctx| ctx.innermost().cell_index == cb.cell_index)
-                        .unwrap_or(false)
+                    && r.cell_context.as_ref().is_some_and(|ctx| {
+                        ctx.innermost()
+                            .is_some_and(|e| e.cell_index == cb.cell_index)
+                    })
             });
             let template_run = same_cell_run.or_else(|| {
                 runs.iter()
@@ -2054,7 +2064,9 @@ impl DocumentCore {
                     }
                     cb.section_index = run.section_index;
                     cb.parent_para_index = cell_ctx.parent_para_index;
-                    cb.control_index = cell_ctx.path[0].control_index;
+                    if let Some(first) = cell_ctx.path.first() {
+                        cb.control_index = first.control_index;
+                    }
                     cb.cell_context = Some(cell_ctx);
                     cb.has_meta = true;
                 }
@@ -2064,7 +2076,10 @@ impl DocumentCore {
         // is_textbox 정확 판별: document의 실제 컨트롤 타입으로 재확인
         for run in &mut runs {
             if let Some(ref ctx) = run.cell_context {
-                let outer = &ctx.path[0];
+                let Some(outer) = ctx.path.first() else {
+                    run.is_textbox = false;
+                    continue;
+                };
                 if outer.cell_index == 0 {
                     let is_shape = self
                         .document
@@ -2091,10 +2106,13 @@ impl DocumentCore {
         for cb in &mut cell_bboxes {
             if let Some(ref mut ctx) = cb.cell_context {
                 self.repair_unwrapped_wrapper_cell_context(cb.section_index, ctx);
-                let outer = &ctx.path[0];
-                cb.parent_para_index = ctx.parent_para_index;
-                cb.control_index = outer.control_index;
-                cb.cell_index = ctx.innermost().cell_index;
+                if let Some(outer) = ctx.path.first() {
+                    cb.parent_para_index = ctx.parent_para_index;
+                    cb.control_index = outer.control_index;
+                }
+                if let Some(inner) = ctx.innermost() {
+                    cb.cell_index = inner.cell_index;
+                }
             }
         }
 
@@ -2388,14 +2406,13 @@ impl DocumentCore {
             let cell_runs: Vec<&RunInfo> = runs
                 .iter()
                 .filter(|r| {
-                    r.cell_context
-                        .as_ref()
-                        .map(|ctx| {
-                            r.table_id == cb.table_id
-                                && ctx.parent_para_index == cb.parent_para_index
-                                && ctx.innermost().cell_index == cb.cell_index
-                        })
-                        .unwrap_or(false)
+                    r.cell_context.as_ref().is_some_and(|ctx| {
+                        r.table_id == cb.table_id
+                            && ctx.parent_para_index == cb.parent_para_index
+                            && ctx
+                                .innermost()
+                                .is_some_and(|e| e.cell_index == cb.cell_index)
+                    })
                 })
                 .collect();
 
@@ -2438,29 +2455,29 @@ impl DocumentCore {
             if cb.has_meta {
                 let caret_h = (cb.h - 4.0).max(12.0);
                 if let Some(ref ctx) = cb.cell_context {
-                    let outer = &ctx.path[0];
-                    let inner = ctx.innermost();
-                    let path_entries: Vec<String> = ctx
-                        .path
-                        .iter()
-                        .map(|e| {
-                            format!(
-                                "{{\"controlIndex\":{},\"cellIndex\":{},\"cellParaIndex\":{}}}",
-                                e.control_index, e.cell_index, e.cell_para_index
-                            )
-                        })
-                        .collect();
-                    return Ok(format!(
-                        "{{\"sectionIndex\":{},\"paragraphIndex\":{},\"charOffset\":0,\
-                         \"parentParaIndex\":{},\"controlIndex\":{},\"cellIndex\":{},\"cellParaIndex\":{},\
-                         \"cellPath\":[{}],\
-                         \"cursorRect\":{{\"pageIndex\":{},\"x\":{:.1},\"y\":{:.1},\"height\":{:.1}}}}}",
-                        cb.section_index, inner.cell_para_index,
-                        ctx.parent_para_index, outer.control_index, outer.cell_index, outer.cell_para_index,
-                        path_entries.join(","),
-                        page_num,
-                        cb.x + 2.0, cb.y + 2.0, caret_h
-                    ));
+                    if let (Some(outer), Some(inner)) = (ctx.path.first(), ctx.innermost()) {
+                        let path_entries: Vec<String> = ctx
+                            .path
+                            .iter()
+                            .map(|e| {
+                                format!(
+                                    "{{\"controlIndex\":{},\"cellIndex\":{},\"cellParaIndex\":{}}}",
+                                    e.control_index, e.cell_index, e.cell_para_index
+                                )
+                            })
+                            .collect();
+                        return Ok(format!(
+                            "{{\"sectionIndex\":{},\"paragraphIndex\":{},\"charOffset\":0,\
+                             \"parentParaIndex\":{},\"controlIndex\":{},\"cellIndex\":{},\"cellParaIndex\":{},\
+                             \"cellPath\":[{}],\
+                             \"cursorRect\":{{\"pageIndex\":{},\"x\":{:.1},\"y\":{:.1},\"height\":{:.1}}}}}",
+                            cb.section_index, inner.cell_para_index,
+                            ctx.parent_para_index, outer.control_index, outer.cell_index, outer.cell_para_index,
+                            path_entries.join(","),
+                            page_num,
+                            cb.x + 2.0, cb.y + 2.0, caret_h
+                        ));
+                    }
                 }
                 return Ok(format!(
                     "{{\"sectionIndex\":{},\"paragraphIndex\":0,\"charOffset\":0,\
@@ -2608,36 +2625,39 @@ impl DocumentCore {
                 field.field_type_str(),
             );
             if let Some(ctx) = cell_context {
-                let outer = &ctx.path[0];
-                let tb = if matches!(
-                    self.document
-                        .sections
-                        .get(section_index)
-                        .and_then(|s| s.paragraphs.get(ctx.parent_para_index))
-                        .and_then(|p| p.controls.get(outer.control_index)),
-                    Some(Control::Shape(_))
-                ) {
-                    ",\"isTextBox\":true"
+                if let Some(outer) = ctx.path.first() {
+                    let tb = if matches!(
+                        self.document
+                            .sections
+                            .get(section_index)
+                            .and_then(|s| s.paragraphs.get(ctx.parent_para_index))
+                            .and_then(|p| p.controls.get(outer.control_index)),
+                        Some(Control::Shape(_))
+                    ) {
+                        ",\"isTextBox\":true"
+                    } else {
+                        ""
+                    };
+                    let path_entries: Vec<String> = ctx
+                        .path
+                        .iter()
+                        .map(|e| {
+                            format!(
+                                "{{\"controlIndex\":{},\"cellIndex\":{},\"cellParaIndex\":{}}}",
+                                e.control_index, e.cell_index, e.cell_para_index
+                            )
+                        })
+                        .collect();
+                    let cell_path = format!(",\"cellPath\":[{}]", path_entries.join(","));
+                    format!(
+                        "{{{},\"parentParaIndex\":{},\"controlIndex\":{},\"cellIndex\":{},\"cellParaIndex\":{}{}{}{}{}}}",
+                        base, ctx.parent_para_index, outer.control_index,
+                        outer.cell_index, outer.cell_para_index,
+                        cell_path, tb, field_info, cursor_rect,
+                    )
                 } else {
-                    ""
-                };
-                let path_entries: Vec<String> = ctx
-                    .path
-                    .iter()
-                    .map(|e| {
-                        format!(
-                            "{{\"controlIndex\":{},\"cellIndex\":{},\"cellParaIndex\":{}}}",
-                            e.control_index, e.cell_index, e.cell_para_index
-                        )
-                    })
-                    .collect();
-                let cell_path = format!(",\"cellPath\":[{}]", path_entries.join(","));
-                format!(
-                    "{{{},\"parentParaIndex\":{},\"controlIndex\":{},\"cellIndex\":{},\"cellParaIndex\":{}{}{}{}{}}}",
-                    base, ctx.parent_para_index, outer.control_index,
-                    outer.cell_index, outer.cell_para_index,
-                    cell_path, tb, field_info, cursor_rect,
-                )
+                    format!("{{{}{}{}}}", base, field_info, cursor_rect)
+                }
             } else {
                 format!("{{{}{}{}}}", base, field_info, cursor_rect)
             }

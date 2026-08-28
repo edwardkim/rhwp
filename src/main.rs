@@ -771,6 +771,14 @@ fn info_json_value(
             // HWP5 summary 또는 HWPX version.xml 메타데이터다. 원 작성 제품이 아니라
             // 마지막 저장 제품을 가리키며 없거나 수정될 수 있다.
             "lastSavedWith": last_saved_with,
+            // [#6208] 문서에 실린 인쇄 방식(모아 찍기 등). rhwp 는 이 값을 **출력에
+            // 반영하지 않으므로**, 한글 오라클 PDF 와 대조할 때 `impliesNup` 이 true
+            // 면 한글 쪽 장 수·용지 방향이 달라 좌표를 그대로 견주면 오판한다.
+            // 값이 문서에 없으면 `printMethod: null`.
+            "printMethod": doc.document().doc_info.print_method,
+            "printMethodImpliesNup": rhwp::model::document::print_method_implies_nup(
+                doc.document().doc_info.print_method,
+            ),
             // [#3880 T1] 파싱 중 건너뛴 것을 봉투가 스스로 밝힌다.
             //
             // 인간 출력은 `warnings: N` 과 상세를 stderr 로 내는데 JSON 분기는 그

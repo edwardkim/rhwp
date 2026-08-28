@@ -125,6 +125,7 @@ fn tac_picture_and_shape_require_partial_paragraph_page_routing() {
     let page = |page_index, start_line, end_line| PageContent {
         page_index,
         page_number: page_index + 1,
+        page_number_restarted: false,
         section_index: 0,
         layout: layout.clone(),
         column_contents: vec![ColumnContent {

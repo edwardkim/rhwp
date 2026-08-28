@@ -1917,9 +1917,52 @@ impl HeightMeasurer {
                                     || matches!(c, Control::Shape(sh) if !sh.common().treat_as_char)
                             })
                     });
+                    // [#6194] 같은 흡수를 **다음 문단의 vpos** 로 적어 둔 모양.
+                    // 156494392 1쪽 머리 표 기관명 칸:
+                    //   p0 [PIC h=2906HU, TopAndBottom]  lineseg vpos=0    vertsize=1200
+                    //   p1 "국립농산물품질관리원"          lineseg vpos=2906 vertsize=1000
+                    // 개체를 단 문단 **자신의** vpos 는 0 이라 위 증인에 안 걸린다. 밀림은
+                    // 뒤 문단의 vpos(=정확히 그림 높이)에 적혀 있다. 그 모양도 사다리가
+                    // 개체를 흡수했다는 증거이므로 같은 갈래로 받는다.
+                    //
+                    // 반례 캘리브는 그대로 통과한다 — KTX TOC 는 개체가 없어 `obj_h == 0`,
+                    // #1282 는 텍스트 문단 vpos 가 0 이라 개체 바닥에 못 미친다.
+                    let ladder_pushed_following_line =
+                        cell.paragraphs.iter().enumerate().any(|(i, pp)| {
+                            let obj_h = pp
+                                .controls
+                                .iter()
+                                .filter_map(|c| match c {
+                                    Control::Picture(pic) => {
+                                        Some(self.non_inline_control_flow_height(&pic.common))
+                                    }
+                                    Control::Shape(sh) => {
+                                        Some(self.non_inline_control_flow_height(sh.common()))
+                                    }
+                                    _ => None,
+                                })
+                                .fold(0.0f64, f64::max);
+                            if obj_h <= 0.0 {
+                                return false;
+                            }
+                            let own_top = pp
+                                .line_segs
+                                .first()
+                                .map(|seg| hwpunit_to_px(seg.vertical_pos, self.dpi))
+                                .unwrap_or(0.0);
+                            // 바로 뒤의 실제 줄만 증거로 쓴다. 여러 문단 뒤의 누적 vpos까지
+                            // 허용하면 긴 셀의 자연스러운 줄 흐름도 개체 흡수로 오인할 수 있다.
+                            cell.paragraphs[i + 1..]
+                                .iter()
+                                .find_map(|later| later.line_segs.first())
+                                .is_some_and(|seg| {
+                                    hwpunit_to_px(seg.vertical_pos, self.dpi) + 0.5
+                                        >= own_top + obj_h
+                                })
+                        });
                     let trust_stored = (depth > 0 || table.common.treat_as_char)
                         && non_inline_h > 0.0
-                        && ladder_absorbed_objects
+                        && (ladder_absorbed_objects || ladder_pushed_following_line)
                         && stored_extent > 0.0
                         && stored_extent + 0.5 < additive
                         && wrap_bottom <= stored_extent + 0.5;
@@ -1953,6 +1996,23 @@ impl HeightMeasurer {
                             })
                         && stored_extent + pad_top + pad_bottom
                             > hwpunit_to_px(cell.height as i32, self.dpi) + 0.5;
+                    // [#6194 진단] 이 갈래의 성분과 게이트를 그대로 찍는다 — 동작 불변.
+                    if std::env::var("RHWP_DIAG_ROWH").is_ok() && depth == 0 {
+                        eprintln!(
+                            "DIAG_TRUST r={} c={} text={:.1} nonInline={:.1} wrapBottom={:.1} additive={:.1} stored={:.1} tac={} absorbed={} pushed={} trust={}",
+                            cell.row,
+                            cell.col,
+                            text_height,
+                            non_inline_h,
+                            wrap_bottom,
+                            additive,
+                            stored_extent,
+                            table.common.treat_as_char,
+                            ladder_absorbed_objects,
+                            ladder_pushed_following_line,
+                            trust_stored,
+                        );
+                    }
                     if trust_stored {
                         stored_extent
                     } else if ladder_exceeds_declared_text_cell {

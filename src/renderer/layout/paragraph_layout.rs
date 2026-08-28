@@ -831,6 +831,61 @@ fn tac_offsets_for_line(
 ///
 /// 다음 composed line이 정확히 같은 run 끝 위치에서 시작하면 그 TAC는 다음 줄 선두다.
 /// #1219의 줄 경계 수식 중복·폭 오포함을 막기 위해 이 경우에는 추가하지 않는다.
+/// [#5820 → Issue #6173] 오른쪽/가운데 정렬이 폭에서 제외할 **줄 말미 공백** 폭 (px).
+///
+/// 말미 공백이 서로 다른 글꼴·글자 크기의 run 경계를 넘을 수 있으므로, 전체 공백을
+/// 마지막 run 의 style 로 재측정하지 않고 뒤에서부터 각 run 의 실제 style 폭을 더한다.
+///
+/// **[Issue #6173] 자리차지(TAC) 개체 앞 공백은 말미 공백이 아니다.** 인라인 개체는
+/// run 을 쪼개지 않고 run 안 char 위치에 놓이므로 `[그림A][공백4][그림B][공백2]` 가
+/// 공백 6칸짜리 run **하나**로 합성된다. run 만 보고 뒤에서 공백을 세면 그림 사이 4칸까지
+/// 말미로 걷어내 오른쪽 앵커가 그만큼(26.7px) 우측으로 밀리고, 마지막 그림이 글상자
+/// 우단을 넘어 잘린다(156740495 2쪽). 줄의 **마지막 개체 위치 뒤** 공백만 말미다.
+///
+/// - `last_inline_object_pos`: 이 줄이 소유한 TAC 개체 중 마지막 것의 절대 char 위치.
+///   개체가 없으면 `None` — 종전 동작 그대로.
+/// - `stop_on_underline`: 밑줄 친 말미 공백에서 멈춘다(가운데 정렬 전용 규칙).
+pub(crate) fn trailing_space_width_after_last_inline_object(
+    line: &ComposedLine,
+    last_inline_object_pos: Option<usize>,
+    styles: &ResolvedStyleSet,
+    stop_on_underline: bool,
+) -> f64 {
+    let run_chars = |r: &crate::renderer::composer::ComposedTextRun| -> usize {
+        if r.char_overlap.is_some() {
+            let chars: Vec<char> = r.text.chars().collect();
+            crate::renderer::composer::char_overlap_advance_units(&chars)
+        } else {
+            r.text.chars().count()
+        }
+    };
+    let mut run_end_pos = line.char_start + line.runs.iter().map(run_chars).sum::<usize>();
+    let mut width = 0.0;
+    for run in line.runs.iter().rev() {
+        let run_char_count = run_chars(run);
+        let run_start_pos = run_end_pos.saturating_sub(run_char_count);
+        let mut trailing_spaces = run.text.chars().rev().take_while(|c| *c == ' ').count();
+        if let Some(obj_pos) = last_inline_object_pos {
+            // 마지막 개체 뒤로 자른다 — 개체 자리 이전 공백은 콘텐츠다.
+            let floor = obj_pos.max(run_start_pos);
+            trailing_spaces = trailing_spaces.min(run_end_pos.saturating_sub(floor));
+        }
+        if trailing_spaces == 0 {
+            break;
+        }
+        let ts = resolved_to_text_style(styles, run.char_style_id, run.lang_index);
+        if stop_on_underline && ts.underline != crate::renderer::UnderlineType::None {
+            break;
+        }
+        width += estimate_text_width(&" ".repeat(trailing_spaces), &ts);
+        if trailing_spaces != run_char_count {
+            break;
+        }
+        run_end_pos = run_start_pos;
+    }
+    width
+}
+
 fn tac_offsets_for_line_width(
     comp: &ComposedParagraph,
     tac_offsets_px: &[(usize, f64, usize)],
@@ -1218,6 +1273,45 @@ pub(crate) fn right_tab_block_width(
         w += estimate_text_width(effective_text_for_metrics(r), &ts);
     }
     w
+}
+
+/// [Issue #6179] 오른쪽 탭 뒤에 오는 **자리차지(TAC) 개체**까지 포함한 정렬 블록 폭.
+///
+/// `auto_tab_right` 오른쪽 탭은 "탭 뒤 블록의 **오른쪽 변**을 우단에 맞춘다"는 뜻이고,
+/// 그 되밀기 폭은 `text_measurement` 가 탭 뒤 **글자**만 재서 구한다. 그런데 run 은
+/// TAC 개체 위치에서 조각으로 쪼개져 측정되므로, 탭 바로 뒤가 개체면 측정 대상 조각에
+/// 남는 글자가 없어 되밀기 폭이 0 이 된다 → 개체의 **왼쪽** 변이 우단에 놓여, 개체는
+/// 정확히 제 폭만큼 우측(용지 밖)으로 밀린다.
+///
+/// 여기서 탭 뒤 잔여 글자 폭 + 탭 뒤 TAC 개체 폭을 합해
+/// `right_tab_block_width_override` 로 주입한다. 탭 뒤에 또 탭이 있으면
+/// (`has_more_tabs_after`) 측정 쪽이 override 를 쓰지 않으므로 `None` 을 돌려준다.
+///
+/// - `run_chars`: run 전체 문자열 (조각이 아니라 run 단위 — 탭 뒤 잔여가 다음 조각에
+///   있을 수 있다)
+/// - `tab_rel`: run 안 마지막 탭의 문자 인덱스
+/// - `run_tacs`: run 안 TAC 목록 `(rel_pos, width_px, control_index)`
+fn right_tab_block_width_with_tac(
+    run_chars: &[char],
+    tab_rel: usize,
+    run_tacs: &[(usize, f64, usize)],
+    style: &TextStyle,
+) -> Option<f64> {
+    if run_chars[tab_rel + 1..].contains(&'\t') {
+        return None;
+    }
+    let tac_w: f64 = run_tacs
+        .iter()
+        .filter(|(rel, _, _)| *rel > tab_rel)
+        .map(|(_, w, _)| *w)
+        .sum();
+    if tac_w <= 0.0 {
+        return None;
+    }
+    let tail: String = run_chars[tab_rel + 1..].iter().collect();
+    let mut ts = style.clone();
+    ts.right_tab_block_width_override = None;
+    Some(estimate_text_width(&tail, &ts) + tac_w)
 }
 
 /// [Task #2067] 정렬(양쪽/배분/나눔)·오버플로우·셀 underflow 에 따른 여분 간격 계산.
@@ -2789,14 +2883,15 @@ impl LayoutEngine {
                     if let Some(Control::Form(f)) = p.controls.get(tac_ci) {
                         let form_h = hwpunit_to_px(f.height as i32, self.dpi);
                         let form_y = (y + baseline - form_h).max(y);
-                        let cell_location = cell_ctx.map(|ctx| {
-                            let e = &ctx.path[0];
-                            (
-                                ctx.parent_para_index,
-                                e.control_index,
-                                e.cell_index,
-                                e.cell_para_index,
-                            )
+                        let cell_location = cell_ctx.and_then(|ctx| {
+                            ctx.path.first().map(|e| {
+                                (
+                                    ctx.parent_para_index,
+                                    e.control_index,
+                                    e.cell_index,
+                                    e.cell_para_index,
+                                )
+                            })
                         });
                         let form_node = RenderNode::new(
                             tree.next_id(),
@@ -3018,8 +3113,8 @@ impl LayoutEngine {
                     };
                     let (eq_cell_idx, eq_cell_para_idx) = if let Some(ref ctx) = cell_ctx {
                         (
-                            Some(ctx.path[0].cell_index),
-                            Some(ctx.path[0].cell_para_index),
+                            ctx.path.first().map(|e| e.cell_index),
+                            ctx.path.first().map(|e| e.cell_para_index),
                         )
                     } else {
                         (None, None)
@@ -3048,7 +3143,7 @@ impl LayoutEngine {
                                 Some(para_index)
                             },
                             control_index: if let Some(ref ctx) = cell_ctx {
-                                Some(ctx.path[0].control_index)
+                                ctx.path.first().map(|e| e.control_index).or(Some(tac_ci))
                             } else {
                                 Some(tac_ci)
                             },
@@ -3792,8 +3887,45 @@ impl LayoutEngine {
             // - 보통(ind=0): 모든 줄 margin_left
             // - 들여쓰기(ind>0): 첫줄 margin_left+indent, 다음줄 margin_left
             // - 내어쓰기(ind<0): 첫줄 margin_left, 다음줄 margin_left+|indent|
-            let line_indent =
-                crate::renderer::equation_tac_flow::paragraph_line_indent(indent, line_idx);
+            //
+            // [Issue #6190] **저장 LINE_SEG 의 `TAG_INDENTATION`(bit 20)이 정답지다.**
+            // 이 비트는 "이 줄에 들여쓰기가 적용됐다"는 한글의 줄별 기록이다. 비트가
+            // 꺼진 줄에 우리가 들여쓰기를 얹으면 그 줄과, 그 문단이 호스트하는 표까지
+            // 함께 밀린다(156458354 3쪽 `경 력 사 항` +68.1px, 마지막 표는 용지 밖 36px).
+            //
+            // 한글 통제 실험으로 확인했다 — 같은 문단의 `indent` 만 바꿔 한글로 PDF 를
+            // 떠서 재면:
+            //
+            // | 문서 | ls[0].tag | indent 0→20445 스윕 | 한글 x |
+            // |---|---|---|---|
+            // | 156458354 pi=28 | `0x60000` (bit20 꺼짐) | 0 · 2000 · 6000 · 10000 · 20445 | **전부 345.60 (불변)** |
+            // | 36313646 pi=2 | `0x160000` (bit20 켜짐) | 0 · 660 · 4000 · 10000 · 20445 | 352.77 → 420.89 (**정확히 indent/4 씩**) |
+            //
+            // 내어쓰기 문단이 `ls[0]=0x60000, ls[1..]=0x160000` 인 것도 같은 의미다 —
+            // 내어쓰기는 둘째 줄부터 적용되고, 비트가 줄마다 그것을 기록한다.
+            // 합성 사다리(`TAG_IMPLEMENTATION_PROPERTY`)는 이 증언이 없으므로 제외한다.
+            //
+            // 편집으로 줄 수가 달라진 문단은 저장 사다리가 더는 이 조판을 설명하지
+            // 못한다 — 그때는 비트도 낡은 기록이다(#6204 계열). `composed.lines` 와
+            // 저장 세그 수가 같을 때만 증언으로 쓴다.
+            //
+            // **본문 흐름 한정**이다 — 표 셀 안 문단은 한글이 들여쓰기를 적용한다
+            // (오라클 7문서: 2777015 · 156548319 · 156658621 · 156428389 등 모두 셀 안
+            // Center 문단이고 한글 x 가 `indent/2` 반영값과 0.0~0.4px 로 일치).
+            let stored_ladder_covers_lines = cell_ctx.is_none()
+                && para.is_some_and(|p| p.line_segs.len() == composed.lines.len());
+            let stored_seg_denies_indent = stored_ladder_covers_lines
+                && para
+                    .and_then(|p| p.line_segs.get(line_idx))
+                    .is_some_and(|seg| {
+                        seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+                            && seg.tag & LineSeg::TAG_INDENTATION == 0
+                    });
+            let line_indent = if stored_seg_denies_indent {
+                0.0
+            } else {
+                crate::renderer::equation_tac_flow::paragraph_line_indent(indent, line_idx)
+            };
             let styled_margin_left = margin_left + line_indent;
 
             // [Task #489] Picture/Shape Square wrap (어울림) 시 LINE_SEG.cs/sw 적용.
@@ -4332,8 +4464,25 @@ impl LayoutEngine {
                         .count()
                 })
                 .sum();
-            let suppress_cell_overflow_spacing =
-                cell_ctx.is_some() && total_text_width > available_width * 1.15;
+            // [Issue #6196] 저장 사다리가 이 셀 문단을 **한 줄**로, 그것도 **셀 안쪽 폭
+            // 그대로** 적어 두었으면 "한글이 이 문장을 이 폭에 담았다"는 증언이다.
+            // 우리 폰트 메트릭의 자연 폭이 그보다 넓다고 압축을 억제하면 문장 꼬리가
+            // 칸 밖으로 나가 잘린다(156543798 4쪽 `우수 내용` 칸 9행 중 7행 소실 —
+            // 자연 폭 290~331px vs 저장 줄폭 229.2px).
+            let stored_single_line_fits_cell = cell_ctx.is_some()
+                && composed.lines.len() == 1
+                && para.is_some_and(|p| {
+                    p.line_segs.len() == 1
+                        && p.line_segs[0].tag
+                            & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                            == 0
+                        && (hwpunit_to_px(p.line_segs[0].segment_width, self.dpi) - available_width)
+                            .abs()
+                            <= 2.0
+                });
+            let suppress_cell_overflow_spacing = cell_ctx.is_some()
+                && total_text_width > available_width * 1.15
+                && !stored_single_line_fits_cell;
             let is_hancom_company_pua_logo_line =
                 is_hancom_company_pua_logo_line(comp_line, alignment);
 
@@ -4475,35 +4624,22 @@ impl LayoutEngine {
             // (issue_1285)은 in_textbox=false 로 그대로 유지된다.
             let right_align_excludes_trailing_ws =
                 alignment == Alignment::Right && cell_ctx.as_ref().is_none_or(|c| c.in_textbox);
-            let trailing_ws_width = if right_align_excludes_trailing_ws
-                || center_excludes_trailing_ws
-            {
-                // 말미 공백이 서로 다른 글꼴/글자 크기의 run 경계를 넘을 수 있다.
-                // 전체 공백을 마지막 run의 style로 재측정하면 그만큼 오른쪽 앵커를
-                // 틀리게 복원하므로, 뒤에서부터 각 run의 실제 style 폭을 더한다.
-                let mut width = 0.0;
-                for run in comp_line.runs.iter().rev() {
-                    let trailing_spaces = run.text.chars().rev().take_while(|c| *c == ' ').count();
-                    if trailing_spaces == 0 {
-                        break;
-                    }
-                    let ts = resolved_to_text_style(styles, run.char_style_id, run.lang_index);
-                    // ④ 밑줄 친 말미 공백은 보이는 콘텐츠 — Center 는 제외 대상에서
-                    // 뺀다(Right 는 기존 검증 동작 유지).
-                    if center_excludes_trailing_ws
-                        && ts.underline != crate::renderer::UnderlineType::None
-                    {
-                        break;
-                    }
-                    width += estimate_text_width(&" ".repeat(trailing_spaces), &ts);
-                    if trailing_spaces != run.text.chars().count() {
-                        break;
-                    }
-                }
-                width
-            } else {
-                0.0
-            };
+            let trailing_ws_width =
+                if right_align_excludes_trailing_ws || center_excludes_trailing_ws {
+                    trailing_space_width_after_last_inline_object(
+                        comp_line,
+                        line_tac_offsets_for_width
+                            .iter()
+                            .map(|(pos, _, _)| *pos)
+                            .max(),
+                        styles,
+                        // ④ 밑줄 친 말미 공백은 보이는 콘텐츠 — Center 는 제외 대상에서
+                        // 뺀다(Right 는 기존 검증 동작 유지).
+                        center_excludes_trailing_ws,
+                    )
+                } else {
+                    0.0
+                };
             let x_start = match alignment {
                 Alignment::Center => {
                     let align_offset = if center_packed_cell_label_as_right {
@@ -5997,6 +6133,20 @@ impl LayoutEngine {
                         let seg_text: String = run_chars[seg_start..tac_rel].iter().collect();
                         let mut seg_style = text_style.clone();
                         seg_style.line_x_offset = x - col_area.x;
+                        // [Issue #6179] 이 조각의 마지막 탭 뒤에 TAC 개체가 오면,
+                        // 되밀기 폭에 그 개체 폭을 포함시킨다 (조각 경계로 잘려
+                        // 측정 쪽에서는 보이지 않는다).
+                        if auto_tab_right && seg_text.contains('\t') {
+                            let tab_rel = seg_start
+                                + run_chars[seg_start..tac_rel]
+                                    .iter()
+                                    .rposition(|c| *c == '\t')
+                                    .expect("seg_text 가 탭을 포함한다");
+                            seg_style.right_tab_block_width_override =
+                                right_tab_block_width_with_tac(
+                                    &run_chars, tab_rel, &run_tacs, &seg_style,
+                                );
+                        }
                         // 탭 리더 계산
                         if has_tabs && seg_text.contains('\t') {
                             let positions = compute_char_positions(&seg_text, &seg_style);
@@ -6208,8 +6358,8 @@ impl LayoutEngine {
                             };
                             let (eq_cell_idx, eq_cell_para_idx) = if let Some(ref ctx) = cell_ctx {
                                 (
-                                    Some(ctx.path[0].cell_index),
-                                    Some(ctx.path[0].cell_para_index),
+                                    ctx.path.first().map(|e| e.cell_index),
+                                    ctx.path.first().map(|e| e.cell_para_index),
                                 )
                             } else {
                                 (None, None)
@@ -6239,7 +6389,10 @@ impl LayoutEngine {
                                             Some(para_index)
                                         },
                                         control_index: if let Some(ref ctx) = cell_ctx {
-                                            Some(ctx.path[0].control_index)
+                                            ctx.path
+                                                .first()
+                                                .map(|e| e.control_index)
+                                                .or(Some(tac_ci))
                                         } else {
                                             Some(tac_ci)
                                         },
@@ -6369,15 +6522,16 @@ impl LayoutEngine {
                         if let Some(Control::Form(f)) = p.controls.get(tac_ci) {
                             let form_h = hwpunit_to_px(f.height as i32, self.dpi);
                             let form_y = (y + baseline - form_h).max(y);
-                            // 셀 내부인 경우 cell_location 채우기
-                            let cell_location = cell_ctx.as_ref().map(|ctx| {
-                                let e = &ctx.path[0];
-                                (
-                                    ctx.parent_para_index,
-                                    e.control_index,
-                                    e.cell_index,
-                                    e.cell_para_index,
-                                )
+                            // 셀 내부인 경우 cell_location 채우기 — 빈 경로면 None
+                            let cell_location = cell_ctx.as_ref().and_then(|ctx| {
+                                ctx.path.first().map(|e| {
+                                    (
+                                        ctx.parent_para_index,
+                                        e.control_index,
+                                        e.cell_index,
+                                        e.cell_para_index,
+                                    )
+                                })
                             });
                             let form_node = RenderNode::new(
                                 tree.next_id(),

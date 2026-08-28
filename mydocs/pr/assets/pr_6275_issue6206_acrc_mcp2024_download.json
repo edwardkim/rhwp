@@ -1,0 +1,25 @@
+{
+  "status": "success",
+  "job_id": "de345027-668c-4fef-9edc-d1563c5eaf54",
+  "output_path": "/home/tsjang/rhwp/pdf/pr_6275/by_saved_version/pr6275_issue6206_acrc_113424_review-2024.pdf",
+  "output_filename": "pr6275_issue6206_acrc_113424_review-2024.pdf",
+  "size": 713682,
+  "sha256": "ae6f7b87d33ab1b5d068f1ab96f90617284e6dc3284362bcc834d3c8217a64f3",
+  "server": {
+    "job_id": "de345027-668c-4fef-9edc-d1563c5eaf54",
+    "status": "success",
+    "target": "pdf",
+    "input_filename": "113424_근무성적평가 및 경력·가점평정 등 운영지침 일부개정예규안_자체법제심사 결과 반영.hwpx",
+    "output_filename": "pr6275_issue6206_acrc_113424_review-2024.pdf",
+    "size": 713682,
+    "sha256": "ae6f7b87d33ab1b5d068f1ab96f90617284e6dc3284362bcc834d3c8217a64f3",
+    "mime_type": "application/pdf",
+    "engine": "2024",
+    "engine_profile": "2024",
+    "hancom_version": "13.0.0.3901",
+    "backend": "hwp-managed-direct-dll-host",
+    "elapsed_ms": 42851,
+    "worker_elapsed_ms": 41587,
+    "worker_bits": 32
+  }
+}

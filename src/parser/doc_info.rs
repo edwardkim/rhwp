@@ -139,6 +139,12 @@ pub fn parse_doc_info(data: &[u8]) -> Result<(DocInfo, DocProperties), DocInfoEr
             }
             // 미지원 태그: 원시 데이터 보존 (라운드트립용)
             _ => {
+                // [Issue #6208] 보존은 그대로 두고 인쇄 방식만 **파생**으로 읽는다.
+                if record.tag_id == tags::HWPTAG_DOC_DATA {
+                    if let Some(pm) = parse_doc_data_print_method(&record.data) {
+                        doc_info.print_method = Some(pm);
+                    }
+                }
                 doc_info.extra_records.push(RawRecord {
                     tag_id: record.tag_id,
                     level: record.level,
@@ -154,6 +160,23 @@ pub fn parse_doc_info(data: &[u8]) -> Result<(DocInfo, DocProperties), DocInfoEr
 // ============================================================
 // 개별 레코드 파서
 // ============================================================
+
+/// [Issue #6208] `HWPTAG_DOC_DATA` 에서 인쇄 방식(모아 찍기 등)을 읽는다.
+///
+/// 레코드는 `(u32 key, u32 value)` 8바이트 쌍의 평평한 목록이다(실측 80바이트 = 10쌍).
+/// **키 순서는 문서마다 다르므로 인덱스가 아니라 키로 찾는다.** 항목이 없으면 `None`.
+///
+/// 같은 목록에 `ZoomX`/`ZoomY`(값 100 두 개) 등 다른 인쇄 설정도 함께 들어 있으며,
+/// HWPX 는 같은 값을 `settings.xml` 의
+/// `<config:config-item name="PrintMethod">` 로 싣는다.
+fn parse_doc_data_print_method(data: &[u8]) -> Option<u32> {
+    data.chunks_exact(8)
+        .find(|kv| {
+            u32::from_le_bytes([kv[0], kv[1], kv[2], kv[3]])
+                == crate::model::document::HWP5_DOC_DATA_KEY_PRINT_METHOD
+        })
+        .map(|kv| u32::from_le_bytes([kv[4], kv[5], kv[6], kv[7]]))
+}
 
 fn parse_document_properties(data: &[u8]) -> Result<DocProperties, DocInfoError> {
     let mut r = ByteReader::new(data);
