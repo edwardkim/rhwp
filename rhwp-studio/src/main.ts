@@ -998,7 +998,6 @@ function setupZoomControls(): void {
   const zoomIn = document.getElementById('sb-zoom-in') as HTMLButtonElement;
   const zoomOut = document.getElementById('sb-zoom-out') as HTMLButtonElement;
   const zoomRange = document.getElementById('sb-zoom-range') as HTMLInputElement;
-  const zoomRangeWrap = zoomRange.closest('.stb-zoom-range-wrap')!;
   const platform = detectPlatformKind();
 
   zoomIn.title = zoomPercentShortcutTitle('확대', 'Ctrl++', platform);
@@ -1013,7 +1012,6 @@ function setupZoomControls(): void {
     const percent = zoomSliderPositionToPercent(Number(zoomRange.value));
     zoomRange.value = String(percentToZoomSliderPosition(percent));
     zoomRange.setAttribute('aria-valuetext', `${percent}%`);
-    zoomRangeWrap.classList.toggle('is-neutral', percent === 100);
     vm.setZoom(percent / 100);
   });
   zoomRange.addEventListener('keydown', (event) => {
@@ -1103,10 +1101,6 @@ function setupEventListeners(): void {
     if (range) {
       range.value = String(percentToZoomSliderPosition(percent));
       range.setAttribute('aria-valuetext', `${percent}%`);
-      range.closest('.stb-zoom-range-wrap')?.classList.toggle(
-        'is-neutral',
-        percent === 100,
-      );
     }
   });
 
@@ -1259,8 +1253,7 @@ function applySavedZoomFitMode(mode: ZoomFitMode): void {
       containerHeight: container.clientHeight,
       pageWidth: pageInfo.width,
       pageHeight: pageInfo.height,
-      arrangement: canvasView?.getPageArrangement()
-        ?? userSettings.getViewSettings().pageArrangement,
+      arrangement: userSettings.getViewSettings().pageArrangement,
     });
     if (zoom !== null) vm.setZoom(zoom, CENTER_ZOOM_ANCHOR, mode);
   } catch (error) {

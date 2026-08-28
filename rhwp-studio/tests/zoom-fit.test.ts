@@ -121,8 +121,10 @@ test('status bar and view command share the fit helpers', () => {
   assert.match(main, /dispatcher\.dispatch\('view:zoom-fit-page'\)/);
   assert.doesNotMatch(main, /calculateFitPageZoom/);
   assert.doesNotMatch(main, /calculateArrangementFitWidthZoom/);
-  assert.match(commands, /calculateFitPageZoom/);
-  assert.match(commands, /calculateArrangementFitWidthZoom/);
+  assert.doesNotMatch(commands, /calculateFitPageZoom/);
+  assert.doesNotMatch(commands, /calculateArrangementFitWidthZoom/);
+  assert.match(commands, /resolveZoomFitZoom/);
+  assert.match(commands, /function getZoomFitMetrics/);
   assert.doesNotMatch(main, /containerHeight - 40/);
   assert.doesNotMatch(commands, /containerH - 40/);
 });
@@ -175,6 +177,7 @@ test('배율 슬라이더 손잡이와 100% 눈금은 같은 12px 크기이며 �
     new URL('../src/styles/status-bar.css', import.meta.url),
     'utf8',
   );
+  const main = readFileSync(new URL('../src/main.ts', import.meta.url), 'utf8');
   const wrap = css.match(/\.stb-zoom-range-wrap\s*\{(?<rules>[^}]*)\}/)?.groups?.rules;
   const range = css.match(/\.stb-zoom-range\s*\{(?<rules>[^}]*)\}/)?.groups?.rules;
   const mark = css.match(/\.stb-zoom-neutral-mark\s*\{(?<rules>[^}]*)\}/)?.groups?.rules;
@@ -213,4 +216,5 @@ test('배율 슬라이더 손잡이와 100% 눈금은 같은 12px 크기이며 �
   assert.match(firefoxTrack, /height:\s*var\(--stb-zoom-track-size\)/);
   assert.match(firefoxTrack, /background:\s*var\(--ui-border-strong\)/);
   assert.doesNotMatch(css, /\.stb-zoom-range-wrap\.is-neutral[\s\S]*?visibility:\s*hidden/);
+  assert.doesNotMatch(main, /classList\.toggle\('is-neutral'/);
 });

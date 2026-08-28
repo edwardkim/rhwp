@@ -15,8 +15,10 @@ function pages(n: number) {
 }
 
 function classMethodSource(name: string, nextName: string): string {
-  const start = canvasViewSource.indexOf(`\n  ${name}(`);
-  const end = canvasViewSource.indexOf(`\n  ${nextName}(`, start + 1);
+  const start = canvasViewSource.search(new RegExp(`\\n  (?:private )?${name}\\(`));
+  const remaining = start >= 0 ? canvasViewSource.slice(start + 1) : '';
+  const relativeEnd = remaining.search(new RegExp(`\\n  (?:private )?${nextName}\\(`));
+  const end = relativeEnd >= 0 ? start + 1 + relativeEnd : -1;
   assert.ok(start >= 0, `${name} 메서드가 있어야 한다`);
   assert.ok(end > start, `${nextName} 경계가 ${name} 뒤에 있어야 한다`);
   return canvasViewSource.slice(start, end);
@@ -54,17 +56,23 @@ test('CanvasView는 저장된 쪽 배치를 레이아웃 계산에 전달한다'
   );
 });
 
-test('CanvasView는 보기 전용 이벤트로 배치를 바꾸고 문서 변경 이벤트를 발행하지 않는다', () => {
+test('CanvasView는 통합 보기 설정 이벤트만 구독하고 단일 필드 wrapper를 노출하지 않는다', () => {
   assert.match(
     canvasViewSource,
-    /eventBus\.on\('page-arrangement-changed',[\s\S]*?this\.setPageArrangement/,
+    /eventBus\.on\('page-view-settings-changed',[\s\S]*?this\.setPageViewSettings/,
   );
-  const method = classMethodSource('setPageArrangement', 'getPageArrangement');
+  assert.doesNotMatch(canvasViewSource, /page-arrangement-changed/);
+  assert.doesNotMatch(canvasViewSource, /\n  setPageArrangement\(/);
+  assert.doesNotMatch(canvasViewSource, /\n  setPageMovement\(/);
+  assert.doesNotMatch(canvasViewSource, /\n  getPageArrangement\(/);
+  assert.doesNotMatch(canvasViewSource, /\n  getPageMovement\(/);
+  assert.match(canvasViewSource, /private setPageViewSettings\(/);
+  const method = classMethodSource('setPageViewSettings', 'getViewportManager');
   assert.doesNotMatch(method, /document-(?:changed|mutated)/);
 });
 
 test('배치 전환은 중심 앵커를 복원하고 토폴로지가 달라질 때만 Canvas를 해제한다', () => {
-  const method = classMethodSource('setPageViewSettings', 'getPageArrangement');
+  const method = classMethodSource('setPageViewSettings', 'getViewportManager');
   assert.match(method, /calculateAnchoredScroll\(/);
   assert.match(method, /CENTER_ZOOM_ANCHOR/);
   assert.match(method, /previousTopology\s*!==\s*nextTopology/);
@@ -80,7 +88,7 @@ test('가로 쪽 이동은 배치와 함께 한 번에 전환하고 가로 가�
     canvasViewSource,
     /getVisiblePages\([\s\S]*?scrollX,[\s\S]*?vpWidth/,
   );
-  const method = classMethodSource('setPageViewSettings', 'getPageArrangement');
+  const method = classMethodSource('setPageViewSettings', 'getViewportManager');
   assert.match(method, /resolvePageViewSettings/);
   assert.doesNotMatch(method, /document-(?:changed|mutated)/);
 });

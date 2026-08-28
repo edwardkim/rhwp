@@ -11,16 +11,37 @@ import {
 } from '../../view/grid-settings';
 import { HWPUNIT_PER_MM } from '../../core/hwp-constants';
 import {
-  calculateArrangementFitWidthZoom,
-  calculateFitPageZoom,
   resolveZoomFitZoom,
+  type ZoomFitMetrics,
 } from '../../view/zoom-fit';
+import type { PageArrangement } from '../../view/page-arrangement';
 import { CENTER_ZOOM_ANCHOR } from '../../view/zoom-anchor';
 import { applyToolboxVisibility } from '../../view/toolbox-visibility';
 import { ZoomDialog } from '../../ui/zoom-dialog';
 import { resolveZoomDialogZoom, zoomFitModeFromChoice } from '../../view/zoom-dialog-state';
 
 const PX_TO_MM = 25.4 / 96;
+const PAGE_GAP = 10;
+
+/** 메뉴·상태 표시줄·대화상자가 공유하는 현재 문서 맞춤 계산 입력을 만든다. */
+function getZoomFitMetrics(
+  services: CommandServices,
+  arrangement: PageArrangement,
+): ZoomFitMetrics | null {
+  if (services.wasm.pageCount === 0) return null;
+  const container = document.getElementById('scroll-container');
+  if (!container) return null;
+  // getPageInfo 의 width/height 는 이미 px 단위 (96dpi 기준)
+  const pageInfo = services.wasm.getPageInfo(0);
+  return {
+    containerWidth: container.clientWidth,
+    containerHeight: container.clientHeight,
+    pageWidth: pageInfo.width,
+    pageHeight: pageInfo.height,
+    arrangement,
+    pageGap: PAGE_GAP,
+  };
+}
 
 /**
  * 쪽 맞춤·폭 맞춤을 지금의 창·쪽 크기로 계산해 적용하고 그 선택을 저장한다.
@@ -28,18 +49,13 @@ const PX_TO_MM = 25.4 / 96;
  */
 function applyZoomFit(services: CommandServices, mode: 'fitWidth' | 'fitPage'): void {
   const vm = services.getViewportManager();
-  if (!vm || services.wasm.pageCount === 0) return;
-  const container = document.getElementById('scroll-container');
-  if (!container) return;
-  // getPageInfo 의 width/height 는 이미 px 단위 (96dpi 기준)
-  const pageInfo = services.wasm.getPageInfo(0);
-  const zoom = resolveZoomFitZoom(mode, {
-    containerWidth: container.clientWidth,
-    containerHeight: container.clientHeight,
-    pageWidth: pageInfo.width,
-    pageHeight: pageInfo.height,
-    arrangement: userSettings.getViewSettings().pageArrangement,
-  });
+  if (!vm) return;
+  const metrics = getZoomFitMetrics(
+    services,
+    userSettings.getViewSettings().pageArrangement,
+  );
+  if (!metrics) return;
+  const zoom = resolveZoomFitZoom(mode, metrics);
   if (zoom === null) return;
   vm.setZoom(zoom, CENTER_ZOOM_ANCHOR, mode);
 }
@@ -222,24 +238,14 @@ export const viewCommands: CommandDef[] = [
     canExecute: (ctx) => ctx.hasDocument,
     execute(services) {
       const vm = services.getViewportManager();
-      if (!vm || services.wasm.pageCount === 0) return;
-      const container = document.getElementById('scroll-container');
-      if (!container) return;
-      const pageInfo = services.wasm.getPageInfo(0);
+      if (!vm) return;
       const viewSettings = userSettings.getViewSettings();
       const arrangement = viewSettings.pageArrangement;
+      const metrics = getZoomFitMetrics(services, arrangement);
+      if (!metrics) return;
       const fitZooms = {
-        fitWidth: calculateArrangementFitWidthZoom({
-          containerWidth: container.clientWidth,
-          pageWidth: pageInfo.width,
-          arrangement,
-        }),
-        fitPage: calculateFitPageZoom(
-          container.clientWidth,
-          container.clientHeight,
-          pageInfo.width,
-          pageInfo.height,
-        ),
+        fitWidth: resolveZoomFitZoom('fitWidth', metrics) ?? 1,
+        fitPage: resolveZoomFitZoom('fitPage', metrics) ?? 1,
       };
       new ZoomDialog({
         currentZoom: vm.getZoom(),
@@ -247,13 +253,15 @@ export const viewCommands: CommandDef[] = [
         arrangement,
         pageMovement: viewSettings.pageMovement,
         onConfirm(value) {
+          const currentMetrics = getZoomFitMetrics(services, value.arrangement);
+          if (!currentMetrics) return;
           const zoom = resolveZoomDialogZoom({
             ...value,
-            viewportWidth: container.clientWidth,
-            viewportHeight: container.clientHeight,
-            pageWidth: pageInfo.width,
-            pageHeight: pageInfo.height,
-            pageGap: 10,
+            viewportWidth: currentMetrics.containerWidth,
+            viewportHeight: currentMetrics.containerHeight,
+            pageWidth: currentMetrics.pageWidth,
+            pageHeight: currentMetrics.pageHeight,
+            pageGap: currentMetrics.pageGap,
           });
           userSettings.setPageMovement(value.pageMovement);
           userSettings.setPageArrangement(value.arrangement);

@@ -19,7 +19,6 @@ import { applyGridOverlayBox, createGridClipCornerOverlay, createGridOverlay } f
 import { getGridViewSettings } from './grid-settings';
 import { userSettings } from '@/core/user-settings';
 import {
-  normalizePageArrangement,
   pageArrangementsEqual,
   type PageArrangement,
 } from './page-arrangement.ts';
@@ -117,9 +116,6 @@ export class CanvasView {
           zoom as number,
           normalizeZoomAnchor(anchor as Partial<ZoomAnchor> | undefined),
         );
-      }),
-      eventBus.on('page-arrangement-changed', (arrangement) => {
-        this.setPageArrangement(normalizePageArrangement(arrangement));
       }),
       eventBus.on('page-view-settings-changed', (payload) => {
         const value = payload as {
@@ -1185,15 +1181,7 @@ export class CanvasView {
    * 중심 쪽을 전환 전후 같은 뷰포트 앵커에 놓고, 실제 행·열 슬롯 토폴로지가 달라진 경우에만
    * Canvas 내용을 버린다. 좌표만 달라지면 recalcLayout()의 reposition 경로로 기존 Canvas를 쓴다.
    */
-  setPageArrangement(arrangement: PageArrangement): boolean {
-    return this.setPageViewSettings(arrangement, this.pageMovement);
-  }
-
-  setPageMovement(movement: PageMovementSettings): boolean {
-    return this.setPageViewSettings(this.pageArrangement, movement);
-  }
-
-  setPageViewSettings(
+  private setPageViewSettings(
     arrangementValue: unknown,
     movementValue: unknown,
   ): boolean {
@@ -1252,16 +1240,6 @@ export class CanvasView {
     }
     this.updateVisiblePages();
     return true;
-  }
-
-  getPageArrangement(): PageArrangement {
-    return this.pageArrangement.kind === 'multiple'
-      ? { ...this.pageArrangement }
-      : { kind: this.pageArrangement.kind };
-  }
-
-  getPageMovement(): PageMovementSettings {
-    return { ...this.pageMovement };
   }
 
   getViewportManager(): ViewportManager {

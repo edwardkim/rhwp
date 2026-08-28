@@ -27,6 +27,20 @@ test('대화상자는 한컴 비율·쪽 모양 선택을 제공하고 저장소
   assert.match(style, /@import '\.\/styles\/zoom-dialog\.css';/);
 });
 
+test('여러 쪽에서는 적용되지 않는 비율 선택을 비활성화한다', () => {
+  assert.match(
+    dialog,
+    /querySelectorAll<HTMLInputElement>\('input\[name="zoom-choice"\]'\)[\s\S]*?input\.disabled\s*=\s*multiple/,
+  );
+  assert.match(dialog, /this\.customInput\.disabled\s*=\s*multiple/);
+});
+
+test('메뉴·대화상자는 한 fit metrics helper와 resolver를 공유한다', () => {
+  assert.match(commands, /function getZoomFitMetrics[\s\S]*?resolveZoomFitZoom/);
+  assert.doesNotMatch(commands, /calculateFitPageZoom/);
+  assert.doesNotMatch(commands, /calculateArrangementFitWidthZoom/);
+});
+
 test('확대/축소 적용은 사용자 보기 설정과 보기 이벤트만 바꾸고 문서를 dirty로 만들지 않는다', () => {
   const start = commands.indexOf("id: 'view:zoom-dialog'");
   const end = commands.indexOf("id: 'view:zoom-fit-page'", start);

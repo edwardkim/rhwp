@@ -313,7 +313,6 @@ export class ZoomDialog extends ModalDialog {
       || !this.rowsInput
       || !this.wheelHorizontalInput
     ) return;
-    this.customInput.disabled = this.selectedValue('zoom-choice') !== 'custom';
     const horizontal = this.selectedValue('page-movement') === 'horizontal';
     if (horizontal) {
       const single = this.dialog.querySelector<HTMLInputElement>(
@@ -324,6 +323,9 @@ export class ZoomDialog extends ModalDialog {
     this.dialog.querySelectorAll<HTMLInputElement>('input[name="page-arrangement"]')
       .forEach((input) => { input.disabled = horizontal && input.value !== 'single'; });
     const multiple = !horizontal && this.selectedValue('page-arrangement') === 'multiple';
+    this.dialog.querySelectorAll<HTMLInputElement>('input[name="zoom-choice"]')
+      .forEach((input) => { input.disabled = multiple; });
+    this.customInput.disabled = multiple || this.selectedValue('zoom-choice') !== 'custom';
     this.columnsInput.disabled = !multiple;
     this.rowsInput.disabled = !multiple;
     this.wheelHorizontalInput.disabled = !horizontal;
