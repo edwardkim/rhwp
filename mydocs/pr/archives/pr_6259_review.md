@@ -33,6 +33,12 @@ last_verified: 2026-08-28
 - 통합 head 공통 검증: fmt, unit tier, suite manifest, clippy, 전체 nextest, Native Skia 3종,
   WASM build 통과.
 
+## 코멘트 처리
+
+merge 후 원 PR/issue 코멘트에는 `p38_table_after.png`에서 표 좌단과 우측 열 잘림이 보정된 직접
+확인 결과를 적는다. 추가 증적 산출이 필요하면 visual sweep 정본 절차에 따라 대표 `review_*.png`와
+summary를 `mydocs/pr/assets`에 보존하고, merge SHA 고정 raw URL을 댓글에 사용한다.
+
 ## 후속
 
 추가 보정 필요 없음.

@@ -34,6 +34,13 @@ last_verified: 2026-08-28
 - 통합 head 공통 검증: fmt, unit tier, suite manifest, clippy, 전체 nextest, Native Skia 3종,
   WASM build 통과.
 
+## 코멘트 처리
+
+merge 후 원 PR/issue 코멘트에는 오른쪽 꼬리말 로고가 용지 밖으로 나가지 않는 대표 after 확인
+결과를 적는다. 추가 증적 산출이 필요하면 `visual_sweep_guide.md#github-merge-comment` 기준으로
+visual sweep을 실행하고, 대표 `review_*.png`와 summary를 `mydocs/pr/assets`에 보존한 뒤 merge SHA
+고정 raw URL로 댓글에 표시한다.
+
 ## 후속
 
 추가 보정 필요 없음.

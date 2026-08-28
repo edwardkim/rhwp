@@ -32,6 +32,13 @@ query가 panic하던 경로를 `Option` 기반 API로 바꾸고, 호출부를 `f
 - 통합 head 공통 검증: fmt, unit tier, suite manifest, clippy, 전체 nextest, Native Skia 3종,
   WASM build 통과.
 
+## 코멘트 처리
+
+merge 후 코멘트에는 `CellContext` 빈 경로가 panic 대신 `Option` 흐름으로 처리된다는 코드 판단과
+`mydocs/report/bug-layout-empty-path/after.png` 확인 사실을 적는다. 별도 visual sweep 산출이 필요한
+renderer 비교 사안으로 확대되면 `visual_sweep_guide.md#github-merge-comment`에 따라 대표 PNG와
+summary를 `mydocs/pr/assets`에 보존한 뒤 merge SHA 고정 raw URL을 사용한다.
+
 ## 후속
 
 추가 보정 필요 없음. `CellContext` public surface의 반환 타입 변경은 통합 head에서 모든 호출부가

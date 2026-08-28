@@ -31,6 +31,12 @@ last_verified: 2026-08-28
 - 통합 head 공통 검증: fmt, unit tier, suite manifest, clippy, 전체 nextest, Native Skia 3종,
   WASM build 통과.
 
+## 코멘트 처리
+
+merge 후 코멘트에는 OOB 방어 PR이라 정상 문서 렌더 변화가 기대되는 사안은 아니며, 숫자 포맷
+fallback 계약과 `bug-circled` SVG 증적을 확인했다는 점을 남긴다. 렌더 차이를 근거로 판단해야 하는
+추가 사안이 생기면 visual sweep 정본 절차에 따라 대표 asset을 보존한 뒤 댓글에 표시한다.
+
 ## 후속
 
 추가 보정 필요 없음. 방어적 fallback이라 정상 문서 렌더 출력 변화는 기대하지 않는다.

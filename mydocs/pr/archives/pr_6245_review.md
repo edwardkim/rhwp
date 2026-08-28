@@ -37,6 +37,14 @@ lineSeg 1개만** 확인하도록 좁혔다.
 - 통합 head 공통 검증: fmt, unit tier, suite manifest, focused regressions, clippy, 전체 nextest,
   Native Skia 3종, WASM build 통과. 상세 숫자는 통합 구현 문서에 기록했다.
 
+## 코멘트 처리
+
+merge 후 원 PR/issue 코멘트에는 메인터너 보정 사유와 대표 시각 증적을 함께 적는다. 추가 증적
+산출이 필요하면 `mydocs/manual/verification/visual_sweep_guide.md#github-merge-comment` 기준으로
+`scripts/visual_sweep.py`를 실행하고, 대표 `review_*.png`와 summary를 `mydocs/pr/assets` 아래에
+보존한 뒤 merge commit SHA 고정 raw URL을 Markdown image로 사용한다. 이번 검토에서 직접 확인한
+대표 증적은 `after_p1.png`와 `oracle_p1.png`다.
+
 ## 후속
 
 통합 PR 본문에는 #6245 자체 수용과 별도로, `any()` 기반 후속 문단 탐색을 첫 후속 lineSeg로 좁힌

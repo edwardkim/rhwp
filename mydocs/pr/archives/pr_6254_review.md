@@ -33,6 +33,12 @@ last_verified: 2026-08-28
 - 통합 head 공통 검증: fmt, unit tier, suite manifest, clippy, 전체 nextest, Native Skia 3종,
   WASM build 통과.
 
+## 코멘트 처리
+
+merge 후 원 PR/issue 코멘트에는 `p2_textbox_after.png` 기준으로 글상자 안 로고가 우단 안에
+배치된다는 직접 확인 결과와 focused test 통과를 적는다. 추가 visual sweep이 필요하면 대표 review
+PNG와 summary를 `mydocs/pr/assets`에 보존하고 merge SHA raw URL로 표시한다.
+
 ## 후속
 
 추가 보정 필요 없음.
