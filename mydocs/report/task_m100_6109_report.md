@@ -4,7 +4,7 @@
 - **브랜치**: `codex/issue-6109-zoom-dialog-transaction`
 - **stack base**: `codex/issue-6108-zoom-fit` `711365b35`
 - **보고일**: 2026-08-28 KST
-- **결과 상태**: Stage 1~3 구현·검증 및 최종 결과 승인 완료
+- **결과 상태**: Stage 1~3 구현·검증·최신 devel 재검증 완료, native stack 게시 준비
 
 ## 완료 결과
 
@@ -67,7 +67,7 @@ UI에서 빈 문자열로 수렴하며, 순수 validator 테스트는 비숫자 
 | `npm run e2e:zoom-fit-mode` | 하위 맞춤 저장·복원 32/32 assertion 통과 |
 | `node --check e2e/zoom-dialog-transaction.test.mjs` | 통과 |
 | `python3 scripts/check_e2e_manifest.py` | tracked 120 / manifest 120, 이상 없음 |
-| `node scripts/rust-test-suite-manifest.mjs --prepare` | 995 sources·48/48 integration targets 준비 완료 |
+| `node scripts/rust-test-suite-manifest.mjs --prepare` | 1,007 sources·48/48 integration targets 준비 완료 |
 | `cargo fmt --all` | 통과 |
 | `cargo fmt --all -- --check` | 통과 |
 | `git diff --check` | 통과 |
@@ -77,8 +77,8 @@ E2E 원장 검사에서 stack base에 이미 tracked된 `issue-4969-shaping-repl
 양방향 완전성을 요구하므로, 두 파일의 실제 용도·fixture·배선을 확인해 원장 행만 함께 보완했다.
 
 Rust format 검사용 파생 suite와 manifest는 검증 뒤 정확한 경로를 작업트리 밖
-`/private/tmp/rhwp-6109-stage3-token-generated`,
-`/private/tmp/rhwp-6109-stage3-token-manifest.json`으로 이동했다.
+`/private/tmp/rhwp-6108-6109-prepublish-generated`,
+`/private/tmp/rhwp-6108-6109-prepublish-manifest.json`으로 이동했다.
 source PR에는 포함하지 않는다.
 
 게시 승인 뒤 공식 `gh-stack`에 기존 #6108·#6109 브랜치를 등록했다. PR review 보정 뒤 최신
@@ -114,6 +114,6 @@ source PR에는 포함하지 않는다.
 
 ## 승인 요청과 게시 경계
 
-작업지시자가 최종 결과와 로컬 UI를 승인했다. Stage 3 변경·본 보고서를 checkpoint commit으로 고정했고,
-#6108 위의 #6109 stack diff를 다시 확인했다. remote push와 native stacked PR 생성은 별도 게시 승인을
-받은 뒤에만 수행한다.
+작업지시자가 최종 결과와 로컬 UI를 승인했고, 이어 remote push와 native stacked PR 생성도 승인했다.
+Stage 3 변경·본 보고서를 checkpoint commit으로 고정하고 최신 devel 위의 #6108→#6109 stack diff와
+전체 게시 전 검증을 다시 확인했다.
