@@ -4,7 +4,7 @@
  * 같은 HF 정의를 쓰는 화면 밖 페이지로 스크롤했을 때 선택 overlay가 새 visible page에
  * 투영되고, 다시 돌아왔을 때도 논리 범위가 유지되는지 검증한다.
  */
-import { runTest, loadHwpFile, assert } from './helpers.mjs';
+import { runTest, loadHwpFile, assert, screenshot } from './helpers.mjs';
 
 process.env.VITE_URL = process.env.VITE_URL || 'http://localhost:7700';
 
@@ -12,6 +12,43 @@ const settle = (page, ms = 400) => page.evaluate(
   (delay) => new Promise(resolve => setTimeout(resolve, delay)),
   ms,
 );
+
+const headerFooterClientPoint = (page, position) => page.evaluate((pos) => {
+  const handler = window.__inputHandler;
+  const rect = handler.wasm.getCursorRectInHeaderFooter(
+    pos.sectionIdx,
+    pos.isHeader,
+    pos.applyTo,
+    pos.paraIdx,
+    pos.charOffset,
+    pos.pageNum,
+  );
+  const scrollContent = handler.container.querySelector('#scroll-content');
+  const bounds = scrollContent.getBoundingClientRect();
+  const zoom = handler.viewportManager.getZoom();
+  const left = handler.virtualScroll.getPageLeftResolved(
+    pos.pageNum,
+    scrollContent.clientWidth,
+  );
+  const top = handler.virtualScroll.getPageOffset(pos.pageNum);
+  return {
+    x: bounds.left + left + rect.x * zoom,
+    y: bounds.top + top - scrollContent.scrollTop
+      + (rect.y + rect.height * 0.5) * zoom,
+  };
+}, position);
+
+const visibleSelectionProjectsToPage = (page, pageNum) => page.evaluate((targetPage) => {
+  const handler = window.__inputHandler;
+  const top = handler.virtualScroll.getPageOffset(targetPage);
+  const bottom = top + handler.virtualScroll.getPageHeight(targetPage);
+  return Array.from(document.querySelectorAll('.selection-highlight'))
+    .filter(el => el.style.display !== 'none')
+    .some(el => {
+      const value = Number.parseFloat(el.style.top);
+      return value >= top && value <= bottom;
+    });
+}, pageNum);
 
 runTest('#4121 HF 선택 반복 페이지 scroll-in 투영', async ({ page }) => {
   const { pageCount } = await loadHwpFile(page, 'biz_plan.hwp');
@@ -415,4 +452,351 @@ runTest('#4121 HF 선택 반복 페이지 scroll-in 투영', async ({ page }) =>
   });
   assert(imeRedo.length === 1 && imeRedo.cursor.join(',') === '0,1',
     'IME 치환 Redo는 최종 조합 문자열과 HF 캐럿을 복원한다');
+
+  // ── Stage 4: 4페이지 Both Header + Odd/Even Footer 통합 사용자 여정 ──
+  const matrixDocument = await loadHwpFile(page, 'biz_plan.hwp');
+  assert(matrixDocument.pageCount >= 4,
+    `Stage 4 전제: 4페이지 이상 문서 (actual=${matrixDocument.pageCount})`);
+  await page.evaluate(() => document.querySelector('.modal-overlay .dialog-btn-primary')?.click());
+
+  const matrixSetup = await page.evaluate(() => {
+    const handler = window.__inputHandler;
+    const wasm = handler.wasm;
+    // E2E helper의 direct loadDocument는 제품 파일 열기 수명주기를 거치지 않으므로, 첫
+    // 여정의 snapshot id가 새 문서 history에 남지 않게 명시적으로 비운다.
+    handler.history.clear(wasm);
+    const pages = [0, 1, 2, 3];
+    const sections = pages.map(pageNum =>
+      wasm.getHeaderFooterEditTarget(pageNum, true).sectionIndex);
+    if (new Set(sections).size !== 1) {
+      return { error: `첫 4쪽이 한 구역이 아님: ${sections.join(',')}` };
+    }
+    const sectionIdx = sections[0];
+
+    const resetDefinition = (isHeader, applyTo) => {
+      const current = JSON.parse(wasm.getHeaderFooter(sectionIdx, isHeader, applyTo));
+      if (current.exists) wasm.deleteHeaderFooter(sectionIdx, isHeader, applyTo);
+    };
+    for (const applyTo of [0, 1, 2]) {
+      resetDefinition(true, applyTo);
+      resetDefinition(false, applyTo);
+    }
+
+    wasm.createHeaderFooter(sectionIdx, true, 0);
+    wasm.createHeaderFooter(sectionIdx, false, 1);
+    wasm.createHeaderFooter(sectionIdx, false, 2);
+    const bothHeader = wasm.replaceRangeInHeaderFooter(
+      sectionIdx, true, 0, 0, 0, 0, 0, 'BOTH-H1\nBOTH-H2',
+    );
+    const evenFooter = wasm.replaceRangeInHeaderFooter(
+      sectionIdx, false, 1, 0, 0, 0, 0, 'EVEN-F1\nEVEN-F2',
+    );
+    const oddFooter = wasm.replaceRangeInHeaderFooter(
+      sectionIdx, false, 2, 0, 0, 0, 0, 'ODD-F1\nODD-F2',
+    );
+    if (!bothHeader.ok || !evenFooter.ok || !oddFooter.ok) {
+      return { error: 'Stage 4 HF fixture 텍스트 구성 실패' };
+    }
+
+    const headerTargets = pages.map(pageNum => ({
+      pageNum,
+      ...wasm.getHeaderFooterEditTarget(pageNum, true),
+    }));
+    const footerTargets = pages.map(pageNum => ({
+      pageNum,
+      ...wasm.getHeaderFooterEditTarget(pageNum, false),
+    }));
+    handler.viewportManager.setZoom(0.55);
+    handler.afterEdit();
+    handler.cursor.enterHeaderFooterMode(true, sectionIdx, 0, pages[0]);
+    handler.cursor.setHfCursorPosition(0, 0, pages[0]);
+    handler.eventBus.emit('headerFooterModeChanged', 'header');
+    handler.updateCaret();
+    handler.focus();
+    return {
+      pages,
+      sectionIdx,
+      headerTargets,
+      footerTargets,
+      mode: handler.cursor.headerFooterMode,
+    };
+  });
+  assert(!matrixSetup.error, matrixSetup.error || 'Stage 4 HF fixture setup');
+  assert(matrixSetup.mode === 'header', 'Stage 4 fixture가 Both 머리말 편집 모드로 진입한다');
+  assert(matrixSetup.headerTargets.every(target => target.applyTo === 0),
+    'Both 머리말이 첫 4쪽의 active target이다');
+  assert(
+    matrixSetup.footerTargets.filter(target => target.applyTo === 1).length === 2
+      && matrixSetup.footerTargets.filter(target => target.applyTo === 2).length === 2,
+    `꼬리말 active target이 홀짝 2쪽씩 분리된다 (${matrixSetup.footerTargets
+      .map(target => `${target.pageNum}:${target.applyTo}`).join(',')})`,
+  );
+  await settle(page, 500);
+
+  // Home → Shift+End → Shift+Down은 첫 문단 시작에서 둘째 문단 끝까지 확장한다.
+  // Stage 2의 실제 mouse drag 여정과 함께 두 선택 입력 경로를 모두 고정한다.
+  await page.keyboard.press('Home');
+  await page.keyboard.down('Shift');
+  await page.keyboard.press('End');
+  await page.keyboard.press('ArrowDown');
+  await page.keyboard.up('Shift');
+  await settle(page, 300);
+  const bothSelection = await page.evaluate(() =>
+    window.__inputHandler.cursor.getHeaderFooterSelectionOrdered());
+  assert(
+    bothSelection?.start.paraIdx === 0
+      && bothSelection.start.charOffset === 0
+      && bothSelection.end.paraIdx === 1
+      && bothSelection.end.charOffset === 7,
+    `Shift 키가 Both 머리말 두 문단 전체를 선택한다 (${JSON.stringify(bothSelection)})`,
+  );
+  await screenshot(page, 'issue4121-stage4-both-header-multiline-selection');
+
+  for (const pageNum of matrixSetup.pages) {
+    await page.evaluate((targetPage) => {
+      const handler = window.__inputHandler;
+      handler.viewportManager.setScrollTop(handler.virtualScroll.getPageOffset(targetPage));
+    }, pageNum);
+    await settle(page, 500);
+    assert(
+      await visibleSelectionProjectsToPage(page, pageNum),
+      `Both 머리말 선택이 ${pageNum + 1}쪽에 투영된다`,
+    );
+  }
+  await page.evaluate(() => window.__inputHandler.viewportManager.setScrollTop(0));
+  await settle(page, 400);
+
+  const multiCopied = await page.evaluate(() => {
+    const handler = window.__inputHandler;
+    const data = new DataTransfer();
+    handler.textarea.dispatchEvent(new ClipboardEvent('copy', {
+      clipboardData: data, bubbles: true, cancelable: true,
+    }));
+    return data.getData('text/plain');
+  });
+  assert(multiCopied === 'BOTH-H1\nBOTH-H2',
+    `다문단 HF copy가 문단 경계를 보존한다 (${JSON.stringify(multiCopied)})`);
+
+  const multiCut = await page.evaluate(() => {
+    const handler = window.__inputHandler;
+    const data = new DataTransfer();
+    handler.textarea.dispatchEvent(new ClipboardEvent('cut', {
+      clipboardData: data, bubbles: true, cancelable: true,
+    }));
+    const info = JSON.parse(handler.wasm.getHeaderFooterParaInfo(
+      handler.cursor.hfSectionIdx, true, handler.cursor.hfApplyTo, 0,
+    ));
+    return { copied: data.getData('text/plain'), paraCount: info.paraCount, length: info.charCount };
+  });
+  await settle(page, 250);
+  assert(
+    multiCut.copied === 'BOTH-H1\nBOTH-H2'
+      && multiCut.paraCount === 1
+      && multiCut.length === 0,
+    '다문단 HF cut이 복사 성공 뒤 범위를 한 번 삭제한다',
+  );
+  await page.evaluate(() => window.__inputHandler.performUndo());
+  await settle(page, 300);
+  const multiCutUndo = await page.evaluate(() => {
+    const handler = window.__inputHandler;
+    const first = JSON.parse(handler.wasm.getHeaderFooterParaInfo(
+      handler.cursor.hfSectionIdx, true, handler.cursor.hfApplyTo, 0,
+    ));
+    return {
+      paraCount: first.paraCount,
+      selection: handler.cursor.getHeaderFooterSelectionOrdered(),
+    };
+  });
+  assert(
+    multiCutUndo.paraCount === 2
+      && multiCutUndo.selection?.start.paraIdx === 0
+      && multiCutUndo.selection?.end.paraIdx === 1,
+    '다문단 cut Undo가 두 문단과 원래 HF 선택을 복원한다',
+  );
+
+  const multiPaste = await page.evaluate(() => {
+    const handler = window.__inputHandler;
+    const data = new DataTransfer();
+    data.setData('text/plain', 'PASTE-A\nPASTE-B\nPASTE-C');
+    handler.textarea.dispatchEvent(new ClipboardEvent('paste', {
+      clipboardData: data, bubbles: true, cancelable: true,
+    }));
+    const infos = [0, 1, 2].map(paraIdx => JSON.parse(
+      handler.wasm.getHeaderFooterParaInfo(
+        handler.cursor.hfSectionIdx, true, handler.cursor.hfApplyTo, paraIdx,
+      ),
+    ));
+    return {
+      paraCount: infos[0].paraCount,
+      lengths: infos.map(info => info.charCount),
+      cursor: [handler.cursor.hfParaIdx, handler.cursor.hfCharOffset],
+    };
+  });
+  await settle(page, 250);
+  assert(
+    multiPaste.paraCount === 3
+      && multiPaste.lengths.join(',') === '7,7,7'
+      && multiPaste.cursor.join(',') === '2,7',
+    `다문단 paste가 세 HF 문단으로 원자 치환된다 (${JSON.stringify(multiPaste)})`,
+  );
+  await page.evaluate(() => window.__inputHandler.performUndo());
+  await settle(page, 300);
+  const multiPasteUndo = await page.evaluate(() => ({
+    paraCount: JSON.parse(window.__inputHandler.wasm.getHeaderFooterParaInfo(
+      window.__inputHandler.cursor.hfSectionIdx,
+      true,
+      window.__inputHandler.cursor.hfApplyTo,
+      0,
+    )).paraCount,
+    selection: window.__inputHandler.cursor.getHeaderFooterSelectionOrdered(),
+  }));
+  assert(multiPasteUndo.paraCount === 2 && multiPasteUndo.selection === null,
+    '다문단 paste Undo는 원문을 복원하되 선택은 복원하지 않는다');
+
+  // 서식 확인을 위해 두 문단을 실제 Shift 키로 다시 선택한다.
+  await page.keyboard.press('ArrowUp');
+  await page.keyboard.press('Home');
+  await page.keyboard.down('Shift');
+  await page.keyboard.press('End');
+  await page.keyboard.press('ArrowDown');
+  await page.keyboard.up('Shift');
+  await settle(page, 200);
+  const beforeMultiBold = await page.evaluate(() => {
+    const handler = window.__inputHandler;
+    return [0, 1].map(paraIdx => handler.wasm.getCharPropertiesInHeaderFooter(
+      handler.cursor.hfSectionIdx, true, handler.cursor.hfApplyTo, paraIdx, 0,
+    ).bold);
+  });
+  await page.click('#btn-bold');
+  await settle(page, 300);
+  const afterMultiBold = await page.evaluate(() => {
+    const handler = window.__inputHandler;
+    return {
+      values: [0, 1].map(paraIdx => handler.wasm.getCharPropertiesInHeaderFooter(
+        handler.cursor.hfSectionIdx, true, handler.cursor.hfApplyTo, paraIdx, 0,
+      ).bold),
+      selection: handler.cursor.getHeaderFooterSelectionOrdered(),
+    };
+  });
+  assert(
+    afterMultiBold.selection?.start.paraIdx === 0
+      && afterMultiBold.selection?.end.paraIdx === 1
+      && afterMultiBold.values.every((value, index) => value !== beforeMultiBold[index]),
+    `다문단 부분 서식이 두 HF 문단에만 적용되고 선택을 유지한다 (${JSON.stringify({
+      before: beforeMultiBold,
+      after: afterMultiBold,
+    })})`,
+  );
+  await page.evaluate(() => window.__inputHandler.performUndo());
+  await settle(page, 250);
+  const multiFormatUndo = await page.evaluate(() => ({
+    values: [0, 1].map(paraIdx => window.__inputHandler.wasm
+      .getCharPropertiesInHeaderFooter(
+        window.__inputHandler.cursor.hfSectionIdx,
+        true,
+        window.__inputHandler.cursor.hfApplyTo,
+        paraIdx,
+        0,
+      ).bold),
+    selection: window.__inputHandler.cursor.getHeaderFooterSelectionOrdered(),
+  }));
+  assert(
+    multiFormatUndo.selection?.end.paraIdx === 1
+      && multiFormatUndo.values.every((value, index) => value === beforeMultiBold[index]),
+    '다문단 부분 서식 Undo가 이전 서식과 같은 선택을 복원한다',
+  );
+  await page.evaluate(() => window.__inputHandler.performRedo());
+  await settle(page, 250);
+  const multiFormatRedo = await page.evaluate(() => ({
+    values: [0, 1].map(paraIdx => window.__inputHandler.wasm
+      .getCharPropertiesInHeaderFooter(
+        window.__inputHandler.cursor.hfSectionIdx,
+        true,
+        window.__inputHandler.cursor.hfApplyTo,
+        paraIdx,
+        0,
+      ).bold),
+    selection: window.__inputHandler.cursor.getHeaderFooterSelectionOrdered(),
+  }));
+  assert(
+    multiFormatRedo.selection?.end.paraIdx === 1
+      && multiFormatRedo.values.join(',') === afterMultiBold.values.join(','),
+    '다문단 부분 서식 Redo가 변경 서식과 같은 선택을 복원한다',
+  );
+
+  const evenTargets = matrixSetup.footerTargets.filter(target => target.applyTo === 1);
+  const oddTargets = matrixSetup.footerTargets.filter(target => target.applyTo === 2);
+  const activeParity = evenTargets;
+  const otherParity = oddTargets;
+  await page.evaluate(({ sectionIdx, startPage }) => {
+    const handler = window.__inputHandler;
+    handler.cursor.switchHeaderFooterTarget(false, sectionIdx, 1, startPage);
+    handler.cursor.setHfCursorPosition(0, 0, startPage);
+    handler.eventBus.emit('headerFooterModeChanged', 'footer');
+    handler.viewportManager.setScrollTop(handler.virtualScroll.getPageOffset(startPage));
+    handler.focus();
+  }, { sectionIdx: matrixSetup.sectionIdx, startPage: activeParity[0].pageNum });
+  await settle(page, 500);
+  await page.keyboard.press('Home');
+  await page.keyboard.down('Shift');
+  await page.keyboard.press('End');
+  await page.keyboard.up('Shift');
+  await settle(page, 250);
+  const paritySelection = await page.evaluate(() =>
+    window.__inputHandler.cursor.getHeaderFooterSelectionOrdered());
+  assert(paritySelection?.start.applyTo === 1 && paritySelection.end.charOffset === 7,
+    'Shift+End가 짝수 쪽 꼬리말 선택을 만든다');
+
+  for (const target of activeParity) {
+    await page.evaluate((pageNum) => {
+      const handler = window.__inputHandler;
+      handler.viewportManager.setScrollTop(handler.virtualScroll.getPageOffset(pageNum));
+    }, target.pageNum);
+    await settle(page, 500);
+    assert(await visibleSelectionProjectsToPage(page, target.pageNum),
+      `짝수 쪽 꼬리말 선택이 같은 정의의 ${target.pageNum + 1}쪽에 투영된다`);
+  }
+  for (const target of otherParity) {
+    await page.evaluate((pageNum) => {
+      const handler = window.__inputHandler;
+      handler.viewportManager.setScrollTop(handler.virtualScroll.getPageOffset(pageNum));
+    }, target.pageNum);
+    await settle(page, 500);
+    assert(!(await visibleSelectionProjectsToPage(page, target.pageNum)),
+      `짝수 쪽 꼬리말 선택이 다른 홀수 정의의 ${target.pageNum + 1}쪽에는 투영되지 않는다`);
+  }
+
+  const switchTarget = otherParity[0];
+  await page.evaluate((pageNum) => {
+    const handler = window.__inputHandler;
+    handler.viewportManager.setScrollTop(handler.virtualScroll.getPageOffset(pageNum));
+  }, switchTarget.pageNum);
+  await settle(page, 500);
+  const oddFooterPoint = await headerFooterClientPoint(page, {
+    sectionIdx: matrixSetup.sectionIdx,
+    isHeader: false,
+    applyTo: 2,
+    paraIdx: 0,
+    charOffset: 3,
+    pageNum: switchTarget.pageNum,
+  });
+  await page.mouse.click(oddFooterPoint.x, oddFooterPoint.y);
+  await settle(page, 350);
+  const afterParitySwitch = await page.evaluate(() => {
+    const handler = window.__inputHandler;
+    return {
+      mode: handler.cursor.headerFooterMode,
+      applyTo: handler.cursor.hfApplyTo,
+      page: handler.cursor.hfPreferredPage,
+      selection: handler.cursor.getHeaderFooterSelectionOrdered(),
+    };
+  });
+  assert(
+    afterParitySwitch.mode === 'footer'
+      && afterParitySwitch.applyTo === 2
+      && afterParitySwitch.page === switchTarget.pageNum
+      && afterParitySwitch.selection === null,
+    `다른 홀짝 정의 클릭이 교차 선택 없이 target을 전환한다 (${JSON.stringify(afterParitySwitch)})`,
+  );
+  await screenshot(page, 'issue4121-stage4-odd-even-footer-switch');
 });
