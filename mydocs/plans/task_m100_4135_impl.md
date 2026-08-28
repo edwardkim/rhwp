@@ -8,7 +8,7 @@
 >
 > 브랜치: `codex/issue-4135-contextual-shortcut`
 >
-> 상태: **Recovery R3 구현·focused 검증 완료, 결과 승인 대기 — R4 통합 검증 미착수**
+> 상태: **Recovery R4 자동·실브라우저 검증 완료, macOS 한글 IME 물리 키 수동 확인·결과 승인 대기**
 
 ## 1. 문제를 다시 정의한다
 
@@ -121,6 +121,13 @@
 - 최종 보고서는 Recovery R4 결과 승인 뒤에만 작성·확정한다.
 - **중단점**: 통합 결과를 보고하고 최종 결과 승인을 기다린다. push·PR은 여전히 별도 승인이다.
 
+R4 실브라우저 첫 실행에서 `10+20+30`의 계산 결과 JSON은 `60`인데 화면에는 `6`만 보이는
+추가 렌더링 결함을 발견했다. 결과 셀의 `text` 필드만 직접 덮던 경로를 일반 셀 텍스트 교체
+경로로 통합하고 SVG 회귀 계약을 추가한 뒤 전체 게이트와 WASM을 다시 통과시켰다. 자동화
+브라우저가 macOS 입력 소스의 실제 한글 IME 물리 키 이벤트를 만들 수 없어, R4의 마지막
+중단 조건은 작업지시자의 한글 입력 상태 수동 확인이다. 상세 증적과 절차는
+[`task_m100_4135_recovery_r4.md`](../working/task_m100_4135_recovery_r4.md)에 기록한다.
+
 ## 5. 예상 변경 파일
 
 | Recovery | 파일 | 변경 |
@@ -130,6 +137,7 @@
 | R2 | `rhwp-studio/src/command/block-calculation-plan.ts` | 선택 범위→계산 job 순수 planner |
 | R2 | `rhwp-studio/src/command/commands/table.ts` | multi-cell·dry-run·snapshot 실행 |
 | R3 | `rhwp-studio/src/command/contextual-shortcut.ts`, `rhwp-studio/src/engine/input-handler-keyboard.ts` | IME 물리 `S`/`M` 라우팅 |
+| R4 | `src/document_core/commands/{table_ops,text_editing}.rs`, `src/wasm_api/tests.rs` | 실브라우저에서 발견한 두 자릿수 결과 렌더링 회귀 보정 |
 | R4 | `mydocs/working/**`, `mydocs/report/**`, `mydocs/orders/20260828.md` | 검증·최종 판정 기록 |
 
 ## 6. 리스크와 중단 조건

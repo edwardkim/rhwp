@@ -3711,30 +3711,31 @@ impl DocumentCore {
         // 결과를 셀에 기록
         if write_result {
             let cell_idx = target_row * col_count + target_col;
-            let section_mut = self.document.sections.get_mut(section_idx).unwrap();
-            let para_mut = section_mut.paragraphs.get_mut(parent_para_idx).unwrap();
-            if let Some(Control::Table(ref mut t)) = para_mut.controls.get_mut(control_idx) {
-                if let Some(cell) = t.cells.get_mut(cell_idx) {
-                    if let Some(cell_para) = cell.paragraphs.first_mut() {
-                        // 정수이면 정수로, 아니면 소수점 표시
-                        let text = if result == result.trunc() && result.abs() < 1e15 {
-                            format!("{}", result as i64)
-                        } else {
-                            format!("{}", result)
-                        };
-                        cell_para.text = text;
-                        let new_len = cell_para.text.chars().count();
-                        cell_para.char_offsets = (0..new_len).map(|i| i as u32).collect();
-                        // [#4149] 원시 text 대입 — 단일줄 과밀 memo 무효화.
-                        cell_para.invalidate_layout_inputs();
-                    }
-                }
-            }
-            // raw_stream 무효화
-            if let Some(sec) = self.document.sections.get_mut(section_idx) {
-                sec.raw_stream = None;
-            }
-            self.recompose_section(section_idx);
+            let old_len = self
+                .get_cell_paragraph_ref(section_idx, parent_para_idx, control_idx, cell_idx, 0)
+                .ok_or_else(|| HwpError::RenderError("결과 셀 문단을 찾을 수 없음".into()))?
+                .text
+                .chars()
+                .count();
+            // 정수이면 정수로, 아니면 소수점 표시한다. 직접 text 필드만 덮으면 표의
+            // 측정 캐시와 문단 layout 입력이 남아 두 자릿수 결과의 마지막 글자가 보이지
+            // 않을 수 있으므로, 일반 셀 텍스트 교체 경로로 모든 불변식을 함께 갱신한다.
+            let text = if result == result.trunc() && result.abs() < 1e15 {
+                format!("{}", result as i64)
+            } else {
+                format!("{}", result)
+            };
+            self.replace_text_in_cell_native_impl(
+                section_idx,
+                parent_para_idx,
+                control_idx,
+                cell_idx,
+                0,
+                0,
+                old_len,
+                &text,
+                true,
+            )?;
         }
 
         Ok(format!(
