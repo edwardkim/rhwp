@@ -1,0 +1,137 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q2-d5-resource-qualified-no-lineseg-activation-plan",
+  "issue": 4969,
+  "stage": "W10-Q2-D5",
+  "status": "awaiting-maintainer-approval",
+  "baseMerge": "1a43a507c",
+  "resourceAuditCheckpoint": "ae36a8786",
+  "productOutputChangeBeforeR2": false,
+  "resourceAuthority": {
+    "bytesOwner": "ExactFontSourceRegistry Arc<[u8]>",
+    "preparedIdentityKey": [
+      "registry-generation",
+      "exact-source-handle",
+      "digest",
+      "byte-length",
+      "face-index"
+    ],
+    "preparationMultiplicity": "once-per-unique-exact-source",
+    "pageArenaMultiplicity": "one-blob-and-one-face-per-unique-source",
+    "rawBytesInTrace": false,
+    "hostPathInTrace": false,
+    "boundedCacheRequired": true
+  },
+  "transport": {
+    "default": "inline-font-bytes-backward-compatible",
+    "optional": "font-by-resource-key",
+    "metadataPreservedWhenOmitted": true,
+    "documentGenerationInConsumerCacheKey": true,
+    "verifyAfterFetch": [
+      "resource-key",
+      "digest",
+      "byte-length",
+      "size-limit"
+    ],
+    "failure": "reject-strict-glyph-run-and-retain-text-run"
+  },
+  "measurementMatrix": {
+    "publicFixtureOnly": true,
+    "privateCorpus": false,
+    "runCounts": [1, 2, 8],
+    "pageCounts": [1, 2, 8],
+    "arbitraryWallTimeThreshold": false,
+    "structuralGate": "full-font-digest-face-preparation-and-transport-scale-with-unique-source-count"
+  },
+  "slices": [
+    {
+      "id": "Q2-D5-R0",
+      "name": "public-matrix-and-counter-red-contract",
+      "productOutputChange": false,
+      "approvalAfter": true
+    },
+    {
+      "id": "Q2-D5-R1",
+      "name": "unique-source-prepared-identity-cache",
+      "productOutputChange": false,
+      "approvalAfter": true
+    },
+    {
+      "id": "Q2-D5-R2",
+      "name": "opt-in-font-by-key-transport",
+      "productOutputChange": "opt-in-only",
+      "approvalAfter": true
+    },
+    {
+      "id": "Q2-D5-R3",
+      "name": "resource-cross-backend-qualification",
+      "productOutputChange": false,
+      "approvalAfter": true,
+      "blocksNoLineSegActivationOnFailure": true
+    },
+    {
+      "id": "Q2-D5-N0",
+      "name": "no-lineseg-dormant-owner-and-rollback-contract",
+      "productOutputChange": false,
+      "approvalAfter": true
+    },
+    {
+      "id": "Q2-D5-N1",
+      "name": "no-lineseg-atomic-boundary-activation",
+      "productOutputChange": true,
+      "approvalAfter": true
+    },
+    {
+      "id": "Q2-D5-N2",
+      "name": "final-cross-backend-performance-qualification",
+      "productOutputChange": false,
+      "approvalAfter": true
+    }
+  ],
+  "noLineSegAtomicPublication": {
+    "featureDetectionNotVersionBranching": true,
+    "initialSubset": "ordinary-single-interval-no-lineseg",
+    "sameMeasurementArcConsumers": [
+      "line-selection",
+      "text-run-bbox",
+      "next-origin",
+      "page-sidecar-and-common-glyph-run"
+    ],
+    "prepareAllTargetsBeforeBoundaryPublication": true,
+    "partialTargetPublication": false,
+    "fallback": "pristine-w9-k0-composition-and-text-run"
+  },
+  "validation": {
+    "newRustRegressionLocation": "tests/cases",
+    "sourceCfgTestIncrease": false,
+    "generatedArtifactsInSourcePr": false,
+    "prepareGeneratedSuitesInTaskWorktree": false,
+    "prepareAndCheckInSeparateReviewWorktree": true,
+    "mandatoryFormatCommandsBeforePush": [
+      "cargo fmt --all",
+      "cargo fmt --all -- --check"
+    ],
+    "nativeAndNodeWasmParity": true,
+    "studioUnitBuildE2e": true,
+    "canvasKitActualReplay": true,
+    "nonTargetOutputHash": true,
+    "failClosedMatrix": true
+  },
+  "deferred": [
+    "multi-interval-frame",
+    "general-edit-reflow",
+    "stored-prefix",
+    "split-cell",
+    "inline-control",
+    "mixed-target-run-splitting",
+    "center-right-justify-distribute-expansion",
+    "rtl",
+    "vertical",
+    "variation",
+    "nonzero-gpos-y-positioning",
+    "native-skia-blob-typeface-replay",
+    "public-rejected-attempt-annotation",
+    "private-corpus-or-hyper-v-oracle-rerun"
+  ],
+  "approvalScope": "plan approval opens Q2-D5-R0 only; each later slice, commit, push, PR, comment, and merge remains separately gated"
+}
