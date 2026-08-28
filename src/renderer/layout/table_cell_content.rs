@@ -6,7 +6,8 @@ use super::super::render_tree::*;
 use super::super::style_resolver::ResolvedStyleSet;
 use super::super::{hwpunit_to_px, ShapeStyle, TextStyle};
 use super::border_rendering::{
-    build_row_col_x, collect_cell_borders, render_edge_borders, render_transparent_borders,
+    build_row_col_x, collect_cell_borders, mark_cell_span_interior_covered, render_edge_borders,
+    render_transparent_borders,
 };
 use super::text_measurement::{
     is_cjk_char, is_vertical_rotate_char, resolved_to_text_style, vertical_substitute_char,
@@ -583,6 +584,10 @@ impl LayoutEngine {
         use crate::model::style::BorderLine;
         let mut h_edges: Vec<Vec<Option<BorderLine>>> = vec![vec![None; col_count]; row_count + 1];
         let mut v_edges: Vec<Vec<Option<BorderLine>>> = vec![vec![None; row_count]; col_count + 1];
+        // 병합 등으로 편집되어 h_edges/v_edges에 기록되지 않는 span 내부 위치를
+        // 투명선 가이드에서 제외하기 위한 커버리지 그리드 (§투명선/셀 편집 정합성).
+        let mut h_span_covered: Vec<Vec<bool>> = vec![vec![false; col_count]; row_count + 1];
+        let mut v_span_covered: Vec<Vec<bool>> = vec![vec![false; row_count]; col_count + 1];
 
         // 표 노드 생성
         // [#4334] TAC(text-as-char) 중첩 표는 자기 자신의 (section, para, control) 을
@@ -714,6 +719,14 @@ impl LayoutEngine {
                     &bs.borders,
                 );
             }
+            mark_cell_span_interior_covered(
+                &mut h_span_covered,
+                &mut v_span_covered,
+                c,
+                r,
+                cell.col_span as usize,
+                cell.row_span as usize,
+            );
 
             // 셀 패딩 (apply_inner_margin 고려)
             let (mut pad_left, mut pad_right, pad_top, pad_bottom) =
@@ -976,7 +989,15 @@ impl LayoutEngine {
         ));
         if self.show_transparent_borders.get() {
             table_node.children.extend(render_transparent_borders(
-                tree, &h_edges, &v_edges, &row_col_x, &row_y, table_x, table_y,
+                tree,
+                &h_edges,
+                &v_edges,
+                &h_span_covered,
+                &v_span_covered,
+                &row_col_x,
+                &row_y,
+                table_x,
+                table_y,
             ));
         }
 
