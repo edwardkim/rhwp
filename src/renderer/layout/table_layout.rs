@@ -4524,6 +4524,15 @@ impl LayoutEngine {
                         | crate::model::shape::TextWrap::BehindText
                 ) && table.row_count > 1
                     && matches!(table.page_break, TablePageBreak::RowBreak);
+                // [#6267] 관문 ①의 예외 — 호스트 문단이 **이미 그린 글**을 가진
+                // 자리차지 표. #1658/#1858 의 "하단 고정 틀"(결재·발신명의)은 빈
+                // 문단이 host 라 클램프가 흐름을 거슬러 올라가도 겹칠 텍스트가 없고,
+                // 그래서 offset 을 "쪽 하단 핀" 으로 읽어도 무해했다. 반면 글이 있는
+                // host 에서는 클램프 상향이 곧 그 글과의 겹침이므로, offset 값과
+                // 무관하게 "자리차지는 텍스트와 겹칠 수 없다"는 J3 계약이 이긴다.
+                // 156726353 1쪽 문단 8 실측: offset 9507HU 표가 raw 954.0 → 클램프 937.0 로
+                // 끌려와 직전 줄(926.4..945.1)을 8.1px 침범(한글 952.9).
+                let host_has_painted_text = self.para_float_host_has_text.get();
                 if allow_rowbreak_object_bottom_bleed || overlay_multirow_rowbreak {
                     pushed.max(min_y)
                 } else {
@@ -4546,16 +4555,25 @@ impl LayoutEngine {
                     //    (issue1891 fixture p39 실측: 해제 +33px 가 다음 표 2줄을
                     //    쪽 밖으로 추가 이탈시킴).
                     // ③ 표 전체가 용지 안에 그려지는 소폭 하단-여백 bleed 만 허용.
+                    // [#6267] 글이 있는 host 는 기준이 y_start 가 아니다 — 호스트
+                    // 텍스트는 표 앵커(y_start) **아래로** 흐르고 표는 offset 만큼 더
+                    // 아래에 앉으므로, 겹침 여부는 클램프가 표를 제 자리(pushed)에서
+                    // 끌어올렸는지로 본다. 종이 밖으로 나가지 않는 한 하단 여백 bleed 로
+                    // 두는 것이 "자리차지는 글과 겹칠 수 없다"는 J3 계약에 맞는다.
+                    let visible_host_release = host_has_painted_text
+                        && clamped < pushed - 0.5
+                        && pushed + table_height <= page_h_approx + 0.5;
                     if matches!(table_text_wrap, crate::model::shape::TextWrap::TopAndBottom)
                         && matches!(
                             table.common.vert_align,
                             crate::model::shape::VertAlign::Top
                                 | crate::model::shape::VertAlign::Inside
                         )
-                        && signed_hwpunit(table.common.vertical_offset) == 0
-                        && clamped < y_start - 0.5
-                        && y_start <= body_bottom + table_height + 0.5
-                        && y_start + table_height <= page_h_approx + 0.5
+                        && (visible_host_release
+                            || (signed_hwpunit(table.common.vertical_offset) == 0
+                                && clamped < y_start - 0.5
+                                && y_start <= body_bottom + table_height + 0.5
+                                && y_start + table_height <= page_h_approx + 0.5))
                     {
                         if std::env::var("RHWP_5699_DBG").is_ok() {
                             eprintln!(
