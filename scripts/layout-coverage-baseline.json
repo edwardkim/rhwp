@@ -1,0 +1,33 @@
+{
+  "_comment": [
+    "조판 커버리지 기준선 — CLEAN 은 layout-anomaly 신호가 하나도 없는 문서 수.",
+    "갱신: node scripts/layout-coverage-sweep.mjs --update",
+    "이 수는 내려갈 수 없다. 올리는 것이 목표다."
+  ],
+  "documents": 887,
+  "clean": 580,
+  "errors": 3,
+  "signals": {
+    "off_canvas": {
+      "documents": 72,
+      "nodes": 414
+    },
+    "overflow": {
+      "documents": 270,
+      "nodes": 2765
+    },
+    "overlap": {
+      "documents": 74,
+      "nodes": 338
+    },
+    "text_overlap": {
+      "documents": 146,
+      "nodes": 4727
+    },
+    "empty_page": {
+      "documents": 30,
+      "nodes": 124
+    }
+  },
+  "coveragePercent": 65.39
+}
