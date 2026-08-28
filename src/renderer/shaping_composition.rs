@@ -5,6 +5,9 @@
 //! before the D4 atomic activation slice.
 
 use super::shaping::TerminalShapingDisposition;
+use super::shaping_context::{
+    HorizontalShapingContext, HorizontalShapingReplaySourceCertificateRejectReason,
+};
 use super::shaping_paragraph::{HorizontalShapingLineDisposition, HorizontalShapingLineOutcome};
 use super::shaping_publication::{
     HorizontalShapingPageSidecars, HorizontalShapingRunDecision, HorizontalShapingRunRange,
@@ -251,4 +254,27 @@ pub(crate) fn attach_horizontal_shaping_mapped_run(
     mapped: &HorizontalShapingMappedRun,
 ) -> Result<(), HorizontalShapingSidecarRejectReason> {
     sidecars.attach(mapped.node_id, mapped.range, Arc::clone(&mapped.decision))
+}
+
+/// D4 activation 직전에 D2 mapping의 exact measurement와 현재 registry source를
+/// 다시 대사한다. 인증된 decision이 만들어져도 page sidecar에 attach되기 전에는
+/// layout geometry를 바꿀 수 없다.
+pub(crate) fn certify_horizontal_shaping_mapped_run(
+    context: &HorizontalShapingContext,
+    mapped: &HorizontalShapingMappedRun,
+) -> Result<Arc<HorizontalShapingRunDecision>, HorizontalShapingReplaySourceCertificateRejectReason>
+{
+    let measurement = mapped
+        .decision
+        .measurement()
+        .expect("D2 mapped decisions always retain an applied measurement");
+    let certificate = context.certify_replay_source(measurement)?;
+    Ok(Arc::new(
+        HorizontalShapingRunDecision::applied_with_replay_source_certificate(
+            mapped.range,
+            mapped.decision.trace().clone(),
+            Arc::clone(measurement),
+            certificate,
+        ),
+    ))
 }

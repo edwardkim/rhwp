@@ -3,7 +3,7 @@
   "kind": "font-w10-q2-d4-revised-same-boundary-activation-plan",
   "issue": 4969,
   "stage": "W10-Q2-D4",
-  "status": "d4-a-qualified-awaiting-d4-b-approval",
+  "status": "d4-b-qualified-awaiting-d4-c-approval",
   "checkpoint": "be88ec57e",
   "productOutputChangeBeforeD4B": false,
   "authorityDecision": {
@@ -131,6 +131,14 @@
     "w9AndD0ThroughD3Regression": true,
     "generatedIntegrationArtifactsInSourcePr": false
   },
+  "executionResult": {
+    "d4A": "qualified",
+    "d4B": "qualified",
+    "d4C": "not-started-awaiting-maintainer-approval",
+    "resultArtifact": "mydocs/tech/investigations/issue-4969/w10_q2_d4_b_atomic_activation.json",
+    "productOutputChangedInBoundedLane": true,
+    "generatedIntegrationArtifactsInSourcePr": false
+  },
   "deferred": [
     "multi-line-or-multi-run-batch-activation",
     "center-right-justify-distribute",
@@ -144,5 +152,5 @@
     "nonzero-gpos-y-offset-or-advance",
     "public-rejected-attempt-annotation"
   ],
-  "approvalScope": "maintainer approval opens Q2-D4-A shadow implementation only; no product activation"
+  "approvalScope": "D4-A and D4-B completed under separate approvals; maintainer approval is required before Q2-D4-C"
 }

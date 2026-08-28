@@ -1,6 +1,6 @@
 //! Producer-side lowering for font-native bitmap and SVG glyph resources.
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::io::Read;
 
 use flate2::read::GzDecoder;
@@ -439,9 +439,22 @@ pub fn lower_font_native_glyph_sidecars(
     resources: &mut ResourceArena,
     fonts: &[EmbeddedFontFace<'_>],
 ) -> FontGlyphLoweringReport {
+    lower_font_native_glyph_sidecars_excluding(root, resources, fonts, &HashSet::new())
+}
+
+/// common shaping이 이미 정확한 GlyphRun alternative를 소유한 text source는
+/// nominal portable GlyphRun만 건너뛴다. TextRun과 bitmap/SVG sidecar 경로는
+/// 그대로 보존한다.
+pub(crate) fn lower_font_native_glyph_sidecars_excluding(
+    root: &mut LayerNode,
+    resources: &mut ResourceArena,
+    fonts: &[EmbeddedFontFace<'_>],
+    claimed_glyph_run_sources: &HashSet<u32>,
+) -> FontGlyphLoweringReport {
     let mut lowerer = FontGlyphLowerer {
         resources,
         fonts,
+        claimed_glyph_run_sources,
         report: FontGlyphLoweringReport::default(),
         next_text_source_id: 0,
         emitted_sidecars: 0,
@@ -458,6 +471,7 @@ pub fn lower_font_native_glyph_sidecars(
 struct FontGlyphLowerer<'a, 'font> {
     resources: &'a mut ResourceArena,
     fonts: &'a [EmbeddedFontFace<'font>],
+    claimed_glyph_run_sources: &'a HashSet<u32>,
     report: FontGlyphLoweringReport,
     next_text_source_id: u32,
     emitted_sidecars: usize,
@@ -496,7 +510,9 @@ impl FontGlyphLowerer<'_, '_> {
             if let PaintOp::TextRun { bbox, run } = op {
                 let text_source_id = self.next_text_source_id;
                 self.next_text_source_id = self.next_text_source_id.saturating_add(1);
-                let glyph_run = self.lower_portable_glyph_run(bbox, &run, text_source_id);
+                let glyph_run = (!self.claimed_glyph_run_sources.contains(&text_source_id))
+                    .then(|| self.lower_portable_glyph_run(bbox, &run, text_source_id))
+                    .flatten();
                 let sidecar = self.lower_text_run(bbox, &run, text_source_id);
                 lowered.push(PaintOp::TextRun { bbox, run });
                 if let Some(glyph_run) = glyph_run {

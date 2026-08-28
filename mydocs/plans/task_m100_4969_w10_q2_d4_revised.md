@@ -5,7 +5,7 @@
   [`task_m100_4969_w10_q2_d3.md`](../working/task_m100_4969_w10_q2_d3.md)
 - **기계 판독 계획**:
   [`w10_q2_d4_revised_execution_plan.json`](../tech/investigations/issue-4969/w10_q2_d4_revised_execution_plan.json)
-- **상태**: D4-A qualified, D4-B 제품 activation 승인 대기
+- **상태**: D4-A·D4-B qualified, D4-C cross-backend·성능 판정 승인 대기
 - **제품 변경**: D4-A는 0, D4-B의 승인된 최초 lane에서만 있음
 
 ## 1. 수정 이유
@@ -201,6 +201,5 @@ line width = bbox width = next origin delta = affine round-trip advance. reject 
 
 ## 9. 승인 게이트
 
-본 수정 계획의 승인은 Q2-D4-A replay projection·certificate shadow 구현만 연다. D4-A 결과 보고와 별도 승인이
-있기 전에는 제품 layout·LayerBuilder caller를 연결하는 D4-B를 시작하지 않는다. D4-B와 D4-C도 각각 결과 보고와
-승인을 받는다. push·PR·GitHub comment는 기존 승인 경계를 유지한다.
+Q2-D4-A와 별도 승인된 Q2-D4-B는 각각 qualified다. D4-B 결과 보고와 별도 승인이 있기 전에는 CanvasKit 실제 draw,
+cross-backend·성능 판정을 수행하는 D4-C를 시작하지 않는다. push·PR·GitHub comment는 기존 승인 경계를 유지한다.

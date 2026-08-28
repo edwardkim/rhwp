@@ -1699,6 +1699,12 @@ impl PageLayoutContext {
         self.horizontal_shaping_sidecars.get(node_id)
     }
 
+    /// LayerBuilder가 최종 RenderNode의 source id와 page-local decision을
+    /// 대사할 때만 사용하는 읽기 전용 경계다. sidecar owner는 계속 frame이다.
+    pub(crate) fn horizontal_shaping_sidecars(&self) -> &HorizontalShapingPageSidecars {
+        &self.horizontal_shaping_sidecars
+    }
+
     pub(crate) fn horizontal_shaping_sidecar_count(&self) -> usize {
         self.horizontal_shaping_sidecars.len()
     }

@@ -4,6 +4,8 @@
 //! that the final `LayerNode::source_node_id` can recover one exact sidecar and
 //! losslessly express its glyph geometry with the existing glyph-run schema.
 
+use std::collections::HashSet;
+
 use crate::paint::{
     font_blob_resource_key, resource_digest_hex, BinaryResourceKind, BinaryResourceRef,
     FontBlobKey, FontBlobResource, FontDigest, FontFaceKey, FontFaceResource, FontFallbackPolicyId,
@@ -513,7 +515,25 @@ pub(crate) fn lower_horizontal_shaping_layer_node_shadow(
     sidecars: &HorizontalShapingPageSidecars,
     resources: &mut ResourceArena,
 ) -> HorizontalShapingGlyphLoweringReport {
-    let Some(source_node_id) = node.source_node_id else {
+    lower_horizontal_shaping_source_shadow(
+        node.source_node_id,
+        bbox,
+        run,
+        text_source_id,
+        sidecars,
+        resources,
+    )
+}
+
+fn lower_horizontal_shaping_source_shadow(
+    source_node_id: Option<u32>,
+    bbox: BoundingBox,
+    run: &TextRunNode,
+    text_source_id: u32,
+    sidecars: &HorizontalShapingPageSidecars,
+    resources: &mut ResourceArena,
+) -> HorizontalShapingGlyphLoweringReport {
+    let Some(source_node_id) = source_node_id else {
         return HorizontalShapingGlyphLoweringReport::rejected(
             None,
             HorizontalShapingGlyphLoweringRejectReason::MissingSourceNode,
@@ -684,4 +704,74 @@ pub(crate) fn lower_horizontal_shaping_layer_node_shadow(
         },
     };
     HorizontalShapingGlyphLoweringReport::emitted(source_node_id, glyph_run)
+}
+
+/// Page-local common shaping sidecar를 TextRun 순서와 같은 text_source_id로
+/// 먼저 내린다. 성공한 source id 집합은 뒤따르는 nominal font lowerer가
+/// 중복 GlyphRun 생성을 건너뛰는 유일한 claim이다.
+pub(crate) fn lower_horizontal_shaping_page_sidecars(
+    root: &mut LayerNode,
+    sidecars: &HorizontalShapingPageSidecars,
+    resources: &mut ResourceArena,
+) -> HashSet<u32> {
+    fn lower_node(
+        node: &mut LayerNode,
+        sidecars: &HorizontalShapingPageSidecars,
+        resources: &mut ResourceArena,
+        next_text_source_id: &mut u32,
+        claimed: &mut HashSet<u32>,
+    ) {
+        let source_node_id = node.source_node_id;
+        match &mut node.kind {
+            crate::paint::LayerNodeKind::Group { children, .. } => {
+                for child in children {
+                    lower_node(child, sidecars, resources, next_text_source_id, claimed);
+                }
+            }
+            crate::paint::LayerNodeKind::ClipRect { child, .. } => {
+                lower_node(child, sidecars, resources, next_text_source_id, claimed);
+            }
+            crate::paint::LayerNodeKind::Leaf { ops } => {
+                let mut lowered = Vec::with_capacity(ops.len());
+                for op in ops.drain(..) {
+                    if let crate::paint::PaintOp::TextRun { bbox, run } = op {
+                        let text_source_id = *next_text_source_id;
+                        *next_text_source_id = next_text_source_id.saturating_add(1);
+                        let report = lower_horizontal_shaping_source_shadow(
+                            source_node_id,
+                            bbox,
+                            &run,
+                            text_source_id,
+                            sidecars,
+                            resources,
+                        );
+                        lowered.push(crate::paint::PaintOp::TextRun { bbox, run });
+                        if report.claims_glyph_run_slot {
+                            if let Some(glyph_run) = report.glyph_run {
+                                lowered.push(crate::paint::PaintOp::GlyphRun {
+                                    bbox,
+                                    run: Box::new(glyph_run),
+                                });
+                                claimed.insert(text_source_id);
+                            }
+                        }
+                    } else {
+                        lowered.push(op);
+                    }
+                }
+                *ops = lowered;
+            }
+        }
+    }
+
+    let mut next_text_source_id = 0;
+    let mut claimed = HashSet::new();
+    lower_node(
+        root,
+        sidecars,
+        resources,
+        &mut next_text_source_id,
+        &mut claimed,
+    );
+    claimed
 }

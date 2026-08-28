@@ -51,15 +51,16 @@ use rhwp::paint::{LayerNode, PaintOp, ResourceArena};
 use rhwp::renderer::render_tree::{BoundingBox, FieldMarkerType, TextRunNode};
 use rhwp::renderer::TextStyle;
 use shaping_composition::{
-    attach_horizontal_shaping_mapped_run, map_horizontal_shaping_emitted_run,
-    HorizontalShapingEmittedRunCandidate,
+    attach_horizontal_shaping_mapped_run, certify_horizontal_shaping_mapped_run,
+    map_horizontal_shaping_emitted_run, HorizontalShapingEmittedRunCandidate,
 };
 use shaping_context::{
     HorizontalShapingContext, HorizontalShapingReplaySourceCertificate,
     HorizontalShapingReplaySourceCertificateRejectReason,
 };
 use shaping_glyph::{
-    lower_horizontal_shaping_layer_node_shadow, HorizontalShapingGlyphLoweringRejectReason,
+    lower_horizontal_shaping_layer_node_shadow, lower_horizontal_shaping_page_sidecars,
+    HorizontalShapingGlyphLoweringRejectReason,
 };
 use shaping_paragraph::{
     run_horizontal_shaping_line_transaction, HorizontalShapingFallbackOwner,
@@ -161,16 +162,12 @@ fn prepared_sidecar() -> (
         },
     )
     .expect("exact final-run mapping");
-    let certificate = context
-        .certify_replay_source(&measurement)
-        .expect("certify exact replay source");
-    let certified_decision = Arc::new(
-        HorizontalShapingRunDecision::applied_with_replay_source_certificate(
-            mapped.range,
-            mapped.decision.trace().clone(),
-            Arc::clone(&measurement),
-            Arc::clone(&certificate),
-        ),
+    let certified_decision = certify_horizontal_shaping_mapped_run(&context, &mapped)
+        .expect("certify exact mapped replay source");
+    let certificate = Arc::clone(
+        certified_decision
+            .replay_source_certificate()
+            .expect("mapped decision certificate"),
     );
     let mut sidecars = HorizontalShapingPageSidecars::default();
     sidecars
@@ -488,7 +485,7 @@ fn issue_4969_q2_d4_a_defers_nonzero_vertical_design_positioning() {
 
 #[test]
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
-fn issue_4969_q2_d4_a_preserves_text_run_fallback_and_has_no_product_caller() {
+fn issue_4969_q2_d4_a_shadow_lowerer_does_not_mutate_the_input_leaf() {
     let (sidecars, _, _) = prepared_sidecar();
     let run = text_run();
     let bbox = BoundingBox::new(0.0, 0.0, 20.0, 14.0);
@@ -503,6 +500,38 @@ fn issue_4969_q2_d4_a_preserves_text_run_fallback_and_has_no_product_caller() {
     };
     assert_eq!(ops.len(), 1);
     assert!(matches!(ops[0], PaintOp::TextRun { .. }));
+}
+
+#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
+fn issue_4969_q2_d4_b_common_run_claim_is_unique_and_resource_bounded() {
+    let (sidecars, measurement, _) = prepared_sidecar();
+    let run = text_run();
+    let bbox = BoundingBox::new(3.0, 5.0, measurement.total_advance_px, 14.0);
+    let mut node = LayerNode::leaf(bbox, Some(17), vec![PaintOp::text_run(bbox, run)]);
+    let mut resources = ResourceArena::default();
+
+    let claimed = lower_horizontal_shaping_page_sidecars(&mut node, &sidecars, &mut resources);
+    assert_eq!(claimed.len(), 1);
+    assert!(claimed.contains(&0));
+    let rhwp::paint::LayerNodeKind::Leaf { ops } = &node.kind else {
+        panic!("fixture node must remain a leaf");
+    };
+    assert_eq!(
+        ops.iter()
+            .filter(|op| matches!(op, PaintOp::TextRun { .. }))
+            .count(),
+        1
+    );
+    assert_eq!(
+        ops.iter()
+            .filter(|op| matches!(op, PaintOp::GlyphRun { .. }))
+            .count(),
+        1
+    );
+    assert_eq!(resources.font_blob_count(), 1);
+    assert_eq!(resources.font_resources().blobs.len(), 1);
+    assert_eq!(resources.font_resources().faces.len(), 1);
 }
 
 #[test]
