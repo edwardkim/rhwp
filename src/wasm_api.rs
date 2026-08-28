@@ -1876,6 +1876,105 @@ impl HwpDocument {
         .map_err(|e| e.into())
     }
 
+    /// 머리말/꼬리말 선택 범위를 평문으로 원자 치환한다.
+    #[wasm_bindgen(js_name = replaceRangeInHeaderFooter)]
+    #[allow(clippy::too_many_arguments)]
+    pub fn replace_range_in_header_footer(
+        &mut self,
+        section_idx: u32,
+        is_header: bool,
+        apply_to: u8,
+        start_hf_para_idx: u32,
+        start_char_offset: u32,
+        end_hf_para_idx: u32,
+        end_char_offset: u32,
+        replacement_text: &str,
+    ) -> Result<String, JsValue> {
+        self.replace_range_in_header_footer_native(
+            section_idx as usize,
+            is_header,
+            apply_to,
+            start_hf_para_idx as usize,
+            start_char_offset as usize,
+            end_hf_para_idx as usize,
+            end_char_offset as usize,
+            replacement_text,
+        )
+        .map_err(|e| e.into())
+    }
+
+    /// 머리말/꼬리말 선택 범위를 내부 클립보드에 복사한다.
+    #[wasm_bindgen(js_name = copySelectionInHeaderFooter)]
+    #[allow(clippy::too_many_arguments)]
+    pub fn copy_selection_in_header_footer(
+        &mut self,
+        section_idx: u32,
+        is_header: bool,
+        apply_to: u8,
+        start_hf_para_idx: u32,
+        start_char_offset: u32,
+        end_hf_para_idx: u32,
+        end_char_offset: u32,
+    ) -> Result<String, JsValue> {
+        self.copy_selection_in_header_footer_native(
+            section_idx as usize,
+            is_header,
+            apply_to,
+            start_hf_para_idx as usize,
+            start_char_offset as usize,
+            end_hf_para_idx as usize,
+            end_char_offset as usize,
+        )
+        .map_err(|e| e.into())
+    }
+
+    /// 머리말/꼬리말 캐럿 위치의 글자 속성을 조회한다.
+    #[wasm_bindgen(js_name = getCharPropertiesInHeaderFooter)]
+    pub fn get_char_properties_in_header_footer(
+        &self,
+        section_idx: u32,
+        is_header: bool,
+        apply_to: u8,
+        hf_para_idx: u32,
+        char_offset: u32,
+    ) -> Result<String, JsValue> {
+        self.get_char_properties_in_header_footer_native(
+            section_idx as usize,
+            is_header,
+            apply_to,
+            hf_para_idx as usize,
+            char_offset as usize,
+        )
+        .map_err(|e| e.into())
+    }
+
+    /// 머리말/꼬리말 선택 범위에 글자 서식을 적용한다.
+    #[wasm_bindgen(js_name = applyCharFormatInHeaderFooter)]
+    #[allow(clippy::too_many_arguments)]
+    pub fn apply_char_format_in_header_footer(
+        &mut self,
+        section_idx: u32,
+        is_header: bool,
+        apply_to: u8,
+        start_hf_para_idx: u32,
+        start_char_offset: u32,
+        end_hf_para_idx: u32,
+        end_char_offset: u32,
+        props_json: &str,
+    ) -> Result<String, JsValue> {
+        self.apply_char_format_in_header_footer_native(
+            section_idx as usize,
+            is_header,
+            apply_to,
+            start_hf_para_idx as usize,
+            start_char_offset as usize,
+            end_hf_para_idx as usize,
+            end_char_offset as usize,
+            props_json,
+        )
+        .map_err(|e| e.into())
+    }
+
     /// 표를 지정 행에서 두 개로 나눈다 (한컴 [표-표 나누기]).
     ///
     /// 반환값: JSON `{"ok":true,"frontRows":<N>,"backParaIdx":<P>}`
@@ -2777,6 +2876,33 @@ impl HwpDocument {
             hf_para_idx as usize,
             char_offset as usize,
             preferred_page,
+        )
+        .map_err(|e| e.into())
+    }
+
+    /// 요청한 한 페이지의 머리말/꼬리말 선택 사각형을 반환한다.
+    #[wasm_bindgen(js_name = getSelectionRectsInHeaderFooter)]
+    #[allow(clippy::too_many_arguments)]
+    pub fn get_selection_rects_in_header_footer(
+        &self,
+        section_idx: u32,
+        is_header: bool,
+        apply_to: u8,
+        page_num: u32,
+        start_hf_para_idx: u32,
+        start_char_offset: u32,
+        end_hf_para_idx: u32,
+        end_char_offset: u32,
+    ) -> Result<String, JsValue> {
+        self.get_selection_rects_in_header_footer_native(
+            section_idx as usize,
+            is_header,
+            apply_to,
+            page_num,
+            start_hf_para_idx as usize,
+            start_char_offset as usize,
+            end_hf_para_idx as usize,
+            end_char_offset as usize,
         )
         .map_err(|e| e.into())
     }

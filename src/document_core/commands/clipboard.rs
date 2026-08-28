@@ -108,7 +108,7 @@ fn recompute_clipboard_control_mask(para: &Paragraph) -> u32 {
     mask
 }
 
-fn strip_structural_controls_for_text_clipboard(para: &mut Paragraph) {
+pub(super) fn strip_structural_controls_for_text_clipboard(para: &mut Paragraph) {
     // [#4149] clip 사본이지만 다중 문단 붙여넣기에서 중간 문단이 통째로 문서에
     // 스플라이스되어 렌더 입력이 될 수 있다 — 컨트롤 제거로 compose 입력이
     // 바뀌므로 단일줄 과밀 memo 를 무효화한다.
@@ -165,7 +165,7 @@ fn text_to_split_logical_offset(para: &Paragraph, text_offset: usize) -> usize {
     text_offset + before_count
 }
 
-fn clip_paragraph_text_range_for_clipboard(
+pub(super) fn clip_paragraph_text_range_for_clipboard(
     source: &Paragraph,
     start_char_offset: usize,
     end_char_offset: usize,

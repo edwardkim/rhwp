@@ -7,7 +7,7 @@
 - 기준: `upstream/devel` @ `94ff48d2b81dee5241110db9d2417dffbfb7f9ec`
 - 수행계획: `mydocs/plans/task_m100_4121.md` 승인 및 로컬 체크포인트
   `e0622c2c7`
-- 현재 단계: 구현계획 승인 대기
+- 현재 단계: Stage 1 코어 계약 완료, Stage 2 승인 대기
 
 이 문서가 승인되기 전에는 제품 소스를 수정하지 않는다. 승인 뒤에도 Hyper-Waterfall에
 따라 각 Stage의 코드·테스트·완료보고서를 한 묶음으로 검토하고 커밋한 뒤 다음 Stage로

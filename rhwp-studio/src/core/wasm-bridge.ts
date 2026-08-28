@@ -3043,9 +3043,116 @@ export class WasmBridge {
     return this.doc.getHeaderFooterParaInfo(sec, isHeader, applyTo, hfParaIdx);
   }
 
+  replaceRangeInHeaderFooter(
+    sec: number,
+    isHeader: boolean,
+    applyTo: number,
+    startHfParaIdx: number,
+    startOffset: number,
+    endHfParaIdx: number,
+    endOffset: number,
+    replacementText: string,
+  ): { ok: boolean; hfParaIndex: number; charOffset: number } {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return JSON.parse((this.doc as any).replaceRangeInHeaderFooter(
+      sec,
+      isHeader,
+      applyTo,
+      startHfParaIdx,
+      startOffset,
+      endHfParaIdx,
+      endOffset,
+      replacementText,
+    ));
+  }
+
+  copySelectionInHeaderFooter(
+    sec: number,
+    isHeader: boolean,
+    applyTo: number,
+    startHfParaIdx: number,
+    startOffset: number,
+    endHfParaIdx: number,
+    endOffset: number,
+  ): { ok: boolean; text: string } {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return JSON.parse((this.doc as any).copySelectionInHeaderFooter(
+      sec,
+      isHeader,
+      applyTo,
+      startHfParaIdx,
+      startOffset,
+      endHfParaIdx,
+      endOffset,
+    ));
+  }
+
+  getCharPropertiesInHeaderFooter(
+    sec: number,
+    isHeader: boolean,
+    applyTo: number,
+    hfParaIdx: number,
+    charOffset: number,
+  ): CharProperties {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return JSON.parse((this.doc as any).getCharPropertiesInHeaderFooter(
+      sec,
+      isHeader,
+      applyTo,
+      hfParaIdx,
+      charOffset,
+    ));
+  }
+
+  applyCharFormatInHeaderFooter(
+    sec: number,
+    isHeader: boolean,
+    applyTo: number,
+    startHfParaIdx: number,
+    startOffset: number,
+    endHfParaIdx: number,
+    endOffset: number,
+    propsJson: string,
+  ): string {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return (this.doc as any).applyCharFormatInHeaderFooter(
+      sec,
+      isHeader,
+      applyTo,
+      startHfParaIdx,
+      startOffset,
+      endHfParaIdx,
+      endOffset,
+      propsJson,
+    );
+  }
+
   getCursorRectInHeaderFooter(sec: number, isHeader: boolean, applyTo: number, hfParaIdx: number, charOffset: number, preferredPage = -1): CursorRect {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return JSON.parse(this.doc.getCursorRectInHeaderFooter(sec, isHeader, applyTo, hfParaIdx, charOffset, preferredPage));
+  }
+
+  getSelectionRectsInHeaderFooter(
+    sec: number,
+    isHeader: boolean,
+    applyTo: number,
+    pageNum: number,
+    startHfParaIdx: number,
+    startOffset: number,
+    endHfParaIdx: number,
+    endOffset: number,
+  ): SelectionRect[] {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    return JSON.parse((this.doc as any).getSelectionRectsInHeaderFooter(
+      sec,
+      isHeader,
+      applyTo,
+      pageNum,
+      startHfParaIdx,
+      startOffset,
+      endHfParaIdx,
+      endOffset,
+    ));
   }
 
   hitTestHeaderFooter(pageNum: number, x: number, y: number): { hit: boolean; isHeader?: boolean; sectionIndex?: number; applyTo?: number } {
@@ -3064,7 +3171,7 @@ export class WasmBridge {
     return JSON.parse((this.doc as any).getHeaderFooterEditTarget(pageNum, isHeader));
   }
 
-  hitTestInHeaderFooter(pageNum: number, isHeader: boolean, x: number, y: number): { hit: boolean; paraIndex?: number; charOffset?: number; cursorRect?: { pageIndex: number; x: number; y: number; height: number } } {
+  hitTestInHeaderFooter(pageNum: number, isHeader: boolean, x: number, y: number): { hit: boolean; sectionIndex?: number; applyTo?: number; paraIndex?: number; charOffset?: number; cursorRect?: { pageIndex: number; x: number; y: number; height: number } } {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return JSON.parse(this.doc.hitTestInHeaderFooter(pageNum, isHeader, x, y));
   }
