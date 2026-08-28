@@ -3,9 +3,9 @@
 - **이슈**: [#6108](https://github.com/edwardkim/rhwp/issues/6108)
 - **브랜치**: `codex/issue-6108-zoom-fit`
 - **최초 작업 기준**: `upstream/devel@2166f4065`
-- **최종 통합 기준**: `upstream/devel@1a43a507c`
+- **최종 통합 기준**: `upstream/devel@1fe0d1480`
 - **보고일**: 2026-08-28 KST
-- **절차 상태**: 로컬 구현·최신 devel 통합·재검증 완료, #6109 stack 분기 준비
+- **절차 상태**: 로컬 구현·최신 devel 통합·재검증 완료, native stack 게시 준비
 
 ## 결과
 
@@ -89,5 +89,8 @@ Cargo registry는 변경하지 않았다.
   생성한 `mydocs/orders/20260828.md` 한 파일뿐이었고, devel의 CI·#4969 기록과 #6108·#6109 행을 모두
   보존했다.
 - 통합된 exact head `4912c9024`에서 Studio 전체 test·production build·Chrome E2E 28/28을 다시 통과했다.
+- 게시 승인 뒤 공식 `gh-stack`에 기존 #6108·#6109 브랜치를 등록하고 최신
+  `upstream/devel@1fe0d1480` 위로 cascading rebase했다. 정확한 #6108 하단 head `c6d9063bc`에서
+  Studio 1,225건(1,224 pass·1 skip), production build 238 modules, Chrome E2E 28/28을 재통과했다.
 - #6108을 bottom, #6109를 top으로 하는 native stacked PR의 로컬 분기 조건을 충족했다.
 - remote push·PR 생성은 아직 수행하지 않았다.
