@@ -3603,7 +3603,7 @@ impl LayoutEngine {
                 } else {
                     let cell_w_px = hwpunit_to_px(cell.width as i32, self.dpi)
                         * self.render_table_width_scale(table);
-                    let inner_width = (cell_w_px - pad_left - pad_right).max(0.0);
+                    let inner_width = crate::renderer::composer::cell_inner_text_width(cell_w_px, pad_left, pad_right, self.dpi);
                     let (line_based, object_based) = self.calc_cell_paragraphs_content_parts(
                         &cell.paragraphs,
                         styles,
@@ -3742,7 +3742,7 @@ impl LayoutEngine {
                     self.resolve_cell_padding(cell, table);
                 let cell_w_px = hwpunit_to_px(cell.width as i32, self.dpi)
                     * self.render_table_width_scale(table);
-                let inner_width = (cell_w_px - pad_left - pad_right).max(0.0);
+                let inner_width = crate::renderer::composer::cell_inner_text_width(cell_w_px, pad_left, pad_right, self.dpi);
                 // LINE_SEG의 line_height에 이미 셀 내 중첩 표 높이가 반영되어 있으므로
                 // controls_height를 별도로 더하면 이중 계산됨
                 // [Task #2211] 1-b 와 동일 — 저장 LINE_SEG 줄 흐름은 pad 미가산,
@@ -4229,6 +4229,7 @@ impl LayoutEngine {
             paragraphs,
             styles,
             preserve_cell_padding,
+            self.dpi,
         )
     }
 
@@ -6852,7 +6853,7 @@ impl LayoutEngine {
             pad_right = new_pr;
 
             let inner_x = cell_x + pad_left;
-            let inner_width = (cell_w - pad_left - pad_right).max(0.0);
+            let inner_width = crate::renderer::composer::cell_inner_text_width(cell_w, pad_left, pad_right, self.dpi);
             let inner_height = (cell_h - pad_top - pad_bottom).max(0.0);
 
             // [Task #671] line_segs 비어 있는 셀 paragraph 의 단일 ComposedLine 압축
@@ -8099,7 +8100,7 @@ impl LayoutEngine {
             } else {
                 0.0
             };
-            let inner_width = (cell_w - pad_left - pad_right).max(0.0);
+            let inner_width = crate::renderer::composer::cell_inner_text_width(cell_w, pad_left, pad_right, self.dpi);
             let mut cell_units = Vec::new();
             let mut after_completed_multiline_table = false;
             for (pi, para) in cell.paragraphs.iter().enumerate() {
@@ -8766,7 +8767,11 @@ impl LayoutEngine {
         // 교정된 문서(80168 pi=1056 r7: 한글 PDF 8줄 실측)에서는 한글이 지키는 패딩을
         // 깨 7줄로 과소(157→156 회귀) — shrink 는 폰트 폭 오차의 문서별 보상재로,
         // 일반화 불가(#2279 코멘트). 측정 폭은 원 패딩 유지.
-        let inner_width = (cell_w - pad_left - pad_right).max(0.0);
+        //
+        // 최소 줄 너비는 다르다. 그것은 문서별 보상재가 아니라 한/글이 지키는 규칙이고
+        // (samples 전수 7,862줄 중 98.7%), 측정과 렌더가 갈리면 줄 수가 어긋난다.
+        // 그래서 shrink 와 달리 `cell_inner_text_width` 안에서 여기에도 적용된다.
+        let inner_width = crate::renderer::composer::cell_inner_text_width(cell_w, pad_left, pad_right, self.dpi);
         let line_seg_is_synthetic = |seg: &crate::model::paragraph::LineSeg| {
             seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
         };
@@ -14185,7 +14190,7 @@ impl LayoutEngine {
                 crate::renderer::composer::no_ls_short_label_cell(
                     cell,
                     table,
-                    (cell_w_px - pad_left - pad_right).max(0.0),
+                    crate::renderer::composer::cell_inner_text_width(cell_w_px, pad_left, pad_right, self.dpi),
                     cell_h_px - pad_top - pad_bottom,
                     styles,
                     self.dpi,

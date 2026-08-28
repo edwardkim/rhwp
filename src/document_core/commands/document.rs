@@ -473,7 +473,7 @@ impl DocumentCore {
                                 crate::renderer::hwpunit_to_px(frame_padding.left as i32, dpi);
                             let pad_right =
                                 crate::renderer::hwpunit_to_px(frame_padding.right as i32, dpi);
-                            let cell_inner_width = (cell_w_px - pad_left - pad_right).max(1.0);
+                            let cell_inner_width = crate::renderer::composer::cell_inner_text_width(cell_w_px, pad_left, pad_right, dpi);
                             // [#2195/#2146] 사선(대각선) 셀의 빈 문단은 코너 라벨의
                             // 짝 — 한글은 흐름 배치하지 않으므로 합성 제외 (21761835
                             // r0 라벨 셀 선언 52.4px 유지, 합성 시 +2.4 팽창).
@@ -1261,7 +1261,7 @@ impl DocumentCore {
                                 crate::renderer::hwpunit_to_px(frame_padding.left as i32, dpi);
                             let pad_right =
                                 crate::renderer::hwpunit_to_px(frame_padding.right as i32, dpi);
-                            let cell_inner_width = (cell_w_px - pad_left - pad_right).max(1.0);
+                            let cell_inner_width = crate::renderer::composer::cell_inner_text_width(cell_w_px, pad_left, pad_right, dpi);
                             for cell_para in &mut cell.paragraphs {
                                 if Self::needs_reflow_broadly(cell_para) {
                                     // 셀 내용 상자 — 위와 같은 이유로 미스냅.
