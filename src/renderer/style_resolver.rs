@@ -303,6 +303,11 @@ pub struct ResolvedStyleSet {
     /// 스타일 복제는 snapshot owner만 공유한다.
     pub(crate) kerning_measurement_context:
         Option<std::sync::Arc<crate::renderer::kerning::KerningMeasurementContext>>,
+    /// Q2-B cluster-aware shadow measurement context.  It is created from the
+    /// same immutable registry snapshot as `kerning_measurement_context` and
+    /// remains dormant until the composition-owner handoff qualifies.
+    pub(crate) horizontal_shaping_context:
+        Option<std::sync::Arc<crate::renderer::shaping_context::HorizontalShapingContext>>,
 }
 
 /// DocInfo 참조 테이블을 해소된 스타일 목록으로 변환한다.
@@ -340,6 +345,7 @@ pub fn resolve_styles_with_variant(
         bullets,
         hwp3_variant: is_hwp3_variant,
         kerning_measurement_context: None,
+        horizontal_shaping_context: None,
     }
 }
 

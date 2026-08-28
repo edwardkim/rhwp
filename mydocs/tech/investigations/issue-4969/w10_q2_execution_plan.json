@@ -1,0 +1,102 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q2-horizontal-common-shaping-plan",
+  "issue": 4969,
+  "stage": "W10-Q2",
+  "status": "q2-d0-qualified-awaiting-d1-approval",
+  "productMutation": false,
+  "firstActivationSubset": {
+    "writingMode": "horizontal-tb",
+    "direction": "ltr",
+    "bidiLevel": 0,
+    "exactPortableSource": true,
+    "variationAxes": [],
+    "syntheticStyle": false,
+    "complexRequiredFirst": true,
+    "latinDefaultLigaRequiresSeparateApproval": true
+  },
+  "rejectedUntilLater": [
+    "rtl-product-replay",
+    "variation-instance",
+    "vertical-writing",
+    "synthetic-style",
+    "backend-reshaping"
+  ],
+  "ownership": {
+    "exactSource": "reuse-w9-registry",
+    "measurement": "horizontal-shaping-context",
+    "lineBreak": "cluster-aware-bounded-transaction",
+    "emittedRun": "internal-arc-sidecar",
+    "paint": "published-glyph-run-or-exact-outline",
+    "rejection": "source-linked-bounded-attempt-sidecar"
+  },
+  "stages": [
+    {
+      "id": "Q2-A",
+      "name": "terminal-attempt-owner",
+      "productOutputChange": false,
+      "result": "qualified",
+      "approvalAfter": true
+    },
+    {
+      "id": "Q2-B",
+      "name": "horizontal-shadow-measurement",
+      "productOutputChange": false,
+      "result": "qualified",
+      "approvalAfter": true
+    },
+    {
+      "id": "Q2-C",
+      "name": "cluster-aware-line-break-transaction",
+      "productOutputChange": false,
+      "result": "qualified-dormant",
+      "requiresActivationMatrixApproval": true,
+      "activationDeferredUntil": "Q2-D emitted-run sidecar handoff"
+    },
+    {
+      "id": "Q2-D",
+      "name": "emitted-run-and-rejected-trace-handoff",
+      "productOutputChange": true,
+      "result": "d0-qualified-d1-awaiting-approval",
+      "plan": "w10_q2_d_execution_plan.json",
+      "schemaMinorChangesOnlyWithRealPublicValues": true
+    },
+    {
+      "id": "Q2-E",
+      "name": "backend-published-result-replay",
+      "productOutputChange": true,
+      "backendReshapingAllowed": false
+    },
+    {
+      "id": "Q2-F",
+      "name": "regression-performance-final-verdict",
+      "productOutputChange": false,
+      "approvalAfter": true
+    }
+  ],
+  "limits": {
+    "fontBytes": 33554432,
+    "textCodePointsPerRun": 4096,
+    "glyphsPerRun": 4096,
+    "clustersPerRun": 4096,
+    "publicAttemptRecordsPerPage": 4096,
+    "cacheEntries": 4096,
+    "cacheTextBytes": 1048576,
+    "cacheGlyphs": 262144,
+    "cacheClusters": 262144,
+    "lineBreakRetries": 2
+  },
+  "rollback": {
+    "unit": "approved-paragraph-or-final-run-transaction",
+    "fallbackOrder": ["w9-k1", "existing-k0"],
+    "partialShapingCommitAllowed": false,
+    "doubleGposAllowed": false
+  },
+  "privacy": {
+    "rawTextInTrace": false,
+    "fontBytesDuplicatedInDiagnostics": false,
+    "localFontPath": false,
+    "privateCorpusIdentity": false
+  },
+  "approvalScope": "Q2-D revised plan awaits approval; approval opens Q2-D0 only"
+}

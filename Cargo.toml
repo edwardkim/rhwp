@@ -191,6 +191,34 @@ name = "issue_4100_chart_data_edit"
 path = "tests/issue_4100_chart_data_edit.rs"
 
 [[test]]
+name = "issue_4969_shaping_composition_handoff"
+path = "tests/cases/issue_4969_shaping_composition_handoff.rs"
+
+[[test]]
+name = "issue_4969_shaping_emitted_run_mapping"
+path = "tests/cases/issue_4969_shaping_emitted_run_mapping.rs"
+
+[[test]]
+name = "issue_4969_shaping_glyph_lowering"
+path = "tests/cases/issue_4969_shaping_glyph_lowering.rs"
+
+[[test]]
+name = "issue_4969_shaping_page_sidecar"
+path = "tests/cases/issue_4969_shaping_page_sidecar.rs"
+
+[[test]]
+name = "issue_4969_shaping_paragraph_transaction"
+path = "tests/cases/issue_4969_shaping_paragraph_transaction.rs"
+
+[[test]]
+name = "issue_4969_shaping_request_contract"
+path = "tests/cases/issue_4969_shaping_request_contract.rs"
+
+[[test]]
+name = "issue_4969_shaping_shadow_context"
+path = "tests/cases/issue_4969_shaping_shadow_context.rs"
+
+[[test]]
 name = "overflow_cell_baseline"
 path = "tests/overflow_cell_baseline.rs"
 
