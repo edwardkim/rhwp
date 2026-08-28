@@ -5874,10 +5874,21 @@ impl LayoutEngine {
                                 {
                                     0.0
                                 } else {
-                                    hwpunit_to_px(
+                                    let raw = hwpunit_to_px(
                                         calc_sibling_topandbottom_reserved_hu(&p.controls),
                                         self.dpi,
-                                    )
+                                    );
+                                    // 줄 y 가 이미 형제 자리차지 예약 아래(최종 좌표)면
+                                    // 이중 가산 금지 — host 문단의 꼬리 줄이 저장 vpos
+                                    // 스냅으로 표 아래(쪽 하단)에 이미 놓였는데 표 높이
+                                    // 를 또 더하면 tac 그림이 줄보다 예약 높이만큼 아래
+                                    // (쪽 밖, #6271 실측 y=2113px > 단 하단 1115px)에
+                                    // 그려져 소실된다.
+                                    if raw > 40.0 && y >= col_area.y + raw - 4.0 {
+                                        0.0
+                                    } else {
+                                        raw
+                                    }
                                 };
                                 if raw_lh + 4.0 >= pic_h {
                                     current_line_reserved_tac_picture_height = Some(pic_h);

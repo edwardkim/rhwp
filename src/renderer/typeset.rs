@@ -22137,9 +22137,16 @@ impl TypesetEngine {
                     st.current_items.last(),
                     Some(PageItem::PartialParagraph { start_line, .. }) if *start_line > 0
                 );
+                // 저장 줄이 표보다 **앞선** 줄일 때만 snap 한다. host 문단의 단일
+                // lineseg 가 표 **아래**의 꼬리 줄(vpos ≈ 표 하단)인 문서에서 그
+                // vpos 로 snap 하면 표 배치 전에 페이지가 소진돼(잔여 ≈ 꼬리 여백)
+                // whole-fit 이 깨지고, 선언높이가 본문에 들어가는 표가 행 단위로
+                // 과분할된다 (#6271: 1쪽 문서가 2쪽, 1쪽에는 머리 행 조각만 잔존).
+                let snap_keeps_table_fitting = target_y + declared_object_total <= available;
                 if !previous_item_is_continued_paragraph
                     && target_y > st.current_height
                     && target_y < available
+                    && snap_keeps_table_fitting
                 {
                     st.current_height = target_y;
                 }
