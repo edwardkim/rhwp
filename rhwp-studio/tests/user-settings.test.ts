@@ -346,6 +346,47 @@ test('쪽 이동은 세로가 기본이며 가로 휠 설정을 저장·복원�
   }
 });
 
+test('쪽 배치·이동·맞춤 모드는 한 번의 정규화된 보기 snapshot으로 저장된다', () => {
+  const originalStorage = (globalThis as { localStorage?: Storage }).localStorage;
+  const store = new Map<string, string>();
+  let writes = 0;
+  const mockStorage = {
+    get length() { return store.size; },
+    clear() { store.clear(); },
+    getItem(key: string) { return store.get(key) ?? null; },
+    key(index: number) { return Array.from(store.keys())[index] ?? null; },
+    removeItem(key: string) { store.delete(key); },
+    setItem(key: string, value: string) {
+      writes += 1;
+      store.set(key, value);
+    },
+  } as Storage;
+
+  (globalThis as { localStorage?: Storage }).localStorage = mockStorage;
+  try {
+    userSettings.setPageViewSettings(
+      { kind: 'double' },
+      { direction: 'horizontal', wheelHorizontal: false },
+      'fitWidth',
+    );
+    const stored = JSON.parse(store.get('rhwp-settings') ?? '{}');
+    assert.equal(writes, 1, '중간 배치 snapshot 없이 localStorage를 한 번만 쓴다');
+    assert.deepEqual(stored.view.pageArrangement, { kind: 'single' });
+    assert.deepEqual(stored.view.pageMovement, {
+      direction: 'horizontal',
+      wheelHorizontal: false,
+    });
+    assert.equal(stored.view.zoomFitMode, 'fitWidth');
+  } finally {
+    userSettings.setPageViewSettings(
+      { kind: 'auto' },
+      { direction: 'vertical', wheelHorizontal: true },
+      'none',
+    );
+    (globalThis as { localStorage?: Storage }).localStorage = originalStorage;
+  }
+});
+
 test('복구용 자동저장 설정은 rhwp-settings에 저장된다', () => {
   const originalStorage = (globalThis as { localStorage?: Storage }).localStorage;
   const store = new Map<string, string>();

@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import {
+  calculateArrangementFitPageZoom,
   calculateArrangementFitWidthZoom,
   calculateFitPageZoom,
   calculateFitWidthZoom,
@@ -51,6 +52,62 @@ test('fit width uses the visible page row width for fixed arrangements', () => {
   );
 });
 
+test('쪽 맞춤은 선택한 쪽 배치의 전체 가로·세로 블록을 기준으로 계산한다', () => {
+  const metrics = {
+    containerWidth: 1600,
+    containerHeight: 900,
+    pageWidth: 800,
+    pageHeight: 1000,
+    pageGap: 10,
+  };
+
+  for (const arrangement of [{ kind: 'auto' }, { kind: 'single' }] as const) {
+    assert.equal(calculateArrangementFitPageZoom({ ...metrics, arrangement }), 0.88);
+  }
+  for (const arrangement of [{ kind: 'double' }, { kind: 'facing' }] as const) {
+    assert.equal(calculateArrangementFitPageZoom({ ...metrics, arrangement }), 0.88);
+  }
+  assert.equal(
+    calculateArrangementFitPageZoom({
+      ...metrics,
+      arrangement: { kind: 'multiple', columns: 2, rows: 2 },
+    }),
+    870 / 2000,
+  );
+  assert.equal(
+    calculateArrangementFitPageZoom({
+      ...metrics,
+      arrangement: { kind: 'multiple', columns: 4, rows: 1 },
+    }),
+    1530 / 3200,
+  );
+});
+
+test('모든 맞춤 계산은 한컴 화면 배율 범위 10~500%를 공유한다', () => {
+  assert.equal(
+    calculateArrangementFitPageZoom({
+      containerWidth: 120,
+      containerHeight: 120,
+      pageWidth: 800,
+      pageHeight: 1000,
+      arrangement: { kind: 'multiple', columns: 8, rows: 8 },
+      pageGap: 10,
+    }),
+    0.1,
+  );
+  assert.equal(
+    calculateArrangementFitPageZoom({
+      containerWidth: 10_000,
+      containerHeight: 10_000,
+      pageWidth: 100,
+      pageHeight: 100,
+      arrangement: { kind: 'single' },
+      pageGap: 10,
+    }),
+    5,
+  );
+});
+
 test('status bar and view command share the fit helpers', () => {
   const main = readFileSync(new URL('../src/main.ts', import.meta.url), 'utf8');
   const commands = readFileSync(
@@ -64,8 +121,10 @@ test('status bar and view command share the fit helpers', () => {
   assert.match(main, /dispatcher\.dispatch\('view:zoom-fit-page'\)/);
   assert.doesNotMatch(main, /calculateFitPageZoom/);
   assert.doesNotMatch(main, /calculateArrangementFitWidthZoom/);
-  assert.match(commands, /calculateFitPageZoom/);
-  assert.match(commands, /calculateArrangementFitWidthZoom/);
+  assert.doesNotMatch(commands, /calculateFitPageZoom/);
+  assert.doesNotMatch(commands, /calculateArrangementFitWidthZoom/);
+  assert.match(commands, /resolveZoomFitZoom/);
+  assert.match(commands, /function getZoomFitMetrics/);
   assert.doesNotMatch(main, /containerHeight - 40/);
   assert.doesNotMatch(commands, /containerH - 40/);
 });
@@ -114,10 +173,12 @@ test('통합 배율 버튼은 좌우 확대 아이콘과 같은 18px SVG 돋보�
 });
 
 test('배율 슬라이더 손잡이와 100% 눈금은 같은 12px 크기이며 눈금이 뒤에 놓인다', () => {
+  const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
   const css = readFileSync(
     new URL('../src/styles/status-bar.css', import.meta.url),
     'utf8',
   );
+  const main = readFileSync(new URL('../src/main.ts', import.meta.url), 'utf8');
   const wrap = css.match(/\.stb-zoom-range-wrap\s*\{(?<rules>[^}]*)\}/)?.groups?.rules;
   const range = css.match(/\.stb-zoom-range\s*\{(?<rules>[^}]*)\}/)?.groups?.rules;
   const mark = css.match(/\.stb-zoom-neutral-mark\s*\{(?<rules>[^}]*)\}/)?.groups?.rules;
@@ -156,4 +217,6 @@ test('배율 슬라이더 손잡이와 100% 눈금은 같은 12px 크기이며 �
   assert.match(firefoxTrack, /height:\s*var\(--stb-zoom-track-size\)/);
   assert.match(firefoxTrack, /background:\s*var\(--ui-border-strong\)/);
   assert.doesNotMatch(css, /\.stb-zoom-range-wrap\.is-neutral[\s\S]*?visibility:\s*hidden/);
+  assert.doesNotMatch(html, /stb-zoom-range-wrap is-neutral/);
+  assert.doesNotMatch(main, /classList\.toggle\('is-neutral'/);
 });

@@ -1,0 +1,23 @@
+{
+  "job_id": "fd0aaefe-9871-4f00-9fcd-305e37ec4e25",
+  "status": "queued",
+  "phase": "queued",
+  "target": "pdf",
+  "engine": "2020",
+  "created_at": "2026-08-28T09:27:03.604Z",
+  "started_at": null,
+  "completed_at": null,
+  "expired_at": null,
+  "elapsed_seconds": 0,
+  "queue_position": 1,
+  "output_bytes": 0,
+  "delivery": {
+    "status": "not_requested",
+    "attempts": 0,
+    "output_path": null,
+    "saved_at": null,
+    "error": null
+  },
+  "result": null,
+  "error": null
+}

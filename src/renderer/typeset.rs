@@ -8456,6 +8456,15 @@ impl TypesetEngine {
                     continue;
                 }
                 match ctrl {
+                    // [#6266] 비-TAC 양식 개체는 자기 배치(기준·정렬·오프셋)를 갖는
+                    // 개체다. 종전에는 IR 에 배치가 없어 무조건 인라인으로 흘렀고,
+                    // 쪽 하단 가운데 서식 번호가 제목 줄 안에 그려졌다.
+                    Control::Form(form) if !form.common.treat_as_char => {
+                        st.current_items.push(PageItem::Shape {
+                            para_index: para_idx,
+                            control_index: ctrl_idx,
+                        });
+                    }
                     Control::Shape(_) | Control::Picture(_) | Control::Equation(_) => {
                         // [#6146] 저장 리셋 경계에서 떠나는 쪽의 흐름 말미에 이미 흘려
                         // 놓은 자리차지 밴드는 다시 배치하지 않는다.
@@ -22138,9 +22147,16 @@ impl TypesetEngine {
                     st.current_items.last(),
                     Some(PageItem::PartialParagraph { start_line, .. }) if *start_line > 0
                 );
+                // 저장 줄이 표보다 **앞선** 줄일 때만 snap 한다. host 문단의 단일
+                // lineseg 가 표 **아래**의 꼬리 줄(vpos ≈ 표 하단)인 문서에서 그
+                // vpos 로 snap 하면 표 배치 전에 페이지가 소진돼(잔여 ≈ 꼬리 여백)
+                // whole-fit 이 깨지고, 선언높이가 본문에 들어가는 표가 행 단위로
+                // 과분할된다 (#6271: 1쪽 문서가 2쪽, 1쪽에는 머리 행 조각만 잔존).
+                let snap_keeps_table_fitting = target_y + declared_object_total <= available;
                 if !previous_item_is_continued_paragraph
                     && target_y > st.current_height
                     && target_y < available
+                    && snap_keeps_table_fitting
                 {
                     st.current_height = target_y;
                 }

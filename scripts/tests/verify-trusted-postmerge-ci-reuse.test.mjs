@@ -7,6 +7,7 @@ const base = "1".repeat(40);
 const head = "2".repeat(40);
 const merge = "3".repeat(40);
 const tree = "4".repeat(40);
+const code = "5".repeat(40);
 
 function candidate(overrides = {}) {
   return {
@@ -46,6 +47,11 @@ function input(overrides = {}) {
       head: { sha: head, ref: "feature", repo: { full_name: "edwardkim/rhwp" } },
     }],
     pullFiles: [{ filename: "src/renderer/layout.rs" }],
+    prCommits: [{
+      sha: head,
+      parents: [{ sha: base }],
+      files: [{ filename: "src/renderer/layout.rs", status: "modified" }],
+    }],
     workflowRuns: [candidate()],
     ...overrides,
   };
@@ -65,4 +71,85 @@ test("fails closed for direct pushes, stale bases, enforcement changes, and inco
   assert.equal(evaluateTrustedPostMergeReuse(input({ mergeBaseSha: "5".repeat(40) })).reuse, false);
   assert.equal(evaluateTrustedPostMergeReuse(input({ pullFiles: [{ filename: ".github/workflows/ci.yml" }] })).reuse, false);
   assert.equal(evaluateTrustedPostMergeReuse(input({ workflowRuns: [candidate({ status: "in_progress", conclusion: null })] })).reuse, false);
+});
+
+test("reuses the preceding full CI through a linear review-only tail", () => {
+  const result = evaluateTrustedPostMergeReuse(input({
+    prCommits: [
+      {
+        sha: code,
+        parents: [{ sha: base }],
+        files: [{ filename: "src/renderer/layout.rs", status: "modified" }],
+      },
+      {
+        sha: head,
+        parents: [{ sha: code }],
+        files: [
+          { filename: "mydocs/pr/archives/pr_6253_review.md", status: "added" },
+          { filename: "pdf/pr_6253/reference.pdf", status: "added" },
+        ],
+      },
+    ],
+    workflowRuns: [candidate({ id: 456, head_sha: code })],
+    fullLaneRunIds: ["456"],
+  }));
+  assert.deepEqual(result, {
+    reuse: true,
+    reason: "review-tail-green-pr-workflow-reused",
+    sourceRunId: "456",
+    pullNumber: "42",
+  });
+});
+
+test("prefers the final PR head when code and review evidence passed together", () => {
+  const result = evaluateTrustedPostMergeReuse(input({
+    prCommits: [
+      {
+        sha: code,
+        parents: [{ sha: base }],
+        files: [{ filename: "src/renderer/layout.rs", status: "modified" }],
+      },
+      {
+        sha: head,
+        parents: [{ sha: code }],
+        files: [
+          { filename: "mydocs/pr/archives/pr_6274_review.md", status: "added" },
+          { filename: "pdf/pr_6274/reference.pdf", status: "added" },
+        ],
+      },
+    ],
+    workflowRuns: [candidate({ id: 789, head_sha: head })],
+    fullLaneRunIds: ["789"],
+  }));
+  assert.deepEqual(result, {
+    reuse: true,
+    reason: "review-tail-final-head-green-pr-workflow-reused",
+    sourceRunId: "789",
+    pullNumber: "42",
+  });
+});
+
+test("fails closed when a CI or CodeQL candidate lacks full-lane evidence", () => {
+  const result = evaluateTrustedPostMergeReuse(input({ fullLaneRunIds: [] }));
+  assert.equal(result.reuse, false);
+  assert.equal(result.reason, "candidate-full-lane-evidence-unavailable");
+});
+
+test("fails closed when the review-only tail is not linear", () => {
+  const result = evaluateTrustedPostMergeReuse(input({
+    prCommits: [
+      {
+        sha: code,
+        parents: [{ sha: base }],
+        files: [{ filename: "src/renderer/layout.rs", status: "modified" }],
+      },
+      {
+        sha: head,
+        parents: [{ sha: "6".repeat(40) }],
+        files: [{ filename: "mydocs/pr/archives/pr_6253_review.md", status: "added" }],
+      },
+    ],
+  }));
+  assert.equal(result.reuse, false);
+  assert.equal(result.reason, "review-tail-evidence-unavailable");
 });

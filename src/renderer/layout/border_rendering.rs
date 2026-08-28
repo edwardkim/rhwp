@@ -831,27 +831,20 @@ fn create_parallel_lines(
         };
 
         let id = tree.next_id();
-        nodes.push(RenderNode::new(
-            id,
-            RenderNodeType::Line(LineNode::new(
-                lx1,
-                ly1,
-                lx2,
-                ly2,
-                LineStyle {
-                    color,
-                    width,
-                    dash,
-                    ..Default::default()
-                },
-            )),
-            BoundingBox::new(
-                lx1.min(lx2),
-                ly1.min(ly2),
-                (lx2 - lx1).abs().max(width),
-                (ly2 - ly1).abs().max(width),
-            ),
-        ));
+        let line = LineNode::new(
+            lx1,
+            ly1,
+            lx2,
+            ly2,
+            LineStyle {
+                color,
+                width,
+                dash,
+                ..Default::default()
+            },
+        );
+        let bbox = line.ink_bbox();
+        nodes.push(RenderNode::new(id, RenderNodeType::Line(line), bbox));
     }
 
     nodes
@@ -885,27 +878,20 @@ fn create_parallel_lines_perpendicular(
         let ly2 = y2 + ny * offset;
 
         let id = tree.next_id();
-        nodes.push(RenderNode::new(
-            id,
-            RenderNodeType::Line(LineNode::new(
-                lx1,
-                ly1,
-                lx2,
-                ly2,
-                LineStyle {
-                    color,
-                    width,
-                    dash,
-                    ..Default::default()
-                },
-            )),
-            BoundingBox::new(
-                lx1.min(lx2),
-                ly1.min(ly2),
-                (lx2 - lx1).abs().max(width),
-                (ly2 - ly1).abs().max(width),
-            ),
-        ));
+        let line = LineNode::new(
+            lx1,
+            ly1,
+            lx2,
+            ly2,
+            LineStyle {
+                color,
+                width,
+                dash,
+                ..Default::default()
+            },
+        );
+        let bbox = line.ink_bbox();
+        nodes.push(RenderNode::new(id, RenderNodeType::Line(line), bbox));
     }
 
     nodes
@@ -923,27 +909,20 @@ fn create_single_line(
     y2: f64,
 ) -> Vec<RenderNode> {
     let id = tree.next_id();
-    vec![RenderNode::new(
-        id,
-        RenderNodeType::Line(LineNode::new(
-            x1,
-            y1,
-            x2,
-            y2,
-            LineStyle {
-                color,
-                width,
-                dash,
-                ..Default::default()
-            },
-        )),
-        BoundingBox::new(
-            x1.min(x2),
-            y1.min(y2),
-            (x2 - x1).abs().max(width),
-            (y2 - y1).abs().max(width),
-        ),
-    )]
+    let line = LineNode::new(
+        x1,
+        y1,
+        x2,
+        y2,
+        LineStyle {
+            color,
+            width,
+            dash,
+            ..Default::default()
+        },
+    );
+    let bbox = line.ink_bbox();
+    vec![RenderNode::new(id, RenderNodeType::Line(line), bbox)]
 }
 
 fn create_editor_only_line(

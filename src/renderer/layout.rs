@@ -543,11 +543,10 @@ fn push_tac_post_f081c_line(
     line.para_index = Some(para_index);
 
     let id = tree.next_id();
-    col_node.children.push(RenderNode::new(
-        id,
-        RenderNodeType::Line(line),
-        BoundingBox::new(marker_x, line_y - stroke_width / 2.0, width, stroke_width),
-    ));
+    let bbox = line.ink_bbox();
+    col_node
+        .children
+        .push(RenderNode::new(id, RenderNodeType::Line(line), bbox));
 }
 
 fn table_has_detached_para_flow_object(table: &crate::model::table::Table) -> bool {
@@ -1022,7 +1021,7 @@ fn para_has_visible_inline_control(para: &Paragraph) -> bool {
         Control::Shape(shape) => shape.common().treat_as_char,
         Control::Table(table) => table.common.treat_as_char,
         Control::Equation(eq) => eq.common.treat_as_char,
-        Control::Form(_) => true,
+        Control::Form(form) => form.common.treat_as_char,
         _ => false,
     })
 }
@@ -2540,6 +2539,11 @@ pub struct LayoutEngine {
     /// 앞 간격이 통째로 유실된다(00451 제목 −26px). 이 토글이 켜진 문단은
     /// column-top 트림을 우회해 전량 재가산하고, 읽는 즉시 clear 된다.
     reapply_snap_anchored_spacing_before: std::cell::Cell<bool>,
+    /// [#6267] 지금 배치하는 자리차지(TopAndBottom) 표의 호스트 문단이 **이미 그린
+    /// 본문 텍스트를 가지고 있는지**. body_bottom 클램프 해제(#5699 J3)의 판별자다 —
+    /// 하단 고정 틀(#1658/#1858)은 빈 host 라 클램프가 흐름을 넘어도 겹칠 텍스트가
+    /// 없지만, 글이 있는 host 는 클램프가 곧 겹침이다.
+    para_float_host_has_text: std::cell::Cell<bool>,
     /// HWPX `Preview/PrvImage.png` 원본. HMapsi OLE처럼 일반 preview stream이 없는
     /// legacy 객체의 제한적 첫 페이지 fallback에 사용한다.
     hwpx_page_preview: std::cell::RefCell<Option<PagePreviewImage>>,
@@ -2653,6 +2657,7 @@ impl LayoutEngine {
             )),
             keep_continuation_column_top_spacing_before: std::cell::Cell::new(false),
             reapply_snap_anchored_spacing_before: std::cell::Cell::new(false),
+            para_float_host_has_text: std::cell::Cell::new(false),
             hwpx_page_preview: std::cell::RefCell::new(None),
             cell_units_cache: std::cell::RefCell::new(std::collections::HashMap::new()),
             table_nested_text_flag_cache: std::cell::RefCell::new(std::collections::HashMap::new()),
@@ -3738,6 +3743,7 @@ impl LayoutEngine {
                                     Some(ci),
                                     outer_hf_ref.clone(),
                                     None, // [Task #1151 v4] cell_ctx: 머리말/꼬리말 path
+                                    styles,
                                 );
                             } else {
                                 self.layout_header_footer_picture(
@@ -3753,6 +3759,7 @@ impl LayoutEngine {
                                     i,
                                     ci,
                                     outer_hf_ref.clone(),
+                                    styles,
                                 );
                             }
                             let pic_h = hwpunit_to_px(pic.common.height as i32, self.dpi);
@@ -4622,6 +4629,7 @@ impl LayoutEngine {
                                         Some(pi),
                                         Some(ci),
                                         None, // [Task #1151 v4] cell_ctx: 바탕쪽 picture 는 셀 중첩 없음
+                                        styles,
                                     );
                                 }
                                 Control::Table(t) => {
@@ -4732,6 +4740,8 @@ impl LayoutEngine {
         inner_para_index: usize,
         inner_control_index: usize,
         outer_hf_ref: Option<crate::renderer::render_tree::HeaderFooterImageRef>,
+        // [#6284] 캡션 문단 조판에 필요하다.
+        styles: &ResolvedStyleSet,
     ) {
         let rotation = pic.shape_attr.rotation_angle.rem_euclid(360);
         let uses_rotated_frame = rotation != 0
@@ -4794,6 +4804,7 @@ impl LayoutEngine {
             Some(inner_control_index),
             outer_hf_ref,
             None,
+            styles,
         );
     }
 
@@ -5611,27 +5622,20 @@ impl LayoutEngine {
             let right = &zone_layout.column_areas[i + 1];
             let sep_x = (left.x + left.width + right.x) / 2.0;
             let sep_id = tree.next_id();
-            let sep_node = RenderNode::new(
-                sep_id,
-                RenderNodeType::Line(LineNode::new(
-                    sep_x,
-                    y_start,
-                    sep_x,
-                    y_end,
-                    LineStyle {
-                        color: zone_layout.separator_color,
-                        width: line_width,
-                        dash,
-                        ..Default::default()
-                    },
-                )),
-                BoundingBox::new(
-                    sep_x - line_width / 2.0,
-                    y_start,
-                    line_width,
-                    y_end - y_start,
-                ),
+            let sep_line = LineNode::new(
+                sep_x,
+                y_start,
+                sep_x,
+                y_end,
+                LineStyle {
+                    color: zone_layout.separator_color,
+                    width: line_width,
+                    dash,
+                    ..Default::default()
+                },
             );
+            let sep_bbox = sep_line.ink_bbox();
+            let sep_node = RenderNode::new(sep_id, RenderNodeType::Line(sep_line), sep_bbox);
             body_node.children.push(sep_node);
         }
     }
@@ -8680,27 +8684,20 @@ impl LayoutEngine {
             let line_width = border_width_to_px(line_width_raw).max(0.5);
             let sep_length = note_separator_length_px(separator_length, col_area.width, self.dpi);
             let line_id = tree.next_id();
-            let line_node = RenderNode::new(
-                line_id,
-                RenderNodeType::Line(LineNode::new(
-                    col_area.x,
-                    y_offset,
-                    col_area.x + sep_length,
-                    y_offset,
-                    LineStyle {
-                        color,
-                        width: line_width,
-                        dash: StrokeDash::Solid,
-                        ..Default::default()
-                    },
-                )),
-                BoundingBox::new(
-                    col_area.x,
-                    y_offset - line_width / 2.0,
-                    sep_length,
-                    line_width,
-                ),
+            let sep_line = LineNode::new(
+                col_area.x,
+                y_offset,
+                col_area.x + sep_length,
+                y_offset,
+                LineStyle {
+                    color,
+                    width: line_width,
+                    dash: StrokeDash::Solid,
+                    ..Default::default()
+                },
             );
+            let sep_bbox = sep_line.ink_bbox();
+            let line_node = RenderNode::new(line_id, RenderNodeType::Line(sep_line), sep_bbox);
             col_node.children.push(line_node);
             line_width
         } else {
@@ -10075,6 +10072,8 @@ impl LayoutEngine {
                     )
                 })
                 .unwrap_or(false);
+            self.para_float_host_has_text
+                .set(is_current_visible_para_float);
             let is_first_empty_para_float_control = is_current_empty_para_float
                 && para.controls.iter().position(|c| {
                     matches!(
@@ -10176,7 +10175,15 @@ impl LayoutEngine {
                             }
                         }
                     }
-                } else if !is_current_empty_para_float {
+                } else if !is_current_empty_para_float && !is_current_visible_para_float {
+                    // [#6267] 자리차지(para-float) 표는 흐름을 소비하지 않고
+                    // compute_table_y_position 이 sb 이전 앵커(para_y_for_table)로
+                    // 따로 앉힌다. 그러므로 여기서 y_offset 에 더한 sb 는 표에는
+                    // 닿지 않고 **호스트 문단 텍스트만** 밀어내는데, 그 텍스트를 그리는
+                    // layout_composed_paragraph 는 (!is_column_top 이면) sb 를 다시
+                    // 가산한다 — 이중 계상이다. 156726353 1쪽 문단 8: 저장 사다리 대비
+                    // 문단 5~7 은 +75.6px 인데 문단 8 만 +91.6px(=sb 16.0px)로 튀어
+                    // 자리차지 표와 18pt 겹쳤다.
                     if let Some(ps) = styles.para_styles.get(ps_id) {
                         if ps.spacing_before > 0.0 && !is_column_top {
                             y_offset += ps.spacing_before;
@@ -12542,6 +12549,7 @@ impl LayoutEngine {
                     .map(|ctrl| match ctrl {
                         Control::Shape(shape) => shape.z_order(),
                         Control::Table(table) => table.common.z_order,
+                        Control::Form(form) => form.common.z_order,
                         _ => 0,
                     })
                     .unwrap_or(0);
@@ -12561,6 +12569,8 @@ impl LayoutEngine {
                     let common = match ctrl {
                         Control::Shape(s) => Some(s.common()),
                         Control::Table(t) => Some(&t.common),
+                        // [#6266] 양식 개체도 용지/쪽 기준 배치를 가질 수 있다.
+                        Control::Form(f) => Some(&f.common),
                         _ => None,
                     };
                     common
@@ -12733,6 +12743,11 @@ impl LayoutEngine {
                     )),
                     Control::Table(table) => Some(Self::render_layer_from_common(
                         &table.common,
+                        para_index,
+                        control_index,
+                    )),
+                    Control::Form(form) => Some(Self::render_layer_from_common(
+                        &form.common,
                         para_index,
                         control_index,
                     )),

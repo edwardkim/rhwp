@@ -71,6 +71,7 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `issue-4159-terminal-nested-bottom-border-canvas2d.test.mjs` | 상시 | active | #4159 실제 HWP 물리 3쪽 종료 재귀 중첩 표 bottom 선의 Canvas2D clip 포섭 | basic/issue2007_nested_cell_pagination_42065.hwp | npm e2e:issue-4159 | #4069 17쪽 pagination 계약 포함 |
 | `issue-4252-nested-partial-table-object-selection.test.mjs` | 상시 | active | #4252 재귀 분할 중첩 표의 실제 IR cellPath·bbox 조회·Esc 객체 선택과 브라우저 성능 증적 | basic/issue2007_nested_cell_pagination_42065.hwp | npm e2e:issue-4252 | 물리 5쪽 외부→래퍼→자식 표 경로와 `output/4252/perf-*.json` |
 | `issue-4694-chart-data-edit.test.mjs` | 상시 | active | #4694 차트 데이터 편집 — 메뉴 노출·더블클릭 진입·값 수정 반영·Ctrl+Z 원복·무편집 무흔적 | chart/세로막대형/묶은세로막대형.hwp | 수동 | |
+| `issue-4969-shaping-replay.test.mjs` | 상시 | active | #4969 common GlyphRun의 strict CanvasKit 선택·Source Han exact face·affine advance와 √ratio ink 계약 | SourceHanSerifK-OldHangul-subset.otf | npm e2e:issue-4969 | software CanvasKit pixel 대조 |
 | `issue-4272-page11-nested-cell-copy.test.mjs` | 상시 | active | #4272 물리 11쪽 자식 표 셀 문단 22의 실제 드래그·Ctrl+C 최내곽 문단 축 검증 | basic/issue2007_nested_cell_pagination_42065.hwp | npm e2e:issue-4272-page11 | `output/4272/page11-child-cell-copy.{json,png}` |
 | `issue-4272-nested-table-object-copy.test.mjs` | 상시 | active | #4272 물리 5쪽 3중 중첩 표 객체 선택의 owner path·control index 분리와 Ctrl+C 검증 | basic/issue2007_nested_cell_pagination_42065.hwp | npm e2e:issue-4272-table-copy | `output/4272/nested-table-object-copy.{json,png}` |
 | `issue-4272-nested-cell-text-selection.test.mjs` | 상시 | active | #4272 중첩 표 안쪽 셀의 전체 cellPath 선택 rect, 실제 마우스 드래그와 Ctrl+C/V | basic/issue2007_nested_cell_pagination_42065.hwp | npm e2e:issue-4272 | 물리 5쪽 `23,504`, `output/4272/nested-cell-*.{json,png}` |
@@ -78,6 +79,7 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `local-font-partial-enumeration-issue4741.test.mjs` | 상시 | active | #4741 Local Font Access 부분 열거를 강제해 raw probe·exact Canvas2D face·폭·cache·편람 383쪽 계약 검증 | 2025 행정업무운영 편람(최종).hwp | npm e2e:issue-4741 | KoPub바탕체 Light 설치 호스트 Chrome 전용 |
 | `issue-595.test.mjs` | 진단 | hold | Issue #595 진단 e2e | exam_math.hwp | 수동 | legacy-name · #595 진단 (assertion 0) |
 | `issue-6099-probe.mjs` | 진단 | active | #6099 90° 회전 그림 DOM frame/img 실측과 스크린샷 생성 프로브 | samples 하위 지정 파일 | 수동 | legacy-name · 일회성 실측 프로브 |
+| `issue-6117-cell-underline-canvas2d.test.mjs` | 상시 | active | #6117 표 칸 안 밑줄이 우측 괘선을 넘어 그려지지 않는 Canvas2D 잉크 경계 | issue6117/52690_higher_education_decree.hwp | 수동 | 9쪽 실제 fixture, `output/6117` 증적 |
 | `line-spacing.test.mjs` | 상시 | active | 줄간격 변경에 따른 페이지 넘김 검증 | — | 수동 |  |
 | `loading-busy-cursor.test.mjs` | 상시 | active | #5740 대형 문서 로딩 중 busy 상태와 wait cursor 표시 계약 | 2025 행정업무운영 편람(최종).hwp | npm e2e:loading-busy-cursor |  |
 | `navigation-shortcuts.test.mjs` | 상시 | active | 플랫폼별 navigation shortcut | — | 수동 |  |
@@ -131,3 +133,4 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `unsaved-changes-guard.test.mjs` | 상시 | active | #886 저장되지 않은 변경사항 보호 모달 | — | npm e2e:unsaved-guard |  |
 | `unsupported-format-error.test.mjs` | 상시 | active | 미지원 문서 오류 알림 후 정상 문서 재로드 | field-01.hwp | 수동 |  |
 | `zoom-fit-mode-persistence.test.mjs` | 상시 | active | 쪽 맞춤/폭 맞춤 선택 저장과 문서 로드 시 복원 — 새 문서 쪽 크기로 재계산, 수치 배율은 맞춤 해제 | 2010-01-06.hwp · 253E164F57A1BC6934-empty.hwp | npm e2e:zoom-fit-mode |  |
+| `zoom-dialog-transaction.test.mjs` | 상시 | active | #6109 사용자 배율 오류·ARIA·Enter/Escape/취소와 배치+이동+배율 단일 transaction — 최종 상태 `recalcLayout()` 1회 | — | npm e2e:zoom-dialog-transaction | dev server 필요 — run-with-vite.mjs 경유 |

@@ -1,0 +1,25 @@
+{
+  "status": "success",
+  "job_id": "f88a52ff-eba9-4cea-a287-8794887ee941",
+  "output_path": "/home/tsjang/rhwp/pdf/pr_planet6897_open_ci_20260828/by_saved_version/pr6292_issue6269_public_sector_jobs_stats-2020.pdf",
+  "output_filename": "pr6292_issue6269_public_sector_jobs_stats-2020.pdf",
+  "size": 1315595,
+  "sha256": "31f8721b23387b1ca3073d022597670348d35c7152094812c8e8dc6a70a5a690",
+  "server": {
+    "job_id": "f88a52ff-eba9-4cea-a287-8794887ee941",
+    "status": "success",
+    "target": "pdf",
+    "input_filename": "156739836_public_sector_jobs_stats.hwpx",
+    "output_filename": "pr6292_issue6269_public_sector_jobs_stats-2020.pdf",
+    "size": 1315595,
+    "sha256": "31f8721b23387b1ca3073d022597670348d35c7152094812c8e8dc6a70a5a690",
+    "mime_type": "application/pdf",
+    "engine": "2020",
+    "engine_profile": "2020",
+    "hancom_version": "12.0.0.4605",
+    "backend": "hwp-managed-direct-dll-host",
+    "elapsed_ms": 55940,
+    "worker_elapsed_ms": 54655,
+    "worker_bits": 32
+  }
+}

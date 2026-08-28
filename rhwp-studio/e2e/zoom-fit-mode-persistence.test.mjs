@@ -10,9 +10,16 @@
  * 2. 다른 문서를 열면 그 문서의 쪽 크기로 폭 맞춤을 다시 계산한다
  * 3. 쪽 맞춤은 앱을 다시 띄운 뒤 첫 문서에도 적용된다
  * 4. 배율 가로바로 수치를 바꾸면 맞춤이 풀린다
+ * 5. 두 쪽 폭 맞춤은 두 쪽과 사이 간격을 한 행으로 계산한다
+ * 6. 여러 쪽은 비율 선택을 잠그고 전체 블록을 쪽 맞춤한다
  */
 
-import { runTest, assert } from './helpers.mjs';
+import {
+  assert,
+  runTest,
+  screenshot,
+  setTestCase,
+} from './helpers.mjs';
 
 process.env.VITE_URL = process.env.VITE_URL || 'http://localhost:7700';
 
@@ -53,6 +60,7 @@ const readZoomState = () => {
   return {
     zoom: window.__canvasView.getViewportManager().getZoom(),
     fitMode: JSON.parse(localStorage.getItem('rhwp-settings') || '{}').view?.zoomFitMode ?? null,
+    arrangement: JSON.parse(localStorage.getItem('rhwp-settings') || '{}').view?.pageArrangement ?? null,
     containerWidth: container.clientWidth,
     containerHeight: container.clientHeight,
     pageWidth: pageInfo.width,
@@ -60,11 +68,41 @@ const readZoomState = () => {
   };
 };
 
-const fitWidthZoom = (s) => (s.containerWidth - HORIZONTAL_FRAME_PADDING) / s.pageWidth;
+const pageGrid = (arrangement) => {
+  if (arrangement?.kind === 'double' || arrangement?.kind === 'facing') {
+    return { columns: 2, rows: 1 };
+  }
+  if (arrangement?.kind === 'multiple') {
+    return { columns: arrangement.columns, rows: arrangement.rows };
+  }
+  return { columns: 1, rows: 1 };
+};
+
+const fitWidthZoom = (s) => {
+  const { columns } = pageGrid(s.arrangement);
+  return (
+    s.containerWidth - HORIZONTAL_FRAME_PADDING - 10 * (columns - 1)
+  ) / (s.pageWidth * columns);
+};
 const fitPageZoom = (s) => Math.min(
-  (s.containerWidth - HORIZONTAL_FRAME_PADDING) / s.pageWidth,
-  (s.containerHeight - VERTICAL_FRAME_PADDING) / s.pageHeight,
+  fitWidthZoom(s),
+  (
+    s.containerHeight
+    - VERTICAL_FRAME_PADDING
+    - 10 * (pageGrid(s.arrangement).rows - 1)
+  ) / (s.pageHeight * pageGrid(s.arrangement).rows),
 );
+
+async function openZoomDialog(page) {
+  await page.click('#sb-zoom-display');
+  await page.waitForSelector('.zoom-dialog', { visible: true });
+}
+
+async function confirmZoomDialog(page) {
+  await page.click('.zoom-dialog .dialog-btn-primary');
+  await page.waitForSelector('.zoom-dialog', { hidden: true });
+  await page.evaluate(() => new Promise(r => setTimeout(r, 300)));
+}
 
 async function startFresh(page) {
   // 첫 실행 스킨 안내 모달이 상태 표시줄 클릭을 삼킨다 — 선택을 마친 상태로 시작한다.
@@ -86,6 +124,7 @@ runTest('쪽/폭 맞춤 저장과 복원', async ({ page }) => {
   await openDocument(page, DOC_A);
 
   // ── TC1: 폭 맞춤 단추가 선택을 저장한다 ────────────────────
+  setTestCase('TC1 자동 배치 폭 맞춤');
   await page.click('#sb-zoom-fit-width');
   await page.evaluate(() => new Promise(r => setTimeout(r, 300)));
   const fitWidth = await page.evaluate(readZoomState);
@@ -94,6 +133,7 @@ runTest('쪽/폭 맞춤 저장과 복원', async ({ page }) => {
     `TC1: 배율이 폭 맞춤 (${fitWidth.zoom.toFixed(3)} vs ${fitWidthZoom(fitWidth).toFixed(3)})`);
 
   // ── TC2: 다른 쪽 크기의 문서에서 다시 계산한다 ──────────────
+  setTestCase('TC2 문서별 폭 맞춤 복원');
   await openDocument(page, DOC_B);
   const reopened = await page.evaluate(readZoomState);
   assert(reopened.fitMode === 'fitWidth', `TC2: 저장된 맞춤 유지 (${reopened.fitMode})`);
@@ -103,6 +143,7 @@ runTest('쪽/폭 맞춤 저장과 복원', async ({ page }) => {
     `TC2: 새 문서 쪽 폭으로 다시 계산 (${reopened.zoom.toFixed(3)} vs ${fitWidthZoom(reopened).toFixed(3)})`);
 
   // ── TC3: 쪽 맞춤은 앱을 다시 띄운 뒤에도 살아 있다 ──────────
+  setTestCase('TC3 자동 배치 쪽 맞춤 복원');
   await page.click('#sb-zoom-fit');
   await page.evaluate(() => new Promise(r => setTimeout(r, 300)));
   const fitPage = await page.evaluate(readZoomState);
@@ -116,6 +157,7 @@ runTest('쪽/폭 맞춤 저장과 복원', async ({ page }) => {
     `TC3: 새 세션 첫 문서가 쪽 맞춤으로 열림 (${restored.zoom.toFixed(3)} vs ${fitPageZoom(restored).toFixed(3)})`);
 
   // ── TC4: 수치 배율은 맞춤을 푼다 ───────────────────────────
+  setTestCase('TC4 수치 배율 전환');
   await page.evaluate(() => {
     const range = document.getElementById('sb-zoom-range');
     range.value = String(Number(range.value) + 60);
@@ -124,4 +166,89 @@ runTest('쪽/폭 맞춤 저장과 복원', async ({ page }) => {
   await page.evaluate(() => new Promise(r => setTimeout(r, 300)));
   const manual = await page.evaluate(readZoomState);
   assert(manual.fitMode === 'none', `TC4: 가로바로 배율을 바꾸면 맞춤이 풀림 (${manual.fitMode})`);
+
+  // ── TC5: 고정 쪽 배치별 폭·쪽 맞춤을 비교한다 ───────────────
+  for (const [kind, label] of [
+    ['single', '한 쪽'],
+    ['double', '두 쪽'],
+    ['facing', '맞쪽'],
+  ]) {
+    setTestCase(`TC5 ${label} 배치 맞춤`);
+    await openZoomDialog(page);
+    await page.click(`input[name="page-arrangement"][value="${kind}"]`);
+    await page.click('input[name="zoom-choice"][value="fitWidth"]');
+    await confirmZoomDialog(page);
+    const widthFit = await page.evaluate(readZoomState);
+    await screenshot(page, `issue-6108-${kind}-fit-width`);
+    assert(widthFit.arrangement?.kind === kind,
+      `TC5: ${label} 배치가 저장됨 (${widthFit.arrangement?.kind})`);
+    assert(widthFit.fitMode === 'fitWidth',
+      `TC5: ${label} 폭 맞춤 규칙이 저장됨 (${widthFit.fitMode})`);
+    assert(Math.abs(widthFit.zoom - fitWidthZoom(widthFit)) < 0.005,
+      `TC5: ${label} 행 전체를 폭 맞춤 (${widthFit.zoom.toFixed(3)} vs ${fitWidthZoom(widthFit).toFixed(3)})`);
+
+    await openZoomDialog(page);
+    await page.click('input[name="zoom-choice"][value="fitPage"]');
+    await confirmZoomDialog(page);
+    const pageFit = await page.evaluate(readZoomState);
+    await screenshot(page, `issue-6108-${kind}-fit-page`);
+    assert(pageFit.fitMode === 'fitPage',
+      `TC5: ${label} 쪽 맞춤 규칙이 저장됨 (${pageFit.fitMode})`);
+    assert(Math.abs(pageFit.zoom - fitPageZoom(pageFit)) < 0.005,
+      `TC5: ${label} 블록 전체를 쪽 맞춤 (${pageFit.zoom.toFixed(3)} vs ${fitPageZoom(pageFit).toFixed(3)})`);
+  }
+
+  // ── TC6: 여러 쪽은 비율 선택을 잠그고 전체 블록을 맞춘다 ────
+  setTestCase('TC6 여러 쪽 2×2 입력 계약');
+  await openZoomDialog(page);
+  await page.click('input[name="page-arrangement"][value="multiple"]');
+  await page.evaluate(() => {
+    for (const ariaLabel of ['여러 쪽 가로 쪽 수', '여러 쪽 세로 쪽 수']) {
+      const input = document.querySelector(`input[aria-label="${ariaLabel}"]`);
+      input.value = '2';
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+  });
+  const multipleControls = await page.evaluate(() => ({
+    allZoomChoicesDisabled: [...document.querySelectorAll('input[name="zoom-choice"]')]
+      .every((input) => input.disabled),
+    customDisabled: document.querySelector('input[aria-label="사용자 정의 배율"]')?.disabled,
+    columnsEnabled: !document.querySelector('input[aria-label="여러 쪽 가로 쪽 수"]')?.disabled,
+    rowsEnabled: !document.querySelector('input[aria-label="여러 쪽 세로 쪽 수"]')?.disabled,
+  }));
+  await screenshot(page, 'issue-6108-multiple-disabled-ratios');
+  assert(multipleControls.allZoomChoicesDisabled && multipleControls.customDisabled,
+    'TC6: 여러 쪽에서 모든 비율 선택과 사용자 정의 입력이 비활성화됨');
+  assert(multipleControls.columnsEnabled && multipleControls.rowsEnabled,
+    'TC6: 여러 쪽의 가로·세로 쪽 수 입력은 활성화됨');
+  await confirmZoomDialog(page);
+  const multipleFit = await page.evaluate(readZoomState);
+  setTestCase('TC6 여러 쪽 2×2 전체 맞춤');
+  await screenshot(page, 'issue-6108-multiple-2x2-fit');
+  assert(
+    multipleFit.arrangement?.kind === 'multiple'
+      && multipleFit.arrangement.columns === 2
+      && multipleFit.arrangement.rows === 2,
+    `TC6: 여러 쪽 2×2 배치가 저장됨 (${JSON.stringify(multipleFit.arrangement)})`,
+  );
+  assert(multipleFit.fitMode === 'fitPage',
+    `TC6: 여러 쪽 전체 맞춤 규칙이 저장됨 (${multipleFit.fitMode})`);
+  assert(Math.abs(multipleFit.zoom - fitPageZoom(multipleFit)) < 0.005,
+    `TC6: 여러 쪽 2×2 전체 블록을 쪽 맞춤 (${multipleFit.zoom.toFixed(3)} vs ${fitPageZoom(multipleFit).toFixed(3)})`);
+
+  setTestCase('TC6 여러 쪽 2×2 새 세션 복원');
+  await startFresh(page);
+  await openDocument(page, DOC_B);
+  const restoredMultiple = await page.evaluate(readZoomState);
+  assert(
+    restoredMultiple.arrangement?.kind === 'multiple'
+      && restoredMultiple.arrangement.columns === 2
+      && restoredMultiple.arrangement.rows === 2,
+    `TC6: 새 세션에서 여러 쪽 2×2 배치가 복원됨 (${JSON.stringify(restoredMultiple.arrangement)})`,
+  );
+  assert(restoredMultiple.fitMode === 'fitPage',
+    `TC6: 새 세션에서 여러 쪽 맞춤 규칙이 복원됨 (${restoredMultiple.fitMode})`);
+  assert(Math.abs(restoredMultiple.zoom - fitPageZoom(restoredMultiple)) < 0.005,
+    `TC6: 새 문서 쪽 크기로 2×2 전체 맞춤을 다시 계산 (${restoredMultiple.zoom.toFixed(3)} vs ${fitPageZoom(restoredMultiple).toFixed(3)})`);
 });

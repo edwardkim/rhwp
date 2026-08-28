@@ -7,7 +7,9 @@ const main = readFileSync(new URL('../src/main.ts', import.meta.url), 'utf8');
 const commands = readFileSync(new URL('../src/command/commands/view.ts', import.meta.url), 'utf8');
 const dialog = readFileSync(new URL('../src/ui/zoom-dialog.ts', import.meta.url), 'utf8');
 const style = readFileSync(new URL('../src/style.css', import.meta.url), 'utf8');
+const zoomStyle = readFileSync(new URL('../src/styles/zoom-dialog.css', import.meta.url), 'utf8');
 const viewport = readFileSync(new URL('../src/view/viewport-manager.ts', import.meta.url), 'utf8');
+const dialogBase = readFileSync(new URL('../src/ui/dialog.ts', import.meta.url), 'utf8');
 
 test('보기 메뉴와 상태 표시줄 통합 배율 버튼은 같은 확대/축소 대화상자 커맨드를 연다', () => {
   assert.match(html, /data-cmd="view:zoom-dialog"[^>]*>[\s\S]*?화면 확대\/축소/);
@@ -27,13 +29,57 @@ test('대화상자는 한컴 비율·쪽 모양 선택을 제공하고 저장소
   assert.match(style, /@import '\.\/styles\/zoom-dialog\.css';/);
 });
 
+test('여러 쪽에서는 적용되지 않는 비율 선택을 비활성화한다', () => {
+  assert.match(
+    dialog,
+    /querySelectorAll<HTMLInputElement>\('input\[name="zoom-choice"\]'\)[\s\S]*?input\.disabled\s*=\s*multiple/,
+  );
+  assert.match(dialog, /this\.customInput\.disabled\s*=\s*multiple/);
+});
+
+test('잘못된 사용자 배율은 대화상자를 유지하고 오류 접근성·포커스를 제공한다', () => {
+  assert.match(dialogBase, /if \(shouldClose !== false\) this\.hide\(\)/);
+  assert.match(dialog, /protected onConfirm\(\): boolean/);
+  assert.match(dialog, /validateCustomZoomPercent\(this\.customInput\.value\)/);
+  assert.match(dialog, /this\.showCustomZoomError\(validation\.message\);\s*return false;/);
+  assert.match(dialog, /setAttribute\('aria-describedby', CUSTOM_ZOOM_ERROR_ID\)/);
+  assert.match(dialog, /setAttribute\('aria-invalid', 'true'\)/);
+  assert.match(dialog, /setAttribute\('role', 'alert'\)/);
+  assert.match(dialog, /this\.customInput\.focus\(\);\s*this\.customInput\.select\(\);/);
+  assert.match(zoomStyle, /zoom-dialog-number\[aria-invalid='true'\][\s\S]*?var\(--ui-danger-strong\)/);
+  assert.match(zoomStyle, /zoom-dialog-custom-error[\s\S]*?color:\s*var\(--ui-danger-strong\)/);
+  assert.doesNotMatch(zoomStyle, /--color-danger|#b91c1c/);
+});
+
+test('사용자 배율 입력의 Enter는 확인 버튼을 사용하고 종료 시 listener를 제거한다', () => {
+  assert.match(
+    dialog,
+    /event\.target === this\.customInput && event\.key === 'Enter'[\s\S]*?confirm\.click\(\)/,
+  );
+  assert.match(dialog, /document\.addEventListener\('keydown', this\.inputEnterHandler, true\)/);
+  assert.match(
+    dialog,
+    /override hide\(\): void[\s\S]*?document\.removeEventListener\('keydown', this\.inputEnterHandler, true\)/,
+  );
+});
+
+test('메뉴·대화상자는 한 fit metrics helper와 resolver를 공유한다', () => {
+  assert.match(commands, /function getZoomFitMetrics[\s\S]*?resolveZoomFitZoom/);
+  assert.doesNotMatch(commands, /calculateFitPageZoom/);
+  assert.doesNotMatch(commands, /calculateArrangementFitWidthZoom/);
+});
+
 test('확대/축소 적용은 사용자 보기 설정과 보기 이벤트만 바꾸고 문서를 dirty로 만들지 않는다', () => {
   const start = commands.indexOf("id: 'view:zoom-dialog'");
   const end = commands.indexOf("id: 'view:zoom-fit-page'", start);
   const command = commands.slice(start, end);
-  assert.match(command, /userSettings\.setPageArrangement/);
-  assert.match(command, /userSettings\.setPageMovement/);
+  assert.match(command, /userSettings\.setPageViewSettings/);
   assert.match(command, /eventBus\.emit\('page-view-settings-changed'/);
+  assert.match(
+    command,
+    /zoom:\s*\{[\s\S]*?value:\s*zoom[\s\S]*?fitMode:[\s\S]*?anchor:\s*CENTER_ZOOM_ANCHOR/,
+  );
+  assert.doesNotMatch(command, /vm\.setZoom\(/);
   assert.doesNotMatch(command, /document-(?:changed|mutated)/);
 });
 
