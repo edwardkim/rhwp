@@ -98,6 +98,7 @@ fn footnote_composed_line_count(
 
 impl LayoutEngine {
     #[allow(clippy::too_many_arguments)]
+    #[allow(clippy::too_many_arguments)]
     pub(crate) fn layout_picture(
         &self,
         tree: &mut PageLayoutContext,
@@ -110,6 +111,8 @@ impl LayoutEngine {
         para_index: Option<usize>,
         control_index: Option<usize>,
         cell_ctx: Option<&crate::renderer::layout::CellContext>,
+        // [#6284] 캡션 문단 조판에 필요하다.
+        styles: &ResolvedStyleSet,
     ) {
         // [Task #825] 본문 picture 경로 — header_footer_ref = None
         self.layout_picture_full(
@@ -124,6 +127,7 @@ impl LayoutEngine {
             control_index,
             None,
             cell_ctx,
+            styles,
         );
     }
 
@@ -148,6 +152,8 @@ impl LayoutEngine {
         control_index: Option<usize>,
         header_footer_ref: Option<crate::renderer::render_tree::HeaderFooterImageRef>,
         cell_ctx: Option<&crate::renderer::layout::CellContext>,
+        // [#6284] 캡션 문단 조판에 필요하다.
+        styles: &ResolvedStyleSet,
     ) {
         // 그림 크기 (HWPUNIT → 픽셀)
         // 회전 picture에서 common.width/height는 한컴이 저장한 회전 후 외접 프레임이고
@@ -197,6 +203,50 @@ impl LayoutEngine {
             pic_width *= scale;
         }
 
+        // [#6284] 캡션 띠 — 그림이 차지하는 블록은 그림 + 캡션이다.
+        //
+        // 이 계약은 형제 함수 `layout_body_picture` 에 이미 있었는데, 본문 그림을
+        // 실제로 그리는 이 경로에는 없었다. 그래서 `side="TOP"` 캡션이 통째로
+        // 사라지고 그림이 캡션 띠만큼(≈15.6~20px) 위로 올라왔다
+        // (156562502: 캡션 17개 전부 TOP, 그림 9개가 3pt 초과로 어긋남).
+        let caption_band_height =
+            crate::renderer::composer::caption_height_px(&picture.caption, self.dpi);
+        let caption_spacing = picture
+            .caption
+            .as_ref()
+            .map(|c| hwpunit_to_px(c.spacing as i32, self.dpi))
+            .unwrap_or(0.0);
+        let (caption_top_offset, caption_left_offset, caption_band_width) =
+            match picture.caption.as_ref().map(|c| c.direction) {
+                Some(CaptionDirection::Top) => (caption_band_height + caption_spacing, 0.0, 0.0),
+                Some(CaptionDirection::Left) => {
+                    let cw = picture
+                        .caption
+                        .as_ref()
+                        .map(|c| hwpunit_to_px(c.width as i32, self.dpi))
+                        .unwrap_or(0.0);
+                    (0.0, cw + caption_spacing, cw + caption_spacing)
+                }
+                Some(CaptionDirection::Right) => {
+                    let cw = picture
+                        .caption
+                        .as_ref()
+                        .map(|c| hwpunit_to_px(c.width as i32, self.dpi))
+                        .unwrap_or(0.0);
+                    (0.0, 0.0, cw + caption_spacing)
+                }
+                _ => (0.0, 0.0, 0.0),
+            };
+        // Bottom 캡션은 그림을 밀지 않고 블록 높이만 늘린다.
+        let caption_block_extra_height = match picture.caption.as_ref().map(|c| c.direction) {
+            Some(CaptionDirection::Top) | Some(CaptionDirection::Bottom) => {
+                caption_band_height + caption_spacing
+            }
+            _ => 0.0,
+        };
+        let block_width = frame_width + caption_band_width;
+        let block_height = frame_height + caption_block_extra_height;
+
         // 그림 위치: non-TAC 이미지는 common 속성의 offset 적용
         // 머리말/꼬리말에서 vert=Paper는 상단여백(header area) 기준
         let (pic_x, pic_y) = if !picture.common.treat_as_char {
@@ -204,35 +254,35 @@ impl LayoutEngine {
             let v_offset = hwpunit_to_px(picture.common.vertical_offset as i32, self.dpi);
             let frame_x = match picture.common.horz_align {
                 HorzAlign::Left | HorzAlign::Inside => container.x + h_offset,
-                HorzAlign::Center => container.x + (container.width - frame_width) / 2.0 + h_offset,
+                HorzAlign::Center => container.x + (container.width - block_width) / 2.0 + h_offset,
                 HorzAlign::Right | HorzAlign::Outside => {
-                    container.x + container.width - frame_width - h_offset
+                    container.x + container.width - block_width - h_offset
                 }
             };
             let frame_y = match picture.common.vert_align {
                 VertAlign::Top | VertAlign::Inside => container.y + v_offset,
                 VertAlign::Center => {
-                    container.y + (container.height - frame_height) / 2.0 + v_offset
+                    container.y + (container.height - block_height) / 2.0 + v_offset
                 }
                 VertAlign::Bottom | VertAlign::Outside => {
-                    container.y + container.height - frame_height - v_offset
+                    container.y + container.height - block_height - v_offset
                 }
             };
             (
-                frame_x + (frame_width - pic_width) / 2.0,
-                frame_y + (frame_height - pic_height) / 2.0,
+                frame_x + caption_left_offset + (frame_width - pic_width) / 2.0,
+                frame_y + caption_top_offset + (frame_height - pic_height) / 2.0,
             )
         } else {
             let frame_x = match alignment {
                 Alignment::Center | Alignment::Distribute => {
-                    container.x + (container.width - frame_width).max(0.0) / 2.0
+                    container.x + (container.width - block_width).max(0.0) / 2.0
                 }
-                Alignment::Right => container.x + (container.width - frame_width).max(0.0),
+                Alignment::Right => container.x + (container.width - block_width).max(0.0),
                 _ => container.x,
             };
             (
-                frame_x + (frame_width - pic_width) / 2.0,
-                container.y + (frame_height - pic_height) / 2.0,
+                frame_x + caption_left_offset + (frame_width - pic_width) / 2.0,
+                container.y + caption_top_offset + (frame_height - pic_height) / 2.0,
             )
         };
 
@@ -313,6 +363,65 @@ impl LayoutEngine {
         );
 
         parent_node.children.push(img_node);
+
+        // [#6284] 캡션 렌더링 — 기하는 위에서 예약한 띠와 같은 산식이다
+        // (`layout_body_picture` 의 캡션 방출부와 같은 규칙).
+        if let Some(ref caption) = picture.caption {
+            use crate::model::shape::CaptionVertAlign;
+            let (cap_x, cap_w, cap_y) = match caption.direction {
+                CaptionDirection::Top => (
+                    pic_x,
+                    pic_width,
+                    (pic_y - caption_top_offset).max(container.y),
+                ),
+                CaptionDirection::Bottom => {
+                    (pic_x, pic_width, pic_y + pic_height + caption_spacing)
+                }
+                CaptionDirection::Left | CaptionDirection::Right => {
+                    let cw = hwpunit_to_px(caption.width as i32, self.dpi);
+                    let cx = if caption.direction == CaptionDirection::Left {
+                        pic_x - caption_left_offset
+                    } else {
+                        pic_x + pic_width + caption_spacing
+                    };
+                    let cy = match caption.vert_align {
+                        CaptionVertAlign::Top => pic_y,
+                        CaptionVertAlign::Center => {
+                            pic_y + (pic_height - caption_band_height).max(0.0) / 2.0
+                        }
+                        CaptionVertAlign::Bottom => {
+                            pic_y + (pic_height - caption_band_height).max(0.0)
+                        }
+                    };
+                    (cx, cw, cy)
+                }
+            };
+            let caption_cell_ctx = cell_ctx.cloned().or_else(|| {
+                para_index.map(|pi| super::CellContext {
+                    in_textbox: false,
+                    parent_para_index: pi,
+                    path: vec![super::CellPathEntry {
+                        control_index: control_index.unwrap_or(0),
+                        cell_index: 0,
+                        cell_para_index: 0,
+                        text_direction: 0,
+                    }],
+                })
+            });
+            self.layout_caption(
+                tree,
+                parent_node,
+                caption,
+                styles,
+                container,
+                cap_x,
+                cap_w,
+                cap_y,
+                &mut self.auto_counter.borrow_mut(),
+                bin_data_content,
+                caption_cell_ctx,
+            );
+        }
 
         // [Task #1151 v4] tac=true 셀 안 picture 의 위치를 inline_shape_positions 에 등록 →
         // cursor_rect 의 hit-test 루프가 picture 클릭 인식. 셀 외부 / 본문 picture 는
@@ -787,6 +896,7 @@ impl LayoutEngine {
                 para_y_before_layout,
                 bin_data_content,
                 ctx.as_ref(),
+                styles,
             );
         }
     }
@@ -800,6 +910,8 @@ impl LayoutEngine {
         para_y: f64,
         bin_data_content: &[BinDataContent],
         cell_ctx: Option<&super::CellContext>,
+        // [#6284] 캡션 문단 조판에 필요하다.
+        styles: &ResolvedStyleSet,
     ) {
         let anchor_y = para
             .line_segs
@@ -868,6 +980,7 @@ impl LayoutEngine {
                 Some(0),
                 Some(ctrl_idx),
                 cell_ctx,
+                styles,
             );
 
             if pic.common.treat_as_char {

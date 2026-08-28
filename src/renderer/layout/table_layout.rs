@@ -5235,6 +5235,7 @@ impl LayoutEngine {
                                     cell_context.as_ref().map(|c| c.parent_para_index),
                                     Some(ctrl_idx),
                                     cell_context.as_ref(),
+                                    styles,
                                 );
                                 inline_x += clamped_w;
                                 continue;
@@ -5597,6 +5598,7 @@ impl LayoutEngine {
                                 cell_context.as_ref().map(|c| c.parent_para_index),
                                 Some(ctrl_idx),
                                 cell_context.as_ref(),
+                                styles,
                             );
                             // 셀 안 부동 그림도 본문/각주 그림과 마찬가지로 자체 caption을
                             // 방출해야 한다. 이 경로가 빠져 있으면 HWP5 LIST_HEADER의

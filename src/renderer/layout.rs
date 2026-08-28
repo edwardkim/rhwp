@@ -3743,6 +3743,7 @@ impl LayoutEngine {
                                     Some(ci),
                                     outer_hf_ref.clone(),
                                     None, // [Task #1151 v4] cell_ctx: 머리말/꼬리말 path
+                                    styles,
                                 );
                             } else {
                                 self.layout_header_footer_picture(
@@ -3758,6 +3759,7 @@ impl LayoutEngine {
                                     i,
                                     ci,
                                     outer_hf_ref.clone(),
+                                    styles,
                                 );
                             }
                             let pic_h = hwpunit_to_px(pic.common.height as i32, self.dpi);
@@ -4627,6 +4629,7 @@ impl LayoutEngine {
                                         Some(pi),
                                         Some(ci),
                                         None, // [Task #1151 v4] cell_ctx: 바탕쪽 picture 는 셀 중첩 없음
+                                        styles,
                                     );
                                 }
                                 Control::Table(t) => {
@@ -4737,6 +4740,8 @@ impl LayoutEngine {
         inner_para_index: usize,
         inner_control_index: usize,
         outer_hf_ref: Option<crate::renderer::render_tree::HeaderFooterImageRef>,
+        // [#6284] 캡션 문단 조판에 필요하다.
+        styles: &ResolvedStyleSet,
     ) {
         let rotation = pic.shape_attr.rotation_angle.rem_euclid(360);
         let uses_rotated_frame = rotation != 0
@@ -4799,6 +4804,7 @@ impl LayoutEngine {
             Some(inner_control_index),
             outer_hf_ref,
             None,
+            styles,
         );
     }
 
