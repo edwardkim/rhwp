@@ -165,8 +165,9 @@ fn stored_layout_relocated_empty_rowbreak_picture_resets_offset(
 use super::super::composer::effective_text_for_metrics;
 use super::super::{hwpunit_to_px, ShapeStyle};
 use super::border_rendering::{
-    build_row_col_x, collect_cell_borders, create_border_line_nodes, render_cell_diagonal,
-    render_edge_borders, render_transparent_borders,
+    build_row_col_x, collect_cell_borders, create_border_line_nodes,
+    mark_cell_span_interior_covered, render_cell_diagonal, render_edge_borders,
+    render_transparent_borders,
 };
 use super::text_measurement::{estimate_text_width, resolved_to_text_style};
 use super::utils::find_bin_data_bytes;
@@ -2966,6 +2967,10 @@ impl LayoutEngine {
         // ── 5. 셀 레이아웃 ──
         let mut h_edges: Vec<Vec<Option<BorderLine>>> = vec![vec![None; col_count]; row_count + 1];
         let mut v_edges: Vec<Vec<Option<BorderLine>>> = vec![vec![None; row_count]; col_count + 1];
+        // 병합 등으로 편집되어 h_edges/v_edges에 기록되지 않는 span 내부 위치를
+        // 투명선 가이드에서 제외하기 위한 커버리지 그리드 (§투명선/셀 편집 정합성).
+        let mut h_span_covered: Vec<Vec<bool>> = vec![vec![false; col_count]; row_count + 1];
+        let mut v_span_covered: Vec<Vec<bool>> = vec![vec![false; row_count]; col_count + 1];
 
         self.layout_table_cells(
             tree,
@@ -2989,6 +2994,8 @@ impl LayoutEngine {
             table_y,
             &mut h_edges,
             &mut v_edges,
+            &mut h_span_covered,
+            &mut v_span_covered,
             split_row_range,
             row_y_shift,
             split_y_offset,
@@ -3120,7 +3127,15 @@ impl LayoutEngine {
             ));
             if self.show_transparent_borders.get() {
                 table_node.children.extend(render_transparent_borders(
-                    tree, &h_edges, &v_edges, &row_col_x, &row_y, table_x, table_y,
+                    tree,
+                    &h_edges,
+                    &v_edges,
+                    &h_span_covered,
+                    &v_span_covered,
+                    &row_col_x,
+                    &row_y,
+                    table_x,
+                    table_y,
                 ));
             }
         }
@@ -6600,6 +6615,8 @@ impl LayoutEngine {
         table_y: f64,
         h_edges: &mut Vec<Vec<Option<BorderLine>>>,
         v_edges: &mut Vec<Vec<Option<BorderLine>>>,
+        h_span_covered: &mut [Vec<bool>],
+        v_span_covered: &mut [Vec<bool>],
         row_filter: Option<(usize, usize)>,
         row_y_shift: f64,
         split_y_offset: f64,
@@ -7270,6 +7287,16 @@ impl LayoutEngine {
                         &bs.borders,
                     );
                 }
+            }
+            if independent_col_row_y.is_none() {
+                mark_cell_span_interior_covered(
+                    h_span_covered,
+                    v_span_covered,
+                    c,
+                    r,
+                    cell.col_span as usize,
+                    cell.row_span as usize,
+                );
             }
 
             table_node.children.push(cell_node);

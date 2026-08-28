@@ -23,6 +23,7 @@ last_verified: 2026-07-25
 | [maintainer_general.md](maintainer_general.md) | maintainer가 외부 PR을 일반 경로로 처리 |
 | [collaborator_self_merge.md](collaborator_self_merge.md) | collaborator 자신의 PR을 준비·merge |
 | [collaborator_external_pr.md](collaborator_external_pr.md) | collaborator가 contributor PR head를 보정하거나 기록을 더함 |
+| [first_time_contributor.md](first_time_contributor.md) | rhwp 첫 외부 contributor PR의 환영, base 위험, maintainer 보정, merge 후속 처리 |
 | [local_validation.md](local_validation.md) | local fetch, simulation, Cargo/npm/fixture 검증 |
 | [visual_fixture_evidence.md](visual_fixture_evidence.md) | renderer 또는 HWP/HWPX/PDF fixture·페이지·시각 검증. 문서 비교 절차는 [Visual Sweep 가이드](../verification/visual_sweep_guide.md#github-merge-comment)를 정본으로 사용 |
 | [multi_pr_update_branch.md](multi_pr_update_branch.md) | 대량 유입, 다수 PR 누적 검토, update branch, stale CI |
@@ -39,6 +40,7 @@ last_verified: 2026-07-25
 | 한 기여자의 여러 PR을 체리픽 누적 검토 | maintainer_general | intake_and_review, local_validation, multi_pr_update_branch, 필요 시 visual_fixture_evidence, post_merge |
 | collaborator 본인 PR | collaborator_self_merge | intake_and_review, local_validation, 필요 시 visual_fixture_evidence |
 | collaborator가 contributor PR에 보정 commit을 추가 | collaborator_external_pr | intake_and_review, local_validation, 필요 시 visual_fixture_evidence와 multi_pr_update_branch, post_merge |
+| rhwp 첫 외부 contributor PR | collaborator_external_pr | first_time_contributor, intake_and_review, local_validation, 필요 시 visual_fixture_evidence, post_merge |
 | collaborator가 contributor code를 local 검증한 뒤 review·오늘할일만 source head에 추가 | collaborator_external_pr | intake_and_review, local_validation, review_only_fast_pass, post_merge |
 | 완료된 원 PR의 review·asset만 별도 PR로 반영 | collaborator_self_merge | intake_and_review, review_only_fast_pass, post_merge |
 | base가 잘못되었거나 재작업 요청 | 해당 기본 경로 | intake_and_review, rework_and_exceptions |
