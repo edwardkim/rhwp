@@ -5,7 +5,24 @@
 - **계획**: [`task_m100_4135_impl.md`](../plans/task_m100_4135_impl.md)
 - **선행 결과**: [`task_m100_4135_recovery_r3.md`](task_m100_4135_recovery_r3.md)
 - **승인**: 작업지시자가 R3 결과 보고 뒤 `진행해줘.`로 R3 결과와 R4 착수를 승인
-- **판정**: 자동·실브라우저 범위 GREEN, macOS 한글 IME 물리 `S` 수동 확인과 R4 결과 승인 대기
+- **판정**: macOS 한글 IME 물리 `S` 수동 확인에서 **대화상자와 `ㄴ` 입력이 동시에 발생**해 R4 미승인; 후속 IME 입력 억제 corrective RED 고정
+
+## 0. 작업지시자 수동 확인 실패와 corrective RED
+
+작업지시자가 macOS 한글 입력 상태에서 물리 `S`를 눌렀을 때 셀 나누기 대화상자는 열렸지만,
+선택 셀에 `ㄴ`도 함께 입력됐다. 따라서 R3의 물리 키 라우팅은 성공했지만 `keydown` 뒤 이어지는
+`compositionstart → input → compositionend` 스트림은 소비하지 못했다. 기존 R4 GREEN 판정은 자동화
+가능 범위에 한정하며, R4 자체는 승인하지 않는다.
+
+corrective RED는 다음 세 계약으로 고정했다.
+
+1. 한글 `ㄴ/ㅡ` 셀 문자 단축키는 후속 composition/input 스트림 전체를 소비한다.
+2. `Process`/`keyCode=229`에서 composition 이벤트가 없는 input-only 폴백은 첫 input만 소비한다.
+3. 영문 `S/M`은 억제 상태를 만들지 않아 다음 정상 입력을 삼키지 않는다.
+
+focused 실행 결과는 기존 11건 통과, 신규 3건 실패이며 실패 원인은 IME 후속 입력 guard 부재다.
+corrective 구현과 전체 재검증, 작업지시자 재확인 전에는 아래 자동 GREEN 증적만으로 R4를 승인하지
+않는다.
 
 ## 1. R4에서 추가로 발견하고 보정한 결함
 
@@ -106,13 +123,14 @@ PASS
 | embed E2E | Save As 소유권 없는 기존 차단 계약 유지 |
 
 자동 브라우저 키 입력은 macOS 입력 소스를 실제 한글 IME로 전환한 `Process/KeyS` 이벤트를
-신뢰성 있게 만들지 못한다. 순수 resolver와 InputHandler 순서 테스트에서 `ㄴ`,
-`Process/KeyS`, `ㅡ`, `Process/KeyM` 계약은 GREEN이지만, 작업지시자가 실제 키보드 한글
-상태에서 마지막 사용자 여정을 확인해야 R4를 확정한다.
+신뢰성 있게 만들지 못한다. 순수 resolver와 InputHandler 순서 테스트에서 명령 라우팅은
+GREEN이었지만, 작업지시자 수동 확인에서 후속 `ㄴ` 입력이 함께 발생했다. corrective 구현 뒤
+동일 사용자 여정을 다시 확인해야 R4를 확정한다.
 
 ## 4. 작업지시자 수동 확인 절차
 
-개발 서버는 `http://127.0.0.1:7715/`에서 실행 중이다. 다음 한글 IME 확인이 필수다.
+개발 서버는 `http://127.0.0.1:7715/`에서 실행 중이다. corrective 구현과 최신 빌드 반영 뒤
+다음 한글 IME 재확인이 필수다.
 
 1. 표의 아무 셀을 클릭하고 `F5`를 두 번 누른 뒤 방향키로 둘 이상의 셀을 파랗게 선택한다.
 2. macOS 입력 소스를 **한글**로 바꾼다.
