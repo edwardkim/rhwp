@@ -25,6 +25,7 @@ const REGRESSION_FIXTURES = REGRESSION_FIXTURE_PATHS.flatMap((filename) => JSON.
   fs.readFileSync(path.join(__dirname, 'fixtures', filename), 'utf8'),
 ));
 const REPOSITORY_ROOT = path.join(__dirname, '..', '..');
+const CLI_ROOT = path.join(REPOSITORY_ROOT, 'src', 'cli');
 const OUTPUT_ADAPTER_ROOT = path.join(REPOSITORY_ROOT, 'src', 'cli', 'outputs');
 
 function rustFilesUnder(directory) {
@@ -35,6 +36,14 @@ function rustFilesUnder(directory) {
       if (!entry.isFile() || !entry.name.endsWith('.rs')) return [];
       return [path.relative(REPOSITORY_ROOT, entryPath).split(path.sep).join('/')];
     });
+}
+
+function directPageRendererCallers() {
+  return rustFilesUnder(CLI_ROOT).filter((filename) => (
+    /\.render_page_(?:svg|html|canvas|to_canvas)/.test(
+      fs.readFileSync(path.join(REPOSITORY_ROOT, filename), 'utf8'),
+    )
+  ));
 }
 
 for (const fixture of HISTORICAL_PRS) {
@@ -165,6 +174,46 @@ test('every CLI output adapter belongs to one explicit impact bucket', () => {
     assert.equal(result.classification_status, 'classified', filename);
     assert.equal(result.classifier_version, '5', filename);
     assert.equal(result.reason, reason, filename);
+  }
+});
+
+test('every direct CLI page renderer caller has an explicit workflow-consumer decision', () => {
+  const buckets = {
+    nativeConsumer: [
+      'src/cli/outputs/raster.rs',
+    ],
+    notWorkflowConsumer: [
+      'src/cli/commands/caption_validation.rs',
+      'src/cli/outputs/vector.rs',
+    ],
+  };
+  const expected = Object.values(buckets).flat();
+  assert.equal(
+    new Set(expected).size,
+    expected.length,
+    'direct CLI renderer caller buckets must be disjoint',
+  );
+  assert.deepEqual(
+    directPageRendererCallers().sort(),
+    expected.sort(),
+    'new direct CLI page renderer callers require an explicit workflow-consumer decision',
+  );
+
+  for (const filename of buckets.nativeConsumer) {
+    const result = classifyChanges({
+      eventName: 'pull_request',
+      files: [{ filename, status: 'modified' }],
+    });
+    assert.equal(result.render_required, 'false', filename);
+    assert.equal(result.native_skia_required, 'true', filename);
+  }
+  for (const filename of buckets.notWorkflowConsumer) {
+    const result = classifyChanges({
+      eventName: 'pull_request',
+      files: [{ filename, status: 'modified' }],
+    });
+    assert.equal(result.render_required, 'false', filename);
+    assert.equal(result.native_skia_required, 'false', filename);
   }
 });
 

@@ -114,7 +114,7 @@ const RENDER_DIFF_PULL_REQUEST_PATHS = [
   'src/model/**',
   'src/renderer/**',
   'src/document_core/queries/rendering.rs',
-  'src/cli/commands/caption_validation.rs',
+  'src/cli/document_io.rs',
   'src/cli/outputs/mod.rs',
   'src/cli/outputs/pdf.rs',
   'src/wasm_api.rs',

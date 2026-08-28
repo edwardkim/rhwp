@@ -38,15 +38,16 @@ class RenderDiffTriggerPolicyTests(unittest.TestCase):
             self.workflow,
         )
 
-    def test_cli_render_boundaries_follow_owned_sources(self) -> None:
+    def test_cli_render_boundaries_follow_direct_workflow_consumers(self) -> None:
         pull_request_trigger = self.workflow.split("  workflow_dispatch:", maxsplit=1)[0]
 
-        self.assertIn(
+        self.assertIn("      - 'src/cli/document_io.rs'", pull_request_trigger)
+        self.assertIn("      - 'src/cli/outputs/mod.rs'", pull_request_trigger)
+        self.assertIn("      - 'src/cli/outputs/pdf.rs'", pull_request_trigger)
+        self.assertNotIn(
             "      - 'src/cli/commands/caption_validation.rs'",
             pull_request_trigger,
         )
-        self.assertIn("      - 'src/cli/outputs/mod.rs'", pull_request_trigger)
-        self.assertIn("      - 'src/cli/outputs/pdf.rs'", pull_request_trigger)
         self.assertNotIn("      - 'src/cli/outputs/raster.rs'", pull_request_trigger)
         self.assertNotIn("      - 'src/cli/outputs/vector.rs'", pull_request_trigger)
         self.assertNotIn("      - 'src/cli/queries/structure.rs'", pull_request_trigger)

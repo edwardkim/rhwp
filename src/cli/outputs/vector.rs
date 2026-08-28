@@ -1,4 +1,4 @@
-//! SVG, render tree, 문서 구조 출력 어댑터.
+//! SVG와 render tree 출력 어댑터.
 
 use std::fs;
 use std::path::Path;

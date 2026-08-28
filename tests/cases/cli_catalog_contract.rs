@@ -15,6 +15,7 @@ use catalog::{commands, Visibility};
 
 const CAPTION_VALIDATION_SOURCE: &str =
     include_str!("../../src/cli/commands/caption_validation.rs");
+const DOCUMENT_IO_SOURCE: &str = include_str!("../../src/cli/document_io.rs");
 const MAIN_SOURCE: &str = include_str!("../../src/main.rs");
 const DATA_EXTRACTION_SOURCE: &str = include_str!("../../src/cli/queries/data_extraction.rs");
 const DIAGNOSTICS_SOURCE: &str = include_str!("../../src/cli/queries/diagnostics.rs");
@@ -26,6 +27,7 @@ const SECURITY_INSPECTION_SOURCE: &str =
     include_str!("../../src/cli/queries/security_inspection.rs");
 const STRUCTURE_SOURCE: &str = include_str!("../../src/cli/queries/structure.rs");
 const STRUCTURED_OBJECTS_SOURCE: &str = include_str!("../../src/cli/queries/structured_objects.rs");
+const UNITS_SOURCE: &str = include_str!("../../src/cli/units.rs");
 const VECTOR_OUTPUT_SOURCE: &str = include_str!("../../src/cli/outputs/vector.rs");
 
 fn rhwp_bin() -> String {
@@ -208,7 +210,7 @@ fn exceptional_visibility_is_small_explicit_and_explained() {
 }
 
 #[test]
-fn caption_render_and_structure_query_have_dedicated_owners() {
+fn cli_render_input_caption_and_structure_have_dedicated_owners() {
     assert!(
         CAPTION_VALIDATION_SOURCE.contains("pub(crate) fn run("),
         "test-caption 구현이 caption_validation 모듈에 있어야 한다"
@@ -218,8 +220,43 @@ fn caption_render_and_structure_query_have_dedicated_owners() {
         "직접 SVG 렌더 경계가 caption_validation 모듈에 있어야 한다"
     );
     assert!(
-        !MAIN_SOURCE.contains("fn test_caption(") && !MAIN_SOURCE.contains(".render_page_svg("),
-        "test-caption 구현이나 직접 SVG 렌더가 main.rs로 되돌아가면 안 된다"
+        !MAIN_SOURCE.contains("fn test_caption(") && !MAIN_SOURCE.contains(".render_page_"),
+        "test-caption 구현이나 직접 페이지 렌더가 main.rs로 되돌아가면 안 된다"
+    );
+
+    for owned in [
+        "pub(crate) fn load_document(",
+        "pub(crate) fn load_document_core(",
+        "pub(crate) fn classify_hwp_error(",
+        "pub(crate) fn strip_global_auth_options(",
+        "thread_local!",
+    ] {
+        assert!(
+            DOCUMENT_IO_SOURCE.contains(owned),
+            "CLI 문서 입력 경계가 document_io 모듈에 있어야 한다: {owned}"
+        );
+    }
+    for root_owned in [
+        "fn load_document(",
+        "fn load_document_core(",
+        "fn classify_hwp_error(",
+        "fn strip_global_auth_options(",
+        "thread_local!",
+    ] {
+        assert!(
+            !MAIN_SOURCE.contains(root_owned),
+            "CLI 문서 입력 구현이 main.rs로 되돌아가면 안 된다: {root_owned}"
+        );
+    }
+    for owned in ["pub(crate) fn hu_to_mm(", "pub(crate) fn hu_to_mm_i("] {
+        assert!(
+            UNITS_SOURCE.contains(owned),
+            "CLI 단위 변환이 units 모듈에 있어야 한다: {owned}"
+        );
+    }
+    assert!(
+        !MAIN_SOURCE.contains("fn hu_to_mm(") && !MAIN_SOURCE.contains("fn hu_to_mm_i("),
+        "CLI 단위 변환 구현이 main.rs로 되돌아가면 안 된다"
     );
 
     assert!(
@@ -245,15 +282,13 @@ fn caption_render_and_structure_query_have_dedicated_owners() {
         .filter(|ch| !ch.is_whitespace())
         .collect();
     assert!(
-        compact_main.contains(
-            "Some(\"test-caption\")=>exit_with(cli::commands::caption_validation::run(&args[2..]))"
-        ),
+        compact_main.contains("Some(\"test-caption\")=>")
+            && compact_main.contains("cli::commands::caption_validation::run(&args[2..])"),
         "test-caption dispatch가 caption_validation 모듈 API를 사용해야 한다"
     );
     assert!(
-        compact_main.contains(
-            "Some(\"export-structure\")=>{exit_with(cli::queries::structure::export_structure(&args[2..]))}"
-        ),
+        compact_main.contains("Some(\"export-structure\")=>")
+            && compact_main.contains("cli::queries::structure::export_structure(&args[2..])"),
         "export-structure dispatch가 structure query 모듈 API를 사용해야 한다"
     );
 }
