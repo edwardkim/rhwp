@@ -9375,7 +9375,11 @@ mod tests {
         assert_eq!(optional_page.apply_to, HeaderFooterApply::Both);
         assert!(optional_page.is_extension);
         assert!(optional_page.overlap);
-        assert!(!optional_page.replace_base);
+        // [#6323] 픽스처가 `pageDuplicate="0"`(겹치게 하기 끔)이므로 LAST_PAGE 와 같이
+        // 기본 바탕쪽을 대체해야 한다. 종전에는 이 단언이 `!replace_base` 였는데,
+        // 그 비대칭 때문에 임의 쪽 바탕쪽이 기본 바탕쪽 위에 덧그려져 쪽번호가
+        // 포개졌다(exam_kor.hwpx 20쪽에서 '2' 위에 '4').
+        assert!(optional_page.replace_base);
         assert_eq!(optional_page.ext_flags, 0x0007);
     }
 
@@ -9425,7 +9429,13 @@ mod tests {
         assert_eq!(master_page.apply_to, HeaderFooterApply::Both);
         assert!(master_page.is_extension);
         assert!(master_page.overlap);
-        assert!(!master_page.replace_base);
+        // [#6323] 이 픽스처는 실제 문서(`samples/hwpx/exam_kor.hwpx` 의 masterpage8)와 같은
+        // 형태다 — `pageDuplicate="0"` 은 "겹치게 하기 끔" 이므로 바로 위
+        // `test_parse_master_page_last_page_extension`(같은 `pageDuplicate="0"`)과 마찬가지로
+        // 기본 바탕쪽을 대체해야 한다. 종전에는 이 단언이 `!replace_base` 라 두 시험이
+        // 같은 선언에 정반대를 못박고 있었고, 그 비대칭 때문에 임의 쪽 바탕쪽이 기본
+        // 바탕쪽 위에 덧그려져 쪽번호가 포개졌다(20쪽에서 '2' 위에 '4').
+        assert!(master_page.replace_base);
         assert_eq!(master_page.ext_flags, 0x0007);
         assert_eq!(master_page.hwpx_page_number, Some(4));
         assert_eq!(master_page.raw_list_header.len(), 34);
