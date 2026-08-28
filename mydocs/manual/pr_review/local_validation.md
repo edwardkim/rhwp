@@ -277,6 +277,23 @@ remote push, PR 생성, ready 전환, merge 승인과는 별개다.
 | CI workflow | [GitHub 저장소 운영 매뉴얼](../github_operations.md)의 변경 등급에 따른 workflow 구문·정책 테스트·required check 영향·최신 GitHub Actions 결과 |
 | 기존 golden/baseline/fixture | 관련 focused test, snapshot 결정성, 최신 PR head CI |
 
+archive label 또는 trusted post-merge reuse topology를 바꾸면, 일반 workflow 계약 검사에 더해
+아래 두 묶음을 PR 전에 모두 실행한다. Studio E2E나 OS resource-limit처럼 이 변경 범위와
+무관한 Node 테스트까지 glob으로 섞지 않는다.
+
+~~~bash
+node --test \
+  scripts/tests/ci-impact-classifier.test.cjs \
+  scripts/tests/ci-impact-policy.test.cjs \
+  scripts/tests/verify-trusted-postmerge-ci-reuse.test.mjs \
+  scripts/tests/verify-trusted-postmerge-ci-reuse-squash.test.mjs
+python3 -m unittest discover -s scripts/tests -p 'test_*workflow.py'
+~~~
+
+이 묶음은 archive consumer, CI impact, CodeQL, adapter, proptest, reusable workflow의
+상호 계약을 함께 검사한다. 따라서 새 archive label이나 reusable input을 추가한 PR은
+GitHub CI에서가 아니라 PR을 열기 전에 누락된 consumer를 발견해야 한다.
+
 ### 4.3.0 PR 검토의 GitHub Full CI 재사용
 
 이 표의 기본 검증은 새 code head를 만들거나 아직 GitHub 전체 검증이 없는 PR에 적용한다. 이미

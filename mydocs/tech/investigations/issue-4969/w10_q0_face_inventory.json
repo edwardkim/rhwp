@@ -1,0 +1,210 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q0-face-capability-inventory",
+  "issue": 4969,
+  "stage": "W10-Q0",
+  "sourceCommit": "6415047a4dfdb71fe96239eced0017559f699c81",
+  "productMutation": false,
+  "faces": [
+    {
+      "id": "noto-sans-kr-regular-sfnt",
+      "path": "ttfs/opensource/NotoSansKR-Regular.ttf",
+      "sha256": "6e06a7fe5d696ca719894a23f36bb2b1be8c816a5937cd4ad0f23ca67780dd74",
+      "bytes": 2519996,
+      "containerFormat": "sfnt-ttf",
+      "rustybuzzParseable": true,
+      "faceIndex": 0,
+      "unitsPerEm": 1000,
+      "glyphCount": 12107,
+      "tables": [
+        "BASE",
+        "GDEF",
+        "GPOS",
+        "GSUB",
+        "hhea",
+        "hmtx",
+        "vhea",
+        "vmtx"
+      ],
+      "variationAxes": [],
+      "candidateLanes": [
+        "horizontal-shaping",
+        "vertical-shaping"
+      ],
+      "registry": {
+        "canvas2dRuleId": "rule.studio-supply.8175c2ae512fdcecc704.canvas2d",
+        "canvas2dStatus": "active",
+        "canvas2dSource": "fonts/NotoSansKR-Regular.woff2",
+        "canvasKitRuleId": "rule.studio-supply.8175c2ae512fdcecc704.canvaskit",
+        "canvasKitStatus": "active",
+        "canvasKitCapability": "unavailable",
+        "canvasKitReason": "no CanvasKit SFNT source"
+      }
+    },
+    {
+      "id": "source-han-serif-k-old-hangul-subset",
+      "path": "assets/fonts/SourceHanSerifK-OldHangul-subset.woff2",
+      "sha256": "9e419cd16df2ea3b220aa7751320d956ac2493440ba412484d98325078f09d43",
+      "bytes": 239628,
+      "containerFormat": "woff2-cff",
+      "rustybuzzParseable": false,
+      "faceIndex": 0,
+      "unitsPerEm": 1000,
+      "glyphCount": 2215,
+      "tables": [
+        "BASE",
+        "CFF ",
+        "GPOS",
+        "GSUB",
+        "VORG",
+        "hhea",
+        "hmtx",
+        "vhea",
+        "vmtx"
+      ],
+      "variationAxes": [],
+      "candidateLanes": [
+        "old-hangul-shaping",
+        "vertical-shaping"
+      ],
+      "registry": {
+        "canvas2dRuleId": "rule.studio-supply.0aab2d58429b52047acb.canvas2d",
+        "canvas2dStatus": "active",
+        "canvas2dSource": "fonts/SourceHanSerifK-OldHangul-subset.woff2",
+        "canvasKitRuleId": "rule.studio-supply.0aab2d58429b52047acb.canvaskit",
+        "canvasKitStatus": "active",
+        "canvasKitCapability": "unavailable",
+        "canvasKitReason": "no CanvasKit SFNT source"
+      }
+    },
+    {
+      "id": "happiness-sans-vf",
+      "path": "assets/fonts/HappinessSansVF.woff2",
+      "sha256": "cd29de60acf8c466938400561fcbfb14812dd5981f4f78b0c8da74609682423c",
+      "bytes": 613412,
+      "containerFormat": "woff2-truetype",
+      "rustybuzzParseable": false,
+      "officialSfntCandidate": {
+        "archiveUrl": "https://thehyundaifont.com/assets/fonts/HappinessSans-Screen.zip",
+        "archiveBytes": 6354097,
+        "archiveSha256": "1defb001694a8bd3fd5c7a15c45377e82e654569177c6995016ae321223fb041",
+        "memberPath": "screen/otf/HappinessSansVF.ttf",
+        "memberBytes": 1503064,
+        "memberSha256": "3bbd254dcc5780f7524f9d07af4aa981ba5e3e84cf32d7d4e04301b3943e8694",
+        "licenseMemberPath": "screen/HapinessSans_License.pdf",
+        "licenseMemberSha256": "f5bd344131ee034f3425517ea376ab6acea9126310e7b2cd74cd18673991b055",
+        "policy": "extract-verbatim; do not derive from WOFF2; verify redistribution terms before tracking"
+      },
+      "faceIndex": 0,
+      "unitsPerEm": 1000,
+      "glyphCount": 3889,
+      "tables": [
+        "GDEF",
+        "GPOS",
+        "GSUB",
+        "fvar",
+        "gvar",
+        "hhea",
+        "hmtx"
+      ],
+      "variationAxes": [
+        {
+          "tag": "wght",
+          "min": 400.0,
+          "default": 400.0,
+          "max": 900.0
+        },
+        {
+          "tag": "opsz",
+          "min": 400.0,
+          "default": 400.0,
+          "max": 900.0
+        }
+      ],
+      "candidateLanes": [
+        "variation-shaping"
+      ],
+      "registry": {
+        "canvas2dRuleId": "rule.studio-supply.7addb14ca54d3478ff11.canvas2d",
+        "canvas2dStatus": "active",
+        "canvas2dSource": "fonts/HappinessSansVF.woff2",
+        "canvasKitRuleId": "rule.studio-supply.7addb14ca54d3478ff11.canvaskit",
+        "canvasKitStatus": "active",
+        "canvasKitCapability": "unavailable",
+        "canvasKitReason": "no CanvasKit SFNT source"
+      }
+    }
+  ],
+  "registryBaseline": {
+    "path": "assets/font-rules/font_rule_registry_v2.json",
+    "fileSha256": "fbab4413007a29600e5d667503e80b861ec4096827a8936943bdf74e58a5ae16",
+    "rulesSha256": "bd9469aa16156a16ea262f608015cb0b78e925700ae7df69c38602ba6670c029",
+    "sourceCommit": "a1f9872e28aea6755b656161ed1802f73308da58",
+    "activeRuleCount": 830
+  },
+  "w8Overlap": {
+    "candidateFaces": [
+      "Noto Sans KR",
+      "Source Han Serif K Old Hangul",
+      "Happiness Sans VF"
+    ],
+    "qualifiedFaces": [
+      "문체부 바탕체",
+      "KoPubWorld돋움체 Light",
+      "KoPubWorld바탕체 Light"
+    ],
+    "overlapCount": 0,
+    "w8Disposition": "all-no-change"
+  },
+  "w3SchemaAudit": {
+    "journalEntries": 10000,
+    "journalMode": "0600",
+    "sourceReparseCount": 0,
+    "availableDimensions": [
+      "alignment",
+      "bold",
+      "context",
+      "font",
+      "format",
+      "italic",
+      "kerning",
+      "language",
+      "ratio",
+      "spacing",
+      "storedLineSeg"
+    ],
+    "missingW10Dimensions": [
+      "direction",
+      "writingMode",
+      "script",
+      "shapingFeatures",
+      "variationAxes"
+    ],
+    "fullCorpusRemeasurement": "not-authorized-not-required-for-q0"
+  },
+  "w9Baseline": {
+    "runtimeParityPath": "mydocs/tech/investigations/issue-4968/kerning_r4e_runtime_parity.json",
+    "runtimeParityFileSha256": "7b21c367669520e504e3278df630f32b6a11ed8b21a2dc66e0dd999127660ef4",
+    "runtimeParityCanonicalSha256": "aaca1249d096965c662043bf3ed09a0aafdc9f9d85f9cefb24382f70695d85a7",
+    "failureMatrixPath": "mydocs/tech/investigations/issue-4968/kerning_r4e_failure_matrix.json",
+    "failureMatrixFileSha256": "baa2d7bc28d66c79eb81f9ba9cb940e9bbda0cbe00ff957a0e269cc3b40c76f7",
+    "embeddingProbePath": "mydocs/tech/investigations/issue-4968/kerning_r4e_wasm_embedding_probe.json",
+    "embeddingProbeFileSha256": "a97c12764280fb45af5819807a3b4cb05201d0f4def0ce708786a3ded989254f",
+    "wasmBytes": 9593739,
+    "wasmSha256": "7907c24bfdeda5bbef9d9f06d88d5de1aa66ab0474563d31c8406f3689e21cc3"
+  },
+  "disposition": {
+    "faceSet": "identity-frozen-source-readiness-partial",
+    "readyExactSourceFaces": [
+      "noto-sans-kr-regular-sfnt"
+    ],
+    "blockedExactSourceFaces": [
+      "source-han-serif-k-old-hangul-subset",
+      "happiness-sans-vf"
+    ],
+    "blocker": "tracked WOFF2 bytes are not directly parseable by the current rustybuzz exact-source path; Happiness has an official exact TTF candidate but it is not yet tracked or policy-approved",
+    "productMutation": "none",
+    "newCorpusMeasurement": "deferred-unless-approved-evidence-gap",
+    "nextStage": "maintainer-source-container-decision-before-W10-Q1"
+  }
+}

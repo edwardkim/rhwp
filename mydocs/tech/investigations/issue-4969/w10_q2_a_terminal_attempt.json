@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q2-a-terminal-attempt-result",
+  "issue": 4969,
+  "stage": "W10-Q2-A",
+  "status": "qualified",
+  "productOutputChange": false,
+  "terminalDispositions": [
+    "applied",
+    "unsupported",
+    "malformed",
+    "bounded-limit",
+    "non-portable"
+  ],
+  "preShapingRequestedSerialized": false,
+  "attemptTrace": {
+    "fields": [
+      "attemptId",
+      "disposition",
+      "reason",
+      "settingsSha256",
+      "fontSourceSha256",
+      "glyphCount"
+    ],
+    "optionalBeforeCanonicalization": [
+      "settingsSha256",
+      "fontSourceSha256"
+    ],
+    "rawText": false,
+    "fontPayload": false,
+    "localPath": false,
+    "glyphVector": false
+  },
+  "appliedOwner": {
+    "kind": "Arc<AppliedShapingRun>",
+    "identityOwnedOnce": true,
+    "glyphVectorOwnedOnce": true,
+    "layoutConnected": false,
+    "paintConnected": false
+  },
+  "ledger": {
+    "recordLimit": 4096,
+    "limitCallerMutable": false,
+    "overflowStatus": "truncated",
+    "overflowAccounting": "saturating-omitted-record-count",
+    "appliedPayloadRetained": false
+  },
+  "validation": {
+    "focusedTests": {
+      "passed": 12,
+      "failed": 0
+    },
+    "cargoCheckLib": "pass",
+    "cargoClippyLibDenyWarnings": "pass",
+    "cargoCheckWasm32Lib": "pass",
+    "diffCheck": "pass"
+  },
+  "next": "maintainer approval required before Q2-B horizontal shadow measurement"
+}

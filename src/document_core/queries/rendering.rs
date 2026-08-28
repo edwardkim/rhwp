@@ -16,7 +16,10 @@ use crate::paint::{
     PageLayerTree, RenderProfile,
 };
 use crate::renderer::canvas::CanvasRenderer;
-use crate::renderer::composer::{compose_paragraph, compose_section, ComposedParagraph};
+use crate::renderer::composer::{
+    compose_paragraph, compose_paragraph_with_horizontal_shaping,
+    compose_section_with_horizontal_shaping, ComposedParagraph,
+};
 use crate::renderer::height_measurer::{HeightMeasurer, MeasuredSection, MeasuredTable};
 use crate::renderer::html::HtmlRenderer;
 use crate::renderer::kerning::{
@@ -972,12 +975,53 @@ fn apply_page_number_layouts_for_section(result: &mut PaginationResult, section:
 }
 
 impl DocumentCore {
+    /// Exact registry의 한 immutable snapshot에서 W9와 Q2-B contexts를 함께
+    /// 만든다. 둘 중 하나만 남는 부분 갱신은 허용하지 않는다.
+    pub(crate) fn refresh_exact_font_measurement_contexts(&mut self) {
+        let (kerning, shaping) = self
+            .layout_engine
+            .exact_font_measurement_context_snapshots();
+        self.styles.kerning_measurement_context = kerning;
+        self.styles.horizontal_shaping_context = shaping;
+    }
+
+    fn ensure_exact_font_measurement_contexts(&mut self) {
+        let generation = self.layout_engine.exact_font_source_registry_counts().3;
+        let slot_count = self.layout_engine.exact_font_source_registry_counts().0;
+        let current = self
+            .styles
+            .kerning_measurement_context
+            .as_ref()
+            .zip(self.styles.horizontal_shaping_context.as_ref())
+            .is_some_and(|(kerning, shaping)| {
+                kerning.registry_generation() == generation
+                    && shaping.registry_generation() == generation
+            });
+        if (slot_count == 0
+            && (self.styles.kerning_measurement_context.is_some()
+                || self.styles.horizontal_shaping_context.is_some()))
+            || (slot_count > 0 && !current)
+        {
+            self.refresh_exact_font_measurement_contexts();
+        }
+    }
+
+    pub(crate) fn recompose_all_with_horizontal_shaping(&mut self) {
+        self.composed = self
+            .document
+            .sections
+            .iter()
+            .map(|section| compose_section_with_horizontal_shaping(section, &self.styles))
+            .collect();
+    }
+
     /// 현재 문서에서 실제 텍스트 run이 참조하는 embedded face만 exact slot registry에
     /// 선등록한다. 개별 32 MiB·문서 layout owner 총 64 MiB 상한은 기존 page lowering과
     /// 동일하며, 초과·손상 source는 추측 없이 등록하지 않는다.
     pub(crate) fn rebuild_embedded_exact_font_sources(&mut self) {
         self.layout_engine.clear_exact_font_sources();
         self.styles.kerning_measurement_context = None;
+        self.styles.horizontal_shaping_context = None;
         let has_embedded_source = self
             .document
             .doc_info
@@ -1113,8 +1157,7 @@ impl DocumentCore {
                 }
             }
         }
-        self.styles.kerning_measurement_context =
-            self.layout_engine.kerning_measurement_context_snapshot();
+        self.refresh_exact_font_measurement_contexts();
     }
 
     /// 페이지 렌더 트리를 생성하여 반환한다 (native bridge / 외부 렌더러용).
@@ -2902,13 +2945,8 @@ impl DocumentCore {
 
     /// 재조판 + 재페이지네이션 수행
     fn recompose_and_paginate(&mut self) -> u32 {
-        self.composed = self
-            .document
-            .sections
-            .iter()
-            .map(|s| compose_section(s))
-            .collect();
         self.rebuild_embedded_exact_font_sources();
+        self.recompose_all_with_horizontal_shaping();
         self.mark_all_sections_dirty();
         self.paginate();
         self.page_count()
@@ -3282,12 +3320,7 @@ impl DocumentCore {
         }
 
         // 재조판 + 재페이지네이션
-        self.composed = self
-            .document
-            .sections
-            .iter()
-            .map(|s| compose_section(s))
-            .collect();
+        self.recompose_all_with_horizontal_shaping();
         self.mark_all_sections_dirty();
         self.paginate();
 
@@ -3922,7 +3955,10 @@ impl DocumentCore {
     /// 구역을 재조판하고 dirty로 표시한다.
     pub(crate) fn recompose_section(&mut self, section_idx: usize) {
         self.invalidate_page_tree_cache();
-        self.composed[section_idx] = compose_section(&self.document.sections[section_idx]);
+        self.composed[section_idx] = compose_section_with_horizontal_shaping(
+            &self.document.sections[section_idx],
+            &self.styles,
+        );
         self.mark_section_dirty(section_idx);
         // 전체 문단 dirty (모두 재측정 필요)
         if section_idx < self.dirty_paragraphs.len() {
@@ -3984,7 +4020,8 @@ impl DocumentCore {
     pub(crate) fn recompose_paragraph(&mut self, section_idx: usize, para_idx: usize) {
         self.invalidate_page_tree_cache();
         let para = &self.document.sections[section_idx].paragraphs[para_idx];
-        self.composed[section_idx][para_idx] = compose_paragraph(para);
+        self.composed[section_idx][para_idx] =
+            compose_paragraph_with_horizontal_shaping(para, &self.styles);
         self.mark_section_dirty(section_idx);
         self.mark_paragraph_dirty(section_idx, para_idx);
     }
@@ -3993,7 +4030,7 @@ impl DocumentCore {
     pub(crate) fn insert_composed_paragraph(&mut self, section_idx: usize, para_idx: usize) {
         self.invalidate_page_tree_cache();
         let para = &self.document.sections[section_idx].paragraphs[para_idx];
-        let composed = compose_paragraph(para);
+        let composed = compose_paragraph_with_horizontal_shaping(para, &self.styles);
         self.composed[section_idx].insert(para_idx, composed);
         self.mark_section_dirty(section_idx);
         // measured_sections: 인덱스 조정으로 기존 측정값 재사용 (전체 재측정 회피)
@@ -4086,16 +4123,13 @@ impl DocumentCore {
     /// 상태를 전부 비우고 재조판까지 한 번에 끝낸다 — 돌아온 뒤 "나중에 다시 계산해야
     /// 한다"고 남겨 두는 표식은 없다.
     ///
-    /// 파생 순서는 소비 순서와 같다: 스타일 → 문단 구성 → (정규화·측정) → 페이지네이션 →
-    /// 페이지 트리. 앞 단계를 뒤 단계보다 늦게 만들면 같은 패스 안에서 옛 값이 섞인다.
+    /// 파생 순서는 소비 순서와 같다: 스타일 → exact source/context → 문단 구성 →
+    /// (정규화·측정) → 페이지네이션 → 페이지 트리. 앞 단계를 뒤 단계보다 늦게
+    /// 만들면 같은 패스 안에서 옛 값이 섞인다.
     pub(crate) fn rebuild_derived_state(&mut self) {
         self.rebuild_resolved_styles();
-        self.composed = self
-            .document
-            .sections
-            .iter()
-            .map(|s| compose_section(s))
-            .collect();
+        self.rebuild_embedded_exact_font_sources();
+        self.recompose_all_with_horizontal_shaping();
         self.mark_all_sections_dirty();
         self.measured_tables.clear();
         self.measured_sections.clear();
@@ -4472,8 +4506,7 @@ impl DocumentCore {
     fn paginate_pass(&mut self, force_breaks: &[std::collections::HashSet<usize>]) {
         // [#4968 R4C-3] 이번 pass의 모든 fresh-layout 경로가 동일한 exact-source
         // generation을 읽는다. 등록 source가 없으면 None으로 K0 fast path를 고정한다.
-        self.styles.kerning_measurement_context =
-            self.layout_engine.kerning_measurement_context_snapshot();
+        self.ensure_exact_font_measurement_contexts();
         #[cfg(not(target_arch = "wasm32"))]
         let issue2424_profile_enabled =
             std::env::var("RHWP_2424_PROFILE").is_ok_and(|value| !value.is_empty() && value != "0");

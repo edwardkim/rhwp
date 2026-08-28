@@ -106,6 +106,149 @@ fn emitted_run_layout_positions(
     (width, Some(positions))
 }
 
+/// Q2-D4-B 최초 lane의 문단 전체 feature detection이다. 버전이나 파일 형식은
+/// 보지 않고 최종 composed surface와 현재 style capability만 판정한다.
+fn horizontal_shaping_initial_lane_preflight(
+    composed: &ComposedParagraph,
+    para: Option<&Paragraph>,
+    styles: &ResolvedStyleSet,
+    start_line: usize,
+    end_line: usize,
+    alignment: Alignment,
+    para_border_fill_id: u16,
+) -> bool {
+    let (Some(para), Some(context), Some(outcome)) = (
+        para,
+        styles.horizontal_shaping_context.as_ref(),
+        composed.horizontal_shaping.as_ref(),
+    ) else {
+        return false;
+    };
+    let (Some(line), Some(final_line)) = (composed.lines.first(), outcome.lines.first()) else {
+        return false;
+    };
+    let Some(run) = line.runs.first() else {
+        return false;
+    };
+    let Some(target) = final_line.target_runs.first() else {
+        return false;
+    };
+    let style = resolved_to_text_style(styles, run.char_style_id, run.lang_index);
+    let scalar_count = run.text.chars().count();
+    let style_surface_supported = !style.bold
+        && !style.italic
+        && style.font_size.is_finite()
+        && style.font_size > 0.0
+        && style.font_size <= 4_096.0
+        && style.ratio.is_finite()
+        && style.ratio > 0.0
+        && style.ratio < 0.999
+        && style.letter_spacing.abs() <= f64::EPSILON
+        && style.underline == UnderlineType::None
+        && !style.strikethrough
+        && style.outline_type == 0
+        && style.shadow_type == 0
+        && !style.emboss
+        && !style.engrave
+        && !style.superscript
+        && !style.subscript
+        && style.emphasis_dot == 0
+        && crate::model::color::char_shade(style.shade_color).is_none();
+    let para_style_supported = styles
+        .para_styles
+        .get(composed.para_style_id as usize)
+        .is_some_and(|style| {
+            style.alignment == Alignment::Left
+                && style.border_fill_id == 0
+                && style.condense_min_space == 0
+                && !style.auto_tab_right
+        });
+    let raw_vertical_positioning_is_zero = target
+        .measurement
+        .applied
+        .glyphs
+        .iter()
+        .all(|glyph| glyph.y_offset == 0 && glyph.y_advance == 0);
+
+    start_line == 0
+        && end_line >= composed.lines.len()
+        && composed.lines.len() == 1
+        && line.runs.len() == 1
+        && !line.has_line_break
+        && line.char_start == 0
+        && composed.numbering_text.is_none()
+        && composed.inline_controls.is_empty()
+        && composed.tac_controls.is_empty()
+        && composed.footnote_positions.is_empty()
+        && composed.tab_extended.is_empty()
+        && para.controls.is_empty()
+        && para.range_tags.is_empty()
+        && para.field_ranges.is_empty()
+        && para.orphan_field_ends.is_empty()
+        && !para.text.chars().any(|character| {
+            matches!(character, '\t' | '\n' | '\r' | '\u{fffc}') || character.is_control()
+        })
+        && para.text == run.text
+        && !run.text.is_empty()
+        && run.display_text.is_none()
+        && run.char_overlap.is_none()
+        && run.footnote_marker.is_none()
+        && alignment == Alignment::Left
+        && para_border_fill_id == 0
+        && style_surface_supported
+        && para_style_supported
+        && outcome.lines.len() == 1
+        && final_line.scalar_start == 0
+        && final_line.scalar_end == scalar_count
+        && final_line.target_runs.len() == 1
+        && target.scalar_start == 0
+        && target.scalar_end == scalar_count
+        && target.measurement.code_point_count == scalar_count
+        && target.measurement.registry_generation == context.registry_generation()
+        && raw_vertical_positioning_is_zero
+}
+
+/// Mapping, exact-source certification, page attach가 모두 성공한 뒤에만
+/// measurement advance를 반환한다. None이면 호출자는 K1/K0 legacy 경로를 그대로 탄다.
+fn attach_horizontal_shaping_initial_lane(
+    tree: &mut PageLayoutContext,
+    composed: &ComposedParagraph,
+    para: &Paragraph,
+    styles: &ResolvedStyleSet,
+    run: &ComposedTextRun,
+    node_id: NodeId,
+    scalar_start: usize,
+    origin_x_px: f64,
+) -> Option<f64> {
+    let outcome = composed.horizontal_shaping.as_ref()?;
+    let context = styles.horizontal_shaping_context.as_ref()?;
+    let mapped = crate::renderer::shaping_composition::map_horizontal_shaping_emitted_run(
+        outcome,
+        crate::renderer::shaping_composition::HorizontalShapingEmittedRunCandidate {
+            node_id,
+            paragraph_text: &para.text,
+            emitted_text: &run.text,
+            scalar_start,
+            origin_x_px,
+            layout_positions_present: false,
+            display_projection_present: false,
+            horizontal_ltr_bidi0: true,
+            has_field_or_note_split: false,
+            has_char_overlap: false,
+            has_border_or_background: false,
+            has_decoration: false,
+        },
+    )
+    .ok()?;
+    let decision = crate::renderer::shaping_composition::certify_horizontal_shaping_mapped_run(
+        context, &mapped,
+    )
+    .ok()?;
+    tree.attach_horizontal_shaping_sidecar(mapped.node_id, mapped.range, decision)
+        .ok()?;
+    Some(mapped.bbox_width_px)
+}
+
 /// `RHWP_LAYOUT_DEBUG=1` 로 활성화되는 layout 디버그 로깅 여부.
 /// Phase 1 (#517) — 본질 정정 (#467/#491/#496) 시 결함 측정·재현 자동화에 사용.
 #[inline]
@@ -630,6 +773,7 @@ struct RunEmitVars {
     extra_dash_sp: f64,
     extra_word_sp: f64,
     has_tabs: bool,
+    horizontal_shaping_initial_lane: bool,
     is_last_line_of_para: bool,
     line_height: f64,
     line_idx: usize,
@@ -3096,6 +3240,15 @@ impl LayoutEngine {
         } else {
             None
         };
+        let horizontal_shaping_initial_lane = horizontal_shaping_initial_lane_preflight(
+            composed,
+            para,
+            styles,
+            start_line,
+            end,
+            alignment,
+            para_border_fill_id,
+        );
 
         // 문단 앞 간격 (첫 줄일 때만)
         // 단/페이지의 맨 처음 문단(column-top)은 spacing_before 를 통째 적용하면 한컴보다
@@ -4471,6 +4624,7 @@ impl LayoutEngine {
                     extra_dash_sp,
                     extra_word_sp,
                     has_tabs,
+                    horizontal_shaping_initial_lane,
                     is_last_line_of_para,
                     line_height,
                     line_idx,
@@ -5030,6 +5184,7 @@ impl LayoutEngine {
             extra_dash_sp,
             extra_word_sp,
             has_tabs,
+            horizontal_shaping_initial_lane,
             is_last_line_of_para,
             line_height,
             line_idx,
@@ -5337,15 +5492,49 @@ impl LayoutEngine {
                     .any(|character| matches!(character, '\t' | '\n' | '\r'))
                 && !has_tac_boundary
                 && !has_note_boundary;
-            let (full_width, layout_positions) = emitted_run_layout_positions(
-                kerning_layout_session,
-                ExactFontSlot::new(run.char_style_id, run.lang_index),
-                effective_text_for_metrics(run),
-                &text_style,
-                full_width,
-                line_trailing_space_by_run[run_idx],
-                exact_replay_eligible,
-            );
+            let shaping_candidate = horizontal_shaping_initial_lane
+                && run_idx == 0
+                && run_char_pos == 0
+                && char_offset == 0
+                && !has_tabs
+                && tac_offsets_px.is_empty()
+                && fn_positions.is_empty()
+                && shape_markers.is_empty()
+                && run_border_fill_id == 0
+                && extra_word_sp.abs() <= f64::EPSILON
+                && extra_char_sp.abs() <= f64::EPSILON
+                && extra_dash_sp.abs() <= f64::EPSILON
+                && !renders_synthetic_wrap_trailing_space;
+            // NodeId를 먼저 고정하되 attach가 실패하면 같은 id로 legacy TextRun을
+            // 만든다. 따라서 실패는 id hole이나 K1 suppression을 남기지 않는다.
+            let reserved_shaping_run_id = shaping_candidate.then(|| tree.next_id());
+            let shaping_width = reserved_shaping_run_id.and_then(|node_id| {
+                para.and_then(|para| {
+                    attach_horizontal_shaping_initial_lane(
+                        tree,
+                        composed,
+                        para,
+                        styles,
+                        run,
+                        node_id,
+                        run_char_pos,
+                        x,
+                    )
+                })
+            });
+            let (full_width, layout_positions) = if let Some(shaping_width) = shaping_width {
+                (shaping_width, None)
+            } else {
+                emitted_run_layout_positions(
+                    kerning_layout_session,
+                    ExactFontSlot::new(run.char_style_id, run.lang_index),
+                    effective_text_for_metrics(run),
+                    &text_style,
+                    full_width,
+                    line_trailing_space_by_run[run_idx],
+                    exact_replay_eligible,
+                )
+            };
             // 탭 리더 계산: 탭이 포함된 run에서 채움 기호 정보 추출
             // inline_tabs를 일시 제거하여 tab_stops 기반 위치 계산과 일관되게 함
             if has_tabs && run.text.contains('\t') {
@@ -5593,7 +5782,7 @@ impl LayoutEngine {
                     if run_fn_markers.is_empty() {
                         // 각주 없음: 기존 방식으로 전체 TextRun 생성
                         let run_x = x;
-                        let run_id = tree.next_id();
+                        let run_id = reserved_shaping_run_id.unwrap_or_else(|| tree.next_id());
                         let run_node = RenderNode::new(
                             run_id,
                             RenderNodeType::TextRun(TextRunNode {
@@ -8089,6 +8278,7 @@ mod trailing_tac_width_tests {
             tac_controls: Vec::new(),
             footnote_positions: Vec::new(),
             tab_extended: Vec::new(),
+            horizontal_shaping: None,
         }
     }
 

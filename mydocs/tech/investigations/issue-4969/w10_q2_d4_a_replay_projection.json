@@ -1,0 +1,114 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q2-d4-a-replay-projection-result",
+  "issue": 4969,
+  "stage": "W10-Q2-D4-A",
+  "status": "qualified-awaiting-d4-b-approval",
+  "productOutputChange": false,
+  "productConsumerCount": 0,
+  "projection": {
+    "drawParamsSsot": "renderer::condensed_ratio_draw_params",
+    "fontSizePx": 10.0,
+    "widthRatio": 0.8,
+    "drawFontSizePx": 8.94427190999916,
+    "placementScaleX": 0.8944271909999159,
+    "paintStyleRatio": 1.0,
+    "glyphTransforms": null,
+    "strictVisualEligible": true,
+    "diagnosticReason": "q2CommonShapingCondensedDrawProjectionV1",
+    "roundTripTolerancePx": 1e-9,
+    "roundTripMismatchCount": 0
+  },
+  "oracle": {
+    "glyphIds": [614, 1230, 1497, 2085],
+    "pagePositionsX": [0.0, 7.728, 15.456, 15.456],
+    "pageAdvancesX": [7.728, 7.728, 0.0, 0.0],
+    "localPositionsX": [
+      0.0,
+      8.640166665059187,
+      17.280333330118374,
+      17.280333330118374
+    ],
+    "localAdvancesX": [8.640166665059187, 8.640166665059187, 0.0, 0.0],
+    "pageTotalAdvancePx": 15.456,
+    "glyphOrClusterMutationCount": 0
+  },
+  "sourceCertificate": {
+    "owner": "ExactFontSourceRegistry Arc<[u8]>",
+    "sha256": "2f86ef9a52acb6d1dad9d915843239123b635d97edd88fd0573a88ffcb4e16f1",
+    "bytes": 456688,
+    "faceIndex": 0,
+    "identityFields": [
+      "registry-generation",
+      "sha256",
+      "byte-length",
+      "face-index",
+      "units-per-em"
+    ],
+    "arcPointerShared": true,
+    "byteCopyCount": 0,
+    "debugRedacted": true,
+    "serialized": false
+  },
+  "failClosed": {
+    "certificateRequiredForLowering": true,
+    "legacyUncertifiedSidecarRemainsValid": true,
+    "staleGenerationRejected": true,
+    "nonzeroDesignYOffsetOrAdvance": "verticalPositioningAuthorityPending",
+    "resourceMutationOnReject": false,
+    "textRunFallbackPreserved": true
+  },
+  "limits": {
+    "glyphsPerRun": 4096,
+    "clustersPerRun": 4096,
+    "portableFontBlobBytes": 33554432,
+    "commonShapingFontBytesPerPage": 67108864
+  },
+  "privacy": {
+    "rawTextInTrace": false,
+    "fontPayloadInTrace": false,
+    "localPathInTrace": false,
+    "privateCorpusUsed": false
+  },
+  "validation": {
+    "nativeSourceIntegration": {
+      "passed": 14,
+      "failed": 0
+    },
+    "nativeFocused": {
+      "passed": 6,
+      "failed": 0,
+      "runtimeSeconds": 0.28
+    },
+    "nodeWasmSourceIntegration": {
+      "passed": 14,
+      "failed": 0
+    },
+    "nodeWasmFocused": {
+      "passed": 6,
+      "failed": 0,
+      "runtimeSeconds": 1.29
+    },
+    "libraryRegression": {
+      "passed": 3889,
+      "failed": 0,
+      "ignored": 13,
+      "runtimeSeconds": 216.49
+    },
+    "workspaceAuxiliaryLibraries": {
+      "passed": 182,
+      "failed": 0
+    },
+    "cargoClippyNativeDenyWarnings": "pass",
+    "cargoClippyWasm32DenyWarnings": "pass",
+    "integrationManifestPolicy": {
+      "passed": 20,
+      "failed": 0
+    },
+    "focusedRustfmt": "pass",
+    "diffCheck": "pass",
+    "productLowererCallsites": 0,
+    "generatedIntegrationArtifacts": 0
+  },
+  "next": "maintainer approval required for Q2-D4-B product activation"
+}

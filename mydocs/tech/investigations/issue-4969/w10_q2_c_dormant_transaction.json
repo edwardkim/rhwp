@@ -1,0 +1,111 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q2-c-dormant-transaction-result",
+  "issue": 4969,
+  "stage": "W10-Q2-C",
+  "status": "qualified",
+  "productOutputChange": false,
+  "productPublished": false,
+  "implementation": {
+    "q2c0": "feature-detected-paragraph-segmentation-and-eligibility",
+    "q2c1": "cluster-aware-single-width-owner",
+    "q2c2": "bounded-final-line-reshape-and-convergence",
+    "productConsumerCount": 0,
+    "activationDeferredUntil": "Q2-D emitted-run Arc sidecar"
+  },
+  "firstEligibleSubset": {
+    "feature": "direct-old-hangul-jamo-present",
+    "writingMode": "horizontal-tb",
+    "direction": "ltr",
+    "bidiLevel": 0,
+    "modelTextMatchesShapingText": true,
+    "variationAxes": [],
+    "syntheticStyle": false,
+    "letterSpacingPx": 0.0,
+    "condenseMinSpace": 0,
+    "inlineControls": false,
+    "tabs": false,
+    "rotation": false,
+    "charOverlap": false
+  },
+  "oldHangulFixture": {
+    "effectiveFontSizePx": 10.0,
+    "widthRatio": 0.8,
+    "fallbackParagraphPx": 16.0,
+    "shapedParagraphPx": 15.456,
+    "unsplittableScalarRange": [0, 3],
+    "unsplittableRangePx": 7.728,
+    "internalRangeRejected": [1, 3],
+    "candidateInput": [0, 1, 2, 3, 4],
+    "availableWidthPx": 10.0,
+    "finalLineRanges": [[0, 3], [3, 4]],
+    "finalLineWidthsPx": [7.728, 7.728]
+  },
+  "ownership": {
+    "target": "common-horizontal-shaping-measurement",
+    "nonTarget": "frozen-w9-k1-or-existing-k0-positions",
+    "doubleGposAllowed": false,
+    "partialSegmentCommitAllowed": false,
+    "finalRunArcPreserved": true,
+    "lineBoundaryPublished": false
+  },
+  "limits": {
+    "paragraphSegments": 4096,
+    "candidateBoundaries": 4097,
+    "shapingAttempts": 4096,
+    "lineDecisionRetries": 2,
+    "attemptIdOverflowDuplicates": 0
+  },
+  "rollback": {
+    "unit": "whole-approved-paragraph-transaction",
+    "fallbackOwners": ["w9-k1", "existing-k0"],
+    "laterSegmentFailureDiscardsEarlierSuccess": true,
+    "fallbackTargetRunCount": 0,
+    "typedCases": [
+      "exact-source-unavailable",
+      "hard-boundary-crossed",
+      "style-boundary-crossed",
+      "cluster-boundary-mismatch",
+      "candidate-limit-exceeded",
+      "candidate-input-malformed",
+      "available-width-malformed",
+      "attempt-limit-exceeded",
+      "line-decision-not-converged"
+    ]
+  },
+  "privacy": {
+    "rawTextInTrace": false,
+    "fontPayloadInTrace": false,
+    "localPathInTrace": false,
+    "privateCorpusUsed": false
+  },
+  "validation": {
+    "nativeFocused": {
+      "passed": 8,
+      "failed": 0,
+      "runtimeSeconds": 0.15
+    },
+    "nodeWasmFocused": {
+      "passed": 8,
+      "failed": 0,
+      "runtimeSeconds": 0.70,
+      "isolatedHarnessRemoved": true
+    },
+    "nativeWasmParityMismatches": 0,
+    "q2bFocusedRegression": {
+      "passed": 5,
+      "failed": 0
+    },
+    "q2aQ1FocusedRegression": {
+      "passed": 12,
+      "failed": 0
+    },
+    "cargoCheckLib": "pass",
+    "cargoClippyLibDenyWarnings": "pass",
+    "cargoClippyWasm32LibDenyWarnings": "pass",
+    "focusedRustfmt": "pass",
+    "diffCheck": "pass",
+    "generatedIntegrationArtifacts": 0
+  },
+  "next": "separate maintainer approval required before Q2-D atomic product activation"
+}
