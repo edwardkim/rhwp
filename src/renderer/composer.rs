@@ -318,7 +318,8 @@ pub fn compose_paragraph(para: &Paragraph) -> ComposedParagraph {
                             t, seg_width, para,
                         ) =>
                 {
-                    let table_width: u32 = t.get_column_widths().iter().sum();
+                    // [#5785 후속] 선언 폭 우선.
+                    let table_width: u32 = t.flow_width_hu();
                     Some((pos, table_width as i32, i))
                 }
                 _ => None,

@@ -522,7 +522,8 @@ fn push_tac_post_f081c_line(
     } else {
         12.0
     };
-    let table_width_hu: u32 = table.get_column_widths().iter().sum();
+    // [#5785 후속] 표 오른쪽 끝 마커 위치도 흐름 폭과 같은 규칙을 써야 한다.
+    let table_width_hu: u32 = table.flow_width_hu();
     let marker_x = col_area.x + hwpunit_to_px(table_width_hu as i32, dpi);
     let width = (font_size * 0.45 * marker.count as f64).max(4.0);
     let stroke_width = (font_size * 0.055).clamp(0.5, 1.0);
