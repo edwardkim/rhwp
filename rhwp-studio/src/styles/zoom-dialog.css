@@ -72,13 +72,13 @@
 }
 
 .zoom-dialog-number[aria-invalid='true'] {
-  border-color: var(--color-danger, #b91c1c);
-  outline-color: var(--color-danger, #b91c1c);
+  border-color: var(--ui-danger-strong);
+  outline-color: var(--ui-danger-strong);
 }
 
 .zoom-dialog-custom-error {
   margin: 2px 0 3px 22px;
-  color: var(--color-danger, #b91c1c);
+  color: var(--ui-danger-strong);
   font-size: var(--font-size-sm);
   line-height: 1.35;
 }

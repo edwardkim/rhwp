@@ -7,6 +7,7 @@ const main = readFileSync(new URL('../src/main.ts', import.meta.url), 'utf8');
 const commands = readFileSync(new URL('../src/command/commands/view.ts', import.meta.url), 'utf8');
 const dialog = readFileSync(new URL('../src/ui/zoom-dialog.ts', import.meta.url), 'utf8');
 const style = readFileSync(new URL('../src/style.css', import.meta.url), 'utf8');
+const zoomStyle = readFileSync(new URL('../src/styles/zoom-dialog.css', import.meta.url), 'utf8');
 const viewport = readFileSync(new URL('../src/view/viewport-manager.ts', import.meta.url), 'utf8');
 const dialogBase = readFileSync(new URL('../src/ui/dialog.ts', import.meta.url), 'utf8');
 
@@ -45,6 +46,9 @@ test('잘못된 사용자 배율은 대화상자를 유지하고 오류 접근�
   assert.match(dialog, /setAttribute\('aria-invalid', 'true'\)/);
   assert.match(dialog, /setAttribute\('role', 'alert'\)/);
   assert.match(dialog, /this\.customInput\.focus\(\);\s*this\.customInput\.select\(\);/);
+  assert.match(zoomStyle, /zoom-dialog-number\[aria-invalid='true'\][\s\S]*?var\(--ui-danger-strong\)/);
+  assert.match(zoomStyle, /zoom-dialog-custom-error[\s\S]*?color:\s*var\(--ui-danger-strong\)/);
+  assert.doesNotMatch(zoomStyle, /--color-danger|#b91c1c/);
 });
 
 test('사용자 배율 입력의 Enter는 확인 버튼을 사용하고 종료 시 listener를 제거한다', () => {

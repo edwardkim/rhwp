@@ -2,7 +2,7 @@
 
 - **이슈**: [#6109](https://github.com/edwardkim/rhwp/issues/6109)
 - **브랜치**: `codex/issue-6109-zoom-dialog-transaction`
-- **stack base**: `codex/issue-6108-zoom-fit` `534cf40ed`
+- **stack base**: `codex/issue-6108-zoom-fit` `711365b35`
 - **문서 성격**: 구현 전 파일 단위 설계
 
 ## Stage 1 — 사용자 배율 검증·접근성 계약

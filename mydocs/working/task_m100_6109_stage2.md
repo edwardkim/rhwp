@@ -2,7 +2,7 @@
 
 - **이슈**: [#6109](https://github.com/edwardkim/rhwp/issues/6109)
 - **브랜치**: `codex/issue-6109-zoom-dialog-transaction`
-- **stack base**: `codex/issue-6108-zoom-fit` `534cf40ed`
+- **stack base**: `codex/issue-6108-zoom-fit` `711365b35`
 - **보고일**: 2026-08-28 KST
 - **단계 상태**: 구현·focused test·결과 승인 완료
 
