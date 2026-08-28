@@ -313,6 +313,32 @@ mod tests {
     }
 
     #[test]
+    fn issue_4135_multi_letter_column_resolves_after_z() {
+        let ctx = TableContext {
+            row_count: 2,
+            col_count: 27,
+            current_row: 0,
+            current_col: 0,
+        };
+        let cell = |col: usize, _row: usize| Some((col + 1) as f64);
+        let result = evaluate_formula("=AA1", &ctx, &cell).unwrap();
+        assert_eq!(result, 27.0);
+    }
+
+    #[test]
+    fn issue_4135_range_can_cross_z_to_aa() {
+        let ctx = TableContext {
+            row_count: 2,
+            col_count: 27,
+            current_row: 0,
+            current_col: 0,
+        };
+        let cell = |col: usize, _row: usize| Some((col + 1) as f64);
+        let result = evaluate_formula("=SUM(Z1:AA1)", &ctx, &cell).unwrap();
+        assert_eq!(result, 53.0);
+    }
+
+    #[test]
     fn test_arithmetic() {
         let ctx = make_ctx();
         // A1(11) + B2(22) * 2 = 11 + 44 = 55

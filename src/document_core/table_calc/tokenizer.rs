@@ -179,6 +179,15 @@ mod tests {
     }
 
     #[test]
+    fn issue_4135_multi_letter_column_is_one_cell_ref() {
+        let tokens = tokenize("=AA1");
+        assert!(
+            matches!(tokens.as_slice(), [Token::CellRef(_, 1)]),
+            "AA1 must be tokenized as one cell reference: {tokens:?}"
+        );
+    }
+
+    #[test]
     fn test_function_call() {
         let tokens = tokenize("=SUM(A1:B5)");
         assert_eq!(

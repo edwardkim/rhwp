@@ -229,6 +229,15 @@ mod tests {
     }
 
     #[test]
+    fn issue_4135_multi_letter_column_parses_as_cell_ref() {
+        let ast = parse_formula("=AA1").unwrap();
+        assert!(
+            matches!(ast, FormulaNode::CellRef { row: 1, .. }),
+            "AA1 must remain a cell reference in the AST: {ast:?}"
+        );
+    }
+
+    #[test]
     fn test_cell_add() {
         let ast = parse_formula("=A1+B3").unwrap();
         match ast {

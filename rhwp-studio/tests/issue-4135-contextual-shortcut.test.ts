@@ -2,7 +2,26 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
-import { resolveCellBlockCtrlShiftS } from '../src/command/contextual-shortcut.ts';
+import * as contextualShortcut from '../src/command/contextual-shortcut.ts';
+
+const { resolveCellBlockCtrlShiftS } = contextualShortcut;
+
+type CellBlockLetterResolver = (
+  event: KeyboardEvent,
+  context: { inCellSelectionMode: boolean },
+) => { kind: 'dispatch'; commandId: 'table:cell-split' | 'table:cell-merge' } | null;
+
+function cellBlockLetterResolver(): CellBlockLetterResolver {
+  const resolver = (contextualShortcut as unknown as {
+    resolveCellBlockLetterShortcut?: CellBlockLetterResolver;
+  }).resolveCellBlockLetterShortcut;
+  assert.equal(
+    typeof resolver,
+    'function',
+    'Recovery R1: 수정자 없는 셀 블록 물리 키 resolver가 필요하다',
+  );
+  return resolver;
+}
 
 function key(input: Partial<KeyboardEvent>): KeyboardEvent {
   return {
@@ -97,4 +116,56 @@ test('InputHandler는 IME와 수정자 없는 S 분기보다 먼저 셀 블록 �
     source,
     /if \(!e\.ctrlKey && !e\.metaKey && !e\.altKey && \(e\.key === 's' \|\| e\.key === 'S'\)\)/,
   );
+});
+
+test('Recovery R1: 영문·한글·Process KeyS는 모두 셀 나누기를 소유한다', () => {
+  const resolve = cellBlockLetterResolver();
+  const context = { inCellSelectionMode: true };
+  for (const event of [
+    key({ key: 's', code: 'KeyS' }),
+    key({ key: 'S', code: 'KeyS', shiftKey: true }),
+    key({ key: 'ㄴ', code: 'KeyS' }),
+    key({ key: 'Process', code: 'KeyS' }),
+  ]) {
+    assert.deepEqual(resolve(event, context), {
+      kind: 'dispatch',
+      commandId: 'table:cell-split',
+    });
+  }
+});
+
+test('Recovery R1: 영문·한글·Process KeyM은 모두 셀 합치기를 소유한다', () => {
+  const resolve = cellBlockLetterResolver();
+  const context = { inCellSelectionMode: true };
+  for (const event of [
+    key({ key: 'm', code: 'KeyM' }),
+    key({ key: 'M', code: 'KeyM', shiftKey: true }),
+    key({ key: 'ㅡ', code: 'KeyM' }),
+    key({ key: 'Process', code: 'KeyM' }),
+  ]) {
+    assert.deepEqual(resolve(event, context), {
+      kind: 'dispatch',
+      commandId: 'table:cell-merge',
+    });
+  }
+});
+
+test('Recovery R1: 셀 블록 밖이거나 Ctrl/Meta/Alt 수정자가 있으면 S/M을 소유하지 않는다', () => {
+  const resolve = cellBlockLetterResolver();
+  assert.equal(resolve(key({ key: 's', code: 'KeyS' }), { inCellSelectionMode: false }), null);
+  assert.equal(resolve(key({ key: 's', code: 'KeyS', ctrlKey: true }), { inCellSelectionMode: true }), null);
+  assert.equal(resolve(key({ key: 'm', code: 'KeyM', metaKey: true }), { inCellSelectionMode: true }), null);
+  assert.equal(resolve(key({ key: 'ㄴ', code: 'KeyS', altKey: true }), { inCellSelectionMode: true }), null);
+});
+
+test('Recovery R1: 물리 S/M 셀 명령은 IME 조기 반환보다 먼저 처리한다', () => {
+  const source = readFileSync(
+    new URL('../src/engine/input-handler-keyboard.ts', import.meta.url),
+    'utf8',
+  );
+  const contextual = source.indexOf('dispatchCellBlockLetterShortcut.call(this, e)');
+  const ime = source.indexOf('if (e.isComposing || e.keyCode === 229) {');
+
+  assert.ok(contextual >= 0, '셀 블록 S/M 문맥 단축키 호출이 있어야 한다');
+  assert.ok(ime > contextual, '한글 IME 조기 반환보다 먼저 S/M을 처리해야 한다');
 });

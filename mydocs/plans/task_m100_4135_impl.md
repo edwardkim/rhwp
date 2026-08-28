@@ -8,7 +8,7 @@
 >
 > 브랜치: `codex/issue-4135-contextual-shortcut`
 >
-> 상태: **Recovery 명칭 정정 완료, R1 착수 승인 대기 — 승인 전 제품·테스트 소스 변경 금지**
+> 상태: **Recovery R1 RED 완료, 결과 승인 대기 — R2 제품 소스 변경 금지**
 
 ## 1. 문제를 다시 정의한다
 
@@ -85,7 +85,8 @@
 - 키보드 테스트에 영문/한글/Process `KeyS`와 대칭 `KeyM`, 수정자 가드를 추가한다.
 - Rust 계산식 테스트에 `Z`, `AA`, 다중 문자 열 범위를 추가해 현 제한을 RED로 고정한다.
 - 제품 코드는 바꾸지 않는다.
-- focused RED 결과와 실패 이유를 `mydocs/working/task_m100_4135_stage1.md`에 기록하고 커밋한다.
+- focused RED 결과와 실패 이유를 `mydocs/working/task_m100_4135_recovery_r1.md`에 기록하고
+  커밋한다.
 - **중단점**: Recovery R1 결과를 보고한 뒤 작업지시자의 별도 승인을 기다린다.
 
 ### Recovery R2 — 선택 범위 블록 합계 구현
@@ -95,7 +96,7 @@
 - `blockCalcCommand()`의 `canExecute`와 실행 경로를 실제 다중 셀 블록에 맞춘다.
 - 모든 job을 먼저 dry-run하고, 전부 성공할 때 한 snapshot에서 결과 셀들을 기록한다.
 - Recovery R1 RED와 계산식/undo focused 테스트를 GREEN으로 만든다.
-- 결과를 `mydocs/working/task_m100_4135_stage2.md`에 기록하고 커밋한다.
+- 결과를 `mydocs/working/task_m100_4135_recovery_r2.md`에 기록하고 커밋한다.
 - **중단점**: Recovery R2 결과를 보고한 뒤 작업지시자의 별도 승인을 기다린다.
 
 ### Recovery R3 — 한글 IME 셀 나누기·합치기 구현
@@ -104,7 +105,7 @@
 - 한글 자모와 `Process` 이벤트를 소비해 `ㄴ`/`ㅡ`가 셀에 들어가지 않게 한다.
 - `Ctrl/Cmd+Shift+S` 문맥 resolver, 일반 Save As, embed consume-only 계약을 보존한다.
 - 키보드 focused 테스트와 기존 contextual shortcut 테스트를 GREEN으로 만든다.
-- 결과를 `mydocs/working/task_m100_4135_stage3.md`에 기록하고 커밋한다.
+- 결과를 `mydocs/working/task_m100_4135_recovery_r3.md`에 기록하고 커밋한다.
 - **중단점**: Recovery R3 결과를 보고한 뒤 작업지시자의 별도 승인을 기다린다.
 
 ### Recovery R4 — 통합·실브라우저 검증과 최종 판정
