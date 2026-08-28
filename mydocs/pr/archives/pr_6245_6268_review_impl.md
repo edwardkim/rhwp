@@ -38,12 +38,13 @@ last_verified: 2026-08-28
 
 - 원 PR head를 `upstream/prNNNN-head`로 fetch한 뒤 PR 번호 순서로 `git cherry-pick -x` 적용했다.
 - 적용 후 원 PR별 head SHA와 통합 브랜치의 최종 변경 내용을 비교했다. #6246은 force-push 이후
-  commit patch-id 비교가 의미 없어진 상태라, 최신 PR head가 바꾼 파일의 최종 diff가 통합 브랜치와
-  일치하는지 별도로 확인했다.
+  `git log --cherry-pick --right-only` 기준으로 최신 직렬화 commit 1개가 남지만, 최신 commit의
+  subList roundtrip test/golden 파일은 통합 head와 차이가 없고 focused #6186 2건도 다시 통과했다.
 - 2026-08-28 재확인 시 모든 포함 PR은 non-draft, 실패 check 0건, 진행 check 0건이었다.
 - 작업지시자 지시에 따라 이 목록 이후 새로 발견되는 PR은 승인 없이 자동 포함하지 않는다.
 - #6246은 검토 중 head가 `89eeca512dcf`에서 `37abb2599dca`로 force-push 되었다. 최신 head와 비교해
-  최종 diff가 일치하도록 stale conflict 보정 흔적을 제거했고, #6186 focused 2건을 다시 통과시켰다.
+  stale conflict 보정 흔적을 제거했고, 최신 직렬화 commit의 test/golden 산출물이 통합 head와 맞는지
+  확인한 뒤 #6186 focused 2건을 다시 통과시켰다.
 
 ## 메인터너 보정
 

@@ -24,8 +24,9 @@ last_verified: 2026-08-28
 계약 test가 함께 들어와 회귀 방어가 가능하다.
 
 검토 중 원 PR head가 `89eeca512dcf`에서 `37abb2599dca`로 force-push 되었다. 통합 브랜치에는 이전
-head의 stale helper 형태가 남아 있었으므로, 최신 head의 inline match 구조와 최종 diff가 일치하도록
-메인터너 정렬 커밋을 추가했다.
+head의 stale helper 형태가 남아 있었으므로 메인터너 정렬 커밋으로 제거했다. force-push 이력 때문에
+`git log --cherry-pick --right-only`에는 최신 직렬화 commit 1개가 남지만, 해당 commit의 test/golden
+파일은 통합 head와 차이가 없고 focused #6186 2건을 다시 통과했다.
 
 ## 증적과 검증
 
@@ -41,8 +42,9 @@ head의 stale helper 형태가 남아 있었으므로, 최신 head의 inline mat
 
 ## 코멘트 처리
 
-merge 후 원 PR/issue 코멘트에는 force-push 이후 최신 head와 통합 branch의 최종 diff를 맞췄다는 점,
-그리고 `after_p2.png`/`oracle_p2.png` 직접 확인 결과를 적는다. 추가 visual sweep이 필요하면
+merge 후 원 PR/issue 코멘트에는 force-push 이후 stale helper 흔적을 제거했고 최신 직렬화 commit의
+test/golden 산출물과 focused 검증을 확인했다는 점, 그리고 `after_p2.png`/`oracle_p2.png` 직접 확인
+결과를 적는다. 추가 visual sweep이 필요하면
 `mydocs/manual/verification/visual_sweep_guide.md#github-merge-comment`에 따라 대표 `review_*.png`를
 `mydocs/pr/assets`에 보존하고, merge commit SHA 고정 raw URL로 댓글에 표시한다.
 
