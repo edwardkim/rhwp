@@ -242,6 +242,14 @@ export class CommandHistory {
       const evicted = this.undoStack.shift();
       if (wasm) evicted?.discard?.(wasm);
     }
+
+    // [#6332] 예산 불변식(live id <= SNAPSHOT_ID_BUDGET)의 남은 push 진입점.
+    // 현재 record 경로 커맨드는 스냅샷을 들지 않아 no-op 이지만, 스냅샷 보유
+    // 커맨드가 이 경로에 추가되면 execute 와 같은 강제 없이는 무통보 축출이
+    // 재발한다(#2328). push·축출 이후에 강제해야 방금 명령이 계수에 반영된다.
+    if (wasm) {
+      this.enforceSnapshotBudget(wasm);
+    }
   }
 
   canUndo(): boolean { return this.undoStack.length > 0; }

@@ -190,6 +190,19 @@ test('[결함1] 스냅샷 예산은 WASM 상한에서 순간 여유를 뺀 값�
     'execute 가 push 이후에 enforceSnapshotBudget 를 호출해야 함(전이면 미반영)');
 });
 
+test('[#6332] recordWithoutExecute 도 스냅샷 예산을 강제한다', () => {
+  // 예산 불변식의 undoStack push 진입점은 execute 와 recordWithoutExecute 둘이다.
+  // execute 쪽 강제는 위 [결함1] 이 고정한다 — 이 테스트는 record 경로가 미보호로
+  // 남지 않게 고정한다. 현재 record 커맨드는 스냅샷 0개라 no-op 방어지만, 스냅샷
+  // 보유 커맨드가 이 경로에 추가되면 강제 없이는 무통보 축출이 재발한다(#2328).
+  const block = methodBlock(history, 'recordWithoutExecute(command: EditCommand, wasm?: WasmBridge): void {');
+  const idxPush = block.indexOf('this.undoStack.push(command)');
+  const idxEnforce = block.indexOf('this.enforceSnapshotBudget(wasm)');
+  assert.ok(idxPush !== -1, 'push 지점을 찾지 못함 — 시그니처가 바뀌었으면 가드 갱신');
+  assert.ok(idxEnforce !== -1 && idxPush < idxEnforce,
+    'recordWithoutExecute 가 push 이후에 enforceSnapshotBudget 를 호출해야 함');
+});
+
 test('[#5769] undo 도 스냅샷 id 를 늘리므로 undo 경로에서 예산을 강제한다', () => {
   // after 지연 저장 이후 undo 는 엔트리를 1슬롯 → 2슬롯으로 바꾼다. execute 에서만
   // 강제하면 예산을 채운 뒤 연속 undo 할 때 store 가 MAX 를 넘어 #2328 무통보 축출이
