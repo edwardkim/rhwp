@@ -1960,9 +1960,49 @@ impl HeightMeasurer {
                                         >= own_top + obj_h
                                 })
                         });
+                    // [#6280] 같은 흡수를 **저장 줄 높이 자체**로 적어 둔 모양.
+                    // 156742029 21쪽 `의원면직` 표의 셀[0]:
+                    //   p[0] text_len=0 ctrls=1  ls[0] vpos=0 lh=3000(40.0px)
+                    //   그림 h=2267(30.2px) tac=false TopAndBottom vert=Para(off=488)
+                    //                                        -> 흐름 높이 36.7px
+                    // 텍스트가 없는데 줄이 40px 인 것은 그 줄이 그림을 담으려고 그만큼
+                    // 잡혔다는 뜻이다. `vpos` 는 0 이라 위 증인에 안 걸리고, 문단이
+                    // 하나뿐이라 뒤 문단으로 밀림을 적을 자리도 없다. 이때 그림을 다시
+                    // 더하면 content 가 40.0+36.7=76.7 이 되어 선언 43.8 의 1.84배로
+                    // 부풀고, `valign=Center` 라 제목이 내려와 장식 막대를 덮는다.
+                    //
+                    // 같은 쪽 같은 서식의 통제군이 이 증인을 좁혀 준다 — `타기관 파견`
+                    // 표의 셀[0] 은 `lh=1400`(18.7px) < 그림 30.2px 라 줄이 그림을 담지
+                    // 못했고(그림이 줄 밖으로 나간다), 이 증인은 발화하지 않는다.
+                    let ladder_line_covers_object = cell.paragraphs.iter().any(|pp| {
+                        if !pp.text.trim().is_empty() {
+                            return false;
+                        }
+                        let obj_h = pp
+                            .controls
+                            .iter()
+                            .filter_map(|c| match c {
+                                Control::Picture(pic) => {
+                                    Some(self.non_inline_control_flow_height(&pic.common))
+                                }
+                                Control::Shape(sh) => {
+                                    Some(self.non_inline_control_flow_height(sh.common()))
+                                }
+                                _ => None,
+                            })
+                            .fold(0.0f64, f64::max);
+                        if obj_h <= 0.0 {
+                            return false;
+                        }
+                        pp.line_segs.first().is_some_and(|seg| {
+                            hwpunit_to_px(seg.line_height, self.dpi) + 0.5 >= obj_h
+                        })
+                    });
                     let trust_stored = (depth > 0 || table.common.treat_as_char)
                         && non_inline_h > 0.0
-                        && (ladder_absorbed_objects || ladder_pushed_following_line)
+                        && (ladder_absorbed_objects
+                            || ladder_pushed_following_line
+                            || ladder_line_covers_object)
                         && stored_extent > 0.0
                         && stored_extent + 0.5 < additive
                         && wrap_bottom <= stored_extent + 0.5;
