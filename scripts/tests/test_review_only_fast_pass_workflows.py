@@ -152,6 +152,237 @@ class ReviewOnlyFastPassWorkflowTests(unittest.TestCase):
         self.assertIn("allowPriorPrBase\n                  ? step.name.startsWith(identityPrefix)", workflow)
         self.assertIn("await renderDiffResult(sourceParent.sha, pr, true)", workflow)
 
+    def test_render_diff_trailing_bridge_reuses_prior_base_identity(self) -> None:
+        base_sha = "b" * 40
+        prior_base_sha = "a" * 40
+        code_candidate = "c" * 40
+        merge_sha = "m" * 40
+        review_tail = "r" * 40
+        files = [
+            {"filename": "src/renderer/layout.rs", "status": "modified"},
+            {"filename": "mydocs/orders/20260827.md", "status": "modified"},
+        ]
+        commits = [
+            {
+                "sha": code_candidate,
+                "parents": [{"sha": "d" * 40}],
+                "files": [{"filename": "src/renderer/layout.rs", "status": "modified"}],
+            },
+            {
+                "sha": merge_sha,
+                "parents": [{"sha": code_candidate}, {"sha": base_sha}],
+                "files": [{"filename": "mydocs/orders/20260827.md", "status": "modified"}],
+            },
+            {
+                "sha": review_tail,
+                "parents": [{"sha": merge_sha}],
+                "files": [{"filename": "mydocs/orders/20260827.md", "status": "modified"}],
+            },
+        ]
+        runs, jobs = self._render_diff_green_fixture(
+            code_candidate,
+            identity_base_sha=prior_base_sha,
+        )
+
+        output = self._run_render_diff_preflight(
+            files=files,
+            commits=commits,
+            runs=runs,
+            jobs=jobs,
+            base_sha=base_sha,
+            head_sha=review_tail,
+        )
+
+        self.assertEqual(output["fast_pass"], "pending-base-merge-tree", output)
+        self.assertEqual(output["candidate_sha"], code_candidate)
+        self.assertEqual(output["base_merge_sha"], merge_sha)
+        self.assertEqual(output["source_parent_sha"], code_candidate)
+
+    def test_render_diff_prior_base_identity_stays_fail_closed_without_bridge(
+        self,
+    ) -> None:
+        base_sha = "b" * 40
+        code_candidate = "c" * 40
+        review_tail = "r" * 40
+        commits = [
+            {
+                "sha": code_candidate,
+                "parents": [{"sha": "d" * 40}],
+                "files": [{"filename": "src/renderer/layout.rs", "status": "modified"}],
+            },
+            {
+                "sha": review_tail,
+                "parents": [{"sha": code_candidate}],
+                "files": [{"filename": "mydocs/orders/20260827.md", "status": "modified"}],
+            },
+        ]
+        runs, jobs = self._render_diff_green_fixture(
+            code_candidate,
+            identity_base_sha="a" * 40,
+        )
+
+        output = self._run_render_diff_preflight(
+            files=[
+                {"filename": "src/renderer/layout.rs", "status": "modified"},
+                {"filename": "mydocs/orders/20260827.md", "status": "modified"},
+            ],
+            commits=commits,
+            runs=runs,
+            jobs=jobs,
+            base_sha=base_sha,
+            head_sha=review_tail,
+        )
+
+        self.assertEqual(output["fast_pass"], "false")
+        self.assertEqual(output["reason"], "canvas-visual-diff-identity-mismatch")
+
+    def test_render_diff_trailing_bridge_prior_base_identity_fail_closed_matrix(
+        self,
+    ) -> None:
+        base_sha = "b" * 40
+        code_candidate = "c" * 40
+        merge_sha = "m" * 40
+        review_tail = "r" * 40
+        files = [
+            {"filename": "src/renderer/layout.rs", "status": "modified"},
+            {"filename": "mydocs/orders/20260827.md", "status": "modified"},
+        ]
+        commits = [
+            {
+                "sha": code_candidate,
+                "parents": [{"sha": "d" * 40}],
+                "files": [{"filename": "src/renderer/layout.rs", "status": "modified"}],
+            },
+            {
+                "sha": merge_sha,
+                "parents": [{"sha": code_candidate}, {"sha": base_sha}],
+                "files": [{"filename": "mydocs/orders/20260827.md", "status": "modified"}],
+            },
+            {
+                "sha": review_tail,
+                "parents": [{"sha": merge_sha}],
+                "files": [{"filename": "mydocs/orders/20260827.md", "status": "modified"}],
+            },
+        ]
+        default_runs, default_jobs = self._render_diff_green_fixture(
+            code_candidate,
+            identity_base_sha="a" * 40,
+        )
+        matrix = [
+            (
+                "wrong-repository",
+                [{**default_runs[0], "head_repository": {"id": 999}}],
+                default_jobs,
+                "render-diff-workflow-pr-identity-mismatch",
+            ),
+            (
+                "wrong-branch",
+                [{**default_runs[0], "head_branch": "fix/other-branch"}],
+                default_jobs,
+                "render-diff-workflow-pr-identity-mismatch",
+            ),
+            (
+                "before-pr",
+                [{**default_runs[0], "created_at": "2026-08-19T23:59:59Z"}],
+                default_jobs,
+                "render-diff-workflow-pr-identity-mismatch",
+            ),
+            (
+                "missing-run",
+                [],
+                default_jobs,
+                "no-green-render-candidate",
+            ),
+            (
+                "pending-run",
+                [{**default_runs[0], "status": "in_progress", "conclusion": None}],
+                default_jobs,
+                "no-green-render-candidate",
+            ),
+            (
+                "failed-run",
+                [{**default_runs[0], "conclusion": "failure"}],
+                default_jobs,
+                "latest-render-diff-workflow-not-success:failure",
+            ),
+            (
+                "failed-identity-step",
+                default_runs,
+                {
+                    "101": [
+                        {
+                            **default_jobs["101"][0],
+                            "steps": [
+                                {
+                                    **default_jobs["101"][0]["steps"][0],
+                                    "conclusion": "failure",
+                                }
+                            ],
+                        }
+                    ]
+                },
+                "canvas-visual-diff-identity-mismatch",
+            ),
+            (
+                "wrong-pr-identity-step",
+                default_runs,
+                {
+                    "101": [
+                        {
+                            **default_jobs["101"][0],
+                            "steps": [
+                                {
+                                    **default_jobs["101"][0]["steps"][0],
+                                    "name": f"Render Diff identity PR #999 base {'a' * 40}",
+                                }
+                            ],
+                        }
+                    ]
+                },
+                "canvas-visual-diff-identity-mismatch",
+            ),
+        ]
+
+        for name, runs, jobs, reason in matrix:
+            with self.subTest(case=name):
+                output = self._run_render_diff_preflight(
+                    files=files,
+                    commits=commits,
+                    runs=runs,
+                    jobs=jobs,
+                    base_sha=base_sha,
+                    head_sha=review_tail,
+                )
+                self.assertEqual(output["fast_pass"], "false")
+                self.assertEqual(output["reason"], reason)
+
+        second_merge = "n" * 40
+        multiple_merge_output = self._run_render_diff_preflight(
+            files=files,
+            commits=[
+                commits[0],
+                commits[1],
+                {
+                    "sha": second_merge,
+                    "parents": [{"sha": merge_sha}, {"sha": base_sha}],
+                    "files": [{"filename": "mydocs/orders/20260827.md", "status": "modified"}],
+                },
+                {
+                    "sha": review_tail,
+                    "parents": [{"sha": second_merge}],
+                    "files": [{"filename": "mydocs/orders/20260827.md", "status": "modified"}],
+                },
+            ],
+            runs=[],
+            jobs={},
+            base_sha=base_sha,
+            head_sha=review_tail,
+        )
+        self.assertEqual(multiple_merge_output["fast_pass"], "false")
+        self.assertTrue(
+            multiple_merge_output["reason"].startswith("multiple-current-base-update-merges:")
+        )
+
     def test_render_diff_skips_a_reused_candidate_before_trying_an_older_canvas_result(
         self,
     ) -> None:
@@ -531,6 +762,148 @@ class ReviewOnlyFastPassWorkflowTests(unittest.TestCase):
             "fixture": json.dumps(fixture),
             "script": textwrap.indent(script, "  "),
             "base_sha": json.dumps(base_sha),
+        }
+        completed = subprocess.run(
+            ["node"],
+            input=harness,
+            check=False,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+        return json.loads(completed.stdout)
+
+    @staticmethod
+    def _render_diff_green_fixture(
+        candidate_sha: str,
+        *,
+        identity_base_sha: str,
+    ) -> tuple[list[dict[str, object]], dict[str, list[dict[str, object]]]]:
+        runs = [
+            {
+                "id": 101,
+                "path": ".github/workflows/render-diff.yml",
+                "event": "pull_request",
+                "head_sha": candidate_sha,
+                "head_branch": "fix/bughunt-batch-r3",
+                "head_repository": {"id": 7},
+                "status": "completed",
+                "conclusion": "success",
+                "created_at": "2026-08-20T12:00:00Z",
+                "completed_at": "2026-08-20T12:05:00Z",
+            }
+        ]
+        jobs = {
+            "101": [
+                {
+                    "name": "Canvas visual diff",
+                    "status": "completed",
+                    "conclusion": "success",
+                    "completed_at": "2026-08-20T12:05:00Z",
+                    "steps": [
+                        {
+                            "name": f"Render Diff identity PR #5772 base {identity_base_sha}",
+                            "status": "completed",
+                            "conclusion": "success",
+                        }
+                    ],
+                }
+            ]
+        }
+        return runs, jobs
+
+    def _run_render_diff_preflight(
+        self,
+        *,
+        files: list[dict[str, object]],
+        commits: list[dict[str, object]],
+        runs: list[dict[str, object]],
+        jobs: dict[str, list[dict[str, object]]],
+        base_sha: str,
+        head_sha: str,
+    ) -> dict[str, str]:
+        workflow = WORKFLOWS["render-diff"].read_text(encoding="utf-8")
+        script = workflow.split("script: |\n", maxsplit=1)[1].split(
+            "\n      # 기준선 병합을 fast-pass bridge로",
+            maxsplit=1,
+        )[0]
+        script = "\n".join(
+            line.removeprefix("            ") for line in script.splitlines()
+        )
+        fixture = {
+            "files": files,
+            "commits": commits,
+            "runs": runs,
+            "jobs": jobs,
+        }
+        harness = textwrap.dedent(
+            """
+            const fixture = %(fixture)s;
+            const outputs = {};
+            const listFiles = Symbol('pulls.listFiles');
+            const listCommits = Symbol('pulls.listCommits');
+            const listWorkflowRuns = Symbol('actions.listWorkflowRuns');
+            const listJobsForWorkflowRun = Symbol('actions.listJobsForWorkflowRun');
+            const listCommitStatusesForRef = Symbol('repos.listCommitStatusesForRef');
+            const commits = new Map(fixture.commits.map((commit) => [commit.sha, commit]));
+            const github = {
+              rest: {
+                pulls: { listFiles, listCommits },
+                repos: {
+                  getCommit: async ({ ref }) => ({ data: commits.get(ref) }),
+                  listCommitStatusesForRef,
+                },
+                actions: {
+                  listWorkflowRuns,
+                  listJobsForWorkflowRun,
+                  getWorkflowRun: async () => { throw new Error('unexpected controller lookup'); },
+                },
+              },
+              paginate: async (endpoint, parameters) => {
+                if (endpoint === listFiles) return fixture.files;
+                if (endpoint === listCommits) return fixture.commits;
+                if (endpoint === listWorkflowRuns) {
+                  return fixture.runs.filter((run) => (
+                    !parameters?.head_sha || run.head_sha === parameters.head_sha
+                  ));
+                }
+                if (endpoint === listJobsForWorkflowRun) {
+                  return fixture.jobs[String(parameters.run_id)] || [];
+                }
+                if (endpoint === listCommitStatusesForRef) return [];
+                throw new Error('unexpected paginate endpoint');
+              },
+            };
+            const context = {
+              eventName: 'pull_request',
+              repo: { owner: 'edwardkim', repo: 'rhwp' },
+              payload: {
+                pull_request: {
+                  number: 5772,
+                  created_at: '2026-08-20T00:00:00Z',
+                  base: { ref: 'devel', sha: %(base_sha)s },
+                  head: { ref: 'fix/bughunt-batch-r3', sha: %(head_sha)s, repo: { id: 7 } },
+                },
+              },
+            };
+            const core = {
+              setOutput: (key, value) => { outputs[key] = String(value); },
+              info: () => {},
+              warning: () => {},
+            };
+            (async () => {
+            %(script)s
+            })().then(
+              () => process.stdout.write(JSON.stringify(outputs)),
+              (error) => { process.stderr.write(String(error.stack || error)); process.exitCode = 1; },
+            );
+            """
+        ) % {
+            "fixture": json.dumps(fixture),
+            "script": textwrap.indent(script, "  "),
+            "base_sha": json.dumps(base_sha),
+            "head_sha": json.dumps(head_sha),
         }
         completed = subprocess.run(
             ["node"],
