@@ -8685,7 +8685,7 @@ fn split_guide_text_to_width<'a>(guide: &'a str, style: &TextStyle, limit: f64) 
     chunks
 }
 
-fn form_color_to_css(color: u32) -> String {
+pub(crate) fn form_color_to_css(color: u32) -> String {
     let b = (color >> 16) & 0xFF;
     let g = (color >> 8) & 0xFF;
     let r = color & 0xFF;

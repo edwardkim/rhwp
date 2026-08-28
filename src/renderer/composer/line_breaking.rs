@@ -2119,7 +2119,7 @@ fn inline_control_line_height_hwp(para: &Paragraph) -> Option<i32> {
             Control::Shape(shape) if shape.common().treat_as_char => Some(shape.flow_height_hu()),
             Control::Table(table) if table.common.treat_as_char => Some(table.common.height as i32),
             Control::Equation(eq) if eq.common.treat_as_char => Some(eq.common.height as i32),
-            Control::Form(form) => Some(form.height as i32),
+            Control::Form(form) if form.common.treat_as_char => Some(form.height as i32),
             _ => None,
         })
         .filter(|height| *height > 0)
@@ -2142,7 +2142,7 @@ fn inline_control_size_hwp(ctrl: &Control) -> Option<(i32, i32)> {
         Control::Equation(eq) if eq.common.treat_as_char => {
             (eq.common.width as i32, eq.common.height as i32)
         }
-        Control::Form(form) => (form.width as i32, form.height as i32),
+        Control::Form(form) if form.common.treat_as_char => (form.width as i32, form.height as i32),
         _ => return None,
     };
 

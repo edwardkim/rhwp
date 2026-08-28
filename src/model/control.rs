@@ -1074,6 +1074,12 @@ pub enum FormType {
 /// 양식 개체 ('form' 컨트롤, ctrl_id=0x666f726d)
 #[derive(Debug, Clone, Default, serde::Serialize)]
 pub struct FormObject {
+    /// 개체 공통 배치 속성 (위치·크기·기준·정렬·어울림)
+    ///
+    /// [#6266] 양식 개체도 다른 개체와 같은 배치 계약을 갖는다. 이 필드가 없던
+    /// 동안 렌더러는 양식 개체를 인라인 말고는 놓을 수 없었고, 쪽 하단 가운데에
+    /// 놓인 서식 일련번호가 제목 줄 안에 그려졌다(2955289 1쪽).
+    pub common: CommonObjAttr,
     /// 양식 개체 타입
     pub form_type: FormType,
     /// 개체 이름

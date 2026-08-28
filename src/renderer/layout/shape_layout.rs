@@ -719,6 +719,38 @@ impl LayoutEngine {
             return;
         }
 
+        // [#6266] 비-TAC 양식 개체 — 자기 배치(기준·정렬·오프셋)대로 놓는다.
+        // 종전에는 IR 에 배치가 없어 인라인으로만 그려졌다.
+        if let Control::Form(form) = ctrl {
+            if form.common.treat_as_char {
+                return;
+            }
+            let (form_x, form_y) =
+                self.form_object_origin(&form.common, col_area, body_area, paper_area, para_y);
+            let form_w = hwpunit_to_px(form.common.width.max(form.width) as i32, self.dpi);
+            let form_h = hwpunit_to_px(form.common.height.max(form.height) as i32, self.dpi);
+            let form_node = RenderNode::new(
+                tree.next_id(),
+                RenderNodeType::FormObject(FormObjectNode {
+                    form_type: form.form_type,
+                    caption: form.caption.clone(),
+                    text: form.text.clone(),
+                    fore_color: super::paragraph_layout::form_color_to_css(form.fore_color),
+                    back_color: super::paragraph_layout::form_color_to_css(form.back_color),
+                    value: form.value,
+                    enabled: form.enabled,
+                    section_index,
+                    para_index,
+                    control_index,
+                    name: form.name.clone(),
+                    cell_location: None,
+                }),
+                BoundingBox::new(form_x, form_y, form_w, form_h),
+            );
+            parent.children.push(form_node);
+            return;
+        }
+
         let shape = match ctrl {
             Control::Shape(s) => s.as_ref(),
             _ => return,
@@ -3970,6 +4002,52 @@ impl LayoutEngine {
         }
 
         result
+    }
+
+    /// [#6266] 양식 개체의 좌상단 좌표 — `calc_shape_bottom_y` 와
+    /// `check_horizontal_overlap` 이 쓰는 것과 같은 기준·정렬 산식이다.
+    fn form_object_origin(
+        &self,
+        common: &CommonObjAttr,
+        col_area: &LayoutRect,
+        body_area: &LayoutRect,
+        paper_area: &LayoutRect,
+        para_y: f64,
+    ) -> (f64, f64) {
+        let w = hwpunit_to_px(common.width as i32, self.dpi);
+        let h = hwpunit_to_px(common.height as i32, self.dpi);
+        let h_offset = hwpunit_to_px(common.horizontal_offset as i32, self.dpi);
+        let v_offset = hwpunit_to_px(common.vertical_offset as i32, self.dpi);
+        // 가장자리 정렬은 바깥 여백만큼 안쪽으로 들어간다. 2955289 실측:
+        // margin.bottom=4252HU(42.5pt) 이고 한글이 이 개체를 용지 하단에서
+        // 정확히 그만큼 위(788.5pt)에 둔다.
+        let m_left = hwpunit_to_px(i32::from(common.margin.left), self.dpi);
+        let m_right = hwpunit_to_px(i32::from(common.margin.right), self.dpi);
+        let m_top = hwpunit_to_px(i32::from(common.margin.top), self.dpi);
+        let m_bottom = hwpunit_to_px(i32::from(common.margin.bottom), self.dpi);
+
+        let (ref_x, ref_w) = match common.horz_rel_to {
+            HorzRelTo::Paper => (paper_area.x, paper_area.width),
+            HorzRelTo::Page => (body_area.x, body_area.width),
+            _ => (col_area.x, col_area.width),
+        };
+        let x = match common.horz_align {
+            HorzAlign::Left | HorzAlign::Inside => ref_x + m_left + h_offset,
+            HorzAlign::Center => ref_x + (ref_w - w) / 2.0 + h_offset,
+            HorzAlign::Right | HorzAlign::Outside => ref_x + ref_w - m_right - w - h_offset,
+        };
+
+        let (ref_y, ref_h) = match common.vert_rel_to {
+            VertRelTo::Paper => (paper_area.y, paper_area.height),
+            VertRelTo::Page => (body_area.y, body_area.height),
+            VertRelTo::Para => (para_y, (col_area.y + col_area.height - para_y).max(0.0)),
+        };
+        let y = match common.vert_align {
+            VertAlign::Top | VertAlign::Inside => ref_y + m_top + v_offset,
+            VertAlign::Center => ref_y + (ref_h - h) / 2.0 + v_offset,
+            VertAlign::Bottom | VertAlign::Outside => ref_y + ref_h - m_bottom - h - v_offset,
+        };
+        (x, y)
     }
 
     /// TopAndBottom 개체의 하단 y 좌표와 상단 y 좌표를 계산 (pub(crate) — Task #901 Stage 8 flow-around)
