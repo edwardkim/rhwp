@@ -2992,17 +2992,44 @@ fn stored_rows_require_external_geometry(
     // With no text and no control, this paragraph provides no local geometry
     // from which a scalar Frame could derive that inset. Reflowing it full
     // width destroys the carrier contract; leave it with the external owner.
+    let differs_from_frame = |segment: &crate::model::paragraph::LineSeg| {
+        segment.column_start != frame.horizontal.start
+            || segment.column_start.checked_add(segment.segment_width) != Some(frame.horizontal.end)
+    };
     let empty_carrier = para.controls.is_empty()
         && para
             .text
             .chars()
             .all(|ch| ch.is_whitespace() || ch == '\r' || ch == '\n');
-    empty_carrier
-        && line_segs.iter().any(|segment| {
-            segment.column_start != frame.horizontal.start
-                || segment.column_start.checked_add(segment.segment_width)
-                    != Some(frame.horizontal.end)
-        })
+    if empty_carrier {
+        return line_segs.iter().any(differs_from_frame);
+    }
+
+    // [#6175] The same argument holds for a text paragraph whose every stored
+    // row is one complete slot *inset inside* this frame. A scalar frame has
+    // one horizontal range and applies the paragraph's own indents inside it,
+    // so it cannot derive an inset narrower than its own carve — the inset
+    // came from an owner this frame does not model, and the only float band
+    // that produces a uniform inset is a side-wrap (Square) object anchored
+    // where the paragraph's first row already starts. Reflowing full width
+    // there runs the text under the object (156518601 p1: four stored
+    // `0+29138` rows reflowed to three `0+48188` rows, 246px of each line
+    // hidden behind the picture).
+    //
+    // Bounded by the frame's own geometry pitch so a rounding-scale
+    // disagreement — which the frame *can* explain — still reflows: only an
+    // inset wider than one pitch counts as evidence of a second owner.
+    let inset_inside_frame = |segment: &crate::model::paragraph::LineSeg| {
+        let end = match segment.column_start.checked_add(segment.segment_width) {
+            Some(end) => end,
+            None => return false,
+        };
+        segment.column_start >= frame.horizontal.start
+            && end <= frame.horizontal.end
+            && (frame.horizontal.end - frame.horizontal.start) - segment.segment_width
+                > crate::renderer::layout_frame::COLUMN_WIDTH_QUANTUM_HWP
+    };
+    line_segs.iter().any(differs_from_frame) && line_segs.iter().all(inset_inside_frame)
 }
 
 /// Whether the frame's own carve reproduces every stored row — §1.4.1's

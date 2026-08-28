@@ -1147,6 +1147,9 @@ struct TypesetState {
     /// 비-TAC Picture/Shape Square wrap: any_seg_matches만으로 후속 문단 판정 허용.
     /// 그림의 lineseg는 첫 seg cs=0일 수 있어 전체 seg 중 하나라도 일치하면 흡수.
     wrap_around_any_seg: bool,
+    /// [#6175] 밴드가 호스트 문단의 저장 사다리가 아니라 어울림 개체의 기하에서
+    /// 유도됐다 — 개체 종류(묶음 포함)와 무관하게 뒤따르는 문단을 개체 옆으로 흘린다.
+    wrap_around_derived_band: bool,
     /// [#1955] 글뒤로/글앞으로(BehindText/InFrontOfText) 비-TAC 표 anchor 문단.
     /// 이 wrap 은 본문 플로우를 소비하지 않으므로(한글: 후속 문단이 anchor 쪽에
     /// 남음), 직후의 빈 후행 문단들을 anchor 첫 fragment 단에 소급 흡수한다.
@@ -1718,6 +1721,44 @@ fn non_tac_square_picture_common(ctrl: &Control) -> Option<&crate::model::shape:
         .then_some(common)
 }
 
+/// [#6175] 비-TAC 어울림(Square) 개체의 공통 속성 — 그림뿐 아니라 묶음(GroupShape)
+/// 등 모든 개체 종류를 받는다. 묶음 그림도 한컴에서는 같은 배제 밴드를 만든다.
+fn non_tac_square_float_common(ctrl: &Control) -> Option<&crate::model::shape::CommonObjAttr> {
+    let common = match ctrl {
+        Control::Picture(pic) => Some(&pic.common),
+        Control::Shape(shape) => Some(shape.common()),
+        _ => None,
+    }?;
+    (!common.treat_as_char && matches!(common.text_wrap, crate::model::shape::TextWrap::Square))
+        .then_some(common)
+}
+
+/// [#6175] 어울림 개체의 **자기 기하**만으로 유도되는 우측 밴드의 좌측 레인 폭.
+///
+/// 호스트 문단의 첫 줄이 전폭이면(그림이 그 줄보다 아래에서 시작하는 형상) 기존
+/// arming 은 밴드를 못 만든다. 그러나 개체가 단 우단까지 닿는 문단/단 기준 개체라면
+/// 옆으로 흐를 레인은 개체 자신의 `horizontal_offset` 이 그대로 규정한다 — 한컴이
+/// 뒤따르는 문단의 `segment_width` 로 저장하는 값과 같은 수다(156518601 1쪽:
+/// horzOffset 29138 = 저장 사다리 4줄 전부의 horzsize).
+fn square_float_left_lane_width(para: &Paragraph, col_w_hu: i32) -> Option<i32> {
+    use crate::model::shape::HorzRelTo;
+    let mut floats = para.controls.iter().filter_map(non_tac_square_float_common);
+    let common = floats.next()?;
+    if floats.next().is_some() {
+        return None;
+    }
+    if !matches!(common.horz_rel_to, HorzRelTo::Para | HorzRelTo::Column) {
+        return None;
+    }
+    let lane = common.horizontal_offset as i32;
+    let right_edge = lane
+        .saturating_add(common.width as i32)
+        .saturating_add(common.margin.right as i32);
+    // 개체가 단 우단까지 닿아야 좌측 레인 하나로 정의된다. 가운데 놓인 개체는
+    // 좌·우 두 레인을 만들므로 이 유도가 성립하지 않는다.
+    (lane > 0 && lane < col_w_hu && right_edge >= col_w_hu - 200).then_some(lane)
+}
+
 fn paragraph_by_global_index<'a>(
     body_paragraphs: &'a [Paragraph],
     endnote_paragraphs: &'a [Paragraph],
@@ -1853,6 +1894,7 @@ fn maybe_register_square_picture_wrap_anchor(
         st.wrap_around_cs = -1;
         st.wrap_around_sw = -1;
         st.wrap_around_any_seg = false;
+        st.wrap_around_derived_band = false;
         st.close_square_band();
     }
 }
@@ -1881,6 +1923,7 @@ fn activate_square_picture_wrap_for_para(
         st.wrap_around_sw = anchor_sw;
         st.wrap_around_table_para = para_index;
         st.wrap_around_any_seg = true;
+        st.wrap_around_derived_band = false;
     }
 }
 
@@ -4411,6 +4454,7 @@ impl TypesetState {
             wrap_around_sw: -1,
             wrap_around_table_para: 0,
             wrap_around_any_seg: false,
+            wrap_around_derived_band: false,
             behind_float_table_para: None,
             next_para_first_stored_vpos: None,
             next_para_is_empty_float_table_anchor: false,
@@ -6307,6 +6351,7 @@ impl TypesetEngine {
                     st.wrap_around_sw = anchor_sw;
                     st.wrap_around_table_para = para_idx;
                     st.wrap_around_any_seg = true;
+                    st.wrap_around_derived_band = false;
                     // [Task #722] anchor host paragraph 자체도 wrap_anchors 등록.
                     // LINE_SEG cs/sw 가 wrap zone 으로 인코딩되어 있으면 host paragraph 의
                     // 줄도 image 우측 wrap zone 에 layout 되어야 한다 (한컴 PDF 권위 정합).
@@ -6370,6 +6415,23 @@ impl TypesetEngine {
                             },
                         );
                     }
+                }
+            }
+
+            // [#6175] 호스트 문단의 저장 사다리가 밴드를 담고 있지 않은 형상 —
+            // 어울림 개체가 호스트 줄보다 아래에서 시작해 배제가 **다음** 문단부터
+            // 걸린다. 이때는 개체 자신의 기하가 유일한 근거다. 위 arming 이 밴드를
+            // 잡지 못했을 때만, 그리고 개체가 단 우단까지 닿아 좌측 레인이 하나로
+            // 정해질 때만 유도한다. `any_seg` 는 켜지 않는다 — 유도 밴드는 저장
+            // segment_width 가 정확히 일치하는 문단만 받고, 첫 불일치에서 닫힌다.
+            if st.wrap_around_cs < 0 {
+                let col_w_hu = st.layout.column_width_hu();
+                if let Some(lane) = square_float_left_lane_width(para, col_w_hu) {
+                    st.wrap_around_cs = 0;
+                    st.wrap_around_sw = lane;
+                    st.wrap_around_table_para = para_idx;
+                    st.wrap_around_any_seg = false;
+                    st.wrap_around_derived_band = true;
                 }
             }
         }
@@ -6622,7 +6684,10 @@ impl TypesetEngine {
                         })
                     })
                     .unwrap_or(false);
-                if anchor_is_picture {
+                // [#6175] 유도 밴드의 앵커는 묶음(GroupShape)일 수 있다 — 개체
+                // 종류로 흡수/통과를 가르는 이 판정에서 묶음 그림을 표로 오인하면
+                // 밴드 옆 본문 문단이 통째로 흡수된다.
+                if anchor_is_picture || st.wrap_around_derived_band {
                     // Picture anchor: wrap_anchors 등록 + FullParagraph 통과
                     // [Task #722] anchor image 의 outer margin_right (HU) 추출
                     let anchor_margin_right = paragraphs
@@ -6795,6 +6860,7 @@ impl TypesetEngine {
                             st.wrap_around_cs = -1;
                             st.wrap_around_sw = -1;
                             st.wrap_around_any_seg = false;
+                            st.wrap_around_derived_band = false;
                             st.close_square_band();
                             if !st.current_items.is_empty()
                                 && st.current_height + suffix_height > st.available_height() + 0.5
@@ -6814,6 +6880,7 @@ impl TypesetEngine {
                     st.wrap_around_cs = -1;
                     st.wrap_around_sw = -1;
                     st.wrap_around_any_seg = false;
+                    st.wrap_around_derived_band = false;
                     // 이 문단은 첫 줄만 Square 띠에 있고 나머지는 표 아래 전폭으로
                     // 복귀한다. 일반 fit 전에 띠 바닥을 흐름 하한으로 반영하지 않으면
                     // 아래 줄이 표와 겹치는 높이를 아직 사용할 수 있다고 오판한다.
@@ -6825,6 +6892,7 @@ impl TypesetEngine {
                 st.wrap_around_cs = -1;
                 st.wrap_around_sw = -1;
                 st.wrap_around_any_seg = false;
+                st.wrap_around_derived_band = false;
                 st.close_square_band();
                 // [Task #741 Stage 4] 매칭 실패 paragraph 의 vpos=0 hint (page break 의도)
                 // 발견 시 advance_column_or_new_page. wrap_around active 종료 후 추가 가드.
@@ -7250,6 +7318,7 @@ impl TypesetEngine {
                 st.wrap_around_cs = -1;
                 st.wrap_around_sw = -1;
                 st.wrap_around_any_seg = false;
+                st.wrap_around_derived_band = false;
                 st.close_square_band();
             }
             // [#1955] 명시적 쪽나누기부터는 글뒤로 표 후행 흡수도 해제 (사용자 의도 새 쪽).
@@ -7527,6 +7596,7 @@ impl TypesetEngine {
                             st.wrap_around_cs = -1;
                             st.wrap_around_sw = -1;
                             st.wrap_around_any_seg = false;
+                            st.wrap_around_derived_band = false;
                             st.close_square_band();
                         }
                         if st.wrap_around_cs < 0 {
@@ -8288,6 +8358,7 @@ impl TypesetEngine {
                             st.wrap_around_sw = strip_sw;
                             st.wrap_around_table_para = para_idx;
                             st.wrap_around_any_seg = false;
+                            st.wrap_around_derived_band = false;
                         } else {
                             let anchor_cs =
                                 para.line_segs.first().map(|s| s.column_start).unwrap_or(0);
@@ -8307,6 +8378,7 @@ impl TypesetEngine {
                                 st.wrap_around_sw = anchor_sw;
                                 st.wrap_around_table_para = para_idx;
                                 st.wrap_around_any_seg = false;
+                                st.wrap_around_derived_band = false;
                             }
                         }
                     }
