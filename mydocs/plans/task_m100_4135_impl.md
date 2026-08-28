@@ -8,7 +8,7 @@
 >
 > 브랜치: `codex/issue-4135-contextual-shortcut`
 >
-> 상태: **Recovery R4 수동 승인 완료, Recovery R5 F5 선택 단계 UX 구현·검증 GREEN**
+> 상태: **Recovery R4·R5 수동 승인 완료, PR 준비 진행 중**
 
 ## 1. 문제를 다시 정의한다
 
@@ -147,7 +147,8 @@ focused 22건, Studio 전체 1,247건, production build, embed E2E 17건과 영�
 
 R5는 RED 4건을 제품 코드 전에 고정한 뒤 focus 기반 마커와 전용 live status를 구현했다. focused 29건,
 Studio 전체 1,251건, production build 241 modules를 통과했고, 실제 2×2 표에서 F5 1·2·3회와 Escape,
-라이트·다크 테마를 확인했다. 결과와 DOM 계측은 R5 결과 문서에 고정한다.
+라이트·다크 테마를 확인했다. 작업지시자도 `확인되었어.`로 같은 UX를 승인했다. 결과와 DOM 계측은 R5
+결과 문서에 고정하고, 이후에는 새 Recovery 구현이 아니라 PR 준비 절차로 진행한다.
 
 ## 5. 예상 변경 파일
 
