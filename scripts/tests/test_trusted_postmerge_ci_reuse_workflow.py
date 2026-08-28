@@ -42,6 +42,10 @@ class TrustedPostmergeReuseWorkflowTests(unittest.TestCase):
         self.assertIn("listCommits", workflow)
         self.assertIn("classifyReviewOnlyCommit", workflow)
         self.assertIn("listWorkflowRunArtifacts", workflow)
+        self.assertIn("listJobsForWorkflowRun", workflow)
+        self.assertIn("fullLaneRunIds", workflow)
+        self.assertIn('"ci.yml", "codeql.yml"', workflow)
+        self.assertIn('`nextest-target-durations-${workflowRun.id}-${label}`', workflow)
         self.assertIn("never checks out or executes", workflow)
         self.assertIn("the merged PR head", workflow)
 
