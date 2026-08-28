@@ -4851,13 +4851,45 @@ impl LayoutEngine {
                             use_top_vpos_anchor,
                             upper_clip_line_reservation,
                         );
-                        // layout_composed_paragraph()가 spacing_before를 더하므로
-                        // 호출 전에 그 값을 빼서 최종 line top이 vpos와 일치하게 한다.
-                        para_y = anchored_y - spacing_before;
-                        // [#5601] Center/Bottom 셀의 column-top 문단은 composed 의
-                        // suppress 경로가 재가산까지 막아 앞 간격이 유실된다 —
-                        // 이 문단의 composed 호출 직전에 전량 재가산 토글을 켠다.
-                        snap_anchored_with_spacing_before = spacing_before > 0.0;
+                        // [#6264] 이 문단이 품은 중첩 표가 **앵커 아래에 담기지
+                        // 않으면** 저장 앵커를 쓰지 않는다.
+                        //
+                        // 저장 사다리는 호스트 문단의 **줄 높이만** 적고 그 문단이
+                        // 품은 표를 기술하지 않는다 — 1977964 1쪽 셀[3]:
+                        // `p[23] vpos=61756HU(823.4px) lh=900(12px)` 인데 그 문단이
+                        // 품은 2×3 표의 선언 높이 합은 569px 다. vpos 를 앵커로 쓰면
+                        // 셀 안쪽 바닥까지 13.4px 만 남아 표가 14.8px 로 눌리고 1행이
+                        // 통째로 빠진다(세로 괘선 전부·본문 71줄 소실).
+                        //
+                        // 한글은 이 vpos 를 쓰지 않고 앞 문단 뒤로 흘린다(실측 첫
+                        // 가로 괘선 405.2px). rhwp 의 자연 흐름 값도 이미 그 자리다
+                        // (`para_y` 403.8px) — 앵커만 쓰지 않으면 제자리로 돌아온다.
+                        //
+                        // `calc_nested_controls_bottom_height` 의 #4533 캡이 이 형상을
+                        // `ladder_end` 로 눌러 `stored_flow_shape_is_trusted` 의
+                        // `non_flow_object_extent` 게이트를 통과시키므로, 배치 시점에
+                        // 문단 단위로 다시 본다. 앵커 아래에 담기는 셀(#5601 00451)은
+                        // 이 조건을 그대로 통과하므로 종전 동작이 유지된다.
+                        let hosted_nested_h: f64 = para
+                            .controls
+                            .iter()
+                            .map(|ctrl| match ctrl {
+                                Control::Table(t) => self.calc_nested_table_height(t, styles),
+                                _ => 0.0,
+                            })
+                            .sum();
+                        let anchored_hosted_content_fits = hosted_nested_h <= 0.0
+                            || anchored_y + hosted_nested_h
+                                <= content_cell_y + pad_top + inner_height + 0.5;
+                        if anchored_hosted_content_fits {
+                            // layout_composed_paragraph()가 spacing_before를 더하므로
+                            // 호출 전에 그 값을 빼서 최종 line top이 vpos와 일치하게 한다.
+                            para_y = anchored_y - spacing_before;
+                            // [#5601] Center/Bottom 셀의 column-top 문단은 composed 의
+                            // suppress 경로가 재가산까지 막아 앞 간격이 유실된다 —
+                            // 이 문단의 composed 호출 직전에 전량 재가산 토글을 켠다.
+                            snap_anchored_with_spacing_before = spacing_before > 0.0;
+                        }
                     }
                 }
             }
