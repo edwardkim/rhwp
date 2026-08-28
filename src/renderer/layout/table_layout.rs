@@ -5227,6 +5227,16 @@ impl LayoutEngine {
                                 } else {
                                     pic_h
                                 };
+                                if std::env::var("RHWP_6313_DBG").is_ok() && tac_img_y > 700.0 {
+                                    let segs: Vec<(i32, i32)> = para
+                                        .line_segs
+                                        .iter()
+                                        .map(|s| (s.vertical_pos, s.line_height))
+                                        .collect();
+                                    eprintln!(
+                                        "[6313] tac_img_y={tac_img_y:.1} pybc={para_y_before_compose:.1} target_line={target_line} cur={current_tac_line} pic_h={pic_h:.1} segs={segs:?}",
+                                    );
+                                }
                                 let pic_area = LayoutRect {
                                     x: inline_x,
                                     y: tac_img_y,
@@ -5465,16 +5475,37 @@ impl LayoutEngine {
                                 // 높이만큼(+98.4px) 칸 밖으로 내려간다. #5731 이 겨냥한
                                 // 형상은 앞선 캡션·그림이 실제로 자리를 차지한 다문단 셀
                                 // 이므로, 앞 내용이 없는 이 형상은 제외한다.
-                                let vpos_is_this_floats_own_displacement =
-                                    para.text.trim().is_empty()
-                                        && cell.paragraphs.iter().take(cp_idx).all(|prev| {
-                                            prev.text.trim().is_empty() && prev.controls.is_empty()
-                                        })
-                                        && para.line_segs.first().is_some_and(|seg| {
-                                            (hwpunit_to_px(seg.vertical_pos, self.dpi) - pic_h)
-                                                .abs()
-                                                <= 1.0
-                                        });
+                                let vpos_is_this_floats_own_displacement = para
+                                    .text
+                                    .trim()
+                                    .is_empty()
+                                    && cell.paragraphs.iter().take(cp_idx).all(|prev| {
+                                        prev.text.trim().is_empty() && prev.controls.is_empty()
+                                    })
+                                    && para.line_segs.first().is_some_and(|seg| {
+                                        // [#6313] 자기 변위는 **높이 + 세로 오프셋**이다 —
+                                        // 한글이 밀어 둔 줄의 vpos 는 그림 바닥을 가리키므로
+                                        // 오프셋이 0 이 아니면 높이만으로는 안 맞는다.
+                                        // 156624779 5쪽 실측: 왼쪽 칸 vpos 15250HU =
+                                        // 높이 14530 + offset 720, 오른쪽 칸 17188 =
+                                        // 16899 + 289 — 둘 다 **단위까지** 일치한다.
+                                        // 종전 `|vpos − 높이| ≤ 1` 은 이 둘을 각각 9.6px·
+                                        // 3.9px 차로 놓쳐, 그림이 제 높이만큼 더 내려가
+                                        // 칸과 용지 밖으로 나갔다(아래끝 898.7pt).
+                                        // #6175·#6280 이 세운 "개체 흐름 높이 = 높이 +
+                                        // 오프셋" 과 같은 계약이다.
+                                        let own_displacement = pic_h
+                                            + hwpunit_to_px(
+                                                crate::renderer::float_placement::signed_hwpunit(
+                                                    pic.common.vertical_offset,
+                                                ),
+                                                self.dpi,
+                                            );
+                                        (hwpunit_to_px(seg.vertical_pos, self.dpi)
+                                            - own_displacement)
+                                            .abs()
+                                            <= 1.0
+                                    });
                                 let trusts_stored_flow = !vpos_is_this_floats_own_displacement
                                     && (self.profile.get().hwp5_stored_pagination_layout()
                                         || self.profile.get().hwpx_stored_layout());
@@ -5579,6 +5610,11 @@ impl LayoutEngine {
                             } else {
                                 pic_y
                             };
+                            if std::env::var("RHWP_6313_DBG").is_ok() && pic_y > 700.0 {
+                                eprintln!(
+                                    "[6313B] pic_y={pic_y:.1} pic_h={pic_h:.1} pic_x={pic_x:.1}"
+                                );
+                            }
                             let pic_area = LayoutRect {
                                 x: pic_x,
                                 y: pic_y,
