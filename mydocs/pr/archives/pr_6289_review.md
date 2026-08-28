@@ -15,7 +15,7 @@ last_verified: 2026-08-28
 - loaded documents: `pr_review_workflow.md`, `pr_review/README.md`, 위 기본·보조 문서와
   `docs_and_git_workflow.md`
 - 작성자 본인 self-review이므로 reviewer를 지정하지 않는다.
-- local code candidate: `58e0292801b8f5f37176dcf828e5e213b559ac49`
+- local code candidate: `2cab279d477dfcbd3ea69886c0fcc087953087b1`
 
 문서 renderer·layout·paint와 HWP/HWPX fixture는 바꾸지 않는다. 다만 실제 쪽 배치와 맞춤 배율의 화면
 관계가 제품 계약이므로 `visual_fixture_evidence.md`의 증거 원칙을 적용해 실제 Chrome E2E와 그 HTML
@@ -32,12 +32,15 @@ last_verified: 2026-08-28
 | stack | 하단 #6289 → 상단 [#6290](https://github.com/edwardkim/rhwp/pull/6290) |
 | base / head | `devel` / `codex/issue-6108-zoom-fit` |
 | local 규모 | 23 files, +1,004 / -198, 7 commits |
-| local base | `upstream/devel@94ff48d2b8` |
-| remote 상태 | Open, non-draft, 기존 remote head는 `MERGEABLE/CLEAN` |
+| local base | `upstream/devel@a6c7e7bb3` |
+| remote 상태 | Open, non-draft, 기존 remote head는 오늘할일 충돌로 `CONFLICTING/DIRTY` |
 
 기존 remote code candidate의 `Build & Test`, Frontend package gates, CodeQL, Render Diff, Adapter
-inter-diff와 Proptest는 성공했다. 이 문서의 local candidate는 아래 review 보정을 더 포함하므로 push 뒤
-GitHub 상태가 다시 계산된다. GitHub metadata와 CI는 변동 값이며 stack 제출·merge 직전에 다시 확인한다.
+inter-diff와 Proptest는 성공했다. 이후 최신 `devel@a6c7e7bb3`의 통합 검토 기록과 이 PR의 M100 표가
+`mydocs/orders/20260828.md` 끝에 함께 추가돼 GitHub가 충돌로 판정했다. 양쪽 기록을 합집합으로 보존해
+rebase했고, 이전·현재 candidate의 range-diff에서 제품 변경은 동일하며 오늘할일 문맥만 추가됐음을 확인했다.
+새 local candidate의 merge tree는 충돌 없이 생성됐다. push 뒤 GitHub 상태가 다시 계산되며 metadata와 CI는
+변동 값이므로 stack 제출·merge 직전에 다시 확인한다.
 
 ## 목적과 변경 범위 정합성
 
@@ -99,6 +102,6 @@ Rust source와 integration test source를 바꾸지 않아 Rust unit·clippy·WA
 review에서 확인한 제품 정확성 결함, 죽은 literal과 Stage 3 누락을 모두 보정했고 추가 blocker는 발견하지
 않았다. self-review는 **완료 / 조건부 merge 권고**다.
 
-하단 #6289를 제출한 뒤 상단 #6290을 새 하단 head 위로 재기반화하고, 두 PR의 최신 head·stack 관계와
-mergeability를 다시 확인해야 한다. GitHub Actions 완료 확인과 최종 merge는 작업지시자가 별도로
-수행하며, 이 작업에서는 CI 완료를 기다리거나 merge하지 않는다.
+하단 #6289와 상단 #6290을 재기반화된 stack으로 제출한 뒤 두 PR의 최신 head·stack 관계와 mergeability를
+다시 확인해야 한다. GitHub Actions 완료 확인과 최종 merge는 작업지시자가 별도로 수행하며, 이 작업에서는
+CI 완료를 기다리거나 merge하지 않는다.
