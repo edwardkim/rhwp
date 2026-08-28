@@ -1,10 +1,11 @@
 # Task M100 #3789 완료 보고서
 
 - **Issue**: [#3789](https://github.com/edwardkim/rhwp/issues/3789)
-- **기준**: `upstream/devel` `1b91c2025`
+- **착수 기준**: `upstream/devel` `1b91c2025`
 - **브랜치**: `task_m100_3789-render-boundary`
-- **완료일**: 2026-08-27 KST
-- **상태**: 최신 `devel` 재기준화·focused 검증 완료, Stage 6 전체 회귀 승인 대기
+- **구현 완료일**: 2026-08-27 KST
+- **최신 갱신일**: 2026-08-28 KST
+- **상태**: 최신 `devel` 재최신화·focused 검증 완료, Stage 7 전체 회귀 승인 대기
 - **절차 판정**: 기술 게이트 준수, 단계별 보고·승인 게이트 부분 미준수
 
 ## 결과
@@ -34,6 +35,8 @@ Render Diff와 Native Skia가 필요한 변경으로 분류된다. #5776이 고�
 | `3c509c7d1` | Stage 1~4 사후 보고와 최종 검증 기록 |
 | `212fa79a4` | 하이퍼 워터폴 절차 감사 보정 |
 | `39d6aa1dd` | `upstream/devel@2166f4065` current-base merge |
+| `a4d7023f7` | Stage 5 동시점 보고와 최신 기준 상태 기록 |
+| `3db893274` | `upstream/devel@5645e1f5b` second current-base merge |
 
 ## 계획 대비 실제
 
@@ -99,7 +102,30 @@ current-base merge했다.
 - Markdown 603개 링크와 branch diff 검사: 통과
 
 전체 release-test와 clippy는 최신 기준에서 아직 다시 실행하지 않았다. Stage 5 결과를 작업지시자에게
-공유하고 승인받은 뒤 Stage 6에서 실행한다. 초기 기준 `1b91c2025`에서 통과한 전체 결과와 혼동하지 않는다.
+공유하고 승인받은 뒤 Stage 6에서 실행하기로 당시 분리했다. 초기 기준 `1b91c2025`에서 통과한 전체 결과와
+혼동하지 않는다.
+
+### Stage 6 second current-base refresh
+
+Stage 5 보고 뒤 `upstream/devel`은 `5645e1f5b`까지 52커밋 더 진전했다. 병합 전 branch 관계는
+`ahead 7 / behind 52`였다. 작업지시자의 재최신화 승인 뒤 dry merge tree가 충돌 없이 생성됨을 확인하고
+`3db893274`로 current-base merge했다. 병합 뒤 관계는 `ahead 8 / behind 0`이다.
+
+양쪽이 다시 함께 바꾼 `scripts/ci-impact-policy.cjs`는 자동 병합됐다. #3789의 정확한 caption render path와
+`src/main.rs` negative 계약뿐 아니라 upstream의 Archive D job, duration-policy resolve·refresh job과 trusted
+review 계약이 함께 남아 있다.
+
+- caption·structure·MCP·batch·exit·ownership Rust 계약: 113/113 통과
+- classifier·policy Node 계약: 67/67 통과
+- CI workflow Python 계약: 71/71 통과
+- `actionlint .github/workflows/render-diff.yml`, Cargo format: 통과
+- integration suite manifest: 987 sources, 4,423 static test attrs, nextest 최소 6,559 cases 확인
+- source unit tier: 4,221 tests, 299 modules 확인
+- Markdown 604개 링크와 branch diff 검사: 통과
+
+이 결과는 [Stage 6 보고](../working/task_m100_3789_stage6.md)에 동시점 기록했다. 최신 기준의 전체
+release-test와 clippy는 아직 실행하지 않았으며, Stage 7 별도 승인 뒤 수행한다. 초기 기준과 Stage 5의
+전체·focused 결과를 최신 기준 결과로 간주하지 않는다.
 
 ## 하이퍼 워터폴 절차 감사
 
@@ -124,5 +150,5 @@ current-base merge했다.
 ## 제출 상태
 
 로컬 구현과 필수 검증은 완료했다. generated integration suite·manifest는 제출 대상에 포함하지 않았다.
-최신 `upstream/devel@2166f4065` merge와 focused 검증은 완료했다. Stage 6 전체 release-test·clippy,
-remote push, PR 생성과 실제 PR CI는 각각 필요한 작업지시자 승인 전까지 남아 있다.
+최신 기준은 다시 `upstream/devel@5645e1f5b`로 갱신됐고 Stage 6 focused 검증까지 완료했다. Stage 7 전체
+release-test·clippy, remote push, PR 생성과 실제 PR CI는 각각 필요한 작업지시자 승인 전까지 남아 있다.

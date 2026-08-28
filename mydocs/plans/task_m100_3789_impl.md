@@ -4,8 +4,8 @@
 - **이슈**: [#3789](https://github.com/edwardkim/rhwp/issues/3789)
 - **작성일**: 2026-08-27 KST
 - **작업 브랜치**: `task_m100_3789-render-boundary`
-- **통합 기준**: `upstream/devel@1b91c2025`
-- **구현 상태**: 최신 `devel@2166f4065` merge·focused 검증 완료, Stage 6 전체 회귀 승인 대기
+- **착수 기준**: `upstream/devel@1b91c2025`
+- **구현 상태**: 최신 `devel@5645e1f5b` merge·focused 검증 완료, Stage 7 전체 회귀 승인 대기
 
 ## 1. 구현 불변식
 
@@ -161,3 +161,6 @@ git diff --check
 - 기존 구현 SHA를 보존하기 위해 rebase 대신 current-base merge를 사용했다. merge commit은
   `39d6aa1dd`이며, 겹친 CI policy 파일은 #3789 render 경계와 #6205 duration-policy job 계약을 모두
   보존한다. 세부 focused 결과는 [Stage 5 보고](../working/task_m100_3789_stage5.md)에 기록한다.
+- Stage 5 뒤 다시 진전한 `upstream/devel@5645e1f5b`도 같은 이유로 `3db893274` current-base merge로
+  반영했다. 자동 병합된 CI policy에서 #3789 경계와 upstream Archive D·duration-policy 계약을 모두
+  보존했고, 세부 focused 결과는 [Stage 6 보고](../working/task_m100_3789_stage6.md)에 기록한다.

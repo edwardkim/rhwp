@@ -64,3 +64,11 @@ commit을 단계별로 나누는 데에는 충분했지만, 각 단계 보고를
 113개, CI policy Node 67개, workflow Python 70개와 format·manifest·문서 게이트가 통과했다. 이 결과를
 [Stage 5 보고](../working/task_m100_3789_stage5.md)로 먼저 공유하고, 전체 release-test·clippy는 다음
 승인 게이트로 분리한다.
+
+## 2차 재최신화
+
+Stage 5 보고 뒤 upstream이 다시 52커밋 진전했다. 작업지시자가 재최신화를 승인해
+`upstream/devel@5645e1f5b`를 `3db893274`로 current-base merge하고, focused Rust 113개, Node 67개,
+Python 71개와 정적 게이트를 재검증했다. 이 결과는 [Stage 6 보고](../working/task_m100_3789_stage6.md)에
+동시점 기록한다. 전체 release-test·clippy를 자동으로 이어 실행하지 않고 Stage 7 승인 게이트로 남겨,
+보정 이후에는 단계 종료 보고와 다음 단계 승인을 실제 순서대로 분리한다.
