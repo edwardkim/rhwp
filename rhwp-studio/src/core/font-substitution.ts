@@ -196,6 +196,9 @@ function installedFaceName(
   } else {
     const confirmed = confirmedFontName([fontName], confirmedLocalFonts);
     if (confirmed) return confirmed;
+    // 호출자가 명시한 목록은 이 호출의 권위 있는 입력이다. 비어 있거나 불일치할 때
+    // 이전 문서의 전역 감지 결과를 다시 사용하면 설치되지 않은 face가 선택될 수 있다.
+    return null;
   }
   return detectedOSFontIndex().get(normalizedFamilyKey(fontName)) ?? null;
 }

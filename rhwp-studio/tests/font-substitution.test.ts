@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 
+import { getDetectedOSFonts } from '../src/core/font-loader.ts';
 import {
   fontFamilyChainForDisplay,
   fontFamilyWithFallback,
@@ -125,6 +126,19 @@ test('치환 대상이 설치돼 있지 않으면 legacy 이름의 기존 체인
     chain,
     '"한양중고딕", "Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans KR", "Pretendard", sans-serif',
   );
+});
+
+test('명시적으로 빈 local face 목록은 이전 OS 감지 결과를 사용하지 않는다', () => {
+  const detected = getDetectedOSFonts() as Set<string>;
+  detected.add('HY중고딕');
+  try {
+    const chain = fontFamilyChainForDisplay('한양중고딕', 0, 0, {
+      confirmedLocalFonts: [],
+    });
+    assert.doesNotMatch(chain, /HY중고딕/u);
+  } finally {
+    detected.delete('HY중고딕');
+  }
 });
 
 test('요청 이름 자체가 설치돼 있으면 치환 대상을 앞에 두지 않는다', () => {
