@@ -48,7 +48,7 @@ function classificationFor(files) {
 
 function policyInput(overrides = {}) {
   const files = overrides.files || [
-    { filename: 'rhwp-studio/src/command/shortcut-map.ts', status: 'modified' },
+    { filename: 'rhwp-studio/tests/shortcut-map.test.ts', status: 'modified' },
   ];
   return {
     repository: 'edwardkim/rhwp',
@@ -369,7 +369,7 @@ test('compact status description round-trips workflow and impact axes', () => {
   assert.ok(policy.status_description.length <= 140);
   assert.deepEqual(parseStatusDescription(policy.status_description), {
     v: '5',
-    cv: '4',
+    cv: '5',
     mode: 'selective',
     rfp: '0',
     wf: '111',
