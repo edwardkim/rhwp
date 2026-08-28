@@ -732,9 +732,14 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
   if (this.cursor.isInHeaderFooter()) {
     if (dispatchSubmodeGlobalShortcut.call(this, e)) return;
 
-    // Shift+Esc 또는 Esc → 편집 모드 탈출
+    // 선택이 있는 Esc는 선택만 해제한다. Shift+Esc 또는 선택 없는 Esc는 모드 탈출.
     if (e.key === 'Escape') {
       e.preventDefault();
+      if (!e.shiftKey && this.cursor.hasHeaderFooterSelection()) {
+        this.cursor.clearSelection();
+        this.updateCaret();
+        return;
+      }
       // 현재 보고 있는 페이지 기억
       const hfPage = this.cursor.rect?.pageIndex ?? 0;
       this.cursor.exitHeaderFooterMode();
@@ -754,11 +759,21 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
       return;
     }
 
-    // 방향키 → 머리말/꼬리말 내 이동
-    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+    // 방향키 → 머리말/꼬리말 내 이동. Shift는 현재 위치를 HF anchor로 고정한다.
+    if (
+      e.key === 'ArrowLeft'
+      || e.key === 'ArrowRight'
+      || e.key === 'ArrowUp'
+      || e.key === 'ArrowDown'
+    ) {
       e.preventDefault();
-      const delta = e.key === 'ArrowLeft' ? -1 : 1;
-      this.cursor.moveHorizontalInHf(delta);
+      if (e.shiftKey) this.cursor.setHfAnchor();
+      else this.cursor.clearSelection();
+      if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+        this.cursor.moveHorizontalInHf(e.key === 'ArrowLeft' ? -1 : 1);
+      } else {
+        this.cursor.moveVerticalInHf(e.key === 'ArrowUp' ? -1 : 1);
+      }
       this.updateCaret();
       return;
     }
@@ -768,6 +783,8 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
     // Ctrl 조합(문서 처음/끝)은 본문 명령이라 이 모드에서 가로채지 않는다.
     if ((e.key === 'Home' || e.key === 'End') && !e.ctrlKey && !e.metaKey && !e.altKey) {
       e.preventDefault();
+      if (e.shiftKey) this.cursor.setHfAnchor();
+      else this.cursor.clearSelection();
       this.cursor.moveToParagraphEdgeInHf(e.key === 'Home' ? -1 : 1);
       this.updateCaret();
       return;

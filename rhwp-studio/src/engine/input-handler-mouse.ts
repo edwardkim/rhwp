@@ -811,6 +811,22 @@ export function onClick(this: any, e: MouseEvent): void {
         this.eventBus.emit('headerFooterModeChanged', 'none');
         // 본문 hitTest로 계속 진행
       } else {
+        const clickedIsHeader = hfHit.isHeader ?? (this.cursor.headerFooterMode === 'header');
+        const clickedSection = hfHit.sectionIndex ?? this.cursor.hfSectionIdx;
+        const clickedApplyTo = hfHit.applyTo ?? this.cursor.hfApplyTo;
+        const sameTarget = this.cursor.headerFooterMode === (clickedIsHeader ? 'header' : 'footer')
+          && this.cursor.hfSectionIdx === clickedSection
+          && this.cursor.hfApplyTo === clickedApplyTo;
+        if (!sameTarget) {
+          this.cursor.switchHeaderFooterTarget(
+            clickedIsHeader,
+            clickedSection,
+            clickedApplyTo,
+            pageIdx,
+          );
+          this.eventBus.emit('headerFooterModeChanged', clickedIsHeader ? 'header' : 'footer');
+        }
+
         // [Task #825] 머리말/꼬리말 편집 모드 — 그림 hit-test 우선, miss 시 텍스트 hit.
         // 머리말 그림은 ImageNode 에 header_footer_ref 동반되어 picHit 정상 반환.
         const picHit = this.findPictureAtClick(pageIdx, pageX, pageY);
@@ -837,11 +853,27 @@ export function onClick(this: any, e: MouseEvent): void {
         }
         // 머리말/꼬리말 영역 클릭 → 내부 텍스트 히트테스트로 커서 이동
         try {
-          const isHeader = this.cursor.headerFooterMode === 'header';
-          const inHfHit = this.wasm.hitTestInHeaderFooter(pageIdx, isHeader, pageX, pageY);
-          if (inHfHit.hit && inHfHit.paraIndex !== undefined && inHfHit.charOffset !== undefined) {
-            this.cursor.setHfCursorPosition(inHfHit.paraIndex, inHfHit.charOffset);
+          const inHfHit = this.wasm.hitTestInHeaderFooter(
+            pageIdx,
+            clickedIsHeader,
+            pageX,
+            pageY,
+          );
+          if (
+            inHfHit.hit
+            && inHfHit.sectionIndex === clickedSection
+            && inHfHit.applyTo === clickedApplyTo
+            && inHfHit.paraIndex !== undefined
+            && inHfHit.charOffset !== undefined
+          ) {
+            if (e.shiftKey && sameTarget) this.cursor.setHfAnchor();
+            else this.cursor.clearSelection();
+            this.cursor.setHfCursorPosition(inHfHit.paraIndex, inHfHit.charOffset, pageIdx);
+            if (!e.shiftKey || !sameTarget) this.cursor.setHfAnchor();
+            this.active = true;
+            this.startTextSelectionDrag(e);
             this.updateCaret();
+            document.addEventListener('mouseup', this.onMouseUpBound, { once: true });
           }
         } catch { /* 무시 */ }
         this.textarea.focus();
@@ -1954,6 +1986,12 @@ export function onMouseUp(this: any, _e: MouseEvent): void {
     if (samePos) {
       this.cursor.clearSelection();
     }
+  }
+  const hfSel = this.cursor.getHeaderFooterSelectionOrdered();
+  if (hfSel) {
+    const samePos = hfSel.start.paraIdx === hfSel.end.paraIdx
+      && hfSel.start.charOffset === hfSel.end.charOffset;
+    if (samePos) this.cursor.clearSelection();
   }
 
   // [Task #779] mouseup 영역 의 updateCaret 은 scrollCaretIntoView skip.

@@ -677,6 +677,15 @@ export class InputHandler {
       requestAnimationFrame(() => this.updateCaret(true));
     });
 
+    // HF 선택은 같은 정의를 쓰는 visible page마다 투영한다. ViewportManager가 scroll
+    // 이벤트를 rAF당 한 번으로 합치므로 여기서는 추가 프레임을 중첩하지 않는다.
+    eventBus.on('viewport-scroll', () => {
+      if (this.cursor.getHeaderFooterSelectionOrdered()) this.updateSelection();
+    });
+    eventBus.on('viewport-resize', () => {
+      if (this.cursor.getHeaderFooterSelectionOrdered()) this.updateSelection();
+    });
+
     // 표 객체 선택 변경 시 렌더링
     eventBus.on('table-object-selection-changed', (selected) => {
       if (selected) {
@@ -1485,6 +1494,36 @@ export class InputHandler {
     }
   }
 
+  /** 화면 좌표에서 현재 머리말/꼬리말 내부 hitTest 결과를 반환한다. */
+  private headerFooterHitTestFromClientPoint(clientX: number, clientY: number): {
+    pageIdx: number;
+    hit: {
+      hit: boolean;
+      sectionIndex?: number;
+      applyTo?: number;
+      paraIndex?: number;
+      charOffset?: number;
+      cursorRect?: { pageIndex: number; x: number; y: number; height: number };
+    };
+  } | null {
+    if (!this.cursor.isInHeaderFooter()) return null;
+    const pagePoint = this.pagePointFromClientPoint(clientX, clientY);
+    if (!pagePoint) return null;
+    try {
+      return {
+        pageIdx: pagePoint.pageIdx,
+        hit: this.wasm.hitTestInHeaderFooter(
+          pagePoint.pageIdx,
+          this.cursor.headerFooterMode === 'header',
+          pagePoint.pageX,
+          pagePoint.pageY,
+        ),
+      };
+    } catch {
+      return null;
+    }
+  }
+
   /** 텍스트 선택 드래그를 시작한다 */
   private startTextSelectionDrag(e: MouseEvent): void {
     this.isDragging = true;
@@ -1503,6 +1542,28 @@ export class InputHandler {
   /** 마지막 포인터 좌표 기준으로 드래그 선택 focus를 갱신한다 */
   private updateTextSelectionDragFromPointer(): void {
     if (!this.isDragging) return;
+
+    if (this.cursor.isInHeaderFooter()) {
+      const hfHit = this.headerFooterHitTestFromClientPoint(
+        this.dragLastClientX,
+        this.dragLastClientY,
+      );
+      if (
+        hfHit?.hit.hit
+        && hfHit.hit.sectionIndex === this.cursor.hfSectionIdx
+        && hfHit.hit.applyTo === this.cursor.hfApplyTo
+        && hfHit.hit.paraIndex !== undefined
+        && hfHit.hit.charOffset !== undefined
+      ) {
+        this.cursor.setHfCursorPosition(
+          hfHit.hit.paraIndex,
+          hfHit.hit.charOffset,
+          hfHit.pageIdx,
+        );
+        this.updateCaretDuringDrag();
+      }
+      return;
+    }
 
     if (this.cursor.isInFootnote()) {
       const fnHit = this.footnoteHitTestFromClientPoint(this.dragLastClientX, this.dragLastClientY);
@@ -3428,6 +3489,36 @@ export class InputHandler {
 
   /** 선택 영역 하이라이트를 갱신한다 */
   private updateSelection(): void {
+    const hfSel = this.cursor.getHeaderFooterSelectionOrdered();
+    if (hfSel) {
+      const { start, end } = hfSel;
+      const zoom = this.viewportManager.getZoom();
+      const { width, height } = this.viewportManager.getViewportSize();
+      const pages = this.virtualScroll.getVisiblePages(
+        this.viewportManager.getScrollY(),
+        height,
+        this.viewportManager.getScrollX(),
+        width,
+      );
+      try {
+        const rects = pages.flatMap((pageNum) => this.wasm.getSelectionRectsInHeaderFooter(
+          start.sectionIdx,
+          start.isHeader,
+          start.applyTo,
+          pageNum,
+          start.paraIdx,
+          start.charOffset,
+          end.paraIdx,
+          end.charOffset,
+        ));
+        this.selectionRenderer.render(rects, zoom);
+      } catch (e) {
+        console.warn('[InputHandler] getSelectionRectsInHeaderFooter 실패:', e);
+        this.selectionRenderer.clear();
+      }
+      return;
+    }
+
     const fnSel = this.cursor.getFootnoteSelectionOrdered();
     if (fnSel) {
       const { start, end, pageNum, footnoteIndex } = fnSel;
