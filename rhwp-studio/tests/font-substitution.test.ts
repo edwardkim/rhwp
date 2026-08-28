@@ -105,3 +105,32 @@ test('ROKG successor는 정부상징 legacy 이름에만 적용한다', () => {
 
   assert.doesNotMatch(chain, /ROKG/u);
 });
+
+test('stand-in 웹폰트만 있는 legacy 이름은 설치된 치환 대상 face를 앞에 둔다', () => {
+  // `한양중고딕`은 studio 공급 카탈로그에 있어 resolveFont가 그대로 돌려준다.
+  // 그 공급은 번들 Noto Sans KR stand-in이므로 설치 face `HY중고딕`이 먼저 와야 한다.
+  const installed = fontFamilyChainForDisplay('한양중고딕', 0, 0, {
+    confirmedLocalFonts: ['HY중고딕'],
+  });
+  assert.match(installed, /^"HY중고딕", "한양중고딕", "Malgun Gothic"/u);
+  assert.match(installed, /sans-serif$/u);
+});
+
+test('치환 대상이 설치돼 있지 않으면 legacy 이름의 기존 체인을 유지한다', () => {
+  const chain = fontFamilyChainForDisplay('한양중고딕', 0, 0, {
+    confirmedLocalFonts: [],
+  });
+
+  assert.equal(
+    chain,
+    '"한양중고딕", "Malgun Gothic", "Apple SD Gothic Neo", "Noto Sans KR", "Pretendard", sans-serif',
+  );
+});
+
+test('요청 이름 자체가 설치돼 있으면 치환 대상을 앞에 두지 않는다', () => {
+  const chain = fontFamilyChainForDisplay('굴림', 0, 0, {
+    confirmedLocalFonts: ['굴림', '새굴림'],
+  });
+
+  assert.match(chain, /^"굴림"/u);
+});
