@@ -86,6 +86,12 @@ pub struct LayerJsonOptions {
     /// minor 를 21 로 올렸다. 계약은 "기존 그림 payload 유지 + schema minor 상승과 새 메타데이터"
     /// 이지 바이트 동일이나 모든 기존 필드 불변이 아니다.
     pub omit_image_bytes: bool,
+    /// Portable font blob bytes를 `resources.fontBlobs`에 inline하지 않는다.
+    ///
+    /// `fontResources.blobs[].dataRef.id`와 `resources.fontBlobKeys`는 그대로 남아 소비자가
+    /// exact key로 bytes를 다시 받을 수 있다. 기본값은 `false`이며 이때 기존 JSON bytes를
+    /// 바꾸지 않는다.
+    pub omit_font_bytes: bool,
 }
 
 /// 직렬화 도중 트리 아래로 흘려야 하는 값. 그림 op 하나를 쓰려면 문서 세대(키 발급)와
@@ -101,7 +107,8 @@ impl PageLayerTree {
         self.to_json_with_options(LayerJsonOptions::default())
     }
 
-    /// [Task #3315] 그림 base64 생략을 켤 수 있는 직렬화. `to_json()` 은 기본 옵션 위임이다.
+    /// [Task #3315/#4969] 그림·font base64 생략을 각각 켤 수 있는 직렬화.
+    /// `to_json()`은 두 payload를 모두 inline하는 기본 옵션 위임이다.
     pub fn to_json_with_options(&self, options: LayerJsonOptions) -> String {
         let mut buf = String::with_capacity(32_768);
         buf.push('{');
@@ -156,7 +163,7 @@ impl PageLayerTree {
         buf.push_str(",\"fontResources\":");
         write_font_resources(&mut buf, self.resources.font_resources());
         buf.push_str(",\"resources\":");
-        write_visual_resources(&mut buf, &self.resources);
+        write_visual_resources(&mut buf, &self.resources, options);
         write_text_export_metadata(&mut buf, &self.root, &self.resources);
         buf.push_str(",\"textV2\":");
         TextV2Diagnostics::from_layer_tree(self).write_json(&mut buf);
@@ -1211,7 +1218,7 @@ fn write_font_resources(buf: &mut String, table: &FontResourceTable) {
     buf.push_str("]}");
 }
 
-fn write_visual_resources(buf: &mut String, resources: &ResourceArena) {
+fn write_visual_resources(buf: &mut String, resources: &ResourceArena, options: LayerJsonOptions) {
     let _ = write!(
         buf,
         "{{\"tableId\":{},\"images\":[",
@@ -1251,11 +1258,13 @@ fn write_visual_resources(buf: &mut String, resources: &ResourceArena) {
         buf.push_str(&json_escape(key));
     }
     buf.push_str("],\"fontBlobs\":[");
-    for (index, (_, bytes)) in resources.font_blob_resources().enumerate() {
-        if index > 0 {
-            buf.push(',');
+    if !options.omit_font_bytes {
+        for (index, (_, bytes)) in resources.font_blob_resources().enumerate() {
+            if index > 0 {
+                buf.push(',');
+            }
+            write_json_base64(buf, bytes);
         }
-        write_json_base64(buf, bytes);
     }
     buf.push_str("],\"fontBlobKeys\":[");
     for index in 0..resources.font_blob_count() {
@@ -4700,6 +4709,7 @@ mod image_bytes_mode_tests {
     fn issue_3315_top_level_image_bytes_is_the_requested_mode_not_a_per_op_guarantee() {
         let json = mixed_tree().to_json_with_options(LayerJsonOptions {
             omit_image_bytes: true,
+            ..LayerJsonOptions::default()
         });
         let ops = image_ops(&json);
         assert_eq!(ops.len(), 2);

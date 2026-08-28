@@ -74,6 +74,7 @@ import { canvaskitClipRightPad } from './canvaskit/policy';
 import {
   CanvasKitGlyphRunFontCache,
   drawCanvasKitGlyphRun,
+  type FontBytesResolver,
 } from './canvaskit/glyph-run-fonts';
 import {
   selectLayerTextVariantsForLeaf,
@@ -609,6 +610,8 @@ export class CanvasKitLayerRenderer {
     targetCanvas: HTMLCanvasElement,
     scale: number,
     pageInfo?: PageInfo,
+    resolveFontBytes?: FontBytesResolver,
+    documentGeneration = 0,
   ): HTMLCanvasElement {
     if (this.disposed) {
       throw new Error('CanvasKit renderer가 이미 dispose되었습니다');
@@ -629,7 +632,12 @@ export class CanvasKitLayerRenderer {
       const canvas = surface.getCanvas();
       this.currentResources = tree.resources;
       this.currentFontResources = tree.fontResources;
-      this.glyphRunFonts.registerResources(tree.fontResources, tree.resources);
+      this.glyphRunFonts.registerResources(
+        tree.fontResources,
+        tree.resources,
+        resolveFontBytes,
+        documentGeneration,
+      );
       this.currentShowParagraphMarks = tree.outputOptions?.showParagraphMarks === true;
       this.currentShowControlCodes = tree.outputOptions?.showControlCodes === true;
       this.selectedTextVariantOps = new WeakSet<LayerPaintOp>();

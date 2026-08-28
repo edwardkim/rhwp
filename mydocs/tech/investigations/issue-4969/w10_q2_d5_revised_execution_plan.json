@@ -3,7 +3,7 @@
   "kind": "font-w10-q2-d5-resource-qualified-no-lineseg-activation-plan",
   "issue": 4969,
   "stage": "W10-Q2-D5",
-  "status": "r1-qualified-r2-awaiting-approval",
+  "status": "r2-qualified-r3-awaiting-approval",
   "baseMerge": "1a43a507c",
   "resourceAuditCheckpoint": "ae36a8786",
   "productOutputChangeBeforeR2": false,
@@ -122,11 +122,13 @@
     "r0Artifact": "mydocs/tech/investigations/issue-4969/w10_q2_d5_r0_red_contract.json",
     "r1": "qualified",
     "r1Artifact": "mydocs/tech/investigations/issue-4969/w10_q2_d5_r1_prepared_source_cache.json",
+    "r2": "qualified",
+    "r2Artifact": "mydocs/tech/investigations/issue-4969/w10_q2_d5_r2_font_by_key_transport.json",
     "pageLocalDedupPreserved": true,
     "uniqueSourcePreparationRed": true,
-    "fontByKeyTransportRed": true,
-    "productOutputChanged": false,
-    "nextSlice": "Q2-D5-R2",
+    "fontByKeyTransportRed": false,
+    "productOutputChanged": "opt-in-only",
+    "nextSlice": "Q2-D5-R3",
     "nextSliceApproved": false
   },
   "deferred": [
@@ -145,5 +147,5 @@
     "public-rejected-attempt-annotation",
     "private-corpus-or-hyper-v-oracle-rerun"
   ],
-  "approvalScope": "Q2-D5-R0 and R1 are complete; maintainer approval opens Q2-D5-R2 only, and each later slice, commit, push, PR, comment, and merge remains separately gated"
+  "approvalScope": "Q2-D5-R0, R1, and R2 are complete; maintainer approval opens Q2-D5-R3 only, and each later slice, commit, push, PR, comment, and merge remains separately gated"
 }

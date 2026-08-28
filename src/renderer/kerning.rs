@@ -214,6 +214,19 @@ impl ExactFontSourceRegistry {
         self.sources.get(handle).cloned()
     }
 
+    /// Portable layer resource key가 현재 registry가 보존한 exact source 하나와 정확히
+    /// 일치할 때만 immutable bytes owner를 돌려준다.
+    pub(crate) fn source_arc_for_resource_key(&self, key: &str) -> Option<std::sync::Arc<[u8]>> {
+        let (byte_len, digest) = crate::paint::parse_font_blob_resource_key(key)?;
+        if byte_len > crate::paint::MAX_PORTABLE_FONT_BLOB_BYTES {
+            return None;
+        }
+        self.sources.values().find_map(|bytes| {
+            (bytes.len() == byte_len && crate::paint::resource_digest_hex(bytes.as_ref()) == digest)
+                .then(|| bytes.clone())
+        })
+    }
+
     pub(crate) fn slot_count(&self) -> usize {
         self.slots.len()
     }

@@ -2745,6 +2745,13 @@ impl LayoutEngine {
         )
     }
 
+    pub(crate) fn exact_font_source_bytes_for_resource_key(
+        &self,
+        key: &str,
+    ) -> Option<std::sync::Arc<[u8]>> {
+        self.exact_font_sources.source_arc_for_resource_key(key)
+    }
+
     pub(crate) fn set_render_normalization_overlay(
         &self,
         overlay: std::sync::Arc<crate::renderer::render_normalization::RenderNormalizationOverlay>,

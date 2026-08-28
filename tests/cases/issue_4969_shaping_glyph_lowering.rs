@@ -47,7 +47,10 @@ mod shaping_glyph;
 use std::sync::Arc;
 
 use kerning::{ExactFontSlot, ExactFontSource, ExactFontSourceRegistry};
-use rhwp::paint::{LayerNode, PaintOp, ResourceArena};
+use rhwp::paint::{
+    font_blob_resource_key, parse_font_blob_resource_key, resource_digest_hex, LayerJsonOptions,
+    LayerNode, PageLayerTree, PaintOp, ResourceArena,
+};
 use rhwp::renderer::render_tree::{BoundingBox, FieldMarkerType, TextRunNode};
 use rhwp::renderer::TextStyle;
 use shaping_composition::{
@@ -702,4 +705,101 @@ fn issue_4969_q2_d5_r1_prepared_cache_debug_excludes_font_bytes() {
     assert!(debug.contains(&format!("total_source_bytes: {}", SOURCE_HAN.len())));
     assert!(!debug.contains("OTTO"));
     assert!(!debug.contains("Source Han Serif"));
+}
+
+#[test]
+fn issue_4969_q2_d5_r2_font_by_key_is_opt_in_and_preserves_exact_metadata() {
+    let (sidecars, measurement, _) = prepared_sidecar();
+    let run = text_run();
+    let bbox = BoundingBox::new(3.0, 5.0, measurement.total_advance_px, 14.0);
+    let mut node = LayerNode::leaf(bbox, Some(17), vec![PaintOp::text_run(bbox, run)]);
+    let mut resources = ResourceArena::default();
+    let claimed = lower_horizontal_shaping_page_sidecars(&mut node, &sidecars, &mut resources);
+    assert_eq!(claimed.len(), 1);
+
+    let mut tree = PageLayerTree::new(100.0, 100.0, node);
+    tree.resources = resources;
+    let default_json = tree.to_json();
+    assert_eq!(
+        default_json,
+        tree.to_json_with_options(LayerJsonOptions::default()),
+        "default output must remain byte-identical to the inline contract"
+    );
+
+    let by_key_json = tree.to_json_with_options(LayerJsonOptions {
+        omit_font_bytes: true,
+        ..LayerJsonOptions::default()
+    });
+    let inline: serde_json::Value = serde_json::from_str(&default_json).expect("inline JSON");
+    let by_key: serde_json::Value = serde_json::from_str(&by_key_json).expect("by-key JSON");
+    let expected_key = font_blob_resource_key(SOURCE_HAN.len(), &resource_digest_hex(SOURCE_HAN));
+
+    assert_eq!(
+        inline["resources"]["fontBlobs"].as_array().unwrap().len(),
+        1
+    );
+    assert_eq!(
+        by_key["resources"]["fontBlobs"].as_array().unwrap().len(),
+        0
+    );
+    assert_eq!(
+        inline["resources"]["fontBlobKeys"],
+        by_key["resources"]["fontBlobKeys"]
+    );
+    assert_eq!(by_key["resources"]["fontBlobKeys"][0], expected_key);
+    assert_eq!(inline["fontResources"], by_key["fontResources"]);
+    assert_eq!(
+        by_key["fontResources"]["blobs"][0]["dataRef"]["id"],
+        expected_key
+    );
+    assert!(
+        by_key_json.len() + SOURCE_HAN.len() < default_json.len(),
+        "opt-in JSON must actually remove the page-linear font payload"
+    );
+}
+
+#[test]
+fn issue_4969_q2_d5_r2_exact_font_resolver_rejects_unverified_keys() {
+    let mut document = rhwp::DocumentCore::new_empty();
+    document
+        .register_exact_font_source_native(SLOT.char_shape_id, SLOT.language_index, SOURCE_HAN, 0)
+        .expect("register exact source");
+    let digest = resource_digest_hex(SOURCE_HAN);
+    let key = font_blob_resource_key(SOURCE_HAN.len(), &digest);
+
+    assert_eq!(
+        parse_font_blob_resource_key(&key),
+        Some((SOURCE_HAN.len(), digest.as_str()))
+    );
+    for invalid in [
+        format!("font:blake3:0{}:{digest}", SOURCE_HAN.len()),
+        format!("font:blake3:0:{digest}"),
+        format!("font:blake3:{}:{}", SOURCE_HAN.len(), digest.to_uppercase()),
+        "font:blake3:4:feed".to_string(),
+        format!("font:sha256:{}:{digest}", SOURCE_HAN.len()),
+        format!("font:blake3:{}:{digest}:extra", SOURCE_HAN.len()),
+    ] {
+        assert_eq!(parse_font_blob_resource_key(&invalid), None, "{invalid}");
+    }
+
+    assert_eq!(
+        document.get_source_font_bytes_native(&key).as_deref(),
+        Some(SOURCE_HAN)
+    );
+    assert!(document
+        .get_source_font_bytes_native(&format!("font:blake3:{}:{digest}", SOURCE_HAN.len() + 1))
+        .is_none());
+    assert!(document
+        .get_source_font_bytes_native(&format!("font:blake3:0{0}:{digest}", SOURCE_HAN.len()))
+        .is_none());
+    assert!(document
+        .get_source_font_bytes_native(&format!(
+            "font:blake3:{}:{}",
+            SOURCE_HAN.len(),
+            "0".repeat(64)
+        ))
+        .is_none());
+    assert!(document
+        .get_source_font_bytes_native(&format!("font:blake3:{}:{digest}", 32 * 1024 * 1024 + 1))
+        .is_none());
 }

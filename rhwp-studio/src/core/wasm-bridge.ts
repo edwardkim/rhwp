@@ -997,18 +997,41 @@ export class WasmBridge {
     }
   }
 
+  /** Portable font key로 현재 document generation의 exact source bytes를 받는다. */
+  getSourceFontBytes(key: string): Uint8Array | null {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    const d = this.doc as unknown as { getSourceFontBytes?: (k: string) => Uint8Array };
+    if (typeof d.getSourceFontBytes !== 'function') return null;
+    try {
+      return d.getSourceFontBytes(key);
+    } catch {
+      return null;
+    }
+  }
+
   getPageLayerTreeObject(pageNum: number, profile: LayerRenderProfile = 'screen'): PageLayerTree {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     const d = this.doc as unknown as {
-      getPageLayerTreeWithProfile?: (p: number, profile: string) => string;
+      getPageLayerTreeWithProfile?: (
+        p: number,
+        profile: string,
+        omitImageBytes?: boolean,
+        omitFontBytes?: boolean,
+      ) => string;
       getPageLayerTree?: (p: number) => string;
+      getSourceFontBytes?: (key: string) => Uint8Array;
     };
     const hasProfileApi = typeof d.getPageLayerTreeWithProfile === 'function';
     if (!hasProfileApi && profile !== 'screen') {
       throw new Error('[WasmBridge] 현재 WASM은 profile별 PageLayerTree를 지원하지 않습니다');
     }
     const json = hasProfileApi
-      ? d.getPageLayerTreeWithProfile!(pageNum, profile)
+      ? d.getPageLayerTreeWithProfile!(
+        pageNum,
+        profile,
+        false,
+        typeof d.getSourceFontBytes === 'function',
+      )
       : this.getPageLayerTree(pageNum);
     let parsed: unknown;
     try {

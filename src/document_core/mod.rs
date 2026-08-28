@@ -187,7 +187,7 @@ pub struct DocumentCore {
     /// [Task #2222] 페이지 레이어 트리 JSON 캐시 — (출력옵션 지문, 직렬화 결과).
     /// 이미지 base64 인라인으로 페이지당 1MB 급이라 재직렬화(실측 15ms/회)가
     /// 렌더 자체와 맞먹는다. 편집 무효화는 page_tree_cache 와 동일 지점에서.
-    pub(crate) layer_tree_json_cache: RefCell<Vec<Vec<(u8, String)>>>,
+    pub(crate) layer_tree_json_cache: RefCell<Vec<Vec<(u16, String)>>>,
     /// 그림 신원 키(`imageKey`)의 문서 단위 세대 번호 (Task #3315).
     ///
     /// `bin_data_id` 는 append-only 라 세션 중 id→바이트가 안정하지만, undo 스냅샷

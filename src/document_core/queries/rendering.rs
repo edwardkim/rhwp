@@ -2077,25 +2077,26 @@ impl DocumentCore {
     }
 
     /// [Task #2222] 레이어 출력옵션 5종과 profile의 비트 지문 — JSON 캐시 키.
-    /// [Task #3315] 그림 바이트 생략 여부를 최상위 비트에 함께 접는다.
+    /// [Task #3315/#4969] 그림·font 바이트 생략 여부를 서로 다른 비트에 함께 접는다.
     fn layer_output_options_fingerprint(
         &self,
         profile: RenderProfile,
         options: crate::paint::LayerJsonOptions,
-    ) -> u8 {
-        let profile_bits = match profile {
+    ) -> u16 {
+        let profile_bits: u16 = match profile {
             RenderProfile::FastPreview => 0,
             RenderProfile::Screen => 1,
             RenderProfile::Print => 2,
             RenderProfile::HighQuality => 3,
         };
-        u8::from(self.show_paragraph_marks)
-            | (u8::from(self.show_control_codes) << 1)
-            | (u8::from(self.show_transparent_borders) << 2)
-            | (u8::from(self.clip_enabled) << 3)
-            | (u8::from(self.debug_overlay) << 4)
+        u16::from(self.show_paragraph_marks)
+            | (u16::from(self.show_control_codes) << 1)
+            | (u16::from(self.show_transparent_borders) << 2)
+            | (u16::from(self.clip_enabled) << 3)
+            | (u16::from(self.debug_overlay) << 4)
             | (profile_bits << 5)
-            | (u8::from(options.omit_image_bytes) << 7)
+            | (u16::from(options.omit_image_bytes) << 7)
+            | (u16::from(options.omit_font_bytes) << 8)
     }
 
     /// 페이지가 그리는 그림들의 신원 키만 작은 JSON 으로 반환한다 (Task #3315).
@@ -2178,6 +2179,16 @@ impl DocumentCore {
         let (mime, bytes) =
             crate::renderer::image_resolver::emitted_image_bytes(&data, variant.bakes_watermark());
         Some((mime, bytes.into_owned()))
+    }
+
+    /// Portable font resource key로 현재 document generation의 exact source bytes를 받는다.
+    ///
+    /// key의 길이·BLAKE3 digest와 registry owner를 다시 대조한다. 등록되지 않았거나 오래된
+    /// key, 비정규 표기, 32 MiB 상한 초과는 모두 `None`으로 닫힌다.
+    pub fn get_source_font_bytes_native(&self, key: &str) -> Option<Vec<u8>> {
+        self.layout_engine
+            .exact_font_source_bytes_for_resource_key(key)
+            .map(|bytes| bytes.to_vec())
     }
 
     /// 본문(flow) 그림의 **배치 정보만** 작은 JSON 으로 반환한다 (Task #3315).

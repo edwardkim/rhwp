@@ -157,6 +157,7 @@ hot_render_boundaries! {
         page_num: u32,
         profile: &str,
         omit_image_bytes: bool,
+        omit_font_bytes: bool,
     ) -> Result<String, JsValue> = super::get_page_layer_tree_with_profile_impl;
 
     // 레이어 평면 분류. `getLayerPlaneSummary` 를 먹여 static flow 분리 여부, overlay 캔버스
@@ -191,6 +192,11 @@ const DELIBERATELY_COLD_EXPORTS: &[(&str, &str)] = &[
     (
         "getSourceImageBytes",
         "결과를 studio 가 키별 object URL 로 메모이즈한다(FlowImageUrlCache). 키가 \
+         바뀌기 전에는 다시 들어오지 않으므로 경계를 두어도 관측되지 않는다.",
+    ),
+    (
+        "getSourceFontBytes",
+        "결과를 studio가 document generation별 verified font cache에 저장한다. exact key가 \
          바뀌기 전에는 다시 들어오지 않으므로 경계를 두어도 관측되지 않는다.",
     ),
     (

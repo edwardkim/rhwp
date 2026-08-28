@@ -265,6 +265,7 @@ fn get_page_layer_tree_with_profile_impl(
     page_num: u32,
     profile: &str,
     omit_image_bytes: bool,
+    omit_font_bytes: bool,
 ) -> Result<String, JsValue> {
     let profile = crate::paint::RenderProfile::parse(profile)
         .ok_or_else(|| JsValue::from_str(&format!("unsupported render profile: {profile}")))?;
@@ -272,7 +273,10 @@ fn get_page_layer_tree_with_profile_impl(
         .get_page_layer_tree_with_options_native(
             page_num,
             profile,
-            crate::paint::LayerJsonOptions { omit_image_bytes },
+            crate::paint::LayerJsonOptions {
+                omit_image_bytes,
+                omit_font_bytes,
+            },
         )
         .map_err(|error| error.into())
 }
@@ -925,7 +929,7 @@ impl HwpDocument {
     /// 경계를 지나야 한다. PageRenderer 가 좁은 질의를 못 쓸 때 되돌아오는 경로다.
     #[wasm_bindgen(js_name = getPageLayerTree)]
     pub fn get_page_layer_tree(&self, page_num: u32) -> Result<String, JsValue> {
-        self.get_page_layer_tree_with_profile(page_num, "screen", Some(false))
+        self.get_page_layer_tree_with_profile(page_num, "screen", Some(false), Some(false))
     }
 
     /// 페이지 레이어 트리를 profile 별로 반환한다.
@@ -933,6 +937,9 @@ impl HwpDocument {
     /// [Task #3315] `omit_image_bytes` 를 `true` 로 주면 `sourceImageKey`를 낼 수 있는 그림만
     /// base64를 생략하고, 바이트는 `getSourceImageBytes(key)`로 따로 받는다. 키 없는 합성 그림은
     /// 소비자가 되찾을 방법이 없으므로 같은 `byKey` 요청에서도 인라인 base64를 유지한다.
+    /// [Task #4969] 네 번째 `omit_font_bytes`를 `true`로 주면 exact font metadata/key는
+    /// 유지하고 `resources.fontBlobs` payload만 생략한다. 바이트는
+    /// `getSourceFontBytes(key)`로 현재 document generation에서 따로 받는다.
     /// 인자를 생략하면(`undefined`) 그림 payload는 inline으로 유지하지만, schema minor 21과
     /// 최상위 `imageBytes:"inline"` 메타데이터가 있으므로 JSON 전체의 byte identity는 보장하지 않는다.
     #[wasm_bindgen(js_name = getPageLayerTreeWithProfile)]
@@ -941,13 +948,16 @@ impl HwpDocument {
         page_num: u32,
         profile: &str,
         omit_image_bytes: Option<bool>,
+        omit_font_bytes: Option<bool>,
     ) -> Result<String, JsValue> {
         let omit_image_bytes = omit_image_bytes.unwrap_or(false);
+        let omit_font_bytes = omit_font_bytes.unwrap_or(false);
         render_patch_boundary::get_page_layer_tree_with_profile(
             self,
             page_num,
             profile,
             omit_image_bytes,
+            omit_font_bytes,
         )
     }
 
@@ -1077,6 +1087,16 @@ impl HwpDocument {
                 "unresolvable source image key: {key}"
             ))),
         }
+    }
+
+    /// Portable font resource key로 exact source bytes를 Uint8Array로 반환한다 (Task #4969).
+    ///
+    /// `getPageLayerTreeWithProfile(page, profile, imageMode, true)`의 opt-in 경로다.
+    /// key가 현재 document generation의 registry source와 정확히 일치하지 않으면 던진다.
+    #[wasm_bindgen(js_name = getSourceFontBytes)]
+    pub fn get_source_font_bytes(&self, key: &str) -> Result<Vec<u8>, JsValue> {
+        self.get_source_font_bytes_native(key)
+            .ok_or_else(|| JsValue::from_str(&format!("unresolvable source font key: {key}")))
     }
 
     /// 페이지 정보를 JSON 문자열로 반환한다.

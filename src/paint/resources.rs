@@ -345,6 +345,26 @@ pub fn font_blob_resource_key(byte_len: usize, digest: &str) -> String {
     resource_key("font", byte_len, digest)
 }
 
+/// Exact portable font resource key를 검증하고 `(byte_len, digest)`로 푼다.
+///
+/// 길이와 digest의 표기까지 canonical해야 한다. 느슨하게 해석하면 같은 font bytes에 여러
+/// cache key가 생겨 document-generation cache의 상한과 무효화 계약을 우회할 수 있다.
+pub fn parse_font_blob_resource_key(key: &str) -> Option<(usize, &str)> {
+    let value = key.strip_prefix("font:blake3:")?;
+    let (byte_len_text, digest) = value.split_once(':')?;
+    if byte_len_text.is_empty()
+        || (byte_len_text.len() > 1 && byte_len_text.starts_with('0'))
+        || digest.len() != 64
+        || !digest
+            .bytes()
+            .all(|byte| byte.is_ascii_digit() || (b'a'..=b'f').contains(&byte))
+    {
+        return None;
+    }
+    let byte_len = byte_len_text.parse::<usize>().ok()?;
+    (byte_len > 0).then_some((byte_len, digest))
+}
+
 fn resource_key(kind: &str, byte_len: usize, digest: &str) -> String {
     format!("{kind}:{RESOURCE_KEY_ALGORITHM}:{byte_len}:{digest}")
 }
