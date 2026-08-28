@@ -1788,7 +1788,7 @@ impl DocumentCore {
         )
     }
 
-    fn replace_text_in_cell_native_impl(
+    pub(crate) fn replace_text_in_cell_native_impl(
         &mut self,
         section_idx: usize,
         parent_para_idx: usize,

@@ -25519,7 +25519,7 @@ fn task1413_remove_field_at_in_cell_ex_equivalent() {
 }
 
 #[test]
-fn task1413_evaluate_table_formula_ex_equivalent() {
+fn task1413_evaluate_table_formula_ex_equivalent_and_issue_4135_rendering() {
     let mut a = create_doc_with_table();
     let rp = a.evaluate_table_formula(0, 0, 0, 0, 0, "=1+1", false);
     let mut b = create_doc_with_table();
@@ -25527,6 +25527,42 @@ fn task1413_evaluate_table_formula_ex_equivalent() {
         r#"{"sectionIdx":0,"parentParaIdx":0,"controlIdx":0,"targetRow":0,"targetCol":0,"formula":"=1+1","writeResult":false}"#,
     );
     assert_eq!(format!("{rp:?}"), format!("{re:?}"));
+
+    let mut doc = HwpDocument::create_empty();
+    doc.create_table_native(0, 0, 0, 2, 4)
+        .expect("2행 4열 표 생성");
+
+    for (cell_idx, text) in [
+        (0, "10"),
+        (1, "20"),
+        (2, "30"),
+        (4, "1"),
+        (5, "2"),
+        (6, "3"),
+    ] {
+        doc.insert_text_in_cell_native(0, 0, 0, cell_idx, 0, 0, text)
+            .expect("계산 원본 셀 입력");
+    }
+
+    let first: Value = serde_json::from_str(
+        &doc.evaluate_table_formula(0, 0, 0, 0, 3, "=SUM(A1:C1)", true)
+            .expect("첫 행 합계"),
+    )
+    .expect("첫 행 합계 JSON");
+    let second: Value = serde_json::from_str(
+        &doc.evaluate_table_formula(0, 0, 0, 1, 3, "=SUM(A2:C2)", true)
+            .expect("둘째 행 합계"),
+    )
+    .expect("둘째 행 합계 JSON");
+
+    assert_eq!(first["result"].as_f64(), Some(60.0));
+    assert_eq!(second["result"].as_f64(), Some(6.0));
+
+    let svg = doc.render_page_svg_native(0).expect("합계 결과 SVG");
+    assert!(
+        svg.matches(">0</text>").count() >= 4,
+        "10, 20, 30과 결과 60의 0까지 모두 렌더링되어야 한다"
+    );
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
