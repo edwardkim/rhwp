@@ -25,15 +25,21 @@ const policy = {
   },
 };
 
-test("duration-aware assignment is deterministic and balances estimated load", () => {
+test("duration-aware assignment is deterministic and balances three estimated loads", () => {
   const first = assignIntegrationTargets(["fast", "slow", "medium", "new"], policy);
   const second = assignIntegrationTargets(["new", "medium", "fast", "slow"], policy);
 
   assert.deepEqual(first, second);
   assert.deepEqual(first["integration-b"].targets, ["slow"]);
-  assert.deepEqual(first["integration-c"].targets, ["fast", "medium", "new"]);
+  assert.deepEqual(first["integration-c"].targets, ["medium"]);
+  assert.deepEqual(first["integration-d"].targets, ["fast", "new"]);
   assert.equal(first["integration-b"].estimatedSeconds, 9);
-  assert.equal(first["integration-c"].estimatedSeconds, 8);
+  assert.equal(first["integration-c"].estimatedSeconds, 6);
+  assert.equal(first["integration-d"].estimatedSeconds, 2);
+  assert.deepEqual(
+    Object.values(first).flatMap((assignment) => assignment.targets).sort(),
+    ["fast", "medium", "new", "slow"],
+  );
 });
 
 test("empty duration profile preserves stable alternating bootstrap assignment", () => {
@@ -43,8 +49,9 @@ test("empty duration profile preserves stable alternating bootstrap assignment",
     targets: {},
   });
 
-  assert.deepEqual(assignments["integration-b"].targets, ["alpha", "charlie"]);
-  assert.deepEqual(assignments["integration-c"].targets, ["bravo", "delta"]);
+  assert.deepEqual(assignments["integration-b"].targets, ["alpha", "delta"]);
+  assert.deepEqual(assignments["integration-c"].targets, ["bravo"]);
+  assert.deepEqual(assignments["integration-d"].targets, ["charlie"]);
 });
 
 test("metadata selection uses only root integration targets", () => {
@@ -104,7 +111,7 @@ test("JUnit collection aggregates testcase durations per binary and skips setup 
   assert.deepEqual(durations, { issue_1: 2, issue_2: 2 });
 });
 
-test("policy refresh accepts one successful B and C measurement", () => {
+test("policy refresh accepts one successful B, C, and D measurement", () => {
   const refreshed = refreshDurationPolicy({
     schema_version: 1,
     fallback_seconds: 1,
@@ -112,21 +119,24 @@ test("policy refresh accepts one successful B and C measurement", () => {
   }, [
     { schema_version: 1, archive_label: "b", run_id: "10", ref: "refs/heads/devel", sha: "same-sha", targets: { beta: 4 } },
     { schema_version: 1, archive_label: "c", run_id: "10", ref: "refs/heads/devel", sha: "same-sha", targets: { alpha: 2 } },
+    { schema_version: 1, archive_label: "d", run_id: "10", ref: "refs/heads/devel", sha: "same-sha", targets: { delta: 1 } },
   ]);
 
-  assert.deepEqual(refreshed.targets, { alpha: 2, beta: 4, existing: 3 });
+  assert.deepEqual(refreshed.targets, { alpha: 2, beta: 4, delta: 1, existing: 3 });
   assert.deepEqual(refreshed.measurement_sources, {
     b: { run_id: "10", ref: "refs/heads/devel", sha: "same-sha" },
     c: { run_id: "10", ref: "refs/heads/devel", sha: "same-sha" },
+    d: { run_id: "10", ref: "refs/heads/devel", sha: "same-sha" },
   });
 });
 
-test("policy refresh rejects empty or mismatched B/C measurements", () => {
+test("policy refresh rejects empty or mismatched B/C/D measurements", () => {
   const basePolicy = { schema_version: 1, fallback_seconds: 1, targets: {} };
   assert.throws(
     () => refreshDurationPolicy(basePolicy, [
       { schema_version: 1, archive_label: "b", run_id: "10", ref: "refs/heads/devel", sha: "same-sha", targets: {} },
       { schema_version: 1, archive_label: "c", run_id: "10", ref: "refs/heads/devel", sha: "same-sha", targets: { alpha: 2 } },
+      { schema_version: 1, archive_label: "d", run_id: "10", ref: "refs/heads/devel", sha: "same-sha", targets: { delta: 1 } },
     ]),
     /must contain target durations: b/,
   );
@@ -134,6 +144,7 @@ test("policy refresh rejects empty or mismatched B/C measurements", () => {
     () => refreshDurationPolicy(basePolicy, [
       { schema_version: 1, archive_label: "b", run_id: "10", ref: "refs/heads/devel", sha: "first", targets: { beta: 4 } },
       { schema_version: 1, archive_label: "c", run_id: "10", ref: "refs/heads/devel", sha: "second", targets: { alpha: 2 } },
+      { schema_version: 1, archive_label: "d", run_id: "10", ref: "refs/heads/devel", sha: "first", targets: { delta: 1 } },
     ]),
     /identical run, ref, and sha provenance/,
   );

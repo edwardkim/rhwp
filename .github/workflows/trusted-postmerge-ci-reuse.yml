@@ -7,6 +7,18 @@ on:
         description: Source workflow filename whose successful PR run may be reused.
         required: true
         type: string
+      caller_event_name:
+        description: Original caller event name; workflow_call itself is not evidence.
+        required: true
+        type: string
+      caller_ref:
+        description: Original caller Git ref.
+        required: true
+        type: string
+      caller_sha:
+        description: Original caller commit SHA.
+        required: true
+        type: string
       require_duration_artifacts:
         description: Require B/C duration artifacts before permitting CI worker reuse.
         required: false
@@ -50,19 +62,53 @@ jobs:
       # falls back to full CI; later PRs use this immutable pre-merge revision.
       - name: Resolve trusted source base parent
         id: source-base
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/devel' }}
+        if: ${{ inputs.caller_event_name == 'push' && inputs.caller_ref == 'refs/heads/devel' }}
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          CALLER_SHA: ${{ inputs.caller_sha }}
         with:
           script: |
             try {
+              const mergeSha = process.env.CALLER_SHA;
+              if (!/^[0-9a-f]{40}$/.test(mergeSha)) {
+                core.setOutput('sha', '');
+                core.warning('Caller SHA is unavailable; running full.');
+                return;
+              }
               const { data: commit } = await github.rest.repos.getCommit({
                 ...context.repo,
-                ref: context.sha,
+                ref: mergeSha,
               });
               const parents = (commit.parents || []).map((parent) => parent.sha);
-              if (parents.length !== 2 || new Set(parents).size !== 2) {
+              if (commit.sha !== mergeSha || new Set(parents).size !== parents.length) {
                 core.setOutput('sha', '');
-                core.warning('Post-merge reuse requires exactly two merge parents.');
+                core.warning('Post-merge commit identity is unavailable; running full.');
+                return;
+              }
+              if (parents.length === 2) {
+                core.setOutput('sha', parents[0]);
+                return;
+              }
+              if (parents.length !== 1) {
+                core.setOutput('sha', '');
+                core.warning('Post-merge reuse requires one squash parent or two merge parents.');
+                return;
+              }
+              const pullRequests = await github.paginate(
+                github.rest.repos.listPullRequestsAssociatedWithCommit,
+                { ...context.repo, commit_sha: mergeSha, per_page: 100 },
+              );
+              const matching = pullRequests.filter((candidate) => (
+                candidate.state === 'closed'
+                && candidate.merged_at
+                && candidate.merge_commit_sha === mergeSha
+                && candidate.base?.ref === 'devel'
+                && candidate.head?.repo?.full_name === process.env.GITHUB_REPOSITORY
+                && /^[0-9a-f]{40}$/.test(candidate.head?.sha || '')
+              ));
+              if (matching.length !== 1) {
+                core.setOutput('sha', '');
+                core.warning('Squash post-merge reuse requires exactly one same-repository merged PR.');
                 return;
               }
               core.setOutput('sha', parents[0]);
@@ -89,6 +135,9 @@ jobs:
         env:
           WORKFLOW_FILE: ${{ inputs.workflow_file }}
           REQUIRE_DURATION_ARTIFACTS: ${{ inputs.require_duration_artifacts }}
+          CALLER_EVENT_NAME: ${{ inputs.caller_event_name }}
+          CALLER_REF: ${{ inputs.caller_ref }}
+          CALLER_SHA: ${{ inputs.caller_sha }}
         with:
           script: |
             const path = require('node:path');
@@ -109,19 +158,20 @@ jobs:
             }
 
             async function collectEvidence() {
+              const mergeSha = process.env.CALLER_SHA;
               const mergeCommit = (await github.rest.repos.getCommit({
                 owner,
                 repo,
-                ref: context.sha,
+                ref: mergeSha,
               })).data;
               const pullRequests = await github.paginate(
                 github.rest.repos.listPullRequestsAssociatedWithCommit,
-                { owner, repo, commit_sha: context.sha, per_page: 100 },
+                { owner, repo, commit_sha: mergeSha, per_page: 100 },
               );
               const pullRequest = pullRequests.filter((candidate) => (
                 candidate.state === 'closed'
                 && candidate.merged_at
-                && candidate.merge_commit_sha === context.sha
+                && candidate.merge_commit_sha === mergeSha
                 && candidate.base?.ref === 'devel'
                 && candidate.head?.repo?.full_name === process.env.GITHUB_REPOSITORY
               ));
@@ -129,9 +179,10 @@ jobs:
                 return { mergeCommit, pullRequests, pullFiles: [], workflowRuns: [] };
               }
               const pr = pullRequest[0];
-              const baseParent = (mergeCommit.parents || [])
-                .map((parent) => parent.sha)
-                .find((sha) => sha !== pr.head.sha);
+              const mergeParents = (mergeCommit.parents || []).map((parent) => parent.sha);
+              const baseParent = mergeParents.length === 1
+                ? mergeParents[0]
+                : mergeParents.find((sha) => sha !== pr.head.sha);
               const [sourceCommit, comparison, pullFiles, workflowRuns] = await Promise.all([
                 github.rest.repos.getCommit({ owner, repo, ref: pr.head.sha }).then((response) => response.data),
                 baseParent
@@ -164,10 +215,10 @@ jobs:
             try {
               const evidence = await collectEvidence();
               result = evaluateTrustedPostMergeReuse({
-                eventName: context.eventName,
-                ref: context.ref,
+                eventName: process.env.CALLER_EVENT_NAME,
+                ref: process.env.CALLER_REF,
                 repository: process.env.GITHUB_REPOSITORY,
-                mergeSha: context.sha,
+                mergeSha: process.env.CALLER_SHA,
                 ...evidence,
               });
             } catch (error) {

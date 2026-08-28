@@ -12,7 +12,7 @@ on:
         required: true
         type: string
       archive_label:
-        description: Stable A/B archive partition label.
+        description: Stable A/B/C/D archive partition label.
         required: true
         type: string
       filterset:
@@ -53,8 +53,8 @@ jobs:
         with:
           name: test-archive-${{ github.run_id }}-${{ inputs.archive_label }}
 
-      # [#5164] 네 worker는 동일 archive에서 서로 배타적인 filter/partition만 실행한다.
-      # 집계 job은 archive runnable 수와 네 Summary run 합계를 대조한다.
+      # [#6251] 각 worker는 자기 archive에서 서로 배타적인 filter/partition만 실행한다.
+      # 집계 job은 archive runnable 수와 worker Summary run 합계를 대조한다.
       - name: Run ${{ inputs.label }}
         env:
           COUNT_LABEL: ${{ inputs.count_label }}
@@ -69,7 +69,7 @@ jobs:
           profile_args=()
           duration_report=""
           case "${{ inputs.archive_label }}" in
-            b|c)
+            b|c|d)
               profile_args=(--profile ci-duration-observation)
               duration_report="target/nextest/ci-duration-observation/junit.xml"
               ;;
@@ -111,8 +111,8 @@ jobs:
       # Same-repository PR artifact is only a short-lived candidate. It cannot
       # update the policy until a trusted post-merge verifier accepts its exact
       # workflow run, merge lineage, and artifact provenance.
-      - name: Upload same-repository PR B/C target durations
-        if: ${{ success() && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && (inputs.archive_label == 'b' || inputs.archive_label == 'c') }}
+      - name: Upload same-repository PR B/C/D target durations
+        if: ${{ success() && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && (inputs.archive_label == 'b' || inputs.archive_label == 'c' || inputs.archive_label == 'd') }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: nextest-target-durations-${{ github.run_id }}-${{ inputs.archive_label }}
@@ -120,10 +120,10 @@ jobs:
           retention-days: 3
           if-no-files-found: error
 
-      # Only successful devel B/C measurements are baseline candidates. They are
+      # Only successful devel B/C/D measurements are baseline candidates. They are
       # retained longer so their provenance can be audited after policy refresh.
-      - name: Upload devel B/C target durations
-        if: ${{ success() && github.event_name == 'push' && github.ref == 'refs/heads/devel' && (inputs.archive_label == 'b' || inputs.archive_label == 'c') }}
+      - name: Upload devel B/C/D target durations
+        if: ${{ success() && github.event_name == 'push' && github.ref == 'refs/heads/devel' && (inputs.archive_label == 'b' || inputs.archive_label == 'c' || inputs.archive_label == 'd') }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: nextest-target-durations-${{ github.run_id }}-${{ inputs.archive_label }}

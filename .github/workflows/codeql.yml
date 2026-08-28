@@ -55,6 +55,9 @@ jobs:
       pull-requests: read
     with:
       workflow_file: codeql.yml
+      caller_event_name: ${{ github.event_name }}
+      caller_ref: ${{ github.ref }}
+      caller_sha: ${{ github.sha }}
 
   preflight:
     name: CodeQL preflight
