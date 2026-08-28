@@ -3405,6 +3405,7 @@ impl LayoutEngine {
                                 Some(para_index),
                                 Some(ctrl_idx_in_para),
                                 Some(&pic_cell_ctx),
+                                styles,
                             );
                             inline_x += clamped_w;
                         } else {
@@ -3427,6 +3428,7 @@ impl LayoutEngine {
                                 Some(para_index),
                                 Some(ctrl_idx_in_para),
                                 Some(&pic_cell_ctx),
+                                styles,
                             );
                             let pic_h = hwpunit_to_px(pic.common.height as i32, self.dpi);
                             max_inline_height = max_inline_height.max(pic_h);
