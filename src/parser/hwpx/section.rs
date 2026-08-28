@@ -277,13 +277,17 @@ fn parse_master_page_start(e: &quick_xml::events::BytesStart, master_page: &mut 
             _ => {}
         }
     }
-    // 한컴 HWPX -> HWP5 저장본은 LAST_PAGE 바탕쪽을 확장 바탕쪽으로 저장하면서
-    // pageDuplicate="0"인 경우에도 overlap bit를 함께 세운다.
-    if is_last_page {
+    // 한컴 HWPX -> HWP5 저장본은 확장 바탕쪽(LAST_PAGE·OPTIONAL_PAGE)을 저장하면서
+    // pageDuplicate="0"인 경우에도 overlap bit를 함께 세운다. 그래서 overlap bit 만으로는
+    // "겹치게 하기" 의도를 알 수 없고, XML 원본의 `pageDuplicate` 를 봐야 한다.
+    //
+    // [#6323] 종전에는 `replace_base` 를 LAST_PAGE 에만 세웠다. OPTIONAL_PAGE 도 같은
+    // 저장 계약을 따르는데 빠져 있어, `pageDuplicate="0"`(겹치지 않음)로 선언된 임의 쪽
+    // 바탕쪽이 기본 홀/짝 바탕쪽을 대체하지 못하고 그 **위에 덧그려졌다**. 실측
+    // (`samples/hwpx/exam_kor.hwpx` 20쪽): EVEN 바탕쪽의 쪽번호 "2" 위에 OPTIONAL_PAGE
+    // 의 "4" 가 같은 좌표로 얹혀 두 글자 모두 읽을 수 없었다.
+    if is_last_page || is_optional_page {
         master_page.replace_base = page_duplicate == Some(false);
-        master_page.overlap = true;
-    }
-    if is_optional_page {
         master_page.overlap = true;
     }
     master_page.ext_flags = u16::from(master_page.overlap)
