@@ -227,6 +227,7 @@ impl CellComposedStore {
         styles: &ResolvedStyleSet,
         dpi: f64,
         legacy_hwp3_stored_geometry: bool,
+        repair_stored_overflow: bool,
     ) -> &ComposedParagraph {
         match self {
             CellComposedStore::Eager(v) => &v[cpi],
@@ -234,21 +235,27 @@ impl CellComposedStore {
                 if slots[cpi].is_none() {
                     let para = &cell.paragraphs[cpi];
                     let mut comp = compose_paragraph(para);
-                    crate::renderer::composer::recompose_cell_lines_in_frame(
-                        &mut comp,
-                        para,
-                        crate::renderer::composer::ParagraphBox::content_width_px(inner_width, dpi),
-                        styles,
-                        dpi,
-                        legacy_hwp3_stored_geometry,
-                    );
                     if cell.text_direction == 0 {
-                        crate::renderer::composer::recompose_stored_single_line_if_overflowing(
+                        crate::renderer::composer::recompose_horizontal_cell_lines_for_width(
                             &mut comp,
                             para,
                             inner_width,
                             styles,
                             dpi,
+                            legacy_hwp3_stored_geometry,
+                            repair_stored_overflow,
+                        );
+                    } else {
+                        crate::renderer::composer::recompose_cell_lines_in_frame(
+                            &mut comp,
+                            para,
+                            crate::renderer::composer::ParagraphBox::content_width_px(
+                                inner_width,
+                                dpi,
+                            ),
+                            styles,
+                            dpi,
+                            legacy_hwp3_stored_geometry,
                         );
                     }
                     slots[cpi] = Some(comp);
@@ -266,6 +273,7 @@ impl CellComposedStore {
         styles: &ResolvedStyleSet,
         dpi: f64,
         legacy_hwp3_stored_geometry: bool,
+        repair_stored_overflow: bool,
     ) {
         if matches!(self, CellComposedStore::Lazy(_)) {
             let mut v = Vec::with_capacity(cell.paragraphs.len());
@@ -278,6 +286,7 @@ impl CellComposedStore {
                         styles,
                         dpi,
                         legacy_hwp3_stored_geometry,
+                        repair_stored_overflow,
                     )
                     .clone(),
                 );
@@ -971,25 +980,27 @@ impl LayoutEngine {
                 // 결과를 셀 가용 너비 (inner_width) 에 맞춰 다중 ComposedLine 으로 재분할.
                 for (cpi, para) in cell.paragraphs.iter().enumerate() {
                     if let Some(comp) = composed_paras.get_mut(cpi) {
-                        crate::renderer::composer::recompose_cell_lines_in_frame(
-                            comp,
-                            para,
-                            crate::renderer::composer::ParagraphBox::content_width_px(
-                                inner_width_for_recompose,
-                                self.dpi,
-                            ),
-                            styles,
-                            self.dpi,
-                            self.profile.get().legacy_hwp3_stored_geometry(),
-                        );
-                        // [#2291] 부실 저장(ls==1·실폭 초과) 재분할 — 가로쓰기 셀 한정.
                         if cell.text_direction == 0 {
-                            crate::renderer::composer::recompose_stored_single_line_if_overflowing(
+                            crate::renderer::composer::recompose_horizontal_cell_lines_for_width(
                                 comp,
                                 para,
                                 inner_width_for_recompose,
                                 styles,
                                 self.dpi,
+                                self.profile.get().legacy_hwp3_stored_geometry(),
+                                self.profile.get().native_hwp5_layout(),
+                            );
+                        } else {
+                            crate::renderer::composer::recompose_cell_lines_in_frame(
+                                comp,
+                                para,
+                                crate::renderer::composer::ParagraphBox::content_width_px(
+                                    inner_width_for_recompose,
+                                    self.dpi,
+                                ),
+                                styles,
+                                self.dpi,
+                                self.profile.get().legacy_hwp3_stored_geometry(),
                             );
                         }
                     }
@@ -1291,6 +1302,7 @@ impl LayoutEngine {
                     styles,
                     self.dpi,
                     self.profile.get().legacy_hwp3_stored_geometry(),
+                    self.profile.get().native_hwp5_layout(),
                 );
                 let vert_inner_area = LayoutRect {
                     x: inner_x,
@@ -1491,6 +1503,7 @@ impl LayoutEngine {
                                 styles,
                                 self.dpi,
                                 self.profile.get().legacy_hwp3_stored_geometry(),
+                                self.profile.get().native_hwp5_layout(),
                             )
                             .lines
                             .len(),
@@ -1558,6 +1571,7 @@ impl LayoutEngine {
                     styles,
                     self.dpi,
                     self.profile.get().legacy_hwp3_stored_geometry(),
+                    self.profile.get().native_hwp5_layout(),
                 );
 
                 if preserve_linear_single_cell_vpos {

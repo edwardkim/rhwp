@@ -3860,16 +3860,14 @@ impl LayoutEngine {
                 // [Task #671] line_segs 비어 있는 셀 paragraph 의 단일 ComposedLine
                 // 압축 결과를 셀 가용 너비에 맞춰 다중 ComposedLine 으로 재분할.
                 // 측정/렌더링 일관성 보장 (table_layout.rs:1226 의 렌더링 경로와 동일).
-                crate::renderer::composer::recompose_cell_lines_in_frame(
+                crate::renderer::composer::recompose_horizontal_cell_lines_for_width(
                     &mut comp,
                     p,
-                    crate::renderer::composer::ParagraphBox::content_width_px(
-                        cell_inner_width_px,
-                        self.dpi,
-                    ),
+                    cell_inner_width_px,
                     styles,
                     self.dpi,
                     self.profile.get().legacy_hwp3_stored_geometry(),
+                    self.profile.get().native_hwp5_layout(),
                 );
                 self.calc_para_lines_height(
                     &comp.lines,
@@ -6827,17 +6825,29 @@ impl LayoutEngine {
             // 줄겹침 시각 결함 정정. 정상 line_segs 인코딩된 paragraph 는 무영향.
             for (cpi, para) in cell.paragraphs.iter().enumerate() {
                 if let Some(comp) = composed_paras.get_mut(cpi) {
-                    crate::renderer::composer::recompose_cell_lines_in_frame(
-                        comp,
-                        para,
-                        crate::renderer::composer::ParagraphBox::content_width_px(
+                    if cell.text_direction == 0 {
+                        crate::renderer::composer::recompose_horizontal_cell_lines_for_width(
+                            comp,
+                            para,
                             inner_width,
+                            styles,
                             self.dpi,
-                        ),
-                        styles,
-                        self.dpi,
-                        self.profile.get().legacy_hwp3_stored_geometry(),
-                    );
+                            self.profile.get().legacy_hwp3_stored_geometry(),
+                            self.profile.get().native_hwp5_layout(),
+                        );
+                    } else {
+                        crate::renderer::composer::recompose_cell_lines_in_frame(
+                            comp,
+                            para,
+                            crate::renderer::composer::ParagraphBox::content_width_px(
+                                inner_width,
+                                self.dpi,
+                            ),
+                            styles,
+                            self.dpi,
+                            self.profile.get().legacy_hwp3_stored_geometry(),
+                        );
+                    }
                 }
             }
 
@@ -8061,17 +8071,29 @@ impl LayoutEngine {
                 let starts_after_completed_multiline_table =
                     after_completed_multiline_table && !para_is_empty_spacer;
                 let mut comp = compose_paragraph(para);
-                crate::renderer::composer::recompose_cell_lines_in_frame(
-                    &mut comp,
-                    para,
-                    crate::renderer::composer::ParagraphBox::content_width_px(
+                if cell.text_direction == 0 {
+                    crate::renderer::composer::recompose_horizontal_cell_lines_for_width(
+                        &mut comp,
+                        para,
                         inner_width,
+                        styles,
                         self.dpi,
-                    ),
-                    styles,
-                    self.dpi,
-                    self.profile.get().legacy_hwp3_stored_geometry(),
-                );
+                        self.profile.get().legacy_hwp3_stored_geometry(),
+                        self.profile.get().native_hwp5_layout(),
+                    );
+                } else {
+                    crate::renderer::composer::recompose_cell_lines_in_frame(
+                        &mut comp,
+                        para,
+                        crate::renderer::composer::ParagraphBox::content_width_px(
+                            inner_width,
+                            self.dpi,
+                        ),
+                        styles,
+                        self.dpi,
+                        self.profile.get().legacy_hwp3_stored_geometry(),
+                    );
+                }
                 // [#2279 axis A] 종전에는 comp.lines 빈 문단을 통째 skip 해 (a) 2단계
                 // 중첩 표(빈 문단 소속)와 (b) 빈 문단 줄박스가 유닛에서 누락됐다 —
                 // 86712 pi=172 r27 근거설명(25문단 + 3×12 + 5×4 내부표) 프래그먼트 합
@@ -8222,17 +8244,29 @@ impl LayoutEngine {
                     );
                     for (pi, para) in cell.paragraphs.iter().enumerate() {
                         let mut comp = compose_paragraph(para);
-                        crate::renderer::composer::recompose_cell_lines_in_frame(
-                            &mut comp,
-                            para,
-                            crate::renderer::composer::ParagraphBox::content_width_px(
+                        if cell.text_direction == 0 {
+                            crate::renderer::composer::recompose_horizontal_cell_lines_for_width(
+                                &mut comp,
+                                para,
                                 inner_width,
+                                styles,
                                 self.dpi,
-                            ),
-                            styles,
-                            self.dpi,
-                            self.profile.get().legacy_hwp3_stored_geometry(),
-                        );
+                                self.profile.get().legacy_hwp3_stored_geometry(),
+                                self.profile.get().native_hwp5_layout(),
+                            );
+                        } else {
+                            crate::renderer::composer::recompose_cell_lines_in_frame(
+                                &mut comp,
+                                para,
+                                crate::renderer::composer::ParagraphBox::content_width_px(
+                                    inner_width,
+                                    self.dpi,
+                                ),
+                                styles,
+                                self.dpi,
+                                self.profile.get().legacy_hwp3_stored_geometry(),
+                            );
+                        }
                         let nctl = para.controls.len();
                         eprintln!(
                             "  p[{pi}] lines={} text_len={} ctrls={} ls_stored={} text={:?}",
@@ -9017,22 +9051,27 @@ impl LayoutEngine {
                 self.paragraph_cell_other_non_inline_control_heights(&p.controls);
             let para_non_inline_h = para_top_and_bottom_h + para_other_non_inline_h;
             let mut comp = compose_paragraph(p);
-            crate::renderer::composer::recompose_cell_lines_in_frame(
-                &mut comp,
-                p,
-                crate::renderer::composer::ParagraphBox::content_width_px(inner_width, self.dpi),
-                styles,
-                self.dpi,
-                self.profile.get().legacy_hwp3_stored_geometry(),
-            );
-            // [#2291] 부실 저장(ls==1 인데 실폭 초과) 문단 재분할 — 가로쓰기 셀 한정.
             if cell.text_direction == 0 {
-                crate::renderer::composer::recompose_stored_single_line_if_overflowing(
+                crate::renderer::composer::recompose_horizontal_cell_lines_for_width(
                     &mut comp,
                     p,
                     inner_width,
                     styles,
                     self.dpi,
+                    self.profile.get().legacy_hwp3_stored_geometry(),
+                    self.profile.get().native_hwp5_layout(),
+                );
+            } else {
+                crate::renderer::composer::recompose_cell_lines_in_frame(
+                    &mut comp,
+                    p,
+                    crate::renderer::composer::ParagraphBox::content_width_px(
+                        inner_width,
+                        self.dpi,
+                    ),
+                    styles,
+                    self.dpi,
+                    self.profile.get().legacy_hwp3_stored_geometry(),
                 );
             }
             let para_style = styles.para_styles.get(p.para_shape_id as usize);
