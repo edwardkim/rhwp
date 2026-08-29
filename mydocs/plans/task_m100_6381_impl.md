@@ -104,4 +104,5 @@ integration suite 준비가 필요한 review worktree 검증에서는 먼저
   suite·manifest와 로컬 출력물은 제출 diff에 포함하지 않았다.
 - PR 게시 직전 이동한 `upstream/devel@f54408110`도 merge commit `143e3032d`로 반영했다. 새 generated
   배정 `regression_suite_018`에서 focused 3/3, clippy와 전체 integration 8,660/8,660을 재통과했다.
-- remote push와 Draft PR 생성은 별도 승인 게이트로 남긴다.
+- 작업지시자 승인 뒤 code candidate `988b9c85f`를 push하고 Draft PR #6391을 생성했다. 번호 기반
+  self-review는 [PR #6391 검토 문서](../pr/archives/pr_6391_review.md)로 trailing한다.

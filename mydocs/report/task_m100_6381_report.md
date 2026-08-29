@@ -6,7 +6,7 @@
 - **착수 기준**: `upstream/devel@2bcf9b261c3b761d114bc2b3a35ed85ccd1e461e`
 - **최신 기준**: `upstream/devel@f5440811042f9c5ab7580d3a64204cf1d1e39dd8`
 - **검증 기준 HEAD**: `143e3032d9c736caade605db3cbfc2cc2748ebb5`
-- **결과 상태**: 구현·최신 기준 전체 로컬 검증 완료, remote push·Draft PR 생성 승인 완료
+- **결과 상태**: 구현·최신 기준 전체 로컬 검증 완료, Draft PR #6391 review 진입
 
 ## 1. 해결 결과
 
@@ -76,5 +76,6 @@ generated suite·manifest와 `target/`, `output/`은 ignored 검증 산출물이
 계획한 all-fail·partial-fail·all-pass 경계, fail-closed 구현, CLI 문서와 최신 devel 전체 회귀를 모두
 완료했다. 구현 범위 밖의 renderer·model·workflow 변경 없이 실제 false-pass만 차단했다.
 
-현재까지 원격 변경은 #6381 등록과 착수 댓글뿐이다. 작업지시자가 remote branch push와 Draft PR 생성을
-승인했으며 최신 기준 검증 결과를 checkpoint한 뒤 게시한다.
+작업지시자 승인 뒤 code candidate `988b9c85f`를 원격 branch에 push하고
+[Draft PR #6391](https://github.com/edwardkim/rhwp/pull/6391)을 생성했다. 다음 조건은 번호 기반 trailing
+self-review 기록, 최신 PR head의 required GitHub Actions, Draft 해제·merge에 대한 별도 작업지시자 판단이다.

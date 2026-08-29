@@ -51,6 +51,8 @@ Closes #6381
 
 - base: `edwardkim/rhwp:devel`
 - head: `postmelee:task_m100_6381-test-caption-false-pass`
-- 상태: Draft
+- PR: [#6391](https://github.com/edwardkim/rhwp/pull/6391)
+- code candidate: `988b9c85f021a082c96713ce16c51c97ba7f4864`
+- 상태: Draft 생성 완료
 - 작업지시자가 remote push와 Draft PR 생성을 승인했다.
-- 실제 PR 번호가 생기면 PR 번호 기반 trailing review 문서·commit은 별도 단계에서 반영한다.
+- 번호 기반 [self-review 문서](../pr/archives/pr_6391_review.md)는 trailing docs-only commit으로 반영한다.
