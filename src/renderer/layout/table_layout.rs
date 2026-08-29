@@ -21,6 +21,15 @@ const ROWBREAK_OBJECT_BOTTOM_BLEED_TOLERANCE_PX: f64 = 64.0;
 /// 일반 그림 위치일 수 있으므로 절대 보정하지 않는다.
 const ROWBREAK_STALE_PAGE_SCALE_PICTURE_OFFSET_MIN_HU: i32 = -40_000;
 
+/// [#6368] 행 컷 기본 용량 비교의 경계 관용 — **부동소수 합산 끝자리만** 흡수한다.
+/// HU→px 변환 누적 오차 실측: hwpctl_API_v2.4 0.0267px · 80168_regulatory 0.0133px
+/// (둘 다 한글 정답 쪽에 남아야 하는 마지막 줄). 이웃 특례처럼 0.5px 를 쓰면
+/// 실제 경계 초과까지 삼킨다 — table_giant_cell_overfill.hwpx 0.1867px 초과 흡수가
+/// 글자 겹침(text-overlap) 18→19건, issue2439 고아 가드 픽스처 0.4px 초과 흡수가
+/// remarks 셋째 줄 소유 회귀로 실증됐다. 그래서 잡음대(≤0.03px)와 실초과(≥0.19px)
+/// 사이의 0.1px 로 고정한다.
+const ROW_CUT_CAPACITY_FP_EPSILON_PX: f64 = 0.1;
+
 /// [#2424 프로파일] 분할 표 컷 프리미티브 실측 카운터 — `RHWP_2424_PROFILE` 전용, 동작 불변.
 /// 프로세스 누적이며 `RHWP_2424_STEP_PROFILE` 출력(typeset.rs)이 스냅샷을 읽는다.
 pub(crate) static ISSUE2424_ADVANCE_ROW_CUT_CALLS: std::sync::atomic::AtomicU64 =
@@ -11957,12 +11966,21 @@ impl LayoutEngine {
                     hit_hard_break = true;
                     break;
                 }
-                // [#6368] 기본 용량 컷에도 이웃 특례(atomic 진입 +0.5, trailing
-                // trim +0.5)와 같은 경계 관용을 둔다. hwpctl_API Example 코드
-                // 상자의 마지막 줄은 유닛 합 106.67px vs 예산 106.6px — 부동소수
-                // 끝자리 0.07px 초과만으로 한글과 달리 다음 쪽으로 이월되어
-                // 9개 쪽 경계의 줄 소유가 연쇄로 어긋났다.
-                if j > start && h + u.height > avail_height + 0.5 {
+                // [#6368] 기본 용량 컷의 부동소수 끝자리 관용. hwpctl_API Example
+                // 코드 상자의 마지막 줄은 유닛 합 vs 예산 차이가 0.0267px — 그
+                // 끝자리 초과만으로 한글과 달리 다음 쪽으로 이월되어 9개 쪽 경계의
+                // 줄 소유가 연쇄로 어긋났다. 관용 폭은 상수 문서 참조(0.5 는 실초과
+                // 0.19·0.4px 까지 삼켜 겹침·고아 가드 회귀를 냈다).
+                if std::env::var("RHWP_DIAG_6368").is_ok() {
+                    let over = h + u.height - avail_height;
+                    if j > start && over > 0.0 && over <= ROW_CUT_CAPACITY_FP_EPSILON_PX {
+                        eprintln!(
+                            "DIAG_6368 cap-absorb pi={} j={} start={} h={:.2} u_h={:.2} avail={:.2} over={:.4}",
+                            u.para_idx, j, start, h, u.height, avail_height, over
+                        );
+                    }
+                }
+                if j > start && h + u.height > avail_height + ROW_CUT_CAPACITY_FP_EPSILON_PX {
                     if std::env::var("RHWP_DIAG_6368").is_ok() {
                         let over = h + u.height - avail_height;
                         if over <= 2.0 {
@@ -12218,11 +12236,19 @@ impl LayoutEngine {
                     hit_hard_break = true;
                     break;
                 }
-                // [#6368] `advance_row_cut_inner` 기본 컷과 같은 +0.5px 경계
-                // 관용 — 부동소수 합산 끝자리(0.07px대) 초과만으로 마지막 줄이
-                // 다음 쪽으로 이월되지 않게 한다. with_row_offsets 경로의 흡수
-                // 판정(12556)은 이미 같은 관용을 쓴다.
-                if j > start && h + u.height > avail_height + 0.5 {
+                // [#6368] `advance_row_cut_inner` 기본 컷과 같은 부동소수 끝자리
+                // 관용(80168_regulatory 실측 0.0133px) — 끝자리 초과만으로 마지막
+                // 줄이 다음 쪽으로 이월되지 않게 한다. 관용 폭은 상수 문서 참조.
+                if std::env::var("RHWP_DIAG_6368").is_ok() {
+                    let over = h + u.height - avail_height;
+                    if j > start && over > 0.0 && over <= ROW_CUT_CAPACITY_FP_EPSILON_PX {
+                        eprintln!(
+                            "DIAG_6368 block-absorb pi={} j={} start={} h={:.2} u_h={:.2} avail={:.2} over={:.4}",
+                            u.para_idx, j, start, h, u.height, avail_height, over
+                        );
+                    }
+                }
+                if j > start && h + u.height > avail_height + ROW_CUT_CAPACITY_FP_EPSILON_PX {
                     if std::env::var("RHWP_DIAG_6368").is_ok() {
                         let over = h + u.height - avail_height;
                         if over <= 2.0 {
