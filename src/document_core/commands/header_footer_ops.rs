@@ -174,6 +174,12 @@ impl DocumentCore {
         );
         empty_para.para_shape_id = left_para_shape_id;
 
+        // find_or_create_para_shape가 새 ID를 만들면 self.styles는 아직 그 ID를 모른다.
+        // 이 상태로 조회·렌더하면 문단 속성 조회는 justify 기본값으로 폴백하고, 실제 HF
+        // 마지막 줄도 공백을 영역 전체로 늘린다. 컨트롤을 붙이기 전에 해석 스타일을
+        // 갱신해 툴바·레이아웃이 같은 Left 모양을 보게 한다.
+        self.rebuild_resolved_styles();
+
         // 컨트롤 생성
         let ctrl = if is_header {
             Control::Header(Box::new(Header {

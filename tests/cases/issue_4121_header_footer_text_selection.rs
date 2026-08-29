@@ -37,7 +37,8 @@ fn header_text(doc: &HwpDocument) -> String {
 
 #[test]
 fn newly_created_header_and_footer_start_left_aligned() {
-    let mut doc = HwpDocument::from_bytes(&sample()).expect("parse");
+    let mut doc = HwpDocument::create_empty();
+    doc.create_blank_document_native().expect("blank2010 생성");
     for (is_header, apply_to) in [(true, 0), (false, 1), (true, 2)] {
         doc.create_header_footer_native(0, is_header, apply_to)
             .expect("HF 생성");
@@ -49,6 +50,11 @@ fn newly_created_header_and_footer_start_left_aligned() {
         (true, HeaderFooterApply::Odd),
     ];
     for (is_header, apply_to) in expected {
+        let apply_to_u8 = match apply_to {
+            HeaderFooterApply::Both => 0,
+            HeaderFooterApply::Even => 1,
+            HeaderFooterApply::Odd => 2,
+        };
         let paragraph = doc.document().sections[0]
             .paragraphs
             .iter()
@@ -69,7 +75,29 @@ fn newly_created_header_and_footer_start_left_aligned() {
             Alignment::Left,
             "새 HF는 종류와 적용 범위에 관계없이 왼쪽 정렬로 시작해야 함: header={is_header}, apply={apply_to:?}"
         );
+
+        let props = doc
+            .get_para_properties_in_hf_native(0, is_header, apply_to_u8, 0)
+            .expect("HF 문단 속성 조회");
+        let props: serde_json::Value = serde_json::from_str(&props).expect("HF 문단 속성 JSON");
+        assert_eq!(
+            props["alignment"], "left",
+            "생성 직후 해석 스타일 캐시도 새 HF의 왼쪽 정렬을 노출해야 함"
+        );
     }
+
+    let text = "가나다 라 바 아";
+    doc.insert_text_in_header_footer_native(0, true, 0, 0, 0, text)
+        .expect("공백 포함 머리말 입력");
+    let rects = doc
+        .get_selection_rects_in_header_footer_native(0, true, 0, 0, 0, 0, 0, text.chars().count())
+        .expect("공백 포함 머리말 선택 영역");
+    let rects: serde_json::Value = serde_json::from_str(&rects).expect("선택 영역 JSON");
+    let width = rects[0]["width"].as_f64().expect("첫 선택 영역 폭");
+    assert!(
+        width < 200.0,
+        "새 HF의 짧은 마지막 줄은 공백을 영역 전체로 늘리면 안 됨: width={width}"
+    );
 }
 
 #[test]
