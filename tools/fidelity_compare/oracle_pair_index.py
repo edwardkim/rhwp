@@ -13,8 +13,8 @@
 
 ## 짝짓기 규칙 — 디렉터리까지 본다
 
-자동 선택하는 정답지 파일명은 `<이름>-<hwp|hwpx>-<2020|2024>.pdf`다. 이름만 맞추면
-**같은 이름의 다른 문서**를 집고, 형식·엔진이 미기록된 PDF는 원본과의 관계도 증명할 수 없다.
+자동 선택하는 정답지 파일명은 `<이름>-<hwp|hwpx>-<2020|2024>-<원본경로해시>.pdf`다. 이름만 맞추면
+**같은 이름의 다른 문서**를 집고, 형식·엔진·원본 경로가 미기록된 PDF는 원본과의 관계도 증명할 수 없다.
 
     samples/KTX.hwp        27쪽  「AI-반도체 해외실증 지원 사업 공모 안내서」
     samples/basic/KTX.hwp   1쪽  실제 KTX 노선도
@@ -23,8 +23,8 @@
 잘못 짝지으면 대조 결과 전체가 무의미해진다 — 실제로 이 함정에 걸려 "글자 93.8% 손실" 이라는
 가짜 결함을 만들 뻔했다. 저장소에는 같은 이름의 서로 다른 문서가 **44 종** 있다.
 
-그래서 원본 형식이 같은 canonical PDF만 남기고, 같은 디렉터리의 후보를 우선한다. canonical
-후보가 없거나 2020·2024 후보가 함께 있으면 자동 비교 인자를 출력하지 않는다. 후자는
+그래서 원본 경로·형식이 같은 canonical PDF만 남긴다. canonical 후보가 없거나 2020·2024 후보가
+함께 있으면 자동 비교 인자를 출력하지 않는다. 후자는
 `--engine`으로 출력 조건을 명시해야 한다.
 
 ## 모아 찍기 문서는 표시한다
@@ -67,20 +67,19 @@ def samples():
 
 
 def build_index():
+    pdfs = git_pdfs()
     by_name = {}
-    for p in git_pdfs():
+    for p in pdfs:
         by_name.setdefault(stem(p), []).append(p)
 
     index = {}
     unverified = {}
     for s in samples():
-        cands = by_name.get(stem(s))
-        if not cands:
-            continue
-        chosen = canonical_candidates(s, cands)
+        cands = by_name.get(stem(s), [])
+        chosen = canonical_candidates(s, pdfs)
         if chosen:
             index[s] = (chosen, len(cands))
-        else:
+        elif cands:
             unverified[s] = sorted(cands)
     return index, unverified
 

@@ -2,17 +2,19 @@
 """형식과 엔진이 파일명으로 확인되는 한컴 PDF 정답지 선택 규칙.
 
 저장소의 과거 PDF는 같은 stem이라도 HWP/HWPX, 한컴 버전, 폰트 조건이 다를 수 있다.
-자동 비교는 `<stem>-<hwp|hwpx>-<2020|2024>.pdf`만 canonical으로 취급한다. 이 규칙으로
-형식 미표기 PDF나 서로 다른 원본 형식의 결과를 조용히 재사용하지 않는다.
+자동 비교는 `<stem>-<hwp|hwpx>-<2020|2024>-<원본경로해시>.pdf`만 canonical으로 취급한다.
+이 규칙으로 형식 미표기 PDF, 서로 다른 원본 형식의 결과, 또는 같은 이름의 다른 경로 원본을
+조용히 재사용하지 않는다.
 """
 
+import hashlib
 import os
 import re
 import unicodedata
 
 
 SUFFIX = re.compile(r'-(20\d\d|hwp|hwpx|kopub|no-ttf|current)+$', re.I)
-CANONICAL = re.compile(r'-(hwp|hwpx)-(2020|2024)$', re.I)
+CANONICAL = re.compile(r'-(hwp|hwpx)-(2020|2024)-([0-9a-f]{16})$', re.I)
 
 
 def stem(path):
@@ -41,8 +43,32 @@ def engine_for_product(product):
     return '2024' if product == 'hancom-office-2024' else '2020'
 
 
+def source_identity(path):
+    """운영체제·호출 위치와 무관한 `samples/` 상대 원본 식별자를 만든다."""
+    normalized = unicodedata.normalize('NFC', str(path).replace('\\', '/'))
+    while normalized.startswith('./'):
+        normalized = normalized[2:]
+    if normalized.startswith('samples/'):
+        return normalized
+    marker = '/samples/'
+    if marker in normalized:
+        return 'samples/' + normalized.split(marker, 1)[1]
+    raise ValueError(f'samples/ 아래의 원본 경로가 아니다: {path}')
+
+
+def source_token(path):
+    """같은 stem 원본을 분리하는 결정적 repository-relative 경로 토큰."""
+    return hashlib.sha256(source_identity(path).encode('utf-8')).hexdigest()[:16]
+
+
 def canonical_filename(sample, engine):
-    """원본 형식과 선택된 엔진이 드러나는 repository PDF 이름을 만든다."""
+    """원본 경로·형식·선택 엔진이 모두 드러나는 repository PDF 이름을 만든다."""
+    return '%s-%s-%s-%s.pdf' % (
+        stem(sample), source_format(sample), engine, source_token(sample))
+
+
+def legacy_canonical_filename(sample, engine):
+    """경로 식별자 도입 전 이름. 명시적 이관 외에는 선택에 사용하지 않는다."""
     return '%s-%s-%s.pdf' % (stem(sample), source_format(sample), engine)
 
 
@@ -55,17 +81,16 @@ def canonical_engine(path):
     return match.group(1).lower(), match.group(2)
 
 
-def subdir(path, root):
-    d = os.path.dirname(path).replace(os.sep, '/')
-    return d[len(root):].lstrip('/') if d.startswith(root) else d
-
-
 def canonical_candidates(sample, candidates):
-    """원본 형식이 같은 canonical PDF만, 같은 디렉터리를 우선해 반환한다."""
-    fmt = source_format(sample)
-    typed = [p for p in candidates if canonical_engine(p) and canonical_engine(p)[0] == fmt]
-    same_dir = [p for p in typed if subdir(p, 'pdf') == subdir(sample, 'samples')]
-    return sorted(same_dir if same_dir else typed)
+    """이 원본의 경로·형식에 정확히 대응하는 canonical PDF만 반환한다."""
+    expected = {
+        canonical_filename(sample, '2020'),
+        canonical_filename(sample, '2024'),
+    }
+    return sorted(
+        path for path in candidates
+        if os.path.basename(path) in expected and canonical_engine(path)
+    )
 
 
 def choose_canonical(sample, candidates, engine=None):

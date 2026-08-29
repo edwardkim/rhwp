@@ -8,6 +8,8 @@ MCP 호출은 이 프로세스 한 개에서만 차례로 수행한다. 성공�
 
 기본 실행은 canonical PDF가 없는 원장 행만 보충한다. 기존 기준 PDF도 다시 뽑으려면
 `--refresh-existing`을 준다. 대량 갱신은 재개 가능하도록 `--limit` 또는 `--source`로 나눠 실행한다.
+경로 식별자 도입 전의 PDF는 `--migrate-success-log`로, 성공 로그에 남은 원본 대응이 확인되는
+경우에만 재변환 없이 새 이름으로 이관한다.
 """
 import argparse
 from datetime import datetime
@@ -19,13 +21,18 @@ import subprocess
 import sys
 import tempfile
 import time
+import re
 from zoneinfo import ZoneInfo
 
 TOOLS_DIR = pathlib.Path(__file__).resolve().parent
 if str(TOOLS_DIR) not in sys.path:
     sys.path.insert(0, str(TOOLS_DIR))
 
-from oracle_pdf_selection import canonical_filename, engine_for_product
+from oracle_pdf_selection import (
+    canonical_filename,
+    engine_for_product,
+    legacy_canonical_filename,
+)
 
 
 FIXTURE = pathlib.Path('tests/fixtures/oracle_page_count_baseline.tsv')
@@ -217,6 +224,57 @@ def convert_one(args, source, engine, destination, logger):
                      time.monotonic() - started, job_id))
 
 
+SUCCESS_RECORD = re.compile(r'MCP 성공: source=(.+?) output=(pdf/.+?\.pdf) bytes=')
+
+
+def migrate_success_log(args, log_path, logger):
+    """기존 성공 로그가 증명하는 PDF만 경로 식별자 이름으로 이관한다."""
+    records = []
+    with pathlib.Path(log_path).open(encoding='utf-8') as fh:
+        for raw in fh:
+            match = SUCCESS_RECORD.search(raw)
+            if match:
+                records.append((match.group(1), match.group(2)))
+    logger.emit('INFO', '기존 성공 로그 이관 계획: 기록=%d' % len(records))
+    migrated = skipped = failures = 0
+    for source, old_output in records:
+        source_path = pathlib.Path(source)
+        old_path = pathlib.Path(old_output)
+        if not source_path.is_file():
+            failures += 1
+            logger.emit('ERROR', '이관 제외(원본 없음): %s' % source)
+            continue
+        try:
+            product, engine = source_metadata(args.rhwp, source)
+        except RuntimeError as exc:
+            failures += 1
+            logger.emit('ERROR', '이관 제외(metadata 실패): %s' % exc)
+            continue
+        if old_path.name != legacy_canonical_filename(source, engine):
+            failures += 1
+            logger.emit('ERROR', '이관 제외(기존 이름 불일치): source=%s output=%s engine=%s' %
+                        (source, old_output, engine))
+            continue
+        destination = pathlib.Path('pdf') / canonical_filename(source, engine)
+        if not old_path.is_file():
+            skipped += 1
+            logger.emit('INFO', '이관 제외(기존 PDF 없음): source=%s output=%s' % (source, old_output))
+            continue
+        if destination.exists():
+            skipped += 1
+            logger.emit('WARN', '이관 제외(대상 PDF 존재): source=%s output=%s' % (source, destination))
+            continue
+        logger.emit('INFO', '이관: source=%s output=%s product=%s engine=%s' %
+                    (source, destination, product or 'null', engine))
+        if not args.dry_run:
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            os.replace(old_path, destination)
+        migrated += 1
+    logger.emit('INFO', '기존 성공 로그 이관 완료: 이관=%d 제외=%d 오류=%d' %
+                (migrated, skipped, failures))
+    return 1 if failures else 0
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--rhwp', default='target/release/rhwp')
@@ -231,12 +289,16 @@ def main():
     parser.add_argument('--source', action='append', default=[], help='특정 상대 원본 경로(반복 가능)')
     parser.add_argument('--limit', type=int, default=None, help='이번 실행에서 변환할 최대 문서 수')
     parser.add_argument('--refresh-existing', action='store_true')
+    parser.add_argument('--migrate-success-log',
+                        help='기존 MCP 성공 로그의 검증된 source/output 기록만 새 canonical 이름으로 이관')
     parser.add_argument('--dry-run', action='store_true')
     parser.add_argument('--log-file', help='시각·상세 MCP 로그 파일(환경 파일의 내용은 기록하지 않음)')
     args = parser.parse_args()
 
     logger = RunLogger(args.log_file)
     try:
+        if args.migrate_success_log:
+            return migrate_success_log(args, args.migrate_success_log, logger)
         logger.emit('INFO', '배치 시작: 기존 canonical PDF 제외=%s, dry_run=%s' %
                     (not args.refresh_existing, args.dry_run))
         selected = args.source or fixture_sources()
