@@ -23,8 +23,11 @@ HWPX 직파스는 단 원점·빈 host 상단에 그 값을 빼먹는다.
 
 `LayoutCompatibilityProfile::hwp5_stored_pagination_layout()` 이 원본 HWPX 에서
 false 라, HWP5 전용 empty-host helper 가 여백을 안 준다. HWP5 경로에 여백을
-여기서 또 더하면 이중 가산이므로 **원본 HWPX 만** 단 기준 x 와 빈 host 상단에
-`outer_margin_*` 를 더한다.
+여기서 또 더하면 이중 가산이다. 모든 원본 HWPX 표에 더하면 #1133 연속 block
+표 간격이 3.8px 줄어든다. 그래서 `original_hwpx_column_cellbreak_equal_outer_margin_hu`
+가 native helper 와 같은 형상만 연다: 비-TAC TopAndBottom(vert=문단), 단·왼쪽,
+RowBreak(이 픽스처 HWPX XML `pageBreak="CELL"` 의 IR), 다행 1열, 사방 균등 양의
+outMargin.
 
 ## 실측 (이 패치 후)
 
