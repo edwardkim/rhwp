@@ -7,13 +7,75 @@ import {
 import type { PageMovementDirection } from './page-movement.ts';
 import { resolvePageGap } from './page-gap.ts';
 
-/** 그리드 모드 전환 줌 임계값 */
-const GRID_ZOOM_THRESHOLD = 0.5;
+/** 자동 열 경계에서 resize/zoom 미세 입력이 왕복하지 않게 하는 CSS px 여유. */
+const AUTO_COLUMN_HYSTERESIS_PX = 8;
 
 /** [#3591] 가로 팬 여백 = clamp(창 폭 × 비율, 하한, 상한). 상한이 큰 화면에서의 증가를 끊는다. */
 const PAN_SPACE_RATIO = 0.25;
 const MIN_PAN_SPACE = 80;
 const MAX_PAN_SPACE = 240;
+
+export interface AutoPageColumnMetrics {
+  pageCount: number;
+  viewportWidth: number;
+  displayedPageWidth: number;
+  pageGap: number;
+  committedColumns?: number;
+  hysteresisPx?: number;
+}
+
+/**
+ * 자동 쪽 배치의 가로 열 수를 표시 geometry만으로 결정한다.
+ *
+ * `committedColumns`를 생략하면 현재 폭에 들어가는 열 수를 바로 반환한다. 이전 commit을
+ * 전달하면 인접 열 경계 양쪽에 작은 dead band를 두어 resize/zoom의 sub-pixel 흔들림으로
+ * 열 수가 왕복하지 않게 한다.
+ */
+export function resolveAutoPageColumns({
+  pageCount,
+  viewportWidth,
+  displayedPageWidth,
+  pageGap,
+  committedColumns,
+  hysteresisPx = AUTO_COLUMN_HYSTERESIS_PX,
+}: AutoPageColumnMetrics): number {
+  const safePageCount = Number.isFinite(pageCount)
+    ? Math.max(1, Math.floor(pageCount))
+    : 1;
+  const safeViewportWidth = Number.isFinite(viewportWidth) && viewportWidth > 0
+    ? viewportWidth
+    : 0;
+  const safePageWidth = Number.isFinite(displayedPageWidth) && displayedPageWidth > 0
+    ? displayedPageWidth
+    : 0;
+  const safeGap = Number.isFinite(pageGap) && pageGap >= 0 ? pageGap : 0;
+
+  if (safeViewportWidth === 0 || safePageWidth === 0) return 1;
+
+  const fitColumns = Math.max(
+    1,
+    Math.floor((safeViewportWidth + safeGap) / (safePageWidth + safeGap)),
+  );
+  const candidate = Math.min(safePageCount, fitColumns);
+  if (committedColumns === undefined || !Number.isFinite(committedColumns)) return candidate;
+
+  const committed = Math.min(
+    safePageCount,
+    Math.max(1, Math.floor(committedColumns)),
+  );
+  if (candidate === committed) return committed;
+
+  const hysteresis = Number.isFinite(hysteresisPx)
+    ? Math.max(0, hysteresisPx)
+    : AUTO_COLUMN_HYSTERESIS_PX;
+  if (candidate > committed) {
+    const nextBoundary = (committed + 1) * safePageWidth + committed * safeGap;
+    return safeViewportWidth >= nextBoundary + hysteresis ? candidate : committed;
+  }
+
+  const currentBoundary = committed * safePageWidth + (committed - 1) * safeGap;
+  return safeViewportWidth < currentBoundary - hysteresis ? candidate : committed;
+}
 
 export class VirtualScroll {
   private pageOffsets: number[] = [];
@@ -78,16 +140,21 @@ export class VirtualScroll {
         break;
       case 'auto':
       default:
-        // 기존 자동 동작: 50% 이하에서만 뷰포트에 들어가는 최대 열 수를 쓴다.
-        this.gridMode = zoom <= GRID_ZOOM_THRESHOLD && viewportWidth > 0 && pages.length > 1;
-        if (this.gridMode) {
-          const columns = Math.max(
-            1,
-            Math.floor((viewportWidth + this.pageGap) / (this.maxPageWidth + this.pageGap)),
-          );
-          this.layoutUniformGrid(viewportWidth, columns);
-        } else {
-          this.layoutSingleColumn();
+        // 자동은 절대 배율 gate가 아니라 실제 표시 폭과 뷰포트 폭으로 열 수를 고른다.
+        // pageCount cap은 존재하지 않는 빈 열이 중앙 정렬 폭에 포함되는 것도 막는다.
+        {
+          const columns = resolveAutoPageColumns({
+            pageCount: pages.length,
+            viewportWidth,
+            displayedPageWidth: this.maxPageWidth,
+            pageGap: this.pageGap,
+          });
+          this.gridMode = columns > 1;
+          if (this.gridMode) {
+            this.layoutUniformGrid(viewportWidth, columns);
+          } else {
+            this.layoutSingleColumn();
+          }
         }
         break;
     }
@@ -230,8 +297,8 @@ export class VirtualScroll {
   private horizontalPanSpace(viewportWidth: number, contentWidth: number): number {
     // 그리드는 layoutGrid 의 marginLeft 가 이미 중앙을 잡고, base 가 항상 창 폭 이상
     // (`max(gridWidth + marginLeft*2, viewportWidth)`)이라 팬 조건이 경계에서 참이 될 수
-    // 있다. 그리드 첫 진입(zoom 0.5)에서만 팬이 붙어 스크롤 여지가 생기고 문서가 중앙에서
-    // 밀리는 현상이 그것이다. 그리드에는 팬을 주지 않는다.
+    // 있다. 자동 열 수가 1→다중 열로 바뀌는 순간 팬이 붙으면 스크롤 여지가 생기고 문서가
+    // 중앙에서 밀린다. 그리드에는 팬을 주지 않는다.
     if (this.gridMode) return 0;
     if (contentWidth <= viewportWidth) return 0;
     const ratio = viewportWidth * PAN_SPACE_RATIO;
