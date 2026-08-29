@@ -253,18 +253,21 @@ border의 stroke interval이 ancestor `body-clip-*` 또는 `cell-clip-*`과 만�
 `REG` 에는 6 쌍이 등록돼 있는데 `pdf/` 에는 정답지가 **573 장** 있다. 나머지를 쓰려면
 `--source`·`--reference-pdf` 로 직접 지정해야 하고, 그때마다 짝을 손으로 찾아야 한다.
 
-`oracle_pair_index.py` 가 그 짝짓기를 자동화한다.
+`oracle_pair_index.py`는 파일명에 원본 형식과 엔진이 기록된 canonical PDF만 자동으로
+짝짓는다. 형식 미표기 과거 PDF는 자동 기준으로 쓰지 않는다.
 
 ```bash
-# 짝지어진 566개 목록 (TSV)
+# 자동 비교 가능한 canonical 쌍 목록 (TSV)
 python tools/fidelity_compare/oracle_pair_index.py --list
 
-# 한 문서의 인자쌍을 바로 얻는다
+# canonical PDF가 하나뿐인 문서는 인자쌍을 바로 얻는다
 python tools/fidelity_compare/oracle_pair_index.py --args "samples/basic/sungeo.hwp"
-#   --source "samples/basic/sungeo.hwp" --reference-pdf "pdf/basic/sungeo-2022.pdf" --label sungeo
+
+# 2020·2024가 함께 있으면 엔진을 명시한다. 생략하면 비교 명령을 출력하지 않고 실패한다.
+python tools/fidelity_compare/oracle_pair_index.py --args "samples/입력.hwpx" --engine 2024
 ```
 
-### 짝짓기는 디렉터리까지 본다
+### 짝짓기는 원본 형식·엔진과 디렉터리까지 본다
 
 이름만 맞추면 **같은 이름의 다른 문서**를 집는다. 저장소에는 그런 문서가 44 종 있다.
 
@@ -273,10 +276,10 @@ samples/KTX.hwp        27쪽  「AI-반도체 해외실증 지원 사업 공모 
 samples/basic/KTX.hwp   1쪽  실제 KTX 노선도
 ```
 
-둘은 `pdf/KTX-2022.pdf`(27 쪽)와 `pdf/basic/KTX-2022.pdf`(1 쪽)를 함께 후보로 갖는다.
-잘못 짝지으면 대조 결과 전체가 무의미해진다. 같은 디렉터리의 정답지가 있으면 그것만 쓰고,
-없으면 이름 후보를 그대로 쓰되 `--list` 의 3 열에 후보 수를 적어 사람이 판단하게 한다.
-566 개 중 **96 개가 디렉터리로 좁혀진다.**
+둘은 이름만으로는 서로의 PDF를 후보로 갖는다. 잘못 짝지으면 대조 결과 전체가 무의미해진다.
+따라서 자동 선택은 `<stem>-<hwp|hwpx>-<2020|2024>.pdf`만 허용하고, 같은 디렉터리 후보를
+우선한다. 형식·엔진이 확인되지 않거나 2020·2024 후보가 여럿이면 `--args`는 명령을 출력하지
+않는다. provenance를 확인한 뒤 `fidelity_compare.py --source --reference-pdf`로 명시 실행한다.
 
 ### 모아 찍기 문서는 쪽 단위로 견주지 않는다
 
