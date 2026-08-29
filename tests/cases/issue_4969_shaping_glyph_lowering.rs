@@ -26,6 +26,7 @@ mod renderer {
     pub(crate) use crate::shaping_publication;
     pub use rhwp::renderer::render_tree;
     pub use rhwp::renderer::style_resolver;
+    pub use rhwp::renderer::PathCommand;
 
     // The product source module calls the crate-private #5821 SSOT. This
     // source integration wrapper mirrors that exact two-branch formula because
@@ -49,17 +50,21 @@ use std::sync::Arc;
 use kerning::{ExactFontSlot, ExactFontSource, ExactFontSourceRegistry};
 use rhwp::paint::{
     font_blob_resource_key, parse_font_blob_resource_key, resource_digest_hex, LayerJsonOptions,
-    LayerNode, PageLayerTree, PaintOp, ResourceArena,
+    LayerNode, PageLayerTree, PaintOp, ResourceArena, TextVariantKind,
+};
+use rhwp::renderer::layer_renderer::{
+    analyze_text_variant_selection, TextVariantSelectionOptions, VariantSelectionBackend,
 };
 use rhwp::renderer::render_tree::{BoundingBox, FieldMarkerType, TextRunNode};
 use rhwp::renderer::TextStyle;
+use shaping::{ShapingFeature, ShapingVariation};
 use shaping_composition::{
     attach_horizontal_shaping_mapped_run, certify_horizontal_shaping_mapped_run,
     map_horizontal_shaping_emitted_run, HorizontalShapingEmittedRunCandidate,
 };
 use shaping_context::{
     HorizontalShapingContext, HorizontalShapingReplaySourceCertificate,
-    HorizontalShapingReplaySourceCertificateRejectReason,
+    HorizontalShapingReplaySourceCertificateRejectReason, HorizontalShapingRequest,
 };
 use shaping_glyph::{
     lower_horizontal_shaping_layer_node_shadow,
@@ -72,17 +77,26 @@ use shaping_paragraph::{
     HorizontalShapingLineRequest, HorizontalShapingParagraphRequest,
     HorizontalShapingParagraphScalarStyle,
 };
-use shaping_publication::{HorizontalShapingPageSidecars, HorizontalShapingRunDecision};
+use shaping_publication::{
+    HorizontalShapingPageSidecars, HorizontalShapingRunDecision, HorizontalShapingRunRange,
+};
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen_test::wasm_bindgen_test;
 
 const SOURCE_HAN: &[u8] =
     include_bytes!("../../ttfs/opensource/SourceHanSerifK-OldHangul-subset.otf");
+const HAPPINESS: &[u8] =
+    include_bytes!("../../ttfs/redistributable/happiness-sans/HappinessSansVF.ttf");
 const SLOT: ExactFontSlot = ExactFontSlot {
     char_shape_id: 4969,
     language_index: 0,
 };
 const TEXT: &str = "ᄒᆞᆫ글";
+const VARIABLE_TEXT: &str = "가변";
+const VARIABLE_SLOT: ExactFontSlot = ExactFontSlot {
+    char_shape_id: 4969,
+    language_index: 2,
+};
 
 fn qualified_context_and_outcome() -> (
     HorizontalShapingContext,
@@ -209,10 +223,351 @@ fn text_run() -> TextRunNode {
     }
 }
 
+fn variable_sidecar(
+    node_id: u32,
+    variations: &[ShapingVariation],
+) -> (
+    HorizontalShapingPageSidecars,
+    Arc<shaping_context::HorizontalShapingMeasurement>,
+) {
+    let mut registry = ExactFontSourceRegistry::default();
+    registry
+        .register(
+            VARIABLE_SLOT,
+            ExactFontSource {
+                bytes: HAPPINESS,
+                face_index: 0,
+            },
+        )
+        .expect("register exact Happiness Sans variable source");
+    let context = HorizontalShapingContext::new(registry);
+    let features = [ShapingFeature {
+        tag: "kern".into(),
+        value: 1,
+    }];
+    let outcome = {
+        let mut transaction = context.transaction();
+        transaction.shadow_measure(&HorizontalShapingRequest {
+            attempt_id: node_id,
+            slot: VARIABLE_SLOT,
+            text: VARIABLE_TEXT,
+            effective_font_size_px: 10.0,
+            width_ratio: 0.8,
+            script: Some("Hang"),
+            language: Some("ko"),
+            features: &features,
+            variations,
+        })
+    };
+    let measurement = outcome
+        .measurement
+        .expect("variable shadow measurement must apply");
+    let certificate = context
+        .certify_replay_source(&measurement)
+        .expect("certify exact variable replay source");
+    let range = HorizontalShapingRunRange {
+        scalar_start: 0,
+        scalar_end: VARIABLE_TEXT.chars().count(),
+        utf8_start: 0,
+        utf8_end: VARIABLE_TEXT.len(),
+        utf16_start: 0,
+        utf16_end: VARIABLE_TEXT.encode_utf16().count(),
+    };
+    let decision = Arc::new(
+        HorizontalShapingRunDecision::applied_with_replay_source_certificate(
+            range,
+            outcome.trace,
+            Arc::clone(&measurement),
+            certificate,
+        ),
+    );
+    let mut sidecars = HorizontalShapingPageSidecars::default();
+    sidecars
+        .attach(node_id, range, decision)
+        .expect("attach variable replay sidecar");
+    (sidecars, measurement)
+}
+
+fn variable_text_run() -> TextRunNode {
+    let mut style = TextStyle::default();
+    style.font_family = "Happiness Sans".to_string();
+    style.font_size = 10.0;
+    style.ratio = 0.8;
+    style.kerning = true;
+    TextRunNode {
+        text: VARIABLE_TEXT.to_string(),
+        style,
+        char_shape_id: Some(VARIABLE_SLOT.char_shape_id),
+        para_shape_id: None,
+        section_index: None,
+        para_index: None,
+        char_start: Some(0),
+        cell_context: None,
+        is_para_end: false,
+        is_line_break_end: false,
+        rotation: 0.0,
+        is_vertical: false,
+        char_overlap: None,
+        border_fill_id: 0,
+        baseline: 10.0,
+        field_marker: FieldMarkerType::None,
+        layout_positions: None,
+        display_text: None,
+    }
+}
+
+fn variable_lowering(
+    node_id: u32,
+    variations: &[ShapingVariation],
+) -> (
+    shaping_glyph::HorizontalShapingGlyphLoweringReport,
+    Arc<shaping_context::HorizontalShapingMeasurement>,
+    ResourceArena,
+    BoundingBox,
+    TextRunNode,
+) {
+    let (sidecars, measurement) = variable_sidecar(node_id, variations);
+    let run = variable_text_run();
+    let bbox = BoundingBox::new(3.0, 5.0, measurement.total_advance_px, 14.0);
+    let node = LayerNode::leaf(bbox, Some(node_id), Vec::new());
+    let mut resources = ResourceArena::default();
+    let report = lower_horizontal_shaping_layer_node_shadow(
+        &node,
+        bbox,
+        &run,
+        23,
+        &sidecars,
+        &mut resources,
+    );
+    (report, measurement, resources, bbox, run)
+}
+
 fn same_f64(left: f64, right: f64) -> bool {
     left.is_finite()
         && right.is_finite()
         && (left - right).abs() <= 1.0e-9 * left.abs().max(right.abs()).max(1.0)
+}
+
+#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
+fn issue_4969_q3_c_canonical_instance_reaches_glyph_run_and_variable_outline() {
+    let title = [
+        ShapingVariation {
+            tag: "wght".into(),
+            value: 900.0,
+        },
+        ShapingVariation {
+            tag: "opsz".into(),
+            value: 900.0,
+        },
+    ];
+    let (report, measurement, _, _, _) = variable_lowering(30, &title);
+
+    assert_eq!(report.reject_reason, None);
+    let glyph_run = report
+        .glyph_run
+        .expect("instance-qualified GlyphRun shadow");
+    assert_eq!(glyph_run.shape_key.font_instance.variations.len(), 2);
+    assert_eq!(glyph_run.shape_key.font_instance.variations[0].tag, "opsz");
+    assert_eq!(glyph_run.shape_key.font_instance.variations[0].value, 900.0);
+    assert_eq!(glyph_run.shape_key.font_instance.variations[1].tag, "wght");
+    assert_eq!(glyph_run.shape_key.font_instance.variations[1].value, 900.0);
+
+    let outline = report
+        .glyph_outline
+        .expect("exact variable outline shadow candidate");
+    let proof = report
+        .variable_outline_proof
+        .expect("variable outline bbox proof");
+    assert_eq!(outline.paths.len(), measurement.glyphs_px.len());
+    assert_eq!(proof.glyph_count, measurement.glyphs_px.len());
+    assert_eq!(proof.bbox_mismatch_count, 0);
+    assert!(proof.command_count > 0);
+    assert!(proof.run_local_bbox.width > 0.0);
+    assert!(proof.run_local_bbox.height > 0.0);
+    assert_eq!(
+        proof.settings_sha256,
+        measurement.applied.identity.settings_sha256
+    );
+    assert_eq!(
+        outline
+            .paths
+            .iter()
+            .map(|path| path.glyph_id)
+            .collect::<Vec<_>>(),
+        measurement
+            .glyphs_px
+            .iter()
+            .map(|glyph| glyph.glyph_id)
+            .collect::<Vec<_>>()
+    );
+}
+
+#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
+fn issue_4969_q3_c_default_and_title_instances_do_not_share_outline_identity() {
+    let title = [
+        ShapingVariation {
+            tag: "wght".into(),
+            value: 900.0,
+        },
+        ShapingVariation {
+            tag: "opsz".into(),
+            value: 900.0,
+        },
+    ];
+    let (default_report, default_measurement, _, _, _) = variable_lowering(32, &[]);
+    let (title_report, title_measurement, _, _, _) = variable_lowering(33, &title);
+    let default_run = default_report.glyph_run.expect("default GlyphRun shadow");
+    let title_run = title_report.glyph_run.expect("Title GlyphRun shadow");
+    let default_proof = default_report
+        .variable_outline_proof
+        .expect("default variable outline proof");
+    let title_proof = title_report
+        .variable_outline_proof
+        .expect("Title variable outline proof");
+
+    assert!(default_run.shape_key.font_instance.variations.is_empty());
+    assert_eq!(title_run.shape_key.font_instance.variations.len(), 2);
+    assert_ne!(
+        default_measurement.applied.identity.settings_sha256,
+        title_measurement.applied.identity.settings_sha256
+    );
+    assert!(
+        !same_f64(
+            default_proof.run_local_bbox.width,
+            title_proof.run_local_bbox.width
+        ) || !same_f64(
+            default_proof.run_local_bbox.height,
+            title_proof.run_local_bbox.height
+        ),
+        "default and Title instances must not collapse to one outline geometry"
+    );
+    assert_eq!(default_proof.bbox_mismatch_count, 0);
+    assert_eq!(title_proof.bbox_mismatch_count, 0);
+}
+
+#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
+fn issue_4969_q3_c_variable_outline_is_selected_only_on_proven_shadow_backends() {
+    let title = [
+        ShapingVariation {
+            tag: "opsz".into(),
+            value: 900.0,
+        },
+        ShapingVariation {
+            tag: "wght".into(),
+            value: 900.0,
+        },
+    ];
+    let (mut report, _, resources, bbox, run) = variable_lowering(31, &title);
+    let glyph_run = report.glyph_run.take().expect("variable GlyphRun shadow");
+    let glyph_outline = report
+        .glyph_outline
+        .take()
+        .expect("variable GlyphOutline shadow");
+    let root = LayerNode::leaf(
+        bbox,
+        Some(31),
+        vec![
+            PaintOp::text_run(bbox, run),
+            PaintOp::GlyphRun {
+                bbox,
+                run: Box::new(glyph_run),
+            },
+            PaintOp::GlyphOutline {
+                bbox,
+                outline: Box::new(glyph_outline),
+            },
+        ],
+    );
+    let mut tree = PageLayerTree::new(100.0, 100.0, root);
+    tree.resources = resources;
+
+    for backend in [
+        VariantSelectionBackend::CanvasKit,
+        VariantSelectionBackend::CanvasKitBrowser,
+        VariantSelectionBackend::NativeSkia,
+        VariantSelectionBackend::Svg,
+    ] {
+        let reports = analyze_text_variant_selection(
+            &tree,
+            TextVariantSelectionOptions {
+                backend,
+                ..TextVariantSelectionOptions::canvaskit()
+            },
+        );
+        assert_eq!(reports.len(), 1);
+        assert_eq!(
+            reports[0].selected_variant_kind,
+            Some(TextVariantKind::GlyphOutline),
+            "{backend:?} must select the producer-resolved outline shadow"
+        );
+        assert!(!reports[0].fallback_required);
+    }
+
+    let reports = analyze_text_variant_selection(
+        &tree,
+        TextVariantSelectionOptions {
+            backend: VariantSelectionBackend::Canvas2D,
+            ..TextVariantSelectionOptions::canvaskit()
+        },
+    );
+    assert_eq!(reports.len(), 1);
+    assert_eq!(
+        reports[0].selected_variant_kind,
+        Some(TextVariantKind::TextRun)
+    );
+    assert!(reports[0].fallback_required);
+}
+
+#[test]
+#[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
+fn issue_4969_q3_c_native_skia_exact_blob_instance_round_trips_coordinates() {
+    use skia_safe::font_arguments::{variation_position::Coordinate, VariationPosition};
+    use skia_safe::{Font, FontArguments, FontMgr, FourByteTag};
+
+    let default_typeface = FontMgr::default()
+        .new_from_data(HAPPINESS, Some(0))
+        .expect("Native Skia must construct the exact official variable TTF");
+    let coordinates = [
+        Coordinate {
+            axis: FourByteTag::from_chars('o', 'p', 's', 'z'),
+            value: 900.0,
+        },
+        Coordinate {
+            axis: FourByteTag::from_chars('w', 'g', 'h', 't'),
+            value: 900.0,
+        },
+    ];
+    let arguments = FontArguments::new().set_variation_design_position(VariationPosition {
+        coordinates: &coordinates,
+    });
+    let title_typeface = default_typeface
+        .clone_with_arguments(&arguments)
+        .expect("Native Skia must clone the exact Title instance");
+    let round_trip = title_typeface
+        .variation_design_position()
+        .expect("Native Skia must expose the applied design coordinates");
+    for expected in coordinates {
+        assert!(round_trip.iter().any(|actual| {
+            actual.axis == expected.axis && (actual.value - expected.value).abs() <= f32::EPSILON
+        }));
+    }
+
+    let mut default_font = Font::new(default_typeface, 1_000.0);
+    default_font.set_linear_metrics(true).set_subpixel(true);
+    let glyphs = default_font.text_to_glyphs_vec(VARIABLE_TEXT);
+    let mut default_widths = vec![0.0; glyphs.len()];
+    default_font.get_widths(&glyphs, &mut default_widths);
+    let mut title_font = Font::new(title_typeface, 1_000.0);
+    title_font.set_linear_metrics(true).set_subpixel(true);
+    let mut title_widths = vec![0.0; glyphs.len()];
+    title_font.get_widths(&glyphs, &mut title_widths);
+    assert!(default_widths
+        .iter()
+        .zip(&title_widths)
+        .any(|(default, title)| (default - title).abs() > f32::EPSILON));
 }
 
 #[test]

@@ -1,0 +1,121 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q3-c-replay-payload-backend-capability-shadow-result",
+  "issue": 4969,
+  "stage": "W10-Q3-C",
+  "status": "qualified-approved-awaiting-checkpoint",
+  "resultApproved": true,
+  "baseCheckpoint": "6a156ca98",
+  "productMutation": false,
+  "productConsumerCount": 0,
+  "replayPayload": {
+    "canonicalVariationInGlyphRunIdentity": true,
+    "canonicalVariationInOutlineProof": true,
+    "exactCertifiedSourceReparsed": true,
+    "backendReshaping": false,
+    "quadraticConvertedToCubic": true,
+    "fontYUpConvertedToRunLocalYDown": true,
+    "outlineCommandLimitPerRun": 262144,
+    "validationBeforeResourceMutation": true
+  },
+  "outlineProof": {
+    "font": "ttfs/redistributable/happiness-sans/HappinessSansVF.ttf",
+    "defaultCanonicalVectorLength": 0,
+    "titleCanonicalVector": [
+      { "tag": "opsz", "value": 900.0 },
+      { "tag": "wght", "value": 900.0 }
+    ],
+    "defaultAndTitleSettingsIdentityEqual": false,
+    "defaultAndTitleOutlineGeometryEqual": false,
+    "glyphIdMismatch": 0,
+    "bboxMismatch": 0,
+    "staticInstanceFontGenerated": false
+  },
+  "backends": [
+    {
+      "id": "canvaskit",
+      "shadowDecision": "qualified-glyph-outline",
+      "strictVariableGlyphRun": "variationUnsupported",
+      "productSelected": false,
+      "cacheMutationOnRejectedProbe": false
+    },
+    {
+      "id": "canvaskit-browser",
+      "shadowDecision": "qualified-glyph-outline",
+      "productSelected": false
+    },
+    {
+      "id": "native-skia",
+      "shadowDecision": "qualified-glyph-outline",
+      "exactBlobTypefaceConstructed": true,
+      "fontArgumentsCoordinateRoundTrip": true,
+      "defaultTitleWidthDeltaObserved": true,
+      "productSelected": false
+    },
+    {
+      "id": "svg",
+      "shadowDecision": "qualified-glyph-outline",
+      "productSelected": false
+    },
+    {
+      "id": "canvas2d",
+      "shadowDecision": "text-run-fallback",
+      "productSelected": false
+    }
+  ],
+  "validation": {
+    "nativeDirectTargets": 7,
+    "nativeDirectPassed": 69,
+    "nativeDirectFailed": 0,
+    "focusedLoweringPassed": 16,
+    "focusedLoweringFailed": 0,
+    "nodeWasmPassed": 10,
+    "nodeWasmFailed": 0,
+    "nodeWasmIgnored": 0,
+    "nativeSkiaProofPassed": 1,
+    "nativeSkiaProofFailed": 0,
+    "studioTotal": 1240,
+    "studioPassed": 1239,
+    "studioFailed": 0,
+    "studioSkipped": 1,
+    "nativeClippy": "passed",
+    "wasmLibClippy": "passed",
+    "dockerWasm": "passed",
+    "dockerWasmSeconds": 358,
+    "trackedPkgChanged": false,
+    "gitDiffCheck": "passed",
+    "focusedRustfmt": "passed",
+    "isolatedHarnessRemoved": true,
+    "q3CargoTargetGiBRemoved": 24.6
+  },
+  "protectedRegression": {
+    "productVariationCallerCount": 0,
+    "publicApiChanged": false,
+    "q2OutputChanged": false,
+    "backendProductSelectorChanged": false,
+    "backendIndependentShapingAdded": false,
+    "generatedArtifactsChanged": false,
+    "newIntegrationSource": false,
+    "sourceCfgTestChanged": false,
+    "privateCorpusUsed": false,
+    "hyperVOrHancomOracleUsed": false
+  },
+  "upstreamRefresh": {
+    "devel": "955abb5268c3",
+    "branchAhead": 15,
+    "branchBehind": 33,
+    "overlapSinceQ3CBase": [
+      "mydocs/orders/20260829.md"
+    ],
+    "productSourceOverlapSinceQ3CBase": false,
+    "mergeDeferredUntilCheckpointCommit": true
+  },
+  "format": {
+    "cargoFmtAllRequiredInPreparedReviewWorktreeBeforePush": true
+  },
+  "next": "approve-q3-c-checkpoint-commit",
+  "nextSlice": "Q3-D-explicit-request-owner-and-dormant-product-transaction",
+  "nextSliceApproved": false,
+  "commitCreated": false,
+  "pushReady": false
+}

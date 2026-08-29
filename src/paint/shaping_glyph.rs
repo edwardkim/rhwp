@@ -11,12 +11,14 @@ use crate::paint::{
     font_blob_resource_key, resource_digest_hex, BinaryResourceKind, BinaryResourceRef,
     FontBlobKey, FontBlobResource, FontDigest, FontFaceKey, FontFaceResource, FontFallbackPolicyId,
     FontInstanceKey, FontPortability, FontResourceSource, GlyphCluster, GlyphClusterFlag,
-    GlyphRange, GlyphRunDiagnostics, GlyphRunOrientation, GlyphRunReplayEligibility, LanguageTag,
-    LayerAffineTransform, LayerGlyphRunPaint, LayerNode, LayerPoint, LayerVector, LocalizedName,
-    OpenTypeFeatureSetting, PaintTextStyle, PaintVariantMeta, ResourceArena, ScriptTag, ShapeKey,
-    ShapingEngineId, TextDirection, TextRunPlacement, TextSourceId, TextSourceRange,
-    TextSourceSpan, TextVariantKind, TextVariantQuality, WritingMode, MAX_PORTABLE_FONT_BLOB_BYTES,
-    MAX_PORTABLE_GLYPHS_PER_RUN, RESOURCE_KEY_ALGORITHM,
+    GlyphOutlineFillRule, GlyphOutlinePayloadKind, GlyphRange, GlyphRunDiagnostics,
+    GlyphRunOrientation, GlyphRunReplayEligibility, LanguageTag, LayerAffineTransform,
+    LayerGlyphOutlinePaint, LayerGlyphOutlinePath, LayerGlyphRunPaint, LayerNode, LayerPoint,
+    LayerVector, LocalizedName, OpenTypeFeatureSetting, PaintTextStyle, PaintVariantMeta,
+    ResourceArena, ScriptTag, ShapeKey, ShapingEngineId, TextDirection, TextRunPlacement,
+    TextSourceId, TextSourceRange, TextSourceSpan, TextVariantKind, TextVariantQuality,
+    VariationAxisValue, WritingMode, MAX_PORTABLE_FONT_BLOB_BYTES, MAX_PORTABLE_GLYPHS_PER_RUN,
+    RESOURCE_KEY_ALGORITHM,
 };
 use crate::renderer::render_tree::{BoundingBox, FieldMarkerType, TextRunNode};
 use crate::renderer::shaping_publication::{
@@ -24,6 +26,7 @@ use crate::renderer::shaping_publication::{
     MAX_HORIZONTAL_SHAPING_FONT_BYTES_PER_PAGE as MAX_COMMON_SHAPING_FONT_BYTES_PER_PAGE,
     MAX_HORIZONTAL_SHAPING_PREPARED_SOURCES_PER_PAGE as MAX_COMMON_SHAPING_PREPARED_SOURCES_PER_PAGE,
 };
+use crate::renderer::PathCommand;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum HorizontalShapingGlyphLoweringRejectReason {
@@ -41,6 +44,9 @@ pub(crate) enum HorizontalShapingGlyphLoweringRejectReason {
     MeasurementGeometryInvalid,
     ReplayProjectionMismatch,
     ClusterMappingInvalid,
+    VariableOutlineUnavailable,
+    VariableOutlineLimitExceeded,
+    VariableOutlineBboxMismatch,
     ResourceLimitExceeded,
 }
 
@@ -61,6 +67,9 @@ impl HorizontalShapingGlyphLoweringRejectReason {
             Self::MeasurementGeometryInvalid => "measurementGeometryInvalid",
             Self::ReplayProjectionMismatch => "replayProjectionMismatch",
             Self::ClusterMappingInvalid => "clusterMappingInvalid",
+            Self::VariableOutlineUnavailable => "variableOutlineUnavailable",
+            Self::VariableOutlineLimitExceeded => "variableOutlineLimitExceeded",
+            Self::VariableOutlineBboxMismatch => "variableOutlineBboxMismatch",
             Self::ResourceLimitExceeded => "resourceLimitExceeded",
         }
     }
@@ -72,6 +81,10 @@ impl HorizontalShapingGlyphLoweringRejectReason {
 pub(crate) struct HorizontalShapingGlyphLoweringReport {
     pub source_node_id: Option<u32>,
     pub glyph_run: Option<LayerGlyphRunPaint>,
+    /// Q3-C producer-resolved variable outline candidate. Product publication
+    /// deliberately ignores this field until a later activation gate.
+    pub glyph_outline: Option<LayerGlyphOutlinePaint>,
+    pub variable_outline_proof: Option<HorizontalShapingVariableOutlineProof>,
     pub reject_reason: Option<HorizontalShapingGlyphLoweringRejectReason>,
     /// Successful-attempt work that scans or parses the exact portable font.
     /// D5 uses this internal-only counter to prove that resource preparation is
@@ -91,6 +104,8 @@ impl HorizontalShapingGlyphLoweringReport {
         Self {
             source_node_id,
             glyph_run: None,
+            glyph_outline: None,
+            variable_outline_proof: None,
             reject_reason: Some(reason),
             portable_source_work: HorizontalShapingPortableSourceWork::default(),
             claims_glyph_run_slot: false,
@@ -100,16 +115,32 @@ impl HorizontalShapingGlyphLoweringReport {
     fn emitted(
         source_node_id: u32,
         glyph_run: LayerGlyphRunPaint,
+        glyph_outline: Option<LayerGlyphOutlinePaint>,
+        variable_outline_proof: Option<HorizontalShapingVariableOutlineProof>,
         portable_source_work: HorizontalShapingPortableSourceWork,
     ) -> Self {
         Self {
             source_node_id: Some(source_node_id),
             glyph_run: Some(glyph_run),
+            glyph_outline,
+            variable_outline_proof,
             reject_reason: None,
             portable_source_work,
             claims_glyph_run_slot: true,
         }
     }
+}
+
+pub(crate) const MAX_HORIZONTAL_SHAPING_OUTLINE_COMMANDS_PER_RUN: usize = 262_144;
+
+#[derive(Debug, Clone)]
+pub(crate) struct HorizontalShapingVariableOutlineProof {
+    pub settings_sha256: String,
+    pub canonical_variations: Vec<VariationAxisValue>,
+    pub glyph_count: usize,
+    pub command_count: usize,
+    pub bbox_mismatch_count: usize,
+    pub run_local_bbox: BoundingBox,
 }
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
@@ -140,6 +171,7 @@ struct HorizontalShapingPreparedSource {
     weight_class: u16,
     width_class: u16,
     italic: bool,
+    is_variable: bool,
 }
 
 /// Page-local prepared exact-source identities. The cache owns only another
@@ -275,6 +307,7 @@ impl HorizontalShapingPreparedSourceCache {
             weight_class: face.weight().to_number(),
             width_class: face.width().to_number(),
             italic: face.is_italic(),
+            is_variable: face.is_variable(),
         });
         self.entries.insert(key, Arc::clone(&prepared));
         self.total_source_bytes = next_total;
@@ -375,7 +408,6 @@ fn validate_measurement(
         || identity.features.len() != 1
         || identity.features[0].tag != "kern"
         || identity.features[0].value != u32::from(run.style.kerning)
-        || !identity.variations.is_empty()
         || measurement.glyphs_px.len() != measurement.applied.glyphs.len()
         || measurement.glyphs_px.is_empty()
         || measurement.glyphs_px.len() > MAX_PORTABLE_GLYPHS_PER_RUN
@@ -508,6 +540,275 @@ struct HorizontalShapingReplayProjection {
     placement: TextRunPlacement,
     max_origin_delta_px: f64,
     max_advance_delta_px: f64,
+}
+
+struct VariableOutlineBuilder {
+    origin_x: f64,
+    origin_y: f64,
+    scale: f64,
+    command_limit: usize,
+    commands: Vec<PathCommand>,
+    current: (f64, f64),
+    contour_start: (f64, f64),
+    overflowed: bool,
+}
+
+impl VariableOutlineBuilder {
+    fn new(origin_x: f64, origin_y: f64, scale: f64, command_limit: usize) -> Self {
+        Self {
+            origin_x,
+            origin_y,
+            scale,
+            command_limit,
+            commands: Vec::new(),
+            current: (0.0, 0.0),
+            contour_start: (0.0, 0.0),
+            overflowed: false,
+        }
+    }
+
+    fn point(&self, x: f64, y: f64) -> (f64, f64) {
+        (
+            self.origin_x + x * self.scale,
+            self.origin_y - y * self.scale,
+        )
+    }
+
+    fn push(&mut self, command: PathCommand) {
+        if self.commands.len() >= self.command_limit {
+            self.overflowed = true;
+            return;
+        }
+        self.commands.push(command);
+    }
+}
+
+impl ttf_parser::OutlineBuilder for VariableOutlineBuilder {
+    fn move_to(&mut self, x: f32, y: f32) {
+        let design = (f64::from(x), f64::from(y));
+        let point = self.point(design.0, design.1);
+        self.push(PathCommand::MoveTo(point.0, point.1));
+        self.current = design;
+        self.contour_start = design;
+    }
+
+    fn line_to(&mut self, x: f32, y: f32) {
+        let design = (f64::from(x), f64::from(y));
+        let point = self.point(design.0, design.1);
+        self.push(PathCommand::LineTo(point.0, point.1));
+        self.current = design;
+    }
+
+    fn quad_to(&mut self, x1: f32, y1: f32, x: f32, y: f32) {
+        let control = (f64::from(x1), f64::from(y1));
+        let end = (f64::from(x), f64::from(y));
+        let first = (
+            self.current.0 + (control.0 - self.current.0) * (2.0 / 3.0),
+            self.current.1 + (control.1 - self.current.1) * (2.0 / 3.0),
+        );
+        let second = (
+            end.0 + (control.0 - end.0) * (2.0 / 3.0),
+            end.1 + (control.1 - end.1) * (2.0 / 3.0),
+        );
+        let first = self.point(first.0, first.1);
+        let second = self.point(second.0, second.1);
+        let end_point = self.point(end.0, end.1);
+        self.push(PathCommand::CurveTo(
+            first.0,
+            first.1,
+            second.0,
+            second.1,
+            end_point.0,
+            end_point.1,
+        ));
+        self.current = end;
+    }
+
+    fn curve_to(&mut self, x1: f32, y1: f32, x2: f32, y2: f32, x: f32, y: f32) {
+        let first = self.point(f64::from(x1), f64::from(y1));
+        let second = self.point(f64::from(x2), f64::from(y2));
+        let end = (f64::from(x), f64::from(y));
+        let end_point = self.point(end.0, end.1);
+        self.push(PathCommand::CurveTo(
+            first.0,
+            first.1,
+            second.0,
+            second.1,
+            end_point.0,
+            end_point.1,
+        ));
+        self.current = end;
+    }
+
+    fn close(&mut self) {
+        self.push(PathCommand::ClosePath);
+        self.current = self.contour_start;
+    }
+}
+
+fn build_variable_outline_shadow(
+    decision: &HorizontalShapingRunDecision,
+    prepared: &HorizontalShapingPreparedSource,
+    projection: &HorizontalShapingReplayProjection,
+    clusters: &[GlyphCluster],
+    text_source_id: u32,
+    run: &TextRunNode,
+) -> Result<
+    (
+        LayerGlyphOutlinePaint,
+        HorizontalShapingVariableOutlineProof,
+    ),
+    HorizontalShapingGlyphLoweringRejectReason,
+> {
+    let measurement = decision
+        .measurement()
+        .ok_or(HorizontalShapingGlyphLoweringRejectReason::RejectedDecision)?;
+    let identity = &measurement.applied.identity;
+    let canonical_variations = identity
+        .variations
+        .iter()
+        .map(|variation| VariationAxisValue {
+            tag: variation.tag.clone(),
+            value: f32::from_bits(variation.value_bits),
+        })
+        .collect::<Vec<_>>();
+    let mut face = ttf_parser::Face::parse(&prepared.source_bytes, prepared.face_index)
+        .map_err(|_| HorizontalShapingGlyphLoweringRejectReason::ReplaySourceFaceInvalid)?;
+    for variation in &canonical_variations {
+        let tag_bytes: [u8; 4] =
+            variation.tag.as_bytes().try_into().map_err(|_| {
+                HorizontalShapingGlyphLoweringRejectReason::MeasurementIdentityMismatch
+            })?;
+        face.set_variation(ttf_parser::Tag::from_bytes(&tag_bytes), variation.value)
+            .ok_or(HorizontalShapingGlyphLoweringRejectReason::MeasurementIdentityMismatch)?;
+    }
+    let scale = projection.draw_font_size_px / f64::from(measurement.units_per_em);
+    if !scale.is_finite() || scale <= 0.0 {
+        return Err(HorizontalShapingGlyphLoweringRejectReason::ReplayProjectionMismatch);
+    }
+
+    let mut paths = Vec::with_capacity(measurement.glyphs_px.len());
+    let mut command_count = 0usize;
+    let mut bbox_mismatch_count = 0usize;
+    let mut min_x = f64::INFINITY;
+    let mut min_y = f64::INFINITY;
+    let mut max_x = f64::NEG_INFINITY;
+    let mut max_y = f64::NEG_INFINITY;
+    for (glyph_index, (glyph, position)) in measurement
+        .glyphs_px
+        .iter()
+        .zip(&projection.positions)
+        .enumerate()
+    {
+        let glyph_id = u16::try_from(glyph.glyph_id)
+            .map(ttf_parser::GlyphId)
+            .map_err(|_| HorizontalShapingGlyphLoweringRejectReason::VariableOutlineUnavailable)?;
+        let remaining = MAX_HORIZONTAL_SHAPING_OUTLINE_COMMANDS_PER_RUN
+            .checked_sub(command_count)
+            .ok_or(HorizontalShapingGlyphLoweringRejectReason::VariableOutlineLimitExceeded)?;
+        let mut builder = VariableOutlineBuilder::new(position.x, position.y, scale, remaining);
+        let outline_bbox = face
+            .outline_glyph(glyph_id, &mut builder)
+            .ok_or(HorizontalShapingGlyphLoweringRejectReason::VariableOutlineUnavailable)?;
+        if builder.overflowed {
+            return Err(HorizontalShapingGlyphLoweringRejectReason::VariableOutlineLimitExceeded);
+        }
+        if face.glyph_bounding_box(glyph_id) != Some(outline_bbox) {
+            bbox_mismatch_count = bbox_mismatch_count.saturating_add(1);
+        }
+        if builder.commands.is_empty() {
+            return Err(HorizontalShapingGlyphLoweringRejectReason::VariableOutlineUnavailable);
+        }
+        command_count = command_count
+            .checked_add(builder.commands.len())
+            .ok_or(HorizontalShapingGlyphLoweringRejectReason::VariableOutlineLimitExceeded)?;
+        let local_x_min = position.x + f64::from(outline_bbox.x_min) * scale;
+        let local_x_max = position.x + f64::from(outline_bbox.x_max) * scale;
+        let local_y_min = position.y - f64::from(outline_bbox.y_max) * scale;
+        let local_y_max = position.y - f64::from(outline_bbox.y_min) * scale;
+        min_x = min_x.min(local_x_min);
+        min_y = min_y.min(local_y_min);
+        max_x = max_x.max(local_x_max);
+        max_y = max_y.max(local_y_max);
+        let glyph_index_u32 = u32::try_from(glyph_index).map_err(|_| {
+            HorizontalShapingGlyphLoweringRejectReason::VariableOutlineLimitExceeded
+        })?;
+        let cluster = clusters
+            .iter()
+            .find(|cluster| {
+                cluster.glyph_range.start <= glyph_index_u32
+                    && glyph_index_u32 < cluster.glyph_range.end
+            })
+            .ok_or(HorizontalShapingGlyphLoweringRejectReason::ClusterMappingInvalid)?;
+        paths.push(LayerGlyphOutlinePath {
+            glyph_id: glyph.glyph_id,
+            source_range_utf8: cluster.source_range_utf8,
+            glyph_range: GlyphRange::new(glyph_index_u32, glyph_index_u32 + 1),
+            commands: builder.commands,
+            fill_rule: GlyphOutlineFillRule::NonZero,
+        });
+    }
+    if bbox_mismatch_count != 0 {
+        return Err(HorizontalShapingGlyphLoweringRejectReason::VariableOutlineBboxMismatch);
+    }
+    if ![min_x, min_y, max_x, max_y].into_iter().all(f64::is_finite)
+        || max_x <= min_x
+        || max_y <= min_y
+    {
+        return Err(HorizontalShapingGlyphLoweringRejectReason::VariableOutlineUnavailable);
+    }
+
+    let equivalence_group = format!("text-{text_source_id}");
+    let mut variant = PaintVariantMeta::text_run_default(equivalence_group.clone());
+    variant.variant_id = "glyphOutline".to_string();
+    variant.variant_kind = TextVariantKind::GlyphOutline;
+    variant.is_default_fallback = false;
+    variant.requires = vec!["text.glyphOutline.monochromeFill".to_string()];
+    variant.quality = Some(TextVariantQuality::Exact);
+    variant.anchor_op_id = Some(equivalence_group);
+    let mut paint_style = PaintTextStyle::from(&run.style);
+    paint_style.font_size = projection.draw_font_size_px;
+    paint_style.ratio = 1.0;
+    let proof = HorizontalShapingVariableOutlineProof {
+        settings_sha256: identity.settings_sha256.clone(),
+        canonical_variations,
+        glyph_count: paths.len(),
+        command_count,
+        bbox_mismatch_count,
+        run_local_bbox: BoundingBox::new(min_x, min_y, max_x - min_x, max_y - min_y),
+    };
+    let outline = LayerGlyphOutlinePaint {
+        source: TextSourceSpan {
+            id: TextSourceId(text_source_id),
+            utf8_range: TextSourceRange::new(0, run.text.len() as u32),
+            utf16_range: TextSourceRange::new(0, run.text.encode_utf16().count() as u32),
+            stable_source_key: None,
+        },
+        variant,
+        payload_kind: GlyphOutlinePayloadKind::MonochromeFill,
+        color_layers: None,
+        bitmap_glyph: None,
+        svg_glyph: None,
+        paint_style,
+        placement: projection.placement,
+        paths,
+        stroke: None,
+        diagnostics: GlyphRunDiagnostics {
+            quality: TextVariantQuality::Exact,
+            replay_eligibility: GlyphRunReplayEligibility::Portable,
+            strict_visual_eligible: true,
+            max_origin_delta_px: projection.max_origin_delta_px,
+            max_advance_delta_px: projection.max_advance_delta_px,
+            max_residual_after_adjustment_px: projection
+                .max_origin_delta_px
+                .max(projection.max_advance_delta_px),
+            cluster_mismatch_count: 0,
+            missing_glyph_count: 0,
+            used_fallback_font_count: 0,
+            reason: Some("q3VariableOutlineProjectionV1".to_string()),
+        },
+    };
+    Ok((outline, proof))
 }
 
 fn project_replay_geometry(
@@ -764,6 +1065,23 @@ fn lower_horizontal_shaping_source_shadow(
     let measurement = decision
         .measurement()
         .expect("measurement was validated above");
+    let variable_outline = if prepared.is_variable {
+        match build_variable_outline_shadow(
+            decision,
+            &prepared,
+            &projection,
+            &clusters,
+            text_source_id,
+            run,
+        ) {
+            Ok(value) => Some(value),
+            Err(reason) => {
+                return HorizontalShapingGlyphLoweringReport::rejected(Some(source_node_id), reason)
+            }
+        }
+    } else {
+        None
+    };
     let glyph_ids = measurement
         .glyphs_px
         .iter()
@@ -809,6 +1127,14 @@ fn lower_horizontal_shaping_source_shadow(
     variant.quality = Some(TextVariantQuality::Exact);
     variant.anchor_op_id = Some(equivalence_group);
     let identity = &measurement.applied.identity;
+    let variations = identity
+        .variations
+        .iter()
+        .map(|variation| VariationAxisValue {
+            tag: variation.tag.clone(),
+            value: f32::from_bits(variation.value_bits),
+        })
+        .collect();
     let features = identity
         .features
         .iter()
@@ -834,7 +1160,7 @@ fn lower_horizontal_shaping_source_shadow(
             font_instance: FontInstanceKey {
                 face_key,
                 size_px: projection.draw_font_size_px,
-                variations: Vec::new(),
+                variations,
                 synthetic_bold: false,
                 synthetic_italic: false,
             },
@@ -871,7 +1197,16 @@ fn lower_horizontal_shaping_source_shadow(
             reason: Some("q2CommonShapingCondensedDrawProjectionV1".to_string()),
         },
     };
-    HorizontalShapingGlyphLoweringReport::emitted(source_node_id, glyph_run, portable_source_work)
+    let (glyph_outline, variable_outline_proof) = variable_outline
+        .map(|(outline, proof)| (Some(outline), Some(proof)))
+        .unwrap_or((None, None));
+    HorizontalShapingGlyphLoweringReport::emitted(
+        source_node_id,
+        glyph_run,
+        glyph_outline,
+        variable_outline_proof,
+        portable_source_work,
+    )
 }
 
 /// Page-local common shaping sidecar를 TextRun 순서와 같은 text_source_id로

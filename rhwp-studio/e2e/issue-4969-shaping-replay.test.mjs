@@ -188,6 +188,29 @@ try {
   cache.registerResources(fontResources, resources);
   const status = cache.replayStatus(glyphRun, fontResources);
   assert.equal(status.replayable, true, 'D4 common GlyphRun은 strict CanvasKit replay 대상이어야 한다');
+  const cacheBeforeVariableProbe = cache.diagnostics();
+  const variableGlyphRun = {
+    ...glyphRun,
+    shapeKey: {
+      ...glyphRun.shapeKey,
+      fontInstance: {
+        ...glyphRun.shapeKey.fontInstance,
+        variations: [
+          { tag: 'opsz', value: 900 },
+          { tag: 'wght', value: 900 },
+        ],
+      },
+    },
+  };
+  const variableStatus = cache.replayStatus(variableGlyphRun, fontResources);
+  assert.equal(variableStatus.replayable, false);
+  assert.equal(variableStatus.reason, 'variationUnsupported');
+  assert.equal(variableStatus.report.variationSupported, false);
+  assert.deepEqual(
+    cache.diagnostics(),
+    cacheBeforeVariableProbe,
+    'canonical vector가 cache key에 없는 동안 variable probe는 typeface/font cache를 열지 않아야 한다',
+  );
   const selected = selectLayerTextVariantsForLeaf(
     [fallback, glyphRun],
     () => false,
