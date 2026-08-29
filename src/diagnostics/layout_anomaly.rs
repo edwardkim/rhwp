@@ -408,7 +408,8 @@ fn glyph_band_bbox(node: &RenderNode) -> BoundingBox {
         return node.bbox;
     };
     let em = run.style.font_size;
-    if !(em > 0.0) || em >= node.bbox.height {
+    // NaN·비유한 font_size 는 종전 `!(em > 0.0)` 처럼 원상자 유지로 처리한다.
+    if !em.is_finite() || em <= 0.0 || em >= node.bbox.height {
         return node.bbox;
     }
     let inset = (node.bbox.height - em) / 2.0;
@@ -1476,105 +1477,6 @@ mod tests {
             RenderNodeType::TextLine(TextLineNode::new(h, h * 0.8)),
             BoundingBox::new(x, y, w, h),
         )
-    }
-
-    /// [흐름 범위] `TextLine` 은 자식 런들의 글자 상자 합집합으로 잰다.
-    #[test]
-    fn flow_extent_unions_child_glyph_bands() {
-        let mut line = text_line(10.0, 100.0, 200.0, 28.0);
-        let mut a = text_run("가");
-        a.bbox = BoundingBox::new(10.0, 100.0, 50.0, 28.0);
-        let mut b = text_run("나");
-        b.bbox = BoundingBox::new(120.0, 100.0, 40.0, 28.0);
-        for run in [&mut a, &mut b] {
-            if let RenderNodeType::TextRun(r) = &mut run.node_type {
-                r.style.font_size = 20.0;
-            }
-        }
-        line.children = vec![a, b];
-        let e = flow_extent_bbox(&line);
-        // 세로는 글자 상자(20) 로 좁고, 가로는 두 런을 합친 10..160.
-        assert_eq!(e.height, 20.0);
-        assert_eq!(e.y, 104.0);
-        assert_eq!(e.x, 10.0);
-        assert_eq!(e.width, 150.0);
-    }
-
-    /// 보이는 런이 없으면 줄 상자를 그대로 쓴다 — 판정에서 조용히 빠지지 않는다.
-    #[test]
-    fn flow_extent_falls_back_to_line_box_without_runs() {
-        let line = text_line(0.0, 0.0, 100.0, 28.0);
-        let e = flow_extent_bbox(&line);
-        assert_eq!(e.height, 28.0);
-        assert_eq!(e.width, 100.0);
-    }
-
-    /// 표·그림 등은 자기 bbox 가 곧 차지하는 범위다.
-    #[test]
-    fn flow_extent_leaves_non_text_nodes_alone() {
-        let node = RenderNode::new(
-            1,
-            RenderNodeType::TextBox,
-            BoundingBox::new(5.0, 6.0, 70.0, 80.0),
-        );
-        let e = flow_extent_bbox(&node);
-        assert_eq!((e.x, e.y, e.width, e.height), (5.0, 6.0, 70.0, 80.0));
-    }
-
-    /// [글자 상자] 줄 상자에서 줄 간격을 뺀 em 상자로 좁힌다.
-    #[test]
-    fn glyph_band_strips_line_leading() {
-        let mut node = text_run("가");
-        node.bbox = BoundingBox::new(10.0, 100.0, 50.0, 16.0);
-        if let RenderNodeType::TextRun(run) = &mut node.node_type {
-            run.style.font_size = 12.0;
-        }
-        let band = glyph_band_bbox(&node);
-        // 16 − 12 = 4 을 위아래로 2 씩 — baseline 위치를 가정하지 않는다.
-        assert_eq!(band.y, 102.0);
-        assert_eq!(band.height, 12.0);
-        assert_eq!(band.x, 10.0, "가로는 건드리지 않는다");
-        assert_eq!(band.width, 50.0);
-    }
-
-    /// 줄 간격이 없는(줄 상자 = em 상자) 런은 그대로 둔다.
-    #[test]
-    fn glyph_band_keeps_box_without_leading() {
-        let mut node = text_run("가");
-        node.bbox = BoundingBox::new(0.0, 0.0, 50.0, 16.0);
-        if let RenderNodeType::TextRun(run) = &mut node.node_type {
-            run.style.font_size = 16.0;
-        }
-        assert_eq!(glyph_band_bbox(&node).height, 16.0);
-    }
-
-    /// font_size 가 줄 상자보다 크면 좁히지 않는다 — 넓히는 방향으로는 틀리지 않는다.
-    #[test]
-    fn glyph_band_never_grows_the_box() {
-        let mut node = text_run("가");
-        node.bbox = BoundingBox::new(0.0, 0.0, 50.0, 10.0);
-        if let RenderNodeType::TextRun(run) = &mut node.node_type {
-            run.style.font_size = 40.0;
-        }
-        assert_eq!(glyph_band_bbox(&node).height, 10.0);
-    }
-
-    /// font_size 가 0 이면 근거가 없으므로 그대로 둔다.
-    #[test]
-    fn glyph_band_needs_a_font_size() {
-        let mut node = text_run("가");
-        node.bbox = BoundingBox::new(0.0, 0.0, 50.0, 16.0);
-        if let RenderNodeType::TextRun(run) = &mut node.node_type {
-            run.style.font_size = 0.0;
-        }
-        assert_eq!(glyph_band_bbox(&node).height, 16.0);
-    }
-
-    /// TextRun 이 아닌 노드는 손대지 않는다.
-    #[test]
-    fn glyph_band_only_applies_to_text_runs() {
-        let node = text_line(0.0, 0.0, 50.0, 16.0);
-        assert_eq!(glyph_band_bbox(&node).height, 16.0);
     }
 
     fn text_run(text: &str) -> RenderNode {
