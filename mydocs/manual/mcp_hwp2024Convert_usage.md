@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/mcp_hwp2024Convert_usage.md
-last_verified: 2026-08-28
+last_verified: 2026-08-30
 ---
 
 # HWP 2024 변환 MCP client 사용법
@@ -461,17 +461,39 @@ server process 전체에서 하나씩 직렬 실행한다. 비동기 요청은 �
 많은 문서·거대 표·중첩 표는 1800초를 권장한다. client의 동기 HTTP request는 변환 timeout에 120초
 여유를 더해 기다린다.
 
-## 손상 HWP 입력
+## HWP5 입력 사전 차단
 
-HWP5 구조 사전 검증에서 손상으로 판정되면 비동기 job은 `failed`로 끝나고 다음과 같은 오류를 반환한다.
+service는 한컴 runtime을 시작하기 전에 HWP5 입력을 검사한다. 암호 HWP5는 비밀번호 전처리가 만든
+평문 CFB에도 같은 검사를 다시 적용한다. 사전 차단되면 비동기 job은 `terminal: true`, `status: failed`,
+`phase: failed`, `output_bytes: 0`으로 끝나고 result blob이나 local output을 만들지 않는다. 따라서
+`succeeded`가 아니면 `download`를 호출해서는 안 된다.
+
+### 손상 HWP
+
+HWP5 구조 사전 검증에서 손상으로 판정되면 다음과 같은 오류를 반환한다.
 
 ```text
 input preflight rejected the document: corrupt HWP document: <손상 원인>
 ```
 
-이 경우 한컴 worker와 PDF/HWPX 변환은 시작되지 않으며 결과 blob도 만들지 않는다. `timeout_seconds`를
-늘리거나 다른 engine으로 재시도하지 말고, `status` 오류를 기록한 뒤 원본 파일을 다시 받거나 복구한다.
-`succeeded`가 아니므로 `download`를 호출해서는 안 된다.
+이 경우 한컴 worker와 PDF/HWPX 변환은 시작되지 않는다. `timeout_seconds`를 늘리거나 다른 engine으로
+재시도하지 말고, `status` 오류를 기록한 뒤 원본 파일을 다시 받거나 복구한다.
+
+### 문서 열기 스크립트
+
+HWP5의 `Scripts/DefaultJScript`에 `function OnDocument_Open(...)`가 있으면 한컴의 스크립트 실행 승인
+모달이 무인 service를 멈출 수 있다. service는 문서 코드를 실행하거나 승인하지 않고, 한컴 DLL과 문서
+open 전에 다음 오류로 차단한다.
+
+```text
+input preflight rejected the document: script-enabled HWP with an OnDocument_Open handler cannot be converted unattended
+```
+
+암호 HWP5는 비밀번호 전처리 뒤 같은 handler가 발견되면 오류 접두어가
+`input preflight rejected the prepared password document:`가 될 수 있다. `Scripts` storage 자체나
+`OnDocument_New`만 있는 문서는 이 정책으로 차단하지 않는다. 이 오류는 파일 구조 손상을 뜻하지 않는다.
+`timeout_seconds`나 engine을 바꿔 재시도하거나 script 실행을 승인하지 말고, 원본 제공자에게 스크립트 없는
+사본을 요청하거나 보안 검토가 가능한 별도 대화형 환경에서 문서 코드를 확인한다.
 
 ## 성공 확인
 
@@ -548,6 +570,11 @@ HWP→PDF와 HWP→HWPX job 모두 즉시 terminal `failed`가 되었고, 각각
 `input preflight rejected the document: corrupt HWP document: DocumentProperties section count does not match BodyText streams`
 오류를 반환했다. 두 요청 모두 한컴 direct worker를 시작하지 않았고 result blob을 만들지 않았다.
 
+2026-08-29 배포 server에서 `OnDocument_Open` handler를 포함한 HWP5 fixture를 비동기
+`start → status`로 검증했다. `engine: 2020`, `target: pdf` 요청은 1초 뒤 terminal `failed`,
+`output_bytes: 0`으로 끝났고, 위의 script-enabled preflight 오류를 반환했다. 한컴 open과 스크립트
+승인 모달은 시작되지 않았으며 result blob도 만들지 않았다.
+
 ## 문제 해결
 
 - `HWP2024_MCP_AUTH_TOKEN or --auth-token is required`
@@ -561,9 +588,14 @@ HWP→PDF와 HWP→HWPX job 모두 즉시 terminal `failed`가 되었고, 각각
 - `unsupported target 'hwpx' for .hwpx input`
   - `.hwpx` 입력은 `pdf` 또는 `hwp`로 변환한다.
 - `input preflight rejected the document: corrupt HWP document: ...`
-  - HWP5 구조 사전 검증이 입력을 손상 문서로 판정한 것이다. 변환은 시작되지 않았고 output도 없다.
-    timeout 또는 engine을 바꿔 재시도하지 말고, 원본을 다시 받거나 복구한다. `succeeded`가 아니므로
-    download하지 않는다.
+   - HWP5 구조 사전 검증이 입력을 손상 문서로 판정한 것이다. 변환은 시작되지 않았고 output도 없다.
+     timeout 또는 engine을 바꿔 재시도하지 말고, 원본을 다시 받거나 복구한다. `succeeded`가 아니므로
+     download하지 않는다.
+- `input preflight rejected the document: script-enabled HWP with an OnDocument_Open handler cannot be converted unattended`
+  - HWP5 문서 열기 스크립트가 무인 실행에 안전하지 않아 한컴을 시작하기 전에 차단된 것이다. 스크립트를
+    실행하거나 승인하지 말고, 스크립트 없는 사본을 받거나 별도 대화형 보안 검토 환경에서 문서 코드를 확인한다.
+    암호 HWP5는 `prepared password document` 접두어가 붙을 수 있다. `succeeded`가 아니므로 download하지
+    않는다.
 - 기존 파일 오류
   - client는 output을 덮어쓰지 않는다. 다른 `output_filename`을 사용하거나 기존 파일을 별도 보관한 뒤 재시도한다.
 - 큰 문서 timeout
