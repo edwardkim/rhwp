@@ -4,26 +4,27 @@
 - **착수 기준**: `upstream/devel` `1b91c2025`
 - **브랜치**: `task_m100_3789-render-boundary`
 - **구현 완료일**: 2026-08-27 KST
-- **최신 갱신일**: 2026-08-28 KST
-- **상태**: PR #6276 생성, self-review trailing head CI 대기
+- **최신 갱신일**: 2026-08-29 KST
+- **상태**: PR #6276 리뷰 보정·최신 devel 로컬 검증 완료, 보정 candidate push 대기
 - **절차 판정**: 기술 게이트 준수, 단계별 보고·승인 게이트 부분 미준수
 
 ## 결과
 
-`src/main.rs`에 남아 있던 두 종류의 책임을 실제 소유 모듈로 분리했다. `test-caption`의 문서 mutation과
-직접 SVG render는 `src/cli/commands/caption_validation.rs`, structure export와 공유 JSON 변환은
-`src/cli/queries/structure.rs`가 소유한다. root에는 인자 해석과 dispatch만 남았으며 2,101줄에서
-1,930줄로 줄었다.
+`src/main.rs`에 남아 있던 책임을 실제 소유 모듈로 분리했다. `test-caption`의 문서 mutation과 직접 SVG
+render는 `src/cli/commands/caption_validation.rs`, structure export와 공유 JSON 변환은
+`src/cli/queries/structure.rs`, CLI 문서 로더·인증 입력은 `src/cli/document_io.rs`, 단위 변환은
+`src/cli/units.rs`가 소유한다. root에는 인자 해석과 dispatch·composition만 남았으며 2,101줄에서
+1,716줄로 줄었다.
 
 structure helper의 소비자는 계획 당시 확인한 vector export와 batch query 외에 MCP structure 응답도
 있었다. 컴파일 단계에서 이를 확인해 같은 query authority를 참조하도록 보정했다. 새 root re-export나
 중복 JSON helper는 만들지 않았다.
 
-CI는 `src/main.rs` 전체를 renderer source로 보던 blanket 경계를 제거했다. 대신 직접
-`render_page_svg`를 호출하는 caption module의 정확한 경로를 Render Diff workflow, trusted classifier와
-policy mirror에 동시에 등록했다. 그 결과 root와 structure query는 일반 Rust 변경으로, caption render는
-Render Diff와 Native Skia가 필요한 변경으로 분류된다. #5776이 고정한 PDF/shared/raster adapter mapping은
-그대로 유지된다.
+CI는 `src/main.rs` 전체를 renderer source로 보던 blanket 경계를 제거했다. PR 리뷰에서 direct renderer
+caller 여부와 실제 workflow consumer가 다름을 확인해, Render Diff의 `export-pdf`와 Native Skia의
+`export-png`가 공유하는 `src/cli/document_io.rs`를 workflow, trusted classifier와 policy mirror에 동시에
+등록했다. root·caption·vector·structure·units는 일반 Rust, raster는 Native Skia, document input은 Render
+Diff와 Native Skia 양쪽으로 분류된다. #5776이 고정한 PDF/shared/raster adapter mapping은 유지된다.
 
 ## 커밋 경계
 
@@ -37,6 +38,15 @@ Render Diff와 Native Skia가 필요한 변경으로 분류된다. #5776이 고�
 | `39d6aa1dd` | `upstream/devel@2166f4065` current-base merge |
 | `a4d7023f7` | Stage 5 동시점 보고와 최신 기준 상태 기록 |
 | `3db893274` | `upstream/devel@5645e1f5b` second current-base merge |
+| `a76e88085` | Stage 6 second refresh 검증 기록 |
+| `7a5781840` | Stage 7 전체 회귀 결과 기록 |
+| `7c6ee5461` | `upstream/devel@1a43a507c` pre-push current-base merge |
+| `764439a15` | Stage 8 제출 직전 검증 기록 |
+| `dc0e3c5b5` | PR #6276 self-review trailing 기록 |
+| `3e439a534` | PR update-branch merge와 원격 review head |
+| `2357800d2` | `upstream/devel@96da78a9c` review correction 전 current-base merge |
+| `eeffb3e8f` | 실제 workflow consumer 기준 CLI 렌더 입력 경계 보정 |
+| `16ea38cd2` | `upstream/devel@f6a6bee8f` final local current-base merge |
 
 ## 계획 대비 실제
 
@@ -46,7 +56,7 @@ Render Diff와 Native Skia가 필요한 변경으로 분류된다. #5776이 고�
 | structure export/helper를 query module로 이동 | `structure.rs`를 단일 authority로 구성 | 계획대로 |
 | root에는 composition만 유지 | renderer 호출·구조 JSON 구현 제거, 171줄 감소 | 계획대로 |
 | vector와 batch 소비자를 새 authority로 연결 | 두 소비자와 추가 발견한 MCP 소비자까지 연결 | 계획 외 보정 |
-| root negative, caption positive CI 분류 | workflow/classifier/policy와 fixture에 동일 반영 | 계획대로 |
+| root negative, caption positive CI 분류 | 실제 consumer 대사 뒤 caption negative·공유 document input positive로 조정 | 리뷰 보정 |
 | renderer 의미·출력 계약 보존 | 알고리즘·schema·golden 변경 없음, 계약·전체 회귀 통과 | 계획대로 |
 
 ## 검증 결과
@@ -64,20 +74,21 @@ Render Diff와 Native Skia가 필요한 변경으로 분류된다. #5776이 고�
 
 ### CI와 전체 회귀
 
-- classifier·policy Node 계약: 67/67 통과
-- CI workflow Python 계약: 68/68 통과
+- classifier·policy Node 계약: 69/69 통과
+- Render Diff·CI impact workflow Python 계약: 37/37 통과
 - `actionlint .github/workflows/render-diff.yml`: 통과
-- release-test: 8,402/8,402 통과, 43 skip, 실패 0
+- release-test: runnable 8,553/8,553 통과, 43 ignored, 실패 0
 - clippy `-D warnings`: 통과
-- integration suite manifest와 source unit tier 정책 검사: 통과
+- integration suite manifest 1,017 sources / 4,503 attrs / 48 targets와 source unit tier 정책 검사: 통과
 - Cargo format과 `git diff --check`: 통과
 
 ## 시각·WASM 검증 판단
 
 이번 변경은 renderer, paint/layout, PDF/SVG/raster 생성 알고리즘이나 WASM API를 바꾸지 않고 기존 direct
-caller의 소유 파일만 이동한다. golden baseline도 변경하지 않았다. 따라서 Native Skia capture, WASM
-build와 시각 baseline 재생성은 로컬 추가 게이트에서 제외했다. 다만 새 caption 파일이 앞으로 변경되면
-CI classifier가 Render Diff와 Native Skia를 모두 활성화하도록 positive 계약을 고정했다.
+caller와 공유 입력의 소유 파일만 이동한다. golden baseline도 변경하지 않았다. 따라서 Native Skia capture,
+WASM build와 시각 baseline 재생성은 로컬 추가 게이트에서 제외했다. 다만 실제 PDF·PNG workflow가 공유하는
+`document_io.rs`가 앞으로 변경되면 CI classifier가 Render Diff와 Native Skia를 모두 활성화하도록 positive
+계약을 고정했다. caption·vector는 현행 workflow가 직접 실행하지 않으므로 과분류하지 않는다.
 
 ## 최신 `devel` 재기준화
 
@@ -158,6 +169,32 @@ remote push와 PR 생성 승인을 받은 직후 fetch에서 `upstream/devel`이
 세부 내용은 [Stage 8 보고](../working/task_m100_3789_stage8.md)에 기록한다. 이 보고 commit까지를 최초
 원격 code candidate로 제출하고, PR 번호 기반 self-review·오늘할일은 후속 review-only commit으로 추가한다.
 
+### Stage 9 PR review correction
+
+[PR 리뷰 comment](https://github.com/edwardkim/rhwp/pull/6276#issuecomment-5452147207)는 최초 CI 경계가
+실제 workflow consumer와 어긋나고 `main.rs`에도 PDF·PNG 입력 helper가 남아 있음을 지적했다. 작업지시자의
+보정 승인 뒤 다음을 반영했다.
+
+- 문서 로더·오류 분류·인증 pre-scan을 `src/cli/document_io.rs`, 단위 변환을 `src/cli/units.rs`로 이동
+- Render Diff·Native Skia 공유 입력을 `document_io.rs`로 등록하고, 미소비 caption trigger 제거
+- root의 모든 `.render_page_` family를 막고 `src/cli/**/*.rs` direct renderer caller를 explicit bucket으로
+  전수 강제
+- rustfmt 중괄호에 결합된 dispatch assertion과 `vector.rs` module doc 보정
+
+리뷰 당시 원격 head `3e439a534` 뒤 `upstream/devel@96da78a9c`와 `@f6a6bee8f`를 각각
+`2357800d2`, `16ea38cd2` current-base merge로 반영했다. 최종 로컬 결과는 다음과 같다.
+
+- #3789 focused Rust: 113/113 통과
+- classifier·policy Node: 69/69 통과
+- Render Diff·CI impact workflow Python: 37/37 통과
+- 전체 nextest: runnable 8,553/8,553 통과, 43 ignored, 실패 0
+- 필수 clippy, actionlint, Cargo format, diff, manifest, unit-tier: 통과
+- manifest: 1,017 sources, 4,503 static test attrs, 48/48 integration targets
+
+`test-caption`의 모든 mutation이 실패해도 exit 0인 기존 동작은 이번 책임 이동과 별개인 false-pass 문제로
+남긴다. 별도 이슈 후보이며 외부 이슈 생성은 별도 승인을 받는다. 세부 판단과 재현 명령은
+[Stage 9 보고](../working/task_m100_3789_stage9.md)에 기록한다.
+
 ## 하이퍼 워터폴 절차 감사
 
 2026-08-27 작업지시자의 요청으로 canonical 절차와 실제 commit 계보를 대사했다.
@@ -180,14 +217,11 @@ remote push와 PR 생성 승인을 받은 직후 fetch에서 `upstream/devel`이
 
 ## 제출 상태
 
-로컬 구현과 필수 검증은 완료했다. generated integration suite·manifest는 제출 대상에 포함하지 않았다.
-Stage 7 시점에는 `upstream/devel@5645e1f5b` 전체 회귀와 필수 clippy까지 완료하고 remote 제출을 별도
-승인 게이트로 남겼다.
-제출 직전 기준을 `upstream/devel@1a43a507c`로 다시 갱신하고 Stage 8 전체 회귀까지 완료했다. 작업지시자가
-remote push와 PR 생성을 승인했으며, 실제 PR 번호·최신 head·GitHub CI 상태는 제출 뒤 번호 기반
-self-review에서 기록한다.
+로컬 구현과 필수 검증은 완료했고 generated integration suite·manifest는 제출 대상에 포함하지 않았다.
+Open PR [#6276](https://github.com/edwardkim/rhwp/pull/6276)은 `devel` 대상 Draft다. 현재 원격 head는
+`3e439a534`이며 그 head의 GitHub Actions는 성공했지만, 리뷰 보정이 반영된 로컬 candidate는
+`16ea38cd2`와 이 보고의 후속 문서 commit이므로 원격 CI 증적으로 재사용하지 않는다.
 
-Open PR [#6276](https://github.com/edwardkim/rhwp/pull/6276)을 `devel` 대상으로 생성했다. 최초 remote code
-candidate는 `764439a15`이고 작성자 본인 PR이므로 reviewer를 지정하지 않는다. 번호 기반
-[self-review](../pr/archives/pr_6276_review.md)와 오늘할일을 trailing commit으로 추가한 뒤 최신 head의
-GitHub Actions·mergeability와 별도 merge 승인을 확인한다.
+[self-review](../pr/archives/pr_6276_review.md)를 리뷰 보정 기준으로 갱신했다. 작업지시자의 별도 push 승인 뒤
+보정 candidate를 원격에 반영하고, 최신 head Full CI·mergeability를 확인한 다음 보정 완료 comment를
+게시한다. `test-caption` false-pass 별도 이슈 생성과 PR merge도 각각 별도 승인 게이트로 남긴다.

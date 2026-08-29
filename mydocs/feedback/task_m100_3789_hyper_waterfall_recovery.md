@@ -86,3 +86,14 @@ push와 PR 생성은 자동으로 이어가지 않고 다음 승인 게이트로
 승인을 오래된 base push의 근거로 쓰지 않고 `upstream/devel@1a43a507c`를 current-base merge한 뒤 focused와
 전체 회귀를 다시 실행했다. [Stage 8 보고](../working/task_m100_3789_stage8.md)를 최초 원격 candidate에
 포함하고, PR 번호가 생긴 뒤에만 self-review와 오늘할일을 trailing commit으로 작성한다.
+
+## Stage 9 리뷰 보정과 안전 중지 복구
+
+PR 리뷰에서 최초 CI 경계 전제의 실제 workflow consumer 불일치를 확인했다. 작업지시자가 보정을 승인해
+source 보정을 `eeffb3e8f`에 먼저 고정했고, 이동 전에 작업지시자의 안전 중지 요청에 따라 clean checkpoint로
+남겼다. 재개 승인 뒤에만 `upstream/devel@f6a6bee8f`를 `16ea38cd2`로 병합하고 focused·전체 회귀를
+수행했다.
+
+이 단계는 과거 Stage 1~4 기록을 고쳐 완전 준수로 만들지 않는다. 리뷰 판단, 보정 commit, 안전 중지,
+재개, 최신화와 검증의 실제 순서를 [Stage 9 보고](../working/task_m100_3789_stage9.md)에 동시점 기록한다.
+원격 push와 보정 완료 comment는 다시 별도 승인 게이트로 남긴다.

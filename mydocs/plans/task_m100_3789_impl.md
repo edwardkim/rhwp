@@ -5,7 +5,7 @@
 - **작성일**: 2026-08-27 KST
 - **작업 브랜치**: `task_m100_3789-render-boundary`
 - **착수 기준**: `upstream/devel@1b91c2025`
-- **구현 상태**: 최신 `devel@1a43a507c` 전체 회귀·필수 clippy 완료, remote 제출 승인 확인
+- **구현 상태**: PR 리뷰 보정과 최신 `devel@f6a6bee8f` 전체 회귀 완료, 로컬 보정 candidate push 대기
 
 ## 1. 구현 불변식
 
@@ -177,3 +177,24 @@ git diff --check
 - remote 제출 승인 뒤 다시 진전한 `upstream/devel@1a43a507c`를 `7c6ee5461` current-base merge로
   반영했다. 새 shaping 통합을 포함한 focused Rust 113개, 전체 nextest 8,519개와 필수 clippy를 통과했고
   [Stage 8 보고](../working/task_m100_3789_stage8.md)에 기록한다.
+
+## 10. PR 리뷰 뒤 계획 조정
+
+이 절은 2026-08-29 PR 리뷰 뒤 추가한 사후 결정 기록이다. 위 1~8절의 최초 계획을 당시부터 현재 결정이었던
+것처럼 고쳐 쓰지 않는다.
+
+- 최초 계획의 “direct SVG caller인 caption source를 Render Diff가 추적한다”는 전제가 실제 workflow 실행
+  그래프와 달랐다. Render Diff는 `test-caption`이나 `export-svg`를 실행하지 않고 `export-pdf` report를
+  소비하며, Native Skia는 `export-png`를 소비한다.
+- 따라서 path 이름이나 direct render 호출 여부가 아니라 **workflow direct consumer와 그 공유 입력**을 CI
+  기준으로 삼는다. caption·vector는 일반 Rust, raster는 Native Skia, `document_io.rs`는 Render Diff와
+  Native Skia 양쪽으로 분류한다.
+- `main.rs`를 negative로 둘 수 있도록 문서 로더·인증 pre-scan과 단위 변환도 실제 소유 모듈로 이동한다.
+  이 조정은 최초 계획 §8의 “render-positive path가 빠지면 완료로 보지 않는다” 중단 조건을 해소한다.
+- direct CLI page renderer caller를 `src/cli/**/*.rs`에서 전수 발견하고 explicit bucket을 요구해 새 command
+  디렉터리에도 같은 결정을 강제한다.
+- 보정 source는 `eeffb3e8f`, 최신 `devel@f6a6bee8f` 병합은 `16ea38cd2`에 고정했다. focused Rust
+  113개, Node 69개, Python 37개, 전체 runnable nextest 8,553개와 필수 clippy가 통과했다. 상세 결과는
+  [Stage 9 보고](../working/task_m100_3789_stage9.md)에 기록한다.
+- `test-caption`의 모든 mutation이 실패해도 exit 0인 기존 동작은 이번 move-only 불변식과 충돌하므로 제품
+  보정에 섞지 않는다. 별도 false-pass 이슈 후보로 유지하고 외부 이슈 생성은 별도 승인을 받는다.
