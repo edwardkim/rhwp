@@ -2098,7 +2098,7 @@ requireSnippet(
 );
 requireSnippet(
   canvaskitSource,
-  /this\.currentFontResources = tree\.fontResources;[\s\S]*?this\.glyphRunFonts\.registerResources\(tree\.fontResources, tree\.resources\);[\s\S]*?this\.selectTextVariants\(tree\.root\)/,
+  /this\.currentFontResources = tree\.fontResources;[\s\S]*?this\.glyphRunFonts\.registerResources\(\s*tree\.fontResources,\s*tree\.resources,\s*resolveFontBytes,\s*documentGeneration,\s*\);[\s\S]*?this\.selectTextVariants\(tree\.root\)/,
   'GlyphRun font blobs must be verified before text variant selection',
 );
 requireSnippet(
