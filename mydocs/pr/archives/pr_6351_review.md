@@ -15,13 +15,12 @@ author: lpaiu-cs
 - 원 PR: https://github.com/edwardkim/rhwp/pull/6351
 - 작성자: `lpaiu-cs`
 - reviewer request: `jangster77` 등록 확인
-- 원 PR head: `c0a00cdd3c59f3ebc1043edebed51845fea58543`
+- 원 PR 최신 head: `77df8746435467d9eab0a41c3bd822e200783a99`
+- 통합 적용 기준: 기능 commit `2847442ec` 및 메인터너 보정 commit `33c6dc4cf`
 - 통합 검토 브랜치: `review/lpaiu-cs-20260829`
 - 최신 기준: `upstream/devel@cf366d2faad63a57fb663ce38b2e02d99b873e22`
-- 적용 commit: `2847442ec`
 - 메인터너 보정 commit: `33c6dc4cf`
-- 원 PR 상태: non-draft, `BLOCKED`
-- 원 PR non-green check: `Lint (fmt, clippy, WASM check)`, `Build & Test`
+- 원 PR 상태: non-draft, 최신 head CI 진행 중
 
 ## 검토 판단
 
@@ -34,6 +33,10 @@ source-side `#[cfg(test)]` 증가로 tier 정책에 걸려 CI lint가 실패했�
 source 내부에 추가된 white-box test를 `tests/cases/issue_6350_equation_setter_raw_passthrough.rs`
 integration regression으로 이동했다. 기존 source-side 단위 테스트는 봉인 없는 raw clear 계약 1건만
 유지해 source-side test 총량 증가를 없앴다.
+
+검토 중 #6351에 `77df87464354`가 추가 push되어 같은 계열의 integration test 이동을 제안했지만,
+통합 브랜치에는 이미 `33c6dc4cf` 메인터너 보정으로 같은 lint 원인이 닫혀 있다. 따라서 로컬에서
+생성됐던 `7d6dc7018` cherry-pick commit은 중복 보정으로 제외했다.
 
 ## 증적과 검증
 
