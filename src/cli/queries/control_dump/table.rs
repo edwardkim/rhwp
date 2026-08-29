@@ -142,6 +142,13 @@ fn dump_cell_paragraph(
                     picture.shape_attr.original_width, picture.shape_attr.original_height,
                     picture.shape_attr.current_width, picture.shape_attr.current_height,
                     picture.crop.left, picture.crop.top, picture.crop.right, picture.crop.bottom);
+                // 셀 안 그림도 본문 그림과 같은 변환 줄을 낸다 — 회전 그림이 셀 안에
+                // 있는 표본(samples/ta-pic-001-r.hwp)이 실재하고, 종전에는 이 경로가
+                // 변환·`flip` 을 아예 내지 않아 `dump` 로 볼 수 없었다.
+                super::shape::dump_shape_attr_transform(
+                    &picture.shape_attr,
+                    &format!("{indent}    "),
+                );
                 println!("{}      [image_attr] effect={:?} brightness={} contrast={} watermark={}",
                     indent, picture.image_attr.effect, picture.image_attr.brightness,
                     picture.image_attr.contrast, picture.image_attr.watermark_preset().unwrap_or("none"));
