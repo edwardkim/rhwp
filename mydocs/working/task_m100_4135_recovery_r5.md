@@ -138,3 +138,24 @@ R5는 Studio UI 오버레이 변경이며 문서 renderer/layout·저장 출력�
 폴더 정리로 사라졌다면 현재 source HEAD에서 새 review worktree를 만들고 suite `--prepare`/`--check`를
 거친다. 이후 lib 전체, nextest 전체, Native Skia 3종, fmt/clippy/doc, Studio 전체/build, 표준 Docker
 WASM, embed E2E와 실브라우저 재검증을 순서대로 수행한다. 파생 harness는 source PR에 포함하지 않는다.
+
+## 9. PR 게이트 corrective — passthrough 위임 분류
+
+재개 뒤 최신 `upstream/devel@f6a6bee8f`를 충돌 없이 통합해 후보 `15bbf82b4`를 만들었다. 새 review
+worktree에서 suite prepare/check, unit tier, Rust focused 5+33건과 Studio focused 56건을 다시
+통과했다. release 전체 빌드는 11분 45초, release lib 전체는 rhwp 3,893 pass/13 ignored와 보조
+crate 182 pass로 통과했다.
+
+첫 release-test nextest 전체는 8,556건 중 8,555 pass/43 skipped였고 다음 1건이 실패했다.
+
+```text
+issue_2724_passthrough_invalidation_guard::classification_drift_is_blocked
+evaluate_table_formula() — 패스스루 무효화 없음
+```
+
+소스 추적 결과 제품 저장 경로는 안전했다. `evaluate_table_formula()`는 결과를 기록할 때
+`replace_text_in_cell_native_impl()`에 위임하고, 그 구현이 `section.raw_stream = None`을 수행한다.
+따라서 제품 무효화 누락이 아니라 새 public 래퍼의 위임 사실을 #2724 가드 분류표에 등록하지 않은
+검증 메타데이터 누락이었다. `Exempt::DelegatesTo("replace_text_in_cell_native_impl")`와 근거를 추가한 뒤
+#2724 가드 5종이 모두 통과했다. 이 corrective checkpoint 이후 nextest 전체를 최종 후보 기준으로
+다시 실행한다.
