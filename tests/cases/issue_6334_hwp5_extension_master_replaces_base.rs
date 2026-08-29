@@ -63,7 +63,10 @@ fn collect_text(node: &RenderNode, out: &mut Vec<String>) {
 #[test]
 fn hwp5_extension_master_does_not_stack_on_base() {
     // (샘플, 쪽 0기준) — 둘 다 구역 마지막 쪽에 "확인 사항" 안내문 바탕쪽이 붙는다.
-    for (sample, page) in [("samples/exam_science.hwp", 3), ("samples/exam-kor-3p.hwp", 2)] {
+    for (sample, page) in [
+        ("samples/exam_science.hwp", 3),
+        ("samples/exam-kor-3p.hwp", 2),
+    ] {
         let Some(masters) = scan(sample, page) else {
             continue;
         };
