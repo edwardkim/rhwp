@@ -1,0 +1,137 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q3-e1-reversible-owner-result",
+  "issue": 4969,
+  "stage": "W10-Q3-E1",
+  "status": "qualified-dormant-reversible-approved",
+  "date": "2026-08-29",
+  "baseHead": "23664a8484931a2951ef2297504d7a949cb4b253",
+  "upstreamDevel": "d29b5fd4ba40a5bd194975be9af7e852232872b6",
+  "ahead": 24,
+  "behind": 0,
+  "implementation": {
+    "nativeSet": "set_exact_font_instance_native",
+    "nativeClear": "clear_exact_font_instance_native",
+    "perSlotClear": true,
+    "effectiveMutationOnlyInvalidation": true,
+    "idempotentSetAndClear": true,
+    "strictDto": true,
+    "publicWasmAdapters": false,
+    "composerActivation": false,
+    "productPublication": false
+  },
+  "limits": {
+    "optionsJsonBytes": 16384,
+    "variationAxes": 16,
+    "languageIndexExclusiveUpperBound": 7
+  },
+  "nativeValidation": {
+    "shadowGreen": { "passed": 14, "failed": 0 },
+    "atomicGreen": { "passed": 6, "failed": 0 },
+    "compositionGreen": { "passed": 4, "failed": 0 },
+    "greenTotal": { "passed": 24, "failed": 0 },
+    "red": {
+      "passed": 1,
+      "failed": 3,
+      "expectedRemaining": [
+        "Q3-E2-public-wasm-adapters-absent",
+        "Q3-E3-explicit-candidate-session-absent",
+        "Q3-E4-atomic-outline-publication-absent"
+      ],
+      "unexpectedFailures": 0
+    }
+  },
+  "defaultReceipt": {
+    "iterationsPerRun": 64,
+    "runs": 9,
+    "layerJsonBytes": 619562,
+    "layerJsonBlake3": "0b5212cc076c34dce706039d7c4da85936c0a6769e83f08baa7f158cbd9029de",
+    "canvasKitPlanBytes": 1755,
+    "canvasKitPlanBlake3": "a98e6933d76901cfa55a43205c758675a8864527f87f8bed7a689d16267cbb56",
+    "glyphOutlinePublicationCount": 0
+  },
+  "performance": {
+    "method": "same-window-parent-current-aba",
+    "parent": {
+      "head": "23664a8484931a2951ef2297504d7a949cb4b253",
+      "samplesNs": [
+        198055994,
+        207169102,
+        208219211,
+        197818028,
+        200075154,
+        208870057,
+        208457285,
+        207094886,
+        214498199
+      ],
+      "p50Ns": 207169102,
+      "p95Ns": 214498199
+    },
+    "currentBeforeParent": {
+      "samplesNs": [
+        202735188,
+        209206715,
+        210564019,
+        215491804,
+        205628641,
+        208769612,
+        215661929,
+        208854149,
+        206971685
+      ],
+      "p50Ns": 208854149,
+      "p95Ns": 215661929,
+      "parentDeltaP50Percent": 0.813,
+      "parentDeltaP95Percent": 0.543
+    },
+    "currentAfterParent": {
+      "samplesNs": [
+        200616086,
+        198146044,
+        198573905,
+        198657324,
+        197309307,
+        196948356,
+        202785797,
+        201594595,
+        204421617
+      ],
+      "p50Ns": 198657324,
+      "p95Ns": 204421617,
+      "parentDeltaP50Percent": -4.109,
+      "parentDeltaP95Percent": -4.698
+    },
+    "upperRegressionGate": {
+      "p50Percent": 3,
+      "p95Percent": 5,
+      "passed": true
+    }
+  },
+  "wasm": {
+    "command": "docker compose --env-file .env.docker run --rm wasm",
+    "result": "passed",
+    "elapsed": "5m57s",
+    "bytes": 9762090,
+    "sha256": "2db98e64a52328bc95813badfd750017badd29f428a0b82d31239062f51b5d1d",
+    "baselineBytes": 9759816,
+    "deltaBytes": 2274,
+    "deltaPercent": 0.0233,
+    "gatePassed": true
+  },
+  "otherValidation": {
+    "cargoFmtAll": "passed",
+    "cargoFmtAllCheck": "passed",
+    "gitDiffCheck": "passed",
+    "clippyAllTargetsDenyWarnings": "passed",
+    "studioBuild": "passed",
+    "studioModules": 239
+  },
+  "trackedGeneratedArtifacts": false,
+  "resultApproved": true,
+  "commitCreated": true,
+  "next": "approve-q3-e2-start",
+  "nextSlice": "Q3-E2-wasm-public-adapter",
+  "nextSliceApproved": false,
+  "remoteMutation": false
+}

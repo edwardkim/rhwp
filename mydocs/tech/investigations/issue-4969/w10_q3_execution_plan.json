@@ -3,7 +3,7 @@
   "kind": "font-w10-q3-variable-instance-execution-plan",
   "issue": 4969,
   "stage": "W10-Q3",
-  "status": "q3-e0-complete-awaiting-q3-e1-start-approval",
+  "status": "q3-e1-complete-awaiting-q3-e2-start-approval",
   "productMutation": false,
   "source": {
     "path": "ttfs/redistributable/happiness-sans/HappinessSansVF.ttf",
@@ -81,6 +81,8 @@
       "id": "Q3-E",
       "name": "bounded-atomic-activation-and-final-qualification",
       "productOutputChange": true,
+      "currentSlice": "Q3-E2-start-approval",
+      "currentSliceEvidence": "mydocs/tech/investigations/issue-4969/w10_q3_e1_reversible_owner.json",
       "approvalAfter": true
     }
   ],
@@ -112,7 +114,7 @@
   "privateCorpus": false,
   "hyperVOrHancomOracle": false,
   "q3ERevisedPlan": "mydocs/tech/investigations/issue-4969/w10_q3_e_execution_plan.json",
-  "nextStage": "Q3-E1-start-approval",
+  "nextStage": "Q3-E2-start-approval",
   "nextStageApproved": false,
-  "approvalScope": "Q3-E0 checkpoint, requalification, evidence checkpoint, and latest devel sync are complete; E1 implementation, public API expansion, product activation, push, PR, and comment remain separately gated"
+  "approvalScope": "Q3-E1 result and checkpoint are complete; Q3-E2 public API expansion, product activation, push, PR, and comment remain separately gated"
 }

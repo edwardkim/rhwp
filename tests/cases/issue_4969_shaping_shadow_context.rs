@@ -461,6 +461,36 @@ fn issue_4969_q3_d_explicit_slot_request_is_canonical_and_generation_owned() {
 
 #[test]
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
+fn issue_4969_q3_e1_per_slot_clear_preserves_other_requests() {
+    let sources = registry();
+    let mut requests = HorizontalShapingInstanceRequestRegistry::default();
+    requests
+        .set_verified(&sources, HAPPINESS_SLOT, &instance_axes(900.0, 900.0))
+        .expect("register variable instance");
+    requests
+        .set_verified(&sources, NOTO_SLOT, &[])
+        .expect("register independent default instance");
+    assert_eq!(requests.request_count(), 2);
+    assert_eq!(requests.generation(), 2);
+
+    assert!(!requests.remove(ExactFontSlot::new(u32::MAX, 6)));
+    assert_eq!(requests.generation(), 2, "missing clear must be idempotent");
+    assert!(requests.remove(HAPPINESS_SLOT));
+    assert_eq!(requests.request_count(), 1);
+    assert_eq!(requests.generation(), 3);
+    assert!(requests.request_slice_for_slot(HAPPINESS_SLOT).is_none());
+    assert!(requests.request_slice_for_slot(NOTO_SLOT).is_some());
+
+    assert!(
+        requests.clear(),
+        "existing whole-registry clear remains valid"
+    );
+    assert_eq!(requests.request_count(), 0);
+    assert_eq!(requests.generation(), 4);
+}
+
+#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
 fn issue_4969_q3_d_invalid_requests_do_not_mutate_the_owner_snapshot() {
     let sources = registry();
     let mut requests = HorizontalShapingInstanceRequestRegistry::default();

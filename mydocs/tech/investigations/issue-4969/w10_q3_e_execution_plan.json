@@ -3,7 +3,7 @@
   "kind": "font-w10-q3-e-bounded-atomic-activation-revised-plan",
   "issue": 4969,
   "stage": "W10-Q3-E",
-  "status": "q3-e0-complete-awaiting-q3-e1-start-approval",
+  "status": "q3-e1-complete-awaiting-q3-e2-start-approval",
   "baseCheckpoint": "558e27f6d",
   "productMutation": true,
   "publicApiExpansionRequiresSeparateApproval": true,
@@ -94,6 +94,9 @@
       "id": "Q3-E1",
       "name": "reversible-owner-and-strict-native-contract",
       "productOutputChange": false,
+      "result": "qualified-dormant-reversible-approved",
+      "resultEvidence": "mydocs/tech/investigations/issue-4969/w10_q3_e1_reversible_owner.json",
+      "checkpointCreated": true,
       "approvalAfter": true
     },
     {
@@ -146,7 +149,7 @@
   "privateCorpus": false,
   "hyperVOrHancomOracle": false,
   "requalificationEvidence": "mydocs/tech/investigations/issue-4969/w10_q3_e0_requalification.json",
-  "nextStage": "Q3-E1-start-approval",
+  "nextStage": "Q3-E2-start-approval",
   "nextStageApproved": false,
-  "approvalScope": "plan, amendment, Q3-E0 checkpoint, requalification, evidence checkpoint, and latest devel sync are complete; E1 implementation, public API expansion, product activation, push, PR, and comment remain separately gated"
+  "approvalScope": "Q3-E1 result and checkpoint are complete; Q3-E2 public API expansion, product activation, push, PR, and comment remain separately gated"
 }

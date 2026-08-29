@@ -11,6 +11,8 @@ use wasm_bindgen_test::wasm_bindgen_test;
 
 const SOURCE_HAN: &[u8] =
     include_bytes!("../../ttfs/opensource/SourceHanSerifK-OldHangul-subset.otf");
+const HAPPINESS: &[u8] =
+    include_bytes!("../../ttfs/redistributable/happiness-sans/HappinessSansVF.ttf");
 // `ᄒᆞᆫ글`은 legacy 제품명 display projection 대상이므로 최초 direct-text lane의
 // 양성 fixture로 쓰지 않는다. 이 문자열은 같은 옛한글 자모 shaping을 요구하지만
 // model text와 replay text가 동일하다.
@@ -22,6 +24,23 @@ fn core_with_surface(
     char_border_fill_id: u16,
     no_stored_line_seg: bool,
 ) -> DocumentCore {
+    core_with_surface_and_source(
+        text,
+        alignment,
+        char_border_fill_id,
+        no_stored_line_seg,
+        SOURCE_HAN,
+    )
+    .0
+}
+
+fn core_with_surface_and_source(
+    text: &str,
+    alignment: Alignment,
+    char_border_fill_id: u16,
+    no_stored_line_seg: bool,
+    exact_source: &[u8],
+) -> (DocumentCore, u32) {
     let mut core = DocumentCore::new_empty();
     core.create_blank_document_native()
         .expect("public blank template");
@@ -71,9 +90,9 @@ fn core_with_surface(
     document.sections[0].section_def.page_def.margin_top = 1_000;
     document.sections[0].section_def.page_def.margin_bottom = 1_000;
     core.set_document(document);
-    core.register_exact_font_source_native(char_shape_id, 0, SOURCE_HAN, 0)
-        .expect("register exact old-Hangul source");
-    core
+    core.register_exact_font_source_native(char_shape_id, 0, exact_source, 0)
+        .expect("register exact source");
+    (core, char_shape_id)
 }
 
 fn collect_text_ops<'a>(node: &'a LayerNode, ops: &mut Vec<&'a PaintOp>) {
@@ -298,4 +317,250 @@ fn issue_4969_q3_e0_default_product_baseline_receipt() {
         plan_json.len(),
         blake3::hash(plan_json.as_bytes()).to_hex(),
     );
+}
+
+#[test]
+#[cfg(not(target_arch = "wasm32"))]
+fn issue_4969_q3_e1_native_instance_owner_is_reversible_and_dormant() {
+    let (mut core, char_shape_id) =
+        core_with_surface_and_source("가변", Alignment::Left, 0, false, HAPPINESS);
+    let baseline = core
+        .build_page_layer_tree(0)
+        .expect("build default variable-font surface")
+        .to_json();
+    assert!(!baseline.contains("\"type\":\"glyphOutline\""));
+
+    let title = serde_json::json!({
+        "charShapeId": char_shape_id,
+        "languageIndex": 0,
+        "mode": "boundedHorizontalLtrV1",
+        "axes": [
+            { "tag": "wght", "value": 900.0 },
+            { "tag": "opsz", "value": 900.0 }
+        ]
+    });
+    let registered: serde_json::Value = serde_json::from_str(
+        &core
+            .set_exact_font_instance_native(&title.to_string())
+            .expect("register strict native instance"),
+    )
+    .expect("registered response JSON");
+    assert_eq!(registered["status"], "registered");
+    assert_eq!(registered["requestGeneration"], 1);
+    assert_eq!(registered["requestCount"], 1);
+    assert!(registered["sourceGeneration"].as_u64().unwrap_or(0) > 0);
+    assert_eq!(registered["axes"][0]["tag"], "opsz");
+    assert_eq!(registered["axes"][1]["tag"], "wght");
+    assert_eq!(registered["axes"][0]["value"], 900.0);
+    assert_eq!(registered["axes"][1]["value"], 900.0);
+    assert_eq!(
+        core.build_page_layer_tree(0)
+            .expect("build dormant registered surface")
+            .to_json(),
+        baseline,
+        "native request owner must not publish before Q3-E3/E4"
+    );
+
+    let canonical_title = serde_json::json!({
+        "charShapeId": char_shape_id,
+        "languageIndex": 0,
+        "mode": "boundedHorizontalLtrV1",
+        "axes": [
+            { "tag": "opsz", "value": 900.0 },
+            { "tag": "wght", "value": 900.0 }
+        ]
+    });
+    let already: serde_json::Value = serde_json::from_str(
+        &core
+            .set_exact_font_instance_native(&canonical_title.to_string())
+            .expect("idempotent native instance"),
+    )
+    .expect("idempotent response JSON");
+    assert_eq!(already["status"], "already-registered");
+    assert_eq!(already["requestGeneration"], 1);
+
+    let explicit_default = serde_json::json!({
+        "charShapeId": char_shape_id,
+        "languageIndex": 0,
+        "mode": "boundedHorizontalLtrV1",
+        "axes": [
+            { "tag": "wght", "value": 400.0 },
+            { "tag": "opsz", "value": 400.0 }
+        ]
+    });
+    let updated: serde_json::Value = serde_json::from_str(
+        &core
+            .set_exact_font_instance_native(&explicit_default.to_string())
+            .expect("update to explicit default"),
+    )
+    .expect("updated response JSON");
+    assert_eq!(updated["status"], "updated");
+    assert_eq!(updated["requestGeneration"], 2);
+    assert_eq!(updated["axes"], serde_json::json!([]));
+
+    let clear = serde_json::json!({
+        "charShapeId": char_shape_id,
+        "languageIndex": 0,
+        "mode": "boundedHorizontalLtrV1"
+    });
+    let cleared: serde_json::Value = serde_json::from_str(
+        &core
+            .clear_exact_font_instance_native(&clear.to_string())
+            .expect("clear native instance"),
+    )
+    .expect("cleared response JSON");
+    assert_eq!(cleared["status"], "cleared");
+    assert_eq!(cleared["requestGeneration"], 3);
+    assert_eq!(cleared["requestCount"], 0);
+
+    let already_cleared: serde_json::Value = serde_json::from_str(
+        &core
+            .clear_exact_font_instance_native(&clear.to_string())
+            .expect("idempotent clear"),
+    )
+    .expect("idempotent clear response JSON");
+    assert_eq!(already_cleared["status"], "already-cleared");
+    assert_eq!(already_cleared["requestGeneration"], 3);
+    assert_eq!(
+        core.build_page_layer_tree(0)
+            .expect("build surface after reversible clear")
+            .to_json(),
+        baseline
+    );
+}
+
+#[test]
+#[cfg(not(target_arch = "wasm32"))]
+fn issue_4969_q3_e1_strict_native_dto_rejects_without_mutation() {
+    let (mut core, char_shape_id) =
+        core_with_surface_and_source("Typography", Alignment::Left, 0, false, HAPPINESS);
+    let too_many_axes = (0..17)
+        .map(|_| serde_json::json!({ "tag": "wght", "value": 400.0 }))
+        .collect::<Vec<_>>();
+    let invalid = [
+        serde_json::json!({
+            "charShapeId": char_shape_id,
+            "languageIndex": 0,
+            "mode": "unknown",
+            "axes": []
+        })
+        .to_string(),
+        serde_json::json!({
+            "charShapeId": char_shape_id,
+            "languageIndex": 0,
+            "mode": "boundedHorizontalLtrV1",
+            "axes": [],
+            "fontBytes": [1, 2, 3]
+        })
+        .to_string(),
+        serde_json::json!({
+            "charShapeId": char_shape_id,
+            "languageIndex": 7,
+            "mode": "boundedHorizontalLtrV1",
+            "axes": []
+        })
+        .to_string(),
+        serde_json::json!({
+            "charShapeId": char_shape_id,
+            "languageIndex": 0,
+            "mode": "boundedHorizontalLtrV1",
+            "axes": too_many_axes
+        })
+        .to_string(),
+        serde_json::json!({
+            "charShapeId": char_shape_id,
+            "languageIndex": 0,
+            "mode": "boundedHorizontalLtrV1",
+            "axes": [
+                { "tag": "wght", "value": 650.0 },
+                { "tag": "wght", "value": 700.0 }
+            ]
+        })
+        .to_string(),
+        serde_json::json!({
+            "charShapeId": char_shape_id,
+            "languageIndex": 0,
+            "mode": "boundedHorizontalLtrV1",
+            "axes": [{ "tag": "wght", "value": 901.0 }]
+        })
+        .to_string(),
+        serde_json::json!({
+            "charShapeId": char_shape_id,
+            "languageIndex": 0,
+            "mode": "boundedHorizontalLtrV1",
+            "axes": [{ "tag": "wgt", "value": 650.0 }]
+        })
+        .to_string(),
+        format!(
+            "{{\"charShapeId\":{char_shape_id},\"languageIndex\":0,\"mode\":\"boundedHorizontalLtrV1\",\"axes\":[{{\"tag\":\"wght\",\"value\":1e400}}]}}"
+        ),
+        serde_json::json!({
+            "charShapeId": char_shape_id + 1,
+            "languageIndex": 0,
+            "mode": "boundedHorizontalLtrV1",
+            "axes": []
+        })
+        .to_string(),
+        format!(
+            "{{\"charShapeId\":{char_shape_id},\"languageIndex\":0,\"mode\":\"boundedHorizontalLtrV1\",\"axes\":[],\"padding\":\"{}\"}}",
+            "x".repeat(16 * 1024)
+        ),
+    ];
+    for options in invalid {
+        assert!(
+            core.set_exact_font_instance_native(&options).is_err(),
+            "invalid strict DTO must fail: {}",
+            &options[..options.len().min(160)]
+        );
+    }
+
+    let valid = serde_json::json!({
+        "charShapeId": char_shape_id,
+        "languageIndex": 0,
+        "mode": "boundedHorizontalLtrV1",
+        "axes": [{ "tag": "wght", "value": 650.0 }]
+    });
+    let registered: serde_json::Value = serde_json::from_str(
+        &core
+            .set_exact_font_instance_native(&valid.to_string())
+            .expect("first valid request after rejects"),
+    )
+    .expect("valid response JSON");
+    assert_eq!(registered["requestGeneration"], 1);
+
+    for invalid_clear in [
+        serde_json::json!({
+            "charShapeId": char_shape_id,
+            "languageIndex": 0,
+            "mode": "unknown"
+        }),
+        serde_json::json!({
+            "charShapeId": char_shape_id,
+            "languageIndex": 0,
+            "mode": "boundedHorizontalLtrV1",
+            "axes": []
+        }),
+        serde_json::json!({
+            "charShapeId": char_shape_id,
+            "languageIndex": 7,
+            "mode": "boundedHorizontalLtrV1"
+        }),
+    ] {
+        assert!(core
+            .clear_exact_font_instance_native(&invalid_clear.to_string())
+            .is_err());
+    }
+    let clear = serde_json::json!({
+        "charShapeId": char_shape_id,
+        "languageIndex": 0,
+        "mode": "boundedHorizontalLtrV1"
+    });
+    let cleared: serde_json::Value = serde_json::from_str(
+        &core
+            .clear_exact_font_instance_native(&clear.to_string())
+            .expect("valid clear after rejects"),
+    )
+    .expect("clear response JSON");
+    assert_eq!(cleared["requestGeneration"], 2);
+    assert_eq!(cleared["requestCount"], 0);
 }

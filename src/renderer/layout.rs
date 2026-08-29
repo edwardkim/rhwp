@@ -2726,6 +2726,21 @@ impl LayoutEngine {
         )
     }
 
+    pub(crate) fn clear_horizontal_shaping_instance_request(
+        &mut self,
+        slot: crate::renderer::kerning::ExactFontSlot,
+    ) -> bool {
+        self.horizontal_shaping_instance_requests.remove(slot)
+    }
+
+    pub(crate) fn horizontal_shaping_instance_request(
+        &self,
+        slot: crate::renderer::kerning::ExactFontSlot,
+    ) -> Option<&[crate::renderer::shaping::ShapingVariation]> {
+        self.horizontal_shaping_instance_requests
+            .request_slice_for_slot(slot)
+    }
+
     pub(crate) fn horizontal_shaping_instance_request_counts(&self) -> (usize, u64) {
         (
             self.horizontal_shaping_instance_requests.request_count(),

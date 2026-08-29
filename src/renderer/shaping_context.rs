@@ -182,6 +182,23 @@ impl HorizontalShapingInstanceRequestRegistry {
         true
     }
 
+    /// Remove one explicit request without disturbing other exact slots.
+    /// Missing slots are idempotent and therefore do not advance generation.
+    pub(crate) fn remove(&mut self, slot: ExactFontSlot) -> bool {
+        if self.entries.remove(&slot).is_none() {
+            return false;
+        }
+        self.generation = self.generation.wrapping_add(1);
+        true
+    }
+
+    pub(crate) fn request_slice_for_slot(
+        &self,
+        slot: ExactFontSlot,
+    ) -> Option<&[ShapingVariation]> {
+        self.entries.get(&slot).map(AsRef::as_ref)
+    }
+
     pub(crate) fn request_count(&self) -> usize {
         self.entries.len()
     }
