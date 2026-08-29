@@ -4365,7 +4365,22 @@ impl LayoutEngine {
                     col_area.x + host_margin_left,
                     col_area.width - host_margin_left,
                 ),
-                _ => (col_area.x, col_area.width),
+                _ => {
+                    // [#6378] 원본 HWPX 는 단 기준 표 x 에 outMargin.left 를 안
+                    // 더한다. 같은 문서 HWP 경로는 283HU=3.8px 안쪽에 둔다
+                    // (tac-img-02 1쪽 Table x 79.4 vs 75.6). HWP5 저장 조판
+                    // 계약은 다른 경로에서 이미 여백을 쓰므로 여기서 더하지
+                    // 않는다 — 이중 가산 금지.
+                    let om_l = if !self.profile.get().hwp5_stored_pagination_layout()
+                        && !table.common.treat_as_char
+                        && table.outer_margin_left > 0
+                    {
+                        hwpunit_to_px(table.outer_margin_left as i32, self.dpi)
+                    } else {
+                        0.0
+                    };
+                    (col_area.x + om_l, col_area.width)
+                }
             };
             match horz_align {
                 HorzAlign::Left | HorzAlign::Inside => ref_x + h_offset,
