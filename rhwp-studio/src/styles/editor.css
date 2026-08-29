@@ -110,30 +110,63 @@
 #scroll-content .hf-edit-region {
   position: absolute;
   box-sizing: border-box;
+  --hf-edit-corner-size: 12px;
+  --hf-edit-guide-color: var(--focus-ring);
 }
 
 #scroll-content .hf-edit-region.is-representative {
   z-index: 1;
-  border: 2px solid var(--focus-ring);
-  background: color-mix(in srgb, var(--focus-ring) 12%, transparent);
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--doc-paper) 75%, transparent) inset;
 }
 
 #scroll-content .hf-edit-region.is-related {
-  border-block: 1px dashed color-mix(in srgb, var(--focus-ring) 65%, transparent);
-  background: color-mix(in srgb, var(--focus-ring) 6%, transparent);
+  --hf-edit-guide-color: color-mix(in srgb, var(--focus-ring) 48%, transparent);
+}
+
+#scroll-content .hf-edit-corner {
+  position: absolute;
+  width: var(--hf-edit-corner-size);
+  height: var(--hf-edit-corner-size);
+  box-sizing: border-box;
+  border-color: var(--hf-edit-guide-color);
+}
+
+#scroll-content .hf-edit-corner.is-top-left {
+  inset: 0 auto auto 0;
+  border-top: 2px solid var(--hf-edit-guide-color);
+  border-left: 2px solid var(--hf-edit-guide-color);
+}
+
+#scroll-content .hf-edit-corner.is-top-right {
+  inset: 0 0 auto auto;
+  border-top: 2px solid var(--hf-edit-guide-color);
+  border-right: 2px solid var(--hf-edit-guide-color);
+}
+
+#scroll-content .hf-edit-corner.is-bottom-left {
+  inset: auto auto 0 0;
+  border-bottom: 2px solid var(--hf-edit-guide-color);
+  border-left: 2px solid var(--hf-edit-guide-color);
+}
+
+#scroll-content .hf-edit-corner.is-bottom-right {
+  inset: auto 0 0 auto;
+  border-right: 2px solid var(--hf-edit-guide-color);
+  border-bottom: 2px solid var(--hf-edit-guide-color);
 }
 
 #scroll-content .hf-edit-badge {
   position: absolute;
   z-index: 2;
   transform: translateY(-100%);
-  padding: 2px 7px;
-  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
-  background: var(--focus-ring);
-  color: var(--doc-paper);
+  padding: 1px 4px 2px;
+  background: color-mix(in srgb, var(--doc-paper) 92%, transparent);
+  color: var(--focus-ring);
   font-size: var(--font-size-xs);
   font-weight: 600;
   line-height: 1.4;
+  text-shadow:
+    0 1px 0 var(--doc-paper),
+    1px 0 0 var(--doc-paper),
+    -1px 0 0 var(--doc-paper);
   white-space: nowrap;
 }

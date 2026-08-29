@@ -629,6 +629,11 @@ export class CanvasView {
       region.style.top = `${band.y * zoom}px`;
       region.style.width = `${band.width * zoom}px`;
       region.style.height = `${band.height * zoom}px`;
+      for (const position of ['top-left', 'top-right', 'bottom-left', 'bottom-right']) {
+        const corner = document.createElement('span');
+        corner.className = `hf-edit-corner is-${position}`;
+        region.appendChild(corner);
+      }
       layer.appendChild(region);
 
       if (isPreview) {
