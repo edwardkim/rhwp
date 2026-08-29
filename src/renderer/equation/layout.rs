@@ -883,7 +883,7 @@ impl EqLayout {
         }
 
         // 행 높이 계산
-        let mut row_heights: Vec<f64> = cell_boxes
+        let row_heights: Vec<f64> = cell_boxes
             .iter()
             .map(|row| row.iter().map(|c| c.height).fold(fs, f64::max))
             .collect();

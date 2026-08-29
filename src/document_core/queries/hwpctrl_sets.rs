@@ -8,8 +8,8 @@
 use crate::document_core::queries::field_query::{
     caret_stops, cell_path_to_list, char_idx_at_stream_pos, cursor_paragraph, json_escape,
     leading_anchor_pos, root_para_count, root_para_location, root_para_of, select_start_pos,
-    shape_lists, stream_len, stream_pos, word_end_from, word_starts, ListEntry,
-    EXTENDED_CTRL_UNITS, ROOT_LIST_ID,
+    shape_lists, stream_len, word_end_from, word_starts, ListEntry, EXTENDED_CTRL_UNITS,
+    ROOT_LIST_ID,
 };
 use crate::document_core::DocumentCore;
 use crate::error::HwpError;

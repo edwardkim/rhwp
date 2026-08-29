@@ -3164,7 +3164,7 @@ impl LayoutEngine {
         // 텍스트 박스 내 인라인 도형 컨트롤 렌더링
         // treat_as_char 도형은 텍스트 흐름 내 문단 시작 위치에 배치
         // 오버플로우된 문단은 제외 (다른 텍스트박스에서 처리)
-        use crate::model::shape::ShapeObject;
+
         let mut inline_y = inner_area.y + vert_offset; // 텍스트 영역 시작 위치
         for (pi, para) in textbox_paragraphs[..para_count].iter().enumerate() {
             // 이 문단에 해당하는 composed 문단의 시작 y 위치 계산

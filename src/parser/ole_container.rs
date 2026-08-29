@@ -143,7 +143,7 @@ pub fn parse_ole_container(cfb_bytes: &[u8]) -> Option<OleContainer> {
         // (이미 preview_emf가 None인 경우만)
         if let Ok(entries) = std::panic::catch_unwind(|| {
             let cursor = Cursor::new(cfb_bytes);
-            CompoundFile::open(cursor).ok().map(|mut comp| {
+            CompoundFile::open(cursor).ok().map(|comp| {
                 comp.walk()
                     .filter(|e| e.is_stream())
                     .map(|e| e.path().to_string_lossy().to_string())

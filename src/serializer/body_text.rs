@@ -665,7 +665,7 @@ fn serialize_para_text(para: &Paragraph) -> ParaTextResult {
     // trailing FIELD_END: control_idx → marker 매핑 (FIELD_BEGIN 직후에 삽입)
     let mut trailing_end_after_ctrl: HashMap<usize, Vec<FieldEndMarker>> = HashMap::new();
     // trailing FIELD_END 중 FIELD_BEGIN이 이미 본문에 배치된 경우 (orphan)
-    let mut trailing_orphan_ends: Vec<u32> = Vec::new();
+    let trailing_orphan_ends: Vec<u32> = Vec::new();
     // [#4402] empty_field_ends/trailing_end_after_ctrl 과 같은 키로 안내문 잔재를 매핑 —
     // 자기 FIELD_END 직전에 되살린다. mismatch(orphan) 경로는 #3545 와 동일하게 제외한다
     // (슬롯 위치 추정이 이미 무너진 퇴화 경로라 주입이 개선이라 단정할 수 없다).

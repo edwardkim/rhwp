@@ -341,7 +341,7 @@ pub(crate) fn export_pdf(args: &[String]) -> i32 {
             target_page,
             pdf_backend,
             pdf_options,
-            mut direct_pdf_options,
+            direct_pdf_options,
             render_profile,
             hangul2024_compat,
             json_mode,

@@ -3556,7 +3556,7 @@ fn test_merge_cells_roundtrip_real_hwp() {
     let orig_data = std::fs::read(orig_path).unwrap();
 
     // 1) 원본 → 수정 없이 라운드트립 (기준선)
-    let mut baseline_doc = HwpDocument::from_bytes(&orig_data).unwrap();
+    let baseline_doc = HwpDocument::from_bytes(&orig_data).unwrap();
     let baseline_exported = baseline_doc.export_hwp_native().unwrap();
 
     // 2) 원본 → 병합 후 내보내기
@@ -3887,7 +3887,7 @@ fn test_compare_user_saved_vs_programmatic() {
     }
 
     // 전체 CFB 파일 비교 (원본 라운드트립 vs 사용자 저장)
-    let mut baseline_doc = HwpDocument::from_bytes(&orig_data).unwrap();
+    let baseline_doc = HwpDocument::from_bytes(&orig_data).unwrap();
     let baseline_data = baseline_doc.export_hwp_native().unwrap();
     eprintln!(
         "\n원본 라운드트립: {}B, 사용자 저장: {}B",
@@ -5242,7 +5242,7 @@ fn test_export_selection_html_partial() {
 
 #[test]
 fn test_export_control_html_table() {
-    let mut doc = create_doc_with_table();
+    let doc = create_doc_with_table();
 
     let result = doc.export_control_html_native(0, 0, &[], 0);
     assert!(result.is_ok());
@@ -22031,7 +22031,7 @@ fn test_task228_highlight_data_analysis() {
 #[test]
 fn test_task228_highlight_render_tree() {
     let data = std::fs::read("samples/h-pen-01.hwp").expect("파일 읽기 실패");
-    let mut doc = crate::DocumentCore::from_bytes(&data).expect("파싱 실패");
+    let doc = crate::DocumentCore::from_bytes(&data).expect("파싱 실패");
     let svg = doc.render_page_svg_native(0).expect("SVG 렌더링 실패");
     // 형광펜 사각형 색상이 SVG에 포함되어야 함
     assert!(
@@ -22210,7 +22210,7 @@ fn test_task229_field_svg_guide_text() {
         shape_field_count
     );
 
-    let mut hwp_doc = HwpDocument::from_bytes(&data).expect("HwpDocument 생성 실패");
+    let hwp_doc = HwpDocument::from_bytes(&data).expect("HwpDocument 생성 실패");
     let svg = hwp_doc.render_page_svg_native(0).expect("SVG 렌더링 실패");
 
     // SVG에 안내문 텍스트가 빨간색 기울임체로 렌더링되는지 확인
@@ -28258,7 +28258,7 @@ fn issue4149_adjacent_giant_cell_cursor_rect_latency_decomposition() {
     use std::time::Instant;
     let bytes =
         std::fs::read("samples/issue1949_giant_cell_nested_tables_perf.hwp").expect("샘플 읽기");
-    let mut doc = HwpDocument::from_bytes(&bytes).expect("파싱");
+    let doc = HwpDocument::from_bytes(&bytes).expect("파싱");
     let pages = doc.page_count();
     println!("[cursor-rect] 총 {pages}쪽");
 
@@ -28319,7 +28319,7 @@ fn issue4149_adjacent_giant_cell_cursor_rect_latency_decomposition() {
 fn issue4149_adjacent_cursor_rect_profile_loop() {
     let bytes =
         std::fs::read("samples/issue1949_giant_cell_nested_tables_perf.hwp").expect("샘플 읽기");
-    let mut doc = HwpDocument::from_bytes(&bytes).expect("파싱");
+    let doc = HwpDocument::from_bytes(&bytes).expect("파싱");
     let _ = doc.page_count();
     let _ = doc.find_pages_for_cell_position(0, 0, 2, 2, Some((6, 5)));
     eprintln!("[profile-loop] 시작 pid={}", std::process::id());

@@ -9,7 +9,7 @@ use crate::model::paragraph::{CharShapeRef, ColumnBreakType, LineSeg, Paragraph}
 use crate::model::style::LineSpacingType;
 use crate::renderer::layout::{
     estimate_text_width, estimate_text_width_unrounded, hancom_regenerated_space_width,
-    is_cjk_char, resolved_to_text_style,
+    is_cjk_char, resolved_letter_spacing, resolved_to_text_style,
 };
 use crate::renderer::layout_frame::{FrameRowMetrics, LayoutFrame, ParagraphBox, RowSegment};
 use crate::renderer::style_resolver::{detect_lang_category, ResolvedStyleSet};
@@ -1208,19 +1208,56 @@ fn resolved_letter_spacing_px(
             }
             let utf16_pos = char_offsets.get(idx).copied().unwrap_or(idx as u32);
             let style_id = find_active_char_shape(char_shapes, utf16_pos);
-            resolved_to_text_style(styles, style_id, lang).letter_spacing
+            // [#5678] `TextStyle` 을 통째로 만들지 않고 자간만 읽는다.
+            resolved_letter_spacing(styles, style_id, lang)
         })
         .collect()
 }
 
+/// fit test 에 쓰는 후보 폭. 펜이 전진하는 폭과 **다른 값**이다.
+///
+/// [#5678] 종전에는 두 값이 다 `i32` 라 호출부가 아무거나 넘길 수 있었고, 실제로
+/// 한 자리만 자간을 뺀 값을 넘겼다. 자간이 0 인 문단에서는 두 값이 같아 어떤 테스트도
+/// 차이를 잡지 못했다. 이제 원시 정수는 이 함수에 들어가지 못하고, 호출부는 생성자
+/// 이름으로 어느 쪽인지 밝혀야 한다.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+struct FitWidthHwp(i32);
+
+impl FitWidthHwp {
+    /// 후보 토큰의 마지막 글자 뒤 자간을 뺀 폭. 실사용 fill 이 쓰는 값이다.
+    ///
+    /// 줄 끝에 오는 글자의 뒤 자간은 그려지지 않으므로 들어가는지 따질 때 빼고 잰다.
+    /// 펜은 전체 폭만큼 전진한다.
+    fn trimmed(token_width_hwp: i32, letter_spacing_px: &[f64], token_end_idx: usize) -> Self {
+        Self(token_width_hwp - fit_test_letter_spacing_trim_hwp(letter_spacing_px, token_end_idx))
+    }
+
+    /// 자간 축이 없는 호출부용. `fill_lines_before_cursor` 는 커서 동등성 증명을 위해
+    /// 얼린 스칼라 구현이라 `letter_spacing_px` 매개변수 자체가 없다 — 그래서 그 증명은
+    /// **자간 0 인 입력에서만** 실사용과 동등하다.
+    ///
+    /// 그 얼린 구현이 `#[cfg(test)]` 이므로 이 생성자도 같다. 실사용 경로에는
+    /// 자간 축이 없는 자리가 없어야 한다 — 있으면 그것이 #5678 의 재발이다.
+    #[cfg(test)]
+    fn without_spacing_axis(token_width_hwp: i32) -> Self {
+        Self(token_width_hwp)
+    }
+
+    /// 커닝 경계쌍 보정을 fit 판정 폭에 더한다 (#4439 커닝 세션과의 병합점).
+    /// 펜 전진 폭에는 더하지 않는다 — fit 판정 전용 축이다.
+    fn with_pair_adjustment(self, adjustment_hwp: i32) -> Self {
+        Self(self.0 + adjustment_hwp)
+    }
+}
+
 fn text_token_fits_line_hwp(
     current_width_hwp: i32,
-    token_width_hwp: i32,
+    token_width: FitWidthHwp,
     space_savings_hwp: i32,
     effective_width_hwp: i32,
     max_font_size: f64,
 ) -> bool {
-    let natural_candidate = current_width_hwp + token_width_hwp;
+    let natural_candidate = current_width_hwp + token_width.0;
     let condensed_candidate = condensed_line_width_hwp(natural_candidate, space_savings_hwp);
     let needs_condense_to_fit = natural_candidate > effective_width_hwp + LINE_BREAK_TOLERANCE
         && condensed_candidate <= effective_width_hwp + LINE_BREAK_TOLERANCE;
@@ -1576,8 +1613,7 @@ fn fill_one_interval(
                 let effective_width = eff_w(cursor.is_first_line);
                 // The pen keeps the full width; only the comparison drops the
                 // candidate's trailing letter space.
-                let w_hwp_fit =
-                    w_hwp - fit_test_letter_spacing_trim_hwp(letter_spacing_px, *end_idx);
+                let w_hwp_fit = FitWidthHwp::trimmed(w_hwp, letter_spacing_px, *end_idx);
                 let pair_adjustment_hwp = if let Some(session) = kerning.as_deref_mut() {
                     to_hwp(session.boundary_pair_adjustment(cursor.line_start_idx, *end_idx)?)
                 } else {
@@ -1585,7 +1621,7 @@ fn fill_one_interval(
                 };
                 let token_fits = text_token_fits_line_hwp(
                     cursor.lw,
-                    w_hwp_fit + pair_adjustment_hwp,
+                    w_hwp_fit.with_pair_adjustment(pair_adjustment_hwp),
                     cursor.line_space_savings,
                     effective_width,
                     *max_font_size,
@@ -1663,10 +1699,14 @@ fn fill_one_interval(
                             // 들어가는지 다시 확인한다. 종전에는 토큰 전체 폭을 무조건
                             // 더하고 continue하여, 긴 영문·숫자 토큰의 글자 단위 fallback을
                             // 건너뛰었다.
+                            // [#5678] 주 판정과 같은 피연산자(`w_hwp_fit`)를 쓴다. 종전에는
+                            // 이 자리만 `w_hwp` 를 넘겨, 같은 토큰이 한 반복 안에서 두 방식으로
+                            // 측정됐다 — 자간이 0 이 아닌 문단에서만 갈리므로 어떤 테스트도
+                            // 이 차이를 잡지 못했다. 펜은 여기서도 전체 폭을 그대로 전진한다.
                             if text_token_fits_line_hwp(
                                 cursor.lw,
-                                w_hwp
-                                    + if let Some(session) = kerning.as_deref_mut() {
+                                w_hwp_fit.with_pair_adjustment(
+                                    if let Some(session) = kerning.as_deref_mut() {
                                         to_hwp(session.boundary_pair_adjustment(
                                             cursor.line_start_idx,
                                             *end_idx,
@@ -1674,6 +1714,7 @@ fn fill_one_interval(
                                     } else {
                                         0
                                     },
+                                ),
                                 cursor.line_space_savings,
                                 eff_w(false),
                                 *max_font_size,
@@ -1874,7 +1915,7 @@ fn fill_lines_before_cursor(
                 let effective_width = eff_w(is_first_line);
                 let token_fits = text_token_fits_line_hwp(
                     lw,
-                    w_hwp,
+                    FitWidthHwp::without_spacing_axis(w_hwp),
                     line_space_savings,
                     effective_width,
                     *max_font_size,
@@ -1898,7 +1939,7 @@ fn fill_lines_before_cursor(
                 }
                 if !text_token_fits_line_hwp(
                     lw,
-                    w_hwp,
+                    FitWidthHwp::without_spacing_axis(w_hwp),
                     line_space_savings,
                     effective_width,
                     *max_font_size,
@@ -1940,7 +1981,7 @@ fn fill_lines_before_cursor(
                             // 건너뛰었다.
                             if text_token_fits_line_hwp(
                                 lw,
-                                w_hwp,
+                                FitWidthHwp::without_spacing_axis(w_hwp),
                                 line_space_savings,
                                 eff_w(false),
                                 *max_font_size,
@@ -2065,7 +2106,7 @@ fn char_level_break_hwp(
     token_end: usize,
     line_start_idx: &mut usize,
     mut lw: i32,
-    mut line_max_fs: f64,
+    line_max_fs: f64,
     first_line_w: i32,
     normal_w: i32,
     mut is_first_line: bool,
@@ -5230,5 +5271,113 @@ mod utf16_offset_tests {
         };
 
         assert_eq!(char_index_to_utf16_offset(&para, 2), 3);
+    }
+}
+
+/// [#5678] 자간 trim 이 발화하는 것을 관측하는 테스트.
+///
+/// 종전에는 이 모듈의 모든 단위 테스트가 `letter_spacing_px` 로 `&[]` 또는 `0.0` 만
+/// 넘겨 `fit_test_letter_spacing_trim_hwp` 가 언제나 `0` 을 돌려줬다. trim 을 켜고 끄는
+/// 차이를 구별하는 테스트가 하나도 없었고, 그래서 네 fit-test 호출부가 서로 다른
+/// 피연산자를 쓰는데도 아무 테스트가 깨지지 않았다.
+///
+/// 눈금: `to_hwp` 는 px × 75, `LINE_BREAK_TOLERANCE` 는 15 HWPUNIT(=0.2px).
+#[cfg(test)]
+mod letter_spacing_trim_tests {
+    use super::*;
+
+    /// 후보 토큰의 **마지막 글자 뒤** 자간만 fit test 에서 뺀다.
+    #[test]
+    fn trim_reads_the_spacing_after_the_last_char_of_the_token() {
+        let spacing = [1.0, 2.0, 3.0, 4.0];
+        assert_eq!(fit_test_letter_spacing_trim_hwp(&spacing, 3), to_hwp(3.0));
+        assert_eq!(fit_test_letter_spacing_trim_hwp(&spacing, 4), to_hwp(4.0));
+    }
+
+    /// 자간 정보가 없거나 토큰이 비면 0 이다 — 이 자리가 종전에 모든 테스트가 밟던 유일한 경로다.
+    #[test]
+    fn trim_is_zero_without_spacing_information() {
+        assert_eq!(fit_test_letter_spacing_trim_hwp(&[], 3), 0);
+        assert_eq!(fit_test_letter_spacing_trim_hwp(&[1.0, 2.0], 0), 0);
+        assert_eq!(fit_test_letter_spacing_trim_hwp(&[1.0, 2.0], 9), 0);
+    }
+
+    /// 음수 자간은 후보를 **넓게** 재게 만든다 — 부호를 삼키지 않는다.
+    #[test]
+    fn trim_keeps_the_sign_of_negative_spacing() {
+        assert_eq!(
+            fit_test_letter_spacing_trim_hwp(&[0.0, -1.6], 2),
+            to_hwp(-1.6)
+        );
+    }
+
+    /// 상자 30px = 2250 HWPUNIT.
+    /// 앞 토큰 20px(1500) + 뒤 토큰 10.5px(787) = 2287 > 2250 + 15 → trim 없으면 안 들어간다.
+    /// 뒤 토큰의 마지막 글자 자간 0.5px(37 HU)를 빼면 2250 ≤ 2265 → 들어간다.
+    fn boundary_case() -> (Vec<char>, Vec<BreakToken>) {
+        let text_chars = "abcd".chars().collect::<Vec<_>>();
+        let tokens = vec![
+            BreakToken::Text {
+                start_idx: 0,
+                end_idx: 2,
+                width: 20.0,
+                max_font_size: 12.0,
+                char_widths: vec![10.0, 10.0],
+            },
+            BreakToken::Text {
+                start_idx: 2,
+                end_idx: 4,
+                width: 10.5,
+                max_font_size: 12.0,
+                char_widths: vec![5.25, 5.25],
+            },
+        ];
+        (text_chars, tokens)
+    }
+
+    fn fill_with(spacing: &[f64]) -> Vec<(usize, usize)> {
+        let (text_chars, tokens) = boundary_case();
+        fill_lines(
+            &tokens,
+            &text_chars,
+            30.0,
+            0.0,
+            48.0,
+            0,
+            0,
+            spacing,
+            0,
+            true,
+        )
+        .iter()
+        .map(|line| (line.start_idx, line.end_idx))
+        .collect()
+    }
+
+    /// 이 테스트가 이 모듈에서 trim 켜짐과 꺼짐을 구별하는 첫 테스트다.
+    #[test]
+    fn trim_changes_where_the_line_breaks() {
+        let without = fill_with(&[]);
+        let with = fill_with(&[0.0, 0.0, 0.0, 0.5]);
+
+        assert_ne!(
+            without, with,
+            "자간 trim 이 줄 나눔에 아무 영향이 없다면 이 모듈의 어떤 테스트도 trim 을 구속하지 못한다"
+        );
+        assert_eq!(
+            without.len(),
+            2,
+            "trim 없으면 둘째 토큰이 다음 줄로 넘어간다"
+        );
+        assert_eq!(with.len(), 1, "trim 이 있으면 한 줄에 들어간다");
+        assert_eq!(with[0], (0, 4));
+    }
+
+    /// 경계에 못 미치는 자간은 결과를 바꾸지 못한다 — `assert_ne!` 가 아무 차이나
+    /// 집어내는 것이 아님을 못 박는다.
+    #[test]
+    fn spacing_below_the_boundary_does_not_change_the_break() {
+        // 22 HWPUNIT 이 필요한데 0.2px = 15 HU 뿐이다.
+        assert_eq!(fill_with(&[0.0, 0.0, 0.0, 0.2]), fill_with(&[]));
     }
 }

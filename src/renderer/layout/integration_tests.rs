@@ -2971,6 +2971,155 @@ mod tests {
     // 는 Table/Image 는 전체 `cell_context`(다단계 경로)를, Rectangle/Line/Ellipse/
     // Path/Equation 은 단일 레벨(`cell_index`/`cell_para_index`/
     // `outer_table_control_index`, Task #1138/#1151 패턴)을 반영한다.
+    /// [#4522] SVG 렌더의 `node_z_sort_key` 와 레이아웃의 `paper_node_sort_key` 가
+    /// 어디서, 왜 갈리는지 실제 문서로 잰다.
+    ///
+    /// 이슈는 "불일치가 없다면 SVG 쪽 구현을 지우고 하나로 합친다" 를 제안했다.
+    /// 재보니 **두 축 모두에서 갈린다.**
+    ///
+    /// 1. **plane** — 불일치 지점은 전부 `PageBackground` 가 낀 자리다. SVG 는 페이지
+    ///    배경을 plane 0 으로 가장 먼저 그려야 하는데(#1167) `paper_node_sort_key` 에는
+    ///    그 갈래가 없어 배경이 BehindText 워터마크 뒤로 밀린다. 합칠 수 없다.
+    /// 2. **세 번째 원소** — 패킹 `stable_index` 를 `DocPath` 로 바꾸면 셀 안 노드의
+    ///    순서가 바뀐다. `samples/복학원서.hwp` 1쪽 골든 SVG 가 실제로 달라진다
+    ///    (셀 그룹 하나가 통째로 앞으로 이동, 바이트 수는 동일).
+    ///
+    /// 그래서 기계적 교체가 아니라 **어느 쪽이 한컴 정합인지 판정**이 먼저다.
+    /// 이 테스트는 그 판정에 필요한 수치를 재고, 규모가 커지면 실패한다.
+    #[test]
+    fn issue_4522_two_sort_keys_diverge_on_planes_and_on_the_third_element() {
+        use crate::renderer::svg::SvgRenderer;
+
+        let candidates = [
+            "samples/복학원서.hwp", // 세 번째 원소 교체가 골든 SVG 를 바꾸는 문서
+            "samples/textbox-under-image.hwp",
+            "samples/aift.hwp",
+            "samples/exam_science.hwp",
+            "samples/exam_kor.hwp",
+            "samples/exam_math.hwp",
+            "samples/hwpspec.hwp",
+            "samples/issue2006/1790387_prep_final_report.hwpx",
+            "samples/issue1921/59043_regulatory_analysis.hwp",
+            "samples/task2093/1192000_hydrogen_policy_research.hwp",
+        ];
+        const MAX_PAGES_PER_DOC: u32 = 40;
+
+        /// layer 를 가진 노드에서 SVG plane 은 레이아웃 plane 보다 정확히 1 크다
+        /// (뒤 1→2, 기본 2→3, 앞 3→4). 이 관계가 깨지는 노드가 SVG 전용 갈래,
+        /// 곧 `PageBackground`(0)와 바탕쪽(1)이다.
+        fn plane_is_svg_specific(node: &RenderNode) -> bool {
+            SvgRenderer::node_z_sort_key(node).0 != LayoutEngine::paper_node_sort_key(node).0 + 1
+        }
+
+        /// 원래 인덱스로 표현한 정렬 결과. 두 키가 같은 순열을 내는지만 본다.
+        fn order_by<K: Ord>(children: &[RenderNode], key: impl Fn(&RenderNode) -> K) -> Vec<usize> {
+            let mut idx: Vec<usize> = (0..children.len()).collect();
+            // `sort_by_key` 와 같은 안정 정렬이라 동률은 삽입 순서를 지킨다.
+            idx.sort_by_key(|&i| key(&children[i]));
+            idx
+        }
+
+        #[derive(Default)]
+        struct Tally {
+            compared: usize,
+            mismatched: usize,
+            unexplained: usize,
+            third_element_swap_changes_order: usize,
+            examples: Vec<String>,
+        }
+
+        fn walk(node: &RenderNode, t: &mut Tally) {
+            if SvgRenderer::children_need_plane_reorder(node) && node.children.len() > 1 {
+                t.compared += 1;
+                let svg_order = order_by(&node.children, SvgRenderer::node_z_sort_key);
+                let paper_order = order_by(&node.children, LayoutEngine::paper_node_sort_key);
+
+                // SVG plane 은 그대로 두고 세 번째 원소만 `DocPath` 로 바꾼 키.
+                // 이것이 현재 SVG 순서와 다르면, 교체는 렌더 결과를 바꾼다.
+                let swapped = order_by(&node.children, |n| {
+                    let (plane, z, _) = SvgRenderer::node_z_sort_key(n);
+                    let (_, _, path) = LayoutEngine::paper_node_sort_key(n);
+                    (plane, z, path)
+                });
+                if swapped != svg_order {
+                    t.third_element_swap_changes_order += 1;
+                    if t.examples.len() < 5 {
+                        t.examples.push(format!(
+                            "세번째원소 교체로 순서 변경: 현재={svg_order:?} 교체후={swapped:?}"
+                        ));
+                    }
+                }
+
+                if svg_order != paper_order && !node.children.iter().any(plane_is_svg_specific) {
+                    t.unexplained += 1;
+                }
+                if svg_order != paper_order {
+                    t.mismatched += 1;
+                }
+            }
+            for child in &node.children {
+                walk(child, t);
+            }
+        }
+
+        let mut t = Tally::default();
+        let mut pages = 0usize;
+        let mut docs = 0usize;
+
+        for path in candidates {
+            let Some(core) = load_document(path) else {
+                continue;
+            };
+            docs += 1;
+            let page_count = core.page_count().min(MAX_PAGES_PER_DOC);
+            for page_idx in 0..page_count {
+                let Ok(tree) = core.build_page_render_tree(page_idx) else {
+                    continue;
+                };
+                pages += 1;
+                walk(&tree.root, &mut t);
+            }
+        }
+
+        if docs == 0 {
+            eprintln!("issue_4522: 대상 fixture 없음(로컬 서브셋 checkout) — 건너뜀");
+            return;
+        }
+
+        eprintln!(
+            "issue_4522: docs={docs} pages={pages} 비교 지점={} 두 키 불일치={} \
+             plane 으로 설명 안 되는 불일치={} 세 번째 원소 교체가 순서를 바꾸는 지점={}",
+            t.compared, t.mismatched, t.unexplained, t.third_element_swap_changes_order
+        );
+        assert!(
+            t.compared > 0,
+            "plane 재정렬이 필요한 노드를 한 곳도 못 찾았다 — 측정이 성립하지 않는다"
+        );
+
+        // 축 1 — 두 키의 순서 차이는 SVG 전용 plane 으로 전부 설명된다.
+        // 다른 축이 끼어들면 원인 분석을 다시 해야 한다.
+        assert_eq!(
+            t.unexplained, 0,
+            "SVG 전용 plane(PageBackground·바탕쪽)으로 설명되지 않는 순서 차이가 생겼다"
+        );
+
+        // 축 2 — 세 번째 원소를 `DocPath` 로 바꾸면 순서가 바뀌는 지점이 있다.
+        // 0 이 되면 그때는 안전하게 합칠 수 있다는 뜻이므로, 이 단언이 실패하는 것이
+        // 곧 "이제 합쳐도 된다" 는 신호다. 지금은 실측 2 지점이다(2026-08-28).
+        const MEASURED_SWAP_CHANGES: usize = 1;
+        assert!(
+            t.third_element_swap_changes_order > 0,
+            "세 번째 원소 교체가 더 이상 순서를 바꾸지 않는다면 두 키를 합칠 수 있다 — \
+             `samples/복학원서.hwp` 골든 SVG 를 확인하고 이 테스트와 svg.rs 주석을 갱신하라"
+        );
+        assert!(
+            t.third_element_swap_changes_order <= MEASURED_SWAP_CHANGES,
+            "교체가 순서를 바꾸는 지점이 {MEASURED_SWAP_CHANGES} → {} 로 늘었다: {:?}",
+            t.third_element_swap_changes_order,
+            t.examples
+        );
+    }
+
     #[test]
     fn issue_4334_stage3_document_position_coverage_precheck() {
         let candidates = [

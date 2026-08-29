@@ -34,8 +34,6 @@
 //!              └ para        각자의 문단 목록
 //! ```
 
-use super::error::SelectorError;
-
 pub use super::suggest::{nearest, unknown_attr, unknown_axis};
 
 /// 선택자 하나 — 쉼표로 이어진 경로들의 합집합.
