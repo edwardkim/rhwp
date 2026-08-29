@@ -982,6 +982,14 @@ export function validateRepository(
   }
 }
 
+export function validateManifest(
+  manifest,
+  root = ROOT,
+  { checkGenerated = true, checkCargo = true } = {},
+) {
+  return inspectRepository(manifest, root, { checkGenerated, checkCargo });
+}
+
 export function generateArtifacts(
   manifest,
   root = ROOT,
@@ -1070,7 +1078,9 @@ if (process.argv[1] && path.resolve(process.argv[1]) === SCRIPT_PATH) {
         durationPolicy: readDurationPolicy(policyPath),
       });
       generateArtifacts(manifest);
-      printValidation(validateRepository());
+      // CI에서는 현재 duration policy로 다시 pack한 harness를 빌드한다. 기본 정책에서
+      // 다시 derive하면 동적으로 생성한 harness와 비교해 false-positive drift가 된다.
+      printValidation(validateManifest(manifest));
     } else if (command === '--sync-cargo-targets') {
       const manifest = prepareManifest(loadManifest());
       generateArtifacts(manifest, ROOT, { syncCargoTargets: true });

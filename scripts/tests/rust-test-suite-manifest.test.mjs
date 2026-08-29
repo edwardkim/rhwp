@@ -212,7 +212,11 @@ test('신규 source는 선택된 suite에 정확히 한 번만 배정한다', (t
 });
 
 test('개별 testcase에서 합산한 source 시간으로 suite를 재배정한다', async (t) => {
-  const { rebalanceManifest } = await import('../rust-test-suite-manifest.mjs');
+  const {
+    generateArtifacts,
+    rebalanceManifest,
+    validateManifest,
+  } = await import('../rust-test-suite-manifest.mjs');
   const root = mkdtempSync(path.join(os.tmpdir(), 'rhwp-duration-rebalance-'));
   t.after(() => rmSync(root, { recursive: true, force: true }));
   mkdirSync(path.join(root, 'tests', 'cases'), { recursive: true });
@@ -220,7 +224,14 @@ test('개별 testcase에서 합산한 source 시간으로 suite를 재배정한�
   writeFileSync(path.join(root, 'tests', 'cases', 'heavy.rs'), '#[test]\nfn heavy() {}\n');
   writeFileSync(path.join(root, 'tests', 'cases', 'light.rs'), '#[test]\nfn light() {}\n');
   const manifest = {
-    sharding: { suitePrefix: 'regression_suite_', suiteCount: 2, testAttributeWeight: 1 },
+    sharding: {
+      suitePrefix: 'regression_suite_',
+      suiteCount: 2,
+      testAttributeWeight: 1,
+      maximumIntegrationTargets: 2,
+    },
+    minimumNextestCases: 1,
+    nextestPriorities: [],
     sourceRoots: [{ path: 'tests/cases', recursive: false }],
     moduleIntegrationOverrides: [],
     exceptions: [],
@@ -234,6 +245,11 @@ test('개별 testcase에서 합산한 source 시간으로 suite를 재배정한�
   });
   assert.deepEqual(rebalanced.suites.regression_suite_001, ['tests/cases/heavy.rs']);
   assert.deepEqual(rebalanced.suites.regression_suite_002, ['tests/cases/light.rs']);
+  generateArtifacts(rebalanced, root);
+  assert.deepEqual(
+    validateManifest(rebalanced, root, { checkCargo: false }).errors,
+    [],
+  );
 });
 
 test('PR base에 없던 integration source는 tests/cases 밖에서 거부한다', () => {
