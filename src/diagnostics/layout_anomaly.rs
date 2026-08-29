@@ -682,6 +682,7 @@ pub fn scan_document(core: &DocumentCore, opts: &AnomalyOptions) -> Result<DocAn
 // CLI: `rhwp layout-anomaly`
 // ─────────────────────────────────────────────────────────────────────────
 
+use std::borrow::Cow;
 use std::path::{Path, PathBuf};
 use std::time::Instant;
 
@@ -862,13 +863,36 @@ fn types_json(opts: &CliOptions) -> Value {
     }
 }
 
+/// [#6348] `-p` 가 주어지면 그 쪽만 남긴 결과를 돌려준다.
+///
+/// 종전에는 `envelope` 이 `pages` 배열만 걸러내고 카운트·`hasSignal` 은 필터 이전의
+/// 문서 전체 값을 실었다. 그래서 신호가 0 인 쪽을 지정해도 `overflowCount: 163`,
+/// `hasSignal: true` 가 나오고 `--strict` 가 종료코드 3 을 냈다 — 배열과 카운트가 서로
+/// 모순되고, 쪽 단위 판정에 쓸 수 없었다.
+///
+/// `page_count` 는 문서 전체 쪽수라 필터와 무관한 메타데이터다. `pageFilter` 와 함께
+/// 읽으면 "전체 N 쪽 중 M 쪽" 이 되므로 그대로 둔다.
+fn filtered_for_page(doc: &DocAnomalies, page: Option<u32>) -> Cow<'_, DocAnomalies> {
+    let Some(want) = page else {
+        return Cow::Borrowed(doc);
+    };
+    Cow::Owned(DocAnomalies {
+        page_count: doc.page_count,
+        pages: doc
+            .pages
+            .iter()
+            .filter(|p| p.page == want)
+            .cloned()
+            .collect(),
+    })
+}
+
 fn envelope(source: &str, doc: &DocAnomalies, opts: &CliOptions) -> Value {
-    let pages: Vec<Value> = doc
-        .pages
-        .iter()
-        .filter(|p| opts.page.is_none_or(|want| p.page == want))
-        .map(page_json)
-        .collect();
+    // 카운트·hasSignal 과 pages 는 반드시 같은 집합에서 나와야 한다. 필터를 여기서
+    // 다시 적용하는 것은 이미 걸러진 값을 받아도 무해하며(idempotent), 호출자가
+    // 하나라도 빠뜨렸을 때 JSON 안에서 서로 모순되는 값이 나가는 것을 막는다.
+    let doc = &filtered_for_page(doc, opts.page);
+    let pages: Vec<Value> = doc.pages.iter().map(page_json).collect();
     crate::provenance::marked(
         json!({
             "schemaVersion": SCHEMA_VERSION,
@@ -944,6 +968,10 @@ fn run_single(opts: &CliOptions) -> i32 {
         }
     }
 
+    // -p 는 여기서 한 번만 적용한다. 이후의 카운트·hasSignal·종료코드는 모두
+    // 이 걸러진 집합에서 나오므로 출력끼리 서로 모순되지 않는다.
+    let doc = filtered_for_page(&doc, opts.page);
+
     if opts.json {
         println!("{}", envelope(&opts.path.display().to_string(), &doc, opts));
         return if opts.strict && doc.has_signal() {
@@ -953,11 +981,7 @@ fn run_single(opts: &CliOptions) -> i32 {
         };
     }
 
-    let shown: Vec<&PageAnomalies> = doc
-        .pages
-        .iter()
-        .filter(|p| opts.page.is_none_or(|want| p.page == want))
-        .collect();
+    let shown: Vec<&PageAnomalies> = doc.pages.iter().collect();
 
     println!(
         "쪽 수: {}  overflow: {}  off-canvas: {}  overlap: {}  text-overlap: {}  empty_page(가능성): {}",
@@ -1171,6 +1195,7 @@ fn run_batch(opts: &CliOptions) -> i32 {
 }
 
 fn fill_ok_row(row: &mut BatchRow, doc: &DocAnomalies, opts: &CliOptions) {
+    let doc = &filtered_for_page(doc, opts.page);
     row.overflow = doc.overflow_count();
     row.overlap = doc.overlap_count();
     row.empty_page = doc.empty_page_count();
