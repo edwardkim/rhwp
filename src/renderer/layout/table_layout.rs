@@ -3603,7 +3603,9 @@ impl LayoutEngine {
                 } else {
                     let cell_w_px = hwpunit_to_px(cell.width as i32, self.dpi)
                         * self.render_table_width_scale(table);
-                    let inner_width = crate::renderer::composer::cell_inner_text_width(cell_w_px, pad_left, pad_right, self.dpi);
+                    let inner_width = crate::renderer::composer::cell_inner_text_width(
+                        cell_w_px, pad_left, pad_right, self.dpi,
+                    );
                     let (line_based, object_based) = self.calc_cell_paragraphs_content_parts(
                         &cell.paragraphs,
                         styles,
@@ -3742,7 +3744,9 @@ impl LayoutEngine {
                     self.resolve_cell_padding(cell, table);
                 let cell_w_px = hwpunit_to_px(cell.width as i32, self.dpi)
                     * self.render_table_width_scale(table);
-                let inner_width = crate::renderer::composer::cell_inner_text_width(cell_w_px, pad_left, pad_right, self.dpi);
+                let inner_width = crate::renderer::composer::cell_inner_text_width(
+                    cell_w_px, pad_left, pad_right, self.dpi,
+                );
                 // LINE_SEG의 line_height에 이미 셀 내 중첩 표 높이가 반영되어 있으므로
                 // controls_height를 별도로 더하면 이중 계산됨
                 // [Task #2211] 1-b 와 동일 — 저장 LINE_SEG 줄 흐름은 pad 미가산,
@@ -4115,23 +4119,24 @@ impl LayoutEngine {
         //           aim=false → table.padding 우선.
         // 한컴은 aim=false일 때 cell.padding 원값을 파일에 보존하더라도 렌더에는 쓰지 않는다.
         // aim=true에서는 0mm도 사용자가 지정한 셀 고유 안 여백으로 존중한다.
-        // [#2195 stage50] 표 기본 전축 0 = 미지정 → 셀 pad (Cell::table_padding_unspecified).
+        // [#2195 stage50] 표 기본 전축 0 = 미지정 → 셀 pad — **수직 축 전용**.
+        // 수평은 전축 0 도 진짜 0: 근거 실측은 `Cell::table_padding_unspecified` 주석과
+        // `mydocs/plans/cell_width_authority.md`. 규칙은 `Cell::effective_padding` 과
+        // 축 단위로 동일해야 한다 (#1785 — 갈리면 예약 높이와 렌더가 어긋난다).
         let table_pad_unspec = !cell.apply_inner_margin
             && crate::model::table::Cell::table_padding_unspecified(&table.padding);
-        let use_cell_left = (table_pad_unspec && cell.padding.left < 2500)
-            || Self::should_use_cell_padding_axis_for_context(
-                cell,
-                cell.padding.left,
-                table.padding.left,
-                allow_saved_small_cell_margin,
-            );
-        let use_cell_right = (table_pad_unspec && cell.padding.right < 2500)
-            || Self::should_use_cell_padding_axis_for_context(
-                cell,
-                cell.padding.right,
-                table.padding.right,
-                allow_saved_small_cell_margin,
-            );
+        let use_cell_left = Self::should_use_cell_padding_axis_for_context(
+            cell,
+            cell.padding.left,
+            table.padding.left,
+            allow_saved_small_cell_margin,
+        );
+        let use_cell_right = Self::should_use_cell_padding_axis_for_context(
+            cell,
+            cell.padding.right,
+            table.padding.right,
+            allow_saved_small_cell_margin,
+        );
         let use_cell_top = (table_pad_unspec && cell.padding.top < 2500)
             || Self::should_use_cell_padding_axis_for_context(
                 cell,
@@ -6853,7 +6858,9 @@ impl LayoutEngine {
             pad_right = new_pr;
 
             let inner_x = cell_x + pad_left;
-            let inner_width = crate::renderer::composer::cell_inner_text_width(cell_w, pad_left, pad_right, self.dpi);
+            let inner_width = crate::renderer::composer::cell_inner_text_width(
+                cell_w, pad_left, pad_right, self.dpi,
+            );
             let inner_height = (cell_h - pad_top - pad_bottom).max(0.0);
 
             // [Task #671] line_segs 비어 있는 셀 paragraph 의 단일 ComposedLine 압축
@@ -8100,7 +8107,9 @@ impl LayoutEngine {
             } else {
                 0.0
             };
-            let inner_width = crate::renderer::composer::cell_inner_text_width(cell_w, pad_left, pad_right, self.dpi);
+            let inner_width = crate::renderer::composer::cell_inner_text_width(
+                cell_w, pad_left, pad_right, self.dpi,
+            );
             let mut cell_units = Vec::new();
             let mut after_completed_multiline_table = false;
             for (pi, para) in cell.paragraphs.iter().enumerate() {
@@ -8771,7 +8780,8 @@ impl LayoutEngine {
         // 최소 줄 너비는 다르다. 그것은 문서별 보상재가 아니라 한/글이 지키는 규칙이고
         // (samples 전수 7,862줄 중 98.7%), 측정과 렌더가 갈리면 줄 수가 어긋난다.
         // 그래서 shrink 와 달리 `cell_inner_text_width` 안에서 여기에도 적용된다.
-        let inner_width = crate::renderer::composer::cell_inner_text_width(cell_w, pad_left, pad_right, self.dpi);
+        let inner_width =
+            crate::renderer::composer::cell_inner_text_width(cell_w, pad_left, pad_right, self.dpi);
         let line_seg_is_synthetic = |seg: &crate::model::paragraph::LineSeg| {
             seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
         };
@@ -14190,7 +14200,9 @@ impl LayoutEngine {
                 crate::renderer::composer::no_ls_short_label_cell(
                     cell,
                     table,
-                    crate::renderer::composer::cell_inner_text_width(cell_w_px, pad_left, pad_right, self.dpi),
+                    crate::renderer::composer::cell_inner_text_width(
+                        cell_w_px, pad_left, pad_right, self.dpi,
+                    ),
                     cell_h_px - pad_top - pad_bottom,
                     styles,
                     self.dpi,

@@ -5,7 +5,7 @@
     "이 수는 내려갈 수 없다. 올리는 것이 목표다."
   ],
   "documents": 887,
-  "clean": 710,
+  "clean": 705,
   "errors": 3,
   "signals": {
     "off_canvas": {
@@ -13,21 +13,21 @@
       "nodes": 414
     },
     "overlap": {
-      "documents": 40,
-      "nodes": 183
+      "documents": 38,
+      "nodes": 179
     },
     "text_overlap": {
-      "documents": 126,
-      "nodes": 4509
+      "documents": 125,
+      "nodes": 4516
     },
     "overflow": {
       "documents": 270,
-      "nodes": 2765
+      "nodes": 2761
     },
     "empty_page": {
       "documents": 30,
       "nodes": 124
     }
   },
-  "coveragePercent": 80.05
+  "coveragePercent": 79.48
 }

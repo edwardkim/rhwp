@@ -272,10 +272,16 @@ impl Cell {
     }
 
     /// 축별 규칙(`use_cell_padding_axis`)을 네 축에 적용한 유효 안 여백 (HWPUNIT).
-    /// [#2195 stage50] 표 기본 여백이 **네 축 모두 0**(미지정)이면 셀 저장 pad —
-    /// 86712 구분선(한글 PDF 괘선 21.1px = 셀 141 상하 포함) + exam_social 머리말
-    /// 글상자(#1100 rect 오라클) 실측. pad 사다리의 '표 기본' 실측은 표 기본이
-    /// 일부 축만 0(0,0,141,141)인 케이스 — 전축 0 과 구분된다.
+    /// [#2195 stage50] 표 기본 여백이 **네 축 모두 0**(미지정)이면 셀 저장 pad.
+    /// **수직 축 전용** — 근거가 수직뿐이다: 86712 구분선(한글 PDF 괘선 21.1px =
+    /// 셀 141 상하 포함) 실측. 수평 축은 한글이 전축 0 을 진짜 0 으로 쓴다:
+    /// exam_social p2 머리말을 한글 2020/2022 인쇄 PDF 로 각각 실측한 글리프
+    /// 좌단(73.9/74.3px)이 셀 pad 적용 원점(77.47)보다 왼쪽이라 적용이 불가능하고,
+    /// 같은 문서 전축0 표의 저장 sw 52/52 가 pad 미적용(±3HU)이다. 종전 수평
+    /// 근거였던 issue_1100 x=77.47 핀은 한글 실측이 아니라 rhwp HWP↔HWPX 패리티
+    /// 자기-핀이었다. 상세: `mydocs/plans/cell_width_authority.md`.
+    /// pad 사다리의 '표 기본' 실측은 표 기본이 일부 축만 0(0,0,141,141)인
+    /// 케이스 — 전축 0 과 구분된다.
     pub fn table_padding_unspecified(table_padding: &crate::model::Padding) -> bool {
         table_padding.left == 0
             && table_padding.right == 0
@@ -288,20 +294,21 @@ impl Cell {
         table_padding: &crate::model::Padding,
     ) -> crate::model::Padding {
         let unspec = !self.apply_inner_margin && Self::table_padding_unspecified(table_padding);
-        let pick = |c: i16, t: i16| -> i16 {
+        let pick = |c: i16, t: i16, unspec_axis: bool| -> i16 {
             // [#1785 위생 한도 유지] 10mm급(>=2500HU) 보존 pad 는 한컴이 렌더에
             // 쓰지 않는다(36381023 render-diff) — 전축0 미지정 규칙에서도 제외.
-            if (unspec && c < 2500) || self.use_cell_padding_axis(c, t, false) {
+            if (unspec_axis && c < 2500) || self.use_cell_padding_axis(c, t, false) {
                 c
             } else {
                 t
             }
         };
         crate::model::Padding {
-            left: pick(self.padding.left, table_padding.left),
-            right: pick(self.padding.right, table_padding.right),
-            top: pick(self.padding.top, table_padding.top),
-            bottom: pick(self.padding.bottom, table_padding.bottom),
+            // 수평은 전축0 도 진짜 0 (`table_padding_unspecified` 주석의 실측).
+            left: pick(self.padding.left, table_padding.left, false),
+            right: pick(self.padding.right, table_padding.right, false),
+            top: pick(self.padding.top, table_padding.top, unspec),
+            bottom: pick(self.padding.bottom, table_padding.bottom, unspec),
         }
     }
 
