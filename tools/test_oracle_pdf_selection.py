@@ -10,6 +10,7 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 from oracle_pdf_selection import (
     canonical_candidates,
     canonical_filename,
+    canonical_pdf_path,
     choose_canonical,
     engine_for_product,
 )
@@ -17,10 +18,10 @@ from oracle_pdf_selection import (
 
 class OraclePdfSelectionTests(unittest.TestCase):
     def setUp(self):
-        self.guide_hwp_2020 = 'pdf/' + canonical_filename('samples/guide.hwp', '2020')
-        self.guide_hwp_2024 = 'pdf/' + canonical_filename('samples/guide.hwp', '2024')
-        self.guide_hwpx_2020 = 'pdf/' + canonical_filename('samples/guide.hwpx', '2020')
-        self.guide_hwpx_2024 = 'pdf/' + canonical_filename('samples/guide.hwpx', '2024')
+        self.guide_hwp_2020 = canonical_pdf_path('samples/guide.hwp', '2020')
+        self.guide_hwp_2024 = canonical_pdf_path('samples/guide.hwp', '2024')
+        self.guide_hwpx_2020 = canonical_pdf_path('samples/guide.hwpx', '2020')
+        self.guide_hwpx_2024 = canonical_pdf_path('samples/guide.hwpx', '2024')
         self.candidates = [
             'pdf/guide-2010-kopub.pdf',
             self.guide_hwp_2020,
@@ -50,8 +51,8 @@ class OraclePdfSelectionTests(unittest.TestCase):
     def test_same_name_sources_never_share_a_canonical_pdf(self):
         root = 'samples/guide.hwp'
         nested = 'samples/basic/guide.hwp'
-        root_pdf = 'pdf/' + canonical_filename(root, '2020')
-        nested_pdf = 'pdf/' + canonical_filename(nested, '2020')
+        root_pdf = canonical_pdf_path(root, '2020')
+        nested_pdf = canonical_pdf_path(nested, '2020')
         self.assertNotEqual(root_pdf, nested_pdf)
         self.assertEqual(canonical_candidates(root, [root_pdf, nested_pdf]), [root_pdf])
         self.assertEqual(canonical_candidates(nested, [root_pdf, nested_pdf]), [nested_pdf])
@@ -60,8 +61,8 @@ class OraclePdfSelectionTests(unittest.TestCase):
         self.assertEqual(engine_for_product('hancom-office-2024'), '2024')
         self.assertEqual(engine_for_product('hancom-office-2022'), '2020')
         self.assertEqual(engine_for_product(None), '2020')
-        self.assertRegex(canonical_filename('samples/guide.hwpx', '2024'),
-                         r'^guide-hwpx-2024-[0-9a-f]{16}\.pdf$')
+        self.assertEqual(canonical_filename('samples/guide.hwpx', '2024'),
+                         'guide-hwpx-2024.pdf')
 
 
 if __name__ == '__main__':

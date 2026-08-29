@@ -2,9 +2,9 @@
 """형식과 엔진이 파일명으로 확인되는 한컴 PDF 정답지 선택 규칙.
 
 저장소의 과거 PDF는 같은 stem이라도 HWP/HWPX, 한컴 버전, 폰트 조건이 다를 수 있다.
-자동 비교는 `<stem>-<hwp|hwpx>-<2020|2024>-<원본경로해시>.pdf`만 canonical으로 취급한다.
-이 규칙으로 형식 미표기 PDF, 서로 다른 원본 형식의 결과, 또는 같은 이름의 다른 경로 원본을
-조용히 재사용하지 않는다.
+자동 비교는 `pdf/<원본의 samples/ 하위 경로>/<stem>-<hwp|hwpx>-<2020|2024>.pdf`만
+canonical으로 취급한다. 이 규칙으로 형식 미표기 PDF, 서로 다른 원본 형식의 결과, 또는 같은
+이름의 다른 경로 원본을 조용히 재사용하지 않는다.
 """
 
 import hashlib
@@ -43,33 +43,41 @@ def engine_for_product(product):
     return '2024' if product == 'hancom-office-2024' else '2020'
 
 
-def source_identity(path):
-    """운영체제·호출 위치와 무관한 `samples/` 상대 원본 식별자를 만든다."""
+def source_relative_path(path):
+    """운영체제·호출 위치와 무관한 `samples/` 아래 상대 원본 경로를 만든다."""
     normalized = unicodedata.normalize('NFC', str(path).replace('\\', '/'))
     while normalized.startswith('./'):
         normalized = normalized[2:]
     if normalized.startswith('samples/'):
-        return normalized
+        return normalized[len('samples/'):]
     marker = '/samples/'
     if marker in normalized:
-        return 'samples/' + normalized.split(marker, 1)[1]
+        return normalized.split(marker, 1)[1]
     raise ValueError(f'samples/ 아래의 원본 경로가 아니다: {path}')
 
 
-def source_token(path):
-    """같은 stem 원본을 분리하는 결정적 repository-relative 경로 토큰."""
-    return hashlib.sha256(source_identity(path).encode('utf-8')).hexdigest()[:16]
-
-
 def canonical_filename(sample, engine):
-    """원본 경로·형식·선택 엔진이 모두 드러나는 repository PDF 이름을 만든다."""
-    return '%s-%s-%s-%s.pdf' % (
-        stem(sample), source_format(sample), engine, source_token(sample))
-
-
-def legacy_canonical_filename(sample, engine):
-    """경로 식별자 도입 전 이름. 명시적 이관 외에는 선택에 사용하지 않는다."""
+    """원본 형식과 선택 엔진이 드러나는 PDF 파일 이름을 만든다."""
     return '%s-%s-%s.pdf' % (stem(sample), source_format(sample), engine)
+
+
+def canonical_pdf_path(sample, engine):
+    """원본 하위 경로까지 보존한 충돌 없는 canonical PDF 상대 경로를 만든다."""
+    relative = source_relative_path(sample)
+    directory = os.path.dirname(relative)
+    parts = ['pdf']
+    if directory:
+        parts.append(directory)
+    parts.append(canonical_filename(sample, engine))
+    return '/'.join(parts)
+
+
+def path_token_canonical_filename(sample, engine):
+    """경로 보존 방식으로 이관할 때만 인식하는 이전 path-token PDF 이름."""
+    # 이전 이관 커밋은 repository-relative `samples/...` 전체를 hash 입력으로 사용했다.
+    # 이 값은 최종 canonical 규칙이 아니라, 이미 만든 산출물을 재변환 없이 옮기기 위한 호환용이다.
+    token = hashlib.sha256(('samples/' + source_relative_path(sample)).encode('utf-8')).hexdigest()[:16]
+    return '%s-%s-%s-%s.pdf' % (stem(sample), source_format(sample), engine, token)
 
 
 def canonical_engine(path):
@@ -84,12 +92,12 @@ def canonical_engine(path):
 def canonical_candidates(sample, candidates):
     """이 원본의 경로·형식에 정확히 대응하는 canonical PDF만 반환한다."""
     expected = {
-        canonical_filename(sample, '2020'),
-        canonical_filename(sample, '2024'),
+        canonical_pdf_path(sample, '2020'),
+        canonical_pdf_path(sample, '2024'),
     }
     return sorted(
         path for path in candidates
-        if os.path.basename(path) in expected and canonical_engine(path)
+        if path.replace(os.sep, '/') in expected and canonical_engine(path)
     )
 
 

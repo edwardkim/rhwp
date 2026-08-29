@@ -30,8 +30,9 @@ if str(TOOLS_DIR) not in sys.path:
 
 from oracle_pdf_selection import (
     canonical_filename,
+    canonical_pdf_path,
     engine_for_product,
-    legacy_canonical_filename,
+    path_token_canonical_filename,
 )
 
 
@@ -250,15 +251,28 @@ def migrate_success_log(args, log_path, logger):
             failures += 1
             logger.emit('ERROR', '이관 제외(metadata 실패): %s' % exc)
             continue
-        if old_path.name != legacy_canonical_filename(source, engine):
+        legacy_path = pathlib.Path('pdf') / canonical_filename(source, engine)
+        if old_path != legacy_path:
             failures += 1
             logger.emit('ERROR', '이관 제외(기존 이름 불일치): source=%s output=%s engine=%s' %
                         (source, old_output, engine))
             continue
-        destination = pathlib.Path('pdf') / canonical_filename(source, engine)
-        if not old_path.is_file():
+        token_path = pathlib.Path('pdf') / path_token_canonical_filename(source, engine)
+        available = [path for path in (legacy_path, token_path) if path.is_file()]
+        if not available:
             skipped += 1
             logger.emit('INFO', '이관 제외(기존 PDF 없음): source=%s output=%s' % (source, old_output))
+            continue
+        if len(available) != 1:
+            failures += 1
+            logger.emit('ERROR', '이관 제외(둘 이상의 이전 PDF): source=%s outputs=%s' %
+                        (source, ','.join(str(path) for path in available)))
+            continue
+        source_pdf = available[0]
+        destination = pathlib.Path(canonical_pdf_path(source, engine))
+        if source_pdf == destination:
+            skipped += 1
+            logger.emit('INFO', '이관 제외(이미 canonical): source=%s output=%s' % (source, destination))
             continue
         if destination.exists():
             skipped += 1
@@ -268,7 +282,7 @@ def migrate_success_log(args, log_path, logger):
                     (source, destination, product or 'null', engine))
         if not args.dry_run:
             destination.parent.mkdir(parents=True, exist_ok=True)
-            os.replace(old_path, destination)
+            os.replace(source_pdf, destination)
         migrated += 1
     logger.emit('INFO', '기존 성공 로그 이관 완료: 이관=%d 제외=%d 오류=%d' %
                 (migrated, skipped, failures))
@@ -315,7 +329,7 @@ def main():
                 inspection_failures.append(str(exc))
                 logger.emit('ERROR', '제외(rhwp info 실패): %s' % exc)
                 continue
-            destination = pathlib.Path('pdf') / canonical_filename(source, engine)
+            destination = pathlib.Path(canonical_pdf_path(source, engine))
             if destination.exists() and not args.refresh_existing:
                 skipped_existing += 1
                 logger.emit('INFO', '유지(기존 PDF): source=%s output=%s product=%s engine=%s' %
