@@ -4508,9 +4508,28 @@ impl LayoutEngine {
                             .abs()
                             <= 2.0
                 });
+            // [#6389] 저장 사다리 증언의 다줄 일반화. 조합이 저장 줄 수를 그대로
+            // 따랐고 모든 저장 줄폭이 셀 열폭 이내면, 한글이 이 내용을 이 폭에
+            // 담았다는 증언이다 — 편람 p68 셀은 kopub/no-ttf 오라클 PDF 모두
+            // 저장 줄과 문자 단위로 일치하는데, 내장 메트릭 진행폭이 실측(0.83em)
+            // 보다 넓어(1.0em) 압축을 억제하면 `○` 문단 줄들이 셀 우측 테두리를
+            // +72~85px 넘는다. 열폭보다 넓게 기록된 사다리(병합·재저장 안 된 낡은
+            // 캐시)는 증언이 성립하지 않으므로 종전대로 억제(클리핑)한다.
+            let stored_ladder_fits_frame = cell_ctx.is_some()
+                && para.is_some_and(|p| {
+                    !p.line_segs.is_empty()
+                        && composed.lines.len() == p.line_segs.len()
+                        && p.line_segs.iter().all(|seg| {
+                            seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                                == 0
+                                && hwpunit_to_px(seg.segment_width, self.dpi)
+                                    <= effective_col_w + 2.0
+                        })
+                });
             let suppress_cell_overflow_spacing = cell_ctx.is_some()
                 && total_text_width > available_width * 1.15
-                && !stored_single_line_fits_cell;
+                && !stored_single_line_fits_cell
+                && !stored_ladder_fits_frame;
             let is_hancom_company_pua_logo_line =
                 is_hancom_company_pua_logo_line(comp_line, alignment);
 
