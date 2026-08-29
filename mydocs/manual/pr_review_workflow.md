@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-08-16
+last_verified: 2026-08-30
 ---
 
 # PR 리뷰 · 통합 워크플로우 매뉴얼
@@ -28,6 +28,12 @@ rhwp의 PR 처리는 외부 contributor PR, collaborator self PR, collaborator�
 소스, 테스트, CI workflow, golden/baseline, 기존 샘플 변경은 maintainer라도 일반 PR과 최신 CI를
 기본으로 한다. GitHub review, comment, push, ready 전환, merge, close는 각각 작업지시자의 명시 승인을
 받은 뒤에만 수행한다.
+
+Rust source 또는 Rust test/baseline helper가 바뀐 PR은 `local_validation.md` 4.3의 Rust lint 묶음
+(format, native Clippy, WASM32 Clippy, workspace all-target Clippy)을 **PR 생성 전에** 통과해야 한다.
+focused test 또는 과거 녹색 CI는 이 선행 lint gate를 대체하지 않는다. GitHub Full CI 재사용은 정확한
+기존 code head를 재검토할 때의 광범위 회귀 생략 규칙일 뿐, maintainer 보정이나 새 code/test/baseline
+commit의 lint 생략 규칙이 아니다.
 
 ### 1.1 PR 번호 채번과 review 기록
 

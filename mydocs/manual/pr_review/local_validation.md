@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-08-10
+last_verified: 2026-08-30
 ---
 
 # 로컬 사전 검증
@@ -250,17 +250,38 @@ devel 위에 PR head를 합친 결과 tree와 conflict를 확인한다. conflict
 
 ## 4.3 변경 범위별 기본 검증
 
-**Rust 를 한 줄이라도 바꾼 PR 은 아래가 실패하면 생성하지 않는다.**
+**Rust source 또는 Rust test/baseline helper를 한 줄이라도 바꾼 PR은 아래 lint 묶음이 실패하면 생성하지
+않는다.** 테스트 전용 변경이나 기존 baseline 분할도 예외가 아니다. #6390처럼 test/baseline만
+바꾼 경우에 `fmt`와 focused nextest만 실행하고 Clippy를 GitHub CI에 넘기는 해석이 가능했던 것이
+기존 절차의 결함이었다.
 
 ```bash
+# PR review worktree에서만 실행: 파생 suite는 검증 뒤 stage하지 않는다.
+node scripts/rust-test-suite-manifest.mjs --prepare
 cargo fmt --all
 cargo fmt --all -- --check
+cargo clippy --locked --target-dir target/pr-review -- -D warnings
+cargo clippy --locked -p rhwp --lib --target wasm32-unknown-unknown \
+  --target-dir target/pr-review -- -D warnings
+cargo build --locked --workspace --target-dir target/pr-review
+cargo clippy --locked --workspace --all-targets --target-dir target/pr-review -- -D warnings
 node scripts/rust-test-suite-manifest.mjs --check
+```
+
+이 묶음은 CI `Lint (fmt, clippy, WASM check)`의 Format check, native root Clippy, WASM32
+Clippy, workspace all-target Clippy와 대응한다. CI에만 있는 Node/Python 계약 검사는 변경 범위가
+해당할 때 아래 표와 workflow 전용 절차에 따라 추가한다. `cargo fmt --check` 또는 native
+`cargo clippy` 하나만 실행하면 각각 Format check 또는 WASM·workspace lint 오류를 놓친다.
+
+`src/**` 또는 `crates/*/src/**`의 `#[cfg(test)]`를 변경했을 때만 다음 policy 검사를 위 묶음 뒤에
+추가한다. 이 검사는 파생 파일을 만들지 않는다.
+
+```bash
 node scripts/rust-unit-test-tiers.mjs --check
 ```
 
-CI `Lint (fmt, clippy, WASM check)` 의 Format check 단계는
-`cargo fmt --all -- --check` 이다. `cargo fmt --check` 만 실행하면 CI 가 실패한다.
+`--prepare`가 만든 `tests/generated/`와 `tests/suites/manifest.json`은 검증 증적일 뿐 source PR에
+stage하지 않는다. 검증 뒤 review worktree에서만 복원한다.
 
 `PR 준비` 지시는 이 절에서 해당 변경 범위에 지정한 검증을 실제로 실행하는 승인이다. PR 본문 초안,
 review 문서, 오늘할일만 작성하고 이 표의 필수 회귀 게이트를 남겨 두면 준비 완료로 보고하지 않는다.
@@ -270,12 +291,13 @@ remote push, PR 생성, ready 전환, merge 승인과는 별개다.
 | 변경 범위 | 기본 검증 |
 | --- | --- |
 | mydocs만 변경 | git diff --check, 문서 경로·링크·변경 범위 확인. Cargo 생략 |
-| Rust parser/model/CLI | focused test, release-test 전체, fmt, clippy. 단, 4.3.0의 검토 재사용 조건이면 focused test와 GitHub 전체 CI 근거 |
+| Rust parser/model/CLI | 모든 Rust lint 묶음, focused test, release-test 전체. 단, 4.3.0의 검토 재사용 조건이면 focused test와 GitHub 전체 CI 근거 |
 | renderer/layout/typeset/WASM | focused test, release-test 전체, Native Skia 3종, wasm-pack build, 시각 증적. 단, 4.3.0의 검토 재사용 조건이면 focused test, WASM·시각 증적과 GitHub 전체 CI 근거 |
 | rhwp-studio만 변경 | TypeScript 검사, npm test, 실제 browser 동작 |
 | npm/editor public API·transport·type | 아래 package 검증 |
 | CI workflow | [GitHub 저장소 운영 매뉴얼](../github_operations.md)의 변경 등급에 따른 workflow 구문·정책 테스트·required check 영향·최신 GitHub Actions 결과 |
-| 기존 golden/baseline/fixture | 관련 focused test, snapshot 결정성, 최신 PR head CI |
+| Rust test/baseline helper | 모든 Rust lint 묶음, 관련 focused test, snapshot 결정성, 최신 PR head CI |
+| 기존 golden/baseline/fixture data만 변경 | 관련 focused test, snapshot 결정성, 최신 PR head CI. Rust helper도 함께 바꾸면 바로 위 행의 lint 묶음을 추가 |
 
 archive label 또는 trusted post-merge reuse topology를 바꾸면, 일반 workflow 계약 검사에 더해
 아래 두 묶음을 PR 전에 모두 실행한다. Studio E2E나 OS resource-limit처럼 이 변경 범위와
@@ -304,6 +326,9 @@ GitHub Full CI가 완료된 code head를 maintainer가 재검토할 때는
 
 - 이 예외는 source·test·fixture·workflow·baseline·asset 보정이 전혀 없고, current-base merge가
   clean 또는 `mydocs/` 한정 bridge인 경우에만 사용한다.
+- maintainer가 Rust source·test·baseline helper 보정을 새 code head에 추가한 경우에는 이전 녹색 CI를
+  lint 생략 근거로 재사용하지 않는다. 위 Rust lint 묶음과 변경 범위 검증을 새 head에서 먼저
+  끝내고 PR을 만든다.
 - focused test, `git diff --check`, 변경 문서 링크 검사, renderer의 실제 WASM/브라우저 시각 검증은
   생략하지 않는다.
 - Docker 등 표준 실행 환경이 없어서 host fallback을 썼다면, 표준 경로를 통과했다고 쓰지 않고
