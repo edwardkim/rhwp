@@ -11,11 +11,12 @@ on:
       - 'src/model/**'
       - 'src/renderer/**'
       - 'src/document_core/queries/rendering.rs'
+      # [#3789] export-pdf와 native raster가 공유하는 CLI 문서 입력 경계.
+      - 'src/cli/document_io.rs'
       # [#5776] PDF report가 native CLI export-pdf와 shared output helper를 직접 소비한다.
       - 'src/cli/outputs/mod.rs'
       - 'src/cli/outputs/pdf.rs'
       - 'src/wasm_api.rs'
-      - 'src/main.rs'
       - 'assets/fonts/**'
       - 'ttfs/**'
       - 'scripts/renderer_baseline.py'

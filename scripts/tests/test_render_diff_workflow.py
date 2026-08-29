@@ -38,14 +38,20 @@ class RenderDiffTriggerPolicyTests(unittest.TestCase):
             self.workflow,
         )
 
-    def test_cli_output_adapter_trigger_follows_direct_workflow_consumers(self) -> None:
+    def test_cli_render_boundaries_follow_direct_workflow_consumers(self) -> None:
         pull_request_trigger = self.workflow.split("  workflow_dispatch:", maxsplit=1)[0]
 
+        self.assertIn("      - 'src/cli/document_io.rs'", pull_request_trigger)
         self.assertIn("      - 'src/cli/outputs/mod.rs'", pull_request_trigger)
         self.assertIn("      - 'src/cli/outputs/pdf.rs'", pull_request_trigger)
+        self.assertNotIn(
+            "      - 'src/cli/commands/caption_validation.rs'",
+            pull_request_trigger,
+        )
         self.assertNotIn("      - 'src/cli/outputs/raster.rs'", pull_request_trigger)
         self.assertNotIn("      - 'src/cli/outputs/vector.rs'", pull_request_trigger)
-        self.assertIn("      - 'src/main.rs'", pull_request_trigger)
+        self.assertNotIn("      - 'src/cli/queries/structure.rs'", pull_request_trigger)
+        self.assertNotIn("      - 'src/main.rs'", pull_request_trigger)
 
     def test_label_events_do_not_restart_render_diff_and_manual_dispatch_is_full(self) -> None:
         self.assertIn(
