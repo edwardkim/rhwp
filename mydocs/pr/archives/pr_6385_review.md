@@ -103,3 +103,16 @@ review에서 발견한 병합 표 좌표 blocker를 보정했고 추가 blocker�
 
 이 작업에서는 보정과 검토 기록을 push해 CI를 시작하는 지점까지만 수행한다. CI 완료 확인, merge와
 연결 이슈 #4135 종료는 작업지시자의 후속 판단 뒤 별도로 수행한다.
+
+## Maintainer integration review - 2026-08-30
+
+외부 통합 검토에서는 `e83dd818a09ed9632df285d57174bde552bb45b6`까지 반영했다. 첫 실행 skin
+onboarding이 test textarea 포커스를 가리는 기존 E2E 준비 결함을 `605bfaa21`로 해제한 뒤 실제
+Chromium `undo-contracts.test.mjs`를 통과했다. 제품 코드와 shortcut 의미는 바꾸지 않았다.
+
+- Studio TypeScript, `npm test` 1271 pass / 1 skip, production build 통과.
+- `issue_4135_table_calc_multi_letter_columns`: 3/3, Native Skia 지정 회귀 2/2 및 4/4 통과.
+- 통합 release-test 전체 8,712/8,712 통과.
+
+따라서 maintainer integration 판단도 **수용 권고**다. 통합 PR merge 후 원 PR에는 F5/IME focused
+계약, 실제 browser undo E2E, 최신 통합 회귀 결과를 수용 근거로 남긴다.
