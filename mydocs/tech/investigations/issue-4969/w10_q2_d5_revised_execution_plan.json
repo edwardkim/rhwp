@@ -3,7 +3,7 @@
   "kind": "font-w10-q2-d5-resource-qualified-no-lineseg-activation-plan",
   "issue": 4969,
   "stage": "W10-Q2-D5",
-  "status": "n1-qualified-n2-awaiting-approval",
+  "status": "n2-qualified-bounded-awaiting-result-approval",
   "baseMerge": "1a43a507c",
   "resourceAuditCheckpoint": "ae36a8786",
   "productOutputChangeBeforeR2": false,
@@ -130,11 +130,13 @@
     "n0Artifact": "mydocs/tech/investigations/issue-4969/w10_q2_d5_n0_no_lineseg_owner.json",
     "n1": "qualified",
     "n1Artifact": "mydocs/tech/investigations/issue-4969/w10_q2_d5_n1_no_lineseg_activation.json",
+    "n2": "qualified-bounded",
+    "n2Artifact": "mydocs/tech/investigations/issue-4969/w10_q2_d5_n2_final_qualification.json",
     "pageLocalDedupPreserved": true,
     "uniqueSourcePreparationRed": true,
     "fontByKeyTransportRed": false,
     "productOutputChanged": "opt-in-and-ordinary-single-interval-no-lineseg",
-    "nextSlice": "Q2-D5-N2",
+    "nextSlice": "Q2-final-support-classification",
     "nextSliceApproved": false
   },
   "deferred": [
@@ -153,5 +155,5 @@
     "public-rejected-attempt-annotation",
     "private-corpus-or-hyper-v-oracle-rerun"
   ],
-  "approvalScope": "Q2-D5-R0, R1, R2, R3, N0, and N1 are complete; maintainer approval opens Q2-D5-N2 only, and each later commit, push, PR, comment, and merge remains separately gated"
+  "approvalScope": "Q2-D5-R0 through N2 are complete with a qualified-bounded D5 result; maintainer approval covers the N2 result only, while checkpoint commit, Q2 final support classification, push, PR, comment, and merge remain separately gated"
 }

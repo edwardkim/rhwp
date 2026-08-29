@@ -214,16 +214,16 @@ impl ExactFontSourceRegistry {
         self.sources.get(handle).cloned()
     }
 
-    /// Portable layer resource key가 현재 registry가 보존한 exact source 하나와 정확히
-    /// 일치할 때만 immutable bytes owner를 돌려준다.
-    pub(crate) fn source_arc_for_resource_key(&self, key: &str) -> Option<std::sync::Arc<[u8]>> {
-        let (byte_len, digest) = crate::paint::parse_font_blob_resource_key(key)?;
-        if byte_len > crate::paint::MAX_PORTABLE_FONT_BLOB_BYTES {
-            return None;
-        }
+    /// Return the immutable exact source whose byte length and caller-owned
+    /// identity predicate both match. Portable key syntax remains outside the
+    /// registry so kerning ownership does not depend on the paint layer.
+    pub(crate) fn source_arc_matching(
+        &self,
+        byte_len: usize,
+        mut identity_matches: impl FnMut(&[u8]) -> bool,
+    ) -> Option<std::sync::Arc<[u8]>> {
         self.sources.values().find_map(|bytes| {
-            (bytes.len() == byte_len && crate::paint::resource_digest_hex(bytes.as_ref()) == digest)
-                .then(|| bytes.clone())
+            (bytes.len() == byte_len && identity_matches(bytes.as_ref())).then(|| bytes.clone())
         })
     }
 

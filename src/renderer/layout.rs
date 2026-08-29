@@ -2749,7 +2749,14 @@ impl LayoutEngine {
         &self,
         key: &str,
     ) -> Option<std::sync::Arc<[u8]>> {
-        self.exact_font_sources.source_arc_for_resource_key(key)
+        let (byte_len, digest) = crate::paint::parse_font_blob_resource_key(key)?;
+        if byte_len > crate::paint::MAX_PORTABLE_FONT_BLOB_BYTES {
+            return None;
+        }
+        self.exact_font_sources
+            .source_arc_matching(byte_len, |bytes| {
+                crate::paint::resource_digest_hex(bytes) == digest
+            })
     }
 
     pub(crate) fn set_render_normalization_overlay(

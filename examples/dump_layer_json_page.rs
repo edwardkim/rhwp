@@ -8,7 +8,7 @@ fn main() {
     let bytes = std::fs::read(&path).expect("read");
     let doc = rhwp::wasm_api::HwpDocument::from_bytes(&bytes).expect("parse");
     let json = doc
-        .get_page_layer_tree_with_profile(page, &profile, Some(true))
+        .get_page_layer_tree_with_profile(page, &profile, Some(true), Some(false))
         .expect("layer json");
     println!("{json}");
 }

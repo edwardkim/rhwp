@@ -116,7 +116,7 @@ fn audit(path: &str) -> Result<DocResult, String> {
             Ok(json) => count_json_mimes(&json, &mut out.flow),
             Err(e) => out.page_errors.push(format!("p{page} flow: {e:?}")),
         }
-        match doc.get_page_layer_tree_with_profile(page, "screen", Some(true)) {
+        match doc.get_page_layer_tree_with_profile(page, "screen", Some(true), Some(false)) {
             Ok(json) => count_json_mimes(&json, &mut out.layer),
             Err(e) => out.page_errors.push(format!("p{page} layer: {e:?}")),
         }
