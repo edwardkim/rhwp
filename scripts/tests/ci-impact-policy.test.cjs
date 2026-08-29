@@ -48,7 +48,10 @@ function classificationFor(files) {
 
 function policyInput(overrides = {}) {
   const files = overrides.files || [
-    { filename: 'rhwp-studio/src/command/shortcut-map.ts', status: 'modified' },
+    // [#6330] 기본 예시는 unit 레인을 유지해야 한다 — 이 기본값을 쓰는 테스트들이
+    // frontendExpected 의 unit 분기(['success','skipped'])를 커버한다. src/command
+    // 경로는 studio-undo-package 로 package 레인이 되므로 tests/ 파일을 쓴다.
+    { filename: 'rhwp-studio/tests/shortcut-map.test.ts', status: 'modified' },
   ];
   return {
     repository: 'edwardkim/rhwp',

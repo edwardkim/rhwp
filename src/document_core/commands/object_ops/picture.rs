@@ -214,17 +214,27 @@ impl DocumentCore {
             pic.crop.bottom = bottom.max(0);
         }
     }
-    fn picture_props_touch_shape_transform(props_json: &str) -> bool {
-        const TRANSFORM_KEYS: [&str; 7] = [
-            "\"width\"",
-            "\"height\"",
-            "\"vertOffset\"",
-            "\"horzOffset\"",
-            "\"rotationAngle\"",
-            "\"horzFlip\"",
-            "\"vertFlip\"",
-        ];
-        TRANSFORM_KEYS.iter().any(|key| props_json.contains(key))
+    /// [#5890] 변환 파생 상태(`raw_rendering`·render_*)의 무효화 판정 근거.
+    ///
+    /// 종전에는 props JSON 에 변환 키가 **등장하는지**만 텍스트로 훑어
+    /// (`"width"`·`"height"`·`"vertOffset"`·`"horzOffset"`·`"rotationAngle"`·
+    /// `"horzFlip"`·`"vertFlip"`) 같은 값을 다시 지정하기만 해도 한컴 원본
+    /// 렌더링 행렬을 파괴했다 — getter 가 낸 봉지를 그대로 재적용해도 마찬가지였다.
+    /// 그 키들이 실제로 쓰는 IR 필드를 지문으로 떠서 값 변화로 판정한다.
+    fn picture_transform_fingerprint(
+        pic: &crate::model::image::Picture,
+    ) -> (u32, u32, u32, u32, u32, u32, i16, bool, bool) {
+        (
+            pic.common.width,
+            pic.common.height,
+            pic.common.horizontal_offset,
+            pic.common.vertical_offset,
+            pic.shape_attr.current_width,
+            pic.shape_attr.current_height,
+            pic.shape_attr.rotation_angle,
+            pic.shape_attr.horz_flip,
+            pic.shape_attr.vert_flip,
+        )
     }
     pub(crate) fn picture_rotated_bounds(width: u32, height: u32, angle: i16) -> (u32, u32) {
         if width == 0 || height == 0 || angle.rem_euclid(360) == 0 {
@@ -975,7 +985,7 @@ impl DocumentCore {
     ) -> bool {
         use crate::document_core::helpers::{json_bool, json_i16, json_i32, json_str, json_u32};
 
-        let transform_changed = Self::picture_props_touch_shape_transform(props_json);
+        let transform_before = Self::picture_transform_fingerprint(pic);
         let mut rotation_changed = false;
 
         // 크기 변경
@@ -1077,15 +1087,6 @@ impl DocumentCore {
             pic.common.horizontal_offset = v as u32;
         }
         Self::sync_common_obj_attr_known_bits(&mut pic.common);
-        if transform_changed {
-            pic.shape_attr.raw_rendering.clear();
-            pic.shape_attr.render_tx = pic.shape_attr.offset_x as f64;
-            pic.shape_attr.render_ty = pic.shape_attr.offset_y as f64;
-            pic.shape_attr.render_sx = 1.0;
-            pic.shape_attr.render_sy = 1.0;
-            pic.shape_attr.render_b = 0.0;
-            pic.shape_attr.render_c = 0.0;
-        }
 
         // 이미지 속성
         if let Some(v) = json_i32(props_json, "brightness") {
@@ -1129,6 +1130,21 @@ impl DocumentCore {
         }
         if rotation_changed {
             Self::refresh_picture_rotation_layout_for_save(pic);
+        }
+
+        // [#5890] 변환 파생 상태 무효화 — 실제로 변환이 바뀐 뒤에만 한다.
+        // `refresh_picture_rotation_layout_for_save` 가 크기·위치를 다시 세우므로
+        // 그 뒤에 지문을 비교한다. 변화가 없으면 한컴 원본 렌더링 행렬을 그대로 둔다
+        // (직렬화기는 `raw_rendering` 이 비어 있을 때만 행렬을 새로 만든다 —
+        // src/serializer/control.rs 의 rendering 블록).
+        if Self::picture_transform_fingerprint(pic) != transform_before {
+            pic.shape_attr.raw_rendering.clear();
+            pic.shape_attr.render_tx = pic.shape_attr.offset_x as f64;
+            pic.shape_attr.render_ty = pic.shape_attr.offset_y as f64;
+            pic.shape_attr.render_sx = 1.0;
+            pic.shape_attr.render_sy = 1.0;
+            pic.shape_attr.render_b = 0.0;
+            pic.shape_attr.render_c = 0.0;
         }
 
         // 자르기: HWP 내부 crop은 원본 이미지의 source rect 좌표이고,

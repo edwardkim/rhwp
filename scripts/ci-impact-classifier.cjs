@@ -315,7 +315,14 @@ function classifyChanges(input = {}) {
     }
 
     if (isStudioKnownNonRenderSource(filename)) {
-      requireFrontend('unit', 'studio-unit');
+      // [#6330] command 층과 히스토리 코어(engine/command.ts)는 스냅샷 진입점이
+      // 밀집한 undo 경로다 — undo depth 게이트(#5769)는 frontend-package-gates
+      // (실 wasm)에서만 돌므로 unit 레인이면 게이트가 통째로 skip 된다.
+      // 렌더 축은 계속 끈 채(Render Diff 불필요) package 레인만 강제한다.
+      // 디렉터리 단위 과근사는 의도다: 스냅샷 없는 command 파일(shortcut-map 등)도
+      // 함께 승격되지만, 목록을 파일 단위로 좁히면 신규 command 파일이 아래
+      // rhwp-studio/ catch-all(render_required 동반)로 떨어져 더 비싸진다.
+      requireFrontend('package', 'studio-undo-package');
       continue;
     }
 

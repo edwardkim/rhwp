@@ -165,16 +165,37 @@ impl DocumentCore {
         }
         Self::apply_common_obj_attr_from_json(&mut eq.common, props_json);
 
-        let (width, height) =
-            crate::renderer::equation::intrinsic_size_hwp(&eq.script, eq.font_size);
-        eq.common.width = width;
-        eq.common.height = height;
+        // [#5890] 파생(자동 크기)은 봉지가 크기를 지정하지 않은 축에만 적용한다.
+        // 종전에는 무조건 덧써서 getter 가 낸 봉지를 그대로 먹여도 크기가 바뀌었다
+        // (get∘set ≠ 항등) — 속성 봉지만으로 되돌릴 수 없는 조작이 되고,
+        // apply_common_obj_attr_from_json 이 방금 반영한 width/height 도 조용히 무시됐다.
+        // UI 다이얼로그는 변경된 키만 담은 부분 봉지를 보내므로(width/height 미포함)
+        // 스크립트·글자크기 편집의 자동 크기 재계산은 종전대로 동작한다.
+        let explicit_width = json_u32(props_json, "width").is_some();
+        let explicit_height = json_u32(props_json, "height").is_some();
+        if !explicit_width || !explicit_height {
+            let (width, height) =
+                crate::renderer::equation::intrinsic_size_hwp(&eq.script, eq.font_size);
+            if !explicit_width {
+                eq.common.width = width;
+            }
+            if !explicit_height {
+                eq.common.height = height;
+            }
+        }
 
-        // raw_ctrl_data 무효화: serialize_equation_control 은 raw_ctrl_data 가 비어있지 않으면
-        // 원본 CTRL_HEADER 바이트를 그대로 방출한다. 편집한 eq.common(크기/위치/treat_as_char)이
-        // .hwp 저장에 반영되도록 원본 passthrough 를 비운다(table_ops 셀 편집 가드, adapt_equation
-        // 의 hwpx→hwp 변환과 동형). EQEDIT 자식 레코드(script/font)는 IR 로 재생성되므로 무관.
-        eq.raw_ctrl_data.clear();
+        // [#5890] raw 패스스루 무효화는 파괴가 아니라 판정으로 한다.
+        // serialize_equation_control 은 raw_ctrl_data 가 비어있지 않으면 원본 CTRL_HEADER
+        // 바이트를 방출하지만, #4495 봉인이 서 있으면 `common` 변경만으로 봉인이 어긋나
+        // 저장기가 IR 합성으로 내려간다 — 원본 바이트를 지우지 않아도 편집(크기/위치/
+        // treat_as_char)은 .hwp 저장에 반영된다. 지우지 않으면 `common` 을 되돌렸을 때
+        // 봉인이 다시 맞아 원본 바이트가 그대로 살아난다(속성 봉지만으로 되돌리는 참 역연산).
+        // 봉인이 없는 raw(파서를 거치지 않은 합성 IR·어댑터 산출)는 판정 근거가 없어
+        // 종전대로 비운다(table_ops 셀 편집 가드, adapt_equation 의 hwpx→hwp 변환과 동형).
+        // EQEDIT 자식 레코드(script/font)는 어느 쪽이든 IR 로 재생성되므로 무관.
+        if eq.raw_ctrl_seal.is_none() {
+            eq.raw_ctrl_data.clear();
+        }
     }
     pub fn get_equation_properties_native(
         &self,
@@ -504,21 +525,22 @@ mod tests {
     use crate::document_core::DocumentCore;
     use crate::model::control::Equation;
 
-    /// .hwp 저장 시 serialize_equation_control 은 raw_ctrl_data 가 비어있지 않으면 원본
-    /// CTRL_HEADER 를 그대로 방출한다. 속성 편집 후 raw_ctrl_data 가 비워지지 않으면
-    /// 크기/위치 편집이 저장에서 원복된다.
+    /// 봉인이 없는 raw(파서를 거치지 않은 합성 IR·어댑터 산출)는 저장기가 원본
+    /// CTRL_HEADER 를 무조건 방출하므로, 판정 근거가 없어 종전대로 비워야 한다.
+    /// 비우지 않으면 크기/위치 편집이 저장에서 원복된다.
     #[test]
-    fn apply_equation_properties_clears_raw_ctrl_data() {
+    fn apply_equation_properties_clears_unsealed_raw_ctrl_data() {
         let mut eq = Equation {
             script: "1 over 2".to_string(),
             font_size: 1000,
             raw_ctrl_data: vec![0xAB; 16],
             ..Default::default()
         };
+        assert!(eq.raw_ctrl_seal.is_none(), "합성 IR 은 봉인이 없다");
         DocumentCore::apply_equation_properties(&mut eq, 96.0, r#"{"width":5000,"height":4000}"#);
         assert!(
             eq.raw_ctrl_data.is_empty(),
-            "apply_equation_properties 후 raw_ctrl_data 가 비워져야 편집이 .hwp 저장에 반영된다"
+            "봉인 없는 raw_ctrl_data 는 비워져야 편집이 .hwp 저장에 반영된다"
         );
     }
 }
