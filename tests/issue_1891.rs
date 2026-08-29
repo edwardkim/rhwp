@@ -29,12 +29,16 @@ const HWP5_ORIGIN_SAMPLES: &[(&str, u32)] = &[
     ("samples/76076_regulatory_analysis.hwp", 82),
     ("samples/80168_regulatory_analysis.hwp", 157),
     ("samples/80250_regulatory_analysis.hwp", 17),
-    ("samples/86712_regulatory_analysis.hwp", 65),
+    // [#6389] KoPub돋움체 한글 폭 872/1000em 실측 복원으로 KoPub 구역(24~27쪽,
+    // 저장 LINE_SEG 없는 리플로우)이 조밀해져 64쪽. PDF 정답 65는 KoPub 미설치
+    // 환경(HCRDotum/Haansoft Batang 치환 — pdffonts 확인)의 렌더라 이 문서의
+    // 격차 1은 oracle_page_count_baseline.tsv 에 알려진 격차로 등재.
+    ("samples/86712_regulatory_analysis.hwp", 64),
     ("samples/issue1891/76076_regulatory_analysis.hwpx", 82),
     ("samples/issue1891/80168_regulatory_analysis.hwpx", 157),
     ("samples/issue1891/80250_regulatory_analysis.hwpx", 17),
     // [#2240] #2197 serializer 수정 반영 재생성 픽스처 — 원본(.hwp=65)과 등가.
-    ("samples/issue1891/86712_regulatory_analysis.hwpx", 65),
+    ("samples/issue1891/86712_regulatory_analysis.hwpx", 64),
 ];
 
 fn read_sample() -> Vec<u8> {
