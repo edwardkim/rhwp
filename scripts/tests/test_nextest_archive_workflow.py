@@ -118,6 +118,32 @@ class NextestArchiveWorkflowTests(unittest.TestCase):
             "steps.test-policy.outputs.timeout_minutes || '60' }}",
             preflight,
         )
+        self.assertIn(
+            "security_sweep_samples_json: ${{ "
+            "steps.collect-impact.outputs.security_sweep_samples_json || '[]' }}",
+            preflight,
+        )
+
+    def test_new_sample_security_sweep_list_flows_to_archive_workers(self) -> None:
+        self.assertIn("security_sweep_samples_json:", self.runner)
+        self.assertIn(
+            "RHWP_SECURITY_SWEEP_SAMPLES_JSON: "
+            "${{ inputs.security_sweep_samples_json }}",
+            self.runner,
+        )
+        for job_name in (
+            "test-archive-a-shard-1",
+            "test-archive-b-shard-1",
+            "test-archive-c-shard-1",
+            "test-archive-d-shard-1",
+        ):
+            with self.subTest(job=job_name):
+                worker = job_body(self.ci, job_name)
+                self.assertIn(
+                    "security_sweep_samples_json: ${{ "
+                    "needs.preflight.outputs.security_sweep_samples_json || '[]' }}",
+                    worker,
+                )
 
     def test_archive_builders_split_lib_and_three_integration_targets(self):
         from pathlib import Path
@@ -135,6 +161,8 @@ class NextestArchiveWorkflowTests(unittest.TestCase):
             builder,
         )
         self.assertIn('--policy "${duration_policy}"', builder)
+        self.assertIn('--manifest tests/suites/manifest.json', builder)
+        self.assertIn('--rebalance-by-duration "${duration_policy}"', builder)
         self.assertNotIn("index % 2", builder)
         self.assertIn("cargo_target_args+=(--lib)", builder)
         self.assertIn('cargo_target_args+=(--test "${target}")', builder)
@@ -153,8 +181,11 @@ class NextestArchiveWorkflowTests(unittest.TestCase):
         collector = (root / "scripts/collect-nextest-target-durations.mjs").read_text()
         refresh = (root / "scripts/refresh-nextest-target-duration-policy.mjs").read_text()
 
-        self.assertIn('"schema_version": 1', policy)
-        self.assertIn('"fallback_seconds": 1', policy)
+        self.assertIn('"schema_version": 2', policy)
+        self.assertIn('"fallback_seconds_per_test": 60', policy)
+        self.assertIn('"parallelism_factor": 4', policy)
+        self.assertIn('"cases": {}', policy)
+        self.assertIn('"test_cases": {}', policy)
         self.assertIn("[profile.ci-duration-observation.junit]", config)
         self.assertIn("github.event_name == 'push'", runner)
         self.assertIn("github.ref == 'refs/heads/devel'", runner)
@@ -169,8 +200,13 @@ class NextestArchiveWorkflowTests(unittest.TestCase):
         self.assertIn("retention-days: 3", runner)
         self.assertIn("retention-days: 30", runner)
         self.assertIn("estimatedSeconds", selector)
+        self.assertIn("estimatedWallSeconds", selector)
+        self.assertIn("maxTestcaseSeconds", selector)
+        self.assertIn("parallelismFactor", selector)
         self.assertIn("<testcase", collector)
         self.assertIn("JUnit report contains no target durations", collector)
+        self.assertIn("collectDurationMeasurement", collector)
+        self.assertIn("case_durations", collector)
         self.assertIn("exactly one B, C, and D report", refresh)
         self.assertIn("identical run, ref, and sha provenance", refresh)
 

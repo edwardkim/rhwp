@@ -14,8 +14,9 @@
 //! 불변(순수 최적화, render-diff 0.00px PASS).
 //!
 //! 본 테스트는 (1) 페이지네이션이 **완주**함(= O(n²) 재발 시 CI 타임아웃으로 검출)과
-//! (2) 산출 페이지 수 안정을 가드한다. (과분할 자체 — rhwp 213 vs 한글 162 — 는 행높이
-//! 드리프트 #1842/#1937 트랙으로 분리.)
+//! (2) 산출 페이지 수 안정을 가드한다. #1842/#2070 도 같은 문서의 `page_count()` 를
+//! 별도 testcase에서 다시 수행하고 있었으나, #6360에서 중복 조판을 제거하고 가장
+//! 엄격한 현재 pin(161쪽)을 이 sentinel 하나로 통합한다.
 
 use std::fs;
 use std::path::Path;
@@ -31,11 +32,12 @@ fn load_page_count(rel: &str) -> u32 {
 fn huge_cellbreak_table_paginates_without_quadratic_blowup() {
     // O(n²)(28억 회) 재발 시 이 호출이 완주하지 못해 CI 타임아웃으로 검출된다.
     let pages = load_page_count("samples/issue2063_huge_cellbreak_table.hwp");
-    // 수정은 순수 최적화라 페이지 수 불변(213). 하한(150)은 페이지네이션 붕괴/조기중단,
-    // 상한(260)은 O(n²) 우회로 인한 재분할 폭주를 잡는다. (한글 2022 = 162, #1842 타깃.)
-    assert!(
-        (150..=260).contains(&pages),
-        "issue2063: 페이지 수 {pages} 가 기대 범위(150..=260) 밖 — \
-         52,694셀 CellBreak 표 페이지네이션 회귀 의심",
+    // #5922 이후 rhwp pin은 161쪽이다. 한글 정답지는 162쪽이고 잔여 −1은 행 경계
+    // sub-pt 적산 축이다. 159p면 #5922 여백 재개방 회귀, 213p면 #1842 synthetic
+    // 라인높이 팽창 회귀, 완주 실패면 #2063 O(n²) 회귀다.
+    assert_eq!(
+        pages, 161,
+        "issue2063/#1842/#2070: 화성시 별표2 CellBreak 표 pin은 161쪽이다 \
+         (한글 정답 162, 잔여 -1). 실측 {pages}p"
     );
 }

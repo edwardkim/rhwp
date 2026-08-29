@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { balancedFrom } from './support/source-guard.ts';
+import { codeOnly, balancedFrom } from './support/source-guard.ts';
 
 // [Task #formula-dialog] 계산식 다이얼로그 히스토리 라우팅 소스 가드.
 //
@@ -18,7 +18,7 @@ const src = readFileSync(join(rootDir, 'src/ui/formula-dialog.ts'), 'utf8');
 
 test('formula-dialog 는 services 주입 + tableFormula snapshot 라우팅 + fallback 을 갖춘다', () => {
   assert.match(src, /services\?:\s*CommandServices/, '생성자에 services 주입');
-  assert.match(src, /import type \{ CommandServices \}/, 'CommandServices import');
+  assert.match(codeOnly(src), /import type \{ CommandServices \}/, 'CommandServices import');
   assert.match(src, /this\.services\?\.getInputHandler\(\)/, 'getInputHandler 로 라우터 도달');
   assert.match(src, /operationType:\s*'tableFormula'/, 'tableFormula snapshot 라우팅');
   assert.match(src, /this\.eventBus\.emit\('document-changed'\)/, 'fallback emit 유지');

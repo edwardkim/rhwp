@@ -66,6 +66,57 @@ export function collectTargetDurations(junitXml) {
   return Object.fromEntries([...durations.entries()].sort(([left], [right]) => left.localeCompare(right)));
 }
 
+function targetForClassName(className) {
+  const separator = className.indexOf("::");
+  return separator === -1 ? className : className.slice(separator + 2);
+}
+
+function caseNameForTest(target, testName) {
+  if (!target.startsWith("regression_suite_")) {
+    return target;
+  }
+  const separator = testName.indexOf("::");
+  if (separator <= 0) {
+    fail(`grouped target testcase must include its source module: ${target}::${testName}`);
+  }
+  return testName.slice(0, separator);
+}
+
+export function collectDurationMeasurement(junitXml) {
+  const targets = new Map();
+  const cases = new Map();
+  const testCases = new Map();
+  for (const match of junitXml.matchAll(/<testcase\b([^>]*)>/g)) {
+    const attributes = parseAttributes(match[1]);
+    const className = attributes.get("classname");
+    const testName = attributes.get("name");
+    const seconds = Number(attributes.get("time"));
+    if (
+      !className
+      || !testName
+      || className.startsWith("@setup-script:")
+      || !Number.isFinite(seconds)
+      || seconds < 0
+    ) {
+      continue;
+    }
+    const target = targetForClassName(className);
+    if (!target) {
+      continue;
+    }
+    const caseName = caseNameForTest(target, testName);
+    const testCase = `${target}::${testName}`;
+    targets.set(target, (targets.get(target) ?? 0) + seconds);
+    cases.set(caseName, (cases.get(caseName) ?? 0) + seconds);
+    testCases.set(testCase, (testCases.get(testCase) ?? 0) + seconds);
+  }
+  return {
+    targets: Object.fromEntries([...targets.entries()].sort(([left], [right]) => left.localeCompare(right))),
+    cases: Object.fromEntries([...cases.entries()].sort(([left], [right]) => left.localeCompare(right))),
+    test_cases: Object.fromEntries([...testCases.entries()].sort(([left], [right]) => left.localeCompare(right))),
+  };
+}
+
 function main() {
   const options = parseArgs(process.argv.slice(2));
   if (options.help) {
@@ -76,22 +127,22 @@ function main() {
     fail("--archive-label b|c|d, --input, and --output are required");
   }
 
-  const targets = collectTargetDurations(fs.readFileSync(options.input, "utf8"));
-  if (Object.keys(targets).length === 0) {
+  const measurement = collectDurationMeasurement(fs.readFileSync(options.input, "utf8"));
+  if (Object.keys(measurement.targets).length === 0) {
     fail("JUnit report contains no target durations");
   }
   const report = {
-    schema_version: 1,
+    schema_version: 2,
     archive_label: options["archive-label"],
     run_id: process.env.GITHUB_RUN_ID ?? null,
     ref: process.env.GITHUB_REF ?? null,
     sha: process.env.GITHUB_SHA ?? null,
-    targets,
+    ...measurement,
   };
   fs.mkdirSync(path.dirname(options.output), { recursive: true });
   fs.writeFileSync(options.output, `${JSON.stringify(report, null, 2)}\n`);
   process.stderr.write(
-    `[NextestTargetDuration] archive=${report.archive_label} target_durations=${Object.keys(targets).length}\n`,
+    `[NextestTargetDuration] archive=${report.archive_label} target_durations=${Object.keys(report.targets).length} case_durations=${Object.keys(report.cases).length}\n`,
   );
 }
 

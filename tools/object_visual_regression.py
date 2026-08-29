@@ -28,6 +28,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -155,7 +156,7 @@ def write_md_summary(path: Path, rows, cur_head: str, base_label: str, tol: floa
 # ---------------------------------------------------------------------------
 def rhwp_objects(path: Path, outdir: Path, reuse: bool = False, rhwp: Path | None = None,
                  rtree: str = "rtree"):
-    """rhwp export-render-tree → 표 개체 리스트(읽기순). 반환: (objects, page_count, err)."""
+    """rhwp export-render-tree → 표/그림 개체 리스트(읽기순). 반환: (objects, page_count, err)."""
     rtdir = outdir / rtree
     rtdir.mkdir(parents=True, exist_ok=True)
     if not (reuse and any(rtdir.glob("render_tree_*.json"))):
@@ -205,6 +206,18 @@ def rhwp_objects(path: Path, outdir: Path, reuse: bool = False, rhwp: Path | Non
                     "text": collect_text(node),
                 })
             depth += 1  # 중첩표 깊이
+        elif node.get("type") == "Image":
+            b = node.get("bbox", {})
+            # 표 내부 그림뿐 아니라 Paper/Page float도 Image 노드로 표현된다.
+            # 최상위 그림은 float 회귀 검토 대상이므로 depth와 무관하게 수집한다.
+            if b.get("w", 0) > 0 and b.get("h", 0) > 0:
+                objects.append({
+                    "kind": "image", "pi": node.get("pi"), "ci": node.get("ci"),
+                    "depth": depth, "page": page,
+                    "x": round(b.get("x", 0), 1), "y": round(b.get("y", 0), 1),
+                    "w": round(b.get("w", 0), 1), "h": round(b.get("h", 0), 1),
+                    "text": "", "text_wrap": node.get("textWrap"),
+                })
         for c in node.get("children", []) or []:
             walk(c, page, depth)
 
@@ -248,13 +261,20 @@ def rhwp_render_png(path: Path, outdir: Path, reuse: bool = False):
 # ---------------------------------------------------------------------------
 # 한글 개체 추출 + 래스터 (COM→PDF→fitz)
 # ---------------------------------------------------------------------------
-def hwp_pdf_and_objects(path: Path, outdir: Path, reuse: bool = False):
-    """한글 COM 으로 PDF 저장 후 fitz 로 페이지 래스터 + 이미지 bbox. 반환 (pages_png, objects, n, err)."""
+def hwp_pdf_and_objects(path: Path, outdir: Path, reuse: bool = False,
+                        reference_pdf: Path | None = None):
+    """한글 PDF를 fitz로 분석해 페이지 래스터 + 이미지 bbox를 반환한다."""
     try:
         import fitz  # PyMuPDF
     except ImportError:
         return None, None, None, "fitz 미설치"
     pdf = outdir / "hwp_ref.pdf"
+    if reference_pdf:
+        if not reference_pdf.is_file():
+            return None, None, None, f"기준 PDF 없음: {reference_pdf}"
+        if reference_pdf.resolve() != pdf.resolve():
+            shutil.copy2(reference_pdf, pdf)
+        reuse = True
     if not (reuse and pdf.exists()):
         try:
             from pyhwpx import Hwp
@@ -311,6 +331,17 @@ def hwp_pdf_and_objects(path: Path, outdir: Path, reuse: bool = False):
         except Exception:  # noqa: BLE001
             pass
     objects.sort(key=lambda o: (o["page"], o["y"], o["x"]))
+    # 한글 PDF는 이미지와 마스크가 같은 bbox로 반복 노출될 수 있다. 배치 비교에는 하나면 충분하다.
+    deduped = []
+    seen_images = set()
+    for obj in objects:
+        if obj["kind"] == "image":
+            key = (obj["page"], obj["x"], obj["y"], obj["w"], obj["h"])
+            if key in seen_images:
+                continue
+            seen_images.add(key)
+        deduped.append(obj)
+    objects = deduped
     return pages_png, objects, doc.page_count, None
 
 
@@ -433,7 +464,8 @@ def run_one(f: Path, outdir: Path, args, head) -> int:
 
     # 한글 대조 + 시각 갤러리
     if not args.no_hwp:
-        hpages_png, hobj, hn, herr = hwp_pdf_and_objects(f, outdir, reuse=args.reuse)
+        hpages_png, hobj, hn, herr = hwp_pdf_and_objects(
+            f, outdir, reuse=args.reuse, reference_pdf=args.reference_pdf)
         if herr:
             print(f"경고: 한글 대조 실패 — {herr} (rhwp-only 진행)", file=sys.stderr)
             hobj, hpages_png, hn = [], {}, None
@@ -521,7 +553,7 @@ def run_one(f: Path, outdir: Path, args, head) -> int:
 
 def main() -> int:
     ap = argparse.ArgumentParser(description="개체 단위 시각/geometry 회귀 (rhwp vs 한글)")
-    ap.add_argument("files", type=Path, nargs="*", help="대상 HWP (여러 개 가능, --preset 과 병용 가능)")
+    ap.add_argument("files", type=Path, nargs="*", help="대상 HWP/HWPX (여러 개 가능, --preset 과 병용 가능)")
     ap.add_argument("-o", "--out", type=Path, default=ROOT / "output" / "ovr",
                     help="산출물 디렉터리 (기본: <repo>/output/ovr — .gitignore 의 /output/ 아래)")
     ap.add_argument("--preset", choices=sorted(PRESETS),
@@ -534,6 +566,8 @@ def main() -> int:
     ap.add_argument("--no-hwp", action="store_true", help="한글 대조 생략(rhwp-vs-baseline 회귀만)")
     ap.add_argument("--rhwp-png", action="store_true", help="rhwp export-png 래스터 크롭(native-skia 필요)")
     ap.add_argument("--reuse", action="store_true", help="기존 산출물(render-tree/PNG/PDF) 재사용 — 재렌더 생략")
+    ap.add_argument("--reference-pdf", type=Path,
+                    help="HWP2024 MCP 등으로 생성한 한글 기준 PDF. 지정하면 COM 변환 대신 이 PDF를 분석")
     ap.add_argument("--tol", type=float, default=2.0, help="geometry 회귀 허용 오차(px)")
     args = ap.parse_args()
 
@@ -545,6 +579,9 @@ def main() -> int:
     missing = [f for f in files if not f.exists()]
     if missing:
         print("오류: 파일 없음 — " + ", ".join(str(m) for m in missing), file=sys.stderr)
+        return 2
+    if args.reference_pdf and not args.reference_pdf.is_file():
+        print(f"오류: 기준 PDF 없음 — {args.reference_pdf}", file=sys.stderr)
         return 2
     if args.baseline and len(files) > 1:
         ap.error("--baseline 은 단일 파일 전용 — 다중 샘플 before/after 는 --diff-against 사용")

@@ -17,15 +17,15 @@ const FIXTURE_PATH = path.join(
   'ci-impact-classifier-prs.json',
 );
 const HISTORICAL_PRS = JSON.parse(fs.readFileSync(FIXTURE_PATH, 'utf8'));
-const REGRESSION_FIXTURE_PATH = path.join(
-  __dirname,
-  'fixtures',
+const REGRESSION_FIXTURE_PATHS = [
   'ci-impact-classifier-output-adapters.json',
-);
-const REGRESSION_FIXTURES = JSON.parse(
-  fs.readFileSync(REGRESSION_FIXTURE_PATH, 'utf8'),
-);
+  'ci-impact-classifier-render-boundaries.json',
+];
+const REGRESSION_FIXTURES = REGRESSION_FIXTURE_PATHS.flatMap((filename) => JSON.parse(
+  fs.readFileSync(path.join(__dirname, 'fixtures', filename), 'utf8'),
+));
 const REPOSITORY_ROOT = path.join(__dirname, '..', '..');
+const CLI_ROOT = path.join(REPOSITORY_ROOT, 'src', 'cli');
 const OUTPUT_ADAPTER_ROOT = path.join(REPOSITORY_ROOT, 'src', 'cli', 'outputs');
 
 function rustFilesUnder(directory) {
@@ -36,6 +36,14 @@ function rustFilesUnder(directory) {
       if (!entry.isFile() || !entry.name.endsWith('.rs')) return [];
       return [path.relative(REPOSITORY_ROOT, entryPath).split(path.sep).join('/')];
     });
+}
+
+function directPageRendererCallers() {
+  return rustFilesUnder(CLI_ROOT).filter((filename) => (
+    /\.render_page_(?:svg|html|canvas|to_canvas)/.test(
+      fs.readFileSync(path.join(REPOSITORY_ROOT, filename), 'utf8'),
+    )
+  ));
 }
 
 for (const fixture of HISTORICAL_PRS) {
@@ -72,7 +80,7 @@ test('review-only changes require no code worker', () => {
       native_skia_required: 'false',
       codeql_languages: 'none',
       classification_status: 'classified',
-      classifier_version: '4',
+      classifier_version: '6',
       reason: 'classified:review-only',
     },
   );
@@ -94,7 +102,7 @@ test('mixed Studio package and Rust changes union modes and CodeQL languages', (
       native_skia_required: 'false',
       codeql_languages: 'javascript-typescript,rust',
       classification_status: 'classified',
-      classifier_version: '4',
+      classifier_version: '6',
       reason: 'classified:rust+studio-package',
     },
   );
@@ -164,8 +172,48 @@ test('every CLI output adapter belongs to one explicit impact bucket', () => {
     assert.equal(result.native_skia_required, nativeSkiaRequired, filename);
     assert.equal(result.codeql_languages, 'rust', filename);
     assert.equal(result.classification_status, 'classified', filename);
-    assert.equal(result.classifier_version, '4', filename);
+    assert.equal(result.classifier_version, '6', filename);
     assert.equal(result.reason, reason, filename);
+  }
+});
+
+test('every direct CLI page renderer caller has an explicit workflow-consumer decision', () => {
+  const buckets = {
+    nativeConsumer: [
+      'src/cli/outputs/raster.rs',
+    ],
+    notWorkflowConsumer: [
+      'src/cli/commands/caption_validation.rs',
+      'src/cli/outputs/vector.rs',
+    ],
+  };
+  const expected = Object.values(buckets).flat();
+  assert.equal(
+    new Set(expected).size,
+    expected.length,
+    'direct CLI renderer caller buckets must be disjoint',
+  );
+  assert.deepEqual(
+    directPageRendererCallers().sort(),
+    expected.sort(),
+    'new direct CLI page renderer callers require an explicit workflow-consumer decision',
+  );
+
+  for (const filename of buckets.nativeConsumer) {
+    const result = classifyChanges({
+      eventName: 'pull_request',
+      files: [{ filename, status: 'modified' }],
+    });
+    assert.equal(result.render_required, 'false', filename);
+    assert.equal(result.native_skia_required, 'true', filename);
+  }
+  for (const filename of buckets.notWorkflowConsumer) {
+    const result = classifyChanges({
+      eventName: 'pull_request',
+      files: [{ filename, status: 'modified' }],
+    });
+    assert.equal(result.render_required, 'false', filename);
+    assert.equal(result.native_skia_required, 'false', filename);
   }
 });
 
@@ -190,7 +238,7 @@ test('Native Skia integration test and support changes run Rust and Native Skia 
     assert.equal(result.native_skia_required, 'true', filename);
     assert.equal(result.codeql_languages, 'rust', filename);
     assert.equal(result.classification_status, 'classified', filename);
-    assert.equal(result.classifier_version, '4', filename);
+    assert.equal(result.classifier_version, '6', filename);
     assert.equal(result.reason, 'classified:native-skia-rust', filename);
   }
 });
@@ -210,7 +258,7 @@ test('Rust test input changes keep default Rust tests alongside render gates', (
     assert.equal(result.native_skia_required, 'true', filename);
     assert.equal(result.codeql_languages, 'none', filename);
     assert.equal(result.classification_status, 'classified', filename);
-    assert.equal(result.classifier_version, '4', filename);
+    assert.equal(result.classifier_version, '6', filename);
     assert.equal(result.reason, 'classified:rust-test-input', filename);
   }
 });
@@ -251,10 +299,27 @@ test('Studio package configuration and broad runtime sources remain render-impac
   }
 });
 
-test('known command sources and non-render tests stay on the unit lane', () => {
+test('command-layer sources require the package lane for the undo depth gate', () => {
+  // [#6330] undo depth 게이트(#5769)는 frontend-package-gates 에서만 돈다 —
+  // 스냅샷 진입점이 밀집한 command 층이 unit 으로 분류되면 게이트가 skip 된다.
   for (const filename of [
     'rhwp-studio/src/command/shortcut-map.ts',
+    'rhwp-studio/src/command/commands/table.ts',
+    'rhwp-studio/src/command/commands/page.ts',
     'rhwp-studio/src/engine/command.ts',
+  ]) {
+    const result = classifyChanges({
+      eventName: 'pull_request',
+      files: [{ filename, status: 'modified' }],
+    });
+    assert.equal(result.frontend_mode, 'package', filename);
+    assert.equal(result.render_required, 'false', filename);
+    assert.equal(result.reason, 'classified:studio-undo-package', filename);
+  }
+});
+
+test('studio test-only changes stay on the unit lane', () => {
+  for (const filename of [
     'rhwp-studio/tests/shortcut-map.test.ts',
     'rhwp-studio/tests/canvaskit-readiness.test.ts',
     'rhwp-studio/tests/render-page.test.ts',
@@ -268,10 +333,30 @@ test('known command sources and non-render tests stay on the unit lane', () => {
   }
 });
 
-test('new review reference assets require no product or CodeQL worker', () => {
+test('new sample documents run only the targeted security sweep lane', () => {
   for (const filename of [
     'samples/new-reference.hwp',
     'samples/new-reference.hwpx',
+    'samples/hml/new-reference.hml',
+    'samples/new-reference.HWP',
+  ]) {
+    const result = classifyChanges({
+      eventName: 'pull_request',
+      files: [{ filename, status: 'added' }],
+    });
+    assert.equal(result.rust_required, 'true', filename);
+    assert.equal(result.frontend_mode, 'none', filename);
+    assert.equal(result.render_required, 'false', filename);
+    assert.equal(result.native_skia_required, 'false', filename);
+    assert.equal(result.codeql_languages, 'none', filename);
+    assert.equal(result.classification_status, 'classified', filename);
+    assert.equal(result.classifier_version, '6', filename);
+    assert.equal(result.reason, 'classified:sample-security-sweep', filename);
+  }
+});
+
+test('new review reference assets require no product or CodeQL worker', () => {
+  for (const filename of [
     'samples/new-reference.pdf',
     'samples/new-reference.png',
     'pdf/new-reference.pdf',
@@ -288,14 +373,13 @@ test('new review reference assets require no product or CodeQL worker', () => {
     assert.equal(result.native_skia_required, 'false', filename);
     assert.equal(result.codeql_languages, 'none', filename);
     assert.equal(result.classification_status, 'classified', filename);
-    assert.equal(result.classifier_version, '4', filename);
+    assert.equal(result.classifier_version, '6', filename);
     assert.equal(result.reason, 'classified:review-only', filename);
   }
 });
 
-test('existing review reference changes remain fail-closed', () => {
+test('existing PDF reference updates require no product or CodeQL worker', () => {
   for (const filename of [
-    'samples/existing-reference.hwp',
     'pdf/existing-reference.pdf',
     'pdf-2020/existing-reference.pdf',
     'pdf-large/nested/existing-reference.pdf',
@@ -304,8 +388,33 @@ test('existing review reference changes remain fail-closed', () => {
       eventName: 'pull_request',
       files: [{ filename, status: 'modified' }],
     });
-    assert.equal(result.classification_status, 'full', filename);
-    assert.equal(result.reason, 'fail-closed:unclassified-path', filename);
+    assert.equal(result.rust_required, 'false', filename);
+    assert.equal(result.frontend_mode, 'none', filename);
+    assert.equal(result.render_required, 'false', filename);
+    assert.equal(result.native_skia_required, 'false', filename);
+    assert.equal(result.codeql_languages, 'none', filename);
+    assert.equal(result.classification_status, 'classified', filename);
+    assert.equal(result.classifier_version, '6', filename);
+    assert.equal(result.reason, 'classified:review-only', filename);
+  }
+});
+
+test('existing sample reference changes and removed PDFs remain fail-closed', () => {
+  for (const file of [
+    { filename: 'samples/existing-reference.hwp', status: 'modified' },
+    { filename: 'samples/existing-reference.hwpx', status: 'modified' },
+    { filename: 'samples/existing-reference.pdf', status: 'modified' },
+    { filename: 'samples/existing-reference.png', status: 'modified' },
+    { filename: 'pdf/existing-reference.pdf', status: 'removed' },
+    { filename: 'pdf-2020/existing-reference.pdf', status: 'removed' },
+    { filename: 'pdf-large/nested/existing-reference.pdf', status: 'removed' },
+  ]) {
+    const result = classifyChanges({
+      eventName: 'pull_request',
+      files: [file],
+    });
+    assert.equal(result.classification_status, 'full', file.filename);
+    assert.equal(result.reason, 'fail-closed:unclassified-path', file.filename);
   }
 });
 
@@ -340,7 +449,6 @@ test('rename evaluates fail-closed before either path can be skipped', () => {
 for (const [filename, expectedReason] of [
   ['Cargo.lock', 'fail-closed:cargo-contract'],
   ['.github/workflows/ci.yml', 'fail-closed:workflow-contract'],
-  ['src/main.rs', 'fail-closed:main-render-boundary'],
   ['src/wasm_api.rs', 'fail-closed:wasm-contract'],
   ['scripts/ci-impact-classifier.cjs', 'fail-closed:classifier-contract'],
   ['rhwp-studio/tsconfig.ci-unit.json', 'fail-closed:frontend-unit-contract'],

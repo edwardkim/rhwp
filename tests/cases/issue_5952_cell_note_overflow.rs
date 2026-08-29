@@ -181,7 +181,7 @@ fn collapsed_stored_two_lines_rewrap_when_over_cell() {
     use rhwp::renderer::style_resolver::ResolvedStyleSet;
 
     let styles = ResolvedStyleSet::default();
-    let text = "가".repeat(40);
+    let text = format!("※{}", "가".repeat(39));
     let n = text.chars().count();
     let collapsed = Paragraph {
         text: text.clone(),
@@ -205,12 +205,14 @@ fn collapsed_stored_two_lines_rewrap_when_over_cell() {
                 text_start: 0,
                 line_height: 800,
                 baseline_distance: 640,
+                segment_width: 3000,
                 ..Default::default()
             },
             LineSeg {
                 text_start: 20,
                 line_height: 800,
                 baseline_distance: 640,
+                segment_width: 3000,
                 ..Default::default()
             },
         ],
@@ -221,14 +223,13 @@ fn collapsed_stored_two_lines_rewrap_when_over_cell() {
     recompose_stored_single_line_if_overflowing(&mut composed, &stored_two, 40.0, &styles, 96.0);
     assert!(
         composed.lines.len() > 1,
-        "저장 2줄이 1줄로 접혀 셀을 넘치면 재래핑돼야 함 (#5952)"
+        "유의사항 bullet 저장 2줄이 셀을 넘치면 재래핑돼야 함 (#5952)"
     );
 }
 
-/// 빈 둘째 LINE_SEG 때문에 composed.len()==2 여도 한 줄이 글자 대부분을
-/// 들고 셀을 넘치면 재래핑한다.
+/// 끝의 빈 LINE_SEG는 저장 행이 접힌 결함이 아니므로 재래핑하지 않는다.
 #[test]
-fn dominant_composed_line_rewrapping_two_stored_segs() {
+fn trailing_empty_stored_line_seg_is_preserved() {
     use rhwp::model::paragraph::{CharShapeRef, LineSeg, Paragraph};
     use rhwp::renderer::composer::{
         compose_paragraph, recompose_stored_single_line_if_overflowing,
@@ -251,23 +252,28 @@ fn dominant_composed_line_rewrapping_two_stored_segs() {
                 text_start: 0,
                 line_height: 800,
                 baseline_distance: 640,
-                segment_width: 37560,
+                segment_width: 3000,
                 ..Default::default()
             },
             LineSeg {
                 text_start: n as u32,
                 line_height: 800,
                 baseline_distance: 640,
-                segment_width: 37560,
+                segment_width: 3000,
                 ..Default::default()
             },
         ],
         ..Default::default()
     };
     let mut composed = compose_paragraph(&stored_two);
+    assert_eq!(
+        composed.lines.len(),
+        2,
+        "빈 둘째 저장 행도 composed에 남는다"
+    );
     recompose_stored_single_line_if_overflowing(&mut composed, &stored_two, 40.0, &styles, 96.0);
     assert!(
-        composed.lines.len() > 1,
-        "둘째 seg 가 빈 접힘도 재래핑돼야 함 (#5952)"
+        composed.lines[1].runs.is_empty(),
+        "끝의 빈 저장 행은 fresh 재래핑으로 채우지 않아야 함 (#5952)"
     );
 }

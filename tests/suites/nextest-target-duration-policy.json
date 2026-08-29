@@ -1,5 +1,8 @@
 {
-  "schema_version": 1,
-  "fallback_seconds": 1,
-  "targets": {}
+  "schema_version": 2,
+  "fallback_seconds_per_test": 60,
+  "parallelism_factor": 4,
+  "targets": {},
+  "cases": {},
+  "test_cases": {}
 }

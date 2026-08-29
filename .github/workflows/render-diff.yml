@@ -11,11 +11,12 @@ on:
       - 'src/model/**'
       - 'src/renderer/**'
       - 'src/document_core/queries/rendering.rs'
+      # [#3789] export-pdf와 native raster가 공유하는 CLI 문서 입력 경계.
+      - 'src/cli/document_io.rs'
       # [#5776] PDF report가 native CLI export-pdf와 shared output helper를 직접 소비한다.
       - 'src/cli/outputs/mod.rs'
       - 'src/cli/outputs/pdf.rs'
       - 'src/wasm_api.rs'
-      - 'src/main.rs'
       - 'assets/fonts/**'
       - 'ttfs/**'
       - 'scripts/renderer_baseline.py'
@@ -117,33 +118,47 @@ jobs:
               if (filename.startsWith('mydocs/')) {
                 return true;
               }
+              if (isPdfReferencePath(filename)) {
+                return file.status === 'added' || file.status === 'modified';
+              }
               if (file.status !== 'added') {
                 return false;
               }
-              return isReviewReferencePath(filename);
+              return isSampleReferencePath(filename);
             }
 
-            function isReviewReferencePath(filename) {
-              const pdfPrefixes = ['pdf/', 'pdf-2020/', 'pdf-large/'];
+            function isSampleReferencePath(filename) {
               return (
                 filename.startsWith('samples/')
                 && (
-                  filename.endsWith('.hwp')
-                  || filename.endsWith('.hwpx')
-                  || filename.endsWith('.pdf')
+                  filename.endsWith('.pdf')
                   || filename.endsWith('.png')
                 )
-              ) || (
+              );
+            }
+
+            function isPdfReferencePath(filename) {
+              const pdfPrefixes = ['pdf/', 'pdf-2020/', 'pdf-large/'];
+              return (
                 pdfPrefixes.some((prefix) => filename.startsWith(prefix))
                 && filename.endsWith('.pdf')
               );
             }
 
+            function isReviewReferencePath(filename) {
+              return isSampleReferencePath(filename) || isPdfReferencePath(filename);
+            }
+
+            function isReviewReferenceFile(file) {
+              const filename = file.filename;
+              if (isPdfReferencePath(filename)) {
+                return file.status === 'added' || file.status === 'modified';
+              }
+              return file.status === 'added' && isSampleReferencePath(filename);
+            }
+
             function reviewOnlyLabel(files) {
-              const hasReferenceArtifact = files.some((file) => (
-                file.status === 'added'
-                && isReviewReferencePath(file.filename)
-              ));
+              const hasReferenceArtifact = files.some((file) => isReviewReferenceFile(file));
               return hasReferenceArtifact ? 'review-reference-only' : 'mydocs-only';
             }
 

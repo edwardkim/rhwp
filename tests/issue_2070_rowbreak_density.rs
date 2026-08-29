@@ -5,14 +5,15 @@
 //! | 문서 | 기준 PDF | rhwp 핀 | 잔여 |
 //! |---|---|---|---|
 //! | 시장구조조사 (RowBreak 변종 최대 인스턴스, pi=1298 2195행×8열 외 3표) | 315쪽 (`pdf/task2070/...-2022.pdf`) | **315 (정답)** | 0 |
-//! | 화성시 별표2 (CellBreak 원문 타깃) | 162쪽 (`pdf/issue2063_huge_cellbreak_table-2020.pdf`) | 161 | −1 (행 경계 sub-pt 적산 축, [#5922](https://github.com/edwardkim/rhwp/issues/5922) 여백 축은 해소) |
+//! | 화성시 별표2 (CellBreak 원문 타깃) | 162쪽 (`pdf/issue2063_huge_cellbreak_table-2020.pdf`) | 161 | #6360 이후 `issue_2063` sentinel에서 관리 |
 //!
 //! 본 수정(행미 공백 유령 줄 + aim=true 패딩 0 존중 + 비-Percent 줄간격
 //! 2×스케일 /2)으로 시장구조조사가 606→307쪽 회복 (행 피치 50.4→22.0px =
 //! 선언 셀높이 = 한글 PDF 실측 21.9px; 본문 Fixed 3320HU 줄 pitch 44.3→22.1px).
 //! 잠정 핀은 잔여 축 해소 시 기준 PDF 값으로 복귀시킨다.
 //! [#5922] 연속 조각 바깥 여백 재개방으로 화성시 별표2 의 여백 축이 해소됐고
-//! 핀을 159→161 로 갱신한다. 남은 −1 은 여백이 아니라 행 경계 sub-pt 적산 축이다.
+//! 핀을 159→161 로 갱신했다. 남은 −1 은 여백이 아니라 행 경계 sub-pt 적산 축이다.
+//! 같은 대형 문서의 중복 page_count는 #6360에서 `issue_2063` sentinel로 합쳤다.
 
 use std::fs;
 use std::path::Path;
@@ -51,17 +52,7 @@ fn sijang_rowbreak_density_pin() {
     );
 }
 
-#[test]
-fn huge_cellbreak_table_pin() {
-    let pages = page_count_of("samples/issue2063_huge_cellbreak_table.hwp");
-    // [#5922] 연속 조각이 표 바깥 여백(0.5mm 상·하)을 다시 열지 않아 쪽마다
-    // 3.2pt 과적재하던 축을 해소했다 — 159→161. 연속 쪽 기하도 정본과 정합
-    // (표 상단 42.74→43.92pt vs 정본 44.00, 하단 최대 554.93→553.22pt vs 553.00,
-    // 세로 span 최대 512.20→509.30pt vs 509.00 — 전부 정본 PDF ±0.5pt 반올림
-    // 불확도 안). 잔여 −1 은 행 경계 sub-pt 적산 축으로 별도 잔여다.
-    assert_eq!(
-        pages, 161,
-        "화성시 별표2 161쪽 (PDF 정답 162, #5922 여백 축 해소 후 잔여 −1 — \
-         행 경계 sub-pt 적산 축). 159p 면 #5922 여백 재개방 회귀, 실측 {pages}p."
-    );
-}
+// 화성시 별표2 CellBreak pin은 #6360에서
+// `issue_2063::huge_cellbreak_table_paginates_without_quadratic_blowup`으로 통합했다.
+// 여기서 같은 `samples/issue2063_huge_cellbreak_table.hwp`를 다시 조판하면 CI wall time만
+// 늘어나고, #2070의 RowBreak 고유 축 검증과는 별도 이득이 없다.

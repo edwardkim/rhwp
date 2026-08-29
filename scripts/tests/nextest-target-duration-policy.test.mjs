@@ -6,6 +6,7 @@ import test from "node:test";
 
 import {
   assignIntegrationTargets,
+  estimateManifestTargetRuntimeProfiles,
   integrationTargetsFromMetadata,
 } from "../select-nextest-archive-targets.mjs";
 import { collectTargetDurations } from "../collect-nextest-target-durations.mjs";
@@ -97,6 +98,9 @@ test("CLI consumes streamed cargo metadata without synchronous stdin reads", () 
   assert.equal(result.status, 0, result.stderr);
   assert.equal(result.stdout, "case-a\n");
   assert.match(result.stderr, /integration_targets=2 selected_targets=1/);
+  assert.match(result.stderr, /estimated_wall_seconds=60\.000/);
+  assert.match(result.stderr, /max_testcase_seconds=60\.000/);
+  assert.match(result.stderr, /parallelism_factor=4/);
 });
 
 test("JUnit collection aggregates testcase durations per binary and skips setup suites", () => {
@@ -109,6 +113,150 @@ test("JUnit collection aggregates testcase durations per binary and skips setup 
   ].join("\n"));
 
   assert.deepEqual(durations, { issue_1: 2, issue_2: 2 });
+});
+
+test("JUnit measurement retains individual testcase and source-case durations", async () => {
+  const { collectDurationMeasurement } = await import("../collect-nextest-target-durations.mjs");
+  const measurement = collectDurationMeasurement([
+    '<testcase name="security_corpus_regression::negative_sweep" classname="rhwp::regression_suite_015" time="9.25" />',
+    '<testcase name="security_corpus_regression::positive_sweep" classname="rhwp::regression_suite_015" time="0.75" />',
+    '<testcase name="standalone" classname="rhwp::issue_1" time="2.00" />',
+  ].join("\n"));
+
+  assert.deepEqual(measurement.targets, { issue_1: 2, regression_suite_015: 10 });
+  assert.deepEqual(measurement.cases, { issue_1: 2, security_corpus_regression: 10 });
+  assert.deepEqual(measurement.test_cases, {
+    "issue_1::standalone": 2,
+    "regression_suite_015::security_corpus_regression::negative_sweep": 9.25,
+    "regression_suite_015::security_corpus_regression::positive_sweep": 0.75,
+  });
+});
+
+test("v2 policy uses current suite source composition instead of a historical suite name", async () => {
+  const { estimateManifestTargetDurations } = await import("../select-nextest-archive-targets.mjs");
+  const fs = await import("node:fs");
+  const os = await import("node:os");
+  const path = await import("node:path");
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "rhwp-duration-manifest-"));
+  try {
+    fs.mkdirSync(path.join(root, "tests", "cases"), { recursive: true });
+    fs.writeFileSync(path.join(root, "tests", "cases", "heavy.rs"), "#[test] fn one() {}\n");
+    fs.writeFileSync(path.join(root, "tests", "cases", "light.rs"), "#[test] fn one() {}\n");
+    const estimates = estimateManifestTargetDurations({
+      suites: { regression_suite_001: ["tests/cases/heavy.rs", "tests/cases/light.rs"] },
+      exceptions: [],
+    }, {
+      schema_version: 2,
+      fallback_seconds_per_test: 60,
+      targets: { regression_suite_001: 1 },
+      cases: { heavy: 800, light: 5 },
+      test_cases: {},
+    }, root);
+    assert.equal(estimates.get("regression_suite_001"), 805);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("v2 policy exposes max testcase critical path for current suite composition", async () => {
+  const fs = await import("node:fs");
+  const os = await import("node:os");
+  const path = await import("node:path");
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "rhwp-duration-critical-path-"));
+  try {
+    fs.mkdirSync(path.join(root, "tests", "cases"), { recursive: true });
+    fs.writeFileSync(path.join(root, "tests", "cases", "heavy.rs"), "#[test] fn one() {}\n");
+    fs.writeFileSync(path.join(root, "tests", "cases", "light.rs"), "#[test] fn one() {}\n");
+    const estimates = estimateManifestTargetRuntimeProfiles({
+      suites: {
+        regression_suite_001: [
+          "tests/cases/heavy.rs",
+          "tests/cases/light.rs",
+        ],
+      },
+      exceptions: [],
+    }, {
+      schema_version: 2,
+      fallback_seconds_per_test: 60,
+      targets: { regression_suite_001: 1 },
+      cases: { heavy: 800, light: 5 },
+      test_cases: {
+        "regression_suite_001::heavy::slow_path": 700,
+        "regression_suite_001::heavy::fast_path": 100,
+        "regression_suite_001::light::small_path": 5,
+      },
+    }, root);
+
+    assert.deepEqual(estimates.get("regression_suite_001"), {
+      estimatedSeconds: 805,
+      maxTestcaseSeconds: 700,
+    });
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("v2 assignment separates longest testcase critical paths before filling bulk work", () => {
+  const assignments = assignIntegrationTargets([
+    "long-a",
+    "bulk",
+    "long-b",
+    "long-c",
+  ], {
+    schema_version: 2,
+    fallback_seconds_per_test: 1,
+    parallelism_factor: 4,
+    targets: {},
+    cases: {},
+    test_cases: {},
+  }, new Map([
+    ["long-a", { estimatedSeconds: 800, maxTestcaseSeconds: 800 }],
+    ["long-b", { estimatedSeconds: 800, maxTestcaseSeconds: 800 }],
+    ["long-c", { estimatedSeconds: 800, maxTestcaseSeconds: 800 }],
+    ["bulk", { estimatedSeconds: 1200, maxTestcaseSeconds: 10 }],
+  ]));
+
+  assert.deepEqual(assignments["integration-b"].targets, ["bulk", "long-a"]);
+  assert.deepEqual(assignments["integration-c"].targets, ["long-b"]);
+  assert.deepEqual(assignments["integration-d"].targets, ["long-c"]);
+  assert.equal(assignments["integration-b"].estimatedSeconds, 2000);
+  assert.equal(assignments["integration-b"].maxTestcaseSeconds, 800);
+  assert.equal(assignments["integration-b"].estimatedWallSeconds, 800);
+  assert.equal(assignments["integration-c"].estimatedWallSeconds, 800);
+  assert.equal(assignments["integration-d"].estimatedWallSeconds, 800);
+});
+
+test("v2 assignment fills critical-path slack to avoid a one-target archive", () => {
+  const assignments = assignIntegrationTargets([
+    "critical",
+    "long-b",
+    "long-c",
+    "bulk-a",
+    "bulk-b",
+    "bulk-c",
+    "bulk-d",
+  ], {
+    schema_version: 2,
+    fallback_seconds_per_test: 1,
+    parallelism_factor: 4,
+    targets: {},
+    cases: {},
+    test_cases: {},
+  }, new Map([
+    ["critical", { estimatedSeconds: 900, maxTestcaseSeconds: 800 }],
+    ["long-b", { estimatedSeconds: 800, maxTestcaseSeconds: 650 }],
+    ["long-c", { estimatedSeconds: 800, maxTestcaseSeconds: 550 }],
+    ["bulk-a", { estimatedSeconds: 500, maxTestcaseSeconds: 10 }],
+    ["bulk-b", { estimatedSeconds: 500, maxTestcaseSeconds: 10 }],
+    ["bulk-c", { estimatedSeconds: 500, maxTestcaseSeconds: 10 }],
+    ["bulk-d", { estimatedSeconds: 500, maxTestcaseSeconds: 10 }],
+  ]));
+
+  const estimatedSeconds = Object.values(assignments)
+    .map((assignment) => assignment.estimatedSeconds);
+  assert.deepEqual(assignments["integration-b"].targets, ["bulk-c", "critical"]);
+  assert.equal(Math.max(...estimatedSeconds) - Math.min(...estimatedSeconds), 500);
+  assert.equal(assignments["integration-b"].estimatedWallSeconds, 800);
 });
 
 test("policy refresh accepts one successful B, C, and D measurement", () => {
@@ -128,6 +276,74 @@ test("policy refresh accepts one successful B, C, and D measurement", () => {
     c: { run_id: "10", ref: "refs/heads/devel", sha: "same-sha" },
     d: { run_id: "10", ref: "refs/heads/devel", sha: "same-sha" },
   });
+});
+
+test("v2 policy refresh preserves the wall-clock parallelism factor", () => {
+  const refreshed = refreshDurationPolicy({
+    schema_version: 2,
+    fallback_seconds_per_test: 60,
+    parallelism_factor: 3,
+    targets: {},
+    cases: {},
+    test_cases: {},
+  }, [
+    {
+      schema_version: 2,
+      archive_label: "b",
+      run_id: "10",
+      ref: "refs/heads/devel",
+      sha: "same-sha",
+      targets: { regression_suite_001: 3 },
+      cases: { heavy: 3 },
+      test_cases: { "regression_suite_001::heavy::slow": 3 },
+    },
+    {
+      schema_version: 2,
+      archive_label: "c",
+      run_id: "10",
+      ref: "refs/heads/devel",
+      sha: "same-sha",
+      targets: { regression_suite_002: 2 },
+      cases: { medium: 2 },
+      test_cases: { "regression_suite_002::medium::middle": 2 },
+    },
+    {
+      schema_version: 2,
+      archive_label: "d",
+      run_id: "10",
+      ref: "refs/heads/devel",
+      sha: "same-sha",
+      targets: { regression_suite_003: 1 },
+      cases: { light: 1 },
+      test_cases: { "regression_suite_003::light::small": 1 },
+    },
+  ]);
+
+  assert.equal(refreshed.parallelism_factor, 3);
+  assert.deepEqual(refreshed.test_cases, {
+    "regression_suite_001::heavy::slow": 3,
+    "regression_suite_002::medium::middle": 2,
+    "regression_suite_003::light::small": 1,
+  });
+});
+
+test("v2 policy keeps its source-case model when a trusted v1 artifact is reused", () => {
+  const policy = {
+    schema_version: 2,
+    fallback_seconds_per_test: 60,
+    targets: {},
+    cases: {},
+    test_cases: {},
+  };
+  const measurements = ["b", "c", "d"].map((archive_label) => ({
+    schema_version: 1,
+    archive_label,
+    run_id: "10",
+    ref: "refs/heads/devel",
+    sha: "same-sha",
+    targets: { regression_suite_001: 4 },
+  }));
+  assert.deepEqual(refreshDurationPolicy(policy, measurements), policy);
 });
 
 test("policy refresh rejects empty or mismatched B/C/D measurements", () => {

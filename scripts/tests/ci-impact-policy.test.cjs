@@ -48,7 +48,10 @@ function classificationFor(files) {
 
 function policyInput(overrides = {}) {
   const files = overrides.files || [
-    { filename: 'rhwp-studio/src/command/shortcut-map.ts', status: 'modified' },
+    // [#6330] 기본 예시는 unit 레인을 유지해야 한다 — 이 기본값을 쓰는 테스트들이
+    // frontendExpected 의 unit 분기(['success','skipped'])를 커버한다. src/command
+    // 경로는 studio-undo-package 로 package 레인이 되므로 tests/ 파일을 쓴다.
+    { filename: 'rhwp-studio/tests/shortcut-map.test.ts', status: 'modified' },
   ];
   return {
     repository: 'edwardkim/rhwp',
@@ -250,9 +253,31 @@ test('same-repository Studio unit PR gets selective three-workflow policy', () =
   assert.equal(policy.classification.codeql_languages, 'javascript-typescript');
 });
 
-test('new review reference PR keeps required aggregates without product workers', () => {
+test('new sample document PR runs targeted security sweep without render workers', () => {
   for (const filename of [
     'samples/new-reference.hwp',
+    'samples/new-reference.hwpx',
+    'samples/hml/new-reference.hml',
+  ]) {
+    const files = [{ filename, status: 'added' }];
+    const policy = determinePolicy(policyInput({ files, classification: classificationFor(files) }));
+    assert.equal(policy.decision, 'selective', filename);
+    assert.deepEqual(policy.expected_workflows, {
+      CI: 'true',
+      CodeQL: 'true',
+      'Render Diff': 'false',
+    }, filename);
+    assert.equal(policy.classification.rust_required, 'true', filename);
+    assert.equal(policy.classification.frontend_mode, 'none', filename);
+    assert.equal(policy.classification.render_required, 'false', filename);
+    assert.equal(policy.classification.native_skia_required, 'false', filename);
+    assert.equal(policy.classification.codeql_languages, 'none', filename);
+    assert.equal(policy.classification.reason, 'classified:sample-security-sweep', filename);
+  }
+});
+
+test('new review reference PR keeps required aggregates without product workers', () => {
+  for (const filename of [
     'pdf/new-reference.pdf',
     'pdf-2020/new-reference.pdf',
     'pdf-large/nested/new-reference.pdf',
@@ -271,6 +296,42 @@ test('new review reference PR keeps required aggregates without product workers'
     assert.equal(policy.classification.native_skia_required, 'false', filename);
     assert.equal(policy.classification.codeql_languages, 'none', filename);
     assert.equal(policy.classification.reason, 'classified:review-only', filename);
+  }
+});
+
+test('existing PDF reference PR keeps required aggregates without product workers', () => {
+  for (const filename of [
+    'pdf/existing-reference.pdf',
+    'pdf-2020/existing-reference.pdf',
+    'pdf-large/nested/existing-reference.pdf',
+  ]) {
+    const files = [{ filename, status: 'modified' }];
+    const policy = determinePolicy(policyInput({ files, classification: classificationFor(files) }));
+    assert.equal(policy.decision, 'selective', filename);
+    assert.deepEqual(policy.expected_workflows, {
+      CI: 'true',
+      CodeQL: 'true',
+      'Render Diff': 'false',
+    }, filename);
+    assert.equal(policy.classification.rust_required, 'false', filename);
+    assert.equal(policy.classification.frontend_mode, 'none', filename);
+    assert.equal(policy.classification.render_required, 'false', filename);
+    assert.equal(policy.classification.native_skia_required, 'false', filename);
+    assert.equal(policy.classification.codeql_languages, 'none', filename);
+    assert.equal(policy.classification.reason, 'classified:review-only', filename);
+  }
+});
+
+test('existing sample reference changes and removed PDFs remain full policy', () => {
+  for (const file of [
+    { filename: 'samples/existing-reference.hwp', status: 'modified' },
+    { filename: 'pdf/existing-reference.pdf', status: 'removed' },
+  ]) {
+    const files = [file];
+    const policy = determinePolicy(policyInput({ files, classification: classificationFor(files) }));
+    assert.equal(policy.decision, 'full', file.filename);
+    assert.equal(policy.classification.classification_status, 'full', file.filename);
+    assert.equal(policy.classification.reason, 'fail-closed:unclassified-path', file.filename);
   }
 });
 
@@ -368,8 +429,8 @@ test('compact status description round-trips workflow and impact axes', () => {
   const policy = determinePolicy(policyInput());
   assert.ok(policy.status_description.length <= 140);
   assert.deepEqual(parseStatusDescription(policy.status_description), {
-    v: '5',
-    cv: '4',
+    v: '6',
+    cv: '6',
     mode: 'selective',
     rfp: '0',
     wf: '111',
@@ -425,10 +486,14 @@ test('mirrored trigger contracts match CI, CodeQL, and Render Diff workflows', (
   assert.equal(workflowRunExpected('CI', [{ filename: 'samples/new-reference.hwp' }]), true);
   assert.equal(workflowRunExpected('CodeQL', [{ filename: 'samples/new-reference.hwp' }]), true);
   assert.equal(workflowRunExpected('Render Diff', [{ filename: 'rhwp-studio/tests/a.ts' }]), true);
+  assert.equal(workflowRunExpected('Render Diff', [{ filename: 'src/cli/document_io.rs' }]), true);
+  assert.equal(workflowRunExpected('Render Diff', [{ filename: 'src/cli/commands/caption_validation.rs' }]), false);
   assert.equal(workflowRunExpected('Render Diff', [{ filename: 'src/cli/outputs/mod.rs' }]), true);
   assert.equal(workflowRunExpected('Render Diff', [{ filename: 'src/cli/outputs/pdf.rs' }]), true);
   assert.equal(workflowRunExpected('Render Diff', [{ filename: 'src/cli/outputs/raster.rs' }]), false);
   assert.equal(workflowRunExpected('Render Diff', [{ filename: 'src/cli/outputs/vector.rs' }]), false);
+  assert.equal(workflowRunExpected('Render Diff', [{ filename: 'src/cli/queries/structure.rs' }]), false);
+  assert.equal(workflowRunExpected('Render Diff', [{ filename: 'src/main.rs' }]), false);
 });
 
 test('every classified render-impacting tracked path starts Render Diff', () => {
@@ -975,5 +1040,5 @@ test('CLI writes policy and aggregate audit outputs', (t) => {
   assert.equal(result.audit.conclusion, 'success');
   assert.match(outputs, /^codeql_run_expected=true$/m);
   assert.match(outputs, /^audit_conclusion=success$/m);
-  assert.equal(JSON.parse(fs.readFileSync(resultPath, 'utf8')).policy.policy_version, '5');
+  assert.equal(JSON.parse(fs.readFileSync(resultPath, 'utf8')).policy.policy_version, '6');
 });

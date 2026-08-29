@@ -121,6 +121,70 @@ export const FONT_RULE_SUBSTITUTION_TABLES: readonly (readonly ProjectedSubstitu
       }),
   )));
 
+export interface ProjectedSubstituteTarget {
+  /** 치환 대상 face 이름. 설치 face 이름인 경우가 많다(`한양중고딕` → `HY중고딕`). */
+  face: string;
+  altType: number;
+  ruleId: string;
+}
+
+function substitutionKey(face: string, altType: number): string {
+  return `${face}\u0000${altType}`;
+}
+
+const substitutionIndexes: (Map<string, ProjectedSubstituteTarget> | null)[] =
+  Array.from({ length: 7 }, () => null);
+
+function substitutionIndex(languageSlot: number): Map<string, ProjectedSubstituteTarget> {
+  const cached = substitutionIndexes[languageSlot];
+  if (cached) return cached;
+  const index = new Map<string, ProjectedSubstituteTarget>();
+  for (const [sourceFace, sourceAltType, targetFace, targetAltType, ruleId]
+    of FONT_RULE_SUBSTITUTION_TABLES[languageSlot]) {
+    const key = substitutionKey(sourceFace, sourceAltType);
+    if (!index.has(key)) index.set(key, { face: targetFace, altType: targetAltType, ruleId });
+  }
+  substitutionIndexes[languageSlot] = index;
+  return index;
+}
+
+/**
+ * 등록 웹폰트 여부와 무관하게 paint 치환 대상 체인을 그대로 돌려준다.
+ *
+ * `resolveFont`는 요청 이름이 이미 등록 웹폰트면 체인을 타지 않는다. 그러나 legacy 이름의
+ * 웹폰트 공급이 번들 stand-in(예: `한양중고딕` → `NotoSansKR-Regular.woff2`)뿐이면 호스트에
+ * 설치된 실제 face(`HY중고딕`)를 찾기 위해 치환 대상 자체가 필요하다.
+ */
+export function projectedSubstituteTargets(
+  fontName: string,
+  altType = 0,
+  langId = 0,
+): ProjectedSubstituteTarget[] {
+  if (!fontName) return [];
+  const index = substitutionIndex(langId >= 0 && langId <= 6 ? langId : 0);
+  let name = fontName;
+  let type = altType || 0;
+  if (type === 0) {
+    if (index.has(substitutionKey(name, 1))) type = 1;
+    else if (index.has(substitutionKey(name, 2))) type = 2;
+    else return [];
+  }
+
+  const targets: ProjectedSubstituteTarget[] = [];
+  const visited = new Set<string>();
+  for (let step = 0; step < 15; step += 1) {
+    const key = substitutionKey(name, type);
+    if (visited.has(key)) break;
+    visited.add(key);
+    const target = index.get(key);
+    if (!target) break;
+    targets.push(target);
+    name = target.face;
+    type = target.altType;
+  }
+  return targets;
+}
+
 export interface ProjectedGovernmentSuccessor {
   sourceFace: string;
   targetFace: string;
