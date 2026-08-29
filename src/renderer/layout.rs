@@ -3281,7 +3281,7 @@ impl LayoutEngine {
         wrap_around_paras: &[super::pagination::WrapAroundPara],
     ) -> PageRenderTree {
         let layout = &page_content.layout;
-        // [#6175] 본문 저장 행 admission의 외부-기하 증거 — 조판이 구역당 한 번
+        // [#6175] 본문 저장 행 admission의 외부-기하 증거 - 조판이 구역당 한 번
         // 계산하는 것과 **같은 함수·같은 입력**이라 두 경로가 갈리지 않는다.
         *self.body_float_carve_evidence.borrow_mut() =
             super::float_placement::paper_or_page_float_carve_evidence(paragraphs);

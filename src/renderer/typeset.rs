@@ -6963,7 +6963,7 @@ impl TypesetEngine {
             .set(crate::renderer::stored_line_ladder_is_uniform_filler(
                 paragraphs, styles,
             ));
-        // [#6175] 용지/쪽 기준 어울림 개체의 폭과 세로 band — 구역당 한 번.
+        // [#6175] 용지/쪽 기준 어울림 개체의 폭과 세로 band - 구역당 한 번.
         *self.float_carve_evidence.borrow_mut() =
             crate::renderer::float_placement::paper_or_page_float_carve_evidence(paragraphs);
         let col_count = column_def.column_count.max(1);
