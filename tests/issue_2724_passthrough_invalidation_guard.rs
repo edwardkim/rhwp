@@ -389,6 +389,13 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
     ),
     (
         "commands/table_ops.rs",
+        "evaluate_table_formula",
+        Exempt::DelegatesTo("replace_text_in_cell_native_impl"),
+        "[#4135] 계산만 할 때는 IR 비변경. 결과 기록은 일반 셀 텍스트 치환 경로에 위임하며 \
+         그 경로가 section raw passthrough를 무효화한다.",
+    ),
+    (
+        "commands/table_ops.rs",
         "remove_border_fill_tails_native",
         Exempt::CallerResponsibility,
         "[#5959] doc_info.border_fills 의 고아 꼬리 절단 + dirty 플래그 원복만 한다 — \

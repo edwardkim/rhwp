@@ -155,6 +155,12 @@ worktree의 suite prepare/check, Rust 5+33건, Studio 56건이 통과했고, rel
 이동 요청으로 안전하게 중단했다. 이는 실패 판정이 아니며 재개 지점과 남은 게이트는
 [`task_m100_4135_recovery_r5.md`](../working/task_m100_4135_recovery_r5.md)의 8절을 따른다.
 
+재개 뒤 최신 `upstream/devel@f6a6bee8f`를 통합하고 release build/lib를 통과했다. 첫 nextest 전체에서
+기존 #2724 가드가 `evaluate_table_formula()`의 passthrough 위임 분류 누락을 발견했다. 실제 결과 기록은
+일반 셀 텍스트 치환 구현으로 위임되어 section raw를 무효화하므로 제품 결함은 아니며, 가드의
+`DelegatesTo` 분류를 보완했다. focused 가드 5종 통과 뒤 full nextest부터 재실행한다. 상세 판정은
+R5 결과 문서 9절에 고정한다.
+
 ## 5. 예상 변경 파일
 
 | Recovery | 파일 | 변경 |
