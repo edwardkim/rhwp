@@ -74,6 +74,7 @@ current head: <작성 시점 참고 SHA 또는 재확인 필요>
 | --- | --- | --- |
 | 접수·리뷰 기록 | 모든 정식 PR review | [PR 접수와 리뷰 기록](pr_review/intake_and_review.md) |
 | 로컬 검증 | fetch, merge simulation, Cargo, npm, fixture 검증을 수행 | [로컬 검증](pr_review/local_validation.md) |
+| 첫 기여자 외부 PR | rhwp에 처음 기여하는 외부 contributor PR | [첫 기여자 외부 PR 처리](pr_review/first_time_contributor.md) |
 | 시각·fixture 증적 | renderer/layout/paint, HWP/HWPX/PDF sample, 기준 PDF, 페이지·표·wrap·clipping 주장 | [시각·fixture 증적](pr_review/visual_fixture_evidence.md) |
 | 다수 PR·update branch | 대량 유입, 누적 cherry-pick, stale SHA CI 취소, update branch 발생 | [다수 PR과 update branch](pr_review/multi_pr_update_branch.md) |
 | review-only fast-pass | code PR 뒤 review 기록만 추가하거나 PR 전체가 문서·허용된 신규 기준 자료뿐임 | [review-only fast-pass](pr_review/review_only_fast_pass.md) |
