@@ -55,10 +55,11 @@
     "command": "docker compose --env-file .env.docker run --rm wasm",
     "result": "passed",
     "elapsed": "6m19s",
-    "bytes": 9795216,
-    "sha256": "bc5f207f21d7a50438979f728f70c30e71b5cbb53719add92418c536d769c322",
-    "q3E2DeltaBytes": 13110,
-    "q3E2DeltaPercent": 0.134019,
+    "bytes": 9795240,
+    "sha256": "37e83b9f2225f1ed3e82307e22cad7b7dec18cc02482d3b1b23dc5a7781057ba",
+    "q3E2DeltaBytes": 13134,
+    "q3E2DeltaPercent": 0.134266,
+    "receiptCorrection": "rebuilt after final request-before-predicate ordering fix",
     "finalSizeGateDeferredTo": "Q3-E5"
   },
   "otherValidation": {
