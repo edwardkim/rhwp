@@ -220,6 +220,15 @@ fn cli_render_input_caption_and_structure_have_dedicated_owners() {
         "직접 SVG 렌더 경계가 caption_validation 모듈에 있어야 한다"
     );
     assert!(
+        CAPTION_VALIDATION_SOURCE.contains("Control::Shape(shape)")
+            && CAPTION_VALIDATION_SOURCE.contains("ShapeObject::Picture(picture)"),
+        "test-caption 검증은 setter와 같이 Shape(Picture)를 그림으로 받아야 한다"
+    );
+    assert!(
+        CAPTION_VALIDATION_SOURCE.contains("Control::Endnote(endnote)"),
+        "test-caption 검증은 setter와 같이 Endnote 가상 문단 좌표를 해석해야 한다"
+    );
+    assert!(
         !MAIN_SOURCE.contains("fn test_caption(") && !MAIN_SOURCE.contains(".render_page_"),
         "test-caption 구현이나 직접 페이지 렌더가 main.rs로 되돌아가면 안 된다"
     );
