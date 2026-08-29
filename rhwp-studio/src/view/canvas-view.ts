@@ -650,7 +650,7 @@ export class CanvasView {
       guideCanvas.style.width = `${guideCanvas.width / dpr}px`;
       guideCanvas.style.height = `${guideCanvas.height / dpr}px`;
       // 공유 경계의 반대 방향 본문 꺾쇠는 숨겼으므로 HF 기준 네 모서리를 그린다.
-      drawPageMarginGuideCorners(band, guideCanvas, renderScale);
+      drawPageMarginGuideCorners(band, guideCanvas, renderScale, 'both', undefined, zoom);
       layer.appendChild(guideCanvas);
 
       const region = document.createElement('div');

@@ -8,10 +8,30 @@ export interface PageSpaceRect {
 }
 
 export const PAGE_MARGIN_GUIDE_COLOR = '#C0C0C0';
-export const PAGE_MARGIN_GUIDE_LINE_WIDTH = 0.6;
-export const PAGE_MARGIN_GUIDE_LENGTH = 15;
+export const PAGE_MARGIN_GUIDE_LINE_WIDTH = 1;
+export const PAGE_MARGIN_GUIDE_MIN_SCREEN_LINE_WIDTH = 0.8;
+export const PAGE_MARGIN_GUIDE_MAX_SCREEN_LINE_WIDTH = 1.5;
+export const PAGE_MARGIN_GUIDE_LENGTH = 22;
 
 export type PageMarginGuideEdges = 'both' | 'top' | 'bottom';
+
+/**
+ * 꺾쇠는 문서 좌표에 놓이지만 UI 안내선이므로 저배율에서도 화면상 0.8px은 유지한다.
+ * 고배율에서는 문서처럼 무한히 굵어지지 않도록 1.5px에서 제한한다.
+ */
+export function resolvePageMarginGuideLineWidth(displayScale: number): number {
+  const safeDisplayScale = Number.isFinite(displayScale) && displayScale > 0
+    ? displayScale
+    : 1;
+  const screenLineWidth = Math.min(
+    PAGE_MARGIN_GUIDE_MAX_SCREEN_LINE_WIDTH,
+    Math.max(
+      PAGE_MARGIN_GUIDE_MIN_SCREEN_LINE_WIDTH,
+      PAGE_MARGIN_GUIDE_LINE_WIDTH * safeDisplayScale,
+    ),
+  );
+  return screenLineWidth / safeDisplayScale;
+}
 
 /**
  * 페이지 공간 사각형의 선택한 모서리에 한컴형 바깥 꺾쇠를 그린다.
@@ -25,6 +45,7 @@ export function drawPageMarginGuideCorners(
   scale: number,
   edges: PageMarginGuideEdges = 'both',
   clip?: PageSpaceRect,
+  displayScale = 1,
 ): void {
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
@@ -46,7 +67,7 @@ export function drawPageMarginGuideCorners(
     ctx.clip();
   }
   ctx.strokeStyle = PAGE_MARGIN_GUIDE_COLOR;
-  ctx.lineWidth = PAGE_MARGIN_GUIDE_LINE_WIDTH;
+  ctx.lineWidth = resolvePageMarginGuideLineWidth(displayScale);
   ctx.beginPath();
 
   if (edges !== 'bottom') {
@@ -84,6 +105,7 @@ export function drawPageMarginGuides(
   scale: number,
   clip?: PageSpaceRect,
   edges: PageMarginGuideEdges = 'both',
+  displayScale = 1,
 ): void {
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
@@ -114,5 +136,6 @@ export function drawPageMarginGuides(
     scale,
     edges,
     clip,
+    displayScale,
   );
 }
