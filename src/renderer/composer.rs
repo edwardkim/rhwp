@@ -2598,14 +2598,8 @@ pub(crate) fn floored_cell_line_width_padding(
 /// 복사돼 있었다. 하한선을 그중 일부에만 넣으면 측정 줄 수와 렌더 줄 수가 갈려 행 높이가
 /// 어긋난다(#2279 가 겪은 것이 정확히 그 발산이다). 계산을 한 자리로 모아 호출부가
 /// 규칙을 고를 수 없게 한다.
-pub(crate) fn cell_inner_text_width(
-    cell_w: f64,
-    pad_left: f64,
-    pad_right: f64,
-    dpi: f64,
-) -> f64 {
-    let (pad_left, pad_right) =
-        floored_cell_line_width_padding(pad_left, pad_right, cell_w, dpi);
+pub(crate) fn cell_inner_text_width(cell_w: f64, pad_left: f64, pad_right: f64, dpi: f64) -> f64 {
+    let (pad_left, pad_right) = floored_cell_line_width_padding(pad_left, pad_right, cell_w, dpi);
     (cell_w - pad_left - pad_right).max(0.0)
 }
 
@@ -2622,8 +2616,7 @@ pub(crate) fn shrunk_cell_horizontal_padding(
     // 하한선을 먼저 적용한다. `preserve_cell_padding`(aim=true) 은 "저장된 안 여백을
     // 임의로 깎지 않는다"는 뜻이지 "줄을 0 폭으로 만든다"는 뜻이 아니다 — 한/글은 aim 과
     // 무관하게 하한선을 지킨다(셀보호2 는 aim=true 이고 남는 폭 283 인데 sw=1440).
-    let (pad_left, pad_right) =
-        floored_cell_line_width_padding(pad_left, pad_right, cell_w, dpi);
+    let (pad_left, pad_right) = floored_cell_line_width_padding(pad_left, pad_right, cell_w, dpi);
 
     if preserve_cell_padding {
         return (pad_left, pad_right);

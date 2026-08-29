@@ -974,7 +974,9 @@ impl LayoutEngine {
                 pad_left = new_pl;
                 pad_right = new_pr;
 
-                let inner_width_for_recompose = crate::renderer::composer::cell_inner_text_width(cell_w, pad_left, pad_right, self.dpi);
+                let inner_width_for_recompose = crate::renderer::composer::cell_inner_text_width(
+                    cell_w, pad_left, pad_right, self.dpi,
+                );
                 // [Task #671] line_segs 비어 있는 셀 paragraph 의 단일 ComposedLine 압축
                 // 결과를 셀 가용 너비 (inner_width) 에 맞춰 다중 ComposedLine 으로 재분할.
                 for (cpi, para) in cell.paragraphs.iter().enumerate() {
@@ -1008,7 +1010,9 @@ impl LayoutEngine {
             }
 
             let inner_x = cell_x + pad_left;
-            let inner_width = crate::renderer::composer::cell_inner_text_width(cell_w, pad_left, pad_right, self.dpi);
+            let inner_width = crate::renderer::composer::cell_inner_text_width(
+                cell_w, pad_left, pad_right, self.dpi,
+            );
             let inner_height = (cell_h - pad_top - pad_bottom).max(0.0);
 
             // 분할 행: [Task #993/#1025] start_cut/end_cut(유닛 컷)으로 표시할 줄 범위 계산.
