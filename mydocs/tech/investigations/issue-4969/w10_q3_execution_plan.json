@@ -3,7 +3,7 @@
   "kind": "font-w10-q3-variable-instance-execution-plan",
   "issue": 4969,
   "stage": "W10-Q3",
-  "status": "q3-c-complete-awaiting-q3-d-start-approval",
+  "status": "q3-d-complete-awaiting-q3-e-revised-plan-approval",
   "productMutation": false,
   "source": {
     "path": "ttfs/redistributable/happiness-sans/HappinessSansVF.ttf",
@@ -71,6 +71,9 @@
       "id": "Q3-D",
       "name": "explicit-request-owner-and-dormant-product-transaction",
       "productOutputChange": false,
+      "result": "qualified-dormant-approved",
+      "resultEvidence": "mydocs/tech/investigations/issue-4969/w10_q3_d_explicit_request_owner.json",
+      "checkpointCreated": true,
       "approvalAfter": true,
       "requiresActivationMatrix": true
     },
@@ -108,7 +111,7 @@
   ],
   "privateCorpus": false,
   "hyperVOrHancomOracle": false,
-  "nextStage": "Q3-D-start-approval",
+  "nextStage": "Q3-E-revised-activation-plan-preparation-approval",
   "nextStageApproved": false,
-  "approvalScope": "Q3-C result, checkpoint, latest devel merge, requalification, and evidence checkpoint are complete; Q3-D start, public API expansion, push, PR, and comment remain separately gated"
+  "approvalScope": "Q3-D implementation, validation, result approval, and checkpoint are complete; Q3-E revised activation plan preparation and review, Q3-E start, public API expansion, push, PR, and comment remain separately gated"
 }

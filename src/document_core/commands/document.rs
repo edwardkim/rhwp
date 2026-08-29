@@ -1988,6 +1988,52 @@ impl DocumentCore {
         .to_string())
     }
 
+    /// Q3-D internal CQRS command for one explicit variable-font instance.
+    ///
+    /// This method deliberately has no native/WASM adapter yet. It validates
+    /// against the exact registered slot, advances the request generation, and
+    /// invalidates every derived layout cache atomically. The existing
+    /// composer still uses the default transaction, so product publication
+    /// remains dormant until Q3-E activation is separately approved.
+    #[allow(dead_code)]
+    pub(crate) fn set_horizontal_shaping_instance_request_dormant(
+        &mut self,
+        char_shape_id: u32,
+        language_index: usize,
+        variations: &[crate::renderer::shaping::ShapingVariation],
+    ) -> Result<
+        crate::renderer::shaping_context::HorizontalShapingInstanceRequestRegistration,
+        HwpError,
+    > {
+        use crate::renderer::kerning::ExactFontSlot;
+        use crate::renderer::shaping_context::HorizontalShapingInstanceRequestRegistration;
+
+        let registration = self
+            .layout_engine
+            .set_horizontal_shaping_instance_request_dormant(
+                ExactFontSlot::new(char_shape_id, language_index),
+                variations,
+            )
+            .map_err(|reason| {
+                HwpError::RenderError(format!(
+                    "horizontal shaping instance request failed: {}",
+                    reason.as_str()
+                ))
+            })?;
+        if registration != HorizontalShapingInstanceRequestRegistration::AlreadyRegistered {
+            self.refresh_exact_font_measurement_contexts();
+            self.recompose_all_with_horizontal_shaping();
+            self.mark_all_sections_dirty();
+            self.measured_tables.clear();
+            self.measured_sections.clear();
+            self.dirty_paragraphs.clear();
+            self.para_column_map.clear();
+            self.invalidate_page_tree_cache();
+            self.paginate_if_needed();
+        }
+        Ok(registration)
+    }
+
     /// Batch 모드를 시작한다. 이후 Command 호출 시 paginate()를 건너뛴다.
     pub fn begin_batch_native(&mut self) -> Result<String, HwpError> {
         self.batch_mode = true;

@@ -989,6 +989,9 @@ impl DocumentCore {
     fn ensure_exact_font_measurement_contexts(&mut self) {
         let generation = self.layout_engine.exact_font_source_registry_counts().3;
         let slot_count = self.layout_engine.exact_font_source_registry_counts().0;
+        let (instance_request_count, instance_request_generation) = self
+            .layout_engine
+            .horizontal_shaping_instance_request_counts();
         let current = self
             .styles
             .kerning_measurement_context
@@ -997,6 +1000,8 @@ impl DocumentCore {
             .is_some_and(|(kerning, shaping)| {
                 kerning.registry_generation() == generation
                     && shaping.registry_generation() == generation
+                    && shaping.instance_request_generation() == instance_request_generation
+                    && shaping.instance_request_count() == instance_request_count
             });
         if (slot_count == 0
             && (self.styles.kerning_measurement_context.is_some()

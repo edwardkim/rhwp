@@ -19,9 +19,12 @@ use kerning::{ExactFontSlot, ExactFontSource, ExactFontSourceRegistry};
 use shaping::MAX_SHAPING_VARIATION_AXES;
 use shaping::{ShapingFeature, ShapingRejectReason, ShapingVariation, TerminalShapingDisposition};
 use shaping_context::{
-    HorizontalShapingContext, HorizontalShapingRequest, MAX_HORIZONTAL_SHAPING_CACHE_CLUSTERS,
+    HorizontalShapingContext, HorizontalShapingInstanceRequestError,
+    HorizontalShapingInstanceRequestRegistration, HorizontalShapingInstanceRequestRegistry,
+    HorizontalShapingRequest, MAX_HORIZONTAL_SHAPING_CACHE_CLUSTERS,
     MAX_HORIZONTAL_SHAPING_CACHE_ENTRIES, MAX_HORIZONTAL_SHAPING_CACHE_GLYPHS,
     MAX_HORIZONTAL_SHAPING_CACHE_TEXT_BYTES, MAX_HORIZONTAL_SHAPING_CLUSTERS,
+    MAX_HORIZONTAL_SHAPING_INSTANCE_REQUESTS,
 };
 use std::collections::HashSet;
 use std::sync::Arc;
@@ -361,6 +364,250 @@ fn issue_4969_q3_b_invalid_variations_keep_structured_terminal_reasons() {
     assert_eq!(transaction.result_cache_hit_count(), 0);
     assert_eq!(transaction.result_cache_miss_count(), 0);
     assert_eq!(context.cached_result_count(), 0);
+}
+
+#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
+fn issue_4969_q3_d_explicit_slot_request_is_canonical_and_generation_owned() {
+    let sources = registry();
+    let reversed_title = [
+        ShapingVariation {
+            tag: "wght".into(),
+            value: 900.0,
+        },
+        ShapingVariation {
+            tag: "opsz".into(),
+            value: 900.0,
+        },
+    ];
+    let title = [reversed_title[1].clone(), reversed_title[0].clone()];
+    let mut requests = HorizontalShapingInstanceRequestRegistry::default();
+    assert_eq!(MAX_HORIZONTAL_SHAPING_INSTANCE_REQUESTS, 4_096);
+    assert_eq!(requests.generation(), 0);
+    assert_eq!(
+        requests.set_verified(&sources, HAPPINESS_SLOT, &reversed_title),
+        Ok(HorizontalShapingInstanceRequestRegistration::Registered)
+    );
+    assert_eq!(requests.generation(), 1);
+    assert_eq!(requests.request_count(), 1);
+    assert_eq!(
+        requests.set_verified(&sources, HAPPINESS_SLOT, &title),
+        Ok(HorizontalShapingInstanceRequestRegistration::AlreadyRegistered)
+    );
+    assert_eq!(
+        requests.generation(),
+        1,
+        "canonical no-op must not invalidate"
+    );
+
+    let context = HorizontalShapingContext::with_instance_requests(sources, requests);
+    assert_eq!(context.instance_request_generation(), 1);
+    assert_eq!(context.instance_request_count(), 1);
+    let baseline = context
+        .transaction()
+        .shadow_measure(&request(
+            230,
+            HAPPINESS_SLOT,
+            "Typography",
+            "Latn",
+            "en",
+            &[],
+        ))
+        .measurement
+        .expect("default measurement");
+    let mut explicit = context
+        .explicit_instance_transaction(HAPPINESS_SLOT)
+        .expect("explicit instance transaction");
+    assert_eq!(
+        explicit.registry_generation(),
+        context.registry_generation()
+    );
+    assert_eq!(explicit.request_generation(), 1);
+    let selected = explicit
+        .shadow_measure(&request(
+            231,
+            HAPPINESS_SLOT,
+            "Typography",
+            "Latn",
+            "en",
+            &[],
+        ))
+        .measurement
+        .expect("explicit Title measurement");
+
+    assert!((baseline.total_advance_px - 43.752).abs() <= 1.0e-9);
+    assert!((selected.total_advance_px - 47.328).abs() <= 1.0e-9);
+    assert_ne!(
+        baseline.applied.identity.settings_sha256,
+        selected.applied.identity.settings_sha256
+    );
+    assert_eq!(baseline.instance_request, None);
+    assert_eq!(
+        selected
+            .instance_request
+            .expect("explicit request provenance")
+            .request_generation,
+        1
+    );
+    assert_eq!(
+        selected
+            .instance_request
+            .expect("explicit request provenance")
+            .slot,
+        HAPPINESS_SLOT
+    );
+    assert_eq!(context.cached_result_count(), 2);
+}
+
+#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
+fn issue_4969_q3_d_invalid_requests_do_not_mutate_the_owner_snapshot() {
+    let sources = registry();
+    let mut requests = HorizontalShapingInstanceRequestRegistry::default();
+    let cases = [
+        (
+            vec![ShapingVariation {
+                tag: "wdth".into(),
+                value: 100.0,
+            }],
+            HorizontalShapingInstanceRequestError::ShapingRejected(
+                ShapingRejectReason::VariationAxisUnsupported,
+            ),
+        ),
+        (
+            vec![ShapingVariation {
+                tag: "wght".into(),
+                value: f32::NAN,
+            }],
+            HorizontalShapingInstanceRequestError::ShapingRejected(
+                ShapingRejectReason::VariationValueNonFinite,
+            ),
+        ),
+        (
+            vec![ShapingVariation {
+                tag: "wght".into(),
+                value: 901.0,
+            }],
+            HorizontalShapingInstanceRequestError::ShapingRejected(
+                ShapingRejectReason::VariationValueOutOfRange,
+            ),
+        ),
+    ];
+    for (axes, expected) in cases {
+        assert_eq!(
+            requests.set_verified(&sources, HAPPINESS_SLOT, &axes),
+            Err(expected)
+        );
+        assert_eq!(requests.request_count(), 0);
+        assert_eq!(requests.generation(), 0);
+    }
+    assert_eq!(
+        requests.set_verified(
+            &sources,
+            ExactFontSlot::new(u32::MAX, 6),
+            &instance_axes(900.0, 900.0),
+        ),
+        Err(HorizontalShapingInstanceRequestError::SourceUnavailable)
+    );
+    assert_eq!(
+        HorizontalShapingContext::with_instance_requests(sources, requests)
+            .explicit_instance_transaction(HAPPINESS_SLOT)
+            .err(),
+        Some(HorizontalShapingInstanceRequestError::RequestUnavailable)
+    );
+}
+
+#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
+fn issue_4969_q3_d_slot_mismatch_and_adhoc_override_fail_before_cache_mutation() {
+    let sources = registry();
+    let mut requests = HorizontalShapingInstanceRequestRegistry::default();
+    requests
+        .set_verified(&sources, HAPPINESS_SLOT, &instance_axes(900.0, 900.0))
+        .expect("register explicit Title request");
+    let context = HorizontalShapingContext::with_instance_requests(sources, requests);
+    let mut transaction = context
+        .explicit_instance_transaction(HAPPINESS_SLOT)
+        .expect("explicit instance transaction");
+
+    let mismatch =
+        transaction.shadow_measure(&request(240, NOTO_SLOT, "Typography", "Latn", "en", &[]));
+    assert_eq!(
+        mismatch.trace.reason,
+        Some(ShapingRejectReason::ExplicitInstanceSlotMismatch)
+    );
+    let override_axes = instance_axes(650.0, 650.0);
+    let override_attempt = transaction.shadow_measure(&variable_request(
+        241,
+        "Typography",
+        "Latn",
+        "en",
+        &override_axes,
+    ));
+    assert_eq!(
+        override_attempt.trace.reason,
+        Some(ShapingRejectReason::ExplicitInstanceOverrideNotAllowed)
+    );
+    assert_eq!(context.cached_result_count(), 0);
+
+    assert!(transaction
+        .shadow_measure(&request(
+            242,
+            HAPPINESS_SLOT,
+            "Typography",
+            "Latn",
+            "en",
+            &[],
+        ))
+        .is_applied());
+    assert_eq!(context.cached_result_count(), 1);
+}
+
+#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
+fn issue_4969_q3_d_explicit_default_preserves_q2_output_but_not_cache_provenance() {
+    let sources = registry();
+    let mut requests = HorizontalShapingInstanceRequestRegistry::default();
+    requests
+        .set_verified(&sources, HAPPINESS_SLOT, &instance_axes(900.0, 900.0))
+        .expect("register Title");
+    assert_eq!(
+        requests.set_verified(&sources, HAPPINESS_SLOT, &instance_axes(400.0, 400.0)),
+        Ok(HorizontalShapingInstanceRequestRegistration::Updated)
+    );
+    assert_eq!(requests.generation(), 2);
+    let context = HorizontalShapingContext::with_instance_requests(sources, requests);
+    let base_request = request(250, HAPPINESS_SLOT, "Typography", "Latn", "en", &[]);
+    let q2 = context
+        .transaction()
+        .shadow_measure(&base_request)
+        .measurement
+        .expect("Q2 default");
+    let explicit_default = context
+        .explicit_instance_transaction(HAPPINESS_SLOT)
+        .expect("explicit default transaction")
+        .shadow_measure(&HorizontalShapingRequest {
+            attempt_id: 251,
+            ..base_request
+        })
+        .measurement
+        .expect("explicit default");
+
+    assert_eq!(q2.total_advance_px, explicit_default.total_advance_px);
+    assert_eq!(
+        q2.applied.identity.settings_sha256,
+        explicit_default.applied.identity.settings_sha256
+    );
+    assert!(!Arc::ptr_eq(&q2, &explicit_default));
+    assert_eq!(q2.instance_request, None);
+    assert_eq!(
+        explicit_default
+            .instance_request
+            .expect("request provenance")
+            .request_generation,
+        2
+    );
+    assert_eq!(context.cached_result_count(), 2);
 }
 
 #[test]

@@ -12,7 +12,7 @@ use super::shaping::{
     terminal_shaping_attempt_from_output, AppliedShapingRun, ShapingAttemptTrace, ShapingDirection,
     ShapingExactSource, ShapingFeature, ShapingOutputDecision, ShapingRejectReason, ShapingRequest,
     ShapingVariation, ShapingWritingMode, TerminalShapingAttempt, TerminalShapingDisposition,
-    MAX_SHAPING_GLYPHS, MAX_SHAPING_TEXT_CODE_POINTS,
+    MAX_SHAPING_GLYPHS, MAX_SHAPING_TEXT_CODE_POINTS, MAX_SHAPING_VARIATION_AXES,
 };
 use serde::Serialize;
 use std::collections::HashMap;
@@ -23,6 +23,177 @@ pub(crate) const MAX_HORIZONTAL_SHAPING_CLUSTERS: usize = 4_096;
 pub(crate) const MAX_HORIZONTAL_SHAPING_CACHE_TEXT_BYTES: usize = 1024 * 1024;
 pub(crate) const MAX_HORIZONTAL_SHAPING_CACHE_GLYPHS: usize = 262_144;
 pub(crate) const MAX_HORIZONTAL_SHAPING_CACHE_CLUSTERS: usize = 262_144;
+pub(crate) const MAX_HORIZONTAL_SHAPING_INSTANCE_REQUESTS: usize = 4_096;
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub(crate) enum HorizontalShapingInstanceRequestRegistration {
+    Registered,
+    Updated,
+    AlreadyRegistered,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub(crate) enum HorizontalShapingInstanceRequestError {
+    InvalidLanguageIndex,
+    SourceUnavailable,
+    SourceIdentityMismatch,
+    MalformedSfnt,
+    RequestLimitExceeded,
+    RequestUnavailable,
+    ShapingRejected(ShapingRejectReason),
+}
+
+impl HorizontalShapingInstanceRequestError {
+    pub(crate) fn as_str(self) -> &'static str {
+        match self {
+            Self::InvalidLanguageIndex => "invalidLanguageIndex",
+            Self::SourceUnavailable => "sourceUnavailable",
+            Self::SourceIdentityMismatch => "sourceIdentityMismatch",
+            Self::MalformedSfnt => "malformedSfnt",
+            Self::RequestLimitExceeded => "requestLimitExceeded",
+            Self::RequestUnavailable => "requestUnavailable",
+            Self::ShapingRejected(reason) => match reason {
+                ShapingRejectReason::VariationAxisLimitExceeded => "variationAxisLimitExceeded",
+                ShapingRejectReason::MalformedVariationTag => "malformedVariationTag",
+                ShapingRejectReason::DuplicateVariationAxis => "duplicateVariationAxis",
+                ShapingRejectReason::VariationValueNonFinite => "variationValueNonFinite",
+                ShapingRejectReason::VariationAxisUnsupported => "variationAxisUnsupported",
+                ShapingRejectReason::VariationValueOutOfRange => "variationValueOutOfRange",
+                _ => "shapingRejected",
+            },
+        }
+    }
+}
+
+#[derive(Clone, Default)]
+pub(crate) struct HorizontalShapingInstanceRequestRegistry {
+    entries: HashMap<ExactFontSlot, Arc<[ShapingVariation]>>,
+    generation: u64,
+}
+
+impl std::fmt::Debug for HorizontalShapingInstanceRequestRegistry {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        formatter
+            .debug_struct("HorizontalShapingInstanceRequestRegistry")
+            .field("request_count", &self.entries.len())
+            .field("generation", &self.generation)
+            .finish()
+    }
+}
+
+impl HorizontalShapingInstanceRequestRegistry {
+    /// Validate and canonicalize one explicit slot request against the exact
+    /// source already selected by the layout owner. No request state changes
+    /// until source identity, SFNT, axis, range, and resource checks all pass.
+    pub(crate) fn set_verified(
+        &mut self,
+        sources: &ExactFontSourceRegistry,
+        slot: ExactFontSlot,
+        variations: &[ShapingVariation],
+    ) -> Result<HorizontalShapingInstanceRequestRegistration, HorizontalShapingInstanceRequestError>
+    {
+        use HorizontalShapingInstanceRequestError as Error;
+        use HorizontalShapingInstanceRequestRegistration as Registration;
+
+        if slot.language_index >= 7 {
+            return Err(Error::InvalidLanguageIndex);
+        }
+        if variations.len() > MAX_SHAPING_VARIATION_AXES {
+            return Err(Error::ShapingRejected(
+                ShapingRejectReason::VariationAxisLimitExceeded,
+            ));
+        }
+        let handle = sources
+            .handle_for_slot(slot)
+            .cloned()
+            .ok_or(Error::SourceUnavailable)?;
+        let source =
+            resolve_exact_font_source(sources, &handle).map_err(|reason| match reason {
+                ExactFontSourceResolutionReason::SourceUnavailable => Error::SourceUnavailable,
+                ExactFontSourceResolutionReason::FontByteLimitExceeded
+                | ExactFontSourceResolutionReason::FaceIndexMismatch
+                | ExactFontSourceResolutionReason::ByteLengthMismatch
+                | ExactFontSourceResolutionReason::Sha256Mismatch => Error::SourceIdentityMismatch,
+            })?;
+        let face = ttf_parser::Face::parse(source.bytes, source.face_index)
+            .map_err(|_| Error::MalformedSfnt)?;
+        let request = ShapingRequest {
+            source: Some(ShapingExactSource {
+                bytes: source.bytes,
+                face_index: source.face_index,
+                portable: true,
+            }),
+            text: "",
+            direction: ShapingDirection::LeftToRight,
+            writing_mode: ShapingWritingMode::HorizontalTb,
+            script: None,
+            language: None,
+            features: &[],
+            variations,
+        };
+        let identity =
+            canonicalize_verified_shaping_request(&request, &face, &handle.font_source_sha256)
+                .map_err(|decision| {
+                    Error::ShapingRejected(
+                        decision
+                            .reason
+                            .unwrap_or(ShapingRejectReason::ShapingUnavailable),
+                    )
+                })?;
+        let canonical = identity
+            .variations
+            .iter()
+            .map(|variation| ShapingVariation {
+                tag: variation.tag.clone(),
+                value: f32::from_bits(variation.value_bits),
+            })
+            .collect::<Vec<_>>();
+        if self.entries.get(&slot).is_some_and(|existing| {
+            existing.len() == canonical.len()
+                && existing.iter().zip(&canonical).all(|(left, right)| {
+                    left.tag == right.tag && left.value.to_bits() == right.value.to_bits()
+                })
+        }) {
+            return Ok(Registration::AlreadyRegistered);
+        }
+        if !self.entries.contains_key(&slot)
+            && self.entries.len() >= MAX_HORIZONTAL_SHAPING_INSTANCE_REQUESTS
+        {
+            return Err(Error::RequestLimitExceeded);
+        }
+        let registration = if self.entries.contains_key(&slot) {
+            Registration::Updated
+        } else {
+            Registration::Registered
+        };
+        self.entries.insert(slot, Arc::from(canonical));
+        self.generation = self.generation.wrapping_add(1);
+        Ok(registration)
+    }
+
+    pub(crate) fn clear(&mut self) -> bool {
+        if self.entries.is_empty() {
+            return false;
+        }
+        self.entries.clear();
+        self.generation = self.generation.wrapping_add(1);
+        true
+    }
+
+    pub(crate) fn request_count(&self) -> usize {
+        self.entries.len()
+    }
+
+    pub(crate) fn generation(&self) -> u64 {
+        self.generation
+    }
+
+    fn request_for_slot(&self, slot: ExactFontSlot) -> Option<Arc<[ShapingVariation]>> {
+        self.entries.get(&slot).cloned()
+    }
+}
 
 #[derive(Debug, Clone)]
 pub(crate) struct HorizontalShapingRequest<'a> {
@@ -40,6 +211,7 @@ pub(crate) struct HorizontalShapingRequest<'a> {
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 struct HorizontalShapingCacheKey {
     registry_generation: u64,
+    instance_request: Option<HorizontalShapingInstanceRequestProvenance>,
     source_handle: ExactFontSourceHandle,
     text: String,
     effective_font_size_bits: u64,
@@ -53,12 +225,14 @@ struct HorizontalShapingCacheKey {
 impl HorizontalShapingCacheKey {
     fn new(
         registry_generation: u64,
+        instance_request: Option<HorizontalShapingInstanceRequestProvenance>,
         source_handle: ExactFontSourceHandle,
         request: &HorizontalShapingRequest<'_>,
         identity: &super::shaping::CanonicalShapingIdentity,
     ) -> Self {
         Self {
             registry_generation,
+            instance_request,
             source_handle,
             text: request.text.to_owned(),
             effective_font_size_bits: request.effective_font_size_px.to_bits(),
@@ -127,6 +301,7 @@ pub(crate) struct HorizontalShapingCluster {
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) struct HorizontalShapingMeasurement {
     pub registry_generation: u64,
+    pub instance_request: Option<HorizontalShapingInstanceRequestProvenance>,
     pub source_handle: ExactFontSourceHandle,
     pub code_point_count: usize,
     pub units_per_em: u16,
@@ -134,6 +309,12 @@ pub(crate) struct HorizontalShapingMeasurement {
     pub glyphs_px: Vec<HorizontalShapingGlyphPx>,
     pub clusters: Vec<HorizontalShapingCluster>,
     pub applied: Arc<AppliedShapingRun>,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub(crate) struct HorizontalShapingInstanceRequestProvenance {
+    pub slot: ExactFontSlot,
+    pub request_generation: u64,
 }
 
 /// Page-local proof that replay uses the exact immutable source selected for
@@ -261,6 +442,7 @@ struct HorizontalShapingResultCache {
 
 pub(crate) struct HorizontalShapingContext {
     registry: ExactFontSourceRegistry,
+    instance_requests: HorizontalShapingInstanceRequestRegistry,
     cache_limit: usize,
     result_cache: Mutex<HorizontalShapingResultCache>,
 }
@@ -270,6 +452,14 @@ impl std::fmt::Debug for HorizontalShapingContext {
         formatter
             .debug_struct("HorizontalShapingContext")
             .field("registry_generation", &self.registry.generation())
+            .field(
+                "instance_request_generation",
+                &self.instance_requests.generation(),
+            )
+            .field(
+                "instance_request_count",
+                &self.instance_requests.request_count(),
+            )
             .field("cache_limit", &self.cache_limit)
             .field("cached_result_count", &self.cached_result_count())
             .finish()
@@ -278,12 +468,40 @@ impl std::fmt::Debug for HorizontalShapingContext {
 
 impl HorizontalShapingContext {
     pub(crate) fn new(registry: ExactFontSourceRegistry) -> Self {
-        Self::with_cache_limit(registry, MAX_HORIZONTAL_SHAPING_CACHE_ENTRIES)
+        Self::with_instance_requests_and_cache_limit(
+            registry,
+            HorizontalShapingInstanceRequestRegistry::default(),
+            MAX_HORIZONTAL_SHAPING_CACHE_ENTRIES,
+        )
     }
 
     pub(crate) fn with_cache_limit(registry: ExactFontSourceRegistry, cache_limit: usize) -> Self {
+        Self::with_instance_requests_and_cache_limit(
+            registry,
+            HorizontalShapingInstanceRequestRegistry::default(),
+            cache_limit,
+        )
+    }
+
+    pub(crate) fn with_instance_requests(
+        registry: ExactFontSourceRegistry,
+        instance_requests: HorizontalShapingInstanceRequestRegistry,
+    ) -> Self {
+        Self::with_instance_requests_and_cache_limit(
+            registry,
+            instance_requests,
+            MAX_HORIZONTAL_SHAPING_CACHE_ENTRIES,
+        )
+    }
+
+    fn with_instance_requests_and_cache_limit(
+        registry: ExactFontSourceRegistry,
+        instance_requests: HorizontalShapingInstanceRequestRegistry,
+        cache_limit: usize,
+    ) -> Self {
         Self {
             registry,
+            instance_requests,
             cache_limit: cache_limit.min(MAX_HORIZONTAL_SHAPING_CACHE_ENTRIES),
             result_cache: Mutex::new(HorizontalShapingResultCache::default()),
         }
@@ -295,6 +513,36 @@ impl HorizontalShapingContext {
 
     pub(crate) fn registry_generation(&self) -> u64 {
         self.registry.generation()
+    }
+
+    pub(crate) fn instance_request_generation(&self) -> u64 {
+        self.instance_requests.generation()
+    }
+
+    pub(crate) fn instance_request_count(&self) -> usize {
+        self.instance_requests.request_count()
+    }
+
+    pub(crate) fn explicit_instance_transaction(
+        &self,
+        slot: ExactFontSlot,
+    ) -> Result<
+        HorizontalShapingExplicitInstanceTransaction<'_>,
+        HorizontalShapingInstanceRequestError,
+    > {
+        let variations = self
+            .instance_requests
+            .request_for_slot(slot)
+            .ok_or(HorizontalShapingInstanceRequestError::RequestUnavailable)?;
+        Ok(HorizontalShapingExplicitInstanceTransaction {
+            transaction: self.transaction(),
+            slot,
+            variations,
+            provenance: HorizontalShapingInstanceRequestProvenance {
+                slot,
+                request_generation: self.instance_requests.generation(),
+            },
+        })
     }
 
     pub(crate) fn cached_result_count(&self) -> usize {
@@ -363,6 +611,56 @@ pub(crate) struct HorizontalShapingTransaction<'a> {
     result_cache_miss_count: usize,
 }
 
+pub(crate) struct HorizontalShapingExplicitInstanceTransaction<'a> {
+    transaction: HorizontalShapingTransaction<'a>,
+    slot: ExactFontSlot,
+    variations: Arc<[ShapingVariation]>,
+    provenance: HorizontalShapingInstanceRequestProvenance,
+}
+
+impl HorizontalShapingExplicitInstanceTransaction<'_> {
+    pub(crate) fn registry_generation(&self) -> u64 {
+        self.transaction.registry_generation()
+    }
+
+    pub(crate) fn request_generation(&self) -> u64 {
+        self.provenance.request_generation
+    }
+
+    pub(crate) fn shadow_measure(
+        &mut self,
+        request: &HorizontalShapingRequest<'_>,
+    ) -> HorizontalShapingShadowOutcome {
+        if request.slot != self.slot {
+            return rejected_outcome(
+                request.attempt_id,
+                TerminalShapingDisposition::Malformed,
+                ShapingRejectReason::ExplicitInstanceSlotMismatch,
+            );
+        }
+        if !request.variations.is_empty() {
+            return rejected_outcome(
+                request.attempt_id,
+                TerminalShapingDisposition::Malformed,
+                ShapingRejectReason::ExplicitInstanceOverrideNotAllowed,
+            );
+        }
+        let owned_request = HorizontalShapingRequest {
+            attempt_id: request.attempt_id,
+            slot: request.slot,
+            text: request.text,
+            effective_font_size_px: request.effective_font_size_px,
+            width_ratio: request.width_ratio,
+            script: request.script,
+            language: request.language,
+            features: request.features,
+            variations: &self.variations,
+        };
+        self.transaction
+            .shadow_measure_with_instance_request(&owned_request, Some(self.provenance))
+    }
+}
+
 impl<'a> HorizontalShapingTransaction<'a> {
     fn new(context: &'a HorizontalShapingContext) -> Self {
         Self {
@@ -400,6 +698,14 @@ impl<'a> HorizontalShapingTransaction<'a> {
     pub(crate) fn shadow_measure(
         &mut self,
         request: &HorizontalShapingRequest<'_>,
+    ) -> HorizontalShapingShadowOutcome {
+        self.shadow_measure_with_instance_request(request, None)
+    }
+
+    fn shadow_measure_with_instance_request(
+        &mut self,
+        request: &HorizontalShapingRequest<'_>,
+        instance_request: Option<HorizontalShapingInstanceRequestProvenance>,
     ) -> HorizontalShapingShadowOutcome {
         if !valid_scale(request.effective_font_size_px, request.width_ratio) {
             return rejected_outcome(
@@ -487,6 +793,7 @@ impl<'a> HorizontalShapingTransaction<'a> {
         };
         let key = HorizontalShapingCacheKey::new(
             self.registry_generation,
+            instance_request,
             handle.clone(),
             request,
             &identity,
@@ -554,6 +861,7 @@ impl<'a> HorizontalShapingTransaction<'a> {
         };
         let measurement = match build_measurement(
             self.registry_generation,
+            instance_request,
             handle,
             request,
             units_per_em,
@@ -705,6 +1013,7 @@ fn rejected_applied_outcome(
 
 fn build_measurement(
     registry_generation: u64,
+    instance_request: Option<HorizontalShapingInstanceRequestProvenance>,
     source_handle: ExactFontSourceHandle,
     request: &HorizontalShapingRequest<'_>,
     units_per_em: u16,
@@ -754,6 +1063,7 @@ fn build_measurement(
 
     Ok(HorizontalShapingMeasurement {
         registry_generation,
+        instance_request,
         source_handle,
         code_point_count: request.text.chars().count(),
         units_per_em,

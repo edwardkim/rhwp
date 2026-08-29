@@ -101,6 +101,8 @@ pub(crate) enum ShapingRejectReason {
     GlyphLimitExceeded,
     InvalidHorizontalScale,
     ExactSourceIdentityMismatch,
+    ExplicitInstanceSlotMismatch,
+    ExplicitInstanceOverrideNotAllowed,
     CacheEntryLimitExceeded,
     ClusterMappingInvalid,
     ShapingUnavailable,
