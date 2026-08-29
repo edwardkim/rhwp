@@ -277,6 +277,41 @@ remote push, PR 생성, ready 전환, merge 승인과는 별개다.
 | CI workflow | [GitHub 저장소 운영 매뉴얼](../github_operations.md)의 변경 등급에 따른 workflow 구문·정책 테스트·required check 영향·최신 GitHub Actions 결과 |
 | 기존 golden/baseline/fixture | 관련 focused test, snapshot 결정성, 최신 PR head CI |
 
+### 4.3.2 조판 원장(baseline ratchet) — 무엇이 자동으로 지켜지나
+
+renderer·layout·pagination 을 건드리면 아래 원장들이 `Build & Test` 안에서 함께 돈다.
+**따로 실행할 필요는 없지만, 무엇이 지켜지고 무엇이 안 지켜지는지는 알고 있어야 한다** —
+어느 것도 걸리지 않았다고 해서 조판이 안 바뀐 것은 아니다.
+
+| 원장 | 무엇을 고정하나 | 판정 |
+| --- | --- | --- |
+| `tests/overflow_cell_baseline.rs` | 셀 줄이 쪽 하단 밖으로 나가 소실되는 것 | 문서별 줄 수 래칫 (`tests/fixtures/overflow_cell_baseline.tsv`) |
+| `tests/visual_roundtrip_baseline.rs` | parse → serialize → reparse 자기 정합성 | 전수 — `VISUAL_XFAIL`·`EXCLUDED` 외 전 샘플, 신규 샘플 자동 포함 |
+| `tests/ir_field_sweep_baseline.rs` | IR 필드 스윕 | 래칫 (`tests/fixtures/ir_field_sweep_baseline.tsv`) |
+| `tests/hwp5_roundtrip_baseline.rs`·`hwpx_roundtrip_baseline.rs` | 형식별 왕복 | 래칫 |
+
+원장이 실패하면 **수치를 올려 통과시키지 않는다.** 원인 정정이 원칙이고, 의도된 변화만
+기준선에 반영하며 그 근거를 PR 에 남긴다(§4.3.1).
+
+특히 `visual_roundtrip_baseline` 의 `VISUAL_XFAIL` 은 **현재 비어 있다**(주석에 남은 것은
+전부 PASS 로 승격돼 제거된 이력이다). 거기에 항목을 넣는 것은 지금 완전히 깨끗한 게이트를
+처음으로 무르게 만드는 일이므로, 내 변경이 만든 회귀를 받아주려고 등재하지 않는다.
+
+#### 원장이 보지 않는 것
+
+원장이 초록이어도 아래는 걸리지 않는다. renderer 변경의 시각 증적을 원장으로 대체할 수
+없는 이유다.
+
+- **본문 여백 초과**(`layout-anomaly` overflow) — 정상 조판에서도 어울림 개체·바탕쪽이
+  여백에 걸치므로 그 자체로는 결함이 아니다. 컨테이너 단위 판정이라 쪽 하단으로 몇 px
+  넘긴 것은 거의 보이지 않는다.
+- **한글과의 조판 일치** — 원장은 rhwp 의 **자기 무회귀**를 볼 뿐 한컴과 같은지는 보지
+  않는다. 원장이 전부 초록이어도 처음부터 한컴과 다르게 조판하고 있으면 그대로 통과한다.
+  그 축은 [한글 페이지 충실도 오라클](../verification/hangul_page_oracle.md) 이 맡는데
+  한컴오피스 설치본이 필요하다.
+- **조판의 환경 의존성** — 같은 문서·같은 커밋인데 로컬과 CI 의 조판이 갈리는 사례가
+  있다. 원장의 기준선은 어느 환경에서 뽑았는지에 따라 값이 달라질 수 있다.
+
 archive label 또는 trusted post-merge reuse topology를 바꾸면, 일반 workflow 계약 검사에 더해
 아래 두 묶음을 PR 전에 모두 실행한다. Studio E2E나 OS resource-limit처럼 이 변경 범위와
 무관한 Node 테스트까지 glob으로 섞지 않는다.
