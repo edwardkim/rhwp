@@ -4,10 +4,10 @@
 
 - GitHub Issue: [#4121](https://github.com/edwardkim/rhwp/issues/4121)
 - 작업 브랜치: `codex/issue-4121-hf-selection`
-- 기준: `upstream/devel` @ `f6a6bee8f3` (Stage 4 최종 검증 전 merge)
+- 기준: `upstream/devel` @ `955abb526` (Stage 5 착수 전 merge)
 - 수행계획: `mydocs/plans/task_m100_4121.md` 승인 및 로컬 체크포인트
   `e0622c2c7`
-- 현재 단계: Stage 4 자동 통합 검증 완료, 사용자 수동 확인 대기
+- 현재 단계: Stage 5 구역 첫 페이지 대표 편집 투영 구현 중
 
 이 문서가 승인되기 전에는 제품 소스를 수정하지 않는다. 승인 뒤에도 Hyper-Waterfall에
 따라 각 Stage의 코드·테스트·완료보고서를 한 묶음으로 검토하고 커밋한 뒤 다음 Stage로
@@ -49,6 +49,21 @@
    조각을 기록한다. HF로 붙여넣을 때는 이번 이슈에서 평문을 사용한다.
 5. 본문↔HF, Header↔Footer, 서로 다른 HF 정의 사이의 교차 선택은 만들지 않는다.
 
+### 2.4 대표 편집 화면과 대상 표시
+
+1. `Both`/`Even`/`Odd` 정의는 실제 적용 쪽의 홀짝과 무관하게 그 정의가 속한 구역의 첫
+   페이지를 대표 편집 화면으로 사용한다. 첫 구역이면 모두 1쪽에서 편집한다.
+2. 대표 페이지의 일반 렌더 결과는 바꾸지 않는다. HF 편집 모드 동안에만 선택한 정의를
+   가상 렌더 트리로 조판해 해당 머리말/꼬리말 밴드 위에 비인쇄 overlay로 투영한다.
+3. 도구 상자에는 `머리말 · 짝수 쪽 편집 중`처럼 종류와 `applyTo`를 함께 표시하고,
+   대표 밴드에는 `머리말(짝수 쪽)` 배지와 강조선을 표시한다.
+4. 같은 정의가 실제 적용되는 visible page에는 약한 밴드 강조를 표시한다. 선택 overlay는
+   대표 페이지와 실제 적용 페이지에 함께 투영하되 다른 홀짝 정의에는 표시하지 않는다.
+5. 편집 모드를 끝내면 대표 overlay를 제거해 첫 페이지의 실제 `Both`/`Odd`/`Even` 결과로
+   즉시 돌아간다. 저장·내보내기·인쇄 결과에는 대표 overlay가 포함되지 않는다.
+6. 기존 Studio 정책을 유지한다. 본문 클릭은 HF 모드를 끝내며, 한글 2024의 전면 클릭 차단과
+   포커스 잠금은 도입하지 않는다.
+
 ## 3. 상태 모델과 불변식
 
 `Cursor`에 본문 `anchor`, 각주 `fnAnchor`와 독립된 `hfAnchor`를 추가한다.
@@ -75,6 +90,10 @@ HF-6  preferredPage 변경은 논리 범위를 바꾸지 않지만 일반 클릭
       기존 선택을 지운 뒤 새 캐럿을 만든다.
 HF-7  선택 복원 전에 현재 HF 문단 수·문자 오프셋을 다시 검증하고 실패하면 선택 없이
       복원한다.
+HF-8  preferredPage는 편집 대상 source section의 첫 페이지다. 실제 적용 페이지 클릭으로
+      target을 바꿔도 새 target의 대표 페이지로 정규화한다.
+HF-9  가상 대표 렌더는 page tree/layer JSON cache에 저장하지 않고 문서 IR·pagination의
+      active_header/active_footer를 바꾸지 않는다.
 ```
 
 `Cursor.hasSelection()`과 `clearSelection()`은 세 선택 종류를 모두 다루되, 범위 조회는
@@ -139,6 +158,26 @@ applyCharFormatInHeaderFooter(...range, propsJson) -> 결과 JSON
 - 선택이 없는 HF 캐럿에서 “다음 입력 글자 서식 예약”까지 확장하지 않는다. 이번 범위는
   선택된 기존 텍스트의 부분 서식과 그 속성 조회다.
 
+### 4.4 대표 페이지 가상 조판
+
+```text
+getHeaderFooterPreviewPage(sectionIdx) -> pageIndex
+renderHeaderFooterEditPreviewToCanvas(
+  pageIndex, sectionIdx, isHeader, applyTo, canvas, scale
+) -> void
+hitTestInHeaderFooterTarget(
+  pageIndex, sectionIdx, isHeader, applyTo, x, y
+) -> hit result
+```
+
+- 일반 `build_page_tree(pageIndex)`를 호출하는 대신, 대표 렌더 전용 경로에서만
+  `PageContent.active_header` 또는 `active_footer`를 요청 target 참조로 바꾼 임시 복사본을
+  조판한다.
+- 가상 트리는 일반 page tree/layer JSON cache에 넣지 않는다. 캐럿·선택 사각형·target-aware
+  hit-test가 대표 페이지를 조회할 때도 같은 임시 트리를 사용한다.
+- 대표 페이지가 아닌 target 불일치 페이지는 종전처럼 빈 선택 기하 또는 `hit:false`로
+  실패한다.
+
 ## 5. Studio 연결 계획
 
 ### 5.1 마우스와 키보드
@@ -177,6 +216,18 @@ applyCharFormatInHeaderFooter(...range, propsJson) -> 결과 JSON
   보낸다. OS별 rich clipboard round-trip은 비범위다.
 - toolbar/shortcut 글자 서식 dispatcher는 “HF 선택이 있는 경우”에만 새 범위 서식 경로를
   허용한다.
+
+### 5.4 대표 밴드 overlay와 접근성
+
+- `headerFooterModeChanged` payload에 `mode`, `sectionIdx`, `applyTo`, `previewPage`를 싣고
+  도구 상자·CanvasView가 같은 편집 target을 소비한다. `none`은 기존 문자열 계약을 유지한다.
+- CanvasView는 대표 페이지에만 가상 HF canvas를 만들고 CSS clip으로 머리말/꼬리말 밴드만
+  노출한다. 페이지 본문과 반대 HF 밴드는 일반 canvas를 그대로 사용한다.
+- 대표 밴드는 강한 강조·배지, 실제 적용 페이지 밴드는 약한 강조를 쓴다. 둘은 선택 highlight와
+  구분되는 색·z-index를 사용하고 `pointer-events:none`으로 입력을 가로채지 않는다.
+- 대표 target 클릭은 target-aware hit-test를 사용한다. 다른 실제 홀짝 페이지의 HF를 클릭해
+  target이 바뀌면 새 target도 해당 구역 첫 페이지에서 편집한다.
+- 편집 상태 텍스트는 `aria-live` 영역에도 전달한다.
 
 ## 6. Undo/Redo 계약
 
@@ -298,6 +349,46 @@ Stage 3 완료보고서와 focused test/E2E를 검토·커밋한 뒤 Stage 4 승
   보고서에 기록한다.
 - 산출물: `mydocs/report/task_m100_4121_report.md`와 필요한 E2E screenshot/video 증적.
 
+### Stage 5 — 구역 첫 페이지 대표 편집 투영과 대상 표시
+
+수정 후보:
+
+```text
+src/document_core/queries/rendering.rs
+src/document_core/queries/cursor_rect.rs
+src/renderer/pagination.rs
+src/wasm_api.rs
+rhwp-studio/src/core/wasm-bridge.ts
+rhwp-studio/src/engine/cursor.ts
+rhwp-studio/src/engine/input-handler*.ts
+rhwp-studio/src/view/canvas-view.ts
+rhwp-studio/src/main.ts
+rhwp-studio/src/styles/editor.css
+rhwp-studio/src/styles/toolbar.css
+rhwp-studio/index.html
+tests/cases/issue_4121_header_footer_text_selection.rs
+rhwp-studio/tests/issue-4121-*.test.ts
+rhwp-studio/e2e/header-footer-selection-issue4121.test.mjs
+mydocs/working/task_m100_4121_stage5.md
+```
+
+RED:
+
+- Even 정의는 실제 짝수 쪽에서만 캐럿·선택·hit-test 가능하고 1쪽 문서에서는 편집 표면이 없음
+- 편집 중인 `Both`/`Even`/`Odd`를 도구 상자와 페이지에서 구분할 수 없음
+- 첫 페이지에 다른 실제 HF가 있으면 target 정의를 가상으로 표시할 수 없음
+
+GREEN:
+
+- Header/Footer × Both/Even/Odd 모두 source section 첫 페이지에서 입력·선택·서식 가능
+- 대표 페이지 가상 렌더와 실제 적용 페이지 갱신, 종료 후 실제 첫 페이지 복원
+- 대표 페이지 + 실제 적용 페이지 선택 투영, 다른 홀짝 페이지 제외
+- toolbar/배지/강·약 밴드 강조와 aria-live target 안내
+- 1쪽 Even/Odd 편집, 4쪽 홀짝, 다구역 첫 페이지와 cache/저장 무오염 회귀
+
+Stage 5 완료보고서와 focused Rust/Studio/E2E/WASM 증적을 검토·커밋한 뒤 사용자 수동 확인으로
+넘어간다.
+
 ## 8. 최종 검증 명령
 
 변경 범위는 Rust document core/WASM + rhwp-studio이며 PDF/SVG 출력 geometry는 바꾸지
@@ -329,10 +420,12 @@ npm --prefix rhwp-studio run build
   전체 회귀에 새 source를 포함하고 파생 변경을 stage하지 않는다.
 - Studio E2E는 실제 browser에서 별도로 실행하고 viewport 크기, zoom, page layout과 결과
   screenshot을 보고서에 남긴다.
+- Stage 5 E2E는 Even/Odd가 첫 페이지에서 편집되는지, toolbar/배지 표시, 실제 홀짝 쪽 반영,
+  HF 종료 뒤 첫 페이지 원래 표시 복원을 추가로 판정한다.
 
 ## 9. 비범위와 후속 분리 기준
 
-- 한글 2024의 HF dialog/모양 갤러리/전용 ribbon 복제
+- 한글 2024의 HF dialog/모양 갤러리/전용 ribbon 전체 복제
 - HF 모드에서 본문·다른 target 클릭을 전면 차단하는 focus lock
 - OS별 rich clipboard 서식 round-trip
 - 선택이 없는 HF 캐럿의 다음 입력 글자 서식 예약
@@ -352,16 +445,18 @@ npm --prefix rhwp-studio run build
 | history 복원 시 stale range | 문서 bounds 재검증, 실패 시 selection 없이 복원 | Stage 3 history metadata commit |
 | SelectionRenderer 좌표 변경의 본문 회귀 | page-left resolver와 기존 mode 회귀 test를 같은 Stage에 포함 | Stage 2 renderer wiring commit |
 | snapshot 메모리 증가 | 선택 범위 복합 연산에만 한정, 일반 typing 정밀 command 유지 | Stage 3 snapshot command commit |
+| 대표 트리가 일반 렌더 cache를 오염 | 가상 트리는 cache 없는 별도 builder로만 생성 | Stage 5 core preview commit |
+| 첫 페이지 실제 HF와 가상 HF가 겹침 | 가상 canvas를 target 밴드에만 clip하고 밴드 배경으로 실제 내용을 가림 | Stage 5 Studio overlay commit |
+| 실제 홀짝 쪽 클릭 뒤 편집 표면 이탈 | Cursor preferredPage를 target source section 첫 페이지로 정규화 | Stage 5 cursor/event commit |
 
 각 Stage는 독립 커밋으로 고정한다. 실패 시 뒤 Stage에서 조건문으로 우회하지 않고 해당
 Stage commit을 되돌릴 수 있게 파일과 테스트를 함께 묶는다.
 
 ## 11. 다음 승인 요청
 
-최신 `upstream/devel` 병합 뒤 Stage 4 자동 검증을 완료했다. 실제 Google Chrome E2E 50/50,
-Studio 1,254 passed, focused Rust 6/6, clippy, production build, 최적화 WASM과 전체 nextest
-8,558/8,558이 통과했다. 상세 결과는 `mydocs/report/task_m100_4121_report.md`에 기록했다.
+사용자가 한글 2024와 같이 Both/Even/Odd를 모두 구역 첫 페이지에서 편집하고 편집 대상을
+명확히 표시하는 Stage 5 확장을 승인했다. 최신 `upstream/devel@955abb526`을 병합했으며, 위
+가상 대표 렌더 경계로 구현·자동 검증·로컬 서버 수동 확인 준비를 진행한다.
 
-다음 단계는 `http://127.0.0.1:7700/`에서 사용자가 직접 Both/Odd/Even 머리말·꼬리말 선택과
-편집을 확인하는 것이다. 원격 push, PR 생성과 #4121 close는 사용자 수동 확인 및 별도 승인
-전까지 수행하지 않는다.
+원격 push, PR 생성과 #4121 close는 Stage 5 사용자 수동 확인 및 별도 승인 전까지 수행하지
+않는다.
