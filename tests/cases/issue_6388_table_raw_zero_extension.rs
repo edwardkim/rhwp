@@ -195,7 +195,10 @@ fn issue_6388_position_props_do_not_grow_empty_raw() {
         (w, h),
         "위치 속성 변경 후 저장·재파싱에서 표 크기가 사라졌다 (#6388)"
     );
-    assert_eq!(t.common.vertical_offset, 2000, "세로 오프셋이 저장에 반영됐다");
+    assert_eq!(
+        t.common.vertical_offset, 2000,
+        "세로 오프셋이 저장에 반영됐다"
+    );
     assert_eq!(
         t.common.horizontal_offset, 1500,
         "가로 오프셋이 저장에 반영됐다"
