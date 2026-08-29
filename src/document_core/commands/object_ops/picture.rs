@@ -291,8 +291,16 @@ impl DocumentCore {
 
         pic.shape_attr.rotation_center.x = (pic.common.width / 2) as i32;
         pic.shape_attr.rotation_center.y = (pic.common.height / 2) as i32;
-        pic.shape_attr.rotate_image = true;
-        pic.shape_attr.flip |= 0x0008_0000;
+        // `rotate_image` 와 `flip` bit19(0x0008_0000)는 **여기서 건드리지 않는다.**
+        // 종전에는 각도와 무관하게 둘을 세웠고, 회전을 0 으로 되돌려도 남아 되돌릴 경로가
+        // 없었다. 한컴 오라클(`tools/hangul_rotation_oracle/EVIDENCE.md`)이 잰 결과 둘은
+        // 회전 상태의 함수가 아니다:
+        //   - 한컴 저장본 5660개 개체에서 bit19 는 회전 개체 569건 중 559건이 **꺼져** 있고
+        //     비회전 개체 5091건 중 4416건이 **켜져** 있다(회전과 반대 방향).
+        //   - 한글 2024 는 회전 0 그림의 bit19 를 그대로 켜 두고, 34° 회전 그림의
+        //     `rotateimage` 를 0 으로 둔다.
+        // 세우는 것도 지우는 것도 근거가 없으므로 파싱된 값을 보존한다. HWP5 저장에는
+        // `flip` 만 나가고 `rotate_image` 는 HWPX `rotateimage` 의 원천이다.
     }
     fn apply_picture_display_width(pic: &mut crate::model::image::Picture, width: u32) {
         let old_common_width = pic.common.width;

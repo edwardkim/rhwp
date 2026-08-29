@@ -118,11 +118,22 @@ break 종류:
 | offset | render_tx, render_ty (렌더링 오프셋) |
 | eff | curr × scale 결과 (실효 크기, mm) |
 
-**변환 속성 (뒤집기/회전이 있을 때만 출력):**
+**변환 속성 (뒤집기·회전·`flip` 워드·`rotateImage` 중 하나라도 기본값이 아닐 때 출력):**
 
 ```
-    변환: 뒤집기=(false,false), 회전=67
+    변환: 뒤집기=(false,false), 회전=67, flip=0x26080000, rotateImage=false
 ```
+
+| 항목 | 설명 |
+|------|------|
+| 뒤집기 | `horz_flip`, `vert_flip` (`flip` bit0·bit1 의 해석값) |
+| 회전 | `rotation_angle` (도) |
+| flip | SHAPE_COMPONENT 저장 워드 원본. bit0·bit1 밖의 비트(예: bit19 `0x0008_0000`)는 해석되지 않은 채 라운드트립되므로 원본 값을 그대로 낸다 |
+| rotateImage | `rotate_image` — HWPX `rotateimage` 속성의 원천. HWP5 저장에는 `flip` 워드만 나가므로 두 값이 어긋날 수 있다 |
+
+`flip` 워드를 함께 내는 이유: 회전이 0 이어도 bit19 가 남아 있는 한컴 저장본이 실재하고,
+그 상태는 해석값(`뒤집기`·`회전`)만으로는 보이지 않는다. 한컴 저장 관례와 대조하는
+오라클(`tools/hangul_rotation_oracle/`)이 이 줄을 판정 근거로 읽는다.
 
 **도형 종류별 추가 정보:**
 
