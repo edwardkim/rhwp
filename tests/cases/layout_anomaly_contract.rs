@@ -182,6 +182,89 @@ fn layout_anomaly_strict_clean_stays_zero() {
     assert_eq!(v["hasSignal"], false, "{v}");
 }
 
+/// [#6348] `-p` 는 `pages` 배열뿐 아니라 카운트·`hasSignal`·`--strict` 종료코드까지
+/// 그 쪽으로 좁힌다.
+///
+/// 종전에는 배열만 걸러 `pages: []` 인데 `overflowCount` 는 문서 전체 값이 실렸고,
+/// 신호가 하나도 없는 쪽을 지정해도 `--strict` 가 3 을 냈다. 그 값으로는
+/// "이 쪽이 깨끗한가"를 판정할 수 없다.
+///
+/// 쪽 번호는 필터 없는 실행에서 뽑는다. 조판이 바뀌어 신호가 다른 쪽으로 옮겨가도
+/// 이 계약 자체는 계속 검사된다.
+#[test]
+fn layout_anomaly_page_filter_scopes_counts_and_strict_exit() {
+    let src = sample(OVERFLOW);
+    let path = src.to_str().unwrap();
+
+    let all_args = ["layout-anomaly", path, "--json"];
+    let all_out = run(&all_args);
+    let all = parse_stdout_json(&all_args, &all_out);
+    let pages = all["pages"].as_array().unwrap();
+    let page_count = all["pageCount"].as_u64().unwrap();
+
+    // 확정 신호(overflow)가 있는 쪽 하나와, 신호가 아예 없는 쪽 하나.
+    let dirty = pages
+        .iter()
+        .find(|p| p["overflow"].as_array().is_some_and(|o| !o.is_empty()))
+        .map(|p| p["page"].as_u64().unwrap())
+        .unwrap_or_else(|| panic!("스캐폴딩 전제: overflow 있는 쪽이 있어야 한다\n{all}"));
+    let flagged: Vec<u64> = pages.iter().map(|p| p["page"].as_u64().unwrap()).collect();
+    let clean = (0..page_count)
+        .find(|p| !flagged.contains(p))
+        .unwrap_or_else(|| panic!("스캐폴딩 전제: 신호 없는 쪽이 있어야 한다\n{all}"));
+
+    let dirty_s = dirty.to_string();
+    let args = ["layout-anomaly", path, "-p", &dirty_s, "--json"];
+    let v = parse_stdout_json(&args, &run(&args));
+    assert_eq!(v["pages"].as_array().unwrap().len(), 1, "{v}");
+    assert_eq!(v["overflowCount"], 1, "그 쪽의 overflow 만 세야 한다\n{v}");
+    assert_eq!(v["hasSignal"], true, "{v}");
+    // pageCount 는 필터와 무관한 문서 메타데이터다.
+    assert_eq!(v["pageCount"], page_count, "{v}");
+    assert_eq!(v["pageFilter"], dirty, "{v}");
+
+    let clean_s = clean.to_string();
+    let args = ["layout-anomaly", path, "-p", &clean_s, "--json"];
+    let v = parse_stdout_json(&args, &run(&args));
+    assert!(v["pages"].as_array().unwrap().is_empty(), "{v}");
+    for key in [
+        "overflowCount",
+        "offCanvasCount",
+        "overlapCount",
+        "textOverlapCount",
+        "emptyPageCount",
+    ] {
+        assert_eq!(
+            v[key], 0,
+            "빈 pages 와 0 이 아닌 {key} 가 함께 나오면 안 된다\n{v}"
+        );
+    }
+    assert_eq!(v["hasSignal"], false, "{v}");
+
+    // 종료코드도 같은 집합에서 나온다.
+    let args = ["layout-anomaly", path, "-p", &clean_s, "--strict", "--json"];
+    let output = run(&args);
+    assert_eq!(
+        output.status.code(),
+        Some(0),
+        "신호 없는 쪽만 봤으면 --strict 도 0 이다.\n{}",
+        describe(&args, &output)
+    );
+    let args = ["layout-anomaly", path, "-p", &dirty_s, "--strict", "--json"];
+    let output = run(&args);
+    assert_eq!(
+        output.status.code(),
+        Some(3),
+        "그 쪽에 확정 신호가 있으면 3 이다.\n{}",
+        describe(&args, &output)
+    );
+
+    // 필터가 없으면 종전 그대로 문서 전체.
+    assert!(all["overflowCount"].as_u64().unwrap() >= 1, "{all}");
+    assert_eq!(all["hasSignal"], true, "{all}");
+    assert!(all["pageFilter"].is_null(), "{all}");
+}
+
 #[test]
 fn layout_anomaly_usage_errors_are_exit_two_with_silent_stdout() {
     let src = sample(CLEAN);

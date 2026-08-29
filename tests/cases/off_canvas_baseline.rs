@@ -1,44 +1,54 @@
-//! [#6315] 글자 겹침(text-overlap) 원장 게이트 — samples 전수 렌더 래칫.
+//! 용지 밖 그리기(`layout-anomaly` off-canvas) 원장 게이트 — samples 전수 래칫.
 //!
-//! `layout_anomaly` 의 text-overlap 판정(#5372)은 이미 있고 정확하다. 문제는 그
-//! 판정을 **PR 에서 아무도 돌리지 않는 것**이었다 —
-//! `.github/workflows/layout-anomaly-advisory.yml` 은 nightly advisory 이고
-//! `continue-on-error: true` 라, 보이는 글자끼리 겹치는 회귀를 새로 만들어도 PR 은
-//! 초록으로 통과했다. PR #6083 이 실제 사례다(편람 69쪽: devel 0건 → head 7건,
-//! 상자 하단이 넘쳐 다음 본문 줄과 겹침). 검토자가 PNG 를 눈으로 대조한 뒤에야
-//! 발견됐다.
+//! # 왜 필요한가
 //!
-//! `ci_advisory.md` §2 가 게이트 승격을 미룬 이유는 "소표본에도 이미 알려진
-//! overflow/overlap 이 있어 지금 강제하면 PR 이 한꺼번에 막힌다" 였다. 이 저장소는
-//! 같은 문제를 `LAYOUT_OVERFLOW_CELL`(#3668)·`ir_field_sweep_baseline` 에서
-//! **기존 발생은 baseline 에 싣고 신규·증가만 실패**시키는 래칫으로 이미 풀었다.
-//! 이 게이트는 그 규약을 그대로 따른다.
+//! `layout-anomaly` 는 요소가 **페이지 상자 밖**(또는 `y < 0`)에 놓인 것을 off-canvas 로
+//! 판정한다. 본문 여백을 넘은 overflow 와 달리 이쪽은 **종이 밖**이라 사용자에게 그 내용이
+//! 아예 보이지 않는다.
 //!
-//! **판정 대상은 text-overlap 하나다.** overflow·off-canvas·overlap 은 컨테이너
-//! 기하라 정상 조판의 접합·장식으로도 흔히 잡히지만, **보이는 글자끼리 겹치는 것은
-//! 두 글자 모두 읽을 수 없게 되는 확정 결함**이다(모듈 머리말이 `--strict` 에
-//! text-overlap 을 포함한 근거와 같다).
+//! 그런데 그 판정을 돌리는 워크플로는 nightly advisory 하나뿐이라
+//! (`.github/workflows/layout-anomaly-advisory.yml` — `pull_request` 트리거 주석 처리,
+//! `continue-on-error: true`), PR 이 새 off-canvas 를 만들어도 초록으로 통과한다.
 //!
-//! ## baseline 재생성
+//! 글자 겹침 축은 #6315 가 같은 방식으로 막았다. 이 시험은 **그 게이트가 보지 않는**
+//! off-canvas 축을 맡는다 — 둘은 겹치지 않는 결함군이다.
 //!
-//! ```text
-//! RHWP_TEXT_OVERLAP_DUMP=tests/fixtures/text_overlap_baseline.tsv \
-//!   cargo test --profile release-test text_overlap_baseline -- --nocapture
-//! ```
+//! # 실측이 말하는 것 (devel `f6a6bee8f3`, samples 945 건)
 //!
-//! 0 이 아닌 문서만 `상대경로\t건수` 로 사전순 기록한다. **감소는 통과**이므로,
-//! 결함을 고쳤으면 dump 로 확인한 뒤 래칫을 조인다.
+//! | 신호 | 건수 | 문서 |
+//! | --- | ---: | ---: |
+//! | text-overlap (#6315 가 담당) | 4,408 | 153 |
+//! | **off-canvas (이 시험)** | **437** | **78** |
+//!
+//! off-canvas 437 건의 성격이다.
+//!
+//! - 노드 종류: `TextLine` 321 · `Table` 96 · `Image` 18 · `Group` 2
+//! - 밖으로 나간 정도: 중앙값 **103.7px**, 90 퍼센타일 363.2px, 최대 4,043.6px
+//! - 2px 이하(경계 스침)는 6 건뿐이고 **397 건이 10px 초과**다
+//!
+//! 즉 경계 반올림 잡음이 아니라 내용이 실제로 종이 밖에 있다. 최다 문서
+//! `basic/sungeo.hwp` 는 105 건이고, 같은 문서가 한글 정답지 대비 8 쪽 부족하다
+//! (#6337 원장의 최대 격차). 두 신호가 같은 뿌리 — 한 쪽에 너무 많이 담는 것 — 를 가리킨다.
+//!
+//! # 판정 규약 (`overflow_cell_baseline`·`text_overlap_baseline` 과 같은 래칫)
+//!
+//! 기존 발생은 baseline 에 싣고 **신규 발생·증가만** 실패로 잡는다. 감소는 통과다.
+//! `local_validation.md` §4.3.0.1 의 "가능하면 최소 공개 fixture 와 자동 래칫을 마련한다"
+//! 를 이 축에 적용한 것이다.
+//!
+//! 현재값 dump: `RHWP_OFF_CANVAS_DUMP=<path>`. 실패 시에는 전체 현재값을 stderr 에
+//! TSV 로 남긴다 — 조판이 환경에 따라 갈리는 문서가 있어(#6325) 다른 환경의 baseline 을
+//! 만들려면 그 정보가 필요하다.
 
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
-use rhwp::diagnostics::layout_anomaly::{scan_document, AnomalyOptions};
+use rhwp::diagnostics::layout_anomaly::{scan_page, AnomalyOptions};
 use rhwp::document_core::DocumentCore;
 
 const SAMPLES_ROOT: &str = "samples";
-const BASELINE_PATH: &str = "tests/fixtures/text_overlap_baseline.tsv";
+const BASELINE_PATH: &str = "tests/fixtures/off_canvas_baseline.tsv";
 
-/// 확장자로 샘플을 재귀 수집해 루트 기준 상대 경로(슬래시)로 돌려준다.
 fn collect_samples() -> Vec<(PathBuf, String)> {
     fn walk(dir: &Path, root: &Path, acc: &mut Vec<(PathBuf, String)>) {
         let entries = std::fs::read_dir(dir).expect("samples 읽기 실패");
@@ -78,19 +88,27 @@ fn load_baseline() -> BTreeMap<String, u64> {
         .collect()
 }
 
-/// 문서 하나의 전 페이지 text-overlap 건수.
-///
-/// 로드·렌더 실패는 이 게이트의 관심사가 아니므로 None(건너뜀)으로 처리한다 —
-/// 크래시·파싱 회귀는 기존 스위트가 잡는다(overflow_cell_baseline 과 같은 규약).
+/// 문서 하나의 전 페이지를 스캔해 off-canvas 건수 합계를 센다.
+/// 로드·렌더 실패는 이 게이트의 관심사가 아니다(파싱 회귀는 기존 스위트가 잡는다).
 fn count_doc(path: &Path) -> Option<u64> {
     let bytes = std::fs::read(path).ok()?;
     let doc = DocumentCore::from_bytes(&bytes).ok()?;
-    let anomalies = scan_document(&doc, &AnomalyOptions::default()).ok()?;
-    Some(anomalies.text_overlap_count() as u64)
+    let opts = AnomalyOptions::default();
+    let page_count = doc.page_count();
+    let mut total = 0u64;
+    for page in 0..page_count {
+        let Ok(tree) = doc.build_page_render_tree(page) else {
+            continue;
+        };
+        total += scan_page(page, &tree.root, page_count, &opts)
+            .off_canvas
+            .len() as u64;
+    }
+    Some(total)
 }
 
 #[test]
-fn text_overlaps_do_not_grow() {
+fn off_canvas_does_not_grow() {
     let samples = collect_samples();
     let baseline = load_baseline();
 
@@ -127,14 +145,14 @@ fn text_overlaps_do_not_grow() {
         .collect();
 
     eprintln!(
-        "text-overlap 스윕: 샘플 {}건(스킵 {}) / 0 아닌 문서 {}종 / 총 {}건",
+        "off-canvas 스윕: 샘플 {}건(스킵 {}) / 0 아닌 문서 {}종 / 총 {}건",
         results.len(),
         skipped.load(std::sync::atomic::Ordering::Relaxed),
         nonzero.len(),
         nonzero.values().sum::<u64>(),
     );
 
-    if let Ok(dump) = std::env::var("RHWP_TEXT_OVERLAP_DUMP") {
+    if let Ok(dump) = std::env::var("RHWP_OFF_CANVAS_DUMP") {
         let mut out = String::new();
         for (rel, n) in &nonzero {
             out.push_str(&format!("{rel}\t{n}\n"));
@@ -143,7 +161,6 @@ fn text_overlaps_do_not_grow() {
         eprintln!("현재값 dump → {dump}");
     }
 
-    // 래칫 판정: 신규 발생 또는 증가만 실패. 감소·해소는 통과(dump 대조로 조인다).
     let mut regressions = Vec::new();
     for (rel, &n) in &nonzero {
         match baseline.get(*rel) {
@@ -153,10 +170,9 @@ fn text_overlaps_do_not_grow() {
         }
     }
     if !regressions.is_empty() {
-        // 실패한 환경의 **전체** 현재값을 남긴다. 증가분만 찍으면 그 환경의 baseline 을
-        // 다시 만들려고 실패를 여러 번 반복해야 한다 — 조판이 환경에 따라 갈리는
-        // 문서가 있어(로컬과 CI 의 표 높이가 다른 사례 실측) 이 정보가 실제로 필요하다.
-        // 아래 블록을 그대로 `tests/fixtures/text_overlap_baseline.tsv` 로 쓰면 된다.
+        // 실패한 환경의 전체 현재값을 남긴다 — 증가분만 찍으면 그 환경의 baseline 을
+        // 만들려고 실패를 여러 번 반복해야 한다. 조판이 환경에 따라 갈리는 문서가
+        // 있어(#6325) 이 정보가 실제로 필요하다.
         eprintln!("---8<--- 현재값 전체 (baseline TSV 형식) ---8<---");
         for (rel, n) in &nonzero {
             eprintln!("{rel}\t{n}");
@@ -165,16 +181,14 @@ fn text_overlaps_do_not_grow() {
     }
     assert!(
         regressions.is_empty(),
-        "보이는 글자끼리 겹치는 사건(layout-anomaly text-overlap)이 늘었다.\n\
-         한 글자 위에 다른 글자가 그려지면 두 글자 모두 읽을 수 없는 확정 결함이다.\n\
+        "용지 밖에 그려지는 요소(layout-anomaly off-canvas)가 늘었다.\n\
+         페이지 상자 밖이나 y<0 에 놓인 내용은 사용자에게 아예 보이지 않는다.\n\
          원인 정정이 원칙이고, 의도된 변화만 baseline 에 반영한다(4.3.1 규약 준용).\n\
          현재값 전체는 위 `---8<---` 블록에 TSV 형식으로 찍혀 있다.\n\
-         로컬 파일로 받으려면: RHWP_TEXT_OVERLAP_DUMP=<path> 로 재실행.\n\
          쪽 단위 위치 확인: rhwp layout-anomaly \"<문서>\" -p <쪽> --json\n{}",
         regressions.join("\n")
     );
 
-    // baseline 부패 감지: 기록된 문서가 코퍼스에서 사라지면 행을 정리해야 한다.
     let missing: Vec<&String> = baseline
         .keys()
         .filter(|rel| !results.contains_key(*rel))
