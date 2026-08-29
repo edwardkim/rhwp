@@ -5,6 +5,7 @@ import { createServer } from 'vite';
 
 import type { PageInfo } from '../src/core/types.ts';
 import {
+  PAGE_MARGIN_GUIDE_LINE_WIDTH,
   drawPageMarginGuideCorners,
   drawPageMarginGuides,
 } from '../src/view/page-margin-guides.ts';
@@ -94,6 +95,26 @@ test('HF band can reuse the exact page-margin corner path', () => {
     (call) => call.name === 'moveTo' || call.name === 'lineTo',
   );
   assert.deepEqual(pathCalls(band.calls), pathCalls(page.calls));
+});
+
+test('HF edge reuses only the non-overlapping page-margin corners', () => {
+  const all = recordingCanvas();
+  const top = recordingCanvas();
+  const bottom = recordingCanvas();
+  const rect = { x: 60, y: 60, width: 480, height: 680 };
+
+  drawPageMarginGuideCorners(rect, all.canvas, 1);
+  drawPageMarginGuideCorners(rect, top.canvas, 1, 'top');
+  drawPageMarginGuideCorners(rect, bottom.canvas, 1, 'bottom');
+
+  const pathCalls = (calls: ContextCall[]) => calls.filter(
+    (call) => call.name === 'moveTo' || call.name === 'lineTo',
+  );
+  assert.deepEqual(
+    [...pathCalls(top.calls), ...pathCalls(bottom.calls)],
+    pathCalls(all.calls),
+  );
+  assert.equal(PAGE_MARGIN_GUIDE_LINE_WIDTH, 0.6);
 });
 
 test('PageRenderer forwards the focused patch to the margin-guide clip', async () => {

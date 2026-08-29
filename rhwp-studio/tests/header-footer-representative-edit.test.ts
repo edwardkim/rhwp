@@ -80,7 +80,7 @@ test('CanvasView는 대표 preview와 실제 적용 쪽 overlay를 비인쇄 계
   assert.match(source, /renderHeaderFooterEditPreviewToCanvas\(/);
   assert.match(source, /data-rhwp-hf-edit-page/);
   assert.match(source, /getHeaderFooterEditTarget\(pageIdx/);
-  assert.match(source, /drawPageMarginGuideCorners\(band, guideCanvas, renderScale\)/);
+  assert.match(source, /state\.mode === 'header' \? 'top' : 'bottom'/);
   assert.match(source, /hf-edit-guide-canvas/);
   assert.match(source, /removeHeaderFooterEditOverlays\(\)/);
 });

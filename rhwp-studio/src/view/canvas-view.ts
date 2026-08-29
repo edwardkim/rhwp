@@ -632,7 +632,14 @@ export class CanvasView {
       guideCanvas.height = Math.max(1, Math.round(page.height * renderScale));
       guideCanvas.style.width = `${guideCanvas.width / dpr}px`;
       guideCanvas.style.height = `${guideCanvas.height / dpr}px`;
-      drawPageMarginGuideCorners(band, guideCanvas, renderScale);
+      // 머리말 아래쪽과 꼬리말 위쪽은 기존 본문 여백 꺾쇠와 같은 경계다.
+      // 겹쳐 그리지 않고 반대편 두 모서리만 추가해 한 세트처럼 보이게 한다.
+      drawPageMarginGuideCorners(
+        band,
+        guideCanvas,
+        renderScale,
+        state.mode === 'header' ? 'top' : 'bottom',
+      );
       layer.appendChild(guideCanvas);
 
       const region = document.createElement('div');
