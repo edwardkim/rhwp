@@ -13,13 +13,23 @@ mod shaping_paragraph;
 #[path = "../../src/renderer/shaping_publication.rs"]
 mod shaping_publication;
 
+// Product symbols stay crate-private. The source integration case includes
+// kerning.rs directly, so mirror the narrow paint surface used by that module.
+mod paint {
+    pub use rhwp::paint::*;
+
+    pub(crate) const MAX_PORTABLE_FONT_BLOB_BYTES: usize = 32 * 1024 * 1024;
+}
+
 use std::sync::Arc;
 
 use kerning::{ExactFontSlot, ExactFontSource, ExactFontSourceRegistry};
 use shaping_composition::{
     attach_horizontal_shaping_mapped_run, map_horizontal_shaping_emitted_run,
-    project_horizontal_shaping_run_range, HorizontalShapingEmittedRunCandidate,
-    HorizontalShapingEmittedRunRejectReason,
+    prepare_horizontal_shaping_no_lineseg_owner_transaction, project_horizontal_shaping_run_range,
+    HorizontalShapingEmittedRunCandidate, HorizontalShapingEmittedRunRejectReason,
+    HorizontalShapingLegacyGeometry, HorizontalShapingNoLineSegOwnerRejectReason,
+    HorizontalShapingNoLineSegSurface,
 };
 use shaping_context::HorizontalShapingContext;
 use shaping_paragraph::{
@@ -39,7 +49,10 @@ const SLOT: ExactFontSlot = ExactFontSlot {
 };
 const TEXT: &str = "ᄒᆞᆫ글";
 
-fn qualified_outcome() -> Arc<shaping_paragraph::HorizontalShapingLineOutcome> {
+fn qualified_context_and_outcome() -> (
+    HorizontalShapingContext,
+    Arc<shaping_paragraph::HorizontalShapingLineOutcome>,
+) {
     let mut registry = ExactFontSourceRegistry::default();
     registry
         .register(
@@ -70,7 +83,7 @@ fn qualified_outcome() -> Arc<shaping_paragraph::HorizontalShapingLineOutcome> {
     let hard_boundaries = [false; 5];
     let candidate_boundaries = [0, 4];
     let available_widths_px = [100.0];
-    Arc::new(run_horizontal_shaping_line_transaction(
+    let outcome = Arc::new(run_horizontal_shaping_line_transaction(
         &mut transaction,
         &HorizontalShapingLineRequest {
             paragraph: HorizontalShapingParagraphRequest {
@@ -91,7 +104,13 @@ fn qualified_outcome() -> Arc<shaping_paragraph::HorizontalShapingLineOutcome> {
             candidate_boundaries: &candidate_boundaries,
             available_widths_px: &available_widths_px,
         },
-    ))
+    ));
+    drop(transaction);
+    (context, outcome)
+}
+
+fn qualified_outcome() -> Arc<shaping_paragraph::HorizontalShapingLineOutcome> {
+    qualified_context_and_outcome().1
 }
 
 fn candidate<'a>(
@@ -111,6 +130,25 @@ fn candidate<'a>(
         has_char_overlap: false,
         has_border_or_background: false,
         has_decoration: false,
+    }
+}
+
+fn no_lineseg_surface() -> HorizontalShapingNoLineSegSurface {
+    HorizontalShapingNoLineSegSurface {
+        model_line_seg_count: 0,
+        frame_interval_count: 1,
+        edit_reflow: false,
+        stored_prefix: false,
+        split_cell: false,
+        has_inline_control: false,
+    }
+}
+
+fn legacy_geometry() -> HorizontalShapingLegacyGeometry {
+    HorizontalShapingLegacyGeometry {
+        line_width_px: 16.0,
+        bbox_width_px: 16.0,
+        next_origin_x_px: 39.5,
     }
 }
 
@@ -207,4 +245,170 @@ fn issue_4969_q2_d2_utf8_and_utf16_offsets_are_not_scalar_aliases() {
     assert_eq!(range.utf8_end, 16);
     assert_eq!(range.utf16_start, 2);
     assert_eq!(range.utf16_end, 6);
+}
+
+#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
+fn issue_4969_q2_d5_n0_no_lineseg_owner_keeps_four_consumers_on_one_arc() {
+    let (context, outcome) = qualified_context_and_outcome();
+    let target_measurement = Arc::clone(&outcome.lines[0].target_runs[0].measurement);
+    let transaction = prepare_horizontal_shaping_no_lineseg_owner_transaction(
+        &context,
+        Arc::clone(&outcome),
+        no_lineseg_surface(),
+        candidate(TEXT, TEXT),
+        legacy_geometry(),
+    )
+    .expect("ordinary no-LineSeg owner transaction");
+
+    assert!(Arc::ptr_eq(transaction.outcome(), &outcome));
+    assert!(Arc::ptr_eq(
+        transaction.line_selection_measurement(),
+        &target_measurement
+    ));
+    assert!(Arc::ptr_eq(
+        transaction.line_selection_measurement(),
+        transaction.bbox_measurement()
+    ));
+    assert!(Arc::ptr_eq(
+        transaction.line_selection_measurement(),
+        transaction.next_origin_measurement()
+    ));
+    assert!(Arc::ptr_eq(
+        transaction.line_selection_measurement(),
+        transaction.sidecar_measurement()
+    ));
+    assert_eq!(
+        transaction.line_width_px(),
+        target_measurement.total_advance_px
+    );
+    assert_eq!(
+        transaction.bbox_width_px(),
+        target_measurement.total_advance_px
+    );
+    assert!(
+        ((transaction.next_origin_x_px() - 23.5) - target_measurement.total_advance_px).abs()
+            <= 1.0e-12
+    );
+    assert_eq!(transaction.fallback_geometry(), legacy_geometry());
+    assert!(!transaction.product_published());
+}
+
+#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
+fn issue_4969_q2_d5_n0_feature_detection_rejects_unsupported_surfaces_by_type() {
+    let cases = [
+        (
+            HorizontalShapingNoLineSegSurface {
+                model_line_seg_count: 1,
+                ..no_lineseg_surface()
+            },
+            HorizontalShapingNoLineSegOwnerRejectReason::ModelLineSegPresent,
+        ),
+        (
+            HorizontalShapingNoLineSegSurface {
+                frame_interval_count: 0,
+                ..no_lineseg_surface()
+            },
+            HorizontalShapingNoLineSegOwnerRejectReason::FrameIntervalCountUnsupported,
+        ),
+        (
+            HorizontalShapingNoLineSegSurface {
+                frame_interval_count: 2,
+                ..no_lineseg_surface()
+            },
+            HorizontalShapingNoLineSegOwnerRejectReason::FrameIntervalCountUnsupported,
+        ),
+        (
+            HorizontalShapingNoLineSegSurface {
+                edit_reflow: true,
+                ..no_lineseg_surface()
+            },
+            HorizontalShapingNoLineSegOwnerRejectReason::EditReflowUnsupported,
+        ),
+        (
+            HorizontalShapingNoLineSegSurface {
+                stored_prefix: true,
+                ..no_lineseg_surface()
+            },
+            HorizontalShapingNoLineSegOwnerRejectReason::StoredPrefixUnsupported,
+        ),
+        (
+            HorizontalShapingNoLineSegSurface {
+                split_cell: true,
+                ..no_lineseg_surface()
+            },
+            HorizontalShapingNoLineSegOwnerRejectReason::SplitCellUnsupported,
+        ),
+        (
+            HorizontalShapingNoLineSegSurface {
+                has_inline_control: true,
+                ..no_lineseg_surface()
+            },
+            HorizontalShapingNoLineSegOwnerRejectReason::InlineControlUnsupported,
+        ),
+    ];
+
+    for (surface, expected) in cases {
+        let (context, outcome) = qualified_context_and_outcome();
+        let rejection = prepare_horizontal_shaping_no_lineseg_owner_transaction(
+            &context,
+            outcome,
+            surface,
+            candidate(TEXT, TEXT),
+            legacy_geometry(),
+        )
+        .unwrap_err();
+        assert_eq!(rejection.reason(), expected);
+        assert_eq!(rejection.fallback_geometry(), legacy_geometry());
+        assert!(!rejection.product_published());
+    }
+}
+
+#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
+fn issue_4969_q2_d5_n0_late_source_failure_rolls_back_all_consumers() {
+    let (_, outcome) = qualified_context_and_outcome();
+    let stale_context = HorizontalShapingContext::new(ExactFontSourceRegistry::default());
+    let rejection = prepare_horizontal_shaping_no_lineseg_owner_transaction(
+        &stale_context,
+        outcome,
+        no_lineseg_surface(),
+        candidate(TEXT, TEXT),
+        legacy_geometry(),
+    )
+    .unwrap_err();
+
+    assert_eq!(
+        rejection.reason(),
+        HorizontalShapingNoLineSegOwnerRejectReason::ReplaySourceRejected(
+            shaping_context::HorizontalShapingReplaySourceCertificateRejectReason::StaleRegistryGeneration
+        )
+    );
+    assert_eq!(rejection.fallback_geometry(), legacy_geometry());
+    assert!(!rejection.product_published());
+}
+
+#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
+fn issue_4969_q2_d5_n0_multiple_targets_are_rejected_before_publication() {
+    let (context, outcome) = qualified_context_and_outcome();
+    let mut multiple = (*outcome).clone();
+    let duplicate = multiple.lines[0].target_runs[0].clone();
+    multiple.lines[0].target_runs.push(duplicate);
+    let rejection = prepare_horizontal_shaping_no_lineseg_owner_transaction(
+        &context,
+        Arc::new(multiple),
+        no_lineseg_surface(),
+        candidate(TEXT, TEXT),
+        legacy_geometry(),
+    )
+    .unwrap_err();
+
+    assert_eq!(
+        rejection.reason(),
+        HorizontalShapingNoLineSegOwnerRejectReason::TargetCountUnsupported
+    );
+    assert_eq!(rejection.fallback_geometry(), legacy_geometry());
+    assert!(!rejection.product_published());
 }

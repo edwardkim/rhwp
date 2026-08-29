@@ -6,7 +6,8 @@
 
 use super::shaping::TerminalShapingDisposition;
 use super::shaping_context::{
-    HorizontalShapingContext, HorizontalShapingReplaySourceCertificateRejectReason,
+    HorizontalShapingContext, HorizontalShapingMeasurement,
+    HorizontalShapingReplaySourceCertificateRejectReason,
 };
 use super::shaping_paragraph::{HorizontalShapingLineDisposition, HorizontalShapingLineOutcome};
 use super::shaping_publication::{
@@ -76,6 +77,267 @@ pub(crate) struct HorizontalShapingMappedRun {
     pub bbox_width_px: f64,
     pub next_origin_x_px: f64,
     pub decision: Arc<HorizontalShapingRunDecision>,
+}
+
+/// Pristine W9/K0 geometry retained as the only rollback result when the
+/// dormant no-LineSeg owner transaction cannot be prepared completely.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub(crate) struct HorizontalShapingLegacyGeometry {
+    pub line_width_px: f64,
+    pub bbox_width_px: f64,
+    pub next_origin_x_px: f64,
+}
+
+impl HorizontalShapingLegacyGeometry {
+    fn is_well_formed(self) -> bool {
+        self.line_width_px.is_finite()
+            && self.line_width_px >= 0.0
+            && self.bbox_width_px.is_finite()
+            && self.bbox_width_px >= 0.0
+            && self.next_origin_x_px.is_finite()
+    }
+}
+
+/// Version-independent feature detection input for the first no-LineSeg lane.
+/// N0 consumes this only in integration/shadow code; no product caller exists.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) struct HorizontalShapingNoLineSegSurface {
+    pub model_line_seg_count: usize,
+    pub frame_interval_count: usize,
+    pub edit_reflow: bool,
+    pub stored_prefix: bool,
+    pub split_cell: bool,
+    pub has_inline_control: bool,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum HorizontalShapingNoLineSegOwnerRejectReason {
+    LegacyGeometryMalformed,
+    ModelLineSegPresent,
+    FrameIntervalCountUnsupported,
+    EditReflowUnsupported,
+    StoredPrefixUnsupported,
+    SplitCellUnsupported,
+    InlineControlUnsupported,
+    OutcomeNotQualified,
+    TargetCountUnsupported,
+    EmittedRunRejected(HorizontalShapingEmittedRunRejectReason),
+    ReplaySourceRejected(HorizontalShapingReplaySourceCertificateRejectReason),
+    OwnerIdentityMismatch,
+}
+
+/// A rejected preparation carries only the untouched legacy geometry. It has
+/// no page-sidecar or resource handle, so partial publication is unrepresentable.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub(crate) struct HorizontalShapingNoLineSegOwnerRejection {
+    reason: HorizontalShapingNoLineSegOwnerRejectReason,
+    fallback_geometry: HorizontalShapingLegacyGeometry,
+}
+
+impl HorizontalShapingNoLineSegOwnerRejection {
+    pub(crate) fn reason(&self) -> HorizontalShapingNoLineSegOwnerRejectReason {
+        self.reason
+    }
+
+    pub(crate) fn fallback_geometry(&self) -> HorizontalShapingLegacyGeometry {
+        self.fallback_geometry
+    }
+
+    pub(crate) fn product_published(&self) -> bool {
+        false
+    }
+}
+
+/// Fully prepared but still dormant owner transaction. The four consumers keep
+/// explicit Arc slots so N0 can prove pointer identity before N1 may publish.
+#[derive(Debug, Clone)]
+pub(crate) struct HorizontalShapingNoLineSegOwnerTransaction {
+    outcome: Arc<HorizontalShapingLineOutcome>,
+    line_selection_measurement: Arc<HorizontalShapingMeasurement>,
+    bbox_measurement: Arc<HorizontalShapingMeasurement>,
+    next_origin_measurement: Arc<HorizontalShapingMeasurement>,
+    sidecar_decision: Arc<HorizontalShapingRunDecision>,
+    line_width_px: f64,
+    bbox_width_px: f64,
+    next_origin_x_px: f64,
+    fallback_geometry: HorizontalShapingLegacyGeometry,
+}
+
+impl HorizontalShapingNoLineSegOwnerTransaction {
+    pub(crate) fn outcome(&self) -> &Arc<HorizontalShapingLineOutcome> {
+        &self.outcome
+    }
+
+    pub(crate) fn line_selection_measurement(&self) -> &Arc<HorizontalShapingMeasurement> {
+        &self.line_selection_measurement
+    }
+
+    pub(crate) fn bbox_measurement(&self) -> &Arc<HorizontalShapingMeasurement> {
+        &self.bbox_measurement
+    }
+
+    pub(crate) fn next_origin_measurement(&self) -> &Arc<HorizontalShapingMeasurement> {
+        &self.next_origin_measurement
+    }
+
+    pub(crate) fn sidecar_measurement(&self) -> &Arc<HorizontalShapingMeasurement> {
+        self.sidecar_decision
+            .measurement()
+            .expect("N0 sidecar decision is applied")
+    }
+
+    pub(crate) fn line_width_px(&self) -> f64 {
+        self.line_width_px
+    }
+
+    pub(crate) fn bbox_width_px(&self) -> f64 {
+        self.bbox_width_px
+    }
+
+    pub(crate) fn next_origin_x_px(&self) -> f64 {
+        self.next_origin_x_px
+    }
+
+    pub(crate) fn fallback_geometry(&self) -> HorizontalShapingLegacyGeometry {
+        self.fallback_geometry
+    }
+
+    pub(crate) fn product_published(&self) -> bool {
+        false
+    }
+}
+
+fn no_lineseg_rejection(
+    reason: HorizontalShapingNoLineSegOwnerRejectReason,
+    fallback_geometry: HorizontalShapingLegacyGeometry,
+) -> HorizontalShapingNoLineSegOwnerRejection {
+    HorizontalShapingNoLineSegOwnerRejection {
+        reason,
+        fallback_geometry,
+    }
+}
+
+/// Prepare all no-LineSeg owner consumers without touching composition, page
+/// sidecars, resources, or product geometry. Any failure returns the exact
+/// legacy snapshot and discards every staged Arc together.
+pub(crate) fn prepare_horizontal_shaping_no_lineseg_owner_transaction(
+    context: &HorizontalShapingContext,
+    outcome: Arc<HorizontalShapingLineOutcome>,
+    surface: HorizontalShapingNoLineSegSurface,
+    candidate: HorizontalShapingEmittedRunCandidate<'_>,
+    fallback_geometry: HorizontalShapingLegacyGeometry,
+) -> Result<HorizontalShapingNoLineSegOwnerTransaction, HorizontalShapingNoLineSegOwnerRejection> {
+    use HorizontalShapingNoLineSegOwnerRejectReason as Reject;
+
+    if !fallback_geometry.is_well_formed() {
+        return Err(no_lineseg_rejection(
+            Reject::LegacyGeometryMalformed,
+            fallback_geometry,
+        ));
+    }
+    if surface.model_line_seg_count != 0 {
+        return Err(no_lineseg_rejection(
+            Reject::ModelLineSegPresent,
+            fallback_geometry,
+        ));
+    }
+    if surface.frame_interval_count != 1 {
+        return Err(no_lineseg_rejection(
+            Reject::FrameIntervalCountUnsupported,
+            fallback_geometry,
+        ));
+    }
+    if surface.edit_reflow {
+        return Err(no_lineseg_rejection(
+            Reject::EditReflowUnsupported,
+            fallback_geometry,
+        ));
+    }
+    if surface.stored_prefix {
+        return Err(no_lineseg_rejection(
+            Reject::StoredPrefixUnsupported,
+            fallback_geometry,
+        ));
+    }
+    if surface.split_cell {
+        return Err(no_lineseg_rejection(
+            Reject::SplitCellUnsupported,
+            fallback_geometry,
+        ));
+    }
+    if surface.has_inline_control {
+        return Err(no_lineseg_rejection(
+            Reject::InlineControlUnsupported,
+            fallback_geometry,
+        ));
+    }
+    if outcome.trace.disposition != HorizontalShapingLineDisposition::DormantQualified
+        || outcome.trace.product_published
+    {
+        return Err(no_lineseg_rejection(
+            Reject::OutcomeNotQualified,
+            fallback_geometry,
+        ));
+    }
+    if outcome.lines.len() != 1 || outcome.lines[0].target_runs.len() != 1 {
+        return Err(no_lineseg_rejection(
+            Reject::TargetCountUnsupported,
+            fallback_geometry,
+        ));
+    }
+
+    let line_selection_measurement = Arc::clone(&outcome.lines[0].target_runs[0].measurement);
+    let mapped = map_horizontal_shaping_emitted_run(&outcome, candidate).map_err(|reason| {
+        no_lineseg_rejection(Reject::EmittedRunRejected(reason), fallback_geometry)
+    })?;
+    let bbox_measurement =
+        Arc::clone(mapped.decision.measurement().ok_or_else(|| {
+            no_lineseg_rejection(Reject::OwnerIdentityMismatch, fallback_geometry)
+        })?);
+    let next_origin_measurement = Arc::clone(&bbox_measurement);
+    let sidecar_decision =
+        certify_horizontal_shaping_mapped_run(context, &mapped).map_err(|reason| {
+            no_lineseg_rejection(Reject::ReplaySourceRejected(reason), fallback_geometry)
+        })?;
+    let Some(sidecar_measurement) = sidecar_decision.measurement() else {
+        return Err(no_lineseg_rejection(
+            Reject::OwnerIdentityMismatch,
+            fallback_geometry,
+        ));
+    };
+    if !Arc::ptr_eq(&line_selection_measurement, &bbox_measurement)
+        || !Arc::ptr_eq(&line_selection_measurement, &next_origin_measurement)
+        || !Arc::ptr_eq(&line_selection_measurement, sidecar_measurement)
+        || !same_width(
+            mapped.line_width_px,
+            line_selection_measurement.total_advance_px,
+        )
+        || !same_width(
+            mapped.bbox_width_px,
+            line_selection_measurement.total_advance_px,
+        )
+        || !same_width(
+            mapped.next_origin_x_px - candidate.origin_x_px,
+            line_selection_measurement.total_advance_px,
+        )
+    {
+        return Err(no_lineseg_rejection(
+            Reject::OwnerIdentityMismatch,
+            fallback_geometry,
+        ));
+    }
+
+    Ok(HorizontalShapingNoLineSegOwnerTransaction {
+        outcome,
+        line_selection_measurement,
+        bbox_measurement,
+        next_origin_measurement,
+        sidecar_decision,
+        line_width_px: mapped.line_width_px,
+        bbox_width_px: mapped.bbox_width_px,
+        next_origin_x_px: mapped.next_origin_x_px,
+        fallback_geometry,
+    })
 }
 
 /// Project a paragraph scalar range into the renderer's three coordinate

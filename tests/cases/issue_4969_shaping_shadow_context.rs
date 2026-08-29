@@ -7,6 +7,14 @@ mod shaping;
 #[path = "../../src/renderer/shaping_context.rs"]
 mod shaping_context;
 
+// Product symbols stay crate-private. This source integration case includes
+// kerning.rs directly, so mirror only the paint surface that module consumes.
+mod paint {
+    pub use rhwp::paint::*;
+
+    pub(crate) const MAX_PORTABLE_FONT_BLOB_BYTES: usize = 32 * 1024 * 1024;
+}
+
 use kerning::{ExactFontSlot, ExactFontSource, ExactFontSourceRegistry};
 use shaping::{ShapingFeature, ShapingRejectReason, TerminalShapingDisposition};
 use shaping_context::{
