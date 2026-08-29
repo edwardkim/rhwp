@@ -5,7 +5,8 @@
 - **작성일**: 2026-08-29 KST
 - **작업 브랜치**: `task_m100_6381-test-caption-false-pass`
 - **착수 기준**: `upstream/devel@2bcf9b261c3b761d114bc2b3a35ed85ccd1e461e`
-- **구현 상태**: fail-closed 구현과 focused 회귀 완료, 전체 회귀 승인 대기
+- **현재 기준**: `upstream/devel@97c4d71550f24182f920d23c0f65d4a6371a6e48`
+- **구현 상태**: fail-closed 구현과 최신 devel 기준 전체 로컬 검증 완료
 
 ## 1. 구현 불변식
 
@@ -95,4 +96,10 @@ integration suite 준비가 필요한 review worktree 검증에서는 먼저
 - mutation 오류를 stderr에 누적하고 mutation 성공 대상만 정확한 캡션 속성으로 verification한다.
 - 실패가 하나라도 있으면 출력 폴더 생성과 page render 전에 exit 1로 종료한다.
 - renderer·layout·model·Render Diff workflow는 변경하지 않았다.
-- 전체 nextest·clippy는 focused 결과 공유 뒤 별도 승인 게이트로 남긴다.
+- 최신 `upstream/devel@97c4d7155`를 merge commit `49d0a61ea`로 반영했으며 직접 충돌이나 추가 제품
+  보정은 없었다.
+- generated suite 재준비 뒤 focused 3/3, clippy `-D warnings`, 전체 integration 8,636/8,636이
+  통과했다. 상세 실행 근거는 [Stage 3 보고](../working/task_m100_6381_stage3.md)에 기록했다.
+- source-side test 정책, format, manifest, Markdown link와 diff 검사를 모두 통과했고 generated
+  suite·manifest와 로컬 출력물은 제출 diff에 포함하지 않았다.
+- remote push와 Draft PR 생성은 별도 승인 게이트로 남긴다.
