@@ -27,7 +27,7 @@ const MINIMUM_USABLE_INTERVAL_HWP: i32 = 1_440;
 /// 4-HWPUNIT grid, not a constant inset, which is why a flat `-2` fixed the
 /// `bw%4==2` documents and broke the `bw%4==0` ones.
 ///
-const COLUMN_WIDTH_QUANTUM_HWP: i32 = 4;
+pub(crate) const COLUMN_WIDTH_QUANTUM_HWP: i32 = 4;
 
 /// Snap a base edge down to `pitch`.
 ///

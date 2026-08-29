@@ -8,6 +8,7 @@ import {
   FONT_RULE_WEBFONT_ENTRIES,
   generatedCanvas2dPaintRuleCount,
   generatedCanvasKitRuleCount,
+  projectedSubstituteTargets,
 } from '../src/core/font-rule-runtime.ts';
 
 test('Studio runtime은 W7 generated projection의 승인 분모를 전부 소비한다', () => {
@@ -34,4 +35,14 @@ test('legacy SUBST_TABLES와 FONT_LIST literal은 production owner에서 제거�
   assert.match(substitutionSource, /FONT_RULE_SUBSTITUTION_TABLES/);
   assert.match(loaderSource, /FONT_RULE_WEBFONT_ENTRIES/);
   assert.match(loaderSource, /resolveProjectedCanvasKitFontPlan/);
+});
+
+test('projectedSubstituteTargets는 등록 웹폰트 이름도 치환 대상 체인을 돌려준다', () => {
+  const targets = projectedSubstituteTargets('한양중고딕', 0, 0);
+
+  assert.equal(targets.length > 0, true);
+  assert.equal(targets[0].face, 'HY중고딕');
+  assert.match(targets[0].ruleId, /^rule\./);
+  assert.deepEqual(projectedSubstituteTargets('없는글꼴', 0, 0), []);
+  assert.deepEqual(projectedSubstituteTargets('', 0, 0), []);
 });

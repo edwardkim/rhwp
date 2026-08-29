@@ -57,35 +57,40 @@ fidelity 원장을 함께 보존해야 한다.
 
 | CLI | 용도 | Ubuntu/WSL/Debian 패키지 |
 |---|---|---|
-| `rsvg-convert` | SVG를 PNG로 변환 | `librsvg2-bin` |
+| Chrome 또는 Chromium | Studio 공통 webfont를 적용해 SVG를 PNG로 변환 | GitHub hosted runner 기본 설치 또는 Chromium 패키지 |
+| `node` | webfont projection을 읽고 headless browser raster를 실행 | Node.js LTS |
 | `pdftoppm` | PDF 페이지를 PNG로 변환 | `poppler-utils` |
 | `pdftotext` | PDF bbox-layout 추출 | `poppler-utils` |
 
-주의: 패키지명은 `libsvg2-bin`이 아니라 `librsvg2-bin`이다.
+`--svg-rasterizer rsvg`로 기존 librsvg 경로를 명시적으로 선택할 때만
+`rsvg-convert`가 필요하다. 이 경우 Ubuntu/WSL/Debian 패키지명은
+`libsvg2-bin`이 아니라 `librsvg2-bin`이다.
 
 설치 예:
 
 ```bash
 sudo apt update
-sudo apt install librsvg2-bin poppler-utils
+sudo apt install chromium-browser nodejs poppler-utils
 ```
 
 macOS Homebrew 환경:
 
 ```bash
-brew install librsvg poppler
+brew install --cask google-chrome
+brew install node poppler
 ```
 
 Fedora 계열:
 
 ```bash
-sudo dnf install librsvg2-tools poppler-utils
+sudo dnf install chromium nodejs poppler-utils
 ```
 
 설치 확인:
 
 ```bash
-which rsvg-convert
+which google-chrome || which chromium || which chromium-browser
+which node
 which pdftoppm
 which pdftotext
 ```
@@ -117,19 +122,26 @@ rhwp export-svg samples/exam_kor.hwp \
 우선한다. 자세한 폰트 fallback 동작은 [export-png 명령 가이드](../export_png_command.md)의
 폰트 섹션을 참고한다.
 
-현재 `scripts/visual_sweep.py`는 `export-svg --font-style`을 사용한다. 이는 SVG에
-`@font-face src: local(...)` 별칭을 넣어 원 문서의 legacy face와 실제 설치 family/full name
-차이(예: `한양중고딕` → `HY중고딕`/`HYGothic-Medium`) 때문에 SVG raster가 두부(□)로
-떨어지는 것을 줄인다. 이 옵션은 SVG 좌표를 바꾸거나 글꼴 바이너리를 embed하지 않으며,
-`--font-path`를 전달하는 것은 아니다. 자동 sweep은 여전히 시스템 fontconfig와 기본 탐색 경로
-기준으로 실행되므로, 폰트 민감 문서는 다음 중 하나로 판정한다.
+기본 `scripts/visual_sweep.py`는 `export-svg --font-style` 뒤에 Chrome headless를 사용한다.
+`rhwp-studio/src/core/generated/font-rule-projections/webfont-supply.ts`의 현재 Studio 공통
+webfont projection에서 SVG에 실제로 나타난 family만 선택해 `@font-face`로 다시 공급한다.
+따라서 `함초롬바탕` 같은 CDN webfont와 `한양중고딕` 같은 번들 대체 webfont가 Studio와 같은
+규칙으로 적용되며, 규칙에 없는 family는 Noto Sans KR webfont를 마지막 fallback으로 사용해
+두부(□)를 피한다. SVG 좌표는 `rhwp export-svg`가 결정한 값을 그대로 유지한다.
 
-- 컨트리뷰터와 메인테이너가 동일한 공개 한글 폰트 환경을 맞춘 뒤 sweep 실행
-- `rhwp export-svg --font-path ...`로 수동 SVG를 내보내고 별도 시각 판정
-- 필요 시 후속 작업으로 sweep 스크립트에 반복 가능한 `--font-path` 전달 옵션 추가
+이 경로는 CDN 응답과 webfont projection의 현재 상태에 의존한다. 실행마다 output의 rasterizer
+로그와 run manifest에 선택한 rasterizer 및 Git HEAD가 남으므로, PR 판정에는 실행 OS와
+`webfont` 경로 사용 여부를 함께 기록한다. 한컴/HY 전용 실폰트의 glyph 형태까지 동일하다는
+증명은 아니며, 그러한 결론에는 한컴 PDF와 OVL 또는 개체 단위 대조가 추가로 필요하다.
 
-PR 보고서에는 폰트 민감 판정일 경우 OS, 공개 한글 폰트 설치 여부, 한컴/HY 전용
-폰트 사용 여부를 함께 적는다.
+네트워크 없이 설치 글꼴만 비교해야 하는 특수 상황에서는 다음처럼 기존 경로를 명시한다.
+
+```bash
+python3 scripts/visual_sweep.py --target 2024-09-between20 --svg-rasterizer rsvg
+```
+
+이 `rsvg` 결과는 Studio webfont 결과와 혼용하지 않으며, PR 보고서에는 사용한 rasterizer를
+명시한다.
 
 ## 사전 빌드
 
@@ -174,7 +186,7 @@ python3 scripts/visual_sweep.py \
 
 `--page`는 여러 번 지정할 수 있고, `--pages`는 `1,3,5-7` 형식을 허용한다. 페이지 번호는
 사용자가 PDF viewer에서 보는 1-based 번호다. `export-svg`와 render tree 추출은 문서 단위로 수행하지만,
-`--page`/`--pages`가 지정되면 `rsvg-convert`와 `pdftoppm`의 raster 생성부터 선택 페이지로 제한한다.
+`--page`/`--pages`가 지정되면 SVG rasterizer와 `pdftoppm`의 raster 생성부터 선택 페이지로 제한한다.
 비교·overlay·analysis도 동일한 선택 페이지로만 수행한다. 따라서 `compare/compare_022.png`,
 `overlay/overlay_022.png`, `analysis/annotated_022.png`처럼 실제 페이지 번호가 파일명에 남는다.
 
