@@ -47,7 +47,10 @@ import {
   headerFooterClipPath,
   resolveHeaderFooterBandBox,
 } from './header-footer-edit-overlay.ts';
-import { drawPageMarginGuideCorners } from './page-margin-guides.ts';
+import {
+  drawPageMarginGuideCorners,
+  type PageMarginGuideEdges,
+} from './page-margin-guides.ts';
 
 /** 문서 교체 중 보여줄 빈 쪽 기본 크기(A4, zoom 1 기준 CSS px). 이전 문서 쪽 크기를 모를 때만 쓴다. */
 const BLANK_PAGE_FALLBACK_SIZE = { width: 794, height: 1123 };
@@ -536,11 +539,15 @@ export class CanvasView {
     const state = parseHeaderFooterModeChanged(payload);
     if (state === 'none') {
       this.headerFooterEditState = null;
+      this.setPageMarginGuideEdges('both');
       this.removeHeaderFooterEditOverlays();
       return;
     }
 
     this.headerFooterEditState = state;
+    // HF와 본문이 공유하는 경계에서는 본문 기준 꺾쇠 방향이 반대다.
+    // 머리말은 본문 위쪽, 꼬리말은 본문 아래쪽 꺾쇠를 잠시 숨긴다.
+    this.setPageMarginGuideEdges(state.mode === 'header' ? 'bottom' : 'top');
     if (!this.currentVisiblePages.includes(state.previewPage)) {
       const pageTop = this.virtualScroll.getPageOffset(state.previewPage);
       this.viewportManager.setScrollTop(Math.max(0, pageTop - this.virtualScroll.getPageGap()));
@@ -548,6 +555,15 @@ export class CanvasView {
       return;
     }
     this.renderHeaderFooterEditOverlays();
+  }
+
+  private setPageMarginGuideEdges(edges: PageMarginGuideEdges): void {
+    if (!this.pageRenderer.setPageMarginGuideEdges(edges)) return;
+    for (const pageIdx of Array.from(this.canvasPool.activePages)) {
+      const canvas = this.canvasPool.getCanvas(pageIdx);
+      if (!canvas) continue;
+      if (!this.renderCanvas(pageIdx, canvas)) this.canvasPool.release(pageIdx);
+    }
   }
 
   private renderHeaderFooterEditOverlays(force = false): void {
@@ -632,14 +648,8 @@ export class CanvasView {
       guideCanvas.height = Math.max(1, Math.round(page.height * renderScale));
       guideCanvas.style.width = `${guideCanvas.width / dpr}px`;
       guideCanvas.style.height = `${guideCanvas.height / dpr}px`;
-      // 머리말 아래쪽과 꼬리말 위쪽은 기존 본문 여백 꺾쇠와 같은 경계다.
-      // 겹쳐 그리지 않고 반대편 두 모서리만 추가해 한 세트처럼 보이게 한다.
-      drawPageMarginGuideCorners(
-        band,
-        guideCanvas,
-        renderScale,
-        state.mode === 'header' ? 'top' : 'bottom',
-      );
+      // 공유 경계의 반대 방향 본문 꺾쇠는 숨겼으므로 HF 기준 네 모서리를 그린다.
+      drawPageMarginGuideCorners(band, guideCanvas, renderScale);
       layer.appendChild(guideCanvas);
 
       const region = document.createElement('div');
@@ -1234,6 +1244,7 @@ export class CanvasView {
     this.currentVisiblePages = [];
     this.editingPageIndex = null;
     this.headerFooterEditState = null;
+    this.pageRenderer.setPageMarginGuideEdges('both');
     this.activePageSnapshot = null;
     if (hadActivePage) this.eventBus.emit('active-page-changed', null);
     if (hadFocusedPage) this.eventBus.emit('focused-page-changed', null);

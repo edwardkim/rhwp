@@ -22,7 +22,11 @@ import {
   type FlowImagePaintOp,
 } from './flow-image-clip';
 import { FlowImageUrlCache } from './flow-image-url-cache';
-import { drawPageMarginGuides, type PageSpaceRect } from './page-margin-guides';
+import {
+  drawPageMarginGuides,
+  type PageMarginGuideEdges,
+  type PageSpaceRect,
+} from './page-margin-guides';
 import type { RenderBackend } from './render-backend';
 import { isSameRenderDocument, type RenderDocumentIdentity } from './render-document-identity.ts';
 
@@ -115,6 +119,7 @@ export class PageRenderer {
   private prefetchRequestTokens = new Map<number, number>();
   private nextPrefetchRequestToken = 0;
   private flowSplitSupported: boolean | null = null;
+  private pageMarginGuideEdges: PageMarginGuideEdges = 'both';
 
   constructor(
     private wasm: WasmBridge,
@@ -141,6 +146,12 @@ export class PageRenderer {
     this.backend = backend;
     this.renderProfile = renderProfile;
     this.canvaskitRenderer = canvaskitRenderer;
+    return true;
+  }
+
+  setPageMarginGuideEdges(edges: PageMarginGuideEdges): boolean {
+    if (this.pageMarginGuideEdges === edges) return false;
+    this.pageMarginGuideEdges = edges;
     return true;
   }
 
@@ -1001,7 +1012,13 @@ export class PageRenderer {
     scale: number,
     clip?: PageSpaceRect,
   ): void {
-    drawPageMarginGuides(this.wasm.getPageInfo(pageIdx), canvas, scale, clip);
+    drawPageMarginGuides(
+      this.wasm.getPageInfo(pageIdx),
+      canvas,
+      scale,
+      clip,
+      this.pageMarginGuideEdges,
+    );
   }
 
   /**

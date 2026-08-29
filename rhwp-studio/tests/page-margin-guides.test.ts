@@ -117,6 +117,25 @@ test('HF edge reuses only the non-overlapping page-margin corners', () => {
   assert.equal(PAGE_MARGIN_GUIDE_LINE_WIDTH, 0.6);
 });
 
+test('HF mode can hide the body edge whose outward direction is reversed', () => {
+  const headerBody = recordingCanvas();
+  const footerBody = recordingCanvas();
+  const topOnly = recordingCanvas();
+  const bottomOnly = recordingCanvas();
+  const bodyRect = { x: 60, y: 60, width: 480, height: 680 };
+
+  drawPageMarginGuides(pageInfo, headerBody.canvas, 1, undefined, 'bottom');
+  drawPageMarginGuides(pageInfo, footerBody.canvas, 1, undefined, 'top');
+  drawPageMarginGuideCorners(bodyRect, topOnly.canvas, 1, 'top');
+  drawPageMarginGuideCorners(bodyRect, bottomOnly.canvas, 1, 'bottom');
+
+  const pathCalls = (calls: ContextCall[]) => calls.filter(
+    (call) => call.name === 'moveTo' || call.name === 'lineTo',
+  );
+  assert.deepEqual(pathCalls(headerBody.calls), pathCalls(bottomOnly.calls));
+  assert.deepEqual(pathCalls(footerBody.calls), pathCalls(topOnly.calls));
+});
+
 test('PageRenderer forwards the focused patch to the margin-guide clip', async () => {
   const studioRoot = fileURLToPath(new URL('..', import.meta.url));
   const vite = await createServer({

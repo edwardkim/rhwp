@@ -83,6 +83,7 @@ export function drawPageMarginGuides(
   canvas: HTMLCanvasElement,
   scale: number,
   clip?: PageSpaceRect,
+  edges: PageMarginGuideEdges = 'both',
 ): void {
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
@@ -111,7 +112,7 @@ export function drawPageMarginGuides(
     },
     canvas,
     scale,
-    'both',
+    edges,
     clip,
   );
 }
