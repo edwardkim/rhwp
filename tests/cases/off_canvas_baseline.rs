@@ -42,13 +42,22 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
+use std::time::{Duration, Instant};
 
 use rhwp::diagnostics::layout_anomaly::{scan_page, AnomalyOptions};
 use rhwp::document_core::DocumentCore;
 
 const SAMPLES_ROOT: &str = "samples";
 const BASELINE_PATH: &str = "tests/fixtures/off_canvas_baseline.tsv";
-const PARTITIONS: usize = 8;
+const PARTITIONS: usize = 16;
+const SLOW_SAMPLE_LOG_THRESHOLD: Duration = Duration::from_secs(30);
+
+/// 전용 장기 sentinel 이 담당하는 fixture.
+///
+/// `issue2063_huge_cellbreak_table.hwp` 는 5만+ 셀 CellBreak 표로, layout-anomaly
+/// 전수 래칫에서도 단일 문서가 수 분을 차지한다. `tests/issue_2063.rs`가 해당 문서의
+/// 완주 성능과 page-count pin을 전담하므로 여기서는 중복 스캔하지 않는다.
+const DEDICATED_SLOW_FIXTURES: &[&str] = &["issue2063_huge_cellbreak_table.hwp"];
 
 fn collect_samples() -> Vec<(PathBuf, String)> {
     fn walk(dir: &Path, root: &Path, acc: &mut Vec<(PathBuf, String)>) {
@@ -72,6 +81,7 @@ fn collect_samples() -> Vec<(PathBuf, String)> {
     }
     let mut acc = Vec::new();
     walk(Path::new(SAMPLES_ROOT), Path::new(SAMPLES_ROOT), &mut acc);
+    acc.retain(|(_, rel)| !DEDICATED_SLOW_FIXTURES.contains(&rel.as_str()));
     acc.sort_by(|a, b| a.1.cmp(&b.1));
     assert!(!acc.is_empty(), "samples 에 hwp/hwpx 샘플이 없음");
     acc
@@ -166,13 +176,21 @@ fn off_canvas_does_not_grow_partition(part: usize) {
             scope.spawn(|| loop {
                 let item = queue.lock().unwrap().next();
                 let Some((path, rel)) = item else { break };
+                let started = Instant::now();
                 match count_doc(&path) {
                     Some(n) => {
-                        results.lock().unwrap().insert(rel, n);
+                        results.lock().unwrap().insert(rel.clone(), n);
                     }
                     None => {
                         skipped.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
                     }
+                }
+                let elapsed = started.elapsed();
+                if elapsed >= SLOW_SAMPLE_LOG_THRESHOLD {
+                    eprintln!(
+                        "off-canvas slow sample partition {part}/{PARTITIONS}: {:.3}s {rel}",
+                        elapsed.as_secs_f64()
+                    );
                 }
             });
         }
@@ -261,4 +279,12 @@ off_canvas_partition_tests!(
     off_canvas_does_not_grow_partition_5 => 5,
     off_canvas_does_not_grow_partition_6 => 6,
     off_canvas_does_not_grow_partition_7 => 7,
+    off_canvas_does_not_grow_partition_8 => 8,
+    off_canvas_does_not_grow_partition_9 => 9,
+    off_canvas_does_not_grow_partition_10 => 10,
+    off_canvas_does_not_grow_partition_11 => 11,
+    off_canvas_does_not_grow_partition_12 => 12,
+    off_canvas_does_not_grow_partition_13 => 13,
+    off_canvas_does_not_grow_partition_14 => 14,
+    off_canvas_does_not_grow_partition_15 => 15,
 );
