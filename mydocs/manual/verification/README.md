@@ -19,6 +19,7 @@ last_verified: 2026-07-30
 | 그림 mime 발산(디코드 불가 방출) 전수 검출 | [이미지 발산 스윕](image_divergence_sweep.md) | [시각 검증 거버넌스](visual_verification_governance.md) |
 | 표·그림 geometry 무회귀 | [개체 시각 회귀 하니스](object_visual_regression.md) | [페이지·PI 매칭 오라클](verify_pi_page_vs_hangul.md) |
 | 편집 전후 페이지 수 무회귀 | [편집-스윕 하니스](edit_sweep.md) | [개체 시각 회귀 하니스](object_visual_regression.md) |
+| 한컴 설치본 없이 조판 판정(저장소 `pdf/` 정답지) | [저장소 정답지 오라클](repo_pdf_oracle.md) | [한글 페이지 충실도 오라클](hangul_page_oracle.md) |
 | HWPX→HWP 페이지네이션 정합 | [roundtrip fidelity 하니스](roundtrip_fidelity_harness.md) | [한글 페이지 충실도 오라클](hangul_page_oracle.md) |
 | 한글 버전 간 페이지네이션 차이 확정(정답지 버전 판단) | [한글 버전별 페이지네이션 대조](hangul_version_oracle.md) | [한글 페이지 충실도 오라클](hangul_page_oracle.md) |
 | 한글 PDF 줄 baseline 대조 | [한글 PDF baseline](hangul_pdf_baseline.md) | [시각 클리핑 검출기](visual_clipping_detector.md) |
