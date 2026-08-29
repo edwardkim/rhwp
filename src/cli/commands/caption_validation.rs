@@ -4,18 +4,162 @@ use std::fs;
 use std::path::Path;
 
 use rhwp::model::control::Control;
-use rhwp::model::shape::{CaptionDirection, CaptionVertAlign};
+use rhwp::model::document::Section;
+use rhwp::model::image::Picture;
+use rhwp::model::shape::{Caption, CaptionDirection, CaptionVertAlign, ShapeObject};
 
 use crate::{EXIT_OK, EXIT_RUNTIME, EXIT_USAGE};
 
-#[derive(Clone, Copy)]
+const CAPTION_WIDTH: u32 = 8504;
+const CAPTION_SPACING: i16 = 850;
+
 struct CaptionExpectation {
     para: usize,
     control: usize,
-    direction_name: &'static str,
-    vert_align_name: &'static str,
     direction: CaptionDirection,
     vert_align: CaptionVertAlign,
+}
+
+impl CaptionExpectation {
+    fn direction_name(&self) -> &'static str {
+        match self.direction {
+            CaptionDirection::Left => "Left",
+            CaptionDirection::Right => "Right",
+            CaptionDirection::Top => "Top",
+            CaptionDirection::Bottom => "Bottom",
+        }
+    }
+
+    fn vert_align_name(&self) -> &'static str {
+        match self.vert_align {
+            CaptionVertAlign::Top => "Top",
+            CaptionVertAlign::Center => "Center",
+            CaptionVertAlign::Bottom => "Bottom",
+        }
+    }
+
+    fn properties_json(&self) -> String {
+        format!(
+            r#"{{"hasCaption":true,"captionDirection":"{}","captionVertAlign":"{}","captionWidth":{CAPTION_WIDTH},"captionSpacing":{CAPTION_SPACING}}}"#,
+            self.direction_name(),
+            self.vert_align_name()
+        )
+    }
+}
+
+const EXPECTATIONS: [CaptionExpectation; 4] = [
+    CaptionExpectation {
+        para: 0,
+        control: 2,
+        direction: CaptionDirection::Bottom,
+        vert_align: CaptionVertAlign::Top,
+    },
+    CaptionExpectation {
+        para: 0,
+        control: 3,
+        direction: CaptionDirection::Top,
+        vert_align: CaptionVertAlign::Top,
+    },
+    CaptionExpectation {
+        para: 1,
+        control: 0,
+        direction: CaptionDirection::Left,
+        vert_align: CaptionVertAlign::Center,
+    },
+    CaptionExpectation {
+        para: 1,
+        control: 1,
+        direction: CaptionDirection::Right,
+        vert_align: CaptionVertAlign::Center,
+    },
+];
+
+/// `set_picture_properties_native`의 좌표·그림 해석과 같은 범위를 읽는다.
+///
+/// 본문 뒤의 para 인덱스는 DocumentCore와 동일하게 Endnote 문단을 이어 붙인 가상
+/// 인덱스로 해석한다. HWP3 파서는 그림을 `Shape(Picture)`로 올릴 수 있으므로 두
+/// 그림 표현을 모두 받아야 mutation 성공 뒤 verification만 실패하는 오탐이 없다.
+fn resolve_picture<'a>(
+    section: &'a Section,
+    expected: &CaptionExpectation,
+) -> Result<&'a Picture, String> {
+    let body_len = section.paragraphs.len();
+    let paragraph = if expected.para < body_len {
+        &section.paragraphs[expected.para]
+    } else {
+        let mut virtual_idx = expected.para - body_len;
+        let mut found = None;
+        'outer: for body_para in &section.paragraphs {
+            for control in &body_para.controls {
+                if let Control::Endnote(endnote) = control {
+                    if virtual_idx < endnote.paragraphs.len() {
+                        found = endnote.paragraphs.get(virtual_idx);
+                        break 'outer;
+                    }
+                    virtual_idx -= endnote.paragraphs.len();
+                }
+            }
+        }
+        found.ok_or_else(|| {
+            format!(
+                "para={} 가 문서 범위를 벗어남(본문 문단 {}개)",
+                expected.para, body_len
+            )
+        })?
+    };
+
+    let control = paragraph.controls.get(expected.control).ok_or_else(|| {
+        format!(
+            "para={} ci={} 가 범위를 벗어남(컨트롤 {}개)",
+            expected.para,
+            expected.control,
+            paragraph.controls.len()
+        )
+    })?;
+    match control {
+        Control::Picture(picture) => Ok(picture),
+        Control::Shape(shape) => match shape.as_ref() {
+            ShapeObject::Picture(picture) => Ok(picture),
+            _ => Err(format!(
+                "para={} ci={} 의 Shape 컨트롤이 그림이 아님",
+                expected.para, expected.control
+            )),
+        },
+        _ => Err(format!(
+            "para={} ci={} 가 그림 컨트롤이 아님",
+            expected.para, expected.control
+        )),
+    }
+}
+
+fn verify_caption<'a>(
+    picture: &'a Picture,
+    expected: &CaptionExpectation,
+) -> Result<&'a Caption, String> {
+    let caption = picture.caption.as_ref().ok_or_else(|| {
+        format!(
+            "para={} ci={} 에 캡션이 없음",
+            expected.para, expected.control
+        )
+    })?;
+    if caption.direction != expected.direction
+        || caption.vert_align != expected.vert_align
+        || caption.width != CAPTION_WIDTH
+        || caption.spacing != CAPTION_SPACING
+    {
+        return Err(format!(
+            "para={} ci={} 기대=(dir={:?}, va={:?}, width={CAPTION_WIDTH}, spacing={CAPTION_SPACING}) 실제=(dir={:?}, va={:?}, width={}, spacing={})",
+            expected.para,
+            expected.control,
+            expected.direction,
+            expected.vert_align,
+            caption.direction,
+            caption.vert_align,
+            caption.width,
+            caption.spacing
+        ));
+    }
+    Ok(caption)
 }
 
 /// 캡션 방향별 테스트: 4개 이미지에 각각 Bottom/Top/Left/Right 캡션을 설정하고 SVG 출력
@@ -78,51 +222,17 @@ pub(crate) fn run(args: &[String]) -> i32 {
     }
 
     // 문단 0: 컨트롤 2,3 / 문단 1: 컨트롤 0,1
-    let expectations = [
-        CaptionExpectation {
-            para: 0,
-            control: 2,
-            direction_name: "Bottom",
-            vert_align_name: "Top",
-            direction: CaptionDirection::Bottom,
-            vert_align: CaptionVertAlign::Top,
-        },
-        CaptionExpectation {
-            para: 0,
-            control: 3,
-            direction_name: "Top",
-            vert_align_name: "Top",
-            direction: CaptionDirection::Top,
-            vert_align: CaptionVertAlign::Top,
-        },
-        CaptionExpectation {
-            para: 1,
-            control: 0,
-            direction_name: "Left",
-            vert_align_name: "Center",
-            direction: CaptionDirection::Left,
-            vert_align: CaptionVertAlign::Center,
-        },
-        CaptionExpectation {
-            para: 1,
-            control: 1,
-            direction_name: "Right",
-            vert_align_name: "Center",
-            direction: CaptionDirection::Right,
-            vert_align: CaptionVertAlign::Center,
-        },
-    ];
-
-    let mut mutation_succeeded = [false; 4];
+    let mut mutation_succeeded = vec![false; EXPECTATIONS.len()];
     let mut validation_failed = false;
-    for (i, expected) in expectations.iter().enumerate() {
-        let json = format!(
-            r#"{{"hasCaption":true,"captionDirection":"{}","captionVertAlign":"{}","captionWidth":8504,"captionSpacing":850}}"#,
-            expected.direction_name, expected.vert_align_name
-        );
+    for (i, expected) in EXPECTATIONS.iter().enumerate() {
+        let json = expected.properties_json();
         println!(
             "[{}] para={}, ci={}, dir={}, va={}",
-            i, expected.para, expected.control, expected.direction_name, expected.vert_align_name
+            i,
+            expected.para,
+            expected.control,
+            expected.direction_name(),
+            expected.vert_align_name()
         );
         match doc.set_picture_properties_native(0, expected.para, expected.control, &json) {
             Ok(result) => {
@@ -142,71 +252,23 @@ pub(crate) fn run(args: &[String]) -> i32 {
     // mutation 성공만으로는 round-trip 검증이 아니다. 네 대상의 실제 캡션 값까지
     // 모두 일치해야 렌더 단계로 이동한다. setter 실패 대상은 이미 진단했으므로
     // 중복 오류 대신 성공한 mutation만 확인한다.
-    for (i, expected) in expectations.iter().enumerate() {
+    let section = &doc.document().sections[0];
+    for (i, expected) in EXPECTATIONS.iter().enumerate() {
         if !mutation_succeeded[i] {
             continue;
         }
-        let Some(section) = doc.document().sections.first() else {
-            eprintln!("문서 오류: 캡션을 검사할 section이 없습니다.");
-            return EXIT_RUNTIME;
-        };
-        let Some(paragraph) = section.paragraphs.get(expected.para) else {
-            validation_failed = true;
-            eprintln!(
-                "[{}] 캡션 검증 오류: para={} 가 문서 범위를 벗어남(문단 {}개)",
-                i,
-                expected.para,
-                section.paragraphs.len()
-            );
-            continue;
-        };
-        let Some(control) = paragraph.controls.get(expected.control) else {
-            validation_failed = true;
-            eprintln!(
-                "[{}] 캡션 검증 오류: para={} ci={} 가 범위를 벗어남(컨트롤 {}개)",
-                i,
-                expected.para,
-                expected.control,
-                paragraph.controls.len()
-            );
-            continue;
-        };
-        let Control::Picture(picture) = control else {
-            validation_failed = true;
-            eprintln!(
-                "[{}] 캡션 검증 오류: para={} ci={} 가 그림 컨트롤이 아님",
-                i, expected.para, expected.control
-            );
-            continue;
-        };
-        let Some(caption) = picture.caption.as_ref() else {
-            validation_failed = true;
-            eprintln!(
-                "[{}] 캡션 검증 오류: para={} ci={} 에 캡션이 없음",
-                i, expected.para, expected.control
-            );
-            continue;
-        };
-        if caption.direction != expected.direction
-            || caption.vert_align != expected.vert_align
-            || caption.width != 8504
-            || caption.spacing != 850
+        let caption = match resolve_picture(section, expected)
+            .and_then(|picture| verify_caption(picture, expected))
         {
-            validation_failed = true;
-            eprintln!(
-                "[{}] 캡션 검증 오류: para={} ci={} 기대=(dir={:?}, va={:?}, width=8504, spacing=850) 실제=(dir={:?}, va={:?}, width={}, spacing={})",
-                i,
-                expected.para,
-                expected.control,
-                expected.direction,
-                expected.vert_align,
-                caption.direction,
-                caption.vert_align,
-                caption.width,
-                caption.spacing
-            );
-            continue;
-        }
+            Ok(caption) => caption,
+            Err(error) => {
+                validation_failed = true;
+                eprintln!("[{i}] 캡션 검증 오류: {error}");
+                continue;
+            }
+        };
+        // 기존 사람용 stdout은 Option<String>의 Debug 표현을 포함한다. 내부 진단
+        // 소비자가 문자열을 비교하므로 이 래핑을 단순화하지 않는다.
         println!(
             "[{}] caption={:?}",
             i,

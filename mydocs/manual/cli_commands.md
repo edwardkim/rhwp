@@ -1791,7 +1791,7 @@ Hancom Office가 저장한 HWP와 rhwp가 생성한 HWP의 DocInfo CHAR_SHAPE를
 
 | 명령 | 용도 |
 |------|------|
-| `test-caption <파일>` | 캡션 라운드트립 검증 |
+| `test-caption <파일>` | 고정 fixture 캡션 라운드트립 검증 |
 | `test-field <파일>` | 필드 라운드트립 검증 |
 | `test-shape <입력> <출력>` | 도형 라운드트립 검증 |
 | `gen-table` | 표 테스트 HWP 생성 |

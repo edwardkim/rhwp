@@ -797,7 +797,7 @@ pub(super) fn extend(commands: &mut Vec<serde_json::Value>) {
         cmd("hwp5-cell-header-probe", "셀 헤더 프로브"),
         // ── 내부 개발용 ──
         cmd("test-shape", "도형 왕복 테스트"),
-        cmd("test-caption", "캡션 테스트"),
+        cmd("test-caption", "고정 fixture 캡션 라운드트립 검증"),
         cmd("test-field", "누름틀 왕복 테스트"),
         cmd("gen-table", "표 샘플 생성"),
         cmd("gen-pua", "PUA 샘플 생성"),

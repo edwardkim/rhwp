@@ -5,7 +5,9 @@
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 
+use rhwp::model::control::Control;
 use rhwp::model::paragraph::Paragraph;
+use rhwp::model::shape::ShapeObject;
 use rhwp::wasm_api::HwpDocument;
 
 fn rhwp_bin() -> String {
@@ -65,8 +67,18 @@ impl CaptionFixture {
             }
         }
 
-        std::fs::write(&input, doc.export_hwp().expect("fixture HWP export"))
-            .expect("fixture HWP 저장");
+        let bytes = doc.export_hwp().expect("fixture HWP export");
+        std::fs::write(&input, bytes).expect("fixture HWP 저장");
+        Self {
+            root,
+            input,
+            output,
+        }
+    }
+
+    fn for_existing_input(input: PathBuf) -> Self {
+        let root = unique_temp_dir();
+        let output = root.join("svg");
         Self {
             root,
             input,
@@ -118,16 +130,37 @@ fn assert_controlled_failure(out: &Output, output_dir: &Path) {
     );
 }
 
+fn assert_success(out: &Output, output_dir: &Path) {
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert_eq!(
+        out.status.code(),
+        Some(0),
+        "정상 fixture는 성공해야 합니다. stdout: {stdout}\nstderr: {stderr}"
+    );
+    assert_eq!(
+        stdout.matches("caption=Some(").count(),
+        4,
+        "네 대상의 verification 증적이 모두 있어야 합니다: {stdout}"
+    );
+    assert!(stdout.contains("완료"), "성공 메시지가 없습니다: {stdout}");
+    assert!(
+        std::fs::read_dir(output_dir)
+            .expect("출력 폴더 읽기 실패")
+            .filter_map(Result::ok)
+            .any(|entry| entry.path().extension().and_then(|ext| ext.to_str()) == Some("svg")),
+        "정상 종료했다면 SVG가 하나 이상 생성되어야 합니다"
+    );
+}
+
 #[test]
 fn test_caption_rejects_all_fail_document_without_panic() {
     // fixture 전용 좌표가 없는 임의의 실문서: 네 mutation이 모두 실패해야 한다.
     let sample = std::fs::canonicalize("samples/2022년 국립국어원 업무계획.hwp")
         .expect("회귀 샘플이 저장소에 있어야 합니다");
-    let root = unique_temp_dir();
-    let output = root.join("svg");
-    let out = run_test_caption(&sample, &output);
-    assert_controlled_failure(&out, &output);
-    std::fs::remove_dir_all(root).expect("임시 폴더 정리 실패");
+    let fixture = CaptionFixture::for_existing_input(sample);
+    let out = run_test_caption(&fixture.input, &fixture.output);
+    assert_controlled_failure(&out, &fixture.output);
 }
 
 #[test]
@@ -142,19 +175,74 @@ fn test_caption_rejects_partial_failure_without_svg() {
 fn test_caption_succeeds_only_when_all_targets_verify() {
     let fixture = CaptionFixture::with_second_paragraph_pictures(2);
     let out = run_test_caption(&fixture.input, &fixture.output);
-    let stdout = String::from_utf8_lossy(&out.stdout);
-    let stderr = String::from_utf8_lossy(&out.stderr);
-    assert_eq!(
-        out.status.code(),
-        Some(0),
-        "정상 fixture는 성공해야 합니다. stdout: {stdout}\nstderr: {stderr}"
-    );
-    assert!(stdout.contains("완료"), "성공 메시지가 없습니다: {stdout}");
-    assert!(
-        std::fs::read_dir(&fixture.output)
-            .expect("출력 폴더 읽기 실패")
-            .filter_map(Result::ok)
-            .any(|entry| entry.path().extension().and_then(|ext| ext.to_str()) == Some("svg")),
-        "정상 종료했다면 SVG가 하나 이상 생성되어야 합니다"
-    );
+    assert_success(&out, &fixture.output);
+}
+
+#[test]
+fn test_shape_picture_caption_properties_round_trip() {
+    let mut doc = HwpDocument::create_empty();
+    let png =
+        std::fs::read(PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("assets/logo/logo-16.png"))
+            .expect("tiny png");
+    doc.insert_picture_native(
+        0,
+        0,
+        0,
+        &[],
+        &png,
+        1200,
+        1200,
+        16,
+        16,
+        "png",
+        "shape picture caption contract",
+        None,
+        None,
+    )
+    .expect("그림 삽입");
+
+    let controls = &mut doc.document_mut().sections[0].paragraphs[0].controls;
+    let picture = match controls.remove(0) {
+        Control::Picture(picture) => picture,
+        other => panic!("setter 계약 대상이 Picture가 아님: {other:?}"),
+    };
+    controls.insert(0, Control::Shape(Box::new(ShapeObject::Picture(picture))));
+
+    doc.set_picture_properties_native(
+        0,
+        0,
+        0,
+        r#"{"hasCaption":true,"captionDirection":"Right","captionVertAlign":"Center","captionWidth":8504,"captionSpacing":850}"#,
+    )
+    .expect("Shape(Picture) 캡션 설정");
+    let properties = doc
+        .get_picture_properties_native(0, 0, 0)
+        .expect("Shape(Picture) 캡션 재조회");
+    let actual: serde_json::Value = serde_json::from_str(&properties).expect("그림 속성 JSON");
+    assert_eq!(actual["hasCaption"], true);
+    assert_eq!(actual["captionDirection"], "Right");
+    assert_eq!(actual["captionVertAlign"], "Center");
+    assert_eq!(actual["captionWidth"], 8504);
+    assert_eq!(actual["captionSpacing"], 850);
+}
+
+#[test]
+fn test_caption_self_description_declares_fixed_fixture_scope() {
+    for args in [["--help"].as_slice(), ["capabilities"].as_slice()] {
+        let out = Command::new(rhwp_bin())
+            .args(args)
+            .output()
+            .expect("자기서술 명령 실행 실패");
+        let stdout = String::from_utf8_lossy(&out.stdout);
+        let stderr = String::from_utf8_lossy(&out.stderr);
+        assert_eq!(
+            out.status.code(),
+            Some(0),
+            "자기서술 명령은 성공해야 합니다. args={args:?} stderr={stderr}"
+        );
+        assert!(
+            stdout.contains("test-caption") && stdout.contains("고정 fixture 캡션 라운드트립 검증"),
+            "test-caption이 고정 fixture 전용임을 밝혀야 합니다. args={args:?} stdout={stdout}"
+        );
+    }
 }
