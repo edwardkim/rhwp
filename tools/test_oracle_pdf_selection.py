@@ -57,6 +57,13 @@ class OraclePdfSelectionTests(unittest.TestCase):
         self.assertEqual(canonical_candidates(root, [root_pdf, nested_pdf]), [root_pdf])
         self.assertEqual(canonical_candidates(nested, [root_pdf, nested_pdf]), [nested_pdf])
 
+    def test_source_version_suffix_is_part_of_the_canonical_identity(self):
+        older = canonical_pdf_path('samples/hwp3-sample16-hwp5-2018.hwp', '2020')
+        newer = canonical_pdf_path('samples/hwp3-sample16-hwp5-2022.hwp', '2020')
+        self.assertEqual(older, 'pdf/hwp3-sample16-hwp5-2018-hwp-2020.pdf')
+        self.assertEqual(newer, 'pdf/hwp3-sample16-hwp5-2022-hwp-2020.pdf')
+        self.assertNotEqual(older, newer)
+
     def test_engine_comes_from_saved_product_not_extension(self):
         self.assertEqual(engine_for_product('hancom-office-2024'), '2024')
         self.assertEqual(engine_for_product('hancom-office-2022'), '2020')

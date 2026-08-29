@@ -14,7 +14,7 @@ import unicodedata
 
 
 SUFFIX = re.compile(r'-(20\d\d|hwp|hwpx|kopub|no-ttf|current)+$', re.I)
-CANONICAL = re.compile(r'-(hwp|hwpx)-(2020|2024)-([0-9a-f]{16})$', re.I)
+CANONICAL = re.compile(r'-(hwp|hwpx)-(2020|2024)$', re.I)
 
 
 def stem(path):
@@ -24,6 +24,17 @@ def stem(path):
     while prev != name:
         prev = name
         name = SUFFIX.sub('', name)
+    return unicodedata.normalize('NFC', name)
+
+
+def source_stem(path):
+    """원본의 식별자 접미사를 보존한 파일명 stem을 반환한다.
+
+    `-2022` 같은 원본명 일부는 출력 조건이 아니라 문서를 식별한다. canonical PDF를
+    만들 때 `stem()`을 쓰면 이런 서로 다른 원본이 같은 출력 경로를 공유하므로, 여기서는
+    확장자만 제거한다.
+    """
+    name = re.sub(r'\.(hwp|hwpx)$', '', os.path.basename(path), flags=re.I)
     return unicodedata.normalize('NFC', name)
 
 
@@ -58,7 +69,7 @@ def source_relative_path(path):
 
 def canonical_filename(sample, engine):
     """원본 형식과 선택 엔진이 드러나는 PDF 파일 이름을 만든다."""
-    return '%s-%s-%s.pdf' % (stem(sample), source_format(sample), engine)
+    return '%s-%s-%s.pdf' % (source_stem(sample), source_format(sample), engine)
 
 
 def canonical_pdf_path(sample, engine):
