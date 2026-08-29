@@ -1,5 +1,6 @@
 import type { CellBbox } from '@/core/types';
 import { VirtualScroll } from '@/view/virtual-scroll';
+import type { CellSelectionPhase, CellSelectionPoint } from './cell-selection-phase';
 
 /** F5 셀 블록 선택 영역을 하이라이트 오버레이로 렌더링한다 */
 export class CellSelectionRenderer {
@@ -9,6 +10,7 @@ export class CellSelectionRenderer {
   constructor(
     private container: HTMLElement,
     private virtualScroll: VirtualScroll,
+    private onPhaseChange: (phase: CellSelectionPhase | null) => void = () => {},
   ) {
     this.layer = document.createElement('div');
     this.layer.className = 'cell-selection-layer';
@@ -25,8 +27,10 @@ export class CellSelectionRenderer {
     range: { startRow: number; startCol: number; endRow: number; endCol: number },
     zoom: number,
     excluded?: Set<string>,
+    phase?: CellSelectionPhase,
+    focus?: CellSelectionPoint,
   ): void {
-    this.clear();
+    this.clearHighlights();
     this.ensureAttached();
 
     const scrollContent = this.container.querySelector('#scroll-content');
@@ -59,10 +63,41 @@ export class CellSelectionRenderer {
       this.layer.appendChild(div);
       this.highlights.push(div);
     }
+
+    // 한컴과 같은 공간 근접 표시: 방향키가 움직이는 focus 셀의 중앙에만 단계 마커를 둔다.
+    // 병합 셀에서는 focus 좌표를 포함하는 anchor bbox를 사용한다.
+    if ((phase === 1 || phase === 2) && focus) {
+      const focusCell = cellBboxes.find((cell) =>
+        focus.row >= cell.row && focus.row < cell.row + cell.rowSpan &&
+        focus.col >= cell.col && focus.col < cell.col + cell.colSpan
+      );
+      if (focusCell) {
+        const marker = document.createElement('div');
+        const pageOffset = this.virtualScroll.getPageOffset(focusCell.pageIndex);
+        const pageDisplayWidth = this.virtualScroll.getPageWidth(focusCell.pageIndex);
+        const pageLeft = (contentWidth - pageDisplayWidth) / 2;
+        marker.className = phase === 1
+          ? 'cell-selection-phase-marker cell-selection-phase-marker--single'
+          : 'cell-selection-phase-marker cell-selection-phase-marker--range';
+        marker.setAttribute('aria-hidden', 'true');
+        marker.style.cssText =
+          `left:${pageLeft + (focusCell.x + focusCell.w / 2) * zoom}px;` +
+          `top:${pageOffset + (focusCell.y + focusCell.h / 2) * zoom}px;`;
+        this.layer.appendChild(marker);
+        this.highlights.push(marker);
+      }
+    }
+
+    this.onPhaseChange(phase ?? null);
   }
 
   /** 모든 하이라이트를 제거한다 */
   clear(): void {
+    this.clearHighlights();
+    this.onPhaseChange(null);
+  }
+
+  private clearHighlights(): void {
     for (const div of this.highlights) {
       div.remove();
     }

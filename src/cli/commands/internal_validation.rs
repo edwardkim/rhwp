@@ -90,7 +90,7 @@ pub(crate) fn run(args: &[String]) -> i32 {
     println!("\n저장: {} ({}바이트)", output, saved.len());
 
     // 5. 재로딩 → 필드 확인
-    let mut core2 = match rhwp::document_core::DocumentCore::from_bytes(&saved) {
+    let core2 = match rhwp::document_core::DocumentCore::from_bytes(&saved) {
         Ok(c) => c,
         Err(e) => {
             eprintln!("오류: 재로딩 실패 - {:?}", e);

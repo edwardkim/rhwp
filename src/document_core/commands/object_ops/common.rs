@@ -1,13 +1,11 @@
 //! 공통 개체 속성/헬퍼 + 새 번호 (object_ops 분할, #1904).
 
 use super::MIN_SHAPE_SIZE;
-use crate::document_core::helpers::{get_textbox_from_shape, get_textbox_from_shape_mut};
 use crate::document_core::DocumentCore;
 use crate::error::HwpError;
 use crate::model::control::Control;
-use crate::model::event::DocumentEvent;
 use crate::model::paragraph::Paragraph;
-use crate::model::shape::{common_obj_offsets, ShapeObject};
+use crate::model::shape::ShapeObject;
 
 impl DocumentCore {
     const COMMON_OBJ_ATTR_KNOWN_MASK: u32 = 0x01

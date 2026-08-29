@@ -8,7 +8,7 @@ use crate::document_core::DocumentCore;
 use crate::error::HwpError;
 use crate::model::control::Control;
 use crate::model::paragraph::Paragraph;
-use crate::renderer::render_tree::{PageRenderTree, TextRunNode};
+use crate::renderer::render_tree::TextRunNode;
 
 /// 화면에서는 여러 글자로 보이지만 모델에서는 marker 한 글자인 필드 런의 캐럿 경계다.
 ///
@@ -376,8 +376,6 @@ impl DocumentCore {
         preferred_x: f64,
         cell_ctx: Option<(usize, usize, usize, usize)>,
     ) -> Result<String, HwpError> {
-        use crate::renderer::render_tree::{RenderNode, RenderNodeType};
-
         // ═══ PHASE 1: preferredX 결정 ═══
         let actual_px = if preferred_x < 0.0 {
             match self.get_cursor_rect_values(sec, para, char_offset, cell_ctx) {
@@ -1054,7 +1052,6 @@ impl DocumentCore {
         char_range: (usize, usize),
         preferred_x: f64,
     ) -> Result<LineCursorHit, HwpError> {
-        use crate::renderer::layout::compute_char_positions;
         use crate::renderer::render_tree::{RenderNode, RenderNodeType};
 
         // 해당 문단이 포함된 페이지의 렌더 트리 빌드
@@ -1823,7 +1820,6 @@ impl DocumentCore {
         cell_target: Option<SelectionCellTarget<'_>>,
         page_hints: Option<(u32, u32)>,
     ) -> Result<String, HwpError> {
-        use crate::renderer::layout::compute_char_positions;
         use crate::renderer::render_tree::{RenderNode, RenderNodeType};
 
         // ── 커서 위치를 pre-built tree에서 직접 찾는 헬퍼 ──

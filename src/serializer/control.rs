@@ -19,7 +19,7 @@ use crate::model::shape::{
     HorzRelTo, OleShape, ShapeComponentAttr, ShapeObject, SizeCriterion, TextFlow, TextWrap,
     VertAlign, VertRelTo,
 };
-use crate::model::style::{Fill, FillType, ImageFillMode, ShapeBorderLine};
+use crate::model::style::{Fill, FillType, ImageFillMode};
 use crate::model::table::{Cell, Table, TablePageBreak, VerticalAlign};
 use crate::parser::record::Record;
 use crate::parser::tags;

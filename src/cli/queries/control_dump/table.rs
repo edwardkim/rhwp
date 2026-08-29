@@ -114,9 +114,18 @@ fn dump_cell_paragraph(
             .iter()
             .enumerate()
             .map(|(line_index, line)| {
+                // ts/cs/sw 는 셀 폭 판정의 근거다. 안 여백이 셀 폭을 넘는 셀에서
+                // 한/글이 실제로 쓴 줄 너비(sw)가 여기 남는다 — 빠지면 그 셀을
+                // 진단할 수 없다. 문단 dump(`control_dump/mod.rs`)와 같은 필드를 찍는다.
                 format!(
-                    "ls[{}] vpos={} lh={} ls={}",
-                    line_index, line.vertical_pos, line.line_height, line.line_spacing
+                    "ls[{}] ts={} vpos={} lh={} ls={} cs={} sw={}",
+                    line_index,
+                    line.text_start,
+                    line.vertical_pos,
+                    line.line_height,
+                    line.line_spacing,
+                    line.column_start,
+                    line.segment_width
                 )
             })
             .collect::<Vec<_>>();

@@ -29,13 +29,7 @@ pub fn is_tac_table_inline(
     // 표만 90% 문턱을 우연히 통과해 인라인이 되고, 그 인라인 흐름이 이웃
     // 셀의 폴백 기준 x 를 +22~27px 오염시켰다(약장 2·5·11). 선언 폭이 없는
     // 합성 표만 colsum 폴백.
-    let tac_width = |t: &Table| -> u32 {
-        if t.common.width > 0 {
-            t.common.width
-        } else {
-            t.get_column_widths().iter().sum()
-        }
-    };
+    let tac_width = |t: &Table| -> u32 { t.flow_width_hu() };
     let table_width: u32 = tac_width(table);
 
     if !text.is_empty() {
@@ -1563,7 +1557,9 @@ impl HeightMeasurer {
                 };
                 // [#2279 axis B 보류] 측정 shrink 폭은 80168 r7(한글 8줄) 회귀로 보류
                 // — table_layout::cell_units_uncached 의 [#2279 axis B 보류] 참조.
-                let cell_inner_width = (cell_w_px - pad_left - pad_right).max(0.0);
+                let cell_inner_width = crate::renderer::composer::cell_inner_text_width(
+                    cell_w_px, pad_left, pad_right, self.dpi,
+                );
 
                 // 셀 내 문단들의 실제 높이 합산
                 let text_height: f64 = if cell.text_direction != 0 {
@@ -2417,7 +2413,9 @@ impl HeightMeasurer {
                 } else {
                     0.0
                 };
-                let cell_inner_width = (cell_w_px - pad_left - pad_right).max(0.0);
+                let cell_inner_width = crate::renderer::composer::cell_inner_text_width(
+                    cell_w_px, pad_left, pad_right, self.dpi,
+                );
                 let text_height: f64 = if cell.text_direction != 0 {
                     // 세로쓰기: max(segment_width)
                     let mut max_h: f64 = 0.0;

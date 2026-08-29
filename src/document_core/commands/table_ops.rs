@@ -10,6 +10,24 @@ use crate::model::event::DocumentEvent;
 use crate::model::path::{path_from_flat, PathSegment};
 use crate::model::shape::common_obj_offsets;
 
+/// [#6388] 표 CTRL_HEADER raw 캐시의 한 필드를 제자리에 덧쓴다 — **raw 를 늘리지 않는다.**
+///
+/// 표는 `raw_ctrl_data` 가 정본이라(`serializer/control.rs::serialize_table`) raw 가 비어
+/// 있으면 저장기가 `common` 합성 경로로 간다 — HWPX 파스본·신설 표를 위해 #1916 이 세운
+/// 계약이다. 종전에는 `while len < 필요길이 { push(0) }` 으로 raw 를 늘렸는데, 그러면
+/// **빈 raw 가 "있는" raw 로 바뀌어** 합성 경로가 끊기고 12바이트짜리 CTRL_HEADER 가
+/// 방출됐다. offset 12 이후의 width(12..16)·height(16..20)·여백(24..32)·instance_id(32..36)
+/// 가 그 순간 사라진다(실측: HWPX 파스본 표를 옮겨 저장하면 45152x58826 → 0x0).
+///
+/// 길이가 모자라면 조용히 건너뛴다. 그래도 값을 잃지 않는다 — 호출자가 `common` 을 함께
+/// 갱신하고 그쪽이 합성 원천이기 때문이다. `Table::update_ctrl_dimensions` 가 이미 쓰는
+/// 가드와 같은 규칙이다.
+fn patch_raw_ctrl_field(raw: &mut [u8], range: std::ops::Range<usize>, bytes: &[u8]) {
+    if raw.len() >= range.end {
+        raw[range].copy_from_slice(bytes);
+    }
+}
+
 impl DocumentCore {
     pub(crate) fn get_table_mut(
         &mut self,
@@ -2644,42 +2662,37 @@ impl DocumentCore {
     ) -> Result<String, HwpError> {
         let table = self.get_table_mut(section_idx, parent_para_idx, control_idx)?;
 
-        // CommonObjAttr 바이트 레이아웃: flags/v_offset/h_offset
-        while table.raw_ctrl_data.len() < common_obj_offsets::H_OFFSET.end {
-            table.raw_ctrl_data.push(0);
-        }
-
         let is_treat_as_char = (table.attr & 0x01) != 0;
+
+        // [#6388] 현재 오프셋은 `common` 에서 읽는다 — 종전에는 raw 에서 읽어서 raw 가 빈
+        // 표(HWPX 파스본)를 다루려면 0 확장이 필요했고, 그 확장이 저장 경로를 파괴했다.
+        // `common` 이 정본으로 안전한 근거: 파스본 표 6708개에서 raw V/H_OFFSET 과
+        // `common.vertical_offset`/`horizontal_offset` 불일치가 0건이다(실측).
+        // 쓰기는 `common` 에 하고 raw 에는 길이가 허락할 때만 덧쓴다(dual-write 유지).
 
         // vertical_offset: CommonObjAttr::V_OFFSET (i32 LE)
         let mut new_v = if delta_v != 0 {
-            let cur_v = i32::from_le_bytes(
-                table.raw_ctrl_data[common_obj_offsets::V_OFFSET]
-                    .try_into()
-                    .unwrap(),
-            );
-            let nv = cur_v.wrapping_add(delta_v);
-            table.raw_ctrl_data[common_obj_offsets::V_OFFSET].copy_from_slice(&nv.to_le_bytes());
+            let nv = (table.common.vertical_offset as i32).wrapping_add(delta_v);
             table.common.vertical_offset = nv as u32;
+            patch_raw_ctrl_field(
+                &mut table.raw_ctrl_data,
+                common_obj_offsets::V_OFFSET,
+                &nv.to_le_bytes(),
+            );
             nv
         } else {
-            i32::from_le_bytes(
-                table.raw_ctrl_data[common_obj_offsets::V_OFFSET]
-                    .try_into()
-                    .unwrap(),
-            )
+            table.common.vertical_offset as i32
         };
 
         // horizontal_offset: CommonObjAttr::H_OFFSET (i32 LE)
         if delta_h != 0 {
-            let cur_h = i32::from_le_bytes(
-                table.raw_ctrl_data[common_obj_offsets::H_OFFSET]
-                    .try_into()
-                    .unwrap(),
-            );
-            let new_h = cur_h.wrapping_add(delta_h);
-            table.raw_ctrl_data[common_obj_offsets::H_OFFSET].copy_from_slice(&new_h.to_le_bytes());
+            let new_h = (table.common.horizontal_offset as i32).wrapping_add(delta_h);
             table.common.horizontal_offset = new_h as u32;
+            patch_raw_ctrl_field(
+                &mut table.raw_ctrl_data,
+                common_obj_offsets::H_OFFSET,
+                &new_h.to_le_bytes(),
+            );
         }
 
         // treat_as_char 표: 문단 경계를 넘으면 문단 이동 (다중 경계 루프)
@@ -2721,9 +2734,12 @@ impl DocumentCore {
             // 최종 v_offset 갱신
             if result_ppi != parent_para_idx {
                 let tbl = self.get_table_mut(section_idx, result_ppi, control_idx)?;
-                tbl.raw_ctrl_data[common_obj_offsets::V_OFFSET]
-                    .copy_from_slice(&new_v.to_le_bytes());
                 tbl.common.vertical_offset = new_v as u32;
+                patch_raw_ctrl_field(
+                    &mut tbl.raw_ctrl_data,
+                    common_obj_offsets::V_OFFSET,
+                    &new_v.to_le_bytes(),
+                );
             }
         }
 
@@ -3044,16 +3060,23 @@ impl DocumentCore {
         }
         table.common.attr = table.attr;
         // 위치 오프셋: CommonObjAttr [0..4]=flags, [4..8]=v_offset, [8..12]=h_offset
-        while table.raw_ctrl_data.len() < common_obj_offsets::H_OFFSET.end {
-            table.raw_ctrl_data.push(0);
-        }
+        // [#6388] raw 를 0 확장하지 않는다 — `common` 이 합성 원천이고 raw 는 길이가
+        // 허락할 때만 덧쓴다.
         if let Some(v) = json_i32(json, "vertOffset") {
-            table.raw_ctrl_data[common_obj_offsets::V_OFFSET].copy_from_slice(&v.to_le_bytes());
             table.common.vertical_offset = v as u32;
+            patch_raw_ctrl_field(
+                &mut table.raw_ctrl_data,
+                common_obj_offsets::V_OFFSET,
+                &v.to_le_bytes(),
+            );
         }
         if let Some(v) = json_i32(json, "horzOffset") {
-            table.raw_ctrl_data[common_obj_offsets::H_OFFSET].copy_from_slice(&v.to_le_bytes());
             table.common.horizontal_offset = v as u32;
+            patch_raw_ctrl_field(
+                &mut table.raw_ctrl_data,
+                common_obj_offsets::H_OFFSET,
+                &v.to_le_bytes(),
+            );
         }
         // restrictInPage → attr bit 13
         if let Some(v) = json_bool(json, "restrictInPage") {
@@ -3083,17 +3106,23 @@ impl DocumentCore {
         // 저장 파일에서 통째로 유실되고 재로드 시 원복된다. V_OFFSET/H_OFFSET/
         // PREVENT_PAGE_BREAK/MARGIN_* 패치와 동일 규칙 (미변경 시에는 파싱
         // 원본 attr 를 그대로 다시 쓰는 항등 연산이라 무해).
-        table.raw_ctrl_data[common_obj_offsets::FLAGS].copy_from_slice(&table.attr.to_le_bytes());
+        // [#6388] raw 가 빌 수 있으므로(HWPX 파스본) 가드를 거친다. 종전에는 바로 위
+        // 위치 오프셋 블록의 0 확장이 길이 4 를 보장해 무조건 색인해도 됐다.
+        patch_raw_ctrl_field(
+            &mut table.raw_ctrl_data,
+            common_obj_offsets::FLAGS,
+            &table.attr.to_le_bytes(),
+        );
         // keepWithAnchor → prevent_page_break
         // CommonObjAttr::PREVENT_PAGE_BREAK (parse_common_obj_attr 정합)
         if let Some(v) = json_bool(json, "keepWithAnchor") {
-            while table.raw_ctrl_data.len() < common_obj_offsets::PREVENT_PAGE_BREAK.end {
-                table.raw_ctrl_data.push(0);
-            }
             let val: i32 = if v { 1 } else { 0 };
-            table.raw_ctrl_data[common_obj_offsets::PREVENT_PAGE_BREAK]
-                .copy_from_slice(&val.to_le_bytes());
             table.common.prevent_page_break = val;
+            patch_raw_ctrl_field(
+                &mut table.raw_ctrl_data,
+                common_obj_offsets::PREVENT_PAGE_BREAK,
+                &val.to_le_bytes(),
+            );
         }
 
         // 바깥 여백 (CommonObjAttr margin ranges, parse_common_obj_attr 정합)
@@ -3688,15 +3717,21 @@ impl DocumentCore {
         let row_count = table.row_count as usize;
         let col_count = table.col_count as usize;
 
-        // 셀 값 조회 함수: 셀의 첫 문단 텍스트를 숫자로 파싱
+        // 셀 값 조회 함수: 셀의 첫 문단 텍스트를 숫자로 파싱한다. 병합 뒤에는 비주 셀이
+        // 제거되어 cells 배열 인덱스와 row * col_count + col이 일치하지 않으므로, 저장된
+        // 논리 좌표로 찾아야 한다. 병합 셀이 덮는 비-anchor 좌표는 별도 셀이 아니어서
+        // 값 없음으로 처리한다.
         let cells = &table.cells;
         let get_cell = |col: usize, row: usize| -> Option<f64> {
-            let idx = row * col_count + col;
             cells
-                .get(idx)
+                .iter()
+                .find(|cell| cell.row as usize == row && cell.col as usize == col)
                 .and_then(|cell| cell.paragraphs.first())
                 .and_then(|p| parse_cell_number(&p.text))
         };
+        let target_cell_idx = cells
+            .iter()
+            .position(|cell| cell.row as usize == target_row && cell.col as usize == target_col);
 
         let ctx = crate::document_core::table_calc::TableContext {
             row_count,
@@ -3710,31 +3745,36 @@ impl DocumentCore {
 
         // 결과를 셀에 기록
         if write_result {
-            let cell_idx = target_row * col_count + target_col;
-            let section_mut = self.document.sections.get_mut(section_idx).unwrap();
-            let para_mut = section_mut.paragraphs.get_mut(parent_para_idx).unwrap();
-            if let Some(Control::Table(ref mut t)) = para_mut.controls.get_mut(control_idx) {
-                if let Some(cell) = t.cells.get_mut(cell_idx) {
-                    if let Some(cell_para) = cell.paragraphs.first_mut() {
-                        // 정수이면 정수로, 아니면 소수점 표시
-                        let text = if result == result.trunc() && result.abs() < 1e15 {
-                            format!("{}", result as i64)
-                        } else {
-                            format!("{}", result)
-                        };
-                        cell_para.text = text;
-                        let new_len = cell_para.text.chars().count();
-                        cell_para.char_offsets = (0..new_len).map(|i| i as u32).collect();
-                        // [#4149] 원시 text 대입 — 단일줄 과밀 memo 무효화.
-                        cell_para.invalidate_layout_inputs();
-                    }
-                }
-            }
-            // raw_stream 무효화
-            if let Some(sec) = self.document.sections.get_mut(section_idx) {
-                sec.raw_stream = None;
-            }
-            self.recompose_section(section_idx);
+            let cell_idx = target_cell_idx.ok_or_else(|| {
+                HwpError::RenderError(format!(
+                    "결과 셀을 찾을 수 없음: row={target_row}, col={target_col}"
+                ))
+            })?;
+            let old_len = self
+                .get_cell_paragraph_ref(section_idx, parent_para_idx, control_idx, cell_idx, 0)
+                .ok_or_else(|| HwpError::RenderError("결과 셀 문단을 찾을 수 없음".into()))?
+                .text
+                .chars()
+                .count();
+            // 정수이면 정수로, 아니면 소수점 표시한다. 직접 text 필드만 덮으면 표의
+            // 측정 캐시와 문단 layout 입력이 남아 두 자릿수 결과의 마지막 글자가 보이지
+            // 않을 수 있으므로, 일반 셀 텍스트 교체 경로로 모든 불변식을 함께 갱신한다.
+            let text = if result == result.trunc() && result.abs() < 1e15 {
+                format!("{}", result as i64)
+            } else {
+                format!("{}", result)
+            };
+            self.replace_text_in_cell_native_impl(
+                section_idx,
+                parent_para_idx,
+                control_idx,
+                cell_idx,
+                0,
+                0,
+                old_len,
+                &text,
+                true,
+            )?;
         }
 
         Ok(format!(

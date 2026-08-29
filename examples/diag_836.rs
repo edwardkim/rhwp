@@ -54,7 +54,7 @@ fn main() {
         );
 
         let mut total_meas = 0.0_f64;
-        let mut prev_ir_vpos: Option<i32> = None;
+        let prev_ir_vpos: Option<i32> = None;
         let mut total_ir_progress = 0.0_f64;
 
         let mut shape_meas = 0.0_f64; // measured for shape-only paragraphs

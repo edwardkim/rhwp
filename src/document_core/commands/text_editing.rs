@@ -15,7 +15,7 @@ use crate::model::paragraph::{LineSeg, ParaMeta, Paragraph};
 use crate::model::shape::{ShapeObject, TextWrap, VertRelTo};
 use crate::model::style::Alignment;
 use crate::renderer::composer::{
-    compose_paragraph, layout_picture_band, reflow_line_segs, ComposedParagraph, ParagraphBox,
+    compose_paragraph, layout_picture_band, reflow_line_segs, ParagraphBox,
 };
 use crate::renderer::page_layout::PageLayoutInfo;
 use crate::renderer::pagination::PageItem;
@@ -774,8 +774,6 @@ impl DocumentCore {
                 .styles
                 .para_styles
                 .get(paragraph.para_shape_id as usize);
-            let margin_left = para_style.map(|style| style.margin_left).unwrap_or(0.0);
-            let margin_right = para_style.map(|style| style.margin_right).unwrap_or(0.0);
             // 본문: 열 상자.
             reflow_line_segs(
                 paragraph,
@@ -1673,11 +1671,9 @@ impl DocumentCore {
             .get(col_idx)
             .unwrap_or(&layout.column_areas[0]);
 
-        // 문단 여백 계산
+        // 문단 스타일 조회 — 여백은 `ParagraphBox::body_for_style` 가 해소한다.
         let para = &section.paragraphs[para_idx];
         let para_style = self.styles.para_styles.get(para.para_shape_id as usize);
-        let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
-        let margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);
         // 본문: 열 상자를 그대로 넘긴다. 이 자리가 대화형 편집의 관문이고,
         // 종전에 두 끝점을 버려 `column_start=0` 을 발행했던 지점이다.
         reflow_line_segs(
@@ -1792,7 +1788,7 @@ impl DocumentCore {
         )
     }
 
-    fn replace_text_in_cell_native_impl(
+    pub(crate) fn replace_text_in_cell_native_impl(
         &mut self,
         section_idx: usize,
         parent_para_idx: usize,

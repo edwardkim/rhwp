@@ -193,7 +193,6 @@ samples/hwpx/hancom-hwp/[2027] 온새미로 1 본교재.hwp	47	48
 samples/hwpx/hancom-hwp/blank_hwpx.hwp	1	1
 samples/hwpx/hancom-hwp/form-002.hwp	10	10
 samples/hwpx/hancom-hwp/hwpx-01.hwp	9	9
-samples/hwpx/hancom-hwp/hwpx-02.hwp	5	9
 samples/hwpx/hancom-hwp/hwpx-h-01.hwp	9	9
 samples/hwpx/hancom-hwp/hwpx-h-02.hwp	9	9
 samples/hwpx/hancom-hwp/hwpx-h-03.hwp	9	9
@@ -202,7 +201,6 @@ samples/hwpx/hancom-hwp/issue_241.hwp	1	1
 samples/hwpx/hancom-hwp/mel-001.hwp	20	20
 samples/hwpx/hancom-hwp/tbox-v-flow-01.hwp	1	1
 samples/hwpx/hwpx-01.hwpx	9	9
-samples/hwpx/hwpx-02.hwpx	5	6
 samples/hwpx/hwpx-h-01.hwpx	9	9
 samples/hwpx/hwpx-h-02.hwpx	9	9
 samples/hwpx/hwpx-h-03.hwpx	9	9
@@ -229,8 +227,8 @@ samples/hwpx_sample2.hwpx	29	29
 samples/img-start-001.hwp	3	3
 samples/inner-table-01.hwp	2	2
 samples/issue-505-equations.hwp	4	4
-samples/issue1510_coanchored_float_tables.hwp	1,2	1
-samples/issue1510_coanchored_float_tables.hwpx	1,2	2
+samples/issue1510_coanchored_float_tables.hwp	1	1
+samples/issue1510_coanchored_float_tables.hwpx	2	2
 samples/issue1663_coanchored_float_orphan.hwpx	2	2
 samples/issue1770_rowsplit_tolerance.hwpx	4	4
 samples/issue1835_tac_stale_height.hwp	3	3

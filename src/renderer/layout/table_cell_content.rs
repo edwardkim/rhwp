@@ -753,7 +753,9 @@ impl LayoutEngine {
             pad_right = new_pr;
 
             let inner_x = cell_x + pad_left;
-            let inner_width = (cell_w - pad_left - pad_right).max(0.0);
+            let inner_width = crate::renderer::composer::cell_inner_text_width(
+                cell_w, pad_left, pad_right, self.dpi,
+            );
             let inner_height = (cell_h - pad_top - pad_bottom).max(0.0);
             let has_nested = cell
                 .paragraphs

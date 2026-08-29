@@ -318,7 +318,8 @@ pub fn compose_paragraph(para: &Paragraph) -> ComposedParagraph {
                             t, seg_width, para,
                         ) =>
                 {
-                    let table_width: u32 = t.get_column_widths().iter().sum();
+                    // [#5785 후속] 선언 폭 우선.
+                    let table_width: u32 = t.flow_width_hu();
                     Some((pos, table_width as i32, i))
                 }
                 _ => None,
@@ -2548,6 +2549,60 @@ pub(crate) fn missing_lineseg_indented_cell_has_uniform_metrics_with_tracking(
 /// 가른다. 한컴 PDF p27 은 이 셀을 4줄로 찍으므로 85.7px 이 맞다. 폭 두 개가 남아
 /// 있는 한 "측정에서만 갈리는 줄바꿈"은 계속 가능하다 — 선행 결함이며 #5193 의
 /// 소관이 아니다 (`issue_2279_nested_cell_units_split_r27_not_r26` 주석 참조).
+/// 한/글이 셀 안 줄에 보장하는 최소 너비 (HWPUNIT). 1440 = 정확히 0.2 인치.
+///
+/// 안 여백 합이 셀 폭에 육박하면 남는 폭이 0 에 가까워진다. 한/글은 그 폭으로 줄을 만들지
+/// 않고 이 하한선까지 넓힌다. `samples/` HWP5 전수(셀-줄 91,866개)에서 저장된
+/// `LineSeg.segment_width` 를 남는 폭과 맞대면 경계가 뚜렷하다.
+///
+/// | 남는 폭 | 줄 수 | `sw == 1440` |
+/// | --- | --- | --- |
+/// | 0 이상 1440 미만 | 7,862 | **98.7%** |
+/// | 1440 초과 | 83,127 | 0.8% |
+///
+/// 근거·재현: `mydocs/report/2026-08-28-cell-min-line-width.md`
+const HANGUL_MIN_CELL_LINE_WIDTH_HWPUNIT: f64 = 1440.0;
+
+/// 남는 폭이 하한선보다 좁으면 **오른쪽** 안 여백을 깎아 하한선을 확보한다.
+///
+/// 왼쪽은 건드리지 않는다 — 한/글은 글자 시작 위치를 유지한다(셀보호2 실측: 첫 글자가
+/// 셀 좌단 + 2834 HWPUNIT 그대로, 미리보기 이미지와 2px 이내 일치).
+///
+/// 셀이 하한선보다 좁으면 오른쪽 여백이 음수가 된다. 이는 글자가 셀 밖으로 나간다는 뜻이고
+/// 한/글도 그렇게 한다(셀 폭 564 에 sw=1440). 호출부는 `pad_right` 를 `cell_w - pl - pr`
+/// 뺄셈에만 쓰므로 음수가 그대로 폭으로 환원된다.
+pub(crate) fn floored_cell_line_width_padding(
+    pad_left: f64,
+    pad_right: f64,
+    cell_w: f64,
+    dpi: f64,
+) -> (f64, f64) {
+    let min_width = HANGUL_MIN_CELL_LINE_WIDTH_HWPUNIT / 7200.0 * dpi;
+    let available = cell_w - pad_left - pad_right;
+
+    // 폭이 없는 셀(선언 없음 → 0)에는 적용하지 않는다. 하한선은 실제 셀에 대한 규칙이고,
+    // 폭을 모르는 자리에 19.2px 를 만들어 주는 것은 측정이 아니라 추측이다.
+    //
+    // 남는 폭이 **음수**인 구간도 다루지 않는다. `aim=true` 로는 표본에 0건이고,
+    // `aim=false` 는 86.9% 로 갈린다(한 파일의 100줄이 여백을 무시하고 셀 폭을 다 쓴다).
+    // 근거가 있는 구간은 `0 <= 남는 폭 < 1440` 뿐이고, 거기서만 적용한다.
+    if cell_w <= 0.0 || available < 0.0 || available >= min_width {
+        return (pad_left, pad_right);
+    }
+    (pad_left, cell_w - pad_left - min_width)
+}
+
+/// 셀 안 글자 상자의 너비. 최소 줄 너비 하한선을 포함한다.
+///
+/// 같은 식 `(cell_w - pad_left - pad_right).max(0)` 이 렌더 4곳·측정 3곳·편집 2곳에
+/// 복사돼 있었다. 하한선을 그중 일부에만 넣으면 측정 줄 수와 렌더 줄 수가 갈려 행 높이가
+/// 어긋난다(#2279 가 겪은 것이 정확히 그 발산이다). 계산을 한 자리로 모아 호출부가
+/// 규칙을 고를 수 없게 한다.
+pub(crate) fn cell_inner_text_width(cell_w: f64, pad_left: f64, pad_right: f64, dpi: f64) -> f64 {
+    let (pad_left, pad_right) = floored_cell_line_width_padding(pad_left, pad_right, cell_w, dpi);
+    (cell_w - pad_left - pad_right).max(0.0)
+}
+
 pub(crate) fn shrunk_cell_horizontal_padding(
     pad_left: f64,
     pad_right: f64,
@@ -2556,7 +2611,13 @@ pub(crate) fn shrunk_cell_horizontal_padding(
     paragraphs: &[Paragraph],
     styles: &ResolvedStyleSet,
     preserve_cell_padding: bool,
+    dpi: f64,
 ) -> (f64, f64) {
+    // 하한선을 먼저 적용한다. `preserve_cell_padding`(aim=true) 은 "저장된 안 여백을
+    // 임의로 깎지 않는다"는 뜻이지 "줄을 0 폭으로 만든다"는 뜻이 아니다 — 한/글은 aim 과
+    // 무관하게 하한선을 지킨다(셀보호2 는 aim=true 이고 남는 폭 283 인데 sw=1440).
+    let (pad_left, pad_right) = floored_cell_line_width_padding(pad_left, pad_right, cell_w, dpi);
+
     if preserve_cell_padding {
         return (pad_left, pad_right);
     }
