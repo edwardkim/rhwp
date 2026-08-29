@@ -6,7 +6,8 @@
   [`task_m100_4969_w10_q2_d5_resource_audit.md`](../working/task_m100_4969_w10_q2_d5_resource_audit.md)
 - **기계 판독 계획**:
   [`w10_q2_d5_revised_execution_plan.json`](../tech/investigations/issue-4969/w10_q2_d5_revised_execution_plan.json)
-- **상태**: R0 `qualified-red`, R1·R2·R3·N0·N1 `qualified`, N2 `qualified-bounded`; 결과 승인 대기
+- **상태**: R0 `qualified-red`, R1·R2·R3·N0·N1 `qualified`, N2 `qualified-bounded`; 결과 승인·checkpoint
+  `422a8f7bc`·최신 devel 병합 재자격화 완료
 - **제품 변경**: R0·R1은 0, R2는 opt-in transport에서만 있음, N0은 0, N1부터 승인된 NO_LS lane에 있음
 
 ## 1. 수정 이유
@@ -189,6 +190,6 @@ classification은 별도 다음 단계에서 확정한다.
 `Q2-D5-R0` red 계약을 qualified-red로 고정했고 `Q2-D5-R1` unique-source prepared identity cache,
 `Q2-D5-R2` opt-in font-by-key transport, `Q2-D5-R3` resource qualification, `Q2-D5-N0` dormant
 owner·rollback 계약과 `Q2-D5-N1` atomic activation을 qualified로 마쳤고, `Q2-D5-N2` 최종 cross-backend·성능
-판정을 `qualified-bounded`로 마쳤다. 다음 승인은 N2 결과와 checkpoint commit만 대상으로 한다. Q2 최종 support
-classification은 별도 다음 단계이며 자동으로 열리지 않는다. commit·remote push·PR 생성·GitHub comment·merge는
-기존 별도 승인 경계를 유지한다.
+판정을 `qualified-bounded`로 마쳤다. N2 결과 승인과 checkpoint `422a8f7bc`, 최신 devel 병합
+`c0998c280` 및 재자격화도 완료했다. 다음 승인은 재자격화 증적 checkpoint와 Q2 최종 support classification
+진입만 대상으로 한다. commit·remote push·PR 생성·GitHub comment·merge는 기존 별도 승인 경계를 유지한다.

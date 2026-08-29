@@ -101,6 +101,34 @@
     "make-issue-3315-layer-json-option-explicit",
     "make-three-wasm-example-font-omission-arguments-explicit"
   ],
+  "postMergeRequalification": {
+    "n2Checkpoint": "422a8f7bc",
+    "upstreamDevel": "f6a6bee8f",
+    "mergeCommit": "c0998c280",
+    "textualConflicts": 0,
+    "reviewSources": 1017,
+    "reviewStaticTestAttributes": 4517,
+    "focusedCrossImpactPassed": 98,
+    "nextestPassed": 8568,
+    "nextestSkipped": 43,
+    "nextestFailed": 0,
+    "nextestRuntimeSeconds": 942.264,
+    "nativeSkiaRhwpPassed": 3946,
+    "nativeSkiaRhwpIgnored": 13,
+    "nativeSkiaAuxiliaryPassed": 182,
+    "nativeAllTargetsClippy": "pass",
+    "dockerWasmBuild": "pass-5m49s",
+    "optimizedWasmBytes": 9739125,
+    "studioTestsPassed": 1238,
+    "studioTestsSkipped": 1,
+    "canvasKitReplay": "pass",
+    "canvasKitFontCoverage": "pass",
+    "rendererBackendContract": "pass",
+    "studioBuild": "pass",
+    "cargoFmtAllPreparedReview": "pass",
+    "cargoFmtAllCheckPreparedReview": "pass",
+    "classificationChanged": false
+  },
   "deferred": [
     "multi-interval-frame",
     "general-edit-reflow",
@@ -118,6 +146,6 @@
   ],
   "nextSlice": "Q2-final-support-classification",
   "nextSliceApproved": false,
-  "checkpointCommitApproved": false,
+  "checkpointCommitApproved": true,
   "pushReady": false
 }
