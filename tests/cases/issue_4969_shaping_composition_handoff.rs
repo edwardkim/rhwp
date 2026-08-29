@@ -143,6 +143,8 @@ fn issue_4969_q2_d1_paired_contexts_share_one_registry_generation() {
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
 fn issue_4969_q2_d1_candidate_gate_is_bounded_before_projection() {
     assert!(is_bounded_horizontal_shaping_candidate_text("ᄒᆞᆫ글"));
+    assert!(!is_bounded_horizontal_shaping_candidate_text("가변"));
+    assert!(!is_bounded_horizontal_shaping_candidate_text("Typography"));
     assert!(!is_bounded_horizontal_shaping_candidate_text(
         "ordinary text"
     ));

@@ -4,6 +4,8 @@ use rhwp::document_core::DocumentCore;
 use rhwp::model::paragraph::{CharShapeRef, LineSeg, Paragraph};
 use rhwp::model::style::Alignment;
 use rhwp::paint::{LayerNode, LayerNodeKind, PaintOp};
+#[cfg(not(target_arch = "wasm32"))]
+use rhwp::renderer::canvaskit_policy::{analyze_canvaskit_replay_plan, CanvasKitReplayMode};
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen_test::wasm_bindgen_test;
 
@@ -264,4 +266,36 @@ fn issue_4969_q2_d5_n1_no_lineseg_publishes_one_atomic_common_alternative() {
     assert!((text_runs[0].width - page_advance).abs() <= 1.0e-9);
     assert_eq!(layer_tree.resources.font_blob_count(), 1);
     assert_eq!(layer_tree.resources.font_resources().faces.len(), 1);
+}
+
+#[test]
+#[cfg(not(target_arch = "wasm32"))]
+fn issue_4969_q3_e0_default_product_baseline_receipt() {
+    use std::time::Instant;
+
+    const ITERATIONS: u32 = 64;
+    let core = core_with_surface(TEXT, Alignment::Left, 0, false);
+    let started = Instant::now();
+    for _ in 0..ITERATIONS {
+        core.build_page_layer_tree(0)
+            .expect("build Q2 default baseline layer tree");
+    }
+    let elapsed_ns = started.elapsed().as_nanos();
+    let layer_tree = core
+        .build_page_layer_tree(0)
+        .expect("build Q2 default baseline receipt");
+    let layer_json = layer_tree.to_json();
+    let plan = analyze_canvaskit_replay_plan(&layer_tree, CanvasKitReplayMode::Default);
+    let plan_json = serde_json::to_string(&plan).expect("serialize CanvasKit baseline plan");
+
+    assert!(layer_json.contains("q2CommonShapingCondensedDrawProjectionV1"));
+    assert!(!layer_json.contains("\"type\":\"glyphOutline\""));
+    assert_eq!(layer_tree.resources.font_blob_count(), 1);
+    println!(
+        "{{\"kind\":\"q3-e0-default-product-baseline\",\"iterations\":{ITERATIONS},\"elapsedNs\":{elapsed_ns},\"layerJsonBytes\":{},\"layerJsonBlake3\":\"{}\",\"canvasKitPlanBytes\":{},\"canvasKitPlanBlake3\":\"{}\"}}",
+        layer_json.len(),
+        blake3::hash(layer_json.as_bytes()).to_hex(),
+        plan_json.len(),
+        blake3::hash(plan_json.as_bytes()).to_hex(),
+    );
 }

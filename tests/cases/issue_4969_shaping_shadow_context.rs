@@ -832,3 +832,45 @@ fn issue_4969_q2_b_limits_and_invalid_scale_fail_closed_without_partial_measurem
     );
     assert!(missing.measurement.is_none());
 }
+
+const Q3_E_DOCUMENT_COMMAND_SOURCE: &str =
+    include_str!("../../src/document_core/commands/document.rs");
+const Q3_E_WASM_API_SOURCE: &str = include_str!("../../src/wasm_api.rs");
+const Q3_E_SHAPING_PARAGRAPH_SOURCE: &str = include_str!("../../src/renderer/shaping_paragraph.rs");
+const Q3_E_SHAPING_GLYPH_SOURCE: &str = include_str!("../../src/paint/shaping_glyph.rs");
+
+#[test]
+fn issue_4969_q3_e0_red_reversible_exact_instance_owner_is_absent() {
+    assert!(
+        Q3_E_DOCUMENT_COMMAND_SOURCE.contains("pub fn clear_exact_font_instance_native"),
+        "Q3-E1 red: the per-slot reversible native owner is absent"
+    );
+}
+
+#[test]
+fn issue_4969_q3_e0_red_public_instance_adapters_are_absent() {
+    assert!(
+        Q3_E_WASM_API_SOURCE.contains("js_name = setExactFontInstance")
+            && Q3_E_WASM_API_SOURCE.contains("js_name = clearExactFontInstance"),
+        "Q3-E2 red: the strict set/clear WASM adapters are absent"
+    );
+}
+
+#[test]
+fn issue_4969_q3_e0_red_explicit_only_candidate_session_is_absent() {
+    assert!(
+        Q3_E_SHAPING_PARAGRAPH_SOURCE.contains("is_bounded_explicit_instance_candidate_text")
+            && Q3_E_SHAPING_PARAGRAPH_SOURCE
+                .contains("run_bounded_explicit_instance_line_transaction"),
+        "Q3-E3 red: the request-gated modern-Hangul/Latin single-run policy is absent"
+    );
+}
+
+#[test]
+fn issue_4969_q3_e0_red_atomic_variable_outline_publication_is_absent() {
+    assert!(
+        Q3_E_SHAPING_GLYPH_SOURCE.contains("report.glyph_outline")
+            && Q3_E_SHAPING_GLYPH_SOURCE.contains("PaintOp::GlyphOutline"),
+        "Q3-E4 red: product lowering does not atomically publish the qualified variable outline"
+    );
+}

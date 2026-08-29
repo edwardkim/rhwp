@@ -1,0 +1,151 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q3-e-bounded-atomic-activation-revised-plan",
+  "issue": 4969,
+  "stage": "W10-Q3-E",
+  "status": "q3-e0-checkpoint-complete-awaiting-latest-devel-requalification-plan",
+  "baseCheckpoint": "558e27f6d",
+  "productMutation": true,
+  "publicApiExpansionRequiresSeparateApproval": true,
+  "authority": {
+    "sourceRegistration": "registerExactFontSource",
+    "nativeSet": "set_exact_font_instance_native",
+    "nativeClear": "clear_exact_font_instance_native",
+    "wasmSet": "setExactFontInstance",
+    "wasmClear": "clearExactFontInstance",
+    "mode": "boundedHorizontalLtrV1",
+    "parserHeuristic": false,
+    "fontNameHeuristic": false,
+    "boldOrRatioHeuristic": false
+  },
+  "limits": {
+    "optionsJsonBytes": 16384,
+    "variationAxes": 16,
+    "languageIndexExclusiveUpperBound": 7,
+    "glyphsPerRun": 4096,
+    "clustersPerRun": 4096,
+    "instanceRequests": 4096
+  },
+  "activationSurface": {
+    "oneLine": true,
+    "oneTextRun": true,
+    "oneExactSlot": true,
+    "homogeneousScript": true,
+    "homogeneousLanguageCategory": true,
+    "pureModernHangulOrLatinNonLigature": true,
+    "horizontalLtrBidi0": true,
+    "modelTextEqualsDisplayText": true,
+    "syntheticStyleAllowed": false,
+    "spacingEffectAllowed": false,
+    "controlOrTabAllowed": false,
+    "partialActivationAllowed": false
+  },
+  "candidatePolicy": {
+    "requestPresenceCheckedBeforeExplicitPredicate": true,
+    "explicitPolicy": "boundedHorizontalLtrV1-single-run-full-range",
+    "q2OldHangulPredicateChanged": false,
+    "q2OldHangulSegmentSelectorChanged": false,
+    "noRequestModernHangulOrLatinEntersExplicitPath": false
+  },
+  "publication": {
+    "textRunFallbackAlwaysPresent": true,
+    "glyphRunAndOutlineAtomic": true,
+    "validationBeforeResourceMutation": true,
+    "backendReshapingAllowed": false
+  },
+  "backendMatrix": [
+    {
+      "backend": "CanvasKitBrowser",
+      "nonDefaultSelection": "GlyphOutline",
+      "activated": true
+    },
+    {
+      "backend": "CanvasKitPolicy",
+      "nonDefaultSelection": "GlyphOutline",
+      "activated": true
+    },
+    {
+      "backend": "NativeSkia",
+      "nonDefaultSelection": "TextRun",
+      "activated": false
+    },
+    {
+      "backend": "SvgLayer",
+      "nonDefaultSelection": "TextRun",
+      "activated": false
+    },
+    {
+      "backend": "Canvas2D",
+      "nonDefaultSelection": "TextRun",
+      "activated": false
+    }
+  ],
+  "stages": [
+    {
+      "id": "Q3-E0",
+      "name": "latest-base-and-red-baseline",
+      "productOutputChange": false,
+      "result": "qualified-red-baseline-approved",
+      "resultEvidence": "mydocs/tech/investigations/issue-4969/w10_q3_e0_red_baseline.json",
+      "checkpointCreated": true,
+      "approvalAfter": true
+    },
+    {
+      "id": "Q3-E1",
+      "name": "reversible-owner-and-strict-native-contract",
+      "productOutputChange": false,
+      "approvalAfter": true
+    },
+    {
+      "id": "Q3-E2",
+      "name": "wasm-public-adapter",
+      "productOutputChange": false,
+      "publicApiChanged": true,
+      "approvalAfter": true
+    },
+    {
+      "id": "Q3-E3",
+      "name": "bounded-explicit-composer-activation",
+      "productOutputChange": true,
+      "approvalAfter": true
+    },
+    {
+      "id": "Q3-E4",
+      "name": "atomic-portable-publication-and-backend-matrix",
+      "productOutputChange": true,
+      "approvalAfter": true
+    },
+    {
+      "id": "Q3-E5",
+      "name": "performance-size-full-regression-and-final-qualification",
+      "productOutputChange": true,
+      "approvalAfter": true
+    }
+  ],
+  "performanceGates": {
+    "warmMeasuredRuns": 9,
+    "noRequestP50MaxRegressionPercent": 3,
+    "noRequestP95MaxRegressionPercent": 5,
+    "activatedP50MaxRegressionPercent": 25,
+    "activatedP95MaxRegressionPercent": 40,
+    "wasmRawMaxDeltaBytes": 65536,
+    "wasmRawMaxDeltaPercent": 0.75
+  },
+  "prohibited": [
+    "hwp-or-hwpx-axis-inference",
+    "font-name-bold-or-ratio-axis-heuristic",
+    "default-transaction-implicit-request-lookup",
+    "partial-run-variable-publication",
+    "backend-independent-shaping",
+    "native-skia-variable-selector-activation",
+    "svg-or-canvas2d-variable-outline-activation",
+    "static-or-modified-instance-font-generation",
+    "font-fallback-registry-change",
+    "vertical-or-rtl-activation"
+  ],
+  "privateCorpus": false,
+  "hyperVOrHancomOracle": false,
+  "nextStage": "Q3-E0-latest-devel-merge-and-requalification-plan-approval",
+  "nextStageApproved": false,
+  "approvalScope": "plan, amendment, Q3-E0 execution, result approval, and checkpoint are complete; latest devel merge and E0 requalification plan, E1 implementation, public API expansion, product activation, push, PR, and comment remain separately gated"
+}
