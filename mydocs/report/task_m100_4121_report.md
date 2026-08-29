@@ -1,10 +1,11 @@
 # 최종 보고서 — #4121 머리말/꼬리말 텍스트 선택
 
 - **이슈**: [#4121](https://github.com/edwardkim/rhwp/issues/4121)
+- **PR**: [#6394](https://github.com/edwardkim/rhwp/pull/6394)
 - **작업 브랜치**: `codex/issue-4121-hf-selection`
-- **기준**: `upstream/devel@955abb526`
-- **자동 검증 완료일**: 2026-08-29 KST
-- **판정**: 구현·자동 통합 검증 완료, 사용자 수동 확인과 원격 제출 승인 대기
+- **기준**: `upstream/devel@2deb3dd61`
+- **자동 검증 완료일**: 2026-08-30 KST
+- **판정**: 구현·focused 자동 검증·PR 생성 완료, 최신 PR head의 CI와 merge 승인 대기
 
 ## 1. 결과
 
@@ -12,8 +13,8 @@
 반복 페이지에 선택 overlay를 투영하도록 구현했다.
 
 - Both/Odd/Even 모두 해당 정의가 속한 구역의 첫 페이지에서 대표 편집
-- `꼬리말 · 짝수 쪽 편집 중` 도구 상자 표시와 `꼬리말(짝수 쪽)` 밴드 배지
-- 대표 페이지에만 가상 HF canvas를 투영하고, 실제 적용 페이지는 연관 영역으로 약하게 표시
+- `꼬리말 · 짝수 쪽 편집 중` 도구 상자 표시와 `꼬리말(짝수 쪽)` canvas 라벨
+- 대표 페이지에서 HF를 편집하고, 기존 페이지 여백 꺾쇠를 재사용해 내용을 가리지 않는 영역 표시
 - 마우스 드래그, Shift+클릭과 Shift 방향/Home/End 선택
 - 단일·다문단 범위와 화면 밖 페이지의 scroll-in 재투영
 - Both는 모든 적용 페이지, Odd/Even은 같은 정의의 페이지만 강조
@@ -39,7 +40,7 @@
 | --- | --- |
 | `cargo fmt --all` / `-- --check` / `git diff --check` | 통과 |
 | Rust unit tier 정책 | 4,221 tests / 299 modules, 통과 |
-| #4121 focused Rust | 6/6 통과 |
+| #4121 focused Rust | 7/7 통과 |
 | #2724 passthrough guard | 5/5 통과 |
 | `cargo clippy --locked --all-targets -- -D warnings` | 통과 |
 | 전체 Rust nextest (Stage 4 baseline) | 8,558/8,558 통과, 43 skipped |
@@ -54,6 +55,11 @@
 복사 API와 동일한 `SessionState` 예외로 등록했다. 이후 focused guard와 전체 nextest를 다시
 실행해 모두 통과했다.
 
+최종 `upstream/devel` rebase 뒤에는 사용자의 최소 검증 요청에 따라 focused Rust 7/7, 관련 Studio
+Node test 43/43, production build 241 modules와 실제 Chrome E2E 56/56을 다시 실행했다. 전체
+nextest·Clippy·최적화 WASM은 동일한 논리 변경 tree의 이전 단계 결과를 유지하고 최종 rebase 뒤에는
+재실행하지 않았다.
+
 로컬 브라우저 증적은 ignored 산출물이며 소스 PR에는 stage하지 않는다.
 
 - `rhwp-studio/e2e/screenshots/issue4121-stage4-both-header-multiline-selection.png`
@@ -62,9 +68,8 @@
 
 ## 4. 남은 확인과 close 판정
 
-자동 검증 기준으로 #4121의 요구 범위와 Stage 5 대표 편집 UX는 해결됐다. 다만 사용자가 로컬
-서버에서 Even/Odd 모두 첫 페이지에 표시되는지, 텍스트·밴드 표시와 편집 결과를 한 번 확인한 뒤
-close 가능으로 최종 판정한다.
+자동 검증과 사용자 피드백 기준으로 #4121의 요구 범위와 대표 편집 UX는 해결됐다. 구현은 원격 branch에
+push했고 PR #6394를 생성했으며, PR 본문에 `Closes #4121`을 연결했다.
 
-원격 push, PR 생성과 이슈 close는 아직 수행하지 않았다. 사용자 수동 확인 후 별도 승인을
-받아 PR을 제출하고, CI 및 review 결과까지 통과하면 #4121을 close해도 된다.
+최신 PR head의 required checks와 review가 통과한 뒤 별도 merge 승인을 받는다. merge 전에는 이슈를
+직접 닫지 않고, PR이 merge될 때 연결 문구에 따라 #4121을 close한다.
