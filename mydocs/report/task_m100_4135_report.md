@@ -1,12 +1,12 @@
-# Task M100 #4135 구현 결과 및 PR 본문 초안
+# Task M100 #4135 구현 결과 및 PR 진행 기록
 
 - **Issue**: [#4135](https://github.com/edwardkim/rhwp/issues/4135)
 - **브랜치**: `codex/issue-4135-contextual-shortcut`
 - **전체 검증 후보**: `8d3fdf011`
-- **최신 통합·focused 검증 후보**: `985396791`
-- **통합한 upstream**: `upstream/devel@2bcf9b261` (PR #6379 포함)
-- **원격 상태**: push·PR 생성 전
-- **현재 판정**: 최신 devel 통합·최소 재검증·PR 본문 초안·장기 검증 산출물 정리 완료
+- **최신 제품 보정 후보**: `5240e38f1`
+- **최종 merge simulation 대상**: `upstream/devel@067a8134b`
+- **원격 상태**: [PR #6385](https://github.com/edwardkim/rhwp/pull/6385) Open
+- **현재 판정**: 병합 표 좌표 보정·전체 재검증·self-review 완료, 최신 head CI 확인 대기
 
 ## 1. 사용자 결과
 
@@ -61,6 +61,21 @@ Cargo cache를 새로 만들면서 `wasm-pack` 설치에 11분 이상이 들었�
 아니지만 성공도 아니다. R4의 이전 코드 후보에서는 fresh WASM과 embed E2E가 통과했으나 현재 후보의
 통과 결과로 승격하지 않는다.
 
+PR self-review에서 병합 표 뒤 수식 좌표가 밀리는 blocker를 추가로 발견했다. 3×4 표의 `A1:B1`을 병합한
+뒤 `SUM(A2:C2)`를 `D2`에 기록하면 기존 구현은 `5`를 `A3`에 썼다. `table.cells`의 물리 index 대신 각
+cell의 논리 `(row, col)`로 원본과 결과 셀을 찾도록 보정한 `5240e38f1`에서 다음을 재검증했다.
+
+| 범위 | 최신 보정 후보 결과 |
+| --- | --- |
+| suite manifest | 1,032 sources / 4,532 static attrs / 48 targets, 통과 |
+| unit tier policy | 4,221 tests / 299 modules, 통과 |
+| Rust focused | `table_calc` 29/29, WASM API 1/1, integration 3/3 통과 |
+| release-test 전체 | 8,635/8,635 통과 / 43 skipped / 0 실패 |
+| 정적 검사 | Clippy `-D warnings`, `cargo fmt --all -- --check`, `git diff --check` 통과 |
+
+임시 review worktree와 이 검증이 만든 `target/pr-review` 8.9GiB는 검증 직후 제거했다. 최신 보정은 Studio
+제품 코드를 바꾸지 않으므로 앞서 승인된 한글 IME·F5 단계 UI candidate는 동일하다.
+
 ## 3. #6379와 장시간 검증의 관계
 
 [PR #6379](https://github.com/edwardkim/rhwp/pull/6379)는 PR에서 새로 추가된 sample만 보안 clean sweep 대상으로
@@ -78,13 +93,14 @@ nextest에서 오래 걸렸던 보안 코퍼스 전수 검사에는 관련이 �
 모두 0임을 확인한 뒤 Colima를 종료했다. 이전 R4에서 만든 유효 `pkg`는 이번 실패 산출물이 아니므로
 보존했다.
 
-## 5. push 전 남은 항목
+## 5. 최신 보정 뒤 남은 merge 조건
 
-최신 `upstream/devel@2bcf9b261` 통합과 변경 범위 최소 재검증은 완료했다. 다음은 실제 push 승인 뒤 수행한다.
+PR #6385의 제품 보정과 self-review는 완료했다. 다음 조건은 최신 trailing head를 push한 뒤 확인한다.
 
-1. 원격이 더 진행됐는지 fetch로 최종 확인한다.
-2. `cargo fmt --all`과 `cargo fmt --all -- --check`, `git diff --check`를 push 직전에 다시 실행한다.
-3. 표준 WASM·browser 결과는 GitHub required checks 또는 정상적인 native Docker 환경에서 확인한다.
+1. 최신 `upstream/devel`과 merge-tree가 충돌 없이 생성되는지 확인한다.
+2. `cargo fmt --all`, `cargo fmt --all -- --check`, `git diff --check`를 push 직전에 다시 실행한다.
+3. latest-head GitHub Actions에서 required checks가 모두 성공하는지 작업지시자가 확인한다.
+4. 최신 head·mergeability·작업지시자 merge 승인을 다시 확인한 뒤 merge한다.
 
 ## 6. 제안 PR 제목
 
@@ -92,7 +108,7 @@ nextest에서 오래 걸렸던 보안 코퍼스 전수 검사에는 관련이 �
 fix(studio): F5 셀 블록 계산과 한글 IME 셀 명령을 바로잡는다
 ```
 
-## 7. 복사 가능한 PR 본문 초안
+## 7. PR 생성 당시 본문 초안 (역사 기록)
 
 ```markdown
 ## 변경 요약
@@ -148,4 +164,5 @@ release/LTO가 장시간 진행돼 로컬 성공으로 기록하지 않았으며
 - F5 3회: 표 전체 선택 + `표 전체 선택`
 ```
 
-원격 push, PR 생성, GitHub comment는 작업지시자의 별도 승인 전에는 수행하지 않는다.
+PR #6385 생성과 최신 보정·검토 기록 push는 작업지시자가 승인했다. CI 완료 확인, merge와 GitHub
+comment는 이번 작업 범위에 포함하지 않는다.
