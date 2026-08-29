@@ -47,6 +47,29 @@ def stem(path):
     return name
 
 
+def subdir(path, root):
+    """`samples/`·`pdf/` 아래의 상대 디렉터리."""
+    d = os.path.dirname(path).replace(os.sep, '/')
+    return d[len(root):].lstrip('/') if d.startswith(root) else d
+
+
+def pick_oracles(sample, candidates):
+    """이름이 같은 정답지 후보 중 이 샘플의 것만 고른다.
+
+    **파일명만 보면 다른 문서의 정답지를 집어 온다.** 저장소에는 같은 이름의 서로 다른
+    문서가 44 종 있다 — 예를 들어 `samples/KTX.hwp` 는 27 쪽짜리 AI-반도체 사업 공모
+    안내서이고 `samples/basic/KTX.hwp` 는 1 쪽짜리 KTX 노선도인데, 이름이 같아서 서로의
+    정답지를 공유했다. 그러면 각자 상대의 쪽수로도 "일치" 판정을 받아 **진짜 불일치가
+    가려진다.**
+
+    같은 디렉터리의 정답지가 있으면 그것만 쓴다. 없으면 이름 후보를 그대로 쓰되(정답지가
+    `pdf/` 최상위에만 있는 문서가 많다), 후보가 여럿이면 그 사실이 픽스처의 쪽수 집합에
+    드러난다.
+    """
+    same_dir = [p for p in candidates if subdir(p, 'pdf') == subdir(sample, 'samples')]
+    return same_dir if same_dir else candidates
+
+
 def git_pdf_paths():
     out = subprocess.run(
         ['git', '-c', 'core.quotePath=false', 'ls-tree', '-r', 'HEAD', '--name-only', 'pdf/'],
@@ -107,7 +130,7 @@ def main():
         if key not in pmap:
             continue
         counts = set()
-        for pdf in pmap[key]:
+        for pdf in pick_oracles(sample, pmap[key]):
             if pdf not in cache:
                 cache[pdf] = oracle_pages(pdf, tmp)
             if cache[pdf]:
