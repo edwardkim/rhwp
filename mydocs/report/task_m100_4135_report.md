@@ -2,11 +2,11 @@
 
 - **Issue**: [#4135](https://github.com/edwardkim/rhwp/issues/4135)
 - **브랜치**: `codex/issue-4135-contextual-shortcut`
-- **검증 후보**: `8d3fdf011`
-- **후보에 통합된 기준**: `upstream/devel@f6a6bee8f`
-- **마지막 확인한 최신 upstream**: `upstream/devel@2bcf9b261` (PR #6379 포함)
+- **전체 검증 후보**: `8d3fdf011`
+- **최신 통합·focused 검증 후보**: `985396791`
+- **통합한 upstream**: `upstream/devel@2bcf9b261` (PR #6379 포함)
 - **원격 상태**: push·PR 생성 전
-- **현재 판정**: PR 본문 초안 작성 완료. push 전 최신 devel 동기화와 최소 재검증 필요
+- **현재 판정**: 최신 devel 통합·최소 재검증·PR 본문 초안·장기 검증 산출물 정리 완료
 
 ## 1. 사용자 결과
 
@@ -24,7 +24,7 @@
 
 ## 2. 검증 결과
 
-검증 후보 `8d3fdf011`에서 다음 결과를 확보했다.
+전체 검증 후보 `8d3fdf011`에서 다음 결과를 확보했다.
 
 | 범위 | 결과 |
 | --- | --- |
@@ -42,6 +42,19 @@
 | Studio production build | Vite 242 modules, 통과 |
 | 사용자 수동 검증 | 한글 IME 셀 나누기·F5 단계 UX 통과 |
 
+최신 `upstream/devel@2bcf9b261`을 충돌 없이 통합한 `985396791`에서는 변경 범위의 최소 재검증을
+다시 수행했다.
+
+| 범위 | 최신 통합 후보 결과 |
+| --- | --- |
+| Rust focused | #4135 5/5, `table_calc` 33/33 통과 |
+| Studio focused | 43/43 통과 |
+| unit tier policy | 4,225 tests / 299 modules, 통과 |
+| Studio TypeScript | 통과 |
+| Studio 전체 | 1,272 tests / 1,271 통과 / 1 skip / 0 실패 |
+| Studio production build | 깨끗한 `dist`에서 Vite 242 modules, 통과 |
+| 포맷 | `cargo fmt --all`, `cargo fmt --all -- --check`, `git diff --check` 통과 |
+
 Docker 표준 WASM build는 현재 후보에서 완료 판정하지 않는다. 중지돼 있던 x86_64 Colima의 빈 이미지와
 Cargo cache를 새로 만들면서 `wasm-pack` 설치에 11분 이상이 들었고, x86 에뮬레이션 release/LTO가 장시간
 계속돼 작업지시자가 PR 준비 범위를 본문 초안까지로 축소한 뒤 컨테이너를 중지했다. 이는 컴파일 오류가
@@ -57,23 +70,29 @@ nextest에서 오래 걸렸던 보안 코퍼스 전수 검사에는 관련이 �
 반면 중지한 작업은 Docker 내부의 x86_64 WASM release/LTO **컴파일**이다. #6379는 CI 테스트 선택 정책을
 바꿀 뿐 WASM 컴파일 경로·프로파일은 바꾸지 않으므로 7시간 남아 있던 컨테이너와는 관련이 없다.
 
-## 4. push 전 남은 항목
+## 4. 장기 검증 산출물 정리
 
-초안 작성 시점에 브랜치는 최신 `upstream/devel@2bcf9b261`보다 61 commits 뒤다. 최신 upstream에는 #6379와
-함께 table calculation·Studio·#2724 guard 주변 변경이 있으므로 다음은 실제 push 승인 뒤 수행한다.
+이번 작업에서 만든 3GB 검토 worktree, 8.1GB `target/pr-review`, 48MB Studio `dist`를 제거했다. Docker의
+`rhwp-wasm:latest`, `rhwp_*` volume 4개, `rhwp_default` network와 이번 빌드 시각의 BuildKit cache 11개도
+제거했다. 정리 뒤 해당 Docker 프로필은 기존 `fedora:42` 이미지만 남고 container·volume·build cache가
+모두 0임을 확인한 뒤 Colima를 종료했다. 이전 R4에서 만든 유효 `pkg`는 이번 실패 산출물이 아니므로
+보존했다.
 
-1. 최신 `upstream/devel`을 통합하고 충돌·중복 구현 여부를 확인한다.
-2. #4135 Rust/Studio focused, TypeScript, Studio 전체 test를 다시 실행한다.
-3. `cargo fmt --all`과 `cargo fmt --all -- --check`, `git diff --check`를 push 직전에 다시 실행한다.
-4. 표준 WASM·browser 결과는 GitHub required checks 또는 정상적인 native Docker 환경에서 확인한다.
+## 5. push 전 남은 항목
 
-## 5. 제안 PR 제목
+최신 `upstream/devel@2bcf9b261` 통합과 변경 범위 최소 재검증은 완료했다. 다음은 실제 push 승인 뒤 수행한다.
+
+1. 원격이 더 진행됐는지 fetch로 최종 확인한다.
+2. `cargo fmt --all`과 `cargo fmt --all -- --check`, `git diff --check`를 push 직전에 다시 실행한다.
+3. 표준 WASM·browser 결과는 GitHub required checks 또는 정상적인 native Docker 환경에서 확인한다.
+
+## 6. 제안 PR 제목
 
 ```text
 fix(studio): F5 셀 블록 계산과 한글 IME 셀 명령을 바로잡는다
 ```
 
-## 6. 복사 가능한 PR 본문 초안
+## 7. 복사 가능한 PR 본문 초안
 
 ```markdown
 ## 변경 요약
@@ -91,6 +110,7 @@ closes #4135
 ## 테스트
 
 - [x] `cargo fmt --all -- --check` 통과
+- [x] 최신 `upstream/devel@2bcf9b261` 통합 및 변경 범위 focused 재검증
 - [x] `src/**` test 변경에 대한 `node scripts/rust-unit-test-tiers.mjs --check` 통과
 - [x] focused Rust: #4135 5/5, table calculation 33/33
 - [x] release lib: 4,075 pass / 13 ignored
@@ -99,7 +119,7 @@ closes #4135
 - [x] `cargo clippy --locked --all-targets -- -D warnings` 통과
 - [x] Rust doc test: 8 pass / 3 ignored
 - [x] Studio TypeScript 검사 및 production build 통과
-- [x] Studio 전체: 1,264 tests / 1,263 pass / 1 skip
+- [x] 최신 통합 후보 Studio 전체: 1,272 tests / 1,271 pass / 1 skip
 - [x] 실제 macOS 한글 IME에서 셀 나누기 후 `ㄴ` 미입력 확인
 - [x] 실제 browser에서 F5 1·2·3회 마커·하단 상태·Escape 해제 확인
 - [ ] 최신 devel 통합 후보의 표준 Docker WASM build / embed E2E
@@ -111,9 +131,10 @@ closes #4135
 - `mydocs/working/task_m100_4135_recovery_r5.md`
 - `mydocs/report/task_m100_4135_report.md`
 
-현재 후보의 전체 Rust·Studio 게이트는 통과했습니다. Docker WASM은 x86_64 Colima 빈 캐시의
-release/LTO가 장시간 진행돼 로컬 성공으로 기록하지 않았으며, 최신 devel 통합 뒤 required check 또는
-정상 native Docker 환경에서 확인합니다.
+전체 Rust 게이트 후보 통과 뒤 최신 devel을 통합했고, 새 head에서 Rust/Studio focused, TypeScript,
+Studio 전체와 production build, 포맷을 다시 통과했습니다. Docker WASM은 x86_64 Colima 빈 캐시의
+release/LTO가 장시간 진행돼 로컬 성공으로 기록하지 않았으며, required check 또는 정상 native Docker
+환경에서 확인합니다.
 
 ## 성능 영향 및 측정 결과
 
