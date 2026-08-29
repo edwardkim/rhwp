@@ -341,7 +341,9 @@ pub(crate) fn export_pdf(args: &[String]) -> i32 {
             target_page,
             pdf_backend,
             pdf_options,
-            direct_pdf_options,
+            // PDF raster feature 빌드가 아래에서 font_paths 를 대입한다 — 기본
+            // 빌드에서만 미사용 mut 로 보이는 자리다 (CI Canvas visual diff 잡 기준).
+            mut direct_pdf_options,
             render_profile,
             hangul2024_compat,
             json_mode,
