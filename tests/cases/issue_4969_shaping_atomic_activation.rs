@@ -3,9 +3,13 @@
 use rhwp::document_core::DocumentCore;
 use rhwp::model::paragraph::{CharShapeRef, LineSeg, Paragraph};
 use rhwp::model::style::Alignment;
-use rhwp::paint::{LayerNode, LayerNodeKind, PaintOp};
+use rhwp::paint::{LayerNode, LayerNodeKind, PaintOp, TextVariantKind};
 #[cfg(not(target_arch = "wasm32"))]
 use rhwp::renderer::canvaskit_policy::{analyze_canvaskit_replay_plan, CanvasKitReplayMode};
+#[cfg(not(target_arch = "wasm32"))]
+use rhwp::renderer::layer_renderer::{
+    analyze_text_variant_selection, TextVariantSelectionOptions, VariantSelectionBackend,
+};
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen_test::wasm_bindgen_test;
 
@@ -103,11 +107,12 @@ fn collect_text_ops<'a>(node: &'a LayerNode, ops: &mut Vec<&'a PaintOp>) {
             }
         }
         LayerNodeKind::ClipRect { child, .. } => collect_text_ops(child, ops),
-        LayerNodeKind::Leaf { ops: leaf_ops } => ops.extend(
-            leaf_ops
-                .iter()
-                .filter(|op| matches!(op, PaintOp::TextRun { .. } | PaintOp::GlyphRun { .. })),
-        ),
+        LayerNodeKind::Leaf { ops: leaf_ops } => ops.extend(leaf_ops.iter().filter(|op| {
+            matches!(
+                op,
+                PaintOp::TextRun { .. } | PaintOp::GlyphRun { .. } | PaintOp::GlyphOutline { .. }
+            )
+        })),
     }
 }
 
@@ -321,7 +326,7 @@ fn issue_4969_q3_e0_default_product_baseline_receipt() {
 
 #[test]
 #[cfg(not(target_arch = "wasm32"))]
-fn issue_4969_q3_e3_native_instance_geometry_is_reversible_and_paint_stays_atomic() {
+fn issue_4969_q3_e4_native_instance_publishes_atomic_portable_outline() {
     let (mut core, char_shape_id) =
         core_with_surface_and_source("가변", Alignment::Left, 0, false, HAPPINESS);
     let baseline_tree = core
@@ -331,13 +336,14 @@ fn issue_4969_q3_e3_native_instance_geometry_is_reversible_and_paint_stays_atomi
     assert!(!baseline.contains("\"type\":\"glyphOutline\""));
     let mut baseline_ops = Vec::new();
     collect_text_ops(&baseline_tree.root, &mut baseline_ops);
-    let baseline_width = baseline_ops
+    let baseline_bbox = baseline_ops
         .iter()
         .find_map(|op| match op {
-            PaintOp::TextRun { bbox, run } if run.text == "가변" => Some(bbox.width),
+            PaintOp::TextRun { bbox, run } if run.text == "가변" => Some(*bbox),
             _ => None,
         })
-        .expect("baseline TextRun width");
+        .expect("baseline TextRun bbox");
+    let baseline_width = baseline_bbox.width;
 
     let title = serde_json::json!({
         "charShapeId": char_shape_id,
@@ -379,23 +385,116 @@ fn issue_4969_q3_e3_native_instance_geometry_is_reversible_and_paint_stays_atomi
         selected_width, baseline_width,
         "instance geometry must change"
     );
-    assert!(
-        !selected_json.contains("\"type\":\"glyphOutline\""),
-        "Q3-E4 owns variable outline publication"
+    let selected_glyph_runs = selected_ops
+        .iter()
+        .filter(|op| {
+            matches!(op, PaintOp::GlyphRun { run, .. }
+                if run.diagnostics.reason.as_deref()
+                    == Some("q3ExplicitInstanceGlyphRunProjectionV1"))
+        })
+        .count();
+    let selected_outlines = selected_ops
+        .iter()
+        .filter(|op| {
+            matches!(op, PaintOp::GlyphOutline { outline, .. }
+                if outline.diagnostics.reason.as_deref()
+                    == Some("q3VariableOutlineProjectionV1"))
+        })
+        .count();
+    assert_eq!(selected_glyph_runs, 1);
+    assert_eq!(selected_outlines, 1);
+    let selected_glyph_run = selected_ops
+        .iter()
+        .find_map(|op| match op {
+            PaintOp::GlyphRun { run, .. }
+                if run.diagnostics.reason.as_deref()
+                    == Some("q3ExplicitInstanceGlyphRunProjectionV1") =>
+            {
+                Some(run.as_ref())
+            }
+            _ => None,
+        })
+        .expect("explicit GlyphRun");
+    let selected_outline = selected_ops
+        .iter()
+        .find_map(|op| match op {
+            PaintOp::GlyphOutline { outline, .. }
+                if outline.diagnostics.reason.as_deref()
+                    == Some("q3VariableOutlineProjectionV1") =>
+            {
+                Some(outline.as_ref())
+            }
+            _ => None,
+        })
+        .expect("explicit GlyphOutline");
+    assert_eq!(selected_glyph_run.source.id, selected_outline.source.id);
+    assert_eq!(
+        selected_glyph_run.variant.equivalence_group,
+        selected_outline.variant.equivalence_group
     );
-    assert!(
-        !selected_json.contains("q2CommonShapingCondensedDrawProjectionV1"),
-        "explicit geometry must not partially publish a Q2 GlyphRun"
+    assert_eq!(
+        selected_glyph_run.variant.anchor_op_id,
+        selected_outline.variant.anchor_op_id
     );
+    assert!(selected_json.contains("\"type\":\"glyphOutline\""));
+    assert!(!selected_json.contains("q2CommonShapingCondensedDrawProjectionV1"));
+    let canvas_kit_plan =
+        analyze_canvaskit_replay_plan(&selected_tree, CanvasKitReplayMode::Default);
+    let canvas_kit_json =
+        serde_json::to_string(&canvas_kit_plan).expect("serialize explicit CanvasKit replay plan");
+    assert!(canvas_kit_json.contains("glyphOutline"));
+    for (backend, expected_kind, expected_fallback) in [
+        (
+            VariantSelectionBackend::CanvasKit,
+            TextVariantKind::GlyphOutline,
+            false,
+        ),
+        (
+            VariantSelectionBackend::CanvasKitBrowser,
+            TextVariantKind::GlyphOutline,
+            false,
+        ),
+        (
+            VariantSelectionBackend::NativeSkia,
+            TextVariantKind::TextRun,
+            true,
+        ),
+        (VariantSelectionBackend::Svg, TextVariantKind::TextRun, true),
+        (
+            VariantSelectionBackend::Canvas2D,
+            TextVariantKind::TextRun,
+            true,
+        ),
+    ] {
+        let reports = analyze_text_variant_selection(
+            &selected_tree,
+            TextVariantSelectionOptions {
+                backend,
+                prefer_strict_outline: true,
+                ..TextVariantSelectionOptions::canvaskit()
+            },
+        );
+        let report = reports
+            .iter()
+            .find(|report| report.equivalence_group == selected_glyph_run.variant.equivalence_group)
+            .expect("explicit variant selection report");
+        assert_eq!(
+            report.selected_variant_kind,
+            Some(expected_kind),
+            "{backend:?}"
+        );
+        assert_eq!(report.fallback_required, expected_fallback, "{backend:?}");
+    }
     println!(
         "{}",
         serde_json::json!({
-            "kind": "q3-e3-explicit-geometry-receipt",
+            "kind": "q3-e4-atomic-publication-receipt",
             "baselineWidthPx": baseline_width,
             "selectedWidthPx": selected_width,
             "deltaPx": selected_width - baseline_width,
-            "glyphOutlinePublished": selected_json.contains("\"type\":\"glyphOutline\""),
-            "q2GlyphRunPublished": selected_json.contains("q2CommonShapingCondensedDrawProjectionV1")
+            "glyphRunPublished": selected_glyph_runs,
+            "glyphOutlinePublished": selected_outlines,
+            "canvasKitSelectsOutline": canvas_kit_json.contains("glyphOutline")
         })
     );
 
@@ -435,6 +534,32 @@ fn issue_4969_q3_e3_native_instance_geometry_is_reversible_and_paint_stays_atomi
     assert_eq!(updated["status"], "updated");
     assert_eq!(updated["requestGeneration"], 2);
     assert_eq!(updated["axes"], serde_json::json!([]));
+    let explicit_default_tree = core
+        .build_page_layer_tree(0)
+        .expect("build explicit-default product surface");
+    assert_eq!(explicit_default_tree.to_json(), baseline);
+    let mut explicit_default_ops = Vec::new();
+    collect_text_ops(&explicit_default_tree.root, &mut explicit_default_ops);
+    let explicit_default_bbox = explicit_default_ops
+        .iter()
+        .find_map(|op| match op {
+            PaintOp::TextRun { bbox, run } if run.text == "가변" => Some(*bbox),
+            _ => None,
+        })
+        .expect("explicit-default TextRun bbox");
+    assert_eq!(explicit_default_bbox.x, baseline_bbox.x);
+    assert_eq!(explicit_default_bbox.y, baseline_bbox.y);
+    assert_eq!(explicit_default_bbox.width, baseline_bbox.width);
+    assert_eq!(explicit_default_bbox.height, baseline_bbox.height);
+    assert!(!explicit_default_ops.iter().any(|op| matches!(
+        op,
+        PaintOp::GlyphRun { run, .. }
+            if run.diagnostics.reason.as_deref()
+                == Some("q3ExplicitInstanceGlyphRunProjectionV1")
+    )));
+    assert!(!explicit_default_ops
+        .iter()
+        .any(|op| matches!(op, PaintOp::GlyphOutline { .. })));
 
     let clear = serde_json::json!({
         "charShapeId": char_shape_id,

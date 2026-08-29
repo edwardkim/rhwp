@@ -53,7 +53,8 @@ use rhwp::paint::{
     LayerNode, PageLayerTree, PaintOp, ResourceArena, TextVariantKind,
 };
 use rhwp::renderer::layer_renderer::{
-    analyze_text_variant_selection, TextVariantSelectionOptions, VariantSelectionBackend,
+    analyze_text_variant_selection, TextVariantSelectionOptions, VariantRejectReason,
+    VariantSelectionBackend,
 };
 use rhwp::renderer::render_tree::{BoundingBox, FieldMarkerType, TextRunNode};
 use rhwp::renderer::TextStyle;
@@ -487,8 +488,6 @@ fn issue_4969_q3_c_variable_outline_is_selected_only_on_proven_shadow_backends()
     for backend in [
         VariantSelectionBackend::CanvasKit,
         VariantSelectionBackend::CanvasKitBrowser,
-        VariantSelectionBackend::NativeSkia,
-        VariantSelectionBackend::Svg,
     ] {
         let reports = analyze_text_variant_selection(
             &tree,
@@ -501,24 +500,126 @@ fn issue_4969_q3_c_variable_outline_is_selected_only_on_proven_shadow_backends()
         assert_eq!(
             reports[0].selected_variant_kind,
             Some(TextVariantKind::GlyphOutline),
-            "{backend:?} must select the producer-resolved outline shadow"
+            "{backend:?} must select the producer-resolved outline"
         );
         assert!(!reports[0].fallback_required);
     }
 
-    let reports = analyze_text_variant_selection(
-        &tree,
-        TextVariantSelectionOptions {
-            backend: VariantSelectionBackend::Canvas2D,
-            ..TextVariantSelectionOptions::canvaskit()
+    for backend in [
+        VariantSelectionBackend::NativeSkia,
+        VariantSelectionBackend::Svg,
+        VariantSelectionBackend::Canvas2D,
+    ] {
+        let reports = analyze_text_variant_selection(
+            &tree,
+            TextVariantSelectionOptions {
+                backend,
+                prefer_strict_outline: true,
+                ..TextVariantSelectionOptions::canvaskit()
+            },
+        );
+        assert_eq!(reports.len(), 1);
+        assert_eq!(
+            reports[0].selected_variant_kind,
+            Some(TextVariantKind::TextRun),
+            "{backend:?} must retain the non-default instance fallback"
+        );
+        assert!(reports[0].fallback_required);
+    }
+}
+
+#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
+fn issue_4969_q3_e4_incomplete_or_malformed_outline_falls_back_atomically() {
+    let title = [
+        ShapingVariation {
+            tag: "opsz".into(),
+            value: 900.0,
         },
+        ShapingVariation {
+            tag: "wght".into(),
+            value: 900.0,
+        },
+    ];
+    let (mut report, _, resources, bbox, run) = variable_lowering(34, &title);
+    let glyph_run = report.glyph_run.take().expect("variable GlyphRun");
+    let mut malformed_outline = report.glyph_outline.take().expect("variable GlyphOutline");
+
+    let incomplete_root = LayerNode::leaf(
+        bbox,
+        Some(34),
+        vec![
+            PaintOp::text_run(bbox, run.clone()),
+            PaintOp::GlyphRun {
+                bbox,
+                run: Box::new(glyph_run.clone()),
+            },
+        ],
     );
-    assert_eq!(reports.len(), 1);
-    assert_eq!(
-        reports[0].selected_variant_kind,
-        Some(TextVariantKind::TextRun)
+    let mut incomplete_tree = PageLayerTree::new(100.0, 100.0, incomplete_root);
+    incomplete_tree.resources = resources.clone();
+
+    malformed_outline.paths.clear();
+    let malformed_root = LayerNode::leaf(
+        bbox,
+        Some(34),
+        vec![
+            PaintOp::text_run(bbox, run),
+            PaintOp::GlyphRun {
+                bbox,
+                run: Box::new(glyph_run),
+            },
+            PaintOp::GlyphOutline {
+                bbox,
+                outline: Box::new(malformed_outline),
+            },
+        ],
     );
-    assert!(reports[0].fallback_required);
+    let mut malformed_tree = PageLayerTree::new(100.0, 100.0, malformed_root);
+    malformed_tree.resources = resources;
+
+    for backend in [
+        VariantSelectionBackend::CanvasKit,
+        VariantSelectionBackend::CanvasKitBrowser,
+    ] {
+        let incomplete = analyze_text_variant_selection(
+            &incomplete_tree,
+            TextVariantSelectionOptions {
+                backend,
+                prefer_strict_outline: true,
+                ..TextVariantSelectionOptions::canvaskit()
+            },
+        );
+        assert_eq!(incomplete.len(), 1);
+        assert_eq!(
+            incomplete[0].selected_variant_kind,
+            Some(TextVariantKind::TextRun),
+            "{backend:?} must reject an incomplete atomic pair"
+        );
+        assert!(incomplete[0].fallback_required);
+
+        let malformed = analyze_text_variant_selection(
+            &malformed_tree,
+            TextVariantSelectionOptions {
+                backend,
+                prefer_strict_outline: true,
+                ..TextVariantSelectionOptions::canvaskit()
+            },
+        );
+        assert_eq!(malformed.len(), 1);
+        assert_eq!(
+            malformed[0].selected_variant_kind,
+            Some(TextVariantKind::TextRun),
+            "{backend:?} must reject a malformed outline"
+        );
+        assert!(malformed[0].fallback_required);
+        assert!(malformed[0].rejected_variants.iter().any(|candidate| {
+            candidate.variant_kind == TextVariantKind::GlyphOutline
+                && candidate
+                    .reasons
+                    .contains(&VariantRejectReason::EmptyGlyphOutlinePayload)
+        }));
+    }
 }
 
 #[test]

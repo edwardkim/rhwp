@@ -3,7 +3,7 @@
   "kind": "font-w10-q3-e-bounded-atomic-activation-revised-plan",
   "issue": 4969,
   "stage": "W10-Q3-E",
-  "status": "q3-e2-complete-awaiting-q3-e3-start-approval",
+  "status": "q3-e4-complete-awaiting-latest-devel-requalification-approval",
   "baseCheckpoint": "558e27f6d",
   "productMutation": true,
   "publicApiExpansionRequiresSeparateApproval": true,
@@ -113,12 +113,18 @@
       "id": "Q3-E3",
       "name": "bounded-explicit-composer-activation",
       "productOutputChange": true,
+      "result": "qualified-bounded-explicit-geometry-approved",
+      "resultEvidence": "mydocs/tech/investigations/issue-4969/w10_q3_e3_bounded_explicit_composer.json",
+      "checkpointCreated": true,
       "approvalAfter": true
     },
     {
       "id": "Q3-E4",
       "name": "atomic-portable-publication-and-backend-matrix",
       "productOutputChange": true,
+      "result": "qualified-atomic-portable-publication-approved",
+      "resultEvidence": "mydocs/tech/investigations/issue-4969/w10_q3_e4_atomic_portable_publication.json",
+      "checkpointCreated": true,
       "approvalAfter": true
     },
     {
@@ -152,7 +158,7 @@
   "privateCorpus": false,
   "hyperVOrHancomOracle": false,
   "requalificationEvidence": "mydocs/tech/investigations/issue-4969/w10_q3_e0_requalification.json",
-  "nextStage": "Q3-E3-start-approval",
+  "nextStage": "latest-devel-merge-requalification-approval",
   "nextStageApproved": false,
-  "approvalScope": "Q3-E2 result and checkpoint are complete; Q3-E3 product activation, push, PR, and comment remain separately gated"
+  "approvalScope": "Q3-E4 result and checkpoint are approved; latest devel merge requalification, Q3-E5, push, PR, and comment remain separately gated"
 }

@@ -478,7 +478,17 @@ impl TextVariantCandidate {
                 }
             }
             TextVariantKind::GlyphOutline => {
-                if matches!(options.backend, VariantSelectionBackend::Canvas2D) {
+                let q3_variable_outline = self.glyph_outlines.iter().any(|outline| {
+                    outline.diagnostics.reason.as_deref() == Some("q3VariableOutlineProjectionV1")
+                });
+                if matches!(options.backend, VariantSelectionBackend::Canvas2D)
+                    || (q3_variable_outline
+                        && !matches!(
+                            options.backend,
+                            VariantSelectionBackend::CanvasKit
+                                | VariantSelectionBackend::CanvasKitBrowser
+                        ))
+                {
                     reasons.insert(VariantRejectReason::BackendDoesNotSupportVariant);
                 }
                 for outline in &self.glyph_outlines {

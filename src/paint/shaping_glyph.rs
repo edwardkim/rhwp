@@ -44,7 +44,6 @@ pub(crate) enum HorizontalShapingGlyphLoweringRejectReason {
     MeasurementGeometryInvalid,
     ReplayProjectionMismatch,
     ClusterMappingInvalid,
-    ExplicitInstancePublicationPending,
     VariableOutlineUnavailable,
     VariableOutlineLimitExceeded,
     VariableOutlineBboxMismatch,
@@ -68,7 +67,6 @@ impl HorizontalShapingGlyphLoweringRejectReason {
             Self::MeasurementGeometryInvalid => "measurementGeometryInvalid",
             Self::ReplayProjectionMismatch => "replayProjectionMismatch",
             Self::ClusterMappingInvalid => "clusterMappingInvalid",
-            Self::ExplicitInstancePublicationPending => "explicitInstancePublicationPending",
             Self::VariableOutlineUnavailable => "variableOutlineUnavailable",
             Self::VariableOutlineLimitExceeded => "variableOutlineLimitExceeded",
             Self::VariableOutlineBboxMismatch => "variableOutlineBboxMismatch",
@@ -83,8 +81,8 @@ impl HorizontalShapingGlyphLoweringRejectReason {
 pub(crate) struct HorizontalShapingGlyphLoweringReport {
     pub source_node_id: Option<u32>,
     pub glyph_run: Option<LayerGlyphRunPaint>,
-    /// Q3-C producer-resolved variable outline candidate. Product publication
-    /// deliberately ignores this field until a later activation gate.
+    /// Q3 producer-resolved variable outline candidate. Q3-E4 publishes this
+    /// atomically with the request-bound GlyphRun.
     pub glyph_outline: Option<LayerGlyphOutlinePaint>,
     pub variable_outline_proof: Option<HorizontalShapingVariableOutlineProof>,
     pub reject_reason: Option<HorizontalShapingGlyphLoweringRejectReason>,
@@ -96,6 +94,9 @@ pub(crate) struct HorizontalShapingGlyphLoweringReport {
     /// A successful common run owns the one GlyphRun alternative. D4 must use
     /// this bit to skip the nominal lowerer for the same TextRun fallback.
     pub claims_glyph_run_slot: bool,
+    /// Explicit instance replay is publishable only when both portable parts
+    /// were produced and can be inserted in one leaf mutation.
+    pub atomic_outline_required: bool,
 }
 
 impl HorizontalShapingGlyphLoweringReport {
@@ -111,6 +112,7 @@ impl HorizontalShapingGlyphLoweringReport {
             reject_reason: Some(reason),
             portable_source_work: HorizontalShapingPortableSourceWork::default(),
             claims_glyph_run_slot: false,
+            atomic_outline_required: false,
         }
     }
 
@@ -120,6 +122,7 @@ impl HorizontalShapingGlyphLoweringReport {
         glyph_outline: Option<LayerGlyphOutlinePaint>,
         variable_outline_proof: Option<HorizontalShapingVariableOutlineProof>,
         portable_source_work: HorizontalShapingPortableSourceWork,
+        atomic_outline_required: bool,
     ) -> Self {
         Self {
             source_node_id: Some(source_node_id),
@@ -129,6 +132,7 @@ impl HorizontalShapingGlyphLoweringReport {
             reject_reason: None,
             portable_source_work,
             claims_glyph_run_slot: true,
+            atomic_outline_required,
         }
     }
 }
@@ -405,8 +409,10 @@ fn validate_measurement(
         || measurement.source_handle.face_index != identity.face_index
         || identity.direction != "ltr"
         || identity.writing_mode != "horizontal-tb"
-        || identity.script.as_deref() != Some("Hang")
-        || identity.language.as_deref() != Some("ko")
+        || !matches!(
+            (identity.script.as_deref(), identity.language.as_deref()),
+            (Some("Hang"), Some("ko")) | (Some("Latn"), Some("en"))
+        )
         || identity.features.len() != 1
         || identity.features[0].tag != "kern"
         || identity.features[0].value != u32::from(run.style.kerning)
@@ -821,7 +827,10 @@ fn project_replay_geometry(
     let measurement = decision
         .measurement()
         .ok_or(HorizontalShapingGlyphLoweringRejectReason::RejectedDecision)?;
-    if !(0.0..0.999).contains(&run.style.ratio) {
+    let explicit_instance = measurement.instance_request.is_some();
+    if (!explicit_instance && !(0.0..0.999).contains(&run.style.ratio))
+        || (explicit_instance && !(0.0..=16.0).contains(&run.style.ratio))
+    {
         return Err(HorizontalShapingGlyphLoweringRejectReason::UnsupportedReplayRatio);
     }
     if measurement
@@ -1030,18 +1039,6 @@ fn lower_horizontal_shaping_source_shadow(
             HorizontalShapingGlyphLoweringRejectReason::UnsupportedRunSurface,
         );
     }
-    if decision
-        .measurement()
-        .is_some_and(|measurement| measurement.instance_request.is_some())
-    {
-        // Q3-E3 may consume request-bound geometry, but Q3-E4 owns the atomic
-        // GlyphRun + GlyphOutline publication.  Reject before prepared-source
-        // cache/resource mutation so no partial variable replay can escape.
-        return HorizontalShapingGlyphLoweringReport::rejected(
-            Some(source_node_id),
-            HorizontalShapingGlyphLoweringRejectReason::ExplicitInstancePublicationPending,
-        );
-    }
     let range = decision.range();
     let scalar_count = run.text.chars().count();
     if range.scalar_end - range.scalar_start != scalar_count
@@ -1096,6 +1093,12 @@ fn lower_horizontal_shaping_source_shadow(
     } else {
         None
     };
+    if measurement.instance_request.is_some() && variable_outline.is_none() {
+        return HorizontalShapingGlyphLoweringReport::rejected(
+            Some(source_node_id),
+            HorizontalShapingGlyphLoweringRejectReason::VariableOutlineUnavailable,
+        );
+    }
     let glyph_ids = measurement
         .glyphs_px
         .iter()
@@ -1208,7 +1211,14 @@ fn lower_horizontal_shaping_source_shadow(
             cluster_mismatch_count: 0,
             missing_glyph_count: 0,
             used_fallback_font_count: 0,
-            reason: Some("q2CommonShapingCondensedDrawProjectionV1".to_string()),
+            reason: Some(
+                if measurement.instance_request.is_some() {
+                    "q3ExplicitInstanceGlyphRunProjectionV1"
+                } else {
+                    "q2CommonShapingCondensedDrawProjectionV1"
+                }
+                .to_string(),
+            ),
         },
     };
     let (glyph_outline, variable_outline_proof) = variable_outline
@@ -1220,6 +1230,7 @@ fn lower_horizontal_shaping_source_shadow(
         glyph_outline,
         variable_outline_proof,
         portable_source_work,
+        measurement.instance_request.is_some(),
     )
 }
 
@@ -1280,7 +1291,21 @@ pub(crate) fn lower_horizontal_shaping_page_sidecars(
                         );
                         lowered.push(crate::paint::PaintOp::TextRun { bbox, run });
                         if report.claims_glyph_run_slot {
-                            if let Some(glyph_run) = report.glyph_run {
+                            if report.atomic_outline_required {
+                                if let (Some(glyph_run), Some(glyph_outline)) =
+                                    (report.glyph_run, report.glyph_outline)
+                                {
+                                    lowered.push(crate::paint::PaintOp::GlyphRun {
+                                        bbox,
+                                        run: Box::new(glyph_run),
+                                    });
+                                    lowered.push(crate::paint::PaintOp::GlyphOutline {
+                                        bbox,
+                                        outline: Box::new(glyph_outline),
+                                    });
+                                    claimed.insert(text_source_id);
+                                }
+                            } else if let Some(glyph_run) = report.glyph_run {
                                 lowered.push(crate::paint::PaintOp::GlyphRun {
                                     bbox,
                                     run: Box::new(glyph_run),

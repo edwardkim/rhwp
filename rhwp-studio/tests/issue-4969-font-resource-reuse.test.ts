@@ -229,3 +229,64 @@ test('issue #4969 Q2-D5-R2 failed font verification leaves the TextRun fallback 
   );
   assert.deepEqual([...selected], [fallback]);
 });
+
+test('issue #4969 Q3-E4 Studio selects only a complete replayable variable outline', () => {
+  const fallback = {
+    type: 'textRun',
+    variant: {
+      equivalenceGroup: 'q3-e4-atomic',
+      variantId: 'fallback',
+      variantKind: 'textRun',
+      partIndex: 0,
+      partCount: 1,
+      isDefaultFallback: true,
+    },
+  } as unknown as LayerPaintOp;
+  const glyphRun = {
+    type: 'glyphRun',
+    variant: {
+      equivalenceGroup: 'q3-e4-atomic',
+      variantId: 'variable-glyph-run',
+      variantKind: 'glyphRun',
+      partIndex: 0,
+      partCount: 1,
+      isDefaultFallback: false,
+    },
+  } as unknown as LayerPaintOp;
+  const outline = {
+    type: 'glyphOutline',
+    variant: {
+      equivalenceGroup: 'q3-e4-atomic',
+      variantId: 'variable-outline',
+      variantKind: 'glyphOutline',
+      partIndex: 0,
+      partCount: 1,
+      isDefaultFallback: false,
+    },
+  } as unknown as LayerPaintOp;
+
+  assert.deepEqual(
+    [...selectLayerTextVariantsForLeaf([fallback, glyphRun, outline], () => true, () => false)],
+    [outline],
+  );
+  assert.deepEqual(
+    [...selectLayerTextVariantsForLeaf([fallback, glyphRun, outline], () => false, () => false)],
+    [fallback],
+  );
+
+  const incompleteOutline = {
+    ...outline,
+    variant: {
+      ...(outline as { variant: Record<string, unknown> }).variant,
+      partCount: 2,
+    },
+  } as unknown as LayerPaintOp;
+  assert.deepEqual(
+    [...selectLayerTextVariantsForLeaf(
+      [fallback, glyphRun, incompleteOutline],
+      () => true,
+      () => false,
+    )],
+    [fallback],
+  );
+});

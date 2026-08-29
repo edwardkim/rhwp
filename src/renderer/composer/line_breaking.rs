@@ -1112,6 +1112,14 @@ pub(super) fn compose_horizontal_shaping_handoff(
         }
         let slot = projection.shaping_scalar_styles.first()?.slot;
         let mut transaction = shaping_context.explicit_instance_transaction(slot).ok()?;
+        // An explicit default remains distinct in the request registry and
+        // shaping cache, but must not widen the product activation surface.
+        // Returning to the existing composer here preserves Q2 pixels and
+        // geometry; only a canonical non-default instance may publish the
+        // Q3-E portable pair.
+        if transaction.is_default_instance() {
+            return None;
+        }
         if !crate::renderer::shaping_paragraph::is_bounded_explicit_instance_candidate_text(
             &para.text,
         ) {

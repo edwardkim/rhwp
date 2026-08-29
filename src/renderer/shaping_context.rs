@@ -669,6 +669,10 @@ impl HorizontalShapingExplicitInstanceTransaction<'_> {
         self.transaction.registry_generation()
     }
 
+    pub(crate) fn is_default_instance(&self) -> bool {
+        self.variations.is_empty()
+    }
+
     pub(crate) fn request_generation(&self) -> u64 {
         self.provenance.request_generation
     }
