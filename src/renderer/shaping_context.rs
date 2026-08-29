@@ -4,15 +4,15 @@
 //! 계산한다. composer, render tree, paint는 이 모듈을 아직 소비하지 않는다.
 
 use super::kerning::{
-    resolve_exact_font_source, ExactFontSlot, ExactFontSourceHandle, ExactFontSourceRegistry,
-    ExactFontSourceResolutionReason,
+    resolve_exact_font_source, ExactFontSlot, ExactFontSource as RegistryExactFontSource,
+    ExactFontSourceHandle, ExactFontSourceRegistry, ExactFontSourceResolutionReason,
 };
 use super::shaping::{
-    canonicalize_shaping_request, shape_canonical_request_with_face,
+    canonicalize_verified_shaping_request, shape_canonical_request_with_face,
     terminal_shaping_attempt_from_output, AppliedShapingRun, ShapingAttemptTrace, ShapingDirection,
     ShapingExactSource, ShapingFeature, ShapingOutputDecision, ShapingRejectReason, ShapingRequest,
-    ShapingWritingMode, TerminalShapingAttempt, TerminalShapingDisposition, MAX_SHAPING_GLYPHS,
-    MAX_SHAPING_TEXT_CODE_POINTS,
+    ShapingVariation, ShapingWritingMode, TerminalShapingAttempt, TerminalShapingDisposition,
+    MAX_SHAPING_GLYPHS, MAX_SHAPING_TEXT_CODE_POINTS,
 };
 use serde::Serialize;
 use std::collections::HashMap;
@@ -34,6 +34,7 @@ pub(crate) struct HorizontalShapingRequest<'a> {
     pub script: Option<&'a str>,
     pub language: Option<&'a str>,
     pub features: &'a [ShapingFeature],
+    pub variations: &'a [ShapingVariation],
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -46,6 +47,7 @@ struct HorizontalShapingCacheKey {
     script: Option<String>,
     language: Option<String>,
     features: Vec<(String, u32)>,
+    variations: Vec<(String, u32)>,
 }
 
 impl HorizontalShapingCacheKey {
@@ -53,6 +55,7 @@ impl HorizontalShapingCacheKey {
         registry_generation: u64,
         source_handle: ExactFontSourceHandle,
         request: &HorizontalShapingRequest<'_>,
+        identity: &super::shaping::CanonicalShapingIdentity,
     ) -> Self {
         Self {
             registry_generation,
@@ -66,6 +69,33 @@ impl HorizontalShapingCacheKey {
                 .features
                 .iter()
                 .map(|feature| (feature.tag.clone(), feature.value))
+                .collect(),
+            variations: identity
+                .variations
+                .iter()
+                .map(|variation| (variation.tag.clone(), variation.value_bits))
+                .collect(),
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+struct HorizontalShapingFaceKey {
+    source_handle: ExactFontSourceHandle,
+    variations: Vec<(String, u32)>,
+}
+
+impl HorizontalShapingFaceKey {
+    fn new(
+        source_handle: ExactFontSourceHandle,
+        identity: &super::shaping::CanonicalShapingIdentity,
+    ) -> Self {
+        Self {
+            source_handle,
+            variations: identity
+                .variations
+                .iter()
+                .map(|variation| (variation.tag.clone(), variation.value_bits))
                 .collect(),
         }
     }
@@ -317,10 +347,17 @@ impl HorizontalShapingContext {
     }
 }
 
+struct HorizontalShapingPreparedSource<'a> {
+    source: RegistryExactFontSource<'a>,
+    face: ttf_parser::Face<'a>,
+}
+
 pub(crate) struct HorizontalShapingTransaction<'a> {
     context: &'a HorizontalShapingContext,
     registry_generation: u64,
-    faces: HashMap<ExactFontSourceHandle, rustybuzz::Face<'a>>,
+    prepared_sources: HashMap<ExactFontSourceHandle, HorizontalShapingPreparedSource<'a>>,
+    faces: HashMap<HorizontalShapingFaceKey, rustybuzz::Face<'a>>,
+    prepared_source_count: usize,
     parsed_face_count: usize,
     result_cache_hit_count: usize,
     result_cache_miss_count: usize,
@@ -331,7 +368,9 @@ impl<'a> HorizontalShapingTransaction<'a> {
         Self {
             context,
             registry_generation: context.registry.generation(),
+            prepared_sources: HashMap::new(),
             faces: HashMap::new(),
+            prepared_source_count: 0,
             parsed_face_count: 0,
             result_cache_hit_count: 0,
             result_cache_miss_count: 0,
@@ -344,6 +383,10 @@ impl<'a> HorizontalShapingTransaction<'a> {
 
     pub(crate) fn parsed_face_count(&self) -> usize {
         self.parsed_face_count
+    }
+
+    pub(crate) fn prepared_source_count(&self) -> usize {
+        self.prepared_source_count
     }
 
     pub(crate) fn result_cache_hit_count(&self) -> usize {
@@ -385,7 +428,69 @@ impl<'a> HorizontalShapingTransaction<'a> {
                 ShapingRejectReason::SourceUnavailable,
             );
         };
-        let key = HorizontalShapingCacheKey::new(self.registry_generation, handle.clone(), request);
+        if !self.prepared_sources.contains_key(&handle) {
+            let registry: &'a ExactFontSourceRegistry = &self.context.registry;
+            let source = match resolve_exact_font_source(registry, &handle) {
+                Ok(source) => source,
+                Err(reason) => return resolution_rejected_outcome(request.attempt_id, reason),
+            };
+            let Ok(face) = ttf_parser::Face::parse(source.bytes, source.face_index) else {
+                return rejected_outcome(
+                    request.attempt_id,
+                    TerminalShapingDisposition::Malformed,
+                    ShapingRejectReason::MalformedSfnt,
+                );
+            };
+            self.prepared_sources.insert(
+                handle.clone(),
+                HorizontalShapingPreparedSource { source, face },
+            );
+            self.prepared_source_count = self.prepared_source_count.saturating_add(1);
+        }
+        let prepared = self
+            .prepared_sources
+            .get(&handle)
+            .expect("prepared exact shaping source");
+        let source = prepared.source;
+        let shaping_request = ShapingRequest {
+            source: Some(ShapingExactSource {
+                bytes: source.bytes,
+                face_index: source.face_index,
+                portable: true,
+            }),
+            text: request.text,
+            direction: ShapingDirection::LeftToRight,
+            writing_mode: ShapingWritingMode::HorizontalTb,
+            script: request.script,
+            language: request.language,
+            features: request.features,
+            variations: request.variations,
+        };
+        let identity = match canonicalize_verified_shaping_request(
+            &shaping_request,
+            &prepared.face,
+            &handle.font_source_sha256,
+        ) {
+            Ok(identity) => identity,
+            Err(decision) => {
+                return terminal_outcome(terminal_shaping_attempt_from_output(
+                    request.attempt_id,
+                    ShapingOutputDecision {
+                        disposition: decision.disposition,
+                        reason: decision.reason,
+                        identity: None,
+                        glyph_count: 0,
+                        glyphs: Vec::new(),
+                    },
+                ));
+            }
+        };
+        let key = HorizontalShapingCacheKey::new(
+            self.registry_generation,
+            handle.clone(),
+            request,
+            &identity,
+        );
         let cache = match self.context.result_cache.lock() {
             Ok(cache) => cache,
             Err(_) => {
@@ -410,42 +515,8 @@ impl<'a> HorizontalShapingTransaction<'a> {
         drop(cache);
         self.result_cache_miss_count = self.result_cache_miss_count.saturating_add(1);
 
-        let registry: &'a ExactFontSourceRegistry = &self.context.registry;
-        let source = match resolve_exact_font_source(registry, &handle) {
-            Ok(source) => source,
-            Err(reason) => return resolution_rejected_outcome(request.attempt_id, reason),
-        };
-        let shaping_request = ShapingRequest {
-            source: Some(ShapingExactSource {
-                bytes: source.bytes,
-                face_index: source.face_index,
-                portable: true,
-            }),
-            text: request.text,
-            direction: ShapingDirection::LeftToRight,
-            writing_mode: ShapingWritingMode::HorizontalTb,
-            script: request.script,
-            language: request.language,
-            features: request.features,
-            variations: &[],
-        };
-        let identity = match canonicalize_shaping_request(&shaping_request) {
-            Ok(identity) => identity,
-            Err(decision) => {
-                return terminal_outcome(terminal_shaping_attempt_from_output(
-                    request.attempt_id,
-                    ShapingOutputDecision {
-                        disposition: decision.disposition,
-                        reason: decision.reason,
-                        identity: None,
-                        glyph_count: 0,
-                        glyphs: Vec::new(),
-                    },
-                ));
-            }
-        };
-
-        if !self.faces.contains_key(&handle) {
+        let face_key = HorizontalShapingFaceKey::new(handle.clone(), &identity);
+        if !self.faces.contains_key(&face_key) {
             let Some(face) = rustybuzz::Face::from_slice(source.bytes, source.face_index) else {
                 return rejected_outcome(
                     request.attempt_id,
@@ -453,10 +524,13 @@ impl<'a> HorizontalShapingTransaction<'a> {
                     ShapingRejectReason::ShapingUnavailable,
                 );
             };
-            self.faces.insert(handle.clone(), face);
+            self.faces.insert(face_key.clone(), face);
             self.parsed_face_count = self.parsed_face_count.saturating_add(1);
         }
-        let face = self.faces.get_mut(&handle).expect("prepared exact face");
+        let face = self
+            .faces
+            .get_mut(&face_key)
+            .expect("prepared exact instance face");
         let Ok(units_per_em) = u16::try_from(face.units_per_em()) else {
             return rejected_outcome(
                 request.attempt_id,

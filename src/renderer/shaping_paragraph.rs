@@ -631,6 +631,7 @@ fn shape_segment(
         script: Some("Hang"),
         language: Some("ko"),
         features: &feature,
+        variations: &[],
     });
     let rejection_reason = match outcome.trace.reason {
         Some(ShapingRejectReason::SourceUnavailable) => {

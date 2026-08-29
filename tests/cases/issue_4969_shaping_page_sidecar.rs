@@ -82,6 +82,7 @@ fn applied_decision() -> Arc<HorizontalShapingRunDecision> {
             script: Some("Hang"),
             language: Some("ko"),
             features: &[],
+            variations: &[],
         });
     let measurement = outcome.measurement.expect("old Hangul measurement");
     Arc::new(HorizontalShapingRunDecision::applied(

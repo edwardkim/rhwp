@@ -286,7 +286,7 @@ fn issue_4969_identity_sorts_axes_but_preserves_feature_order() {
     let axes_forward = [
         ShapingVariation {
             tag: "wght".into(),
-            value: 400.0,
+            value: 650.0,
         },
         ShapingVariation {
             tag: "opsz".into(),
@@ -320,7 +320,7 @@ fn issue_4969_identity_sorts_axes_but_preserves_feature_order() {
     assert_eq!(forward, reordered_axes);
     assert_eq!(
         forward.settings_sha256,
-        "fc9df3bfa6a6d8f2f59728372603bafd8147ad12be7a7981ab3ee7c530615f3a"
+        "e62f3422b5da9dd24f7e88504440e916ce4808dcd10dc7ea7d24d4a2616e38be"
     );
     assert_eq!(forward.language.as_deref(), Some("ko-kr"));
     assert_eq!(forward.variations[0].tag, "opsz");

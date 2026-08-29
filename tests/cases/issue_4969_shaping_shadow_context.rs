@@ -16,12 +16,14 @@ mod paint {
 }
 
 use kerning::{ExactFontSlot, ExactFontSource, ExactFontSourceRegistry};
+use shaping::MAX_SHAPING_VARIATION_AXES;
 use shaping::{ShapingFeature, ShapingRejectReason, ShapingVariation, TerminalShapingDisposition};
 use shaping_context::{
     HorizontalShapingContext, HorizontalShapingRequest, MAX_HORIZONTAL_SHAPING_CACHE_CLUSTERS,
     MAX_HORIZONTAL_SHAPING_CACHE_ENTRIES, MAX_HORIZONTAL_SHAPING_CACHE_GLYPHS,
     MAX_HORIZONTAL_SHAPING_CACHE_TEXT_BYTES, MAX_HORIZONTAL_SHAPING_CLUSTERS,
 };
+use std::collections::HashSet;
 use std::sync::Arc;
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen_test::wasm_bindgen_test;
@@ -94,6 +96,7 @@ fn request<'a>(
         script: Some(script),
         language: Some(language),
         features,
+        variations: &[],
     }
 }
 
@@ -151,7 +154,213 @@ fn issue_4969_q3_a_default_and_title_are_distinct_instance_cache_entries() {
     assert!(!Arc::ptr_eq(&empty_default, &title));
     assert_ne!(empty_default.total_advance_px, title.total_advance_px);
     assert_eq!(context.cached_result_count(), 2);
+    assert_eq!(transaction.prepared_source_count(), 1);
     assert_eq!(transaction.parsed_face_count(), 2);
+}
+
+fn instance_axes(wght: f32, opsz: f32) -> Vec<ShapingVariation> {
+    vec![
+        ShapingVariation {
+            tag: "wght".into(),
+            value: wght,
+        },
+        ShapingVariation {
+            tag: "opsz".into(),
+            value: opsz,
+        },
+    ]
+}
+
+#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
+fn issue_4969_q3_b_public_instance_matrix_is_deterministic_for_hangul_and_latin() {
+    let matrix = [
+        instance_axes(400.0, 400.0),
+        instance_axes(650.0, 400.0),
+        instance_axes(900.0, 400.0),
+        instance_axes(400.0, 650.0),
+        instance_axes(900.0, 900.0),
+    ];
+    let context = HorizontalShapingContext::new(registry());
+    let mut transaction = context.transaction();
+    let mut settings = HashSet::new();
+    let mut hangul_ids = Vec::new();
+    let mut latin_ids = Vec::new();
+    let mut hangul_advances = Vec::new();
+    let mut latin_advances = Vec::new();
+
+    for (index, axes) in matrix.iter().enumerate() {
+        let hangul = transaction.shadow_measure(&variable_request(
+            30 + index as u32 * 2,
+            "가변",
+            "Hang",
+            "ko",
+            axes,
+        ));
+        let latin = transaction.shadow_measure(&variable_request(
+            31 + index as u32 * 2,
+            "Typography",
+            "Latn",
+            "en",
+            axes,
+        ));
+        let hangul = hangul.measurement.expect("Hangul matrix measurement");
+        let latin = latin.measurement.expect("Latin matrix measurement");
+        settings.insert(hangul.applied.identity.settings_sha256.clone());
+        hangul_ids.push(
+            hangul
+                .glyphs_px
+                .iter()
+                .map(|glyph| glyph.glyph_id)
+                .collect::<Vec<_>>(),
+        );
+        latin_ids.push(
+            latin
+                .glyphs_px
+                .iter()
+                .map(|glyph| glyph.glyph_id)
+                .collect::<Vec<_>>(),
+        );
+        hangul_advances.push(hangul.total_advance_px);
+        latin_advances.push(latin.total_advance_px);
+    }
+
+    assert_eq!(settings.len(), matrix.len());
+    assert!(hangul_ids.windows(2).all(|pair| pair[0] == pair[1]));
+    assert!(latin_ids.windows(2).all(|pair| pair[0] == pair[1]));
+    println!("q3-b public matrix Hangul={hangul_advances:?} Latin={latin_advances:?}");
+    for (actual, expected) in hangul_advances
+        .iter()
+        .zip([14.72, 14.72, 14.72, 14.72, 14.88])
+    {
+        assert!((actual - expected).abs() <= 1.0e-9);
+    }
+    for (actual, expected) in latin_advances
+        .iter()
+        .zip([43.752, 44.448, 45.136, 43.752, 47.328])
+    {
+        assert!((actual - expected).abs() <= 1.0e-9);
+    }
+    assert_ne!(hangul_advances[0], hangul_advances[4]);
+    assert_ne!(latin_advances[0], latin_advances[4]);
+    assert_eq!(transaction.prepared_source_count(), 1);
+    assert_eq!(transaction.parsed_face_count(), matrix.len());
+    assert_eq!(transaction.result_cache_miss_count(), matrix.len() * 2);
+    assert_eq!(transaction.result_cache_hit_count(), 0);
+    assert_eq!(context.cached_result_count(), matrix.len() * 2);
+}
+
+#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
+fn issue_4969_q3_b_instance_and_run_matrix_has_bounded_cache_ownership() {
+    let matrix = [
+        instance_axes(400.0, 400.0),
+        instance_axes(650.0, 400.0),
+        instance_axes(900.0, 400.0),
+        instance_axes(400.0, 650.0),
+        instance_axes(900.0, 900.0),
+        instance_axes(650.0, 650.0),
+        instance_axes(400.0, 900.0),
+        instance_axes(650.0, 900.0),
+    ];
+
+    for instance_count in [1_usize, 2, 8] {
+        for runs_per_instance in [1_usize, 2, 8] {
+            let context = HorizontalShapingContext::new(registry());
+            let mut transaction = context.transaction();
+            for (instance_index, axes) in matrix.iter().take(instance_count).enumerate() {
+                let mut first = None;
+                for run_index in 0..runs_per_instance {
+                    let outcome = transaction.shadow_measure(&variable_request(
+                        100 + (instance_index * runs_per_instance + run_index) as u32,
+                        "Typography",
+                        "Latn",
+                        "en",
+                        axes,
+                    ));
+                    let measurement = outcome.measurement.expect("bounded matrix measurement");
+                    if let Some(first) = first.as_ref() {
+                        assert!(Arc::ptr_eq(first, &measurement));
+                        assert!(outcome.cache_hit);
+                    } else {
+                        assert!(!outcome.cache_hit);
+                        first = Some(measurement);
+                    }
+                }
+            }
+
+            assert_eq!(transaction.prepared_source_count(), 1);
+            assert_eq!(transaction.parsed_face_count(), instance_count);
+            assert_eq!(transaction.result_cache_miss_count(), instance_count);
+            assert_eq!(
+                transaction.result_cache_hit_count(),
+                instance_count * (runs_per_instance - 1)
+            );
+            assert_eq!(context.cached_result_count(), instance_count);
+        }
+    }
+}
+
+#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
+fn issue_4969_q3_b_invalid_variations_keep_structured_terminal_reasons() {
+    let cases = [
+        (
+            vec![ShapingVariation {
+                tag: "wdth".into(),
+                value: 100.0,
+            }],
+            TerminalShapingDisposition::Unsupported,
+            ShapingRejectReason::VariationAxisUnsupported,
+        ),
+        (
+            vec![ShapingVariation {
+                tag: "wght".into(),
+                value: f32::NAN,
+            }],
+            TerminalShapingDisposition::Malformed,
+            ShapingRejectReason::VariationValueNonFinite,
+        ),
+        (
+            vec![ShapingVariation {
+                tag: "wght".into(),
+                value: 901.0,
+            }],
+            TerminalShapingDisposition::Malformed,
+            ShapingRejectReason::VariationValueOutOfRange,
+        ),
+        (
+            (0..=MAX_SHAPING_VARIATION_AXES)
+                .map(|_| ShapingVariation {
+                    tag: "wght".into(),
+                    value: 400.0,
+                })
+                .collect(),
+            TerminalShapingDisposition::BoundedLimit,
+            ShapingRejectReason::VariationAxisLimitExceeded,
+        ),
+    ];
+    let context = HorizontalShapingContext::new(registry());
+    let mut transaction = context.transaction();
+
+    for (index, (axes, disposition, reason)) in cases.iter().enumerate() {
+        let outcome = transaction.shadow_measure(&variable_request(
+            200 + index as u32,
+            "가변",
+            "Hang",
+            "ko",
+            axes,
+        ));
+        assert_eq!(outcome.trace.disposition, *disposition);
+        assert_eq!(outcome.trace.reason, Some(*reason));
+        assert!(outcome.measurement.is_none());
+    }
+
+    assert_eq!(transaction.prepared_source_count(), 1);
+    assert_eq!(transaction.parsed_face_count(), 0);
+    assert_eq!(transaction.result_cache_hit_count(), 0);
+    assert_eq!(transaction.result_cache_miss_count(), 0);
+    assert_eq!(context.cached_result_count(), 0);
 }
 
 #[test]
@@ -165,6 +374,7 @@ fn issue_4969_q2_b_transaction_parses_each_source_once_and_reuses_owned_result()
         value: 1,
     }];
     let mut transaction = context.transaction();
+    assert_eq!(transaction.prepared_source_count(), 0);
     assert_eq!(
         transaction.registry_generation(),
         context.registry_generation()
@@ -173,6 +383,7 @@ fn issue_4969_q2_b_transaction_parses_each_source_once_and_reuses_owned_result()
     let first = transaction.shadow_measure(&request(1, NOTO_SLOT, "office", "Latn", "en", &liga));
     assert!(first.is_applied());
     assert!(!first.cache_hit);
+    assert_eq!(transaction.prepared_source_count(), 1);
     assert_eq!(transaction.parsed_face_count(), 1);
     assert_eq!(transaction.result_cache_miss_count(), 1);
 
@@ -190,6 +401,7 @@ fn issue_4969_q2_b_transaction_parses_each_source_once_and_reuses_owned_result()
     let third = transaction.shadow_measure(&request(3, NOTO_SLOT, "AV", "Latn", "en", &[]));
     assert!(third.is_applied());
     assert!(!third.cache_hit);
+    assert_eq!(transaction.prepared_source_count(), 1);
     assert_eq!(transaction.parsed_face_count(), 1);
     assert_eq!(transaction.result_cache_miss_count(), 2);
     assert_eq!(context.cached_result_count(), 2);
