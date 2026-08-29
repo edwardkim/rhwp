@@ -18648,7 +18648,13 @@ impl TypesetEngine {
                             | crate::model::shape::TextWrap::BehindText
                     ) && ((st.col_count == 1
                         && !oversized_multirow
-                        && !table.common.treat_as_char)
+                        && !table.common.treat_as_char
+                        // [#6366] flowWithText=1 글앞으로 표는 본문을 밀지 않아도
+                        // 문단을 따라 흐르므로 쪽 분할 대상이다. 데코레이션 단축
+                        // (Issue #703) 에서 빼지 않으면 42행 표가 Shape 로만 올라
+                        // 한글 6쪽이 rhwp 5쪽이 된다
+                        // (2700727_animal_facility_standards.hwpx).
+                        && !table.common.flow_with_text)
                         || multicol_empty_overlay_anchor
                         || multicol_tac_host_overlay_anchor))
                         || horz_fully_outside_column
