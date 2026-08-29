@@ -1744,7 +1744,13 @@ pub(crate) fn no_ls_short_label_cell(
 /// 추정 실폭이 셀 내폭을 명백히 초과(×1.05)하면 저장을 불신하고 fresh
 /// 재래핑한다. **가로쓰기 셀 전용** — 세로쓰기 셀은 글자를 세로로 쌓아 가로
 /// 실폭 판정이 무의미하므로 호출부(셀 방향을 아는 곳)에서 걸러야 한다
-/// (task81 세로쓰기 회귀 실측). 정상 1줄(실폭 ≤ 내폭)·다줄 저장(ls≥2)은 불변.
+/// (task81 세로쓰기 회귀 실측). 정상 1줄(실폭 ≤ 내폭)은 불변.
+///
+/// [#5952] 저장 ls≥2 인데 composed 가 접혔거나(한 줄이 글자 대부분),
+/// 짧은 문단(ls≤3)의 저장 `segment_width`가 셀 내폭과 같은데 한 줄 실폭이
+/// ×1.10 을 넘으면 Hangul 분할을 복원한다. 행정업무운영편람 61쪽 유의사항
+/// 상자가 그 경우다. 긴 본문 다줄 셀을 셀 내폭 ×1.05 만으로 재래핑하면
+/// 쪽수·LAYOUT_OVERFLOW_CELL 이 부푼다.
 pub fn recompose_stored_single_line_if_overflowing(
     composed: &mut ComposedParagraph,
     para: &Paragraph,
@@ -1752,12 +1758,51 @@ pub fn recompose_stored_single_line_if_overflowing(
     styles: &ResolvedStyleSet,
     dpi: f64,
 ) {
-    let stored_single = para.line_segs.len() == 1
+    if composed.lines.is_empty() || cell_inner_width_px <= 0.0 {
+        return;
+    }
+    let authentic_stored = !para.line_segs.is_empty()
         && para
             .line_segs
             .iter()
             .all(|seg| seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0);
-    if !stored_single || composed.lines.len() != 1 || cell_inner_width_px <= 0.0 {
+    if authentic_stored && para.line_segs.len() >= 2 {
+        let collapsed = composed.lines.len() < para.line_segs.len();
+        let total_chars = para.text.chars().count();
+        let stored_seg_px = para
+            .line_segs
+            .iter()
+            .map(|seg| crate::renderer::hwpunit_to_px(seg.segment_width, dpi))
+            .fold(0.0_f64, f64::max);
+        let over = composed.lines.iter().any(|line| {
+            let width = estimate_composed_line_width(line, styles);
+            if width <= cell_inner_width_px * 1.05 {
+                return false;
+            }
+            if collapsed {
+                return true;
+            }
+            let line_chars: usize = line.runs.iter().map(|run| run.text.chars().count()).sum();
+            let dominant =
+                total_chars > 0 && line_chars.saturating_mul(3) > total_chars.saturating_mul(2);
+            // 유의사항 상자: 저장 horzsize 가 셀 내폭과 같고(500.8px) 2~3줄
+            // 인데 한 줄 추정 실폭이 1.12~1.16×. 긴 본문 다줄 셀은 제외.
+            let stored_matches_cell =
+                stored_seg_px > 0.0 && (stored_seg_px - cell_inner_width_px).abs() <= 1.0;
+            let ignores_stored =
+                stored_matches_cell && para.line_segs.len() <= 3 && width > stored_seg_px * 1.10;
+            dominant || ignores_stored
+        });
+        if over {
+            reflow_cell_line_ignoring_stored_segs(composed, para, cell_inner_width_px, styles, dpi);
+        }
+        return;
+    }
+    if composed.lines.len() != 1 {
+        return;
+    }
+    let stored_single = para.line_segs.len() == 1 && authentic_stored;
+    if !stored_single {
         return;
     }
     // [#2430] 발동 임계 ×1.05 는 측정(원패딩) vs 렌더(shrink패딩) 폭 발산(#2237)
@@ -1810,6 +1855,16 @@ pub fn recompose_stored_single_line_if_overflowing(
     if !over {
         return;
     }
+    reflow_cell_line_ignoring_stored_segs(composed, para, cell_inner_width_px, styles, dpi);
+}
+
+fn reflow_cell_line_ignoring_stored_segs(
+    composed: &mut ComposedParagraph,
+    para: &Paragraph,
+    cell_inner_width_px: f64,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+) {
     // 저장 seg 를 일시적으로 무시하고 NO_LS 폴백과 동일 경로로 재분할한다.
     let mut para_no_ls = para.clone();
     para_no_ls.line_segs.clear();
@@ -1821,6 +1876,39 @@ pub fn recompose_stored_single_line_if_overflowing(
         dpi,
         false,
     );
+}
+
+/// 가로쓰기 셀의 렌더/측정 공통 재구성 경로.
+///
+/// `recompose_cell_lines_in_frame`만 적용하면 저장 다줄 문단이 실제로는 셀 폭을
+/// 넘쳐 fresh 재래핑되는 경우(#5952)를 높이 계산이 놓칠 수 있다. 호출자는
+/// 세로쓰기 셀을 이미 제외해야 한다.
+pub(crate) fn recompose_horizontal_cell_lines_for_width(
+    composed: &mut ComposedParagraph,
+    para: &Paragraph,
+    cell_inner_width_px: f64,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+    legacy_hwp3_stored_geometry: bool,
+    repair_stored_overflow: bool,
+) {
+    recompose_cell_lines_in_frame(
+        composed,
+        para,
+        ParagraphBox::content_width_px(cell_inner_width_px, dpi),
+        styles,
+        dpi,
+        legacy_hwp3_stored_geometry,
+    );
+    if repair_stored_overflow {
+        recompose_stored_single_line_if_overflowing(
+            composed,
+            para,
+            cell_inner_width_px,
+            styles,
+            dpi,
+        );
+    }
 }
 
 /// [#2279] 저장 lineseg 분할의 실폭-과잉 판정 (본문 판, 줄수 무관).
