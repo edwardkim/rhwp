@@ -129,6 +129,15 @@ def mcp_command(args, env_file, action, extra):
     ]
 
 
+def configured_server_urls(env_file):
+    """비공개 env의 comma-separated endpoint 목록을 읽되 값은 로그에 남기지 않는다."""
+    key = 'HWP2024_MCP_SERVER_URLS='
+    for raw in pathlib.Path(env_file).read_text(encoding='utf-8').splitlines():
+        if raw.startswith(key):
+            return [url.strip() for url in raw[len(key):].split(',') if url.strip()]
+    return []
+
+
 def run_mcp(command, label, logger):
     result = subprocess.run(
         command,
@@ -233,9 +242,8 @@ def convert_one(args, source, engine, destination, logger, env_file, lane):
 SUCCESS_RECORD = re.compile(r'MCP 성공: source=(.+?) output=(pdf/.+?\.pdf) bytes=')
 
 
-def endpoint_env_files(args, directory):
+def endpoint_env_files(args, endpoints, directory):
     """각 endpoint에 사용할 임시 env 파일을 만들되 비밀값은 로그에 남기지 않는다."""
-    endpoints = args.server_url or [None]
     explicit = [endpoint for endpoint in endpoints if endpoint is not None]
     if len(explicit) != len(set(explicit)):
         raise ValueError('같은 --server-url을 중복 지정할 수 없다')
@@ -329,7 +337,7 @@ def main():
     parser.add_argument('--timeout-seconds', type=int, default=1800)
     parser.add_argument('--status-interval-seconds', type=int, default=15)
     parser.add_argument('--server-url', action='append', default=[],
-                        help='MCP endpoint URL (반복 지정 시 URL당 단일 worker)')
+                        help='env의 endpoint 목록을 재정의하는 MCP URL (반복 지정 시 URL당 단일 worker)')
     parser.add_argument('--source', action='append', default=[], help='특정 상대 원본 경로(반복 가능)')
     parser.add_argument('--limit', type=int, default=None, help='이번 실행에서 변환할 최대 문서 수')
     parser.add_argument('--refresh-existing', action='store_true')
@@ -341,10 +349,11 @@ def main():
 
     logger = RunLogger(args.log_file)
     try:
+        endpoints = args.server_url or configured_server_urls(args.env_file) or [None]
         if args.migrate_success_log:
             return migrate_success_log(args, args.migrate_success_log, logger)
         logger.emit('INFO', '배치 시작: 기존 canonical PDF 제외=%s, dry_run=%s, endpoint=%d, endpoint별 단일 큐' %
-                    (not args.refresh_existing, args.dry_run, len(args.server_url) or 1))
+                    (not args.refresh_existing, args.dry_run, len(endpoints)))
         selected = args.source or fixture_sources()
         pending = []
         inspection_failures = []
@@ -374,7 +383,7 @@ def main():
                     (len(pending), skipped_existing, len(inspection_failures)))
         if not args.dry_run:
             with tempfile.TemporaryDirectory(prefix='rhwp-mcp-endpoints-') as endpoint_dir:
-                lanes = endpoint_env_files(args, pathlib.Path(endpoint_dir))
+                lanes = endpoint_env_files(args, endpoints, pathlib.Path(endpoint_dir))
                 lane_lock = threading.Lock()
                 next_position = 0
 
