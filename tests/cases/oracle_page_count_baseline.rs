@@ -42,12 +42,18 @@
 
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
+use std::time::{Duration, Instant};
 
 use rhwp::document_core::DocumentCore;
 use rhwp::model::document::print_method_implies_nup;
 
 const BASELINE_PATH: &str = "tests/fixtures/oracle_page_count_baseline.tsv";
-const PARTITIONS: usize = 8;
+const PARTITIONS: usize = 16;
+const SLOW_SAMPLE_LOG_THRESHOLD: Duration = Duration::from_secs(30);
+const DEDICATED_PAGE_COUNT_FIXTURES: &[(&str, &str)] = &[(
+    "samples/issue2063_huge_cellbreak_table.hwp",
+    "tests/issue_2063.rs::huge_cellbreak_table_paginates_without_quadratic_blowup",
+)];
 
 #[derive(Clone)]
 struct Row {
@@ -60,6 +66,12 @@ struct Row {
 
 fn repo_root() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+}
+
+fn dedicated_page_count_fixture(rel: &str) -> Option<&'static str> {
+    DEDICATED_PAGE_COUNT_FIXTURES
+        .iter()
+        .find_map(|(path, owner)| (*path == rel).then_some(*owner))
 }
 
 fn load_baseline() -> BTreeMap<String, Row> {
@@ -141,6 +153,7 @@ fn page_counts_do_not_drift_from_hancom_oracle_partition(part: usize) {
         &root,
         baseline
             .iter()
+            .filter(|(k, _)| dedicated_page_count_fixture(k).is_none())
             .map(|(k, v)| (k.clone(), v.clone()))
             .collect(),
         PARTITIONS,
@@ -164,10 +177,18 @@ fn page_counts_do_not_drift_from_hancom_oracle_partition(part: usize) {
             scope.spawn(|| loop {
                 let item = { queue.lock().unwrap().next() };
                 let Some((rel, row)) = item else { break };
+                let started = Instant::now();
                 let Some((got, nup)) = measure(&root.join(rel)) else {
                     stats.lock().unwrap().2 += 1;
                     continue;
                 };
+                let elapsed = started.elapsed();
+                if elapsed >= SLOW_SAMPLE_LOG_THRESHOLD {
+                    eprintln!(
+                        "oracle page-count slow sample partition {part}/{PARTITIONS}: {:.3}s {rel}",
+                        elapsed.as_secs_f64()
+                    );
+                }
                 if nup {
                     // 픽스처 생성 단계에서 제외되므로 여기 오면 문서 해석이 바뀐 것이다.
                     failures.lock().unwrap().push(format!(
@@ -195,11 +216,12 @@ fn page_counts_do_not_drift_from_hancom_oracle_partition(part: usize) {
 
     let (matched, known_gap, skipped) = *stats.lock().unwrap();
     eprintln!(
-        "정답지 쪽수 대조 partition {part}/{PARTITIONS}: {}개 / 일치 {} / 기존 격차 유지·개선 {} / 건너뜀 {}",
+        "정답지 쪽수 대조 partition {part}/{PARTITIONS}: {}개 / 일치 {} / 기존 격차 유지·개선 {} / 건너뜀 {} / 전용 sentinel 제외 {}",
         selected.len(),
         matched,
         known_gap,
-        skipped
+        skipped,
+        DEDICATED_PAGE_COUNT_FIXTURES.len()
     );
 
     let failures = failures.into_inner().unwrap();
@@ -233,4 +255,12 @@ oracle_partition_tests!(
     page_counts_do_not_drift_from_hancom_oracle_partition_5 => 5,
     page_counts_do_not_drift_from_hancom_oracle_partition_6 => 6,
     page_counts_do_not_drift_from_hancom_oracle_partition_7 => 7,
+    page_counts_do_not_drift_from_hancom_oracle_partition_8 => 8,
+    page_counts_do_not_drift_from_hancom_oracle_partition_9 => 9,
+    page_counts_do_not_drift_from_hancom_oracle_partition_10 => 10,
+    page_counts_do_not_drift_from_hancom_oracle_partition_11 => 11,
+    page_counts_do_not_drift_from_hancom_oracle_partition_12 => 12,
+    page_counts_do_not_drift_from_hancom_oracle_partition_13 => 13,
+    page_counts_do_not_drift_from_hancom_oracle_partition_14 => 14,
+    page_counts_do_not_drift_from_hancom_oracle_partition_15 => 15,
 );
