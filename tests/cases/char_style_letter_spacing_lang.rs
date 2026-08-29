@@ -16,5 +16,9 @@ fn per_language_spacing_wins_when_present() {
     };
     assert_eq!(cs.letter_spacing_for_lang(0), 1.25);
     assert_eq!(cs.letter_spacing_for_lang(1), -0.75);
-    assert_eq!(cs.letter_spacing_for_lang(2), 0.5, "범위 밖이면 스칼라 기본값");
+    assert_eq!(
+        cs.letter_spacing_for_lang(2),
+        0.5,
+        "범위 밖이면 스칼라 기본값"
+    );
 }
