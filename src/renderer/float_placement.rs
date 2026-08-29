@@ -360,6 +360,52 @@ pub(crate) fn native_empty_host_cellbreak_fragment_repeats_outer_margin(
         && !has_non_whitespace_text(para)
 }
 
+/// [#6378] 원본 HWPX 단 기준 RowBreak 자리차지 표의 사방 균등 outMargin (HU).
+///
+/// `hwp5_stored_pagination_layout` 이 꺼진 원본 HWPX 는 native HWP5 빈-host
+/// RowBreak helper(`native_empty_host_physical_outer_box_paint_inset`)가 표
+/// 원점에 싣는 바깥 여백을 주지 않는다. 같은 문서 HWP 경로(`tac-img-02`)는
+/// 1mm(283HU) 안쪽에 둔다. HWPX XML `pageBreak="CELL"` 도 이 픽스처에서는
+/// IR `RowBreak` 로 들어온다. 모든 원본 HWPX 표·연속 block 표(#1133)에
+/// 더하면 간격이 3.8px 줄고 글자 겹침 기준선이 커지므로, native helper 와
+/// 같은 형상만 연다: 비-TAC TopAndBottom(vert=문단), 단·왼쪽, RowBreak,
+/// 다행 1열, 사방 균등 양의 outMargin, 오프셋 0.
+pub(crate) fn original_hwpx_column_rowbreak_equal_outer_margin_hu(
+    original_hwpx: bool,
+    table: &Table,
+) -> Option<i32> {
+    let declared_height = signed_hwpunit(table.common.height);
+    if !original_hwpx
+        || table.common.treat_as_char
+        || !is_para_topbottom_float(&table.common)
+        || !matches!(table.common.vert_align, VertAlign::Top | VertAlign::Inside)
+        || !matches!(table.common.horz_rel_to, HorzRelTo::Column)
+        || !matches!(table.common.horz_align, HorzAlign::Left | HorzAlign::Inside)
+        || signed_hwpunit(table.common.horizontal_offset) != 0
+        || signed_hwpunit(table.common.vertical_offset) != 0
+        || !matches!(table.page_break, TablePageBreak::RowBreak)
+        || table.row_count <= 1
+        || table.col_count != 1
+        || table.cells.len() != usize::from(table.row_count)
+        || !table.cells.iter().enumerate().all(|(row, cell)| {
+            cell.row == row as u16 && cell.col == 0 && cell.row_span == 1 && cell.col_span == 1
+        })
+        || signed_hwpunit(table.common.width) <= 0
+        || declared_height <= 0
+        || table.outer_margin_left <= 0
+        || table.outer_margin_right <= 0
+        || table.outer_margin_top <= 0
+        || table.outer_margin_bottom <= 0
+        || table.outer_margin_left != table.outer_margin_right
+        || table.outer_margin_left != table.outer_margin_top
+        || table.outer_margin_left != table.outer_margin_bottom
+        || table.caption.is_some()
+    {
+        return None;
+    }
+    Some(i32::from(table.outer_margin_left))
+}
+
 /// [#5870] 빈 host 자리차지 float 의 저장 사다리가 **물리 공식과 정확히 일치**하는지 —
 /// `next.vpos - host.vpos == v_off + outer_top + 선언높이 + outer_bottom` (±2HU) — 를
 /// 검증하고, 일치하면 흐름에 더 계상해야 할 여분(`v_off + outer_top + outer_bottom`, HU)을
@@ -1472,5 +1518,34 @@ mod tests {
             &spanning_row,
             Some(&next),
         ));
+    }
+
+    #[test]
+    fn original_hwpx_rowbreak_equal_outer_margin_matches_tac_img_02_shape_only() {
+        let (_, table, _) = physical_outer_box_candidate();
+
+        assert_eq!(
+            original_hwpx_column_rowbreak_equal_outer_margin_hu(true, &table),
+            Some(283)
+        );
+        assert!(original_hwpx_column_rowbreak_equal_outer_margin_hu(false, &table).is_none());
+
+        let mut two_columns = table.clone();
+        two_columns.col_count = 2;
+        assert!(original_hwpx_column_rowbreak_equal_outer_margin_hu(true, &two_columns).is_none());
+
+        let mut para_relative = table.clone();
+        para_relative.common.horz_rel_to = HorzRelTo::Para;
+        assert!(
+            original_hwpx_column_rowbreak_equal_outer_margin_hu(true, &para_relative).is_none()
+        );
+
+        let mut cell_break = table.clone();
+        cell_break.page_break = TablePageBreak::CellBreak;
+        assert!(original_hwpx_column_rowbreak_equal_outer_margin_hu(true, &cell_break).is_none());
+
+        let mut asymmetric = table.clone();
+        asymmetric.outer_margin_right += 1;
+        assert!(original_hwpx_column_rowbreak_equal_outer_margin_hu(true, &asymmetric).is_none());
     }
 }

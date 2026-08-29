@@ -9,8 +9,8 @@ use super::composer::{
 use super::float_placement::{
     empty_host_physical_ladder_extras_hu, horizontal_range, is_para_topbottom_float,
     native_empty_host_physical_outer_box_paint_inset, native_empty_host_rowbreak_line_advance_hu,
-    signed_hwpunit, stored_empty_anchor_band_host_line_advance_hu, FloatLaneSet,
-    FloatPlacementContext,
+    original_hwpx_column_rowbreak_equal_outer_margin_hu, signed_hwpunit,
+    stored_empty_anchor_band_host_line_advance_hu, FloatLaneSet, FloatPlacementContext,
 };
 use super::font_metrics_data;
 use super::height_cursor::HeightCursor;
@@ -9112,17 +9112,16 @@ impl LayoutEngine {
                     )
                     .map(|_| hwpunit_to_px(t.outer_margin_top as i32, self.dpi))
                     .unwrap_or_else(|| {
-                        // [#6378] 원본 HWPX 빈 host 자리차지 표는 HWP5 RowBreak
-                        // helper 가 꺼져 있어 outMargin.top 이 상단에 안 실린다.
-                        // 같은 문서 HWP 는 y 가 3.8px 아래(283HU)다.
-                        if !self.profile.get().hwp5_stored_pagination_layout()
-                            && is_para_topbottom_float(&t.common)
-                            && t.outer_margin_top > 0
-                        {
-                            hwpunit_to_px(t.outer_margin_top as i32, self.dpi)
-                        } else {
-                            0.0
-                        }
+                        // [#6378] 원본 HWPX 는 HWP5 RowBreak helper 가 꺼져
+                        // outMargin.top 이 빈 host 상단에 안 실린다. 같은
+                        // 문서 HWP 는 y 가 3.8px 아래(283HU)다. 모든 T&B
+                        // 빈 host 에 더하면 #1133 연속 표 간격이 줄어든다.
+                        original_hwpx_column_rowbreak_equal_outer_margin_hu(
+                            !self.profile.get().hwp5_stored_pagination_layout(),
+                            t,
+                        )
+                        .map(|hu| hwpunit_to_px(hu, self.dpi))
+                        .unwrap_or(0.0)
                     });
                     let raw_top = if is_current_empty_square_sibling_float {
                         // 이 pair는 같은 저장 LINE_SEG의 page-relative 좌표를 공유한다.
