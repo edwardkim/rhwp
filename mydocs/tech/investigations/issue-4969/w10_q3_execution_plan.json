@@ -3,7 +3,7 @@
   "kind": "font-w10-q3-variable-instance-execution-plan",
   "issue": 4969,
   "stage": "W10-Q3",
-  "status": "q3-c-qualified-approved-awaiting-checkpoint",
+  "status": "q3-c-complete-awaiting-q3-d-start-approval",
   "productMutation": false,
   "source": {
     "path": "ttfs/redistributable/happiness-sans/HappinessSansVF.ttf",
@@ -62,6 +62,9 @@
       "productOutputChange": false,
       "result": "qualified-approved",
       "resultEvidence": "mydocs/tech/investigations/issue-4969/w10_q3_c_replay_capability_shadow.json",
+      "checkpoint": "0a248f3b8",
+      "postMergeRequalified": true,
+      "postMergeEvidenceCheckpointCreated": true,
       "approvalAfter": true
     },
     {
@@ -105,7 +108,7 @@
   ],
   "privateCorpus": false,
   "hyperVOrHancomOracle": false,
-  "nextStage": "Q3-C-checkpoint-commit-approval",
+  "nextStage": "Q3-D-start-approval",
   "nextStageApproved": false,
-  "approvalScope": "Q3-C result is approved; checkpoint commit, Q3-D start, public API expansion, push, PR, comment, and merge remain separately gated"
+  "approvalScope": "Q3-C result, checkpoint, latest devel merge, requalification, and evidence checkpoint are complete; Q3-D start, public API expansion, push, PR, and comment remain separately gated"
 }

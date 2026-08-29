@@ -3,9 +3,11 @@
   "kind": "font-w10-q3-c-replay-payload-backend-capability-shadow-result",
   "issue": 4969,
   "stage": "W10-Q3-C",
-  "status": "qualified-approved-awaiting-checkpoint",
+  "status": "qualified-complete",
   "resultApproved": true,
+  "postMergeRequalificationApproved": true,
   "baseCheckpoint": "6a156ca98",
+  "checkpoint": "0a248f3b8",
   "productMutation": false,
   "productConsumerCount": 0,
   "replayPayload": {
@@ -100,7 +102,7 @@
     "privateCorpusUsed": false,
     "hyperVOrHancomOracleUsed": false
   },
-  "upstreamRefresh": {
+  "upstreamRefreshBeforeMerge": {
     "devel": "955abb5268c3",
     "branchAhead": 15,
     "branchBehind": 33,
@@ -110,12 +112,49 @@
     "productSourceOverlapSinceQ3CBase": false,
     "mergeDeferredUntilCheckpointCommit": true
   },
+  "postMergeRequalification": {
+    "upstreamDevel": "955abb5268c3a6a93a41328633729fd095b7390a",
+    "mergeCommit": "a8ff6a19d348a8b41e3ee42284708bd797cbb7cc",
+    "branchAhead": 17,
+    "branchBehind": 0,
+    "conflictPaths": ["mydocs/orders/20260829.md"],
+    "q3DirectPassed": 69,
+    "q3DirectFailed": 0,
+    "crossImpactPassed": 33,
+    "crossImpactFailed": 0,
+    "nativeSkiaLibraryPassed": 3946,
+    "nativeSkiaLibraryIgnored": 13,
+    "nativeSkiaAuxiliaryPassed": 182,
+    "nativeSkiaFixturePassed": 6,
+    "nativeSkiaExactCoordinateProofPassed": 1,
+    "studioPassed": 1243,
+    "studioSkipped": 1,
+    "studioFailed": 0,
+    "studioProductionBuild": "passed",
+    "canvasKitE2ePassed": 2,
+    "nodeWasmPassed": 10,
+    "nodeWasmFailed": 0,
+    "dockerWasm": "passed",
+    "dockerWasmSeconds": 355,
+    "trackedPkgChanged": false,
+    "allTargetClippy": "passed",
+    "unitTierTests": 4221,
+    "unitTierModules": 299,
+    "manifestPolicyPassed": 18,
+    "cargoFmtAll": "passed",
+    "cargoFmtAllCheck": "passed",
+    "gitDiffCheck": "passed",
+    "isolatedHarnessMiBRemoved": 416,
+    "dedicatedTargetCreated": false,
+    "sharedReviewTargetGiB": 17
+  },
   "format": {
     "cargoFmtAllRequiredInPreparedReviewWorktreeBeforePush": true
   },
-  "next": "approve-q3-c-checkpoint-commit",
+  "next": "approve-q3-d-start",
   "nextSlice": "Q3-D-explicit-request-owner-and-dormant-product-transaction",
   "nextSliceApproved": false,
-  "commitCreated": false,
+  "commitCreated": true,
+  "postMergeEvidenceCommitCreated": true,
   "pushReady": false
 }
