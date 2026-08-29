@@ -4,10 +4,10 @@
 
 - GitHub Issue: [#4121](https://github.com/edwardkim/rhwp/issues/4121)
 - 작업 브랜치: `codex/issue-4121-hf-selection`
-- 기준: `upstream/devel` @ `b1485e0a1` (Stage 2 시작 전 merge)
+- 기준: `upstream/devel` @ `f6a6bee8f3` (Stage 4 최종 검증 전 merge)
 - 수행계획: `mydocs/plans/task_m100_4121.md` 승인 및 로컬 체크포인트
   `e0622c2c7`
-- 현재 단계: Stage 4 통합 검증 진행 중 안전 중단, checkpoint에서 재개
+- 현재 단계: Stage 4 자동 통합 검증 완료, 사용자 수동 확인 대기
 
 이 문서가 승인되기 전에는 제품 소스를 수정하지 않는다. 승인 뒤에도 Hyper-Waterfall에
 따라 각 Stage의 코드·테스트·완료보고서를 한 묶음으로 검토하고 커밋한 뒤 다음 Stage로
@@ -358,7 +358,10 @@ Stage commit을 되돌릴 수 있게 파일과 테스트를 함께 묶는다.
 
 ## 11. 다음 승인 요청
 
-Stage 4 승인을 받아 4페이지 Both/Odd/Even Header/Footer 실제 Chrome 통합 여정과 WASM,
-clippy까지 완료했다. 이동 요청에 따라 전체 nextest 빌드 중 안전 중단했으며, 재개 시
-`mydocs/working/task_m100_4121_stage4_checkpoint.md`의 남은 게이트부터 이어간다. 원격 push,
-PR 생성과 #4121 close는 최종 검증 및 사용자 수동 확인 뒤 별도 승인 전까지 수행하지 않는다.
+최신 `upstream/devel` 병합 뒤 Stage 4 자동 검증을 완료했다. 실제 Google Chrome E2E 50/50,
+Studio 1,254 passed, focused Rust 6/6, clippy, production build, 최적화 WASM과 전체 nextest
+8,558/8,558이 통과했다. 상세 결과는 `mydocs/report/task_m100_4121_report.md`에 기록했다.
+
+다음 단계는 `http://127.0.0.1:7700/`에서 사용자가 직접 Both/Odd/Even 머리말·꼬리말 선택과
+편집을 확인하는 것이다. 원격 push, PR 생성과 #4121 close는 사용자 수동 확인 및 별도 승인
+전까지 수행하지 않는다.

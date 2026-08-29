@@ -1,4 +1,4 @@
-# Task M100-4121 Stage 4 중간 체크포인트 — 통합 검증 안전 중단
+# Task M100-4121 Stage 4 체크포인트 — 안전 중단과 재개 완료
 
 ## 중단 상태
 
@@ -57,3 +57,19 @@ cargo nextest run --locked \
 6. 오늘할일을 갱신하고 Stage 4 최종 커밋을 만든다.
 
 원격 push, PR 생성 및 #4121 close는 아직 수행하지 않는다.
+
+## 2026-08-29 재개 결과
+
+1. `upstream/devel@f6a6bee8f3`을 merge했고, 충돌은 `mydocs/orders/20260828.md` 한 곳만
+   양쪽 기록을 보존해 해결했다.
+2. 파생 integration suite를 `--prepare`한 뒤 manifest check를 통과했다. 파생 suite와
+   manifest는 ignored 검증 산출물로 stage하지 않았다.
+3. 최신 코어로 최적화 WASM을 다시 만들고 실제 Google Chrome E2E 50/50을 통과했다.
+4. 첫 전체 nextest에서 새 HF 복사 API가 #2724 패스스루 분류 장부에 없음을 발견했다.
+   이 API는 문서 IR이 아니라 `self.clipboard`만 바꾸므로 기존 본문·셀 복사와 같은
+   `SessionState`로 등록했다.
+5. 수정 뒤 #2724 가드 5/5, #4121 회귀 6/6과 전체 nextest 8,558/8,558을 통과했다.
+
+자동 게이트는 완료됐다. 로컬 Studio 서버는 사용자 수동 확인을 위해
+`http://127.0.0.1:7700/`에서 유지한다. 최종 보고서는
+`mydocs/report/task_m100_4121_report.md`에 있다.

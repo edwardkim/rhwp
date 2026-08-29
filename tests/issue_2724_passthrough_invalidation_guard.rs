@@ -84,7 +84,7 @@ enum Exempt {
 
 /// 무효화하지 않는 `pub fn (&mut self)` 전수 목록 — (파일, 함수, 분류, 근거).
 ///
-/// 파일 경로는 [`SCAN_ROOT`] 기준 상대 경로다. `devel` 기준 43건(2026-08-27 동결).
+/// 파일 경로는 [`SCAN_ROOT`] 기준 상대 경로다. `devel` 기준 44건(2026-08-29 동결).
 const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
     // ── 세션/캐시 상태만 변경 (문서 IR 비변경) ──────────────────────────────
     (
@@ -160,6 +160,12 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
         "copy_selection_in_cell_by_path_native",
         Exempt::SessionState,
         "경로 기반 복사 — 읽기 후 `self.clipboard` 에만 기록.",
+    ),
+    (
+        "commands/header_footer_ops.rs",
+        "copy_selection_in_header_footer_native",
+        Exempt::SessionState,
+        "머리말/꼬리말 복사 — 읽기 후 `self.clipboard` 에만 기록. 문서 IR 비변경.",
     ),
     (
         "commands/clipboard.rs",
