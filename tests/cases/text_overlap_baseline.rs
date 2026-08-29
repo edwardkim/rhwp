@@ -31,13 +31,22 @@
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
+use std::time::{Duration, Instant};
 
 use rhwp::diagnostics::layout_anomaly::{scan_document, AnomalyOptions};
 use rhwp::document_core::DocumentCore;
 
 const SAMPLES_ROOT: &str = "samples";
 const BASELINE_PATH: &str = "tests/fixtures/text_overlap_baseline.tsv";
-const PARTITIONS: usize = 8;
+const PARTITIONS: usize = 16;
+const SLOW_SAMPLE_LOG_THRESHOLD: Duration = Duration::from_secs(30);
+
+/// 전용 장기 sentinel 이 담당하는 fixture.
+///
+/// `issue2063_huge_cellbreak_table.hwp` 는 text-overlap 전수 래칫에서만 200초 이상
+/// 걸리며, 본질은 초대형 CellBreak 표 페이지네이션 성능/페이지 pin 이다.
+/// `tests/issue_2063.rs` 가 해당 축을 직접 검증하므로 여기서는 중복 스캔하지 않는다.
+const DEDICATED_SLOW_FIXTURES: &[&str] = &["issue2063_huge_cellbreak_table.hwp"];
 
 /// 확장자로 샘플을 재귀 수집해 루트 기준 상대 경로(슬래시)로 돌려준다.
 fn collect_samples() -> Vec<(PathBuf, String)> {
@@ -62,6 +71,7 @@ fn collect_samples() -> Vec<(PathBuf, String)> {
     }
     let mut acc = Vec::new();
     walk(Path::new(SAMPLES_ROOT), Path::new(SAMPLES_ROOT), &mut acc);
+    acc.retain(|(_, rel)| !DEDICATED_SLOW_FIXTURES.contains(&rel.as_str()));
     acc.sort_by(|a, b| a.1.cmp(&b.1));
     assert!(!acc.is_empty(), "samples 에 hwp/hwpx 샘플이 없음");
     acc
@@ -148,13 +158,21 @@ fn text_overlaps_do_not_grow_partition(part: usize) {
             scope.spawn(|| loop {
                 let item = queue.lock().unwrap().next();
                 let Some((path, rel)) = item else { break };
+                let started = Instant::now();
                 match count_doc(&path) {
                     Some(n) => {
-                        results.lock().unwrap().insert(rel, n);
+                        results.lock().unwrap().insert(rel.clone(), n);
                     }
                     None => {
                         skipped.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
                     }
+                }
+                let elapsed = started.elapsed();
+                if elapsed >= SLOW_SAMPLE_LOG_THRESHOLD {
+                    eprintln!(
+                        "text-overlap slow sample partition {part}/{PARTITIONS}: {:.3}s {rel}",
+                        elapsed.as_secs_f64()
+                    );
                 }
             });
         }
@@ -247,4 +265,12 @@ text_overlap_partition_tests!(
     text_overlaps_do_not_grow_partition_5 => 5,
     text_overlaps_do_not_grow_partition_6 => 6,
     text_overlaps_do_not_grow_partition_7 => 7,
+    text_overlaps_do_not_grow_partition_8 => 8,
+    text_overlaps_do_not_grow_partition_9 => 9,
+    text_overlaps_do_not_grow_partition_10 => 10,
+    text_overlaps_do_not_grow_partition_11 => 11,
+    text_overlaps_do_not_grow_partition_12 => 12,
+    text_overlaps_do_not_grow_partition_13 => 13,
+    text_overlaps_do_not_grow_partition_14 => 14,
+    text_overlaps_do_not_grow_partition_15 => 15,
 );
