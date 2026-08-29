@@ -3,8 +3,8 @@
   "kind": "font-w10-q2-horizontal-common-shaping-plan",
   "issue": 4969,
   "stage": "W10-Q2",
-  "status": "q2-d0-qualified-awaiting-d1-approval",
-  "productMutation": false,
+  "status": "q2-final-bounded-subset-approved",
+  "productMutation": true,
   "firstActivationSubset": {
     "writingMode": "horizontal-tb",
     "direction": "ltr",
@@ -57,7 +57,7 @@
       "id": "Q2-D",
       "name": "emitted-run-and-rejected-trace-handoff",
       "productOutputChange": true,
-      "result": "d0-qualified-d1-awaiting-approval",
+      "result": "qualified-bounded-through-d5",
       "plan": "w10_q2_d_execution_plan.json",
       "schemaMinorChangesOnlyWithRealPublicValues": true
     },
@@ -65,13 +65,15 @@
       "id": "Q2-E",
       "name": "backend-published-result-replay",
       "productOutputChange": true,
-      "backendReshapingAllowed": false
+      "backendReshapingAllowed": false,
+      "result": "qualified-bounded-canvas-kit-strict-other-backends-deterministic-fallback"
     },
     {
       "id": "Q2-F",
       "name": "regression-performance-final-verdict",
       "productOutputChange": false,
-      "approvalAfter": true
+      "approvalAfter": true,
+      "result": "bounded-subset"
     }
   ],
   "limits": {
@@ -98,5 +100,8 @@
     "localFontPath": false,
     "privateCorpusIdentity": false
   },
-  "approvalScope": "Q2-D revised plan awaits approval; approval opens Q2-D0 only"
+  "finalClassification": "mydocs/tech/investigations/issue-4969/w10_q2_final_support_classification.json",
+  "nextStage": "W10-Q3-variable-font-instance-capability-audit-and-revised-plan",
+  "nextStageApproved": false,
+  "approvalScope": "Q2 final bounded-subset classification and its checkpoint commit are approved; Q3 revised plan, push, PR, issue comment, and merge remain separately gated"
 }

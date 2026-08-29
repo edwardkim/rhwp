@@ -3,7 +3,7 @@
   "kind": "font-w10-q2-d5-resource-qualified-no-lineseg-activation-plan",
   "issue": 4969,
   "stage": "W10-Q2-D5",
-  "status": "n2-qualified-bounded-post-merge-requalified",
+  "status": "q2-final-bounded-subset-approved",
   "baseMerge": "1a43a507c",
   "resourceAuditCheckpoint": "ae36a8786",
   "productOutputChangeBeforeR2": false,
@@ -139,7 +139,7 @@
     "uniqueSourcePreparationRed": true,
     "fontByKeyTransportRed": false,
     "productOutputChanged": "opt-in-and-ordinary-single-interval-no-lineseg",
-    "nextSlice": "Q2-final-support-classification",
+    "nextSlice": "W10-Q3-variable-font-instance-capability-audit-and-revised-plan",
     "nextSliceApproved": false
   },
   "deferred": [
@@ -158,5 +158,6 @@
     "public-rejected-attempt-annotation",
     "private-corpus-or-hyper-v-oracle-rerun"
   ],
-  "approvalScope": "Q2-D5-R0 through N2 are complete with a qualified-bounded D5 result; N2 result approval, checkpoint 422a8f7bc, and latest-devel post-merge requalification are complete, while the requalification evidence checkpoint, Q2 final support classification, push, PR, comment, and merge remain separately gated"
+  "finalClassification": "mydocs/tech/investigations/issue-4969/w10_q2_final_support_classification.json",
+  "approvalScope": "Q2-D5-R0 through N2 and the approved Q2 bounded-subset classification are complete; the classification checkpoint is authorized, while Q3 revised plan, push, PR, comment, and merge remain separately gated"
 }

@@ -145,7 +145,10 @@
     "private-corpus-or-hyper-v-oracle-rerun"
   ],
   "nextSlice": "Q2-final-support-classification",
-  "nextSliceApproved": false,
+  "nextSliceApproved": true,
+  "finalClassificationArtifact": "mydocs/tech/investigations/issue-4969/w10_q2_final_support_classification.json",
+  "followingSlice": "W10-Q3-variable-font-instance-capability-audit-and-revised-plan",
+  "followingSliceApproved": false,
   "checkpointCommitApproved": true,
   "pushReady": false
 }
