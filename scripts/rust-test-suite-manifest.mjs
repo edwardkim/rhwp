@@ -354,7 +354,7 @@ const MODULE_BLOCKERS = [
   ],
 ];
 
-export function sourceMetrics(source, manifest, root = ROOT) {
+export function sourceMetrics(source, manifest, root = ROOT, durationPolicy = null) {
   const text = readFileSync(path.join(root, source), 'utf8');
   const testAttributes = (text.match(TEST_ATTRIBUTE) ?? []).length;
   const caseAttributes = (text.match(CASE_ATTRIBUTE) ?? []).length;
@@ -368,7 +368,7 @@ export function sourceMetrics(source, manifest, root = ROOT) {
   const blockers = MODULE_BLOCKERS.filter(
     ([name, pattern]) => !allowedBlockers.has(name) && pattern.test(text),
   ).map(([name]) => name);
-  return {
+  const metric = {
     source,
     caseName: caseNameForSource(source),
     staticTests,
@@ -377,6 +377,36 @@ export function sourceMetrics(source, manifest, root = ROOT) {
       bytes + Math.max(1, staticTests) * manifest.sharding.testAttributeWeight,
     blockers,
   };
+  if (durationPolicy !== null) {
+    const measured = durationPolicy.cases.get(metric.caseName);
+    const fallback = Math.max(1, metric.staticTests) * durationPolicy.fallbackSecondsPerTest;
+    metric.durationSeconds = measured ?? fallback;
+    metric.weight = metric.durationSeconds;
+  }
+  return metric;
+}
+
+function readDurationPolicy(policyPath) {
+  const policy = JSON.parse(readFileSync(policyPath, 'utf8'));
+  if (policy.schema_version === 2) {
+    if (
+      !Number.isFinite(policy.fallback_seconds_per_test)
+      || policy.fallback_seconds_per_test <= 0
+      || !policy.cases
+      || typeof policy.cases !== 'object'
+      || Array.isArray(policy.cases)
+    ) {
+      throw new Error('duration policy v2 requires fallback_seconds_per_test and cases');
+    }
+    return {
+      fallbackSecondsPerTest: policy.fallback_seconds_per_test,
+      cases: new Map(Object.entries(policy.cases)),
+    };
+  }
+  if (policy.schema_version === 1) {
+    return { fallbackSecondsPerTest: 60, cases: new Map() };
+  }
+  throw new Error(`unsupported duration policy schema_version: ${policy.schema_version}`);
 }
 
 export function buildCaseIndex(manifest) {
@@ -449,9 +479,13 @@ function lightestSuite(records) {
   )[0];
 }
 
-export function rebalanceManifest(manifest, root = ROOT) {
+export function rebalanceManifest(
+  manifest,
+  root = ROOT,
+  { durationPolicy = null } = {},
+) {
   const sources = discoverSourceFiles(manifest, root);
-  const metrics = sources.map((source) => sourceMetrics(source, manifest, root));
+  const metrics = sources.map((source) => sourceMetrics(source, manifest, root, durationPolicy));
   const manualPaths = new Set(
     manifest.exceptions.filter((entry) => entry.manual).map((entry) => entry.path),
   );
@@ -1027,6 +1061,16 @@ if (process.argv[1] && path.resolve(process.argv[1]) === SCRIPT_PATH) {
       const manifest = prepareManifest(loadManifest());
       generateArtifacts(manifest);
       printValidation(validateRepository());
+    } else if (command === '--rebalance-by-duration') {
+      const policyPath = process.argv[3];
+      if (!policyPath || process.argv.length !== 4) {
+        throw new Error('--rebalance-by-duration requires exactly one duration policy path');
+      }
+      const manifest = rebalanceManifest(loadManifest(), ROOT, {
+        durationPolicy: readDurationPolicy(policyPath),
+      });
+      generateArtifacts(manifest);
+      printValidation(validateRepository());
     } else if (command === '--sync-cargo-targets') {
       const manifest = prepareManifest(loadManifest());
       generateArtifacts(manifest, ROOT, { syncCargoTargets: true });
@@ -1056,6 +1100,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === SCRIPT_PATH) {
       process.stderr.write(
         '사용법: node scripts/rust-test-suite-manifest.mjs ' +
         '--check [--base-ref <Git ref>]|--prepare|--generate|--sync|--rebalance|' +
+          '--rebalance-by-duration <policy.json>|' +
           '--adopt-new|--adopt <파일...>|--sync-cargo-targets\n',
       );
       process.exitCode = 2;
