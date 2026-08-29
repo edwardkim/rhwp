@@ -227,8 +227,8 @@ samples/hwpx_sample2.hwpx	29	29
 samples/img-start-001.hwp	3	3
 samples/inner-table-01.hwp	2	2
 samples/issue-505-equations.hwp	4	4
-samples/issue1510_coanchored_float_tables.hwp	1,2	1
-samples/issue1510_coanchored_float_tables.hwpx	1,2	2
+samples/issue1510_coanchored_float_tables.hwp	1	1
+samples/issue1510_coanchored_float_tables.hwpx	2	2
 samples/issue1663_coanchored_float_orphan.hwpx	2	2
 samples/issue1770_rowsplit_tolerance.hwpx	4	4
 samples/issue1835_tac_stale_height.hwp	3	3
