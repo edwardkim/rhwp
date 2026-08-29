@@ -4,30 +4,30 @@
     "갱신: node scripts/layout-coverage-sweep.mjs --update",
     "이 수는 내려갈 수 없다. 올리는 것이 목표다."
   ],
-  "documents": 887,
-  "clean": 705,
+  "documents": 945,
+  "clean": 756,
   "errors": 3,
   "signals": {
     "off_canvas": {
-      "documents": 72,
-      "nodes": 414
+      "documents": 78,
+      "nodes": 434
     },
     "overlap": {
-      "documents": 38,
-      "nodes": 179
+      "documents": 42,
+      "nodes": 172
     },
     "text_overlap": {
-      "documents": 125,
-      "nodes": 4516
+      "documents": 132,
+      "nodes": 4203
     },
     "overflow": {
-      "documents": 270,
-      "nodes": 2761
+      "documents": 293,
+      "nodes": 2942
     },
     "empty_page": {
-      "documents": 30,
-      "nodes": 124
+      "documents": 33,
+      "nodes": 133
     }
   },
-  "coveragePercent": 79.48
+  "coveragePercent": 80
 }
