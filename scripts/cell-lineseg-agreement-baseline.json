@@ -4,12 +4,12 @@
     "갱신: node scripts/cell-lineseg-agreement.mjs --update",
     "이 비율은 내려갈 수 없다. 올리는 것이 목표다."
   ],
-  "documents": 368,
+  "documents": 369,
   "skipped": 101,
-  "paragraphs": 23309,
-  "agree": 21500,
-  "disagree": 1809,
-  "renderedMore": 1803,
+  "paragraphs": 23336,
+  "agree": 21525,
+  "disagree": 1811,
+  "renderedMore": 1805,
   "renderedFewer": 6,
   "agreementPercent": 92.24
 }
