@@ -70,7 +70,8 @@ test('CLEAN 이 줄면 회귀다', () => {
 });
 
 test('overflow 만 있는 문서는 CLEAN 이다 — 선언대로 그린 표가 대부분이다', () => {
-  // 근거: 이상 노드 1개짜리 48문서가 지나가는 표 148개 전부 렌더 폭 = 선언 폭.
+  // 근거: 한/글 2022 가 파일에 넣어 둔 미리보기(PrvImage)를 재니 한/글도 표를 본문 여백
+  // 밖으로 내보낸다 — 표-텍스트 721.4 / 셀보호2 688.5 대 본문 여백 680.3.
   const t = tallySweep([doc({ overflowCount: 3, hasSignal: true })].join('\n'));
   assert.equal(t.clean, 1);
   assert.equal(t.signals.overflow.documents, 1, 'CLEAN 이어도 신호는 계속 센다');
