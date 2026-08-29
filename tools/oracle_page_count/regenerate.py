@@ -57,6 +57,38 @@ def subdir(path, root):
     return d[len(root):].lstrip('/') if d.startswith(root) else d
 
 
+FORMAT_SUFFIX = re.compile(r'-(hwpx|hwp)(?=-|$)', re.I)
+
+
+def oracle_format(pdf_path):
+    """정답지가 **어느 형식의 원본**에서 뽑혔는지. 태그가 없으면 `None`.
+
+    `-hwp`·`-hwpx` 는 한글 버전·글꼴 조건 같은 접미사가 아니라 원본 형식 표기다.
+    `stem()` 은 이름을 맞추려고 이것도 벗기는데, 그대로 두면 같은 문서의 HWP본·HWPX본
+    정답지가 한 집합으로 뭉쳐 **각 샘플이 상대 형식의 쪽수로도 "일치" 판정**을 받는다.
+
+    `issue1510_coanchored_float_tables` 가 그 실측이다. 한글은 HWP본을 1 쪽,
+    HWPX본을 2 쪽으로 뽑았고 **둘 다 정답이다**(저장된 float 배치가 다르다). 그런데
+    원장은 두 행 모두 정답지 `1,2` 를 갖고 있어 rhwp 가 어느 쪽으로 틀려도 통과한다.
+    """
+    name = re.sub(r'\.pdf$', '', os.path.basename(pdf_path), flags=re.I)
+    # `<이름>.hwp.pdf` / `<이름>.hwpx.pdf` 형태도 같은 표기다.
+    if name.lower().endswith('.hwpx'):
+        return 'hwpx'
+    if name.lower().endswith('.hwp'):
+        return 'hwp'
+    work = name
+    while True:
+        m = SUFFIX.search(work)
+        if not m:
+            break
+        tag = m.group(1).lower()
+        if tag in ('hwp', 'hwpx'):
+            return tag
+        work = work[:m.start()]
+    return None
+
+
 def pick_oracles(sample, candidates):
     """이름이 같은 정답지 후보 중 이 샘플의 것만 고른다.
 
@@ -70,8 +102,14 @@ def pick_oracles(sample, candidates):
     `pdf/` 최상위에만 있는 문서가 많다), 후보가 여럿이면 그 사실이 픽스처의 쪽수 집합에
     드러난다.
 
+    형식 태그(`-hwp`/`-hwpx`)가 붙은 정답지는 **같은 형식의 샘플에만** 준다
+    (`oracle_format` 참고). 태그가 없는 정답지는 형식을 가리지 않는다.
+
     디렉터리 fallback 은 여기서 끝나지 않는다 — `owner_claims_oracle` 이 본문으로 확인한다.
     """
+    want = 'hwpx' if sample.lower().endswith('.hwpx') else 'hwp'
+    candidates = [p for p in candidates
+                  if oracle_format(p) in (None, want)]
     same_dir = [p for p in candidates if subdir(p, 'pdf') == subdir(sample, 'samples')]
     return same_dir if same_dir else candidates
 
