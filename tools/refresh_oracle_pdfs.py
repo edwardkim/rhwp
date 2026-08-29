@@ -43,6 +43,10 @@ FIXTURE = pathlib.Path('tests/fixtures/oracle_page_count_baseline.tsv')
 KST = ZoneInfo('Asia/Seoul')
 
 
+class DocumentPreflightRejected(RuntimeError):
+    """MCP가 문서 자체의 unattended 변환을 허용하지 않은 경우다."""
+
+
 class RunLogger:
     """시각이 붙은 재개 가능 변환 로그. 비공개 env 내용이나 명령행은 기록하지 않는다."""
 
@@ -114,6 +118,15 @@ def source_metadata(rhwp, source):
         raise RuntimeError('%s: rhwp info JSON 해석 실패: %s' % (source, exc)) from exc
     product = (data.get('lastSavedWith') or {}).get('product')
     return product, engine_for_product(product)
+
+
+def existing_canonical_pdfs(source):
+    """메타데이터 조회 없이 확인할 수 있는 기존 canonical PDF 후보를 돌려준다."""
+    return [
+        (engine, pathlib.Path(canonical_pdf_path(source, engine)))
+        for engine in ('2020', '2024')
+        if pathlib.Path(canonical_pdf_path(source, engine)).is_file()
+    ]
 
 
 def mcp_command(args, env_file, action, extra):
@@ -198,11 +211,21 @@ def convert_one(args, source, engine, destination, logger, env_file, lane):
         terminal_success = {'success', 'succeeded'}
         terminal_failure = {'failed', 'failure', 'cancelled', 'canceled', 'terminated'}
         while True:
-            status_response = run_mcp(
-                mcp_command(args, env_file, 'status', ['--job-id', job_id]),
-                'MCP status lane=%s job_id=%s' % (lane, job_id),
-                logger,
-            )
+            for attempt in range(1, args.status_retry_count + 1):
+                try:
+                    status_response = run_mcp(
+                        mcp_command(args, env_file, 'status', ['--job-id', job_id]),
+                        'MCP status lane=%s job_id=%s' % (lane, job_id),
+                        logger,
+                    )
+                    break
+                except RuntimeError as exc:
+                    if attempt == args.status_retry_count:
+                        raise
+                    delay = args.status_retry_delay_seconds * attempt
+                    logger.emit('WARN', 'MCP status 재시도: lane=%s job_id=%s attempt=%d/%d delay=%ss reason=%s' %
+                                (lane, job_id, attempt, args.status_retry_count, delay, exc))
+                    time.sleep(delay)
             status = nested_value(status_response, 'status')
             terminal = nested_value(status_response, 'terminal')
             elapsed = time.monotonic() - started
@@ -210,6 +233,10 @@ def convert_one(args, source, engine, destination, logger, env_file, lane):
                         (job_id, status or 'unknown', terminal, elapsed))
             if status in terminal_success:
                 break
+            remote_error = nested_value(status_response, 'error')
+            if (isinstance(remote_error, str)
+                    and remote_error.startswith('input preflight rejected the document:')):
+                raise DocumentPreflightRejected('%s: %s' % (source, remote_error))
             if status in terminal_failure or terminal is True:
                 raise RuntimeError('%s: MCP job %s 비성공 종료 (status=%s, terminal=%s, %.1fs)' %
                                    (source, job_id, status, terminal, elapsed))
@@ -266,6 +293,7 @@ def endpoint_env_files(args, configured, directory):
     if len(configured) != len(set(configured)):
         raise ValueError('같은 --server-url을 중복 지정할 수 없다')
     base = pathlib.Path(args.env_file).read_text(encoding='utf-8')
+    base = re.sub(r'^HWP2024_MCP_SERVER_URLS=.*(?:\n|$)', '', base, flags=re.MULTILINE)
     lanes = []
     for index, endpoint in enumerate(configured, 1):
         replacement = 'HWP2024_MCP_SERVER_URL=%s' % endpoint
@@ -351,6 +379,8 @@ def main():
     parser.add_argument('--env-file', default=default_env_file())
     parser.add_argument('--timeout-seconds', type=int, default=1800)
     parser.add_argument('--status-interval-seconds', type=int, default=15)
+    parser.add_argument('--status-retry-count', type=int, default=4)
+    parser.add_argument('--status-retry-delay-seconds', type=int, default=5)
     parser.add_argument('--endpoint-env-file', action='append', default=[],
                         help='endpoint와 token이 함께 든 lane별 env 파일 (반복 지정 시 파일당 단일 worker)')
     parser.add_argument('--server-url', action='append', default=[],
@@ -384,6 +414,17 @@ def main():
             if not pathlib.Path(source).is_file():
                 logger.emit('WARN', '제외(원본 없음): %s' % source)
                 continue
+            if not args.refresh_existing:
+                existing = existing_canonical_pdfs(source)
+                if len(existing) == 1:
+                    engine, destination = existing[0]
+                    skipped_existing += 1
+                    logger.emit('INFO', '유지(기존 canonical PDF, metadata 생략): source=%s output=%s engine=%s' %
+                                (source, destination, engine))
+                    continue
+                if len(existing) > 1:
+                    logger.emit('WARN', '기존 canonical PDF가 둘 이상이므로 metadata 확인: source=%s outputs=%s' %
+                                (source, ','.join(str(path) for _, path in existing)))
             try:
                 product, engine = source_metadata(args.rhwp, source)
             except RuntimeError as exc:
@@ -425,6 +466,9 @@ def main():
                                      product or 'null', engine))
                         try:
                             convert_one(args, source, engine, destination, logger, env_file, lane)
+                        except DocumentPreflightRejected as exc:
+                            logger.emit('WARN', '제외(MCP input preflight): lane=%s %s' % (lane, exc))
+                            continue
                         except Exception as exc:
                             message = '%s: %s' % (source, exc)
                             lane_failures.append(message)
