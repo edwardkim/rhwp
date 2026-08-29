@@ -1,88 +1,130 @@
-# Task M100 #4135 1차 라우팅 WIP 보고서
+# Task M100 #4135 구현 결과 및 PR 본문 초안
 
 - **Issue**: [#4135](https://github.com/edwardkim/rhwp/issues/4135)
-- **기준**: `upstream/devel` `94ff48d2b81dee5241110db9d2417dffbfb7f9ec`
 - **브랜치**: `codex/issue-4135-contextual-shortcut`
-- **작성일**: 2026-08-28 KST
-- **원격 상태**: push/PR 생성 전
-- **현재 판정**: 수동 검증 후 최종 완료 판정 철회, 후속 구현 계획 승인 대기
+- **검증 후보**: `8d3fdf011`
+- **후보에 통합된 기준**: `upstream/devel@f6a6bee8f`
+- **마지막 확인한 최신 upstream**: `upstream/devel@2bcf9b261` (PR #6379 포함)
+- **원격 상태**: push·PR 생성 전
+- **현재 판정**: PR 본문 초안 작성 완료. push 전 최신 devel 동기화와 최소 재검증 필요
 
-> **정정 공지**: 이 보고서는 단축키 라우팅 단계의 자동·브라우저 검증 기록으로 보존한다.
-> 이후 작업지시자 수동 검증에서 블록 합계 결과 배치와 한글 IME 셀 나누기 결함이 드러났으므로
-> 최종 완료 보고서가 아니다. 원문 피드백은
-> [`task_m100_4135_manual_validation.md`](../feedback/task_m100_4135_manual_validation.md), 후속 정본은
-> [`task_m100_4135_impl.md`](../plans/task_m100_4135_impl.md)다.
+## 1. 사용자 결과
 
-## 결과
+#4135의 단축키 도달성만 고치는 데서 끝내지 않고 실제 한컴 사용자 여정까지 보정했다.
 
-F5 셀 블록 상태의 `Ctrl/Cmd+Shift+S`를 `table:block-sum`으로 보내는 좁은 문맥
-라우터를 추가했다. 셀 블록 밖에서는 기존 `file:save-as`, 수정자 없는 `S`는
-`table:cell-split`을 유지한다. 한글 자모 `ㄴ`과 조합 중 `Process/KeyS`도 같은 물리 키
-계약으로 처리한다.
+1. F5 셀 블록에서 `Ctrl/Cmd+Shift+S`를 누르면 Save As나 셀 나누기가 아니라 블록 합계를 실행한다.
+2. 선택 범위의 오른쪽 또는 아래 빈 결과 가장자리에 행별·열별 합계를 한 번의 undo 단위로 기록한다.
+3. 한글 IME에서도 수정자 없는 물리 `S`/`M`이 셀 나누기·합치기로 동작하고 `ㄴ`/`ㅡ`가 남지 않는다.
+4. F5 1·2·3회 상태를 셀 안 회색/주황 마커와 하단 상태 문구로 구분한다.
+5. 셀 계산식은 `AA` 이상 다중 문자 열 주소를 처리하고, 두 자릿수 이상 결과도 일반 셀 텍스트 치환 경로로
+   기록해 화면과 저장 데이터가 일치한다.
 
-embed 프로파일에서는 숨겨진 `file:save-as`가 비활성일 때 후순위 표 명령으로 우회하지
-않고 이벤트만 소비한다. 전역 단축키 맵에서는 도달 불가였던 `table:block-sum` 중복을
-제거하고, Save As 항목에 물리 `KeyS` 보정을 추가했다.
+작업지시자는 실제 macOS 한글 IME에서 셀 나누기 뒤 `ㄴ`이 남지 않는 것과 F5 단계 표시를 각각
+`수정이 반영되었어.`, `확인되었어.`로 승인했다.
 
-## 최신 기준선에서 확인한 원인
+## 2. 검증 결과
 
-이슈가 작성된 시점에는 동일 단축키의 첫 매칭 `file:save-as`가 블록 합계를 가렸다.
-최신 devel에서는 그 중복과 함께, F5 셀 선택 분기의 modifier를 확인하지 않는 `S` 처리도
-매처보다 먼저 실행됐다. 실제 브라우저 기준선은 이슈 본문의 Save As가 아니라
-**셀 나누기 대화상자**였다.
+검증 후보 `8d3fdf011`에서 다음 결과를 확보했다.
 
-따라서 전역 매처 계약 전체를 바꾸는 대신 다음 세 지점을 함께 보정했다.
+| 범위 | 결과 |
+| --- | --- |
+| Rust focused | #4135 5/5, `table_calc` 33/33 통과 |
+| Studio focused | 56/56 통과 |
+| unit tier policy | 4,225 tests / 299 modules, 통과 |
+| release build | `cargo build --locked --release`, 통과 (11분 45초) |
+| release lib | 4,075 통과 / 13 ignored / 0 실패 |
+| release-test 전체 | 8,556 통과 / 43 skipped / 0 실패 |
+| Native Skia | lib 전체 통과, placeholder 2/2, direct PDF 4/4 통과 |
+| 정적 검사 | `cargo fmt --all -- --check`, `git diff --check`, clippy `-D warnings` 통과 |
+| Rust doc test | 8 통과 / 3 ignored / 0 실패 |
+| Studio TypeScript | `npx --no-install tsc --noEmit`, 통과 |
+| Studio 전체 | 1,264 tests / 1,263 통과 / 1 skip / 0 실패 |
+| Studio production build | Vite 242 modules, 통과 |
+| 사용자 수동 검증 | 한글 IME 셀 나누기·F5 단계 UX 통과 |
 
-1. IME와 셀 선택 `S` 분기보다 먼저 실행되는 셀 블록 전용 라우터
-2. modifier 없는 `M`/`S`에만 셀 합치기/나누기를 허용하는 가드
-3. 일반 Save As의 `KeyS` 보정과 전역 exact 슬롯 중복 제거
+Docker 표준 WASM build는 현재 후보에서 완료 판정하지 않는다. 중지돼 있던 x86_64 Colima의 빈 이미지와
+Cargo cache를 새로 만들면서 `wasm-pack` 설치에 11분 이상이 들었고, x86 에뮬레이션 release/LTO가 장시간
+계속돼 작업지시자가 PR 준비 범위를 본문 초안까지로 축소한 뒤 컨테이너를 중지했다. 이는 컴파일 오류가
+아니지만 성공도 아니다. R4의 이전 코드 후보에서는 fresh WASM과 embed E2E가 통과했으나 현재 후보의
+통과 결과로 승격하지 않는다.
 
-## 단계별 커밋
+## 3. #6379와 장시간 검증의 관계
 
-| 단계 | commit | 내용 |
-| --- | --- | --- |
-| RED·계획 | `a191509f9` | 재현 기록, full/embed·Ctrl/Meta·영문/IME 계약, 중복 슬롯 검사 |
-| 구현·GREEN | `2141666e0` | 문맥 라우터, 입력 순서/가드, shortcut-map 정리, 브라우저 증빙 |
-| 최종 기록 | 이 보고서 commit | 전체 검증과 PR 준비 상태 정리 |
+[PR #6379](https://github.com/edwardkim/rhwp/pull/6379)는 PR에서 새로 추가된 sample만 보안 clean sweep 대상으로
+삼도록 `security_corpus_regression`과 `injection_scan_contract`의 CI 선택 범위를 줄인다. 따라서 첫 전체
+nextest에서 오래 걸렸던 보안 코퍼스 전수 검사에는 관련이 있다.
 
-## 검증 결과
+반면 중지한 작업은 Docker 내부의 x86_64 WASM release/LTO **컴파일**이다. #6379는 CI 테스트 선택 정책을
+바꿀 뿐 WASM 컴파일 경로·프로파일은 바꾸지 않으므로 7시간 남아 있던 컨테이너와는 관련이 없다.
+
+## 4. push 전 남은 항목
+
+초안 작성 시점에 브랜치는 최신 `upstream/devel@2bcf9b261`보다 61 commits 뒤다. 최신 upstream에는 #6379와
+함께 table calculation·Studio·#2724 guard 주변 변경이 있으므로 다음은 실제 push 승인 뒤 수행한다.
+
+1. 최신 `upstream/devel`을 통합하고 충돌·중복 구현 여부를 확인한다.
+2. #4135 Rust/Studio focused, TypeScript, Studio 전체 test를 다시 실행한다.
+3. `cargo fmt --all`과 `cargo fmt --all -- --check`, `git diff --check`를 push 직전에 다시 실행한다.
+4. 표준 WASM·browser 결과는 GitHub required checks 또는 정상적인 native Docker 환경에서 확인한다.
+
+## 5. 제안 PR 제목
 
 ```text
-focused Node: 31 pass, 0 fail
-npm test: 1,231 tests / 1,230 pass / 1 skip / 0 fail
-npm run build: TypeScript + Vite production build, 239 modules transformed
-npm run e2e:embed: 17 assertions PASS
-cargo fmt --all: exit 0
-cargo fmt --all -- --check: exit 0
-git diff --check: exit 0
+fix(studio): F5 셀 블록 계산과 한글 IME 셀 명령을 바로잡는다
 ```
 
-embed E2E의 첫 시도는 제품 코드가 아니라 `puppeteer-core`의 Chrome 실행 경로 미설정으로
-시작 전에 실패했다. 설치된 Chrome의 `CHROME_PATH`와 실행 중인 개발 서버의 `VITE_URL`을
-명시해 다시 실행했고 전 판정이 통과했다.
+## 6. 복사 가능한 PR 본문 초안
 
-실제 macOS Codex in-app browser의 최신 런타임에서 2행 3열 표를 만들고 `F5`, `F5`,
-`ArrowRight`로 복수 셀을 선택해 다음을 확인했다.
+```markdown
+## 변경 요약
 
-| 입력 | 결과 |
-| --- | --- |
-| 셀 블록 + `Ctrl+Shift+S` | 셀 나누기/Save As 대화상자 없이 블록 계산 경로 실행 |
-| 셀 블록 + `Cmd+Shift+S` | 셀 나누기/Save As 대화상자 없이 블록 계산 경로 실행 |
-| 셀 블록 해제 + `Ctrl+Shift+S` | 다른 이름으로 저장 대화상자 표시 |
-| 셀 블록 + `S` | 셀 나누기 대화상자 표시 |
+- F5 셀 블록의 `Ctrl/Cmd+Shift+S`를 Save As·셀 나누기보다 먼저 블록 합계로 라우팅합니다.
+- 선택 범위의 오른쪽/아래 빈 결과 가장자리에 행별·열별 합계를 all-or-nothing snapshot으로 기록합니다.
+- 한글 IME에서도 물리 `KeyS`/`KeyM` 셀 나누기·합치기를 처리하고 후속 `ㄴ`/`ㅡ` 입력을 억제합니다.
+- F5 1·2단계를 셀 안 회색/주황 마커로, 1·2·3단계를 하단 상태 문구로 함께 표시합니다.
+- `AA` 이상 계산식 열 주소와 두 자릿수 이상 결과의 셀 렌더링·저장 경로를 보정합니다.
 
-## 범위
+## 관련 이슈
 
-이번 작업은 #4135의 단축키 도달성만 수정했다. 기존 `table:block-sum`이 현재 셀에
-`=SUM(above)`를 적용하는 계산 의미는 바꾸지 않았다. 선택 범위 자체를 피연산자로 삼아야
-한다는 별도 요구가 확인되면 연결 이슈에서 계산 명령을 확장하는 편이 안전하다.
+closes #4135
 
-## 당시 작업 상태와 현재 정정
+## 테스트
 
-당시에는 로컬 구현, 자동·실제 브라우저 라우팅 검증과 PR 직전 포맷 게이트를 완료했다고
-판정했다. 그러나 계산 결과가 올바른 위치에 기록되는지와 한글 IME의 수정자 없는 `S`를
-검증하지 않아 완료 판정이 과했다.
+- [x] `cargo fmt --all -- --check` 통과
+- [x] `src/**` test 변경에 대한 `node scripts/rust-unit-test-tiers.mjs --check` 통과
+- [x] focused Rust: #4135 5/5, table calculation 33/33
+- [x] release lib: 4,075 pass / 13 ignored
+- [x] release-test 전체: 8,556 pass / 43 skipped
+- [x] Native Skia lib + 지정 회귀 2/2, 4/4 통과
+- [x] `cargo clippy --locked --all-targets -- -D warnings` 통과
+- [x] Rust doc test: 8 pass / 3 ignored
+- [x] Studio TypeScript 검사 및 production build 통과
+- [x] Studio 전체: 1,264 tests / 1,263 pass / 1 skip
+- [x] 실제 macOS 한글 IME에서 셀 나누기 후 `ㄴ` 미입력 확인
+- [x] 실제 browser에서 F5 1·2·3회 마커·하단 상태·Escape 해제 확인
+- [ ] 최신 devel 통합 후보의 표준 Docker WASM build / embed E2E
 
-기존 `a191509f9`, `2141666e0`, `1d3c78c1d`는 삭제·amend하지 않고 WIP 증적으로 보존한다.
-후속 수행·구현 계획을 작업지시자가 승인하기 전에는 추가 소스·테스트 변경, push, PR 생성을
-진행하지 않는다.
+상세 구현·수동 검증 기록:
+
+- `mydocs/plans/task_m100_4135_impl.md`
+- `mydocs/working/task_m100_4135_recovery_r4.md`
+- `mydocs/working/task_m100_4135_recovery_r5.md`
+- `mydocs/report/task_m100_4135_report.md`
+
+현재 후보의 전체 Rust·Studio 게이트는 통과했습니다. Docker WASM은 x86_64 Colima 빈 캐시의
+release/LTO가 장시간 진행돼 로컬 성공으로 기록하지 않았으며, 최신 devel 통합 뒤 required check 또는
+정상 native Docker 환경에서 확인합니다.
+
+## 성능 영향 및 측정 결과
+
+- 예상 영향: 일반 입력 경로 영향 없음. 셀 블록 계산 시 선택 범위 크기에 비례하는 preflight와 결과 기록이 추가됩니다.
+- 재현·측정: 별도 성능 benchmark는 실행하지 않았습니다. focused·전체 회귀에서 기능 회귀는 없었습니다.
+
+## 스크린샷
+
+- F5 1회: 포커스 셀 중앙 회색 마커 + `셀 선택 · 방향키로 이동`
+- F5 2회: 포커스 셀 중앙 주황 마커 + `셀 범위 선택 · 방향키로 확장`
+- F5 3회: 표 전체 선택 + `표 전체 선택`
+```
+
+원격 push, PR 생성, GitHub comment는 작업지시자의 별도 승인 전에는 수행하지 않는다.
