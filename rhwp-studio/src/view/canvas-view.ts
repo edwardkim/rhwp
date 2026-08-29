@@ -45,6 +45,7 @@ import {
 } from '@/engine/header-footer-mode.ts';
 import {
   headerFooterClipPath,
+  resolveHeaderFooterBadgeMetrics,
   resolveHeaderFooterBandBox,
 } from './header-footer-edit-overlay.ts';
 import {
@@ -662,11 +663,14 @@ export class CanvasView {
 
       if (isPreview) {
         const kind = state.mode === 'header' ? '머리말' : '꼬리말';
+        const badgeMetrics = resolveHeaderFooterBadgeMetrics(zoom);
         const badge = document.createElement('span');
         badge.className = 'hf-edit-badge';
         badge.textContent = `${kind}(${headerFooterApplyToLabel(state.applyTo)})`;
         badge.style.left = `${band.x * zoom}px`;
         badge.style.top = `${band.y * zoom}px`;
+        badge.style.fontSize = `${badgeMetrics.fontSizePx}px`;
+        badge.style.setProperty('--hf-edit-badge-gap', `${badgeMetrics.gapPx}px`);
         layer.appendChild(badge);
       }
 

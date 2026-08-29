@@ -128,7 +128,10 @@
 #scroll-content .hf-edit-badge {
   position: absolute;
   z-index: 2;
-  transform: translateY(-100%);
+  transform: translate(
+    var(--hf-edit-badge-gap, 4px),
+    calc(-100% - var(--hf-edit-badge-gap, 4px))
+  );
   padding: 1px 4px 2px;
   background: color-mix(in srgb, var(--doc-paper) 92%, transparent);
   color: #333333;

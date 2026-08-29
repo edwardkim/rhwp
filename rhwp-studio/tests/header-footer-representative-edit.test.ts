@@ -5,6 +5,7 @@ import test from 'node:test';
 import type { PageInfo } from '../src/core/types.ts';
 import {
   headerFooterClipPath,
+  resolveHeaderFooterBadgeMetrics,
   resolveHeaderFooterBandBox,
 } from '../src/view/header-footer-edit-overlay.ts';
 import {
@@ -57,6 +58,24 @@ test('구 WASM은 PageDef 여백으로 같은 HF 영역을 재구성한다', () 
   );
 });
 
+test('HF 안내 라벨은 고배율에서 완만하게 커지고 최대 두 배로 제한된다', () => {
+  assert.deepEqual(resolveHeaderFooterBadgeMetrics(0.5), {
+    fontSizePx: 10,
+    gapPx: 4,
+  });
+  assert.deepEqual(resolveHeaderFooterBadgeMetrics(1), {
+    fontSizePx: 10,
+    gapPx: 4,
+  });
+  assert.deepEqual(resolveHeaderFooterBadgeMetrics(5), {
+    fontSizePx: 20,
+    gapPx: 8,
+  });
+  const atTwoHundred = resolveHeaderFooterBadgeMetrics(2);
+  assert.ok(atTwoHundred.fontSizePx > 14 && atTwoHundred.fontSizePx < 15);
+  assert.ok(atTwoHundred.gapPx > 5 && atTwoHundred.gapPx < 6);
+});
+
 test('HF 편집 상태는 종류·타겟·대표 페이지를 함께 전달한다', () => {
   const state = parseHeaderFooterModeChanged({
     mode: 'footer',
@@ -91,6 +110,7 @@ test('HF 편집 안내는 내용을 덮지 않고 모서리와 텍스트만 표�
   const representative = css.match(/\.hf-edit-region\.is-representative\s*\{([^}]*)\}/)?.[1] ?? '';
   const related = css.match(/\.hf-edit-region\.is-related\s*\{([^}]*)\}/)?.[1] ?? '';
   const guideCanvas = css.match(/canvas\.hf-edit-guide-canvas\s*\{([^}]*)\}/)?.[1] ?? '';
+  const badge = css.match(/\.hf-edit-badge\s*\{([^}]*)\}/)?.[1] ?? '';
 
   assert.doesNotMatch(representative, /background\s*:/);
   assert.doesNotMatch(representative, /border\s*:/);
@@ -98,5 +118,7 @@ test('HF 편집 안내는 내용을 덮지 않고 모서리와 텍스트만 표�
   assert.match(guideCanvas, /background:\s*transparent/);
   assert.match(guideCanvas, /transform:\s*none/);
   assert.doesNotMatch(css, /\.hf-edit-corner/);
+  assert.match(badge, /--hf-edit-badge-gap/);
+  assert.match(badge, /calc\(-100% - var\(--hf-edit-badge-gap, 4px\)\)/);
   assert.match(css, /\.hf-edit-badge[\s\S]*color:\s*#333333/);
 });

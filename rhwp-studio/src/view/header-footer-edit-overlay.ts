@@ -7,6 +7,32 @@ export interface HeaderFooterBandBox {
   height: number;
 }
 
+export interface HeaderFooterBadgeMetrics {
+  fontSizePx: number;
+  gapPx: number;
+}
+
+const HEADER_FOOTER_BADGE_BASE_FONT_SIZE_PX = 10;
+const HEADER_FOOTER_BADGE_BASE_GAP_PX = 4;
+const HEADER_FOOTER_BADGE_MAX_SCALE = 2;
+
+/**
+ * HF 안내 라벨은 화면 UI이므로 문서와 똑같이 확대하지 않는다.
+ * 100% 이하는 읽을 수 있는 최소 크기를 유지하고, 고배율에서는 제곱근만큼
+ * 완만하게 키우되 2배에서 멈춰 문서 내용을 가리지 않게 한다.
+ */
+export function resolveHeaderFooterBadgeMetrics(zoom: number): HeaderFooterBadgeMetrics {
+  const safeZoom = Number.isFinite(zoom) && zoom > 0 ? zoom : 1;
+  const scale = Math.min(
+    HEADER_FOOTER_BADGE_MAX_SCALE,
+    Math.max(1, Math.sqrt(safeZoom)),
+  );
+  return {
+    fontSizePx: HEADER_FOOTER_BADGE_BASE_FONT_SIZE_PX * scale,
+    gapPx: HEADER_FOOTER_BADGE_BASE_GAP_PX * scale,
+  };
+}
+
 /**
  * 렌더러의 HF hit-test와 같은 영역을 쓴다.
  *
