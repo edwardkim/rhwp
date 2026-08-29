@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""원본 저장 제품에 맞는 한컴 PDF 정답지를 서버별 단일 큐로 갱신한다.
+"""원본 저장 제품에 맞는 한컴 PDF 정답지를 endpoint별 단일 큐로 갱신한다.
 
 각 원본에 대해 `rhwp info --json`을 먼저 읽어 한컴 저장 제품을 확인한다. 2024 저장본은
 MCP engine 2024로, 그 외와 메타데이터 없는 저장본은 문서화된 2020 호환 engine으로 변환한다.
-각 MCP endpoint에는 변환 작업을 하나만 보낸다. 성공한 결과만 `pdf/`의 canonical 이름으로 원자
-교체하므로 실패한 항목은 기존 PDF와 기준 원장을 훼손하지 않는다.
+각 MCP endpoint에는 변환 작업을 하나만 보낸다. 여러 endpoint를 지정하면 endpoint별 한 작업씩만
+병렬로 실행한다. 성공한 결과만 `pdf/`의 canonical 이름으로 원자 교체하므로 실패한 항목은 기존
+PDF와 기준 원장을 훼손하지 않는다.
 
 기본 실행은 canonical PDF가 없는 원장 행만 보충한다. 기존 기준 PDF도 다시 뽑으려면
 `--refresh-existing`을 준다. 대량 갱신은 재개 가능하도록 `--limit` 또는 `--source`로 나눠 실행한다.
@@ -12,6 +13,7 @@ MCP engine 2024로, 그 외와 메타데이터 없는 저장본은 문서화된 
 경우에만 재변환 없이 새 이름으로 이관한다.
 """
 import argparse
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 import json
 import os
@@ -20,6 +22,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import threading
 import time
 import re
 from zoneinfo import ZoneInfo
@@ -46,6 +49,7 @@ class RunLogger:
     def __init__(self, path):
         self.path = pathlib.Path(path) if path else None
         self.file = None
+        self.lock = threading.Lock()
         if self.path:
             self.path.parent.mkdir(parents=True, exist_ok=True)
             self.file = self.path.open('a', encoding='utf-8')
@@ -53,9 +57,10 @@ class RunLogger:
     def emit(self, level, message):
         timestamp = datetime.now(KST).strftime('%y-%m-%d %H:%M:%S KST')
         line = '%s [%s] %s' % (timestamp, level, message)
-        print(line, flush=True)
-        if self.file:
-            print(line, file=self.file, flush=True)
+        with self.lock:
+            print(line, flush=True)
+            if self.file:
+                print(line, file=self.file, flush=True)
 
     def detail(self, label, content):
         if not content.strip():
@@ -111,7 +116,7 @@ def source_metadata(rhwp, source):
     return product, engine_for_product(product)
 
 
-def mcp_command(args, action, extra):
+def mcp_command(args, env_file, action, extra):
     return [
         args.npx,
         '-y',
@@ -119,7 +124,7 @@ def mcp_command(args, action, extra):
         '--',
         'hwp2024-mcp-convert',
         action,
-        '--env-file', args.env_file,
+        '--env-file', env_file,
         *extra,
     ]
 
@@ -158,14 +163,14 @@ def nested_value(data, key):
     return None
 
 
-def convert_one(args, source, engine, destination, logger):
+def convert_one(args, source, engine, destination, logger, env_file, lane):
     output_name = destination.name
     with tempfile.TemporaryDirectory(prefix='rhwp-oracle-pdf-') as temp_dir:
-        logger.emit('INFO', 'MCP start: source=%s output=%s engine=%s' %
-                    (source, destination, engine))
+        logger.emit('INFO', 'MCP start: lane=%s source=%s output=%s engine=%s' %
+                    (lane, source, destination, engine))
         started = time.monotonic()
         start_response = run_mcp(
-            mcp_command(args, 'start', [
+            mcp_command(args, env_file, 'start', [
                 '--input', source,
                 '--target', 'pdf',
                 '--engine', engine,
@@ -185,7 +190,7 @@ def convert_one(args, source, engine, destination, logger):
         terminal_failure = {'failed', 'failure', 'cancelled', 'canceled', 'terminated'}
         while True:
             status_response = run_mcp(
-                mcp_command(args, 'status', ['--job-id', job_id]),
+                mcp_command(args, env_file, 'status', ['--job-id', job_id]),
                 'MCP status job_id=%s' % job_id,
                 logger,
             )
@@ -205,7 +210,7 @@ def convert_one(args, source, engine, destination, logger):
             time.sleep(args.status_interval_seconds)
 
         download_response = run_mcp(
-            mcp_command(args, 'download', [
+            mcp_command(args, env_file, 'download', [
                 '--job-id', job_id,
                 '--output-dir', temp_dir,
             ]),
@@ -226,6 +231,29 @@ def convert_one(args, source, engine, destination, logger):
 
 
 SUCCESS_RECORD = re.compile(r'MCP 성공: source=(.+?) output=(pdf/.+?\.pdf) bytes=')
+
+
+def endpoint_env_files(args, directory):
+    """각 endpoint에 사용할 임시 env 파일을 만들되 비밀값은 로그에 남기지 않는다."""
+    endpoints = args.server_url or [None]
+    explicit = [endpoint for endpoint in endpoints if endpoint is not None]
+    if len(explicit) != len(set(explicit)):
+        raise ValueError('같은 --server-url을 중복 지정할 수 없다')
+    if endpoints == [None]:
+        return [('endpoint-1', args.env_file)]
+
+    base = pathlib.Path(args.env_file).read_text(encoding='utf-8')
+    files = []
+    for index, endpoint in enumerate(endpoints, 1):
+        replacement = 'HWP2024_MCP_SERVER_URL=%s' % endpoint
+        content, changed = re.subn(
+            r'^HWP2024_MCP_SERVER_URL=.*$', replacement, base, flags=re.MULTILINE)
+        if not changed:
+            content = base.rstrip() + '\n' + replacement + '\n'
+        path = directory / ('endpoint-%d.env' % index)
+        path.write_text(content, encoding='utf-8')
+        files.append(('endpoint-%d' % index, str(path)))
+    return files
 
 
 def migrate_success_log(args, log_path, logger):
@@ -300,6 +328,8 @@ def main():
     parser.add_argument('--env-file', default=default_env_file())
     parser.add_argument('--timeout-seconds', type=int, default=1800)
     parser.add_argument('--status-interval-seconds', type=int, default=15)
+    parser.add_argument('--server-url', action='append', default=[],
+                        help='MCP endpoint URL (반복 지정 시 URL당 단일 worker)')
     parser.add_argument('--source', action='append', default=[], help='특정 상대 원본 경로(반복 가능)')
     parser.add_argument('--limit', type=int, default=None, help='이번 실행에서 변환할 최대 문서 수')
     parser.add_argument('--refresh-existing', action='store_true')
@@ -313,8 +343,8 @@ def main():
     try:
         if args.migrate_success_log:
             return migrate_success_log(args, args.migrate_success_log, logger)
-        logger.emit('INFO', '배치 시작: 기존 canonical PDF 제외=%s, dry_run=%s, endpoint별 단일 큐' %
-                    (not args.refresh_existing, args.dry_run))
+        logger.emit('INFO', '배치 시작: 기존 canonical PDF 제외=%s, dry_run=%s, endpoint=%d, endpoint별 단일 큐' %
+                    (not args.refresh_existing, args.dry_run, len(args.server_url) or 1))
         selected = args.source or fixture_sources()
         pending = []
         inspection_failures = []
@@ -342,16 +372,36 @@ def main():
         failures = list(inspection_failures)
         logger.emit('INFO', '변환 계획: 대상=%d 기존 PDF 제외=%d metadata 실패=%d' %
                     (len(pending), skipped_existing, len(inspection_failures)))
-        for position, (source, product, engine, destination) in enumerate(pending, 1):
-            logger.emit('INFO', '[%d/%d] 변환: source=%s output=%s product=%s engine=%s' %
-                        (position, len(pending), source, destination, product or 'null', engine))
-            if not args.dry_run:
-                try:
-                    convert_one(args, source, engine, destination, logger)
-                except Exception as exc:
-                    message = str(exc)
-                    failures.append(message)
-                    logger.emit('ERROR', message)
+        if not args.dry_run:
+            with tempfile.TemporaryDirectory(prefix='rhwp-mcp-endpoints-') as endpoint_dir:
+                lanes = endpoint_env_files(args, pathlib.Path(endpoint_dir))
+                lane_lock = threading.Lock()
+                next_position = 0
+
+                def convert_next(lane, env_file):
+                    nonlocal next_position
+                    lane_failures = []
+                    while True:
+                        with lane_lock:
+                            if next_position >= len(pending):
+                                return lane_failures
+                            position = next_position + 1
+                            source, product, engine, destination = pending[next_position]
+                            next_position += 1
+                        logger.emit('INFO', '[%d/%d] 변환: lane=%s source=%s output=%s product=%s engine=%s' %
+                                    (position, len(pending), lane, source, destination,
+                                     product or 'null', engine))
+                        try:
+                            convert_one(args, source, engine, destination, logger, env_file, lane)
+                        except Exception as exc:
+                            message = str(exc)
+                            lane_failures.append(message)
+                            logger.emit('ERROR', 'lane=%s %s' % (lane, message))
+
+                with ThreadPoolExecutor(max_workers=len(lanes), thread_name_prefix='oracle-pdf') as executor:
+                    futures = [executor.submit(convert_next, lane, env_file) for lane, env_file in lanes]
+                    for future in futures:
+                        failures.extend(future.result())
         logger.emit('INFO', '배치 완료: 변환 대상=%d 기존 PDF 제외=%d 실패=%d' %
                     (len(pending), skipped_existing, len(failures)))
         return 1 if failures else 0
