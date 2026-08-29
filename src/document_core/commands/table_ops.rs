@@ -3688,15 +3688,21 @@ impl DocumentCore {
         let row_count = table.row_count as usize;
         let col_count = table.col_count as usize;
 
-        // 셀 값 조회 함수: 셀의 첫 문단 텍스트를 숫자로 파싱
+        // 셀 값 조회 함수: 셀의 첫 문단 텍스트를 숫자로 파싱한다. 병합 뒤에는 비주 셀이
+        // 제거되어 cells 배열 인덱스와 row * col_count + col이 일치하지 않으므로, 저장된
+        // 논리 좌표로 찾아야 한다. 병합 셀이 덮는 비-anchor 좌표는 별도 셀이 아니어서
+        // 값 없음으로 처리한다.
         let cells = &table.cells;
         let get_cell = |col: usize, row: usize| -> Option<f64> {
-            let idx = row * col_count + col;
             cells
-                .get(idx)
+                .iter()
+                .find(|cell| cell.row as usize == row && cell.col as usize == col)
                 .and_then(|cell| cell.paragraphs.first())
                 .and_then(|p| parse_cell_number(&p.text))
         };
+        let target_cell_idx = cells
+            .iter()
+            .position(|cell| cell.row as usize == target_row && cell.col as usize == target_col);
 
         let ctx = crate::document_core::table_calc::TableContext {
             row_count,
@@ -3710,7 +3716,11 @@ impl DocumentCore {
 
         // 결과를 셀에 기록
         if write_result {
-            let cell_idx = target_row * col_count + target_col;
+            let cell_idx = target_cell_idx.ok_or_else(|| {
+                HwpError::RenderError(format!(
+                    "결과 셀을 찾을 수 없음: row={target_row}, col={target_col}"
+                ))
+            })?;
             let old_len = self
                 .get_cell_paragraph_ref(section_idx, parent_para_idx, control_idx, cell_idx, 0)
                 .ok_or_else(|| HwpError::RenderError("결과 셀 문단을 찾을 수 없음".into()))?
