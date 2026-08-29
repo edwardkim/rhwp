@@ -80,8 +80,8 @@ test('CanvasView는 대표 preview와 실제 적용 쪽 overlay를 비인쇄 계
   assert.match(source, /renderHeaderFooterEditPreviewToCanvas\(/);
   assert.match(source, /data-rhwp-hf-edit-page/);
   assert.match(source, /getHeaderFooterEditTarget\(pageIdx/);
-  assert.match(source, /'top-left', 'top-right', 'bottom-left', 'bottom-right'/);
-  assert.match(source, /hf-edit-corner is-/);
+  assert.match(source, /drawPageMarginGuideCorners\(band, guideCanvas, renderScale\)/);
+  assert.match(source, /hf-edit-guide-canvas/);
   assert.match(source, /removeHeaderFooterEditOverlays\(\)/);
 });
 
@@ -89,20 +89,13 @@ test('HF 편집 안내는 내용을 덮지 않고 모서리와 텍스트만 표�
   const css = readFileSync(new URL('../src/styles/editor.css', import.meta.url), 'utf8');
   const representative = css.match(/\.hf-edit-region\.is-representative\s*\{([^}]*)\}/)?.[1] ?? '';
   const related = css.match(/\.hf-edit-region\.is-related\s*\{([^}]*)\}/)?.[1] ?? '';
-  const topLeft = css.match(/\.hf-edit-corner\.is-top-left\s*\{([^}]*)\}/)?.[1] ?? '';
-  const bottomRight = css.match(/\.hf-edit-corner\.is-bottom-right\s*\{([^}]*)\}/)?.[1] ?? '';
+  const guideCanvas = css.match(/canvas\.hf-edit-guide-canvas\s*\{([^}]*)\}/)?.[1] ?? '';
 
   assert.doesNotMatch(representative, /background\s*:/);
   assert.doesNotMatch(representative, /border\s*:/);
   assert.doesNotMatch(related, /background\s*:/);
-  assert.match(css, /\.hf-edit-corner\.is-top-left/);
-  assert.match(css, /\.hf-edit-corner\.is-bottom-right/);
-  assert.match(topLeft, /border-right:/);
-  assert.match(topLeft, /border-bottom:/);
-  assert.doesNotMatch(topLeft, /border-(?:top|left):/);
-  assert.match(bottomRight, /border-top:/);
-  assert.match(bottomRight, /border-left:/);
-  assert.doesNotMatch(bottomRight, /border-(?:right|bottom):/);
-  assert.match(css, /calc\(-1 \* var\(--hf-edit-corner-size\)\)/);
-  assert.match(css, /\.hf-edit-badge[\s\S]*color:\s*var\(--focus-ring\)/);
+  assert.match(guideCanvas, /background:\s*transparent/);
+  assert.match(guideCanvas, /transform:\s*none/);
+  assert.doesNotMatch(css, /\.hf-edit-corner/);
+  assert.match(css, /\.hf-edit-badge[\s\S]*color:\s*#333333/);
 });

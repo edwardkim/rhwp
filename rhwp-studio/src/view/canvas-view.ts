@@ -47,6 +47,7 @@ import {
   headerFooterClipPath,
   resolveHeaderFooterBandBox,
 } from './header-footer-edit-overlay.ts';
+import { drawPageMarginGuideCorners } from './page-margin-guides.ts';
 
 /** 문서 교체 중 보여줄 빈 쪽 기본 크기(A4, zoom 1 기준 CSS px). 이전 문서 쪽 크기를 모를 때만 쓴다. */
 const BLANK_PAGE_FALLBACK_SIZE = { width: 794, height: 1123 };
@@ -599,12 +600,12 @@ export class CanvasView {
       this.positionPageElement(layer, pageIdx);
 
       const band = resolveHeaderFooterBandBox(page, state.mode === 'header');
+      const rawDpr = window.devicePixelRatio || 1;
+      const renderScale = clampRenderScale(page, zoom * rawDpr);
+      const dpr = renderScale / (zoom > 0 ? zoom : 1);
       if (isPreview) {
         const previewCanvas = document.createElement('canvas');
         previewCanvas.className = 'hf-edit-preview-canvas';
-        const rawDpr = window.devicePixelRatio || 1;
-        const renderScale = clampRenderScale(page, zoom * rawDpr);
-        const dpr = renderScale / (zoom > 0 ? zoom : 1);
         try {
           this.wasm.renderHeaderFooterEditPreviewToCanvas(
             pageIdx,
@@ -623,17 +624,23 @@ export class CanvasView {
         }
       }
 
+      // 일반 페이지 본문 여백과 같은 Canvas 꺾쇠 렌더러를 그대로 사용한다.
+      // 별도 CSS border를 쓰면 색·두께·확대 배율이 기존 페이지 가이드와 달라진다.
+      const guideCanvas = document.createElement('canvas');
+      guideCanvas.className = 'hf-edit-guide-canvas';
+      guideCanvas.width = Math.max(1, Math.round(page.width * renderScale));
+      guideCanvas.height = Math.max(1, Math.round(page.height * renderScale));
+      guideCanvas.style.width = `${guideCanvas.width / dpr}px`;
+      guideCanvas.style.height = `${guideCanvas.height / dpr}px`;
+      drawPageMarginGuideCorners(band, guideCanvas, renderScale);
+      layer.appendChild(guideCanvas);
+
       const region = document.createElement('div');
       region.className = `hf-edit-region ${isPreview ? 'is-representative' : 'is-related'}`;
       region.style.left = `${band.x * zoom}px`;
       region.style.top = `${band.y * zoom}px`;
       region.style.width = `${band.width * zoom}px`;
       region.style.height = `${band.height * zoom}px`;
-      for (const position of ['top-left', 'top-right', 'bottom-left', 'bottom-right']) {
-        const corner = document.createElement('span');
-        corner.className = `hf-edit-corner is-${position}`;
-        region.appendChild(corner);
-      }
       layer.appendChild(region);
 
       if (isPreview) {

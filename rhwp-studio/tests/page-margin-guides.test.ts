@@ -4,7 +4,10 @@ import { fileURLToPath } from 'node:url';
 import { createServer } from 'vite';
 
 import type { PageInfo } from '../src/core/types.ts';
-import { drawPageMarginGuides } from '../src/view/page-margin-guides.ts';
+import {
+  drawPageMarginGuideCorners,
+  drawPageMarginGuides,
+} from '../src/view/page-margin-guides.ts';
 
 interface ContextCall {
   name: string;
@@ -78,6 +81,19 @@ test('full page render keeps the existing unclipped margin-guide path', () => {
   assert.equal(calls.some((call) => call.name === 'rect'), false);
   assert.equal(calls.some((call) => call.name === 'clip'), false);
   assert.equal(calls.filter((call) => call.name === 'stroke').length, 1);
+});
+
+test('HF band can reuse the exact page-margin corner path', () => {
+  const page = recordingCanvas();
+  const band = recordingCanvas();
+
+  drawPageMarginGuides(pageInfo, page.canvas, 1);
+  drawPageMarginGuideCorners({ x: 60, y: 60, width: 480, height: 680 }, band.canvas, 1);
+
+  const pathCalls = (calls: ContextCall[]) => calls.filter(
+    (call) => call.name === 'moveTo' || call.name === 'lineTo',
+  );
+  assert.deepEqual(pathCalls(band.calls), pathCalls(page.calls));
 });
 
 test('PageRenderer forwards the focused patch to the margin-guide clip', async () => {

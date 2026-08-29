@@ -7,9 +7,18 @@ export interface PageSpaceRect {
   height: number;
 }
 
-/** 편집 용지 여백 가이드라인을 캔버스에 그린다 (4모서리 L자 표시). */
-export function drawPageMarginGuides(
-  pageInfo: PageInfo,
+export const PAGE_MARGIN_GUIDE_COLOR = '#C0C0C0';
+export const PAGE_MARGIN_GUIDE_LINE_WIDTH = 0.3;
+export const PAGE_MARGIN_GUIDE_LENGTH = 15;
+
+/**
+ * 페이지 공간 사각형의 네 모서리에 한컴형 바깥 꺾쇠를 그린다.
+ *
+ * 일반 본문 여백과 머리말/꼬리말 편집 경계가 같은 모양·확대 계약을 공유하도록
+ * 좌표 계산과 페인트 속성을 이 함수 하나에서 관리한다.
+ */
+export function drawPageMarginGuideCorners(
+  rect: PageSpaceRect,
   canvas: HTMLCanvasElement,
   scale: number,
   clip?: PageSpaceRect,
@@ -17,23 +26,11 @@ export function drawPageMarginGuides(
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
 
-  const {
-    width,
-    height,
-    marginLeft,
-    marginRight,
-    marginTop,
-    marginBottom,
-    marginHeader,
-    marginFooter,
-  } = pageInfo;
-  const left = marginLeft;
-  // 한컴 HWP 기준: 본문 시작 = marginHeader + marginTop
-  const top = marginHeader + marginTop;
-  const right = width - marginRight;
-  // 한컴 HWP 기준: 본문 끝 = height - marginFooter - marginBottom
-  const bottom = height - marginFooter - marginBottom;
-  const L = 15;
+  const left = rect.x;
+  const top = rect.y;
+  const right = rect.x + rect.width;
+  const bottom = rect.y + rect.height;
+  const L = PAGE_MARGIN_GUIDE_LENGTH;
 
   ctx.save();
   // WASM 렌더링 후 ctx transform 상태가 불확실하므로 명시적으로 설정
@@ -45,8 +42,8 @@ export function drawPageMarginGuides(
     ctx.rect(clip.x, clip.y, clip.width, clip.height);
     ctx.clip();
   }
-  ctx.strokeStyle = '#C0C0C0';
-  ctx.lineWidth = 0.3;
+  ctx.strokeStyle = PAGE_MARGIN_GUIDE_COLOR;
+  ctx.lineWidth = PAGE_MARGIN_GUIDE_LINE_WIDTH;
   ctx.beginPath();
 
   // 좌상 코너
@@ -71,4 +68,37 @@ export function drawPageMarginGuides(
 
   ctx.stroke();
   ctx.restore();
+}
+
+/** 편집 용지 여백 가이드라인을 캔버스에 그린다 (4모서리 L자 표시). */
+export function drawPageMarginGuides(
+  pageInfo: PageInfo,
+  canvas: HTMLCanvasElement,
+  scale: number,
+  clip?: PageSpaceRect,
+): void {
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+
+  const {
+    width,
+    height,
+    marginLeft,
+    marginRight,
+    marginTop,
+    marginBottom,
+    marginHeader,
+    marginFooter,
+  } = pageInfo;
+  // 한컴 HWP 기준: 본문 시작 = marginHeader + marginTop
+  const top = marginHeader + marginTop;
+  const right = width - marginRight;
+  // 한컴 HWP 기준: 본문 끝 = height - marginFooter - marginBottom
+  const bottom = height - marginFooter - marginBottom;
+  drawPageMarginGuideCorners({
+    x: marginLeft,
+    y: top,
+    width: right - marginLeft,
+    height: bottom - top,
+  }, canvas, scale, clip);
 }
