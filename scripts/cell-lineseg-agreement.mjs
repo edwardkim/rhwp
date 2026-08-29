@@ -5,16 +5,16 @@
 // 캐시로 두고, 프레임이 계산한 값과 정확히 같을 때만 받아들인다(`resolve_stored_line_segs_in_frame`).
 // 캐시가 거부되면 rhwp 가 자기 폭으로 다시 나눈다. 그 재계산이 한/글과 갈리면 행 높이가 틀어진다.
 //
-// **왜 셀만 재는가** — 본문 문단은 `composer::lineseg_compare` 가 이미 잰다(60개 문서
-// 9,180 문단에서 99.43% 일치). 셀 안 문단은 코드 경로가 다른데 재는 도구가 없었고,
-// 첫 측정에서 6,668 문단 중 90.0% 였다. 본문보다 17배 나쁘다.
+// **왜 셀만 재는가** — 본문 문단은 `composer::lineseg_compare` 가 이미 잰다. 셀 안
+// 문단은 코드 경로가 달라 별도 도구가 필요했다.
 //
-// 불일치는 **전부 한 방향**이다 — rhwp 가 줄을 더 많이 만든다(667건 전부, 줄이 적게 나온
-// 경우 0건). 셀 가용 폭을 너무 좁게 잡아 일찍 끊는다는 뜻이다.
-// 근거: `mydocs/report/2026-08-28-cell-min-line-width.md`
-//
-// 짝짓기 한계: `dump` 의 셀 순서와 render tree 의 Cell 순서로 맞춘다. 개수가 다르면
-// 그 문서는 **건너뛴다** — 억지로 맞추면 거짓 불일치가 나온다. 건너뛴 문서 수도 회귀로 센다.
+// **짝짓기** — 종전에는 dump 셀 순서와 render tree Cell 순서를 순번으로 맞추고, 개수가
+// 다르면 문서를 통째로 건너뛰었다(600 문서 중 231 건너뜀 — 셀 구조가 복잡한, 즉 개선과
+// 회귀가 실제로 일어나는 문서가 사각에 몰렸다). 지금은 셀을 (행, 열, 텍스트 접두사)
+// 내용 키로 짝짓는다. 못 짝지은 셀만 `unpaired*` 로 세고 문서는 버리지 않는다.
+// 같은 키가 여럿이면(빈 셀 격자 등) 순서대로 맞춘다. 머리말/꼬리말 표 셀은 쪽마다
+// 렌더가 복제되므로 `unpairedRendered` 가 저장 쪽보다 큰 것이 정상이다 — 첫 복제가
+// 저장 기록과 짝지어지고 나머지는 판정 없이 남는다.
 //
 // 사용:
 //   node scripts/cell-lineseg-agreement.mjs            기준선과 비교, 회귀면 exit 1
@@ -30,55 +30,97 @@ const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 export const REPO_ROOT = path.resolve(SCRIPT_DIR, '..');
 export const BASELINE_PATH = path.join(SCRIPT_DIR, 'cell-lineseg-agreement-baseline.json');
 
-const CELL_LINE = /셀\[(\d+)\].*?paras=(\d+) text="/;
-const LINE_SEG = /ls\[(\d+)\] ts=/g;
+const CELL_LINE = /셀\[\d+\] r=(\d+),c=(\d+) .*?text="([^"]*)"/;
+const TABLE_LINE = /(?:내부표|표): /;
+const PARA_LINE = /p\[\d+\]/;
+const LINE_SEG = /ls\[\d+\] ts=/g;
+const PREFIX = /^\s*\[\d+\]( *)/;
 
-/** `rhwp dump` 출력에서 셀 문단별 저장 줄 수를 뽑는다. */
-export function storedLineCounts(dumpText) {
-  const counts = [];
-  let pendingCell = false;
-  for (const line of dumpText.split('\n')) {
-    if (CELL_LINE.test(line)) {
-      pendingCell = true;
-      continue;
-    }
-    if (pendingCell && line.includes(' p[')) {
-      const n = (line.match(LINE_SEG) ?? []).length;
-      if (n > 0) counts.push(n);
-      pendingCell = false;
-    }
-  }
-  return counts;
+/** 짝짓기 키의 텍스트 부분 — 공백·구분 기호를 걷고 앞 12자만 쓴다. */
+export function textKey(text) {
+  return text.replace(/[\s|]/g, '').slice(0, 12);
 }
 
-/** render tree JSON 에서 Cell 별 TextLine 개수를 뽑는다. */
-export function renderedLineCounts(tree) {
-  const counts = [];
+/**
+ * `rhwp dump` 출력에서 셀별 (행, 열, 텍스트, 저장 줄 수)를 뽑는다.
+ *
+ * 중첩 표가 셀 문단 사이에 끼므로 들여쓰기 스택으로 소유를 판정한다 — `ls` 줄은
+ * 자기보다 얕은 가장 가까운 셀의 것이고, 같은 깊이의 새 항목은 그 셀을 닫는다.
+ */
+export function storedCells(dumpText) {
+  const stack = []; // { indent, cell }
+  const cells = [];
+  for (const line of dumpText.split('\n')) {
+    const m = PREFIX.exec(line);
+    if (!m) continue;
+    const indent = m[1].length;
+    const cellMatch = CELL_LINE.exec(line);
+    if (cellMatch) {
+      while (stack.length > 0 && stack[stack.length - 1].indent >= indent) stack.pop();
+      const cell = { row: Number(cellMatch[1]), col: Number(cellMatch[2]), text: cellMatch[3], lines: 0 };
+      cells.push(cell);
+      stack.push({ indent, cell });
+      continue;
+    }
+    if (LINE_SEG.test(line)) {
+      LINE_SEG.lastIndex = 0;
+      const owner = [...stack].reverse().find((s) => s.indent < indent);
+      if (owner) owner.cell.lines += (line.match(LINE_SEG) ?? []).length;
+      continue;
+    }
+    if (TABLE_LINE.test(line) || PARA_LINE.test(line)) {
+      while (stack.length > 0 && stack[stack.length - 1].indent >= indent) stack.pop();
+    }
+  }
+  return cells;
+}
+
+/** render tree JSON 에서 Cell 별 (행, 열, 텍스트, TextLine 수)를 뽑는다. */
+export function renderedCells(tree) {
+  const cells = [];
   const walk = (node) => {
     if (node.type === 'Cell') {
-      counts.push((node.children ?? []).filter((c) => c.type === 'TextLine').length);
+      const lines = (node.children ?? []).filter((c) => c.type === 'TextLine');
+      const text = lines
+        .map((l) => (l.children ?? []).map((r) => r.text ?? '').join(''))
+        .join('|');
+      cells.push({
+        row: node.row ?? 0,
+        col: node.col ?? 0,
+        text,
+        lines: lines.length,
+      });
     }
     for (const child of node.children ?? []) walk(child);
   };
   walk(tree);
-  return counts;
+  return cells;
 }
 
 /**
- * 저장/렌더 줄 수를 맞대어 집계한다.
+ * 내용 키로 셀을 짝지어 집계한다.
  *
- * 글자가 없는 셀(렌더 0줄)은 세지 않는다 — 줄 나눔 판정이 없는 자리다.
- * 개수가 다른 문서는 `skipped` 로 세고 비교하지 않는다.
+ * 렌더 0줄 셀은 판정하지 않는다(줄 나눔이 없는 자리) — 짝짓기에는 참여시켜
+ * 다른 셀의 상대를 빼앗지 않게 한다. 못 짝지은 셀은 양쪽 각각 센다.
  */
 export function tallyDocument(stored, rendered, totals) {
-  if (stored.length !== rendered.length) {
-    totals.skipped += 1;
-    return;
+  const buckets = new Map();
+  for (const c of stored) {
+    const key = `${c.row}:${c.col}:${textKey(c.text)}`;
+    if (!buckets.has(key)) buckets.set(key, []);
+    buckets.get(key).push(c);
   }
-  for (let i = 0; i < stored.length; i += 1) {
-    if (rendered[i] === 0) continue;
-    totals.paragraphs += 1;
-    const delta = rendered[i] - stored[i];
+  for (const r of rendered) {
+    const key = `${r.row}:${r.col}:${textKey(r.text)}`;
+    const queue = buckets.get(key);
+    if (!queue || queue.length === 0) {
+      totals.unpairedRendered += 1;
+      continue;
+    }
+    const s = queue.shift();
+    if (r.lines === 0) continue;
+    totals.cells += 1;
+    const delta = r.lines - s.lines;
     if (delta === 0) totals.agree += 1;
     else {
       totals.disagree += 1;
@@ -86,13 +128,14 @@ export function tallyDocument(stored, rendered, totals) {
       else totals.renderedFewer += 1;
     }
   }
+  for (const queue of buckets.values()) totals.unpairedStored += queue.length;
 }
 
 export function agreementPercent(totals) {
-  return totals.paragraphs === 0 ? 0 : (totals.agree / totals.paragraphs) * 100;
+  return totals.cells === 0 ? 0 : (totals.agree / totals.cells) * 100;
 }
 
-/** 일치가 줄거나 건너뛴 문서가 늘면 회귀다. */
+/** 일치가 줄거나, 못 짝지은 셀이 늘거나, 측정 모수가 줄면 회귀다. */
 export function compareAgreement(actual, baseline) {
   const regressions = [];
   const improvements = [];
@@ -101,18 +144,29 @@ export function compareAgreement(actual, baseline) {
   if (now < was - 0.005) regressions.push({ what: '일치율', now: now.toFixed(2), was: was.toFixed(2) });
   else if (now > was + 0.005) improvements.push({ what: '일치율', now: now.toFixed(2), was: was.toFixed(2) });
 
-  // 건너뛴 문서가 늘면 모수가 줄어 일치율이 착시로 오른다.
-  if (actual.skipped > baseline.skipped) {
-    regressions.push({ what: '짝 못 맞춘 문서', now: actual.skipped, was: baseline.skipped });
+  const unpairedNow = actual.unpairedStored + actual.unpairedRendered;
+  const unpairedWas = baseline.unpairedStored + baseline.unpairedRendered;
+  if (unpairedNow > unpairedWas) {
+    regressions.push({ what: '못 짝지은 셀', now: unpairedNow, was: unpairedWas });
   }
-  if (actual.paragraphs < baseline.paragraphs) {
-    regressions.push({ what: '측정 문단', now: actual.paragraphs, was: baseline.paragraphs });
+  // 모수가 줄면 일치율이 착시로 오를 수 있다 — "안 재서 통과"를 막는다.
+  if (actual.cells < baseline.cells) {
+    regressions.push({ what: '측정 셀', now: actual.cells, was: baseline.cells });
   }
   return { regressions, improvements };
 }
 
 function emptyTotals() {
-  return { documents: 0, skipped: 0, paragraphs: 0, agree: 0, disagree: 0, renderedMore: 0, renderedFewer: 0 };
+  return {
+    documents: 0,
+    unpairedStored: 0,
+    unpairedRendered: 0,
+    cells: 0,
+    agree: 0,
+    disagree: 0,
+    renderedMore: 0,
+    renderedFewer: 0,
+  };
 }
 
 function sweep() {
@@ -136,10 +190,10 @@ function sweep() {
       if (tree.status !== 0) continue;
       const rendered = [];
       for (const f of readdirSync(out).filter((f) => f.endsWith('.json')).sort()) {
-        rendered.push(...renderedLineCounts(JSON.parse(readFileSync(path.join(out, f), 'utf8'))));
+        rendered.push(...renderedCells(JSON.parse(readFileSync(path.join(out, f), 'utf8'))));
       }
       totals.documents += 1;
-      tallyDocument(storedLineCounts(dump.stdout), rendered, totals);
+      tallyDocument(storedCells(dump.stdout), rendered, totals);
     } finally {
       rmSync(out, { recursive: true, force: true });
     }
@@ -148,8 +202,8 @@ function sweep() {
 }
 
 function report(t) {
-  console.log(`  문서 ${t.documents}개 (짝 못 맞춰 건너뜀 ${t.skipped})`);
-  console.log(`  셀 문단 ${t.paragraphs}개   일치 ${t.agree} = ${agreementPercent(t).toFixed(2)}%`);
+  console.log(`  문서 ${t.documents}개 (못 짝지은 셀: 저장 ${t.unpairedStored} / 렌더 ${t.unpairedRendered})`);
+  console.log(`  측정 셀 ${t.cells}개   일치 ${t.agree} = ${agreementPercent(t).toFixed(2)}%`);
   console.log(`  불일치 ${t.disagree}  (rhwp 가 더 많이 ${t.renderedMore} / 더 적게 ${t.renderedFewer})`);
 }
 
@@ -159,7 +213,7 @@ function main() {
   if (args.includes('--update')) {
     const doc = {
       _comment: [
-        '셀 안 문단의 줄 나눔이 한/글 저장 기록과 일치하는 비율.',
+        '셀 안 문단의 줄 나눔이 한/글 저장 기록과 일치하는 비율 (내용 키 짝짓기).',
         '갱신: node scripts/cell-lineseg-agreement.mjs --update',
         '이 비율은 내려갈 수 없다. 올리는 것이 목표다.',
       ],
