@@ -17,6 +17,8 @@
 //! 외부 한글-only 페이지 붕괴(convert 경로 등)는 `output/poc/fidelity/` 한글 harness 보조.
 
 use std::path::{Path, PathBuf};
+use std::sync::atomic::{AtomicUsize, Ordering};
+use std::time::{Duration, Instant};
 
 use rhwp::diagnostics::hwp5_roundtrip_batch::baseline_check;
 use rhwp::parser::{detect_format, parse_document, FileFormat, ParseError};
@@ -26,8 +28,19 @@ const SAMPLES_ROOT: &str = "samples";
 /// 대형 분리 기준(바이트). 이상은 `baseline_large_samples_roundtrip` 로 분리해
 /// 하네스 병렬 실행을 활용한다.
 const LARGE_THRESHOLD: u64 = 3 * 1024 * 1024;
-const SMALL_PARTITIONS: usize = 8;
+const SMALL_PARTITIONS: usize = 16;
 const LARGE_PARTITIONS: usize = 4;
+const SLOW_SAMPLE_LOG_THRESHOLD: Duration = Duration::from_secs(30);
+
+/// 전용 장기 sentinel 이 담당하는 fixture.
+///
+/// `issue2063_huge_cellbreak_table.hwp` 는 5만+ 셀 CellBreak 표로, roundtrip
+/// 무손실보다 페이지네이션 성능/페이지 pin 이 핵심이다. `tests/issue_2063.rs` 가
+/// 그 축을 직접 검증하므로 전수 roundtrip baseline 에서 중복 조판하지 않는다.
+const DEDICATED_SLOW_FIXTURES: &[(&str, &str)] = &[(
+    "issue2063_huge_cellbreak_table.hwp",
+    "issue_2063 sentinel 이 초대형 CellBreak 표 페이지네이션을 전담",
+)];
 
 /// B등급 (xfail) — (상대 경로, 사유). 사유 없는 등록 금지.
 ///
@@ -115,14 +128,11 @@ fn out_of_scope(bytes: &[u8]) -> Option<&'static str> {
 
 /// baseline 대상(범위 밖/XFAIL 제외)을 검사하고 실패 목록을 단언한다.
 fn run_baseline(size_filter: impl Fn(u64) -> bool, partition: usize, partitions: usize) {
-    let mut failures = Vec::new();
-    let mut eligible = 0usize;
-
     let candidates: Vec<(PathBuf, String)> = collect_samples()
         .into_iter()
         .filter(|(path, rel)| {
             let size = std::fs::metadata(path).map(|m| m.len()).unwrap_or(0);
-            size_filter(size) && !in_list(XFAIL, rel)
+            size_filter(size) && !in_list(XFAIL, rel) && !in_list(DEDICATED_SLOW_FIXTURES, rel)
         })
         .collect();
     let buckets = partition_samples(candidates, partitions);
@@ -135,17 +145,42 @@ fn run_baseline(size_filter: impl Fn(u64) -> bool, partition: usize, partitions:
         "baseline partition {partition}/{partitions} 이 비어 있음"
     );
 
-    for (path, rel) in selected {
-        let bytes = std::fs::read(&path).expect("읽기 실패");
-        if out_of_scope(&bytes).is_some() {
-            continue;
-        }
-        eligible += 1;
-        if let Err(reason) = baseline_check(&bytes) {
-            failures.push(format!("  {rel}: {reason}"));
-        }
-    }
+    let workers = std::thread::available_parallelism()
+        .map(|n| n.get())
+        .unwrap_or(4)
+        .min(8);
+    let queue = std::sync::Mutex::new(selected.into_iter());
+    let failures = std::sync::Mutex::new(Vec::<String>::new());
+    let eligible = AtomicUsize::new(0);
 
+    std::thread::scope(|scope| {
+        for _ in 0..workers {
+            scope.spawn(|| loop {
+                let item = queue.lock().unwrap().next();
+                let Some((path, rel)) = item else { break };
+                let bytes = std::fs::read(&path).expect("읽기 실패");
+                if out_of_scope(&bytes).is_some() {
+                    continue;
+                }
+                eligible.fetch_add(1, Ordering::Relaxed);
+                let started = Instant::now();
+                if let Err(reason) = baseline_check(&bytes) {
+                    failures.lock().unwrap().push(format!("  {rel}: {reason}"));
+                }
+                let elapsed = started.elapsed();
+                if elapsed >= SLOW_SAMPLE_LOG_THRESHOLD {
+                    eprintln!(
+                        "hwp5 baseline slow sample partition {partition}/{partitions}: {:.3}s {rel}",
+                        elapsed.as_secs_f64()
+                    );
+                }
+            });
+        }
+    });
+
+    let eligible = eligible.load(Ordering::Relaxed);
+    let mut failures = failures.into_inner().unwrap();
+    failures.sort();
     assert!(
         eligible > 0,
         "baseline partition {partition}/{partitions} 검사 대상이 없음"
@@ -190,6 +225,14 @@ small_partition_tests!(
     baseline_all_samples_roundtrip_partition_5 => 5,
     baseline_all_samples_roundtrip_partition_6 => 6,
     baseline_all_samples_roundtrip_partition_7 => 7,
+    baseline_all_samples_roundtrip_partition_8 => 8,
+    baseline_all_samples_roundtrip_partition_9 => 9,
+    baseline_all_samples_roundtrip_partition_10 => 10,
+    baseline_all_samples_roundtrip_partition_11 => 11,
+    baseline_all_samples_roundtrip_partition_12 => 12,
+    baseline_all_samples_roundtrip_partition_13 => 13,
+    baseline_all_samples_roundtrip_partition_14 => 14,
+    baseline_all_samples_roundtrip_partition_15 => 15,
 );
 
 large_partition_tests!(
