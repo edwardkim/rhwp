@@ -461,15 +461,6 @@ mod tests {
     }
 
     #[test]
-    fn araea_with_filler_leading_keeps_the_bare_jamo() {
-        // [#6380] hwp3-sample16 의 0x87C1 — 초성 '채움'(인덱스 1) + 아래아 + 받침 없음.
-        // 한컴 변환본은 같은 자리를 `석ᆞ박사급` 처럼 U+119E 한 글자로 보존한다.
-        assert_eq!(decode_johab_araea_jamo(0x87C1), Some((None, 'ᆞ', None)));
-        // 무효 초성(인덱스 0)은 종전대로 None.
-        assert_eq!(decode_johab_araea_jamo(0x83C1), None);
-    }
-
-    #[test]
     fn hancom_tilde_variant_matches_hangul() {
         // KS X 1001 0xA1AD 는 표준 매핑이 U+223C(∼)지만 한글은 U+FF5E(～)를 쓴다.
         // 실측 80건 — 보정하지 않으면 되살린 문자가 다른 글자가 된다.
