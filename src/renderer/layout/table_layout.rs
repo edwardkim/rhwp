@@ -11996,10 +11996,33 @@ impl LayoutEngine {
                             &mut h,
                         );
                     }
+                    if std::env::var("RHWP_DIAG_6368").is_ok() {
+                        let over = h + u.height - avail_height;
+                        if over > 0.0 && over <= 2.0 {
+                            eprintln!(
+                                "DIAG_6368 hard-cut pi={} j={} start={} h={:.2} u_h={:.2} avail={:.2} over={:.2}",
+                                u.para_idx, j, start, h, u.height, avail_height, over
+                            );
+                        }
+                    }
                     hit_hard_break = true;
                     break;
                 }
-                if j > start && h + u.height > avail_height {
+                // [#6368] 기본 용량 컷에도 이웃 특례(atomic 진입 +0.5, trailing
+                // trim +0.5)와 같은 경계 관용을 둔다. hwpctl_API Example 코드
+                // 상자의 마지막 줄은 유닛 합 106.67px vs 예산 106.6px — 부동소수
+                // 끝자리 0.07px 초과만으로 한글과 달리 다음 쪽으로 이월되어
+                // 9개 쪽 경계의 줄 소유가 연쇄로 어긋났다.
+                if j > start && h + u.height > avail_height + 0.5 {
+                    if std::env::var("RHWP_DIAG_6368").is_ok() {
+                        let over = h + u.height - avail_height;
+                        if over <= 2.0 {
+                            eprintln!(
+                                "DIAG_6368 cap-cut pi={} j={} start={} h={:.2} u_h={:.2} avail={:.2} over={:.2}",
+                                u.para_idx, j, start, h, u.height, avail_height, over
+                            );
+                        }
+                    }
                     // [#5920] 마지막으로 놓이는 중첩 표 atom 유닛이 **상자 아래
                     // 보이지 않는 이송 여백** 때문에만 예산을 넘으면 현재 쪽에
                     // 앉힌다. 보이는 상자는 본문 안에 들어가므로 한글과 같은 쪽에
@@ -12246,7 +12269,20 @@ impl LayoutEngine {
                     hit_hard_break = true;
                     break;
                 }
-                if j > start && h + u.height > avail_height {
+                // [#6368] `advance_row_cut_inner` 기본 컷과 같은 +0.5px 경계
+                // 관용 — 부동소수 합산 끝자리(0.07px대) 초과만으로 마지막 줄이
+                // 다음 쪽으로 이월되지 않게 한다. with_row_offsets 경로의 흡수
+                // 판정(12556)은 이미 같은 관용을 쓴다.
+                if j > start && h + u.height > avail_height + 0.5 {
+                    if std::env::var("RHWP_DIAG_6368").is_ok() {
+                        let over = h + u.height - avail_height;
+                        if over <= 2.0 {
+                            eprintln!(
+                                "DIAG_6368 block-cut pi={} j={} start={} h={:.2} u_h={:.2} avail={:.2} over={:.2}",
+                                u.para_idx, j, start, h, u.height, avail_height, over
+                            );
+                        }
+                    }
                     let visible_tail_before_spacer = relaxed_hard_break
                         && Self::visible_tail_fits_before_spacer(&units, j, h, avail_height);
                     if visible_tail_before_spacer {
