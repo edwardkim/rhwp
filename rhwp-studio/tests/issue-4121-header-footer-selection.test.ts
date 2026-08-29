@@ -101,6 +101,104 @@ test('#4121 HF 위아래 이동은 같은 resolved target의 시각 줄만 따�
   }
 });
 
+test('#4121 HF 단어·문단·target 경계 이동은 HF 좌표계를 유지한다', async () => {
+  const vite = await createServer({
+    root: rootDir, appType: 'custom', logLevel: 'silent', server: { middlewareMode: true },
+  });
+  try {
+    const { CursorState } = await vite.ssrLoadModule('/src/engine/cursor.ts');
+    const texts = ['alpha beta', '둘째 문단'];
+    const wasm = {
+      getCursorRectInHeaderFooter: (
+        _sec: number, _header: boolean, _apply: number,
+        paraIdx: number, charOffset: number, preferredPage: number,
+      ) => ({ pageIndex: preferredPage, x: charOffset * 8, y: paraIdx * 20, height: 12 }),
+      getHeaderFooterParaInfo: (_sec: number, _header: boolean, _apply: number, paraIdx: number) =>
+        JSON.stringify({ paraCount: texts.length, charCount: Array.from(texts[paraIdx]).length, text: texts[paraIdx] }),
+    };
+    const cursor: any = new CursorState(wasm);
+    cursor.enterHeaderFooterMode(true, 0, 0, 2);
+    cursor.setHfCursorPosition(0, 10, 2);
+
+    cursor.moveToWordBoundaryInHf(-1);
+    assert.equal(cursor.hfCharOffset, 6, 'Option+Left는 이전 단어 시작으로 이동');
+    cursor.moveToWordBoundaryInHf(-1);
+    assert.equal(cursor.hfCharOffset, 0);
+    cursor.moveToWordBoundaryInHf(1);
+    assert.equal(cursor.hfCharOffset, 6, 'Option+Right는 다음 단어 시작으로 이동');
+
+    cursor.moveToParagraphBoundaryInHf(1);
+    assert.deepEqual([cursor.hfParaIdx, cursor.hfCharOffset], [1, 0]);
+    cursor.moveToHeaderFooterBoundary(1);
+    assert.deepEqual([cursor.hfParaIdx, cursor.hfCharOffset], [1, 5]);
+    cursor.moveToHeaderFooterBoundary(-1);
+    assert.deepEqual([cursor.hfParaIdx, cursor.hfCharOffset], [0, 0]);
+  } finally {
+    await vite.close();
+  }
+});
+
+test('#4121 macOS HF Option+Shift·Command+Shift 탐색은 실제 선택 범위를 만든다', async () => {
+  const vite = await createServer({
+    root: rootDir, appType: 'custom', logLevel: 'silent', server: { middlewareMode: true },
+  });
+  try {
+    const { CursorState } = await vite.ssrLoadModule('/src/engine/cursor.ts');
+    const { onKeyDown } = await vite.ssrLoadModule('/src/engine/input-handler-keyboard.ts');
+    const texts = ['alpha beta', '둘째 문단'];
+    const wasm = {
+      getCursorRectInHeaderFooter: (
+        _sec: number, _header: boolean, _apply: number,
+        paraIdx: number, charOffset: number, preferredPage: number,
+      ) => ({ pageIndex: preferredPage, x: charOffset * 8, y: paraIdx * 20, height: 12 }),
+      getHeaderFooterParaInfo: (_sec: number, _header: boolean, _apply: number, paraIdx: number) =>
+        JSON.stringify({ paraCount: texts.length, charCount: Array.from(texts[paraIdx]).length, text: texts[paraIdx] }),
+    };
+    const cursor: any = new CursorState(wasm);
+    cursor.enterHeaderFooterMode(true, 0, 0, 2);
+    cursor.setHfCursorPosition(0, 10, 2);
+    let caretUpdates = 0;
+    const handler: any = {
+      active: true,
+      cursor,
+      wasm,
+      flushDeferredPaginationIfNeeded: () => {},
+      updateCaret: () => { caretUpdates++; },
+    };
+    const key = (keyName: string, modifiers: Record<string, boolean>) => ({
+      key: keyName,
+      code: keyName,
+      shiftKey: false,
+      ctrlKey: false,
+      metaKey: false,
+      altKey: false,
+      isComposing: false,
+      keyCode: 0,
+      preventDefault: () => {},
+      ...modifiers,
+    });
+
+    (globalThis as any).__rhwpTestPlatformKind = 'mac';
+    onKeyDown.call(handler, key('ArrowLeft', { altKey: true, shiftKey: true }));
+    assert.deepEqual(cursor.getHeaderFooterSelectionOrdered(), {
+      start: { sectionIdx: 0, isHeader: true, applyTo: 0, paraIdx: 0, charOffset: 6 },
+      end: { sectionIdx: 0, isHeader: true, applyTo: 0, paraIdx: 0, charOffset: 10 },
+      preferredPage: 2,
+    });
+
+    cursor.clearSelection();
+    cursor.setHfCursorPosition(1, 3, 2);
+    onKeyDown.call(handler, key('ArrowUp', { metaKey: true, shiftKey: true }));
+    assert.deepEqual(cursor.getHeaderFooterSelectionOrdered()?.start, {
+      sectionIdx: 0, isHeader: true, applyTo: 0, paraIdx: 0, charOffset: 0,
+    });
+    assert.equal(caretUpdates, 2);
+  } finally {
+    delete (globalThis as any).__rhwpTestPlatformKind;
+    await vite.close();
+  }
+});
+
 test('#4121 마우스 HF 선택은 클릭 페이지 target을 확인하고 drag lifecycle을 시작한다', () => {
   const mouse = src('src/engine/input-handler-mouse.ts');
   const click = functionBodyFrom(mouse, 'export function onClick(');
@@ -118,6 +216,7 @@ test('#4121 HF 키보드는 Shift 선택과 Esc 2단계를 제공한다', () => 
   const fnStart = keydown.indexOf('if (this.cursor.isInFootnote())');
   const hf = keydown.slice(hfStart, fnStart);
   assert.match(hf, /e\.shiftKey[\s\S]*setHfAnchor\(\)/);
+  assert.match(hf, /handleHeaderFooterNavigationShortcut/);
   assert.match(hf, /moveVerticalInHf/);
   assert.match(hf, /hasHeaderFooterSelection\(\)/);
   assert.match(hf, /clearSelection\(\)/);

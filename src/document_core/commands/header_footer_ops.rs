@@ -157,28 +157,10 @@ impl DocumentCore {
             )));
         }
 
-        // 새 머리말/꼬리말은 한컴의 빈 HF와 같이 왼쪽 정렬로 시작한다.
-        //
-        // Paragraph::default()의 para_shape_id=0은 "기본 왼쪽 정렬"이 아니라
-        // 현재 문서 DocInfo의 0번 문단 모양을 뜻한다. blank2010의 0번 모양은
-        // 양쪽 정렬이므로, 단일 줄 HF에서 공백 하나가 영역 전체로 늘어나고
-        // 캐럿도 오른쪽 끝으로 이동한다. 가져온 기존 HF의 저장 정렬은 건드리지
-        // 않고, 새로 만드는 빈 문단에만 0번 모양을 복제한 Left 변형을 적용한다.
-        let mut empty_para = Paragraph::new_empty();
-        let left_para_shape_id = self.document.find_or_create_para_shape(
-            empty_para.para_shape_id,
-            &crate::model::style::ParaShapeMods {
-                alignment: Some(crate::model::style::Alignment::Left),
-                ..Default::default()
-            },
-        );
-        empty_para.para_shape_id = left_para_shape_id;
-
-        // find_or_create_para_shape가 새 ID를 만들면 self.styles는 아직 그 ID를 모른다.
-        // 이 상태로 조회·렌더하면 문단 속성 조회는 justify 기본값으로 폴백하고, 실제 HF
-        // 마지막 줄도 공백을 영역 전체로 늘린다. 컨트롤을 붙이기 전에 해석 스타일을
-        // 갱신해 툴바·레이아웃이 같은 Left 모양을 보게 한다.
-        self.rebuild_resolved_styles();
+        // 새 머리말/꼬리말도 본문과 같은 문서 기본 문단 모양(0번)을 사용한다.
+        // blank2010의 0번 모양은 양쪽 정렬이다. 합성 HF에는 저장 LINE_SEG를 미리
+        // 만들지 않아 파일명·쪽번호 같은 동적 필드가 현재 문서 문맥으로 해석되게 한다.
+        let empty_para = Paragraph::default();
 
         // 컨트롤 생성
         let ctrl = if is_header {
@@ -602,15 +584,17 @@ impl DocumentCore {
         };
 
         let para_count = paragraphs.len();
-        let char_count = if hf_para_idx < para_count {
-            paragraphs[hf_para_idx].text.chars().count()
+        let (char_count, text) = if let Some(paragraph) = paragraphs.get(hf_para_idx) {
+            (paragraph.text.chars().count(), paragraph.text.as_str())
         } else {
-            0
+            (0, "")
         };
 
         Ok(format!(
-            "{{\"ok\":true,\"paraCount\":{},\"charCount\":{}}}",
-            para_count, char_count
+            "{{\"ok\":true,\"paraCount\":{},\"charCount\":{},\"text\":\"{}\"}}",
+            para_count,
+            char_count,
+            super::super::helpers::json_escape(text)
         ))
     }
 
@@ -1574,6 +1558,13 @@ mod tests {
 
         let result = core.get_header_footer_native(0, true, 0).unwrap();
         assert!(result.contains("Hello"));
+
+        let info = core
+            .get_header_footer_para_info_native(0, true, 0, 0)
+            .unwrap();
+        let value: serde_json::Value = serde_json::from_str(&info).unwrap();
+        assert_eq!(value["charCount"], 5);
+        assert_eq!(value["text"], "Hello");
     }
 
     /// 필드 삽입의 반환 오프셋은 실제로 삽입된 자리를 가리킨다.

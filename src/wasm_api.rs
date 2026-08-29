@@ -1897,7 +1897,7 @@ impl HwpDocument {
 
     /// 머리말/꼬리말 문단 정보 조회
     ///
-    /// 반환: JSON `{"ok":true,"paraCount":N,"charCount":N}`
+    /// 반환: JSON `{"ok":true,"paraCount":N,"charCount":N,"text":"..."}`
     #[wasm_bindgen(js_name = getHeaderFooterParaInfo)]
     pub fn get_header_footer_para_info(
         &self,

@@ -262,6 +262,71 @@ function handleNavigationShortcut(this: any, e: KeyboardEvent): boolean {
   return false;
 }
 
+function executeHeaderFooterNavigationAction(
+  this: any,
+  action: NavigationAction,
+  shiftKey: boolean,
+): void {
+  if (shiftKey) this.cursor.setHfAnchor();
+  else this.cursor.clearSelection();
+
+  switch (action) {
+    case 'wordBackward':
+      this.cursor.moveToWordBoundaryInHf(-1);
+      break;
+    case 'wordForward':
+      this.cursor.moveToWordBoundaryInHf(1);
+      break;
+    case 'lineStart':
+      this.cursor.moveToParagraphEdgeInHf(-1);
+      break;
+    case 'lineEnd':
+      this.cursor.moveToParagraphEdgeInHf(1);
+      break;
+    case 'paragraphBackward':
+      this.cursor.moveToParagraphBoundaryInHf(-1);
+      break;
+    case 'paragraphForward':
+      this.cursor.moveToParagraphBoundaryInHf(1);
+      break;
+  }
+
+  this.updateCaret();
+}
+
+/** 본문과 같은 플랫폼별 탐색 규칙을 머리말/꼬리말 좌표계에 적용한다. */
+function handleHeaderFooterNavigationShortcut(this: any, e: KeyboardEvent): boolean {
+  const input = toNavigationKeyInput(e);
+  const platform = detectPlatformKind();
+  const action = getNavigationAction(input, platform);
+  if (action) {
+    e.preventDefault();
+    executeHeaderFooterNavigationAction.call(this, action, e.shiftKey);
+    return true;
+  }
+
+  const isTargetBoundary =
+    ((e.metaKey && !e.ctrlKey && !e.altKey)
+      && (e.key === 'ArrowUp' || e.key === 'ArrowDown'))
+    || (((e.ctrlKey || e.metaKey) && !e.altKey)
+      && (e.key === 'Home' || e.key === 'End'));
+  if (isTargetBoundary) {
+    e.preventDefault();
+    if (e.shiftKey) this.cursor.setHfAnchor();
+    else this.cursor.clearSelection();
+    const towardStart = e.key === 'ArrowUp' || e.key === 'Home';
+    this.cursor.moveToHeaderFooterBoundary(towardStart ? -1 : 1);
+    this.updateCaret();
+    return true;
+  }
+
+  if (shouldSuppressUnmappedNavigation(input, platform)) {
+    e.preventDefault();
+    return true;
+  }
+  return false;
+}
+
 function positionAfterPasteResult(pos: DocumentPosition, parsed: any): DocumentPosition {
   const newPos: DocumentPosition = {
     sectionIndex: pos.sectionIndex,
@@ -760,7 +825,10 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
       return;
     }
 
-    // 방향키 → 머리말/꼬리말 내 이동. Shift는 현재 위치를 HF anchor로 고정한다.
+    if (handleHeaderFooterNavigationShortcut.call(this, e)) return;
+
+    // 수정자에 별도 의미가 없는 방향키 → 머리말/꼬리말 내 시각 이동.
+    // Shift는 현재 위치를 HF anchor로 고정해 범위를 확장한다.
     if (
       e.key === 'ArrowLeft'
       || e.key === 'ArrowRight'
@@ -775,18 +843,6 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
       } else {
         this.cursor.moveVerticalInHf(e.key === 'ArrowUp' ? -1 : 1);
       }
-      this.updateCaret();
-      return;
-    }
-
-    // Home/End → 머리말/꼬리말 내 줄 처음·끝. 이 분기가 없으면 키가 여기서 삼켜져
-    // 아래 본문 navigation 경로에 닿지 못하고 무동작이 된다.
-    // Ctrl 조합(문서 처음/끝)은 본문 명령이라 이 모드에서 가로채지 않는다.
-    if ((e.key === 'Home' || e.key === 'End') && !e.ctrlKey && !e.metaKey && !e.altKey) {
-      e.preventDefault();
-      if (e.shiftKey) this.cursor.setHfAnchor();
-      else this.cursor.clearSelection();
-      this.cursor.moveToParagraphEdgeInHf(e.key === 'Home' ? -1 : 1);
       this.updateCaret();
       return;
     }

@@ -2019,6 +2019,98 @@ export class CursorState {
     this.updateRect();
   }
 
+  /** 머리말/꼬리말 내 단어 경계로 이동한다 (Option/Ctrl+←/→). */
+  moveToWordBoundaryInHf(direction: -1 | 1): void {
+    if (this._headerFooterMode === 'none') return;
+    const isHeader = this._headerFooterMode === 'header';
+
+    try {
+      const info = JSON.parse(this.wasm.getHeaderFooterParaInfo(
+        this._hfSectionIdx, isHeader, this._hfApplyTo, this._hfParaIdx,
+      ));
+      const charCount = Number(info.charCount);
+      const text = typeof info.text === 'string' ? info.text : '';
+
+      if (direction > 0) {
+        if (this._hfCharOffset >= charCount) {
+          this.moveHorizontalInHf(1);
+          return;
+        }
+        const remaining = Array.from(text).slice(this._hfCharOffset, this._hfCharOffset + 50).join('');
+        this._hfCharOffset = Math.min(
+          charCount,
+          this._hfCharOffset + findWordBoundaryForward(remaining),
+        );
+      } else {
+        if (this._hfCharOffset <= 0) {
+          this.moveHorizontalInHf(-1);
+          return;
+        }
+        const start = Math.max(0, this._hfCharOffset - 50);
+        const preceding = Array.from(text).slice(start, this._hfCharOffset).join('');
+        this._hfCharOffset = start + findWordBoundaryBackward(preceding);
+      }
+      this.updateRect();
+    } catch {
+      // WASM 호출 실패 시 현재 위치를 유지한다.
+    }
+  }
+
+  /** 머리말/꼬리말의 이전/다음 문단 경계로 이동한다 (Ctrl+↑/↓). */
+  moveToParagraphBoundaryInHf(direction: -1 | 1): void {
+    if (this._headerFooterMode === 'none') return;
+    const isHeader = this._headerFooterMode === 'header';
+
+    try {
+      const info = JSON.parse(this.wasm.getHeaderFooterParaInfo(
+        this._hfSectionIdx, isHeader, this._hfApplyTo, this._hfParaIdx,
+      ));
+      const paraCount = Number(info.paraCount);
+      if (direction < 0) {
+        if (this._hfCharOffset > 0) {
+          this._hfCharOffset = 0;
+        } else if (this._hfParaIdx > 0) {
+          this._hfParaIdx--;
+          this._hfCharOffset = 0;
+        }
+      } else if (this._hfParaIdx + 1 < paraCount) {
+        this._hfParaIdx++;
+        this._hfCharOffset = 0;
+      } else {
+        this._hfCharOffset = Number(info.charCount);
+      }
+      this.updateRect();
+    } catch {
+      // WASM 호출 실패 시 현재 위치를 유지한다.
+    }
+  }
+
+  /** 머리말/꼬리말 편집 target 전체의 처음/끝으로 이동한다 (Cmd+↑/↓, Ctrl+Home/End). */
+  moveToHeaderFooterBoundary(edge: -1 | 1): void {
+    if (this._headerFooterMode === 'none') return;
+    const isHeader = this._headerFooterMode === 'header';
+
+    try {
+      const currentInfo = JSON.parse(this.wasm.getHeaderFooterParaInfo(
+        this._hfSectionIdx, isHeader, this._hfApplyTo, this._hfParaIdx,
+      ));
+      if (edge < 0) {
+        this._hfParaIdx = 0;
+        this._hfCharOffset = 0;
+      } else {
+        const lastPara = Math.max(0, Number(currentInfo.paraCount) - 1);
+        const lastInfo = JSON.parse(this.wasm.getHeaderFooterParaInfo(
+          this._hfSectionIdx, isHeader, this._hfApplyTo, lastPara,
+        ));
+        this._hfParaIdx = lastPara;
+        this._hfCharOffset = Number(lastInfo.charCount);
+      }
+      this.updateRect();
+    } catch {
+      // WASM 호출 실패 시 현재 위치를 유지한다.
+    }
+  }
+
   /** 머리말/꼬리말 내 수평 이동 */
   moveHorizontalInHf(delta: number): void {
     if (this._headerFooterMode === 'none') return;

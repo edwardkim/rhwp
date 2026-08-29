@@ -36,7 +36,7 @@ fn header_text(doc: &HwpDocument) -> String {
 }
 
 #[test]
-fn newly_created_header_and_footer_start_left_aligned() {
+fn newly_created_header_and_footer_use_body_default_justification() {
     let mut doc = HwpDocument::create_empty();
     doc.create_blank_document_native().expect("blank2010 생성");
     for (is_header, apply_to) in [(true, 0), (false, 1), (true, 2)] {
@@ -72,8 +72,8 @@ fn newly_created_header_and_footer_start_left_aligned() {
         let shape = &doc.document().doc_info.para_shapes[paragraph.para_shape_id as usize];
         assert_eq!(
             shape.alignment,
-            Alignment::Left,
-            "새 HF는 종류와 적용 범위에 관계없이 왼쪽 정렬로 시작해야 함: header={is_header}, apply={apply_to:?}"
+            Alignment::Justify,
+            "새 HF는 종류와 적용 범위에 관계없이 본문 기본 양쪽 정렬로 시작해야 함: header={is_header}, apply={apply_to:?}"
         );
 
         let props = doc
@@ -81,8 +81,8 @@ fn newly_created_header_and_footer_start_left_aligned() {
             .expect("HF 문단 속성 조회");
         let props: serde_json::Value = serde_json::from_str(&props).expect("HF 문단 속성 JSON");
         assert_eq!(
-            props["alignment"], "left",
-            "생성 직후 해석 스타일 캐시도 새 HF의 왼쪽 정렬을 노출해야 함"
+            props["alignment"], "justify",
+            "생성 직후 문단 속성도 본문 기본 양쪽 정렬을 노출해야 함"
         );
     }
 
