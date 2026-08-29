@@ -3,6 +3,9 @@
 
 use std::path::Path;
 
+use rhwp::model::control::Control;
+use rhwp::model::header_footer::HeaderFooterApply;
+use rhwp::model::style::Alignment;
 use rhwp::wasm_api::HwpDocument;
 
 fn sample() -> Vec<u8> {
@@ -30,6 +33,43 @@ fn header_text(doc: &HwpDocument) -> String {
         .expect("머리말 조회");
     let value: serde_json::Value = serde_json::from_str(&raw).expect("머리말 JSON");
     value["text"].as_str().unwrap_or_default().to_string()
+}
+
+#[test]
+fn newly_created_header_and_footer_start_left_aligned() {
+    let mut doc = HwpDocument::from_bytes(&sample()).expect("parse");
+    for (is_header, apply_to) in [(true, 0), (false, 1), (true, 2)] {
+        doc.create_header_footer_native(0, is_header, apply_to)
+            .expect("HF 생성");
+    }
+
+    let expected = [
+        (true, HeaderFooterApply::Both),
+        (false, HeaderFooterApply::Even),
+        (true, HeaderFooterApply::Odd),
+    ];
+    for (is_header, apply_to) in expected {
+        let paragraph = doc.document().sections[0]
+            .paragraphs
+            .iter()
+            .flat_map(|paragraph| paragraph.controls.iter())
+            .find_map(|control| match control {
+                Control::Header(header) if is_header && header.apply_to == apply_to => {
+                    header.paragraphs.first()
+                }
+                Control::Footer(footer) if !is_header && footer.apply_to == apply_to => {
+                    footer.paragraphs.first()
+                }
+                _ => None,
+            })
+            .expect("생성한 HF 문단");
+        let shape = &doc.document().doc_info.para_shapes[paragraph.para_shape_id as usize];
+        assert_eq!(
+            shape.alignment,
+            Alignment::Left,
+            "새 HF는 종류와 적용 범위에 관계없이 왼쪽 정렬로 시작해야 함: header={is_header}, apply={apply_to:?}"
+        );
+    }
 }
 
 #[test]

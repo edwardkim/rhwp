@@ -157,8 +157,22 @@ impl DocumentCore {
             )));
         }
 
-        // 빈 문단 생성
-        let empty_para = Paragraph::default();
+        // 새 머리말/꼬리말은 한컴의 빈 HF와 같이 왼쪽 정렬로 시작한다.
+        //
+        // Paragraph::default()의 para_shape_id=0은 "기본 왼쪽 정렬"이 아니라
+        // 현재 문서 DocInfo의 0번 문단 모양을 뜻한다. blank2010의 0번 모양은
+        // 양쪽 정렬이므로, 단일 줄 HF에서 공백 하나가 영역 전체로 늘어나고
+        // 캐럿도 오른쪽 끝으로 이동한다. 가져온 기존 HF의 저장 정렬은 건드리지
+        // 않고, 새로 만드는 빈 문단에만 0번 모양을 복제한 Left 변형을 적용한다.
+        let mut empty_para = Paragraph::new_empty();
+        let left_para_shape_id = self.document.find_or_create_para_shape(
+            empty_para.para_shape_id,
+            &crate::model::style::ParaShapeMods {
+                alignment: Some(crate::model::style::Alignment::Left),
+                ..Default::default()
+            },
+        );
+        empty_para.para_shape_id = left_para_shape_id;
 
         // 컨트롤 생성
         let ctrl = if is_header {
