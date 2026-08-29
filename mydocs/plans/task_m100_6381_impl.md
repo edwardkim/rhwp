@@ -5,8 +5,8 @@
 - **작성일**: 2026-08-29 KST
 - **작업 브랜치**: `task_m100_6381-test-caption-false-pass`
 - **착수 기준**: `upstream/devel@2bcf9b261c3b761d114bc2b3a35ed85ccd1e461e`
-- **현재 기준**: `upstream/devel@f5440811042f9c5ab7580d3a64204cf1d1e39dd8`
-- **구현 상태**: fail-closed 구현과 최신 devel 기준 전체 로컬 검증 완료
+- **현재 기준**: `upstream/devel@2deb3dd6163d83d2932ab58ac5a0bf61bfce6d31`
+- **구현 상태**: review 보정과 최신 devel 기준 전체 로컬 검증 완료
 
 ## 1. 구현 불변식
 
@@ -23,6 +23,8 @@
 | --- | --- | --- |
 | [`src/cli/commands/caption_validation.rs`](../../src/cli/commands/caption_validation.rs) | mutation·verification 실패 집계, 정확한 caption 비교, fail-closed 반환 | 성공 대상·속성·SVG 이름 |
 | [`tests/issue_cli_test_caption_no_panic.rs`](../../tests/issue_cli_test_caption_no_panic.rs) | all-fail·partial-fail·all-pass subprocess 회귀 | exit/stdout/stderr/산출물 |
+| [`tests/cases/cli_catalog_contract.rs`](../../tests/cases/cli_catalog_contract.rs) | verifier와 setter의 picture·가상 문단 해석 topology 고정 | `Shape(Picture)`·Endnote 범위 |
+| `src/cli/metadata/{help/protocol.rs,capabilities/extended.rs}` | 고정 fixture 전용 자기서술 | help·capabilities 일치 |
 | [`mydocs/manual/cli_commands.md`](../manual/cli_commands.md) | `test-caption` 성공·검증 실패 의미 명시 | 공통 exit code 표 |
 
 ## 3. 테스트 fixture 전략
@@ -106,3 +108,12 @@ integration suite 준비가 필요한 review worktree 검증에서는 먼저
   배정 `regression_suite_018`에서 focused 3/3, clippy와 전체 integration 8,660/8,660을 재통과했다.
 - 작업지시자 승인 뒤 code candidate `988b9c85f`를 push하고 Draft PR #6391을 생성했다. 번호 기반
   self-review는 [PR #6391 검토 문서](../pr/archives/pr_6391_review.md)로 trailing한다.
+- review에서 확인한 verification 해석 범위를 setter와 맞췄다. 본문 뒤 Endnote 문단의 가상 인덱스와
+  `Control::Shape(ShapeObject::Picture)`도 같은 그림으로 읽으며, 기대값 상수와 JSON 생성을 한 곳에 모았다.
+- 성공 subprocess 회귀는 `caption=Some(...)` 네 건을 요구해 verification 블록이 빠지면 실패한다.
+  별도 model test는 `Shape(Picture)`에 설정한 direction·vertical alignment·width·spacing의 재조회를
+  고정하고, CLI catalog contract는 verifier topology가 setter 범위에서 다시 좁아지는 회귀를 막는다.
+- help·capabilities·CLI 정본은 `test-caption`을 “고정 fixture 캡션 라운드트립 검증”으로 설명한다.
+- 최신 `upstream/devel@2deb3dd61` merge 뒤 focused 5/5, CLI catalog 20/20, native·WASM32·workspace
+  all-target Clippy, workspace build와 전체 integration 8,686/8,686을 통과했다. 보정 code candidate는
+  `d8ab820b0`이다.

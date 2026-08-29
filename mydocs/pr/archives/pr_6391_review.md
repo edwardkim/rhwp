@@ -27,10 +27,10 @@ author: postmelee
 | PR | [#6391](https://github.com/edwardkim/rhwp/pull/6391) |
 | 관련 issue | [#6381](https://github.com/edwardkim/rhwp/issues/6381) |
 | base / head | `devel` / `task_m100_6381-test-caption-false-pass` |
-| 기준 devel | `f5440811042f9c5ab7580d3a64204cf1d1e39dd8` |
-| code candidate | `988b9c85f021a082c96713ce16c51c97ba7f4864` |
-| 규모 | 10 files, `+827/-69`, 8 commits |
-| 원격 상태 | Draft, `MERGEABLE`; code candidate required checks 성공, trailing push 전 |
+| 기준 devel | `2deb3dd6163d83d2932ab58ac5a0bf61bfce6d31` |
+| code candidate | `d8ab820b065618966dfb67969cf2c1b1ba26992a` |
+| 규모 | 최초 구현 뒤 review 보정 6 files, trailing 기록 별도 |
+| 원격 상태 | Open; 보정 candidate·trailing push와 최신 required checks 확인 전 |
 
 PR은 내부 진단 명령 `test-caption`이 고정 fixture의 캡션 변경을 검증하지 못해도 SVG와 `완료`를 남기고
 exit 0을 반환하던 false-pass를 제거한다. CLI command, 세 subprocess 회귀, 내부 CLI 문서와 작업 증적만
@@ -47,21 +47,38 @@ exit 1로 돌리고 렌더·출력 폴더 생성 전에 종료하므로, 일부 
 네 대상이 모두 통과할 때의 기존 stdout, SVG 파일명과 `완료`는 유지한다.
 
 회귀는 고정 대상이 없는 임의 실문서, 일부만 유효한 합성 HWP, 네 대상이 모두 유효한 합성 HWP를 분리한다.
-합성 fixture는 공개 `HwpDocument` API와 기존 PNG asset을 사용하고 새 binary fixture를 추가하지 않는다.
+성공 경로는 verification 증적 네 건까지 요구한다. 합성 fixture는 공개 `HwpDocument` API와 기존 PNG
+asset을 사용하고 새 binary fixture를 추가하지 않는다.
+
+## review 보정
+
+[review comment](https://github.com/edwardkim/rhwp/pull/6391#issuecomment-5464292086)를 다음 순서로 반영했다.
+
+- **해석 경계**: verifier가 본문 `Control::Picture`만 받던 결함을 고쳐 setter와 같이
+  `Shape(Picture)`와 Endnote 가상 문단도 해석한다.
+- **회귀 증명력**: 성공 CLI test가 `caption=Some(...)` 네 건을 요구해 verification block 삭제를
+  잡는다. `Shape(Picture)` setter/getter 필드와 verifier topology도 별도 test로 고정한다.
+- **구조 정리**: expectation·폭·간격과 JSON 생성을 한 곳에 모으고 vector 크기를 expectation 수에서
+  계산하며 section lookup과 임시 폴더 정리를 단순화했다.
+- **자기서술**: help·capabilities·CLI 정본에 “고정 fixture 캡션 라운드트립 검증”을 명시했다.
+
+HWP5 export가 `Shape(Picture)`를 `Control::Picture`로 정규화해 subprocess fixture로 해당 표현을 보존할 수
+없었다. 따라서 존재하지 않는 파일 왕복을 가장하지 않고 model setter/getter와 verifier topology의 두
+계약으로 분리했다.
 
 ## 완료한 검증
 
-검증 기준은 최신 devel merge 뒤 code candidate의 제품 tree인 `143e3032d`다. 뒤의 `988b9c85f`는 검증
-결과만 갱신한 docs-only checkpoint다.
+검증 기준은 최신 devel merge `0240e043e` 뒤 보정 code candidate `d8ab820b0`이다.
 
 | 검증 | 결과 |
 | --- | --- |
-| focused nextest | 3/3 pass, run `9178a2dd-86d3-4842-a44b-cfe6e6132b96` |
-| 전체 integration nextest | 8,660/8,660 pass, 43 skipped, 4 slow |
-| 전체 nextest run | `f5122360-2c28-47fa-a8a6-0824129d7d47` |
-| clippy | `cargo clippy --locked --all-targets --target-dir target/pr-review -- -D warnings` 통과 |
+| focused `test-caption` | 5/5 pass, run `bd1bcaa0-dd48-415d-ab11-5a325cdd718d` |
+| focused CLI catalog | 20/20 pass, run `c7ba0e7a-ec8f-4b5b-a9ca-4643d1a6078e` |
+| 전체 integration nextest | 8,686/8,686 pass, 43 skipped, 1 slow |
+| 전체 nextest run | `554b5740-99fd-450e-982d-62c9c8810420` |
+| lint·build | native/WASM32/workspace all-target Clippy와 workspace build 통과 |
 | format | `cargo fmt --all`, `cargo fmt --all -- --check` 통과 |
-| integration manifest | 1,032 sources / 4,533 attrs / 48/48 targets, 정책 검사 통과 |
+| integration manifest | 1,032 sources / 4,535 attrs / 48/48 targets, 정책 검사 통과 |
 | source-side unit tier | 4,221 tests / 299 modules, 정책 검사 통과 |
 | 문서·diff | Markdown 상대 링크와 `git diff --check` 통과 |
 
@@ -79,7 +96,7 @@ sweep은 적용 대상이 아니다.
 
 ## 원격 조건과 권고
 
-code candidate `988b9c85f`의 required GitHub Actions는 모두 성공했다.
+최초 code candidate `988b9c85f`의 required GitHub Actions는 모두 성공했다.
 
 - [CI run 33264074427](https://github.com/edwardkim/rhwp/actions/runs/33264074427): lint, archive A-D,
   shard A-D와 Build & Test aggregate 성공
@@ -88,7 +105,5 @@ code candidate `988b9c85f`의 required GitHub Actions는 모두 성공했다.
 - [Adapter inter-diff run 33264074420](https://github.com/edwardkim/rhwp/actions/runs/33264074420): 성공
 - [Proptest roundtrip run 33264074417](https://github.com/edwardkim/rhwp/actions/runs/33264074417): 성공
 
-이 문서는 같은 PR의 trailing docs-only commit으로 추가한다. 최신 trailing head의 review-only fast-pass,
-required aggregate와 mergeability를 다시 확인하기 전에는 merge하지 않는다.
-
-현재 PR은 작업지시자가 승인한 Draft다. Draft 해제와 실제 merge는 각각 별도 작업지시자 승인 대상이다.
+이 문서는 같은 PR의 보정 trailing docs-only commit으로 갱신한다. 최신 trailing head의 required aggregate와
+mergeability를 다시 확인하기 전에는 merge하지 않는다. 실제 merge는 별도 작업지시자 승인 대상이다.
