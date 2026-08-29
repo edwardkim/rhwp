@@ -62,6 +62,52 @@ fn merge_border(a: &BorderLine, b: &BorderLine) -> BorderLine {
     }
 }
 
+/// 병합/숨김 등으로 편집된 셀의 span 내부 위치를 "이미 처리됨"으로 표시한다.
+/// h_edges/v_edges 그리드는 각 셀의 자기 span 경계에만 채워지므로, 병합된 셀 내부의
+/// 미기록 슬롯(`None`)은 "실제로 선이 없음"과 "병합으로 사라진 경계"를 구분하지 못한다.
+/// 투명선 가이드가 후자에도 그려지는 것을 막기 위해 별도 커버리지 그리드에 기록한다.
+pub(crate) fn mark_cell_span_interior_covered(
+    h_covered: &mut [Vec<bool>],
+    v_covered: &mut [Vec<bool>],
+    col: usize,
+    row: usize,
+    col_span: usize,
+    row_span: usize,
+) {
+    let h_rows = h_covered.len();
+    let v_cols = v_covered.len();
+    let col_count = if h_rows > 0 {
+        h_covered[0].len()
+    } else {
+        return;
+    };
+    let row_count = if v_cols > 0 {
+        v_covered[0].len()
+    } else {
+        return;
+    };
+    let end_col = (col + col_span).min(col_count);
+    let end_row = (row + row_span).min(row_count);
+    if row_span > 1 {
+        for r in (row + 1)..end_row {
+            if r < h_rows {
+                for c in col..end_col {
+                    h_covered[r][c] = true;
+                }
+            }
+        }
+    }
+    if col_span > 1 {
+        for c in (col + 1)..end_col {
+            if c < v_cols {
+                for r in row..end_row {
+                    v_covered[c][r] = true;
+                }
+            }
+        }
+    }
+}
+
 /// 엣지 그리드 슬롯에 테두리를 병합 저장
 fn merge_edge_slot(slot: &mut Option<BorderLine>, border: &BorderLine) {
     if border.line_type == BorderLineType::None {
@@ -610,6 +656,8 @@ pub(crate) fn render_transparent_borders(
     tree: &mut PageLayoutContext,
     h_edges: &[Vec<Option<BorderLine>>],
     v_edges: &[Vec<Option<BorderLine>>],
+    h_covered: &[Vec<bool>],
+    v_covered: &[Vec<bool>],
     row_col_x: &[Vec<f64>],
     row_y: &[f64],
     table_x: f64,
@@ -620,6 +668,18 @@ pub(crate) fn render_transparent_borders(
     let width = 0.4_f64;
     let dash = StrokeDash::Dot;
     let row_count = if row_y.len() > 1 { row_y.len() - 1 } else { 0 };
+    let is_h_covered = |ri: usize, ci: usize| -> bool {
+        h_covered
+            .get(ri)
+            .and_then(|row| row.get(ci).copied())
+            .unwrap_or(false)
+    };
+    let is_v_covered = |ci: usize, ri: usize| -> bool {
+        v_covered
+            .get(ci)
+            .and_then(|col| col.get(ri).copied())
+            .unwrap_or(false)
+    };
 
     // 수평 투명 엣지
     for (ri, h_row) in h_edges.iter().enumerate() {
@@ -629,7 +689,7 @@ pub(crate) fn render_transparent_borders(
         let mut seg_start: Option<usize> = None;
 
         for (ci, edge_opt) in h_row.iter().enumerate() {
-            if edge_opt.is_none() {
+            if edge_opt.is_none() && !is_h_covered(ri, ci) {
                 if seg_start.is_none() {
                     seg_start = Some(ci);
                 }
@@ -662,7 +722,7 @@ pub(crate) fn render_transparent_borders(
                     .get(ri)
                     .and_then(|rx| rx.get(ci).copied())
                     .unwrap_or(0.0);
-            if edge_opt.is_none() {
+            if edge_opt.is_none() && !is_v_covered(ci, ri) {
                 if seg_start.is_none() {
                     seg_start = Some(ri);
                     seg_x = x;

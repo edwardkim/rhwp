@@ -8,7 +8,8 @@ use super::super::render_tree::*;
 use super::super::style_resolver::ResolvedStyleSet;
 use super::super::{hwpunit_to_px, px_to_hwpunit, ShapeStyle};
 use super::border_rendering::{
-    build_row_col_x, collect_cell_borders, render_edge_borders, render_transparent_borders,
+    build_row_col_x, collect_cell_borders, mark_cell_span_interior_covered, render_edge_borders,
+    render_transparent_borders,
 };
 use super::table_layout::{
     calc_nested_split_rows, effective_margin_left_line, extend_completed_nested_table_border_clips,
@@ -226,6 +227,7 @@ impl CellComposedStore {
         styles: &ResolvedStyleSet,
         dpi: f64,
         legacy_hwp3_stored_geometry: bool,
+        repair_stored_overflow: bool,
     ) -> &ComposedParagraph {
         match self {
             CellComposedStore::Eager(v) => &v[cpi],
@@ -233,21 +235,27 @@ impl CellComposedStore {
                 if slots[cpi].is_none() {
                     let para = &cell.paragraphs[cpi];
                     let mut comp = compose_paragraph(para);
-                    crate::renderer::composer::recompose_cell_lines_in_frame(
-                        &mut comp,
-                        para,
-                        crate::renderer::composer::ParagraphBox::content_width_px(inner_width, dpi),
-                        styles,
-                        dpi,
-                        legacy_hwp3_stored_geometry,
-                    );
                     if cell.text_direction == 0 {
-                        crate::renderer::composer::recompose_stored_single_line_if_overflowing(
+                        crate::renderer::composer::recompose_horizontal_cell_lines_for_width(
                             &mut comp,
                             para,
                             inner_width,
                             styles,
                             dpi,
+                            legacy_hwp3_stored_geometry,
+                            repair_stored_overflow,
+                        );
+                    } else {
+                        crate::renderer::composer::recompose_cell_lines_in_frame(
+                            &mut comp,
+                            para,
+                            crate::renderer::composer::ParagraphBox::content_width_px(
+                                inner_width,
+                                dpi,
+                            ),
+                            styles,
+                            dpi,
+                            legacy_hwp3_stored_geometry,
                         );
                     }
                     slots[cpi] = Some(comp);
@@ -265,6 +273,7 @@ impl CellComposedStore {
         styles: &ResolvedStyleSet,
         dpi: f64,
         legacy_hwp3_stored_geometry: bool,
+        repair_stored_overflow: bool,
     ) {
         if matches!(self, CellComposedStore::Lazy(_)) {
             let mut v = Vec::with_capacity(cell.paragraphs.len());
@@ -277,6 +286,7 @@ impl CellComposedStore {
                         styles,
                         dpi,
                         legacy_hwp3_stored_geometry,
+                        repair_stored_overflow,
                     )
                     .clone(),
                 );
@@ -747,6 +757,8 @@ impl LayoutEngine {
         render_row_y: &[f64],
         h_edges: &mut Vec<Vec<Option<BorderLine>>>,
         v_edges: &mut Vec<Vec<Option<BorderLine>>>,
+        h_span_covered: &mut [Vec<bool>],
+        v_span_covered: &mut [Vec<bool>],
         measured_table: Option<&MeasuredTable>,
         enclosing_cell_ctx: Option<&CellContext>,
         clamp_header_negative_para_offset: bool,
@@ -968,25 +980,27 @@ impl LayoutEngine {
                 // 결과를 셀 가용 너비 (inner_width) 에 맞춰 다중 ComposedLine 으로 재분할.
                 for (cpi, para) in cell.paragraphs.iter().enumerate() {
                     if let Some(comp) = composed_paras.get_mut(cpi) {
-                        crate::renderer::composer::recompose_cell_lines_in_frame(
-                            comp,
-                            para,
-                            crate::renderer::composer::ParagraphBox::content_width_px(
-                                inner_width_for_recompose,
-                                self.dpi,
-                            ),
-                            styles,
-                            self.dpi,
-                            self.profile.get().legacy_hwp3_stored_geometry(),
-                        );
-                        // [#2291] 부실 저장(ls==1·실폭 초과) 재분할 — 가로쓰기 셀 한정.
                         if cell.text_direction == 0 {
-                            crate::renderer::composer::recompose_stored_single_line_if_overflowing(
+                            crate::renderer::composer::recompose_horizontal_cell_lines_for_width(
                                 comp,
                                 para,
                                 inner_width_for_recompose,
                                 styles,
                                 self.dpi,
+                                self.profile.get().legacy_hwp3_stored_geometry(),
+                                self.profile.get().native_hwp5_layout(),
+                            );
+                        } else {
+                            crate::renderer::composer::recompose_cell_lines_in_frame(
+                                comp,
+                                para,
+                                crate::renderer::composer::ParagraphBox::content_width_px(
+                                    inner_width_for_recompose,
+                                    self.dpi,
+                                ),
+                                styles,
+                                self.dpi,
+                                self.profile.get().legacy_hwp3_stored_geometry(),
                             );
                         }
                     }
@@ -1288,6 +1302,7 @@ impl LayoutEngine {
                     styles,
                     self.dpi,
                     self.profile.get().legacy_hwp3_stored_geometry(),
+                    self.profile.get().native_hwp5_layout(),
                 );
                 let vert_inner_area = LayoutRect {
                     x: inner_x,
@@ -1310,7 +1325,7 @@ impl LayoutEngine {
                     enclosing_cell_ctx.cloned(),
                 );
                 // 세로쓰기 셀도 테두리를 엣지 그리드에 수집
-                if let Some(bs) = border_style {
+                {
                     let cell_end_row_idx = cell_row + cell.row_span as usize;
                     let first_ri = render_rows.iter().position(|&r| r == cell_row).or_else(|| {
                         render_rows
@@ -1321,14 +1336,24 @@ impl LayoutEngine {
                         .iter()
                         .rposition(|&r| r >= cell_row && r < cell_end_row_idx);
                     if let (Some(fri), Some(lri)) = (first_ri, last_ri) {
-                        collect_cell_borders(
-                            &mut *h_edges,
-                            &mut *v_edges,
+                        if let Some(bs) = border_style {
+                            collect_cell_borders(
+                                &mut *h_edges,
+                                &mut *v_edges,
+                                cell_col,
+                                fri,
+                                cell.col_span as usize,
+                                lri + 1 - fri,
+                                &bs.borders,
+                            );
+                        }
+                        mark_cell_span_interior_covered(
+                            &mut *h_span_covered,
+                            &mut *v_span_covered,
                             cell_col,
                             fri,
                             cell.col_span as usize,
                             lri + 1 - fri,
-                            &bs.borders,
                         );
                     }
                 }
@@ -1478,6 +1503,7 @@ impl LayoutEngine {
                                 styles,
                                 self.dpi,
                                 self.profile.get().legacy_hwp3_stored_geometry(),
+                                self.profile.get().native_hwp5_layout(),
                             )
                             .lines
                             .len(),
@@ -1545,6 +1571,7 @@ impl LayoutEngine {
                     styles,
                     self.dpi,
                     self.profile.get().legacy_hwp3_stored_geometry(),
+                    self.profile.get().native_hwp5_layout(),
                 );
 
                 if preserve_linear_single_cell_vpos {
@@ -2841,7 +2868,7 @@ impl LayoutEngine {
             );
 
             // 셀 테두리를 엣지 그리드에 수집 (인접 셀 중복 제거)
-            if let Some(bs) = border_style {
+            {
                 let cell_end_row_idx = cell_row + cell.row_span as usize;
                 let first_ri = render_rows.iter().position(|&r| r == cell_row).or_else(|| {
                     render_rows
@@ -2852,14 +2879,24 @@ impl LayoutEngine {
                     .iter()
                     .rposition(|&r| r >= cell_row && r < cell_end_row_idx);
                 if let (Some(fri), Some(lri)) = (first_ri, last_ri) {
-                    collect_cell_borders(
-                        &mut *h_edges,
-                        &mut *v_edges,
+                    if let Some(bs) = border_style {
+                        collect_cell_borders(
+                            &mut *h_edges,
+                            &mut *v_edges,
+                            cell_col,
+                            fri,
+                            cell.col_span as usize,
+                            lri + 1 - fri,
+                            &bs.borders,
+                        );
+                    }
+                    mark_cell_span_interior_covered(
+                        &mut *h_span_covered,
+                        &mut *v_span_covered,
                         cell_col,
                         fri,
                         cell.col_span as usize,
                         lri + 1 - fri,
-                        &bs.borders,
                     );
                 }
             }
@@ -3534,6 +3571,10 @@ impl LayoutEngine {
             vec![vec![None; col_count]; render_row_count + 1];
         let mut v_edges: Vec<Vec<Option<BorderLine>>> =
             vec![vec![None; render_row_count]; col_count + 1];
+        // 병합 등으로 편집되어 h_edges/v_edges에 기록되지 않는 span 내부 위치를
+        // 투명선 가이드에서 제외하기 위한 커버리지 그리드 (§투명선/셀 편집 정합성).
+        let mut h_span_covered: Vec<Vec<bool>> = vec![vec![false; col_count]; render_row_count + 1];
+        let mut v_span_covered: Vec<Vec<bool>> = vec![vec![false; render_row_count]; col_count + 1];
         let mut grid_row_y = render_row_y.clone();
         grid_row_y.push(partial_table_height);
 
@@ -3665,6 +3706,8 @@ impl LayoutEngine {
             &render_row_y,
             &mut h_edges,
             &mut v_edges,
+            &mut h_span_covered,
+            &mut v_span_covered,
             measured_table,
             enclosing_cell_ctx,
             clamp_header_negative_para_offset,
@@ -3715,6 +3758,8 @@ impl LayoutEngine {
                 tree,
                 &h_edges,
                 &v_edges,
+                &h_span_covered,
+                &v_span_covered,
                 &fragment_row_col_x,
                 &grid_row_y,
                 table_x,
