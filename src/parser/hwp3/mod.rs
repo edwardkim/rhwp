@@ -2932,7 +2932,7 @@ pub(crate) fn parse_paragraph_list(
                     // char_offsets는 출력 문자마다 하나여야 하고, source hchar 위치는
                     // 이미 loop 시작에서 hwp3_char_to_utf16_pos에 기록했으므로 둘을
                     // 각각 갱신해 글자 모양·줄 시작 오프셋도 뒤따르게 한다.
-                    for decoded in [Some(leading), Some(araea), trailing].into_iter().flatten() {
+                    for decoded in [leading, Some(araea), trailing].into_iter().flatten() {
                         char_offsets.push(utf16_len);
                         utf16_len += decoded.len_utf16() as u32;
                         text_string.push(decoded);
