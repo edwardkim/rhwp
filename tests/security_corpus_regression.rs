@@ -10,8 +10,8 @@
 //! # 이 스위트가 확인하는 세 가지
 //!
 //! 1. **양성 코퍼스** — 벡터별 합성 문서 하나씩이 해당 탐지기에서 `clean: false`.
-//! 2. **음성 코퍼스(더 중요하다)** — PR에서 새로 추가된 sample 문서가 세 탐지기 모두에서
-//!    `clean: true`. 하나라도 걸리면 이 시험이 실패해야 한다.
+//! 2. **신규 샘플 음성 코퍼스(더 중요하다)** — PR에서 새로 추가된 sample 문서만
+//!    세 탐지기 모두에서 `clean: true`. 하나라도 걸리면 이 시험이 실패해야 한다.
 //! 3. **봉투 스키마 정합** — 세 탐지기가 `clean` 필드를 공통으로 갖고, 각자의 배열
 //!    필드(`findings`/`hiddenText`/`injectionSignals`)가 소비자에게 같은 방식으로 보인다.
 //!
@@ -239,11 +239,11 @@ fn positive_corpus_unicode_vector_is_caught() {
     let _ = std::fs::remove_file(&doc);
 }
 
-// ── 음성 코퍼스: samples/ 오탐 회귀(더 중요한 절반) ─────────────────────
+// ── 음성 코퍼스: PR 신규 samples/ 오탐 회귀(더 중요한 절반) ─────────────
 //
 // `test_corpus.md` §5 의 결정은 "정상 문서 오탐 0" 이다. 다만 PR마다 samples 전체를
 // 전수 스윕하면 신규 샘플 하나를 추가한 PR도 오래된 대형 샘플 비용을 반복 지불한다.
-// CI는 새로 추가된 sample 문서만 `RHWP_SECURITY_SWEEP_SAMPLES_JSON` 으로 넘긴다.
+// CI는 PR에서 새로 추가된 sample 문서만 `RHWP_SECURITY_SWEEP_SAMPLES_JSON` 으로 넘긴다.
 // env가 비어 있으면 이 축은 실행하지 않는다. 이미 저장소에 들어온 기존 샘플은
 // 해당 샘플을 들여온 PR 시점에 검사됐다는 전제를 둔다.
 
@@ -373,10 +373,12 @@ fn unicode_finding_count(core: &DocumentCore) -> usize {
 }
 
 #[test]
-fn negative_corpus_sweep_is_clean_for_representative_or_new_samples() {
+fn new_sample_documents_are_clean_across_all_three_detectors() {
     let docs = security_sweep_documents();
     if docs.is_empty() {
-        eprintln!("{SECURITY_SWEEP_SAMPLES_ENV} 가 비어 있어 신규 sample 문서 clean sweep을 건너뜁니다");
+        eprintln!(
+            "{SECURITY_SWEEP_SAMPLES_ENV} 가 비어 있어 신규 sample 문서 clean sweep을 건너뜁니다"
+        );
         return;
     }
 

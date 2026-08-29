@@ -4,7 +4,7 @@
 //!
 //! 1. **문서를 고치지 않는다** — 스캔 전후 파일 해시가 같아야 한다. 조용히 정화하면
 //!    사용자는 원문을 봤다고 믿는데 아니다.
-//! 2. **정상 문서 오탐 0** — PR에서 새로 추가된 sample 문서가 `clean: true`.
+//! 2. **신규 샘플 오탐 0** — PR에서 새로 추가된 sample 문서만 `clean: true`.
 //!    오탐이 나면 아무도 이 기능을 켜지 않으므로 방어력이 0이 된다.
 //! 3. **kind 마다 실제로 잡는다** — 6종 전부 양성 1건 이상, 그리고 각 종류마다
 //!    "닮았지만 정상인" 음성 짝을 함께 고정한다.
@@ -174,7 +174,7 @@ fn is_injection_sample_path(rel: &str) -> bool {
                 .and_then(|ext| ext.to_str())
                 .map(str::to_ascii_lowercase)
                 .as_deref(),
-            Some("hwp" | "hwpx")
+            Some("hwp" | "hwpx" | "hml")
         )
 }
 
@@ -261,8 +261,9 @@ fn scan_does_not_sanitize_the_payload_out_of_the_document() {
 
 // ── ② 정상 샘플 오탐 0 ────────────────────────────────────────────────────
 
-fn representative_or_new_normal_samples_are_clean() {
-    // 수용 기준. 하나라도 걸리면 규칙이 너무 넓다는 뜻이므로 좁혀야 한다.
+#[test]
+fn new_normal_sample_documents_are_clean() {
+    // PR에서 새로 추가된 정상 샘플만 본다. 하나라도 걸리면 규칙이 너무 넓다는 뜻이다.
     let entries = clean_sweep_documents();
     if entries.is_empty() {
         eprintln!("{SECURITY_SWEEP_SAMPLES_ENV} 가 비어 있어 신규 sample 문서 injection sweep을 건너뜁니다");

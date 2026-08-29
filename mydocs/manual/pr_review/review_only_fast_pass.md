@@ -16,9 +16,9 @@ review-only인 경우에 적용하는 공용 modifier다. maintainer·collaborat
   올리는 PDF, HWP/HWPX, PNG 등 검토 증적도 문서-only PR과 같은 허용 범위다.
 - added 상태의 samples 아래 pdf, png
 - added 상태의 samples 아래 hwp, hwpx, hml은 review-only가 아니다. 새 문서 샘플은 Build & Test가
-  실행되며, CI preflight가 신규 문서 경로만 `RHWP_SECURITY_SWEEP_SAMPLES_JSON`으로 전달해
-  `security_corpus_regression`과 `injection_scan_contract`의 정상 샘플 오탐 검사를 해당 신규 샘플로
-  한정한다.
+  실행되며, CI preflight가 PR에서 새로 추가된 문서 경로만 `RHWP_SECURITY_SWEEP_SAMPLES_JSON`으로
+  전달한다. `security_corpus_regression`과 `injection_scan_contract`의 정상 샘플 오탐 검사는 이 env가
+  가리키는 신규 샘플만 대상으로 하며, 대표 샘플이나 기존 samples 전체를 fallback으로 돌리지 않는다.
 - added 또는 modified 상태의 pdf, pdf-2020, pdf-large 아래 PDF
 
 기존 samples 파일의 수정·삭제·rename, 신규 문서 샘플(hwp/hwpx/hml), 세 PDF 디렉터리 파일의
