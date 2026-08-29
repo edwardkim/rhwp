@@ -135,10 +135,20 @@ function isSampleReviewReferencePath(filename) {
   return (
     filename.startsWith('samples/')
     && (
-      filename.endsWith('.hwp')
-      || filename.endsWith('.hwpx')
-      || filename.endsWith('.pdf')
+      filename.endsWith('.pdf')
       || filename.endsWith('.png')
+    )
+  );
+}
+
+function isSampleSecuritySweepPath(filename) {
+  const lower = filename.toLowerCase();
+  return (
+    filename.startsWith('samples/')
+    && (
+      lower.endsWith('.hwp')
+      || lower.endsWith('.hwpx')
+      || lower.endsWith('.hml')
     )
   );
 }
@@ -281,11 +291,6 @@ function classifyChanges(input = {}) {
   for (const file of files.slice().sort((a, b) => a.filename.localeCompare(b.filename))) {
     const filename = file.filename;
 
-    if (isAllowedReviewReferenceFile(file)) {
-      reviewOnlyCount += 1;
-      continue;
-    }
-
     if (isRenderRustPath(filename)) {
       rustRequired = true;
       renderRequired = true;
@@ -315,6 +320,17 @@ function classifyChanges(input = {}) {
       renderRequired = true;
       nativeSkiaRequired = true;
       reasons.add('rust-test-input');
+      continue;
+    }
+
+    if (file.status === 'added' && isSampleSecuritySweepPath(filename)) {
+      rustRequired = true;
+      reasons.add('sample-security-sweep');
+      continue;
+    }
+
+    if (isAllowedReviewReferenceFile(file)) {
+      reviewOnlyCount += 1;
       continue;
     }
 

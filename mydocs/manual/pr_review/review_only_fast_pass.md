@@ -14,12 +14,16 @@ review-only인 경우에 적용하는 공용 modifier다. maintainer·collaborat
 
 - mydocs 아래 모든 파일 — 파일 상태와 확장자를 제한하지 않는다. 따라서 `mydocs/pr/assets` 등에
   올리는 PDF, HWP/HWPX, PNG 등 검토 증적도 문서-only PR과 같은 허용 범위다.
-- added 상태의 samples 아래 hwp, hwpx, pdf, png
+- added 상태의 samples 아래 pdf, png
+- added 상태의 samples 아래 hwp, hwpx, hml은 review-only가 아니다. 새 문서 샘플은 Build & Test가
+  실행되며, CI preflight가 신규 문서 경로만 `RHWP_SECURITY_SWEEP_SAMPLES_JSON`으로 전달해
+  `security_corpus_regression`과 `injection_scan_contract`의 정상 샘플 오탐 검사를 해당 신규 샘플로
+  한정한다.
 - added 또는 modified 상태의 pdf, pdf-2020, pdf-large 아래 PDF
 
-기존 samples 파일의 수정·삭제·rename, 세 PDF 디렉터리 파일의 삭제·rename, source, test, workflow,
-Cargo.lock, golden, baseline은 허용 범위가 아니다. 기준 PDF를 재산출해 같은 경로에 갱신하는 경우만
-세 PDF 디렉터리에서 modified 상태를 허용한다.
+기존 samples 파일의 수정·삭제·rename, 신규 문서 샘플(hwp/hwpx/hml), 세 PDF 디렉터리 파일의
+삭제·rename, source, test, workflow, Cargo.lock, golden, baseline은 허용 범위가 아니다. 기준 PDF를
+재산출해 같은 경로에 갱신하는 경우만 세 PDF 디렉터리에서 modified 상태를 허용한다.
 
 Proptest roundtrip과 Adapter inter-diff도 같은 허용 경로 정책을 사용한다. 이 두 required check가 code
 candidate의 결과를 재사용할 때는 PR 번호 배열 유무가 아니라 candidate SHA, 현재 PR head branch, source

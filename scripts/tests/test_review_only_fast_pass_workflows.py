@@ -49,6 +49,22 @@ class ReviewOnlyFastPassWorkflowTests(unittest.TestCase):
                     workflow,
                 )
 
+    def test_sample_document_files_are_not_review_only_fast_pass_references(self) -> None:
+        workflow_paths = {
+            **WORKFLOWS,
+            **{name: spec[0] for name, spec in WORKER_PREFLIGHTS.items()},
+        }
+        for name, workflow_path in workflow_paths.items():
+            with self.subTest(workflow=name):
+                workflow = workflow_path.read_text(encoding="utf-8")
+                sample_function = workflow.split(
+                    "function isSampleReferencePath(filename)", maxsplit=1
+                )[1].split("function isPdfReferencePath(filename)", maxsplit=1)[0]
+                self.assertIn("filename.endsWith('.pdf')", sample_function)
+                self.assertIn("filename.endsWith('.png')", sample_function)
+                self.assertNotIn("filename.endsWith('.hwp')", sample_function)
+                self.assertNotIn("filename.endsWith('.hwpx')", sample_function)
+
     def test_base_advance_does_not_invalidate_a_trailing_review_record(self) -> None:
         for name, workflow_path in WORKFLOWS.items():
             with self.subTest(workflow=name):

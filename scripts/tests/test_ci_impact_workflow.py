@@ -544,11 +544,31 @@ class CiImpactWorkflowTests(unittest.TestCase):
             "classifier_version": "'unavailable'",
             "impact_reason": "'fail-closed:impact-unavailable'",
             "impact_authority": "'unavailable'",
+            "security_sweep_samples_json": "'[]'",
         }
         for output, default in expected_defaults.items():
             with self.subTest(output=output):
                 self.assertIn(f"      {output}:", self.preflight)
                 self.assertIn(default, self.preflight)
+
+    def test_preflight_collects_only_new_sample_docs_for_security_sweep(self) -> None:
+        collect = self._step("Collect CI impact input", self.preflight)
+        self.assertIn("function securitySweepSamples(files)", collect)
+        self.assertIn(".filter((file) => file.status === 'added')", collect)
+        self.assertIn("filename.startsWith('samples/')", collect)
+        self.assertIn("/\\.(hwp|hwpx|hml)$/i.test(filename)", collect)
+        self.assertIn(
+            "core.setOutput('security_sweep_samples_json', JSON.stringify(samplePaths));",
+            collect,
+        )
+
+        summary = self._step("Summarize CI impact classification", self.preflight)
+        self.assertIn(
+            "SECURITY_SWEEP_SAMPLES_JSON: "
+            "${{ steps.collect-impact.outputs.security_sweep_samples_json || '[]' }}",
+            summary,
+        )
+        self.assertIn("security_sweep_samples_json", summary)
 
     def test_classifier_uses_pr_base_sha_without_checkout_credentials(self) -> None:
         step = self._step("Check out trusted CI impact classifier", self.preflight)

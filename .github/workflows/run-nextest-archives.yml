@@ -24,6 +24,11 @@ on:
         required: false
         default: ""
         type: string
+      security_sweep_samples_json:
+        description: JSON array of newly added sample documents for security clean-sweep tests.
+        required: false
+        default: "[]"
+        type: string
 
 jobs:
   run:
@@ -60,6 +65,7 @@ jobs:
           COUNT_LABEL: ${{ inputs.count_label }}
           FILTERSET: ${{ inputs.filterset }}
           PARTITION: ${{ inputs.partition }}
+          RHWP_SECURITY_SWEEP_SAMPLES_JSON: ${{ inputs.security_sweep_samples_json }}
         run: |
           set -euo pipefail
           partition_args=()

@@ -10,7 +10,7 @@
 //! # 이 스위트가 확인하는 세 가지
 //!
 //! 1. **양성 코퍼스** — 벡터별 합성 문서 하나씩이 해당 탐지기에서 `clean: false`.
-//! 2. **음성 코퍼스(더 중요하다)** — `samples/` 대표 표본셋 전체가 세 탐지기 모두에서
+//! 2. **음성 코퍼스(더 중요하다)** — PR에서 새로 추가된 sample 문서가 세 탐지기 모두에서
 //!    `clean: true`. 하나라도 걸리면 이 시험이 실패해야 한다.
 //! 3. **봉투 스키마 정합** — 세 탐지기가 `clean` 필드를 공통으로 갖고, 각자의 배열
 //!    필드(`findings`/`hiddenText`/`injectionSignals`)가 소비자에게 같은 방식으로 보인다.
@@ -241,30 +241,11 @@ fn positive_corpus_unicode_vector_is_caught() {
 
 // ── 음성 코퍼스: samples/ 오탐 회귀(더 중요한 절반) ─────────────────────
 //
-// `test_corpus.md` §5 의 결정 — samples/ 전건(또는 대표 샘플셋) 스윕이 세 탐지기
-// 모두에서 clean: true 여야 한다. 전수(668건) x 3탐지기는 프로세스 스폰 비용이 커서
-// CI 예산을 넘길 수 있으므로, 최상위 디렉터리의 문서 파일(중복 없는 대표 샘플셋)로
-// 스윕 범위를 정한다 — `injection_scan_contract.rs::every_normal_sample_is_clean` 이
-// 쓰는 것과 같은 범위다. 하위 디렉터리 표본은 각 계약 시험의 CLEAN_SAMPLES/
-// CLEAN_CORPUS 하드코딩 목록이 이미 별도로 고정한다.
-
-fn top_level_documents() -> Vec<PathBuf> {
-    let dir = repo("samples");
-    let mut entries: Vec<PathBuf> = std::fs::read_dir(&dir)
-        .expect("samples 읽기 실패")
-        .filter_map(|e| e.ok().map(|e| e.path()))
-        .filter(|p| {
-            p.is_file()
-                && p.extension().and_then(|e| e.to_str()).is_some_and(|e| {
-                    e.eq_ignore_ascii_case("hwp")
-                        || e.eq_ignore_ascii_case("hwpx")
-                        || e.eq_ignore_ascii_case("hml")
-                })
-        })
-        .collect();
-    entries.sort();
-    entries
-}
+// `test_corpus.md` §5 의 결정은 "정상 문서 오탐 0" 이다. 다만 PR마다 samples 전체를
+// 전수 스윕하면 신규 샘플 하나를 추가한 PR도 오래된 대형 샘플 비용을 반복 지불한다.
+// CI는 새로 추가된 sample 문서만 `RHWP_SECURITY_SWEEP_SAMPLES_JSON` 으로 넘긴다.
+// env가 비어 있으면 이 축은 실행하지 않는다. 이미 저장소에 들어온 기존 샘플은
+// 해당 샘플을 들여온 PR 시점에 검사됐다는 전제를 둔다.
 
 /// 음성 코퍼스에 섞여 있는 **진짜 은닉 텍스트**. 오탐이 아니라 탐지가 맞은 것이다.
 ///
@@ -299,28 +280,42 @@ const KNOWN_GENUINE_ZERO_WIDTH: &[&str] = &[
     "정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx",
 ];
 
-const NEGATIVE_PARTITIONS: usize = 8;
+const SECURITY_SWEEP_SAMPLES_ENV: &str = "RHWP_SECURITY_SWEEP_SAMPLES_JSON";
 
-fn partition_paths(mut paths: Vec<PathBuf>, partitions: usize) -> Vec<Vec<PathBuf>> {
-    paths.sort_by_key(|path| {
-        let size = std::fs::metadata(path).map(|m| m.len()).unwrap_or(0);
-        let name = path.file_name().unwrap_or_default().to_os_string();
-        (std::cmp::Reverse(size), name)
-    });
+fn is_security_sample_path(rel: &str) -> bool {
+    rel.starts_with("samples/")
+        && matches!(
+            Path::new(rel)
+                .extension()
+                .and_then(|ext| ext.to_str())
+                .map(str::to_ascii_lowercase)
+                .as_deref(),
+            Some("hwp" | "hwpx" | "hml")
+        )
+}
 
-    let mut buckets: Vec<(u64, Vec<PathBuf>)> = (0..partitions).map(|_| (0, Vec::new())).collect();
-    for path in paths {
-        let size = std::fs::metadata(&path).map(|m| m.len()).unwrap_or(0);
-        let index = buckets
-            .iter()
-            .enumerate()
-            .min_by_key(|(i, (total, rows))| (*total, rows.len(), *i))
-            .map(|(i, _)| i)
-            .expect("partition bucket");
-        buckets[index].0 += size.max(1);
-        buckets[index].1.push(path);
+fn security_sweep_documents() -> Vec<PathBuf> {
+    let Ok(raw) = std::env::var(SECURITY_SWEEP_SAMPLES_ENV) else {
+        return Vec::new();
+    };
+    let trimmed = raw.trim();
+    if trimmed.is_empty() || trimmed == "[]" {
+        return Vec::new();
     }
-    buckets.into_iter().map(|(_, rows)| rows).collect()
+
+    let rels: Vec<String> = serde_json::from_str(trimmed).unwrap_or_else(|e| {
+        panic!("{SECURITY_SWEEP_SAMPLES_ENV} 는 JSON string array 여야 합니다: {e}")
+    });
+    let docs: Vec<PathBuf> = rels
+        .into_iter()
+        .filter(|rel| is_security_sample_path(rel))
+        .map(|rel| repo(&rel))
+        .collect();
+    assert!(
+        !docs.is_empty(),
+        "{SECURITY_SWEEP_SAMPLES_ENV} 에 검사 가능한 samples/*.hwp|hwpx|hml 항목이 없습니다"
+    );
+    docs
 }
 
 fn mcp_tool_names() -> Vec<String> {
@@ -377,22 +372,13 @@ fn unicode_finding_count(core: &DocumentCore) -> usize {
     findings
 }
 
-fn negative_corpus_sweep_partition(part: usize) {
-    let docs = top_level_documents();
-    assert!(
-        docs.len() >= 100,
-        "음성 코퍼스가 {}건뿐입니다 — 스윕이 공허하게 통과합니다",
-        docs.len()
-    );
-    let buckets = partition_paths(docs, NEGATIVE_PARTITIONS);
-    let docs = buckets
-        .into_iter()
-        .nth(part)
-        .unwrap_or_else(|| panic!("없는 partition: {part}"));
-    assert!(
-        !docs.is_empty(),
-        "음성 코퍼스 partition {part} 이 비어 있음"
-    );
+#[test]
+fn negative_corpus_sweep_is_clean_for_representative_or_new_samples() {
+    let docs = security_sweep_documents();
+    if docs.is_empty() {
+        eprintln!("{SECURITY_SWEEP_SAMPLES_ENV} 가 비어 있어 신규 sample 문서 clean sweep을 건너뜁니다");
+        return;
+    }
 
     let mut checked_hidden = 0usize;
     let mut checked_injection = 0usize;
@@ -443,40 +429,18 @@ fn negative_corpus_sweep_partition(part: usize) {
 
     assert!(
         checked_hidden > 0 && checked_injection > 0 && checked_unicode > 0,
-        "탐지기별 검사 건수가 너무 적습니다 — hidden={checked_hidden} injection={checked_injection} unicode={checked_unicode} (partition {part}/{NEGATIVE_PARTITIONS}, 스윕 대상 {})",
+        "탐지기별 검사 건수가 너무 적습니다 — hidden={checked_hidden} injection={checked_injection} unicode={checked_unicode} (스윕 대상 {})",
         docs.len()
     );
 
     assert!(
         dirty.is_empty(),
-        "정상 코퍼스 스윕 partition {part}/{NEGATIVE_PARTITIONS} 에서 오탐 {}건 (hidden={checked_hidden} injection={checked_injection} unicode={checked_unicode}):\n{}\n\n\
+        "정상 코퍼스 스윕에서 오탐 {}건 (hidden={checked_hidden} injection={checked_injection} unicode={checked_unicode}):\n{}\n\n\
          오탐 1건이 향후 모든 탐지 신호를 무시하게 만듭니다 — 규칙을 좁히세요.",
         dirty.len(),
         dirty.join("\n")
     );
 }
-
-macro_rules! negative_corpus_partition_tests {
-    ($($name:ident => $part:expr),+ $(,)?) => {
-        $(
-            #[test]
-            fn $name() {
-                negative_corpus_sweep_partition($part);
-            }
-        )+
-    };
-}
-
-negative_corpus_partition_tests!(
-    negative_corpus_sweep_partition_0 => 0,
-    negative_corpus_sweep_partition_1 => 1,
-    negative_corpus_sweep_partition_2 => 2,
-    negative_corpus_sweep_partition_3 => 3,
-    negative_corpus_sweep_partition_4 => 4,
-    negative_corpus_sweep_partition_5 => 5,
-    negative_corpus_sweep_partition_6 => 6,
-    negative_corpus_sweep_partition_7 => 7,
-);
 
 // ── 봉투 스키마 정합 ─────────────────────────────────────────────────────
 

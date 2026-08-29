@@ -333,10 +333,30 @@ test('studio test-only changes stay on the unit lane', () => {
   }
 });
 
-test('new review reference assets require no product or CodeQL worker', () => {
+test('new sample documents run only the targeted security sweep lane', () => {
   for (const filename of [
     'samples/new-reference.hwp',
     'samples/new-reference.hwpx',
+    'samples/hml/new-reference.hml',
+    'samples/new-reference.HWP',
+  ]) {
+    const result = classifyChanges({
+      eventName: 'pull_request',
+      files: [{ filename, status: 'added' }],
+    });
+    assert.equal(result.rust_required, 'true', filename);
+    assert.equal(result.frontend_mode, 'none', filename);
+    assert.equal(result.render_required, 'false', filename);
+    assert.equal(result.native_skia_required, 'false', filename);
+    assert.equal(result.codeql_languages, 'none', filename);
+    assert.equal(result.classification_status, 'classified', filename);
+    assert.equal(result.classifier_version, '6', filename);
+    assert.equal(result.reason, 'classified:sample-security-sweep', filename);
+  }
+});
+
+test('new review reference assets require no product or CodeQL worker', () => {
+  for (const filename of [
     'samples/new-reference.pdf',
     'samples/new-reference.png',
     'pdf/new-reference.pdf',

@@ -118,6 +118,32 @@ class NextestArchiveWorkflowTests(unittest.TestCase):
             "steps.test-policy.outputs.timeout_minutes || '60' }}",
             preflight,
         )
+        self.assertIn(
+            "security_sweep_samples_json: ${{ "
+            "steps.collect-impact.outputs.security_sweep_samples_json || '[]' }}",
+            preflight,
+        )
+
+    def test_new_sample_security_sweep_list_flows_to_archive_workers(self) -> None:
+        self.assertIn("security_sweep_samples_json:", self.runner)
+        self.assertIn(
+            "RHWP_SECURITY_SWEEP_SAMPLES_JSON: "
+            "${{ inputs.security_sweep_samples_json }}",
+            self.runner,
+        )
+        for job_name in (
+            "test-archive-a-shard-1",
+            "test-archive-b-shard-1",
+            "test-archive-c-shard-1",
+            "test-archive-d-shard-1",
+        ):
+            with self.subTest(job=job_name):
+                worker = job_body(self.ci, job_name)
+                self.assertIn(
+                    "security_sweep_samples_json: ${{ "
+                    "needs.preflight.outputs.security_sweep_samples_json || '[]' }}",
+                    worker,
+                )
 
     def test_archive_builders_split_lib_and_three_integration_targets(self):
         from pathlib import Path

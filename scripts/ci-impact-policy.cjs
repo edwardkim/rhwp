@@ -306,9 +306,7 @@ function isSampleReviewReferencePath(filename) {
   return (
     filename.startsWith('samples/')
     && (
-      filename.endsWith('.hwp')
-      || filename.endsWith('.hwpx')
-      || filename.endsWith('.pdf')
+      filename.endsWith('.pdf')
       || filename.endsWith('.png')
     )
   );

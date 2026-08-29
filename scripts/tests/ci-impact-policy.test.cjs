@@ -253,9 +253,31 @@ test('same-repository Studio unit PR gets selective three-workflow policy', () =
   assert.equal(policy.classification.codeql_languages, 'javascript-typescript');
 });
 
-test('new review reference PR keeps required aggregates without product workers', () => {
+test('new sample document PR runs targeted security sweep without render workers', () => {
   for (const filename of [
     'samples/new-reference.hwp',
+    'samples/new-reference.hwpx',
+    'samples/hml/new-reference.hml',
+  ]) {
+    const files = [{ filename, status: 'added' }];
+    const policy = determinePolicy(policyInput({ files, classification: classificationFor(files) }));
+    assert.equal(policy.decision, 'selective', filename);
+    assert.deepEqual(policy.expected_workflows, {
+      CI: 'true',
+      CodeQL: 'true',
+      'Render Diff': 'false',
+    }, filename);
+    assert.equal(policy.classification.rust_required, 'true', filename);
+    assert.equal(policy.classification.frontend_mode, 'none', filename);
+    assert.equal(policy.classification.render_required, 'false', filename);
+    assert.equal(policy.classification.native_skia_required, 'false', filename);
+    assert.equal(policy.classification.codeql_languages, 'none', filename);
+    assert.equal(policy.classification.reason, 'classified:sample-security-sweep', filename);
+  }
+});
+
+test('new review reference PR keeps required aggregates without product workers', () => {
+  for (const filename of [
     'pdf/new-reference.pdf',
     'pdf-2020/new-reference.pdf',
     'pdf-large/nested/new-reference.pdf',
