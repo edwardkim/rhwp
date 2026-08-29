@@ -18,7 +18,7 @@
 
 use std::collections::BTreeSet;
 
-use crate::model::bin_data::{BinDataContent, BinDataStatus, BinDataType};
+use crate::model::bin_data::{BinDataStatus, BinDataType};
 use crate::model::control::Control;
 use crate::model::document::{
     Document, HwpVersion, Section, SectionDef, HWP3_ORIGIN_STREAM_PATH, HWPX_ORIGIN_STREAM_PATH,

@@ -3,8 +3,7 @@
 use super::super::font_metrics_data;
 use super::super::kerning::{ExactFontSourceHandle, KerningRunMeasurement, KerningSourceSession};
 use super::super::style_resolver::ResolvedStyleSet;
-use super::super::{hwpunit_to_px, TabLeaderInfo, TabStop, TextStyle};
-use crate::model::style::UnderlineType;
+use super::super::{TabLeaderInfo, TabStop, TextStyle};
 
 // ── TextMeasurer trait ──────────────────────────────────────────────
 
@@ -776,7 +775,10 @@ pub(crate) fn resolved_to_text_style(
             underline: cs.underline,
             strikethrough: cs.strikethrough,
             kerning: cs.kerning,
-            letter_spacing: cs.letter_spacing_for_lang(lang_index),
+            // 단일 출처: 줄 나눔 고속 경로(resolved_letter_spacing)와 같은 식을 쓴다.
+            // 두 경로 동등성 시험(구 letter_spacing_matches_full_style_resolution)을
+            // 이 호출이 구조적으로 대체한다.
+            letter_spacing: resolved_letter_spacing(styles, char_style_id, lang_index),
             ratio: cs.ratio_for_lang(lang_index),
             default_tab_width: 0.0,
             tab_stops: Vec::new(),
@@ -809,6 +811,26 @@ pub(crate) fn resolved_to_text_style(
     } else {
         TextStyle::default()
     }
+}
+
+/// `resolved_to_text_style(..).letter_spacing` 와 같은 값을 `TextStyle` 을 만들지 않고 읽는다.
+///
+/// [#5678] 줄 나눔이 문단의 **글자마다** 자간을 필요로 하는데, 종전에는 그때마다
+/// `resolved_to_text_style` 을 불러 `String` 하나와 `Vec` 셋을 포함한 `TextStyle` 을
+/// 통째로 만들었다 — 대부분의 문서에서 `0.0` 인 `f64` 하나를 읽으려고.
+///
+/// 두 경로가 같은 값을 낸다는 것은 `letter_spacing_matches_full_style_resolution` 이 잡는다.
+pub(crate) fn resolved_letter_spacing(
+    styles: &ResolvedStyleSet,
+    char_style_id: u32,
+    lang_index: usize,
+) -> f64 {
+    styles
+        .char_styles
+        .get(char_style_id as usize)
+        .map(|cs| cs.letter_spacing_for_lang(lang_index))
+        // 스타일이 없을 때의 값은 위 함수의 `TextStyle::default()` 갈래와 같아야 한다.
+        .unwrap_or_else(|| TextStyle::default().letter_spacing)
 }
 
 // ── 내장 폰트 메트릭 측정 ───────────────────────────────────────────

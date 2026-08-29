@@ -8,8 +8,6 @@ use super::byte_reader::ByteReader;
 use super::record::Record;
 use super::tags;
 
-use std::collections::HashMap;
-
 use crate::model::control::{
     AutoNumber, AutoNumberType, Bookmark, CharOverlap, Control, Equation, Field, FieldType,
     FormObject, FormType, HiddenComment, IndexMark, NewNumber, PageHide, PageNumCtrl,
@@ -17,16 +15,9 @@ use crate::model::control::{
 };
 use crate::model::footnote::{Endnote, Footnote};
 use crate::model::header_footer::{Footer, Header, HeaderFooterApply};
-use crate::model::image::{ImageEffect, Picture};
-use crate::model::shape::{
-    ArcShape, Caption, CaptionDirection, CaptionVertAlign, CommonObjAttr, CurveShape,
-    DrawingObjAttr, EllipseShape, GroupShape, HorzAlign, HorzRelTo, LineShape, PolygonShape,
-    RectangleShape, ShapeComponentAttr, ShapeObject, TextWrap, VertAlign, VertRelTo,
-};
-use crate::model::style::{Fill, ShapeBorderLine};
+use crate::model::shape::{Caption, CaptionDirection, CaptionVertAlign};
 use crate::model::table::{Cell, Table, TablePageBreak, VerticalAlign};
 use crate::model::Padding;
-use crate::model::Point;
 
 /// ctrl_id 기반으로 컨트롤 파싱
 ///

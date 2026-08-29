@@ -2215,7 +2215,7 @@ impl LayoutEngine {
                 let seg_text: String = text_chars[*s..*e].iter().collect();
                 if !seg_text.is_empty() {
                     // 문자별로 처리하며 줄바꿈 판단
-                    let mut run_start = *s;
+                    let run_start = *s;
                     let mut line_run_start = *s; // 현재 줄 run의 시작
                     let mut line_run_x = inline_x; // 현재 줄 run의 x 시작
                     let mut current_cs_id = {
@@ -5369,7 +5369,7 @@ impl LayoutEngine {
         } = vars;
         let RunEmitState {
             mut x,
-            mut y,
+            y,
             mut char_offset,
             mut run_char_pos,
             mut inline_tab_cursor_render,

@@ -38,7 +38,7 @@ fn eval_node(node: &FormulaNode, ctx: &TableContext, get_cell: CellValueFn) -> R
         FormulaNode::Number(n) => Ok(*n),
 
         FormulaNode::CellRef { col, row } => {
-            let (c, r) = resolve_cell_ref(*col, *row, ctx)?;
+            let (c, r) = resolve_cell_ref(col, *row, ctx)?;
             Ok(get_cell(c, r).unwrap_or(0.0))
         }
 
@@ -70,13 +70,20 @@ fn eval_node(node: &FormulaNode, ctx: &TableContext, get_cell: CellValueFn) -> R
 }
 
 /// 셀 참조를 (col_index, row_index) 0-based로 변환
-fn resolve_cell_ref(col: char, row: u32, ctx: &TableContext) -> Result<(usize, usize), String> {
-    let c = if col == '?' {
+fn resolve_cell_ref(col: &str, row: u32, ctx: &TableContext) -> Result<(usize, usize), String> {
+    let c = if col == "?" {
         ctx.current_col
     } else {
-        (col as usize)
-            .checked_sub('A' as usize)
-            .ok_or_else(|| format!("잘못된 열: {}", col))?
+        if col.is_empty() || !col.chars().all(|ch| ch.is_ascii_uppercase()) {
+            return Err(format!("잘못된 열: {col}"));
+        }
+        let one_based = col.chars().try_fold(0usize, |acc, ch| {
+            acc.checked_mul(26)
+                .and_then(|value| value.checked_add((ch as u8 - b'A' + 1) as usize))
+        });
+        one_based
+            .and_then(|value| value.checked_sub(1))
+            .ok_or_else(|| format!("잘못된 열: {col}"))?
     };
     let r = if row == WILDCARD_ROW {
         ctx.current_row // 와일드카드 행
@@ -97,8 +104,8 @@ fn collect_cells(arg: &FormulaNode, ctx: &TableContext) -> Result<Vec<(usize, us
                 FormulaNode::CellRef { col: c2, row: r2 },
             ) = (start.as_ref(), end.as_ref())
             {
-                let (sc, sr) = resolve_cell_ref(*c1, *r1, ctx)?;
-                let (ec, er) = resolve_cell_ref(*c2, *r2, ctx)?;
+                let (sc, sr) = resolve_cell_ref(c1, *r1, ctx)?;
+                let (ec, er) = resolve_cell_ref(c2, *r2, ctx)?;
                 let mut cells = Vec::new();
                 let (min_r, max_r) = (sr.min(er), sr.max(er));
                 let (min_c, max_c) = (sc.min(ec), sc.max(ec));
@@ -139,7 +146,7 @@ fn collect_cells(arg: &FormulaNode, ctx: &TableContext) -> Result<Vec<(usize, us
             Ok(cells)
         }
         FormulaNode::CellRef { col, row } => {
-            let (c, r) = resolve_cell_ref(*col, *row, ctx)?;
+            let (c, r) = resolve_cell_ref(col, *row, ctx)?;
             Ok(vec![(c, r)])
         }
         _ => Err("함수 인수가 범위/셀/방향이 아님".into()),
@@ -164,7 +171,7 @@ fn collect_values(
                 }
             }
             FormulaNode::CellRef { col, row } => {
-                let (c, r) = resolve_cell_ref(*col, *row, ctx)?;
+                let (c, r) = resolve_cell_ref(col, *row, ctx)?;
                 if let Some(v) = get_cell(c, r) {
                     values.push(v);
                 }

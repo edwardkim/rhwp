@@ -27,9 +27,7 @@ use crate::renderer::kerning::{
     ExactFontRegistryRegistration, ExactFontSlot, MAX_KERNING_REGISTRY_SLOTS,
 };
 use crate::renderer::layer_renderer::LayerRenderer;
-use crate::renderer::layout::{
-    estimate_text_width, resolved_to_text_style, CellContext, LayoutEngine,
-};
+use crate::renderer::layout::{estimate_text_width, resolved_to_text_style, CellContext};
 use crate::renderer::page_layout::PageLayoutInfo;
 use crate::renderer::pagination::{
     HeaderFooterRef, MasterPageRef, PageContent, PaginationResult, Paginator,
@@ -41,7 +39,6 @@ use crate::renderer::svg::SvgRenderer;
 use crate::renderer::svg_layer::SvgLayerRenderer;
 use crate::renderer::typeset::TypesetEngine;
 use crate::renderer::TextStyle;
-use std::cell::RefCell;
 use std::fmt::Write as _;
 
 const MAX_EMBEDDED_FONT_BYTES: usize = 32 * 1024 * 1024;
@@ -2412,7 +2409,6 @@ impl DocumentCore {
         };
         use crate::renderer::render_tree::RenderLayerInfo;
         use crate::renderer::render_tree::{BoundingBox, ImageNode};
-        use base64::Engine;
 
         fn effect_str(value: ImageEffect) -> &'static str {
             match value {

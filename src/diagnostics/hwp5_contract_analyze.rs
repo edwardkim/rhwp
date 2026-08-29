@@ -8,7 +8,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::fmt::Write as _;
 use std::fs;
 use std::io::{Cursor, Read};
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 use crate::diagnostics::hwp5_inventory::{build_inventory, Hwp5InventoryItem};
 use crate::model::control::Control;

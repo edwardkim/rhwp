@@ -2,7 +2,7 @@
 fn main() {
     let path = std::env::args().nth(1).expect("hwp path");
     let bytes = std::fs::read(&path).expect("read");
-    let mut doc = rhwp::wasm_api::HwpDocument::from_bytes(&bytes).expect("parse");
+    let doc = rhwp::wasm_api::HwpDocument::from_bytes(&bytes).expect("parse");
     // 첫 페이지 layer JSON
     let json = doc.get_page_layer_tree(0).expect("layer json");
     // path 항목 추출

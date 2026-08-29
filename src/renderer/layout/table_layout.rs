@@ -21,6 +21,15 @@ const ROWBREAK_OBJECT_BOTTOM_BLEED_TOLERANCE_PX: f64 = 64.0;
 /// 일반 그림 위치일 수 있으므로 절대 보정하지 않는다.
 const ROWBREAK_STALE_PAGE_SCALE_PICTURE_OFFSET_MIN_HU: i32 = -40_000;
 
+/// [#6368] 행 컷 기본 용량 비교의 경계 관용 — **부동소수 합산 끝자리만** 흡수한다.
+/// HU→px 변환 누적 오차 실측: hwpctl_API_v2.4 0.0267px · 80168_regulatory 0.0133px
+/// (둘 다 한글 정답 쪽에 남아야 하는 마지막 줄). 이웃 특례처럼 0.5px 를 쓰면
+/// 실제 경계 초과까지 삼킨다 — table_giant_cell_overfill.hwpx 0.1867px 초과 흡수가
+/// 글자 겹침(text-overlap) 18→19건, issue2439 고아 가드 픽스처 0.4px 초과 흡수가
+/// remarks 셋째 줄 소유 회귀로 실증됐다. 그래서 잡음대(≤0.03px)와 실초과(≥0.19px)
+/// 사이의 0.1px 로 고정한다.
+const ROW_CUT_CAPACITY_FP_EPSILON_PX: f64 = 0.1;
+
 /// [#2424 프로파일] 분할 표 컷 프리미티브 실측 카운터 — `RHWP_2424_PROFILE` 전용, 동작 불변.
 /// 프로세스 누적이며 `RHWP_2424_STEP_PROFILE` 출력(typeset.rs)이 스냅샷을 읽는다.
 pub(crate) static ISSUE2424_ADVANCE_ROW_CUT_CALLS: std::sync::atomic::AtomicU64 =
@@ -3603,7 +3612,9 @@ impl LayoutEngine {
                 } else {
                     let cell_w_px = hwpunit_to_px(cell.width as i32, self.dpi)
                         * self.render_table_width_scale(table);
-                    let inner_width = (cell_w_px - pad_left - pad_right).max(0.0);
+                    let inner_width = crate::renderer::composer::cell_inner_text_width(
+                        cell_w_px, pad_left, pad_right, self.dpi,
+                    );
                     let (line_based, object_based) = self.calc_cell_paragraphs_content_parts(
                         &cell.paragraphs,
                         styles,
@@ -3742,7 +3753,9 @@ impl LayoutEngine {
                     self.resolve_cell_padding(cell, table);
                 let cell_w_px = hwpunit_to_px(cell.width as i32, self.dpi)
                     * self.render_table_width_scale(table);
-                let inner_width = (cell_w_px - pad_left - pad_right).max(0.0);
+                let inner_width = crate::renderer::composer::cell_inner_text_width(
+                    cell_w_px, pad_left, pad_right, self.dpi,
+                );
                 // LINE_SEG의 line_height에 이미 셀 내 중첩 표 높이가 반영되어 있으므로
                 // controls_height를 별도로 더하면 이중 계산됨
                 // [Task #2211] 1-b 와 동일 — 저장 LINE_SEG 줄 흐름은 pad 미가산,
@@ -4115,23 +4128,24 @@ impl LayoutEngine {
         //           aim=false → table.padding 우선.
         // 한컴은 aim=false일 때 cell.padding 원값을 파일에 보존하더라도 렌더에는 쓰지 않는다.
         // aim=true에서는 0mm도 사용자가 지정한 셀 고유 안 여백으로 존중한다.
-        // [#2195 stage50] 표 기본 전축 0 = 미지정 → 셀 pad (Cell::table_padding_unspecified).
+        // [#2195 stage50] 표 기본 전축 0 = 미지정 → 셀 pad — **수직 축 전용**.
+        // 수평은 전축 0 도 진짜 0: 근거 실측은 `Cell::table_padding_unspecified` 주석과
+        // `mydocs/plans/cell_width_authority.md`. 규칙은 `Cell::effective_padding` 과
+        // 축 단위로 동일해야 한다 (#1785 — 갈리면 예약 높이와 렌더가 어긋난다).
         let table_pad_unspec = !cell.apply_inner_margin
             && crate::model::table::Cell::table_padding_unspecified(&table.padding);
-        let use_cell_left = (table_pad_unspec && cell.padding.left < 2500)
-            || Self::should_use_cell_padding_axis_for_context(
-                cell,
-                cell.padding.left,
-                table.padding.left,
-                allow_saved_small_cell_margin,
-            );
-        let use_cell_right = (table_pad_unspec && cell.padding.right < 2500)
-            || Self::should_use_cell_padding_axis_for_context(
-                cell,
-                cell.padding.right,
-                table.padding.right,
-                allow_saved_small_cell_margin,
-            );
+        let use_cell_left = Self::should_use_cell_padding_axis_for_context(
+            cell,
+            cell.padding.left,
+            table.padding.left,
+            allow_saved_small_cell_margin,
+        );
+        let use_cell_right = Self::should_use_cell_padding_axis_for_context(
+            cell,
+            cell.padding.right,
+            table.padding.right,
+            allow_saved_small_cell_margin,
+        );
         let use_cell_top = (table_pad_unspec && cell.padding.top < 2500)
             || Self::should_use_cell_padding_axis_for_context(
                 cell,
@@ -4229,6 +4243,7 @@ impl LayoutEngine {
             paragraphs,
             styles,
             preserve_cell_padding,
+            self.dpi,
         )
     }
 
@@ -5227,6 +5242,16 @@ impl LayoutEngine {
                                 } else {
                                     pic_h
                                 };
+                                if std::env::var("RHWP_6313_DBG").is_ok() && tac_img_y > 700.0 {
+                                    let segs: Vec<(i32, i32)> = para
+                                        .line_segs
+                                        .iter()
+                                        .map(|s| (s.vertical_pos, s.line_height))
+                                        .collect();
+                                    eprintln!(
+                                        "[6313] tac_img_y={tac_img_y:.1} pybc={para_y_before_compose:.1} target_line={target_line} cur={current_tac_line} pic_h={pic_h:.1} segs={segs:?}",
+                                    );
+                                }
                                 let pic_area = LayoutRect {
                                     x: inline_x,
                                     y: tac_img_y,
@@ -5471,7 +5496,26 @@ impl LayoutEngine {
                                             prev.text.trim().is_empty() && prev.controls.is_empty()
                                         })
                                         && para.line_segs.first().is_some_and(|seg| {
-                                            (hwpunit_to_px(seg.vertical_pos, self.dpi) - pic_h)
+                                            // [#6313] 자기 변위는 **높이 + 세로 오프셋**이다 —
+                                            // 한글이 밀어 둔 줄의 vpos 는 그림 바닥을 가리키므로
+                                            // 오프셋이 0 이 아니면 높이만으로는 안 맞는다.
+                                            // 156624779 5쪽 실측: 왼쪽 칸 vpos 15250HU =
+                                            // 높이 14530 + offset 720, 오른쪽 칸 17188 =
+                                            // 16899 + 289 — 둘 다 **단위까지** 일치한다.
+                                            // 종전 `|vpos − 높이| ≤ 1` 은 이 둘을 각각 9.6px·
+                                            // 3.9px 차로 놓쳐, 그림이 제 높이만큼 더 내려가
+                                            // 칸과 용지 밖으로 나갔다(아래끝 898.7pt).
+                                            // #6175·#6280 이 세운 "개체 흐름 높이 = 높이 +
+                                            // 오프셋" 과 같은 계약이다.
+                                            let own_displacement = pic_h
+                                            + hwpunit_to_px(
+                                                crate::renderer::float_placement::signed_hwpunit(
+                                                    pic.common.vertical_offset,
+                                                ),
+                                                self.dpi,
+                                            );
+                                            (hwpunit_to_px(seg.vertical_pos, self.dpi)
+                                                - own_displacement)
                                                 .abs()
                                                 <= 1.0
                                         });
@@ -5579,6 +5623,11 @@ impl LayoutEngine {
                             } else {
                                 pic_y
                             };
+                            if std::env::var("RHWP_6313_DBG").is_ok() && pic_y > 700.0 {
+                                eprintln!(
+                                    "[6313B] pic_y={pic_y:.1} pic_h={pic_h:.1} pic_x={pic_x:.1}"
+                                );
+                            }
                             let pic_area = LayoutRect {
                                 x: pic_x,
                                 y: pic_y,
@@ -6816,7 +6865,9 @@ impl LayoutEngine {
             pad_right = new_pr;
 
             let inner_x = cell_x + pad_left;
-            let inner_width = (cell_w - pad_left - pad_right).max(0.0);
+            let inner_width = crate::renderer::composer::cell_inner_text_width(
+                cell_w, pad_left, pad_right, self.dpi,
+            );
             let inner_height = (cell_h - pad_top - pad_bottom).max(0.0);
 
             // [Task #671] line_segs 비어 있는 셀 paragraph 의 단일 ComposedLine 압축
@@ -8063,7 +8114,9 @@ impl LayoutEngine {
             } else {
                 0.0
             };
-            let inner_width = (cell_w - pad_left - pad_right).max(0.0);
+            let inner_width = crate::renderer::composer::cell_inner_text_width(
+                cell_w, pad_left, pad_right, self.dpi,
+            );
             let mut cell_units = Vec::new();
             let mut after_completed_multiline_table = false;
             for (pi, para) in cell.paragraphs.iter().enumerate() {
@@ -8730,7 +8783,12 @@ impl LayoutEngine {
         // 교정된 문서(80168 pi=1056 r7: 한글 PDF 8줄 실측)에서는 한글이 지키는 패딩을
         // 깨 7줄로 과소(157→156 회귀) — shrink 는 폰트 폭 오차의 문서별 보상재로,
         // 일반화 불가(#2279 코멘트). 측정 폭은 원 패딩 유지.
-        let inner_width = (cell_w - pad_left - pad_right).max(0.0);
+        //
+        // 최소 줄 너비는 다르다. 그것은 문서별 보상재가 아니라 한/글이 지키는 규칙이고
+        // (samples 전수 7,862줄 중 98.7%), 측정과 렌더가 갈리면 줄 수가 어긋난다.
+        // 그래서 shrink 와 달리 `cell_inner_text_width` 안에서 여기에도 적용된다.
+        let inner_width =
+            crate::renderer::composer::cell_inner_text_width(cell_w, pad_left, pad_right, self.dpi);
         let line_seg_is_synthetic = |seg: &crate::model::paragraph::LineSeg| {
             seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
         };
@@ -11945,10 +12003,42 @@ impl LayoutEngine {
                             &mut h,
                         );
                     }
+                    if std::env::var("RHWP_DIAG_6368").is_ok() {
+                        let over = h + u.height - avail_height;
+                        if over > 0.0 && over <= 2.0 {
+                            eprintln!(
+                                "DIAG_6368 hard-cut pi={} j={} start={} h={:.2} u_h={:.2} avail={:.2} over={:.2}",
+                                u.para_idx, j, start, h, u.height, avail_height, over
+                            );
+                        }
+                    }
                     hit_hard_break = true;
                     break;
                 }
-                if j > start && h + u.height > avail_height {
+                // [#6368] 기본 용량 컷의 부동소수 끝자리 관용. hwpctl_API Example
+                // 코드 상자의 마지막 줄은 유닛 합 vs 예산 차이가 0.0267px — 그
+                // 끝자리 초과만으로 한글과 달리 다음 쪽으로 이월되어 9개 쪽 경계의
+                // 줄 소유가 연쇄로 어긋났다. 관용 폭은 상수 문서 참조(0.5 는 실초과
+                // 0.19·0.4px 까지 삼켜 겹침·고아 가드 회귀를 냈다).
+                if std::env::var("RHWP_DIAG_6368").is_ok() {
+                    let over = h + u.height - avail_height;
+                    if j > start && over > 0.0 && over <= ROW_CUT_CAPACITY_FP_EPSILON_PX {
+                        eprintln!(
+                            "DIAG_6368 cap-absorb pi={} j={} start={} h={:.2} u_h={:.2} avail={:.2} over={:.4}",
+                            u.para_idx, j, start, h, u.height, avail_height, over
+                        );
+                    }
+                }
+                if j > start && h + u.height > avail_height + ROW_CUT_CAPACITY_FP_EPSILON_PX {
+                    if std::env::var("RHWP_DIAG_6368").is_ok() {
+                        let over = h + u.height - avail_height;
+                        if over <= 2.0 {
+                            eprintln!(
+                                "DIAG_6368 cap-cut pi={} j={} start={} h={:.2} u_h={:.2} avail={:.2} over={:.2}",
+                                u.para_idx, j, start, h, u.height, avail_height, over
+                            );
+                        }
+                    }
                     // [#5920] 마지막으로 놓이는 중첩 표 atom 유닛이 **상자 아래
                     // 보이지 않는 이송 여백** 때문에만 예산을 넘으면 현재 쪽에
                     // 앉힌다. 보이는 상자는 본문 안에 들어가므로 한글과 같은 쪽에
@@ -12195,7 +12285,28 @@ impl LayoutEngine {
                     hit_hard_break = true;
                     break;
                 }
-                if j > start && h + u.height > avail_height {
+                // [#6368] `advance_row_cut_inner` 기본 컷과 같은 부동소수 끝자리
+                // 관용(80168_regulatory 실측 0.0133px) — 끝자리 초과만으로 마지막
+                // 줄이 다음 쪽으로 이월되지 않게 한다. 관용 폭은 상수 문서 참조.
+                if std::env::var("RHWP_DIAG_6368").is_ok() {
+                    let over = h + u.height - avail_height;
+                    if j > start && over > 0.0 && over <= ROW_CUT_CAPACITY_FP_EPSILON_PX {
+                        eprintln!(
+                            "DIAG_6368 block-absorb pi={} j={} start={} h={:.2} u_h={:.2} avail={:.2} over={:.4}",
+                            u.para_idx, j, start, h, u.height, avail_height, over
+                        );
+                    }
+                }
+                if j > start && h + u.height > avail_height + ROW_CUT_CAPACITY_FP_EPSILON_PX {
+                    if std::env::var("RHWP_DIAG_6368").is_ok() {
+                        let over = h + u.height - avail_height;
+                        if over <= 2.0 {
+                            eprintln!(
+                                "DIAG_6368 block-cut pi={} j={} start={} h={:.2} u_h={:.2} avail={:.2} over={:.2}",
+                                u.para_idx, j, start, h, u.height, avail_height, over
+                            );
+                        }
+                    }
                     let visible_tail_before_spacer = relaxed_hard_break
                         && Self::visible_tail_fits_before_spacer(&units, j, h, avail_height);
                     if visible_tail_before_spacer {
@@ -14149,7 +14260,9 @@ impl LayoutEngine {
                 crate::renderer::composer::no_ls_short_label_cell(
                     cell,
                     table,
-                    (cell_w_px - pad_left - pad_right).max(0.0),
+                    crate::renderer::composer::cell_inner_text_width(
+                        cell_w_px, pad_left, pad_right, self.dpi,
+                    ),
                     cell_h_px - pad_top - pad_bottom,
                     styles,
                     self.dpi,

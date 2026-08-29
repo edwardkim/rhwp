@@ -49,6 +49,7 @@ import { tableObjectClipboardTarget } from './table-object-clipboard-target';
 import { clearObjectEditingPage } from './object-selection-page';
 import { showInitialCaretAndPublishFocus } from './initial-caret-focus';
 import { emitHeaderFooterModeChanged } from './header-footer-mode';
+import { CellBlockLetterImeGuard } from '@/command/contextual-shortcut';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const DRAG_SCROLL_EDGE_PX = 48;
@@ -519,6 +520,7 @@ export class InputHandler {
   /** HF 선택 위 IME는 선택 삭제와 최종 조합 문자열을 하나의 snapshot으로 기록한다. */
   private headerFooterSelectionComposition = false;
   private _pendingNavAfterIME: NavigationKeyInput | null = null;
+  private _cellBlockLetterImeGuard = new CellBlockLetterImeGuard();
   // iOS 폴백: composition 이벤트 없이 input만으로 한글 조합 처리
   private _iosComposing = false;
   private _iosAnchor: DocumentPosition | null = null;
@@ -3745,7 +3747,18 @@ export class InputHandler {
       }
       const zoom = this.viewportManager.getZoom();
       const excluded = this.cursor.getExcludedCells();
-      this.cellSelectionRenderer.render(bboxes, range, zoom, excluded.size > 0 ? excluded : undefined);
+      // 보호 셀 클릭의 내부 선택은 F5 학습 상태가 아니다. 기존 하이라이트만 유지한다.
+      const showPhase = !this.cursor.isProtectedCellSelectionMode();
+      const phase = showPhase ? this.cursor.getCellSelectionPhase() : undefined;
+      const focus = showPhase ? this.cursor.getCellSelectionFocus() ?? undefined : undefined;
+      this.cellSelectionRenderer.render(
+        bboxes,
+        range,
+        zoom,
+        excluded.size > 0 ? excluded : undefined,
+        phase,
+        focus,
+      );
     } catch (e) {
       console.warn('[InputHandler] updateCellSelection 실패:', e);
       this.cellSelectionRenderer.clear();
@@ -4150,6 +4163,7 @@ export class InputHandler {
     this._lastCompositionText = '';
     this._lastComposedText = '';
     this._pendingNavAfterIME = null;
+    this._cellBlockLetterImeGuard.reset();
     if (this._iosInputTimer) {
       clearTimeout(this._iosInputTimer);
       this._iosInputTimer = null;
@@ -4199,6 +4213,7 @@ export class InputHandler {
     this._lastCompositionText = '';
     this._lastComposedText = '';
     this._pendingNavAfterIME = null;
+    this._cellBlockLetterImeGuard.reset();
     if (this._iosInputTimer) {
       clearTimeout(this._iosInputTimer);
       this._iosInputTimer = null;

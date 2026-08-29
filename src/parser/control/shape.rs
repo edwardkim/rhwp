@@ -6,10 +6,9 @@ use super::parse_caption;
 use crate::model::control::Control;
 use crate::model::image::{ImageEffect, Picture};
 use crate::model::shape::{
-    ArcShape, Caption, CaptionDirection, ChartShape, ChartType, CommonObjAttr, CurveShape,
-    DrawingObjAttr, EllipseShape, GroupShape, HorzAlign, HorzRelTo, LineShape, OleDrawingAspect,
-    OleShape, PolygonShape, RectangleShape, ShapeComponentAttr, ShapeObject, TextWrap, VertAlign,
-    VertRelTo,
+    ArcShape, Caption, ChartShape, CommonObjAttr, CurveShape, DrawingObjAttr, EllipseShape,
+    GroupShape, HorzAlign, HorzRelTo, LineShape, OleDrawingAspect, OleShape, PolygonShape,
+    RectangleShape, ShapeComponentAttr, ShapeObject, TextWrap, VertAlign, VertRelTo,
 };
 use crate::model::style::{Fill, ShapeBorderLine};
 use crate::model::Padding;

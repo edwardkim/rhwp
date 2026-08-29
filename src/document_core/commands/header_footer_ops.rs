@@ -1483,7 +1483,7 @@ mod tests {
         use crate::model::document::{Document, Section, SectionDef};
         use crate::model::page::PageDef;
         let mut doc = Document::default();
-        let mut section = Section {
+        let section = Section {
             section_def: SectionDef {
                 page_def: PageDef {
                     width: 59528,  // A4 폭

@@ -1,13 +1,9 @@
 //! 각주/미주(+미주 수식) native 명령 (object_ops 분할, #1904).
 
-use super::MIN_SHAPE_SIZE;
-use crate::document_core::helpers::{get_textbox_from_shape, get_textbox_from_shape_mut};
 use crate::document_core::DocumentCore;
 use crate::error::HwpError;
 use crate::model::control::Control;
 use crate::model::event::DocumentEvent;
-use crate::model::paragraph::Paragraph;
-use crate::model::shape::{common_obj_offsets, ShapeObject};
 
 impl DocumentCore {
     fn find_note_equation_ref(

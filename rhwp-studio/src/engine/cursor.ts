@@ -4,6 +4,7 @@ import type { WasmBridge } from '@/core/wasm-bridge';
 import { cellAxisPath, type FocusedCellCursorGeometry } from './command';
 // 제외 셀 Set 의 키 형식은 조립하는 쪽과 조회하는 쪽이 반드시 같아야 한다 → 단일 정의.
 import { excludedCellKey } from './cell-block-format';
+import type { CellSelectionPhase, CellSelectionPoint } from './cell-selection-phase';
 
 type CellSelectionReason = 'manual' | 'protected';
 
@@ -85,7 +86,7 @@ export class CursorState {
   // ─── F5 셀 블록 선택 ──────────────────────────────────────
   private _cellSelectionMode = false;
   /** 셀 선택 단계: 1=단일셀, 2=범위선택, 3=전체선택 */
-  private _cellSelectionPhase = 1;
+  private _cellSelectionPhase: CellSelectionPhase = 1;
   private _cellSelectionReason: CellSelectionReason = 'manual';
   private cellAnchor: { row: number; col: number } | null = null;
   private cellFocus: { row: number; col: number } | null = null;
@@ -1418,7 +1419,13 @@ export class CursorState {
   }
 
   /** 셀 선택 단계를 반환한다. */
-  getCellSelectionPhase(): number { return this._cellSelectionPhase; }
+  getCellSelectionPhase(): CellSelectionPhase { return this._cellSelectionPhase; }
+
+  /** 방향키 이동·확장의 활성 끝점. renderer가 정렬 range에서 방향을 다시 추론하지 않게 한다. */
+  getCellSelectionFocus(): CellSelectionPoint | null {
+    if (!this._cellSelectionMode || !this.cellFocus) return null;
+    return { ...this.cellFocus };
+  }
 
   /** F5 반복: 셀 선택 단계를 다음으로 진행한다. */
   advanceCellSelectionPhase(): void {

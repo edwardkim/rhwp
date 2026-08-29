@@ -101,7 +101,7 @@ impl DocumentCore {
                 .text
                 .is_empty();
 
-            let mut insert_idx = if left_empty {
+            let insert_idx = if left_empty {
                 // 빈 왼쪽 문단을 첫 번째 파싱 문단으로 대체
                 self.document.sections[section_idx].paragraphs[para_idx] = parsed_paras[0].clone();
                 let idx = para_idx + 1;

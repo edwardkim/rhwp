@@ -1,15 +1,13 @@
 //! 도형 생성/속성/그룹 native 명령 (object_ops 분할, #1904).
 
 use super::MIN_SHAPE_SIZE;
-use crate::document_core::helpers::{get_textbox_from_shape, get_textbox_from_shape_mut};
+use crate::document_core::helpers::get_textbox_from_shape;
 use crate::document_core::DocumentCore;
 use crate::error::HwpError;
 use crate::model::control::Control;
 use crate::model::event::DocumentEvent;
 use crate::model::paragraph::Paragraph;
-use crate::model::shape::{
-    common_obj_offsets, Caption, CaptionDirection, CaptionVertAlign, ShapeObject,
-};
+use crate::model::shape::{Caption, CaptionDirection, CaptionVertAlign, ShapeObject};
 
 impl DocumentCore {
     fn shape_caption_ref(shape: &ShapeObject) -> Option<&Caption> {

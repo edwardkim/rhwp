@@ -48,6 +48,34 @@ test('한글 IME의 Ctrl+A를 물리 KeyA로 모두 선택에 매핑한다', () 
   assert.equal(command({ key: 'ㅂ', code: 'KeyQ', ctrlKey: true }), null);
 });
 
+test('한글 IME의 Ctrl+Shift+S를 물리 KeyS로 다른 이름으로 저장에 매핑한다', () => {
+  assert.equal(
+    command({ key: 'Process', code: 'KeyS', ctrlKey: true, shiftKey: true }),
+    'file:save-as',
+  );
+});
+
+test('완전히 같은 단축키 슬롯은 서로 다른 커맨드에 중복 배정하지 않는다', () => {
+  const owners = new Map<string, Set<string>>();
+  for (const [def, commandId] of defaultShortcuts) {
+    const signature = JSON.stringify({
+      key: def.key,
+      ctrl: def.ctrl ?? false,
+      shift: def.shift ?? false,
+      alt: def.alt ?? false,
+      platform: def.platform ?? 'all',
+    });
+    const commands = owners.get(signature) ?? new Set<string>();
+    commands.add(commandId);
+    owners.set(signature, commands);
+  }
+
+  const conflicts = [...owners.entries()]
+    .filter(([, commands]) => commands.size > 1)
+    .map(([signature, commands]) => ({ signature, commands: [...commands].sort() }));
+  assert.deepEqual(conflicts, []);
+});
+
 test('macOS 영문 입력 Option+G의 © 문자 값도 물리 KeyG로 찾아가기를 실행한다', () => {
   assert.equal(command({ key: 'g', code: 'KeyG', altKey: true }, 'mac'), 'edit:goto');
   assert.equal(command({ key: '©', code: 'KeyG', altKey: true }, 'mac'), 'edit:goto');

@@ -1,7 +1,6 @@
 use crate::model::document::Document;
 use crate::model::style::{
-    border_width_mm_str, Alignment, BorderLine, BorderLineType, CharShape, LineSpacingType,
-    ParaShape,
+    border_width_mm_str, Alignment, BorderLine, BorderLineType, LineSpacingType, ParaShape,
 };
 use crate::parser::HmlImportMetadata;
 

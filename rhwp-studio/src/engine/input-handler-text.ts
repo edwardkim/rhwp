@@ -368,7 +368,23 @@ export function handleDelete(this: any, pos: DocumentPosition, inCell: boolean):
   }
 }
 
+function clearCellBlockLetterImeFollowup(this: any): void {
+  this.textarea.value = '';
+  this.isComposing = false;
+  this.compositionAnchor = null;
+  this.compositionLength = 0;
+  this._lastCompositionText = '';
+  this._lastComposedText = '';
+  this.caret.hideComposition();
+  this.resetRawTextMutationEffects();
+}
+
 export function onCompositionStart(this: any): void {
+  if (this._cellBlockLetterImeGuard?.consume('compositionstart')) {
+    clearCellBlockLetterImeFollowup.call(this);
+    return;
+  }
+
   this.resetRawTextMutationEffects();
   this.headerFooterSelectionComposition = false;
   // 선택 영역이 있으면 삭제 후 조합 시작
@@ -417,6 +433,11 @@ export function onCompositionStart(this: any): void {
 }
 
 export function onCompositionEnd(this: any): void {
+  if (this._cellBlockLetterImeGuard?.consume('compositionend', this.textarea.value)) {
+    clearCellBlockLetterImeFollowup.call(this);
+    return;
+  }
+
   const anchor = this.compositionAnchor;
   const finalLength = this.compositionLength;
   const headerFooterSelectionComposition = this.headerFooterSelectionComposition === true;
@@ -496,6 +517,12 @@ export function getTextAt(this: any, pos: DocumentPosition, count: number): stri
 
 export function onInput(this: any, e?: InputEvent): void {
   if (!this.active) return;
+
+  if (this._cellBlockLetterImeGuard?.consume('input', this.textarea.value)) {
+    e?.preventDefault();
+    clearCellBlockLetterImeFollowup.call(this);
+    return;
+  }
 
   const text = this.textarea.value;
   // const inputType = e?.inputType ?? 'unknown';
