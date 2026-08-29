@@ -165,16 +165,37 @@ impl DocumentCore {
         }
         Self::apply_common_obj_attr_from_json(&mut eq.common, props_json);
 
-        let (width, height) =
-            crate::renderer::equation::intrinsic_size_hwp(&eq.script, eq.font_size);
-        eq.common.width = width;
-        eq.common.height = height;
+        // [#5890] 파생(자동 크기)은 봉지가 크기를 지정하지 않은 축에만 적용한다.
+        // 종전에는 무조건 덧써서 getter 가 낸 봉지를 그대로 먹여도 크기가 바뀌었다
+        // (get∘set ≠ 항등) — 속성 봉지만으로 되돌릴 수 없는 조작이 되고,
+        // apply_common_obj_attr_from_json 이 방금 반영한 width/height 도 조용히 무시됐다.
+        // UI 다이얼로그는 변경된 키만 담은 부분 봉지를 보내므로(width/height 미포함)
+        // 스크립트·글자크기 편집의 자동 크기 재계산은 종전대로 동작한다.
+        let explicit_width = json_u32(props_json, "width").is_some();
+        let explicit_height = json_u32(props_json, "height").is_some();
+        if !explicit_width || !explicit_height {
+            let (width, height) =
+                crate::renderer::equation::intrinsic_size_hwp(&eq.script, eq.font_size);
+            if !explicit_width {
+                eq.common.width = width;
+            }
+            if !explicit_height {
+                eq.common.height = height;
+            }
+        }
 
-        // raw_ctrl_data 무효화: serialize_equation_control 은 raw_ctrl_data 가 비어있지 않으면
-        // 원본 CTRL_HEADER 바이트를 그대로 방출한다. 편집한 eq.common(크기/위치/treat_as_char)이
-        // .hwp 저장에 반영되도록 원본 passthrough 를 비운다(table_ops 셀 편집 가드, adapt_equation
-        // 의 hwpx→hwp 변환과 동형). EQEDIT 자식 레코드(script/font)는 IR 로 재생성되므로 무관.
-        eq.raw_ctrl_data.clear();
+        // [#5890] raw 패스스루 무효화는 파괴가 아니라 판정으로 한다.
+        // serialize_equation_control 은 raw_ctrl_data 가 비어있지 않으면 원본 CTRL_HEADER
+        // 바이트를 방출하지만, #4495 봉인이 서 있으면 `common` 변경만으로 봉인이 어긋나
+        // 저장기가 IR 합성으로 내려간다 — 원본 바이트를 지우지 않아도 편집(크기/위치/
+        // treat_as_char)은 .hwp 저장에 반영된다. 지우지 않으면 `common` 을 되돌렸을 때
+        // 봉인이 다시 맞아 원본 바이트가 그대로 살아난다(속성 봉지만으로 되돌리는 참 역연산).
+        // 봉인이 없는 raw(파서를 거치지 않은 합성 IR·어댑터 산출)는 판정 근거가 없어
+        // 종전대로 비운다(table_ops 셀 편집 가드, adapt_equation 의 hwpx→hwp 변환과 동형).
+        // EQEDIT 자식 레코드(script/font)는 어느 쪽이든 IR 로 재생성되므로 무관.
+        if eq.raw_ctrl_seal.is_none() {
+            eq.raw_ctrl_data.clear();
+        }
     }
     pub fn get_equation_properties_native(
         &self,
@@ -502,23 +523,214 @@ impl DocumentCore {
 #[cfg(test)]
 mod tests {
     use crate::document_core::DocumentCore;
-    use crate::model::control::Equation;
+    use crate::model::control::{Control, Equation};
+    use crate::model::raw_provenance::record_digest;
 
-    /// .hwp 저장 시 serialize_equation_control 은 raw_ctrl_data 가 비어있지 않으면 원본
-    /// CTRL_HEADER 를 그대로 방출한다. 속성 편집 후 raw_ctrl_data 가 비워지지 않으면
-    /// 크기/위치 편집이 저장에서 원복된다.
-    #[test]
-    fn apply_equation_properties_clears_raw_ctrl_data() {
+    fn sealed_equation() -> Equation {
         let mut eq = Equation {
             script: "1 over 2".to_string(),
             font_size: 1000,
             raw_ctrl_data: vec![0xAB; 16],
             ..Default::default()
         };
+        eq.common.width = 5000;
+        eq.common.height = 4000;
+        // 파서(seal_body_raw_provenance)가 서는 봉인과 같은 계약.
+        eq.raw_ctrl_seal = Some(record_digest(&eq.common));
+        eq
+    }
+
+    /// 봉인이 없는 raw(파서를 거치지 않은 합성 IR·어댑터 산출)는 저장기가 원본
+    /// CTRL_HEADER 를 무조건 방출하므로, 판정 근거가 없어 종전대로 비워야 한다.
+    /// 비우지 않으면 크기/위치 편집이 저장에서 원복된다.
+    #[test]
+    fn apply_equation_properties_clears_unsealed_raw_ctrl_data() {
+        let mut eq = Equation {
+            script: "1 over 2".to_string(),
+            font_size: 1000,
+            raw_ctrl_data: vec![0xAB; 16],
+            ..Default::default()
+        };
+        assert!(eq.raw_ctrl_seal.is_none(), "합성 IR 은 봉인이 없다");
         DocumentCore::apply_equation_properties(&mut eq, 96.0, r#"{"width":5000,"height":4000}"#);
         assert!(
             eq.raw_ctrl_data.is_empty(),
-            "apply_equation_properties 후 raw_ctrl_data 가 비워져야 편집이 .hwp 저장에 반영된다"
+            "봉인 없는 raw_ctrl_data 는 비워져야 편집이 .hwp 저장에 반영된다"
         );
+    }
+
+    /// [#5890] 봉인된 raw 는 setter 가 파괴하지 않는다 — #4495 봉인이 `common` 변경을
+    /// 감지해 저장기를 IR 합성으로 내리므로 지울 이유가 없고, 지우지 않으면 되돌릴 때
+    /// 원본 바이트가 살아난다.
+    #[test]
+    fn apply_equation_properties_keeps_sealed_raw_ctrl_data() {
+        let mut eq = sealed_equation();
+        DocumentCore::apply_equation_properties(&mut eq, 96.0, r#"{"script":"1 over 3"}"#);
+        assert_eq!(
+            eq.raw_ctrl_data,
+            vec![0xAB; 16],
+            "봉인된 raw_ctrl_data 는 setter 가 지우지 않는다 (#5890)"
+        );
+        assert_ne!(
+            eq.raw_ctrl_seal,
+            Some(record_digest(&eq.common)),
+            "자동 크기 재계산으로 common 이 바뀌었으면 봉인이 어긋나 저장기가 IR 로 합성한다"
+        );
+    }
+
+    /// [#5890] 파괴하지 않으므로 되돌리기가 성립한다 — `common` 을 원상복구하면 봉인이
+    /// 다시 맞아 저장기가 원본 CTRL_HEADER 바이트를 그대로 방출한다.
+    #[test]
+    fn sealed_equation_raw_revives_when_common_restored() {
+        let mut eq = sealed_equation();
+        let sealed = eq.raw_ctrl_seal.expect("픽스처는 봉인돼 있다");
+        let before = eq.common.clone();
+
+        DocumentCore::apply_equation_properties(&mut eq, 96.0, r#"{"script":"1 over 3"}"#);
+        assert_ne!(
+            record_digest(&eq.common),
+            record_digest(&before),
+            "편집이 common 을 바꿨다"
+        );
+
+        eq.script = "1 over 2".to_string();
+        eq.common = before;
+        assert_eq!(
+            eq.raw_ctrl_seal,
+            Some(sealed),
+            "setter 는 봉인 자체를 건드리지 않는다"
+        );
+        assert_eq!(
+            sealed,
+            record_digest(&eq.common),
+            "common 원상복구 후 봉인이 다시 맞아 저장기가 원본 raw 를 승인한다 (#5890)"
+        );
+        assert_eq!(eq.raw_ctrl_data, vec![0xAB; 16], "원본 바이트가 남아 있다");
+    }
+
+    /// [#5890] 자동 크기 파생은 봉지가 지정하지 않은 축에만 적용한다 — 종전에는
+    /// 무조건 덧써서 명시된 width/height 가 조용히 무시됐다.
+    #[test]
+    fn apply_equation_properties_honors_explicit_size() {
+        let mut eq = Equation {
+            script: "1 over 2".to_string(),
+            font_size: 1000,
+            ..Default::default()
+        };
+        let (intrinsic_w, intrinsic_h) =
+            crate::renderer::equation::intrinsic_size_hwp(&eq.script, eq.font_size);
+
+        DocumentCore::apply_equation_properties(&mut eq, 96.0, r#"{"width":5000,"height":4000}"#);
+        assert_eq!((eq.common.width, eq.common.height), (5000, 4000));
+
+        // 한 축만 지정하면 나머지 축은 파생값을 받는다.
+        let mut half = Equation {
+            script: "1 over 2".to_string(),
+            font_size: 1000,
+            ..Default::default()
+        };
+        DocumentCore::apply_equation_properties(&mut half, 96.0, r#"{"width":5000}"#);
+        assert_eq!((half.common.width, half.common.height), (5000, intrinsic_h));
+
+        // 크기를 담지 않은 부분 봉지(UI 다이얼로그 계약)는 두 축 모두 파생값.
+        let mut auto = Equation {
+            script: "1 over 2".to_string(),
+            font_size: 1000,
+            ..Default::default()
+        };
+        DocumentCore::apply_equation_properties(&mut auto, 96.0, r#"{"color":255}"#);
+        assert_eq!(
+            (auto.common.width, auto.common.height),
+            (intrinsic_w, intrinsic_h)
+        );
+    }
+
+    fn find_equation_coord(core: &DocumentCore) -> (usize, usize, usize) {
+        for (si, section) in core.document.sections.iter().enumerate() {
+            for (pi, para) in section.paragraphs.iter().enumerate() {
+                for (ci, ctrl) in para.controls.iter().enumerate() {
+                    if matches!(ctrl, Control::Equation(_)) {
+                        return (si, pi, ci);
+                    }
+                }
+            }
+        }
+        panic!("샘플에 수식 컨트롤이 없다");
+    }
+
+    /// [#5890] 한컴 원본 3종에서 getter 가 낸 속성 봉지를 그대로 setter 에 먹이면
+    /// 저장 바이트가 편집 전과 같아야 한다(get∘set = 항등).
+    ///
+    /// 기준선도 구역 패스스루(`raw_stream`)를 비워 setter 와 같은 조건에서 비교한다 —
+    /// 판정 대상은 수식 CTRL_HEADER 이고, 구역 스트림 봉인은 #4488 이 따로 다룬다.
+    ///
+    /// 수정 전에는 세 샘플 모두 불일치했다: setter 가 `raw_ctrl_data` 를 파괴하고
+    /// 자동 크기로 `common.width/height` 를 덧썼다(equation-lim 9096x2715 → 9327x2684,
+    /// atop-equation-01 1235x2362 → 1075x2640, issue-505 9096x2715 → 13466x3025).
+    #[test]
+    fn setter_roundtrip_is_byte_identical_on_hancom_samples() {
+        for sample in [
+            "samples/equation-lim.hwp",
+            "samples/atop-equation-01.hwp",
+            "samples/issue-505-equations.hwp",
+        ] {
+            let bytes = std::fs::read(sample).unwrap_or_else(|e| panic!("{sample}: {e}"));
+
+            let mut base = DocumentCore::from_bytes(&bytes).expect("파싱");
+            let (si, pi, ci) = find_equation_coord(&base);
+            {
+                let eq = base
+                    .find_equation_ref(si, pi, ci, None, None)
+                    .expect("수식 참조");
+                assert!(
+                    !eq.raw_ctrl_data.is_empty() && eq.raw_ctrl_seal.is_some(),
+                    "{sample}: 파스본 수식은 봉인된 raw 를 가진다 (전제)"
+                );
+            }
+            let bag = base
+                .get_equation_properties_native(si, pi, ci, None, None)
+                .expect("getter");
+            base.document.sections[si].raw_stream = None;
+            let baseline = base.export_hwp_native().expect("기준 저장");
+
+            let mut edited = DocumentCore::from_bytes(&bytes).expect("파싱");
+            edited
+                .set_equation_properties_native(si, pi, ci, None, None, &bag)
+                .expect("setter");
+            let roundtripped = edited.export_hwp_native().expect("편집 저장");
+
+            assert_eq!(
+                baseline, roundtripped,
+                "{sample}: getter 봉지를 그대로 먹인 뒤 저장 바이트가 달라졌다 (#5890)"
+            );
+
+            // 종전 `raw_ctrl_data.clear()` 가 지키던 계약은 그대로다 — 실제 편집은 봉인
+            // 불일치로 저장기를 IR 합성으로 내려 저장·재파싱에서 살아남는다.
+            let mut resized = DocumentCore::from_bytes(&bytes).expect("파싱");
+            resized
+                .set_equation_properties_native(
+                    si,
+                    pi,
+                    ci,
+                    None,
+                    None,
+                    r#"{"width":5000,"height":4000}"#,
+                )
+                .expect("setter");
+            let resaved = resized.export_hwp_native().expect("편집 저장");
+            assert_ne!(
+                baseline, resaved,
+                "{sample}: 크기 편집이 저장 바이트에 반영되지 않았다"
+            );
+            let reparsed = DocumentCore::from_bytes(&resaved).expect("재파싱");
+            let eq = reparsed
+                .find_equation_ref(si, pi, ci, None, None)
+                .expect("수식 참조");
+            assert_eq!(
+                (eq.common.width, eq.common.height),
+                (5000, 4000),
+                "{sample}: 크기 편집이 저장·재파싱에서 살아남지 않았다"
+            );
+        }
     }
 }
