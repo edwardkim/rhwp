@@ -5321,15 +5321,19 @@ mod letter_spacing_trim_tests {
             BreakToken::Text {
                 start_idx: 0,
                 end_idx: 2,
+                base_width: 20.0,
                 width: 20.0,
                 max_font_size: 12.0,
+                base_char_widths: vec![10.0, 10.0],
                 char_widths: vec![10.0, 10.0],
             },
             BreakToken::Text {
                 start_idx: 2,
                 end_idx: 4,
+                base_width: 10.5,
                 width: 10.5,
                 max_font_size: 12.0,
+                base_char_widths: vec![5.25, 5.25],
                 char_widths: vec![5.25, 5.25],
             },
         ];
@@ -5349,6 +5353,7 @@ mod letter_spacing_trim_tests {
             spacing,
             0,
             true,
+            None,
         )
         .iter()
         .map(|line| (line.start_idx, line.end_idx))
