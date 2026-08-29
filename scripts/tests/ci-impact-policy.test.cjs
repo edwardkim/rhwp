@@ -277,6 +277,42 @@ test('new review reference PR keeps required aggregates without product workers'
   }
 });
 
+test('existing PDF reference PR keeps required aggregates without product workers', () => {
+  for (const filename of [
+    'pdf/existing-reference.pdf',
+    'pdf-2020/existing-reference.pdf',
+    'pdf-large/nested/existing-reference.pdf',
+  ]) {
+    const files = [{ filename, status: 'modified' }];
+    const policy = determinePolicy(policyInput({ files, classification: classificationFor(files) }));
+    assert.equal(policy.decision, 'selective', filename);
+    assert.deepEqual(policy.expected_workflows, {
+      CI: 'true',
+      CodeQL: 'true',
+      'Render Diff': 'false',
+    }, filename);
+    assert.equal(policy.classification.rust_required, 'false', filename);
+    assert.equal(policy.classification.frontend_mode, 'none', filename);
+    assert.equal(policy.classification.render_required, 'false', filename);
+    assert.equal(policy.classification.native_skia_required, 'false', filename);
+    assert.equal(policy.classification.codeql_languages, 'none', filename);
+    assert.equal(policy.classification.reason, 'classified:review-only', filename);
+  }
+});
+
+test('existing sample reference changes and removed PDFs remain full policy', () => {
+  for (const file of [
+    { filename: 'samples/existing-reference.hwp', status: 'modified' },
+    { filename: 'pdf/existing-reference.pdf', status: 'removed' },
+  ]) {
+    const files = [file];
+    const policy = determinePolicy(policyInput({ files, classification: classificationFor(files) }));
+    assert.equal(policy.decision, 'full', file.filename);
+    assert.equal(policy.classification.classification_status, 'full', file.filename);
+    assert.equal(policy.classification.reason, 'fail-closed:unclassified-path', file.filename);
+  }
+});
+
 test('external fork is mediated unless it changes the enforcement surface', () => {
   const input = policyInput();
   input.pullRequest = {
@@ -371,8 +407,8 @@ test('compact status description round-trips workflow and impact axes', () => {
   const policy = determinePolicy(policyInput());
   assert.ok(policy.status_description.length <= 140);
   assert.deepEqual(parseStatusDescription(policy.status_description), {
-    v: '5',
-    cv: '5',
+    v: '6',
+    cv: '6',
     mode: 'selective',
     rfp: '0',
     wf: '111',
@@ -982,5 +1018,5 @@ test('CLI writes policy and aggregate audit outputs', (t) => {
   assert.equal(result.audit.conclusion, 'success');
   assert.match(outputs, /^codeql_run_expected=true$/m);
   assert.match(outputs, /^audit_conclusion=success$/m);
-  assert.equal(JSON.parse(fs.readFileSync(resultPath, 'utf8')).policy.policy_version, '5');
+  assert.equal(JSON.parse(fs.readFileSync(resultPath, 'utf8')).policy.policy_version, '6');
 });

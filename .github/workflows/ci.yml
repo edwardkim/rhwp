@@ -205,14 +205,16 @@ jobs:
               if (filename.startsWith('mydocs/')) {
                 return true;
               }
+              if (isPdfReferencePath(filename)) {
+                return file.status === 'added' || file.status === 'modified';
+              }
               if (file.status !== 'added') {
                 return false;
               }
-              return isReviewReferencePath(filename);
+              return isSampleReferencePath(filename);
             }
 
-            function isReviewReferencePath(filename) {
-              const pdfPrefixes = ['pdf/', 'pdf-2020/', 'pdf-large/'];
+            function isSampleReferencePath(filename) {
               return (
                 filename.startsWith('samples/')
                 && (
@@ -221,17 +223,31 @@ jobs:
                   || filename.endsWith('.pdf')
                   || filename.endsWith('.png')
                 )
-              ) || (
+              );
+            }
+
+            function isPdfReferencePath(filename) {
+              const pdfPrefixes = ['pdf/', 'pdf-2020/', 'pdf-large/'];
+              return (
                 pdfPrefixes.some((prefix) => filename.startsWith(prefix))
                 && filename.endsWith('.pdf')
               );
             }
 
+            function isReviewReferencePath(filename) {
+              return isSampleReferencePath(filename) || isPdfReferencePath(filename);
+            }
+
+            function isReviewReferenceFile(file) {
+              const filename = file.filename;
+              if (isPdfReferencePath(filename)) {
+                return file.status === 'added' || file.status === 'modified';
+              }
+              return file.status === 'added' && isSampleReferencePath(filename);
+            }
+
             function reviewOnlyLabel(files) {
-              const hasReferenceArtifact = files.some((file) => (
-                file.status === 'added'
-                && isReviewReferencePath(file.filename)
-              ));
+              const hasReferenceArtifact = files.some((file) => isReviewReferenceFile(file));
               return hasReferenceArtifact ? 'review-reference-only' : 'mydocs-only';
             }
 

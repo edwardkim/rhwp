@@ -22,6 +22,13 @@
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 
+use rhwp::document_core::queries::hidden_text::HiddenTextOptions;
+use rhwp::document_core::queries::injection_scan::{
+    Confidence, InjectionScanOptions, InjectionScanSummary,
+};
+use rhwp::document_core::{text_security as ts, DocumentCore};
+use rhwp::model::control::Control;
+
 fn repo(rel: &str) -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join(rel)
 }
@@ -292,84 +299,184 @@ const KNOWN_GENUINE_ZERO_WIDTH: &[&str] = &[
     "정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx",
 ];
 
-#[test]
-fn negative_corpus_sweep_is_clean_across_all_three_detectors() {
+const NEGATIVE_PARTITIONS: usize = 8;
+
+fn partition_paths(mut paths: Vec<PathBuf>, partitions: usize) -> Vec<Vec<PathBuf>> {
+    paths.sort_by_key(|path| {
+        let size = std::fs::metadata(path).map(|m| m.len()).unwrap_or(0);
+        let name = path.file_name().unwrap_or_default().to_os_string();
+        (std::cmp::Reverse(size), name)
+    });
+
+    let mut buckets: Vec<(u64, Vec<PathBuf>)> = (0..partitions).map(|_| (0, Vec::new())).collect();
+    for path in paths {
+        let size = std::fs::metadata(&path).map(|m| m.len()).unwrap_or(0);
+        let index = buckets
+            .iter()
+            .enumerate()
+            .min_by_key(|(i, (total, rows))| (*total, rows.len(), *i))
+            .map(|(i, _)| i)
+            .expect("partition bucket");
+        buckets[index].0 += size.max(1);
+        buckets[index].1.push(path);
+    }
+    buckets.into_iter().map(|(_, rows)| rows).collect()
+}
+
+fn mcp_tool_names() -> Vec<String> {
+    let args = ["capabilities", "--mcp"];
+    let out = run(&args);
+    assert_eq!(out.status.code(), Some(0), "{}", describe(&args, &out));
+    let manifest = parse_stdout_json(&args, &out);
+    manifest["tools"]
+        .as_array()
+        .map(|tools| {
+            tools
+                .iter()
+                .filter_map(|tool| tool["name"].as_str().map(str::to_string))
+                .collect()
+        })
+        .unwrap_or_default()
+}
+
+fn unicode_finding_count(core: &DocumentCore) -> usize {
+    let mut findings = 0usize;
+    for section in &core.document().sections {
+        for para in &section.paragraphs {
+            findings += ts::scan_deception(&para.text, None).len();
+            for ctrl in &para.controls {
+                match ctrl {
+                    Control::Table(table) => {
+                        for cell in &table.cells {
+                            for cp in &cell.paragraphs {
+                                findings += ts::scan_deception(&cp.text, None).len();
+                                for nested in &cp.controls {
+                                    if let Control::Equation(eq) = nested {
+                                        findings += ts::scan_deception(&eq.script, None).len();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    Control::Shape(shape) => {
+                        if let Some(tb) = shape.as_ref().drawing().and_then(|d| d.text_box.as_ref())
+                        {
+                            for tp in &tb.paragraphs {
+                                findings += ts::scan_deception(&tp.text, None).len();
+                            }
+                        }
+                    }
+                    Control::Equation(eq) => {
+                        findings += ts::scan_deception(&eq.script, None).len();
+                    }
+                    _ => {}
+                }
+            }
+        }
+    }
+    findings
+}
+
+fn negative_corpus_sweep_partition(part: usize) {
     let docs = top_level_documents();
     assert!(
         docs.len() >= 100,
         "음성 코퍼스가 {}건뿐입니다 — 스윕이 공허하게 통과합니다",
         docs.len()
     );
+    let buckets = partition_paths(docs, NEGATIVE_PARTITIONS);
+    let docs = buckets
+        .into_iter()
+        .nth(part)
+        .unwrap_or_else(|| panic!("없는 partition: {part}"));
+    assert!(
+        !docs.is_empty(),
+        "음성 코퍼스 partition {part} 이 비어 있음"
+    );
 
     let mut checked_hidden = 0usize;
     let mut checked_injection = 0usize;
     let mut checked_unicode = 0usize;
     let mut dirty: Vec<String> = Vec::new();
+    let tool_names = mcp_tool_names();
 
     for path in &docs {
         let name = path.file_name().unwrap().to_string_lossy().to_string();
+        let Ok(data) = std::fs::read(path) else {
+            continue;
+        };
+        let Ok(core) = DocumentCore::from_bytes(&data) else {
+            continue;
+        };
 
-        // hidden-text
-        {
-            let p = path.to_str().unwrap();
-            let args = ["inspect", "hidden-text", p, "--json"];
-            let out = run(&args);
-            if out.status.code() == Some(0) {
-                let v = parse_stdout_json(&args, &out);
-                checked_hidden += 1;
-                if v["clean"] != true && !KNOWN_GENUINE_HIDDEN_TEXT.contains(&name.as_str()) {
-                    dirty.push(format!("  - [hidden-text] {name}: {}", v["hiddenText"]));
-                }
-            }
-            // 종료 코드가 0이 아니면(암호 문서 등) 이 스윕의 관심사가 아니다.
+        let hidden = core.detect_hidden_text(&HiddenTextOptions::default());
+        checked_hidden += 1;
+        if !hidden.clean && !KNOWN_GENUINE_HIDDEN_TEXT.contains(&name.as_str()) {
+            dirty.push(format!(
+                "  - [hidden-text] {name}: {}건",
+                hidden.hidden_text.len()
+            ));
         }
 
-        // injection
-        {
-            let p = path.to_str().unwrap();
-            let args = ["inspect", "injection", p, "--json", "--include-fields"];
-            let out = run(&args);
-            if out.status.code() == Some(0) {
-                let v = parse_stdout_json(&args, &out);
-                checked_injection += 1;
-                if v["clean"] != true {
-                    dirty.push(format!("  - [injection] {name}: {}", v["injectionSignals"]));
-                }
-            }
+        let injection = InjectionScanSummary {
+            signals: core.scan_injection(&InjectionScanOptions {
+                min_confidence: Confidence::Low,
+                include_fields: true,
+                tool_names: tool_names.clone(),
+            }),
+        };
+        checked_injection += 1;
+        if !injection.clean() {
+            dirty.push(format!(
+                "  - [injection] {name}: {}건 {:?}",
+                injection.signals.len(),
+                injection.signals
+            ));
         }
 
-        // unicode
-        {
-            let p = path.to_str().unwrap();
-            let args = ["inspect", "unicode", p, "--json"];
-            let out = run(&args);
-            if out.status.code() == Some(0) {
-                let v = parse_stdout_json(&args, &out);
-                checked_unicode += 1;
-                if v["clean"] != true && !KNOWN_GENUINE_ZERO_WIDTH.contains(&name.as_str()) {
-                    dirty.push(format!(
-                        "  - [unicode] {name}: {}건 {}",
-                        v["findingCount"], v["findings"]
-                    ));
-                }
-            }
+        let unicode = unicode_finding_count(&core);
+        checked_unicode += 1;
+        if unicode > 0 && !KNOWN_GENUINE_ZERO_WIDTH.contains(&name.as_str()) {
+            dirty.push(format!("  - [unicode] {name}: {unicode}건"));
         }
     }
 
     assert!(
-        checked_hidden >= 80 && checked_injection >= 80 && checked_unicode >= 80,
-        "탐지기별 검사 건수가 너무 적습니다 — hidden={checked_hidden} injection={checked_injection} unicode={checked_unicode} (스윕 대상 {})",
+        checked_hidden > 0 && checked_injection > 0 && checked_unicode > 0,
+        "탐지기별 검사 건수가 너무 적습니다 — hidden={checked_hidden} injection={checked_injection} unicode={checked_unicode} (partition {part}/{NEGATIVE_PARTITIONS}, 스윕 대상 {})",
         docs.len()
     );
 
     assert!(
         dirty.is_empty(),
-        "정상 코퍼스 스윕에서 오탐 {}건 (hidden={checked_hidden} injection={checked_injection} unicode={checked_unicode}):\n{}\n\n\
+        "정상 코퍼스 스윕 partition {part}/{NEGATIVE_PARTITIONS} 에서 오탐 {}건 (hidden={checked_hidden} injection={checked_injection} unicode={checked_unicode}):\n{}\n\n\
          오탐 1건이 향후 모든 탐지 신호를 무시하게 만듭니다 — 규칙을 좁히세요.",
         dirty.len(),
         dirty.join("\n")
     );
 }
+
+macro_rules! negative_corpus_partition_tests {
+    ($($name:ident => $part:expr),+ $(,)?) => {
+        $(
+            #[test]
+            fn $name() {
+                negative_corpus_sweep_partition($part);
+            }
+        )+
+    };
+}
+
+negative_corpus_partition_tests!(
+    negative_corpus_sweep_partition_0 => 0,
+    negative_corpus_sweep_partition_1 => 1,
+    negative_corpus_sweep_partition_2 => 2,
+    negative_corpus_sweep_partition_3 => 3,
+    negative_corpus_sweep_partition_4 => 4,
+    negative_corpus_sweep_partition_5 => 5,
+    negative_corpus_sweep_partition_6 => 6,
+    negative_corpus_sweep_partition_7 => 7,
+);
 
 // ── 봉투 스키마 정합 ─────────────────────────────────────────────────────
 

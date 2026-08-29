@@ -15,10 +15,11 @@ review-only인 경우에 적용하는 공용 modifier다. maintainer·collaborat
 - mydocs 아래 모든 파일 — 파일 상태와 확장자를 제한하지 않는다. 따라서 `mydocs/pr/assets` 등에
   올리는 PDF, HWP/HWPX, PNG 등 검토 증적도 문서-only PR과 같은 허용 범위다.
 - added 상태의 samples 아래 hwp, hwpx, pdf, png
-- added 상태의 pdf, pdf-2020, pdf-large 아래 PDF
+- added 또는 modified 상태의 pdf, pdf-2020, pdf-large 아래 PDF
 
-기존 samples 또는 세 PDF 디렉터리 파일의 수정·삭제·rename, source, test, workflow, Cargo.lock,
-golden, baseline은 허용 범위가 아니다.
+기존 samples 파일의 수정·삭제·rename, 세 PDF 디렉터리 파일의 삭제·rename, source, test, workflow,
+Cargo.lock, golden, baseline은 허용 범위가 아니다. 기준 PDF를 재산출해 같은 경로에 갱신하는 경우만
+세 PDF 디렉터리에서 modified 상태를 허용한다.
 
 Proptest roundtrip과 Adapter inter-diff도 같은 허용 경로 정책을 사용한다. 이 두 required check가 code
 candidate의 결과를 재사용할 때는 PR 번호 배열 유무가 아니라 candidate SHA, 현재 PR head branch, source
@@ -108,7 +109,9 @@ all-review-only-no-code-impact fast-pass를 즉시 선택한다. candidate의 �
 
 - code, test, CI workflow, Cargo.lock 변경. 단, CI workflow 변경 뒤 review-only 기록만 추가된 경우에는
   A.1의 trusted controller 증명이 전부 성립할 때만 예외로 한다.
-- 기존 sample, PDF, golden, baseline, fixture의 수정·삭제·rename
+- 기존 sample, golden, baseline, fixture의 수정·삭제·rename. 단, pdf, pdf-2020, pdf-large 아래
+  기존 PDF의 modified 상태는 기준 PDF 재산출 증적 갱신으로 보아 허용한다.
+- pdf, pdf-2020, pdf-large 아래 기존 PDF의 삭제·rename
 - 허용 목록 밖의 신규 파일
 - A 경로의 candidate workflow 누락·실패·미완료·PR identity 불일치, current-base merge tree 불일치,
   `mydocs/` 밖 충돌 해소·해소 경로 조회 실패·복수 base merge 또는 허용되지 않은 merge 형태

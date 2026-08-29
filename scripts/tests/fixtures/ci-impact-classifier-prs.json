@@ -19,7 +19,7 @@
       "native_skia_required": "false",
       "codeql_languages": "javascript-typescript",
       "classification_status": "classified",
-      "classifier_version": "5",
+      "classifier_version": "6",
       "reason": "classified:studio-undo-package+studio-unit"
     }
   },
@@ -37,7 +37,7 @@
       "native_skia_required": "false",
       "codeql_languages": "javascript-typescript",
       "classification_status": "classified",
-      "classifier_version": "5",
+      "classifier_version": "6",
       "reason": "classified:studio-undo-package+studio-unit"
     }
   },
@@ -54,7 +54,7 @@
       "native_skia_required": "false",
       "codeql_languages": "javascript-typescript",
       "classification_status": "classified",
-      "classifier_version": "5",
+      "classifier_version": "6",
       "reason": "classified:studio-undo-package"
     }
   },
@@ -76,7 +76,7 @@
       "native_skia_required": "false",
       "codeql_languages": "javascript-typescript",
       "classification_status": "classified",
-      "classifier_version": "5",
+      "classifier_version": "6",
       "reason": "classified:studio-package+studio-unit"
     }
   },
@@ -95,7 +95,7 @@
       "native_skia_required": "false",
       "codeql_languages": "javascript-typescript",
       "classification_status": "classified",
-      "classifier_version": "5",
+      "classifier_version": "6",
       "reason": "classified:studio-render-package+studio-unit"
     }
   },
@@ -161,7 +161,7 @@
       "native_skia_required": "true",
       "codeql_languages": "javascript-typescript,python,rust",
       "classification_status": "full",
-      "classifier_version": "5",
+      "classifier_version": "6",
       "reason": "fail-closed:cargo-contract"
     }
   },
@@ -180,7 +180,7 @@
       "native_skia_required": "true",
       "codeql_languages": "rust",
       "classification_status": "classified",
-      "classifier_version": "5",
+      "classifier_version": "6",
       "reason": "classified:native-skia-rust"
     }
   }

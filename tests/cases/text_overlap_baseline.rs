@@ -29,7 +29,7 @@
 //! 0 이 아닌 문서만 `상대경로\t건수` 로 사전순 기록한다. **감소는 통과**이므로,
 //! 결함을 고쳤으면 dump 로 확인한 뒤 래칫을 조인다.
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
 
 use rhwp::diagnostics::layout_anomaly::{scan_document, AnomalyOptions};
@@ -37,6 +37,7 @@ use rhwp::document_core::DocumentCore;
 
 const SAMPLES_ROOT: &str = "samples";
 const BASELINE_PATH: &str = "tests/fixtures/text_overlap_baseline.tsv";
+const PARTITIONS: usize = 8;
 
 /// 확장자로 샘플을 재귀 수집해 루트 기준 상대 경로(슬래시)로 돌려준다.
 fn collect_samples() -> Vec<(PathBuf, String)> {
@@ -78,6 +79,38 @@ fn load_baseline() -> BTreeMap<String, u64> {
         .collect()
 }
 
+fn partition_samples(
+    mut samples: Vec<(PathBuf, String)>,
+    partitions: usize,
+) -> Vec<Vec<(PathBuf, String)>> {
+    samples.sort_by_key(|(path, rel)| {
+        let size = std::fs::metadata(path).map(|m| m.len()).unwrap_or(0);
+        (std::cmp::Reverse(size), rel.clone())
+    });
+    let mut buckets: Vec<(u64, Vec<(PathBuf, String)>)> =
+        (0..partitions).map(|_| (0, Vec::new())).collect();
+    for (path, rel) in samples {
+        let size = std::fs::metadata(&path).map(|m| m.len()).unwrap_or(0);
+        let index = buckets
+            .iter()
+            .enumerate()
+            .min_by_key(|(i, (total, rows))| (*total, rows.len(), *i))
+            .map(|(i, _)| i)
+            .expect("partition bucket");
+        buckets[index].0 += size.max(1);
+        buckets[index].1.push((path, rel));
+    }
+    buckets.into_iter().map(|(_, rows)| rows).collect()
+}
+
+fn partition_dump_path(path: &str, part: usize) -> String {
+    if PARTITIONS == 1 {
+        path.to_string()
+    } else {
+        format!("{path}.part{part:02}-of{PARTITIONS:02}")
+    }
+}
+
 /// 문서 하나의 전 페이지 text-overlap 건수.
 ///
 /// 로드·렌더 실패는 이 게이트의 관심사가 아니므로 None(건너뜀)으로 처리한다 —
@@ -89,9 +122,17 @@ fn count_doc(path: &Path) -> Option<u64> {
     Some(anomalies.text_overlap_count() as u64)
 }
 
-#[test]
-fn text_overlaps_do_not_grow() {
-    let samples = collect_samples();
+fn text_overlaps_do_not_grow_partition(part: usize) {
+    let buckets = partition_samples(collect_samples(), PARTITIONS);
+    let samples = buckets
+        .into_iter()
+        .nth(part)
+        .unwrap_or_else(|| panic!("없는 partition: {part}"));
+    assert!(
+        !samples.is_empty(),
+        "text-overlap partition {part} 이 비어 있음"
+    );
+    let selected_rels: BTreeSet<String> = samples.iter().map(|(_, rel)| rel.clone()).collect();
     let baseline = load_baseline();
 
     let workers = std::thread::available_parallelism()
@@ -127,7 +168,7 @@ fn text_overlaps_do_not_grow() {
         .collect();
 
     eprintln!(
-        "text-overlap 스윕: 샘플 {}건(스킵 {}) / 0 아닌 문서 {}종 / 총 {}건",
+        "text-overlap 스윕 partition {part}/{PARTITIONS}: 샘플 {}건(스킵 {}) / 0 아닌 문서 {}종 / 총 {}건",
         results.len(),
         skipped.load(std::sync::atomic::Ordering::Relaxed),
         nonzero.len(),
@@ -135,6 +176,7 @@ fn text_overlaps_do_not_grow() {
     );
 
     if let Ok(dump) = std::env::var("RHWP_TEXT_OVERLAP_DUMP") {
+        let dump = partition_dump_path(&dump, part);
         let mut out = String::new();
         for (rel, n) in &nonzero {
             out.push_str(&format!("{rel}\t{n}\n"));
@@ -177,10 +219,32 @@ fn text_overlaps_do_not_grow() {
     // baseline 부패 감지: 기록된 문서가 코퍼스에서 사라지면 행을 정리해야 한다.
     let missing: Vec<&String> = baseline
         .keys()
-        .filter(|rel| !results.contains_key(*rel))
+        .filter(|rel| selected_rels.contains(*rel) && !results.contains_key(*rel))
         .collect();
     assert!(
         missing.is_empty(),
         "baseline 에 있으나 샘플에 없는 문서 — 행을 정리할 것: {missing:?}"
     );
 }
+
+macro_rules! text_overlap_partition_tests {
+    ($($name:ident => $part:expr),+ $(,)?) => {
+        $(
+            #[test]
+            fn $name() {
+                text_overlaps_do_not_grow_partition($part);
+            }
+        )+
+    };
+}
+
+text_overlap_partition_tests!(
+    text_overlaps_do_not_grow_partition_0 => 0,
+    text_overlaps_do_not_grow_partition_1 => 1,
+    text_overlaps_do_not_grow_partition_2 => 2,
+    text_overlaps_do_not_grow_partition_3 => 3,
+    text_overlaps_do_not_grow_partition_4 => 4,
+    text_overlaps_do_not_grow_partition_5 => 5,
+    text_overlaps_do_not_grow_partition_6 => 6,
+    text_overlaps_do_not_grow_partition_7 => 7,
+);

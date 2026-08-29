@@ -157,6 +157,7 @@ class NextestArchiveWorkflowTests(unittest.TestCase):
 
         self.assertIn('"schema_version": 2', policy)
         self.assertIn('"fallback_seconds_per_test": 60', policy)
+        self.assertIn('"parallelism_factor": 4', policy)
         self.assertIn('"cases": {}', policy)
         self.assertIn('"test_cases": {}', policy)
         self.assertIn("[profile.ci-duration-observation.junit]", config)
@@ -173,6 +174,9 @@ class NextestArchiveWorkflowTests(unittest.TestCase):
         self.assertIn("retention-days: 3", runner)
         self.assertIn("retention-days: 30", runner)
         self.assertIn("estimatedSeconds", selector)
+        self.assertIn("estimatedWallSeconds", selector)
+        self.assertIn("maxTestcaseSeconds", selector)
+        self.assertIn("parallelismFactor", selector)
         self.assertIn("<testcase", collector)
         self.assertIn("JUnit report contains no target durations", collector)
         self.assertIn("collectDurationMeasurement", collector)

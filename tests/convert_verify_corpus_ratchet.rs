@@ -57,7 +57,10 @@ const TOO_SLOW: &[&str] = &[
 const SIZE_CAP_BYTES: u64 = 1024 * 1024;
 
 /// 코퍼스를 나눌 조각 수 — nextest 가 조각마다 프로세스를 병렬로 띄운다.
-const PARTITIONS: usize = 4;
+///
+/// #6360: 4분할 상태에서도 가장 느린 조각이 816초까지 커졌다. 단일 testcase
+/// 시간이 archive wall time 하한이 되므로 더 잘게 나눈다.
+const PARTITIONS: usize = 16;
 
 fn samples_dir() -> std::path::PathBuf {
     std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("samples")
@@ -103,6 +106,31 @@ fn verify_roundtrip(data: &[u8]) -> Option<usize> {
     Some(diff.differences.len())
 }
 
+fn partition_entries(
+    mut entries: Vec<std::path::PathBuf>,
+    partitions: usize,
+) -> Vec<Vec<std::path::PathBuf>> {
+    entries.sort_by_key(|p| {
+        let size = std::fs::metadata(p).map(|m| m.len()).unwrap_or(0);
+        (std::cmp::Reverse(size), p.clone())
+    });
+
+    let mut buckets: Vec<(u64, Vec<std::path::PathBuf>)> =
+        (0..partitions).map(|_| (0, Vec::new())).collect();
+    for path in entries {
+        let size = std::fs::metadata(&path).map(|m| m.len()).unwrap_or(0);
+        let index = buckets
+            .iter()
+            .enumerate()
+            .min_by_key(|(i, (total, paths))| (*total, paths.len(), *i))
+            .map(|(i, _)| i)
+            .expect("partition bucket");
+        buckets[index].0 += size.max(1);
+        buckets[index].1.push(path);
+    }
+    buckets.into_iter().map(|(_, paths)| paths).collect()
+}
+
 /// 코퍼스를 `PARTITIONS` 조각으로 나눠 검사한다.
 ///
 /// 전수를 한 테스트로 돌리면 415초가 걸려 CI 샤드 하나가 그만큼 길어진다. nextest 는
@@ -140,18 +168,13 @@ fn run_partition(part: usize) {
     // 나머지 하위 디렉터리 68개는 이 이슈가 다루는 축이 아니고, 한꺼번에 넣으면
     // 무관한 신규 실패를 이 PR 에서 등재해야 한다. 필요하면 별도 이슈로 넓힌다.
     collect_recursive(&samples_dir().join("chart"), &mut entries);
-    // 크기 내림차순으로 정렬한 뒤 인덱스로 나눈다 — 큰 문서가 한 조각에 몰리면 그 조각이
-    // 전체 벽시계를 지배한다(실측: 이름순 분배 시 42/50/134/191초로 4.5배 편차).
-    // 이름을 2차 키로 둬서 크기가 같아도 순서가 결정적이다.
-    entries.sort_by_key(|p| {
-        let size = std::fs::metadata(p).map(|m| m.len()).unwrap_or(0);
-        (std::cmp::Reverse(size), p.clone())
-    });
+    let partitions = partition_entries(entries, PARTITIONS);
+    let selected = partitions
+        .into_iter()
+        .nth(part)
+        .unwrap_or_else(|| panic!("없는 partition: {part}"));
 
-    for (index, path) in entries.into_iter().enumerate() {
-        if index % PARTITIONS != part {
-            continue;
-        }
+    for path in selected {
         let name = path
             .file_name()
             .and_then(|s| s.to_str())
@@ -188,8 +211,8 @@ fn run_partition(part: usize) {
     }
 
     assert!(
-        checked > 40,
-        "조각 {part} 이 검사한 문서가 너무 적다({checked}건) — 표본 수집이 깨졌는지 확인하라"
+        checked > 0,
+        "조각 {part} 이 검사한 문서가 없다 — 표본 수집이 깨졌는지 확인하라"
     );
 
     let now: std::collections::BTreeSet<&str> = failed.keys().map(|s| s.as_str()).collect();
@@ -229,22 +252,32 @@ fn run_partition(part: usize) {
     );
 }
 
-#[test]
-fn ratchet_partition_0() {
-    run_partition(0);
+macro_rules! ratchet_partition_tests {
+    ($($name:ident => $part:expr),+ $(,)?) => {
+        $(
+            #[test]
+            fn $name() {
+                run_partition($part);
+            }
+        )+
+    };
 }
 
-#[test]
-fn ratchet_partition_1() {
-    run_partition(1);
-}
-
-#[test]
-fn ratchet_partition_2() {
-    run_partition(2);
-}
-
-#[test]
-fn ratchet_partition_3() {
-    run_partition(3);
-}
+ratchet_partition_tests!(
+    ratchet_partition_0 => 0,
+    ratchet_partition_1 => 1,
+    ratchet_partition_2 => 2,
+    ratchet_partition_3 => 3,
+    ratchet_partition_4 => 4,
+    ratchet_partition_5 => 5,
+    ratchet_partition_6 => 6,
+    ratchet_partition_7 => 7,
+    ratchet_partition_8 => 8,
+    ratchet_partition_9 => 9,
+    ratchet_partition_10 => 10,
+    ratchet_partition_11 => 11,
+    ratchet_partition_12 => 12,
+    ratchet_partition_13 => 13,
+    ratchet_partition_14 => 14,
+    ratchet_partition_15 => 15,
+);

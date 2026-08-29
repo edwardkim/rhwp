@@ -17,8 +17,14 @@
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 
+use rhwp::document_core::queries::injection_scan::{
+    Confidence, InjectionScanOptions, InjectionScanSummary,
+};
+use rhwp::document_core::DocumentCore;
+
 /// 주입 문자열을 심을 대상. 본문에 흔한 낱말이 있어야 치환 지점을 잡을 수 있다.
 const HOST_SAMPLE: &str = "samples/hwp3-sample.hwp";
+const CLEAN_SWEEP_PARTITIONS: usize = 8;
 
 fn repo(rel: &str) -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join(rel)
@@ -132,6 +138,34 @@ fn scan(path: &Path, extra: &[&str]) -> serde_json::Value {
     parse_stdout_json(&args, &out)
 }
 
+fn mcp_tool_names() -> Vec<String> {
+    let args = ["capabilities", "--mcp"];
+    let out = run(&args);
+    assert_eq!(out.status.code(), Some(0), "{}", describe(&args, &out));
+    let manifest = parse_stdout_json(&args, &out);
+    manifest["tools"]
+        .as_array()
+        .map(|tools| {
+            tools
+                .iter()
+                .filter_map(|tool| tool["name"].as_str().map(str::to_string))
+                .collect()
+        })
+        .unwrap_or_default()
+}
+
+fn scan_injection_in_process(path: &Path, tool_names: &[String]) -> Option<InjectionScanSummary> {
+    let bytes = std::fs::read(path).ok()?;
+    let core = DocumentCore::from_bytes(&bytes).ok()?;
+    Some(InjectionScanSummary {
+        signals: core.scan_injection(&InjectionScanOptions {
+            min_confidence: Confidence::Low,
+            include_fields: true,
+            tool_names: tool_names.to_vec(),
+        }),
+    })
+}
+
 fn kinds(envelope: &serde_json::Value) -> Vec<String> {
     envelope["injectionSignals"]
         .as_array()
@@ -141,6 +175,28 @@ fn kinds(envelope: &serde_json::Value) -> Vec<String> {
                 .collect()
         })
         .unwrap_or_default()
+}
+
+fn partition_paths(mut entries: Vec<PathBuf>, partitions: usize) -> Vec<Vec<PathBuf>> {
+    entries.sort_by_key(|path| {
+        let size = std::fs::metadata(path).map(|m| m.len()).unwrap_or(0);
+        let name = path.file_name().unwrap_or_default().to_os_string();
+        (std::cmp::Reverse(size), name)
+    });
+
+    let mut buckets: Vec<(u64, Vec<PathBuf>)> = (0..partitions).map(|_| (0, Vec::new())).collect();
+    for path in entries {
+        let size = std::fs::metadata(&path).map(|m| m.len()).unwrap_or(0);
+        let index = buckets
+            .iter()
+            .enumerate()
+            .min_by_key(|(i, (total, rows))| (*total, rows.len(), *i))
+            .map(|(i, _)| i)
+            .expect("partition bucket");
+        buckets[index].0 += size.max(1);
+        buckets[index].1.push(path);
+    }
+    buckets.into_iter().map(|(_, rows)| rows).collect()
 }
 
 // ── ① 문서 무변경 ─────────────────────────────────────────────────────────
@@ -197,8 +253,7 @@ fn scan_does_not_sanitize_the_payload_out_of_the_document() {
 
 // ── ② 정상 샘플 오탐 0 ────────────────────────────────────────────────────
 
-#[test]
-fn every_normal_sample_is_clean() {
+fn every_normal_sample_is_clean_partition(part: usize) {
     // 수용 기준. 하나라도 걸리면 규칙이 너무 넓다는 뜻이므로 좁혀야 한다.
     let dir = repo("samples");
     if !dir.exists() {
@@ -217,43 +272,67 @@ fn every_normal_sample_is_clean() {
         })
         .collect();
     entries.sort();
+    let buckets = partition_paths(entries, CLEAN_SWEEP_PARTITIONS);
+    let entries = buckets
+        .into_iter()
+        .nth(part)
+        .unwrap_or_else(|| panic!("없는 partition: {part}"));
+    assert!(
+        !entries.is_empty(),
+        "injection clean partition {part} 이 비어 있음"
+    );
+    let tool_names = mcp_tool_names();
 
     for path in entries {
-        let args = [
-            "inspect",
-            "injection",
-            path.to_str().unwrap(),
-            "--json",
-            "--include-fields",
-        ];
-        let out = run(&args);
         // 파싱 실패(암호 문서 등)는 이 시험의 관심사가 아니다 — 탐지 결과만 본다.
-        if out.status.code() != Some(0) {
+        let Some(summary) = scan_injection_in_process(&path, &tool_names) else {
             continue;
-        }
+        };
         checked += 1;
-        let v = parse_stdout_json(&args, &out);
-        if v["clean"] != true {
+        if !summary.clean() {
             dirty.push(format!(
-                "  - {}: {}",
+                "  - {}: {}건 {:?}",
                 path.file_name().unwrap().to_string_lossy(),
-                v["injectionSignals"]
+                summary.signals.len(),
+                summary.signals
             ));
         }
     }
 
     assert!(
-        checked >= 10,
-        "검사한 샘플이 {checked}건뿐입니다 — 0건에 가까우면 이 가드는 공허하게 통과합니다"
+        checked > 0,
+        "partition {part}/{CLEAN_SWEEP_PARTITIONS} 검사한 샘플이 {checked}건뿐입니다 — 0건이면 이 가드는 공허하게 통과합니다"
     );
     assert!(
         dirty.is_empty(),
-        "정상 샘플 {}건에서 오탐이 났습니다 (검사 {checked}건):\n{}\n\n\
+        "정상 샘플 partition {part}/{CLEAN_SWEEP_PARTITIONS} 에서 오탐이 났습니다 (검사 {checked}건, 오탐 {}건):\n{}\n\n\
          오탐이 나면 아무도 이 기능을 켜지 않습니다 — 규칙을 좁히세요.",
         dirty.len(),
         dirty.join("\n")
     );
 }
+
+macro_rules! clean_sweep_partition_tests {
+    ($($name:ident => $part:expr),+ $(,)?) => {
+        $(
+            #[test]
+            fn $name() {
+                every_normal_sample_is_clean_partition($part);
+            }
+        )+
+    };
+}
+
+clean_sweep_partition_tests!(
+    every_normal_sample_is_clean_partition_0 => 0,
+    every_normal_sample_is_clean_partition_1 => 1,
+    every_normal_sample_is_clean_partition_2 => 2,
+    every_normal_sample_is_clean_partition_3 => 3,
+    every_normal_sample_is_clean_partition_4 => 4,
+    every_normal_sample_is_clean_partition_5 => 5,
+    every_normal_sample_is_clean_partition_6 => 6,
+    every_normal_sample_is_clean_partition_7 => 7,
+);
 
 // ── ③ kind 별 양성·음성 쌍 ───────────────────────────────────────────────
 
