@@ -912,11 +912,17 @@ fn kopub_char_width(primary_name: &str, c: char, font_size: f64) -> Option<f64> 
         return Some(quantize_hwp_px(font_size * 0.5));
     }
     if is_cjk_char(c) || is_fullwidth_symbol(c) {
-        // [#2195 stage57] KoPub 미설치 환경에서 한글은 바탕으로 치환해 **전각
-        // 1.0em** 렌더 — 86712 한컴 PDF 글리프 직독(Haansoft Batang, 12pt 한글
-        // 16px) 실측. 종전 0.84 는 r27 근거설명 25문단을 -11줄 과소(래핑 조기
-        // 종료)시키던 성분.
-        let factor = if is_dotum { 1.0 } else { 0.94 };
+        // [#6389] KoPub돋움체 한글 전각은 872/1000em — 편람 kopub 오라클 PDF 의
+        // 임베드 서브셋 CIDFont /W 직독(Light 601·Medium 319·Bold 283 글리프
+        // 전원 872). 재구성도 맞는다: 한글 줄폭 = 872×장평0.98−자간 = 825HU/자
+        // ≈ 오라클 잉크 실측 829. 종전 1.0 은 #2195 stage57 이 86712 한컴 PDF
+        // 에서 실측한 값인데, 그 PDF 는 KoPub 미설치 환경이라 한글이 바탕으로
+        // **치환해** 그린 것 — 치환 글꼴(전각 1.0em)의 폭이 KoPub face 상수로
+        // 들어와 있었다. 치환 환경 문서군의 폭은 face 상수가 아니라 치환 경로가
+        // 소유해야 한다. 그보다 전의 0.84 도 실물(0.872)과 미세하게 어긋나
+        // r27 을 -11줄 과소시켰다. 바탕체 0.94 는 같은 방법 실측 936/1000 과
+        // 사실상 일치해 유지한다.
+        let factor = if is_dotum { 0.872 } else { 0.94 };
         return Some(quantize_hwp_px(font_size * factor));
     }
 
@@ -2170,7 +2176,7 @@ mod tests {
     }
 
     #[test]
-    fn test_kopub_dotum_hangul_full_width_substitution() {
+    fn test_kopub_dotum_hangul_872_advance() {
         let m = EmbeddedTextMeasurer;
         let style = TextStyle {
             font_family: "KoPub돋움체 Light".to_string(),
@@ -2178,11 +2184,13 @@ mod tests {
             ..Default::default()
         };
 
-        // [#2195 stage57] KoPub 미설치 환경에서 한글이 바탕으로 치환되어 전각
-        // 1.0em 렌더 (86712 한컴 PDF 글리프 실측: 12pt 한글 16px). 종전 0.84
-        // 핀은 r27 근거설명 25문단 -11줄 과소의 성분이었다.
+        // [#6389] KoPub돋움체 한글 전각 872/1000em — 편람 kopub 오라클 PDF 임베드
+        // 서브셋 CIDFont /W 직독(전 웨이트 1,203 글리프 만장일치 872). 종전 1.0
+        // 은 KoPub 미설치 환경의 바탕 치환 렌더(86712)를 face 상수로 오인한 값.
+        // 14px × 0.872 = 12.208 → HWPUNIT 양자화 12.2/자, 두 글자 24.4 를
+        // estimate_text_width 가 총폭 round 해 24.0 (줄바꿈 비교는 unrounded).
         let w = m.estimate_text_width("가나", &style);
-        assert_eq!(w, 28.0);
+        assert_eq!(w, 24.0);
     }
 
     #[test]
