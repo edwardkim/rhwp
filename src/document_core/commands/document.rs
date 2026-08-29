@@ -618,9 +618,9 @@ impl DocumentCore {
                         // 미보존 시 typeset 의 vpos-reset 쪽나눔(#321/#1921)이 무력화되어
                         // HWPX 로딩만 쪽이 당겨진다 (hwp3-sample16-hwpx pi88: 저장 568이
                         // 208008 로 변조 → 3쪽부터 전면 당김, 63쪽 vs 한글 64쪽).
-                        // first==0 은 제외 — mid-doc vpos=0 은 생성기 노이즈일 수 있어
-                        // (task1749 pi2/27/47 실측, 흔들면 HWP 참조 컷 회귀) 쪽 하단
-                        // 고정 틀 host 한정의 기존 #1920 규칙에만 맡긴다. 정당한 텍스트
+                        // first==0 은 이 규칙에서 제외 — mid-doc vpos=0 은 생성기
+                        // 노이즈일 수 있어(task1749 pi2/27/47 실측, 흔들면 HWP 참조
+                        // 컷 회귀) 아래 #6342 의 좁은 조건에서만 본다. 정당한 텍스트
                         // 쪽나눔 리셋은 sb 를 반영한 양수 쪽 상단 좌표(sample16
                         // pi88=568)로 저장된다. 소폭 감소·중간 좌표 리셋도 보존하지
                         // 않는다.
@@ -630,6 +630,43 @@ impl DocumentCore {
                             && first < prev_stored_last_vpos
                         {
                             running_vpos = first;
+                        } else if first == 0
+                            && running_vpos > 60000
+                            && pi.checked_sub(1).is_some_and(|prev| {
+                                orig_span.get(prev).copied().flatten().is_none()
+                            })
+                        {
+                            // [#6342] 저장 사다리는 쪽마다 0 에서 다시 시작한다. 위
+                            // 규칙은 그 리셋을 "직전 저장 vpos 가 크고 지금 저장
+                            // vpos 가 작다" 로 잡는데, 직전 문단이 reflow 된
+                            // TopAndBottom 개체 host 면 저장 좌표 스냅샷이 없어
+                            // (`orig_span=None`) prev_stored_last_vpos 가 0 에
+                            // 머문다. 그래서 표가 한 쪽을 다 채운 뒤의 리셋이 임계에
+                            // 걸리지 않고 연속 좌표로 덮여, 붙임 목록이 앞 쪽으로
+                            // 흡수됐다(36385445: 한글 2쪽 vs rhwp 1쪽).
+                            //
+                            // 그래서 **직전 문단의 저장 스냅샷이 없을 때만**
+                            // (`orig_span[pi-1] == None`) 대체 근거로 재계산 사다리
+                            // 자신의 위치를 본다. 위 규칙이 판단을 내릴 근거를
+                            // 가졌던 자리는 그대로 위 규칙에 맡긴다 — 거기서
+                            // first==0 을 제외한 것은 의도된 결정이다.
+                            //
+                            // 사다리는 쪽 리셋을 만나면 위 규칙들이 0 으로
+                            // 되돌리므로, 60000HU(#1921 near-top 임계와 동일)를
+                            // 넘었다는 것은 "지금 쪽을 이미 다 채웠다" 는 뜻이다.
+                            // 거기서 만난 저장 0 은 이어붙일 좌표가 아니라 다음 쪽
+                            // 상단 좌표다.
+                            //
+                            // 두 조건을 모두 요구하지 않으면 mid-doc vpos=0
+                            // 노이즈까지 리셋으로 받아 회귀한다 — 스냅샷 조건 없이
+                            // 사다리 위치만 봤을 때 실측으로 6건이 깨졌다
+                            // (issue_1811 pi52 rowbreak 컷, issue_6031 tail,
+                            // issue_2470 masking 핀, issue_4179 cursor rect,
+                            // 암호 fixture 2건).
+                            //
+                            // 기존 #1920 규칙은 쪽 하단 고정 틀 host 문단만 봐서
+                            // 일반 본문 문단인 이 형상을 잡지 못한다.
+                            running_vpos = 0;
                         }
                     }
                     let original_last_vpos = if was_reflowed {
