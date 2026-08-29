@@ -696,6 +696,42 @@ fn is_outside_body_text_area(t: &RenderNodeType) -> bool {
     )
 }
 
+/// [#6344] 페이지 어디든 보이는 내용이 있는가 — `empty_page` 판정 전용.
+///
+/// `walk` 의 `has_content` 는 `Body` 서브트리만 본다. 용지 기준으로 배치된 표·도형은
+/// 페이지 직계 자식이라 그쪽에 잡히지 않으므로, 빈 쪽 판정에서만 페이지 전체를 훑는다.
+/// 바탕쪽(`MasterPage`)은 제외한다 — 배경·장식은 모든 쪽에 있으므로 그걸 내용으로 세면
+/// 빈 쪽 판정 자체가 무의미해진다. 머리말·꼬리말도 같은 이유로 제외한다(쪽번호만 있는
+/// 빈 쪽을 "내용 있음" 으로 볼 수 없다).
+fn page_has_visible_content(node: &RenderNode) -> bool {
+    if !node.visible || node.editor_only {
+        return false;
+    }
+    if matches!(
+        node.node_type,
+        RenderNodeType::MasterPage | RenderNodeType::Header | RenderNodeType::Footer
+    ) {
+        return false;
+    }
+    let self_has = match &node.node_type {
+        RenderNodeType::TextRun(tr) => has_visible_text(&tr.text),
+        RenderNodeType::Image(_)
+        | RenderNodeType::Table(_)
+        | RenderNodeType::Equation(_)
+        | RenderNodeType::TextBox
+        | RenderNodeType::Line(_)
+        | RenderNodeType::Rectangle(_)
+        | RenderNodeType::Ellipse(_)
+        | RenderNodeType::Path(_)
+        | RenderNodeType::Group(_)
+        | RenderNodeType::FormObject(_)
+        | RenderNodeType::Placeholder(_)
+        | RenderNodeType::RawSvg(_) => true,
+        _ => false,
+    };
+    self_has || node.children.iter().any(page_has_visible_content)
+}
+
 /// 한 페이지 렌더 트리를 스캔한다. `page_count` 는 `empty_page` 가 "문서 중간"인지
 /// 판정하는 데만 쓴다(첫·마지막 쪽은 의도된 빈 쪽이 흔해 애초에 검사하지 않는다).
 pub fn scan_page(
@@ -741,6 +777,21 @@ pub fn scan_page(
 
     let overlap = find_overlaps(&flow, opts);
     let text_overlap = find_text_overlaps(&text, opts);
+
+    // [#6344] 콘텐츠 유무는 **페이지 전체**로 판정한다.
+    //
+    // 위 `walk` 는 `Body` 서브트리만 도는데, 용지 기준으로 배치된 표·도형은 `Body` 가 아니라
+    // **페이지 직계 자식**으로 그려진다. `Body` 만 보면 그 쪽이 통째로 비어 보인다.
+    //
+    // 실측(`samples/table-ipc.hwp`): 10쪽 문서의 8쪽이 빈 쪽으로 잡혔는데, 그 쪽들은
+    // `Table`(181칸, 글자 154개)과 쪽번호 `Rect` 를 페이지 직계로 갖고 `Body` 는 비어 있다.
+    // `export-text` 는 같은 쪽에서 700~860자를 뽑고 한컴 정답지도 10쪽 모두 861~1,026자다.
+    //
+    // overflow·off-canvas·overlap 의 기준 상자는 그대로다 — 이 보정은 "이 쪽에 내용이
+    // 있는가" 하나만 고친다.
+    if !has_content {
+        has_content = page_has_visible_content(root);
+    }
 
     // 문서 중간(첫·마지막 제외)이고 콘텐츠가 전혀 없을 때만 "가능성 신호"로 남긴다.
     let empty_page = if page_count >= 3 && page > 0 && page < page_count - 1 && !has_content {
