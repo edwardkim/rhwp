@@ -6,7 +6,7 @@ use super::super::height_measurer::MeasuredTable;
 use super::super::page_layout::LayoutRect;
 use super::super::render_tree::*;
 use super::super::style_resolver::ResolvedStyleSet;
-use super::super::{hwpunit_to_px, px_to_hwpunit, ShapeStyle};
+use super::super::{hwpunit_to_px, px_to_hwpunit};
 use super::border_rendering::{
     build_row_col_x, collect_cell_borders, mark_cell_span_interior_covered, render_edge_borders,
     render_transparent_borders,
@@ -16,7 +16,6 @@ use super::table_layout::{
     native_terminal_child_host_line_spacing, NestedTableSplit, INLINE_WRAP_WIDTH_EPSILON_PX,
 };
 use super::text_measurement::{estimate_text_width, resolved_to_text_style};
-use super::utils::find_bin_data;
 use super::{
     repeats_native_empty_host_rowbreak_fragment_margin, CellContext, CellPathEntry, LayoutEngine,
 };

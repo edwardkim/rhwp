@@ -15,7 +15,6 @@ use std::time::{Duration, Instant};
 use crate::document_core::DocumentCore;
 use crate::error::HwpError;
 use crate::model::control::Control;
-use crate::model::document::Document;
 use crate::model::paragraph::Paragraph;
 use crate::model::shape::ShapeObject;
 use crate::model::style::{Alignment, CharShape};

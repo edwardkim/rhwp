@@ -2591,8 +2591,8 @@ pub(crate) use table_partial::{PartialTableCellProbe, ProbeCutPlan};
 pub(crate) use text_measurement::{
     compute_char_positions, estimate_text_width, estimate_text_width_unrounded,
     extract_tab_leaders_with_extended, find_next_tab_stop, hancom_regenerated_space_width,
-    is_cjk_char, is_halfwidth_cjk_quote, resolved_to_text_style, split_into_clusters,
-    trace_char_width_decisions, CharWidthDecision,
+    is_cjk_char, is_halfwidth_cjk_quote, resolved_letter_spacing, resolved_to_text_style,
+    split_into_clusters, trace_char_width_decisions, CharWidthDecision,
 };
 // [#6060] forces_halfwidth_cjk_quote 는 통합 테스트
 // (tests/cases/issue_6060_cjk_quote_paint_measure_parity.rs) 에서 측정-페인트 정합을
@@ -3947,7 +3947,7 @@ impl LayoutEngine {
                 // 남의 글자를 그린다. 형제 `substitute_page_auto_numbers_in_composed`도
                 // 원본 marker 문자열은 보존하고 해당 문단의 표시 문자열을 다시 만든다.
                 let mut plain = String::new();
-                let mut push_plain = |new_runs: &mut Vec<_>, text: String| {
+                let push_plain = |new_runs: &mut Vec<_>, text: String| {
                     let mut piece = run.clone();
                     piece.display_text = Self::pua_display_for(&text);
                     piece.text = text;

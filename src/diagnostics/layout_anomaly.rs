@@ -47,7 +47,7 @@ use serde_json::{json, Value};
 
 use crate::document_core::DocumentCore;
 use crate::model::shape::TextWrap;
-use crate::renderer::render_tree::{BoundingBox, RenderLayerInfo, RenderNode, RenderNodeType};
+use crate::renderer::render_tree::{BoundingBox, RenderNode, RenderNodeType};
 use crate::HwpError;
 
 // ─────────────────────────────────────────────────────────────────────────

@@ -1,9 +1,8 @@
 //! 내부 클립보드 + HTML 내보내기 관련 native 메서드
 
 use super::super::helpers::{
-    border_line_type_to_u8_val, clipboard_color_to_css, clipboard_escape_html, color_ref_to_css,
-    detect_clipboard_image_mime, get_textbox_from_shape, get_textbox_from_shape_mut,
-    utf16_pos_to_char_idx,
+    clipboard_color_to_css, clipboard_escape_html, detect_clipboard_image_mime,
+    get_textbox_from_shape, get_textbox_from_shape_mut, utf16_pos_to_char_idx,
 };
 use super::super::queries::field_query::rebuild_char_offsets;
 use crate::document_core::{ClipboardData, DocumentCore};
@@ -1714,8 +1713,6 @@ impl DocumentCore {
     /// 처리할 때는 `depth + 1`을 넘겨, 그 컨트롤이 표이면 `control_to_html`이
     /// 상한을 검사한 뒤 그 값으로 재귀한다.
     fn table_to_html_at_depth(&self, table: &crate::model::table::Table, depth: usize) -> String {
-        use crate::renderer::style_resolver::ResolvedBorderStyle;
-
         let mut html = String::from(
             "<table style=\"border-collapse:collapse;\" cellpadding=\"0\" cellspacing=\"0\">\n",
         );

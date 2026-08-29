@@ -399,8 +399,6 @@ impl DocumentCore {
                 // 본문 NO_LS 텍스트 문단의 실폭 래핑은 composer recompose 가 담당한다.
                 if Self::needs_line_seg_reflow_in_scope(para, include_empty, section_sized) {
                     let para_style = styles.para_styles.get(para.para_shape_id as usize);
-                    let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
-                    let margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);
                     // 본문: 열 상자를 그대로 넘긴다 — 렌더가 깎는 상자와 같아야 한다.
                     reflow_line_segs(
                         para,
@@ -1241,8 +1239,6 @@ impl DocumentCore {
 
                     let para = &mut section.paragraphs[pi];
                     let para_style = styles.para_styles.get(para.para_shape_id as usize);
-                    let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
-                    let margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);
                     // 본문: 열 상자.
                     reflow_line_segs(
                         para,

@@ -3,8 +3,7 @@
 use super::super::font_metrics_data;
 use super::super::kerning::{ExactFontSourceHandle, KerningRunMeasurement, KerningSourceSession};
 use super::super::style_resolver::ResolvedStyleSet;
-use super::super::{hwpunit_to_px, TabLeaderInfo, TabStop, TextStyle};
-use crate::model::style::UnderlineType;
+use super::super::{TabLeaderInfo, TabStop, TextStyle};
 
 // ── TextMeasurer trait ──────────────────────────────────────────────
 
@@ -809,6 +808,26 @@ pub(crate) fn resolved_to_text_style(
     } else {
         TextStyle::default()
     }
+}
+
+/// `resolved_to_text_style(..).letter_spacing` 와 같은 값을 `TextStyle` 을 만들지 않고 읽는다.
+///
+/// [#5678] 줄 나눔이 문단의 **글자마다** 자간을 필요로 하는데, 종전에는 그때마다
+/// `resolved_to_text_style` 을 불러 `String` 하나와 `Vec` 셋을 포함한 `TextStyle` 을
+/// 통째로 만들었다 — 대부분의 문서에서 `0.0` 인 `f64` 하나를 읽으려고.
+///
+/// 두 경로가 같은 값을 낸다는 것은 `letter_spacing_matches_full_style_resolution` 이 잡는다.
+pub(crate) fn resolved_letter_spacing(
+    styles: &ResolvedStyleSet,
+    char_style_id: u32,
+    lang_index: usize,
+) -> f64 {
+    styles
+        .char_styles
+        .get(char_style_id as usize)
+        .map(|cs| cs.letter_spacing_for_lang(lang_index))
+        // 스타일이 없을 때의 값은 위 함수의 `TextStyle::default()` 갈래와 같아야 한다.
+        .unwrap_or_else(|| TextStyle::default().letter_spacing)
 }
 
 // ── 내장 폰트 메트릭 측정 ───────────────────────────────────────────
@@ -2592,4 +2611,57 @@ mod tests {
     // HWP5 의 `tab_extended[0]` 가 이미 right-tab 결과 위치 (= 우측 끝 - 한컴_seg_w)
     // 로 저장되어 있어 LEFT fallback 이 인코딩 의도와 정합. 본 테스트는 합성 데이터
     // 기반의 잘못된 가정 (RIGHT 정확 매치) 을 검증하던 것이라 삭제.
+}
+
+/// [#5678] 자간 전용 접근자가 전체 스타일 해석과 같은 값을 내는지 못 박는다.
+#[cfg(test)]
+mod letter_spacing_accessor_tests {
+    use super::*;
+    use crate::renderer::style_resolver::ResolvedCharStyle;
+
+    fn styles_with(letter_spacing: f64, per_lang: Vec<f64>) -> ResolvedStyleSet {
+        ResolvedStyleSet {
+            char_styles: vec![ResolvedCharStyle {
+                letter_spacing,
+                letter_spacings: per_lang,
+                ..Default::default()
+            }],
+            ..Default::default()
+        }
+    }
+
+    /// 두 경로가 갈리면 조판이 조용히 달라진다. 값이 아니라 **동등성**을 잡는다.
+    #[test]
+    fn letter_spacing_matches_full_style_resolution() {
+        let cases = [
+            styles_with(0.0, Vec::new()),
+            styles_with(-1.6, Vec::new()),
+            styles_with(0.5, vec![1.25, -0.75, 3.0]),
+            ResolvedStyleSet::default(), // char_styles 가 비어 있는 갈래
+        ];
+        for styles in &cases {
+            for style_id in [0u32, 7u32] {
+                for lang in [0usize, 1, 2, 9] {
+                    assert_eq!(
+                        resolved_letter_spacing(styles, style_id, lang),
+                        resolved_to_text_style(styles, style_id, lang).letter_spacing,
+                        "style_id={style_id} lang={lang} 에서 두 경로가 갈렸다"
+                    );
+                }
+            }
+        }
+    }
+
+    /// 언어별 자간이 있으면 그 값을, 없으면 기본 자간을 쓴다.
+    #[test]
+    fn per_language_spacing_wins_when_present() {
+        let styles = styles_with(0.5, vec![1.25, -0.75]);
+        assert_eq!(resolved_letter_spacing(&styles, 0, 0), 1.25);
+        assert_eq!(resolved_letter_spacing(&styles, 0, 1), -0.75);
+        assert_eq!(
+            resolved_letter_spacing(&styles, 0, 2),
+            0.5,
+            "범위 밖이면 기본값"
+        );
+    }
 }

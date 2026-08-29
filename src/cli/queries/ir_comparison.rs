@@ -695,7 +695,7 @@ pub(crate) fn ir_sweep(args: &[String]) -> i32 {
         }
     }
 
-    let mut load = |path: &String| match std::fs::read(path) {
+    let load = |path: &String| match std::fs::read(path) {
         Ok(bytes) => match rhwp::parser::parse_document(&bytes) {
             Ok(doc) => Some(doc),
             Err(e) => {

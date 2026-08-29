@@ -399,7 +399,7 @@ pub(crate) fn cmd_harness_status(args: &[String]) -> i32 {
     let (mut deep_checked, mut deep_ok) = (0u64, 0u64);
     for path in &capsules {
         let name = path.file_name().unwrap().to_string_lossy().into_owned();
-        let mut fail = |why: &str, broken_at: &mut serde_json::Value, chain_valid: &mut bool| {
+        let fail = |why: &str, broken_at: &mut serde_json::Value, chain_valid: &mut bool| {
             if *chain_valid {
                 *chain_valid = false;
                 *broken_at = serde_json::json!(format!("{name}: {why}"));

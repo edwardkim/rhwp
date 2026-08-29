@@ -26,7 +26,7 @@ fn issue_5723_square_pair_stays_level() {
     let svg = core.render_page_svg_native(0).expect("page 1 svg");
 
     // 두 차트 표의 위 괘선: 폭 265.2 / 321.8 의 수평선 y 를 찾는다.
-    let mut top_of = |w: &str| -> f64 {
+    let top_of = |w: &str| -> f64 {
         let mut min_y = f64::INFINITY;
         for cap in svg.split("<line ").skip(1) {
             let head = &cap[..cap.find('>').unwrap_or(cap.len())];

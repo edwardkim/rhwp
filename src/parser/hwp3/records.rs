@@ -3,9 +3,7 @@
 //! HWP3 파일 포맷의 다양한 헤더, 문서 정보, 스타일, 개체 레코드의 바이트 수준 구조를 정의한다.
 //! 바이너리 스트림에서 직접 구조체로 데이터를 읽어오는 메서드들을 포함한다.
 
-use super::Hwp3Error;
 use byteorder::{LittleEndian, ReadBytesExt};
-use snafu::ResultExt;
 use std::io::{self, Read};
 
 #[derive(Debug, Default)]
