@@ -7,9 +7,26 @@
 
 ## 수정
 
-- `advance_row_cut_inner` 기본 컷: `h + u.height > avail_height` → `> avail_height + 0.5`
-- `advance_row_block_cut` 기본 컷: 동일 (+0.5)
-- 근인 추적용 `RHWP_DIAG_6368`(near-miss 컷 로그, ≤2.0px) 추가
+- `advance_row_cut_inner` 기본 컷: `h + u.height > avail_height` →
+  `> avail_height + ROW_CUT_CAPACITY_FP_EPSILON_PX` (**0.1px**)
+- `advance_row_block_cut` 기본 컷: 동일 (+0.1px)
+- 근인 추적용 `RHWP_DIAG_6368` 추가 — 컷 로그(≤2.0px)와 흡수 로그(관용 안 near-miss)
+
+### 관용 폭을 0.5 → 0.1px 로 좁힌 경위 (CI 실패 수리)
+
+최초 제출본은 이웃 특례(atomic 진입·trailing trim)와 같은 +0.5px 를 그대로 썼다.
+그 폭은 부동소수 끝자리만이 아니라 **실제 경계 초과**까지 삼켜 CI 확정 게이트 2개를 깼다:
+
+| 실패 게이트 | 흡수된 초과분 | 증상 |
+|---|---|---|
+| `text_overlap_baseline::text_overlaps_do_not_grow` | `table_giant_cell_overfill.hwpx` 0.1867px | 글자 겹침 18 → 19건 (확정 결함 래칫) |
+| `issue2439_row_orphan_guard_uses_padded_visible_fragment_height` | 픽스처 0.4px | remarks 셋째 줄이 현재 쪽으로 흡수돼 고아 가드 계약 위반 |
+
+동기 사례의 실측 초과분은 hwpctl_API_v2.4 **0.0267px**, 80168_regulatory **0.0133px**
+(RHWP_DIAG_6368 흡수 로그) — 잡음대(≤0.03px)와 실초과(≥0.19px) 사이 0.1px 로 좁혀
+동기 흡수 2건은 그대로 유지하고 회귀 2건은 다시 컷한다. 0.1px 적용 후 재실측:
+두 동기 문서의 흡수 이벤트가 +0.5 때와 동일(각 1건, 같은 컷 지점)이므로 위 fidelity
+측정은 그대로 유효하고, giant_cell 겹침은 18건(baseline)으로 복귀, issue2439 통과.
 
 ## 측정 (fidelity_compare --text-only --layout-ledger, 한컴 2022 정답지)
 
