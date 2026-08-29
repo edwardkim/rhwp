@@ -15,7 +15,7 @@
 
 use rhwp::diagnostics::layout_anomaly::{scan_page, AnomalyOptions};
 use rhwp::renderer::render_tree::{
-    BoundingBox, PageNode, RenderNode, FieldMarkerType, RenderNodeType, TableNode, TextLineNode,
+    BoundingBox, FieldMarkerType, PageNode, RenderNode, RenderNodeType, TableNode, TextLineNode,
     TextRunNode,
 };
 
@@ -81,7 +81,9 @@ fn line_with_runs(x: f64, y: f64, w: f64, h: f64, runs: Vec<RenderNode>) -> Rend
 
 fn overlap_count(children: Vec<RenderNode>) -> usize {
     let root = page_root(children);
-    scan_page(1, &root, 10, &AnomalyOptions::default()).overlap.len()
+    scan_page(1, &root, 10, &AnomalyOptions::default())
+        .overlap
+        .len()
 }
 
 /// 줄 상자는 8px 겹치지만 글자 상자(fs=12, 위아래 8px 간격 제거)는 안 겹친다 → 비검출.
@@ -89,24 +91,63 @@ fn overlap_count(children: Vec<RenderNode>) -> usize {
 #[test]
 fn leading_strip_changes_the_verdict() {
     let stripped = overlap_count(vec![
-        line_with_runs(10.0, 100.0, 200.0, 28.0, vec![run("가", 10.0, 100.0, 200.0, 28.0, 12.0)]),
-        line_with_runs(10.0, 120.0, 200.0, 28.0, vec![run("나", 10.0, 120.0, 200.0, 28.0, 12.0)]),
+        line_with_runs(
+            10.0,
+            100.0,
+            200.0,
+            28.0,
+            vec![run("가", 10.0, 100.0, 200.0, 28.0, 12.0)],
+        ),
+        line_with_runs(
+            10.0,
+            120.0,
+            200.0,
+            28.0,
+            vec![run("나", 10.0, 120.0, 200.0, 28.0, 12.0)],
+        ),
     ]);
     assert_eq!(stripped, 0, "줄 간격을 걷어낸 글자 상자끼리는 안 겹친다");
 
     let raw = overlap_count(vec![
-        line_with_runs(10.0, 100.0, 200.0, 28.0, vec![run("가", 10.0, 100.0, 200.0, 28.0, 28.0)]),
-        line_with_runs(10.0, 120.0, 200.0, 28.0, vec![run("나", 10.0, 120.0, 200.0, 28.0, 28.0)]),
+        line_with_runs(
+            10.0,
+            100.0,
+            200.0,
+            28.0,
+            vec![run("가", 10.0, 100.0, 200.0, 28.0, 28.0)],
+        ),
+        line_with_runs(
+            10.0,
+            120.0,
+            200.0,
+            28.0,
+            vec![run("나", 10.0, 120.0, 200.0, 28.0, 28.0)],
+        ),
     ]);
-    assert_eq!(raw, 1, "줄 간격이 없으면(=글자 상자=줄 상자) 8px 겹침이 잡혀야 한다");
+    assert_eq!(
+        raw, 1,
+        "줄 간격이 없으면(=글자 상자=줄 상자) 8px 겹침이 잡혀야 한다"
+    );
 }
 
 /// font_size=0 이면 걷어낼 근거가 없으므로 상자 그대로 → 겹침이 그대로 검출된다.
 #[test]
 fn zero_font_size_keeps_the_box() {
     let n = overlap_count(vec![
-        line_with_runs(10.0, 100.0, 200.0, 28.0, vec![run("가", 10.0, 100.0, 200.0, 28.0, 0.0)]),
-        line_with_runs(10.0, 120.0, 200.0, 28.0, vec![run("나", 10.0, 120.0, 200.0, 28.0, 0.0)]),
+        line_with_runs(
+            10.0,
+            100.0,
+            200.0,
+            28.0,
+            vec![run("가", 10.0, 100.0, 200.0, 28.0, 0.0)],
+        ),
+        line_with_runs(
+            10.0,
+            120.0,
+            200.0,
+            28.0,
+            vec![run("나", 10.0, 120.0, 200.0, 28.0, 0.0)],
+        ),
     ]);
     assert_eq!(n, 1);
 }
@@ -115,10 +156,25 @@ fn zero_font_size_keeps_the_box() {
 #[test]
 fn oversized_font_never_grows_the_box() {
     let n = overlap_count(vec![
-        line_with_runs(10.0, 100.0, 200.0, 10.0, vec![run("가", 10.0, 100.0, 200.0, 10.0, 40.0)]),
-        line_with_runs(10.0, 113.0, 200.0, 10.0, vec![run("나", 10.0, 113.0, 200.0, 10.0, 40.0)]),
+        line_with_runs(
+            10.0,
+            100.0,
+            200.0,
+            10.0,
+            vec![run("가", 10.0, 100.0, 200.0, 10.0, 40.0)],
+        ),
+        line_with_runs(
+            10.0,
+            113.0,
+            200.0,
+            10.0,
+            vec![run("나", 10.0, 113.0, 200.0, 10.0, 40.0)],
+        ),
     ]);
-    assert_eq!(n, 0, "글자 상자를 넓히는 방향으로 틀리면 없는 겹침을 만든다");
+    assert_eq!(
+        n, 0,
+        "글자 상자를 넓히는 방향으로 틀리면 없는 겹침을 만든다"
+    );
 }
 
 /// 줄의 흐름 범위는 런들의 **합집합**이다 — 두 런 사이 틈에 낀 상대도 겹침으로 잡는다.
@@ -136,7 +192,13 @@ fn flow_extent_is_the_union_across_runs() {
             ],
         ),
         // 두 런 사이 틈(60..200) 한가운데, 같은 세로 대역.
-        line_with_runs(80.0, 100.0, 60.0, 20.0, vec![run("다", 80.0, 100.0, 60.0, 20.0, 20.0)]),
+        line_with_runs(
+            80.0,
+            100.0,
+            60.0,
+            20.0,
+            vec![run("다", 80.0, 100.0, 60.0, 20.0, 20.0)],
+        ),
     ]);
     assert_eq!(n, 1, "합집합이 아니라 런별 상자였다면 틈의 상대를 놓친다");
 }
@@ -158,7 +220,13 @@ fn table_uses_its_own_bbox() {
         BoundingBox::new(10.0, 104.0, 200.0, 40.0),
     );
     let n = overlap_count(vec![
-        line_with_runs(10.0, 100.0, 200.0, 28.0, vec![run("가", 10.0, 100.0, 200.0, 28.0, 12.0)]),
+        line_with_runs(
+            10.0,
+            100.0,
+            200.0,
+            28.0,
+            vec![run("가", 10.0, 100.0, 200.0, 28.0, 12.0)],
+        ),
         table,
     ]);
     assert_eq!(n, 1, "표가 글자-상자 축소를 받았다면 이 겹침은 사라졌을 것");
@@ -169,7 +237,13 @@ fn table_uses_its_own_bbox() {
 fn runless_line_is_not_a_candidate() {
     let n = overlap_count(vec![
         line_with_runs(10.0, 100.0, 200.0, 28.0, vec![]),
-        line_with_runs(10.0, 110.0, 200.0, 28.0, vec![run("가", 10.0, 110.0, 200.0, 28.0, 28.0)]),
+        line_with_runs(
+            10.0,
+            110.0,
+            200.0,
+            28.0,
+            vec![run("가", 10.0, 110.0, 200.0, 28.0, 28.0)],
+        ),
     ]);
     assert_eq!(n, 0, "무런 줄이 후보로 새면 유령 겹침이 생긴다");
 }
