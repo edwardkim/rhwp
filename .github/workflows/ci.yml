@@ -105,6 +105,7 @@ jobs:
       classifier_version: ${{ steps.impact.outputs.classifier_version || 'unavailable' }}
       impact_reason: ${{ steps.impact.outputs.reason || 'fail-closed:impact-unavailable' }}
       impact_authority: ${{ steps.collect-impact.outputs.authority || 'unavailable' }}
+      security_sweep_samples_json: ${{ steps.collect-impact.outputs.security_sweep_samples_json || '[]' }}
       # [#4029] CI test profile과 archive timeout은 한 step에서 함께 결정한다. output 부재는
       # 검증 강도를 낮추지 않도록 release/60으로 닫는다.
       test_profile: ${{ steps.test-policy.outputs.cargo_profile || 'release' }}
@@ -205,33 +206,47 @@ jobs:
               if (filename.startsWith('mydocs/')) {
                 return true;
               }
+              if (isPdfReferencePath(filename)) {
+                return file.status === 'added' || file.status === 'modified';
+              }
               if (file.status !== 'added') {
                 return false;
               }
-              return isReviewReferencePath(filename);
+              return isSampleReferencePath(filename);
             }
 
-            function isReviewReferencePath(filename) {
-              const pdfPrefixes = ['pdf/', 'pdf-2020/', 'pdf-large/'];
+            function isSampleReferencePath(filename) {
               return (
                 filename.startsWith('samples/')
                 && (
-                  filename.endsWith('.hwp')
-                  || filename.endsWith('.hwpx')
-                  || filename.endsWith('.pdf')
+                  filename.endsWith('.pdf')
                   || filename.endsWith('.png')
                 )
-              ) || (
+              );
+            }
+
+            function isPdfReferencePath(filename) {
+              const pdfPrefixes = ['pdf/', 'pdf-2020/', 'pdf-large/'];
+              return (
                 pdfPrefixes.some((prefix) => filename.startsWith(prefix))
                 && filename.endsWith('.pdf')
               );
             }
 
+            function isReviewReferencePath(filename) {
+              return isSampleReferencePath(filename) || isPdfReferencePath(filename);
+            }
+
+            function isReviewReferenceFile(file) {
+              const filename = file.filename;
+              if (isPdfReferencePath(filename)) {
+                return file.status === 'added' || file.status === 'modified';
+              }
+              return file.status === 'added' && isSampleReferencePath(filename);
+            }
+
             function reviewOnlyLabel(files) {
-              const hasReferenceArtifact = files.some((file) => (
-                file.status === 'added'
-                && isReviewReferencePath(file.filename)
-              ));
+              const hasReferenceArtifact = files.some((file) => isReviewReferenceFile(file));
               return hasReferenceArtifact ? 'review-reference-only' : 'mydocs-only';
             }
 
@@ -654,9 +669,23 @@ jobs:
                 : 'checked-out-ref';
             core.setOutput('authority', authority);
 
+            function securitySweepSamples(files) {
+              return files
+                .filter((file) => file.status === 'added')
+                .map((file) => file.filename)
+                .filter((filename) => (
+                  filename.startsWith('samples/')
+                  && /\.(hwp|hwpx|hml)$/i.test(filename)
+                ))
+                .sort();
+            }
+
             function writeInput(input) {
               fs.writeFileSync(inputPath, `${JSON.stringify(input)}\n`, 'utf8');
+              const samplePaths = securitySweepSamples(input.files || []);
+              core.setOutput('security_sweep_samples_json', JSON.stringify(samplePaths));
               core.info(`CI impact input: event=${input.eventName} files=${input.files.length}`);
+              core.info(`security_sweep_samples=${samplePaths.length}`);
             }
 
             function normalizedFiles(files) {
@@ -753,6 +782,7 @@ jobs:
           CLASSIFICATION_STATUS: ${{ steps.impact.outputs.classification_status || 'full' }}
           CLASSIFIER_VERSION: ${{ steps.impact.outputs.classifier_version || 'unavailable' }}
           IMPACT_REASON: ${{ steps.impact.outputs.reason || 'fail-closed:impact-unavailable' }}
+          SECURITY_SWEEP_SAMPLES_JSON: ${{ steps.collect-impact.outputs.security_sweep_samples_json || '[]' }}
         run: |
           {
             echo '### CI impact classification'
@@ -771,6 +801,7 @@ jobs:
             printf '| classification_status | %s |\n' "${CLASSIFICATION_STATUS}"
             printf '| classifier_version | %s |\n' "${CLASSIFIER_VERSION}"
             printf '| reason | %s |\n' "${IMPACT_REASON}"
+            printf '| security_sweep_samples_json | `%s` |\n' "${SECURITY_SWEEP_SAMPLES_JSON}"
           } >> "${GITHUB_STEP_SUMMARY}"
 
   # [#6205] B/C가 같은 측정 정책 commit을 보도록 CI 시작 때 한 번만 SHA를 고정한다.
@@ -1413,6 +1444,7 @@ jobs:
       archive_label: a
       filterset: "all()"
       partition: "hash:1/1"
+      security_sweep_samples_json: ${{ needs.preflight.outputs.security_sweep_samples_json || '[]' }}
 
 
   test-archive-b-shard-1:
@@ -1434,6 +1466,7 @@ jobs:
       archive_label: b
       filterset: "all()"
       partition: "hash:1/1"
+      security_sweep_samples_json: ${{ needs.preflight.outputs.security_sweep_samples_json || '[]' }}
 
 
   test-archive-c-shard-1:
@@ -1455,6 +1488,7 @@ jobs:
       archive_label: c
       filterset: "all()"
       partition: "hash:1/1"
+      security_sweep_samples_json: ${{ needs.preflight.outputs.security_sweep_samples_json || '[]' }}
 
 
   test-archive-d-shard-1:
@@ -1476,6 +1510,7 @@ jobs:
       archive_label: d
       filterset: "all()"
       partition: "hash:1/1"
+      security_sweep_samples_json: ${{ needs.preflight.outputs.security_sweep_samples_json || '[]' }}
 
 
   # B/C/D duration data is refreshed from this devel run, or from the exact green

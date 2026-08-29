@@ -80,7 +80,7 @@ test('review-only changes require no code worker', () => {
       native_skia_required: 'false',
       codeql_languages: 'none',
       classification_status: 'classified',
-      classifier_version: '5',
+      classifier_version: '6',
       reason: 'classified:review-only',
     },
   );
@@ -102,7 +102,7 @@ test('mixed Studio package and Rust changes union modes and CodeQL languages', (
       native_skia_required: 'false',
       codeql_languages: 'javascript-typescript,rust',
       classification_status: 'classified',
-      classifier_version: '5',
+      classifier_version: '6',
       reason: 'classified:rust+studio-package',
     },
   );
@@ -172,7 +172,7 @@ test('every CLI output adapter belongs to one explicit impact bucket', () => {
     assert.equal(result.native_skia_required, nativeSkiaRequired, filename);
     assert.equal(result.codeql_languages, 'rust', filename);
     assert.equal(result.classification_status, 'classified', filename);
-    assert.equal(result.classifier_version, '5', filename);
+    assert.equal(result.classifier_version, '6', filename);
     assert.equal(result.reason, reason, filename);
   }
 });
@@ -238,7 +238,7 @@ test('Native Skia integration test and support changes run Rust and Native Skia 
     assert.equal(result.native_skia_required, 'true', filename);
     assert.equal(result.codeql_languages, 'rust', filename);
     assert.equal(result.classification_status, 'classified', filename);
-    assert.equal(result.classifier_version, '5', filename);
+    assert.equal(result.classifier_version, '6', filename);
     assert.equal(result.reason, 'classified:native-skia-rust', filename);
   }
 });
@@ -258,7 +258,7 @@ test('Rust test input changes keep default Rust tests alongside render gates', (
     assert.equal(result.native_skia_required, 'true', filename);
     assert.equal(result.codeql_languages, 'none', filename);
     assert.equal(result.classification_status, 'classified', filename);
-    assert.equal(result.classifier_version, '5', filename);
+    assert.equal(result.classifier_version, '6', filename);
     assert.equal(result.reason, 'classified:rust-test-input', filename);
   }
 });
@@ -333,10 +333,30 @@ test('studio test-only changes stay on the unit lane', () => {
   }
 });
 
-test('new review reference assets require no product or CodeQL worker', () => {
+test('new sample documents run only the targeted security sweep lane', () => {
   for (const filename of [
     'samples/new-reference.hwp',
     'samples/new-reference.hwpx',
+    'samples/hml/new-reference.hml',
+    'samples/new-reference.HWP',
+  ]) {
+    const result = classifyChanges({
+      eventName: 'pull_request',
+      files: [{ filename, status: 'added' }],
+    });
+    assert.equal(result.rust_required, 'true', filename);
+    assert.equal(result.frontend_mode, 'none', filename);
+    assert.equal(result.render_required, 'false', filename);
+    assert.equal(result.native_skia_required, 'false', filename);
+    assert.equal(result.codeql_languages, 'none', filename);
+    assert.equal(result.classification_status, 'classified', filename);
+    assert.equal(result.classifier_version, '6', filename);
+    assert.equal(result.reason, 'classified:sample-security-sweep', filename);
+  }
+});
+
+test('new review reference assets require no product or CodeQL worker', () => {
+  for (const filename of [
     'samples/new-reference.pdf',
     'samples/new-reference.png',
     'pdf/new-reference.pdf',
@@ -353,14 +373,13 @@ test('new review reference assets require no product or CodeQL worker', () => {
     assert.equal(result.native_skia_required, 'false', filename);
     assert.equal(result.codeql_languages, 'none', filename);
     assert.equal(result.classification_status, 'classified', filename);
-    assert.equal(result.classifier_version, '5', filename);
+    assert.equal(result.classifier_version, '6', filename);
     assert.equal(result.reason, 'classified:review-only', filename);
   }
 });
 
-test('existing review reference changes remain fail-closed', () => {
+test('existing PDF reference updates require no product or CodeQL worker', () => {
   for (const filename of [
-    'samples/existing-reference.hwp',
     'pdf/existing-reference.pdf',
     'pdf-2020/existing-reference.pdf',
     'pdf-large/nested/existing-reference.pdf',
@@ -369,8 +388,33 @@ test('existing review reference changes remain fail-closed', () => {
       eventName: 'pull_request',
       files: [{ filename, status: 'modified' }],
     });
-    assert.equal(result.classification_status, 'full', filename);
-    assert.equal(result.reason, 'fail-closed:unclassified-path', filename);
+    assert.equal(result.rust_required, 'false', filename);
+    assert.equal(result.frontend_mode, 'none', filename);
+    assert.equal(result.render_required, 'false', filename);
+    assert.equal(result.native_skia_required, 'false', filename);
+    assert.equal(result.codeql_languages, 'none', filename);
+    assert.equal(result.classification_status, 'classified', filename);
+    assert.equal(result.classifier_version, '6', filename);
+    assert.equal(result.reason, 'classified:review-only', filename);
+  }
+});
+
+test('existing sample reference changes and removed PDFs remain fail-closed', () => {
+  for (const file of [
+    { filename: 'samples/existing-reference.hwp', status: 'modified' },
+    { filename: 'samples/existing-reference.hwpx', status: 'modified' },
+    { filename: 'samples/existing-reference.pdf', status: 'modified' },
+    { filename: 'samples/existing-reference.png', status: 'modified' },
+    { filename: 'pdf/existing-reference.pdf', status: 'removed' },
+    { filename: 'pdf-2020/existing-reference.pdf', status: 'removed' },
+    { filename: 'pdf-large/nested/existing-reference.pdf', status: 'removed' },
+  ]) {
+    const result = classifyChanges({
+      eventName: 'pull_request',
+      files: [file],
+    });
+    assert.equal(result.classification_status, 'full', file.filename);
+    assert.equal(result.reason, 'fail-closed:unclassified-path', file.filename);
   }
 });
 

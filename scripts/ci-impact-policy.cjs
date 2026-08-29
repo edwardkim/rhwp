@@ -2,7 +2,7 @@
 
 const fs = require('node:fs');
 
-const POLICY_VERSION = '5';
+const POLICY_VERSION = '6';
 const POLICY_CONTEXT = 'CI Impact Policy';
 const WORKFLOW_ORDER = ['CI', 'CodeQL', 'Render Diff'];
 const WORKFLOW_PATHS = {
@@ -275,10 +275,13 @@ function normalizeClassification(value, fallbackReason = 'classifier-unavailable
 }
 
 function normalizeFile(file) {
-  if (typeof file === 'string') return { filename: file, previous_filename: '' };
+  if (typeof file === 'string') {
+    return { filename: file, previous_filename: '', status: 'modified' };
+  }
   return {
     filename: String(file?.filename || file?.path || ''),
     previous_filename: String(file?.previous_filename || file?.previousPath || ''),
+    status: String(file?.status || file?.changeType || 'modified').toLowerCase(),
   };
 }
 
@@ -299,27 +302,36 @@ function changesEnforcementSurface(files) {
   ));
 }
 
-function isReviewReferencePath(filename) {
-  const pdfPrefixes = ['pdf/', 'pdf-2020/', 'pdf-large/'];
+function isSampleReviewReferencePath(filename) {
   return (
     filename.startsWith('samples/')
     && (
-      filename.endsWith('.hwp')
-      || filename.endsWith('.hwpx')
-      || filename.endsWith('.pdf')
+      filename.endsWith('.pdf')
       || filename.endsWith('.png')
     )
-  ) || (
+  );
+}
+
+function isPdfReviewReferencePath(filename) {
+  const pdfPrefixes = ['pdf/', 'pdf-2020/', 'pdf-large/'];
+  return (
     pdfPrefixes.some((prefix) => filename.startsWith(prefix))
     && filename.endsWith('.pdf')
   );
 }
 
+function isReviewReferencePath(filename) {
+  return isSampleReviewReferencePath(filename) || isPdfReviewReferencePath(filename);
+}
+
 function isAllowedReviewFile(file) {
   const normalized = normalizeFile(file);
   if (normalized.filename.startsWith('mydocs/')) return true;
-  return String(file?.status || '') === 'added'
-    && isReviewReferencePath(normalized.filename);
+  if (isPdfReviewReferencePath(normalized.filename)) {
+    return normalized.status === 'added' || normalized.status === 'modified';
+  }
+  return normalized.status === 'added'
+    && isSampleReviewReferencePath(normalized.filename);
 }
 
 function selectReviewOnlyCandidate(commits, currentBaseSha) {

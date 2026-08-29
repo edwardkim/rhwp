@@ -2,7 +2,7 @@
 
 const fs = require('node:fs');
 
-const CLASSIFIER_VERSION = '5';
+const CLASSIFIER_VERSION = '6';
 const CODEQL_LANGUAGE_ORDER = ['javascript-typescript', 'python', 'rust'];
 const FRONTEND_MODE_RANK = { none: 0, unit: 1, package: 2 };
 
@@ -131,19 +131,44 @@ function isReviewOnlyPath(filename) {
   );
 }
 
-function isReviewReferencePath(filename) {
+function isSampleReviewReferencePath(filename) {
   return (
     filename.startsWith('samples/')
     && (
-      filename.endsWith('.hwp')
-      || filename.endsWith('.hwpx')
-      || filename.endsWith('.pdf')
+      filename.endsWith('.pdf')
       || filename.endsWith('.png')
     )
-  ) || (
+  );
+}
+
+function isSampleSecuritySweepPath(filename) {
+  const lower = filename.toLowerCase();
+  return (
+    filename.startsWith('samples/')
+    && (
+      lower.endsWith('.hwp')
+      || lower.endsWith('.hwpx')
+      || lower.endsWith('.hml')
+    )
+  );
+}
+
+function isPdfReviewReferencePath(filename) {
+  return (
     REVIEW_REFERENCE_PDF_PREFIXES.some((prefix) => filename.startsWith(prefix))
     && filename.endsWith('.pdf')
   );
+}
+
+function isReviewReferencePath(filename) {
+  return isSampleReviewReferencePath(filename) || isPdfReviewReferencePath(filename);
+}
+
+function isAllowedReviewReferenceFile(file) {
+  if (isPdfReviewReferencePath(file.filename)) {
+    return file.status === 'added' || file.status === 'modified';
+  }
+  return file.status === 'added' && isSampleReviewReferencePath(file.filename);
 }
 
 function failClosedPathReason(filename) {
@@ -266,11 +291,6 @@ function classifyChanges(input = {}) {
   for (const file of files.slice().sort((a, b) => a.filename.localeCompare(b.filename))) {
     const filename = file.filename;
 
-    if (file.status === 'added' && isReviewReferencePath(filename)) {
-      reviewOnlyCount += 1;
-      continue;
-    }
-
     if (isRenderRustPath(filename)) {
       rustRequired = true;
       renderRequired = true;
@@ -300,6 +320,17 @@ function classifyChanges(input = {}) {
       renderRequired = true;
       nativeSkiaRequired = true;
       reasons.add('rust-test-input');
+      continue;
+    }
+
+    if (file.status === 'added' && isSampleSecuritySweepPath(filename)) {
+      rustRequired = true;
+      reasons.add('sample-security-sweep');
+      continue;
+    }
+
+    if (isAllowedReviewReferenceFile(file)) {
+      reviewOnlyCount += 1;
       continue;
     }
 

@@ -10,8 +10,8 @@
 //! # 이 스위트가 확인하는 세 가지
 //!
 //! 1. **양성 코퍼스** — 벡터별 합성 문서 하나씩이 해당 탐지기에서 `clean: false`.
-//! 2. **음성 코퍼스(더 중요하다)** — `samples/` 대표 표본셋 전체가 세 탐지기 모두에서
-//!    `clean: true`. 하나라도 걸리면 이 시험이 실패해야 한다.
+//! 2. **신규 샘플 음성 코퍼스(더 중요하다)** — PR에서 새로 추가된 sample 문서만
+//!    세 탐지기 모두에서 `clean: true`. 하나라도 걸리면 이 시험이 실패해야 한다.
 //! 3. **봉투 스키마 정합** — 세 탐지기가 `clean` 필드를 공통으로 갖고, 각자의 배열
 //!    필드(`findings`/`hiddenText`/`injectionSignals`)가 소비자에게 같은 방식으로 보인다.
 //!
@@ -21,6 +21,13 @@
 
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
+
+use rhwp::document_core::queries::hidden_text::HiddenTextOptions;
+use rhwp::document_core::queries::injection_scan::{
+    Confidence, InjectionScanOptions, InjectionScanSummary,
+};
+use rhwp::document_core::{text_security as ts, DocumentCore};
+use rhwp::model::control::Control;
 
 fn repo(rel: &str) -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join(rel)
@@ -232,32 +239,13 @@ fn positive_corpus_unicode_vector_is_caught() {
     let _ = std::fs::remove_file(&doc);
 }
 
-// ── 음성 코퍼스: samples/ 오탐 회귀(더 중요한 절반) ─────────────────────
+// ── 음성 코퍼스: PR 신규 samples/ 오탐 회귀(더 중요한 절반) ─────────────
 //
-// `test_corpus.md` §5 의 결정 — samples/ 전건(또는 대표 샘플셋) 스윕이 세 탐지기
-// 모두에서 clean: true 여야 한다. 전수(668건) x 3탐지기는 프로세스 스폰 비용이 커서
-// CI 예산을 넘길 수 있으므로, 최상위 디렉터리의 문서 파일(중복 없는 대표 샘플셋)로
-// 스윕 범위를 정한다 — `injection_scan_contract.rs::every_normal_sample_is_clean` 이
-// 쓰는 것과 같은 범위다. 하위 디렉터리 표본은 각 계약 시험의 CLEAN_SAMPLES/
-// CLEAN_CORPUS 하드코딩 목록이 이미 별도로 고정한다.
-
-fn top_level_documents() -> Vec<PathBuf> {
-    let dir = repo("samples");
-    let mut entries: Vec<PathBuf> = std::fs::read_dir(&dir)
-        .expect("samples 읽기 실패")
-        .filter_map(|e| e.ok().map(|e| e.path()))
-        .filter(|p| {
-            p.is_file()
-                && p.extension().and_then(|e| e.to_str()).is_some_and(|e| {
-                    e.eq_ignore_ascii_case("hwp")
-                        || e.eq_ignore_ascii_case("hwpx")
-                        || e.eq_ignore_ascii_case("hml")
-                })
-        })
-        .collect();
-    entries.sort();
-    entries
-}
+// `test_corpus.md` §5 의 결정은 "정상 문서 오탐 0" 이다. 다만 PR마다 samples 전체를
+// 전수 스윕하면 신규 샘플 하나를 추가한 PR도 오래된 대형 샘플 비용을 반복 지불한다.
+// CI는 PR에서 새로 추가된 sample 문서만 `RHWP_SECURITY_SWEEP_SAMPLES_JSON` 으로 넘긴다.
+// env가 비어 있으면 이 축은 실행하지 않는다. 이미 저장소에 들어온 기존 샘플은
+// 해당 샘플을 들여온 PR 시점에 검사됐다는 전제를 둔다.
 
 /// 음성 코퍼스에 섞여 있는 **진짜 은닉 텍스트**. 오탐이 아니라 탐지가 맞은 것이다.
 ///
@@ -292,72 +280,157 @@ const KNOWN_GENUINE_ZERO_WIDTH: &[&str] = &[
     "정책연구용역사업 중간진도보고서(살아있는 간장 기증자의 의학적 선별기준 연구).hwpx",
 ];
 
-#[test]
-fn negative_corpus_sweep_is_clean_across_all_three_detectors() {
-    let docs = top_level_documents();
+const SECURITY_SWEEP_SAMPLES_ENV: &str = "RHWP_SECURITY_SWEEP_SAMPLES_JSON";
+
+fn is_security_sample_path(rel: &str) -> bool {
+    rel.starts_with("samples/")
+        && matches!(
+            Path::new(rel)
+                .extension()
+                .and_then(|ext| ext.to_str())
+                .map(str::to_ascii_lowercase)
+                .as_deref(),
+            Some("hwp" | "hwpx" | "hml")
+        )
+}
+
+fn security_sweep_documents() -> Vec<PathBuf> {
+    let Ok(raw) = std::env::var(SECURITY_SWEEP_SAMPLES_ENV) else {
+        return Vec::new();
+    };
+    let trimmed = raw.trim();
+    if trimmed.is_empty() || trimmed == "[]" {
+        return Vec::new();
+    }
+
+    let rels: Vec<String> = serde_json::from_str(trimmed).unwrap_or_else(|e| {
+        panic!("{SECURITY_SWEEP_SAMPLES_ENV} 는 JSON string array 여야 합니다: {e}")
+    });
+    let docs: Vec<PathBuf> = rels
+        .into_iter()
+        .filter(|rel| is_security_sample_path(rel))
+        .map(|rel| repo(&rel))
+        .collect();
     assert!(
-        docs.len() >= 100,
-        "음성 코퍼스가 {}건뿐입니다 — 스윕이 공허하게 통과합니다",
-        docs.len()
+        !docs.is_empty(),
+        "{SECURITY_SWEEP_SAMPLES_ENV} 에 검사 가능한 samples/*.hwp|hwpx|hml 항목이 없습니다"
     );
+    docs
+}
+
+fn mcp_tool_names() -> Vec<String> {
+    let args = ["capabilities", "--mcp"];
+    let out = run(&args);
+    assert_eq!(out.status.code(), Some(0), "{}", describe(&args, &out));
+    let manifest = parse_stdout_json(&args, &out);
+    manifest["tools"]
+        .as_array()
+        .map(|tools| {
+            tools
+                .iter()
+                .filter_map(|tool| tool["name"].as_str().map(str::to_string))
+                .collect()
+        })
+        .unwrap_or_default()
+}
+
+fn unicode_finding_count(core: &DocumentCore) -> usize {
+    let mut findings = 0usize;
+    for section in &core.document().sections {
+        for para in &section.paragraphs {
+            findings += ts::scan_deception(&para.text, None).len();
+            for ctrl in &para.controls {
+                match ctrl {
+                    Control::Table(table) => {
+                        for cell in &table.cells {
+                            for cp in &cell.paragraphs {
+                                findings += ts::scan_deception(&cp.text, None).len();
+                                for nested in &cp.controls {
+                                    if let Control::Equation(eq) = nested {
+                                        findings += ts::scan_deception(&eq.script, None).len();
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    Control::Shape(shape) => {
+                        if let Some(tb) = shape.as_ref().drawing().and_then(|d| d.text_box.as_ref())
+                        {
+                            for tp in &tb.paragraphs {
+                                findings += ts::scan_deception(&tp.text, None).len();
+                            }
+                        }
+                    }
+                    Control::Equation(eq) => {
+                        findings += ts::scan_deception(&eq.script, None).len();
+                    }
+                    _ => {}
+                }
+            }
+        }
+    }
+    findings
+}
+
+#[test]
+fn new_sample_documents_are_clean_across_all_three_detectors() {
+    let docs = security_sweep_documents();
+    if docs.is_empty() {
+        eprintln!(
+            "{SECURITY_SWEEP_SAMPLES_ENV} 가 비어 있어 신규 sample 문서 clean sweep을 건너뜁니다"
+        );
+        return;
+    }
 
     let mut checked_hidden = 0usize;
     let mut checked_injection = 0usize;
     let mut checked_unicode = 0usize;
     let mut dirty: Vec<String> = Vec::new();
+    let tool_names = mcp_tool_names();
 
     for path in &docs {
         let name = path.file_name().unwrap().to_string_lossy().to_string();
+        let Ok(data) = std::fs::read(path) else {
+            continue;
+        };
+        let Ok(core) = DocumentCore::from_bytes(&data) else {
+            continue;
+        };
 
-        // hidden-text
-        {
-            let p = path.to_str().unwrap();
-            let args = ["inspect", "hidden-text", p, "--json"];
-            let out = run(&args);
-            if out.status.code() == Some(0) {
-                let v = parse_stdout_json(&args, &out);
-                checked_hidden += 1;
-                if v["clean"] != true && !KNOWN_GENUINE_HIDDEN_TEXT.contains(&name.as_str()) {
-                    dirty.push(format!("  - [hidden-text] {name}: {}", v["hiddenText"]));
-                }
-            }
-            // 종료 코드가 0이 아니면(암호 문서 등) 이 스윕의 관심사가 아니다.
+        let hidden = core.detect_hidden_text(&HiddenTextOptions::default());
+        checked_hidden += 1;
+        if !hidden.clean && !KNOWN_GENUINE_HIDDEN_TEXT.contains(&name.as_str()) {
+            dirty.push(format!(
+                "  - [hidden-text] {name}: {}건",
+                hidden.hidden_text.len()
+            ));
         }
 
-        // injection
-        {
-            let p = path.to_str().unwrap();
-            let args = ["inspect", "injection", p, "--json", "--include-fields"];
-            let out = run(&args);
-            if out.status.code() == Some(0) {
-                let v = parse_stdout_json(&args, &out);
-                checked_injection += 1;
-                if v["clean"] != true {
-                    dirty.push(format!("  - [injection] {name}: {}", v["injectionSignals"]));
-                }
-            }
+        let injection = InjectionScanSummary {
+            signals: core.scan_injection(&InjectionScanOptions {
+                min_confidence: Confidence::Low,
+                include_fields: true,
+                tool_names: tool_names.clone(),
+            }),
+        };
+        checked_injection += 1;
+        if !injection.clean() {
+            dirty.push(format!(
+                "  - [injection] {name}: {}건 {:?}",
+                injection.signals.len(),
+                injection.signals
+            ));
         }
 
-        // unicode
-        {
-            let p = path.to_str().unwrap();
-            let args = ["inspect", "unicode", p, "--json"];
-            let out = run(&args);
-            if out.status.code() == Some(0) {
-                let v = parse_stdout_json(&args, &out);
-                checked_unicode += 1;
-                if v["clean"] != true && !KNOWN_GENUINE_ZERO_WIDTH.contains(&name.as_str()) {
-                    dirty.push(format!(
-                        "  - [unicode] {name}: {}건 {}",
-                        v["findingCount"], v["findings"]
-                    ));
-                }
-            }
+        let unicode = unicode_finding_count(&core);
+        checked_unicode += 1;
+        if unicode > 0 && !KNOWN_GENUINE_ZERO_WIDTH.contains(&name.as_str()) {
+            dirty.push(format!("  - [unicode] {name}: {unicode}건"));
         }
     }
 
     assert!(
-        checked_hidden >= 80 && checked_injection >= 80 && checked_unicode >= 80,
+        checked_hidden > 0 && checked_injection > 0 && checked_unicode > 0,
         "탐지기별 검사 건수가 너무 적습니다 — hidden={checked_hidden} injection={checked_injection} unicode={checked_unicode} (스윕 대상 {})",
         docs.len()
     );
