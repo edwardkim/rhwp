@@ -10,13 +10,14 @@
 //! 현재값 dump: `RHWP_OVERFLOW_CELL_DUMP=<path>` 로 실행하면 TSV 를 떨어뜨린다.
 //! baseline 은 0 이 아닌 문서만 `상대경로\t줄수` 사전순으로 기록한다.
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
 
 use rhwp::document_core::DocumentCore;
 
 const SAMPLES_ROOT: &str = "samples";
 const BASELINE_PATH: &str = "tests/fixtures/overflow_cell_baseline.tsv";
+const PARTITIONS: usize = 8;
 
 /// 확장자로 샘플을 재귀 수집해 루트 기준 상대 경로(슬래시)로 돌려준다.
 fn collect_samples() -> Vec<(PathBuf, String)> {
@@ -58,6 +59,38 @@ fn load_baseline() -> BTreeMap<String, u64> {
         .collect()
 }
 
+fn partition_samples(
+    mut samples: Vec<(PathBuf, String)>,
+    partitions: usize,
+) -> Vec<Vec<(PathBuf, String)>> {
+    samples.sort_by_key(|(path, rel)| {
+        let size = std::fs::metadata(path).map(|m| m.len()).unwrap_or(0);
+        (std::cmp::Reverse(size), rel.clone())
+    });
+    let mut buckets: Vec<(u64, Vec<(PathBuf, String)>)> =
+        (0..partitions).map(|_| (0, Vec::new())).collect();
+    for (path, rel) in samples {
+        let size = std::fs::metadata(&path).map(|m| m.len()).unwrap_or(0);
+        let index = buckets
+            .iter()
+            .enumerate()
+            .min_by_key(|(i, (total, rows))| (*total, rows.len(), *i))
+            .map(|(i, _)| i)
+            .expect("partition bucket");
+        buckets[index].0 += size.max(1);
+        buckets[index].1.push((path, rel));
+    }
+    buckets.into_iter().map(|(_, rows)| rows).collect()
+}
+
+fn partition_dump_path(path: &str, part: usize) -> String {
+    if PARTITIONS == 1 {
+        path.to_string()
+    } else {
+        format!("{path}.part{part:02}-of{PARTITIONS:02}")
+    }
+}
+
 /// 문서 하나의 전 페이지를 렌더해 `LAYOUT_OVERFLOW_CELL` 줄 수 합계를 센다.
 /// 로드·렌더 실패는 이 게이트의 관심사가 아니므로 None(건너뜀)으로 처리한다 —
 /// 크래시·파싱 회귀는 기존 스위트가 잡는다.
@@ -77,9 +110,17 @@ fn count_doc(path: &Path) -> Option<u64> {
     Some(total)
 }
 
-#[test]
-fn overflow_cell_lines_do_not_grow() {
-    let samples = collect_samples();
+fn overflow_cell_lines_do_not_grow_partition(part: usize) {
+    let buckets = partition_samples(collect_samples(), PARTITIONS);
+    let samples = buckets
+        .into_iter()
+        .nth(part)
+        .unwrap_or_else(|| panic!("없는 partition: {part}"));
+    assert!(
+        !samples.is_empty(),
+        "overflow-cell partition {part} 이 비어 있음"
+    );
+    let selected_rels: BTreeSet<String> = samples.iter().map(|(_, rel)| rel.clone()).collect();
     let baseline = load_baseline();
 
     let workers = std::thread::available_parallelism()
@@ -115,7 +156,7 @@ fn overflow_cell_lines_do_not_grow() {
         .collect();
 
     eprintln!(
-        "overflow-cell 스윕: 샘플 {}건(스킵 {}) / 0 아닌 문서 {}종 / 총 {}줄",
+        "overflow-cell 스윕 partition {part}/{PARTITIONS}: 샘플 {}건(스킵 {}) / 0 아닌 문서 {}종 / 총 {}줄",
         results.len(),
         skipped.load(std::sync::atomic::Ordering::Relaxed),
         nonzero.len(),
@@ -123,6 +164,7 @@ fn overflow_cell_lines_do_not_grow() {
     );
 
     if let Ok(dump) = std::env::var("RHWP_OVERFLOW_CELL_DUMP") {
+        let dump = partition_dump_path(&dump, part);
         let mut out = String::new();
         for (rel, n) in &nonzero {
             out.push_str(&format!("{rel}\t{n}\n"));
@@ -151,10 +193,32 @@ fn overflow_cell_lines_do_not_grow() {
     // baseline 부패 감지: 기록된 문서가 코퍼스에서 사라지면 행을 정리해야 한다.
     let missing: Vec<&String> = baseline
         .keys()
-        .filter(|rel| !results.contains_key(*rel))
+        .filter(|rel| selected_rels.contains(*rel) && !results.contains_key(*rel))
         .collect();
     assert!(
         missing.is_empty(),
         "baseline 에 있으나 샘플에 없는 문서 — 행을 정리할 것: {missing:?}"
     );
 }
+
+macro_rules! overflow_cell_partition_tests {
+    ($($name:ident => $part:expr),+ $(,)?) => {
+        $(
+            #[test]
+            fn $name() {
+                overflow_cell_lines_do_not_grow_partition($part);
+            }
+        )+
+    };
+}
+
+overflow_cell_partition_tests!(
+    overflow_cell_lines_do_not_grow_partition_0 => 0,
+    overflow_cell_lines_do_not_grow_partition_1 => 1,
+    overflow_cell_lines_do_not_grow_partition_2 => 2,
+    overflow_cell_lines_do_not_grow_partition_3 => 3,
+    overflow_cell_lines_do_not_grow_partition_4 => 4,
+    overflow_cell_lines_do_not_grow_partition_5 => 5,
+    overflow_cell_lines_do_not_grow_partition_6 => 6,
+    overflow_cell_lines_do_not_grow_partition_7 => 7,
+);

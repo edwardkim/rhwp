@@ -55,6 +55,7 @@ export function refreshDurationPolicy(policy, measurements) {
     if (measurements.every((measurement) => measurement?.schema_version === 1)) {
       return policy;
     }
+    const parsedPolicy = parseDurationPolicy(policy);
     const targets = {};
     const cases = {};
     const testCases = {};
@@ -89,6 +90,7 @@ export function refreshDurationPolicy(policy, measurements) {
     return {
       schema_version: 2,
       fallback_seconds_per_test: policy.fallback_seconds_per_test,
+      parallelism_factor: parsedPolicy.parallelismFactor,
       measurement_sources: Object.fromEntries(measurements
         .map((measurement) => [measurement.archive_label, {
           run_id: measurement.run_id,

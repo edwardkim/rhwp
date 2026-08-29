@@ -40,9 +40,6 @@ function allowedReviewOnlyFile(file) {
   if (file.filename.startsWith("mydocs/")) {
     return true;
   }
-  if (file.status !== "added") {
-    return false;
-  }
 
   const filename = file.filename;
   const lowerName = filename.toLowerCase();
@@ -51,7 +48,10 @@ function allowedReviewOnlyFile(file) {
   const pdfReference = ["pdf/", "pdf-2020/", "pdf-large/"]
     .some((prefix) => filename.startsWith(prefix))
     && lowerName.endsWith(".pdf");
-  return sampleReference || pdfReference;
+  if (pdfReference) {
+    return file.status === "added" || file.status === "modified";
+  }
+  return file.status === "added" && sampleReference;
 }
 
 export function classifyReviewOnlyCommit(commit) {

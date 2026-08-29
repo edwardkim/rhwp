@@ -41,10 +41,29 @@ class ReviewOnlyFastPassWorkflowTests(unittest.TestCase):
             with self.subTest(workflow=name):
                 workflow = workflow_path.read_text(encoding="utf-8")
                 self.assertIn(expected, workflow)
+                self.assertIn("function isPdfReferencePath(filename)", workflow)
+                self.assertIn("function isSampleReferencePath(filename)", workflow)
+                self.assertIn("file.status === 'added' || file.status === 'modified'", workflow)
                 self.assertIn(
                     "pdfPrefixes.some((prefix) => filename.startsWith(prefix))",
                     workflow,
                 )
+
+    def test_sample_document_files_are_not_review_only_fast_pass_references(self) -> None:
+        workflow_paths = {
+            **WORKFLOWS,
+            **{name: spec[0] for name, spec in WORKER_PREFLIGHTS.items()},
+        }
+        for name, workflow_path in workflow_paths.items():
+            with self.subTest(workflow=name):
+                workflow = workflow_path.read_text(encoding="utf-8")
+                sample_function = workflow.split(
+                    "function isSampleReferencePath(filename)", maxsplit=1
+                )[1].split("function isPdfReferencePath(filename)", maxsplit=1)[0]
+                self.assertIn("filename.endsWith('.pdf')", sample_function)
+                self.assertIn("filename.endsWith('.png')", sample_function)
+                self.assertNotIn("filename.endsWith('.hwp')", sample_function)
+                self.assertNotIn("filename.endsWith('.hwpx')", sample_function)
 
     def test_base_advance_does_not_invalidate_a_trailing_review_record(self) -> None:
         for name, workflow_path in WORKFLOWS.items():
@@ -427,6 +446,30 @@ class ReviewOnlyFastPassWorkflowTests(unittest.TestCase):
                 output = self._run_worker_preflight(name, files=files)
                 self.assertEqual(output[output_name], skip_value)
 
+    def test_worker_preflights_skip_modified_review_pdf(self) -> None:
+        files = [
+            {
+                "filename": "pdf/2025 행정업무운영 편람(최종)-hwp-2020.pdf",
+                "status": "modified",
+            },
+            {
+                "filename": "pdf/2025 행정업무운영 편람(최종)-hwp-2024.pdf",
+                "status": "modified",
+            },
+            {
+                "filename": "pdf/2025 행정업무운영 편람(최종)-hwpx-2020.pdf",
+                "status": "modified",
+            },
+            {
+                "filename": "pdf/2025 행정업무운영 편람(최종)-hwpx-2024.pdf",
+                "status": "modified",
+            },
+        ]
+        for name, (_, _, output_name, skip_value, _) in WORKER_PREFLIGHTS.items():
+            with self.subTest(workflow=name):
+                output = self._run_worker_preflight(name, files=files)
+                self.assertEqual(output[output_name], skip_value)
+
     def test_worker_preflights_reuse_matching_fork_candidate_after_pdf_and_mydocs_tail(
         self,
     ) -> None:
@@ -640,7 +683,7 @@ class ReviewOnlyFastPassWorkflowTests(unittest.TestCase):
                 )
                 self.assertEqual(output[output_name], full_value)
 
-    def test_worker_preflights_reject_modified_pdf_and_wrong_fork_candidate(self) -> None:
+    def test_worker_preflights_reuse_modified_pdf_tail_and_reject_wrong_fork_candidate(self) -> None:
         code_candidate = "c" * 40
         modified_pdf = "m" * 40
         modified_pdf_commits = [
@@ -655,6 +698,15 @@ class ReviewOnlyFastPassWorkflowTests(unittest.TestCase):
                 "files": [{"filename": "pdf/existing_reference.pdf", "status": "modified"}],
             },
         ]
+        matching_run = {
+            "event": "pull_request",
+            "head_sha": code_candidate,
+            "head_branch": "fix/bughunt-batch-r3",
+            "head_repository": {"id": 7},
+            "status": "completed",
+            "conclusion": "success",
+            "created_at": "2026-08-20T12:00:00Z",
+        }
         trailing_review = "r" * 40
         trusted_tail = [
             modified_pdf_commits[0],
@@ -682,8 +734,9 @@ class ReviewOnlyFastPassWorkflowTests(unittest.TestCase):
                         {"filename": "pdf/existing_reference.pdf", "status": "modified"},
                     ],
                     commits=modified_pdf_commits,
+                    runs=[matching_run],
                 )
-                self.assertEqual(output[output_name], full_value)
+                self.assertEqual(output[output_name], WORKER_PREFLIGHTS[name][3])
             with self.subTest(workflow=name, case="wrong-fork"):
                 output = self._run_worker_preflight(
                     name,

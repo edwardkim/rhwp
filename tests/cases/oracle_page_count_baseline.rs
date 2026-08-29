@@ -47,7 +47,9 @@ use rhwp::document_core::DocumentCore;
 use rhwp::model::document::print_method_implies_nup;
 
 const BASELINE_PATH: &str = "tests/fixtures/oracle_page_count_baseline.tsv";
+const PARTITIONS: usize = 8;
 
+#[derive(Clone)]
 struct Row {
     /// 한글이 뽑은 쪽수. 같은 문서를 여러 한글 버전·폰트 조건으로 뽑은 정답지가 있으면
     /// 여럿이다 — 그중 하나와 맞으면 일치로 본다(조건 차이를 결함으로 오인하지 않는다).
@@ -103,16 +105,57 @@ fn gap(oracle: &[u32], got: u32) -> u32 {
         .expect("정답지 쪽수는 최소 1개")
 }
 
-#[test]
-fn page_counts_do_not_drift_from_hancom_oracle() {
+fn partition_rows(
+    root: &Path,
+    mut rows: Vec<(String, Row)>,
+    partitions: usize,
+) -> Vec<Vec<(String, Row)>> {
+    rows.sort_by_key(|(rel, _)| {
+        let size = std::fs::metadata(root.join(rel))
+            .map(|m| m.len())
+            .unwrap_or(0);
+        (std::cmp::Reverse(size), rel.clone())
+    });
+    let mut buckets: Vec<(u64, Vec<(String, Row)>)> =
+        (0..partitions).map(|_| (0, Vec::new())).collect();
+    for (rel, row) in rows {
+        let size = std::fs::metadata(root.join(&rel))
+            .map(|m| m.len())
+            .unwrap_or(0);
+        let index = buckets
+            .iter()
+            .enumerate()
+            .min_by_key(|(i, (total, rows))| (*total, rows.len(), *i))
+            .map(|(i, _)| i)
+            .expect("partition bucket");
+        buckets[index].0 += size.max(1);
+        buckets[index].1.push((rel, row));
+    }
+    buckets.into_iter().map(|(_, rows)| rows).collect()
+}
+
+fn page_counts_do_not_drift_from_hancom_oracle_partition(part: usize) {
     let baseline = load_baseline();
     let root = repo_root();
+    let buckets = partition_rows(
+        &root,
+        baseline
+            .iter()
+            .map(|(k, v)| (k.clone(), v.clone()))
+            .collect(),
+        PARTITIONS,
+    );
+    let selected = buckets
+        .into_iter()
+        .nth(part)
+        .unwrap_or_else(|| panic!("없는 partition: {part}"));
+    assert!(!selected.is_empty(), "oracle partition {part} 이 비어 있음");
 
     let workers = std::thread::available_parallelism()
         .map(|n| n.get())
         .unwrap_or(4)
         .min(8);
-    let queue = std::sync::Mutex::new(baseline.iter());
+    let queue = std::sync::Mutex::new(selected.iter());
     let failures = std::sync::Mutex::new(Vec::<String>::new());
     let stats = std::sync::Mutex::new((0usize, 0usize, 0usize)); // 일치 / 기존격차 / 건너뜀
 
@@ -152,8 +195,8 @@ fn page_counts_do_not_drift_from_hancom_oracle() {
 
     let (matched, known_gap, skipped) = *stats.lock().unwrap();
     eprintln!(
-        "정답지 쪽수 대조: {}개 / 일치 {} / 기존 격차 유지·개선 {} / 건너뜀 {}",
-        baseline.len(),
+        "정답지 쪽수 대조 partition {part}/{PARTITIONS}: {}개 / 일치 {} / 기존 격차 유지·개선 {} / 건너뜀 {}",
+        selected.len(),
         matched,
         known_gap,
         skipped
@@ -169,3 +212,25 @@ fn page_counts_do_not_drift_from_hancom_oracle() {
         failures.join("\n")
     );
 }
+
+macro_rules! oracle_partition_tests {
+    ($($name:ident => $part:expr),+ $(,)?) => {
+        $(
+            #[test]
+            fn $name() {
+                page_counts_do_not_drift_from_hancom_oracle_partition($part);
+            }
+        )+
+    };
+}
+
+oracle_partition_tests!(
+    page_counts_do_not_drift_from_hancom_oracle_partition_0 => 0,
+    page_counts_do_not_drift_from_hancom_oracle_partition_1 => 1,
+    page_counts_do_not_drift_from_hancom_oracle_partition_2 => 2,
+    page_counts_do_not_drift_from_hancom_oracle_partition_3 => 3,
+    page_counts_do_not_drift_from_hancom_oracle_partition_4 => 4,
+    page_counts_do_not_drift_from_hancom_oracle_partition_5 => 5,
+    page_counts_do_not_drift_from_hancom_oracle_partition_6 => 6,
+    page_counts_do_not_drift_from_hancom_oracle_partition_7 => 7,
+);

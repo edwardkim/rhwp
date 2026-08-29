@@ -11,7 +11,7 @@
       "native_skia_required": "false",
       "codeql_languages": "rust",
       "classification_status": "classified",
-      "classifier_version": "5",
+      "classifier_version": "6",
       "reason": "classified:rust"
     }
   },
@@ -27,7 +27,7 @@
       "native_skia_required": "true",
       "codeql_languages": "rust",
       "classification_status": "classified",
-      "classifier_version": "5",
+      "classifier_version": "6",
       "reason": "classified:rust-render"
     }
   },
@@ -43,7 +43,7 @@
       "native_skia_required": "false",
       "codeql_languages": "rust",
       "classification_status": "classified",
-      "classifier_version": "5",
+      "classifier_version": "6",
       "reason": "classified:rust"
     }
   },
@@ -59,7 +59,7 @@
       "native_skia_required": "false",
       "codeql_languages": "rust",
       "classification_status": "classified",
-      "classifier_version": "5",
+      "classifier_version": "6",
       "reason": "classified:rust"
     }
   }
