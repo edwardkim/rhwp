@@ -5,6 +5,42 @@
  * wasm-pack이 자동 생성하는 pkg/rhwp.d.ts를 보완하는 설계 문서.
  */
 
+/** 명시 variable-font instance의 지원 mode. */
+export type ExactFontInstanceMode = 'boundedHorizontalLtrV1';
+
+/** variable font axis 좌표. tag는 OpenType 4-byte ASCII axis tag다. */
+export interface ExactFontInstanceAxis {
+  tag: string;
+  value: number;
+}
+
+/** setExactFontInstance 입력. font bytes는 registerExactFontSource로 별도 등록한다. */
+export interface SetExactFontInstanceOptions {
+  charShapeId: number;
+  languageIndex: number;
+  mode: ExactFontInstanceMode;
+  axes: ExactFontInstanceAxis[];
+}
+
+/** clearExactFontInstance 입력. */
+export interface ClearExactFontInstanceOptions {
+  charShapeId: number;
+  languageIndex: number;
+  mode: ExactFontInstanceMode;
+}
+
+/** exact instance command의 JSON 응답. */
+export interface ExactFontInstanceResult {
+  ok: true;
+  status: 'registered' | 'updated' | 'already-registered' | 'cleared' | 'already-cleared';
+  mode: ExactFontInstanceMode;
+  slot: { charShapeId: number; languageIndex: number };
+  axes: ExactFontInstanceAxis[];
+  sourceGeneration: number;
+  requestGeneration: number;
+  requestCount: number;
+}
+
 /** HWP 문서 객체 */
 export class HwpDocument {
   /** HWP 파일 바이트로부터 문서를 로드한다. */
@@ -30,6 +66,20 @@ export class HwpDocument {
 
   /** 문서 정보를 JSON 문자열로 반환한다. */
   getDocumentInfo(): string;
+
+  /** 확정된 font bytes를 exact layout slot에 등록한다. */
+  registerExactFontSource(
+    charShapeId: number,
+    languageIndex: number,
+    fontBytes: Uint8Array,
+    faceIndex: number,
+  ): string;
+
+  /** exact slot에 strict opt-in variable-font instance 요청을 설정한다. */
+  setExactFontInstance(optionsJson: string): string;
+
+  /** exact slot 하나의 variable-font instance 요청을 제거한다. */
+  clearExactFontInstance(optionsJson: string): string;
 
   /** DPI를 설정한다. */
   setDpi(dpi: number): void;

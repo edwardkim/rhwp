@@ -881,7 +881,9 @@ fn issue_4969_q3_e0_red_reversible_exact_instance_owner_is_absent() {
 fn issue_4969_q3_e0_red_public_instance_adapters_are_absent() {
     assert!(
         Q3_E_WASM_API_SOURCE.contains("js_name = setExactFontInstance")
-            && Q3_E_WASM_API_SOURCE.contains("js_name = clearExactFontInstance"),
+            && Q3_E_WASM_API_SOURCE.contains("js_name = clearExactFontInstance")
+            && Q3_E_WASM_API_SOURCE.contains("self.set_exact_font_instance_native(options_json)")
+            && Q3_E_WASM_API_SOURCE.contains("self.clear_exact_font_instance_native(options_json)"),
         "Q3-E2 red: the strict set/clear WASM adapters are absent"
     );
 }

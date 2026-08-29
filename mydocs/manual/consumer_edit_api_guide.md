@@ -2,7 +2,7 @@
 kind: reference
 status: active
 canonical: mydocs/manual/consumer_edit_api_guide.md
-last_verified: 2026-07-28
+last_verified: 2026-08-29
 ---
 
 # @rhwp/core 편집 API 가이드 (소비자용)
@@ -140,7 +140,45 @@ doc.applyCharFormatInCellEx(JSON.stringify({
 }));
 ```
 
-## 5. 0.x 버전 변경 대응
+## 5. 명시 variable-font instance 요청
+
+host가 확정한 variable font를 exact `(charShapeId, languageIndex)` slot에 연결할 때는 font bytes를 먼저
+`registerExactFontSource`로 등록하고, 별도 strict JSON command로 instance를 설정한다. 문서 parser·font name·bold·
+장평·자간으로 axis를 추측해 자동 호출하면 안 된다.
+
+```ts
+doc.registerExactFontSource(charShapeId, 0, fontBytes, 0);
+
+const setResult = JSON.parse(doc.setExactFontInstance(JSON.stringify({
+  charShapeId,
+  languageIndex: 0,
+  mode: 'boundedHorizontalLtrV1',
+  axes: [
+    { tag: 'wght', value: 650 },
+    { tag: 'opsz', value: 400 },
+  ],
+})));
+
+const clearResult = JSON.parse(doc.clearExactFontInstance(JSON.stringify({
+  charShapeId,
+  languageIndex: 0,
+  mode: 'boundedHorizontalLtrV1',
+})));
+```
+
+- options JSON은 16 KiB, axis는 16개, `languageIndex`는 0..6으로 제한된다.
+- unknown field/mode, 중복·잘못된 axis tag, 비유한 값, font의 `fvar` 범위 밖 값은 요청 snapshot 변경 전에
+  예외로 거절된다.
+- axis 순서는 canonical tag 순서로 정렬되고 `fvar` default 값은 응답 axis에서 생략된다. 빈 axis 또는 explicit
+  default 요청은 유효하며 clear와 같지 않다.
+- 같은 canonical request의 재설정과 이미 비어 있는 slot의 clear는 멱등이다. 응답의 `status`와
+  `requestGeneration`으로 effective mutation 여부를 확인할 수 있다.
+- 반환 JSON에는 상태·slot·canonical axis·source/request generation·request count만 있고 font bytes·문서 text·
+  host path는 포함되지 않는다.
+- 이 API는 명시 요청 owner다. 호출 성공 자체가 모든 문단·backend에서 variable instance가 시각적으로 게시됐다는
+  뜻은 아니며, 지원되지 않는 형상과 backend는 기존 default `TextRun`으로 결정론적으로 fallback한다.
+
+## 6. 0.x 버전 변경 대응
 
 `@rhwp/core` 는 0.x 단계라 편집 API 시그니처가 바뀔 수 있다. 업그레이드 비용을 줄이려면:
 
@@ -149,7 +187,7 @@ doc.applyCharFormatInCellEx(JSON.stringify({
 - 업그레이드 시 CHANGELOG 의 `### API` 항목을 확인한다(인자 추가·index 변경을 기록).
 - 타입 검사(`tsc`)로 시그니처 불일치를 빌드 단계에서 잡는다.
 
-## 6. 저장
+## 7. 저장
 
 ```ts
 const hwpBytes = doc.exportHwp(); // Uint8Array — .hwp 파일로 저장

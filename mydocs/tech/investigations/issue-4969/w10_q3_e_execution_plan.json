@@ -3,7 +3,7 @@
   "kind": "font-w10-q3-e-bounded-atomic-activation-revised-plan",
   "issue": 4969,
   "stage": "W10-Q3-E",
-  "status": "q3-e1-complete-awaiting-q3-e2-start-approval",
+  "status": "q3-e2-complete-awaiting-q3-e3-start-approval",
   "baseCheckpoint": "558e27f6d",
   "productMutation": true,
   "publicApiExpansionRequiresSeparateApproval": true,
@@ -104,6 +104,9 @@
       "name": "wasm-public-adapter",
       "productOutputChange": false,
       "publicApiChanged": true,
+      "result": "qualified-public-dormant-approved",
+      "resultEvidence": "mydocs/tech/investigations/issue-4969/w10_q3_e2_wasm_public_adapter.json",
+      "checkpointCreated": true,
       "approvalAfter": true
     },
     {
@@ -149,7 +152,7 @@
   "privateCorpus": false,
   "hyperVOrHancomOracle": false,
   "requalificationEvidence": "mydocs/tech/investigations/issue-4969/w10_q3_e0_requalification.json",
-  "nextStage": "Q3-E2-start-approval",
+  "nextStage": "Q3-E3-start-approval",
   "nextStageApproved": false,
-  "approvalScope": "Q3-E1 result and checkpoint are complete; Q3-E2 public API expansion, product activation, push, PR, and comment remain separately gated"
+  "approvalScope": "Q3-E2 result and checkpoint are complete; Q3-E3 product activation, push, PR, and comment remain separately gated"
 }

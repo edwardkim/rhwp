@@ -652,6 +652,22 @@ impl HwpDocument {
         .map_err(JsValue::from)
     }
 
+    /// 이미 등록된 exact font source slot에 명시 variable-font instance 요청을 설정한다.
+    /// JSON DTO의 검증·canonicalization·mutation 권위는 native command 한 곳에만 둔다.
+    #[wasm_bindgen(js_name = setExactFontInstance)]
+    pub fn set_exact_font_instance(&mut self, options_json: &str) -> Result<String, JsValue> {
+        self.set_exact_font_instance_native(options_json)
+            .map_err(JsValue::from)
+    }
+
+    /// exact slot 하나의 명시 variable-font instance 요청을 제거한다.
+    /// 없는 요청의 clear는 멱등이며 다른 slot의 요청을 건드리지 않는다.
+    #[wasm_bindgen(js_name = clearExactFontInstance)]
+    pub fn clear_exact_font_instance(&mut self, options_json: &str) -> Result<String, JsValue> {
+        self.clear_exact_font_instance_native(options_json)
+            .map_err(JsValue::from)
+    }
+
     /// 문단부호(¶) 표시 여부를 설정한다.
     #[wasm_bindgen(js_name = setShowParagraphMarks)]
     pub fn set_show_paragraph_marks(&mut self, enabled: bool) {
