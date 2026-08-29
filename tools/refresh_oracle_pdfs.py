@@ -129,6 +129,15 @@ def mcp_command(args, env_file, action, extra):
     ]
 
 
+def configured_server_urls(env_file):
+    """공통 인증을 쓰는 endpoint URL 목록을 비공개 env에서 읽는다."""
+    key = 'HWP2024_MCP_SERVER_URLS='
+    for raw in pathlib.Path(env_file).read_text(encoding='utf-8').splitlines():
+        if raw.startswith(key):
+            return [url.strip() for url in raw[len(key):].split(',') if url.strip()]
+    return []
+
+
 def run_mcp(command, label, logger):
     result = subprocess.run(
         command,
@@ -233,18 +242,39 @@ def convert_one(args, source, engine, destination, logger, env_file, lane):
 SUCCESS_RECORD = re.compile(r'MCP 성공: source=(.+?) output=(pdf/.+?\.pdf) bytes=')
 
 
-def endpoint_env_files(args):
-    """endpoint와 token이 함께 들어 있는 lane별 env 파일만 허용한다."""
-    configured = args.endpoint_env_file or [args.env_file]
-    seen = set()
+def endpoint_env_files(args, configured, directory):
+    """lane별 env를 만든다.
+
+    `--endpoint-env-file`은 endpoint와 token이 모두 다른 서버용이다. URL만 다른 서버들은
+    공통 인증 env를 복제해 URL만 바꾼 임시 파일을 사용한다.
+    """
+    if args.endpoint_env_file:
+        seen = set()
+        lanes = []
+        for index, raw_path in enumerate(configured, 1):
+            path = pathlib.Path(raw_path).expanduser().resolve()
+            if not path.is_file():
+                raise ValueError('endpoint 환경 파일이 없다: %s' % path)
+            if path in seen:
+                raise ValueError('같은 endpoint 환경 파일을 중복 지정할 수 없다')
+            seen.add(path)
+            lanes.append(('endpoint-%d' % index, str(path)))
+        return lanes
+
+    if configured == [None]:
+        return [('endpoint-1', args.env_file)]
+    if len(configured) != len(set(configured)):
+        raise ValueError('같은 --server-url을 중복 지정할 수 없다')
+    base = pathlib.Path(args.env_file).read_text(encoding='utf-8')
     lanes = []
-    for index, raw_path in enumerate(configured, 1):
-        path = pathlib.Path(raw_path).expanduser().resolve()
-        if not path.is_file():
-            raise ValueError('endpoint 환경 파일이 없다: %s' % path)
-        if path in seen:
-            raise ValueError('같은 endpoint 환경 파일을 중복 지정할 수 없다')
-        seen.add(path)
+    for index, endpoint in enumerate(configured, 1):
+        replacement = 'HWP2024_MCP_SERVER_URL=%s' % endpoint
+        content, changed = re.subn(
+            r'^HWP2024_MCP_SERVER_URL=.*$', replacement, base, flags=re.MULTILINE)
+        if not changed:
+            content = base.rstrip() + '\n' + replacement + '\n'
+        path = directory / ('endpoint-%d.env' % index)
+        path.write_text(content, encoding='utf-8')
         lanes.append(('endpoint-%d' % index, str(path)))
     return lanes
 
@@ -323,6 +353,8 @@ def main():
     parser.add_argument('--status-interval-seconds', type=int, default=15)
     parser.add_argument('--endpoint-env-file', action='append', default=[],
                         help='endpoint와 token이 함께 든 lane별 env 파일 (반복 지정 시 파일당 단일 worker)')
+    parser.add_argument('--server-url', action='append', default=[],
+                        help='공통 인증 env를 사용할 MCP URL (반복 지정 시 URL당 단일 worker)')
     parser.add_argument('--source', action='append', default=[], help='특정 상대 원본 경로(반복 가능)')
     parser.add_argument('--limit', type=int, default=None, help='이번 실행에서 변환할 최대 문서 수')
     parser.add_argument('--refresh-existing', action='store_true')
@@ -334,11 +366,16 @@ def main():
 
     logger = RunLogger(args.log_file)
     try:
-        lanes = endpoint_env_files(args)
         if args.migrate_success_log:
             return migrate_success_log(args, args.migrate_success_log, logger)
+        configured_lanes = (
+            args.endpoint_env_file
+            or args.server_url
+            or configured_server_urls(args.env_file)
+            or [None]
+        )
         logger.emit('INFO', '배치 시작: 기존 canonical PDF 제외=%s, dry_run=%s, endpoint=%d, endpoint별 단일 큐' %
-                    (not args.refresh_existing, args.dry_run, len(lanes)))
+                    (not args.refresh_existing, args.dry_run, len(configured_lanes)))
         selected = args.source or fixture_sources()
         pending = []
         inspection_failures = []
@@ -367,36 +404,38 @@ def main():
         logger.emit('INFO', '변환 계획: 대상=%d 기존 PDF 제외=%d metadata 실패=%d' %
                     (len(pending), skipped_existing, len(inspection_failures)))
         if not args.dry_run:
-            lane_lock = threading.Lock()
-            stop_event = threading.Event()
-            next_position = 0
+            with tempfile.TemporaryDirectory(prefix='rhwp-mcp-endpoints-') as endpoint_dir:
+                lanes = endpoint_env_files(args, configured_lanes, pathlib.Path(endpoint_dir))
+                lane_lock = threading.Lock()
+                stop_event = threading.Event()
+                next_position = 0
 
-            def convert_next(lane, env_file):
-                nonlocal next_position
-                lane_failures = []
-                while not stop_event.is_set():
-                    with lane_lock:
-                        if stop_event.is_set() or next_position >= len(pending):
-                            return lane_failures
-                        position = next_position + 1
-                        source, product, engine, destination = pending[next_position]
-                        next_position += 1
-                    logger.emit('INFO', '[%d/%d] 변환: lane=%s source=%s output=%s product=%s engine=%s' %
-                                (position, len(pending), lane, source, destination,
-                                 product or 'null', engine))
-                    try:
-                        convert_one(args, source, engine, destination, logger, env_file, lane)
-                    except Exception as exc:
-                        message = '%s: %s' % (source, exc)
-                        lane_failures.append(message)
-                        logger.emit('ERROR', 'lane=%s %s' % (lane, message))
-                        stop_event.set()
-                return lane_failures
+                def convert_next(lane, env_file):
+                    nonlocal next_position
+                    lane_failures = []
+                    while not stop_event.is_set():
+                        with lane_lock:
+                            if stop_event.is_set() or next_position >= len(pending):
+                                return lane_failures
+                            position = next_position + 1
+                            source, product, engine, destination = pending[next_position]
+                            next_position += 1
+                        logger.emit('INFO', '[%d/%d] 변환: lane=%s source=%s output=%s product=%s engine=%s' %
+                                    (position, len(pending), lane, source, destination,
+                                     product or 'null', engine))
+                        try:
+                            convert_one(args, source, engine, destination, logger, env_file, lane)
+                        except Exception as exc:
+                            message = '%s: %s' % (source, exc)
+                            lane_failures.append(message)
+                            logger.emit('ERROR', 'lane=%s %s' % (lane, message))
+                            stop_event.set()
+                    return lane_failures
 
-            with ThreadPoolExecutor(max_workers=len(lanes), thread_name_prefix='oracle-pdf') as executor:
-                futures = [executor.submit(convert_next, lane, env_file) for lane, env_file in lanes]
-                for future in futures:
-                    failures.extend(future.result())
+                with ThreadPoolExecutor(max_workers=len(lanes), thread_name_prefix='oracle-pdf') as executor:
+                    futures = [executor.submit(convert_next, lane, env_file) for lane, env_file in lanes]
+                    for future in futures:
+                        failures.extend(future.result())
         logger.emit('INFO', '배치 완료: 변환 대상=%d 기존 PDF 제외=%d 실패=%d' %
                     (len(pending), skipped_existing, len(failures)))
         return 1 if failures else 0
