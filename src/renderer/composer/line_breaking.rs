@@ -991,8 +991,11 @@ pub(super) fn compose_horizontal_shaping_handoff(
     if kerning_context.registry_generation() != shaping_context.registry_generation() {
         return None;
     }
-    if !crate::renderer::shaping_paragraph::is_bounded_horizontal_shaping_candidate_text(&para.text)
-    {
+    let q2_candidate =
+        crate::renderer::shaping_paragraph::is_bounded_horizontal_shaping_candidate_text(
+            &para.text,
+        );
+    if !q2_candidate && shaping_context.instance_request_count() == 0 {
         return None;
     }
 
@@ -1087,13 +1090,40 @@ pub(super) fn compose_horizontal_shaping_handoff(
         candidate_boundaries: &candidate_boundaries,
         available_widths_px: &available_widths_px,
     };
-    let mut transaction = shaping_context.transaction();
-    let outcome = std::sync::Arc::new(
-        crate::renderer::shaping_paragraph::run_horizontal_shaping_line_transaction(
-            &mut transaction,
-            &request,
-        ),
-    );
+    let outcome = if q2_candidate {
+        let mut transaction = shaping_context.transaction();
+        std::sync::Arc::new(
+            crate::renderer::shaping_paragraph::run_horizontal_shaping_line_transaction(
+                &mut transaction,
+                &request,
+            ),
+        )
+    } else {
+        let line = composed.lines.first()?;
+        let run = line.runs.first()?;
+        if composed.lines.len() != 1
+            || line.runs.len() != 1
+            || line.has_line_break
+            || line.char_start != 0
+            || run.text != para.text
+            || run.display_text.is_some()
+        {
+            return None;
+        }
+        let slot = projection.shaping_scalar_styles.first()?.slot;
+        let mut transaction = shaping_context.explicit_instance_transaction(slot).ok()?;
+        if !crate::renderer::shaping_paragraph::is_bounded_explicit_instance_candidate_text(
+            &para.text,
+        ) {
+            return None;
+        }
+        std::sync::Arc::new(
+            crate::renderer::shaping_paragraph::run_bounded_explicit_instance_line_transaction(
+                &mut transaction,
+                &request,
+            ),
+        )
+    };
     crate::renderer::shaping_composition::retain_qualified_horizontal_shaping_outcome(outcome)
 }
 

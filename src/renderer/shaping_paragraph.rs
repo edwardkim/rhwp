@@ -6,7 +6,8 @@
 use super::kerning::ExactFontSlot;
 use super::shaping::{ShapingAttemptTrace, ShapingFeature, ShapingRejectReason};
 use super::shaping_context::{
-    HorizontalShapingMeasurement, HorizontalShapingRequest, HorizontalShapingTransaction,
+    HorizontalShapingExplicitInstanceTransaction, HorizontalShapingMeasurement,
+    HorizontalShapingMeasurementSession, HorizontalShapingRequest, HorizontalShapingTransaction,
 };
 use serde::Serialize;
 use std::collections::BTreeSet;
@@ -110,6 +111,8 @@ pub(crate) enum HorizontalShapingActivationReason {
     AvailableWidthMalformed,
     AttemptLimitExceeded,
     LineDecisionNotConverged,
+    ExplicitInstanceScriptUnsupported,
+    ExplicitInstanceLigatureUnsupported,
     PublicationOwnerPending,
 }
 
@@ -339,6 +342,26 @@ pub(crate) fn is_bounded_horizontal_shaping_candidate_text(text: &str) -> bool {
         has_old_hangul |= is_old_hangul_jamo(character);
     }
     code_point_count <= super::shaping::MAX_SHAPING_TEXT_CODE_POINTS && has_old_hangul
+}
+
+/// Request-gated Q3-E3 candidate predicate.  The composer must prove that an
+/// exact instance request exists before calling this function.  Keeping this
+/// predicate separate preserves the Q2 old-Hangul activation surface.
+pub(crate) fn is_bounded_explicit_instance_candidate_text(text: &str) -> bool {
+    let mut code_point_count = 0usize;
+    let mut all_modern_hangul = true;
+    let mut all_ascii_latin = true;
+    for character in text
+        .chars()
+        .take(super::shaping::MAX_SHAPING_TEXT_CODE_POINTS + 1)
+    {
+        code_point_count += 1;
+        all_modern_hangul &= matches!(character as u32, 0xac00..=0xd7a3);
+        all_ascii_latin &= character.is_ascii_alphabetic();
+    }
+    code_point_count > 0
+        && code_point_count <= super::shaping::MAX_SHAPING_TEXT_CODE_POINTS
+        && (all_modern_hangul || all_ascii_latin)
 }
 
 fn is_initial_hangul_scalar(character: char) -> bool {
@@ -592,6 +615,119 @@ fn eligible_segments(
     )
 }
 
+fn explicit_instance_segment(
+    request: &HorizontalShapingParagraphRequest<'_>,
+) -> (HorizontalShapingActivationDecision, Vec<EligibleSegment>) {
+    let code_point_count = request
+        .text
+        .chars()
+        .take(super::shaping::MAX_SHAPING_TEXT_CODE_POINTS + 1)
+        .count();
+    if code_point_count > super::shaping::MAX_SHAPING_TEXT_CODE_POINTS {
+        return rejected_decision(
+            HorizontalShapingActivationDisposition::BoundedLimit,
+            HorizontalShapingActivationReason::TextCodePointLimitExceeded,
+            code_point_count,
+        );
+    }
+    if !is_bounded_explicit_instance_candidate_text(request.text) {
+        return rejected_decision(
+            HorizontalShapingActivationDisposition::NotTarget,
+            HorizontalShapingActivationReason::ExplicitInstanceScriptUnsupported,
+            code_point_count,
+        );
+    }
+    if request.scalar_styles.len() != code_point_count
+        || request.fallback_positions.len() != code_point_count.saturating_add(1)
+        || request.hard_boundaries.len() != code_point_count.saturating_add(1)
+    {
+        return rejected_decision(
+            HorizontalShapingActivationDisposition::Malformed,
+            HorizontalShapingActivationReason::ParagraphInputLengthMismatch,
+            code_point_count,
+        );
+    }
+    if request
+        .fallback_positions
+        .iter()
+        .any(|value| !value.is_finite())
+    {
+        return rejected_decision(
+            HorizontalShapingActivationDisposition::Malformed,
+            HorizontalShapingActivationReason::FallbackPositionNonFinite,
+            code_point_count,
+        );
+    }
+    if request
+        .fallback_positions
+        .windows(2)
+        .any(|pair| pair[1] < pair[0])
+    {
+        return rejected_decision(
+            HorizontalShapingActivationDisposition::Malformed,
+            HorizontalShapingActivationReason::FallbackPositionNonMonotonic,
+            code_point_count,
+        );
+    }
+    let style = request.scalar_styles[0];
+    let reason = if !request.horizontal_ltr_bidi0 {
+        Some(HorizontalShapingActivationReason::BidiAuthorityPending)
+    } else if !request.model_text_matches_shaping_text {
+        Some(HorizontalShapingActivationReason::DisplayProjectionNotSupported)
+    } else if request.condense_min_space != 0 {
+        Some(HorizontalShapingActivationReason::CondenseSemanticsPending)
+    } else if request.has_inline_controls {
+        Some(HorizontalShapingActivationReason::InlineControlNotSupported)
+    } else if request.has_tabs {
+        Some(HorizontalShapingActivationReason::TabNotSupported)
+    } else if request.has_rotation {
+        Some(HorizontalShapingActivationReason::RotationNotSupported)
+    } else if request.has_char_overlap {
+        Some(HorizontalShapingActivationReason::CharOverlapNotSupported)
+    } else if request.hard_boundaries[1..code_point_count]
+        .iter()
+        .any(|boundary| *boundary)
+    {
+        Some(HorizontalShapingActivationReason::HardBoundaryCrossed)
+    } else if request.scalar_styles[1..]
+        .iter()
+        .any(|candidate| !style.same_shaping_identity(*candidate))
+    {
+        Some(HorizontalShapingActivationReason::StyleBoundaryCrossed)
+    } else if style.bold || style.italic {
+        Some(HorizontalShapingActivationReason::SyntheticStyleNotSupported)
+    } else if style.superscript || style.subscript {
+        Some(HorizontalShapingActivationReason::SuperscriptSubscriptNotSupported)
+    } else if style.letter_spacing_px != 0.0 {
+        Some(HorizontalShapingActivationReason::LetterSpacingSemanticsPending)
+    } else if !valid_scale(style) {
+        Some(HorizontalShapingActivationReason::InvalidScale)
+    } else {
+        None
+    };
+    if let Some(reason) = reason {
+        let disposition = if reason == HorizontalShapingActivationReason::InvalidScale {
+            HorizontalShapingActivationDisposition::Malformed
+        } else {
+            HorizontalShapingActivationDisposition::Unsupported
+        };
+        return rejected_decision(disposition, reason, code_point_count);
+    }
+    let segments = vec![EligibleSegment {
+        range: 0..code_point_count,
+        style,
+    }];
+    (
+        decision(
+            HorizontalShapingActivationDisposition::Eligible,
+            None,
+            code_point_count,
+            &segments,
+        ),
+        segments,
+    )
+}
+
 pub(crate) fn decide_horizontal_shaping_activation(
     request: &HorizontalShapingParagraphRequest<'_>,
 ) -> HorizontalShapingActivationDecision {
@@ -605,8 +741,14 @@ fn scalar_utf8_offsets(text: &str) -> Vec<usize> {
         .collect()
 }
 
-fn shape_segment(
-    transaction: &mut HorizontalShapingTransaction<'_>,
+#[derive(Clone, Copy)]
+enum HorizontalShapingSelectionPolicy {
+    Q2OldHangul,
+    ExplicitInstance,
+}
+
+fn shape_segment<S: HorizontalShapingMeasurementSession>(
+    transaction: &mut S,
     text: &str,
     scalar_start: usize,
     scalar_end: usize,
@@ -622,14 +764,22 @@ fn shape_segment(
     let segment_text = text
         .get(utf8_offsets[scalar_start]..utf8_offsets[scalar_end])
         .ok_or(HorizontalShapingActivationReason::ParagraphInputLengthMismatch)?;
+    let (script, language) = if segment_text
+        .chars()
+        .all(|character| character.is_ascii_alphabetic())
+    {
+        (Some("Latn"), Some("en"))
+    } else {
+        (Some("Hang"), Some("ko"))
+    };
     let outcome = transaction.shadow_measure(&HorizontalShapingRequest {
         attempt_id,
         slot: style.slot,
         text: segment_text,
         effective_font_size_px: style.effective_font_size_px,
         width_ratio: style.width_ratio,
-        script: Some("Hang"),
-        language: Some("ko"),
+        script,
+        language,
         features: &feature,
         variations: &[],
     });
@@ -652,12 +802,16 @@ fn shape_segment(
     Ok(measurement)
 }
 
-fn prepare_paragraph_with_budget(
-    transaction: &mut HorizontalShapingTransaction<'_>,
+fn prepare_paragraph_with_budget<S: HorizontalShapingMeasurementSession>(
+    transaction: &mut S,
     request: &HorizontalShapingParagraphRequest<'_>,
     budget: &mut AttemptBudget,
+    policy: HorizontalShapingSelectionPolicy,
 ) -> Result<Arc<HorizontalShapingParagraphMeasurement>, HorizontalShapingActivationDecision> {
-    let (activation, segments) = eligible_segments(request);
+    let (activation, segments) = match policy {
+        HorizontalShapingSelectionPolicy::Q2OldHangul => eligible_segments(request),
+        HorizontalShapingSelectionPolicy::ExplicitInstance => explicit_instance_segment(request),
+    };
     if !activation.is_eligible() {
         return Err(activation);
     }
@@ -683,6 +837,19 @@ fn prepare_paragraph_with_budget(
                 ));
             }
         };
+        if matches!(policy, HorizontalShapingSelectionPolicy::ExplicitInstance)
+            && measurement
+                .clusters
+                .iter()
+                .any(|cluster| cluster.scalar_end - cluster.scalar_start != 1)
+        {
+            return Err(decision(
+                HorizontalShapingActivationDisposition::Unsupported,
+                Some(HorizontalShapingActivationReason::ExplicitInstanceLigatureUnsupported),
+                activation.code_point_count,
+                &[],
+            ));
+        }
         targets.push(HorizontalShapingParagraphTargetMeasurement {
             scalar_start: segment.range.start,
             scalar_end: segment.range.end,
@@ -764,7 +931,12 @@ pub(crate) fn prepare_horizontal_shaping_paragraph(
     request: &HorizontalShapingParagraphRequest<'_>,
 ) -> HorizontalShapingParagraphOutcome {
     let mut budget = AttemptBudget::new(request.attempt_id_base);
-    match prepare_paragraph_with_budget(transaction, request, &mut budget) {
+    match prepare_paragraph_with_budget(
+        transaction,
+        request,
+        &mut budget,
+        HorizontalShapingSelectionPolicy::Q2OldHangul,
+    ) {
         Ok(measurement) => HorizontalShapingParagraphOutcome {
             activation: measurement.activation.clone(),
             attempts: budget.traces,
@@ -873,8 +1045,8 @@ where
     Ok(ranges)
 }
 
-fn shape_final_range(
-    transaction: &mut HorizontalShapingTransaction<'_>,
+fn shape_final_range<S: HorizontalShapingMeasurementSession>(
+    transaction: &mut S,
     request: &HorizontalShapingParagraphRequest<'_>,
     paragraph: &HorizontalShapingParagraphMeasurement,
     range: Range<usize>,
@@ -928,8 +1100,8 @@ fn shape_final_range(
     })
 }
 
-fn choose_final_lines(
-    transaction: &mut HorizontalShapingTransaction<'_>,
+fn choose_final_lines<S: HorizontalShapingMeasurementSession>(
+    transaction: &mut S,
     request: &HorizontalShapingParagraphRequest<'_>,
     paragraph: &HorizontalShapingParagraphMeasurement,
     boundaries: &[usize],
@@ -1035,9 +1207,10 @@ fn line_trace(
     }
 }
 
-pub(crate) fn run_horizontal_shaping_line_transaction(
-    transaction: &mut HorizontalShapingTransaction<'_>,
+fn run_horizontal_shaping_line_transaction_with_policy<S: HorizontalShapingMeasurementSession>(
+    transaction: &mut S,
     request: &HorizontalShapingLineRequest<'_>,
+    policy: HorizontalShapingSelectionPolicy,
 ) -> HorizontalShapingLineOutcome {
     let mut budget = AttemptBudget::new(request.paragraph.attempt_id_base);
     if let Err(reason) = validate_available_widths(request.available_widths_px) {
@@ -1061,7 +1234,7 @@ pub(crate) fn run_horizontal_shaping_line_transaction(
         };
     }
     let paragraph =
-        match prepare_paragraph_with_budget(transaction, &request.paragraph, &mut budget) {
+        match prepare_paragraph_with_budget(transaction, &request.paragraph, &mut budget, policy) {
             Ok(paragraph) => paragraph,
             Err(activation) => {
                 let lines = fallback_lines(
@@ -1218,4 +1391,28 @@ pub(crate) fn run_horizontal_shaping_line_transaction(
         paragraph_measurement: Some(paragraph),
         lines,
     }
+}
+
+pub(crate) fn run_horizontal_shaping_line_transaction(
+    transaction: &mut HorizontalShapingTransaction<'_>,
+    request: &HorizontalShapingLineRequest<'_>,
+) -> HorizontalShapingLineOutcome {
+    run_horizontal_shaping_line_transaction_with_policy(
+        transaction,
+        request,
+        HorizontalShapingSelectionPolicy::Q2OldHangul,
+    )
+}
+
+/// Run the bounded Q3-E3 transaction only through an explicit-instance
+/// session.  The caller owns the one-line/one-run/one-slot preflight.
+pub(crate) fn run_bounded_explicit_instance_line_transaction(
+    transaction: &mut HorizontalShapingExplicitInstanceTransaction<'_>,
+    request: &HorizontalShapingLineRequest<'_>,
+) -> HorizontalShapingLineOutcome {
+    run_horizontal_shaping_line_transaction_with_policy(
+        transaction,
+        request,
+        HorizontalShapingSelectionPolicy::ExplicitInstance,
+    )
 }

@@ -1,0 +1,92 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q3-e3-bounded-explicit-composer-result",
+  "issue": 4969,
+  "stage": "W10-Q3-E3",
+  "status": "qualified-bounded-explicit-geometry-approved",
+  "date": "2026-08-29",
+  "baseCheckpoint": "3005302519f97a884912750f0de9168d92a8bd2f",
+  "validationUpstreamDevel": "d29b5fd4ba40a5bd194975be9af7e852232872b6",
+  "currentUpstreamDevel": "2bcf9b261c3b761d114bc2b3a35ed85ccd1e461e",
+  "ahead": 26,
+  "behind": 7,
+  "activation": {
+    "requiresExactInstanceRequest": true,
+    "surface": "one-line-one-run-one-slot-horizontal-ltr",
+    "scripts": ["modern-hangul-syllables", "ascii-latin-letters"],
+    "mixedScriptAllowed": false,
+    "ligatureClusterAllowed": false,
+    "wholeParagraphRollback": true,
+    "q2OldHangulPredicateChanged": false,
+    "q2OldHangulSegmentSelectorChanged": false
+  },
+  "geometryReceipt": {
+    "font": "Happiness Sans VF",
+    "text": "가변",
+    "axes": { "opsz": 900.0, "wght": 900.0 },
+    "baselineWidthPx": 21.0,
+    "selectedWidthPx": 19.840000000000003,
+    "deltaPx": -1.1599999999999966,
+    "clearRestoredExactBaseline": true,
+    "glyphRunPublished": false,
+    "glyphOutlinePublished": false
+  },
+  "defaultReceipt": {
+    "layerJsonBytes": 619562,
+    "layerJsonBlake3": "0b5212cc076c34dce706039d7c4da85936c0a6769e83f08baa7f158cbd9029de",
+    "canvasKitPlanBytes": 1755,
+    "canvasKitPlanBlake3": "a98e6933d76901cfa55a43205c758675a8864527f87f8bed7a689d16267cbb56",
+    "changedFromQ3E0": false
+  },
+  "nativeValidation": {
+    "compositionHandoff": { "passed": 5, "failed": 0 },
+    "q2ParagraphRegression": { "passed": 8, "failed": 0 },
+    "atomicActivation": { "passed": 7, "failed": 0 },
+    "glyphLowering": { "passed": 16, "failed": 0 },
+    "shadowContextGreen": { "passed": 17, "failed": 0 },
+    "red": {
+      "passed": 3,
+      "failed": 1,
+      "expectedRemaining": ["Q3-E4-atomic-outline-publication-absent"],
+      "unexpectedFailures": 0
+    }
+  },
+  "wasm": {
+    "command": "docker compose --env-file .env.docker run --rm wasm",
+    "result": "passed",
+    "elapsed": "6m19s",
+    "bytes": 9795216,
+    "sha256": "bc5f207f21d7a50438979f728f70c30e71b5cbb53719add92418c536d769c322",
+    "q3E2DeltaBytes": 13110,
+    "q3E2DeltaPercent": 0.134019,
+    "finalSizeGateDeferredTo": "Q3-E5"
+  },
+  "otherValidation": {
+    "cargoFmtAll": "passed",
+    "cargoFmtAllCheck": "passed",
+    "gitDiffCheck": "passed",
+    "clippyAllTargetsDenyWarnings": "passed"
+  },
+  "upstreamDrift": {
+    "commitCount": 7,
+    "changedFileCount": 39,
+    "overlapWithQ3E3ChangedFiles": 0,
+    "mergePerformed": false,
+    "requalificationRequiredAfterApproval": true
+  },
+  "protectedRegression": {
+    "defaultOutputChanged": false,
+    "partialGeometryActivation": false,
+    "partialPortablePublication": false,
+    "fontFallbackRegistryChanged": false,
+    "newIntegrationSource": false,
+    "generatedArtifactsStaged": false,
+    "privateCorpusUsed": false,
+    "hyperVOrHancomOracleUsed": false
+  },
+  "resultApproved": true,
+  "commitCreated": true,
+  "next": "approve-latest-devel-merge-requalification-plan",
+  "nextSlice": "checkpoint-then-latest-devel-requalification",
+  "remoteMutation": false
+}

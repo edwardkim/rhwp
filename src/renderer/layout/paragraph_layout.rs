@@ -135,6 +135,17 @@ fn horizontal_shaping_initial_lane_preflight(
     };
     let style = resolved_to_text_style(styles, run.char_style_id, run.lang_index);
     let scalar_count = run.text.chars().count();
+    let instance_request = target.measurement.instance_request;
+    let ratio_supported = if instance_request.is_some() {
+        style.ratio <= 16.0
+    } else {
+        style.ratio < 0.999
+    };
+    let request_provenance_current = instance_request.is_none_or(|provenance| {
+        provenance.slot
+            == crate::renderer::kerning::ExactFontSlot::new(run.char_style_id, run.lang_index)
+            && provenance.request_generation == context.instance_request_generation()
+    });
     let style_surface_supported = !style.bold
         && !style.italic
         && style.font_size.is_finite()
@@ -142,7 +153,7 @@ fn horizontal_shaping_initial_lane_preflight(
         && style.font_size <= 4_096.0
         && style.ratio.is_finite()
         && style.ratio > 0.0
-        && style.ratio < 0.999
+        && ratio_supported
         && style.letter_spacing.abs() <= f64::EPSILON
         && style.underline == UnderlineType::None
         && !style.strikethrough
@@ -205,6 +216,7 @@ fn horizontal_shaping_initial_lane_preflight(
         && target.scalar_end == scalar_count
         && target.measurement.code_point_count == scalar_count
         && target.measurement.registry_generation == context.registry_generation()
+        && request_provenance_current
         && raw_vertical_positioning_is_zero
 }
 

@@ -321,14 +321,23 @@ fn issue_4969_q3_e0_default_product_baseline_receipt() {
 
 #[test]
 #[cfg(not(target_arch = "wasm32"))]
-fn issue_4969_q3_e1_native_instance_owner_is_reversible_and_dormant() {
+fn issue_4969_q3_e3_native_instance_geometry_is_reversible_and_paint_stays_atomic() {
     let (mut core, char_shape_id) =
         core_with_surface_and_source("가변", Alignment::Left, 0, false, HAPPINESS);
-    let baseline = core
+    let baseline_tree = core
         .build_page_layer_tree(0)
-        .expect("build default variable-font surface")
-        .to_json();
+        .expect("build default variable-font surface");
+    let baseline = baseline_tree.to_json();
     assert!(!baseline.contains("\"type\":\"glyphOutline\""));
+    let mut baseline_ops = Vec::new();
+    collect_text_ops(&baseline_tree.root, &mut baseline_ops);
+    let baseline_width = baseline_ops
+        .iter()
+        .find_map(|op| match op {
+            PaintOp::TextRun { bbox, run } if run.text == "가변" => Some(bbox.width),
+            _ => None,
+        })
+        .expect("baseline TextRun width");
 
     let title = serde_json::json!({
         "charShapeId": char_shape_id,
@@ -353,12 +362,41 @@ fn issue_4969_q3_e1_native_instance_owner_is_reversible_and_dormant() {
     assert_eq!(registered["axes"][1]["tag"], "wght");
     assert_eq!(registered["axes"][0]["value"], 900.0);
     assert_eq!(registered["axes"][1]["value"], 900.0);
-    assert_eq!(
-        core.build_page_layer_tree(0)
-            .expect("build dormant registered surface")
-            .to_json(),
-        baseline,
-        "native request owner must not publish before Q3-E3/E4"
+    let selected_tree = core
+        .build_page_layer_tree(0)
+        .expect("build explicit-instance geometry surface");
+    let selected_json = selected_tree.to_json();
+    let mut selected_ops = Vec::new();
+    collect_text_ops(&selected_tree.root, &mut selected_ops);
+    let selected_width = selected_ops
+        .iter()
+        .find_map(|op| match op {
+            PaintOp::TextRun { bbox, run } if run.text == "가변" => Some(bbox.width),
+            _ => None,
+        })
+        .expect("selected TextRun width");
+    assert_ne!(
+        selected_width, baseline_width,
+        "instance geometry must change"
+    );
+    assert!(
+        !selected_json.contains("\"type\":\"glyphOutline\""),
+        "Q3-E4 owns variable outline publication"
+    );
+    assert!(
+        !selected_json.contains("q2CommonShapingCondensedDrawProjectionV1"),
+        "explicit geometry must not partially publish a Q2 GlyphRun"
+    );
+    println!(
+        "{}",
+        serde_json::json!({
+            "kind": "q3-e3-explicit-geometry-receipt",
+            "baselineWidthPx": baseline_width,
+            "selectedWidthPx": selected_width,
+            "deltaPx": selected_width - baseline_width,
+            "glyphOutlinePublished": selected_json.contains("\"type\":\"glyphOutline\""),
+            "q2GlyphRunPublished": selected_json.contains("q2CommonShapingCondensedDrawProjectionV1")
+        })
     );
 
     let canonical_title = serde_json::json!({
@@ -427,6 +465,37 @@ fn issue_4969_q3_e1_native_instance_owner_is_reversible_and_dormant() {
             .to_json(),
         baseline
     );
+}
+
+#[test]
+#[cfg(not(target_arch = "wasm32"))]
+fn issue_4969_q3_e3_negative_surfaces_roll_back_the_whole_paragraph() {
+    for (text, alignment) in [
+        ("가변Typography", Alignment::Left),
+        ("가변", Alignment::Center),
+    ] {
+        let (mut core, char_shape_id) =
+            core_with_surface_and_source(text, alignment, 0, false, HAPPINESS);
+        let baseline = core
+            .build_page_layer_tree(0)
+            .expect("build negative baseline")
+            .to_json();
+        let request = serde_json::json!({
+            "charShapeId": char_shape_id,
+            "languageIndex": 0,
+            "mode": "boundedHorizontalLtrV1",
+            "axes": [{ "tag": "wght", "value": 900.0 }]
+        });
+        core.set_exact_font_instance_native(&request.to_string())
+            .expect("register negative-surface request");
+        assert_eq!(
+            core.build_page_layer_tree(0)
+                .expect("build negative requested surface")
+                .to_json(),
+            baseline,
+            "unsupported surface must keep the complete default paragraph: {text:?}"
+        );
+    }
 }
 
 #[test]

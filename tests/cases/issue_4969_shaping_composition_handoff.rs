@@ -27,8 +27,9 @@ use kerning::{ExactFontSlot, ExactFontSource, ExactFontSourceRegistry, KerningMe
 use shaping_composition::retain_qualified_horizontal_shaping_outcome;
 use shaping_context::HorizontalShapingContext;
 use shaping_paragraph::{
-    is_bounded_horizontal_shaping_candidate_text, run_horizontal_shaping_line_transaction,
-    HorizontalShapingFallbackOwner, HorizontalShapingLineDisposition, HorizontalShapingLineRequest,
+    is_bounded_explicit_instance_candidate_text, is_bounded_horizontal_shaping_candidate_text,
+    run_horizontal_shaping_line_transaction, HorizontalShapingFallbackOwner,
+    HorizontalShapingLineDisposition, HorizontalShapingLineRequest,
     HorizontalShapingParagraphRequest, HorizontalShapingParagraphScalarStyle,
 };
 #[cfg(target_arch = "wasm32")]
@@ -151,4 +152,24 @@ fn issue_4969_q2_d1_candidate_gate_is_bounded_before_projection() {
 
     let oversized = format!("{}ᄒ", "a".repeat(shaping::MAX_SHAPING_TEXT_CODE_POINTS));
     assert!(!is_bounded_horizontal_shaping_candidate_text(&oversized));
+}
+
+#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
+fn issue_4969_q3_e3_explicit_candidate_is_separate_and_bounded() {
+    assert!(is_bounded_explicit_instance_candidate_text("가변"));
+    assert!(is_bounded_explicit_instance_candidate_text("Typography"));
+    assert!(!is_bounded_explicit_instance_candidate_text("ᄒᆞᆫ글"));
+    assert!(!is_bounded_explicit_instance_candidate_text(
+        "가변Typography"
+    ));
+    assert!(!is_bounded_explicit_instance_candidate_text("Latin text"));
+    assert!(!is_bounded_explicit_instance_candidate_text(""));
+
+    let oversized = "a".repeat(shaping::MAX_SHAPING_TEXT_CODE_POINTS + 1);
+    assert!(!is_bounded_explicit_instance_candidate_text(&oversized));
+    assert!(
+        !is_bounded_horizontal_shaping_candidate_text("가변"),
+        "Q2 old-Hangul gate must stay unchanged"
+    );
 }

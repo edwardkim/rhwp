@@ -635,6 +635,35 @@ pub(crate) struct HorizontalShapingExplicitInstanceTransaction<'a> {
     provenance: HorizontalShapingInstanceRequestProvenance,
 }
 
+/// Paragraph shaping consumes one measurement session without knowing whether
+/// it is the legacy/default lane or a request-bound explicit instance lane.
+/// Implementations remain separate so the default transaction can never pick
+/// up an instance request implicitly.
+pub(crate) trait HorizontalShapingMeasurementSession {
+    fn shadow_measure(
+        &mut self,
+        request: &HorizontalShapingRequest<'_>,
+    ) -> HorizontalShapingShadowOutcome;
+}
+
+impl HorizontalShapingMeasurementSession for HorizontalShapingTransaction<'_> {
+    fn shadow_measure(
+        &mut self,
+        request: &HorizontalShapingRequest<'_>,
+    ) -> HorizontalShapingShadowOutcome {
+        HorizontalShapingTransaction::shadow_measure(self, request)
+    }
+}
+
+impl HorizontalShapingMeasurementSession for HorizontalShapingExplicitInstanceTransaction<'_> {
+    fn shadow_measure(
+        &mut self,
+        request: &HorizontalShapingRequest<'_>,
+    ) -> HorizontalShapingShadowOutcome {
+        HorizontalShapingExplicitInstanceTransaction::shadow_measure(self, request)
+    }
+}
+
 impl HorizontalShapingExplicitInstanceTransaction<'_> {
     pub(crate) fn registry_generation(&self) -> u64 {
         self.transaction.registry_generation()

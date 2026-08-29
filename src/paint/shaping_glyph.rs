@@ -44,6 +44,7 @@ pub(crate) enum HorizontalShapingGlyphLoweringRejectReason {
     MeasurementGeometryInvalid,
     ReplayProjectionMismatch,
     ClusterMappingInvalid,
+    ExplicitInstancePublicationPending,
     VariableOutlineUnavailable,
     VariableOutlineLimitExceeded,
     VariableOutlineBboxMismatch,
@@ -67,6 +68,7 @@ impl HorizontalShapingGlyphLoweringRejectReason {
             Self::MeasurementGeometryInvalid => "measurementGeometryInvalid",
             Self::ReplayProjectionMismatch => "replayProjectionMismatch",
             Self::ClusterMappingInvalid => "clusterMappingInvalid",
+            Self::ExplicitInstancePublicationPending => "explicitInstancePublicationPending",
             Self::VariableOutlineUnavailable => "variableOutlineUnavailable",
             Self::VariableOutlineLimitExceeded => "variableOutlineLimitExceeded",
             Self::VariableOutlineBboxMismatch => "variableOutlineBboxMismatch",
@@ -1026,6 +1028,18 @@ fn lower_horizontal_shaping_source_shadow(
         return HorizontalShapingGlyphLoweringReport::rejected(
             Some(source_node_id),
             HorizontalShapingGlyphLoweringRejectReason::UnsupportedRunSurface,
+        );
+    }
+    if decision
+        .measurement()
+        .is_some_and(|measurement| measurement.instance_request.is_some())
+    {
+        // Q3-E3 may consume request-bound geometry, but Q3-E4 owns the atomic
+        // GlyphRun + GlyphOutline publication.  Reject before prepared-source
+        // cache/resource mutation so no partial variable replay can escape.
+        return HorizontalShapingGlyphLoweringReport::rejected(
+            Some(source_node_id),
+            HorizontalShapingGlyphLoweringRejectReason::ExplicitInstancePublicationPending,
         );
     }
     let range = decision.range();
