@@ -5,7 +5,7 @@
 - **작성일**: 2026-08-29 KST
 - **작업 브랜치**: `task_m100_6381-test-caption-false-pass`
 - **착수 기준**: `upstream/devel@2bcf9b261c3b761d114bc2b3a35ed85ccd1e461e`
-- **구현 상태**: 계획 고정
+- **구현 상태**: fail-closed 구현과 focused 회귀 완료, 전체 회귀 승인 대기
 
 ## 1. 구현 불변식
 
@@ -84,3 +84,15 @@ integration suite 준비가 필요한 review worktree 검증에서는 먼저
 3. 문서·검증: CLI 문서, 단계 보고와 최종 검증 결과
 
 각 단계는 exact path만 stage해 local commit으로 고정한다. push·PR은 별도 승인 게이트다.
+
+## 8. 구현 결과
+
+- 계획 commit: `c0bc5c486`
+- fail-closed 구현과 세 CLI 회귀 test: `21c3bd43c`
+- 내부 CLI 계약 문서: `025ce6806`
+- 기존 제품에서 all-fail·partial-fail이 exit 0으로 재현됐고, 구현 뒤 all-fail·partial-fail·all-pass 세
+  시나리오가 모두 통과했다.
+- mutation 오류를 stderr에 누적하고 mutation 성공 대상만 정확한 캡션 속성으로 verification한다.
+- 실패가 하나라도 있으면 출력 폴더 생성과 page render 전에 exit 1로 종료한다.
+- renderer·layout·model·Render Diff workflow는 변경하지 않았다.
+- 전체 nextest·clippy는 focused 결과 공유 뒤 별도 승인 게이트로 남긴다.
