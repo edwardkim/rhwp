@@ -101,7 +101,7 @@
     "hyperVOrHancomOracleUsed": false
   },
   "requalificationEvidence": "mydocs/tech/investigations/issue-4969/w10_q3_e0_requalification.json",
-  "next": "approve-latest-devel-sync-before-q3-e1",
+  "next": "approve-q3-e1-start",
   "nextSlice": "Q3-E1-reversible-owner-and-strict-native-contract",
   "nextSliceApproved": false,
   "commitCreated": true,

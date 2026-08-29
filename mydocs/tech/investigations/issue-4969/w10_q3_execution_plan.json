@@ -3,7 +3,7 @@
   "kind": "font-w10-q3-variable-instance-execution-plan",
   "issue": 4969,
   "stage": "W10-Q3",
-  "status": "q3-e0-requalification-complete-awaiting-latest-devel-sync",
+  "status": "q3-e0-complete-awaiting-q3-e1-start-approval",
   "productMutation": false,
   "source": {
     "path": "ttfs/redistributable/happiness-sans/HappinessSansVF.ttf",
@@ -112,7 +112,7 @@
   "privateCorpus": false,
   "hyperVOrHancomOracle": false,
   "q3ERevisedPlan": "mydocs/tech/investigations/issue-4969/w10_q3_e_execution_plan.json",
-  "nextStage": "latest-devel-sync-before-Q3-E1-approval",
+  "nextStage": "Q3-E1-start-approval",
   "nextStageApproved": false,
-  "approvalScope": "Q3-E0 checkpoint, latest devel merge, requalification, result approval, and evidence checkpoint are complete; latest devel sync, E1 implementation, public API expansion, product activation, push, PR, and comment remain separately gated"
+  "approvalScope": "Q3-E0 checkpoint, requalification, evidence checkpoint, and latest devel sync are complete; E1 implementation, public API expansion, product activation, push, PR, and comment remain separately gated"
 }

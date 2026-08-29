@@ -104,9 +104,12 @@
     "ahead": 21,
     "behind": 2,
     "changes": "pdf-oracle-only",
-    "bilateralOverlapCount": 0
+    "bilateralOverlapCount": 0,
+    "syncMergeCommit": "351817b21",
+    "postMergeAhead": 23,
+    "postMergeBehind": 0
   },
-  "next": "approve-latest-devel-sync-before-q3-e1",
+  "next": "approve-q3-e1-start",
   "nextSlice": "Q3-E1-reversible-owner-and-strict-native-contract",
   "nextSliceApproved": false,
   "commitCreated": true,

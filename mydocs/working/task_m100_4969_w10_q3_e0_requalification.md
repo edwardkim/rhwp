@@ -94,5 +94,6 @@ green/red 계약이 그대로이므로 Q3 activation의 부분 구현이나 defa
 ## 다음 승인 경계
 
 재자격화 결과와 증적 checkpoint는 승인·고정됐다. checkpoint 직전 `upstream/devel@d29b5fd4ba40`의 PDF 정답지
-갱신 2 commit이 추가됐고 Q3 변경 집합과 교집합은 없다. 다음 경계는 최신 devel 동기화 승인이다. 그 뒤에만
-Q3-E1 reversible native owner 구현 착수를 요청한다. push·PR·GitHub comment는 계속 별도 승인이다.
+갱신 2 commit이 추가됐고 Q3 변경 집합과 교집합은 없다. 이를 merge `351817b21`로 충돌 없이 통합해 branch는
+`23 ahead / 0 behind`다. 다음 경계는 Q3-E1 reversible native owner 구현 착수 승인이다. push·PR·GitHub
+comment는 계속 별도 승인이다.
