@@ -14,7 +14,7 @@ author: lpaiu-cs
 
 - 원 PR: https://github.com/edwardkim/rhwp/pull/6376
 - 작성자: `lpaiu-cs`
-- reviewer request: 미등록. 원격 상태 변경은 사용자 승인 뒤 수행한다.
+- reviewer request: `jangster77` 등록 확인
 - 원 PR head: `11e50cf44ccc1504fce849d8ae8ca05726e0d3eb`
 - 원 PR 상태: non-draft, `CLEAN`
 - 통합 검토 브랜치: `review/lpaiu-cs-6372-6376-20260829`
