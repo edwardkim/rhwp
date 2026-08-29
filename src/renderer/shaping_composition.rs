@@ -123,6 +123,7 @@ pub(crate) enum HorizontalShapingNoLineSegOwnerRejectReason {
     TargetCountUnsupported,
     EmittedRunRejected(HorizontalShapingEmittedRunRejectReason),
     ReplaySourceRejected(HorizontalShapingReplaySourceCertificateRejectReason),
+    SidecarRejected(HorizontalShapingSidecarRejectReason),
     OwnerIdentityMismatch,
 }
 
@@ -152,6 +153,7 @@ impl HorizontalShapingNoLineSegOwnerRejection {
 /// explicit Arc slots so N0 can prove pointer identity before N1 may publish.
 #[derive(Debug, Clone)]
 pub(crate) struct HorizontalShapingNoLineSegOwnerTransaction {
+    node_id: u32,
     outcome: Arc<HorizontalShapingLineOutcome>,
     line_selection_measurement: Arc<HorizontalShapingMeasurement>,
     bbox_measurement: Arc<HorizontalShapingMeasurement>,
@@ -161,6 +163,21 @@ pub(crate) struct HorizontalShapingNoLineSegOwnerTransaction {
     bbox_width_px: f64,
     next_origin_x_px: f64,
     fallback_geometry: HorizontalShapingLegacyGeometry,
+}
+
+/// N1 terminal publication. This value can only be constructed after the
+/// exact-source-certified sidecar has been attached successfully, so all four
+/// geometry consumers cross the product boundary together.
+#[derive(Debug, Clone)]
+pub(crate) struct HorizontalShapingNoLineSegPublication {
+    outcome: Arc<HorizontalShapingLineOutcome>,
+    line_selection_measurement: Arc<HorizontalShapingMeasurement>,
+    bbox_measurement: Arc<HorizontalShapingMeasurement>,
+    next_origin_measurement: Arc<HorizontalShapingMeasurement>,
+    sidecar_decision: Arc<HorizontalShapingRunDecision>,
+    line_width_px: f64,
+    bbox_width_px: f64,
+    next_origin_x_px: f64,
 }
 
 impl HorizontalShapingNoLineSegOwnerTransaction {
@@ -204,6 +221,46 @@ impl HorizontalShapingNoLineSegOwnerTransaction {
 
     pub(crate) fn product_published(&self) -> bool {
         false
+    }
+}
+
+impl HorizontalShapingNoLineSegPublication {
+    pub(crate) fn outcome(&self) -> &Arc<HorizontalShapingLineOutcome> {
+        &self.outcome
+    }
+
+    pub(crate) fn line_selection_measurement(&self) -> &Arc<HorizontalShapingMeasurement> {
+        &self.line_selection_measurement
+    }
+
+    pub(crate) fn bbox_measurement(&self) -> &Arc<HorizontalShapingMeasurement> {
+        &self.bbox_measurement
+    }
+
+    pub(crate) fn next_origin_measurement(&self) -> &Arc<HorizontalShapingMeasurement> {
+        &self.next_origin_measurement
+    }
+
+    pub(crate) fn sidecar_measurement(&self) -> &Arc<HorizontalShapingMeasurement> {
+        self.sidecar_decision
+            .measurement()
+            .expect("N1 sidecar decision is applied")
+    }
+
+    pub(crate) fn line_width_px(&self) -> f64 {
+        self.line_width_px
+    }
+
+    pub(crate) fn bbox_width_px(&self) -> f64 {
+        self.bbox_width_px
+    }
+
+    pub(crate) fn next_origin_x_px(&self) -> f64 {
+        self.next_origin_x_px
+    }
+
+    pub(crate) fn product_published(&self) -> bool {
+        true
     }
 }
 
@@ -328,6 +385,7 @@ pub(crate) fn prepare_horizontal_shaping_no_lineseg_owner_transaction(
     }
 
     Ok(HorizontalShapingNoLineSegOwnerTransaction {
+        node_id: candidate.node_id,
         outcome,
         line_selection_measurement,
         bbox_measurement,
@@ -337,6 +395,40 @@ pub(crate) fn prepare_horizontal_shaping_no_lineseg_owner_transaction(
         bbox_width_px: mapped.bbox_width_px,
         next_origin_x_px: mapped.next_origin_x_px,
         fallback_geometry,
+    })
+}
+
+/// Commit the fully prepared N0 owner transaction to the page-local sidecar
+/// table. `HorizontalShapingPageSidecars::attach` validates every field before
+/// mutation; therefore an error leaves both the table and product geometry on
+/// the pristine W9/K0 owner.
+pub(crate) fn publish_horizontal_shaping_no_lineseg_owner_transaction(
+    sidecars: &mut HorizontalShapingPageSidecars,
+    transaction: HorizontalShapingNoLineSegOwnerTransaction,
+) -> Result<HorizontalShapingNoLineSegPublication, HorizontalShapingNoLineSegOwnerRejection> {
+    let fallback_geometry = transaction.fallback_geometry;
+    sidecars
+        .attach_no_lineseg_atomic(
+            transaction.node_id,
+            transaction.sidecar_decision.range(),
+            Arc::clone(&transaction.sidecar_decision),
+        )
+        .map_err(|reason| {
+            no_lineseg_rejection(
+                HorizontalShapingNoLineSegOwnerRejectReason::SidecarRejected(reason),
+                fallback_geometry,
+            )
+        })?;
+
+    Ok(HorizontalShapingNoLineSegPublication {
+        outcome: transaction.outcome,
+        line_selection_measurement: transaction.line_selection_measurement,
+        bbox_measurement: transaction.bbox_measurement,
+        next_origin_measurement: transaction.next_origin_measurement,
+        sidecar_decision: transaction.sidecar_decision,
+        line_width_px: transaction.line_width_px,
+        bbox_width_px: transaction.bbox_width_px,
+        next_origin_x_px: transaction.next_origin_x_px,
     })
 }
 

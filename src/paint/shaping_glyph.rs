@@ -21,10 +21,9 @@ use crate::paint::{
 use crate::renderer::render_tree::{BoundingBox, FieldMarkerType, TextRunNode};
 use crate::renderer::shaping_publication::{
     HorizontalShapingPageSidecars, HorizontalShapingRunDecision,
+    MAX_HORIZONTAL_SHAPING_FONT_BYTES_PER_PAGE as MAX_COMMON_SHAPING_FONT_BYTES_PER_PAGE,
+    MAX_HORIZONTAL_SHAPING_PREPARED_SOURCES_PER_PAGE as MAX_COMMON_SHAPING_PREPARED_SOURCES_PER_PAGE,
 };
-
-const MAX_COMMON_SHAPING_FONT_BYTES_PER_PAGE: usize = 64 * 1024 * 1024;
-const MAX_COMMON_SHAPING_PREPARED_SOURCES_PER_PAGE: usize = 256;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum HorizontalShapingGlyphLoweringRejectReason {

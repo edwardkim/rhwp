@@ -1,0 +1,120 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q2-d5-n1-no-lineseg-atomic-activation-result",
+  "issue": 4969,
+  "stage": "W10-Q2-D5-N1",
+  "status": "qualified",
+  "fixture": {
+    "text": "ᄒᆞᆫ말",
+    "font": "ttfs/opensource/SourceHanSerifK-OldHangul-subset.otf",
+    "fontBytes": 456688,
+    "privateCorpusUsed": false,
+    "hyperVOrHancomOracleUsed": false
+  },
+  "activation": {
+    "productCallerConnected": true,
+    "featureDetectionNotVersionBranching": true,
+    "requiredModelLineSegCount": 0,
+    "requiredFrameIntervalCount": 1,
+    "requiredFinalTargetCount": 1,
+    "finalFrameRecompositionOwnsFirstUsableWidth": true,
+    "editReflow": false,
+    "storedPrefix": false,
+    "splitCell": false,
+    "inlineControl": false
+  },
+  "atomicPublication": {
+    "sameMeasurementArcConsumers": [
+      "line-selection",
+      "text-run-bbox",
+      "next-origin",
+      "page-sidecar-and-common-glyph-run"
+    ],
+    "allConsumerArcsPointerEqual": true,
+    "lineWidthEqualsMeasurementAdvance": true,
+    "bboxWidthEqualsMeasurementAdvance": true,
+    "nextOriginDeltaEqualsMeasurementAdvance": true,
+    "sidecarReservedBeforeGeometryReturn": true,
+    "sourceBudgetReservedBeforeGeometryReturn": true,
+    "partialPublication": false
+  },
+  "resourceReservation": {
+    "perPagePreparedSourceLimit": 256,
+    "perPageFontBytesLimit": 67108864,
+    "perBlobBytesLimit": 33554432,
+    "sameSourceRunCountProbed": 2,
+    "reservedUniqueSources": 1,
+    "reservedSourceBytes": 456688,
+    "sidecarConflictReservationCount": 0,
+    "sidecarConflictReservationBytes": 0,
+    "limitsSharedWithPaintLowering": true
+  },
+  "productOutput": {
+    "supportedSurfaceTextRuns": 1,
+    "supportedSurfaceCommonGlyphRuns": 1,
+    "supportedSurfaceNominalDuplicateGlyphRuns": 0,
+    "supportedSurfaceFontBlobs": 1,
+    "supportedSurfaceFontFaces": 1,
+    "textRunGlyphRunBboxEqual": true,
+    "bboxWidthPageAdvanceEqual": true,
+    "changeScope": "ordinary-single-interval-no-lineseg-only"
+  },
+  "negativeMatrix": {
+    "surfaces": [
+      "center-alignment",
+      "edit-dirty"
+    ],
+    "textRuns": 1,
+    "commonGlyphRuns": 0,
+    "fontBlobs": 0,
+    "fontFaces": 0,
+    "completeLayerJsonEqualsNoExactSourceLegacyBaseline": true,
+    "duplicateNodePreservesExistingOwner": true,
+    "fallback": "pristine-w9-k0-composition-and-text-run"
+  },
+  "redGreen": {
+    "initialRed": "missing-n1-publication-api-compile-failure",
+    "fixtureCorrection": "Paragraph-new-empty-default-LineSeg-cleared-explicitly",
+    "productRed": "no-common-glyph-run-because-initial-no-lineseg-width-was-zero",
+    "ownerCorrection": "recompute-q2c-handoff-after-final-physical-frame-partition",
+    "postGreenAuditGap": "page-source-budget-not-reserved-before-geometry",
+    "resourceCorrection": "shared-limits-and-atomic-sidecar-source-reservation",
+    "final": "qualified"
+  },
+  "validation": {
+    "n1AndD2Passed": 12,
+    "adjacentSourceIntegrationPassed": 17,
+    "integrationPolicyPassed": 18,
+    "unitTierTests": 4221,
+    "unitTierModules": 299,
+    "unitTierViolationCount": 0,
+    "rhwpLibPassed": 3889,
+    "rhwpLibIgnored": 13,
+    "auxiliaryLibPassed": 182,
+    "fullLibFailed": 0,
+    "releaseLibClippy": "pass",
+    "dockerWasmBuild": "pass",
+    "dockerWasmBuildSeconds": 359,
+    "canvasKitReplay": "pass",
+    "canvasKitInk": "58x34",
+    "canvasKitOldContractInk": "58x38",
+    "canvasKitPageAdvancePx": 61.824,
+    "canvasKitFontCoverage": "pass",
+    "rendererContract": "pass",
+    "studioPassed": 1238,
+    "studioExistingSkipped": 1,
+    "studioFailed": 0,
+    "studioProductionBuild": "pass",
+    "focusedRustfmt": "pass",
+    "gitDiffCheck": "pass",
+    "taskWorktreeCargoFmt": "not-entered-missing-generated-suite-sources",
+    "cargoFmtRequiredInPreparedReviewWorktreeBeforePush": true,
+    "newIntegrationSource": false,
+    "generatedArtifactsChanged": false,
+    "sourceCfgTestChanged": false
+  },
+  "nextSlice": "Q2-D5-N2",
+  "nextSliceApproved": false,
+  "checkpointCommitApproved": false,
+  "pushReady": false
+}

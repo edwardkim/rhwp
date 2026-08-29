@@ -14,7 +14,12 @@ const SOURCE_HAN: &[u8] =
 // model text와 replay text가 동일하다.
 const TEXT: &str = "ᄒᆞᆫ말";
 
-fn core_with_surface(text: &str, alignment: Alignment, char_border_fill_id: u16) -> DocumentCore {
+fn core_with_surface(
+    text: &str,
+    alignment: Alignment,
+    char_border_fill_id: u16,
+    no_stored_line_seg: bool,
+) -> DocumentCore {
     let mut core = DocumentCore::new_empty();
     core.create_blank_document_native()
         .expect("public blank template");
@@ -53,6 +58,9 @@ fn core_with_surface(text: &str, alignment: Alignment, char_border_fill_id: u16)
         segment_width: 48_000,
         tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
     }];
+    if no_stored_line_seg {
+        paragraph.line_segs.clear();
+    }
     document.sections[0].paragraphs = vec![paragraph];
     document.sections[0].section_def.page_def.width = 50_000;
     document.sections[0].section_def.page_def.height = 100_000;
@@ -85,7 +93,7 @@ fn collect_text_ops<'a>(node: &'a LayerNode, ops: &mut Vec<&'a PaintOp>) {
 #[test]
 #[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
 fn issue_4969_q2_d4_b_one_line_run_publishes_one_common_alternative() {
-    let core = core_with_surface(TEXT, Alignment::Left, 0);
+    let core = core_with_surface(TEXT, Alignment::Left, 0, false);
     let layer_tree = core
         .build_page_layer_tree(0)
         .expect("build activated page layer tree");
@@ -186,7 +194,7 @@ fn issue_4969_q2_d4_b_rejected_surfaces_keep_only_legacy_text() {
         (TEXT, Alignment::Left, 2),
     ];
     for (text, alignment, char_border_fill_id) in cases {
-        let core = core_with_surface(text, alignment, char_border_fill_id);
+        let core = core_with_surface(text, alignment, char_border_fill_id, false);
         let layer_tree = core
             .build_page_layer_tree(0)
             .expect("build rejected surface layer tree");
@@ -202,4 +210,58 @@ fn issue_4969_q2_d4_b_rejected_surfaces_keep_only_legacy_text() {
         }));
         assert_eq!(layer_tree.resources.font_blob_count(), 0);
     }
+}
+
+#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
+fn issue_4969_q2_d5_n1_no_lineseg_publishes_one_atomic_common_alternative() {
+    let core = core_with_surface(TEXT, Alignment::Left, 0, true);
+    let layer_tree = core
+        .build_page_layer_tree(0)
+        .expect("build no-LineSeg page layer tree");
+    let mut ops = Vec::new();
+    collect_text_ops(&layer_tree.root, &mut ops);
+    let text_runs = ops
+        .iter()
+        .filter_map(|op| match op {
+            PaintOp::TextRun { bbox, run } if run.text == TEXT => Some(*bbox),
+            _ => None,
+        })
+        .collect::<Vec<_>>();
+    let glyph_runs = ops
+        .iter()
+        .filter_map(|op| match op {
+            PaintOp::GlyphRun { bbox, run }
+                if run.diagnostics.reason.as_deref()
+                    == Some("q2CommonShapingCondensedDrawProjectionV1") =>
+            {
+                Some((*bbox, run.as_ref()))
+            }
+            _ => None,
+        })
+        .collect::<Vec<_>>();
+
+    assert_eq!(text_runs.len(), 1, "one TextRun fallback must remain");
+    assert_eq!(glyph_runs.len(), 1, "one common GlyphRun must be published");
+    assert_eq!(
+        ops.iter()
+            .filter(|op| matches!(op, PaintOp::GlyphRun { .. }))
+            .count(),
+        1,
+        "nominal GlyphRun must not duplicate the N1 common claim"
+    );
+    let (glyph_bbox, glyph_run) = glyph_runs[0];
+    let local_advance = glyph_run
+        .advances
+        .as_ref()
+        .expect("common replay advances")
+        .iter()
+        .map(|advance| advance.dx)
+        .sum::<f64>();
+    let page_advance = local_advance * glyph_run.placement.run_to_page.a;
+    assert_eq!(text_runs[0].x, glyph_bbox.x);
+    assert_eq!(text_runs[0].width, glyph_bbox.width);
+    assert!((text_runs[0].width - page_advance).abs() <= 1.0e-9);
+    assert_eq!(layer_tree.resources.font_blob_count(), 1);
+    assert_eq!(layer_tree.resources.font_resources().faces.len(), 1);
 }

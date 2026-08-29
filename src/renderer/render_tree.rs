@@ -1721,6 +1721,22 @@ impl PageLayoutContext {
             .attach(node_id, expected_range, decision)
     }
 
+    /// Q2-D5-N1 no-LineSeg publication boundary. The transaction owns every
+    /// geometry consumer already; only a successful page-sidecar attach may
+    /// turn it into a product publication.
+    pub(crate) fn publish_horizontal_shaping_no_lineseg_owner_transaction(
+        &mut self,
+        transaction: crate::renderer::shaping_composition::HorizontalShapingNoLineSegOwnerTransaction,
+    ) -> Result<
+        crate::renderer::shaping_composition::HorizontalShapingNoLineSegPublication,
+        crate::renderer::shaping_composition::HorizontalShapingNoLineSegOwnerRejection,
+    > {
+        crate::renderer::shaping_composition::publish_horizontal_shaping_no_lineseg_owner_transaction(
+            &mut self.horizontal_shaping_sidecars,
+            transaction,
+        )
+    }
+
     pub(crate) fn horizontal_shaping_sidecar(
         &self,
         node_id: NodeId,
