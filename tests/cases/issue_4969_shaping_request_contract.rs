@@ -4,12 +4,12 @@
 mod shaping;
 
 use shaping::{
-    canonicalize_shaping_request, shape_bounded_request, terminal_shaping_attempt,
-    validate_shaping_request, BoundedShapingAttemptLedger, ShapingAttemptLedgerStatus,
-    ShapingDirection, ShapingDisposition, ShapingExactSource, ShapingFeature, ShapingRejectReason,
-    ShapingRequest, ShapingVariation, ShapingWritingMode, TerminalShapingDisposition,
-    MAX_SHAPING_ATTEMPT_TRACE_RECORDS, MAX_SHAPING_FEATURES, MAX_SHAPING_FONT_BYTES,
-    MAX_SHAPING_TEXT_CODE_POINTS, MAX_SHAPING_VARIATION_AXES,
+    canonicalize_shaping_request, shape_bounded_request, shape_canonical_request_with_face,
+    terminal_shaping_attempt, validate_shaping_request, BoundedShapingAttemptLedger,
+    ShapingAttemptLedgerStatus, ShapingDirection, ShapingDisposition, ShapingExactSource,
+    ShapingFeature, ShapingRejectReason, ShapingRequest, ShapingVariation, ShapingWritingMode,
+    TerminalShapingDisposition, MAX_SHAPING_ATTEMPT_TRACE_RECORDS, MAX_SHAPING_FEATURES,
+    MAX_SHAPING_FONT_BYTES, MAX_SHAPING_TEXT_CODE_POINTS, MAX_SHAPING_VARIATION_AXES,
 };
 
 const NOTO: &[u8] = include_bytes!("../../ttfs/opensource/NotoSansKR-Regular.ttf");
@@ -199,6 +199,22 @@ fn issue_4969_tags_and_axes_are_canonical_and_unambiguous() {
         ),
         (
             vec![ShapingVariation {
+                tag: "wght".into(),
+                value: f32::INFINITY,
+            }],
+            ShapingDisposition::Malformed,
+            ShapingRejectReason::VariationValueNonFinite,
+        ),
+        (
+            vec![ShapingVariation {
+                tag: "wgt".into(),
+                value: 400.0,
+            }],
+            ShapingDisposition::Malformed,
+            ShapingRejectReason::MalformedVariationTag,
+        ),
+        (
+            vec![ShapingVariation {
                 tag: "wdth".into(),
                 value: 100.0,
             }],
@@ -319,6 +335,124 @@ fn issue_4969_identity_sorts_axes_but_preserves_feature_order() {
     assert_ne!(forward.settings_sha256, reordered_features.settings_sha256);
     assert_eq!(reordered_features.features[0].tag, "kern");
     assert_eq!(reordered_features.features[1].tag, "liga");
+}
+
+#[test]
+fn issue_4969_q3_a_effective_default_axes_share_the_empty_identity() {
+    let explicit_defaults = [
+        ShapingVariation {
+            tag: "wght".into(),
+            value: 400.0,
+        },
+        ShapingVariation {
+            tag: "opsz".into(),
+            value: 400.0,
+        },
+    ];
+    let reversed_defaults = [explicit_defaults[1].clone(), explicit_defaults[0].clone()];
+    let wght_default = [explicit_defaults[0].clone()];
+    let opsz_default = [explicit_defaults[1].clone()];
+
+    let empty =
+        canonicalize_shaping_request(&request(HAPPINESS, "가변")).expect("empty default instance");
+    assert!(empty.variations.is_empty());
+
+    for axes in [
+        explicit_defaults.as_slice(),
+        reversed_defaults.as_slice(),
+        wght_default.as_slice(),
+        opsz_default.as_slice(),
+    ] {
+        let mut candidate = request(HAPPINESS, "가변");
+        candidate.variations = axes;
+        let candidate = canonicalize_shaping_request(&candidate).expect("effective default");
+        assert_eq!(candidate, empty, "explicit fvar defaults must be omitted");
+        assert!(candidate.variations.is_empty());
+    }
+}
+
+#[test]
+fn issue_4969_q3_a_explicit_defaults_shape_as_the_empty_instance() {
+    let defaults = [
+        ShapingVariation {
+            tag: "opsz".into(),
+            value: 400.0,
+        },
+        ShapingVariation {
+            tag: "wght".into(),
+            value: 400.0,
+        },
+    ];
+    let empty_request = request(HAPPINESS, "Typography");
+    let expected = shape_bounded_request(&empty_request);
+    let mut explicit_request = request(HAPPINESS, "Typography");
+    explicit_request.variations = &defaults;
+    let actual = shape_bounded_request(&explicit_request);
+
+    assert_eq!(actual.disposition, ShapingDisposition::Applied);
+    assert_eq!(actual.identity, expected.identity);
+    assert_eq!(actual.glyphs, expected.glyphs);
+}
+
+fn shape_with_shared_face(
+    face: &mut rustybuzz::Face<'_>,
+    request: &ShapingRequest<'_>,
+) -> shaping::ShapingOutputDecision {
+    let identity = canonicalize_shaping_request(request).expect("canonical request");
+    shape_canonical_request_with_face(request, identity, face)
+}
+
+#[test]
+fn issue_4969_q3_a_default_after_title_does_not_inherit_axes() {
+    let title_axes = [
+        ShapingVariation {
+            tag: "wght".into(),
+            value: 900.0,
+        },
+        ShapingVariation {
+            tag: "opsz".into(),
+            value: 900.0,
+        },
+    ];
+    let mut title = request(HAPPINESS, "가변");
+    title.variations = &title_axes;
+    let default_probe = request(HAPPINESS, "Typography");
+    let expected_default = shape_bounded_request(&default_probe);
+    let mut shared_face = rustybuzz::Face::from_slice(HAPPINESS, 0).expect("variable face");
+
+    let title_output = shape_with_shared_face(&mut shared_face, &title);
+    assert_eq!(title_output.disposition, ShapingDisposition::Applied);
+    let actual_default = shape_with_shared_face(&mut shared_face, &default_probe);
+
+    assert_eq!(actual_default.disposition, ShapingDisposition::Applied);
+    assert_eq!(actual_default.identity, expected_default.identity);
+    assert_eq!(actual_default.glyphs, expected_default.glyphs);
+}
+
+#[test]
+fn issue_4969_q3_a_partial_axis_requests_do_not_leak_between_instances() {
+    let weight_axes = [ShapingVariation {
+        tag: "wght".into(),
+        value: 650.0,
+    }];
+    let optical_axes = [ShapingVariation {
+        tag: "opsz".into(),
+        value: 650.0,
+    }];
+    let mut weight = request(HAPPINESS, "가변");
+    weight.variations = &weight_axes;
+    let mut optical_probe = request(HAPPINESS, "Typography");
+    optical_probe.variations = &optical_axes;
+    let expected_optical = shape_bounded_request(&optical_probe);
+    let mut shared_face = rustybuzz::Face::from_slice(HAPPINESS, 0).expect("variable face");
+
+    let weight_output = shape_with_shared_face(&mut shared_face, &weight);
+    assert_eq!(weight_output.disposition, ShapingDisposition::Applied);
+    let actual_optical = shape_with_shared_face(&mut shared_face, &optical_probe);
+
+    assert_eq!(actual_optical.disposition, ShapingDisposition::Applied);
+    assert_eq!(actual_optical.identity, expected_optical.identity);
+    assert_eq!(actual_optical.glyphs, expected_optical.glyphs);
 }
 
 fn glyph_ids(output: &shaping::ShapingOutputDecision) -> Vec<u32> {

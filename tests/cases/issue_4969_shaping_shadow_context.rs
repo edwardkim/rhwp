@@ -16,7 +16,7 @@ mod paint {
 }
 
 use kerning::{ExactFontSlot, ExactFontSource, ExactFontSourceRegistry};
-use shaping::{ShapingFeature, ShapingRejectReason, TerminalShapingDisposition};
+use shaping::{ShapingFeature, ShapingRejectReason, ShapingVariation, TerminalShapingDisposition};
 use shaping_context::{
     HorizontalShapingContext, HorizontalShapingRequest, MAX_HORIZONTAL_SHAPING_CACHE_CLUSTERS,
     MAX_HORIZONTAL_SHAPING_CACHE_ENTRIES, MAX_HORIZONTAL_SHAPING_CACHE_GLYPHS,
@@ -29,6 +29,8 @@ use wasm_bindgen_test::wasm_bindgen_test;
 const NOTO: &[u8] = include_bytes!("../../ttfs/opensource/NotoSansKR-Regular.ttf");
 const SOURCE_HAN: &[u8] =
     include_bytes!("../../ttfs/opensource/SourceHanSerifK-OldHangul-subset.otf");
+const HAPPINESS: &[u8] =
+    include_bytes!("../../ttfs/redistributable/happiness-sans/HappinessSansVF.ttf");
 
 const NOTO_SLOT: ExactFontSlot = ExactFontSlot {
     char_shape_id: 4969,
@@ -37,6 +39,10 @@ const NOTO_SLOT: ExactFontSlot = ExactFontSlot {
 const SOURCE_HAN_SLOT: ExactFontSlot = ExactFontSlot {
     char_shape_id: 4969,
     language_index: 0,
+};
+const HAPPINESS_SLOT: ExactFontSlot = ExactFontSlot {
+    char_shape_id: 4969,
+    language_index: 2,
 };
 
 fn registry() -> ExactFontSourceRegistry {
@@ -60,6 +66,15 @@ fn registry() -> ExactFontSourceRegistry {
         )
         .expect("register Source Han exact source");
     registry
+        .register(
+            HAPPINESS_SLOT,
+            ExactFontSource {
+                bytes: HAPPINESS,
+                face_index: 0,
+            },
+        )
+        .expect("register Happiness Sans variable source");
+    registry
 }
 
 fn request<'a>(
@@ -80,6 +95,63 @@ fn request<'a>(
         language: Some(language),
         features,
     }
+}
+
+fn variable_request<'a>(
+    attempt_id: u32,
+    text: &'a str,
+    script: &'a str,
+    language: &'a str,
+    variations: &'a [ShapingVariation],
+) -> HorizontalShapingRequest<'a> {
+    let mut request = request(attempt_id, HAPPINESS_SLOT, text, script, language, &[]);
+    request.variations = variations;
+    request
+}
+
+#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
+fn issue_4969_q3_a_default_and_title_are_distinct_instance_cache_entries() {
+    let defaults = [
+        ShapingVariation {
+            tag: "wght".into(),
+            value: 400.0,
+        },
+        ShapingVariation {
+            tag: "opsz".into(),
+            value: 400.0,
+        },
+    ];
+    let title = [
+        ShapingVariation {
+            tag: "opsz".into(),
+            value: 900.0,
+        },
+        ShapingVariation {
+            tag: "wght".into(),
+            value: 900.0,
+        },
+    ];
+    let context = HorizontalShapingContext::new(registry());
+    let mut transaction = context.transaction();
+    let empty_default =
+        transaction.shadow_measure(&variable_request(20, "가변", "Hang", "ko", &[]));
+    let explicit_default =
+        transaction.shadow_measure(&variable_request(21, "가변", "Hang", "ko", &defaults));
+    let title = transaction.shadow_measure(&variable_request(22, "가변", "Hang", "ko", &title));
+
+    let empty_default = empty_default
+        .measurement
+        .expect("empty default measurement");
+    let explicit_default = explicit_default
+        .measurement
+        .expect("explicit default measurement");
+    let title = title.measurement.expect("title measurement");
+    assert!(Arc::ptr_eq(&empty_default, &explicit_default));
+    assert!(!Arc::ptr_eq(&empty_default, &title));
+    assert_ne!(empty_default.total_advance_px, title.total_advance_px);
+    assert_eq!(context.cached_result_count(), 2);
+    assert_eq!(transaction.parsed_face_count(), 2);
 }
 
 #[test]

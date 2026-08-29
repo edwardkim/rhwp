@@ -3,7 +3,7 @@
   "kind": "font-w10-q3-variable-instance-execution-plan",
   "issue": 4969,
   "stage": "W10-Q3",
-  "status": "revised-plan-approved-awaiting-q3-a-checkpoint",
+  "status": "q3-a-qualified-red-approved-awaiting-checkpoint",
   "productMutation": false,
   "source": {
     "path": "ttfs/redistributable/happiness-sans/HappinessSansVF.ttf",
@@ -43,6 +43,7 @@
       "id": "Q3-A",
       "name": "canonical-instance-red-contract",
       "productOutputChange": false,
+      "result": "qualified-red-approved",
       "approvalAfter": true
     },
     {
@@ -98,7 +99,7 @@
   ],
   "privateCorpus": false,
   "hyperVOrHancomOracle": false,
-  "nextStage": "Q3-A-canonical-instance-red-contract",
-  "nextStageApproved": true,
-  "approvalScope": "plan approval opens Q3-A only; Q3-B through Q3-E, public API expansion, commit, push, PR, comment, and merge remain separately gated"
+  "nextStage": "Q3-A-result-approval-then-checkpoint",
+  "nextStageApproved": false,
+  "approvalScope": "Q3-A result approval does not include checkpoint commit, Q3-B implementation, public API expansion, push, PR, comment, or merge"
 }
