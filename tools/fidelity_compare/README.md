@@ -248,6 +248,43 @@ border의 stroke interval이 ancestor `body-clip-*` 또는 `cell-clip-*`과 만�
 이슈로 승격한다. 문자 멀티셋도 후보 검출용이다. PDF 텍스트층에 없는 path 글리프,
 숨김 텍스트, 추출기 문자 매핑 차이가 있으므로 최종 시각 판정을 대신하지 않는다.
 
+## 등록되지 않은 문서와 짝짓기 — `oracle_pair_index.py`
+
+`REG` 에는 6 쌍이 등록돼 있는데 `pdf/` 에는 정답지가 **573 장** 있다. 나머지를 쓰려면
+`--source`·`--reference-pdf` 로 직접 지정해야 하고, 그때마다 짝을 손으로 찾아야 한다.
+
+`oracle_pair_index.py` 가 그 짝짓기를 자동화한다.
+
+```bash
+# 짝지어진 566개 목록 (TSV)
+python tools/fidelity_compare/oracle_pair_index.py --list
+
+# 한 문서의 인자쌍을 바로 얻는다
+python tools/fidelity_compare/oracle_pair_index.py --args "samples/basic/sungeo.hwp"
+#   --source "samples/basic/sungeo.hwp" --reference-pdf "pdf/basic/sungeo-2022.pdf" --label sungeo
+```
+
+### 짝짓기는 디렉터리까지 본다
+
+이름만 맞추면 **같은 이름의 다른 문서**를 집는다. 저장소에는 그런 문서가 44 종 있다.
+
+```
+samples/KTX.hwp        27쪽  「AI-반도체 해외실증 지원 사업 공모 안내서」
+samples/basic/KTX.hwp   1쪽  실제 KTX 노선도
+```
+
+둘은 `pdf/KTX-2022.pdf`(27 쪽)와 `pdf/basic/KTX-2022.pdf`(1 쪽)를 함께 후보로 갖는다.
+잘못 짝지으면 대조 결과 전체가 무의미해진다. 같은 디렉터리의 정답지가 있으면 그것만 쓰고,
+없으면 이름 후보를 그대로 쓰되 `--list` 의 3 열에 후보 수를 적어 사람이 판단하게 한다.
+566 개 중 **96 개가 디렉터리로 좁혀진다.**
+
+### 모아 찍기 문서는 쪽 단위로 견주지 않는다
+
+`print_method` 가 모아 찍기(4·5)면 한글이 한 장에 여러 쪽을 실어 뽑아 쪽수·용지 방향이
+rhwp 와 다르다. `--rhwp <바이너리>` 를 주면 `--list` 4 열에 `nup` 으로 표시한다(566 개 중
+10 개). 그 문서는 쪽 좌표를 그대로 견주면 오판한다 —
+`model::document::print_method_implies_nup` 주석의 실측표를 참고한다.
+
 ## 등록 쌍과 기준 등급
 
 `REG`는 한글 경로 인코딩·NFC/NFD 함정을 피하려고 ASCII 글롭을 사용한다. `pdf/` 아래의
