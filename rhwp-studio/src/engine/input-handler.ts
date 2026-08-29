@@ -48,6 +48,7 @@ import { DeferredPaginationRunner } from './deferred-pagination-runner';
 import { tableObjectClipboardTarget } from './table-object-clipboard-target';
 import { clearObjectEditingPage } from './object-selection-page';
 import { showInitialCaretAndPublishFocus } from './initial-caret-focus';
+import { CaretLayoutReveal } from './caret-layout-reveal';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const DRAG_SCROLL_EDGE_PX = 48;
@@ -375,6 +376,8 @@ export class InputHandler {
   private readonly deferredPaginationRunner: DeferredPaginationRunner;
   private rawTextMutationEffects = new TextMutationEffectAccumulator();
   private pendingFocusedPagePatch: DeferredFocusedPagePatch | null = null;
+  /** 쪽/단 나누기 뒤 CanvasView의 새 page offset이 준비되면 캐럿을 다시 드러낸다. */
+  private readonly caretLayoutReveal = new CaretLayoutReveal();
 
   // 표 경계선 리사이즈 드래그 상태
   private isResizeDragging = false;
@@ -675,6 +678,15 @@ export class InputHandler {
     eventBus.on('document-view-changed', () => {
       if (!this.active) return;
       requestAnimationFrame(() => this.updateCaret(true));
+    });
+
+    // 전체 mutation render는 renderer 선택 때문에 비동기다. 쪽/단 나누기 직후의 첫
+    // updateCaret은 아직 이전 VirtualScroll을 보므로, 새 쪽 배치가 준비된 이 시점에
+    // page-local rect와 DOM 위치를 다시 계산하고 한컴처럼 대상 쪽을 화면에 드러낸다.
+    eventBus.on('document-layout-refreshed', () => {
+      if (!this.caretLayoutReveal.consume() || !this.active) return;
+      this.cursor.updateRect();
+      this.updateCaret();
     });
 
     // 표 객체 선택 변경 시 렌더링
@@ -2564,6 +2576,7 @@ export class InputHandler {
       // [Task #3416] 그 위에 "지우기 전 선택" 을 되살린다 — 커서 위치가 정해진 뒤라야
       // anchor 만 더해 범위가 완성된다. redo 쪽에는 두지 않는다(한컴도 redo 는 해제).
       this.restoreSelectionAfterUndo(this.history.peekRedoTop());
+      this.caretLayoutReveal.requestFor(this.history.peekRedoTop()?.type ?? '');
       this.afterEdit();
     }
   }
@@ -2580,6 +2593,7 @@ export class InputHandler {
       this.resetDerivedStateAfterHistoryJump();
       // [Task #2337] 방금 다시 실행한 커맨드가 HF/FN 편집이면 그 커서 모드로 복원.
       this.restoreEditContextAfterHistory(this.history.peekUndoTop(), newPos);
+      this.caretLayoutReveal.requestFor(this.history.peekUndoTop()?.type ?? '');
       this.afterEdit(!boundaryHandled);
     }
   }
@@ -2770,6 +2784,7 @@ export class InputHandler {
         if (cmd.isNoOp()) break;
         this.cursor.moveTo(newPos);
         this.cursor.resetPreferredX();
+        this.caretLayoutReveal.requestFor(desc.operationType);
         if (markPastedFieldEndOutside) {
           this.markCurrentFieldEndOutside();
         }

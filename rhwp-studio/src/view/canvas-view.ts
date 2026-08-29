@@ -294,6 +294,9 @@ export class CanvasView {
     const selected = await this.selectMutationRevision();
     if (!selected || !this.rendererSession.isCurrent(selected.selection)) return;
     this.refreshPages();
+    // InputHandler의 mutation 직후 caret 갱신보다 VirtualScroll 재계산이 늦다.
+    // 새 page offset을 소비할 수 있는 완료 경계를 별도 이벤트로 알린다.
+    this.eventBus.emit('document-layout-refreshed', { source: 'mutation' });
   }
 
   /** document-agent RPC 응답 전에 현재 visible page가 실제 canvas로 그려졌는지 확인한다. */

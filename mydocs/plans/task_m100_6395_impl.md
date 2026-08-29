@@ -63,8 +63,8 @@ npx tsc --noEmit
 npm test
 npm run build
 CHROME_PATH='/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' npm run e2e:page-break-caret
-node ../scripts/check-e2e-manifest.mjs
 cd ..
+python3 scripts/check_e2e_manifest.py
 git diff --check
 ```
 
