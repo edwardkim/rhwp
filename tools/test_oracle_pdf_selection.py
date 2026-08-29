@@ -46,7 +46,7 @@ class OraclePdfSelectionTests(unittest.TestCase):
 
     def test_legacy_only_pdf_is_not_automatic_reference(self):
         with self.assertRaisesRegex(ValueError, 'canonical'):
-            choose_canonical('samples/guide.hwp', ['pdf/guide-hwp-2020.pdf'])
+            choose_canonical('samples/guide.hwp', ['pdf/guide-2010-kopub.pdf'])
 
     def test_same_name_sources_never_share_a_canonical_pdf(self):
         root = 'samples/guide.hwp'
