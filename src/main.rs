@@ -1,6 +1,5 @@
 use std::env;
 use std::fs;
-use std::io::Read as _;
 use std::path::Path;
 use std::process;
 
@@ -23,9 +22,18 @@ pub(crate) use cli::commands::edit::{
     measure_cell_overflow, recolor_cell_text_black, resolve_table_cell,
     set_cell_control_char_rejection, CellResolveError,
 };
+pub(crate) use cli::document_io::{
+    classify_hwp_error, cli_output_password, cli_password, load_document, load_document_core,
+    LoadError,
+};
+use cli::document_io::{
+    has_global_auth_option, is_batch_invocation, set_cli_output_password, set_cli_password,
+    strip_global_auth_options, strip_utf8_bom,
+};
 use cli::integrity::{
     cas_test_mark_checked_and_wait, cas_test_synchronize_before_lock, sha256_hex_of, CasPathLock,
 };
+pub(crate) use cli::units::{hu_to_mm, hu_to_mm_i};
 use rhwp::provenance;
 use rhwp::schema_registry::ENVELOPE_SCHEMA_VERSION;
 
@@ -47,226 +55,6 @@ fn exit_with(exit_code: i32) {
     if exit_code != EXIT_OK {
         process::exit(exit_code);
     }
-}
-
-// ============================================================================
-// 전역 비밀번호 (--password / --password-stdin, --output-password / --output-password-stdin)
-//
-// main() 의 pre-scan 이 설정하고 load_document/load_document_core 가 읽는다.
-// CLI는 단일 스레드이므로 thread_local 로 전역 상태를 안전하게 전달한다.
-// 명령 함수 시그니처를 일일이 바꾸지 않아도 일반 문서 로드 명령에
-// 비밀번호를 적용할 수 있다.
-// ============================================================================
-
-thread_local! {
-    static CLI_PASSWORD: std::cell::RefCell<Option<String>> = const { std::cell::RefCell::new(None) };
-    static CLI_OUTPUT_PASSWORD: std::cell::RefCell<Option<String>> = const { std::cell::RefCell::new(None) };
-}
-
-fn set_cli_password(pw: Option<String>) {
-    CLI_PASSWORD.with(|c| *c.borrow_mut() = pw);
-}
-
-fn cli_password() -> Option<String> {
-    CLI_PASSWORD.with(|c| c.borrow().clone())
-}
-
-fn set_cli_output_password(pw: Option<String>) {
-    CLI_OUTPUT_PASSWORD.with(|c| *c.borrow_mut() = pw);
-}
-
-fn cli_output_password() -> Option<String> {
-    CLI_OUTPUT_PASSWORD.with(|c| c.borrow().clone())
-}
-
-/// 문서 로드 에러 — 비밀번호 필요/불일치/기타를 구분해 종료 코드를 다르게 매핑.
-enum LoadError {
-    /// 암호 문서인데 비밀번호가 제공되지 않음 (EXIT_USAGE)
-    NeedPassword,
-    /// 비밀번호 불일치 (EXIT_RUNTIME)
-    WrongPassword,
-    /// 그 외 파싱 오류 (EXIT_RUNTIME)
-    Other(String),
-}
-
-impl LoadError {
-    /// stderr 에 메시지를 출력하고 매핑된 종료 코드를 반환한다.
-    fn report(self) -> i32 {
-        match self {
-            LoadError::NeedPassword => {
-                eprintln!("오류: 비밀번호가 필요한 암호 문서입니다 (--password <pw> 로 전달).");
-                EXIT_USAGE
-            }
-            LoadError::WrongPassword => {
-                eprintln!("오류: 비밀번호가 일치하지 않거나 암호화 데이터가 손상되었습니다.");
-                EXIT_RUNTIME
-            }
-            LoadError::Other(msg) => {
-                eprintln!("오류: 문서 파싱 실패 - {}", msg);
-                EXIT_RUNTIME
-            }
-        }
-    }
-}
-
-/// HwpError Display 메시지에서 비밀번호 관련 에러를 분류한다.
-/// CryptoError::WrongPassword → "...비밀번호가 일치하지 않...",
-/// ParseError::EncryptedDocument → "...비밀번호가 필요한 암호 문서..." 가
-/// HwpError::InvalidFile 로 래핑돼 전해지므로 부분문자열로 판별한다.
-fn classify_hwp_error(msg: &str) -> LoadError {
-    if msg.contains("비밀번호가 일치하지 않") {
-        LoadError::WrongPassword
-    } else if msg.contains("비밀번호가 필요한 암호 문서") {
-        LoadError::NeedPassword
-    } else {
-        LoadError::Other(msg.to_string())
-    }
-}
-
-/// HwpDocument 로드. 전역 비밀번호가 설정돼 있으면 비밀번호 경로로 연다.
-fn load_document(data: &[u8]) -> Result<rhwp::wasm_api::HwpDocument, LoadError> {
-    let result = match cli_password() {
-        Some(pw) => rhwp::wasm_api::HwpDocument::from_bytes_with_password(data, pw.as_bytes()),
-        None => rhwp::wasm_api::HwpDocument::from_bytes(data),
-    };
-    result.map_err(|e| classify_hwp_error(&e.to_string()))
-}
-
-/// DocumentCore 로드 (export-pdf/export-hml 등). 동일 분기.
-fn load_document_core(data: &[u8]) -> Result<rhwp::document_core::DocumentCore, LoadError> {
-    let result = match cli_password() {
-        Some(pw) => {
-            rhwp::document_core::DocumentCore::from_bytes_with_password(data, pw.as_bytes())
-        }
-        None => rhwp::document_core::DocumentCore::from_bytes(data),
-    };
-    result.map_err(|e| classify_hwp_error(&e.to_string()))
-}
-
-/// `batch` 는 stdin 전체를 파일 경로 목록으로 소비한다. 전역 인증 옵션 중 stdin
-/// 변형은 그 목록과 같은 바이트 스트림을 두 번 읽으려 하고, 리터럴 변형도 worker
-/// thread-local 인증 상태로 전달되지 않는다. 따라서 암호화 batch 를 정식으로 설계하기
-/// 전에는 네 옵션을 모두 호출 경계에서 거부한다.
-///
-/// 명령 위치 앞의 전역 인증 옵션만 건너뛰어 `batch` 여부를 판정한다. 단순히 모든 인자에서
-/// `batch` 문자열을 찾으면 `search --query batch` 같은 정상 호출을 잘못 막게 된다.
-fn is_batch_invocation(args: &[String]) -> bool {
-    let mut i = 1; // args[0] 은 프로그램 경로
-    while let Some(arg) = args.get(i) {
-        match arg.as_str() {
-            "--password" | "--output-password" => i += 2,
-            "--password-stdin" | "--output-password-stdin" => i += 1,
-            _ => return arg == "batch",
-        }
-    }
-    false
-}
-
-/// `batch` 명령이 실제로 보이면, 그 뒤·앞 어느 위치의 전역 인증 옵션도 거부한다.
-fn has_global_auth_option(args: &[String]) -> bool {
-    args.iter().skip(1).any(|arg| {
-        matches!(
-            arg.as_str(),
-            "--password" | "--password-stdin" | "--output-password" | "--output-password-stdin"
-        )
-    })
-}
-
-/// Windows PowerShell/.NET이 UTF-8 표준입력의 첫 바이트에 붙일 수 있는 BOM은
-/// 비밀번호 본문이 아니라 인코딩 표식이다. 첫 줄 암호에 섞이면 정상 비밀번호도
-/// 오입력으로 판정되므로, stdin 전체의 맨 앞에서만 제거한다.
-fn strip_utf8_bom(input: &str) -> &str {
-    input.strip_prefix('\u{feff}').unwrap_or(input)
-}
-
-/// args 전체를 스캔해 입력·출력 인증 옵션을 떼어낸다.
-///
-/// 뽑아낸 입력 암호와 출력 암호는 이 함수 안에서 thread-local 상태로 소비하고,
-/// 반환값에는 해당 토큰이 제거된 args 만 담는다. 두 stdin 옵션을 같이 사용하면
-/// stdin 첫 줄은 입력, 둘째 줄은 출력 암호로 고정한다.
-///
-/// 이름과 반환 형태가 "정제된 args" 인 것은 의도적이다. 비밀번호를 반환값(과거의
-/// `(args, password)` 튜플)에 싣거나 함수 이름에 `password` 를 두면 CodeQL
-/// `rust/cleartext-logging` 이 이 호출의 결과 전체를 민감 데이터로 보고, 비밀번호
-/// 토큰이 이미 제거된 args 를 쓰는 오류·진단 출력까지 sink 로 분류한다
-/// (PR #3405 검토에서 41건 과탐지로 확인, PR #3644 에서 alert #119 로 재발).
-/// 반환 경로에 비밀번호가 남지 않으므로 이 분류는 실제 유출 경로가 아니다.
-fn strip_global_auth_options(mut args: Vec<String>) -> Result<Vec<String>, i32> {
-    let mut password: Option<String> = None;
-    let mut output_password: Option<String> = None;
-    let mut password_stdin = false;
-    let mut output_password_stdin = false;
-    let mut i = 1; // args[0] 은 프로그램 경로
-    while i < args.len() {
-        match args[i].as_str() {
-            "--password" => {
-                if password.is_some() {
-                    eprintln!("오류: 비밀번호 옵션은 한 번만 지정할 수 있습니다.");
-                    return Err(EXIT_USAGE);
-                }
-                if i + 1 >= args.len() {
-                    eprintln!("오류: --password 뒤에 비밀번호가 필요합니다.");
-                    return Err(EXIT_USAGE);
-                }
-                password = Some(args[i + 1].clone());
-                args.drain(i..=i + 1);
-            }
-            "--password-stdin" => {
-                if password.is_some() || password_stdin {
-                    eprintln!("오류: 비밀번호 옵션은 한 번만 지정할 수 있습니다.");
-                    return Err(EXIT_USAGE);
-                }
-                password_stdin = true;
-                args.remove(i);
-            }
-            "--output-password" => {
-                if output_password.is_some() || output_password_stdin {
-                    eprintln!("오류: 출력 비밀번호 옵션은 한 번만 지정할 수 있습니다.");
-                    return Err(EXIT_USAGE);
-                }
-                if i + 1 >= args.len() {
-                    eprintln!("오류: --output-password 뒤에 비밀번호가 필요합니다.");
-                    return Err(EXIT_USAGE);
-                }
-                output_password = Some(args[i + 1].clone());
-                args.drain(i..=i + 1);
-            }
-            "--output-password-stdin" => {
-                if output_password.is_some() || output_password_stdin {
-                    eprintln!("오류: 출력 비밀번호 옵션은 한 번만 지정할 수 있습니다.");
-                    return Err(EXIT_USAGE);
-                }
-                output_password_stdin = true;
-                args.remove(i);
-            }
-            _ => i += 1,
-        }
-    }
-
-    if password_stdin || output_password_stdin {
-        let mut stdin = String::new();
-        if let Err(error) = std::io::stdin().read_to_string(&mut stdin) {
-            eprintln!("오류: 표준 입력에서 비밀번호 읽기 실패 - {}", error);
-            return Err(EXIT_RUNTIME);
-        }
-        let stdin = strip_utf8_bom(&stdin);
-        let mut lines = stdin.lines();
-        if password_stdin {
-            password = Some(lines.next().unwrap_or_default().to_string());
-        }
-        if output_password_stdin {
-            output_password = Some(lines.next().unwrap_or_default().to_string());
-        }
-    }
-    if let Some(value) = output_password.as_deref() {
-        if value.is_empty() || value.len() > 4096 || value.contains(['\r', '\n']) {
-            eprintln!("오류: 출력 비밀번호는 빈 값·줄바꿈 없이 UTF-8 4096바이트 이하여야 합니다.");
-            return Err(EXIT_USAGE);
-        }
-    }
-    set_cli_password(password);
-    set_cli_output_password(output_password);
-    Ok(args)
 }
 
 /// 쪽수와 IR 검증은 모두 수행하되, 종료 코드는 쪽수 실패를 우선한다.
@@ -322,7 +110,9 @@ fn main() {
         Some("export-render-tree") => {
             exit_with(cli::outputs::vector::export_render_tree(&args[2..]))
         }
-        Some("export-structure") => exit_with(cli::outputs::vector::export_structure(&args[2..])),
+        Some("export-structure") => {
+            exit_with(cli::queries::structure::export_structure(&args[2..]))
+        }
         Some("export-png") => exit_with(cli::outputs::raster::export_png(&args[2..])),
         // [gym_gpu_raster] GPU 가속 PNG 래스터화 (feature = "gpu"). export-png(native-skia)과
         // 같은 방식으로 feature 게이팅 — 미빌드 바이너리는 사용법 오류(exit 2)로 안내한다.
@@ -424,7 +214,7 @@ fn main() {
         }
         Some("dump-records") => exit_with(cli::queries::diagnostics::dump_raw_records(&args[2..])),
         Some("test-shape") => exit_with(test_shape_roundtrip(&args[2..])),
-        Some("test-caption") => exit_with(test_caption(&args[2..])),
+        Some("test-caption") => exit_with(cli::commands::caption_validation::run(&args[2..])),
         Some("gen-table") => exit_with(gen_table(&args[2..])),
         Some("gen-pua") => exit_with(gen_pua_test(&args[2..])),
         Some("test-field") => exit_with(cli::commands::internal_validation::run(&args[2..])),
@@ -512,24 +302,6 @@ fn main() {
 }
 
 // [#5511] 최상위 dispatch 끝 — 소유 모듈 이동과 무관한 characterization 경계다.
-
-/// [#3261] `export-structure --json`·`batch export-structure --json` 이 공유하는
-/// 구조 봉투 레코드. `mode`/`nodeCount` 를 톱레벨로 올려 스윕 선별(jq select)이 싸다.
-fn structure_json_value(
-    file_path: &str,
-    st: &rhwp::document_core::queries::structure::StructureDoc,
-) -> serde_json::Value {
-    provenance::marked(
-        serde_json::json!({
-            "schemaVersion": ENVELOPE_SCHEMA_VERSION,
-            "source": file_path,
-            "mode": st.mode,
-            "nodeCount": st.node_count,
-            "structure": st,
-        }),
-        "export-structure",
-    )
-}
 
 /// [#3346] `export-tables --json` 과 `batch export-tables` 가 공유하는 봉투.
 fn tables_json_value(
@@ -834,16 +606,6 @@ fn info_warnings_value(doc: &rhwp::wasm_api::HwpDocument) -> serde_json::Value {
     )
 }
 
-/// HWPUNIT(u32)을 mm로 변환
-fn hu_to_mm(hu: u32) -> f64 {
-    hu as f64 * 25.4 / 7200.0
-}
-
-/// HWPUNIT(i32)을 mm로 변환
-fn hu_to_mm_i(hu: i32) -> f64 {
-    hu as f64 * 25.4 / 7200.0
-}
-
 /// [#3719 §6-10] `extract-data --json` 봉투.
 ///
 /// `counts` 는 **요청한 종류에 대한 문서 전체 건수**다(`--limit` 절단 전). 요청하지 않은
@@ -997,161 +759,6 @@ fn test_shape_roundtrip(args: &[String]) -> i32 {
             EXIT_RUNTIME
         }
     }
-}
-
-/// 캡션 방향별 테스트: 4개 이미지에 각각 Bottom/Top/Left/Right 캡션을 설정하고 SVG 출력
-fn test_caption(args: &[String]) -> i32 {
-    if args.is_empty() {
-        eprintln!("사용법: rhwp test-caption <파일.hwp> [-o <출력 폴더>]");
-        return EXIT_USAGE;
-    }
-    if args[0].starts_with('-') {
-        eprintln!(
-            "오류: test-caption 입력 파일 자리에 옵션을 쓸 수 없습니다 - {}",
-            args[0]
-        );
-        return EXIT_USAGE;
-    }
-
-    let input = &args[0];
-    let mut output_dir = Path::new("output/caption-test");
-    let mut i = 1;
-    while i < args.len() {
-        match args[i].as_str() {
-            "-o" | "--output" => {
-                let Some(value) = args.get(i + 1) else {
-                    eprintln!("오류: {} 뒤에 출력 폴더 경로가 필요합니다.", args[i]);
-                    return EXIT_USAGE;
-                };
-                if value.starts_with('-') {
-                    eprintln!("오류: {} 뒤에 출력 폴더 경로가 필요합니다.", args[i]);
-                    return EXIT_USAGE;
-                }
-                output_dir = Path::new(value);
-                i += 2;
-            }
-            option => {
-                eprintln!("오류: 알 수 없는 test-caption 옵션입니다 - {option}");
-                return EXIT_USAGE;
-            }
-        }
-    }
-
-    let data = match fs::read(input) {
-        Ok(d) => d,
-        Err(e) => {
-            eprintln!("파일 읽기 오류: {}", e);
-            return EXIT_RUNTIME;
-        }
-    };
-
-    let mut doc = match rhwp::wasm_api::HwpDocument::from_bytes(&data) {
-        Ok(d) => d,
-        Err(e) => {
-            eprintln!("파싱 오류: {}", e);
-            return EXIT_RUNTIME;
-        }
-    };
-
-    if doc.document().sections.is_empty() {
-        eprintln!("문서 오류: 캡션을 검사할 section이 없습니다.");
-        return EXIT_RUNTIME;
-    }
-
-    // 문단 0: 컨트롤 2,3 / 문단 1: 컨트롤 0,1
-    let pic_refs: [(usize, usize); 4] = [(0, 2), (0, 3), (1, 0), (1, 1)];
-
-    // 4개 이미지에 각각 다른 캡션 방향 설정
-    let directions = [
-        ("Bottom", "Top"),
-        ("Top", "Top"),
-        ("Left", "Center"),
-        ("Right", "Center"),
-    ];
-
-    for (i, ((para, ci), (dir, va))) in pic_refs.iter().zip(directions.iter()).enumerate() {
-        let json = format!(
-            r#"{{"hasCaption":true,"captionDirection":"{}","captionVertAlign":"{}","captionWidth":8504,"captionSpacing":850}}"#,
-            dir, va
-        );
-        println!("[{}] para={}, ci={}, dir={}, va={}", i, para, ci, dir, va);
-        match doc.set_picture_properties_native(0, *para, *ci, &json) {
-            Ok(r) => println!("  결과: {}", r),
-            Err(e) => println!("  오류: {:?}", e),
-        }
-    }
-
-    // 캡션 상태 확인
-    // [CLI 계약 정합] capabilities 가 "internal" 카테고리로도 <파일.hwp> 를 받는
-    // 일반 명령처럼 자기서술한다 — 에이전트가 임의 문서로 호출할 수 있다는 뜻이다.
-    // 이 도구는 원래 para=0/1·control 2/3/0/1 을 가진 고정 fixture 전용이었는데,
-    // 그 인덱스를 경계검사 없이 바로 인덱싱해 다른 문서를 주면 패닉(exit 101)했다.
-    // "안 죽는다"는 CLI 자기서술 계약을 어기므로, 범위를 벗어나면 패닉 대신
-    // 제어된 오류를 출력하고 다음 항목으로 넘어간다.
-    for (i, (para, ci)) in pic_refs.iter().enumerate() {
-        let Some(section) = doc.document().sections.first() else {
-            eprintln!("문서 오류: 캡션을 검사할 section이 없습니다.");
-            return EXIT_RUNTIME;
-        };
-        let Some(p) = section.paragraphs.get(*para) else {
-            println!(
-                "[{}] 건너뜀: para={} 가 문서 범위를 벗어남(문단 {}개)",
-                i,
-                para,
-                section.paragraphs.len()
-            );
-            continue;
-        };
-        let Some(ctrl) = p.controls.get(*ci) else {
-            println!(
-                "[{}] 건너뜀: para={} ci={} 가 범위를 벗어남(컨트롤 {}개)",
-                i,
-                para,
-                ci,
-                p.controls.len()
-            );
-            continue;
-        };
-        if let rhwp::model::control::Control::Picture(pic) = ctrl {
-            println!(
-                "[{}] caption={:?}",
-                i,
-                pic.caption.as_ref().map(|c| {
-                    format!(
-                        "dir={:?}, paras={}, text={:?}",
-                        c.direction,
-                        c.paragraphs.len(),
-                        c.paragraphs.first().map(|p| &p.text)
-                    )
-                })
-            );
-        }
-    }
-
-    // SVG 출력
-    if let Err(e) = fs::create_dir_all(output_dir) {
-        eprintln!("출력 폴더 생성 오류: {}: {}", output_dir.display(), e);
-        return EXIT_RUNTIME;
-    }
-    let page_count = doc.page_count();
-    println!("페이지 수: {}", page_count);
-    for p in 0..page_count {
-        let svg = match doc.render_page_svg(p) {
-            Ok(svg) => svg,
-            Err(e) => {
-                eprintln!("SVG 렌더링 오류(page {}): {:?}", p, e);
-                return EXIT_RUNTIME;
-            }
-        };
-        let path = output_dir.join(format!("caption-test-p{}.svg", p));
-        if let Err(e) = fs::write(&path, &svg) {
-            eprintln!("SVG 저장 오류: {}: {}", path.display(), e);
-            return EXIT_RUNTIME;
-        }
-        println!("  → {}", path.display());
-    }
-    println!("완료");
-    EXIT_OK
 }
 
 fn gen_table(args: &[String]) -> i32 {

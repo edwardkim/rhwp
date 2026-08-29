@@ -1926,7 +1926,7 @@ fn session_doc_structure(args: &serde_json::Value, sessions: &mut Sessions) -> s
         Err(e) => return e,
     };
     let st = build_structure(sd.doc.document(), mode);
-    tool_ok_text(crate::structure_json_value(&id, &st).to_string())
+    tool_ok_text(crate::cli::queries::structure::structure_json_value(&id, &st).to_string())
 }
 
 /// [#4856] 열린 핸들에서 날짜·금액·수량을 재파싱 없이 뽑는다 — 무상태

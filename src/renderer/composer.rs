@@ -1746,11 +1746,10 @@ pub(crate) fn no_ls_short_label_cell(
 /// 실폭 판정이 무의미하므로 호출부(셀 방향을 아는 곳)에서 걸러야 한다
 /// (task81 세로쓰기 회귀 실측). 정상 1줄(실폭 ≤ 내폭)은 불변.
 ///
-/// [#5952] 저장 ls≥2 인데 composed 가 접혔거나(한 줄이 글자 대부분),
-/// 짧은 문단(ls≤3)의 저장 `segment_width`가 셀 내폭과 같은데 한 줄 실폭이
-/// ×1.10 을 넘으면 Hangul 분할을 복원한다. 행정업무운영편람 61쪽 유의사항
-/// 상자가 그 경우다. 긴 본문 다줄 셀을 셀 내폭 ×1.05 만으로 재래핑하면
-/// 쪽수·LAYOUT_OVERFLOW_CELL 이 부푼다.
+/// [#5952] `※`/`☞` 유의사항 bullet의 저장 2~3줄이 각 `segment_width`에서 셀
+/// 내폭과 같지만 합성 행이 ×1.10을 넘으면 Hangul 분할을 복원한다. 행정업무운영
+/// 편람 61쪽의 유의사항 상자가 그 경우다. 일반 다중행 본문, 끝의 빈 저장 행,
+/// 단순한 폭 불일치는 저장 분할을 보존한다.
 pub fn recompose_stored_single_line_if_overflowing(
     composed: &mut ComposedParagraph,
     para: &Paragraph,
@@ -1767,32 +1766,23 @@ pub fn recompose_stored_single_line_if_overflowing(
             .iter()
             .all(|seg| seg.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0);
     if authentic_stored && para.line_segs.len() >= 2 {
-        let collapsed = composed.lines.len() < para.line_segs.len();
-        let total_chars = para.text.chars().count();
-        let stored_seg_px = para
-            .line_segs
+        let note_bullet = matches!(para.text.trim_start().chars().next(), Some('※' | '☞'));
+        let short_note_cell = note_bullet
+            && (2..=3).contains(&para.line_segs.len())
+            && para.line_segs.iter().all(|seg| {
+                seg.segment_width > 0
+                    && (crate::renderer::hwpunit_to_px(seg.segment_width, dpi)
+                        - cell_inner_width_px)
+                        .abs()
+                        <= 1.0
+            });
+        if !short_note_cell {
+            return;
+        }
+        let over = composed
+            .lines
             .iter()
-            .map(|seg| crate::renderer::hwpunit_to_px(seg.segment_width, dpi))
-            .fold(0.0_f64, f64::max);
-        let over = composed.lines.iter().any(|line| {
-            let width = estimate_composed_line_width(line, styles);
-            if width <= cell_inner_width_px * 1.05 {
-                return false;
-            }
-            if collapsed {
-                return true;
-            }
-            let line_chars: usize = line.runs.iter().map(|run| run.text.chars().count()).sum();
-            let dominant =
-                total_chars > 0 && line_chars.saturating_mul(3) > total_chars.saturating_mul(2);
-            // 유의사항 상자: 저장 horzsize 가 셀 내폭과 같고(500.8px) 2~3줄
-            // 인데 한 줄 추정 실폭이 1.12~1.16×. 긴 본문 다줄 셀은 제외.
-            let stored_matches_cell =
-                stored_seg_px > 0.0 && (stored_seg_px - cell_inner_width_px).abs() <= 1.0;
-            let ignores_stored =
-                stored_matches_cell && para.line_segs.len() <= 3 && width > stored_seg_px * 1.10;
-            dominant || ignores_stored
-        });
+            .any(|line| estimate_composed_line_width(line, styles) > cell_inner_width_px * 1.10);
         if over {
             reflow_cell_line_ignoring_stored_segs(composed, para, cell_inner_width_px, styles, dpi);
         }
@@ -2051,6 +2041,46 @@ pub(crate) fn recompose_stored_lines_in_frame(
     dpi: f64,
     legacy_hwp3_stored_geometry: bool,
     miss_policy: line_breaking::StoredRowMissPolicy,
+    // [#6175] 같은 세로 band의 용지/쪽 기준 어울림 개체 증거(HWPUNIT) — 저장 행이
+    // 남긴 결손 폭과 위치를 함께 설명할 때만 재래핑하지 않는다. 측정·페인트가 같은
+    // 함수를 타므로 두 경로가 갈리지 않는다.
+    float_carve_evidence: &[crate::renderer::float_placement::FloatCarveEvidence],
+) -> Option<ComposedParagraph> {
+    recompose_stored_lines_in_frame_with_known_square_band(
+        composed,
+        para,
+        paragraph_box,
+        inner_width_px,
+        styles,
+        dpi,
+        legacy_hwp3_stored_geometry,
+        miss_policy,
+        float_carve_evidence,
+        false,
+    )
+}
+
+/// Resolve stored rows when the caller has already proven that the paragraph
+/// belongs to a non-TAC Square Picture/Shape wrap band.
+///
+/// A uniformly narrow stored ladder is not generally float evidence: ordinary
+/// paragraph indentation has the same local shape. Only the pagination and
+/// render paths that carry a real Square-wrap anchor may preserve that ladder
+/// as externally owned geometry.
+#[allow(clippy::too_many_arguments)]
+pub(crate) fn recompose_stored_lines_in_frame_with_known_square_band(
+    composed: &ComposedParagraph,
+    para: &Paragraph,
+    paragraph_box: ParagraphBox,
+    inner_width_px: f64,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+    legacy_hwp3_stored_geometry: bool,
+    miss_policy: line_breaking::StoredRowMissPolicy,
+    // [#6175] 용지/쪽 기준 float 증거는 uniform ladder의 결손 폭과 세로 band를
+    // 함께 설명할 때만 저장 기하를 유지한다.
+    float_carve_evidence: &[crate::renderer::float_placement::FloatCarveEvidence],
+    known_square_band: bool,
 ) -> Option<ComposedParagraph> {
     // A degenerate box, or controls with their own layout owner, means there is
     // no frame to build. The composition stands as it is — there is no second
@@ -2074,6 +2104,8 @@ pub(crate) fn recompose_stored_lines_in_frame(
         legacy_hwp3_stored_geometry,
         miss_policy,
         stale,
+        float_carve_evidence,
+        known_square_band,
     ) {
         // Stale — the row cannot hold its own text — so the rebuilt row is the
         // frame's. Its fill tokenizes through `para.char_shapes`
@@ -2178,6 +2210,9 @@ pub(crate) fn probe_stored_row_disposition(
         legacy_hwp3_stored_geometry,
         miss_policy,
         stale,
+        // 증거 프로브는 단 문맥을 갖지 않는다 — 개체 증거 없이 판정한다.
+        &[],
+        false,
     ) {
         Some(line_breaking::StoredRowResolution::Stored) => StoredRowProbeDisposition::Admitted,
         Some(line_breaking::StoredRowResolution::Reflowed) => StoredRowProbeDisposition::Rejected,
@@ -2427,6 +2462,8 @@ pub fn recompose_cell_lines_in_frame(
             dpi,
             legacy_hwp3_stored_geometry,
             line_breaking::StoredRowMissPolicy::UnmodelledUnlessStale,
+            // 셀 줄의 어울림 배제는 #5818 셀 계약이 따로 소유한다.
+            &[],
         )
     } else {
         // NO_LS is the arm this owner normally serves. A synthetic single row
@@ -2442,6 +2479,7 @@ pub fn recompose_cell_lines_in_frame(
             dpi,
             legacy_hwp3_stored_geometry,
             line_breaking::StoredRowMissPolicy::Reflow,
+            &[],
         )
     };
     if let Some(rebuilt) = rebuilt {

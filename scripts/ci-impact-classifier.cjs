@@ -2,7 +2,7 @@
 
 const fs = require('node:fs');
 
-const CLASSIFIER_VERSION = '4';
+const CLASSIFIER_VERSION = '5';
 const CODEQL_LANGUAGE_ORDER = ['javascript-typescript', 'python', 'rust'];
 const FRONTEND_MODE_RANK = { none: 0, unit: 1, package: 2 };
 
@@ -19,6 +19,8 @@ const RENDER_RUST_PREFIXES = [
 ];
 
 const RENDER_RUST_FILES = new Set([
+  // [#3789] export-pdf와 native raster가 공유하는 문서 로더·인증 입력 경계다.
+  'src/cli/document_io.rs',
   // [#5776] Render Diff의 PDF report가 native CLI export-pdf를 직접 실행한다.
   // outputs/mod.rs의 sibling-resource 판정도 같은 PDF 입력 경계다.
   'src/cli/outputs/mod.rs',
@@ -31,6 +33,8 @@ const RENDER_RUST_FILES = new Set([
 // native_skia_required=false 로 판정되어 정작 그 경계를 검증할 job 이 skip 된다.
 // test_ci_impact_workflow.py 가 workflow·support 양쪽을 강제한다.
 const NATIVE_SKIA_RUST_FILES = new Set([
+  // [#3789] export-png도 공유 문서 로더·인증 입력 경계를 소비한다.
+  'src/cli/document_io.rs',
   // [#5776] Native Skia job의 cli_exit_codes_native가 export-png를 직접 실행한다.
   // Render Diff는 현재 raster adapter를 소비하지 않으므로 Canvas 축은 켜지 않는다.
   'src/cli/outputs/raster.rs',
@@ -151,9 +155,6 @@ function failClosedPathReason(filename) {
   }
   if (filename === 'rust-toolchain.toml' || filename.startsWith('.cargo/')) {
     return 'rust-toolchain-contract';
-  }
-  if (filename === 'src/main.rs') {
-    return 'main-render-boundary';
   }
   if (filename === 'src/wasm_api.rs' || filename.startsWith('src/wasm_api/')) {
     return 'wasm-contract';

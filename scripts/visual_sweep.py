@@ -387,10 +387,45 @@ def page_num(path: Path) -> int:
     return int(matches[-1])
 
 
-def ensure_tools() -> None:
-    missing = [tool for tool in ("rsvg-convert", "pdftoppm", "pdftotext") if shutil.which(tool) is None]
+def ensure_tools(svg_rasterizer: str = "webfont") -> None:
+    required = ["pdftoppm", "pdftotext"]
+    if svg_rasterizer == "rsvg":
+        required.append("rsvg-convert")
+    else:
+        required.append("node")
+    missing = [tool for tool in required if shutil.which(tool) is None]
     if missing:
         raise SystemExit("필수 도구가 없습니다: " + ", ".join(missing))
+
+
+def svg_raster_command(
+    root: Path,
+    svg_path: Path,
+    png_path: Path,
+    zoom: float,
+    svg_rasterizer: str,
+) -> list[str]:
+    if svg_rasterizer == "rsvg":
+        return [
+            "rsvg-convert",
+            "-f",
+            "png",
+            "--zoom",
+            f"{zoom:.8f}",
+            "-o",
+            str(png_path),
+            str(svg_path),
+        ]
+    return [
+        "node",
+        str(root / "scripts" / "rasterize-svg-webfonts.mjs"),
+        "--input",
+        str(svg_path),
+        "--output",
+        str(png_path),
+        "--zoom",
+        f"{zoom:.8f}",
+    ]
 
 
 def load_note_shape(root: Path, hwp: Path, rhwp_bin: str, out_path: Path) -> dict[str, object]:
@@ -535,6 +570,7 @@ def sweep_provenance(
     hwp: Path,
     pdf: Path,
     rhwp_bin: str,
+    svg_rasterizer: str,
 ) -> dict[str, object]:
     return {
         "hwp": {"path": safe_rel_str(root, hwp), "sha256": sha256_file(hwp)},
@@ -544,6 +580,7 @@ def sweep_provenance(
             "path": safe_rel_str(root, Path(__file__).resolve()),
             "sha256": sha256_file(Path(__file__).resolve()),
         },
+        "svg_rasterizer": svg_rasterizer,
         "rhwp_binary": rhwp_binary_identifier(root, rhwp_bin),
     }
 
@@ -1012,6 +1049,7 @@ def render_target(
     selected_pages: list[int] | None,
     *,
     resume: bool,
+    svg_rasterizer: str,
 ) -> dict[str, object]:
     print(f"== {target.key} ==", flush=True)
     if dpi <= 0:
@@ -1052,7 +1090,7 @@ def render_target(
     ):
         directory.mkdir(parents=True, exist_ok=True)
 
-    provenance = sweep_provenance(root, hwp, pdf, rhwp_bin)
+    provenance = sweep_provenance(root, hwp, pdf, rhwp_bin, svg_rasterizer)
     run_manifest = run_manifest_for_target(
         base,
         target,
@@ -1161,20 +1199,10 @@ def render_target(
             print(f"resume: p{page:03d} checkpoint를 재사용합니다.", flush=True)
             continue
         png = rhwp_png_dir / f"rhwp_{page:03d}.png"
-        # export-svg의 unitless width/height는 CSS px(96dpi)다. rsvg-convert의
-        # --dpi-*만 바꾸면 unitless 크기는 그대로이므로, PDF와 같은 목표 DPI로
-        # 래스터하려면 zoom도 함께 적용해야 한다.
+        # export-svg의 unitless width/height는 CSS px(96dpi)다. webfont browser와
+        # rsvg-convert 모두 PDF 목표 DPI에 맞춰 같은 zoom을 적용한다.
         run(
-            [
-                "rsvg-convert",
-                "-f",
-                "png",
-                "--zoom",
-                f"{svg_zoom:.8f}",
-                "-o",
-                str(png),
-                str(svg_path),
-            ],
+            svg_raster_command(root, svg_path, png, svg_zoom, svg_rasterizer),
             cwd=root,
             verbose=False,
         )
@@ -4750,6 +4778,15 @@ def main() -> None:
     parser.add_argument("--rhwp-bin", default="target/debug/rhwp")
     parser.add_argument("--dpi", type=int, default=96)
     parser.add_argument(
+        "--svg-rasterizer",
+        choices=("webfont", "rsvg"),
+        default="webfont",
+        help=(
+            "SVG rasterizer입니다. 기본 webfont는 Chrome과 Studio 공통 웹폰트 규칙을 사용하고, "
+            "rsvg는 외부 웹폰트 없이 기존 librsvg 경로를 사용합니다."
+        ),
+    )
+    parser.add_argument(
         "--resume",
         action="store_true",
         help=(
@@ -4793,7 +4830,7 @@ def main() -> None:
     selected_pages = parse_page_selection(args.page, args.pages)
 
     root = Path.cwd()
-    ensure_tools()
+    ensure_tools(args.svg_rasterizer)
     custom_targets = custom_targets_from_args(args)
     requested_targets = args.target
     if requested_targets and "all" in requested_targets:
@@ -4817,6 +4854,7 @@ def main() -> None:
             args.pixel_diff_threshold,
             selected_pages,
             resume=args.resume,
+            svg_rasterizer=args.svg_rasterizer,
         )
     summary_path = out_root / "summary.json"
     print(f"summary: {summary_path}")

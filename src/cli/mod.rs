@@ -7,11 +7,13 @@
 pub(crate) mod batch;
 pub(crate) mod catalog;
 pub(crate) mod commands;
+pub(crate) mod document_io;
 pub(crate) mod integrity;
 pub(crate) mod metadata;
 pub(crate) mod outputs;
 pub(crate) mod protocol;
 pub(crate) mod queries;
+pub(crate) mod units;
 
 /// `--compat 2022|2024` 값을 `hangul2024_compat` 세션 설정으로 옮긴다.
 ///
