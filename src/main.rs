@@ -1,3 +1,4 @@
+// CI canary (#3789): src/main.rs-only changes must not require Render Diff.
 use std::env;
 use std::fs;
 use std::path::Path;
