@@ -4403,10 +4403,25 @@ impl DocumentCore {
             (0..total_pages).collect()
         };
         for page_num in page_order {
-            if self.resolve_header_footer_target(page_num, is_header) != (section_idx, apply_to) {
+            let actual_target = self.resolve_header_footer_target(page_num, is_header);
+            let is_preview_page = preferred_page >= 0
+                && page_num == preferred_page as u32
+                && self
+                    .header_footer_preview_page_for_section(section_idx)
+                    .is_ok_and(|preview| preview == page_num);
+            if actual_target != (section_idx, apply_to) && !is_preview_page {
                 continue;
             }
-            let tree = self.build_page_tree(page_num)?;
+            let tree = if actual_target == (section_idx, apply_to) {
+                self.build_page_tree(page_num)?
+            } else {
+                self.build_header_footer_edit_preview_tree(
+                    page_num,
+                    section_idx,
+                    is_header,
+                    apply_to,
+                )?
+            };
             // 루트의 자식에서 Header/Footer 노드 찾기
             for child in &tree.root.children {
                 if is_target_node(&child.node_type) {
@@ -4590,12 +4605,47 @@ impl DocumentCore {
         x: f64,
         y: f64,
     ) -> Result<String, HwpError> {
+        let (section_idx, apply_to) = self.resolve_header_footer_target(page_num, is_header);
+        self.hit_test_in_header_footer_target_native(
+            page_num,
+            section_idx,
+            is_header,
+            apply_to,
+            x,
+            y,
+        )
+    }
+
+    /// 대표 편집 페이지에서 명시한 HF target으로 내부 텍스트를 히트테스트한다.
+    ///
+    /// 일반 페이지는 실제 active target과 일치할 때만 허용하고, target source section의
+    /// 첫 페이지에서만 가상 대표 트리를 사용한다.
+    pub fn hit_test_in_header_footer_target_native(
+        &self,
+        page_num: u32,
+        section_idx: usize,
+        is_header: bool,
+        apply_to: u8,
+        x: f64,
+        y: f64,
+    ) -> Result<String, HwpError> {
         use crate::renderer::layout::compute_char_positions;
         use crate::renderer::render_tree::{RenderNode, RenderNodeType};
 
-        let (resolved_section_idx, resolved_apply_to) =
-            self.resolve_header_footer_target(page_num, is_header);
-        let tree = self.build_page_tree(page_num)?;
+        let actual_target = self.resolve_header_footer_target(page_num, is_header);
+        let is_preview_page = self
+            .header_footer_preview_page_for_section(section_idx)
+            .is_ok_and(|preview| preview == page_num);
+        if actual_target != (section_idx, apply_to) && !is_preview_page {
+            return Ok("{\"hit\":false}".to_string());
+        }
+        let tree = if actual_target == (section_idx, apply_to) {
+            self.build_page_tree(page_num)?
+        } else {
+            self.build_header_footer_edit_preview_tree(page_num, section_idx, is_header, apply_to)?
+        };
+        let resolved_section_idx = section_idx;
+        let resolved_apply_to = apply_to;
 
         // Header/Footer 서브트리 찾기
         let hf_node = tree.root.children.iter().find(|child| {
@@ -4864,7 +4914,11 @@ impl DocumentCore {
         use crate::renderer::layout::compute_char_positions;
         use crate::renderer::render_tree::{RenderNode, RenderNodeType};
 
-        if self.resolve_header_footer_target(page_num, is_header) != (section_idx, apply_to) {
+        let actual_target = self.resolve_header_footer_target(page_num, is_header);
+        let is_preview_page = self
+            .header_footer_preview_page_for_section(section_idx)
+            .is_ok_and(|preview| preview == page_num);
+        if actual_target != (section_idx, apply_to) && !is_preview_page {
             return Ok("[]".to_string());
         }
 
@@ -4888,7 +4942,11 @@ impl DocumentCore {
             }
         }
 
-        let tree = self.build_page_tree(page_num)?;
+        let tree = if actual_target == (section_idx, apply_to) {
+            self.build_page_tree(page_num)?
+        } else {
+            self.build_header_footer_edit_preview_tree(page_num, section_idx, is_header, apply_to)?
+        };
         let Some(hf_node) = tree.root.children.iter().find(|child| {
             if is_header {
                 matches!(child.node_type, RenderNodeType::Header)

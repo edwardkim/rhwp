@@ -78,6 +78,10 @@ import { TableResizeRenderer } from '@/engine/table-resize-renderer';
 import { Ruler } from '@/view/ruler';
 import { detectPlatformKind } from '@/engine/navigation-keymap';
 import {
+  headerFooterApplyToLabel,
+  parseHeaderFooterModeChanged,
+} from '@/engine/header-footer-mode';
+import {
   percentToZoomSliderPosition,
   zoomPercentShortcutTitle,
   zoomSliderPositionToPercent,
@@ -1191,8 +1195,10 @@ function setupEventListeners(): void {
   const scrollContainer = document.getElementById('scroll-container');
   const styleBar = document.getElementById('style-bar');
 
-  eventBus.on('headerFooterModeChanged', (mode) => {
-    const isActive = (mode as string) !== 'none';
+  const hfLiveStatus = document.getElementById('hf-edit-status-live');
+  eventBus.on('headerFooterModeChanged', (payload) => {
+    const state = parseHeaderFooterModeChanged(payload);
+    const isActive = state !== 'none';
     headerFooterToolbarActive = isActive;
     iconToolbarScroller?.resetToStart();
     // 도구상자 전환
@@ -1200,7 +1206,16 @@ function setupEventListeners(): void {
       hfGroup.hidden = !isActive;
     }
     if (hfLabel) {
-      hfLabel.textContent = (mode as string) === 'header' ? '머리말' : (mode as string) === 'footer' ? '꼬리말' : '';
+      const kind = state === 'none' ? '' : state.mode === 'header' ? '머리말' : '꼬리말';
+      const target = state === 'none' ? '' : headerFooterApplyToLabel(state.applyTo);
+      hfLabel.textContent = state === 'none' ? '' : `${kind} · ${target} 편집 중`;
+      hfLabel.dataset.mode = state === 'none' ? '' : state.mode;
+      hfLabel.dataset.applyTo = state === 'none' ? '' : String(state.applyTo);
+      if (hfLiveStatus) {
+        hfLiveStatus.textContent = state === 'none'
+          ? '머리말 꼬리말 편집 종료'
+          : `${kind} ${target} 편집 중, 구역 ${state.sectionIdx + 1} 첫 페이지`;
+      }
     }
     defaultTbGroups.forEach((el) => {
       (el as HTMLElement).hidden = isActive;

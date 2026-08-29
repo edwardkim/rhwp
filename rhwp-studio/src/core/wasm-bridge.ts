@@ -3171,9 +3171,91 @@ export class WasmBridge {
     return JSON.parse((this.doc as any).getHeaderFooterEditTarget(pageNum, isHeader));
   }
 
+  /** HF 정의의 대표 편집 페이지. 구버전 WASM은 PageInfo를 훑어 같은 답으로 폴백한다. */
+  getHeaderFooterPreviewPage(sectionIdx: number): number {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    const doc = this.doc as unknown as {
+      getHeaderFooterPreviewPage?: (sectionIdx: number) => string;
+    };
+    if (typeof doc.getHeaderFooterPreviewPage === 'function') {
+      const result = JSON.parse(doc.getHeaderFooterPreviewPage(sectionIdx));
+      if (Number.isSafeInteger(result.pageIndex) && result.pageIndex >= 0) {
+        return result.pageIndex;
+      }
+    }
+    for (let pageIndex = 0; pageIndex < this.pageCount; pageIndex++) {
+      if (this.getPageInfo(pageIndex).sectionIndex === sectionIdx) return pageIndex;
+    }
+    throw new Error(`구역 ${sectionIdx}의 대표 HF 편집 페이지를 찾을 수 없습니다`);
+  }
+
   hitTestInHeaderFooter(pageNum: number, isHeader: boolean, x: number, y: number): { hit: boolean; sectionIndex?: number; applyTo?: number; paraIndex?: number; charOffset?: number; cursorRect?: { pageIndex: number; x: number; y: number; height: number } } {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
     return JSON.parse(this.doc.hitTestInHeaderFooter(pageNum, isHeader, x, y));
+  }
+
+  hitTestInHeaderFooterTarget(
+    pageNum: number,
+    sectionIdx: number,
+    isHeader: boolean,
+    applyTo: number,
+    x: number,
+    y: number,
+  ): { hit: boolean; sectionIndex?: number; applyTo?: number; paraIndex?: number; charOffset?: number; cursorRect?: { pageIndex: number; x: number; y: number; height: number } } {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    const doc = this.doc as unknown as {
+      hitTestInHeaderFooterTarget?: (
+        pageNum: number,
+        sectionIdx: number,
+        isHeader: boolean,
+        applyTo: number,
+        x: number,
+        y: number,
+      ) => string;
+    };
+    if (typeof doc.hitTestInHeaderFooterTarget !== 'function') {
+      return this.hitTestInHeaderFooter(pageNum, isHeader, x, y);
+    }
+    return JSON.parse(doc.hitTestInHeaderFooterTarget(
+      pageNum,
+      sectionIdx,
+      isHeader,
+      applyTo,
+      x,
+      y,
+    ));
+  }
+
+  renderHeaderFooterEditPreviewToCanvas(
+    pageNum: number,
+    sectionIdx: number,
+    isHeader: boolean,
+    applyTo: number,
+    canvas: HTMLCanvasElement,
+    scale: number,
+  ): void {
+    if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
+    const doc = this.doc as unknown as {
+      renderHeaderFooterEditPreviewToCanvas?: (
+        pageNum: number,
+        sectionIdx: number,
+        isHeader: boolean,
+        applyTo: number,
+        canvas: HTMLCanvasElement,
+        scale: number,
+      ) => void;
+    };
+    if (typeof doc.renderHeaderFooterEditPreviewToCanvas !== 'function') {
+      throw new Error('현재 WASM은 HF 대표 편집 preview 렌더링을 지원하지 않습니다');
+    }
+    doc.renderHeaderFooterEditPreviewToCanvas(
+      pageNum,
+      sectionIdx,
+      isHeader,
+      applyTo,
+      canvas,
+      scale,
+    );
   }
 
   deleteHeaderFooter(sectionIdx: number, isHeader: boolean, applyTo: number): void {

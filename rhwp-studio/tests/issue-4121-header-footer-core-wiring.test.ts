@@ -11,6 +11,9 @@ const methods = [
   'copySelectionInHeaderFooter',
   'getCharPropertiesInHeaderFooter',
   'applyCharFormatInHeaderFooter',
+  'getHeaderFooterPreviewPage',
+  'hitTestInHeaderFooterTarget',
+  'renderHeaderFooterEditPreviewToCanvas',
 ];
 
 for (const method of methods) {

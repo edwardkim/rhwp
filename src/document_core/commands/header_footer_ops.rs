@@ -45,6 +45,20 @@ fn apply_label(a: HeaderFooterApply) -> &'static str {
 }
 
 impl DocumentCore {
+    /// 머리말/꼬리말 정의를 편집할 대표 페이지(구역 첫 페이지)를 반환한다.
+    ///
+    /// 반환: JSON `{"ok":true,"pageIndex":N,"sectionIdx":N}`
+    pub fn get_header_footer_preview_page_native(
+        &self,
+        section_idx: usize,
+    ) -> Result<String, HwpError> {
+        let page_index = self.header_footer_preview_page_for_section(section_idx)?;
+        Ok(format!(
+            "{{\"ok\":true,\"pageIndex\":{},\"sectionIdx\":{}}}",
+            page_index, section_idx
+        ))
+    }
+
     /// 구역의 문단들에서 특정 apply_to의 머리말 또는 꼬리말 컨트롤 위치를 찾는다.
     /// 반환: (para_index, control_index)
     fn find_header_footer_control(

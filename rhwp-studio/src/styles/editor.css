@@ -90,3 +90,50 @@
 #scroll-container.hf-editing {
   background: var(--ui-active);
 }
+
+/* HF 대표 편집: 구역 첫 쪽은 강조하고, 실제 적용 쪽은 연관 영역으로 표시한다. */
+#scroll-content .hf-edit-surface-layer {
+  position: absolute;
+  z-index: 4;
+  pointer-events: none;
+}
+
+#scroll-content canvas.hf-edit-preview-canvas {
+  inset: 0 auto auto 0;
+  z-index: 0;
+  transform: none;
+  transform-origin: top left;
+  background: var(--doc-paper);
+  box-shadow: none;
+}
+
+#scroll-content .hf-edit-region {
+  position: absolute;
+  box-sizing: border-box;
+}
+
+#scroll-content .hf-edit-region.is-representative {
+  z-index: 1;
+  border: 2px solid var(--focus-ring);
+  background: color-mix(in srgb, var(--focus-ring) 12%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--doc-paper) 75%, transparent) inset;
+}
+
+#scroll-content .hf-edit-region.is-related {
+  border-block: 1px dashed color-mix(in srgb, var(--focus-ring) 65%, transparent);
+  background: color-mix(in srgb, var(--focus-ring) 6%, transparent);
+}
+
+#scroll-content .hf-edit-badge {
+  position: absolute;
+  z-index: 2;
+  transform: translateY(-100%);
+  padding: 2px 7px;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  background: var(--focus-ring);
+  color: var(--doc-paper);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  line-height: 1.4;
+  white-space: nowrap;
+}

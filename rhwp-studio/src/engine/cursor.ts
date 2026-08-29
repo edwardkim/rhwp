@@ -1901,6 +1901,18 @@ export class CursorState {
   /** 머리말/꼬리말 편집 모드인지 반환 */
   isInHeaderFooter(): boolean { return this._headerFooterMode !== 'none'; }
 
+  private resolveHeaderFooterPreviewPage(sectionIdx: number, fallback: number): number {
+    const wasm = this.wasm as unknown as {
+      getHeaderFooterPreviewPage?: (sectionIdx: number) => number;
+    };
+    if (typeof wasm.getHeaderFooterPreviewPage === 'function') {
+      try {
+        return wasm.getHeaderFooterPreviewPage(sectionIdx);
+      } catch { /* 구버전/부분 mock은 호출자가 준 페이지를 유지 */ }
+    }
+    return fallback;
+  }
+
   /** 머리말/꼬리말 편집 모드에 진입한다. */
   enterHeaderFooterMode(isHeader: boolean, sectionIdx: number, applyTo: number, preferredPage = -1): void {
     // 현재 본문 커서 위치 저장
@@ -1911,7 +1923,10 @@ export class CursorState {
     this._hfApplyTo = applyTo;
     this._hfParaIdx = 0;
     this._hfCharOffset = 0;
-    this._hfPreferredPage = preferredPage;
+    this._hfPreferredPage = this.resolveHeaderFooterPreviewPage(
+      sectionIdx,
+      preferredPage >= 0 ? preferredPage : (this.rect?.pageIndex ?? 0),
+    );
 
     // 선택 해제
     this.clearSelection();
@@ -1949,7 +1964,10 @@ export class CursorState {
     this._hfApplyTo = applyTo;
     this._hfParaIdx = 0;
     this._hfCharOffset = 0;
-    this._hfPreferredPage = targetPage >= 0 ? targetPage : (this.rect?.pageIndex ?? this._hfPreferredPage);
+    this._hfPreferredPage = this.resolveHeaderFooterPreviewPage(
+      sectionIdx,
+      targetPage >= 0 ? targetPage : (this.rect?.pageIndex ?? this._hfPreferredPage),
+    );
     this.clearSelection();
     this.updateRect();
   }
@@ -1958,7 +1976,12 @@ export class CursorState {
   setHfCursorPosition(paraIdx: number, charOffset: number, preferredPage = -1): void {
     this._hfParaIdx = paraIdx;
     this._hfCharOffset = charOffset;
-    if (preferredPage >= 0) this._hfPreferredPage = preferredPage;
+    if (preferredPage >= 0) {
+      this._hfPreferredPage = this.resolveHeaderFooterPreviewPage(
+        this._hfSectionIdx,
+        preferredPage,
+      );
+    }
     this.updateRect();
   }
 
@@ -2044,12 +2067,25 @@ export class CursorState {
 
     for (const multiplier of [1, 2, 4]) {
       try {
-        const hit = this.wasm.hitTestInHeaderFooter(
-          pageNum,
-          isHeader,
-          this.rect.x,
-          this.rect.y + delta * baseStep * multiplier,
-        );
+        const wasm = this.wasm as unknown as {
+          hitTestInHeaderFooterTarget?: WasmBridge['hitTestInHeaderFooterTarget'];
+          hitTestInHeaderFooter: WasmBridge['hitTestInHeaderFooter'];
+        };
+        const hit = typeof wasm.hitTestInHeaderFooterTarget === 'function'
+          ? wasm.hitTestInHeaderFooterTarget(
+              pageNum,
+              this._hfSectionIdx,
+              isHeader,
+              this._hfApplyTo,
+              this.rect.x,
+              this.rect.y + delta * baseStep * multiplier,
+            )
+          : wasm.hitTestInHeaderFooter(
+              pageNum,
+              isHeader,
+              this.rect.x,
+              this.rect.y + delta * baseStep * multiplier,
+            );
         if (
           hit.hit
           && hit.sectionIndex === this._hfSectionIdx

@@ -85,7 +85,12 @@ runTest('#4121 HF 선택 반복 페이지 scroll-in 투영', async ({ page }) =>
       startPage,
     );
     handler.cursor.setHfCursorPosition(0, 0, startPage);
-    handler.eventBus.emit('headerFooterModeChanged', 'header');
+    handler.eventBus.emit('headerFooterModeChanged', {
+      mode: 'header',
+      sectionIdx: handler.cursor.hfSectionIdx,
+      applyTo: handler.cursor.hfApplyTo,
+      previewPage: handler.cursor.hfPreferredPage,
+    });
     handler.viewportManager.setZoom(0.7);
     handler.focus();
     return { startPage, repeatPage, target };
@@ -510,7 +515,12 @@ runTest('#4121 HF 선택 반복 페이지 scroll-in 투영', async ({ page }) =>
     handler.afterEdit();
     handler.cursor.enterHeaderFooterMode(true, sectionIdx, 0, pages[0]);
     handler.cursor.setHfCursorPosition(0, 0, pages[0]);
-    handler.eventBus.emit('headerFooterModeChanged', 'header');
+    handler.eventBus.emit('headerFooterModeChanged', {
+      mode: 'header',
+      sectionIdx: handler.cursor.hfSectionIdx,
+      applyTo: handler.cursor.hfApplyTo,
+      previewPage: handler.cursor.hfPreferredPage,
+    });
     handler.updateCaret();
     handler.focus();
     return {
@@ -732,11 +742,44 @@ runTest('#4121 HF 선택 반복 페이지 scroll-in 투영', async ({ page }) =>
     const handler = window.__inputHandler;
     handler.cursor.switchHeaderFooterTarget(false, sectionIdx, 1, startPage);
     handler.cursor.setHfCursorPosition(0, 0, startPage);
-    handler.eventBus.emit('headerFooterModeChanged', 'footer');
-    handler.viewportManager.setScrollTop(handler.virtualScroll.getPageOffset(startPage));
+    handler.eventBus.emit('headerFooterModeChanged', {
+      mode: 'footer',
+      sectionIdx: handler.cursor.hfSectionIdx,
+      applyTo: handler.cursor.hfApplyTo,
+      previewPage: handler.cursor.hfPreferredPage,
+    });
+    handler.viewportManager.setScrollTop(
+      handler.virtualScroll.getPageOffset(handler.cursor.hfPreferredPage),
+    );
     handler.focus();
   }, { sectionIdx: matrixSetup.sectionIdx, startPage: activeParity[0].pageNum });
   await settle(page, 500);
+  const representativeEditing = await page.evaluate(() => {
+    const handler = window.__inputHandler;
+    const layer = document.querySelector(
+      `[data-rhwp-hf-edit-page="${handler.cursor.hfPreferredPage}"].is-representative`,
+    );
+    return {
+      preferredPage: handler.cursor.hfPreferredPage,
+      expectedPreviewPage: handler.wasm.getHeaderFooterPreviewPage(handler.cursor.hfSectionIdx),
+      label: document.querySelector('.tb-hf-label')?.textContent || '',
+      badge: layer?.querySelector('.hf-edit-badge')?.textContent || '',
+      hasPreviewCanvas: Boolean(layer?.querySelector('.hf-edit-preview-canvas')),
+      hasStrongRegion: Boolean(layer?.querySelector('.hf-edit-region.is-representative')),
+    };
+  });
+  assert(
+    representativeEditing.preferredPage === representativeEditing.expectedPreviewPage
+      && representativeEditing.preferredPage === matrixSetup.pages[0],
+    `짝수 꼬리말도 구역 첫 페이지에서 대표 편집한다 (${JSON.stringify(representativeEditing)})`,
+  );
+  assert(
+    representativeEditing.label.includes('꼬리말 · 짝수 쪽 편집 중')
+      && representativeEditing.badge === '꼬리말(짝수 쪽)'
+      && representativeEditing.hasPreviewCanvas
+      && representativeEditing.hasStrongRegion,
+    `대표 편집 타겟과 영역을 텍스트·강조로 표시한다 (${JSON.stringify(representativeEditing)})`,
+  );
   await page.keyboard.press('Home');
   await page.keyboard.down('Shift');
   await page.keyboard.press('End');
@@ -746,6 +789,10 @@ runTest('#4121 HF 선택 반복 페이지 scroll-in 투영', async ({ page }) =>
     window.__inputHandler.cursor.getHeaderFooterSelectionOrdered());
   assert(paritySelection?.start.applyTo === 1 && paritySelection.end.charOffset === 7,
     'Shift+End가 짝수 쪽 꼬리말 선택을 만든다');
+  assert(
+    await visibleSelectionProjectsToPage(page, representativeEditing.preferredPage),
+    '짝수 쪽 꼬리말 선택이 대표 편집 페이지에 투영된다',
+  );
 
   for (const target of activeParity) {
     await page.evaluate((pageNum) => {
@@ -755,8 +802,13 @@ runTest('#4121 HF 선택 반복 페이지 scroll-in 투영', async ({ page }) =>
     await settle(page, 500);
     assert(await visibleSelectionProjectsToPage(page, target.pageNum),
       `짝수 쪽 꼬리말 선택이 같은 정의의 ${target.pageNum + 1}쪽에 투영된다`);
+    const related = await page.evaluate((pageNum) => Boolean(document.querySelector(
+      `[data-rhwp-hf-edit-page="${pageNum}"].is-related .hf-edit-region.is-related`,
+    )), target.pageNum);
+    assert(related, `짝수 쪽 ${target.pageNum + 1}쪽은 실제 적용 영역으로 연관 표시된다`);
   }
   for (const target of otherParity) {
+    if (target.pageNum === representativeEditing.preferredPage) continue;
     await page.evaluate((pageNum) => {
       const handler = window.__inputHandler;
       handler.viewportManager.setScrollTop(handler.virtualScroll.getPageOffset(pageNum));
@@ -766,7 +818,10 @@ runTest('#4121 HF 선택 반복 페이지 scroll-in 투영', async ({ page }) =>
       `짝수 쪽 꼬리말 선택이 다른 홀수 정의의 ${target.pageNum + 1}쪽에는 투영되지 않는다`);
   }
 
-  const switchTarget = otherParity[0];
+  const switchTarget = otherParity.find(
+    target => target.pageNum !== representativeEditing.preferredPage,
+  );
+  assert(Boolean(switchTarget), '대표 페이지 밖에 홀수 꼬리말 적용 쪽이 있다');
   await page.evaluate((pageNum) => {
     const handler = window.__inputHandler;
     handler.viewportManager.setScrollTop(handler.virtualScroll.getPageOffset(pageNum));
@@ -788,15 +843,41 @@ runTest('#4121 HF 선택 반복 페이지 scroll-in 투영', async ({ page }) =>
       mode: handler.cursor.headerFooterMode,
       applyTo: handler.cursor.hfApplyTo,
       page: handler.cursor.hfPreferredPage,
+      previewPage: handler.wasm.getHeaderFooterPreviewPage(handler.cursor.hfSectionIdx),
+      label: document.querySelector('.tb-hf-label')?.textContent || '',
       selection: handler.cursor.getHeaderFooterSelectionOrdered(),
     };
   });
   assert(
     afterParitySwitch.mode === 'footer'
       && afterParitySwitch.applyTo === 2
-      && afterParitySwitch.page === switchTarget.pageNum
+      && afterParitySwitch.page === afterParitySwitch.previewPage
+      && afterParitySwitch.label.includes('홀수 쪽 편집 중')
       && afterParitySwitch.selection === null,
     `다른 홀짝 정의 클릭이 교차 선택 없이 target을 전환한다 (${JSON.stringify(afterParitySwitch)})`,
   );
   await screenshot(page, 'issue4121-stage4-odd-even-footer-switch');
+
+  const actualPreviewTarget = await page.evaluate(() => {
+    const handler = window.__inputHandler;
+    return handler.wasm.getHeaderFooterEditTarget(handler.cursor.hfPreferredPage, false);
+  });
+  await page.click('[data-cmd="page:headerfooter-close"]');
+  await settle(page, 250);
+  const exited = await page.evaluate(() => {
+    const handler = window.__inputHandler;
+    return {
+      inHeaderFooter: handler.cursor.isInHeaderFooter(),
+      overlayCount: document.querySelectorAll('[data-rhwp-hf-edit-page]').length,
+      toolbarHidden: document.querySelector('.tb-headerfooter-group')?.hidden,
+      actualTarget: handler.wasm.getHeaderFooterEditTarget(0, false),
+    };
+  });
+  assert(
+    !exited.inHeaderFooter
+      && exited.overlayCount === 0
+      && exited.toolbarHidden === true
+      && JSON.stringify(exited.actualTarget) === JSON.stringify(actualPreviewTarget),
+    `편집 종료는 preview를 거두고 실제 페이지 target을 바꾸지 않는다 (${JSON.stringify(exited)})`,
+  );
 });

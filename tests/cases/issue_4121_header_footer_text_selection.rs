@@ -33,7 +33,7 @@ fn header_text(doc: &HwpDocument) -> String {
 }
 
 #[test]
-fn selection_rects_span_header_paragraphs_and_reject_wrong_target() {
+fn selection_rects_span_header_paragraphs_and_reject_missing_preview_target() {
     let doc = header_with_two_paragraphs("ABCDE", "FGHIJ");
 
     let raw = doc
@@ -63,10 +63,11 @@ fn selection_rects_span_header_paragraphs_and_reject_wrong_target() {
     assert_eq!(hit["sectionIndex"], 0);
     assert_eq!(hit["applyTo"], 0);
 
-    let wrong = doc
-        .get_selection_rects_in_header_footer_native(0, true, 1, 0, 0, 1, 1, 3)
-        .expect("target 불일치는 정상적인 빈 결과");
-    assert_eq!(wrong, "[]");
+    assert!(
+        doc.get_selection_rects_in_header_footer_native(0, true, 1, 0, 0, 1, 1, 3)
+            .is_err(),
+        "대표 페이지라도 존재하지 않는 HF target은 거부해야 함"
+    );
 
     assert!(
         doc.get_selection_rects_in_header_footer_native(0, true, 0, 0, 0, 0, 1, 99)
@@ -135,10 +136,64 @@ fn odd_and_even_footer_rects_follow_each_pages_resolved_target() {
                 0,
                 1,
             )
-            .expect("inactive target은 빈 결과");
-        assert_eq!(wrong, "[]");
+            .expect("inactive target 선택 영역");
+        if page_num == 0 {
+            let wrong_rects: serde_json::Value =
+                serde_json::from_str(&wrong).expect("preview rect JSON");
+            assert!(
+                !wrong_rects.as_array().unwrap().is_empty(),
+                "구역 첫 페이지는 실제 active target과 달라도 선택한 HF를 대표 투영해야 함: {wrong}"
+            );
+        } else {
+            assert_eq!(wrong, "[]");
+        }
     }
     assert_eq!(seen, std::collections::BTreeSet::from([1, 2]));
+
+    let preview_raw = doc
+        .get_header_footer_preview_page_native(0)
+        .expect("대표 편집 페이지");
+    let preview: serde_json::Value = serde_json::from_str(&preview_raw).expect("preview JSON");
+    assert_eq!(preview["pageIndex"], 0);
+
+    let actual_before = doc
+        .get_header_footer_edit_target_native(0, false)
+        .expect("대표 페이지의 실제 target");
+    let even_cursor_raw = doc
+        .get_cursor_rect_in_header_footer_native(0, false, 1, 0, 2, 0)
+        .expect("짝수 꼬리말을 구역 첫 페이지에 가상 투영한 커서");
+    let even_cursor: serde_json::Value =
+        serde_json::from_str(&even_cursor_raw).expect("cursor JSON");
+    assert_eq!(even_cursor["pageIndex"], 0);
+    let hit_raw = doc
+        .hit_test_in_header_footer_target_native(
+            0,
+            0,
+            false,
+            1,
+            even_cursor["x"].as_f64().unwrap_or_default(),
+            even_cursor["y"].as_f64().unwrap_or_default() + 1.0,
+        )
+        .expect("대표 페이지의 명시적 짝수 target hit-test");
+    let hit: serde_json::Value = serde_json::from_str(&hit_raw).expect("hit JSON");
+    assert_eq!(hit["sectionIndex"], 0);
+    assert_eq!(hit["applyTo"], 1);
+    assert_eq!(
+        doc.get_header_footer_edit_target_native(0, false)
+            .expect("대표 투영 후 실제 target"),
+        actual_before,
+        "대표 편집 preview는 pagination active target을 바꾸면 안 됨"
+    );
+
+    let saved = doc.export_hwp().expect("preview 조회 후 저장");
+    let reparsed = HwpDocument::from_bytes(&saved).expect("preview 조회 후 재파스");
+    assert_eq!(
+        reparsed
+            .get_header_footer_edit_target_native(0, false)
+            .expect("재파스 실제 target"),
+        actual_before,
+        "비인쇄 preview는 저장/출력 의미를 바꾸면 안 됨"
+    );
 }
 
 #[test]

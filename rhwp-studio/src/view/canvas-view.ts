@@ -38,6 +38,15 @@ import {
   resolveActivePage,
   type ActivePageSnapshot,
 } from './active-page.ts';
+import {
+  headerFooterApplyToLabel,
+  parseHeaderFooterModeChanged,
+  type HeaderFooterModeState,
+} from '@/engine/header-footer-mode.ts';
+import {
+  headerFooterClipPath,
+  resolveHeaderFooterBandBox,
+} from './header-footer-edit-overlay.ts';
 
 /** 문서 교체 중 보여줄 빈 쪽 기본 크기(A4, zoom 1 기준 CSS px). 이전 문서 쪽 크기를 모를 때만 쓴다. */
 const BLANK_PAGE_FALLBACK_SIZE = { width: 794, height: 1123 };
@@ -68,6 +77,7 @@ export class CanvasView {
   private pages: PageInfo[] = [];
   private currentVisiblePages: number[] = [];
   private editingPageIndex: number | null = null;
+  private headerFooterEditState: HeaderFooterModeState | null = null;
   private activePageSnapshot: ActivePageSnapshot | null = null;
   private unsubscribers: (() => void)[] = [];
   private pendingTextEditRefreshes = new Map<number, PageRenderContext>();
@@ -122,6 +132,9 @@ export class CanvasView {
       }),
       eventBus.on('page-view-settings-changed', (payload) => {
         this.setPageViewSettings(payload);
+      }),
+      eventBus.on('headerFooterModeChanged', (payload) => {
+        this.handleHeaderFooterModeChanged(payload);
       }),
       eventBus.on('document-page-invalidated', (payload) => {
         void this.refreshInvalidatedPageForMutation(payload);
@@ -464,7 +477,7 @@ export class CanvasView {
       const canvas = this.canvasPool.getCanvas(pageIdx);
       if (canvas) this.positionPageElement(canvas, pageIdx);
       this.scrollContent.querySelectorAll<HTMLElement>(
-        `[data-rhwp-overlay-page="${pageIdx}"], [data-rhwp-grid-page="${pageIdx}"]`,
+        `[data-rhwp-overlay-page="${pageIdx}"], [data-rhwp-grid-page="${pageIdx}"], [data-rhwp-hf-edit-page="${pageIdx}"]`,
       ).forEach((element) => this.positionPageElement(element, pageIdx));
     }
   }
@@ -513,7 +526,132 @@ export class CanvasView {
     this.schedulePrefetchPages(prefetchPages.filter((pageIdx) => !visibleSet.has(pageIdx)));
 
     this.currentVisiblePages = visiblePages;
+    this.renderHeaderFooterEditOverlays();
     this.updateActivePageSnapshot();
+  }
+
+  /** HF 타겟을 구역 첫 페이지에 가상 투영하고 실제 적용 쪽을 함께 표시한다. */
+  private handleHeaderFooterModeChanged(payload: unknown): void {
+    const state = parseHeaderFooterModeChanged(payload);
+    if (state === 'none') {
+      this.headerFooterEditState = null;
+      this.removeHeaderFooterEditOverlays();
+      return;
+    }
+
+    this.headerFooterEditState = state;
+    if (!this.currentVisiblePages.includes(state.previewPage)) {
+      const pageTop = this.virtualScroll.getPageOffset(state.previewPage);
+      this.viewportManager.setScrollTop(Math.max(0, pageTop - this.virtualScroll.getPageGap()));
+      this.updateVisiblePages();
+      return;
+    }
+    this.renderHeaderFooterEditOverlays();
+  }
+
+  private renderHeaderFooterEditOverlays(force = false): void {
+    const state = this.headerFooterEditState;
+    if (!state || this.pages.length === 0) {
+      this.removeHeaderFooterEditOverlays();
+      return;
+    }
+
+    const desiredPages = new Set<number>();
+    for (const pageIdx of this.canvasPool.activePages) {
+      const page = this.pages[pageIdx];
+      if (!page) continue;
+      const isPreview = pageIdx === state.previewPage;
+      let isAppliedPage = false;
+      try {
+        const target = this.wasm.getHeaderFooterEditTarget(pageIdx, state.mode === 'header');
+        isAppliedPage = target.sectionIndex === state.sectionIdx && target.applyTo === state.applyTo;
+      } catch {
+        // 현재 렌더된 HF가 없는 쪽은 연관 표시 대상에서 뺀다.
+      }
+      if (!isPreview && !isAppliedPage) continue;
+      desiredPages.add(pageIdx);
+
+      const zoom = this.viewportManager.getZoom();
+      const overlayKey = [
+        state.mode,
+        state.sectionIdx,
+        state.applyTo,
+        isPreview ? 'representative' : 'related',
+        zoom,
+      ].join(':');
+      const selector = `[data-rhwp-hf-edit-page="${pageIdx}"]`;
+      const existing = this.scrollContent.querySelector<HTMLElement>(selector);
+      if (!force && existing?.dataset.hfOverlayKey === overlayKey) {
+        this.positionPageElement(existing, pageIdx);
+        continue;
+      }
+      existing?.remove();
+
+      const layer = document.createElement('div');
+      layer.className = `hf-edit-surface-layer ${isPreview ? 'is-representative' : 'is-related'}`;
+      layer.dataset.rhwpHfEditPage = String(pageIdx);
+      layer.dataset.hfApplyTo = String(state.applyTo);
+      layer.dataset.hfMode = state.mode;
+      layer.dataset.hfOverlayKey = overlayKey;
+      layer.setAttribute('aria-hidden', 'true');
+      layer.style.width = `${page.width * zoom}px`;
+      layer.style.height = `${page.height * zoom}px`;
+      this.positionPageElement(layer, pageIdx);
+
+      const band = resolveHeaderFooterBandBox(page, state.mode === 'header');
+      if (isPreview) {
+        const previewCanvas = document.createElement('canvas');
+        previewCanvas.className = 'hf-edit-preview-canvas';
+        const rawDpr = window.devicePixelRatio || 1;
+        const renderScale = clampRenderScale(page, zoom * rawDpr);
+        const dpr = renderScale / (zoom > 0 ? zoom : 1);
+        try {
+          this.wasm.renderHeaderFooterEditPreviewToCanvas(
+            pageIdx,
+            state.sectionIdx,
+            state.mode === 'header',
+            state.applyTo,
+            previewCanvas,
+            renderScale,
+          );
+          previewCanvas.style.width = `${previewCanvas.width / dpr}px`;
+          previewCanvas.style.height = `${previewCanvas.height / dpr}px`;
+          previewCanvas.style.clipPath = headerFooterClipPath(page, band, zoom);
+          layer.appendChild(previewCanvas);
+        } catch (error) {
+          console.error('[CanvasView] HF 대표 편집 preview 렌더링 실패:', error);
+        }
+      }
+
+      const region = document.createElement('div');
+      region.className = `hf-edit-region ${isPreview ? 'is-representative' : 'is-related'}`;
+      region.style.left = `${band.x * zoom}px`;
+      region.style.top = `${band.y * zoom}px`;
+      region.style.width = `${band.width * zoom}px`;
+      region.style.height = `${band.height * zoom}px`;
+      layer.appendChild(region);
+
+      if (isPreview) {
+        const kind = state.mode === 'header' ? '머리말' : '꼬리말';
+        const badge = document.createElement('span');
+        badge.className = 'hf-edit-badge';
+        badge.textContent = `${kind}(${headerFooterApplyToLabel(state.applyTo)})`;
+        badge.style.left = `${band.x * zoom}px`;
+        badge.style.top = `${band.y * zoom}px`;
+        layer.appendChild(badge);
+      }
+
+      this.scrollContent.appendChild(layer);
+    }
+    this.scrollContent.querySelectorAll<HTMLElement>('[data-rhwp-hf-edit-page]')
+      .forEach((element) => {
+        const pageIdx = Number(element.dataset.rhwpHfEditPage);
+        if (!desiredPages.has(pageIdx)) element.remove();
+      });
+  }
+
+  private removeHeaderFooterEditOverlays(): void {
+    this.scrollContent.querySelectorAll('[data-rhwp-hf-edit-page]').forEach((element) => element.remove());
   }
 
   private pageIndexFromPayload(payload: unknown): number | null {
@@ -870,7 +1008,7 @@ export class CanvasView {
         : 1;
       this.applyZoomPreviewBox(canvas, pageIdx, scale);
       this.scrollContent.querySelectorAll<HTMLElement>(
-        `[data-rhwp-overlay-page="${pageIdx}"], [data-rhwp-grid-page="${pageIdx}"]`,
+        `[data-rhwp-overlay-page="${pageIdx}"], [data-rhwp-grid-page="${pageIdx}"], [data-rhwp-hf-edit-page="${pageIdx}"]`,
       ).forEach((element) => this.applyZoomPreviewBox(element, pageIdx, scale));
     }
   }
@@ -1024,7 +1162,9 @@ export class CanvasView {
     if (!this.renderCanvas(pageIndex, canvas, renderContext)) {
       this.canvasPool.release(pageIndex);
       this.updateVisiblePages();
+      return;
     }
+    this.renderHeaderFooterEditOverlays(true);
   }
 
   private cancelPendingTextEditRefresh(pageIndex?: number): void {
@@ -1074,6 +1214,7 @@ export class CanvasView {
     this.releaseAllRenderedPages();
     this.currentVisiblePages = [];
     this.editingPageIndex = null;
+    this.headerFooterEditState = null;
     this.activePageSnapshot = null;
     if (hadActivePage) this.eventBus.emit('active-page-changed', null);
     if (hadFocusedPage) this.eventBus.emit('focused-page-changed', null);
@@ -1085,6 +1226,7 @@ export class CanvasView {
   private releaseAllRenderedPages(): void {
     this.pageRenderer.resetImageRetryState();
     this.pageRenderer.removeAllPageLayers(this.scrollContent);
+    this.removeHeaderFooterEditOverlays();
     this.removeAllGridOverlays();
     this.canvasPool.releaseAll();
   }

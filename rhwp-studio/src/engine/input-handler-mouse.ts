@@ -6,6 +6,7 @@ import { chartTargetFromSelection, matchChartRef } from '@/core/chart-data-targe
 import * as _connector from './input-handler-connector';
 import { MoveLineEndpointCommand, SetZOrderCommand } from './command';
 import { computeLineEndpointRecord } from './object-drag-record';
+import { emitHeaderFooterModeChanged } from './header-footer-mode';
 
 function protectedCellKey(hit: any): string | null {
   if (!hit || hit.isTextBox) return null;
@@ -808,12 +809,18 @@ export function onClick(this: any, e: MouseEvent): void {
       if (!hfHit.hit) {
         // 본문 영역 클릭 → 편집 모드 탈출 (스크롤 없이 — 이후 hitTest에서 커서 재배치)
         this.cursor.exitHeaderFooterMode();
-        this.eventBus.emit('headerFooterModeChanged', 'none');
+        emitHeaderFooterModeChanged(this.eventBus, this.cursor);
         // 본문 hitTest로 계속 진행
       } else {
         const clickedIsHeader = hfHit.isHeader ?? (this.cursor.headerFooterMode === 'header');
-        const clickedSection = hfHit.sectionIndex ?? this.cursor.hfSectionIdx;
-        const clickedApplyTo = hfHit.applyTo ?? this.cursor.hfApplyTo;
+        const isPreviewSurface = pageIdx === this.cursor.hfPreferredPage
+          && clickedIsHeader === (this.cursor.headerFooterMode === 'header');
+        const clickedSection = isPreviewSurface
+          ? this.cursor.hfSectionIdx
+          : (hfHit.sectionIndex ?? this.cursor.hfSectionIdx);
+        const clickedApplyTo = isPreviewSurface
+          ? this.cursor.hfApplyTo
+          : (hfHit.applyTo ?? this.cursor.hfApplyTo);
         const sameTarget = this.cursor.headerFooterMode === (clickedIsHeader ? 'header' : 'footer')
           && this.cursor.hfSectionIdx === clickedSection
           && this.cursor.hfApplyTo === clickedApplyTo;
@@ -824,12 +831,14 @@ export function onClick(this: any, e: MouseEvent): void {
             clickedApplyTo,
             pageIdx,
           );
-          this.eventBus.emit('headerFooterModeChanged', clickedIsHeader ? 'header' : 'footer');
+          emitHeaderFooterModeChanged(this.eventBus, this.cursor);
         }
 
         // [Task #825] 머리말/꼬리말 편집 모드 — 그림 hit-test 우선, miss 시 텍스트 hit.
         // 머리말 그림은 ImageNode 에 header_footer_ref 동반되어 picHit 정상 반환.
-        const picHit = this.findPictureAtClick(pageIdx, pageX, pageY);
+        const picHit = isPreviewSurface
+          ? null
+          : this.findPictureAtClick(pageIdx, pageX, pageY);
         if (picHit && (picHit.type === 'image' || picHit.type === 'shape' || picHit.type === 'line' || picHit.type === 'ole')) {
           // 머리말 안 그림 객체 선택 → context menu 에 "개체 속성" 표시 가능
           this.cursor.clearSelection();
@@ -853,9 +862,11 @@ export function onClick(this: any, e: MouseEvent): void {
         }
         // 머리말/꼬리말 영역 클릭 → 내부 텍스트 히트테스트로 커서 이동
         try {
-          const inHfHit = this.wasm.hitTestInHeaderFooter(
+          const inHfHit = this.wasm.hitTestInHeaderFooterTarget(
             pageIdx,
+            clickedSection,
             clickedIsHeader,
+            clickedApplyTo,
             pageX,
             pageY,
           );
@@ -1354,7 +1365,7 @@ export function onDblClick(this: any, e: MouseEvent): void {
               this.wasm.createHeaderFooter(sectionIdx, isHeader, applyTo);
             }
             this.cursor.enterHeaderFooterMode(isHeader, sectionIdx, applyTo, pageIdx);
-            this.eventBus.emit('headerFooterModeChanged', isHeader ? 'header' : 'footer');
+            emitHeaderFooterModeChanged(this.eventBus, this.cursor);
             this.updateCaret();
             this.textarea.focus();
             return;

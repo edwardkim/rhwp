@@ -48,6 +48,7 @@ import { DeferredPaginationRunner } from './deferred-pagination-runner';
 import { tableObjectClipboardTarget } from './table-object-clipboard-target';
 import { clearObjectEditingPage } from './object-selection-page';
 import { showInitialCaretAndPublishFocus } from './initial-caret-focus';
+import { emitHeaderFooterModeChanged } from './header-footer-mode';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 const DRAG_SCROLL_EDGE_PX = 48;
@@ -1514,9 +1515,11 @@ export class InputHandler {
     try {
       return {
         pageIdx: pagePoint.pageIdx,
-        hit: this.wasm.hitTestInHeaderFooter(
+        hit: this.wasm.hitTestInHeaderFooterTarget(
           pagePoint.pageIdx,
+          this.cursor.hfSectionIdx,
           this.cursor.headerFooterMode === 'header',
+          this.cursor.hfApplyTo,
           pagePoint.pageX,
           pagePoint.pageY,
         ),
@@ -2899,7 +2902,7 @@ export class InputHandler {
           );
         }
         // 진입/전환 양쪽 모두 mode-change 를 알려 툴바/오버레이가 stale 하지 않게 한다.
-        this.eventBus.emit('headerFooterModeChanged', ctx.isHeader ? 'header' : 'footer');
+        emitHeaderFooterModeChanged(this.eventBus, this.cursor);
       }
       this.cursor.setHfCursorPosition(ctx.paraIdx, ctx.charOffset, ctx.preferredPage);
       return;
@@ -2908,7 +2911,7 @@ export class InputHandler {
     if (ctx?.mode === 'footnote') {
       if (this.cursor.isInHeaderFooter()) {
         this.cursor.exitHeaderFooterMode();
-        this.eventBus.emit('headerFooterModeChanged', 'none');
+        emitHeaderFooterModeChanged(this.eventBus, this.cursor);
       }
       const sameTarget = this.cursor.isInFootnote()
         && this.cursor.fnSectionIdx === ctx.sectionIdx
@@ -2926,7 +2929,7 @@ export class InputHandler {
     // 본문 커맨드 — HF/FN 모드였으면 빠져나오고 본문 커서 이동.
     if (this.cursor.isInHeaderFooter()) {
       this.cursor.exitHeaderFooterMode();
-      this.eventBus.emit('headerFooterModeChanged', 'none');
+      emitHeaderFooterModeChanged(this.eventBus, this.cursor);
     }
     if (this.cursor.isInFootnote()) {
       this.cursor.exitFootnoteMode();
