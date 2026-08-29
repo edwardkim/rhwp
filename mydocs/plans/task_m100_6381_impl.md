@@ -5,7 +5,7 @@
 - **작성일**: 2026-08-29 KST
 - **작업 브랜치**: `task_m100_6381-test-caption-false-pass`
 - **착수 기준**: `upstream/devel@2bcf9b261c3b761d114bc2b3a35ed85ccd1e461e`
-- **현재 기준**: `upstream/devel@97c4d71550f24182f920d23c0f65d4a6371a6e48`
+- **현재 기준**: `upstream/devel@f5440811042f9c5ab7580d3a64204cf1d1e39dd8`
 - **구현 상태**: fail-closed 구현과 최신 devel 기준 전체 로컬 검증 완료
 
 ## 1. 구현 불변식
@@ -102,4 +102,6 @@ integration suite 준비가 필요한 review worktree 검증에서는 먼저
   통과했다. 상세 실행 근거는 [Stage 3 보고](../working/task_m100_6381_stage3.md)에 기록했다.
 - source-side test 정책, format, manifest, Markdown link와 diff 검사를 모두 통과했고 generated
   suite·manifest와 로컬 출력물은 제출 diff에 포함하지 않았다.
+- PR 게시 직전 이동한 `upstream/devel@f54408110`도 merge commit `143e3032d`로 반영했다. 새 generated
+  배정 `regression_suite_018`에서 focused 3/3, clippy와 전체 integration 8,660/8,660을 재통과했다.
 - remote push와 Draft PR 생성은 별도 승인 게이트로 남긴다.

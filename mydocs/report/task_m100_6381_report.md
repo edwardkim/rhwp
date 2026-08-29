@@ -4,9 +4,9 @@
 - **브랜치**: `task_m100_6381-test-caption-false-pass`
 - **보고일**: 2026-08-30 KST
 - **착수 기준**: `upstream/devel@2bcf9b261c3b761d114bc2b3a35ed85ccd1e461e`
-- **최신 기준**: `upstream/devel@97c4d71550f24182f920d23c0f65d4a6371a6e48`
-- **검증 기준 HEAD**: `49d0a61ea805f636b7b0da25190db9d491e4f63a`
-- **결과 상태**: 구현·최신 기준 전체 로컬 검증 완료, remote push·Draft PR 생성 승인 대기
+- **최신 기준**: `upstream/devel@f5440811042f9c5ab7580d3a64204cf1d1e39dd8`
+- **검증 기준 HEAD**: `143e3032d9c736caade605db3cbfc2cc2748ebb5`
+- **결과 상태**: 구현·최신 기준 전체 로컬 검증 완료, remote push·Draft PR 생성 승인 완료
 
 ## 1. 해결 결과
 
@@ -52,16 +52,18 @@ repository에 추가하지 않는다.
 
 장기 검증 전에 `upstream/devel`이 5개 commit 이동한 것을 확인했다. picture edit module 관련 upstream
 변경과 직접 경로 충돌이 없음을 확인하고 dry merge 뒤 merge commit `49d0a61ea`로
-`upstream/devel@97c4d7155`를 반영했다. 충돌이나 추가 제품 보정은 없었다.
+`upstream/devel@97c4d7155`를 반영했다. PR 게시 승인 뒤 장기 baseline test 분할 3개 commit이 더
+반영되어 `upstream/devel@f54408110`을 merge commit `143e3032d`로 추가 반영했다. 두 번 모두 충돌이나
+추가 제품 보정은 없었고 각 기준에서 focused·clippy·전체 integration을 다시 실행했다.
 
 ## 5. 검증 결과
 
 | 게이트 | 결과 |
 | --- | --- |
-| focused nextest | 3/3 pass, run `b54f8ddf-6ab7-45ba-96ee-e3ac7b547fa8` |
+| focused nextest | 3/3 pass, run `9178a2dd-86d3-4842-a44b-cfe6e6132b96` |
 | `cargo clippy --locked --all-targets ... -- -D warnings` | 통과 |
-| 전체 integration nextest | 8,636/8,636 pass, 43 skipped, 7 slow |
-| 전체 nextest run | `a70f4a26-f5f2-44ac-82e0-e8ffb5d7d84f` |
+| 전체 integration nextest | 8,660/8,660 pass, 43 skipped, 4 slow |
+| 전체 nextest run | `f5122360-2c28-47fa-a8a6-0824129d7d47` |
 | integration manifest | 1,032 sources, 4,533 attrs, 48/48 targets |
 | source-side unit tier | 4,221 tests, 299 modules, 정책 검사 통과 |
 | `cargo fmt --all -- --check` | 통과 |
@@ -74,5 +76,5 @@ generated suite·manifest와 `target/`, `output/`은 ignored 검증 산출물이
 계획한 all-fail·partial-fail·all-pass 경계, fail-closed 구현, CLI 문서와 최신 devel 전체 회귀를 모두
 완료했다. 구현 범위 밖의 renderer·model·workflow 변경 없이 실제 false-pass만 차단했다.
 
-현재까지 원격 변경은 #6381 등록과 착수 댓글뿐이다. 작업 branch는 아직 push하지 않았고 PR도 만들지
-않았다. 다음 단계는 작업지시자의 별도 승인 후 remote branch를 push하고 Draft PR을 생성하는 것이다.
+현재까지 원격 변경은 #6381 등록과 착수 댓글뿐이다. 작업지시자가 remote branch push와 Draft PR 생성을
+승인했으며 최신 기준 검증 결과를 checkpoint한 뒤 게시한다.

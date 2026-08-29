@@ -1,9 +1,9 @@
 # Task M100 #6381 Stage 3 완료보고 — 최신 devel 전체 검증
 
 - **이슈**: [#6381](https://github.com/edwardkim/rhwp/issues/6381)
-- **최신 기준**: `upstream/devel@97c4d71550f24182f920d23c0f65d4a6371a6e48`
-- **검증 기준 HEAD**: `49d0a61ea805f636b7b0da25190db9d491e4f63a`
-- **상태**: 최신 기준 전체 로컬 검증 완료, remote push·Draft PR 생성 승인 대기
+- **최신 기준**: `upstream/devel@f5440811042f9c5ab7580d3a64204cf1d1e39dd8`
+- **검증 기준 HEAD**: `143e3032d9c736caade605db3cbfc2cc2748ebb5`
+- **상태**: 최신 기준 전체 로컬 검증 완료, remote push·Draft PR 생성 승인 완료
 
 ## 1. 최신 devel 반영
 
@@ -74,8 +74,26 @@ git diff --check
 `tests/generated/`, `tests/suites/manifest.json`, `target/`, `output/`은 로컬 검증 산출물로 ignored 상태이며
 stage하거나 제출 diff에 포함하지 않았다.
 
-## 5. Stage 3 판정
+## 5. PR 게시 직전 재기준화
+
+remote push·Draft PR 생성 승인 뒤 `upstream/devel`이 `97c4d7155`에서 `f54408110`으로 3개 commit 더
+이동한 것을 확인했다. 추가 변경은 장기 baseline test 분할과 관련 문서였으며 #6381 source와 직접 경로
+충돌은 없었다. dry merge tree `c9a4ab33a9a7ea8ca52f21fc284f590320c9ff66`을 확인하고 merge commit
+`143e3032d`로 반영했다.
+
+generated target이 `regression_suite_018`로 이동해 현재 manifest 배정으로 다시 검증했다.
+
+| 게이트 | 최신 기준 결과 |
+| --- | --- |
+| focused nextest | 3/3 pass, run `9178a2dd-86d3-4842-a44b-cfe6e6132b96` |
+| clippy | `-D warnings` 통과 |
+| 전체 integration nextest | 8,660/8,660 pass, 43 skipped, 4 slow, 177.007초 |
+| 전체 nextest run | `f5122360-2c28-47fa-a8a6-0824129d7d47` |
+| manifest | 1,032 sources / 4,533 attrs / 48/48 targets / weight 786,188..791,783 |
+
+## 6. Stage 3 판정
 
 #6381의 fail-closed 구현은 최신 devel의 picture edit 변경과 함께 focused·clippy·전체 integration에서 모두
 통과했다. renderer·layout·document model·Render Diff workflow 변경이 없어 별도 시각 검증 대상은 아니다.
-로컬 구현·검증은 완료됐고, 다음 단계는 별도 승인 뒤 remote branch push와 Draft PR 생성이다.
+로컬 구현·검증은 최신 PR 기준에서도 완료됐고, 작업지시자가 승인한 remote branch push와 Draft PR
+생성 단계로 진행한다.

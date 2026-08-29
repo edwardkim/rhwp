@@ -36,7 +36,7 @@ Render Diff workflow와 공개 CLI schema도 변경하지 않습니다.
 ## 검증
 
 - [x] focused nextest: 3/3 pass
-- [x] 전체 integration nextest: 8,636/8,636 pass, 43 skipped
+- [x] 전체 integration nextest: 8,660/8,660 pass, 43 skipped
 - [x] `cargo clippy --locked --all-targets --target-dir target/pr-review -- -D warnings`
 - [x] `cargo fmt --all -- --check`
 - [x] integration manifest: 1,032 sources / 4,533 attrs / 48/48 targets
@@ -52,5 +52,5 @@ Closes #6381
 - base: `edwardkim/rhwp:devel`
 - head: `postmelee:task_m100_6381-test-caption-false-pass`
 - 상태: Draft
-- remote push와 PR 생성은 작업지시자 승인 뒤 수행한다.
+- 작업지시자가 remote push와 Draft PR 생성을 승인했다.
 - 실제 PR 번호가 생기면 PR 번호 기반 trailing review 문서·commit은 별도 단계에서 반영한다.
