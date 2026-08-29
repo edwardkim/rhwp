@@ -17,7 +17,11 @@
     "upstreamDevel": "3dc1fd382e0b",
     "ahead": 19,
     "behind": 17,
-    "overlapDetected": true,
+    "tipDiffTouchedQ3Paths": true,
+    "bilateralOverlapPaths": [
+      "mydocs/orders/20260829.md"
+    ],
+    "productSourceOverlapDetected": false,
     "requalificationRequiredBeforeQ3E1": true
   },
   "planAmendment": {
@@ -96,7 +100,8 @@
     "privateCorpusUsed": false,
     "hyperVOrHancomOracleUsed": false
   },
-  "next": "approve-q3-e0-latest-devel-merge-and-requalification-plan",
+  "requalificationEvidence": "mydocs/tech/investigations/issue-4969/w10_q3_e0_requalification.json",
+  "next": "approve-latest-devel-sync-before-q3-e1",
   "nextSlice": "Q3-E1-reversible-owner-and-strict-native-contract",
   "nextSliceApproved": false,
   "commitCreated": true,

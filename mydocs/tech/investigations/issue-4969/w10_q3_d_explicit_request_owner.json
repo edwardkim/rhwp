@@ -100,7 +100,7 @@
     "privateCorpusUsed": false,
     "hyperVOrHancomOracleUsed": false
   },
-  "next": "approve-q3-e0-latest-devel-merge-and-requalification-plan",
+  "next": "approve-latest-devel-sync-before-q3-e1",
   "nextSlice": "Q3-E-bounded-atomic-activation-and-final-qualification",
   "nextSliceApproved": false,
   "commitCreated": true,
