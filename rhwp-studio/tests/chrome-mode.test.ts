@@ -1,4 +1,5 @@
 import test from 'node:test';
+import { codeOnly } from './support/source-guard.ts';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
@@ -82,7 +83,7 @@ test('main은 embed에서 수명주기 커맨드 등록만 거르고 메뉴는 �
     /if \(chromeMode !== 'embed'\) await offerAutosaveRecoveryIfIdle\(\);/,
   );
   // 시작 시 빈 문서도 호스트가 감지할 수 없는 문서 교체이므로 embed에서는 열지 않는다.
-  assert.match(mainSource, /async function openBlankDocumentIfIdle[\s\S]*?if \(chromeMode === 'embed'\) return;/);
+  assert.match(codeOnly(mainSource), /async function openBlankDocumentIfIdle[\s\S]*?if \(chromeMode === 'embed'\) return;/);
   // index.html은 수정하지 않는다 — 기본 full 프로파일의 정적 마크업 검사가 그대로 유효하다.
   const indexHtml = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
   assert.match(indexHtml, /data-cmd="file:save"/);
@@ -212,7 +213,7 @@ test('embed의 unsaved guard는 로컬 저장 선택지를 막고 자동 discard
   assert.match(fileSource, /if \(!allowLocalSave\) return false;/);
 
   const mainSource = readFileSync(new URL('../src/main.ts', import.meta.url), 'utf8');
-  assert.match(mainSource, /allowLocalSave: chromeMode !== 'embed'/);
+  assert.match(codeOnly(mainSource), /allowLocalSave: chromeMode !== 'embed'/);
 
   // 다이얼로그는 저장 비활성 사유를 받아 표시하고, '저장 안 함'/'취소' 선택은
   // 사용자에게 남는다(자동 discard 없음).

@@ -117,3 +117,31 @@ export function matchesOutside(src: string, pattern: RegExp, ranges: string[]): 
   }
   return outside;
 }
+
+/**
+ * [#6335] 주석만 공백으로 치환한 사본 — 코드·문자열·줄 구조(개행)는 보존한다.
+ * 전문(full-source) pin 이 주석 속 선언 인용에 첫-매치되는 오염을 막는 데 쓴다
+ * (#6333 리뷰에서 적발된 계급의 전수 일반화). 문자열을 매치하는 pin 이 많아
+ * 문자열은 보존이 관건이다. CSS 등 비 TS/JS 소스에는 쓰지 않는다.
+ */
+export function codeOnly(src: string): string {
+  let out = '';
+  for (let i = 0; i < src.length; ) {
+    const ch = src[i];
+    if (ch === '/' && (src[i + 1] === '/' || src[i + 1] === '*')) {
+      const end = skipNonCode(src, i);
+      for (let j = i; j < end; j += 1) out += src[j] === String.fromCharCode(10) ? src[j] : ' ';
+      i = end;
+      continue;
+    }
+    if (ch === "'" || ch === '"' || ch === '`') {
+      const end = skipNonCode(src, i);
+      out += src.slice(i, end);
+      i = end;
+      continue;
+    }
+    out += ch;
+    i += 1;
+  }
+  return out;
+}

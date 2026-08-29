@@ -20603,6 +20603,13 @@ impl TypesetEngine {
         // [#5828] landscape short-row 흡수가 직전에 받은 행의 높이. 정상 적합
         // 행이 나오면 리셋된다 — 같은 높이 행이 연속 흡수되는 것을 막는다.
         let mut bleed_absorbed_row_height: Option<f64> = None;
+        // [#6307] 이 표의 저장 사다리가 물리 쪽 분할(셀 내부 vpos reset)을 하나라도
+        // 기록했는지 — 기록한 표(한글 실저장: 편람 등)는 경계 행 흡수(#1672)를 저장
+        // 신뢰 그대로 두고, 저장이 분할에 대해 침묵하는 표(hwpctl_* 등 행별 독립
+        // 사다리)만 한글 2022 신규 조판처럼 본문 하한에서 행내 분할한다. 편람 22개
+        // 경계는 전부 reset 기록이 있는 표였고(384쪽 계약 보존), hwpctl 원장 표는
+        // 기록이 없다 — RHWP_DIAG_6307 실측.
+        let table_storage_declares_splits = rowbreak_table_has_internal_saved_vpos_reset(table);
         while r < row_count {
             let cs_before = if r > cursor_row { cs } else { 0.0 };
             // [#3820 Stage 76] 직전 fragment가 내용은 모두 소비한 채 남긴
@@ -21236,7 +21243,11 @@ impl TypesetEngine {
             // Keep the baseline whole-row allowance separate from the larger
             // short-row allowance, and never apply the latter to rowspan or a
             // row containing an internal saved page boundary.
-            if landscape_rowbreak_bleed
+            // 흡수 형상(연속 조각 경계)이되 행내 분할 가능해 흡수 대신 분할로
+            // 돌린 행 — 아래 고아 가드가 이 행의 정상 컷(첫 줄 유지)을 content
+            // 높이 미달로 기각해 행 통째 이월로 되돌리지 않도록 표시한다.
+            let mut landscape_boundary_splittable = false;
+            let landscape_whole_row_shape = landscape_rowbreak_bleed
                 && mt.allows_row_break_split()
                 && is_continuation
                 && header_overhead > 0.0
@@ -21248,7 +21259,17 @@ impl TypesetEngine {
                 && !bleed_absorbed_row_height
                     .is_some_and(|prev| (prev - row_total).abs() < 0.5)
                 && consumed + cs_before + row_total
-                    <= avail_for_rows + landscape_whole_row_tolerance
+                    <= avail_for_rows + landscape_whole_row_tolerance;
+            if landscape_whole_row_shape
+                // [#6307] 행내 분할 가능한 다줄 행은 얹지 않는다 — 한컴 2022 는 이런 행을
+                // 본문 하한에서 가른다 (hwpctl_ParameterSetID p11 실측: 2줄 행
+                // 통짜 흡수 시 +25.7px 로 바탕쪽 로고 밴드까지 침범). 흡수는
+                // 가를 수 없는 행(단일 줄·이미지 셀)의 경계 구제만 맡고,
+                // 가를 수 있는 행은 아래 인트라-분할이 한컴처럼 첫 줄(들)만
+                // 남긴다 (landscape_boundary_band_keep).
+                && !(can_intra_split
+                    && mt.is_row_splittable(r)
+                    && !table_storage_declares_splits)
             {
                 bleed_absorbed_row_height = Some(row_total);
                 consumed += cs_before + row_total;
@@ -21291,11 +21312,36 @@ impl TypesetEngine {
                 && consumed + cs_before + row_total
                     <= avail_for_rows + landscape_short_row_tolerance
             {
-                bleed_absorbed_row_height = Some(row_total);
-                consumed += cs_before + row_total;
-                r += 1;
-                end_row = r;
-                continue;
+                // [#6307] 행내 분할 가능한 다줄 행은 whole-row 분기와 같은 이유로 얹지
+                // 않는다 — 한컴은 본문 하한에서 가른다 (hwpctl_ParameterSetID p11).
+                if !(can_intra_split && mt.is_row_splittable(r) && !table_storage_declares_splits) {
+                    bleed_absorbed_row_height = Some(row_total);
+                    consumed += cs_before + row_total;
+                    r += 1;
+                    end_row = r;
+                    continue;
+                }
+                landscape_boundary_splittable = true;
+            }
+            if landscape_whole_row_shape
+                && can_intra_split
+                && mt.is_row_splittable(r)
+                && !table_storage_declares_splits
+            {
+                landscape_boundary_splittable = true;
+            }
+            if landscape_boundary_splittable && std::env::var("RHWP_DIAG_6307").is_ok() {
+                eprintln!(
+                    "DIAG6307 r={} row_total={:.1} band={:.1} avail={:.1} hdr={:.1} reset={} tbl_reset={} rows={}",
+                    r,
+                    row_total,
+                    avail_for_rows - consumed - cs_before,
+                    avail_for_rows,
+                    header_overhead,
+                    rowbreak_row_has_internal_saved_vpos_reset(table, r),
+                    rowbreak_table_has_internal_saved_vpos_reset(table),
+                    row_count,
+                );
             }
             // 행 r 이 예산 초과 — 인트라-분할 시도.
             // [Task #77] 분할 불가 행(이미지 셀 등)은 통째 배치 / 다음 페이지.
@@ -21683,8 +21729,16 @@ impl TypesetEngine {
             // native short parent에만 적용한다. 마지막 경우는 PDF가 border·label과
             // 함께 보이는 첫 child line을 현재 쪽 owner로 고정하지만 content-only
             // 높이가 25px에 근소하게 못 미치는 76076 p81→82 구조다.
+            // [#6307 landscape 경계 분할] 흡수 형상에서 분할로 돌린 행의 컷은 한컴처럼
+            // 본문 하한 밴드로 남는다 — 남는 밴드(avail-consumed ≥ 고아 기준)가
+            // 실제 painted 높이이므로 content-only 기각을 적용하지 않는다.
+            let landscape_boundary_band_keep = landscape_boundary_splittable
+                && res.consumed_height > 0.5
+                && res.end_cut.iter().any(|units| *units > 0)
+                && (avail_for_rows - consumed - cs_before) >= MIN_TOP_KEEP_PX;
             if r > cursor_row
                 && !cellbreak_complete_unit_keep
+                && !landscape_boundary_band_keep
                 && !row_split_meets_min_top_keep(
                     res.consumed_height,
                     split_total,

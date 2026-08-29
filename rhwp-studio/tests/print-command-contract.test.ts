@@ -1,4 +1,5 @@
 import test from 'node:test';
+import { codeOnly } from './support/source-guard.ts';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
@@ -88,8 +89,8 @@ test('PDF 경로는 안내·진행 모달을 닫은 뒤 native 인쇄창을 호�
 test('인쇄 전용 문서는 same-origin 미리보기 loading surface를 제공한다', () => {
   assert.match(printHtml, /인쇄 미리보기를 준비하고 있습니다/);
   assert.match(commandSource, /appendPrintPreviewBar/);
-  assert.match(commandSource, /id = 'print-btn'/);
-  assert.match(commandSource, /id = 'close-btn'/);
+  assert.match(codeOnly(commandSource), /id = 'print-btn'/);
+  assert.match(codeOnly(commandSource), /id = 'close-btn'/);
 });
 
 test('print pipeline은 저장 handle·파일명·dirty 상태를 변경하지 않는다', () => {

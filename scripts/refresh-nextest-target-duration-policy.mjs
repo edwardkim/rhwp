@@ -35,6 +35,72 @@ function parseArgs(args) {
 }
 
 export function refreshDurationPolicy(policy, measurements) {
+  if (policy.schema_version === 2) {
+    if (
+      !Number.isFinite(policy.fallback_seconds_per_test)
+      || policy.fallback_seconds_per_test <= 0
+      || !policy.cases
+      || typeof policy.cases !== "object"
+      || Array.isArray(policy.cases)
+      || !policy.test_cases
+      || typeof policy.test_cases !== "object"
+      || Array.isArray(policy.test_cases)
+    ) {
+      fail("schema_version 2 policy requires fallback_seconds_per_test, cases, and test_cases");
+    }
+    // A trusted review-tail may have completed before this schema migration.
+    // Its artifact provenance is still valid for post-merge reuse, but it has
+    // no source-case detail. Keep the v2 policy unchanged rather than making
+    // post-merge processing fail or reviving mutable suite-name measurements.
+    if (measurements.every((measurement) => measurement?.schema_version === 1)) {
+      return policy;
+    }
+    const targets = {};
+    const cases = {};
+    const testCases = {};
+    const sourceKeys = new Set();
+    for (const measurement of measurements) {
+      if (!measurement || measurement.schema_version !== 2 || !["b", "c", "d"].includes(measurement.archive_label)) {
+        fail("measurement must be a B, C, or D schema_version 2 report");
+      }
+      for (const [field, destination] of [["targets", targets], ["cases", cases], ["test_cases", testCases]]) {
+        if (!measurement[field] || typeof measurement[field] !== "object" || Array.isArray(measurement[field])) {
+          fail(`measurement ${field} must be an object: ${measurement.archive_label}`);
+        }
+        for (const [name, seconds] of Object.entries(measurement[field])) {
+          if (!name || !Number.isFinite(seconds) || seconds <= 0) {
+            fail(`measurement ${field} must have a positive duration: ${name}`);
+          }
+          destination[name] = seconds;
+        }
+      }
+      if (Object.keys(measurement.targets).length === 0 || Object.keys(measurement.cases).length === 0) {
+        fail(`measurement must contain target and case durations: ${measurement.archive_label}`);
+      }
+      const source = [measurement.run_id, measurement.ref, measurement.sha];
+      if (!source.every((value) => typeof value === "string" && value.length > 0)) {
+        fail(`measurement must identify its run, ref, and sha: ${measurement.archive_label}`);
+      }
+      sourceKeys.add(JSON.stringify(source));
+    }
+    if (sourceKeys.size !== 1) {
+      fail("B, C, and D measurements must have identical run, ref, and sha provenance");
+    }
+    return {
+      schema_version: 2,
+      fallback_seconds_per_test: policy.fallback_seconds_per_test,
+      measurement_sources: Object.fromEntries(measurements
+        .map((measurement) => [measurement.archive_label, {
+          run_id: measurement.run_id,
+          ref: measurement.ref,
+          sha: measurement.sha,
+        }])
+        .sort(([left], [right]) => left.localeCompare(right))),
+      targets: Object.fromEntries(Object.entries(targets).sort(([left], [right]) => left.localeCompare(right))),
+      cases: Object.fromEntries(Object.entries(cases).sort(([left], [right]) => left.localeCompare(right))),
+      test_cases: Object.fromEntries(Object.entries(testCases).sort(([left], [right]) => left.localeCompare(right))),
+    };
+  }
   parseDurationPolicy(policy);
   const durations = { ...policy.targets };
   const sourceKeys = new Set();

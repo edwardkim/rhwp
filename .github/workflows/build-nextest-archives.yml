@@ -180,11 +180,17 @@ jobs:
                 echo 'duration_policy_source=fallback:no-pinned-policy'
               fi
 
+              # `regression_suite_NNN`는 고정 workload 이름이 아니다. 현재 source 구성에
+              # 대응하는 개별 testcase 측정값으로 harness를 다시 pack한 뒤 archive를 만든다.
+              node scripts/rust-test-suite-manifest.mjs \
+                --rebalance-by-duration "${duration_policy}"
+
               mapfile -t selected_targets < <(
                 cargo metadata --no-deps --format-version 1 \
                   | node scripts/select-nextest-archive-targets.mjs \
                     --group "${{ inputs.target_group }}" \
-                    --policy "${duration_policy}"
+                    --policy "${duration_policy}" \
+                    --manifest tests/suites/manifest.json
               )
               if (( ${#selected_targets[@]} == 0 )); then
                 echo "::error::integration target group selected no targets: ${{ inputs.target_group }}"

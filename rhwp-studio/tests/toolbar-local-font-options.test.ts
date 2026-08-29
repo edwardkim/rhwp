@@ -1,4 +1,5 @@
 import test from 'node:test';
+import { codeOnly } from './support/source-guard.ts';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
@@ -26,7 +27,7 @@ test('한컴형 글꼴 메뉴는 범주 목록과 기존 글꼴 적용 이벤트
   assert.match(source, /label: '문서 글꼴'/);
   assert.match(source, /label: '대표 글꼴'/);
   assert.match(source, /label: '시스템 글꼴'/);
-  assert.match(source, /menu\.className = 'font-picker-menu'/);
+  assert.match(codeOnly(source), /menu\.className = 'font-picker-menu'/);
   assert.match(source, /this\.fontName\.dispatchEvent\(new Event\('change', \{ bubbles: true \}\)\)/);
 });
 

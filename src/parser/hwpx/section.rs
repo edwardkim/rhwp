@@ -277,13 +277,17 @@ fn parse_master_page_start(e: &quick_xml::events::BytesStart, master_page: &mut 
             _ => {}
         }
     }
-    // 한컴 HWPX -> HWP5 저장본은 LAST_PAGE 바탕쪽을 확장 바탕쪽으로 저장하면서
-    // pageDuplicate="0"인 경우에도 overlap bit를 함께 세운다.
-    if is_last_page {
+    // 한컴 HWPX -> HWP5 저장본은 확장 바탕쪽(LAST_PAGE·OPTIONAL_PAGE)을 저장하면서
+    // pageDuplicate="0"인 경우에도 overlap bit를 함께 세운다. 그래서 overlap bit 만으로는
+    // "겹치게 하기" 의도를 알 수 없고, XML 원본의 `pageDuplicate` 를 봐야 한다.
+    //
+    // [#6323] 종전에는 `replace_base` 를 LAST_PAGE 에만 세웠다. OPTIONAL_PAGE 도 같은
+    // 저장 계약을 따르는데 빠져 있어, `pageDuplicate="0"`(겹치지 않음)로 선언된 임의 쪽
+    // 바탕쪽이 기본 홀/짝 바탕쪽을 대체하지 못하고 그 **위에 덧그려졌다**. 실측
+    // (`samples/hwpx/exam_kor.hwpx` 20쪽): EVEN 바탕쪽의 쪽번호 "2" 위에 OPTIONAL_PAGE
+    // 의 "4" 가 같은 좌표로 얹혀 두 글자 모두 읽을 수 없었다.
+    if is_last_page || is_optional_page {
         master_page.replace_base = page_duplicate == Some(false);
-        master_page.overlap = true;
-    }
-    if is_optional_page {
         master_page.overlap = true;
     }
     master_page.ext_flags = u16::from(master_page.overlap)
@@ -9371,7 +9375,11 @@ mod tests {
         assert_eq!(optional_page.apply_to, HeaderFooterApply::Both);
         assert!(optional_page.is_extension);
         assert!(optional_page.overlap);
-        assert!(!optional_page.replace_base);
+        // [#6323] 픽스처가 `pageDuplicate="0"`(겹치게 하기 끔)이므로 LAST_PAGE 와 같이
+        // 기본 바탕쪽을 대체해야 한다. 종전에는 이 단언이 `!replace_base` 였는데,
+        // 그 비대칭 때문에 임의 쪽 바탕쪽이 기본 바탕쪽 위에 덧그려져 쪽번호가
+        // 포개졌다(exam_kor.hwpx 20쪽에서 '2' 위에 '4').
+        assert!(optional_page.replace_base);
         assert_eq!(optional_page.ext_flags, 0x0007);
     }
 
@@ -9421,7 +9429,13 @@ mod tests {
         assert_eq!(master_page.apply_to, HeaderFooterApply::Both);
         assert!(master_page.is_extension);
         assert!(master_page.overlap);
-        assert!(!master_page.replace_base);
+        // [#6323] 이 픽스처는 실제 문서(`samples/hwpx/exam_kor.hwpx` 의 masterpage8)와 같은
+        // 형태다 — `pageDuplicate="0"` 은 "겹치게 하기 끔" 이므로 바로 위
+        // `test_parse_master_page_last_page_extension`(같은 `pageDuplicate="0"`)과 마찬가지로
+        // 기본 바탕쪽을 대체해야 한다. 종전에는 이 단언이 `!replace_base` 라 두 시험이
+        // 같은 선언에 정반대를 못박고 있었고, 그 비대칭 때문에 임의 쪽 바탕쪽이 기본
+        // 바탕쪽 위에 덧그려져 쪽번호가 포개졌다(20쪽에서 '2' 위에 '4').
+        assert!(master_page.replace_base);
         assert_eq!(master_page.ext_flags, 0x0007);
         assert_eq!(master_page.hwpx_page_number, Some(4));
         assert_eq!(master_page.raw_list_header.len(), 34);

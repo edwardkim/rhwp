@@ -111,6 +111,49 @@ test("JUnit collection aggregates testcase durations per binary and skips setup 
   assert.deepEqual(durations, { issue_1: 2, issue_2: 2 });
 });
 
+test("JUnit measurement retains individual testcase and source-case durations", async () => {
+  const { collectDurationMeasurement } = await import("../collect-nextest-target-durations.mjs");
+  const measurement = collectDurationMeasurement([
+    '<testcase name="security_corpus_regression::negative_sweep" classname="rhwp::regression_suite_015" time="9.25" />',
+    '<testcase name="security_corpus_regression::positive_sweep" classname="rhwp::regression_suite_015" time="0.75" />',
+    '<testcase name="standalone" classname="rhwp::issue_1" time="2.00" />',
+  ].join("\n"));
+
+  assert.deepEqual(measurement.targets, { issue_1: 2, regression_suite_015: 10 });
+  assert.deepEqual(measurement.cases, { issue_1: 2, security_corpus_regression: 10 });
+  assert.deepEqual(measurement.test_cases, {
+    "issue_1::standalone": 2,
+    "regression_suite_015::security_corpus_regression::negative_sweep": 9.25,
+    "regression_suite_015::security_corpus_regression::positive_sweep": 0.75,
+  });
+});
+
+test("v2 policy uses current suite source composition instead of a historical suite name", async () => {
+  const { estimateManifestTargetDurations } = await import("../select-nextest-archive-targets.mjs");
+  const fs = await import("node:fs");
+  const os = await import("node:os");
+  const path = await import("node:path");
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "rhwp-duration-manifest-"));
+  try {
+    fs.mkdirSync(path.join(root, "tests", "cases"), { recursive: true });
+    fs.writeFileSync(path.join(root, "tests", "cases", "heavy.rs"), "#[test] fn one() {}\n");
+    fs.writeFileSync(path.join(root, "tests", "cases", "light.rs"), "#[test] fn one() {}\n");
+    const estimates = estimateManifestTargetDurations({
+      suites: { regression_suite_001: ["tests/cases/heavy.rs", "tests/cases/light.rs"] },
+      exceptions: [],
+    }, {
+      schema_version: 2,
+      fallback_seconds_per_test: 60,
+      targets: { regression_suite_001: 1 },
+      cases: { heavy: 800, light: 5 },
+      test_cases: {},
+    }, root);
+    assert.equal(estimates.get("regression_suite_001"), 805);
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+});
+
 test("policy refresh accepts one successful B, C, and D measurement", () => {
   const refreshed = refreshDurationPolicy({
     schema_version: 1,
@@ -128,6 +171,25 @@ test("policy refresh accepts one successful B, C, and D measurement", () => {
     c: { run_id: "10", ref: "refs/heads/devel", sha: "same-sha" },
     d: { run_id: "10", ref: "refs/heads/devel", sha: "same-sha" },
   });
+});
+
+test("v2 policy keeps its source-case model when a trusted v1 artifact is reused", () => {
+  const policy = {
+    schema_version: 2,
+    fallback_seconds_per_test: 60,
+    targets: {},
+    cases: {},
+    test_cases: {},
+  };
+  const measurements = ["b", "c", "d"].map((archive_label) => ({
+    schema_version: 1,
+    archive_label,
+    run_id: "10",
+    ref: "refs/heads/devel",
+    sha: "same-sha",
+    targets: { regression_suite_001: 4 },
+  }));
+  assert.deepEqual(refreshDurationPolicy(policy, measurements), policy);
 });
 
 test("policy refresh rejects empty or mismatched B/C/D measurements", () => {

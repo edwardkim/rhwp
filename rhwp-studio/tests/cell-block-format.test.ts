@@ -1,4 +1,5 @@
 import test from 'node:test';
+import { codeOnly } from './support/source-guard.ts';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -65,7 +66,7 @@ test('제외 셀 키 형식은 CursorState 가 조립하는 것과 같은 함수
   // 조립하는 쪽과 조회하는 쪽이 형식을 따로 갖고 있으면 한쪽만 바뀌어도 조회가 조용히
   // 빗나가 제외 셀이 무시된다. 리터럴 재조립을 금지하고 단일 함수를 쓰는지 본다.
   const cursor = source('src/engine/cursor.ts');
-  assert.match(cursor, /const key = excludedCellKey\(row, col\)/,
+  assert.match(codeOnly(cursor), /const key = excludedCellKey\(row, col\)/,
     'CursorState.ctrlToggleCell 이 공유 키 함수를 쓰지 않는다');
   assert.doesNotMatch(cursor, /const key = `\$\{row\},\$\{col\}`/,
     'CursorState 가 제외 셀 키를 리터럴로 재조립한다');
