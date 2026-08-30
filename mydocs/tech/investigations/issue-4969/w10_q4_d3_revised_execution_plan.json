@@ -4,7 +4,8 @@
   "issue": 4969,
   "stage": "W10-Q4-D3",
   "date": "2026-08-30",
-  "status": "maintainer-plan-approved-awaiting-checkpoint",
+  "status": "Q4-D3-A-qualified-shadow-mapping-checkpoint-approved",
+  "planCheckpoint": "e64d6fd67",
   "d2Checkpoint": "992fe4acaf92",
   "mergedUpstreamDevel": "bd78a53122e4",
   "mergeCommit": "049b73d0cd80",
@@ -39,6 +40,8 @@
     {
       "id": "Q4-D3-A",
       "name": "leaf-source-mapping-shadow",
+      "status": "qualified-shadow-mapping-checkpoint-approved",
+      "resultEvidence": "mydocs/tech/investigations/issue-4969/w10_q4_d3_a_leaf_source_mapping_shadow.json",
       "productOutputChange": false,
       "callerEnabled": false
     },
@@ -101,5 +104,5 @@
     "githubComment": true,
     "pullRequest": true
   },
-  "next": "plan-checkpoint-commit-before-Q4-D3-A"
+  "next": "D3-A-checkpoint-then-maintainer-D3-B-approval"
 }

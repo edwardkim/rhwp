@@ -14,6 +14,7 @@ use super::shaping::{
     ShapingExactSource, ShapingFeature, ShapingRejectReason, ShapingRequest, ShapingVariation,
     ShapingWritingMode, TerminalShapingDisposition,
 };
+use sha2::{Digest, Sha256};
 use std::collections::{HashMap, HashSet};
 use std::ops::Range;
 use std::sync::Arc;
@@ -604,20 +605,40 @@ impl CertifiedDormantVerticalShapingTransaction {
 /// Paint publication remains closed: D2 stores the certified Q4-C owner beside
 /// the committed fallback nodes, while Q4-D3 will be the first consumer allowed
 /// to lower it to a glyph run.
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub(crate) struct BoundedVerticalHwp5TableCellSidecar {
     line_node_id: u32,
     transaction: Arc<CertifiedDormantVerticalShapingTransaction>,
+    source_text_sha256: [u8; 32],
+    source_utf8_bytes: usize,
+    source_utf16_units: usize,
+}
+
+impl std::fmt::Debug for BoundedVerticalHwp5TableCellSidecar {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        formatter
+            .debug_struct("BoundedVerticalHwp5TableCellSidecar")
+            .field("line_node_id", &self.line_node_id)
+            .field("source_utf8_bytes", &self.source_utf8_bytes)
+            .field("source_utf16_units", &self.source_utf16_units)
+            .field("transaction", &self.transaction)
+            .finish()
+    }
 }
 
 impl BoundedVerticalHwp5TableCellSidecar {
     pub(crate) fn new(
         line_node_id: u32,
         transaction: Arc<CertifiedDormantVerticalShapingTransaction>,
+        source_text: &str,
     ) -> Self {
+        let source_text_sha256 = Sha256::digest(source_text.as_bytes()).into();
         Self {
             line_node_id,
             transaction,
+            source_text_sha256,
+            source_utf8_bytes: source_text.len(),
+            source_utf16_units: source_text.encode_utf16().count(),
         }
     }
 
@@ -628,6 +649,246 @@ impl BoundedVerticalHwp5TableCellSidecar {
     pub(crate) fn transaction(&self) -> &Arc<CertifiedDormantVerticalShapingTransaction> {
         &self.transaction
     }
+}
+
+#[derive(Debug, Clone, Copy)]
+pub(crate) struct VerticalGlyphPublicationLeafInput<'a> {
+    pub source_node_id: u32,
+    pub text_source_id: u32,
+    pub text: &'a str,
+    pub is_vertical: bool,
+    pub bbox: VerticalRect,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub(crate) struct VerticalGlyphPublicationLeafShadow {
+    source_node_id: u32,
+    text_source_id: u32,
+    source_utf8_range: Range<usize>,
+    source_utf16_range: Range<usize>,
+    glyph_index: usize,
+    glyph_id: u32,
+    origin: VerticalPoint,
+    bbox: VerticalRect,
+    advance: VerticalPoint,
+}
+
+impl VerticalGlyphPublicationLeafShadow {
+    pub(crate) fn source_node_id(&self) -> u32 {
+        self.source_node_id
+    }
+
+    pub(crate) fn text_source_id(&self) -> u32 {
+        self.text_source_id
+    }
+
+    pub(crate) fn source_utf8_range(&self) -> Range<usize> {
+        self.source_utf8_range.clone()
+    }
+
+    pub(crate) fn source_utf16_range(&self) -> Range<usize> {
+        self.source_utf16_range.clone()
+    }
+
+    pub(crate) fn glyph_index(&self) -> usize {
+        self.glyph_index
+    }
+
+    pub(crate) fn glyph_id(&self) -> u32 {
+        self.glyph_id
+    }
+
+    pub(crate) fn origin(&self) -> VerticalPoint {
+        self.origin
+    }
+
+    pub(crate) fn bbox(&self) -> VerticalRect {
+        self.bbox
+    }
+
+    pub(crate) fn advance(&self) -> VerticalPoint {
+        self.advance
+    }
+}
+
+#[derive(Debug, Clone)]
+pub(crate) struct VerticalGlyphPublicationShadow {
+    line_node_id: u32,
+    leaves: Vec<VerticalGlyphPublicationLeafShadow>,
+    registry_generation: u64,
+    font_source_sha256: String,
+    font_bytes: usize,
+    face_index: u32,
+}
+
+impl VerticalGlyphPublicationShadow {
+    pub(crate) fn line_node_id(&self) -> u32 {
+        self.line_node_id
+    }
+
+    pub(crate) fn leaves(&self) -> &[VerticalGlyphPublicationLeafShadow] {
+        &self.leaves
+    }
+
+    pub(crate) fn registry_generation(&self) -> u64 {
+        self.registry_generation
+    }
+
+    pub(crate) fn font_source_sha256(&self) -> &str {
+        &self.font_source_sha256
+    }
+
+    pub(crate) fn font_bytes(&self) -> usize {
+        self.font_bytes
+    }
+
+    pub(crate) fn face_index(&self) -> u32 {
+        self.face_index
+    }
+
+    pub(crate) fn product_published(&self) -> bool {
+        false
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum VerticalGlyphPublicationShadowRejectReason {
+    OwnerIdentityMismatch,
+    SourceIdentityMismatch,
+    LeafCountMismatch,
+    NodeSequenceMismatch,
+    TextSourceSequenceMismatch,
+    UnsupportedFallbackLeaf,
+    ClusterTextMismatch,
+    GeometryMismatch,
+}
+
+fn same_vertical_scalar(left: f64, right: f64) -> bool {
+    left.is_finite()
+        && right.is_finite()
+        && (left - right).abs() <= 1.0e-9 * left.abs().max(right.abs()).max(1.0)
+}
+
+fn same_vertical_rect(left: VerticalRect, right: VerticalRect) -> bool {
+    same_vertical_scalar(left.x, right.x)
+        && same_vertical_scalar(left.y, right.y)
+        && same_vertical_scalar(left.width, right.width)
+        && same_vertical_scalar(left.height, right.height)
+}
+
+/// Q4-D3-A read-only mapping from one certified D2 line to its leaf-scoped
+/// text sources. The returned DTO owns no raw text or font bytes and cannot
+/// mutate a render tree, layer tree, or resource arena.
+pub(crate) fn prepare_bounded_vertical_glyph_publication_shadow(
+    sidecar: &Arc<BoundedVerticalHwp5TableCellSidecar>,
+    leaves: &[VerticalGlyphPublicationLeafInput<'_>],
+) -> Result<VerticalGlyphPublicationShadow, VerticalGlyphPublicationShadowRejectReason> {
+    let certified = sidecar.transaction();
+    let transaction = certified.transaction();
+    let geometry = transaction.line_geometry();
+    if certified.product_published()
+        || transaction.product_published()
+        || !Arc::ptr_eq(geometry, transaction.bbox_geometry())
+        || !Arc::ptr_eq(geometry, transaction.next_origin_geometry())
+    {
+        return Err(VerticalGlyphPublicationShadowRejectReason::OwnerIdentityMismatch);
+    }
+    let certificate = certified.certificate();
+    let identity = &transaction.applied().identity;
+    if certificate.font_source_sha256() != NOTO_SANS_KR_REGULAR_SHA256
+        || certificate.font_source_sha256() != identity.font_source_sha256
+        || certificate.font_bytes() != certificate.source_bytes_arc().len()
+        || certificate.font_bytes() != identity.font_bytes
+        || certificate.face_index() != identity.face_index
+    {
+        return Err(VerticalGlyphPublicationShadowRejectReason::SourceIdentityMismatch);
+    }
+    if leaves.is_empty() || leaves.len() != geometry.glyphs.len() {
+        return Err(VerticalGlyphPublicationShadowRejectReason::LeafCountMismatch);
+    }
+
+    let mut text_hasher = Sha256::new();
+    let mut cumulative_utf8 = 0usize;
+    let mut cumulative_utf16 = 0usize;
+    let first_text_source_id = leaves[0].text_source_id;
+    let mut mapped = Vec::with_capacity(leaves.len());
+    for (index, (leaf, glyph)) in leaves.iter().zip(&geometry.glyphs).enumerate() {
+        let expected_node_id = sidecar
+            .line_node_id()
+            .checked_add(u32::try_from(index).unwrap_or(u32::MAX))
+            .and_then(|value| value.checked_add(1))
+            .ok_or(VerticalGlyphPublicationShadowRejectReason::NodeSequenceMismatch)?;
+        if leaf.source_node_id != expected_node_id {
+            return Err(VerticalGlyphPublicationShadowRejectReason::NodeSequenceMismatch);
+        }
+        let expected_text_source_id = first_text_source_id
+            .checked_add(u32::try_from(index).unwrap_or(u32::MAX))
+            .ok_or(VerticalGlyphPublicationShadowRejectReason::TextSourceSequenceMismatch)?;
+        if leaf.text_source_id != expected_text_source_id {
+            return Err(VerticalGlyphPublicationShadowRejectReason::TextSourceSequenceMismatch);
+        }
+        if !leaf.is_vertical || leaf.text.chars().count() != 1 || !leaf.bbox.is_well_formed() {
+            return Err(VerticalGlyphPublicationShadowRejectReason::UnsupportedFallbackLeaf);
+        }
+        let next_utf8 = cumulative_utf8
+            .checked_add(leaf.text.len())
+            .ok_or(VerticalGlyphPublicationShadowRejectReason::ClusterTextMismatch)?;
+        let leaf_utf16 = leaf.text.encode_utf16().count();
+        let next_utf16 = cumulative_utf16
+            .checked_add(leaf_utf16)
+            .ok_or(VerticalGlyphPublicationShadowRejectReason::ClusterTextMismatch)?;
+        if glyph.cluster_utf8_range != (cumulative_utf8..next_utf8) {
+            return Err(VerticalGlyphPublicationShadowRejectReason::ClusterTextMismatch);
+        }
+        if glyph.glyph_id == 0
+            || !matches!(glyph.transform, VerticalGlyphTransform::Upright)
+            || !same_vertical_rect(leaf.bbox, glyph.bbox)
+        {
+            return Err(VerticalGlyphPublicationShadowRejectReason::GeometryMismatch);
+        }
+        let next_origin = geometry
+            .glyphs
+            .get(index + 1)
+            .map(|next| next.origin)
+            .unwrap_or(geometry.next_inline_origin);
+        let advance = VerticalPoint {
+            x: next_origin.x - glyph.origin.x,
+            y: next_origin.y - glyph.origin.y,
+        };
+        if !glyph.origin.is_finite() || !advance.is_finite() {
+            return Err(VerticalGlyphPublicationShadowRejectReason::GeometryMismatch);
+        }
+        text_hasher.update(leaf.text.as_bytes());
+        mapped.push(VerticalGlyphPublicationLeafShadow {
+            source_node_id: leaf.source_node_id,
+            text_source_id: leaf.text_source_id,
+            source_utf8_range: 0..leaf.text.len(),
+            source_utf16_range: 0..leaf_utf16,
+            glyph_index: index,
+            glyph_id: glyph.glyph_id,
+            origin: glyph.origin,
+            bbox: glyph.bbox,
+            advance,
+        });
+        cumulative_utf8 = next_utf8;
+        cumulative_utf16 = next_utf16;
+    }
+    let text_sha256: [u8; 32] = text_hasher.finalize().into();
+    if cumulative_utf8 != sidecar.source_utf8_bytes
+        || cumulative_utf16 != sidecar.source_utf16_units
+        || text_sha256 != sidecar.source_text_sha256
+    {
+        return Err(VerticalGlyphPublicationShadowRejectReason::ClusterTextMismatch);
+    }
+
+    Ok(VerticalGlyphPublicationShadow {
+        line_node_id: sidecar.line_node_id(),
+        leaves: mapped,
+        registry_generation: certificate.registry_generation(),
+        font_source_sha256: certificate.font_source_sha256().to_string(),
+        font_bytes: certificate.font_bytes(),
+        face_index: certificate.face_index(),
+    })
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

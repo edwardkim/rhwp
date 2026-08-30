@@ -515,6 +515,7 @@ impl LayoutEngine {
             let sidecar = Arc::new(BoundedVerticalHwp5TableCellSidecar::new(
                 first_node_id,
                 certified,
+                &source_run.text,
             ));
             Some(BoundedVerticalHwp5TableCellCommit {
                 first_node_id,

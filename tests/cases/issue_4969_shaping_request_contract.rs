@@ -19,12 +19,15 @@ use shaping::{
 };
 use shaping_vertical::{
     adapt_hwp5_vertical_intent, adapt_hwpx_vertical_intent,
+    prepare_bounded_vertical_glyph_publication_shadow,
     prepare_dormant_vertical_shaping_transaction, BoundedVerticalHwp5TableCellSidecar,
     DormantVerticalShapingRejectReason, DormantVerticalShapingRequest, TypedVerticalIntent,
+    VerticalGlyphPublicationLeafInput, VerticalGlyphPublicationShadowRejectReason,
     VerticalGlyphTransform, VerticalIntentDisposition, VerticalIntentSurface,
     VerticalLatinOrientation, VerticalLegacyGeometry, VerticalPoint, VerticalRect,
     VerticalRunClass, VerticalShapingContext, VerticalShapingContextRejectReason,
     VerticalShapingContextRequest, VerticalShapingPageSidecars, VerticalShapingSidecarRejectReason,
+    NOTO_SANS_KR_REGULAR_SHA256,
 };
 use std::sync::Arc;
 #[cfg(target_arch = "wasm32")]
@@ -1806,6 +1809,7 @@ fn issue_4969_q4_d2_vertical_sidecar_is_atomic_and_keeps_one_geometry_owner() {
     let sidecar = Arc::new(BoundedVerticalHwp5TableCellSidecar::new(
         41,
         Arc::clone(&certified),
+        "한글",
     ));
     sidecars
         .attach_bounded_hwp5_table_cell_atomic(Arc::clone(&sidecar))
@@ -1844,7 +1848,11 @@ fn issue_4969_q4_d2_non_noto_exact_source_leaves_vertical_sidecar_pristine() {
             .prepare_dormant(q4_d1_context_request(slot, "ᄒᆞᆫ글"))
             .expect("source is shape-capable but outside D2 hash gate"),
     );
-    let sidecar = Arc::new(BoundedVerticalHwp5TableCellSidecar::new(51, certified));
+    let sidecar = Arc::new(BoundedVerticalHwp5TableCellSidecar::new(
+        51,
+        certified,
+        "ᄒᆞᆫ글",
+    ));
     let mut sidecars = VerticalShapingPageSidecars::default();
     assert_eq!(
         sidecars
@@ -1854,6 +1862,76 @@ fn issue_4969_q4_d2_non_noto_exact_source_leaves_vertical_sidecar_pristine() {
     );
     assert_eq!(sidecars.len(), 0);
     assert_eq!(sidecars.registry_generation(), None);
+}
+
+#[test]
+fn issue_4969_q4_d3_a_maps_one_certified_line_to_leaf_scoped_sources_atomically() {
+    let slot = ExactFontSlot::new(73, 0);
+    let mut registry = ExactFontSourceRegistry::default();
+    registry
+        .register(
+            slot,
+            ExactFontSource {
+                bytes: NOTO,
+                face_index: 0,
+            },
+        )
+        .expect("register public Noto exact source");
+    let context = VerticalShapingContext::new(registry);
+    let certified = Arc::new(
+        context
+            .prepare_dormant(q4_d1_context_request(slot, "한글"))
+            .expect("certify bounded vertical owner"),
+    );
+    let geometry = certified.transaction().line_geometry();
+    assert_eq!(geometry.glyphs.len(), 2);
+    let sidecar = Arc::new(BoundedVerticalHwp5TableCellSidecar::new(
+        81,
+        Arc::clone(&certified),
+        "한글",
+    ));
+    let leaves = [
+        VerticalGlyphPublicationLeafInput {
+            source_node_id: 82,
+            text_source_id: 11,
+            text: "한",
+            is_vertical: true,
+            bbox: geometry.glyphs[0].bbox,
+        },
+        VerticalGlyphPublicationLeafInput {
+            source_node_id: 83,
+            text_source_id: 12,
+            text: "글",
+            is_vertical: true,
+            bbox: geometry.glyphs[1].bbox,
+        },
+    ];
+
+    let shadow = prepare_bounded_vertical_glyph_publication_shadow(&sidecar, &leaves)
+        .expect("D3-A must prepare a read-only all-leaf mapping");
+    assert_eq!(shadow.line_node_id(), 81);
+    assert_eq!(shadow.leaves().len(), 2);
+    assert_eq!(shadow.font_source_sha256(), NOTO_SANS_KR_REGULAR_SHA256);
+    assert_eq!(shadow.font_bytes(), NOTO.len());
+    assert_eq!(shadow.leaves()[0].source_node_id(), 82);
+    assert_eq!(shadow.leaves()[0].text_source_id(), 11);
+    assert_eq!(shadow.leaves()[0].source_utf8_range(), 0..3);
+    assert_eq!(shadow.leaves()[0].source_utf16_range(), 0..1);
+    assert_eq!(shadow.leaves()[0].glyph_id(), geometry.glyphs[0].glyph_id);
+    assert_eq!(shadow.leaves()[1].source_node_id(), 83);
+    assert_eq!(shadow.leaves()[1].text_source_id(), 12);
+    assert_eq!(shadow.leaves()[1].source_utf8_range(), 0..3);
+    assert_eq!(shadow.leaves()[1].source_utf16_range(), 0..1);
+    assert_eq!(shadow.leaves()[1].glyph_id(), geometry.glyphs[1].glyph_id);
+    assert!(!shadow.product_published());
+
+    let mut malformed = leaves;
+    malformed[1].text = "가";
+    assert_eq!(
+        prepare_bounded_vertical_glyph_publication_shadow(&sidecar, &malformed)
+            .expect_err("one mismatched leaf must reject the whole line"),
+        VerticalGlyphPublicationShadowRejectReason::ClusterTextMismatch
+    );
 }
 
 #[test]

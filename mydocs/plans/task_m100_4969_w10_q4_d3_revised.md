@@ -6,7 +6,7 @@
 - **D2 재자격화 기록**: `7bfefff07a99`
 - **기계 판독 계획**:
   [`w10_q4_d3_revised_execution_plan.json`](../tech/investigations/issue-4969/w10_q4_d3_revised_execution_plan.json)
-- **상태**: 메인테이너 수정 수행계획 승인, 계획 checkpoint 대기
+- **상태**: 계획 checkpoint `e64d6fd67`; D3-A `qualified-shadow-mapping` 결과·checkpoint 생성 승인
 - **작성일**: 2026-08-30 KST
 - **제품 출력 변경**: 승인된 D2 target의 layer tree에 fallback과 함께 portable `GlyphRun` 대안을 게시
 - **backend 선택 변경**: 없음 — Q4-D4 전까지 모든 backend는 `TextRun`을 선택
@@ -91,6 +91,11 @@ leaf op, source claim을 하나도 추가하지 않는다.
 
 **종료 게이트**: target mapping mismatch 0, no-source/non-Noto control rejection, 제품 layer hash 변화 0.
 
+**결과 후보**: [Q4-D3-A 결과 보고서](../working/task_m100_4969_w10_q4_d3_a.md)는 D2 line과 두
+fallback leaf/source/glyph를 일대일로 매핑하고, 같은 길이의 다른 문자도 비직렬화 source-text SHA-256으로
+거부한다. Q4 green 36/36, atomic activation 9 pass/1 ignore, integration 정책 19/19와 canonical controls를
+통과했으며 product publication과 backend 선택은 0이다. 메인테이너 결과 승인·checkpoint 전 D3-B는 닫힌다.
+
 ### Q4-D3-B — atomic resource + leaf publication
 
 1. exact certificate에서 portable blob/face metadata와 모든 leaf `GlyphRun`을 mutation 없이 준비한다.
@@ -159,5 +164,6 @@ canonical mismatch 0, 회귀 0. 결과 승인·checkpoint 전 Q4-D4는 시작하
 - D3에서 vertical candidate를 선택하려면 계획 위반이므로 selector를 열지 않고 D4로 넘긴다.
 - public schema 변경, D2 target 확대, horizontal resource helper 대규모 리팩터링이 필요하면 별도 수정 계획을 낸다.
 
-메인테이너가 이 수정 수행계획을 승인했다. 계획 문서의 최종 검증과 checkpoint commit을 고정한 뒤에만
-Q4-D3-A source/test 변경을 시작한다.
+메인테이너가 수정 수행계획을 승인하고 계획 checkpoint `e64d6fd67`을 고정했다. Q4-D3-A 결과는
+`qualified-shadow-mapping`으로 승인됐으며 checkpoint 생성도 승인됐다. 결과 checkpoint와 D3-B 진행 승인을
+받기 전에는 atomic resource + leaf publication을 시작하지 않는다.

@@ -245,6 +245,32 @@ fn collect_vertical_line_geometry(
     }
 }
 
+fn collect_vertical_line_ids(node: &RenderNode, ids: &mut Vec<u32>) {
+    if matches!(node.node_type, RenderNodeType::TextLine(_))
+        && node.children.iter().any(
+            |child| matches!(&child.node_type, RenderNodeType::TextRun(run) if run.is_vertical),
+        )
+    {
+        ids.push(node.id);
+    }
+    for child in &node.children {
+        collect_vertical_line_ids(child, ids);
+    }
+}
+
+fn find_layer_source_node(node: &LayerNode, source_node_id: u32) -> Option<&LayerNode> {
+    if node.source_node_id == Some(source_node_id) {
+        return Some(node);
+    }
+    match &node.kind {
+        LayerNodeKind::Group { children, .. } => children
+            .iter()
+            .find_map(|child| find_layer_source_node(child, source_node_id)),
+        LayerNodeKind::ClipRect { child, .. } => find_layer_source_node(child, source_node_id),
+        LayerNodeKind::Leaf { .. } => None,
+    }
+}
+
 fn assert_bbox(actual: rhwp::renderer::render_tree::BoundingBox, expected: (f64, f64, f64, f64)) {
     let (x, y, width, height) = expected;
     assert!((actual.x - x).abs() <= 1.0e-9, "x: {actual:?}");
@@ -310,6 +336,68 @@ fn issue_4969_q4_d2_target_commits_one_line_while_no_source_keeps_legacy_tree() 
         vec![1, 1],
         "failed target preparation must preserve the legacy per-character tree"
     );
+}
+
+#[test]
+fn issue_4969_q4_d3_a_target_has_leaf_scoped_sources_without_glyph_publication() {
+    let core = bounded_vertical_table_core(true);
+    let render_tree = core
+        .build_page_render_tree(0)
+        .expect("build D3-A target render tree");
+    let mut line_geometry = Vec::new();
+    collect_vertical_line_geometry(&render_tree.root, &mut line_geometry);
+    assert_eq!(line_geometry.len(), 1);
+    assert_eq!(line_geometry[0].1.len(), 2);
+    let mut line_ids = Vec::new();
+    collect_vertical_line_ids(&render_tree.root, &mut line_ids);
+    assert_eq!(line_ids.len(), 1);
+
+    let layer_tree = core
+        .build_page_layer_tree(0)
+        .expect("build dormant D3-A layer tree");
+    let layer_line = find_layer_source_node(&layer_tree.root, line_ids[0])
+        .expect("D2 line must retain its source node in the layer tree");
+    let LayerNodeKind::Group { children, .. } = &layer_line.kind else {
+        panic!("D2 line must lower to one group");
+    };
+    assert_eq!(children.len(), 2);
+    for (index, child) in children.iter().enumerate() {
+        assert_eq!(child.source_node_id, Some(line_ids[0] + index as u32 + 1));
+        let LayerNodeKind::Leaf { ops } = &child.kind else {
+            panic!("each D2 fallback must remain one direct leaf");
+        };
+        assert!(matches!(
+            ops.as_slice(),
+            [PaintOp::TextRun { run, .. }] if run.is_vertical
+        ));
+    }
+    assert_eq!(layer_tree.text_sources.entries.len(), 2);
+    let vertical_sources = layer_tree
+        .text_sources
+        .entries
+        .iter()
+        .filter(|entry| matches!(entry.text.as_str(), "한" | "글"))
+        .collect::<Vec<_>>();
+    assert_eq!(vertical_sources.len(), 2);
+    assert_eq!(vertical_sources[1].id.0, vertical_sources[0].id.0 + 1);
+
+    let mut ops = Vec::new();
+    collect_text_ops(&layer_tree.root, &mut ops);
+    assert_eq!(
+        ops.iter()
+            .filter(|op| matches!(op, PaintOp::TextRun { run, .. } if run.is_vertical))
+            .count(),
+        2
+    );
+    assert_eq!(
+        ops.iter()
+            .filter(|op| matches!(op, PaintOp::GlyphRun { .. }))
+            .count(),
+        0,
+        "D3-A shadow must not publish a product GlyphRun"
+    );
+    assert!(layer_tree.resources.font_resources().blobs.is_empty());
+    assert!(layer_tree.resources.font_resources().faces.is_empty());
 }
 
 #[test]
