@@ -21,24 +21,40 @@ fn issue_5946_p141_hangmok_is_not_covered_by_form_header() {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
     let bytes = fs::read(path).unwrap_or_else(|e| panic!("read {SAMPLE}: {e}"));
     let core = DocumentCore::from_bytes(&bytes).expect("parse handbook");
-    let page = core
-        .build_page_render_tree(PAGE_INDEX)
-        .expect("page 141 render tree");
-
+    let page_count = core.page_count();
+    // 뷰어 141쪽을 우선하되, 조판이 한두 쪽 밀리면 근처에서 '4. 항목란' 을 찾는다.
+    let search_lo = PAGE_INDEX.saturating_sub(4);
+    let search_hi = (PAGE_INDEX + 4).min(page_count.saturating_sub(1));
     let mut hangmok = Vec::new();
     let mut form = Vec::new();
-    collect(&page.root, None, &mut hangmok, &mut form);
+    let mut found_page = PAGE_INDEX;
+    for page_idx in search_lo..=search_hi {
+        hangmok.clear();
+        form.clear();
+        let page = core
+            .build_page_render_tree(page_idx)
+            .unwrap_or_else(|e| panic!("page {} render tree: {e}", page_idx + 1));
+        collect(&page.root, None, &mut hangmok, &mut form);
+        if !hangmok.is_empty() {
+            found_page = page_idx;
+            break;
+        }
+    }
 
     assert!(
         !hangmok.is_empty(),
-        "141쪽에 '4. 항목란' 이 없다 — 표본 쪽 번호가 바뀌었는지 확인하라"
+        "{}쪽에 '4. 항목란' 이 없다 — 검색 {}..{}: 표본 쪽 번호가 바뀌었는지 확인하라",
+        PAGE_INDEX + 1,
+        search_lo + 1,
+        search_hi + 1
     );
     for (hx, hy, hw, hh, _) in &hangmok {
         for (fx, fy, fw, fh, ftext) in &form {
             let overlap = hx < &(fx + fw) && fx < &(hx + hw) && hy < &(fy + fh) && fy < &(hy + hh);
             assert!(
                 !overlap,
-                "예시 서식 '{ftext}' 가 4. 항목란 과 겹친다 ({fx:.1},{fy:.1})×({fw:.1}x{fh:.1}) vs 항목란 ({hx:.1},{hy:.1})"
+                "쪽 {} 예시 서식 '{ftext}' 가 4. 항목란 과 겹친다 ({fx:.1},{fy:.1})×({fw:.1}x{fh:.1}) vs 항목란 ({hx:.1},{hy:.1})",
+                found_page + 1
             );
         }
     }
