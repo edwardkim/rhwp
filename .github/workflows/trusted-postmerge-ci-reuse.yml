@@ -220,6 +220,16 @@ jobs:
               }
               const requireFullLaneEvidence = ["ci.yml", "codeql.yml"]
                 .includes(process.env.WORKFLOW_FILE);
+              const reviewOnlyWorker = {
+                "proptest-roundtrip.yml": {
+                  preflight: "Proptest preflight",
+                  worker: "prop roundtrip",
+                },
+                "adapter-diff.yml": {
+                  preflight: "adapter inter-diff preflight",
+                  worker: "adapter inter-diff",
+                },
+              }[process.env.WORKFLOW_FILE];
               const fullLaneRunIds = [];
               if (requireFullLaneEvidence) {
                 for (const workflowRun of workflowRuns) {
@@ -253,6 +263,31 @@ jobs:
                   }
                 }
               }
+              const reviewOnlyFastPassRunIds = [];
+              if (reviewOnlyWorker) {
+                for (const workflowRun of workflowRuns) {
+                  if (workflowRun.status !== "completed" || workflowRun.conclusion !== "success") {
+                    continue;
+                  }
+                  const jobs = await github.paginate(
+                    github.rest.actions.listJobsForWorkflowRun,
+                    { owner, repo, run_id: workflowRun.id, per_page: 100 },
+                  );
+                  const preflightSucceeded = jobs.some((job) => (
+                    job.name === reviewOnlyWorker.preflight
+                    && job.status === "completed"
+                    && job.conclusion === "success"
+                  ));
+                  const workerSkipped = jobs.some((job) => (
+                    job.name === reviewOnlyWorker.worker
+                    && job.status === "completed"
+                    && job.conclusion === "skipped"
+                  ));
+                  if (preflightSucceeded && workerSkipped) {
+                    reviewOnlyFastPassRunIds.push(String(workflowRun.id));
+                  }
+                }
+              }
               const evidence = {
                 mergeCommit,
                 pullRequests,
@@ -264,6 +299,9 @@ jobs:
               };
               if (requireFullLaneEvidence) {
                 evidence.fullLaneRunIds = fullLaneRunIds;
+              }
+              if (reviewOnlyWorker) {
+                evidence.reviewOnlyFastPassRunIds = reviewOnlyFastPassRunIds;
               }
               return evidence;
             }
