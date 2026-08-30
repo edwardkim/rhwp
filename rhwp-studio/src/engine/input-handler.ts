@@ -3518,7 +3518,7 @@ export class InputHandler {
             const isHeader = this.cursor.headerFooterMode === 'header';
             startRect = this.wasm.getCursorRectInHeaderFooter(
               this.cursor.hfSectionIdx, isHeader, this.cursor.hfApplyTo,
-              this.cursor.hfParaIdx, anchor.charOffset, this.cursor.getRect()?.pageIndex ?? 0,
+              this.cursor.hfParaIdx, anchor.charOffset, this.cursor.hfPreviewPage,
             )!;
           } else if (this.cursor.isInFootnote()) {
             startRect = this.wasm.getCursorRectInFootnote(

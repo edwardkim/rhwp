@@ -485,7 +485,8 @@ export class HwpDocument {
     /**
      * 머리말/꼬리말 내 커서 위치의 픽셀 좌표를 반환한다.
      *
-     * preview_page_hint: 편집 정의를 투영할 대표 페이지 힌트. 음수이면 실제 적용 페이지를 찾는다.
+     * preview_page_hint: 편집 정의를 투영할 대표 페이지 힌트. Studio는 구역의 첫 페이지를
+     * 전달한다. 음수이면 호환 경로로 실제 적용 페이지를 앞에서부터 찾는다.
      * 반환: JSON `{"pageIndex":N,"x":F,"y":F,"height":F}`
      */
     getCursorRectInHeaderFooter(section_idx: number, is_header: boolean, apply_to: number, hf_para_idx: number, char_offset: number, preview_page_hint: number): string;
