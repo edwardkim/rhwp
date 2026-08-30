@@ -5132,11 +5132,20 @@ impl LayoutEngine {
                     .unwrap_or(total_inline_width);
                 let line_margin =
                     effective_margin_left_line(para_margin_left_px, para_indent_px, 0);
+                // [#6353] 오른쪽 정렬 TAC 는 저장 sw 에 붙인다. exam_kor 바탕쪽
+                // 머리 표 홀수형 박스: 셀 내폭 22206HU vs sw 22054HU.
+                let right_box_w = para
+                    .line_segs
+                    .first()
+                    .filter(|seg| seg.segment_width > 0)
+                    .map(|seg| hwpunit_to_px(seg.segment_width, self.dpi))
+                    .filter(|&sw| sw + 0.5 < inner_area.width)
+                    .unwrap_or(inner_area.width);
                 match para_alignment {
                     Alignment::Center | Alignment::Distribute => {
                         inner_area.x + (inner_area.width - line_w).max(0.0) / 2.0
                     }
-                    Alignment::Right => inner_area.x + (inner_area.width - line_w).max(0.0),
+                    Alignment::Right => inner_area.x + (right_box_w - line_w).max(0.0),
                     _ => inner_area.x + line_margin,
                 }
             };
@@ -5799,12 +5808,19 @@ impl LayoutEngine {
                                     para_indent_px,
                                     target_line,
                                 );
+                                let right_box_w = para
+                                    .line_segs
+                                    .get(target_line)
+                                    .filter(|seg| seg.segment_width > 0)
+                                    .map(|seg| hwpunit_to_px(seg.segment_width, self.dpi))
+                                    .filter(|&sw| sw + 0.5 < inner_area.width)
+                                    .unwrap_or(inner_area.width);
                                 inline_x = match para_alignment {
                                     Alignment::Center | Alignment::Distribute => {
                                         inner_area.x + (inner_area.width - line_w).max(0.0) / 2.0
                                     }
                                     Alignment::Right => {
-                                        inner_area.x + (inner_area.width - line_w).max(0.0)
+                                        inner_area.x + (right_box_w - line_w).max(0.0)
                                     }
                                     _ => inner_area.x + line_margin,
                                 };
