@@ -312,19 +312,43 @@ pub(crate) fn stored_empty_anchor_band_host_line_advance_hu(
         return None;
     }
 
-    fn stored_seg(paragraph: &Paragraph) -> Option<&crate::model::paragraph::LineSeg> {
+    fn stored_seg_index(
+        paragraph: &Paragraph,
+    ) -> Option<(usize, &crate::model::paragraph::LineSeg)> {
         paragraph
             .line_segs
             .iter()
-            .find(|seg| seg.tag & 0x8000_0000 == 0 && seg.line_height > 0)
+            .enumerate()
+            .find(|(_, seg)| seg.tag & 0x8000_0000 == 0 && seg.line_height > 0)
     }
-    let host_seg = stored_seg(para)?;
+    // [#6312] 사다리 등식은 **원본 저장 vpos** 로 본다.
+    //
+    // `reflow_zero_height_paragraphs` 는 구역에 0-높이 lineseg 가 하나라도 있으면
+    // 그 구역 **모든** 문단의 `vertical_pos` 를 자기 누적 좌표로 다시 쓴다(첫 문단은
+    // 0 에서 시작). 그 좌표로 등식을 재면 rhwp 자신의 재계산을 rhwp 로 검증하는
+    // 순환이 되고, 원본이 등식을 만족해도 걸리지 않는다 — 156721992 1쪽 실측:
+    // 원본 19829 − 17129 = 2700 = lh 1500 + ls 1200 (성립)인데, 재계산 좌표는
+    // 11066 − 0 = 11066 이라 불성립이라 앵커 줄 27pt 가 통째로 사라졌다.
+    //
+    // 다행히 그 재계산이 원본을 `source_line_seg_vertical_pos` 에 남겨 둔다. 있으면
+    // 그 값을, 없으면(재계산이 안 걸린 문서) 현재 vpos 를 쓴다.
+    fn ladder_vpos(paragraph: &Paragraph, index: usize, fallback: i32) -> i32 {
+        paragraph
+            .source_line_seg_vertical_pos
+            .as_ref()
+            .and_then(|src| src.get(index).copied())
+            .unwrap_or(fallback)
+    }
+    let (host_index, host_seg) = stored_seg_index(para)?;
     let advance = host_seg.line_height + host_seg.line_spacing.max(0);
     if advance <= 0 {
         return None;
     }
-    let next_vpos = next_para.and_then(stored_seg)?.vertical_pos;
-    ((next_vpos - host_seg.vertical_pos - advance).abs() <= 1).then_some(advance)
+    let next = next_para?;
+    let (next_index, next_seg) = stored_seg_index(next)?;
+    let host_vpos = ladder_vpos(para, host_index, host_seg.vertical_pos);
+    let next_vpos = ladder_vpos(next, next_index, next_seg.vertical_pos);
+    ((next_vpos - host_vpos - advance).abs() <= 1).then_some(advance)
 }
 
 /// 문단에 공백·개체 마커가 아닌 실제 글자가 있는가.
