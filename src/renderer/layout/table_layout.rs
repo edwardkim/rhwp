@@ -4148,20 +4148,22 @@ impl LayoutEngine {
             table.padding.right,
             allow_saved_small_cell_margin,
         );
-        let use_cell_top = (table_pad_unspec && cell.padding.top < 2500)
+        // [#6358] 음수 pad 는 `c < 2500` 위생 한도를 통과하므로 0 하한을 같이 둔다.
+        let use_cell_top = (table_pad_unspec && cell.padding.top >= 0 && cell.padding.top < 2500)
             || Self::should_use_cell_padding_axis_for_context(
                 cell,
                 cell.padding.top,
                 table.padding.top,
                 allow_saved_small_cell_margin,
             );
-        let use_cell_bottom = (table_pad_unspec && cell.padding.bottom < 2500)
-            || Self::should_use_cell_padding_axis_for_context(
-                cell,
-                cell.padding.bottom,
-                table.padding.bottom,
-                allow_saved_small_cell_margin,
-            );
+        let use_cell_bottom =
+            (table_pad_unspec && cell.padding.bottom >= 0 && cell.padding.bottom < 2500)
+                || Self::should_use_cell_padding_axis_for_context(
+                    cell,
+                    cell.padding.bottom,
+                    table.padding.bottom,
+                    allow_saved_small_cell_margin,
+                );
 
         let pad_left = if use_cell_left {
             hwpunit_to_px(cell.padding.left as i32, self.dpi)
