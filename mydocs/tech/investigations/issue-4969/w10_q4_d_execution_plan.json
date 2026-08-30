@@ -4,13 +4,13 @@
   "issue": 4969,
   "stage": "W10-Q4-D",
   "date": "2026-08-30",
-  "status": "Q4-D5-A-qualified-measurement-contract-result-approved",
+  "status": "Q4-D5-C-blocked-causal-wasm-size-unavailable-result-approved-automatic",
   "baseCheckpoint": "f449960c7",
   "upstreamDevelAtD2Start": "628944a33cb5",
-  "latestObservedUpstreamDevel": "19b89d967b15",
-  "latestUpstreamMergeCommit": "eb7d020e4",
+  "latestObservedUpstreamDevel": "28057f02ea5731cbc0566f67eb9c0129e47287e6",
+  "latestUpstreamMergeCommit": "edb9f51e4",
   "d4DCheckpoint": "f40987220",
-  "aheadAfterLatestFetch": 55,
+  "aheadAfterLatestFetch": 63,
   "behindAfterLatestFetch": 0,
   "incomingD2FileOverlap": 0,
   "productMutationBeforeApproval": false,
@@ -96,9 +96,10 @@
     {
       "id": "Q4-D5",
       "name": "regression-performance-and-final-classification",
-      "status": "D5-A-qualified-measurement-contract-result-approved",
+      "status": "blocked-causal-wasm-size-unavailable-result-approved-automatic",
       "plan": "mydocs/plans/task_m100_4969_w10_q4_d5.md",
       "executionPlan": "mydocs/tech/investigations/issue-4969/w10_q4_d5_execution_plan.json",
+      "resultEvidence": "mydocs/tech/investigations/issue-4969/w10_q4_d5_c_final_classification.json",
       "productOutputChange": false
     }
   ],
@@ -125,5 +126,6 @@
     "githubComment": true,
     "pullRequest": true
   },
-  "next": "automatic-D5-A-checkpoint-then-D5-B"
+  "finalClassification": "blocked",
+  "next": "checkpoint-blocked-result-then-maintainer-policy-decision-on-causal-size-gate"
 }

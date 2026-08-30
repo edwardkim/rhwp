@@ -4,11 +4,14 @@
   "issue": 4969,
   "stage": "W10-Q4-D5",
   "date": "2026-08-31",
-  "status": "D5-B-causal-size-unavailable-result-approved-automatic",
+  "status": "D5-C-blocked-causal-wasm-size-unavailable-result-approved-automatic",
   "planApproved": true,
   "d4DCheckpoint": "f40987220",
   "planCheckpoint": "a4248b9c6",
   "baseUpstreamDevel": "19b89d967b15",
+  "finalUpstreamDevel": "28057f02ea5731cbc0566f67eb9c0129e47287e6",
+  "finalUpstreamMergeCommit": "edb9f51e4",
+  "finalValidatedHead": "513068f8e8e19fa1b70e32a31fc4d56557d952b8",
   "productMutationExpected": false,
   "measurement": {
     "fixture": "public-synthetic-HWP5-code2-one-cell-one-paragraph-one-line-one-column-pure-CJK",
@@ -75,7 +78,8 @@
     {
       "id": "Q4-D5-C",
       "name": "final-regression-and-Q4-D-classification",
-      "status": "blocked-by-D5-B",
+      "status": "blocked-causal-wasm-size-unavailable-result-approved-automatic",
+      "resultEvidence": "mydocs/tech/investigations/issue-4969/w10_q4_d5_c_final_classification.json",
       "productOutputChange": false
     }
   ],
@@ -106,5 +110,6 @@
     "githubMutationAllowed": false
   },
   "existingEvidenceReused": "mydocs/tech/investigations/issue-4969/w10_q4_d4_d_cross_validation.json",
-  "next": "D5-C-correctness-and-regression-bounding"
+  "finalClassification": "blocked",
+  "next": "checkpoint-blocked-result-then-maintainer-policy-decision-on-causal-size-gate"
 }
