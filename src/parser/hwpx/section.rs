@@ -908,14 +908,7 @@ fn parse_paragraph_body(
                 for c in part.chars() {
                     char_offsets.push(utf16_pos);
                     visual_text.push(c);
-                    let width = if c == '\t' {
-                        8
-                    } else if (c as u32) > 0xFFFF {
-                        2
-                    } else {
-                        1
-                    };
-                    utf16_pos += width;
+                    utf16_pos += hwpx_char_utf16_width(c);
                 }
             }
         }
@@ -4821,7 +4814,12 @@ fn parse_ctrl(
                     b"footer" => {
                         let ctrl = parse_ctrl_footer(ce, reader)?;
                         controls.push(ctrl);
-                        text_parts.push("\u{0002}".to_string());
+                        // [#5251] HWP3 원본 문단은 pageNum/footer 를 PARA_TEXT 8유닛
+                        // 슬롯으로 세지 않는다(issue_265: char_count 55). 여기서 8을
+                        // 더하면 FFFC 1유닛과 합쳐 char_shapes 경계가 밀린다.
+                        if !hwpx_hwp3_origin_source() {
+                            text_parts.push("\u{0002}".to_string());
+                        }
                     }
                     b"footNote" => {
                         let ctrl = parse_ctrl_footnote(ce, reader)?;
@@ -4883,7 +4881,9 @@ fn parse_ctrl(
                     b"pageNum" => {
                         let pn = parse_page_num_attrs(ce);
                         controls.push(Control::PageNumberPos(pn));
-                        text_parts.push("\u{0002}".to_string());
+                        if !hwpx_hwp3_origin_source() {
+                            text_parts.push("\u{0002}".to_string());
+                        }
                         skip_element(reader, b"pageNum")?;
                     }
                     b"bookmark" => {
@@ -4935,7 +4935,9 @@ fn parse_ctrl(
                     b"pageNum" => {
                         let pn = parse_page_num_attrs(ce);
                         controls.push(Control::PageNumberPos(pn));
-                        text_parts.push("\u{0002}".to_string());
+                        if !hwpx_hwp3_origin_source() {
+                            text_parts.push("\u{0002}".to_string());
+                        }
                     }
                     b"bookmark" => {
                         let bm = parse_bookmark_attrs(ce);
@@ -5487,6 +5489,25 @@ thread_local! {
     static HWPX_HWP5_ORIGIN_SOURCE: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
     /// 원본 HWP3→HWPX (hwp3-origin 마커, hwp5-origin 없음).
     static HWPX_HWP3_ORIGIN_SOURCE: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
+}
+
+fn hwpx_hwp3_origin_source() -> bool {
+    HWPX_HWP3_ORIGIN_SOURCE.with(|c| c.get())
+}
+
+/// [#5251] HWP3 원본 IR 은 개체 자리 U+FFFC 를 8유닛 슬롯으로 센다
+/// (issue_265 offsets 16→24). HWPX `<hp:t>` 리터럴은 기본 1유닛이라
+/// char_shapes 가 7만큼 앞당겨진다.
+fn hwpx_char_utf16_width(c: char) -> u32 {
+    if c == '\t' {
+        8
+    } else if c == '\u{fffc}' && hwpx_hwp3_origin_source() {
+        8
+    } else if (c as u32) > 0xFFFF {
+        2
+    } else {
+        1
+    }
 }
 
 /// [#3518] HWP3 는 개체를 U+FFFC 1유닛으로 남긴다. HWPX 슬롯 `\u{0002}`(8유닛)를
@@ -6551,18 +6572,7 @@ fn calc_utf16_len_from_parts(parts: &[String]) -> u32 {
             // 경계가 offsets 축과 어긋났다 (143E 각주 run 경계 2 → 정답 9).
             "\u{0002}" | "\u{0003}" | "\u{0004}" | "\u{0012}" => 8,
             TITLE_MARK_PART_IGNORE | TITLE_MARK_PART_KEEP => 8,
-            _ => s
-                .chars()
-                .map(|c| {
-                    if c == '\t' {
-                        8u32
-                    } else if (c as u32) > 0xFFFF {
-                        2
-                    } else {
-                        1
-                    }
-                })
-                .sum(),
+            _ => s.chars().map(hwpx_char_utf16_width).sum(),
         })
         .sum()
 }
