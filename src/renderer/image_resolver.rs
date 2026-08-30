@@ -1080,9 +1080,9 @@ fn decode_image_with_format_limited(
 mod tests {
     use super::{
         bmp_bytes_to_png_bytes, emitted_image_bytes, grayscale_jpeg_bytes_to_png_bytes,
-        is_watermark_image, jpeg_is_four_component, resolve_image_payload,
-        watermark_jpeg_bytes_to_hancom_baked_png_bytes, ConversionMemo,
-        CANVASKIT_MAX_IMAGE_DIMENSION, CONVERSIONS_RUN, MAX_MEMO_BYTES, MAX_MEMO_ENTRIES,
+        is_watermark_image, resolve_image_payload, watermark_jpeg_bytes_to_hancom_baked_png_bytes,
+        ConversionMemo, CANVASKIT_MAX_IMAGE_DIMENSION, CONVERSIONS_RUN, MAX_MEMO_BYTES,
+        MAX_MEMO_ENTRIES,
     };
     use crate::model::image::ImageEffect;
     use crate::paint::ResolvedImageKind;
@@ -1103,22 +1103,6 @@ mod tests {
             .write_to(&mut Cursor::new(&mut out), ImageFormat::Jpeg)
             .expect("encode jpeg");
         out
-    }
-
-    #[test]
-    fn four_component_jpeg_detector_accepts_marker_fill_before_sof() {
-        // 유효한 JPEG은 SOF marker 앞에 0xFF fill byte를 반복할 수 있다. 4성분 SOF0
-        // (length 20 = 고정 필드 8 + component descriptor 4×3)를 최소 헤더로 만든다.
-        let jpeg = [
-            0xFF, 0xD8, // SOI
-            0xFF, 0xFF, 0xC0, // marker fill + SOF0
-            0x00, 0x14, // segment length
-            0x08, 0x00, 0x01, 0x00, 0x01, 0x04, // precision, height, width, components
-            0x01, 0x11, 0x00, 0x02, 0x11, 0x00, 0x03, 0x11, 0x00, 0x04, 0x11, 0x00, 0xFF,
-            0xD9, // EOI
-        ];
-
-        assert!(jpeg_is_four_component(&jpeg));
     }
 
     /// 지금까지 실제로 수행된 변환 횟수.

@@ -101,3 +101,23 @@ fn four_component_jpeg_is_detected() {
         "대조군: 3성분 JPEG 은 4성분으로 판정되지 않는다"
     );
 }
+
+/// JPEG marker fill byte가 있어도 4성분 SOF0를 놓치지 않는다.
+///
+/// [maintainer correction] source-side unit baseline을 늘리지 않고 #6310 fixture contract 안에서
+/// 판별기의 유효 JPEG 경계를 고정한다. JPEG은 SOF marker 앞에 0xFF fill byte를 반복할 수 있다.
+#[test]
+fn four_component_jpeg_detector_accepts_marker_fill_before_sof() {
+    use rhwp::renderer::image_resolver::jpeg_is_four_component;
+
+    // 4성분 SOF0: length 20 = 고정 필드 8 + component descriptor 4×3.
+    let jpeg = [
+        0xFF, 0xD8, // SOI
+        0xFF, 0xFF, 0xC0, // marker fill + SOF0
+        0x00, 0x14, // segment length
+        0x08, 0x00, 0x01, 0x00, 0x01, 0x04, // precision, height, width, components
+        0x01, 0x11, 0x00, 0x02, 0x11, 0x00, 0x03, 0x11, 0x00, 0x04, 0x11, 0x00, 0xFF, 0xD9,
+    ];
+
+    assert!(jpeg_is_four_component(&jpeg));
+}
