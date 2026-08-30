@@ -4,7 +4,7 @@
   "issue": 4969,
   "stage": "W10-Q4-D3",
   "date": "2026-08-30",
-  "status": "Q4-D3-A-qualified-shadow-mapping-checkpoint-approved",
+  "status": "Q4-D3-B-qualified-atomic-leaf-publication-checkpoint-approved",
   "planCheckpoint": "e64d6fd67",
   "d2Checkpoint": "992fe4acaf92",
   "mergedUpstreamDevel": "bd78a53122e4",
@@ -40,7 +40,8 @@
     {
       "id": "Q4-D3-A",
       "name": "leaf-source-mapping-shadow",
-      "status": "qualified-shadow-mapping-checkpoint-approved",
+      "status": "qualified-shadow-mapping-checkpointed",
+      "checkpoint": "bb334756b",
       "resultEvidence": "mydocs/tech/investigations/issue-4969/w10_q4_d3_a_leaf_source_mapping_shadow.json",
       "productOutputChange": false,
       "callerEnabled": false
@@ -48,6 +49,8 @@
     {
       "id": "Q4-D3-B",
       "name": "atomic-resource-and-leaf-publication",
+      "status": "qualified-atomic-leaf-publication-checkpoint-approved",
+      "resultEvidence": "mydocs/tech/investigations/issue-4969/w10_q4_d3_b_atomic_leaf_publication.json",
       "productOutputChange": true,
       "backendSelectionChange": false
     },
@@ -104,5 +107,5 @@
     "githubComment": true,
     "pullRequest": true
   },
-  "next": "D3-A-checkpoint-then-maintainer-D3-B-approval"
+  "next": "D3-B-checkpoint-then-maintainer-D3-C-approval"
 }

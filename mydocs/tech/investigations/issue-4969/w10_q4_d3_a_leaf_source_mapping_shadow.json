@@ -4,8 +4,9 @@
   "issue": 4969,
   "stage": "W10-Q4-D3-A",
   "date": "2026-08-30",
-  "status": "qualified-shadow-mapping-checkpoint-approved",
+  "status": "qualified-shadow-mapping-checkpointed",
   "resultApproved": true,
+  "checkpoint": "bb334756b",
   "planCheckpoint": "e64d6fd67",
   "baseUpstreamDevel": "bd78a53122e4",
   "productPublished": false,
@@ -69,5 +70,5 @@
   "privateCorpusUsed": false,
   "hyperVUsed": false,
   "githubMutation": false,
-  "next": "D3-A-checkpoint-then-maintainer-D3-B-approval"
+  "next": "Q4-D3-B"
 }

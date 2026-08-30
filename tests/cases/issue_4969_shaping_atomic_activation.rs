@@ -5,7 +5,10 @@ use rhwp::model::control::Control;
 use rhwp::model::paragraph::{CharShapeRef, LineSeg, Paragraph};
 use rhwp::model::style::Alignment;
 use rhwp::model::table::{Cell, Table, VerticalAlign};
-use rhwp::paint::{LayerNode, LayerNodeKind, PaintOp, TextVariantKind};
+use rhwp::paint::{
+    GlyphRunOrientation, LayerBuilder, LayerNode, LayerNodeKind, PaintOp, RenderProfile,
+    TextDirection, TextVariantKind, WritingMode,
+};
 #[cfg(not(target_arch = "wasm32"))]
 use rhwp::renderer::canvaskit_policy::{analyze_canvaskit_replay_plan, CanvasKitReplayMode};
 #[cfg(not(target_arch = "wasm32"))]
@@ -258,6 +261,21 @@ fn collect_vertical_line_ids(node: &RenderNode, ids: &mut Vec<u32>) {
     }
 }
 
+fn replace_nth_vertical_run_text(node: &mut RenderNode, target: usize, seen: &mut usize) -> bool {
+    if let RenderNodeType::TextRun(run) = &mut node.node_type {
+        if run.is_vertical {
+            if *seen == target {
+                run.text = "가".to_string();
+                return true;
+            }
+            *seen += 1;
+        }
+    }
+    node.children
+        .iter_mut()
+        .any(|child| replace_nth_vertical_run_text(child, target, seen))
+}
+
 fn find_layer_source_node(node: &LayerNode, source_node_id: u32) -> Option<&LayerNode> {
     if node.source_node_id == Some(source_node_id) {
         return Some(node);
@@ -339,11 +357,11 @@ fn issue_4969_q4_d2_target_commits_one_line_while_no_source_keeps_legacy_tree() 
 }
 
 #[test]
-fn issue_4969_q4_d3_a_target_has_leaf_scoped_sources_without_glyph_publication() {
+fn issue_4969_q4_d3_b_target_publishes_one_vertical_glyph_run_per_fallback_leaf() {
     let core = bounded_vertical_table_core(true);
     let render_tree = core
         .build_page_render_tree(0)
-        .expect("build D3-A target render tree");
+        .expect("build D3-B target render tree");
     let mut line_geometry = Vec::new();
     collect_vertical_line_geometry(&render_tree.root, &mut line_geometry);
     assert_eq!(line_geometry.len(), 1);
@@ -354,7 +372,7 @@ fn issue_4969_q4_d3_a_target_has_leaf_scoped_sources_without_glyph_publication()
 
     let layer_tree = core
         .build_page_layer_tree(0)
-        .expect("build dormant D3-A layer tree");
+        .expect("build D3-B published layer tree");
     let layer_line = find_layer_source_node(&layer_tree.root, line_ids[0])
         .expect("D2 line must retain its source node in the layer tree");
     let LayerNodeKind::Group { children, .. } = &layer_line.kind else {
@@ -366,10 +384,39 @@ fn issue_4969_q4_d3_a_target_has_leaf_scoped_sources_without_glyph_publication()
         let LayerNodeKind::Leaf { ops } = &child.kind else {
             panic!("each D2 fallback must remain one direct leaf");
         };
-        assert!(matches!(
-            ops.as_slice(),
-            [PaintOp::TextRun { run, .. }] if run.is_vertical
-        ));
+        let [PaintOp::TextRun { run: fallback, .. }, PaintOp::GlyphRun { run: glyph, .. }] =
+            ops.as_slice()
+        else {
+            panic!("each D2 fallback leaf must publish exactly one vertical GlyphRun alternative");
+        };
+        assert!(fallback.is_vertical);
+        assert_eq!(glyph.source.id.0, index as u32);
+        assert_eq!(glyph.source.utf8_range.start, 0);
+        assert_eq!(glyph.source.utf8_range.end, fallback.text.len() as u32);
+        assert_eq!(glyph.source.utf16_range.start, 0);
+        assert_eq!(
+            glyph.source.utf16_range.end,
+            fallback.text.encode_utf16().count() as u32
+        );
+        assert_eq!(glyph.variant.equivalence_group, format!("text-{index}"));
+        assert_eq!(glyph.variant.variant_id, "verticalGlyphRun");
+        assert_eq!(glyph.variant.variant_kind, TextVariantKind::GlyphRun);
+        assert!(!glyph.variant.is_default_fallback);
+        assert_eq!(
+            glyph.variant.anchor_op_id.as_deref(),
+            Some(glyph.variant.equivalence_group.as_str())
+        );
+        assert_eq!(glyph.glyph_ids.len(), 1);
+        assert_eq!(glyph.positions.len(), 1);
+        assert_eq!(glyph.advances.as_ref().map(Vec::len), Some(1));
+        assert_eq!(glyph.clusters.len(), 1);
+        assert_eq!(glyph.direction, TextDirection::Ltr);
+        assert_eq!(glyph.writing_mode, WritingMode::VerticalRl);
+        assert_eq!(glyph.orientation, GlyphRunOrientation::VerticalUpright);
+        assert_eq!(
+            glyph.diagnostics.reason.as_deref(),
+            Some("boundedVerticalHwp5TableCellV1")
+        );
     }
     assert_eq!(layer_tree.text_sources.entries.len(), 2);
     let vertical_sources = layer_tree
@@ -393,11 +440,61 @@ fn issue_4969_q4_d3_a_target_has_leaf_scoped_sources_without_glyph_publication()
         ops.iter()
             .filter(|op| matches!(op, PaintOp::GlyphRun { .. }))
             .count(),
-        0,
-        "D3-A shadow must not publish a product GlyphRun"
+        2,
+        "D3-B must publish one GlyphRun alternative for every fallback leaf"
     );
-    assert!(layer_tree.resources.font_resources().blobs.is_empty());
-    assert!(layer_tree.resources.font_resources().faces.is_empty());
+    assert_eq!(layer_tree.resources.font_blob_count(), 1);
+    assert_eq!(layer_tree.resources.font_resources().blobs.len(), 1);
+    assert_eq!(layer_tree.resources.font_resources().faces.len(), 1);
+    rhwp::paint::validate_text_variant_scope(&layer_tree)
+        .expect("leaf-scoped vertical alternatives must satisfy variant scope");
+    #[cfg(not(target_arch = "wasm32"))]
+    for backend in [
+        VariantSelectionBackend::CanvasKit,
+        VariantSelectionBackend::CanvasKitBrowser,
+        VariantSelectionBackend::NativeSkia,
+        VariantSelectionBackend::Svg,
+        VariantSelectionBackend::Canvas2D,
+    ] {
+        let reports = analyze_text_variant_selection(
+            &layer_tree,
+            TextVariantSelectionOptions {
+                backend,
+                ..TextVariantSelectionOptions::canvaskit()
+            },
+        );
+        let vertical_reports = reports
+            .iter()
+            .filter(|report| matches!(report.equivalence_group.as_str(), "text-0" | "text-1"))
+            .collect::<Vec<_>>();
+        assert_eq!(vertical_reports.len(), 2, "{backend:?}");
+        assert!(vertical_reports.iter().all(|report| {
+            report.selected_variant_kind == Some(TextVariantKind::TextRun)
+                && report.fallback_required
+        }));
+    }
+
+    let mut rejected_tree = render_tree;
+    assert!(replace_nth_vertical_run_text(
+        &mut rejected_tree.root,
+        1,
+        &mut 0
+    ));
+    let rejected_layer = LayerBuilder::new(RenderProfile::Screen).build(&rejected_tree);
+    let mut rejected_ops = Vec::new();
+    collect_text_ops(&rejected_layer.root, &mut rejected_ops);
+    assert_eq!(
+        rejected_ops
+            .iter()
+            .filter(|op| matches!(op, PaintOp::GlyphRun { run, .. }
+                if run.diagnostics.reason.as_deref() == Some("boundedVerticalHwp5TableCellV1")))
+            .count(),
+        0,
+        "one mismatched leaf must reject the entire vertical publication"
+    );
+    assert_eq!(rejected_layer.resources.font_blob_count(), 0);
+    assert!(rejected_layer.resources.font_resources().blobs.is_empty());
+    assert!(rejected_layer.resources.font_resources().faces.is_empty());
 }
 
 #[test]

@@ -6,7 +6,8 @@
 - **D2 재자격화 기록**: `7bfefff07a99`
 - **기계 판독 계획**:
   [`w10_q4_d3_revised_execution_plan.json`](../tech/investigations/issue-4969/w10_q4_d3_revised_execution_plan.json)
-- **상태**: 계획 checkpoint `e64d6fd67`; D3-A `qualified-shadow-mapping` 결과·checkpoint 생성 승인
+- **상태**: 계획 checkpoint `e64d6fd67`; D3-A checkpoint `bb334756b`; D3-B
+  `qualified-atomic-leaf-publication` 결과·checkpoint 생성 승인
 - **작성일**: 2026-08-30 KST
 - **제품 출력 변경**: 승인된 D2 target의 layer tree에 fallback과 함께 portable `GlyphRun` 대안을 게시
 - **backend 선택 변경**: 없음 — Q4-D4 전까지 모든 backend는 `TextRun`을 선택
@@ -111,6 +112,11 @@ fallback leaf/source/glyph를 일대일로 매핑하고, 같은 길이의 다른
 **종료 게이트**: target은 `N TextRun + N vertical GlyphRun`, leaf별 group 1, portable blob/face 1,
 nominal duplicate 0; rejected batch publication residue 0.
 
+**결과 후보**: [Q4-D3-B 결과 보고서](../working/task_m100_4969_w10_q4_d3_b.md)는 target의 두 fallback
+leaf에 vertical `GlyphRun`을 하나씩 게시하고 portable blob/face를 한 번만 등록했다. 같은 길이 문자 변조는
+line 전체를 거부해 glyph/resource residue 0을 유지했고, D4 전 selector 다섯 종류는 모두 `TextRun`을
+선택했다. 판정은 `qualified-atomic-leaf-publication`으로 승인됐으며 checkpoint 승인 대기 상태다.
+
 ### Q4-D3-C — publication 검증·결과 판정
 
 1. `validate_text_variant_scope`와 layer JSON source/variant mapping을 통과시킨다.
@@ -165,5 +171,7 @@ canonical mismatch 0, 회귀 0. 결과 승인·checkpoint 전 Q4-D4는 시작하
 - public schema 변경, D2 target 확대, horizontal resource helper 대규모 리팩터링이 필요하면 별도 수정 계획을 낸다.
 
 메인테이너가 수정 수행계획을 승인하고 계획 checkpoint `e64d6fd67`을 고정했다. Q4-D3-A 결과는
-`qualified-shadow-mapping`으로 승인됐으며 checkpoint 생성도 승인됐다. 결과 checkpoint와 D3-B 진행 승인을
-받기 전에는 atomic resource + leaf publication을 시작하지 않는다.
+`qualified-shadow-mapping`으로 승인돼 checkpoint `bb334756b`로 고정됐다. D3-B 진행 승인을 받아 atomic
+resource + leaf publication을 구현했고 `qualified-atomic-leaf-publication` 결과도 승인받았다. 현재
+checkpoint 생성도 승인됐으며 D3-B 결과 checkpoint와 D3-C 진행 승인을 받기 전에는
+교차 런타임 publication 검증을 시작하지 않는다.

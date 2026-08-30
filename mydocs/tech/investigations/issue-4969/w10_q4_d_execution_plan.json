@@ -4,7 +4,7 @@
   "issue": 4969,
   "stage": "W10-Q4-D",
   "date": "2026-08-30",
-  "status": "Q4-D3-A-qualified-shadow-mapping-checkpoint-approved",
+  "status": "Q4-D3-B-qualified-atomic-leaf-publication-checkpoint-approved",
   "baseCheckpoint": "f449960c7",
   "upstreamDevelAtD2Start": "628944a33cb5",
   "latestObservedUpstreamDevel": "bd78a53122e4",
@@ -77,7 +77,7 @@
     {
       "id": "Q4-D3",
       "name": "atomic-vertical-glyph-run-publication",
-      "status": "D3-A-qualified-shadow-mapping-checkpoint-approved",
+      "status": "D3-B-qualified-atomic-leaf-publication-checkpoint-approved",
       "plan": "mydocs/plans/task_m100_4969_w10_q4_d3_revised.md",
       "executionPlan": "mydocs/tech/investigations/issue-4969/w10_q4_d3_revised_execution_plan.json",
       "productOutputChange": true
@@ -108,5 +108,5 @@
     "githubComment": true,
     "pullRequest": true
   },
-  "next": "D3-A-checkpoint-then-maintainer-D3-B-approval"
+  "next": "D3-B-checkpoint-then-maintainer-D3-C-approval"
 }
