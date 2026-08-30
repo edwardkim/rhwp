@@ -143,7 +143,7 @@ fn hyphen_runs(svg: &str, min_len: usize) -> Vec<Run> {
 /// 쏟으면 35쪽 8자 런이 1.9em 까지 벌어진다(구현 중 실제로 만든 오답).
 #[test]
 fn last_line_dash_leader_advance_stays_in_the_oracle_band() {
-    for page_arg in ["33", "34"] {
+    for page_arg in ["32", "33"] {
         let svg = render_page_svg(page_arg);
         let runs = hyphen_runs(&svg, 8);
         assert!(
@@ -172,7 +172,7 @@ fn stretched_dash_leader_stays_inside_the_text_area() {
     // 이 문서(A4 세로, 96dpi SVG)의 정상(양쪽정렬) 런 마지막 글리프 **원점** 실측
     // 최대치는 707.1px 다. 확장된 마지막 줄 런의 원점이 그보다 밖이면 여백 침범이다.
     const RIGHT_EDGE_ORIGIN_PX: f64 = 708.0;
-    for page_arg in ["33", "34"] {
+    for page_arg in ["32", "33"] {
         let svg = render_page_svg(page_arg);
         for run in hyphen_runs(&svg, 8) {
             let last_x = run.pts[run.pts.len() - 1].0;
