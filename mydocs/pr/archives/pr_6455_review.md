@@ -1,6 +1,6 @@
 ---
 kind: pr-review
-status: active
+status: visual-hold
 canonical: mydocs/manual/pr_review_workflow.md
 last_verified: 2026-08-30
 pr: 6455
@@ -9,6 +9,15 @@ author: planet6897
 ---
 
 # PR #6455 검토 기록
+
+## 결정
+
+| 구분 | 현재 결정 |
+|---|---|
+| 원 PR head 직접 병합 | 하지 않음 |
+| 수용 대상 | 기존 baseline 행을 보존한 #6481의 `1b8a5deff57cef226fb89e587128335fb767d86e` |
+| 현재 상태 | 수용 보류: 카드·페이지 배치 visual sweep과 최신 CI가 아직 완료되지 않음 |
+| 승인 뒤 처리 | #6481 수용·병합 뒤 #6455를 포함 수용 근거와 함께 close |
 
 ## 식별과 provenance
 
@@ -28,6 +37,6 @@ author: planet6897
 
 번들 PNG는 통합 head 직접 재생성 결과가 아니므로 최종 시각 판정은 통합 PR Render Diff 성공을 조건으로 한다.
 
-## 판정
+## 현재 결론
 
-차단 finding은 없다. 통합 PR latest-head CI와 Render Diff를 기다리는 수용 후보이다.
+baseline 충돌은 기존 회귀 행을 보존해 해소됐고 focused test도 통과했다. 그러나 cell margin 변경은 카드와 페이지 배치에 영향을 주므로 visual sweep 없이 수용 확정을 하지 않는다. 현재는 수용 보류이며, 승인 뒤 #6481의 CI와 visual 증빙을 확인한 경우에만 포함 수용한다.

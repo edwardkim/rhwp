@@ -1,6 +1,6 @@
 ---
 kind: pr-review
-status: active
+status: visual-hold
 canonical: mydocs/manual/pr_review_workflow.md
 last_verified: 2026-08-30
 pr: 6447
@@ -9,6 +9,15 @@ author: planet6897
 ---
 
 # PR #6447 검토 기록
+
+## 결정
+
+| 구분 | 현재 결정 |
+|---|---|
+| 원 PR head 직접 병합 | 하지 않음 |
+| 수용 대상 | 통합 PR #6481에 포함된 `16ee5f750f8ce76ba9879eed00c2597423b1b0c6` |
+| 현재 상태 | 수용 보류: 페이지 경계 visual sweep과 최신 CI가 아직 완료되지 않음 |
+| 승인 뒤 처리 | #6481 수용·병합 뒤 #6447을 포함 수용 근거와 함께 close |
 
 ## 식별과 provenance
 
@@ -28,6 +37,6 @@ line 끝의 forced break가 다음 행과 합쳐지는 #6300 페이지 회귀를
 
 원 PR의 비교 이미지는 변경 의도의 보조 근거로만 확인했다. 통합 head의 최종 시각 수용은 Render Diff 성공을 조건으로 한다.
 
-## 판정
+## 현재 결론
 
-차단 finding은 없다. 통합 PR latest-head CI와 Render Diff를 기다리는 수용 후보이다.
+forced break와 페이지 수는 사용자-visible 결과이므로 contract test만으로 수용을 확정하지 않는다. 현재는 visual sweep 미실행에 따른 수용 보류이며, 승인 뒤 #6481의 CI와 visual 증빙을 확인한 경우에만 포함 수용한다.

@@ -1,6 +1,6 @@
 ---
 kind: pr-review
-status: active
+status: maintainer-fix-visual-hold
 canonical: mydocs/manual/pr_review_workflow.md
 last_verified: 2026-08-30
 pr: 6471
@@ -9,6 +9,15 @@ author: planet6897
 ---
 
 # PR #6471 검토 기록
+
+## 결정
+
+| 구분 | 현재 결정 |
+|---|---|
+| 원 PR head 직접 병합 | 불가: 최신 devel과 중복된 Zoom 구현으로 원 CI 실패 |
+| 수용 대상 | 중복 Zoom을 제거하고 CMYK JPEG 정규화만 보존한 메인터너 보정 #6481 |
+| 현재 상태 | 메인터너 보정 후 수용 보류: CMYK/Zoom 출력의 visual sweep과 최신 CI가 아직 완료되지 않음 |
+| 승인 뒤 처리 | #6481 수용·병합 뒤 #6471을 원 head가 아닌 보정된 통합 결과 기준으로 close |
 
 ## 식별과 provenance
 
@@ -30,6 +39,6 @@ author: planet6897
 
 최종 후보에서 기존 `header_imgbrush_zoom_is_not_collapsed_to_tile`, `zoom_cell_fill_svg_meets_the_cell_box`와 신규 `hwpx_zoom_mode_is_not_parsed_as_tile`, `four_component_jpeg_is_detected`가 모두 통과했다. 공통 필수 native·WASM·workspace clippy, workspace build, manifest와 format 검증도 통과했다.
 
-## 판정
+## 현재 결론
 
-원 head 그대로는 수용 불가였으나 중복 구현 제거 후 고유 CMYK 보정은 수용 가능하다. 통합 PR latest-head CI와 Render Diff를 기다리는 메인터너 보정 수용 후보이다.
+원 head는 CI를 통과하지 못하므로 merge 불가다. 중복 Zoom 제거 뒤 CMYK JPEG 정규화와 해당 계약은 수용 가능한 코드 후보이지만, 이미지 fill과 CMYK 출력은 visual sweep 없이 수용을 확정할 수 없다. 현재 판정은 `메인터너 보정 후 수용 보류`다.

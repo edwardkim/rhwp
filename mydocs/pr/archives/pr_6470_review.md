@@ -1,6 +1,6 @@
 ---
 kind: pr-review
-status: active
+status: visual-hold
 canonical: mydocs/manual/pr_review_workflow.md
 last_verified: 2026-08-30
 pr: 6470
@@ -9,6 +9,15 @@ author: planet6897
 ---
 
 # PR #6470 검토 기록
+
+## 결정
+
+| 구분 | 현재 결정 |
+|---|---|
+| 원 PR head 직접 병합 | 하지 않음 |
+| 수용 대상 | 통합 PR #6481에 포함된 `421f3846d14720a9cfd3b2fc8f4a42afea80fc90` |
+| 현재 상태 | 수용 보류: golden SVG와 비용 상세 열 visual sweep이 아직 완료되지 않음 |
+| 승인 뒤 처리 | #6481 수용·병합 뒤 #6470을 포함 수용 근거와 함께 close |
 
 ## 식별과 provenance
 
@@ -28,6 +37,6 @@ author: planet6897
 
 golden SVG와 번들 이미지 변경은 통합 PR Render Diff에서 다시 확인해야 하며, contributor 산출물만으로 시각 sweep 통과를 주장하지 않는다.
 
-## 판정
+## 현재 결론
 
-차단 finding은 없다. 통합 PR latest-head CI와 Render Diff를 기다리는 수용 후보이다.
+저장된 condensed width와 텍스트 계약은 통과했지만 golden SVG 변경은 직접 visual 확인이 필요하다. 현재는 visual sweep 미실행에 따른 수용 보류이며, 승인 뒤 #6481의 CI와 visual 증빙을 확인한 경우에만 포함 수용한다.
