@@ -1351,6 +1351,154 @@ fn issue_4969_q3_e3_negative_surfaces_roll_back_the_whole_paragraph() {
     }
 }
 
+#[cfg(not(target_arch = "wasm32"))]
+fn q4_d5_measure_vertical_case(label: &str, core: &DocumentCore) -> serde_json::Value {
+    use std::time::Instant;
+
+    const WARMUPS: usize = 20;
+    const ITERATIONS: usize = 64;
+
+    let cold_layout_started = Instant::now();
+    let cold_render_tree = core
+        .build_page_render_tree(0)
+        .expect("build Q4-D5 cold render tree");
+    let cold_layout_ns = cold_layout_started.elapsed().as_nanos();
+
+    for _ in 0..WARMUPS {
+        std::hint::black_box(
+            core.build_page_render_tree(0)
+                .expect("warm Q4-D5 render tree"),
+        );
+    }
+    let warm_layout_started = Instant::now();
+    for _ in 0..ITERATIONS {
+        std::hint::black_box(
+            core.build_page_render_tree(0)
+                .expect("measure Q4-D5 render tree"),
+        );
+    }
+    let warm_layout_ns = warm_layout_started.elapsed().as_nanos();
+
+    for _ in 0..WARMUPS {
+        std::hint::black_box(LayerBuilder::new(RenderProfile::Screen).build(&cold_render_tree));
+    }
+    let layer_started = Instant::now();
+    for _ in 0..ITERATIONS {
+        std::hint::black_box(LayerBuilder::new(RenderProfile::Screen).build(&cold_render_tree));
+    }
+    let layer_build_ns = layer_started.elapsed().as_nanos();
+
+    let layer_tree = LayerBuilder::new(RenderProfile::Screen).build(&cold_render_tree);
+    for _ in 0..WARMUPS {
+        std::hint::black_box(layer_tree.to_json());
+    }
+    let json_started = Instant::now();
+    for _ in 0..ITERATIONS {
+        std::hint::black_box(layer_tree.to_json());
+    }
+    let json_serialize_ns = json_started.elapsed().as_nanos();
+
+    for _ in 0..WARMUPS {
+        std::hint::black_box(analyze_canvaskit_replay_plan(
+            &layer_tree,
+            CanvasKitReplayMode::Default,
+        ));
+    }
+    let replay_plan_started = Instant::now();
+    for _ in 0..ITERATIONS {
+        std::hint::black_box(analyze_canvaskit_replay_plan(
+            &layer_tree,
+            CanvasKitReplayMode::Default,
+        ));
+    }
+    let replay_plan_ns = replay_plan_started.elapsed().as_nanos();
+
+    let layer_json = layer_tree.to_json();
+    let replay_plan = analyze_canvaskit_replay_plan(&layer_tree, CanvasKitReplayMode::Default);
+    let replay_plan_json =
+        serde_json::to_string(&replay_plan).expect("serialize Q4-D5 replay plan");
+    let mut ops = Vec::new();
+    collect_text_ops(&layer_tree.root, &mut ops);
+    let fallback_text_runs = ops
+        .iter()
+        .filter(|op| matches!(op, PaintOp::TextRun { run, .. } if run.is_vertical))
+        .count();
+    let vertical_glyph_runs = ops
+        .iter()
+        .filter(|op| {
+            matches!(op, PaintOp::GlyphRun { run, .. }
+                if run.diagnostics.reason.as_deref() == Some("boundedVerticalHwp5TableCellV1"))
+        })
+        .count();
+    let font_payload_bytes = layer_tree
+        .resources
+        .font_blob_resources()
+        .map(|(_, bytes)| bytes.len())
+        .sum::<usize>();
+
+    serde_json::json!({
+        "label": label,
+        "warmups": WARMUPS,
+        "iterations": ITERATIONS,
+        "coldLayoutNs": cold_layout_ns,
+        "warmLayoutNs": warm_layout_ns,
+        "layerBuildNs": layer_build_ns,
+        "jsonSerializeNs": json_serialize_ns,
+        "replayPlanNs": replay_plan_ns,
+        "layerJsonBytes": layer_json.len(),
+        "layerJsonBlake3": blake3::hash(layer_json.as_bytes()).to_hex().to_string(),
+        "replayPlanBytes": replay_plan_json.len(),
+        "replayPlanBlake3": blake3::hash(replay_plan_json.as_bytes()).to_hex().to_string(),
+        "fallbackTextRuns": fallback_text_runs,
+        "verticalGlyphRuns": vertical_glyph_runs,
+        "fontBlobs": layer_tree.resources.font_blob_count(),
+        "fontFaces": layer_tree.resources.font_resources().faces.len(),
+        "fontPayloadBytes": font_payload_bytes
+    })
+}
+
+#[test]
+#[ignore = "Q4-D5 local A/B/A performance receipt; run serially in release profile"]
+#[cfg(not(target_arch = "wasm32"))]
+fn issue_4969_q4_d5_local_vertical_activation_aba_receipt() {
+    let a1 = q4_d5_measure_vertical_case(
+        "A1-legacy-no-exact-source",
+        &bounded_vertical_table_core(false),
+    );
+    let b =
+        q4_d5_measure_vertical_case("B-bounded-exact-source", &bounded_vertical_table_core(true));
+    let a2 = q4_d5_measure_vertical_case(
+        "A2-legacy-no-exact-source",
+        &bounded_vertical_table_core(false),
+    );
+
+    assert_eq!(a1["layerJsonBlake3"], a2["layerJsonBlake3"]);
+    assert_eq!(a1["replayPlanBlake3"], a2["replayPlanBlake3"]);
+    for control in [&a1, &a2] {
+        assert_eq!(control["fallbackTextRuns"], 2);
+        assert_eq!(control["verticalGlyphRuns"], 0);
+        assert_eq!(control["fontBlobs"], 0);
+        assert_eq!(control["fontFaces"], 0);
+        assert_eq!(control["fontPayloadBytes"], 0);
+    }
+    assert_eq!(b["fallbackTextRuns"], 2);
+    assert_eq!(b["verticalGlyphRuns"], 2);
+    assert_eq!(b["fontBlobs"], 1);
+    assert_eq!(b["fontFaces"], 1);
+    assert_eq!(b["fontPayloadBytes"], NOTO.len());
+
+    println!(
+        "{}",
+        serde_json::json!({
+            "kind": "q4-d5-vertical-activation-aba-performance",
+            "fixture": "public-synthetic-HWP5-code2-one-cell-one-paragraph-one-line-one-column-pure-CJK",
+            "fontBytes": NOTO.len(),
+            "fontBlake3": blake3::hash(NOTO).to_hex().to_string(),
+            "cases": [a1, b, a2]
+        })
+    );
+}
+
 #[test]
 #[cfg(not(target_arch = "wasm32"))]
 fn issue_4969_q3_e1_strict_native_dto_rejects_without_mutation() {

@@ -4,7 +4,7 @@
   "issue": 4969,
   "stage": "W10-Q4-D",
   "date": "2026-08-30",
-  "status": "Q4-D5-detailed-plan-approved-checkpoint-pending",
+  "status": "Q4-D5-A-qualified-measurement-contract-result-approved",
   "baseCheckpoint": "f449960c7",
   "upstreamDevelAtD2Start": "628944a33cb5",
   "latestObservedUpstreamDevel": "19b89d967b15",
@@ -96,7 +96,7 @@
     {
       "id": "Q4-D5",
       "name": "regression-performance-and-final-classification",
-      "status": "detailed-plan-approved-checkpoint-pending",
+      "status": "D5-A-qualified-measurement-contract-result-approved",
       "plan": "mydocs/plans/task_m100_4969_w10_q4_d5.md",
       "executionPlan": "mydocs/tech/investigations/issue-4969/w10_q4_d5_execution_plan.json",
       "productOutputChange": false
@@ -125,5 +125,5 @@
     "githubComment": true,
     "pullRequest": true
   },
-  "next": "separate-Q4-D5-plan-checkpoint-approval"
+  "next": "automatic-D5-A-checkpoint-then-D5-B"
 }

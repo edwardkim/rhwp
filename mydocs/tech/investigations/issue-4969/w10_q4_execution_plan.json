@@ -4,7 +4,7 @@
   "issue": 4969,
   "stage": "W10-Q4",
   "date": "2026-08-30",
-  "status": "q4-d5-detailed-plan-approved-checkpoint-pending",
+  "status": "q4-d5-a-qualified-measurement-contract-result-approved",
   "productMutationBeforeApproval": false,
   "slices": [
     {
@@ -31,7 +31,7 @@
     {
       "id": "Q4-D",
       "name": "one-surface-bounded-atomic-activation",
-      "status": "d4-qualified-canvaskit-bounded-vertical-runtime-checkpointed-d5-plan-approved-checkpoint-pending",
+      "status": "d4-qualified-canvaskit-bounded-vertical-runtime-checkpointed-d5-a-result-approved",
       "plan": "mydocs/plans/task_m100_4969_w10_q4_d.md",
       "candidate": "hwp5-table-cell-code2-one-paragraph-one-run-one-column-pure-cjk",
       "exit": "exact-position-mismatch-zero-partial-publication-zero"
@@ -70,5 +70,5 @@
     "githubComment": true,
     "pullRequest": true
   },
-  "next": "separate-Q4-D5-plan-checkpoint-approval"
+  "next": "automatic-D5-A-checkpoint-then-D5-B"
 }

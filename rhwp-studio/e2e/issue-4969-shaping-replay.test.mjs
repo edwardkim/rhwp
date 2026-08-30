@@ -209,6 +209,31 @@ function rasterize(run, font) {
   }
 }
 
+function readSurfacePixels(surface, width, height) {
+  surface.flush();
+  const snapshot = surface.makeImageSnapshot();
+  try {
+    const pixels = snapshot.readPixels(0, 0, {
+      width,
+      height,
+      colorType: CanvasKit.ColorType.RGBA_8888,
+      alphaType: CanvasKit.AlphaType.Unpremul,
+      colorSpace: CanvasKit.ColorSpace.SRGB,
+    });
+    assert.ok(pixels, 'CanvasKit performance receipt pixel을 읽을 수 있어야 한다');
+    return Uint8Array.from(pixels);
+  } finally {
+    snapshot.delete();
+  }
+}
+
+function measureCanvasKitPrimitive(draw, warmups = 20, iterations = 64) {
+  for (let index = 0; index < warmups; index += 1) draw();
+  const started = process.hrtime.bigint();
+  for (let index = 0; index < iterations; index += 1) draw();
+  return Number(process.hrtime.bigint() - started);
+}
+
 function verticalFixture(faceKey, text, glyphId, sourceId) {
   const equivalenceGroup = `issue-4969-q4-d4-bounded-vertical-${sourceId}`;
   const verticalFallback = {
@@ -624,6 +649,98 @@ try {
           }));
         } finally {
           snapshot.delete();
+        }
+      }
+
+      if (process.env.RHWP_Q4_D5_ABA === '1') {
+        const receiptWidth = 128;
+        const receiptHeight = 128;
+        const receiptSurface = CanvasKit.MakeSurface(receiptWidth, receiptHeight);
+        assert.ok(receiptSurface, 'Q4-D5 actual CanvasKit A/B/A surface를 만들 수 있어야 한다');
+        const receiptCanvas = receiptSurface.getCanvas();
+        const [firstFixture, secondFixture] = verticalFixtures;
+        const firstFont = verticalCache.font(
+          firstFixture.verticalGlyphRun,
+          verticalResources.fontResources,
+        );
+        const secondFont = verticalCache.font(
+          secondFixture.verticalGlyphRun,
+          verticalResources.fontResources,
+        );
+        assert.ok(firstFont && secondFont, 'Q4-D5 actual Noto fonts를 준비해야 한다');
+        const secondRun = {
+          ...secondFixture.verticalGlyphRun,
+          placement: {
+            ...secondFixture.verticalGlyphRun.placement,
+            runToPage: {
+              ...secondFixture.verticalGlyphRun.placement.runToPage,
+              f: 88,
+            },
+          },
+        };
+        const drawLegacy = () => {
+          receiptCanvas.clear(CanvasKit.TRANSPARENT);
+          receiptCanvas.drawText('한', 32, 48, paint, firstFont);
+          receiptCanvas.drawText('글', 32, 88, paint, secondFont);
+        };
+        const drawBounded = () => {
+          receiptCanvas.clear(CanvasKit.TRANSPARENT);
+          assert.equal(drawCanvasKitGlyphRun(
+            receiptCanvas,
+            firstFixture.verticalGlyphRun,
+            firstFont,
+            paint,
+          ), true);
+          assert.equal(drawCanvasKitGlyphRun(
+            receiptCanvas,
+            secondRun,
+            secondFont,
+            paint,
+          ), true);
+        };
+        try {
+          drawLegacy();
+          const legacyPixels = readSurfacePixels(receiptSurface, receiptWidth, receiptHeight);
+          const legacyHash = bytesToHex(blake3(legacyPixels));
+          drawBounded();
+          const boundedPixels = readSurfacePixels(receiptSurface, receiptWidth, receiptHeight);
+          const boundedHash = bytesToHex(blake3(boundedPixels));
+          assert.equal(
+            legacyHash,
+            boundedHash,
+            '단순 CJK target은 legacy drawText와 bounded drawGlyphs의 actual pixel이 같아야 한다',
+          );
+
+          const a1ElapsedNs = measureCanvasKitPrimitive(drawLegacy);
+          const bElapsedNs = measureCanvasKitPrimitive(drawBounded);
+          const a2ElapsedNs = measureCanvasKitPrimitive(drawLegacy);
+          drawLegacy();
+          assert.equal(
+            bytesToHex(blake3(readSurfacePixels(receiptSurface, receiptWidth, receiptHeight))),
+            legacyHash,
+            'A1/A2 legacy primitive pixel hash는 같아야 한다',
+          );
+          drawBounded();
+          assert.equal(
+            bytesToHex(blake3(readSurfacePixels(receiptSurface, receiptWidth, receiptHeight))),
+            boundedHash,
+            'bounded primitive pixel hash는 반복 뒤에도 같아야 한다',
+          );
+          console.log(JSON.stringify({
+            kind: 'q4-d5-actual-canvaskit-aba-performance',
+            warmups: 20,
+            iterations: 64,
+            fontBytes: verticalFontBytes.byteLength,
+            fontBlake3: bytesToHex(blake3(verticalFontBytes)),
+            cases: [
+              { label: 'A1-legacy-drawText', elapsedNs: a1ElapsedNs, drawCallsPerIteration: 2, pixelBlake3: legacyHash },
+              { label: 'B-bounded-drawGlyphs', elapsedNs: bElapsedNs, drawCallsPerIteration: 2, pixelBlake3: boundedHash },
+              { label: 'A2-legacy-drawText', elapsedNs: a2ElapsedNs, drawCallsPerIteration: 2, pixelBlake3: legacyHash },
+            ],
+            fontCache: verticalCache.diagnostics(),
+          }));
+        } finally {
+          receiptSurface.delete();
         }
       }
     } finally {

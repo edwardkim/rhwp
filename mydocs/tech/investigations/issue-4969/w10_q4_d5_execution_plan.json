@@ -4,9 +4,10 @@
   "issue": 4969,
   "stage": "W10-Q4-D5",
   "date": "2026-08-31",
-  "status": "detailed-plan-approved-checkpoint-pending",
+  "status": "D5-A-qualified-measurement-contract-result-approved",
   "planApproved": true,
   "d4DCheckpoint": "f40987220",
+  "planCheckpoint": "a4248b9c6",
   "baseUpstreamDevel": "19b89d967b15",
   "productMutationExpected": false,
   "measurement": {
@@ -58,7 +59,8 @@
     {
       "id": "Q4-D5-A",
       "name": "measurement-contract-and-reproducible-harness",
-      "status": "blocked-by-plan-checkpoint",
+      "status": "qualified-measurement-contract-result-approved",
+      "resultEvidence": "mydocs/tech/investigations/issue-4969/w10_q4_d5_a_measurement_contract.json",
       "productOutputChange": false
     },
     {
@@ -101,5 +103,5 @@
     "githubMutationAllowed": false
   },
   "existingEvidenceReused": "mydocs/tech/investigations/issue-4969/w10_q4_d4_d_cross_validation.json",
-  "next": "separate-plan-checkpoint-approval"
+  "next": "automatic-D5-A-checkpoint-then-D5-B"
 }
