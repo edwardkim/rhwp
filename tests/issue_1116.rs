@@ -344,8 +344,11 @@ fn sample16_hwp5_page3_dump_pages_reports_line_spacing_in_height() {
         .find(|line| line.contains("FullParagraph  pi=74"))
         .unwrap_or_else(|| panic!("p3 pi=74 dump line not found:\n{dump}"));
 
-    assert!(p74.contains("h=88.2") && p74.contains("lines=80.6"),
-        "p3 3줄 문단 높이는 lh=52.0px, ls=28.6px, HWP3-origin spacing_before=7.6px를 포함해 표시되어야 함: {p74}"
+    // #4628 dump-pages 는 HeightMeasurer 합(h=88.2)이 아니라 프로덕션
+    // format_paragraph total 을 말한다. lh/ls 분해와 줄 간격 포함은 유지한다.
+    assert!(
+        p74.contains("lines=80.6"),
+        "p3 3줄 문단은 줄 간격이 포함된 lines=80.6 을 유지해야 함: {p74}"
     );
     assert!(
         p74.contains("lh=52.0") && p74.contains("ls=28.6"),
@@ -382,8 +385,10 @@ fn sample16_hwp5_page3_bcp_tail_paragraph_stays_single_visual_line_for_pdf_oracl
         .find(|line| line.contains("FullParagraph  pi=83"))
         .unwrap_or_else(|| panic!("p3 pi=83 dump line not found:\n{dump}"));
 
+    // #4628: 프로덕션 format_paragraph total(sb + lines + sa). 2022 표본과
+    // 같이 HeightMeasurer 합 31.5 가 아니라 29.6 이다. 한 줄 접힘은 유지.
     assert!(
-        p83.contains("h=31.5")
+        p83.contains("h=29.6")
             && p83.contains("lines=27.7")
             && p83.contains("lh=17.3")
             && p83.contains("ls=10.4"),
