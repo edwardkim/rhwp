@@ -582,6 +582,31 @@ pub struct HeightMeasurer {
     float_carve_evidence: Vec<crate::renderer::float_placement::FloatCarveEvidence>,
 }
 
+/// [#6299] 이 저장 seg 가 **앞 줄의 가로 조각**인가 — 같은 물리 줄의 오른쪽 조각.
+///
+/// 어울림(SQUARE) 개체를 낀 문단의 글줄은 개체 좌·우로 쪼개지고, 한글은 그 짝을
+/// **같은 `vertical_pos`** 로 적어 둔다. 조각마다 줄 높이를 더하면 문단이 조각 수만큼
+/// 부푼다 — 156518878 1쪽 머리글 칸은 seg 6개(물리 줄 3개)라 content 가 68.3px 대신
+/// 136.5px 이 됐고, 칸이 `vertAlign=CENTER` 라 내용이 27.9pt 아래로 내려와 다음 행과
+/// 겹쳤다.
+///
+/// **⚠ 판별은 `column_start` 가 함께 달라야 한다.** 같은 `vertical_pos` 쌍에는 세 가지
+/// 뜻이 있고(좌우분할 · 쪽 리셋 · 중복), **이중 계상이 실제로 드러나는 것은 좌우분할
+/// 하나뿐**이다. cs·sw 가 같은 쌍(쪽 리셋·중복)은 렌더 결함이 0 이라 건드리면 안 된다
+/// — 10k 모집단 실측에서 확인된 구분이다.
+pub(crate) fn stored_seg_is_row_fragment(para: &Paragraph, idx: usize) -> bool {
+    use crate::model::paragraph::LineSeg;
+    let segs = &para.line_segs;
+    if idx == 0 || idx >= segs.len() {
+        return false;
+    }
+    let (cur, prev) = (&segs[idx], &segs[idx - 1]);
+    cur.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+        && prev.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+        && cur.vertical_pos == prev.vertical_pos
+        && cur.column_start != prev.column_start
+}
+
 impl HeightMeasurer {
     pub fn new(dpi: f64) -> Self {
         Self {
@@ -1791,6 +1816,10 @@ impl HeightMeasurer {
                                             h
                                         }
                                     })
+                                    .enumerate()
+                                    // [#6299] 앞 줄의 가로 조각은 높이를 다시 더하지 않는다.
+                                    .filter(|(i, _)| !stored_seg_is_row_fragment(p, *i))
+                                    .map(|(_, h)| h)
                                     .sum();
                                 spacing_before + lines_total + spacing_after
                             }
@@ -2642,6 +2671,10 @@ impl HeightMeasurer {
                                             h
                                         }
                                     })
+                                    .enumerate()
+                                    // [#6299] 앞 줄의 가로 조각은 높이를 다시 더하지 않는다.
+                                    .filter(|(i, _)| !stored_seg_is_row_fragment(p, *i))
+                                    .map(|(_, h)| h)
                                     .sum();
                                 spacing_before + lines_total + spacing_after
                             }
