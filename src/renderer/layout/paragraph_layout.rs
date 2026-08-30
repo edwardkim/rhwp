@@ -5186,6 +5186,16 @@ impl LayoutEngine {
                 y += line_flow_height;
             } else if skip_advance_empty_line {
                 // no advance
+            } else if para.is_some_and(|p| {
+                crate::renderer::height_measurer::stored_seg_is_row_fragment(p, line_idx + 1)
+            }) {
+                // [#6299] 다음 줄이 이 줄의 **가로 조각**(같은 vertical_pos, 다른
+                // column_start)이면 같은 물리 줄이다 — 어울림 개체 좌·우로 쪼개진 짝을
+                // 세로로 쌓으면 문단이 조각 수만큼 길어져 칸 밖으로 흘러내린다
+                // (156518878 1쪽 머리글 칸: 101.3 / 122.6 / 143.9 / 165.3 으로 4단
+                // 적층, 마지막 줄이 칸 바닥 164.5 를 넘었다). 측정 쪽 회계와 같은
+                // 계약이라 두 경로가 갈리지 않는다.
+                last_line_box_bottom = Some(y + render_line_flow_height);
             } else {
                 last_line_box_bottom = Some(y + render_line_flow_height);
                 y += render_line_flow_height + render_line_spacing_px + tac_picture_label_extra;
