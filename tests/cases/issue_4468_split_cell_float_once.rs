@@ -73,11 +73,11 @@ fn issue_4468_split_cell_tb_float_paints_once() {
         "표 8 축소본은 2쪽이어야 한다: {page_count}"
     );
 
-    let mut pages_by_id: HashMap<CellFloatId, Vec<usize>> = HashMap::new();
+    let mut pages_by_id: HashMap<CellFloatId, Vec<u32>> = HashMap::new();
     let mut tv_pages = Vec::new();
     for page in 0..page_count {
         let layout = core
-            .get_page_control_layout_native(page as u32)
+            .get_page_control_layout_native(page)
             .unwrap_or_else(|e| panic!("page {} control layout: {e}", page + 1));
         for (id, h) in cell_tb_images(&layout) {
             if (h - TV_H).abs() < 0.6 {
