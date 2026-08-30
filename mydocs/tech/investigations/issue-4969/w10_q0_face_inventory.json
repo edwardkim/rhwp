@@ -182,6 +182,53 @@
     ],
     "fullCorpusRemeasurement": "not-authorized-not-required-for-q0"
   },
+  "q4SourceReadinessRefresh": {
+    "date": "2026-08-30",
+    "observedAtHead": "73fe7768e18b17a9ebd7ea7ee11259cd0c31119d",
+    "historicalQ0DispositionPreserved": true,
+    "reason": "Q1 and Q3 added tracked exact OTF and TTF sources after the original Q0 WOFF2-only audit",
+    "faces": [
+      {
+        "id": "noto-sans-kr-regular-sfnt",
+        "exactSourcePath": "ttfs/opensource/NotoSansKR-Regular.ttf",
+        "bytes": 2519996,
+        "sha256": "6e06a7fe5d696ca719894a23f36bb2b1be8c816a5937cd4ad0f23ca67780dd74",
+        "rustybuzzParseable": true,
+        "verticalTables": ["vhea", "vmtx"],
+        "hasVorg": false,
+        "q4Disposition": "vertical-oracle-ready"
+      },
+      {
+        "id": "source-han-serif-k-old-hangul-subset",
+        "historicalAssetPath": "assets/fonts/SourceHanSerifK-OldHangul-subset.woff2",
+        "exactSourcePath": "ttfs/opensource/SourceHanSerifK-OldHangul-subset.otf",
+        "bytes": 456688,
+        "sha256": "2f86ef9a52acb6d1dad9d915843239123b635d97edd88fd0573a88ffcb4e16f1",
+        "rustybuzzParseable": true,
+        "verticalTables": ["vhea", "vmtx", "VORG"],
+        "hasVorg": true,
+        "q4Disposition": "vertical-oracle-ready"
+      },
+      {
+        "id": "happiness-sans-vf",
+        "historicalAssetPath": "assets/fonts/HappinessSansVF.woff2",
+        "exactSourcePath": "ttfs/redistributable/happiness-sans/HappinessSansVF.ttf",
+        "bytes": 1503064,
+        "sha256": "3bbd254dcc5780f7524f9d07af4aa981ba5e3e84cf32d7d4e04301b3943e8694",
+        "rustybuzzParseable": true,
+        "verticalTables": [],
+        "hasVorg": false,
+        "q4Disposition": "negative-control-vertical-metrics-unavailable"
+      }
+    ],
+    "verticalOracleReadyExactSourceFaces": [
+      "noto-sans-kr-regular-sfnt",
+      "source-han-serif-k-old-hangul-subset"
+    ],
+    "verticalNegativeControlFaces": ["happiness-sans-vf"],
+    "privateCorpusUsed": false,
+    "productMutation": false
+  },
   "w9Baseline": {
     "runtimeParityPath": "mydocs/tech/investigations/issue-4968/kerning_r4e_runtime_parity.json",
     "runtimeParityFileSha256": "7b21c367669520e504e3278df630f32b6a11ed8b21a2dc66e0dd999127660ef4",

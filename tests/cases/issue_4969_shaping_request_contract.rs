@@ -1,4 +1,5 @@
-//! Issue #4969 W10-Q1: exact-source shaping request는 bounded하고 fail-closed해야 한다.
+//! Issue #4969 W10-Q1/Q4-A: exact-source shaping request는 bounded·fail-closed하고,
+//! exact vertical output은 요청 identity와 결정적 glyph/position oracle을 가져야 한다.
 
 #[path = "../../src/renderer/shaping.rs"]
 mod shaping;
@@ -31,6 +32,29 @@ fn request<'a>(bytes: &'a [u8], text: &'a str) -> ShapingRequest<'a> {
         script: Some("Hang"),
         language: Some("ko"),
         features: &[],
+        variations: &[],
+    }
+}
+
+fn vertical_request<'a>(
+    bytes: &'a [u8],
+    text: &'a str,
+    script: &'a str,
+    language: &'a str,
+    features: &'a [ShapingFeature],
+) -> ShapingRequest<'a> {
+    ShapingRequest {
+        source: Some(ShapingExactSource {
+            bytes,
+            face_index: 0,
+            portable: true,
+        }),
+        text,
+        direction: ShapingDirection::TopToBottom,
+        writing_mode: ShapingWritingMode::VerticalRl,
+        script: Some(script),
+        language: Some(language),
+        features,
         variations: &[],
     }
 }
@@ -469,6 +493,158 @@ fn clusters(output: &shaping::ShapingOutputDecision) -> Vec<u32> {
 
 fn x_advances(output: &shaping::ShapingOutputDecision) -> Vec<i32> {
     output.glyphs.iter().map(|glyph| glyph.x_advance).collect()
+}
+
+fn glyph_records(output: &shaping::ShapingOutputDecision) -> Vec<(u32, u32, i32, i32, i32, i32)> {
+    output
+        .glyphs
+        .iter()
+        .map(|glyph| {
+            (
+                glyph.glyph_id,
+                glyph.cluster_utf8,
+                glyph.x_advance,
+                glyph.y_advance,
+                glyph.x_offset,
+                glyph.y_offset,
+            )
+        })
+        .collect()
+}
+
+#[test]
+fn issue_4969_q4_a_exact_vertical_metrics_and_origins_are_deterministic() {
+    let noto_cjk = shape_bounded_request(&vertical_request(NOTO, "한글", "Hang", "ko", &[]));
+    assert_eq!(noto_cjk.disposition, ShapingDisposition::Applied);
+    assert_eq!(
+        glyph_records(&noto_cjk),
+        [
+            (11232, 0, 0, -1000, -460, -880),
+            (1156, 3, 0, -1000, -460, -880),
+        ]
+    );
+    let noto_identity = noto_cjk.identity.as_ref().expect("Noto vertical identity");
+    assert_eq!(noto_identity.direction, "ttb");
+    assert_eq!(noto_identity.writing_mode, "vertical-rl");
+    assert_eq!(
+        noto_identity.settings_sha256,
+        "8777a129be5e352b4727cf247b63de2b9457b46be09074fcc1eb6b6bfa9d4808"
+    );
+
+    let noto_latin = shape_bounded_request(&vertical_request(NOTO, "AB", "Latn", "en", &[]));
+    assert_eq!(noto_latin.disposition, ShapingDisposition::Applied);
+    assert_eq!(
+        glyph_records(&noto_latin),
+        [(34, 0, 0, -1000, -304, -880), (35, 1, 0, -1000, -328, -880),]
+    );
+
+    let source_han = shape_bounded_request(&vertical_request(
+        SOURCE_HAN,
+        "\u{1112}\u{119e}\u{11ab}글",
+        "Hang",
+        "ko",
+        &[],
+    ));
+    assert_eq!(source_han.disposition, ShapingDisposition::Applied);
+    assert_eq!(
+        glyph_records(&source_han),
+        [
+            (614, 0, 0, -1000, -483, -880),
+            (1230, 9, 0, -1000, -483, -880),
+            (1497, 9, 0, 0, 483, 120),
+            (2085, 9, 0, 0, 483, 120),
+        ]
+    );
+    assert_eq!(
+        source_han
+            .identity
+            .as_ref()
+            .expect("Source Han vertical identity")
+            .settings_sha256,
+        "e41dd5fc7b332e7367802c508cc7b07cb193bd92903731b3fe4637071ac3de6f"
+    );
+}
+
+#[test]
+fn issue_4969_q4_a_writing_mode_identity_does_not_rewrite_vertical_glyphs() {
+    let rl = shape_bounded_request(&vertical_request(NOTO, "한글", "Hang", "ko", &[]));
+    let mut lr_request = vertical_request(NOTO, "한글", "Hang", "ko", &[]);
+    lr_request.writing_mode = ShapingWritingMode::VerticalLr;
+    let lr = shape_bounded_request(&lr_request);
+
+    assert_eq!(rl.glyphs, lr.glyphs);
+    let rl_identity = rl.identity.expect("vertical-rl identity");
+    let lr_identity = lr.identity.expect("vertical-lr identity");
+    assert_eq!(rl_identity.writing_mode, "vertical-rl");
+    assert_eq!(lr_identity.writing_mode, "vertical-lr");
+    assert_eq!(
+        lr_identity.settings_sha256,
+        "0f9548dfa3d703f2aa253bb36545791438d785d8c164552de9fbfd83deb461c9"
+    );
+    assert_ne!(rl_identity.settings_sha256, lr_identity.settings_sha256);
+}
+
+#[test]
+fn issue_4969_q4_a_vert_and_vrt2_feature_policy_is_explicit() {
+    let vertical_off = [
+        ShapingFeature {
+            tag: "vert".into(),
+            value: 0,
+        },
+        ShapingFeature {
+            tag: "vrt2".into(),
+            value: 0,
+        },
+    ];
+    let vertical_on = [
+        ShapingFeature {
+            tag: "vert".into(),
+            value: 1,
+        },
+        ShapingFeature {
+            tag: "vrt2".into(),
+            value: 1,
+        },
+    ];
+    let default = shape_bounded_request(&vertical_request(NOTO, "—…", "Hani", "ja", &[]));
+    let off = shape_bounded_request(&vertical_request(NOTO, "—…", "Hani", "ja", &vertical_off));
+    let on = shape_bounded_request(&vertical_request(NOTO, "—…", "Hani", "ja", &vertical_on));
+
+    assert_eq!(
+        glyph_records(&default),
+        [
+            (197, 0, 0, -1000, -447, -880),
+            (11826, 3, 0, -1000, -500, -880),
+        ]
+    );
+    assert_eq!(default.glyphs, on.glyphs);
+    assert_eq!(
+        glyph_records(&off),
+        [
+            (197, 0, 0, -1000, -447, -880),
+            (206, 3, 0, -1000, -500, -880),
+        ]
+    );
+    assert_ne!(default.glyphs, off.glyphs);
+    assert_eq!(
+        default
+            .identity
+            .expect("default feature identity")
+            .settings_sha256,
+        "ff220fc653825ac2e1219cbedff9c9949a4bcc55aefcacc6ce0e42e0335b6c15"
+    );
+    assert_eq!(
+        off.identity
+            .expect("disabled feature identity")
+            .settings_sha256,
+        "63a70ea1144669216d62c33be5cf2f3d53bd7eeff4dfa45f8b46c7b32b1e5169"
+    );
+    assert_eq!(
+        on.identity
+            .expect("enabled feature identity")
+            .settings_sha256,
+        "c37b7bef80d887899ee27592f2a0872644988f086b6b67225b15ee45fd321a6e"
+    );
 }
 
 #[test]

@@ -4,18 +4,20 @@
   "issue": 4969,
   "stage": "W10-Q4",
   "date": "2026-08-30",
-  "status": "approved-checkpoint-commit-pending",
+  "status": "q4-a-qualified-q4-b-next",
   "productMutationBeforeApproval": false,
   "slices": [
     {
       "id": "Q4-A",
       "name": "exact-vertical-output-oracle-contract",
+      "status": "completed-qualified",
       "productCaller": false,
       "exit": "deterministic-glyph-cluster-xy-position-oracles-and-negative-control"
     },
     {
       "id": "Q4-B",
       "name": "typed-surface-vertical-intent",
+      "status": "next",
       "productCaller": false,
       "exit": "surface-specific-intent-map-and-round-trip-regression-zero"
     },
@@ -65,5 +67,5 @@
     "githubComment": true,
     "pullRequest": true
   },
-  "next": "approve-handoff-plan-checkpoint-commit-then-enter-Q4-A"
+  "next": "enter-Q4-B-after-Q4-A-checkpoint"
 }
