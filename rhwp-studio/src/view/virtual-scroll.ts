@@ -7,8 +7,47 @@ import {
 import type { PageMovementDirection } from './page-movement.ts';
 import { resolvePageGap } from './page-gap.ts';
 
-/** 그리드 모드 전환 줌 임계값 */
-const GRID_ZOOM_THRESHOLD = 0.5;
+/** [#6040] 열 수 왕복을 막기 위한 폭 여유. 한 임계값 통과당 commit 한 번. */
+export const AUTO_GRID_COLUMN_HYSTERESIS_PX = 12;
+
+/**
+ * [#6040] 자동 열 후보. 50% 전역 gate 없이 표시 페이지 폭·간격·편집 영역 폭으로
+ * 계산하고 실제 페이지 수를 넘지 않는다.
+ */
+export function autoGridColumnCandidate(
+  viewportWidth: number,
+  scaledPageWidth: number,
+  pageGap: number,
+  pageCount: number,
+): number {
+  if (!(viewportWidth > 0) || !(scaledPageWidth > 0) || pageCount <= 1) return 1;
+  const fitted = Math.floor((viewportWidth + pageGap) / (scaledPageWidth + pageGap));
+  return Math.max(1, Math.min(pageCount, fitted));
+}
+
+/**
+ * [#6040] 후보를 히스테리시스와 함께 commit 한다.
+ * 늘릴 때는 후보 폭 + 여유, 줄일 때는 현재 열이 더 이상 들어가지 않을 때만.
+ */
+export function commitAutoGridColumns(
+  candidate: number,
+  committed: number,
+  viewportWidth: number,
+  scaledPageWidth: number,
+  pageGap: number,
+  pageCount: number,
+): number {
+  const maxCols = Math.max(1, pageCount);
+  const next = Math.max(1, Math.min(maxCols, Math.floor(candidate)));
+  const prev = Math.max(1, Math.min(maxCols, Math.floor(committed || 1)));
+  if (next === prev) return prev;
+  if (next > prev) {
+    const needed = next * scaledPageWidth + (next - 1) * pageGap + AUTO_GRID_COLUMN_HYSTERESIS_PX;
+    return viewportWidth >= needed ? next : prev;
+  }
+  const keepWidth = prev * scaledPageWidth + (prev - 1) * pageGap - AUTO_GRID_COLUMN_HYSTERESIS_PX;
+  return viewportWidth < keepWidth ? next : prev;
+}
 
 /** [#3591] 가로 팬 여백 = clamp(창 폭 × 비율, 하한, 상한). 상한이 큰 화면에서의 증가를 끊는다. */
 const PAN_SPACE_RATIO = 0.25;
@@ -45,6 +84,7 @@ export class VirtualScroll {
     arrangement: PageArrangement = DEFAULT_PAGE_ARRANGEMENT,
     movement: PageMovementDirection = 'vertical',
     viewportHeight = 0,
+    holdColumns: number | null = null,
   ): void {
     this.pageGap = resolvePageGap(zoom, this.pageGapAt100Percent);
     this.pageHeights = pages.map((p) => p.height * zoom);
@@ -77,19 +117,32 @@ export class VirtualScroll {
         this.layoutUniformGrid(viewportWidth, normalized.columns);
         break;
       case 'auto':
-      default:
-        // 기존 자동 동작: 50% 이하에서만 뷰포트에 들어가는 최대 열 수를 쓴다.
-        this.gridMode = zoom <= GRID_ZOOM_THRESHOLD && viewportWidth > 0 && pages.length > 1;
+      default: {
+        const candidate = autoGridColumnCandidate(
+          viewportWidth,
+          this.maxPageWidth,
+          this.pageGap,
+          pages.length,
+        );
+        const held = typeof holdColumns === 'number' && holdColumns >= 1
+          ? Math.max(1, Math.min(pages.length, Math.floor(holdColumns)))
+          : null;
+        const columns = held ?? commitAutoGridColumns(
+          candidate,
+          this.columns,
+          viewportWidth,
+          this.maxPageWidth,
+          this.pageGap,
+          pages.length,
+        );
+        this.gridMode = columns > 1;
         if (this.gridMode) {
-          const columns = Math.max(
-            1,
-            Math.floor((viewportWidth + this.pageGap) / (this.maxPageWidth + this.pageGap)),
-          );
           this.layoutUniformGrid(viewportWidth, columns);
         } else {
           this.layoutSingleColumn();
         }
         break;
+      }
     }
     this.applyHorizontalPanSpace(viewportWidth);
   }

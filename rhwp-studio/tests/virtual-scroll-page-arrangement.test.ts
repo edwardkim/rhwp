@@ -7,15 +7,17 @@ function pages(n: number, width = 800, height = 1000) {
   return Array.from({ length: n }, () => ({ width, height })) as never;
 }
 
-test('자동은 기존 50% 임계값과 뷰포트 최대 열 계산을 보존한다', () => {
+test('자동은 50% gate 없이 뷰포트에 들어가는 열 수를 쓴다', () => {
   const scroll = new VirtualScroll(10);
   scroll.setPageDimensions(pages(6), 0.4, 2000, { kind: 'auto' });
   assert.equal(scroll.getColumns(), 6);
   assert.equal(scroll.getPageOffset(0), scroll.getPageOffset(5));
 
+  // 0.51 에서도 폭이 4열을 담으면 1열이 아니라 4열이다 (#6040).
   scroll.setPageDimensions(pages(6), 0.51, 2000, { kind: 'auto' });
-  assert.equal(scroll.getColumns(), 1);
-  assert.notEqual(scroll.getPageOffset(0), scroll.getPageOffset(1));
+  assert.equal(scroll.getColumns(), 4);
+  assert.equal(scroll.getPageOffset(0), scroll.getPageOffset(3));
+  assert.notEqual(scroll.getPageOffset(0), scroll.getPageOffset(4));
 });
 
 test('한 쪽은 낮은 배율에서도 한 행 한 쪽과 중앙 정렬을 유지한다', () => {

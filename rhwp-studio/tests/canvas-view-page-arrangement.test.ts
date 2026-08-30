@@ -52,7 +52,7 @@ test('CanvasView는 저장된 쪽 배치를 레이아웃 계산에 전달한다'
   );
   assert.match(
     canvasViewSource,
-    /setPageDimensions\([\s\S]*?this\.pageArrangement,[\s\S]*?this\.pageMovement\.direction,[\s\S]*?viewport\.height/,
+    /setPageDimensions\([\s\S]*?this\.pageArrangement,[\s\S]*?this\.pageMovement\.direction,[\s\S]*?viewport\.height,[\s\S]*?this\.pinchHoldColumns/,
   );
 });
 

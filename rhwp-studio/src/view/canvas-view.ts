@@ -83,6 +83,8 @@ export class CanvasView {
   private layoutViewportSize = { width: 0, height: 0 };
   private blankPagePlaceholder: HTMLElement | null = null;
   private lastPageSize: { width: number; height: number } | null = null;
+  /** [#6040] 핀치 중 토폴로지 commit 보류. 정착 시 한 번만 반영한다. */
+  private pinchHoldColumns: number | null = null;
   private disposed = false;
 
   constructor(
@@ -419,6 +421,7 @@ export class CanvasView {
       this.pageArrangement,
       this.pageMovement.direction,
       viewport.height,
+      this.pinchHoldColumns,
     );
     this.scrollContent.style.height = `${this.virtualScroll.getTotalHeight()}px`;
     this.scrollContent.style.width = `${this.virtualScroll.getTotalWidth()}px`;
@@ -816,6 +819,15 @@ export class CanvasView {
   private onZoomChanged(zoom: number, anchor: ZoomAnchor): void {
     if (this.pages.length === 0) return;
 
+    const animating = this.viewportManager.isZoomAnimating();
+    if (animating) {
+      if (this.pinchHoldColumns === null) {
+        this.pinchHoldColumns = this.virtualScroll.getColumns();
+      }
+    } else {
+      this.pinchHoldColumns = null;
+    }
+
     const scrollTop = this.viewportManager.getScrollY();
     const scrollLeft = this.viewportManager.getScrollX();
     const { width: vpWidth, height: vpHeight } = this.viewportManager.getViewportSize();
@@ -843,7 +855,7 @@ export class CanvasView {
 
     this.eventBus.emit('zoom-level-display', zoom);
 
-    if (this.viewportManager.isZoomAnimating()) {
+    if (animating) {
       this.cancelPendingTextEditRefresh();
       this.cancelTextEditStaticLayerVerification();
       this.cancelPendingPrefetch();
@@ -851,11 +863,29 @@ export class CanvasView {
       return;
     }
 
-    // 모든 Canvas 재렌더링
+    // [#6040] 정착만을 이유로 활성 Canvas를 전량 제거하지 않는다.
+    // 페이지 슬롯 토폴로지가 바뀌어도 Canvas는 pageIdx 소유라 좌표만 옮기고,
+    // 새 배율 래스터는 보이는 쪽부터 점진 교체한다.
     this.cancelPendingTextEditRefresh();
     this.cancelTextEditStaticLayerVerification();
-    this.releaseAllRenderedPages();
-    this.pageRenderer.cancelAll();
+    this.rerenderVisiblePagesAtCurrentZoom();
+  }
+
+  /** 줌 정착 후 기존 Canvas 좌표를 맞추고, 배율이 바뀐 보이는 쪽만 다시 그린다. */
+  private rerenderVisiblePagesAtCurrentZoom(): void {
+    const zoom = this.viewportManager.getZoom();
+    for (const pageIdx of [...this.canvasPool.activePages]) {
+      const canvas = this.canvasPool.getCanvas(pageIdx);
+      if (!canvas) continue;
+      this.positionPageElement(canvas, pageIdx);
+      this.scrollContent.querySelectorAll<HTMLElement>(
+        `[data-rhwp-overlay-page="${pageIdx}"], [data-rhwp-grid-page="${pageIdx}"]`,
+      ).forEach((element) => this.positionPageElement(element, pageIdx));
+      const renderedZoom = Number(canvas.dataset.rhwpRenderedZoom);
+      if (!Number.isFinite(renderedZoom) || Math.abs(renderedZoom - zoom) > 1e-4) {
+        this.renderPage(pageIdx);
+      }
+    }
     this.updateVisiblePages();
   }
 
