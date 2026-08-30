@@ -4,7 +4,7 @@ use super::super::render_tree::*;
 use super::super::style_resolver::ResolvedBorderStyle;
 use super::super::{LineStyle, StrokeDash};
 use crate::model::style::{BorderLine, BorderLineType, CenterLine};
-use crate::model::table::{Table, MAX_TABLE_GRID_CELLS};
+use crate::model::table::{MAX_TABLE_GRID_CELLS, Table};
 
 /// [#4287] `build_row_col_x` 가 `row_count × col_count` 2D 그리드를 예약하지 않는 이유.
 ///
@@ -483,6 +483,42 @@ pub(crate) fn collect_cell_borders(
         for r in row..end_row {
             merge_edge_slot(&mut v_edges[end_col][r], &borders[1]);
         }
+    }
+}
+
+/// 표 자신의 `borderFillIDRef` 를 바깥 네 변의 **빈 슬롯**에만 보충한다.
+///
+/// 칸이 이미 SOLID 를 넣었으면 (`Some`) 한 겹으로 두고, 칸 네 변이 NONE 이라
+/// 슬롯이 비면 표 테두리를 넣는다. 칸이 그 자리를 차지한다는 이유만으로
+/// 건너뛰면 일러두기 틀처럼 바깥 칸이 NONE 인 표의 왼쪽·아래·제목왼쪽이
+/// 레이아웃에서 사라진다 (#6311).
+pub(crate) fn apply_table_outer_border_fill(
+    h_edges: &mut [Vec<Option<BorderLine>>],
+    v_edges: &mut [Vec<Option<BorderLine>>],
+    table_borders: &[BorderLine; 4],
+) {
+    if h_edges.is_empty() || v_edges.is_empty() {
+        return;
+    }
+    let col_count = h_edges[0].len();
+    let row_count = v_edges[0].len();
+    if h_edges.len() != row_count + 1 || v_edges.len() != col_count + 1 {
+        return;
+    }
+
+    let fill = |slot: &mut Option<BorderLine>, border: &BorderLine| {
+        if slot.is_none() && border.line_type != BorderLineType::None {
+            *slot = Some(*border);
+        }
+    };
+
+    for c in 0..col_count {
+        fill(&mut h_edges[0][c], &table_borders[2]);
+        fill(&mut h_edges[row_count][c], &table_borders[3]);
+    }
+    for r in 0..row_count {
+        fill(&mut v_edges[0][r], &table_borders[0]);
+        fill(&mut v_edges[col_count][r], &table_borders[1]);
     }
 }
 
