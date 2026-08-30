@@ -4,7 +4,7 @@
   "issue": 4969,
   "stage": "W10-Q4-D",
   "date": "2026-08-30",
-  "status": "revised-plan-approved-awaiting-Q4-D0",
+  "status": "Q4-D0-qualified-checkpoint-awaiting-Q4-D1-start-approval",
   "baseCheckpoint": "f449960c7",
   "upstreamDevel": "a71ebf2141ae",
   "ahead": 38,
@@ -51,7 +51,13 @@
     "unsupported-backend"
   ],
   "stages": [
-    {"id": "Q4-D0", "name": "red-baseline-and-target-contract", "productOutputChange": false},
+    {
+      "id": "Q4-D0",
+      "name": "red-baseline-and-target-contract",
+      "status": "qualified-red-baseline-approved",
+      "resultEvidence": "mydocs/tech/investigations/issue-4969/w10_q4_d0_red_baseline.json",
+      "productOutputChange": false
+    },
     {"id": "Q4-D1", "name": "exact-source-bound-dormant-owner", "productOutputChange": false},
     {"id": "Q4-D2", "name": "one-table-cell-atomic-layout-commit", "productOutputChange": true},
     {"id": "Q4-D3", "name": "atomic-vertical-glyph-run-publication", "productOutputChange": true},
@@ -81,5 +87,5 @@
     "githubComment": true,
     "pullRequest": true
   },
-  "next": "Q4-D0-red-baseline-after-plan-checkpoint"
+  "next": "maintainer-Q4-D1-start-approval-after-Q4-D0-checkpoint"
 }

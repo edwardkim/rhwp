@@ -1469,3 +1469,152 @@ fn issue_4969_q4_c_intent_and_geometry_inputs_fail_before_publication() {
         DormantVerticalShapingRejectReason::VariationGeometryUnsupported
     );
 }
+
+#[derive(Debug, Clone, Copy)]
+struct Q4D0ActivationSurface<'a> {
+    hwp5_semantic_provenance: bool,
+    text_direction: u8,
+    cell_count: usize,
+    paragraph_count: usize,
+    composed_line_count: usize,
+    text_run_count: usize,
+    column_count: usize,
+    text: &'a str,
+    exact_source_registered: bool,
+    variation_requested: bool,
+}
+
+fn q4_d0_activation_surface_is_candidate(surface: Q4D0ActivationSurface<'_>) -> bool {
+    surface.hwp5_semantic_provenance
+        && surface.text_direction == 2
+        && surface.cell_count == 1
+        && surface.paragraph_count == 1
+        && surface.composed_line_count == 1
+        && surface.text_run_count == 1
+        && surface.column_count == 1
+        && !surface.text.is_empty()
+        && surface.text.chars().all(|ch| {
+            matches!(
+                u32::from(ch),
+                0x1100..=0x11ff
+                    | 0x3130..=0x318f
+                    | 0x3400..=0x4dbf
+                    | 0x4e00..=0x9fff
+                    | 0xac00..=0xd7af
+                    | 0xf900..=0xfaff
+            )
+        })
+        && surface.exact_source_registered
+        && !surface.variation_requested
+}
+
+#[test]
+fn issue_4969_q4_d0_target_policy_is_hwp5_code2_one_column_pure_cjk_only() {
+    let target = Q4D0ActivationSurface {
+        hwp5_semantic_provenance: true,
+        text_direction: 2,
+        cell_count: 1,
+        paragraph_count: 1,
+        composed_line_count: 1,
+        text_run_count: 1,
+        column_count: 1,
+        text: "한글",
+        exact_source_registered: true,
+        variation_requested: false,
+    };
+    assert!(q4_d0_activation_surface_is_candidate(target));
+    assert_eq!(
+        adapt_hwp5_vertical_intent(VerticalIntentSurface::Hwp5TableCell, 2),
+        VerticalIntentDisposition::Supported(TypedVerticalIntent::vertical_rl(
+            VerticalLatinOrientation::Upright
+        ))
+    );
+    let transaction = prepare_dormant_vertical_shaping_transaction(dormant_vertical_request(
+        NOTO,
+        target.text,
+        "Hang",
+        "ko",
+        &[],
+        TypedVerticalIntent::vertical_rl(VerticalLatinOrientation::Upright),
+    ))
+    .expect("D0 target must already qualify in the Q4-C dormant owner");
+    assert!(!transaction.product_published());
+
+    assert!(!q4_d0_activation_surface_is_candidate(
+        Q4D0ActivationSurface {
+            hwp5_semantic_provenance: false,
+            ..target
+        }
+    ));
+    assert!(!q4_d0_activation_surface_is_candidate(
+        Q4D0ActivationSurface {
+            text_direction: 1,
+            ..target
+        }
+    ));
+    assert!(!q4_d0_activation_surface_is_candidate(
+        Q4D0ActivationSurface {
+            text: "한A",
+            ..target
+        }
+    ));
+    assert!(!q4_d0_activation_surface_is_candidate(
+        Q4D0ActivationSurface {
+            paragraph_count: 2,
+            ..target
+        }
+    ));
+    assert!(!q4_d0_activation_surface_is_candidate(
+        Q4D0ActivationSurface {
+            exact_source_registered: false,
+            ..target
+        }
+    ));
+}
+
+#[test]
+fn issue_4969_q4_d0_red_product_vertical_module_registration_is_absent() {
+    let renderer_mod = include_str!("../../src/renderer/mod.rs");
+    assert!(
+        renderer_mod.contains("pub(crate) mod shaping_vertical;"),
+        "Q4-D1 red: shaping_vertical must not be a product module before approval"
+    );
+}
+
+#[test]
+fn issue_4969_q4_d0_red_exact_source_bound_vertical_owner_is_absent() {
+    let vertical = include_str!("../../src/renderer/shaping_vertical.rs");
+    assert!(
+        vertical.contains("pub(crate) struct VerticalShapingContext"),
+        "Q4-D1 red: exact-source-bound vertical context is not implemented"
+    );
+}
+
+#[test]
+fn issue_4969_q4_d0_red_atomic_table_cell_layout_commit_is_absent() {
+    let layout = include_str!("../../src/renderer/layout/table_cell_content.rs");
+    assert!(
+        layout.contains("commit_bounded_vertical_hwp5_table_cell"),
+        "Q4-D2 red: atomic HWP5 table-cell layout commit is not implemented"
+    );
+}
+
+#[test]
+fn issue_4969_q4_d0_red_vertical_glyph_run_publication_is_absent() {
+    let builder = include_str!("../../src/paint/builder.rs");
+    assert!(
+        builder.contains("lower_vertical_shaping_page_sidecars"),
+        "Q4-D3 red: vertical sidecar publication is not implemented"
+    );
+}
+
+#[test]
+fn issue_4969_q4_d0_red_canvaskit_vertical_feature_detection_is_absent() {
+    let rust_policy = include_str!("../../src/renderer/layer_renderer.rs");
+    let studio_replay = include_str!("../../rhwp-studio/src/view/canvaskit/glyph-run-fonts.ts");
+    assert!(
+        rust_policy.contains("boundedVerticalHwp5TableCellV1")
+            && studio_replay.contains("boundedVerticalHwp5TableCellV1"),
+        "Q4-D4 red: Rust and Studio CanvasKit feature detection are not implemented"
+    );
+}

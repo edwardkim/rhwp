@@ -4,7 +4,7 @@
   "issue": 4969,
   "stage": "W10-Q4",
   "date": "2026-08-30",
-  "status": "q4-d-revised-plan-approved-awaiting-d0",
+  "status": "q4-d0-qualified-checkpoint-awaiting-d1-start-approval",
   "productMutationBeforeApproval": false,
   "slices": [
     {
@@ -31,7 +31,7 @@
     {
       "id": "Q4-D",
       "name": "one-surface-bounded-atomic-activation",
-      "status": "revised-plan-approved",
+      "status": "d0-qualified-red-baseline-approved",
       "plan": "mydocs/plans/task_m100_4969_w10_q4_d.md",
       "candidate": "hwp5-table-cell-code2-one-paragraph-one-run-one-column-pure-cjk",
       "exit": "exact-position-mismatch-zero-partial-publication-zero"
@@ -70,5 +70,5 @@
     "githubComment": true,
     "pullRequest": true
   },
-  "next": "Q4-D0-red-baseline-after-plan-checkpoint"
+  "next": "maintainer-Q4-D1-start-approval-after-Q4-D0-checkpoint"
 }
