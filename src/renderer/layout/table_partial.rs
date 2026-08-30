@@ -739,6 +739,7 @@ impl LayoutEngine {
         start_row: usize,
         end_row: usize,
         end_row_height_override: Option<f64>,
+        start_row_height_override: Option<f64>,
         is_continuation: bool,
         start_cut: &[usize],
         end_cut: &[usize],
@@ -859,6 +860,15 @@ impl LayoutEngine {
                 !end_cut.is_empty() && cell_row == end_row.saturating_sub(1)
             };
             let is_in_split_row = is_split_start_row || is_split_end_row;
+            // [#5946] 쪽 분할이 행 높이 override 로만 이어질 때(컷 부기 없음)
+            // 중첩 표·긴 셀 내용이 조각 높이를 무시하고 다음 행 위로 포개진다.
+            // 행정업무운영편람 141쪽: '3. 쪽' 예시 서식이 '4. 항목란' 과 겹침.
+            let height_override_clip = (start_row_height_override.is_some()
+                && cell_row == start_row)
+                || (end_row_height_override.is_some()
+                    && end_row
+                        .checked_sub(1)
+                        .is_some_and(|last| cell_row <= last && cell_end_row > last));
 
             // [Task #1748] RowBreak 표에서 페이지 경계가 rowspan 블록 내부를 per-row
             // 분할할 때(#1022 경로), 컷 부기(start_cut/end_cut)는 컷 행의 row_span==1
@@ -912,9 +922,9 @@ impl LayoutEngine {
                     row_span: cell.row_span,
                     border_fill_id: cell.border_fill_id,
                     text_direction: cell.text_direction,
-                    clip: is_in_split_row || is_rowbreak_straddle,
+                    clip: is_in_split_row || is_rowbreak_straddle || height_override_clip,
                     // [#5862] 이 경로의 clip 셀은 전부 쪽 컷이 만든 조각이다.
-                    page_fragment: is_in_split_row || is_rowbreak_straddle,
+                    page_fragment: is_in_split_row || is_rowbreak_straddle || height_override_clip,
                     model_cell_index: Some(cell_idx as u32),
                 }),
                 BoundingBox::new(cell_x, cell_y, cell_w, cell_h),
@@ -3693,6 +3703,7 @@ impl LayoutEngine {
             start_row,
             end_row,
             end_row_height_override,
+            start_row_height_override,
             is_continuation,
             start_cut,
             end_cut,

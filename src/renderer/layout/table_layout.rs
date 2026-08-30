@@ -2151,6 +2151,32 @@ impl LayoutEngine {
         (latest_start + 0.5 < earliest_end).then_some(furthest_bottom)
     }
 
+    /// 문단의 TopAndBottom 셀-flow 그림/도형 control 범위. atomic unit 에 붙여
+    /// 쪽을 걸친 셀 조각에서 같은 그림을 한 번만 emit 한다 (#4468).
+    fn paragraph_cell_top_and_bottom_control_range(
+        &self,
+        controls: &[Control],
+    ) -> Option<(usize, usize)> {
+        let mut first = None;
+        let mut last = None;
+        for (control_idx, control) in controls.iter().enumerate() {
+            let common = match control {
+                Control::Picture(picture) => &picture.common,
+                Control::Shape(shape) => shape.common(),
+                _ => continue,
+            };
+            if common.treat_as_char || !matches!(common.text_wrap, TextWrap::TopAndBottom) {
+                continue;
+            }
+            if self.non_inline_control_flow_height(common) <= 0.5 {
+                continue;
+            }
+            first.get_or_insert(control_idx);
+            last = Some(control_idx);
+        }
+        first.zip(last)
+    }
+
     /// Square/Tight/Through cell-flow의 control별 높이. 기존 aggregate 높이 계산과 같은
     /// contract를 유지하되, 16px fragment unit이 어떤 source control에 해당하는지 복원한다.
     fn paragraph_cell_other_non_inline_control_heights(
@@ -9029,37 +9055,45 @@ impl LayoutEngine {
                     non_inline_h -= h;
                 }
             };
-        let append_atomic_unit = |units: &mut Vec<CellUnit>, para_idx: usize, non_inline_h: f64| {
-            if non_inline_h <= 0.5 {
-                return;
-            }
-            units.push(CellUnit {
-                height: non_inline_h,
-                hard_break_before: false,
-                stored_frame_break_before: false,
-                vpos_gap_before: false,
-                para_idx,
-                vis_start: 0,
-                vis_end: 0,
-                nested_row: None,
-                nested_table_fragment: None,
-                mixed_nested_fragment: false,
-                mixed_nested_trailing: false,
-                mixed_nested_content_height: 0.0,
-                mixed_nested_recursive: false,
-                mixed_nested_starts_after_table: false,
-                mixed_nested_source_para_idx: None,
-                recursive_block_prelude_role: RecursiveBlockPreludeRole::None,
-                top_and_bottom_flow: true,
-                empty_spacer: false,
-                non_inline_control_range: None,
-            });
-        };
+        let append_atomic_unit =
+            |units: &mut Vec<CellUnit>,
+             para_idx: usize,
+             non_inline_h: f64,
+             tb_range: Option<(usize, usize)>| {
+                if non_inline_h <= 0.5 {
+                    return;
+                }
+                units.push(CellUnit {
+                    height: non_inline_h,
+                    hard_break_before: false,
+                    stored_frame_break_before: false,
+                    vpos_gap_before: false,
+                    para_idx,
+                    vis_start: 0,
+                    vis_end: 0,
+                    nested_row: None,
+                    nested_table_fragment: None,
+                    mixed_nested_fragment: false,
+                    mixed_nested_trailing: false,
+                    mixed_nested_content_height: 0.0,
+                    mixed_nested_recursive: false,
+                    mixed_nested_starts_after_table: false,
+                    mixed_nested_source_para_idx: None,
+                    recursive_block_prelude_role: RecursiveBlockPreludeRole::None,
+                    top_and_bottom_flow: true,
+                    empty_spacer: false,
+                    // [#4468] 쪽을 걸친 셀에서 TopAndBottom 그림이 앞·뒤 조각에 중복
+                    // 페인트되지 않도록, atomic unit 을 control identity 로 표지한다.
+                    // Square 경로와 같이 그 control 의 **첫** unit 을 품은 cut 만 emit 한다.
+                    non_inline_control_range: tb_range,
+                });
+            };
         let append_non_inline_units = |units: &mut Vec<CellUnit>,
                                        para_idx: usize,
                                        extra_h: f64,
                                        top_and_bottom_h: f64,
-                                       other_h: f64|
+                                       other_h: f64,
+                                       tb_range: Option<(usize, usize)>|
          -> std::ops::Range<usize> {
             let (top_extra_h, other_extra_h) =
                 split_non_inline_extra(extra_h, top_and_bottom_h, other_h);
@@ -9069,12 +9103,12 @@ impl LayoutEngine {
             let other_start = units.len();
             append_fragment_units(units, para_idx, other_extra_h);
             let other_end = units.len();
-            append_atomic_unit(units, para_idx, top_extra_h);
+            append_atomic_unit(units, para_idx, top_extra_h, tb_range);
             other_start..other_end
         };
         // 기존 16px generic fragment의 높이·개수·순서는 그대로 두고, 각 fragment가
         // 겹치는 Square/Tight/Through source control range만 복원한다. TopAndBottom
-        // atomic unit은 이 metadata의 대상이 아니다.
+        // atomic unit 은 `tb_range` 로 control identity 를 붙인다 (#4468).
         let tag_other_non_inline_control_units =
             |units: &mut [CellUnit], range: std::ops::Range<usize>, controls: &[(usize, f64)]| {
                 if range.is_empty() || controls.is_empty() {
@@ -9910,6 +9944,7 @@ impl LayoutEngine {
                         para_non_inline_extra_h,
                         para_top_and_bottom_h,
                         para_other_non_inline_h,
+                        self.paragraph_cell_top_and_bottom_control_range(&p.controls),
                     );
                     tag_other_non_inline_control_units(
                         &mut units,
@@ -10056,6 +10091,7 @@ impl LayoutEngine {
                             para_non_inline_extra_h,
                             para_top_and_bottom_h,
                             para_other_non_inline_h,
+                            self.paragraph_cell_top_and_bottom_control_range(&p.controls),
                         );
                         tag_other_non_inline_control_units(
                             &mut units,
@@ -10267,6 +10303,7 @@ impl LayoutEngine {
                         para_non_inline_extra_h,
                         para_top_and_bottom_h,
                         para_other_non_inline_h,
+                        self.paragraph_cell_top_and_bottom_control_range(&p.controls),
                     );
                     tag_other_non_inline_control_units(
                         &mut units,
@@ -10532,6 +10569,7 @@ impl LayoutEngine {
                 para_non_inline_extra_h,
                 para_top_and_bottom_h,
                 para_other_non_inline_h,
+                self.paragraph_cell_top_and_bottom_control_range(&p.controls),
             );
             tag_other_non_inline_control_units(
                 &mut units,
@@ -13232,10 +13270,10 @@ impl LayoutEngine {
 
     /// `cell_cut_contains_non_inline_control_units`의 control-identity 버전.
     ///
-    /// Square/Tight/Through flow fragment는 control range의 **첫** unit을 포함한 cut만
-    /// picture/shape를 emit한다. 같은 control의 뒷 unit은 다음 physical fragment에서
-    /// 다시 image를 paint하지 않는다. legacy/TopAndBottom unit처럼 range가 없는 경우에는
-    /// 기존 paragraph-level 판정을 유지해 저장 형식별 기존 contract를 바꾸지 않는다.
+    /// Square/Tight/Through flow fragment와 TopAndBottom atomic unit 은 control
+    /// range의 **첫** unit을 포함한 cut만 picture/shape를 emit한다. 같은 control의
+    /// 뒷 unit은 다음 physical fragment에서 다시 image를 paint하지 않는다 (#4468).
+    /// range가 없는 레거시 unit만 paragraph-level 판정을 유지한다.
     pub(crate) fn cell_cut_starts_non_inline_control(
         &self,
         cell: &crate::model::table::Cell,
