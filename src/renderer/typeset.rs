@@ -28,7 +28,10 @@ use crate::renderer::height_measurer::{
     MeasuredTable,
 };
 use crate::renderer::layout::table_layout::native_terminal_child_host_line_spacing;
-use crate::renderer::layout::{border_width_to_px, ENDNOTE_COLUMN_BOTTOM_BLEED_TOLERANCE_PX};
+use crate::renderer::layout::{
+    border_width_to_px, endnote_last_column_tail_overflows_frame,
+    ENDNOTE_COLUMN_BOTTOM_BLEED_TOLERANCE_PX, ENDNOTE_LAST_COLUMN_SPLIT_BLEED_PX,
+};
 use crate::renderer::page_layout::PageLayoutInfo;
 use crate::renderer::style_resolver::ResolvedStyleSet;
 use crate::renderer::{
@@ -11134,10 +11137,9 @@ impl TypesetEngine {
                     && (!default_between_notes_gap || zero_between_large_separator_margin)
                 {
                     // 보이는 구분선의 마지막 단에서는 renderer의 저장 vpos
-                    // 보정이 하단으로 약간 내려갈 수 있다. 미주 사이가
-                    // 0이어도 구분선 위/아래가 큰 프로필은 같은 방식으로
-                    // 마지막 visible tail 한 줄을 현재 단에 남긴다.
-                    remaining_height + ENDNOTE_COLUMN_BOTTOM_BLEED_TOLERANCE_PX
+                    // 보정이 하단으로 수 px 내려갈 수 있다. 24px bleed 는
+                    // 한 줄(≈12px)을 본문 프레임 아래(+14px)에 남긴다(#4318).
+                    remaining_height + ENDNOTE_LAST_COLUMN_SPLIT_BLEED_PX
                 } else {
                     remaining_height
                 };
@@ -11212,6 +11214,34 @@ impl TypesetEngine {
                 // 아래로 내려갈 수 있다. 한컴은 이 tail 한 줄을 다음 쪽
                 // 첫 줄로 넘기므로 마지막 줄 직전에 분할한다.
                 (head_fits && tail_overflows && last_line_visible).then_some(tail_split)
+            } else {
+                split_endnote_to_fit
+            };
+            // [#4318] 구분선 위/아래 20mm 마지막 단: 0/0/0 가드가 없어도
+            // 마지막 줄이 본문 하단을 넘기면 그 줄만 다음 쪽으로 넘긴다.
+            let split_endnote_to_fit = if split_endnote_to_fit.is_none()
+                && compact_endnote_separator_profile
+                && has_visible_endnote_separator
+                && ep_idx > 0
+                && st.current_column + 1 >= st.col_count
+                && fmt.line_heights.len() >= 2
+                && !local_vpos_rewind
+                && !internal_vpos_rewind
+                && endnote_has_visible_payload
+            {
+                let tail_split = fmt.line_heights.len() - 1;
+                let head_h = fmt.line_advances_sum(0..tail_split);
+                let tail_h = fmt.line_advance(tail_split);
+                let last_line_visible =
+                    line_has_visible_text_or_tac_equation(en_para, &composed, tail_split);
+                (st.current_height + head_h <= available + ENDNOTE_LAST_COLUMN_SPLIT_BLEED_PX
+                    && endnote_last_column_tail_overflows_frame(
+                        st.current_height + head_h,
+                        tail_h,
+                        available,
+                    )
+                    && last_line_visible)
+                    .then_some(tail_split)
             } else {
                 split_endnote_to_fit
             };
@@ -12689,6 +12719,21 @@ impl TypesetEngine {
                                 .paragraphs
                                 .get(ep_idx + 1)
                                 .is_some_and(para_is_treat_as_char_picture_only)));
+            // [#4318] 0/0/0 가드가 아닌 구분선 20/20 마지막 단 한 줄 꼬리.
+            let last_column_visible_text_tail_starts_next_page = compact_endnote_separator_profile
+                && has_visible_endnote_separator
+                && ep_idx > 0
+                && st.current_column + 1 >= st.col_count
+                && !local_vpos_rewind
+                && !internal_vpos_rewind
+                && !para_is_treat_as_char_picture_only(en_para)
+                && para_has_visible_text_or_equation(en_para)
+                && fmt.line_heights.len() == 1
+                && endnote_last_column_tail_overflows_frame(
+                    st.current_height,
+                    fmt.total_height,
+                    available,
+                );
             let large_between_zero_above_whole_note_small_bleed_fits =
                 compact_endnote_separator_profile
                     && visible_large_between_zero_above_compact_below
@@ -12715,6 +12760,7 @@ impl TypesetEngine {
                 || visible_separator_text_after_equation_tail_overflows_frame
                 || zero_visible_last_column_text_tail_starts_next_page
                 || zero_between_visible_last_column_text_tail_starts_next_page
+                || last_column_visible_text_tail_starts_next_page
                 || endnote_boundary_gap_tail_overflows_frame
                 || default_title_tail_body_advances_column
                 || large_between_title_tail_body_advances_page
@@ -12751,6 +12797,7 @@ impl TypesetEngine {
                     || visible_separator_text_after_equation_tail_overflows_frame
                     || zero_visible_last_column_text_tail_starts_next_page
                     || zero_between_visible_last_column_text_tail_starts_next_page
+                    || last_column_visible_text_tail_starts_next_page
                     || zero_between_large_separator_last_column_title_orphan
                     || large_between_last_column_final_lead_tac_tail_starts_next_page
                     || internal_reset_split_head_render_overflows
