@@ -5097,6 +5097,9 @@ impl LayoutEngine {
                 }
             };
             let mut tac_img_y = para_y_before_compose;
+            // [#6114] 폴백으로 그린 TAC 그림의 페인트 하단. composed 줄 높이가
+            // 글줄(26px)이면 흐름이 그림(312px)을 못 따라가 아래 표가 겹친다.
+            let mut tac_flow_bottom: Option<f64> = None;
             // [#5712] 같은 문단에서 앞서 배치된 비-TAC TopAndBottom 중첩 표가
             // para_y 를 전진시켰는지 — co-anchored TAC 표의 적층 판별에 쓴다.
             let mut prior_float_table_stacked = false;
@@ -5274,6 +5277,11 @@ impl LayoutEngine {
                                     Some(ctrl_idx),
                                     cell_context.as_ref(),
                                     styles,
+                                );
+                                tac_flow_bottom = Some(
+                                    tac_flow_bottom
+                                        .unwrap_or(f64::MIN)
+                                        .max(tac_img_y + clamped_h),
                                 );
                                 inline_x += clamped_w;
                                 continue;
@@ -6475,6 +6483,9 @@ impl LayoutEngine {
             }
             if rendered_top_and_bottom_non_inline {
                 para_y += self.paragraph_top_and_bottom_non_inline_flow_height(&para.controls);
+            }
+            if let Some(bottom) = tac_flow_bottom {
+                para_y = para_y.max(bottom);
             }
 
             // 마지막 인라인 Shape 이후의 남은 텍스트 렌더링 (예: "일")
@@ -9389,6 +9400,12 @@ impl LayoutEngine {
             };
             let corrected_h = |line: &ComposedLine, li: usize| -> f64 {
                 let raw_lh = hwpunit_to_px(line.line_height, self.dpi);
+                // [#6114] 저장 줄이 글줄 높이만 담아도 그 줄 TAC 그림은 자기 높이만큼
+                // 칸 조각 회계에 들어가야 한다. max 라 이미 그림 높이인 LINE_SEG 는 불변.
+                let tac_h =
+                    crate::renderer::composed_line_tac_object_height_px(p, &comp, li, self.dpi)
+                        .unwrap_or(0.0);
+                let with_tac = |h: f64| h.max(tac_h);
                 // [Task #1811] HWPX RowBreak 셀의 synthetic lineSeg 는 저장 근거가 아니라
                 // reflow 산물이다. row cut 측정에서 다시 corrected_line_height 를 적용하면
                 // HWP 기준보다 줄 유닛이 커져 p4→p5 split 이 한 유닛 빨라진다.
@@ -9396,7 +9413,7 @@ impl LayoutEngine {
                     && is_block_rowbreak
                     && para_uses_synthetic_line_segs
                 {
-                    return raw_lh;
+                    return with_tac(raw_lh);
                 }
                 // [#2112] 실제 저장 LINE_SEG 를 보유한 셀 문단은 저장 줄높이를 신뢰한다.
                 // 한글은 압축 줄높이(lh < 글자크기)를 저장값대로 렌더하는데 corrected
@@ -9404,7 +9421,7 @@ impl LayoutEngine {
                 // +76.8px, 표 합계 +335px → 다쪽 표 쪽수 밀림). 보정은 lineseg 부재
                 // 폴백(#674/#993 원 목적)에만 유지.
                 if p.line_segs.iter().any(|ls| !line_seg_is_synthetic(ls)) {
-                    return raw_lh;
+                    return with_tac(raw_lh);
                 }
                 match para_style {
                     Some(ps) => {
@@ -9443,19 +9460,21 @@ impl LayoutEngine {
                         // max_fs*ls% 팽창을 em 으로 교정 — CellBreak 표.
                         // [#2150/#2169] 일반화: 한글 NO_LS fresh 공식 — 비마지막 줄
                         // fs×ls% 동치 + 셀 마지막 줄만 em (ls 사다리 + 80168 per-row 확정).
-                        crate::renderer::corrected_line_height_for_variant_synthetic(
-                            raw_lh,
-                            max_fs,
-                            ps.line_spacing_type,
-                            ps.line_spacing,
-                            crate::renderer::para_has_no_stored_line_segs(p)
-                                && (!p.text.is_empty() || p.controls.is_empty())
-                                && (matches!(table.page_break, TablePageBreak::CellBreak)
+                        with_tac(
+                            crate::renderer::corrected_line_height_for_variant_synthetic(
+                                raw_lh,
+                                max_fs,
+                                ps.line_spacing_type,
+                                ps.line_spacing,
+                                crate::renderer::para_has_no_stored_line_segs(p)
+                                    && (!p.text.is_empty() || p.controls.is_empty())
+                                    && (matches!(table.page_break, TablePageBreak::CellBreak)
                                     // [#2070 실험] 셀 마지막 줄 = em (5축 전면).
                                     || cell_last_line_idx == Some(li)),
+                            ),
                         )
                     }
-                    None => raw_lh,
+                    None => with_tac(raw_lh),
                 }
             };
             let has_table_in_para = p.controls.iter().any(|c| matches!(c, Control::Table(_)));
