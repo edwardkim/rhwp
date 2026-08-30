@@ -9331,6 +9331,29 @@ impl LayoutEngine {
                 } else {
                     table_y_start
                 };
+                // [#6104] 자리차지(vert=Para) 표 밴드는 후속 TAC 제목 상자에도 적용돼야
+                // 한다. 문단 경로의 exclusion 소비는 FullParagraph 만 보고, TAC 표는
+                // PageItem::Table 로 따로 그려져 선행 표 데이터 행 위에 올라탔다
+                // (36483048 4쪽: 제목 상자 498.4..534.8 ↔ 표1 459.6..531.2). 이미
+                // 그린 선행 owner 밴드만 피하므로 앵커 예약 이중 계상(#4090)은 없다.
+                let table_y_start = if is_tac && !visible_float_exclusions.is_empty() {
+                    let tac_h = hwpunit_to_px(t.common.height as i32, self.dpi);
+                    let mut floor = table_y_start;
+                    for zone in visible_float_exclusions.iter() {
+                        if !zone.blocks_text || zone.owner_para >= para_index {
+                            continue;
+                        }
+                        let starts_in_zone = floor + 0.5 >= zone.top && floor < zone.bottom;
+                        let overlaps_zone =
+                            tac_h > 0.0 && floor < zone.top && floor + tac_h > zone.top + 0.5;
+                        if starts_in_zone || overlaps_zone {
+                            floor = floor.max(zone.bottom);
+                        }
+                    }
+                    floor
+                } else {
+                    table_y_start
+                };
                 // [Issue #1549] visible-host 의 양수 offset float 표는 host 텍스트(섹션 제목)가
                 // line 0 으로 그려지는 줄 *아래*에 와야 한다(한컴: 제목 위, 표 아래). 제목과 표는
                 // 같은 문단 앵커를 공유하고 선행 float exclusion 으로 함께 같은 y 까지 밀리므로,
