@@ -4,10 +4,11 @@
   "issue": 4969,
   "stage": "W10-Q4-D3-C",
   "date": "2026-08-30",
-  "status": "qualified-publication-parity-result-approved",
+  "status": "qualified-publication-parity-checkpointed",
   "preDockerResultApproved": true,
   "resultApproved": true,
   "baseCheckpoint": "d49400aad",
+  "checkpoint": "43d50ad99",
   "baseUpstreamDevel": "bd78a53122e4",
   "productMutation": false,
   "backendSelectionChanged": false,
@@ -101,5 +102,5 @@
   "privateCorpusUsed": false,
   "hyperVUsed": false,
   "githubMutation": false,
-  "next": "separate-checkpoint-approval"
+  "next": "Q4-D4"
 }

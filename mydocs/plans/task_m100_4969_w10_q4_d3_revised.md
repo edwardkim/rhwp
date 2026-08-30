@@ -7,7 +7,8 @@
 - **기계 판독 계획**:
   [`w10_q4_d3_revised_execution_plan.json`](../tech/investigations/issue-4969/w10_q4_d3_revised_execution_plan.json)
 - **상태**: 계획 checkpoint `e64d6fd67`; D3-A checkpoint `bb334756b`; D3-B checkpoint
-  `d49400aad`; D3-C `qualified-publication-parity` 최종 결과 승인, checkpoint 승인 대기
+  `d49400aad`; D3-C `qualified-publication-parity` checkpoint `43d50ad99`; 최신 devel merge
+  `bcaf86e18`; Q4-D4 상세 수행계획 승인 대기
 - **작성일**: 2026-08-30 KST
 - **제품 출력 변경**: 승인된 D2 target의 layer tree에 fallback과 함께 portable `GlyphRun` 대안을 게시
 - **backend 선택 변경**: 없음 — Q4-D4 전까지 모든 backend는 `TextRun`을 선택
@@ -182,5 +183,6 @@ checkpoint 승인 전에는 D3-C를 고정하지 않는다.
 `qualified-atomic-leaf-publication`으로 승인돼 checkpoint `d49400aad`로 고정됐다. 별도 승인을 받아 D3-C의
 native·격리 Node WASM·회귀·canonical 검증을 마치고 `qualified-publication-parity-pre-docker` 사전 결과를
 승인받았다. 이어서 표준 Docker WASM과 post-build native 영수증도 통과했다. 현재
-`qualified-publication-parity` 최종 결과를 승인받았다. 별도 checkpoint 승인 전에는 D3-C를 고정하지 않고,
-Q4-D4는 checkpoint 뒤 다시 별도 착수 승인을 받아 시작한다.
+`qualified-publication-parity` 최종 결과를 승인받고 checkpoint `43d50ad99`로 고정했다. Q4-D4 착수 승인을
+받아 최신 devel을 merge commit `bcaf86e18`로 병합하고 D3-C·incoming 회귀와 canonical을 재통과했다.
+Q4-D4 상세 수행계획 승인 전에는 Rust selector 구현을 시작하지 않는다.

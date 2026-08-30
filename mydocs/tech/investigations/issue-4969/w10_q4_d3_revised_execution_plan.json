@@ -4,7 +4,7 @@
   "issue": 4969,
   "stage": "W10-Q4-D3",
   "date": "2026-08-30",
-  "status": "Q4-D3-C-qualified-publication-parity-result-approved",
+  "status": "Q4-D3-C-qualified-publication-parity-checkpointed",
   "planCheckpoint": "e64d6fd67",
   "d2Checkpoint": "992fe4acaf92",
   "mergedUpstreamDevel": "bd78a53122e4",
@@ -58,7 +58,8 @@
     {
       "id": "Q4-D3-C",
       "name": "publication-validation-and-result-classification",
-      "status": "qualified-publication-parity-result-approved",
+      "status": "qualified-publication-parity-checkpointed",
+      "checkpoint": "43d50ad99",
       "resultEvidence": "mydocs/tech/investigations/issue-4969/w10_q4_d3_c_publication_validation.json",
       "productOutputChange": false,
       "backendSelectionChange": false
@@ -110,5 +111,5 @@
     "githubComment": true,
     "pullRequest": true
   },
-  "next": "separate-D3-C-checkpoint-approval"
+  "next": "Q4-D4"
 }

@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q4-d4-canvaskit-vertical-execution-plan",
+  "issue": 4969,
+  "stage": "W10-Q4-D4",
+  "date": "2026-08-30",
+  "status": "detailed-plan-checkpoint-approved",
+  "planApproved": true,
+  "checkpointApproved": true,
+  "checkpointApprovedDate": "2026-08-31",
+  "d3CCheckpoint": "43d50ad99",
+  "mergedUpstreamDevel": "8a150f9a8bb1",
+  "mergeCommit": "bcaf86e18",
+  "productMutationBeforeApproval": false,
+  "featureDetection": {
+    "versionBranchingAllowed": false,
+    "candidateProvenance": "boundedVerticalHwp5TableCellV1",
+    "variantId": "verticalGlyphRun",
+    "writingMode": "vertical-rl",
+    "orientation": "vertical-upright",
+    "glyphTransformsAllowed": false,
+    "runtimeCanvasDrawGlyphsRequiredBeforeSelection": true,
+    "fontResourceVerificationRequired": true
+  },
+  "backendAuthority": {
+    "canvasKit": "bounded-target-only",
+    "canvasKitBrowser": "bounded-target-only",
+    "nativeSkia": "fallback",
+    "svg": "fallback",
+    "canvas2d": "fallback"
+  },
+  "stages": [
+    {
+      "id": "Q4-D4-A",
+      "name": "merge-requalification-and-red-baseline",
+      "status": "completed"
+    },
+    {
+      "id": "Q4-D4-B",
+      "name": "rust-selector-capability",
+      "status": "blocked-by-separate-stage-approval"
+    },
+    {
+      "id": "Q4-D4-C",
+      "name": "studio-runtime-capability-and-pixel-proof",
+      "status": "blocked-by-D4-B"
+    },
+    {
+      "id": "Q4-D4-D",
+      "name": "cross-runtime-validation-and-result",
+      "status": "blocked-by-D4-C"
+    }
+  ],
+  "mergeRequalification": {
+    "conflicts": 0,
+    "d3CAtomicActivationPassed": 9,
+    "issue6029Passed": 1,
+    "incomingOverlapPassed": 9,
+    "integrationManifestSources": 1057,
+    "integrationManifestStaticTestAttrs": 4680,
+    "integrationManifestTargetsPassed": 48,
+    "integrationManifestTargetsTotal": 48,
+    "integrationPolicyPassed": 20,
+    "canonicalMismatch": 0,
+    "d4RedConfirmed": true
+  },
+  "invariants": {
+    "backendReshapeAllowed": false,
+    "genericVerticalGuardRemovalAllowed": false,
+    "fallbackDisappearanceAllowed": false,
+    "horizontalContractChangeAllowed": false,
+    "newIntegrationSourceAllowed": false,
+    "publicSchemaChangeAllowed": false,
+    "privateCorpusAllowed": false,
+    "hyperVAllowed": false
+  },
+  "controls": [
+    "samples/table-004.hwp",
+    "samples/issue6029/3200477_icao_procedure.hwpx"
+  ],
+  "next": "plan-checkpoint-then-separate-Q4-D4-B-approval"
+}
