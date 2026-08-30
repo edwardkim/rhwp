@@ -82,3 +82,36 @@ E2E의 cursor/page/DOM/viewport 수치로 직접 검증한다.
 2. 쪽 나누기 직후 새 쪽 offset을 사용한 캐럿이 viewport 안에 표시된다.
 3. 전체 Studio unit test와 build가 기존 회귀 없이 통과한다.
 4. code candidate와 검증 결과를 stage·최종 보고서에 기록하고 Open PR로 제출한다.
+
+## 5. PR 리뷰 보정 구현 계획 — 2026-08-30
+
+### `rhwp-studio/src/engine/caret-layout-reveal.ts`
+
+- `clear()`를 추가해 성공한 layout 이벤트를 기다리지 않고도 pending 예약을 명시적으로 폐기한다.
+- `consume()`의 1회 소비 계약은 그대로 유지한다.
+
+### `rhwp-studio/src/engine/input-handler.ts`
+
+- 문서 초기화 공통 시퀀스가 호출하는 `deactivate()`에서 `caretLayoutReveal.clear()`를 실행한다.
+- 일반 focus 이동이 아니라 실제 문서 교체에 사용되는 기존 경계를 재사용하며 새 event wiring은 추가하지 않는다.
+
+### `rhwp-studio/tests/caret-layout-reveal.test.ts`
+
+- `pageBreak` 예약 뒤 `clear()`를 호출하면 다음 `consume()`이 `false`인지 검증한다.
+- 기존 operation allowlist와 일반 명령 보존 테스트는 유지한다.
+
+### 검증
+
+```bash
+cd rhwp-studio
+npx tsc --noEmit
+npm test
+npm run build
+CHROME_PATH='/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' npm run e2e:page-break-caret
+cd ..
+python3 scripts/check_e2e_manifest.py
+git diff --check
+```
+
+Rust source·test, npm/editor public API, fixture는 바뀌지 않으므로 Rust lint 묶음과 package 검증은 적용하지
+않는다. 보정은 Studio TypeScript 상태 수명과 그 단위·브라우저 회귀에 한정한다.
