@@ -1,0 +1,30 @@
+{
+  "pr": 6412,
+  "issue": 6389,
+  "input": {
+    "hwp": "samples/2025 행정업무운영 편람(최종).hwp",
+    "sha256": "40d6d05eac4d55bdc4b0c62c42d93af104d5123b447581246f36fd15de7bd46f",
+    "lastSavedWith": {
+      "product": "hancom-office-2024",
+      "version": "13.0.0.3622"
+    }
+  },
+  "referencePdf": {
+    "path": "pdf/2025 행정업무운영 편람(최종)-hwp-2024.pdf",
+    "sha256": "34db2aeefa4ae00b38c464571e7e17eef375ffd3ec29eb6d89ddcd67b63bb670"
+  },
+  "visualSweep": {
+    "page": 68,
+    "rasterizer": "rsvg",
+    "flaggedPageCount": 0,
+    "pixelMatchPercent": 90.60603,
+    "inkMatchPercent": 77.33644,
+    "visualAccuracyProxyPercent": 77.33644,
+    "temporaryOutput": "output/visual_sweep_non_kevin_20260831_rsvg_2024/pr6412-issue6389-p68",
+    "representativePng": "mydocs/pr/assets/pr_6412_issue6389_p68_review.png"
+  },
+  "reviewLimitations": [
+    "Chrome rasterizer가 이 호스트에 없어 rsvg를 사용했다.",
+    "ink/visual accuracy proxy는 글꼴 및 rasterizer 차이를 포함하므로 전체 fidelity pass/fail 판정으로 사용하지 않았다."
+  ]
+}
