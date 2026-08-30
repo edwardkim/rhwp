@@ -52,7 +52,29 @@ export function textKey(text) {
 export function storedCells(dumpText) {
   const stack = []; // { indent, cell }
   const cells = [];
-  for (const line of dumpText.split('\n')) {
+  // 셀 텍스트의 개행은 dump 에 물리 줄바꿈으로 그대로 찍힌다 — `text="` 가 열린 채
+  // 끝나는 줄은 닫는 따옴표가 나올 때까지 이어붙여 한 줄로 되돌린다. 안 하면 그 셀이
+  // 통째로 누락되고, 셀의 ls 줄이 직전 셀에 가산돼 거짓 불일치가 생긴다(k-water 의
+  // '운영중\n(사업대상)' 열이 이웃 열 전체를 +2 로 부풀렸다).
+  const reassembled = [];
+  let open = null;
+  for (const raw of dumpText.split('\n')) {
+    if (open !== null) {
+      open += `\n${raw}`;
+      if (raw.includes('"')) {
+        reassembled.push(open);
+        open = null;
+      }
+      continue;
+    }
+    if (/text="[^"]*$/.test(raw)) {
+      open = raw;
+      continue;
+    }
+    reassembled.push(raw);
+  }
+  if (open !== null) reassembled.push(open);
+  for (const line of reassembled) {
     const m = PREFIX.exec(line);
     if (!m) continue;
     const indent = m[1].length;
@@ -175,6 +197,15 @@ export function mergePageSplitFragments(stored, rendered) {
  * 렌더 여러 개이면 `hdr=true` 는 조각마다 비교하고 `hdr=false` 는 줄 수를 합산한다.
  */
 export function tallyDocument(stored, rendered, totals) {
+  // 내용 키가 빈 셀은 짝짓기에서 뺀다 — 빈 셀은 문서에 수백 개씩 있어 (행, 열, 빈 키)가
+  // 식별력을 잃고, 무관한 셀끼리 붙어 거짓 불일치를 만든다(편람: 저장 3줄 빈 셀의 진짜
+  // 렌더는 3줄로 일치하는데, 계측은 다른 쪽의 1줄짜리 무관 빈 셀과 붙여 "더 적게"를
+  // 보고했다). 짝지을 수 없는 것은 못 짝지은 것과 달라 emptyCells 로 따로 센다.
+  const measurable = (cell) => textKey(cell.text) !== '';
+  totals.emptyCells += stored.filter((c) => !measurable(c)).length;
+  totals.emptyCells += rendered.filter((c) => !measurable(c)).length;
+  stored = stored.filter(measurable);
+  rendered = rendered.filter(measurable);
   const renderedForPairing = mergePageSplitFragments(stored, rendered);
   const buckets = new Map();
   for (const cell of stored) {
@@ -252,6 +283,7 @@ function emptyTotals() {
     unpairedStored: 0,
     unpairedRendered: 0,
     noStoredRecord: 0,
+    emptyCells: 0,
     cells: 0,
     agree: 0,
     disagree: 0,
@@ -295,6 +327,7 @@ function sweep() {
 function report(t) {
   console.log(`  문서 ${t.documents}개 (못 짝지은 셀: 저장 ${t.unpairedStored} / 렌더 ${t.unpairedRendered})`);
   console.log(`  기록 없음 ${t.noStoredRecord}개 (비교 모수에서 제외)`);
+  console.log(`  빈 셀 ${t.emptyCells}개 (내용 키 없음 — 짝짓기 불가, 비교 제외)`);
   console.log(`  측정 셀 ${t.cells}개   일치 ${t.agree} = ${agreementPercent(t).toFixed(2)}%`);
   console.log(`  불일치 ${t.disagree}  (rhwp 가 더 많이 ${t.renderedMore} / 더 적게 ${t.renderedFewer})`);
 }

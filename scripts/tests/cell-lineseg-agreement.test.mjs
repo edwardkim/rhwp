@@ -23,6 +23,7 @@ function totals() {
     documents: 0,
     unpairedStored: 0,
     unpairedRendered: 0,
+    emptyCells: 0,
     noStoredRecord: 0,
     cells: 0,
     agree: 0,
@@ -113,8 +114,8 @@ test('개수가 달라도 문서를 버리지 않는다 — 남는 셀만 unpair
 test('렌더 0줄 셀은 판정하지 않되 짝은 소비한다', () => {
   const t = totals();
   tallyDocument(
-    [cell(0, 0, '', 1), cell(0, 0, '', 1)],
-    [cell(0, 0, '', 0), cell(0, 0, '', 1)],
+    [cell(0, 0, '가', 1), cell(0, 0, '가', 1)],
+    [cell(0, 0, '가', 0), cell(0, 0, '가', 1)],
     t,
   );
   assert.equal(t.cells, 1);
@@ -125,11 +126,44 @@ test('렌더 0줄 셀은 판정하지 않되 짝은 소비한다', () => {
 test('같은 키가 여럿이면 순서대로 맞춘다', () => {
   const t = totals();
   tallyDocument(
-    [cell(0, 0, '', 1), cell(0, 0, '', 2)],
-    [cell(0, 0, '', 1), cell(0, 0, '', 2)],
+    [cell(0, 0, '가', 1), cell(0, 0, '가', 2)],
+    [cell(0, 0, '가', 1), cell(0, 0, '가', 2)],
     t,
   );
   assert.equal(t.agree, 2);
+});
+
+test('개행 든 셀 텍스트를 닫는 따옴표까지 재조립해 등록한다', () => {
+  // dump 는 셀 텍스트의 개행을 물리 줄바꿈으로 찍는다 — 재조립하지 않으면 그 셀이
+  // 통째로 빠지고 ls 가 직전 셀에 가산된다(k-water '운영중\n(사업대상)' 열).
+  const dump = [
+    '  [0]   셀[0] r=0,c=0 rs=1,cs=1 h=1 w=100 pad=(0,0,0,0) valign=Center aim=false hdr=false bf=1 paras=1 text="운영중',
+    '(사업대상)"',
+    '  [0]     p[0] ps_id=1 ctrls=0 text_len=10 ls[0] ts=0 vpos=0 lh=1000 ls=600 cs=0 sw=90',
+    '  [0]   셀[1] r=0,c=1 rs=1,cs=1 h=1 w=100 pad=(0,0,0,0) valign=Center aim=false hdr=false bf=1 paras=1 text="이웃"',
+    '  [0]     p[0] ps_id=1 ctrls=0 text_len=2 ls[0] ts=0 vpos=0 lh=1000 ls=600 cs=0 sw=90',
+  ].join('\n');
+  const cells = storedCells(dump);
+  assert.equal(cells.length, 2);
+  assert.equal(cells[0].lines, 1);
+  assert.equal(cells[1].lines, 1);
+  assert.ok(cells[0].text.includes('운영중'));
+});
+
+test('내용 키가 빈 셀은 짝짓기에서 빼고 emptyCells 로 센다 — 식별력이 없다', () => {
+  // 빈 키는 (행, 열)만으로 수백 셀이 겹쳐 무관한 셀끼리 붙는다(편람: 저장 3줄 빈 셀이
+  // 다른 쪽 1줄 빈 셀과 붙어 거짓 "더 적게"). 짝짓기 불가는 못 짝지음과 다른 사실이다.
+  const t = totals();
+  tallyDocument(
+    [cell(0, 0, '||', 3), cell(0, 0, '가', 1)],
+    [cell(0, 0, '|', 1), cell(0, 0, '가', 1)],
+    t,
+  );
+  assert.equal(t.emptyCells, 2);
+  assert.equal(t.cells, 1);
+  assert.equal(t.agree, 1);
+  assert.equal(t.disagree, 0);
+  assert.equal(t.unpairedStored + t.unpairedRendered, 0);
 });
 
 test('일치율이 내려가면 회귀다', () => {
