@@ -1734,6 +1734,15 @@ impl SvgRenderer {
                     Some((mime, bytes)) => (std::borrow::Cow::Owned(bytes), mime, false),
                     None => (std::borrow::Cow::Borrowed(data), mime_type, false),
                 }
+            } else if mime_type == "image/jpeg"
+                && crate::renderer::image_resolver::jpeg_is_four_component(data)
+            {
+                // [#6310] 4성분(CMYK/YCCK) JPEG 은 PDF `/DeviceRGB` 선언과 성분 수가
+                // 어긋나 행 보폭이 깨진다 — PNG(RGB)로 정규화해 싣는다.
+                match crate::renderer::image_resolver::cmyk_jpeg_bytes_to_png_bytes(data) {
+                    Some(png_bytes) => (std::borrow::Cow::Owned(png_bytes), "image/png", false),
+                    None => (std::borrow::Cow::Borrowed(data), mime_type, false),
+                }
             } else if is_watermark_image && mime_type == "image/jpeg" {
                 match watermark_jpeg_bytes_to_hancom_baked_png_bytes(data) {
                     Some(png_bytes) => (std::borrow::Cow::Owned(png_bytes), "image/png", true),
