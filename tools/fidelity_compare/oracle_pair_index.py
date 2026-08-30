@@ -13,8 +13,8 @@
 
 ## 짝짓기 규칙 — 디렉터리까지 본다
 
-정답지 파일명은 `<이름>[-접미사].pdf` 이고 접미사는 한글 버전·폰트 조건이다
-(`-2022`, `-2020-kopub`, `-no-ttf` 등). 이름만 맞추면 **같은 이름의 다른 문서**를 집는다.
+자동 선택하는 정답지 경로는 `pdf/<원본의 samples/ 하위 경로>/<이름>-<hwp|hwpx>-<2020|2024>.pdf`다.
+이름만 맞추면 **같은 이름의 다른 문서**를 집고, 형식·엔진·원본 경로가 미기록된 PDF는 원본과의 관계도 증명할 수 없다.
 
     samples/KTX.hwp        27쪽  「AI-반도체 해외실증 지원 사업 공모 안내서」
     samples/basic/KTX.hwp   1쪽  실제 KTX 노선도
@@ -23,8 +23,9 @@
 잘못 짝지으면 대조 결과 전체가 무의미해진다 — 실제로 이 함정에 걸려 "글자 93.8% 손실" 이라는
 가짜 결함을 만들 뻔했다. 저장소에는 같은 이름의 서로 다른 문서가 **44 종** 있다.
 
-그래서 **같은 디렉터리의 정답지가 있으면 그것만** 쓴다. 없으면 이름 후보를 그대로 쓰되
-`--list` 출력에 후보 수를 함께 적어 사람이 판단할 수 있게 한다.
+그래서 원본 경로·형식이 같은 canonical PDF만 남긴다. canonical 후보가 없거나 2020·2024 후보가
+함께 있으면 자동 비교 인자를 출력하지 않는다. 후자는
+`--engine`으로 출력 조건을 명시해야 한다.
 
 ## 모아 찍기 문서는 표시한다
 
@@ -35,26 +36,15 @@ rhwp 와 다르다(`model::document::print_method_implies_nup`). 쪽 단위로 �
 import argparse
 import json
 import os
-import re
 import subprocess
 import sys
 
-SUFFIX = re.compile(r'-(20\d\d|hwp|hwpx|kopub|no-ttf|current)+$', re.I)
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+TOOLS_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if TOOLS_DIR not in sys.path:
+    sys.path.insert(0, TOOLS_DIR)
 
-
-def stem(path):
-    name = re.sub(r'\.(pdf|hwp|hwpx)$', '', os.path.basename(path), flags=re.I)
-    prev = None
-    while prev != name:
-        prev = name
-        name = SUFFIX.sub('', name)
-    return name
-
-
-def subdir(path, root):
-    d = os.path.dirname(path).replace(os.sep, '/')
-    return d[len(root):].lstrip('/') if d.startswith(root) else d
+from oracle_pdf_selection import canonical_candidates, canonical_engine, choose_canonical, stem
 
 
 def git_pdfs():
@@ -77,19 +67,21 @@ def samples():
 
 
 def build_index():
+    pdfs = git_pdfs()
     by_name = {}
-    for p in git_pdfs():
+    for p in pdfs:
         by_name.setdefault(stem(p), []).append(p)
 
     index = {}
+    unverified = {}
     for s in samples():
-        cands = by_name.get(stem(s))
-        if not cands:
-            continue
-        same_dir = [p for p in cands if subdir(p, 'pdf') == subdir(s, 'samples')]
-        chosen = same_dir if same_dir else cands
-        index[s] = (sorted(chosen), len(cands))
-    return index
+        cands = by_name.get(stem(s), [])
+        chosen = canonical_candidates(s, pdfs)
+        if chosen:
+            index[s] = (chosen, len(cands))
+        elif cands:
+            unverified[s] = sorted(cands)
+    return index, unverified
 
 
 def nup_flag(rhwp, sample):
@@ -109,31 +101,37 @@ def main():
     ap.add_argument('--list', action='store_true', help='짝지어진 목록을 TSV 로 낸다')
     ap.add_argument('--args', metavar='SAMPLE',
                     help='그 문서의 fidelity_compare 인자쌍을 낸다')
+    ap.add_argument('--engine', choices=('2020', '2024'),
+                    help='여러 canonical PDF가 있을 때 선택할 한컴 출력 엔진')
     ap.add_argument('--rhwp', help='모아 찍기 판정을 채울 rhwp 바이너리 경로')
     args = ap.parse_args()
 
-    index = build_index()
+    index, unverified = build_index()
 
     if args.args:
         key = args.args.replace(os.sep, '/')
         if key not in index:
-            print(f'짝지어진 정답지가 없다: {key}', file=sys.stderr)
+            if key in unverified:
+                print(f'형식·엔진이 확인된 canonical PDF가 없어 자동 비교하지 않는다: {key}',
+                      file=sys.stderr)
+            else:
+                print(f'짝지어진 정답지가 없다: {key}', file=sys.stderr)
             return 1
         chosen, _ = index[key]
+        try:
+            reference = choose_canonical(key, chosen, args.engine)
+        except ValueError as e:
+            print(str(e), file=sys.stderr)
+            return 1
         print('--source "%s" --reference-pdf "%s" --label %s'
-              % (key, chosen[0], re.sub(r'[^A-Za-z0-9]+', '-', stem(key)).strip('-') or 'doc'))
-        if len(chosen) > 1:
-            print('# 정답지 후보 %d개 — 한글 버전·폰트 조건이 다르다:' % len(chosen),
-                  file=sys.stderr)
-            for p in chosen:
-                print('#   %s' % p, file=sys.stderr)
+              % (key, reference, ''.join(ch if ch.isalnum() else '-' for ch in stem(key)).strip('-') or 'doc'))
         return 0
 
     if not args.list:
         ap.print_help()
         return 2
 
-    print('# 문서\t정답지(쉼표구분)\t이름후보수\t모아찍기')
+    print('# 문서\tcanonical 정답지(쉼표구분)\t같은-stem 후보수\t모아찍기')
     nup_count = 0
     for s, (chosen, n_all) in sorted(index.items()):
         nup = ''
@@ -144,8 +142,9 @@ def main():
                 nup_count += 1
         print('%s\t%s\t%d\t%s' % (s, ','.join(chosen), n_all, nup))
     narrowed = sum(1 for _, (c, n) in index.items() if len(c) < n)
-    print('# 짝지어진 문서 %d개 / 디렉터리로 좁혀진 것 %d개%s'
-          % (len(index), narrowed, ' / 모아찍기 %d개' % nup_count if args.rhwp else ''),
+    print('# 자동 비교 가능 문서 %d개 / canonical 미확인 제외 %d개 / 디렉터리로 좁혀진 것 %d개%s'
+          % (len(index), len(unverified), narrowed,
+             ' / 모아찍기 %d개' % nup_count if args.rhwp else ''),
           file=sys.stderr)
     return 0
 
