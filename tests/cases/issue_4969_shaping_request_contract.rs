@@ -881,3 +881,243 @@ fn issue_4969_attempt_ledger_truncates_without_retaining_applied_payload() {
     assert!(!ledger_json.contains("glyphs"));
     assert!(ledger_json.contains("\"status\":\"complete\""));
 }
+
+// Q4-B contract-only adapter. It deliberately lives in the executable contract
+// rather than the product path: Q4-C owns the first dormant consumer.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum VerticalIntentSurface {
+    Hwp5TableCell,
+    Hwp5TextBox,
+    HwpxTableCell,
+    HwpxTextBox,
+    HwpxSection,
+    HwpxMasterPage,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum LatinOrientation {
+    NotApplicable,
+    Sideways,
+    Upright,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+struct TypedVerticalIntent {
+    writing_mode: ShapingWritingMode,
+    latin_orientation: LatinOrientation,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum VerticalIntentDisposition {
+    Supported(TypedVerticalIntent),
+    UnsupportedRaw,
+}
+
+fn horizontal_intent() -> VerticalIntentDisposition {
+    VerticalIntentDisposition::Supported(TypedVerticalIntent {
+        writing_mode: ShapingWritingMode::HorizontalTb,
+        latin_orientation: LatinOrientation::NotApplicable,
+    })
+}
+
+fn vertical_intent(latin_orientation: LatinOrientation) -> VerticalIntentDisposition {
+    VerticalIntentDisposition::Supported(TypedVerticalIntent {
+        writing_mode: ShapingWritingMode::VerticalRl,
+        latin_orientation,
+    })
+}
+
+fn adapt_hwp5_vertical_intent(
+    surface: VerticalIntentSurface,
+    raw: u8,
+) -> VerticalIntentDisposition {
+    if !matches!(
+        surface,
+        VerticalIntentSurface::Hwp5TableCell | VerticalIntentSurface::Hwp5TextBox
+    ) {
+        return VerticalIntentDisposition::UnsupportedRaw;
+    }
+    match raw {
+        0 => horizontal_intent(),
+        1 => vertical_intent(LatinOrientation::Sideways),
+        2 => vertical_intent(LatinOrientation::Upright),
+        _ => VerticalIntentDisposition::UnsupportedRaw,
+    }
+}
+
+fn adapt_hwpx_vertical_intent(
+    surface: VerticalIntentSurface,
+    raw: &str,
+) -> VerticalIntentDisposition {
+    if !matches!(
+        surface,
+        VerticalIntentSurface::HwpxTableCell
+            | VerticalIntentSurface::HwpxTextBox
+            | VerticalIntentSurface::HwpxSection
+            | VerticalIntentSurface::HwpxMasterPage
+    ) {
+        return VerticalIntentDisposition::UnsupportedRaw;
+    }
+    match raw {
+        "HORIZONTAL" => horizontal_intent(),
+        "VERTICAL" => vertical_intent(LatinOrientation::Sideways),
+        "VERTICALALL" => vertical_intent(LatinOrientation::Upright),
+        _ => VerticalIntentDisposition::UnsupportedRaw,
+    }
+}
+
+fn table_cell_directions(doc: &rhwp::model::document::Document) -> Vec<u8> {
+    use rhwp::model::control::Control;
+
+    doc.sections
+        .iter()
+        .flat_map(|section| &section.paragraphs)
+        .flat_map(|para| &para.controls)
+        .filter_map(|control| match control {
+            Control::Table(table) => Some(table.cells.iter().map(|cell| cell.text_direction)),
+            _ => None,
+        })
+        .flatten()
+        .collect()
+}
+
+fn rectangle_textbox_directions(doc: &rhwp::model::document::Document) -> Vec<(u8, bool)> {
+    use rhwp::model::control::Control;
+    use rhwp::model::shape::ShapeObject;
+
+    doc.sections
+        .iter()
+        .flat_map(|section| &section.paragraphs)
+        .flat_map(|para| &para.controls)
+        .filter_map(|control| match control {
+            Control::Shape(shape) => match shape.as_ref() {
+                ShapeObject::Rectangle(rect) => rect
+                    .drawing
+                    .text_box
+                    .as_ref()
+                    .map(|text_box| ((text_box.list_attr & 0x07) as u8, text_box.vertical_all)),
+                _ => None,
+            },
+            _ => None,
+        })
+        .collect()
+}
+
+#[test]
+fn issue_4969_q4_b_surface_values_map_without_collapsing_latin_orientation() {
+    let horizontal = horizontal_intent();
+    let sideways = vertical_intent(LatinOrientation::Sideways);
+    let upright = vertical_intent(LatinOrientation::Upright);
+
+    for surface in [
+        VerticalIntentSurface::Hwp5TableCell,
+        VerticalIntentSurface::Hwp5TextBox,
+    ] {
+        assert_eq!(adapt_hwp5_vertical_intent(surface, 0), horizontal);
+        assert_eq!(adapt_hwp5_vertical_intent(surface, 1), sideways);
+        assert_eq!(adapt_hwp5_vertical_intent(surface, 2), upright);
+        for raw in 3..=7 {
+            assert_eq!(
+                adapt_hwp5_vertical_intent(surface, raw),
+                VerticalIntentDisposition::UnsupportedRaw
+            );
+        }
+    }
+
+    for surface in [
+        VerticalIntentSurface::HwpxTableCell,
+        VerticalIntentSurface::HwpxTextBox,
+        VerticalIntentSurface::HwpxSection,
+        VerticalIntentSurface::HwpxMasterPage,
+    ] {
+        assert_eq!(
+            adapt_hwpx_vertical_intent(surface, "HORIZONTAL"),
+            horizontal
+        );
+        assert_eq!(adapt_hwpx_vertical_intent(surface, "VERTICAL"), sideways);
+        assert_eq!(adapt_hwpx_vertical_intent(surface, "VERTICALALL"), upright);
+        assert_eq!(
+            adapt_hwpx_vertical_intent(surface, "SIDEWAYS-RL"),
+            VerticalIntentDisposition::UnsupportedRaw
+        );
+    }
+
+    assert_eq!(
+        adapt_hwp5_vertical_intent(VerticalIntentSurface::HwpxTableCell, 1),
+        VerticalIntentDisposition::UnsupportedRaw
+    );
+    assert_eq!(
+        adapt_hwpx_vertical_intent(VerticalIntentSurface::Hwp5TableCell, "VERTICAL"),
+        VerticalIntentDisposition::UnsupportedRaw
+    );
+}
+
+#[test]
+fn issue_4969_q4_b_public_pairs_adjudicate_verticalall_as_hwp5_code_2() {
+    let hwpx = std::fs::read("samples/hwpx/tbox-v-flow-01.hwpx").expect("HWPX fixture");
+    let hwp =
+        std::fs::read("samples/hwpx/hancom-hwp/tbox-v-flow-01.hwp").expect("paired HWP fixture");
+    let hwpx_doc = rhwp::parser::parse_document(&hwpx).expect("HWPX parse");
+    let hwp_doc = rhwp::parser::parse_document(&hwp).expect("paired HWP parse");
+
+    assert_eq!(rectangle_textbox_directions(&hwpx_doc), vec![(1, true)]);
+    assert_eq!(rectangle_textbox_directions(&hwp_doc), vec![(2, false)]);
+    let hwpx_roundtrip = rhwp::serializer::serialize_hwpx(&hwpx_doc).expect("HWPX serialize");
+    let hwpx_roundtrip_doc =
+        rhwp::parser::parse_document(&hwpx_roundtrip).expect("HWPX roundtrip parse");
+    assert_eq!(
+        rectangle_textbox_directions(&hwpx_roundtrip_doc),
+        vec![(1, true)]
+    );
+    let hwp_roundtrip = rhwp::serializer::serialize_hwp(&hwp_doc).expect("HWP5 serialize");
+    let hwp_roundtrip_doc =
+        rhwp::parser::parse_document(&hwp_roundtrip).expect("HWP5 roundtrip parse");
+    assert_eq!(
+        rectangle_textbox_directions(&hwp_roundtrip_doc),
+        vec![(2, false)]
+    );
+    assert_eq!(
+        adapt_hwpx_vertical_intent(VerticalIntentSurface::HwpxTextBox, "VERTICALALL"),
+        adapt_hwp5_vertical_intent(VerticalIntentSurface::Hwp5TextBox, 2)
+    );
+}
+
+#[test]
+fn issue_4969_q4_b_public_table_controls_preserve_direction_values_on_roundtrip() {
+    let hwp = std::fs::read("samples/table-004.hwp").expect("HWP5 table fixture");
+    let hwp_doc = rhwp::parser::parse_document(&hwp).expect("HWP5 parse");
+    let hwp_direction_2 = table_cell_directions(&hwp_doc)
+        .into_iter()
+        .filter(|direction| *direction == 2)
+        .count();
+    assert_eq!(hwp_direction_2, 3);
+    let hwp_roundtrip = rhwp::serializer::serialize_hwp(&hwp_doc).expect("HWP5 serialize");
+    let hwp_roundtrip_doc =
+        rhwp::parser::parse_document(&hwp_roundtrip).expect("HWP5 roundtrip parse");
+    assert_eq!(
+        table_cell_directions(&hwp_roundtrip_doc)
+            .into_iter()
+            .filter(|direction| *direction == 2)
+            .count(),
+        3
+    );
+
+    let hwpx =
+        std::fs::read("samples/issue6029/3200477_icao_procedure.hwpx").expect("HWPX table fixture");
+    let hwpx_doc = rhwp::parser::parse_document(&hwpx).expect("HWPX parse");
+    let hwpx_direction_1 = table_cell_directions(&hwpx_doc)
+        .into_iter()
+        .filter(|direction| *direction == 1)
+        .count();
+    assert_eq!(hwpx_direction_1, 3);
+    let hwpx_roundtrip = rhwp::serializer::serialize_hwpx(&hwpx_doc).expect("HWPX serialize");
+    let hwpx_roundtrip_doc =
+        rhwp::parser::parse_document(&hwpx_roundtrip).expect("HWPX roundtrip parse");
+    assert_eq!(
+        table_cell_directions(&hwpx_roundtrip_doc)
+            .into_iter()
+            .filter(|direction| *direction == 1)
+            .count(),
+        3
+    );
+}
