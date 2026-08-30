@@ -7,6 +7,7 @@ import {
 import { PageSetupDialog } from '@/ui/page-setup-dialog';
 import { AboutDialog } from '@/ui/about-dialog';
 import { showSaveAs } from '@/ui/save-as-dialog';
+import { showConfirm } from '@/ui/confirm-dialog';
 import { showHwpSavePasswordDialog } from '@/ui/hwp-password-dialog';
 import { showUnsavedChangesDialog } from '@/ui/unsaved-changes-dialog';
 import { showHmlSaveFormatDialog } from '@/ui/hml-save-format-dialog';
@@ -273,12 +274,27 @@ async function promptSaveAsOptions(
   services: CommandServices,
   format: SaveFormat,
 ): Promise<SaveAsOptions | null> {
+  const protectedDoc = services.wasm.requiresPasswordForSave;
+  const passwordFormat = format !== 'hml';
   const selection = await showSaveAs(
     saveBaseNameFor(services.wasm.fileName, format),
     format,
-    { allowPassword: format !== 'hml' },
+    {
+      allowPassword: passwordFormat,
+      inheritPassword: protectedDoc && passwordFormat,
+    },
   );
   if (selection === null) return null;
+
+  if (protectedDoc && format === 'hml') {
+    const confirmed = await showConfirm(
+      '보호 해제',
+      'HML 형식은 문서 암호를 지원하지 않습니다. 암호 없이 저장하면 보호가 해제됩니다. 계속할까요?',
+    );
+    if (!confirmed) return null;
+    return { fileName: selection.fileName, password: null };
+  }
+
   if (!selection.configurePassword) {
     return { fileName: selection.fileName, password: null };
   }
