@@ -57,6 +57,74 @@ jobs:
         run: |
           printf 'reuse=false\nreason=not-a-devel-push\n' >> "$GITHUB_OUTPUT"
 
+      # pull_request runs execute refs/pull/N/merge, while the Actions API exposes
+      # only the source head as workflow_run.head_sha. Preserve the actual tested
+      # merge commit and tree in an immutable run artifact so a later devel push
+      # can prove that its merge tree is byte-for-byte identical.
+      - name: Capture PR merge-tree evidence
+        id: pr-merge-tree
+        if: ${{ inputs.caller_event_name == 'pull_request' && startsWith(inputs.caller_ref, 'refs/pull/') }}
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          CALLER_SHA: ${{ inputs.caller_sha }}
+          WORKFLOW_FILE: ${{ inputs.workflow_file }}
+        with:
+          script: |
+            const fs = require('node:fs');
+            const mergeSha = process.env.CALLER_SHA;
+            const pullRequest = context.payload.pull_request;
+            if (
+              !/^[0-9a-f]{40}$/.test(mergeSha || '')
+              || !pullRequest
+              || pullRequest.head?.repo?.full_name !== process.env.GITHUB_REPOSITORY
+              || !/^[0-9a-f]{40}$/.test(pullRequest.base?.sha || '')
+              || !/^[0-9a-f]{40}$/.test(pullRequest.head?.sha || '')
+            ) {
+              core.warning('PR merge-tree identity is unavailable; no reuse evidence will be published.');
+              return;
+            }
+            try {
+              const { data: commit } = await github.rest.repos.getCommit({
+                ...context.repo,
+                ref: mergeSha,
+              });
+              const parents = (commit.parents || []).map((parent) => parent.sha);
+              const treeSha = commit.commit?.tree?.sha || '';
+              if (
+                commit.sha !== mergeSha
+                || parents.length !== 2
+                || parents[0] !== pullRequest.base.sha
+                || parents[1] !== pullRequest.head.sha
+                || !/^[0-9a-f]{40}$/.test(treeSha)
+              ) {
+                core.warning('PR merge ref does not match the event base/head pair; no evidence will be published.');
+                return;
+              }
+              const artifactName = `trusted-postmerge-merge-tree-v1-${mergeSha}-${treeSha}`;
+              fs.writeFileSync('trusted-postmerge-merge-tree.json', `${JSON.stringify({
+                schema: 1,
+                repository: process.env.GITHUB_REPOSITORY,
+                workflow_file: process.env.WORKFLOW_FILE,
+                run_id: String(context.runId),
+                merge_sha: mergeSha,
+                parents,
+                tree_sha: treeSha,
+              }, null, 2)}\n`);
+              core.setOutput('artifact_name', artifactName);
+              core.info(`Captured exact PR merge-tree evidence: ${artifactName}`);
+            } catch (error) {
+              core.warning(`Could not capture PR merge-tree evidence. ${error.message}`);
+            }
+
+      - name: Upload PR merge-tree evidence
+        if: ${{ steps.pr-merge-tree.outputs.artifact_name != '' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0 # v7.0.1
+        with:
+          name: ${{ steps.pr-merge-tree.outputs.artifact_name }}
+          path: trusted-postmerge-merge-tree.json
+          retention-days: 7
+          if-no-files-found: error
+
       # Resolve the merge's pre-PR source parent before any local verifier code
       # is checked out. An initial rollout has no base verifier and therefore
       # falls back to full CI; later PRs use this immutable pre-merge revision.
@@ -218,6 +286,60 @@ jobs:
                   break;
                 }
               }
+              const mergeTreeEvidenceByRunId = {};
+              const createdAt = Date.parse(pr.created_at || '');
+              const mergedAt = Date.parse(pr.merged_at || '');
+              const finalHeadRuns = workflowRuns.filter((run) => (
+                run.event === 'pull_request'
+                && run.head_sha === pr.head.sha
+                && run.head_branch === pr.head.ref
+                && run.head_repository?.full_name === process.env.GITHUB_REPOSITORY
+                && Number.isFinite(createdAt)
+                && Number.isFinite(mergedAt)
+                && Date.parse(run.created_at || '') >= createdAt
+                && Date.parse(run.updated_at || '') <= mergedAt
+              )).sort((left, right) => (
+                Date.parse(right.updated_at || '') - Date.parse(left.updated_at || '')
+                || Number(right.run_attempt || 0) - Number(left.run_attempt || 0)
+                || Number(right.id || 0) - Number(left.id || 0)
+              ));
+              const finalHeadRun = finalHeadRuns[0];
+              if (finalHeadRun?.status === 'completed' && finalHeadRun?.conclusion === 'success') {
+                const artifacts = await github.paginate(
+                  github.rest.actions.listWorkflowRunArtifacts,
+                  { owner, repo, run_id: finalHeadRun.id, per_page: 100 },
+                );
+                const evidenceArtifacts = artifacts
+                  .filter((artifact) => artifact.expired !== true)
+                  .map((artifact) => ({
+                    artifact,
+                    match: /^trusted-postmerge-merge-tree-v1-([0-9a-f]{40})-([0-9a-f]{40})$/
+                      .exec(artifact.name || ''),
+                  }))
+                  .filter(({ match }) => match !== null);
+                if (evidenceArtifacts.length === 1) {
+                  const [, testedMergeSha, encodedTreeSha] = evidenceArtifacts[0].match;
+                  const testedMerge = (await github.rest.repos.getCommit({
+                    owner,
+                    repo,
+                    ref: testedMergeSha,
+                  })).data;
+                  const testedParents = (testedMerge.parents || []).map((parent) => parent.sha);
+                  const testedTreeSha = testedMerge.commit?.tree?.sha || '';
+                  if (
+                    testedMerge.sha === testedMergeSha
+                    && testedParents.length === 2
+                    && testedParents[1] === pr.head.sha
+                    && testedTreeSha === encodedTreeSha
+                  ) {
+                    mergeTreeEvidenceByRunId[String(finalHeadRun.id)] = {
+                      sha: testedMergeSha,
+                      parents: testedParents,
+                      treeSha: testedTreeSha,
+                    };
+                  }
+                }
+              }
               const requireFullLaneEvidence = ["ci.yml", "codeql.yml"]
                 .includes(process.env.WORKFLOW_FILE);
               const reviewOnlyWorker = {
@@ -296,6 +418,7 @@ jobs:
                 pullFiles,
                 prCommits,
                 workflowRuns,
+                mergeTreeEvidenceByRunId,
               };
               if (requireFullLaneEvidence) {
                 evidence.fullLaneRunIds = fullLaneRunIds;

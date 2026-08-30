@@ -48,6 +48,13 @@ class TrustedPostmergeReuseWorkflowTests(unittest.TestCase):
         self.assertIn('`nextest-target-durations-${workflowRun.id}-${label}`', workflow)
         self.assertIn("never checks out or executes", workflow)
         self.assertIn("the merged PR head", workflow)
+        self.assertIn("Capture PR merge-tree evidence", workflow)
+        self.assertIn("Upload PR merge-tree evidence", workflow)
+        self.assertIn("trusted-postmerge-merge-tree-v1-", workflow)
+        self.assertIn("mergeTreeEvidenceByRunId", workflow)
+        self.assertIn("parents[0] !== pullRequest.base.sha", workflow)
+        self.assertIn("parents[1] !== pullRequest.head.sha", workflow)
+        self.assertIn("testedTreeSha === encodedTreeSha", workflow)
 
     def test_all_duplicate_postmerge_workflows_call_the_shared_verifier(self) -> None:
         expected_workflow_files = {
