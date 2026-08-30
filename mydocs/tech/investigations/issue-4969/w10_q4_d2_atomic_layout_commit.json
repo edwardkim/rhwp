@@ -12,6 +12,30 @@
   "aheadAfterLatestFetch": 43,
   "behindAfterLatestFetch": 22,
   "incomingD2FileOverlap": 0,
+  "d2Checkpoint": "992fe4acaf92",
+  "mergeRequalification": {
+    "mergedUpstreamDevel": "bd78a53122e4",
+    "mergeCommit": "049b73d0cd80",
+    "mergeConflicts": 0,
+    "aheadAfterMerge": 45,
+    "formatCheck": "passed",
+    "focusedClippy": "passed",
+    "integrationManifestSources": 1040,
+    "integrationManifestTargetsPassed": 48,
+    "integrationManifestTargetsTotal": 48,
+    "q4ContractPassed": 35,
+    "q4ContractFailed": 0,
+    "expectedRedFilteredOut": 2,
+    "atomicActivationPassed": 8,
+    "atomicActivationFailed": 0,
+    "atomicActivationIgnored": 1,
+    "issue6029Passed": 1,
+    "canonicalMismatch": 0,
+    "dockerWasm": "passed",
+    "dockerWasmElapsed": "2m38s",
+    "wasmBytes": 9860053,
+    "worktreeCleanAfterGeneratedArtifacts": true
+  },
   "mode": "boundedVerticalHwp5TableCellV1",
   "layoutCommit": {
     "oneMutationBoundary": true,
@@ -84,5 +108,5 @@
   "privateCorpusUsed": false,
   "hyperVUsed": false,
   "githubMutation": false,
-  "next": "Q4-D2-checkpoint-then-maintainer-latest-devel-merge-approval"
+  "next": "maintainer-approval-for-merge-requalification-record-commit-then-Q4-D3-planning"
 }
