@@ -1,8 +1,10 @@
-//! Issue #4969 W10-Q1/Q4-A: exact-source shaping request는 bounded·fail-closed하고,
-//! exact vertical output은 요청 identity와 결정적 glyph/position oracle을 가져야 한다.
+//! Issue #4969 W10-Q1/Q4-A~C: exact-source shaping request는 bounded·fail-closed하고,
+//! vertical output과 dormant geometry는 하나의 결정적 glyph/position/bbox owner를 가져야 한다.
 
 #[path = "../../src/renderer/shaping.rs"]
 mod shaping;
+#[path = "../../src/renderer/shaping_vertical.rs"]
+mod shaping_vertical;
 
 use shaping::{
     canonicalize_shaping_request, shape_bounded_request, shape_canonical_request_with_face,
@@ -12,6 +14,15 @@ use shaping::{
     TerminalShapingDisposition, MAX_SHAPING_ATTEMPT_TRACE_RECORDS, MAX_SHAPING_FEATURES,
     MAX_SHAPING_FONT_BYTES, MAX_SHAPING_TEXT_CODE_POINTS, MAX_SHAPING_VARIATION_AXES,
 };
+use shaping_vertical::{
+    adapt_hwp5_vertical_intent, adapt_hwpx_vertical_intent,
+    prepare_dormant_vertical_shaping_transaction, DormantVerticalShapingRejectReason,
+    DormantVerticalShapingRequest, TypedVerticalIntent, VerticalGlyphTransform,
+    VerticalIntentDisposition, VerticalIntentSurface, VerticalLatinOrientation,
+    VerticalLegacyGeometry, VerticalPoint, VerticalRect, VerticalRunClass,
+};
+#[cfg(target_arch = "wasm32")]
+use wasm_bindgen_test::wasm_bindgen_test;
 
 const NOTO: &[u8] = include_bytes!("../../ttfs/opensource/NotoSansKR-Regular.ttf");
 const SOURCE_HAN: &[u8] =
@@ -882,90 +893,6 @@ fn issue_4969_attempt_ledger_truncates_without_retaining_applied_payload() {
     assert!(ledger_json.contains("\"status\":\"complete\""));
 }
 
-// Q4-B contract-only adapter. It deliberately lives in the executable contract
-// rather than the product path: Q4-C owns the first dormant consumer.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum VerticalIntentSurface {
-    Hwp5TableCell,
-    Hwp5TextBox,
-    HwpxTableCell,
-    HwpxTextBox,
-    HwpxSection,
-    HwpxMasterPage,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum LatinOrientation {
-    NotApplicable,
-    Sideways,
-    Upright,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-struct TypedVerticalIntent {
-    writing_mode: ShapingWritingMode,
-    latin_orientation: LatinOrientation,
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum VerticalIntentDisposition {
-    Supported(TypedVerticalIntent),
-    UnsupportedRaw,
-}
-
-fn horizontal_intent() -> VerticalIntentDisposition {
-    VerticalIntentDisposition::Supported(TypedVerticalIntent {
-        writing_mode: ShapingWritingMode::HorizontalTb,
-        latin_orientation: LatinOrientation::NotApplicable,
-    })
-}
-
-fn vertical_intent(latin_orientation: LatinOrientation) -> VerticalIntentDisposition {
-    VerticalIntentDisposition::Supported(TypedVerticalIntent {
-        writing_mode: ShapingWritingMode::VerticalRl,
-        latin_orientation,
-    })
-}
-
-fn adapt_hwp5_vertical_intent(
-    surface: VerticalIntentSurface,
-    raw: u8,
-) -> VerticalIntentDisposition {
-    if !matches!(
-        surface,
-        VerticalIntentSurface::Hwp5TableCell | VerticalIntentSurface::Hwp5TextBox
-    ) {
-        return VerticalIntentDisposition::UnsupportedRaw;
-    }
-    match raw {
-        0 => horizontal_intent(),
-        1 => vertical_intent(LatinOrientation::Sideways),
-        2 => vertical_intent(LatinOrientation::Upright),
-        _ => VerticalIntentDisposition::UnsupportedRaw,
-    }
-}
-
-fn adapt_hwpx_vertical_intent(
-    surface: VerticalIntentSurface,
-    raw: &str,
-) -> VerticalIntentDisposition {
-    if !matches!(
-        surface,
-        VerticalIntentSurface::HwpxTableCell
-            | VerticalIntentSurface::HwpxTextBox
-            | VerticalIntentSurface::HwpxSection
-            | VerticalIntentSurface::HwpxMasterPage
-    ) {
-        return VerticalIntentDisposition::UnsupportedRaw;
-    }
-    match raw {
-        "HORIZONTAL" => horizontal_intent(),
-        "VERTICAL" => vertical_intent(LatinOrientation::Sideways),
-        "VERTICALALL" => vertical_intent(LatinOrientation::Upright),
-        _ => VerticalIntentDisposition::UnsupportedRaw,
-    }
-}
-
 fn table_cell_directions(doc: &rhwp::model::document::Document) -> Vec<u8> {
     use rhwp::model::control::Control;
 
@@ -1005,9 +932,13 @@ fn rectangle_textbox_directions(doc: &rhwp::model::document::Document) -> Vec<(u
 
 #[test]
 fn issue_4969_q4_b_surface_values_map_without_collapsing_latin_orientation() {
-    let horizontal = horizontal_intent();
-    let sideways = vertical_intent(LatinOrientation::Sideways);
-    let upright = vertical_intent(LatinOrientation::Upright);
+    let horizontal = VerticalIntentDisposition::Supported(TypedVerticalIntent::horizontal());
+    let sideways = VerticalIntentDisposition::Supported(TypedVerticalIntent::vertical_rl(
+        VerticalLatinOrientation::Sideways,
+    ));
+    let upright = VerticalIntentDisposition::Supported(TypedVerticalIntent::vertical_rl(
+        VerticalLatinOrientation::Upright,
+    ));
 
     for surface in [
         VerticalIntentSurface::Hwp5TableCell,
@@ -1119,5 +1050,422 @@ fn issue_4969_q4_b_public_table_controls_preserve_direction_values_on_roundtrip(
             .filter(|direction| *direction == 1)
             .count(),
         3
+    );
+}
+
+fn vertical_fallback() -> VerticalLegacyGeometry {
+    VerticalLegacyGeometry {
+        bbox: VerticalRect {
+            x: 91.0,
+            y: 199.0,
+            width: 18.0,
+            height: 22.0,
+        },
+        next_inline_origin: VerticalPoint { x: 100.0, y: 222.0 },
+        next_column_origin: VerticalPoint { x: 88.0, y: 200.0 },
+    }
+}
+
+fn dormant_vertical_request<'a>(
+    bytes: &'a [u8],
+    text: &'a str,
+    script: &'a str,
+    language: &'a str,
+    features: &'a [ShapingFeature],
+    intent: TypedVerticalIntent,
+) -> DormantVerticalShapingRequest<'a> {
+    DormantVerticalShapingRequest {
+        attempt_id: 4969,
+        shaping: ShapingRequest {
+            source: Some(ShapingExactSource {
+                bytes,
+                face_index: 0,
+                portable: true,
+            }),
+            text,
+            direction: ShapingDirection::TopToBottom,
+            writing_mode: intent.writing_mode(),
+            script: Some(script),
+            language: Some(language),
+            features,
+            variations: &[],
+        },
+        intent,
+        font_size_px: 10.0,
+        origin: VerticalPoint { x: 100.0, y: 200.0 },
+        column_pitch_px: 12.0,
+        fallback_geometry: vertical_fallback(),
+    }
+}
+
+fn assert_vertical_point(actual: VerticalPoint, expected: VerticalPoint) {
+    assert!((actual.x - expected.x).abs() <= 1.0e-9, "x: {actual:?}");
+    assert!((actual.y - expected.y).abs() <= 1.0e-9, "y: {actual:?}");
+}
+
+fn assert_vertical_rect(actual: VerticalRect, expected: VerticalRect) {
+    assert!((actual.x - expected.x).abs() <= 1.0e-9, "x: {actual:?}");
+    assert!((actual.y - expected.y).abs() <= 1.0e-9, "y: {actual:?}");
+    assert!(
+        (actual.width - expected.width).abs() <= 1.0e-9,
+        "width: {actual:?}"
+    );
+    assert!(
+        (actual.height - expected.height).abs() <= 1.0e-9,
+        "height: {actual:?}"
+    );
+}
+
+#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
+fn issue_4969_q4_c_old_hangul_geometry_has_one_owner_and_exact_origins() {
+    let transaction = prepare_dormant_vertical_shaping_transaction(dormant_vertical_request(
+        SOURCE_HAN,
+        "ᄒᆞᆫ글",
+        "Hang",
+        "ko",
+        &[],
+        TypedVerticalIntent::vertical_rl(VerticalLatinOrientation::Upright),
+    ))
+    .expect("old Hangul vertical transaction");
+    assert!(!transaction.product_published());
+    assert_eq!(transaction.fallback_geometry(), vertical_fallback());
+    assert_eq!(transaction.trace().attempt_id, 4969);
+    assert_eq!(
+        transaction.trace().font_source_sha256.as_deref(),
+        Some("2f86ef9a52acb6d1dad9d915843239123b635d97edd88fd0573a88ffcb4e16f1")
+    );
+    assert!(std::sync::Arc::ptr_eq(
+        transaction.line_geometry(),
+        transaction.bbox_geometry()
+    ));
+    assert!(std::sync::Arc::ptr_eq(
+        transaction.line_geometry(),
+        transaction.next_origin_geometry()
+    ));
+
+    let geometry = transaction.line_geometry();
+    assert_eq!(geometry.run_class, VerticalRunClass::CjkUpright);
+    assert_eq!(geometry.writing_mode, ShapingWritingMode::VerticalRl);
+    assert_eq!(
+        transaction
+            .applied()
+            .glyphs
+            .iter()
+            .map(|glyph| glyph.glyph_id)
+            .collect::<Vec<_>>(),
+        vec![614, 1230, 1497, 2085]
+    );
+    assert_eq!(
+        geometry
+            .glyphs
+            .iter()
+            .map(|glyph| glyph.cluster_utf8_range.clone())
+            .collect::<Vec<_>>(),
+        vec![0..9, 9..12, 9..12, 9..12]
+    );
+    for (glyph, expected) in geometry.glyphs.iter().zip([
+        (
+            VerticalPoint { x: 95.17, y: 208.8 },
+            VerticalRect {
+                x: 96.43,
+                y: 200.41,
+                width: 6.98,
+                height: 9.18,
+            },
+        ),
+        (
+            VerticalPoint { x: 95.17, y: 218.8 },
+            VerticalRect {
+                x: 96.83,
+                y: 211.19,
+                width: 6.24,
+                height: 3.85,
+            },
+        ),
+        (
+            VerticalPoint {
+                x: 104.83,
+                y: 218.8,
+            },
+            VerticalRect {
+                x: 95.42,
+                y: 214.74,
+                width: 9.2,
+                height: 0.9,
+            },
+        ),
+        (
+            VerticalPoint {
+                x: 104.83,
+                y: 218.8,
+            },
+            VerticalRect {
+                x: 97.12,
+                y: 216.59,
+                width: 5.98,
+                height: 3.05,
+            },
+        ),
+    ]) {
+        assert_vertical_point(glyph.origin, expected.0);
+        assert_vertical_rect(glyph.bbox, expected.1);
+    }
+    assert_vertical_rect(
+        geometry.bbox,
+        VerticalRect {
+            x: 95.42,
+            y: 200.41,
+            width: 9.2,
+            height: 19.23,
+        },
+    );
+    assert_eq!(geometry.inline_advance_px, 20.0);
+    assert_eq!(
+        geometry.next_inline_origin,
+        VerticalPoint { x: 100.0, y: 220.0 }
+    );
+    assert_eq!(
+        geometry.next_column_origin,
+        VerticalPoint { x: 88.0, y: 200.0 }
+    );
+}
+
+#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
+fn issue_4969_q4_c_latin_orientation_changes_transform_not_shaping_output() {
+    let sideways = prepare_dormant_vertical_shaping_transaction(dormant_vertical_request(
+        NOTO,
+        "AB",
+        "Latn",
+        "en",
+        &[],
+        TypedVerticalIntent::vertical_rl(VerticalLatinOrientation::Sideways),
+    ))
+    .expect("sideways Latin transaction");
+    let upright = prepare_dormant_vertical_shaping_transaction(dormant_vertical_request(
+        NOTO,
+        "AB",
+        "Latn",
+        "en",
+        &[],
+        TypedVerticalIntent::vertical_rl(VerticalLatinOrientation::Upright),
+    ))
+    .expect("upright Latin transaction");
+    assert_eq!(sideways.applied().as_ref(), upright.applied().as_ref());
+    assert_eq!(
+        sideways.line_geometry().run_class,
+        VerticalRunClass::LatinSideways
+    );
+    assert_eq!(
+        upright.line_geometry().run_class,
+        VerticalRunClass::LatinUpright
+    );
+    assert!(sideways
+        .line_geometry()
+        .glyphs
+        .iter()
+        .all(|glyph| glyph.transform == VerticalGlyphTransform::RotateClockwise90));
+    assert!(upright
+        .line_geometry()
+        .glyphs
+        .iter()
+        .all(|glyph| glyph.transform == VerticalGlyphTransform::Upright));
+    assert_ne!(sideways.line_geometry().bbox, upright.line_geometry().bbox);
+    assert_vertical_rect(
+        sideways.line_geometry().bbox,
+        VerticalRect {
+            x: 96.72,
+            y: 208.84,
+            width: 7.57,
+            height: 16.08,
+        },
+    );
+    assert_vertical_rect(
+        upright.line_geometry().bbox,
+        VerticalRect {
+            x: 97.0,
+            y: 201.47,
+            width: 6.0,
+            height: 17.33,
+        },
+    );
+    assert_eq!(
+        sideways.line_geometry().next_inline_origin,
+        upright.line_geometry().next_inline_origin
+    );
+}
+
+#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
+fn issue_4969_q4_c_punctuation_and_column_progression_are_explicit() {
+    let rl = prepare_dormant_vertical_shaping_transaction(dormant_vertical_request(
+        NOTO,
+        "—…",
+        "Hani",
+        "ja",
+        &[],
+        TypedVerticalIntent::vertical_rl(VerticalLatinOrientation::Upright),
+    ))
+    .expect("RL punctuation transaction");
+    let lr = prepare_dormant_vertical_shaping_transaction(dormant_vertical_request(
+        NOTO,
+        "—…",
+        "Hani",
+        "ja",
+        &[],
+        TypedVerticalIntent::vertical_lr(VerticalLatinOrientation::Upright),
+    ))
+    .expect("LR punctuation transaction");
+    assert_eq!(
+        rl.line_geometry().run_class,
+        VerticalRunClass::CjkPunctuation
+    );
+    assert_eq!(
+        lr.line_geometry().run_class,
+        VerticalRunClass::CjkPunctuation
+    );
+    assert_eq!(
+        rl.applied()
+            .glyphs
+            .iter()
+            .map(|glyph| glyph.glyph_id)
+            .collect::<Vec<_>>(),
+        vec![197, 11826]
+    );
+    assert_eq!(
+        lr.applied()
+            .glyphs
+            .iter()
+            .map(|glyph| glyph.glyph_id)
+            .collect::<Vec<_>>(),
+        vec![197, 11826]
+    );
+    assert_vertical_rect(
+        rl.line_geometry().bbox,
+        VerticalRect {
+            x: 95.99,
+            y: 205.68,
+            width: 8.01,
+            height: 13.31,
+        },
+    );
+    assert_eq!(
+        rl.line_geometry().next_column_origin,
+        VerticalPoint { x: 88.0, y: 200.0 }
+    );
+    assert_eq!(
+        lr.line_geometry().next_column_origin,
+        VerticalPoint { x: 112.0, y: 200.0 }
+    );
+}
+
+#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
+fn issue_4969_q4_c_mixed_and_missing_vertical_source_return_pristine_fallback() {
+    let mixed = prepare_dormant_vertical_shaping_transaction(dormant_vertical_request(
+        NOTO,
+        "한A",
+        "Hang",
+        "ko",
+        &[],
+        TypedVerticalIntent::vertical_rl(VerticalLatinOrientation::Sideways),
+    ))
+    .expect_err("mixed run must remain dormant unsupported");
+    assert_eq!(
+        mixed.reason(),
+        DormantVerticalShapingRejectReason::MixedRunUnsupported
+    );
+    assert_eq!(mixed.fallback_geometry(), vertical_fallback());
+    assert!(!mixed.product_published());
+
+    let missing_metrics = prepare_dormant_vertical_shaping_transaction(dormant_vertical_request(
+        HAPPINESS,
+        "가변",
+        "Hang",
+        "ko",
+        &[],
+        TypedVerticalIntent::vertical_rl(VerticalLatinOrientation::Upright),
+    ))
+    .expect_err("font without vhea/vmtx must fail closed");
+    assert_eq!(
+        missing_metrics.reason(),
+        DormantVerticalShapingRejectReason::ShapingRejected(
+            ShapingRejectReason::VerticalMetricsUnavailable
+        )
+    );
+    assert_eq!(missing_metrics.fallback_geometry(), vertical_fallback());
+    assert!(!missing_metrics.product_published());
+}
+
+#[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
+fn issue_4969_q4_c_intent_and_geometry_inputs_fail_before_publication() {
+    let mut horizontal = dormant_vertical_request(
+        NOTO,
+        "한글",
+        "Hang",
+        "ko",
+        &[],
+        TypedVerticalIntent::horizontal(),
+    );
+    horizontal.shaping.direction = ShapingDirection::LeftToRight;
+    let horizontal = prepare_dormant_vertical_shaping_transaction(horizontal)
+        .expect_err("horizontal intent is outside Q4-C");
+    assert_eq!(
+        horizontal.reason(),
+        DormantVerticalShapingRejectReason::HorizontalIntentUnsupported
+    );
+
+    let mut mismatch = dormant_vertical_request(
+        NOTO,
+        "한글",
+        "Hang",
+        "ko",
+        &[],
+        TypedVerticalIntent::vertical_rl(VerticalLatinOrientation::Upright),
+    );
+    mismatch.shaping.writing_mode = ShapingWritingMode::VerticalLr;
+    let mismatch = prepare_dormant_vertical_shaping_transaction(mismatch)
+        .expect_err("source intent and shaping mode must agree");
+    assert_eq!(
+        mismatch.reason(),
+        DormantVerticalShapingRejectReason::DirectionIntentMismatch
+    );
+
+    let mut invalid_pitch = dormant_vertical_request(
+        NOTO,
+        "한글",
+        "Hang",
+        "ko",
+        &[],
+        TypedVerticalIntent::vertical_rl(VerticalLatinOrientation::Upright),
+    );
+    invalid_pitch.column_pitch_px = f64::NAN;
+    let invalid_pitch = prepare_dormant_vertical_shaping_transaction(invalid_pitch)
+        .expect_err("non-finite column pitch must fail closed");
+    assert_eq!(
+        invalid_pitch.reason(),
+        DormantVerticalShapingRejectReason::ColumnPitchInvalid
+    );
+
+    let axes = [ShapingVariation {
+        tag: "wght".into(),
+        value: 400.0,
+    }];
+    let mut variation = dormant_vertical_request(
+        HAPPINESS,
+        "가변",
+        "Hang",
+        "ko",
+        &[],
+        TypedVerticalIntent::vertical_rl(VerticalLatinOrientation::Upright),
+    );
+    variation.shaping.variations = &axes;
+    let variation = prepare_dormant_vertical_shaping_transaction(variation)
+        .expect_err("variable outline bbox is outside Q4-C");
+    assert_eq!(
+        variation.reason(),
+        DormantVerticalShapingRejectReason::VariationGeometryUnsupported
     );
 }

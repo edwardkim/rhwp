@@ -4,7 +4,7 @@
   "issue": 4969,
   "stage": "W10-Q4",
   "date": "2026-08-30",
-  "status": "q4-b-qualified-q4-c-next",
+  "status": "q4-c-qualified-checkpoint",
   "productMutationBeforeApproval": false,
   "slices": [
     {
@@ -24,13 +24,14 @@
     {
       "id": "Q4-C",
       "name": "dormant-vertical-layout-transaction",
-      "status": "next",
+      "status": "completed-qualified-dormant",
       "productCaller": false,
       "exit": "measurement-bbox-next-origin-mismatch-zero"
     },
     {
       "id": "Q4-D",
       "name": "one-surface-bounded-atomic-activation",
+      "status": "next-plan-review",
       "candidate": "table-cell-one-paragraph-one-run-one-column-homogeneous-cjk",
       "exit": "exact-position-mismatch-zero-partial-publication-zero"
     },
@@ -68,5 +69,5 @@
     "githubComment": true,
     "pullRequest": true
   },
-  "next": "enter-Q4-C-after-Q4-B-checkpoint"
+  "next": "Q4-D-plan-review-after-Q4-C-checkpoint"
 }
