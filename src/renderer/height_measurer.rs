@@ -8,9 +8,43 @@ use super::style_resolver::ResolvedStyleSet;
 use super::{hwpunit_to_px, DEFAULT_DPI};
 use crate::model::control::Control;
 use crate::model::footnote::{Footnote, FootnoteShape};
-use crate::model::paragraph::Paragraph;
+use crate::model::paragraph::{LineSeg, Paragraph};
 use crate::model::shape::{Caption, CommonObjAttr, TextWrap, VertRelTo};
 use crate::model::table::{Table, TablePageBreak};
+
+/// [#6299] 같은 `vertical_pos` 를 공유하는 LINE_SEG 는 한 줄의 가로 조각
+/// (어울림 개체 좌·우). 높이 회계에서는 이어지는 두 번째 이후 조각을 건너뛴다.
+fn is_same_vertpos_wrap_fragment(segs: &[LineSeg], idx: usize) -> bool {
+    idx > 0 && idx < segs.len() && segs[idx].vertical_pos == segs[idx - 1].vertical_pos
+}
+
+/// 합성 줄이 저장 LINE_SEG 와 1:1 일 때만 조각 건너뛰기를 적용한다.
+/// 재래핑으로 줄 수가 달라지면 합성 줄이 이미 시각 줄이다.
+fn skip_same_vertpos_composed_fragment(
+    segs: &[LineSeg],
+    composed_line_count: usize,
+    line_idx: usize,
+) -> bool {
+    composed_line_count == segs.len() && is_same_vertpos_wrap_fragment(segs, line_idx)
+}
+
+/// 셀 마지막 줄 trailing 판정 — 같은 vertpos 조각은 한 줄이므로, 뒤에 남은
+/// seg 가 전부 이 줄의 가로 조각이면 마지막 시각 줄이다.
+fn is_last_visual_line_for_cell_height(
+    segs: &[LineSeg],
+    composed_line_count: usize,
+    line_idx: usize,
+) -> bool {
+    if composed_line_count != segs.len() || segs.is_empty() {
+        return line_idx + 1 == composed_line_count;
+    }
+    segs.get(line_idx + 1..)
+        .map(|rest| {
+            rest.iter()
+                .all(|s| s.vertical_pos == segs[line_idx].vertical_pos)
+        })
+        .unwrap_or(true)
+}
 
 /// treat_as_char 표가 인라인(텍스트와 나란히)인지 판별
 ///
@@ -1016,8 +1050,10 @@ impl HeightMeasurer {
                     .unwrap_or(0);
                 para.line_segs
                     .iter()
+                    .enumerate()
                     .skip(skip)
-                    .map(|seg| {
+                    .filter(|(i, _)| !is_same_vertpos_wrap_fragment(&para.line_segs, *i))
+                    .map(|(_, seg)| {
                         (
                             hwpunit_to_px(seg.line_height, self.dpi),
                             hwpunit_to_px(seg.line_spacing, self.dpi),
@@ -1027,7 +1063,9 @@ impl HeightMeasurer {
             } else {
                 para.line_segs
                     .iter()
-                    .map(|seg| {
+                    .enumerate()
+                    .filter(|(i, _)| !is_same_vertpos_wrap_fragment(&para.line_segs, *i))
+                    .map(|(_, seg)| {
                         (
                             hwpunit_to_px(seg.line_height, self.dpi),
                             hwpunit_to_px(seg.line_spacing, self.dpi),
@@ -1706,6 +1744,13 @@ impl HeightMeasurer {
                                     .iter()
                                     .enumerate()
                                     .map(|(i, line)| {
+                                        if skip_same_vertpos_composed_fragment(
+                                            &p.line_segs,
+                                            line_count,
+                                            i,
+                                        ) {
+                                            return 0.0;
+                                        }
                                         let raw_lh = hwpunit_to_px(line.line_height, self.dpi);
                                         let max_fs = line
                                             .runs
@@ -1718,8 +1763,12 @@ impl HeightMeasurer {
                                                     .unwrap_or(0.0)
                                             })
                                             .fold(0.0f64, f64::max);
-                                        let is_cell_last_line =
-                                            is_last_para && i + 1 == line_count;
+                                        let is_cell_last_line = is_last_para
+                                            && is_last_visual_line_for_cell_height(
+                                                &p.line_segs,
+                                                line_count,
+                                                i,
+                                            );
                                         // [#2169] NO_LS 순수 빈 문단 — 문단 char shape fs
                                         // 폴백 (한글은 완전한 em 줄박스로 취급).
                                         let max_fs = if max_fs <= 0.0
@@ -2557,6 +2606,13 @@ impl HeightMeasurer {
                                     .iter()
                                     .enumerate()
                                     .map(|(i, line)| {
+                                        if skip_same_vertpos_composed_fragment(
+                                            &p.line_segs,
+                                            line_count,
+                                            i,
+                                        ) {
+                                            return 0.0;
+                                        }
                                         let raw_lh = hwpunit_to_px(line.line_height, self.dpi);
                                         let max_fs = line
                                             .runs
@@ -2569,8 +2625,12 @@ impl HeightMeasurer {
                                                     .unwrap_or(0.0)
                                             })
                                             .fold(0.0f64, f64::max);
-                                        let is_cell_last_line =
-                                            is_last_para && i + 1 == line_count;
+                                        let is_cell_last_line = is_last_para
+                                            && is_last_visual_line_for_cell_height(
+                                                &p.line_segs,
+                                                line_count,
+                                                i,
+                                            );
                                         // [#2169] NO_LS 순수 빈 문단 — 문단 char shape fs
                                         // 폴백 (한글은 완전한 em 줄박스로 취급).
                                         let max_fs = if max_fs <= 0.0
@@ -2993,6 +3053,11 @@ impl HeightMeasurer {
                                 && matches!(table.page_break, TablePageBreak::CellBreak);
                             let line_count = comp.lines.len();
                             for (li, line) in comp.lines.iter().enumerate() {
+                                if skip_same_vertpos_composed_fragment(&p.line_segs, line_count, li)
+                                {
+                                    line_heights.push(0.0);
+                                    continue;
+                                }
                                 let raw_lh = hwpunit_to_px(line.line_height, self.dpi);
                                 let max_fs = line
                                     .runs
@@ -3006,7 +3071,12 @@ impl HeightMeasurer {
                                     })
                                     .fold(0.0f64, f64::max);
                                 // 셀의 마지막 줄(마지막 문단의 마지막 줄)은 ls 제외
-                                let is_cell_last_line = is_last_para && li + 1 == line_count;
+                                let is_cell_last_line = is_last_para
+                                    && is_last_visual_line_for_cell_height(
+                                        &p.line_segs,
+                                        line_count,
+                                        li,
+                                    );
                                 // [#2169] NO_LS 순수 빈 문단 — char shape fs 폴백.
                                 let max_fs = if max_fs <= 0.0
                                     && crate::renderer::para_has_no_stored_line_segs(p)
