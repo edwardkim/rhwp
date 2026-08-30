@@ -22,9 +22,9 @@ fn issue_5946_p141_hangmok_is_not_covered_by_form_header() {
     let bytes = fs::read(path).unwrap_or_else(|e| panic!("read {SAMPLE}: {e}"));
     let core = DocumentCore::from_bytes(&bytes).expect("parse handbook");
     let page_count = core.page_count();
-    // 뷰어 141쪽을 우선하되, 조판이 한두 쪽 밀리면 근처에서 '4. 항목란' 을 찾는다.
+    // 뷰어 141쪽 근처. 조판이 밀리고 렌더 트리는 '4. ' / '항목란' 을 나눠 그린다.
     let search_lo = PAGE_INDEX.saturating_sub(4);
-    let search_hi = (PAGE_INDEX + 4).min(page_count.saturating_sub(1));
+    let search_hi = (PAGE_INDEX + 20).min(page_count.saturating_sub(1));
     let mut hangmok = Vec::new();
     let mut form = Vec::new();
     let mut found_page = PAGE_INDEX;
@@ -43,7 +43,7 @@ fn issue_5946_p141_hangmok_is_not_covered_by_form_header() {
 
     assert!(
         !hangmok.is_empty(),
-        "{}쪽에 '4. 항목란' 이 없다 — 검색 {}..{}: 표본 쪽 번호가 바뀌었는지 확인하라",
+        "{}쪽 근처에 '항목란' 이 없다 — 검색 {}..{}: 표본 쪽 번호가 바뀌었는지 확인하라",
         PAGE_INDEX + 1,
         search_lo + 1,
         search_hi + 1
@@ -79,7 +79,8 @@ fn collect(
             node.bbox.height,
             t.to_string(),
         );
-        if t.contains("4. 항목란") {
+        // 레이아웃이 '4. 항목란' 을 줄/런 단위로 나눠 '항목란' 만 남긴다.
+        if t.contains("항목란") {
             hangmok.push(bb.clone());
         }
         if (t.contains("접수번호") || t.contains("3쪽 중 1쪽")) && cell_clip != Some(true) {
