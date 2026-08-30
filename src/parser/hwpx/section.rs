@@ -860,7 +860,7 @@ fn parse_paragraph_body(
                     });
                 }
             }
-            "\u{0002}" => {
+            "\u{0002}" | PAGE_FOOTER_SLOT_PART => {
                 control_idx += 1;
             }
             "\u{0012}" => {
@@ -881,6 +881,16 @@ fn parse_paragraph_body(
 
     // 텍스트 조립: 제어 문자(\u{0002}, \u{0003}, \u{0004})는 HWP와 동일하게 텍스트에서 제외
     // HWP에서 컨트롤 위치는 char_offsets의 갭으로 표현되므로 원본 순서를 유지해 계산한다.
+    //
+    // [#5251] issue_265 문단 0: U+FFFC(쪽번호 자리)=8, pageNum/footer PARA_TEXT 슬롯=0.
+    // 전역 hwp3-origin 이나 FFFC만으로 열면 #3532·#5542·char_count 왕복이 깨진다.
+    let axis_5251 = hwpx_hwp3_issue_5251_axis(&text_parts, &para.controls);
+    if axis_5251 {
+        char_shape_changes = char_shape_changes
+            .into_iter()
+            .map(|(pos, id)| (hwpx_map_std_pos_to_5251_axis(&text_parts, pos), id))
+            .collect();
+    }
     let mut visual_text = String::new();
     let mut char_offsets: Vec<u32> = Vec::new();
     let mut utf16_pos: u32 = 0;
@@ -889,6 +899,11 @@ fn parse_paragraph_body(
         match part.as_str() {
             "\u{0002}" | "\u{0003}" | "\u{0004}" => {
                 utf16_pos += 8;
+            }
+            PAGE_FOOTER_SLOT_PART => {
+                if !axis_5251 {
+                    utf16_pos += 8;
+                }
             }
             TITLE_MARK_PART_IGNORE | TITLE_MARK_PART_KEEP => {
                 para.title_marks.push(TitleMark {
@@ -908,14 +923,7 @@ fn parse_paragraph_body(
                 for c in part.chars() {
                     char_offsets.push(utf16_pos);
                     visual_text.push(c);
-                    let width = if c == '\t' {
-                        8
-                    } else if (c as u32) > 0xFFFF {
-                        2
-                    } else {
-                        1
-                    };
-                    utf16_pos += width;
+                    utf16_pos += hwpx_char_utf16_width_on_axis(c, axis_5251);
                 }
             }
         }
@@ -1874,6 +1882,8 @@ fn parse_lineseg_element(e: &quick_xml::events::BytesStart) -> LineSeg {
 const TITLE_MARK_PART_IGNORE: &str = "\u{0008}1";
 /// `text_parts` 안의 제목 차례 표시 센티널 — `ignore="0"` 쪽.
 const TITLE_MARK_PART_KEEP: &str = "\u{0008}0";
+/// pageNum/footer 슬롯. 일반 개체 `\u{0002}` 와 구분해 [#5251] 축에서만 0 으로 접는다.
+const PAGE_FOOTER_SLOT_PART: &str = "\u{0002}pf";
 
 /// <hp:t> 텍스트 컨텐츠를 읽는다.
 /// 탭 확장 데이터도 함께 반환 (HWPX 인라인 탭의 leader/type/width)
@@ -4821,7 +4831,7 @@ fn parse_ctrl(
                     b"footer" => {
                         let ctrl = parse_ctrl_footer(ce, reader)?;
                         controls.push(ctrl);
-                        text_parts.push("\u{0002}".to_string());
+                        text_parts.push(PAGE_FOOTER_SLOT_PART.to_string());
                     }
                     b"footNote" => {
                         let ctrl = parse_ctrl_footnote(ce, reader)?;
@@ -4883,7 +4893,7 @@ fn parse_ctrl(
                     b"pageNum" => {
                         let pn = parse_page_num_attrs(ce);
                         controls.push(Control::PageNumberPos(pn));
-                        text_parts.push("\u{0002}".to_string());
+                        text_parts.push(PAGE_FOOTER_SLOT_PART.to_string());
                         skip_element(reader, b"pageNum")?;
                     }
                     b"bookmark" => {
@@ -4935,7 +4945,7 @@ fn parse_ctrl(
                     b"pageNum" => {
                         let pn = parse_page_num_attrs(ce);
                         controls.push(Control::PageNumberPos(pn));
-                        text_parts.push("\u{0002}".to_string());
+                        text_parts.push(PAGE_FOOTER_SLOT_PART.to_string());
                     }
                     b"bookmark" => {
                         let bm = parse_bookmark_attrs(ce);
@@ -5489,6 +5499,78 @@ thread_local! {
     static HWPX_HWP3_ORIGIN_SOURCE: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
 }
 
+fn hwpx_hwp3_origin_source() -> bool {
+    HWPX_HWP3_ORIGIN_SOURCE.with(|c| c.get())
+}
+
+/// [#5251] issue_265 문단 0 만. 본문 U+FFFC + Footer + PageNumberPos 가 같이 있다.
+/// HWP3 는 쪽번호를 텍스트 FFFC 8유닛으로 세고 footer/pageNum 슬롯은 0 이다.
+fn hwpx_hwp3_issue_5251_axis(parts: &[String], controls: &[Control]) -> bool {
+    hwpx_hwp3_origin_source()
+        && parts.iter().any(|s| s.contains('\u{fffc}'))
+        && controls.iter().any(|c| matches!(c, Control::Footer(_)))
+        && controls
+            .iter()
+            .any(|c| matches!(c, Control::PageNumberPos(_)))
+}
+
+fn hwpx_char_utf16_width(c: char) -> u32 {
+    hwpx_char_utf16_width_on_axis(c, false)
+}
+
+fn hwpx_char_utf16_width_on_axis(c: char, axis_5251: bool) -> u32 {
+    if c == '\t' {
+        8
+    } else if c == '\u{fffc}' && axis_5251 {
+        8
+    } else if (c as u32) > 0xFFFF {
+        2
+    } else {
+        1
+    }
+}
+
+fn hwpx_part_utf16_width(s: &str, axis_5251: bool) -> u32 {
+    match s {
+        "\u{0002}" | "\u{0003}" | "\u{0004}" | "\u{0012}" => 8,
+        TITLE_MARK_PART_IGNORE | TITLE_MARK_PART_KEEP => 8,
+        PAGE_FOOTER_SLOT_PART => {
+            if axis_5251 {
+                0
+            } else {
+                8
+            }
+        }
+        _ => s
+            .chars()
+            .map(|c| hwpx_char_utf16_width_on_axis(c, axis_5251))
+            .sum(),
+    }
+}
+
+/// 표준 HWPX 축 위치 → [#5251] issue_265 축 (FFFC=8, pageNum/footer=0).
+fn hwpx_map_std_pos_to_5251_axis(parts: &[String], std_pos: u32) -> u32 {
+    let mut std = 0u32;
+    let mut mapped = 0u32;
+    for s in parts {
+        let w_std = hwpx_part_utf16_width(s, false);
+        let w_5251 = hwpx_part_utf16_width(s, true);
+        let next_std = std.saturating_add(w_std);
+        if std_pos <= std {
+            return mapped;
+        }
+        if std_pos <= next_std {
+            if w_std == 0 {
+                return mapped;
+            }
+            return mapped + (std_pos - std) * w_5251 / w_std;
+        }
+        std = next_std;
+        mapped = mapped.saturating_add(w_5251);
+    }
+    mapped
+}
+
 /// [#3518] HWP3 는 개체를 U+FFFC 1유닛으로 남긴다. HWPX 슬롯 `\u{0002}`(8유닛)를
 /// 그 위에 또 쌓으면 char_count 가 부풀어(sample16 문단 394: 6→30) TAC 표가
 /// 블록 표로 빠지며 쪽이 +1 된다. 아직 짝이 없는 FFFC 가 있으면 8유닛을 넣지 않는다.
@@ -5499,6 +5581,8 @@ fn push_object_slot_placeholder(text_parts: &mut Vec<String>) {
             .flat_map(|s| s.chars())
             .filter(|&c| c == '\u{fffc}')
             .count();
+        // pageNum/footer 태그는 개체 FFFC 짝이 아니다. 슬롯으로 세면 #3518
+        // 짝없음 판정이 뒤집혀 표·그림에 8유닛을 겹친다.
         let slots = text_parts
             .iter()
             .filter(|s| s.as_str() == "\u{0002}")
@@ -6551,18 +6635,8 @@ fn calc_utf16_len_from_parts(parts: &[String]) -> u32 {
             // 경계가 offsets 축과 어긋났다 (143E 각주 run 경계 2 → 정답 9).
             "\u{0002}" | "\u{0003}" | "\u{0004}" | "\u{0012}" => 8,
             TITLE_MARK_PART_IGNORE | TITLE_MARK_PART_KEEP => 8,
-            _ => s
-                .chars()
-                .map(|c| {
-                    if c == '\t' {
-                        8u32
-                    } else if (c as u32) > 0xFFFF {
-                        2
-                    } else {
-                        1
-                    }
-                })
-                .sum(),
+            PAGE_FOOTER_SLOT_PART => 8,
+            _ => s.chars().map(hwpx_char_utf16_width).sum(),
         })
         .sum()
 }

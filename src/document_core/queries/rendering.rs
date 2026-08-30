@@ -5802,6 +5802,129 @@ impl DocumentCore {
         }
     }
 
+    /// 프로덕션 조판(`TypesetEngine::format_paragraph`)이 부여하는 문단 높이.
+    /// dump-pages 가 fallback `MeasuredSection` 이 아니라 이 값을 말한다 (#4628).
+    pub fn production_paragraph_height(
+        &self,
+        section_idx: usize,
+        para_index: usize,
+        column_width_px: Option<f64>,
+    ) -> Option<f64> {
+        let col_w =
+            column_width_px.or_else(|| self.dump_paragraph_column_width(section_idx, para_index));
+        self.dump_production_paragraph_height(section_idx, para_index, col_w)
+            .map(|h| h.total)
+    }
+
+    /// HeightMeasurer fallback `total_height`. 프로덕션 페이지네이션은 읽지 않는다 (#4628).
+    pub fn fallback_measured_paragraph_total_height(
+        &self,
+        section_idx: usize,
+        para_index: usize,
+    ) -> Option<f64> {
+        self.measured_sections
+            .get(section_idx)?
+            .get_paragraph_height(para_index)
+    }
+
+    fn dump_section_typesetter(&self, sec_idx: usize) -> TypesetEngine {
+        let typesetter = TypesetEngine::new(self.dpi);
+        typesetter.apply_section_format_context(
+            self.section_render_paragraphs(sec_idx),
+            &self.styles,
+            self.effective_layout_profile(),
+        );
+        typesetter
+    }
+
+    fn dump_paragraph_column_width(&self, sec_idx: usize, para_index: usize) -> Option<f64> {
+        use crate::renderer::pagination::PageItem;
+        let pr = self.pagination.get(sec_idx)?;
+        for page in &pr.pages {
+            for cc in &page.column_contents {
+                let hit = cc.items.iter().any(|item| {
+                    matches!(item, PageItem::FullParagraph { para_index: pi } if *pi == para_index)
+                });
+                if hit {
+                    return Self::dump_column_width_px(page, cc);
+                }
+            }
+        }
+        pr.pages
+            .first()?
+            .layout
+            .column_areas
+            .first()
+            .map(|area| area.width)
+    }
+
+    fn dump_production_paragraph_height(
+        &self,
+        sec_idx: usize,
+        para_index: usize,
+        column_width_px: Option<f64>,
+    ) -> Option<crate::renderer::typeset::DumpFormattedParagraphHeight> {
+        let typesetter = self.dump_section_typesetter(sec_idx);
+        let body_len = self.section_render_paragraphs(sec_idx).len();
+        let pr = self.pagination.get(sec_idx)?;
+        let paragraphs: std::borrow::Cow<'_, [Paragraph]> = if pr.endnote_paragraphs.is_empty() {
+            std::borrow::Cow::Borrowed(self.section_render_paragraphs(sec_idx))
+        } else {
+            std::borrow::Cow::Owned(
+                self.section_render_paragraphs(sec_idx)
+                    .iter()
+                    .chain(pr.endnote_paragraphs.iter())
+                    .cloned()
+                    .collect(),
+            )
+        };
+        self.dump_production_paragraph_height_with(
+            &typesetter,
+            sec_idx,
+            para_index,
+            body_len,
+            paragraphs.as_ref(),
+            column_width_px,
+        )
+    }
+
+    fn dump_production_paragraph_height_with(
+        &self,
+        typesetter: &crate::renderer::typeset::TypesetEngine,
+        sec_idx: usize,
+        para_index: usize,
+        body_len: usize,
+        paragraphs: &[Paragraph],
+        column_width_px: Option<f64>,
+    ) -> Option<crate::renderer::typeset::DumpFormattedParagraphHeight> {
+        let para = paragraphs.get(para_index)?;
+        let composed = if para_index < body_len {
+            self.section_render_composed(sec_idx).get(para_index)
+        } else {
+            None
+        };
+        Some(typesetter.dump_formatted_paragraph_height(
+            para,
+            composed,
+            &self.styles,
+            column_width_px,
+            para_index >= body_len,
+        ))
+    }
+
+    fn dump_column_width_px(
+        page: &crate::renderer::pagination::PageContent,
+        cc: &crate::renderer::pagination::ColumnContent,
+    ) -> Option<f64> {
+        cc.zone_layout
+            .as_ref()
+            .unwrap_or(&page.layout)
+            .column_areas
+            .get(cc.column_index as usize)
+            .or(page.layout.column_areas.first())
+            .map(|area| area.width)
+    }
+
     /// [#3697] 페이지네이션 결과를 기계 계약 JSON 으로 덤프 (#3608 1-C).
     ///
     /// 텍스트 덤프(`dump_page_items`)와 같은 순회·같은 구역 전처리
@@ -5819,7 +5942,7 @@ impl DocumentCore {
             let ctx = self.page_dump_section_ctx(sec_idx, pr, global_page);
             let paragraphs: &[Paragraph] = &ctx.paragraphs;
             let body_len = ctx.body_len;
-            let measured = self.measured_sections.get(sec_idx);
+            let typesetter = self.dump_section_typesetter(sec_idx);
 
             // 미주 항목(pi >= body_len)의 원본 위치 — 텍스트 덤프의 `src=...` 와 동일.
             let endnote_source_json = |para_index: usize| -> serde_json::Value {
@@ -5855,19 +5978,22 @@ impl DocumentCore {
                     for item in &cc.items {
                         let v = match item {
                             PageItem::FullParagraph { para_index } => {
-                                let height = measured
-                                    .and_then(|m| m.get_measured_paragraph(*para_index))
+                                let col_w = Self::dump_column_width_px(page, cc);
+                                let height = self
+                                    .dump_production_paragraph_height_with(
+                                        &typesetter,
+                                        sec_idx,
+                                        *para_index,
+                                        body_len,
+                                        paragraphs,
+                                        col_w,
+                                    )
                                     .map(|mp| {
-                                        let lh_sum: f64 = mp.line_heights.iter().sum();
-                                        let ls_sum: f64 = mp.line_spacings.iter().sum();
                                         serde_json::json!({
-                                            "total": mp.spacing_before
-                                                + lh_sum
-                                                + ls_sum
-                                                + mp.spacing_after,
+                                            "total": mp.total,
                                             "spacingBefore": mp.spacing_before,
-                                            "lineHeightSum": lh_sum,
-                                            "lineSpacingSum": ls_sum,
+                                            "lineHeightSum": mp.line_height_sum,
+                                            "lineSpacingSum": mp.line_spacing_sum,
                                             "spacingAfter": mp.spacing_after,
                                         })
                                     });
@@ -6077,7 +6203,7 @@ impl DocumentCore {
             let paragraphs: &[Paragraph] = &ctx.paragraphs;
             let body_len = ctx.body_len;
             let extra_by_page = &ctx.extra_by_page;
-            let measured = self.measured_sections.get(sec_idx);
+            let typesetter = self.dump_section_typesetter(sec_idx);
 
             for (local_idx, page) in pr.pages.iter().enumerate() {
                 if let Some(pf) = page_filter {
@@ -6163,22 +6289,26 @@ impl DocumentCore {
                                         }
                                     })
                                     .unwrap_or_default();
-                                let height = measured
-                                    .and_then(|m| m.get_measured_paragraph(*para_index))
+                                let col_w = Self::dump_column_width_px(page, cc);
+                                let height = self
+                                    .dump_production_paragraph_height_with(
+                                        &typesetter,
+                                        sec_idx,
+                                        *para_index,
+                                        body_len,
+                                        paragraphs,
+                                        col_w,
+                                    )
                                     .map(|mp| {
-                                        let sb = mp.spacing_before;
-                                        let sa = mp.spacing_after;
-                                        let lh_sum: f64 = mp.line_heights.iter().sum();
-                                        let ls_sum: f64 = mp.line_spacings.iter().sum();
-                                        let lines = lh_sum + ls_sum;
+                                        let lines = mp.line_height_sum + mp.line_spacing_sum;
                                         format!(
                                             "h={:.1} (sb={:.1} lines={:.1} lh={:.1} ls={:.1} sa={:.1})",
-                                            sb + lines + sa,
-                                            sb,
+                                            mp.total,
+                                            mp.spacing_before,
                                             lines,
-                                            lh_sum,
-                                            ls_sum,
-                                            sa
+                                            mp.line_height_sum,
+                                            mp.line_spacing_sum,
+                                            mp.spacing_after,
                                         )
                                     })
                                     .unwrap_or_default();

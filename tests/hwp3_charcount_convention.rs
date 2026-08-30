@@ -118,10 +118,16 @@ fn hwp3_roundtrip_char_count_is_not_off_by_exactly_one() {
     let output = run(&args);
     let text = String::from_utf8_lossy(&output.stdout).to_string();
     let pairs = cc_pairs(&text);
-    assert!(
-        !pairs.is_empty(),
-        "cc 라인 파싱 실패 — 형식이 바뀌었을 수 있습니다\n{text}"
-    );
+    if pairs.is_empty() {
+        // [#5251] issue_265(=hwp3-sample) char_count 가 맞으면 cc 줄이 없다.
+        // off-by-one 패턴이 사라진 것과 같다. ir-diff 출력이 비면 형식 변경이다.
+        assert!(
+            text.contains("[차이]") || text.contains("IR 차이 없음"),
+            "cc 라인 파싱 실패 — 형식이 바뀌었을 수 있습니다\n{text}"
+        );
+        let _ = std::fs::remove_file(&out);
+        return;
+    }
     for (a, b) in &pairs {
         assert_ne!(
             (a - b).abs(),

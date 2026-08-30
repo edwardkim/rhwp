@@ -514,6 +514,28 @@ test('본문 insert와 delete command는 stable local replace effect를 반환�
   });
 });
 
+test('본문 local result의 focusedPagePatch 를 text-edit 렌더에 넘긴다', () => {
+  const wasm = new FakeWasm();
+  const position = { sectionIndex: 0, paragraphIndex: 2, charOffset: 3 };
+  wasm.queueBodyResult({
+    ok: true,
+    charOffset: 4,
+    documentPaginationPending: true,
+    flowChanged: false,
+    focusedPagePatch: { pageIndex: 0, x: 10, y: 20, width: 30, height: 12 },
+  });
+
+  assert.deepEqual(
+    replaceBodyTextWithMutationEffects(wasm, position, 0, '가'),
+    {
+      documentPaginationPending: true,
+      flowChanged: false,
+      paginationCompleted: false,
+      focusedPagePatch: { pageIndex: 0, x: 10, y: 20, width: 30, height: 12 },
+    },
+  );
+});
+
 test('본문 flow boundary local result는 pagination 완료 effect로 전달된다', () => {
   const wasm = new FakeWasm();
   const position = { sectionIndex: 0, paragraphIndex: 2, charOffset: 3 };
