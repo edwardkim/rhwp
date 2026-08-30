@@ -15,9 +15,9 @@ author: planet6897
 | 구분 | 현재 결정 |
 |---|---|
 | 원 PR head 직접 병합 | 불가: 최신 devel과 중복된 Zoom 구현으로 원 CI 실패 |
-| 수용 대상 | 중복 Zoom을 제거하고 CMYK JPEG 정규화만 보존한 메인터너 보정 #6481 |
+| replacement 후보 반영 | 제외: #6471의 두 체리픽과 CMYK JPEG 정규화는 새 통합 branch에 넣지 않음 |
 | 현재 상태 | 머지 보류: Zoom 증적은 완료됐지만 CMYK JPEG 정규화의 독립 Hancom PDF 증적이 없음 |
-| 승인 뒤 처리 | #6481 수용·병합 뒤 #6471을 원 head가 아닌 보정된 통합 결과 기준으로 close |
+| 후속 처리 | 별도 보정·독립 Hancom PDF 증적·최신 CI가 갖춰진 새 후보가 생기기 전에는 close하지 않음 |
 
 ## 식별과 provenance
 
@@ -26,16 +26,15 @@ author: planet6897
 | 원 PR | https://github.com/edwardkim/rhwp/pull/6471 |
 | 원 head | `5af8e20ca0e8b2e807b9e33dbb8d55ba4fc0402f` |
 | 원 commits | `f1791b6109df1adebf27954cf252520ed63b9905`, `5af8e20ca0e8b2e807b9e33dbb8d55ba4fc0402f` |
-| 통합 기준 | `upstream/devel@8a150f9a8bb19a9918e195da3a646690f68f4328` |
-| 통합 commits | `60197deaa24793978e5f9b3b534a175961d2affe`, `44f1176dc9afe446ff76e522ece0b7f1b47892e5` |
-| 메인터너 보정 | `de5209d52d20749ec413a996f0c89da0e7af1362` |
-| 통합 순서 | 7/8 |
+| 닫힌 #6481의 과거 통합 commits | `60197deaa24793978e5f9b3b534a175961d2affe`, `44f1176dc9afe446ff76e522ece0b7f1b47892e5` |
+| 닫힌 #6481의 과거 메인터너 보정 | `de5209d52d20749ec413a996f0c89da0e7af1362` |
+| replacement 후보 | `review/planet6897-batch-without-6471-20260831`; #6471 체리픽 제외 |
 
-## 원 CI 실패와 메인터너 보정
+## 원 CI 실패와 과거 메인터너 보정
 
 원 PR CI는 최신 devel에 이미 존재하는 `ImageFillMode::Zoom` enum과 parser·serializer·renderer match arm을 다시 추가해 lint, build, render, proptest, adapter lane에서 실패했다. 이 실패는 CMYK JPEG 정규화 자체의 결함이 아니라 current-base 중복 구현이다.
 
-통합에서는 중복 Zoom 선언과 분기를 제거하고 기존 devel의 `preserveAspectRatio="xMidYMid meet"` 계약을 유지했다. 원 PR의 고유 변경인 four-component JPEG 감지, CMYK JPEG의 PNG 정규화, 관련 fixture와 계약 테스트는 보존했다. 원 PR의 별도 explicit rectangle Zoom 분기를 시험 적용했을 때 기존 `zoom_cell_fill_svg_meets_the_cell_box`가 실패했으므로 그 과도한 변경은 수용하지 않았다.
+닫힌 #6481에서는 중복 Zoom 선언과 분기를 제거하고 기존 devel의 `preserveAspectRatio="xMidYMid meet"` 계약을 유지했다. 원 PR의 고유 변경인 four-component JPEG 감지, CMYK JPEG의 PNG 정규화, 관련 fixture와 계약 테스트는 그 과거 후보에만 남겼다. 원 PR의 별도 explicit rectangle Zoom 분기를 시험 적용했을 때 기존 `zoom_cell_fill_svg_meets_the_cell_box`가 실패했으므로 그 과도한 변경은 수용하지 않았다.
 
 최종 후보에서 기존 `header_imgbrush_zoom_is_not_collapsed_to_tile`, `zoom_cell_fill_svg_meets_the_cell_box`와 신규 `hwpx_zoom_mode_is_not_parsed_as_tile`, `four_component_jpeg_is_detected`가 모두 통과했다. 공통 필수 native·WASM·workspace clippy, workspace build, manifest와 format 검증도 통과했다.
 
@@ -43,4 +42,4 @@ author: planet6897
 
 ## 현재 결론
 
-**최종 판정: 머지 보류.** 원 head는 current-base 중복 Zoom 구현으로 CI를 통과하지 못하며, 메인터너 보정의 Zoom 부분만 직접 시각 증적으로 보완됐다. CMYK JPEG 정규화는 아직 contract test만 통과했으므로 현재 통합 후보도 수용하지 않는다. 독립 Hancom PDF 기반 CMYK 판정까지 포함한 메인터너 보정 검증이 끝나면 `메인터너 보정 후 수용 가능`으로 재분류한다. remote push, merge, #6471 close는 수행하지 않는다.
+**최종 판정: 머지 보류.** 원 head는 current-base 중복 Zoom 구현으로 CI를 통과하지 못하며, 과거 메인터너 보정의 Zoom 부분만 직접 시각 증적으로 보완됐다. CMYK JPEG 정규화는 아직 contract test만 통과했으므로 수용하지 않는다. 독립 Hancom PDF 기반 CMYK 판정까지 포함한 메인터너 보정 검증이 끝나면 `메인터너 보정 후 수용 가능`으로 재분류한다. #6471은 replacement 후보에서 제외했으며, remote push, merge, close는 이 기록만으로 수행하지 않는다.

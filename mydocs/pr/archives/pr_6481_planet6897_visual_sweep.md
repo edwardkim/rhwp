@@ -1,6 +1,6 @@
 ---
 kind: visual-sweep-record
-status: partial-evidence-generated
+status: superseded-after-6471-removal
 canonical: mydocs/manual/verification/visual_sweep_guide.md
 last_verified: 2026-08-31
 pr: 6481
@@ -8,6 +8,10 @@ source_prs: [6413, 6422, 6445, 6447, 6455, 6470, 6471, 6479]
 ---
 
 # PR #6481 planet6897 통합 visual sweep 기록
+
+> **역사 기록**: PR #6481은 #6471의 CMYK JPEG 증적 부족으로 2026-08-31에 닫혔다. 이 문서는
+> 당시 8개 체리픽 후보의 증적을 보존하며, 새 replacement 후보의 수용 근거로 재사용하지 않는다.
+> replacement 후보는 #6471의 두 체리픽을 제외하고 별도 PR 번호의 review 기록을 새로 작성한다.
 
 ## 범위와 판정 원칙
 
@@ -72,6 +76,8 @@ N-up 비교에는 `visual_sweep.py`를 쓰지 않았다. `export-svg --compat 20
 | #6471 | 머지 보류 | CMYK JPEG 정규화는 독립 Hancom PDF 증적이 없다. 이를 보완한 메인터너 검증 뒤에만 `메인터너 보정 후 수용 가능`으로 재분류한다. |
 | #6479 | 승인 | footer/logo line claim의 p13 직접 시각 증적과 계약 검증에 차단 finding이 없다. #6481 통합 결과로만 수용한다. |
 
-따라서 #6481 전체는 #6471이 머지 보류인 동안 merge 권고를 내리지 않는다.
+따라서 #6481 전체는 #6471이 머지 보류인 동안 merge 권고를 내리지 않았고, 해당 PR은 닫혔다.
+replacement 후보에서는 #6471을 체리픽하지 않으며, 새 후보의 source PR 목록·commit SHA·검증 결과는
+새 PR 번호의 review 기록으로 다시 작성한다.
 
 대표 asset과 기준 PDF는 아직 local review branch에만 있고 원격 PR #6481에는 push하지 않았다. 승인 뒤 asset을 포함한 commit을 push한 경우에만 merge 후 contributor PR comment에 [Visual Sweep 정본](../../manual/verification/visual_sweep_guide.md#github-merge-comment)과 merge-SHA 고정 raw asset URL을 `--body-file`로 한 번 게시하고 API로 재조회한다.
