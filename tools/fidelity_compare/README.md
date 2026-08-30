@@ -253,13 +253,16 @@ border의 stroke interval이 ancestor `body-clip-*` 또는 `cell-clip-*`과 만�
 `REG` 에는 6 쌍이 등록돼 있는데 `pdf/` 에는 정답지가 **573 장** 있다. 나머지를 쓰려면
 `--source`·`--reference-pdf` 로 직접 지정해야 하고, 그때마다 짝을 손으로 찾아야 한다.
 
-`oracle_pair_index.py` 가 그 짝짓기를 자동화한다.
+`oracle_pair_index.py` 가 그 짝짓기를 자동화한다. 자동 선택은 **원본 형식과 한컴 엔진
+연도가 확인된 PDF**만 고른다. 형식 미표기·상대 형식·kopub/no-ttf 는 섞지 않는다.
+`--args` 는 canonical PDF가 없거나 같은 연도에 여러 장이면 비교 인자를 출력하지 않고
+실패한다 (#6374).
 
 ```bash
-# 짝지어진 566개 목록 (TSV)
+# 짝지어진 canonical 목록 (TSV)
 python tools/fidelity_compare/oracle_pair_index.py --list
 
-# 한 문서의 인자쌍을 바로 얻는다
+# 한 문서의 인자쌍을 바로 얻는다. 편람 HWPX 는 hwpx-2024 를 고르고 2010-kopub 은 고르지 않는다.
 python tools/fidelity_compare/oracle_pair_index.py --args "samples/basic/sungeo.hwp"
 #   --source "samples/basic/sungeo.hwp" --reference-pdf "pdf/basic/sungeo-2022.pdf" --label sungeo
 ```

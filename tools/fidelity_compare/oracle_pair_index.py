@@ -8,6 +8,9 @@
 이 도구는 그 짝짓기를 자동화한다. 산출은 `fidelity_compare.py` 에 그대로 넣을 수 있는
 `--source`/`--reference-pdf` 인자쌍이거나 TSV 목록이다.
 
+자동 선택은 원본 형식과 한컴 엔진 연도가 확인된 PDF만 고른다. `--args` 는 canonical
+PDF가 없거나 같은 연도에 여러 장이면 비교 인자를 출력하지 않고 실패한다.
+
     python tools/fidelity_compare/oracle_pair_index.py --list
     python tools/fidelity_compare/oracle_pair_index.py --args "samples/basic/sungeo.hwp"
 
@@ -23,8 +26,8 @@
 잘못 짝지으면 대조 결과 전체가 무의미해진다 — 실제로 이 함정에 걸려 "글자 93.8% 손실" 이라는
 가짜 결함을 만들 뻔했다. 저장소에는 같은 이름의 서로 다른 문서가 **44 종** 있다.
 
-그래서 **같은 디렉터리의 정답지가 있으면 그것만** 쓴다. 없으면 이름 후보를 그대로 쓰되
-`--list` 출력에 후보 수를 함께 적어 사람이 판단할 수 있게 한다.
+그래서 **같은 디렉터리의 정답지가 있으면 그것만** 후보로 본다. 그 안에서 원본 형식과
+한컴 엔진 연도가 확인된 PDF만 남긴다. 없으면 비교 인자를 만들지 않는다.
 
 ## 모아 찍기 문서는 표시한다
 
@@ -39,22 +42,18 @@ import re
 import subprocess
 import sys
 
-SUFFIX = re.compile(r'-(20\d\d|hwp|hwpx|kopub|no-ttf|current)+$', re.I)
-REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+_HERE = os.path.dirname(os.path.abspath(__file__))
+_PAIRING_DIR = os.path.join(os.path.dirname(_HERE), 'oracle_page_count')
+if _PAIRING_DIR not in sys.path:
+    sys.path.insert(0, _PAIRING_DIR)
+from pairing import (  # noqa: E402
+    pick_canonical_oracles,
+    select_args_pdf,
+    stem,
+    subdir,
+)
 
-
-def stem(path):
-    name = re.sub(r'\.(pdf|hwp|hwpx)$', '', os.path.basename(path), flags=re.I)
-    prev = None
-    while prev != name:
-        prev = name
-        name = SUFFIX.sub('', name)
-    return name
-
-
-def subdir(path, root):
-    d = os.path.dirname(path).replace(os.sep, '/')
-    return d[len(root):].lstrip('/') if d.startswith(root) else d
+REPO = os.path.dirname(os.path.dirname(_HERE))
 
 
 def git_pdfs():
@@ -86,9 +85,10 @@ def build_index():
         cands = by_name.get(stem(s))
         if not cands:
             continue
-        same_dir = [p for p in cands if subdir(p, 'pdf') == subdir(s, 'samples')]
-        chosen = same_dir if same_dir else cands
-        index[s] = (sorted(chosen), len(cands))
+        chosen = pick_canonical_oracles(s, cands)
+        if not chosen:
+            continue
+        index[s] = (chosen, len(cands))
     return index
 
 
@@ -117,16 +117,17 @@ def main():
     if args.args:
         key = args.args.replace(os.sep, '/')
         if key not in index:
-            print(f'짝지어진 정답지가 없다: {key}', file=sys.stderr)
+            print(f'짝지어진 canonical 정답지가 없다: {key}', file=sys.stderr)
             return 1
         chosen, _ = index[key]
+        selected, reason = select_args_pdf(chosen)
+        if selected is None:
+            print(f'{key}: {reason}', file=sys.stderr)
+            for path in chosen:
+                print('#   %s' % path, file=sys.stderr)
+            return 1
         print('--source "%s" --reference-pdf "%s" --label %s'
-              % (key, chosen[0], re.sub(r'[^A-Za-z0-9]+', '-', stem(key)).strip('-') or 'doc'))
-        if len(chosen) > 1:
-            print('# 정답지 후보 %d개 — 한글 버전·폰트 조건이 다르다:' % len(chosen),
-                  file=sys.stderr)
-            for p in chosen:
-                print('#   %s' % p, file=sys.stderr)
+              % (key, selected, re.sub(r'[^A-Za-z0-9]+', '-', stem(key)).strip('-') or 'doc'))
         return 0
 
     if not args.list:
