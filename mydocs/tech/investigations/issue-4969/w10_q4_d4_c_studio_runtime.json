@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q4-d4-c-studio-runtime-pixel-proof",
+  "issue": 4969,
+  "stage": "W10-Q4-D4-C",
+  "date": "2026-08-31",
+  "status": "qualified-studio-runtime-pixel-proof-result-approved",
+  "resultApproved": true,
+  "planCheckpoint": "c11e84935",
+  "d4BCheckpoint": "c9b551909",
+  "baseUpstreamDevel": "8a150f9a8bb1",
+  "featureDetection": {
+    "actualCanvasDrawGlyphsCheckedBeforeSelection": true,
+    "drawHelperRechecksDrawGlyphs": true,
+    "versionOrUserAgentBranching": false,
+    "malformedBoundedTupleFailClosed": true
+  },
+  "font": {
+    "path": "ttfs/opensource/NotoSansKR-Regular.ttf",
+    "bytes": 2519996,
+    "sha256": "6e06a7fe5d696ca719894a23f36bb2b1be8c816a5937cd4ad0f23ca67780dd74",
+    "canvasKitPackageEvidenceOnly": "0.41.1"
+  },
+  "verticalLeaves": [
+    {
+      "sourceId": 0,
+      "text": "한",
+      "glyphId": 11232,
+      "deliveredPosition": [0, 0],
+      "deliveredOrigin": [0, 0],
+      "drawCalls": 1,
+      "alphaBounds": { "left": 33, "top": 15, "right": 67, "bottom": 50, "width": 35, "height": 36 }
+    },
+    {
+      "sourceId": 1,
+      "text": "글",
+      "glyphId": 1156,
+      "deliveredPosition": [0, 0],
+      "deliveredOrigin": [0, 0],
+      "drawCalls": 1,
+      "alphaBounds": { "left": 34, "top": 16, "right": 66, "bottom": 50, "width": 33, "height": 35 }
+    }
+  ],
+  "mismatch": {
+    "glyphId": 0,
+    "position": 0,
+    "origin": 0,
+    "alphaBounds": 0,
+    "drawCall": 0,
+    "fallbackDoublePaint": 0,
+    "capabilityMissingBlank": 0
+  },
+  "fallback": {
+    "missingDrawGlyphsPreserved": 1,
+    "unverifiedFontBlobPreserved": 1,
+    "unsupportedFaceIndexPreserved": 1,
+    "malformedTuplePreserved": 5,
+    "malformedTupleTotal": 5
+  },
+  "validation": {
+    "issue4969StudioE2E": "passed",
+    "rendererContract": "passed",
+    "canvasKitFontCoverage": "passed",
+    "studioUnitPassed": 1321,
+    "studioUnitFailed": 0,
+    "studioUnitSkipped": 1,
+    "studioProductionBuild": "passed",
+    "rustD4FeatureDetectionPassed": 1,
+    "integrationManifestSources": 1057,
+    "integrationManifestStaticTestAttrs": 4680,
+    "integrationManifestTargetsPassed": 48,
+    "integrationManifestTargetsTotal": 48
+  },
+  "newE2ESource": false,
+  "newIntegrationSource": false,
+  "generatedIntegrationArtifacts": false,
+  "publicSchemaChanged": false,
+  "privateCorpusUsed": false,
+  "hyperVUsed": false,
+  "githubMutation": false,
+  "next": "separate-D4-C-checkpoint-approval"
+}

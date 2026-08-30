@@ -4,11 +4,12 @@
   "issue": 4969,
   "stage": "W10-Q4-D4",
   "date": "2026-08-30",
-  "status": "Q4-D4-B-qualified-rust-bounded-selector-result-approved",
+  "status": "Q4-D4-C-qualified-studio-runtime-pixel-proof-result-approved",
   "planApproved": true,
   "checkpointApproved": true,
   "checkpointApprovedDate": "2026-08-31",
   "planCheckpoint": "c11e84935",
+  "d4BCheckpoint": "c9b551909",
   "d3CCheckpoint": "43d50ad99",
   "mergedUpstreamDevel": "8a150f9a8bb1",
   "mergeCommit": "bcaf86e18",
@@ -39,13 +40,14 @@
     {
       "id": "Q4-D4-B",
       "name": "rust-selector-capability",
-      "status": "qualified-rust-bounded-selector-result-approved",
+      "status": "completed-checkpoint-c9b551909",
       "resultEvidence": "mydocs/tech/investigations/issue-4969/w10_q4_d4_b_rust_selector.json"
     },
     {
       "id": "Q4-D4-C",
       "name": "studio-runtime-capability-and-pixel-proof",
-      "status": "blocked-by-D4-B"
+      "status": "qualified-studio-runtime-pixel-proof-result-approved",
+      "resultEvidence": "mydocs/tech/investigations/issue-4969/w10_q4_d4_c_studio_runtime.json"
     },
     {
       "id": "Q4-D4-D",
@@ -80,5 +82,5 @@
     "samples/table-004.hwp",
     "samples/issue6029/3200477_icao_procedure.hwpx"
   ],
-  "next": "separate-Q4-D4-B-checkpoint-approval"
+  "next": "separate-Q4-D4-C-checkpoint-approval"
 }

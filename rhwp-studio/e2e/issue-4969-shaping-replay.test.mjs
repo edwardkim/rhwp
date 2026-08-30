@@ -7,6 +7,7 @@ import { blake3 } from '@noble/hashes/blake3.js';
 import { bytesToHex } from '@noble/hashes/utils.js';
 import CanvasKitInit from 'canvaskit-wasm/bin/full/canvaskit.js';
 import {
+  canvasKitCanvasSupportsGlyphRunReplay,
   CanvasKitGlyphRunFontCache,
   drawCanvasKitGlyphRun,
 } from '../src/view/canvaskit/glyph-run-fonts.ts';
@@ -15,6 +16,7 @@ import { selectLayerTextVariantsForLeaf } from '../src/view/canvaskit/text-varia
 const studioRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const repoRoot = path.resolve(studioRoot, '..');
 const fontPath = path.join(repoRoot, 'ttfs/opensource/SourceHanSerifK-OldHangul-subset.otf');
+const verticalFontPath = path.join(repoRoot, 'ttfs/opensource/NotoSansKR-Regular.ttf');
 const canvasKitBundle = path.join(studioRoot, 'node_modules/canvaskit-wasm/bin/full');
 const CanvasKit = await CanvasKitInit({
   locateFile: file => path.join(canvasKitBundle, file),
@@ -39,6 +41,30 @@ const resources = {
   fontBlobs: [fontBytes.toString('base64')],
   fontBlobKeys: [blobKey],
 };
+
+function portableFontFixture(bytes) {
+  const fontDigest = bytesToHex(blake3(bytes));
+  const fontBlobKey = `font:blake3:${bytes.byteLength}:${fontDigest}`;
+  const fontFaceKey = `${fontBlobKey}:face:0`;
+  return {
+    faceKey: fontFaceKey,
+    fontResources: {
+      blobs: [{
+        id: fontBlobKey,
+        source: 'embedded',
+        portability: 'portableBlob',
+        digest: { algorithm: 'blake3', value: fontDigest },
+        dataRef: { kind: 'fontBlob', id: fontBlobKey },
+      }],
+      faces: [{ id: fontFaceKey, blobKey: fontBlobKey, faceIndex: 0 }],
+    },
+    resources: {
+      tableId: 1,
+      fontBlobs: [bytes.toString('base64')],
+      fontBlobKeys: [fontBlobKey],
+    },
+  };
+}
 
 const ratio = 0.8;
 const drawScale = Math.sqrt(ratio);
@@ -183,6 +209,91 @@ function rasterize(run, font) {
   }
 }
 
+function verticalFixture(faceKey, text, glyphId, sourceId) {
+  const equivalenceGroup = `issue-4969-q4-d4-bounded-vertical-${sourceId}`;
+  const verticalFallback = {
+    type: 'textRun',
+    bbox: { x: 32, y: 8, width: 40, height: 48 },
+    text,
+    variant: {
+      equivalenceGroup,
+      variantId: 'textRun',
+      variantKind: 'textRun',
+      partIndex: 0,
+      partCount: 1,
+      isDefaultFallback: true,
+    },
+  };
+  const verticalGlyphRun = {
+    type: 'glyphRun',
+    bbox: verticalFallback.bbox,
+    source: {
+      id: sourceId,
+      utf8Range: { start: 0, end: 3 },
+      utf16Range: { start: 0, end: 1 },
+    },
+    variant: {
+      equivalenceGroup,
+      variantId: 'verticalGlyphRun',
+      variantKind: 'glyphRun',
+      partIndex: 0,
+      partCount: 1,
+      isDefaultFallback: false,
+      requires: ['fontResources', 'text.glyphRun', 'text.glyphRun.verticalUpright'],
+      quality: 'exact',
+      anchorOpId: equivalenceGroup,
+    },
+    paintStyle: {
+      fontFamily: 'Noto Sans KR',
+      fontSize: 40,
+      color: '#000000',
+    },
+    shapeKey: {
+      fontInstance: {
+        faceKey,
+        sizePx: 40,
+        syntheticBold: false,
+        syntheticItalic: false,
+      },
+      direction: 'ltr',
+      writingMode: 'vertical-rl',
+      shapingEngine: 'rustybuzz-q4-vertical-v1',
+      fallbackPolicy: 'none',
+    },
+    placement: {
+      runToPage: { a: 1, b: 0, c: 0, d: 1, e: 32, f: 48 },
+      baselineY: 0,
+    },
+    glyphIds: [glyphId],
+    positions: [{ x: 0, y: 0 }],
+    advances: [{ dx: 0, dy: 40 }],
+    clusters: [{
+      sourceRangeUtf8: { start: 0, end: 3 },
+      sourceRangeUtf16: { start: 0, end: 1 },
+      textRangeUtf8: { start: 0, end: 3 },
+      glyphRange: { start: 0, end: 1 },
+      flags: ['fallbackBoundary'],
+    }],
+    direction: 'ltr',
+    bidiLevel: 0,
+    writingMode: 'vertical-rl',
+    orientation: 'vertical-upright',
+    diagnostics: {
+      quality: 'exact',
+      replayEligibility: 'portable',
+      strictVisualEligible: true,
+      maxOriginDeltaPx: 0,
+      maxAdvanceDeltaPx: 0,
+      maxResidualAfterAdjustmentPx: 0,
+      clusterMismatchCount: 0,
+      missingGlyphCount: 0,
+      usedFallbackFontCount: 0,
+      reason: 'boundedVerticalHwp5TableCellV1',
+    },
+  };
+  return { verticalFallback, verticalGlyphRun };
+}
+
 const cache = new CanvasKitGlyphRunFontCache(CanvasKit);
 try {
   cache.registerResources(fontResources, resources);
@@ -293,4 +404,234 @@ try {
   }));
 } finally {
   cache.clear();
+}
+
+const verticalFontBytes = fs.readFileSync(verticalFontPath);
+const verticalResources = portableFontFixture(verticalFontBytes);
+const verticalCache = new CanvasKitGlyphRunFontCache(CanvasKit);
+try {
+  verticalCache.registerResources(
+    verticalResources.fontResources,
+    verticalResources.resources,
+  );
+  const verticalFixtures = [
+    {
+      ...verticalFixture(verticalResources.faceKey, '한', 11232, 0),
+      expectedInk: { left: 33, top: 15, right: 67, bottom: 50, width: 35, height: 36 },
+    },
+    {
+      ...verticalFixture(verticalResources.faceKey, '글', 1156, 1),
+      expectedInk: { left: 34, top: 16, right: 66, bottom: 50, width: 33, height: 35 },
+    },
+  ];
+  const [{ verticalFallback, verticalGlyphRun }] = verticalFixtures;
+  const surface = CanvasKit.MakeSurface(128, 80);
+  assert.ok(surface, 'bounded vertical capability probe surface를 만들 수 있어야 한다');
+  try {
+    const canvas = surface.getCanvas();
+    assert.equal(canvasKitCanvasSupportsGlyphRunReplay(canvas), true);
+    for (const fixture of verticalFixtures) {
+      const status = verticalCache.replayStatus(
+        fixture.verticalGlyphRun,
+        verticalResources.fontResources,
+      );
+      assert.equal(status.replayable, true, 'exact bounded vertical tuple은 replay 가능해야 한다');
+      const selected = selectLayerTextVariantsForLeaf(
+        [fixture.verticalFallback, fixture.verticalGlyphRun],
+        () => false,
+        op => canvasKitCanvasSupportsGlyphRunReplay(canvas)
+          && verticalCache.replayStatus(op, verticalResources.fontResources).replayable,
+      );
+      assert.deepEqual([...selected], [fixture.verticalGlyphRun]);
+    }
+
+    for (const malformed of [
+      {
+        ...verticalGlyphRun,
+        diagnostics: { ...verticalGlyphRun.diagnostics, reason: 'untrustedVerticalCandidate' },
+      },
+      {
+        ...verticalGlyphRun,
+        variant: { ...verticalGlyphRun.variant, variantId: 'untrustedVerticalGlyphRun' },
+      },
+      { ...verticalGlyphRun, orientation: 'vertical-sideways' },
+      {
+        ...verticalGlyphRun,
+        writingMode: 'horizontal-tb',
+        shapeKey: { ...verticalGlyphRun.shapeKey, writingMode: 'horizontal-tb' },
+        orientation: 'horizontal',
+      },
+      {
+        ...verticalGlyphRun,
+        glyphTransforms: [{ xx: 1, xy: 0, yx: 0, yy: 1, tx: 0, ty: 0 }],
+      },
+    ]) {
+      const malformedStatus = verticalCache.replayStatus(
+        malformed,
+        verticalResources.fontResources,
+      );
+      assert.equal(malformedStatus.replayable, false);
+      assert.equal(malformedStatus.reason, 'boundedVerticalGlyphRunTupleMismatch');
+      assert.deepEqual(
+        [...selectLayerTextVariantsForLeaf(
+          [verticalFallback, malformed],
+          () => false,
+          op => canvasKitCanvasSupportsGlyphRunReplay(canvas)
+            && verticalCache.replayStatus(op, verticalResources.fontResources).replayable,
+        )],
+        [verticalFallback],
+      );
+    }
+
+    const missingCapabilityCanvas = {};
+    assert.equal(canvasKitCanvasSupportsGlyphRunReplay(missingCapabilityCanvas), false);
+    assert.deepEqual(
+      [...selectLayerTextVariantsForLeaf(
+        [verticalFallback, verticalGlyphRun],
+        () => false,
+        op => canvasKitCanvasSupportsGlyphRunReplay(missingCapabilityCanvas)
+          && verticalCache.replayStatus(op, verticalResources.fontResources).replayable,
+      )],
+      [verticalFallback],
+      'drawGlyphs 부재는 선택 전에 TextRun fallback을 보존해야 한다',
+    );
+    assert.equal(
+      drawCanvasKitGlyphRun(missingCapabilityCanvas, verticalGlyphRun, {}, {}),
+      false,
+      'draw helper도 drawGlyphs 기능 부재를 재검사해야 한다',
+    );
+    const unverifiedCache = new CanvasKitGlyphRunFontCache(CanvasKit);
+    try {
+      const unverifiedStatus = unverifiedCache.replayStatus(
+        verticalGlyphRun,
+        verticalResources.fontResources,
+      );
+      assert.equal(unverifiedStatus.replayable, false);
+      assert.equal(unverifiedStatus.reason, 'fontBlobNotVerified');
+      assert.deepEqual(
+        [...selectLayerTextVariantsForLeaf(
+          [verticalFallback, verticalGlyphRun],
+          () => false,
+          op => canvasKitCanvasSupportsGlyphRunReplay(canvas)
+            && unverifiedCache.replayStatus(op, verticalResources.fontResources).replayable,
+        )],
+        [verticalFallback],
+        'font verification 실패는 TextRun fallback을 보존해야 한다',
+      );
+    } finally {
+      unverifiedCache.clear();
+    }
+    const unsupportedFaceKey = `${verticalResources.fontResources.blobs[0].id}:face:1`;
+    const unsupportedFaceResources = {
+      blobs: verticalResources.fontResources.blobs,
+      faces: [{
+        id: unsupportedFaceKey,
+        blobKey: verticalResources.fontResources.blobs[0].id,
+        faceIndex: 1,
+      }],
+    };
+    const unsupportedFaceRun = {
+      ...verticalGlyphRun,
+      shapeKey: {
+        ...verticalGlyphRun.shapeKey,
+        fontInstance: {
+          ...verticalGlyphRun.shapeKey.fontInstance,
+          faceKey: unsupportedFaceKey,
+        },
+      },
+    };
+    const unsupportedFaceStatus = verticalCache.replayStatus(
+      unsupportedFaceRun,
+      unsupportedFaceResources,
+    );
+    assert.equal(unsupportedFaceStatus.replayable, false);
+    assert.equal(unsupportedFaceStatus.reason, 'faceIndexUnsupported');
+    assert.deepEqual(
+      [...selectLayerTextVariantsForLeaf(
+        [verticalFallback, unsupportedFaceRun],
+        () => false,
+        op => canvasKitCanvasSupportsGlyphRunReplay(canvas)
+          && verticalCache.replayStatus(op, unsupportedFaceResources).replayable,
+      )],
+      [verticalFallback],
+      'font face 생성 실패도 TextRun fallback을 보존해야 한다',
+    );
+    const paint = new CanvasKit.Paint();
+    try {
+      paint.setColor(CanvasKit.BLACK);
+      paint.setStyle(CanvasKit.PaintStyle.Fill);
+      for (const fixture of verticalFixtures) {
+        const verticalFont = verticalCache.font(
+          fixture.verticalGlyphRun,
+          verticalResources.fontResources,
+        );
+        assert.ok(verticalFont, 'actual Noto face에서 bounded vertical Font를 만들어야 한다');
+        let drawCalls = 0;
+        let deliveredGlyphs = [];
+        let deliveredPositions = [];
+        let deliveredOrigin = [];
+        canvas.clear(CanvasKit.TRANSPARENT);
+        const countingCanvas = {
+          save: () => canvas.save(),
+          concat: matrix => canvas.concat(matrix),
+          drawGlyphs: (...args) => {
+            drawCalls += 1;
+            deliveredGlyphs = Array.from(args[0]);
+            deliveredPositions = Array.from(args[1]);
+            deliveredOrigin = args.slice(2, 4);
+            canvas.drawGlyphs(...args);
+          },
+          restore: () => canvas.restore(),
+        };
+        assert.equal(
+          drawCanvasKitGlyphRun(
+            countingCanvas,
+            fixture.verticalGlyphRun,
+            verticalFont,
+            paint,
+          ),
+          true,
+        );
+        assert.equal(drawCalls, 1, 'bounded vertical leaf는 정확히 한 번 drawGlyphs를 호출해야 한다');
+        assert.deepEqual(
+          deliveredGlyphs,
+          fixture.verticalGlyphRun.glyphIds,
+          'D3 glyph id를 reshape 없이 전달해야 한다',
+        );
+        assert.deepEqual(deliveredPositions, [0, 0], 'D3 glyph position을 재측정 없이 전달해야 한다');
+        assert.deepEqual(deliveredOrigin, [0, 0], 'D3 baseline origin을 변경하지 않아야 한다');
+        surface.flush();
+        const snapshot = surface.makeImageSnapshot();
+        try {
+          const pixels = snapshot.readPixels(0, 0, {
+            width: 128,
+            height: 80,
+            colorType: CanvasKit.ColorType.RGBA_8888,
+            alphaType: CanvasKit.AlphaType.Unpremul,
+            colorSpace: CanvasKit.ColorSpace.SRGB,
+          });
+          assert.ok(pixels, 'actual Noto bounded vertical pixel을 읽을 수 있어야 한다');
+          const ink = alphaBounds(pixels, 128, 80);
+          assert.deepEqual(ink, fixture.expectedInk);
+          console.log(JSON.stringify({
+            status: 'pass',
+            selector: 'boundedVerticalGlyphRun',
+            sourceId: fixture.verticalGlyphRun.source.id,
+            drawCalls,
+            glyphIds: fixture.verticalGlyphRun.glyphIds,
+            ink,
+            fontCache: verticalCache.diagnostics(),
+          }));
+        } finally {
+          snapshot.delete();
+        }
+      }
+    } finally {
+      paint.delete();
+    }
+  } finally {
+    surface.delete();
+  }
+} finally {
+  verticalCache.clear();
 }
