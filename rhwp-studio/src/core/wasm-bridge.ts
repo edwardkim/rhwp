@@ -3054,7 +3054,7 @@ export class WasmBridge {
     replacementText: string,
   ): { ok: boolean; hfParaIndex: number; charOffset: number } {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
-    return JSON.parse((this.doc as any).replaceRangeInHeaderFooter(
+    return JSON.parse(this.doc.replaceRangeInHeaderFooter(
       sec,
       isHeader,
       applyTo,
@@ -3076,7 +3076,7 @@ export class WasmBridge {
     endOffset: number,
   ): { ok: boolean; text: string } {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
-    return JSON.parse((this.doc as any).copySelectionInHeaderFooter(
+    return JSON.parse(this.doc.copySelectionInHeaderFooter(
       sec,
       isHeader,
       applyTo,
@@ -3095,7 +3095,7 @@ export class WasmBridge {
     charOffset: number,
   ): CharProperties {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
-    return JSON.parse((this.doc as any).getCharPropertiesInHeaderFooter(
+    return JSON.parse(this.doc.getCharPropertiesInHeaderFooter(
       sec,
       isHeader,
       applyTo,
@@ -3115,7 +3115,7 @@ export class WasmBridge {
     propsJson: string,
   ): string {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
-    return (this.doc as any).applyCharFormatInHeaderFooter(
+    return this.doc.applyCharFormatInHeaderFooter(
       sec,
       isHeader,
       applyTo,
@@ -3143,7 +3143,7 @@ export class WasmBridge {
     endOffset: number,
   ): SelectionRect[] {
     if (!this.doc) throw new Error('문서가 로드되지 않았습니다');
-    return JSON.parse((this.doc as any).getSelectionRectsInHeaderFooter(
+    return JSON.parse(this.doc.getSelectionRectsInHeaderFooter(
       sec,
       isHeader,
       applyTo,

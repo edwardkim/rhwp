@@ -199,6 +199,67 @@ test('#4121 macOS HF Option+Shift·Command+Shift 탐색은 실제 선택 범위�
   }
 });
 
+test('#4121 HF 모두 선택은 메뉴와 Ctrl/Cmd+A 모두 현재 정의만 대상으로 한다', async () => {
+  const vite = await createServer({
+    root: rootDir, appType: 'custom', logLevel: 'silent', server: { middlewareMode: true },
+  });
+  try {
+    const { CursorState } = await vite.ssrLoadModule('/src/engine/cursor.ts');
+    const { handleSelectAll, onKeyDown } = await vite.ssrLoadModule('/src/engine/input-handler-keyboard.ts');
+    const texts = ['첫 문단', 'second paragraph'];
+    const wasm = {
+      getCursorRectInHeaderFooter: (
+        _sec: number, _header: boolean, _apply: number,
+        paraIdx: number, charOffset: number, preferredPage: number,
+      ) => ({ pageIndex: preferredPage, x: charOffset * 8, y: paraIdx * 20, height: 12 }),
+      getHeaderFooterParaInfo: (_sec: number, _header: boolean, _apply: number, paraIdx: number) =>
+        JSON.stringify({
+          paraCount: texts.length,
+          charCount: Array.from(texts[paraIdx]).length,
+          text: texts[paraIdx],
+        }),
+    };
+    const cursor: any = new CursorState(wasm);
+    cursor.enterHeaderFooterMode(true, 1, 2, 3);
+    cursor.setHfCursorPosition(0, 2, 3);
+    let caretUpdates = 0;
+    let dispatched = '';
+    const handler: any = {
+      active: true,
+      cursor,
+      wasm,
+      flushDeferredPaginationIfNeeded: () => {},
+      updateCaret: () => { caretUpdates++; },
+    };
+    handler.dispatcher = {
+      isEnabled: () => false,
+      dispatch: (commandId: string) => {
+        dispatched = commandId;
+        handleSelectAll.call(handler);
+      },
+    };
+
+    handleSelectAll.call(handler);
+    assert.deepEqual(cursor.getHeaderFooterSelectionOrdered(), {
+      start: { sectionIdx: 1, isHeader: true, applyTo: 2, paraIdx: 0, charOffset: 0 },
+      end: { sectionIdx: 1, isHeader: true, applyTo: 2, paraIdx: 1, charOffset: 16 },
+      preferredPage: 3,
+    });
+    assert.equal(cursor.getSelectionOrdered(), null, '본문 anchor는 만들지 않는다');
+
+    cursor.clearSelection();
+    onKeyDown.call(handler, {
+      key: 'a', code: 'KeyA', shiftKey: false, ctrlKey: false, metaKey: true, altKey: false,
+      isComposing: false, keyCode: 0, preventDefault: () => {},
+    });
+    assert.equal(dispatched, 'edit:select-all');
+    assert.equal(cursor.getHeaderFooterSelectionOrdered()?.end.paraIdx, 1);
+    assert.equal(caretUpdates, 2);
+  } finally {
+    await vite.close();
+  }
+});
+
 test('#4121 마우스 HF 선택은 클릭 페이지 target을 확인하고 drag lifecycle을 시작한다', () => {
   const mouse = src('src/engine/input-handler-mouse.ts');
   const click = functionBodyFrom(mouse, 'export function onClick(');

@@ -110,6 +110,44 @@ test('#4121 일반 입력과 IME는 HF 선택을 별도 삭제하지 않고 원�
   assert.match(compositionEnd, /headerFooterSelectionComposition/);
 });
 
+test('#4121 HF IME 시작은 남아 있는 본문 selection을 삭제하지 않는다', async () => {
+  const vite = await createServer({
+    root: rootDir, appType: 'custom', logLevel: 'silent', server: { middlewareMode: true },
+  });
+  try {
+    const { onCompositionStart } = await vite.ssrLoadModule('/src/engine/input-handler-text.ts');
+    let bodyDeleteCalls = 0;
+    const handler: any = {
+      resetRawTextMutationEffects: () => {},
+      headerFooterSelectionComposition: false,
+      getNonEmptyHeaderFooterSelection: () => null,
+      cursor: {
+        isInHeaderFooter: () => true,
+        isInFootnote: () => false,
+        hasSelection: () => true,
+        getPosition: () => ({ sectionIndex: 0, paragraphIndex: 9, charOffset: 3 }),
+        hfCharOffset: 2,
+      },
+      textarea: { value: '' },
+      deleteSelection: () => { bodyDeleteCalls++; },
+      canInsertTextInFormMode: () => true,
+      isComposing: false,
+      compositionAnchor: null,
+      compositionLength: 0,
+    };
+
+    onCompositionStart.call(handler);
+
+    assert.equal(bodyDeleteCalls, 0);
+    assert.equal(handler.isComposing, true);
+    assert.deepEqual(handler.compositionAnchor, {
+      sectionIndex: 0, paragraphIndex: 9, charOffset: 2,
+    });
+  } finally {
+    await vite.close();
+  }
+});
+
 test('#4121 HF copy/cut/paste는 HF 전용 copy와 평문 범위 치환을 사용한다', () => {
   const keyboard = src('src/engine/input-handler-keyboard.ts');
   const copy = functionBodyFrom(keyboard, 'export function onCopy(');
@@ -139,4 +177,13 @@ test('#4121 undo는 HF selectionBefore, redo는 format의 selectionAfter를 복�
   assert.match(undo, /restoreSelectionAfterUndo/);
   assert.match(redo, /restoreSelectionAfterRedo/);
   assert.match(restore, /selectHeaderFooterRange/);
+});
+
+test('#4121 새 HF WASM API는 생성 바인딩 타입을 우회하지 않고 탐색 실패를 기록한다', () => {
+  const bridge = src('src/core/wasm-bridge.ts');
+  const cursor = src('src/engine/cursor.ts');
+  assert.doesNotMatch(bridge, /\(this\.doc as any\)\.(?:replaceRangeInHeaderFooter|copySelectionInHeaderFooter|getCharPropertiesInHeaderFooter|applyCharFormatInHeaderFooter|getSelectionRectsInHeaderFooter)/);
+  assert.match(cursor, /moveToWordBoundaryInHf 실패/);
+  assert.match(cursor, /moveToParagraphBoundaryInHf 실패/);
+  assert.match(cursor, /moveToHeaderFooterBoundary 실패/);
 });

@@ -396,7 +396,7 @@ export function onCompositionStart(this: any): void {
       this.textarea.value = '';
       return;
     }
-  } else if (this.cursor.hasSelection()) {
+  } else if (!this.cursor.isInHeaderFooter() && this.cursor.hasSelection()) {
     if (!this.canDeleteSelectionInFormMode?.()) {
       this.textarea.value = '';
       return;

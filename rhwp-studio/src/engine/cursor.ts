@@ -1992,6 +1992,37 @@ export class CursorState {
     this.updateRect();
   }
 
+  /** 현재 머리말/꼬리말 정의의 첫 위치부터 마지막 문단 끝까지 선택한다. */
+  selectAllInHeaderFooter(): boolean {
+    if (this._headerFooterMode === 'none') return false;
+    const isHeader = this._headerFooterMode === 'header';
+
+    try {
+      const currentInfo = JSON.parse(this.wasm.getHeaderFooterParaInfo(
+        this._hfSectionIdx, isHeader, this._hfApplyTo, this._hfParaIdx,
+      ));
+      const lastPara = Math.max(0, Number(currentInfo.paraCount) - 1);
+      const lastInfo = lastPara === this._hfParaIdx
+        ? currentInfo
+        : JSON.parse(this.wasm.getHeaderFooterParaInfo(
+          this._hfSectionIdx, isHeader, this._hfApplyTo, lastPara,
+        ));
+      const target = {
+        sectionIdx: this._hfSectionIdx,
+        isHeader,
+        applyTo: this._hfApplyTo,
+      };
+      return this.selectHeaderFooterRange(
+        { ...target, paraIdx: 0, charOffset: 0 },
+        { ...target, paraIdx: lastPara, charOffset: Number(lastInfo.charCount) },
+        this._hfPreferredPage,
+      );
+    } catch (e) {
+      console.warn('[CursorState] selectAllInHeaderFooter 실패:', e);
+      return false;
+    }
+  }
+
   private currentHeaderFooterTextPosition(): HeaderFooterTextPosition {
     return {
       sectionIdx: this._hfSectionIdx,
@@ -2058,8 +2089,8 @@ export class CursorState {
         this._hfCharOffset = start + findWordBoundaryBackward(preceding);
       }
       this.updateRect();
-    } catch {
-      // WASM 호출 실패 시 현재 위치를 유지한다.
+    } catch (e) {
+      console.warn('[CursorState] moveToWordBoundaryInHf 실패:', e);
     }
   }
 
@@ -2087,8 +2118,8 @@ export class CursorState {
         this._hfCharOffset = Number(info.charCount);
       }
       this.updateRect();
-    } catch {
-      // WASM 호출 실패 시 현재 위치를 유지한다.
+    } catch (e) {
+      console.warn('[CursorState] moveToParagraphBoundaryInHf 실패:', e);
     }
   }
 
@@ -2113,8 +2144,8 @@ export class CursorState {
         this._hfCharOffset = Number(lastInfo.charCount);
       }
       this.updateRect();
-    } catch {
-      // WASM 호출 실패 시 현재 위치를 유지한다.
+    } catch (e) {
+      console.warn('[CursorState] moveToHeaderFooterBoundary 실패:', e);
     }
   }
 

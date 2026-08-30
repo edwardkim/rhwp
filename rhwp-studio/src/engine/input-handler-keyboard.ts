@@ -45,6 +45,7 @@ const SUBMODE_GLOBAL_COMMANDS = new Set([
   'edit:undo',
   'edit:redo',
   'edit:goto',
+  'edit:select-all',
 ]);
 
 /**
@@ -1699,6 +1700,12 @@ export function handleCtrlKey(this: any, e: KeyboardEvent): void {
 }
 
 export function handleSelectAll(this: any): void {
+  if (this.cursor.isInHeaderFooter()) {
+    this.cursor.selectAllInHeaderFooter();
+    this.updateCaret();
+    return;
+  }
+
   // anchor를 문서 시작, focus를 문서 끝으로 설정
   this.cursor.moveTo({ sectionIndex: 0, paragraphIndex: 0, charOffset: 0 });
   this.cursor.setAnchor();
