@@ -10,8 +10,8 @@
   "planCheckpoint": "a4248b9c6",
   "d5CResultCheckpoint": "a7de96b44",
   "baseUpstreamDevel": "19b89d967b15",
-  "finalUpstreamDevel": "28057f02ea5731cbc0566f67eb9c0129e47287e6",
-  "finalUpstreamMergeCommit": "edb9f51e4",
+  "finalUpstreamDevel": "77bcaaa49c89dc12761282c759717188a880064c",
+  "finalUpstreamMergeCommit": "aecdde843b43709fced6924f6ed3a58f24592962",
   "finalValidatedHead": "513068f8e8e19fa1b70e32a31fc4d56557d952b8",
   "productMutationExpected": false,
   "measurement": {

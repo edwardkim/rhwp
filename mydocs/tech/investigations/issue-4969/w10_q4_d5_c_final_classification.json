@@ -8,11 +8,30 @@
   "classification": "blocked",
   "classificationMeaning": "correctness and performance qualification passed, but the plan-required same-tree causal WASM A baseline could not be constructed without resolving reverse-patch conflicts",
   "source": {
-    "head": "513068f8e8e19fa1b70e32a31fc4d56557d952b8",
-    "upstreamDevel": "28057f02ea5731cbc0566f67eb9c0129e47287e6",
-    "upstreamMergeCommit": "edb9f51e4",
-    "ahead": 63,
+    "head": "aecdde843b43709fced6924f6ed3a58f24592962",
+    "productValidatedHead": "513068f8e8e19fa1b70e32a31fc4d56557d952b8",
+    "upstreamDevel": "77bcaaa49c89dc12761282c759717188a880064c",
+    "upstreamMergeCommit": "aecdde843b43709fced6924f6ed3a58f24592962",
+    "ahead": 66,
     "behind": 0
+  },
+  "postValidationUpstreamRequalification": {
+    "incomingCommits": 3,
+    "incomingProductSourceChanges": 0,
+    "directFileOverlap": 0,
+    "mergeTreeConflicts": 0,
+    "scope": "trusted post-merge CI reuse workflow, workflow verifier contracts, and PR review record",
+    "nodeWorkflowContracts": {
+      "passed": 18,
+      "failed": 0
+    },
+    "pythonWorkflowContracts": {
+      "passed": 171,
+      "failed": 0
+    },
+    "actionlint": "unavailable-locally-upstream-self-review-records-pass",
+    "fullProductGateRepeated": false,
+    "fullProductGateRepeatReason": "not required because incoming changed no Rust product source, fixture, renderer, or D5 file"
   },
   "qualification": {
     "correctness": "qualified",
