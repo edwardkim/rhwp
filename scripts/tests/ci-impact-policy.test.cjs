@@ -486,6 +486,8 @@ test('mirrored trigger contracts match CI, CodeQL, and Render Diff workflows', (
   assert.equal(workflowRunExpected('CI', [{ filename: 'samples/new-reference.hwp' }]), true);
   assert.equal(workflowRunExpected('CodeQL', [{ filename: 'samples/new-reference.hwp' }]), true);
   assert.equal(workflowRunExpected('Render Diff', [{ filename: 'rhwp-studio/tests/a.ts' }]), true);
+  assert.equal(workflowRunExpected('Render Diff', [{ filename: 'scripts/generate_exact_face_collection_fixture.py' }]), true);
+  assert.equal(workflowRunExpected('Render Diff', [{ filename: 'scripts/generate_exact_kerning_fixture.py' }]), true);
   assert.equal(workflowRunExpected('Render Diff', [{ filename: 'src/cli/document_io.rs' }]), true);
   assert.equal(workflowRunExpected('Render Diff', [{ filename: 'src/cli/commands/caption_validation.rs' }]), false);
   assert.equal(workflowRunExpected('Render Diff', [{ filename: 'src/cli/outputs/mod.rs' }]), true);
