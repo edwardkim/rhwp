@@ -405,7 +405,11 @@ impl VerticalShapingContext {
             })?;
         let face = Face::parse(source_bytes.as_ref(), handle.face_index).map_err(|_| {
             context_reject(
-                VerticalShapingContextRejectReason::CertificateFaceInvalid,
+                VerticalShapingContextRejectReason::Dormant(
+                    DormantVerticalShapingRejectReason::ShapingRejected(
+                        ShapingRejectReason::MalformedSfnt,
+                    ),
+                ),
                 fallback,
             )
         })?;
