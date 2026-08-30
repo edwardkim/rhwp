@@ -85,6 +85,26 @@ pub(super) fn effective_margin_left_line(margin_left: f64, indent: f64, line_n: 
     margin_left + line_indent
 }
 
+/// [#6353] 머리말·바탕쪽 셀 오른쪽 TAC 는 저장 줄 폭(sw)에 붙인다.
+/// 본문 표는 셀 내폭을 유지해 issue_617 exam_kor 본문 스냅샷을 흔들지 않는다.
+fn header_cell_tac_right_box_w(
+    para: &Paragraph,
+    line_idx: usize,
+    inner_width: f64,
+    dpi: f64,
+    in_header_or_master: bool,
+) -> f64 {
+    if !in_header_or_master {
+        return inner_width;
+    }
+    para.line_segs
+        .get(line_idx)
+        .filter(|seg| seg.segment_width > 0)
+        .map(|seg| hwpunit_to_px(seg.segment_width, dpi))
+        .filter(|&sw| sw + 0.5 < inner_width)
+        .unwrap_or(inner_width)
+}
+
 fn cell_para_line_anchor_y(
     base_y: f64,
     content_cell_y: f64,
@@ -1984,6 +2004,8 @@ struct HorizontalCellVars {
     outline_numbering_id: u16,
     depth: usize,
     clamp_header_negative_para_offset: bool,
+    /// [#6353] 머리말/꼬리말/바탕쪽 표 칸 — 오른쪽 TAC 는 저장 sw 를 쓴다.
+    header_or_master_cell: bool,
     /// root-body table owner의 첫 저장 LINE_SEG vpos. nested/header/footer 호출은 None.
     outer_host_stored_vpos_hu: Option<i32>,
     inline_table_flow_y_shift: f64,
@@ -3049,6 +3071,10 @@ impl LayoutEngine {
             scalar_replay_terminal_boundary_unit,
             split_terminal,
             clamp_header_negative_para_offset,
+            matches!(
+                col_node.node_type,
+                RenderNodeType::Header | RenderNodeType::Footer | RenderNodeType::MasterPage
+            ),
             inline_table_flow_y_shift,
             // HWP5에서 표 안의 비글자 1×1 표가 `inMargin=(0,0,141,141)`를
             // 갖더라도 셀의 작은 좌우 저장 margin을 계속 적용하는 형상이 있다.
@@ -4726,6 +4752,7 @@ impl LayoutEngine {
             outline_numbering_id,
             depth,
             clamp_header_negative_para_offset,
+            header_or_master_cell,
             outer_host_stored_vpos_hu,
             inline_table_flow_y_shift,
             single_row_continuation,
@@ -5132,15 +5159,15 @@ impl LayoutEngine {
                     .unwrap_or(total_inline_width);
                 let line_margin =
                     effective_margin_left_line(para_margin_left_px, para_indent_px, 0);
-                // [#6353] 오른쪽 정렬 TAC 는 저장 sw 에 붙인다. exam_kor 바탕쪽
-                // 머리 표 홀수형 박스: 셀 내폭 22206HU vs sw 22054HU.
-                let right_box_w = para
-                    .line_segs
-                    .first()
-                    .filter(|seg| seg.segment_width > 0)
-                    .map(|seg| hwpunit_to_px(seg.segment_width, self.dpi))
-                    .filter(|&sw| sw + 0.5 < inner_area.width)
-                    .unwrap_or(inner_area.width);
+                // [#6353] 머리말·바탕쪽 셀 오른쪽 TAC 만 저장 sw 에 붙인다.
+                // exam_kor 바탕쪽 머리 표 홀수형 박스: 셀 내폭 22206HU vs sw 22054HU.
+                let right_box_w = header_cell_tac_right_box_w(
+                    para,
+                    0,
+                    inner_area.width,
+                    self.dpi,
+                    header_or_master_cell,
+                );
                 match para_alignment {
                     Alignment::Center | Alignment::Distribute => {
                         inner_area.x + (inner_area.width - line_w).max(0.0) / 2.0
@@ -5808,13 +5835,13 @@ impl LayoutEngine {
                                     para_indent_px,
                                     target_line,
                                 );
-                                let right_box_w = para
-                                    .line_segs
-                                    .get(target_line)
-                                    .filter(|seg| seg.segment_width > 0)
-                                    .map(|seg| hwpunit_to_px(seg.segment_width, self.dpi))
-                                    .filter(|&sw| sw + 0.5 < inner_area.width)
-                                    .unwrap_or(inner_area.width);
+                                let right_box_w = header_cell_tac_right_box_w(
+                                    para,
+                                    target_line,
+                                    inner_area.width,
+                                    self.dpi,
+                                    header_or_master_cell,
+                                );
                                 inline_x = match para_alignment {
                                     Alignment::Center | Alignment::Distribute => {
                                         inner_area.x + (inner_area.width - line_w).max(0.0) / 2.0
@@ -6735,6 +6762,7 @@ impl LayoutEngine {
         replay_terminal_boundary_unit: bool,
         split_terminal: bool,
         clamp_header_negative_para_offset: bool,
+        header_or_master_cell: bool,
         inline_table_flow_y_shift: f64,
         nested_non_tac_cell_margin_compat: bool,
         cellzone_diagonal_origin_covered: &[Vec<bool>],
@@ -7373,6 +7401,7 @@ impl LayoutEngine {
                         outline_numbering_id,
                         depth,
                         clamp_header_negative_para_offset,
+                        header_or_master_cell,
                         outer_host_stored_vpos_hu,
                         inline_table_flow_y_shift,
                         single_row_continuation: scalar_single_row_continuation,
