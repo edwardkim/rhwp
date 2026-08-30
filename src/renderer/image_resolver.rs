@@ -39,6 +39,7 @@ const MAX_MEMO_ENTRIES: usize = 64;
 #[derive(Clone, Copy)]
 enum Conversion {
     Bmp,
+    CmykJpeg,
     Pcx,
     Tiff,
     GrayscaleJpeg,
@@ -291,6 +292,53 @@ pub(crate) fn is_watermark_image(image: &ImageNode) -> bool {
 ///
 /// 브라우저는 SVG `<image>` 내부의 `data:image/bmp` URI를 표준 지원하지 않으므로,
 /// SVG 임베딩 전에 PNG로 변환해 호환성을 확보한다.
+/// [#6310] 4성분(CMYK/YCCK) JPEG 인가 — SOF 성분 수로 판정한다.
+///
+/// PDF `DCTDecode` 는 성분 수를 스트림이 아니라 `/ColorSpace` 선언에서 가져가므로,
+/// 4성분 JPEG 을 `/DeviceRGB` 로 박으면 3성분으로 읽혀 행 보폭이 어긋난다 —
+/// 같은 그림이 가로로 반복되고 색이 번진다(156745900 1쪽 로고).
+pub fn jpeg_is_four_component(data: &[u8]) -> bool {
+    let mut i = 2usize;
+    while i + 3 < data.len() {
+        if data[i] != 0xFF {
+            i += 1;
+            continue;
+        }
+        let marker = data[i + 1];
+        // 독립 마커(SOI/EOI/TEM/RSTn)는 길이 필드가 없다.
+        if marker == 0xD8 || marker == 0xD9 || marker == 0x01 || (0xD0..=0xD7).contains(&marker) {
+            i += 2;
+            continue;
+        }
+        let len = u16::from_be_bytes([data[i + 2], data[i + 3]]) as usize;
+        // SOF0/1/2 = baseline / extended / progressive. 성분 수는 세그먼트 8번째 바이트.
+        if matches!(marker, 0xC0 | 0xC1 | 0xC2) {
+            return data.get(i + 9).copied() == Some(4);
+        }
+        if marker == 0xDA || len < 2 {
+            break;
+        }
+        i += 2 + len;
+    }
+    false
+}
+
+/// [#6310] 4성분 JPEG 을 PNG(RGB)로 정규화한다.
+///
+/// 한컴은 같은 그림을 3성분 RGB 로 다시 인코딩해 내보낸다(원본 616KB → 14KB).
+/// rhwp 는 원본 바이트를 그대로 실어 왔으므로 여기서 한 번 정규화한다.
+pub fn cmyk_jpeg_bytes_to_png_bytes(data: &[u8]) -> Option<Vec<u8>> {
+    memoized(Conversion::CmykJpeg, data, || {
+        use image::ImageFormat;
+        let img = decode_image_with_format_limited(data, ImageFormat::Jpeg)?;
+        let mut out = Vec::new();
+        image::DynamicImage::ImageRgb8(img.to_rgb8())
+            .write_to(&mut Cursor::new(&mut out), ImageFormat::Png)
+            .ok()?;
+        Some(out)
+    })
+}
+
 pub(crate) fn bmp_bytes_to_png_bytes(data: &[u8]) -> Option<Vec<u8>> {
     memoized(Conversion::Bmp, data, || {
         use image::ImageFormat;

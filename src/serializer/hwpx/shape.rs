@@ -1000,6 +1000,8 @@ pub(crate) fn write_fill_brush<W: Write>(
                 ImageFillMode::CenterTop => "CENTER_TOP",
                 ImageFillMode::CenterBottom => "CENTER_BOTTOM",
                 ImageFillMode::LeftTop => "TOP_LEFT_ALIGN",
+                // [#6310] 원문 mode 를 그대로 되돌린다.
+                ImageFillMode::Zoom => "ZOOM",
                 _ => "TILE",
             };
             start_tag(w, "hc:fillBrush")?;
