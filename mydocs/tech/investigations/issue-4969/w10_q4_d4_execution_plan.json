@@ -4,13 +4,14 @@
   "issue": 4969,
   "stage": "W10-Q4-D4",
   "date": "2026-08-30",
-  "status": "Q4-D4-D-qualified-canvaskit-bounded-vertical-runtime-result-approved",
+  "status": "Q4-D4-qualified-canvaskit-bounded-vertical-runtime-checkpointed",
   "planApproved": true,
   "checkpointApproved": true,
   "checkpointApprovedDate": "2026-08-31",
   "planCheckpoint": "c11e84935",
   "d4BCheckpoint": "c9b551909",
   "d4CCheckpoint": "b1a33b6fc",
+  "d4DCheckpoint": "f40987220",
   "d3CCheckpoint": "43d50ad99",
   "mergedUpstreamDevel": "19b89d967b15",
   "mergeCommit": "eb7d020e4",
@@ -53,7 +54,7 @@
     {
       "id": "Q4-D4-D",
       "name": "cross-runtime-validation-and-result",
-      "status": "qualified-canvaskit-bounded-vertical-runtime-result-approved",
+      "status": "completed-checkpoint-f40987220",
       "resultEvidence": "mydocs/tech/investigations/issue-4969/w10_q4_d4_d_cross_validation.json"
     }
   ],
@@ -92,5 +93,5 @@
     "evidence": "mydocs/tech/investigations/issue-4969/w10_q4_d4_d_cross_validation.json",
     "q4DFinalClassificationDeferredToD5": true
   },
-  "next": "separate-Q4-D4-D-checkpoint-approval"
+  "next": "Q4-D5-detailed-plan"
 }

@@ -4,12 +4,13 @@
   "issue": 4969,
   "stage": "W10-Q4-D4-D",
   "date": "2026-08-31",
-  "status": "qualified-canvaskit-bounded-vertical-runtime-result-approved",
+  "status": "qualified-canvaskit-bounded-vertical-runtime-checkpointed",
   "resultApproved": true,
   "classification": "qualified-canvaskit-bounded-vertical-runtime",
   "planCheckpoint": "c11e84935",
   "d4BCheckpoint": "c9b551909",
   "d4CCheckpoint": "b1a33b6fc",
+  "checkpoint": "f40987220",
   "baseUpstreamDevel": "19b89d967b15",
   "mergeCommit": "eb7d020e4",
   "productMutation": false,
@@ -137,5 +138,5 @@
   "privateCorpusUsed": false,
   "hyperVUsed": false,
   "githubMutation": false,
-  "next": "separate-D4-D-checkpoint-approval"
+  "next": "Q4-D5-detailed-plan"
 }

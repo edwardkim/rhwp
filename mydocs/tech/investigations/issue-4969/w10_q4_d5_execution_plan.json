@@ -1,0 +1,105 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q4-d5-regression-performance-final-classification-plan",
+  "issue": 4969,
+  "stage": "W10-Q4-D5",
+  "date": "2026-08-31",
+  "status": "detailed-plan-approved-checkpoint-pending",
+  "planApproved": true,
+  "d4DCheckpoint": "f40987220",
+  "baseUpstreamDevel": "19b89d967b15",
+  "productMutationExpected": false,
+  "measurement": {
+    "fixture": "public-synthetic-HWP5-code2-one-cell-one-paragraph-one-line-one-column-pure-CJK",
+    "font": "ttfs/opensource/NotoSansKR-Regular.ttf",
+    "order": [
+      "A1-legacy-no-exact-source",
+      "B-bounded-exact-source",
+      "A2-legacy-no-exact-source"
+    ],
+    "processRuns": 9,
+    "warmups": 20,
+    "iterations": 64,
+    "statistics": [
+      "p50",
+      "p95",
+      "B-minus-mean-A1-A2",
+      "A2-minus-A1-drift"
+    ],
+    "axes": [
+      "render-tree-layout",
+      "layer-build",
+      "layer-json-serialization",
+      "rust-canvaskit-replay-plan",
+      "actual-canvaskit-replay"
+    ],
+    "wallTimeHardGate": false,
+    "postHocThresholdAllowed": false,
+    "structuralCounterHardGate": true
+  },
+  "causalWasmComparison": {
+    "sameLatestTreeRequired": true,
+    "disposableWorktreeRequired": true,
+    "reverseProductCheckpoints": [
+      "b1a33b6fc",
+      "c9b551909",
+      "d49400aad",
+      "bb334756b",
+      "992fe4acaf92",
+      "d0948166a"
+    ],
+    "separateTargetAndPkgDirectories": true,
+    "buildWallTimeIsConclusion": false,
+    "reverseConflictMayBeForced": false,
+    "outOfAllowlistDiffAllowed": false,
+    "fallbackToHistoricalAbsoluteDeltaAllowed": false
+  },
+  "stages": [
+    {
+      "id": "Q4-D5-A",
+      "name": "measurement-contract-and-reproducible-harness",
+      "status": "blocked-by-plan-checkpoint",
+      "productOutputChange": false
+    },
+    {
+      "id": "Q4-D5-B",
+      "name": "local-aba-resource-and-causal-size",
+      "status": "blocked-by-D5-A",
+      "productOutputChange": false
+    },
+    {
+      "id": "Q4-D5-C",
+      "name": "final-regression-and-Q4-D-classification",
+      "status": "blocked-by-D5-B",
+      "productOutputChange": false
+    }
+  ],
+  "hardGates": {
+    "targetGlyphPositionPixelMismatchAllowed": false,
+    "canonicalOrHorizontalRegressionAllowed": false,
+    "unsupportedBackendFalseSelectionAllowed": false,
+    "fallbackDisappearanceAllowed": false,
+    "resourceMultiplicityGrowthAllowed": false,
+    "partialPublicationAllowed": false,
+    "measurementRawRunsRequired": 9,
+    "causalWasmSizeReceiptRequired": true,
+    "supportScopeOverstatementAllowed": false
+  },
+  "classifications": [
+    "qualified-bounded-subset",
+    "dormant",
+    "blocked"
+  ],
+  "invariants": {
+    "newIntegrationSourceAllowed": false,
+    "productCfgTestSeamAllowed": false,
+    "publicApiOrSchemaExpansionAllowed": false,
+    "versionOrUserAgentBranchAllowed": false,
+    "backendReshapeAllowed": false,
+    "privateCorpusAllowed": false,
+    "hyperVAllowed": false,
+    "githubMutationAllowed": false
+  },
+  "existingEvidenceReused": "mydocs/tech/investigations/issue-4969/w10_q4_d4_d_cross_validation.json",
+  "next": "separate-plan-checkpoint-approval"
+}

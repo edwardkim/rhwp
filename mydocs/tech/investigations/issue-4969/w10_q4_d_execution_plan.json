@@ -4,11 +4,12 @@
   "issue": 4969,
   "stage": "W10-Q4-D",
   "date": "2026-08-30",
-  "status": "Q4-D4-D-qualified-canvaskit-bounded-vertical-runtime-result-approved",
+  "status": "Q4-D5-detailed-plan-approved-checkpoint-pending",
   "baseCheckpoint": "f449960c7",
   "upstreamDevelAtD2Start": "628944a33cb5",
   "latestObservedUpstreamDevel": "19b89d967b15",
   "latestUpstreamMergeCommit": "eb7d020e4",
+  "d4DCheckpoint": "f40987220",
   "aheadAfterLatestFetch": 55,
   "behindAfterLatestFetch": 0,
   "incomingD2FileOverlap": 0,
@@ -86,13 +87,20 @@
     {
       "id": "Q4-D4",
       "name": "canvaskit-feature-detection-and-pixel-proof",
-      "status": "qualified-canvaskit-bounded-vertical-runtime-result-approved",
+      "status": "qualified-canvaskit-bounded-vertical-runtime-checkpointed",
       "plan": "mydocs/plans/task_m100_4969_w10_q4_d4.md",
       "executionPlan": "mydocs/tech/investigations/issue-4969/w10_q4_d4_execution_plan.json",
       "resultEvidence": "mydocs/tech/investigations/issue-4969/w10_q4_d4_d_cross_validation.json",
       "productOutputChange": true
     },
-    {"id": "Q4-D5", "name": "regression-performance-and-final-classification", "productOutputChange": true}
+    {
+      "id": "Q4-D5",
+      "name": "regression-performance-and-final-classification",
+      "status": "detailed-plan-approved-checkpoint-pending",
+      "plan": "mydocs/plans/task_m100_4969_w10_q4_d5.md",
+      "executionPlan": "mydocs/tech/investigations/issue-4969/w10_q4_d5_execution_plan.json",
+      "productOutputChange": false
+    }
   ],
   "invariants": {
     "noExactSourceOutputRegressionAllowed": false,
@@ -117,5 +125,5 @@
     "githubComment": true,
     "pullRequest": true
   },
-  "next": "separate-Q4-D4-D-checkpoint-approval"
+  "next": "separate-Q4-D5-plan-checkpoint-approval"
 }
