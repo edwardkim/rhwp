@@ -10,8 +10,8 @@ use super::float_placement::{
     empty_host_physical_ladder_extras_hu, horizontal_range, is_para_topbottom_float,
     native_empty_host_physical_outer_box_paint_inset, native_empty_host_rowbreak_line_advance_hu,
     original_hwpx_column_rowbreak_equal_outer_margin_hu, signed_hwpunit,
-    stored_empty_anchor_band_host_line_advance_hu,
-    stored_visible_anchor_band_host_line_advance_hu, FloatLaneSet, FloatPlacementContext,
+    stored_empty_anchor_band_host_line_advance_hu, stored_visible_anchor_band_host_line_advance_hu,
+    FloatLaneSet, FloatPlacementContext,
 };
 use super::font_metrics_data;
 use super::height_cursor::HeightCursor;
