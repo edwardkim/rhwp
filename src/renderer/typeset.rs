@@ -7177,10 +7177,14 @@ impl TypesetEngine {
                 }
             }
             // [#4533 HWP3] 자리차지 밴드 비예약 판별용 — 표 경로 포함 전 문단 공통.
-            st.next_para_first_stored_vpos = paragraphs
-                .get(para_idx + 1)
-                .and_then(|p| p.line_segs.first())
-                .map(|seg| seg.vertical_pos);
+            st.next_para_first_stored_vpos = paragraphs.get(para_idx + 1).and_then(|p| {
+                p.line_segs.first().map(|seg| {
+                    p.source_line_seg_vertical_pos
+                        .as_ref()
+                        .and_then(|source| source.first().copied())
+                        .unwrap_or(seg.vertical_pos)
+                })
+            });
             st.next_para_is_empty_float_table_anchor = paragraphs
                 .get(para_idx + 1)
                 .is_some_and(|p| para_is_empty_topbottom_table_anchor(p));

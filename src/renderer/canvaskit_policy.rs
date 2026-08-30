@@ -2185,7 +2185,6 @@ fn image_fill_mode_detail(value: ImageFillMode) -> &'static str {
         ImageFillMode::RightTop => "rightTop",
         ImageFillMode::RightBottom => "rightBottom",
         ImageFillMode::None => "none",
-        ImageFillMode::Zoom => "zoom",
     }
 }
 

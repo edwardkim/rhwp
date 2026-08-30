@@ -797,12 +797,6 @@ pub enum ImageFillMode {
     RightTop,
     RightBottom,
     None,
-    /// [#6310] HWPX `hc:imgBrush mode="ZOOM"` — 채울 영역에 **비율을 지키며** 맞춘다.
-    ///
-    /// `FitToSize`(늘려 채움)와 달리 종횡비를 유지하고, 타일 계열과 달리 원본 픽셀
-    /// 크기를 쓰지 않는다. 종전에는 매핑이 없어 `_ => TileAll` 로 떨어져 원본 픽셀
-    /// 크기로 타일링됐다 (156745900 1쪽 로고 8.33배 → 칸 clip 안에 흰 여백만 남음).
-    Zoom,
 }
 
 /// 테두리 선 정보 (그리기 개체용)

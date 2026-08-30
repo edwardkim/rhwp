@@ -541,8 +541,6 @@ fn image_fill_mode_to_u8(mode: ImageFillMode) -> u8 {
         ImageFillMode::RightTop => 13,
         ImageFillMode::RightBottom => 14,
         ImageFillMode::None => 15,
-        // [#6310] HWP5 이진에는 ZOOM 코드가 없다 — 가장 가까운 "맞춤"(5)으로 쓴다.
-        ImageFillMode::Zoom => 5,
     }
 }
 

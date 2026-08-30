@@ -2782,8 +2782,6 @@ fn serialize_shape_fill(w: &mut ByteWriter, fill: &Fill) {
                 ImageFillMode::RightTop => 13,
                 ImageFillMode::RightBottom => 14,
                 ImageFillMode::None => 15,
-                // [#6310] HWP5 이진에는 ZOOM 코드가 없다 — 가장 가까운 "맞춤"(5).
-                ImageFillMode::Zoom => 5,
             };
             w.write_u8(mode_val).unwrap();
             w.write_i8(img.brightness).unwrap();

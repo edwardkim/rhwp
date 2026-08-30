@@ -1887,37 +1887,6 @@ impl SvgRenderer {
                     img.original_size,
                 );
             }
-            ImageFillMode::Zoom => {
-                // [#6310] 채울 영역에 **비율을 지키며** 맞춘다 (`FitToSize` 는 늘려
-                // 채우고, 타일 계열은 원본 픽셀 크기를 쓴다).
-                //
-                // `preserveAspectRatio="xMidYMid meet"` 로 맡기지 않고 **맞춤
-                // 사각형을 직접 계산**한다 — 이 저장소의 두 래스터 경로(svg2pdf,
-                // skia)가 그 속성을 서로 다르게 해석해, 같은 SVG 가 PDF 에서는
-                // 타일처럼, PNG 에서는 과대 확대로 나왔다. 좌표를 명시하면
-                // 소비자와 무관하게 같은 그림이 된다.
-                let fitted = parse_image_dimensions(&render_data)
-                    .filter(|&(w, h)| w > 0 && h > 0)
-                    .filter(|_| bbox.width > 0.0 && bbox.height > 0.0)
-                    .map(|(iw, ih)| {
-                        let scale = (bbox.width / iw as f64).min(bbox.height / ih as f64);
-                        let w = iw as f64 * scale;
-                        let h = ih as f64 * scale;
-                        (
-                            bbox.x + (bbox.width - w) / 2.0,
-                            bbox.y + (bbox.height - h) / 2.0,
-                            w,
-                            h,
-                        )
-                    })
-                    .unwrap_or((bbox.x, bbox.y, bbox.width, bbox.height));
-                let (fx, fy, fw, fh) = fitted;
-                self.output.push_str(&format!(
-                    "<image x=\"{}\" y=\"{}\" width=\"{}\" height=\"{}\" preserveAspectRatio=\"none\" href=\"{}\"/>
-",
-                    fx, fy, fw, fh, data_uri,
-                ));
-            }
             _ => {
                 // 배치 모드: 원래 크기대로 지정 위치에 배치
                 self.render_positioned_image(

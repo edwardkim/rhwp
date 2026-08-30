@@ -1706,10 +1706,6 @@ fn parse_border_fill(
                                             }
                                             "ZOOM" => ImageFillMode::Zoom,
                                             "TOTAL" => ImageFillMode::Total,
-                                            // [#6310] 채울 영역에 비율 유지 맞춤.
-                                            // 종전엔 이 갈래가 없어 `_ => TileAll` 로
-                                            // 떨어져 원본 픽셀 크기 타일이 됐다.
-                                            "ZOOM" => ImageFillMode::Zoom,
                                             "TOP_LEFT_ALIGN" => ImageFillMode::LeftTop,
                                             _ => ImageFillMode::TileAll,
                                         };
