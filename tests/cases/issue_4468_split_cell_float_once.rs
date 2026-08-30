@@ -92,7 +92,7 @@ fn issue_4468_split_cell_tb_float_paints_once() {
         "셀 TopAndBottom 그림이 한 장도 없다"
     );
     for (id, pages) in &pages_by_id {
-        let unique: Vec<usize> = {
+        let unique: Vec<u32> = {
             let mut p = pages.clone();
             p.sort_unstable();
             p.dedup();
