@@ -71,6 +71,7 @@
   },
   "classificationOnSuccess": "qualified-bounded-subset",
   "classificationOnFailure": "blocked",
+  "resultCheckpoint": "95d450dd5",
   "resultEvidence": "mydocs/tech/investigations/issue-4969/w10_q4_d5_d_causal_wasm_result.json",
   "result": {
     "aBytes": 9858318,

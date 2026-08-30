@@ -6,6 +6,7 @@
   "date": "2026-08-31",
   "status": "qualified-clean-room-causal-wasm",
   "classification": "qualified-bounded-subset",
+  "resultCheckpoint": "95d450dd5",
   "productMutation": false,
   "source": {
     "bHead": "e866bc0b8c7ff88917d4f915575fb6c345ec26c4",

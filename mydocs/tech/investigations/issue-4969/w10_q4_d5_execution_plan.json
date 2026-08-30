@@ -10,6 +10,7 @@
   "planCheckpoint": "a4248b9c6",
   "d5CResultCheckpoint": "a7de96b44",
   "d5DPlanCheckpoint": "e866bc0b8",
+  "d5DResultCheckpoint": "95d450dd5",
   "baseUpstreamDevel": "19b89d967b15",
   "finalUpstreamDevel": "77bcaaa49c89dc12761282c759717188a880064c",
   "finalUpstreamMergeCommit": "aecdde843b43709fced6924f6ed3a58f24592962",
