@@ -11,6 +11,15 @@ use crate::model::paragraph::Paragraph;
 use crate::renderer::layout::{CellContext, CellPathEntry};
 use crate::renderer::render_tree::TextRunNode;
 
+/// 묶음 개체(GSO Group)인가. 자식 Image 노드는 외곽 Group의 control_index를 물려받는다.
+fn is_group_shape_control(ctrl: &Control) -> bool {
+    matches!(
+        ctrl,
+        Control::Shape(shape)
+            if matches!(shape.as_ref(), crate::model::shape::ShapeObject::Group(_))
+    )
+}
+
 /// 글자겹침 TextRun의 논리적 char_count (1) 반환, 아니면 실제 글자 수 반환.
 ///
 /// `table-vpos-01.hwp`의 boxed 10/11/12처럼 CharOverlap payload가 여러
@@ -1980,6 +1989,12 @@ impl DocumentCore {
                             .and_then(|para| {
                                 let ctrl = para.controls.get(ci)?;
                                 if !is_treat_as_char_object_control(ctrl) {
+                                    return None;
+                                }
+                                // 묶음 자식 Image는 외곽 Group 인덱스를 물려받고 paint bbox가
+                                // 페이지 전체로 팽창될 수 있다. 그 bbox를 본문 인라인 hit로
+                                // 등록하면 표/셀 검사보다 먼저 선점한다 (#4753).
+                                if is_group_shape_control(ctrl) {
                                     return None;
                                 }
                                 find_logical_control_positions(para).get(ci).copied()
