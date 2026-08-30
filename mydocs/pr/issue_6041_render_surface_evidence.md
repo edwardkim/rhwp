@@ -101,6 +101,34 @@ fixture: `samples/basic/KTX.hwp`
   보존하고 화면 밖 한 페이지만 DPR 1.5로 낮춘다. 이때 추정 surface pixel은 약 42.77M에서 36.53M으로
   14.59% 줄어든다. 이는 정책의 결정론적 검증값이며 실제 제품 속도 향상 측정으로 주장하지 않는다.
 
+## 실제 예산 발동 계측 — 21쪽 다중 페이지 문서
+
+fixture: `samples/issue6280/156742029_prosecutor_transfer_list.hwp`
+
+- SHA-256: `522b4522395bbd25993f52799eb0607e9f81286f875b7ceddad7264edecc6ead`
+- 21쪽 문서이며 첫 두 retained 쪽 모두 실제 main + front Canvas 두 장을 가진다.
+- 100%에서는 두 쪽 모두 raw DPR 2를 유지한다.
+- 200%에서는 화면에 보이는 첫 쪽의 DPR 2를 유지하고, 화면 밖 prefetch인 두 번째 쪽만 DPR 2→1로
+  낮춘다. visible 쪽의 글자와 표를 희생하지 않는 우선순위가 실제 DOM에서도 확인됐다.
+
+| 배율 | 수정 전 physical Canvas pixel | 수정 후 physical Canvas pixel | raw RGBA 환산 | 판정 |
+| ---: | ---: | ---: | ---: | --- |
+| 100% | 14,266,592 | 14,266,592 | 양쪽 54.42MiB | 예산 이내, 강등 없음 |
+| 200% | 57,035,700 | 35,651,146 | 217.57→136.00MiB | 21,384,554 pixel, 37.49% 감소 |
+
+physical pixel은 DOM에 존재하는 `document-page-canvas`와 `data-rhwp-layer-kind` Canvas의 실제
+`width × height` 합이다. 수정 전 200%에서는 네 Canvas가 모두 3175×4491이고, 수정 후에는 visible
+쪽의 두 Canvas만 3175×4491을 유지하며 offscreen 쪽의 두 Canvas는 1588×2246이 된다. raw RGBA
+환산은 physical pixel×4로 계산한 backing-store 등가값이며 브라우저 객체 overhead와 GPU 복사본은
+포함하지 않는다.
+
+100→200% 전환 뒤 모든 retained main Canvas가 목표 zoom을 보고하고 surface 크기가 500ms 동안
+안정된 시점까지 같은 브라우저에서 3회 반복 측정했다. 수정 전은 `[1366, 1352, 1345]ms`(중앙값
+1352ms), 수정 후는 `[1354, 1360, 1360]ms`(중앙값 1360ms)였다. 중앙값 차이 8ms(0.59%)는 UI 조작과
+polling을 포함한 표본 해상도 안이므로 zoom 지연 개선 또는 악화로 해석하지 않는다. 이 계측에서
+확정할 수 있는 성능 효과는 steady-state physical Canvas pixel과 raw backing-store 등가값의 37.49%
+감소다.
+
 ## 비교 asset SHA-256
 
 | 문서·배율 | SHA-256 |
@@ -115,13 +143,15 @@ fixture: `samples/basic/KTX.hwp`
 | KTX 50% | `dd87dfd1e17ddbb2b622468a4c708987dd68b35120928533489129c60bab6fac` |
 | KTX 100% | `0c1b3f217bdef83dab088b0fe8404fd62b12d91d53f57892c2c1a5b5d916707f` |
 
-## 성능 측정의 한계
+## 성능 측정의 해석과 한계
 
 60→100% 전환 완료를 같은 탭에서 각각 5회 측정한 중앙값은 기준 126ms, 변경본 132ms였다.
 표본은 `[141,126,134,116,94]`와 `[122,132,142,322,100]`으로 변동이 크고 변경본에 outlier도 있어,
-이 결과로 속도 향상을 주장하지 않는다. 페이지별 비용 보정 뒤 위 일반 문서들은 모두 예산 이내여서
-candidate가 의도적으로 물리 픽셀을 줄이지 않는다. 이 PR의 근거는 과도한 surface가 실제로 예상되는
-경우에만 비포커스 페이지를 단계적으로 낮추는 planner 계약과, 일반 문서의 최대 해상도 보존이다.
+이 결과로 속도 향상을 주장하지 않는다. 페이지별 비용 보정 뒤 위 34%·50%·100% 품질 비교 문서들은
+모두 예산 이내여서 candidate가 의도적으로 물리 픽셀을 줄이지 않는다. 반면 issue6280 실문서의 200%
+상태에서는 예산이 실제로 발동해 비포커스 페이지의 physical pixel을 줄였다. 따라서 이 PR의 근거는
+일반 문서의 최대 해상도 보존과 과도한 surface 상태에서의 결정론적 steady-state 비용 감소이며,
+브라우저 wall-clock 속도 향상은 별도 장기 benchmark 없이는 주장하지 않는다.
 
 ## 자동 검증
 

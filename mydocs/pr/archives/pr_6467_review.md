@@ -62,6 +62,7 @@ layer를 진행하지 않는다.
 | production build | 244 modules pass, 기존 대형 chunk 경고만 확인 |
 | diff | `git diff --check` pass |
 | 실제 Canvas2D | 3개 문서×34/50/100% 수정 전·후 PNG 9개, SSIM 0.999885~0.999979, raw DPR 보존 |
+| 예산 발동 실측 | issue6280 21쪽 문서 200% physical Canvas 57.04M→35.65Mpx, 37.49% 감소 |
 | CanvasKit | layerCount 1·raw DPR 보존, warning/error 없음 |
 
 Rust source/test/fixture와 PDF/SVG 출력은 바꾸지 않으므로 Rust lint 묶음과 출력 visual sweep은 범위에서
@@ -79,8 +80,10 @@ PNG를 리사이즈·손실 압축 없이 붙였다. 사람이 9개를 모두 �
   4장으로 잡던 초기 candidate와 달리 콘텐츠 기반이며, 예산을 넘지 않으면 해상도에 영향이 없다.
 - 예산을 넘겨도 포커스 페이지는 품질을 낮추지 않아 `withinBudget=false`일 수 있다. 이는 편집 품질을
   메모리 수치보다 우선한 명시적 계약이다.
-- 시간 표본 변동이 커 실제 속도 향상은 주장하지 않는다. 실측 샘플이 예산 이내면 최적화하지 않는 것이
-  이번 정책의 올바른 결과다.
+- issue6280 200%에서 visible DPR 2를 보존하고 offscreen DPR만 1로 낮춰 steady-state physical Canvas
+  pixel과 raw RGBA backing-store 등가값이 37.49% 감소했다.
+- 100→200% 완료 시간 중앙값은 기준 1352ms, 변경본 1360ms로 사실상 동일하다. wall-clock 속도 향상은
+  주장하지 않으며, 실측 샘플이 예산 이내면 최적화하지 않는 것이 이번 정책의 올바른 결과다.
 - 사용자 시각 검증, 보정 candidate의 PR CI와 latest head required aggregate를 확인하기 전에는 Ready/merge
   또는 #6042 시작을 권고하지 않는다.
 
