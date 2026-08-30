@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q4-d-bounded-vertical-activation-revised-plan",
+  "issue": 4969,
+  "stage": "W10-Q4-D",
+  "date": "2026-08-30",
+  "status": "revised-plan-approved-awaiting-Q4-D0",
+  "baseCheckpoint": "f449960c7",
+  "upstreamDevel": "a71ebf2141ae",
+  "ahead": 38,
+  "behind": 0,
+  "productMutationBeforeApproval": false,
+  "publicApiExpansion": false,
+  "mode": "boundedVerticalHwp5TableCellV1",
+  "activationSurface": {
+    "provenance": "hwp5-semantic-lineage",
+    "surface": "table-cell",
+    "textDirection": 2,
+    "oneCell": true,
+    "oneParagraph": true,
+    "oneComposedLine": true,
+    "oneTextRun": true,
+    "oneColumn": true,
+    "pureCjkUpright": true,
+    "oneExactSlot": true,
+    "variationAllowed": false,
+    "partialActivationAllowed": false
+  },
+  "sourceAuthority": {
+    "registration": "registerExactFontSource",
+    "parserMayRegister": false,
+    "fontNameHeuristicAllowed": false,
+    "sourceIdentityRevalidated": true,
+    "fontBytesInTrace": false
+  },
+  "backendMatrix": [
+    {"backend": "CanvasKitBrowser", "targetSelected": true},
+    {"backend": "CanvasKitPolicy", "targetSelected": true},
+    {"backend": "NativeSkia", "targetSelected": false, "fallback": "TextRun"},
+    {"backend": "SvgLayer", "targetSelected": false, "fallback": "TextRun"},
+    {"backend": "Canvas2D", "targetSelected": false, "fallback": "TextRun"}
+  ],
+  "nonTargets": [
+    "hwpx-table-cell",
+    "hwp5-text-direction-1",
+    "horizontal-cell",
+    "missing-or-stale-exact-source",
+    "multi-paragraph-run-or-column",
+    "latin-punctuation-or-mixed-run",
+    "variation",
+    "unsupported-backend"
+  ],
+  "stages": [
+    {"id": "Q4-D0", "name": "red-baseline-and-target-contract", "productOutputChange": false},
+    {"id": "Q4-D1", "name": "exact-source-bound-dormant-owner", "productOutputChange": false},
+    {"id": "Q4-D2", "name": "one-table-cell-atomic-layout-commit", "productOutputChange": true},
+    {"id": "Q4-D3", "name": "atomic-vertical-glyph-run-publication", "productOutputChange": true},
+    {"id": "Q4-D4", "name": "canvaskit-feature-detection-and-pixel-proof", "productOutputChange": true},
+    {"id": "Q4-D5", "name": "regression-performance-and-final-classification", "productOutputChange": true}
+  ],
+  "invariants": {
+    "noExactSourceOutputRegressionAllowed": false,
+    "horizontalOutputRegressionAllowed": false,
+    "hwpxActivationAllowed": false,
+    "versionBuildBranchAllowed": false,
+    "backendReshapingAllowed": false,
+    "partialLayoutOrPublicationAllowed": false,
+    "horizontalVerticalAuthorityGuardRemoved": false,
+    "privateCorpusAllowed": false
+  },
+  "controls": [
+    "samples/table-004.hwp",
+    "samples/issue6029/3200477_icao_procedure.hwpx"
+  ],
+  "approvalGates": {
+    "revisedPlan": true,
+    "eachStageResult": true,
+    "checkpoint": true,
+    "commit": true,
+    "push": true,
+    "githubComment": true,
+    "pullRequest": true
+  },
+  "next": "Q4-D0-red-baseline-after-plan-checkpoint"
+}
