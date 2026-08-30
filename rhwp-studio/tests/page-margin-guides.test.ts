@@ -4,7 +4,15 @@ import { fileURLToPath } from 'node:url';
 import { createServer } from 'vite';
 
 import type { PageInfo } from '../src/core/types.ts';
-import { drawPageMarginGuides } from '../src/view/page-margin-guides.ts';
+import {
+  PAGE_MARGIN_GUIDE_LENGTH,
+  PAGE_MARGIN_GUIDE_LINE_WIDTH,
+  PAGE_MARGIN_GUIDE_MAX_SCREEN_LINE_WIDTH,
+  PAGE_MARGIN_GUIDE_MIN_SCREEN_LINE_WIDTH,
+  drawPageMarginGuideCorners,
+  drawPageMarginGuides,
+  resolvePageMarginGuideLineWidth,
+} from '../src/view/page-margin-guides.ts';
 
 interface ContextCall {
   name: string;
@@ -78,6 +86,69 @@ test('full page render keeps the existing unclipped margin-guide path', () => {
   assert.equal(calls.some((call) => call.name === 'rect'), false);
   assert.equal(calls.some((call) => call.name === 'clip'), false);
   assert.equal(calls.filter((call) => call.name === 'stroke').length, 1);
+});
+
+test('HF band can reuse the exact page-margin corner path', () => {
+  const page = recordingCanvas();
+  const band = recordingCanvas();
+
+  drawPageMarginGuides(pageInfo, page.canvas, 1);
+  drawPageMarginGuideCorners({ x: 60, y: 60, width: 480, height: 680 }, band.canvas, 1);
+
+  const pathCalls = (calls: ContextCall[]) => calls.filter(
+    (call) => call.name === 'moveTo' || call.name === 'lineTo',
+  );
+  assert.deepEqual(pathCalls(band.calls), pathCalls(page.calls));
+});
+
+test('HF edge reuses only the non-overlapping page-margin corners', () => {
+  const all = recordingCanvas();
+  const top = recordingCanvas();
+  const bottom = recordingCanvas();
+  const rect = { x: 60, y: 60, width: 480, height: 680 };
+
+  drawPageMarginGuideCorners(rect, all.canvas, 1);
+  drawPageMarginGuideCorners(rect, top.canvas, 1, 'top');
+  drawPageMarginGuideCorners(rect, bottom.canvas, 1, 'bottom');
+
+  const pathCalls = (calls: ContextCall[]) => calls.filter(
+    (call) => call.name === 'moveTo' || call.name === 'lineTo',
+  );
+  assert.deepEqual(
+    [...pathCalls(top.calls), ...pathCalls(bottom.calls)],
+    pathCalls(all.calls),
+  );
+  assert.equal(PAGE_MARGIN_GUIDE_LINE_WIDTH, 1);
+  assert.equal(PAGE_MARGIN_GUIDE_LENGTH, 22);
+});
+
+test('margin-guide stroke stays readable at low zoom and bounded at high zoom', () => {
+  const screenLineWidth = (zoom: number): number =>
+    resolvePageMarginGuideLineWidth(zoom) * zoom;
+
+  assert.equal(screenLineWidth(0.43), PAGE_MARGIN_GUIDE_MIN_SCREEN_LINE_WIDTH);
+  assert.equal(screenLineWidth(1), PAGE_MARGIN_GUIDE_LINE_WIDTH);
+  assert.equal(screenLineWidth(1.21), 1.21);
+  assert.equal(screenLineWidth(5), PAGE_MARGIN_GUIDE_MAX_SCREEN_LINE_WIDTH);
+});
+
+test('HF mode can hide the body edge whose outward direction is reversed', () => {
+  const headerBody = recordingCanvas();
+  const footerBody = recordingCanvas();
+  const topOnly = recordingCanvas();
+  const bottomOnly = recordingCanvas();
+  const bodyRect = { x: 60, y: 60, width: 480, height: 680 };
+
+  drawPageMarginGuides(pageInfo, headerBody.canvas, 1, undefined, 'bottom');
+  drawPageMarginGuides(pageInfo, footerBody.canvas, 1, undefined, 'top');
+  drawPageMarginGuideCorners(bodyRect, topOnly.canvas, 1, 'top');
+  drawPageMarginGuideCorners(bodyRect, bottomOnly.canvas, 1, 'bottom');
+
+  const pathCalls = (calls: ContextCall[]) => calls.filter(
+    (call) => call.name === 'moveTo' || call.name === 'lineTo',
+  );
+  assert.deepEqual(pathCalls(headerBody.calls), pathCalls(bottomOnly.calls));
+  assert.deepEqual(pathCalls(footerBody.calls), pathCalls(topOnly.calls));
 });
 
 test('PageRenderer forwards the focused patch to the margin-guide clip', async () => {

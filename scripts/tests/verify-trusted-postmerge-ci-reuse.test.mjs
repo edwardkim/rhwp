@@ -101,6 +101,41 @@ test("reuses the preceding full CI through a linear review-only tail", () => {
   });
 });
 
+test("reuses an exact direct review-only PR fast pass after merge", () => {
+  const result = evaluateTrustedPostMergeReuse(input({
+    pullFiles: [
+      { filename: "mydocs/pr/archives/pr_6456_review.md", status: "added" },
+      { filename: "mydocs/orders/20260830.md", status: "modified" },
+    ],
+    prCommits: [{
+      sha: head,
+      parents: [{ sha: base }],
+      files: [{ filename: "mydocs/pr/archives/pr_6456_review.md", status: "added" }],
+    }],
+    reviewOnlyFastPassRunIds: ["123"],
+  }));
+  assert.deepEqual(result, {
+    reuse: true,
+    reason: "direct-review-only-pr-fast-pass-reused",
+    sourceRunId: "123",
+    pullNumber: "42",
+  });
+});
+
+test("fails closed when a direct review-only PR lacks worker-skip evidence", () => {
+  const result = evaluateTrustedPostMergeReuse(input({
+    pullFiles: [{ filename: "mydocs/orders/20260830.md", status: "modified" }],
+    prCommits: [{
+      sha: head,
+      parents: [{ sha: base }],
+      files: [{ filename: "mydocs/orders/20260830.md", status: "modified" }],
+    }],
+    reviewOnlyFastPassRunIds: [],
+  }));
+  assert.equal(result.reuse, false);
+  assert.equal(result.reason, "direct-review-only-pr-fast-pass-evidence-unavailable");
+});
+
 test("prefers the final PR head when code and review evidence passed together", () => {
   const result = evaluateTrustedPostMergeReuse(input({
     prCommits: [

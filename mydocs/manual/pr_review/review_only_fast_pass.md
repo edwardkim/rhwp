@@ -107,6 +107,21 @@ all-review-only-no-code-impact fast-pass를 즉시 선택한다. candidate의 �
 
 따라서 순수 문서·review 기준 자료 PR에 A 경로의 candidate-check 조회 조건을 잘못 적용하지 않는다.
 
+### B.1 `devel` 병합 후 worker 재사용
+
+Adapter inter-diff와 Proptest roundtrip은 `devel` push에도 required check 이름을 유지한다. PR event가
+아닌 push에는 PR payload가 없으므로, 일반 preflight는 단독으로 review-only 판정을 하지 않고 Full로
+닫힌다. 다만 trusted post-merge controller가 아래를 모두 확인한 같은 저장소 PR이면 worker를 다시
+실행하지 않는다.
+
+1. merge commit이 유일한 `devel` 대상 PR에 대응하고, merge tree와 PR head tree가 일치한다.
+2. PR 전체 파일과 linear PR commit이 모두 B 경로 허용 범위다.
+3. 해당 PR head의 성공한 `pull_request` workflow run에서 해당 preflight는 success이고 worker는
+   실제로 `skipped`였다.
+
+direct push, fork PR, PR 식별 불명확, merge tree 불일치, workflow·CI policy 변경, 비허용 파일, merge
+commit 또는 worker-skip 증거 누락은 재사용하지 않고 Full 실행한다.
+
 ## Full CI fallback
 
 다음 중 하나면 fast-pass로 단정하지 않고 workflow의 full CI 결과를 기다린다.
