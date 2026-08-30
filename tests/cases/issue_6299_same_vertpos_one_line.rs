@@ -35,7 +35,6 @@ fn wrap_frag(text_start: u32, vertical_pos: i32, left: bool) -> LineSeg {
         } else {
             LineSeg::TAG_LAST_SEGMENT
         },
-        ..Default::default()
     }
 }
 
