@@ -184,6 +184,13 @@ pub struct DocumentCore {
     pub(crate) pending_pagination_job: Option<PendingPaginationJob>,
     /// 페이지별 렌더 트리 캐시 (지연 구축, 부분 무효화)
     pub(crate) page_tree_cache: RefCell<Vec<Option<PageRenderTree>>>,
+    /// [#6452] 구역 첫 페이지에 임시 투영한 머리말/꼬리말 편집 tree의 단일-entry 캐시.
+    ///
+    /// Studio는 한 번에 한 HF 정의만 편집하므로 마지막 `(page, section, header,
+    /// apply_to)`만 보존한다. 일반 page cache와 분리해 pagination의 실제 active
+    /// header/footer tree를 오염시키지 않는다.
+    pub(crate) header_footer_preview_tree_cache:
+        RefCell<Option<((u32, usize, bool, u8), PageRenderTree)>>,
     /// [Task #2222] 페이지 레이어 트리 JSON 캐시 — (출력옵션 지문, 직렬화 결과).
     /// 이미지 base64 인라인으로 페이지당 1MB 급이라 재직렬화(실측 15ms/회)가
     /// 렌더 자체와 맞먹는다. 편집 무효화는 page_tree_cache 와 동일 지점에서.
@@ -415,6 +422,7 @@ impl DocumentCore {
             deferred_pagination_descriptor: None,
             pending_pagination_job: None,
             page_tree_cache: RefCell::new(Vec::new()),
+            header_footer_preview_tree_cache: RefCell::new(None),
             layer_tree_json_cache: RefCell::new(Vec::new()),
             bin_data_epoch: 0,
             batch_mode: false,

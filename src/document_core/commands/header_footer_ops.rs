@@ -1110,6 +1110,7 @@ impl DocumentCore {
         if let Some(slot) = cache.get_mut(page_num as usize) {
             *slot = None;
         }
+        self.header_footer_preview_tree_cache.borrow_mut().take();
         Ok(format!("{{\"ok\":true,\"hidden\":{}}}", hidden))
     }
 

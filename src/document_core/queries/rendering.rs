@@ -6427,6 +6427,10 @@ impl DocumentCore {
         for i in from..cache.len() {
             cache[i] = None;
         }
+        // 대표 HF tree는 일반 pagination tree와 다른 active target을 담는다. 부분
+        // 무효화의 원인이 HF 자체가 아니더라도 body/쪽번호/페이지 기하가 바뀔 수 있어
+        // 단일 entry를 보수적으로 비운다 (#6452).
+        self.header_footer_preview_tree_cache.borrow_mut().take();
         let mut json_cache = self.layer_tree_json_cache.borrow_mut();
         for i in from..json_cache.len() {
             json_cache[i].clear();
@@ -6695,6 +6699,7 @@ impl DocumentCore {
     /// 페이지 렌더 트리 캐시 전체 무효화.
     pub(crate) fn invalidate_page_tree_cache(&self) {
         self.page_tree_cache.borrow_mut().clear();
+        self.header_footer_preview_tree_cache.borrow_mut().take();
         self.layer_tree_json_cache.borrow_mut().clear();
         // [Task #1949] IR 이 바뀌는 재조판 경계에서 셀 단위 레이아웃 캐시(포인터 키)도
         // 함께 비워 다른 IR 의 셀 포인터 재사용으로 인한 오재사용을 방지한다.
@@ -6823,7 +6828,11 @@ impl DocumentCore {
         )))
     }
 
-    /// 구역 첫 페이지에 요청한 HF 정의를 임시로 투영한 비캐시 렌더 트리.
+    /// 구역 첫 페이지에 요청한 HF 정의를 임시로 투영한 렌더 트리.
+    ///
+    /// 실제 page tree cache와 섞지 않고 마지막 편집 target 한 건만 재사용한다. 선택
+    /// 드래그는 hit-test와 selection geometry를 프레임마다 연속 조회하므로, 캐시가
+    /// 없으면 같은 대표 페이지를 매번 full build하게 된다 (#6452).
     pub(crate) fn build_header_footer_edit_preview_tree(
         &self,
         page_num: u32,
@@ -6837,10 +6846,19 @@ impl DocumentCore {
                 page_num, section_idx
             )));
         }
-        self.build_page_tree_with_header_footer_override(
+        let key = (page_num, section_idx, is_header, apply_to);
+        if let Some((cached_key, tree)) = self.header_footer_preview_tree_cache.borrow().as_ref() {
+            if *cached_key == key {
+                return Ok(tree.clone());
+            }
+        }
+
+        let tree = self.build_page_tree_with_header_footer_override(
             page_num,
             Some((section_idx, is_header, apply_to)),
-        )
+        )?;
+        *self.header_footer_preview_tree_cache.borrow_mut() = Some((key, tree.clone()));
+        Ok(tree)
     }
 
     /// 페이지 렌더 트리를 빌드한다.
