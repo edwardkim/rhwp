@@ -3,7 +3,7 @@
   "kind": "font-w10-q3-e-bounded-atomic-activation-revised-plan",
   "issue": 4969,
   "stage": "W10-Q3-E",
-  "status": "q3-e4-complete-awaiting-latest-devel-requalification-approval",
+  "status": "q3-e4-complete-awaiting-q3-e5-start-approval",
   "baseCheckpoint": "558e27f6d",
   "productMutation": true,
   "publicApiExpansionRequiresSeparateApproval": true,
@@ -157,8 +157,8 @@
   ],
   "privateCorpus": false,
   "hyperVOrHancomOracle": false,
-  "requalificationEvidence": "mydocs/tech/investigations/issue-4969/w10_q3_e0_requalification.json",
-  "nextStage": "latest-devel-merge-requalification-approval",
+  "requalificationEvidence": "mydocs/tech/investigations/issue-4969/w10_q3_e4_merge_requalification.json",
+  "nextStage": "Q3-E5-start-approval",
   "nextStageApproved": false,
-  "approvalScope": "Q3-E4 result and checkpoint are approved; latest devel merge requalification, Q3-E5, push, PR, and comment remain separately gated"
+  "approvalScope": "Q3-E4 merge requalification result and checkpoint are approved; Q3-E5, push, PR, and comment remain separately gated"
 }
