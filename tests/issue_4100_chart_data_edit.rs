@@ -3974,9 +3974,11 @@ fn engine_documents_match_spike_documents_byte_for_byte() {
 /// [#5652 S5] 엔진 판정 원장(`samples/issue5652/MANIFEST.json`)이 가리키는 자산이 지금도 그 바이트인가.
 ///
 /// `b2_judgment_assets_match_the_manifest`(#5447) 와 같은 트립와이어 — 원장 32행의 원본·한컴 PDF
-/// SHA-256 을 다시 재고, 두 디렉터리를 거꾸로 훑어 등재되지 않은 자산을 잡는다(해시 집합으로 —
-/// NFC/NFD 파일명 사고 대비). 래스터 재계산은 `tools/hancom_chart_judgment_verify.py --manifest
-/// samples/issue5652/MANIFEST.json` 이 로컬에서 맡는다.
+/// SHA-256 을 다시 재고, 원본 디렉터리와 현행 B2 판정 PDF namespace(`-2020.pdf`)를 거꾸로 훑어
+/// 등재되지 않은 자산을 잡는다(해시 집합으로 — NFC/NFD 파일명 사고 대비). 같은 `pdf/issue5652/`
+/// 아래의 `-2022.pdf`는 이전 판정 PDF이며 현행 B2 원장 기준에 속하지 않는다.
+/// 래스터 재계산은 `tools/hancom_chart_judgment_verify.py --manifest samples/issue5652/MANIFEST.json` 이
+/// 로컬에서 맡는다.
 #[test]
 fn b2_engine_judgment_assets_match_the_manifest() {
     fn sha256_of(path: &std::path::Path) -> String {
@@ -4070,13 +4072,10 @@ fn b2_engine_judgment_assets_match_the_manifest() {
         "#5447 판정 PDF 와 렌더가 다른 항목이 있다"
     );
 
-    for (dir, ignored) in [
-        (
-            "samples/issue5652",
-            ["MANIFEST.json", "README.md", "PANJEONG.md"].as_slice(),
-        ),
-        ("pdf/issue5652", ["README.md"].as_slice()),
-    ] {
+    for (dir, ignored) in [(
+        "samples/issue5652",
+        ["MANIFEST.json", "README.md", "PANJEONG.md"].as_slice(),
+    )] {
         let mut counted = 0usize;
         for item in std::fs::read_dir(manifest(dir)).expect("판정 자산 디렉터리") {
             let path = item.expect("디렉터리 항목").path();
@@ -4099,6 +4098,31 @@ fn b2_engine_judgment_assets_match_the_manifest() {
         }
         assert_eq!(counted, 32, "{dir}: 판정 자산이 32건이 아니다");
     }
+
+    // `pdf/issue5652/`에는 이전 `-2022.pdf`와 현행 B2 기준 `-2020.pdf`가 공존한다. 원장은
+    // 이번에 재산출한 기준 PDF만 소유하므로, 그 namespace만 역방향으로 검증한다.
+    let dir = "pdf/issue5652";
+    let mut counted = 0usize;
+    for item in std::fs::read_dir(manifest(dir)).expect("판정 PDF 디렉터리") {
+        let path = item.expect("디렉터리 항목").path();
+        if !path.is_file() {
+            continue;
+        }
+        let file_name = path
+            .file_name()
+            .and_then(|s| s.to_str())
+            .unwrap_or_default()
+            .to_string();
+        if !file_name.ends_with("-2020.pdf") {
+            continue;
+        }
+        assert!(
+            registered.contains(&sha256_of(&path)),
+            "{dir}/{file_name}: B2 원장에 등재되지 않은 현행 한컴 판정 자산이다"
+        );
+        counted += 1;
+    }
+    assert_eq!(counted, 32, "{dir}: 현행 B2 한컴 판정 자산이 32건이 아니다");
 }
 
 // ---------------------------------------------------------------------------
