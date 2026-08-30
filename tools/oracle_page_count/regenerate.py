@@ -43,7 +43,7 @@ TOOLS_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if TOOLS_DIR not in sys.path:
     sys.path.insert(0, TOOLS_DIR)
 
-from oracle_pdf_selection import choose_canonical_for_product, stem  # noqa: E402
+from oracle_pdf_selection import choose_canonical, engine_for_product, stem  # noqa: E402
 
 FIXTURE = 'tests/fixtures/oracle_page_count_baseline.tsv'
 
@@ -68,7 +68,13 @@ def pick_oracles(sample, candidates, product):
     여러 엔진 중 최신 연도를 추정하지 않는다.
     """
     try:
-        return [choose_canonical_for_product(sample, candidates, product)]
+        return [
+            choose_canonical(
+                sample,
+                candidates,
+                engine=engine_for_product(product),
+            )
+        ]
     except ValueError:
         return []
 
