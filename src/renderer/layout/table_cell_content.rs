@@ -19,6 +19,37 @@ use crate::model::control::Control;
 use crate::model::paragraph::Paragraph;
 use crate::model::style::Alignment;
 use crate::model::table::VerticalAlign;
+use crate::renderer::kerning::ExactFontSlot;
+use crate::renderer::shaping_vertical::{
+    BoundedVerticalHwp5TableCellSidecar, TypedVerticalIntent, VerticalLatinOrientation,
+    VerticalLegacyGeometry, VerticalPoint, VerticalRect, VerticalShapingContextRequest,
+    VerticalShapingSidecarRejectReason, NOTO_SANS_KR_REGULAR_SHA256,
+};
+use std::sync::Arc;
+
+struct BoundedVerticalHwp5TableCellCommit {
+    first_node_id: NodeId,
+    node_count: u32,
+    line_node: RenderNode,
+    sidecar: Arc<BoundedVerticalHwp5TableCellSidecar>,
+}
+
+/// The only Q4-D2 mutation boundary. The page frame validates and attaches the
+/// sidecar before advancing its ID cursor; the cell receives the fully built
+/// line only after that infallible frame commit succeeds.
+fn commit_bounded_vertical_hwp5_table_cell(
+    tree: &mut PageLayoutContext,
+    cell_node: &mut RenderNode,
+    commit: BoundedVerticalHwp5TableCellCommit,
+) -> Result<(), VerticalShapingSidecarRejectReason> {
+    tree.commit_bounded_vertical_hwp5_table_cell_frame(
+        commit.first_node_id,
+        commit.node_count,
+        commit.sidecar,
+    )?;
+    cell_node.children.push(commit.line_node);
+    Ok(())
+}
 
 impl LayoutEngine {
     /// 세로쓰기 셀의 텍스트를 수직 방향으로 배치한다.
@@ -41,6 +72,7 @@ impl LayoutEngine {
         section_index: usize,
         table_meta: Option<(usize, usize)>,
         cell_idx: usize,
+        table_cell_count: usize,
         enclosing_cell_ctx: Option<CellContext>,
     ) {
         // 1. line_seg 기반으로 composed lines를 열(column)로 변환
@@ -50,6 +82,7 @@ impl LayoutEngine {
             ch: char,
             style: TextStyle,
             char_style_id: u32,
+            lang_index: usize,
             para_style_id: u16,
             cell_para_index: usize,
             char_offset: usize,
@@ -180,6 +213,7 @@ impl LayoutEngine {
                             ch,
                             style: text_style.clone(),
                             char_style_id: run.char_style_id,
+                            lang_index: run.lang_index,
                             para_style_id: composed.para_style_id,
                             cell_para_index: cp_idx,
                             char_offset,
@@ -242,6 +276,258 @@ impl LayoutEngine {
             }
             VerticalAlign::Bottom => inner_area.x.min(right_aligned),
         };
+
+        // Q4-D2 first activation lane. Every target check, exact-source shape,
+        // geometry projection, ID preview, node build, and sidecar build happens
+        // before either the frame or cell tree is mutated. Any `None`/`Err`
+        // falls through to the byte-stable legacy per-character loop below.
+        let bounded_commit = (|| -> Option<BoundedVerticalHwp5TableCellCommit> {
+            if !self.profile.get().native_hwp5_layout()
+                || text_direction != 2
+                || table_cell_count != 1
+                || paragraphs.len() != 1
+                || composed_paras.len() != 1
+                || composed_paras[0].lines.len() != 1
+                || composed_paras[0].lines[0].runs.len() != 1
+                || columns.len() != 1
+                || chars.is_empty()
+                || !paragraphs[0].controls.is_empty()
+                || !paragraphs[0].range_tags.is_empty()
+            {
+                return None;
+            }
+            let source_run = &composed_paras[0].lines[0].runs[0];
+            if source_run.text.is_empty()
+                || source_run.char_overlap.is_some()
+                || source_run.footnote_marker.is_some()
+                || source_run.display_text.is_some()
+                || source_run.lang_index != 0
+                || source_run.text.chars().count() != chars.len()
+            {
+                return None;
+            }
+            let pure_cjk_upright = source_run.text.chars().all(|character| {
+                matches!(
+                    u32::from(character),
+                    0x1100..=0x11ff
+                        | 0x3130..=0x318f
+                        | 0x3400..=0x4dbf
+                        | 0x4e00..=0x9fff
+                        | 0xac00..=0xd7af
+                        | 0xf900..=0xfaff
+                )
+            });
+            if !pure_cjk_upright
+                || chars.iter().any(|character| {
+                    character.char_style_id != source_run.char_style_id
+                        || character.lang_index != source_run.lang_index
+                })
+            {
+                return None;
+            }
+            let resolved = styles.char_styles.get(source_run.char_style_id as usize)?;
+            if resolved.bold
+                || resolved.italic
+                || !matches!(resolved.underline, crate::model::style::UnderlineType::None)
+                || resolved.strikethrough
+                || resolved.border_fill_id != 0
+                || resolved.outline_type != 0
+                || resolved.shadow_type != 0
+                || resolved.emboss
+                || resolved.engrave
+                || resolved.superscript
+                || resolved.subscript
+                || resolved.emphasis_dot != 0
+                || resolved
+                    .letter_spacing_for_lang(source_run.lang_index)
+                    .abs()
+                    > 1.0e-9
+                || (resolved.ratio_for_lang(source_run.lang_index) - 1.0).abs() > 1.0e-9
+            {
+                return None;
+            }
+
+            let column = &columns[0];
+            if column.start_idx != 0 || column.end_idx != chars.len() {
+                return None;
+            }
+            let col_x = cols_x_start + total_cols_width - column.col_width;
+            let free_space = (inner_area.height - column.total_height).max(0.0);
+            let y_start = inner_area.y
+                + match column.alignment {
+                    Alignment::Center | Alignment::Distribute => free_space / 2.0,
+                    Alignment::Right => free_space,
+                    _ => 0.0,
+                };
+            let origin = VerticalPoint {
+                x: col_x + column.col_width / 2.0,
+                y: y_start,
+            };
+            let legacy_bbox = VerticalRect {
+                x: col_x + (column.col_width - chars[0].style.font_size) / 2.0,
+                y: y_start,
+                width: chars[0].style.font_size,
+                height: column.total_height,
+            };
+            let fallback_geometry = VerticalLegacyGeometry {
+                bbox: legacy_bbox,
+                next_inline_origin: VerticalPoint {
+                    x: origin.x,
+                    y: y_start + column.total_height,
+                },
+                next_column_origin: VerticalPoint {
+                    x: origin.x - column.col_width,
+                    y: y_start,
+                },
+            };
+            let context = self.vertical_shaping_context_snapshot()?;
+            let certified = Arc::new(
+                context
+                    .prepare_dormant(VerticalShapingContextRequest {
+                        attempt_id: 4969,
+                        slot: ExactFontSlot::new(source_run.char_style_id, source_run.lang_index),
+                        text: &source_run.text,
+                        intent: TypedVerticalIntent::vertical_rl(VerticalLatinOrientation::Upright),
+                        font_size_px: chars[0].style.font_size,
+                        origin,
+                        column_pitch_px: column.col_width,
+                        fallback_geometry,
+                        script: Some("Hang"),
+                        language: Some("ko"),
+                        features: &[],
+                        variations: &[],
+                    })
+                    .ok()?,
+            );
+            if certified.certificate().font_source_sha256() != NOTO_SANS_KR_REGULAR_SHA256 {
+                return None;
+            }
+            let geometry = certified.transaction().line_geometry();
+            if !Arc::ptr_eq(geometry, certified.transaction().bbox_geometry())
+                || !Arc::ptr_eq(geometry, certified.transaction().next_origin_geometry())
+                || geometry.glyphs.len() != chars.len()
+            {
+                return None;
+            }
+            let mut expected_ranges = Vec::with_capacity(chars.len());
+            let mut byte_start = 0usize;
+            for character in source_run.text.chars() {
+                let byte_end = byte_start.checked_add(character.len_utf8())?;
+                expected_ranges.push(byte_start..byte_end);
+                byte_start = byte_end;
+            }
+            if geometry
+                .glyphs
+                .iter()
+                .zip(&expected_ranges)
+                .any(|(glyph, expected)| glyph.cluster_utf8_range != *expected)
+            {
+                return None;
+            }
+            let inside = |rect: VerticalRect| {
+                let epsilon = 0.5;
+                rect.x >= inner_area.x - epsilon
+                    && rect.y >= inner_area.y - epsilon
+                    && rect.x + rect.width <= inner_area.x + inner_area.width + epsilon
+                    && rect.y + rect.height <= inner_area.y + inner_area.height + epsilon
+            };
+            if !inside(geometry.bbox)
+                || geometry.glyphs.iter().any(|glyph| !inside(glyph.bbox))
+                || geometry.next_inline_origin.y > inner_area.y + inner_area.height + 0.5
+                || geometry.next_inline_origin.x < inner_area.x - 0.5
+                || geometry.next_inline_origin.x > inner_area.x + inner_area.width + 0.5
+                || geometry.next_column_origin.x < inner_area.x - 0.5
+                || geometry.next_column_origin.x > inner_area.x + inner_area.width + 0.5
+            {
+                return None;
+            }
+
+            let node_count = u32::try_from(geometry.glyphs.len().checked_add(1)?).ok()?;
+            let first_node_id = tree.preview_node_ids(node_count).ok()?;
+            let baseline = geometry
+                .glyphs
+                .first()
+                .map(|glyph| glyph.origin.y - geometry.bbox.y)
+                .unwrap_or(0.0);
+            let mut line_node = RenderNode::new(
+                first_node_id,
+                RenderNodeType::TextLine(TextLineNode::new(geometry.inline_advance_px, baseline)),
+                BoundingBox::new(
+                    geometry.bbox.x,
+                    geometry.bbox.y,
+                    geometry.bbox.width,
+                    geometry.bbox.height,
+                ),
+            );
+            let cell_context = if let Some(ref context) = enclosing_cell_ctx {
+                let mut context = context.clone();
+                if let Some(last) = context.path.last_mut() {
+                    last.cell_index = cell_idx;
+                    last.cell_para_index = 0;
+                    last.text_direction = text_direction;
+                }
+                Some(context)
+            } else {
+                table_meta.map(|(para_index, control_index)| CellContext {
+                    in_textbox: false,
+                    parent_para_index: para_index,
+                    path: vec![CellPathEntry {
+                        control_index,
+                        cell_index: cell_idx,
+                        cell_para_index: 0,
+                        text_direction,
+                    }],
+                })
+            };
+            for (index, (character, glyph)) in chars.iter().zip(&geometry.glyphs).enumerate() {
+                let run_id =
+                    first_node_id.checked_add(u32::try_from(index).ok()?.checked_add(1)?)?;
+                line_node.children.push(RenderNode::new(
+                    run_id,
+                    RenderNodeType::TextRun(TextRunNode {
+                        text: character.ch.to_string(),
+                        style: character.style.clone(),
+                        char_shape_id: Some(character.char_style_id),
+                        para_shape_id: Some(character.para_style_id),
+                        section_index: Some(section_index),
+                        para_index: Some(character.cell_para_index),
+                        char_start: Some(character.char_offset),
+                        cell_context: cell_context.clone(),
+                        is_para_end: character.is_para_end,
+                        is_line_break_end: false,
+                        rotation: 0.0,
+                        is_vertical: true,
+                        char_overlap: None,
+                        border_fill_id: 0,
+                        baseline: glyph.origin.y - glyph.bbox.y,
+                        field_marker: FieldMarkerType::None,
+                        layout_positions: None,
+                        display_text: None,
+                    }),
+                    BoundingBox::new(
+                        glyph.bbox.x,
+                        glyph.bbox.y,
+                        glyph.bbox.width,
+                        glyph.bbox.height,
+                    ),
+                ));
+            }
+            let sidecar = Arc::new(BoundedVerticalHwp5TableCellSidecar::new(
+                first_node_id,
+                certified,
+            ));
+            Some(BoundedVerticalHwp5TableCellCommit {
+                first_node_id,
+                node_count,
+                line_node,
+                sidecar,
+            })
+        })();
+        if let Some(commit) = bounded_commit {
+            if commit_bounded_vertical_hwp5_table_cell(tree, cell_node, commit).is_ok() {
+                return;
+            }
+        }
 
         // 3. 각 글자를 TextLine + TextRun 노드로 생성
         let mut col_x = cols_x_start + total_cols_width;

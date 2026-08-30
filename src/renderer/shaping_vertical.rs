@@ -14,9 +14,16 @@ use super::shaping::{
     ShapingExactSource, ShapingFeature, ShapingRejectReason, ShapingRequest, ShapingVariation,
     ShapingWritingMode, TerminalShapingDisposition,
 };
+use std::collections::{HashMap, HashSet};
 use std::ops::Range;
 use std::sync::Arc;
 use ttf_parser::{Face, GlyphId};
+
+pub(crate) const MAX_VERTICAL_SHAPING_PAGE_SIDECARS: usize = 4_096;
+pub(crate) const MAX_VERTICAL_SHAPING_PREPARED_SOURCES_PER_PAGE: usize = 64;
+pub(crate) const MAX_VERTICAL_SHAPING_FONT_BYTES_PER_PAGE: usize = 64 * 1024 * 1024;
+pub(crate) const NOTO_SANS_KR_REGULAR_SHA256: &str =
+    "6e06a7fe5d696ca719894a23f36bb2b1be8c816a5937cd4ad0f23ca67780dd74";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum VerticalIntentSurface {
@@ -589,6 +596,141 @@ impl CertifiedDormantVerticalShapingTransaction {
 
     pub(crate) fn product_published(&self) -> bool {
         false
+    }
+}
+
+/// Q4-D2 page-local owner for one bounded HWP5 vertical table-cell source run.
+///
+/// Paint publication remains closed: D2 stores the certified Q4-C owner beside
+/// the committed fallback nodes, while Q4-D3 will be the first consumer allowed
+/// to lower it to a glyph run.
+#[derive(Debug, Clone)]
+pub(crate) struct BoundedVerticalHwp5TableCellSidecar {
+    line_node_id: u32,
+    transaction: Arc<CertifiedDormantVerticalShapingTransaction>,
+}
+
+impl BoundedVerticalHwp5TableCellSidecar {
+    pub(crate) fn new(
+        line_node_id: u32,
+        transaction: Arc<CertifiedDormantVerticalShapingTransaction>,
+    ) -> Self {
+        Self {
+            line_node_id,
+            transaction,
+        }
+    }
+
+    pub(crate) fn line_node_id(&self) -> u32 {
+        self.line_node_id
+    }
+
+    pub(crate) fn transaction(&self) -> &Arc<CertifiedDormantVerticalShapingTransaction> {
+        &self.transaction
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum VerticalShapingSidecarRejectReason {
+    ZeroNode,
+    OwnerIdentityMismatch,
+    SourceIdentityMismatch,
+    StaleRegistryGeneration,
+    DuplicateNode,
+    EntryLimitExceeded,
+    ResourceLimitExceeded,
+    NodeSequenceMismatch,
+    NodeSequenceOverflow,
+}
+
+/// Bounded page-local vertical owner table. Every check is completed before
+/// any map, generation, or resource-budget mutation.
+#[derive(Debug, Clone, Default)]
+pub(crate) struct VerticalShapingPageSidecars {
+    registry_generation: Option<u64>,
+    entries: HashMap<u32, Arc<BoundedVerticalHwp5TableCellSidecar>>,
+    reserved_source_identities: HashSet<(u64, String, usize, u32)>,
+    reserved_source_bytes: usize,
+}
+
+impl VerticalShapingPageSidecars {
+    pub(crate) fn attach_bounded_hwp5_table_cell_atomic(
+        &mut self,
+        sidecar: Arc<BoundedVerticalHwp5TableCellSidecar>,
+    ) -> Result<(), VerticalShapingSidecarRejectReason> {
+        let node_id = sidecar.line_node_id();
+        if node_id == 0 {
+            return Err(VerticalShapingSidecarRejectReason::ZeroNode);
+        }
+        let certified = sidecar.transaction();
+        let transaction = certified.transaction();
+        let line = transaction.line_geometry();
+        if transaction.product_published()
+            || !Arc::ptr_eq(line, transaction.bbox_geometry())
+            || !Arc::ptr_eq(line, transaction.next_origin_geometry())
+        {
+            return Err(VerticalShapingSidecarRejectReason::OwnerIdentityMismatch);
+        }
+        let certificate = certified.certificate();
+        if certificate.font_source_sha256() != NOTO_SANS_KR_REGULAR_SHA256
+            || certificate.font_bytes() != certificate.source_bytes_arc().len()
+            || certificate.source_bytes_arc().len() > super::shaping::MAX_SHAPING_FONT_BYTES
+        {
+            return Err(VerticalShapingSidecarRejectReason::SourceIdentityMismatch);
+        }
+        if self.entries.contains_key(&node_id) {
+            return Err(VerticalShapingSidecarRejectReason::DuplicateNode);
+        }
+        if self
+            .registry_generation
+            .is_some_and(|generation| generation != certificate.registry_generation())
+        {
+            return Err(VerticalShapingSidecarRejectReason::StaleRegistryGeneration);
+        }
+        if self.entries.len() >= MAX_VERTICAL_SHAPING_PAGE_SIDECARS {
+            return Err(VerticalShapingSidecarRejectReason::EntryLimitExceeded);
+        }
+
+        let identity = (
+            certificate.registry_generation(),
+            certificate.font_source_sha256().to_string(),
+            certificate.font_bytes(),
+            certificate.face_index(),
+        );
+        let is_new_source = !self.reserved_source_identities.contains(&identity);
+        let next_source_count = self.reserved_source_identities.len() + usize::from(is_new_source);
+        let next_source_bytes = if is_new_source {
+            self.reserved_source_bytes
+                .checked_add(certificate.source_bytes_arc().len())
+                .ok_or(VerticalShapingSidecarRejectReason::ResourceLimitExceeded)?
+        } else {
+            self.reserved_source_bytes
+        };
+        if next_source_count > MAX_VERTICAL_SHAPING_PREPARED_SOURCES_PER_PAGE
+            || next_source_bytes > MAX_VERTICAL_SHAPING_FONT_BYTES_PER_PAGE
+        {
+            return Err(VerticalShapingSidecarRejectReason::ResourceLimitExceeded);
+        }
+
+        self.registry_generation = Some(certificate.registry_generation());
+        self.entries.insert(node_id, sidecar);
+        if is_new_source {
+            self.reserved_source_identities.insert(identity);
+            self.reserved_source_bytes = next_source_bytes;
+        }
+        Ok(())
+    }
+
+    pub(crate) fn get(&self, node_id: u32) -> Option<&Arc<BoundedVerticalHwp5TableCellSidecar>> {
+        self.entries.get(&node_id)
+    }
+
+    pub(crate) fn len(&self) -> usize {
+        self.entries.len()
+    }
+
+    pub(crate) fn registry_generation(&self) -> Option<u64> {
+        self.registry_generation
     }
 }
 

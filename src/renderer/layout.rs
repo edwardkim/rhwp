@@ -2794,6 +2794,23 @@ impl LayoutEngine {
         )
     }
 
+    /// Q4-D2 vertical table-cell activation snapshot. The registry clone keeps
+    /// immutable font bytes in Arc storage and cannot observe later host
+    /// registration changes during the page transaction.
+    pub(crate) fn vertical_shaping_context_snapshot(
+        &self,
+    ) -> Option<crate::renderer::shaping_vertical::VerticalShapingContext> {
+        if self.exact_font_sources.slot_count() == 0 {
+            None
+        } else {
+            Some(
+                crate::renderer::shaping_vertical::VerticalShapingContext::new(
+                    self.exact_font_sources.clone(),
+                ),
+            )
+        }
+    }
+
     pub(crate) fn exact_font_source_registry_counts(&self) -> (usize, usize, usize, u64) {
         (
             self.exact_font_sources.slot_count(),

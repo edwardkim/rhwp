@@ -1325,6 +1325,7 @@ impl LayoutEngine {
                     section_index,
                     Some((para_index, control_index)),
                     cell_idx,
+                    table.cells.len(),
                     enclosing_cell_ctx.cloned(),
                 );
                 // 세로쓰기 셀도 테두리를 엣지 그리드에 수집

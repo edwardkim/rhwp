@@ -19,12 +19,14 @@ use shaping::{
 };
 use shaping_vertical::{
     adapt_hwp5_vertical_intent, adapt_hwpx_vertical_intent,
-    prepare_dormant_vertical_shaping_transaction, DormantVerticalShapingRejectReason,
-    DormantVerticalShapingRequest, TypedVerticalIntent, VerticalGlyphTransform,
-    VerticalIntentDisposition, VerticalIntentSurface, VerticalLatinOrientation,
-    VerticalLegacyGeometry, VerticalPoint, VerticalRect, VerticalRunClass, VerticalShapingContext,
-    VerticalShapingContextRejectReason, VerticalShapingContextRequest,
+    prepare_dormant_vertical_shaping_transaction, BoundedVerticalHwp5TableCellSidecar,
+    DormantVerticalShapingRejectReason, DormantVerticalShapingRequest, TypedVerticalIntent,
+    VerticalGlyphTransform, VerticalIntentDisposition, VerticalIntentSurface,
+    VerticalLatinOrientation, VerticalLegacyGeometry, VerticalPoint, VerticalRect,
+    VerticalRunClass, VerticalShapingContext, VerticalShapingContextRejectReason,
+    VerticalShapingContextRequest, VerticalShapingPageSidecars, VerticalShapingSidecarRejectReason,
 };
+use std::sync::Arc;
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen_test::wasm_bindgen_test;
 
@@ -1769,6 +1771,89 @@ fn issue_4969_q4_d0_red_atomic_table_cell_layout_commit_is_absent() {
         layout.contains("commit_bounded_vertical_hwp5_table_cell"),
         "Q4-D2 red: atomic HWP5 table-cell layout commit is not implemented"
     );
+}
+
+#[test]
+fn issue_4969_q4_d2_vertical_sidecar_is_atomic_and_keeps_one_geometry_owner() {
+    let slot = ExactFontSlot::new(71, 0);
+    let mut registry = ExactFontSourceRegistry::default();
+    registry
+        .register(
+            slot,
+            ExactFontSource {
+                bytes: NOTO,
+                face_index: 0,
+            },
+        )
+        .expect("register public Noto exact source");
+    let context = VerticalShapingContext::new(registry);
+    let certified = Arc::new(
+        context
+            .prepare_dormant(q4_d1_context_request(slot, "한글"))
+            .expect("certify bounded vertical owner"),
+    );
+    let geometry = certified.transaction().line_geometry();
+    assert!(Arc::ptr_eq(
+        geometry,
+        certified.transaction().bbox_geometry()
+    ));
+    assert!(Arc::ptr_eq(
+        geometry,
+        certified.transaction().next_origin_geometry()
+    ));
+
+    let mut sidecars = VerticalShapingPageSidecars::default();
+    let sidecar = Arc::new(BoundedVerticalHwp5TableCellSidecar::new(
+        41,
+        Arc::clone(&certified),
+    ));
+    sidecars
+        .attach_bounded_hwp5_table_cell_atomic(Arc::clone(&sidecar))
+        .expect("first atomic attach");
+    assert_eq!(sidecars.len(), 1);
+    assert!(Arc::ptr_eq(
+        sidecars.get(41).expect("attached owner"),
+        &sidecar
+    ));
+    let generation = sidecars.registry_generation();
+
+    let duplicate = sidecars
+        .attach_bounded_hwp5_table_cell_atomic(sidecar)
+        .expect_err("duplicate node must fail before mutation");
+    assert_eq!(duplicate, VerticalShapingSidecarRejectReason::DuplicateNode);
+    assert_eq!(sidecars.len(), 1);
+    assert_eq!(sidecars.registry_generation(), generation);
+}
+
+#[test]
+fn issue_4969_q4_d2_non_noto_exact_source_leaves_vertical_sidecar_pristine() {
+    let slot = ExactFontSlot::new(72, 0);
+    let mut registry = ExactFontSourceRegistry::default();
+    registry
+        .register(
+            slot,
+            ExactFontSource {
+                bytes: SOURCE_HAN,
+                face_index: 0,
+            },
+        )
+        .expect("register non-target exact source");
+    let context = VerticalShapingContext::new(registry);
+    let certified = Arc::new(
+        context
+            .prepare_dormant(q4_d1_context_request(slot, "ᄒᆞᆫ글"))
+            .expect("source is shape-capable but outside D2 hash gate"),
+    );
+    let sidecar = Arc::new(BoundedVerticalHwp5TableCellSidecar::new(51, certified));
+    let mut sidecars = VerticalShapingPageSidecars::default();
+    assert_eq!(
+        sidecars
+            .attach_bounded_hwp5_table_cell_atomic(sidecar)
+            .expect_err("D2 accepts only the approved public Noto bytes"),
+        VerticalShapingSidecarRejectReason::SourceIdentityMismatch
+    );
+    assert_eq!(sidecars.len(), 0);
+    assert_eq!(sidecars.registry_generation(), None);
 }
 
 #[test]

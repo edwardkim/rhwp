@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q4-d2-atomic-layout-commit",
+  "issue": 4969,
+  "stage": "W10-Q4-D2",
+  "date": "2026-08-30",
+  "status": "qualified-atomic-layout",
+  "maintainerResultApproved": true,
+  "baseMerge": "7a7b316506ff",
+  "upstreamDevelAtD2Start": "628944a33cb5",
+  "latestObservedUpstreamDevel": "bd78a53122e4",
+  "aheadAfterLatestFetch": 43,
+  "behindAfterLatestFetch": 22,
+  "incomingD2FileOverlap": 0,
+  "mode": "boundedVerticalHwp5TableCellV1",
+  "layoutCommit": {
+    "oneMutationBoundary": true,
+    "nodeIdsPreviewedBeforeMutation": true,
+    "sidecarValidatedBeforeIdAdvance": true,
+    "cellChildrenAppendedAfterFrameCommit": true,
+    "geometryOwnerArcCount": 1,
+    "glyphRunPublished": false,
+    "backendSelected": false
+  },
+  "target": {
+    "text": "한글",
+    "lineBBox": [257.92, 132.98666666666668, 11.133333333333326, 25.24000000000001],
+    "runBBoxes": [
+      [257.94666666666666, 132.98666666666668, 11.106666666666683, 11.786666666666662],
+      [257.92, 146.82666666666668, 10.933333333333337, 11.400000000000006]
+    ],
+    "positionMismatch": 0,
+    "lineOwnerCount": 1,
+    "fallbackRunCount": 2
+  },
+  "rejection": {
+    "noExactSourceLegacyChildCounts": [1, 1],
+    "nonNotoSidecarResidue": 0,
+    "duplicateSidecarCountDelta": 0,
+    "canonicalMismatch": 0,
+    "partialLayoutPublication": 0
+  },
+  "green": {
+    "q4ContractPassed": 35,
+    "q4ContractFailed": 0,
+    "expectedRedFilteredOut": 2,
+    "existingProductSuitePassed": 8,
+    "existingProductSuiteFailed": 0,
+    "existingProductSuiteIgnored": 1,
+    "issue6029Passed": 1,
+    "integrationPolicyPassed": 19,
+    "integrationPolicyFailed": 0,
+    "focusedClippy": "passed",
+    "formatCheck": "passed",
+    "dockerWasm": "passed",
+    "dockerWasmElapsed": "6m28s",
+    "wasmBytes": 9860053
+  },
+  "canonicalControls": [
+    {
+      "path": "samples/table-004.hwp",
+      "pages": 1,
+      "overflowCellLines": 0,
+      "svgBytes": 214449,
+      "svgSha256": "7711baa0afe033c044605ff1afd5597534a8f246819bf12e929ac3c5ab93873f",
+      "mismatch": 0
+    },
+    {
+      "path": "samples/issue6029/3200477_icao_procedure.hwpx",
+      "pages": 1,
+      "overflowCellLines": 0,
+      "svgBytes": 273101,
+      "svgSha256": "27ac3f000875a1413a9a99bb3f8ad4c1fb8c21a942a3b9fd6476df72030328e9",
+      "mismatch": 0
+    }
+  ],
+  "knownUnrelatedGate": {
+    "command": "cargo clippy --lib --all-features -- -D warnings",
+    "status": "blocked-by-pre-existing-optional-gpu-dependency-version-conflict",
+    "detail": "vello 0.9 Scene versus vello 0.10 Scene"
+  },
+  "newIntegrationSource": false,
+  "generatedIntegrationArtifacts": false,
+  "privateCorpusUsed": false,
+  "hyperVUsed": false,
+  "githubMutation": false,
+  "next": "Q4-D2-checkpoint-then-maintainer-latest-devel-merge-approval"
+}

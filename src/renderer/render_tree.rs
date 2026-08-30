@@ -12,6 +12,10 @@ use super::shaping_publication::{
     HorizontalShapingPageSidecars, HorizontalShapingRunDecision, HorizontalShapingRunRange,
     HorizontalShapingSidecarRejectReason,
 };
+use super::shaping_vertical::{
+    BoundedVerticalHwp5TableCellSidecar, VerticalShapingPageSidecars,
+    VerticalShapingSidecarRejectReason,
+};
 use super::{GradientFillInfo, LineStyle, PathCommand, ShapeStyle, TextStyle};
 use crate::model::image::ImageEffect;
 use crate::model::shape::TextWrap;
@@ -1618,6 +1622,8 @@ pub struct PageLayoutContext {
     page_bbox: BoundingBox,
     /// Q2-D horizontal shaping terminal decisions. PageRenderTree.frame 전체가 직렬화 제외된다.
     horizontal_shaping_sidecars: HorizontalShapingPageSidecars,
+    /// Q4-D2 bounded HWP5 vertical table-cell owners. Paint publication is D3-only.
+    vertical_shaping_sidecars: VerticalShapingPageSidecars,
 }
 
 impl PageLayoutContext {
@@ -1629,6 +1635,7 @@ impl PageLayoutContext {
             page_index,
             page_bbox: BoundingBox::new(0.0, 0.0, width, height),
             horizontal_shaping_sidecars: HorizontalShapingPageSidecars::default(),
+            vertical_shaping_sidecars: VerticalShapingPageSidecars::default(),
         }
     }
 
@@ -1710,6 +1717,43 @@ impl PageLayoutContext {
         id
     }
 
+    /// Read-only node-id preview for a transaction that must prepare every
+    /// render node before changing the page frame.
+    pub(crate) fn preview_node_ids(
+        &self,
+        count: u32,
+    ) -> Result<NodeId, VerticalShapingSidecarRejectReason> {
+        if count == 0 {
+            return Err(VerticalShapingSidecarRejectReason::NodeSequenceMismatch);
+        }
+        self.next_id
+            .checked_add(count)
+            .ok_or(VerticalShapingSidecarRejectReason::NodeSequenceOverflow)?;
+        Ok(self.next_id)
+    }
+
+    /// Q4-D2 atomic frame commit. Sidecar validation and every fallible ID
+    /// check precede mutation; after attach succeeds, advancing the counter is
+    /// infallible and the caller may append its already-built node batch.
+    pub(crate) fn commit_bounded_vertical_hwp5_table_cell_frame(
+        &mut self,
+        expected_first_id: NodeId,
+        node_count: u32,
+        sidecar: std::sync::Arc<BoundedVerticalHwp5TableCellSidecar>,
+    ) -> Result<(), VerticalShapingSidecarRejectReason> {
+        if expected_first_id != self.next_id || sidecar.line_node_id() != expected_first_id {
+            return Err(VerticalShapingSidecarRejectReason::NodeSequenceMismatch);
+        }
+        let next_id = self
+            .next_id
+            .checked_add(node_count)
+            .ok_or(VerticalShapingSidecarRejectReason::NodeSequenceOverflow)?;
+        self.vertical_shaping_sidecars
+            .attach_bounded_hwp5_table_cell_atomic(sidecar)?;
+        self.next_id = next_id;
+        Ok(())
+    }
+
     /// Attach one terminal shaping decision to the final emitted node without publishing it.
     pub(crate) fn attach_horizontal_shaping_sidecar(
         &mut self,
@@ -1756,6 +1800,21 @@ impl PageLayoutContext {
 
     pub(crate) fn horizontal_shaping_sidecar_registry_generation(&self) -> Option<u64> {
         self.horizontal_shaping_sidecars.registry_generation()
+    }
+
+    pub(crate) fn vertical_shaping_sidecar(
+        &self,
+        node_id: NodeId,
+    ) -> Option<&std::sync::Arc<BoundedVerticalHwp5TableCellSidecar>> {
+        self.vertical_shaping_sidecars.get(node_id)
+    }
+
+    pub(crate) fn vertical_shaping_sidecar_count(&self) -> usize {
+        self.vertical_shaping_sidecars.len()
+    }
+
+    pub(crate) fn vertical_shaping_sidecar_registry_generation(&self) -> Option<u64> {
+        self.vertical_shaping_sidecars.registry_generation()
     }
 }
 

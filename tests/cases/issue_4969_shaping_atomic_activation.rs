@@ -1,8 +1,10 @@
 //! Issue #4969 W10-Q2-D4-B: the first product lane activates atomically.
 
 use rhwp::document_core::DocumentCore;
+use rhwp::model::control::Control;
 use rhwp::model::paragraph::{CharShapeRef, LineSeg, Paragraph};
 use rhwp::model::style::Alignment;
+use rhwp::model::table::{Cell, Table, VerticalAlign};
 use rhwp::paint::{LayerNode, LayerNodeKind, PaintOp, TextVariantKind};
 #[cfg(not(target_arch = "wasm32"))]
 use rhwp::renderer::canvaskit_policy::{analyze_canvaskit_replay_plan, CanvasKitReplayMode};
@@ -10,6 +12,7 @@ use rhwp::renderer::canvaskit_policy::{analyze_canvaskit_replay_plan, CanvasKitR
 use rhwp::renderer::layer_renderer::{
     analyze_text_variant_selection, TextVariantSelectionOptions, VariantSelectionBackend,
 };
+use rhwp::renderer::render_tree::{RenderNode, RenderNodeType};
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen_test::wasm_bindgen_test;
 
@@ -17,6 +20,7 @@ const SOURCE_HAN: &[u8] =
     include_bytes!("../../ttfs/opensource/SourceHanSerifK-OldHangul-subset.otf");
 const HAPPINESS: &[u8] =
     include_bytes!("../../ttfs/redistributable/happiness-sans/HappinessSansVF.ttf");
+const NOTO: &[u8] = include_bytes!("../../ttfs/opensource/NotoSansKR-Regular.ttf");
 // `ᄒᆞᆫ글`은 legacy 제품명 display projection 대상이므로 최초 direct-text lane의
 // 양성 fixture로 쓰지 않는다. 이 문자열은 같은 옛한글 자모 shaping을 요구하지만
 // model text와 replay text가 동일하다.
@@ -114,6 +118,198 @@ fn collect_text_ops<'a>(node: &'a LayerNode, ops: &mut Vec<&'a PaintOp>) {
             )
         })),
     }
+}
+
+fn bounded_vertical_table_core(register_exact_source: bool) -> DocumentCore {
+    let mut core = DocumentCore::new_empty();
+    core.create_blank_document_native()
+        .expect("public blank HWP5 template");
+    let mut document = core.document().clone();
+    let mut char_shape = document.doc_info.char_shapes[0].clone();
+    char_shape.raw_data = None;
+    char_shape.base_size = 1_000;
+    char_shape.ratios = [100; 7];
+    char_shape.spacings = [0; 7];
+    char_shape.bold = false;
+    char_shape.italic = false;
+    char_shape.kerning = false;
+    char_shape.border_fill_id = 0;
+    let char_shape_id = document.doc_info.char_shapes.len() as u32;
+    document.doc_info.char_shapes.push(char_shape);
+
+    let mut cell_para = Paragraph::new_empty();
+    cell_para.text = "한글".to_string();
+    cell_para.char_count = 2;
+    cell_para.char_offsets = vec![0, 1];
+    cell_para.char_shapes = vec![CharShapeRef {
+        start_pos: 0,
+        char_shape_id,
+    }];
+    cell_para.line_segs = vec![LineSeg {
+        text_start: 0,
+        vertical_pos: 0,
+        line_height: 1_500,
+        text_height: 1_000,
+        baseline_distance: 1_000,
+        line_spacing: 0,
+        column_start: 0,
+        segment_width: 18_000,
+        tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
+    }];
+    let cell = Cell {
+        row: 0,
+        col: 0,
+        row_span: 1,
+        col_span: 1,
+        width: 12_000,
+        height: 20_000,
+        paragraphs: vec![cell_para],
+        text_direction: 2,
+        vertical_align: VerticalAlign::Top,
+        ..Default::default()
+    };
+    let mut table = Table {
+        row_count: 1,
+        col_count: 1,
+        cells: vec![cell],
+        ..Default::default()
+    };
+    table.common.width = 12_000;
+    table.common.height = 20_000;
+    table.common.treat_as_char = true;
+    let mut host = Paragraph::new_empty();
+    host.controls.push(Control::Table(Box::new(table)));
+    host.line_segs = vec![LineSeg {
+        text_start: 0,
+        vertical_pos: 0,
+        line_height: 20_000,
+        text_height: 1_000,
+        baseline_distance: 1_000,
+        line_spacing: 0,
+        column_start: 0,
+        segment_width: 48_000,
+        tag: LineSeg::TAG_SINGLE_SEGMENT_LINE,
+    }];
+    document.sections[0].paragraphs = vec![host];
+    core.set_document(document);
+    if register_exact_source {
+        core.register_exact_font_source_native(char_shape_id, 0, NOTO, 0)
+            .expect("register public Noto exact source");
+    }
+    core
+}
+
+fn vertical_text_line_child_counts(node: &RenderNode, counts: &mut Vec<usize>) {
+    if matches!(node.node_type, RenderNodeType::TextLine(_)) {
+        let vertical_children = node
+            .children
+            .iter()
+            .filter(|child| {
+                matches!(
+                    &child.node_type,
+                    RenderNodeType::TextRun(run) if run.is_vertical && (run.text == "한" || run.text == "글")
+                )
+            })
+            .count();
+        if vertical_children > 0 {
+            counts.push(vertical_children);
+        }
+    }
+    for child in &node.children {
+        vertical_text_line_child_counts(child, counts);
+    }
+}
+
+fn collect_vertical_line_geometry(
+    node: &RenderNode,
+    geometry: &mut Vec<(
+        rhwp::renderer::render_tree::BoundingBox,
+        Vec<rhwp::renderer::render_tree::BoundingBox>,
+    )>,
+) {
+    if matches!(node.node_type, RenderNodeType::TextLine(_)) {
+        let runs = node
+            .children
+            .iter()
+            .filter_map(|child| match &child.node_type {
+                RenderNodeType::TextRun(run) if run.is_vertical => Some(child.bbox),
+                _ => None,
+            })
+            .collect::<Vec<_>>();
+        if !runs.is_empty() {
+            geometry.push((node.bbox, runs));
+        }
+    }
+    for child in &node.children {
+        collect_vertical_line_geometry(child, geometry);
+    }
+}
+
+fn assert_bbox(actual: rhwp::renderer::render_tree::BoundingBox, expected: (f64, f64, f64, f64)) {
+    let (x, y, width, height) = expected;
+    assert!((actual.x - x).abs() <= 1.0e-9, "x: {actual:?}");
+    assert!((actual.y - y).abs() <= 1.0e-9, "y: {actual:?}");
+    assert!((actual.width - width).abs() <= 1.0e-9, "width: {actual:?}");
+    assert!(
+        (actual.height - height).abs() <= 1.0e-9,
+        "height: {actual:?}"
+    );
+}
+
+#[test]
+fn issue_4969_q4_d2_target_commits_one_line_while_no_source_keeps_legacy_tree() {
+    let target = bounded_vertical_table_core(true)
+        .build_page_render_tree(0)
+        .expect("build D2 target page tree");
+    let mut target_geometry = Vec::new();
+    collect_vertical_line_geometry(&target.root, &mut target_geometry);
+    assert_eq!(target_geometry.len(), 1);
+    assert_bbox(
+        target_geometry[0].0,
+        (
+            257.92,
+            132.98666666666668,
+            11.133333333333326,
+            25.24000000000001,
+        ),
+    );
+    assert_eq!(target_geometry[0].1.len(), 2);
+    assert_bbox(
+        target_geometry[0].1[0],
+        (
+            257.94666666666666,
+            132.98666666666668,
+            11.106666666666683,
+            11.786666666666662,
+        ),
+    );
+    assert_bbox(
+        target_geometry[0].1[1],
+        (
+            257.92,
+            146.82666666666668,
+            10.933333333333337,
+            11.400000000000006,
+        ),
+    );
+    let mut target_counts = Vec::new();
+    vertical_text_line_child_counts(&target.root, &mut target_counts);
+    assert_eq!(
+        target_counts,
+        vec![2],
+        "one shaped owner line, two fallback runs"
+    );
+
+    let control = bounded_vertical_table_core(false)
+        .build_page_render_tree(0)
+        .expect("build no-source legacy control");
+    let mut control_counts = Vec::new();
+    vertical_text_line_child_counts(&control.root, &mut control_counts);
+    assert_eq!(
+        control_counts,
+        vec![1, 1],
+        "failed target preparation must preserve the legacy per-character tree"
+    );
 }
 
 #[test]
