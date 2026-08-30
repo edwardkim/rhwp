@@ -4319,6 +4319,7 @@ impl LayoutEngine {
         paragraphs: &[Paragraph],
         styles: &ResolvedStyleSet,
         preserve_cell_padding: bool,
+        line_wrap_squeeze: bool,
     ) -> (f64, f64) {
         // [#2279 axis B] 규칙 본체는 composer::shrunk_cell_horizontal_padding 로 이동 —
         // cut(cell_units)/mt(HeightMeasurer) 측정과 단일 출처 공유 (규칙이 갈리면
@@ -4331,6 +4332,7 @@ impl LayoutEngine {
             paragraphs,
             styles,
             preserve_cell_padding,
+            line_wrap_squeeze,
             self.dpi,
         )
     }
@@ -6961,6 +6963,7 @@ impl LayoutEngine {
                 &cell.paragraphs,
                 styles,
                 preserve_explicit_horizontal_padding,
+                cell.line_wrap == crate::model::table::CELL_LINE_WRAP_SQUEEZE,
             );
             pad_left = new_pl;
             pad_right = new_pr;
@@ -15412,6 +15415,7 @@ mod row_cut_tests {
             &paragraphs,
             &styles,
             false,
+            false,
         );
         assert!(
             shrunk.0 < 20.0 || shrunk.1 < 20.0,
@@ -15426,11 +15430,30 @@ mod row_cut_tests {
             &paragraphs,
             &styles,
             true,
+            false,
         );
         assert_eq!(
             preserved,
             (20.0, 20.0),
             "안 여백 지정 셀은 한컴처럼 입력한 좌우 여백을 렌더링에서도 보존해야 함"
+        );
+
+        // [#6145] "한 줄로 입력" 칸은 aim=false 여도 여백을 깎지 않는다 —
+        // 한/글은 여백 대신 자간을 줄여 글자를 안쪽 폭에 맞춘다.
+        let squeezed = eng.shrink_cell_padding_for_overflow(
+            20.0,
+            20.0,
+            30.0,
+            &composed,
+            &paragraphs,
+            &styles,
+            false,
+            true,
+        );
+        assert_eq!(
+            squeezed,
+            (20.0, 20.0),
+            "lineWrap=SQUEEZE 칸은 넘쳐도 좌우 안 여백을 보존해야 함: {squeezed:?}"
         );
     }
 

@@ -2632,6 +2632,7 @@ pub(crate) fn shrunk_cell_horizontal_padding(
     paragraphs: &[Paragraph],
     styles: &ResolvedStyleSet,
     preserve_cell_padding: bool,
+    line_wrap_squeeze: bool,
     dpi: f64,
 ) -> (f64, f64) {
     // 하한선을 먼저 적용한다. `preserve_cell_padding`(aim=true) 은 "저장된 안 여백을
@@ -2640,6 +2641,17 @@ pub(crate) fn shrunk_cell_horizontal_padding(
     let (pad_left, pad_right) = floored_cell_line_width_padding(pad_left, pad_right, cell_w, dpi);
 
     if preserve_cell_padding {
+        return (pad_left, pad_right);
+    }
+
+    // [#6145] **"한 줄로 입력"(`lineWrap=SQUEEZE`) 칸은 안 여백을 깎지 않는다.**
+    //
+    // 이 규칙은 "글자가 넘치면 여백을 1px 까지 내주어 자리를 만든다"는 뜻인데, SQUEEZE
+    // 칸에서 한/글이 하는 일은 정반대다 — 여백은 그대로 두고 **자간을 줄여** 글자를
+    // 안쪽 폭에 밀어 넣는다. 156607916 6쪽 마지막 열이 그 예로, 저장 lineseg 가
+    // `horzsize=9340`(=93.40pt)를 못박아 두었는데도 여백을 깎아 97.56pt 를 내주는 바람에
+    // 자간이 덜 줄고 글자가 우측 괘선 밖 +0.69pt 로 나갔다(한/글은 −3.02pt 안쪽).
+    if line_wrap_squeeze {
         return (pad_left, pad_right);
     }
 
