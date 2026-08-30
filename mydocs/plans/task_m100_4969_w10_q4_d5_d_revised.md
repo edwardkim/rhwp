@@ -6,7 +6,8 @@
 - **기계 판독 계획**:
   [`w10_q4_d5_d_execution_plan.json`](../tech/investigations/issue-4969/w10_q4_d5_d_execution_plan.json)
 - **작성일**: 2026-08-31 KST
-- **상태**: 다음 절편 구현 자동 승인
+- **계획 checkpoint**: `e866bc0b8`
+- **상태**: clean-room causal WASM 계측 완료·`qualified-bounded-subset` 결과 자동 승인
 - **제품 변경**: 없음 — disposable A축과 계측·보고만 수행
 
 ## 1. 목적
@@ -101,7 +102,9 @@ build wall time은 cache·열 상태가 달라 성능 결론으로 사용하지 
 - 결과 문서와 기계 판독 JSON만 별도 checkpoint로 커밋한다.
 - push·PR·GitHub comment는 결과 checkpoint와 분리한다.
 
-## 다음 경계
+## 결과
 
-메인테이너가 다음 절편 구현을 승인했고, 야간 자동 승인 지시에 따라 이 수정 수행계획과 plan checkpoint를
-자동 승인한다. checkpoint 뒤에만 disposable A 구성과 Docker A/B 계측을 시작한다.
+[D5-D 결과 보고서](../working/task_m100_4969_w10_q4_d5_d.md)에 따라 source-only A 구성과 동일 Docker image의
+A/B 빌드가 모든 hard gate를 통과했다. causal WASM delta는 +36,611 bytes, A 대비 +0.371371668%이며
+Q4-D 최종 분류를 `qualified-bounded-subset`으로 갱신한다. 결과 checkpoint 뒤 최신 `upstream/devel`을 다시
+확인하며 push·PR·GitHub comment는 별도 경계로 유지한다.

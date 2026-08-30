@@ -4,7 +4,7 @@
   "issue": 4969,
   "stage": "W10-Q4-D5-D",
   "date": "2026-08-31",
-  "status": "implementation-approved-automatic",
+  "status": "qualified-clean-room-causal-wasm-result-approved-automatic",
   "planApproved": true,
   "productMutation": false,
   "baselineClassification": "blocked",
@@ -71,5 +71,16 @@
   },
   "classificationOnSuccess": "qualified-bounded-subset",
   "classificationOnFailure": "blocked",
-  "next": "checkpoint-plan-then-construct-clean-room-A"
+  "resultEvidence": "mydocs/tech/investigations/issue-4969/w10_q4_d5_d_causal_wasm_result.json",
+  "result": {
+    "aBytes": 9858318,
+    "bBytes": 9894929,
+    "bMinusABytes": 36611,
+    "bMinusAPercentOfA": 0.37137166806751415,
+    "sameDockerImage": true,
+    "separateVolumes": true,
+    "hardGate": "available"
+  },
+  "finalClassification": "qualified-bounded-subset",
+  "next": "checkpoint-qualified-result-then-refresh-upstream-before-submission"
 }
