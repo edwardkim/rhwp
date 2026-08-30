@@ -14,8 +14,15 @@ use crate::model::table::{Table, TablePageBreak};
 
 /// [#6299] 같은 `vertical_pos` 를 공유하는 LINE_SEG 는 한 줄의 가로 조각
 /// (어울림 개체 좌·우). 높이 회계에서는 이어지는 두 번째 이후 조각을 건너뛴다.
+///
+/// `vertical_pos` 만 같으면 건너뛰지 않는다. HWP3 와 페이지 분할 픽스처는
+/// 모든 줄의 `vertical_pos` 가 0 이고, 그 경우 줄마다 높이를 더해야 한다.
+/// 가로 조각은 `column_start` 가 갈라진다.
 fn is_same_vertpos_wrap_fragment(segs: &[LineSeg], idx: usize) -> bool {
-    idx > 0 && idx < segs.len() && segs[idx].vertical_pos == segs[idx - 1].vertical_pos
+    idx > 0
+        && idx < segs.len()
+        && segs[idx].vertical_pos == segs[idx - 1].vertical_pos
+        && segs[idx].column_start != segs[idx - 1].column_start
 }
 
 /// 합성 줄이 저장 LINE_SEG 와 1:1 일 때만 조각 건너뛰기를 적용한다.
@@ -40,8 +47,10 @@ fn is_last_visual_line_for_cell_height(
     }
     segs.get(line_idx + 1..)
         .map(|rest| {
-            rest.iter()
-                .all(|s| s.vertical_pos == segs[line_idx].vertical_pos)
+            rest.iter().all(|s| {
+                s.vertical_pos == segs[line_idx].vertical_pos
+                    && s.column_start != segs[line_idx].column_start
+            })
         })
         .unwrap_or(true)
 }
