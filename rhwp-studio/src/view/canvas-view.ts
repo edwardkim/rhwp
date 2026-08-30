@@ -3,6 +3,15 @@ import { EventBus } from '@/core/event-bus';
 import type { PageInfo } from '@/core/types';
 import { VirtualScroll } from './virtual-scroll';
 import { CanvasPool } from './canvas-pool';
+import {
+  PageSurfaceLru,
+  pageSurfaceCacheKey,
+  quantizeRenderScaleTier,
+} from './page-surface-lru';
+import {
+  PageRenderScheduler,
+  syncVisibleRenderBudget,
+} from './page-render-scheduler';
 import { PageRenderer, type PageRenderContext, type PageRenderResult } from './page-renderer';
 import { ViewportManager } from './viewport-manager';
 import { CoordinateSystem } from './coordinate-system';
@@ -75,6 +84,11 @@ export class CanvasView {
   private textEditStaticLayerVerifyTimers = new Map<number, ReturnType<typeof setTimeout>>();
   private pendingPrefetchPages = new Set<number>();
   private deferredPrefetchTask: DeferredPrefetchTask | null = null;
+  private pageSurfaceLru = new PageSurfaceLru();
+  private pageRenderScheduler = new PageRenderScheduler();
+  private lastScrollY = 0;
+  private scrollDirection: 1 | -1 = 1;
+  private firstVisiblePaintDone = false;
   private rendererSelectionEpoch = 0;
   private rendererFallbackScheduled = false;
   private activeRendererDecisionKey: string | null = null;
@@ -199,6 +213,7 @@ export class CanvasView {
 
     this.container.scrollTop = 0;
     this.lastPageSize = { width: this.pages[0].width, height: this.pages[0].height };
+    this.firstVisiblePaintDone = false;
     this.updateVisiblePages();
     this.clearBlankPagePlaceholder();
     // 초기 replay가 예약한 document fallback을 load 완료 전에 확정한다.
@@ -306,12 +321,12 @@ export class CanvasView {
     const scrollY = this.viewportManager.getScrollY();
     const scrollX = this.viewportManager.getScrollX();
     const viewport = this.viewportManager.getViewportSize();
-    const visiblePages = this.virtualScroll.getVisiblePages(
+    const visiblePages = this.virtualScroll.getVisibilitySnapshot(
       scrollY,
       viewport.height,
       scrollX,
       viewport.width,
-    );
+    ).visiblePages;
     const failed = visiblePages.filter(pageIndex => !this.canvasPool.has(pageIndex));
     if (visiblePages.length === 0 || failed.length > 0) {
       throw new Error(`document-agent visible page render 실패: ${failed.join(',') || 'none'}`);
@@ -475,45 +490,119 @@ export class CanvasView {
     const scrollX = this.viewportManager.getScrollX();
     const { width: vpWidth, height: vpHeight } = this.viewportManager.getViewportSize();
 
-    const prefetchPages = this.virtualScroll.getPrefetchPages(
-      scrollY,
-      vpHeight,
-      scrollX,
-      vpWidth,
-    );
-    const visiblePages = this.virtualScroll.getVisiblePages(
-      scrollY,
-      vpHeight,
-      scrollX,
-      vpWidth,
-    );
-    const visibleSet = new Set(visiblePages);
-
-    // 벗어난 페이지 해제
-    const prefetchSet = new Set(prefetchPages);
-    for (const pageIdx of this.canvasPool.activePages) {
-      if (!prefetchSet.has(pageIdx)) {
-        this.cancelPendingTextEditRefresh(pageIdx);
-        this.cancelTextEditStaticLayerVerification(pageIdx);
-        this.pageRenderer.cancelReRender(pageIdx);
-        this.pageRenderer.removePageLayers(this.scrollContent, pageIdx);
-        this.pageRenderer.releasePageDiagnostics(pageIdx);
-        this.removeGridOverlay(pageIdx);
-        this.canvasPool.release(pageIdx);
-      }
+    if (scrollY !== this.lastScrollY) {
+      this.scrollDirection = scrollY > this.lastScrollY ? 1 : -1;
+      this.lastScrollY = scrollY;
     }
 
-    // 현재 보이는 페이지는 즉시 렌더한다. 인접 페이지는 스크롤 입력 뒤에 처리한다.
+    const snapshot = this.virtualScroll.getVisibilitySnapshot(
+      scrollY,
+      vpHeight,
+      scrollX,
+      vpWidth,
+    );
+    const work = this.virtualScroll.getWorkSet(snapshot, this.scrollDirection);
+    const visiblePages = snapshot.visiblePages;
+    const prefetchPages = work.prefetch;
+    const visibleSet = new Set(visiblePages);
+    this.currentVisiblePages = visiblePages;
+    const epoch = this.pageRenderScheduler.beginFrame();
+    this.cancelPendingPrefetch();
+
+    const protect = new Set(visiblePages);
+    this.pageSurfaceLru.evictToBudget(
+      (pageIdx) => this.releaseRenderedPage(pageIdx),
+      protect,
+    );
+
+    const missingVisible: number[] = [];
     for (const pageIdx of visiblePages) {
       this.pendingPrefetchPages.delete(pageIdx);
-      if (!this.canvasPool.has(pageIdx)) {
-        this.renderPage(pageIdx);
-      }
+      if (!this.isSurfaceCacheHit(pageIdx)) missingVisible.push(pageIdx);
     }
+
+    const budget = this.firstVisiblePaintDone
+      ? syncVisibleRenderBudget(this.virtualScroll.getColumns(), missingVisible.length)
+      : missingVisible.length <= 2
+        ? missingVisible.length
+        : syncVisibleRenderBudget(this.virtualScroll.getColumns(), missingVisible.length);
+    const syncPages = missingVisible.slice(0, budget);
+    const deferredVisible = missingVisible.slice(budget);
+    for (const pageIdx of syncPages) {
+      this.renderRetainedPage(pageIdx);
+    }
+    if (syncPages.length > 0 || missingVisible.length === 0) {
+      this.firstVisiblePaintDone = true;
+    }
+    if (deferredVisible.length > 0) {
+      this.pageRenderScheduler.scheduleVisible(deferredVisible, epoch, (pageIdx) => {
+        if (!this.isSurfaceCacheHit(pageIdx)) this.renderRetainedPage(pageIdx);
+      });
+    }
+
     this.schedulePrefetchPages(prefetchPages.filter((pageIdx) => !visibleSet.has(pageIdx)));
 
-    this.currentVisiblePages = visiblePages;
     this.updateActivePageSnapshot();
+  }
+
+  private surfaceCacheKeyFor(pageIdx: number): string {
+    const pageInfo = this.pages[pageIdx];
+    const zoom = this.viewportManager.getZoom();
+    const rawDpr = (typeof window !== 'undefined' && window.devicePixelRatio) || 1;
+    const scale = pageInfo ? clampRenderScale(pageInfo, zoom * rawDpr) : zoom;
+    const backend = this.pageRenderer.getBackend();
+    const revision = this.rendererSession.diagnostics()?.documentRevision ?? 0;
+    return pageSurfaceCacheKey({
+      pageIdx,
+      revision,
+      backend,
+      renderScaleTier: quantizeRenderScaleTier(scale),
+    });
+  }
+
+  private isSurfaceCacheHit(pageIdx: number): boolean {
+    if (!this.canvasPool.has(pageIdx)) return false;
+    return this.pageSurfaceLru.touch(pageIdx, this.surfaceCacheKeyFor(pageIdx));
+  }
+
+  private renderRetainedPage(pageIdx: number): void {
+    const key = this.surfaceCacheKeyFor(pageIdx);
+    const existing = this.canvasPool.getCanvas(pageIdx);
+    if (existing && this.pageSurfaceLru.has(pageIdx, key)) return;
+    if (existing) {
+      if (!this.renderCanvas(pageIdx, existing)) {
+        this.releaseRenderedPage(pageIdx);
+        return;
+      }
+    } else {
+      this.renderPage(pageIdx);
+    }
+    this.rememberSurface(pageIdx);
+  }
+
+  private rememberSurface(pageIdx: number): void {
+    const canvas = this.canvasPool.getCanvas(pageIdx);
+    if (!canvas) return;
+    this.pageSurfaceLru.put(
+      pageIdx,
+      this.surfaceCacheKeyFor(pageIdx),
+      Math.max(1, canvas.width) * Math.max(1, canvas.height),
+      (victim) => {
+        if (victim !== pageIdx) this.releaseRenderedPage(victim);
+      },
+      new Set(this.currentVisiblePages),
+    );
+  }
+
+  private releaseRenderedPage(pageIdx: number): void {
+    this.cancelPendingTextEditRefresh(pageIdx);
+    this.cancelTextEditStaticLayerVerification(pageIdx);
+    this.pageRenderer.cancelReRender(pageIdx);
+    this.pageRenderer.removePageLayers(this.scrollContent, pageIdx);
+    this.pageRenderer.releasePageDiagnostics(pageIdx);
+    this.removeGridOverlay(pageIdx);
+    this.canvasPool.release(pageIdx);
+    this.pageSurfaceLru.remove(pageIdx);
   }
 
   private pageIndexFromPayload(payload: unknown): number | null {
@@ -572,17 +661,21 @@ export class CanvasView {
       if (!candidateSet.has(pageIdx)) this.pendingPrefetchPages.delete(pageIdx);
     }
     for (const pageIdx of pageIndices) {
-      if (!this.canvasPool.has(pageIdx)) this.pendingPrefetchPages.add(pageIdx);
+      if (!this.isSurfaceCacheHit(pageIdx)) this.pendingPrefetchPages.add(pageIdx);
     }
     if (this.pendingPrefetchPages.size === 0 || this.deferredPrefetchTask !== null) return;
+    this.armPrefetchCallback();
+  }
 
+  private armPrefetchCallback(): void {
     const run = () => {
       this.deferredPrefetchTask = null;
-      const pages = Array.from(this.pendingPrefetchPages);
-      this.pendingPrefetchPages.clear();
-      for (const pageIdx of pages) {
-        if (!this.canvasPool.has(pageIdx)) this.renderPage(pageIdx);
-      }
+      const next = this.pendingPrefetchPages.values().next();
+      if (next.done) return;
+      const pageIdx = next.value;
+      this.pendingPrefetchPages.delete(pageIdx);
+      if (!this.isSurfaceCacheHit(pageIdx)) this.renderRetainedPage(pageIdx);
+      if (this.pendingPrefetchPages.size > 0) this.armPrefetchCallback();
     };
     const idleWindow = window as IdleCallbackWindow;
     if (typeof idleWindow.requestIdleCallback === 'function') {
@@ -599,6 +692,7 @@ export class CanvasView {
   }
 
   private cancelPendingPrefetch(): void {
+    this.pageRenderScheduler.cancelVisible();
     const task = this.deferredPrefetchTask;
     this.deferredPrefetchTask = null;
     this.pendingPrefetchPages.clear();
@@ -1078,6 +1172,7 @@ export class CanvasView {
     if (hadActivePage) this.eventBus.emit('active-page-changed', null);
     if (hadFocusedPage) this.eventBus.emit('focused-page-changed', null);
     this.pages = [];
+    this.firstVisiblePaintDone = false;
     this.scrollContent.replaceChildren();
     this.blankPagePlaceholder = null;
   }
@@ -1087,6 +1182,7 @@ export class CanvasView {
     this.pageRenderer.removeAllPageLayers(this.scrollContent);
     this.removeAllGridOverlays();
     this.canvasPool.releaseAll();
+    this.pageSurfaceLru.clear();
   }
 
   private refreshGridOverlays(): void {

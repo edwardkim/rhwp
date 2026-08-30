@@ -110,7 +110,7 @@ test('가로 쪽 이동은 배치와 함께 한 번에 전환하고 가로 가�
   );
   assert.match(
     canvasViewSource,
-    /getVisiblePages\([\s\S]*?scrollX,[\s\S]*?vpWidth/,
+    /getVisibilitySnapshot\([\s\S]*?scrollX,[\s\S]*?vpWidth/,
   );
   const method = classMethodSource('setPageViewSettings', 'getViewportManager');
   assert.match(method, /resolvePageViewSettings/);

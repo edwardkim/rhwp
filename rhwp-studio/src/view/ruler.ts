@@ -1,7 +1,7 @@
 import { EventBus } from '@/core/event-bus';
 import { WasmBridge } from '@/core/wasm-bridge';
 import type { ParaProperties } from '@/core/types';
-import { VirtualScroll } from './virtual-scroll';
+import { uniqueRowIndices, VirtualScroll } from './virtual-scroll';
 import { ViewportManager } from './viewport-manager';
 import {
   horizontalPinCommit,
@@ -709,7 +709,21 @@ export class Ruler {
 
     // 가로 눈금자와 같은 마지막 편집 focus 쪽 한 장만 그린다. 저배율에서 보이는 모든
     // 페이지의 숫자를 반복하면 세로 눈금자가 다시 한 덩어리로 뭉치고 #6107 focus 계약도 깨진다.
-    const pageIdx = activePageIdx;
+    // 그리드의 같은 visible row는 열 수만큼 반복하지 않는다 (#6042).
+    const snapshot = this.virtualScroll.peekVisibilitySnapshot();
+    const candidatePages = snapshot && snapshot.visiblePages.length > 0
+      ? snapshot.visiblePages
+      : [activePageIdx];
+    const visibleRowsOnce = uniqueRowIndices(
+      candidatePages.map((page) => this.virtualScroll.getPageRow(page)),
+    );
+    const focusedRow = this.virtualScroll.getPageRow(activePageIdx);
+    let pageIdx = activePageIdx;
+    for (const row of visibleRowsOnce) {
+      if (row !== focusedRow) continue;
+      pageIdx = activePageIdx;
+      break;
+    }
     this.vPins = [];
     // 격자 보기: 같은 행의 쪽들이 같은 y를 공유해 핀이 겹친다 (가로 눈금자와 같은 이유).
     const gridMode = this.virtualScroll.isGridMode();

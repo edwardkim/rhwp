@@ -15,6 +15,49 @@ const PAN_SPACE_RATIO = 0.25;
 const MIN_PAN_SPACE = 80;
 const MAX_PAN_SPACE = 240;
 
+export interface VisibilitySnapshot {
+  scrollY: number;
+  scrollX: number;
+  viewportHeight: number;
+  viewportWidth: number;
+  visiblePages: number[];
+  prefetchPages: number[];
+  visibleRows: number[];
+  firstVisibleRow: number;
+  lastVisibleRow: number;
+  probedRows: number;
+  probedPages: number;
+  computed: boolean;
+}
+
+export interface ViewportWorkSet {
+  visible: number[];
+  prefetch: number[];
+}
+
+/** 같은 행을 열 수만큼 반복하지 않는다. */
+export function uniqueRowIndices(rows: readonly number[]): number[] {
+  const seen = new Set<number>();
+  const out: number[] = [];
+  for (const row of rows) {
+    if (seen.has(row)) continue;
+    seen.add(row);
+    out.push(row);
+  }
+  return out;
+}
+
+function lowerBound(length: number, pred: (index: number) => boolean): number {
+  let lo = 0;
+  let hi = length;
+  while (lo < hi) {
+    const mid = (lo + hi) >> 1;
+    if (pred(mid)) hi = mid;
+    else lo = mid + 1;
+  }
+  return lo;
+}
+
 export class VirtualScroll {
   private pageOffsets: number[] = [];
   private pageHeights: number[] = [];
@@ -23,12 +66,17 @@ export class VirtualScroll {
   private pageRows: number[] = [];
   private pageColumns: number[] = [];
   private rowPages: number[][] = [];
+  private rowTops: number[] = [];
+  private rowHeights: number[] = [];
   private maxPageWidth = 0;
   private totalHeight = 0;
   private totalWidth = 0;
   private columns = 1;
   private gridMode = false;
   private horizontalMode = false;
+  private layoutGeneration = 0;
+  private lastSnapshot: VisibilitySnapshot | null = null;
+  private lastSnapshotKey = '';
   private readonly pageGapAt100Percent: number;
   private pageGap: number;
 
@@ -47,6 +95,9 @@ export class VirtualScroll {
     viewportHeight = 0,
   ): void {
     this.pageGap = resolvePageGap(zoom, this.pageGapAt100Percent);
+    this.layoutGeneration += 1;
+    this.lastSnapshot = null;
+    this.lastSnapshotKey = '';
     this.pageHeights = pages.map((p) => p.height * zoom);
     this.pageWidths = pages.map((p) => p.width * zoom);
     this.maxPageWidth = Math.max(...this.pageWidths, 0);
@@ -121,6 +172,8 @@ export class VirtualScroll {
       left += this.pageWidths[pageIdx] + this.pageGap;
     }
     this.totalWidth = Math.max(viewportWidth, innerWidth + marginLeft * 2);
+    this.rowTops = this.pageOffsets.length > 0 ? [Math.min(...this.pageOffsets)] : [];
+    this.rowHeights = this.pageHeights.length > 0 ? [Math.max(...this.pageHeights)] : [];
   }
 
   /** 단일 열 배치 (기존 동작) */
@@ -131,6 +184,8 @@ export class VirtualScroll {
     this.pageRows = [];
     this.pageColumns = [];
     this.rowPages = [];
+    this.rowTops = [];
+    this.rowHeights = [];
     let offset = this.pageGap;
     for (let i = 0; i < this.pageHeights.length; i++) {
       this.pageOffsets.push(offset);
@@ -138,6 +193,8 @@ export class VirtualScroll {
       this.pageRows.push(i);
       this.pageColumns.push(0);
       this.rowPages.push([i]);
+      this.rowTops.push(offset);
+      this.rowHeights.push(this.pageHeights[i]);
       offset += this.pageHeights[i] + this.pageGap;
     }
     this.totalHeight = offset;
@@ -179,6 +236,8 @@ export class VirtualScroll {
     this.pageRows = new Array(this.pageHeights.length).fill(0);
     this.pageColumns = new Array(this.pageHeights.length).fill(0);
     this.rowPages = [];
+    this.rowTops = [];
+    this.rowHeights = [];
 
     if (slots.length === 0) {
       this.totalHeight = 0;
@@ -212,6 +271,8 @@ export class VirtualScroll {
     }
 
     const lastRow = rowCount - 1;
+    this.rowTops = rowTops;
+    this.rowHeights = rowHeights;
     this.totalHeight = rowTops[lastRow] + rowHeights[lastRow] + gap;
     this.totalWidth = Math.max(gridWidth + marginLeft * 2, viewportWidth);
   }
@@ -263,28 +324,7 @@ export class VirtualScroll {
     scrollX = 0,
     viewportWidth = 0,
   ): number[] {
-    const vpTop = scrollY;
-    const vpBottom = scrollY + viewportHeight;
-    const vpLeft = scrollX;
-    const vpRight = viewportWidth > 0 ? scrollX + viewportWidth : Infinity;
-    const visible: number[] = [];
-
-    for (let i = 0; i < this.pageOffsets.length; i++) {
-      const pageTop = this.pageOffsets[i];
-      const pageBottom = pageTop + this.pageHeights[i];
-      const pageLeft = this.getPageLeftResolved(i, this.totalWidth);
-      const pageRight = pageLeft + this.pageWidths[i];
-
-      if (
-        pageTop < vpBottom
-        && pageBottom > vpTop
-        && pageLeft < vpRight
-        && pageRight > vpLeft
-      ) {
-        visible.push(i);
-      }
-    }
-    return visible;
+    return this.getVisibilitySnapshot(scrollY, viewportHeight, scrollX, viewportWidth).visiblePages;
   }
 
   /** 프리페치 대상 페이지 (visible 범위 ± 1행) */
@@ -294,27 +334,182 @@ export class VirtualScroll {
     scrollX = 0,
     viewportWidth = 0,
   ): number[] {
-    const visible = this.getVisiblePages(scrollY, viewportHeight, scrollX, viewportWidth);
-    if (visible.length === 0) return [];
+    return this.getVisibilitySnapshot(scrollY, viewportHeight, scrollX, viewportWidth).prefetchPages;
+  }
 
-    const prefetch = new Set(visible);
+  peekVisibilitySnapshot(): VisibilitySnapshot | null {
+    return this.lastSnapshot;
+  }
+
+  /**
+   * 같은 프레임의 CanvasView·쪽 표시·ruler가 공유하는 가시성 스냅샷.
+   * 행 인덱스 이진 탐색으로 계산하고, 같은 뷰포트 키면 재사용한다.
+   */
+  getVisibilitySnapshot(
+    scrollY: number,
+    viewportHeight: number,
+    scrollX = 0,
+    viewportWidth = 0,
+  ): VisibilitySnapshot {
+    const key = `${this.layoutGeneration}|${scrollY}|${viewportHeight}|${scrollX}|${viewportWidth}`;
+    if (this.lastSnapshot && this.lastSnapshotKey === key) {
+      return this.lastSnapshot.computed
+        ? { ...this.lastSnapshot, computed: false }
+        : this.lastSnapshot;
+    }
+    const snapshot = this.computeVisibilitySnapshot(scrollY, viewportHeight, scrollX, viewportWidth);
+    this.lastSnapshot = snapshot;
+    this.lastSnapshotKey = key;
+    return snapshot;
+  }
+
+  /** visible / 진행 방향 prefetch. retention은 표면 LRU가 담당한다. */
+  getWorkSet(snapshot: VisibilitySnapshot, direction: 1 | -1): ViewportWorkSet {
+    const visible = snapshot.visiblePages.slice();
+    const visibleSet = new Set(visible);
+    const extras = snapshot.prefetchPages.filter((pageIdx) => !visibleSet.has(pageIdx));
+    if (extras.length === 0) return { visible, prefetch: extras };
+
+    const firstVisible = visible[0] ?? 0;
+    const lastVisible = visible[visible.length - 1] ?? 0;
+    const toward = extras.filter((pageIdx) => (
+      direction >= 0 ? pageIdx >= lastVisible : pageIdx <= firstVisible
+    ));
+    const away = extras.filter((pageIdx) => !toward.includes(pageIdx));
+    return { visible, prefetch: toward.concat(away) };
+  }
+
+  getPageRow(pageIdx: number): number {
+    return this.pageRows[pageIdx] ?? 0;
+  }
+
+  getRowPageList(row: number): readonly number[] {
+    return this.rowPages[row] ?? [];
+  }
+
+  getRowCount(): number {
+    return this.rowTops.length;
+  }
+
+  private computeVisibilitySnapshot(
+    scrollY: number,
+    viewportHeight: number,
+    scrollX: number,
+    viewportWidth: number,
+  ): VisibilitySnapshot {
+    const empty: VisibilitySnapshot = {
+      scrollY,
+      scrollX,
+      viewportHeight,
+      viewportWidth,
+      visiblePages: [],
+      prefetchPages: [],
+      visibleRows: [],
+      firstVisibleRow: -1,
+      lastVisibleRow: -1,
+      probedRows: 0,
+      probedPages: 0,
+      computed: true,
+    };
+    if (this.pageOffsets.length === 0) return empty;
+
+    const vpTop = scrollY;
+    const vpBottom = scrollY + viewportHeight;
+    const vpLeft = scrollX;
+    const vpRight = viewportWidth > 0 ? scrollX + viewportWidth : Infinity;
+    let probedRows = 0;
+    let probedPages = 0;
+
+    const pageIntersects = (pageIdx: number): boolean => {
+      probedPages += 1;
+      const pageTop = this.pageOffsets[pageIdx];
+      const pageBottom = pageTop + this.pageHeights[pageIdx];
+      const pageLeft = this.getPageLeftResolved(pageIdx, this.totalWidth);
+      const pageRight = pageLeft + this.pageWidths[pageIdx];
+      return pageTop < vpBottom
+        && pageBottom > vpTop
+        && pageLeft < vpRight
+        && pageRight > vpLeft;
+    };
+
+    const visible: number[] = [];
+    const visibleRows: number[] = [];
+    let firstVisibleRow = -1;
+    let lastVisibleRow = -1;
 
     if (this.horizontalMode) {
-      const first = visible[0];
-      const last = visible[visible.length - 1];
-      if (first > 0) prefetch.add(first - 1);
-      if (last + 1 < this.pageCount) prefetch.add(last + 1);
-      return Array.from(prefetch).sort((a, b) => a - b);
+      const n = this.pageOffsets.length;
+      const first = lowerBound(n, (index) => {
+        probedPages += 1;
+        return (this.pageLefts[index] ?? 0) + (this.pageWidths[index] ?? 0) > vpLeft;
+      });
+      const lastExcl = lowerBound(n, (index) => {
+        probedPages += 1;
+        return (this.pageLefts[index] ?? 0) >= vpRight;
+      });
+      for (let pageIdx = first; pageIdx < lastExcl; pageIdx++) {
+        if (pageIntersects(pageIdx)) visible.push(pageIdx);
+      }
+      if (visible.length > 0) {
+        firstVisibleRow = 0;
+        lastVisibleRow = 0;
+        visibleRows.push(0);
+      }
+      probedRows += 1;
+    } else {
+      const rowCount = this.rowTops.length;
+      const firstRow = lowerBound(rowCount, (row) => {
+        probedRows += 1;
+        return this.rowTops[row] + this.rowHeights[row] > vpTop;
+      });
+      const lastRowExcl = lowerBound(rowCount, (row) => {
+        probedRows += 1;
+        return this.rowTops[row] >= vpBottom;
+      });
+      for (let row = firstRow; row < lastRowExcl; row++) {
+        let rowHasVisible = false;
+        for (const pageIdx of this.rowPages[row] ?? []) {
+          if (pageIntersects(pageIdx)) {
+            visible.push(pageIdx);
+            rowHasVisible = true;
+          }
+        }
+        if (rowHasVisible) {
+          visibleRows.push(row);
+          if (firstVisibleRow < 0) firstVisibleRow = row;
+          lastVisibleRow = row;
+        }
+      }
     }
 
-    const visibleRows = visible.map((pageIdx) => this.pageRows[pageIdx] ?? 0);
-    const firstRow = Math.min(...visibleRows);
-    const lastRow = Math.max(...visibleRows);
-    for (const row of [firstRow - 1, lastRow + 1]) {
-      for (const pageIdx of this.rowPages[row] ?? []) prefetch.add(pageIdx);
+    const prefetch = new Set(visible);
+    if (visible.length > 0) {
+      if (this.horizontalMode) {
+        const first = visible[0];
+        const last = visible[visible.length - 1];
+        if (first > 0) prefetch.add(first - 1);
+        if (last + 1 < this.pageCount) prefetch.add(last + 1);
+      } else {
+        for (const row of [firstVisibleRow - 1, lastVisibleRow + 1]) {
+          for (const pageIdx of this.rowPages[row] ?? []) prefetch.add(pageIdx);
+        }
+      }
     }
 
-    return Array.from(prefetch).sort((a, b) => a - b);
+    return {
+      scrollY,
+      scrollX,
+      viewportHeight,
+      viewportWidth,
+      visiblePages: visible,
+      prefetchPages: Array.from(prefetch).sort((a, b) => a - b),
+      visibleRows,
+      firstVisibleRow,
+      lastVisibleRow,
+      probedRows,
+      probedPages,
+      computed: true,
+    };
   }
 
   /** 특정 문서 Y 좌표가 속하는 페이지 인덱스를 반환한다 */
@@ -329,12 +524,14 @@ export class VirtualScroll {
    */
   getPageAtY(docY: number): number {
     if (this.horizontalMode) return 0;
-    for (let i = this.pageOffsets.length - 1; i >= 0; i--) {
-      if (docY >= this.pageOffsets[i]) {
-        return i;
-      }
-    }
-    return 0;
+    const pages = this.rowPages[this.rowIndexAtY(docY)];
+    return pages && pages.length > 0 ? pages[pages.length - 1] : 0;
+  }
+
+  private rowIndexAtY(docY: number): number {
+    if (this.rowTops.length === 0) return 0;
+    const firstPast = lowerBound(this.rowTops.length, (row) => this.rowTops[row] > docY);
+    return Math.max(0, firstPast - 1);
   }
 
   /**
