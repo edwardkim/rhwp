@@ -1387,7 +1387,7 @@ fn is_render_inline_control(ctrl: &Control) -> bool {
     }
 }
 
-fn find_render_inline_control_positions(para: &Paragraph) -> Vec<usize> {
+pub(crate) fn find_render_inline_control_positions(para: &Paragraph) -> Vec<usize> {
     if para.text.is_empty() && para.char_offsets.is_empty() {
         let mut inline_seen = 0usize;
         let mut positions = Vec::with_capacity(para.controls.len());
