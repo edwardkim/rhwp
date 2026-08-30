@@ -883,7 +883,20 @@ fn compose_lines(para: &Paragraph) -> Vec<ComposedLine> {
         );
 
         // 강제 줄넘김(\n) + TAC 표 문단 처리 (Task #19/Task #20)
-        let newline_pos = line_text.find('\n');
+        //
+        // [#6300] `\n` 이 이 줄의 **마지막 글자**면 저장 사다리가 이미 거기서 끊어
+        // 둔 것이라 분할 대상이 아니다. Task #19/20 이 겨냥한 형상은 한 줄 안에서
+        // `\n` 이 텍스트와 표를 가르는 것인데, 문단 끝이 `… \n [인라인 개체]` 이면
+        // `\n` 은 그 줄의 끝이고 개체는 **다음 seg** 가 이미 갖고 있다.
+        //
+        // 그런데도 분할하면 이 줄의 앞부분이 **이전 줄에 합쳐지고** 그 자리에 빈 줄이
+        // 남아, 줄 하나가 비고 다음 줄이 두 줄 분량을 받는다 — 156464313 17쪽 실측:
+        // 저장 경계 [0,45,83,119,152] 가 [0,45,83,83] 로 무너져 69자 줄이 본문 우단을
+        // 47.6pt 넘겼다. 문서 전수에서 `\n` 뒤 인라인 개체 문단 7개 ↔ 우단 초과 쪽
+        // 7개가 정확히 일치한다.
+        let newline_pos = line_text
+            .find('\n')
+            .filter(|&nl_pos| line_text[nl_pos..].chars().nth(1).is_some());
         if let (true, Some(nl_pos)) = (has_tac, newline_pos) {
             let pre_text: String = line_text.chars().take(nl_pos).collect();
             let pre_end = text_start + nl_pos;
