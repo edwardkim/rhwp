@@ -832,6 +832,7 @@ export class CanvasView {
           pageIndex,
           width: page.width,
           height: page.height,
+          layerCount: this.pageRenderer.getCanvasSurfaceLayerCount(pageIndex),
           visible: visibleSet.has(pageIndex),
           focused: this.editingPageIndex === pageIndex,
           distanceFromFocus: Math.abs(pageIndex - focusPage),
@@ -867,6 +868,7 @@ export class CanvasView {
       } else {
         // 가시성만 바뀐 페이지는 다시 raster하지 않고 진단값만 현재 plan에 맞춘다.
         canvas.dataset.rhwpSurfaceVisible = after.visible ? 'true' : 'false';
+        canvas.dataset.rhwpSurfaceLayerCount = String(after.layerCount);
         canvas.dataset.rhwpEstimatedSurfaceBytes = String(after.surfaceBytes);
         canvas.dataset.rhwpEstimatedVisibleSurfaceBytes = String(plan.visibleSurfacePixels * 4);
         canvas.dataset.rhwpEstimatedRetainedSurfaceBytes = String(plan.retainedSurfacePixels * 4);
@@ -971,6 +973,7 @@ export class CanvasView {
     renderedCanvas.dataset.rhwpRawDpr = String(rawDpr);
     renderedCanvas.dataset.rhwpEffectiveDpr = String(dpr);
     renderedCanvas.dataset.rhwpSurfaceVisible = surfaceDecision?.visible ? 'true' : 'false';
+    renderedCanvas.dataset.rhwpSurfaceLayerCount = String(surfaceDecision?.layerCount ?? 1);
     renderedCanvas.dataset.rhwpEstimatedSurfaceBytes = String(surfaceDecision?.surfaceBytes ?? 0);
     renderedCanvas.dataset.rhwpEstimatedVisibleSurfaceBytes = String(
       (this.renderSurfacePlan?.visibleSurfacePixels ?? 0) * 4,

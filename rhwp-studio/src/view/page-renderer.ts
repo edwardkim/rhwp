@@ -92,6 +92,8 @@ export class PageRenderer {
   private reRenderJobs = new Map<number, ReRenderJob>();
   private imageRetryCounts = new Map<number, string>();
   private layerSummaryCache = new Map<number, LayerSummaryCacheEntry>();
+  /** zoom과 무관한 페이지별 Canvas surface 상한. 문서/revision 경계에서만 무효화한다. */
+  private surfaceLayerCountCache = new Map<number, number>();
   private canvaskitDiagnosticsByPage = new Map<number, CanvasKitRenderDiagnostics>();
   /**
    * prefetch 를 끝낸 페이지의 그림 서명 (Task #3315).
@@ -144,6 +146,7 @@ export class PageRenderer {
     this.cancelAll();
     if (!preserveCanvasKitDiagnostics) this.releaseAllPageDiagnostics();
     this.layerSummaryCache.clear();
+    this.surfaceLayerCountCache.clear();
     this.backend = backend;
     this.renderProfile = renderProfile;
     this.canvaskitRenderer = canvaskitRenderer;
@@ -188,6 +191,7 @@ export class PageRenderer {
 
     this.imageRetryCounts.clear();
     this.prefetchedImageSignatures.clear();
+    this.surfaceLayerCountCache.clear();
     // 신원을 모르면(`digest === null`) 항목이 어느 문서 것인지 표시할 수 없다. 그 상태에서는
     // `buildImageRetryKey` 도 서명 기록도 멈추므로 지킬 것이 없다 — 범위를 비워 둔다.
     this.documentScope = identity.digest === null ? null : identity;
@@ -197,6 +201,7 @@ export class PageRenderer {
     this.cancelAll();
     this.releaseAllPageDiagnostics();
     this.layerSummaryCache.clear();
+    this.surfaceLayerCountCache.clear();
     // [#3315] object URL 캐시는 여기서 비우지 않는다. 이 메서드는 renderer decision key 에
     // 묶여 있어 같은 문서를 편집할 때마다 불리므로, 여기서 비우면 캐시가 매 키 입력에 수 MB 를
     // 다시 읽는다 — 캐시가 없는 것과 같아진다. 문서 경계는 `beginDocument` 가 가른다.
@@ -213,6 +218,7 @@ export class PageRenderer {
   ): PageRenderResult {
     if (this.backend === 'canvaskit') {
       this.layerSummaryCache.delete(pageIdx);
+      this.surfaceLayerCountCache.set(pageIdx, 1);
       const renderedCanvas = this.renderPageCanvasKit(pageIdx, canvas, renderScale);
       return { needsTextEditStaticLayerVerification: false, renderedCanvas };
     }
@@ -226,6 +232,7 @@ export class PageRenderer {
     }
 
     const layers = this.getLayerPlaneSummary(pageIdx, canvas, renderScale, context);
+    this.surfaceLayerCountCache.set(pageIdx, this.canvasSurfaceLayerCount(layers));
     const preferStaticFlow = this.shouldSplitStaticFlow(layers);
     let reuseStaticFlow = this.renderFlowCanvas(pageIdx, canvas, renderScale, preferStaticFlow);
     const flowImages = reuseStaticFlow && layers.flowImageCount > 0
@@ -259,6 +266,7 @@ export class PageRenderer {
     } catch (error) {
       if (!reuseStaticFlow) throw error;
       this.flowSplitSupported = false;
+      this.surfaceLayerCountCache.clear();
       canvas.parentElement && this.removeOverlayLayer(canvas.parentElement, pageIdx, 'flow-static');
       reuseStaticFlow = false;
       this.wasm.renderPageToCanvasFiltered(pageIdx, canvas, renderScale, 'flow', this.renderProfile);
@@ -295,6 +303,29 @@ export class PageRenderer {
 
   getRenderProfile(): LayerRenderProfile {
     return this.renderProfile;
+  }
+
+  /**
+   * 해당 페이지가 만들 수 있는 Canvas surface 수를 콘텐츠 plane 구성에서 계산한다.
+   * 아직 렌더하지 않은 retained 페이지도 전역 예산에 넣을 수 있도록 zoom과 독립적으로 캐시한다.
+   */
+  getCanvasSurfaceLayerCount(pageIdx: number): number {
+    if (this.backend === 'canvaskit') return 1;
+    const cached = this.surfaceLayerCountCache.get(pageIdx);
+    if (cached !== undefined) return cached;
+
+    const layers = this.getLayerPlaneSummaryFromOverlayImages(pageIdx)
+      ?? this.getLayerPlaneSummaryFromTree(pageIdx);
+    const layerCount = this.canvasSurfaceLayerCount(layers);
+    this.surfaceLayerCountCache.set(pageIdx, layerCount);
+    return layerCount;
+  }
+
+  private canvasSurfaceLayerCount(layers: LayerPlaneSummary): number {
+    return 1
+      + (this.shouldSplitStaticFlow(layers) ? 1 : 0)
+      + (layers.hasBehind ? 2 : 0)
+      + (layers.hasFront ? 1 : 0);
   }
 
   getCanvasKitRenderDiagnostics(pageIdx: number): CanvasKitRenderDiagnostics | null {
@@ -858,6 +889,7 @@ export class PageRenderer {
       return true;
     } catch (error) {
       this.flowSplitSupported = false;
+      this.surfaceLayerCountCache.clear();
       console.warn('[PageRenderer] flow-dynamic 렌더 미지원, 기존 flow 렌더로 fallback:', error);
       this.wasm.renderPageToCanvasFiltered(pageIdx, canvas, renderScale, 'flow', this.renderProfile);
       return false;
@@ -1187,6 +1219,7 @@ export class PageRenderer {
           renderedStaticFlow = true;
         } catch (error) {
           this.flowSplitSupported = false;
+          this.surfaceLayerCountCache.clear();
           flowStatic.remove();
           console.warn('[PageRenderer] flow-static 지연 재렌더 실패, 기존 flow 재렌더로 fallback:', error);
         }
@@ -1369,6 +1402,7 @@ export class PageRenderer {
   resetImageRetryState(): void {
     this.prefetchRequestTokens.clear();
     this.layerSummaryCache.clear();
+    this.surfaceLayerCountCache.clear();
     this.canvaskitDiagnosticsByPage.clear();
   }
 
@@ -1378,6 +1412,7 @@ export class PageRenderer {
     this.prefetchedImageSignatures.clear();
     this.prefetchRequestTokens.clear();
     this.layerSummaryCache.clear();
+    this.surfaceLayerCountCache.clear();
     this.canvaskitDiagnosticsByPage.clear();
     this.flowImageUrls.releaseAll();
     this.documentScope = null;

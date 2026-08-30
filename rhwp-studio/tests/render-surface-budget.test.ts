@@ -17,6 +17,7 @@ function pages(
     focused?: number | null;
     width?: number;
     height?: number;
+    layerCount?: number;
   } = {},
 ): RenderSurfacePageInput[] {
   const visible = new Set(options.visible ?? Array.from({ length: count }, (_, index) => index));
@@ -25,13 +26,14 @@ function pages(
     pageIndex,
     width: options.width ?? A4.width,
     height: options.height ?? A4.height,
+    layerCount: options.layerCount,
     visible: visible.has(pageIndex),
     focused: focused === pageIndex,
     distanceFromFocus: Math.abs(pageIndex - (focused ?? 0)),
   }));
 }
 
-test('4쪽 실문서의 34% 배치는 예산 이내이면 모두 raw DPR을 유지한다', () => {
+test('4-layer 4쪽의 34% 배치는 예산 이내이면 모두 raw DPR을 유지한다', () => {
   const plan = planRenderSurfaceBudget({
     pages: pages(4, { focused: 2 }),
     zoom: 0.34,
@@ -41,6 +43,20 @@ test('4쪽 실문서의 34% 배치는 예산 이내이면 모두 raw DPR을 유�
 
   assert.equal(plan.withinBudget, true);
   assert.deepEqual(plan.decisions.map(decision => decision.effectiveDpr), [2, 2, 2, 2]);
+  assert.ok(plan.fullQualityRetainedSurfacePixels < plan.retainedPixelBudget);
+});
+
+test('단일 Canvas 페이지는 보수적 fallback 4가 있어도 실제 layerCount 1로 계산한다', () => {
+  const plan = planRenderSurfaceBudget({
+    pages: pages(3, { visible: [0, 1], focused: 0, layerCount: 1 }),
+    zoom: 1,
+    rawDpr: 2,
+    layerCount: 4,
+  });
+
+  assert.equal(plan.withinBudget, true);
+  assert.deepEqual(plan.decisions.map(decision => decision.layerCount), [1, 1, 1]);
+  assert.deepEqual(plan.decisions.map(decision => decision.effectiveDpr), [2, 2, 2]);
   assert.ok(plan.fullQualityRetainedSurfacePixels < plan.retainedPixelBudget);
 });
 
@@ -251,6 +267,7 @@ test('CanvasView는 가시 집합과 포커스 변경 후 budget plan을 갱신�
     source,
     /environmentKey !== this\.renderSurfaceEnvironmentKey[\s\S]*?previousEffectiveDpr\.clear\(\)/,
   );
+  assert.match(source, /getCanvasSurfaceLayerCount\(pageIndex\)/);
   assert.doesNotMatch(
     readFileSync(new URL('../src/view/render-surface-budget.ts', import.meta.url), 'utf8'),
     /pagesPerRow|OVERVIEW_PAGES_PER_ROW/,

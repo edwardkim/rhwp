@@ -15,6 +15,8 @@ export interface RenderSurfacePageInput {
   pageIndex: number;
   width: number;
   height: number;
+  /** 페이지별 Canvas surface 수. 없으면 planner의 보수적인 fallback을 사용한다. */
+  layerCount?: number;
   visible: boolean;
   focused: boolean;
   distanceFromFocus: number;
@@ -33,6 +35,7 @@ export interface RenderSurfaceBudgetInput {
 
 export interface RenderSurfaceDecision {
   pageIndex: number;
+  layerCount: number;
   visible: boolean;
   focused: boolean;
   effectiveDpr: number;
@@ -54,6 +57,7 @@ export interface RenderSurfaceBudgetPlan {
 }
 
 interface MutablePageState extends RenderSurfacePageInput {
+  layerCount: number;
   steps: number[];
   stepIndex: number;
 }
@@ -79,7 +83,7 @@ export function renderDprSteps(rawDprValue: number): number[] {
 }
 
 export function pageSurfacePixels(
-  page: Pick<RenderSurfacePageInput, 'width' | 'height'>,
+  page: Pick<RenderSurfacePageInput, 'width' | 'height' | 'layerCount'>,
   zoomValue: number,
   dprValue: number,
   layerCountValue: number,
@@ -88,7 +92,10 @@ export function pageSurfacePixels(
   const dpr = positive(dprValue, 1);
   const width = positive(page.width, 1);
   const height = positive(page.height, 1);
-  const layerCount = Math.max(1, Math.round(positive(layerCountValue, 1)));
+  const layerCount = Math.max(
+    1,
+    Math.round(positive(page.layerCount ?? layerCountValue, positive(layerCountValue, 1))),
+  );
   return width * height * zoom * zoom * dpr * dpr * layerCount;
 }
 
@@ -185,6 +192,7 @@ export function planRenderSurfaceBudget(input: RenderSurfaceBudgetInput): Render
     ...page,
     width: positive(page.width, 1),
     height: positive(page.height, 1),
+    layerCount: Math.max(1, Math.round(positive(page.layerCount ?? layerCount, layerCount))),
     distanceFromFocus: Math.max(0, positive(page.distanceFromFocus, 0)),
     steps: renderDprSteps(rawDpr),
     stepIndex: 0,
@@ -219,6 +227,7 @@ export function planRenderSurfaceBudget(input: RenderSurfaceBudgetInput): Render
     const surfacePixels = pageSurfacePixels(state, zoom, effectiveDpr, layerCount);
     return {
       pageIndex: state.pageIndex,
+      layerCount: state.layerCount,
       visible: state.visible,
       focused: state.focused,
       effectiveDpr,
