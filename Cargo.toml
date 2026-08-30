@@ -143,22 +143,6 @@ name = "regression_suite_028"
 path = "tests/generated/regression_suite_028.rs"
 
 [[test]]
-name = "regression_suite_029"
-path = "tests/generated/regression_suite_029.rs"
-
-[[test]]
-name = "regression_suite_030"
-path = "tests/generated/regression_suite_030.rs"
-
-[[test]]
-name = "regression_suite_031"
-path = "tests/generated/regression_suite_031.rs"
-
-[[test]]
-name = "regression_suite_032"
-path = "tests/generated/regression_suite_032.rs"
-
-[[test]]
 name = "cli_exit_codes"
 path = "tests/cli_exit_codes.rs"
 
@@ -175,6 +159,10 @@ name = "issue_1144_native"
 path = "tests/issue_1144_native.rs"
 
 [[test]]
+name = "issue_2833_hml_adapter_row_sizes"
+path = "tests/issue_2833_hml_adapter_row_sizes.rs"
+
+[[test]]
 name = "issue_4055_b1_chart_edit_probe"
 path = "tests/issue_4055_b1_chart_edit_probe.rs"
 
@@ -189,6 +177,18 @@ path = "tests/issue_4099_hwpx_chart_to_hwp.rs"
 [[test]]
 name = "issue_4100_chart_data_edit"
 path = "tests/issue_4100_chart_data_edit.rs"
+
+[[test]]
+name = "issue_4126_cursor_rect_empty_para_pages"
+path = "tests/issue_4126_cursor_rect_empty_para_pages.rs"
+
+[[test]]
+name = "issue_4128_cell_cursor_page_narrowing"
+path = "tests/issue_4128_cell_cursor_page_narrowing.rs"
+
+[[test]]
+name = "issue_4179_cursor_rect_text_host_para_pages"
+path = "tests/issue_4179_cursor_rect_text_host_para_pages.rs"
 
 [[test]]
 name = "issue_4969_shaping_composition_handoff"
