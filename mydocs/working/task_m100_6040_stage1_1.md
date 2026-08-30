@@ -2,7 +2,8 @@
 
 - **이슈**: [#6040](https://github.com/edwardkim/rhwp/issues/6040)
 - **브랜치**: `codex/issue-6040-zoom-topology`
-- **부모 commit**: Stage 1 재구성 문서 `354b2d417`
+- **부모 commit**: Stage 1 재구성 문서 `ce3402e52` (재배치 전 `354b2d417`)
+- **구현 commit**: `049683ee9` (재배치 전 `1d597e81b`)
 - **작성일**: 2026-08-30 KST
 - **결과 승인**: 2026-08-30 작업지시자 승인
 - **Stage 범위**: 수평 눈금자 끝 라벨의 종이 경계 초과만 억제. 종이 경계·끝 tick과 기존 줌·배치 경로는 유지
@@ -26,13 +27,16 @@ A4 155%에서 21cm 라벨은 중심이 종이 오른쪽 끝에 놓여 글자의 
 
 - 눈금자 focused: 17건 중 17 pass
 - TypeScript `npx tsc --noEmit`: 통과
-- 전체 Studio: 1,249건 중 1,248 pass·1 skip·0 fail
-- production build: 240 modules, 통과. 기존 대형 chunk 경고만 확인
+- 전체 Studio: 1,278건 중 1,277 pass·1 skip·0 fail
+- production build: 243 modules, 통과. 기존 대형 chunk 경고만 확인
+- `cargo fmt --all -- --check`: 파생 regression suite 준비 뒤 통과. 파생 파일은 PR에 포함하지 않음
 - 실제 Chromium, 6쪽 복구 문서, 자동 모드 155%:
   - 20cm 라벨 표시
   - 21cm 라벨 숨김
   - 종이 오른쪽 경계선과 끝 tick 유지
   - warning/error 0건
+- 같은 문서 자동 60%: 2열, 점유 묶음 중심 오차 0.14px
+- 같은 문서 자동 50%: 3열, 점유 묶음 중심 오차 0.07px
 - `git diff --check`: 통과
 
 ## 범위 감사와 다음 게이트

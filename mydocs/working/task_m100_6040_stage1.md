@@ -2,8 +2,10 @@
 
 - **이슈**: [#6040](https://github.com/edwardkim/rhwp/issues/6040)
 - **브랜치**: `codex/issue-6040-zoom-topology`
-- **기준 commit**: `upstream/devel` `2deb3dd61`
-- **계획 commit**: `5b98fb684`
+- **PR 기준 commit**: `upstream/devel` `7592e9c99`
+- **최초 구현 기준**: `upstream/devel` `2deb3dd61`
+- **계획 commit**: `d5cd2e387` (재배치 전 `5b98fb684`)
+- **Stage 1 commit**: `a135cc266` (재배치 전 `63fa3d0cf`)
 - **결과 승인**: 2026-08-30 작업지시자 승인; 2026-08-30 Stage 2·3 폐기 뒤 이 commit으로 재구성
 - **Stage 범위**: 자동 열 순수 계산·page count cap·중앙 정렬·히스테리시스 계약. 줌 preview와
   topology commit 분리는 Stage 2에 유지
@@ -77,7 +79,7 @@ tests 46, pass 46, fail 0
 
 Stage 2·3의 Canvas 전용 preview 설계는 기존 단일 좌표 계약을 깨는 회귀 때문에 폐기했다. 전체 상태는
 `codex/issue-6040-zoom-topology-backup-20260830@d97307cab`에 보존했고, 작업 branch는 이 Stage 1
-commit `63fa3d0cf`로 재구성했다.
+commit `a135cc266`으로 재구성했다(재배치 전 `63fa3d0cf`).
 
 ## Stage 1 재구성 뒤 기존 줌 재검증
 

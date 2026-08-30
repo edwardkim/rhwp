@@ -2,10 +2,11 @@
 
 - **이슈**: [#6040](https://github.com/edwardkim/rhwp/issues/6040)
 - **브랜치**: `codex/issue-6040-zoom-topology`
-- **기준 commit**: `upstream/devel` `2deb3dd61`
+- **PR 기준 commit**: `upstream/devel` `7592e9c99`
+- **최초 구현 기준**: `upstream/devel` `2deb3dd61`
 - **문서 성격**: 구현 전 파일·상태 전이 설계
 - **계획 승인**: 2026-08-30 작업지시자 승인, Stage 1 진행
-- **현재 상태**: Stage 2·3 구현 폐기·Stage 1 `63fa3d0cf` 재구성 완료. 아래 줌 상태 전이 설계는
+- **현재 상태**: Stage 2·3 구현 폐기·Stage 1 `a135cc266` 재구성 완료. 아래 줌 상태 전이 설계는
   역사적 폐기안이며 새 공유 좌표 계획 승인 전에는 구현하지 않는다.
 
 ## 자동 열 계약
@@ -37,9 +38,9 @@ candidate = clamp(fitColumns, 1, pageCount)
 ## 줌 상태 전이
 
 > **폐기된 설계**: 이 절의 Canvas 전용 preview는 눈금자·캐럿·선택·hit-test와 다른 좌표계를 만들어
-> 회귀를 일으켰다. 현재 branch의 `CanvasView`·`Ruler`·`ViewportManager`·caret/input 경로는 기준
-> `2deb3dd61`과 동일하다. 후속 설계는 모든 소비자가 하나의 authoritative preview geometry를
-> 사용하거나, 기존처럼 매 프레임 같은 `VirtualScroll`을 소비해야 한다.
+> 회귀를 일으켰다. 현재 branch는 최신 PR 기준 대비 `CanvasView`·`ViewportManager`·caret/input 경로를
+> 변경하지 않으며, `Ruler`는 Stage 1.1의 끝 라벨 경계 처리만 포함한다. 후속 설계는 모든 소비자가 하나의
+> authoritative preview geometry를 사용하거나, 기존처럼 매 프레임 같은 `VirtualScroll`을 소비해야 한다.
 
 ```text
 idle
