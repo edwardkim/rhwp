@@ -4089,6 +4089,7 @@ fn parse_shape_fill_brush(reader: &mut Reader<&[u8]>) -> Result<Fill, HwpxError>
                                         "FIT" | "FIT_TO_SIZE" | "STRETCH" => {
                                             ImageFillMode::FitToSize
                                         }
+                                        "ZOOM" => ImageFillMode::Zoom,
                                         "TOTAL" => ImageFillMode::Total,
                                         "TOP_LEFT_ALIGN" => ImageFillMode::LeftTop,
                                         _ => ImageFillMode::TileAll,

@@ -995,6 +995,7 @@ pub(crate) fn write_fill_brush<W: Write>(
                 ImageFillMode::TileVertLeft => "TILE_VERT_LEFT",
                 ImageFillMode::TileVertRight => "TILE_VERT_RIGHT",
                 ImageFillMode::FitToSize => "FIT",
+                ImageFillMode::Zoom => "ZOOM",
                 ImageFillMode::Total => "TOTAL",
                 ImageFillMode::Center => "CENTER",
                 ImageFillMode::CenterTop => "CENTER_TOP",
