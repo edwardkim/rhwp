@@ -489,10 +489,10 @@ pub(crate) fn collect_cell_borders(
 /// 표 자신의 `borderFillIDRef` 를 바깥 네 변의 **빈 슬롯**에만 보충한다.
 ///
 /// 칸 occupancy 만으로 막으면 일러두기 틀처럼 바깥 칸이 NONE 인 변
-/// (왼쪽·아래·제목왼쪽)이 사라진다 (#6311). 반대로 바깥이 전부 NONE 인
-/// 표에 표 테두리를 새로 그리면 #469·KTX TOC·#6030 이 깨진다.
-/// 칸이 이미 바깥 SOLID 를 일부 그린 **부분 프레임**만 빈 슬롯을 메운다.
-/// 칸이 안 덮는 구멍은 종전처럼 표 테두리 fallback 을 둔다.
+/// (왼쪽·아래·제목왼쪽)이 사라진다 (#6311). 반대로 바깥 SOLID 가 하나라도
+/// 있는 일반 표까지 빈 칸을 메우면 #469 단 침범·KTX TOC·#6030 행 괘선이
+/// 깨진다. 제목 칸만 바깥 SOLID 를 일부 그린 **일러두기 부분 프레임**만
+/// occupancy+NONE 슬롯을 메우고, 칸이 안 덮는 구멍은 종전 fallback 을 둔다.
 pub(crate) fn apply_table_outer_border_fill(
     h_edges: &mut [Vec<Option<BorderLine>>],
     v_edges: &mut [Vec<Option<BorderLine>>],
@@ -540,24 +540,12 @@ pub(crate) fn apply_table_outer_border_fill(
         }
     }
 
-    let slot_drawn = |slot: &Option<BorderLine>| {
-        slot.as_ref()
-            .is_some_and(|b| b.line_type != BorderLineType::None)
-    };
-    let mut any_outer_solid = false;
-    for c in 0..col_count {
-        any_outer_solid |= slot_drawn(&h_edges[0][c]);
-        any_outer_solid |= slot_drawn(&h_edges[row_count][c]);
-    }
-    for r in 0..row_count {
-        any_outer_solid |= slot_drawn(&v_edges[0][r]);
-        any_outer_solid |= slot_drawn(&v_edges[col_count][r]);
-    }
+    let fill_occupied = is_callout_partial_frame(h_edges, v_edges, &h_occupied);
 
     let fill = |slot: &mut Option<BorderLine>, border: &BorderLine, occupied: bool| {
         if slot.is_none()
             && border.line_type != BorderLineType::None
-            && (!occupied || any_outer_solid)
+            && (!occupied || fill_occupied)
         {
             *slot = Some(*border);
         }
@@ -579,6 +567,51 @@ pub(crate) fn apply_table_outer_border_fill(
             v_occupied[col_count][r],
         );
     }
+}
+
+fn outer_slot_drawn(slot: &Option<BorderLine>) -> bool {
+    slot.as_ref()
+        .is_some_and(|border| border.line_type != BorderLineType::None)
+}
+
+/// 일러두기 틀: 첫 행 제목 칸만 바깥 SOLID 를 일부 그리고, 아래·본문 좌우는
+/// 칸이 NONE 이다. 일반 박스(좌우·아래가 이미 있는 부분 시작 표)는 제외한다.
+fn is_callout_partial_frame(
+    h_edges: &[Vec<Option<BorderLine>>],
+    v_edges: &[Vec<Option<BorderLine>>],
+    h_occupied: &[Vec<bool>],
+) -> bool {
+    let col_count = h_edges[0].len();
+    let row_count = v_edges[0].len();
+    if row_count < 2 || col_count < 2 {
+        return false;
+    }
+
+    let mut top_drawn = false;
+    let mut top_empty_occupied = false;
+    for c in 0..col_count {
+        if outer_slot_drawn(&h_edges[0][c]) {
+            top_drawn = true;
+        } else if h_occupied[0][c] {
+            top_empty_occupied = true;
+        }
+    }
+    if !top_drawn || !top_empty_occupied {
+        return false;
+    }
+
+    if (0..col_count).any(|c| outer_slot_drawn(&h_edges[row_count][c])) {
+        return false;
+    }
+
+    // 본문 행의 좌·우 바깥 SOLID 가 있으면 일반 박스다. 제목 행(row 0) 토막만 허용.
+    for r in 1..row_count {
+        if outer_slot_drawn(&v_edges[0][r]) || outer_slot_drawn(&v_edges[col_count][r]) {
+            return false;
+        }
+    }
+
+    true
 }
 
 /// 엣지 그리드에서 테두리 Line 노드를 생성
@@ -1816,5 +1849,105 @@ mod tests {
         assert_eq!(cell_bbox.y, cell_bbox_before.y);
         assert_eq!(cell_bbox.width, cell_bbox_before.width);
         assert_eq!(cell_bbox.height, cell_bbox_before.height);
+    }
+
+    fn solid_line() -> BorderLine {
+        BorderLine {
+            line_type: BorderLineType::Solid,
+            width: 1,
+            color: 0,
+        }
+    }
+
+    fn covering_cells(positions: &[(u16, u16, u16, u16)]) -> Vec<Cell> {
+        positions
+            .iter()
+            .map(|&(col, row, col_span, row_span)| Cell {
+                col,
+                row,
+                col_span,
+                row_span,
+                ..Default::default()
+            })
+            .collect()
+    }
+
+    #[test]
+    fn callout_partial_frame_fills_left_bottom_and_title_left() {
+        let solid = solid_line();
+        let table_borders = [solid, solid, solid, solid];
+        let mut h_edges = vec![vec![None; 2]; 3];
+        let mut v_edges = vec![vec![None; 2]; 3];
+        collect_cell_borders(&mut h_edges, &mut v_edges, 1, 0, 1, 1, &table_borders);
+        let cells = covering_cells(&[(0, 0, 1, 1), (1, 0, 1, 1), (0, 1, 2, 1)]);
+
+        apply_table_outer_border_fill(&mut h_edges, &mut v_edges, &table_borders, &cells);
+
+        assert!(
+            h_edges[0][0].is_some(),
+            "제목 왼쪽 바깥 가로선을 메워야 한다"
+        );
+        assert!(
+            h_edges[2][0].is_some() && h_edges[2][1].is_some(),
+            "아래 바깥 가로선을 메워야 한다"
+        );
+        assert!(
+            v_edges[0][0].is_some() && v_edges[0][1].is_some(),
+            "왼쪽 바깥 세로선을 메워야 한다"
+        );
+    }
+
+    #[test]
+    fn occupied_none_table_does_not_complete_outer_frame() {
+        let solid = solid_line();
+        let table_borders = [solid, solid, solid, solid];
+        let mut h_edges = vec![vec![None; 2]; 3];
+        let mut v_edges = vec![vec![None; 2]; 3];
+        let cells = covering_cells(&[(0, 0, 1, 1), (1, 0, 1, 1), (0, 1, 1, 1), (1, 1, 1, 1)]);
+
+        apply_table_outer_border_fill(&mut h_edges, &mut v_edges, &table_borders, &cells);
+
+        assert!(h_edges.iter().all(|row| row.iter().all(Option::is_none)));
+        assert!(v_edges.iter().all(|col| col.iter().all(Option::is_none)));
+    }
+
+    #[test]
+    fn partial_start_box_does_not_fill_missing_top() {
+        let solid = solid_line();
+        let table_borders = [solid, solid, solid, solid];
+        let mut h_edges = vec![vec![None; 2]; 3];
+        let mut v_edges = vec![vec![None; 2]; 3];
+        h_edges[2][0] = Some(solid);
+        h_edges[2][1] = Some(solid);
+        for r in 0..2 {
+            v_edges[0][r] = Some(solid);
+            v_edges[2][r] = Some(solid);
+        }
+        let cells = covering_cells(&[(0, 0, 1, 1), (1, 0, 1, 1), (0, 1, 1, 1), (1, 1, 1, 1)]);
+
+        apply_table_outer_border_fill(&mut h_edges, &mut v_edges, &table_borders, &cells);
+
+        assert!(
+            h_edges[0].iter().all(Option::is_none),
+            "부분 시작 박스의 빈 윗변을 표 테두리로 메우면 안 된다"
+        );
+    }
+
+    #[test]
+    fn unoccupied_outer_hole_still_gets_table_border() {
+        let solid = solid_line();
+        let table_borders = [solid, solid, solid, solid];
+        let mut h_edges = vec![vec![None; 2]; 2];
+        let mut v_edges = vec![vec![None; 1]; 3];
+        let cells = covering_cells(&[(1, 0, 1, 1)]);
+
+        apply_table_outer_border_fill(&mut h_edges, &mut v_edges, &table_borders, &cells);
+
+        assert!(h_edges[0][0].is_some() && h_edges[1][0].is_some());
+        assert!(v_edges[0][0].is_some());
+        assert!(
+            h_edges[0][1].is_none() && h_edges[1][1].is_none(),
+            "칸이 덮은 NONE 변은 일반 표에서 그대로 둔다"
+        );
     }
 }

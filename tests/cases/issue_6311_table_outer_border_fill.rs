@@ -139,11 +139,13 @@ fn issue_6311_table_border_fill_emits_left_bottom_and_title_left() {
             && (x1.min(x2) - left).abs() <= 4.0
             && x1.max(x2) >= right - 4.0
     });
+    // 제목 칸 윗변과 표 테두리가 같은 스타일이면 한 세그먼트로 병합된다.
+    // 왼쪽에서 시작해 제목 칸까지 덮으면 제목왼쪽이 있는 것이다.
     let has_title_left = lines.iter().any(|&(x1, y1, x2, y2)| {
         (y1 - top).abs() <= 2.0
             && (y2 - top).abs() <= 2.0
             && (x1.min(x2) - left).abs() <= 4.0
-            && x1.max(x2) <= mid_x + 2.0
+            && x1.max(x2) >= mid_x - 2.0
             && (x1 - x2).abs() >= 8.0
     });
 
