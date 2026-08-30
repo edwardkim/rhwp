@@ -95,6 +95,12 @@ source branch의 오늘할일이 최신 `upstream/devel`보다 오래된 경우�
 contributor 원 commit을 rewrite하지 않는다. review 문서·오늘할일·보정 code는 별도 commit으로 나누고,
 보정이 있으면 review 문서에 contributor 원 변경과 collaborator 추가 변경을 구분한다.
 
+최종 판정은 [공통 세 상태](../pr_review_workflow.md#11-최종-판정-용어와-원격-조치의-분리)로 기록한다.
+원 contributor head가 그대로 검증되면 `승인`, blocker가 남으면 `머지 보류`, 원 head에는 blocker가 있지만
+정확히 기록한 collaborator 보정이 있는 integration head를 검증 대상으로 삼을 때만 `메인터너 보정 후 수용 가능`이다.
+마지막 경우 review 문서는 원 PR 번호·원 head SHA·보정 SHA·integration head SHA를 각각 적고, 원 contributor
+PR을 직접 merge 대상으로 표시하지 않는다. 이 분류는 remote push, PR comment, close 또는 merge를 승인하지 않는다.
+
 ### 9.3.0 LFS 대상 사전 판독
 
 review-only 문서 push를 포함한 **모든** contributor source branch push는 dry-run이나 실제 push 전에,
