@@ -298,27 +298,43 @@ pub(crate) fn is_watermark_image(image: &ImageNode) -> bool {
 /// 4성분 JPEG 을 `/DeviceRGB` 로 박으면 3성분으로 읽혀 행 보폭이 어긋난다 —
 /// 같은 그림이 가로로 반복되고 색이 번진다(156745900 1쪽 로고).
 pub fn jpeg_is_four_component(data: &[u8]) -> bool {
+    if !data.starts_with(&[0xFF, 0xD8]) {
+        return false;
+    }
+
     let mut i = 2usize;
-    while i + 3 < data.len() {
-        if data[i] != 0xFF {
+    while i < data.len() {
+        // JPEG은 marker 앞에 fill byte(0xFF)를 하나 이상 둘 수 있다. 첫 0xFF를
+        // marker로 해석하면 뒤의 SOF를 건너뛰어 유효한 CMYK JPEG을 놓친다.
+        while data.get(i) == Some(&0xFF) {
             i += 1;
-            continue;
         }
-        let marker = data[i + 1];
+        let Some(&marker) = data.get(i) else {
+            break;
+        };
+        i += 1;
+
         // 독립 마커(SOI/EOI/TEM/RSTn)는 길이 필드가 없다.
         if marker == 0xD8 || marker == 0xD9 || marker == 0x01 || (0xD0..=0xD7).contains(&marker) {
-            i += 2;
             continue;
         }
-        let len = u16::from_be_bytes([data[i + 2], data[i + 3]]) as usize;
-        // SOF0/1/2 = baseline / extended / progressive. 성분 수는 세그먼트 8번째 바이트.
-        if matches!(marker, 0xC0..=0xC2) {
-            return data.get(i + 9).copied() == Some(4);
+        let Some(len_bytes) = data.get(i..i + 2) else {
+            return false;
+        };
+        let len = u16::from_be_bytes([len_bytes[0], len_bytes[1]]) as usize;
+        if len < 2 || i + len > data.len() {
+            return false;
         }
-        if marker == 0xDA || len < 2 {
+
+        // SOF0/1/2 = baseline / extended / progressive. 성분 수는 length field 뒤
+        // 여섯 번째 바이트다(precision, height, width 다음).
+        if matches!(marker, 0xC0..=0xC2) {
+            return data.get(i + 7).copied() == Some(4);
+        }
+        if marker == 0xDA {
             break;
         }
-        i += 2 + len;
+        i += len;
     }
     false
 }
@@ -1064,9 +1080,9 @@ fn decode_image_with_format_limited(
 mod tests {
     use super::{
         bmp_bytes_to_png_bytes, emitted_image_bytes, grayscale_jpeg_bytes_to_png_bytes,
-        is_watermark_image, resolve_image_payload, watermark_jpeg_bytes_to_hancom_baked_png_bytes,
-        ConversionMemo, CANVASKIT_MAX_IMAGE_DIMENSION, CONVERSIONS_RUN, MAX_MEMO_BYTES,
-        MAX_MEMO_ENTRIES,
+        is_watermark_image, jpeg_is_four_component, resolve_image_payload,
+        watermark_jpeg_bytes_to_hancom_baked_png_bytes, ConversionMemo,
+        CANVASKIT_MAX_IMAGE_DIMENSION, CONVERSIONS_RUN, MAX_MEMO_BYTES, MAX_MEMO_ENTRIES,
     };
     use crate::model::image::ImageEffect;
     use crate::paint::ResolvedImageKind;
@@ -1087,6 +1103,22 @@ mod tests {
             .write_to(&mut Cursor::new(&mut out), ImageFormat::Jpeg)
             .expect("encode jpeg");
         out
+    }
+
+    #[test]
+    fn four_component_jpeg_detector_accepts_marker_fill_before_sof() {
+        // 유효한 JPEG은 SOF marker 앞에 0xFF fill byte를 반복할 수 있다. 4성분 SOF0
+        // (length 20 = 고정 필드 8 + component descriptor 4×3)를 최소 헤더로 만든다.
+        let jpeg = [
+            0xFF, 0xD8, // SOI
+            0xFF, 0xFF, 0xC0, // marker fill + SOF0
+            0x00, 0x14, // segment length
+            0x08, 0x00, 0x01, 0x00, 0x01, 0x04, // precision, height, width, components
+            0x01, 0x11, 0x00, 0x02, 0x11, 0x00, 0x03, 0x11, 0x00, 0x04, 0x11, 0x00, 0xFF,
+            0xD9, // EOI
+        ];
+
+        assert!(jpeg_is_four_component(&jpeg));
     }
 
     /// 지금까지 실제로 수행된 변환 횟수.
