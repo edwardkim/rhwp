@@ -3192,6 +3192,39 @@ impl LayoutEngine {
                 Alignment::Left
             };
 
+            // [#6465] 인라인 개체가 놓인 **그 줄**을 쓴다 — 첫 줄이 아니다.
+            //
+            // 저장 사다리가 문단을 두 줄로 적고 개체를 둘째 줄에 배정한 형상
+            // (156677575 13쪽: `tp=0`/`tp=9`, 개체 둘 다 text pos 9 = 둘째 줄 시작)
+            // 에서 첫 줄로 재면 ① 정렬 기준 폭이 첫 줄 공백 9자만큼 부풀고
+            // ② 개체 앞 전진이 그 9자를 또 더하고 ③ y 가 첫 줄 것이 된다.
+            // 방출 경로(`emit_line_runs`)는 이미 둘째 줄에 싣고 있었다.
+            let inline_line_idx: usize = composed_paras
+                .get(pi)
+                .and_then(|comp| {
+                    let first_tac = comp.tac_controls.iter().map(|(pos, _, _)| *pos).min()?;
+                    comp.lines
+                        .iter()
+                        .enumerate()
+                        .rev()
+                        .find(|(_, line)| line.char_start <= first_tac)
+                        .map(|(idx, _)| idx)
+                })
+                .unwrap_or(0);
+            // 개체가 놓인 줄의 y — 저장 사다리의 그 줄 `vertical_pos` 를 따른다.
+            let inline_obj_y = if inline_line_idx > 0 {
+                para.line_segs
+                    .get(inline_line_idx)
+                    .map(|seg| {
+                        inner_area.y
+                            + vert_offset
+                            + textbox_vpos_px(seg.vertical_pos, textbox_vpos_origin_hu, self.dpi)
+                    })
+                    .unwrap_or(para_start_y)
+            } else {
+                para_start_y
+            };
+
             // 문단 시작 위치로 inline_y 갱신 (이전 문단보다 앞으로 가지 않도록)
             inline_y = inline_y.max(para_start_y);
 
@@ -3230,7 +3263,7 @@ impl LayoutEngine {
             let first_line_text_width: f64 = if total_inline_width > 0.0
                 && pi < composed_paras.len()
             {
-                if let Some(first_line) = composed_paras[pi].lines.first() {
+                if let Some(first_line) = composed_paras[pi].lines.get(inline_line_idx) {
                     let tab_width = styles
                         .para_styles
                         .get(composed_paras[pi].para_style_id as usize)
@@ -3268,7 +3301,7 @@ impl LayoutEngine {
             {
                 let comp = &composed_paras[pi];
                 comp.lines
-                    .first()
+                    .get(inline_line_idx)
                     .map(|line| {
                         let line_end = line.char_start
                             + line
@@ -3310,7 +3343,13 @@ impl LayoutEngine {
             };
 
             let control_text_positions = para.control_text_positions();
-            let mut text_cursor = 0usize;
+            // [#6465] 개체 앞 전진은 **그 개체가 놓인 줄의 시작**부터 잰다. 0 부터 재면
+            // 앞 줄의 글자 폭까지 더해 개체가 그만큼 우측으로 밀린다.
+            let mut text_cursor = composed_paras
+                .get(pi)
+                .and_then(|comp| comp.lines.get(inline_line_idx))
+                .map(|line| line.char_start)
+                .unwrap_or(0);
 
             for (ctrl_idx_in_para, ctrl) in para.controls.iter().enumerate() {
                 let ctrl_text_pos = control_text_positions
@@ -3342,7 +3381,7 @@ impl LayoutEngine {
                             advance_to_control(&mut inline_x);
                             let x = inline_x;
                             inline_x += child_w;
-                            (x, para_start_y)
+                            (x, inline_obj_y)
                         } else {
                             // 절대 위치 도형
                             (
@@ -3421,7 +3460,8 @@ impl LayoutEngine {
                             // 정렬은 두 그림 top 이 같아 A 가 12.1px 낮았다).
                             let pic_container = LayoutRect {
                                 x: inline_x,
-                                y: inline_y + (max_inline_height - clamped_h).max(0.0),
+                                // [#6465] 개체가 뒤 줄에 배정됐으면 그 줄의 y 를 쓴다.
+                                y: inline_obj_y + (max_inline_height - clamped_h).max(0.0),
                                 width: clamped_w,
                                 height: clamped_h,
                             };
@@ -3507,7 +3547,7 @@ impl LayoutEngine {
                             let (eq_x, eq_y) = {
                                 let x = inline_x;
                                 inline_x += eq_w;
-                                (x, para_start_y)
+                                (x, inline_obj_y)
                             };
 
                             let tokens = super::super::equation::tokenizer::tokenize(&eq.script);

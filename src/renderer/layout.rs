@@ -9004,7 +9004,17 @@ impl LayoutEngine {
                 } else {
                     composed
                         .get(para_index)
-                        .map(|c| compute_tac_leading_width(c, control_index, styles))
+                        .map(|c| {
+                            // [#6298] 블록 취급 표의 문단 내 char 위치 — `tac_controls`
+                            // 와 같은 좌표계(`find_render_inline_control_positions`)로
+                            // 뽑아야 정지점이 어긋나지 않는다.
+                            let block_pos = paragraphs.get(para_index).and_then(|p| {
+                                crate::renderer::composer::find_render_inline_control_positions(p)
+                                    .get(control_index)
+                                    .copied()
+                            });
+                            compute_tac_leading_width(c, control_index, styles, block_pos)
+                        })
                         .unwrap_or(0.0)
                 };
                 // [Issue #3396] 한글은 TAC 표를 "문자"로 취급해 advance =
@@ -13188,6 +13198,10 @@ fn compute_tac_leading_width(
     composed: &ComposedParagraph,
     target_control_index: usize,
     styles: &ResolvedStyleSet,
+    // [#6298] 블록 취급 TAC 표의 문단 내 char 위치. `composed.tac_controls` 에 없는
+    // 표(폭이 줄폭에 육박해 인라인으로 안 세는 표)도 **자기 앞** 텍스트까지만
+    // leading 으로 세게 하는 정지점이다.
+    block_tac_char_pos: Option<usize>,
 ) -> f64 {
     let Some(first_line) = composed.lines.first() else {
         return 0.0;
@@ -13255,9 +13269,37 @@ fn compute_tac_leading_width(
             }
             Some(_) => break,
             None => {
-                // block 취급 TAC: 전체 run 합산
-                width += estimate_text_width(effective_full, &style);
-                char_pos += run_len;
+                // [#6298] block 취급 TAC 도 **표 앞** 텍스트만 leading 이다.
+                //
+                // 종전에는 줄 0 의 run 을 전부 합산해, 표 **뒤**에 붙은 공백까지
+                // 표의 x 로 실렸다 — 그래서 같은 선언의 두 표가 어긋나고(156586318
+                // 12쪽: 58.10 vs 70.94pt) 공백을 표 앞에 두나 뒤에 두나 결과가 같은
+                // "순서 무관"이 나왔다. leading 은 정의상 **앞**에 있는 것이므로,
+                // 표 위치를 알 수 있으면 거기서 멈춘다.
+                match block_tac_char_pos {
+                    Some(stop) if char_pos >= stop => break,
+                    Some(stop) if char_pos + run_len > stop => {
+                        let partial_len = stop - char_pos;
+                        let partial: String = run.text.chars().take(partial_len).collect();
+                        let partial_display: String = partial
+                            .chars()
+                            .flat_map(|ch| {
+                                use super::pua_oldhangul::map_pua_old_hangul;
+                                if let Some(jamos) = map_pua_old_hangul(ch) {
+                                    jamos.iter().copied().collect::<Vec<_>>()
+                                } else {
+                                    vec![ch]
+                                }
+                            })
+                            .collect();
+                        width += estimate_text_width(&partial_display, &style);
+                        break;
+                    }
+                    _ => {
+                        width += estimate_text_width(effective_full, &style);
+                        char_pos += run_len;
+                    }
+                }
             }
         }
     }

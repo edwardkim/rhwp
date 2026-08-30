@@ -82,6 +82,12 @@ cargo nextest run --locked \
   --tests --test-threads <현재_환경에_맞는_값> --no-fail-fast
 ~~~
 
+`cargo test --profile release-test --tests`는 이 전체 integration 회귀의 대체 명령이 아니다.
+unsharded libtest 경로는 nextest 우선순위, `--no-fail-fast`, 고정 review target 계약을 따르지
+않으므로 전체 integration 검증에는 반드시 위 `cargo nextest run --locked` 명령을 사용한다.
+`cargo test`는 이 문서가 정확한 test target 또는 Native Skia lib 범위를 지정한 focused 명령에만
+쓴다. 실수로 전체 `cargo test`를 시작했다면 중지하고, 그 실행을 검증 결과로 기록하지 않는다.
+
 ### integration test source 추가와 자동 sharding
 
 새 회귀·계약 테스트는 `tests/cases/issue_<번호>_<설명>.rs` 또는

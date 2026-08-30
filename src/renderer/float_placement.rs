@@ -354,8 +354,17 @@ fn next_plain_text_vpos(next_para: Option<&Paragraph>) -> Option<i32> {
     }
     next.line_segs
         .iter()
-        .find(|seg| seg.tag & 0x8000_0000 == 0 && seg.line_height > 0)
-        .map(|seg| seg.vertical_pos)
+        .enumerate()
+        .find(|(_, seg)| seg.tag & 0x8000_0000 == 0 && seg.line_height > 0)
+        .map(|(index, seg)| ladder_vpos(next, index, seg.vertical_pos))
+}
+
+fn ladder_vpos(paragraph: &Paragraph, index: usize, fallback: i32) -> i32 {
+    paragraph
+        .source_line_seg_vertical_pos
+        .as_ref()
+        .and_then(|source| source.get(index).copied())
+        .unwrap_or(fallback)
 }
 
 fn stored_anchor_band_host_line_from_ladder(
@@ -385,15 +394,18 @@ fn stored_anchor_band_host_line_from_ladder(
     // 개체-개체 간격이라 이미 #1133 이 보존한다.
     let next_vpos = next_plain_text_vpos?;
 
-    let host_seg = para
+    // [#6312] 사다리 등식은 재조판 좌표가 아니라 원본 저장 vpos 로 본다.
+    let (host_index, host_seg) = para
         .line_segs
         .iter()
-        .find(|seg| seg.tag & 0x8000_0000 == 0 && seg.line_height > 0)?;
+        .enumerate()
+        .find(|(_, seg)| seg.tag & 0x8000_0000 == 0 && seg.line_height > 0)?;
     let advance = host_seg.line_height + host_seg.line_spacing.max(0);
     if advance <= 0 {
         return None;
     }
-    ((next_vpos - host_seg.vertical_pos - advance).abs() <= 1).then_some(advance)
+    let host_vpos = ladder_vpos(para, host_index, host_seg.vertical_pos);
+    ((next_vpos - host_vpos - advance).abs() <= 1).then_some(advance)
 }
 
 /// 문단에 공백·개체 마커가 아닌 실제 글자가 있는가.
