@@ -15,21 +15,26 @@ author: planet6897
 - 통합 적용 commits: `8012d5c0df247d619dc10ffef0aa4b9c32de81c1`,
   `c4fca0b6899192568a28ca7fe5ceaa4478cd05fb`
 - 메인터너 보정: `e4617834596e6dd86c9102c3db961d156dc3eef1`
-  (`보정: CMYK JPEG marker fill 판별 안정화`)
+  (`보정: CMYK JPEG marker fill 판별 안정화`),
+  `160746888a3d42ec48da0f66cbd9af6a5e84039f`
+  (`보정: CMYK JPEG 계약을 integration suite로 이동`)
 - 통합 기준 base: `upstream/devel@77bcaaa49c89dc12761282c759717188a880064c`
 - 작성 시점 원 PR은 Open/non-draft, `MERGEABLE/CLEAN`이며 Build & Test와 CodeQL이 성공했다. merge 직전에
   보정 포함 최신 통합 head의 CI와 mergeability를 확인한다.
 
 원 head의 실제 CMYK fixture는 통과하지만 JPEG은 SOF marker 앞에 `0xFF` fill byte를 반복할 수 있다.
 원 구현은 첫 fill byte를 marker로 해석해 유효한 4성분 JPEG을 놓칠 수 있었으므로, 메인터너가 SOI·segment
-길이 검증과 fill-byte skip을 추가했다. 새 unit test가 `FF FF C0` SOF0 minimal header를 4성분으로 판별한다.
+길이 검증과 fill-byte skip을 추가했다. `FF FF C0` SOF0 minimal header를 4성분으로 판별하는 새
+integration contract는 기존 #6310 fixture suite에 둬 source-side `#[cfg(test)]` 기준선은 올리지 않는다.
 
 ## 검토와 검증
 
-- `cargo test --locked -p rhwp renderer::image_resolver::tests::four_component_jpeg_detector_accepts_marker_fill_before_sof
-  --target-dir target/pr-review`가 1 passed였다.
-- 보정 후 native/WASM `cargo clippy --locked -p rhwp --lib ... -D warnings`, `cargo fmt --all -- --check`,
-  `git diff --check`가 통과했다. 4성분 검출 및 HWPX ZOOM 계약을 포함한 focused nextest 22건도 통과했다.
+- `160746888` 뒤 `node scripts/rust-unit-test-tiers.mjs --check`가 source-side 4,221 tests/299 modules로
+  통과했고, `node scripts/rust-test-suite-manifest.mjs --check`도 4,643 static test attrs/48 of 48
+  integration target으로 통과했다.
+- 보정 후 host all-target와 WASM library `cargo clippy ... -D warnings`, `cargo fmt --all -- --check`,
+  `git diff --check`가 통과했다. 4성분 marker-fill, HWPX ZOOM, 밑줄, 인용부호 계약을 포함한 focused
+  nextest 23건도 통과했다.
 - 보정 전 통합 candidate에서 `cargo nextest run --cargo-profile release-test --target-dir target/pr-review
   --tests --test-threads 12 --no-fail-fast`를 실행해 8,794 passed, 43 skipped를 확인했다. 이후 보정의
   영향 범위는 JPEG header scan뿐이므로 해당 단위·fixture regression과 lint를 다시 실행했다.
@@ -57,4 +62,4 @@ author: planet6897
 
 **메인터너 보정 후 수용 가능.** 원 PR의 4성분 정규화 방향과 fixture는 수용 가능하나, 유효한 marker-fill
 JPEG을 놓치지 않도록 통합 head에 범위를 제한한 `e4617834596e6dd86c9102c3db961d156dc3eef1` 보정이 필요했다.
-이 보정 포함 통합 PR의 최신 CI 성공과 mergeability 재확인이 merge 조건이다.
+두 보정 포함 통합 PR의 최신 CI 성공과 mergeability 재확인이 merge 조건이다.
