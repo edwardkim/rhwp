@@ -309,6 +309,60 @@ pub(crate) fn stored_empty_anchor_band_host_line_advance_hu(
     if !stored_layout || !para.text.is_empty() {
         return None;
     }
+    stored_anchor_band_host_line_from_ladder(para, control_index, next_plain_text_vpos(next_para))
+}
+
+/// [#6312] 글이 있는 자리차지 host 문단의 저장 사다리가 host 줄만 증언하면
+/// 표 밴드 아래에 그 줄 상자(`lh + ls`)를 계상한다.
+///
+/// #6147 은 빈 앵커(`text.is_empty()`)에만 발동한다. 글이 있으면 #1147 억제가
+/// 꺼져 조판이 host 줄을 이미 계상한다고 가정했는데, `is_current_visible_para_float`
+/// 경로는 표 뒤에 줄 높이/줄간격을 건너뛰어 다음 문단이 표에 붙는다
+/// (156721992 1쪽: 한글 27.0pt 자리, rhwp 0). 같은 사다리 등식
+/// `next.vpos - host.vpos == lh+ls` 가 표 높이를 접었다는 뜻이라 표 높이를
+/// 다시 더하지 않는다(#4090 이중 계상 차단과 같은 축).
+pub(crate) fn stored_visible_anchor_band_host_line_advance_hu(
+    stored_layout: bool,
+    para: &Paragraph,
+    control_index: usize,
+    next_para: Option<&Paragraph>,
+) -> Option<i32> {
+    stored_visible_anchor_band_host_line_advance_from_vpos(
+        stored_layout,
+        para,
+        control_index,
+        next_plain_text_vpos(next_para),
+    )
+}
+
+pub(crate) fn stored_visible_anchor_band_host_line_advance_from_vpos(
+    stored_layout: bool,
+    para: &Paragraph,
+    control_index: usize,
+    next_plain_text_vpos: Option<i32>,
+) -> Option<i32> {
+    if !stored_layout || !para_has_non_whitespace_text(para) {
+        return None;
+    }
+    stored_anchor_band_host_line_from_ladder(para, control_index, next_plain_text_vpos)
+}
+
+fn next_plain_text_vpos(next_para: Option<&Paragraph>) -> Option<i32> {
+    let next = next_para?;
+    if !para_has_non_whitespace_text(next) || !next.controls.is_empty() {
+        return None;
+    }
+    next.line_segs
+        .iter()
+        .find(|seg| seg.tag & 0x8000_0000 == 0 && seg.line_height > 0)
+        .map(|seg| seg.vertical_pos)
+}
+
+fn stored_anchor_band_host_line_from_ladder(
+    para: &Paragraph,
+    control_index: usize,
+    next_plain_text_vpos: Option<i32>,
+) -> Option<i32> {
     // 문단의 가시 개체가 전부 비-TAC 자리차지(vert=문단) float 이어야 한다 — 인라인
     // 내용이 섞이면 host 줄이 그 내용의 줄이지 앵커 줄이 아니다.
     let mut last_float = None;
@@ -329,23 +383,16 @@ pub(crate) fn stored_empty_anchor_band_host_line_advance_hu(
     }
     // 다음이 개체 없는 일반 본문 문단일 때만 — 앵커 스택(다음도 빈 앵커)의 줄간격은
     // 개체-개체 간격이라 이미 #1133 이 보존한다.
-    if !next_para.is_some_and(|next| para_has_non_whitespace_text(next) && next.controls.is_empty())
-    {
-        return None;
-    }
+    let next_vpos = next_plain_text_vpos?;
 
-    fn stored_seg(paragraph: &Paragraph) -> Option<&crate::model::paragraph::LineSeg> {
-        paragraph
-            .line_segs
-            .iter()
-            .find(|seg| seg.tag & 0x8000_0000 == 0 && seg.line_height > 0)
-    }
-    let host_seg = stored_seg(para)?;
+    let host_seg = para
+        .line_segs
+        .iter()
+        .find(|seg| seg.tag & 0x8000_0000 == 0 && seg.line_height > 0)?;
     let advance = host_seg.line_height + host_seg.line_spacing.max(0);
     if advance <= 0 {
         return None;
     }
-    let next_vpos = next_para.and_then(stored_seg)?.vertical_pos;
     ((next_vpos - host_seg.vertical_pos - advance).abs() <= 1).then_some(advance)
 }
 
