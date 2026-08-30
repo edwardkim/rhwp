@@ -1,9 +1,9 @@
 //! 표 레이아웃 (layout_table + 셀 높이/줄범위 계산)
 
-use super::super::composer::{ComposedLine, ComposedParagraph, compose_paragraph};
+use super::super::composer::{compose_paragraph, ComposedLine, ComposedParagraph};
 use super::super::height_measurer::{
-    MeasuredTable, fit_measured_table_declared_tail_to_declared_height,
-    fit_measured_table_nested_tail_to_declared_height,
+    fit_measured_table_declared_tail_to_declared_height,
+    fit_measured_table_nested_tail_to_declared_height, MeasuredTable,
 };
 use super::super::page_layout::LayoutRect;
 use super::super::render_tree::*;
@@ -68,9 +68,17 @@ pub(crate) fn issue2424_profile_enabled() -> bool {
 /// - indent=0: 모든 line 에 margin_left 만 적용
 pub(super) fn effective_margin_left_line(margin_left: f64, indent: f64, line_n: usize) -> f64 {
     let line_indent = if indent > 0.0 {
-        if line_n == 0 { indent } else { 0.0 }
+        if line_n == 0 {
+            indent
+        } else {
+            0.0
+        }
     } else if indent < 0.0 {
-        if line_n == 0 { 0.0 } else { indent.abs() }
+        if line_n == 0 {
+            0.0
+        } else {
+            indent.abs()
+        }
     } else {
         0.0
     };
@@ -166,7 +174,7 @@ fn stored_layout_relocated_empty_rowbreak_picture_resets_offset(
 }
 
 use super::super::composer::effective_text_for_metrics;
-use super::super::{ShapeStyle, hwpunit_to_px};
+use super::super::{hwpunit_to_px, ShapeStyle};
 use super::border_rendering::{
     apply_table_outer_border_fill, build_row_col_x, collect_cell_borders, create_border_line_nodes,
     mark_cell_span_interior_covered, render_cell_diagonal, render_edge_borders,
@@ -2437,7 +2445,11 @@ impl LayoutEngine {
                                     let any_border = bs.borders.iter().any(|b| {
                                         b.line_type != crate::model::style::BorderLineType::None
                                     });
-                                    if any_border { Some(bs.borders) } else { None }
+                                    if any_border {
+                                        Some(bs.borders)
+                                    } else {
+                                        None
+                                    }
                                 } else {
                                     None
                                 }
@@ -3062,13 +3074,17 @@ impl LayoutEngine {
         }
 
         // ── 5-1. 표 전체 외곽 테두리 보충 ──
-        // 칸이 바깥 변을 SOLID 로 이미 넣었으면 한 겹으로 두고, NONE 이라 빈
-        // 슬롯에만 table.border_fill_id 를 넣는다. 칸 occupancy 로 막으면
-        // 일러두기 틀(#6311)처럼 바깥 칸이 NONE 인 표의 세 변이 사라진다.
+        // 칸이 바깥을 덮지 않는 구멍은 표 테두리 fallback. 바깥이 일부 SOLID
+        // 인 부분 프레임만 occupancy+NONE 슬롯을 메운다 (#6311 일러두기).
         if table.border_fill_id > 0 {
             let tbl_idx = (table.border_fill_id as usize).saturating_sub(1);
             if let Some(tbl_bs) = styles.border_styles.get(tbl_idx) {
-                apply_table_outer_border_fill(&mut h_edges, &mut v_edges, &tbl_bs.borders);
+                apply_table_outer_border_fill(
+                    &mut h_edges,
+                    &mut v_edges,
+                    &tbl_bs.borders,
+                    &table.cells,
+                );
             }
         }
 
@@ -11186,7 +11202,11 @@ impl LayoutEngine {
         // 을 판정한다.
         let page_body_h = {
             let body = self.current_body_area.get().3;
-            if body > 0.5 { body } else { 1100.0 }
+            if body > 0.5 {
+                body
+            } else {
+                1100.0
+            }
         };
         unit_idx == start
             && consumed_in_cell <= 0.5
@@ -13755,7 +13775,11 @@ impl LayoutEngine {
                         }
                     }
                     let band = offset - prefix;
-                    if band > 0.5 { band } else { 0.0 }
+                    if band > 0.5 {
+                        band
+                    } else {
+                        0.0
+                    }
                 } else {
                     0.0
                 };
@@ -14804,9 +14828,9 @@ impl LayoutEngine {
 #[cfg(test)]
 mod row_cut_tests {
     use super::{
-        CellUnit, LayoutEngine, MixedNestedOwnerMarker, RecursiveBlockPreludeRole,
         stored_layout_relocated_empty_rowbreak_picture_resets_offset,
-        trailing_reservation_after_final_source_owner,
+        trailing_reservation_after_final_source_owner, CellUnit, LayoutEngine,
+        MixedNestedOwnerMarker, RecursiveBlockPreludeRole,
     };
     use crate::model::control::Control;
     use crate::model::image::Picture;
@@ -16883,12 +16907,10 @@ mod row_cut_tests {
             .map(|cell| eng.cell_units(cell, &owner_table, &styles))
             .collect::<Vec<_>>();
         let unrelated_after = eng.cell_units(&unrelated_table.cells[0], &unrelated_table, &styles);
-        assert!(
-            owner_before
-                .iter()
-                .zip(&owner_after)
-                .all(|(before, after)| !std::sync::Arc::ptr_eq(before, after))
-        );
+        assert!(owner_before
+            .iter()
+            .zip(&owner_after)
+            .all(|(before, after)| !std::sync::Arc::ptr_eq(before, after)));
         assert!(std::sync::Arc::ptr_eq(&unrelated_before, &unrelated_after));
         assert!(!eng.table_has_visible_text_with_nested_table(&owner_table));
         assert_eq!(
