@@ -1,7 +1,7 @@
 # 한글 정답지 PDF 대비 rhwp pageCount 기준선.
 # 생성: python tools/oracle_page_count/regenerate.py
 # 열: 상대경로 <TAB> 정답지쪽수(쉼표구분) <TAB> 이 기준선의 rhwp쪽수
-# 정답지쪽수는 원본 형식·한컴 엔진이 확인된 canonical PDF만 쓴다.
+# 정답지쪽수는 원본 형식·rhwp info --json 저장 제품 엔진이 일치하는 canonical PDF만 쓴다.
 # 형식 미표기·kopub/no-ttf 쪽수는 섞지 않는다. rhwp가 다르면 미해결 격차다.
 # 모아 찍기(print_method 4·5) 문서는 장 수가 애초에 달라 제외한다.
 samples/2010-01-06.hwp	6	6
