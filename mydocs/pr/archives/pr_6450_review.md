@@ -22,9 +22,10 @@ author: t2c-lab
 - 깊은 HTML tree의 재귀 깊이와 입력 크기를 상한으로 두고, 중복 span 탐색을 제거하며, 개행 없는 장문을
   조판 전 cap 단위로 나눈다. 관련 원인은 [#6449](https://github.com/edwardkim/rhwp/issues/6449)에 기록돼 있다.
 - 원 PR에는 새 동작을 직접 고정하는 Rust contract가 없었다. 통합 branch에는 production logic을 바꾸지
-  않는 메인터너 테스트 보정을 추가했다. 큰 markup fallback과 4,000-character 장문 분할을 검증한다.
-- `cargo test --locked --profile release-test --target-dir target/pr-review --lib
-  document_core::commands::html_import::tests -- --nocapture` 결과는 `6 passed`였다.
+  않는 메인터너 테스트 보정을 추가했다. 큰 markup fallback과 4,000-character 장문 분할은 public
+  `paste_html_native` 경로의 `tests/cases/html_import_paste_contract.rs`가 검증한다.
+- #6486 초기 CI는 source-side `#[cfg(test)]` 증가를 거부했다. 같은 네 계약을 public integration test로
+  옮긴 뒤 source module test `2 passed`, public contract `4 passed`, RustUnitTier base `4,221`을 확인했다.
 
 ## 판단
 

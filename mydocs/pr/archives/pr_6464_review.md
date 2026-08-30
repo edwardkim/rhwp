@@ -23,9 +23,12 @@ author: t2c-lab
   들어가도록 HTML import 경로를 보완한다. 관련 원인은 [#6463](https://github.com/edwardkim/rhwp/issues/6463)에
   기록돼 있다.
 - 원 PR의 서명 shape 결과를 고정하는 새 Rust contract가 없었다. 메인터너 보정은 production logic을
-  바꾸지 않고 다음을 고정했다: top-level span의 tag 미노출, `홍길동`의 bold start offset, ` 부장`의
-  underline UTF-16 offset, 두 list item의 bullet text.
-- 공유 HTML import test module은 `6 passed`였다.
+  바꾸지 않고 public `paste_html_native` 결과로 다음을 고정했다: top-level span의 tag 미노출, 붙여넣은
+  문단에 적용된 bold/underline shape, 두 list item의 bullet text. 붙여넣기 이후의 run 시작 위치는 내부
+  document offset으로 재계산되므로 UTF-16 offset을 외부 API 계약으로 고정하지 않는다.
+- #6486 초기 CI는 source-side `#[cfg(test)]` 증가를 거부했다. 네 계약을
+  `tests/cases/html_import_paste_contract.rs`로 옮긴 뒤 source module test `2 passed`, public contract
+  `4 passed`, RustUnitTier base `4,221`을 확인했다.
 
 ## 판단
 
