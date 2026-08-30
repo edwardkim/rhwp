@@ -4090,6 +4090,21 @@ impl LayoutEngine {
                         })
                     })
                     .unwrap_or(false);
+            // [#6353] 셀 안 TAC 도형(글자처럼 사각형)도 저장 sw 를 쓴다. exam_kor
+            // 머리말 홀수형 박스: 셀 폭 22206HU vs 저장 sw 22054HU (차 152HU =
+            // 2.03px @96dpi). 200HU 노이즈 문턱은 이 잔차를 놓쳐 줄 끝 도형이
+            // 유도 내폭 우단에 붙어 한/글보다 +1.88px 오른다.
+            let line_has_inline_tac_shape = !tac_offsets_px.is_empty()
+                && para
+                    .map(|p| {
+                        line_tac_offsets.iter().any(|(_, _, ci)| {
+                            matches!(
+                                p.controls.get(*ci),
+                                Some(Control::Shape(s)) if s.common().treat_as_char
+                            )
+                        })
+                    })
+                    .unwrap_or(false);
 
             // [Task #568] 임계값에 column_start 포함 — 실제 가용 line 폭은 (sw + cs).
             // 단락 들여쓰기를 LINE_SEG.column_start 로 인코딩한 paragraph 의
@@ -4178,14 +4193,21 @@ impl LayoutEngine {
                             })
                         })
                 };
+            let cell_tac_shape_stored_line = line_has_inline_tac_shape
+                && cell_ctx.is_some()
+                && comp_line.segment_width > 0
+                && line_avail_hu < col_area_w_hu;
             let uses_stored_segment_geometry = (has_picture_shape_square_wrap
                 || line_has_inline_tac_table
                 || precomputed_body_wrap_line
                 || empty_stored_wrap_line
                 || body_square_wrap_stored_line
-                || cell_square_wrap_stored_line)
+                || cell_square_wrap_stored_line
+                || cell_tac_shape_stored_line)
                 && comp_line.segment_width > 0
-                && (line_avail_hu < col_area_w_hu - 200 || cs_significant);
+                && (line_avail_hu < col_area_w_hu - 200
+                    || cs_significant
+                    || cell_tac_shape_stored_line);
             let (effective_col_x, effective_col_w) = if uses_stored_segment_geometry {
                 let cs_px = hwpunit_to_px(comp_line.column_start, self.dpi);
                 let sw_px = hwpunit_to_px(comp_line.segment_width, self.dpi);
