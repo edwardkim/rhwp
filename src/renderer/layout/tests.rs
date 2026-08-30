@@ -2008,7 +2008,7 @@ fn test_tac_leading_width_block_table_full_line() {
         }],
         ..Default::default()
     };
-    let width = super::compute_tac_leading_width(&composed, 0, &styles);
+    let width = super::compute_tac_leading_width(&composed, 0, &styles, None);
     // [#2279] 자간 글자폭 비례: 4 spaces × (10 base + 10×-8% = 9.2) = 36.8
     // (min_clamp 5.0 미작동)
     assert!((width - 36.8).abs() < 0.5, "expected ~36.8, got {}", width);
@@ -2103,7 +2103,7 @@ fn test_tac_leading_width_inline_table_partial() {
         }],
         ..Default::default()
     };
-    let width = super::compute_tac_leading_width(&composed, 0, &styles);
+    let width = super::compute_tac_leading_width(&composed, 0, &styles, None);
     // "ab" 2 chars, 반각 × font_size/2 = 20*0.5*2 = 20
     assert!((width - 20.0).abs() < 0.5, "expected ~20.0, got {}", width);
 }
