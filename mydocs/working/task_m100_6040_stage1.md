@@ -4,7 +4,7 @@
 - **브랜치**: `codex/issue-6040-zoom-topology`
 - **기준 commit**: `upstream/devel` `2deb3dd61`
 - **계획 commit**: `5b98fb684`
-- **결과 승인**: 2026-08-30 작업지시자 승인, Stage 2 진행
+- **결과 승인**: 2026-08-30 작업지시자 승인; 2026-08-30 Stage 2·3 폐기 뒤 이 commit으로 재구성
 - **Stage 범위**: 자동 열 순수 계산·page count cap·중앙 정렬·히스테리시스 계약. 줌 preview와
   topology commit 분리는 Stage 2에 유지
 
@@ -75,11 +75,24 @@ tests 46, pass 46, fail 0
 
 ## 다음 게이트
 
-작업지시자가 Stage 1 결과를 승인하면 이 source·test·보고 문서를 commit하고 Stage 2에서만 다음 작업을
-진행한다.
+Stage 2·3의 Canvas 전용 preview 설계는 기존 단일 좌표 계약을 깨는 회귀 때문에 폐기했다. 전체 상태는
+`codex/issue-6040-zoom-topology-backup-20260830@d97307cab`에 보존했고, 작업 branch는 이 Stage 1
+commit `63fa3d0cf`로 재구성했다.
 
-1. 줌 제스처 시작 시 commit topology와 기준 페이지/정규화 앵커 snapshot
-2. animation frame의 전체 `recalcLayout()` 제거와 active element CSS preview
-3. settled event의 최종 후보 단일 commit과 앵커 복원
+## Stage 1 재구성 뒤 기존 줌 재검증
 
-Stage 2 승인 전에는 활성 Canvas 점진 교체(Stage 3)를 구현하지 않는다.
+- 기준 `2deb3dd61` 대비 `canvas-view.ts`, `ruler.ts`, `viewport-manager.ts`, `caret-renderer.ts`,
+  `input-handler.ts` diff 0
+- 자동 배치·줌·눈금자 focused: 69건 중 69 pass
+- 전체 Studio: 1,246건 중 1,245 pass·1 skip·0 fail
+- TypeScript no-emit·239 modules production build·`git diff --check`: 통과
+- Chromium, 편집 viewport `1260px`, 6쪽 자동 배치:
+  - 60% 2열, 점유 묶음 중심 오차 0.14px
+  - 50% 3열, 점유 묶음 중심 오차 0.07px
+  - 100→90%에서 content와 종이 폭이 매 frame 함께 변하고 중간 92%에서도 눈금자 경계 일치
+  - 50→60% 3→2열 전환 전 frame에서 caret의 page-local X 비율 `0.1428`, Y `0.1178~0.1179`
+  - warning/error 0건
+
+성능 최적화는 눈금자·캐럿·선택·hit-test까지 같은 preview geometry를 소비하는 새 구현 계획을 별도로
+승인하기 전에는 재개하지 않는다. 작업지시자가 2026-08-30 재검증 결과를 승인했으므로 이 재구성 문서를
+별도 commit으로 고정하고, #6040의 다음 범위는 줌 경로와 분리된 눈금자 끝 라벨 처리(Stage 1.1)만 진행한다.
