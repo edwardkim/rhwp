@@ -19,7 +19,8 @@ use crate::renderer::composer::{compose_paragraph, first_text_line, ComposedPara
 use crate::renderer::float_placement::{
     horizontal_range, is_page_bottom_fixed_float, is_para_topbottom_float,
     native_empty_host_rowbreak_line_advance_hu, signed_hwpunit,
-    stored_empty_anchor_band_host_line_advance_hu, FloatLaneSet, FloatPlacementContext,
+    stored_empty_anchor_band_host_line_advance_hu,
+    stored_visible_anchor_band_host_line_advance_from_vpos, FloatLaneSet, FloatPlacementContext,
 };
 use crate::renderer::height_cursor::HeightCursor;
 use crate::renderer::height_measurer::{
@@ -1161,6 +1162,9 @@ struct TypesetState {
     /// [#5870] 다음 문단이 빈 host 자리차지 표 앵커인가 — 빈-host float 의
     /// 물리-사다리 여분 가산 발동 조건. 문단 루프 머리에서 세팅.
     next_para_is_empty_float_table_anchor: bool,
+    /// [#6312] 다음 문단이 개체 없는 실텍스트 본문인가 — 글 있는 자리차지 host
+    /// 줄 상자 가산의 사다리 게이트.
+    next_para_is_plain_text: bool,
     /// [#1955] 글뒤로 표 후행 빈 문단의 보류 흡수 목록. 표 fragment 는 지연 flush
     /// 되므로 흡수 시점에는 anchor 첫 fragment 단을 찾을 수 없다 — 페이지 확정 후
     /// (최종 flush 뒤) 첫 fragment 단에 일괄 부착한다.
@@ -4458,6 +4462,7 @@ impl TypesetState {
             behind_float_table_para: None,
             next_para_first_stored_vpos: None,
             next_para_is_empty_float_table_anchor: false,
+            next_para_is_plain_text: false,
             behind_pending_absorbs: Vec::new(),
             overlay_shape_shortcut_para: None,
             pending_overlay_continuations: Vec::new(),
@@ -7146,6 +7151,9 @@ impl TypesetEngine {
             st.next_para_is_empty_float_table_anchor = paragraphs
                 .get(para_idx + 1)
                 .is_some_and(|p| para_is_empty_topbottom_table_anchor(p));
+            st.next_para_is_plain_text = paragraphs
+                .get(para_idx + 1)
+                .is_some_and(|p| para_has_non_whitespace_text(p) && p.controls.is_empty());
             if std::env::var("RHWP_FLOW_DBG").is_ok() {
                 eprintln!(
                     "FLOW_DBG pi={} page={} cur_h={:.1}",
@@ -20295,6 +20303,22 @@ impl TypesetEngine {
                 end_line: total_lines,
             });
             st.current_height += post_height;
+        } else if is_visible_para_float && is_last_table {
+            // [#6312] host 글줄을 post-text 로 방출하지 못한 자리차지 표.
+            // 저장 사다리가 lh+ls 만 증언하면 그 줄 상자를 표 밴드 아래에 계상한다.
+            let next_vpos = if st.next_para_is_plain_text {
+                st.next_para_first_stored_vpos
+            } else {
+                None
+            };
+            if let Some(line_advance) = stored_visible_anchor_band_host_line_advance_from_vpos(
+                st.profile.hwp5_stored_pagination_layout() || st.profile.hwpx_stored_layout(),
+                para,
+                ctrl_idx,
+                next_vpos,
+            ) {
+                st.current_height += hwpunit_to_px(line_advance, self.dpi);
+            }
         }
 
         // TAC 표: trailing line_spacing 복원 (Paginator place_table_fits:777-783 동일)
