@@ -13,13 +13,12 @@
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 
-/// IR 축만 실패하고 쪽수는 안정적인 표본 — 16쪽 유지, IR 차이 1건(선두
-/// char_shapes 경계 시프트 — 본 PR 의 말미 경계 수정(#3532)으로도 남는 별개 클래스).
+/// IR 축만 실패하고 쪽수는 안정적인 표본.
 ///
-/// hwp3-sample10 은 본 PR(#3532, 말미 경계)이 정상화하므로 표본으로 쓰지 않는다
-/// (#3820·#4916 때 교체와 같은 관례 — 정상화된 문서를 표본으로 계속 쓰지 않는다).
-/// issue_265 는 저장 캠페인 전 수정 통합 트리 전수 스캔으로 잔존을 확인했다.
-const IR_FAIL_SAMPLE: &str = "samples/issue_265.hwp";
+/// hwp3-sample10 은 #3532 가, issue_265 는 #5251 이 정상화하므로 표본으로
+/// 쓰지 않는다 (정상화된 문서를 실패 표본으로 계속 쓰지 않는다).
+/// hwp3-sample16 은 #3518 로 쪽수는 64로 유지되고, 저장 IR 잔존은 남는다.
+const IR_FAIL_SAMPLE: &str = "samples/hwp3-sample16.hwp";
 /// 두 축 모두 통과하는 표본 — 무회귀 기준선.
 const CLEAN_SAMPLE: &str = "samples/table-001.hwp";
 
