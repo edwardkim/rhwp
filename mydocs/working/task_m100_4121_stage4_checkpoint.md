@@ -1,0 +1,75 @@
+# Task M100-4121 Stage 4 체크포인트 — 안전 중단과 재개 완료
+
+## 중단 상태
+
+2026-08-28 이동 요청에 따라 실행 중이던 전체 nextest와 `127.0.0.1:7700` Studio 개발 서버를
+정상 종료했다. 테스트 실패로 중단한 것이 아니며, 아래 완료 증적 다음부터 재개한다.
+
+## 완료한 검증
+
+- 최신 branch 코어로 최적화 WASM 빌드 완료
+  - `CARGO_TARGET_DIR=target/pr-review scripts/wasm-pack-locked.sh --target web --out-dir pkg`
+- 실제 Google Chrome에서 #4121 Stage 2~4 E2E 50/50 통과
+  - 기존 mouse drag, Shift 선택, scroll-in 반복 페이지 투영
+  - 선택 delete/typing/IME/paste/copy/cut/부분 서식과 Undo/Redo
+  - 4페이지 Both 머리말의 전 페이지 투영
+  - Odd/Even 꼬리말의 같은 정의 페이지만 투영 및 다른 정의 클릭 전환
+  - 다문단 copy/cut/paste/부분 서식
+- `cargo fmt --all`, `cargo fmt --all -- --check` 통과
+- Rust unit tier 검사 4,221 tests / 299 modules 통과
+- Rust integration suite manifest 1,015 sources / 최소 6,559 cases 통과
+- E2E manifest tracked 121 / rows 121 통과
+- `cargo clippy --locked --all-targets -- -D warnings` 통과
+- `git diff --check` 통과
+
+로컬 E2E 증적은 다음 ignored 산출물에 있다.
+
+- `rhwp-studio/e2e/screenshots/issue4121-stage4-both-header-multiline-selection.png`
+- `rhwp-studio/e2e/screenshots/issue4121-stage4-odd-even-footer-switch.png`
+- `output/e2e/header-footer-selection-issue4121-report.html`
+
+## 중단한 검증
+
+다음 전체 회귀는 release-test 바이너리 빌드 중 사용자의 이동 요청으로 `Ctrl+C` 종료했다.
+실패 판정이 아니며 재개 시 같은 target을 사용한다.
+
+```bash
+cargo nextest run --locked \
+  --cargo-profile release-test --target-dir target/pr-review \
+  --tests --no-fail-fast
+```
+
+## 재개 순서
+
+1. 중단 시점 `git status`는 `upstream/devel`보다 9커밋 뒤였다. 최신 upstream을 다시 fetch하고
+   clean 상태를 확인한 뒤 계획대로 `upstream/devel`을 merge한다. base가 바뀌므로 아래 검증은
+   merge된 head에서 다시 판정한다.
+2. 위 전체 nextest를 완료한다.
+3. `npm --prefix rhwp-studio test`와 `npm --prefix rhwp-studio run build`를 실행한다.
+4. 필요하면 아래 서버를 다시 실행해 사용자 수동 확인을 받는다.
+
+   ```bash
+   cd rhwp-studio
+   npm run dev -- --host 127.0.0.1 --port 7700
+   ```
+
+5. 수동 확인 결과와 전체 게이트를 `mydocs/report/task_m100_4121_report.md`에 기록한다.
+6. 오늘할일을 갱신하고 Stage 4 최종 커밋을 만든다.
+
+원격 push, PR 생성 및 #4121 close는 아직 수행하지 않는다.
+
+## 2026-08-29 재개 결과
+
+1. `upstream/devel@f6a6bee8f3`을 merge했고, 충돌은 `mydocs/orders/20260828.md` 한 곳만
+   양쪽 기록을 보존해 해결했다.
+2. 파생 integration suite를 `--prepare`한 뒤 manifest check를 통과했다. 파생 suite와
+   manifest는 ignored 검증 산출물로 stage하지 않았다.
+3. 최신 코어로 최적화 WASM을 다시 만들고 실제 Google Chrome E2E 50/50을 통과했다.
+4. 첫 전체 nextest에서 새 HF 복사 API가 #2724 패스스루 분류 장부에 없음을 발견했다.
+   이 API는 문서 IR이 아니라 `self.clipboard`만 바꾸므로 기존 본문·셀 복사와 같은
+   `SessionState`로 등록했다.
+5. 수정 뒤 #2724 가드 5/5, #4121 회귀 6/6과 전체 nextest 8,558/8,558을 통과했다.
+
+자동 게이트는 완료됐다. 로컬 Studio 서버는 사용자 수동 확인을 위해
+`http://127.0.0.1:7700/`에서 유지한다. 최종 보고서는
+`mydocs/report/task_m100_4121_report.md`에 있다.

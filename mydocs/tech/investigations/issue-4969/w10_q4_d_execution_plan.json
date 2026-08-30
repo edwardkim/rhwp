@@ -4,11 +4,11 @@
   "issue": 4969,
   "stage": "W10-Q4-D",
   "date": "2026-08-30",
-  "status": "Q4-D1-qualified-dormant-certified-approved-checkpoint",
+  "status": "Q4-D1-qualified-dormant-certified-merge-reconfirmed-awaiting-D2-start-approval",
   "baseCheckpoint": "f449960c7",
-  "upstreamDevel": "7592e9c99dab",
-  "aheadBeforeCheckpoint": 40,
-  "behindBeforeCheckpoint": 1,
+  "upstreamDevel": "d3b40a3d7c3e",
+  "aheadAfterMerge": 42,
+  "behindAfterMerge": 0,
   "productMutationBeforeApproval": false,
   "publicApiExpansion": false,
   "mode": "boundedVerticalHwp5TableCellV1",
@@ -61,7 +61,7 @@
     {
       "id": "Q4-D1",
       "name": "exact-source-bound-dormant-owner",
-      "status": "qualified-dormant-certified-approved",
+      "status": "qualified-dormant-certified-merge-reconfirmed",
       "resultEvidence": "mydocs/tech/investigations/issue-4969/w10_q4_d1_exact_source_owner.json",
       "productOutputChange": false
     },
@@ -93,5 +93,5 @@
     "githubComment": true,
     "pullRequest": true
   },
-  "next": "synchronize-upstream-and-revalidate-before-Q4-D2-start-approval"
+  "next": "maintainer-Q4-D2-start-approval"
 }

@@ -22,7 +22,11 @@ import {
   type FlowImagePaintOp,
 } from './flow-image-clip';
 import { FlowImageUrlCache } from './flow-image-url-cache';
-import { drawPageMarginGuides, type PageSpaceRect } from './page-margin-guides';
+import {
+  drawPageMarginGuides,
+  type PageMarginGuideEdges,
+  type PageSpaceRect,
+} from './page-margin-guides';
 import type { RenderBackend } from './render-backend';
 import { isSameRenderDocument, type RenderDocumentIdentity } from './render-document-identity.ts';
 
@@ -64,6 +68,7 @@ interface ReRenderPolicy {
   retrySignature: string;
   reuseStaticFlow: boolean;
   reuseStaticOverlay: boolean;
+  displayScale: number;
 }
 
 interface LayerSummaryCacheEntry {
@@ -115,6 +120,7 @@ export class PageRenderer {
   private prefetchRequestTokens = new Map<number, number>();
   private nextPrefetchRequestToken = 0;
   private flowSplitSupported: boolean | null = null;
+  private pageMarginGuideEdges: PageMarginGuideEdges = 'both';
 
   constructor(
     private wasm: WasmBridge,
@@ -141,6 +147,12 @@ export class PageRenderer {
     this.backend = backend;
     this.renderProfile = renderProfile;
     this.canvaskitRenderer = canvaskitRenderer;
+    return true;
+  }
+
+  setPageMarginGuideEdges(edges: PageMarginGuideEdges): boolean {
+    if (this.pageMarginGuideEdges === edges) return false;
+    this.pageMarginGuideEdges = edges;
     return true;
   }
 
@@ -195,7 +207,7 @@ export class PageRenderer {
     pageIdx: number,
     canvas: HTMLCanvasElement,
     renderScale: number,
-    _displayScale: number,
+    displayScale: number,
     dpr: number,
     context: PageRenderContext = {},
   ): PageRenderResult {
@@ -208,7 +220,7 @@ export class PageRenderer {
     if (
       context.reason === 'text-edit'
       && context.focusedPagePatch?.pageIndex === pageIdx
-      && this.renderFocusedPagePatch(pageIdx, canvas, renderScale, context)
+      && this.renderFocusedPagePatch(pageIdx, canvas, renderScale, displayScale, context)
     ) {
       return { needsTextEditStaticLayerVerification: false };
     }
@@ -231,7 +243,7 @@ export class PageRenderer {
     // 다층 layer 모드.
     // 1) 본문 Canvas 는 'flow' 필터로 BehindText/InFrontOfText plane 제외
     // 2) behind/front plane 은 같은 부모 컨테이너에 별도 canvas layer 로 합성
-    this.drawMarginGuides(pageIdx, canvas, renderScale);
+    this.drawMarginGuides(pageIdx, canvas, renderScale, undefined, displayScale);
     let overlays: LayerPlaneSummary;
     try {
       overlays = this.applyOverlays(
@@ -250,7 +262,7 @@ export class PageRenderer {
       canvas.parentElement && this.removeOverlayLayer(canvas.parentElement, pageIdx, 'flow-static');
       reuseStaticFlow = false;
       this.wasm.renderPageToCanvasFiltered(pageIdx, canvas, renderScale, 'flow', this.renderProfile);
-      this.drawMarginGuides(pageIdx, canvas, renderScale);
+      this.drawMarginGuides(pageIdx, canvas, renderScale, undefined, displayScale);
       overlays = this.applyOverlays(pageIdx, canvas, renderScale, dpr, context, layers, false, []);
     }
     this.rememberLayerPlaneSummary(pageIdx, canvas, renderScale, layers);
@@ -266,6 +278,7 @@ export class PageRenderer {
         retrySignature: overlays.signature,
         reuseStaticFlow,
         reuseStaticOverlay: context.reason === 'text-edit' && context.allowStaticOverlayReuse === true,
+        displayScale,
       },
     );
     return {
@@ -752,13 +765,19 @@ export class PageRenderer {
    * 페이지를 본문 layer (flow) 만 Canvas 에 렌더링한다 (Task #516, Stage 5.2).
    * BehindText / InFrontOfText plane 은 제외 — overlay canvas 로 별도 표시.
    */
-  renderPageFlow(pageIdx: number, canvas: HTMLCanvasElement, scale: number): void {
+  renderPageFlow(
+    pageIdx: number,
+    canvas: HTMLCanvasElement,
+    scale: number,
+    displayScale = scale,
+  ): void {
     this.wasm.renderPageToCanvasFiltered(pageIdx, canvas, scale, 'flow', this.renderProfile);
-    this.drawMarginGuides(pageIdx, canvas, scale);
+    this.drawMarginGuides(pageIdx, canvas, scale, undefined, displayScale);
     this.scheduleReRender(pageIdx, canvas, scale, 0, 0, {
       retrySignature: 'flow-only',
       reuseStaticFlow: false,
       reuseStaticOverlay: false,
+      displayScale,
     });
   }
 
@@ -851,6 +870,7 @@ export class PageRenderer {
     pageIdx: number,
     canvas: HTMLCanvasElement,
     renderScale: number,
+    displayScale: number,
     context: PageRenderContext,
   ): boolean {
     const patch = context.focusedPagePatch;
@@ -868,7 +888,7 @@ export class PageRenderer {
         patch,
         this.renderProfile,
       );
-      this.drawMarginGuides(pageIdx, canvas, renderScale, patch);
+      this.drawMarginGuides(pageIdx, canvas, renderScale, patch, displayScale);
       this.rememberLayerPlaneSummary(pageIdx, canvas, renderScale, layers);
       this.cancelReRender(pageIdx);
       this.imageRetryCounts.delete(pageIdx);
@@ -1007,8 +1027,16 @@ export class PageRenderer {
     canvas: HTMLCanvasElement,
     scale: number,
     clip?: PageSpaceRect,
+    displayScale = 1,
   ): void {
-    drawPageMarginGuides(this.wasm.getPageInfo(pageIdx), canvas, scale, clip);
+    drawPageMarginGuides(
+      this.wasm.getPageInfo(pageIdx),
+      canvas,
+      scale,
+      clip,
+      this.pageMarginGuideEdges,
+      displayScale,
+    );
   }
 
   /**
@@ -1169,7 +1197,7 @@ export class PageRenderer {
         'flow',
         this.renderProfile,
       );
-      this.drawMarginGuides(pageIdx, flowCanvas, renderScale);
+      this.drawMarginGuides(pageIdx, flowCanvas, renderScale, undefined, policy.displayScale);
     }
 
     if (policy.reuseStaticOverlay) return;

@@ -4,7 +4,7 @@
   "issue": 4969,
   "stage": "W10-Q4-D1",
   "date": "2026-08-30",
-  "status": "qualified-dormant-certified",
+  "status": "qualified-dormant-certified-merge-reconfirmed",
   "maintainerResultApproved": true,
   "planCheckpoint": "7b3a7bab4",
   "d0Checkpoint": "87d7a13a2",
@@ -75,5 +75,27 @@
   "hyperVUsed": false,
   "githubMutation": false,
   "temporaryHarnessDisposition": "moved-to-trash",
-  "next": "checkpoint-then-synchronize-upstream-before-Q4-D2-start-approval"
+  "mergeRequalification": {
+    "d1Checkpoint": "d0948166a",
+    "upstreamDevel": "d3b40a3d7c3e",
+    "upstreamCommitCount": 25,
+    "conflictFiles": 3,
+    "recordsPreserved": true,
+    "passthroughGuardExemptions": 46,
+    "passthroughGuardPassed": 5,
+    "d1NativePassed": 30,
+    "remainingExpectedRed": 3,
+    "incomingIssue4121RustPassed": 7,
+    "studioUnitPassed": 1314,
+    "studioUnitSkipped": 1,
+    "studioBuildModules": 244,
+    "studioIssue4969Replay": "passed",
+    "studioRendererContract": "passed",
+    "dockerWasm": "passed",
+    "dockerWasmSeconds": 384,
+    "dockerWasmBytes": 9843870,
+    "stalePkgDeclarationCorrectedByStandardWasmBuild": true,
+    "trackedGeneratedArtifacts": false
+  },
+  "next": "maintainer-Q4-D2-start-approval"
 }

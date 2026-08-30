@@ -305,6 +305,19 @@
   white-space: nowrap;
 }
 
+.tb-hf-label {
+  align-self: center;
+  margin: 6px 8px;
+  padding: 5px 10px;
+  border: 1px solid color-mix(in srgb, var(--focus-ring) 55%, var(--ui-border));
+  border-radius: var(--radius-md);
+  background: var(--ui-selected);
+  color: var(--color-text);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
 /* 텍스트 기반 아이콘 (스프라이트 없는 버튼용) */
 .tb-icon-text {
   display: block;

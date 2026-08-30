@@ -4,7 +4,7 @@
   "issue": 4969,
   "stage": "W10-Q4",
   "date": "2026-08-30",
-  "status": "q4-d1-qualified-dormant-certified-approved-checkpoint",
+  "status": "q4-d1-merge-reconfirmed-awaiting-d2-start-approval",
   "productMutationBeforeApproval": false,
   "slices": [
     {
@@ -31,7 +31,7 @@
     {
       "id": "Q4-D",
       "name": "one-surface-bounded-atomic-activation",
-      "status": "d1-qualified-dormant-certified-approved",
+      "status": "d1-qualified-dormant-certified-merge-reconfirmed",
       "plan": "mydocs/plans/task_m100_4969_w10_q4_d.md",
       "candidate": "hwp5-table-cell-code2-one-paragraph-one-run-one-column-pure-cjk",
       "exit": "exact-position-mismatch-zero-partial-publication-zero"
@@ -70,5 +70,5 @@
     "githubComment": true,
     "pullRequest": true
   },
-  "next": "synchronize-upstream-and-revalidate-before-Q4-D2-start-approval"
+  "next": "maintainer-Q4-D2-start-approval"
 }

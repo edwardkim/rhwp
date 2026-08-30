@@ -13,7 +13,7 @@ use crate::renderer::style_resolver::{
     resolve_styles, resolve_styles_for_document, ResolvedStyleSet,
 };
 
-fn char_shape_mods_affect_text_flow(mods: &crate::model::style::CharShapeMods) -> bool {
+pub(super) fn char_shape_mods_affect_text_flow(mods: &crate::model::style::CharShapeMods) -> bool {
     mods.base_size.is_some()
         || mods.font_ids.is_some()
         || mods.ratios.is_some()

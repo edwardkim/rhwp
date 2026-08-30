@@ -65,8 +65,9 @@ export const MUTATING_METHODS: readonly string[] = [
   'findOrCreateFontId', 'findOrCreateFontIdForLang',
   // 머리말/꼬리말
   'createHeaderFooter', 'deleteHeaderFooter', 'toggleHideHeaderFooter',
-  'insertTextInHeaderFooter', 'deleteTextInHeaderFooter', 'splitParagraphInHeaderFooter',
-  'mergeParagraphInHeaderFooter', 'applyParaFormatInHf', 'insertFieldInHf', 'applyHfTemplate',
+  'insertTextInHeaderFooter', 'deleteTextInHeaderFooter', 'replaceRangeInHeaderFooter',
+  'splitParagraphInHeaderFooter', 'mergeParagraphInHeaderFooter',
+  'applyCharFormatInHeaderFooter', 'applyParaFormatInHf', 'insertFieldInHf', 'applyHfTemplate',
   // 필드/양식/찾아바꾸기/책갈피
   'setFieldValue', 'setFieldValueByName', 'removeFieldAt', 'insertClickHereField',
   'updateClickHereProps', 'setFormValue', 'setFormValueInCell',

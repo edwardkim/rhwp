@@ -8,6 +8,14 @@ import type { CellSelectionPhase, CellSelectionPoint } from './cell-selection-ph
 
 type CellSelectionReason = 'manual' | 'protected';
 
+export type HeaderFooterTextPosition = {
+  sectionIdx: number;
+  isHeader: boolean;
+  applyTo: number;
+  paraIdx: number;
+  charOffset: number;
+};
+
 type PictureSelectionRef = {
   sec: number;
   ppi: number;
@@ -44,6 +52,8 @@ export class CursorState {
   private anchor: DocumentPosition | null = null;
   /** 각주/미주 내부 선택 시작점. 본문 anchor와 별도로 관리한다. */
   private fnAnchor: { fnParaIdx: number; charOffset: number } | null = null;
+  /** 머리말/꼬리말 내부 선택 시작점. 정의 target까지 함께 소유한다. */
+  private hfAnchor: HeaderFooterTextPosition | null = null;
 
   // ─── 머리말/꼬리말 편집 모드 ──────────────────────────────
   private _headerFooterMode: 'none' | 'header' | 'footer' = 'none';
@@ -99,7 +109,7 @@ export class CursorState {
 
   /** 선택 영역이 있는지 반환한다 */
   hasSelection(): boolean {
-    return this.anchor !== null || this.fnAnchor !== null;
+    return this.anchor !== null || this.fnAnchor !== null || this.hfAnchor !== null;
   }
 
   /** 선택 영역 (anchor → focus)을 반환한다 */
@@ -161,6 +171,21 @@ export class CursorState {
     };
   }
 
+  /** 머리말/꼬리말 내부 선택 영역을 start < end 순서로 반환한다. */
+  getHeaderFooterSelectionOrdered(): {
+    start: HeaderFooterTextPosition;
+    end: HeaderFooterTextPosition;
+    preferredPage: number;
+  } | null {
+    if (!this.hfAnchor || this._headerFooterMode === 'none') return null;
+    const focus = this.currentHeaderFooterTextPosition();
+    if (!CursorState.sameHeaderFooterTarget(this.hfAnchor, focus)) return null;
+    const cmp = CursorState.compareHeaderFooterPositions(this.hfAnchor, focus);
+    return cmp <= 0
+      ? { start: { ...this.hfAnchor }, end: focus, preferredPage: this._hfPreferredPage }
+      : { start: focus, end: { ...this.hfAnchor }, preferredPage: this._hfPreferredPage };
+  }
+
   /** 현재 위치를 anchor로 설정 (선택 시작) */
   setAnchor(): void {
     if (!this.anchor) {
@@ -176,6 +201,65 @@ export class CursorState {
         charOffset: this._fnCharOffset,
       };
     }
+  }
+
+  /** 현재 머리말/꼬리말 위치를 anchor로 설정한다. */
+  setHfAnchor(): void {
+    if (!this.hfAnchor && this._headerFooterMode !== 'none') {
+      this.hfAnchor = this.currentHeaderFooterTextPosition();
+    }
+  }
+
+  hasHeaderFooterSelection(): boolean {
+    return this.hfAnchor !== null;
+  }
+
+  /**
+   * history가 보관한 HF 선택을 현재 문서에 복원한다.
+   *
+   * target과 양 끝의 문단/오프셋을 모두 확인한 뒤에만 상태를 바꾼다. 조회 실패나 stale
+   * 범위는 false로 거절하며, 호출부가 history jump 직후 해제된 상태를 그대로 유지하게 한다.
+   */
+  selectHeaderFooterRange(
+    start: HeaderFooterTextPosition,
+    end: HeaderFooterTextPosition,
+    preferredPage: number,
+  ): boolean {
+    if (this._headerFooterMode === 'none') return false;
+    const current = this.currentHeaderFooterTextPosition();
+    if (
+      !CursorState.sameHeaderFooterTarget(start, end)
+      || !CursorState.sameHeaderFooterTarget(start, current)
+    ) return false;
+
+    const valid = (pos: HeaderFooterTextPosition): boolean => {
+      if (
+        !Number.isInteger(pos.paraIdx)
+        || !Number.isInteger(pos.charOffset)
+        || pos.paraIdx < 0
+        || pos.charOffset < 0
+      ) return false;
+      try {
+        const info = JSON.parse(this.wasm.getHeaderFooterParaInfo(
+          pos.sectionIdx,
+          pos.isHeader,
+          pos.applyTo,
+          pos.paraIdx,
+        ));
+        return pos.paraIdx < Number(info.paraCount)
+          && pos.charOffset <= Number(info.charCount);
+      } catch {
+        return false;
+      }
+    };
+    if (!valid(start) || !valid(end)) return false;
+
+    this.hfAnchor = { ...start };
+    this._hfParaIdx = end.paraIdx;
+    this._hfCharOffset = end.charOffset;
+    if (preferredPage >= 0) this._hfPreferredPage = preferredPage;
+    this.updateRect();
+    return true;
   }
 
   /**
@@ -240,6 +324,25 @@ export class CursorState {
   clearSelection(): void {
     this.anchor = null;
     this.fnAnchor = null;
+    this.hfAnchor = null;
+  }
+
+  static compareHeaderFooterPositions(
+    a: Pick<HeaderFooterTextPosition, 'paraIdx' | 'charOffset'>,
+    b: Pick<HeaderFooterTextPosition, 'paraIdx' | 'charOffset'>,
+  ): number {
+    if (a.paraIdx !== b.paraIdx) return a.paraIdx < b.paraIdx ? -1 : 1;
+    if (a.charOffset !== b.charOffset) return a.charOffset < b.charOffset ? -1 : 1;
+    return 0;
+  }
+
+  private static sameHeaderFooterTarget(
+    a: HeaderFooterTextPosition,
+    b: HeaderFooterTextPosition,
+  ): boolean {
+    return a.sectionIdx === b.sectionIdx
+      && a.isHeader === b.isHeader
+      && a.applyTo === b.applyTo;
   }
 
   static compareFootnotePositions(
@@ -1799,9 +1902,23 @@ export class CursorState {
   get hfParaIdx(): number { return this._hfParaIdx; }
   /** 머리말/꼬리말 내 문자 오프셋 */
   get hfCharOffset(): number { return this._hfCharOffset; }
+  /** 머리말/꼬리말 캐럿을 표시할 선호 페이지 */
+  get hfPreferredPage(): number { return this._hfPreferredPage; }
 
   /** 머리말/꼬리말 편집 모드인지 반환 */
   isInHeaderFooter(): boolean { return this._headerFooterMode !== 'none'; }
+
+  private resolveHeaderFooterPreviewPage(sectionIdx: number, fallback: number): number {
+    const wasm = this.wasm as unknown as {
+      getHeaderFooterPreviewPage?: (sectionIdx: number) => number;
+    };
+    if (typeof wasm.getHeaderFooterPreviewPage === 'function') {
+      try {
+        return wasm.getHeaderFooterPreviewPage(sectionIdx);
+      } catch { /* 구버전/부분 mock은 호출자가 준 페이지를 유지 */ }
+    }
+    return fallback;
+  }
 
   /** 머리말/꼬리말 편집 모드에 진입한다. */
   enterHeaderFooterMode(isHeader: boolean, sectionIdx: number, applyTo: number, preferredPage = -1): void {
@@ -1813,7 +1930,10 @@ export class CursorState {
     this._hfApplyTo = applyTo;
     this._hfParaIdx = 0;
     this._hfCharOffset = 0;
-    this._hfPreferredPage = preferredPage;
+    this._hfPreferredPage = this.resolveHeaderFooterPreviewPage(
+      sectionIdx,
+      preferredPage >= 0 ? preferredPage : (this.rect?.pageIndex ?? 0),
+    );
 
     // 선택 해제
     this.clearSelection();
@@ -1851,16 +1971,66 @@ export class CursorState {
     this._hfApplyTo = applyTo;
     this._hfParaIdx = 0;
     this._hfCharOffset = 0;
-    this._hfPreferredPage = targetPage >= 0 ? targetPage : (this.rect?.pageIndex ?? this._hfPreferredPage);
+    this._hfPreferredPage = this.resolveHeaderFooterPreviewPage(
+      sectionIdx,
+      targetPage >= 0 ? targetPage : (this.rect?.pageIndex ?? this._hfPreferredPage),
+    );
     this.clearSelection();
     this.updateRect();
   }
 
   /** 머리말/꼬리말 내 커서 위치를 설정한다. */
-  setHfCursorPosition(paraIdx: number, charOffset: number): void {
+  setHfCursorPosition(paraIdx: number, charOffset: number, preferredPage = -1): void {
     this._hfParaIdx = paraIdx;
     this._hfCharOffset = charOffset;
+    if (preferredPage >= 0) {
+      this._hfPreferredPage = this.resolveHeaderFooterPreviewPage(
+        this._hfSectionIdx,
+        preferredPage,
+      );
+    }
     this.updateRect();
+  }
+
+  /** 현재 머리말/꼬리말 정의의 첫 위치부터 마지막 문단 끝까지 선택한다. */
+  selectAllInHeaderFooter(): boolean {
+    if (this._headerFooterMode === 'none') return false;
+    const isHeader = this._headerFooterMode === 'header';
+
+    try {
+      const currentInfo = JSON.parse(this.wasm.getHeaderFooterParaInfo(
+        this._hfSectionIdx, isHeader, this._hfApplyTo, this._hfParaIdx,
+      ));
+      const lastPara = Math.max(0, Number(currentInfo.paraCount) - 1);
+      const lastInfo = lastPara === this._hfParaIdx
+        ? currentInfo
+        : JSON.parse(this.wasm.getHeaderFooterParaInfo(
+          this._hfSectionIdx, isHeader, this._hfApplyTo, lastPara,
+        ));
+      const target = {
+        sectionIdx: this._hfSectionIdx,
+        isHeader,
+        applyTo: this._hfApplyTo,
+      };
+      return this.selectHeaderFooterRange(
+        { ...target, paraIdx: 0, charOffset: 0 },
+        { ...target, paraIdx: lastPara, charOffset: Number(lastInfo.charCount) },
+        this._hfPreferredPage,
+      );
+    } catch (e) {
+      console.warn('[CursorState] selectAllInHeaderFooter 실패:', e);
+      return false;
+    }
+  }
+
+  private currentHeaderFooterTextPosition(): HeaderFooterTextPosition {
+    return {
+      sectionIdx: this._hfSectionIdx,
+      isHeader: this._headerFooterMode === 'header',
+      applyTo: this._hfApplyTo,
+      paraIdx: this._hfParaIdx,
+      charOffset: this._hfCharOffset,
+    };
   }
 
   /**
@@ -1885,6 +2055,98 @@ export class CursorState {
       }
     }
     this.updateRect();
+  }
+
+  /** 머리말/꼬리말 내 단어 경계로 이동한다 (Option/Ctrl+←/→). */
+  moveToWordBoundaryInHf(direction: -1 | 1): void {
+    if (this._headerFooterMode === 'none') return;
+    const isHeader = this._headerFooterMode === 'header';
+
+    try {
+      const info = JSON.parse(this.wasm.getHeaderFooterParaInfo(
+        this._hfSectionIdx, isHeader, this._hfApplyTo, this._hfParaIdx,
+      ));
+      const charCount = Number(info.charCount);
+      const text = typeof info.text === 'string' ? info.text : '';
+
+      if (direction > 0) {
+        if (this._hfCharOffset >= charCount) {
+          this.moveHorizontalInHf(1);
+          return;
+        }
+        const remaining = Array.from(text).slice(this._hfCharOffset, this._hfCharOffset + 50).join('');
+        this._hfCharOffset = Math.min(
+          charCount,
+          this._hfCharOffset + findWordBoundaryForward(remaining),
+        );
+      } else {
+        if (this._hfCharOffset <= 0) {
+          this.moveHorizontalInHf(-1);
+          return;
+        }
+        const start = Math.max(0, this._hfCharOffset - 50);
+        const preceding = Array.from(text).slice(start, this._hfCharOffset).join('');
+        this._hfCharOffset = start + findWordBoundaryBackward(preceding);
+      }
+      this.updateRect();
+    } catch (e) {
+      console.warn('[CursorState] moveToWordBoundaryInHf 실패:', e);
+    }
+  }
+
+  /** 머리말/꼬리말의 이전/다음 문단 경계로 이동한다 (Ctrl+↑/↓). */
+  moveToParagraphBoundaryInHf(direction: -1 | 1): void {
+    if (this._headerFooterMode === 'none') return;
+    const isHeader = this._headerFooterMode === 'header';
+
+    try {
+      const info = JSON.parse(this.wasm.getHeaderFooterParaInfo(
+        this._hfSectionIdx, isHeader, this._hfApplyTo, this._hfParaIdx,
+      ));
+      const paraCount = Number(info.paraCount);
+      if (direction < 0) {
+        if (this._hfCharOffset > 0) {
+          this._hfCharOffset = 0;
+        } else if (this._hfParaIdx > 0) {
+          this._hfParaIdx--;
+          this._hfCharOffset = 0;
+        }
+      } else if (this._hfParaIdx + 1 < paraCount) {
+        this._hfParaIdx++;
+        this._hfCharOffset = 0;
+      } else {
+        this._hfCharOffset = Number(info.charCount);
+      }
+      this.updateRect();
+    } catch (e) {
+      console.warn('[CursorState] moveToParagraphBoundaryInHf 실패:', e);
+    }
+  }
+
+  /** 머리말/꼬리말 편집 target 전체의 처음/끝으로 이동한다 (Cmd+↑/↓, Ctrl+Home/End). */
+  moveToHeaderFooterBoundary(edge: -1 | 1): void {
+    if (this._headerFooterMode === 'none') return;
+    const isHeader = this._headerFooterMode === 'header';
+
+    try {
+      const currentInfo = JSON.parse(this.wasm.getHeaderFooterParaInfo(
+        this._hfSectionIdx, isHeader, this._hfApplyTo, this._hfParaIdx,
+      ));
+      if (edge < 0) {
+        this._hfParaIdx = 0;
+        this._hfCharOffset = 0;
+      } else {
+        const lastPara = Math.max(0, Number(currentInfo.paraCount) - 1);
+        const lastInfo = JSON.parse(this.wasm.getHeaderFooterParaInfo(
+          this._hfSectionIdx, isHeader, this._hfApplyTo, lastPara,
+        ));
+        this._hfParaIdx = lastPara;
+        this._hfCharOffset = Number(lastInfo.charCount);
+      }
+      this.updateRect();
+    } catch (e) {
+      console.warn('[CursorState] moveToHeaderFooterBoundary 실패:', e);
+    }
   }
 
   /** 머리말/꼬리말 내 수평 이동 */
@@ -1922,6 +2184,56 @@ export class CursorState {
     }
 
     this.updateRect();
+  }
+
+  /** 머리말/꼬리말에서 현재 X를 유지해 위·아래 시각 줄로 이동한다. */
+  moveVerticalInHf(delta: -1 | 1): void {
+    if (this._headerFooterMode === 'none' || !this.rect) return;
+    const isHeader = this._headerFooterMode === 'header';
+    const pageNum = this.rect.pageIndex;
+    const startPara = this._hfParaIdx;
+    const startOffset = this._hfCharOffset;
+    const baseStep = Math.max(12, this.rect.height * 1.25);
+
+    for (const multiplier of [1, 2, 4]) {
+      try {
+        const wasm = this.wasm as unknown as {
+          hitTestInHeaderFooterTarget?: WasmBridge['hitTestInHeaderFooterTarget'];
+          hitTestInHeaderFooter: WasmBridge['hitTestInHeaderFooter'];
+        };
+        const hit = typeof wasm.hitTestInHeaderFooterTarget === 'function'
+          ? wasm.hitTestInHeaderFooterTarget(
+              pageNum,
+              this._hfSectionIdx,
+              isHeader,
+              this._hfApplyTo,
+              this.rect.x,
+              this.rect.y + delta * baseStep * multiplier,
+            )
+          : wasm.hitTestInHeaderFooter(
+              pageNum,
+              isHeader,
+              this.rect.x,
+              this.rect.y + delta * baseStep * multiplier,
+            );
+        if (
+          hit.hit
+          && hit.sectionIndex === this._hfSectionIdx
+          && hit.applyTo === this._hfApplyTo
+          && hit.paraIndex !== undefined
+          && hit.charOffset !== undefined
+          && (hit.paraIndex !== startPara || hit.charOffset !== startOffset)
+        ) {
+          this._hfParaIdx = hit.paraIndex;
+          this._hfCharOffset = hit.charOffset;
+          this._hfPreferredPage = pageNum;
+          this.updateRect();
+          return;
+        }
+      } catch {
+        return;
+      }
+    }
   }
 
   // ─── 각주 편집 모드 ──────────────────────────────────────

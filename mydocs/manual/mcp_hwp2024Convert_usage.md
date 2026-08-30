@@ -262,6 +262,20 @@ status의 terminal 상태는 `succeeded`, `failed`, `expired`다. `succeeded`일
 `failed` 또는 `expired`이면 result blob과 local output은 없으므로 download하지 않는다.
 비동기 start에는 local `output_dir`을 전달하지 않으며 download 단계에서 지정한다.
 
+### 비성공 terminal 상태 대응
+
+`failed`는 입력 문서의 손상만을 뜻하지 않는다. `status`의 `phase`와 `error`를 함께 확인하고,
+같은 `job_id`를 성공으로 가정하거나 결과 저장에 사용하지 않는다.
+
+- `phase: failed`와 `input preflight rejected ...` 오류는 한컴 worker를 시작하기 전에 입력 계약 또는
+  무인 호환성 문제를 발견한 경우다. 아래 사전 차단 절의 종류별 대응을 따른다.
+- `phase: service_restarted`는 service가 queued/running/succeeded job의 결과 blob을 안전하게
+  보관·복구하기 전에 재시작된 경우다. 같은 `job_id`를 반복 조회하거나 download하지 말고, 원본 local
+  input blob으로 새 `start` 요청을 제출한다.
+- 여러 service endpoint를 병렬로 쓰는 client wrapper는 `start`에 성공한 endpoint를 해당 job의
+  `status`와 `download`까지 고정해야 한다. 서로 다른 endpoint에 상태 조회나 결과 저장을 보내면
+  그 서버에는 job journal과 result blob이 없어 `job_id was not found or has expired`가 반환될 수 있다.
+
 ## VS Code MCP 등록
 
 VS Code Chat에서 tool을 사용할 때만 stdio bridge를 등록한다. terminal에서 bridge를 미리 실행해 두지
@@ -494,6 +508,26 @@ input preflight rejected the document: script-enabled HWP with an OnDocument_Ope
 `OnDocument_New`만 있는 문서는 이 정책으로 차단하지 않는다. 이 오류는 파일 구조 손상을 뜻하지 않는다.
 `timeout_seconds`나 engine을 바꿔 재시도하거나 script 실행을 승인하지 말고, 원본 제공자에게 스크립트 없는
 사본을 요청하거나 보안 검토가 가능한 별도 대화형 환경에서 문서 코드를 확인한다.
+
+## HWPX 양식 컨트롤 사전 차단
+
+HWPX의 `Contents/*.xml`에 `checkBtn`, `radioBtn`, `comboBox`, `edit` 양식 컨트롤이 있으면 현재
+배포된 무인 HOffice120/HOffice130 runtime에서 `OpenDocument` access violation이 재현된다. 이 HWPX는
+ZIP·XML 형식이 유효하더라도 손상 문서로 분류하지 않는다. service는 한컴 DLL/WPF를 시작하기 전에
+다음 오류로 job을 끝낸다.
+
+```text
+input preflight rejected the document: HWPX form controls are incompatible with the installed Hancom unattended runtime
+```
+
+암호 HWPX는 password preparation 뒤 평문 temporary package를 다시 검사한다. 이 차단은 HWP 형식의
+양식 컨트롤이나 일반 HWPX에 적용되지 않는다.
+
+이 경우 비동기 job은 `terminal: true`, `status: failed`, `phase: failed`, `output_bytes: 0`이며
+result blob과 local output을 만들지 않는다. `download`를 호출하지 말고, `timeout_seconds` 증가나
+다른 engine으로 같은 HWPX를 재시도하지 않는다. 한컴 runtime 업데이트 뒤 두 engine에서 실제
+open·PDF smoke가 통과하기 전까지는 원본 제공자에게 양식 없는 사본을 요청하거나, 보안 검토가 가능한
+대화형 한컴 환경에서 처리한다.
 
 ## 성공 확인
 
