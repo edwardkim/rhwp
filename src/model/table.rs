@@ -13,6 +13,9 @@ use super::*;
 /// 4,000,000 × 16B = 64 MiB (wasm32 는 8B → 32 MiB) 로 abort 없이 처리된다.
 pub const MAX_TABLE_GRID_CELLS: usize = 4_000_000;
 
+/// [#6145] 칸 줄바꿈 방식 "한 줄로 입력" — 자간을 조절해 한 줄을 유지한다.
+pub const CELL_LINE_WRAP_SQUEEZE: u8 = 1;
+
 pub const CELL_FLAG_HAS_MARGIN: u16 = 0x0001;
 pub const CELL_FLAG_PROTECT: u16 = 0x0002;
 pub const CELL_FLAG_HEADER: u16 = 0x0004;
