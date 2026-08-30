@@ -62,4 +62,6 @@ integration contract는 기존 #6310 fixture suite에 둬 source-side `#[cfg(tes
 
 **메인터너 보정 후 수용 가능.** 원 PR의 4성분 정규화 방향과 fixture는 수용 가능하나, 유효한 marker-fill
 JPEG을 놓치지 않도록 통합 head에 범위를 제한한 `e4617834596e6dd86c9102c3db961d156dc3eef1` 보정이 필요했다.
-두 보정 포함 통합 PR의 최신 CI 성공과 mergeability 재확인이 merge 조건이다.
+두 보정 포함 통합 PR #6490의 code head `2024da02cde595a179655b8e697d6f0ab8f8b509`에서 Build & Test,
+Lint, Native Skia, CodeQL을 포함한 34 check-run이 실패 없이 끝났고 mergeability가 `clean`임을 확인했다.
+이 trailing 문서 head의 CI만 마저 확인하면 merge 조건이 충족된다.

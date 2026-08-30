@@ -46,5 +46,7 @@ author: planet6897
 
 ## 최종 판정
 
-**승인.** 전각 oracle 근거, measure/paint parity 계약, 원 문서 PDF 비교가 같은 결론을 지지한다. 최신
-통합 head의 CI 성공과 mergeability 재확인이 merge 조건이다.
+**승인.** 전각 oracle 근거, measure/paint parity 계약, 원 문서 PDF 비교가 같은 결론을 지지한다. 통합
+PR #6490의 code head `2024da02cde595a179655b8e697d6f0ab8f8b509`에서 Build & Test, Lint, Native
+Skia, CodeQL을 포함한 34 check-run이 실패 없이 끝났고 mergeability가 `clean`임을 확인했다. 이 trailing
+문서 head의 CI만 마저 확인하면 merge 조건이 충족된다.

@@ -50,4 +50,7 @@ author: planet6897
 ## 최종 판정
 
 **승인.** 변경은 장식선 폭의 단일 경계로 제한되고, 3조각 exact-contiguity 계약, focused regression,
-직접 PDF visual sweep이 이를 함께 뒷받침한다. 최신 통합 head의 CI 성공과 mergeability 재확인이 merge 조건이다.
+직접 PDF visual sweep이 이를 함께 뒷받침한다. 통합 PR #6490의 code head
+`2024da02cde595a179655b8e697d6f0ab8f8b509`에서 Build & Test, Lint, Native Skia, CodeQL을 포함한
+34 check-run이 실패 없이 끝났고 mergeability가 `clean`임을 확인했다. 이 trailing 문서 head의 CI만
+마저 확인하면 merge 조건이 충족된다.
