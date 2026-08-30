@@ -232,6 +232,10 @@ fast-pass 또는 Full CI aggregate 성공은 여전히 merge 직전 다시 확�
 - 하나의 checkout, `target/pr-review`, Cargo cache를 공유하는 cargo test, cargo clippy, cargo build,
   wasm-pack은 순차 실행한다. 로컬 검증을 CI처럼 여러 Cargo 실행으로 병렬화하지 않는다. 장시간 테스트는
   `.config/nextest.toml`의 우선순위로 같은 nextest 실행 안에서 먼저 시작한다.
+- 전체 integration 회귀를 `cargo test --profile release-test --tests`로 대체하지 않는다. 이 명령은
+  unsharded libtest 경로이며, 표준 PR review 경로는
+  [로컬 검증](pr_review/local_validation.md#고정-review-target과-실행-환경)의 `--locked` nextest
+  명령이다. `cargo test`는 해당 문서가 이름을 지정한 focused 또는 Native Skia lib 검증에만 사용한다.
 - branch fetch 이후의 merge simulation, cherry-pick, conflict resolution, commit, push, update branch,
   merge와 stale run force-cancel은 대상 SHA를 확인한 뒤 순차로 실행한다.
 - 실제 GitHub review/comment, issue close, PR close는 승인과 선행 조건이 갖춰진 뒤에만 게시한다.
