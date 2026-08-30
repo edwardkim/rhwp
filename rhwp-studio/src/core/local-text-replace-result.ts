@@ -43,6 +43,7 @@ export function parseLocalBodyTextReplaceResult(
   const parsed = JSON.parse(raw) as Partial<LocalBodyTextReplaceResult>;
   if (
     parsed.ok !== true ||
+    typeof parsed.charOffset !== 'number' ||
     !Number.isInteger(parsed.charOffset) ||
     typeof parsed.documentPaginationPending !== 'boolean' ||
     typeof parsed.flowChanged !== 'boolean' ||
