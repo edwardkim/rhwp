@@ -4,7 +4,7 @@
   "issue": 4969,
   "stage": "W10-Q4-D",
   "date": "2026-08-30",
-  "status": "Q4-D2-qualified-atomic-layout-approved-awaiting-checkpoint",
+  "status": "Q4-D2-merge-requalified-Q4-D3-revised-plan-approved-awaiting-checkpoint",
   "baseCheckpoint": "f449960c7",
   "upstreamDevelAtD2Start": "628944a33cb5",
   "latestObservedUpstreamDevel": "bd78a53122e4",
@@ -70,11 +70,18 @@
     {
       "id": "Q4-D2",
       "name": "one-table-cell-atomic-layout-commit",
-      "status": "qualified-atomic-layout-approved-awaiting-checkpoint",
+      "status": "qualified-atomic-layout-merge-requalified",
       "resultEvidence": "mydocs/tech/investigations/issue-4969/w10_q4_d2_atomic_layout_commit.json",
       "productOutputChange": true
     },
-    {"id": "Q4-D3", "name": "atomic-vertical-glyph-run-publication", "productOutputChange": true},
+    {
+      "id": "Q4-D3",
+      "name": "atomic-vertical-glyph-run-publication",
+      "status": "revised-plan-approved-awaiting-checkpoint",
+      "plan": "mydocs/plans/task_m100_4969_w10_q4_d3_revised.md",
+      "executionPlan": "mydocs/tech/investigations/issue-4969/w10_q4_d3_revised_execution_plan.json",
+      "productOutputChange": true
+    },
     {"id": "Q4-D4", "name": "canvaskit-feature-detection-and-pixel-proof", "productOutputChange": true},
     {"id": "Q4-D5", "name": "regression-performance-and-final-classification", "productOutputChange": true}
   ],
@@ -101,5 +108,5 @@
     "githubComment": true,
     "pullRequest": true
   },
-  "next": "Q4-D2-checkpoint-then-maintainer-latest-devel-merge-approval"
+  "next": "Q4-D3-plan-checkpoint-before-D3-A"
 }
