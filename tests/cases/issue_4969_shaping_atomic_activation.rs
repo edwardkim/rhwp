@@ -299,10 +299,24 @@ fn issue_4969_q3_e0_default_product_baseline_receipt() {
 
     const ITERATIONS: u32 = 64;
     let core = core_with_surface(TEXT, Alignment::Left, 0, false);
+    let page_tree_started = Instant::now();
+    std::hint::black_box(
+        core.build_page_render_tree(0)
+            .expect("warm Q2 default baseline page render tree"),
+    );
+    let page_tree_warm_elapsed_ns = page_tree_started.elapsed().as_nanos();
+    let cold_started = Instant::now();
+    std::hint::black_box(
+        core.build_page_layer_tree(0)
+            .expect("warm Q2 default baseline layer tree"),
+    );
+    let cold_elapsed_ns = cold_started.elapsed().as_nanos();
     let started = Instant::now();
     for _ in 0..ITERATIONS {
-        core.build_page_layer_tree(0)
-            .expect("build Q2 default baseline layer tree");
+        std::hint::black_box(
+            core.build_page_layer_tree(0)
+                .expect("build Q2 default baseline layer tree"),
+        );
     }
     let elapsed_ns = started.elapsed().as_nanos();
     let layer_tree = core
@@ -316,11 +330,115 @@ fn issue_4969_q3_e0_default_product_baseline_receipt() {
     assert!(!layer_json.contains("\"type\":\"glyphOutline\""));
     assert_eq!(layer_tree.resources.font_blob_count(), 1);
     println!(
-        "{{\"kind\":\"q3-e0-default-product-baseline\",\"iterations\":{ITERATIONS},\"elapsedNs\":{elapsed_ns},\"layerJsonBytes\":{},\"layerJsonBlake3\":\"{}\",\"canvasKitPlanBytes\":{},\"canvasKitPlanBlake3\":\"{}\"}}",
+        "{{\"kind\":\"q3-e0-default-product-baseline\",\"iterations\":{ITERATIONS},\"pageTreeWarmElapsedNs\":{page_tree_warm_elapsed_ns},\"coldElapsedNs\":{cold_elapsed_ns},\"elapsedNs\":{elapsed_ns},\"layerJsonBytes\":{},\"layerJsonBlake3\":\"{}\",\"canvasKitPlanBytes\":{},\"canvasKitPlanBlake3\":\"{}\"}}",
         layer_json.len(),
         blake3::hash(layer_json.as_bytes()).to_hex(),
         plan_json.len(),
         blake3::hash(plan_json.as_bytes()).to_hex(),
+    );
+}
+
+#[test]
+#[ignore = "Q3-E5 local performance receipt; run serially with RHWP_Q3_E5_CASE"]
+#[cfg(not(target_arch = "wasm32"))]
+fn issue_4969_q3_e5_local_variable_instance_performance_receipt() {
+    use std::time::Instant;
+
+    const ITERATIONS: u32 = 64;
+    let case = std::env::var("RHWP_Q3_E5_CASE").unwrap_or_else(|_| "exact-default".to_string());
+    let (mut core, char_shape_id) =
+        core_with_surface_and_source("가변", Alignment::Left, 0, false, HAPPINESS);
+    let axes = match case.as_str() {
+        "exact-default" => None,
+        "explicit-default" => Some((400.0, 400.0)),
+        "interior" => Some((650.0, 650.0)),
+        "max" => Some((900.0, 900.0)),
+        other => panic!("unsupported RHWP_Q3_E5_CASE: {other}"),
+    };
+    if let Some((opsz, wght)) = axes {
+        let request = serde_json::json!({
+            "charShapeId": char_shape_id,
+            "languageIndex": 0,
+            "mode": "boundedHorizontalLtrV1",
+            "axes": [
+                { "tag": "opsz", "value": opsz },
+                { "tag": "wght", "value": wght }
+            ]
+        });
+        core.set_exact_font_instance_native(&request.to_string())
+            .expect("register Q3-E5 measurement instance");
+    }
+
+    let page_tree_started = Instant::now();
+    std::hint::black_box(
+        core.build_page_render_tree(0)
+            .expect("warm Q3-E5 variable-font page render tree"),
+    );
+    let page_tree_warm_elapsed_ns = page_tree_started.elapsed().as_nanos();
+    let cold_started = Instant::now();
+    std::hint::black_box(
+        core.build_page_layer_tree(0)
+            .expect("warm Q3-E5 variable-font surface"),
+    );
+    let cold_elapsed_ns = cold_started.elapsed().as_nanos();
+    let started = Instant::now();
+    for _ in 0..ITERATIONS {
+        std::hint::black_box(
+            core.build_page_layer_tree(0)
+                .expect("build Q3-E5 variable-font surface"),
+        );
+    }
+    let elapsed_ns = started.elapsed().as_nanos();
+    let layer_tree = core
+        .build_page_layer_tree(0)
+        .expect("build Q3-E5 variable-font receipt");
+    let layer_json = layer_tree.to_json();
+    let plan = analyze_canvaskit_replay_plan(&layer_tree, CanvasKitReplayMode::Default);
+    let plan_json = serde_json::to_string(&plan).expect("serialize Q3-E5 CanvasKit plan");
+    let mut ops = Vec::new();
+    collect_text_ops(&layer_tree.root, &mut ops);
+    let text_runs = ops
+        .iter()
+        .filter(|op| matches!(op, PaintOp::TextRun { .. }))
+        .count();
+    let glyph_runs = ops
+        .iter()
+        .filter(|op| matches!(op, PaintOp::GlyphRun { .. }))
+        .count();
+    let glyph_outlines = ops
+        .iter()
+        .filter(|op| matches!(op, PaintOp::GlyphOutline { .. }))
+        .count();
+    match case.as_str() {
+        "exact-default" | "explicit-default" => {
+            assert_eq!((text_runs, glyph_runs, glyph_outlines), (1, 0, 0));
+            assert_eq!(layer_tree.resources.font_blob_count(), 0);
+        }
+        "interior" | "max" => {
+            assert_eq!((text_runs, glyph_runs, glyph_outlines), (1, 1, 1));
+            assert_eq!(layer_tree.resources.font_blob_count(), 1);
+        }
+        _ => unreachable!(),
+    }
+    println!(
+        "{}",
+        serde_json::json!({
+            "kind": "q3-e5-variable-instance-performance",
+            "case": case,
+            "iterations": ITERATIONS,
+            "pageTreeWarmElapsedNs": page_tree_warm_elapsed_ns,
+            "coldElapsedNs": cold_elapsed_ns,
+            "elapsedNs": elapsed_ns,
+            "layerJsonBytes": layer_json.len(),
+            "layerJsonBlake3": blake3::hash(layer_json.as_bytes()).to_hex().to_string(),
+            "canvasKitPlanBytes": plan_json.len(),
+            "canvasKitPlanBlake3": blake3::hash(plan_json.as_bytes()).to_hex().to_string(),
+            "textRuns": text_runs,
+            "glyphRuns": glyph_runs,
+            "glyphOutlines": glyph_outlines,
+            "fontBlobs": layer_tree.resources.font_blob_count(),
+            "fontFaces": layer_tree.resources.font_resources().faces.len()
+        })
     );
 }
 

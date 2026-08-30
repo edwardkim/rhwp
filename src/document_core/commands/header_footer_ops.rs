@@ -730,11 +730,9 @@ impl DocumentCore {
             self.hidden_header_footer.insert(key);
             true
         };
-        // 렌더 트리 캐시 무효화
-        let mut cache = self.page_tree_cache.borrow_mut();
-        if let Some(slot) = cache.get_mut(page_num as usize) {
-            *slot = None;
-        }
+        // 숨김 상태는 page tree와 두 파생 표현 모두에 반영되므로 한 페이지의
+        // 캐시 계보를 원자적으로 무효화한다.
+        self.invalidate_page_tree_cache_page(page_num);
         Ok(format!("{{\"ok\":true,\"hidden\":{}}}", hidden))
     }
 
@@ -1150,6 +1148,42 @@ mod tests {
         let result = core.get_header_footer_native(0, true, 0).unwrap();
         assert!(result.contains("\"exists\":true"));
         assert!(result.contains("\"paraCount\":1"));
+    }
+
+    #[test]
+    fn toggle_hide_header_footer_invalidates_all_page_tree_derivatives() {
+        let mut core = DocumentCore::new_empty();
+        core.create_blank_document_native().unwrap();
+        core.get_page_layer_tree_with_profile_native(0, crate::paint::RenderProfile::Screen)
+            .expect("initial layer tree JSON");
+
+        assert!(core.page_tree_cache.borrow()[0].is_some());
+        assert!(!core.layer_tree_json_cache.borrow()[0].is_empty());
+        assert!(!core.page_layer_tree_cache.borrow()[0].is_empty());
+
+        core.toggle_hide_header_footer_native(0, true)
+            .expect("toggle header visibility");
+
+        assert!(core.page_tree_cache.borrow()[0].is_none());
+        assert!(core.layer_tree_json_cache.borrow()[0].is_empty());
+        assert!(core.page_layer_tree_cache.borrow()[0].is_empty());
+    }
+
+    #[test]
+    fn blank_document_replacement_drops_cached_layer_tree_derivatives() {
+        let mut core = DocumentCore::new_empty();
+        core.create_blank_document_native().unwrap();
+        core.get_page_layer_tree_with_profile_native(0, crate::paint::RenderProfile::Screen)
+            .expect("initial layer tree JSON");
+
+        assert!(!core.layer_tree_json_cache.borrow()[0].is_empty());
+        assert!(!core.page_layer_tree_cache.borrow()[0].is_empty());
+
+        core.create_blank_document_native()
+            .expect("replace with another blank document");
+
+        assert!(core.layer_tree_json_cache.borrow().is_empty());
+        assert!(core.page_layer_tree_cache.borrow().is_empty());
     }
 
     #[test]

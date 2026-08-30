@@ -1181,6 +1181,14 @@ impl DocumentCore {
         profile: RenderProfile,
     ) -> Result<PageLayerTree, HwpError> {
         let _overflows = self.layout_engine.take_overflows();
+        let idx = page_num as usize;
+        let fingerprint = self
+            .layer_output_options_fingerprint(profile, crate::paint::LayerJsonOptions::default());
+        if let Some(variants) = self.page_layer_tree_cache.borrow().get(idx) {
+            if let Some((_, tree)) = variants.iter().find(|(value, _)| *value == fingerprint) {
+                return Ok(tree.clone());
+            }
+        }
         let show_editor_visuals = profile.shows_editor_visuals();
         let output_options = LayerOutputOptions {
             show_paragraph_marks: show_editor_visuals && self.show_paragraph_marks,
@@ -1189,7 +1197,7 @@ impl DocumentCore {
             clip_enabled: self.clip_enabled,
             debug_overlay: show_editor_visuals && self.debug_overlay,
         };
-        self.with_page_tree_cached(page_num, |tree| {
+        let layer_tree = self.with_page_tree_cached(page_num, |tree| {
             let mut used_font_slots = Vec::new();
             let mut nodes = vec![&tree.root];
             while let Some(node) = nodes.pop() {
@@ -1344,7 +1352,20 @@ impl DocumentCore {
                 .with_output_options(output_options)
                 .with_bin_data_epoch(self.bin_data_epoch);
             Ok(builder.build_with_embedded_fonts(tree, &embedded_fonts))
-        })
+        })?;
+        {
+            let mut cache = self.page_layer_tree_cache.borrow_mut();
+            if cache.len() <= idx {
+                cache.resize_with(idx + 1, Vec::new);
+            }
+            let variants = &mut cache[idx];
+            variants.retain(|(value, _)| *value != fingerprint);
+            if variants.len() >= 4 {
+                variants.remove(0);
+            }
+            variants.push((fingerprint, layer_tree.clone()));
+        }
+        Ok(layer_tree)
     }
 
     /// 바이너리 데이터를 0-based `bin_data_content` 인덱스로 반환한다.
@@ -6426,6 +6447,24 @@ impl DocumentCore {
         for i in from..json_cache.len() {
             json_cache[i].clear();
         }
+        let mut layer_cache = self.page_layer_tree_cache.borrow_mut();
+        for i in from..layer_cache.len() {
+            layer_cache[i].clear();
+        }
+    }
+
+    /// 한 페이지의 렌더 트리와 그 파생 표현을 함께 무효화한다.
+    pub(crate) fn invalidate_page_tree_cache_page(&self, page_num: u32) {
+        let idx = page_num as usize;
+        if let Some(slot) = self.page_tree_cache.borrow_mut().get_mut(idx) {
+            *slot = None;
+        }
+        if let Some(variants) = self.layer_tree_json_cache.borrow_mut().get_mut(idx) {
+            variants.clear();
+        }
+        if let Some(variants) = self.page_layer_tree_cache.borrow_mut().get_mut(idx) {
+            variants.clear();
+        }
     }
 
     /// [#3137 Stage 4] same-line인 셀 문단 꼬리 편집을 캐시된 TextLine에 반영한다.
@@ -6676,6 +6715,13 @@ impl DocumentCore {
         {
             variants.clear();
         }
+        if let Some(variants) = self
+            .page_layer_tree_cache
+            .borrow_mut()
+            .get_mut(template.page_index)
+        {
+            variants.clear();
+        }
         Some(FocusedPageTreePatch {
             page_index: template.page_index as u32,
             dirty_rect: BoundingBox::new(
@@ -6691,6 +6737,7 @@ impl DocumentCore {
     pub(crate) fn invalidate_page_tree_cache(&self) {
         self.page_tree_cache.borrow_mut().clear();
         self.layer_tree_json_cache.borrow_mut().clear();
+        self.page_layer_tree_cache.borrow_mut().clear();
         // [Task #1949] IR 이 바뀌는 재조판 경계에서 셀 단위 레이아웃 캐시(포인터 키)도
         // 함께 비워 다른 IR 의 셀 포인터 재사용으로 인한 오재사용을 방지한다.
         self.layout_engine.clear_layout_caches();

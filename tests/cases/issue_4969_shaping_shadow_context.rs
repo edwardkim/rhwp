@@ -267,6 +267,7 @@ fn issue_4969_q3_b_instance_and_run_matrix_has_bounded_cache_ownership() {
         instance_axes(650.0, 900.0),
     ];
 
+    let mut observations = Vec::new();
     for instance_count in [1_usize, 2, 8] {
         for runs_per_instance in [1_usize, 2, 8] {
             let context = HorizontalShapingContext::new(registry());
@@ -300,8 +301,24 @@ fn issue_4969_q3_b_instance_and_run_matrix_has_bounded_cache_ownership() {
                 instance_count * (runs_per_instance - 1)
             );
             assert_eq!(context.cached_result_count(), instance_count);
+            observations.push(serde_json::json!({
+                "instances": instance_count,
+                "runsPerInstance": runs_per_instance,
+                "preparedSources": transaction.prepared_source_count(),
+                "parsedFaces": transaction.parsed_face_count(),
+                "resultCacheMisses": transaction.result_cache_miss_count(),
+                "resultCacheHits": transaction.result_cache_hit_count(),
+                "cachedResults": context.cached_result_count()
+            }));
         }
     }
+    println!(
+        "{}",
+        serde_json::json!({
+            "kind": "q3-e5-instance-run-cache-matrix",
+            "observations": observations
+        })
+    );
 }
 
 #[test]

@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::sync::Arc;
 
 use crate::paint::font::{BinaryResourceKind, BinaryResourceRef, FontResourceTable};
 
@@ -31,7 +32,7 @@ pub struct ResourceArena {
     svg_fingerprints: Vec<[u8; 16]>,
     svg_resource_keys: Vec<String>,
     svg_lookup: HashMap<u64, Vec<SvgResourceId>>,
-    font_blob_bytes: Vec<Vec<u8>>,
+    font_blob_bytes: Vec<Arc<[u8]>>,
     font_blob_hashes: Vec<u64>,
     font_blob_fingerprints: Vec<[u8; 16]>,
     font_blob_resource_keys: Vec<String>,
@@ -153,7 +154,7 @@ impl ResourceArena {
         let hash = resource_hash(bytes);
         if let Some(candidates) = self.font_blob_lookup.get(&hash) {
             for id in candidates {
-                if self.font_blob_bytes[id.0].as_slice() == bytes {
+                if self.font_blob_bytes[id.0].as_ref() == bytes {
                     return *id;
                 }
             }
@@ -165,7 +166,7 @@ impl ResourceArena {
         fingerprint.copy_from_slice(&digest.as_bytes()[..16]);
         let digest_hex = digest.to_hex();
         let resource_key = font_blob_resource_key(bytes.len(), digest_hex.as_str());
-        self.font_blob_bytes.push(bytes.to_vec());
+        self.font_blob_bytes.push(Arc::from(bytes));
         self.font_blob_hashes.push(hash);
         self.font_blob_fingerprints.push(fingerprint);
         self.font_blob_resource_keys.push(resource_key.clone());
@@ -175,7 +176,7 @@ impl ResourceArena {
     }
 
     pub fn font_blob_bytes(&self, id: FontBlobResourceId) -> Option<&[u8]> {
-        self.font_blob_bytes.get(id.0).map(Vec::as_slice)
+        self.font_blob_bytes.get(id.0).map(Arc::as_ref)
     }
 
     pub fn font_blob_count(&self) -> usize {
@@ -198,7 +199,7 @@ impl ResourceArena {
         self.font_blob_bytes
             .iter()
             .enumerate()
-            .map(|(index, bytes)| (FontBlobResourceId(index), bytes.as_slice()))
+            .map(|(index, bytes)| (FontBlobResourceId(index), bytes.as_ref()))
     }
 
     pub fn font_blob_bytes_for_ref(&self, data_ref: &BinaryResourceRef) -> Option<&[u8]> {

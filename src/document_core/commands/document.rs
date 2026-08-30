@@ -254,6 +254,7 @@ impl DocumentCore {
             pending_pagination_job: None,
             page_tree_cache: RefCell::new(Vec::new()),
             layer_tree_json_cache: RefCell::new(Vec::new()),
+            page_layer_tree_cache: RefCell::new(Vec::new()),
             bin_data_epoch: 0,
             batch_mode: false,
             event_log: Vec::new(),
@@ -1442,7 +1443,7 @@ impl DocumentCore {
         self.measured_sections = Vec::new();
         self.dirty_paragraphs = Vec::new();
         self.para_column_map = Vec::new();
-        self.page_tree_cache.borrow_mut().clear();
+        self.invalidate_page_tree_cache();
         self.snapshot_store.clear();
         self.next_snapshot_id = 0;
         self.source_format = crate::parser::FileFormat::Hwp;

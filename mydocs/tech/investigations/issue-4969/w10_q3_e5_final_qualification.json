@@ -1,0 +1,132 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q3-e5-final-qualification-result",
+  "issue": 4969,
+  "stage": "W10-Q3-E5",
+  "status": "qualified-approved-checkpoint",
+  "date": "2026-08-30",
+  "head": "8bcaa54ed872c5390620ce190ad8122b09036f31",
+  "upstreamDevel": "a71ebf2141ae3bd1ca3b5d3ea438bbe3454edaf9",
+  "ahead": 33,
+  "behind": 0,
+  "cacheFix": {
+    "fontBlobOwnership": "Arc<[u8]>",
+    "pageLayerTreeCacheKey": "existing-output-profile-fingerprint",
+    "maxVariantsPerPage": 4,
+    "invalidationBoundary": "page-render-tree-json-and-page-layer-generation",
+    "invalidationGuardTests": 2
+  },
+  "performance": {
+    "processRunsPerCase": 9,
+    "warmIterations": 64,
+    "cases": {
+      "exactDefault": { "coldP50Ns": 5238942, "coldP95Ns": 5543362, "warmP50Ns": 29063, "warmP95Ns": 30059 },
+      "explicitDefault": { "coldP50Ns": 5365069, "coldP95Ns": 6900372, "warmP50Ns": 29659, "warmP95Ns": 41543 },
+      "interior": { "coldP50Ns": 7883886, "coldP95Ns": 9389626, "warmP50Ns": 143394, "warmP95Ns": 255633 },
+      "max": { "coldP50Ns": 7980947, "coldP95Ns": 10440417, "warmP50Ns": 126818, "warmP95Ns": 128915 }
+    },
+    "activationGate": {
+      "noiseFloorApplied": true,
+      "p50AbsoluteDeltaLimitNs": 1000000,
+      "p95AbsoluteDeltaLimitNs": 2000000,
+      "explicitDefaultRelativeP50Percent": 2.05,
+      "explicitDefaultRelativeP95Percent": 38.20,
+      "interiorP50DeltaNs": 114331,
+      "interiorP95DeltaNs": 225574,
+      "maxP50DeltaNs": 97755,
+      "maxP95DeltaNs": 98856,
+      "result": "passed"
+    },
+    "noRequest": {
+      "upstreamWarmP50Ns": 45933129,
+      "upstreamWarmP95Ns": 46983320,
+      "candidateColdP50Ns": 2434360,
+      "candidateColdP95Ns": 2863719,
+      "candidateWarmP50Ns": 84673,
+      "candidateWarmP95Ns": 141188
+    },
+    "coldPolicy": "observational-first-baseline-no-retrospective-hard-gate"
+  },
+  "defaultReceipt": {
+    "layerJsonBytes": 619562,
+    "layerJsonBlake3": "0b5212cc076c34dce706039d7c4da85936c0a6769e83f08baa7f158cbd9029de",
+    "canvasKitPlanBytes": 1755,
+    "canvasKitPlanBlake3": "a98e6933d76901cfa55a43205c758675a8864527f87f8bed7a689d16267cbb56",
+    "changed": false
+  },
+  "resourceMatrix": {
+    "instanceCounts": [1, 2, 8],
+    "runsPerInstance": [1, 2, 8],
+    "sourceBytes": 1503064,
+    "digestPassesPerCombination": 1,
+    "sourceFaceParsesPerCombination": 1,
+    "arenaInternAttemptsPerCombination": 1,
+    "fontBlobsPerCombination": 1,
+    "fontFacesPerCombination": 1,
+    "maxCombination": {
+      "instances": 8,
+      "runsPerInstance": 8,
+      "parsedInstanceFaces": 8,
+      "resultCacheMisses": 8,
+      "resultCacheHits": 56,
+      "cachedResults": 8,
+      "glyphRuns": 64,
+      "glyphOutlines": 64,
+      "payloadBytes": 2613391
+    },
+    "result": "passed"
+  },
+  "wasm": {
+    "command": "docker compose --env-file .env.docker run --rm wasm",
+    "result": "passed",
+    "elapsedWallSeconds": 617,
+    "bytes": 9810922,
+    "sha256": "c851f8fd2b04221b1a68950f5c0ab921ac9255dfb343f39bc5953e903cbc8408",
+    "baselineBytes": 9759368,
+    "deltaBytes": 51554,
+    "deltaPercent": 0.5282514,
+    "byteGate": 65536,
+    "percentGate": 0.75
+  },
+  "canvasKitE2E": {
+    "result": "passed",
+    "currentInk": { "width": 58, "height": 34 },
+    "oldContractInk": { "width": 58, "height": 38 },
+    "fontCache": { "blobs": 1, "typefaces": 1, "fonts": 2, "bytes": 456688 }
+  },
+  "validation": {
+    "nextest": { "passed": 8759, "failed": 0, "skipped": 45, "slow": 2, "elapsedSeconds": 387.490 },
+    "nativeSkiaLib": { "passed": 3948, "failed": 0, "ignored": 13 },
+    "nativeSkiaMissingPicture": { "passed": 2, "failed": 0 },
+    "nativeSkiaDirectPdf": { "passed": 4, "failed": 0 },
+    "atomicActivation": { "passed": 7, "failed": 0 },
+    "glyphLowering": { "passed": 18, "failed": 0, "ignored": 1 },
+    "shadowContext": { "passed": 18, "failed": 0 },
+    "passthroughGuard": { "passed": 5, "failed": 0 },
+    "pageCacheLineageGuard": { "passed": 2, "failed": 0 },
+    "studio": { "passed": 1276, "failed": 0, "skipped": 1, "buildModules": 242 },
+    "nodeWasmEditor": { "passed": 3, "failed": 0 },
+    "docTests": { "passed": 8, "failed": 0, "ignored": 3 },
+    "cargoFmtAllCheck": "passed",
+    "nativeClippy": "passed",
+    "wasm32Clippy": "passed",
+    "workspaceAllTargetsClippy": "passed",
+    "manifestCheck": "passed",
+    "gitDiffCheck": "passed"
+  },
+  "protectedRegression": {
+    "defaultOutputChanged": false,
+    "explicitDefaultOutputChanged": false,
+    "unsupportedBackendNonDefaultSelection": false,
+    "partialPublication": false,
+    "documentRawPassthroughInvalidatedBySessionApi": false,
+    "newIntegrationSource": false,
+    "generatedArtifactsStaged": false,
+    "privateCorpusUsed": false
+  },
+  "resultApproved": true,
+  "checkpointApproved": true,
+  "commitCreated": true,
+  "remoteMutation": false,
+  "next": "q4-handoff-decision"
+}

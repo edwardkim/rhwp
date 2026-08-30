@@ -46,6 +46,8 @@ mod renderer {
 mod shaping_glyph;
 
 use std::sync::Arc;
+#[cfg(not(target_arch = "wasm32"))]
+use std::time::Instant;
 
 use kerning::{ExactFontSlot, ExactFontSource, ExactFontSourceRegistry};
 use rhwp::paint::{
@@ -1066,6 +1068,261 @@ fn issue_4969_q2_d5_r0_prepares_one_portable_source_once_for_1_2_8_runs() {
             (8, 1, 1, 1, 1, 1, 1, SOURCE_HAN.len()),
         ],
         "font-wide digest, face preparation, and arena registration must scale with one unique exact source, not emitted run count",
+    );
+}
+
+#[test]
+#[cfg(not(target_arch = "wasm32"))]
+fn issue_4969_q3_e5_instance_run_payload_matrix_is_resource_bounded() {
+    let instance = |opsz, wght| {
+        vec![
+            ShapingVariation {
+                tag: "opsz".into(),
+                value: opsz,
+            },
+            ShapingVariation {
+                tag: "wght".into(),
+                value: wght,
+            },
+        ]
+    };
+    let matrix = [
+        Vec::new(),
+        instance(650.0, 400.0),
+        instance(900.0, 400.0),
+        instance(400.0, 650.0),
+        instance(900.0, 900.0),
+        instance(650.0, 650.0),
+        instance(400.0, 900.0),
+        instance(650.0, 900.0),
+    ];
+    let mut observations = Vec::new();
+    for instance_count in [1_usize, 2, 8] {
+        for runs_per_instance in [1_usize, 2, 8] {
+            let mut registry = ExactFontSourceRegistry::default();
+            registry
+                .register(
+                    VARIABLE_SLOT,
+                    ExactFontSource {
+                        bytes: HAPPINESS,
+                        face_index: 0,
+                    },
+                )
+                .expect("register matrix variable source");
+            let context = HorizontalShapingContext::new(registry);
+            let mut transaction = context.transaction();
+            let features = [ShapingFeature {
+                tag: "kern".into(),
+                value: 1,
+            }];
+            let mut resources = ResourceArena::default();
+            let mut prepared_sources = HorizontalShapingPreparedSourceCache::default();
+            let mut ops = Vec::new();
+            let mut digest_passes = 0usize;
+            let mut face_parses = 0usize;
+            let mut arena_intern_attempts = 0usize;
+            for (instance_index, variations) in matrix.iter().take(instance_count).enumerate() {
+                for run_index in 0..runs_per_instance {
+                    let node_id = 500 + (instance_index * runs_per_instance + run_index) as u32;
+                    let outcome = transaction.shadow_measure(&HorizontalShapingRequest {
+                        attempt_id: node_id,
+                        slot: VARIABLE_SLOT,
+                        text: VARIABLE_TEXT,
+                        effective_font_size_px: 10.0,
+                        width_ratio: 0.8,
+                        script: Some("Hang"),
+                        language: Some("ko"),
+                        features: &features,
+                        variations,
+                    });
+                    let measurement = outcome
+                        .measurement
+                        .expect("matrix variable measurement must apply");
+                    let certificate = context
+                        .certify_replay_source(&measurement)
+                        .expect("certify matrix variable source");
+                    let range = HorizontalShapingRunRange {
+                        scalar_start: 0,
+                        scalar_end: VARIABLE_TEXT.chars().count(),
+                        utf8_start: 0,
+                        utf8_end: VARIABLE_TEXT.len(),
+                        utf16_start: 0,
+                        utf16_end: VARIABLE_TEXT.encode_utf16().count(),
+                    };
+                    let decision = Arc::new(
+                        HorizontalShapingRunDecision::applied_with_replay_source_certificate(
+                            range,
+                            outcome.trace,
+                            Arc::clone(&measurement),
+                            certificate,
+                        ),
+                    );
+                    let mut sidecars = HorizontalShapingPageSidecars::default();
+                    sidecars
+                        .attach(node_id, range, decision)
+                        .expect("attach matrix variable sidecar");
+                    let run = variable_text_run();
+                    let bbox = BoundingBox::new(3.0, 5.0, measurement.total_advance_px, 14.0);
+                    let node = LayerNode::leaf(bbox, Some(node_id), Vec::new());
+                    let report = lower_horizontal_shaping_layer_node_shadow_with_prepared_sources(
+                        &node,
+                        bbox,
+                        &run,
+                        node_id,
+                        &sidecars,
+                        &mut resources,
+                        &mut prepared_sources,
+                    );
+                    digest_passes += report.portable_source_work.explicit_blake3_digest_passes;
+                    face_parses += report.portable_source_work.face_parse_attempts;
+                    arena_intern_attempts += report.portable_source_work.arena_intern_attempts;
+                    let reject_diagnostic = format!("{:?}", report.reject_reason);
+                    ops.push(PaintOp::text_run(bbox, run));
+                    ops.push(PaintOp::GlyphRun {
+                        bbox,
+                        run: Box::new(report.glyph_run.unwrap_or_else(|| {
+                            panic!(
+                                "matrix GlyphRun: instance={instance_index} run={run_index} reject={reject_diagnostic}"
+                            )
+                        })),
+                    });
+                    ops.push(PaintOp::GlyphOutline {
+                        bbox,
+                        outline: Box::new(report.glyph_outline.unwrap_or_else(|| {
+                            panic!(
+                                "matrix GlyphOutline: instance={instance_index} run={run_index} reject={reject_diagnostic}"
+                            )
+                        })),
+                    });
+                }
+            }
+            let glyph_runs = instance_count * runs_per_instance;
+            let glyph_outlines = glyph_runs;
+            let root = LayerNode::leaf(BoundingBox::new(0.0, 0.0, 100.0, 100.0), Some(4969), ops);
+            let mut tree = PageLayerTree::new(100.0, 100.0, root);
+            tree.resources = resources;
+            let payload_bytes = tree.to_json().len();
+
+            assert_eq!(digest_passes, 1);
+            assert_eq!(face_parses, 1);
+            assert_eq!(arena_intern_attempts, 1);
+            assert_eq!(prepared_sources.entry_count(), 1);
+            assert_eq!(tree.resources.font_blob_count(), 1);
+            assert_eq!(tree.resources.font_resources().faces.len(), 1);
+            assert_eq!(transaction.prepared_source_count(), 1);
+            assert_eq!(transaction.parsed_face_count(), instance_count);
+            assert_eq!(transaction.result_cache_miss_count(), instance_count);
+            assert_eq!(
+                transaction.result_cache_hit_count(),
+                instance_count * (runs_per_instance - 1)
+            );
+            assert_eq!(context.cached_result_count(), instance_count);
+            observations.push(serde_json::json!({
+                "instances": instance_count,
+                "runsPerInstance": runs_per_instance,
+                "glyphRuns": glyph_runs,
+                "glyphOutlines": glyph_outlines,
+                "fontBlobs": tree.resources.font_blob_count(),
+                "fontFaces": tree.resources.font_resources().faces.len(),
+                "preparedSources": prepared_sources.entry_count(),
+                "sourceBytes": prepared_sources.total_source_bytes(),
+                "digestPasses": digest_passes,
+                "faceParses": face_parses,
+                "arenaInternAttempts": arena_intern_attempts,
+                "parsedInstanceFaces": transaction.parsed_face_count(),
+                "resultCacheMisses": transaction.result_cache_miss_count(),
+                "resultCacheHits": transaction.result_cache_hit_count(),
+                "cachedResults": context.cached_result_count(),
+                "payloadBytes": payload_bytes
+            }));
+        }
+    }
+    println!(
+        "{}",
+        serde_json::json!({
+            "kind": "q3-e5-instance-run-payload-matrix",
+            "observations": observations
+        })
+    );
+}
+
+#[test]
+#[ignore = "local Q3-E5 component performance receipt"]
+#[cfg(not(target_arch = "wasm32"))]
+fn issue_4969_q3_e5_local_lowering_component_performance_receipt() {
+    const ITERATIONS: usize = 64;
+    let mode = std::env::var("RHWP_Q3_E5_LOWERING_MODE")
+        .expect("set RHWP_Q3_E5_LOWERING_MODE to fresh-page or shared-page-cache");
+    let variations = [
+        ShapingVariation {
+            tag: "opsz".into(),
+            value: 650.0,
+        },
+        ShapingVariation {
+            tag: "wght".into(),
+            value: 650.0,
+        },
+    ];
+    let (sidecars, measurement) = variable_sidecar(4969, &variations);
+    let run = variable_text_run();
+    let bbox = BoundingBox::new(3.0, 5.0, measurement.total_advance_px, 14.0);
+    let node = LayerNode::leaf(bbox, Some(4969), Vec::new());
+
+    let lower_fresh_page = || {
+        let mut resources = ResourceArena::default();
+        let mut prepared_sources = HorizontalShapingPreparedSourceCache::default();
+        lower_horizontal_shaping_layer_node_shadow_with_prepared_sources(
+            &node,
+            bbox,
+            &run,
+            4969,
+            &sidecars,
+            &mut resources,
+            &mut prepared_sources,
+        )
+    };
+    std::hint::black_box(lower_fresh_page());
+
+    let started = Instant::now();
+    let (font_blobs, prepared_sources) = match mode.as_str() {
+        "fresh-page" => {
+            for _ in 0..ITERATIONS {
+                std::hint::black_box(lower_fresh_page());
+            }
+            (1, 1)
+        }
+        "shared-page-cache" => {
+            let mut resources = ResourceArena::default();
+            let mut prepared = HorizontalShapingPreparedSourceCache::default();
+            for _ in 0..ITERATIONS {
+                let report = lower_horizontal_shaping_layer_node_shadow_with_prepared_sources(
+                    &node,
+                    bbox,
+                    &run,
+                    4969,
+                    &sidecars,
+                    &mut resources,
+                    &mut prepared,
+                );
+                assert!(report.glyph_outline.is_some());
+                std::hint::black_box(report);
+            }
+            (resources.font_blob_count(), prepared.entry_count())
+        }
+        other => panic!("unsupported RHWP_Q3_E5_LOWERING_MODE={other}"),
+    };
+    let elapsed_ns = started.elapsed().as_nanos();
+    println!(
+        "{}",
+        serde_json::json!({
+            "kind": "q3-e5-lowering-component-performance",
+            "mode": mode,
+            "iterations": ITERATIONS,
+            "elapsedNs": elapsed_ns,
+            "fontBytes": HAPPINESS.len(),
+            "fontBlobs": font_blobs,
+            "preparedSources": prepared_sources
+        })
     );
 }
 

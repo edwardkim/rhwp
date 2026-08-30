@@ -19,6 +19,7 @@ use crate::model::document::Document;
 use crate::model::event::DocumentEvent;
 use crate::model::paragraph::Paragraph;
 use crate::model::table::TableTransposeData;
+use crate::paint::PageLayerTree;
 use crate::renderer::composer::ComposedParagraph;
 use crate::renderer::height_measurer::{MeasuredSection, MeasuredTable};
 use crate::renderer::layout::LayoutEngine;
@@ -188,6 +189,10 @@ pub struct DocumentCore {
     /// 이미지 base64 인라인으로 페이지당 1MB 급이라 재직렬화(실측 15ms/회)가
     /// 렌더 자체와 맞먹는다. 편집 무효화는 page_tree_cache 와 동일 지점에서.
     pub(crate) layer_tree_json_cache: RefCell<Vec<Vec<(u16, String)>>>,
+    /// [#4969 Q3-E5] 페이지 레이어 트리 캐시 — (출력옵션 지문, immutable tree).
+    /// page render tree와 같은 세대에서 무효화하며, 페이지당 최근 변형 4개로 제한한다.
+    /// `ResourceArena`의 font bytes는 `Arc<[u8]>`라 캐시 hit clone이 payload를 복제하지 않는다.
+    pub(crate) page_layer_tree_cache: RefCell<Vec<Vec<(u16, PageLayerTree)>>>,
     /// 그림 신원 키(`imageKey`)의 문서 단위 세대 번호 (Task #3315).
     ///
     /// `bin_data_id` 는 append-only 라 세션 중 id→바이트가 안정하지만, undo 스냅샷
@@ -416,6 +421,7 @@ impl DocumentCore {
             pending_pagination_job: None,
             page_tree_cache: RefCell::new(Vec::new()),
             layer_tree_json_cache: RefCell::new(Vec::new()),
+            page_layer_tree_cache: RefCell::new(Vec::new()),
             bin_data_epoch: 0,
             batch_mode: false,
             event_log: Vec::new(),
