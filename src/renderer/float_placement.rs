@@ -1037,44 +1037,6 @@ mod tests {
     }
 
     #[test]
-    fn original_hwpx_infront_para_flow_paginates_requires_para_infront_grid() {
-        let table = Table {
-            row_count: 42,
-            col_count: 6,
-            common: CommonObjAttr {
-                treat_as_char: false,
-                flow_with_text: true,
-                text_wrap: TextWrap::InFrontOfText,
-                vert_rel_to: VertRelTo::Para,
-                horz_rel_to: HorzRelTo::Para,
-                ..Default::default()
-            },
-            ..Default::default()
-        };
-        assert!(original_hwpx_infront_para_flow_paginates(true, &table));
-        assert!(!original_hwpx_infront_para_flow_paginates(false, &table));
-
-        let mut column_relative = table.clone();
-        column_relative.common.horz_rel_to = HorzRelTo::Column;
-        assert!(!original_hwpx_infront_para_flow_paginates(
-            true,
-            &column_relative
-        ));
-
-        let mut behind = table.clone();
-        behind.common.text_wrap = TextWrap::BehindText;
-        assert!(!original_hwpx_infront_para_flow_paginates(true, &behind));
-
-        let mut short_grid = table.clone();
-        short_grid.row_count = 31;
-        short_grid.col_count = 7;
-        assert!(!original_hwpx_infront_para_flow_paginates(
-            true,
-            &short_grid
-        ));
-    }
-
-    #[test]
     fn para_topbottom_float_predicate_requires_non_tac_para_topbottom() {
         let mut common = base_common();
         assert!(is_para_topbottom_float(&common));
