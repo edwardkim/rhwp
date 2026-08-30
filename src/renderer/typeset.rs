@@ -5204,6 +5204,16 @@ impl TypesetState {
     }
 }
 
+/// dump-pages가 프로덕션 `format_paragraph` 높이를 그대로 말하기 위한 분해 (#4628).
+#[derive(Debug, Clone, Copy)]
+pub(crate) struct DumpFormattedParagraphHeight {
+    pub total: f64,
+    pub spacing_before: f64,
+    pub line_height_sum: f64,
+    pub spacing_after: f64,
+    pub line_spacing_sum: f64,
+}
+
 /// 문단 format() 결과: 문단의 실제 렌더링 높이 정보
 #[derive(Debug, Clone)]
 struct FormattedParagraph {
@@ -5762,6 +5772,46 @@ impl TypesetEngine {
 
     pub fn with_default_dpi() -> Self {
         Self::new(DEFAULT_DPI)
+    }
+
+    /// 구역 조판과 같은 format 문맥을 연다. dump-pages 진단이 pagination과
+    /// 다른 높이를 말하지 않도록 `typeset_section_with_variant` 와 공유한다 (#4628).
+    pub(crate) fn apply_section_format_context(
+        &self,
+        paragraphs: &[Paragraph],
+        styles: &ResolvedStyleSet,
+        profile: crate::model::provenance::LayoutCompatibilityProfile,
+    ) {
+        self.profile.set(profile);
+        self.uniform_filler_ladder
+            .set(crate::renderer::stored_line_ladder_is_uniform_filler(
+                paragraphs, styles,
+            ));
+        *self.float_carve_evidence.borrow_mut() =
+            crate::renderer::float_placement::paper_or_page_float_carve_evidence(paragraphs);
+    }
+
+    /// 프로덕션 문단 높이 분해. pagination이 `format_paragraph` 로 쓰는 값과 같다.
+    pub(crate) fn dump_formatted_paragraph_height(
+        &self,
+        para: &Paragraph,
+        composed: Option<&ComposedParagraph>,
+        styles: &ResolvedStyleSet,
+        column_width_px: Option<f64>,
+        endnote: bool,
+    ) -> DumpFormattedParagraphHeight {
+        let fmt = if endnote {
+            self.format_endnote_paragraph(para, composed, styles, column_width_px)
+        } else {
+            self.format_paragraph(para, composed, styles, column_width_px)
+        };
+        DumpFormattedParagraphHeight {
+            total: fmt.total_height,
+            spacing_before: fmt.spacing_before,
+            line_height_sum: fmt.line_heights.iter().sum(),
+            line_spacing_sum: fmt.line_spacings.iter().sum(),
+            spacing_after: fmt.spacing_after,
+        }
     }
 
     fn predict_current_column_para_y(
@@ -16029,7 +16079,7 @@ impl TypesetEngine {
         st.current_height = y;
     }
 
-    /// 기존 HeightMeasurer::measure_paragraph()와 동일한 로직.
+    /// 프로덕션 문단 높이. dump-pages 진단도 이 경로만 읽는다 (#4628).
     fn format_paragraph(
         &self,
         para: &Paragraph,

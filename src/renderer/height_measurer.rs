@@ -154,7 +154,11 @@ fn empty_paragraph_fallback_line_metrics(
 pub struct MeasuredParagraph {
     /// 문단 인덱스
     pub para_index: usize,
-    /// 총 높이 (spacing 포함, px)
+    /// 총 높이 (spacing 포함, px).
+    ///
+    /// 표 vpos clamp·ClickHere 안내문 차감이 들어가면 `spacing_before + Σline_heights
+    /// + Σline_spacings + spacing_after` 와 다를 수 있다. 프로덕션 페이지네이션은 이
+    /// 필드를 읽지 않는다 — dump-pages 는 `TypesetEngine::format_paragraph` 를 쓴다 (#4628).
     pub total_height: f64,
     /// 줄별 콘텐츠 높이 목록 (line_height만, line_spacing 미포함, px)
     pub line_heights: Vec<f64>,
