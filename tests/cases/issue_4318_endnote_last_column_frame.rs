@@ -57,9 +57,7 @@ fn sep2020_page17_right_column_last_line_stays_inside_body() {
         HANGUL_PAGE_COUNT,
         "한글 23쪽을 유지해야 한다 (56px 용지밖 가드를 낮추면 22쪽으로 줄어 #5886)"
     );
-    let tree = core
-        .build_page_render_tree(PAGE)
-        .expect("17쪽 렌더 트리");
+    let tree = core.build_page_render_tree(PAGE).expect("17쪽 렌더 트리");
     let body_bottom = body_bottom(&tree.root).expect("Body");
     let mut bottoms = Vec::new();
     collect_right_col_line_bottoms(&tree.root, false, &mut bottoms);
