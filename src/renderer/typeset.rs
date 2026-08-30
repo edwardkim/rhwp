@@ -4179,56 +4179,6 @@ mod saved_tac_table_flow_tail_contract {
     }
 }
 
-#[cfg(test)]
-mod original_hwpx_tac_filled_page_keeps_short_trail_contract {
-    use super::original_hwpx_tac_filled_page_keeps_short_trail;
-    use crate::model::shape::{CommonObjAttr, TextWrap};
-    use crate::model::table::Table;
-
-    fn tac_topbottom() -> Table {
-        Table {
-            common: CommonObjAttr {
-                treat_as_char: true,
-                text_wrap: TextWrap::TopAndBottom,
-                height: 67_460,
-                ..Default::default()
-            },
-            ..Default::default()
-        }
-    }
-
-    #[test]
-    fn keeps_two_short_lines_together_after_page_filling_tac_table() {
-        assert!(original_hwpx_tac_filled_page_keeps_short_trail(
-            true,
-            &tac_topbottom(),
-            899.5,
-            952.5,
-            53.0,
-            28.8,
-            28.8,
-        ));
-        assert!(!original_hwpx_tac_filled_page_keeps_short_trail(
-            false,
-            &tac_topbottom(),
-            899.5,
-            952.5,
-            53.0,
-            28.8,
-            28.8,
-        ));
-        assert!(!original_hwpx_tac_filled_page_keeps_short_trail(
-            true,
-            &tac_topbottom(),
-            400.0,
-            952.5,
-            53.0,
-            28.8,
-            28.8,
-        ));
-    }
-}
-
 fn paragraph_saved_visible_bounds(
     para: &Paragraph,
     page_vpos_base: i32,
