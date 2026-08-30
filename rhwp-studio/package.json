@@ -35,6 +35,7 @@
     "e2e:hwp-password-open": "node e2e/hwp-password-open.test.mjs --mode=headless",
     "e2e:clipboard-priority": "node e2e/task-871-clipboard-priority.test.mjs",
     "e2e:page-key-scroll": "node e2e/page-key-scroll.test.mjs --mode=headless",
+    "e2e:page-break-caret": "node e2e/run-with-vite.mjs -- node e2e/page-break-caret-reveal.test.mjs --mode=headless",
     "e2e:home-end-key": "node e2e/home-end-key.test.mjs --mode=headless",
     "e2e:drag-autoscroll": "node e2e/drag-selection-autoscroll.test.mjs",
     "e2e:renderer-contract": "node e2e/renderer-contract.test.mjs",
