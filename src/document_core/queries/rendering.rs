@@ -6685,6 +6685,7 @@ impl DocumentCore {
         {
             variants.clear();
         }
+        self.header_footer_preview_tree_cache.borrow_mut().take();
         Some(FocusedPageTreePatch {
             page_index: template.page_index as u32,
             dirty_rect: BoundingBox::new(
