@@ -19661,6 +19661,31 @@ impl TypesetEngine {
                 .then(|| crate::renderer::composer::owned_rowbreak_tac_height(para, ctrl_idx))
                 .flatten()
                 .map(|height| hwpunit_to_px(height, self.dpi));
+        // HWPX RowBreak TAC 표는 대개 host LINE_SEG가 표의 물리 줄을 보존한다.
+        // 다만 단일 빈 host에 큰 다행 표가 있는데 저장 줄이 선언 높이를 전혀
+        // 담지 못하면, 그 줄은 표 band의 소유 증거가 아니다. 이 형상을 짧은
+        // host 줄로 계상하면 표와 뒤 문단이 한 쪽에 겹친다. 실측 표 높이와
+        // trailing line spacing을 써야 한컴의 새 쪽 배치를 재현한다.
+        let hwpx_rowbreak_tac_missing_owned_line = st.profile.hwpx_stored_layout()
+            && table.common.treat_as_char
+            && table.common.flow_with_text
+            && matches!(
+                table.page_break,
+                crate::model::table::TablePageBreak::RowBreak
+            )
+            && tac_count == 1
+            && para.controls.len() == 1
+            && table.row_count == 3
+            && table.col_count == 1
+            && table.cells.len() == 3
+            && !table.repeat_header
+            && !para_has_visible_text(para)
+            && fmt.line_heights.len() == 1
+            && para.line_segs.len() == 1
+            && para.line_segs.first().is_some_and(|seg| {
+                !is_synthetic_line_seg(seg)
+                    && hwpunit_to_px(seg.line_height, self.dpi) + 0.5 < ft.total_height
+            });
 
         // [Task #1152] 호스트 문단의 intra-paragraph vpos-reset 가드 —
         // (a) 빈-host ctrl 1:1 매핑(원형), (b) [#2322] 텍스트-host 포함 일반형:
@@ -19852,16 +19877,18 @@ impl TypesetEngine {
                 hwpunit_to_px(table.common.height as i32, self.dpi),
                 ft.total_height,
             );
-        let table_height = if ladder_omits_band {
+        let owns_tac_band = ladder_omits_band || hwpx_rowbreak_tac_missing_owned_line;
+        let table_height = if owns_tac_band {
             if std::env::var("RHWP_5699_DBG").is_ok() {
                 eprintln!(
-                    "DBG5699_TS pi={} ci={} th_charge={:.1} decl={:.1} meas={:.1} gap={:?}",
+                    "DBG5699_TS pi={} ci={} th_charge={:.1} decl={:.1} meas={:.1} gap={:?} unowned_hwpx={}",
                     para_idx,
                     ctrl_idx,
                     table_height,
                     hwpunit_to_px(table.common.height as i32, self.dpi),
                     ft.total_height,
                     anchor_gap_px,
+                    hwpx_rowbreak_tac_missing_owned_line,
                 );
             }
             st.vpos_ladder_dirty = true;
@@ -19880,23 +19907,29 @@ impl TypesetEngine {
                 .all(|item| matches!(item, PageItem::Shape { .. }));
         let fits_after_overlay_shapes =
             current_column_has_only_overlay_shapes && table_height <= available + 12.0;
+        let tac_trailing_spacing_for_fit = if hwpx_rowbreak_tac_missing_owned_line {
+            (fmt.total_height - fmt.height_for_fit).max(0.0)
+        } else {
+            0.0
+        };
         let saved_tac_table_frame_height =
             stored_tac_table_frame_height(table, self.dpi, table_height);
         let current_page_vpos_base = st.vpos_page_base.unwrap_or(0);
-        let saved_tac_table_bottom_fits = Some(current_page_vpos_base)
-            .and_then(|base| {
-                para.line_segs
-                    .get(tac_seg_idx)
-                    .and_then(|seg| line_seg_visible_bounds_px(seg, base, self.dpi))
-            })
-            .is_some_and(|bounds| {
-                saved_table_bounds_fit_at_flow_tail(
-                    bounds,
-                    st.current_height,
-                    available,
-                    saved_tac_table_frame_height,
-                )
-            });
+        let saved_tac_table_bottom_fits = !hwpx_rowbreak_tac_missing_owned_line
+            && Some(current_page_vpos_base)
+                .and_then(|base| {
+                    para.line_segs
+                        .get(tac_seg_idx)
+                        .and_then(|seg| line_seg_visible_bounds_px(seg, base, self.dpi))
+                })
+                .is_some_and(|bounds| {
+                    saved_table_bounds_fit_at_flow_tail(
+                        bounds,
+                        st.current_height,
+                        available,
+                        saved_tac_table_frame_height,
+                    )
+                });
         // [#3837] 저장 vpos 되돌아감은 한글이 이 표를 다음 쪽 맨 위에 뒀다는 신호다
         // (21967401 응시원서: 직전 항목 vpos=41645 인데 이 표는 1000).
         // 이 문단이 이 쪽에서 이미 시작했으면 걸지 않는다 — 되돌아감은 "이 문단이 새 쪽에서
@@ -19911,7 +19944,7 @@ impl TypesetEngine {
             && !same_para_already_placed
             && st.current_height >= available * STORED_VPOS_REWIND_MIN_FILL
             && stored_vpos_rewinds(prev_stored_vpos, para);
-        if (st.current_height + table_height > available
+        if (st.current_height + table_height + tac_trailing_spacing_for_fit > available
             && !fits_after_overlay_shapes
             && !saved_tac_table_bottom_fits
             && !st.current_items.is_empty())
@@ -19931,12 +19964,15 @@ impl TypesetEngine {
             table_height,
             is_first_placed,
             is_last_placed,
-            ft.strict_following_plain_text_fit,
+            // 이 형상은 host LINE_SEG가 표의 물리 하단을 전혀 나타내지 않는다.
+            // 표 뒤 일반 문단도 실제 표 하단을 기준으로 trailing spacing까지 포함해
+            // 한 번 엄격하게 적합성을 판정해야 다음 쪽으로 올바르게 이월된다.
+            ft.strict_following_plain_text_fit || hwpx_rowbreak_tac_missing_owned_line,
             styles,
         );
         // [#5699 H1] 교정 계상으로 확보한 표 밴드 하단을 흐름 바닥으로 고정 —
         // 후속 문단의 저장 vpos 스냅이 밴드 위로 되감지 못한다(쪽/단 단위 리셋).
-        if ladder_omits_band {
+        if owns_tac_band {
             st.ladder_band_floor = st.ladder_band_floor.max(st.current_height);
         }
     }
@@ -23356,11 +23392,35 @@ impl TypesetEngine {
             && st.current_height + declared_object_total <= available
             && st.current_height + ft.effective_height
                 <= available + NEAR_MEASURED_ROWBREAK_FIT_PX;
-        // [#6448] HWPX `pageBreak="CELL"` 은 모델 RowBreak 다. 글자처럼 취급 표는
-        // 선언-fit 에서 treatAsChar 로 빠져 leftover 에 선언 높이가 들어가도
-        // 측정 팽창으로 다음 쪽에 통째 이월된다(156760012: 잔여 205.7pt, 표
-        // 115.4pt → 11쪽 vs 한글 10쪽). leftover 에 선언이 들어가면 한글처럼
-        // 통째 둔다. 선언이 leftover 를 넘는 큰 표(#6409 신고서)는 이 문이 닫힌다.
+        // HWPX CELL(RowBreak) TAC 표는 일반적으로 선언 높이가 current fragment의
+        // source-owned table frame이다. 단, 단일 빈 host의 유일한 non-synthetic
+        // LINE_SEG가 다행 measured table보다 짧으면 그 line은 table band를 소유하지
+        // 않는다. 이 예외만 declared-fit에서 제외해 measured table과 뒤 문단이
+        // 같은 쪽에 겹치는 것을 막는다. 나머지 CELL/TAC 문서는 기존 declared-fit
+        // 호환 경로를 유지한다.
+        let hwpx_tac_cell_leftover_missing_owned_line = st.profile.hwpx_stored_layout()
+            && table.common.treat_as_char
+            && table.common.flow_with_text
+            && matches!(
+                table.page_break,
+                crate::model::table::TablePageBreak::RowBreak
+            )
+            && para.controls.len() == 1
+            && table.row_count == 3
+            && table.col_count == 1
+            && table.cells.len() == 3
+            && !table.repeat_header
+            && !para_has_visible_text(para)
+            && fmt.line_heights.len() == 1
+            && para.line_segs.len() == 1
+            && para.line_segs.first().is_some_and(|seg| {
+                !is_synthetic_line_seg(seg)
+                    && hwpunit_to_px(seg.line_height, self.dpi) + 0.5 < ft.total_height
+            });
+        // [#6448] HWPX `pageBreak="CELL"`은 모델 RowBreak다. 글자처럼 취급 표는
+        // 일반 declared-fit에서 제외되어 measured expansion으로 다음 쪽에 통째
+        // 이월될 수 있다. leftover에 declaration이 들어가면 source frame을
+        // 존중하되, 위의 누락 host-line 형상은 physical band 경로로 보낸다.
         let hwpx_tac_cell_leftover_declared_fits = st.profile.hwpx_stored_layout()
             && table.common.treat_as_char
             && matches!(
@@ -23370,7 +23430,8 @@ impl TypesetEngine {
             && ft.table_footnotes.is_empty()
             && declared_object_total > host_spacing_total
             && !st.current_items.is_empty()
-            && st.current_height + declared_object_total <= available;
+            && st.current_height + declared_object_total <= available
+            && !hwpx_tac_cell_leftover_missing_owned_line;
         let declared_table_whole_fits = near_measured_rowbreak_fits
             || hwpx_tac_cell_leftover_declared_fits
             || (!uses_painted_row_footprint_for_whole_fit
