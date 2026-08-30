@@ -1323,6 +1323,8 @@ fn compute_line_extra_spacing(
     alignment: Alignment,
     in_cell: bool,
     needs_justify: bool,
+    // [#6443] 양쪽정렬이 **일부러 제외한** 마지막 줄인가 (Justify 문단의 마지막 줄).
+    is_excluded_justify_last_line: bool,
     justify_spaces_only: bool,
     needs_distribute: bool,
     has_tabs: bool,
@@ -1682,6 +1684,14 @@ fn compute_line_extra_spacing(
                 .sum();
             natural_w > available_width
         }
+        // [#6443] 양쪽정렬이 **일부러 제외한** 마지막 줄은 여기서도 늘리지 않는다.
+        //
+        // `needs_word_distribution` 은 Justify 문단의 마지막 줄을 분배에서 뺀다. 그런데
+        // 이 규칙이 같은 줄을 칸 폭까지 되늘리면 두 규칙이 서로를 무효화한다 —
+        // 3123751 8쪽 `산 출 내 역` 열(한 줄짜리 Justify 문단, 자간 −16%)이 그 예로,
+        // 한글은 괘선 22pt 안쪽에서 멈추는데 rhwp 만 괘선까지 채웠다
+        // (글자 전진 한글 8.40pt vs rhwp 8.95pt).
+        && !is_excluded_justify_last_line
     {
         // 표 셀 내부 underflow: HWP 편집기가 자연 폭이 셀을 넘는 텍스트를
         // 음수 자간으로 셀 폭에 맞춰 저장했으므로, 재렌더 시 우리 폰트
@@ -4532,6 +4542,7 @@ impl LayoutEngine {
                     alignment,
                     cell_ctx.is_some(),
                     needs_justify,
+                    alignment == Alignment::Justify && is_last_line_of_para && !needs_justify,
                     justify_spaces_only,
                     needs_distribute,
                     has_tabs,
@@ -8176,6 +8187,7 @@ mod issue_2809_split_alignment_tests {
             false,
             false,
             false,
+            false,
             5,
             30.0,
             90.0,
@@ -8206,6 +8218,7 @@ mod issue_2809_split_alignment_tests {
             Alignment::Justify,
             false,
             true,
+            false,
             false,
             false,
             false,
@@ -8244,6 +8257,7 @@ mod issue_2809_split_alignment_tests {
             Alignment::Split,
             true,
             true,
+            false,
             false,
             false,
             false,
@@ -8292,6 +8306,7 @@ mod issue_2809_split_alignment_tests {
             Alignment::Justify,
             false,
             true,
+            false,
             true,
             false,
             false,
@@ -8313,6 +8328,7 @@ mod issue_2809_split_alignment_tests {
             Alignment::Justify,
             false,
             true,
+            false,
             false,
             false,
             false,
@@ -8356,6 +8372,7 @@ mod issue_4657_distribute_alignment_tests {
             &line(text),
             &ResolvedStyleSet::default(),
             Alignment::Distribute,
+            false,
             false,
             false,
             false,
