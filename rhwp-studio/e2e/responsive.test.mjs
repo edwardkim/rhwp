@@ -8,6 +8,7 @@ const VIEWPORTS = [
   { name: 'wide-desktop', width: 1920, height: 1080, styleMode: 'full' },
   { name: 'desktop', width: 1280, height: 900, styleMode: 'full' },
   { name: 'narrow-desktop', width: 1024, height: 768, styleMode: 'full' },
+  { name: 'narrow-desktop-minus', width: 1023, height: 768, styleMode: 'full' },
   { name: 'full-boundary', width: 962, height: 900, styleMode: 'full' },
   { name: 'compact-boundary', width: 961, height: 900, styleMode: 'compact' },
   { name: 'compact-desktop', width: 883, height: 900, styleMode: 'compact' },
@@ -96,6 +97,9 @@ async function run() {
         const fileTitle = menuBar?.querySelector('[data-menu="file"] .menu-title');
         const statusBar = document.getElementById('status-bar');
         const editor = document.getElementById('editor-area');
+        const hRuler = document.getElementById('h-ruler');
+        const vRuler = document.getElementById('v-ruler');
+        const rulerCorner = document.getElementById('ruler-corner');
         const field = styleBar?.querySelector('.sb-field-ribbon-group');
         const command = styleBar?.querySelector('.sb-command-track');
         const paragraph = styleBar?.querySelector('.sb-paragraph-ribbon-group');
@@ -175,6 +179,10 @@ async function run() {
           overflowPanelHidden: overflowPanel?.hidden ?? null,
           statusBarVisible: isVisible(statusBar),
           editorVisible: isVisible(editor),
+          editorDisplay: editor ? getComputedStyle(editor).display : null,
+          hRulerVisible: isVisible(hRuler),
+          vRulerVisible: isVisible(vRuler),
+          rulerCornerVisible: isVisible(rulerCorner),
           pageCount: window.__wasm?.pageCount ?? 0,
           rootClientWidth: document.documentElement.clientWidth,
           rootScrollWidth: document.documentElement.scrollWidth,
@@ -186,6 +194,16 @@ async function run() {
 
       check(tc, result.hasCanvas, '캔버스 존재');
       check(tc, result.editorVisible, '편집 영역 표시');
+      const rulersExpected = vp.width >= 768;
+      check(
+        tc,
+        result.hRulerVisible === rulersExpected && result.vRulerVisible === rulersExpected
+          && result.rulerCornerVisible === rulersExpected,
+        `눈금자 ${rulersExpected ? '표시' : '숨김'} (h=${result.hRulerVisible} v=${result.vRulerVisible})`,
+      );
+      if (rulersExpected) {
+        check(tc, result.editorDisplay === 'grid', `눈금자 표시 시 editor grid (display=${result.editorDisplay})`);
+      }
       check(tc, result.pageCount >= 1, `페이지 수: ${result.pageCount}`);
       check(tc, result.menuBarVisible, '메뉴바 표시');
       check(tc, result.menuBarHeight === 28, `마우스 메뉴바 28px 한 줄 높이 (h=${result.menuBarHeight})`);
