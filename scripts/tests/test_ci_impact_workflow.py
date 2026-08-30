@@ -590,6 +590,21 @@ class CiImpactWorkflowTests(unittest.TestCase):
         self.assertIn("pr-base-trusted", self.preflight)
         self.assertNotIn("pr-base-trusted-shadow", self.preflight)
 
+    def test_font_fixture_generators_are_registered_as_render_tools(self) -> None:
+        classifier = CLASSIFIER_PATH.read_text(encoding="utf-8")
+        tool_block = classifier.split("const RENDER_TOOL_PATHS = new Set([", maxsplit=1)[1].split(
+            "]);",
+            maxsplit=1,
+        )[0]
+        for expected in (
+            "scripts/generate_font_glyph_payload_fixture.py",
+            "scripts/generate_exact_face_collection_fixture.py",
+            "scripts/generate_exact_kerning_fixture.py",
+            "scripts/generate_font_native_hwpx_fixture.py",
+        ):
+            with self.subTest(path=expected):
+                self.assertIn(f"'{expected}'", tool_block)
+
     def test_missing_classifier_checkout_cannot_claim_trusted_authority(self) -> None:
         self.assertIn(
             "const classifierPath = path.join(\n"

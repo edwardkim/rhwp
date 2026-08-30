@@ -65,6 +65,25 @@ class ReviewOnlyFastPassWorkflowTests(unittest.TestCase):
                 self.assertNotIn("filename.endsWith('.hwp')", sample_function)
                 self.assertNotIn("filename.endsWith('.hwpx')", sample_function)
 
+    def test_font_fixture_generators_are_not_review_only_or_enforcement_surface(self) -> None:
+        for name, workflow_path in WORKFLOWS.items():
+            with self.subTest(workflow=name):
+                workflow = workflow_path.read_text(encoding="utf-8")
+                execution = workflow.split(
+                    "function isCiExecutionPath(filename)", maxsplit=1
+                )[1].split("function latestRun", maxsplit=1)[0]
+                self.assertNotIn("generate_exact_kerning_fixture.py", execution)
+                self.assertNotIn("generate_exact_face_collection_fixture.py", execution)
+
+        pull_request_trigger = WORKFLOWS["render-diff"].read_text(encoding="utf-8").split(
+            "  workflow_dispatch:",
+            maxsplit=1,
+        )[0]
+        self.assertIn(
+            "      - 'scripts/generate_exact_kerning_fixture.py'",
+            pull_request_trigger,
+        )
+
     def test_base_advance_does_not_invalidate_a_trailing_review_record(self) -> None:
         for name, workflow_path in WORKFLOWS.items():
             with self.subTest(workflow=name):
