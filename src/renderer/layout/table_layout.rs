@@ -3413,6 +3413,7 @@ impl LayoutEngine {
             styles,
             true,
             relaxed_pad,
+            false,
         )
     }
 
@@ -3433,6 +3434,7 @@ impl LayoutEngine {
             styles,
             false,
             relaxed_pad,
+            false,
         )
     }
 
@@ -3510,6 +3512,10 @@ impl LayoutEngine {
         rh[..row_count].copy_from_slice(&decl);
     }
 
+    // `col_count` 는 본문에서 쓰이지 않고 재귀 호출로만 넘어가지만, 두 래퍼와
+    // 시그니처를 맞춰 두는 편이 호출부를 읽기 쉽다 (#6442 의 재시도 경로가
+    // 이 재귀를 만들었다).
+    #[allow(clippy::only_used_in_recursion)]
     fn resolve_row_heights_with_common_fit(
         &self,
         table: &crate::model::table::Table,
@@ -3519,6 +3525,7 @@ impl LayoutEngine {
         styles: &ResolvedStyleSet,
         fit_common_height: bool,
         relaxed_pad: bool,
+        suppress_unused_padding: bool,
     ) -> Vec<f64> {
         if let Some(mt) = measured_table {
             // `TypesetEngine::format_table` uses this same narrow replacement for
@@ -3630,8 +3637,12 @@ impl LayoutEngine {
                         } else {
                             f64::MAX
                         };
-                        let raw_pad_v = hwpunit_to_px(cell.padding.top as i32, self.dpi)
-                            + hwpunit_to_px(cell.padding.bottom as i32, self.dpi);
+                        let raw_pad_v = if suppress_unused_padding {
+                            hwpunit_to_px(cell.stored_vertical_padding_hu(), self.dpi)
+                        } else {
+                            hwpunit_to_px(cell.padding.top as i32, self.dpi)
+                                + hwpunit_to_px(cell.padding.bottom as i32, self.dpi)
+                        };
                         let pad_v = (pad_top + pad_bottom).max(raw_pad_v);
                         if Self::cell_row_grows_with_padding(line_based, decl_h, pad_v)
                             && (line_based > decl_h + 1.5 || row_count <= 20)
@@ -3769,8 +3780,7 @@ impl LayoutEngine {
                     } else {
                         f64::MAX
                     };
-                    let raw_pad_v = hwpunit_to_px(cell.padding.top as i32, self.dpi)
-                        + hwpunit_to_px(cell.padding.bottom as i32, self.dpi);
+                    let raw_pad_v = hwpunit_to_px(cell.stored_vertical_padding_hu(), self.dpi);
                     let pad_v = (pad_top + pad_bottom).max(raw_pad_v);
                     if Self::cell_row_grows_with_padding(line_based, decl_h, pad_v)
                         && (line_based > decl_h + 1.5 || row_count <= 20)
@@ -3802,10 +3812,58 @@ impl LayoutEngine {
                 row_heights[r] = hwpunit_to_px(400, self.dpi);
             }
         }
+        // [#6442] 쓰이지 않는 안 여백 필드(`apply_inner_margin=false`)의 쓰레기값이
+        // 행을 부풀려 표가 **자기 선언 높이 밖으로** 나갔으면, 그 값을 빼고 한 번 다시
+        // 잰다. 값만 보면 정상 문서(#1921 59043)의 같은 형상과 구분되지 않으므로
+        // **결과**로 가른다 — 표가 제 선언 안에 들어가는 한 종전 값을 그대로 쓴다.
+        if !suppress_unused_padding
+            && self.unused_padding_overflows_declared_table(table, &row_heights)
+        {
+            return self.resolve_row_heights_with_common_fit(
+                table,
+                col_count,
+                row_count,
+                measured_table,
+                styles,
+                fit_common_height,
+                relaxed_pad,
+                true,
+            );
+        }
         if fit_common_height {
             self.fit_row_heights_to_common_height(table, &mut row_heights);
         }
         row_heights
+    }
+
+    /// [#6442] 표 선언 높이 대비 이 배수를 넘으면 "표가 제 선언을 감당 못 한다"로 본다.
+    /// 대산항 출입증 중첩표는 선언 366.4px 에 행 합 약 4400px — **12배**다.
+    const UNUSED_PADDING_OVERFLOW_FACTOR: f64 = 2.0;
+
+    /// [#6442] 쓰이지 않는 안 여백 쓰레기값이 표를 자기 선언 높이 밖으로 밀어냈는가.
+    ///
+    /// 후보 셀이 하나도 없으면 즉시 거짓이라 일반 표에는 비용도 영향도 없다.
+    fn unused_padding_overflows_declared_table(
+        &self,
+        table: &crate::model::table::Table,
+        row_heights: &[f64],
+    ) -> bool {
+        // 행이 하나면 배분할 행이 없다 — 선언 높이 맞춤
+        // (`fit_row_heights_to_common_height`)이 이미 다루는 형상이라 건드리지 않는다.
+        // #1921 59043 의 1행 표가 같은 배수(10.3)를 내지만 한글 실측 핀에 맞는 상태다.
+        if table.common.height == 0 || row_heights.len() < 2 {
+            return false;
+        }
+        let has_candidate = table.cells.iter().any(|cell| {
+            cell.stored_vertical_padding_hu()
+                != (cell.padding.top as i32).saturating_add(cell.padding.bottom as i32)
+        });
+        if !has_candidate {
+            return false;
+        }
+        let declared = hwpunit_to_px(table.common.height as i32, self.dpi);
+        let sum: f64 = row_heights.iter().sum();
+        declared > 0.0 && sum > declared * Self::UNUSED_PADDING_OVERFLOW_FACTOR
     }
 
     fn fit_row_heights_to_common_height(

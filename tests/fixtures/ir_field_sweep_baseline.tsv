@@ -277,6 +277,8 @@ hwp5rb	issue6140/156462405_smart_expo.hwp	sections[].paragraphs[].controls[].cel
 hwp5rb	issue6172/2599643_port_call_form.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	18
 hwp5rb	issue6264/1977964_env_satellite_report_form.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	50
 hwp5rb	issue6280/156742029_prosecutor_transfer_list.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	2
+hwp5rb	issue6442/access_pass_form.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	14
+hwp5rb	issue6442/access_pass_form.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	164
 hwp5rb	issue_1133.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	15
 hwp5rb	issues/2809/jubo_20260104.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	174
 hwp5rb	k-water-rfp-2024.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	457
