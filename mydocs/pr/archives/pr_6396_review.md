@@ -107,3 +107,23 @@ HWP/PDF fixture나 기준 PDF를 이용한 PDF/SVG visual sweep은 이번 주장
 - 이 trailing 문서 commit을 포함한 최신 PR head의 required checks가 성공해야 한다.
 - merge 전 최신 head SHA, `MERGEABLE/CLEAN` 상태를 다시 확인해야 한다.
 - 작업지시자의 별도 merge 승인이 있어야 squash merge할 수 있다.
+
+## self-review 보정 — 2026-08-30
+
+추가 검토에서 one-shot 예약의 문서 수명 경계 누락을 확인해 merge 전에 보정했다. mutation renderer 선택이
+문서 전환과 경합하면 `document-layout-refreshed`가 생략될 수 있는데, 기존 `InputHandler.deactivate()`는
+`CaretLayoutReveal`의 pending 상태를 지우지 않아 다음 문서의 첫 full mutation이 이전 예약을 소비할 수
+있었다.
+
+- 보정 계획 commit: `dfd6e124e`
+- 보정 code candidate: `a21bbc9a0`
+- `CaretLayoutReveal.clear()`를 추가하고 문서 교체 공통 경계인 `deactivate()`에서 호출했다.
+- 예약 뒤 초기화하면 다음 consume이 `false`인지 단위 테스트를 추가했다.
+- focused unit 4/4, TypeScript, Studio/editor 전체 test 1,314건(1,313 pass·1 skip), production build 245
+  modules, 실제 Chrome E2E, E2E manifest 122/122, `git diff --check`를 통과했다.
+- Chrome E2E의 page offset `1713.75`, DOM 캐럿 `1912.2px`, `scrollTop=1214`, viewport
+  `698.2..718.15px / 738px` 계약은 보정 뒤에도 유지됐다.
+
+allowlist 일반화, `cursor.updateRect()` 정리, 첫 pass의 잠재적 flicker, E2E timeout 진단성은 #6395 범위의
+정확성 결함으로 재현되지 않아 이번 code candidate에는 섞지 않았다. 최신 보정 head의 required checks와
+`MERGEABLE/CLEAN`, 작업지시자의 별도 merge 승인은 계속 최종 조건이다.

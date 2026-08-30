@@ -6,9 +6,10 @@
 - **충돌 해소 기준**: `upstream/devel` `d3b40a3d7c3ecb5d0f014ce604b99fda17b2bd9b`
 - **계획 commit**: `9ac158614`
 - **구현 commit**: `2d64b1d0f`
+- **리뷰 보정 commit**: `a21bbc9a0`
 - **PR**: [#6396](https://github.com/edwardkim/rhwp/pull/6396)
 - **작성일**: 2026-08-30 KST
-- **상태**: 최신 devel 충돌 해소·로컬 재검증 완료, Open PR 최신 head CI·merge 승인 대기
+- **상태**: 최신 devel 충돌 해소·리뷰 보정·로컬 재검증 완료, Open PR 최신 head CI·merge 승인 대기
 
 ## 1. 결론
 
@@ -30,17 +31,19 @@ WASM의 page break 편집과 cursor position은 즉시 갱신됐지만, `CanvasV
 - 완료 이벤트에서 cursor rect를 새 page offset으로 다시 계산하고 기존 DOM 캐럿·scroll-into-view 경로를
   재사용했다.
 - 일반 편집은 같은 이벤트를 받아도 예약이 없어 scroll 위치를 바꾸지 않는다.
+- 문서 전환과 renderer 선택이 경합해 완료 이벤트가 생략돼도 이전 문서의 예약이 다음 문서로 넘어가지 않도록
+  `deactivate()`에서 one-shot 상태를 초기화한다.
 
 ## 4. 회귀 검증
 
 | 명령 | 결과 |
 | --- | --- |
 | `cd rhwp-studio && npx tsc --noEmit` | PASS |
-| `cd rhwp-studio && npm test` | PASS — tests 1,246, pass 1,245, skip 1, fail 0 |
-| `cd rhwp-studio && npm run build` | PASS |
+| `cd rhwp-studio && npm test` | PASS — tests 1,314, pass 1,313, skip 1, fail 0 |
+| `cd rhwp-studio && npm run build` | PASS — 245 modules |
 | `CHROME_PATH=... npm run e2e:page-break-caret` | PASS — 실제 headless Chrome |
-| `python3 scripts/check_e2e_manifest.py` | PASS — 121/121 |
-| `git diff --cached --check` | PASS |
+| `python3 scripts/check_e2e_manifest.py` | PASS — 122/122 |
+| `git diff --check` | PASS |
 
 핵심 E2E는 한 쪽짜리 새 문서를 150%로 표시한 뒤 실제 `Meta+Enter`를 입력했다. 새 커서는 paragraph 1,
 offset 0과 page index 1을 가리켰다. 새 page offset `1713.75`를 사용한 DOM 캐럿 `1912.2px`가 계산 기대값과
@@ -70,6 +73,8 @@ helper, npm/editor public API, HWP/HWPX fixture, document renderer의 pagination
   commit으로 추가했다.
 - `upstream/devel@d3b40a3d7` 병합에서 오늘할일과 `InputHandler` 충돌을 양쪽 동작 보존으로 해소했다.
   최신 merge tree의 TypeScript·전체 Studio/editor test·build·실제 Chrome E2E도 다시 통과했다.
+- self-review에서 발견한 문서 간 pending reveal 누수를 `a21bbc9a0`에서 보정하고 전환 회귀 단위 테스트와
+  전체 Studio·실제 Chrome 검증을 다시 통과했다.
 - 최신 PR head의 GitHub Actions, mergeable 상태와 작업지시자의 merge 승인은 별도 조건이다.
 - 이 보고서는 한글 2024를 자동화해 직접 측정했다는 주장을 하지 않는다. 사용자 제보의 기대 동작을 Studio
   브라우저 회귀 계약으로 고정한 결과다.
