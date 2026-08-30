@@ -4,15 +4,16 @@
   "issue": 4969,
   "stage": "W10-Q4-D4",
   "date": "2026-08-30",
-  "status": "Q4-D4-C-qualified-studio-runtime-pixel-proof-result-approved",
+  "status": "Q4-D4-D-qualified-canvaskit-bounded-vertical-runtime-result-approved",
   "planApproved": true,
   "checkpointApproved": true,
   "checkpointApprovedDate": "2026-08-31",
   "planCheckpoint": "c11e84935",
   "d4BCheckpoint": "c9b551909",
+  "d4CCheckpoint": "b1a33b6fc",
   "d3CCheckpoint": "43d50ad99",
-  "mergedUpstreamDevel": "8a150f9a8bb1",
-  "mergeCommit": "bcaf86e18",
+  "mergedUpstreamDevel": "19b89d967b15",
+  "mergeCommit": "eb7d020e4",
   "productMutationBeforeApproval": false,
   "featureDetection": {
     "versionBranchingAllowed": false,
@@ -46,13 +47,14 @@
     {
       "id": "Q4-D4-C",
       "name": "studio-runtime-capability-and-pixel-proof",
-      "status": "qualified-studio-runtime-pixel-proof-result-approved",
+      "status": "completed-checkpoint-b1a33b6fc",
       "resultEvidence": "mydocs/tech/investigations/issue-4969/w10_q4_d4_c_studio_runtime.json"
     },
     {
       "id": "Q4-D4-D",
       "name": "cross-runtime-validation-and-result",
-      "status": "blocked-by-D4-C"
+      "status": "qualified-canvaskit-bounded-vertical-runtime-result-approved",
+      "resultEvidence": "mydocs/tech/investigations/issue-4969/w10_q4_d4_d_cross_validation.json"
     }
   ],
   "mergeRequalification": {
@@ -60,13 +62,15 @@
     "d3CAtomicActivationPassed": 9,
     "issue6029Passed": 1,
     "incomingOverlapPassed": 9,
-    "integrationManifestSources": 1057,
-    "integrationManifestStaticTestAttrs": 4680,
+    "incomingCommits": 23,
+    "integrationManifestSources": 1064,
+    "integrationManifestStaticTestAttrs": 4689,
     "integrationManifestTargetsPassed": 48,
     "integrationManifestTargetsTotal": 48,
-    "integrationPolicyPassed": 20,
+    "integrationPolicyPassed": 22,
     "canonicalMismatch": 0,
-    "d4RedConfirmed": true
+    "d4InitialRedConfirmed": true,
+    "d4GreenConfirmed": true
   },
   "invariants": {
     "backendReshapeAllowed": false,
@@ -82,5 +86,11 @@
     "samples/table-004.hwp",
     "samples/issue6029/3200477_icao_procedure.hwpx"
   ],
-  "next": "separate-Q4-D4-C-checkpoint-approval"
+  "result": {
+    "classification": "qualified-canvaskit-bounded-vertical-runtime",
+    "approved": true,
+    "evidence": "mydocs/tech/investigations/issue-4969/w10_q4_d4_d_cross_validation.json",
+    "q4DFinalClassificationDeferredToD5": true
+  },
+  "next": "separate-Q4-D4-D-checkpoint-approval"
 }

@@ -4,10 +4,11 @@
   "issue": 4969,
   "stage": "W10-Q4-D4-C",
   "date": "2026-08-31",
-  "status": "qualified-studio-runtime-pixel-proof-result-approved",
+  "status": "qualified-studio-runtime-pixel-proof-checkpointed",
   "resultApproved": true,
   "planCheckpoint": "c11e84935",
   "d4BCheckpoint": "c9b551909",
+  "checkpoint": "b1a33b6fc",
   "baseUpstreamDevel": "8a150f9a8bb1",
   "featureDetection": {
     "actualCanvasDrawGlyphsCheckedBeforeSelection": true,
@@ -78,5 +79,5 @@
   "privateCorpusUsed": false,
   "hyperVUsed": false,
   "githubMutation": false,
-  "next": "separate-D4-C-checkpoint-approval"
+  "next": "Q4-D4-D"
 }
