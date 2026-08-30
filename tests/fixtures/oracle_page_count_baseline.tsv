@@ -1,11 +1,13 @@
 # 한글 정답지 PDF 대비 rhwp pageCount 기준선.
 # 생성: python tools/oracle_page_count/regenerate.py
 # 열: 상대경로 <TAB> 정답지쪽수(쉼표구분) <TAB> 이 기준선의 rhwp쪽수
+# 정답지쪽수는 원본 형식·rhwp info --json 저장 제품 엔진이 일치하는 canonical PDF만 쓴다.
+# 형식 미표기·kopub/no-ttf 쪽수는 섞지 않는다. rhwp가 다르면 미해결 격차다.
 # 모아 찍기(print_method 4·5) 문서는 장 수가 애초에 달라 제외한다.
 samples/2010-01-06.hwp	6	6
 samples/2022년 국립국어원 업무계획.hwp	35	35
-samples/2025 행정업무운영 편람(최종).hwp	383,388,389	384
-samples/2025 행정업무운영 편람(최종).hwpx	383,388,389	382
+samples/2025 행정업무운영 편람(최종).hwp	384	384
+samples/2025 행정업무운영 편람(최종).hwpx	384	382
 samples/20250130-hongbo.hwp	4	4
 samples/2025년 기부·답례품 실적 지자체 보고서_양식.hwpx	30	30
 samples/21_언어_기출_편집가능본.hwp	15	15

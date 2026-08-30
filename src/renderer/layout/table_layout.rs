@@ -13,7 +13,9 @@ use crate::model::control::Control;
 use crate::model::paragraph::Paragraph;
 use crate::model::style::{Alignment, BorderLine, CenterLine};
 use crate::model::table::{TablePageBreak, VerticalAlign};
-use crate::renderer::float_placement::signed_hwpunit;
+use crate::renderer::float_placement::{
+    original_hwpx_column_rowbreak_equal_outer_margin_hu, signed_hwpunit,
+};
 
 const ROWBREAK_OBJECT_BOTTOM_BLEED_TOLERANCE_PX: f64 = 64.0;
 /// [#3738 Stage 19] native HWP5가 빈 1×1 RowBreak picture table에 남기는 stale page
@@ -4146,20 +4148,22 @@ impl LayoutEngine {
             table.padding.right,
             allow_saved_small_cell_margin,
         );
-        let use_cell_top = (table_pad_unspec && cell.padding.top < 2500)
+        // [#6358] 음수 pad 는 `c < 2500` 위생 한도를 통과하므로 0 하한을 같이 둔다.
+        let use_cell_top = (table_pad_unspec && cell.padding.top >= 0 && cell.padding.top < 2500)
             || Self::should_use_cell_padding_axis_for_context(
                 cell,
                 cell.padding.top,
                 table.padding.top,
                 allow_saved_small_cell_margin,
             );
-        let use_cell_bottom = (table_pad_unspec && cell.padding.bottom < 2500)
-            || Self::should_use_cell_padding_axis_for_context(
-                cell,
-                cell.padding.bottom,
-                table.padding.bottom,
-                allow_saved_small_cell_margin,
-            );
+        let use_cell_bottom =
+            (table_pad_unspec && cell.padding.bottom >= 0 && cell.padding.bottom < 2500)
+                || Self::should_use_cell_padding_axis_for_context(
+                    cell,
+                    cell.padding.bottom,
+                    table.padding.bottom,
+                    allow_saved_small_cell_margin,
+                );
 
         let pad_left = if use_cell_left {
             hwpunit_to_px(cell.padding.left as i32, self.dpi)
@@ -4365,7 +4369,20 @@ impl LayoutEngine {
                     col_area.x + host_margin_left,
                     col_area.width - host_margin_left,
                 ),
-                _ => (col_area.x, col_area.width),
+                _ => {
+                    // [#6378] 원본 HWPX 단 기준 RowBreak 1열 자리차지 표만
+                    // outMargin.left 를 싣는다. 같은 문서 HWP 경로는 283HU=
+                    // 3.8px 안쪽에 둔다(tac-img-02 1쪽 Table x 79.4 vs 75.6).
+                    // HWP5 저장 조판 계약과 연속 block 표(#1133)는 여기서
+                    // 더하지 않는다 — 이중 가산·간격 회귀 금지.
+                    let om_l = original_hwpx_column_rowbreak_equal_outer_margin_hu(
+                        !self.profile.get().hwp5_stored_pagination_layout(),
+                        table,
+                    )
+                    .map(|hu| hwpunit_to_px(hu, self.dpi))
+                    .unwrap_or(0.0);
+                    (col_area.x + om_l, col_area.width)
+                }
             };
             match horz_align {
                 HorzAlign::Left | HorzAlign::Inside => ref_x + h_offset,

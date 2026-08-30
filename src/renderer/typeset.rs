@@ -18,8 +18,9 @@ use crate::model::shape::CaptionDirection;
 use crate::renderer::composer::{compose_paragraph, first_text_line, ComposedParagraph};
 use crate::renderer::float_placement::{
     horizontal_range, is_page_bottom_fixed_float, is_para_topbottom_float,
-    native_empty_host_rowbreak_line_advance_hu, signed_hwpunit,
-    stored_empty_anchor_band_host_line_advance_hu, FloatLaneSet, FloatPlacementContext,
+    native_empty_host_rowbreak_line_advance_hu, original_hwpx_infront_para_flow_paginates,
+    signed_hwpunit, stored_empty_anchor_band_host_line_advance_hu,
+    stored_visible_anchor_band_host_line_advance_from_vpos, FloatLaneSet, FloatPlacementContext,
 };
 use crate::renderer::height_cursor::HeightCursor;
 use crate::renderer::height_measurer::{
@@ -1161,6 +1162,9 @@ struct TypesetState {
     /// [#5870] 다음 문단이 빈 host 자리차지 표 앵커인가 — 빈-host float 의
     /// 물리-사다리 여분 가산 발동 조건. 문단 루프 머리에서 세팅.
     next_para_is_empty_float_table_anchor: bool,
+    /// [#6312] 다음 문단이 개체 없는 실텍스트 본문인가 — 글 있는 자리차지 host
+    /// 줄 상자 가산의 사다리 게이트.
+    next_para_is_plain_text: bool,
     /// [#1955] 글뒤로 표 후행 빈 문단의 보류 흡수 목록. 표 fragment 는 지연 flush
     /// 되므로 흡수 시점에는 anchor 첫 fragment 단을 찾을 수 없다 — 페이지 확정 후
     /// (최종 flush 뒤) 첫 fragment 단에 일괄 부착한다.
@@ -3429,6 +3433,39 @@ fn stored_vpos_top_collision(prev: &Paragraph, curr: &Paragraph) -> bool {
         && prev_last.segment_width == curr_first.segment_width
 }
 
+/// [#6342] 쪽을 거의 채운 TAC 자리차지 표 뒤의 짧은 붙임 두 줄은 잔여 칸에
+/// 한 줄만 끼워 넣지 않고 다음 쪽으로 함께 넘긴다.
+///
+/// `36385445` 결재문서: 4×1 단 기준 TAC 표 899.5px / 본문 952.5px 뒤에 붙임
+/// 28.8+28.8px 가 온다. 한글은 둘 다 2쪽에 둔다. 첫 줄만 잔여 53px 에 넣으면
+/// used=964.3 으로 넘친다. 모든 원본 HWPX TAC 표에 열면 #3931 편람 쪽수와
+/// #6044 상자 간격이 깨지므로, 4×1 단 기준·40px 미만 두 줄만 연다.
+fn original_hwpx_tac_filled_page_keeps_short_trail(
+    original_hwpx: bool,
+    table: &crate::model::table::Table,
+    table_height_px: f64,
+    body_height_px: f64,
+    remaining_px: f64,
+    current_h: f64,
+    next_h: f64,
+) -> bool {
+    use crate::model::shape::{HorzRelTo, TextWrap};
+    original_hwpx
+        && table.common.treat_as_char
+        && matches!(table.common.text_wrap, TextWrap::TopAndBottom)
+        && matches!(table.common.horz_rel_to, HorzRelTo::Column)
+        && table.row_count == 4
+        && table.col_count == 1
+        && body_height_px > 0.0
+        && table_height_px >= body_height_px * 0.90
+        && current_h > 0.0
+        && next_h > 0.0
+        && current_h < 40.0
+        && next_h < 40.0
+        && remaining_px + 0.5 >= current_h
+        && remaining_px + 0.5 < current_h + next_h
+}
+
 /// Returns only the measured-row slack that remains below a saved native
 /// RowBreak first-fragment flow frame. Both bounds are absolute page flow
 /// coordinates; host-before spacing and paint-only vertical insets are not
@@ -4458,6 +4495,7 @@ impl TypesetState {
             behind_float_table_para: None,
             next_para_first_stored_vpos: None,
             next_para_is_empty_float_table_anchor: false,
+            next_para_is_plain_text: false,
             behind_pending_absorbs: Vec::new(),
             overlay_shape_shortcut_para: None,
             pending_overlay_continuations: Vec::new(),
@@ -7146,6 +7184,9 @@ impl TypesetEngine {
             st.next_para_is_empty_float_table_anchor = paragraphs
                 .get(para_idx + 1)
                 .is_some_and(|p| para_is_empty_topbottom_table_anchor(p));
+            st.next_para_is_plain_text = paragraphs
+                .get(para_idx + 1)
+                .is_some_and(|p| para_has_non_whitespace_text(p) && p.controls.is_empty());
             if std::env::var("RHWP_FLOW_DBG").is_ok() {
                 eprintln!(
                     "FLOW_DBG pi={} page={} cur_h={:.1}",
@@ -8145,6 +8186,42 @@ impl TypesetEngine {
                     styles,
                     formatted.spacing_before,
                 );
+                if let Some(crate::model::control::Control::Table(prev_table)) =
+                    st.current_items.last().and_then(|item| match item {
+                        PageItem::Table {
+                            para_index,
+                            control_index,
+                        } => paragraphs
+                            .get(*para_index)
+                            .and_then(|p| p.controls.get(*control_index)),
+                        _ => None,
+                    })
+                {
+                    let next_h = paragraphs.get(para_idx + 1).map(|next| {
+                        next.line_segs
+                            .iter()
+                            .map(|s| {
+                                hwpunit_to_px(
+                                    s.line_height.saturating_add(s.line_spacing) as i32,
+                                    self.dpi,
+                                )
+                            })
+                            .sum::<f64>()
+                    });
+                    let remaining = st.available_height() - st.current_height;
+                    let table_h = hwpunit_to_px(prev_table.common.height as i32, self.dpi);
+                    if original_hwpx_tac_filled_page_keeps_short_trail(
+                        !st.profile.hwp5_stored_pagination_layout(),
+                        prev_table,
+                        table_h,
+                        st.layout.body_area.height,
+                        remaining,
+                        formatted.height_for_fit.max(formatted.total_height),
+                        next_h.unwrap_or(0.0),
+                    ) {
+                        st.advance_column_or_new_page();
+                    }
+                }
                 self.typeset_paragraph(
                     &mut st,
                     para_idx,
@@ -18648,7 +18725,15 @@ impl TypesetEngine {
                             | crate::model::shape::TextWrap::BehindText
                     ) && ((st.col_count == 1
                         && !oversized_multirow
-                        && !table.common.treat_as_char)
+                        && !table.common.treat_as_char
+                        // [#6366] 원본 HWPX 문단 기준 글앞으로 다행·다열
+                        // flowWithText 표만 데코레이션 단축(#703)에서 뺀다.
+                        // 모든 flowWithText 글앞으로 표에 열면 #5918 쪽수와
+                        // text-overlap 기준선이 깨진다.
+                        && !original_hwpx_infront_para_flow_paginates(
+                            !self.profile.get().hwp5_stored_pagination_layout(),
+                            table,
+                        ))
                         || multicol_empty_overlay_anchor
                         || multicol_tac_host_overlay_anchor))
                         || horz_fully_outside_column
@@ -20295,6 +20380,22 @@ impl TypesetEngine {
                 end_line: total_lines,
             });
             st.current_height += post_height;
+        } else if is_visible_para_float && is_last_table {
+            // [#6312] host 글줄을 post-text 로 방출하지 못한 자리차지 표.
+            // 저장 사다리가 lh+ls 만 증언하면 그 줄 상자를 표 밴드 아래에 계상한다.
+            let next_vpos = if st.next_para_is_plain_text {
+                st.next_para_first_stored_vpos
+            } else {
+                None
+            };
+            if let Some(line_advance) = stored_visible_anchor_band_host_line_advance_from_vpos(
+                st.profile.hwp5_stored_pagination_layout() || st.profile.hwpx_stored_layout(),
+                para,
+                ctrl_idx,
+                next_vpos,
+            ) {
+                st.current_height += hwpunit_to_px(line_advance, self.dpi);
+            }
         }
 
         // TAC 표: trailing line_spacing 복원 (Paginator place_table_fits:777-783 동일)

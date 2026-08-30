@@ -1704,6 +1704,7 @@ fn parse_border_fill(
                                             "FIT" | "FIT_TO_SIZE" | "STRETCH" => {
                                                 ImageFillMode::FitToSize
                                             }
+                                            "ZOOM" => ImageFillMode::Zoom,
                                             "TOTAL" => ImageFillMode::Total,
                                             "TOP_LEFT_ALIGN" => ImageFillMode::LeftTop,
                                             _ => ImageFillMode::TileAll,

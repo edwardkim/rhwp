@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 import unittest
 from pathlib import Path
 
@@ -18,6 +19,14 @@ WORKFLOWS = {
 
 
 class TrustedPostmergeReuseWorkflowTests(unittest.TestCase):
+    def test_reusable_workflow_actions_are_pinned_to_full_commit_shas(self) -> None:
+        workflow = REUSABLE.read_text(encoding="utf-8")
+        pins = re.findall(
+            r"^\s*uses:\s+[^@\s]+@([0-9a-f]+)\b", workflow, flags=re.MULTILINE
+        )
+        self.assertGreater(len(pins), 0)
+        self.assertTrue(all(len(pin) == 40 for pin in pins))
+
     def test_reusable_verifier_is_read_only_and_fail_closed(self) -> None:
         workflow = REUSABLE.read_text(encoding="utf-8")
         self.assertIn("actions: read", workflow)
@@ -48,6 +57,13 @@ class TrustedPostmergeReuseWorkflowTests(unittest.TestCase):
         self.assertIn('`nextest-target-durations-${workflowRun.id}-${label}`', workflow)
         self.assertIn("never checks out or executes", workflow)
         self.assertIn("the merged PR head", workflow)
+        self.assertIn("Capture PR merge-tree evidence", workflow)
+        self.assertIn("Upload PR merge-tree evidence", workflow)
+        self.assertIn("trusted-postmerge-merge-tree-v1-", workflow)
+        self.assertIn("mergeTreeEvidenceByRunId", workflow)
+        self.assertIn("parents[0] !== pullRequest.base.sha", workflow)
+        self.assertIn("parents[1] !== pullRequest.head.sha", workflow)
+        self.assertIn("testedTreeSha === encodedTreeSha", workflow)
 
     def test_all_duplicate_postmerge_workflows_call_the_shared_verifier(self) -> None:
         expected_workflow_files = {

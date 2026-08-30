@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-08-07
+last_verified: 2026-08-30
 ---
 
 # PR 접수와 리뷰 기록
@@ -113,6 +113,12 @@ review 문서에는 최소한 다음을 포함한다.
 - 선택한 로컬·CI·시각 검증 및 생략 이유
 - 발견한 문제·risk·후속 이슈
 - 최종 권고: merge, 보정, rebase 요청, 재작업, close, 보류 중 하나
+
+시각 검증을 최종 권고의 근거로 썼다면 `Merge 후 contributor PR comment 계획`도 review 문서에 포함한다.
+계획에는 Visual Sweep 정본 direct link, 실제 페이지·후보 수·지표와 사람의 판정, representative PNG의
+`mydocs/pr/assets/` 안정 경로, `<merge-commit-sha>` 고정 raw image URL 형식, merge 뒤 `--body-file` 게시 및
+API 재조회 조건을 적는다. 이는 게시 승인이나 사전 comment를 뜻하지 않는다. asset이 devel에 반영되고 merge
+SHA가 확정된 뒤에만 [merge 후속 처리](post_merge.md)의 실제 게시 단계로 진행한다.
 
 ### 3.2 implementation 계획서
 

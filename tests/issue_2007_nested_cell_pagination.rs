@@ -17,9 +17,23 @@
 
 use std::fs;
 use std::path::Path;
+use std::sync::{Mutex, MutexGuard};
 
 use rhwp::document_core::DocumentCore;
 use rhwp::renderer::render_tree::{BoundingBox, RenderNode, RenderNodeType};
+
+/// [#4207] 이 파일의 테스트는 같은 픽스처를 조판한다. 생성 suite 한 프로세스에서
+/// 병렬이면 LayoutEngine 의 cell-units 포인터 캐시가 allocator 재사용으로
+/// 저장 프레임 경계를 흔든다(shard 간헐 red, 무관 PR 오염).
+/// 단언은 그대로 두고 조판만 직렬화한다. CI nextest 는 별도 프로세스가 기본이라
+/// `.config/nextest.toml` 에서 해당 테스트를 exclusive 로 돌린다.
+static ISSUE_2007_LAYOUT_LOCK: Mutex<()> = Mutex::new(());
+
+fn lock_issue_2007_layout() -> MutexGuard<'static, ()> {
+    ISSUE_2007_LAYOUT_LOCK
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner)
+}
 
 fn page_text(node: &RenderNode, out: &mut String) {
     if let RenderNodeType::TextRun(run) = &node.node_type {
@@ -501,6 +515,7 @@ fn has_nested_cell_text_overlap(node: &RenderNode) -> bool {
 
 #[test]
 fn issue_2007_nested_cell_content_paginates() {
+    let _issue_2007_layout = lock_issue_2007_layout();
     let repo_root = env!("CARGO_MANIFEST_DIR");
     let hwp_path =
         Path::new(repo_root).join("samples/basic/issue2007_nested_cell_pagination_42065.hwp");
@@ -580,6 +595,7 @@ fn issue_2007_nested_cell_content_paginates() {
 
 #[test]
 fn issue_2007_nested_cell_cursor_has_no_boundary_duplication() {
+    let _issue_2007_layout = lock_issue_2007_layout();
     let path = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("samples/basic/issue2007_nested_cell_pagination_42065.hwp");
     let bytes = fs::read(&path).expect("fixture read");
@@ -613,6 +629,7 @@ fn issue_2007_nested_cell_cursor_has_no_boundary_duplication() {
 
 #[test]
 fn issue_2007_recursive_partial_render_is_page_order_independent() {
+    let _issue_2007_layout = lock_issue_2007_layout();
     let path = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("samples/basic/issue2007_nested_cell_pagination_42065.hwp");
     let bytes = fs::read(&path).expect("fixture read");
@@ -638,6 +655,7 @@ fn issue_2007_recursive_partial_render_is_page_order_independent() {
 
 #[test]
 fn issue_2007_intra_paragraph_saved_frame_break_is_preserved() {
+    let _issue_2007_layout = lock_issue_2007_layout();
     let path = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("samples/basic/issue2007_nested_cell_pagination_42065.hwp");
     let bytes = fs::read(&path).expect("fixture read");
@@ -669,6 +687,7 @@ fn issue_2007_intra_paragraph_saved_frame_break_is_preserved() {
 
 #[test]
 fn issue_2007_saved_frame_tail_nested_table_starts_before_next_frame() {
+    let _issue_2007_layout = lock_issue_2007_layout();
     let path = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("samples/basic/issue2007_nested_cell_pagination_42065.hwp");
     let bytes = fs::read(&path).expect("fixture read");
@@ -700,6 +719,7 @@ fn issue_2007_saved_frame_tail_nested_table_starts_before_next_frame() {
 
 #[test]
 fn issue_2007_nested_table_right_outer_border_is_not_clipped() {
+    let _issue_2007_layout = lock_issue_2007_layout();
     let repo_root = env!("CARGO_MANIFEST_DIR");
     let hwp_path =
         Path::new(repo_root).join("samples/basic/issue2007_nested_cell_pagination_42065.hwp");
@@ -738,6 +758,7 @@ fn issue_2007_nested_table_right_outer_border_is_not_clipped() {
 
 #[test]
 fn issue_2007_wrapper_clip_keeps_completed_nested_table_right_borders() {
+    let _issue_2007_layout = lock_issue_2007_layout();
     let repo_root = env!("CARGO_MANIFEST_DIR");
     let hwp_path =
         Path::new(repo_root).join("samples/basic/issue2007_nested_cell_pagination_42065.hwp");
@@ -791,6 +812,7 @@ fn issue_2007_wrapper_clip_keeps_completed_nested_table_right_borders() {
 
 #[test]
 fn issue_2007_continuation_ancestor_clip_keeps_deep_right_border() {
+    let _issue_2007_layout = lock_issue_2007_layout();
     let repo_root = env!("CARGO_MANIFEST_DIR");
     let hwp_path =
         Path::new(repo_root).join("samples/basic/issue2007_nested_cell_pagination_42065.hwp");
@@ -822,6 +844,7 @@ fn issue_2007_continuation_ancestor_clip_keeps_deep_right_border() {
 
 #[test]
 fn issue_2007_single_cell_continuation_does_not_repaint_boundary_fragments() {
+    let _issue_2007_layout = lock_issue_2007_layout();
     let repo_root = env!("CARGO_MANIFEST_DIR");
     let hwp_path =
         Path::new(repo_root).join("samples/basic/issue2007_nested_cell_pagination_42065.hwp");
@@ -910,6 +933,7 @@ fn issue_2007_single_cell_continuation_does_not_repaint_boundary_fragments() {
 
 #[test]
 fn issue_2007_completed_multiline_table_keeps_following_heading_in_next_viewport() {
+    let _issue_2007_layout = lock_issue_2007_layout();
     let repo_root = env!("CARGO_MANIFEST_DIR");
     let hwp_path =
         Path::new(repo_root).join("samples/basic/issue2007_nested_cell_pagination_42065.hwp");
@@ -947,6 +971,7 @@ fn issue_2007_completed_multiline_table_keeps_following_heading_in_next_viewport
 
 #[test]
 fn issue_2007_continuation_frame_restarts_and_drops_previous_page_residual() {
+    let _issue_2007_layout = lock_issue_2007_layout();
     let repo_root = env!("CARGO_MANIFEST_DIR");
     let hwp_path =
         Path::new(repo_root).join("samples/basic/issue2007_nested_cell_pagination_42065.hwp");
@@ -1206,6 +1231,7 @@ fn issue_2007_continuation_frame_restarts_and_drops_previous_page_residual() {
 
 #[test]
 fn issue_2007_cell_vpos_reset_does_not_overlap_following_paragraphs() {
+    let _issue_2007_layout = lock_issue_2007_layout();
     let repo_root = env!("CARGO_MANIFEST_DIR");
     let hwp_path =
         Path::new(repo_root).join("samples/basic/issue2007_nested_cell_pagination_42065.hwp");
@@ -1253,6 +1279,7 @@ fn issue_2007_cell_vpos_reset_does_not_overlap_following_paragraphs() {
 
 #[test]
 fn issue_4159_terminal_nested_bottom_border_is_inside_all_cell_clips() {
+    let _issue_2007_layout = lock_issue_2007_layout();
     let path = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("samples/basic/issue2007_nested_cell_pagination_42065.hwp");
     let bytes = fs::read(&path).expect("fixture read");
@@ -1296,6 +1323,7 @@ fn issue_4159_terminal_nested_bottom_border_is_inside_all_cell_clips() {
 
 #[test]
 fn issue_4159_svg_terminal_bottom_border_is_visible_inside_outer_cell_clip() {
+    let _issue_2007_layout = lock_issue_2007_layout();
     let path = Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("samples/basic/issue2007_nested_cell_pagination_42065.hwp");
     let bytes = fs::read(&path).expect("fixture read");
@@ -1339,6 +1367,7 @@ fn issue_4159_svg_terminal_bottom_border_is_visible_inside_outer_cell_clip() {
 
 #[test]
 fn issue_2007_continuation_viewport_does_not_center_nested_cell_content() {
+    let _issue_2007_layout = lock_issue_2007_layout();
     let repo_root = env!("CARGO_MANIFEST_DIR");
     let hwp_path =
         Path::new(repo_root).join("samples/basic/issue2007_nested_cell_pagination_42065.hwp");

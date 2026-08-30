@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-08-28
+last_verified: 2026-08-30
 ---
 
 # 시각·fixture 증적
@@ -115,6 +115,10 @@ visual sweep을 실제 merge 판단에 썼으면 merge 가능 또는 승인 요�
   direct link로 남긴다. output 경로 link만 남기지 않고, merge commit에 반영된 asset의 **commit SHA 고정**
   raw URL을 Markdown image로 실제 표시한다. raw URL은 PNG 표시용 증적이며 문서 비교 방법의 인용은
   Visual Sweep 정본과 review 문서가 담당한다.
+- 시각 검증을 `수용` 또는 `merge 권고` 근거로 쓰면, merge 전 개별 review 문서에 `Merge 후 contributor PR
+  comment 계획`을 작성한다. 계획에는 실제 확인 페이지·후보 수·지표·사람의 결론과 한계, representative PNG의
+  안정 경로, `<merge-commit-sha>` 고정 raw URL 형식, merge 뒤 `--body-file` 게시·API 재조회 조건을 넣는다.
+  이 계획이 없으면 merge 뒤 임시 산출물에서 수치를 추정해 comment하지 않고 review 기록부터 보완한다.
 
 ~~~markdown
 - 문서 비교: [PDF/SVG visual sweep 가이드](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/verification/visual_sweep_guide.md#github-merge-comment)를 따름

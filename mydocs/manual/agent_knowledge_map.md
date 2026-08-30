@@ -148,7 +148,7 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 
 | 하려는 일 | 명령 (MCP 도구) | 판정 필드 | 권위 |
 |---|---|---|---|
-| 두 문서 IR 차이 | `ir-diff --json` (`hwp_ir_diff`) | `identical`·`diffCount`·`categories` | [ir-diff 매뉴얼](ir_diff_command.md) |
+| 두 문서 IR 차이 | `ir-diff --json` (`hwp_ir_diff`) | `identical`·`diffCount`·`categories`·`pageCountA`·`pageCountB` | [ir-diff 매뉴얼](ir_diff_command.md) |
 | 라운드트립 시각 회귀 | `render-diff --json` (`hwp_render_diff`) | `status`·`maxDisp`·`regression` | [CLI 매뉴얼](cli_commands.md) §render-diff |
 | 조판 결과 덤프 | `dump-pages --json` | `pages[].columns[].items[]` | [dump 매뉴얼](dump_command.md) |
 | IR 모양 코드 생성 | `export-ir-schema --json` | `schema`·`definitionCount` | [CLI 매뉴얼](cli_commands.md) |
@@ -686,7 +686,7 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 
 | 필드 | 타입 | 의미 · `null` 의 뜻 | 등장 명령 |
 |---|---|---|---|
-| `identical` | bool | IR 이 같은가. **차이는 오류가 아니라 데이터(exit 3)** | `ir-diff`·`verify` 안 |
+| `identical` | bool | IR 필드와 `pageCount` 가 같은가. 쪽수가 달라도 false. **차이는 오류가 아니라 데이터(exit 3)** | `ir-diff`·`verify` 안 |
 | `diffCount` | number | 차이 개수 | `ir-diff`·`verify` 안 |
 | `categories` | object | 차이의 분류별 개수 — 키 이름 자체가 문서 파생일 수 있다 | `ir-diff` |
 | `status` | string | `render-diff` 판정(`OK`·`OVER` 등) | `render-diff` |
@@ -701,7 +701,7 @@ IR·provenance·plan 네 축을 한 번에 조립하고, 빠진 축은 `missingA
 | `worstPage` | number | 최대 변위가 난 쪽 | `render-diff` |
 | `overPages` | number | 임계를 넘은 쪽 수 | `render-diff` |
 | `structPages` / `hardStructPages` | number | 구조 불일치 쪽 수 / 그중 완화 규칙으로도 못 넘긴 쪽 수 | `render-diff` |
-| `pageCountA` / `pageCountB` | number | 양쪽 쪽 수 | `render-diff` |
+| `pageCountA` / `pageCountB` | number | 양쪽 쪽 수. `ir-diff` 는 `info --json` 과 같은 조판 쪽수 | `render-diff`·`ir-diff` |
 | `pageCountMismatch` | bool | 쪽 수가 다른가 | `render-diff` |
 | `pageFilter` | number\|null | `-p` 로 좁혔나. `null` = 전 쪽 | `render-diff`·`dump-pages`·`layout-anomaly` |
 | `strict` | bool | 확정 이상 신호를 종료 코드 3으로 취급할지. 빈 쪽 신호는 `true`여도 실패시키지 않는다 | `layout-anomaly` |

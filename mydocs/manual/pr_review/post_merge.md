@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-08-16
+last_verified: 2026-08-30
 ---
 
 # Merge 후속 처리
@@ -169,6 +169,11 @@ close 체크리스트: ① sub-issue close ② 가드 테스트 PR merge ③ 판
 시각 검증을 merge 판단 근거로 썼다면 [Visual Sweep의 GitHub merge comment 정본](../verification/visual_sweep_guide.md#github-merge-comment)을
 direct link로 남기고, merge commit에 포함된 실제 asset을 보이게 포함한다. raw URL은 이미지 표시용 증적이며,
 문서 비교 방법의 정본은 Visual Sweep 가이드다.
+
+게시 전에 해당 개별 review 문서의 `Merge 후 contributor PR comment 계획`을 읽고, 실제 merge SHA, devel에
+존재하는 asset, 확인한 페이지·후보 수·수치·사람의 결론이 계획과 일치하는지 대조한다. 계획이 없거나 불완전하면
+임시 output이나 기억에 의존해 comment를 작성하지 않는다. review 기록을 먼저 보완하고, 필요한 asset을 devel에
+반영한 뒤 작업지시자 승인 범위에서 게시한다.
 
 ~~~markdown
 검토 및 머지 완료했습니다. 감사합니다.
