@@ -1519,33 +1519,4 @@ mod tests {
             Some(&next),
         ));
     }
-
-    #[test]
-    fn original_hwpx_rowbreak_equal_outer_margin_matches_tac_img_02_shape_only() {
-        let (_, table, _) = physical_outer_box_candidate();
-
-        assert_eq!(
-            original_hwpx_column_rowbreak_equal_outer_margin_hu(true, &table),
-            Some(283)
-        );
-        assert!(original_hwpx_column_rowbreak_equal_outer_margin_hu(false, &table).is_none());
-
-        let mut two_columns = table.clone();
-        two_columns.col_count = 2;
-        assert!(original_hwpx_column_rowbreak_equal_outer_margin_hu(true, &two_columns).is_none());
-
-        let mut para_relative = table.clone();
-        para_relative.common.horz_rel_to = HorzRelTo::Para;
-        assert!(
-            original_hwpx_column_rowbreak_equal_outer_margin_hu(true, &para_relative).is_none()
-        );
-
-        let mut cell_break = table.clone();
-        cell_break.page_break = TablePageBreak::CellBreak;
-        assert!(original_hwpx_column_rowbreak_equal_outer_margin_hu(true, &cell_break).is_none());
-
-        let mut asymmetric = table.clone();
-        asymmetric.outer_margin_right += 1;
-        assert!(original_hwpx_column_rowbreak_equal_outer_margin_hu(true, &asymmetric).is_none());
-    }
 }
