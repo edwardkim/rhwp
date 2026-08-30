@@ -395,7 +395,10 @@ test('#3137 stable text edit forwards a validated focused patch to partial Canva
   assert.match(canvasView, /candidate\.pageIndex !== pageIndex/);
   assert.match(canvasView, /\.\.\.\(validFocusedPagePatch \? \{ focusedPagePatch: validFocusedPagePatch \} : \{\}\)/);
   assert.match(pageRenderer, /context\.focusedPagePatch\?\.pageIndex === pageIdx/);
-  assert.match(pageRenderer, /this\.renderFocusedPagePatch\(pageIdx,\s*canvas,\s*renderScale,\s*context\)/);
+  assert.match(
+    pageRenderer,
+    /this\.renderFocusedPagePatch\(pageIdx,\s*canvas,\s*renderScale,\s*displayScale,\s*context\)/,
+  );
   assert.match(pageRenderer, /layers\.imageCount > 0 \|\| layers\.rawSvgCount > 0/);
   assert.match(pageRenderer, /this\.wasm\.renderPagePatchToCanvasFiltered\(/);
   assert.match(wasmBridge, /renderPagePatchToCanvasFilteredWithProfile/);
