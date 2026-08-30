@@ -8,6 +8,7 @@
   "planApproved": true,
   "d4DCheckpoint": "f40987220",
   "planCheckpoint": "a4248b9c6",
+  "d5CResultCheckpoint": "a7de96b44",
   "baseUpstreamDevel": "19b89d967b15",
   "finalUpstreamDevel": "28057f02ea5731cbc0566f67eb9c0129e47287e6",
   "finalUpstreamMergeCommit": "edb9f51e4",

@@ -10,6 +10,7 @@
   "latestObservedUpstreamDevel": "28057f02ea5731cbc0566f67eb9c0129e47287e6",
   "latestUpstreamMergeCommit": "edb9f51e4",
   "d4DCheckpoint": "f40987220",
+  "d5CResultCheckpoint": "a7de96b44",
   "aheadAfterLatestFetch": 63,
   "behindAfterLatestFetch": 0,
   "incomingD2FileOverlap": 0,
