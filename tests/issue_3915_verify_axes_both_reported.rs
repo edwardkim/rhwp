@@ -13,10 +13,10 @@
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 
-/// 잔존 IR 실패 표본. hwp3-sample10 은 #3532, issue_265 는 #5251 이 정상화했다.
-/// sample16 은 저장 IR 잔존이 있고, CLI `--verify-pages` 가 흔들려도 IR 축은
-/// 함께 보고돼야 한다 (#3915 — 쪽수 실패가 IR 을 가리던 버그).
-const IR_FAIL_SAMPLE: &str = "samples/hwp3-sample16.hwp";
+/// 이중 축 보고 표본. hwp3-sample10 은 #3532, issue_265 는 #5251 이 정상화했고
+/// sample16 도 #5251 이후 IR 왕복이 맞을 수 있다. 계약은 쪽수 축이 통과·실패여도
+/// `--verify` IR 축이 **반드시 한 줄로 보고**되는 것이다 (#3915).
+const DUAL_AXIS_SAMPLE: &str = "samples/hwp3-sample16.hwp";
 /// 두 축 모두 통과하는 표본 — 무회귀 기준선.
 const CLEAN_SAMPLE: &str = "samples/table-001.hwp";
 
@@ -53,25 +53,34 @@ fn page_and_ir_axes_report_their_actual_results() {
     std::fs::create_dir_all(&dir).expect("임시 디렉터리");
 
     let ir = export(
-        IR_FAIL_SAMPLE,
-        &dir.join("ir-fail.hwpx"),
+        DUAL_AXIS_SAMPLE,
+        &dir.join("dual.hwpx"),
         &["--verify", "--verify-pages"],
     );
     let ir_combined = format!("{}{}", stderr(&ir), String::from_utf8_lossy(&ir.stdout));
     let pages_ok = ir_combined.contains("검증 통과(--verify-pages)");
     let pages_ng = ir_combined.contains("검증 실패(--verify-pages)");
+    let ir_ok = ir_combined.contains("검증 통과(--verify)");
+    let ir_ng = ir_combined.contains("검증 실패(--verify)");
     assert!(
         pages_ok || pages_ng,
         "쪽수 축이 보고되지 않았습니다:\n{ir_combined}"
     );
     assert!(
-        ir_combined.contains("검증 실패(--verify)"),
-        "IR 실패가 쪽수 축에 가려지면 안 된다 (#3915):\n{ir_combined}"
+        ir_ok || ir_ng,
+        "IR 축이 쪽수 축에 가려지면 안 된다 (#3915):\n{ir_combined}"
     );
+    let expected = if pages_ng {
+        4
+    } else if ir_ng {
+        3
+    } else {
+        0
+    };
     assert_eq!(
         ir.status.code(),
-        Some(if pages_ng { 4 } else { 3 }),
-        "쪽수 실패면 4, IR만 실패면 3 (#3915):\n{ir_combined}"
+        Some(expected),
+        "쪽수 실패면 4, IR만 실패면 3, 둘 다 통과면 0 (#3915):\n{ir_combined}"
     );
 
     let _ = std::fs::remove_dir_all(&dir);
