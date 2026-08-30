@@ -434,7 +434,30 @@ impl DocumentCore {
     // === HTML 파서 ===
 
     /// HTML 문자열을 파싱하여 Paragraph 목록을 생성한다.
+    /// `<div>`/`<p><table>` 재귀 하강 깊이 상한. Gmail 등 웹메일 클립보드는 서명·본문을
+    /// 감싸는 wrapper `<div>`가 수십 겹인 경우가 흔하다(예: 실사용 리포트 — 서명 블록 하나에
+    /// `</div>` 8개 이상 연속). 이 깊이만큼 매번 `find_closing_tag_chars`로 전체 구간을
+    /// 다시 훑고 재귀하므로, 깊이가 무제한이면 붙여넣기 한 번이 브라우저를 "응답 없음"으로
+    /// 멈춰 세울 만큼 느려진다(실사용 확인). 이 상한을 넘으면 태그 트리 파싱을 포기하고
+    /// 태그만 제거한 평문 문단으로 폴백한다 — 서식은 잃어도 붙여넣기 자체는 항상 끝난다.
+    const HTML_PASTE_MAX_RECURSION_DEPTH: u32 = 16;
+
+    /// 파싱을 시도할 최대 HTML 바이트 크기. 이보다 크면 태그 트리 파싱 없이 평문으로
+    /// 폴백한다 — 크기 자체가 계산량의 또 다른 축이라 깊이 상한과 별개로 방어한다.
+    const HTML_PASTE_MAX_BYTES: usize = 400_000;
+
     pub(crate) fn parse_html_to_paragraphs(&mut self, html: &str) -> Vec<Paragraph> {
+        self.parse_html_to_paragraphs_at_depth(html, 0)
+    }
+
+    fn parse_html_to_paragraphs_at_depth(&mut self, html: &str, depth: u32) -> Vec<Paragraph> {
+        if depth >= Self::HTML_PASTE_MAX_RECURSION_DEPTH || html.len() > Self::HTML_PASTE_MAX_BYTES
+        {
+            let mut fallback_paragraphs = Vec::new();
+            self.flush_text_to_paragraphs(&mut fallback_paragraphs, &html_strip_tags(html));
+            return fallback_paragraphs;
+        }
+
         let mut paragraphs: Vec<Paragraph> = Vec::new();
 
         // <!--StartFragment-->...<!--EndFragment--> 영역 추출 (없으면 전체 사용)
@@ -524,7 +547,7 @@ impl DocumentCore {
 
                     // <p> 내부에 <table>이 있으면 재귀적으로 처리
                     if p_inner.to_lowercase().contains("<table") {
-                        let sub_paras = self.parse_html_to_paragraphs(p_inner);
+                        let sub_paras = self.parse_html_to_paragraphs_at_depth(p_inner, depth + 1);
                         paragraphs.extend(sub_paras);
                         pos = p_end;
                         continue;
@@ -552,7 +575,7 @@ impl DocumentCore {
                         &div_inner
                     };
 
-                    let sub_paras = self.parse_html_to_paragraphs(div_inner);
+                    let sub_paras = self.parse_html_to_paragraphs_at_depth(div_inner, depth + 1);
                     paragraphs.extend(sub_paras);
                     pos = div_end;
                     continue;
@@ -680,24 +703,19 @@ impl DocumentCore {
                 let tag_lower = tag_str.to_lowercase();
 
                 if tag_lower.starts_with("<span") {
+                    // [붙여넣기 무한루프/응답없음 방지] span_end_tag(깊이 인식 탐색)가 이미
+                    // 정확한 닫는 위치를 갖고 있는데, 예전 코드는 그 뒤에 또 "</span>" 리터럴을
+                    // 처음부터 선형 재탐색했다 — 중첩 span이 많은 Gmail류 클립보드(span 수백
+                    // 개)에서 O(n) 재탐색이 span마다 반복돼 실질적으로 O(n²)이 됐고, 게다가
+                    // 깊이를 무시한 첫 "</span>" 매치라 중첩 span에서는 내부 span의 닫는
+                    // 태그를 잘못 집는 경계 버그이기도 했다. span_end_tag 하나로 통일한다
+                    // ("</span>".len() == 7 만큼 빼면 내용 끝 위치).
                     let span_end_tag = find_closing_tag_chars(&chars, pos, "span");
                     let inner_start = tag_end + 1;
-                    let inner_end = {
-                        // char 배열에서 "</span>" 검색 (바이트 인덱스 혼동 방지)
-                        let close_chars: Vec<char> = "</span>".chars().collect();
-                        let mut found = None;
-                        for i in inner_start..len.saturating_sub(close_chars.len() - 1) {
-                            let slice: String = chars[i..i + close_chars.len().min(len - i)]
-                                .iter()
-                                .collect();
-                            if slice.to_lowercase() == "</span>" {
-                                found = Some(i);
-                                break;
-                            }
-                        }
-                        found.unwrap_or(span_end_tag)
-                    };
-                    let inner: String = chars[inner_start..inner_end.min(len)].iter().collect();
+                    let inner_end = span_end_tag.saturating_sub(7);
+                    let inner: String = chars[inner_start..inner_end.max(inner_start).min(len)]
+                        .iter()
+                        .collect();
                     let inner_text = decode_html_entities(&html_strip_tags(&inner));
 
                     if !inner_text.is_empty() {
