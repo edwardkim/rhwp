@@ -61,8 +61,8 @@ export class CursorState {
   private _hfApplyTo = 0; // 0=Both, 1=Even, 2=Odd
   private _hfParaIdx = 0;
   private _hfCharOffset = 0;
-  /** 머리말/꼬리말이 위치한 선호 페이지 (더블클릭한 페이지) */
-  private _hfPreferredPage = -1;
+  /** 머리말/꼬리말 정의를 투영해 편집하는 구역 첫 페이지 */
+  private _hfPreviewPage = -1;
   /** 편집 모드 진입 전 본문 커서 위치 (탈출 시 복원용) */
   private _savedBodyPosition: DocumentPosition | null = null;
 
@@ -175,15 +175,15 @@ export class CursorState {
   getHeaderFooterSelectionOrdered(): {
     start: HeaderFooterTextPosition;
     end: HeaderFooterTextPosition;
-    preferredPage: number;
+    previewPage: number;
   } | null {
     if (!this.hfAnchor || this._headerFooterMode === 'none') return null;
     const focus = this.currentHeaderFooterTextPosition();
     if (!CursorState.sameHeaderFooterTarget(this.hfAnchor, focus)) return null;
     const cmp = CursorState.compareHeaderFooterPositions(this.hfAnchor, focus);
     return cmp <= 0
-      ? { start: { ...this.hfAnchor }, end: focus, preferredPage: this._hfPreferredPage }
-      : { start: focus, end: { ...this.hfAnchor }, preferredPage: this._hfPreferredPage };
+      ? { start: { ...this.hfAnchor }, end: focus, previewPage: this._hfPreviewPage }
+      : { start: focus, end: { ...this.hfAnchor }, previewPage: this._hfPreviewPage };
   }
 
   /** 현재 위치를 anchor로 설정 (선택 시작) */
@@ -223,7 +223,7 @@ export class CursorState {
   selectHeaderFooterRange(
     start: HeaderFooterTextPosition,
     end: HeaderFooterTextPosition,
-    preferredPage: number,
+    previewPage: number,
   ): boolean {
     if (this._headerFooterMode === 'none') return false;
     const current = this.currentHeaderFooterTextPosition();
@@ -257,7 +257,12 @@ export class CursorState {
     this.hfAnchor = { ...start };
     this._hfParaIdx = end.paraIdx;
     this._hfCharOffset = end.charOffset;
-    if (preferredPage >= 0) this._hfPreferredPage = preferredPage;
+    if (previewPage >= 0) {
+      this._hfPreviewPage = this.resolveHeaderFooterPreviewPage(
+        this._hfSectionIdx,
+        previewPage,
+      );
+    }
     this.updateRect();
     return true;
   }
@@ -1294,7 +1299,7 @@ export class CursorState {
         const isHeader = this._headerFooterMode === 'header';
         this.rect = this.wasm.getCursorRectInHeaderFooter(
           this._hfSectionIdx, isHeader, this._hfApplyTo,
-          this._hfParaIdx, this._hfCharOffset, this._hfPreferredPage,
+          this._hfParaIdx, this._hfCharOffset, this._hfPreviewPage,
         );
         return;
       }
@@ -1902,8 +1907,8 @@ export class CursorState {
   get hfParaIdx(): number { return this._hfParaIdx; }
   /** 머리말/꼬리말 내 문자 오프셋 */
   get hfCharOffset(): number { return this._hfCharOffset; }
-  /** 머리말/꼬리말 캐럿을 표시할 선호 페이지 */
-  get hfPreferredPage(): number { return this._hfPreferredPage; }
+  /** 머리말/꼬리말 정의를 투영해 편집하는 구역 첫 페이지 */
+  get hfPreviewPage(): number { return this._hfPreviewPage; }
 
   /** 머리말/꼬리말 편집 모드인지 반환 */
   isInHeaderFooter(): boolean { return this._headerFooterMode !== 'none'; }
@@ -1921,7 +1926,7 @@ export class CursorState {
   }
 
   /** 머리말/꼬리말 편집 모드에 진입한다. */
-  enterHeaderFooterMode(isHeader: boolean, sectionIdx: number, applyTo: number, preferredPage = -1): void {
+  enterHeaderFooterMode(isHeader: boolean, sectionIdx: number, applyTo: number, sourcePage = -1): void {
     // 현재 본문 커서 위치 저장
     this._savedBodyPosition = { ...this.position };
 
@@ -1930,9 +1935,9 @@ export class CursorState {
     this._hfApplyTo = applyTo;
     this._hfParaIdx = 0;
     this._hfCharOffset = 0;
-    this._hfPreferredPage = this.resolveHeaderFooterPreviewPage(
+    this._hfPreviewPage = this.resolveHeaderFooterPreviewPage(
       sectionIdx,
-      preferredPage >= 0 ? preferredPage : (this.rect?.pageIndex ?? 0),
+      sourcePage >= 0 ? sourcePage : (this.rect?.pageIndex ?? 0),
     );
 
     // 선택 해제
@@ -1964,31 +1969,25 @@ export class CursorState {
   }
 
   /** 다른 머리말/꼬리말로 직접 전환한다 (exit→enter 사이의 updateRect 호출을 피함). */
-  switchHeaderFooterTarget(isHeader: boolean, sectionIdx: number, applyTo: number, targetPage = -1): void {
+  switchHeaderFooterTarget(isHeader: boolean, sectionIdx: number, applyTo: number, sourcePage = -1): void {
     if (this._headerFooterMode === 'none') return;
     this._headerFooterMode = isHeader ? 'header' : 'footer';
     this._hfSectionIdx = sectionIdx;
     this._hfApplyTo = applyTo;
     this._hfParaIdx = 0;
     this._hfCharOffset = 0;
-    this._hfPreferredPage = this.resolveHeaderFooterPreviewPage(
+    this._hfPreviewPage = this.resolveHeaderFooterPreviewPage(
       sectionIdx,
-      targetPage >= 0 ? targetPage : (this.rect?.pageIndex ?? this._hfPreferredPage),
+      sourcePage >= 0 ? sourcePage : (this.rect?.pageIndex ?? this._hfPreviewPage),
     );
     this.clearSelection();
     this.updateRect();
   }
 
   /** 머리말/꼬리말 내 커서 위치를 설정한다. */
-  setHfCursorPosition(paraIdx: number, charOffset: number, preferredPage = -1): void {
+  setHfCursorPosition(paraIdx: number, charOffset: number): void {
     this._hfParaIdx = paraIdx;
     this._hfCharOffset = charOffset;
-    if (preferredPage >= 0) {
-      this._hfPreferredPage = this.resolveHeaderFooterPreviewPage(
-        this._hfSectionIdx,
-        preferredPage,
-      );
-    }
     this.updateRect();
   }
 
@@ -2015,7 +2014,7 @@ export class CursorState {
       return this.selectHeaderFooterRange(
         { ...target, paraIdx: 0, charOffset: 0 },
         { ...target, paraIdx: lastPara, charOffset: Number(lastInfo.charCount) },
-        this._hfPreferredPage,
+        this._hfPreviewPage,
       );
     } catch (e) {
       console.warn('[CursorState] selectAllInHeaderFooter 실패:', e);
@@ -2226,7 +2225,6 @@ export class CursorState {
         ) {
           this._hfParaIdx = hit.paraIndex;
           this._hfCharOffset = hit.charOffset;
-          this._hfPreferredPage = pageNum;
           this.updateRect();
           return;
         }

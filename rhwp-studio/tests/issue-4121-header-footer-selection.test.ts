@@ -18,22 +18,22 @@ test('#4121 HF anchor는 본문·각주와 독립된 target 소유 범위를 만
     const wasm = {
       getCursorRectInHeaderFooter: (
         _sec: number, _header: boolean, _apply: number,
-        paraIdx: number, charOffset: number, preferredPage: number,
-      ) => ({ pageIndex: preferredPage, x: charOffset * 8, y: paraIdx * 20, height: 12 }),
+        paraIdx: number, charOffset: number, previewPage: number,
+      ) => ({ pageIndex: previewPage, x: charOffset * 8, y: paraIdx * 20, height: 12 }),
       getHeaderFooterParaInfo: (_sec: number, _header: boolean, _apply: number, paraIdx: number) =>
         JSON.stringify({ paraCount: 2, charCount: paraIdx === 0 ? 5 : 4 }),
     };
     const cursor: any = new CursorState(wasm);
     cursor.enterHeaderFooterMode(true, 2, 1, 4);
-    cursor.setHfCursorPosition(0, 4, 4);
+    cursor.setHfCursorPosition(0, 4);
     cursor.setHfAnchor();
-    cursor.setHfCursorPosition(1, 2, 6);
+    cursor.setHfCursorPosition(1, 2);
 
     assert.equal(cursor.hasSelection(), true);
     assert.deepEqual(cursor.getHeaderFooterSelectionOrdered(), {
       start: { sectionIdx: 2, isHeader: true, applyTo: 1, paraIdx: 0, charOffset: 4 },
       end: { sectionIdx: 2, isHeader: true, applyTo: 1, paraIdx: 1, charOffset: 2 },
-      preferredPage: 6,
+      previewPage: 4,
     });
 
     cursor.switchHeaderFooterTarget(true, 2, 2, 7);
@@ -55,9 +55,9 @@ test('#4121 HF 역방향 범위는 문단·문자 사전식으로 정렬된다',
     };
     const cursor: any = new CursorState(wasm);
     cursor.enterHeaderFooterMode(false, 0, 0, 3);
-    cursor.setHfCursorPosition(1, 6, 3);
+    cursor.setHfCursorPosition(1, 6);
     cursor.setHfAnchor();
-    cursor.setHfCursorPosition(0, 2, 3);
+    cursor.setHfCursorPosition(0, 2);
 
     const selection = cursor.getHeaderFooterSelectionOrdered();
     assert.deepEqual(selection?.start, {
@@ -80,8 +80,8 @@ test('#4121 HF 위아래 이동은 같은 resolved target의 시각 줄만 따�
     const wasm = {
       getCursorRectInHeaderFooter: (
         _sec: number, _header: boolean, _apply: number,
-        paraIdx: number, charOffset: number, preferredPage: number,
-      ) => ({ pageIndex: preferredPage, x: charOffset * 8, y: paraIdx * 20, height: 12 }),
+        paraIdx: number, charOffset: number, previewPage: number,
+      ) => ({ pageIndex: previewPage, x: charOffset * 8, y: paraIdx * 20, height: 12 }),
       getHeaderFooterParaInfo: () => JSON.stringify({ paraCount: 2, charCount: 8 }),
       hitTestInHeaderFooter: () => ({
         hit: true, sectionIndex: 0, applyTo: 2, paraIndex: 1, charOffset: 3,
@@ -89,13 +89,13 @@ test('#4121 HF 위아래 이동은 같은 resolved target의 시각 줄만 따�
     };
     const cursor: any = new CursorState(wasm);
     cursor.enterHeaderFooterMode(true, 0, 2, 5);
-    cursor.setHfCursorPosition(0, 2, 5);
+    cursor.setHfCursorPosition(0, 2);
     cursor.setHfAnchor();
     cursor.moveVerticalInHf(1);
 
     assert.equal(cursor.hfParaIdx, 1);
     assert.equal(cursor.hfCharOffset, 3);
-    assert.equal(cursor.getHeaderFooterSelectionOrdered()?.preferredPage, 5);
+    assert.equal(cursor.getHeaderFooterSelectionOrdered()?.previewPage, 5);
   } finally {
     await vite.close();
   }
@@ -111,14 +111,14 @@ test('#4121 HF 단어·문단·target 경계 이동은 HF 좌표계를 유지한
     const wasm = {
       getCursorRectInHeaderFooter: (
         _sec: number, _header: boolean, _apply: number,
-        paraIdx: number, charOffset: number, preferredPage: number,
-      ) => ({ pageIndex: preferredPage, x: charOffset * 8, y: paraIdx * 20, height: 12 }),
+        paraIdx: number, charOffset: number, previewPage: number,
+      ) => ({ pageIndex: previewPage, x: charOffset * 8, y: paraIdx * 20, height: 12 }),
       getHeaderFooterParaInfo: (_sec: number, _header: boolean, _apply: number, paraIdx: number) =>
         JSON.stringify({ paraCount: texts.length, charCount: Array.from(texts[paraIdx]).length, text: texts[paraIdx] }),
     };
     const cursor: any = new CursorState(wasm);
     cursor.enterHeaderFooterMode(true, 0, 0, 2);
-    cursor.setHfCursorPosition(0, 10, 2);
+    cursor.setHfCursorPosition(0, 10);
 
     cursor.moveToWordBoundaryInHf(-1);
     assert.equal(cursor.hfCharOffset, 6, 'Option+Left는 이전 단어 시작으로 이동');
@@ -149,14 +149,14 @@ test('#4121 macOS HF Option+Shift·Command+Shift 탐색은 실제 선택 범위�
     const wasm = {
       getCursorRectInHeaderFooter: (
         _sec: number, _header: boolean, _apply: number,
-        paraIdx: number, charOffset: number, preferredPage: number,
-      ) => ({ pageIndex: preferredPage, x: charOffset * 8, y: paraIdx * 20, height: 12 }),
+        paraIdx: number, charOffset: number, previewPage: number,
+      ) => ({ pageIndex: previewPage, x: charOffset * 8, y: paraIdx * 20, height: 12 }),
       getHeaderFooterParaInfo: (_sec: number, _header: boolean, _apply: number, paraIdx: number) =>
         JSON.stringify({ paraCount: texts.length, charCount: Array.from(texts[paraIdx]).length, text: texts[paraIdx] }),
     };
     const cursor: any = new CursorState(wasm);
     cursor.enterHeaderFooterMode(true, 0, 0, 2);
-    cursor.setHfCursorPosition(0, 10, 2);
+    cursor.setHfCursorPosition(0, 10);
     let caretUpdates = 0;
     const handler: any = {
       active: true,
@@ -183,11 +183,11 @@ test('#4121 macOS HF Option+Shift·Command+Shift 탐색은 실제 선택 범위�
     assert.deepEqual(cursor.getHeaderFooterSelectionOrdered(), {
       start: { sectionIdx: 0, isHeader: true, applyTo: 0, paraIdx: 0, charOffset: 6 },
       end: { sectionIdx: 0, isHeader: true, applyTo: 0, paraIdx: 0, charOffset: 10 },
-      preferredPage: 2,
+      previewPage: 2,
     });
 
     cursor.clearSelection();
-    cursor.setHfCursorPosition(1, 3, 2);
+    cursor.setHfCursorPosition(1, 3);
     onKeyDown.call(handler, key('ArrowUp', { metaKey: true, shiftKey: true }));
     assert.deepEqual(cursor.getHeaderFooterSelectionOrdered()?.start, {
       sectionIdx: 0, isHeader: true, applyTo: 0, paraIdx: 0, charOffset: 0,
@@ -210,8 +210,8 @@ test('#4121 HF 모두 선택은 메뉴와 Ctrl/Cmd+A 모두 현재 정의만 대
     const wasm = {
       getCursorRectInHeaderFooter: (
         _sec: number, _header: boolean, _apply: number,
-        paraIdx: number, charOffset: number, preferredPage: number,
-      ) => ({ pageIndex: preferredPage, x: charOffset * 8, y: paraIdx * 20, height: 12 }),
+        paraIdx: number, charOffset: number, previewPage: number,
+      ) => ({ pageIndex: previewPage, x: charOffset * 8, y: paraIdx * 20, height: 12 }),
       getHeaderFooterParaInfo: (_sec: number, _header: boolean, _apply: number, paraIdx: number) =>
         JSON.stringify({
           paraCount: texts.length,
@@ -221,7 +221,7 @@ test('#4121 HF 모두 선택은 메뉴와 Ctrl/Cmd+A 모두 현재 정의만 대
     };
     const cursor: any = new CursorState(wasm);
     cursor.enterHeaderFooterMode(true, 1, 2, 3);
-    cursor.setHfCursorPosition(0, 2, 3);
+    cursor.setHfCursorPosition(0, 2);
     let caretUpdates = 0;
     let dispatched = '';
     const handler: any = {
@@ -243,7 +243,7 @@ test('#4121 HF 모두 선택은 메뉴와 Ctrl/Cmd+A 모두 현재 정의만 대
     assert.deepEqual(cursor.getHeaderFooterSelectionOrdered(), {
       start: { sectionIdx: 1, isHeader: true, applyTo: 2, paraIdx: 0, charOffset: 0 },
       end: { sectionIdx: 1, isHeader: true, applyTo: 2, paraIdx: 1, charOffset: 16 },
-      preferredPage: 3,
+      previewPage: 3,
     });
     assert.equal(cursor.getSelectionOrdered(), null, '본문 anchor는 만들지 않는다');
 

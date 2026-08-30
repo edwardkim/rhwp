@@ -24,7 +24,7 @@ export function headerFooterModeState(cursor: CursorState): HeaderFooterModeChan
     mode: cursor.headerFooterMode === 'header' ? 'header' : 'footer',
     sectionIdx: cursor.hfSectionIdx,
     applyTo: cursor.hfApplyTo,
-    previewPage: cursor.hfPreferredPage,
+    previewPage: cursor.hfPreviewPage,
   };
 }
 

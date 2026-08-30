@@ -2,8 +2,8 @@
 
 use super::super::helpers::color_ref_to_css;
 use crate::document_core::{
-    DeferredPaginationJobState, DeferredPaginationStepResult, DeferredPaginationTargetStatus,
-    DocumentCore, PendingPaginationJob,
+    header_footer_apply_from_u8, DeferredPaginationJobState, DeferredPaginationStepResult,
+    DeferredPaginationTargetStatus, DocumentCore, PendingPaginationJob,
 };
 use crate::error::HwpError;
 use crate::model::control::Control;
@@ -6790,37 +6790,21 @@ impl DocumentCore {
         is_header: bool,
         apply_to: u8,
     ) -> Result<HeaderFooterRef, HwpError> {
-        let apply_to = match apply_to {
-            1 => HeaderFooterApply::Even,
-            2 => HeaderFooterApply::Odd,
-            _ => HeaderFooterApply::Both,
-        };
-        let section = self
-            .document
-            .sections
-            .get(section_idx)
-            .ok_or_else(|| HwpError::RenderError(format!("구역 {} 범위 초과", section_idx)))?;
-        for (para_index, para) in section.paragraphs.iter().enumerate() {
-            for (control_index, control) in para.controls.iter().enumerate() {
-                let matches_target = match control {
-                    Control::Header(header) => is_header && header.apply_to == apply_to,
-                    Control::Footer(footer) => !is_header && footer.apply_to == apply_to,
-                    _ => false,
-                };
-                if matches_target {
-                    return Ok(HeaderFooterRef {
-                        para_index,
-                        control_index,
-                        source_section_index: section_idx,
-                        table_path: Vec::new(),
-                    });
-                }
-            }
-        }
-        Err(HwpError::RenderError(format!(
-            "머리말/꼬리말 편집 target을 찾을 수 없습니다: sec={}, is_header={}, apply_to={}",
-            section_idx, is_header, apply_to as u8
-        )))
+        let apply = header_footer_apply_from_u8(apply_to);
+        let (para_index, control_index) = self
+            .find_header_footer_control(section_idx, is_header, apply)
+            .ok_or_else(|| {
+                HwpError::RenderError(format!(
+                    "머리말/꼬리말 편집 target을 찾을 수 없습니다: sec={}, is_header={}, apply_to={}",
+                    section_idx, is_header, apply_to
+                ))
+            })?;
+        Ok(HeaderFooterRef {
+            para_index,
+            control_index,
+            source_section_index: section_idx,
+            table_path: Vec::new(),
+        })
     }
 
     /// 구역 첫 페이지에 요청한 HF 정의를 임시로 투영한 비캐시 렌더 트리.

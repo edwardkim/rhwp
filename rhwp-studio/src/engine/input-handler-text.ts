@@ -228,7 +228,7 @@ export function handleBackspace(this: any, pos: DocumentPosition, inCell: boolea
     const hfOff = this.cursor.hfCharOffset;
     const target = {
       sectionIdx: this.cursor.hfSectionIdx, isHeader, applyTo: this.cursor.hfApplyTo,
-      preferredPage: this.cursor.hfPreferredPage,
+      previewPage: this.cursor.hfPreviewPage,
     };
     const paraIdx = this.cursor.hfParaIdx;
     if (hfOff > 0) {
@@ -297,7 +297,7 @@ export function handleDelete(this: any, pos: DocumentPosition, inCell: boolean):
     const isHeader = this.cursor.headerFooterMode === 'header';
     const target = {
       sectionIdx: this.cursor.hfSectionIdx, isHeader, applyTo: this.cursor.hfApplyTo,
-      preferredPage: this.cursor.hfPreferredPage,
+      previewPage: this.cursor.hfPreviewPage,
     };
     try {
       const paraIdx = this.cursor.hfParaIdx;
@@ -468,7 +468,7 @@ export function onCompositionEnd(this: any): void {
           sectionIdx: this.cursor.hfSectionIdx,
           isHeader: this.cursor.headerFooterMode === 'header',
           applyTo: this.cursor.hfApplyTo,
-          preferredPage: this.cursor.hfPreferredPage,
+          previewPage: this.cursor.hfPreviewPage,
         };
         this.executeOperation({ kind: 'record', command: new InsertTextInHeaderFooterCommand(target, this.cursor.hfParaIdx, anchor.charOffset, composed) });
       }
@@ -682,7 +682,7 @@ export function onInput(this: any, e?: InputEvent): void {
       }
       const target = {
         sectionIdx: this.cursor.hfSectionIdx, isHeader, applyTo: this.cursor.hfApplyTo,
-        preferredPage: this.cursor.hfPreferredPage,
+        previewPage: this.cursor.hfPreviewPage,
       };
       const paraIdx = this.cursor.hfParaIdx;
       const charOffset = this.cursor.hfCharOffset;
