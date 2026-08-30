@@ -1,0 +1,77 @@
+name: Upload artifact with retry
+description: >-
+  [#3790 Stage 6] Pin된 upload-artifact를 일시 오류(5xx·네트워크)에 최대 3회 재시도한다.
+  필수 검사(Build & Test)를 건너뛰지 않으며, 마지막 시도 실패는 job 실패로 남긴다.
+
+inputs:
+  name:
+    required: true
+    description: Artifact name.
+  path:
+    required: true
+    description: Files to upload.
+  retention-days:
+    required: false
+    default: "1"
+    description: Artifact retention in days.
+  if-no-files-found:
+    required: false
+    default: error
+    description: warn, error, or ignore when path is empty.
+  compression-level:
+    required: false
+    default: "6"
+    description: zip compression level 0-9.
+  overwrite:
+    required: false
+    default: "true"
+    description: Overwrite a same-name artifact from an earlier attempt.
+
+runs:
+  using: composite
+  steps:
+    - name: Upload attempt 1
+      id: attempt1
+      continue-on-error: true
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: ${{ inputs.name }}
+        path: ${{ inputs.path }}
+        retention-days: ${{ inputs.retention-days }}
+        if-no-files-found: ${{ inputs.if-no-files-found }}
+        compression-level: ${{ inputs.compression-level }}
+        overwrite: ${{ inputs.overwrite }}
+
+    - name: Wait before upload retry 2
+      if: steps.attempt1.outcome == 'failure'
+      shell: bash
+      run: sleep 8
+
+    - name: Upload attempt 2
+      id: attempt2
+      if: steps.attempt1.outcome == 'failure'
+      continue-on-error: true
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: ${{ inputs.name }}
+        path: ${{ inputs.path }}
+        retention-days: ${{ inputs.retention-days }}
+        if-no-files-found: ${{ inputs.if-no-files-found }}
+        compression-level: ${{ inputs.compression-level }}
+        overwrite: ${{ inputs.overwrite }}
+
+    - name: Wait before upload retry 3
+      if: steps.attempt1.outcome == 'failure' && steps.attempt2.outcome == 'failure'
+      shell: bash
+      run: sleep 16
+
+    - name: Upload attempt 3
+      if: steps.attempt1.outcome == 'failure' && steps.attempt2.outcome == 'failure'
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      with:
+        name: ${{ inputs.name }}
+        path: ${{ inputs.path }}
+        retention-days: ${{ inputs.retention-days }}
+        if-no-files-found: ${{ inputs.if-no-files-found }}
+        compression-level: ${{ inputs.compression-level }}
+        overwrite: ${{ inputs.overwrite }}

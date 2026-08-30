@@ -358,6 +358,25 @@ class NextestArchiveWorkflowTests(unittest.TestCase):
             self.builder,
         )
 
+    def test_archive_pipeline_uploads_go_through_stage6_retry_wrapper(self) -> None:
+        """[#3790 Stage 6] builder/worker 산출 업로드는 일시 오류 재시도를 거친다."""
+        retry = "uses: ./.github/actions/upload-artifact-retry"
+        self.assertGreaterEqual(self.builder.count(retry), 2)
+        self.assertGreaterEqual(self.runner.count(retry), 3)
+        self.assertNotIn("uses: actions/upload-artifact@", self.builder)
+        self.assertNotIn("uses: actions/upload-artifact@", self.runner)
+
+    def test_stage6_retry_action_pins_upload_artifact_and_retries_thrice(self) -> None:
+        action = (
+            REPO_ROOT / ".github/actions/upload-artifact-retry/action.yml"
+        ).read_text(encoding="utf-8")
+        pin = "uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a"
+        self.assertEqual(action.count(pin), 3)
+        self.assertIn("continue-on-error: true", action)
+        self.assertIn("overwrite: ${{ inputs.overwrite }}", action)
+        self.assertIn("Upload attempt 3", action)
+        self.assertNotIn("continue-on-error: true", action.split("Upload attempt 3", maxsplit=1)[1])
+
 
 if __name__ == "__main__":
     unittest.main()

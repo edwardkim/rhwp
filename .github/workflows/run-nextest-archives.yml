@@ -107,11 +107,11 @@ jobs:
           fi
 
       - name: Upload ${{ inputs.label }} count
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: ./.github/actions/upload-artifact-retry
         with:
           name: shard-count-${{ inputs.count_label }}
           path: shard-count-${{ inputs.count_label }}.txt
-          retention-days: 1
+          retention-days: "1"
           if-no-files-found: error
 
       # Same-repository PR artifact is only a short-lived candidate. It cannot
@@ -119,20 +119,20 @@ jobs:
       # workflow run, merge lineage, and artifact provenance.
       - name: Upload same-repository PR B/C/D target durations
         if: ${{ success() && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && (inputs.archive_label == 'b' || inputs.archive_label == 'c' || inputs.archive_label == 'd') }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: ./.github/actions/upload-artifact-retry
         with:
           name: nextest-target-durations-${{ github.run_id }}-${{ inputs.archive_label }}
           path: target-durations-${{ inputs.archive_label }}.json
-          retention-days: 3
+          retention-days: "3"
           if-no-files-found: error
 
       # Only successful devel B/C/D measurements are baseline candidates. They are
       # retained longer so their provenance can be audited after policy refresh.
       - name: Upload devel B/C/D target durations
         if: ${{ success() && github.event_name == 'push' && github.ref == 'refs/heads/devel' && (inputs.archive_label == 'b' || inputs.archive_label == 'c' || inputs.archive_label == 'd') }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: ./.github/actions/upload-artifact-retry
         with:
           name: nextest-target-durations-${{ github.run_id }}-${{ inputs.archive_label }}
           path: target-durations-${{ inputs.archive_label }}.json
-          retention-days: 30
+          retention-days: "30"
           if-no-files-found: error

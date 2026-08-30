@@ -224,18 +224,18 @@ jobs:
           echo "archive=${{ inputs.archive_label }} expected_runnable=${runnable}"
 
       - name: Upload test archive
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: ./.github/actions/upload-artifact-retry
         with:
           name: test-archive-${{ github.run_id }}-${{ inputs.archive_label }}
           path: tests.tar.zst
-          compression-level: 0
-          retention-days: 1
+          compression-level: "0"
+          retention-days: "1"
           if-no-files-found: error
 
       - name: Upload archive expected count
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: ./.github/actions/upload-artifact-retry
         with:
           name: archive-expected-${{ github.run_id }}-${{ inputs.archive_label }}
           path: archive-expected-total.txt
-          retention-days: 1
+          retention-days: "1"
           if-no-files-found: error
