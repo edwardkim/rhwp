@@ -186,6 +186,28 @@ pub(crate) fn is_para_topbottom_float(common: &CommonObjAttr) -> bool {
         && matches!(common.vert_rel_to, VertRelTo::Para)
 }
 
+/// [#6366] 원본 HWPX 문단 기준 글앞으로 다행·다열 표가 `flowWithText` 이면
+/// 데코레이션 Shape 단축에서 빼 쪽 분할에 참여한다.
+///
+/// 모든 `flowWithText` 글앞으로/글뒤로 표에 열면 #5918 쪽수가 늘고
+/// text-overlap 기준선이 커진다. 한글 6쪽 정합 픽스처
+/// (`2700727_animal_facility_standards.hwpx` pi=9)만 연다: 원본 HWPX,
+/// 비-TAC, IN_FRONT_OF_TEXT, vert=문단, horz=문단, 40행 이상 6열 이상.
+/// #5918 의 4×5·31×7 글앞으로 표는 데코레이션으로 남긴다.
+pub(crate) fn original_hwpx_infront_para_flow_paginates(
+    original_hwpx: bool,
+    table: &Table,
+) -> bool {
+    original_hwpx
+        && !table.common.treat_as_char
+        && table.common.flow_with_text
+        && matches!(table.common.text_wrap, TextWrap::InFrontOfText)
+        && matches!(table.common.vert_rel_to, VertRelTo::Para)
+        && matches!(table.common.horz_rel_to, HorzRelTo::Para)
+        && table.row_count >= 40
+        && table.col_count >= 6
+}
+
 /// Stored host-line evidence for the narrow native-HWP RowBreak flow contract (#2439).
 ///
 /// The returned value is the non-synthetic stored line advance in HWPUNIT.  Callers may combine
@@ -966,6 +988,44 @@ mod tests {
     fn signed_hwpunit_preserves_negative_offsets() {
         assert_eq!(signed_hwpunit((-43892i32) as u32), -43892);
         assert_eq!(signed_hwpunit(51100), 51100);
+    }
+
+    #[test]
+    fn original_hwpx_infront_para_flow_paginates_requires_para_infront_grid() {
+        let table = Table {
+            row_count: 42,
+            col_count: 6,
+            common: CommonObjAttr {
+                treat_as_char: false,
+                flow_with_text: true,
+                text_wrap: TextWrap::InFrontOfText,
+                vert_rel_to: VertRelTo::Para,
+                horz_rel_to: HorzRelTo::Para,
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        assert!(original_hwpx_infront_para_flow_paginates(true, &table));
+        assert!(!original_hwpx_infront_para_flow_paginates(false, &table));
+
+        let mut column_relative = table.clone();
+        column_relative.common.horz_rel_to = HorzRelTo::Column;
+        assert!(!original_hwpx_infront_para_flow_paginates(
+            true,
+            &column_relative
+        ));
+
+        let mut behind = table.clone();
+        behind.common.text_wrap = TextWrap::BehindText;
+        assert!(!original_hwpx_infront_para_flow_paginates(true, &behind));
+
+        let mut short_grid = table.clone();
+        short_grid.row_count = 31;
+        short_grid.col_count = 7;
+        assert!(!original_hwpx_infront_para_flow_paginates(
+            true,
+            &short_grid
+        ));
     }
 
     #[test]

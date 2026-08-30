@@ -1848,15 +1848,15 @@ impl Paginator {
                     // 콜아웃 박스가 글앞으로로 저장돼도 흐름 높이를 차지해야 후속
                     // 문단이 박스 위로 겹치지 않는다.
                     //
-                    // [#6366] `flowWithText=1` 인 글앞으로 표는 본문을 밀지 않더라도
-                    // 문단을 따라 흐르므로 쪽 분할 대상이다. 한글은
-                    // samples/issue5792/2700727_animal_facility_standards.hwpx 의
-                    // pi=9 (IN_FRONT_OF_TEXT, 42행) 꼬리를 단독 쪽으로 나누어 6쪽으로
-                    // 조판한다. Shape 로만 올리면 단 높이 525px 만 찬 것으로 보고
-                    // 표를 쪼개지 않아 5쪽이 된다. allowOverlap=0 과 같은 pos 를
-                    // 가진 TOP_AND_BOTTOM 이웃 표는 이미 분할된다.
+                    // 글앞으로 / 글뒤로: Shape처럼 취급 — 공간 차지 없음.
+                    // 단, treat_as_char(글자처럼 취급) 표는 인라인이므로 wrap 설정과
+                    // 무관하게 높이를 예약해야 한다(한컴 의미론). #1995: 전체폭 단일셀
+                    // 콜아웃 박스가 글앞으로로 저장돼도 흐름 높이를 차지해야 후속
+                    // 문단이 박스 위로 겹치지 않는다.
+                    //
+                    // [#6366] 쪽수 경로는 TypesetEngine (#703 단축)이다. 여기
+                    // Paginator 에 flowWithText 를 넓게 열면 #5918 쪽수가 는다.
                     if !table.common.treat_as_char
-                        && !table.common.flow_with_text
                         && matches!(
                             table.common.text_wrap,
                             crate::model::shape::TextWrap::InFrontOfText

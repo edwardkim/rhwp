@@ -18,8 +18,9 @@ use crate::model::shape::CaptionDirection;
 use crate::renderer::composer::{compose_paragraph, first_text_line, ComposedParagraph};
 use crate::renderer::float_placement::{
     horizontal_range, is_page_bottom_fixed_float, is_para_topbottom_float,
-    native_empty_host_rowbreak_line_advance_hu, signed_hwpunit,
-    stored_empty_anchor_band_host_line_advance_hu, FloatLaneSet, FloatPlacementContext,
+    native_empty_host_rowbreak_line_advance_hu, original_hwpx_infront_para_flow_paginates,
+    signed_hwpunit, stored_empty_anchor_band_host_line_advance_hu, FloatLaneSet,
+    FloatPlacementContext,
 };
 use crate::renderer::height_cursor::HeightCursor;
 use crate::renderer::height_measurer::{
@@ -18649,12 +18650,14 @@ impl TypesetEngine {
                     ) && ((st.col_count == 1
                         && !oversized_multirow
                         && !table.common.treat_as_char
-                        // [#6366] flowWithText=1 글앞으로 표는 본문을 밀지 않아도
-                        // 문단을 따라 흐르므로 쪽 분할 대상이다. 데코레이션 단축
-                        // (Issue #703) 에서 빼지 않으면 42행 표가 Shape 로만 올라
-                        // 한글 6쪽이 rhwp 5쪽이 된다
-                        // (2700727_animal_facility_standards.hwpx).
-                        && !table.common.flow_with_text)
+                        // [#6366] 원본 HWPX 문단 기준 글앞으로 다행·다열
+                        // flowWithText 표만 데코레이션 단축(#703)에서 뺀다.
+                        // 모든 flowWithText 글앞으로 표에 열면 #5918 쪽수와
+                        // text-overlap 기준선이 깨진다.
+                        && !original_hwpx_infront_para_flow_paginates(
+                            !self.profile.get().hwp5_stored_pagination_layout(),
+                            table,
+                        ))
                         || multicol_empty_overlay_anchor
                         || multicol_tac_host_overlay_anchor))
                         || horz_fully_outside_column
