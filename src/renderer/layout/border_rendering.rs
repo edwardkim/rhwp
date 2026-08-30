@@ -4,7 +4,7 @@ use super::super::render_tree::*;
 use super::super::style_resolver::ResolvedBorderStyle;
 use super::super::{LineStyle, StrokeDash};
 use crate::model::style::{BorderLine, BorderLineType, CenterLine};
-use crate::model::table::{MAX_TABLE_GRID_CELLS, Table};
+use crate::model::table::{Cell, Table, MAX_TABLE_GRID_CELLS};
 
 /// [#4287] `build_row_col_x` 가 `row_count × col_count` 2D 그리드를 예약하지 않는 이유.
 ///
@@ -488,14 +488,16 @@ pub(crate) fn collect_cell_borders(
 
 /// 표 자신의 `borderFillIDRef` 를 바깥 네 변의 **빈 슬롯**에만 보충한다.
 ///
-/// 칸이 이미 SOLID 를 넣었으면 (`Some`) 한 겹으로 두고, 칸 네 변이 NONE 이라
-/// 슬롯이 비면 표 테두리를 넣는다. 칸이 그 자리를 차지한다는 이유만으로
-/// 건너뛰면 일러두기 틀처럼 바깥 칸이 NONE 인 표의 왼쪽·아래·제목왼쪽이
-/// 레이아웃에서 사라진다 (#6311).
+/// 칸 occupancy 만으로 막으면 일러두기 틀처럼 바깥 칸이 NONE 인 변
+/// (왼쪽·아래·제목왼쪽)이 사라진다 (#6311). 반대로 바깥이 전부 NONE 인
+/// 표에 표 테두리를 새로 그리면 #469·KTX TOC·#6030 이 깨진다.
+/// 칸이 이미 바깥 SOLID 를 일부 그린 **부분 프레임**만 빈 슬롯을 메운다.
+/// 칸이 안 덮는 구멍은 종전처럼 표 테두리 fallback 을 둔다.
 pub(crate) fn apply_table_outer_border_fill(
     h_edges: &mut [Vec<Option<BorderLine>>],
     v_edges: &mut [Vec<Option<BorderLine>>],
     table_borders: &[BorderLine; 4],
+    cells: &[Cell],
 ) {
     if h_edges.is_empty() || v_edges.is_empty() {
         return;
@@ -506,19 +508,76 @@ pub(crate) fn apply_table_outer_border_fill(
         return;
     }
 
-    let fill = |slot: &mut Option<BorderLine>, border: &BorderLine| {
-        if slot.is_none() && border.line_type != BorderLineType::None {
+    let mut h_occupied = vec![vec![false; col_count]; row_count + 1];
+    let mut v_occupied = vec![vec![false; row_count]; col_count + 1];
+    for cell in cells {
+        let c = cell.col as usize;
+        let r = cell.row as usize;
+        if c >= col_count || r >= row_count {
+            continue;
+        }
+        let ec = (c + cell.col_span as usize).min(col_count);
+        let er = (r + cell.row_span as usize).min(row_count);
+        if r == 0 {
+            for cc in c..ec {
+                h_occupied[0][cc] = true;
+            }
+        }
+        if er == row_count {
+            for cc in c..ec {
+                h_occupied[row_count][cc] = true;
+            }
+        }
+        if c == 0 {
+            for rr in r..er {
+                v_occupied[0][rr] = true;
+            }
+        }
+        if ec == col_count {
+            for rr in r..er {
+                v_occupied[col_count][rr] = true;
+            }
+        }
+    }
+
+    let slot_drawn = |slot: &Option<BorderLine>| {
+        slot.as_ref()
+            .is_some_and(|b| b.line_type != BorderLineType::None)
+    };
+    let mut any_outer_solid = false;
+    for c in 0..col_count {
+        any_outer_solid |= slot_drawn(&h_edges[0][c]);
+        any_outer_solid |= slot_drawn(&h_edges[row_count][c]);
+    }
+    for r in 0..row_count {
+        any_outer_solid |= slot_drawn(&v_edges[0][r]);
+        any_outer_solid |= slot_drawn(&v_edges[col_count][r]);
+    }
+
+    let fill = |slot: &mut Option<BorderLine>, border: &BorderLine, occupied: bool| {
+        if slot.is_none()
+            && border.line_type != BorderLineType::None
+            && (!occupied || any_outer_solid)
+        {
             *slot = Some(*border);
         }
     };
 
     for c in 0..col_count {
-        fill(&mut h_edges[0][c], &table_borders[2]);
-        fill(&mut h_edges[row_count][c], &table_borders[3]);
+        fill(&mut h_edges[0][c], &table_borders[2], h_occupied[0][c]);
+        fill(
+            &mut h_edges[row_count][c],
+            &table_borders[3],
+            h_occupied[row_count][c],
+        );
     }
     for r in 0..row_count {
-        fill(&mut v_edges[0][r], &table_borders[0]);
-        fill(&mut v_edges[col_count][r], &table_borders[1]);
+        fill(&mut v_edges[0][r], &table_borders[0], v_occupied[0][r]);
+        fill(
+            &mut v_edges[col_count][r],
+            &table_borders[1],
+            v_occupied[col_count][r],
+        );
     }
 }
 
