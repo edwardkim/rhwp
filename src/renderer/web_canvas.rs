@@ -3515,6 +3515,26 @@ impl WebCanvasRenderer {
     ) {
         let mode = fill_mode.unwrap_or(ImageFillMode::FitToSize);
         match mode {
+            ImageFillMode::Zoom => {
+                let (img_w, img_h) = match parse_image_dimensions_canvas(data) {
+                    Some((w, h)) if w > 0 && h > 0 => (w as f64, h as f64),
+                    _ => {
+                        self.draw_image(data, bbox.x, bbox.y, bbox.width, bbox.height);
+                        return;
+                    }
+                };
+                let scale = (bbox.width / img_w).min(bbox.height / img_h);
+                let w = img_w * scale;
+                let h = img_h * scale;
+                let x = bbox.x + (bbox.width - w) / 2.0;
+                let y = bbox.y + (bbox.height - h) / 2.0;
+                self.ctx.save();
+                self.ctx.begin_path();
+                self.ctx.rect(bbox.x, bbox.y, bbox.width, bbox.height);
+                self.ctx.clip();
+                self.draw_image(data, x, y, w, h);
+                self.ctx.restore();
+            }
             ImageFillMode::FitToSize | ImageFillMode::Total | ImageFillMode::None => {
                 // crop이 있으면 source rect 기반 drawImage 사용
                 if let Some(crop_rect) = crop {

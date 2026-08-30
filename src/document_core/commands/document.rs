@@ -448,7 +448,15 @@ impl DocumentCore {
                             para.line_segs.iter().any(|s| s.line_height >= max_tac_h);
                         if !already_covered {
                             if let Some(seg) = para.line_segs.first_mut() {
-                                if seg.line_height < max_tac_h {
+                                // 주석 계약: linesegarray 가 없어 기본 lh=100 단일
+                                // seg 만 있는 경우에만 확대한다. HWP3 빈 셀 문단은
+                                // 저장 vertsize=1000 을 갖는데 (#5184
+                                // hwp3-empty-cell), 여기까지 확대하면 HWPX 재파싱
+                                // IR 이 표 높이(23476/29096)로 바뀐다.
+                                if seg.line_height > 0
+                                    && seg.line_height <= 100
+                                    && seg.line_height < max_tac_h
+                                {
                                     seg.line_height = max_tac_h;
                                     body_line_seg_changed = true;
                                 }

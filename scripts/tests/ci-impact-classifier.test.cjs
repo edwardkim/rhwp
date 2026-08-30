@@ -246,6 +246,7 @@ test('Native Skia integration test and support changes run Rust and Native Skia 
 test('Rust test input changes keep default Rust tests alongside render gates', () => {
   for (const filename of [
     'tests/fixtures/fonts/RHWPExactFaceSmoke.ttc',
+    'tests/fixtures/fonts/RHWPExactKerningSmoke.ttf',
     'ttfs/opensource/NotoSansKR-Regular.ttf',
     'samples/render-p35-font-native-bitmap.hwpx',
   ]) {
@@ -267,6 +268,7 @@ test('frontend font assets and render tooling do not over-enable the Rust lane',
   for (const filename of [
     'assets/fonts/NotoSansKR-Regular.woff2',
     'scripts/generate_exact_face_collection_fixture.py',
+    'scripts/generate_exact_kerning_fixture.py',
     'docs/text-ir-v2.md',
   ]) {
     const result = classifyChanges({

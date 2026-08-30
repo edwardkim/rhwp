@@ -668,7 +668,7 @@ pub(crate) fn capabilities_value() -> serde_json::Value {
             "schemaPolicy": "필드 추가 허용, 변경·삭제는 schemaVersion 범프",
             // [#3884 G3] run 의 예외는 설계다(판정을 데이터로 보고) — 적지 않으면
             // "실패 = stdout 0바이트"를 믿는 소비자가 run 에서 깨진다.
-            "failure": "단건 명령 실패 시 stdout 0바이트; batch 는 error 레코드 + 최종 exit 1. 예외: run — 실패도 봉투를 stdout 으로 낸다(입력 오류 exit 1 + error, 계획 무효 exit 2 + invalid[], 단언 실패 exit 3 + verify 저널)",
+            "failure": "단건 명령 실패 시 stdout 0바이트; batch 는 error 레코드 + 최종 exit 1. 예외: run — 실패도 봉투를 stdout 으로 낸다(계획 안 문서 부재 등 입력 오류 exit 1 + error, 계획 무효 exit 2 + invalid[], 단언 실패 exit 3 + verify 저널)",
             // [#3707] 봉투에 담기는 문서 유래 문자열의 유니코드 기만 판정. 이 키가
             // 있으면 바이너리가 검사한다는 뜻이다 — 키가 없으면 '깨끗함'이 아니라
             // '검사하지 않음'으로 읽어야 한다.

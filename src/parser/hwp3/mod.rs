@@ -124,6 +124,14 @@ fn apply_hwp3_compressed_flag(
     }
 }
 
+/// HWP3 `border_margin` 은 u16 이고 HWP5 간격은 i16 HU(×4)다.
+/// 퍼징 입력(#5196)처럼 여백이 크면 `as i16 * 4` 가 debug overflow 로 패닉한다.
+fn hwp3_border_spacing_hu(margin: u16) -> i16 {
+    i32::from(margin)
+        .saturating_mul(4)
+        .clamp(i32::from(i16::MIN), i32::from(i16::MAX)) as i16
+}
+
 fn hwp3_page_border_fill(
     doc_info: &Hwp3DocInfo,
     border_fill_id: u16,
@@ -133,10 +141,10 @@ fn hwp3_page_border_fill(
     // Page/BodyBased로 정규화한다. (Task #1129 Stage 24)
     crate::model::page::PageBorderFill {
         attr: 0x01,
-        spacing_left: (doc_info.border_margin_left as i16) * 4,
-        spacing_right: (doc_info.border_margin_right as i16) * 4,
-        spacing_top: (doc_info.border_margin_top as i16) * 4,
-        spacing_bottom: (doc_info.border_margin_bottom as i16) * 4,
+        spacing_left: hwp3_border_spacing_hu(doc_info.border_margin_left),
+        spacing_right: hwp3_border_spacing_hu(doc_info.border_margin_right),
+        spacing_top: hwp3_border_spacing_hu(doc_info.border_margin_top),
+        spacing_bottom: hwp3_border_spacing_hu(doc_info.border_margin_bottom),
         border_fill_id,
         basis: crate::model::page::PageBorderBasis::BodyBased,
         ui_basis: crate::model::page::PageBorderUiBasis::Page,
@@ -5760,6 +5768,20 @@ mod tests {
         assert_eq!(pbf.spacing_bottom, 160);
         assert_eq!(pbf.basis, PageBorderBasis::BodyBased);
         assert_eq!(pbf.ui_basis, PageBorderUiBasis::Page);
+
+        // [#5196] u16 여백 ×4 가 i16 을 넘어도 패닉하지 않는다.
+        let huge = Hwp3DocInfo {
+            border_margin_left: u16::MAX,
+            border_margin_right: u16::MAX,
+            border_margin_top: u16::MAX,
+            border_margin_bottom: u16::MAX,
+            ..Default::default()
+        };
+        let huge_pbf = hwp3_page_border_fill(&huge, 1);
+        assert_eq!(huge_pbf.spacing_left, i16::MAX);
+        assert_eq!(huge_pbf.spacing_right, i16::MAX);
+        assert_eq!(huge_pbf.spacing_top, i16::MAX);
+        assert_eq!(huge_pbf.spacing_bottom, i16::MAX);
     }
 
     #[test]

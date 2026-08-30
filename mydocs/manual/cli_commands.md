@@ -1561,8 +1561,10 @@ HML 원본 문서를 의미 보존 HWPML 2.91 XML로 저장한다.
 두 파일의 IR 비교(HWPX↔HWP 불일치 검출). 상세: [ir_diff_command.md](ir_diff_command.md)
 - 비교: text, char_count/offsets/shapes, line_segs, controls, tab_extended, ParaShape, TabDef,
   표(page_break/outer_margin/treat_as_char/wrap/size/offset), 그림·도형(rel_to 등)
-- `--json` (#3274): 판정 봉투 **한 줄** JSON 을 stdout 으로 —
-  `{"schemaVersion":"1.0","a","b","identical","diffCount","categories":{카테고리:건수}}`.
+- `--json` (#3274, #4658): 판정 봉투 **한 줄** JSON 을 stdout 으로 —
+  `{"schemaVersion":"1.0","a","b","identical","diffCount","categories":{카테고리:건수},"pageCountA","pageCountB"}`.
+  `pageCountA`/`pageCountB` 는 `info --json` 과 같은 조판 쪽수다. IR 필드가 같아도
+  쪽수가 다르면 `identical:false` 이고 `categories.pageCount` 가 1 이다 (IR 동일 ≠ 조판 동일).
   종료 코드 0=동일 / **3=차이 발견**(위 "종료 코드 (#2707)" 표의 "IR 차이 검출" 코드와 동일 의미) /
   1=읽기·파싱 실패(stdout 0바이트) / 2=사용법 오류 → 변환 파이프라인 게이트:
   `rhwp ir-diff 원본.hwp 변환본.hwpx --json || 격리처리`

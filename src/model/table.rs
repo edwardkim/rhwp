@@ -297,7 +297,11 @@ impl Cell {
         let pick = |c: i16, t: i16, unspec_axis: bool| -> i16 {
             // [#1785 위생 한도 유지] 10mm급(>=2500HU) 보존 pad 는 한컴이 렌더에
             // 쓰지 않는다(36381023 render-diff) — 전축0 미지정 규칙에서도 제외.
-            if (unspec_axis && c < 2500) || self.use_cell_padding_axis(c, t, false) {
+            // [#6358] 음수는 깨진 저장값(37787 셀 pad=-19215). `c < 2500` 만 보면
+            // 통과해 안쪽 높이가 부풀어 Center 정렬이 셀 밖 +130px 로 나간다.
+            // aim=true 경로(`use_cell_padding_axis`: `cell_padding >= 0`)와 같이
+            // 결측 센티널로 보고 표 기본으로 폴백한다.
+            if (unspec_axis && c >= 0 && c < 2500) || self.use_cell_padding_axis(c, t, false) {
                 c
             } else {
                 t

@@ -107,8 +107,9 @@ $ rhwp capabilities | jq '.commands[] | select(.name=="dump")'
 
 *층* L1 — *이슈* [#3880](https://github.com/edwardkim/rhwp/issues/3880) T4
 
-**증상.** `capabilities.jsonContract.failure` 는 "단건 명령 실패 시 stdout 0바이트"라고 말하는데 `run` 은 예외다. 자기서술만
-읽는 소비자가 깨진다.
+**증상.** `run` 은 실패에도 봉투를 stdout 으로 낸다. 자기서술이 이 예외를 빼면
+"실패 = stdout 0바이트"를 믿는 소비자가 깨진다. 선언은 `jsonContract.failure` 에
+계획 안 문서 부재(exit 1 + error)를 포함해 적는다.
 
 **재현 — 예외의 경계까지 확정했다.**
 
@@ -119,7 +120,7 @@ $ rhwp run                                 → exit=2  stdout=0B    ← 규약 �
 $ rhwp run <비 JSON 파일> --json             → exit=2  stdout=0B    ← 규약 준수
 
 $ rhwp capabilities | jq -r '.jsonContract.failure'
-단건 명령 실패 시 stdout 0바이트; batch 는 error 레코드 + 최종 exit 1
+단건 명령 실패 시 stdout 0바이트; batch 는 error 레코드 + 최종 exit 1. 예외: run — 실패도 봉투를 stdout 으로 낸다(계획 안 문서 부재 등 입력 오류 exit 1 + error, 계획 무효 exit 2 + invalid[], 단언 실패 exit 3 + verify 저널)
 ```
 
 > [#3876](https://github.com/edwardkim/rhwp/pull/3876) 은 "exit 1 + 200 B",
