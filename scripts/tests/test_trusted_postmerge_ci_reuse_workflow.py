@@ -76,6 +76,17 @@ class TrustedPostmergeReuseWorkflowTests(unittest.TestCase):
         self.assertIn("Download trusted PR Archive B duration measurement", ci)
         self.assertIn("Download trusted PR Archive C duration measurement", ci)
 
+    def test_direct_review_only_reuse_requires_the_exact_skipped_worker(self) -> None:
+        workflow = REUSABLE.read_text(encoding="utf-8")
+        self.assertIn("reviewOnlyFastPassRunIds", workflow)
+        self.assertIn('"proptest-roundtrip.yml"', workflow)
+        self.assertIn('preflight: "Proptest preflight"', workflow)
+        self.assertIn('worker: "prop roundtrip"', workflow)
+        self.assertIn('"adapter-diff.yml"', workflow)
+        self.assertIn('preflight: "adapter inter-diff preflight"', workflow)
+        self.assertIn('worker: "adapter inter-diff"', workflow)
+        self.assertIn('job.conclusion === "skipped"', workflow)
+
     def test_trusted_reuse_evaluator_contracts_are_invoked_by_ci(self) -> None:
         ci = CI_WORKFLOW.read_text(encoding="utf-8")
         self.assertIn(

@@ -100,6 +100,34 @@ export function selectTrustedPostMergeCandidate(pullRequest, prCommits) {
   return null;
 }
 
+function isDirectReviewOnlyPullRequest(pullRequest, pullFiles, prCommits) {
+  if (
+    !validSha(pullRequest?.head?.sha)
+    || !Array.isArray(pullFiles)
+    || pullFiles.length === 0
+    || !pullFiles.every(allowedReviewOnlyFile)
+    || !Array.isArray(prCommits)
+    || prCommits.length === 0
+  ) {
+    return false;
+  }
+
+  let expectedSha = pullRequest.head.sha;
+  for (let index = prCommits.length - 1; index >= 0; index -= 1) {
+    const commit = prCommits[index];
+    if (commit?.sha !== expectedSha) {
+      return false;
+    }
+    const classification = classifyReviewOnlyCommit(commit);
+    if (classification.kind !== "review") {
+      return false;
+    }
+    expectedSha = classification.parentSha;
+  }
+
+  return true;
+}
+
 function latestCandidateRun(runs, pullRequest, repository, candidateSha) {
   const createdAt = timestamp(pullRequest.created_at);
   const mergedAt = timestamp(pullRequest.merged_at);
@@ -136,6 +164,13 @@ function hasFullLaneEvidence(input, run) {
   }
   const runId = String(run?.id || "");
   return runId !== "" && input.fullLaneRunIds.some((id) => String(id) === runId);
+}
+
+function hasReviewOnlyFastPassEvidence(input, run) {
+  const runId = String(run?.id || "");
+  return Array.isArray(input?.reviewOnlyFastPassRunIds)
+    && runId !== ""
+    && input.reviewOnlyFastPassRunIds.some((id) => String(id) === runId);
 }
 
 export function evaluateTrustedPostMergeReuse(input) {
@@ -187,6 +222,35 @@ export function evaluateTrustedPostMergeReuse(input) {
   }
   if (enforcementPathChanged(input.pullFiles)) {
     return denied("pr-changes-ci-enforcement-surface");
+  }
+
+  // A direct review-only PR has no code candidate. It is safe to reuse only
+  // when this worker's exact PR run proves that preflight skipped the worker.
+  if (isDirectReviewOnlyPullRequest(pullRequest, input.pullFiles, input.prCommits)) {
+    const finalHeadCandidate = latestCandidateRun(
+      input.workflowRuns,
+      pullRequest,
+      input.repository,
+      pullRequest.head.sha,
+    );
+    if (!finalHeadCandidate) {
+      return denied("direct-review-only-pr-workflow-unavailable");
+    }
+    if (
+      finalHeadCandidate.status !== "completed"
+      || finalHeadCandidate.conclusion !== "success"
+    ) {
+      return denied("direct-review-only-pr-workflow-not-successful");
+    }
+    if (!hasReviewOnlyFastPassEvidence(input, finalHeadCandidate)) {
+      return denied("direct-review-only-pr-fast-pass-evidence-unavailable");
+    }
+    return {
+      reuse: true,
+      reason: "direct-review-only-pr-fast-pass-reused",
+      sourceRunId: String(finalHeadCandidate.id),
+      pullNumber: String(pullRequest.number),
+    };
   }
 
   const candidateSource = selectTrustedPostMergeCandidate(pullRequest, input.prCommits);
