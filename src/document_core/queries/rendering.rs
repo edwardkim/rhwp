@@ -8,6 +8,7 @@ use crate::document_core::{
 use crate::error::HwpError;
 use crate::model::control::Control;
 use crate::model::document::{Document, Section};
+use crate::model::header_footer::HeaderFooterApply;
 use crate::model::page::{ColumnDef, PageAreas};
 use crate::model::paragraph::{ColumnBreakType, Paragraph};
 use crate::model::style::Alignment;
@@ -26,11 +27,11 @@ use crate::renderer::kerning::{
     ExactFontRegistryRegistration, ExactFontSlot, MAX_KERNING_REGISTRY_SLOTS,
 };
 use crate::renderer::layer_renderer::LayerRenderer;
-use crate::renderer::layout::{
-    estimate_text_width, resolved_to_text_style, CellContext, LayoutEngine,
-};
+use crate::renderer::layout::{estimate_text_width, resolved_to_text_style, CellContext};
 use crate::renderer::page_layout::PageLayoutInfo;
-use crate::renderer::pagination::{MasterPageRef, PageContent, PaginationResult, Paginator};
+use crate::renderer::pagination::{
+    HeaderFooterRef, MasterPageRef, PageContent, PaginationResult, Paginator,
+};
 use crate::renderer::render_tree::{
     BoundingBox, FieldMarkerType, PageRenderTree, RenderNode, RenderNodeType, TextRunNode,
 };
@@ -38,7 +39,6 @@ use crate::renderer::svg::SvgRenderer;
 use crate::renderer::svg_layer::SvgLayerRenderer;
 use crate::renderer::typeset::TypesetEngine;
 use crate::renderer::TextStyle;
-use std::cell::RefCell;
 use std::fmt::Write as _;
 
 const MAX_EMBEDDED_FONT_BYTES: usize = 32 * 1024 * 1024;
@@ -2409,7 +2409,6 @@ impl DocumentCore {
         };
         use crate::renderer::render_tree::RenderLayerInfo;
         use crate::renderer::render_tree::{BoundingBox, ImageNode};
-        use base64::Engine;
 
         fn effect_str(value: ImageEffect) -> &'static str {
             match value {
@@ -2741,6 +2740,14 @@ impl DocumentCore {
         let areas = PageAreas::from_page_def_for_page(page_def, page_content.page_number);
         let body_left = hwpunit_to_px(areas.body_area.left, self.dpi);
         let body_right = hwpunit_to_px(areas.body_area.right, self.dpi);
+        let header_x = hwpunit_to_px(areas.header_area.left, self.dpi);
+        let header_y = hwpunit_to_px(areas.header_area.top, self.dpi);
+        let header_width = hwpunit_to_px(areas.header_area.width(), self.dpi);
+        let header_height = hwpunit_to_px(areas.header_area.height(), self.dpi);
+        let footer_x = hwpunit_to_px(areas.footer_area.left, self.dpi);
+        let footer_y = hwpunit_to_px(areas.footer_area.top, self.dpi);
+        let footer_width = hwpunit_to_px(areas.footer_area.width(), self.dpi);
+        let footer_height = hwpunit_to_px(areas.footer_area.height(), self.dpi);
         // 본문 경계를 다시 PageDef 필드로 되돌리려면(눈금자 핀 드래그) 두 가지가 더 필요하다:
         // 제본 여백은 왼쪽 경계에만 더해지고, 맞쪽 제본의 짝수 쪽은 좌우가 뒤바뀐다.
         let gutter = hwpunit_to_px(page_def.margin_gutter as i32, self.dpi);
@@ -2795,6 +2802,8 @@ impl DocumentCore {
             "{{\"pageIndex\":{},\"pageNumber\":{},\"width\":{:.1},\"height\":{:.1},\"sectionIndex\":{},\
             \"marginLeft\":{:.1},\"marginRight\":{:.1},\"marginTop\":{:.1},\"marginBottom\":{:.1},\
             \"marginHeader\":{:.1},\"marginFooter\":{:.1},\
+            \"headerArea\":{{\"x\":{:.1},\"y\":{:.1},\"width\":{:.1},\"height\":{:.1}}},\
+            \"footerArea\":{{\"x\":{:.1},\"y\":{:.1},\"width\":{:.1},\"height\":{:.1}}},\
             \"bodyLeft\":{:.1},\"bodyRight\":{:.1},\"marginGutter\":{:.1},\
             \"bindingMirrored\":{},\
             \"pageBorderLeft\":{:.1},\"pageBorderRight\":{:.1},\"pageBorderTop\":{:.1},\"pageBorderBottom\":{:.1},\
@@ -2812,6 +2821,14 @@ impl DocumentCore {
             mb,
             mh,
             mf,
+            header_x,
+            header_y,
+            header_width,
+            header_height,
+            footer_x,
+            footer_y,
+            footer_width,
+            footer_height,
             body_left,
             body_right,
             gutter,
@@ -6746,8 +6763,96 @@ impl DocumentCore {
         build(tree)
     }
 
+    /// 머리말/꼬리말 정의가 속한 구역의 대표 편집 페이지를 반환한다.
+    ///
+    /// 대표 페이지는 구역 첫 페이지다. 물리 홀짝과 무관한 편집 표면일 뿐 pagination의
+    /// active_header/active_footer나 문서 IR을 바꾸지 않는다.
+    pub(crate) fn header_footer_preview_page_for_section(
+        &self,
+        section_idx: usize,
+    ) -> Result<u32, HwpError> {
+        let result = self
+            .pagination
+            .get(section_idx)
+            .ok_or_else(|| HwpError::RenderError(format!("구역 {} 범위 초과", section_idx)))?;
+        result
+            .pages
+            .first()
+            .map(|page| page.page_index)
+            .ok_or_else(|| {
+                HwpError::RenderError(format!("구역 {}에 편집할 페이지가 없습니다", section_idx))
+            })
+    }
+
+    fn header_footer_ref_for_edit_target(
+        &self,
+        section_idx: usize,
+        is_header: bool,
+        apply_to: u8,
+    ) -> Result<HeaderFooterRef, HwpError> {
+        let apply_to = match apply_to {
+            1 => HeaderFooterApply::Even,
+            2 => HeaderFooterApply::Odd,
+            _ => HeaderFooterApply::Both,
+        };
+        let section = self
+            .document
+            .sections
+            .get(section_idx)
+            .ok_or_else(|| HwpError::RenderError(format!("구역 {} 범위 초과", section_idx)))?;
+        for (para_index, para) in section.paragraphs.iter().enumerate() {
+            for (control_index, control) in para.controls.iter().enumerate() {
+                let matches_target = match control {
+                    Control::Header(header) => is_header && header.apply_to == apply_to,
+                    Control::Footer(footer) => !is_header && footer.apply_to == apply_to,
+                    _ => false,
+                };
+                if matches_target {
+                    return Ok(HeaderFooterRef {
+                        para_index,
+                        control_index,
+                        source_section_index: section_idx,
+                        table_path: Vec::new(),
+                    });
+                }
+            }
+        }
+        Err(HwpError::RenderError(format!(
+            "머리말/꼬리말 편집 target을 찾을 수 없습니다: sec={}, is_header={}, apply_to={}",
+            section_idx, is_header, apply_to as u8
+        )))
+    }
+
+    /// 구역 첫 페이지에 요청한 HF 정의를 임시로 투영한 비캐시 렌더 트리.
+    pub(crate) fn build_header_footer_edit_preview_tree(
+        &self,
+        page_num: u32,
+        section_idx: usize,
+        is_header: bool,
+        apply_to: u8,
+    ) -> Result<PageRenderTree, HwpError> {
+        if self.header_footer_preview_page_for_section(section_idx)? != page_num {
+            return Err(HwpError::RenderError(format!(
+                "쪽 {}은 구역 {}의 대표 HF 편집 페이지가 아닙니다",
+                page_num, section_idx
+            )));
+        }
+        self.build_page_tree_with_header_footer_override(
+            page_num,
+            Some((section_idx, is_header, apply_to)),
+        )
+    }
+
     /// 페이지 렌더 트리를 빌드한다.
     pub(crate) fn build_page_tree(&self, page_num: u32) -> Result<PageRenderTree, HwpError> {
+        self.build_page_tree_with_header_footer_override(page_num, None)
+    }
+
+    fn build_page_tree_with_header_footer_override(
+        &self,
+        page_num: u32,
+        header_footer_override: Option<(usize, bool, u8)>,
+    ) -> Result<PageRenderTree, HwpError> {
         use crate::model::style::HeadType;
         use crate::renderer::layout::resolve_numbering_id;
         use crate::renderer::pagination::PageItem;
@@ -6783,7 +6888,24 @@ impl DocumentCore {
                     af.cell_path.clone(),
                 )
             }));
-        let (page_content, paragraphs, composed) = self.find_page(page_num)?;
+        let (base_page_content, paragraphs, composed) = self.find_page(page_num)?;
+        let overridden_page_content =
+            if let Some((section_idx, is_header, apply_to)) = header_footer_override {
+                let mut page_content = base_page_content.clone();
+                let target =
+                    self.header_footer_ref_for_edit_target(section_idx, is_header, apply_to)?;
+                if is_header {
+                    page_content.active_header = Some(target);
+                } else {
+                    page_content.active_footer = Some(target);
+                }
+                Some(page_content)
+            } else {
+                None
+            };
+        let page_content = overridden_page_content
+            .as_ref()
+            .unwrap_or(base_page_content);
         // 구역의 각주 모양 정보
         let footnote_shape = if page_content.section_index < self.document.sections.len() {
             &self.document.sections[page_content.section_index]

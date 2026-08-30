@@ -3,11 +3,12 @@
 - **Issue**: [#6395](https://github.com/edwardkim/rhwp/issues/6395)
 - **브랜치**: `codex/issue-6395-page-break-caret-reveal`
 - **기준 commit**: `upstream/devel` `2deb3dd6163d83d2932ab58ac5a0bf61bfce6d31`
+- **충돌 해소 기준**: `upstream/devel` `d3b40a3d7c3ecb5d0f014ce604b99fda17b2bd9b`
 - **계획 commit**: `9ac158614`
 - **구현 commit**: `2d64b1d0f`
 - **PR**: [#6396](https://github.com/edwardkim/rhwp/pull/6396)
 - **작성일**: 2026-08-30 KST
-- **상태**: 구현·로컬 검증 완료, Open PR 최신 head CI·merge 승인 대기
+- **상태**: 최신 devel 충돌 해소·로컬 재검증 완료, Open PR 최신 head CI·merge 승인 대기
 
 ## 1. 결론
 
@@ -67,6 +68,8 @@ helper, npm/editor public API, HWP/HWPX fixture, document renderer의 pagination
 
 - Open PR #6396을 생성했고 collaborator self-review와 오늘할일을 같은 source branch의 trailing 문서
   commit으로 추가했다.
+- `upstream/devel@d3b40a3d7` 병합에서 오늘할일과 `InputHandler` 충돌을 양쪽 동작 보존으로 해소했다.
+  최신 merge tree의 TypeScript·전체 Studio/editor test·build·실제 Chrome E2E도 다시 통과했다.
 - 최신 PR head의 GitHub Actions, mergeable 상태와 작업지시자의 merge 승인은 별도 조건이다.
 - 이 보고서는 한글 2024를 자동화해 직접 측정했다는 주장을 하지 않는다. 사용자 제보의 기대 동작을 Studio
   브라우저 회귀 계약으로 고정한 결과다.

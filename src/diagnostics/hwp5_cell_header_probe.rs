@@ -8,7 +8,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::fmt::Write as _;
 use std::fs;
 use std::io::Write;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 
 use crate::diagnostics::{
     read_hwp5_body_text_section_limited, MAX_HWP5_DIAGNOSTIC_STREAM_OUTPUT_BYTES,

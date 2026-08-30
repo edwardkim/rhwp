@@ -6,16 +6,14 @@ use super::super::helpers::{
 };
 use crate::document_core::DocumentCore;
 use crate::error::HwpError;
-use crate::model::control::Control;
 use crate::model::event::DocumentEvent;
-use crate::model::paragraph::Paragraph;
 use crate::renderer::composer::{reflow_line_segs, ParagraphBox};
 use crate::renderer::page_layout::PageLayoutInfo;
 use crate::renderer::style_resolver::{
     resolve_styles, resolve_styles_for_document, ResolvedStyleSet,
 };
 
-fn char_shape_mods_affect_text_flow(mods: &crate::model::style::CharShapeMods) -> bool {
+pub(super) fn char_shape_mods_affect_text_flow(mods: &crate::model::style::CharShapeMods) -> bool {
     mods.base_size.is_some()
         || mods.font_ids.is_some()
         || mods.ratios.is_some()
@@ -1039,8 +1037,6 @@ impl DocumentCore {
                 .unwrap_or(layout.body_area.width);
             let para_shape_id = self.document.sections[sec_idx].paragraphs[para_idx].para_shape_id;
             let para_style = styles.para_styles.get(para_shape_id as usize);
-            let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
-            let margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);
             // 본문: 열 상자.
             let paragraph_box = ParagraphBox::body_for_style(col_width, para_style, self.dpi);
             // 원본 LineSeg 무효화 → reflow가 max_font_size에서 새로 계산
@@ -1109,8 +1105,6 @@ impl DocumentCore {
                 .unwrap_or(layout.body_area.width);
             let para_shape_id = section.paragraphs[para_idx].para_shape_id;
             let para_style = styles.para_styles.get(para_shape_id as usize);
-            let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
-            let margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);
             // 본문: 열 상자.
             ParagraphBox::body_for_style(col_width, para_style, self.dpi)
         };
@@ -1488,8 +1482,6 @@ impl DocumentCore {
                 .map(|a| a.width)
                 .unwrap_or(layout.body_area.width);
             let para_style = styles.para_styles.get(new_id as usize);
-            let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
-            let margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);
             // 본문: 열 상자.
             reflow_line_segs(
                 &mut self.document.sections[sec_idx].paragraphs[para_idx],
@@ -1548,8 +1540,6 @@ impl DocumentCore {
                 .map(|a| a.width)
                 .unwrap_or(layout.body_area.width);
             let para_style = styles.para_styles.get(para_shape_id as usize);
-            let margin_left = para_style.map(|s| s.margin_left).unwrap_or(0.0);
-            let margin_right = para_style.map(|s| s.margin_right).unwrap_or(0.0);
             // 본문: 열 상자.
             ParagraphBox::body_for_style(col_width, para_style, self.dpi)
         };

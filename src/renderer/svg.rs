@@ -283,7 +283,26 @@ impl SvgRenderer {
         }
     }
 
-    fn node_z_sort_key(node: &RenderNode) -> (u8, i32, u32) {
+    /// SVG 렌더 순서의 정렬키 `(plane, z_order, stable_index)`.
+    ///
+    /// [#4522] 이 키는 `LayoutEngine::paper_node_sort_key` 와 별개 구현이고, #4334 이후
+    /// 의미가 갈라져 있다. 두 축 모두 실측했다 —
+    /// `issue_4522_two_sort_keys_diverge_on_planes_and_on_the_third_element` 참고.
+    ///
+    /// **plane 은 합칠 수 없다.** SVG 는 `PageBackground`(0)와 바탕쪽(1)을 따로 갖는데
+    /// `paper_node_sort_key` 에는 그 갈래가 없다. 그쪽 plane 을 쓰면 페이지 배경이
+    /// BehindText 워터마크 뒤로 밀려 흰 배경 rect 가 워터마크를 덮는다 — #1167 회귀다.
+    ///
+    /// **세 번째 원소도 아직 합치지 못한다.** 패킹된 `stable_index` 는 `(para << 16) | ctrl`
+    /// 이라 셀 경로 축이 없고, `DocPath` 로 바꾸면 셀 안 노드의 순서가 달라진다.
+    /// 실제로 `samples/복학원서.hwp` 1쪽의 골든 SVG 가 바뀐다 — 셀 그룹 하나가 통째로
+    /// 앞으로 이동한다(바이트 수는 같고 순서만 다르다). 어느 쪽이 한컴 정합인지는 한글
+    /// 오라클 없이 정할 수 없어 측정만 남기고 교체하지 않았다. 교체하려면 그 골든을
+    /// 어느 쪽으로 갱신할지부터 정해야 한다.
+    ///
+    /// 모듈 밖에서 부를 수 있게 열어 둔 것은 그 측정 때문이다 — 상태를 바꾸는
+    /// test backdoor 가 아니라 순수 함수다.
+    pub(crate) fn node_z_sort_key(node: &RenderNode) -> (u8, i32, u32) {
         let layer = node.layer;
         (
             Self::node_z_plane(node),
@@ -294,7 +313,7 @@ impl SvgRenderer {
 
     /// [Issue #1167/#1197] 자식 중 BehindText/InFrontOfText 객체가 섞여 있어 plane
     /// 재정렬이 필요한지. 대부분의 노드는 Flow 만 가지므로 정렬 비용을 피한다.
-    fn children_need_plane_reorder(node: &RenderNode) -> bool {
+    pub(crate) fn children_need_plane_reorder(node: &RenderNode) -> bool {
         node.children.iter().any(|c| Self::node_z_plane(c) != 3)
     }
 

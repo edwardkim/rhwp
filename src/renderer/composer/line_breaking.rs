@@ -9,7 +9,7 @@ use crate::model::paragraph::{CharShapeRef, ColumnBreakType, LineSeg, Paragraph}
 use crate::model::style::LineSpacingType;
 use crate::renderer::layout::{
     estimate_text_width, estimate_text_width_unrounded, hancom_regenerated_space_width,
-    is_cjk_char, resolved_to_text_style,
+    is_cjk_char, resolved_letter_spacing, resolved_to_text_style,
 };
 use crate::renderer::layout_frame::{FrameRowMetrics, LayoutFrame, ParagraphBox, RowSegment};
 use crate::renderer::style_resolver::{detect_lang_category, ResolvedStyleSet};
@@ -1208,19 +1208,45 @@ fn resolved_letter_spacing_px(
             }
             let utf16_pos = char_offsets.get(idx).copied().unwrap_or(idx as u32);
             let style_id = find_active_char_shape(char_shapes, utf16_pos);
-            resolved_to_text_style(styles, style_id, lang).letter_spacing
+            // [#5678] `TextStyle` 을 통째로 만들지 않고 자간만 읽는다.
+            resolved_letter_spacing(styles, style_id, lang)
         })
         .collect()
 }
 
+/// fit test 에 쓰는 후보 폭. 펜이 전진하는 폭과 **다른 값**이다.
+///
+/// [#5678] 종전에는 두 값이 다 `i32` 라 호출부가 아무거나 넘길 수 있었고, 실제로
+/// 한 자리만 자간을 뺀 값을 넘겼다. 자간이 0 인 문단에서는 두 값이 같아 어떤 테스트도
+/// 차이를 잡지 못했다. 이제 원시 정수는 이 함수에 들어가지 못하고, 호출부는 생성자
+/// 이름으로 어느 쪽인지 밝혀야 한다.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+struct FitWidthHwp(i32);
+
+impl FitWidthHwp {
+    /// 후보 토큰의 마지막 글자 뒤 자간을 뺀 폭. 실사용 fill 이 쓰는 값이다.
+    ///
+    /// 줄 끝에 오는 글자의 뒤 자간은 그려지지 않으므로 들어가는지 따질 때 빼고 잰다.
+    /// 펜은 전체 폭만큼 전진한다.
+    fn trimmed(token_width_hwp: i32, letter_spacing_px: &[f64], token_end_idx: usize) -> Self {
+        Self(token_width_hwp - fit_test_letter_spacing_trim_hwp(letter_spacing_px, token_end_idx))
+    }
+
+    /// 커닝 경계쌍 보정을 fit 판정 폭에 더한다 (#4439 커닝 세션과의 병합점).
+    /// 펜 전진 폭에는 더하지 않는다 — fit 판정 전용 축이다.
+    fn with_pair_adjustment(self, adjustment_hwp: i32) -> Self {
+        Self(self.0 + adjustment_hwp)
+    }
+}
+
 fn text_token_fits_line_hwp(
     current_width_hwp: i32,
-    token_width_hwp: i32,
+    token_width: FitWidthHwp,
     space_savings_hwp: i32,
     effective_width_hwp: i32,
     max_font_size: f64,
 ) -> bool {
-    let natural_candidate = current_width_hwp + token_width_hwp;
+    let natural_candidate = current_width_hwp + token_width.0;
     let condensed_candidate = condensed_line_width_hwp(natural_candidate, space_savings_hwp);
     let needs_condense_to_fit = natural_candidate > effective_width_hwp + LINE_BREAK_TOLERANCE
         && condensed_candidate <= effective_width_hwp + LINE_BREAK_TOLERANCE;
@@ -1576,8 +1602,7 @@ fn fill_one_interval(
                 let effective_width = eff_w(cursor.is_first_line);
                 // The pen keeps the full width; only the comparison drops the
                 // candidate's trailing letter space.
-                let w_hwp_fit =
-                    w_hwp - fit_test_letter_spacing_trim_hwp(letter_spacing_px, *end_idx);
+                let w_hwp_fit = FitWidthHwp::trimmed(w_hwp, letter_spacing_px, *end_idx);
                 let pair_adjustment_hwp = if let Some(session) = kerning.as_deref_mut() {
                     to_hwp(session.boundary_pair_adjustment(cursor.line_start_idx, *end_idx)?)
                 } else {
@@ -1585,7 +1610,7 @@ fn fill_one_interval(
                 };
                 let token_fits = text_token_fits_line_hwp(
                     cursor.lw,
-                    w_hwp_fit + pair_adjustment_hwp,
+                    w_hwp_fit.with_pair_adjustment(pair_adjustment_hwp),
                     cursor.line_space_savings,
                     effective_width,
                     *max_font_size,
@@ -1663,10 +1688,14 @@ fn fill_one_interval(
                             // 들어가는지 다시 확인한다. 종전에는 토큰 전체 폭을 무조건
                             // 더하고 continue하여, 긴 영문·숫자 토큰의 글자 단위 fallback을
                             // 건너뛰었다.
+                            // [#5678] 주 판정과 같은 피연산자(`w_hwp_fit`)를 쓴다. 종전에는
+                            // 이 자리만 `w_hwp` 를 넘겨, 같은 토큰이 한 반복 안에서 두 방식으로
+                            // 측정됐다 — 자간이 0 이 아닌 문단에서만 갈리므로 어떤 테스트도
+                            // 이 차이를 잡지 못했다. 펜은 여기서도 전체 폭을 그대로 전진한다.
                             if text_token_fits_line_hwp(
                                 cursor.lw,
-                                w_hwp
-                                    + if let Some(session) = kerning.as_deref_mut() {
+                                w_hwp_fit.with_pair_adjustment(
+                                    if let Some(session) = kerning.as_deref_mut() {
                                         to_hwp(session.boundary_pair_adjustment(
                                             cursor.line_start_idx,
                                             *end_idx,
@@ -1674,6 +1703,7 @@ fn fill_one_interval(
                                     } else {
                                         0
                                     },
+                                ),
                                 cursor.line_space_savings,
                                 eff_w(false),
                                 *max_font_size,
@@ -1874,7 +1904,7 @@ fn fill_lines_before_cursor(
                 let effective_width = eff_w(is_first_line);
                 let token_fits = text_token_fits_line_hwp(
                     lw,
-                    w_hwp,
+                    FitWidthHwp(w_hwp),
                     line_space_savings,
                     effective_width,
                     *max_font_size,
@@ -1898,7 +1928,7 @@ fn fill_lines_before_cursor(
                 }
                 if !text_token_fits_line_hwp(
                     lw,
-                    w_hwp,
+                    FitWidthHwp(w_hwp),
                     line_space_savings,
                     effective_width,
                     *max_font_size,
@@ -1940,7 +1970,7 @@ fn fill_lines_before_cursor(
                             // 건너뛰었다.
                             if text_token_fits_line_hwp(
                                 lw,
-                                w_hwp,
+                                FitWidthHwp(w_hwp),
                                 line_space_savings,
                                 eff_w(false),
                                 *max_font_size,
@@ -2065,7 +2095,7 @@ fn char_level_break_hwp(
     token_end: usize,
     line_start_idx: &mut usize,
     mut lw: i32,
-    mut line_max_fs: f64,
+    line_max_fs: f64,
     first_line_w: i32,
     normal_w: i32,
     mut is_first_line: bool,
@@ -2136,7 +2166,8 @@ fn inline_control_size_hwp(ctrl: &Control) -> Option<(i32, i32)> {
             shape.flow_height_hu(),
         ),
         Control::Table(table) if table.common.treat_as_char => {
-            let width = table.get_column_widths().iter().sum::<u32>() as i32;
+            // [#5785 후속] 선언 폭 우선 — 원시 열 합은 행별 구획이 다른 표에서 과대집계된다.
+            let width = table.flow_width_hu() as i32;
             (width, table.common.height as i32)
         }
         Control::Equation(eq) if eq.common.treat_as_char => {

@@ -34,6 +34,24 @@ import {
 
 const sleep = (page, ms) => page.evaluate(t => new Promise(r => setTimeout(r, t)), ms);
 
+/**
+ * 첫 실행의 스킨 선택은 편집 캔버스와 textarea 포커스를 가린다. 이 계약은
+ * onboarding 자체가 아니라 실제 편집 및 undo 경로를 검증하므로 시작 전에만 닫는다.
+ */
+async function dismissSkinOnboarding(page) {
+  await page.evaluate(() => {
+    const card = document.querySelector('.skin-onboarding-card');
+    if (card) card.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+    const start = [...document.querySelectorAll('button.dialog-btn-primary')]
+      .find(button => button.offsetParent !== null && button.textContent?.trim() === '시작하기');
+    if (start) {
+      start.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+      start.click();
+    }
+  });
+  await sleep(page, 600);
+}
+
 /** 1x1 투명 PNG (그림 삽입용 최소 fixture) */
 const TINY_PNG_BASE64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==';
 
@@ -186,6 +204,7 @@ async function insertFloatingPicture(page, extraProps = {}) {
 // ─── 테스트 본문 ────────────────────────────────────────────
 
 runTest('편집 undo 계약 실동작 (Task #2301)', async ({ page }) => {
+  await dismissSkinOnboarding(page);
 
   // ── 케이스 1: 모두 바꾸기 undo (#2037) ──────────────────
   setTestCase('find-replace: 모두 바꾸기 → Ctrl+Z 복원');

@@ -2,7 +2,6 @@
 
 use super::helpers::*;
 use crate::document_core::DocumentCore;
-use crate::error::HwpError;
 use crate::model::control::Control;
 use crate::model::paragraph::Paragraph;
 use crate::model::shape::common_obj_offsets;

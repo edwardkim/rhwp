@@ -85,6 +85,20 @@ HWP/PDF fixture나 기준 PDF를 이용한 PDF/SVG visual sweep은 이번 주장
 - one-shot 예약은 current revision 확인 뒤 완료 이벤트에서만 소비하므로 stale mutation이 캐럿을 먼저
   이동할 위험을 제한한다.
 
+## 최신 devel 충돌 해소 — 2026-08-30
+
+- 이전 PR head `5481452f8`은 Frontend package gates, Canvas visual diff, Build & Test를 포함한 분류된 CI를
+  모두 통과했다. 그 뒤 `devel`이 `d3b40a3d7`까지 이동하면서 PR은 `CONFLICTING/DIRTY`가 됐다.
+- 최신 `upstream/devel@d3b40a3d7`을 merge하고 `mydocs/orders/20260830.md`와
+  `rhwp-studio/src/engine/input-handler.ts`의 content conflict를 해소했다.
+- 오늘할일은 최신 base 항목을 모두 보존한 뒤 #6395 표만 추가했다. `InputHandler`는 최신 HF selection·IME·
+  submode snapshot 복원을 모두 보존하고 #6395의 15줄만 PR 고유 diff로 유지했다.
+- 최신 WASM을 새로 만들고 TypeScript, Studio/editor 전체 test 1,313건, production build 245 modules,
+  실제 Chrome E2E, E2E manifest 122/122를 통과했다. 상세 근거는
+  [Stage 2](../../working/task_m100_6395_stage2.md)에 기록했다.
+- 이 merge commit이 push되면 이전 녹색 head를 최신 head의 최종 CI 근거로 재사용하지 않는다. 최신 head의
+  required checks와 mergeability를 다시 확인한다.
+
 ## 최종 권고와 남은 조건
 
 **조건부 수용.** 원인과 수정 경계가 좁고 TypeScript 전체 회귀 및 실제 Chrome E2E가 이슈 #6395의 수용

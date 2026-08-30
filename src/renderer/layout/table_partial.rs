@@ -6,7 +6,7 @@ use super::super::height_measurer::MeasuredTable;
 use super::super::page_layout::LayoutRect;
 use super::super::render_tree::*;
 use super::super::style_resolver::ResolvedStyleSet;
-use super::super::{hwpunit_to_px, px_to_hwpunit, ShapeStyle};
+use super::super::{hwpunit_to_px, px_to_hwpunit};
 use super::border_rendering::{
     build_row_col_x, collect_cell_borders, mark_cell_span_interior_covered, render_edge_borders,
     render_transparent_borders,
@@ -16,7 +16,6 @@ use super::table_layout::{
     native_terminal_child_host_line_spacing, NestedTableSplit, INLINE_WRAP_WIDTH_EPSILON_PX,
 };
 use super::text_measurement::{estimate_text_width, resolved_to_text_style};
-use super::utils::find_bin_data;
 use super::{
     repeats_native_empty_host_rowbreak_fragment_margin, CellContext, CellPathEntry, LayoutEngine,
 };
@@ -975,7 +974,9 @@ impl LayoutEngine {
                 pad_left = new_pl;
                 pad_right = new_pr;
 
-                let inner_width_for_recompose = (cell_w - pad_left - pad_right).max(0.0);
+                let inner_width_for_recompose = crate::renderer::composer::cell_inner_text_width(
+                    cell_w, pad_left, pad_right, self.dpi,
+                );
                 // [Task #671] line_segs 비어 있는 셀 paragraph 의 단일 ComposedLine 압축
                 // 결과를 셀 가용 너비 (inner_width) 에 맞춰 다중 ComposedLine 으로 재분할.
                 for (cpi, para) in cell.paragraphs.iter().enumerate() {
@@ -1009,7 +1010,9 @@ impl LayoutEngine {
             }
 
             let inner_x = cell_x + pad_left;
-            let inner_width = (cell_w - pad_left - pad_right).max(0.0);
+            let inner_width = crate::renderer::composer::cell_inner_text_width(
+                cell_w, pad_left, pad_right, self.dpi,
+            );
             let inner_height = (cell_h - pad_top - pad_bottom).max(0.0);
 
             // 분할 행: [Task #993/#1025] start_cut/end_cut(유닛 컷)으로 표시할 줄 범위 계산.

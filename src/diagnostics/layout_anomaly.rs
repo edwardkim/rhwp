@@ -47,7 +47,7 @@ use serde_json::{json, Value};
 
 use crate::document_core::DocumentCore;
 use crate::model::shape::TextWrap;
-use crate::renderer::render_tree::{BoundingBox, RenderLayerInfo, RenderNode, RenderNodeType};
+use crate::renderer::render_tree::{BoundingBox, RenderNode, RenderNodeType};
 use crate::HwpError;
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -323,6 +323,45 @@ fn type_allowed(label: &str, opts: &AnomalyOptions) -> bool {
 /// 밀어내는 wrap)일 때만 후보로 본다. BehindText/InFrontOfText 는 애초에 다른
 /// 콘텐츠와 겹치라고 있는 wrap 이라 후보에서 뺀다. 바탕쪽(master page) 유래
 /// 개체도 항상 배경에 깔릴 뿐이라 제외한다.
+/// 흐름 겹침 판정에 쓰는 상자.
+///
+/// `TextLine` 은 줄 상자(줄높이)를 bbox 로 갖는다. 줄높이는 줄 간격을 포함하므로,
+/// 줄 간격이 줄높이보다 좁은 문단에서는 **연속된 두 줄의 상자가 자동으로 겹친다** —
+/// 글자는 안 겹치는데도. 수식이 섞인 줄에서 특히 잦다(위첨자·분수가 줄 상자를 키운다).
+///
+/// 실측(2026-08-28): `3-11월_실전_통합_2022.hwp` 의 겹침 8건이 전부 연속 줄 쌍이고,
+/// 줄 상자 27.6px 에 줄 간격 20.4px 이라 7.2px 이 겹친다. 렌더에는 겹친 글자가 없다.
+///
+/// 그래서 `TextLine` 은 자식 `TextRun` 들의 **글자 상자 합집합**으로 잰다. 글자가 실제로
+/// 차지하는 범위이고, `text_overlap` 이 런 단위로 쓰는 것과 같은 기준이다 — 같은 질문에
+/// 두 개의 답을 두지 않는다. 줄이 정말로 포개지면 그 합집합도 겹치므로 검출은 잃지 않는다.
+///
+/// `TextLine` 이 아닌 노드(표·그림·도형)는 자기 bbox 가 곧 차지하는 범위다.
+fn flow_extent_bbox(node: &RenderNode) -> BoundingBox {
+    if !matches!(node.node_type, RenderNodeType::TextLine(_)) {
+        return node.bbox;
+    }
+    let mut union: Option<BoundingBox> = None;
+    for child in &node.children {
+        if !matches!(&child.node_type, RenderNodeType::TextRun(tr) if has_visible_text(&tr.text)) {
+            continue;
+        }
+        let band = glyph_band_bbox(child);
+        union = Some(match union {
+            None => band,
+            Some(u) => {
+                let x = u.x.min(band.x);
+                let y = u.y.min(band.y);
+                let right = (u.x + u.width).max(band.x + band.width);
+                let bottom = (u.y + u.height).max(band.y + band.height);
+                BoundingBox::new(x, y, right - x, bottom - y)
+            }
+        });
+    }
+    // 보이는 런이 없으면 줄 상자를 그대로 쓴다 — 판정 대상에서 조용히 빠지지 않게 한다.
+    union.unwrap_or(node.bbox)
+}
+
 fn is_overlap_candidate(node: &RenderNode) -> bool {
     match &node.node_type {
         RenderNodeType::TextLine(_) => node.children.iter().any(
@@ -344,6 +383,37 @@ fn is_overlap_candidate(node: &RenderNode) -> bool {
 
 fn has_visible_text(s: &str) -> bool {
     s.chars().any(|c| !c.is_whitespace())
+}
+
+/// `TextRun` bbox 를 **글자 상자**로 좁힌다.
+///
+/// 노드 bbox 는 줄 상자(전진폭 × 줄높이)이지 글리프 잉크가 아니다. 줄높이는 줄 간격을
+/// 포함하므로, 행 간격이 줄높이보다 좁은 표에서는 위아래 줄의 **상자**가 자동으로 겹친다 —
+/// 글자는 안 겹치는데도.
+///
+/// 실측(2026-08-28): `hwpx/hancom-hwp/hwpx-02.hwp` 2쪽은 이 검출기가 71건을 보고하는데
+/// 렌더에는 겹친 글자가 하나도 없다. 예 — 줄 상자 높이 16.0px, 행 간격 11.73px,
+/// 보고된 세로 겹침 4.27px. 그 4.27 은 줄 간격이지 글자가 아니다.
+///
+/// 보이는 세로 범위는 글리프의 em 상자이고 그 높이는 `font_size` 다. 줄 상자보다 크지
+/// 않으므로 중앙 기준으로 좁힌다 — baseline 위치를 가정하지 않으려는 선택이다
+/// (렌더 트리에 baseline 필드가 없다). 가로는 그대로 둔다: 전진폭은 글자가 실제로
+/// 차지하는 가로 범위와 사실상 같다.
+///
+/// 이것은 근사다. 정확히 하려면 폰트 메트릭의 ascent/descent 로 잉크 상자를 계산해야
+/// 한다. 다만 지금 근사는 "줄 간격을 글자 겹침으로 세지 않는다" 는 점에서 종전보다
+/// 엄밀하고, 방향이 한쪽(위양성 감소)이라 결함을 놓치는 쪽으로는 틀리지 않는다.
+fn glyph_band_bbox(node: &RenderNode) -> BoundingBox {
+    let RenderNodeType::TextRun(run) = &node.node_type else {
+        return node.bbox;
+    };
+    let em = run.style.font_size;
+    // NaN·비유한 font_size 는 종전 `!(em > 0.0)` 처럼 원상자 유지로 처리한다.
+    if !em.is_finite() || em <= 0.0 || em >= node.bbox.height {
+        return node.bbox;
+    }
+    let inset = (node.bbox.height - em) / 2.0;
+    BoundingBox::new(node.bbox.x, node.bbox.y + inset, node.bbox.width, em)
 }
 
 /// text-overlap 후보 — 보이는 글자가 있는 `TextRun` 이고, 한컴 글자겹침
@@ -535,7 +605,7 @@ fn walk(
         text_out.push(FlowCandidate {
             path: path.clone(),
             node_type: "TextRun",
-            bbox: node.bbox,
+            bbox: glyph_band_bbox(node),
             column,
         });
     }
@@ -560,7 +630,7 @@ fn walk(
                 flow_out.push(FlowCandidate {
                     path: path.clone(),
                     node_type: label,
-                    bbox: node.bbox,
+                    bbox: flow_extent_bbox(node),
                     column,
                 });
             }

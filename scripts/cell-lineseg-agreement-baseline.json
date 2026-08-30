@@ -1,0 +1,16 @@
+{
+  "_comment": [
+    "셀 안 문단의 줄 나눔이 한/글 저장 기록과 일치하는 비율 (내용 키 짝짓기).",
+    "갱신: node scripts/cell-lineseg-agreement.mjs --update",
+    "이 비율은 내려갈 수 없다. 올리는 것이 목표다."
+  ],
+  "documents": 369,
+  "unpairedStored": 886,
+  "unpairedRendered": 11701,
+  "cells": 169444,
+  "agree": 124053,
+  "disagree": 45391,
+  "renderedMore": 44845,
+  "renderedFewer": 546,
+  "agreementPercent": 73.21
+}

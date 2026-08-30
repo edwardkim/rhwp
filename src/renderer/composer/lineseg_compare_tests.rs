@@ -774,7 +774,7 @@ mod tests {
 
     #[test]
     fn test_lineseg_compare_hancom_saved() {
-        let mut pairs: Vec<(String, String)> = std::fs::read_dir("samples/")
+        let pairs: Vec<(String, String)> = std::fs::read_dir("samples/")
             .unwrap()
             .filter_map(|e| e.ok())
             .filter_map(|e| {

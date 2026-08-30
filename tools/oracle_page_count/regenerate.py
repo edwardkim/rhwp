@@ -28,11 +28,15 @@ CI 와 회귀 시험은 만들어진 TSV 만 읽는다 — Rust 쪽에 PDF 파�
 정답지를 2-up 으로 오인해 진짜 불일치를 삼킨 사례가 있었다(`hancom-hwp/hwpx-02.hwp`).
 """
 import argparse
+import collections
+import io
 import json
 import os
 import re
+import shutil
 import subprocess
 import sys
+import tempfile
 
 SUFFIX = re.compile(r'-(20\d\d|hwp|hwpx|kopub|no-ttf|current)+$', re.I)
 FIXTURE = 'tests/fixtures/oracle_page_count_baseline.tsv'
@@ -53,6 +57,38 @@ def subdir(path, root):
     return d[len(root):].lstrip('/') if d.startswith(root) else d
 
 
+FORMAT_SUFFIX = re.compile(r'-(hwpx|hwp)(?=-|$)', re.I)
+
+
+def oracle_format(pdf_path):
+    """정답지가 **어느 형식의 원본**에서 뽑혔는지. 태그가 없으면 `None`.
+
+    `-hwp`·`-hwpx` 는 한글 버전·글꼴 조건 같은 접미사가 아니라 원본 형식 표기다.
+    `stem()` 은 이름을 맞추려고 이것도 벗기는데, 그대로 두면 같은 문서의 HWP본·HWPX본
+    정답지가 한 집합으로 뭉쳐 **각 샘플이 상대 형식의 쪽수로도 "일치" 판정**을 받는다.
+
+    `issue1510_coanchored_float_tables` 가 그 실측이다. 한글은 HWP본을 1 쪽,
+    HWPX본을 2 쪽으로 뽑았고 **둘 다 정답이다**(저장된 float 배치가 다르다). 그런데
+    원장은 두 행 모두 정답지 `1,2` 를 갖고 있어 rhwp 가 어느 쪽으로 틀려도 통과한다.
+    """
+    name = re.sub(r'\.pdf$', '', os.path.basename(pdf_path), flags=re.I)
+    # `<이름>.hwp.pdf` / `<이름>.hwpx.pdf` 형태도 같은 표기다.
+    if name.lower().endswith('.hwpx'):
+        return 'hwpx'
+    if name.lower().endswith('.hwp'):
+        return 'hwp'
+    work = name
+    while True:
+        m = SUFFIX.search(work)
+        if not m:
+            break
+        tag = m.group(1).lower()
+        if tag in ('hwp', 'hwpx'):
+            return tag
+        work = work[:m.start()]
+    return None
+
+
 def pick_oracles(sample, candidates):
     """이름이 같은 정답지 후보 중 이 샘플의 것만 고른다.
 
@@ -65,9 +101,112 @@ def pick_oracles(sample, candidates):
     같은 디렉터리의 정답지가 있으면 그것만 쓴다. 없으면 이름 후보를 그대로 쓰되(정답지가
     `pdf/` 최상위에만 있는 문서가 많다), 후보가 여럿이면 그 사실이 픽스처의 쪽수 집합에
     드러난다.
+
+    형식 태그(`-hwp`/`-hwpx`)가 붙은 정답지는 **같은 형식의 샘플에만** 준다
+    (`oracle_format` 참고). 태그가 없는 정답지는 형식을 가리지 않는다.
+
+    디렉터리 fallback 은 여기서 끝나지 않는다 — `owner_claims_oracle` 이 본문으로 확인한다.
     """
+    want = 'hwpx' if sample.lower().endswith('.hwpx') else 'hwp'
+    candidates = [p for p in candidates
+                  if oracle_format(p) in (None, want)]
     same_dir = [p for p in candidates if subdir(p, 'pdf') == subdir(sample, 'samples')]
     return same_dir if same_dir else candidates
+
+
+#: 디렉터리 주인이 후보보다 이만큼 더 맞으면 후보의 짝짓기를 버린다.
+#:
+#: **절대 임계로는 판별할 수 없다.** 정답지 PDF 의 텍스트 추출 품질이 문서마다 극과
+#: 극이라(수식·기호 폰트 문서는 0% 도 나온다) 낮은 일치율 자체는 "다른 문서" 의 증거가
+#: 아니다. 실제로 절대 55% 로 걸러 봤더니 6 건이 배제됐는데 그중 5 건은 같은 문서였다
+#: (`form-01` 0.0%, `exam_social` 2.4% 등 — 추출이 안 된 것뿐).
+#:
+#: 판별력은 **상대 비교**에 있다. 진짜 오짝인
+#: `samples/hwpx/hancom-hwp/hwpx-02.hwp` 는 14.1% 인데 그 정답지의 디렉터리 주인
+#: `samples/hwpx/hwpx-02.hwpx` 는 78.7% 다 — 64.6%p 차. 같은 문서인 fallback 짝 9 쌍은
+#: 주인과 후보의 차가 0%p 다(양쪽 다 92~100%). 그 사이라 30%p 로 둔다.
+PAIRING_OWNER_MARGIN = 0.30
+
+#: 주인 쪽이 이만큼은 맞아야 "주인이 더 맞는다" 는 비교가 의미를 갖는다.
+#: 둘 다 추출이 안 된 문서에서 잡음으로 배제되는 것을 막는다.
+PAIRING_OWNER_MIN_SHARE = 0.55
+
+
+def _char_multiset(text):
+    """[`squeeze`] 한 본문의 문자 카운터.
+
+    정답지 PDF 는 수식·기호를 PUA 코드포인트로 싣고 rhwp 는 실제 유니코드를 낸다.
+    그 차이는 표현이지 문서가 다르다는 뜻이 아니므로 양쪽에서 뺀다.
+    """
+    return collections.Counter(squeeze(text))
+
+
+def text_share(sample_text, oracle_text):
+    """정답지와 렌더 텍스트의 문자 멀티셋 일치율."""
+    a, b = _char_multiset(oracle_text), _char_multiset(sample_text)
+    total = max(sum(a.values()), sum(b.values()))
+    if total == 0:
+        return 1.0
+    return sum((a & b).values()) / total
+
+
+def owner_claims_oracle(candidate_share, owner_share):
+    """디렉터리 주인이 이 정답지를 더 잘 맞추는가.
+
+    디렉터리가 다른데 이름만 같은 짝은 쪽수만 봐서는 오짝을 알아챌 수 없다. 실제로
+    `samples/hwpx/hancom-hwp/hwpx-02.hwp`(10,204 자 보도자료)가
+    `pdf/hwpx/hwpx-02-2022.pdf`(1,437 자 해외직접투자 요약, 진짜 주인은
+    `samples/hwpx/hwpx-02.hwpx`)를 물어 "정답지 5 쪽 vs rhwp 9 쪽" 이라는 **없는 불일치**
+    를 원장에 실었다. 거짓 불일치가 하나라도 있으면 원장 전체를 믿을 수 없다.
+
+    반대로 멀쩡한 짝을 버려도 곤란하다 — 원장이 조용히 줄어드는 것은 통과처럼 보이는
+    미검증이다. 그래서 "이 후보가 정답지와 덜 닮았다" 가 아니라 "**다른 샘플이 더
+    닮았다**" 를 근거로 삼는다.
+    """
+    return (owner_share >= PAIRING_OWNER_MIN_SHARE
+            and owner_share - candidate_share >= PAIRING_OWNER_MARGIN)
+
+
+#: 초과 쪽의 8 글자 연속열이 정답지 본문에 이만큼도 안 나오면 "정답지에 없는 내용" 이다.
+#:
+#: 문자 단위 겹침은 한국어 문서끼리 늘 높아(같은 자모를 쓴다) 변별력이 없다.
+#: 연속열 포함 여부라야 "같은 내용인가" 를 가린다.
+COVERAGE_MIN_GRAM_HIT = 0.20
+
+#: 겹치는 앞쪽들의 쪽별 글자 수가 이 비율 안이면 "정답지가 덮는 범위는 같게 조판했다".
+COVERAGE_HEAD_TOLERANCE = 0.10
+
+
+def oracle_covers_document(oracle_pages_text, rhwp_pages_text):
+    """정답지가 이 문서 전체를 담고 있는가.
+
+    쪽수 원장은 "정답지 N 쪽 vs rhwp M 쪽" 만 보므로, 정답지가 애초에 문서 전체를
+    담지 않았으면 M>N 이 결함처럼 보인다. `samples/hwpx/hwpx-02.hwpx` 가 그렇다 —
+    정답지는 `Contents/section0.xml`(1,437 자)만 담고 rhwp 6 쪽째는
+    `section1.xml`(389 자)이다. rhwp 는 **정답지가 덮는 범위를 정확히 같은 5 쪽으로**
+    조판했는데도 원장에는 "정답지 5 vs rhwp 6" 이 실렸다.
+
+    판정은 두 조건을 함께 본다. 겹치는 앞쪽들의 쪽별 글자 수가 근사 일치하고(같은 범위를
+    같게 조판했다), 정답지 분량을 넘는 rhwp 꼬리의 내용이 정답지에 아예 없으면
+    (정답지가 그 부분을 안 담았다) 부분 수록으로 본다. 한쪽만으로는 진짜 결함
+    (쪽이 밀려 내용이 뒤로 넘친 경우)과 구별되지 않는다.
+    """
+    n = len(oracle_pages_text)
+    if not n or len(rhwp_pages_text) <= n:
+        return True, 0
+    for k in range(min(n, len(rhwp_pages_text))):
+        a, b = len(oracle_pages_text[k]), len(rhwp_pages_text[k])
+        if max(a, b) and abs(a - b) / max(a, b) > COVERAGE_HEAD_TOLERANCE:
+            return True, 0
+    tail = ''.join(rhwp_pages_text[n:])
+    if len(tail) <= 40:
+        return True, 0
+    whole = ''.join(oracle_pages_text)
+    grams = [tail[k:k + 8] for k in range(0, len(tail) - 8, 4)]
+    if not grams:
+        return True, 0
+    hit = sum(1 for g in grams if g in whole) / len(grams)
+    return hit >= COVERAGE_MIN_GRAM_HIT, len(tail)
 
 
 def git_pdf_paths():
@@ -86,18 +225,45 @@ def sample_paths():
     return sorted(found)
 
 
-def oracle_pages(git_path, tmp):
+def oracle_pages_and_text(git_path, tmp):
+    """정답지 PDF 의 (쪽 수, 쪽별 본문). 쪽별로 두는 이유는 수록 범위 확인 때문이다."""
     import pypdfium2 as pdfium
     with open(tmp, 'wb') as fh:
         if subprocess.run(['git', 'show', 'HEAD:' + git_path], stdout=fh).returncode != 0:
-            return None
+            return None, []
     try:
         doc = pdfium.PdfDocument(tmp)
         n = len(doc)
+        pages = [squeeze(doc[i].get_textpage().get_text_range()) for i in range(n)]
         doc.close()
-        return n
+        return n, pages
     except Exception:
+        return None, []
+
+
+def squeeze(text):
+    """공백과 사제 영역(PUA)을 뺀 본문. 두 확인 모두 이 표현으로 비교한다."""
+    return ''.join(
+        c for c in re.sub(r'\s', '', text) if not 0xE000 <= ord(c) <= 0xF8FF)
+
+
+def rhwp_text(rhwp, path, outdir):
+    """`export-text` 로 뽑은 쪽별 본문. 짝짓기·수록 범위 확인에만 쓴다."""
+    shutil.rmtree(outdir, ignore_errors=True)
+    r = subprocess.run([rhwp, 'export-text', path, '-o', outdir],
+                       capture_output=True, text=True, encoding='utf-8', errors='replace')
+    if r.returncode != 0 or not os.path.isdir(outdir):
         return None
+    pages = []
+    for name in sorted(os.listdir(outdir)):
+        if name.lower().endswith('.txt'):
+            try:
+                with io.open(os.path.join(outdir, name), encoding='utf-8',
+                             errors='replace') as fh:
+                    pages.append(squeeze(fh.read()))
+            except OSError:
+                pass
+    return pages
 
 
 def rhwp_info(rhwp, path):
@@ -121,20 +287,68 @@ def main():
     for p in git_pdf_paths():
         pmap.setdefault(stem(p), []).append(p)
 
-    tmp = os.path.join(os.environ.get('TEMP', '.'), 'rhwp_oracle_regen.pdf')
+    samples = sample_paths()
+    # 각 정답지의 "디렉터리 주인" — 그 정답지와 같은 상대 디렉터리에 있는 같은 이름의
+    # 샘플. 주인이 있으면 이름만 같은 다른 디렉터리의 샘플은 그 정답지를 넘볼 수 없다.
+    owners = {}
+    for sample in samples:
+        for pdf in pmap.get(stem(sample), []):
+            if subdir(pdf, 'pdf') == subdir(sample, 'samples'):
+                owners.setdefault(pdf, sample)
+
+    tmpdir = tempfile.mkdtemp(prefix='rhwp_oracle_regen_')
+    tmp = os.path.join(tmpdir, 'oracle.pdf')
+    textdir = os.path.join(tmpdir, 'text')
     cache = {}
+    text_cache = {}
     rows = []
     skipped_nup = []
-    for sample in sample_paths():
+    skipped_pairing = []
+    skipped_coverage = []
+    for sample in samples:
         key = stem(sample)
         if key not in pmap:
             continue
+        picked = pick_oracles(sample, pmap[key])
         counts = set()
-        for pdf in pick_oracles(sample, pmap[key]):
+        rejected = []
+        best_oracle_pages = None
+        for pdf in picked:
             if pdf not in cache:
-                cache[pdf] = oracle_pages(pdf, tmp)
-            if cache[pdf]:
-                counts.add(cache[pdf])
+                cache[pdf] = oracle_pages_and_text(pdf, tmp)
+            pages, opages = cache[pdf]
+            if not pages:
+                continue
+            otext = ''.join(opages)
+            # 디렉터리로 고른 짝은 그대로 믿는다. 이름만 같은 fallback 짝은, 그 정답지의
+            # 디렉터리 주인이 따로 있을 때만 본문으로 견준다 — 확인은 export-text 를
+            # 두 번 부르므로 전건에 걸면 생성이 몇 배 느려진다.
+            owner = owners.get(pdf)
+            if owner is None or owner == sample:
+                counts.add(pages)
+                if best_oracle_pages is None or pages > len(best_oracle_pages):
+                    best_oracle_pages = opages
+                continue
+            if sample not in text_cache:
+                text_cache[sample] = rhwp_text(args.rhwp, sample, textdir)
+            if owner not in text_cache:
+                text_cache[owner] = rhwp_text(args.rhwp, owner, textdir)
+            mine, theirs = text_cache[sample], text_cache[owner]
+            if mine is None or theirs is None:
+                counts.add(pages)
+                continue
+            mine_share = text_share(''.join(mine), otext)
+            owner_share = text_share(''.join(theirs), otext)
+            if owner_claims_oracle(mine_share, owner_share):
+                rejected.append((pdf, mine_share, owner, owner_share))
+                continue
+            counts.add(pages)
+            if best_oracle_pages is None or pages > len(best_oracle_pages):
+                best_oracle_pages = opages
+        if rejected:
+            skipped_pairing.extend(
+                (sample, pdf, share, owner, owner_share)
+                for pdf, share, owner, owner_share in rejected)
         if not counts:
             continue
         got, nup = rhwp_info(args.rhwp, sample)
@@ -143,6 +357,18 @@ def main():
         if nup:
             skipped_nup.append(sample)
             continue
+        # rhwp 쪽이 더 많을 때만 수록 범위를 확인한다 — 정답지가 문서 일부만 담았으면
+        # 그 초과는 결함이 아니다. 확인은 export-text 를 부르므로 해당 행에만 건다.
+        if got > max(counts) and best_oracle_pages:
+            if sample not in text_cache:
+                text_cache[sample] = rhwp_text(args.rhwp, sample, textdir)
+            mine = text_cache[sample]
+            if mine:
+                covered, tail_len = oracle_covers_document(best_oracle_pages, mine)
+                if not covered:
+                    skipped_coverage.append(
+                        (sample, len(best_oracle_pages), got, tail_len))
+                    continue
         rows.append((sample, sorted(counts), got))
 
     lines = [
@@ -161,7 +387,14 @@ def main():
           % (len(rows), match, len(rows) - match, len(skipped_nup)))
     for s in skipped_nup:
         print('  모아찍기 제외: %s' % s)
+    for sample, n, got, tail_len in skipped_coverage:
+        print('  정답지 부분 수록 제외: %s (정답지 %d쪽 / rhwp %d쪽, 정답지에 없는 꼬리 %d자)'
+              % (sample, n, got, tail_len))
+    for sample, pdf, share, owner, owner_share in skipped_pairing:
+        print('  오짝 제외: %s ← %s (본문 %.1f%%, 주인 %s 는 %.1f%%)'
+              % (sample, pdf, share * 100, owner, owner_share * 100))
     print('기록: %s' % FIXTURE)
+    shutil.rmtree(tmpdir, ignore_errors=True)
     return 0
 
 

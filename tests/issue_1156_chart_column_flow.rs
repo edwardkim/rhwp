@@ -16,7 +16,7 @@ use std::path::Path;
 fn render_page_svg(rel: &str, page: u32) -> String {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(rel);
     let bytes = fs::read(&path).unwrap_or_else(|e| panic!("read {}: {}", rel, e));
-    let mut doc = rhwp::wasm_api::HwpDocument::from_bytes(&bytes).expect("parse");
+    let doc = rhwp::wasm_api::HwpDocument::from_bytes(&bytes).expect("parse");
     doc.render_page_svg(page).expect("render svg")
 }
 

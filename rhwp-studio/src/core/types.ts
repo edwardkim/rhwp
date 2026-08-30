@@ -34,6 +34,9 @@ export interface PageInfo {
   marginHeader: number;
   /** 꼬리말 여백 (px) */
   marginFooter: number;
+  /** 렌더러가 사용하는 정확한 머리말/꼬리말 영역 (px, 페이지 좌표). */
+  headerArea?: { x: number; y: number; width: number; height: number };
+  footerArea?: { x: number; y: number; width: number; height: number };
   /** 본문 상자의 왼쪽/오른쪽 (px, 페이지 좌표).
    *
    * marginLeft/marginRight 는 PageDef 원본이라 제본 여백이 빠져 있고 맞쪽 제본 짝수 쪽의

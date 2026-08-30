@@ -7,7 +7,7 @@ use crate::error::HwpError;
 use crate::model::control::Control;
 use crate::model::event::DocumentEvent;
 use crate::model::paragraph::Paragraph;
-use crate::model::shape::{common_obj_offsets, ShapeObject};
+use crate::model::shape::common_obj_offsets;
 
 impl DocumentCore {
     /// [Task #1151 v7] cell_path JSON → Vec<(controlIdx, cellIdx, cellParaIdx)>.

@@ -47,6 +47,7 @@
     "e2e:issue-3315-perf": "node e2e/probe-image-repaint-issue3315.mjs --mode=headless",
     "e2e:issue-3137-perf": "node e2e/probe-input-perf-issue3137.mjs --mode=headless",
     "e2e:issue-4031-cell-enter": "node e2e/cell-enter-pagination-issue4031.test.mjs --mode=headless",
+    "e2e:issue-4121": "node e2e/run-with-vite.mjs -- node e2e/header-footer-selection-issue4121.test.mjs --mode=headless",
     "e2e:issue-2809": "node e2e/issue-2809-split-alignment.test.mjs --mode=headless",
     "e2e:issue-4159": "node e2e/issue-4159-terminal-nested-bottom-border-canvas2d.test.mjs --mode=headless",
     "e2e:issue-4252": "node e2e/issue-4252-nested-partial-table-object-selection.test.mjs --mode=headless",

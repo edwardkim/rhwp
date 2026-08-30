@@ -15,8 +15,7 @@ use crate::model::control::Control;
 use crate::model::footnote::{Footnote, FootnoteShape};
 use crate::model::header_footer::HeaderFooterApply;
 use crate::model::page::{ColumnDef, PageDef};
-use crate::model::paragraph::{ColumnBreakType, Paragraph};
-use crate::model::shape::CaptionDirection;
+use crate::model::paragraph::Paragraph;
 
 pub fn estimate_footnote_note_height(footnote: &Footnote, dpi: f64) -> f64 {
     let mut height = 0.0;
@@ -177,7 +176,7 @@ pub struct PaginationResult {
 }
 
 /// 한 페이지에 배치될 콘텐츠
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct PageContent {
     /// 페이지 인덱스 (0-based)
     pub page_index: u32,
@@ -454,7 +453,7 @@ pub struct FootnoteRef {
 }
 
 /// 한 단(Column)에 배치될 콘텐츠
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ColumnContent {
     /// 단 인덱스 (0-based)
     pub column_index: u16,
@@ -552,7 +551,7 @@ pub struct WrapAnchorRef {
 }
 
 /// 페이지에 배치되는 개별 항목
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum PageItem {
     /// 문단 전체가 배치됨
     FullParagraph {
@@ -893,7 +892,7 @@ impl PaginationResult {
         // 수렴 페이지 이후를 이전 결과에서 복사
         self.pages.truncate(converge_page);
         for old_page in &old.pages[converge_page..] {
-            let mut new_page = PageContent {
+            let new_page = PageContent {
                 page_index: old_page.page_index,
                 page_number: old_page.page_number,
                 page_number_restarted: old_page.page_number_restarted,

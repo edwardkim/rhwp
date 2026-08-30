@@ -84,7 +84,7 @@ enum Exempt {
 
 /// 무효화하지 않는 `pub fn (&mut self)` 전수 목록 — (파일, 함수, 분류, 근거).
 ///
-/// 파일 경로는 [`SCAN_ROOT`] 기준 상대 경로다. `devel` 기준 43건(2026-08-27 동결).
+/// 파일 경로는 [`SCAN_ROOT`] 기준 상대 경로다. `devel` 기준 44건(2026-08-29 동결).
 const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
     // ── 세션/캐시 상태만 변경 (문서 IR 비변경) ──────────────────────────────
     (
@@ -160,6 +160,12 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
         "copy_selection_in_cell_by_path_native",
         Exempt::SessionState,
         "경로 기반 복사 — 읽기 후 `self.clipboard` 에만 기록.",
+    ),
+    (
+        "commands/header_footer_ops.rs",
+        "copy_selection_in_header_footer_native",
+        Exempt::SessionState,
+        "머리말/꼬리말 복사 — 읽기 후 `self.clipboard` 에만 기록. 문서 IR 비변경.",
     ),
     (
         "commands/clipboard.rs",
@@ -386,6 +392,13 @@ const EXEMPT: &[(&str, &str, Exempt, &str)] = &[
         "fit_table_to_page_native",
         Exempt::DelegatesTo("set_table_column_widths_native"),
         "열 폭 계산만 하고 실제 반영은 열 폭 설정 뮤테이터가 한다.",
+    ),
+    (
+        "commands/table_ops.rs",
+        "evaluate_table_formula",
+        Exempt::DelegatesTo("replace_text_in_cell_native_impl"),
+        "[#4135] 계산만 할 때는 IR 비변경. 결과 기록은 일반 셀 텍스트 치환 경로에 위임하며 \
+         그 경로가 section raw passthrough를 무효화한다.",
     ),
     (
         "commands/table_ops.rs",

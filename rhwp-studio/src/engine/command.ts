@@ -5,6 +5,7 @@ import type {
   WasmBridge,
 } from '@/core/wasm-bridge';
 import type { DocumentPosition, CharProperties, ParaProperties, CellPathLike, CellPathEntry, SectionDef, CellProperties } from '@/core/types';
+import type { HeaderFooterTextPosition } from './cursor';
 import { MAX_PAGE_LOCAL_TEXT_EDIT_CHARS } from './input-edit-invalidation';
 import type { LineEndpoints as LineEndpointsLike } from './object-drag-record';
 import { setObjectProps, type ObjectPropsRef } from './object-props';
@@ -51,17 +52,15 @@ export interface EditCommand {
    * redo 하면 해제된다. 반면 선택 위에 타이핑해서 대체한 경우의 undo 는 복원하지 않는다.
    * F3 블록 선택은 **확장 단계까지** 되돌아온다 — undo 뒤 F3 를 누르면 단어에서 문단으로
    * 이어서 확장한다(단계가 초기화됐다면 다시 단어 범위에 머물렀을 것이다).
-   * 그래서 이것은 **선택 삭제 계열만 구현한다** — 미구현이면 종전대로 해제된다.
+   * 본문은 선택 삭제 계열이 이 metadata를 사용한다. HF는 연산별 계약에 따라 삭제·cut의
+   * undo와 부분 서식의 undo/redo에서 사용하며, 입력·IME·paste 치환은 선택을 복원하지 않는다.
    *
    * 반환값은 "그때 그랬다" 는 기록일 뿐 지금 유효하다는 보장이 아니다. 복원하는 쪽이 현재
    * 문서에서 유효한지 반드시 확인해야 한다(#2339).
    */
-  selectionBefore?(): {
-    start: DocumentPosition;
-    end: DocumentPosition;
-    /** F3 블록 선택이었으면 그 확장 단계, 아니면 `null` (실측: 한컴은 단계까지 되돌린다). */
-    blockPhase: number | null;
-  } | null;
+  selectionBefore?(): EditSelectionSnapshot | null;
+  /** redo 뒤 되살릴 선택. 서식처럼 실행 전후 선택을 유지하는 명령만 구현한다. */
+  selectionAfter?(): EditSelectionSnapshot | null;
 }
 
 /**
@@ -77,6 +76,7 @@ export type EditContext =
       readonly applyTo: number;
       readonly paraIdx: number;
       readonly charOffset: number;
+      readonly preferredPage: number;
     }
   | {
       readonly mode: 'footnote';
@@ -88,6 +88,22 @@ export type EditContext =
       readonly innerParaIdx: number;
       readonly charOffset: number;
     };
+
+export type BodySelectionSnapshot = {
+  readonly start: DocumentPosition;
+  readonly end: DocumentPosition;
+  /** F3 블록 선택이었으면 그 확장 단계, 아니면 `null`. */
+  readonly blockPhase: number | null;
+};
+
+export type HeaderFooterSelectionSnapshot = {
+  readonly mode: 'headerFooter';
+  readonly start: HeaderFooterTextPosition;
+  readonly end: HeaderFooterTextPosition;
+  readonly preferredPage: number;
+};
+
+export type EditSelectionSnapshot = BodySelectionSnapshot | HeaderFooterSelectionSnapshot;
 
 /** text mutation의 document pagination/flow 경계와 immediate 완료를 함께 전달한다. */
 export interface FocusedCellCursorGeometry {
@@ -243,6 +259,12 @@ export type OperationDescriptor =
       operation: (wasm: WasmBridge) => DocumentPosition | null;
       /** 본문 좌표와 분리된 HF/FN 편집 문맥. undo/redo 뒤 같은 문맥으로 돌아간다. */
       editContext?: EditContext;
+      /** 최초 실행/redo 뒤 복원할 문맥. 함수형이면 최초 mutation 결과를 반영해 지연 계산한다. */
+      editContextAfter?: EditContext | (() => EditContext);
+      /** undo 뒤 복원할 선택. */
+      selectionBefore?: EditSelectionSnapshot | null;
+      /** 최초 실행/redo 뒤 복원할 선택. */
+      selectionAfter?: EditSelectionSnapshot | null;
       meta?: OperationMetadata;
     }
   | { kind: 'record'; command: EditCommand; meta?: OperationMetadata };
@@ -1272,6 +1294,7 @@ export interface HeaderFooterEditTarget {
   readonly sectionIdx: number;
   readonly isHeader: boolean;
   readonly applyTo: number;
+  readonly preferredPage: number;
 }
 
 export interface FootnoteEditTarget {
@@ -1285,7 +1308,10 @@ export interface FootnoteEditTarget {
 }
 
 function hfEditContext(t: HeaderFooterEditTarget, paraIdx: number, charOffset: number): EditContext {
-  return { mode: 'headerFooter', sectionIdx: t.sectionIdx, isHeader: t.isHeader, applyTo: t.applyTo, paraIdx, charOffset };
+  return {
+    mode: 'headerFooter', sectionIdx: t.sectionIdx, isHeader: t.isHeader,
+    applyTo: t.applyTo, paraIdx, charOffset, preferredPage: t.preferredPage,
+  };
 }
 
 function fnEditContext(t: FootnoteEditTarget, innerParaIdx: number, charOffset: number): EditContext {
@@ -2879,4 +2905,55 @@ export class SubmodeSnapshotCommand extends SnapshotCommand {
   }
 
   editContext(): EditContext { return this.context; }
+}
+
+/**
+ * HF 범위 mutation처럼 undo/redo의 커서 문맥과 선택 정책이 서로 다른 스냅샷 명령.
+ *
+ * `contextAfter` 함수는 최초 operation이 코어가 계산한 새 문단/오프셋을 돌려준 뒤 한 번만
+ * 평가한다. redo는 저장된 after snapshot과 같은 확정 문맥을 재사용한다.
+ */
+export class SubmodeSelectionSnapshotCommand extends SnapshotCommand {
+  private lastContext: EditContext;
+  private resolvedContextAfter: EditContext | null = null;
+
+  constructor(
+    operationType: string,
+    cursorBefore: DocumentPosition,
+    cursorAfter: DocumentPosition,
+    operation: ((wasm: WasmBridge) => DocumentPosition | null) | null,
+    private readonly contextBefore: EditContext,
+    private readonly contextAfter: EditContext | (() => EditContext),
+    private readonly beforeSelection: EditSelectionSnapshot | null = null,
+    private readonly afterSelection: EditSelectionSnapshot | null = null,
+  ) {
+    super(operationType, cursorBefore, cursorAfter, operation);
+    this.lastContext = contextBefore;
+  }
+
+  execute(wasm: WasmBridge): DocumentPosition {
+    const result = super.execute(wasm);
+    if (!this.resolvedContextAfter) {
+      this.resolvedContextAfter = typeof this.contextAfter === 'function'
+        ? this.contextAfter()
+        : this.contextAfter;
+    }
+    this.lastContext = this.resolvedContextAfter;
+    return result;
+  }
+
+  undo(wasm: WasmBridge): DocumentPosition {
+    const result = super.undo(wasm);
+    this.lastContext = this.contextBefore;
+    return result;
+  }
+
+  editContext(): EditContext { return this.lastContext; }
+  /** raw IME가 snapshot 최초 실행 뒤 최종 캐럿을 확정할 때 after 문맥을 갱신한다. */
+  updateContextAfter(context: EditContext): void {
+    this.resolvedContextAfter = context;
+    this.lastContext = context;
+  }
+  selectionBefore(): EditSelectionSnapshot | null { return this.beforeSelection; }
+  selectionAfter(): EditSelectionSnapshot | null { return this.afterSelection; }
 }

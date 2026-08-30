@@ -226,7 +226,10 @@ export function handleBackspace(this: any, pos: DocumentPosition, inCell: boolea
   if (this.cursor.isInHeaderFooter()) {
     const isHeader = this.cursor.headerFooterMode === 'header';
     const hfOff = this.cursor.hfCharOffset;
-    const target = { sectionIdx: this.cursor.hfSectionIdx, isHeader, applyTo: this.cursor.hfApplyTo };
+    const target = {
+      sectionIdx: this.cursor.hfSectionIdx, isHeader, applyTo: this.cursor.hfApplyTo,
+      preferredPage: this.cursor.hfPreferredPage,
+    };
     const paraIdx = this.cursor.hfParaIdx;
     if (hfOff > 0) {
       // [Task #2337] 삭제 텍스트를 WASM 반환에서 확보해 역연산(재삽입) 기록. Backspace 이므로
@@ -292,7 +295,10 @@ export function handleDelete(this: any, pos: DocumentPosition, inCell: boolean):
   // 머리말/꼬리말 편집 모드
   if (this.cursor.isInHeaderFooter()) {
     const isHeader = this.cursor.headerFooterMode === 'header';
-    const target = { sectionIdx: this.cursor.hfSectionIdx, isHeader, applyTo: this.cursor.hfApplyTo };
+    const target = {
+      sectionIdx: this.cursor.hfSectionIdx, isHeader, applyTo: this.cursor.hfApplyTo,
+      preferredPage: this.cursor.hfPreferredPage,
+    };
     try {
       const paraIdx = this.cursor.hfParaIdx;
       const info = JSON.parse(this.wasm.getHeaderFooterParaInfo(target.sectionIdx, isHeader, target.applyTo, paraIdx));
@@ -362,10 +368,35 @@ export function handleDelete(this: any, pos: DocumentPosition, inCell: boolean):
   }
 }
 
-export function onCompositionStart(this: any): void {
+function clearCellBlockLetterImeFollowup(this: any): void {
+  this.textarea.value = '';
+  this.isComposing = false;
+  this.compositionAnchor = null;
+  this.compositionLength = 0;
+  this._lastCompositionText = '';
+  this._lastComposedText = '';
+  this.caret.hideComposition();
   this.resetRawTextMutationEffects();
+}
+
+export function onCompositionStart(this: any): void {
+  if (this._cellBlockLetterImeGuard?.consume('compositionstart')) {
+    clearCellBlockLetterImeFollowup.call(this);
+    return;
+  }
+
+  this.resetRawTextMutationEffects();
+  this.headerFooterSelectionComposition = false;
   // 선택 영역이 있으면 삭제 후 조합 시작
-  if (this.cursor.hasSelection()) {
+  if (
+    this.cursor.isInHeaderFooter()
+    && this.getNonEmptyHeaderFooterSelection()
+  ) {
+    if (!this.beginHeaderFooterSelectionComposition()) {
+      this.textarea.value = '';
+      return;
+    }
+  } else if (!this.cursor.isInHeaderFooter() && this.cursor.hasSelection()) {
     if (!this.canDeleteSelectionInFormMode?.()) {
       this.textarea.value = '';
       return;
@@ -402,8 +433,14 @@ export function onCompositionStart(this: any): void {
 }
 
 export function onCompositionEnd(this: any): void {
+  if (this._cellBlockLetterImeGuard?.consume('compositionend', this.textarea.value)) {
+    clearCellBlockLetterImeFollowup.call(this);
+    return;
+  }
+
   const anchor = this.compositionAnchor;
   const finalLength = this.compositionLength;
+  const headerFooterSelectionComposition = this.headerFooterSelectionComposition === true;
 
   this.isComposing = false;
   this.compositionAnchor = null;
@@ -420,14 +457,19 @@ export function onCompositionEnd(this: any): void {
   // 조합 중 WASM 직접 호출로 이미 문서에 삽입된 텍스트를
   // Command로 기록하여 Undo 가능하게 한다.
   // [Task #2337] 머리말/꼬리말·각주 모드도 이제 기록한다(본문 스냅샷 undo 의 무언 파괴 차단).
-  if (anchor && finalLength > 0) {
+  if (anchor && finalLength > 0 && !headerFooterSelectionComposition) {
     if (this.cursor.isInHeaderFooter()) {
       // HF 는 신뢰할 텍스트 read 가 없어 getTextAt(본문 리더)을 쓸 수 없으므로 조합 텍스트
       // (_lastCompositionText)를 그대로 기록한다. anchor.charOffset = 조합 시작 오프셋,
       // hfParaIdx 는 조합 중 불변.
       const composed = this._lastCompositionText || '';
       if (composed) {
-        const target = { sectionIdx: this.cursor.hfSectionIdx, isHeader: this.cursor.headerFooterMode === 'header', applyTo: this.cursor.hfApplyTo };
+        const target = {
+          sectionIdx: this.cursor.hfSectionIdx,
+          isHeader: this.cursor.headerFooterMode === 'header',
+          applyTo: this.cursor.hfApplyTo,
+          preferredPage: this.cursor.hfPreferredPage,
+        };
         this.executeOperation({ kind: 'record', command: new InsertTextInHeaderFooterCommand(target, this.cursor.hfParaIdx, anchor.charOffset, composed) });
       }
     } else if (this.cursor.isInFootnote()) {
@@ -446,6 +488,9 @@ export function onCompositionEnd(this: any): void {
         this.executeOperation({ kind: 'record', command: new InsertTextCommand(anchor, insertedText) });
       }
     }
+  }
+  if (headerFooterSelectionComposition) {
+    this.finishHeaderFooterSelectionComposition();
   }
 
   // 조합 종료 후 대기 중인 탐색 키 처리 (IME 조합 중 방향키 등)
@@ -472,6 +517,12 @@ export function getTextAt(this: any, pos: DocumentPosition, count: number): stri
 
 export function onInput(this: any, e?: InputEvent): void {
   if (!this.active) return;
+
+  if (this._cellBlockLetterImeGuard?.consume('input', this.textarea.value)) {
+    e?.preventDefault();
+    clearCellBlockLetterImeFollowup.call(this);
+    return;
+  }
 
   const text = this.textarea.value;
   // const inputType = e?.inputType ?? 'unknown';
@@ -623,7 +674,16 @@ export function onInput(this: any, e?: InputEvent): void {
   if (this.cursor.isInHeaderFooter()) {
     const isHeader = this.cursor.headerFooterMode === 'header';
     try {
-      const target = { sectionIdx: this.cursor.hfSectionIdx, isHeader, applyTo: this.cursor.hfApplyTo };
+      if (this.getNonEmptyHeaderFooterSelection()) {
+        this.replaceHeaderFooterSelection(text, {
+          operationType: 'replaceSelectionInHeaderFooter',
+        });
+        return;
+      }
+      const target = {
+        sectionIdx: this.cursor.hfSectionIdx, isHeader, applyTo: this.cursor.hfApplyTo,
+        preferredPage: this.cursor.hfPreferredPage,
+      };
       const paraIdx = this.cursor.hfParaIdx;
       const charOffset = this.cursor.hfCharOffset;
       this.wasm.insertTextInHeaderFooter(target.sectionIdx, isHeader, target.applyTo, paraIdx, charOffset, text);

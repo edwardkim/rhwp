@@ -1,14 +1,13 @@
 //! 커서 좌표/히트테스트/셀 커서/경로 기반 조작 관련 native 메서드
 
 use super::super::helpers::{
-    color_ref_to_css, find_char_at_x, find_logical_control_positions, has_table_control,
-    is_treat_as_char_object_control, navigable_text_len, utf16_pos_to_char_idx, LineInfoResult,
+    find_char_at_x, find_logical_control_positions, is_treat_as_char_object_control,
+    navigable_text_len, LineInfoResult,
 };
 use crate::document_core::DocumentCore;
 use crate::error::HwpError;
 use crate::model::control::Control;
 use crate::model::paragraph::Paragraph;
-use crate::model::path::PathSegment;
 use crate::renderer::layout::{CellContext, CellPathEntry};
 use crate::renderer::render_tree::TextRunNode;
 
@@ -3964,8 +3963,6 @@ impl DocumentCore {
         delta: i32,
         preferred_x: f64,
     ) -> Result<String, HwpError> {
-        use crate::renderer::layout::compute_char_positions;
-
         let path = Self::parse_cell_path(path_json)?;
         if path.is_empty() {
             return Err(HwpError::RenderError("경로가 비어있습니다".to_string()));
@@ -4403,7 +4400,25 @@ impl DocumentCore {
             (0..total_pages).collect()
         };
         for page_num in page_order {
-            let tree = self.build_page_tree(page_num)?;
+            let actual_target = self.resolve_header_footer_target(page_num, is_header);
+            let is_preview_page = preferred_page >= 0
+                && page_num == preferred_page as u32
+                && self
+                    .header_footer_preview_page_for_section(section_idx)
+                    .is_ok_and(|preview| preview == page_num);
+            if actual_target != (section_idx, apply_to) && !is_preview_page {
+                continue;
+            }
+            let tree = if actual_target == (section_idx, apply_to) {
+                self.build_page_tree(page_num)?
+            } else {
+                self.build_header_footer_edit_preview_tree(
+                    page_num,
+                    section_idx,
+                    is_header,
+                    apply_to,
+                )?
+            };
             // 루트의 자식에서 Header/Footer 노드 찾기
             for child in &tree.root.children {
                 if is_target_node(&child.node_type) {
@@ -4587,10 +4602,47 @@ impl DocumentCore {
         x: f64,
         y: f64,
     ) -> Result<String, HwpError> {
+        let (section_idx, apply_to) = self.resolve_header_footer_target(page_num, is_header);
+        self.hit_test_in_header_footer_target_native(
+            page_num,
+            section_idx,
+            is_header,
+            apply_to,
+            x,
+            y,
+        )
+    }
+
+    /// 대표 편집 페이지에서 명시한 HF target으로 내부 텍스트를 히트테스트한다.
+    ///
+    /// 일반 페이지는 실제 active target과 일치할 때만 허용하고, target source section의
+    /// 첫 페이지에서만 가상 대표 트리를 사용한다.
+    pub fn hit_test_in_header_footer_target_native(
+        &self,
+        page_num: u32,
+        section_idx: usize,
+        is_header: bool,
+        apply_to: u8,
+        x: f64,
+        y: f64,
+    ) -> Result<String, HwpError> {
         use crate::renderer::layout::compute_char_positions;
         use crate::renderer::render_tree::{RenderNode, RenderNodeType};
 
-        let tree = self.build_page_tree(page_num)?;
+        let actual_target = self.resolve_header_footer_target(page_num, is_header);
+        let is_preview_page = self
+            .header_footer_preview_page_for_section(section_idx)
+            .is_ok_and(|preview| preview == page_num);
+        if actual_target != (section_idx, apply_to) && !is_preview_page {
+            return Ok("{\"hit\":false}".to_string());
+        }
+        let tree = if actual_target == (section_idx, apply_to) {
+            self.build_page_tree(page_num)?
+        } else {
+            self.build_header_footer_edit_preview_tree(page_num, section_idx, is_header, apply_to)?
+        };
+        let resolved_section_idx = section_idx;
+        let resolved_apply_to = apply_to;
 
         // Header/Footer 서브트리 찾기
         let hf_node = tree.root.children.iter().find(|child| {
@@ -4657,8 +4709,13 @@ impl DocumentCore {
         if runs.is_empty() {
             // TextRun이 없는 경우 — 빈 머리말/꼬리말
             return Ok(format!(
-                "{{\"hit\":true,\"paraIndex\":0,\"charOffset\":0,\"cursorRect\":{{\"pageIndex\":{},\"x\":{:.1},\"y\":{:.1},\"height\":{:.1}}}}}",
-                page_num, hf_node.bbox.x, hf_node.bbox.y, 12.0
+                "{{\"hit\":true,\"sectionIndex\":{},\"applyTo\":{},\"paraIndex\":0,\"charOffset\":0,\"cursorRect\":{{\"pageIndex\":{},\"x\":{:.1},\"y\":{:.1},\"height\":{:.1}}}}}",
+                resolved_section_idx,
+                resolved_apply_to,
+                page_num,
+                hf_node.bbox.x,
+                hf_node.bbox.y,
+                12.0
             ));
         }
 
@@ -4701,7 +4758,13 @@ impl DocumentCore {
             (model_idx * display_len + run.char_count / 2) / run.char_count
         }
 
-        fn format_hf_hit(run: &HfRunInfo, char_offset: usize, page_num: u32) -> String {
+        fn format_hf_hit(
+            run: &HfRunInfo,
+            char_offset: usize,
+            page_num: u32,
+            section_idx: usize,
+            apply_to: u8,
+        ) -> String {
             let cursor_x = if char_offset <= run.char_start {
                 run.bbox_x
             } else {
@@ -4717,8 +4780,15 @@ impl DocumentCore {
             let ascent = run.font_size * 0.8;
             let cursor_y = run.bbox_y + run.baseline - ascent;
             format!(
-                "{{\"hit\":true,\"paraIndex\":{},\"charOffset\":{},\"cursorRect\":{{\"pageIndex\":{},\"x\":{:.1},\"y\":{:.1},\"height\":{:.1}}}}}",
-                run.hf_para_idx, char_offset, page_num, cursor_x, cursor_y, run.font_size
+                "{{\"hit\":true,\"sectionIndex\":{},\"applyTo\":{},\"paraIndex\":{},\"charOffset\":{},\"cursorRect\":{{\"pageIndex\":{},\"x\":{:.1},\"y\":{:.1},\"height\":{:.1}}}}}",
+                section_idx,
+                apply_to,
+                run.hf_para_idx,
+                char_offset,
+                page_num,
+                cursor_x,
+                cursor_y,
+                run.font_size
             )
         }
 
@@ -4732,7 +4802,13 @@ impl DocumentCore {
                 let local_x = x - run.bbox_x;
                 let display_idx = find_char_at_x_hf(&run.char_positions, local_x);
                 let char_offset = model_index_in_run(run, display_idx);
-                return Ok(format_hf_hit(run, run.char_start + char_offset, page_num));
+                return Ok(format_hf_hit(
+                    run,
+                    run.char_start + char_offset,
+                    page_num,
+                    resolved_section_idx,
+                    resolved_apply_to,
+                ));
             }
         }
 
@@ -4744,13 +4820,21 @@ impl DocumentCore {
         if !same_line.is_empty() {
             if x < same_line[0].bbox_x {
                 let run = same_line[0];
-                return Ok(format_hf_hit(run, run.char_start, page_num));
+                return Ok(format_hf_hit(
+                    run,
+                    run.char_start,
+                    page_num,
+                    resolved_section_idx,
+                    resolved_apply_to,
+                ));
             }
             let last = same_line.last().unwrap();
             return Ok(format_hf_hit(
                 last,
                 last.char_start + last.char_count,
                 page_num,
+                resolved_section_idx,
+                resolved_apply_to,
             ));
         }
 
@@ -4774,7 +4858,13 @@ impl DocumentCore {
 
         if x < line_runs[0].bbox_x {
             let run = line_runs[0];
-            return Ok(format_hf_hit(run, run.char_start, page_num));
+            return Ok(format_hf_hit(
+                run,
+                run.char_start,
+                page_num,
+                resolved_section_idx,
+                resolved_apply_to,
+            ));
         }
 
         for run in &line_runs {
@@ -4782,7 +4872,13 @@ impl DocumentCore {
                 let local_x = x - run.bbox_x;
                 let display_idx = find_char_at_x_hf(&run.char_positions, local_x);
                 let char_offset = model_index_in_run(run, display_idx);
-                return Ok(format_hf_hit(run, run.char_start + char_offset, page_num));
+                return Ok(format_hf_hit(
+                    run,
+                    run.char_start + char_offset,
+                    page_num,
+                    resolved_section_idx,
+                    resolved_apply_to,
+                ));
             }
         }
 
@@ -4791,7 +4887,212 @@ impl DocumentCore {
             last,
             last.char_start + last.char_count,
             page_num,
+            resolved_section_idx,
+            resolved_apply_to,
         ))
+    }
+
+    /// 머리말/꼬리말 내부 선택 영역의 줄별 사각형을 계산한다.
+    ///
+    /// 선택은 `(section_idx, is_header, apply_to)` 정의에 속하고, 이 API는 요청한 한
+    /// 페이지에 그 정의가 실제 active target일 때만 페이지 지역 사각형을 반환한다.
+    #[allow(clippy::too_many_arguments)]
+    pub fn get_selection_rects_in_header_footer_native(
+        &self,
+        section_idx: usize,
+        is_header: bool,
+        apply_to: u8,
+        page_num: u32,
+        start_hf_para_idx: usize,
+        start_char_offset: usize,
+        end_hf_para_idx: usize,
+        end_char_offset: usize,
+    ) -> Result<String, HwpError> {
+        use crate::renderer::layout::compute_char_positions;
+        use crate::renderer::render_tree::{RenderNode, RenderNodeType};
+
+        let actual_target = self.resolve_header_footer_target(page_num, is_header);
+        let is_preview_page = self
+            .header_footer_preview_page_for_section(section_idx)
+            .is_ok_and(|preview| preview == page_num);
+        if actual_target != (section_idx, apply_to) && !is_preview_page {
+            return Ok("[]".to_string());
+        }
+
+        {
+            let paragraphs = self.get_hf_paragraphs_ref(section_idx, is_header, apply_to)?;
+            if start_hf_para_idx >= paragraphs.len() || end_hf_para_idx >= paragraphs.len() {
+                return Err(HwpError::RenderError(format!(
+                    "머리말/꼬리말 문단 범위 초과 (start={}, end={}, total={})",
+                    start_hf_para_idx,
+                    end_hf_para_idx,
+                    paragraphs.len()
+                )));
+            }
+            let start_len = paragraphs[start_hf_para_idx].text.chars().count();
+            let end_len = paragraphs[end_hf_para_idx].text.chars().count();
+            if start_char_offset > start_len || end_char_offset > end_len {
+                return Err(HwpError::RenderError(format!(
+                    "머리말/꼬리말 문자 범위 초과 (start={}/{}, end={}/{})",
+                    start_char_offset, start_len, end_char_offset, end_len
+                )));
+            }
+        }
+
+        let tree = if actual_target == (section_idx, apply_to) {
+            self.build_page_tree(page_num)?
+        } else {
+            self.build_header_footer_edit_preview_tree(page_num, section_idx, is_header, apply_to)?
+        };
+        let Some(hf_node) = tree.root.children.iter().find(|child| {
+            if is_header {
+                matches!(child.node_type, RenderNodeType::Header)
+            } else {
+                matches!(child.node_type, RenderNodeType::Footer)
+            }
+        }) else {
+            return Ok("[]".to_string());
+        };
+
+        #[derive(Clone)]
+        struct HfRunInfo {
+            hf_para_idx: usize,
+            char_start: usize,
+            char_count: usize,
+            char_positions: Vec<f64>,
+            bbox_x: f64,
+            bbox_y: f64,
+            bbox_w: f64,
+            bbox_h: f64,
+        }
+
+        fn collect_runs(node: &RenderNode, runs: &mut Vec<HfRunInfo>) {
+            if let RenderNodeType::TextRun(ref tr) = node.node_type {
+                if let (Some(marker_para), Some(char_start)) = (tr.para_index, tr.char_start) {
+                    if marker_para >= usize::MAX - 1000 && tr.cell_context.is_none() {
+                        runs.push(HfRunInfo {
+                            hf_para_idx: usize::MAX - marker_para,
+                            char_start,
+                            char_count: effective_char_count(tr),
+                            char_positions: compute_char_positions(tr.display_or_text(), &tr.style),
+                            bbox_x: node.bbox.x,
+                            bbox_y: node.bbox.y,
+                            bbox_w: node.bbox.width,
+                            bbox_h: node.bbox.height,
+                        });
+                    }
+                }
+            }
+            for child in &node.children {
+                collect_runs(child, runs);
+            }
+        }
+
+        fn cmp_pos(a_para: usize, a_off: usize, b_para: usize, b_off: usize) -> std::cmp::Ordering {
+            a_para.cmp(&b_para).then_with(|| a_off.cmp(&b_off))
+        }
+
+        fn display_index_for_model_offset(run: &HfRunInfo, char_offset: usize) -> usize {
+            let local_model = char_offset
+                .saturating_sub(run.char_start)
+                .min(run.char_count);
+            let display_len = run.char_positions.len().saturating_sub(1);
+            if display_len == 0 || display_len == run.char_count || run.char_count == 0 {
+                local_model.min(display_len)
+            } else {
+                ((local_model * display_len + run.char_count / 2) / run.char_count).min(display_len)
+            }
+        }
+
+        fn x_at(run: &HfRunInfo, char_offset: usize) -> f64 {
+            if char_offset <= run.char_start {
+                return run.bbox_x;
+            }
+            let display_idx = display_index_for_model_offset(run, char_offset);
+            run.char_positions
+                .get(display_idx)
+                .map(|x| run.bbox_x + x)
+                .unwrap_or(run.bbox_x + run.bbox_w)
+        }
+
+        let ((start_para, start_offset), (end_para, end_offset)) = if cmp_pos(
+            start_hf_para_idx,
+            start_char_offset,
+            end_hf_para_idx,
+            end_char_offset,
+        )
+            == std::cmp::Ordering::Greater
+        {
+            (
+                (end_hf_para_idx, end_char_offset),
+                (start_hf_para_idx, start_char_offset),
+            )
+        } else {
+            (
+                (start_hf_para_idx, start_char_offset),
+                (end_hf_para_idx, end_char_offset),
+            )
+        };
+        if (start_para, start_offset) == (end_para, end_offset) {
+            return Ok("[]".to_string());
+        }
+
+        let mut runs = Vec::new();
+        collect_runs(hf_node, &mut runs);
+        runs.sort_by(|a, b| {
+            a.hf_para_idx
+                .cmp(&b.hf_para_idx)
+                .then_with(|| {
+                    a.bbox_y
+                        .partial_cmp(&b.bbox_y)
+                        .unwrap_or(std::cmp::Ordering::Equal)
+                })
+                .then_with(|| {
+                    a.bbox_x
+                        .partial_cmp(&b.bbox_x)
+                        .unwrap_or(std::cmp::Ordering::Equal)
+                })
+        });
+
+        let mut rects = Vec::new();
+        for run in runs {
+            let run_start = (run.hf_para_idx, run.char_start);
+            let run_end = (run.hf_para_idx, run.char_start + run.char_count);
+            if cmp_pos(run_end.0, run_end.1, start_para, start_offset)
+                != std::cmp::Ordering::Greater
+                || cmp_pos(run_start.0, run_start.1, end_para, end_offset)
+                    != std::cmp::Ordering::Less
+            {
+                continue;
+            }
+
+            let selected_start = if run.hf_para_idx == start_para {
+                start_offset.max(run.char_start)
+            } else {
+                run.char_start
+            };
+            let selected_end = if run.hf_para_idx == end_para {
+                end_offset.min(run.char_start + run.char_count)
+            } else {
+                run.char_start + run.char_count
+            };
+            if selected_end <= selected_start {
+                continue;
+            }
+
+            let x1 = x_at(&run, selected_start);
+            let x2 = x_at(&run, selected_end);
+            rects.push(format!(
+                "{{\"pageIndex\":{},\"x\":{:.2},\"y\":{:.2},\"width\":{:.2},\"height\":{:.2}}}",
+                page_num,
+                x1,
+                run.bbox_y,
+                (x2 - x1).max(1.0),
+                run.bbox_h
+            ));
+        }
+
+        Ok(format!("[{}]", rects.join(",")))
     }
 
     /// 각주 영역 히트테스트

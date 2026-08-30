@@ -3,7 +3,6 @@
 //! HWP3(.hwp) 문서 포맷을 읽고 파싱하여 애플리케이션의 공통 문서 모델로 변환한다.
 //! 문서 정보, 요약, 문단, 스타일 등을 종합적으로 처리하는 진입점 역할을 한다.
 use crate::model::document::Document;
-use crate::model::paragraph::LineSeg;
 use snafu::Snafu;
 use std::io::{self, Cursor, Read};
 
@@ -18,7 +17,6 @@ pub mod records;
 pub mod special_char;
 use paragraph::{Hwp3LineInfo, Hwp3ParaInfo};
 use records::{Hwp3DocInfo, Hwp3DocSummary};
-use special_char::Hwp3SpecialChar;
 
 #[derive(Debug, Snafu)]
 pub enum Hwp3Error {
@@ -1285,7 +1283,7 @@ fn parse_hwp3_object_dispatch(
 
             let mut border_fill = crate::model::style::BorderFill::default();
 
-            let mut hwp3_line_to_border = |line_val: u8| -> crate::model::style::BorderLine {
+            let hwp3_line_to_border = |line_val: u8| -> crate::model::style::BorderLine {
                 use crate::model::style::BorderLineType;
                 // HWP3 선 종류: 0=투명, 1=실선, 2=굵은 실선, 3=점선, 4=2중 실선
                 let (line_type, width) = match line_val {
@@ -2755,7 +2753,6 @@ pub(crate) fn parse_paragraph_list(
 ) -> Result<Vec<crate::model::paragraph::Paragraph>, Hwp3Error> {
     use crate::model::paragraph::{CharShapeRef, LineSeg, Paragraph};
     use byteorder::{LittleEndian, ReadBytesExt};
-    use std::io::Read;
 
     let mut paragraphs = Vec::new();
     let mut current_para_shape_id = 0u16;
@@ -2932,7 +2929,7 @@ pub(crate) fn parse_paragraph_list(
                     // char_offsets는 출력 문자마다 하나여야 하고, source hchar 위치는
                     // 이미 loop 시작에서 hwp3_char_to_utf16_pos에 기록했으므로 둘을
                     // 각각 갱신해 글자 모양·줄 시작 오프셋도 뒤따르게 한다.
-                    for decoded in [Some(leading), Some(araea), trailing].into_iter().flatten() {
+                    for decoded in [leading, Some(araea), trailing].into_iter().flatten() {
                         char_offsets.push(utf16_len);
                         utf16_len += decoded.len_utf16() as u32;
                         text_string.push(decoded);
@@ -3211,9 +3208,9 @@ pub(crate) fn parse_paragraph_list(
 
                 let mut th = (linfo.line_height as i32) * 4;
 
-                let mut lh;
-                let mut bl;
-                let mut ls;
+                let lh;
+                let bl;
+                let ls;
 
                 if th == 0 {
                     lh = fallback_line_height;
