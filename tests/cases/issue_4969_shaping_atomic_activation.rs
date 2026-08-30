@@ -7,7 +7,7 @@ use rhwp::model::style::Alignment;
 use rhwp::model::table::{Cell, Table, VerticalAlign};
 use rhwp::paint::{
     GlyphRunOrientation, LayerBuilder, LayerNode, LayerNodeKind, PaintOp, RenderProfile,
-    TextDirection, TextVariantKind, WritingMode,
+    TextDirection, TextV2Diagnostics, TextVariantKind, WritingMode,
 };
 #[cfg(not(target_arch = "wasm32"))]
 use rhwp::renderer::canvaskit_policy::{analyze_canvaskit_replay_plan, CanvasKitReplayMode};
@@ -120,6 +120,29 @@ fn collect_text_ops<'a>(node: &'a LayerNode, ops: &mut Vec<&'a PaintOp>) {
                 PaintOp::TextRun { .. } | PaintOp::GlyphRun { .. } | PaintOp::GlyphOutline { .. }
             )
         })),
+    }
+}
+
+fn collect_layer_json_ops<'a>(value: &'a serde_json::Value, ops: &mut Vec<&'a serde_json::Value>) {
+    match value {
+        serde_json::Value::Array(values) => {
+            for value in values {
+                collect_layer_json_ops(value, ops);
+            }
+        }
+        serde_json::Value::Object(values) => {
+            if values
+                .get("type")
+                .and_then(serde_json::Value::as_str)
+                .is_some_and(|kind| matches!(kind, "textRun" | "glyphRun" | "glyphOutline"))
+            {
+                ops.push(value);
+            }
+            for value in values.values() {
+                collect_layer_json_ops(value, ops);
+            }
+        }
+        _ => {}
     }
 }
 
@@ -357,6 +380,7 @@ fn issue_4969_q4_d2_target_commits_one_line_while_no_source_keeps_legacy_tree() 
 }
 
 #[test]
+#[cfg_attr(target_arch = "wasm32", wasm_bindgen_test)]
 fn issue_4969_q4_d3_b_target_publishes_one_vertical_glyph_run_per_fallback_leaf() {
     let core = bounded_vertical_table_core(true);
     let render_tree = core
@@ -448,6 +472,19 @@ fn issue_4969_q4_d3_b_target_publishes_one_vertical_glyph_run_per_fallback_leaf(
     assert_eq!(layer_tree.resources.font_resources().faces.len(), 1);
     rhwp::paint::validate_text_variant_scope(&layer_tree)
         .expect("leaf-scoped vertical alternatives must satisfy variant scope");
+    let text_v2 = TextV2Diagnostics::from_layer_tree(&layer_tree);
+    let vertical_slots = text_v2
+        .slot_diagnostics
+        .iter()
+        .filter(|slot| matches!(slot.equivalence_group.as_str(), "text-0" | "text-1"))
+        .collect::<Vec<_>>();
+    assert!(text_v2.fallback_required);
+    assert_eq!(vertical_slots.len(), 2);
+    assert!(vertical_slots.iter().all(|slot| {
+        slot.fallback_present
+            && !slot.strict_variant_available
+            && slot.fallback_reason.as_deref() == Some("verticalGlyphOrientationAuthorityPending")
+    }));
     #[cfg(not(target_arch = "wasm32"))]
     for backend in [
         VariantSelectionBackend::CanvasKit,
@@ -495,6 +532,72 @@ fn issue_4969_q4_d3_b_target_publishes_one_vertical_glyph_run_per_fallback_leaf(
     assert_eq!(rejected_layer.resources.font_blob_count(), 0);
     assert!(rejected_layer.resources.font_resources().blobs.is_empty());
     assert!(rejected_layer.resources.font_resources().faces.is_empty());
+
+    let accepted_json = layer_tree.to_json();
+    let rejected_json = rejected_layer.to_json();
+    let accepted: serde_json::Value =
+        serde_json::from_str(&accepted_json).expect("parse accepted layer JSON");
+    assert_eq!(accepted["textSources"].as_array().map(Vec::len), Some(2));
+    assert_eq!(
+        accepted["fontResources"]["blobs"].as_array().map(Vec::len),
+        Some(1)
+    );
+    assert_eq!(
+        accepted["fontResources"]["faces"].as_array().map(Vec::len),
+        Some(1)
+    );
+    assert_eq!(
+        accepted["resources"]["fontBlobs"].as_array().map(Vec::len),
+        Some(1)
+    );
+    let mut json_ops = Vec::new();
+    collect_layer_json_ops(&accepted["root"], &mut json_ops);
+    let vertical_json_glyphs = json_ops
+        .iter()
+        .filter(|op| {
+            op["type"] == "glyphRun"
+                && op["diagnostics"]["reason"] == "boundedVerticalHwp5TableCellV1"
+        })
+        .collect::<Vec<_>>();
+    assert_eq!(vertical_json_glyphs.len(), 2);
+    for (index, glyph) in vertical_json_glyphs.iter().enumerate() {
+        assert_eq!(glyph["source"]["id"], index as u32);
+        assert_eq!(
+            glyph["variant"]["equivalenceGroup"],
+            format!("text-{index}")
+        );
+        assert_eq!(glyph["variant"]["variantId"], "verticalGlyphRun");
+        assert_eq!(glyph["writingMode"], "vertical-rl");
+        assert_eq!(glyph["orientation"], "vertical-upright");
+        assert_eq!(glyph["glyphIds"].as_array().map(Vec::len), Some(1));
+        assert_eq!(glyph["positions"].as_array().map(Vec::len), Some(1));
+        assert_eq!(glyph["advances"].as_array().map(Vec::len), Some(1));
+        assert_eq!(glyph["clusters"].as_array().map(Vec::len), Some(1));
+    }
+    let font_payload_bytes = layer_tree
+        .resources
+        .font_blob_resources()
+        .map(|(_, bytes)| bytes.len())
+        .sum::<usize>();
+    assert_eq!(font_payload_bytes, 2_519_996);
+    assert_eq!(accepted_json.len(), 3_375_512);
+    assert_eq!(rejected_json.len(), 9_078);
+    assert_eq!(accepted_json.len() - rejected_json.len(), 3_366_434);
+    println!(
+        "{}",
+        serde_json::json!({
+            "kind": "q4-d3-c-native-publication-receipt",
+            "linePublicationAttempts": 1,
+            "uniquePreparedSources": layer_tree.resources.font_blob_count(),
+            "fontPayloadBytes": font_payload_bytes,
+            "acceptedLayerJsonBytes": accepted_json.len(),
+            "rejectedLayerJsonBytes": rejected_json.len(),
+            "layerJsonIncreaseBytes": accepted_json.len() - rejected_json.len(),
+            "fallbackTextRuns": 2,
+            "verticalGlyphRuns": vertical_json_glyphs.len(),
+            "textV2FallbackSlots": vertical_slots.len(),
+        })
+    );
 }
 
 #[test]

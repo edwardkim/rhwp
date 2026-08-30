@@ -6,8 +6,8 @@
 - **D2 재자격화 기록**: `7bfefff07a99`
 - **기계 판독 계획**:
   [`w10_q4_d3_revised_execution_plan.json`](../tech/investigations/issue-4969/w10_q4_d3_revised_execution_plan.json)
-- **상태**: 계획 checkpoint `e64d6fd67`; D3-A checkpoint `bb334756b`; D3-B
-  `qualified-atomic-leaf-publication` 결과·checkpoint 생성 승인
+- **상태**: 계획 checkpoint `e64d6fd67`; D3-A checkpoint `bb334756b`; D3-B checkpoint
+  `d49400aad`; D3-C `qualified-publication-parity` 최종 결과 승인, checkpoint 승인 대기
 - **작성일**: 2026-08-30 KST
 - **제품 출력 변경**: 승인된 D2 target의 layer tree에 fallback과 함께 portable `GlyphRun` 대안을 게시
 - **backend 선택 변경**: 없음 — Q4-D4 전까지 모든 backend는 `TextRun`을 선택
@@ -128,6 +128,13 @@ line 전체를 거부해 glyph/resource residue 0을 유지했고, D4 전 select
 **종료 게이트**: publication 값 mismatch 0, fallback disappearance 0, backend false selection 0,
 canonical mismatch 0, 회귀 0. 결과 승인·checkpoint 전 Q4-D4는 시작하지 않는다.
 
+**최종 결과 후보**: [Q4-D3-C 결과 보고서](../working/task_m100_4969_w10_q4_d3_c.md)는 native와 격리
+Node WASM의 source/variant/glyph/resource 수치가 일치하고, selector·`text_v2`가 두 leaf 모두 fallback을
+유지하며 canonical SVG 두 건과 관련 회귀가 불변임을 확인했다. font payload와 layer JSON 증가량은 기준선으로만
+기록했다. 메인테이너가 `qualified-publication-parity-pre-docker` 사전 판정을 승인한 뒤 표준 Docker WASM과
+post-build native 영수증도 통과했다. 최종 판정 후보는 `qualified-publication-parity`이며 별도 결과 승인과
+checkpoint 승인 전에는 D3-C를 고정하지 않는다.
+
 ## 5. 실패 원자성
 
 | 실패 지점 | 결과 |
@@ -171,7 +178,9 @@ canonical mismatch 0, 회귀 0. 결과 승인·checkpoint 전 Q4-D4는 시작하
 - public schema 변경, D2 target 확대, horizontal resource helper 대규모 리팩터링이 필요하면 별도 수정 계획을 낸다.
 
 메인테이너가 수정 수행계획을 승인하고 계획 checkpoint `e64d6fd67`을 고정했다. Q4-D3-A 결과는
-`qualified-shadow-mapping`으로 승인돼 checkpoint `bb334756b`로 고정됐다. D3-B 진행 승인을 받아 atomic
-resource + leaf publication을 구현했고 `qualified-atomic-leaf-publication` 결과도 승인받았다. 현재
-checkpoint 생성도 승인됐으며 D3-B 결과 checkpoint와 D3-C 진행 승인을 받기 전에는
-교차 런타임 publication 검증을 시작하지 않는다.
+`qualified-shadow-mapping`으로 승인돼 checkpoint `bb334756b`로 고정됐다. D3-B는
+`qualified-atomic-leaf-publication`으로 승인돼 checkpoint `d49400aad`로 고정됐다. 별도 승인을 받아 D3-C의
+native·격리 Node WASM·회귀·canonical 검증을 마치고 `qualified-publication-parity-pre-docker` 사전 결과를
+승인받았다. 이어서 표준 Docker WASM과 post-build native 영수증도 통과했다. 현재
+`qualified-publication-parity` 최종 결과를 승인받았다. 별도 checkpoint 승인 전에는 D3-C를 고정하지 않고,
+Q4-D4는 checkpoint 뒤 다시 별도 착수 승인을 받아 시작한다.
