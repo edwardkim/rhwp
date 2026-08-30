@@ -9,8 +9,8 @@ last_verified: 2026-08-30
 
 ## 범위와 기준
 
-- 기준: #6040 Stage 1 head `dfe27e18884cd067b0f4ccd0ed9141e20640fac5`
-- 비교 대상: `codex/issue-6041-budget-first-render-scale`
+- 수정 전: #6040 PR head `dfe27e18884cd067b0f4ccd0ed9141e20640fac5`
+- 수정 후: #6041 code candidate `e37d483fd5f16b2c710a95389f882c9985d50851`
 - backend: Canvas2D
 - browser viewport: 1280×720 CSS px, 문서 viewport 1260×558 CSS px
 - raw DPR: 2
@@ -20,36 +20,41 @@ last_verified: 2026-08-30
 크기, tier, surface 비용과 같은 화면 캡처를 비교했다. print/PDF/SVG/highQuality 출력 경로는 정책에서
 제외된다. 최종 사용자-visible 판정은 작업지시자의 로컬 조작 확인을 남겨 둔다.
 
-## 34% 4쪽 실문서 품질 보존
+수정 전·후를 각각 새 탭에서 같은 문서와 34→50→100% 순서로 열었다. 아래 합성 PNG는 모두
+**왼쪽이 수정 전(#6040), 오른쪽이 수정 후(#6041)**이며 가운데 8px 선으로 구분한다. 두 화면 모두
+1280×720 원본 PNG를 무손실로 붙였고 리사이즈나 JPEG 재압축을 하지 않았다.
+
+## 4쪽 실문서 34%·50%·100%
 
 fixture: `samples/21868765_별표2_보건소_분장사무.hwp`
 
 - SHA-256: `ae694583e739ac48af97cb12ce573c2da9f4cb637721fdf84e5af4bf7ca17c13`
-- 자동 4열, retained/visible 4쪽
-- 기준과 변경본 모두 네 쪽 `screen`, effective DPR 2
-- 쪽당 Canvas 540×764 physical px / 270×382 CSS px
-- 네 페이지 모두 `layerCount=1`, main Canvas 합계 1,650,240 physical px / 6.30MiB RGBA
-- JPEG 화면 캡처 SSIM: 0.999901. 상태줄 시간처럼 정책과 무관한 미세 차이만 있다.
+- 수정 후 세 배율 모두 retained 페이지가 `layerCount=1`, `screen`, effective DPR 2를 유지했다.
+- 34%는 자동 4열·visible 4쪽이며 쪽당 540×764 physical px / 270×382 CSS px다.
+- 100%는 viewport와 prefetch 범위에 따라 retained 3쪽이며 모두 DPR 2다.
 
-![#6041 Stage 1 baseline at 34%](assets/issue6041_exact4_baseline_34.jpg)
+| 배율 | screenshot SSIM | 수정 후 판정 |
+| ---: | ---: | --- |
+| 34% | 0.999885 | 4쪽 모두 DPR 2 / `screen` |
+| 50% | 0.999894 | 4쪽 모두 DPR 2 / `screen` |
+| 100% | 0.999893 | retained 3쪽 모두 DPR 2 / `screen` |
 
-![#6041 budget-first result at 34%](assets/issue6041_exact4_budget_first_34.jpg)
+![4쪽 실문서 34% — 왼쪽 수정 전, 오른쪽 수정 후](assets/issue6041_compare_exact4_34.png)
 
-asset SHA-256:
+![4쪽 실문서 50% — 왼쪽 수정 전, 오른쪽 수정 후](assets/issue6041_compare_exact4_50.png)
 
-- baseline: `9969d7582154c6a4768c98b5213ee305c49002d031ef44c75321463727090bd3`
-- budget-first: `aae1878c0674ce13e4153dd3fda782dfe13a5b10161c7ba9739ab0a838c84d2e`
+![4쪽 실문서 100% — 왼쪽 수정 전, 오른쪽 수정 후](assets/issue6041_compare_exact4_100.png)
 
-## 100% 실제 다중 쪽 문서의 불필요한 강등 방지
+## 다중 쪽 `kps-ai.hwp` 34%·50%·100%
 
 fixture: `samples/kps-ai.hwp`
 
 - SHA-256: `9b0fceb3d96956f27c893e15a72a1ad94f7ee005bd581381a1aadfcb1f57a7b9`
-- 재현 순서: 25 → 34 → 36 → 50 → 60 → 100%
-- 최종 retained 3쪽, visible 2쪽
-- 첫 페이지는 정적 flow 가능성을 포함한 보수적 `layerCount=2`, 나머지는 `layerCount=1`
+- 비교 캡처 순서: 34 → 50 → 100%
+- 수정 후 모든 캡처의 retained 페이지는 `screen`, effective DPR 2다.
+- 페이지별 보수적 layer count는 콘텐츠에 따라 1~2이며 100%에서도 비용이 예산 이내라 강등하지 않았다.
 
-| 지표 | Stage 1 기준 | page-specific budget-first | 판정 |
+| 지표 | 수정 전(#6040) | 수정 후(#6041) | 판정 |
 | --- | ---: | ---: | --- |
 | visible tier/DPR | 2쪽 모두 DPR 2 | 2쪽 모두 DPR 2 | 품질 보존 |
 | offscreen prefetch | DPR 2 | DPR 2 | 실제 비용이 예산 이내라 보존 |
@@ -62,11 +67,32 @@ fixture: `samples/kps-ai.hwp`
 한 장이고, 첫 페이지에만 정적 flow 가능성 1장을 보수적으로 더 잡으면 충분했다. 현재 구현은 이
 페이지별 구성을 사용하므로 100%에서도 세 쪽 모두 raw DPR 2를 유지한다.
 
-## 실제 4-layer 콘텐츠와 예산 동작
+| 배율 | screenshot SSIM | 수정 후 판정 |
+| ---: | ---: | --- |
+| 34% | 0.999896 | retained 12쪽 모두 DPR 2 / `screen` |
+| 50% | 0.999975 | retained 9쪽 모두 DPR 2 / `screen` |
+| 100% | 0.999975 | retained 3쪽 모두 DPR 2 / `screen` |
+
+![kps-ai.hwp 34% — 왼쪽 수정 전, 오른쪽 수정 후](assets/issue6041_compare_kps_ai_34.png)
+
+![kps-ai.hwp 50% — 왼쪽 수정 전, 오른쪽 수정 후](assets/issue6041_compare_kps_ai_50.png)
+
+![kps-ai.hwp 100% — 왼쪽 수정 전, 오른쪽 수정 후](assets/issue6041_compare_kps_ai_100.png)
+
+## 실제 4-layer `KTX.hwp` 34%·50%·100%
 
 fixture: `samples/basic/KTX.hwp`
 
-- main + background + behind + front의 실제 Canvas 네 장을 DOM에서 확인했다.
+- main + background + behind + front의 실제 Canvas 네 장을 DOM에서 확인했다. 34%·50%·100% 모두
+  `layerCount=4`, `screen`, effective DPR 2다.
+- screenshot SSIM은 각각 0.999910, 0.999889, 0.999979이며 수정 전과 같은 화면 품질을 보존했다.
+
+![KTX.hwp 34% — 왼쪽 수정 전, 오른쪽 수정 후](assets/issue6041_compare_ktx_4layer_34.png)
+
+![KTX.hwp 50% — 왼쪽 수정 전, 오른쪽 수정 후](assets/issue6041_compare_ktx_4layer_50.png)
+
+![KTX.hwp 100% — 왼쪽 수정 전, 오른쪽 수정 후](assets/issue6041_compare_ktx_4layer_100.png)
+
 - 136%에서 `layerCount=4`, effective DPR 2, `screen`, 약 105.46MB surface로 visible 32M pixel
   예산 안에 있어 최대 해상도를 유지했다.
 - 163%에서는 visible 예산을 넘지만 현재 편집/포커스 페이지이므로 DPR 2를 유지하고 상태만
@@ -74,6 +100,20 @@ fixture: `samples/basic/KTX.hwp`
 - 3개 A4 4-layer 페이지를 100%에서 유지하는 순수 planner 회귀 테스트는 두 visible 페이지를 DPR 2로
   보존하고 화면 밖 한 페이지만 DPR 1.5로 낮춘다. 이때 추정 surface pixel은 약 42.77M에서 36.53M으로
   14.59% 줄어든다. 이는 정책의 결정론적 검증값이며 실제 제품 속도 향상 측정으로 주장하지 않는다.
+
+## 비교 asset SHA-256
+
+| 문서·배율 | SHA-256 |
+| --- | --- |
+| 4쪽 34% | `8f44d5079b27eeb6898024afc6cfb2596f80a740db7553982f4409a768fd40f3` |
+| 4쪽 50% | `885dfd7915c5e3596d9970e7697664a32fb59ef66ffb6f9c350ef4b69f0f1422` |
+| 4쪽 100% | `3e3e4432e2b737cc044132e4a4cdf4df7bc9d92d38fb4c05ed4087c23331fac4` |
+| kps-ai 34% | `7887ed62f7fb47acf4a0d7ca304ed15569824ee5c46e1897cc768e496b445c28` |
+| kps-ai 50% | `309050d9adb99b41817bc0496fb9144d73cc325beac1bc68ced12ec2bc5c97b3` |
+| kps-ai 100% | `de772c1f1625c20a51a6397083d2ba415024d067b5eb87c7ad2c2a587c7e735d` |
+| KTX 34% | `3cd1452904c1386c0925bb9496388f9c2ceee7f84927f83bdf82f976fbff4b12` |
+| KTX 50% | `dd87dfd1e17ddbb2b622468a4c708987dd68b35120928533489129c60bab6fac` |
+| KTX 100% | `0c1b3f217bdef83dab088b0fe8404fd62b12d91d53f57892c2c1a5b5d916707f` |
 
 ## 성능 측정의 한계
 

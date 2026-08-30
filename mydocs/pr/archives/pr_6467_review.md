@@ -61,12 +61,17 @@ layer를 진행하지 않는다.
 | Studio 전체 | 1,290 pass, 1 skip, 0 fail |
 | production build | 244 modules pass, 기존 대형 chunk 경고만 확인 |
 | diff | `git diff --check` pass |
-| 실제 Canvas2D | 34% 4쪽·100% kps raw DPR 보존, KTX 4-layer 식별 |
+| 실제 Canvas2D | 3개 문서×34/50/100% 수정 전·후 PNG 9개, SSIM 0.999885~0.999979, raw DPR 보존 |
 | CanvasKit | layerCount 1·raw DPR 보존, warning/error 없음 |
 
 Rust source/test/fixture와 PDF/SVG 출력은 바꾸지 않으므로 Rust lint 묶음과 출력 visual sweep은 범위에서
 제외했다. 이 PR의 사용자-visible 대상은 Studio Canvas 해상도이므로 실제 브라우저의 physical/CSS 크기,
 DPR, tier, layer count와 before/after 화면을 직접 판정했다.
+
+비교 asset은 4쪽 실문서, `kps-ai.hwp`, 실제 4-layer `KTX.hwp`를 각각 34%·50%·100%에서 같은
+1280×720 viewport로 캡처했다. 각 합성 PNG는 왼쪽 수정 전(#6040), 오른쪽 수정 후(#6041)이며 원본
+PNG를 리사이즈·손실 압축 없이 붙였다. 사람이 9개를 모두 열어 문서 정렬, 텍스트/표/그림 선명도와
+상태줄 배율을 확인했으며 제품 품질 차이는 없고 상태줄 렌더 시간만 달랐다.
 
 ## 위험과 후속 조건
 
