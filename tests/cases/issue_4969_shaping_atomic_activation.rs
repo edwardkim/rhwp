@@ -6,8 +6,9 @@ use rhwp::model::paragraph::{CharShapeRef, LineSeg, Paragraph};
 use rhwp::model::style::Alignment;
 use rhwp::model::table::{Cell, Table, VerticalAlign};
 use rhwp::paint::{
-    GlyphRunOrientation, LayerBuilder, LayerNode, LayerNodeKind, PaintOp, RenderProfile,
-    TextDirection, TextV2Diagnostics, TextVariantKind, WritingMode,
+    GlyphRunOrientation, GlyphTransform, LayerBuilder, LayerGlyphRunPaint, LayerNode,
+    LayerNodeKind, PaintOp, RenderProfile, TextDirection, TextV2Diagnostics, TextVariantKind,
+    WritingMode,
 };
 #[cfg(not(target_arch = "wasm32"))]
 use rhwp::renderer::canvaskit_policy::{analyze_canvaskit_replay_plan, CanvasKitReplayMode};
@@ -143,6 +144,31 @@ fn collect_layer_json_ops<'a>(value: &'a serde_json::Value, ops: &mut Vec<&'a se
             }
         }
         _ => {}
+    }
+}
+
+fn mutate_bounded_vertical_glyph_runs(
+    node: &mut LayerNode,
+    mutate: &mut impl FnMut(&mut LayerGlyphRunPaint),
+) {
+    match &mut node.kind {
+        LayerNodeKind::Group { children, .. } => {
+            for child in children {
+                mutate_bounded_vertical_glyph_runs(child, mutate);
+            }
+        }
+        LayerNodeKind::ClipRect { child, .. } => {
+            mutate_bounded_vertical_glyph_runs(child, mutate);
+        }
+        LayerNodeKind::Leaf { ops } => {
+            for op in ops {
+                if let PaintOp::GlyphRun { run, .. } = op {
+                    if run.diagnostics.reason.as_deref() == Some("boundedVerticalHwp5TableCellV1") {
+                        mutate(run);
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -486,29 +512,129 @@ fn issue_4969_q4_d3_b_target_publishes_one_vertical_glyph_run_per_fallback_leaf(
             && slot.fallback_reason.as_deref() == Some("verticalGlyphOrientationAuthorityPending")
     }));
     #[cfg(not(target_arch = "wasm32"))]
-    for backend in [
-        VariantSelectionBackend::CanvasKit,
-        VariantSelectionBackend::CanvasKitBrowser,
-        VariantSelectionBackend::NativeSkia,
-        VariantSelectionBackend::Svg,
-        VariantSelectionBackend::Canvas2D,
-    ] {
-        let reports = analyze_text_variant_selection(
-            &layer_tree,
-            TextVariantSelectionOptions {
+    {
+        for backend in [
+            VariantSelectionBackend::CanvasKit,
+            VariantSelectionBackend::CanvasKitBrowser,
+            VariantSelectionBackend::NativeSkia,
+            VariantSelectionBackend::Svg,
+            VariantSelectionBackend::Canvas2D,
+        ] {
+            let reports = analyze_text_variant_selection(
+                &layer_tree,
+                TextVariantSelectionOptions {
+                    backend,
+                    ..TextVariantSelectionOptions::canvaskit()
+                },
+            );
+            let vertical_reports = reports
+                .iter()
+                .filter(|report| matches!(report.equivalence_group.as_str(), "text-0" | "text-1"))
+                .collect::<Vec<_>>();
+            assert_eq!(vertical_reports.len(), 2, "{backend:?}");
+            if matches!(
                 backend,
-                ..TextVariantSelectionOptions::canvaskit()
-            },
-        );
-        let vertical_reports = reports
+                VariantSelectionBackend::CanvasKit | VariantSelectionBackend::CanvasKitBrowser
+            ) {
+                assert!(vertical_reports.iter().all(|report| {
+                    report.selected_variant_id.as_deref() == Some("verticalGlyphRun")
+                        && report.selected_variant_kind == Some(TextVariantKind::GlyphRun)
+                        && !report.fallback_required
+                }));
+            } else {
+                assert!(vertical_reports.iter().all(|report| {
+                    report.selected_variant_kind == Some(TextVariantKind::TextRun)
+                        && report.fallback_required
+                }));
+            }
+        }
+
+        let browser_plan = analyze_canvaskit_replay_plan(&layer_tree, CanvasKitReplayMode::Default);
+        let bounded_reports = browser_plan
+            .text_variants
             .iter()
             .filter(|report| matches!(report.equivalence_group.as_str(), "text-0" | "text-1"))
             .collect::<Vec<_>>();
-        assert_eq!(vertical_reports.len(), 2, "{backend:?}");
-        assert!(vertical_reports.iter().all(|report| {
-            report.selected_variant_kind == Some(TextVariantKind::TextRun)
-                && report.fallback_required
+        assert_eq!(bounded_reports.len(), 2);
+        assert!(bounded_reports.iter().all(|report| {
+            report.selected_variant_id.as_deref() == Some("verticalGlyphRun")
+                && report.selected_variant_kind == Some("glyphRun")
+                && !report.fallback_required
         }));
+        assert_eq!(
+            browser_plan
+                .items
+                .iter()
+                .filter(|item| {
+                    item.op_type == "glyphRun"
+                        && item.detail.as_deref() == Some("selectedVariant=verticalGlyphRun")
+                })
+                .count(),
+            2,
+            "both bounded leaves must be direct-required CanvasKit replay items"
+        );
+        assert_eq!(
+            browser_plan
+                .items
+                .iter()
+                .filter(|item| item.op_type == "textRun")
+                .count(),
+            2,
+            "fallback leaves remain published while the variant report chooses GlyphRun"
+        );
+
+        for mutation in [
+            "wrongProvenance",
+            "wrongVariant",
+            "verticalSideways",
+            "horizontalTuple",
+            "glyphTransforms",
+        ] {
+            let mut malformed = layer_tree.clone();
+            mutate_bounded_vertical_glyph_runs(&mut malformed.root, &mut |run| match mutation {
+                "wrongProvenance" => {
+                    run.diagnostics.reason = Some("untrustedVerticalCandidate".to_string());
+                }
+                "wrongVariant" => {
+                    run.variant.variant_id = "untrustedVerticalGlyphRun".to_string();
+                }
+                "verticalSideways" => {
+                    run.orientation = GlyphRunOrientation::VerticalSideways;
+                }
+                "horizontalTuple" => {
+                    run.writing_mode = WritingMode::HorizontalTb;
+                    run.shape_key.writing_mode = WritingMode::HorizontalTb;
+                    run.orientation = GlyphRunOrientation::Horizontal;
+                }
+                "glyphTransforms" => {
+                    run.glyph_transforms = Some(vec![GlyphTransform {
+                        xx: 1.0,
+                        xy: 0.0,
+                        yx: 0.0,
+                        yy: 1.0,
+                        tx: 0.0,
+                        ty: 0.0,
+                    }]);
+                }
+                _ => unreachable!(),
+            });
+            let reports = analyze_text_variant_selection(
+                &malformed,
+                TextVariantSelectionOptions::canvaskit(),
+            );
+            let bounded_reports = reports
+                .iter()
+                .filter(|report| matches!(report.equivalence_group.as_str(), "text-0" | "text-1"))
+                .collect::<Vec<_>>();
+            assert_eq!(bounded_reports.len(), 2, "{mutation}");
+            assert!(
+                bounded_reports.iter().all(|report| {
+                    report.selected_variant_kind == Some(TextVariantKind::TextRun)
+                        && report.fallback_required
+                }),
+                "{mutation}"
+            );
+        }
     }
 
     let mut rejected_tree = render_tree;

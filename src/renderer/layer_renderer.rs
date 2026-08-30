@@ -14,6 +14,8 @@ use std::io::Cursor;
 const MAX_CANVASKIT_BITMAP_RESOURCE_BYTES: usize = 4 * 1024 * 1024;
 const MAX_CANVASKIT_BITMAP_DIMENSION: u32 = 8192;
 const MAX_CANVASKIT_BITMAP_PIXELS: u64 = 32 * 1024 * 1024;
+const BOUNDED_VERTICAL_HWP5_TABLE_CELL_REASON: &str = "boundedVerticalHwp5TableCellV1";
+const BOUNDED_VERTICAL_GLYPH_VARIANT_ID: &str = "verticalGlyphRun";
 
 pub type LayerRenderResult<T> = Result<T, HwpError>;
 
@@ -588,6 +590,16 @@ fn collect_glyph_run_reject_reasons(
     resources: &ResourceArena,
     reasons: &mut BTreeSet<VariantRejectReason>,
 ) {
+    let bounded_vertical_declared =
+        run.diagnostics.reason.as_deref() == Some(BOUNDED_VERTICAL_HWP5_TABLE_CELL_REASON);
+    let bounded_vertical_canvaskit =
+        is_bounded_vertical_hwp5_canvaskit_candidate(run, options.backend);
+    if bounded_vertical_declared && !bounded_vertical_canvaskit {
+        // Bounded provenance is an all-field capability claim. A malformed claim must not
+        // fall through to the generic horizontal GlyphRun lane after changing only its mode.
+        reasons.insert(VariantRejectReason::WritingModeAuthorityPending);
+        reasons.insert(VariantRejectReason::VerticalGlyphOrientationAuthorityPending);
+    }
     if run.glyph_ids.is_empty() {
         reasons.insert(VariantRejectReason::EmptyGlyphRun);
     }
@@ -626,8 +638,9 @@ fn collect_glyph_run_reject_reasons(
     if run.bidi_level != Some(0) {
         reasons.insert(VariantRejectReason::BidiLevelAuthorityPending);
     }
-    if !matches!(run.writing_mode, WritingMode::HorizontalTb)
-        || !matches!(run.shape_key.writing_mode, WritingMode::HorizontalTb)
+    if (!matches!(run.writing_mode, WritingMode::HorizontalTb)
+        || !matches!(run.shape_key.writing_mode, WritingMode::HorizontalTb))
+        && !bounded_vertical_canvaskit
     {
         reasons.insert(VariantRejectReason::WritingModeAuthorityPending);
     }
@@ -639,6 +652,7 @@ fn collect_glyph_run_reject_reasons(
         GlyphRunOrientation::MixedPerGlyph => {
             reasons.insert(VariantRejectReason::MixedPerGlyphAuthorityPending);
         }
+        GlyphRunOrientation::VerticalUpright if bounded_vertical_canvaskit => {}
         GlyphRunOrientation::VerticalUpright | GlyphRunOrientation::VerticalSideways => {
             reasons.insert(VariantRejectReason::VerticalGlyphOrientationAuthorityPending);
         }
@@ -700,6 +714,50 @@ fn collect_glyph_run_reject_reasons(
     if !font_size.is_finite() || font_size <= 0.0 || font_size > 4096.0 {
         reasons.insert(VariantRejectReason::FontInstanceInvalid);
     }
+}
+
+fn is_bounded_vertical_hwp5_canvaskit_candidate(
+    run: &LayerGlyphRunPaint,
+    backend: VariantSelectionBackend,
+) -> bool {
+    matches!(
+        backend,
+        VariantSelectionBackend::CanvasKit | VariantSelectionBackend::CanvasKitBrowser
+    ) && run.diagnostics.reason.as_deref() == Some(BOUNDED_VERTICAL_HWP5_TABLE_CELL_REASON)
+        && run.variant.variant_id == BOUNDED_VERTICAL_GLYPH_VARIANT_ID
+        && run.variant.variant_kind == TextVariantKind::GlyphRun
+        && run.variant.part_index == 0
+        && run.variant.part_count == 1
+        && !run.variant.is_default_fallback
+        && run.variant.quality == Some(TextVariantQuality::Exact)
+        && matches!(
+            run.variant.requires.as_slice(),
+            [font_resources, glyph_run, vertical_upright]
+                if font_resources == "fontResources"
+                    && glyph_run == "text.glyphRun"
+                    && vertical_upright == "text.glyphRun.verticalUpright"
+        )
+        && matches!(run.writing_mode, WritingMode::VerticalRl)
+        && matches!(run.shape_key.writing_mode, WritingMode::VerticalRl)
+        && matches!(run.orientation, GlyphRunOrientation::VerticalUpright)
+        && run.glyph_transforms.is_none()
+        && matches!(run.direction, TextDirection::Ltr)
+        && matches!(run.shape_key.direction, TextDirection::Ltr)
+        && run.bidi_level == Some(0)
+        && run.shape_key.shaping_engine.0 == "rustybuzz-q4-vertical-v1"
+        && run.shape_key.fallback_policy.0 == "none"
+        && run.shape_key.font_instance.variations.is_empty()
+        && !run.shape_key.font_instance.synthetic_bold
+        && !run.shape_key.font_instance.synthetic_italic
+        && run.diagnostics.quality == TextVariantQuality::Exact
+        && matches!(
+            run.diagnostics.replay_eligibility,
+            GlyphRunReplayEligibility::Portable
+        )
+        && run.diagnostics.strict_visual_eligible
+        && run.diagnostics.cluster_mismatch_count == 0
+        && run.diagnostics.missing_glyph_count == 0
+        && run.diagnostics.used_fallback_font_count == 0
 }
 
 fn collect_glyph_run_font_resource_reject_reasons(

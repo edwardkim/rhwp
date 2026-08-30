@@ -4,10 +4,11 @@
   "issue": 4969,
   "stage": "W10-Q4-D4",
   "date": "2026-08-30",
-  "status": "detailed-plan-checkpoint-approved",
+  "status": "Q4-D4-B-qualified-rust-bounded-selector-result-approved",
   "planApproved": true,
   "checkpointApproved": true,
   "checkpointApprovedDate": "2026-08-31",
+  "planCheckpoint": "c11e84935",
   "d3CCheckpoint": "43d50ad99",
   "mergedUpstreamDevel": "8a150f9a8bb1",
   "mergeCommit": "bcaf86e18",
@@ -38,7 +39,8 @@
     {
       "id": "Q4-D4-B",
       "name": "rust-selector-capability",
-      "status": "blocked-by-separate-stage-approval"
+      "status": "qualified-rust-bounded-selector-result-approved",
+      "resultEvidence": "mydocs/tech/investigations/issue-4969/w10_q4_d4_b_rust_selector.json"
     },
     {
       "id": "Q4-D4-C",
@@ -78,5 +80,5 @@
     "samples/table-004.hwp",
     "samples/issue6029/3200477_icao_procedure.hwpx"
   ],
-  "next": "plan-checkpoint-then-separate-Q4-D4-B-approval"
+  "next": "separate-Q4-D4-B-checkpoint-approval"
 }
