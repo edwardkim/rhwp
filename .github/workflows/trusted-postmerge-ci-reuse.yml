@@ -304,11 +304,15 @@ jobs:
                 || Number(right.id || 0) - Number(left.id || 0)
               ));
               const finalHeadRun = finalHeadRuns[0];
-              if (finalHeadRun?.status === 'completed' && finalHeadRun?.conclusion === 'success') {
-                const artifacts = await github.paginate(
-                  github.rest.actions.listWorkflowRunArtifacts,
-                  { owner, repo, run_id: finalHeadRun.id, per_page: 100 },
-                );
+              async function recordMergeTreeEvidence(workflowRun, artifacts) {
+                if (
+                  workflowRun?.event !== 'pull_request'
+                  || workflowRun?.head_branch !== pr.head.ref
+                  || workflowRun?.head_repository?.full_name !== process.env.GITHUB_REPOSITORY
+                  || !/^[0-9a-f]{40}$/.test(workflowRun?.head_sha || '')
+                ) {
+                  return;
+                }
                 const evidenceArtifacts = artifacts
                   .filter((artifact) => artifact.expired !== true)
                   .map((artifact) => ({
@@ -329,16 +333,23 @@ jobs:
                   if (
                     testedMerge.sha === testedMergeSha
                     && testedParents.length === 2
-                    && testedParents[1] === pr.head.sha
+                    && testedParents[1] === workflowRun.head_sha
                     && testedTreeSha === encodedTreeSha
                   ) {
-                    mergeTreeEvidenceByRunId[String(finalHeadRun.id)] = {
+                    mergeTreeEvidenceByRunId[String(workflowRun.id)] = {
                       sha: testedMergeSha,
                       parents: testedParents,
                       treeSha: testedTreeSha,
                     };
                   }
                 }
+              }
+              if (finalHeadRun?.status === 'completed' && finalHeadRun?.conclusion === 'success') {
+                const artifacts = await github.paginate(
+                  github.rest.actions.listWorkflowRunArtifacts,
+                  { owner, repo, run_id: finalHeadRun.id, per_page: 100 },
+                );
+                await recordMergeTreeEvidence(finalHeadRun, artifacts);
               }
               const requireFullLaneEvidence = ["ci.yml", "codeql.yml"]
                 .includes(process.env.WORKFLOW_FILE);
@@ -369,6 +380,7 @@ jobs:
                     const available = new Set(artifacts.map((artifact) => artifact.name));
                     if ([...expected].every((name) => available.has(name))) {
                       fullLaneRunIds.push(String(workflowRun.id));
+                      await recordMergeTreeEvidence(workflowRun, artifacts);
                     }
                     continue;
                   }
@@ -382,6 +394,11 @@ jobs:
                     && job.conclusion === "success"
                   ))) {
                     fullLaneRunIds.push(String(workflowRun.id));
+                    const artifacts = await github.paginate(
+                      github.rest.actions.listWorkflowRunArtifacts,
+                      { owner, repo, run_id: workflowRun.id, per_page: 100 },
+                    );
+                    await recordMergeTreeEvidence(workflowRun, artifacts);
                   }
                 }
               }
