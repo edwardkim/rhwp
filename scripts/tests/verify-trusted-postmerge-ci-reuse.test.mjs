@@ -10,6 +10,7 @@ const tree = "4".repeat(40);
 const code = "5".repeat(40);
 const oldBase = "6".repeat(40);
 const testedMerge = "7".repeat(40);
+const reviewed = "8".repeat(40);
 
 function candidate(overrides = {}) {
   return {
@@ -159,6 +160,109 @@ test("reuses the preceding full CI through a linear review-only tail", () => {
     sourceRunId: "456",
     pullNumber: "42",
   });
+});
+
+test("reuses a full review-evidence candidate before a later fast-pass tail", () => {
+  const result = evaluateTrustedPostMergeReuse(input({
+    prCommits: [
+      {
+        sha: code,
+        parents: [{ sha: base }],
+        files: [{ filename: "src/renderer/layout.rs", status: "modified" }],
+      },
+      {
+        sha: reviewed,
+        parents: [{ sha: code }],
+        files: [{ filename: "pdf/pr_6279/reference.pdf", status: "added" }],
+      },
+      {
+        sha: head,
+        parents: [{ sha: reviewed }],
+        files: [{ filename: "mydocs/pr/archives/pr_6279_review.md", status: "added" }],
+      },
+    ],
+    workflowRuns: [
+      candidate({ id: 123, head_sha: head }),
+      candidate({ id: 456, head_sha: reviewed }),
+    ],
+    fullLaneRunIds: ["456"],
+    mergeTreeEvidenceByRunId: {
+      456: { sha: testedMerge, parents: [base, reviewed], treeSha: tree },
+    },
+  }));
+  assert.deepEqual(result, {
+    reuse: true,
+    reason: "review-tail-green-pr-workflow-reused",
+    sourceRunId: "456",
+    pullNumber: "42",
+  });
+});
+
+test("reuses a full review-evidence candidate through a stale-base tail", () => {
+  const result = evaluateTrustedPostMergeReuse(input({
+    sourceCommit: { sha: head, commit: { tree: { sha: "9".repeat(40) } } },
+    mergeBaseSha: oldBase,
+    prCommits: [
+      {
+        sha: code,
+        parents: [{ sha: base }],
+        files: [{ filename: "src/renderer/layout.rs", status: "modified" }],
+      },
+      {
+        sha: reviewed,
+        parents: [{ sha: code }],
+        files: [{ filename: "pdf/pr_6279/reference.pdf", status: "added" }],
+      },
+      {
+        sha: head,
+        parents: [{ sha: reviewed }],
+        files: [{ filename: "mydocs/pr/archives/pr_6279_review.md", status: "added" }],
+      },
+    ],
+    workflowRuns: [
+      candidate({ id: 123, head_sha: head }),
+      candidate({ id: 456, head_sha: reviewed }),
+    ],
+    fullLaneRunIds: ["456"],
+    mergeTreeEvidenceByRunId: {
+      123: { sha: testedMerge, parents: [base, head], treeSha: tree },
+      456: { sha: "a".repeat(40), parents: [base, reviewed], treeSha: tree },
+    },
+  }));
+  assert.deepEqual(result, {
+    reuse: true,
+    reason: "review-tail-green-pr-workflow-reused",
+    sourceRunId: "456",
+    pullNumber: "42",
+  });
+});
+
+test("fails closed when an intermediate full review candidate lacks merge-tree evidence", () => {
+  const result = evaluateTrustedPostMergeReuse(input({
+    prCommits: [
+      {
+        sha: code,
+        parents: [{ sha: base }],
+        files: [{ filename: "src/renderer/layout.rs", status: "modified" }],
+      },
+      {
+        sha: reviewed,
+        parents: [{ sha: code }],
+        files: [{ filename: "pdf/pr_6279/reference.pdf", status: "added" }],
+      },
+      {
+        sha: head,
+        parents: [{ sha: reviewed }],
+        files: [{ filename: "mydocs/pr/archives/pr_6279_review.md", status: "added" }],
+      },
+    ],
+    workflowRuns: [candidate({ id: 456, head_sha: reviewed })],
+    fullLaneRunIds: ["456"],
+  }));
+  assert.equal(
+    result.reason,
+    "review-tail-candidate-merge-tree-evidence-unavailable",
+  );
 });
 
 test("reuses an exact direct review-only PR fast pass after merge", () => {

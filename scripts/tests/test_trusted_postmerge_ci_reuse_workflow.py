@@ -62,7 +62,8 @@ class TrustedPostmergeReuseWorkflowTests(unittest.TestCase):
         self.assertIn("trusted-postmerge-merge-tree-v1-", workflow)
         self.assertIn("mergeTreeEvidenceByRunId", workflow)
         self.assertIn("parents[0] !== pullRequest.base.sha", workflow)
-        self.assertIn("parents[1] !== pullRequest.head.sha", workflow)
+        self.assertIn("recordMergeTreeEvidence", workflow)
+        self.assertIn("testedParents[1] === workflowRun.head_sha", workflow)
         self.assertIn("testedTreeSha === encodedTreeSha", workflow)
 
     def test_all_duplicate_postmerge_workflows_call_the_shared_verifier(self) -> None:

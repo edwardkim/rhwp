@@ -81,6 +81,7 @@ export function selectTrustedPostMergeCandidate(pullRequest, prCommits) {
 
   let expectedSha = pullRequest.head.sha;
   let hasReviewOnlyTail = false;
+  const fullLaneCandidates = [];
   for (let index = prCommits.length - 1; index >= 0; index -= 1) {
     const commit = prCommits[index];
     if (commit?.sha !== expectedSha) {
@@ -91,8 +92,16 @@ export function selectTrustedPostMergeCandidate(pullRequest, prCommits) {
       return null;
     }
     if (classification.kind === "code") {
-      return { sha: commit.sha, hasReviewOnlyTail };
+      return {
+        sha: commit.sha,
+        hasReviewOnlyTail,
+        fullLaneCandidates: [
+          ...fullLaneCandidates,
+          { sha: commit.sha, hasReviewOnlyTail },
+        ],
+      };
     }
+    fullLaneCandidates.push({ sha: commit.sha, hasReviewOnlyTail });
     hasReviewOnlyTail = true;
     expectedSha = classification.parentSha;
   }
@@ -188,6 +197,21 @@ function hasExactMergeTreeEvidence(input, run, pullRequest, parents, treeSha) {
     && evidenceParents.every((sha, index) => sha === parents[index])
     && evidenceParents.includes(pullRequest.head.sha)
     && evidence.treeSha === treeSha
+  );
+}
+
+function hasIntermediateCandidateMergeTreeEvidence(input, run) {
+  const runId = String(run?.id || "");
+  const evidence = input?.mergeTreeEvidenceByRunId?.[runId];
+  const evidenceParents = Array.isArray(evidence?.parents)
+    ? evidence.parents.filter(validSha)
+    : [];
+  return (
+    runId !== ""
+    && validSha(evidence?.sha)
+    && validSha(evidence?.treeSha)
+    && evidenceParents.length === 2
+    && evidenceParents[1] === run?.head_sha
   );
 }
 
@@ -312,37 +336,60 @@ export function evaluateTrustedPostMergeReuse(input) {
     };
   }
 
-  if (!headContainsBase) {
-    if (!hasFullLaneEvidence(input, finalHeadCandidate)) {
-      return denied("candidate-full-lane-evidence-unavailable");
+  let foundCandidateRun = false;
+  let foundFullLaneCandidate = false;
+  let missingIntermediateCandidateEvidence = false;
+  let unsuccessfulCandidate = false;
+  for (const candidateSourceEntry of candidateSource.fullLaneCandidates) {
+    const candidate = latestCandidateRun(
+      input.workflowRuns,
+      pullRequest,
+      input.repository,
+      candidateSourceEntry.sha,
+    );
+    if (!candidate) {
+      continue;
     }
-    return denied("latest-pr-workflow-candidate-not-successful");
+    foundCandidateRun = true;
+    if (!hasFullLaneEvidence(input, candidate)) {
+      continue;
+    }
+    foundFullLaneCandidate = true;
+    if (candidate.status !== "completed" || candidate.conclusion !== "success") {
+      unsuccessfulCandidate = true;
+      continue;
+    }
+    if (
+      candidateSourceEntry.sha !== candidateSource.sha
+      && !hasIntermediateCandidateMergeTreeEvidence(input, candidate)
+    ) {
+      missingIntermediateCandidateEvidence = true;
+      continue;
+    }
+    if (!Number.isInteger(candidate.id) && !/^[1-9][0-9]*$/.test(String(candidate.id || ""))) {
+      unsuccessfulCandidate = true;
+      continue;
+    }
+    return {
+      reuse: true,
+      reason: candidateSourceEntry.hasReviewOnlyTail
+        ? "review-tail-green-pr-workflow-reused"
+        : "exact-green-pr-workflow-reused",
+      sourceRunId: String(candidate.id),
+      pullNumber: String(pullRequest.number),
+    };
   }
-
-  const candidate = latestCandidateRun(
-    input.workflowRuns,
-    pullRequest,
-    input.repository,
-    candidateSource.sha,
-  );
-  if (!candidate) {
+  if (!foundCandidateRun) {
     return denied("no-current-pr-workflow-candidate");
   }
-  if (!hasFullLaneEvidence(input, candidate)) {
+  if (!foundFullLaneCandidate) {
     return denied("candidate-full-lane-evidence-unavailable");
   }
-  if (candidate.status !== "completed" || candidate.conclusion !== "success") {
+  if (missingIntermediateCandidateEvidence) {
+    return denied("review-tail-candidate-merge-tree-evidence-unavailable");
+  }
+  if (unsuccessfulCandidate) {
     return denied("latest-pr-workflow-candidate-not-successful");
   }
-  if (!Number.isInteger(candidate.id) && !/^[1-9][0-9]*$/.test(String(candidate.id || ""))) {
-    return denied("candidate-run-id-unavailable");
-  }
-  return {
-    reuse: true,
-    reason: candidateSource.hasReviewOnlyTail
-      ? "review-tail-green-pr-workflow-reused"
-      : "exact-green-pr-workflow-reused",
-    sourceRunId: String(candidate.id),
-    pullNumber: String(pullRequest.number),
-  };
+  return denied("candidate-run-id-unavailable");
 }
