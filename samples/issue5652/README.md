@@ -2,7 +2,8 @@
 
 **이 폴더는 일반 fixture 가 아니다.** [#5652](https://github.com/edwardkim/rhwp/issues/5652)
 B2-엔진 본구현에서 **엔진(`set_chart_data_by_index_native`, `structure:true`)이 만들어 한컴에서
-판정한 32개 산출**이다. 현행 기준 PDF 는 [`pdf/issue5652/`](../../pdf/issue5652/)의 `-2020.pdf`이며,
+판정한 32개 산출**이다. 현행 기준 PDF 는 원본의 저장 제품 메타데이터로 engine을 결정한
+[`pdf/issue5652/`](../../pdf/issue5652/)의 `-2020.pdf` 또는 `-2024.pdf`이며,
 판정 원장은 이 폴더의 [`MANIFEST.json`](MANIFEST.json), 결론은
 [`mydocs/report/task_m100_5652_report.md`](../../mydocs/report/task_m100_5652_report.md) 다.
 [#5447](https://github.com/edwardkim/rhwp/issues/5447) 스파이크 자산([`samples/issue5447/`](../issue5447/))의
@@ -42,6 +43,6 @@ python tools/hancom_chart_judgment_verify.py --manifest samples/issue5652/MANIFE
 ```
 
 CI 트립와이어 `b2_engine_judgment_assets_match_the_manifest`(`tests/issue_4100_chart_data_edit.rs`)가
-원장 ↔ B2 원본·현행 `-2020.pdf` 32건의 SHA-256 과 등재 누락을 상시로 본다. 이 B2 판정 자산을
-더하거나 빼면 그 테스트와 원장을 한 커밋에서 같이 옮긴다. 같은 `pdf/issue5652/`의 `-2022.pdf`는
-이전 판정 PDF로 보관하되 현행 B2 원장 기준에는 속하지 않는다.
+원장 ↔ B2 원본·원본 메타데이터로 확인한 engine의 현행 PDF 32건 SHA-256 과 등재 누락을 상시로
+본다. 이 B2 판정 자산을 더하거나 빼면 그 테스트와 원장을 한 커밋에서 같이 옮긴다. 같은
+`pdf/issue5652/`의 `-2022.pdf`는 이전 판정 PDF로 보관하되 현행 B2 원장 기준에는 속하지 않는다.
