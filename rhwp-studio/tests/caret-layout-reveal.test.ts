@@ -26,3 +26,10 @@ test('경계 명령 뒤의 일반 명령은 아직 도착하지 않은 layout re
   assert.equal(reveal.consume(), true);
   assert.equal(reveal.consume(), false);
 });
+
+test('문서 전환 경계에서는 아직 도착하지 않은 layout reveal 예약을 폐기한다', () => {
+  const reveal = new CaretLayoutReveal();
+  reveal.requestFor('pageBreak');
+  reveal.clear();
+  assert.equal(reveal.consume(), false);
+});

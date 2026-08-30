@@ -22,6 +22,10 @@ export class CaretLayoutReveal {
     }
   }
 
+  clear(): void {
+    this.pending = false;
+  }
+
   consume(): boolean {
     const pending = this.pending;
     this.pending = false;
