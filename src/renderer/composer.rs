@@ -836,7 +836,7 @@ fn compose_lines(para: &Paragraph) -> Vec<ComposedLine> {
         return lines;
     }
 
-    let mut lines = Vec::new();
+    let mut lines: Vec<ComposedLine> = Vec::new();
     let line_seg_count = effective_line_seg_count(para);
 
     for line_idx in 0..line_seg_count {
@@ -881,15 +881,28 @@ fn compose_lines(para: &Paragraph) -> Vec<ComposedLine> {
         let has_tac = para.controls.iter().any(
             |c| matches!(c, crate::model::control::Control::Table(t) if t.common.treat_as_char),
         );
+        // [#6300] `\n` 뒤 인라인 개체(표·도형·그림)도 같은 줄 경계 보존이 필요하다.
+        let has_trailing_inline_object = para.controls.iter().any(|c| match c {
+            crate::model::control::Control::Table(t) => t.common.treat_as_char,
+            crate::model::control::Control::Shape(s) => s.common().treat_as_char,
+            crate::model::control::Control::Picture(p) => p.common.treat_as_char,
+            crate::model::control::Control::Form(f) => f.common.treat_as_char,
+            _ => false,
+        });
 
-        // 강제 줄넘김(\n) + TAC 표 문단 처리 (Task #19/Task #20)
+        // 강제 줄넘김(\n) + 인라인 개체 문단 처리 (Task #19/Task #20, #6300)
         let newline_pos = line_text.find('\n');
-        if let (true, Some(nl_pos)) = (has_tac, newline_pos) {
+        if let (true, Some(nl_pos)) = (has_trailing_inline_object, newline_pos) {
             let pre_text: String = line_text.chars().take(nl_pos).collect();
             let pre_end = text_start + nl_pos;
+            // [#6300] 저장 LINE_SEG 가 `\n` 앞에 새 줄을 연 경우(text_start 가 이전
+            // 줄과 다름) 그 경계를 이전 줄에 합치지 않는다. 합치면 119 같은
+            // text_start 가 사라지고 다음 줄에 두 줄이 몰려 우단을 넘는다.
+            let keep_stored_boundary =
+                matches!(lines.last(), Some(prev) if prev.char_start != text_start);
 
-            if !pre_text.is_empty() && !lines.is_empty() {
-                // \n 앞 텍스트를 이전 ComposedLine에 합침 (한컴 방식: \n 전 전체가 한 줄)
+            if !pre_text.is_empty() && !lines.is_empty() && !keep_stored_boundary {
+                // 같은 저장 줄 안에서 `\n` 앞 텍스트만 이어 붙인다.
                 let prev: &mut ComposedLine = lines.last_mut().unwrap();
                 let mut extra_runs = split_by_char_shapes(
                     &pre_text,
