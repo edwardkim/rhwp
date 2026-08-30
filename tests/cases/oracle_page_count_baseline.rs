@@ -57,8 +57,8 @@ const DEDICATED_PAGE_COUNT_FIXTURES: &[(&str, &str)] = &[(
 
 #[derive(Clone)]
 struct Row {
-    /// 한글이 뽑은 쪽수. 같은 문서를 여러 한글 버전·폰트 조건으로 뽑은 정답지가 있으면
-    /// 여럿이다 — 그중 하나와 맞으면 일치로 본다(조건 차이를 결함으로 오인하지 않는다).
+    /// 한글이 뽑은 쪽수. 원본 형식·한컴 엔진이 확인된 canonical PDF만 모은다.
+    /// 미표기·kopub/no-ttf 쪽수는 섞지 않는다 (#6374).
     oracle: Vec<u32>,
     /// 이 기준선을 찍을 때의 rhwp 쪽수.
     baseline: u32,
