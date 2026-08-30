@@ -6,8 +6,9 @@ use std::path::Path;
 use rhwp::model::document::Document;
 use rhwp::provenance;
 use rhwp::schema_registry::ENVELOPE_SCHEMA_VERSION;
+use rhwp::wasm_api::HwpDocument;
 
-use crate::{classify_hwp_error, cli_password, EXIT_OK, EXIT_RUNTIME, EXIT_USAGE};
+use crate::{load_document, EXIT_OK, EXIT_RUNTIME, EXIT_USAGE};
 
 fn control_tag(c: &rhwp::model::control::Control) -> &'static str {
     use rhwp::model::control::Control;
@@ -807,7 +808,7 @@ impl IrDiffArgs {
     }
 }
 
-fn load_ir_diff_document(path: &str, password: Option<&str>) -> Result<Document, i32> {
+fn load_ir_diff_document(path: &str) -> Result<HwpDocument, i32> {
     let data = match fs::read(path) {
         Ok(data) => data,
         Err(e) => {
@@ -815,13 +816,9 @@ fn load_ir_diff_document(path: &str, password: Option<&str>) -> Result<Document,
             return Err(EXIT_RUNTIME);
         }
     };
-    let parsed = match password {
-        Some(password) => rhwp::parser::parse_document_with_password(&data, password.as_bytes()),
-        None => rhwp::parser::parse_document(&data),
-    };
-    parsed.map_err(|e| {
+    load_document(&data).map_err(|e| {
         eprintln!("오류: {} 파싱 실패", path);
-        classify_hwp_error(&e.to_string()).report()
+        e.report()
     })
 }
 
@@ -969,7 +966,13 @@ fn compare_ir_tab_defs(doc_a: &Document, doc_b: &Document, em: &mut IrDiffEmitte
     total_diffs
 }
 
-fn finish_ir_diff(args: &IrDiffArgs, em: IrDiffEmitter, total_diffs: u32) -> i32 {
+fn finish_ir_diff(
+    args: &IrDiffArgs,
+    em: IrDiffEmitter,
+    total_diffs: u32,
+    page_count_a: u32,
+    page_count_b: u32,
+) -> i32 {
     if args.summary_mode && !args.json_mode {
         println!("=== 카테고리별 차이 요약 ===");
         let mut entries: Vec<(String, u32)> = em.summary_buckets.clone().into_iter().collect();
@@ -986,6 +989,8 @@ fn finish_ir_diff(args: &IrDiffArgs, em: IrDiffEmitter, total_diffs: u32) -> i32
             "identical": total_diffs == 0,
             "diffCount": total_diffs,
             "categories": em.summary_buckets,
+            "pageCountA": page_count_a,
+            "pageCountB": page_count_b,
         });
         println!("{}", provenance::marked(envelope, "ir-diff"));
         return if total_diffs == 0 { EXIT_OK } else { 3 };
@@ -999,15 +1004,18 @@ pub(crate) fn ir_diff(args: &[String]) -> i32 {
         Ok(args) => args,
         Err(exit) => return exit,
     };
-    let password = cli_password();
-    let doc_a = match load_ir_diff_document(&args.file_a, password.as_deref()) {
+    let doc_a = match load_ir_diff_document(&args.file_a) {
         Ok(doc) => doc,
         Err(exit) => return exit,
     };
-    let doc_b = match load_ir_diff_document(&args.file_b, password.as_deref()) {
+    let doc_b = match load_ir_diff_document(&args.file_b) {
         Ok(doc) => doc,
         Err(exit) => return exit,
     };
+    let page_count_a = doc_a.page_count();
+    let page_count_b = doc_b.page_count();
+    let ir_a = doc_a.document();
+    let ir_b = doc_b.document();
 
     let name_a = Path::new(&args.file_a)
         .file_name()
@@ -1027,16 +1035,20 @@ pub(crate) fn ir_diff(args: &[String]) -> i32 {
         truncated: false,
         summary_buckets: std::collections::BTreeMap::new(),
     };
-    let mut total_diffs = compare_ir_sections(
-        &doc_a,
-        &doc_b,
-        args.section_filter,
-        args.para_filter,
-        &mut em,
-    );
-    total_diffs += compare_ir_para_shapes(&doc_a, &doc_b, &mut em);
-    total_diffs += compare_ir_tab_defs(&doc_a, &doc_b, &mut em);
-    finish_ir_diff(&args, em, total_diffs)
+    let mut total_diffs =
+        compare_ir_sections(ir_a, ir_b, args.section_filter, args.para_filter, &mut em);
+    total_diffs += compare_ir_para_shapes(ir_a, ir_b, &mut em);
+    total_diffs += compare_ir_tab_defs(ir_a, ir_b, &mut em);
+    // [#4658] IR 비교는 출처 프로파일(HWP5-origin 마커 등)을 보지 않는다.
+    // info.pageCount 가 갈리면 identical:true 는 조판 동등이라는 거짓 신호다.
+    if page_count_a != page_count_b {
+        em.diff(format!(
+            "pageCount: A={} vs B={}",
+            page_count_a, page_count_b
+        ));
+        total_diffs += 1;
+    }
+    finish_ir_diff(&args, em, total_diffs, page_count_a, page_count_b)
 }
 
 #[cfg(test)]
