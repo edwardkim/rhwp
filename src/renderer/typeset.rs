@@ -3430,6 +3430,34 @@ fn stored_vpos_top_collision(prev: &Paragraph, curr: &Paragraph) -> bool {
         && prev_last.segment_width == curr_first.segment_width
 }
 
+/// [#6342] 쪽을 거의 채운 TAC 자리차지 표 뒤의 짧은 붙임 두 줄은 잔여 칸에
+/// 한 줄만 끼워 넣지 않고 다음 쪽으로 함께 넘긴다.
+///
+/// `36385445` 결재문서: 표 899.5px / 본문 952.5px 뒤에 붙임 28.8+28.8px 가
+/// 온다. 한글은 둘 다 2쪽에 둔다. 첫 줄만 잔여 53px 에 넣으면 used=964.3 으로
+/// 넘치고 한글 2쪽이 rhwp 1쪽이 된다. 표 높이가 본문의 90% 이상이고, 지금
+/// 문단은 혼자 들어가지만 다음 짧은 문단까지 더하면 넘칠 때만 연다.
+fn original_hwpx_tac_filled_page_keeps_short_trail(
+    original_hwpx: bool,
+    table: &crate::model::table::Table,
+    table_height_px: f64,
+    body_height_px: f64,
+    remaining_px: f64,
+    current_h: f64,
+    next_h: f64,
+) -> bool {
+    use crate::model::shape::TextWrap;
+    original_hwpx
+        && table.common.treat_as_char
+        && matches!(table.common.text_wrap, TextWrap::TopAndBottom)
+        && body_height_px > 0.0
+        && table_height_px >= body_height_px * 0.90
+        && current_h > 0.0
+        && next_h > 0.0
+        && remaining_px + 0.5 >= current_h
+        && remaining_px + 0.5 < current_h + next_h
+}
+
 /// Returns only the measured-row slack that remains below a saved native
 /// RowBreak first-fragment flow frame. Both bounds are absolute page flow
 /// coordinates; host-before spacing and paint-only vertical insets are not
@@ -4147,6 +4175,56 @@ mod saved_tac_table_flow_tail_contract {
             400.0,
             700.0,
             350.0,
+        ));
+    }
+}
+
+#[cfg(test)]
+mod original_hwpx_tac_filled_page_keeps_short_trail_contract {
+    use super::original_hwpx_tac_filled_page_keeps_short_trail;
+    use crate::model::shape::{CommonObjAttr, TextWrap};
+    use crate::model::table::Table;
+
+    fn tac_topbottom() -> Table {
+        Table {
+            common: CommonObjAttr {
+                treat_as_char: true,
+                text_wrap: TextWrap::TopAndBottom,
+                height: 67_460,
+                ..Default::default()
+            },
+            ..Default::default()
+        }
+    }
+
+    #[test]
+    fn keeps_two_short_lines_together_after_page_filling_tac_table() {
+        assert!(original_hwpx_tac_filled_page_keeps_short_trail(
+            true,
+            &tac_topbottom(),
+            899.5,
+            952.5,
+            53.0,
+            28.8,
+            28.8,
+        ));
+        assert!(!original_hwpx_tac_filled_page_keeps_short_trail(
+            false,
+            &tac_topbottom(),
+            899.5,
+            952.5,
+            53.0,
+            28.8,
+            28.8,
+        ));
+        assert!(!original_hwpx_tac_filled_page_keeps_short_trail(
+            true,
+            &tac_topbottom(),
+            400.0,
+            952.5,
+            53.0,
+            28.8,
+            28.8,
         ));
     }
 }
@@ -8146,6 +8224,42 @@ impl TypesetEngine {
                     styles,
                     formatted.spacing_before,
                 );
+                if let Some(crate::model::control::Control::Table(prev_table)) =
+                    st.current_items.last().and_then(|item| match item {
+                        PageItem::Table {
+                            para_index,
+                            control_index,
+                        } => paragraphs
+                            .get(*para_index)
+                            .and_then(|p| p.controls.get(*control_index)),
+                        _ => None,
+                    })
+                {
+                    let next_h = paragraphs.get(para_idx + 1).map(|next| {
+                        next.line_segs
+                            .iter()
+                            .map(|s| {
+                                hwpunit_to_px(
+                                    s.line_height.saturating_add(s.line_spacing) as i32,
+                                    self.dpi,
+                                )
+                            })
+                            .sum::<f64>()
+                    });
+                    let remaining = st.available_height() - st.current_height;
+                    let table_h = hwpunit_to_px(prev_table.common.height as i32, self.dpi);
+                    if original_hwpx_tac_filled_page_keeps_short_trail(
+                        !st.profile.hwp5_stored_pagination_layout(),
+                        prev_table,
+                        table_h,
+                        st.layout.body_area.height,
+                        remaining,
+                        formatted.height_for_fit.max(formatted.total_height),
+                        next_h.unwrap_or(0.0),
+                    ) {
+                        st.advance_column_or_new_page();
+                    }
+                }
                 self.typeset_paragraph(
                     &mut st,
                     para_idx,
