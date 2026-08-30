@@ -312,7 +312,7 @@ pub fn jpeg_is_four_component(data: &[u8]) -> bool {
         }
         let len = u16::from_be_bytes([data[i + 2], data[i + 3]]) as usize;
         // SOF0/1/2 = baseline / extended / progressive. 성분 수는 세그먼트 8번째 바이트.
-        if matches!(marker, 0xC0 | 0xC1 | 0xC2) {
+        if matches!(marker, 0xC0..=0xC2) {
             return data.get(i + 9).copied() == Some(4);
         }
         if marker == 0xDA || len < 2 {
