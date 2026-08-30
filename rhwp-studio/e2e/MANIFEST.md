@@ -86,6 +86,7 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `navigation-shortcuts.test.mjs` | 상시 | active | 플랫폼별 navigation shortcut | — | 수동 |  |
 | `page-border-toggle.test.mjs` | 상시 | active | 쪽 테두리/배경 미리보기 버튼 토글 | — | 수동 |  |
 | `page-break.test.mjs` | 상시 | active | biz_plan.hwp 강제 쪽 나누기 / "5. 사업추진조직" 문단 앞에 쪽 나누기 삽입 후 페이지 재배치 확인 | biz_plan.hwp | 수동 |  |
+| `page-break-caret-reveal.test.mjs` | 상시 | active | Cmd+Enter 쪽 나누기 뒤 새 쪽 캐럿 DOM 재배치와 편집 영역 viewport 자동 스크롤 | — | npm e2e:page-break-caret | dev server 필요 — run-with-vite.mjs 경유 |
 | `page-key-scroll.test.mjs` | 상시 | active | PgUp/PgDn 쪽 단위 스크롤 — 건너뜀 없음·쪽 머리 착지·캐럿 추종·포커스 밖 동작 | biz_plan.hwp | npm e2e:page-key-scroll |  |
 | `page-setup-orientation-icon.test.mjs` | 상시 | active | 편집 용지 대화창의 용지 방향 아이콘 식별성 | — | 수동 |  |
 | `pdf-render-diff-report.mjs` | 상시 | active | Report-only visual diff between browser Canvas output and SVG-deri | — | npm+CI | legacy-name |
