@@ -23356,7 +23356,23 @@ impl TypesetEngine {
             && st.current_height + declared_object_total <= available
             && st.current_height + ft.effective_height
                 <= available + NEAR_MEASURED_ROWBREAK_FIT_PX;
+        // [#6448] HWPX `pageBreak="CELL"` 은 모델 RowBreak 다. 글자처럼 취급 표는
+        // 선언-fit 에서 treatAsChar 로 빠져 leftover 에 선언 높이가 들어가도
+        // 측정 팽창으로 다음 쪽에 통째 이월된다(156760012: 잔여 205.7pt, 표
+        // 115.4pt → 11쪽 vs 한글 10쪽). leftover 에 선언이 들어가면 한글처럼
+        // 통째 둔다. 선언이 leftover 를 넘는 큰 표(#6409 신고서)는 이 문이 닫힌다.
+        let hwpx_tac_cell_leftover_declared_fits = st.profile.hwpx_stored_layout()
+            && table.common.treat_as_char
+            && matches!(
+                table.page_break,
+                crate::model::table::TablePageBreak::RowBreak
+            )
+            && ft.table_footnotes.is_empty()
+            && declared_object_total > host_spacing_total
+            && !st.current_items.is_empty()
+            && st.current_height + declared_object_total <= available;
         let declared_table_whole_fits = near_measured_rowbreak_fits
+            || hwpx_tac_cell_leftover_declared_fits
             || (!uses_painted_row_footprint_for_whole_fit
                 && declared_fit_scope_ok
                 // This HWPX compatibility route uses the measured table height,
