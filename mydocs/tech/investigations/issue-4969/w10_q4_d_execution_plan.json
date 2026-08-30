@@ -4,11 +4,11 @@
   "issue": 4969,
   "stage": "W10-Q4-D",
   "date": "2026-08-30",
-  "status": "Q4-D0-qualified-checkpoint-awaiting-Q4-D1-start-approval",
+  "status": "Q4-D1-qualified-dormant-certified-approved-checkpoint",
   "baseCheckpoint": "f449960c7",
-  "upstreamDevel": "a71ebf2141ae",
-  "ahead": 38,
-  "behind": 0,
+  "upstreamDevel": "7592e9c99dab",
+  "aheadBeforeCheckpoint": 40,
+  "behindBeforeCheckpoint": 1,
   "productMutationBeforeApproval": false,
   "publicApiExpansion": false,
   "mode": "boundedVerticalHwp5TableCellV1",
@@ -58,7 +58,13 @@
       "resultEvidence": "mydocs/tech/investigations/issue-4969/w10_q4_d0_red_baseline.json",
       "productOutputChange": false
     },
-    {"id": "Q4-D1", "name": "exact-source-bound-dormant-owner", "productOutputChange": false},
+    {
+      "id": "Q4-D1",
+      "name": "exact-source-bound-dormant-owner",
+      "status": "qualified-dormant-certified-approved",
+      "resultEvidence": "mydocs/tech/investigations/issue-4969/w10_q4_d1_exact_source_owner.json",
+      "productOutputChange": false
+    },
     {"id": "Q4-D2", "name": "one-table-cell-atomic-layout-commit", "productOutputChange": true},
     {"id": "Q4-D3", "name": "atomic-vertical-glyph-run-publication", "productOutputChange": true},
     {"id": "Q4-D4", "name": "canvaskit-feature-detection-and-pixel-proof", "productOutputChange": true},
@@ -87,5 +93,5 @@
     "githubComment": true,
     "pullRequest": true
   },
-  "next": "maintainer-Q4-D1-start-approval-after-Q4-D0-checkpoint"
+  "next": "synchronize-upstream-and-revalidate-before-Q4-D2-start-approval"
 }

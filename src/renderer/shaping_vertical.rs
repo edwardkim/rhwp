@@ -1,13 +1,18 @@
 //! W10-Q4-C dormant vertical shaping geometry transaction.
 //!
 //! This module joins the exact Q4-A shaping output and Q4-B typed source intent,
-//! but it is intentionally not registered in `renderer::mod` yet. The executable
-//! contract includes this exact source directly; Q4-D owns the first product
-//! module registration and bounded caller.
+//! Q4-D1 registers this module and adds an exact-source-bound dormant context.
+//! Product layout, sidecar, paint, and backend callers remain closed until their
+//! separately approved Q4-D2~D4 slices.
 
+use super::kerning::{
+    resolve_exact_font_source, ExactFontSlot, ExactFontSourceHandle, ExactFontSourceRegistry,
+    ExactFontSourceResolutionReason,
+};
 use super::shaping::{
     terminal_shaping_attempt, AppliedShapingRun, ShapingAttemptTrace, ShapingDirection,
-    ShapingRejectReason, ShapingRequest, ShapingWritingMode, TerminalShapingDisposition,
+    ShapingExactSource, ShapingFeature, ShapingRejectReason, ShapingRequest, ShapingVariation,
+    ShapingWritingMode, TerminalShapingDisposition,
 };
 use std::ops::Range;
 use std::sync::Arc;
@@ -312,6 +317,278 @@ fn reject(
     DormantVerticalShapingRejection {
         reason,
         fallback_geometry,
+    }
+}
+
+/// Immutable exact-source snapshot for the first bounded vertical owner.
+///
+/// D1 deliberately exposes no layout or publication method. A caller can only
+/// prepare a certified dormant transaction whose product flag remains false.
+pub(crate) struct VerticalShapingContext {
+    registry: ExactFontSourceRegistry,
+}
+
+impl std::fmt::Debug for VerticalShapingContext {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        formatter
+            .debug_struct("VerticalShapingContext")
+            .field("registry_generation", &self.registry.generation())
+            .field("slot_count", &self.registry.slot_count())
+            .field("source_count", &self.registry.source_count())
+            .field("total_source_bytes", &self.registry.total_source_bytes())
+            .finish()
+    }
+}
+
+impl VerticalShapingContext {
+    pub(crate) fn new(registry: ExactFontSourceRegistry) -> Self {
+        Self { registry }
+    }
+
+    pub(crate) fn registry_generation(&self) -> u64 {
+        self.registry.generation()
+    }
+
+    pub(crate) fn slot_count(&self) -> usize {
+        self.registry.slot_count()
+    }
+
+    pub(crate) fn source_count(&self) -> usize {
+        self.registry.source_count()
+    }
+
+    pub(crate) fn prepare_dormant(
+        &self,
+        request: VerticalShapingContextRequest<'_>,
+    ) -> Result<CertifiedDormantVerticalShapingTransaction, VerticalShapingContextRejection> {
+        let fallback = request.fallback_geometry;
+        if !fallback.is_well_formed() {
+            return Err(context_reject(
+                VerticalShapingContextRejectReason::Dormant(
+                    DormantVerticalShapingRejectReason::LegacyGeometryMalformed,
+                ),
+                fallback,
+            ));
+        }
+        let handle = self
+            .registry
+            .handle_for_slot(request.slot)
+            .cloned()
+            .ok_or_else(|| {
+                context_reject(
+                    VerticalShapingContextRejectReason::SourceUnavailable,
+                    fallback,
+                )
+            })?;
+        let source = resolve_exact_font_source(&self.registry, &handle)
+            .map_err(|reason| context_source_rejection(reason, fallback))?;
+        let source_bytes = self
+            .registry
+            .source_arc_for_handle(&handle)
+            .ok_or_else(|| {
+                context_reject(
+                    VerticalShapingContextRejectReason::SourceUnavailable,
+                    fallback,
+                )
+            })?;
+        let shaping = ShapingRequest {
+            source: Some(ShapingExactSource {
+                bytes: source.bytes,
+                face_index: source.face_index,
+                portable: true,
+            }),
+            text: request.text,
+            direction: ShapingDirection::TopToBottom,
+            writing_mode: request.intent.writing_mode(),
+            script: request.script,
+            language: request.language,
+            features: request.features,
+            variations: request.variations,
+        };
+        let transaction =
+            prepare_dormant_vertical_shaping_transaction(DormantVerticalShapingRequest {
+                attempt_id: request.attempt_id,
+                shaping,
+                intent: request.intent,
+                font_size_px: request.font_size_px,
+                origin: request.origin,
+                column_pitch_px: request.column_pitch_px,
+                fallback_geometry: fallback,
+            })
+            .map_err(|rejection| {
+                context_reject(
+                    VerticalShapingContextRejectReason::Dormant(rejection.reason()),
+                    rejection.fallback_geometry(),
+                )
+            })?;
+        let face = Face::parse(source_bytes.as_ref(), handle.face_index).map_err(|_| {
+            context_reject(
+                VerticalShapingContextRejectReason::CertificateFaceInvalid,
+                fallback,
+            )
+        })?;
+        let units_per_em = face.units_per_em();
+        if units_per_em == 0 {
+            return Err(context_reject(
+                VerticalShapingContextRejectReason::Dormant(
+                    DormantVerticalShapingRejectReason::FontUnitsPerEmInvalid,
+                ),
+                fallback,
+            ));
+        }
+        Ok(CertifiedDormantVerticalShapingTransaction {
+            transaction,
+            certificate: Arc::new(VerticalShapingSourceCertificate {
+                registry_generation: self.registry.generation(),
+                slot: request.slot,
+                handle,
+                source_bytes,
+                units_per_em,
+            }),
+        })
+    }
+}
+
+pub(crate) struct VerticalShapingContextRequest<'a> {
+    pub attempt_id: u32,
+    pub slot: ExactFontSlot,
+    pub text: &'a str,
+    pub intent: TypedVerticalIntent,
+    pub font_size_px: f64,
+    pub origin: VerticalPoint,
+    pub column_pitch_px: f64,
+    pub fallback_geometry: VerticalLegacyGeometry,
+    pub script: Option<&'a str>,
+    pub language: Option<&'a str>,
+    pub features: &'a [ShapingFeature],
+    pub variations: &'a [ShapingVariation],
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub(crate) enum VerticalShapingContextRejectReason {
+    SourceUnavailable,
+    SourceIdentityMismatch,
+    CertificateFaceInvalid,
+    Dormant(DormantVerticalShapingRejectReason),
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub(crate) struct VerticalShapingContextRejection {
+    reason: VerticalShapingContextRejectReason,
+    fallback_geometry: VerticalLegacyGeometry,
+}
+
+impl VerticalShapingContextRejection {
+    pub(crate) fn reason(&self) -> VerticalShapingContextRejectReason {
+        self.reason
+    }
+
+    pub(crate) fn fallback_geometry(&self) -> VerticalLegacyGeometry {
+        self.fallback_geometry
+    }
+
+    pub(crate) fn product_published(&self) -> bool {
+        false
+    }
+}
+
+fn context_reject(
+    reason: VerticalShapingContextRejectReason,
+    fallback_geometry: VerticalLegacyGeometry,
+) -> VerticalShapingContextRejection {
+    VerticalShapingContextRejection {
+        reason,
+        fallback_geometry,
+    }
+}
+
+fn context_source_rejection(
+    reason: ExactFontSourceResolutionReason,
+    fallback_geometry: VerticalLegacyGeometry,
+) -> VerticalShapingContextRejection {
+    let reason = match reason {
+        ExactFontSourceResolutionReason::SourceUnavailable => {
+            VerticalShapingContextRejectReason::SourceUnavailable
+        }
+        ExactFontSourceResolutionReason::FontByteLimitExceeded
+        | ExactFontSourceResolutionReason::FaceIndexMismatch
+        | ExactFontSourceResolutionReason::ByteLengthMismatch
+        | ExactFontSourceResolutionReason::Sha256Mismatch => {
+            VerticalShapingContextRejectReason::SourceIdentityMismatch
+        }
+    };
+    context_reject(reason, fallback_geometry)
+}
+
+#[derive(Clone)]
+pub(crate) struct VerticalShapingSourceCertificate {
+    registry_generation: u64,
+    slot: ExactFontSlot,
+    handle: ExactFontSourceHandle,
+    source_bytes: Arc<[u8]>,
+    units_per_em: u16,
+}
+
+impl std::fmt::Debug for VerticalShapingSourceCertificate {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        formatter
+            .debug_struct("VerticalShapingSourceCertificate")
+            .field("registry_generation", &self.registry_generation)
+            .field("slot", &self.slot)
+            .field("source_handle", &self.handle)
+            .field("source_bytes_len", &self.source_bytes.len())
+            .field("units_per_em", &self.units_per_em)
+            .finish()
+    }
+}
+
+impl VerticalShapingSourceCertificate {
+    pub(crate) fn registry_generation(&self) -> u64 {
+        self.registry_generation
+    }
+
+    pub(crate) fn slot(&self) -> ExactFontSlot {
+        self.slot
+    }
+
+    pub(crate) fn font_source_sha256(&self) -> &str {
+        &self.handle.font_source_sha256
+    }
+
+    pub(crate) fn font_bytes(&self) -> usize {
+        self.handle.font_bytes
+    }
+
+    pub(crate) fn face_index(&self) -> u32 {
+        self.handle.face_index
+    }
+
+    pub(crate) fn units_per_em(&self) -> u16 {
+        self.units_per_em
+    }
+
+    pub(crate) fn source_bytes_arc(&self) -> &Arc<[u8]> {
+        &self.source_bytes
+    }
+}
+
+#[derive(Debug, Clone)]
+pub(crate) struct CertifiedDormantVerticalShapingTransaction {
+    transaction: DormantVerticalShapingTransaction,
+    certificate: Arc<VerticalShapingSourceCertificate>,
+}
+
+impl CertifiedDormantVerticalShapingTransaction {
+    pub(crate) fn transaction(&self) -> &DormantVerticalShapingTransaction {
+        &self.transaction
+    }
+
+    pub(crate) fn certificate(&self) -> &Arc<VerticalShapingSourceCertificate> {
+        &self.certificate
+    }
+
+    pub(crate) fn product_published(&self) -> bool {
+        false
     }
 }
 

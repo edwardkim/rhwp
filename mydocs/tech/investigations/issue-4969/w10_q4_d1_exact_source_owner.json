@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q4-d1-exact-source-bound-dormant-owner",
+  "issue": 4969,
+  "stage": "W10-Q4-D1",
+  "date": "2026-08-30",
+  "status": "qualified-dormant-certified",
+  "maintainerResultApproved": true,
+  "planCheckpoint": "7b3a7bab4",
+  "d0Checkpoint": "87d7a13a2",
+  "productModuleRegistered": true,
+  "productCallerCount": 0,
+  "productOutputChanged": false,
+  "sourceOwner": {
+    "immutableRegistrySnapshot": true,
+    "slotIdentityRevalidated": true,
+    "certificateOwnsRegistryGeneration": true,
+    "certificateOwnsExactHandle": true,
+    "certificateOwnsSourceArc": true,
+    "certificateOwnsUnitsPerEm": true,
+    "sameSourceArcReused": true,
+    "productPublished": false
+  },
+  "typedRejections": [
+    "source-unavailable",
+    "source-identity-mismatch",
+    "certificate-face-invalid",
+    "legacy-geometry-malformed",
+    "mixed-run-unsupported",
+    "variation-geometry-unsupported",
+    "bounded-shaping-rejection"
+  ],
+  "diagnosticRedaction": {
+    "rawText": false,
+    "fontBytes": false,
+    "sourcePath": false
+  },
+  "native": {
+    "greenPassed": 30,
+    "greenFailed": 0,
+    "redFilteredOut": 5,
+    "d1BehaviorPassed": 2,
+    "d1BehaviorFailed": 0
+  },
+  "redTransition": {
+    "passed": 2,
+    "expectedFailed": 3,
+    "unexpectedFailures": 0,
+    "remaining": [
+      "atomic-table-cell-layout-commit-absent",
+      "vertical-glyph-run-publication-absent",
+      "rust-and-studio-canvaskit-feature-detection-absent"
+    ]
+  },
+  "wasm": {
+    "standardDockerReleaseBuild": "passed",
+    "pkgWasmBytes": 9810922,
+    "pkgTrackedDiff": false,
+    "dockerNodeRunnerAvailable": false,
+    "isolatedHostNodeBehaviorPassed": 1,
+    "isolatedHostNodeBehaviorFailed": 0,
+    "hostFallbackDisclosed": true,
+    "sizeDeltaClaimed": false
+  },
+  "integrationPolicy": {
+    "passed": 19,
+    "failed": 0,
+    "newIntegrationSource": false,
+    "generatedIntegrationArtifacts": false
+  },
+  "layoutCallerAdded": false,
+  "sidecarPublicationAdded": false,
+  "paintBackendSelectionAdded": false,
+  "privateCorpusUsed": false,
+  "hyperVUsed": false,
+  "githubMutation": false,
+  "temporaryHarnessDisposition": "moved-to-trash",
+  "next": "checkpoint-then-synchronize-upstream-before-Q4-D2-start-approval"
+}

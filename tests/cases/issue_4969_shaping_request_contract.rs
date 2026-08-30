@@ -1,11 +1,14 @@
 //! Issue #4969 W10-Q1/Q4-A~C: exact-source shaping request는 bounded·fail-closed하고,
 //! vertical output과 dormant geometry는 하나의 결정적 glyph/position/bbox owner를 가져야 한다.
 
+#[path = "../../src/renderer/kerning.rs"]
+mod kerning;
 #[path = "../../src/renderer/shaping.rs"]
 mod shaping;
 #[path = "../../src/renderer/shaping_vertical.rs"]
 mod shaping_vertical;
 
+use kerning::{ExactFontSlot, ExactFontSource, ExactFontSourceRegistry};
 use shaping::{
     canonicalize_shaping_request, shape_bounded_request, shape_canonical_request_with_face,
     terminal_shaping_attempt, validate_shaping_request, BoundedShapingAttemptLedger,
@@ -19,7 +22,8 @@ use shaping_vertical::{
     prepare_dormant_vertical_shaping_transaction, DormantVerticalShapingRejectReason,
     DormantVerticalShapingRequest, TypedVerticalIntent, VerticalGlyphTransform,
     VerticalIntentDisposition, VerticalIntentSurface, VerticalLatinOrientation,
-    VerticalLegacyGeometry, VerticalPoint, VerticalRect, VerticalRunClass,
+    VerticalLegacyGeometry, VerticalPoint, VerticalRect, VerticalRunClass, VerticalShapingContext,
+    VerticalShapingContextRejectReason, VerticalShapingContextRequest,
 };
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen_test::wasm_bindgen_test;
@@ -1570,6 +1574,174 @@ fn issue_4969_q4_d0_target_policy_is_hwp5_code2_one_column_pure_cjk_only() {
             ..target
         }
     ));
+}
+
+fn q4_d1_context_request(slot: ExactFontSlot, text: &str) -> VerticalShapingContextRequest<'_> {
+    VerticalShapingContextRequest {
+        attempt_id: 4969,
+        slot,
+        text,
+        intent: TypedVerticalIntent::vertical_rl(VerticalLatinOrientation::Upright),
+        font_size_px: 10.0,
+        origin: VerticalPoint { x: 100.0, y: 200.0 },
+        column_pitch_px: 12.0,
+        fallback_geometry: vertical_fallback(),
+        script: Some("Hang"),
+        language: Some("ko"),
+        features: &[],
+        variations: &[],
+    }
+}
+
+#[test]
+fn issue_4969_q4_d1_exact_source_context_certifies_dormant_owner_without_publication() {
+    let slot = ExactFontSlot::new(7, 0);
+    let mut registry = ExactFontSourceRegistry::default();
+    registry
+        .register(
+            slot,
+            ExactFontSource {
+                bytes: NOTO,
+                face_index: 0,
+            },
+        )
+        .expect("register exact Noto slot");
+    let context = VerticalShapingContext::new(registry.clone());
+    let first = context
+        .prepare_dormant(q4_d1_context_request(slot, "한글"))
+        .expect("certified D1 dormant transaction");
+    let second = context
+        .prepare_dormant(q4_d1_context_request(slot, "세로"))
+        .expect("same exact source must reuse the registry Arc");
+
+    assert_eq!(context.registry_generation(), registry.generation());
+    assert_eq!(context.slot_count(), 1);
+    assert_eq!(context.source_count(), 1);
+    assert_eq!(first.certificate().slot(), slot);
+    assert_eq!(
+        first.certificate().registry_generation(),
+        registry.generation()
+    );
+    assert_eq!(first.certificate().font_bytes(), NOTO.len());
+    assert_eq!(first.certificate().face_index(), 0);
+    assert_eq!(first.certificate().units_per_em(), 1_000);
+    assert_eq!(
+        first.certificate().font_source_sha256(),
+        "6e06a7fe5d696ca719894a23f36bb2b1be8c816a5937cd4ad0f23ca67780dd74"
+    );
+    assert!(std::sync::Arc::ptr_eq(
+        first.certificate().source_bytes_arc(),
+        second.certificate().source_bytes_arc()
+    ));
+    assert_eq!(first.transaction().line_geometry().glyphs.len(), 2);
+    assert!(!first.product_published());
+    assert!(!second.product_published());
+
+    let diagnostic = format!("{context:?} {:?}", first.certificate());
+    for forbidden in ["한글", "세로", "NotoSans", "fontBytes", "/home/"] {
+        assert!(
+            !diagnostic.contains(forbidden),
+            "D1 diagnostic leaked {forbidden}"
+        );
+    }
+
+    registry
+        .register(
+            ExactFontSlot::new(8, 0),
+            ExactFontSource {
+                bytes: SOURCE_HAN,
+                face_index: 0,
+            },
+        )
+        .expect("mutate the original registry after the D1 snapshot");
+    let stale_slot = context
+        .prepare_dormant(q4_d1_context_request(ExactFontSlot::new(8, 0), "ᄒᆞᆫ글"))
+        .expect_err("immutable D1 snapshot must not observe a later slot");
+    assert_eq!(
+        stale_slot.reason(),
+        VerticalShapingContextRejectReason::SourceUnavailable
+    );
+    assert_eq!(stale_slot.fallback_geometry(), vertical_fallback());
+    assert!(!stale_slot.product_published());
+}
+
+#[test]
+fn issue_4969_q4_d1_context_preserves_typed_rejections_and_pristine_fallback() {
+    let malformed_slot = ExactFontSlot::new(9, 0);
+    let noto_slot = ExactFontSlot::new(10, 0);
+    let mut registry = ExactFontSourceRegistry::default();
+    registry
+        .register(
+            malformed_slot,
+            ExactFontSource {
+                bytes: b"not-a-font",
+                face_index: 0,
+            },
+        )
+        .expect("registry identity can retain malformed bounded bytes");
+    registry
+        .register(
+            noto_slot,
+            ExactFontSource {
+                bytes: NOTO,
+                face_index: 0,
+            },
+        )
+        .expect("register exact Noto control");
+    let context = VerticalShapingContext::new(registry);
+
+    let malformed = context
+        .prepare_dormant(q4_d1_context_request(malformed_slot, "한글"))
+        .expect_err("malformed exact bytes must fail closed");
+    assert_eq!(
+        malformed.reason(),
+        VerticalShapingContextRejectReason::Dormant(
+            DormantVerticalShapingRejectReason::ShapingRejected(ShapingRejectReason::MalformedSfnt)
+        )
+    );
+    assert_eq!(malformed.fallback_geometry(), vertical_fallback());
+    assert!(!malformed.product_published());
+
+    let mixed = context
+        .prepare_dormant(q4_d1_context_request(noto_slot, "한A"))
+        .expect_err("mixed run must preserve the Q4-C typed reason");
+    assert_eq!(
+        mixed.reason(),
+        VerticalShapingContextRejectReason::Dormant(
+            DormantVerticalShapingRejectReason::MixedRunUnsupported
+        )
+    );
+    assert_eq!(mixed.fallback_geometry(), vertical_fallback());
+
+    let axes = [ShapingVariation {
+        tag: "wght".into(),
+        value: 400.0,
+    }];
+    let mut variation = q4_d1_context_request(noto_slot, "한글");
+    variation.variations = &axes;
+    let variation = context
+        .prepare_dormant(variation)
+        .expect_err("variable bbox is outside D1");
+    assert_eq!(
+        variation.reason(),
+        VerticalShapingContextRejectReason::Dormant(
+            DormantVerticalShapingRejectReason::VariationGeometryUnsupported
+        )
+    );
+    assert_eq!(variation.fallback_geometry(), vertical_fallback());
+
+    let mut malformed_fallback = q4_d1_context_request(ExactFontSlot::new(99, 0), "한글");
+    malformed_fallback.fallback_geometry.bbox.width = f64::NAN;
+    let malformed_fallback = context
+        .prepare_dormant(malformed_fallback)
+        .expect_err("legacy geometry is validated before source lookup");
+    assert_eq!(
+        malformed_fallback.reason(),
+        VerticalShapingContextRejectReason::Dormant(
+            DormantVerticalShapingRejectReason::LegacyGeometryMalformed
+        )
+    );
+    assert!(!malformed_fallback.product_published());
 }
 
 #[test]
