@@ -9,15 +9,15 @@ use std::collections::HashSet;
 use std::sync::Arc;
 
 use crate::paint::{
-    font_blob_resource_key, resource_digest_hex, BinaryResourceKind, BinaryResourceRef,
-    FontBlobKey, FontBlobResource, FontDigest, FontFaceKey, FontFaceResource, FontFallbackPolicyId,
-    FontInstanceKey, FontPortability, FontResourceSource, GlyphCluster, GlyphClusterFlag,
-    GlyphRange, GlyphRunDiagnostics, GlyphRunOrientation, GlyphRunReplayEligibility,
-    LayerAffineTransform, LayerGlyphRunPaint, LayerNode, LayerNodeKind, LayerPoint, LayerVector,
-    LocalizedName, OpenTypeFeatureSetting, PaintOp, PaintTextStyle, PaintVariantMeta,
-    ResourceArena, ScriptTag, ShapeKey, ShapingEngineId, TextDirection, TextRunPlacement,
-    TextSourceId, TextSourceRange, TextSourceSpan, TextVariantKind, TextVariantQuality,
-    VariationAxisValue, WritingMode, MAX_PORTABLE_FONT_BLOB_BYTES, RESOURCE_KEY_ALGORITHM,
+    font_blob_resource_key, BinaryResourceKind, BinaryResourceRef, FontBlobKey, FontBlobResource,
+    FontDigest, FontFaceKey, FontFaceResource, FontFallbackPolicyId, FontInstanceKey,
+    FontPortability, FontResourceSource, GlyphCluster, GlyphClusterFlag, GlyphRange,
+    GlyphRunDiagnostics, GlyphRunOrientation, GlyphRunReplayEligibility, LayerAffineTransform,
+    LayerGlyphRunPaint, LayerNode, LayerNodeKind, LayerPoint, LayerVector, LocalizedName,
+    OpenTypeFeatureSetting, PaintOp, PaintTextStyle, PaintVariantMeta, ResourceArena, ScriptTag,
+    ShapeKey, ShapingEngineId, TextDirection, TextRunPlacement, TextSourceId, TextSourceRange,
+    TextSourceSpan, TextVariantKind, TextVariantQuality, VariationAxisValue, WritingMode,
+    MAX_PORTABLE_FONT_BLOB_BYTES, RESOURCE_KEY_ALGORITHM,
 };
 use crate::renderer::render_tree::PageLayoutContext;
 use crate::renderer::shaping_vertical::{
@@ -82,7 +82,6 @@ pub(crate) fn prepare_vertical_shaping_line_shadow(
 enum VerticalGlyphLinePublicationRejectReason {
     Shadow(VerticalGlyphLayerShadowRejectReason),
     FontLimitExceeded,
-    FontFaceInvalid,
     FontIdentityMismatch,
     ResourceKeyConflict,
     UnsupportedFallbackStyle,
@@ -93,6 +92,8 @@ enum VerticalGlyphLinePublicationRejectReason {
 #[derive(Debug, Clone)]
 struct VerticalFontResourceDelta {
     source_bytes: Arc<[u8]>,
+    resource_hash_fnv1a64: u64,
+    resource_fingerprint: [u8; 16],
     blob: FontBlobResource,
     face: FontFaceResource,
     data_ref: BinaryResourceRef,
@@ -119,13 +120,15 @@ fn prepare_vertical_font_delta(
     {
         return Err(VerticalGlyphLinePublicationRejectReason::FontLimitExceeded);
     }
-    let face = ttf_parser::Face::parse(source_bytes, certificate.face_index())
-        .map_err(|_| VerticalGlyphLinePublicationRejectReason::FontFaceInvalid)?;
-    if face.units_per_em() != certificate.units_per_em() {
+    if certificate.units_per_em() == 0 {
         return Err(VerticalGlyphLinePublicationRejectReason::FontIdentityMismatch);
     }
 
-    let digest_value = resource_digest_hex(source_bytes);
+    let portable_font = certificate.portable_font();
+    let digest_value = portable_font.resource_digest_blake3().to_string();
+    if digest_value.len() != 64 || !digest_value.bytes().all(|byte| byte.is_ascii_hexdigit()) {
+        return Err(VerticalGlyphLinePublicationRejectReason::FontIdentityMismatch);
+    }
     let resource_key = font_blob_resource_key(source_bytes.len(), &digest_value);
     let digest = FontDigest {
         algorithm: RESOURCE_KEY_ALGORITHM.to_string(),
@@ -147,7 +150,7 @@ fn prepare_vertical_font_delta(
             data_ref: data_ref.clone(),
         },
     };
-    let number_of_glyphs = face.number_of_glyphs();
+    let number_of_glyphs = portable_font.number_of_glyphs();
     let mut face = FontFaceResource {
         id: face_key,
         blob_key,
@@ -158,9 +161,9 @@ fn prepare_vertical_font_delta(
             value: family.to_string(),
         }],
         style_names: Vec::new(),
-        weight_class: Some(face.weight().to_number()),
-        width_class: Some(face.width().to_number()),
-        italic: Some(face.is_italic()),
+        weight_class: Some(portable_font.weight_class()),
+        width_class: Some(portable_font.width_class()),
+        italic: Some(portable_font.italic()),
     };
 
     if resources
@@ -219,6 +222,8 @@ fn prepare_vertical_font_delta(
 
     Ok(VerticalFontResourceDelta {
         source_bytes: Arc::clone(source_bytes),
+        resource_hash_fnv1a64: portable_font.resource_hash_fnv1a64(),
+        resource_fingerprint: portable_font.resource_fingerprint(),
         blob,
         face,
         data_ref,
@@ -441,7 +446,12 @@ fn commit_vertical_line_publication(
 ) -> Vec<u32> {
     let delta = prepared.resource_delta;
     if resources.font_blob_bytes_for_ref(&delta.data_ref).is_none() {
-        resources.intern_font_blob_bytes(&delta.source_bytes);
+        resources.intern_prepared_font_blob_arc(
+            delta.source_bytes,
+            delta.resource_hash_fnv1a64,
+            delta.resource_fingerprint,
+            delta.data_ref.id.clone(),
+        );
     }
     if !resources
         .font_resources()

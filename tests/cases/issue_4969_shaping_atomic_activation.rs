@@ -496,6 +496,23 @@ fn issue_4969_q4_d3_b_target_publishes_one_vertical_glyph_run_per_fallback_leaf(
     assert_eq!(layer_tree.resources.font_blob_count(), 1);
     assert_eq!(layer_tree.resources.font_resources().blobs.len(), 1);
     assert_eq!(layer_tree.resources.font_resources().faces.len(), 1);
+    let expected_digest = blake3::hash(NOTO).to_hex().to_string();
+    let expected_resource_key = format!("font:blake3:{}:{expected_digest}", NOTO.len());
+    let published_blob = &layer_tree.resources.font_resources().blobs[0];
+    let published_face = &layer_tree.resources.font_resources().faces[0];
+    let expected_face = ttf_parser::Face::parse(NOTO, 0).expect("parse fixture face metadata");
+    assert_eq!(published_blob.id.0, expected_resource_key);
+    assert_eq!(published_face.blob_key, published_blob.id);
+    assert_eq!(published_face.face_index, 0);
+    assert_eq!(
+        published_face.weight_class,
+        Some(expected_face.weight().to_number())
+    );
+    assert_eq!(
+        published_face.width_class,
+        Some(expected_face.width().to_number())
+    );
+    assert_eq!(published_face.italic, Some(expected_face.is_italic()));
     rhwp::paint::validate_text_variant_scope(&layer_tree)
         .expect("leaf-scoped vertical alternatives must satisfy variant scope");
     let text_v2 = TextV2Diagnostics::from_layer_tree(&layer_tree);

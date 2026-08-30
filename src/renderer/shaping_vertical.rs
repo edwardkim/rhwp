@@ -6,13 +6,15 @@
 //! separately approved Q4-D2~D4 slices.
 
 use super::kerning::{
-    resolve_exact_font_source, ExactFontSlot, ExactFontSourceHandle, ExactFontSourceRegistry,
-    ExactFontSourceResolutionReason,
+    ExactFontPortableResourceIdentity, ExactFontSlot, ExactFontSourceHandle,
+    ExactFontSourceRegistry, ExactFontSourceResolutionReason,
 };
 use super::shaping::{
-    terminal_shaping_attempt, AppliedShapingRun, ShapingAttemptTrace, ShapingDirection,
-    ShapingExactSource, ShapingFeature, ShapingRejectReason, ShapingRequest, ShapingVariation,
-    ShapingWritingMode, TerminalShapingDisposition,
+    canonicalize_verified_shaping_request, shape_canonical_request_with_face,
+    terminal_shaping_attempt, terminal_shaping_attempt_from_output, AppliedShapingRun,
+    ShapingAttemptTrace, ShapingDirection, ShapingExactSource, ShapingFeature, ShapingRejectReason,
+    ShapingRequest, ShapingVariation, ShapingWritingMode, TerminalShapingAttempt,
+    TerminalShapingDisposition,
 };
 use sha2::{Digest, Sha256};
 use std::collections::{HashMap, HashSet};
@@ -388,45 +390,17 @@ impl VerticalShapingContext {
                     fallback,
                 )
             })?;
-        let source = resolve_exact_font_source(&self.registry, &handle)
-            .map_err(|reason| context_source_rejection(reason, fallback))?;
         let source_bytes = self
             .registry
-            .source_arc_for_handle(&handle)
+            .resolve_owned_source_arc(&handle)
+            .map_err(|reason| context_source_rejection(reason, fallback))?;
+        let portable_resource = self
+            .registry
+            .portable_resource_identity_for_handle(&handle)
             .ok_or_else(|| {
                 context_reject(
                     VerticalShapingContextRejectReason::SourceUnavailable,
                     fallback,
-                )
-            })?;
-        let shaping = ShapingRequest {
-            source: Some(ShapingExactSource {
-                bytes: source.bytes,
-                face_index: source.face_index,
-                portable: true,
-            }),
-            text: request.text,
-            direction: ShapingDirection::TopToBottom,
-            writing_mode: request.intent.writing_mode(),
-            script: request.script,
-            language: request.language,
-            features: request.features,
-            variations: request.variations,
-        };
-        let transaction =
-            prepare_dormant_vertical_shaping_transaction(DormantVerticalShapingRequest {
-                attempt_id: request.attempt_id,
-                shaping,
-                intent: request.intent,
-                font_size_px: request.font_size_px,
-                origin: request.origin,
-                column_pitch_px: request.column_pitch_px,
-                fallback_geometry: fallback,
-            })
-            .map_err(|rejection| {
-                context_reject(
-                    VerticalShapingContextRejectReason::Dormant(rejection.reason()),
-                    rejection.fallback_geometry(),
                 )
             })?;
         let face = Face::parse(source_bytes.as_ref(), handle.face_index).map_err(|_| {
@@ -444,6 +418,41 @@ impl VerticalShapingContext {
                 fallback,
             ));
         }
+        let shaping = ShapingRequest {
+            source: Some(ShapingExactSource {
+                bytes: source_bytes.as_ref(),
+                face_index: handle.face_index,
+                portable: true,
+            }),
+            text: request.text,
+            direction: ShapingDirection::TopToBottom,
+            writing_mode: request.intent.writing_mode(),
+            script: request.script,
+            language: request.language,
+            features: request.features,
+            variations: request.variations,
+        };
+        let transaction = prepare_verified_dormant_vertical_shaping_transaction(
+            DormantVerticalShapingRequest {
+                attempt_id: request.attempt_id,
+                shaping,
+                intent: request.intent,
+                font_size_px: request.font_size_px,
+                origin: request.origin,
+                column_pitch_px: request.column_pitch_px,
+                fallback_geometry: fallback,
+            },
+            &face,
+            &handle.font_source_sha256,
+        )
+        .map_err(|rejection| {
+            context_reject(
+                VerticalShapingContextRejectReason::Dormant(rejection.reason()),
+                rejection.fallback_geometry(),
+            )
+        })?;
+        let portable_font =
+            VerticalShapingPortableFontMetadata::from_face(portable_resource, &face);
         Ok(CertifiedDormantVerticalShapingTransaction {
             transaction,
             certificate: Arc::new(VerticalShapingSourceCertificate {
@@ -452,6 +461,7 @@ impl VerticalShapingContext {
                 handle,
                 source_bytes,
                 units_per_em,
+                portable_font,
             }),
         })
     }
@@ -528,6 +538,59 @@ fn context_source_rejection(
     context_reject(reason, fallback_geometry)
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) struct VerticalShapingPortableFontMetadata {
+    resource_digest_blake3: String,
+    resource_hash_fnv1a64: u64,
+    resource_fingerprint: [u8; 16],
+    number_of_glyphs: u16,
+    weight_class: u16,
+    width_class: u16,
+    italic: bool,
+}
+
+impl VerticalShapingPortableFontMetadata {
+    fn from_face(resource: ExactFontPortableResourceIdentity, face: &Face<'_>) -> Self {
+        Self {
+            resource_digest_blake3: resource.digest_blake3().to_string(),
+            resource_hash_fnv1a64: resource.hash_fnv1a64(),
+            resource_fingerprint: resource.fingerprint(),
+            number_of_glyphs: face.number_of_glyphs(),
+            weight_class: face.weight().to_number(),
+            width_class: face.width().to_number(),
+            italic: face.is_italic(),
+        }
+    }
+
+    pub(crate) fn resource_digest_blake3(&self) -> &str {
+        &self.resource_digest_blake3
+    }
+
+    pub(crate) fn resource_hash_fnv1a64(&self) -> u64 {
+        self.resource_hash_fnv1a64
+    }
+
+    pub(crate) fn resource_fingerprint(&self) -> [u8; 16] {
+        self.resource_fingerprint
+    }
+
+    pub(crate) fn number_of_glyphs(&self) -> u16 {
+        self.number_of_glyphs
+    }
+
+    pub(crate) fn weight_class(&self) -> u16 {
+        self.weight_class
+    }
+
+    pub(crate) fn width_class(&self) -> u16 {
+        self.width_class
+    }
+
+    pub(crate) fn italic(&self) -> bool {
+        self.italic
+    }
+}
+
 #[derive(Clone)]
 pub(crate) struct VerticalShapingSourceCertificate {
     registry_generation: u64,
@@ -535,6 +598,7 @@ pub(crate) struct VerticalShapingSourceCertificate {
     handle: ExactFontSourceHandle,
     source_bytes: Arc<[u8]>,
     units_per_em: u16,
+    portable_font: VerticalShapingPortableFontMetadata,
 }
 
 impl std::fmt::Debug for VerticalShapingSourceCertificate {
@@ -546,6 +610,7 @@ impl std::fmt::Debug for VerticalShapingSourceCertificate {
             .field("source_handle", &self.handle)
             .field("source_bytes_len", &self.source_bytes.len())
             .field("units_per_em", &self.units_per_em)
+            .field("portable_font", &self.portable_font)
             .finish()
     }
 }
@@ -577,6 +642,10 @@ impl VerticalShapingSourceCertificate {
 
     pub(crate) fn source_bytes_arc(&self) -> &Arc<[u8]> {
         &self.source_bytes
+    }
+
+    pub(crate) fn portable_font(&self) -> &VerticalShapingPortableFontMetadata {
+        &self.portable_font
     }
 }
 
@@ -1127,9 +1196,9 @@ fn glyph_rect(
     }
 }
 
-pub(crate) fn prepare_dormant_vertical_shaping_transaction(
-    request: DormantVerticalShapingRequest<'_>,
-) -> Result<DormantVerticalShapingTransaction, DormantVerticalShapingRejection> {
+fn validate_dormant_vertical_shaping_request(
+    request: &DormantVerticalShapingRequest<'_>,
+) -> Result<VerticalRunClass, DormantVerticalShapingRejection> {
     use DormantVerticalShapingRejectReason as Reject;
 
     let fallback = request.fallback_geometry;
@@ -1158,8 +1227,74 @@ pub(crate) fn prepare_dormant_vertical_shaping_transaction(
     if !request.shaping.variations.is_empty() {
         return Err(reject(Reject::VariationGeometryUnsupported, fallback));
     }
+    Ok(run_class)
+}
+
+pub(crate) fn prepare_dormant_vertical_shaping_transaction(
+    request: DormantVerticalShapingRequest<'_>,
+) -> Result<DormantVerticalShapingTransaction, DormantVerticalShapingRejection> {
+    use DormantVerticalShapingRejectReason as Reject;
+
+    let fallback = request.fallback_geometry;
+    let run_class = validate_dormant_vertical_shaping_request(&request)?;
 
     let attempt = terminal_shaping_attempt(request.attempt_id, &request.shaping);
+    let source = request
+        .shaping
+        .source
+        .ok_or_else(|| reject(Reject::AppliedPayloadMissing, fallback))?;
+    let face = Face::parse(source.bytes, source.face_index)
+        .map_err(|_| reject(Reject::AppliedPayloadMissing, fallback))?;
+    finish_dormant_vertical_shaping_transaction(request, run_class, attempt, &face)
+}
+
+fn prepare_verified_dormant_vertical_shaping_transaction(
+    request: DormantVerticalShapingRequest<'_>,
+    face: &Face<'_>,
+    source_digest: &str,
+) -> Result<DormantVerticalShapingTransaction, DormantVerticalShapingRejection> {
+    use DormantVerticalShapingRejectReason as Reject;
+
+    let fallback = request.fallback_geometry;
+    let run_class = validate_dormant_vertical_shaping_request(&request)?;
+    let identity = canonicalize_verified_shaping_request(&request.shaping, face, source_digest)
+        .map_err(|decision| {
+            reject(
+                Reject::ShapingRejected(
+                    decision
+                        .reason
+                        .unwrap_or(ShapingRejectReason::ShapingUnavailable),
+                ),
+                fallback,
+            )
+        })?;
+    let source = request
+        .shaping
+        .source
+        .ok_or_else(|| reject(Reject::AppliedPayloadMissing, fallback))?;
+    let mut shaping_face = rustybuzz::Face::from_slice(source.bytes, source.face_index)
+        .ok_or_else(|| {
+            reject(
+                Reject::ShapingRejected(ShapingRejectReason::ShapingUnavailable),
+                fallback,
+            )
+        })?;
+    let attempt = terminal_shaping_attempt_from_output(
+        request.attempt_id,
+        shape_canonical_request_with_face(&request.shaping, identity, &mut shaping_face),
+    );
+    finish_dormant_vertical_shaping_transaction(request, run_class, attempt, face)
+}
+
+fn finish_dormant_vertical_shaping_transaction(
+    request: DormantVerticalShapingRequest<'_>,
+    run_class: VerticalRunClass,
+    attempt: TerminalShapingAttempt,
+    face: &Face<'_>,
+) -> Result<DormantVerticalShapingTransaction, DormantVerticalShapingRejection> {
+    use DormantVerticalShapingRejectReason as Reject;
+
+    let fallback = request.fallback_geometry;
     if attempt.trace.disposition != TerminalShapingDisposition::Applied {
         return Err(reject(
             Reject::ShapingRejected(
@@ -1175,12 +1310,6 @@ pub(crate) fn prepare_dormant_vertical_shaping_transaction(
     let applied = attempt
         .applied
         .ok_or_else(|| reject(Reject::AppliedPayloadMissing, fallback))?;
-    let source = request
-        .shaping
-        .source
-        .ok_or_else(|| reject(Reject::AppliedPayloadMissing, fallback))?;
-    let face = Face::parse(source.bytes, source.face_index)
-        .map_err(|_| reject(Reject::AppliedPayloadMissing, fallback))?;
     let units_per_em = face.units_per_em();
     if units_per_em == 0 {
         return Err(reject(Reject::FontUnitsPerEmInvalid, fallback));

@@ -4,7 +4,7 @@
   "issue": 4969,
   "stage": "W10-Q4-D5-B",
   "date": "2026-08-31",
-  "status": "approved-automatic",
+  "status": "qualified-performance-correction-result-approved-automatic",
   "planApproved": true,
   "approvalBasis": "maintainer-auto-approval-until-morning",
   "d5ACheckpoint": "e31c5c15d",
@@ -35,5 +35,6 @@
     "generatedIntegrationArtifactAllowed": false,
     "nineProcessPostCorrectionMeasurementRequired": true
   },
-  "next": "D5-B1-registry-owned-source-consumption"
+  "resultEvidence": "mydocs/tech/investigations/issue-4969/w10_q4_d5_b_performance_correction.json",
+  "next": "correction-checkpoint-then-causal-WASM-size-comparison"
 }

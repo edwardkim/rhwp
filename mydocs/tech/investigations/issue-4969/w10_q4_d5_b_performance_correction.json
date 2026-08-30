@@ -1,0 +1,117 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q4-d5-b-performance-correction-result",
+  "issue": 4969,
+  "stage": "W10-Q4-D5-B",
+  "date": "2026-08-31",
+  "status": "qualified-performance-correction-result-approved-automatic",
+  "plan": "mydocs/tech/investigations/issue-4969/w10_q4_d5_b_correction_plan.json",
+  "measurement": {
+    "profile": "release",
+    "processRuns": 9,
+    "warmupsPerProcess": 20,
+    "iterationsPerProcess": 64,
+    "p50Method": "sorted-index-4-of-9",
+    "p95Method": "nearest-rank-max-of-9"
+  },
+  "beforeCorrectionP50Ns64Iterations": {
+    "warmLayout": 1142878416,
+    "layerBuild": 223300253,
+    "jsonSerialize": 87006870,
+    "replayPlan": 68626304
+  },
+  "afterCorrection": {
+    "A1": {
+      "coldLayoutNs": [192950, 176263, 182458, 161166, 177452, 159167, 173556, 163456, 162657],
+      "warmLayoutNs": [559265, 565660, 556967, 689227, 555139, 641267, 566529, 659521, 609665],
+      "layerBuildNs": [117609, 141591, 118708, 117403, 117802, 121299, 118202, 117896, 117996],
+      "jsonSerializeNs": [2774045, 2590787, 2493463, 2880207, 2473345, 2748715, 2523703, 2558253, 2498205],
+      "replayPlanNs": [212435, 216732, 212235, 230109, 211225, 233206, 210425, 208716, 210715]
+    },
+    "B": {
+      "coldLayoutNs": [125903, 135695, 122006, 112807, 116004, 122498, 130592, 129586, 133483],
+      "warmLayoutNs": [1820985, 1891531, 1768227, 1985750, 1943085, 1952977, 1802802, 1909123, 1911720],
+      "layerBuildNs": [636905, 677573, 658389, 814123, 635072, 579018, 759169, 556311, 767925],
+      "jsonSerializeNs": [86149280, 85535657, 86198841, 91002866, 100907135, 84762053, 84221817, 83661391, 83322589],
+      "replayPlanNs": [68607606, 67036226, 67910931, 68543732, 67134704, 68717688, 67397381, 68441764, 67895843]
+    },
+    "A2": {
+      "coldLayoutNs": [41867, 43966, 40966, 40367, 71141, 41465, 41663, 41564, 46360],
+      "warmLayoutNs": [603331, 598535, 604498, 600600, 620784, 736988, 620855, 608765, 739650],
+      "layerBuildNs": [125203, 124703, 126495, 124496, 126495, 127693, 123192, 125889, 127388],
+      "jsonSerializeNs": [2639050, 2800125, 2791979, 2439872, 2801771, 2760206, 2749584, 2755479, 2825317],
+      "replayPlanNs": [242811, 240513, 235305, 207327, 389776, 236403, 201723, 222404, 217709]
+    },
+    "p50P95Ns64Iterations": {
+      "A1": {
+        "coldLayout": [173556, 192950],
+        "warmLayout": [566529, 689227],
+        "layerBuild": [117996, 141591],
+        "jsonSerialize": [2558253, 2880207],
+        "replayPlan": [212235, 233206]
+      },
+      "B": {
+        "coldLayout": [125903, 135695],
+        "warmLayout": [1909123, 1985750],
+        "layerBuild": [658389, 814123],
+        "jsonSerialize": [85535657, 100907135],
+        "replayPlan": [67910931, 68717688]
+      },
+      "A2": {
+        "coldLayout": [41663, 71141],
+        "warmLayout": [608765, 739650],
+        "layerBuild": [125889, 127693],
+        "jsonSerialize": [2760206, 2825317],
+        "replayPlan": [235305, 389776]
+      },
+      "BMinusBracket": {
+        "coldLayout": [22182, 28974.5],
+        "warmLayout": [1263849.5, 1355123.5],
+        "layerBuild": [535787.5, 693173.5],
+        "jsonSerialize": [82840201, 98269577],
+        "replayPlan": [67687161, 68482883.5]
+      }
+    }
+  },
+  "improvementRatioBeforeP50OverAfterP50": {
+    "warmLayout": 598.6405359947997,
+    "layerBuild": 339.161579248742
+  },
+  "structural": {
+    "allNineRunsMatched": true,
+    "A1A2LayerJsonBlake3": "b432af74d621227c201f02a8de4209214a99e7206d50920f45bdc9a61e47a4a3",
+    "BLayerJsonBlake3": "79451e388811aa7d6ce65ecb3131cf1acdbbf21783207328cadeda2cc353adc2",
+    "A1A2ReplayPlanBlake3": "9837a3d0a085be32d06c85196a85e65bcdd668584242a56b2993ef611d28dead",
+    "BReplayPlanBlake3": "700b4141f76567c4eaf2fd64b1ea295a887c8d52efa0eed4c2051f6fc12704f1",
+    "BLayerJsonBytes": 3375512,
+    "BReplayPlanBytes": 2694,
+    "BFallbackTextRuns": 2,
+    "BVerticalGlyphRuns": 2,
+    "BFontBlobs": 1,
+    "BFontFaces": 1,
+    "BFontPayloadBytes": 2519996
+  },
+  "actualCanvasKitReusedEvidence": {
+    "processRuns": 9,
+    "A1P50P95Ns64Iterations": [11465984, 14701840],
+    "BP50P95Ns64Iterations": [11317080, 11453877],
+    "A2P50P95Ns64Iterations": [10566144, 15867158],
+    "BMinusBracketP50P95Ns": [161970.5, 507068.5],
+    "allPixelsMatched": true,
+    "pixelBlake3": "3de701e651c3f23c655d35693ca54920507adea9bf3cbf734de0f9fbd1f9169f"
+  },
+  "rootCause": [
+    "registry-owned immutable source was rehashed with SHA-256 during every vertical layout",
+    "shaping validation and geometry reparsed the same face",
+    "layer publication rehashed and copied the complete font into every fresh ResourceArena"
+  ],
+  "correction": [
+    "prepare portable BLAKE3 FNV-1a and fingerprint once in the immutable registry entry",
+    "use verified shaping with the registered SHA-256 and one ttf face",
+    "carry face and portable resource metadata in the vertical source certificate",
+    "intern the certified source Arc without copying or complete-content rescans"
+  ],
+  "tradeoff": "exact-source registration adds one BLAKE3 and one FNV-1a pass outside the timed region",
+  "remainingObservedCost": "large layer JSON serialization and replay-plan analysis scale with the intentional 2.52 MiB portable payload and are not the repeated source-preparation defect",
+  "next": "correction-checkpoint-then-causal-WASM-size-comparison"
+}

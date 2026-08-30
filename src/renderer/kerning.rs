@@ -65,6 +65,53 @@ pub(crate) struct ExactFontSourceHandle {
     pub face_index: u32,
 }
 
+/// Content identity prepared once when immutable exact-source bytes enter the
+/// registry. Paint resource publication can reuse it without scanning the
+/// complete font during every layout or layer rebuild.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub(crate) struct ExactFontPortableResourceIdentity {
+    digest_blake3: String,
+    hash_fnv1a64: u64,
+    fingerprint: [u8; 16],
+}
+
+impl ExactFontPortableResourceIdentity {
+    fn from_bytes(bytes: &[u8]) -> Self {
+        const FNV_OFFSET_BASIS: u64 = 0xcbf2_9ce4_8422_2325;
+        const FNV_PRIME: u64 = 0x0000_0100_0000_01b3;
+
+        let hash_fnv1a64 = bytes.iter().fold(FNV_OFFSET_BASIS, |hash, byte| {
+            (hash ^ u64::from(*byte)).wrapping_mul(FNV_PRIME)
+        });
+        let digest = blake3::hash(bytes);
+        let mut fingerprint = [0; 16];
+        fingerprint.copy_from_slice(&digest.as_bytes()[..16]);
+        Self {
+            digest_blake3: digest.to_hex().to_string(),
+            hash_fnv1a64,
+            fingerprint,
+        }
+    }
+
+    pub(crate) fn digest_blake3(&self) -> &str {
+        &self.digest_blake3
+    }
+
+    pub(crate) fn hash_fnv1a64(&self) -> u64 {
+        self.hash_fnv1a64
+    }
+
+    pub(crate) fn fingerprint(&self) -> [u8; 16] {
+        self.fingerprint
+    }
+}
+
+#[derive(Clone)]
+struct OwnedExactFontSource {
+    bytes: std::sync::Arc<[u8]>,
+    portable_resource: ExactFontPortableResourceIdentity,
+}
+
 /// Document/native/WASM host가 소유한 font bytes를 handle 수명 동안 빌려주는 경계다.
 ///
 /// provider의 반환값은 신뢰하지 않는다. 반드시 [`resolve_exact_font_source`]가
@@ -115,7 +162,7 @@ impl ExactFontRegistryError {
 #[derive(Clone, Default)]
 pub(crate) struct ExactFontSourceRegistry {
     slots: HashMap<ExactFontSlot, ExactFontSourceHandle>,
-    sources: HashMap<ExactFontSourceHandle, std::sync::Arc<[u8]>>,
+    sources: HashMap<ExactFontSourceHandle, OwnedExactFontSource>,
     total_source_bytes: usize,
     generation: u64,
 }
@@ -176,7 +223,10 @@ impl ExactFontSourceRegistry {
             }
             self.sources.insert(
                 handle.clone(),
-                std::sync::Arc::<[u8]>::from(source.bytes.to_vec()),
+                OwnedExactFontSource {
+                    bytes: std::sync::Arc::<[u8]>::from(source.bytes.to_vec()),
+                    portable_resource: ExactFontPortableResourceIdentity::from_bytes(source.bytes),
+                },
             );
             self.total_source_bytes = next_total;
         }
@@ -211,7 +261,45 @@ impl ExactFontSourceRegistry {
         &self,
         handle: &ExactFontSourceHandle,
     ) -> Option<std::sync::Arc<[u8]>> {
-        self.sources.get(handle).cloned()
+        self.sources
+            .get(handle)
+            .map(|source| std::sync::Arc::clone(&source.bytes))
+    }
+
+    /// Resolve bytes owned by this registry without hashing the complete
+    /// source again.
+    ///
+    /// Unlike [`resolve_exact_font_source`], this is not an external-provider
+    /// trust boundary. `register` created both the map key and immutable Arc
+    /// from the same bytes after computing the handle, and callers can only
+    /// retrieve an exact key already present in that map. Length and bounded
+    /// size are still checked so a future storage change cannot silently
+    /// weaken the invariant.
+    pub(crate) fn resolve_owned_source_arc(
+        &self,
+        handle: &ExactFontSourceHandle,
+    ) -> Result<std::sync::Arc<[u8]>, ExactFontSourceResolutionReason> {
+        let source = self
+            .sources
+            .get(handle)
+            .ok_or(ExactFontSourceResolutionReason::SourceUnavailable)?;
+        let bytes = std::sync::Arc::clone(&source.bytes);
+        if bytes.len() > MAX_KERNING_FONT_BYTES {
+            return Err(ExactFontSourceResolutionReason::FontByteLimitExceeded);
+        }
+        if bytes.len() != handle.font_bytes {
+            return Err(ExactFontSourceResolutionReason::ByteLengthMismatch);
+        }
+        Ok(bytes)
+    }
+
+    pub(crate) fn portable_resource_identity_for_handle(
+        &self,
+        handle: &ExactFontSourceHandle,
+    ) -> Option<ExactFontPortableResourceIdentity> {
+        self.sources
+            .get(handle)
+            .map(|source| source.portable_resource.clone())
     }
 
     /// Return the immutable exact source whose byte length and caller-owned
@@ -222,8 +310,9 @@ impl ExactFontSourceRegistry {
         byte_len: usize,
         mut identity_matches: impl FnMut(&[u8]) -> bool,
     ) -> Option<std::sync::Arc<[u8]>> {
-        self.sources.values().find_map(|bytes| {
-            (bytes.len() == byte_len && identity_matches(bytes.as_ref())).then(|| bytes.clone())
+        self.sources.values().find_map(|source| {
+            (source.bytes.len() == byte_len && identity_matches(source.bytes.as_ref()))
+                .then(|| std::sync::Arc::clone(&source.bytes))
         })
     }
 
@@ -245,9 +334,9 @@ impl ExactFontSourceProvider for ExactFontSourceRegistry {
         &'a self,
         handle: &ExactFontSourceHandle,
     ) -> Option<ExactFontSource<'a>> {
-        let bytes = self.sources.get(handle)?;
+        let source = self.sources.get(handle)?;
         Some(ExactFontSource {
-            bytes,
+            bytes: &source.bytes,
             face_index: handle.face_index,
         })
     }

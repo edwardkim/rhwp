@@ -4,7 +4,7 @@
   "issue": 4969,
   "stage": "W10-Q4-D5",
   "date": "2026-08-31",
-  "status": "D5-B-correction-plan-approved-automatic",
+  "status": "D5-B-performance-correction-result-approved-automatic",
   "planApproved": true,
   "d4DCheckpoint": "f40987220",
   "planCheckpoint": "a4248b9c6",
@@ -66,8 +66,9 @@
     {
       "id": "Q4-D5-B",
       "name": "local-aba-resource-and-causal-size",
-      "status": "correction-plan-approved-automatic",
+      "status": "performance-correction-result-approved-automatic",
       "correctionPlan": "mydocs/tech/investigations/issue-4969/w10_q4_d5_b_correction_plan.json",
+      "correctionResult": "mydocs/tech/investigations/issue-4969/w10_q4_d5_b_performance_correction.json",
       "productOutputChange": false
     },
     {
@@ -104,5 +105,5 @@
     "githubMutationAllowed": false
   },
   "existingEvidenceReused": "mydocs/tech/investigations/issue-4969/w10_q4_d4_d_cross_validation.json",
-  "next": "D5-B1-registry-owned-source-consumption"
+  "next": "D5-B-causal-WASM-size-comparison"
 }

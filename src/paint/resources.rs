@@ -175,6 +175,43 @@ impl ResourceArena {
         id
     }
 
+    /// Intern an immutable exact-source Arc whose complete-content identity was
+    /// prepared and certified before the atomic paint commit.
+    ///
+    /// This avoids copying and re-hashing a multi-megabyte font during every
+    /// layer rebuild. The caller must already have validated the canonical
+    /// resource key and conflicts against this arena; general callers continue
+    /// to use [`Self::intern_font_blob_bytes`].
+    pub(crate) fn intern_prepared_font_blob_arc(
+        &mut self,
+        bytes: Arc<[u8]>,
+        hash: u64,
+        fingerprint: [u8; 16],
+        resource_key: String,
+    ) -> FontBlobResourceId {
+        if let Some(id) = self.font_blob_ref_lookup.get(&resource_key).copied() {
+            debug_assert_eq!(self.font_blob_bytes(id), Some(bytes.as_ref()));
+            return id;
+        }
+        if let Some(candidates) = self.font_blob_lookup.get(&hash) {
+            for id in candidates {
+                if self.font_blob_bytes[id.0].as_ref() == bytes.as_ref() {
+                    self.font_blob_ref_lookup.insert(resource_key, *id);
+                    return *id;
+                }
+            }
+        }
+
+        let id = FontBlobResourceId(self.font_blob_bytes.len());
+        self.font_blob_bytes.push(bytes);
+        self.font_blob_hashes.push(hash);
+        self.font_blob_fingerprints.push(fingerprint);
+        self.font_blob_resource_keys.push(resource_key.clone());
+        self.font_blob_lookup.entry(hash).or_default().push(id);
+        self.font_blob_ref_lookup.insert(resource_key, id);
+        id
+    }
+
     pub fn font_blob_bytes(&self, id: FontBlobResourceId) -> Option<&[u8]> {
         self.font_blob_bytes.get(id.0).map(Arc::as_ref)
     }
