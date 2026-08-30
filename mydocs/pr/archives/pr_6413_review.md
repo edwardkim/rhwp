@@ -37,6 +37,16 @@ TAC 표의 leading 위치와 본문 우측 경계를 맞추는 #6298 회귀 보�
 
 원 PR에 포함된 before/after PNG는 변경 의도를 확인하는 보조 자료로만 사용했다. 통합 code head에서 HWP MCP 2020 기준 PDF를 다시 만들고 12쪽을 직접 비교했다. `pixel_match=87.44435`, `visual_accuracy_proxy_percent=78.80165`였고, 자동 column line-band 후보 2건은 review PNG에서 표의 raster/text band 묶음 차이로 확인됐다. 표의 공통 좌측선과 본문 우측 경계에는 clipping 또는 overflow가 보이지 않았다. 대표 증적은 [p12 review PNG](../assets/pr_6481_issue6298_p012_review.png)이며, 명령·PDF SHA·임시 compare/overlay 경로는 [PR #6481 visual sweep 기록](pr_6481_planet6897_visual_sweep.md)에 보존했다.
 
-## 현재 결론
+## #6481 당시 결론 (역사)
 
-**최종 판정: 승인.** TAC 표 경계라는 이번 주장에 대한 직접 시각 증적과 계약 검증에는 차단 finding이 없다. 수치는 전체 fidelity 합격이 아니라 claim-scoped 근거이며, 원 PR은 직접 merge하지 않고 #6481 통합 결과로만 수용한다. remote push, merge, #6413 close는 별도 지시가 있을 때만 수행한다.
+**당시 판정: 승인.** TAC 표 경계라는 이번 주장에 대한 직접 시각 증적과 계약 검증에는 차단 finding이 없다. 수치는 전체 fidelity 합격이 아니라 claim-scoped 근거이며, 원 PR은 직접 merge하지 않고 #6481 통합 결과로만 수용한다. remote push, merge, #6413 close는 별도 지시가 있을 때만 수행한다.
+
+## #6485 최신 통합 판정
+
+#6481은 닫힌 역사 통합이다. 현재 수용 대상은 PR #6485의 code candidate `f47d5b3586d470c99ed38f155af18175801f3c85`에 적용된 `9fbc0c092`이며, 원 PR head는 직접 병합하지 않는다. focused 2건, 전체 nextest 8,785건, Native Skia, WASM, lint가 실제 통과했다. HWP MCP 2020 기준 PDF `pdf/pr6485-visual/pr6485-issue6298-copay-cap-tac-table-leading-2020.pdf`(SHA-256 `3c661ccd22d30c7a50e1e7e2f95a6c56b15606e2d2c614bb6391776947f480c0`)와 p12 direct sweep의 `pixel_match=87.92468`, proxy `79.37219`, 후보 0건을 확인했다. 대표 PNG는 [p12 review PNG](../assets/pr_6485_issue6298_p012_review.png)다.
+
+**최종 판정: 승인.** #6485 최신 trailing head의 required CI와 명시적 merge 승인이 남은 조건이다.
+
+## Merge 후 contributor PR comment 계획
+
+#6485 merge SHA와 실제 PR/devel CI를 기록하고 [Visual Sweep 정본](../../manual/verification/visual_sweep_guide.md#github-merge-comment), p12 후보 0건과 위 수치, `<merge-commit-sha>` 고정 raw PNG URL을 body-file 방식으로 한 번 게시한다.

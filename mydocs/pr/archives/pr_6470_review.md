@@ -37,6 +37,16 @@ author: planet6897
 
 golden SVG와 번들 이미지는 contributor 산출물만으로 판단하지 않았다. 통합 code head에서 HWP MCP 2020 기준 PDF와 전 8쪽 sweep을 실행했고, 비용 상세 열 claim page인 8쪽의 `pixel_match=90.08795`, `visual_accuracy_proxy_percent=25.08413`, 자동 후보 0건을 기록했다. review PNG에서 비용 상세 텍스트가 우측 cell line을 넘거나 잘려 보이지 않았다. 대표 증적은 [p8 review PNG](../assets/pr_6481_issue6443_p008_review.png)이며, 재현 명령과 원본/PDF SHA는 [PR #6481 visual sweep 기록](pr_6481_planet6897_visual_sweep.md)에 있다.
 
-## 현재 결론
+## #6481 당시 결론 (역사)
 
-**최종 판정: 승인.** 저장된 condensed width와 텍스트 계약은 통과했고 claim page의 우측 경계도 직접 확인했다. proxy 수치는 overflow/clip 여부의 제한된 근거다. 원 PR은 직접 merge하지 않고 #6481 통합 결과로만 수용한다. remote push, merge, #6470 close는 별도 지시가 있을 때만 수행한다.
+**당시 판정: 승인.** 저장된 condensed width와 텍스트 계약은 통과했고 claim page의 우측 경계도 직접 확인했다. proxy 수치는 overflow/clip 여부의 제한된 근거다. 원 PR은 직접 merge하지 않고 #6481 통합 결과로만 수용한다. remote push, merge, #6470 close는 별도 지시가 있을 때만 수행한다.
+
+## #6485 최신 통합 판정
+
+현재 수용 대상은 PR #6485 code candidate `f47d5b3586d470c99ed38f155af18175801f3c85`의 `e476c9625`이며 원 PR head는 직접 병합하지 않는다. focused 2건, 전체 nextest 8,785건, Native Skia, WASM, lint가 실제 통과했다. HWP MCP 2020 기준 PDF `pdf/pr6485-visual/pr6485-issue6443-research-project-design-form-2020.pdf`(SHA-256 `37f5057fb78108c195a0437a2f9887be1da628272dcbb729c449f93dd8319421`)와 p8 direct sweep의 `pixel_match=90.08795`, proxy `25.08413`, 후보 0건을 확인했다. 대표 PNG는 [p8 review PNG](../assets/pr_6485_issue6443_p008_review.png)다.
+
+**최종 판정: 승인.** #6485 최신 trailing head CI와 명시적 merge 승인이 남은 조건이다.
+
+## Merge 후 contributor PR comment 계획
+
+#6485 merge SHA와 실제 PR/devel CI, p8 후보 0건과 위 수치를 [Visual Sweep 정본](../../manual/verification/visual_sweep_guide.md#github-merge-comment), `<merge-commit-sha>` 고정 raw PNG URL로 한 번 게시한다.
