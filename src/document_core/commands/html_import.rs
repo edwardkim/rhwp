@@ -579,6 +579,75 @@ impl DocumentCore {
                     paragraphs.extend(sub_paras);
                     pos = div_end;
                     continue;
+                } else if tag_lower.starts_with("<ul") || tag_lower.starts_with("<ol") {
+                    // [Gmail 등 웹메일 서명 붙여넣기가 raw 태그로 나오던 결함] 목록 태그
+                    // 자체는 컨테이너일 뿐이라 <div>처럼 내부를 재귀 처리한다 — <li> 각각이
+                    // 실제 항목 문단이 된다.
+                    if !pending_text.trim().is_empty() {
+                        self.flush_text_to_paragraphs(&mut paragraphs, &pending_text);
+                        pending_text.clear();
+                    }
+                    let list_tag_name = if tag_lower.starts_with("<ul") {
+                        "ul"
+                    } else {
+                        "ol"
+                    };
+                    let list_content_start = tag_end + 1;
+                    let list_end = find_closing_tag_chars(&chars, pos, list_tag_name);
+                    let list_inner: String = chars[list_content_start..list_end.min(len)]
+                        .iter()
+                        .collect();
+                    let close_marker = format!("</{list_tag_name}>");
+                    let list_inner = if let Some(idx) = list_inner.rfind(&close_marker) {
+                        &list_inner[..idx]
+                    } else {
+                        &list_inner
+                    };
+                    let sub_paras = self.parse_html_to_paragraphs(list_inner);
+                    paragraphs.extend(sub_paras);
+                    pos = list_end;
+                    continue;
+                } else if tag_lower.starts_with("<li") {
+                    // <li> 내부 전체(중첩 span/strong 등 포함)를 한 문단으로 묶어
+                    // parse_inline_content 로 서식까지 보존해 파싱하고, 글머리 기호를
+                    // 앞에 붙인다. 표 없는 최상위 <p> 처리와 동일한 패턴.
+                    if !pending_text.trim().is_empty() {
+                        self.flush_text_to_paragraphs(&mut paragraphs, &pending_text);
+                        pending_text.clear();
+                    }
+                    let li_content_start = tag_end + 1;
+                    let li_end = find_closing_tag_chars(&chars, pos, "li");
+                    let li_inner: String =
+                        chars[li_content_start..li_end.min(len)].iter().collect();
+                    let li_inner = if let Some(idx) = li_inner.rfind("</li>") {
+                        &li_inner[..idx]
+                    } else {
+                        &li_inner
+                    };
+                    let mut para = Paragraph::default();
+                    self.parse_inline_content(&mut para, li_inner);
+                    if !para.text.trim().is_empty() {
+                        para.text = format!("• {}", para.text);
+                        para.char_offsets = para
+                            .text
+                            .chars()
+                            .scan(0u32, |acc, c| {
+                                let off = *acc;
+                                *acc += c.len_utf16() as u32;
+                                Some(off)
+                            })
+                            .collect();
+                        para.char_count = para.text.encode_utf16().count() as u32 + 1;
+                        // 글머리 기호("• ")만큼 스타일 구간을 오른쪽으로 밀어 정렬을 맞춘다.
+                        // start_pos 는 UTF-16 코드유닛 단위(위 char_offsets 와 동일 축).
+                        let bullet_len = "• ".encode_utf16().count() as u32;
+                        for cs in &mut para.char_shapes {
+                            cs.start_pos += bullet_len;
+                        }
+                        paragraphs.push(para);
+                    }
+                    pos = li_end;
+                    continue;
                 } else if tag_lower.starts_with("<br") {
                     // <br> → 문단 구분
                     if !pending_text.is_empty() {
@@ -597,18 +666,26 @@ impl DocumentCore {
                 } else {
                     // 기타 태그 무시 (span 등 인라인은 <p> 밖에서 직접 올 수 있음)
                     if tag_lower.starts_with("<span") {
-                        // <span>...</span> 인라인 콘텐츠
+                        // [Gmail 등 웹메일 서명 붙여넣기가 raw 태그로 나오던 결함] 예전
+                        // 코드는 span 내부(중첩 <u>/<strong>/주석 포함)를 첫 ">" 뒤부터
+                        // 그대로 pending_text 에 밀어 넣어, 태그 자체가 문서에 문자로
+                        // 그대로 찍혔다. <p> 처리와 같은 방식으로 parse_inline_content 에
+                        // 넘겨 중첩 서식(굵게 등)까지 해석한 문단으로 만든다.
+                        if !pending_text.trim().is_empty() {
+                            self.flush_text_to_paragraphs(&mut paragraphs, &pending_text);
+                            pending_text.clear();
+                        }
                         let span_end = find_closing_tag_chars(&chars, pos, "span");
-                        let span_full: String =
-                            chars[tag_start..span_end.min(len)].iter().collect();
-                        let span_full = if let Some(idx) = span_full.rfind("</span>") {
-                            &span_full[..idx]
-                        } else {
-                            &span_full
-                        };
-                        // span 태그 내부 텍스트 추출
-                        if let Some(gt_pos) = span_full.find('>') {
-                            pending_text.push_str(&span_full[gt_pos + 1..]);
+                        let inner_start = tag_end + 1;
+                        let inner_end = span_end.saturating_sub(7); // "</span>".len()
+                        let span_inner: String = chars
+                            [inner_start..inner_end.max(inner_start).min(len)]
+                            .iter()
+                            .collect();
+                        let mut para = Paragraph::default();
+                        self.parse_inline_content(&mut para, &span_inner);
+                        if !para.text.trim().is_empty() {
+                            paragraphs.push(para);
                         }
                         pos = span_end;
                         continue;
