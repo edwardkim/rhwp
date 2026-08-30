@@ -22,6 +22,8 @@ pub struct SVGPlayer {
     context_stack: Vec<DeviceContext>,
     context_current: DeviceContext,
     definitions: Vec<Node>,
+    /// [#6469] 근사로 방출한 `PATINVERT` 사각형 이력 — 같은 사각형이 다시 오면 상쇄한다.
+    xor_rects: Vec<(i16, i16, i16, i16, String)>,
     elements: Vec<Node>,
     object_selected: SelectedGraphicsObject,
     current_clip_id: Option<String>,
@@ -69,6 +71,7 @@ impl crate::wmf::converter::Player for SVGPlayer {
         let Self {
             context_current,
             definitions,
+            xor_rects,
             elements,
             ..
         } = self;
@@ -215,12 +218,11 @@ impl crate::wmf::converter::Player for SVGPlayer {
             }
         };
 
-        let Some(elem) =
-            operator
-                .run(&mut self.definitions)
-                .map_err(|err| PlayError::InvalidRecord {
-                    cause: err.to_string(),
-                })?
+        let Some(elem) = operator
+            .run(&mut self.definitions, &mut self.xor_rects)
+            .map_err(|err| PlayError::InvalidRecord {
+                cause: err.to_string(),
+            })?
         else {
             return Ok(self);
         };
@@ -290,12 +292,11 @@ impl crate::wmf::converter::Player for SVGPlayer {
             }
         };
 
-        let Some(elem) =
-            operator
-                .run(&mut self.definitions)
-                .map_err(|err| PlayError::InvalidRecord {
-                    cause: err.to_string(),
-                })?
+        let Some(elem) = operator
+            .run(&mut self.definitions, &mut self.xor_rects)
+            .map_err(|err| PlayError::InvalidRecord {
+                cause: err.to_string(),
+            })?
         else {
             return Ok(self);
         };
@@ -375,12 +376,11 @@ impl crate::wmf::converter::Player for SVGPlayer {
             }
         };
 
-        let Some(elem) =
-            operator
-                .run(&mut self.definitions)
-                .map_err(|err| PlayError::InvalidRecord {
-                    cause: err.to_string(),
-                })?
+        let Some(elem) = operator
+            .run(&mut self.definitions, &mut self.xor_rects)
+            .map_err(|err| PlayError::InvalidRecord {
+                cause: err.to_string(),
+            })?
         else {
             return Ok(self);
         };
@@ -474,12 +474,11 @@ impl crate::wmf::converter::Player for SVGPlayer {
             }
         };
 
-        let Some(elem) =
-            operator
-                .run(&mut self.definitions)
-                .map_err(|err| PlayError::InvalidRecord {
-                    cause: err.to_string(),
-                })?
+        let Some(elem) = operator
+            .run(&mut self.definitions, &mut self.xor_rects)
+            .map_err(|err| PlayError::InvalidRecord {
+                cause: err.to_string(),
+            })?
         else {
             return Ok(self);
         };
@@ -523,12 +522,11 @@ impl crate::wmf::converter::Player for SVGPlayer {
             operator = operator.source_bitmap(dib);
         }
 
-        let Some(elem) =
-            operator
-                .run(&mut self.definitions)
-                .map_err(|err| PlayError::InvalidRecord {
-                    cause: err.to_string(),
-                })?
+        let Some(elem) = operator
+            .run(&mut self.definitions, &mut self.xor_rects)
+            .map_err(|err| PlayError::InvalidRecord {
+                cause: err.to_string(),
+            })?
         else {
             return Ok(self);
         };
