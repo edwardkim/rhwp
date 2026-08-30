@@ -628,12 +628,41 @@ impl DocumentCore {
             self.flush_text_to_paragraphs(&mut paragraphs, &pending_text);
         }
 
-        // 빈 결과 시 최소 처리
+        // 빈 결과 시 최소 처리 — flush_text_to_paragraphs 재사용으로 줄바꿈 분리와
+        // 긴 줄 강제 절단(FLUSH_LINE_CHAR_CAP)을 여기도 동일하게 적용한다.
+        // flush_text_to_paragraphs 가 자체적으로 decode_html_entities 를 수행하므로,
+        // 여기서는 태그만 벗긴 원문(html_strip_tags)을 넘겨 엔티티 이중 디코딩을 피한다.
         if paragraphs.is_empty() {
-            let plain = html_to_plain_text(html);
-            if !plain.is_empty() {
+            let stripped = html_strip_tags(html);
+            if !stripped.trim().is_empty() {
+                self.flush_text_to_paragraphs(&mut paragraphs, &stripped);
+            }
+        }
+
+        paragraphs
+    }
+
+    /// 개행이 전혀 없는 한 "줄"을 이 길이(문자 수) 단위로 강제 절단해 별도 문단으로 만든다.
+    ///
+    /// [붙여넣기 화면 겹침 방지] 웹페이지 렌더 결과가 아니라 원본 소스(view-source 등)를
+    /// 통째로 복사하면, 내부 텍스트에 실제 개행 문자가 전혀 없는 경우(예: 한 줄짜리 최소화
+    /// JS/JSON 블록)가 있다 — 실사용 확인: Daum 홈페이지 전체 소스(HTML 598KB) 붙여넣기가
+    /// 개행 없는 50만자 이상 단일 문단을 만들어 화면이 겹쳐 보이는 결과로 이어졌다. 문단
+    /// 하나가 이 정도로 크면 줄바꿈 계산 등 조판 경로가 원래 가정하지 않은 크기라 무너진다.
+    const FLUSH_LINE_CHAR_CAP: usize = 4000;
+
+    /// 텍스트를 문단으로 변환하여 추가한다 (줄바꿈 기준 분리, 개행 없는 긴 줄은 추가 절단).
+    pub(crate) fn flush_text_to_paragraphs(&self, paragraphs: &mut Vec<Paragraph>, text: &str) {
+        let decoded = decode_html_entities(text);
+        for line in decoded.split('\n') {
+            let trimmed = line.trim();
+            if trimmed.is_empty() {
+                continue;
+            }
+            let chars: Vec<char> = trimmed.chars().collect();
+            for chunk in chars.chunks(Self::FLUSH_LINE_CHAR_CAP) {
                 let mut para = Paragraph::default();
-                para.text = plain;
+                para.text = chunk.iter().collect();
                 // [#3494] char_count 는 문단 종결자를 포함한다 (model/paragraph.rs:1042).
                 para.char_count = para.text.encode_utf16().count() as u32 + 1;
                 para.char_offsets = para
@@ -647,33 +676,6 @@ impl DocumentCore {
                     .collect();
                 paragraphs.push(para);
             }
-        }
-
-        paragraphs
-    }
-
-    /// 텍스트를 문단으로 변환하여 추가한다 (줄바꿈 기준 분리).
-    pub(crate) fn flush_text_to_paragraphs(&self, paragraphs: &mut Vec<Paragraph>, text: &str) {
-        let decoded = decode_html_entities(text);
-        for line in decoded.split('\n') {
-            let trimmed = line.trim();
-            if trimmed.is_empty() {
-                continue;
-            }
-            let mut para = Paragraph::default();
-            para.text = trimmed.to_string();
-            // [#3494] char_count 는 문단 종결자를 포함한다 (model/paragraph.rs:1042).
-            para.char_count = para.text.encode_utf16().count() as u32 + 1;
-            para.char_offsets = para
-                .text
-                .chars()
-                .scan(0u32, |acc, c| {
-                    let off = *acc;
-                    *acc += c.len_utf16() as u32;
-                    Some(off)
-                })
-                .collect();
-            paragraphs.push(para);
         }
     }
 
