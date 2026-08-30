@@ -11,6 +11,11 @@ import type { CanvasKitRenderDiagnostics } from './canvaskit-renderer';
 import type { FontDecisionTraceRecordV1 } from '@/core/font-decision-trace';
 import { clampRenderScale, type RenderBackend } from './render-backend';
 import {
+  DEFAULT_PAGE_LAYER_COUNT,
+  resolveAdaptiveRenderScale,
+  type RenderDprBucket,
+} from './adaptive-render-scale.ts';
+import {
   RendererSession,
   type RendererSessionDiagnostics,
   type RendererSessionSelection,
@@ -69,6 +74,7 @@ export class CanvasView {
   private currentVisiblePages: number[] = [];
   private editingPageIndex: number | null = null;
   private activePageSnapshot: ActivePageSnapshot | null = null;
+  private pageRenderBuckets = new Map<number, RenderDprBucket>();
   private unsubscribers: (() => void)[] = [];
   private pendingTextEditRefreshes = new Map<number, PageRenderContext>();
   private textEditRefreshRafId: number | null = null;
@@ -636,8 +642,32 @@ export class CanvasView {
       console.error(`[CanvasView] 페이지 ${pageIdx} 정보가 없습니다`);
       return false;
     }
-    // iOS/WebKit과 GPU surface가 감당하기 어려운 물리 픽셀 수를 중앙 정책으로 제한한다.
-    const renderScale = clampRenderScale(pageInfo, zoom * rawDpr);
+    const interaction = this.viewportManager.isZoomAnimating() ? 'pinch' : 'idle';
+    const layerCount = this.pageRenderer.getBackend() === 'canvaskit'
+      ? 1
+      : DEFAULT_PAGE_LAYER_COUNT;
+    const pagesPerRow = this.virtualScroll.isHorizontalMode()
+      ? Math.max(this.currentVisiblePages.length, 1)
+      : this.virtualScroll.pagesPerRow;
+    const decision = resolveAdaptiveRenderScale({
+      pageWidth: pageInfo.width,
+      pageHeight: pageInfo.height,
+      zoom,
+      rawDpr,
+      pagesPerRow,
+      visiblePageCount: this.currentVisiblePages.length,
+      retainedPageCount: this.canvasPool.activePages.length,
+      layerCount,
+      isFocused: this.activePageSnapshot?.pageIndex === pageIdx
+        && this.activePageSnapshot.source === 'editing',
+      isEditing: this.editingPageIndex === pageIdx,
+      interaction,
+      renderProfile: this.pageRenderer.getRenderProfile(),
+      previousBucket: this.pageRenderBuckets.get(pageIdx) ?? null,
+    });
+    this.pageRenderBuckets.set(pageIdx, decision.bucket);
+    // 표시 zoom과 내부 render scale을 분리하고, 페이지당 67M 상한은 기존 clamp를 유지한다.
+    const renderScale = clampRenderScale(pageInfo, decision.renderScale);
     const dpr = renderScale / (zoom > 0 ? zoom : 1);
 
     // Canvas를 DOM에 추가하고 위치를 설정한다
@@ -696,6 +726,9 @@ export class CanvasView {
     renderedCanvas.style.height = `${renderedCanvas.height / dpr}px`;
     renderedCanvas.style.transformOrigin = '';
     renderedCanvas.dataset.rhwpRenderedZoom = String(zoom);
+    renderedCanvas.dataset.rhwpRenderTier = decision.tier;
+    renderedCanvas.dataset.rhwpRenderBucket = String(decision.bucket);
+    renderedCanvas.dataset.rhwpEffectiveDpr = String(dpr);
     this.renderGridOverlay(pageIdx, renderedCanvas);
     if (renderResult.needsTextEditStaticLayerVerification) {
       this.scheduleTextEditStaticLayerVerification(pageIdx);
@@ -1087,6 +1120,7 @@ export class CanvasView {
     this.pageRenderer.removeAllPageLayers(this.scrollContent);
     this.removeAllGridOverlays();
     this.canvasPool.releaseAll();
+    this.pageRenderBuckets.clear();
   }
 
   private refreshGridOverlays(): void {

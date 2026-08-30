@@ -280,6 +280,10 @@ export class PageRenderer {
     return this.backend;
   }
 
+  getRenderProfile(): LayerRenderProfile {
+    return this.renderProfile;
+  }
+
   getCanvasKitRenderDiagnostics(pageIdx: number): CanvasKitRenderDiagnostics | null {
     const diagnostics = this.canvaskitDiagnosticsByPage.get(pageIdx);
     if (!diagnostics) return null;
