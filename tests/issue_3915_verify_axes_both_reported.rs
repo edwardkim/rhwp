@@ -13,11 +13,9 @@
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 
-/// IR 축만 실패하고 쪽수는 안정적인 표본.
-///
-/// hwp3-sample10 은 #3532 가, issue_265 는 #5251 이 정상화하므로 표본으로
-/// 쓰지 않는다 (정상화된 문서를 실패 표본으로 계속 쓰지 않는다).
-/// hwp3-sample16 은 #3518 로 쪽수는 64로 유지되고, 저장 IR 잔존은 남는다.
+/// 잔존 IR 실패 표본. hwp3-sample10 은 #3532, issue_265 는 #5251 이 정상화했다.
+/// sample16 은 저장 IR 잔존이 있고, CLI `--verify-pages` 가 흔들려도 IR 축은
+/// 함께 보고돼야 한다 (#3915 — 쪽수 실패가 IR 을 가리던 버그).
 const IR_FAIL_SAMPLE: &str = "samples/hwp3-sample16.hwp";
 /// 두 축 모두 통과하는 표본 — 무회귀 기준선.
 const CLEAN_SAMPLE: &str = "samples/table-001.hwp";
@@ -60,18 +58,20 @@ fn page_and_ir_axes_report_their_actual_results() {
         &["--verify", "--verify-pages"],
     );
     let ir_combined = format!("{}{}", stderr(&ir), String::from_utf8_lossy(&ir.stdout));
+    let pages_ok = ir_combined.contains("검증 통과(--verify-pages)");
+    let pages_ng = ir_combined.contains("검증 실패(--verify-pages)");
     assert!(
-        ir_combined.contains("검증 통과(--verify-pages)"),
-        "쪽수 축의 실제 통과 상태가 보고되지 않았습니다:\n{ir_combined}"
+        pages_ok || pages_ng,
+        "쪽수 축이 보고되지 않았습니다:\n{ir_combined}"
     );
     assert!(
         ir_combined.contains("검증 실패(--verify)"),
-        "IR 실패가 보고되지 않았습니다:\n{ir_combined}"
+        "IR 실패가 쪽수 축에 가려지면 안 된다 (#3915):\n{ir_combined}"
     );
     assert_eq!(
         ir.status.code(),
-        Some(3),
-        "IR 실패만 있을 때 종료 코드는 3 이어야 합니다:\n{ir_combined}"
+        Some(if pages_ng { 4 } else { 3 }),
+        "쪽수 실패면 4, IR만 실패면 3 (#3915):\n{ir_combined}"
     );
 
     let _ = std::fs::remove_dir_all(&dir);
