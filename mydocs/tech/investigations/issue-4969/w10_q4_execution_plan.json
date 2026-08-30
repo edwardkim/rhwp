@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q4-vertical-execution-plan",
+  "issue": 4969,
+  "stage": "W10-Q4",
+  "date": "2026-08-30",
+  "status": "approved-checkpoint-commit-pending",
+  "productMutationBeforeApproval": false,
+  "slices": [
+    {
+      "id": "Q4-A",
+      "name": "exact-vertical-output-oracle-contract",
+      "productCaller": false,
+      "exit": "deterministic-glyph-cluster-xy-position-oracles-and-negative-control"
+    },
+    {
+      "id": "Q4-B",
+      "name": "typed-surface-vertical-intent",
+      "productCaller": false,
+      "exit": "surface-specific-intent-map-and-round-trip-regression-zero"
+    },
+    {
+      "id": "Q4-C",
+      "name": "dormant-vertical-layout-transaction",
+      "productCaller": false,
+      "exit": "measurement-bbox-next-origin-mismatch-zero"
+    },
+    {
+      "id": "Q4-D",
+      "name": "one-surface-bounded-atomic-activation",
+      "candidate": "table-cell-one-paragraph-one-run-one-column-homogeneous-cjk",
+      "exit": "exact-position-mismatch-zero-partial-publication-zero"
+    },
+    {
+      "id": "Q4-E",
+      "name": "extension-and-editor-coordinate-classification",
+      "exit": "qualified-bounded-subset-dormant-blocked-or-follow-up-per-surface"
+    },
+    {
+      "id": "Q4-F",
+      "name": "q5-handoff-checkpoint",
+      "exit": "machine-readable-support-matrix-and-q5-measurement-scope"
+    }
+  ],
+  "invariants": {
+    "horizontalOutputRegressionAllowed": false,
+    "horizontalRotationMayQualifyAsExactVertical": false,
+    "versionBasedPolicyAllowed": false,
+    "rawDirectionNumberMaySelectOpenTypeMode": false,
+    "backendReshapingAllowed": false,
+    "partialPublicationAllowed": false,
+    "privateCorpusAllowed": false
+  },
+  "hyperV": {
+    "requiredForQ4A": false,
+    "requiredForInitialQ4B": false,
+    "conditional": true,
+    "requiresSeparateApproval": true
+  },
+  "approvalGates": {
+    "eachSliceResult": true,
+    "checkpoint": true,
+    "commit": true,
+    "push": true,
+    "githubComment": true,
+    "pullRequest": true
+  },
+  "next": "approve-handoff-plan-checkpoint-commit-then-enter-Q4-A"
+}
