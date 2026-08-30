@@ -462,10 +462,12 @@ export function replaceBodyTextWithMutationEffects(
     deleteCount,
     text,
   );
+  const focusedPagePatch = !result.flowChanged ? result.focusedPagePatch : undefined;
   return {
     documentPaginationPending: result.documentPaginationPending,
     flowChanged: result.flowChanged,
     paginationCompleted: !result.documentPaginationPending,
+    ...(focusedPagePatch ? { focusedPagePatch } : {}),
   };
 }
 
