@@ -112,7 +112,10 @@ review 문서에는 최소한 다음을 포함한다.
 - 렌더 영향과 visual sweep 필요 여부
 - 선택한 로컬·CI·시각 검증 및 생략 이유
 - 발견한 문제·risk·후속 이슈
-- 최종 권고: merge, 보정, rebase 요청, 재작업, close, 보류 중 하나
+- `최종 판정`: [공통 판정 용어](../pr_review_workflow.md#11-최종-판정-용어와-원격-조치의-분리)의
+  `승인`, `머지 보류`, `메인터너 보정 후 수용 가능` 중 정확히 하나
+- 판정 근거와 다음 조건: `승인`이면 merge 전 게이트, `머지 보류`면 해제 조건,
+  `메인터너 보정 후 수용 가능`이면 원 head·보정 SHA·통합 검증 경로
 
 시각 검증을 최종 권고의 근거로 썼다면 `Merge 후 contributor PR comment 계획`도 review 문서에 포함한다.
 계획에는 Visual Sweep 정본 direct link, 실제 페이지·후보 수·지표와 사람의 판정, representative PNG의
@@ -152,11 +155,28 @@ GitHub Actions와 mergeability는 작성 뒤에도 변하는 외부 상태이므
 merge 전 조건으로 구분해 기록한다. 이 규칙은 로컬 검증 결과를 미래 약속처럼 약화하거나,
 반대로 대기 중 CI를 완료 사실처럼 쓰는 일을 함께 막는다.
 
-### 3.5 가설 기각·재분류 PR
+### 3.5 판정 기록 예시
+
+`승인`에는 검증을 통과한 변경만 포함하고, 현재 CI 대기나 작업지시자 승인 같은 외부 게이트는
+"merge 전 조건"으로 별도 적는다. `머지 보류`는 "추가 검토 필요"처럼 모호하게 쓰지 말고 blocker와
+해제 조건을 함께 적는다. `메인터너 보정 후 수용 가능`은 contributor 원 변경의 수용과 collaborator가
+추가한 보정의 수용을 구분하는 판정이다. 원 head와 보정 뒤 integration head를 같은 대상으로 쓰지 않는다.
+
+~~~markdown
+## 최종 판정
+
+- 판정: 메인터너 보정 후 수용 가능
+- 원 PR head: <contributor SHA>; 이 head만으로는 <blocker> 때문에 수용하지 않는다.
+- 보정 후보: <maintainer SHA>; <보정 범위>만 추가했다.
+- 수용 전 조건: <보정 대상 focused/full CI와 시각 증적>, 최신 integration head CI, 작업지시자 승인.
+- 원격 조치: 이 기록 자체는 GitHub approve, comment, close, push 또는 merge를 수행하지 않는다.
+~~~
+
+### 3.6 가설 기각·재분류 PR
 
 조사 PR이 초기 가설을 기각하거나 다른 원인 계통으로 재분류하는 목적이면, 기각 자체는 merge 보류 사유가 아니다.
 다만 최종 보고서·stage 문서·README·sample 설명이 같은 결론을 가리키고, 기각 근거와 후속 issue가 명확해야 한다.
-초기 가설을 최종 사실처럼 남긴 문서가 있으면 수정 요청 또는 보정 뒤에 판단한다.
+초기 가설을 최종 사실처럼 남긴 문서가 있으면 `머지 보류` 또는 `메인터너 보정 후 수용 가능`으로 기록한다.
 
 시각 검증을 실제 판단 근거로 쓸 때의 asset·기준 PDF·MCP·comment 규칙은
 [시각·fixture 증적](visual_fixture_evidence.md)을 따른다.

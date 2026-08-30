@@ -1,8 +1,8 @@
 ---
 kind: pr-review
-status: visual-hold
+status: approved-via-integration
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-08-30
+last_verified: 2026-08-31
 pr: 6470
 issue: 6443
 author: planet6897
@@ -16,7 +16,7 @@ author: planet6897
 |---|---|
 | 원 PR head 직접 병합 | 하지 않음 |
 | 수용 대상 | 통합 PR #6481에 포함된 `421f3846d14720a9cfd3b2fc8f4a42afea80fc90` |
-| 현재 상태 | 수용 보류: golden SVG와 비용 상세 열 visual sweep이 아직 완료되지 않음 |
+| 현재 상태 | 승인: #6481 통합 후보 기준으로 비용 상세 열 시각 증적과 계약 검증에 차단 finding 없음 |
 | 승인 뒤 처리 | #6481 수용·병합 뒤 #6470을 포함 수용 근거와 함께 close |
 
 ## 식별과 provenance
@@ -35,8 +35,8 @@ author: planet6897
 
 통합 후보에서 `cost_detail_column_text_is_intact`, `cost_detail_column_keeps_its_stored_condensed_width`가 통과했다. 공통 필수 clippy·build·manifest·format 검증도 통과했다.
 
-golden SVG와 번들 이미지 변경은 통합 PR Render Diff에서 다시 확인해야 하며, contributor 산출물만으로 시각 sweep 통과를 주장하지 않는다.
+golden SVG와 번들 이미지는 contributor 산출물만으로 판단하지 않았다. 통합 code head에서 HWP MCP 2020 기준 PDF와 전 8쪽 sweep을 실행했고, 비용 상세 열 claim page인 8쪽의 `pixel_match=90.08795`, `visual_accuracy_proxy_percent=25.08413`, 자동 후보 0건을 기록했다. review PNG에서 비용 상세 텍스트가 우측 cell line을 넘거나 잘려 보이지 않았다. 대표 증적은 [p8 review PNG](../assets/pr_6481_issue6443_p008_review.png)이며, 재현 명령과 원본/PDF SHA는 [PR #6481 visual sweep 기록](pr_6481_planet6897_visual_sweep.md)에 있다.
 
 ## 현재 결론
 
-저장된 condensed width와 텍스트 계약은 통과했지만 golden SVG 변경은 직접 visual 확인이 필요하다. 현재는 visual sweep 미실행에 따른 수용 보류이며, 승인 뒤 #6481의 CI와 visual 증빙을 확인한 경우에만 포함 수용한다.
+**최종 판정: 승인.** 저장된 condensed width와 텍스트 계약은 통과했고 claim page의 우측 경계도 직접 확인했다. proxy 수치는 overflow/clip 여부의 제한된 근거다. 원 PR은 직접 merge하지 않고 #6481 통합 결과로만 수용한다. remote push, merge, #6470 close는 별도 지시가 있을 때만 수행한다.

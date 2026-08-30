@@ -35,7 +35,24 @@ focused test 또는 과거 녹색 CI는 이 선행 lint gate를 대체하지 않
 기존 code head를 재검토할 때의 광범위 회귀 생략 규칙일 뿐, maintainer 보정이나 새 code/test/baseline
 commit의 lint 생략 규칙이 아니다.
 
-### 1.1 PR 번호 채번과 review 기록
+### 1.1 최종 판정 용어와 원격 조치의 분리
+
+모든 정식 `pr_N_review.md`는 최종 판정을 아래 셋 중 **정확히 하나**로 적는다. `close`,
+`rebase 요청`, `comment 게시`, GitHub review의 `approve`, `merge`는 판정명이 아니라 그 판정 뒤에
+작업지시자 승인을 받아 수행할 수 있는 별도 조치다.
+
+| 최종 판정 | 의미 | review 문서에 반드시 남길 내용 |
+| --- | --- | --- |
+| `승인` | 현재 검토 대상 head 또는 명시한 통합 head가 주장 범위의 증적과 적용 검증을 충족한다. | 검증한 SHA·범위·잔여 risk, merge 전 최신 head CI와 작업지시자 승인 조건 |
+| `머지 보류` | 현재 head는 병합하면 안 된다. 증적 부족, 재현된 결함, CI 실패, 범위 밖 위험 중 적어도 하나가 blocker다. | blocker와 근거, 보류를 해제할 정확한 증적·수정·CI 조건, 원격 조치를 하지 않는다는 상태 |
+| `메인터너 보정 후 수용 가능` | contributor 원 head 자체는 그대로 수용할 수 없지만, 범위를 제한한 maintainer 보정 commit을 적용한 통합 head는 수용 후보가 될 수 있다. | 원 head와 보정 SHA의 구분, 보정 이유·소유자, 보정 뒤 필요한 검증과 통합 PR 경로 |
+
+`승인`은 GitHub의 review event 또는 admin merge 권한 행사를 뜻하지 않는다. 세 판정 어느 것도
+최신 head의 required check, mergeability 재확인, 작업지시자의 원격 승인 게이트를 생략하지 않는다.
+`메인터너 보정 후 수용 가능`은 원 contributor PR을 직접 merge해도 된다는 뜻이 아니며, 보정이 포함된
+명시적 integration head만 다음 단계의 검토 대상이 된다.
+
+### 1.2 PR 번호 채번과 review 기록
 
 PR 번호는 PR을 생성할 때 채번된다. 따라서 collaborator self PR의 번호 기반 review 기록은
 다음 순서로 같은 PR에 포함한다.

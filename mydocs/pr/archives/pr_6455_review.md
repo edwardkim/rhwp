@@ -1,8 +1,8 @@
 ---
 kind: pr-review
-status: visual-hold
+status: approved-via-integration
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-08-30
+last_verified: 2026-08-31
 pr: 6455
 issue: 6442
 author: planet6897
@@ -16,7 +16,7 @@ author: planet6897
 |---|---|
 | 원 PR head 직접 병합 | 하지 않음 |
 | 수용 대상 | 기존 baseline 행을 보존한 #6481의 `1b8a5deff57cef226fb89e587128335fb767d86e` |
-| 현재 상태 | 수용 보류: 카드·페이지 배치 visual sweep과 최신 CI가 아직 완료되지 않음 |
+| 현재 상태 | 승인: #6481 통합 후보 기준으로 카드·페이지 배치 시각 증적과 계약 검증에 차단 finding 없음 |
 | 승인 뒤 처리 | #6481 수용·병합 뒤 #6455를 포함 수용 근거와 함께 close |
 
 ## 식별과 provenance
@@ -35,8 +35,8 @@ author: planet6897
 
 통합 후보에서 `unused_inner_margin_field_is_not_charged`, `page3_control_group_is_unchanged`, `both_back_side_cards_on_page2_carry_their_content`가 통과했다. 공통 필수 clippy·build·manifest·format 검증도 통과했다.
 
-번들 PNG는 통합 head 직접 재생성 결과가 아니므로 최종 시각 판정은 통합 PR Render Diff 성공을 조건으로 한다.
+번들 PNG는 변경 의도의 보조 자료로만 사용했다. 통합 code head에서 HWP MCP 2020 기준 PDF와 전 3쪽 sweep을 직접 실행했고, claim page인 2쪽의 `pixel_match=89.70238`, `visual_accuracy_proxy_percent=40.26297`, 자동 후보 0건을 기록했다. review PNG에서 앞면과 뒷면 카드 4개 모두 내용이 있고, 이번 결함인 뒷면 카드 공백은 보이지 않았다. 대표 증적은 [p2 review PNG](../assets/pr_6481_issue6442_p002_review.png)이며, 재현 명령과 원본/PDF SHA는 [PR #6481 visual sweep 기록](pr_6481_planet6897_visual_sweep.md)에 있다.
 
 ## 현재 결론
 
-baseline 충돌은 기존 회귀 행을 보존해 해소됐고 focused test도 통과했다. 그러나 cell margin 변경은 카드와 페이지 배치에 영향을 주므로 visual sweep 없이 수용 확정을 하지 않는다. 현재는 수용 보류이며, 승인 뒤 #6481의 CI와 visual 증빙을 확인한 경우에만 포함 수용한다.
+**최종 판정: 승인.** baseline 충돌은 기존 회귀 행을 보존해 해소됐고 focused test와 claim page 시각 증적에도 차단 finding이 없다. proxy 수치는 카드 공백 결함 해소의 제한된 근거다. 원 PR은 직접 merge하지 않고 #6481 통합 결과로만 수용한다. remote push, merge, #6455 close는 별도 지시가 있을 때만 수행한다.

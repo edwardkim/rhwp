@@ -1,8 +1,8 @@
 ---
 kind: pr-review
-status: visual-hold
+status: approved-via-integration
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-08-30
+last_verified: 2026-08-31
 pr: 6479
 issue: 6465
 author: planet6897
@@ -16,7 +16,7 @@ author: planet6897
 |---|---|
 | 원 PR head 직접 병합 | 하지 않음 |
 | 수용 대상 | 기존 overlap baseline 행을 보존한 #6481의 `2a014091410a1d4f93d24af804b8382e55103bdc` |
-| 현재 상태 | 수용 보류: footer/logo line 배치 visual sweep과 최신 CI가 아직 완료되지 않음 |
+| 현재 상태 | 승인: #6481 통합 후보 기준으로 footer/logo line 시각 증적과 계약 검증에 차단 finding 없음 |
 | 승인 뒤 처리 | #6481 수용·병합 뒤 #6479를 포함 수용 근거와 함께 close |
 
 ## 식별과 provenance
@@ -35,8 +35,8 @@ inline object가 footer logo와 같은 line을 잘못 공유하는 #6465 회귀�
 
 통합 후보에서 `footer_logos_sit_on_their_own_line`이 통과했다. 공통 필수 native·WASM·workspace clippy, workspace build, manifest와 format 검증도 통과했다.
 
-번들 PNG는 통합 head 직접 산출물이 아니므로 최종 시각 판정은 통합 PR Render Diff 성공을 조건으로 한다.
+번들 PNG는 변경 의도의 보조 자료로만 사용했다. 통합 code head에서 HWP MCP 2020 기준 PDF와 전 13쪽 sweep을 실행했고, footer/logo claim page인 13쪽의 `pixel_match=93.64131`, `visual_accuracy_proxy_percent=20.50308`, 자동 후보 0건을 기록했다. review PNG에서 footer logo와 설명 block은 자체 줄에 남아 inline object와 같은 줄을 공유하지 않았다. 대표 증적은 [p13 review PNG](../assets/pr_6481_issue6465_p013_review.png)이며, 재현 명령과 원본/PDF SHA는 [PR #6481 visual sweep 기록](pr_6481_planet6897_visual_sweep.md)에 있다.
 
 ## 현재 결론
 
-원 PR 최초 수집 시 CI가 진행 중이었고, footer/logo의 line placement는 사용자-visible 범위다. focused 계약만 통과한 현재 상태에서는 수용을 확정하지 않는다. 승인 뒤 #6481의 CI와 visual 증빙을 확인한 경우에만 포함 수용한다.
+**최종 판정: 승인.** footer/logo의 line placement는 사용자-visible 범위이므로 focused 계약과 claim page 시각 증적을 함께 확인했고 차단 finding이 없다. proxy 수치는 이번 줄 배치 주장에 한정한다. 원 PR은 직접 merge하지 않고 #6481 통합 결과로만 수용한다. remote push, merge, #6479 close는 별도 지시가 있을 때만 수행한다.
