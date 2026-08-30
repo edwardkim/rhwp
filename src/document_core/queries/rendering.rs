@@ -26,9 +26,7 @@ use crate::renderer::kerning::{
     ExactFontRegistryRegistration, ExactFontSlot, MAX_KERNING_REGISTRY_SLOTS,
 };
 use crate::renderer::layer_renderer::LayerRenderer;
-use crate::renderer::layout::{
-    estimate_text_width, resolved_to_text_style, CellContext, LayoutEngine,
-};
+use crate::renderer::layout::{estimate_text_width, resolved_to_text_style, CellContext};
 use crate::renderer::page_layout::PageLayoutInfo;
 use crate::renderer::pagination::{MasterPageRef, PageContent, PaginationResult, Paginator};
 use crate::renderer::render_tree::{
@@ -38,7 +36,6 @@ use crate::renderer::svg::SvgRenderer;
 use crate::renderer::svg_layer::SvgLayerRenderer;
 use crate::renderer::typeset::TypesetEngine;
 use crate::renderer::TextStyle;
-use std::cell::RefCell;
 use std::fmt::Write as _;
 
 const MAX_EMBEDDED_FONT_BYTES: usize = 32 * 1024 * 1024;
@@ -2425,7 +2422,6 @@ impl DocumentCore {
         };
         use crate::renderer::render_tree::RenderLayerInfo;
         use crate::renderer::render_tree::{BoundingBox, ImageNode};
-        use base64::Engine;
 
         fn effect_str(value: ImageEffect) -> &'static str {
             match value {
@@ -6764,10 +6760,6 @@ impl DocumentCore {
 
     /// 페이지 렌더 트리를 빌드한다.
     pub(crate) fn build_page_tree(&self, page_num: u32) -> Result<PageRenderTree, HwpError> {
-        use crate::model::style::HeadType;
-        use crate::renderer::layout::resolve_numbering_id;
-        use crate::renderer::pagination::PageItem;
-
         // [#4126/#4128 회귀 가드] 콜드 캐럿 질의의 O(pages) 빌드 폭증 판별용 작업량 카운터.
         crate::diagnostics::perf_counters::record_page_tree_build();
 

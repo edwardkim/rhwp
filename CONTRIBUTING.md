@@ -1,17 +1,22 @@
 # Contributing to rhwp
 
 > **PR·push 차단 게이트 — 하나라도 실패하면 `gh pr create` / `git push` 하지 마세요.**
-> 테스트만 고친 뒤에도 `cargo fmt --all -- --check` 를 다시 돌리세요. 일반 기여자의 source PR
-> checkout에서는 generated suite를 준비하지 않습니다.
+> 테스트·baseline만 고친 뒤에도 포맷과 Clippy를 다시 확인하세요. 일반 기여자의 source PR
+> checkout에서는 generated suite를 준비하지 않으며, maintainer review worktree의 전체 lint gate는
+> [로컬 사전 검증](mydocs/manual/pr_review/local_validation.md#43-변경-범위별-기본-검증)을 따릅니다.
 >
 > ```bash
 > cargo fmt --all
 > cargo fmt --all -- --check
+> cargo clippy --locked -- -D warnings
+> cargo clippy --locked -p rhwp --lib --target wasm32-unknown-unknown -- -D warnings
+> cargo build --locked --workspace --target-dir target/pr-review
+> cargo clippy --locked --workspace --all-targets --target-dir target/pr-review -- -D warnings
 > ```
 >
-> CI Lint job 의 Format check 는 `cargo fmt --all -- --check` 입니다.
-> `cargo fmt --check` 만으로는 부족합니다. 실패하면 `cargo fmt --all` 로 고친 뒤
-> `--check` 가 통과할 때까지 PR 을 만들지 마세요.
+> CI Lint job은 Format check 외에도 native·WASM32·workspace Clippy를 실행합니다. `cargo fmt --check`
+> 또는 native Clippy 하나만으로는 충분하지 않습니다. 실패하면 수정 후 같은 명령을 다시 통과시킨 뒤
+> PR을 만드세요.
 > `src/**`의 `#[cfg(test)]`를 바꾼 경우에는 추가로
 > `node scripts/rust-unit-test-tiers.mjs --check`를 실행하세요. 이 검사는 source와 추적 정책만
 > 읽으며 파생 inventory를 만들거나 stage하지 않습니다. 반면
@@ -156,6 +161,10 @@ HWP 파일이 한컴과 다르게 렌더링되면 알려주세요:
 cargo install cargo-nextest --locked             # 최초 1회
 cargo fmt --all                                  # 로컬 포맷 적용
 cargo fmt --all -- --check                       # CI와 같은 포맷 검증 — PR 전 필수
+cargo clippy --locked -- -D warnings              # native root lint
+cargo clippy --locked -p rhwp --lib --target wasm32-unknown-unknown -- -D warnings # WASM cfg lint
+cargo build --locked --workspace --target-dir target/pr-review
+cargo clippy --locked --workspace --all-targets --target-dir target/pr-review -- -D warnings
 node --test scripts/tests/rust-test-suite-manifest.test.mjs
 # `src/**`의 `#[cfg(test)]`를 변경한 경우에만 실행한다. 파생 파일은 생성하지 않는다.
 node scripts/rust-unit-test-tiers.mjs --check
@@ -167,8 +176,8 @@ cargo clippy --all-targets --target-dir target/pr-review -- -D warnings # 린트
 ```
 
 `cargo fmt --all -- --check` 가 실패하면 PR을 만들지 마세요. `cargo fmt --check`
-만으로는 CI `Lint (fmt, clippy, WASM check)` 와 같지 않습니다. 포맷이 깨졌으면
-`cargo fmt --all` 로 고친 뒤 다시 `--check` 가 통과한 다음에만 PR을 생성해주세요.
+만으로는 CI `Lint (fmt, clippy, WASM check)` 와 같지 않습니다. 포맷이 깨졌거나 native/WASM
+Clippy가 경고를 내면 수정 뒤 해당 lint를 다시 통과한 다음에만 PR을 생성해주세요.
 
 새 통합 테스트는 `tests/cases/` 에만 둡니다. `tests/suites/suite-policy.json`,
 `tests/suites/unit-test-tier-policy.json`은 추적하는 정책이고, `tests/generated/`, `tests/suites/manifest.json`,

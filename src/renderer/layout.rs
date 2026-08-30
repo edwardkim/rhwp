@@ -522,7 +522,8 @@ fn push_tac_post_f081c_line(
     } else {
         12.0
     };
-    let table_width_hu: u32 = table.get_column_widths().iter().sum();
+    // [#5785 후속] 표 오른쪽 끝 마커 위치도 흐름 폭과 같은 규칙을 써야 한다.
+    let table_width_hu: u32 = table.flow_width_hu();
     let marker_x = col_area.x + hwpunit_to_px(table_width_hu as i32, dpi);
     let width = (font_size * 0.45 * marker.count as f64).max(4.0);
     let stroke_width = (font_size * 0.055).clamp(0.5, 1.0);
@@ -2595,8 +2596,8 @@ pub(crate) use table_partial::{PartialTableCellProbe, ProbeCutPlan};
 pub(crate) use text_measurement::{
     compute_char_positions, estimate_text_width, estimate_text_width_unrounded,
     extract_tab_leaders_with_extended, find_next_tab_stop, hancom_regenerated_space_width,
-    is_cjk_char, is_halfwidth_cjk_quote, resolved_to_text_style, split_into_clusters,
-    trace_char_width_decisions, CharWidthDecision,
+    is_cjk_char, is_halfwidth_cjk_quote, resolved_letter_spacing, resolved_to_text_style,
+    split_into_clusters, trace_char_width_decisions, CharWidthDecision,
 };
 // [#6060] forces_halfwidth_cjk_quote 는 통합 테스트
 // (tests/cases/issue_6060_cjk_quote_paint_measure_parity.rs) 에서 측정-페인트 정합을
@@ -4014,7 +4015,7 @@ impl LayoutEngine {
                 // 남의 글자를 그린다. 형제 `substitute_page_auto_numbers_in_composed`도
                 // 원본 marker 문자열은 보존하고 해당 문단의 표시 문자열을 다시 만든다.
                 let mut plain = String::new();
-                let mut push_plain = |new_runs: &mut Vec<_>, text: String| {
+                let push_plain = |new_runs: &mut Vec<_>, text: String| {
                     let mut piece = run.clone();
                     piece.display_text = Self::pua_display_for(&text);
                     piece.text = text;
@@ -13102,6 +13103,27 @@ fn compute_tac_leading_width(
         .iter()
         .find(|(_, _, ci)| *ci == target_control_index)
         .map(|(pos, _, _)| *pos);
+
+    // [SBS 제출서류 표 오른쪽 밀림] 블록 취급 TAC 표(tac_pos_opt=None) 앞 텍스트가
+    // 탭(U+0009)뿐이면 그 폭을 leading 으로 합산하지 않는다. 스페이스는 일반 문자
+    // 처럼 고정폭 없이 실측 폭만큼 흐름에 남는 반면(Task #146 v3 text-align.hwp
+    // 문단 0.2 — 스페이스 4개 실측 leading 36.8px, 아래 단위 테스트로 고정),
+    // 탭은 "다음 탭 위치로 점프"라는 그리드 스냅 의미라 뒤에 오는 내용이 곧바로
+    // 자기 줄을 차지하는 block 표일 때는 그 점프 목표 자체가 무의미해진다 — 한글도
+    // 이런 표를 자기 줄 좌단에 그린다. SBS미디어넷 참여기업 모집공고 10쪽 "제출서류"
+    // 표(문단 텍스트가 탭 한 글자뿐)가 탭 폭만큼 밀려 용지 오른쪽 끝을 넘어가던
+    // 결함의 근본 원인 — `복학원서.hwp` pi=16(PUA 필러 U+F081C 기반 leading)이나
+    // 스페이스 기반 leading 은 이 조건에 해당하지 않아 그대로 보존된다.
+    if tac_pos_opt.is_none() {
+        let only_tabs = first_line
+            .runs
+            .iter()
+            .flat_map(|run| run.text.chars())
+            .all(|ch| ch == '\t');
+        if only_tabs {
+            return 0.0;
+        }
+    }
 
     let mut char_pos = first_line.char_start;
     let mut width = 0.0;

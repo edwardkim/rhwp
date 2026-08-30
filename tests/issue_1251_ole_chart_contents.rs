@@ -206,7 +206,7 @@ fn ole_chart_contents_renders_standalone_rust_svg() {
 #[cfg(not(target_arch = "wasm32"))]
 #[test]
 fn issue_1251_svg_uses_legacy_ole_chart_renderer() {
-    let mut doc = rhwp::wasm_api::HwpDocument::from_bytes(&read_fixture()).expect("parse fixture");
+    let doc = rhwp::wasm_api::HwpDocument::from_bytes(&read_fixture()).expect("parse fixture");
     let svg = doc.render_page_svg_native(0).expect("render page svg");
 
     assert!(svg.contains("hwp-ole-chart"));
@@ -231,7 +231,7 @@ fn issue_1283_hwpx_internal_ole_is_loaded_even_when_isembeded_zero() {
 #[cfg(not(target_arch = "wasm32"))]
 #[test]
 fn issue_1283_hwpx_svg_uses_legacy_ole_chart_renderer() {
-    let mut doc =
+    let doc =
         rhwp::wasm_api::HwpDocument::from_bytes(&read_hwpx_fixture()).expect("parse hwpx fixture");
     let svg = doc.render_page_svg_native(0).expect("render HWPX page svg");
 

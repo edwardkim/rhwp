@@ -25,8 +25,8 @@
 /// 크기 필드는 실제 바이트 수와 맞춘다.
 fn synth_wmf_with_poly_record(record_function: u16, number_of_points: i16) -> Vec<u8> {
     let mut out: Vec<u8> = Vec::new();
-    let mut push_u16 = |v: u16, buf: &mut Vec<u8>| buf.extend_from_slice(&v.to_le_bytes());
-    let mut push_u32 = |v: u32, buf: &mut Vec<u8>| buf.extend_from_slice(&v.to_le_bytes());
+    let push_u16 = |v: u16, buf: &mut Vec<u8>| buf.extend_from_slice(&v.to_le_bytes());
+    let push_u32 = |v: u32, buf: &mut Vec<u8>| buf.extend_from_slice(&v.to_le_bytes());
 
     // ── META_HEADER ──
     push_u16(1, &mut out); // Type: 1 = memory metafile

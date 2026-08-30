@@ -2971,6 +2971,7 @@ mod tests {
     // 는 Table/Image 는 전체 `cell_context`(다단계 경로)를, Rectangle/Line/Ellipse/
     // Path/Equation 은 단일 레벨(`cell_index`/`cell_para_index`/
     // `outer_table_control_index`, Task #1138/#1151 패턴)을 반영한다.
+
     #[test]
     fn issue_4334_stage3_document_position_coverage_precheck() {
         let candidates = [

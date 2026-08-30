@@ -41,14 +41,26 @@
 
 ## 문서와 검증
 
-- **모든 PR·push 직전 필수 (건너뛰면 CI Lint Format check 실패)**:
+- **Rust source 또는 Rust test/baseline helper를 바꾼 모든 PR·push 직전 필수**: 포맷만 확인하고
+  Clippy를 CI에 넘기지 않는다. PR review worktree에서 파생 integration suite를 준비한 뒤 아래
+  Rust lint 묶음을 **순차로** 모두 통과시킨다. `cargo clippy -- -D warnings`만으로는
+  WASM 전용 cfg와 workspace member·integration target을 놓치므로 CI `Lint (fmt, clippy, WASM
+  check)`의 세 Clippy 단계를 각각 확인한다.
   ```
+  node scripts/rust-test-suite-manifest.mjs --prepare
   cargo fmt --all
   cargo fmt --all -- --check
+  cargo clippy --locked --target-dir target/pr-review -- -D warnings
+  cargo clippy --locked -p rhwp --lib --target wasm32-unknown-unknown \
+    --target-dir target/pr-review -- -D warnings
+  cargo build --locked --workspace --target-dir target/pr-review
+  cargo clippy --locked --workspace --all-targets --target-dir target/pr-review -- -D warnings
+  node scripts/rust-test-suite-manifest.mjs --check
   ```
-  CI Format check 는 `cargo fmt --all -- --check` 이다. `cargo fmt --check` 만으로는
-  부족하다. 테스트만 고친 커밋도 다시 돌려야 한다. `--check` 가 실패하면
-  `cargo fmt --all` 후 다시 `--check` 가 통과하기 전에는 push 하지 않는다.
+  새 integration test source를 추가한 경우 `--prepare`가 만든 파생 파일은 검증 뒤 review
+  worktree에서만 복원하고 PR에 stage하지 않는다. 한 단계라도 실패하면 수정·재실행 전에는 push 또는
+  PR을 만들지 않는다. 세부 범위와 예외는 `mydocs/manual/pr_review/local_validation.md`의 4.3을
+  따른다.
 - **source-side test 변경 시 추가**: `src/**`의 `#[cfg(test)]`를 변경하면
   `node scripts/rust-unit-test-tiers.mjs --check`를 실행한다. 이 검사는 source와 정책만 읽고
   파생 inventory를 만들지 않는다. 진단용 `--generate` 결과는 `tests/generated/unit-test-tiers.json`에

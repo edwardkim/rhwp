@@ -620,8 +620,7 @@ use crate::model::shape::{
     ArcShape, CommonObjAttr, CurveShape, DrawingObjAttr, EllipseShape, GroupShape, LineShape,
     PolygonShape, RectangleShape, ShapeComponentAttr, ShapeObject, TextBox,
 };
-use crate::model::style::{Fill, FillType, ShapeBorderLine};
-use crate::model::Padding;
+use crate::model::style::{Fill, ShapeBorderLine};
 use crate::parser::hwp3::Hwp3Error;
 use std::collections::HashMap;
 

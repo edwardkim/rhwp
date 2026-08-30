@@ -3,7 +3,164 @@
 use std::fs;
 use std::path::Path;
 
+use rhwp::model::control::Control;
+use rhwp::model::document::Section;
+use rhwp::model::image::Picture;
+use rhwp::model::shape::{Caption, CaptionDirection, CaptionVertAlign, ShapeObject};
+
 use crate::{EXIT_OK, EXIT_RUNTIME, EXIT_USAGE};
+
+const CAPTION_WIDTH: u32 = 8504;
+const CAPTION_SPACING: i16 = 850;
+
+struct CaptionExpectation {
+    para: usize,
+    control: usize,
+    direction: CaptionDirection,
+    vert_align: CaptionVertAlign,
+}
+
+impl CaptionExpectation {
+    fn direction_name(&self) -> &'static str {
+        match self.direction {
+            CaptionDirection::Left => "Left",
+            CaptionDirection::Right => "Right",
+            CaptionDirection::Top => "Top",
+            CaptionDirection::Bottom => "Bottom",
+        }
+    }
+
+    fn vert_align_name(&self) -> &'static str {
+        match self.vert_align {
+            CaptionVertAlign::Top => "Top",
+            CaptionVertAlign::Center => "Center",
+            CaptionVertAlign::Bottom => "Bottom",
+        }
+    }
+
+    fn properties_json(&self) -> String {
+        format!(
+            r#"{{"hasCaption":true,"captionDirection":"{}","captionVertAlign":"{}","captionWidth":{CAPTION_WIDTH},"captionSpacing":{CAPTION_SPACING}}}"#,
+            self.direction_name(),
+            self.vert_align_name()
+        )
+    }
+}
+
+const EXPECTATIONS: [CaptionExpectation; 4] = [
+    CaptionExpectation {
+        para: 0,
+        control: 2,
+        direction: CaptionDirection::Bottom,
+        vert_align: CaptionVertAlign::Top,
+    },
+    CaptionExpectation {
+        para: 0,
+        control: 3,
+        direction: CaptionDirection::Top,
+        vert_align: CaptionVertAlign::Top,
+    },
+    CaptionExpectation {
+        para: 1,
+        control: 0,
+        direction: CaptionDirection::Left,
+        vert_align: CaptionVertAlign::Center,
+    },
+    CaptionExpectation {
+        para: 1,
+        control: 1,
+        direction: CaptionDirection::Right,
+        vert_align: CaptionVertAlign::Center,
+    },
+];
+
+/// `set_picture_properties_native`의 좌표·그림 해석과 같은 범위를 읽는다.
+///
+/// 본문 뒤의 para 인덱스는 DocumentCore와 동일하게 Endnote 문단을 이어 붙인 가상
+/// 인덱스로 해석한다. HWP3 파서는 그림을 `Shape(Picture)`로 올릴 수 있으므로 두
+/// 그림 표현을 모두 받아야 mutation 성공 뒤 verification만 실패하는 오탐이 없다.
+fn resolve_picture<'a>(
+    section: &'a Section,
+    expected: &CaptionExpectation,
+) -> Result<&'a Picture, String> {
+    let body_len = section.paragraphs.len();
+    let paragraph = if expected.para < body_len {
+        &section.paragraphs[expected.para]
+    } else {
+        let mut virtual_idx = expected.para - body_len;
+        let mut found = None;
+        'outer: for body_para in &section.paragraphs {
+            for control in &body_para.controls {
+                if let Control::Endnote(endnote) = control {
+                    if virtual_idx < endnote.paragraphs.len() {
+                        found = endnote.paragraphs.get(virtual_idx);
+                        break 'outer;
+                    }
+                    virtual_idx -= endnote.paragraphs.len();
+                }
+            }
+        }
+        found.ok_or_else(|| {
+            format!(
+                "para={} 가 문서 범위를 벗어남(본문 문단 {}개)",
+                expected.para, body_len
+            )
+        })?
+    };
+
+    let control = paragraph.controls.get(expected.control).ok_or_else(|| {
+        format!(
+            "para={} ci={} 가 범위를 벗어남(컨트롤 {}개)",
+            expected.para,
+            expected.control,
+            paragraph.controls.len()
+        )
+    })?;
+    match control {
+        Control::Picture(picture) => Ok(picture),
+        Control::Shape(shape) => match shape.as_ref() {
+            ShapeObject::Picture(picture) => Ok(picture),
+            _ => Err(format!(
+                "para={} ci={} 의 Shape 컨트롤이 그림이 아님",
+                expected.para, expected.control
+            )),
+        },
+        _ => Err(format!(
+            "para={} ci={} 가 그림 컨트롤이 아님",
+            expected.para, expected.control
+        )),
+    }
+}
+
+fn verify_caption<'a>(
+    picture: &'a Picture,
+    expected: &CaptionExpectation,
+) -> Result<&'a Caption, String> {
+    let caption = picture.caption.as_ref().ok_or_else(|| {
+        format!(
+            "para={} ci={} 에 캡션이 없음",
+            expected.para, expected.control
+        )
+    })?;
+    if caption.direction != expected.direction
+        || caption.vert_align != expected.vert_align
+        || caption.width != CAPTION_WIDTH
+        || caption.spacing != CAPTION_SPACING
+    {
+        return Err(format!(
+            "para={} ci={} 기대=(dir={:?}, va={:?}, width={CAPTION_WIDTH}, spacing={CAPTION_SPACING}) 실제=(dir={:?}, va={:?}, width={}, spacing={})",
+            expected.para,
+            expected.control,
+            expected.direction,
+            expected.vert_align,
+            caption.direction,
+            caption.vert_align,
+            caption.width,
+            caption.spacing
+        ));
+    }
+    Ok(caption)
+}
 
 /// 캡션 방향별 테스트: 4개 이미지에 각각 Bottom/Top/Left/Right 캡션을 설정하고 SVG 출력
 pub(crate) fn run(args: &[String]) -> i32 {
@@ -65,81 +222,80 @@ pub(crate) fn run(args: &[String]) -> i32 {
     }
 
     // 문단 0: 컨트롤 2,3 / 문단 1: 컨트롤 0,1
-    let pic_refs: [(usize, usize); 4] = [(0, 2), (0, 3), (1, 0), (1, 1)];
-
-    // 4개 이미지에 각각 다른 캡션 방향 설정
-    let directions = [
-        ("Bottom", "Top"),
-        ("Top", "Top"),
-        ("Left", "Center"),
-        ("Right", "Center"),
-    ];
-
-    for (i, ((para, ci), (dir, va))) in pic_refs.iter().zip(directions.iter()).enumerate() {
-        let json = format!(
-            r#"{{"hasCaption":true,"captionDirection":"{}","captionVertAlign":"{}","captionWidth":8504,"captionSpacing":850}}"#,
-            dir, va
+    let mut mutation_succeeded = vec![false; EXPECTATIONS.len()];
+    let mut validation_failed = false;
+    for (i, expected) in EXPECTATIONS.iter().enumerate() {
+        let json = expected.properties_json();
+        println!(
+            "[{}] para={}, ci={}, dir={}, va={}",
+            i,
+            expected.para,
+            expected.control,
+            expected.direction_name(),
+            expected.vert_align_name()
         );
-        println!("[{}] para={}, ci={}, dir={}, va={}", i, para, ci, dir, va);
-        match doc.set_picture_properties_native(0, *para, *ci, &json) {
-            Ok(r) => println!("  결과: {}", r),
-            Err(e) => println!("  오류: {:?}", e),
+        match doc.set_picture_properties_native(0, expected.para, expected.control, &json) {
+            Ok(result) => {
+                mutation_succeeded[i] = true;
+                println!("  결과: {}", result);
+            }
+            Err(error) => {
+                validation_failed = true;
+                eprintln!(
+                    "[{}] 캡션 설정 오류: para={} ci={}: {:?}",
+                    i, expected.para, expected.control, error
+                );
+            }
         }
     }
 
-    // 캡션 상태 확인
-    // [CLI 계약 정합] capabilities 가 "internal" 카테고리로도 <파일.hwp> 를 받는
-    // 일반 명령처럼 자기서술한다 — 에이전트가 임의 문서로 호출할 수 있다는 뜻이다.
-    // 이 도구는 원래 para=0/1·control 2/3/0/1 을 가진 고정 fixture 전용이었는데,
-    // 그 인덱스를 경계검사 없이 바로 인덱싱해 다른 문서를 주면 패닉(exit 101)했다.
-    // "안 죽는다"는 CLI 자기서술 계약을 어기므로, 범위를 벗어나면 패닉 대신
-    // 제어된 오류를 출력하고 다음 항목으로 넘어간다.
-    for (i, (para, ci)) in pic_refs.iter().enumerate() {
-        let Some(section) = doc.document().sections.first() else {
-            eprintln!("문서 오류: 캡션을 검사할 section이 없습니다.");
-            return EXIT_RUNTIME;
-        };
-        let Some(p) = section.paragraphs.get(*para) else {
-            println!(
-                "[{}] 건너뜀: para={} 가 문서 범위를 벗어남(문단 {}개)",
-                i,
-                para,
-                section.paragraphs.len()
-            );
+    // mutation 성공만으로는 round-trip 검증이 아니다. 네 대상의 실제 캡션 값까지
+    // 모두 일치해야 렌더 단계로 이동한다. setter 실패 대상은 이미 진단했으므로
+    // 중복 오류 대신 성공한 mutation만 확인한다.
+    let section = &doc.document().sections[0];
+    for (i, expected) in EXPECTATIONS.iter().enumerate() {
+        if !mutation_succeeded[i] {
             continue;
-        };
-        let Some(ctrl) = p.controls.get(*ci) else {
-            println!(
-                "[{}] 건너뜀: para={} ci={} 가 범위를 벗어남(컨트롤 {}개)",
-                i,
-                para,
-                ci,
-                p.controls.len()
-            );
-            continue;
-        };
-        if let rhwp::model::control::Control::Picture(pic) = ctrl {
-            println!(
-                "[{}] caption={:?}",
-                i,
-                pic.caption.as_ref().map(|c| {
-                    format!(
-                        "dir={:?}, paras={}, text={:?}",
-                        c.direction,
-                        c.paragraphs.len(),
-                        c.paragraphs.first().map(|p| &p.text)
-                    )
-                })
-            );
         }
+        let caption = match resolve_picture(section, expected)
+            .and_then(|picture| verify_caption(picture, expected))
+        {
+            Ok(caption) => caption,
+            Err(error) => {
+                validation_failed = true;
+                eprintln!("[{i}] 캡션 검증 오류: {error}");
+                continue;
+            }
+        };
+        // 기존 사람용 stdout은 Option<String>의 Debug 표현을 포함한다. 내부 진단
+        // 소비자가 문자열을 비교하므로 이 래핑을 단순화하지 않는다.
+        println!(
+            "[{}] caption={:?}",
+            i,
+            Some(format!(
+                "dir={:?}, paras={}, text={:?}",
+                caption.direction,
+                caption.paragraphs.len(),
+                caption.paragraphs.first().map(|p| &p.text)
+            ))
+        );
+    }
+
+    if validation_failed {
+        eprintln!("캡션 검증 실패: 네 대상의 mutation과 verification이 모두 성공해야 합니다.");
+        return EXIT_RUNTIME;
     }
 
     // SVG 출력
+    let page_count = doc.page_count();
+    if page_count == 0 {
+        eprintln!("SVG 렌더링 오류: 문서에 출력할 페이지가 없습니다.");
+        return EXIT_RUNTIME;
+    }
     if let Err(e) = fs::create_dir_all(output_dir) {
         eprintln!("출력 폴더 생성 오류: {}: {}", output_dir.display(), e);
         return EXIT_RUNTIME;
     }
-    let page_count = doc.page_count();
     println!("페이지 수: {}", page_count);
     for p in 0..page_count {
         let svg = match doc.render_page_svg(p) {

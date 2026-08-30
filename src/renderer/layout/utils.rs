@@ -3,11 +3,9 @@
 use super::super::page_layout::LayoutRect;
 use super::super::render_tree::*;
 use super::super::{
-    format_number, ArrowStyle, LineStyle, NumberFormat as NumFmt, PathCommand, ShapeStyle,
-    StrokeDash,
+    format_number, ArrowStyle, LineStyle, NumberFormat as NumFmt, ShapeStyle, StrokeDash,
 };
 use crate::model::bin_data::BinDataContent;
-use crate::model::footnote::NumberFormat;
 use crate::model::image::Picture;
 use crate::model::style::{HeadType, Numbering};
 

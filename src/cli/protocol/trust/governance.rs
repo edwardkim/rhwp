@@ -644,7 +644,7 @@ pub(crate) fn cmd_conformance(args: &[String]) -> i32 {
         return EXIT_USAGE;
     }
     let mut checks: Vec<serde_json::Value> = Vec::new();
-    let mut push = |checks: &mut Vec<serde_json::Value>, id: &str, ok: bool, detail: String| {
+    let push = |checks: &mut Vec<serde_json::Value>, id: &str, ok: bool, detail: String| {
         checks.push(serde_json::json!({ "id": id, "ok": ok, "detail": detail }));
         ok
     };

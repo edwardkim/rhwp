@@ -29,28 +29,51 @@ fn pad(v: i16) -> Padding {
 
 #[test]
 fn issue_1785_effective_padding_rule() {
-    // aim=false + 레거시 보존값(cell > table, < 2500) → 셀 값 사용
+    // aim=false + 표 기본 전축 0(미지정) + 셀 140 → **수직만** 셀 값(stage50), 수평은
+    // 진짜 0. 수평 실측: exam_social p2 머리말을 한글 2020/2022 인쇄 PDF 로 각각
+    // 재면 글리프 좌단 73.9/74.3px 가 셀 pad 적용 원점 77.47px 보다 왼쪽이라 적용이
+    // 물리적으로 불가능하고, 같은 층 전축0 표의 저장 sw 52/52 도 pad 미적용(±3HU).
+    // 상세: mydocs/plans/cell_width_authority.md
     let mut cell = Cell {
         padding: pad(140),
         ..Default::default()
     };
     cell.apply_inner_margin = false;
-    assert_eq!(cell.effective_padding(&pad(0)).top, 140);
+    let eff = cell.effective_padding(&pad(0));
+    assert_eq!(eff.top, 140);
+    assert_eq!(eff.bottom, 140);
+    assert_eq!(eff.left, 0);
+    assert_eq!(eff.right, 0);
+
+    // 표 기본이 일부 축만 0(0,0,141,141)이면 미지정이 아니다 — 전 축 표 기본.
+    // (#2195 stage18 사다리 실측: 표(0,0,141,141)+셀 보존값 → 실효 좌우 0·상하 141)
+    let part = Padding {
+        left: 0,
+        right: 0,
+        top: 141,
+        bottom: 141,
+    };
+    let eff = cell.effective_padding(&part);
+    assert_eq!((eff.left, eff.right, eff.top, eff.bottom), (0, 0, 141, 141));
 
     // aim=false + cell <= table → 표 기본값
     assert_eq!(cell.effective_padding(&pad(140)).top, 140);
     assert_eq!(cell.effective_padding(&pad(200)).top, 200);
 
     // aim=false + 10mm급(>=2500) 보존값 → 한컴은 렌더에 쓰지 않음 → 표 기본값
+    // (전축0 수직 미지정 규칙에서도 제외 — #1785 위생 한도)
     cell.padding = pad(2834);
     assert_eq!(cell.effective_padding(&pad(0)).top, 0);
+    assert_eq!(cell.effective_padding(&pad(0)).left, 0);
 
-    // aim=true → 셀 값. [#2070] 0 도 사용자가 지정한 셀 고유 안 여백으로 존중
-    // (한글 PDF 실측: 시장구조조사 pad=0 셀의 코드 폭 37.0px > 표 폴백 inner
-    // 26.5px — 폴백이면 물리적으로 1줄 배치 불가). 음수(결측 센티널)만 표 폴백.
+    // aim=true → 셀 값 (수평·수직 동일). [#2070] 0 도 사용자가 지정한 셀 고유 안
+    // 여백으로 존중 (한글 PDF 실측: 시장구조조사 pad=0 셀의 코드 폭 37.0px > 표
+    // 폴백 inner 26.5px — 폴백이면 물리적으로 1줄 배치 불가). 음수(결측 센티널)만
+    // 표 폴백.
     cell.apply_inner_margin = true;
     cell.padding = pad(141);
     assert_eq!(cell.effective_padding(&pad(0)).top, 141);
+    assert_eq!(cell.effective_padding(&pad(0)).left, 141);
     cell.padding = pad(0);
     assert_eq!(cell.effective_padding(&pad(140)).top, 0);
     cell.padding = pad(-1);
