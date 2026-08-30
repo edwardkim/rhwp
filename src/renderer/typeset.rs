@@ -3322,6 +3322,38 @@ fn is_synthetic_line_seg(ls: &LineSeg) -> bool {
     ls.tag & 0x80000000 != 0
 }
 
+/// [#6409] HWPX 가 글자처럼 취급 표를 쪽높이급 **한 줄**로 저장했으면, leftover
+/// 에 행 분할로 끼우지 않고 다음 쪽 상단에서 시작한다.
+///
+/// 원본 XML 의 vertpos=0 은 typeset 전에 누적 vpos 로 덮인다(3249937 신고서
+/// 표 0 → 524475). 남는 신호는 단일 LINE_SEG 높이(vertsize=69344 ≈ 본문 92%).
+/// 붙임4 표도 한 줄이지만 잔여에 통째로 들어가(762px < leftover) 그대로 둔다.
+fn hwpx_stored_tac_table_starts_at_page_top(
+    para: &Paragraph,
+    table: &crate::model::table::Table,
+    current_items_empty: bool,
+    current_height: f64,
+    body_available: f64,
+    dpi: f64,
+) -> bool {
+    if current_items_empty || current_height < 1.0 || !table.common.treat_as_char {
+        return false;
+    }
+    let segs: Vec<&LineSeg> = para
+        .line_segs
+        .iter()
+        .filter(|seg| !is_synthetic_line_seg(seg))
+        .collect();
+    let Some(seg) = segs.first() else {
+        return false;
+    };
+    if segs.len() != 1 {
+        return false;
+    }
+    let stored_h = hwpunit_to_px(seg.line_height, dpi);
+    stored_h >= body_available * 0.5 && current_height + stored_h > body_available
+}
+
 /// [#5921] stored near-top 리셋이 이번 쪽 잔여를 넘는가.
 ///
 /// `native_near_top_reset` 은 저장 vpos≈sb 만 보고 쪽을 가른다. 잔여에
@@ -23789,7 +23821,18 @@ impl TypesetEngine {
                         - st.current_zone_y_offset
                         - st.current_bottom_fixed_exclusion
                         + 0.5;
-        if remaining_on_page < split_unit_h && !st.current_items.is_empty() {
+        let stored_page_top_tac_table = st.profile.hwpx_stored_layout()
+            && hwpx_stored_tac_table_starts_at_page_top(
+                para,
+                table,
+                st.current_items.is_empty(),
+                st.current_height,
+                st.base_available_height(),
+                self.dpi,
+            );
+        if stored_page_top_tac_table
+            || (remaining_on_page < split_unit_h && !st.current_items.is_empty())
+        {
             let first_row_splittable = (first_block_is_single_row || !first_block_protected)
                 && can_intra_split
                 && mt.is_row_splittable(0);
@@ -23884,7 +23927,8 @@ impl TypesetEngine {
                     multirow_clean_defer
                 );
             }
-            if (!first_row_splittable && !first_row_force_splittable)
+            if stored_page_top_tac_table
+                || (!first_row_splittable && !first_row_force_splittable)
                 || remaining_on_page < min_content
                 || multirow_clean_defer
             {
