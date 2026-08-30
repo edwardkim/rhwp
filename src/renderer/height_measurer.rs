@@ -521,10 +521,7 @@ pub fn fit_measured_table_declared_tail_to_declared_height(
             .map(|seg| i64::from(seg.vertical_pos) + i64::from(seg.line_height))
             .max()
             .unwrap_or(0);
-        let pad = hwpunit_to_px(
-            (cell.padding.top as i32).saturating_add(cell.padding.bottom as i32),
-            dpi,
-        );
+        let pad = hwpunit_to_px(cell.stored_vertical_padding_hu(), dpi);
         let floor = hwpunit_to_px(content_hu as i32, dpi) + pad;
         if floor > content_floor {
             content_floor = floor;
@@ -1276,10 +1273,7 @@ impl HeightMeasurer {
             if content_hu <= 0 {
                 continue;
             }
-            let pad = hwpunit_to_px(
-                (cell.padding.top as i32).saturating_add(cell.padding.bottom as i32),
-                dpi,
-            );
+            let pad = hwpunit_to_px(cell.stored_vertical_padding_hu(), dpi);
             let needed = hwpunit_to_px(content_hu as i32, dpi) + pad;
             // 걸친 행 사이의 칸 간격도 내용이 쓸 수 있는 높이다.
             let spanned: f64 = row_heights[r..end].iter().sum::<f64>()
@@ -2862,10 +2856,7 @@ impl HeightMeasurer {
                     .map(|seg| i64::from(seg.vertical_pos) + i64::from(seg.line_height))
                     .max()
                     .unwrap_or(0);
-                let pad = hwpunit_to_px(
-                    (cell.padding.top as i32).saturating_add(cell.padding.bottom as i32),
-                    self.dpi,
-                );
+                let pad = hwpunit_to_px(cell.stored_vertical_padding_hu(), self.dpi);
                 let floor = (hwpunit_to_px(content_hu as i32, self.dpi) + pad).min(row_heights[r]);
                 if floor > floors[r] {
                     floors[r] = floor;
