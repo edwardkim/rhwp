@@ -1200,16 +1200,21 @@ fn para_text_is_picture_only_host(para: &crate::model::paragraph::Paragraph) -> 
     })
 }
 
-/// 합성 줄이 담은 글자처럼(TAC) 그림/도형의 최대 흐름 높이.
+/// 쪽 분할 칸의 그림-only 문단에서, 합성 줄이 담은 TAC 그림의 흐름 높이.
 ///
-/// 저장 LINE_SEG 가 글줄 높이만 담고 있어도 그 줄의 TAC 개체는 자기 높이만큼
-/// 칸 흐름을 밀어야 한다 (#6114: 312px 차트가 26px 만 전진해 아래 표가 겹침).
+/// 저장 LINE_SEG 가 글줄만 담아도 그 줄의 TAC 그림은 자기 높이만큼 칸 조각
+/// 회계에 들어가야 한다 (#6114: 312px 차트가 26px 만 전진해 아래 표가 겹침).
+/// 본문과 섞인 줄에는 쓰지 않는다 — 일반 칸 글줄까지 그림 높이로 키우면
+/// 칸 상자 밖으로 글이 밀려 text-overlap 이 는다.
 pub(crate) fn composed_line_tac_object_height_px(
     para: &crate::model::paragraph::Paragraph,
     composed: &composer::ComposedParagraph,
     line_idx: usize,
     dpi: f64,
 ) -> Option<f64> {
+    if !para_text_is_picture_only_host(para) {
+        return None;
+    }
     let line = composed.lines.get(line_idx)?;
     let start = line.char_start;
     let end = composed

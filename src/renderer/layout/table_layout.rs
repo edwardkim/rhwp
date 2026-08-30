@@ -29,6 +29,9 @@ const ROWBREAK_STALE_PAGE_SCALE_PICTURE_OFFSET_MIN_HU: i32 = -40_000;
 /// remarks 셋째 줄 소유 회귀로 실증됐다. 그래서 잡음대(≤0.03px)와 실초과(≥0.19px)
 /// 사이의 0.1px 로 고정한다.
 const ROW_CUT_CAPACITY_FP_EPSILON_PX: f64 = 0.1;
+/// 쪽 스케일 칸 바닥값 — `cell_units` 쪽 프레임 판정과 같다. 이보다 작은 칸은
+/// 한 쪽에 들어가므로 [#6114] TAC 그림 높이 회계를 적용하지 않는다.
+const PAGE_SCALE_CELL_HEIGHT_PX: f64 = 800.0;
 
 /// [#2424 프로파일] 분할 표 컷 프리미티브 실측 카운터 — `RHWP_2424_PROFILE` 전용, 동작 불변.
 /// 프로세스 누적이며 `RHWP_2424_STEP_PROFILE` 출력(typeset.rs)이 스냅샷을 읽는다.
@@ -101,6 +104,17 @@ fn cell_para_line_anchor_y(
     } else {
         base_y + hwpunit_to_px(vertical_pos_hu, dpi)
     }
+}
+
+/// [#6114] 쪽 나눔이 허용되고 선언 높이가 쪽 규모인 칸.
+/// 이 칸의 그림-only TAC 줄만 페인트 높이로 조각 회계·흐름을 민다.
+fn cell_is_page_split_candidate(
+    cell: &crate::model::table::Cell,
+    table: &crate::model::table::Table,
+    dpi: f64,
+) -> bool {
+    !matches!(table.page_break, TablePageBreak::None)
+        && hwpunit_to_px(cell.height.min(i32::MAX as u32) as i32, dpi) >= PAGE_SCALE_CELL_HEIGHT_PX
 }
 
 fn has_initial_tac_shape_host(paragraphs: &[Paragraph]) -> bool {
@@ -5097,8 +5111,9 @@ impl LayoutEngine {
                 }
             };
             let mut tac_img_y = para_y_before_compose;
-            // [#6114] 폴백으로 그린 TAC 그림의 페인트 하단. composed 줄 높이가
-            // 글줄(26px)이면 흐름이 그림(312px)을 못 따라가 아래 표가 겹친다.
+            // [#6114] 쪽 분할 칸에서만 폴백 TAC 그림 페인트 하단으로 흐름을 민다.
+            // 일반 칸까지 밀면 칸 상자 밖 글이 아래 본문과 겹친다.
+            let split_cell_tac_flow = fragment_cut_units.is_some();
             let mut tac_flow_bottom: Option<f64> = None;
             // [#5712] 같은 문단에서 앞서 배치된 비-TAC TopAndBottom 중첩 표가
             // para_y 를 전진시켰는지 — co-anchored TAC 표의 적층 판별에 쓴다.
@@ -5278,11 +5293,13 @@ impl LayoutEngine {
                                     cell_context.as_ref(),
                                     styles,
                                 );
-                                tac_flow_bottom = Some(
-                                    tac_flow_bottom
-                                        .unwrap_or(f64::MIN)
-                                        .max(tac_img_y + clamped_h),
-                                );
+                                if split_cell_tac_flow {
+                                    tac_flow_bottom = Some(
+                                        tac_flow_bottom
+                                            .unwrap_or(f64::MIN)
+                                            .max(tac_img_y + clamped_h),
+                                    );
+                                }
                                 inline_x += clamped_w;
                                 continue;
                             }
@@ -9398,13 +9415,17 @@ impl LayoutEngine {
             } else {
                 None
             };
+            // [#6114] 쪽 분할 칸의 그림-only TAC 줄만 페인트 높이를 조각 회계에
+            // 넣는다. 일반 칸·본문 섞인 줄까지 max 하면 컷이 빨라져 글이 겹친다.
+            let apply_split_cell_tac = cell_is_page_split_candidate(cell, table, self.dpi);
             let corrected_h = |line: &ComposedLine, li: usize| -> f64 {
                 let raw_lh = hwpunit_to_px(line.line_height, self.dpi);
-                // [#6114] 저장 줄이 글줄 높이만 담아도 그 줄 TAC 그림은 자기 높이만큼
-                // 칸 조각 회계에 들어가야 한다. max 라 이미 그림 높이인 LINE_SEG 는 불변.
-                let tac_h =
+                let tac_h = if apply_split_cell_tac {
                     crate::renderer::composed_line_tac_object_height_px(p, &comp, li, self.dpi)
-                        .unwrap_or(0.0);
+                        .unwrap_or(0.0)
+                } else {
+                    0.0
+                };
                 let with_tac = |h: f64| h.max(tac_h);
                 // [Task #1811] HWPX RowBreak 셀의 synthetic lineSeg 는 저장 근거가 아니라
                 // reflow 산물이다. row cut 측정에서 다시 corrected_line_height 를 적용하면

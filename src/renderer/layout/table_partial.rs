@@ -1894,9 +1894,10 @@ impl LayoutEngine {
                     // 흐름 y 를 함께 들고 간다.
                     let mut inline_tac_line = 0usize;
                     let mut inline_tac_y = para_y_before_compose;
-                    // TAC 폴백 개체의 페인트 하단. composed 줄 높이가 글줄만 담으면
-                    // (#6114 312px 차트 → 26px 전진) 아래 표가 그림 위에 겹친다.
-                    // 폭 초과 개행(#6122)과 단독 그림 모두 이 값으로 흐름을 민다.
+                    // 폭 초과로 줄을 내린 개체의 하단(#6122). 쪽 분할 칸의 단독 TAC
+                    // 그림(#6114)도 같은 값으로 흐름을 민다 — 일반 칸까지 밀면
+                    // 칸 상자 밖 글이 아래 본문과 겹친다.
+                    let split_cell_tac_flow = cut_units.is_some();
                     let mut wrapped_tac_flow_bottom: Option<f64> = None;
                     let mut rendered_top_and_bottom_non_inline = false;
 
@@ -2013,11 +2014,13 @@ impl LayoutEngine {
                                                 Some(&cell_context),
                                                 styles,
                                             );
-                                            wrapped_tac_flow_bottom = Some(
-                                                wrapped_tac_flow_bottom
-                                                    .unwrap_or(f64::MIN)
-                                                    .max(empty_tac_y + clamped_h),
-                                            );
+                                            if split_cell_tac_flow {
+                                                wrapped_tac_flow_bottom = Some(
+                                                    wrapped_tac_flow_bottom
+                                                        .unwrap_or(f64::MIN)
+                                                        .max(empty_tac_y + clamped_h),
+                                                );
+                                            }
                                             empty_tac_x += clamped_w;
                                             continue;
                                         }
@@ -2103,11 +2106,13 @@ impl LayoutEngine {
                                             Some(&cell_context),
                                             styles,
                                         );
-                                        wrapped_tac_flow_bottom = Some(
-                                            wrapped_tac_flow_bottom
-                                                .unwrap_or(f64::MIN)
-                                                .max(inline_tac_y + clamped_h),
-                                        );
+                                        if split_cell_tac_flow {
+                                            wrapped_tac_flow_bottom = Some(
+                                                wrapped_tac_flow_bottom
+                                                    .unwrap_or(f64::MIN)
+                                                    .max(inline_tac_y + clamped_h),
+                                            );
+                                        }
                                         inline_x += clamped_w;
                                         continue;
                                     }

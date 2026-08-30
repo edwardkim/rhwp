@@ -4377,18 +4377,8 @@ impl LayoutEngine {
                 .as_ref()
                 .map(|flow| flow.extra_rows)
                 .unwrap_or(0);
-            let cell_tac_flow_h = if cell_ctx.is_some() {
-                para.and_then(|p| {
-                    crate::renderer::composed_line_tac_object_height_px(
-                        p, composed, line_idx, self.dpi,
-                    )
-                })
-                .unwrap_or(0.0)
-            } else {
-                0.0
-            };
-            let line_flow_height = line_height.max(cell_tac_flow_h)
-                + equation_tac_extra_rows as f64 * (line_height + line_spacing_px);
+            let line_flow_height =
+                line_height + equation_tac_extra_rows as f64 * (line_height + line_spacing_px);
             let render_line_flow_height =
                 if cell_ctx.is_none() && para_index >= self.endnote_para_base.get() {
                     // 미주 lineSeg의 행 진행값이 실제 TextLine bbox보다 작으면 단일 줄 미주가
