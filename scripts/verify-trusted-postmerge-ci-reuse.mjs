@@ -173,6 +173,24 @@ function hasReviewOnlyFastPassEvidence(input, run) {
     && input.reviewOnlyFastPassRunIds.some((id) => String(id) === runId);
 }
 
+function hasExactMergeTreeEvidence(input, run, pullRequest, parents, treeSha) {
+  const runId = String(run?.id || "");
+  const evidence = input?.mergeTreeEvidenceByRunId?.[runId];
+  const evidenceParents = Array.isArray(evidence?.parents)
+    ? evidence.parents.filter(validSha)
+    : [];
+  return (
+    runId !== ""
+    && validSha(evidence?.sha)
+    && validSha(evidence?.treeSha)
+    && parents.length === 2
+    && evidenceParents.length === 2
+    && evidenceParents.every((sha, index) => sha === parents[index])
+    && evidenceParents.includes(pullRequest.head.sha)
+    && evidence.treeSha === treeSha
+  );
+}
+
 export function evaluateTrustedPostMergeReuse(input) {
   if (input?.eventName !== "push" || input?.ref !== "refs/heads/devel") {
     return denied("not-a-devel-push");
@@ -208,31 +226,47 @@ export function evaluateTrustedPostMergeReuse(input) {
   const baseParent = parents.length === 1
     ? parents[0]
     : parents.find((parent) => parent !== pullRequest.head.sha);
-  if (!baseParent || input.mergeBaseSha !== baseParent) {
-    return denied("pr-head-does-not-contain-merge-base");
+  if (!baseParent) {
+    return denied("merge-base-parent-unavailable");
   }
   if (input.sourceCommit?.sha !== pullRequest.head.sha) {
     return denied("source-commit-does-not-match-pr-head");
   }
+  if (enforcementPathChanged(input.pullFiles)) {
+    return denied("pr-changes-ci-enforcement-surface");
+  }
+  const mergeTreeSha = input.mergeCommit?.commit?.tree?.sha;
+  if (!validSha(mergeTreeSha)) {
+    return denied("merge-tree-unavailable");
+  }
+  const headContainsBase = input.mergeBaseSha === baseParent;
+  const finalHeadCandidate = latestCandidateRun(
+    input.workflowRuns,
+    pullRequest,
+    input.repository,
+    pullRequest.head.sha,
+  );
+  const exactMergeTreeEvidence = hasExactMergeTreeEvidence(
+    input,
+    finalHeadCandidate,
+    pullRequest,
+    parents,
+    mergeTreeSha,
+  );
   if (
-    input.mergeCommit?.commit?.tree?.sha !== input.sourceCommit?.commit?.tree?.sha
-    || !input.mergeCommit?.commit?.tree?.sha
+    headContainsBase
+    && mergeTreeSha !== input.sourceCommit?.commit?.tree?.sha
+    && !exactMergeTreeEvidence
   ) {
     return denied("merge-tree-does-not-match-pr-head");
   }
-  if (enforcementPathChanged(input.pullFiles)) {
-    return denied("pr-changes-ci-enforcement-surface");
+  if (!headContainsBase && !exactMergeTreeEvidence) {
+    return denied("pr-merge-tree-evidence-unavailable");
   }
 
   // A direct review-only PR has no code candidate. It is safe to reuse only
   // when this worker's exact PR run proves that preflight skipped the worker.
   if (isDirectReviewOnlyPullRequest(pullRequest, input.pullFiles, input.prCommits)) {
-    const finalHeadCandidate = latestCandidateRun(
-      input.workflowRuns,
-      pullRequest,
-      input.repository,
-      pullRequest.head.sha,
-    );
     if (!finalHeadCandidate) {
       return denied("direct-review-only-pr-workflow-unavailable");
     }
@@ -258,12 +292,6 @@ export function evaluateTrustedPostMergeReuse(input) {
     return denied("review-tail-evidence-unavailable");
   }
 
-  const finalHeadCandidate = latestCandidateRun(
-    input.workflowRuns,
-    pullRequest,
-    input.repository,
-    pullRequest.head.sha,
-  );
   if (
     finalHeadCandidate
     && finalHeadCandidate.status === "completed"
@@ -272,12 +300,23 @@ export function evaluateTrustedPostMergeReuse(input) {
   ) {
     return {
       reuse: true,
-      reason: candidateSource.hasReviewOnlyTail
-        ? "review-tail-final-head-green-pr-workflow-reused"
-        : "exact-green-pr-workflow-reused",
+      reason: !headContainsBase
+        ? (candidateSource.hasReviewOnlyTail
+          ? "review-tail-exact-merge-tree-green-pr-workflow-reused"
+          : "exact-merge-tree-green-pr-workflow-reused")
+        : (candidateSource.hasReviewOnlyTail
+          ? "review-tail-final-head-green-pr-workflow-reused"
+          : "exact-green-pr-workflow-reused"),
       sourceRunId: String(finalHeadCandidate.id),
       pullNumber: String(pullRequest.number),
     };
+  }
+
+  if (!headContainsBase) {
+    if (!hasFullLaneEvidence(input, finalHeadCandidate)) {
+      return denied("candidate-full-lane-evidence-unavailable");
+    }
+    return denied("latest-pr-workflow-candidate-not-successful");
   }
 
   const candidate = latestCandidateRun(

@@ -8,6 +8,8 @@ const head = "2".repeat(40);
 const merge = "3".repeat(40);
 const tree = "4".repeat(40);
 const code = "5".repeat(40);
+const oldBase = "6".repeat(40);
+const testedMerge = "7".repeat(40);
 
 function candidate(overrides = {}) {
   return {
@@ -71,6 +73,64 @@ test("fails closed for direct pushes, stale bases, enforcement changes, and inco
   assert.equal(evaluateTrustedPostMergeReuse(input({ mergeBaseSha: "5".repeat(40) })).reuse, false);
   assert.equal(evaluateTrustedPostMergeReuse(input({ pullFiles: [{ filename: ".github/workflows/ci.yml" }] })).reuse, false);
   assert.equal(evaluateTrustedPostMergeReuse(input({ workflowRuns: [candidate({ status: "in_progress", conclusion: null })] })).reuse, false);
+});
+
+test("reuses a stale-head PR when its tested merge ref exactly matches the final merge tree", () => {
+  const result = evaluateTrustedPostMergeReuse(input({
+    sourceCommit: { sha: head, commit: { tree: { sha: "8".repeat(40) } } },
+    mergeBaseSha: oldBase,
+    mergeTreeEvidenceByRunId: {
+      123: {
+        sha: testedMerge,
+        parents: [base, head],
+        treeSha: tree,
+      },
+    },
+    fullLaneRunIds: ["123"],
+  }));
+  assert.deepEqual(result, {
+    reuse: true,
+    reason: "exact-merge-tree-green-pr-workflow-reused",
+    sourceRunId: "123",
+    pullNumber: "42",
+  });
+});
+
+test("fails closed when stale-head merge-tree evidence is absent or mismatched", () => {
+  const stale = {
+    sourceCommit: { sha: head, commit: { tree: { sha: "8".repeat(40) } } },
+    mergeBaseSha: oldBase,
+    fullLaneRunIds: ["123"],
+  };
+  assert.equal(
+    evaluateTrustedPostMergeReuse(input(stale)).reason,
+    "pr-merge-tree-evidence-unavailable",
+  );
+  assert.equal(evaluateTrustedPostMergeReuse(input({
+    ...stale,
+    mergeTreeEvidenceByRunId: {
+      123: { sha: testedMerge, parents: [base, head], treeSha: "9".repeat(40) },
+    },
+  })).reason, "pr-merge-tree-evidence-unavailable");
+  assert.equal(evaluateTrustedPostMergeReuse(input({
+    ...stale,
+    mergeTreeEvidenceByRunId: {
+      123: { sha: testedMerge, parents: [oldBase, head], treeSha: tree },
+    },
+  })).reason, "pr-merge-tree-evidence-unavailable");
+});
+
+test("stale-head exact-tree reuse still requires full-lane evidence", () => {
+  const result = evaluateTrustedPostMergeReuse(input({
+    sourceCommit: { sha: head, commit: { tree: { sha: "8".repeat(40) } } },
+    mergeBaseSha: oldBase,
+    mergeTreeEvidenceByRunId: {
+      123: { sha: testedMerge, parents: [base, head], treeSha: tree },
+    },
+    fullLaneRunIds: [],
+  }));
+  assert.equal(result.reuse, false);
+  assert.equal(result.reason, "candidate-full-lane-evidence-unavailable");
 });
 
 test("reuses the preceding full CI through a linear review-only tail", () => {
