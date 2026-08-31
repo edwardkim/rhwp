@@ -26,3 +26,12 @@
 - 따라서 #6536은 P1 변경 요청이며, 이 통합 브랜치로 remote PR을 만들거나 병합하지 않는다.
 - #6514는 독립 변경으로 승인 가능하지만, 현재 요청의 통합 범위에서는 #6536 수정본과 함께 재검토한다.
 
+
+## #6536 메인터너 보정 완료 (2026-09-01)
+
+#6536의 원 contributor head `8e4269db82cae5a45115f332c2fb80a467a45f32`는 빈 host paragraph 뒤 양수 offset 표가 다음 생성 본문을 앞질러 배치하는 P1 시각 오류를 포함했다. 검토 브랜치의 `0ff2e25b6`에서 본문 anchor 복원과 표 anchor 보존을 함께 적용하고, `2.` 본문 -> `연번` 표 -> `끝.` 순서를 회귀 테스트로 고정했다.
+
+- 결론: **메인터너 보정 후 수용 가능**.
+- 로컬 검증: lint 묶음, Native Skia, locked WASM package, focused #6535, 전체 nextest `8,912 passed, 46 skipped` 통과.
+- 시각 증적: `mydocs/pr/assets/pr_6536_issue6535_p1_2020.pdf` (SHA-256 `d5a4a5f8702937d835aba7111c1c72dbbdfed6297c6d1ae3eff23ae656e8c66b`) 및 `mydocs/pr/assets/pr_6536_issue6535_p1_maintainer_review.png`을 함께 보관했다. physical page 1, visual sweep flagged 0, 사람 검토 순서 일치.
+- 원격 조건: 작업지시자 승인 후 보정 commit을 포함한 integration PR을 만들고, 최신 head Full CI와 mergeability를 재확인한 뒤에만 병합한다. 원 contributor fork head는 변경하거나 삭제하지 않는다.
