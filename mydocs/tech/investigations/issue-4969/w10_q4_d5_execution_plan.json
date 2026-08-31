@@ -4,7 +4,7 @@
   "issue": 4969,
   "stage": "W10-Q4-D5",
   "date": "2026-08-31",
-  "status": "D5-D-qualified-clean-room-causal-wasm-result-approved-automatic",
+  "status": "D5-D-qualified-clean-room-causal-wasm-result-approved-by-maintainer",
   "planApproved": true,
   "d4DCheckpoint": "f40987220",
   "planCheckpoint": "a4248b9c6",
@@ -88,7 +88,7 @@
     {
       "id": "Q4-D5-D",
       "name": "clean-room-causal-wasm-recovery",
-      "status": "qualified-clean-room-causal-wasm-result-approved-automatic",
+      "status": "qualified-clean-room-causal-wasm-result-approved-by-maintainer",
       "plan": "mydocs/plans/task_m100_4969_w10_q4_d5_d_revised.md",
       "executionPlan": "mydocs/tech/investigations/issue-4969/w10_q4_d5_d_execution_plan.json",
       "resultEvidence": "mydocs/tech/investigations/issue-4969/w10_q4_d5_d_causal_wasm_result.json",

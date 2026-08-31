@@ -9,7 +9,7 @@
 - **계획 checkpoint**: `e866bc0b8`
 - **결과 checkpoint**: `95d450dd5`
 - **최신 devel 재자격화**: `upstream/devel@3b301f725`, merge `3d239b5a7`
-- **상태**: clean-room causal WASM 계측 완료·`qualified-bounded-subset` 결과 자동 승인
+- **상태**: clean-room causal WASM 계측 완료·`qualified-bounded-subset` 결과 메인테이너 명시 승인
 - **제품 변경**: 없음 — disposable A축과 계측·보고만 수행
 
 ## 1. 목적

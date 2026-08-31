@@ -4,7 +4,7 @@
   "issue": 4969,
   "stage": "W10-Q4-D5-D",
   "date": "2026-08-31",
-  "status": "qualified-clean-room-causal-wasm-result-approved-automatic",
+  "status": "qualified-clean-room-causal-wasm-result-approved-by-maintainer",
   "planApproved": true,
   "productMutation": false,
   "baselineClassification": "blocked",
