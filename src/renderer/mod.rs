@@ -1498,16 +1498,39 @@ pub fn base_family_without_weight_suffix(font_family: &str) -> Option<String> {
 /// 원 font가 없는 호스트에서는 `Malgun Gothic`이 종전과 같은 마지막 대체다.
 fn installed_render_font_aliases(font_family: &str) -> &'static [&'static str] {
     match font_family {
-        "한양중고딕" => &["HY중고딕"],
-        "HY중고딕" => &["Malgun Gothic"],
+        // [#6171 ③] 원 face 가 없는 호스트에서 generic 으로 떨어지면 그 첫 후보가
+        // `Malgun Gothic` 인데, **Malgun Gothic 만 `『`(U+300E)·`』` 를 반각으로 둔다.**
+        // 글꼴 파일 실측(이 PC `C:\Windows\Fonts`, `『` advance / 잉크, em 단위):
+        //
+        //   Malgun Gothic  0.517em  잉크 0.152..0.463   ← 반각 + 잉크가 왼쪽 절반
+        //   HY중고딕       1.000em  잉크 0.625..0.938
+        //   HY견고딕       1.000em  잉크 0.602..0.938
+        //   Batang/Dotum   1.000em  잉크 0.63 ..0.94
+        //
+        // 조판이 이미 전각 advance 로 다음 런의 x 를 고정해 두므로, 반각 face 가 잡히면
+        // 잉크가 em 왼쪽에 그려져 `『`→`별` 공백이 4.25px → 13.50px 로 벌어진다
+        // (3146683 1쪽). `font_local_aliases`(svg.rs)의 `@font-face` src 는 이미
+        // 한컴 대체 face(`HCR Dotum`)를 먼저 두는데, 이 family 체인에는 그것이 없어
+        // 두 경로가 서로 다른 답을 냈다 — 같은 대체를 여기에도 잇는다.
+        //
+        // 원 face 가 설치된 호스트의 결과는 바뀌지 않는다(앞 후보가 먼저 잡힌다).
+        "한양중고딕" => &["HY중고딕", "HYGothic-Medium", "HCR Dotum", "함초롬돋움"],
+        "HY중고딕" => &[
+            "HYGothic-Medium",
+            "HCR Dotum",
+            "함초롬돋움",
+            "Malgun Gothic",
+        ],
         // [#6171] 견고딕/견명조도 같은 legacy ↔ 설치 face 짝이다. 이 arm 이 없으면
         // 체인이 `'한양견고딕'` 하나 뒤에 바로 generic(=Malgun Gothic)으로 떨어져,
         // `HY견고딕`이 설치된 호스트에서도 Malgun Regular 로 그려진다 — 3146683 1쪽
         // `『별표 7』`의 `별표` 획이 견고딕(Extra)보다 가늘어지는 원인.
         // Windows 글꼴 레지스트리 실측: `HY견고딕`=H2GTRE.TTF(family `HYGothic-Extra`),
         // `HY견명조`=H2MJRE.TTF(family `HYMyeongJo-Extra`).
-        "한양견고딕" => &["HY견고딕", "HYGothic-Extra"],
-        "한양견명조" => &["HY견명조", "HYMyeongJo-Extra"],
+        // 견고딕/견명조도 같은 이유로 한컴 대체 face 를 generic 앞에 둔다 — 이 문서의
+        // `별표` 가 그 갈래다.
+        "한양견고딕" => &["HY견고딕", "HYGothic-Extra", "HCR Dotum", "함초롬돋움"],
+        "한양견명조" => &["HY견명조", "HYMyeongJo-Extra", "HCR Batang", "함초롬바탕"],
         // #4739: 구형 정부상징 부처명 face가 없을 때 현재 공식 배포 face를 찾는다.
         // 동일 alias가 아니라 availability 기반 successor이므로 exact legacy 뒤에만 둔다.
         "정부상징 부처명_16040911" | "Government_16040911" => &[
@@ -2543,9 +2566,15 @@ mod tests {
             render_font_family_chain(r"Legacy\Face").starts_with(r"'Legacy\\Face','Malgun Gothic'")
         );
 
+        // [#6171 ③] 설치 face 뒤에 **한컴 대체 face** 가 오고 그 뒤가 generic 이다.
+        // generic 의 첫 후보 `Malgun Gothic` 만 `『`(U+300E)를 반각으로 두므로(글꼴 파일
+        // 실측 0.517em, 잉크가 em 왼쪽 절반), 그 앞에 전각 face 를 두어야 한다.
         assert_eq!(
             render_font_family_chain("한양중고딕"),
-            format!("'한양중고딕','HY중고딕',{}", generic_fallback("한양중고딕"))
+            format!(
+                "'한양중고딕','HY중고딕','HYGothic-Medium','HCR Dotum','함초롬돋움',{}",
+                generic_fallback("한양중고딕")
+            )
         );
 
         // [#6171] 견고딕/견명조도 legacy name 뒤에 설치 face 이름이 와야 한다. 이 arm 이
@@ -2554,14 +2583,14 @@ mod tests {
         assert_eq!(
             render_font_family_chain("한양견고딕"),
             format!(
-                "'한양견고딕','HY견고딕','HYGothic-Extra',{}",
+                "'한양견고딕','HY견고딕','HYGothic-Extra','HCR Dotum','함초롬돋움',{}",
                 generic_fallback("한양견고딕")
             )
         );
         assert_eq!(
             render_font_family_chain("한양견명조"),
             format!(
-                "'한양견명조','HY견명조','HYMyeongJo-Extra',{}",
+                "'한양견명조','HY견명조','HYMyeongJo-Extra','HCR Batang','함초롬바탕',{}",
                 generic_fallback("한양견명조")
             )
         );
@@ -2573,10 +2602,11 @@ mod tests {
                 generic_fallback("Noto Serif KR Black")
             )
         );
+        // [#6171 ③] Canvas 체인도 같은 순서다 — `Malgun Gothic` 앞에 전각 `『` face 가 온다.
         assert_eq!(
             canvas_font_family_chain("HY중고딕"),
             format!(
-                "\"HY중고딕\", \"Malgun Gothic\", {}",
+                "\"HY중고딕\", \"HYGothic-Medium\", \"HCR Dotum\", \"함초롬돋움\", \"Malgun Gothic\", {}",
                 generic_fallback("HY중고딕")
             )
         );
