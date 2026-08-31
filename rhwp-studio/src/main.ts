@@ -799,6 +799,15 @@ async function initialize(): Promise<void> {
 
     // E2E 테스트용 전역 노출 (개발 모드 전용)
     if (import.meta.env.DEV) {
+      if (new URLSearchParams(window.location.search).get('scrollProbe') === '1') {
+        const { installPageScrollProbe } = await import('./dev/page-scroll-probe');
+        installPageScrollProbe(canvasView, ruler, wasm, eventBus, async path => {
+          const response = await fetch(`/samples/${encodeURI(path)}`);
+          if (!response.ok) throw new Error(`fixture ${response.status}: ${path}`);
+          await loadBytes(new Uint8Array(await response.arrayBuffer()), path.split('/').pop()!, null,
+            performance.now(), { skipRecent: true, suppressDialogs: true });
+        });
+      }
       (window as any).__inputHandler = inputHandler;
       (window as any).__canvasView = canvasView;
       (window as any).__renderBackend = null;

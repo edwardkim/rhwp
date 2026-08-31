@@ -1,7 +1,7 @@
 # 구현 계획 — Task M100 #6042
 
 - 작성일: 2026-08-31 KST
-- 상태: **계획 승인 대기, 아래는 제안 설계이며 미구현**
+- 상태: **Stage 1 완료·Stage 2 승인 대기**. 아래 Stage 2 이후 제품 설계는 미구현.
 - 기준: #6467 `ba68cd655aed5fd94804f725c033cf615231ce4b`
 - branch: `codex/issue-6042-page-virtualization`
 - 수행 범위·단계·fixture·수용 기준: [수행 계획서](task_m100_6042.md)
@@ -13,7 +13,7 @@
 
 | 파일 (`rhwp-studio/` 아래) | 변경안 | 단계 |
 | --- | --- | --- |
-| `src/dev/page-scroll-probe.ts` (신규), 필요 시 `src/view/scroll-performance.ts` (신규) | opt-in 관찰·bounded counters/marks·snapshot export. #6521 전체 이식 금지 | 1 |
+| `src/dev/page-scroll-probe.ts`, `src/dev/scroll-observation.ts` (신규) | opt-in 관찰·bounded counters/marks·snapshot export. #6521 전체 이식 금지 | 1 완료 |
 | `src/main.ts` | 기존 DEV 설치 경로의 최소 loader만. production에서는 미설치 | 1 |
 | `src/view/virtual-scroll.ts` | row tops/bottoms/pages 인덱스, horizontal X 탐색, immutable visibility snapshot, 기존 wrapper 유지 | 2 |
 | `src/view/canvas-view.ts` | snapshot 한 번 소비, page bundle/cache lifecycle, 명시적 render reason에 따른 스케줄 경로 | 2~4 |
@@ -28,6 +28,10 @@ snapshot을 Ruler에 억지로 직접 주입하거나 row decoration을 추가�
 active/focused snapshot 경로로 전달하고, ruler rAF를 raster 완료 뒤로 미루지 않는다.
 
 ## 2. Stage 1 — 기준선·완료 시점부터 고정
+
+[완료 보고](../working/task_m100_6042_stage1.md): 기준선 120회, off/on 교대 관찰 비용, 실제 문서 6종,
+줌 경계·이미지 완료 smoke, 무수정 서버의 page-info 경고 재현, 98개 집중 테스트와 production asset
+동일성 확인. compositor timing·DPR 1·backend 전체 수명 통합 검증은 완료한 것으로 주장하지 않는다.
 
 1. 무수정 #6467 서버와 같은 SHA에 관찰만 추가한 서버를 분리한다. opt-in off/on에서 좌표·raster
    횟수·오류·시간이 관찰 허용 범위 안인지 확인한다. 조건·WASM·font hash를 고정한다.
@@ -78,6 +82,9 @@ geometryRevision은 document/layout/zoom/resize 재계산 시 갱신한다. '같
 
 새 snapshot이 없을 때 이전 문서 snapshot을 peek해 쓰지 않는다. 빈 문서/교체 중에는 유효한 empty를
 반환하고 Wasm page count 밖의 page info를 조회하지 않는다. reset 이벤트의 기존 관측 계약도 테스트한다.
+Stage 1에서 무수정 #6467의 문서 전환 page-info 경고를 재현했다. `pages=[]`와 이전 VirtualScroll
+geometry가 공존할 때 늦은 viewport-scroll이 render를 시도하는 경로를 실행 기반 테스트로 고정하고,
+새 empty snapshot으로 무효화한다. placeholder의 중앙 정렬·줌 앵커 의미는 바꾸지 않는다.
 
 ### 3.3 검증
 
@@ -225,5 +232,6 @@ reset/dispose는 예약·가드를 먼저 무효화해 reentrant focus 이벤트
 분리한다. 승인 없이 안전한 하단 stack이나 사용자 변경을 reset하지 않는다. LRU/scheduler를 도입할 이득이
 입증되지 않으면 인덱스 개선만 유지하는 축소안도 **계획 변경 승인 후** 선택한다.
 
-이번 커밋은 계획만 포함한다. Stage 6 완료 뒤에도 push·native Draft PR 생성은 별도 승인,
+최초 계획 커밋은 계획만 포함했고, Stage 1은 별도 관찰·검증 커밋으로 잇는다. Stage 6 완료 뒤에도
+push·native Draft PR 생성은 별도 승인,
 기존 #6444 처리·전체 stack Ready·merge는 또 다른 승인 경계다.

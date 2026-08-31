@@ -1,0 +1,140 @@
+✔ 여러 쪽 배치는 X/Y가 실제로 겹치는 페이지만 활성 후보로 사용한다 (2.146917ms)
+✔ 단일 열은 X 가시성 보강 뒤에도 현재 페이지 판정을 유지한다 (0.1985ms)
+✔ 보이는 편집 페이지가 뷰포트 중심 페이지보다 우선한다 (0.779ms)
+✔ 편집 페이지가 화면 밖이면 보이는 뷰포트 페이지로 전환한다 (0.069791ms)
+✔ 뷰포트 기준점이 빈 슬롯이나 범위 밖이면 첫 실제 가시 페이지를 쓴다 (0.057125ms)
+✔ 가시 페이지가 없거나 문서가 비었으면 활성 페이지도 없다 (0.062875ms)
+✔ 0번 페이지도 유효한 편집 페이지로 보존한다 (0.058208ms)
+✔ 눈금자는 순수 스크롤로 활성 페이지가 바뀌어도 마지막 편집 focus를 유지한다 (0.054666ms)
+✔ 편집 focus가 아직 없을 때만 활성 뷰포트 페이지로 눈금자를 초기화한다 (0.043625ms)
+✔ 눈금자는 문서와 확정 레이아웃에 모두 존재하는 페이지만 사용한다 (0.042125ms)
+✔ 눈금자의 편집 문맥은 viewport 활성 쪽이 바뀌어도 마지막 focus에 남는다 (0.064833ms)
+✔ focus와 활성 페이지가 모두 무효하면 눈금자 대상도 없다 (0.087916ms)
+✔ 같은 행 그룹은 같은 토폴로지 키를 가지며 맞쪽은 두 쪽과 구분된다 (0.648583ms)
+✔ 자동 단일 열과 명시 한 쪽은 같은 토폴로지다 (0.12225ms)
+✔ CanvasView는 저장된 쪽 배치를 레이아웃 계산에 전달한다 (0.145625ms)
+✔ CanvasView는 통합 보기 설정 이벤트만 구독하고 단일 필드 wrapper를 노출하지 않는다 (0.254584ms)
+✔ 배치 전환은 중심 앵커를 복원하고 토폴로지가 달라질 때만 Canvas를 해제한다 (0.102083ms)
+✔ 배치와 배율 transaction은 표준 zoom 이벤트를 유지하고 최종 레이아웃만 한 번 계산한다 (0.118209ms)
+✔ 가로 쪽 이동은 배치와 함께 한 번에 전환하고 가로 가시 범위를 사용한다 (0.087083ms)
+✔ 중첩 bbox가 mime 앞에 있어도 image prefetch URL을 수집한다 (1.000167ms)
+✔ 같은 그림 집합을 이미 디코드했으면 prefetch 를 건너뛴다 (0.088292ms)
+✔ 그림이 바뀌면 건너뛰지 않는다 (0.056458ms)
+✔ rawSvg 가 있던 페이지는 그림 키가 같아도 건너뛰지 않는다 (0.041417ms)
+✔ 판정 재료가 없으면 종전대로 매번 prefetch 한다 (0.046291ms)
+✔ 다른 문서의 서명은 키가 같아도 재사용하지 않는다 (0.040417ms)
+✔ 문서 신원을 모르면 재사용하지 않는다 (0.034292ms)
+✔ 현재 rawSvg가 새로 생기면 이전 raster 서명을 재사용하지 않는다 (0.049375ms)
+✔ decode가 모두 끝난 뒤에만 서명을 기록한다 (1.588166ms)
+✔ decode 실패나 빈 작업은 완료 서명으로 기록하지 않는다 (0.473459ms)
+✔ 같은 파일을 다시 열면 문서 세대가 달라 서명을 재사용하지 않는다 (0.076584ms)
+✔ 늦게 끝난 이전 prefetch는 최신 서명을 덮어쓰지 않는다 (0.0745ms)
+✔ 안정된 키가 없는 합성 그림 페이지는 서명 캐시 대상이 아니다 (0.071459ms)
+✔ [#3315] resetImageRetryState 는 재시도 키를 비우지 않는다 (1.225375ms)
+✔ [#3315] 재시도 키는 문서 신원과 그림 내용을 직접 든다 (0.246708ms)
+✔ [#3315] 판정 재료가 없으면 재사용 조기 반환이 일어나지 않는다 (0.695375ms)
+✔ [#3315] dispose 는 재시도 키를 거둔다 (0.166708ms)
+✔ [#3315] 문서 교체 경로는 여전히 파생 상태를 정리한다 (0.444208ms)
+✔ 4-layer 4쪽의 34% 배치는 예산 이내이면 모두 raw DPR을 유지한다 (0.946208ms)
+✔ 단일 Canvas 페이지는 보수적 fallback 4가 있어도 실제 layerCount 1로 계산한다 (0.118875ms)
+✔ 열 수가 아니라 실제 surface 비용으로만 조정 여부를 결정한다 (0.156167ms)
+✔ 예산 초과분은 DPR 1로 직행하지 않고 모든 후보를 1.5로 먼저 낮춘다 (1.362917ms)
+✔ retained 예산은 visible 품질보다 화면 밖 prefetch를 먼저 낮춘다 (0.216875ms)
+✔ 기본 예산은 100% 두 쪽을 보존하고 초과한 prefetch만 낮춘다 (0.332125ms)
+✔ 같은 단계에서는 편집 쪽에서 가장 먼 페이지를 먼저 조정한다 (0.180292ms)
+✔ 편집 페이지는 예산을 충족할 수 없는 경우에도 raw DPR을 유지한다 (0.129ms)
+✔ 포커스가 이동하면 새 편집 쪽은 즉시 raw DPR로 승격된다 (0.293625ms)
+✔ 예산 히스테리시스는 경계에서 이전 demotion을 유지하고 여유가 생기면 복원한다 (0.350167ms)
+✔ DPR 3은 3을 보존하고 필요할 때 2, 1.5, 1 순서로 낮춘다 (0.116417ms)
+✔ print와 highQuality는 surface 예산으로 낮추지 않는다 (0.179458ms)
+✔ CanvasView는 가시 집합과 포커스 변경 후 budget plan을 갱신한다 (0.744584ms)
+✔ 문서 화면이 새로 서면 눈금자에게 알린다 (0.639459ms)
+✔ 눈금자는 문서 로드 알림에 크기와 눈금을 모두 다시 잡는다 (0.324625ms)
+✔ A4 155%에서 20cm 라벨은 보이고 21cm 끝 라벨은 숨긴다 (0.613291ms)
+✔ 끝 tick 안쪽이라도 라벨 폭이 용지 경계를 넘으면 숨긴다 (0.073292ms)
+✔ 잘못된 좌표나 음수 크기는 표시하지 않는다 (0.058625ms)
+✔ 관찰은 this·인수·반환 값과 원래 prototype descriptor를 보존한다 (0.468708ms)
+✔ 관찰은 동일 Promise와 thrown undefined까지 보존한다 (0.338917ms)
+✔ 관찰 실패·해제가 제품 결과나 다른 wrapper를 바꾸지 않는다 (0.076333ms)
+✔ 늦은 generation·완료 이후 counter/mark는 다음 interaction을 오염시키지 않는다 (0.187583ms)
+✔ 완료는 명시적 readiness가 필요하고 timeout/중단을 성공으로 세지 않는다 (0.17575ms)
+✔ 기록·span·frame buffer는 bounded이며 snapshot은 독립 복사다 (0.1475ms)
+✔ surface 비용은 실제 다층·익명 pool dimension 합이며 명목 DPR을 곱하지 않는다 (0.054416ms)
+✔ scroll setter 뒤 이전 visibility는 완료가 아니며 scope·zoom·양축 ack가 모두 필요하다 (0.067167ms)
+✔ cold DOM image·decode 실패를 완성으로 보지 않고 오래된 문서/request를 기각한다 (0.53375ms)
+✔ fallback으로 job이 없어져도 관찰된 pending/실패를 준비 완료로 승격하지 않는다 (0.099875ms)
+✔ rapid zoom requests coalesce into one eased animation (5.743417ms)
+✔ a fine trackpad wheel delta produces a fine animated zoom change (0.550792ms)
+✔ vertical-dominant wheel input locks horizontal pan in every delta mode (0.118208ms)
+✔ 세로 쪽 이동의 가로 우세 입력은 native 가로 pan을 유지한다 (0.0605ms)
+✔ 가로 쪽 이동은 선택했을 때 가로·세로 우세 입력을 모두 좌우 스크롤로 바꾼다 (0.11625ms)
+✔ an eight-pixel trackpad gesture settles within four frames and moves nearly five percent (0.167167ms)
+✔ wheel zoom emits the pointer anchor and inverse deltas restore zoom (0.510209ms)
+✔ zoom in and out controls share the command smooth zoom path (1.908333ms)
+✔ CanvasView scales existing pages during zoom and rerenders only after settling (0.683584ms)
+✔ 그리드 모드에서 getPageAtY 는 행의 마지막 쪽을 준다(의도된 의미) (0.640583ms)
+✔ getRowFirstPageAtY 는 행의 첫 쪽을 준다 — 상태바가 1쪽을 표시할 수 있어야 함 (0.095417ms)
+✔ PageUp 이 이전 행으로 실제로 이동한다 — 행 단위 스텝 (0.087458ms)
+✔ 단일 컬럼 모드에서는 종전 동작과 동일하다 (0.072708ms)
+✔ horizontal pan coordinates center the page when content overflows (0.500208ms)
+✔ no pan space when the content fits inside the viewport (0.071833ms)
+✔ pan space is clamped so large screens do not grow the scroll area (0.527667ms)
+✔ grid layout keeps its own centering when no pan space is applied (0.211709ms)
+✔ pointer anchor remains representable across the viewport-width boundary (0.142584ms)
+✔ grid mode never receives pan space at any zoom (0.190584ms)
+✔ 자동은 절대 배율 gate 없이 표시 geometry로 열 수를 계산한다 (0.641125ms)
+✔ 자동은 50% 위에서도 두 쪽 폭이면 2열을 선택하고 50% 전후에 1열을 끼우지 않는다 (0.544959ms)
+✔ 자동 열 후보는 실제 페이지 수를 넘지 않고 실제 점유 묶음을 중앙 정렬한다 (0.11ms)
+✔ 자동 열 후보는 잘못된 geometry에 1열로 수렴하고 열 경계에 hysteresis를 적용한다 (0.061292ms)
+✔ 한 쪽은 낮은 배율에서도 한 행 한 쪽과 중앙 정렬을 유지한다 (0.072417ms)
+✔ 두 쪽은 1-2, 3-4를 같은 행에 놓는다 (0.055583ms)
+✔ 맞쪽은 첫 홀수 쪽을 오른쪽에 두고 이후 짝수·홀수를 좌우에 놓는다 (0.07125ms)
+✔ 여러 쪽은 지정한 열 수를 줌과 무관하게 유지한다 (0.065625ms)
+✔ 크기가 다른 페이지는 동일 슬롯 안에서 가운데 정렬된다 (0.070209ms)
+✔ 맞쪽 첫 행의 프리페치는 다음 실제 행 전체를 포함한다 (0.432959ms)
+✔ 가로 쪽 이동은 한 쪽씩 한 행에 놓고 뷰포트 높이에서 세로 중앙 정렬한다 (0.127791ms)
+✔ 가로 쪽 이동은 가로 가시 범위만 렌더하고 양옆 한 쪽만 프리페치한다 (0.079917ms)
+✔ 저배율 페이지 간격은 모든 배치에서 같은 CSS px 하한을 사용한다 (0.094083ms)
+✔ 고배율 페이지 간격은 모든 배치 좌표에 배율 비례값으로 반영된다 (0.035125ms)
+ℹ tests 98
+ℹ suites 0
+ℹ pass 98
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 214.679542
+
+> rhwp-studio@0.8.4 build
+> tsc && vite build
+
+vite v8.2.2 building client environment for production...
+transforming...
+[plugin rolldown:vite-resolve] Module "fs" has been externalized for browser compatibility, imported by "/Users/melee/Documents/projects/forks/rhwp/tmp/issue-6041-budget-first/rhwp-studio/node_modules/canvaskit-wasm/bin/canvaskit.js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+[plugin rolldown:vite-resolve] Module "path" has been externalized for browser compatibility, imported by "/Users/melee/Documents/projects/forks/rhwp/tmp/issue-6041-budget-first/rhwp-studio/node_modules/canvaskit-wasm/bin/canvaskit.js". See https://vite.dev/guide/troubleshooting.html#module-externalized-for-browser-compatibility for more details.
+✓ 244 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/registerSW.js                              0.13 kB
+dist/manifest.webmanifest                       0.76 kB
+dist/index.html                                66.79 kB │ gzip:     8.87 kB
+dist/assets/canvaskit-SCAxUyCS.wasm         7,317.34 kB │ gzip: 2,989.78 kB
+dist/assets/rhwp_bg-BM74VABM.wasm           9,713.62 kB │ gzip: 3,652.10 kB
+dist/assets/index-BRxDP2oX.css                107.71 kB │ gzip:    18.67 kB
+dist/assets/studio-plugin-Cp8dJ3L_.js          54.38 kB │ gzip:    16.18 kB
+dist/assets/canvaskit-renderer-BVgzWlAx.js    244.87 kB │ gzip:    74.09 kB
+dist/assets/index-CFelgPxu.js               1,711.79 kB │ gzip:   354.77 kB
+
+✓ built in 465ms
+[plugin builtin:vite-reporter]
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+
+PWA v1.3.0
+mode      generateSW
+precache  58 entries (25631.55 KiB)
+files generated
+  dist/sw.js
+  dist/workbox-dcde9eb3.js

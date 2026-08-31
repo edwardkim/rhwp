@@ -1,0 +1,35 @@
+{
+  "allEqual": true,
+  "assets": [
+    {
+      "file": "canvaskit-SCAxUyCS.wasm",
+      "current": "25ebed8e60158c5854f8dc807b936daca21354f8bfb6a2231266b0a93812f301",
+      "baseline": "25ebed8e60158c5854f8dc807b936daca21354f8bfb6a2231266b0a93812f301"
+    },
+    {
+      "file": "canvaskit-renderer-BVgzWlAx.js",
+      "current": "fdb2691b4be64046affacde6a5dc1e66fc52521d517c27e5fa87f1b0d4f149a1",
+      "baseline": "fdb2691b4be64046affacde6a5dc1e66fc52521d517c27e5fa87f1b0d4f149a1"
+    },
+    {
+      "file": "index-BRxDP2oX.css",
+      "current": "f056f385354aafd39f0cf146fc0cb87ceb749980b43aea1b2f77a780fe2a16d7",
+      "baseline": "f056f385354aafd39f0cf146fc0cb87ceb749980b43aea1b2f77a780fe2a16d7"
+    },
+    {
+      "file": "index-CFelgPxu.js",
+      "current": "3e1cd923d72cc091b82ed5beb4938583c38cd35ae4c18ef4dcc5e58335d081c1",
+      "baseline": "3e1cd923d72cc091b82ed5beb4938583c38cd35ae4c18ef4dcc5e58335d081c1"
+    },
+    {
+      "file": "rhwp_bg-BM74VABM.wasm",
+      "current": "44fd90d539d06727dac3c6f8899a492e8e0d48b31ba797eed386f0ef58b51e24",
+      "baseline": "44fd90d539d06727dac3c6f8899a492e8e0d48b31ba797eed386f0ef58b51e24"
+    },
+    {
+      "file": "studio-plugin-Cp8dJ3L_.js",
+      "current": "abdcbcab732aad8d91b551c97ff045bec6b140ae87d94c5fd44235d5515fb4e7",
+      "baseline": "abdcbcab732aad8d91b551c97ff045bec6b140ae87d94c5fd44235d5515fb4e7"
+    }
+  ]
+}

@@ -1,0 +1,103 @@
+{
+  "baseline": [
+    {
+      "box": {
+        "height": 1587.5,
+        "width": 1123,
+        "x": 88.5,
+        "y": 150
+      },
+      "dataset": {
+        "rhwpEffectiveDpr": "2",
+        "rhwpEstimatedRetainedSurfaceBytes": "135421094",
+        "rhwpEstimatedSurfaceBytes": "114038816",
+        "rhwpEstimatedVisibleSurfaceBytes": "114038816",
+        "rhwpRawDpr": "2",
+        "rhwpRenderBucket": "2",
+        "rhwpRenderScale": "2",
+        "rhwpRenderTier": "screen",
+        "rhwpRenderedZoom": "1",
+        "rhwpSurfaceBudgetState": "within",
+        "rhwpSurfaceLayerCount": "4",
+        "rhwpSurfaceVisible": "true"
+      },
+      "height": 3175,
+      "width": 2246
+    },
+    {
+      "box": {
+        "height": 1588,
+        "width": 1123,
+        "x": 88.5,
+        "y": 1747.3984375
+      },
+      "dataset": {
+        "rhwpEffectiveDpr": "1",
+        "rhwpEstimatedRetainedSurfaceBytes": "135421094",
+        "rhwpEstimatedSurfaceBytes": "21382278",
+        "rhwpEstimatedVisibleSurfaceBytes": "114038816",
+        "rhwpRawDpr": "2",
+        "rhwpRenderBucket": "1",
+        "rhwpRenderScale": "1",
+        "rhwpRenderTier": "economy",
+        "rhwpRenderedZoom": "1",
+        "rhwpSurfaceBudgetState": "within",
+        "rhwpSurfaceLayerCount": "3",
+        "rhwpSurfaceVisible": "false"
+      },
+      "height": 1588,
+      "width": 1123
+    }
+  ],
+  "observer": [
+    {
+      "box": {
+        "height": 1587.5,
+        "width": 1123,
+        "x": 88.5,
+        "y": 150
+      },
+      "dataset": {
+        "rhwpEffectiveDpr": "2",
+        "rhwpEstimatedRetainedSurfaceBytes": "135421094",
+        "rhwpEstimatedSurfaceBytes": "114038816",
+        "rhwpEstimatedVisibleSurfaceBytes": "114038816",
+        "rhwpRawDpr": "2",
+        "rhwpRenderBucket": "2",
+        "rhwpRenderScale": "2",
+        "rhwpRenderTier": "screen",
+        "rhwpRenderedZoom": "1",
+        "rhwpSurfaceBudgetState": "within",
+        "rhwpSurfaceLayerCount": "4",
+        "rhwpSurfaceVisible": "true"
+      },
+      "height": 3175,
+      "width": 2246
+    },
+    {
+      "box": {
+        "height": 1588,
+        "width": 1123,
+        "x": 88.5,
+        "y": 1747.3984375
+      },
+      "dataset": {
+        "rhwpEffectiveDpr": "1",
+        "rhwpEstimatedRetainedSurfaceBytes": "135421094",
+        "rhwpEstimatedSurfaceBytes": "21382278",
+        "rhwpEstimatedVisibleSurfaceBytes": "114038816",
+        "rhwpRawDpr": "2",
+        "rhwpRenderBucket": "1",
+        "rhwpRenderScale": "1",
+        "rhwpRenderTier": "economy",
+        "rhwpRenderedZoom": "1",
+        "rhwpSurfaceBudgetState": "within",
+        "rhwpSurfaceLayerCount": "3",
+        "rhwpSurfaceVisible": "false"
+      },
+      "height": 1588,
+      "width": 1123
+    }
+  ],
+  "identical": true
+}
