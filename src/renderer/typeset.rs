@@ -1498,6 +1498,31 @@ fn para_has_visible_text_or_equation(para: &Paragraph) -> bool {
             .any(|c| matches!(c, Control::Equation(eq) if eq.common.treat_as_char))
 }
 
+fn para_has_visible_text_and_treat_as_char_equation(para: &Paragraph) -> bool {
+    para_has_visible_text(para)
+        && para
+            .controls
+            .iter()
+            .any(|c| matches!(c, Control::Equation(eq) if eq.common.treat_as_char))
+}
+
+/// HWPX가 자동으로 만드는 미주 제목은 자동번호 컨트롤과 짧은 답 표식만 가진다.
+/// 리터럴 문항명이 남은 HWP5 제목과 구별해, 단 하단에서 제목만 고립시키지 않는다.
+fn para_is_short_auto_endnote_marker(para: &Paragraph) -> bool {
+    para.text
+        .chars()
+        .filter(|c| *c > '\u{001F}' && *c != '\u{FFFC}' && !c.is_whitespace())
+        .count()
+        <= 1
+        && para.controls.iter().any(|control| {
+            matches!(
+                control,
+                Control::AutoNumber(number)
+                    if number.number_type == crate::model::control::AutoNumberType::Endnote
+            )
+        })
+}
+
 fn is_treat_as_char_equation_control(ctrl: Option<&Control>) -> bool {
     matches!(ctrl, Some(Control::Equation(eq)) if eq.common.treat_as_char)
 }
@@ -12108,6 +12133,7 @@ impl TypesetEngine {
                     endnote_shape,
                     available,
                     ep_idx,
+                    next_endnote_first_line_advance,
                     next_endnote_head_pair_advance,
                     default_between_notes_gap,
                     compact_endnote_separator_profile,
@@ -15215,6 +15241,7 @@ impl TypesetEngine {
         endnote_shape: Option<&FootnoteShape>,
         available: f64,
         ep_idx: usize,
+        next_endnote_first_line_advance: Option<f64>,
         next_endnote_head_pair_advance: Option<f64>,
         default_between_notes_gap: bool,
         compact_endnote_separator_profile: bool,
@@ -15237,15 +15264,28 @@ impl TypesetEngine {
             && st.current_height > available * 0.95
             && st.current_height + fmt.line_advance(0)
                 <= available + ENDNOTE_COLUMN_BOTTOM_BLEED_TOLERANCE_PX
-            && en_ctrl.paragraphs.get(1).is_some_and(|next_para| {
+            && ((en_ctrl.paragraphs.get(1).is_some_and(|next_para| {
                 !para_has_visible_text(next_para) && para_has_visible_text_or_equation(next_para)
-            })
-            && next_endnote_head_pair_advance
+            }) && next_endnote_head_pair_advance
                 .map(|next_h| {
                     st.current_height + fmt.line_advance(0) + next_h
                         > available + ENDNOTE_COLUMN_BOTTOM_BLEED_TOLERANCE_PX + 2.0
                 })
-                .unwrap_or(false)
+                .unwrap_or(false))
+                || (st.profile.hwpx_stored_layout()
+                    && en_ctrl
+                        .paragraphs
+                        .first()
+                        .is_some_and(para_is_short_auto_endnote_marker)
+                    && en_ctrl
+                        .paragraphs
+                        .get(1)
+                        .is_some_and(para_has_visible_text_and_treat_as_char_equation)
+                    && next_endnote_first_line_advance
+                        .map(|next_h| {
+                            st.current_height + fmt.line_advance(0) + next_h > available + 2.0
+                        })
+                        .unwrap_or(false)))
             && endnote_has_visible_payload
     }
 

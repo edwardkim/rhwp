@@ -8,7 +8,7 @@ use crate::wmf::{
         svg::{
             device_context::DeviceContext,
             node::{Data, Node},
-            ternary_raster_operator::TernaryRasterOperator,
+            ternary_raster_operator::{BrushOnlyRopSequence, TernaryRasterOperator},
             util::{as_point_string, url_string, Fill, Stroke},
         },
         GraphicsObject, PlayError, SelectedGraphicsObject,
@@ -22,8 +22,8 @@ pub struct SVGPlayer {
     context_stack: Vec<DeviceContext>,
     context_current: DeviceContext,
     definitions: Vec<Node>,
-    /// [#6469] 근사로 방출한 `PATINVERT` 사각형 이력 — 같은 사각형이 다시 오면 상쇄한다.
-    xor_rects: Vec<(i16, i16, i16, i16, String)>,
+    /// [#6469] 브러시 전용 ROP 근사의 짧은 PATINVERT → DPA → PATINVERT 상태.
+    brush_only_rop_sequence: BrushOnlyRopSequence,
     elements: Vec<Node>,
     object_selected: SelectedGraphicsObject,
     current_clip_id: Option<String>,
@@ -71,7 +71,7 @@ impl crate::wmf::converter::Player for SVGPlayer {
         let Self {
             context_current,
             definitions,
-            xor_rects,
+            brush_only_rop_sequence: _,
             elements,
             ..
         } = self;
@@ -219,7 +219,11 @@ impl crate::wmf::converter::Player for SVGPlayer {
         };
 
         let Some(elem) = operator
-            .run(&mut self.definitions, &mut self.xor_rects)
+            .run(
+                &mut self.definitions,
+                &mut self.brush_only_rop_sequence,
+                self.elements.len(),
+            )
             .map_err(|err| PlayError::InvalidRecord {
                 cause: err.to_string(),
             })?
@@ -293,7 +297,11 @@ impl crate::wmf::converter::Player for SVGPlayer {
         };
 
         let Some(elem) = operator
-            .run(&mut self.definitions, &mut self.xor_rects)
+            .run(
+                &mut self.definitions,
+                &mut self.brush_only_rop_sequence,
+                self.elements.len(),
+            )
             .map_err(|err| PlayError::InvalidRecord {
                 cause: err.to_string(),
             })?
@@ -377,7 +385,11 @@ impl crate::wmf::converter::Player for SVGPlayer {
         };
 
         let Some(elem) = operator
-            .run(&mut self.definitions, &mut self.xor_rects)
+            .run(
+                &mut self.definitions,
+                &mut self.brush_only_rop_sequence,
+                self.elements.len(),
+            )
             .map_err(|err| PlayError::InvalidRecord {
                 cause: err.to_string(),
             })?
@@ -475,7 +487,11 @@ impl crate::wmf::converter::Player for SVGPlayer {
         };
 
         let Some(elem) = operator
-            .run(&mut self.definitions, &mut self.xor_rects)
+            .run(
+                &mut self.definitions,
+                &mut self.brush_only_rop_sequence,
+                self.elements.len(),
+            )
             .map_err(|err| PlayError::InvalidRecord {
                 cause: err.to_string(),
             })?
@@ -523,7 +539,11 @@ impl crate::wmf::converter::Player for SVGPlayer {
         }
 
         let Some(elem) = operator
-            .run(&mut self.definitions, &mut self.xor_rects)
+            .run(
+                &mut self.definitions,
+                &mut self.brush_only_rop_sequence,
+                self.elements.len(),
+            )
             .map_err(|err| PlayError::InvalidRecord {
                 cause: err.to_string(),
             })?

@@ -11,6 +11,76 @@ pub enum TernaryRasterOperationError {
     NoSource { cause: String },
 }
 
+type BrushOnlyRopKey = (i16, i16, i16, i16, String);
+
+#[derive(Default)]
+pub struct BrushOnlyRopSequence {
+    state: Option<BrushOnlyRopSequenceState>,
+}
+
+enum BrushOnlyRopSequenceState {
+    AwaitDpa {
+        key: BrushOnlyRopKey,
+        expected_element_count: usize,
+    },
+    AwaitFinalPatInvert {
+        key: BrushOnlyRopKey,
+        expected_element_count: usize,
+    },
+}
+
+impl BrushOnlyRopSequence {
+    /// Returns true only for the contiguous fallback sequence
+    /// PATINVERT(key) -> DPA -> PATINVERT(key).
+    fn observe(
+        &mut self,
+        operation: TernaryRasterOperation,
+        key: BrushOnlyRopKey,
+        element_count: usize,
+    ) -> bool {
+        let state = std::mem::take(&mut self.state);
+        match (state, operation) {
+            (
+                Some(BrushOnlyRopSequenceState::AwaitDpa {
+                    key: previous_key,
+                    expected_element_count,
+                }),
+                TernaryRasterOperation::DPA,
+            ) if element_count == expected_element_count => {
+                self.state = Some(BrushOnlyRopSequenceState::AwaitFinalPatInvert {
+                    key: previous_key,
+                    expected_element_count: element_count + 1,
+                });
+                false
+            }
+            (
+                Some(BrushOnlyRopSequenceState::AwaitFinalPatInvert {
+                    key: previous_key,
+                    expected_element_count,
+                }),
+                TernaryRasterOperation::PATINVERT,
+            ) if key == previous_key && element_count == expected_element_count => true,
+            (_, TernaryRasterOperation::PATINVERT) => {
+                self.state = Some(BrushOnlyRopSequenceState::AwaitDpa {
+                    key,
+                    expected_element_count: element_count + 1,
+                });
+                false
+            }
+            _ => false,
+        }
+    }
+
+    fn clear_if_unrelated(&mut self, operation: TernaryRasterOperation) {
+        if !matches!(
+            operation,
+            TernaryRasterOperation::PATINVERT | TernaryRasterOperation::DPA
+        ) {
+            self.state = None;
+        }
+    }
+}
+
 pub struct TernaryRasterOperator {
     operation: TernaryRasterOperation,
     x: i16,
@@ -83,8 +153,11 @@ impl TernaryRasterOperator {
     pub fn run(
         self,
         definitions: &mut Vec<Node>,
-        xor_rects: &mut Vec<(i16, i16, i16, i16, String)>,
+        brush_only_rop_sequence: &mut BrushOnlyRopSequence,
+        element_count: usize,
     ) -> Result<Option<Node>, TernaryRasterOperationError> {
+        brush_only_rop_sequence.clear_if_unrelated(self.operation);
+
         if self.operation.use_selected_brush() && self.brush.is_none() {
             return Err(TernaryRasterOperationError::NoBrush {
                 cause: format!(
@@ -192,21 +265,17 @@ impl TernaryRasterOperator {
                     Fill::Value { value } => value,
                 };
 
-                // `PATINVERT`(D ⊕ P)는 **같은 사각형·같은 브러시로 두 번 오면 상쇄**한다.
-                // 이 문서의 관용구가 정확히 그 형태다.
+                // `PATINVERT`(D ⊕ P)는 확인된 연속 관용구 안에서만 상쇄한다.
                 //
                 //   PATINVERT(gray) → DPa(패턴) → PATINVERT(gray)
                 //
                 // 평면 색 근사로 셋 다 칠하면 마지막 XOR 이 가운데 패턴 blit 이 칠한
-                // 그림(흰 원)을 덮는다. 짝이 되는 두 번째 XOR 은 건너뛰어 상쇄를
-                // 재현한다 — 156627451 2쪽 위 도해에서 흰 원이 살아난다.
-                if matches!(operation, TernaryRasterOperation::PATINVERT) {
-                    let key = (self.x, self.y, self.width, self.height, fill.clone());
-                    if let Some(pos) = xor_rects.iter().position(|k| *k == key) {
-                        xor_rects.remove(pos);
-                        return Ok(None);
-                    }
-                    xor_rects.push(key);
+                // 그림(흰 원)을 덮는다. 다만 전역 이력에서 같은 키를 찾으면 독립된
+                // 후속 draw까지 지워질 수 있으므로, 출력 요소 순서상 연속한
+                // PATINVERT → DPA → PATINVERT만 상쇄한다.
+                let key = (self.x, self.y, self.width, self.height, fill.clone());
+                if brush_only_rop_sequence.observe(operation, key, element_count) {
+                    return Ok(None);
                 }
 
                 Node::new("rect")
@@ -271,5 +340,32 @@ impl From<ColorRef> for RGBQuad {
             blue,
             reserved,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn key() -> BrushOnlyRopKey {
+        (10, 20, 30, 40, "#D9D9D9".to_owned())
+    }
+
+    #[test]
+    fn cancels_only_the_contiguous_patinvert_dpa_patinvert_sequence() {
+        let mut sequence = BrushOnlyRopSequence::default();
+
+        assert!(!sequence.observe(TernaryRasterOperation::PATINVERT, key(), 0));
+        assert!(!sequence.observe(TernaryRasterOperation::DPA, key(), 1));
+        assert!(sequence.observe(TernaryRasterOperation::PATINVERT, key(), 2));
+    }
+
+    #[test]
+    fn preserves_a_same_key_patinvert_after_an_intervening_element() {
+        let mut sequence = BrushOnlyRopSequence::default();
+
+        assert!(!sequence.observe(TernaryRasterOperation::PATINVERT, key(), 0));
+        assert!(!sequence.observe(TernaryRasterOperation::DPA, key(), 1));
+        assert!(!sequence.observe(TernaryRasterOperation::PATINVERT, key(), 3));
     }
 }

@@ -3678,3 +3678,20 @@ fn issue_1139_endnote_equation_exposes_note_ref_and_properties() {
         "캡션이 없는 수식은 수식 속성 여백/캡션 탭에서 위치 없음으로 표시되어야 함: {props}"
     );
 }
+
+#[test]
+fn issue_1139_2024_hwpx_page9_endnote_title_moves_with_first_payload_line() {
+    let bytes = std::fs::read("samples/3-09월_교육_통합_2022.hwpx").expect("sample");
+    let doc = HwpDocument::from_bytes(&bytes).expect("parse");
+    let page9 = doc.dump_page_items(Some(8));
+    let page10 = doc.dump_page_items(Some(9));
+
+    assert!(
+        !page9.contains("pi=523"),
+        "문8 제목만 9쪽 오른쪽 단 하단에 남기면 한컴 2024 PDF와 달라짐\n{page9}"
+    );
+    assert!(
+        page10.contains("pi=523"),
+        "문8은 첫 payload 줄과 함께 10쪽에서 시작해야 함\n{page10}"
+    );
+}
