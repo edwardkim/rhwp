@@ -833,7 +833,7 @@ class CiImpactWorkflowTests(unittest.TestCase):
             function_gated_native_skia_tests(),
             [
                 "issue_2225_missing_picture_placeholder::"
-                "issue_2225_export_png_defaults_to_print_equivalent_skia_profile",
+                "issue_2225_export_png_defaults_to_screen_skia_profile",
             ],
         )
 

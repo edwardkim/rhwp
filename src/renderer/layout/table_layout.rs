@@ -4153,7 +4153,7 @@ impl LayoutEngine {
         cell: &crate::model::table::Cell,
         table: &crate::model::table::Table,
     ) -> (f64, f64, f64, f64) {
-        self.resolve_cell_padding_for_context(cell, table, false)
+        self.resolve_cell_padding_for_context(cell, table)
     }
 
     /// Native HWP5의 긴 1×1 child 중 `applyInnerMargin=false`이고 table 좌우
@@ -4191,7 +4191,6 @@ impl LayoutEngine {
         &self,
         cell: &crate::model::table::Cell,
         table: &crate::model::table::Table,
-        allow_saved_small_cell_margin: bool,
     ) -> (f64, f64, f64, f64) {
         // HWP 스펙: aim(apply_inner_margin)=true → cell.padding,
         //           aim=false → table.padding 우선.
@@ -4207,13 +4206,11 @@ impl LayoutEngine {
             cell,
             cell.padding.left,
             table.padding.left,
-            allow_saved_small_cell_margin,
         );
         let use_cell_right = Self::should_use_cell_padding_axis_for_context(
             cell,
             cell.padding.right,
             table.padding.right,
-            allow_saved_small_cell_margin,
         );
         // [#6358] 음수 pad 는 `c < 2500` 위생 한도를 통과하므로 0 하한을 같이 둔다.
         let use_cell_top = (table_pad_unspec && cell.padding.top >= 0 && cell.padding.top < 2500)
@@ -4221,7 +4218,6 @@ impl LayoutEngine {
                 cell,
                 cell.padding.top,
                 table.padding.top,
-                allow_saved_small_cell_margin,
             );
         let use_cell_bottom =
             (table_pad_unspec && cell.padding.bottom >= 0 && cell.padding.bottom < 2500)
@@ -4229,7 +4225,6 @@ impl LayoutEngine {
                     cell,
                     cell.padding.bottom,
                     table.padding.bottom,
-                    allow_saved_small_cell_margin,
                 );
 
         let pad_left = if use_cell_left {
@@ -4277,11 +4272,10 @@ impl LayoutEngine {
         cell: &crate::model::table::Cell,
         cell_padding: i16,
         table_padding: i16,
-        allow_saved_small_cell_margin: bool,
     ) -> bool {
         // [Task #1785] 규칙 본체는 Cell::use_cell_padding_axis 로 이동 — height_measurer
         // 와 단일 출처 공유 (규칙이 갈리면 예약 높이와 실제 렌더가 어긋난다).
-        cell.use_cell_padding_axis(cell_padding, table_padding, allow_saved_small_cell_margin)
+        cell.use_cell_padding_axis(cell_padding, table_padding)
     }
 
     /// 셀 텍스트가 오버플로우할 때 좌우 패딩을 축소하여 공간을 확보한다.
@@ -4302,6 +4296,7 @@ impl LayoutEngine {
         paragraphs: &[Paragraph],
         styles: &ResolvedStyleSet,
         preserve_cell_padding: bool,
+        line_wrap_squeeze: bool,
     ) -> (f64, f64) {
         // [#2279 axis B] 규칙 본체는 composer::shrunk_cell_horizontal_padding 로 이동 —
         // cut(cell_units)/mt(HeightMeasurer) 측정과 단일 출처 공유 (규칙이 갈리면
@@ -4314,6 +4309,7 @@ impl LayoutEngine {
             paragraphs,
             styles,
             preserve_cell_padding,
+            line_wrap_squeeze,
             self.dpi,
         )
     }
@@ -5454,7 +5450,36 @@ impl LayoutEngine {
                                     .line_segs
                                     .first()
                                     .is_some_and(|seg| seg.vertical_pos > 0);
-                            let anchor_y = if displaced_empty_line_para {
+                            // [#6494] **한 문단이 float 그림을 둘 이상 달고 있으면 그것들은
+                            // 나란히 놓이는 한 무리**다 — 칸 valign 이나 저장 vpos 가 아니라
+                            // 문단 앵커(`para_y_before_compose`)에 함께 걸린다.
+                            //
+                            // 156489219 5쪽 `p[1]`(빈 문단, 그림 2장)이 그 형상이다. 한글 2022
+                            // 오라클은 두 장을 **소수점까지 같은 y=516.04**(표 상단 기준 상대
+                            // 118.68pt)에 나란히 놓는다. 우리 `para_y_before_compose` 는 상대
+                            // 118.9pt 로 **0.22pt** 안에서 그 값이다.
+                            //
+                            // 종전에는 둘이 서로 다른 갈래를 타 찢어졌다 — 하나는
+                            // `displaced_empty_line_para` 로 칸 상단에 붙은 뒤 음수 오프셋
+                            // −185.8pt 를 먹어 칸 위로 246px 나가 보이지 않게 됐고, 다른 하나는
+                            // #2071 칸 valign 강제로 칸 아래(용지 밖 51.4pt)로 갔다.
+                            //
+                            // 음수 오프셋을 버리는 이유: 그 값은 **변위된** 문단 위치를 기준으로
+                            // 저장된 보정이라, 앵커를 변위 전으로 되돌린 뒤 다시 빼면 이중
+                            // 보정이 된다.
+                            let side_by_side_float_group = para
+                                .controls
+                                .iter()
+                                .filter(|c| {
+                                    matches!(c, crate::model::control::Control::Picture(p)
+                                        if !p.common.treat_as_char
+                                            && matches!(p.common.vert_rel_to, VertRelTo::Para))
+                                })
+                                .count()
+                                > 1;
+                            let anchor_y = if side_by_side_float_group {
+                                para_y_before_compose
+                            } else if displaced_empty_line_para {
                                 // Square 포함 모든 비인라인 그림 — 원점은 문단 시작.
                                 content_cell_y + pad_top
                             } else if non_inline_para && !top_and_bottom_para {
@@ -5516,8 +5541,16 @@ impl LayoutEngine {
                                     .max(0.0),
                                 ..inner_area
                             };
+                            // [#6494] 나란히 무리에서는 음수 세로 오프셋을 버린다 — 위 주석 참조.
+                            let grouped_common = (side_by_side_float_group
+                                && signed_hwpunit(pic.common.vertical_offset) < 0)
+                                .then(|| {
+                                    let mut c = pic.common.clone();
+                                    c.vertical_offset = 0;
+                                    c
+                                });
                             let (pic_x, pic_y) = self.compute_object_position(
-                                &pic.common,
+                                grouped_common.as_ref().unwrap_or(&pic.common),
                                 pic_w,
                                 pic_h,
                                 &cell_area,
@@ -5555,6 +5588,8 @@ impl LayoutEngine {
                                 && pic.common.flow_with_text
                                 && !unrestricted_take_place_cell_float
                                 && !detached_from_inline_table_flow
+                                // [#6494] 나란히 무리는 칸 valign 이 아니라 문단 앵커를 따른다.
+                                && !side_by_side_float_group
                             {
                                 let v_off = hwpunit_to_px(
                                     signed_hwpunit(pic.common.vertical_offset),
@@ -5727,6 +5762,31 @@ impl LayoutEngine {
                                 }
                             } else {
                                 pic_y
+                            };
+                            // [#6494] **칸 앵커 그림은 자기 칸 밖으로 나가지 않는다.**
+                            //
+                            // 이것은 물리적 봉쇄이지 근인 정정이 아니다 — 앵커 계약 자체는
+                            // 아직 확정되지 않았다(이슈에 후보표를 남겼다). 다만 지금은
+                            // 같은 문단의 두 float 이 서로 다른 최종 기준을 써서 한 장은
+                            // 칸 **위로** 246px, 다른 한 장은 칸 **아래로** 나가 용지
+                            // 밖 51.4pt 까지 이르러 캡션·주석·쪽번호를 덮는다
+                            // (156489219 5쪽, 한글 2022 는 두 장을 같은 y=516.04 에 나란히
+                            // 놓는다).
+                            //
+                            // 칸 밖으로 나간 그림은 어느 앵커 모델에서도 옳지 않으므로,
+                            // 모델이 정해질 때까지 칸 안으로 묶는다. 칸보다 큰 그림은
+                            // 건드리지 않는다 — 그 경우 봉쇄는 위치를 바꿀 뿐 결과를
+                            // 개선하지 못하고, 종전 배치를 흔들 위험만 남는다.
+                            let pic_y = {
+                                let cell_top = content_cell_y.min(inner_area.y);
+                                let cell_bottom = (content_cell_y + cell_h)
+                                    .min(inner_area.y + inner_area.height)
+                                    .max(cell_top);
+                                if pic_h <= (cell_bottom - cell_top) + 0.5 {
+                                    pic_y.clamp(cell_top, (cell_bottom - pic_h).max(cell_top))
+                                } else {
+                                    pic_y
+                                }
                             };
                             if std::env::var("RHWP_6313_DBG").is_ok() && pic_y > 700.0 {
                                 eprintln!(
@@ -6936,8 +6996,8 @@ impl LayoutEngine {
             );
 
             // 셀 패딩 (cell.padding이 0이면 table.padding fallback)
-            let (mut pad_left, mut pad_right, pad_top, pad_bottom) = self
-                .resolve_cell_padding_for_context(cell, table, nested_non_tac_cell_margin_compat);
+            let (mut pad_left, mut pad_right, pad_top, pad_bottom) =
+                self.resolve_cell_padding_for_context(cell, table);
 
             let mut composed_paras: Vec<_> = cell
                 .paragraphs
@@ -6976,6 +7036,7 @@ impl LayoutEngine {
                 &cell.paragraphs,
                 styles,
                 preserve_explicit_horizontal_padding,
+                cell.line_wrap == crate::model::table::CELL_LINE_WRAP_SQUEEZE,
             );
             pad_left = new_pl;
             pad_right = new_pr;
@@ -8220,13 +8281,8 @@ impl LayoutEngine {
 
         let mut row_units: Vec<(f64, bool, f64, bool, Option<usize>)> = Vec::new();
         for cell in table.cells.iter().filter(|cell| cell.row == 0) {
-            let preserve_saved_small_margin = !table.common.treat_as_char
-                && !self
-                    .render_normalization_overlay()
-                    .uses_owner_content_box(table)
-                && !self.long_indented_tracking_uses_table_content_box(table, styles);
             let (pad_left, pad_right, pad_top, pad_bottom) =
-                self.resolve_cell_padding_for_context(cell, table, preserve_saved_small_margin);
+                self.resolve_cell_padding_for_context(cell, table);
             let cell_w = if cell.width < 0x8000_0000 {
                 hwpunit_to_px(cell.width as i32, self.dpi) * self.render_table_width_scale(table)
             } else {
@@ -15435,6 +15491,7 @@ mod row_cut_tests {
             &paragraphs,
             &styles,
             false,
+            false,
         );
         assert!(
             shrunk.0 < 20.0 || shrunk.1 < 20.0,
@@ -15449,11 +15506,30 @@ mod row_cut_tests {
             &paragraphs,
             &styles,
             true,
+            false,
         );
         assert_eq!(
             preserved,
             (20.0, 20.0),
             "안 여백 지정 셀은 한컴처럼 입력한 좌우 여백을 렌더링에서도 보존해야 함"
+        );
+
+        // [#6145] "한 줄로 입력" 칸은 aim=false 여도 여백을 깎지 않는다 —
+        // 한/글은 여백 대신 자간을 줄여 글자를 안쪽 폭에 맞춘다.
+        let squeezed = eng.shrink_cell_padding_for_overflow(
+            20.0,
+            20.0,
+            30.0,
+            &composed,
+            &paragraphs,
+            &styles,
+            false,
+            true,
+        );
+        assert_eq!(
+            squeezed,
+            (20.0, 20.0),
+            "lineWrap=SQUEEZE 칸은 넘쳐도 좌우 안 여백을 보존해야 함: {squeezed:?}"
         );
     }
 

@@ -1501,6 +1501,31 @@ fn para_has_visible_text_or_equation(para: &Paragraph) -> bool {
             .any(|c| matches!(c, Control::Equation(eq) if eq.common.treat_as_char))
 }
 
+fn para_has_visible_text_and_treat_as_char_equation(para: &Paragraph) -> bool {
+    para_has_visible_text(para)
+        && para
+            .controls
+            .iter()
+            .any(|c| matches!(c, Control::Equation(eq) if eq.common.treat_as_char))
+}
+
+/// HWPX가 자동으로 만드는 미주 제목은 자동번호 컨트롤과 짧은 답 표식만 가진다.
+/// 리터럴 문항명이 남은 HWP5 제목과 구별해, 단 하단에서 제목만 고립시키지 않는다.
+fn para_is_short_auto_endnote_marker(para: &Paragraph) -> bool {
+    para.text
+        .chars()
+        .filter(|c| *c > '\u{001F}' && *c != '\u{FFFC}' && !c.is_whitespace())
+        .count()
+        <= 1
+        && para.controls.iter().any(|control| {
+            matches!(
+                control,
+                Control::AutoNumber(number)
+                    if number.number_type == crate::model::control::AutoNumberType::Endnote
+            )
+        })
+}
+
 fn is_treat_as_char_equation_control(ctrl: Option<&Control>) -> bool {
     matches!(ctrl, Some(Control::Equation(eq)) if eq.common.treat_as_char)
 }
@@ -11043,7 +11068,14 @@ impl TypesetEngine {
                 && st.col_count > 1
                 && !st.current_items.is_empty()
                 && st.current_height > available * 0.5
-                && (local_vpos_rewind || st.column_had_compact_endnote_rewind);
+                && (local_vpos_rewind
+                    || st.column_had_compact_endnote_rewind
+                    // [#6495] 되감김 신호가 **없는** 단도 넘친다. 3-09월_교육_통합_2022
+                    // 9쪽 오른쪽 단은 되감김이 한 번도 없는데 타이프셋 누계가
+                    // 1048.9 로 가용 1001.6 을 47px 넘고, 그린 줄이 용지 끝
+                    // 841.17pt(용지 841.9)에 닿는다. 누계가 이미 가용을 넘었으면
+                    // 신호와 무관하게 시뮬로 확인한다.
+                    || st.current_height > available);
             let simulated_endnote_bottom = if ssot_level >= EnSsotLevel::A2 || page_offcanvas_sim {
                 self.simulate_endnote_column_bottom_y(
                     &st,
@@ -11063,9 +11095,23 @@ impl TypesetEngine {
             } else {
                 None
             };
+            // [#5886] 허용 bleed 는 **용지 안에 남는 만큼**을 넘을 수 없다.
+            //
+            // 관문 이름 그대로 이것은 "용지 밖(off-canvas)"을 막는 장치인데, 허용치를
+            // 단 하단 기준 고정 56px 로 두면 쪽 아래 여백이 그보다 좁은 문서에서
+            // **여백과 56px 사이 구간이 통째로 사각지대**가 된다. 3-09월_교육_통합_2022
+            // 12쪽이 그 예로, 단 하단 1092.3 에서 용지 1122.5 까지 30.2px 뿐인데
+            // 관문은 +56px 을 넘을 때까지 침묵해 세 문단(시뮬 하단 1016.6·1034.6·1052.7)
+            // 이 놓인 뒤에야 발동했다. 뒤 두 문단은 용지 밖이라 다시 그려지지도 않는다.
+            //
+            // 여백이 56px 이상인 문서는 종전과 같다 — 좁은 쪽에서만 조인다.
+            let page_bottom_room = (st.layout.page_height
+                - (st.layout.body_area.y + st.layout.body_area.height))
+                .max(0.0);
+            let page_offcanvas_guard_px = ENDNOTE_PAGE_OFFCANVAS_GUARD_PX.min(page_bottom_room);
             let page_offcanvas_with_para = page_offcanvas_sim
                 && simulated_endnote_bottom
-                    .is_some_and(|bottom| bottom > available + ENDNOTE_PAGE_OFFCANVAS_GUARD_PX);
+                    .is_some_and(|bottom| bottom > available + page_offcanvas_guard_px);
             // 구분선 없는 큰 미주 block에서는 다줄 수식 문단의 advance가
             // frame을 약간 넘더라도 실제 보이는 줄은 하단 frame 안에 남는다.
             // 이 tail을 통째로 유지해야 다음 단의 새 문항 시작점이 한컴과 맞는다.
@@ -12124,6 +12170,7 @@ impl TypesetEngine {
                     endnote_shape,
                     available,
                     ep_idx,
+                    next_endnote_first_line_advance,
                     next_endnote_head_pair_advance,
                     default_between_notes_gap,
                     compact_endnote_separator_profile,
@@ -15280,6 +15327,7 @@ impl TypesetEngine {
         endnote_shape: Option<&FootnoteShape>,
         available: f64,
         ep_idx: usize,
+        next_endnote_first_line_advance: Option<f64>,
         next_endnote_head_pair_advance: Option<f64>,
         default_between_notes_gap: bool,
         compact_endnote_separator_profile: bool,
@@ -15302,15 +15350,28 @@ impl TypesetEngine {
             && st.current_height > available * 0.95
             && st.current_height + fmt.line_advance(0)
                 <= available + ENDNOTE_COLUMN_BOTTOM_BLEED_TOLERANCE_PX
-            && en_ctrl.paragraphs.get(1).is_some_and(|next_para| {
+            && ((en_ctrl.paragraphs.get(1).is_some_and(|next_para| {
                 !para_has_visible_text(next_para) && para_has_visible_text_or_equation(next_para)
-            })
-            && next_endnote_head_pair_advance
+            }) && next_endnote_head_pair_advance
                 .map(|next_h| {
                     st.current_height + fmt.line_advance(0) + next_h
                         > available + ENDNOTE_COLUMN_BOTTOM_BLEED_TOLERANCE_PX + 2.0
                 })
-                .unwrap_or(false)
+                .unwrap_or(false))
+                || (st.profile.hwpx_stored_layout()
+                    && en_ctrl
+                        .paragraphs
+                        .first()
+                        .is_some_and(para_is_short_auto_endnote_marker)
+                    && en_ctrl
+                        .paragraphs
+                        .get(1)
+                        .is_some_and(para_has_visible_text_and_treat_as_char_equation)
+                    && next_endnote_first_line_advance
+                        .map(|next_h| {
+                            st.current_height + fmt.line_advance(0) + next_h > available + 2.0
+                        })
+                        .unwrap_or(false)))
             && endnote_has_visible_payload
     }
 
