@@ -5,7 +5,7 @@
 - base: `devel` (`upstream/devel@887b4ce15`로 rebase)
 - 원 PR head: `e374be85c554c8b4b502f1f253aaa7c3d7b425f0`
 - 통합 보정 commit: `b0109a1f6`
-- 상태: 메인 터너 보정을 포함한 통합본 수용. 원 PR 직접 병합 금지.
+- 상태: [통합 PR #6537](https://github.com/edwardkim/rhwp/pull/6537)로 병합 완료 (`1636910809ce9d1a394b30144fff19cc5fc32826`). 원 PR 직접 병합은 하지 않았다.
 
 ## 범위와 충돌 보정
 
