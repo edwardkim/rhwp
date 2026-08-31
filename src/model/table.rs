@@ -226,16 +226,10 @@ impl Cell {
     /// [Task #1785] 렌더에 실제 적용되는 축별 안 여백 선택 규칙 (단일 출처).
     ///
     /// HWP 스펙: aim=true → cell.padding(단, 0 은 표 기본으로 폴백), aim=false →
-    /// table.padding. 예외로 aim=false 여도 레거시 보존값(cell > table, 2500HU 미만)은
-    /// 한컴이 렌더에 사용한다 (KTX 목차, exam_kor 보기 박스).
+    /// table.padding.
     /// 레이아웃(resolve_cell_padding)과 높이 측정(height_measurer)이 반드시 같은 값을
     /// 봐야 한다 — 규칙이 갈리면 예약 높이와 실제 렌더가 어긋나 표 높이가 틀어진다.
-    pub fn use_cell_padding_axis(
-        &self,
-        cell_padding: i16,
-        table_padding: i16,
-        allow_saved_small_cell_margin: bool,
-    ) -> bool {
+    pub fn use_cell_padding_axis(&self, cell_padding: i16, table_padding: i16) -> bool {
         if self.apply_inner_margin {
             // [#2070] aim=true 의 0 은 사용자가 지정한 셀 고유 안 여백 — 존중한다
             // (한글 PDF 실측: 시장구조조사 c0 pad=(0,0) 코드 폭 37.0px > 표 폴백
@@ -243,17 +237,18 @@ impl Cell {
             // 센티널로 보고 표 패딩 폴백 유지.
             return cell_padding >= 0;
         }
-        // [#2195] aim=false 는 원칙적으로 **전 축 표 기본** — pad 통제 사다리
-        // 2종 실측:
+        // [#2195] aim=false 는 **전 축 표 기본** — pad 통제 사다리 2종 실측:
         // (1) 표(0,0,141,141)+셀(510,510,141,141): 실효 좌우 0·상하 141,
         // (2) 표(510,510,223,223)+셀 동일: inner = 표폭-1020(좌우 510x2)·상하 223.
-        // 단, 셀 안의 비글자표가 표 자체에는 좌우 0·상하 141HU만 저장하고 셀에는
-        // 510HU 좌우 margin을 보존한 HWP5 형상은 한컴이 그 작은 저장 여백을 쓴다.
-        // 이는 일반 표의 `inMargin=(0,0,141,141)` 사다리를 뒤집지 않도록 호출자가
-        // 중첩 비글자표 문맥에서만 허용한다 (#2308 p34).
-        if allow_saved_small_cell_margin && cell_padding > table_padding && cell_padding < 2500 {
-            return true;
-        }
+        //
+        // [#5301] 종전에는 "중첩 비글자표는 셀의 작은 저장 여백을 한컴이 쓴다"는 예외를
+        // 뒀는데(`#2308 p34`), 그 근거 문서를 한글 2024 오라클로 다시 재니 **반대**였다.
+        // `samples/issue1891/76076_regulatory_analysis.hwp` 는 34쪽·66쪽 모두 중첩 칸
+        // (표 pad 0/0 · 셀 pad 510/510 · aim=false)인데 한컴이 그린 글자 상자가
+        // `156.96..522.60pt = 365.6pt` 로 **칸 폭 36572HU(365.72pt) 전부**다 —
+        // 여백 0 이다. 510 을 적용하면 폭이 10.2pt 좁아져 줄이 하나 더 생기고,
+        // 그 초과 줄이 조각 용량을 넘어 66쪽에서 `로 예상` 세 글자가 소실됐다.
+        let _ = (cell_padding, table_padding);
         false
     }
 
@@ -348,7 +343,7 @@ impl Cell {
             // 통과해 안쪽 높이가 부풀어 Center 정렬이 셀 밖 +130px 로 나간다.
             // aim=true 경로(`use_cell_padding_axis`: `cell_padding >= 0`)와 같이
             // 결측 센티널로 보고 표 기본으로 폴백한다.
-            if (unspec_axis && c >= 0 && c < 2500) || self.use_cell_padding_axis(c, t, false) {
+            if (unspec_axis && c >= 0 && c < 2500) || self.use_cell_padding_axis(c, t) {
                 c
             } else {
                 t

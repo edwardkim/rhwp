@@ -4170,7 +4170,7 @@ impl LayoutEngine {
         cell: &crate::model::table::Cell,
         table: &crate::model::table::Table,
     ) -> (f64, f64, f64, f64) {
-        self.resolve_cell_padding_for_context(cell, table, false)
+        self.resolve_cell_padding_for_context(cell, table)
     }
 
     /// Native HWP5의 긴 1×1 child 중 `applyInnerMargin=false`이고 table 좌우
@@ -4208,7 +4208,6 @@ impl LayoutEngine {
         &self,
         cell: &crate::model::table::Cell,
         table: &crate::model::table::Table,
-        allow_saved_small_cell_margin: bool,
     ) -> (f64, f64, f64, f64) {
         // HWP 스펙: aim(apply_inner_margin)=true → cell.padding,
         //           aim=false → table.padding 우선.
@@ -4224,13 +4223,11 @@ impl LayoutEngine {
             cell,
             cell.padding.left,
             table.padding.left,
-            allow_saved_small_cell_margin,
         );
         let use_cell_right = Self::should_use_cell_padding_axis_for_context(
             cell,
             cell.padding.right,
             table.padding.right,
-            allow_saved_small_cell_margin,
         );
         // [#6358] 음수 pad 는 `c < 2500` 위생 한도를 통과하므로 0 하한을 같이 둔다.
         let use_cell_top = (table_pad_unspec && cell.padding.top >= 0 && cell.padding.top < 2500)
@@ -4238,7 +4235,6 @@ impl LayoutEngine {
                 cell,
                 cell.padding.top,
                 table.padding.top,
-                allow_saved_small_cell_margin,
             );
         let use_cell_bottom =
             (table_pad_unspec && cell.padding.bottom >= 0 && cell.padding.bottom < 2500)
@@ -4246,7 +4242,6 @@ impl LayoutEngine {
                     cell,
                     cell.padding.bottom,
                     table.padding.bottom,
-                    allow_saved_small_cell_margin,
                 );
 
         let pad_left = if use_cell_left {
@@ -4294,11 +4289,10 @@ impl LayoutEngine {
         cell: &crate::model::table::Cell,
         cell_padding: i16,
         table_padding: i16,
-        allow_saved_small_cell_margin: bool,
     ) -> bool {
         // [Task #1785] 규칙 본체는 Cell::use_cell_padding_axis 로 이동 — height_measurer
         // 와 단일 출처 공유 (규칙이 갈리면 예약 높이와 실제 렌더가 어긋난다).
-        cell.use_cell_padding_axis(cell_padding, table_padding, allow_saved_small_cell_margin)
+        cell.use_cell_padding_axis(cell_padding, table_padding)
     }
 
     /// 셀 텍스트가 오버플로우할 때 좌우 패딩을 축소하여 공간을 확보한다.
@@ -6921,8 +6915,8 @@ impl LayoutEngine {
             );
 
             // 셀 패딩 (cell.padding이 0이면 table.padding fallback)
-            let (mut pad_left, mut pad_right, pad_top, pad_bottom) = self
-                .resolve_cell_padding_for_context(cell, table, nested_non_tac_cell_margin_compat);
+            let (mut pad_left, mut pad_right, pad_top, pad_bottom) =
+                self.resolve_cell_padding_for_context(cell, table);
 
             let mut composed_paras: Vec<_> = cell
                 .paragraphs
@@ -8203,13 +8197,8 @@ impl LayoutEngine {
 
         let mut row_units: Vec<(f64, bool, f64, bool, Option<usize>)> = Vec::new();
         for cell in table.cells.iter().filter(|cell| cell.row == 0) {
-            let preserve_saved_small_margin = !table.common.treat_as_char
-                && !self
-                    .render_normalization_overlay()
-                    .uses_owner_content_box(table)
-                && !self.long_indented_tracking_uses_table_content_box(table, styles);
             let (pad_left, pad_right, pad_top, pad_bottom) =
-                self.resolve_cell_padding_for_context(cell, table, preserve_saved_small_margin);
+                self.resolve_cell_padding_for_context(cell, table);
             let cell_w = if cell.width < 0x8000_0000 {
                 hwpunit_to_px(cell.width as i32, self.dpi) * self.render_table_width_scale(table)
             } else {
