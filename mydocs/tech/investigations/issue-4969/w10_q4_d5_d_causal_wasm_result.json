@@ -104,5 +104,34 @@
     "preserved": true,
     "resolution": "D5-D changed only clean-room baseline construction and satisfied the unchanged causal-size hard gate"
   },
-  "next": "checkpoint-qualified-result-then-refresh-upstream-before-submission"
+  "postResultUpstreamRequalification": {
+    "upstreamDevel": "3b301f725ab48985f19c25784b68448ed4257bfd",
+    "incomingCommits": 12,
+    "mergeCommit": "3d239b5a7",
+    "ahead": 71,
+    "behind": 0,
+    "directFileOverlap": [
+      "mydocs/orders/20260831.md"
+    ],
+    "q4DProductSourceDirectOverlap": 0,
+    "mergeConflict": "daily-order-add-add-preserved-both-sections",
+    "issue4969": {
+      "passed": 112,
+      "failed": 0,
+      "skippedByFilter": 8793
+    },
+    "wasm32CargoCheck": "passed",
+    "rustUnitTier": {
+      "tests": 4223,
+      "modules": 299,
+      "ready": 0,
+      "support": 87,
+      "whiteBox": 4132
+    },
+    "formatAllCheck": "passed",
+    "causalReceiptRepeated": false,
+    "causalReceiptScope": "exact B snapshot e866bc0b8; not relabeled as the merged-head absolute size",
+    "repeatReason": "incoming had no direct Q4-D product source overlap and no post-hoc size threshold exists"
+  },
+  "next": "submission-boundary-after-final-remote-refresh"
 }

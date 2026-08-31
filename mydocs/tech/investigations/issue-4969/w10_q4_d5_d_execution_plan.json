@@ -83,5 +83,7 @@
     "hardGate": "available"
   },
   "finalClassification": "qualified-bounded-subset",
-  "next": "checkpoint-qualified-result-then-refresh-upstream-before-submission"
+  "latestRequalifiedUpstreamDevel": "3b301f725ab48985f19c25784b68448ed4257bfd",
+  "latestRequalificationMergeCommit": "3d239b5a7",
+  "next": "submission-boundary-after-final-remote-refresh"
 }

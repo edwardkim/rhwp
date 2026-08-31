@@ -8,6 +8,7 @@
 - **작성일**: 2026-08-31 KST
 - **계획 checkpoint**: `e866bc0b8`
 - **결과 checkpoint**: `95d450dd5`
+- **최신 devel 재자격화**: `upstream/devel@3b301f725`, merge `3d239b5a7`
 - **상태**: clean-room causal WASM 계측 완료·`qualified-bounded-subset` 결과 자동 승인
 - **제품 변경**: 없음 — disposable A축과 계측·보고만 수행
 
@@ -107,6 +108,6 @@ build wall time은 cache·열 상태가 달라 성능 결론으로 사용하지 
 
 [D5-D 결과 보고서](../working/task_m100_4969_w10_q4_d5_d.md)에 따라 source-only A 구성과 동일 Docker image의
 A/B 빌드가 모든 hard gate를 통과했다. causal WASM delta는 +36,611 bytes, A 대비 +0.371371668%이며
-Q4-D 최종 분류를 `qualified-bounded-subset`으로 갱신하고 결과 checkpoint `95d450dd5`로 고정했다. 최신
-`upstream/devel`을 다시
-확인하며 push·PR·GitHub comment는 별도 경계로 유지한다.
+Q4-D 최종 분류를 `qualified-bounded-subset`으로 갱신하고 결과 checkpoint `95d450dd5`로 고정했다. 이후
+최신 `upstream/devel@3b301f725`를 merge `3d239b5a7`로 병합하고 #4969 112건·wasm32 check·tier·format을
+재통과했다. push·PR·GitHub comment는 별도 경계로 유지한다.

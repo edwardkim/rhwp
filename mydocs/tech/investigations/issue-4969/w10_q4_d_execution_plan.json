@@ -7,13 +7,13 @@
   "status": "Q4-D5-D-qualified-bounded-subset-result-approved-automatic",
   "baseCheckpoint": "f449960c7",
   "upstreamDevelAtD2Start": "628944a33cb5",
-  "latestObservedUpstreamDevel": "77bcaaa49c89dc12761282c759717188a880064c",
-  "latestUpstreamMergeCommit": "aecdde843b43709fced6924f6ed3a58f24592962",
+  "latestObservedUpstreamDevel": "3b301f725ab48985f19c25784b68448ed4257bfd",
+  "latestUpstreamMergeCommit": "3d239b5a7",
   "d4DCheckpoint": "f40987220",
   "d5CResultCheckpoint": "a7de96b44",
   "d5DPlanCheckpoint": "e866bc0b8",
   "d5DResultCheckpoint": "95d450dd5",
-  "aheadAfterLatestFetch": 66,
+  "aheadAfterLatestFetch": 71,
   "behindAfterLatestFetch": 0,
   "incomingD2FileOverlap": 0,
   "productMutationBeforeApproval": false,
@@ -131,5 +131,5 @@
     "pullRequest": true
   },
   "finalClassification": "qualified-bounded-subset",
-  "next": "checkpoint-qualified-result-then-refresh-upstream-before-submission"
+  "next": "submission-boundary-after-final-remote-refresh"
 }
