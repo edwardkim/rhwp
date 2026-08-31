@@ -38,15 +38,21 @@ pub(crate) fn print_help() {
 /// 사람용 root index에서만 이름순으로 정렬한다.
 fn root_command_index() -> Vec<(String, String)> {
     let caps = crate::cli::metadata::capabilities::capabilities_value();
+    let visible: std::collections::BTreeSet<&str> = crate::cli::catalog::commands()
+        .iter()
+        .filter(|command| command.in_help())
+        .map(|command| command.name)
+        .collect();
     let mut commands: Vec<(String, String)> = caps["commands"]
         .as_array()
         .into_iter()
         .flatten()
         .filter_map(|entry| {
-            Some((
-                entry["name"].as_str()?.to_string(),
-                entry["summary"].as_str()?.to_string(),
-            ))
+            let name = entry["name"].as_str()?;
+            if !visible.contains(name) {
+                return None;
+            }
+            Some((name.to_string(), entry["summary"].as_str()?.to_string()))
         })
         .collect();
     commands.sort_unstable_by(|(left, _), (right, _)| left.cmp(right));

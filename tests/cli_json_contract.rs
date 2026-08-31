@@ -540,7 +540,7 @@ fn capabilities_version_matches_version_flag() {
 
 #[test]
 fn capabilities_covers_every_help_command() {
-    // 드리프트 가드 ②: `--help` 에 보이는 명령은 capabilities 에도 있어야 한다.
+    // 드리프트 가드 ②: 루트 `--help` 색인에 보이는 명령은 capabilities 에도 있어야 한다.
     // 새 명령을 help 에만 추가하면 이 테스트가 잡는다.
     let cap = parse_stdout_json(&["capabilities"], &run(&["capabilities"]));
     let names: Vec<String> = cap["commands"]
@@ -561,6 +561,9 @@ fn capabilities_covers_every_help_command() {
             }
             let token = rest.split_whitespace().next().unwrap_or("");
             if !token.is_empty()
+                && token != "rhwp"
+                // capabilities 는 자기서술 JSON 바깥의 메타 명령이다.
+                && token != "capabilities"
                 && token
                     .chars()
                     .all(|c| c.is_ascii_lowercase() || c == '-' || c.is_ascii_digit())
@@ -864,31 +867,38 @@ fn help_hidden() -> Vec<(&'static str, &'static str)> {
 
 #[test]
 fn help_covers_every_capabilities_command() {
-    // 드리프트 가드 ③(신규): capabilities 가 광고하는 명령은 사람이 보는 `--help` 에도
-    // 있어야 한다. 종전 가드는 help→capabilities 한 방향뿐이라, 매뉴얼 절까지 갖춘
-    // 사용자용 명령이 help 에서 통째로 빠져도 아무도 못 잡았다(extract-pages 가 실제로
-    // 그랬다 — --json 계약까지 가진 명령이 help 에 없었다).
+    // 드리프트 가드 ③: capabilities 가 광고하는 최상위 명령은 루트 `--help` 색인에도
+    // 있어야 한다. 세부 플래그와 하위 명령은 각각 `rhwp <명령> --help`에서 안내한다.
     let cap = parse_stdout_json(&["capabilities"], &run(&["capabilities"]));
-    let help = help_command_tokens();
+    let output = run(&["--help"]);
+    let help_text = String::from_utf8_lossy(&output.stdout);
     let hidden = help_hidden();
-    assert!(
-        help.len() > 10,
-        "help 파서가 명령을 거의 못 찾았습니다 — 파서가 조용히 0건을 내면 이 가드가 \
-         공허하게 통과합니다: {help:?}"
-    );
 
     let missing: Vec<&str> = cap["commands"]
         .as_array()
         .expect("commands 배열")
         .iter()
         .filter_map(|c| c["name"].as_str())
-        .filter(|n| !help.iter().any(|h| h.as_str() == *n))
+        .filter(|n| {
+            !help_text.lines().any(|line| {
+                let Some(rest) = line.strip_prefix("  ") else {
+                    return false;
+                };
+                let Some(tail) = rest.strip_prefix(*n) else {
+                    return false;
+                };
+                tail.chars()
+                    .next()
+                    .map(char::is_whitespace)
+                    .unwrap_or(false)
+            })
+        })
         .filter(|n| !hidden.iter().any(|(hidden, _)| *hidden == *n))
         .collect();
     assert!(
         missing.is_empty(),
-        "capabilities 에는 있는데 --help 에 없는 명령: {missing:?}\n\
-         사용자용이면 print_help 에 추가하고, 내부 프로브면 HELP_HIDDEN 에 사유와 함께 넣으세요."
+        "capabilities 에는 있는데 루트 --help 색인에 없는 명령: {missing:?}\n\
+         사용자용이면 root_command_index 에 추가하고, 내부 프로브면 HELP_HIDDEN 에 사유와 함께 넣으세요."
     );
 
     // 허용목록이 낡는 것도 같은 부류의 드리프트다 — help 에 실린 명령이 목록에 남아
@@ -896,7 +906,20 @@ fn help_covers_every_capabilities_command() {
     let stale: Vec<&str> = hidden
         .iter()
         .map(|(hidden, _)| *hidden)
-        .filter(|hidden| help.iter().any(|h| h.as_str() == *hidden))
+        .filter(|hidden| {
+            help_text.lines().any(|line| {
+                let Some(rest) = line.strip_prefix("  ") else {
+                    return false;
+                };
+                let Some(tail) = rest.strip_prefix(*hidden) else {
+                    return false;
+                };
+                tail.chars()
+                    .next()
+                    .map(char::is_whitespace)
+                    .unwrap_or(false)
+            })
+        })
         .collect();
     assert!(
         stale.is_empty(),

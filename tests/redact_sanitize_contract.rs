@@ -713,10 +713,14 @@ fn capabilities_and_mcp_declare_both_commands() {
         assert_eq!(tool["cli"]["command"], "edit", "{tool}");
     }
 
-    // 사람이 보는 --help 에도 두 하위 명령이 있어야 한다(기계·사람 자기서술 동기).
-    let help = String::from_utf8_lossy(&run(&["--help"]).stdout).to_string();
-    for line in ["edit redact", "edit sanitize"] {
-        assert!(help.contains(line), "--help 에 '{line}' 이 없습니다");
+    // 사람이 보는 edit 색인에도 두 하위 명령이 있어야 한다(기계·사람 자기서술 동기).
+    let help = String::from_utf8_lossy(&run(&["edit", "--help"]).stdout).to_string();
+    for command in ["redact", "sanitize"] {
+        assert!(
+            help.lines()
+                .any(|line| line.trim_start().starts_with(command)),
+            "edit --help 에 '{command}' 이 없습니다"
+        );
     }
 }
 

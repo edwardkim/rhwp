@@ -183,7 +183,12 @@ fn whole_help_is_a_sorted_command_index() {
         !text.contains("  edit fill-fields "),
         "root help가 edit 하위 상세 절을 중복 출력한다"
     );
-    let mut expected: Vec<String> = declared().into_iter().map(|(name, _)| name).collect();
+    let hidden_diagnostics = ["core-pages", "dump-extents", "measure-width"];
+    let mut expected: Vec<String> = declared()
+        .into_iter()
+        .map(|(name, _)| name)
+        .filter(|name| !hidden_diagnostics.contains(&name.as_str()))
+        .collect();
     expected.sort();
     let mut previous = 0usize;
     for name in expected {
