@@ -2,9 +2,10 @@
 
 - Issue: [#6187](https://github.com/edwardkim/rhwp/issues/6187)
 - 작성일: 2026-08-31 KST
-- 상태: Stage 1 구현·focused 검증 완료 / 결과 승인 및 Stage 2 착수 승인 대기.
+- 상태: Stage 2 구현·focused 검증 완료 / 결과 및 Stage 3 통합 검증 착수 승인 대기.
 - 수행 계획: [task_m100_6187.md](task_m100_6187.md)
 - Stage 1 결과: [상시 표시·입력 정책 구현 보고](../working/task_m100_6187_stage1.md)
+- Stage 2 결과: [resize 갱신 원자화 보고](../working/task_m100_6187_stage2.md)
 - 브랜치: `codex/issue-6187-always-visible-ruler`
 - 기준: `upstream/devel@e50792c6341a0b61afc3ffeb687a92fc6a807e69`
 
@@ -94,6 +95,11 @@
 - 이전 화면을 복사하는 이중 버퍼를 근거 없이 도입하는 변경.
 - 전역 `ViewportManager`의 ResizeObserver→setTimeout 정책을 무조건 rAF로 바꾸는 변경.
 - `CanvasView`의 anchor·reflow 순서나 #6149 LOD를 근거 없이 수정하는 변경.
+
+Stage 2 구현에서는 별도 resize dirty flag 대신 공통 `update()`의 paint 직전에 항상 최신 크기를
+비교한다. 두 축의 container 측정을 먼저 마친 뒤 달라진 bitmap/CSS 차원만 쓴다. 따라서 resize
+예약과 다른 repaint 예약이 합쳐지거나 DPR이 바뀌어도 크기 갱신을 놓치지 않으며, 변화 없는
+bitmap은 초기화하지 않는다. DPR은 갱신당 한 번 읽어 크기 계산과 두 축 paint에 공유한다.
 
 눈금자 내부 수정 후에도 실제 화면에서 stale geometry/공백이 관측되면, 관측값과 필요한 추가 파일을
 보고하고 설계를 재승인받는다. 전역 이벤트 순서 변경은 이 계획의 자동 승인 범위가 아니다.

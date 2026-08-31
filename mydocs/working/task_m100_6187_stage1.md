@@ -2,7 +2,7 @@
 
 - Issue: [#6187](https://github.com/edwardkim/rhwp/issues/6187)
 - 작성일: 2026-08-31 KST
-- 상태: 상시 표시·입력 정책 구현 및 focused 검증 완료. 작업지시자 결과 승인 대기.
+- 상태: 상시 표시·입력 정책 구현 및 focused 검증 완료. 2026-08-31 작업지시자 결과 승인 완료.
 - 브랜치: `codex/issue-6187-always-visible-ruler`
 - 기준: `upstream/devel@e50792c6341a0b61afc3ffeb687a92fc6a807e69`
 - 계획 승인 기록 commit: `ddd9fe37d`
@@ -112,3 +112,6 @@ npx --no-install tsc --noEmit
 
 Stage 1 코드·테스트·보고서를 commit한 뒤 작업을 멈춘다. 작업지시자가 Stage 1 결과와 Stage 2 착수를
 승인하면, 기존 resize 갱신 경로의 실패를 먼저 고정하고 눈금자 내부에서 크기 변경과 paint를 원자화한다.
+
+후속 승인: `a24b353b2` commit과 이 보고서를 전달한 뒤 작업지시자가 `진행해줘.`로 Stage 1 결과와
+Stage 2 착수를 승인했다. 이후 작업은 [Stage 2 보고서](task_m100_6187_stage2.md)에 기록한다.
