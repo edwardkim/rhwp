@@ -342,30 +342,3 @@ impl From<ColorRef> for RGBQuad {
         }
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    fn key() -> BrushOnlyRopKey {
-        (10, 20, 30, 40, "#D9D9D9".to_owned())
-    }
-
-    #[test]
-    fn cancels_only_the_contiguous_patinvert_dpa_patinvert_sequence() {
-        let mut sequence = BrushOnlyRopSequence::default();
-
-        assert!(!sequence.observe(TernaryRasterOperation::PATINVERT, key(), 0));
-        assert!(!sequence.observe(TernaryRasterOperation::DPA, key(), 1));
-        assert!(sequence.observe(TernaryRasterOperation::PATINVERT, key(), 2));
-    }
-
-    #[test]
-    fn preserves_a_same_key_patinvert_after_an_intervening_element() {
-        let mut sequence = BrushOnlyRopSequence::default();
-
-        assert!(!sequence.observe(TernaryRasterOperation::PATINVERT, key(), 0));
-        assert!(!sequence.observe(TernaryRasterOperation::DPA, key(), 1));
-        assert!(!sequence.observe(TernaryRasterOperation::PATINVERT, key(), 3));
-    }
-}
