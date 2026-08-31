@@ -409,6 +409,18 @@ fn preserves_stored_first_visible_break_after_bottom_caption_table(para: &Paragr
 /// [`preserves_stored_first_visible_break_after_bottom_caption_table`]가 소유권을 증명하면
 /// 두 번째 저장 줄의 index 0만 보존한다.
 pub(super) fn inline_table_stored_line_break_char_indices(para: &Paragraph) -> Vec<usize> {
+    inline_table_stored_line_breaks(para)
+        .into_iter()
+        .map(|(char_idx, _)| char_idx)
+        .collect()
+}
+
+/// [#6181] 위와 같은 줄 나눔 목록에 **그 줄을 소유한 `line_segs` 인덱스**를 함께 준다.
+///
+/// `char_idx == 0` 인 저장 줄은 실질 개행이 아니라 걸러지므로, 목록의 n 번째 나눔이
+/// `line_segs[n + 1]` 이라고 가정할 수 없다. 줄 상단을 저장 `vertical_pos` 로 잡으려면
+/// 그 대응이 필요하다.
+pub(super) fn inline_table_stored_line_breaks(para: &Paragraph) -> Vec<(usize, usize)> {
     if para.line_segs.len() <= 1 || para.char_offsets.is_empty() {
         return Vec::new();
     }
@@ -416,7 +428,7 @@ pub(super) fn inline_table_stored_line_break_char_indices(para: &Paragraph) -> V
     let text_len = para.text.chars().count();
     let preserves_first_visible_break =
         preserves_stored_first_visible_break_after_bottom_caption_table(para);
-    let mut indices = Vec::new();
+    let mut indices: Vec<(usize, usize)> = Vec::new();
     for (line_index, _line_seg) in para.line_segs.iter().enumerate().skip(1) {
         // [#5961] `char_offsets` 는 HWP5 축이므로 저장 `text_start` 를 같은 자로 올린다.
         let seg_start = para.line_seg_text_start(line_index);
@@ -431,13 +443,48 @@ pub(super) fn inline_table_stored_line_break_char_indices(para: &Paragraph) -> V
             && char_idx <= text_len
             && indices
                 .last()
-                .map(|&previous| char_idx > previous)
+                .map(|&(previous, _)| char_idx > previous)
                 .unwrap_or(true)
         {
-            indices.push(char_idx);
+            indices.push((char_idx, line_index));
         }
     }
     indices
+}
+
+/// [#6181] 인라인 TAC 표를 품은 문단의 줄 상단은 저장 `LINE_SEG` 의 `vertical_pos` 델타가
+/// 정답지다 — 첫 줄 기준 오프셋(px)을 준다.
+///
+/// 종전에는 첫 줄바꿈을 **표 하단**(`max_table_bottom`)에 붙였다. 표 폭 때문에 글이
+/// 아래로 밀리는 형상에는 맞지만, 표가 줄 안에 들어가는(`신규` 배지 같은) 문단에서는
+/// 앞 줄의 `line_height` 초과분과 `line_spacing` 을 함께 버린다.
+///
+/// 실측(156562368 인쇄 4쪽 para#114·#119, `lineSpacing PERCENT 120`):
+///
+/// ```text
+/// ls[0] vertpos=24112 vertsize=1778 spacing=976
+/// ls[1] vertpos=26866 vertsize=1500 spacing=976   → 델타 2754HU = 36.72px
+/// rhwp 실측 20.00px (= 표 하단, 뒤 줄 vertsize 만) — 13.6px(40%) 소실
+/// ```
+///
+/// 합성 사다리(`TAG_IMPLEMENTATION_PROPERTY`)와 전진하지 않는 값은 `None` 으로 물러나
+/// 종전 추정을 그대로 쓴다.
+fn inline_table_stored_line_top_offset_px(
+    para: &Paragraph,
+    line_index: usize,
+    dpi: f64,
+) -> Option<f64> {
+    if line_index == 0 {
+        return None;
+    }
+    let synth = crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY;
+    let first = para.line_segs.first()?;
+    let seg = para.line_segs.get(line_index)?;
+    if first.tag & synth != 0 || seg.tag & synth != 0 {
+        return None;
+    }
+    let delta = seg.vertical_pos - first.vertical_pos;
+    (delta > 0).then(|| hwpunit_to_px(delta, dpi))
 }
 
 fn paragraph_active_text_style(
@@ -2335,7 +2382,11 @@ impl LayoutEngine {
         // 이전: ctrl_gap 을 paragraph 전체 controls 합으로 over-subtract → controls 가 있는
         // paragraph 에서 saturating 0 으로 항상 break 미감지 (#496 케이스).
         // 이전: ls[1] 만 사용. 다중 줄 paragraph 에서 ls[2..] 무시 → dynamic reflow.
-        let line_break_char_indices = inline_table_stored_line_break_char_indices(para);
+        let stored_line_breaks = inline_table_stored_line_breaks(para);
+        let line_break_char_indices: Vec<usize> = stored_line_breaks
+            .iter()
+            .map(|&(char_idx, _)| char_idx)
+            .collect();
         if layout_debug_enabled() {
             eprintln!(
                 "  LAYOUT_BREAK_INDICES: pi={} indices={:?} (from ls[1..])",
@@ -2482,9 +2533,14 @@ impl LayoutEngine {
                         // char_shape 변경 또는 줄바꿈 시 누적된 run을 출력
                         // [Task #518] LINE_SEG 기반 줄 나눔: ls[1..] 의 text_start 위치 모두 사용.
                         // break 가 모두 소진되거나 미존재 시 right_margin 동적 reflow 로 fallback.
+                        // [#6181] 저장 나눔으로 넘어간 줄은 그 줄을 소유한 `line_segs`
+                        // 인덱스를 함께 들고 간다 — 아래에서 줄 상단을 저장 `vertical_pos`
+                        // 로 잡는 데 쓴다.
+                        let mut stored_break_seg: Option<usize> = None;
                         let need_wrap = if next_break < line_break_char_indices.len()
                             && ch_idx >= line_break_char_indices[next_break]
                         {
+                            stored_break_seg = stored_line_breaks.get(next_break).map(|&(_, s)| s);
                             next_break += 1;
                             true
                         } else {
@@ -2544,8 +2600,20 @@ impl LayoutEngine {
                         }
 
                         if need_wrap {
+                            // [#6181] 저장 사다리가 이 줄의 상단을 직접 말하면 그것이
+                            // 정답지다 — 표 하단 추정보다 우선한다. 표가 줄 **안**에
+                            // 들어가는 형상(`신규` 배지 같은 1×1 TAC 표)에서는 표 하단에
+                            // 붙이면 앞 줄 `vertsize` 초과분과 `spacing` 을 함께 버려
+                            // 둘째 줄이 첫 줄에 바짝 붙는다(156562368 인쇄 4~9쪽 25줄:
+                            // 36.72px 이어야 할 전진이 20.00px).
+                            let stored_top = stored_break_seg.and_then(|seg| {
+                                inline_table_stored_line_top_offset_px(para, seg, self.dpi)
+                            });
                             // 줄바꿈: 표 아래로 넘어가는 경우 표 하단 기준 배치
-                            if !wrapped_below_table && max_table_bottom > y {
+                            if let Some(offset) = stored_top {
+                                current_y = y + offset;
+                                wrapped_below_table = true;
+                            } else if !wrapped_below_table && max_table_bottom > y {
                                 // 첫 번째 줄바꿈 시 표 아래로 이동
                                 // HWP: 표 너비로 인한 텍스트 오버플로우에는 줄간격 미적용
                                 // (텍스트만의 오버플로우에는 줄간격 적용)
