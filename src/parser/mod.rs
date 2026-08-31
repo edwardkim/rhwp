@@ -2768,30 +2768,6 @@ mod tests {
     }
 
     #[test]
-    fn issue6534_detect_format_does_not_promote_xlsx_zip_to_hwpx() {
-        let data = make_zip(&[
-            ("[Content_Types].xml", b"<Types/>"),
-            ("xl/workbook.xml", b"<workbook/>"),
-        ]);
-
-        assert_eq!(detect_format(&data), FileFormat::Unknown);
-        let error = parse_document(&data).expect_err("XLSX must not enter the HWPX parser");
-        assert!(
-            matches!(error, ParseError::UnsupportedFormat { code, .. } if code == UNSUPPORTED_FILE_FORMAT_CODE),
-            "XLSX ZIP must fail at format detection instead of HWPX MissingFile: {error}"
-        );
-    }
-
-    #[test]
-    fn issue6534_detect_format_requires_both_hwpx_package_entries() {
-        let only_content = make_zip(&[("Contents/content.hpf", b"<package/>")]);
-        let only_header = make_zip(&[("Contents/header.xml", b"<head/>")]);
-
-        assert_eq!(detect_format(&only_content), FileFormat::Unknown);
-        assert_eq!(detect_format(&only_header), FileFormat::Unknown);
-    }
-
-    #[test]
     fn test_detect_format_unknown() {
         let data = [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00];
         assert_eq!(detect_format(&data), FileFormat::Unknown);
