@@ -59,6 +59,28 @@ fn has_majority_fullpage_images(fullpage_count: usize, noninline_picture_count: 
     fullpage_count >= 2 && fullpage_count.saturating_mul(2) > noninline_picture_count
 }
 
+/// [#6511] #1995 낱장 배치는 본문 흐름에 참여하는 비-TAC 그림만 후보와 과반
+/// 분모로 센다. 글뒤로/글앞으로(BehindText/InFrontOfText) 그림은 흐름 공간을
+/// 소비하지 않아 한 쪽에 몇 장이든 공존할 수 있으므로(#703 표와 같은 불변식)
+/// 전면 크기라도 스캔 이미지가 아니라 배경/워터마크다. 낱장 배치 후보로 세면
+/// 배경 프레임을 깐 안내문이 강제 새 쪽을 얻고, 분모로만 남겨도 스캔 그림의
+/// 과반을 희석해 정당한 낱장 배치를 억제한다 — 양쪽 모두에서 제외한다.
+fn flow_noninline_picture(ctrl: &Control) -> Option<&crate::model::image::Picture> {
+    match ctrl {
+        Control::Picture(pic)
+            if !pic.common.treat_as_char
+                && !matches!(
+                    pic.common.text_wrap,
+                    crate::model::shape::TextWrap::BehindText
+                        | crate::model::shape::TextWrap::InFrontOfText
+                ) =>
+        {
+            Some(pic)
+        }
+        _ => None,
+    }
+}
+
 /// [#2085] 표 행-스캔 분할점 캐리 (값 왕복). split_end_cut 은 move.
 struct BlockTableRowScan {
     consumed: f64,
@@ -8610,17 +8632,16 @@ impl TypesetEngine {
             // 각각 한 페이지에 단독 배치해야 한다. 미수정 시 96장이 한 앵커에 스택되어
             // 문서가 과소 페이지가 된다(오라클 268 vs rhwp 174). 한 문단에 본문높이의
             // 60% 이상인 non-TAC 그림이 2장 이상일 때만 발동(정상 단일 그림 문단 불변).
+            // 글뒤로/글앞으로 그림은 후보·분모 모두에서 제외한다(#6511, `flow_noninline_picture`).
             let fullpage_img_body_h = st.base_available_height();
             let fullpage_img_ctrls: Vec<usize> = if fullpage_img_body_h > 0.0 && !has_table {
                 para.controls
                     .iter()
                     .enumerate()
-                    .filter_map(|(ci, c)| match c {
-                        Control::Picture(pic) if !pic.common.treat_as_char => {
-                            let h = hwpunit_to_px(pic.common.height as i32, self.dpi);
-                            (h >= fullpage_img_body_h * 0.6).then_some(ci)
-                        }
-                        _ => None,
+                    .filter_map(|(ci, c)| {
+                        let pic = flow_noninline_picture(c)?;
+                        let h = hwpunit_to_px(pic.common.height as i32, self.dpi);
+                        (h >= fullpage_img_body_h * 0.6).then_some(ci)
                     })
                     .collect()
             } else {
@@ -8635,7 +8656,7 @@ impl TypesetEngine {
             let noninline_pic_count = para
                 .controls
                 .iter()
-                .filter(|c| matches!(c, Control::Picture(pic) if !pic.common.treat_as_char))
+                .filter(|c| flow_noninline_picture(c).is_some())
                 .count();
             // [#4770] #2004 본문 정규화와 같은 엄격한 저장 스택 계약을 쓴다. 즉 빈
             // 문단의 비-TAC Square·겹침불허 그림/그림-도형이 같은 세로 band에 있고,
