@@ -16,6 +16,36 @@ rhwp --help        # 도움말
 rhwp --version     # 버전
 ```
 
+## 도움말 탐색
+
+`rhwp --help`는 공개 최상위 명령을 **명령 이름순**으로 보여 주는 짧은 인덱스다. 실행
+디스패치 순서나 내부 구현 순서는 이 출력에 노출하지 않으므로, 목록에서 명령을 찾은 뒤
+그 명령의 상세 도움말을 연다.
+
+```bash
+# 최상위 명령 인덱스
+rhwp --help
+
+# 한 명령의 위치 인자, 옵션, 입출력·종료 계약
+rhwp export-png --help
+rhwp dump-extents --help
+
+# 계층형 명령의 하위 명령 인덱스(이름순)
+rhwp edit --help
+rhwp inspect --help
+
+# 한 하위 명령의 상세 도움말
+rhwp edit insert-row --help
+rhwp inspect hidden-text --help
+```
+
+- `rhwp <명령> --help`와 `rhwp <그룹> <하위명령> --help`는 stdout에 성공적으로 도움말을
+  출력하고 종료한다. 실제 실행에 필요한 상세 계약은 이 범위의 도움말과 해당 절을 함께 따른다.
+- `rhwp edit --help`와 `rhwp inspect --help`는 현재 지원하는 하위 명령을 빠짐없이 이름순으로
+  표시하는 인덱스이며, 최상위 `rhwp --help`에는 이 계층을 중복 나열하지 않는다.
+- 자동화가 사람이 읽는 도움말을 파싱해서 명령 목록을 얻으면 안 된다. 기계 판독용 목록과
+  입출력 계약은 `rhwp capabilities`를 사용한다.
+
 > 빌드: `cargo build --release` 후 `./target/release/rhwp`, 또는 개발 중 `cargo run --bin rhwp -- <명령>`.
 > 네이티브 빌드/실행은 항상 로컬 cargo 사용(Docker 는 WASM 전용).
 

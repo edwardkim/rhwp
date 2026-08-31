@@ -138,37 +138,103 @@ fn scoped_help_is_a_fraction_of_the_whole_help() {
 }
 
 #[test]
-fn group_help_is_an_index_of_subcommands() {
-    let text = stdout_of(&run(&["edit", "--help"]));
-    assert!(
-        text.contains("하나만 보기"),
-        "그룹 도움말에 다음 수가 없다:\n{text}"
-    );
-    assert!(text.contains("fill-fields"), "그룹 목차에 하위 이름이 없다");
+fn every_declared_group_help_is_a_sorted_subcommand_index() {
     let whole = stdout_of(&run(&["--help"]));
-    assert!(
-        text.len() * 3 < whole.len(),
-        "그룹 목차가 절 전체를 쏟고 있다 (목차 {} B, 통짜 {} B)",
-        text.len(),
-        whole.len()
-    );
+    for (parent, subcommands) in declared()
+        .into_iter()
+        .filter(|(_, subcommands)| !subcommands.is_empty())
+    {
+        let text = stdout_of(&run(&[&parent, "--help"]));
+        assert!(
+            text.contains("하나만 보기"),
+            "{parent} 도움말에 다음 수가 없다:\n{text}"
+        );
+        assert!(
+            text.len() * 3 < whole.len(),
+            "{parent} 목차가 절 전체를 쏟고 있다 (목차 {} B, 통짜 {} B)",
+            text.len(),
+            whole.len()
+        );
+
+        let mut expected = subcommands;
+        expected.sort();
+        let mut previous = 0usize;
+        for subcommand in expected {
+            let marker = format!("      {subcommand}");
+            let position = text.find(&marker).unwrap_or_else(|| {
+                panic!("{parent} --help index에 {subcommand} 이 없다:\n{text}")
+            });
+            assert!(
+                previous <= position,
+                "{parent} --help 하위 명령이 이름순이 아니다: {subcommand}\n{text}"
+            );
+            previous = position;
+        }
+    }
 }
 
 #[test]
-fn the_whole_help_still_prints_everything() {
+fn whole_help_is_a_sorted_command_index() {
     let out = run(&["--help"]);
     assert_eq!(out.status.code(), Some(0));
     let text = stdout_of(&out);
     assert!(
-        text.lines().count() > 1_000,
-        "통짜 도움말이 줄어들었다: {}",
+        text.lines().count() < 200,
+        "root help가 여전히 상세 매뉴얼이다: {}",
         text.lines().count()
     );
-    assert!(text.contains("명령:"), "통짜 도움말의 구역 제목이 사라졌다");
     assert!(
-        text.contains("  edit fill-fields "),
-        "통짜 도움말에서 하위 절이 사라졌다"
+        text.contains("명령 (이름순"),
+        "root help의 정렬 index 제목이 사라졌다"
     );
+    assert!(
+        !text.contains("  edit fill-fields "),
+        "root help가 edit 하위 상세 절을 중복 출력한다"
+    );
+    let mut expected: Vec<String> = declared().into_iter().map(|(name, _)| name).collect();
+    expected.sort();
+    let mut previous = 0usize;
+    for name in expected {
+        let marker = format!("  {name:<28}");
+        let position = text
+            .find(&marker)
+            .unwrap_or_else(|| panic!("root index에 {name} 이 없다:\n{text}"));
+        assert!(
+            previous <= position,
+            "root index가 명령 이름순이 아니다: {name} 이 앞 명령보다 먼저 나왔다\n{text}"
+        );
+        previous = position;
+    }
+}
+
+#[test]
+fn formerly_fallback_diagnostics_have_real_detail() {
+    for (args, required) in [
+        (
+            ["dump-extents", "--help"].as_slice(),
+            ["<파일.hwp>", "--outside", "--gaps"].as_slice(),
+        ),
+        (
+            ["measure-width", "--help"].as_slice(),
+            ["--size <pt>", "--ratio <백분율>", "width_px"].as_slice(),
+        ),
+        (
+            ["core-pages", "--help"].as_slice(),
+            ["<파일.hwp>", "DocumentCore", "p001"].as_slice(),
+        ),
+    ] {
+        let text = stdout_of(&run(args));
+        for needle in required {
+            assert!(
+                text.contains(needle),
+                "{args:?} detail에 {needle:?}가 없다:\n{text}"
+            );
+        }
+        assert!(
+            !text.contains("상세 절은 아직 없다"),
+            "{args:?}가 fallback 문구만 출력한다:\n{text}"
+        );
+    }
 }
 
 /// `--help` 가 **값 자리**면 도움말이 아니다 — `--find --help` 는 "--help" 를 찾는 치환이다.

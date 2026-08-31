@@ -1,14 +1,56 @@
 //! 사람용 `--help` 출력의 순서 보존 조립 경계.
 
+mod diagnostics;
 mod edit;
 mod protocol;
 mod public;
 mod sink;
 
+use sink::println;
+
 pub(crate) fn print_help() {
-    public::print();
-    edit::print();
-    protocol::print();
+    println!("rhwp v{} - HWP 파일 뷰어", rhwp::version());
+    println!();
+    println!("사용법: rhwp <명령> [옵션]");
+    println!("       rhwp <명령> [<하위명령>] --help    해당 명령의 상세 안내");
+    println!();
+    println!("전역 옵션 (일반 HWP5 열기·내보내기·변환 명령):");
+    println!("      --password <pw>         EncryptVersion 4 암호 문서 열기");
+    println!("      --password-stdin        표준 입력 첫 줄에서 비밀번호 읽기 (권장)");
+    println!("                              --password 값은 프로세스 목록에 노출될 수 있음");
+    println!();
+    println!("명령 (이름순, 상세는 rhwp <명령> --help):");
+    for (name, summary) in root_command_index() {
+        println!("  {name:<28} {summary}");
+    }
+    println!();
+    println!("계층형 명령:");
+    println!("  rhwp edit --help            편집 하위 명령의 이름순 index");
+    println!("  rhwp inspect --help         검사 하위 명령의 이름순 index");
+    println!();
+    println!("자기서술 JSON: rhwp capabilities");
+    println!("옵션:");
+    println!("  -h, --help      도움말 표시");
+    println!("  -V, --version   버전 표시");
+}
+
+/// capabilities 선언의 dispatcher 순서는 did-you-mean 동률 해소 계약이므로 바꾸지 않고,
+/// 사람용 root index에서만 이름순으로 정렬한다.
+fn root_command_index() -> Vec<(String, String)> {
+    let caps = crate::cli::metadata::capabilities::capabilities_value();
+    let mut commands: Vec<(String, String)> = caps["commands"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .filter_map(|entry| {
+            Some((
+                entry["name"].as_str()?.to_string(),
+                entry["summary"].as_str()?.to_string(),
+            ))
+        })
+        .collect();
+    commands.sort_unstable_by(|(left, _), (right, _)| left.cmp(right));
+    commands
 }
 
 /// 통짜 도움말을 한 번 흘려 `head`(+`sub`) 절만 모은다.
@@ -17,6 +59,7 @@ fn section_lines(head: &str, sub: Option<&str>) -> Vec<String> {
         public::print();
         edit::print();
         protocol::print();
+        diagnostics::print();
     })
 }
 
@@ -70,10 +113,11 @@ fn group_index_lines(head: &str) -> Option<Vec<String>> {
         .as_array()?
         .iter()
         .find(|c| c["name"].as_str() == Some(head))?;
-    let subs = entry["subcommands"].as_array()?;
+    let mut subs: Vec<&serde_json::Value> = entry["subcommands"].as_array()?.iter().collect();
     if subs.is_empty() {
         return None;
     }
+    subs.sort_unstable_by(|left, right| left["name"].as_str().cmp(&right["name"].as_str()));
     let mut out = vec![format!(
         "  {head} <하위명령> [옵션]   (하위 {}종)",
         subs.len()
