@@ -79,9 +79,9 @@ Stage 5 시작 전 원격 `devel`이 `891e395bb`까지 전진해 로컬 merge를
 ### Rust·WASM
 
 - native Clippy, WASM lib Clippy, workspace build와 all-target Clippy: PASS
-- integration manifest: 1,096 sources / 4,758 static attrs / 48 targets
-- source unit tier: 4,223 tests / 299 modules
-- full release-test: 8,908/8,908 PASS, 46 policy skip, 332.620초
+- integration manifest: 1,097 sources / 4,760 static attrs / 48 targets
+- source unit tier: 4,221 tests / 299 modules
+- full release-test: 8,908/8,908 PASS, 46 policy skip, 최신 정정 head 308.125초
 - Docker WASM release build와 `wasm-opt`: PASS, 6분 09초
 
 ### Studio·확장
@@ -137,5 +137,7 @@ timeline이 제공되지 않았다. 따라서 특정 기관 응답을 재생했�
 
 최종 판정은 **`qualified-synthetic-real-browser`**다. 합성 응답을 사용했지만 실제 packaged Chrome의
 download lifecycle 전체를 통과했으며, Chrome/Firefox 공유 정책과 Rust HWPX 구조 판정의 보호계약이
-모두 green이다. 다음 단계는 code candidate의 exact diff와 최신 base 포함을 다시 확인한 뒤, 별도 승인
-게이트에 따라 push와 PR 생성을 진행하는 것이다.
+모두 green이다. PR #6547의 최초 code candidate가 드러낸 source unit 증가도 기준선 완화 없이 integration
+원본으로 이동해 교정했다. 수정 code candidate `108d61281`은 로컬 full nextest 8,908/8,908과 GitHub
+Full CI·CodeQL·Render Diff·Adapter inter-diff·Proptest를 모두 통과했다. 다음 단계는 self-review 기록만
+담은 trailing commit의 trusted fast-pass와 최신 mergeability를 확인한 뒤 별도 승인을 받아 병합하는 것이다.
