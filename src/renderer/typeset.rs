@@ -13764,17 +13764,32 @@ impl TypesetEngine {
                     .or(split_endnote_to_fit)
             };
             // [#4318] 구분선 20/20+기본 미주사이 마지막 단: LINE_SEG 마지막
-            // 줄 vpos=0 reset 은 그 줄만 다음 쪽으로 보낸다. rhwp 는 reset
-            // 직전 줄을 본문 하단 아래로 그리므로 그 줄까지 함께 넘긴다.
+            // 줄 vpos=0 reset 은 그 줄만 넘긴다. reset 앞 head 가 저장 vpos
+            // 기준으로 단 하단을 넘기면 들어가는 줄까지 줄여 넘긴다.
             let split_candidate = if both_large_separator_default_between
                 && compact_endnote_separator_profile
                 && has_visible_endnote_separator
                 && st.current_column + 1 >= st.col_count
                 && saved_page_reset_rewind
             {
-                match split_candidate {
-                    Some(split) if split >= 2 => Some(split - 1),
-                    other => other,
+                match (
+                    split_candidate,
+                    self.predict_current_column_para_y(
+                        &st,
+                        en_para_idx,
+                        paragraphs,
+                        &styles,
+                        measured_tables,
+                        Some(en_col_w),
+                    ),
+                ) {
+                    (Some(mut split), Some(render_y)) if split >= 2 => {
+                        while split >= 2 && render_y + fmt.line_advances_sum(0..split) > available {
+                            split -= 1;
+                        }
+                        Some(split)
+                    }
+                    (other, _) => other,
                 }
             } else {
                 split_candidate
