@@ -2,9 +2,9 @@
 
 - 검토일: 2026-08-31
 - 작성자: `planet6897`
-- base: `devel` (`upstream/devel@99419b6b2`에서 통합 시작)
+- base: `devel` (`upstream/devel@887b4ce15`로 rebase)
 - 원 PR head: `ef0d03fc74ac34bae709f5e24c61c51f4b412fcf`
-- 통합 commit: `1d43b1f5f`
+- 통합 commit: `f535a4636`
 - 상태: 승인 (통합 검증본 기준)
 
 ## 범위
@@ -26,4 +26,3 @@
 ## 병합 조건
 
 - 원격 병합 또는 통합 PR 게시 직전에 원 PR head와 CI green 상태를 다시 확인한다.
-

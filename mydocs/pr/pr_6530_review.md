@@ -2,9 +2,9 @@
 
 - 검토일: 2026-08-31
 - 작성자: `planet6897`
-- base: `devel` (`upstream/devel@99419b6b2`에서 통합 시작)
+- base: `devel` (`upstream/devel@887b4ce15`로 rebase)
 - 원 PR head: `e374be85c554c8b4b502f1f253aaa7c3d7b425f0`
-- 통합 보정 commit: `b98b9de60`
+- 통합 보정 commit: `b0109a1f6`
 - 상태: 메인 터너 보정을 포함한 통합본 수용. 원 PR 직접 병합 금지.
 
 ## 범위와 충돌 보정
@@ -24,6 +24,5 @@
 ## 병합 조건
 
 - #6530 원 PR은 독립 merge 대상으로 쓰지 않는다.
-- `b98b9de60`을 포함한 통합 브랜치를 PR로 게시할 경우에만 원 PR 내용을 승계한다.
+- `b0109a1f6`을 포함한 통합 브랜치를 PR로 게시할 경우에만 원 PR 내용을 승계한다.
 - 게시 직전에 원 head, 통합 head, CI를 모두 재확인한다.
-
