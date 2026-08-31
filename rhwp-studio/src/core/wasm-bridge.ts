@@ -204,29 +204,9 @@ export interface DeferredPaginationResult {
   pageCount: number;
 }
 
-import { fontFamilyChainForDisplay } from './font-substitution';
+import { substituteCssFontFamily } from './font-substitution';
 import { rememberRawCanvasFontDescriptor } from './canvas-font-raw';
 import type { FileSystemFileHandleLike } from '@/command/file-system-access';
-
-/**
- * CSS font 문자열에서 font-family를 추출하여 폰트 치환을 적용한다.
- *
- * 입력: 'bold 14.5px "안상수2006가는", sans-serif'
- * 출력: 'bold 14.5px "돋움", sans-serif'
- */
-function substituteCssFontFamily(cssFont: string): string {
-  const pxIdx = cssFont.indexOf('px ');
-  if (pxIdx < 0) return cssFont;
-
-  const prefix = cssFont.substring(0, pxIdx + 3);
-  const familyPart = cssFont.substring(pxIdx + 3);
-
-  const match = familyPart.match(/^"([^"]+)"/);
-  if (!match) return cssFont;
-
-  const fontName = match[1];
-  return prefix + fontFamilyChainForDisplay(fontName, 0, 0);
-}
 
 let canvasFontSubstitutionInstalled = false;
 

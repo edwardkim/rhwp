@@ -463,3 +463,66 @@ export function fontFamilyCandidatesForDisplayWithRules(
     ruleIds: [...new Set(ruleIds.filter(Boolean))],
   };
 }
+
+/** CSS family 목록에서 큰따옴표로 감싼 이름만 순서대로 뽑는다. */
+function quotedFamilyNames(familyList: string): string[] {
+  return [...familyList.matchAll(/"([^"]*)"/g)].map(match => match[1]);
+}
+
+/**
+ * studio 체인에 **코어가 준 face 이름들**을 합친다.
+ *
+ * [#6171] studio 는 코어 체인에서 primary 하나만 뽑아 자기 표로 다시 만들었다.
+ * 그래서 `installed_render_font_aliases`(Rust) 가 아는 설치 face 이름이 화면에
+ * 닿지 못했다 — 3146683 1쪽 `『별표 7』` 의 `『` 가 Malgun 으로 떨어져 뒤 글자와의
+ * 틈이 8.00pt(한글 2020 오라클 2.50pt, rhwp PDF 2.38pt)가 되던 원인이다.
+ * 코어 체인을 그대로 흘려보내는 통제 렌더에서 잉크 시작이 65.50pt 로 PDF 실측과
+ * 일치하고 틈이 2.25pt 로 닫히는 것을 확인했다.
+ *
+ * 코어 체인(`canvas_font_family_chain`)은 face 이름을 모두 `"..."` 로 내보내고
+ * 마지막에 generic fallback 을 덧붙인다. 그래서 큰따옴표 이름 중 **첫 번째를 뺀
+ * 나머지**가 코어가 아는 alias/base/문서 선언 대체다. 그것을 studio 가 고른 첫
+ * 이름 바로 뒤에 끼워 넣는다 — studio 가 설치 여부를 보고 앞세운 face 는 그대로
+ * 1순위로 두고, 코어 지식만 보태는 순서다.
+ */
+function mergeCoreFaceAliases(studioChain: string, coreFamilyList: string): string {
+  const coreAliases = quotedFamilyNames(coreFamilyList).slice(1);
+  if (coreAliases.length === 0) return studioChain;
+
+  const seen = new Set(quotedFamilyNames(studioChain).map(normalizedFamilyKey));
+  const missing: string[] = [];
+  for (const name of coreAliases) {
+    const key = normalizedFamilyKey(name);
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    missing.push(name);
+  }
+  if (missing.length === 0) return studioChain;
+
+  const inserted = missing.map(name => `"${name}"`).join(', ');
+  const first = /"[^"]*"/.exec(studioChain);
+  if (!first) return `${inserted}, ${studioChain}`;
+  const at = first.index + first[0].length;
+  return `${studioChain.slice(0, at)}, ${inserted}${studioChain.slice(at)}`;
+}
+
+/**
+ * CSS font 문자열에서 font-family를 추출하여 폰트 치환을 적용한다.
+ *
+ * 입력: 'bold 14.5px "안상수2006가는", sans-serif'
+ * 출력: 'bold 14.5px "돋움", sans-serif'
+ */
+export function substituteCssFontFamily(cssFont: string): string {
+  const pxIdx = cssFont.indexOf('px ');
+  if (pxIdx < 0) return cssFont;
+
+  const prefix = cssFont.substring(0, pxIdx + 3);
+  const familyPart = cssFont.substring(pxIdx + 3);
+
+  const match = familyPart.match(/^"([^"]+)"/);
+  if (!match) return cssFont;
+
+  const fontName = match[1];
+  const studioChain = fontFamilyChainForDisplay(fontName, 0, 0);
+  return prefix + mergeCoreFaceAliases(studioChain, familyPart);
+}

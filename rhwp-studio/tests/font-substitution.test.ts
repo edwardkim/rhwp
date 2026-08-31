@@ -6,6 +6,7 @@ import {
   fontFamilyChainForDisplay,
   fontFamilyWithFallback,
   resolveFont,
+  substituteCssFontFamily,
 } from '../src/core/font-substitution.ts';
 
 test('resolveFont는 기존 웹 대체 글꼴 해소를 유지한다', () => {
@@ -147,4 +148,27 @@ test('요청 이름 자체가 설치돼 있으면 치환 대상을 앞에 두지
   });
 
   assert.match(chain, /^"굴림"/u);
+});
+
+test('substituteCssFontFamily는 코어 체인의 설치 face 이름을 studio 체인에 합친다', () => {
+  // [#6171] studio 는 코어 체인에서 primary 하나만 뽑아 자기 표로 다시 만들었다.
+  // 그래서 `installed_render_font_aliases` 가 아는 `HYGothic`(= H2GTRM.TTF 의
+  // DirectWrite family) 이 화면에 닿지 못하고 Malgun 으로 떨어졌다 —
+  // 3146683 1쪽 `『별표 7』` 의 `『` 뒤 틈 8.00pt(오라클 2.50pt).
+  const merged = substituteCssFontFamily(
+    '18.667px "한양중고딕", "HY중고딕", "HYGothic", \'Malgun Gothic\',sans-serif',
+  );
+  assert.match(merged, /^18\.667px /);
+  // studio 가 고른 첫 이름은 그대로 1순위, 코어가 아는 이름이 그 뒤에 온다.
+  assert.match(merged, /^18\.667px "한양중고딕", "HY중고딕", "HYGothic",/);
+
+  // 코어가 별칭을 주지 않으면 종전 동작 그대로다(추가 이름 없음).
+  const plain = substituteCssFontFamily('12px "맑은 고딕", \'sans-serif\'');
+  assert.doesNotMatch(plain, /"HYGothic"/);
+
+  // 이미 있는 이름은 중복으로 넣지 않는다.
+  const deduped = substituteCssFontFamily(
+    '12px "한양중고딕", "한양중고딕", "HYGothic", \'sans-serif\'',
+  );
+  assert.equal(deduped.match(/"HYGothic"/g)?.length, 1);
 });
