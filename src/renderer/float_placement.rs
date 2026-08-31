@@ -186,6 +186,28 @@ pub(crate) fn is_para_topbottom_float(common: &CommonObjAttr) -> bool {
         && matches!(common.vert_rel_to, VertRelTo::Para)
 }
 
+/// [#6366] 원본 HWPX 문단 기준 글앞으로 다행·다열 표가 `flowWithText` 이면
+/// 데코레이션 Shape 단축에서 빼 쪽 분할에 참여한다.
+///
+/// 모든 `flowWithText` 글앞으로/글뒤로 표에 열면 #5918 쪽수가 늘고
+/// text-overlap 기준선이 커진다. 한글 6쪽 정합 픽스처
+/// (`2700727_animal_facility_standards.hwpx` pi=9)만 연다: 원본 HWPX,
+/// 비-TAC, IN_FRONT_OF_TEXT, vert=문단, horz=문단, 40행 이상 6열 이상.
+/// #5918 의 4×5·31×7 글앞으로 표는 데코레이션으로 남긴다.
+pub(crate) fn original_hwpx_infront_para_flow_paginates(
+    original_hwpx: bool,
+    table: &Table,
+) -> bool {
+    original_hwpx
+        && !table.common.treat_as_char
+        && table.common.flow_with_text
+        && matches!(table.common.text_wrap, TextWrap::InFrontOfText)
+        && matches!(table.common.vert_rel_to, VertRelTo::Para)
+        && matches!(table.common.horz_rel_to, HorzRelTo::Para)
+        && table.row_count >= 40
+        && table.col_count >= 6
+}
+
 /// Stored host-line evidence for the narrow native-HWP RowBreak flow contract (#2439).
 ///
 /// The returned value is the non-synthetic stored line advance in HWPUNIT.  Callers may combine
@@ -287,6 +309,69 @@ pub(crate) fn stored_empty_anchor_band_host_line_advance_hu(
     if !stored_layout || !para.text.is_empty() {
         return None;
     }
+    stored_anchor_band_host_line_from_ladder(para, control_index, next_plain_text_vpos(next_para))
+}
+
+/// [#6312] 글이 있는 자리차지 host 문단의 저장 사다리가 host 줄만 증언하면
+/// 표 밴드 아래에 그 줄 상자(`lh + ls`)를 계상한다.
+///
+/// #6147 은 빈 앵커(`text.is_empty()`)에만 발동한다. 글이 있으면 #1147 억제가
+/// 꺼져 조판이 host 줄을 이미 계상한다고 가정했는데, `is_current_visible_para_float`
+/// 경로는 표 뒤에 줄 높이/줄간격을 건너뛰어 다음 문단이 표에 붙는다
+/// (156721992 1쪽: 한글 27.0pt 자리, rhwp 0). 같은 사다리 등식
+/// `next.vpos - host.vpos == lh+ls` 가 표 높이를 접었다는 뜻이라 표 높이를
+/// 다시 더하지 않는다(#4090 이중 계상 차단과 같은 축).
+pub(crate) fn stored_visible_anchor_band_host_line_advance_hu(
+    stored_layout: bool,
+    para: &Paragraph,
+    control_index: usize,
+    next_para: Option<&Paragraph>,
+) -> Option<i32> {
+    stored_visible_anchor_band_host_line_advance_from_vpos(
+        stored_layout,
+        para,
+        control_index,
+        next_plain_text_vpos(next_para),
+    )
+}
+
+pub(crate) fn stored_visible_anchor_band_host_line_advance_from_vpos(
+    stored_layout: bool,
+    para: &Paragraph,
+    control_index: usize,
+    next_plain_text_vpos: Option<i32>,
+) -> Option<i32> {
+    if !stored_layout || !para_has_non_whitespace_text(para) {
+        return None;
+    }
+    stored_anchor_band_host_line_from_ladder(para, control_index, next_plain_text_vpos)
+}
+
+fn next_plain_text_vpos(next_para: Option<&Paragraph>) -> Option<i32> {
+    let next = next_para?;
+    if !para_has_non_whitespace_text(next) || !next.controls.is_empty() {
+        return None;
+    }
+    next.line_segs
+        .iter()
+        .enumerate()
+        .find(|(_, seg)| seg.tag & 0x8000_0000 == 0 && seg.line_height > 0)
+        .map(|(index, seg)| ladder_vpos(next, index, seg.vertical_pos))
+}
+
+fn ladder_vpos(paragraph: &Paragraph, index: usize, fallback: i32) -> i32 {
+    paragraph
+        .source_line_seg_vertical_pos
+        .as_ref()
+        .and_then(|source| source.get(index).copied())
+        .unwrap_or(fallback)
+}
+
+fn stored_anchor_band_host_line_from_ladder(
+    para: &Paragraph,
+    control_index: usize,
+    next_plain_text_vpos: Option<i32>,
+) -> Option<i32> {
     // 문단의 가시 개체가 전부 비-TAC 자리차지(vert=문단) float 이어야 한다 — 인라인
     // 내용이 섞이면 host 줄이 그 내용의 줄이지 앵커 줄이 아니다.
     let mut last_float = None;
@@ -307,24 +392,20 @@ pub(crate) fn stored_empty_anchor_band_host_line_advance_hu(
     }
     // 다음이 개체 없는 일반 본문 문단일 때만 — 앵커 스택(다음도 빈 앵커)의 줄간격은
     // 개체-개체 간격이라 이미 #1133 이 보존한다.
-    if !next_para.is_some_and(|next| para_has_non_whitespace_text(next) && next.controls.is_empty())
-    {
-        return None;
-    }
+    let next_vpos = next_plain_text_vpos?;
 
-    fn stored_seg(paragraph: &Paragraph) -> Option<&crate::model::paragraph::LineSeg> {
-        paragraph
-            .line_segs
-            .iter()
-            .find(|seg| seg.tag & 0x8000_0000 == 0 && seg.line_height > 0)
-    }
-    let host_seg = stored_seg(para)?;
+    // [#6312] 사다리 등식은 재조판 좌표가 아니라 원본 저장 vpos 로 본다.
+    let (host_index, host_seg) = para
+        .line_segs
+        .iter()
+        .enumerate()
+        .find(|(_, seg)| seg.tag & 0x8000_0000 == 0 && seg.line_height > 0)?;
     let advance = host_seg.line_height + host_seg.line_spacing.max(0);
     if advance <= 0 {
         return None;
     }
-    let next_vpos = next_para.and_then(stored_seg)?.vertical_pos;
-    ((next_vpos - host_seg.vertical_pos - advance).abs() <= 1).then_some(advance)
+    let host_vpos = ladder_vpos(para, host_index, host_seg.vertical_pos);
+    ((next_vpos - host_vpos - advance).abs() <= 1).then_some(advance)
 }
 
 /// 문단에 공백·개체 마커가 아닌 실제 글자가 있는가.
@@ -358,6 +439,52 @@ pub(crate) fn native_empty_host_cellbreak_fragment_repeats_outer_margin(
         && is_para_topbottom_float(&table.common)
         && matches!(table.page_break, TablePageBreak::CellBreak)
         && !has_non_whitespace_text(para)
+}
+
+/// [#6378] 원본 HWPX 단 기준 RowBreak 자리차지 표의 사방 균등 outMargin (HU).
+///
+/// `hwp5_stored_pagination_layout` 이 꺼진 원본 HWPX 는 native HWP5 빈-host
+/// RowBreak helper(`native_empty_host_physical_outer_box_paint_inset`)가 표
+/// 원점에 싣는 바깥 여백을 주지 않는다. 같은 문서 HWP 경로(`tac-img-02`)는
+/// 1mm(283HU) 안쪽에 둔다. HWPX XML `pageBreak="CELL"` 도 이 픽스처에서는
+/// IR `RowBreak` 로 들어온다. 모든 원본 HWPX 표·연속 block 표(#1133)에
+/// 더하면 간격이 3.8px 줄고 글자 겹침 기준선이 커지므로, native helper 와
+/// 같은 형상만 연다: 비-TAC TopAndBottom(vert=문단), 단·왼쪽, RowBreak,
+/// 다행 1열, 사방 균등 양의 outMargin, 오프셋 0.
+pub(crate) fn original_hwpx_column_rowbreak_equal_outer_margin_hu(
+    original_hwpx: bool,
+    table: &Table,
+) -> Option<i32> {
+    let declared_height = signed_hwpunit(table.common.height);
+    if !original_hwpx
+        || table.common.treat_as_char
+        || !is_para_topbottom_float(&table.common)
+        || !matches!(table.common.vert_align, VertAlign::Top | VertAlign::Inside)
+        || !matches!(table.common.horz_rel_to, HorzRelTo::Column)
+        || !matches!(table.common.horz_align, HorzAlign::Left | HorzAlign::Inside)
+        || signed_hwpunit(table.common.horizontal_offset) != 0
+        || signed_hwpunit(table.common.vertical_offset) != 0
+        || !matches!(table.page_break, TablePageBreak::RowBreak)
+        || table.row_count <= 1
+        || table.col_count != 1
+        || table.cells.len() != usize::from(table.row_count)
+        || !table.cells.iter().enumerate().all(|(row, cell)| {
+            cell.row == row as u16 && cell.col == 0 && cell.row_span == 1 && cell.col_span == 1
+        })
+        || signed_hwpunit(table.common.width) <= 0
+        || declared_height <= 0
+        || table.outer_margin_left <= 0
+        || table.outer_margin_right <= 0
+        || table.outer_margin_top <= 0
+        || table.outer_margin_bottom <= 0
+        || table.outer_margin_left != table.outer_margin_right
+        || table.outer_margin_left != table.outer_margin_top
+        || table.outer_margin_left != table.outer_margin_bottom
+        || table.caption.is_some()
+    {
+        return None;
+    }
+    Some(i32::from(table.outer_margin_left))
 }
 
 /// [#5870] 빈 host 자리차지 float 의 저장 사다리가 **물리 공식과 정확히 일치**하는지 —

@@ -72,8 +72,10 @@ import {
 } from './canvaskit/image-header';
 import { canvaskitClipRightPad } from './canvaskit/policy';
 import {
+  canvasKitCanvasSupportsGlyphRunReplay,
   CanvasKitGlyphRunFontCache,
   drawCanvasKitGlyphRun,
+  type FontBytesResolver,
 } from './canvaskit/glyph-run-fonts';
 import {
   selectLayerTextVariantsForLeaf,
@@ -615,6 +617,8 @@ export class CanvasKitLayerRenderer {
     targetCanvas: HTMLCanvasElement,
     scale: number,
     pageInfo?: PageInfo,
+    resolveFontBytes?: FontBytesResolver,
+    documentGeneration = 0,
   ): HTMLCanvasElement {
     if (this.disposed) {
       throw new Error('CanvasKit renderer가 이미 dispose되었습니다');
@@ -635,11 +639,16 @@ export class CanvasKitLayerRenderer {
       const canvas = surface.getCanvas();
       this.currentResources = tree.resources;
       this.currentFontResources = tree.fontResources;
-      this.glyphRunFonts.registerResources(tree.fontResources, tree.resources);
+      this.glyphRunFonts.registerResources(
+        tree.fontResources,
+        tree.resources,
+        resolveFontBytes,
+        documentGeneration,
+      );
       this.currentShowParagraphMarks = tree.outputOptions?.showParagraphMarks === true;
       this.currentShowControlCodes = tree.outputOptions?.showControlCodes === true;
       this.selectedTextVariantOps = new WeakSet<LayerPaintOp>();
-      this.selectTextVariants(tree.root);
+      this.selectTextVariants(tree.root, canvas);
       let hasPageBackground = false;
       const stack: LayerNode[] = [tree.root];
       while (stack.length > 0 && !hasPageBackground) {
@@ -1017,28 +1026,29 @@ export class CanvasKitLayerRenderer {
     throw new Error('CanvasKit surface를 만들 수 없습니다');
   }
 
-  private selectTextVariants(node: LayerNode): void {
+  private selectTextVariants(node: LayerNode, canvas: SkCanvas): void {
     if (node.kind === 'group') {
-      for (const child of node.children) this.selectTextVariants(child);
+      for (const child of node.children) this.selectTextVariants(child, canvas);
       return;
     }
     if (node.kind === 'clipRect') {
-      this.selectTextVariants(node.child);
+      this.selectTextVariants(node.child, canvas);
       return;
     }
 
     const selected = selectLayerTextVariantsForLeaf(
       node.ops,
       op => this.glyphOutlineVariantReplayable(op),
-      op => this.glyphRunVariantReplayable(op),
+      op => this.glyphRunVariantReplayable(op, canvas),
     );
     for (const op of selected) {
       this.selectedTextVariantOps.add(op);
     }
   }
 
-  private glyphRunVariantReplayable(op: LayerGlyphRunOp): boolean {
-    return this.glyphRunFonts.replayStatus(op, this.currentFontResources).replayable;
+  private glyphRunVariantReplayable(op: LayerGlyphRunOp, canvas: SkCanvas): boolean {
+    return canvasKitCanvasSupportsGlyphRunReplay(canvas)
+      && this.glyphRunFonts.replayStatus(op, this.currentFontResources).replayable;
   }
 
   private glyphOutlineVariantReplayable(op: LayerGlyphOutlineOp): boolean {

@@ -15,6 +15,7 @@ const repoRoot = path.resolve(studioRoot, '..');
 const canvaskitPath = path.join(studioRoot, 'src/view/canvaskit-renderer.ts');
 const canvaskitDirectory = path.join(studioRoot, 'src/view/canvaskit');
 const canvaskitDiagnosticsPath = path.join(canvaskitDirectory, 'diagnostics.ts');
+const canvaskitGlyphRunFontsPath = path.join(canvaskitDirectory, 'glyph-run-fonts.ts');
 const layerTypesPath = path.join(studioRoot, 'src/core/types.ts');
 const textIrV2DocPath = path.join(repoRoot, 'docs/text-ir-v2.md');
 const canvaskitParityPlanDocPath = path.join(repoRoot, 'docs/canvaskit-parity-implementation.md');
@@ -42,6 +43,7 @@ const fullRendererSweepWorkflowPath = path.join(
 
 const canvaskitSource = fs.readFileSync(canvaskitPath, 'utf8');
 const canvaskitDiagnosticsSource = fs.readFileSync(canvaskitDiagnosticsPath, 'utf8');
+const canvaskitGlyphRunFontsSource = fs.readFileSync(canvaskitGlyphRunFontsPath, 'utf8');
 const layerTypesSource = fs.readFileSync(layerTypesPath, 'utf8');
 const textIrV2DocSource = fs.readFileSync(textIrV2DocPath, 'utf8');
 const canvaskitParityPlanDocSource = fs.readFileSync(canvaskitParityPlanDocPath, 'utf8');
@@ -1734,7 +1736,7 @@ function runExecutableFontNativeGlyphReplay() {
     kind: 'leaf',
     bounds: bitmap.bbox,
     ops: [textFallback, bitmap],
-  });
+  }, canvas);
   assert.equal(renderer.selectedTextVariantOps.has(bitmap), true);
   assert.equal(renderer.selectedTextVariantOps.has(textFallback), false);
   renderer.renderGlyphOutline(canvas, bitmap);
@@ -2098,8 +2100,28 @@ requireSnippet(
 );
 requireSnippet(
   canvaskitSource,
-  /this\.currentFontResources = tree\.fontResources;[\s\S]*?this\.glyphRunFonts\.registerResources\(tree\.fontResources, tree\.resources\);[\s\S]*?this\.selectTextVariants\(tree\.root\)/,
-  'GlyphRun font blobs must be verified before text variant selection',
+  /const canvas = surface\.getCanvas\(\);[\s\S]*?this\.currentFontResources = tree\.fontResources;[\s\S]*?this\.glyphRunFonts\.registerResources\(\s*tree\.fontResources,\s*tree\.resources,\s*resolveFontBytes,\s*documentGeneration,\s*\);[\s\S]*?this\.selectTextVariants\(tree\.root, canvas\)/,
+  'GlyphRun font blobs and actual Canvas capability must be available before text variant selection',
+);
+requireSnippet(
+  canvaskitSource,
+  /glyphRunVariantReplayable\(op: LayerGlyphRunOp, canvas: SkCanvas\)[\s\S]*?canvasKitCanvasSupportsGlyphRunReplay\(canvas\)[\s\S]*?this\.glyphRunFonts\.replayStatus/,
+  'GlyphRun selection must feature-detect drawGlyphs on the current Canvas',
+);
+requireSnippet(
+  canvaskitGlyphRunFontsSource,
+  /boundedVerticalHwp5TableCellV1[\s\S]*?verticalGlyphRun[\s\S]*?boundedVerticalGlyphRunTupleMismatch/,
+  'malformed bounded vertical declarations must fail closed',
+);
+requireSnippet(
+  canvaskitGlyphRunFontsSource,
+  /function isBoundedVerticalHwp5CanvasKitCandidate[\s\S]*?text\.glyphRun\.verticalUpright[\s\S]*?vertical-rl[\s\S]*?vertical-upright[\s\S]*?rustybuzz-q4-vertical-v1/,
+  'bounded vertical GlyphRun replay must require the exact Rust provenance tuple',
+);
+requireSnippet(
+  canvaskitGlyphRunFontsSource,
+  /drawCanvasKitGlyphRun[\s\S]*?if \(!canvasKitCanvasSupportsGlyphRunReplay\(canvas\)\) return false;[\s\S]*?canvas\.drawGlyphs/,
+  'GlyphRun draw helper must defensively recheck drawGlyphs',
 );
 requireSnippet(
   renderGlyphRunBody,

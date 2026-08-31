@@ -129,6 +129,21 @@ fn preview_target_reuses_tree_and_header_footer_edit_invalidates_it() {
         "같은 Odd/Even 대표 투영은 최초 한 번만 빌드해야 한다"
     );
 
+    // #4969가 도입한 page-local 공통 무효화도 HF preview를 함께 비워야 한다.
+    // 꼬리말 선택은 유지한 채 같은 페이지의 머리말 숨김 상태만 바꾼다.
+    doc.toggle_hide_header_footer_native(0, true)
+        .expect("대표 페이지 머리말 숨김");
+    perf_counters::reset_thread_page_tree_builds();
+    for _ in 0..2 {
+        doc.get_selection_rects_in_header_footer_native(0, false, preview_apply, 0, 0, 0, 0, 2)
+            .expect("페이지 단위 무효화 후 대표 꼬리말 selection rect");
+    }
+    assert_eq!(
+        perf_counters::thread_page_tree_builds(),
+        1,
+        "페이지 단위 무효화도 preview tree를 한 번 다시 빌드해야 한다"
+    );
+
     doc.insert_text_in_header_footer_native(0, false, preview_apply, 0, 2, "C")
         .expect("대표 투영 target 편집");
     perf_counters::reset_thread_page_tree_builds();

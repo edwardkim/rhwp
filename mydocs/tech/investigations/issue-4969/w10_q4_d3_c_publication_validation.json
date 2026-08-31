@@ -1,0 +1,106 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q4-d3-c-publication-validation",
+  "issue": 4969,
+  "stage": "W10-Q4-D3-C",
+  "date": "2026-08-30",
+  "status": "qualified-publication-parity-checkpointed",
+  "preDockerResultApproved": true,
+  "resultApproved": true,
+  "baseCheckpoint": "d49400aad",
+  "checkpoint": "43d50ad99",
+  "baseUpstreamDevel": "bd78a53122e4",
+  "productMutation": false,
+  "backendSelectionChanged": false,
+  "publication": {
+    "linePublicationTargets": 1,
+    "textSources": 2,
+    "fallbackTextRuns": 2,
+    "verticalGlyphRuns": 2,
+    "equivalenceGroups": 2,
+    "portableFontBlobPayloads": 1,
+    "portableFontBlobRecords": 1,
+    "portableFontFaceRecords": 1,
+    "nominalDuplicateGlyphRuns": 0,
+    "mappingMismatch": 0,
+    "rejectedBatchResidue": 0
+  },
+  "textV2FallbackFence": {
+    "slotsChecked": 2,
+    "fallbackPresent": 2,
+    "strictVariantAvailable": 0,
+    "reason": "verticalGlyphOrientationAuthorityPending",
+    "falseSelection": 0
+  },
+  "sizeReceipt": {
+    "uniqueInternedSources": 1,
+    "fontPayloadBytes": 2519996,
+    "acceptedLayerJsonBytes": 3375512,
+    "rejectedLayerJsonBytes": 9078,
+    "layerJsonIncreaseBytes": 3366434,
+    "performanceConclusion": false,
+    "multiLinePreparationCacheProven": false
+  },
+  "runtimeParity": {
+    "native": "passed",
+    "isolatedNodeWasm": {
+      "passed": 1,
+      "failed": 0,
+      "numericAssertionsMatchNative": true
+    },
+    "standardDockerWasm": {
+      "status": "passed",
+      "wasmPackElapsedSeconds": 403,
+      "commandElapsedSeconds": 429.34,
+      "wasmBytes": 9874453,
+      "wasmSha256": "4213af83ef6b38c2a8abd923ffe3545ffc920edb8c8526ba4a77e0ac008610f1",
+      "postBuildNativeReceiptMatched": true,
+      "causalSizeDeltaClaimed": false
+    }
+  },
+  "green": {
+    "atomicActivationPassed": 9,
+    "atomicActivationFailed": 0,
+    "relatedQ2Q3Passed": 65,
+    "relatedQ2Q3Failed": 0,
+    "relatedQ2Q3Skipped": 1,
+    "q4RequestContractPassedExcludingD4Red": 21,
+    "q4RequestContractFailed": 0,
+    "issue6029Passed": 1,
+    "integrationManifestSources": 1040,
+    "integrationManifestStaticTestAttrs": 4639,
+    "integrationManifestTargetsPassed": 48,
+    "integrationManifestTargetsTotal": 48,
+    "integrationPolicyPassed": 19,
+    "integrationPolicyFailed": 0,
+    "focusedClippy": "passed",
+    "formatCheck": "passed"
+  },
+  "remainingRed": [
+    "Q4-D4-canvaskit-feature-detection"
+  ],
+  "canonicalControls": [
+    {
+      "path": "samples/table-004.hwp",
+      "pages": 1,
+      "overflowCellLines": 0,
+      "svgBytes": 214449,
+      "svgSha256": "7711baa0afe033c044605ff1afd5597534a8f246819bf12e929ac3c5ab93873f",
+      "mismatch": 0
+    },
+    {
+      "path": "samples/issue6029/3200477_icao_procedure.hwpx",
+      "pages": 1,
+      "overflowCellLines": 0,
+      "svgBytes": 273101,
+      "svgSha256": "27ac3f000875a1413a9a99bb3f8ad4c1fb8c21a942a3b9fd6476df72030328e9",
+      "mismatch": 0
+    }
+  ],
+  "newIntegrationSource": false,
+  "generatedIntegrationArtifacts": false,
+  "privateCorpusUsed": false,
+  "hyperVUsed": false,
+  "githubMutation": false,
+  "next": "Q4-D4"
+}

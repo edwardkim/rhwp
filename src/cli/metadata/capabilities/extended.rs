@@ -682,6 +682,8 @@ pub(super) fn extend(commands: &mut Vec<serde_json::Value>) {
                 "identical",
                 "diffCount",
                 "categories",
+                "pageCountA",
+                "pageCountB",
             ],
         ),
         // [#4113 / #3918 승격 2호] 독립 사후검증 게이트 — 기대 조건 집합 대조.

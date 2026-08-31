@@ -9,8 +9,9 @@ use super::composer::{
 use super::float_placement::{
     empty_host_physical_ladder_extras_hu, horizontal_range, is_para_topbottom_float,
     native_empty_host_physical_outer_box_paint_inset, native_empty_host_rowbreak_line_advance_hu,
-    signed_hwpunit, stored_empty_anchor_band_host_line_advance_hu, FloatLaneSet,
-    FloatPlacementContext,
+    original_hwpx_column_rowbreak_equal_outer_margin_hu, signed_hwpunit,
+    stored_empty_anchor_band_host_line_advance_hu, stored_visible_anchor_band_host_line_advance_hu,
+    FloatLaneSet, FloatPlacementContext,
 };
 use super::font_metrics_data;
 use super::height_cursor::HeightCursor;
@@ -2418,6 +2419,10 @@ pub struct LayoutEngine {
     /// Font selection이 확정한 slot→exact source를 layout session 수명에 공급한다.
     /// face parser는 보존하지 않고 immutable bytes만 소유해 self-reference를 피한다.
     exact_font_sources: crate::renderer::kerning::ExactFontSourceRegistry,
+    /// Q3-D explicit opt-in slot request의 canonical snapshot. 공개 adapter와
+    /// composer가 아직 소비하지 않으므로 product publication은 dormant다.
+    horizontal_shaping_instance_requests:
+        crate::renderer::shaping_context::HorizontalShapingInstanceRequestRegistry,
     /// 자동 번호 카운터
     auto_counter: std::cell::RefCell<AutoNumberCounter>,
     /// 문단 번호 상태
@@ -2622,6 +2627,9 @@ impl LayoutEngine {
         Self {
             dpi,
             exact_font_sources: crate::renderer::kerning::ExactFontSourceRegistry::default(),
+            horizontal_shaping_instance_requests:
+                crate::renderer::shaping_context::HorizontalShapingInstanceRequestRegistry::default(
+                ),
             auto_counter: std::cell::RefCell::new(AutoNumberCounter::new()),
             numbering_state: std::cell::RefCell::new(NumberingState::default()),
             show_transparent_borders: std::cell::Cell::new(false),
@@ -2696,7 +2704,50 @@ impl LayoutEngine {
     }
 
     pub(crate) fn clear_exact_font_sources(&mut self) -> bool {
-        self.exact_font_sources.clear()
+        let sources_cleared = self.exact_font_sources.clear();
+        let requests_cleared = self.horizontal_shaping_instance_requests.clear();
+        sources_cleared || requests_cleared
+    }
+
+    /// Q3-D internal command owner. The public native/WASM surface remains
+    /// unopened until the activation matrix is approved. Validation and
+    /// canonicalization complete before this mutates the request snapshot.
+    #[allow(dead_code)]
+    pub(crate) fn set_horizontal_shaping_instance_request_dormant(
+        &mut self,
+        slot: crate::renderer::kerning::ExactFontSlot,
+        variations: &[crate::renderer::shaping::ShapingVariation],
+    ) -> Result<
+        crate::renderer::shaping_context::HorizontalShapingInstanceRequestRegistration,
+        crate::renderer::shaping_context::HorizontalShapingInstanceRequestError,
+    > {
+        self.horizontal_shaping_instance_requests.set_verified(
+            &self.exact_font_sources,
+            slot,
+            variations,
+        )
+    }
+
+    pub(crate) fn clear_horizontal_shaping_instance_request(
+        &mut self,
+        slot: crate::renderer::kerning::ExactFontSlot,
+    ) -> bool {
+        self.horizontal_shaping_instance_requests.remove(slot)
+    }
+
+    pub(crate) fn horizontal_shaping_instance_request(
+        &self,
+        slot: crate::renderer::kerning::ExactFontSlot,
+    ) -> Option<&[crate::renderer::shaping::ShapingVariation]> {
+        self.horizontal_shaping_instance_requests
+            .request_slice_for_slot(slot)
+    }
+
+    pub(crate) fn horizontal_shaping_instance_request_counts(&self) -> (usize, u64) {
+        (
+            self.horizontal_shaping_instance_requests.request_count(),
+            self.horizontal_shaping_instance_requests.generation(),
+        )
     }
 
     pub(crate) fn exact_font_source_handle(
@@ -2736,9 +2787,29 @@ impl LayoutEngine {
                 crate::renderer::kerning::KerningMeasurementContext::new(registry.clone()),
             )),
             Some(std::sync::Arc::new(
-                crate::renderer::shaping_context::HorizontalShapingContext::new(registry),
+                crate::renderer::shaping_context::HorizontalShapingContext::with_instance_requests(
+                    registry,
+                    self.horizontal_shaping_instance_requests.clone(),
+                ),
             )),
         )
+    }
+
+    /// Q4-D2 vertical table-cell activation snapshot. The registry clone keeps
+    /// immutable font bytes in Arc storage and cannot observe later host
+    /// registration changes during the page transaction.
+    pub(crate) fn vertical_shaping_context_snapshot(
+        &self,
+    ) -> Option<crate::renderer::shaping_vertical::VerticalShapingContext> {
+        if self.exact_font_sources.slot_count() == 0 {
+            None
+        } else {
+            Some(
+                crate::renderer::shaping_vertical::VerticalShapingContext::new(
+                    self.exact_font_sources.clone(),
+                ),
+            )
+        }
     }
 
     pub(crate) fn exact_font_source_registry_counts(&self) -> (usize, usize, usize, u64) {
@@ -2748,6 +2819,20 @@ impl LayoutEngine {
             self.exact_font_sources.total_source_bytes(),
             self.exact_font_sources.generation(),
         )
+    }
+
+    pub(crate) fn exact_font_source_bytes_for_resource_key(
+        &self,
+        key: &str,
+    ) -> Option<std::sync::Arc<[u8]>> {
+        let (byte_len, digest) = crate::paint::parse_font_blob_resource_key(key)?;
+        if byte_len > crate::paint::MAX_PORTABLE_FONT_BLOB_BYTES {
+            return None;
+        }
+        self.exact_font_sources
+            .source_arc_matching(byte_len, |bytes| {
+                crate::paint::resource_digest_hex(bytes) == digest
+            })
     }
 
     pub(crate) fn set_render_normalization_overlay(
@@ -8919,7 +9004,17 @@ impl LayoutEngine {
                 } else {
                     composed
                         .get(para_index)
-                        .map(|c| compute_tac_leading_width(c, control_index, styles))
+                        .map(|c| {
+                            // [#6298] 블록 취급 표의 문단 내 char 위치 — `tac_controls`
+                            // 와 같은 좌표계(`find_render_inline_control_positions`)로
+                            // 뽑아야 정지점이 어긋나지 않는다.
+                            let block_pos = paragraphs.get(para_index).and_then(|p| {
+                                crate::renderer::composer::find_render_inline_control_positions(p)
+                                    .get(control_index)
+                                    .copied()
+                            });
+                            compute_tac_leading_width(c, control_index, styles, block_pos)
+                        })
                         .unwrap_or(0.0)
                 };
                 // [Issue #3396] 한글은 TAC 표를 "문자"로 취급해 advance =
@@ -9111,7 +9206,18 @@ impl LayoutEngine {
                         paragraphs.get(para_index + 1),
                     )
                     .map(|_| hwpunit_to_px(t.outer_margin_top as i32, self.dpi))
-                    .unwrap_or(0.0);
+                    .unwrap_or_else(|| {
+                        // [#6378] 원본 HWPX 는 HWP5 RowBreak helper 가 꺼져
+                        // outMargin.top 이 빈 host 상단에 안 실린다. 같은
+                        // 문서 HWP 는 y 가 3.8px 아래(283HU)다. 모든 T&B
+                        // 빈 host 에 더하면 #1133 연속 표 간격이 줄어든다.
+                        original_hwpx_column_rowbreak_equal_outer_margin_hu(
+                            !self.profile.get().hwp5_stored_pagination_layout(),
+                            t,
+                        )
+                        .map(|hu| hwpunit_to_px(hu, self.dpi))
+                        .unwrap_or(0.0)
+                    });
                     let raw_top = if is_current_empty_square_sibling_float {
                         // 이 pair는 같은 저장 LINE_SEG의 page-relative 좌표를 공유한다.
                         // 현재 흐름 y를 쓰면 첫 표 아래에 둘째 표를 수직으로 쌓아
@@ -9320,6 +9426,29 @@ impl LayoutEngine {
                 } else {
                     table_y_start
                 };
+                // [#6104] 자리차지(vert=Para) 표 밴드는 후속 TAC 제목 상자에도 적용돼야
+                // 한다. 문단 경로의 exclusion 소비는 FullParagraph 만 보고, TAC 표는
+                // PageItem::Table 로 따로 그려져 선행 표 데이터 행 위에 올라탔다
+                // (36483048 4쪽: 제목 상자 498.4..534.8 ↔ 표1 459.6..531.2). 이미
+                // 그린 선행 owner 밴드만 피하므로 앵커 예약 이중 계상(#4090)은 없다.
+                let table_y_start = if is_tac && !visible_float_exclusions.is_empty() {
+                    let tac_h = hwpunit_to_px(t.common.height as i32, self.dpi);
+                    let mut floor = table_y_start;
+                    for zone in visible_float_exclusions.iter() {
+                        if !zone.blocks_text || zone.owner_para >= para_index {
+                            continue;
+                        }
+                        let starts_in_zone = floor + 0.5 >= zone.top && floor < zone.bottom;
+                        let overlaps_zone =
+                            tac_h > 0.0 && floor < zone.top && floor + tac_h > zone.top + 0.5;
+                        if starts_in_zone || overlaps_zone {
+                            floor = floor.max(zone.bottom);
+                        }
+                    }
+                    floor
+                } else {
+                    table_y_start
+                };
                 // [Issue #1549] visible-host 의 양수 offset float 표는 host 텍스트(섹션 제목)가
                 // line 0 으로 그려지는 줄 *아래*에 와야 한다(한컴: 제목 위, 표 아래). 제목과 표는
                 // 같은 문단 앵커를 공유하고 선행 float exclusion 으로 함께 같은 y 까지 밀리므로,
@@ -9510,7 +9639,7 @@ impl LayoutEngine {
                     None
                 };
                 y_offset = if is_current_visible_para_float {
-                    if signed_hwpunit(t.common.vertical_offset) > 0 {
+                    let mut flow_y = if signed_hwpunit(t.common.vertical_offset) > 0 {
                         if issue2439_visible_host_stack {
                             // #2439: 저장된 두 표 visible-host 형상은 후행 표가 선행
                             // 표 아래로 밀려난 높이까지 host 흐름이 실제로 소비한다.
@@ -9533,7 +9662,53 @@ impl LayoutEngine {
                         table_visual_end + inter_float_gap + visible_outer_bottom_px
                     } else {
                         table_y_before.max(table_visual_end + visible_outer_bottom_px)
+                    };
+                    // [#6312] 글이 있는 host 는 위 분기가 표 밴드만 소비하고 자기
+                    // 글줄(lh+ls)을 버린다. 저장 사다리가 그 줄만 증언하고, 표 **뒤**
+                    // 같은 문단 텍스트가 흐름을 이미 소비하지 않을 때만 밴드 아래에
+                    // 계상한다 — 표 높이는 다시 더하지 않는다(#4090). 표 **앞**
+                    // pre-text 는 밴드와 별개라 이 줄을 대체하지 않는다.
+                    let host_post_text_exists = {
+                        let mut seen_this_table = false;
+                        let mut found = false;
+                        for cc in &page_content.column_contents {
+                            for item in &cc.items {
+                                match item {
+                                    PageItem::Table {
+                                        para_index: item_para,
+                                        control_index: item_ctrl,
+                                    } if *item_para == para_index
+                                        && *item_ctrl == control_index =>
+                                    {
+                                        seen_this_table = true;
+                                    }
+                                    PageItem::PartialParagraph {
+                                        para_index: item_para,
+                                        ..
+                                    }
+                                    | PageItem::FullParagraph {
+                                        para_index: item_para,
+                                    } if *item_para == para_index && seen_this_table => {
+                                        found = true;
+                                    }
+                                    _ => {}
+                                }
+                            }
+                        }
+                        found
+                    };
+                    if !host_post_text_exists {
+                        if let Some(line_advance) = stored_visible_anchor_band_host_line_advance_hu(
+                            self.profile.get().hwp5_stored_pagination_layout()
+                                || self.profile.get().hwpx_stored_layout(),
+                            para,
+                            control_index,
+                            paragraphs.get(para_index + 1),
+                        ) {
+                            flow_y += hwpunit_to_px(line_advance, self.dpi);
+                        }
                     }
+                    flow_y
                 } else if paper_page_square_empty_top.is_some() {
                     table_y_before
                 } else if table_visual_shift > 0.0 {
@@ -13023,6 +13198,10 @@ fn compute_tac_leading_width(
     composed: &ComposedParagraph,
     target_control_index: usize,
     styles: &ResolvedStyleSet,
+    // [#6298] 블록 취급 TAC 표의 문단 내 char 위치. `composed.tac_controls` 에 없는
+    // 표(폭이 줄폭에 육박해 인라인으로 안 세는 표)도 **자기 앞** 텍스트까지만
+    // leading 으로 세게 하는 정지점이다.
+    block_tac_char_pos: Option<usize>,
 ) -> f64 {
     let Some(first_line) = composed.lines.first() else {
         return 0.0;
@@ -13090,9 +13269,37 @@ fn compute_tac_leading_width(
             }
             Some(_) => break,
             None => {
-                // block 취급 TAC: 전체 run 합산
-                width += estimate_text_width(effective_full, &style);
-                char_pos += run_len;
+                // [#6298] block 취급 TAC 도 **표 앞** 텍스트만 leading 이다.
+                //
+                // 종전에는 줄 0 의 run 을 전부 합산해, 표 **뒤**에 붙은 공백까지
+                // 표의 x 로 실렸다 — 그래서 같은 선언의 두 표가 어긋나고(156586318
+                // 12쪽: 58.10 vs 70.94pt) 공백을 표 앞에 두나 뒤에 두나 결과가 같은
+                // "순서 무관"이 나왔다. leading 은 정의상 **앞**에 있는 것이므로,
+                // 표 위치를 알 수 있으면 거기서 멈춘다.
+                match block_tac_char_pos {
+                    Some(stop) if char_pos >= stop => break,
+                    Some(stop) if char_pos + run_len > stop => {
+                        let partial_len = stop - char_pos;
+                        let partial: String = run.text.chars().take(partial_len).collect();
+                        let partial_display: String = partial
+                            .chars()
+                            .flat_map(|ch| {
+                                use super::pua_oldhangul::map_pua_old_hangul;
+                                if let Some(jamos) = map_pua_old_hangul(ch) {
+                                    jamos.iter().copied().collect::<Vec<_>>()
+                                } else {
+                                    vec![ch]
+                                }
+                            })
+                            .collect();
+                        width += estimate_text_width(&partial_display, &style);
+                        break;
+                    }
+                    _ => {
+                        width += estimate_text_width(effective_full, &style);
+                        char_pos += run_len;
+                    }
+                }
             }
         }
     }

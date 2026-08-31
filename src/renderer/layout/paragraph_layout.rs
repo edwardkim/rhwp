@@ -135,6 +135,17 @@ fn horizontal_shaping_initial_lane_preflight(
     };
     let style = resolved_to_text_style(styles, run.char_style_id, run.lang_index);
     let scalar_count = run.text.chars().count();
+    let instance_request = target.measurement.instance_request;
+    let ratio_supported = if instance_request.is_some() {
+        style.ratio <= 16.0
+    } else {
+        style.ratio < 0.999
+    };
+    let request_provenance_current = instance_request.is_none_or(|provenance| {
+        provenance.slot
+            == crate::renderer::kerning::ExactFontSlot::new(run.char_style_id, run.lang_index)
+            && provenance.request_generation == context.instance_request_generation()
+    });
     let style_surface_supported = !style.bold
         && !style.italic
         && style.font_size.is_finite()
@@ -142,7 +153,7 @@ fn horizontal_shaping_initial_lane_preflight(
         && style.font_size <= 4_096.0
         && style.ratio.is_finite()
         && style.ratio > 0.0
-        && style.ratio < 0.999
+        && ratio_supported
         && style.letter_spacing.abs() <= f64::EPSILON
         && style.underline == UnderlineType::None
         && !style.strikethrough
@@ -205,6 +216,7 @@ fn horizontal_shaping_initial_lane_preflight(
         && target.scalar_end == scalar_count
         && target.measurement.code_point_count == scalar_count
         && target.measurement.registry_generation == context.registry_generation()
+        && request_provenance_current
         && raw_vertical_positioning_is_zero
 }
 
@@ -219,25 +231,77 @@ fn attach_horizontal_shaping_initial_lane(
     node_id: NodeId,
     scalar_start: usize,
     origin_x_px: f64,
+    legacy_width_px: f64,
+    split_cell: bool,
 ) -> Option<f64> {
     let outcome = composed.horizontal_shaping.as_ref()?;
     let context = styles.horizontal_shaping_context.as_ref()?;
+    let candidate = crate::renderer::shaping_composition::HorizontalShapingEmittedRunCandidate {
+        node_id,
+        paragraph_text: &para.text,
+        emitted_text: &run.text,
+        scalar_start,
+        origin_x_px,
+        layout_positions_present: false,
+        display_projection_present: false,
+        horizontal_ltr_bidi0: true,
+        has_field_or_note_split: false,
+        has_char_overlap: false,
+        has_border_or_background: false,
+        has_decoration: false,
+    };
+
+    if crate::renderer::para_has_no_stored_line_segs(para) {
+        let frame_interval_count = para.line_segs.first().map_or(1, |segment| {
+            usize::from(
+                segment.tag & LineSeg::TAG_SINGLE_SEGMENT_LINE == LineSeg::TAG_SINGLE_SEGMENT_LINE,
+            )
+        });
+        let transaction = crate::renderer::shaping_composition::prepare_horizontal_shaping_no_lineseg_owner_transaction(
+            context,
+            std::sync::Arc::clone(outcome),
+            crate::renderer::shaping_composition::HorizontalShapingNoLineSegSurface {
+                model_line_seg_count: 0,
+                frame_interval_count,
+                edit_reflow: para.stored_text_partition_is_dirty(),
+                stored_prefix: scalar_start != 0,
+                split_cell,
+                has_inline_control: !para.controls.is_empty(),
+            },
+            candidate,
+            crate::renderer::shaping_composition::HorizontalShapingLegacyGeometry {
+                line_width_px: legacy_width_px,
+                bbox_width_px: legacy_width_px,
+                next_origin_x_px: origin_x_px + legacy_width_px,
+            },
+        )
+        .ok()?;
+        let publication = tree
+            .publish_horizontal_shaping_no_lineseg_owner_transaction(transaction)
+            .ok()?;
+        debug_assert!(publication.product_published());
+        debug_assert!(std::sync::Arc::ptr_eq(
+            publication.line_selection_measurement(),
+            publication.bbox_measurement()
+        ));
+        debug_assert!(std::sync::Arc::ptr_eq(
+            publication.line_selection_measurement(),
+            publication.next_origin_measurement()
+        ));
+        debug_assert!(std::sync::Arc::ptr_eq(
+            publication.line_selection_measurement(),
+            publication.sidecar_measurement()
+        ));
+        debug_assert!((publication.line_width_px() - publication.bbox_width_px()).abs() <= 1.0e-9);
+        debug_assert!(
+            ((publication.next_origin_x_px() - origin_x_px) - publication.line_width_px()).abs()
+                <= 1.0e-9
+        );
+        return Some(publication.bbox_width_px());
+    }
+
     let mapped = crate::renderer::shaping_composition::map_horizontal_shaping_emitted_run(
-        outcome,
-        crate::renderer::shaping_composition::HorizontalShapingEmittedRunCandidate {
-            node_id,
-            paragraph_text: &para.text,
-            emitted_text: &run.text,
-            scalar_start,
-            origin_x_px,
-            layout_positions_present: false,
-            display_projection_present: false,
-            horizontal_ltr_bidi0: true,
-            has_field_or_note_split: false,
-            has_char_overlap: false,
-            has_border_or_background: false,
-            has_decoration: false,
-        },
+        outcome, candidate,
     )
     .ok()?;
     let decision = crate::renderer::shaping_composition::certify_horizontal_shaping_mapped_run(
@@ -1323,6 +1387,8 @@ fn compute_line_extra_spacing(
     alignment: Alignment,
     in_cell: bool,
     needs_justify: bool,
+    // [#6443] 양쪽정렬이 **일부러 제외한** 마지막 줄인가 (Justify 문단의 마지막 줄).
+    is_excluded_justify_last_line: bool,
     justify_spaces_only: bool,
     needs_distribute: bool,
     has_tabs: bool,
@@ -1682,6 +1748,14 @@ fn compute_line_extra_spacing(
                 .sum();
             natural_w > available_width
         }
+        // [#6443] 양쪽정렬이 **일부러 제외한** 마지막 줄은 여기서도 늘리지 않는다.
+        //
+        // `needs_word_distribution` 은 Justify 문단의 마지막 줄을 분배에서 뺀다. 그런데
+        // 이 규칙이 같은 줄을 칸 폭까지 되늘리면 두 규칙이 서로를 무효화한다 —
+        // 3123751 8쪽 `산 출 내 역` 열(한 줄짜리 Justify 문단, 자간 −16%)이 그 예로,
+        // 한글은 괘선 22pt 안쪽에서 멈추는데 rhwp 만 괘선까지 채웠다
+        // (글자 전진 한글 8.40pt vs rhwp 8.95pt).
+        && !is_excluded_justify_last_line
     {
         // 표 셀 내부 underflow: HWP 편집기가 자연 폭이 셀을 넘는 텍스트를
         // 음수 자간으로 셀 폭에 맞춰 저장했으므로, 재렌더 시 우리 폰트
@@ -4514,9 +4588,28 @@ impl LayoutEngine {
                             .abs()
                             <= 2.0
                 });
+            // [#6389] 저장 사다리 증언의 다줄 일반화. 조합이 저장 줄 수를 그대로
+            // 따랐고 모든 저장 줄폭이 셀 열폭 이내면, 한글이 이 내용을 이 폭에
+            // 담았다는 증언이다 — 편람 p68 셀은 kopub/no-ttf 오라클 PDF 모두
+            // 저장 줄과 문자 단위로 일치하는데, 내장 메트릭 진행폭이 실측(0.83em)
+            // 보다 넓어(1.0em) 압축을 억제하면 `○` 문단 줄들이 셀 우측 테두리를
+            // +72~85px 넘는다. 열폭보다 넓게 기록된 사다리(병합·재저장 안 된 낡은
+            // 캐시)는 증언이 성립하지 않으므로 종전대로 억제(클리핑)한다.
+            let stored_ladder_fits_frame = cell_ctx.is_some()
+                && para.is_some_and(|p| {
+                    !p.line_segs.is_empty()
+                        && composed.lines.len() == p.line_segs.len()
+                        && p.line_segs.iter().all(|seg| {
+                            seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                                == 0
+                                && hwpunit_to_px(seg.segment_width, self.dpi)
+                                    <= effective_col_w + 2.0
+                        })
+                });
             let suppress_cell_overflow_spacing = cell_ctx.is_some()
                 && total_text_width > available_width * 1.15
-                && !stored_single_line_fits_cell;
+                && !stored_single_line_fits_cell
+                && !stored_ladder_fits_frame;
             let is_hancom_company_pua_logo_line =
                 is_hancom_company_pua_logo_line(comp_line, alignment);
 
@@ -4532,6 +4625,7 @@ impl LayoutEngine {
                     alignment,
                     cell_ctx.is_some(),
                     needs_justify,
+                    alignment == Alignment::Justify && is_last_line_of_para && !needs_justify,
                     justify_spaces_only,
                     needs_distribute,
                     has_tabs,
@@ -5186,6 +5280,16 @@ impl LayoutEngine {
                 y += line_flow_height;
             } else if skip_advance_empty_line {
                 // no advance
+            } else if para.is_some_and(|p| {
+                crate::renderer::height_measurer::stored_seg_is_row_fragment(p, line_idx + 1)
+            }) {
+                // [#6299] 다음 줄이 이 줄의 **가로 조각**(같은 vertical_pos, 다른
+                // column_start)이면 같은 물리 줄이다 — 어울림 개체 좌·우로 쪼개진 짝을
+                // 세로로 쌓으면 문단이 조각 수만큼 길어져 칸 밖으로 흘러내린다
+                // (156518878 1쪽 머리글 칸: 101.3 / 122.6 / 143.9 / 165.3 으로 4단
+                // 적층, 마지막 줄이 칸 바닥 164.5 를 넘었다). 측정 쪽 회계와 같은
+                // 계약이라 두 경로가 갈리지 않는다.
+                last_line_box_bottom = Some(y + render_line_flow_height);
             } else {
                 last_line_box_bottom = Some(y + render_line_flow_height);
                 y += render_line_flow_height + render_line_spacing_px + tac_picture_label_extra;
@@ -5689,6 +5793,8 @@ impl LayoutEngine {
                         node_id,
                         run_char_pos,
                         x,
+                        full_width,
+                        cell_ctx.is_some() && (start_line != 0 || end != composed.lines.len()),
                     )
                 })
             });
@@ -8176,6 +8282,7 @@ mod issue_2809_split_alignment_tests {
             false,
             false,
             false,
+            false,
             5,
             30.0,
             90.0,
@@ -8206,6 +8313,7 @@ mod issue_2809_split_alignment_tests {
             Alignment::Justify,
             false,
             true,
+            false,
             false,
             false,
             false,
@@ -8244,6 +8352,7 @@ mod issue_2809_split_alignment_tests {
             Alignment::Split,
             true,
             true,
+            false,
             false,
             false,
             false,
@@ -8292,6 +8401,7 @@ mod issue_2809_split_alignment_tests {
             Alignment::Justify,
             false,
             true,
+            false,
             true,
             false,
             false,
@@ -8313,6 +8423,7 @@ mod issue_2809_split_alignment_tests {
             Alignment::Justify,
             false,
             true,
+            false,
             false,
             false,
             false,
@@ -8356,6 +8467,7 @@ mod issue_4657_distribute_alignment_tests {
             &line(text),
             &ResolvedStyleSet::default(),
             Alignment::Distribute,
+            false,
             false,
             false,
             false,

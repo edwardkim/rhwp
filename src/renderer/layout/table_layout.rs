@@ -13,7 +13,9 @@ use crate::model::control::Control;
 use crate::model::paragraph::Paragraph;
 use crate::model::style::{Alignment, BorderLine, CenterLine};
 use crate::model::table::{TablePageBreak, VerticalAlign};
-use crate::renderer::float_placement::signed_hwpunit;
+use crate::renderer::float_placement::{
+    original_hwpx_column_rowbreak_equal_outer_margin_hu, signed_hwpunit,
+};
 
 const ROWBREAK_OBJECT_BOTTOM_BLEED_TOLERANCE_PX: f64 = 64.0;
 /// [#3738 Stage 19] native HWP5가 빈 1×1 RowBreak picture table에 남기는 stale page
@@ -2149,6 +2151,32 @@ impl LayoutEngine {
         (latest_start + 0.5 < earliest_end).then_some(furthest_bottom)
     }
 
+    /// 문단의 TopAndBottom 셀-flow 그림/도형 control 범위. atomic unit 에 붙여
+    /// 쪽을 걸친 셀 조각에서 같은 그림을 한 번만 emit 한다 (#4468).
+    fn paragraph_cell_top_and_bottom_control_range(
+        &self,
+        controls: &[Control],
+    ) -> Option<(usize, usize)> {
+        let mut first = None;
+        let mut last = None;
+        for (control_idx, control) in controls.iter().enumerate() {
+            let common = match control {
+                Control::Picture(picture) => &picture.common,
+                Control::Shape(shape) => shape.common(),
+                _ => continue,
+            };
+            if common.treat_as_char || !matches!(common.text_wrap, TextWrap::TopAndBottom) {
+                continue;
+            }
+            if self.non_inline_control_flow_height(common) <= 0.5 {
+                continue;
+            }
+            first.get_or_insert(control_idx);
+            last = Some(control_idx);
+        }
+        first.zip(last)
+    }
+
     /// Square/Tight/Through cell-flow의 control별 높이. 기존 aggregate 높이 계산과 같은
     /// contract를 유지하되, 16px fragment unit이 어떤 source control에 해당하는지 복원한다.
     fn paragraph_cell_other_non_inline_control_heights(
@@ -3413,6 +3441,7 @@ impl LayoutEngine {
             styles,
             true,
             relaxed_pad,
+            false,
         )
     }
 
@@ -3433,6 +3462,7 @@ impl LayoutEngine {
             styles,
             false,
             relaxed_pad,
+            false,
         )
     }
 
@@ -3510,6 +3540,10 @@ impl LayoutEngine {
         rh[..row_count].copy_from_slice(&decl);
     }
 
+    // `col_count` 는 본문에서 쓰이지 않고 재귀 호출로만 넘어가지만, 두 래퍼와
+    // 시그니처를 맞춰 두는 편이 호출부를 읽기 쉽다 (#6442 의 재시도 경로가
+    // 이 재귀를 만들었다).
+    #[allow(clippy::only_used_in_recursion)]
     fn resolve_row_heights_with_common_fit(
         &self,
         table: &crate::model::table::Table,
@@ -3519,6 +3553,7 @@ impl LayoutEngine {
         styles: &ResolvedStyleSet,
         fit_common_height: bool,
         relaxed_pad: bool,
+        suppress_unused_padding: bool,
     ) -> Vec<f64> {
         if let Some(mt) = measured_table {
             // `TypesetEngine::format_table` uses this same narrow replacement for
@@ -3630,8 +3665,12 @@ impl LayoutEngine {
                         } else {
                             f64::MAX
                         };
-                        let raw_pad_v = hwpunit_to_px(cell.padding.top as i32, self.dpi)
-                            + hwpunit_to_px(cell.padding.bottom as i32, self.dpi);
+                        let raw_pad_v = if suppress_unused_padding {
+                            hwpunit_to_px(cell.stored_vertical_padding_hu(), self.dpi)
+                        } else {
+                            hwpunit_to_px(cell.padding.top as i32, self.dpi)
+                                + hwpunit_to_px(cell.padding.bottom as i32, self.dpi)
+                        };
                         let pad_v = (pad_top + pad_bottom).max(raw_pad_v);
                         if Self::cell_row_grows_with_padding(line_based, decl_h, pad_v)
                             && (line_based > decl_h + 1.5 || row_count <= 20)
@@ -3769,8 +3808,7 @@ impl LayoutEngine {
                     } else {
                         f64::MAX
                     };
-                    let raw_pad_v = hwpunit_to_px(cell.padding.top as i32, self.dpi)
-                        + hwpunit_to_px(cell.padding.bottom as i32, self.dpi);
+                    let raw_pad_v = hwpunit_to_px(cell.stored_vertical_padding_hu(), self.dpi);
                     let pad_v = (pad_top + pad_bottom).max(raw_pad_v);
                     if Self::cell_row_grows_with_padding(line_based, decl_h, pad_v)
                         && (line_based > decl_h + 1.5 || row_count <= 20)
@@ -3802,10 +3840,58 @@ impl LayoutEngine {
                 row_heights[r] = hwpunit_to_px(400, self.dpi);
             }
         }
+        // [#6442] 쓰이지 않는 안 여백 필드(`apply_inner_margin=false`)의 쓰레기값이
+        // 행을 부풀려 표가 **자기 선언 높이 밖으로** 나갔으면, 그 값을 빼고 한 번 다시
+        // 잰다. 값만 보면 정상 문서(#1921 59043)의 같은 형상과 구분되지 않으므로
+        // **결과**로 가른다 — 표가 제 선언 안에 들어가는 한 종전 값을 그대로 쓴다.
+        if !suppress_unused_padding
+            && self.unused_padding_overflows_declared_table(table, &row_heights)
+        {
+            return self.resolve_row_heights_with_common_fit(
+                table,
+                col_count,
+                row_count,
+                measured_table,
+                styles,
+                fit_common_height,
+                relaxed_pad,
+                true,
+            );
+        }
         if fit_common_height {
             self.fit_row_heights_to_common_height(table, &mut row_heights);
         }
         row_heights
+    }
+
+    /// [#6442] 표 선언 높이 대비 이 배수를 넘으면 "표가 제 선언을 감당 못 한다"로 본다.
+    /// 대산항 출입증 중첩표는 선언 366.4px 에 행 합 약 4400px — **12배**다.
+    const UNUSED_PADDING_OVERFLOW_FACTOR: f64 = 2.0;
+
+    /// [#6442] 쓰이지 않는 안 여백 쓰레기값이 표를 자기 선언 높이 밖으로 밀어냈는가.
+    ///
+    /// 후보 셀이 하나도 없으면 즉시 거짓이라 일반 표에는 비용도 영향도 없다.
+    fn unused_padding_overflows_declared_table(
+        &self,
+        table: &crate::model::table::Table,
+        row_heights: &[f64],
+    ) -> bool {
+        // 행이 하나면 배분할 행이 없다 — 선언 높이 맞춤
+        // (`fit_row_heights_to_common_height`)이 이미 다루는 형상이라 건드리지 않는다.
+        // #1921 59043 의 1행 표가 같은 배수(10.3)를 내지만 한글 실측 핀에 맞는 상태다.
+        if table.common.height == 0 || row_heights.len() < 2 {
+            return false;
+        }
+        let has_candidate = table.cells.iter().any(|cell| {
+            cell.stored_vertical_padding_hu()
+                != (cell.padding.top as i32).saturating_add(cell.padding.bottom as i32)
+        });
+        if !has_candidate {
+            return false;
+        }
+        let declared = hwpunit_to_px(table.common.height as i32, self.dpi);
+        let sum: f64 = row_heights.iter().sum();
+        declared > 0.0 && sum > declared * Self::UNUSED_PADDING_OVERFLOW_FACTOR
     }
 
     fn fit_row_heights_to_common_height(
@@ -4146,20 +4232,22 @@ impl LayoutEngine {
             table.padding.right,
             allow_saved_small_cell_margin,
         );
-        let use_cell_top = (table_pad_unspec && cell.padding.top < 2500)
+        // [#6358] 음수 pad 는 `c < 2500` 위생 한도를 통과하므로 0 하한을 같이 둔다.
+        let use_cell_top = (table_pad_unspec && cell.padding.top >= 0 && cell.padding.top < 2500)
             || Self::should_use_cell_padding_axis_for_context(
                 cell,
                 cell.padding.top,
                 table.padding.top,
                 allow_saved_small_cell_margin,
             );
-        let use_cell_bottom = (table_pad_unspec && cell.padding.bottom < 2500)
-            || Self::should_use_cell_padding_axis_for_context(
-                cell,
-                cell.padding.bottom,
-                table.padding.bottom,
-                allow_saved_small_cell_margin,
-            );
+        let use_cell_bottom =
+            (table_pad_unspec && cell.padding.bottom >= 0 && cell.padding.bottom < 2500)
+                || Self::should_use_cell_padding_axis_for_context(
+                    cell,
+                    cell.padding.bottom,
+                    table.padding.bottom,
+                    allow_saved_small_cell_margin,
+                );
 
         let pad_left = if use_cell_left {
             hwpunit_to_px(cell.padding.left as i32, self.dpi)
@@ -4365,7 +4453,20 @@ impl LayoutEngine {
                     col_area.x + host_margin_left,
                     col_area.width - host_margin_left,
                 ),
-                _ => (col_area.x, col_area.width),
+                _ => {
+                    // [#6378] 원본 HWPX 단 기준 RowBreak 1열 자리차지 표만
+                    // outMargin.left 를 싣는다. 같은 문서 HWP 경로는 283HU=
+                    // 3.8px 안쪽에 둔다(tac-img-02 1쪽 Table x 79.4 vs 75.6).
+                    // HWP5 저장 조판 계약과 연속 block 표(#1133)는 여기서
+                    // 더하지 않는다 — 이중 가산·간격 회귀 금지.
+                    let om_l = original_hwpx_column_rowbreak_equal_outer_margin_hu(
+                        !self.profile.get().hwp5_stored_pagination_layout(),
+                        table,
+                    )
+                    .map(|hu| hwpunit_to_px(hu, self.dpi))
+                    .unwrap_or(0.0);
+                    (col_area.x + om_l, col_area.width)
+                }
             };
             match horz_align {
                 HorzAlign::Left | HorzAlign::Inside => ref_x + h_offset,
@@ -7276,6 +7377,7 @@ impl LayoutEngine {
                     section_index,
                     table_meta,
                     cell_idx,
+                    table.cells.len(),
                     enclosing_cell_ctx.clone(),
                 );
             } else {
@@ -9011,37 +9113,45 @@ impl LayoutEngine {
                     non_inline_h -= h;
                 }
             };
-        let append_atomic_unit = |units: &mut Vec<CellUnit>, para_idx: usize, non_inline_h: f64| {
-            if non_inline_h <= 0.5 {
-                return;
-            }
-            units.push(CellUnit {
-                height: non_inline_h,
-                hard_break_before: false,
-                stored_frame_break_before: false,
-                vpos_gap_before: false,
-                para_idx,
-                vis_start: 0,
-                vis_end: 0,
-                nested_row: None,
-                nested_table_fragment: None,
-                mixed_nested_fragment: false,
-                mixed_nested_trailing: false,
-                mixed_nested_content_height: 0.0,
-                mixed_nested_recursive: false,
-                mixed_nested_starts_after_table: false,
-                mixed_nested_source_para_idx: None,
-                recursive_block_prelude_role: RecursiveBlockPreludeRole::None,
-                top_and_bottom_flow: true,
-                empty_spacer: false,
-                non_inline_control_range: None,
-            });
-        };
+        let append_atomic_unit =
+            |units: &mut Vec<CellUnit>,
+             para_idx: usize,
+             non_inline_h: f64,
+             tb_range: Option<(usize, usize)>| {
+                if non_inline_h <= 0.5 {
+                    return;
+                }
+                units.push(CellUnit {
+                    height: non_inline_h,
+                    hard_break_before: false,
+                    stored_frame_break_before: false,
+                    vpos_gap_before: false,
+                    para_idx,
+                    vis_start: 0,
+                    vis_end: 0,
+                    nested_row: None,
+                    nested_table_fragment: None,
+                    mixed_nested_fragment: false,
+                    mixed_nested_trailing: false,
+                    mixed_nested_content_height: 0.0,
+                    mixed_nested_recursive: false,
+                    mixed_nested_starts_after_table: false,
+                    mixed_nested_source_para_idx: None,
+                    recursive_block_prelude_role: RecursiveBlockPreludeRole::None,
+                    top_and_bottom_flow: true,
+                    empty_spacer: false,
+                    // [#4468] 쪽을 걸친 셀에서 TopAndBottom 그림이 앞·뒤 조각에 중복
+                    // 페인트되지 않도록, atomic unit 을 control identity 로 표지한다.
+                    // Square 경로와 같이 그 control 의 **첫** unit 을 품은 cut 만 emit 한다.
+                    non_inline_control_range: tb_range,
+                });
+            };
         let append_non_inline_units = |units: &mut Vec<CellUnit>,
                                        para_idx: usize,
                                        extra_h: f64,
                                        top_and_bottom_h: f64,
-                                       other_h: f64|
+                                       other_h: f64,
+                                       tb_range: Option<(usize, usize)>|
          -> std::ops::Range<usize> {
             let (top_extra_h, other_extra_h) =
                 split_non_inline_extra(extra_h, top_and_bottom_h, other_h);
@@ -9051,12 +9161,12 @@ impl LayoutEngine {
             let other_start = units.len();
             append_fragment_units(units, para_idx, other_extra_h);
             let other_end = units.len();
-            append_atomic_unit(units, para_idx, top_extra_h);
+            append_atomic_unit(units, para_idx, top_extra_h, tb_range);
             other_start..other_end
         };
         // 기존 16px generic fragment의 높이·개수·순서는 그대로 두고, 각 fragment가
         // 겹치는 Square/Tight/Through source control range만 복원한다. TopAndBottom
-        // atomic unit은 이 metadata의 대상이 아니다.
+        // atomic unit 은 `tb_range` 로 control identity 를 붙인다 (#4468).
         let tag_other_non_inline_control_units =
             |units: &mut [CellUnit], range: std::ops::Range<usize>, controls: &[(usize, f64)]| {
                 if range.is_empty() || controls.is_empty() {
@@ -9892,6 +10002,7 @@ impl LayoutEngine {
                         para_non_inline_extra_h,
                         para_top_and_bottom_h,
                         para_other_non_inline_h,
+                        self.paragraph_cell_top_and_bottom_control_range(&p.controls),
                     );
                     tag_other_non_inline_control_units(
                         &mut units,
@@ -10038,6 +10149,7 @@ impl LayoutEngine {
                             para_non_inline_extra_h,
                             para_top_and_bottom_h,
                             para_other_non_inline_h,
+                            self.paragraph_cell_top_and_bottom_control_range(&p.controls),
                         );
                         tag_other_non_inline_control_units(
                             &mut units,
@@ -10249,6 +10361,7 @@ impl LayoutEngine {
                         para_non_inline_extra_h,
                         para_top_and_bottom_h,
                         para_other_non_inline_h,
+                        self.paragraph_cell_top_and_bottom_control_range(&p.controls),
                     );
                     tag_other_non_inline_control_units(
                         &mut units,
@@ -10514,6 +10627,7 @@ impl LayoutEngine {
                 para_non_inline_extra_h,
                 para_top_and_bottom_h,
                 para_other_non_inline_h,
+                self.paragraph_cell_top_and_bottom_control_range(&p.controls),
             );
             tag_other_non_inline_control_units(
                 &mut units,
@@ -13214,10 +13328,10 @@ impl LayoutEngine {
 
     /// `cell_cut_contains_non_inline_control_units`의 control-identity 버전.
     ///
-    /// Square/Tight/Through flow fragment는 control range의 **첫** unit을 포함한 cut만
-    /// picture/shape를 emit한다. 같은 control의 뒷 unit은 다음 physical fragment에서
-    /// 다시 image를 paint하지 않는다. legacy/TopAndBottom unit처럼 range가 없는 경우에는
-    /// 기존 paragraph-level 판정을 유지해 저장 형식별 기존 contract를 바꾸지 않는다.
+    /// Square/Tight/Through flow fragment와 TopAndBottom atomic unit 은 control
+    /// range의 **첫** unit을 포함한 cut만 picture/shape를 emit한다. 같은 control의
+    /// 뒷 unit은 다음 physical fragment에서 다시 image를 paint하지 않는다 (#4468).
+    /// range가 없는 레거시 unit만 paragraph-level 판정을 유지한다.
     pub(crate) fn cell_cut_starts_non_inline_control(
         &self,
         cell: &crate::model::table::Cell,

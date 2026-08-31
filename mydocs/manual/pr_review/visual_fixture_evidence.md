@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-08-28
+last_verified: 2026-08-30
 ---
 
 # 시각·fixture 증적
@@ -22,9 +22,11 @@ reviewer는 source PR이 첨부한 before/after나 수치만으로 "시각 검�
 
 직접 visual sweep 또는 동등한 판정을 수행하지 못한 경우 review 문서의 최종 권고는 다음처럼 제한한다.
 
-- `보류`: PR 주장이 시각 결과 자체이고 기준 산출물을 확인하지 못했다.
-- `조건부 보류`: 코드·회귀 테스트는 통과했지만 시각 asset 확인이 남았다.
-- `수용 아님`: 원 PR 증적만 확인했고 maintainer 검증이 없는 상태다.
+- `머지 보류`: PR 주장이 시각 결과 자체인데 기준 산출물 또는 maintainer 직접 판정이 없다.
+  코드·회귀 테스트만 통과했거나 원 PR 증적만 확인한 경우도 이 판정이다.
+- `메인터너 보정 후 수용 가능`: 원 head의 시각 증적은 불충분하지만, 범위가 제한된 보정 commit과
+  그 commit의 직접 기준 PDF·visual sweep 검증을 같은 integration head에서 제시할 수 있을 때만 쓴다.
+  보정 전 원 head를 `승인`으로 쓰지 않는다.
 
 이 상태에서는 "원 PR 증적 확인", "numeric/contract test 통과", "IR sweep baseline 통과" 같은 표현을
 "visual sweep 통과"와 섞지 않는다.
@@ -49,6 +51,8 @@ visual sweep을 실제 검토 근거로 쓰면 review 문서에 다음을 모두
   comment에는 그 한계를 함께 쓴다.
 
 Codex 또는 Claude가 이미지를 확인했더라도 작업지시자 승인 전에는 시각 판정을 최종 통과라고 단정하지 않는다.
+직접 증적이 충분하면 review 문서의 판정은 `승인`으로 기록할 수 있으나, 이는 GitHub approve나 merge
+승인이 아니며 최신 CI와 작업지시자 승인 게이트는 별도다.
 원본 HWP/HWPX, 기준 PDF, visual sweep 결과의 출처·역할·SHA-256을 구분해 보존한다.
 
 ## 원본 fixture와 기준 PDF 보존
@@ -115,6 +119,10 @@ visual sweep을 실제 merge 판단에 썼으면 merge 가능 또는 승인 요�
   direct link로 남긴다. output 경로 link만 남기지 않고, merge commit에 반영된 asset의 **commit SHA 고정**
   raw URL을 Markdown image로 실제 표시한다. raw URL은 PNG 표시용 증적이며 문서 비교 방법의 인용은
   Visual Sweep 정본과 review 문서가 담당한다.
+- 시각 검증을 `수용` 또는 `merge 권고` 근거로 쓰면, merge 전 개별 review 문서에 `Merge 후 contributor PR
+  comment 계획`을 작성한다. 계획에는 실제 확인 페이지·후보 수·지표·사람의 결론과 한계, representative PNG의
+  안정 경로, `<merge-commit-sha>` 고정 raw URL 형식, merge 뒤 `--body-file` 게시·API 재조회 조건을 넣는다.
+  이 계획이 없으면 merge 뒤 임시 산출물에서 수치를 추정해 comment하지 않고 review 기록부터 보완한다.
 
 ~~~markdown
 - 문서 비교: [PDF/SVG visual sweep 가이드](https://github.com/edwardkim/rhwp/blob/devel/mydocs/manual/verification/visual_sweep_guide.md#github-merge-comment)를 따름

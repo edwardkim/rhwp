@@ -20,6 +20,27 @@ const PASTE_CASCADE_STEP_HU: u32 = 567;
 /// 같은 값·형태 — 병적으로 깊은 중첩 문서에서 export 재귀가 스택을 태우지 않게 막는다.
 const MAX_NEST_DEPTH: usize = 8;
 
+/// [#4275] HTML 내보내기에 쓸 셀 BorderFill — `table.zones` 가 덮어쓴 유효 값.
+/// 셀 고유 `border_fill_id` 만 보면 cellzone 회색 헤더 등이 빠진다.
+fn html_cell_border_fill_id(
+    table: &crate::model::table::Table,
+    cell: &crate::model::table::Cell,
+) -> u16 {
+    table
+        .zones
+        .iter()
+        .rev()
+        .find(|zone| {
+            zone.border_fill_id > 0
+                && zone.start_row <= cell.row
+                && cell.row <= zone.end_row
+                && zone.start_col <= cell.col
+                && cell.col <= zone.end_col
+        })
+        .map(|zone| zone.border_fill_id)
+        .unwrap_or(cell.border_fill_id)
+}
+
 /// 셀 HTML 내보내기에서 지원하지 않는 컨트롤을 경고 주석에 남기기 위한 표시 이름.
 /// `Control::Table`/`Control::Picture`는 `control_to_html`이 직접 처리하므로 이 경로를
 /// 타지 않지만, 매치 순서가 바뀌어도 무해한 이름을 반환하도록 모든 변형을 다룬다.
@@ -1733,8 +1754,10 @@ impl DocumentCore {
                 // (styles.border_styles는 0-based). 다른 소비처(예:
                 // renderer/layout/table_layout.rs, document_core/queries/hidden_text.rs)와
                 // 동일하게 -1 보정한다. [#4412]
-                if cell.border_fill_id > 0 {
-                    let idx = (cell.border_fill_id as usize).saturating_sub(1);
+                // [#4275] cellzone overlay 가 있으면 그 유효 id 를 쓴다.
+                let fill_id = html_cell_border_fill_id(table, cell);
+                if fill_id > 0 {
+                    let idx = (fill_id as usize).saturating_sub(1);
                     if let Some(bs) = self.styles.border_styles.get(idx) {
                         self.apply_border_fill_css(&mut td_style, bs);
                     }

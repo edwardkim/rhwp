@@ -12,9 +12,11 @@
 // 다르면 문서를 통째로 건너뛰었다(600 문서 중 231 건너뜀 — 셀 구조가 복잡한, 즉 개선과
 // 회귀가 실제로 일어나는 문서가 사각에 몰렸다). 지금은 셀을 (행, 열, 텍스트 접두사)
 // 내용 키로 짝짓는다. 못 짝지은 셀만 `unpaired*` 로 세고 문서는 버리지 않는다.
-// 같은 키가 여럿이면(빈 셀 격자 등) 순서대로 맞춘다. 머리말/꼬리말 표 셀은 쪽마다
-// 렌더가 복제되므로 `unpairedRendered` 가 저장 쪽보다 큰 것이 정상이다 — 첫 복제가
-// 저장 기록과 짝지어지고 나머지는 판정 없이 남는다.
+// 같은 키가 여럿이면(빈 셀 격자 등) 순서대로 맞춘다.
+//
+// **v3 분류 (#6363)** — 기록 없는 문단(저장 줄수 0)은 불일치가 아니라 `noStoredRecord` 다.
+// 쪽 나눔 조각은 통짜 저장 셀과 첫 조각만 비교하지 않는다: `hdr=true`(제목 행 반복)는
+// 각 조각을 같은 저장 값과 개별 비교하고, `hdr=false` 는 같은 (행,열) 조각을 합산한다.
 //
 // 사용:
 //   node scripts/cell-lineseg-agreement.mjs            기준선과 비교, 회귀면 exit 1
@@ -30,7 +32,7 @@ const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 export const REPO_ROOT = path.resolve(SCRIPT_DIR, '..');
 export const BASELINE_PATH = path.join(SCRIPT_DIR, 'cell-lineseg-agreement-baseline.json');
 
-const CELL_LINE = /셀\[\d+\] r=(\d+),c=(\d+) .*?text="([^"]*)"/;
+const CELL_LINE = /셀\[\d+\] r=(\d+),c=(\d+) .*?hdr=(true|false) .*?text="([^"]*)"/;
 const TABLE_LINE = /(?:내부표|표): /;
 const PARA_LINE = /p\[\d+\]/;
 const LINE_SEG = /ls\[\d+\] ts=/g;
@@ -50,14 +52,42 @@ export function textKey(text) {
 export function storedCells(dumpText) {
   const stack = []; // { indent, cell }
   const cells = [];
-  for (const line of dumpText.split('\n')) {
+  // 셀 텍스트의 개행은 dump 에 물리 줄바꿈으로 그대로 찍힌다 — `text="` 가 열린 채
+  // 끝나는 줄은 닫는 따옴표가 나올 때까지 이어붙여 한 줄로 되돌린다. 안 하면 그 셀이
+  // 통째로 누락되고, 셀의 ls 줄이 직전 셀에 가산돼 거짓 불일치가 생긴다(k-water 의
+  // '운영중\n(사업대상)' 열이 이웃 열 전체를 +2 로 부풀렸다).
+  const reassembled = [];
+  let open = null;
+  for (const raw of dumpText.split('\n')) {
+    if (open !== null) {
+      open += `\n${raw}`;
+      if (raw.includes('"')) {
+        reassembled.push(open);
+        open = null;
+      }
+      continue;
+    }
+    if (/text="[^"]*$/.test(raw)) {
+      open = raw;
+      continue;
+    }
+    reassembled.push(raw);
+  }
+  if (open !== null) reassembled.push(open);
+  for (const line of reassembled) {
     const m = PREFIX.exec(line);
     if (!m) continue;
     const indent = m[1].length;
     const cellMatch = CELL_LINE.exec(line);
     if (cellMatch) {
       while (stack.length > 0 && stack[stack.length - 1].indent >= indent) stack.pop();
-      const cell = { row: Number(cellMatch[1]), col: Number(cellMatch[2]), text: cellMatch[3], lines: 0 };
+      const cell = {
+        row: Number(cellMatch[1]),
+        col: Number(cellMatch[2]),
+        header: cellMatch[3] === 'true',
+        text: cellMatch[4],
+        lines: 0,
+      };
       cells.push(cell);
       stack.push({ indent, cell });
       continue;
@@ -97,36 +127,122 @@ export function renderedCells(tree) {
   return cells;
 }
 
+function cellKey(cell) {
+  return `${cell.row}:${cell.col}:${textKey(cell.text)}`;
+}
+
+function posKey(cell) {
+  return `${cell.row}:${cell.col}`;
+}
+
+function judgePair(storedLines, renderedLines, totals) {
+  if (renderedLines === 0) return;
+  if (storedLines === 0) {
+    totals.noStoredRecord += 1;
+    return;
+  }
+  totals.cells += 1;
+  const delta = renderedLines - storedLines;
+  if (delta === 0) totals.agree += 1;
+  else {
+    totals.disagree += 1;
+    if (delta > 0) totals.renderedMore += 1;
+    else totals.renderedFewer += 1;
+  }
+}
+
+/**
+ * 문서에 (행,열)이 유일한 `hdr=false` 저장 셀이면, 쪽 나눔으로 쪼개진 렌더
+ * 조각을 합산한다. 첫 조각의 텍스트를 남겨 저장 접두사와 내용 키가 맞는다.
+ * (행,열)이 여러 표에 반복되면 합치지 않는다 — #6354 사각을 되돌리지 않기 위함.
+ */
+export function mergePageSplitFragments(stored, rendered) {
+  const storedAtPos = new Map();
+  for (const cell of stored) {
+    const pos = posKey(cell);
+    if (!storedAtPos.has(pos)) storedAtPos.set(pos, []);
+    storedAtPos.get(pos).push(cell);
+  }
+  const mergeable = new Set();
+  for (const [pos, list] of storedAtPos) {
+    if (list.length === 1 && !list[0].header) mergeable.add(pos);
+  }
+  const mergedAtPos = new Map();
+  const out = [];
+  for (const cell of rendered) {
+    const pos = posKey(cell);
+    if (!mergeable.has(pos)) {
+      out.push(cell);
+      continue;
+    }
+    const existing = mergedAtPos.get(pos);
+    if (!existing) {
+      const merged = { row: cell.row, col: cell.col, text: cell.text, lines: cell.lines };
+      mergedAtPos.set(pos, merged);
+      out.push(merged);
+    } else {
+      existing.lines += cell.lines;
+    }
+  }
+  return out;
+}
+
 /**
  * 내용 키로 셀을 짝지어 집계한다.
  *
  * 렌더 0줄 셀은 판정하지 않는다(줄 나눔이 없는 자리) — 짝짓기에는 참여시켜
  * 다른 셀의 상대를 빼앗지 않게 한다. 못 짝지은 셀은 양쪽 각각 센다.
+ *
+ * 저장 줄수 0 은 비교 모수에서 빼고 `noStoredRecord` 로 센다. 같은 키에 저장 1개·
+ * 렌더 여러 개이면 `hdr=true` 는 조각마다 비교하고 `hdr=false` 는 줄 수를 합산한다.
  */
 export function tallyDocument(stored, rendered, totals) {
+  // 내용 키가 빈 셀은 짝짓기에서 뺀다 — 빈 셀은 문서에 수백 개씩 있어 (행, 열, 빈 키)가
+  // 식별력을 잃고, 무관한 셀끼리 붙어 거짓 불일치를 만든다(편람: 저장 3줄 빈 셀의 진짜
+  // 렌더는 3줄로 일치하는데, 계측은 다른 쪽의 1줄짜리 무관 빈 셀과 붙여 "더 적게"를
+  // 보고했다). 짝지을 수 없는 것은 못 짝지은 것과 달라 emptyCells 로 따로 센다.
+  const measurable = (cell) => textKey(cell.text) !== '';
+  totals.emptyCells += stored.filter((c) => !measurable(c)).length;
+  totals.emptyCells += rendered.filter((c) => !measurable(c)).length;
+  stored = stored.filter(measurable);
+  rendered = rendered.filter(measurable);
+  const renderedForPairing = mergePageSplitFragments(stored, rendered);
   const buckets = new Map();
-  for (const c of stored) {
-    const key = `${c.row}:${c.col}:${textKey(c.text)}`;
+  for (const cell of stored) {
+    const key = cellKey(cell);
     if (!buckets.has(key)) buckets.set(key, []);
-    buckets.get(key).push(c);
+    buckets.get(key).push(cell);
   }
-  for (const r of rendered) {
-    const key = `${r.row}:${r.col}:${textKey(r.text)}`;
-    const queue = buckets.get(key);
-    if (!queue || queue.length === 0) {
-      totals.unpairedRendered += 1;
+  const renderedBuckets = new Map();
+  for (const cell of renderedForPairing) {
+    const key = cellKey(cell);
+    if (!renderedBuckets.has(key)) renderedBuckets.set(key, []);
+    renderedBuckets.get(key).push(cell);
+  }
+
+  const keys = new Set([...buckets.keys(), ...renderedBuckets.keys()]);
+  for (const key of keys) {
+    const storedQueue = buckets.get(key) ?? [];
+    const renderedQueue = renderedBuckets.get(key) ?? [];
+    if (storedQueue.length === 1 && renderedQueue.length > 1) {
+      const storedCell = storedQueue[0];
+      if (storedCell.header) {
+        for (const renderedCell of renderedQueue) {
+          judgePair(storedCell.lines, renderedCell.lines, totals);
+        }
+      } else if (renderedQueue.some((cell) => cell.lines > 0)) {
+        const summed = renderedQueue.reduce((n, cell) => n + cell.lines, 0);
+        judgePair(storedCell.lines, summed, totals);
+      }
+      storedQueue.length = 0;
       continue;
     }
-    const s = queue.shift();
-    if (r.lines === 0) continue;
-    totals.cells += 1;
-    const delta = r.lines - s.lines;
-    if (delta === 0) totals.agree += 1;
-    else {
-      totals.disagree += 1;
-      if (delta > 0) totals.renderedMore += 1;
-      else totals.renderedFewer += 1;
+    while (storedQueue.length > 0 && renderedQueue.length > 0) {
+      const storedCell = storedQueue.shift();
+      const renderedCell = renderedQueue.shift();
+      judgePair(storedCell.lines, renderedCell.lines, totals);
     }
+    totals.unpairedRendered += renderedQueue.length;
   }
   for (const queue of buckets.values()) totals.unpairedStored += queue.length;
 }
@@ -135,7 +251,7 @@ export function agreementPercent(totals) {
   return totals.cells === 0 ? 0 : (totals.agree / totals.cells) * 100;
 }
 
-/** 일치가 줄거나, 못 짝지은 셀이 늘거나, 측정 모수가 줄면 회귀다. */
+/** 일치가 줄거나, 못 짝지은 셀이 늘거나, 측정 모수가 줄거나, 기록 없음이 늘면 회귀다. */
 export function compareAgreement(actual, baseline) {
   const regressions = [];
   const improvements = [];
@@ -153,6 +269,11 @@ export function compareAgreement(actual, baseline) {
   if (actual.cells < baseline.cells) {
     regressions.push({ what: '측정 셀', now: actual.cells, was: baseline.cells });
   }
+  const noStoredNow = actual.noStoredRecord ?? 0;
+  const noStoredWas = baseline.noStoredRecord ?? 0;
+  if (noStoredNow > noStoredWas) {
+    regressions.push({ what: '기록 없는 셀', now: noStoredNow, was: noStoredWas });
+  }
   return { regressions, improvements };
 }
 
@@ -161,6 +282,8 @@ function emptyTotals() {
     documents: 0,
     unpairedStored: 0,
     unpairedRendered: 0,
+    noStoredRecord: 0,
+    emptyCells: 0,
     cells: 0,
     agree: 0,
     disagree: 0,
@@ -203,6 +326,8 @@ function sweep() {
 
 function report(t) {
   console.log(`  문서 ${t.documents}개 (못 짝지은 셀: 저장 ${t.unpairedStored} / 렌더 ${t.unpairedRendered})`);
+  console.log(`  기록 없음 ${t.noStoredRecord}개 (비교 모수에서 제외)`);
+  console.log(`  빈 셀 ${t.emptyCells}개 (내용 키 없음 — 짝짓기 불가, 비교 제외)`);
   console.log(`  측정 셀 ${t.cells}개   일치 ${t.agree} = ${agreementPercent(t).toFixed(2)}%`);
   console.log(`  불일치 ${t.disagree}  (rhwp 가 더 많이 ${t.renderedMore} / 더 적게 ${t.renderedFewer})`);
 }
@@ -213,7 +338,8 @@ function main() {
   if (args.includes('--update')) {
     const doc = {
       _comment: [
-        '셀 안 문단의 줄 나눔이 한/글 저장 기록과 일치하는 비율 (내용 키 짝짓기).',
+        '셀 안 문단의 줄 나눔이 한/글 저장 기록과 일치하는 비율 (내용 키 짝짓기, v3).',
+        '비교 모수는 저장 줄수가 있는 셀만. 기록 없음은 noStoredRecord.',
         '갱신: node scripts/cell-lineseg-agreement.mjs --update',
         '이 비율은 내려갈 수 없다. 올리는 것이 목표다.',
       ],

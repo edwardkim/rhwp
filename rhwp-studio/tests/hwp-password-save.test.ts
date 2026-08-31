@@ -35,7 +35,8 @@ test('암호 저장 dialog는 확인 입력, 최소 길이, 닫기 시 DOM 초�
 test('다른 이름·HWP·HWPX 저장은 공통 대화상자에서 암호 설정을 선택한다', () => {
   assert.match(commandSource, /async function promptSaveAsOptions/, '공통 저장 옵션 대화상자 경로가 있어야 합니다');
   assert.match(commandSource, /showSaveAs\(/, '파일명을 먼저 받는 대화상자를 열어야 합니다');
-  assert.match(codeOnly(commandSource), /allowPassword: format !== 'hml'/, 'HWP/HWPX에만 암호 설정을 노출해야 합니다');
+  assert.match(codeOnly(commandSource), /const passwordFormat = format !== 'hml'/, 'HWP/HWPX에만 암호 설정을 노출해야 합니다');
+  assert.match(codeOnly(commandSource), /allowPassword: passwordFormat/, '암호 지원 형식에서만 암호 설정을 노출해야 합니다');
   assert.match(commandSource, /showHwpSavePasswordDialog\(selection\.fileName\)/, '암호 설정을 누르면 암호/확인 대화상자를 열어야 합니다');
   assert.match(commandSource, /exportPasswordProtectedDocumentWithReportForFormat/, '내용 손실 보고를 포함한 전용 암호 serializer를 선택해야 합니다');
   assert.match(commandSource, /암호 설정 저장은 HWP 또는 HWPX 형식에서만 지원합니다/, 'HML 암호 저장을 거부해야 합니다');
@@ -87,6 +88,70 @@ test('다른 이름 저장은 새 문서명 상태와 최근 문서를 함께 �
   assert.match(mainSource, /refreshDocumentStatus: \(\) => \{[\s\S]*?wasm\.fileName/, '상태바 갱신은 현재 문서명을 사용해야 합니다');
   assert.match(codeOnly(mainSource), /RECENT_SUBMENU_COLLAPSED_LIMIT = 8/, '최근 문서는 기본 8개만 보여야 합니다');
   assert.match(mainSource, /최근 문서 더보기/, '9개 이상이면 더보기 항목을 제공해야 합니다');
+});
+
+test('보호된 문서의 Save As 기본 확인은 평문 exporter를 고르지 않는다', () => {
+  const prompt = between(commandSource, 'async function promptSaveAsOptions', 'async function saveAsFormat');
+  const onConfirm = between(saveAsDialogSource, 'protected onConfirm()', 'override hide()');
+  assert.match(
+    codeOnly(prompt),
+    /inheritPassword: protectedDoc && passwordFormat/,
+    '암호 지원 형식 Save As는 보호 의도를 기본 계승해야 합니다',
+  );
+  assert.match(
+    codeOnly(onConfirm),
+    /configurePassword: this.inheritPassword/,
+    '보호된 문서의 확인 단추는 암호 설정 흐름으로 이어져야 합니다',
+  );
+  assert.match(
+    prompt,
+    /showHwpSavePasswordDialog\(selection\.fileName\)/,
+    '기본 확인 뒤 암호를 다시 입력받아야 합니다',
+  );
+  assert.doesNotMatch(
+    codeOnly(onConfirm),
+    /configurePassword: false/,
+    '기본 확인이 평문을 암묵 선택하면 안 됩니다',
+  );
+});
+
+test('평문 사본은 명시적 보호 해제 동작에서만 만든다', () => {
+  assert.match(
+    codeOnly(saveAsDialogSource),
+    /plaintextButton\.textContent = '암호 없이 저장'/,
+    '보호된 문서에 암호 없이 저장 선택이 있어야 합니다',
+  );
+  assert.match(
+    saveAsDialogSource,
+    /configurePassword: false/,
+    '암호 없이 저장만 평문 결과를 내야 합니다',
+  );
+  const prompt = between(commandSource, 'async function promptSaveAsOptions', 'async function saveAsFormat');
+  assert.match(
+    prompt,
+    /HML 형식은 문서 암호를 지원하지 않습니다/,
+    '암호 미지원 형식은 보호 해제 경고를 거쳐야 합니다',
+  );
+  assert.match(prompt, /showConfirm\(/, '보호 해제 경고는 확인 대화상자여야 합니다');
+  assert.match(
+    prompt,
+    /if \(!confirmed\) return null/,
+    '경고를 취소하면 기존 보호 의도를 유지해야 합니다',
+  );
+});
+
+test('Save As 암호 입력 취소는 persist 전에 보호 상태를 바꾸지 않는다', () => {
+  const prompt = between(commandSource, 'async function promptSaveAsOptions', 'async function saveAsFormat');
+  const saveAs = between(commandSource, 'async function saveAsFormat', 'function reportSaveError');
+  const passwordCancel = prompt.indexOf('if (password === null) return null;');
+  const createPayload = saveAs.indexOf('createSavePayload(');
+  const protectionCommit = saveAs.indexOf('services.wasm.requiresPasswordForSave = password !== null;');
+  assert.ok(passwordCancel >= 0, '암호 입력 취소 경로가 있어야 합니다');
+  assert.ok(createPayload >= 0, 'export는 옵션이 확정된 뒤에만 호출해야 합니다');
+  assert.ok(
+    protectionCommit > createPayload,
+    '보호 상태 변경은 persist 성공 콜백에서만 이루어져야 합니다',
+  );
 });
 
 test('Studio public WASM 배포물도 암호 저장 binding을 제공한다', () => {

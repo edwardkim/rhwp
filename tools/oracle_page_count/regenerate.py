@@ -16,9 +16,10 @@ CI 와 회귀 시험은 만들어진 TSV 만 읽는다 — Rust 쪽에 PDF 파�
 ## 짝짓기 규칙
 
 정답지 파일명은 `<이름>[-접미사].pdf` 이고 접미사는 한글 버전·폰트 조건이다
-(`-2022`, `-2020-kopub`, `-no-ttf` 등). 같은 문서를 여러 조건으로 뽑은 정답지가 있으면
-**쪽수의 집합**을 만들어 그중 하나와 맞으면 일치로 본다 — 조건 차이를 결함으로 오인하지
-않기 위한 보수적 판정이다.
+(`-2022`, `-2020-kopub`, `-no-ttf` 등). 원본 형식과 `rhwp info --json`의 저장
+제품에 맞는 한컴 엔진 연도가 확인된 정답지만 고른다. 저장 제품 메타데이터가 없으면
+2020 엔진을 쓴다. 형식 미표기·상대 형식·kopub/no-ttf 는 한 허용 집합에 섞지
+않으며, 엔진 연도가 여럿이라고 가장 최근 연도를 추측해 고르지 않는다.
 
 ## 모아 찍기 제외
 
@@ -38,59 +39,23 @@ import subprocess
 import sys
 import tempfile
 
-SUFFIX = re.compile(r'-(20\d\d|hwp|hwpx|kopub|no-ttf|current)+$', re.I)
+TOOLS_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if TOOLS_DIR not in sys.path:
+    sys.path.insert(0, TOOLS_DIR)
+
+from oracle_pdf_selection import choose_canonical, engine_for_product, stem  # noqa: E402
+
 FIXTURE = 'tests/fixtures/oracle_page_count_baseline.tsv'
 
 
-def stem(path):
-    name = re.sub(r'\.(pdf|hwp|hwpx)$', '', os.path.basename(path), flags=re.I)
-    prev = None
-    while prev != name:
-        prev = name
-        name = SUFFIX.sub('', name)
-    return name
-
-
 def subdir(path, root):
-    """`samples/`·`pdf/` 아래의 상대 디렉터리."""
-    d = os.path.dirname(path).replace(os.sep, '/')
-    return d[len(root):].lstrip('/') if d.startswith(root) else d
+    """`samples/`·`pdf/` 아래의 상대 디렉터리를 반환한다."""
+    directory = os.path.dirname(path).replace(os.sep, '/')
+    return directory[len(root):].lstrip('/') if directory.startswith(root) else directory
 
 
-FORMAT_SUFFIX = re.compile(r'-(hwpx|hwp)(?=-|$)', re.I)
-
-
-def oracle_format(pdf_path):
-    """정답지가 **어느 형식의 원본**에서 뽑혔는지. 태그가 없으면 `None`.
-
-    `-hwp`·`-hwpx` 는 한글 버전·글꼴 조건 같은 접미사가 아니라 원본 형식 표기다.
-    `stem()` 은 이름을 맞추려고 이것도 벗기는데, 그대로 두면 같은 문서의 HWP본·HWPX본
-    정답지가 한 집합으로 뭉쳐 **각 샘플이 상대 형식의 쪽수로도 "일치" 판정**을 받는다.
-
-    `issue1510_coanchored_float_tables` 가 그 실측이다. 한글은 HWP본을 1 쪽,
-    HWPX본을 2 쪽으로 뽑았고 **둘 다 정답이다**(저장된 float 배치가 다르다). 그런데
-    원장은 두 행 모두 정답지 `1,2` 를 갖고 있어 rhwp 가 어느 쪽으로 틀려도 통과한다.
-    """
-    name = re.sub(r'\.pdf$', '', os.path.basename(pdf_path), flags=re.I)
-    # `<이름>.hwp.pdf` / `<이름>.hwpx.pdf` 형태도 같은 표기다.
-    if name.lower().endswith('.hwpx'):
-        return 'hwpx'
-    if name.lower().endswith('.hwp'):
-        return 'hwp'
-    work = name
-    while True:
-        m = SUFFIX.search(work)
-        if not m:
-            break
-        tag = m.group(1).lower()
-        if tag in ('hwp', 'hwpx'):
-            return tag
-        work = work[:m.start()]
-    return None
-
-
-def pick_oracles(sample, candidates):
-    """이름이 같은 정답지 후보 중 이 샘플의 것만 고른다.
+def pick_oracles(sample, candidates, product):
+    """원본 형식과 저장 제품 엔진에 맞는 canonical PDF 하나만 고른다.
 
     **파일명만 보면 다른 문서의 정답지를 집어 온다.** 저장소에는 같은 이름의 서로 다른
     문서가 44 종 있다 — 예를 들어 `samples/KTX.hwp` 는 27 쪽짜리 AI-반도체 사업 공모
@@ -98,20 +63,20 @@ def pick_oracles(sample, candidates):
     정답지를 공유했다. 그러면 각자 상대의 쪽수로도 "일치" 판정을 받아 **진짜 불일치가
     가려진다.**
 
-    같은 디렉터리의 정답지가 있으면 그것만 쓴다. 없으면 이름 후보를 그대로 쓰되(정답지가
-    `pdf/` 최상위에만 있는 문서가 많다), 후보가 여럿이면 그 사실이 픽스처의 쪽수 집합에
-    드러난다.
-
-    형식 태그(`-hwp`/`-hwpx`)가 붙은 정답지는 **같은 형식의 샘플에만** 준다
-    (`oracle_format` 참고). 태그가 없는 정답지는 형식을 가리지 않는다.
-
-    디렉터리 fallback 은 여기서 끝나지 않는다 — `owner_claims_oracle` 이 본문으로 확인한다.
+    형식 태그(`-hwp`/`-hwpx`)와 source-relative 경로가 같은 정답지 중에서 저장 제품이
+    지시한 엔진 하나만 허용한다. 형식 미표기 PDF와 kopub/no-ttf 산출물로 되돌리거나,
+    여러 엔진 중 최신 연도를 추정하지 않는다.
     """
-    want = 'hwpx' if sample.lower().endswith('.hwpx') else 'hwp'
-    candidates = [p for p in candidates
-                  if oracle_format(p) in (None, want)]
-    same_dir = [p for p in candidates if subdir(p, 'pdf') == subdir(sample, 'samples')]
-    return same_dir if same_dir else candidates
+    try:
+        return [
+            choose_canonical(
+                sample,
+                candidates,
+                engine=engine_for_product(product),
+            )
+        ]
+    except ValueError:
+        return []
 
 
 #: 디렉터리 주인이 후보보다 이만큼 더 맞으면 후보의 짝짓기를 버린다.
@@ -270,12 +235,14 @@ def rhwp_info(rhwp, path):
     r = subprocess.run([rhwp, 'info', path, '--json'],
                        capture_output=True, text=True, encoding='utf-8', errors='replace')
     if r.returncode != 0:
-        return None, False
+        return None, False, None
     try:
         d = json.loads(r.stdout)
-        return d.get('pageCount'), bool(d.get('printMethodImpliesNup'))
+        saved_with = d.get('lastSavedWith')
+        product = saved_with.get('product') if isinstance(saved_with, dict) else None
+        return d.get('pageCount'), bool(d.get('printMethodImpliesNup')), product
     except Exception:
-        return None, False
+        return None, False, None
 
 
 def main():
@@ -303,13 +270,23 @@ def main():
     text_cache = {}
     rows = []
     skipped_nup = []
+    skipped_canonical = []
     skipped_pairing = []
     skipped_coverage = []
     for sample in samples:
         key = stem(sample)
         if key not in pmap:
             continue
-        picked = pick_oracles(sample, pmap[key])
+        got, nup, product = rhwp_info(args.rhwp, sample)
+        if got is None:
+            continue
+        if nup:
+            skipped_nup.append(sample)
+            continue
+        picked = pick_oracles(sample, pmap[key], product)
+        if not picked:
+            skipped_canonical.append((sample, product))
+            continue
         counts = set()
         rejected = []
         best_oracle_pages = None
@@ -351,12 +328,6 @@ def main():
                 for pdf, share, owner, owner_share in rejected)
         if not counts:
             continue
-        got, nup = rhwp_info(args.rhwp, sample)
-        if got is None:
-            continue
-        if nup:
-            skipped_nup.append(sample)
-            continue
         # rhwp 쪽이 더 많을 때만 수록 범위를 확인한다 — 정답지가 문서 일부만 담았으면
         # 그 초과는 결함이 아니다. 확인은 export-text 를 부르므로 해당 행에만 건다.
         if got > max(counts) and best_oracle_pages:
@@ -375,6 +346,8 @@ def main():
         '# 한글 정답지 PDF 대비 rhwp pageCount 기준선.',
         '# 생성: python tools/oracle_page_count/regenerate.py',
         '# 열: 상대경로 <TAB> 정답지쪽수(쉼표구분) <TAB> 이 기준선의 rhwp쪽수',
+        '# 정답지쪽수는 원본 형식·rhwp info --json 저장 제품 엔진이 일치하는 canonical PDF만 쓴다.',
+        '# 형식 미표기·kopub/no-ttf 쪽수는 섞지 않는다. rhwp가 다르면 미해결 격차다.',
         '# 모아 찍기(print_method 4·5) 문서는 장 수가 애초에 달라 제외한다.',
     ]
     for sample, counts, got in rows:
@@ -387,6 +360,9 @@ def main():
           % (len(rows), match, len(rows) - match, len(skipped_nup)))
     for s in skipped_nup:
         print('  모아찍기 제외: %s' % s)
+    for sample, product in skipped_canonical:
+        print('  canonical 정답지 없음: %s (product=%s)'
+              % (sample, product or 'unknown'))
     for sample, n, got, tail_len in skipped_coverage:
         print('  정답지 부분 수록 제외: %s (정답지 %d쪽 / rhwp %d쪽, 정답지에 없는 꼬리 %d자)'
               % (sample, n, got, tail_len))

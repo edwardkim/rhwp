@@ -1,0 +1,117 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q3-e0-post-merge-requalification-result",
+  "issue": 4969,
+  "stage": "W10-Q3-E0-requalification",
+  "status": "qualified-red-baseline-reconfirmed-complete",
+  "resultApproved": true,
+  "e0Checkpoint": "406ee9e31d0e3c10c93897d355d03f0051dd5be1",
+  "mergedUpstreamDevel": "b54f20e391023e04c9916c2b6d60af8ab1863369",
+  "mergeCommit": "b5fbed37c9ada3ec7a39931657d4bce386547626",
+  "branchState": {
+    "ahead": 21,
+    "behind": 0
+  },
+  "overlapAudit": {
+    "mergeBase": "955abb5268c3a6a93a41328633729fd095b7390a",
+    "branchChangedPaths": 79,
+    "upstreamChangedPaths": 98,
+    "bilateralOverlapPaths": [
+      "mydocs/orders/20260829.md"
+    ],
+    "productSourceOverlapDetected": false,
+    "q3TestOverlapDetected": false,
+    "conflictCount": 1,
+    "conflictsResolved": 1,
+    "resolution": "preserve-both-daily-order-sections"
+  },
+  "defaultProductBaseline": {
+    "profile": "cargo-test-debug-warm-structural-reference",
+    "measuredRuns": 9,
+    "layerBuildsPerRun": 64,
+    "aggregateElapsedNs": [
+      204018421,
+      198989376,
+      199119239,
+      203743911,
+      198055997,
+      205214939,
+      198994581,
+      200760043,
+      197994528
+    ],
+    "aggregateP50Ns": 199119239,
+    "aggregateP95NearestRankNs": 205214939,
+    "perBuildP50Ns": 3111238.11,
+    "perBuildP95Ns": 3206483.42,
+    "p50DeltaPercentFromE0": -1.09,
+    "p95DeltaPercentFromE0": -1.04,
+    "layerJsonBytes": 619562,
+    "layerJsonBlake3": "0b5212cc076c34dce706039d7c4da85936c0a6769e83f08baa7f158cbd9029de",
+    "canvasKitPlanBytes": 1755,
+    "canvasKitPlanBlake3": "a98e6933d76901cfa55a43205c758675a8864527f87f8bed7a689d16267cbb56",
+    "hashMismatchCount": 0,
+    "glyphOutlinePublished": false
+  },
+  "greenControl": {
+    "shadowContextPassed": 13,
+    "atomicProductPassed": 4,
+    "compositionHandoffPassed": 4,
+    "totalPassed": 21,
+    "failed": 0
+  },
+  "red": {
+    "passed": 0,
+    "failed": 4,
+    "causes": [
+      "reversible-per-slot-native-owner-absent",
+      "strict-set-clear-wasm-adapters-absent",
+      "request-gated-explicit-single-run-session-absent",
+      "atomic-qualified-variable-outline-publication-absent"
+    ],
+    "unexpectedFailureCount": 0
+  },
+  "dockerWasm": {
+    "command": "docker compose --env-file .env.docker run --rm wasm",
+    "status": "passed",
+    "wall": "6m06s",
+    "bytes": 9759816,
+    "deltaBytesFromE0": 448,
+    "deltaPercentFromE0": 0.0046,
+    "sha256": "31110f71a477f044d013986c9f7cd067cdb2f7be92840dea1cb40f5fed63e051"
+  },
+  "studio": {
+    "build": "passed",
+    "viteModules": 239,
+    "viteBuildMilliseconds": 960,
+    "wasmCopyMatches": true,
+    "mainJsBytes": 1699677,
+    "mainJsSha256": "7d381a746ff460e43fdb66768fdc3aa9ff85a732ff2cbd0456904db144c09f3d",
+    "cssBytes": 106910,
+    "cssSha256": "17e81926a0b122e311840b76b70f7315ea5d8b4a420184aabdbac8ca6b482f57"
+  },
+  "protectedRegression": {
+    "q3ImplementationChanged": false,
+    "publicApiChanged": false,
+    "defaultOutputChanged": false,
+    "newIntegrationSource": false,
+    "generatedArtifactsStaged": false,
+    "privateCorpusUsed": false,
+    "hyperVOrHancomOracleUsed": false
+  },
+  "checkpointPreflight": {
+    "upstreamDevel": "d29b5fd4ba40",
+    "ahead": 21,
+    "behind": 2,
+    "changes": "pdf-oracle-only",
+    "bilateralOverlapCount": 0,
+    "syncMergeCommit": "351817b21",
+    "postMergeAhead": 23,
+    "postMergeBehind": 0
+  },
+  "next": "approve-q3-e1-start",
+  "nextSlice": "Q3-E1-reversible-owner-and-strict-native-contract",
+  "nextSliceApproved": false,
+  "commitCreated": true,
+  "pushReady": false
+}

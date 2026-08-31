@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q3-a-canonical-instance-red-contract-result",
+  "issue": 4969,
+  "stage": "W10-Q3-A",
+  "status": "qualified-red-approved-awaiting-checkpoint",
+  "resultApproved": true,
+  "baseCheckpoint": "4b68ce669",
+  "productMutation": false,
+  "testSources": [
+    "tests/cases/issue_4969_shaping_request_contract.rs",
+    "tests/cases/issue_4969_shaping_shadow_context.rs"
+  ],
+  "baseline": {
+    "requestContractPassed": 12,
+    "shadowContextPassed": 5,
+    "pageSidecarPassed": 4,
+    "failed": 0
+  },
+  "standaloneRed": {
+    "passed": 12,
+    "failed": 4,
+    "contracts": [
+      {
+        "id": "effective-default-identity",
+        "current": "explicit-default-and-empty-have-different-canonical-vectors-and-settings-hashes",
+        "target": "empty-explicit-default-partial-default-and-axis-permutation-share-one-identity"
+      },
+      {
+        "id": "explicit-default-shaping",
+        "current": "same-glyph-output-but-different-identity",
+        "target": "same-disposition-identity-and-glyphs-as-empty-default"
+      },
+      {
+        "id": "title-to-default-face-state",
+        "currentFirstLatinAdvance": 598,
+        "freshDefaultFirstLatinAdvance": 579,
+        "target": "all-glyph-records-equal-fresh-default"
+      },
+      {
+        "id": "partial-axis-face-state",
+        "currentFirstLatinAdvance": 585,
+        "freshOpticalOnlyFirstLatinAdvance": 579,
+        "target": "omitted-weight-axis-uses-fvar-default"
+      }
+    ]
+  },
+  "transactionRed": {
+    "compileError": "E0609",
+    "missingField": "HorizontalShapingRequest.variations",
+    "futureBehaviorContract": {
+      "emptyAndExplicitDefaultShareMeasurementArc": true,
+      "titleUsesDistinctMeasurement": true,
+      "expectedResultCacheEntries": 2,
+      "expectedParsedInstanceFaces": 2
+    }
+  },
+  "protectedRegression": {
+    "structuredAxisReasonsPassed": true,
+    "oldHangulOraclePassed": true,
+    "defaultRenderTreeJsonPassed": true,
+    "pageSidecarPassed": 4,
+    "generatedArtifactsChanged": false,
+    "sourceCfgTestIncrease": false,
+    "productOutputChanged": false,
+    "privateCorpusUsed": false,
+    "hyperVOrHancomOracleUsed": false
+  },
+  "format": {
+    "changedSourceRustfmtPassed": true,
+    "gitDiffCheckPassed": true,
+    "cargoFmtAllBlockedByAbsentGeneratedSuites": true,
+    "cargoFmtAllRequiredInPreparedReviewWorktreeBeforePush": true
+  },
+  "next": "approve-q3-a-checkpoint-commit",
+  "nextSlice": "Q3-B-instance-aware-dormant-measurement-and-cache",
+  "nextSliceApproved": false,
+  "commitCreated": false,
+  "pushReady": false
+}

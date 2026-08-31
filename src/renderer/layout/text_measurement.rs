@@ -912,11 +912,17 @@ fn kopub_char_width(primary_name: &str, c: char, font_size: f64) -> Option<f64> 
         return Some(quantize_hwp_px(font_size * 0.5));
     }
     if is_cjk_char(c) || is_fullwidth_symbol(c) {
-        // [#2195 stage57] KoPub 미설치 환경에서 한글은 바탕으로 치환해 **전각
-        // 1.0em** 렌더 — 86712 한컴 PDF 글리프 직독(Haansoft Batang, 12pt 한글
-        // 16px) 실측. 종전 0.84 는 r27 근거설명 25문단을 -11줄 과소(래핑 조기
-        // 종료)시키던 성분.
-        let factor = if is_dotum { 1.0 } else { 0.94 };
+        // [#6389] KoPub돋움체 한글 전각은 872/1000em — 편람 kopub 오라클 PDF 의
+        // 임베드 서브셋 CIDFont /W 직독(Light 601·Medium 319·Bold 283 글리프
+        // 전원 872). 재구성도 맞는다: 한글 줄폭 = 872×장평0.98−자간 = 825HU/자
+        // ≈ 오라클 잉크 실측 829. 종전 1.0 은 #2195 stage57 이 86712 한컴 PDF
+        // 에서 실측한 값인데, 그 PDF 는 KoPub 미설치 환경이라 한글이 바탕으로
+        // **치환해** 그린 것 — 치환 글꼴(전각 1.0em)의 폭이 KoPub face 상수로
+        // 들어와 있었다. 치환 환경 문서군의 폭은 face 상수가 아니라 치환 경로가
+        // 소유해야 한다. 그보다 전의 0.84 도 실물(0.872)과 미세하게 어긋나
+        // r27 을 -11줄 과소시켰다. 바탕체 0.94 는 같은 방법 실측 936/1000 과
+        // 사실상 일치해 유지한다.
+        let factor = if is_dotum { 0.872 } else { 0.94 };
         return Some(quantize_hwp_px(font_size * factor));
     }
 
@@ -1066,10 +1072,7 @@ fn measure_char_width_embedded_decision<'a>(
                 (mm.metric.em_size as f64 * 0.3) as u16,
                 "metricNarrowPunctuationOverlay",
             )
-        } else if (is_halfwidth_punct
-            || (is_halfwidth_cjk_quote(c) && is_monospace_metric(mm.metric)))
-            && glyph_w >= mm.metric.em_size
-        {
+        } else if is_halfwidth_punct && glyph_w >= mm.metric.em_size {
             (mm.metric.em_size / 2, HALFWIDTH_PUNCTUATION_WIDTH_SOURCE)
         } else {
             (glyph_w, "embeddedMetric")
@@ -2170,7 +2173,7 @@ mod tests {
     }
 
     #[test]
-    fn test_kopub_dotum_hangul_full_width_substitution() {
+    fn test_kopub_dotum_hangul_872_advance() {
         let m = EmbeddedTextMeasurer;
         let style = TextStyle {
             font_family: "KoPub돋움체 Light".to_string(),
@@ -2178,11 +2181,13 @@ mod tests {
             ..Default::default()
         };
 
-        // [#2195 stage57] KoPub 미설치 환경에서 한글이 바탕으로 치환되어 전각
-        // 1.0em 렌더 (86712 한컴 PDF 글리프 실측: 12pt 한글 16px). 종전 0.84
-        // 핀은 r27 근거설명 25문단 -11줄 과소의 성분이었다.
+        // [#6389] KoPub돋움체 한글 전각 872/1000em — 편람 kopub 오라클 PDF 임베드
+        // 서브셋 CIDFont /W 직독(전 웨이트 1,203 글리프 만장일치 872). 종전 1.0
+        // 은 KoPub 미설치 환경의 바탕 치환 렌더(86712)를 face 상수로 오인한 값.
+        // 14px × 0.872 = 12.208 → HWPUNIT 양자화 12.2/자, 두 글자 24.4 를
+        // estimate_text_width 가 총폭 round 해 24.0 (줄바꿈 비교는 unrounded).
         let w = m.estimate_text_width("가나", &style);
-        assert_eq!(w, 28.0);
+        assert_eq!(w, 24.0);
     }
 
     #[test]
@@ -2558,7 +2563,12 @@ mod tests {
     }
 
     #[test]
-    fn test_2020_corner_quote_halfwidth_in_registered_font() {
+    /// [#6478] `「` 는 등록 폰트에서도 **전각**이다 — #2020 의 반각 기대를 뒤집었다.
+    ///
+    /// #2020 의 원 문서(여권신청서)를 한글 2022 로 다시 재니 돋움체 낫표가 전각이고
+    /// (9.96pt → 폭 9.96), 설치된 어떤 폰트도 U+300C 를 반각으로 갖고 있지 않다
+    /// (Windows batang/gulim 8종, 한컴 HBATANG/HDOTUM 모두 1.0 em).
+    fn test_6478_corner_quote_is_fullwidth_in_registered_font() {
         let m = EmbeddedTextMeasurer;
         let style = TextStyle {
             font_family: "돋움체".to_string(),
@@ -2572,8 +2582,8 @@ mod tests {
         let hangul_advance = positions[2] - positions[1];
 
         assert!(
-            quote_advance <= style.font_size * 0.6,
-            "`「` 는 등록 폰트에서도 반각 advance 로 측정되어야 함. got {:.2}",
+            quote_advance >= style.font_size * 0.9,
+            "`「` 는 등록 폰트에서 전각 advance 로 측정되어야 함. got {:.2}",
             quote_advance
         );
         assert!(
@@ -2581,6 +2591,24 @@ mod tests {
             "뒤따르는 한글은 전각 advance 를 유지해야 함. got {:.2}",
             hangul_advance
         );
+
+        // [#6478] 바탕체도 같다 — 한글 2022 실측 BatangChe 14.00pt 선언에서
+        // `「` 크기 14.04pt · 전진 14.04 (156509659 1쪽). 종전 rhwp 는 9.65pt /
+        // 전진 6.65 로 반토막이었다.
+        for face in ["바탕체", "굴림체", "궁서체"] {
+            let style = TextStyle {
+                font_family: face.to_string(),
+                font_size: 18.667,
+                ratio: 1.0,
+                ..Default::default()
+            };
+            let positions = m.compute_char_positions("「여", &style);
+            let adv = positions[1] - positions[0];
+            assert!(
+                adv >= style.font_size * 0.9,
+                "{face} 의 `「` 도 전각이어야 함. got {adv:.2}"
+            );
+        }
     }
 
     /// [U+00B7 .notdef 위장값 정정] 비례폰트(휴먼명조)에서 `·`(U+00B7) 글리프

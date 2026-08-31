@@ -1,0 +1,106 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q3-b-instance-aware-dormant-measurement-result",
+  "issue": 4969,
+  "stage": "W10-Q3-B",
+  "status": "qualified-approved-awaiting-checkpoint",
+  "resultApproved": true,
+  "baseCheckpoint": "1075f5dce",
+  "productMutation": false,
+  "productConsumerCount": 0,
+  "canonicalInstance": {
+    "fvarDefaultCoordinatesRemoved": true,
+    "negativeZeroNormalized": true,
+    "partialVectorUsesDefaults": true,
+    "axisOrderCanonical": true,
+    "allFaceAxesResetBeforeApply": true,
+    "emptyEqualsExplicitDefault": true
+  },
+  "ownership": {
+    "preparedSource": "one-per-exact-source-per-transaction",
+    "mutableFace": "one-per-source-handle-and-canonical-instance",
+    "resultCache": "source-handle-and-canonical-instance-and-text-settings",
+    "crossInstanceStateLeak": 0,
+    "cacheCollision": 0
+  },
+  "publicMatrix": {
+    "font": "ttfs/redistributable/happiness-sans/HappinessSansVF.ttf",
+    "fontSha256": "3bbd254dcc5780f7524f9d07af4aa981ba5e3e84cf32d7d4e04301b3943e8694",
+    "fontBytes": 1503064,
+    "fontSizePx": 10.0,
+    "widthRatio": 0.8,
+    "instances": [
+      { "id": "default", "wght": 400.0, "opsz": 400.0, "hangulAdvancePx": 14.72, "latinAdvancePx": 43.752 },
+      { "id": "weight-interior", "wght": 650.0, "opsz": 400.0, "hangulAdvancePx": 14.72, "latinAdvancePx": 44.448 },
+      { "id": "bold", "wght": 900.0, "opsz": 400.0, "hangulAdvancePx": 14.72, "latinAdvancePx": 45.136 },
+      { "id": "optical-interior", "wght": 400.0, "opsz": 650.0, "hangulAdvancePx": 14.72, "latinAdvancePx": 43.752 },
+      { "id": "title", "wght": 900.0, "opsz": 900.0, "hangulAdvancePx": 14.88, "latinAdvancePx": 47.328 }
+    ],
+    "hangulText": "가변",
+    "latinText": "Typography",
+    "glyphIdentityStableAcrossInstances": true,
+    "distinctSettingsIdentities": 5
+  },
+  "scaleMatrix": {
+    "instanceCounts": [1, 2, 8],
+    "runsPerInstance": [1, 2, 8],
+    "preparedSources": 1,
+    "parsedFaceFormula": "instances",
+    "cacheMissFormula": "instances",
+    "cacheHitFormula": "instances*(runs-1)",
+    "cacheEntryFormula": "instances"
+  },
+  "performanceReference": {
+    "scope": "warm-shadow-matrix-test-not-page-layout-sla",
+    "beforePreparedSourceCacheSeconds": 1.455,
+    "afterPreparedSourceCacheSeconds": 0.230,
+    "reductionPercent": 84.2,
+    "finalNineTestNextestSeconds": 0.239
+  },
+  "negativeTransaction": {
+    "unknownAxis": "variationAxisUnsupported",
+    "nan": "variationValueNonFinite",
+    "outOfRange": "variationValueOutOfRange",
+    "seventeenAxes": "variationAxisLimitExceeded",
+    "rejectedInstanceFaces": 0,
+    "rejectedCacheEntries": 0
+  },
+  "validation": {
+    "nativeDirectTargets": 7,
+    "nativeDirectPassed": 66,
+    "nativeDirectFailed": 0,
+    "nodeWasmShadowPassed": 9,
+    "nodeWasmShadowFailed": 0,
+    "nodeWasmSeconds": 0.47,
+    "nativeWasmMismatch": 0,
+    "nativeClippy": "passed",
+    "wasmLibClippy": "passed",
+    "integrationSourcePolicyPassed": 18,
+    "unitTierTests": 4221,
+    "unitTierModules": 299,
+    "gitDiffCheck": "passed",
+    "focusedRustfmt": "passed",
+    "rootWasmPackBlockedByExistingDevDependencies": true,
+    "isolatedHarnessRemoved": true,
+    "q3CargoTargetGiBRemoved": 3.7
+  },
+  "protectedRegression": {
+    "productVariationCallerCount": 0,
+    "q2OutputChanged": false,
+    "layoutPaintOrBackendPublicationChanged": false,
+    "generatedArtifactsChanged": false,
+    "newIntegrationSource": false,
+    "sourceCfgTestChanged": false,
+    "staticInstanceFontGenerated": false,
+    "privateCorpusUsed": false,
+    "hyperVOrHancomOracleUsed": false
+  },
+  "format": {
+    "cargoFmtAllRequiredInPreparedReviewWorktreeBeforePush": true
+  },
+  "next": "approve-q3-b-checkpoint-commit",
+  "nextSlice": "Q3-C-replay-payload-and-backend-capability-shadow",
+  "nextSliceApproved": false,
+  "commitCreated": false,
+  "pushReady": false
+}

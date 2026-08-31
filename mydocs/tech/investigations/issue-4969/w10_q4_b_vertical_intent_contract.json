@@ -1,0 +1,125 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q4-b-vertical-intent-contract",
+  "issue": 4969,
+  "stage": "W10-Q4-B",
+  "date": "2026-08-30",
+  "status": "qualified-contract-only",
+  "productMutation": false,
+  "productActivation": false,
+  "typedMapping": [
+    {
+      "sourceFamily": "hwp5-list-header",
+      "surfaces": ["table-cell", "text-box"],
+      "raw": 0,
+      "writingMode": "horizontal-tb",
+      "latinOrientation": "not-applicable"
+    },
+    {
+      "sourceFamily": "hwp5-list-header",
+      "surfaces": ["table-cell", "text-box"],
+      "raw": 1,
+      "writingMode": "vertical-rl",
+      "latinOrientation": "sideways"
+    },
+    {
+      "sourceFamily": "hwp5-list-header",
+      "surfaces": ["table-cell", "text-box"],
+      "raw": 2,
+      "writingMode": "vertical-rl",
+      "latinOrientation": "upright"
+    },
+    {
+      "sourceFamily": "hwpx-text-direction",
+      "surfaces": ["table-cell", "text-box", "section", "master-page"],
+      "raw": "HORIZONTAL",
+      "writingMode": "horizontal-tb",
+      "latinOrientation": "not-applicable"
+    },
+    {
+      "sourceFamily": "hwpx-text-direction",
+      "surfaces": ["table-cell", "text-box", "section", "master-page"],
+      "raw": "VERTICAL",
+      "writingMode": "vertical-rl",
+      "latinOrientation": "sideways"
+    },
+    {
+      "sourceFamily": "hwpx-text-direction",
+      "surfaces": ["table-cell", "text-box", "section", "master-page"],
+      "raw": "VERTICALALL",
+      "writingMode": "vertical-rl",
+      "latinOrientation": "upright"
+    }
+  ],
+  "negativeContract": {
+    "hwp5Raw": [3, 4, 5, 6, 7],
+    "hwpxExample": "SIDEWAYS-RL",
+    "disposition": "unsupported-raw",
+    "silentHorizontalFallbackAllowed": false,
+    "crossFamilyAdapterAllowed": false
+  },
+  "adjudication": {
+    "schema": {
+      "path": "mydocs/manual/OWPML SCHEMA/ParaList XML schema.xml",
+      "verticalAllDocumentation": "세로 영문 세움"
+    },
+    "hwpx": {
+      "path": "samples/hwpx/tbox-v-flow-01.hwpx",
+      "sha256": "4ed50b49aeb9b0dac7cdfcd2a5d2a8ed0404f77fe6004b695737c54abcb84c9a",
+      "raw": "VERTICALALL",
+      "parsed": {"listAttrDirection": 1, "verticalAll": true}
+    },
+    "pairedHwp": {
+      "path": "samples/hwpx/hancom-hwp/tbox-v-flow-01.hwp",
+      "sha256": "f9f752dbc96fd2fdf18a0f57197a94110b0caf7440e46cbbc91bfb4705e14e29",
+      "parsed": {"listAttrDirection": 2, "verticalAll": false}
+    },
+    "pairedPdf": {
+      "path": "pdf/hwpx/tbox-v-flow-01-2022.pdf",
+      "sha256": "73389838285f90a5caa17f29df8fbad20ee265e6b17ebc7251b8c092db0b4535",
+      "pages": 1,
+      "latinOrientationAdjudication": false,
+      "reason": "fixture text is Korean-only"
+    },
+    "hyperVRequired": false
+  },
+  "publicControls": [
+    {
+      "path": "samples/table-004.hwp",
+      "sha256": "451ab7c40d47c4200e98b57b7cb3806e64968c32fa9441fc171e7babf64be915",
+      "expectedDirection2Cells": 3,
+      "hwp5RoundTripDirection2Cells": 3
+    },
+    {
+      "path": "samples/issue6029/3200477_icao_procedure.hwpx",
+      "sha256": "d3fb34289a9a49315510a70166aa4451a11e71eb79c7ac129fdf9da6426f75a2",
+      "expectedDirection1Cells": 3,
+      "hwpxRoundTripDirection1Cells": 3
+    }
+  ],
+  "legacyRenderControl": {
+    "hwpxSvgSha256": "5d382cfe43ec4b8ea8ee39da0c11a9642b777e2a57369d9d6fa05369601c7570",
+    "pairedHwpSvgSha256": "5d382cfe43ec4b8ea8ee39da0c11a9642b777e2a57369d9d6fa05369601c7570",
+    "bytesEach": 50211,
+    "rotateTransformsEach": 4,
+    "overflowCellLinesEach": 0,
+    "renderMismatch": 0
+  },
+  "currentProductGaps": [
+    "hwpx-table-verticalall-collapses-to-horizontal",
+    "hwp5-table-code-2-serializes-to-hwpx-horizontal",
+    "hwpx-textbox-verticalall-layout-collapses-to-code-1",
+    "hwpx-section-verticalall-collapses-to-horizontal",
+    "hwpx-master-page-verticalall-collapses-to-horizontal",
+    "unknown-source-values-collapse-in-existing-parsers"
+  ],
+  "tests": {
+    "target": "issue_4969_shaping_request_contract",
+    "passed": 22,
+    "failed": 0,
+    "q4BAdded": 3
+  },
+  "privateCorpusUsed": false,
+  "githubMutation": false,
+  "next": "Q4-C-dormant-vertical-layout-transaction"
+}

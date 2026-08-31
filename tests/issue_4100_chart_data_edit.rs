@@ -2474,15 +2474,17 @@ fn generate_b2_structure_judgment_bundle() {
 ///
 /// PR #5647 이 보류된 이유는 "판정을 재계산할 자산이 저장소에 없다" 였다. 자산을 커밋한
 /// 뒤에는 반대 위험이 생긴다 — 원장과 자산 중 **한쪽만 조용히 늙는 것**. 그래서 원장
-/// 38행이 가리키는 원본과 한컴 PDF 를 열어 SHA-256 을 다시 잰다.
+/// 38행이 가리키는 원본과 현행 한컴 PDF 를 열어 SHA-256 을 다시 잰다.
 ///
 /// 렌더러 의존성이 없어 CI 에서 상시로 돈다. 래스터 재계산과 불변식 재판정은
 /// `tools/hancom_chart_judgment_verify.py` 가 로컬에서 맡는다
 /// (`scripts/check_e2e_manifest.py` 와 같은 원장 트립와이어 운용).
 ///
-/// 양방향으로 본다 — 원장 → 파일(빠진 자산)뿐 아니라 파일 → 원장(등재되지 않은 자산)도
-/// 본다. 뒤쪽을 **이름이 아니라 해시 집합**으로 맞추는 것은 판정 자산이 macOS↔Windows 를
-/// 오가며 파일명이 NFC/NFD 로 갈렸던 전례(#5447 보고서 §6-1) 때문이다.
+/// 양방향으로 본다 — 원장 → 파일(빠진 자산)뿐 아니라 원본 디렉터리와 현행 판정 PDF
+/// namespace(`-2020.pdf` 또는 `-2024.pdf`) → 원장(등재되지 않은 자산)도 본다. 뒤쪽을 **이름이 아니라
+/// 해시 집합**으로 맞추는 것은 판정 자산이 macOS↔Windows 를 오가며 파일명이 NFC/NFD 로 갈렸던 전례
+/// (#5447 보고서 §6-1) 때문이다. 같은 `pdf/issue5447/`의 `-2022.pdf`는 이전 판정 PDF이며 현행
+/// 원장 기준에 속하지 않는다.
 #[test]
 fn b2_judgment_assets_match_the_manifest() {
     fn sha256_of(path: &std::path::Path) -> String {
@@ -2579,13 +2581,10 @@ fn b2_judgment_assets_match_the_manifest() {
         );
     }
 
-    for (dir, ignored) in [
-        (
-            "samples/issue5447",
-            ["MANIFEST.json", "README.md", "PANJEONG.md"].as_slice(),
-        ),
-        ("pdf/issue5447", ["README.md"].as_slice()),
-    ] {
+    for (dir, ignored) in [(
+        "samples/issue5447",
+        ["MANIFEST.json", "README.md", "PANJEONG.md"].as_slice(),
+    )] {
         let mut counted = 0usize;
         for item in std::fs::read_dir(manifest(dir)).expect("판정 자산 디렉터리") {
             let path = item.expect("디렉터리 항목").path();
@@ -2608,6 +2607,32 @@ fn b2_judgment_assets_match_the_manifest() {
         }
         assert_eq!(counted, 38, "{dir}: 판정 자산이 38건이 아니다");
     }
+
+    // `pdf/issue5447/`에는 이전 `-2022.pdf`와 원본 메타데이터로 engine을 결정한 현행 B2 기준
+    // PDF가 공존한다. 원장은 현행 engine suffix의 PDF만 소유하므로, 그 namespace만 역방향으로
+    // 검증한다.
+    let dir = "pdf/issue5447";
+    let mut counted = 0usize;
+    for item in std::fs::read_dir(manifest(dir)).expect("판정 PDF 디렉터리") {
+        let path = item.expect("디렉터리 항목").path();
+        if !path.is_file() {
+            continue;
+        }
+        let file_name = path
+            .file_name()
+            .and_then(|s| s.to_str())
+            .unwrap_or_default()
+            .to_string();
+        if !(file_name.ends_with("-2020.pdf") || file_name.ends_with("-2024.pdf")) {
+            continue;
+        }
+        assert!(
+            registered.contains(&sha256_of(&path)),
+            "{dir}/{file_name}: B2 원장에 등재되지 않은 현행 한컴 판정 자산이다"
+        );
+        counted += 1;
+    }
+    assert_eq!(counted, 38, "{dir}: 현행 B2 한컴 판정 자산이 38건이 아니다");
 }
 
 // ---------------------------------------------------------------------------
@@ -3974,9 +3999,12 @@ fn engine_documents_match_spike_documents_byte_for_byte() {
 /// [#5652 S5] 엔진 판정 원장(`samples/issue5652/MANIFEST.json`)이 가리키는 자산이 지금도 그 바이트인가.
 ///
 /// `b2_judgment_assets_match_the_manifest`(#5447) 와 같은 트립와이어 — 원장 32행의 원본·한컴 PDF
-/// SHA-256 을 다시 재고, 두 디렉터리를 거꾸로 훑어 등재되지 않은 자산을 잡는다(해시 집합으로 —
-/// NFC/NFD 파일명 사고 대비). 래스터 재계산은 `tools/hancom_chart_judgment_verify.py --manifest
-/// samples/issue5652/MANIFEST.json` 이 로컬에서 맡는다.
+/// SHA-256 을 다시 재고, 원본 디렉터리와 현행 B2 판정 PDF namespace(`-2020.pdf` 또는
+/// `-2024.pdf`)를 거꾸로 훑어 등재되지 않은 자산을 잡는다(해시 집합으로 — NFC/NFD 파일명 사고
+/// 대비). 같은 `pdf/issue5652/` 아래의 `-2022.pdf`는 이전 판정 PDF이며 현행 B2 원장 기준에
+/// 속하지 않는다.
+/// 래스터 재계산은 `tools/hancom_chart_judgment_verify.py --manifest samples/issue5652/MANIFEST.json` 이
+/// 로컬에서 맡는다.
 #[test]
 fn b2_engine_judgment_assets_match_the_manifest() {
     fn sha256_of(path: &std::path::Path) -> String {
@@ -4070,13 +4098,10 @@ fn b2_engine_judgment_assets_match_the_manifest() {
         "#5447 판정 PDF 와 렌더가 다른 항목이 있다"
     );
 
-    for (dir, ignored) in [
-        (
-            "samples/issue5652",
-            ["MANIFEST.json", "README.md", "PANJEONG.md"].as_slice(),
-        ),
-        ("pdf/issue5652", ["README.md"].as_slice()),
-    ] {
+    for (dir, ignored) in [(
+        "samples/issue5652",
+        ["MANIFEST.json", "README.md", "PANJEONG.md"].as_slice(),
+    )] {
         let mut counted = 0usize;
         for item in std::fs::read_dir(manifest(dir)).expect("판정 자산 디렉터리") {
             let path = item.expect("디렉터리 항목").path();
@@ -4099,6 +4124,32 @@ fn b2_engine_judgment_assets_match_the_manifest() {
         }
         assert_eq!(counted, 32, "{dir}: 판정 자산이 32건이 아니다");
     }
+
+    // `pdf/issue5652/`에는 이전 `-2022.pdf`와 원본 메타데이터로 engine을 결정한 현행 B2 기준
+    // PDF가 공존한다. 원장은 현행 engine suffix의 PDF만 소유하므로, 그 namespace만 역방향으로
+    // 검증한다.
+    let dir = "pdf/issue5652";
+    let mut counted = 0usize;
+    for item in std::fs::read_dir(manifest(dir)).expect("판정 PDF 디렉터리") {
+        let path = item.expect("디렉터리 항목").path();
+        if !path.is_file() {
+            continue;
+        }
+        let file_name = path
+            .file_name()
+            .and_then(|s| s.to_str())
+            .unwrap_or_default()
+            .to_string();
+        if !(file_name.ends_with("-2020.pdf") || file_name.ends_with("-2024.pdf")) {
+            continue;
+        }
+        assert!(
+            registered.contains(&sha256_of(&path)),
+            "{dir}/{file_name}: B2 원장에 등재되지 않은 현행 한컴 판정 자산이다"
+        );
+        counted += 1;
+    }
+    assert_eq!(counted, 32, "{dir}: 현행 B2 한컴 판정 자산이 32건이 아니다");
 }
 
 // ---------------------------------------------------------------------------

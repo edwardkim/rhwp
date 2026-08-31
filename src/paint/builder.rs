@@ -6,6 +6,7 @@ use crate::paint::layer_tree::{
 use crate::paint::paint_op::{PaintOp, TextDecorationKind};
 use crate::paint::profile::RenderProfile;
 use crate::paint::shaping_glyph::lower_horizontal_shaping_page_sidecars;
+use crate::paint::shaping_glyph_vertical::lower_vertical_shaping_page_sidecars;
 use crate::paint::EmbeddedFontFace;
 use crate::renderer::render_tree::{PageRenderTree, RenderNode, RenderNodeType};
 
@@ -62,11 +63,19 @@ impl LayerBuilder {
             PageLayerTree::with_profile(page_width, page_height, root, self.profile)
                 .with_output_options(self.output_options)
                 .with_bin_data_epoch(self.bin_data_epoch);
-        let claimed_glyph_run_sources = lower_horizontal_shaping_page_sidecars(
+        // Vertical exact-source publication owns its leaf slots first. The
+        // horizontal and nominal lowerers remain independent and only share
+        // the final claim set used to suppress duplicate nominal GlyphRuns.
+        let mut claimed_glyph_run_sources = lower_vertical_shaping_page_sidecars(
+            &mut layer_tree.root,
+            &tree.frame,
+            &mut layer_tree.resources,
+        );
+        claimed_glyph_run_sources.extend(lower_horizontal_shaping_page_sidecars(
             &mut layer_tree.root,
             tree.frame.horizontal_shaping_sidecars(),
             &mut layer_tree.resources,
-        );
+        ));
         lower_font_native_glyph_sidecars_excluding(
             &mut layer_tree.root,
             &mut layer_tree.resources,

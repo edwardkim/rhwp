@@ -4,6 +4,12 @@
 
 ## [Unreleased]
 
+### API
+
+- `HwpDocument.setExactFontInstance(optionsJson)`와 `clearExactFontInstance(optionsJson)`를 추가했다. host가
+  `registerExactFontSource`로 등록한 exact slot에만 `boundedHorizontalLtrV1` variable-font 요청을 설정·해제하며,
+  strict JSON 검증과 per-slot 멱등 clear를 제공한다. parser나 font 이름에서 axis를 자동 추론하지 않는다 (#4969).
+
 ### HWPX 저장
 
 - `hp:ole` 의 shape-component 자식(`offset`·`orgSz`·`curSz`·`flip`·

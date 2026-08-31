@@ -1,0 +1,77 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q4-d3-b-atomic-leaf-publication",
+  "issue": 4969,
+  "stage": "W10-Q4-D3-B",
+  "date": "2026-08-30",
+  "status": "qualified-atomic-leaf-publication-checkpoint-approved",
+  "resultApproved": true,
+  "baseCheckpoint": "bb334756b",
+  "baseUpstreamDevel": "bd78a53122e4",
+  "productPublished": true,
+  "backendSelectionChanged": false,
+  "redFirst": {
+    "test": "issue_4969_q4_d3_b_target_publishes_one_vertical_glyph_run_per_fallback_leaf",
+    "failedAt": "missing-second-glyph-run-op-in-first-fallback-leaf"
+  },
+  "target": {
+    "lineGroups": 1,
+    "fallbackTextRuns": 2,
+    "verticalGlyphRuns": 2,
+    "equivalenceGroups": 2,
+    "portableFontBlobPayloads": 1,
+    "portableFontBlobRecords": 1,
+    "portableFontFaceRecords": 1,
+    "nominalDuplicateGlyphRuns": 0,
+    "variantScopeValid": true
+  },
+  "atomicRejection": {
+    "mutation": "same-length-second-leaf-text-substitution",
+    "verticalGlyphRuns": 0,
+    "portableFontBlobPayloads": 0,
+    "portableFontBlobRecords": 0,
+    "portableFontFaceRecords": 0
+  },
+  "selectorFence": {
+    "backends": [
+      "CanvasKit",
+      "CanvasKitBrowser",
+      "NativeSkia",
+      "Svg",
+      "Canvas2D"
+    ],
+    "groupsChecked": 2,
+    "selectedTextRunGroups": 2,
+    "selectedVerticalGlyphRunGroups": 0
+  },
+  "green": {
+    "atomicActivationPassed": 9,
+    "atomicActivationFailed": 0,
+    "atomicActivationIgnored": 1,
+    "q4RequestContractPassedExcludingD4Red": 21,
+    "q4RequestContractFailed": 0,
+    "integrationManifestSources": 1040,
+    "integrationManifestStaticTestAttrs": 4639,
+    "integrationManifestTargetsPassed": 48,
+    "integrationManifestTargetsTotal": 48,
+    "integrationPolicyPassed": 19,
+    "integrationPolicyFailed": 0,
+    "focusedClippy": "passed",
+    "formatCheck": "passed"
+  },
+  "remainingRed": [
+    "Q4-D4-canvaskit-feature-detection"
+  ],
+  "deferredToD3C": [
+    "layer-json-value-reconciliation",
+    "issue-6029-and-canonical-controls",
+    "native-node-wasm-docker-wasm-reconciliation",
+    "source-preparation-and-payload-size-receipt"
+  ],
+  "newIntegrationSource": false,
+  "generatedIntegrationArtifacts": false,
+  "privateCorpusUsed": false,
+  "hyperVUsed": false,
+  "githubMutation": false,
+  "next": "D3-B-checkpoint-then-maintainer-D3-C-approval"
+}

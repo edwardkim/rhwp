@@ -142,6 +142,13 @@ pub struct SvgRenderer {
     soft_wrap_decoration_trim: Option<(u32, usize)>,
     /// draw_text 한 회 한정 활성 트림 수 (위 필드에서 파생).
     active_decoration_trim: usize,
+    /// [#6451] 이 run 의 **레이아웃 폭**(render tree bbox). 장식선(밑줄/취소선)은
+    /// 작성기의 자체 글자 측정 대신 이 값을 쓴다.
+    ///
+    /// 두 측정은 미세하게 어긋난다 — 156514427 1쪽 밑줄에서 작성기는 run 끝을
+    /// 372.520px 로 보는데 레이아웃은 다음 run 을 372.853px 에 놓아, 조각 사이에
+    /// 0.333px(0.25pt) 실틈이 남았다. bbox 는 `101.9+271.0=372.9` 로 정확히 이어진다.
+    active_decoration_width: Option<f64>,
 }
 
 /// 디버그 오버레이용 문단 경계 정보
@@ -220,6 +227,7 @@ impl SvgRenderer {
             metric_faces: std::collections::BTreeSet::new(),
             soft_wrap_decoration_trim: None,
             active_decoration_trim: 0,
+            active_decoration_width: None,
         }
     }
 
@@ -437,6 +445,9 @@ impl SvgRenderer {
                         Some((id, trim)) if id == node.id => trim,
                         _ => 0,
                     };
+                    // [#6451] 장식선은 레이아웃 폭을 따른다 — 작성기 자체 측정과
+                    // 어긋나면 run 경계마다 실틈이 남는다.
+                    self.active_decoration_width = Some(node.bbox.width);
                     self.draw_text_positioned(
                         run.display_or_text(),
                         node.bbox.x,
@@ -445,6 +456,7 @@ impl SvgRenderer {
                         run.validated_layout_positions_for(run.display_or_text()),
                     );
                     self.active_decoration_trim = 0;
+                    self.active_decoration_width = None;
                 }
                 if self.show_paragraph_marks || self.show_control_codes {
                     // 조판부호 마커 TextRun은 공백 기호 표시 건너뛰기
@@ -1570,6 +1582,14 @@ impl SvgRenderer {
                     bbox.x, bbox.y, bbox.width, bbox.height, data_uri,
                 ));
             }
+            ImageFillMode::Zoom => {
+                // [#6310] 칸/영역에 맞춰 종횡비를 지키며 축소(contain). TILE 원본 픽셀
+                // 배치가 아니다.
+                self.output.push_str(&format!(
+                    "<image x=\"{}\" y=\"{}\" width=\"{}\" height=\"{}\" preserveAspectRatio=\"xMidYMid meet\" href=\"{}\"/>\n",
+                    bbox.x, bbox.y, bbox.width, bbox.height, data_uri,
+                ));
+            }
             ImageFillMode::TileAll => {
                 self.render_tiled_image(&render_bytes, &data_uri, bbox, true, true, None);
             }
@@ -1726,6 +1746,15 @@ impl SvgRenderer {
                     Some((mime, bytes)) => (std::borrow::Cow::Owned(bytes), mime, false),
                     None => (std::borrow::Cow::Borrowed(data), mime_type, false),
                 }
+            } else if mime_type == "image/jpeg"
+                && crate::renderer::image_resolver::jpeg_is_four_component(data)
+            {
+                // [#6310] 4성분(CMYK/YCCK) JPEG 은 PDF `/DeviceRGB` 선언과 성분 수가
+                // 어긋나 행 보폭이 깨진다 — PNG(RGB)로 정규화해 싣는다.
+                match crate::renderer::image_resolver::cmyk_jpeg_bytes_to_png_bytes(data) {
+                    Some(png_bytes) => (std::borrow::Cow::Owned(png_bytes), "image/png", false),
+                    None => (std::borrow::Cow::Borrowed(data), mime_type, false),
+                }
             } else if is_watermark_image && mime_type == "image/jpeg" {
                 match watermark_jpeg_bytes_to_hancom_baked_png_bytes(data) {
                     Some(png_bytes) => (std::borrow::Cow::Owned(png_bytes), "image/png", true),
@@ -1784,6 +1813,12 @@ impl SvgRenderer {
         let fill_mode = img.fill_mode.unwrap_or(ImageFillMode::FitToSize);
 
         match fill_mode {
+            ImageFillMode::Zoom => {
+                self.output.push_str(&format!(
+                    "<image x=\"{}\" y=\"{}\" width=\"{}\" height=\"{}\" preserveAspectRatio=\"xMidYMid meet\" href=\"{}\"/>\n",
+                    bbox.x, bbox.y, bbox.width, bbox.height, data_uri,
+                ));
+            }
             ImageFillMode::FitToSize | ImageFillMode::Total => {
                 // 그림 자르기: crop이 있으면 원본 이미지의 일부만 표시
                 if let Some((cl, ct, cr, cb)) = img.crop {
@@ -3178,11 +3213,20 @@ impl Renderer for SvgRenderer {
         let decoration_width = {
             let trailing = text.chars().rev().take_while(|ch| *ch == ' ').count();
             let trim = self.active_decoration_trim.min(trailing);
-            let n = text.chars().count();
-            char_positions
-                .get(n - trim)
-                .copied()
-                .unwrap_or_else(|| *char_positions.last().unwrap_or(&0.0))
+            // [#6451] 트림이 없으면 **레이아웃 폭**(render tree bbox)을 그대로 쓴다 —
+            // run 경계가 정확히 맞아 밑줄이 한 줄로 이어진다. 작성기 자체 측정은
+            // 레이아웃 advance 와 0.3px 남짓 어긋나 조각 사이에 실틈을 남긴다.
+            // 트림이 있으면 말미 공백을 글자 단위로 걷어내야 하므로 #6028 계산을 쓴다.
+            match self.active_decoration_width {
+                Some(w) if trim == 0 => w,
+                _ => {
+                    let n = text.chars().count();
+                    char_positions
+                        .get(n - trim)
+                        .copied()
+                        .unwrap_or_else(|| *char_positions.last().unwrap_or(&0.0))
+                }
+            }
         };
         if !matches!(style.underline, UnderlineType::None) {
             let text_width = decoration_width;

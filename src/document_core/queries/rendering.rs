@@ -989,6 +989,9 @@ impl DocumentCore {
     fn ensure_exact_font_measurement_contexts(&mut self) {
         let generation = self.layout_engine.exact_font_source_registry_counts().3;
         let slot_count = self.layout_engine.exact_font_source_registry_counts().0;
+        let (instance_request_count, instance_request_generation) = self
+            .layout_engine
+            .horizontal_shaping_instance_request_counts();
         let current = self
             .styles
             .kerning_measurement_context
@@ -997,6 +1000,8 @@ impl DocumentCore {
             .is_some_and(|(kerning, shaping)| {
                 kerning.registry_generation() == generation
                     && shaping.registry_generation() == generation
+                    && shaping.instance_request_generation() == instance_request_generation
+                    && shaping.instance_request_count() == instance_request_count
             });
         if (slot_count == 0
             && (self.styles.kerning_measurement_context.is_some()
@@ -1179,6 +1184,14 @@ impl DocumentCore {
         profile: RenderProfile,
     ) -> Result<PageLayerTree, HwpError> {
         let _overflows = self.layout_engine.take_overflows();
+        let idx = page_num as usize;
+        let fingerprint = self
+            .layer_output_options_fingerprint(profile, crate::paint::LayerJsonOptions::default());
+        if let Some(variants) = self.page_layer_tree_cache.borrow().get(idx) {
+            if let Some((_, tree)) = variants.iter().find(|(value, _)| *value == fingerprint) {
+                return Ok(tree.clone());
+            }
+        }
         let show_editor_visuals = profile.shows_editor_visuals();
         let output_options = LayerOutputOptions {
             show_paragraph_marks: show_editor_visuals && self.show_paragraph_marks,
@@ -1187,7 +1200,7 @@ impl DocumentCore {
             clip_enabled: self.clip_enabled,
             debug_overlay: show_editor_visuals && self.debug_overlay,
         };
-        self.with_page_tree_cached(page_num, |tree| {
+        let layer_tree = self.with_page_tree_cached(page_num, |tree| {
             let mut used_font_slots = Vec::new();
             let mut nodes = vec![&tree.root];
             while let Some(node) = nodes.pop() {
@@ -1342,7 +1355,20 @@ impl DocumentCore {
                 .with_output_options(output_options)
                 .with_bin_data_epoch(self.bin_data_epoch);
             Ok(builder.build_with_embedded_fonts(tree, &embedded_fonts))
-        })
+        })?;
+        {
+            let mut cache = self.page_layer_tree_cache.borrow_mut();
+            if cache.len() <= idx {
+                cache.resize_with(idx + 1, Vec::new);
+            }
+            let variants = &mut cache[idx];
+            variants.retain(|(value, _)| *value != fingerprint);
+            if variants.len() >= 4 {
+                variants.remove(0);
+            }
+            variants.push((fingerprint, layer_tree.clone()));
+        }
+        Ok(layer_tree)
     }
 
     /// 바이너리 데이터를 0-based `bin_data_content` 인덱스로 반환한다.
@@ -2077,25 +2103,26 @@ impl DocumentCore {
     }
 
     /// [Task #2222] 레이어 출력옵션 5종과 profile의 비트 지문 — JSON 캐시 키.
-    /// [Task #3315] 그림 바이트 생략 여부를 최상위 비트에 함께 접는다.
+    /// [Task #3315/#4969] 그림·font 바이트 생략 여부를 서로 다른 비트에 함께 접는다.
     fn layer_output_options_fingerprint(
         &self,
         profile: RenderProfile,
         options: crate::paint::LayerJsonOptions,
-    ) -> u8 {
-        let profile_bits = match profile {
+    ) -> u16 {
+        let profile_bits: u16 = match profile {
             RenderProfile::FastPreview => 0,
             RenderProfile::Screen => 1,
             RenderProfile::Print => 2,
             RenderProfile::HighQuality => 3,
         };
-        u8::from(self.show_paragraph_marks)
-            | (u8::from(self.show_control_codes) << 1)
-            | (u8::from(self.show_transparent_borders) << 2)
-            | (u8::from(self.clip_enabled) << 3)
-            | (u8::from(self.debug_overlay) << 4)
+        u16::from(self.show_paragraph_marks)
+            | (u16::from(self.show_control_codes) << 1)
+            | (u16::from(self.show_transparent_borders) << 2)
+            | (u16::from(self.clip_enabled) << 3)
+            | (u16::from(self.debug_overlay) << 4)
             | (profile_bits << 5)
-            | (u8::from(options.omit_image_bytes) << 7)
+            | (u16::from(options.omit_image_bytes) << 7)
+            | (u16::from(options.omit_font_bytes) << 8)
     }
 
     /// 페이지가 그리는 그림들의 신원 키만 작은 JSON 으로 반환한다 (Task #3315).
@@ -2178,6 +2205,16 @@ impl DocumentCore {
         let (mime, bytes) =
             crate::renderer::image_resolver::emitted_image_bytes(&data, variant.bakes_watermark());
         Some((mime, bytes.into_owned()))
+    }
+
+    /// Portable font resource key로 현재 document generation의 exact source bytes를 받는다.
+    ///
+    /// key의 길이·BLAKE3 digest와 registry owner를 다시 대조한다. 등록되지 않았거나 오래된
+    /// key, 비정규 표기, 32 MiB 상한 초과는 모두 `None`으로 닫힌다.
+    pub fn get_source_font_bytes_native(&self, key: &str) -> Option<Vec<u8>> {
+        self.layout_engine
+            .exact_font_source_bytes_for_resource_key(key)
+            .map(|bytes| bytes.to_vec())
     }
 
     /// 본문(flow) 그림의 **배치 정보만** 작은 JSON 으로 반환한다 (Task #3315).
@@ -5802,6 +5839,129 @@ impl DocumentCore {
         }
     }
 
+    /// 프로덕션 조판(`TypesetEngine::format_paragraph`)이 부여하는 문단 높이.
+    /// dump-pages 가 fallback `MeasuredSection` 이 아니라 이 값을 말한다 (#4628).
+    pub fn production_paragraph_height(
+        &self,
+        section_idx: usize,
+        para_index: usize,
+        column_width_px: Option<f64>,
+    ) -> Option<f64> {
+        let col_w =
+            column_width_px.or_else(|| self.dump_paragraph_column_width(section_idx, para_index));
+        self.dump_production_paragraph_height(section_idx, para_index, col_w)
+            .map(|h| h.total)
+    }
+
+    /// HeightMeasurer fallback `total_height`. 프로덕션 페이지네이션은 읽지 않는다 (#4628).
+    pub fn fallback_measured_paragraph_total_height(
+        &self,
+        section_idx: usize,
+        para_index: usize,
+    ) -> Option<f64> {
+        self.measured_sections
+            .get(section_idx)?
+            .get_paragraph_height(para_index)
+    }
+
+    fn dump_section_typesetter(&self, sec_idx: usize) -> TypesetEngine {
+        let typesetter = TypesetEngine::new(self.dpi);
+        typesetter.apply_section_format_context(
+            self.section_render_paragraphs(sec_idx),
+            &self.styles,
+            self.effective_layout_profile(),
+        );
+        typesetter
+    }
+
+    fn dump_paragraph_column_width(&self, sec_idx: usize, para_index: usize) -> Option<f64> {
+        use crate::renderer::pagination::PageItem;
+        let pr = self.pagination.get(sec_idx)?;
+        for page in &pr.pages {
+            for cc in &page.column_contents {
+                let hit = cc.items.iter().any(|item| {
+                    matches!(item, PageItem::FullParagraph { para_index: pi } if *pi == para_index)
+                });
+                if hit {
+                    return Self::dump_column_width_px(page, cc);
+                }
+            }
+        }
+        pr.pages
+            .first()?
+            .layout
+            .column_areas
+            .first()
+            .map(|area| area.width)
+    }
+
+    fn dump_production_paragraph_height(
+        &self,
+        sec_idx: usize,
+        para_index: usize,
+        column_width_px: Option<f64>,
+    ) -> Option<crate::renderer::typeset::DumpFormattedParagraphHeight> {
+        let typesetter = self.dump_section_typesetter(sec_idx);
+        let body_len = self.section_render_paragraphs(sec_idx).len();
+        let pr = self.pagination.get(sec_idx)?;
+        let paragraphs: std::borrow::Cow<'_, [Paragraph]> = if pr.endnote_paragraphs.is_empty() {
+            std::borrow::Cow::Borrowed(self.section_render_paragraphs(sec_idx))
+        } else {
+            std::borrow::Cow::Owned(
+                self.section_render_paragraphs(sec_idx)
+                    .iter()
+                    .chain(pr.endnote_paragraphs.iter())
+                    .cloned()
+                    .collect(),
+            )
+        };
+        self.dump_production_paragraph_height_with(
+            &typesetter,
+            sec_idx,
+            para_index,
+            body_len,
+            paragraphs.as_ref(),
+            column_width_px,
+        )
+    }
+
+    fn dump_production_paragraph_height_with(
+        &self,
+        typesetter: &crate::renderer::typeset::TypesetEngine,
+        sec_idx: usize,
+        para_index: usize,
+        body_len: usize,
+        paragraphs: &[Paragraph],
+        column_width_px: Option<f64>,
+    ) -> Option<crate::renderer::typeset::DumpFormattedParagraphHeight> {
+        let para = paragraphs.get(para_index)?;
+        let composed = if para_index < body_len {
+            self.section_render_composed(sec_idx).get(para_index)
+        } else {
+            None
+        };
+        Some(typesetter.dump_formatted_paragraph_height(
+            para,
+            composed,
+            &self.styles,
+            column_width_px,
+            para_index >= body_len,
+        ))
+    }
+
+    fn dump_column_width_px(
+        page: &crate::renderer::pagination::PageContent,
+        cc: &crate::renderer::pagination::ColumnContent,
+    ) -> Option<f64> {
+        cc.zone_layout
+            .as_ref()
+            .unwrap_or(&page.layout)
+            .column_areas
+            .get(cc.column_index as usize)
+            .or(page.layout.column_areas.first())
+            .map(|area| area.width)
+    }
+
     /// [#3697] 페이지네이션 결과를 기계 계약 JSON 으로 덤프 (#3608 1-C).
     ///
     /// 텍스트 덤프(`dump_page_items`)와 같은 순회·같은 구역 전처리
@@ -5819,7 +5979,7 @@ impl DocumentCore {
             let ctx = self.page_dump_section_ctx(sec_idx, pr, global_page);
             let paragraphs: &[Paragraph] = &ctx.paragraphs;
             let body_len = ctx.body_len;
-            let measured = self.measured_sections.get(sec_idx);
+            let typesetter = self.dump_section_typesetter(sec_idx);
 
             // 미주 항목(pi >= body_len)의 원본 위치 — 텍스트 덤프의 `src=...` 와 동일.
             let endnote_source_json = |para_index: usize| -> serde_json::Value {
@@ -5855,19 +6015,22 @@ impl DocumentCore {
                     for item in &cc.items {
                         let v = match item {
                             PageItem::FullParagraph { para_index } => {
-                                let height = measured
-                                    .and_then(|m| m.get_measured_paragraph(*para_index))
+                                let col_w = Self::dump_column_width_px(page, cc);
+                                let height = self
+                                    .dump_production_paragraph_height_with(
+                                        &typesetter,
+                                        sec_idx,
+                                        *para_index,
+                                        body_len,
+                                        paragraphs,
+                                        col_w,
+                                    )
                                     .map(|mp| {
-                                        let lh_sum: f64 = mp.line_heights.iter().sum();
-                                        let ls_sum: f64 = mp.line_spacings.iter().sum();
                                         serde_json::json!({
-                                            "total": mp.spacing_before
-                                                + lh_sum
-                                                + ls_sum
-                                                + mp.spacing_after,
+                                            "total": mp.total,
                                             "spacingBefore": mp.spacing_before,
-                                            "lineHeightSum": lh_sum,
-                                            "lineSpacingSum": ls_sum,
+                                            "lineHeightSum": mp.line_height_sum,
+                                            "lineSpacingSum": mp.line_spacing_sum,
                                             "spacingAfter": mp.spacing_after,
                                         })
                                     });
@@ -6077,7 +6240,7 @@ impl DocumentCore {
             let paragraphs: &[Paragraph] = &ctx.paragraphs;
             let body_len = ctx.body_len;
             let extra_by_page = &ctx.extra_by_page;
-            let measured = self.measured_sections.get(sec_idx);
+            let typesetter = self.dump_section_typesetter(sec_idx);
 
             for (local_idx, page) in pr.pages.iter().enumerate() {
                 if let Some(pf) = page_filter {
@@ -6163,22 +6326,26 @@ impl DocumentCore {
                                         }
                                     })
                                     .unwrap_or_default();
-                                let height = measured
-                                    .and_then(|m| m.get_measured_paragraph(*para_index))
+                                let col_w = Self::dump_column_width_px(page, cc);
+                                let height = self
+                                    .dump_production_paragraph_height_with(
+                                        &typesetter,
+                                        sec_idx,
+                                        *para_index,
+                                        body_len,
+                                        paragraphs,
+                                        col_w,
+                                    )
                                     .map(|mp| {
-                                        let sb = mp.spacing_before;
-                                        let sa = mp.spacing_after;
-                                        let lh_sum: f64 = mp.line_heights.iter().sum();
-                                        let ls_sum: f64 = mp.line_spacings.iter().sum();
-                                        let lines = lh_sum + ls_sum;
+                                        let lines = mp.line_height_sum + mp.line_spacing_sum;
                                         format!(
                                             "h={:.1} (sb={:.1} lines={:.1} lh={:.1} ls={:.1} sa={:.1})",
-                                            sb + lines + sa,
-                                            sb,
+                                            mp.total,
+                                            mp.spacing_before,
                                             lines,
-                                            lh_sum,
-                                            ls_sum,
-                                            sa
+                                            mp.line_height_sum,
+                                            mp.line_spacing_sum,
+                                            mp.spacing_after,
                                         )
                                     })
                                     .unwrap_or_default();
@@ -6435,6 +6602,26 @@ impl DocumentCore {
         for i in from..json_cache.len() {
             json_cache[i].clear();
         }
+        let mut layer_cache = self.page_layer_tree_cache.borrow_mut();
+        for i in from..layer_cache.len() {
+            layer_cache[i].clear();
+        }
+    }
+
+    /// 한 페이지의 렌더 트리와 그 파생 표현을 함께 무효화한다.
+    pub(crate) fn invalidate_page_tree_cache_page(&self, page_num: u32) {
+        let idx = page_num as usize;
+        if let Some(slot) = self.page_tree_cache.borrow_mut().get_mut(idx) {
+            *slot = None;
+        }
+        // 대표 HF tree도 페이지 숨김 상태를 포함하므로 함께 무효화한다 (#6452).
+        self.header_footer_preview_tree_cache.borrow_mut().take();
+        if let Some(variants) = self.layer_tree_json_cache.borrow_mut().get_mut(idx) {
+            variants.clear();
+        }
+        if let Some(variants) = self.page_layer_tree_cache.borrow_mut().get_mut(idx) {
+            variants.clear();
+        }
     }
 
     /// [#3137 Stage 4] same-line인 셀 문단 꼬리 편집을 캐시된 TextLine에 반영한다.
@@ -6685,6 +6872,13 @@ impl DocumentCore {
         {
             variants.clear();
         }
+        if let Some(variants) = self
+            .page_layer_tree_cache
+            .borrow_mut()
+            .get_mut(template.page_index)
+        {
+            variants.clear();
+        }
         self.header_footer_preview_tree_cache.borrow_mut().take();
         Some(FocusedPageTreePatch {
             page_index: template.page_index as u32,
@@ -6702,6 +6896,7 @@ impl DocumentCore {
         self.page_tree_cache.borrow_mut().clear();
         self.header_footer_preview_tree_cache.borrow_mut().take();
         self.layer_tree_json_cache.borrow_mut().clear();
+        self.page_layer_tree_cache.borrow_mut().clear();
         // [Task #1949] IR 이 바뀌는 재조판 경계에서 셀 단위 레이아웃 캐시(포인터 키)도
         // 함께 비워 다른 IR 의 셀 포인터 재사용으로 인한 오재사용을 방지한다.
         self.layout_engine.clear_layout_caches();

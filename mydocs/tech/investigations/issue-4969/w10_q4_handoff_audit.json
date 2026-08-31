@@ -1,0 +1,96 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q4-vertical-handoff-audit",
+  "issue": 4969,
+  "stage": "W10-Q4-handoff",
+  "date": "2026-08-30",
+  "head": "4e0a3822c3e05c2df8b7c52740b3a0c79487053a",
+  "upstreamDevel": "a71ebf2141ae3bd1ca3b5d3ea438bbe3454edaf9",
+  "ahead": 34,
+  "behind": 0,
+  "status": "revised-plan-required",
+  "productMutation": false,
+  "sources": [
+    {
+      "path": "ttfs/opensource/NotoSansKR-Regular.ttf",
+      "bytes": 2519996,
+      "sha256": "6e06a7fe5d696ca719894a23f36bb2b1be8c816a5937cd4ad0f23ca67780dd74",
+      "tables": ["GPOS", "GSUB", "vhea", "vmtx"],
+      "hasVorg": false,
+      "verticalReady": true
+    },
+    {
+      "path": "ttfs/opensource/SourceHanSerifK-OldHangul-subset.otf",
+      "bytes": 456688,
+      "sha256": "2f86ef9a52acb6d1dad9d915843239123b635d97edd88fd0573a88ffcb4e16f1",
+      "tables": ["CFF ", "GPOS", "GSUB", "VORG", "vhea", "vmtx"],
+      "hasVorg": true,
+      "verticalReady": true
+    },
+    {
+      "path": "ttfs/redistributable/happiness-sans/HappinessSansVF.ttf",
+      "bytes": 1503064,
+      "sha256": "3bbd254dcc5780f7524f9d07af4aa981ba5e3e84cf32d7d4e04301b3943e8694",
+      "hasVerticalMetrics": false,
+      "requiredDisposition": "verticalMetricsUnavailable"
+    }
+  ],
+  "existingCapability": {
+    "topToBottomDirection": true,
+    "verticalRlAndLrWritingModes": true,
+    "directionWritingModeValidation": true,
+    "verticalTableFeatureDetection": true,
+    "vorgCapabilityDetection": true,
+    "rustybuzzVerticalPositionsPreserved": true,
+    "exactVerticalOutputOracle": false,
+    "productVerticalShapingCaller": false
+  },
+  "semanticAudit": {
+    "hwp5CellRawValues": [0, 1, 2],
+    "hwp5Meaning": {"1": "latin-sideways", "2": "latin-upright"},
+    "hwpxCellParsedValues": [0, 1],
+    "hwpxTextBoxValues": ["HORIZONTAL", "VERTICAL", "VERTICALALL"],
+    "hwpxTextBoxRoundTripDistinctionPreserved": true,
+    "hwpxTextBoxLayoutDistinctionPreserved": false,
+    "sectionAndMasterPageRequireSeparateIntent": true,
+    "rawU8MayDirectlySelectOpenTypeMode": false
+  },
+  "legacyProductPath": {
+    "fontSizeAdvanceHeuristic": true,
+    "unicodeVerticalFormSubstitution": true,
+    "manualNinetyDegreeRotation": true,
+    "exactVmtxPositioning": false,
+    "horizontalLowererRejectsVerticalPositioning": true
+  },
+  "publicFixtures": [
+    {
+      "path": "samples/table-004.hwp",
+      "role": "hwp5-text-direction-2-semantic-and-legacy-control"
+    },
+    {
+      "path": "samples/issue6029/3200477_icao_procedure.hwpx",
+      "verticalCellCount": 3,
+      "role": "character-preservation-and-single-column-legacy-control",
+      "exactVerticalOracle": false
+    },
+    {
+      "path": "samples/hwpx/tbox-v-flow-01.hwpx",
+      "pairedHwp": "samples/hwpx/hancom-hwp/tbox-v-flow-01.hwp",
+      "pairedPdf": "pdf/hwpx/tbox-v-flow-01-2022.pdf",
+      "role": "verticalall-semantic-adjudication"
+    }
+  ],
+  "requiredOrder": [
+    "Q4-A-exact-vertical-output-oracle-contract",
+    "Q4-B-typed-surface-intent",
+    "Q4-C-dormant-vertical-layout-transaction",
+    "Q4-D-one-surface-bounded-atomic-activation",
+    "Q4-E-extension-and-editor-coordinate-classification",
+    "Q4-F-Q5-handoff-checkpoint"
+  ],
+  "hyperVRequiredNow": false,
+  "hyperVConditionalReason": "public-schema-paired-hwp-hwpx-pdf-cannot-adjudicate-vertical-versus-verticalall",
+  "privateCorpusUsed": false,
+  "githubMutation": false,
+  "next": "maintainer-approval-of-handoff-plan-checkpoint-commit"
+}

@@ -85,3 +85,18 @@ test("fails closed when a squash merge has no unique associated PR", () => {
   assert.equal(result.reuse, false);
   assert.equal(result.reason, "merge-commit-must-map-to-one-merged-same-repository-pr");
 });
+
+test("does not apply two-parent merge-ref evidence to a stale squash merge", () => {
+  const result = evaluateTrustedPostMergeReuse(input({
+    mergeBaseSha: "6".repeat(40),
+    mergeTreeEvidenceByRunId: {
+      123: {
+        sha: "7".repeat(40),
+        parents: [base, head],
+        treeSha: tree,
+      },
+    },
+  }));
+  assert.equal(result.reuse, false);
+  assert.equal(result.reason, "pr-merge-tree-evidence-unavailable");
+});

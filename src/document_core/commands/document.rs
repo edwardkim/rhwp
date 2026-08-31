@@ -16,6 +16,7 @@ use crate::renderer::layout::LayoutEngine;
 use crate::renderer::page_layout::PageLayoutInfo;
 use crate::renderer::style_resolver::{resolve_styles_for_document, ResolvedStyleSet};
 use crate::renderer::{px_to_hwpunit, DEFAULT_DPI};
+use serde::Deserialize;
 use std::cell::RefCell;
 use std::collections::HashMap;
 
@@ -39,6 +40,71 @@ pub struct HwpExportVerification {
 
 type PageBorderFillExtras = Vec<crate::model::page::PageBorderFill>;
 type HwpPageBorderFillOverlay = Vec<(PageBorderFillExtras, Vec<Vec<Option<PageBorderFillExtras>>>)>;
+
+const MAX_EXACT_FONT_INSTANCE_OPTIONS_BYTES: usize = 16 * 1024;
+
+#[derive(Debug, Clone, Copy, Deserialize)]
+enum ExactFontInstanceMode {
+    #[serde(rename = "boundedHorizontalLtrV1")]
+    BoundedHorizontalLtrV1,
+}
+
+impl ExactFontInstanceMode {
+    fn as_str(self) -> &'static str {
+        match self {
+            Self::BoundedHorizontalLtrV1 => "boundedHorizontalLtrV1",
+        }
+    }
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct ExactFontInstanceAxisOptions {
+    tag: String,
+    value: f32,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct SetExactFontInstanceOptions {
+    char_shape_id: u32,
+    language_index: usize,
+    mode: ExactFontInstanceMode,
+    axes: Vec<ExactFontInstanceAxisOptions>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+struct ClearExactFontInstanceOptions {
+    char_shape_id: u32,
+    language_index: usize,
+    mode: ExactFontInstanceMode,
+}
+
+fn parse_exact_font_instance_options<T>(options_json: &str, command: &str) -> Result<T, HwpError>
+where
+    T: serde::de::DeserializeOwned,
+{
+    if options_json.len() > MAX_EXACT_FONT_INSTANCE_OPTIONS_BYTES {
+        return Err(HwpError::RenderError(format!(
+            "{command} options exceed {MAX_EXACT_FONT_INSTANCE_OPTIONS_BYTES} bytes"
+        )));
+    }
+    serde_json::from_str(options_json)
+        .map_err(|error| HwpError::RenderError(format!("{command} options: {error}")))
+}
+
+fn validate_exact_font_instance_language_index(
+    language_index: usize,
+    command: &str,
+) -> Result<(), HwpError> {
+    if language_index >= 7 {
+        return Err(HwpError::RenderError(format!(
+            "{command} languageIndex must be in 0..=6"
+        )));
+    }
+    Ok(())
+}
 
 impl DocumentCore {
     /// [Task #741 후속] 외부 file path 그림 영역 의 binary 영역 영역 base_dir 영역 영역 자동 load.
@@ -189,6 +255,7 @@ impl DocumentCore {
             page_tree_cache: RefCell::new(Vec::new()),
             header_footer_preview_tree_cache: RefCell::new(None),
             layer_tree_json_cache: RefCell::new(Vec::new()),
+            page_layer_tree_cache: RefCell::new(Vec::new()),
             bin_data_epoch: 0,
             batch_mode: false,
             event_log: Vec::new(),
@@ -449,7 +516,15 @@ impl DocumentCore {
                             para.line_segs.iter().any(|s| s.line_height >= max_tac_h);
                         if !already_covered {
                             if let Some(seg) = para.line_segs.first_mut() {
-                                if seg.line_height < max_tac_h {
+                                // 주석 계약: linesegarray 가 없어 기본 lh=100 단일
+                                // seg 만 있는 경우에만 확대한다. HWP3 빈 셀 문단은
+                                // 저장 vertsize=1000 을 갖는데 (#5184
+                                // hwp3-empty-cell), 여기까지 확대하면 HWPX 재파싱
+                                // IR 이 표 높이(23476/29096)로 바뀐다.
+                                if seg.line_height > 0
+                                    && seg.line_height <= 100
+                                    && seg.line_height < max_tac_h
+                                {
                                     seg.line_height = max_tac_h;
                                     body_line_seg_changed = true;
                                 }
@@ -1377,8 +1452,7 @@ impl DocumentCore {
         self.measured_sections = Vec::new();
         self.dirty_paragraphs = Vec::new();
         self.para_column_map = Vec::new();
-        self.page_tree_cache.borrow_mut().clear();
-        self.header_footer_preview_tree_cache.borrow_mut().take();
+        self.invalidate_page_tree_cache();
         self.snapshot_store.clear();
         self.next_snapshot_id = 0;
         self.source_format = crate::parser::FileFormat::Hwp;
@@ -2025,6 +2099,161 @@ impl DocumentCore {
             }
         })
         .to_string())
+    }
+
+    /// Register or update one explicit variable-font instance request.
+    ///
+    /// The strict JSON DTO is the native authority consumed by the later WASM
+    /// adapter. It accepts no font bytes and mutates the request snapshot only
+    /// after the exact source and every variation axis have been validated.
+    pub fn set_exact_font_instance_native(
+        &mut self,
+        options_json: &str,
+    ) -> Result<String, HwpError> {
+        use crate::renderer::kerning::ExactFontSlot;
+        use crate::renderer::shaping::ShapingVariation;
+        use crate::renderer::shaping_context::HorizontalShapingInstanceRequestRegistration;
+
+        let options: SetExactFontInstanceOptions =
+            parse_exact_font_instance_options(options_json, "set exact font instance")?;
+        validate_exact_font_instance_language_index(
+            options.language_index,
+            "set exact font instance",
+        )?;
+        let slot = ExactFontSlot::new(options.char_shape_id, options.language_index);
+        let variations = options
+            .axes
+            .into_iter()
+            .map(|axis| ShapingVariation {
+                tag: axis.tag,
+                value: axis.value,
+            })
+            .collect::<Vec<_>>();
+        let registration = self.set_horizontal_shaping_instance_request_dormant(
+            slot.char_shape_id,
+            slot.language_index,
+            &variations,
+        )?;
+        let canonical_axes = self
+            .layout_engine
+            .horizontal_shaping_instance_request(slot)
+            .ok_or_else(|| {
+                HwpError::RenderError(
+                    "set exact font instance lost its canonical request".to_string(),
+                )
+            })?
+            .iter()
+            .map(|axis| serde_json::json!({ "tag": axis.tag, "value": axis.value }))
+            .collect::<Vec<_>>();
+        let status = match registration {
+            HorizontalShapingInstanceRequestRegistration::Registered => "registered",
+            HorizontalShapingInstanceRequestRegistration::Updated => "updated",
+            HorizontalShapingInstanceRequestRegistration::AlreadyRegistered => "already-registered",
+        };
+        let source_generation = self.layout_engine.exact_font_source_registry_counts().3;
+        let (request_count, request_generation) = self
+            .layout_engine
+            .horizontal_shaping_instance_request_counts();
+        Ok(serde_json::json!({
+            "ok": true,
+            "status": status,
+            "mode": options.mode.as_str(),
+            "slot": slot,
+            "axes": canonical_axes,
+            "sourceGeneration": source_generation,
+            "requestGeneration": request_generation,
+            "requestCount": request_count,
+        })
+        .to_string())
+    }
+
+    /// Remove one exact-slot instance request without clearing other slots.
+    /// Missing requests are a no-op and do not invalidate layout or advance
+    /// request generation.
+    pub fn clear_exact_font_instance_native(
+        &mut self,
+        options_json: &str,
+    ) -> Result<String, HwpError> {
+        use crate::renderer::kerning::ExactFontSlot;
+
+        let options: ClearExactFontInstanceOptions =
+            parse_exact_font_instance_options(options_json, "clear exact font instance")?;
+        validate_exact_font_instance_language_index(
+            options.language_index,
+            "clear exact font instance",
+        )?;
+        let slot = ExactFontSlot::new(options.char_shape_id, options.language_index);
+        let removed = self
+            .layout_engine
+            .clear_horizontal_shaping_instance_request(slot);
+        if removed {
+            self.invalidate_horizontal_shaping_instance_change();
+        }
+        let source_generation = self.layout_engine.exact_font_source_registry_counts().3;
+        let (request_count, request_generation) = self
+            .layout_engine
+            .horizontal_shaping_instance_request_counts();
+        Ok(serde_json::json!({
+            "ok": true,
+            "status": if removed { "cleared" } else { "already-cleared" },
+            "mode": options.mode.as_str(),
+            "slot": slot,
+            "axes": [],
+            "sourceGeneration": source_generation,
+            "requestGeneration": request_generation,
+            "requestCount": request_count,
+        })
+        .to_string())
+    }
+
+    /// Q3-D internal CQRS command for one explicit variable-font instance.
+    ///
+    /// This method deliberately has no native/WASM adapter yet. It validates
+    /// against the exact registered slot, advances the request generation, and
+    /// invalidates every derived layout cache atomically. The existing
+    /// composer still uses the default transaction, so product publication
+    /// remains dormant until Q3-E activation is separately approved.
+    #[allow(dead_code)]
+    pub(crate) fn set_horizontal_shaping_instance_request_dormant(
+        &mut self,
+        char_shape_id: u32,
+        language_index: usize,
+        variations: &[crate::renderer::shaping::ShapingVariation],
+    ) -> Result<
+        crate::renderer::shaping_context::HorizontalShapingInstanceRequestRegistration,
+        HwpError,
+    > {
+        use crate::renderer::kerning::ExactFontSlot;
+        use crate::renderer::shaping_context::HorizontalShapingInstanceRequestRegistration;
+
+        let registration = self
+            .layout_engine
+            .set_horizontal_shaping_instance_request_dormant(
+                ExactFontSlot::new(char_shape_id, language_index),
+                variations,
+            )
+            .map_err(|reason| {
+                HwpError::RenderError(format!(
+                    "horizontal shaping instance request failed: {}",
+                    reason.as_str()
+                ))
+            })?;
+        if registration != HorizontalShapingInstanceRequestRegistration::AlreadyRegistered {
+            self.invalidate_horizontal_shaping_instance_change();
+        }
+        Ok(registration)
+    }
+
+    fn invalidate_horizontal_shaping_instance_change(&mut self) {
+        self.refresh_exact_font_measurement_contexts();
+        self.recompose_all_with_horizontal_shaping();
+        self.mark_all_sections_dirty();
+        self.measured_tables.clear();
+        self.measured_sections.clear();
+        self.dirty_paragraphs.clear();
+        self.para_column_map.clear();
+        self.invalidate_page_tree_cache();
+        self.paginate_if_needed();
     }
 
     /// Batch 모드를 시작한다. 이후 Command 호출 시 paginate()를 건너뛴다.

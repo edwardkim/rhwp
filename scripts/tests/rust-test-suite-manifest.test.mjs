@@ -154,6 +154,24 @@ test('Native Skia 함수 게이트 case는 generated suite에서 feature별로 �
   );
 });
 
+test('#6308 전역 카운터·벽시계 테스트는 generated suite가 아니라 독립 target이다', () => {
+  for (const caseName of [
+    'issue_2833_hml_adapter_row_sizes',
+    'issue_4126_cursor_rect_empty_para_pages',
+    'issue_4128_cell_cursor_page_narrowing',
+    'issue_4179_cursor_rect_text_host_para_pages',
+  ]) {
+    const plan = resolveCasePlan(caseName);
+    assert.equal(plan.grouped, false, caseName);
+    assert.equal(plan.target, caseName, caseName);
+    const exception = loadManifest().exceptions.find(
+      (entry) => entry.target === caseName,
+    );
+    assert.equal(exception?.manual, true, caseName);
+    assert.deepEqual(exception?.reasons, ['manual_isolation'], caseName);
+  }
+});
+
 test('CI slow archive case는 독립 target과 nextest 우선순위를 함께 유지한다', () => {
   const manifest = loadManifest();
   assert.deepEqual(manifest.nextestPriorities, [

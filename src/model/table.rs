@@ -257,6 +257,53 @@ impl Cell {
         false
     }
 
+    /// [#6442] 셀 안 여백으로는 설명되지 않는 절대 크기 (HWPUNIT). 2cm —
+    /// 한글이 실제로 내는 안 여백(대개 141~1417HU, #2195 의 레거시 상한도
+    /// 2500HU)을 두 배 이상 웃돈다. 실제로 걸린 쓰레기값은 23812~29693HU 다.
+    const ABSURD_INNER_MARGIN_HU: i32 = 5669;
+
+    /// [#6442] **측정용** 저장 상하 안 여백 (HWPUNIT) — 쓰이지 않는 필드에 담긴
+    /// 쓰레기값만 걸러 낸다.
+    ///
+    /// `apply_inner_margin=false` 셀의 `padding` 필드는 한글이 렌더에 **쓰지 않는**
+    /// 값이라 파일에 무엇이 들어 있어도 무방하고, 실제로 좌표성 쓰레기가 들어 있는
+    /// 문서가 있다.
+    ///
+    /// | 문서 | `pad.top` | `pad.bottom` | 셀 선언 높이 |
+    /// |---|---|---|---|
+    /// | 대산항 출입증(#6442) | 29693 | 10433 | **683** |
+    /// | 59043 규제분석(#1921 표본) | 23812 | 10930 | **282** |
+    ///
+    /// 이 원시값을 그대로 더하면 행 하나가 500px 씩 부푼다.
+    ///
+    /// **aim=false 저장값을 전부 버리면 안 된다** — rhwp 조판은 그 값에 의존하는
+    /// 경로가 여럿이라(중첩 비글자표 #2195 등) 전부 버리면 10건이 회귀한다.
+    /// 두 조건을 **모두** 요구해 걸러지는 범위를 좁혔다.
+    ///
+    /// 1. `total > height` — **엄격 초과**. `>=` 로 두면 `total = height = 282`
+    ///    (141+141 안 여백에 내용 높이 0) 인 정상 셀까지 잡는다(#3637 2587개 셀).
+    /// 2. `total >= ABSURD_INNER_MARGIN_HU` — 안 여백으로는 설명이 안 되는 절대 크기.
+    pub fn stored_vertical_padding_hu(&self) -> i32 {
+        let total = (self.padding.top as i32).saturating_add(self.padding.bottom as i32);
+        if self.apply_inner_margin || total <= 0 {
+            return total;
+        }
+        // 선언 높이가 없으면(0 / 미지 센티널) 판정 근거가 없으니 종전대로 둔다.
+        if self.height == 0 || self.height >= 0x8000_0000 {
+            return total;
+        }
+        if total > self.height as i32 && total >= Self::ABSURD_INNER_MARGIN_HU {
+            if std::env::var("RHWP_6442_SCAN").is_ok() {
+                eprintln!(
+                    "[6442S] total={total} h={} pads=({},{})",
+                    self.height, self.padding.top, self.padding.bottom
+                );
+            }
+            return 0;
+        }
+        total
+    }
+
     /// [Task #501 / #5751] 한컴 방어 가드의 발동 기준 — 셀 상하 안 여백 합이 셀
     /// 선언 높이 **자체**를 넘으면 그 저장값을 비정상으로 본다
     /// (mel-001 p2 셀[21]: pad 3400 HU vs h 1280 HU).
@@ -297,7 +344,11 @@ impl Cell {
         let pick = |c: i16, t: i16, unspec_axis: bool| -> i16 {
             // [#1785 위생 한도 유지] 10mm급(>=2500HU) 보존 pad 는 한컴이 렌더에
             // 쓰지 않는다(36381023 render-diff) — 전축0 미지정 규칙에서도 제외.
-            if (unspec_axis && c < 2500) || self.use_cell_padding_axis(c, t, false) {
+            // [#6358] 음수는 깨진 저장값(37787 셀 pad=-19215). `c < 2500` 만 보면
+            // 통과해 안쪽 높이가 부풀어 Center 정렬이 셀 밖 +130px 로 나간다.
+            // aim=true 경로(`use_cell_padding_axis`: `cell_padding >= 0`)와 같이
+            // 결측 센티널로 보고 표 기본으로 폴백한다.
+            if (unspec_axis && c >= 0 && c < 2500) || self.use_cell_padding_axis(c, t, false) {
                 c
             } else {
                 t

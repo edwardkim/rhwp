@@ -3,7 +3,7 @@
   "minimumNextestCases": 6559,
   "sharding": {
     "suitePrefix": "regression_suite_",
-    "suiteCount": 32,
+    "suiteCount": 28,
     "testAttributeWeight": 4096,
     "maximumIntegrationTargets": 48
   },
@@ -102,6 +102,14 @@
       ]
     },
     {
+      "target": "issue_2833_hml_adapter_row_sizes",
+      "path": "tests/issue_2833_hml_adapter_row_sizes.rs",
+      "manual": true,
+      "reasons": [
+        "manual_isolation"
+      ]
+    },
+    {
       "target": "issue_4055_b1_chart_edit_probe",
       "path": "tests/issue_4055_b1_chart_edit_probe.rs",
       "manual": false,
@@ -135,6 +143,30 @@
       "reasons": [
         "path_attr",
         "root_mod"
+      ]
+    },
+    {
+      "target": "issue_4126_cursor_rect_empty_para_pages",
+      "path": "tests/issue_4126_cursor_rect_empty_para_pages.rs",
+      "manual": true,
+      "reasons": [
+        "manual_isolation"
+      ]
+    },
+    {
+      "target": "issue_4128_cell_cursor_page_narrowing",
+      "path": "tests/issue_4128_cell_cursor_page_narrowing.rs",
+      "manual": true,
+      "reasons": [
+        "manual_isolation"
+      ]
+    },
+    {
+      "target": "issue_4179_cursor_rect_text_host_para_pages",
+      "path": "tests/issue_4179_cursor_rect_text_host_para_pages.rs",
+      "manual": true,
+      "reasons": [
+        "manual_isolation"
       ]
     },
     {

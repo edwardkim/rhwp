@@ -33,3 +33,28 @@ test('모순되거나 불완전한 local result는 거부한다', () => {
   ));
   assert.throws(() => parseLocalBodyTextReplaceResult('{"ok":true}'));
 });
+
+test('stable local result의 focusedPagePatch 를 정규화한다', () => {
+  assert.deepEqual(parseLocalBodyTextReplaceResult(
+    '{"ok":true,"charOffset":4,"documentPaginationPending":true,"flowChanged":false,'
+    + '"focusedPagePatch":{"pageIndex":0,"x":10,"y":20,"width":30,"height":12}}',
+  ), {
+    ok: true,
+    charOffset: 4,
+    documentPaginationPending: true,
+    flowChanged: false,
+    focusedPagePatch: { pageIndex: 0, x: 10, y: 20, width: 30, height: 12 },
+  });
+});
+
+test('깨진 focusedPagePatch 는 무시하고 국소 조판 신호는 유지한다', () => {
+  assert.deepEqual(parseLocalBodyTextReplaceResult(
+    '{"ok":true,"charOffset":4,"documentPaginationPending":true,"flowChanged":false,'
+    + '"focusedPagePatch":{"pageIndex":0,"x":10,"y":20,"width":0,"height":12}}',
+  ), {
+    ok: true,
+    charOffset: 4,
+    documentPaginationPending: true,
+    flowChanged: false,
+  });
+});

@@ -48,6 +48,7 @@ import { DeferredPaginationRunner } from './deferred-pagination-runner';
 import { tableObjectClipboardTarget } from './table-object-clipboard-target';
 import { clearObjectEditingPage } from './object-selection-page';
 import { showInitialCaretAndPublishFocus } from './initial-caret-focus';
+import { CaretLayoutReveal } from './caret-layout-reveal';
 import { emitHeaderFooterModeChanged } from './header-footer-mode';
 import { CellBlockLetterImeGuard } from '@/command/contextual-shortcut';
 
@@ -377,6 +378,8 @@ export class InputHandler {
   private readonly deferredPaginationRunner: DeferredPaginationRunner;
   private rawTextMutationEffects = new TextMutationEffectAccumulator();
   private pendingFocusedPagePatch: DeferredFocusedPagePatch | null = null;
+  /** 쪽/단 나누기 뒤 CanvasView의 새 page offset이 준비되면 캐럿을 다시 드러낸다. */
+  private readonly caretLayoutReveal = new CaretLayoutReveal();
 
   // 표 경계선 리사이즈 드래그 상태
   private isResizeDragging = false;
@@ -680,6 +683,15 @@ export class InputHandler {
     eventBus.on('document-view-changed', () => {
       if (!this.active) return;
       requestAnimationFrame(() => this.updateCaret(true));
+    });
+
+    // 전체 mutation render는 renderer 선택 때문에 비동기다. 쪽/단 나누기 직후의 첫
+    // updateCaret은 아직 이전 VirtualScroll을 보므로, 새 쪽 배치가 준비된 이 시점에
+    // page-local rect와 DOM 위치를 다시 계산하고 한컴처럼 대상 쪽을 화면에 드러낸다.
+    eventBus.on('document-layout-refreshed', () => {
+      if (!this.caretLayoutReveal.consume() || !this.active) return;
+      this.cursor.updateRect();
+      this.updateCaret();
     });
 
     // HF 선택은 같은 정의를 쓰는 visible page마다 투영한다. ViewportManager가 scroll
@@ -2842,6 +2854,7 @@ export class InputHandler {
       // [Task #3416] 그 위에 "지우기 전 선택" 을 되살린다 — 커서 위치가 정해진 뒤라야
       // anchor 만 더해 범위가 완성된다. redo 쪽에는 두지 않는다(한컴도 redo 는 해제).
       this.restoreSelectionAfterUndo(this.history.peekRedoTop());
+      this.caretLayoutReveal.requestFor(this.history.peekRedoTop()?.type ?? '');
       this.afterEdit();
     }
   }
@@ -2861,6 +2874,7 @@ export class InputHandler {
       // HF 부분 서식은 redo 뒤에도 같은 논리 선택을 유지한다. 삭제·치환은 metadata가 없어
       // 해제된 상태로 남는다.
       this.restoreSelectionAfterRedo(this.history.peekUndoTop());
+      this.caretLayoutReveal.requestFor(this.history.peekUndoTop()?.type ?? '');
       this.afterEdit(!boundaryHandled);
     }
   }
@@ -3098,6 +3112,7 @@ export class InputHandler {
           this.cursor.moveTo(newPos);
           this.cursor.resetPreferredX();
         }
+        this.caretLayoutReveal.requestFor(desc.operationType);
         if (markPastedFieldEndOutside) {
           this.markCurrentFieldEndOutside();
         }
@@ -4148,6 +4163,9 @@ export class InputHandler {
   deactivate(): void {
     this.flushDeferredPaginationIfNeeded('before-deactivate', false);
     this.active = false;
+    // 문서 교체와 mutation renderer 선택이 경합해 layout 완료 이벤트가 생략돼도
+    // 이전 문서의 one-shot reveal 예약을 다음 문서로 넘기지 않는다.
+    this.caretLayoutReveal.clear();
     this.cancelDeferredPaginationFlush();
     this.deferredPaginationRunner.cancel();
     this.deferredPaginationPending = false;

@@ -71,7 +71,9 @@ fn main() {
                         }
                     }
                 }
-                if let Ok(json) = doc.get_page_layer_tree_with_profile(page, "screen", Some(true)) {
+                if let Ok(json) =
+                    doc.get_page_layer_tree_with_profile(page, "screen", Some(true), Some(false))
+                {
                     let needle = "\"type\":\"pageBackground\"";
                     let mut idx = 0;
                     while let Some(p) = json[idx..].find(needle) {
