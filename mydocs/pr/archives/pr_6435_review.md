@@ -32,7 +32,10 @@ author: kevin9327
 - 직접 검토한 asset은
   `mydocs/pr/assets/pr_6435_issue4318_p17_before_review.png`와
   `mydocs/pr/assets/pr_6435_issue4318_p17_review.png`다. 후자는 목표인 오른쪽 단 마지막 줄이 본문
-  frame 밖으로 나가지 않음을 보여 준다. `rsvg` proxy는 font raster 차이에 민감한 보조값이다.
+  frame 밖으로 나가지 않음을 보여 준다. 임시 output은 각각
+  `output/visual_sweep_kevin9327_20260831/base_pr6435_issue4318/base-pr6435-issue4318/review/review_017.png`와
+  `output/visual_sweep_kevin9327_20260831/pr6435_issue4318/pr6435-issue4318/review/review_017.png`다.
+  `rsvg` proxy는 font raster 차이에 민감한 보조값이다.
 
 ## 통합 검증과 판단
 

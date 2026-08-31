@@ -30,7 +30,8 @@ author: kevin9327
 - 통합 head의 `target/pr-review/debug/rhwp`와 `rsvg` rasterizer로 p1을 sweep했다. flagged=0,
   pixel match 91.91521%, visual-accuracy proxy 28.80661%다.
 - 직접 확인한 `review_001.png`에서 마지막 열의 긴 행은 표 우측 괘선 안에 남는다. 대표 asset은
-  `mydocs/pr/assets/pr_6423_issue6303_p1_review.png`이다.
+  `mydocs/pr/assets/pr_6423_issue6303_p1_review.png`이고, 임시 output은
+  `output/visual_sweep_kevin9327_20260831/pr6423_issue6303/pr6423-issue6303/review/review_001.png`다.
 - `rsvg`는 Studio webfont 경로가 아니므로 proxy는 glyph raster 차이에 민감한 보조값이며 사람의 판정을
   대체하지 않는다. 이 검토에서는 0.25px 경계 회귀 test와 실제 괘선 안쪽 배치를 함께 판단 근거로 썼다.
 

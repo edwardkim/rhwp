@@ -26,7 +26,9 @@ author: kevin9327
   12.56379%다. `exam_kor_odd_header_box_follows_stored_line_width`는 한/글 기준 x=924.0px 쪽으로
   이동했고 이전 rhwp x=926.1px보다 가까운지 직접 잠근다.
 - 대표 `mydocs/pr/assets/pr_6428_issue6353_p6_review.png`를 열어 머리말 우측 "홀수형" 박스가 두 기준에서
-  같은 머리 띠 위치에 존재함을 확인했다. proxy는 `rsvg`의 폰트 raster 차이에 민감한 보조값이다.
+  같은 머리 띠 위치에 존재함을 확인했다. 임시 output은
+  `output/visual_sweep_kevin9327_20260831/pr6428_issue6353/pr6428-issue6353/review/review_006.png`다.
+  proxy는 `rsvg`의 폰트 raster 차이에 민감한 보조값이다.
 
 ## 통합 검증과 판단
 
