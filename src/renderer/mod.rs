@@ -1435,6 +1435,17 @@ fn installed_render_font_aliases(font_family: &str) -> &'static [&'static str] {
         // `HY견명조`=H2MJRE.TTF(family `HYMyeongJo-Extra`).
         "한양견고딕" => &["HY견고딕", "HYGothic-Extra"],
         "한양견명조" => &["HY견명조", "HYMyeongJo-Extra"],
+        // 신명조도 같은 짝인데 이 arm 만 빠져 있었다. `svg.rs` 의 local()·embed 두 표는
+        // 이미 `한양신명조 → HY신명조 / HYSinMyeongJo-Medium / H2MJSM.TTF` 를 알고 있는데,
+        // 정작 체인을 만드는 여기가 몰라서 `'한양신명조','Batang',…` 로 바로 떨어졌다.
+        // 156573118 8쪽 실측: 그 쪽 텍스트 런 600개가 이 체인을 쓰고, `HY신명조`가 설치된
+        // 호스트에서도 Batang 으로 그려졌다(형제 `한양중고딕` 은 `'한양중고딕','HY중고딕',…`).
+        // 이름 순서가 중요하다. `H2MJSM.TTF` 의 name 테이블은 family(ko) `HY신명조`,
+        // family(en) `HYSinMyeongJo-Medium` 인데, headless Chrome 실측으로는 **둘 다
+        // 매칭되지 않고** 스타일 접미사를 뗀 `HYSinMyeongJo` 만 잡힌다(각각 serif 로
+        // 떨어지는 것을 통제 SVG 로 확인). 그래서 실제로 해석되는 이름을 앞에 둔다.
+        // 형제 항목과 다른 점이라 주의 — `HY견고딕`·`HYGothic-Extra` 는 둘 다 잡힌다.
+        "한양신명조" => &["HYSinMyeongJo", "HY신명조", "HYSinMyeongJo-Medium"],
         // #4739: 구형 정부상징 부처명 face가 없을 때 현재 공식 배포 face를 찾는다.
         // 동일 alias가 아니라 availability 기반 successor이므로 exact legacy 뒤에만 둔다.
         "정부상징 부처명_16040911" | "Government_16040911" => &[
@@ -2490,6 +2501,15 @@ mod tests {
             format!(
                 "'한양견명조','HY견명조','HYMyeongJo-Extra',{}",
                 generic_fallback("한양견명조")
+            )
+        );
+        // 신명조도 같은 짝이다. 이 arm 이 없으면 체인이 `'한양신명조','Batang',…` 로
+        // 떨어져 `HY신명조`(H2MJSM.TTF) 설치본을 건너뛴다 — 156573118 8쪽 텍스트 런 600개.
+        assert_eq!(
+            render_font_family_chain("한양신명조"),
+            format!(
+                "'한양신명조','HYSinMyeongJo','HY신명조','HYSinMyeongJo-Medium',{}",
+                generic_fallback("한양신명조")
             )
         );
 
