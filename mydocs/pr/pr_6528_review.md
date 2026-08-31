@@ -29,3 +29,10 @@
 ## 병합 조건
 
 - 원격 병합 또는 통합 PR 게시 직전에 원 PR head와 CI green 상태를 다시 확인한다.
+
+## Merge 후 contributor PR comment 계획
+
+- 대상: [#6528](https://github.com/edwardkim/rhwp/pull/6528)와 관련 issue #6181.
+- 선행 조건: 통합 PR의 merge SHA가 `upstream/devel`에 포함되고 p5 review asset이 실제 merge commit에 존재할 것.
+- 내용: 통합 PR·merge SHA, focused regression과 전체 nextest, Hancom 2020 p5 sweep의 flagged `0/1` 및 pixel match `87.88947%`, 사람 검토 결론, asset direct link를 남긴다.
+- issue가 OPEN이면 merge 반영과 검증 증적을 comment로 남긴 뒤 close 여부를 확인한다.

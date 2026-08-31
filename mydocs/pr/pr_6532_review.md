@@ -26,3 +26,10 @@
 ## 병합 조건
 
 - 원격 병합 또는 통합 PR 게시 직전에 원 PR head와 CI green 상태를 다시 확인한다.
+
+## Merge 후 contributor PR comment 계획
+
+- 대상: [#6532](https://github.com/edwardkim/rhwp/pull/6532)와 관련 issue #6263.
+- 선행 조건: 통합 PR의 merge SHA가 `upstream/devel`에 포함될 것.
+- 내용: 통합 PR·merge SHA, Studio contract `2 pass / 0 fail`, 전체 nextest, substitution 범위가 renderer paint output을 바꾸지 않는다는 검토 결론을 남긴다.
+- issue가 OPEN이면 merge 반영과 검증 증적을 comment로 남긴 뒤 close 여부를 확인한다.

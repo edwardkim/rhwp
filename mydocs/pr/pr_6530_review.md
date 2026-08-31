@@ -26,3 +26,10 @@
 - #6530 원 PR은 독립 merge 대상으로 쓰지 않는다.
 - `b0109a1f6`을 포함한 통합 브랜치를 PR로 게시할 경우에만 원 PR 내용을 승계한다.
 - 게시 직전에 원 head, 통합 head, CI를 모두 재확인한다.
+
+## Merge 후 contributor PR comment 계획
+
+- 대상: [#6530](https://github.com/edwardkim/rhwp/pull/6530)와 관련 issue #6171.
+- 선행 조건: 통합 PR의 merge SHA가 `upstream/devel`에 포함되고 공유 p3 review asset이 실제 merge commit에 존재할 것.
+- 내용: 원 PR은 충돌 상태여서 직접 merge하지 않았고, maintainer 보정 `b0109a1f6`으로 통합 PR에 승계했음을 명확히 적는다. fallback order regression, 전체 nextest, 공유 p3 visual sweep의 flagged `0/1`, asset direct link를 함께 남긴다.
+- issue가 OPEN이면 merge 반영과 보정 경위를 comment로 남긴 뒤 close 여부를 확인한다.
