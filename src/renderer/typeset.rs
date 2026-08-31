@@ -22683,7 +22683,24 @@ impl TypesetEngine {
                 // +482px vs 흐름 +143px) target_y 가 본문 끝이 아니다 — 동기화를
                 // 건너뛰고 흐름 좌표로 판정한다(한글 PDF 본문 끝 ~520px = 흐름
                 // 517.3px 실측 일치, stored 861.2px 는 허상. 한글 1쪽 vs +1 유령).
+                // [#6535] 이 블록 **자신**이 쪽-앵커면 그 host 문단의 저장 vpos 도 절대 위치
+                // 산물이다 — 위 `page_has_page_abs_top_table` 이 "같은 쪽의 **다른** 절대배치
+                // 표"에 대해 편 논리와 같은 것이고, 블록 자신에게 적용하지 않을 이유가 없다.
+                //
+                // 실측(36404612 pi=4, `vert=쪽(0)` 발신명의 틀): 흐름 542.80px 인데 저장
+                // vpos 49154 = 655.39px 로 **112.6px** 상향돼 배타 잔여 638.87 을 넘어(slack
+                // -16.52) 틀이 통째로 2쪽에 단독 배치됐다 — 본문 없는 빈 쪽이 생기고 한/글은
+                // 1쪽이다. 동기화를 건너뛰면 slack +96.07 로 같은 쪽에 흡수된다.
+                //
+                // `anchor_vpos <= 0` 인 경우는 위에서 이미 `prev_body_bottom_vpos`(직전 본문
+                // 문단의 저장 흐름 하단)로 복원한 **본문 좌표**라 이 예외 대상이 아니다.
+                let block_anchor_vpos_is_absolute = anchor_vpos > 0
+                    && matches!(
+                        table.common.vert_rel_to,
+                        crate::model::shape::VertRelTo::Page
+                    );
                 let sync_h = if !st.page_has_page_abs_top_table
+                    && !block_anchor_vpos_is_absolute
                     && target_y <= st.current_height + block_height
                 {
                     st.current_height.max(target_y)
