@@ -1875,6 +1875,11 @@ fn collect_shape_marker_labels(show_ctrl: bool, para: Option<&Paragraph>) -> Vec
     }
 }
 
+/// [#5677] 빈 문단의 저장 `column_start` 가 그 문단 자신의 `margin_left` 와 같다고 볼
+/// 허용치 (HWPUNIT, 2pt). 발행 시 기하 pitch(`snap_base_left`)가 몇 HWPUNIT 을 올릴 수
+/// 있어 정확 일치를 요구하지 않는다. 진짜 어울림 배제는 이보다 훨씬 크게 벌어진다.
+const EMPTY_LINE_OWN_MARGIN_TOLERANCE_HU: i32 = 200;
+
 impl LayoutEngine {
     /// [#5729] 저장 줄 밴드가 정확히 `om_top + 선언높이 + om_bottom` 인 TAC 표는
     /// 한글이 표 상단을 **줄 상단 + om_top** 에 앉힌다 (156505870 4표 실측:
@@ -4070,11 +4075,26 @@ impl LayoutEngine {
                     .and_then(|p| p.line_segs.get(line_idx))
                     .map(|seg| seg.is_in_wrap_zone(col_area_w_hu))
                     .unwrap_or(false);
+            // [#5677] `column_start` 가 **문단 자신의 `margin_left`** 로 설명되면 그
+            // 좁음의 출처는 외부 기하가 아니라 문단 여백이다. 그런 줄에 저장 기하를
+            // 쓰면 `effective_col_x = col_area.x + cs` 로 여백을 한 번 먹고, 아래
+            // `hwp5_stored_line_start_eligible` 이 `!uses_stored_segment_geometry` 를
+            // 요구해 거짓이 되므로 `margin_left` 를 **또** 더한다.
+            //
+            // hwp3-sample 문단 53(빈 본문, `margin_left=18.56px`, 저장 `cs=1392HU`)이
+            // 그 형상으로, 줄 좌단이 단 좌단 + **37.12px**(=2×18.56)에 놓였다.
+            // `ParagraphBox::body_for_style` 의 원점 차단이 `head_type` 을 키로 잡아
+            // `HeadType::None` 인 본문 문단은 빠져 있었는데, 그 주석이 스스로 적어
+            // 두었듯 위험은 목록이 아니라 **비어 있음**에 있다.
+            let own_margin_hu = crate::renderer::px_to_hwpunit(margin_left, self.dpi);
+            let cs_is_own_margin = (comp_line.column_start - own_margin_hu).abs()
+                <= EMPTY_LINE_OWN_MARGIN_TOLERANCE_HU;
             let empty_stored_wrap_line = cell_ctx.is_none()
                 && para
                     .map(|p| p.text.is_empty() && p.controls.is_empty())
                     .unwrap_or(false)
                 && comp_line.column_start > 0
+                && !cs_is_own_margin
                 && comp_line.segment_width > 0
                 && comp_line.segment_width < col_area_w_hu;
             // [#5818] 어울림(Square 계열) float 그림이 있는 **셀** 의 줄도 저장
