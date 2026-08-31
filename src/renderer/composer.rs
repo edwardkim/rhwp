@@ -892,7 +892,8 @@ fn compose_lines(para: &Paragraph) -> Vec<ComposedLine> {
             let post_text_clean = post_text.trim_end_matches('\n').to_string();
             // [#6300] 강제 줄나눔이 이 저장 줄의 끝이고, 다음 LINE_SEG 가 인라인
             // 개체일 때만 경계를 유지한다. 같은 저장 줄 안의 `\n`+표(Task #20)는
-            // 기존처럼 `\n` 앞 텍스트를 이전 줄에 합친다.
+            // 기존처럼 `\n` 앞 텍스트를 이전 줄에 합친다. 이 가드 밖의 `\n` 은
+            // off-canvas·overflow-cell 래칫을 키우지 않는다.
             let keep_stored_boundary = post_text_clean.is_empty()
                 && line_idx + 1 < line_seg_count
                 && tac_inline_object_starts_at(para, text_end)
