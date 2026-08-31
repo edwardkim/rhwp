@@ -124,6 +124,52 @@ fn collect_text_ops<'a>(node: &'a LayerNode, ops: &mut Vec<&'a PaintOp>) {
     }
 }
 
+#[test]
+fn issue_4969_q3_e5_hiding_header_invalidates_cached_layer_output() {
+    let mut core = DocumentCore::new_empty();
+    core.create_blank_document_native()
+        .expect("public blank template");
+    core.create_header_footer_native(0, true, 0)
+        .expect("create header");
+    core.insert_text_in_header_footer_native(0, true, 0, 0, 0, "CACHE_HEADER_SENTINEL")
+        .expect("insert header sentinel");
+
+    let visible = core
+        .get_page_layer_tree_with_profile_native(0, RenderProfile::Screen)
+        .expect("visible header layer JSON");
+    assert!(visible.contains("CACHE_HEADER_SENTINEL"));
+
+    core.toggle_hide_header_footer_native(0, true)
+        .expect("hide header");
+    let hidden = core
+        .get_page_layer_tree_with_profile_native(0, RenderProfile::Screen)
+        .expect("hidden header layer JSON");
+    assert!(!hidden.contains("CACHE_HEADER_SENTINEL"));
+    assert_ne!(hidden, visible);
+}
+
+#[test]
+fn issue_4969_q3_e5_blank_replacement_drops_cached_layer_output() {
+    let mut core = DocumentCore::new_empty();
+    core.create_blank_document_native()
+        .expect("public blank template");
+    core.insert_text_native(0, 0, 0, "CACHE_BODY_SENTINEL")
+        .expect("insert body sentinel");
+
+    let populated = core
+        .get_page_layer_tree_with_profile_native(0, RenderProfile::Screen)
+        .expect("populated layer JSON");
+    assert!(populated.contains("CACHE_BODY_SENTINEL"));
+
+    core.create_blank_document_native()
+        .expect("replace with another blank document");
+    let blank = core
+        .get_page_layer_tree_with_profile_native(0, RenderProfile::Screen)
+        .expect("replacement layer JSON");
+    assert!(!blank.contains("CACHE_BODY_SENTINEL"));
+    assert_ne!(blank, populated);
+}
+
 fn collect_layer_json_ops<'a>(value: &'a serde_json::Value, ops: &mut Vec<&'a serde_json::Value>) {
     match value {
         serde_json::Value::Array(values) => {
