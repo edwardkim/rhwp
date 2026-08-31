@@ -1,0 +1,110 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q3-e2-wasm-public-adapter-result",
+  "issue": 4969,
+  "stage": "W10-Q3-E2",
+  "status": "qualified-public-dormant-approved",
+  "date": "2026-08-29",
+  "baseCheckpoint": "ee3e9c894bcc629c7cf9c81079e449202d3607d4",
+  "upstreamDevel": "d29b5fd4ba40a5bd194975be9af7e852232872b6",
+  "ahead": 25,
+  "behind": 0,
+  "publicApi": {
+    "set": "HwpDocument.setExactFontInstance(optionsJson)",
+    "clear": "HwpDocument.clearExactFontInstance(optionsJson)",
+    "nativeAuthority": true,
+    "adapterLogicCopyCount": 0,
+    "typescriptDeclarationUpdated": true,
+    "consumerGuideUpdated": true,
+    "changelogUpdated": true
+  },
+  "nodeWasmReceipt": {
+    "sourceStatus": "registered",
+    "registered": {
+      "status": "registered",
+      "axes": [{ "tag": "wght", "value": 650.0 }],
+      "requestGeneration": 1
+    },
+    "malformedUnknownFontBytesRejected": true,
+    "malformedMutationCount": 0,
+    "idempotentSet": {
+      "status": "already-registered",
+      "requestGeneration": 1
+    },
+    "clear": {
+      "status": "cleared",
+      "requestGeneration": 2
+    },
+    "idempotentClear": {
+      "status": "already-cleared",
+      "requestGeneration": 2
+    }
+  },
+  "nativeValidation": {
+    "green": { "passed": 24, "failed": 0 },
+    "red": {
+      "passed": 2,
+      "failed": 2,
+      "expectedRemaining": [
+        "Q3-E3-explicit-candidate-session-absent",
+        "Q3-E4-atomic-outline-publication-absent"
+      ],
+      "unexpectedFailures": 0
+    }
+  },
+  "defaultReceipt": {
+    "iterations": 64,
+    "layerJsonBytes": 619562,
+    "layerJsonBlake3": "0b5212cc076c34dce706039d7c4da85936c0a6769e83f08baa7f158cbd9029de",
+    "canvasKitPlanBytes": 1755,
+    "canvasKitPlanBlake3": "a98e6933d76901cfa55a43205c758675a8864527f87f8bed7a689d16267cbb56",
+    "glyphOutlinePublicationCount": 0
+  },
+  "wasm": {
+    "command": "docker compose --env-file .env.docker run --rm wasm",
+    "result": "passed",
+    "elapsed": "6m32s",
+    "bytes": 9782106,
+    "sha256": "fbbc83bf25049c53ed5c80e0968606015ffc23547e72a22ceba54b3ad2ba56c9",
+    "q3E1DeltaBytes": 20016,
+    "q3E1DeltaPercent": 0.205038,
+    "q3E0BaselineBytes": 9759816,
+    "q3E0DeltaBytes": 22290,
+    "q3E0DeltaPercent": 0.228385,
+    "gatePassed": true
+  },
+  "declarationAndStudio": {
+    "generatedExportCoherence": "passed-1-of-1",
+    "consumerTypeScriptDeclaration": "passed",
+    "studioBuild": "passed",
+    "studioModules": 239,
+    "studioMainJsBytes": 1700187,
+    "studioMainJsSha256": "1cdd059adc075538c9eb215016af5ad36ce92c123293968f7517b8aa4e8c8295",
+    "studioCssBytes": 106910,
+    "studioCssSha256": "17e81926a0b122e311840b76b70f7315ea5d8b4a420184aabdbac8ca6b482f57"
+  },
+  "otherValidation": {
+    "cargoFmtAll": "passed",
+    "cargoFmtAllCheck": "passed",
+    "gitDiffCheck": "passed",
+    "clippyAllTargetsDenyWarnings": "passed"
+  },
+  "protectedRegression": {
+    "composerActivation": false,
+    "productPublication": false,
+    "defaultOutputChanged": false,
+    "q2OldHangulGateChanged": false,
+    "fontFallbackRegistryChanged": false,
+    "studioImplicitCallerAdded": false,
+    "newIntegrationSource": false,
+    "generatedArtifactsStaged": false,
+    "privateCorpusUsed": false,
+    "hyperVOrHancomOracleUsed": false
+  },
+  "resultApproved": true,
+  "commitCreated": true,
+  "next": "approve-q3-e3-start",
+  "nextSlice": "Q3-E3-bounded-explicit-composer-activation",
+  "nextSliceApproved": false,
+  "remoteMutation": false
+}

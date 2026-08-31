@@ -368,7 +368,14 @@ export class PageRenderer {
       canvas.height = Math.max(1, Math.ceil(pageInfo.height * renderScale));
       const tree = this.wasm.getPageLayerTreeObject(pageIdx, this.renderProfile);
       renderStarted = true;
-      const renderedCanvas = this.canvaskitRenderer.renderPage(tree, canvas, renderScale, pageInfo);
+      const renderedCanvas = this.canvaskitRenderer.renderPage(
+        tree,
+        canvas,
+        renderScale,
+        pageInfo,
+        key => this.wasm.getSourceFontBytes(key),
+        this.wasm.documentGeneration,
+      );
       this.canvaskitDiagnosticsByPage.set(pageIdx, this.canvaskitRenderer.diagnostics());
       this.cancelReRender(pageIdx);
       this.imageRetryCounts.delete(pageIdx);

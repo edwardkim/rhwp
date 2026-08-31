@@ -1,0 +1,112 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q4-d5-a-measurement-contract",
+  "issue": 4969,
+  "stage": "W10-Q4-D5-A",
+  "date": "2026-08-31",
+  "status": "qualified-measurement-contract-result-approved",
+  "resultApproved": true,
+  "planCheckpoint": "a4248b9c6",
+  "classification": "qualified-measurement-contract",
+  "productMutation": false,
+  "harness": {
+    "rustSource": "tests/cases/issue_4969_shaping_atomic_activation.rs",
+    "rustDefault": "ignored",
+    "studioSource": "rhwp-studio/e2e/issue-4969-shaping-replay.test.mjs",
+    "studioEnvironmentGate": "RHWP_Q4_D5_ABA=1",
+    "order": [
+      "A1-legacy-no-exact-source",
+      "B-bounded-exact-source",
+      "A2-legacy-no-exact-source"
+    ],
+    "warmups": 20,
+    "iterations": 64,
+    "newIntegrationSource": false,
+    "productCfgTestSeam": false,
+    "publicApiOrSchemaChanged": false,
+    "productionTimer": false
+  },
+  "structuralReceipt": {
+    "a1": {
+      "fallbackTextRuns": 2,
+      "verticalGlyphRuns": 0,
+      "fontBlobs": 0,
+      "fontFaces": 0,
+      "fontPayloadBytes": 0
+    },
+    "b": {
+      "fallbackTextRuns": 2,
+      "verticalGlyphRuns": 2,
+      "fontBlobs": 1,
+      "fontFaces": 1,
+      "fontPayloadBytes": 2519996
+    },
+    "a2": {
+      "fallbackTextRuns": 2,
+      "verticalGlyphRuns": 0,
+      "fontBlobs": 0,
+      "fontFaces": 0,
+      "fontPayloadBytes": 0
+    },
+    "a1A2LayerJsonHashMatch": true,
+    "a1A2ReplayPlanHashMatch": true,
+    "actualCanvasKitPixelHashAllCases": "3de701e651c3f23c655d35693ca54920507adea9bf3cbf734de0f9fbd1f9169f"
+  },
+  "pilot": {
+    "authoritativePerformanceResult": false,
+    "rustWarm64Ns": {
+      "a1": {
+        "layout": 648096,
+        "layerBuild": 117262,
+        "jsonSerialize": 2512577,
+        "replayPlan": 234925
+      },
+      "b": {
+        "layout": 1150149059,
+        "layerBuild": 225139037,
+        "jsonSerialize": 89903074,
+        "replayPlan": 69211154
+      },
+      "a2": {
+        "layout": 620573,
+        "layerBuild": 116107,
+        "jsonSerialize": 2815302,
+        "replayPlan": 235618
+      }
+    },
+    "actualCanvasKitWarm64Ns": {
+      "a1": 11505596,
+      "b": 10993970,
+      "a2": 10834949
+    },
+    "rustBSignalRequiresD5BRootCause": true
+  },
+  "validation": {
+    "atomicActivationPassed": 9,
+    "atomicActivationFailed": 0,
+    "atomicActivationIgnored": 2,
+    "releaseReceiptPassed": 1,
+    "studioDefaultE2E": "passed",
+    "studioMeasurementE2E": "passed",
+    "studioUnitPassed": 1324,
+    "studioUnitFailed": 0,
+    "studioUnitSkipped": 1,
+    "integrationManifestSources": 1064,
+    "integrationManifestStaticTestAttrs": 4690,
+    "integrationManifestTargetsPassed": 48,
+    "integrationManifestTargetsTotal": 48,
+    "integrationPolicyPassed": 22,
+    "focusedClippy": "passed",
+    "formatCheck": "passed"
+  },
+  "corrections": [
+    "query-generated-manifest-for-regression-suite-028",
+    "assert-legacy-and-bounded-simple-CJK-pixel-equality",
+    "remove-invalid-expect-from-infallible-layer-builder"
+  ],
+  "generatedArtifactsSubmitted": false,
+  "privateCorpusUsed": false,
+  "hyperVUsed": false,
+  "githubMutation": false,
+  "next": "automatic-D5-A-checkpoint-then-D5-B"
+}

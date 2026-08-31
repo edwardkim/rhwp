@@ -7377,6 +7377,7 @@ impl LayoutEngine {
                     section_index,
                     table_meta,
                     cell_idx,
+                    table.cells.len(),
                     enclosing_cell_ctx.clone(),
                 );
             } else {

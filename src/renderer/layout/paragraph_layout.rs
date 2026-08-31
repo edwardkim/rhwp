@@ -135,6 +135,17 @@ fn horizontal_shaping_initial_lane_preflight(
     };
     let style = resolved_to_text_style(styles, run.char_style_id, run.lang_index);
     let scalar_count = run.text.chars().count();
+    let instance_request = target.measurement.instance_request;
+    let ratio_supported = if instance_request.is_some() {
+        style.ratio <= 16.0
+    } else {
+        style.ratio < 0.999
+    };
+    let request_provenance_current = instance_request.is_none_or(|provenance| {
+        provenance.slot
+            == crate::renderer::kerning::ExactFontSlot::new(run.char_style_id, run.lang_index)
+            && provenance.request_generation == context.instance_request_generation()
+    });
     let style_surface_supported = !style.bold
         && !style.italic
         && style.font_size.is_finite()
@@ -142,7 +153,7 @@ fn horizontal_shaping_initial_lane_preflight(
         && style.font_size <= 4_096.0
         && style.ratio.is_finite()
         && style.ratio > 0.0
-        && style.ratio < 0.999
+        && ratio_supported
         && style.letter_spacing.abs() <= f64::EPSILON
         && style.underline == UnderlineType::None
         && !style.strikethrough
@@ -205,6 +216,7 @@ fn horizontal_shaping_initial_lane_preflight(
         && target.scalar_end == scalar_count
         && target.measurement.code_point_count == scalar_count
         && target.measurement.registry_generation == context.registry_generation()
+        && request_provenance_current
         && raw_vertical_positioning_is_zero
 }
 
@@ -219,25 +231,77 @@ fn attach_horizontal_shaping_initial_lane(
     node_id: NodeId,
     scalar_start: usize,
     origin_x_px: f64,
+    legacy_width_px: f64,
+    split_cell: bool,
 ) -> Option<f64> {
     let outcome = composed.horizontal_shaping.as_ref()?;
     let context = styles.horizontal_shaping_context.as_ref()?;
+    let candidate = crate::renderer::shaping_composition::HorizontalShapingEmittedRunCandidate {
+        node_id,
+        paragraph_text: &para.text,
+        emitted_text: &run.text,
+        scalar_start,
+        origin_x_px,
+        layout_positions_present: false,
+        display_projection_present: false,
+        horizontal_ltr_bidi0: true,
+        has_field_or_note_split: false,
+        has_char_overlap: false,
+        has_border_or_background: false,
+        has_decoration: false,
+    };
+
+    if crate::renderer::para_has_no_stored_line_segs(para) {
+        let frame_interval_count = para.line_segs.first().map_or(1, |segment| {
+            usize::from(
+                segment.tag & LineSeg::TAG_SINGLE_SEGMENT_LINE == LineSeg::TAG_SINGLE_SEGMENT_LINE,
+            )
+        });
+        let transaction = crate::renderer::shaping_composition::prepare_horizontal_shaping_no_lineseg_owner_transaction(
+            context,
+            std::sync::Arc::clone(outcome),
+            crate::renderer::shaping_composition::HorizontalShapingNoLineSegSurface {
+                model_line_seg_count: 0,
+                frame_interval_count,
+                edit_reflow: para.stored_text_partition_is_dirty(),
+                stored_prefix: scalar_start != 0,
+                split_cell,
+                has_inline_control: !para.controls.is_empty(),
+            },
+            candidate,
+            crate::renderer::shaping_composition::HorizontalShapingLegacyGeometry {
+                line_width_px: legacy_width_px,
+                bbox_width_px: legacy_width_px,
+                next_origin_x_px: origin_x_px + legacy_width_px,
+            },
+        )
+        .ok()?;
+        let publication = tree
+            .publish_horizontal_shaping_no_lineseg_owner_transaction(transaction)
+            .ok()?;
+        debug_assert!(publication.product_published());
+        debug_assert!(std::sync::Arc::ptr_eq(
+            publication.line_selection_measurement(),
+            publication.bbox_measurement()
+        ));
+        debug_assert!(std::sync::Arc::ptr_eq(
+            publication.line_selection_measurement(),
+            publication.next_origin_measurement()
+        ));
+        debug_assert!(std::sync::Arc::ptr_eq(
+            publication.line_selection_measurement(),
+            publication.sidecar_measurement()
+        ));
+        debug_assert!((publication.line_width_px() - publication.bbox_width_px()).abs() <= 1.0e-9);
+        debug_assert!(
+            ((publication.next_origin_x_px() - origin_x_px) - publication.line_width_px()).abs()
+                <= 1.0e-9
+        );
+        return Some(publication.bbox_width_px());
+    }
+
     let mapped = crate::renderer::shaping_composition::map_horizontal_shaping_emitted_run(
-        outcome,
-        crate::renderer::shaping_composition::HorizontalShapingEmittedRunCandidate {
-            node_id,
-            paragraph_text: &para.text,
-            emitted_text: &run.text,
-            scalar_start,
-            origin_x_px,
-            layout_positions_present: false,
-            display_projection_present: false,
-            horizontal_ltr_bidi0: true,
-            has_field_or_note_split: false,
-            has_char_overlap: false,
-            has_border_or_background: false,
-            has_decoration: false,
-        },
+        outcome, candidate,
     )
     .ok()?;
     let decision = crate::renderer::shaping_composition::certify_horizontal_shaping_mapped_run(
@@ -5729,6 +5793,8 @@ impl LayoutEngine {
                         node_id,
                         run_char_pos,
                         x,
+                        full_width,
+                        cell_ctx.is_some() && (start_line != 0 || end != composed.lines.len()),
                     )
                 })
             });

@@ -1,8 +1,10 @@
 //! Page-local publication contract for horizontal shaping decisions.
 //!
-//! Q2-D0 only establishes bounded ownership. No layout or paint consumer reads this table yet.
+//! Q2-D0 established bounded ownership. D4 consumes certified decisions for stored rows, while
+//! Q2-D5-N1 may atomically reserve the same bounded source budget before a qualified no-LineSeg
+//! layout publishes geometry.
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::sync::Arc;
 
 use super::shaping::{ShapingAttemptTrace, TerminalShapingDisposition};
@@ -12,6 +14,8 @@ use super::shaping_context::{
 
 /// A single page cannot retain more shaping decisions than it can reasonably emit as text runs.
 pub(crate) const MAX_HORIZONTAL_SHAPING_PAGE_SIDECARS: usize = 4_096;
+pub(crate) const MAX_HORIZONTAL_SHAPING_PREPARED_SOURCES_PER_PAGE: usize = 256;
+pub(crate) const MAX_HORIZONTAL_SHAPING_FONT_BYTES_PER_PAGE: usize = 64 * 1024 * 1024;
 
 /// One emitted run expressed in all three text coordinate systems used by the renderer.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -150,6 +154,7 @@ pub(crate) enum HorizontalShapingSidecarRejectReason {
     StaleRegistryGeneration,
     DuplicateNode,
     EntryLimitExceeded,
+    ResourceLimitExceeded,
 }
 
 /// Bounded `NodeId -> Arc<decision>` storage. `NodeId` is a `u32` alias in render_tree.
@@ -157,6 +162,8 @@ pub(crate) enum HorizontalShapingSidecarRejectReason {
 pub(crate) struct HorizontalShapingPageSidecars {
     registry_generation: Option<u64>,
     entries: HashMap<u32, Arc<HorizontalShapingRunDecision>>,
+    reserved_source_identities: HashSet<(u64, String, usize, u32)>,
+    reserved_source_bytes: usize,
 }
 
 impl Default for HorizontalShapingPageSidecars {
@@ -164,6 +171,8 @@ impl Default for HorizontalShapingPageSidecars {
         Self {
             registry_generation: None,
             entries: HashMap::new(),
+            reserved_source_identities: HashSet::new(),
+            reserved_source_bytes: 0,
         }
     }
 }
@@ -246,6 +255,52 @@ impl HorizontalShapingPageSidecars {
         Ok(())
     }
 
+    /// N1 attaches a certified decision only after the page can also reserve
+    /// the same unique-source budget that paint lowering enforces. All checks
+    /// precede both mutations; a failed attach cannot leave a partial resource
+    /// reservation or sidecar behind.
+    pub(crate) fn attach_no_lineseg_atomic(
+        &mut self,
+        node_id: u32,
+        expected_range: HorizontalShapingRunRange,
+        decision: Arc<HorizontalShapingRunDecision>,
+    ) -> Result<(), HorizontalShapingSidecarRejectReason> {
+        let certificate = decision
+            .replay_source_certificate()
+            .ok_or(HorizontalShapingSidecarRejectReason::ReplaySourceCertificateMismatch)?;
+        let source = certificate.source_handle();
+        if certificate.source_bytes().len() > crate::paint::MAX_PORTABLE_FONT_BLOB_BYTES {
+            return Err(HorizontalShapingSidecarRejectReason::ResourceLimitExceeded);
+        }
+        let identity = (
+            certificate.registry_generation(),
+            source.font_source_sha256.clone(),
+            source.font_bytes,
+            source.face_index,
+        );
+        let is_new_source = !self.reserved_source_identities.contains(&identity);
+        let next_source_count = self.reserved_source_identities.len() + usize::from(is_new_source);
+        let next_source_bytes = if is_new_source {
+            self.reserved_source_bytes
+                .checked_add(certificate.source_bytes().len())
+                .ok_or(HorizontalShapingSidecarRejectReason::ResourceLimitExceeded)?
+        } else {
+            self.reserved_source_bytes
+        };
+        if next_source_count > MAX_HORIZONTAL_SHAPING_PREPARED_SOURCES_PER_PAGE
+            || next_source_bytes > MAX_HORIZONTAL_SHAPING_FONT_BYTES_PER_PAGE
+        {
+            return Err(HorizontalShapingSidecarRejectReason::ResourceLimitExceeded);
+        }
+
+        self.attach(node_id, expected_range, decision)?;
+        if is_new_source {
+            self.reserved_source_identities.insert(identity);
+            self.reserved_source_bytes = next_source_bytes;
+        }
+        Ok(())
+    }
+
     pub(crate) fn get(&self, node_id: u32) -> Option<&Arc<HorizontalShapingRunDecision>> {
         self.entries.get(&node_id)
     }
@@ -260,5 +315,13 @@ impl HorizontalShapingPageSidecars {
 
     pub(crate) fn registry_generation(&self) -> Option<u64> {
         self.registry_generation
+    }
+
+    pub(crate) fn reserved_source_count(&self) -> usize {
+        self.reserved_source_identities.len()
+    }
+
+    pub(crate) fn reserved_source_bytes(&self) -> usize {
+        self.reserved_source_bytes
     }
 }

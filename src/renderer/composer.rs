@@ -2140,6 +2140,14 @@ pub(crate) fn recompose_stored_lines_in_frame_with_known_square_band(
             preserve_context_resolved_runs(composed, &mut reflowed);
             let mut reconciled = composed.clone();
             reconciled.lines = reflowed.lines;
+            // Q2-D5-N1: source NO_LS has no usable width during the initial
+            // composition handoff. The physical frame is the first owner that
+            // knows the final intervals, so prepare Q2-C again only after that
+            // partition is complete. Stored-row D4 outcomes stay untouched.
+            if crate::renderer::para_has_no_stored_line_segs(para) {
+                reconciled.horizontal_shaping =
+                    line_breaking::compose_horizontal_shaping_handoff(para, &reconciled, styles);
+            }
             Some(reconciled)
         }
         // `Stored`: returning the composition unchanged is the answer, not a

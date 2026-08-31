@@ -1105,11 +1105,9 @@ impl DocumentCore {
             self.hidden_header_footer.insert(key);
             true
         };
-        // 렌더 트리 캐시 무효화
-        let mut cache = self.page_tree_cache.borrow_mut();
-        if let Some(slot) = cache.get_mut(page_num as usize) {
-            *slot = None;
-        }
+        // 숨김 상태는 page tree와 두 파생 표현 모두에 반영되므로 한 페이지의
+        // 캐시 계보를 원자적으로 무효화한다.
+        self.invalidate_page_tree_cache_page(page_num);
         Ok(format!("{{\"ok\":true,\"hidden\":{}}}", hidden))
     }
 

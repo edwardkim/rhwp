@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::sync::Arc;
 
 use crate::paint::font::{BinaryResourceKind, BinaryResourceRef, FontResourceTable};
 
@@ -31,7 +32,7 @@ pub struct ResourceArena {
     svg_fingerprints: Vec<[u8; 16]>,
     svg_resource_keys: Vec<String>,
     svg_lookup: HashMap<u64, Vec<SvgResourceId>>,
-    font_blob_bytes: Vec<Vec<u8>>,
+    font_blob_bytes: Vec<Arc<[u8]>>,
     font_blob_hashes: Vec<u64>,
     font_blob_fingerprints: Vec<[u8; 16]>,
     font_blob_resource_keys: Vec<String>,
@@ -153,7 +154,7 @@ impl ResourceArena {
         let hash = resource_hash(bytes);
         if let Some(candidates) = self.font_blob_lookup.get(&hash) {
             for id in candidates {
-                if self.font_blob_bytes[id.0].as_slice() == bytes {
+                if self.font_blob_bytes[id.0].as_ref() == bytes {
                     return *id;
                 }
             }
@@ -165,7 +166,44 @@ impl ResourceArena {
         fingerprint.copy_from_slice(&digest.as_bytes()[..16]);
         let digest_hex = digest.to_hex();
         let resource_key = font_blob_resource_key(bytes.len(), digest_hex.as_str());
-        self.font_blob_bytes.push(bytes.to_vec());
+        self.font_blob_bytes.push(Arc::from(bytes));
+        self.font_blob_hashes.push(hash);
+        self.font_blob_fingerprints.push(fingerprint);
+        self.font_blob_resource_keys.push(resource_key.clone());
+        self.font_blob_lookup.entry(hash).or_default().push(id);
+        self.font_blob_ref_lookup.insert(resource_key, id);
+        id
+    }
+
+    /// Intern an immutable exact-source Arc whose complete-content identity was
+    /// prepared and certified before the atomic paint commit.
+    ///
+    /// This avoids copying and re-hashing a multi-megabyte font during every
+    /// layer rebuild. The caller must already have validated the canonical
+    /// resource key and conflicts against this arena; general callers continue
+    /// to use [`Self::intern_font_blob_bytes`].
+    pub(crate) fn intern_prepared_font_blob_arc(
+        &mut self,
+        bytes: Arc<[u8]>,
+        hash: u64,
+        fingerprint: [u8; 16],
+        resource_key: String,
+    ) -> FontBlobResourceId {
+        if let Some(id) = self.font_blob_ref_lookup.get(&resource_key).copied() {
+            debug_assert_eq!(self.font_blob_bytes(id), Some(bytes.as_ref()));
+            return id;
+        }
+        if let Some(candidates) = self.font_blob_lookup.get(&hash) {
+            for id in candidates {
+                if self.font_blob_bytes[id.0].as_ref() == bytes.as_ref() {
+                    self.font_blob_ref_lookup.insert(resource_key, *id);
+                    return *id;
+                }
+            }
+        }
+
+        let id = FontBlobResourceId(self.font_blob_bytes.len());
+        self.font_blob_bytes.push(bytes);
         self.font_blob_hashes.push(hash);
         self.font_blob_fingerprints.push(fingerprint);
         self.font_blob_resource_keys.push(resource_key.clone());
@@ -175,7 +213,7 @@ impl ResourceArena {
     }
 
     pub fn font_blob_bytes(&self, id: FontBlobResourceId) -> Option<&[u8]> {
-        self.font_blob_bytes.get(id.0).map(Vec::as_slice)
+        self.font_blob_bytes.get(id.0).map(Arc::as_ref)
     }
 
     pub fn font_blob_count(&self) -> usize {
@@ -198,7 +236,7 @@ impl ResourceArena {
         self.font_blob_bytes
             .iter()
             .enumerate()
-            .map(|(index, bytes)| (FontBlobResourceId(index), bytes.as_slice()))
+            .map(|(index, bytes)| (FontBlobResourceId(index), bytes.as_ref()))
     }
 
     pub fn font_blob_bytes_for_ref(&self, data_ref: &BinaryResourceRef) -> Option<&[u8]> {
@@ -343,6 +381,26 @@ pub fn svg_resource_key(byte_len: usize, digest: &str) -> String {
 
 pub fn font_blob_resource_key(byte_len: usize, digest: &str) -> String {
     resource_key("font", byte_len, digest)
+}
+
+/// Exact portable font resource key를 검증하고 `(byte_len, digest)`로 푼다.
+///
+/// 길이와 digest의 표기까지 canonical해야 한다. 느슨하게 해석하면 같은 font bytes에 여러
+/// cache key가 생겨 document-generation cache의 상한과 무효화 계약을 우회할 수 있다.
+pub fn parse_font_blob_resource_key(key: &str) -> Option<(usize, &str)> {
+    let value = key.strip_prefix("font:blake3:")?;
+    let (byte_len_text, digest) = value.split_once(':')?;
+    if byte_len_text.is_empty()
+        || (byte_len_text.len() > 1 && byte_len_text.starts_with('0'))
+        || digest.len() != 64
+        || !digest
+            .bytes()
+            .all(|byte| byte.is_ascii_digit() || (b'a'..=b'f').contains(&byte))
+    {
+        return None;
+    }
+    let byte_len = byte_len_text.parse::<usize>().ok()?;
+    (byte_len > 0).then_some((byte_len, digest))
 }
 
 fn resource_key(kind: &str, byte_len: usize, digest: &str) -> String {

@@ -1,0 +1,142 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q4-d4-d-cross-runtime-validation",
+  "issue": 4969,
+  "stage": "W10-Q4-D4-D",
+  "date": "2026-08-31",
+  "status": "qualified-canvaskit-bounded-vertical-runtime-checkpointed",
+  "resultApproved": true,
+  "classification": "qualified-canvaskit-bounded-vertical-runtime",
+  "planCheckpoint": "c11e84935",
+  "d4BCheckpoint": "c9b551909",
+  "d4CCheckpoint": "b1a33b6fc",
+  "checkpoint": "f40987220",
+  "baseUpstreamDevel": "19b89d967b15",
+  "mergeCommit": "eb7d020e4",
+  "productMutation": false,
+  "mergeRequalification": {
+    "incomingCommits": 23,
+    "directOverlapFiles": 3,
+    "selectorOrStudioDirectOverlapFiles": 0,
+    "conflicts": 0,
+    "incomingFocusedPassed": 9,
+    "incomingFocusedFailed": 0
+  },
+  "supportedSubset": {
+    "provenance": "boundedVerticalHwp5TableCellV1",
+    "format": "HWP5",
+    "textDirection": 2,
+    "surface": "one-table-cell",
+    "paragraphs": 1,
+    "composedLines": 1,
+    "columns": 1,
+    "content": "pure-supported-CJK",
+    "writingMode": "vertical-rl",
+    "orientation": "vertical-upright",
+    "exactPortableSourceRequired": true,
+    "glyphTransformsAllowed": false,
+    "variationsAllowed": false,
+    "syntheticStyleOrEffectsAllowed": false,
+    "canvasDrawGlyphsRequired": true,
+    "backends": [
+      "CanvasKit",
+      "CanvasKitBrowser"
+    ]
+  },
+  "fallbackSubset": [
+    "HWPX",
+    "horizontal-or-HWP5-code-1",
+    "multi-paragraph-run-line-or-column",
+    "Latin-punctuation-mixed-or-sideways",
+    "missing-or-stale-exact-source",
+    "unverified-font-or-unsupported-face",
+    "missing-canvas-drawGlyphs",
+    "malformed-bounded-tuple",
+    "glyph-transform-variation-synthetic-style-or-effect",
+    "NativeSkia-SVG-Canvas2D"
+  ],
+  "runtimeValidation": {
+    "issue4969": {
+      "requestContractPassed": 38,
+      "emittedRunMappingPassed": 12,
+      "glyphLoweringPassed": 18,
+      "glyphLoweringIgnoredPerf": 1,
+      "paragraphTransactionPassed": 8,
+      "shadowContextPassed": 18,
+      "atomicActivationPassed": 9,
+      "atomicActivationIgnoredPerf": 1,
+      "totalPassed": 103,
+      "totalFailed": 0,
+      "totalIgnoredPerf": 2
+    },
+    "layerRendererUnitPassed": 44,
+    "canvasKitPolicyUnitPassed": 50,
+    "issue6029Passed": 1,
+    "studioUnitPassed": 1324,
+    "studioUnitFailed": 0,
+    "studioUnitSkipped": 1,
+    "studioIssue4969E2E": "passed",
+    "studioCanvasKitFontCoverage": "passed",
+    "studioRendererContract": "passed",
+    "studioProductionBuild": "passed",
+    "isolatedNodeWasmPassed": 4,
+    "isolatedNodeWasmFailed": 0,
+    "standardDockerWasm": {
+      "status": "passed",
+      "commandElapsedSeconds": 385,
+      "wasmBytes": 9883530,
+      "wasmSha256": "d75bfbd467652fd7af835fe9b2c334dfd80e60e640ca5510ae8f75c4b575b4a9",
+      "differenceFromD3CBytes": 9077,
+      "causalSizeDeltaClaimed": false
+    },
+    "integrationManifestSources": 1064,
+    "integrationManifestStaticTestAttrs": 4689,
+    "integrationManifestTargetsPassed": 48,
+    "integrationManifestTargetsTotal": 48,
+    "integrationPolicyPassed": 22,
+    "integrationPolicyFailed": 0,
+    "focusedClippy": "passed",
+    "formatCheck": "passed"
+  },
+  "pixelMismatch": {
+    "glyphId": 0,
+    "position": 0,
+    "origin": 0,
+    "alphaBounds": 0,
+    "drawCall": 0,
+    "fallbackDoublePaint": 0,
+    "capabilityMissingBlank": 0
+  },
+  "canonicalControls": [
+    {
+      "path": "samples/table-004.hwp",
+      "pages": 1,
+      "overflowCellLines": 0,
+      "svgBytes": 214449,
+      "svgSha256": "7711baa0afe033c044605ff1afd5597534a8f246819bf12e929ac3c5ab93873f",
+      "mismatch": 0
+    },
+    {
+      "path": "samples/issue6029/3200477_icao_procedure.hwpx",
+      "pages": 1,
+      "overflowCellLines": 0,
+      "svgBytes": 273101,
+      "svgSha256": "27ac3f000875a1413a9a99bb3f8ad4c1fb8c21a942a3b9fd6476df72030328e9",
+      "mismatch": 0
+    }
+  ],
+  "mismatch": {
+    "targetSelectionOrPixel": 0,
+    "unsupportedBackendFalseSelection": 0,
+    "fallbackDisappearance": 0,
+    "horizontalOrCanonicalRegression": 0
+  },
+  "q4DFinalClassificationDeferredToD5": true,
+  "newIntegrationSource": false,
+  "generatedIntegrationArtifactsSubmitted": false,
+  "publicSchemaChanged": false,
+  "privateCorpusUsed": false,
+  "hyperVUsed": false,
+  "githubMutation": false,
+  "next": "Q4-D5-detailed-plan"
+}

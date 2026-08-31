@@ -20,6 +20,8 @@ const MAX_GLYPHS_PER_RUN = 4096;
 const MAX_GLYPH_RUN_TYPEFACES = 256;
 const MAX_GLYPH_RUN_FONTS = 1024;
 const MAX_FLOAT32 = 3.4028234663852886e38;
+const BOUNDED_VERTICAL_HWP5_TABLE_CELL_REASON = 'boundedVerticalHwp5TableCellV1';
+const BOUNDED_VERTICAL_GLYPH_VARIANT_ID = 'verticalGlyphRun';
 const FONT_RESOURCE_KEY = /^font:blake3:(0|[1-9][0-9]*):([0-9a-f]{64})$/;
 const BASE64_PAYLOAD = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/;
 
@@ -46,12 +48,15 @@ export type CanvasKitGlyphRunReplayStatus =
     report: CanvasKitGlyphRunReplayReport;
   };
 
+export type FontBytesResolver = (resourceKey: string) => Uint8Array | null;
+
 export class CanvasKitGlyphRunFontCache {
   private readonly canvasKit: CanvasKit;
   private readonly verifiedFontBlobs = new Map<string, ArrayBuffer>();
   private readonly glyphRunTypefaces = new Map<string, Typeface>();
   private readonly glyphRunFonts = new Map<string, Font>();
   private registeredBlobBytes = 0;
+  private documentGeneration: number | null = null;
 
   constructor(canvasKit: CanvasKit) {
     this.canvasKit = canvasKit;
@@ -60,7 +65,15 @@ export class CanvasKitGlyphRunFontCache {
   registerResources(
     fontResources: LayerFontResources | undefined,
     resources: LayerResources | undefined,
+    resolveFontBytes?: FontBytesResolver,
+    documentGeneration = 0,
   ): void {
+    if (!Number.isSafeInteger(documentGeneration) || documentGeneration < 0) return;
+    if (this.documentGeneration !== null && documentGeneration < this.documentGeneration) return;
+    if (this.documentGeneration !== null && documentGeneration > this.documentGeneration) {
+      this.clear();
+    }
+    this.documentGeneration = documentGeneration;
     if (
       !Array.isArray(fontResources?.blobs)
       || fontResources.blobs.length === 0
@@ -68,11 +81,14 @@ export class CanvasKitGlyphRunFontCache {
       || !Array.isArray(fontResources.faces)
       || fontResources.faces.length > MAX_FONT_FACE_RESOURCES
       || !Array.isArray(resources?.fontBlobs)
-      || resources.fontBlobs.length === 0
       || resources.fontBlobs.length > MAX_FONT_BLOB_RESOURCES
       || !Array.isArray(resources.fontBlobKeys)
       || resources.fontBlobKeys.length > MAX_FONT_BLOB_RESOURCES
     ) return;
+    const byKeyTransport = resources.fontBlobs.length === 0 && resolveFontBytes !== undefined;
+    const pending: Array<{ cacheKey: string; buffer: ArrayBuffer }> = [];
+    const pendingKeys = new Set<string>();
+    let pendingBytes = 0;
     for (const blob of fontResources.blobs) {
       if (
         !blob
@@ -80,19 +96,60 @@ export class CanvasKitGlyphRunFontCache {
         || blob.portability !== 'portableBlob'
         || blob.digest?.algorithm !== 'blake3'
         || blob.dataRef?.kind !== 'fontBlob'
-      ) continue;
+      ) {
+        if (byKeyTransport) return;
+        continue;
+      }
       const cacheKey = this.fontBlobCacheKey(blob);
-      if (this.verifiedFontBlobs.has(cacheKey)) continue;
+      if (this.verifiedFontBlobs.has(cacheKey) || pendingKeys.has(cacheKey)) continue;
       const resourceIndex = resources.fontBlobKeys?.indexOf(blob.dataRef.id) ?? -1;
-      if (resourceIndex < 0) continue;
-      const bytes = fontBlobPayloadBytes(resources.fontBlobs[resourceIndex]);
-      if (!bytes || !fontResourceKeyMatches(blob.dataRef.id, blob.digest.value, bytes)) continue;
-      if (this.registeredBlobBytes + bytes.byteLength > MAX_DOCUMENT_FONT_BLOB_BYTES) continue;
-      if (this.verifiedFontBlobs.size >= MAX_FONT_BLOB_RESOURCES) break;
-      const copy = bytes.slice();
-      this.verifiedFontBlobs.set(cacheKey, copy.buffer);
-      this.registeredBlobBytes += copy.byteLength;
+      if (resourceIndex < 0) {
+        if (byKeyTransport) return;
+        continue;
+      }
+      const keyMatch = FONT_RESOURCE_KEY.exec(blob.dataRef.id);
+      const declaredByteLength = keyMatch ? Number(keyMatch[1]) : Number.NaN;
+      if (
+        !keyMatch
+        || keyMatch[2] !== blob.digest.value
+        || !Number.isSafeInteger(declaredByteLength)
+        || declaredByteLength <= 0
+        || declaredByteLength > MAX_FONT_BLOB_BYTES
+      ) {
+        if (byKeyTransport) return;
+        continue;
+      }
+      const inlinePayload = resources.fontBlobs[resourceIndex];
+      let bytes = fontBlobPayloadBytes(inlinePayload);
+      if (inlinePayload === undefined && resolveFontBytes) {
+        try {
+          const resolved = resolveFontBytes(blob.dataRef.id);
+          bytes = resolved instanceof Uint8Array ? resolved : null;
+        } catch {
+          bytes = null;
+        }
+      }
+      if (!bytes || !fontResourceKeyMatches(blob.dataRef.id, blob.digest.value, bytes)) {
+        if (byKeyTransport) return;
+        continue;
+      }
+      if (
+        this.registeredBlobBytes + pendingBytes + bytes.byteLength > MAX_DOCUMENT_FONT_BLOB_BYTES
+        || this.verifiedFontBlobs.size + pending.length >= MAX_FONT_BLOB_RESOURCES
+      ) {
+        if (byKeyTransport) return;
+        continue;
+      }
+      const copy = new Uint8Array(bytes.byteLength);
+      copy.set(bytes);
+      pending.push({ cacheKey, buffer: copy.buffer });
+      pendingKeys.add(cacheKey);
+      pendingBytes += copy.byteLength;
     }
+    for (const entry of pending) {
+      this.verifiedFontBlobs.set(entry.cacheKey, entry.buffer);
+    }
+    this.registeredBlobBytes += pendingBytes;
   }
 
   replayStatus(
@@ -113,6 +170,8 @@ export class CanvasKitGlyphRunFontCache {
       !run
       || typeof run.diagnostics !== 'object'
       || run.diagnostics === null
+      || typeof run.variant !== 'object'
+      || run.variant === null
       || !Array.isArray(run.glyphIds)
       || !Array.isArray(run.positions)
       || (run.advances !== undefined && !Array.isArray(run.advances))
@@ -139,8 +198,18 @@ export class CanvasKitGlyphRunFontCache {
     if (run.diagnostics.missingGlyphCount !== 0) return reject('missingGlyph');
     if (run.diagnostics.clusterMismatchCount !== 0) return reject('clusterMismatch');
     if (run.diagnostics.usedFallbackFontCount !== 0) return reject('fontNotPortable');
-    if (run.orientation !== 'horizontal') return reject('verticalGlyphOrientationAuthorityPending');
-    if (run.glyphTransforms?.length) return reject('glyphTransformAuthorityPending');
+    const boundedVertical = isBoundedVerticalHwp5CanvasKitCandidate(run);
+    const declaresBoundedVertical = run.diagnostics.reason === BOUNDED_VERTICAL_HWP5_TABLE_CELL_REASON
+      || run.variant.variantId === BOUNDED_VERTICAL_GLYPH_VARIANT_ID;
+    if (declaresBoundedVertical && !boundedVertical) {
+      return reject('boundedVerticalGlyphRunTupleMismatch');
+    }
+    if (!boundedVertical && run.orientation !== 'horizontal') {
+      return reject('verticalGlyphOrientationAuthorityPending');
+    }
+    if (!boundedVertical && run.glyphTransforms?.length) {
+      return reject('glyphTransformAuthorityPending');
+    }
     if (instance.syntheticBold !== false || instance.syntheticItalic !== false) {
       return reject('syntheticStyleAuthorityPending');
     }
@@ -148,7 +217,10 @@ export class CanvasKitGlyphRunFontCache {
       return reject('bidiDirectionAuthorityPending');
     }
     if (run.bidiLevel !== 0) return reject('bidiLevelAuthorityPending');
-    if (run.writingMode !== 'horizontal-tb' || run.shapeKey.writingMode !== 'horizontal-tb') {
+    if (
+      !boundedVertical
+      && (run.writingMode !== 'horizontal-tb' || run.shapeKey.writingMode !== 'horizontal-tb')
+    ) {
       return reject('writingModeAuthorityPending');
     }
     if (!run.glyphIds.length) return reject('emptyGlyphRun');
@@ -290,6 +362,7 @@ export class CanvasKitGlyphRunFontCache {
     this.glyphRunTypefaces.clear();
     this.verifiedFontBlobs.clear();
     this.registeredBlobBytes = 0;
+    this.documentGeneration = null;
   }
 
   private typefaceFor(face: LayerFontFaceResource, blob: LayerFontBlobResource): Typeface | null {
@@ -354,6 +427,7 @@ export function drawCanvasKitGlyphRun(
   font: Font,
   paint: Paint,
 ): boolean {
+  if (!canvasKitCanvasSupportsGlyphRunReplay(canvas)) return false;
   const glyphs = Uint16Array.from(run.glyphIds);
   const positions = new Float32Array(run.positions.length * 2);
   for (const [index, point] of run.positions.entries()) {
@@ -381,6 +455,45 @@ export function drawCanvasKitGlyphRun(
   } finally {
     canvas.restore();
   }
+}
+
+export function canvasKitCanvasSupportsGlyphRunReplay(canvas: unknown): canvas is Canvas {
+  return typeof (canvas as { drawGlyphs?: unknown } | null | undefined)?.drawGlyphs === 'function';
+}
+
+function isBoundedVerticalHwp5CanvasKitCandidate(run: LayerGlyphRunOp): boolean {
+  const instance = run.shapeKey.fontInstance;
+  const requires = run.variant.requires;
+  return run.diagnostics.reason === BOUNDED_VERTICAL_HWP5_TABLE_CELL_REASON
+    && run.variant.variantId === BOUNDED_VERTICAL_GLYPH_VARIANT_ID
+    && run.variant.variantKind === 'glyphRun'
+    && run.variant.partIndex === 0
+    && run.variant.partCount === 1
+    && run.variant.isDefaultFallback === false
+    && run.variant.quality === 'exact'
+    && Array.isArray(requires)
+    && requires.length === 3
+    && requires[0] === 'fontResources'
+    && requires[1] === 'text.glyphRun'
+    && requires[2] === 'text.glyphRun.verticalUpright'
+    && run.writingMode === 'vertical-rl'
+    && run.shapeKey.writingMode === 'vertical-rl'
+    && run.orientation === 'vertical-upright'
+    && run.glyphTransforms === undefined
+    && run.direction === 'ltr'
+    && run.shapeKey.direction === 'ltr'
+    && run.bidiLevel === 0
+    && run.shapeKey.shapingEngine === 'rustybuzz-q4-vertical-v1'
+    && run.shapeKey.fallbackPolicy === 'none'
+    && (instance.variations === undefined || instance.variations.length === 0)
+    && instance.syntheticBold === false
+    && instance.syntheticItalic === false
+    && run.diagnostics.quality === 'exact'
+    && run.diagnostics.replayEligibility === 'portable'
+    && run.diagnostics.strictVisualEligible === true
+    && run.diagnostics.clusterMismatchCount === 0
+    && run.diagnostics.missingGlyphCount === 0
+    && run.diagnostics.usedFallbackFontCount === 0;
 }
 
 function fontBlobPayloadBytes(payload: Uint8Array | number[] | string | undefined): Uint8Array | null {

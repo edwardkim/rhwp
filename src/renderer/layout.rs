@@ -2419,6 +2419,10 @@ pub struct LayoutEngine {
     /// Font selection이 확정한 slot→exact source를 layout session 수명에 공급한다.
     /// face parser는 보존하지 않고 immutable bytes만 소유해 self-reference를 피한다.
     exact_font_sources: crate::renderer::kerning::ExactFontSourceRegistry,
+    /// Q3-D explicit opt-in slot request의 canonical snapshot. 공개 adapter와
+    /// composer가 아직 소비하지 않으므로 product publication은 dormant다.
+    horizontal_shaping_instance_requests:
+        crate::renderer::shaping_context::HorizontalShapingInstanceRequestRegistry,
     /// 자동 번호 카운터
     auto_counter: std::cell::RefCell<AutoNumberCounter>,
     /// 문단 번호 상태
@@ -2623,6 +2627,9 @@ impl LayoutEngine {
         Self {
             dpi,
             exact_font_sources: crate::renderer::kerning::ExactFontSourceRegistry::default(),
+            horizontal_shaping_instance_requests:
+                crate::renderer::shaping_context::HorizontalShapingInstanceRequestRegistry::default(
+                ),
             auto_counter: std::cell::RefCell::new(AutoNumberCounter::new()),
             numbering_state: std::cell::RefCell::new(NumberingState::default()),
             show_transparent_borders: std::cell::Cell::new(false),
@@ -2697,7 +2704,50 @@ impl LayoutEngine {
     }
 
     pub(crate) fn clear_exact_font_sources(&mut self) -> bool {
-        self.exact_font_sources.clear()
+        let sources_cleared = self.exact_font_sources.clear();
+        let requests_cleared = self.horizontal_shaping_instance_requests.clear();
+        sources_cleared || requests_cleared
+    }
+
+    /// Q3-D internal command owner. The public native/WASM surface remains
+    /// unopened until the activation matrix is approved. Validation and
+    /// canonicalization complete before this mutates the request snapshot.
+    #[allow(dead_code)]
+    pub(crate) fn set_horizontal_shaping_instance_request_dormant(
+        &mut self,
+        slot: crate::renderer::kerning::ExactFontSlot,
+        variations: &[crate::renderer::shaping::ShapingVariation],
+    ) -> Result<
+        crate::renderer::shaping_context::HorizontalShapingInstanceRequestRegistration,
+        crate::renderer::shaping_context::HorizontalShapingInstanceRequestError,
+    > {
+        self.horizontal_shaping_instance_requests.set_verified(
+            &self.exact_font_sources,
+            slot,
+            variations,
+        )
+    }
+
+    pub(crate) fn clear_horizontal_shaping_instance_request(
+        &mut self,
+        slot: crate::renderer::kerning::ExactFontSlot,
+    ) -> bool {
+        self.horizontal_shaping_instance_requests.remove(slot)
+    }
+
+    pub(crate) fn horizontal_shaping_instance_request(
+        &self,
+        slot: crate::renderer::kerning::ExactFontSlot,
+    ) -> Option<&[crate::renderer::shaping::ShapingVariation]> {
+        self.horizontal_shaping_instance_requests
+            .request_slice_for_slot(slot)
+    }
+
+    pub(crate) fn horizontal_shaping_instance_request_counts(&self) -> (usize, u64) {
+        (
+            self.horizontal_shaping_instance_requests.request_count(),
+            self.horizontal_shaping_instance_requests.generation(),
+        )
     }
 
     pub(crate) fn exact_font_source_handle(
@@ -2737,9 +2787,29 @@ impl LayoutEngine {
                 crate::renderer::kerning::KerningMeasurementContext::new(registry.clone()),
             )),
             Some(std::sync::Arc::new(
-                crate::renderer::shaping_context::HorizontalShapingContext::new(registry),
+                crate::renderer::shaping_context::HorizontalShapingContext::with_instance_requests(
+                    registry,
+                    self.horizontal_shaping_instance_requests.clone(),
+                ),
             )),
         )
+    }
+
+    /// Q4-D2 vertical table-cell activation snapshot. The registry clone keeps
+    /// immutable font bytes in Arc storage and cannot observe later host
+    /// registration changes during the page transaction.
+    pub(crate) fn vertical_shaping_context_snapshot(
+        &self,
+    ) -> Option<crate::renderer::shaping_vertical::VerticalShapingContext> {
+        if self.exact_font_sources.slot_count() == 0 {
+            None
+        } else {
+            Some(
+                crate::renderer::shaping_vertical::VerticalShapingContext::new(
+                    self.exact_font_sources.clone(),
+                ),
+            )
+        }
     }
 
     pub(crate) fn exact_font_source_registry_counts(&self) -> (usize, usize, usize, u64) {
@@ -2749,6 +2819,20 @@ impl LayoutEngine {
             self.exact_font_sources.total_source_bytes(),
             self.exact_font_sources.generation(),
         )
+    }
+
+    pub(crate) fn exact_font_source_bytes_for_resource_key(
+        &self,
+        key: &str,
+    ) -> Option<std::sync::Arc<[u8]>> {
+        let (byte_len, digest) = crate::paint::parse_font_blob_resource_key(key)?;
+        if byte_len > crate::paint::MAX_PORTABLE_FONT_BLOB_BYTES {
+            return None;
+        }
+        self.exact_font_sources
+            .source_arc_matching(byte_len, |bytes| {
+                crate::paint::resource_digest_hex(bytes) == digest
+            })
     }
 
     pub(crate) fn set_render_normalization_overlay(

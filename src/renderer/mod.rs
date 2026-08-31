@@ -55,6 +55,10 @@ pub(crate) mod shaping_composition;
 pub(crate) mod shaping_context;
 pub(crate) mod shaping_paragraph;
 pub(crate) mod shaping_publication;
+// Q4-D1 registers the exact-source-bound vertical owner while all product
+// layout/publication callers remain closed until their own approved slices.
+#[allow(dead_code)]
+pub(crate) mod shaping_vertical;
 #[cfg(all(not(target_arch = "wasm32"), feature = "native-skia"))]
 pub mod skia;
 pub(crate) mod static_svg;

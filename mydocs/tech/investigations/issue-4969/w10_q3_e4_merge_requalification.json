@@ -1,0 +1,92 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q3-e4-merge-requalification-result",
+  "issue": 4969,
+  "stage": "W10-Q3-E4-requalification",
+  "status": "qualified-merge-reconfirmed-approved",
+  "date": "2026-08-30",
+  "q3E4Checkpoint": "880862177b4b8b430f3aab3ffb56702e90881310",
+  "upstreamDevel": "965c050f0b691fabd385926e3574101a8eade158",
+  "mergeCommit": "a457f289e",
+  "ahead": 31,
+  "behind": 0,
+  "merge": {
+    "upstreamCommitCount": 6,
+    "upstreamChangedFileCount": 17,
+    "productOrTestOverlapCount": 0,
+    "sharedChangedFiles": ["mydocs/orders/20260829.md"],
+    "conflictCount": 0
+  },
+  "validation": {
+    "compositionHandoff": { "passed": 5, "failed": 0 },
+    "glyphLowering": { "passed": 17, "failed": 0 },
+    "atomicActivation": { "passed": 7, "failed": 0 },
+    "q3ERedFilter": { "passed": 4, "failed": 0 },
+    "upstreamIssue6373": { "passed": 2, "failed": 0 },
+    "cargoCheckTests": "passed",
+    "rustUnitTier": { "tests": 4221, "modules": 299, "result": "passed" },
+    "integrationManifest": {
+      "sources": 1032,
+      "staticTestAttrs": 4573,
+      "suites": 32,
+      "exceptions": 16,
+      "prepare": "passed",
+      "check": "passed",
+      "trackedDiff": false
+    },
+    "studioFull": { "passed": 1247, "failed": 0, "skipped": 1 },
+    "studioBuildModules": 239,
+    "clippyAllTargetsDenyWarnings": "passed",
+    "cargoFmtAll": "passed",
+    "cargoFmtAllCheck": "passed",
+    "gitDiffCheck": "passed"
+  },
+  "defaultReceipt": {
+    "layerJsonBytes": 619562,
+    "layerJsonBlake3": "0b5212cc076c34dce706039d7c4da85936c0a6769e83f08baa7f158cbd9029de",
+    "canvasKitPlanBytes": 1755,
+    "canvasKitPlanBlake3": "a98e6933d76901cfa55a43205c758675a8864527f87f8bed7a689d16267cbb56",
+    "changedFromPreMerge": false
+  },
+  "wasm": {
+    "command": "docker compose --env-file .env.docker run --rm wasm",
+    "result": "passed",
+    "elapsedWallSeconds": 397.77,
+    "bytes": 9796088,
+    "sha256": "f149f84321ae6473daa321adeb4ed2a1f89b258ab71ff49b77ce6efe9b293de5",
+    "preMergeDeltaBytes": -25,
+    "preMergeDeltaPercent": -0.000255,
+    "finalSizeGateDeferredTo": "Q3-E5"
+  },
+  "procedureCorrections": [
+    {
+      "attempt": "cargo-test-direct-source-target",
+      "result": "no-test-target",
+      "classification": "invocation-error"
+    },
+    {
+      "attempt": "run-rust-test-before-prepare",
+      "result": "zero-tests-stale-generated-suite",
+      "classification": "derived-state-error"
+    },
+    {
+      "attempt": "prepare-check-then-run-rust-test",
+      "result": "2-passed",
+      "classification": "official-success-path"
+    }
+  ],
+  "protectedRegression": {
+    "q3E4BehaviorChanged": false,
+    "defaultOutputChanged": false,
+    "explicitDefaultOutputChanged": false,
+    "generatedArtifactsStaged": false,
+    "privateCorpusUsed": false,
+    "hyperVOrHancomOracleUsed": false
+  },
+  "resultApproved": true,
+  "checkpointApproved": true,
+  "commitCreated": true,
+  "next": "approve-q3-e5-start",
+  "nextSlice": "q3-e5-start-approval",
+  "remoteMutation": false
+}

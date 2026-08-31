@@ -989,6 +989,9 @@ impl DocumentCore {
     fn ensure_exact_font_measurement_contexts(&mut self) {
         let generation = self.layout_engine.exact_font_source_registry_counts().3;
         let slot_count = self.layout_engine.exact_font_source_registry_counts().0;
+        let (instance_request_count, instance_request_generation) = self
+            .layout_engine
+            .horizontal_shaping_instance_request_counts();
         let current = self
             .styles
             .kerning_measurement_context
@@ -997,6 +1000,8 @@ impl DocumentCore {
             .is_some_and(|(kerning, shaping)| {
                 kerning.registry_generation() == generation
                     && shaping.registry_generation() == generation
+                    && shaping.instance_request_generation() == instance_request_generation
+                    && shaping.instance_request_count() == instance_request_count
             });
         if (slot_count == 0
             && (self.styles.kerning_measurement_context.is_some()
@@ -1179,6 +1184,14 @@ impl DocumentCore {
         profile: RenderProfile,
     ) -> Result<PageLayerTree, HwpError> {
         let _overflows = self.layout_engine.take_overflows();
+        let idx = page_num as usize;
+        let fingerprint = self
+            .layer_output_options_fingerprint(profile, crate::paint::LayerJsonOptions::default());
+        if let Some(variants) = self.page_layer_tree_cache.borrow().get(idx) {
+            if let Some((_, tree)) = variants.iter().find(|(value, _)| *value == fingerprint) {
+                return Ok(tree.clone());
+            }
+        }
         let show_editor_visuals = profile.shows_editor_visuals();
         let output_options = LayerOutputOptions {
             show_paragraph_marks: show_editor_visuals && self.show_paragraph_marks,
@@ -1187,7 +1200,7 @@ impl DocumentCore {
             clip_enabled: self.clip_enabled,
             debug_overlay: show_editor_visuals && self.debug_overlay,
         };
-        self.with_page_tree_cached(page_num, |tree| {
+        let layer_tree = self.with_page_tree_cached(page_num, |tree| {
             let mut used_font_slots = Vec::new();
             let mut nodes = vec![&tree.root];
             while let Some(node) = nodes.pop() {
@@ -1342,7 +1355,20 @@ impl DocumentCore {
                 .with_output_options(output_options)
                 .with_bin_data_epoch(self.bin_data_epoch);
             Ok(builder.build_with_embedded_fonts(tree, &embedded_fonts))
-        })
+        })?;
+        {
+            let mut cache = self.page_layer_tree_cache.borrow_mut();
+            if cache.len() <= idx {
+                cache.resize_with(idx + 1, Vec::new);
+            }
+            let variants = &mut cache[idx];
+            variants.retain(|(value, _)| *value != fingerprint);
+            if variants.len() >= 4 {
+                variants.remove(0);
+            }
+            variants.push((fingerprint, layer_tree.clone()));
+        }
+        Ok(layer_tree)
     }
 
     /// 바이너리 데이터를 0-based `bin_data_content` 인덱스로 반환한다.
@@ -2077,25 +2103,26 @@ impl DocumentCore {
     }
 
     /// [Task #2222] 레이어 출력옵션 5종과 profile의 비트 지문 — JSON 캐시 키.
-    /// [Task #3315] 그림 바이트 생략 여부를 최상위 비트에 함께 접는다.
+    /// [Task #3315/#4969] 그림·font 바이트 생략 여부를 서로 다른 비트에 함께 접는다.
     fn layer_output_options_fingerprint(
         &self,
         profile: RenderProfile,
         options: crate::paint::LayerJsonOptions,
-    ) -> u8 {
-        let profile_bits = match profile {
+    ) -> u16 {
+        let profile_bits: u16 = match profile {
             RenderProfile::FastPreview => 0,
             RenderProfile::Screen => 1,
             RenderProfile::Print => 2,
             RenderProfile::HighQuality => 3,
         };
-        u8::from(self.show_paragraph_marks)
-            | (u8::from(self.show_control_codes) << 1)
-            | (u8::from(self.show_transparent_borders) << 2)
-            | (u8::from(self.clip_enabled) << 3)
-            | (u8::from(self.debug_overlay) << 4)
+        u16::from(self.show_paragraph_marks)
+            | (u16::from(self.show_control_codes) << 1)
+            | (u16::from(self.show_transparent_borders) << 2)
+            | (u16::from(self.clip_enabled) << 3)
+            | (u16::from(self.debug_overlay) << 4)
             | (profile_bits << 5)
-            | (u8::from(options.omit_image_bytes) << 7)
+            | (u16::from(options.omit_image_bytes) << 7)
+            | (u16::from(options.omit_font_bytes) << 8)
     }
 
     /// 페이지가 그리는 그림들의 신원 키만 작은 JSON 으로 반환한다 (Task #3315).
@@ -2178,6 +2205,16 @@ impl DocumentCore {
         let (mime, bytes) =
             crate::renderer::image_resolver::emitted_image_bytes(&data, variant.bakes_watermark());
         Some((mime, bytes.into_owned()))
+    }
+
+    /// Portable font resource key로 현재 document generation의 exact source bytes를 받는다.
+    ///
+    /// key의 길이·BLAKE3 digest와 registry owner를 다시 대조한다. 등록되지 않았거나 오래된
+    /// key, 비정규 표기, 32 MiB 상한 초과는 모두 `None`으로 닫힌다.
+    pub fn get_source_font_bytes_native(&self, key: &str) -> Option<Vec<u8>> {
+        self.layout_engine
+            .exact_font_source_bytes_for_resource_key(key)
+            .map(|bytes| bytes.to_vec())
     }
 
     /// 본문(flow) 그림의 **배치 정보만** 작은 JSON 으로 반환한다 (Task #3315).
@@ -6561,6 +6598,24 @@ impl DocumentCore {
         for i in from..json_cache.len() {
             json_cache[i].clear();
         }
+        let mut layer_cache = self.page_layer_tree_cache.borrow_mut();
+        for i in from..layer_cache.len() {
+            layer_cache[i].clear();
+        }
+    }
+
+    /// 한 페이지의 렌더 트리와 그 파생 표현을 함께 무효화한다.
+    pub(crate) fn invalidate_page_tree_cache_page(&self, page_num: u32) {
+        let idx = page_num as usize;
+        if let Some(slot) = self.page_tree_cache.borrow_mut().get_mut(idx) {
+            *slot = None;
+        }
+        if let Some(variants) = self.layer_tree_json_cache.borrow_mut().get_mut(idx) {
+            variants.clear();
+        }
+        if let Some(variants) = self.page_layer_tree_cache.borrow_mut().get_mut(idx) {
+            variants.clear();
+        }
     }
 
     /// [#3137 Stage 4] same-line인 셀 문단 꼬리 편집을 캐시된 TextLine에 반영한다.
@@ -6811,6 +6866,13 @@ impl DocumentCore {
         {
             variants.clear();
         }
+        if let Some(variants) = self
+            .page_layer_tree_cache
+            .borrow_mut()
+            .get_mut(template.page_index)
+        {
+            variants.clear();
+        }
         Some(FocusedPageTreePatch {
             page_index: template.page_index as u32,
             dirty_rect: BoundingBox::new(
@@ -6826,6 +6888,7 @@ impl DocumentCore {
     pub(crate) fn invalidate_page_tree_cache(&self) {
         self.page_tree_cache.borrow_mut().clear();
         self.layer_tree_json_cache.borrow_mut().clear();
+        self.page_layer_tree_cache.borrow_mut().clear();
         // [Task #1949] IR 이 바뀌는 재조판 경계에서 셀 단위 레이아웃 캐시(포인터 키)도
         // 함께 비워 다른 IR 의 셀 포인터 재사용으로 인한 오재사용을 방지한다.
         self.layout_engine.clear_layout_caches();

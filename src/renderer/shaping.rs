@@ -101,6 +101,8 @@ pub(crate) enum ShapingRejectReason {
     GlyphLimitExceeded,
     InvalidHorizontalScale,
     ExactSourceIdentityMismatch,
+    ExplicitInstanceSlotMismatch,
+    ExplicitInstanceOverrideNotAllowed,
     CacheEntryLimitExceeded,
     ClusterMappingInvalid,
     ShapingUnavailable,
@@ -213,6 +215,15 @@ pub(crate) fn validate_shaping_request(request: &ShapingRequest<'_>) -> ShapingC
         );
     };
 
+    validate_shaping_request_with_face(request, source, source_digest, &face)
+}
+
+fn validate_shaping_request_with_face(
+    request: &ShapingRequest<'_>,
+    source: ShapingExactSource<'_>,
+    source_digest: String,
+    face: &Face<'_>,
+) -> ShapingCapabilityDecision {
     let observed_code_points = request
         .text
         .chars()
@@ -448,16 +459,60 @@ pub(crate) fn canonicalize_shaping_request(
         return Err(decision);
     }
 
+    let source = request
+        .source
+        .expect("validated shaping request has an exact source");
+    let face = Face::parse(source.bytes, source.face_index)
+        .expect("validated shaping request has a parseable face");
+    Ok(canonicalize_validated_shaping_request(
+        request, decision, &face,
+    ))
+}
+
+pub(crate) fn canonicalize_verified_shaping_request(
+    request: &ShapingRequest<'_>,
+    face: &Face<'_>,
+    source_digest: &str,
+) -> Result<CanonicalShapingIdentity, ShapingCapabilityDecision> {
+    let source = request
+        .source
+        .expect("verified shaping request has an exact source");
+    let decision =
+        validate_shaping_request_with_face(request, source, source_digest.to_owned(), face);
+    if decision.disposition != ShapingDisposition::Requested {
+        return Err(decision);
+    }
+    Ok(canonicalize_validated_shaping_request(
+        request, decision, face,
+    ))
+}
+
+fn canonicalize_validated_shaping_request(
+    request: &ShapingRequest<'_>,
+    decision: ShapingCapabilityDecision,
+    face: &Face<'_>,
+) -> CanonicalShapingIdentity {
     let mut variations = request
         .variations
         .iter()
-        .map(|axis| CanonicalShapingVariation {
-            tag: axis.tag.clone(),
-            value_bits: if axis.value == 0.0 {
-                0.0_f32.to_bits()
+        .filter_map(|axis| {
+            let requested_tag = parse_tag(&axis.tag);
+            let default_value = face
+                .variation_axes()
+                .into_iter()
+                .find(|candidate| candidate.tag == requested_tag)
+                .expect("validated variation axis exists")
+                .def_value;
+            let default_value = if default_value == 0.0 {
+                0.0
             } else {
-                axis.value.to_bits()
-            },
+                default_value
+            };
+            let value = if axis.value == 0.0 { 0.0 } else { axis.value };
+            (value.to_bits() != default_value.to_bits()).then(|| CanonicalShapingVariation {
+                tag: axis.tag.clone(),
+                value_bits: value.to_bits(),
+            })
         })
         .collect::<Vec<_>>();
     variations.sort_by(|left, right| left.tag.cmp(&right.tag));
@@ -515,7 +570,7 @@ pub(crate) fn canonicalize_shaping_request(
                 value
             });
 
-    Ok(CanonicalShapingIdentity {
+    CanonicalShapingIdentity {
         settings_sha256,
         font_source_sha256,
         font_bytes: decision.font_bytes,
@@ -526,7 +581,7 @@ pub(crate) fn canonicalize_shaping_request(
         language,
         features,
         variations,
-    })
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize)]
@@ -565,23 +620,22 @@ pub(crate) fn shape_canonical_request_with_face(
     identity: CanonicalShapingIdentity,
     face: &mut rustybuzz::Face<'_>,
 ) -> ShapingOutputDecision {
-    if request.variations.is_empty() != identity.variations.is_empty() {
-        return ShapingOutputDecision {
-            disposition: ShapingDisposition::Malformed,
-            reason: Some(ShapingRejectReason::ShapingUnavailable),
-            identity: Some(identity),
-            glyph_count: 0,
-            glyphs: Vec::new(),
-        };
-    }
-    let variations = identity
-        .variations
-        .iter()
+    let mut variations = face
+        .variation_axes()
+        .into_iter()
         .map(|axis| Variation {
-            tag: parse_tag(&axis.tag),
-            value: f32::from_bits(axis.value_bits),
+            tag: axis.tag,
+            value: axis.def_value,
         })
         .collect::<Vec<_>>();
+    for requested in &identity.variations {
+        let tag = parse_tag(&requested.tag);
+        let variation = variations
+            .iter_mut()
+            .find(|variation| variation.tag == tag)
+            .expect("canonical variation axis exists on the face");
+        variation.value = f32::from_bits(requested.value_bits);
+    }
     face.set_variations(&variations);
 
     let mut buffer = UnicodeBuffer::new();
