@@ -12,8 +12,9 @@ author: kevin9327
 ## 검토 대상
 
 - 원 PR head: `404cfb41c256040978afc479548f78afb64126f6`.
-- 통합 적용 최종 commit: `76b158531`.
-- 기준 base: `upstream/devel@3afbb066fe93724ab44309163a2e04efb954bf18`.
+- 통합 적용 최종 commit: `8463255f`.
+- 검증 base: `upstream/devel@3afbb066fe93724ab44309163a2e04efb954bf18`; PR 직전
+  `upstream/devel@cfa4ccacab63b470771720ebed33503cdd62adb6`로 충돌 없이 rebase했다.
 - 2026-08-31 재조회에서 Open/non-draft, requested reviewer는 비어 있어 `postmelee` 지정 대상이 아니다.
 - 원 head의 Build & Test, Lint, Native Skia, Archive A-D, adapter/proptest가 성공했다. CodeQL의 neutral은
   실패 conclusion이 아니다.
@@ -34,6 +35,7 @@ author: kevin9327
   Rust unit tier check를 실행해 모두 통과했다.
 - `cargo nextest run --cargo-profile release-test --target-dir target/pr-review --tests --test-threads 12 --no-fail-fast`
   를 완료해 `8870 passed, 46 skipped` (450.949초, exit 0)를 확인했다.
+- rebase는 충돌 없이 적용됐으며 추가 로컬 회귀는 수행하지 않았다. 최종 PR head의 CI 통과를 merge 조건으로 둔다.
 
 ## 판단과 후속 comment 계획
 

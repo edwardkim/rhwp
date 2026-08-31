@@ -11,8 +11,9 @@ author: kevin9327
 
 ## 검토 대상
 
-- 원 PR head: `80f5ef26240926840d6580631c1ba8eb7c421b63`, 통합 적용 최종 commit `06e26162c`.
-- 기준 base: `upstream/devel@3afbb066fe93724ab44309163a2e04efb954bf18`.
+- 원 PR head: `80f5ef26240926840d6580631c1ba8eb7c421b63`, 통합 적용 최종 commit `f6d37697`.
+- 검증 base: `upstream/devel@3afbb066fe93724ab44309163a2e04efb954bf18`; PR 직전
+  `upstream/devel@cfa4ccacab63b470771720ebed33503cdd62adb6`로 충돌 없이 rebase했다.
 - 2026-08-31 재조회에서 Open/non-draft, requested reviewer 없음이다. source head의 Build & Test, Lint,
   Native Skia, Archive A-D와 adapter/proptest는 성공했다.
 - 바탕쪽 표 오른쪽 셀의 TAC 사각형만 저장 `segment_width`를 사용하고, 부동 그림과 일반 셀 줄 폭 경로는
@@ -34,6 +35,7 @@ author: kevin9327
 
 - fmt, native/WASM clippy, workspace build, all-target clippy, manifest, Rust unit tier check가 통과했고,
   release-test 전체 nextest는 `8870 passed, 46 skipped` (450.949초, exit 0)였다.
+- rebase는 충돌 없이 적용됐으며 추가 로컬 회귀는 수행하지 않았다. 최종 PR head의 CI 통과를 merge 조건으로 둔다.
 
 **수용 권고.** 변경은 저장 폭이 권위인 셀 TAC 오른쪽 정렬로 국한되고, 실제 HWP p6 sweep과 위치 회귀가
 의도한 +1.88px 보정을 뒷받침한다.

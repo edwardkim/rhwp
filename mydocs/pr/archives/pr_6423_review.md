@@ -11,13 +11,14 @@ author: kevin9327
 
 ## 검토 대상과 보정
 
-- 원 PR head: `3e426e0d5185db15c661b9976a7151fa7a626b89`, 통합 적용 최종 commit `dd61af159`.
-- 기준 base: `upstream/devel@3afbb066fe93724ab44309163a2e04efb954bf18`.
+- 원 PR head: `3e426e0d5185db15c661b9976a7151fa7a626b89`, 통합 적용 최종 commit `aef1cd45`.
+- 검증 base: `upstream/devel@3afbb066fe93724ab44309163a2e04efb954bf18`; PR 직전
+  `upstream/devel@cfa4ccacab63b470771720ebed33503cdd62adb6`로 충돌 없이 rebase했다.
 - source PR은 base 변경으로 dirty였고 최신 head에는 `cancel-stale-runs`만 붙어 있었다. 통합 branch의
   전체 로컬 검증으로 대체 확인했다. 2026-08-31 재조회에서도 Open/non-draft이며 `postmelee` requested
   reviewer는 없다.
 - 충돌 합성 뒤 `compute_line_extra_spacing`의 새 `converge_auto_shrink_cell` 인자가 기존 unit test 세 곳에
-  누락된 것을 all-target clippy에서 발견했다. 메인터너 보정 `da5e65ae8`이 세 호출에 `false`를 명시해
+  누락된 것을 all-target clippy에서 발견했다. 메인터너 보정 `d8f031c0`이 세 호출에 `false`를 명시해
   기존 테스트 의미를 보존했다.
 
 ## 시각 증적
@@ -39,6 +40,7 @@ author: kevin9327
 
 - 통합 후보에서 fmt, native/WASM clippy, workspace build, all-target clippy, manifest, Rust unit tier
   check가 통과했고, 전체 release-test nextest는 `8870 passed, 46 skipped` (450.949초, exit 0)였다.
+- rebase는 충돌 없이 적용됐으며 추가 로컬 회귀는 수행하지 않았다. 최종 PR head의 CI 통과를 merge 조건으로 둔다.
 
 **수용(메인터너 보정 포함).** 수렴 범위는 셀 자동 축소 경로에 한정돼 있으며, 충돌 보정 후 전체 회귀와
 실물 HWP p1 검증이 통과했다.

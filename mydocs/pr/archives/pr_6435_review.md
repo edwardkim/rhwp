@@ -11,8 +11,9 @@ author: kevin9327
 
 ## 검토 대상
 
-- 원 PR head: `f7706305c7aa4ae17153f2d2e590b07ac6b0fdd6`, 통합 적용 최종 commit `06f315e9d`.
-- 기준 base: `upstream/devel@3afbb066fe93724ab44309163a2e04efb954bf18`.
+- 원 PR head: `f7706305c7aa4ae17153f2d2e590b07ac6b0fdd6`, 통합 적용 최종 commit `6f7f5c56`.
+- 검증 base: `upstream/devel@3afbb066fe93724ab44309163a2e04efb954bf18`; PR 직전
+  `upstream/devel@cfa4ccacab63b470771720ebed33503cdd62adb6`로 충돌 없이 rebase했다.
 - 2026-08-31 재조회에서 Open/non-draft, `postmelee` requested reviewer 없음이다. source head의 Build & Test,
   Lint, Native Skia, Archive A-D와 adapter/proptest는 성공했다.
 - 마지막 column의 overflow 줄만 다음 쪽으로 넘기고 `ENDNOTE_PAGE_OFFCANVAS_GUARD_PX=56`은 보존한다.
@@ -41,6 +42,7 @@ author: kevin9327
 
 - fmt, native/WASM clippy, workspace build, all-target clippy, manifest, Rust unit tier check가 통과했고,
   release-test 전체 nextest는 `8870 passed, 46 skipped` (450.949초, exit 0)였다.
+- rebase는 충돌 없이 적용됐으며 추가 로컬 회귀는 수행하지 않았다. 최종 PR head의 CI 통과를 merge 조건으로 둔다.
 
 **수용 권고.** base 대비 14px frame overflow와 render-tree tail 후보가 모두 사라졌고, 23쪽 불변식과
 전체 회귀를 함께 확인했다. marker/line 차이는 이 수용의 범위가 아니며 별도 fidelity 개선 대상으로 남긴다.

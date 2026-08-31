@@ -11,8 +11,9 @@ author: kevin9327
 
 ## 검토 대상과 보정
 
-- 원 PR head: `77d59943b450c4d465d925c9a29e781b19076204`, 통합 적용 최종 commit `489b44542`.
-- 기준 base: `upstream/devel@3afbb066fe93724ab44309163a2e04efb954bf18`.
+- 원 PR head: `77d59943b450c4d465d925c9a29e781b19076204`, 통합 적용 최종 commit `2abc4ad7`.
+- 검증 base: `upstream/devel@3afbb066fe93724ab44309163a2e04efb954bf18`; PR 직전
+  `upstream/devel@cfa4ccacab63b470771720ebed33503cdd62adb6`로 충돌 없이 rebase했다.
 - source PR은 base 변경으로 dirty이고 최신 head에는 실행 가능한 CI가 붙지 않았다. 2026-08-31 재조회에서
   Open/non-draft, `postmelee` requested reviewer 없음이 확인됐다.
 - `composer.rs` 충돌은 현재 devel의 인라인 control 탐색 가시성을 유지하면서, `\\n` 직후 실제 TAC inline
@@ -25,6 +26,7 @@ author: kevin9327
   유지하고 83 중복을 금지한다. 외부 HWP/HWPX 기준 PDF가 없는 모델 합성 fixture이므로 visual sweep 대상은 아니다.
 - 통합 후보에서 fmt, native/WASM clippy, workspace build, all-target clippy, manifest 및 unit tier check가
   통과했고, release-test 전체 nextest는 `8870 passed, 46 skipped` (450.949초, exit 0)였다.
+- rebase는 충돌 없이 적용됐으며 추가 로컬 회귀는 수행하지 않았다. 최종 PR head의 CI 통과를 merge 조건으로 둔다.
 
 ## 판단과 후속 comment 계획
 
