@@ -84,7 +84,7 @@
     "serialize-javascript": "7.0.5"
   },
   "dependencies": {
-    "@noble/hashes": "^2.3.0",
+    "@noble/hashes": "^2.4.0",
     "canvaskit-wasm": "^0.42.0",
     "pixelmatch": "^7.1.0",
     "pngjs": "^7.0.0"
