@@ -5,7 +5,7 @@
 - base: `devel` (`upstream/devel@887b4ce15`로 rebase)
 - 원 PR head: `02ccd4bb70884ae3cb6726e69b8a6f907fe46a75`
 - 통합 commit: `baa8179bb`
-- 상태: 승인 (통합 검증본 기준)
+- 상태: [통합 PR #6537](https://github.com/edwardkim/rhwp/pull/6537) 병합 완료 (`1636910809ce9d1a394b30144fff19cc5fc32826`)
 
 ## 범위
 
