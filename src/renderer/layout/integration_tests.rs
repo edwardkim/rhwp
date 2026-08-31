@@ -844,7 +844,12 @@ mod tests {
         let mut search_start = 0;
         while let Some(pos) = svg[search_start..].find(needle) {
             let abs_pos = search_start + pos;
-            let context_start = abs_pos.saturating_sub(2000);
+            // 글꼴 체인 길이에 따라 앞뒤 바이트 오프셋이 밀린다. 고정 바이트 뺄셈은
+            // 한글 문자 중간에 떨어질 수 있으므로 char 경계까지 앞으로 민다.
+            let mut context_start = abs_pos.saturating_sub(4000);
+            while context_start < abs_pos && !svg.is_char_boundary(context_start) {
+                context_start += 1;
+            }
             let context = &svg[context_start..abs_pos];
             // 가장 가까운 직전 `<g transform="translate(X` 패턴 찾기
             if let Some(g_rel) = context.rfind("<g transform=\"translate(") {
