@@ -1427,10 +1427,26 @@ pub fn base_family_without_weight_suffix(font_family: &str) -> Option<String> {
 /// `HY중고딕`(fontconfig full name: `HYGothic-Medium`)이다. 두 이름을 모두
 /// 체인에 넣어 원 font가 설치된 호스트에서는 해당 glyph를 먼저 선택한다.
 /// 원 font가 없는 호스트에서는 `Malgun Gothic`이 종전과 같은 마지막 대체다.
+///
+/// 다만 이름을 그대로 넣는 것만으로는 Windows(DirectWrite/Chrome)에서 안 잡히는
+/// face 가 있다. 아래 중고딕 arm 의 주석을 볼 것.
 fn installed_render_font_aliases(font_family: &str) -> &'static [&'static str] {
     match font_family {
-        "한양중고딕" => &["HY중고딕"],
-        "HY중고딕" => &["Malgun Gothic"],
+        // [#6171] 이름 셋 중 `HYGothic` 만 Windows 에서 해석된다. headless Chrome
+        // 통제 실측(`'X',serif` 를 없는 글꼴 기준선과 픽셀 차분):
+        // `HY중고딕` 0px · `HYGothic-Medium` 0px · **`HYGothic` 3,287px**.
+        // DirectWrite 가 영문 family 끝의 스타일 접미사를 떼어 family 를 구성하기
+        // 때문이다 — `-Medium` 은 떼어지므로 원문 이름이 남지 않고, 한국어 이름도 그
+        // family 로 이관되지 않아 같이 실패한다. 아래 견고딕/견명조의 `-Extra` 는
+        // 스타일 토큰이 아니라 안 떼어져 원문 그대로 잡히는 것이라 이 arm 과 다르다
+        // (`H2GTRM`/`H2GTRE` 의 name 테이블 구조는 동일한데 결과만 갈린다).
+        // `HYGothic` 이 실제로 `H2GTRM.TTF` 임은 Chrome 렌더 ↔ TTF 직접 렌더의 잉크
+        // IoU 0.724 로 확인했다(대조군 `H2GTRE.TTF` 는 0.405).
+        // 이 arm 이 없으면 3146683 1쪽 `『별표 7』`의 `『`(중고딕 run)만 Malgun 으로
+        // 떨어져 뒤 글자와의 틈이 8.88pt 가 된다 — 한글 오라클 2.50pt, rhwp PDF 2.38pt.
+        // (체인에서 이 이름만 뺀 통제 렌더로 잰 값. 이 arm 을 넣으면 2.25pt.)
+        "한양중고딕" => &["HY중고딕", "HYGothic"],
+        "HY중고딕" => &["HYGothic", "Malgun Gothic"],
         // [#6171] 견고딕/견명조도 같은 legacy ↔ 설치 face 짝이다. 이 arm 이 없으면
         // 체인이 `'한양견고딕'` 하나 뒤에 바로 generic(=Malgun Gothic)으로 떨어져,
         // `HY견고딕`이 설치된 호스트에서도 Malgun Regular 로 그려진다 — 3146683 1쪽
@@ -2474,9 +2490,22 @@ mod tests {
             render_font_family_chain(r"Legacy\Face").starts_with(r"'Legacy\\Face','Malgun Gothic'")
         );
 
+        // [#6171] `HYGothic` 이 빠지면 `『별표 7』`의 `『`(중고딕 run)이 Windows 에서
+        // Malgun 으로 떨어진다. `HY중고딕`·`HYGothic-Medium` 은 DirectWrite 가 안 잡고
+        // 접미사를 뗀 `HYGothic` 만 잡히므로, 두 이름 뒤에 반드시 와야 한다.
         assert_eq!(
             render_font_family_chain("한양중고딕"),
-            format!("'한양중고딕','HY중고딕',{}", generic_fallback("한양중고딕"))
+            format!(
+                "'한양중고딕','HY중고딕','HYGothic',{}",
+                generic_fallback("한양중고딕")
+            )
+        );
+        assert_eq!(
+            render_font_family_chain("HY중고딕"),
+            format!(
+                "'HY중고딕','HYGothic','Malgun Gothic',{}",
+                generic_fallback("HY중고딕")
+            )
         );
 
         // [#6171] 견고딕/견명조도 legacy name 뒤에 설치 face 이름이 와야 한다. 이 arm 이
@@ -2504,10 +2533,11 @@ mod tests {
                 generic_fallback("Noto Serif KR Black")
             )
         );
+        // [#6171] studio(canvas) 축도 SVG 와 같은 별칭 표를 쓰므로 `HYGothic` 이 들어간다.
         assert_eq!(
             canvas_font_family_chain("HY중고딕"),
             format!(
-                "\"HY중고딕\", \"Malgun Gothic\", {}",
+                "\"HY중고딕\", \"HYGothic\", \"Malgun Gothic\", {}",
                 generic_fallback("HY중고딕")
             )
         );
