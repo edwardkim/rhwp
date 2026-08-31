@@ -2,7 +2,7 @@
 kind: pr-review
 status: pending-ci
 canonical: mydocs/manual/pr_review_workflow.md
-last_verified: 2026-08-30
+last_verified: 2026-08-31
 pr: 6461
 issue: 6453
 author: postmelee
@@ -22,10 +22,11 @@ author: postmelee
   `mydocs/manual/pr_review/intake_and_review.md`, `mydocs/manual/pr_review/local_validation.md`,
   `mydocs/manual/codex/docs_and_git_workflow.md`.
 - 작성자·self-review: `postmelee`; collaborator 본인 PR이므로 reviewer request는 등록하지 않았다.
-- 검토 대상 base는 `devel`, 로컬 code candidate는
-  `4ab7d5f798277175b349f23f4593a6fbebadef02`이다. 보정 전 원격 head
-  `575e7c88e97903a5693baae102460c996a57d279`의 required checks는 모두 성공했고,
-  이 문서를 포함한 trailing head의 CI는 push 뒤 다시 확인해야 한다.
+- 검토 대상 code candidate는 `4ab7d5f798277175b349f23f4593a6fbebadef02`,
+  검증된 trailing 원격 head는 `c0603b9f139266e3ca59afcdf8e6ac9e98a2d291`이다.
+  [해당 head CI](https://github.com/edwardkim/rhwp/actions/runs/33306122565)의
+  Build & Test, lint, 전체 Rust archive, Native Skia와 package gate가 성공했다.
+  [Canvas visual diff](https://github.com/edwardkim/rhwp/actions/runs/33306122461)도 성공했다.
 
 ## 변경 범위와 판단
 
@@ -67,11 +68,25 @@ author: postmelee
 - 실제 Chrome E2E에서 HF 진입, 선택·치환·IME, 반복 페이지 투영, 홀짝 target 전환을 확인했다.
   E2E가 만든 ignored screenshot과 HTML report는 검증 산출물이며 stage하지 않았다.
 
+## 2026-08-31 병합 전 재확인
+
+- 최신 `devel` `3afbb066fe93724ab44309163a2e04efb954bf18`과의 merge simulation은 clean이다.
+- #6460 충돌 해소 후보 `5846201178a62d5019b0858c881bd3655eb1ac4b` 위에 이 PR을
+  누적한 merge simulation도 clean이며, 결과 tree는
+  `f14d5b8f820372cff958726dd38cf816f34ea910`이다.
+- 누적 tree에서 canonical HF resolver와 대표 preview cache, 페이지별·전체·부분 캐시 무효화가
+  함께 유지되는 것을 코드로 확인했다. 이 tree 자체를 실행 검증했다는 의미는 아니다.
+- source 변경 없이 #6453 Studio 계약 테스트 3/3, `npx tsc --noEmit`, `git diff --check`를
+  다시 통과했다. 전체 Rust·Native Skia 검증은 위 녹색 code-head CI 근거를 재사용한다.
+- GitHub 상태는 `OPEN`, `MERGEABLE/CLEAN`이다. #6460을 먼저 병합한다면 변경된 base에서
+  이 PR의 mergeable 상태와 최신 required checks를 다시 확인해야 한다.
+
 ## 최종 권고와 후속 조건
 
-**조건부 수용.** 대표 페이지와 텍스트 변경 이벤트 계약을 자동 검증했고, 리뷰의 주석 동기화와 IME
+**승인.** 대표 페이지와 텍스트 변경 이벤트 계약을 자동 검증했고, 리뷰의 주석 동기화와 IME
 우회 경로도 보정했다. 문단 split/merge 이벤트 식별은 비차단 후속 설계 항목이다.
+이 판정은 기술 검토 결과이며 원격 push·merge 실행 승인이 아니다.
 
-- 이 self-review를 trailing 문서 commit으로 같은 branch에 추가한다.
-- 최신 PR head의 required checks가 모두 성공하고 `MERGEABLE/CLEAN`인지 확인한다.
+- 갱신한 self-review를 trailing 문서 commit으로 같은 branch에 추가한다.
+- push 후 최신 trailing PR head의 required checks와 `MERGEABLE/CLEAN`을 다시 확인한다.
 - merge는 작업지시자의 별도 승인 뒤 수행하며, #6453은 PR 본문의 `closes #6453`에 따라 merge 시 닫는다.
