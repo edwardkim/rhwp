@@ -264,7 +264,7 @@ blake3 = "1"
 # 저장소는 getrandom 0.4 + wasm_js 를 쓴다). 여기 코드는 소금·논스를
 # `getrandom::fill` 로 직접 만들고 저수준 Argon2 API 만 쓰므로 그 피처가
 # 필요 없다 — 끊어 두면 wasm 빌드가 구버전 getrandom 을 아예 만나지 않는다.
-argon2 = { version = "0.5", default-features = false, features = ["alloc"] }
+argon2 = { version = "0.6", default-features = false, features = ["alloc"] }
 chacha20poly1305 = { version = "0.11", default-features = false, features = ["alloc"] }
 zeroize = "1"
 # [보안 트레일러 · 포스트양자] ML-KEM-768(NIST FIPS 203) 격자 KEM — 공개키 봉인의
