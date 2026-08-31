@@ -5720,6 +5720,31 @@ impl LayoutEngine {
                             } else {
                                 pic_y
                             };
+                            // [#6494] **칸 앵커 그림은 자기 칸 밖으로 나가지 않는다.**
+                            //
+                            // 이것은 물리적 봉쇄이지 근인 정정이 아니다 — 앵커 계약 자체는
+                            // 아직 확정되지 않았다(이슈에 후보표를 남겼다). 다만 지금은
+                            // 같은 문단의 두 float 이 서로 다른 최종 기준을 써서 한 장은
+                            // 칸 **위로** 246px, 다른 한 장은 칸 **아래로** 나가 용지
+                            // 밖 51.4pt 까지 이르러 캡션·주석·쪽번호를 덮는다
+                            // (156489219 5쪽, 한글 2022 는 두 장을 같은 y=516.04 에 나란히
+                            // 놓는다).
+                            //
+                            // 칸 밖으로 나간 그림은 어느 앵커 모델에서도 옳지 않으므로,
+                            // 모델이 정해질 때까지 칸 안으로 묶는다. 칸보다 큰 그림은
+                            // 건드리지 않는다 — 그 경우 봉쇄는 위치를 바꿀 뿐 결과를
+                            // 개선하지 못하고, 종전 배치를 흔들 위험만 남는다.
+                            let pic_y = {
+                                let cell_top = content_cell_y.min(inner_area.y);
+                                let cell_bottom = (content_cell_y + cell_h)
+                                    .min(inner_area.y + inner_area.height)
+                                    .max(cell_top);
+                                if pic_h <= (cell_bottom - cell_top) + 0.5 {
+                                    pic_y.clamp(cell_top, (cell_bottom - pic_h).max(cell_top))
+                                } else {
+                                    pic_y
+                                }
+                            };
                             if std::env::var("RHWP_6313_DBG").is_ok() && pic_y > 700.0 {
                                 eprintln!(
                                     "[6313B] pic_y={pic_y:.1} pic_h={pic_h:.1} pic_x={pic_x:.1}"
