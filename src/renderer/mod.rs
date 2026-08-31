@@ -1547,6 +1547,32 @@ fn installed_render_font_aliases(font_family: &str) -> &'static [&'static str] {
         // 떨어지는 것을 통제 SVG 로 확인). 그래서 실제로 해석되는 이름을 앞에 둔다.
         // 형제 항목과 다른 점이라 주의 — `HY견고딕`·`HYGothic-Extra` 는 둘 다 잡힌다.
         "한양신명조" => &["HYSinMyeongJo", "HY신명조", "HYSinMyeongJo-Medium"],
+        // [#6263] 같은 접미사 절단 규칙의 나머지 한컴 face 다. 문서가 한국어 이름을
+        // 그대로 들고 있는데 Windows 는 그 이름으로 face 를 못 찾는다. 위 `한양신명조`
+        // arm 은 legacy 이름으로 들어오는 경우고, 이 셋은 문서가 `HY…` 이름을 직접
+        // 쓰는 경우라 별도 arm 이 필요하다(#6263 신고 7문서 실측).
+        //
+        // headless Chrome 통제 실측(`'X',serif` 를 없는 글꼴 기준선과 픽셀 차분):
+        //   `HY신명조` 0px · `HYSinMyeongJo-Medium` 0px · `HYSinMyeongJo` 3,295px
+        //   `HY헤드라인M` 0px · `HYHeadLine-Medium` 0px · `HYHeadLine` 4,785px
+        //   `HY그래픽M` 0px · `HYGraphic-Medium` 0px · `HYGraphic` 3,687px
+        // 셋 다 한국어 이름과 `-Medium` 원문이 모두 안 잡히고 접미사를 뗀 이름만
+        // 잡힌다 — `한양신명조` arm 이 이미 적어 둔 규칙이 그대로 성립한다.
+        //
+        // name 테이블 실측 — family(ko)/family(en):
+        //   H2MJSM.TTF `HY신명조`/`HYSinMyeongJo-Medium`
+        //   H2HDRM.TTF `HY헤드라인M`/`HYHeadLine-Medium`
+        //   H2GPRM.TTF `HY그래픽M`/`HYGraphic-Medium`
+        // 해석되는 이름을 앞에 두고, 원문 en 이름은 다른 매칭 규칙을 쓰는 호스트를
+        // 위해 뒤에 남긴다(형제 arm 과 같은 순서 규약).
+        "HY신명조" => &[
+            "HYSinMyeongJo",
+            "HYSinMyeongJo-Medium",
+            "HCR Batang",
+            "함초롬바탕",
+        ],
+        "HY헤드라인M" => &["HYHeadLine", "HYHeadLine-Medium", "HCR Dotum", "함초롬돋움"],
+        "HY그래픽M" => &["HYGraphic", "HYGraphic-Medium", "HCR Dotum", "함초롬돋움"],
         // #4739: 구형 정부상징 부처명 face가 없을 때 현재 공식 배포 face를 찾는다.
         // 동일 alias가 아니라 availability 기반 successor이므로 exact legacy 뒤에만 둔다.
         "정부상징 부처명_16040911" | "Government_16040911" => &[
@@ -2619,6 +2645,12 @@ mod tests {
         );
         // 신명조도 같은 짝이다. 이 arm 이 없으면 체인이 `'한양신명조','Batang',…` 로
         // 떨어져 `HY신명조`(H2MJSM.TTF) 설치본을 건너뛴다 — 156573118 8쪽 텍스트 런 600개.
+        // [#6263] 문서가 `HY…` 이름을 직접 쓰는 경우도 접미사를 뗀 이름이 앞에 와야
+        // 한다. 한국어 이름·`-Medium` 원문은 Windows 에서 둘 다 안 잡힌다(실측 0px).
+        assert!(render_font_family_chain("HY신명조").starts_with("'HY신명조','HYSinMyeongJo',"));
+        assert!(render_font_family_chain("HY헤드라인M").starts_with("'HY헤드라인M','HYHeadLine',"));
+        assert!(render_font_family_chain("HY그래픽M").starts_with("'HY그래픽M','HYGraphic',"));
+
         assert_eq!(
             render_font_family_chain("한양신명조"),
             format!(
