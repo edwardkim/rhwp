@@ -1790,7 +1790,12 @@ fn textless_host_ladder_line_advance(paragraphs: &[Paragraph], para_index: usize
     let seg = stored_single_visual_line(cur)?;
     let next_seg = next.line_segs.first()?;
     // 줄 규모는 조각들의 최대값으로 본다 — 좌·우 띠는 같은 줄이라 높이를 더하지 않는다.
-    let expected = cur.line_segs.iter().map(|s| s.line_height).max().unwrap_or(0)
+    let expected = cur
+        .line_segs
+        .iter()
+        .map(|s| s.line_height)
+        .max()
+        .unwrap_or(0)
         + cur
             .line_segs
             .iter()
