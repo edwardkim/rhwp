@@ -68,12 +68,10 @@ fn validate_subtree(xml: &str, limits: &HmlLimits) -> Result<String, String> {
             Event::Empty(element) => state.empty(&element, &reader, limits)?,
             Event::End(_) => state.end()?,
             Event::Text(text) => {
-                let decoded = text.decode().map_err(|error| error.to_string())?;
-                state.text(&decoded, text.len(), limits)?;
+                state.text(text.as_ref(), text.len(), limits)?;
             }
             Event::CData(text) => {
-                let decoded = text.decode().map_err(|error| error.to_string())?;
-                state.text(&decoded, text.len(), limits)?;
+                state.text(text.as_ref(), text.len(), limits)?;
             }
             Event::GeneralRef(reference) => state.reference(&reference)?,
             Event::Decl(_) | Event::DocType(_) => {
@@ -134,11 +132,7 @@ impl SubtreeState {
         if self.roots > 1 {
             return Err("raw fragment must contain exactly one root subtree".to_string());
         }
-        self.root_name = Some(
-            std::str::from_utf8(element.name().as_ref())
-                .map_err(|_| "raw fragment root name is not UTF-8".to_string())?
-                .to_string(),
-        );
+        self.root_name = Some(element.name().as_ref().to_string());
         Ok(())
     }
 
@@ -170,8 +164,8 @@ impl SubtreeState {
         {
             return validate_xml_chars(&character.to_string());
         }
-        let name = reference.decode().map_err(|error| error.to_string())?;
-        if matches!(name.as_ref(), "lt" | "gt" | "amp" | "quot" | "apos") {
+        let name = reference.as_ref();
+        if matches!(name, "lt" | "gt" | "amp" | "quot" | "apos") {
             Ok(())
         } else {
             Err(format!("unsupported entity reference &{name};"))
@@ -189,7 +183,7 @@ impl SubtreeState {
 
 fn validate_attributes(
     element: &BytesStart<'_>,
-    reader: &Reader<&[u8]>,
+    _reader: &Reader<&[u8]>,
     limits: &HmlLimits,
 ) -> Result<(), String> {
     let mut count = 0usize;
@@ -200,7 +194,7 @@ fn validate_attributes(
         }
         let attribute = attribute.map_err(|error| error.to_string())?;
         let value = attribute
-            .decoded_and_normalized_value(quick_xml::XmlVersion::Explicit1_0, reader.decoder())
+            .normalized_value(quick_xml::XmlVersion::Explicit1_0)
             .map_err(|error| error.to_string())?;
         validate_xml_chars(&value)?;
     }

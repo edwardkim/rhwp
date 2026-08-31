@@ -69,11 +69,11 @@ fn hwpx_app_version(data: &[u8]) -> Option<String> {
                 for attr in element.attributes() {
                     let attr = attr.ok()?;
                     if local_name(attr.key.as_ref()) == b"appVersion" {
-                        let raw = String::from_utf8_lossy(&attr.value);
+                        let raw = attr.value.as_ref();
                         return Some(
                             quick_xml::escape::unescape(&raw)
                                 .map(|value| value.into_owned())
-                                .unwrap_or_else(|_| raw.into_owned()),
+                                .unwrap_or_else(|_| raw.to_owned()),
                         );
                     }
                 }
@@ -86,8 +86,8 @@ fn hwpx_app_version(data: &[u8]) -> Option<String> {
     }
 }
 
-fn local_name(name: &[u8]) -> &[u8] {
-    name.rsplit(|byte| *byte == b':').next().unwrap_or(name)
+fn local_name(name: &str) -> &[u8] {
+    name.rsplit(':').next().unwrap_or(name).as_bytes()
 }
 
 fn save_version(value: &str) -> Option<HancomOfficeSaveVersion> {

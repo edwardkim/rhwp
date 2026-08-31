@@ -6242,16 +6242,12 @@ struct Task903Stage52ParaPrInfo {
     auto_spacing_e_asian_num: String,
 }
 
-fn task903_stage52_local_name(name: &[u8]) -> &[u8] {
-    if let Some(pos) = name.iter().position(|&b| b == b':') {
-        &name[pos + 1..]
-    } else {
-        name
-    }
+fn task903_stage52_local_name(name: &str) -> &[u8] {
+    name.rsplit(':').next().unwrap_or(name).as_bytes()
 }
 
 fn task903_stage52_attr_value(attr: &quick_xml::events::attributes::Attribute) -> String {
-    String::from_utf8_lossy(attr.value.as_ref()).to_string()
+    attr.value.as_ref().to_string()
 }
 
 fn task903_stage52_read_header_xml() -> String {

@@ -364,11 +364,8 @@ impl ScanState {
 /// `c:pt` 의 `idx` 속성.
 fn pt_index(e: &BytesStart) -> u32 {
     for attr in e.attributes().flatten() {
-        if attr.key.local_name().as_ref() == b"idx" {
-            return std::str::from_utf8(&attr.value)
-                .ok()
-                .and_then(|s| s.parse().ok())
-                .unwrap_or(0);
+        if attr.key.local_name().as_ref().as_bytes() == b"idx" {
+            return attr.value.as_ref().parse().unwrap_or(0);
         }
     }
     0
@@ -399,15 +396,15 @@ fn prefix_of(e: &BytesStart) -> String {
     let qname = e.name();
     let qname = qname.as_ref();
     let local_len = e.local_name().as_ref().len();
-    String::from_utf8_lossy(&qname[..qname.len().saturating_sub(local_len)]).into_owned()
+    qname[..qname.len().saturating_sub(local_len)].to_owned()
 }
 
 /// [#5652] 속성 `name` 의 값 — quick_xml 이 파싱한 그대로(이스케이프 해제 없음).
 fn attr_value(e: &BytesStart, name: &[u8]) -> Option<String> {
     e.attributes()
         .flatten()
-        .find(|attr| attr.key.local_name().as_ref() == name)
-        .map(|attr| String::from_utf8_lossy(&attr.value).into_owned())
+        .find(|attr| attr.key.local_name().as_ref().as_bytes() == name)
+        .map(|attr| attr.value.as_ref().to_owned())
 }
 
 /// [#5652] 태그 하나의 raw 구간(`tag`, `<` 부터 `>` 까지) 안에서 속성 `name` 의 값 텍스트
@@ -558,7 +555,7 @@ fn note_series_index(state: &mut ScanState, text: &str, tag_range: Range<usize>,
     let Some(cur) = state.cur.as_mut() else {
         return;
     };
-    let slot = match e.local_name().as_ref() {
+    let slot = match e.local_name().as_ref().as_bytes() {
         b"idx" => &mut cur.idx_span,
         b"order" => &mut cur.order_span,
         _ => return,
@@ -596,11 +593,13 @@ pub fn scan_chart_values(xml: &[u8]) -> Result<ChartData, ChartScanError> {
                 skip_depth -= 1;
             }
             Ok(Event::Empty(_)) if skip_depth > 0 => {}
-            Ok(Event::Start(ref e)) if is_skipped(e.local_name().as_ref()) => skip_depth = 1,
+            Ok(Event::Start(ref e)) if is_skipped(e.local_name().as_ref().as_bytes()) => {
+                skip_depth = 1
+            }
             Ok(Event::Start(ref e)) => {
                 // 이번 이벤트의 raw 태그 구간 — `<` 부터 `>` 까지. 속성값 구간은 이 안에서만 찾는다.
                 let tag_range = pos_before..reader.buffer_position() as usize;
-                match e.local_name().as_ref() {
+                match e.local_name().as_ref().as_bytes() {
                     b"ser" => {
                         state.cur = Some(ChartSeries {
                             name: None,
@@ -668,7 +667,7 @@ pub fn scan_chart_values(xml: &[u8]) -> Result<ChartData, ChartScanError> {
             }
             Ok(Event::Empty(ref e)) => {
                 let tag_range = pos_before..reader.buffer_position() as usize;
-                match e.local_name().as_ref() {
+                match e.local_name().as_ref().as_bytes() {
                     // 빈 요소 `<c:v/>` — 결측치다. 텍스트 구간이 없으니 구간 없이 싣는다.
                     // 읽기는 되고 그 점의 편집만 거부된다.
                     b"v" if state.capturing() => {
@@ -720,7 +719,7 @@ pub fn scan_chart_values(xml: &[u8]) -> Result<ChartData, ChartScanError> {
             }
             Ok(Event::End(ref e)) => {
                 let end = reader.buffer_position() as usize;
-                match e.local_name().as_ref() {
+                match e.local_name().as_ref().as_bytes() {
                     b"v" => {
                         if let Some(start) = state.v_start.take() {
                             // 닫는 태그 직전 = 텍스트 끝. 닫는 태그 길이를 계산하지 않는다.
