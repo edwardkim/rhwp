@@ -10555,6 +10555,11 @@ impl TypesetEngine {
             let zero_between_large_separator_margin = endnote_flow_profile
                 .map(EndnoteFlowProfile::visible_zero_between_large_separator_margin)
                 .unwrap_or(false);
+            // [#4318] 구분선 위/아래 20mm + 기본 미주 사이(7mm). 다른 미주
+            // 모양까지 4px bleed·꼬리 넘김을 쓰면 쪽수/off-canvas 가 흔들린다.
+            let both_large_separator_default_between = endnote_flow_profile
+                .map(EndnoteFlowProfile::visible_both_large_separator_default_between)
+                .unwrap_or(false);
             let endnote_has_text_or_equation = para_has_visible_text_or_equation(en_para);
             let endnote_has_visible_payload =
                 endnote_has_text_or_equation || para_has_non_tac_picture_or_shape(en_para);
@@ -11137,9 +11142,10 @@ impl TypesetEngine {
                     && (!default_between_notes_gap || zero_between_large_separator_margin)
                 {
                     // 보이는 구분선의 마지막 단에서는 renderer의 저장 vpos
-                    // 보정이 하단으로 수 px 내려갈 수 있다. 24px bleed 는
-                    // 한 줄(≈12px)을 본문 프레임 아래(+14px)에 남긴다(#4318).
-                    remaining_height + ENDNOTE_LAST_COLUMN_SPLIT_BLEED_PX
+                    // 보정이 하단으로 약간 내려갈 수 있다. 미주 사이가
+                    // 0이어도 구분선 위/아래가 큰 프로필은 같은 방식으로
+                    // 마지막 visible tail 한 줄을 현재 단에 남긴다.
+                    remaining_height + ENDNOTE_COLUMN_BOTTOM_BLEED_TOLERANCE_PX
                 } else {
                     remaining_height
                 };
@@ -11217,10 +11223,11 @@ impl TypesetEngine {
             } else {
                 split_endnote_to_fit
             };
-            // [#4318] 구분선 위/아래 20mm 마지막 단: 0/0/0 가드가 없어도
-            // 마지막 줄이 본문 하단을 넘기면 그 줄만 다음 쪽으로 넘긴다.
+            // [#4318] 구분선 위/아래 20mm + 기본 미주 사이 마지막 단: 0/0/0
+            // 가드가 없어도 마지막 줄이 본문 하단을 넘기면 그 줄만 넘긴다.
             let split_endnote_to_fit = if split_endnote_to_fit.is_none()
                 && compact_endnote_separator_profile
+                && both_large_separator_default_between
                 && has_visible_endnote_separator
                 && ep_idx > 0
                 && st.current_column + 1 >= st.col_count
@@ -12719,8 +12726,9 @@ impl TypesetEngine {
                                 .paragraphs
                                 .get(ep_idx + 1)
                                 .is_some_and(para_is_treat_as_char_picture_only)));
-            // [#4318] 0/0/0 가드가 아닌 구분선 20/20 마지막 단 한 줄 꼬리.
+            // [#4318] 구분선 위/아래 20mm + 기본 미주 사이 마지막 단 한 줄 꼬리.
             let last_column_visible_text_tail_starts_next_page = compact_endnote_separator_profile
+                && both_large_separator_default_between
                 && has_visible_endnote_separator
                 && ep_idx > 0
                 && st.current_column + 1 >= st.col_count
@@ -26174,6 +26182,15 @@ impl EndnoteFlowProfile {
 
     fn visible_zero_between_large_separator_margin(self) -> bool {
         self.visible_separator && self.between_notes_hu == 0 && self.large_separator_margin()
+    }
+
+    /// [#4318] 구분선 위/아래가 모두 7mm를 넘는 20mm급이고, 미주 사이는
+    /// 기본(0이 아닌 7mm 이하). 0/0/0·미주사이 0·미주사이 20은 제외한다.
+    fn visible_both_large_separator_default_between(self) -> bool {
+        self.visible_separator
+            && self.separator_above_hu > ENDNOTE_BETWEEN_NOTES_BASE_FLOW_HU
+            && self.separator_below_hu > ENDNOTE_BETWEEN_NOTES_BASE_FLOW_HU
+            && self.nonzero_default_between_notes()
     }
 
     fn visible_large_between_zero_above_compact_below(self) -> bool {
