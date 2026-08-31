@@ -46,8 +46,9 @@ fn parse_export_png_args<'a>(args: &'a [String]) -> Result<PngExportArgs<'a>, i3
     let mut max_dimension: Option<i32> = None;
     let mut vlm_target: Option<VlmTarget> = None;
     let mut dpi: Option<f64> = None;
-    // PNG export is print-equivalent output. Editor visuals require an explicit screen profile.
-    let mut render_profile = rhwp::paint::RenderProfile::HighQuality;
+    // 기본 PNG는 Studio Canvas와 같은 screen 레이어 트리를 재생한다. 인쇄용
+    // 고품질 출력은 명시적인 `--profile high-quality`로 선택한다.
+    let mut render_profile = rhwp::paint::RenderProfile::Screen;
     let mut hangul2024_compat = false;
 
     let mut i = 0;

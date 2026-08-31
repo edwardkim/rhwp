@@ -1035,6 +1035,7 @@ impl LayoutEngine {
                 &cell.paragraphs,
                 styles,
                 cell.apply_inner_margin,
+                cell.line_wrap == crate::model::table::CELL_LINE_WRAP_SQUEEZE,
             );
             pad_left = new_pl;
             pad_right = new_pr;

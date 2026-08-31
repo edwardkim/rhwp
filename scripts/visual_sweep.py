@@ -56,6 +56,8 @@ FRAME_OVERFLOW_PIXEL_LIMIT = 20
 FRAME_OVERFLOW_EXTRA_PIXEL_LIMIT = 12
 FRAME_OVERFLOW_TOLERATED_BLEED_PX = 12
 FRAME_BOTTOM_GLYPH_BLEED_TOLERANCE_PX = 6
+FRAME_INTERIOR_DECORATION_MIN_BOTTOM_MARGIN_PX = 16
+DEFAULT_RHWP_BIN = "target/pr-review/debug/rhwp"
 # A centered endnote separator can span almost half of a Chrome-size page
 # raster.  It is not a page boundary, so use a stronger coverage requirement
 # only when selecting the *bottom* frame line.
@@ -563,6 +565,42 @@ def rhwp_binary_identifier(root: Path, rhwp_bin: str) -> dict[str, str]:
         "path": safe_rel_str(root, resolved.resolve()),
         "sha256": sha256_file(resolved),
     }
+
+
+def git_head_commit_timestamp(root: Path) -> float:
+    proc = subprocess.run(
+        ["git", "show", "-s", "--format=%ct", "HEAD"],
+        cwd=root,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    if proc.returncode != 0:
+        raise SystemExit(f"Git HEAD 시각을 확인할 수 없습니다: {proc.stderr.strip()}")
+    try:
+        return float(proc.stdout.strip())
+    except ValueError as error:
+        raise SystemExit("Git HEAD 시각이 비어 있거나 올바르지 않습니다.") from error
+
+
+def ensure_default_rhwp_binary_is_current(root: Path, rhwp_bin: str) -> None:
+    """Reject an implicit debug binary built before the checked-out HEAD.
+
+    An explicit --rhwp-bin is caller-owned: it may intentionally point at a
+    separately built artifact.  The default is different because silently
+    reusing target/debug/rhwp makes visual evidence describe an older tree.
+    """
+    if Path(rhwp_bin) != Path(DEFAULT_RHWP_BIN):
+        return
+    binary = root / rhwp_bin
+    if not binary.is_file():
+        return
+    if binary.stat().st_mtime < git_head_commit_timestamp(root):
+        raise SystemExit(
+            f"기본 {DEFAULT_RHWP_BIN}가 현재 HEAD보다 오래되었습니다. "
+            "`cargo build --locked`로 다시 빌드하거나, 검증할 최신 실행 파일을 "
+            "--rhwp-bin으로 명시하세요."
+        )
 
 
 def sweep_provenance(
@@ -1382,6 +1420,27 @@ def detect_frame(image: Image.Image) -> tuple[int, int, int, int]:
     left = max(left_candidates)[1] if left_candidates else round(w * 0.033)
     right = max(right_candidates)[1] if right_candidates else round(w * 0.967)
     return left, top, right, bottom
+
+
+def frames_are_interior_decorations(
+    rhwp: Image.Image,
+    rhwp_frame: tuple[int, int, int, int],
+    pdf: Image.Image,
+    pdf_frame: tuple[int, int, int, int],
+) -> bool:
+    """Whether both detected bottom lines sit inside their physical pages.
+
+    detect_frame finds prominent drawn rules.  Such a rule can be a content or
+    decorative frame rather than the paper edge, so text below it is not page
+    overflow by itself.  Keep the raw measurements, but do not turn them into
+    a frame-overflow failure when both sides have a material paper margin.
+    """
+    rhwp_bottom_margin = rhwp.height - 1 - rhwp_frame[3]
+    pdf_bottom_margin = pdf.height - 1 - pdf_frame[3]
+    return (
+        rhwp_bottom_margin >= FRAME_INTERIOR_DECORATION_MIN_BOTTOM_MARGIN_PX
+        and pdf_bottom_margin >= FRAME_INTERIOR_DECORATION_MIN_BOTTOM_MARGIN_PX
+    )
 
 
 def horizontal_rule_candidates(
@@ -3589,6 +3648,12 @@ def analyze_page(
     pdf = Image.open(pdf_path).convert("RGB")
     rhwp_frame = detect_frame(rhwp)
     pdf_frame = detect_frame(pdf)
+    frame_is_interior_decoration = frames_are_interior_decorations(
+        rhwp,
+        rhwp_frame,
+        pdf,
+        pdf_frame,
+    )
     rl, rt, rr, rb = rhwp_frame
     pl, pt, pr, pb = pdf_frame
 
@@ -3793,6 +3858,8 @@ def analyze_page(
         )
     )
     if (
+        not frame_is_interior_decoration
+        and
         rhwp_out_pixels > max(FRAME_OVERFLOW_PIXEL_LIMIT, pdf_out_pixels + FRAME_OVERFLOW_EXTRA_PIXEL_LIMIT)
         and not tolerated_rhwp_frame_bleed
         and not minor_rhwp_glyph_bleed
@@ -3866,7 +3933,11 @@ def analyze_page(
         flags.append("line_order_overlap")
     if column_text_flow_collapse:
         flags.append("column_text_flow_collapse")
-    frame_tail_flow_overflow = bool(frame_tail_overflows and (column_line_drift_candidates or rhwp_out_pixels > 0))
+    frame_tail_flow_overflow = bool(
+        not frame_is_interior_decoration
+        and frame_tail_overflows
+        and (column_line_drift_candidates or rhwp_out_pixels > 0)
+    )
     if frame_tail_flow_overflow:
         flags.append("render_tree_frame_tail_overflow")
     if question_marker_drifts:
@@ -3934,6 +4005,7 @@ def analyze_page(
         "pdf_outside_frame_max_y": pdf_out_max_y,
         "rhwp_outside_frame_extent_px": rhwp_out_extent,
         "pdf_outside_frame_extent_px": pdf_out_extent,
+        "frame_is_interior_decoration": frame_is_interior_decoration,
         "frame_overflow_tolerated_bleed": tolerated_rhwp_frame_bleed,
         "paper_size_footer_frame_bleed": paper_size_footer_frame_bleed,
         "rhwp_outside_frame_bleed_px": rhwp_outside_frame_bleed_px,
@@ -4775,7 +4847,14 @@ def main() -> None:
         ),
     )
     parser.add_argument("--out", default="output/task1274")
-    parser.add_argument("--rhwp-bin", default="target/debug/rhwp")
+    parser.add_argument(
+        "--rhwp-bin",
+        default=DEFAULT_RHWP_BIN,
+        help=(
+            "SVG와 render tree를 내보낼 rhwp 실행 파일입니다. 기본값은 현재 검토 전용 "
+            f"빌드 산출물인 {DEFAULT_RHWP_BIN}입니다."
+        ),
+    )
     parser.add_argument("--dpi", type=int, default=96)
     parser.add_argument(
         "--svg-rasterizer",
@@ -4831,6 +4910,7 @@ def main() -> None:
 
     root = Path.cwd()
     ensure_tools(args.svg_rasterizer)
+    ensure_default_rhwp_binary_is_current(root, args.rhwp_bin)
     custom_targets = custom_targets_from_args(args)
     requested_targets = args.target
     if requested_targets and "all" in requested_targets:

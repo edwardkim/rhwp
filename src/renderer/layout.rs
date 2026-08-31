@@ -1760,14 +1760,48 @@ fn para_has_visible_textless_float_shape_item(
 /// 실제로 어떻게 했는지가 다음 문단과의 vpos 델타에 남는다(30213 9쪽 실측: 도식 앵커
 /// 2560 = lh1600+gap960 전체 예약 — vert_rel_to 휴리스틱으로는 못 가르는 케이스).
 /// 쪽 경계 리셋(음수 델타)·다중 lineseg·값 부재는 None 으로 물러나 휴리스틱에 맡긴다.
+/// [#6524] 저장 사다리에서 이 문단이 **한 줄**일 때 그 줄의 대표 조각을 준다.
+///
+/// 어울림 개체를 안은 문단의 저장 줄은 개체를 피해 좌·우 띠로 쪼개져 `LINE_SEG` 조각
+/// 둘로 남는다(30098 pi=36: 둘 다 `vpos=21722`·`lh=1500`·`sp=900`, `cs` 는 0 과 45305).
+/// 같은 `vertical_pos` 를 공유하면서 `column_start` 가 갈라지는 조각은 **한 줄**이다
+/// (#6299 술어, `height_measurer::is_same_vertpos_wrap_fragment` 와 같은 판별).
+///
+/// `cs` 까지 같은 쌍은 쪽 리셋·중복이라 뜻이 갈리고, 진짜 여러 줄은 stale 사다리일 수
+/// 있으므로 둘 다 `None` 으로 물러난다.
+fn stored_single_visual_line(para: &Paragraph) -> Option<&crate::model::paragraph::LineSeg> {
+    let segs = para.line_segs.as_slice();
+    let first = segs.first()?;
+    segs[1..]
+        .iter()
+        .all(|other| {
+            other.vertical_pos == first.vertical_pos && other.column_start != first.column_start
+        })
+        .then_some(first)
+}
+
 fn textless_host_ladder_line_advance(paragraphs: &[Paragraph], para_index: usize) -> Option<bool> {
     let cur = paragraphs.get(para_index)?;
     let next = paragraphs.get(para_index + 1)?;
-    let (seg, next_seg) = match (cur.line_segs.as_slice(), next.line_segs.first()) {
-        ([seg], Some(next_seg)) => (seg, next_seg),
-        _ => return None,
-    };
-    let expected = seg.line_height + seg.line_spacing;
+    // [#6524] 물러날 대상은 "**줄**이 여럿"이지 "**조각**이 여럿"이 아니다. 종전 술어
+    // `[seg]` 는 좌·우로 쪼개진 한 줄에서도 통째로 물러나 진행량 0 을 주었고, 다음 문단이
+    // 24.00pt 위로 올라와 본문 전체가 15.00pt 상승했다(30098 3쪽: `추진경과` 제목이 도표
+    // 테두리와 6.01pt 겹침, 한/글은 8.70pt 여유).
+    let seg = stored_single_visual_line(cur)?;
+    let next_seg = next.line_segs.first()?;
+    // 줄 규모는 조각들의 최대값으로 본다 — 좌·우 띠는 같은 줄이라 높이를 더하지 않는다.
+    let expected = cur
+        .line_segs
+        .iter()
+        .map(|s| s.line_height)
+        .max()
+        .unwrap_or(0)
+        + cur
+            .line_segs
+            .iter()
+            .map(|s| s.line_spacing)
+            .max()
+            .unwrap_or(0);
     if expected <= 0 {
         return None;
     }
@@ -1779,7 +1813,7 @@ fn textless_host_ladder_line_advance(paragraphs: &[Paragraph], para_index: usize
     // Square 호스트까지 이 사다리 질의를 넓히면서(호출부) stale 사다리가
     // 계약을 뒤집던 반증(issue_2069 편집 시나리오)을 태그로 차단한다.
     let synth = crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY;
-    if seg.tag & synth != 0 || next_seg.tag & synth != 0 {
+    if cur.line_segs.iter().any(|s| s.tag & synth != 0) || next_seg.tag & synth != 0 {
         return None;
     }
     let delta = next_seg.vertical_pos - seg.vertical_pos;
@@ -8210,10 +8244,12 @@ impl LayoutEngine {
                                 .then(|| {
                                     let cur = paragraphs.get(*para_index)?;
                                     let next = paragraphs.get(*para_index + 1)?;
-                                    let seg = match cur.line_segs.as_slice() {
-                                        [seg] => seg,
-                                        _ => return None,
-                                    };
+                                    // [#6524] 사다리 질의와 **같은 술어**를 써야 한다.
+                                    // 여기만 `[seg]` 로 두면 좌·우 조각 문단이 저장 델타를
+                                    // 못 받고 `paragraph_line_advance_px` 로 물러나는데,
+                                    // 그 폴백은 조각 둘을 **두 줄**로 세어 24.00pt 를 더
+                                    // 전진시킨다(30098 pi=36: 24.00 대신 48.00).
+                                    let seg = stored_single_visual_line(cur)?;
                                     let delta =
                                         next.line_segs.first()?.vertical_pos - seg.vertical_pos;
                                     (delta > 0).then(|| hwpunit_to_px(delta, self.dpi))

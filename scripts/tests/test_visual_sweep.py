@@ -626,6 +626,27 @@ class LegacyGlyphVisualCandidateTests(unittest.TestCase):
 
 
 class FrameDetectionTests(unittest.TestCase):
+    def test_interior_frames_are_not_physical_page_boundaries(self) -> None:
+        rhwp = Image.new("RGB", (794, 1123), "white")
+        pdf = Image.new("RGB", (794, 1122), "white")
+
+        self.assertTrue(
+            SWEEP.frames_are_interior_decorations(
+                rhwp,
+                (26, 75, 767, 1096),
+                pdf,
+                (26, 75, 767, 1095),
+            )
+        )
+        self.assertFalse(
+            SWEEP.frames_are_interior_decorations(
+                rhwp,
+                (26, 75, 767, 1112),
+                pdf,
+                (26, 75, 767, 1111),
+            )
+        )
+
     def test_frame_tail_uses_raster_coordinates_and_skips_off_page_nodes(self) -> None:
         tree = {
             "type": "Page",
@@ -712,6 +733,30 @@ class FrameDetectionTests(unittest.TestCase):
 
         self.assertEqual(active, [])
         self.assertEqual(suppressed[0]["suppressed_reason"], "page_number_footer_bleed")
+
+
+class RhwpBinaryFreshnessTests(unittest.TestCase):
+    def test_rejects_stale_implicit_debug_binary(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            binary = root / "target" / "pr-review" / "debug" / "rhwp"
+            binary.parent.mkdir(parents=True)
+            binary.write_bytes(b"rhwp")
+            os.utime(binary, (100.0, 100.0))
+            with patch.object(SWEEP, "git_head_commit_timestamp", return_value=101.0):
+                with self.assertRaisesRegex(SystemExit, "현재 HEAD보다 오래되었습니다"):
+                    SWEEP.ensure_default_rhwp_binary_is_current(root, SWEEP.DEFAULT_RHWP_BIN)
+
+    def test_allows_explicit_binary_and_current_default_binary(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            binary = root / "target" / "pr-review" / "debug" / "rhwp"
+            binary.parent.mkdir(parents=True)
+            binary.write_bytes(b"rhwp")
+            os.utime(binary, (102.0, 102.0))
+            with patch.object(SWEEP, "git_head_commit_timestamp", return_value=101.0):
+                SWEEP.ensure_default_rhwp_binary_is_current(root, SWEEP.DEFAULT_RHWP_BIN)
+                SWEEP.ensure_default_rhwp_binary_is_current(root, "target/debug/rhwp")
 
 
 class RenderTreeLineOrderTests(unittest.TestCase):

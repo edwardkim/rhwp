@@ -257,11 +257,23 @@ fn positive_corpus_unicode_vector_is_caught() {
 ///   y 318~347 로 **겹치지 않는다**.
 /// - `issue1892_hwp3_tab_roundtrip.hwp` 1쪽 "귀하" 2건. 그 쪽에 `<image>` 0개,
 ///   비흰색 `<rect>` 0개.
+/// - `30098_float_host_split_lineseg.hwp` 14쪽 흰 글자 1자 "장". 주민등록표 위임장
+///   서식(별지 제9호서식)의 표 셀[43] r=31,c=5 는 `"장년      월      일  "` 인데,
+///   서명란 위 날짜줄에 남은 앞 글자 "장" 하나만 `text=#FFFFFF` 로 칠해져 있다.
+///   셀의 `border_fill_id=40` 에는 배경 채우기가 없어 탐지기가 쪽 바탕까지
+///   내려간다(`backgroundSource: "page"`). SVG 좌표로 확인했다 — 글자는
+///   `translate(592.07, 914.47)` 이고 그 점을 덮는 도형은 표 테두리 `<rect>` 둘
+///   (둘 다 `fill` 속성 없음)과 흰 쪽 바탕 `<rect fill="#ffffff">` 뿐이며 그 쪽의
+///   `<image>` 는 0개다. 즉 흰 종이 위 흰 글자로 **사람 눈에 보이지 않는다**.
 ///
-/// 그래서 **규칙을 느슨하게 하지 않고** 이 두 문서만 스윕에서 뺀다. 여기에 항목을
+/// 그래서 **규칙을 느슨하게 하지 않고** 이 세 문서만 스윕에서 뺀다. 여기에 항목을
 /// 추가할 때는 반드시 위와 같은 개별 근거를 함께 남긴다 — 근거 없이 이름만 늘리면
 /// 이 목록이 오탐을 숨기는 서랍이 된다.
-const KNOWN_GENUINE_HIDDEN_TEXT: &[&str] = &["synam-001.hwp", "issue1892_hwp3_tab_roundtrip.hwp"];
+const KNOWN_GENUINE_HIDDEN_TEXT: &[&str] = &[
+    "synam-001.hwp",
+    "issue1892_hwp3_tab_roundtrip.hwp",
+    "30098_float_host_split_lineseg.hwp",
+];
 
 /// 제로폭 축의 같은 성격 목록 — **탐지가 맞았는데 표본이 실제로 그렇다**는 선언.
 ///
