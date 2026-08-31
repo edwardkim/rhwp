@@ -2,12 +2,13 @@
 
 - Issue: [#6187](https://github.com/edwardkim/rhwp/issues/6187)
 - 작성일: 2026-08-31 KST
-- 상태: resize 갱신 수정·focused 검증 완료. Stage 2 결과 및 Stage 3 착수 승인 대기.
+- 상태: resize 갱신 수정·focused 검증 완료. 후속 사용자 승인으로 Stage 3 검증 착수.
 - 브랜치: `codex/issue-6187-always-visible-ruler`
 - 수정 전 기준: Stage 1 commit `a24b353b2`
 - 수행 계획: [task_m100_6187.md](../plans/task_m100_6187.md)
 - 구현 계획: [task_m100_6187_impl.md](../plans/task_m100_6187_impl.md)
 - 앞 단계: [Stage 1 보고](task_m100_6187_stage1.md)
+- 후속: [Stage 3 검증 체크포인트](task_m100_6187_stage3.md). 아래 실행 결과와 미실행 범위는 Stage 2 종료 시점 기록이다.
 
 ## 1. 승인과 범위
 

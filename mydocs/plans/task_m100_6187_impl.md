@@ -2,10 +2,11 @@
 
 - Issue: [#6187](https://github.com/edwardkim/rhwp/issues/6187)
 - 작성일: 2026-08-31 KST
-- 상태: Stage 2 구현·focused 검증 완료 / 결과 및 Stage 3 통합 검증 착수 승인 대기.
+- 상태: Stage 3 검증 체크포인트 기록 / 사용자 창 드래그 및 잔여 검증 대기.
 - 수행 계획: [task_m100_6187.md](task_m100_6187.md)
 - Stage 1 결과: [상시 표시·입력 정책 구현 보고](../working/task_m100_6187_stage1.md)
 - Stage 2 결과: [resize 갱신 원자화 보고](../working/task_m100_6187_stage2.md)
+- Stage 3 체크포인트: [전체 테스트·브라우저 검증 기록](../working/task_m100_6187_stage3.md)
 - 브랜치: `codex/issue-6187-always-visible-ruler`
 - 기준: `upstream/devel@e50792c6341a0b61afc3ffeb687a92fc6a807e69`
 
@@ -163,3 +164,14 @@ Stage 2 결과 승인 뒤 아래 범위의 실행 승인을 받아 수행한다.
    포함되지 않게 한다. 이번 변경은 문서 조판이 아닌 Studio UI이므로 한컴 PDF 전수 sweep을 요구하지 않는다.
 5. 사용자 확인 전에는 ‘PR 준비 완료’나 ‘깜빡임 최종 해결’로 확정하지 않는다.
 6. 결과 승인 뒤에도 push·PR 생성은 별도 게이트다. 원 PR은 새 PR merge와 종료 승인 전까지 유지한다.
+
+### 2026-08-31 실행 체크포인트
+
+전체 npm·TypeScript 및 지원되는 Browser API로 snapshot 177개, 마우스 핀 drag/undo,
+수치 입력·새 문서·테마 스모크를 실행했다. 새 snapshot 검사와 부정 대조 4개를 추가했다.
+제품 코드는 Stage 2 commit `35a1e4a63` 이후 변경하지 않았다.
+
+현재 Browser 도구에는 native touch dispatch나 canvas context 읽기 기능이 없으므로, 실제 입력
+계약과 전체 합성 프레임 검증을 완료했다고 간주하지 않는다. page global에 직접 쓰는 기존 E2E도
+이 도구로 우회 실행하지 않았다. 상세 미실행 항목은 Stage 3 기록에 남겼고, 원 계획의 수용 기준을
+snapshot 통과만으로 축소하지 않는다. 사용자에게 실제 창 드래그용 서버를 제공한 체크포인트다.
