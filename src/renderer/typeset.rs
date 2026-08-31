@@ -17972,6 +17972,57 @@ impl TypesetEngine {
                 cumulative = fmt.line_advances_sum(cursor_line..end_line);
             }
 
+            // [#6542] 문단 **안**에서 저장 `vertical_pos` 가 되감기면 그 줄부터 다음 쪽이다.
+            //
+            // 위 `next_para_is_rowbreak_anchor_table` 갈래가 "다음 줄의 저장 vpos 가 0(새 쪽
+            // 상단)" 을 근거로 `end_line` 을 되돌리는 것과 같은 종류의 증거인데, 되감김
+            // (vpos 가 앞줄보다 **작아짐**) 은 배선돼 있지 않았다. `dump-pages` 는 이미
+            // `[vpos-rewind@lineN]` 으로 검출해 찍지만 그것은 진단 문자열일 뿐이다.
+            //
+            // 실측(156678235 pi=59, 물리 6쪽): 저장 사다리가 `68896 → 5040` 으로 line1 에서
+            // 되감기는데 lines 0..3 을 한 쪽에 얹어 `used 1008.3px > 본문 933.6px` — 세 줄이
+            // 본문 하한 1028.1 을 넘어(+3.7 / +37.3 / +70.9px) 쪽번호 아래에 그려졌다.
+            // line0 만 남기면 907.5px 로 들어간다.
+            //
+            // 발동을 두 겹으로 좁힌다.
+            //   ① **실제로 넘칠 때만** — 되감김이 있어도 예산 안에 들어가는 문단은 종전
+            //      배분을 그대로 둔다(쪽 경계 판정은 #2098·#2138·#2279 로 눈금이 맞춰진
+            //      지점들과 얽혀 있다).
+            //   ② **쪽 규모 되감김만** — 문단 안의 작은 국소 리셋(들여쓰기·조각 재시작 산물)
+            //      까지 쪽 경계로 읽으면 안 된다. 넓게 켠 판(①만)은 `#2070` 시장구조조사
+            //      핀을 315 → 316쪽으로 깨뜨렸다(한글 기준 PDF 정답 315). 되감김 폭이 남은
+            //      본문 높이의 절반 이상일 때만 "다음 쪽 상단으로 돌아갔다"로 읽는다.
+            // 저장 사다리가 권위인 native HWP5 조판에 한정한다.
+            let page_scale_rewind_hu =
+                (crate::renderer::px_to_hwpunit(st.base_available_height(), self.dpi) / 2).max(1);
+            if st.profile.hwp5_stored_pagination_layout()
+                && end_line > cursor_line + 1
+                && cumulative > avail_for_lines
+            {
+                let rewind_line = (cursor_line + 1..end_line).find(|&k| {
+                    match (para.line_segs.get(k - 1), para.line_segs.get(k)) {
+                        (Some(prev), Some(cur)) => {
+                            !is_synthetic_line_seg(prev)
+                                && !is_synthetic_line_seg(cur)
+                                // `vpos == 0` 은 되감김이 아니라 **새 물리 쪽 상단** 표식이고
+                                // 바로 위 `next_para_is_rowbreak_anchor_table` 갈래를 비롯해
+                                // 별도 기계가 이미 다룬다. 여기서 같이 자르면 #2070
+                                // 시장구조조사가 315 → 316쪽이 된다(pi=343·1088 실측:
+                                // 54444→0, 53265→0).
+                                && cur.vertical_pos > 0
+                                && cur.vertical_pos < prev.vertical_pos
+                                && i64::from(prev.vertical_pos) - i64::from(cur.vertical_pos)
+                                    >= i64::from(page_scale_rewind_hu)
+                        }
+                        _ => false,
+                    }
+                });
+                if let Some(k) = rewind_line {
+                    end_line = k;
+                    cumulative = fmt.line_advances_sum(cursor_line..end_line);
+                }
+            }
+
             let part_line_height = fmt.line_advances_sum(cursor_line..end_line);
             let part_sp_after = if end_line >= line_count {
                 fmt.spacing_after
