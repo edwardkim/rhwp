@@ -2538,6 +2538,16 @@ impl LayoutEngine {
                             stored_break_seg = stored_line_breaks.get(next_break).map(|&(_, s)| s);
                             next_break += 1;
                             true
+                        } else if next_break < line_break_char_indices.len() {
+                            // [#6180] 아직 도달하지 않은 저장 나눔이 남아 있으면 그것이 이
+                            // 줄의 권위다 — 측정 폭이 한 글자 일찍 넘쳐도 접지 않는다.
+                            //
+                            // 156745974 7쪽 pi=94: 저장 나눔은 35 인데 rhwp 측정 폭이 34 에서
+                            // 넘쳐 `안전` 의 `전` 하나가 제 줄로 떨어졌다(2줄이어야 할 문단이
+                            // 3줄). 한/글은 `… 협력업체의 안전` 까지 한 줄에 담는다.
+                            //
+                            // 저장 나눔을 다 쓴 뒤(재래핑 구간)에는 종전대로 폭으로 접는다.
+                            false
                         } else {
                             inline_x + ch_w > right_margin + 0.5 && inline_x > line_start_x + 1.0
                         };
