@@ -17,7 +17,8 @@ use crate::model::paragraph::{ColumnBreakType, LineSeg, Paragraph};
 use crate::model::shape::CaptionDirection;
 use crate::renderer::composer::{compose_paragraph, first_text_line, ComposedParagraph};
 use crate::renderer::float_placement::{
-    horizontal_range, is_page_bottom_fixed_float, is_para_topbottom_float,
+    empty_offset_float_defers_to_following_generated_text, horizontal_range,
+    is_page_bottom_fixed_float, is_para_topbottom_float,
     native_empty_host_rowbreak_line_advance_hu, original_hwpx_infront_para_flow_paginates,
     signed_hwpunit, stored_empty_anchor_band_host_line_advance_hu,
     stored_visible_anchor_band_host_line_advance_from_vpos, FloatLaneSet, FloatPlacementContext,
@@ -17381,9 +17382,30 @@ impl TypesetEngine {
                 || saved_list_tail_body_vpos_fits)
         {
             // place: 전체 배치
-            st.current_items.push(PageItem::FullParagraph {
+            let defer_preceding_float = matches!(
+                st.current_items.last(),
+                Some(PageItem::Table {
+                    para_index: host_para_idx,
+                    control_index,
+                }) if *host_para_idx + 1 == para_idx
+                    && paragraphs
+                        .get(*host_para_idx)
+                        .and_then(|host| host.controls.get(*control_index).map(|control| (host, control)))
+                        .is_some_and(|(host, control)| matches!(control, Control::Table(table)
+                            if empty_offset_float_defers_to_following_generated_text(host, table, para)))
+            );
+            let paragraph_item = PageItem::FullParagraph {
                 para_index: para_idx,
-            });
+            };
+            if defer_preceding_float {
+                // 빈 host의 양수-offset 자리차지 표는 다음 계산 본문 문단이 표 위 빈칸을
+                // 채운 뒤에 그려진다. 표를 먼저 놓으면 그 본문이 표 하단으로 밀린다.
+                let table_item = st.current_items.pop().expect("checked trailing table item");
+                st.current_items.push(paragraph_item);
+                st.current_items.push(table_item);
+            } else {
+                st.current_items.push(paragraph_item);
+            }
             // [Task #391] 다단/단단 분기:
             //   - 단단 (col_count == 1): total_height (k-water-rfp p3 311px drift 차단, #359)
             //   - 다단 (col_count > 1): height_for_fit (exam_eng 8p 정상 단 채움 복원)

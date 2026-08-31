@@ -29,6 +29,37 @@ use rhwp::wasm_api::HwpDocument;
 
 const SAMPLE: &str = "samples/issue6535/36404612_page_anchored_footer_block.hwpx";
 
+fn find_text_y(node: &rhwp::renderer::render_tree::RenderNode, needle: &str) -> Option<f64> {
+    if let rhwp::renderer::render_tree::RenderNodeType::TextRun(run) = &node.node_type {
+        if run.text.contains(needle) {
+            return Some(node.bbox.y);
+        }
+    }
+    node.children
+        .iter()
+        .find_map(|child| find_text_y(child, needle))
+}
+
+fn contains_text(node: &rhwp::renderer::render_tree::RenderNode, needle: &str) -> bool {
+    find_text_y(node, needle).is_some()
+}
+
+fn find_table_y_with_text(
+    node: &rhwp::renderer::render_tree::RenderNode,
+    needle: &str,
+) -> Option<f64> {
+    if matches!(
+        node.node_type,
+        rhwp::renderer::render_tree::RenderNodeType::Table(_)
+    ) && contains_text(node, needle)
+    {
+        return Some(node.bbox.y);
+    }
+    node.children
+        .iter()
+        .find_map(|child| find_table_y_with_text(child, needle))
+}
+
 #[test]
 fn issue_6535_page_anchored_block_stays_on_its_page() {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(SAMPLE);
@@ -61,5 +92,13 @@ fn issue_6535_page_anchored_block_stays_on_its_page() {
     assert!(
         tables >= 3,
         "1쪽에 표가 {tables}개뿐이다 — 발신명의 틀까지 같은 쪽에 있어야 한다"
+    );
+
+    let body_y = find_text_y(&tree.root, "2.").expect("find numbered body paragraph");
+    let table_y = find_table_y_with_text(&tree.root, "연번").expect("find incident table");
+    let ending_y = find_text_y(&tree.root, "끝.").expect("find ending paragraph");
+    assert!(
+        body_y < table_y && table_y < ending_y,
+        "Hancom 순서와 달리 본문({body_y:.1})/표({table_y:.1})/종결문({ending_y:.1})이 배치됐다"
     );
 }
