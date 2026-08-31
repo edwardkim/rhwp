@@ -23042,6 +23042,17 @@ impl TypesetEngine {
             let measured_fits_current = st.current_height + table_total <= available;
             let declared_overflows_current = st.current_height + declared_total > available;
             let measured_declared_excess = (table_total - declared_total).max(0.0);
+            // [#5941] `anchor_delay <= measured_declared_excess` 는 둘 다 0 인 정상 형상에서
+            // **부동소수점 1 ULP** 로 뒤집힌다. 실측(1130000-200900012 pi=1):
+            //
+            //     anchor = 42.93333333333333   cur_h = 42.93333333333334
+            //     delay  = 7.105427357601002e-15   excess = 0.0   → 판정 false
+            //
+            // 저장 하단(881.39px)이 본문(895.73px)에 들어가는데도 표가 제 쪽으로 밀려
+            // 2쪽 문서가 3쪽이 됐다(한/글 2쪽). 두 값 모두 HWPUNIT→px 나눗셈 산물이라
+            // 비트 일치를 요구할 수 없다 — 픽셀 이하 오차 폭을 준다. 실제 지연(≥0.01px)
+            // 은 종전대로 걸러진다.
+            const ANCHOR_DELAY_FLOAT_EPS_PX: f64 = 1e-6;
             // 저장된 LineSeg와 객체 높이가 현재 쪽 본문 하단 안에 들어간다고 말하려면,
             // anchor 지연이 실제 measured excess로 설명되어야 한다.
             let saved_span = para
@@ -23069,7 +23080,7 @@ impl TypesetEngine {
                 saved_span.is_some_and(|(anchor_px, _top_px, bottom_px)| {
                     let anchor_delay = (st.current_height - anchor_px).max(0.0);
                     anchor_px <= st.current_height
-                        && anchor_delay <= measured_declared_excess
+                        && anchor_delay <= measured_declared_excess + ANCHOR_DELAY_FLOAT_EPS_PX
                         && bottom_px <= available
                 });
             // [#2097] 저장 앵커가 현재 흐름 위치와 정합하는데 저장 하단이 쪽 본문을
