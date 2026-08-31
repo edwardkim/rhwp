@@ -76,7 +76,7 @@ export type EditContext =
       readonly applyTo: number;
       readonly paraIdx: number;
       readonly charOffset: number;
-      readonly preferredPage: number;
+      readonly previewPage: number;
     }
   | {
       readonly mode: 'footnote';
@@ -100,7 +100,7 @@ export type HeaderFooterSelectionSnapshot = {
   readonly mode: 'headerFooter';
   readonly start: HeaderFooterTextPosition;
   readonly end: HeaderFooterTextPosition;
-  readonly preferredPage: number;
+  readonly previewPage: number;
 };
 
 export type EditSelectionSnapshot = BodySelectionSnapshot | HeaderFooterSelectionSnapshot;
@@ -1296,7 +1296,8 @@ export interface HeaderFooterEditTarget {
   readonly sectionIdx: number;
   readonly isHeader: boolean;
   readonly applyTo: number;
-  readonly preferredPage: number;
+  /** 구역 첫 페이지에 마련된 대표 HF 편집 표면 */
+  readonly previewPage: number;
 }
 
 export interface FootnoteEditTarget {
@@ -1312,7 +1313,7 @@ export interface FootnoteEditTarget {
 function hfEditContext(t: HeaderFooterEditTarget, paraIdx: number, charOffset: number): EditContext {
   return {
     mode: 'headerFooter', sectionIdx: t.sectionIdx, isHeader: t.isHeader,
-    applyTo: t.applyTo, paraIdx, charOffset, preferredPage: t.preferredPage,
+    applyTo: t.applyTo, paraIdx, charOffset, previewPage: t.previewPage,
   };
 }
 

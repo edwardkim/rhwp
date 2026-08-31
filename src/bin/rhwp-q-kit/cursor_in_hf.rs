@@ -24,7 +24,7 @@ pub fn run(args: &[String]) -> i32 {
         opts.apply_to,
         opts.para,
         opts.offset,
-        opts.preferred_page,
+        opts.preview_page_hint,
     ) {
         Ok(s) => s,
         Err(e) => {
@@ -43,7 +43,8 @@ pub fn run(args: &[String]) -> i32 {
         "applyTo": opts.apply_to,
         "para": opts.para,
         "offset": opts.offset,
-        "preferredPage": opts.preferred_page,
+        // 기존 JSON 소비자를 위해 키 이름은 유지한다. 값의 의미는 대표 페이지 힌트다.
+        "preferredPage": opts.preview_page_hint,
     });
     merge_object(&mut payload, native);
     if opts.json {
@@ -61,7 +62,7 @@ struct Opts {
     apply_to: u8,
     para: usize,
     offset: usize,
-    preferred_page: i32,
+    preview_page_hint: i32,
 }
 
 fn parse(args: &[String]) -> Result<Opts, i32> {
@@ -116,7 +117,7 @@ fn parse(args: &[String]) -> Result<Opts, i32> {
         apply_to: require(apply_to, "--apply-to")?,
         para: require(para, "--para")?,
         offset: require(offset, "--offset")?,
-        preferred_page: page.map(|p| p as i32).unwrap_or(-1),
+        preview_page_hint: page.map(|p| p as i32).unwrap_or(-1),
     })
 }
 

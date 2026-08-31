@@ -2932,7 +2932,8 @@ impl HwpDocument {
 
     /// 머리말/꼬리말 내 커서 위치의 픽셀 좌표를 반환한다.
     ///
-    /// preferred_page: 선호 페이지 (더블클릭한 페이지). -1이면 첫 번째 발견 페이지 사용.
+    /// `preview_page_hint`: 편집 정의를 투영할 대표 페이지 힌트. Studio는 구역의 첫 페이지를
+    /// 전달한다. 음수이면 호환 경로로 실제 적용 페이지를 앞에서부터 찾는다.
     /// 반환: JSON `{"pageIndex":N,"x":F,"y":F,"height":F}`
     #[wasm_bindgen(js_name = getCursorRectInHeaderFooter)]
     pub fn get_cursor_rect_in_header_footer(
@@ -2942,7 +2943,7 @@ impl HwpDocument {
         apply_to: u8,
         hf_para_idx: u32,
         char_offset: u32,
-        preferred_page: i32,
+        preview_page_hint: i32,
     ) -> Result<String, JsValue> {
         self.get_cursor_rect_in_header_footer_native(
             section_idx as usize,
@@ -2950,7 +2951,7 @@ impl HwpDocument {
             apply_to,
             hf_para_idx as usize,
             char_offset as usize,
-            preferred_page,
+            preview_page_hint,
         )
         .map_err(|e| e.into())
     }

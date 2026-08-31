@@ -8,7 +8,9 @@ use crate::document_core::helpers::{
     build_tab_def_from_json, json_has_border_keys, json_has_tab_keys, parse_char_shape_mods,
     parse_json_i16_array, parse_para_shape_mods,
 };
-use crate::document_core::{ClipboardData, DocumentCore};
+use crate::document_core::{
+    header_footer_apply_from_u8, header_footer_apply_to_u8, ClipboardData, DocumentCore,
+};
 use crate::error::HwpError;
 use crate::model::control::Control;
 use crate::model::event::DocumentEvent;
@@ -16,24 +18,6 @@ use crate::model::header_footer::{Footer, Header, HeaderFooterApply};
 use crate::model::paragraph::{ParaMeta, Paragraph};
 use crate::renderer::composer::{reflow_line_segs, ParagraphBox};
 use crate::renderer::style_resolver::resolve_styles_for_document;
-
-/// applyTo u8 값 → HeaderFooterApply 변환
-fn apply_from_u8(v: u8) -> HeaderFooterApply {
-    match v {
-        1 => HeaderFooterApply::Even,
-        2 => HeaderFooterApply::Odd,
-        _ => HeaderFooterApply::Both,
-    }
-}
-
-/// HeaderFooterApply → u8 변환
-fn apply_to_u8(a: HeaderFooterApply) -> u8 {
-    match a {
-        HeaderFooterApply::Both => 0,
-        HeaderFooterApply::Even => 1,
-        HeaderFooterApply::Odd => 2,
-    }
-}
 
 /// HeaderFooterApply → 표시 레이블
 fn apply_label(a: HeaderFooterApply) -> &'static str {
@@ -59,31 +43,6 @@ impl DocumentCore {
         ))
     }
 
-    /// 구역의 문단들에서 특정 apply_to의 머리말 또는 꼬리말 컨트롤 위치를 찾는다.
-    /// 반환: (para_index, control_index)
-    fn find_header_footer_control(
-        &self,
-        section_idx: usize,
-        is_header: bool,
-        apply_to: HeaderFooterApply,
-    ) -> Option<(usize, usize)> {
-        let section = self.document.sections.get(section_idx)?;
-        for (pi, para) in section.paragraphs.iter().enumerate() {
-            for (ci, ctrl) in para.controls.iter().enumerate() {
-                match ctrl {
-                    Control::Header(h) if is_header && h.apply_to == apply_to => {
-                        return Some((pi, ci));
-                    }
-                    Control::Footer(f) if !is_header && f.apply_to == apply_to => {
-                        return Some((pi, ci));
-                    }
-                    _ => {}
-                }
-            }
-        }
-        None
-    }
-
     /// 머리말/꼬리말 조회 — JSON 반환
     ///
     /// 존재하면: `{"ok":true,"exists":true,"applyTo":0,"paraCount":N,"text":"..."}`
@@ -101,7 +60,7 @@ impl DocumentCore {
                 self.document.sections.len()
             )));
         }
-        let apply = apply_from_u8(apply_to);
+        let apply = header_footer_apply_from_u8(apply_to);
         if let Some((pi, ci)) = self.find_header_footer_control(section_idx, is_header, apply) {
             let section = &self.document.sections[section_idx];
             let ctrl = &section.paragraphs[pi].controls[ci];
@@ -119,7 +78,7 @@ impl DocumentCore {
             let label = apply_label(at);
             Ok(format!(
                 "{{\"ok\":true,\"exists\":true,\"kind\":\"{}\",\"applyTo\":{},\"label\":\"{}\",\"paraIndex\":{},\"controlIndex\":{},\"paraCount\":{},\"text\":\"{}\"}}",
-                kind, apply_to_u8(at), label, pi, ci, paragraphs.len(),
+                kind, header_footer_apply_to_u8(at), label, pi, ci, paragraphs.len(),
                 super::super::helpers::json_escape(&text)
             ))
         } else {
@@ -144,7 +103,7 @@ impl DocumentCore {
                 self.document.sections.len()
             )));
         }
-        let apply = apply_from_u8(apply_to);
+        let apply = header_footer_apply_from_u8(apply_to);
         if self
             .find_header_footer_control(section_idx, is_header, apply)
             .is_some()
@@ -219,7 +178,7 @@ impl DocumentCore {
         apply_to: u8,
         hf_para_idx: usize,
     ) -> Result<&mut Paragraph, HwpError> {
-        let apply = apply_from_u8(apply_to);
+        let apply = header_footer_apply_from_u8(apply_to);
         let (pi, ci) = self
             .find_header_footer_control(section_idx, is_header, apply)
             .ok_or_else(|| {
@@ -267,7 +226,7 @@ impl DocumentCore {
         apply_to: u8,
         hf_para_idx: usize,
     ) -> Option<&Paragraph> {
-        let apply = apply_from_u8(apply_to);
+        let apply = header_footer_apply_from_u8(apply_to);
         let (pi, ci) = self.find_header_footer_control(section_idx, is_header, apply)?;
         let ctrl = &self.document.sections[section_idx].paragraphs[pi].controls[ci];
         match ctrl {
@@ -284,7 +243,7 @@ impl DocumentCore {
         is_header: bool,
         apply_to: u8,
     ) -> Result<&[Paragraph], HwpError> {
-        let apply = apply_from_u8(apply_to);
+        let apply = header_footer_apply_from_u8(apply_to);
         let (pi, ci) = self
             .find_header_footer_control(section_idx, is_header, apply)
             .ok_or_else(|| {
@@ -306,7 +265,7 @@ impl DocumentCore {
         is_header: bool,
         apply_to: u8,
     ) -> Result<&mut Vec<Paragraph>, HwpError> {
-        let apply = apply_from_u8(apply_to);
+        let apply = header_footer_apply_from_u8(apply_to);
         let (pi, ci) = self
             .find_header_footer_control(section_idx, is_header, apply)
             .ok_or_else(|| {
@@ -341,7 +300,7 @@ impl DocumentCore {
 
         let hf_para = self.get_hf_paragraph_mut(section_idx, is_header, apply_to, hf_para_idx)?;
         let new_chars_count = text.chars().count();
-        hf_para.insert_text_at(char_offset, text);
+        let inserted_at = hf_para.insert_text_at(char_offset, text);
 
         // 리플로우 (머리말/꼬리말 영역 폭 기반)
         self.reflow_hf_paragraph(section_idx, is_header, apply_to, hf_para_idx);
@@ -351,13 +310,19 @@ impl DocumentCore {
         self.mark_section_dirty(section_idx);
         self.paginate_if_needed();
 
-        let new_offset = char_offset + new_chars_count;
-        self.event_log.push(DocumentEvent::TextInserted {
-            section: section_idx,
-            para: 0,
-            offset: char_offset,
-            len: new_chars_count,
-        });
+        let new_offset = inserted_at + new_chars_count;
+        self.event_log
+            .push(DocumentEvent::HeaderFooterTextReplaced {
+                section: section_idx,
+                is_header,
+                apply_to,
+                start_para: hf_para_idx,
+                start_offset: inserted_at,
+                end_para: hf_para_idx,
+                end_offset: inserted_at,
+                inserted_end_para: hf_para_idx,
+                inserted_end_offset: new_offset,
+            });
         Ok(super::super::helpers::json_ok_with(&format!(
             "\"charOffset\":{}",
             new_offset
@@ -386,8 +351,14 @@ impl DocumentCore {
         // [Task #2337] undo 재삽입용으로 삭제될 텍스트를 먼저 확보한다. char 단위 슬라이스는
         // delete_text_at 의 클램핑(text_len - char_offset)과 동일 범위이며, Rust char 경계로
         // 잘라 studio(UTF-16) 측 조인 모호성을 피한다. 역연산 삭제 커맨드가 재삽입에 쓴다.
-        let deleted_text: String = hf_para.text.chars().skip(char_offset).take(count).collect();
-        hf_para.delete_text_at(char_offset, count);
+        let actual_offset = char_offset.min(hf_para.text.chars().count());
+        let deleted_text: String = hf_para
+            .text
+            .chars()
+            .skip(actual_offset)
+            .take(count)
+            .collect();
+        hf_para.delete_text_at(actual_offset, count);
 
         // 리플로우
         self.reflow_hf_paragraph(section_idx, is_header, apply_to, hf_para_idx);
@@ -397,15 +368,22 @@ impl DocumentCore {
         self.mark_section_dirty(section_idx);
         self.paginate_if_needed();
 
-        self.event_log.push(DocumentEvent::TextDeleted {
-            section: section_idx,
-            para: 0,
-            offset: char_offset,
-            count,
-        });
+        let deleted_count = deleted_text.chars().count();
+        self.event_log
+            .push(DocumentEvent::HeaderFooterTextReplaced {
+                section: section_idx,
+                is_header,
+                apply_to,
+                start_para: hf_para_idx,
+                start_offset: actual_offset,
+                end_para: hf_para_idx,
+                end_offset: actual_offset + deleted_count,
+                inserted_end_para: hf_para_idx,
+                inserted_end_offset: actual_offset,
+            });
         Ok(super::super::helpers::json_ok_with(&format!(
             "\"charOffset\":{},\"deletedText\":\"{}\"",
-            char_offset,
+            actual_offset,
             super::super::helpers::json_escape(&deleted_text)
         )))
     }
@@ -427,7 +405,7 @@ impl DocumentCore {
             )));
         }
 
-        let apply = apply_from_u8(apply_to);
+        let apply = header_footer_apply_from_u8(apply_to);
         let (pi, ci) = self
             .find_header_footer_control(section_idx, is_header, apply)
             .ok_or_else(|| {
@@ -507,7 +485,7 @@ impl DocumentCore {
             ));
         }
 
-        let apply = apply_from_u8(apply_to);
+        let apply = header_footer_apply_from_u8(apply_to);
         let (pi, ci) = self
             .find_header_footer_control(section_idx, is_header, apply)
             .ok_or_else(|| {
@@ -568,7 +546,7 @@ impl DocumentCore {
                 section_idx
             )));
         }
-        let apply = apply_from_u8(apply_to);
+        let apply = header_footer_apply_from_u8(apply_to);
         let (pi, ci) = self
             .find_header_footer_control(section_idx, is_header, apply)
             .ok_or_else(|| {
@@ -691,24 +669,18 @@ impl DocumentCore {
         }
         self.document.sections[section_idx].raw_stream = None;
         self.rebuild_section(section_idx);
-        self.event_log.push(DocumentEvent::TextDeleted {
-            section: section_idx,
-            para: start_para,
-            offset: start_offset,
-            count: if start_para == end_para {
-                end_offset.saturating_sub(start_offset)
-            } else {
-                0
-            },
-        });
-        if !normalized.is_empty() {
-            self.event_log.push(DocumentEvent::TextInserted {
+        self.event_log
+            .push(DocumentEvent::HeaderFooterTextReplaced {
                 section: section_idx,
-                para: start_para,
-                offset: start_offset,
-                len: normalized.chars().count(),
+                is_header,
+                apply_to,
+                start_para,
+                start_offset,
+                end_para,
+                end_offset,
+                inserted_end_para: cursor_para,
+                inserted_end_offset: cursor_offset,
             });
-        }
 
         Ok(super::super::helpers::json_ok_with(&format!(
             "\"hfParaIndex\":{},\"charOffset\":{}",
@@ -922,7 +894,7 @@ impl DocumentCore {
                 self.document.sections.len()
             )));
         }
-        let apply = apply_from_u8(apply_to);
+        let apply = header_footer_apply_from_u8(apply_to);
         let (pi, ci) = self
             .find_header_footer_control(section_idx, is_header, apply)
             .ok_or_else(|| {
@@ -962,7 +934,7 @@ impl DocumentCore {
     ) -> Result<String, HwpError> {
         let mut items = Vec::new();
         let mut current_index: i32 = -1;
-        let current_apply = apply_from_u8(current_apply_to);
+        let current_apply = header_footer_apply_from_u8(current_apply_to);
 
         for (si, section) in self.document.sections.iter().enumerate() {
             for (pi, para) in section.paragraphs.iter().enumerate() {
@@ -974,7 +946,7 @@ impl DocumentCore {
                     };
                     let kind = if is_header { "머리말" } else { "꼬리말" };
                     let label = apply_label(apply);
-                    let at = apply_to_u8(apply);
+                    let at = header_footer_apply_to_u8(apply);
 
                     if si == current_section_idx
                         && is_header == current_is_header
@@ -1056,8 +1028,8 @@ impl DocumentCore {
                         if let Some(para) = section.paragraphs.get(para_idx) {
                             if let Some(ctrl) = para.controls.get(ctrl_idx) {
                                 match ctrl {
-                                    Control::Header(h) => apply_to_u8(h.apply_to),
-                                    Control::Footer(f) => apply_to_u8(f.apply_to),
+                                    Control::Header(h) => header_footer_apply_to_u8(h.apply_to),
+                                    Control::Footer(f) => header_footer_apply_to_u8(f.apply_to),
                                     _ => 0,
                                 }
                             } else {
@@ -1150,7 +1122,7 @@ impl DocumentCore {
         let final_width = (available_width - margin_left - margin_right).max(0.0);
 
         // 가변 참조로 리플로우 실행
-        let apply = apply_from_u8(apply_to);
+        let apply = header_footer_apply_from_u8(apply_to);
         if let Some((pi, ci)) = self.find_header_footer_control(section_idx, is_header, apply) {
             let ctrl = &mut self.document.sections[section_idx].paragraphs[pi].controls[ci];
             let paragraphs = match ctrl {
@@ -1294,12 +1266,18 @@ impl DocumentCore {
         self.paginate_if_needed();
 
         let new_offset = inserted_at + 1;
-        self.event_log.push(DocumentEvent::TextInserted {
-            section: section_idx,
-            para: 0,
-            offset: inserted_at,
-            len: 1,
-        });
+        self.event_log
+            .push(DocumentEvent::HeaderFooterTextReplaced {
+                section: section_idx,
+                is_header,
+                apply_to,
+                start_para: hf_para_idx,
+                start_offset: inserted_at,
+                end_para: hf_para_idx,
+                end_offset: inserted_at,
+                inserted_end_para: hf_para_idx,
+                inserted_end_offset: new_offset,
+            });
         Ok(super::super::helpers::json_ok_with(&format!(
             "\"charOffset\":{},\"insertedAt\":{},\"insertedLength\":1",
             new_offset, inserted_at
@@ -1336,7 +1314,7 @@ impl DocumentCore {
             )));
         }
 
-        let apply = apply_from_u8(apply_to);
+        let apply = header_footer_apply_from_u8(apply_to);
 
         // 1) 기존 HF가 있으면 삭제
         if self
@@ -1892,8 +1870,8 @@ mod tests {
                         if let Some(para) = section.paragraphs.get(pi) {
                             if let Some(ctrl) = para.controls.get(ci) {
                                 let apply_to = match ctrl {
-                                    Control::Header(h) => apply_to_u8(h.apply_to),
-                                    Control::Footer(f) => apply_to_u8(f.apply_to),
+                                    Control::Header(h) => header_footer_apply_to_u8(h.apply_to),
+                                    Control::Footer(f) => header_footer_apply_to_u8(f.apply_to),
                                     _ => 255,
                                 };
                                 eprintln!(

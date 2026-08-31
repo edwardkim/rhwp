@@ -4,7 +4,7 @@ use super::super::helpers::{
     find_char_at_x, find_logical_control_positions, is_treat_as_char_object_control,
     navigable_text_len, LineInfoResult,
 };
-use crate::document_core::DocumentCore;
+use crate::document_core::{header_footer_apply_to_u8, DocumentCore};
 use crate::error::HwpError;
 use crate::model::control::Control;
 use crate::model::paragraph::Paragraph;
@@ -4301,6 +4301,10 @@ impl DocumentCore {
 
     /// 머리말/꼬리말 내 커서 좌표를 반환한다.
     ///
+    /// `preview_page_hint`가 구역 대표 페이지이면 그 페이지에 요청한 정의를 투영한다.
+    /// 그 밖의 유효한 페이지는 실제 적용 정의가 일치할 때만 사용하며, 음수이면 실제 적용
+    /// 페이지를 앞에서부터 찾는 CLI·구버전 호출부 호환 경로로 동작한다.
+    ///
     /// 반환: JSON `{"pageIndex":N,"x":F,"y":F,"height":F}`
     pub fn get_cursor_rect_in_header_footer_native(
         &self,
@@ -4309,7 +4313,7 @@ impl DocumentCore {
         apply_to: u8,
         hf_para_idx: usize,
         char_offset: usize,
-        preferred_page: i32,
+        preview_page_hint: i32,
     ) -> Result<String, HwpError> {
         use crate::renderer::layout::compute_char_positions;
         use crate::renderer::render_tree::{RenderNode, RenderNodeType};
@@ -4404,20 +4408,22 @@ impl DocumentCore {
             None
         }
 
-        // preferred_page가 지정되면 해당 페이지를 먼저 탐색
+        // 대표 페이지 힌트가 지정되면 해당 페이지를 먼저 탐색한다. 대표 페이지가 아닌
+        // 힌트에서는 실제 적용 정의가 일치해야 하므로 클릭 페이지가 편집 surface를 바꾸지 않는다.
         let total_pages = self.page_count();
-        let page_order: Vec<u32> = if preferred_page >= 0 && (preferred_page as u32) < total_pages {
-            let pref = preferred_page as u32;
-            std::iter::once(pref)
-                .chain((0..total_pages).filter(move |&p| p != pref))
-                .collect()
-        } else {
-            (0..total_pages).collect()
-        };
+        let page_order: Vec<u32> =
+            if preview_page_hint >= 0 && (preview_page_hint as u32) < total_pages {
+                let preview = preview_page_hint as u32;
+                std::iter::once(preview)
+                    .chain((0..total_pages).filter(move |&page| page != preview))
+                    .collect()
+            } else {
+                (0..total_pages).collect()
+            };
         for page_num in page_order {
             let actual_target = self.resolve_header_footer_target(page_num, is_header);
-            let is_preview_page = preferred_page >= 0
-                && page_num == preferred_page as u32
+            let is_preview_page = preview_page_hint >= 0
+                && page_num == preview_page_hint as u32
                 && self
                     .header_footer_preview_page_for_section(section_idx)
                     .is_ok_and(|preview| preview == page_num);
@@ -4562,8 +4568,6 @@ impl DocumentCore {
 
     /// 해당 페이지에서 활성화된 머리말/꼬리말의 (source_section_index, apply_to)를 반환한다.
     fn get_active_hf_info(&self, page_num: u32, is_header: bool) -> Option<(usize, u8)> {
-        use crate::model::header_footer::HeaderFooterApply;
-
         let mut offset = 0u32;
         for (_si, pr) in self.pagination.iter().enumerate() {
             let count = pr.pages.len() as u32;
@@ -4581,16 +4585,8 @@ impl DocumentCore {
                         if let Some(para) = section.paragraphs.get(r.para_index) {
                             if let Some(ctrl) = para.controls.get(r.control_index) {
                                 let apply_to = match ctrl {
-                                    Control::Header(h) => match h.apply_to {
-                                        HeaderFooterApply::Both => 0,
-                                        HeaderFooterApply::Even => 1,
-                                        HeaderFooterApply::Odd => 2,
-                                    },
-                                    Control::Footer(f) => match f.apply_to {
-                                        HeaderFooterApply::Both => 0,
-                                        HeaderFooterApply::Even => 1,
-                                        HeaderFooterApply::Odd => 2,
-                                    },
+                                    Control::Header(h) => header_footer_apply_to_u8(h.apply_to),
+                                    Control::Footer(f) => header_footer_apply_to_u8(f.apply_to),
                                     _ => 0,
                                 };
                                 return Some((source_sec, apply_to));

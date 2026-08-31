@@ -897,7 +897,7 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
       try {
         const target = {
           sectionIdx: this.cursor.hfSectionIdx, isHeader, applyTo: this.cursor.hfApplyTo,
-          preferredPage: this.cursor.hfPreferredPage,
+          previewPage: this.cursor.hfPreviewPage,
         };
         const paraIdx = this.cursor.hfParaIdx;
         const charOffset = this.cursor.hfCharOffset;
@@ -916,7 +916,7 @@ export function onKeyDown(this: any, e: KeyboardEvent): void {
       try {
         const target = {
           sectionIdx: this.cursor.hfSectionIdx, isHeader, applyTo: this.cursor.hfApplyTo,
-          preferredPage: this.cursor.hfPreferredPage,
+          previewPage: this.cursor.hfPreviewPage,
         };
         const paraIdx = this.cursor.hfParaIdx;
         const charOffset = this.cursor.hfCharOffset;

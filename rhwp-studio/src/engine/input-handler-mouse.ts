@@ -813,7 +813,7 @@ export function onClick(this: any, e: MouseEvent): void {
         // 본문 hitTest로 계속 진행
       } else {
         const clickedIsHeader = hfHit.isHeader ?? (this.cursor.headerFooterMode === 'header');
-        const isPreviewSurface = pageIdx === this.cursor.hfPreferredPage
+        const isPreviewSurface = pageIdx === this.cursor.hfPreviewPage
           && clickedIsHeader === (this.cursor.headerFooterMode === 'header');
         const clickedSection = isPreviewSurface
           ? this.cursor.hfSectionIdx
@@ -879,7 +879,7 @@ export function onClick(this: any, e: MouseEvent): void {
           ) {
             if (e.shiftKey && sameTarget) this.cursor.setHfAnchor();
             else this.cursor.clearSelection();
-            this.cursor.setHfCursorPosition(inHfHit.paraIndex, inHfHit.charOffset, pageIdx);
+            this.cursor.setHfCursorPosition(inHfHit.paraIndex, inHfHit.charOffset);
             if (!e.shiftKey || !sameTarget) this.cursor.setHfAnchor();
             this.active = true;
             this.startTextSelectionDrag(e);
