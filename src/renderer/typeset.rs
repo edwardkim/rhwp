@@ -11055,9 +11055,23 @@ impl TypesetEngine {
             } else {
                 None
             };
+            // [#5886] 허용 bleed 는 **용지 안에 남는 만큼**을 넘을 수 없다.
+            //
+            // 관문 이름 그대로 이것은 "용지 밖(off-canvas)"을 막는 장치인데, 허용치를
+            // 단 하단 기준 고정 56px 로 두면 쪽 아래 여백이 그보다 좁은 문서에서
+            // **여백과 56px 사이 구간이 통째로 사각지대**가 된다. 3-09월_교육_통합_2022
+            // 12쪽이 그 예로, 단 하단 1092.3 에서 용지 1122.5 까지 30.2px 뿐인데
+            // 관문은 +56px 을 넘을 때까지 침묵해 세 문단(시뮬 하단 1016.6·1034.6·1052.7)
+            // 이 놓인 뒤에야 발동했다. 뒤 두 문단은 용지 밖이라 다시 그려지지도 않는다.
+            //
+            // 여백이 56px 이상인 문서는 종전과 같다 — 좁은 쪽에서만 조인다.
+            let page_bottom_room = (st.layout.page_height
+                - (st.layout.body_area.y + st.layout.body_area.height))
+                .max(0.0);
+            let page_offcanvas_guard_px = ENDNOTE_PAGE_OFFCANVAS_GUARD_PX.min(page_bottom_room);
             let page_offcanvas_with_para = page_offcanvas_sim
                 && simulated_endnote_bottom
-                    .is_some_and(|bottom| bottom > available + ENDNOTE_PAGE_OFFCANVAS_GUARD_PX);
+                    .is_some_and(|bottom| bottom > available + page_offcanvas_guard_px);
             // 구분선 없는 큰 미주 block에서는 다줄 수식 문단의 advance가
             // frame을 약간 넘더라도 실제 보이는 줄은 하단 frame 안에 남는다.
             // 이 tail을 통째로 유지해야 다음 단의 새 문항 시작점이 한컴과 맞는다.
