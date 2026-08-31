@@ -1,0 +1,170 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q5-evidence-eligibility-audit",
+  "issue": 4969,
+  "stage": "W10-Q5-A",
+  "date": "2026-08-31",
+  "status": "qualified-evidence-audit-approved",
+  "planApproval": "explicit",
+  "resultApproval": "explicit",
+  "checkpointApproved": true,
+  "current": {
+    "branch": "task_m100_4969_w10_q5",
+    "upstreamDevel": "3afbb066fe93724ab44309163a2e04efb954bf18",
+    "mergeCommit": "3afbb066fe93724ab44309163a2e04efb954bf18",
+    "mergeTree": "da1c173345adda3c691878415441e6f64515afe1"
+  },
+  "sourceEvidence": {
+    "q2": {
+      "checkpoint": "167e3b3d22a7a136b056e292933fcbdf7cccbd98",
+      "path": "mydocs/tech/investigations/issue-4969/w10_q2_final_support_classification.json",
+      "sha256": "1c68e10a62f55f52923c72f8e3954b4fce2c8f44170832f6acda68cdd506e218",
+      "ancestorOfCurrent": true
+    },
+    "q3": {
+      "checkpoint": "4e0a3822c3e05c2df8b7c52740b3a0c79487053a",
+      "measurementHead": "8bcaa54ed872c5390620ce190ad8122b09036f31",
+      "path": "mydocs/tech/investigations/issue-4969/w10_q3_e5_final_qualification.json",
+      "sha256": "1cad795c466838979770940778158e3bc69edad1221bbf28385fe3aba8f5250d",
+      "ancestorOfCurrent": true
+    },
+    "q4": {
+      "classificationCheckpoint": "a7de96b44a2f14a9c2ae67ff009f852a1638c875",
+      "causalWasmCheckpoint": "95d450dd5205e121279ca1e1e857510161c1920f",
+      "latestRequalification": "95429a34f5a81f231615592d0c951477fd2e42fb",
+      "classificationPath": "mydocs/tech/investigations/issue-4969/w10_q4_d5_c_final_classification.json",
+      "classificationSha256": "027b99843ce3772baf8a626c08a364d4ad0ada9acb9cf3b212317021a0389fcd",
+      "causalWasmPath": "mydocs/tech/investigations/issue-4969/w10_q4_d5_d_causal_wasm_result.json",
+      "causalWasmSha256": "c73e9edaa291486441dd2a0aba5d1906f7eda959d836230c86c861aaeaca948e",
+      "ancestorOfCurrent": true
+    }
+  },
+  "integration": {
+    "pullRequest": 6493,
+    "codeCandidate": {
+      "head": "7a67f250851babf37e8d21f242494829952ade74",
+      "checkRuns": {
+        "total": 34,
+        "success": 30,
+        "skipped": 4,
+        "failed": 0,
+        "pending": 0
+      }
+    },
+    "trailingReview": {
+      "head": "2497f48f283aa3ad714b53497d8cc2a33f5019a4",
+      "changedPathsFromCodeCandidate": [
+        "mydocs/orders/20260831.md",
+        "mydocs/pr/archives/pr_6493_review.md",
+        "mydocs/pr/archives/pr_6493_review_impl.md"
+      ],
+      "productPathChanges": 0,
+      "checkRuns": {
+        "total": 31,
+        "success": 11,
+        "expectedFastPassSkipped": 19,
+        "cancelStaleSkipped": 1,
+        "failed": 0,
+        "pending": 0
+      }
+    },
+    "merge": {
+      "headTreeEqualsMergeTree": true,
+      "changedPathsFromTrailingReview": 0
+    },
+    "firstCiCorrection": {
+      "commit": "7a67f250851babf37e8d21f242494829952ade74",
+      "classification": "test-relocation-only",
+      "sourceTestRemovedFrom": "src/document_core/commands/header_footer_ops.rs",
+      "integrationTestAddedTo": "tests/cases/issue_4969_shaping_atomic_activation.rs",
+      "productionSemanticsChanged": false
+    }
+  },
+  "overlap": {
+    "q2AfterCheckpoint": {
+      "sharedOwnersChanged": true,
+      "representativeChanges": [
+        "6a156ca98-q3-instance-isolation",
+        "880862177-q3-portable-publication",
+        "4e0a3822c-q3-layer-cache",
+        "992fe4aca-q4-vertical-layout",
+        "d49400aad-q4-vertical-publication",
+        "c9b551909-q4-canvaskit-selection",
+        "e7f814330-q4-source-reuse"
+      ],
+      "affectedPlanes": [
+        "shaping-owner",
+        "paint-resource",
+        "layer-cache",
+        "canvaskit-selection",
+        "issue-4969-harness"
+      ]
+    },
+    "q3AfterCheckpoint": {
+      "sharedOwnersChanged": true,
+      "representativeChanges": [
+        "992fe4aca-q4-vertical-layout",
+        "d49400aad-q4-vertical-publication",
+        "c9b551909-q4-canvaskit-selection",
+        "b1a33b6fc-q4-studio-replay",
+        "e7f814330-q4-source-reuse"
+      ],
+      "affectedPlanes": [
+        "paint-resource",
+        "layer-cache",
+        "canvaskit-selection",
+        "issue-4969-harness"
+      ]
+    },
+    "q4AfterLatestRequalification": {
+      "productionSourceChanges": 0,
+      "studioSourceChanges": 0,
+      "fontOrSampleChanges": 0,
+      "testRelocationOnly": true
+    }
+  },
+  "eligibility": {
+    "q2": {
+      "historicalClassification": "reusable",
+      "currentCanonicalParity": "focused-refresh",
+      "currentBackendParity": "focused-refresh",
+      "currentPerformanceAndResource": "focused-refresh",
+      "historicalAbsoluteWasm": "historical-only-not-current-causal"
+    },
+    "q3": {
+      "historicalClassification": "reusable",
+      "currentCanonicalParity": "focused-refresh",
+      "currentBackendParity": "focused-refresh",
+      "currentPerformanceAndResource": "focused-refresh",
+      "stageLocalCausalWasm": "reusable-historical-only"
+    },
+    "q4": {
+      "currentCorrectness": "reusable",
+      "currentBackendParity": "reusable",
+      "currentPerformanceAndResource": "reusable",
+      "stageLocalCausalWasm": "reusable-historical-only"
+    },
+    "combined": {
+      "codeCandidateFullRegression": "reusable",
+      "trailingReviewFastPass": "reusable",
+      "mergedHeadCanonicalParity": "focused-refresh",
+      "mergedHeadFailClosedMatrix": "focused-refresh",
+      "currentAbsoluteDockerWasmBytesAndDigest": "focused-refresh",
+      "fullNextestRepeat": "not-required",
+      "fullNativeSkiaRepeat": "not-required",
+      "cleanRoomCausalWasmRepeat": "not-required",
+      "privateCorpusOrHyperV": "not-required"
+    }
+  },
+  "next": {
+    "q5B": "run-existing-issue-4969-native-node-wasm-studio-parity-on-merged-head",
+    "q5C": "run-existing-bounded-and-fail-closed-contracts-on-merged-head",
+    "q5D": [
+      "refresh-q2-q3-shared-resource-performance-only",
+      "reuse-q4-performance-and-stage-local-causal-size",
+      "build-current-docker-wasm-once-for-absolute-bytes-and-digest"
+    ],
+    "newIntegrationSource": false,
+    "productMutation": false
+  }
+}
