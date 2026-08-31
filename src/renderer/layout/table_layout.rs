@@ -5446,7 +5446,36 @@ impl LayoutEngine {
                                     .line_segs
                                     .first()
                                     .is_some_and(|seg| seg.vertical_pos > 0);
-                            let anchor_y = if displaced_empty_line_para {
+                            // [#6494] **한 문단이 float 그림을 둘 이상 달고 있으면 그것들은
+                            // 나란히 놓이는 한 무리**다 — 칸 valign 이나 저장 vpos 가 아니라
+                            // 문단 앵커(`para_y_before_compose`)에 함께 걸린다.
+                            //
+                            // 156489219 5쪽 `p[1]`(빈 문단, 그림 2장)이 그 형상이다. 한글 2022
+                            // 오라클은 두 장을 **소수점까지 같은 y=516.04**(표 상단 기준 상대
+                            // 118.68pt)에 나란히 놓는다. 우리 `para_y_before_compose` 는 상대
+                            // 118.9pt 로 **0.22pt** 안에서 그 값이다.
+                            //
+                            // 종전에는 둘이 서로 다른 갈래를 타 찢어졌다 — 하나는
+                            // `displaced_empty_line_para` 로 칸 상단에 붙은 뒤 음수 오프셋
+                            // −185.8pt 를 먹어 칸 위로 246px 나가 보이지 않게 됐고, 다른 하나는
+                            // #2071 칸 valign 강제로 칸 아래(용지 밖 51.4pt)로 갔다.
+                            //
+                            // 음수 오프셋을 버리는 이유: 그 값은 **변위된** 문단 위치를 기준으로
+                            // 저장된 보정이라, 앵커를 변위 전으로 되돌린 뒤 다시 빼면 이중
+                            // 보정이 된다.
+                            let side_by_side_float_group = para
+                                .controls
+                                .iter()
+                                .filter(|c| {
+                                    matches!(c, crate::model::control::Control::Picture(p)
+                                        if !p.common.treat_as_char
+                                            && matches!(p.common.vert_rel_to, VertRelTo::Para))
+                                })
+                                .count()
+                                > 1;
+                            let anchor_y = if side_by_side_float_group {
+                                para_y_before_compose
+                            } else if displaced_empty_line_para {
                                 // Square 포함 모든 비인라인 그림 — 원점은 문단 시작.
                                 content_cell_y + pad_top
                             } else if non_inline_para && !top_and_bottom_para {
@@ -5508,8 +5537,16 @@ impl LayoutEngine {
                                     .max(0.0),
                                 ..inner_area
                             };
+                            // [#6494] 나란히 무리에서는 음수 세로 오프셋을 버린다 — 위 주석 참조.
+                            let grouped_common = (side_by_side_float_group
+                                && signed_hwpunit(pic.common.vertical_offset) < 0)
+                                .then(|| {
+                                    let mut c = pic.common.clone();
+                                    c.vertical_offset = 0;
+                                    c
+                                });
                             let (pic_x, pic_y) = self.compute_object_position(
-                                &pic.common,
+                                grouped_common.as_ref().unwrap_or(&pic.common),
                                 pic_w,
                                 pic_h,
                                 &cell_area,
@@ -5547,6 +5584,8 @@ impl LayoutEngine {
                                 && pic.common.flow_with_text
                                 && !unrestricted_take_place_cell_float
                                 && !detached_from_inline_table_flow
+                                // [#6494] 나란히 무리는 칸 valign 이 아니라 문단 앵커를 따른다.
+                                && !side_by_side_float_group
                             {
                                 let v_off = hwpunit_to_px(
                                     signed_hwpunit(pic.common.vertical_offset),
