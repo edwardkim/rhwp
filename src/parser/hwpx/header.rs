@@ -100,7 +100,7 @@ pub fn parse_hwpx_hwpml_version(xml: &str) -> Option<String> {
                 let name = e.name();
                 if local_name(name.as_ref()) == b"head" {
                     for attr in e.attributes().flatten() {
-                        if attr.key.as_ref() == b"version" {
+                        if attr.key.as_ref().as_bytes() == b"version" {
                             return Some(attr_str(&attr));
                         }
                     }
@@ -138,7 +138,7 @@ pub fn parse_hwpx_header(xml: &str) -> Result<(DocInfo, DocProperties), HwpxErro
                     b"fontface" => {
                         // <hh:fontface lang="HANGUL"> → 언어 그룹 설정
                         for attr in e.attributes().flatten() {
-                            if attr.key.as_ref() == b"lang" {
+                            if attr.key.as_ref().as_bytes() == b"lang" {
                                 current_font_group = match attr_str(&attr).as_str() {
                                     "HANGUL" => 0,
                                     "LATIN" => 1,
@@ -201,7 +201,7 @@ pub fn parse_hwpx_header(xml: &str) -> Result<(DocInfo, DocProperties), HwpxErro
                         // 자기 닫힘 태그: 빈 TabDef만 push
                         let mut td = TabDef::default();
                         for attr in e.attributes().flatten() {
-                            match attr.key.as_ref() {
+                            match attr.key.as_ref().as_bytes() {
                                 b"autoTabLeft" => td.auto_tab_left = attr_str(&attr) == "1",
                                 b"autoTabRight" => td.auto_tab_right = attr_str(&attr) == "1",
                                 _ => {}
@@ -272,7 +272,7 @@ fn parse_doc_option_linkinfo(e: &quick_xml::events::BytesStart, doc_info: &mut D
     let mut footnote_inherit = false;
 
     for attr in e.attributes().flatten() {
-        match attr.key.as_ref() {
+        match attr.key.as_ref().as_bytes() {
             b"pageInherit" => page_inherit = parse_bool(&attr),
             b"footnoteInherit" => footnote_inherit = parse_bool(&attr),
             _ => {}
@@ -347,7 +347,7 @@ fn parse_memo_shape(e: &quick_xml::events::BytesStart, doc_info: &mut DocInfo) {
     let mut memo_type = 0u32;
 
     for attr in e.attributes().flatten() {
-        match attr.key.as_ref() {
+        match attr.key.as_ref().as_bytes() {
             b"width" => width = parse_u32(&attr),
             b"lineWidth" => line_width = parse_u8(&attr),
             b"lineType" => line_type = parse_memo_line_type(&attr_str(&attr)),
@@ -412,7 +412,7 @@ fn parse_memo_type(value: &str) -> u32 {
 
 fn parse_begin_num(e: &quick_xml::events::BytesStart, props: &mut DocProperties) {
     for attr in e.attributes().flatten() {
-        match attr.key.as_ref() {
+        match attr.key.as_ref().as_bytes() {
             b"page" => props.page_start_num = parse_u16(&attr),
             b"footnote" => props.footnote_start_num = parse_u16(&attr),
             b"endnote" => props.endnote_start_num = parse_u16(&attr),
@@ -441,7 +441,7 @@ fn parse_font(
     let mut subst_font = None;
 
     for attr in e.attributes().flatten() {
-        match attr.key.as_ref() {
+        match attr.key.as_ref().as_bytes() {
             b"face" => name = attr_str(&attr),
             b"type" => {
                 font_type = match attr_str(&attr).as_str() {
@@ -514,7 +514,7 @@ fn parse_font_type_info(
 
     for attr in e.attributes().flatten() {
         let value = attr_str(&attr);
-        match attr.key.as_ref() {
+        match attr.key.as_ref().as_bytes() {
             b"familyType" => info[0] = font_family_type_to_u8(&value),
             b"weight" => info[2] = value.parse::<u8>().unwrap_or(0),
             b"proportion" => info[3] = value.parse::<u8>().unwrap_or(0),
@@ -537,7 +537,7 @@ fn parse_subst_font(e: &quick_xml::events::BytesStart) -> SubstFont {
     let mut sf = SubstFont::default();
     for attr in e.attributes().flatten() {
         let value = attr_str(&attr);
-        match attr.key.as_ref() {
+        match attr.key.as_ref().as_bytes() {
             b"face" => sf.face = value,
             b"type" => {
                 sf.font_type = match value.as_str() {
@@ -612,7 +612,7 @@ fn parse_char_shape(
     let mut id: Option<usize> = None;
 
     for attr in e.attributes().flatten() {
-        match attr.key.as_ref() {
+        match attr.key.as_ref().as_bytes() {
             b"id" => id = Some(parse_u32(&attr) as usize),
             b"height" => cs.base_size = parse_i32(&attr),
             b"textColor" => cs.text_color = parse_color(&attr),
@@ -649,7 +649,7 @@ fn parse_char_shape(
                         b"fontRef" => {
                             for attr in ce.attributes().flatten() {
                                 let val = parse_u16(&attr);
-                                match attr.key.as_ref() {
+                                match attr.key.as_ref().as_bytes() {
                                     b"hangul" => cs.font_ids[0] = val,
                                     b"latin" => cs.font_ids[1] = val,
                                     b"hanja" => cs.font_ids[2] = val,
@@ -664,7 +664,7 @@ fn parse_char_shape(
                         b"ratio" => {
                             for attr in ce.attributes().flatten() {
                                 let val = parse_u8(&attr);
-                                match attr.key.as_ref() {
+                                match attr.key.as_ref().as_bytes() {
                                     b"hangul" => cs.ratios[0] = val,
                                     b"latin" => cs.ratios[1] = val,
                                     b"hanja" => cs.ratios[2] = val,
@@ -679,7 +679,7 @@ fn parse_char_shape(
                         b"spacing" => {
                             for attr in ce.attributes().flatten() {
                                 let val = parse_i8(&attr);
-                                match attr.key.as_ref() {
+                                match attr.key.as_ref().as_bytes() {
                                     b"hangul" => cs.spacings[0] = val,
                                     b"latin" => cs.spacings[1] = val,
                                     b"hanja" => cs.spacings[2] = val,
@@ -694,7 +694,7 @@ fn parse_char_shape(
                         b"relSz" => {
                             for attr in ce.attributes().flatten() {
                                 let val = parse_u8(&attr);
-                                match attr.key.as_ref() {
+                                match attr.key.as_ref().as_bytes() {
                                     b"hangul" => cs.relative_sizes[0] = val,
                                     b"latin" => cs.relative_sizes[1] = val,
                                     b"hanja" => cs.relative_sizes[2] = val,
@@ -709,7 +709,7 @@ fn parse_char_shape(
                         b"offset" => {
                             for attr in ce.attributes().flatten() {
                                 let val = parse_i8(&attr);
-                                match attr.key.as_ref() {
+                                match attr.key.as_ref().as_bytes() {
                                     b"hangul" => cs.char_offsets[0] = val,
                                     b"latin" => cs.char_offsets[1] = val,
                                     b"hanja" => cs.char_offsets[2] = val,
@@ -725,7 +725,7 @@ fn parse_char_shape(
                         b"italic" => cs.italic = true,
                         b"underline" => {
                             for attr in ce.attributes().flatten() {
-                                match attr.key.as_ref() {
+                                match attr.key.as_ref().as_bytes() {
                                     b"type" => {
                                         cs.underline_type = match attr_str(&attr).as_str() {
                                             "BOTTOM" => UnderlineType::Bottom,
@@ -761,7 +761,7 @@ fn parse_char_shape(
                         }
                         b"strikeout" => {
                             for attr in ce.attributes().flatten() {
-                                match attr.key.as_ref() {
+                                match attr.key.as_ref().as_bytes() {
                                     b"shape" => {
                                         let val = attr_str(&attr);
                                         // 화이트리스트 방식: 한컴이 실제 렌더링하는
@@ -796,7 +796,7 @@ fn parse_char_shape(
                         }
                         b"outline" => {
                             for attr in ce.attributes().flatten() {
-                                if attr.key.as_ref() == b"type" {
+                                if attr.key.as_ref().as_bytes() == b"type" {
                                     let val = attr_str(&attr);
                                     // [#2695] 외곽선 8종 (표 27 선 종류 앞 7개 + NONE).
                                     // HWP5 attr bits 8-10 (3비트) 과 1:1 대응하므로
@@ -817,7 +817,7 @@ fn parse_char_shape(
                         }
                         b"shadow" => {
                             for attr in ce.attributes().flatten() {
-                                match attr.key.as_ref() {
+                                match attr.key.as_ref().as_bytes() {
                                     b"type" => {
                                         let val = attr_str(&attr);
                                         // [#2695] HWP5 attr bits 11-12: 1=비연속(DROP,
@@ -890,7 +890,7 @@ fn parse_para_shape(
     let mut id: Option<usize> = None;
 
     for attr in e.attributes().flatten() {
-        match attr.key.as_ref() {
+        match attr.key.as_ref().as_bytes() {
             b"id" => id = Some(parse_u32(&attr) as usize),
             b"tabPrIDRef" => ps.tab_def_id = parse_u16(&attr),
             b"condense" => {
@@ -990,7 +990,7 @@ fn parse_para_shape_child(
     match local {
         b"align" => {
             for attr in ce.attributes().flatten() {
-                match attr.key.as_ref() {
+                match attr.key.as_ref().as_bytes() {
                     b"horizontal" => ps.alignment = parse_alignment(&attr),
                     b"vertical" => {
                         ps.attr1 = (ps.attr1 & !(0x03 << 20))
@@ -1003,7 +1003,7 @@ fn parse_para_shape_child(
         }
         b"heading" => {
             for attr in ce.attributes().flatten() {
-                match attr.key.as_ref() {
+                match attr.key.as_ref().as_bytes() {
                     b"type" => {
                         let val = attr_str(&attr);
                         ps.head_type = match val.as_str() {
@@ -1026,7 +1026,7 @@ fn parse_para_shape_child(
         }
         b"lineSpacing" => {
             for attr in ce.attributes().flatten() {
-                match attr.key.as_ref() {
+                match attr.key.as_ref().as_bytes() {
                     b"type" => {
                         let val = attr_str(&attr);
                         ps.line_spacing_type = match val.as_str() {
@@ -1050,7 +1050,7 @@ fn parse_para_shape_child(
         }
         b"border" => {
             for attr in ce.attributes().flatten() {
-                match attr.key.as_ref() {
+                match attr.key.as_ref().as_bytes() {
                     b"borderFillIDRef" => ps.border_fill_id = parse_u16(&attr),
                     b"offsetLeft" => ps.border_spacing[0] = parse_i16(&attr),
                     b"offsetRight" => ps.border_spacing[1] = parse_i16(&attr),
@@ -1077,7 +1077,7 @@ fn parse_para_shape_child(
         }
         b"breakSetting" => {
             for attr in ce.attributes().flatten() {
-                match attr.key.as_ref() {
+                match attr.key.as_ref().as_bytes() {
                     b"breakLatinWord" => {
                         // [#1986] 값 3종(BREAK_WORD/KEEP_WORD/HYPHENATION) — 원문 보존.
                         // 미보존 시 직렬화가 KEEP_WORD 로 고정해 꼬리말·표셀 재계산
@@ -1137,7 +1137,7 @@ fn parse_para_shape_child(
             // 해당 비트는 문단 세로 정렬이며, <align vertical="...">에서 채운다.
             // 한컴 HWP5의 자동 간격 정본은 attr2 bits 4/5다.
             for attr in ce.attributes().flatten() {
-                match attr.key.as_ref() {
+                match attr.key.as_ref().as_bytes() {
                     b"eAsianEng" => {
                         if parse_bool(&attr) {
                             ps.attr2 |= 1 << 4;
@@ -1164,7 +1164,7 @@ fn parse_para_shape_child(
 
 fn parse_para_shape_margin_attrs(ce: &quick_xml::events::BytesStart, ps: &mut ParaShape) {
     for attr in ce.attributes().flatten() {
-        match attr.key.as_ref() {
+        match attr.key.as_ref().as_bytes() {
             b"left" => ps.margin_left = parse_i32(&attr),
             b"right" => ps.margin_right = parse_i32(&attr),
             b"indent" => ps.indent = parse_i32(&attr),
@@ -1183,7 +1183,7 @@ fn parse_para_shape_margin_value_child(ce: &quick_xml::events::BytesStart, ps: &
     }
 
     for attr in ce.attributes().flatten() {
-        if attr.key.as_ref() != b"value" {
+        if attr.key.as_ref().as_bytes() != b"value" {
             continue;
         }
         let value = parse_i32(&attr);
@@ -1280,7 +1280,7 @@ fn parse_para_shape_switch(
                             // margin 하위 요소들: <left value="..." />, <prev value="..." /> 등
                             let tag_name = local;
                             for attr in ce.attributes().flatten() {
-                                if attr.key.as_ref() == b"value" {
+                                if attr.key.as_ref().as_bytes() == b"value" {
                                     let val = parse_i32(&attr);
                                     if in_hwpunitchar_case {
                                         // HwpUnitChar 값은 실제 HWPUNIT(1× 스케일)이므로
@@ -1332,7 +1332,7 @@ fn parse_para_shape_switch(
                             let mut ls_type = None;
                             let mut ls_val = None;
                             for attr in ce.attributes().flatten() {
-                                match attr.key.as_ref() {
+                                match attr.key.as_ref().as_bytes() {
                                     b"type" => {
                                         ls_type = Some(match attr_str(&attr).as_str() {
                                             "PERCENT" => LineSpacingType::Percent,
@@ -1484,7 +1484,7 @@ fn parse_style(e: &quick_xml::events::BytesStart, doc_info: &mut DocInfo) {
     let mut style = Style::default();
     style.lang_id = 1042; // default 한국어 (HWPX 미지정 시)
     for attr in e.attributes().flatten() {
-        match attr.key.as_ref() {
+        match attr.key.as_ref().as_bytes() {
             b"name" => style.local_name = attr_str(&attr),
             b"engName" => style.english_name = attr_str(&attr),
             b"type" => {
@@ -1501,7 +1501,7 @@ fn parse_style(e: &quick_xml::events::BytesStart, doc_info: &mut DocInfo) {
             // [Task #1058 후속] HWPX `langID` → Style.lang_id (spec 표 47).
             // HWPX 의 `langID="1042"` 가 한컴 정답지의 Style record 의 INT16 lang_id.
             b"langID" => {
-                if let Ok(s) = std::str::from_utf8(&attr.value) {
+                if let Ok(s) = std::str::from_utf8(attr.value.as_ref().as_bytes()) {
                     if let Ok(v) = s.parse::<i16>() {
                         style.lang_id = v;
                     }
@@ -1526,7 +1526,7 @@ fn parse_border_fill(
 ) -> Result<(), HwpxError> {
     let mut bf = BorderFill::default();
     for attr in e.attributes().flatten() {
-        match attr.key.as_ref() {
+        match attr.key.as_ref().as_bytes() {
             b"centerLine" => {
                 bf.center_line = parse_center_line(&attr);
                 if bf.center_line == CenterLine::None {
@@ -1571,7 +1571,7 @@ fn parse_border_fill(
                             };
                             if idx < 4 {
                                 for attr in ce.attributes().flatten() {
-                                    match attr.key.as_ref() {
+                                    match attr.key.as_ref().as_bytes() {
                                         b"type" => {
                                             bf.borders[idx].line_type =
                                                 parse_border_line_type(&attr)
@@ -1587,7 +1587,7 @@ fn parse_border_fill(
                         }
                         b"diagonal" => {
                             for attr in ce.attributes().flatten() {
-                                match attr.key.as_ref() {
+                                match attr.key.as_ref().as_bytes() {
                                     b"type" => {
                                         bf.diagonal.diagonal_type =
                                             parse_border_line_type_code(&attr)
@@ -1615,7 +1615,7 @@ fn parse_border_fill(
                             // 해석되어, 문단모양/렌더에 의도치 않은 배경이 생겼다.
                             let mut face_is_none = false;
                             for attr in ce.attributes().flatten() {
-                                match attr.key.as_ref() {
+                                match attr.key.as_ref().as_bytes() {
                                     b"faceColor" => {
                                         if attr_str(&attr).eq_ignore_ascii_case("none") {
                                             face_is_none = true;
@@ -1656,7 +1656,7 @@ fn parse_border_fill(
                             bf.fill.fill_type = FillType::Gradient;
                             let mut grad = GradientFill::default();
                             for attr in ce.attributes().flatten() {
-                                match attr.key.as_ref() {
+                                match attr.key.as_ref().as_bytes() {
                                     b"type" => {
                                         grad.gradient_type = parse_gradient_type(&attr_str(&attr))
                                     }
@@ -1680,7 +1680,7 @@ fn parse_border_fill(
                             // <hh:color value="#RRGGBB"/> — gradation 자식
                             if let Some(ref mut grad) = bf.fill.gradient {
                                 for attr in ce.attributes().flatten() {
-                                    if attr.key.as_ref() == b"value" {
+                                    if attr.key.as_ref().as_bytes() == b"value" {
                                         grad.colors.push(parse_color(&attr));
                                     }
                                 }
@@ -1690,7 +1690,7 @@ fn parse_border_fill(
                             bf.fill.fill_type = FillType::Image;
                             let mut img_fill = ImageFill::default();
                             for attr in ce.attributes().flatten() {
-                                match attr.key.as_ref() {
+                                match attr.key.as_ref().as_bytes() {
                                     b"mode" => {
                                         img_fill.fill_mode = match attr_str(&attr).as_str() {
                                             "TILE" | "TILE_ALL" => ImageFillMode::TileAll,
@@ -1731,7 +1731,7 @@ fn parse_border_fill(
                             // 배경 워터마크 반투명 합성이 빠졌다 (SVG/PNG 회귀).
                             if let Some(ref mut img_fill) = bf.fill.image {
                                 for attr in ce.attributes().flatten() {
-                                    match attr.key.as_ref() {
+                                    match attr.key.as_ref().as_bytes() {
                                         b"binaryItemIDRef" => {
                                             let val = attr_str(&attr);
                                             let num: String = val
@@ -1761,7 +1761,7 @@ fn parse_border_fill(
                             // 선 종류가 아니다. 방향 비트(attr bits 2~4)만 설정하고,
                             // 선 종류/굵기/색은 <hh:diagonal> 요소가 전담한다.
                             for attr in ce.attributes().flatten() {
-                                match attr.key.as_ref() {
+                                match attr.key.as_ref().as_bytes() {
                                     b"type" => {
                                         let code = parse_slash_shape_code(&attr);
                                         set_diagonal_attr_bits(&mut bf, 2, code);
@@ -1780,7 +1780,7 @@ fn parse_border_fill(
                         b"backSlash" => {
                             // backSlash 방향 비트(attr bits 5~7)만 설정.
                             for attr in ce.attributes().flatten() {
-                                match attr.key.as_ref() {
+                                match attr.key.as_ref().as_bytes() {
                                     b"type" => {
                                         let code = parse_slash_shape_code(&attr);
                                         set_diagonal_attr_bits(&mut bf, 5, code);
@@ -1817,7 +1817,7 @@ fn parse_border_fill(
 fn parse_tab_item(ce: &quick_xml::events::BytesStart) -> TabItem {
     let mut item = TabItem::default();
     for attr in ce.attributes().flatten() {
-        match attr.key.as_ref() {
+        match attr.key.as_ref().as_bytes() {
             b"pos" => item.position = parse_u32(&attr),
             b"type" => {
                 item.tab_type = match attr_str(&attr).as_str() {
@@ -1869,7 +1869,7 @@ fn parse_tab_def(
     let mut td = TabDef::default();
 
     for attr in e.attributes().flatten() {
-        match attr.key.as_ref() {
+        match attr.key.as_ref().as_bytes() {
             b"autoTabLeft" => td.auto_tab_left = attr_str(&attr) == "1",
             b"autoTabRight" => td.auto_tab_right = attr_str(&attr) == "1",
             _ => {}
@@ -1978,23 +1978,23 @@ fn parse_bullet_hwpx(
     let mut bullet = Bullet::default();
 
     for attr in e.attributes().flatten() {
-        match attr.key.as_ref() {
+        match attr.key.as_ref().as_bytes() {
             b"char" => {
-                if let Ok(s) = std::str::from_utf8(&attr.value) {
+                if let Ok(s) = std::str::from_utf8(attr.value.as_ref().as_bytes()) {
                     if let Some(c) = s.chars().next() {
                         bullet.bullet_char = c;
                     }
                 }
             }
             b"useImage" => {
-                if let Ok(s) = std::str::from_utf8(&attr.value) {
+                if let Ok(s) = std::str::from_utf8(attr.value.as_ref().as_bytes()) {
                     if s == "1" {
                         bullet.image_bullet = 1;
                     }
                 }
             }
             b"checkedChar" => {
-                if let Ok(s) = std::str::from_utf8(&attr.value) {
+                if let Ok(s) = std::str::from_utf8(attr.value.as_ref().as_bytes()) {
                     if let Some(c) = s.chars().next() {
                         bullet.check_bullet_char = c;
                     }
@@ -2024,9 +2024,9 @@ fn parse_bullet_hwpx(
                     if let Some(attr) = ce
                         .attributes()
                         .flatten()
-                        .find(|a| a.key.as_ref() == b"binaryItemIDRef")
+                        .find(|a| a.key.as_ref().as_bytes() == b"binaryItemIDRef")
                     {
-                        let s = String::from_utf8_lossy(&attr.value);
+                        let s = attr.value.as_ref().to_owned();
                         let num: String = s.chars().filter(|c| c.is_ascii_digit()).collect();
                         if let Ok(id) = num.parse::<i32>() {
                             bullet.image_bullet = id;
@@ -2071,7 +2071,7 @@ fn parse_bullet_hwpx(
 /// Bullet 필드(HWP5 BULLET record 의 문단 머리 정보 12바이트와 동일 의미)로 흡수한다.
 fn apply_bullet_para_head_attrs(bullet: &mut Bullet, e: &quick_xml::events::BytesStart) {
     for attr in e.attributes().flatten() {
-        match attr.key.as_ref() {
+        match attr.key.as_ref().as_bytes() {
             b"charPrIDRef" => bullet.char_shape_id = parse_u32(&attr),
             b"widthAdjust" => bullet.width_adjust = parse_i16(&attr),
             b"textOffset" => bullet.text_distance = parse_i16(&attr),
@@ -2089,7 +2089,7 @@ fn parse_numbering(
     let mut num = Numbering::default();
 
     for attr in e.attributes().flatten() {
-        if attr.key.as_ref() == b"start" {
+        if attr.key.as_ref().as_bytes() == b"start" {
             num.start_number = parse_u16(&attr);
         }
     }
@@ -2160,7 +2160,7 @@ fn parse_numbering_para_head_attrs(
     let mut format_str = String::new();
 
     for attr in e.attributes().flatten() {
-        match attr.key.as_ref() {
+        match attr.key.as_ref().as_bytes() {
             b"level" => level = parse_u32(&attr) as usize,
             b"start" => start = Some(parse_u32(&attr)),
             b"text" => format_str = attr_str(&attr),
@@ -2185,10 +2185,10 @@ fn read_numbering_para_head_text(reader: &mut Reader<&[u8]>) -> Result<String, H
     loop {
         match reader.read_event_into(&mut buf) {
             Ok(Event::Text(ref t)) => {
-                text.push_str(&t.decode().unwrap_or_default());
+                text.push_str(t.as_ref());
             }
             Ok(Event::CData(ref t)) => {
-                text.push_str(&String::from_utf8_lossy(t.as_ref()));
+                text.push_str(t.as_ref());
             }
             Ok(Event::End(ref ee)) => {
                 if local_name(ee.name().as_ref()) == b"paraHead" {
@@ -2952,7 +2952,7 @@ mod tests {
         let mut buf = Vec::new();
         if let Ok(Event::Empty(ref e)) = reader.read_event_into(&mut buf) {
             for attr in e.attributes().flatten() {
-                if attr.key.as_ref() == b"color" {
+                if attr.key.as_ref().as_bytes() == b"color" {
                     assert_eq!(parse_color(&attr), 0x000000FF);
                 }
             }
@@ -2966,7 +2966,7 @@ mod tests {
         let mut buf = Vec::new();
         if let Ok(Event::Empty(ref e)) = reader.read_event_into(&mut buf) {
             for attr in e.attributes().flatten() {
-                if attr.key.as_ref() == b"color" {
+                if attr.key.as_ref().as_bytes() == b"color" {
                     assert_eq!(parse_color(&attr), 0xFFFFFFFF);
                 }
             }
@@ -2989,7 +2989,7 @@ mod tests {
             let mut buf = Vec::new();
             if let Ok(Event::Empty(ref e)) = reader.read_event_into(&mut buf) {
                 for attr in e.attributes().flatten() {
-                    if attr.key.as_ref() == b"type" {
+                    if attr.key.as_ref().as_bytes() == b"type" {
                         assert_eq!(parse_border_line_type(&attr), expected, "{value}");
                     }
                 }
@@ -3095,7 +3095,7 @@ mod tests {
             let mut buf = Vec::new();
             if let Ok(Event::Empty(ref e)) = reader.read_event_into(&mut buf) {
                 for attr in e.attributes().flatten() {
-                    if attr.key.as_ref() == b"horizontal" {
+                    if attr.key.as_ref().as_bytes() == b"horizontal" {
                         assert_eq!(parse_alignment(&attr), expected);
                     }
                 }
@@ -3110,7 +3110,7 @@ mod tests {
         let mut buf = Vec::new();
         if let Ok(Event::Empty(ref e)) = reader.read_event_into(&mut buf) {
             for attr in e.attributes().flatten() {
-                if attr.key.as_ref() == b"vertical" {
+                if attr.key.as_ref().as_bytes() == b"vertical" {
                     assert_eq!(parse_vertical_alignment_bits(&attr), 2);
                 }
             }
@@ -3518,7 +3518,7 @@ mod tests {
         let mut buf = Vec::new();
         if let Ok(Event::Empty(ref e)) = reader.read_event_into(&mut buf) {
             for attr in e.attributes().flatten() {
-                if attr.key.as_ref() == b"type" {
+                if attr.key.as_ref().as_bytes() == b"type" {
                     return parse_slash_shape_code(&attr);
                 }
             }

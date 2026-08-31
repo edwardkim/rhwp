@@ -72,13 +72,14 @@ pub fn parse_chart_xml(xml: &[u8]) -> Option<OoxmlChart> {
             Ok(Event::Start(ref e)) => handle_start(e, &mut chart, &mut state),
             Ok(Event::Empty(ref e)) => {
                 handle_start(e, &mut chart, &mut state);
-                handle_end(e.local_name().as_ref(), &mut chart, &mut state);
+                handle_end(e.local_name().as_ref().as_bytes(), &mut chart, &mut state);
             }
-            Ok(Event::End(ref e)) => handle_end(e.local_name().as_ref(), &mut chart, &mut state),
+            Ok(Event::End(ref e)) => {
+                handle_end(e.local_name().as_ref().as_bytes(), &mut chart, &mut state)
+            }
             Ok(Event::Text(t)) => {
                 if state.in_v || state.in_a_t {
-                    let s = t.decode().unwrap_or_default();
-                    state.cur_text_buf.push_str(&s);
+                    state.cur_text_buf.push_str(t.as_ref());
                 }
             }
             Ok(Event::Eof) => break,
@@ -175,7 +176,7 @@ pub fn parse_chart_xml(xml: &[u8]) -> Option<OoxmlChart> {
 
 fn handle_start(e: &quick_xml::events::BytesStart, chart: &mut OoxmlChart, st: &mut ParseState) {
     let name = e.local_name();
-    let name_bytes = name.as_ref();
+    let name_bytes = name.as_ref().as_bytes();
     match name_bytes {
         b"barChart" => {
             chart.chart_type = OoxmlChartType::Column; // barDir로 세분
@@ -650,8 +651,8 @@ fn handle_end(name: &[u8], chart: &mut OoxmlChart, st: &mut ParseState) {
 
 fn attr_val(e: &quick_xml::events::BytesStart, key: &str) -> Option<String> {
     for attr in e.attributes().flatten() {
-        if attr.key.as_ref() == key.as_bytes() {
-            return Some(String::from_utf8_lossy(attr.value.as_ref()).to_string());
+        if attr.key.as_ref().as_bytes() == key.as_bytes() {
+            return Some(attr.value.as_ref().to_string());
         }
     }
     None

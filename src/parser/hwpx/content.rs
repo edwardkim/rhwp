@@ -66,7 +66,7 @@ pub fn parse_content_hpf(xml: &str) -> Result<PackageInfo, HwpxError> {
                         // isEmbeded="0" 인 경우만 false 로 설정.
                         let mut is_embedded = true;
                         for attr in e.attributes().flatten() {
-                            match attr.key.as_ref() {
+                            match attr.key.as_ref().as_bytes() {
                                 b"id" => id = attr_value(&attr),
                                 b"href" => href = attr_value(&attr),
                                 b"media-type" => media_type = attr_value(&attr),
@@ -82,7 +82,7 @@ pub fn parse_content_hpf(xml: &str) -> Result<PackageInfo, HwpxError> {
                     }
                     b"itemref" => {
                         for attr in e.attributes().flatten() {
-                            if attr.key.as_ref() == b"idref" {
+                            if attr.key.as_ref().as_bytes() == b"idref" {
                                 spine_order.push(attr_value(&attr));
                             }
                         }
@@ -215,16 +215,12 @@ fn collect_section_master_pages(
 
 /// XML 어트리뷰트 값을 String으로 변환
 fn attr_value(attr: &quick_xml::events::attributes::Attribute) -> String {
-    String::from_utf8_lossy(&attr.value).to_string()
+    attr.value.as_ref().to_owned()
 }
 
 /// 네임스페이스 접두사를 제거하고 로컬 태그 이름을 반환
-fn local_tag_name(name: &[u8]) -> &[u8] {
-    if let Some(pos) = name.iter().position(|&b| b == b':') {
-        &name[pos + 1..]
-    } else {
-        name
-    }
+fn local_tag_name(name: &str) -> &[u8] {
+    name.rsplit(':').next().unwrap_or(name).as_bytes()
 }
 
 #[cfg(test)]

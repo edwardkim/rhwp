@@ -647,7 +647,7 @@ fn strip_hwpx_encryption_data(manifest: &[u8]) -> Result<Vec<u8>, PasswordCrypto
         match reader.read_event_into(&mut buffer) {
             Ok(Event::Eof) => break,
             Ok(Event::Start(event))
-                if hwpx_local_name(event.name().as_ref()) == b"encryption-data" =>
+                if hwpx_local_name(event.name().as_ref().as_bytes()) == b"encryption-data" =>
             {
                 skipped_depth = 1;
             }
