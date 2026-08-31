@@ -152,6 +152,9 @@ Safari 다운로드 API 추가나 별도 ZIP parser 도입은 범위 밖이다. 
 | `src/parser/mod.rs` | ZIP 매직 후보의 구조 확정과 합성 ZIP unit test |
 | `rhwp-studio/src/core/document-signature.ts` | `zip` 후보와 HWPX 확정 책임 설명 |
 | `rhwp-studio/tests/document-signature.test.ts` | 일반 ZIP/OOXML을 `hwpx`로 부르지 않는 계약 |
+| `tests/threat_scan_contract.rs` | 기존 합성 HWPX builder의 필수 package entry 보완 |
+| `tests/cases/threat_scan_cli_contract.rs` | 기존 CLI 합성 HWPX builder의 필수 package entry 보완 |
+| `crates/rhwp-contracts/src/schema_registry.rs` | 병렬 전체 회귀에서 불안정한 정책 문서 runtime lookup을 compile-time linkage로 고정 |
 | `rhwp-chrome/e2e/download-interceptor.test.mjs` (신규) | 격리 packaged Chrome 실제 download/tabs 계약 |
 | `rhwp-chrome/package.json` | 독립 download E2E 실행 script |
 | `mydocs/manual/browser_extension_dev_guide.md` | metadata 우선순위와 ZIP 후보/Rust 확정 설명 |
@@ -161,6 +164,31 @@ Safari 다운로드 API 추가나 별도 ZIP parser 도입은 범위 밖이다. 
 
 `rhwp-shared/sw/download-observer-state.js`, manifest, 배포 버전, dist 산출물은 변경하지 않는다.
 allowlist 밖 제품 파일이 필요해지면 먼저 원인과 영향도를 문서에 반영하고 계획 변경 승인을 받는다.
+
+### 5.1 Stage 4 계획 변경 — threat-scan 합성 HWPX 정합성
+
+Stage 4 전체 release-test에서 threat-scan 5건이 새 detector에 의해 `Unknown`으로 거부됐다. 두 기존
+test helper가 HWPX라고 명명한 ZIP에 `Contents/header.xml`을 넣지 않았고, 일부 사례는
+`Contents/content.hpf`도 생략한 것이 원인이다. 실제 추적 HWPX 525건과 비밀번호 표본은 두 엔트리를
+모두 가진다는 Stage 3 감사와도 어긋난다.
+
+제품 detector나 threat scanner를 확장자 기준으로 느슨하게 만들지 않는다. 위 두 기존 test helper가
+호출될 때 누락된 필수 엔트리만 최소 XML로 보완해, 위협 payload·finding cap·출력 계약은 그대로 두고
+합성 컨테이너를 유효한 HWPX 후보로 만든다. 테스트 수와 generated suite·manifest는 바꾸지 않는다.
+메인테이너는 2026-08-31 이 allowlist 확장과 fixture 정정을 승인했다.
+
+### 5.2 Stage 4 계획 변경 — schema policy 문서 연결 결정성
+
+fixture 정정 뒤 전체 8,881건은 threat-scan 5건을 모두 회복했지만,
+`rhwp-contracts::schema_registry::tests::policy_path_points_to_existing_document` 한 건이 전체 병렬 실행에서만
+두 번 실패했다. 같은 release-test binary의 단독·crate 단위 실행은 모두 통과했고, 대상 파일의 inode,
+mtime과 Git 상태도 변하지 않았다. #6534 제품·fixture 변경과 인과관계는 없다.
+
+내부 비배포 crate의 이 테스트가 runtime `Path::exists()`에 의존할 이유가 없다. registry의 `policy` 값을
+canonical 상대경로와 exact 비교하고, 같은 파일을 `include_str!`로 compile-time 연결한다. 문서가
+누락·이동되면 컴파일이 실패하고 registry 문자열만 drift하면 assertion이 실패하므로 기존 불변식을 더
+결정론적으로 유지한다. 테스트 수와 제품 API는 바꾸지 않는다. 메인테이너는 2026-09-01 이 두 번째
+allowlist 확장과 정정을 승인했다.
 
 ## 6. 구현 순서와 단계별 중단점
 
