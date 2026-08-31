@@ -1514,16 +1514,28 @@ fn installed_render_font_aliases(font_family: &str) -> &'static [&'static str] {
         // 이 arm 이 없으면 3146683 1쪽 `『별표 7』`의 `『`(중고딕 run)만 Malgun 으로
         // 떨어져 뒤 글자와의 틈이 8.88pt 가 된다 — 한글 오라클 2.50pt, rhwp PDF 2.38pt.
         // (체인에서 이 이름만 뺀 통제 렌더로 잰 값. 이 arm 을 넣으면 2.25pt.)
-        "한양중고딕" => &["HY중고딕", "HYGothic"],
-        "HY중고딕" => &["HYGothic", "Malgun Gothic"],
+        "한양중고딕" => &[
+            "HY중고딕",
+            "HYGothic",
+            "HYGothic-Medium",
+            "HCR Dotum",
+            "함초롬돋움",
+        ],
+        "HY중고딕" => &[
+            "HYGothic",
+            "HYGothic-Medium",
+            "HCR Dotum",
+            "함초롬돋움",
+            "Malgun Gothic",
+        ],
         // [#6171] 견고딕/견명조도 같은 legacy ↔ 설치 face 짝이다. 이 arm 이 없으면
         // 체인이 `'한양견고딕'` 하나 뒤에 바로 generic(=Malgun Gothic)으로 떨어져,
         // `HY견고딕`이 설치된 호스트에서도 Malgun Regular 로 그려진다 — 3146683 1쪽
         // `『별표 7』`의 `별표` 획이 견고딕(Extra)보다 가늘어지는 원인.
         // Windows 글꼴 레지스트리 실측: `HY견고딕`=H2GTRE.TTF(family `HYGothic-Extra`),
         // `HY견명조`=H2MJRE.TTF(family `HYMyeongJo-Extra`).
-        "한양견고딕" => &["HY견고딕", "HYGothic-Extra"],
-        "한양견명조" => &["HY견명조", "HYMyeongJo-Extra"],
+        "한양견고딕" => &["HY견고딕", "HYGothic-Extra", "HCR Dotum", "함초롬돋움"],
+        "한양견명조" => &["HY견명조", "HYMyeongJo-Extra", "HCR Batang", "함초롬바탕"],
         // 신명조도 같은 짝인데 이 arm 만 빠져 있었다. `svg.rs` 의 local()·embed 두 표는
         // 이미 `한양신명조 → HY신명조 / HYSinMyeongJo-Medium / H2MJSM.TTF` 를 알고 있는데,
         // 정작 체인을 만드는 여기가 몰라서 `'한양신명조','Batang',…` 로 바로 떨어졌다.
@@ -2576,14 +2588,14 @@ mod tests {
         assert_eq!(
             render_font_family_chain("한양중고딕"),
             format!(
-                "'한양중고딕','HY중고딕','HYGothic',{}",
+                "'한양중고딕','HY중고딕','HYGothic','HYGothic-Medium','HCR Dotum','함초롬돋움',{}",
                 generic_fallback("한양중고딕")
             )
         );
         assert_eq!(
             render_font_family_chain("HY중고딕"),
             format!(
-                "'HY중고딕','HYGothic','Malgun Gothic',{}",
+                "'HY중고딕','HYGothic','HYGothic-Medium','HCR Dotum','함초롬돋움','Malgun Gothic',{}",
                 generic_fallback("HY중고딕")
             )
         );
@@ -2594,14 +2606,14 @@ mod tests {
         assert_eq!(
             render_font_family_chain("한양견고딕"),
             format!(
-                "'한양견고딕','HY견고딕','HYGothic-Extra',{}",
+                "'한양견고딕','HY견고딕','HYGothic-Extra','HCR Dotum','함초롬돋움',{}",
                 generic_fallback("한양견고딕")
             )
         );
         assert_eq!(
             render_font_family_chain("한양견명조"),
             format!(
-                "'한양견명조','HY견명조','HYMyeongJo-Extra',{}",
+                "'한양견명조','HY견명조','HYMyeongJo-Extra','HCR Batang','함초롬바탕',{}",
                 generic_fallback("한양견명조")
             )
         );
@@ -2626,7 +2638,7 @@ mod tests {
         assert_eq!(
             canvas_font_family_chain("HY중고딕"),
             format!(
-                "\"HY중고딕\", \"HYGothic\", \"Malgun Gothic\", {}",
+                "\"HY중고딕\", \"HYGothic\", \"HYGothic-Medium\", \"HCR Dotum\", \"함초롬돋움\", \"Malgun Gothic\", {}",
                 generic_fallback("HY중고딕")
             )
         );

@@ -220,6 +220,20 @@ function installedSubstituteFace(
     const installed = installedFaceName(target.face, confirmedLocalFonts);
     if (installed) return { fontName: installed, ruleId: target.ruleId };
   }
+  // [#6263] 치환표 항목에는 altType 조건이 붙어 있다(`한양중고딕`은 `source:2->target:1`
+  // 하나뿐). 문서가 같은 legacy 이름을 altType=1 로 선언하면 조회가 통째로 비어, 호스트에
+  // `HY견고딕`이 설치돼 있는데도 체인이 곧바로 generic(`Malgun Gothic`)으로 떨어진다
+  // (`한양견고딕` altType=1 은 원 이름조차 체인에서 사라진다).
+  //
+  // 여기서 하는 일은 **설치 face 를 다른 이름으로 찾는 것**뿐이라 선언 altType 과 무관하다.
+  // 타입 지정 조회가 비면 타입-무관(0) 탐색으로 한 번 더 본다 — `projectedSubstituteTargets`
+  // 가 0 에서 1·2 를 차례로 훑는 기존 규약을 그대로 쓴다.
+  if (altType !== 0) {
+    for (const target of projectedSubstituteTargets(fontName, 0, langId)) {
+      const installed = installedFaceName(target.face, confirmedLocalFonts);
+      if (installed) return { fontName: installed, ruleId: target.ruleId };
+    }
+  }
   return null;
 }
 
