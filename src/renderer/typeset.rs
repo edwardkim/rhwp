@@ -11035,7 +11035,14 @@ impl TypesetEngine {
                 && st.col_count > 1
                 && !st.current_items.is_empty()
                 && st.current_height > available * 0.5
-                && (local_vpos_rewind || st.column_had_compact_endnote_rewind);
+                && (local_vpos_rewind
+                    || st.column_had_compact_endnote_rewind
+                    // [#6495] 되감김 신호가 **없는** 단도 넘친다. 3-09월_교육_통합_2022
+                    // 9쪽 오른쪽 단은 되감김이 한 번도 없는데 타이프셋 누계가
+                    // 1048.9 로 가용 1001.6 을 47px 넘고, 그린 줄이 용지 끝
+                    // 841.17pt(용지 841.9)에 닿는다. 누계가 이미 가용을 넘었으면
+                    // 신호와 무관하게 시뮬로 확인한다.
+                    || st.current_height > available);
             let simulated_endnote_bottom = if ssot_level >= EnSsotLevel::A2 || page_offcanvas_sim {
                 self.simulate_endnote_column_bottom_y(
                     &st,
