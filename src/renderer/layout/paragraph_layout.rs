@@ -1766,6 +1766,7 @@ fn compute_line_extra_spacing(
             // [#6303] 칸 폭 자동 축소(#6196) 가 선형 slack/N 한 번이면 목표가
             // 1~2% 헐거워 긴 행 꼬리가 괘선 밖으로 나간다. 저장 한 줄이 안쪽 폭을
             // 15% 넘게 넘는 칸에서만 줄바꿈은 그대로 두고 실측 폭을 수렴시킨다.
+            // 일반 in_cell 줄까지 수렴하면 page-local hash·text-overlap 이 흔들린다.
             (
                 0.0,
                 converge_cell_overflow_char_spacing(
