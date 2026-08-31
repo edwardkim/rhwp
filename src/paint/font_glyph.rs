@@ -311,15 +311,14 @@ pub fn decode_font_svg_glyph_payload(
     loop {
         match reader.read_event() {
             Ok(Event::Start(element)) | Ok(Event::Empty(element)) => {
-                if view_box.is_none() && element.name().as_ref().eq_ignore_ascii_case(b"svg") {
+                if view_box.is_none() && element.name().as_ref().eq_ignore_ascii_case("svg") {
                     for attribute in element.attributes().with_checks(true) {
                         let attribute =
                             attribute.map_err(|_| FontSvgGlyphDecodeError::InvalidSvgXml)?;
-                        if !attribute.key.as_ref().eq_ignore_ascii_case(b"viewBox") {
+                        if !attribute.key.as_ref().eq_ignore_ascii_case("viewBox") {
                             continue;
                         }
-                        let value = std::str::from_utf8(attribute.value.as_ref())
-                            .map_err(|_| FontSvgGlyphDecodeError::InvalidViewBox)?;
+                        let value = attribute.value.as_ref();
                         let values = value
                             .split(|character: char| {
                                 character.is_ascii_whitespace() || character == ','

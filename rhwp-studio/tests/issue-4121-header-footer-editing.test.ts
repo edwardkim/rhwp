@@ -18,8 +18,9 @@ test('#4121 history 복원용 HF 선택은 현재 target과 문단 경계를 다
     const wasm = {
       getCursorRectInHeaderFooter: (
         _sec: number, _header: boolean, _apply: number,
-        paraIdx: number, charOffset: number, preferredPage: number,
-      ) => ({ pageIndex: preferredPage, x: charOffset * 8, y: paraIdx * 20, height: 12 }),
+        paraIdx: number, charOffset: number, previewPage: number,
+      ) => ({ pageIndex: previewPage, x: charOffset * 8, y: paraIdx * 20, height: 12 }),
+      getHeaderFooterPreviewPage: () => 4,
       getHeaderFooterParaInfo: (_sec: number, _header: boolean, _apply: number, paraIdx: number) =>
         JSON.stringify({ paraCount: 2, charCount: paraIdx === 0 ? 5 : 4 }),
     };
@@ -31,7 +32,7 @@ test('#4121 history 복원용 HF 선택은 현재 target과 문단 경계를 다
       { sectionIdx: 2, isHeader: true, applyTo: 1, paraIdx: 1, charOffset: 3 },
       6,
     ), true);
-    assert.equal(cursor.getHeaderFooterSelectionOrdered()?.preferredPage, 6);
+    assert.equal(cursor.getHeaderFooterSelectionOrdered()?.previewPage, 4);
 
     cursor.clearSelection();
     assert.equal(cursor.selectHeaderFooterRange(
@@ -59,17 +60,17 @@ test('#4121 HF snapshot command는 undo/redo 문맥과 선택 정책을 분리�
     };
     const before = {
       mode: 'headerFooter', sectionIdx: 0, isHeader: true, applyTo: 0,
-      paraIdx: 1, charOffset: 3, preferredPage: 4,
+      paraIdx: 1, charOffset: 3, previewPage: 4,
     };
     const after = {
       mode: 'headerFooter', sectionIdx: 0, isHeader: true, applyTo: 0,
-      paraIdx: 0, charOffset: 2, preferredPage: 4,
+      paraIdx: 0, charOffset: 2, previewPage: 4,
     };
     const selection = {
       mode: 'headerFooter',
       start: { sectionIdx: 0, isHeader: true, applyTo: 0, paraIdx: 0, charOffset: 2 },
       end: { sectionIdx: 0, isHeader: true, applyTo: 0, paraIdx: 1, charOffset: 3 },
-      preferredPage: 4,
+      previewPage: 4,
     };
     const body = { sectionIndex: 0, paragraphIndex: 0, charOffset: 0 };
     const cmd = new SubmodeSelectionSnapshotCommand(

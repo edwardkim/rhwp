@@ -12,6 +12,8 @@
 //!
 //! 가드: p18(0-idx 17) 좌측 컬럼 첫 미주 제목(문30)의 baseline y 가 이중계상 시의
 //! 위치(+약 26px)로 회귀하지 않는지 절대 bound 로 추적.
+//! #4318 이 17쪽 마지막 단 overflow 꼬리(pi=922 lines 2..5)를 18쪽 좌측
+//! 상단으로 넘기므로 문30 기준점은 ~336 이 아니라 ~375.
 
 use std::fs;
 use std::path::Path;
@@ -68,8 +70,8 @@ fn attr_f(tag: &str, key: &str) -> Option<f64> {
 }
 
 /// p18(0-idx 17) 좌측 첫 미주 제목(문30) baseline y.
-/// 이중계상 회귀 시 약 +26px(≈ 1줄) 아래로 이동한다. 정정 위치 ~336px 기준,
-/// 회귀(약 ≥362px)를 잡도록 상한 350px.
+/// 이중계상 회귀 시 약 +26px(≈ 1줄) 아래로 이동한다. #4318 이후 정정
+/// 위치 ~375px 기준, 회귀(약 ≥401px)를 잡도록 상한 390px.
 #[test]
 fn endnote_first_title_gap_not_doubled_p18() {
     let doc = load_doc("samples/3-09월_교육_통합_2024-구분선아래20구분선위20.hwp");
@@ -79,7 +81,7 @@ fn endnote_first_title_gap_not_doubled_p18() {
         .first()
         .unwrap_or_else(|| panic!("p18 좌측 미주 제목('문') 미검출: {ys:?}"));
     assert!(
-        first < 350.0,
-        "p18 첫 미주 제목 y={first:.1} ≥ 350 — 제목 앞 gap 이중계상 회귀 의심 (정정 위치 ~336)"
+        first < 390.0,
+        "p18 첫 미주 제목 y={first:.1} ≥ 390 — 제목 앞 gap 이중계상 회귀 의심 (정정 위치 ~375)"
     );
 }

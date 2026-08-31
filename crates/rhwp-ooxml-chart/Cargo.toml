@@ -9,4 +9,4 @@ publish = false
 too_many_arguments = "allow"
 
 [dependencies]
-quick-xml = "0.41"
+quick-xml = "0.42"

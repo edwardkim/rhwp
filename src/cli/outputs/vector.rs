@@ -384,7 +384,13 @@ pub(crate) fn export_svg(args: &[String]) -> i32 {
         } else if font_embed_mode != rhwp::renderer::svg::FontEmbedMode::None {
             doc.render_page_svg_with_fonts(*page_num, font_embed_mode, &font_paths)
         } else {
-            doc.render_page_svg_native(*page_num)
+            // 기본 SVG도 Studio Canvas와 같은 screen 레이어 트리를 재생한다.
+            // 레거시 PageRenderTree 경로를 기본으로 두면 동일 문서가 Studio와
+            // export-svg에서 서로 다른 배치/클리핑 결과를 낼 수 있다.
+            doc.render_page_svg_layer_with_profile_native(
+                *page_num,
+                rhwp::paint::RenderProfile::Screen,
+            )
         };
         let page_overflow_cell_lines = doc.take_overflow_cell_lines();
         overflow_cell_total += u64::from(page_overflow_cell_lines);

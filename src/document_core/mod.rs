@@ -15,8 +15,10 @@ pub mod table_calc;
 pub mod text_security;
 pub mod validation;
 
+use crate::model::control::Control;
 use crate::model::document::Document;
 use crate::model::event::DocumentEvent;
+use crate::model::header_footer::HeaderFooterApply;
 use crate::model::paragraph::Paragraph;
 use crate::model::table::TableTransposeData;
 use crate::paint::PageLayerTree;
@@ -36,6 +38,26 @@ use std::sync::Arc;
 /// 기본 폰트 fallback 경로
 pub const DEFAULT_FALLBACK_FONT: &str = "/usr/share/fonts/truetype/nanum/NanumGothic.ttf";
 pub(crate) const TABLE_CAPTION_CELL_SENTINEL: usize = 65_534;
+
+/// Studio/WASM의 `applyTo` 숫자를 core 열거형으로 변환한다.
+///
+/// 공개 API의 기존 호환 규칙대로 1=짝수, 2=홀수, 나머지는 양쪽이다.
+pub(crate) fn header_footer_apply_from_u8(value: u8) -> HeaderFooterApply {
+    match value {
+        1 => HeaderFooterApply::Even,
+        2 => HeaderFooterApply::Odd,
+        _ => HeaderFooterApply::Both,
+    }
+}
+
+/// core 열거형을 Studio/WASM의 `applyTo` 숫자로 변환한다.
+pub(crate) fn header_footer_apply_to_u8(value: HeaderFooterApply) -> u8 {
+    match value {
+        HeaderFooterApply::Both => 0,
+        HeaderFooterApply::Even => 1,
+        HeaderFooterApply::Odd => 2,
+    }
+}
 
 /// 내부 클립보드 데이터
 pub(crate) struct ClipboardData {
@@ -185,6 +207,13 @@ pub struct DocumentCore {
     pub(crate) pending_pagination_job: Option<PendingPaginationJob>,
     /// 페이지별 렌더 트리 캐시 (지연 구축, 부분 무효화)
     pub(crate) page_tree_cache: RefCell<Vec<Option<PageRenderTree>>>,
+    /// [#6452] 구역 첫 페이지에 임시 투영한 머리말/꼬리말 편집 tree의 단일-entry 캐시.
+    ///
+    /// Studio는 한 번에 한 HF 정의만 편집하므로 마지막 `(page, section, header,
+    /// apply_to)`만 보존한다. 일반 page cache와 분리해 pagination의 실제 active
+    /// header/footer tree를 오염시키지 않는다.
+    pub(crate) header_footer_preview_tree_cache:
+        RefCell<Option<((u32, usize, bool, u8), PageRenderTree)>>,
     /// [Task #2222] 페이지 레이어 트리 JSON 캐시 — (출력옵션 지문, 직렬화 결과).
     /// 이미지 base64 인라인으로 페이지당 1MB 급이라 재직렬화(실측 15ms/회)가
     /// 렌더 자체와 맞먹는다. 편집 무효화는 page_tree_cache 와 동일 지점에서.
@@ -237,6 +266,34 @@ pub struct DocumentCore {
     /// HWPX 비표준 감지 등 문서 검증 경고.
     /// `from_bytes` 에서 자동 생성되며, 사용자 고지·선택적 reflow 에 사용 (#177).
     pub(crate) validation_report: validation::ValidationReport,
+}
+
+impl DocumentCore {
+    /// 구역에서 지정한 머리말/꼬리말 정의의 원본 control 위치를 찾는다.
+    ///
+    /// 편집 command와 대표 페이지 renderer가 반드시 이 resolver를 공유해야 한다
+    /// (#6453). 먼저 발견된 동일 종류·적용 범위 control이 canonical target이다.
+    pub(crate) fn find_header_footer_control(
+        &self,
+        section_idx: usize,
+        is_header: bool,
+        apply_to: HeaderFooterApply,
+    ) -> Option<(usize, usize)> {
+        let section = self.document.sections.get(section_idx)?;
+        for (para_index, para) in section.paragraphs.iter().enumerate() {
+            for (control_index, control) in para.controls.iter().enumerate() {
+                let matches = match control {
+                    Control::Header(header) => is_header && header.apply_to == apply_to,
+                    Control::Footer(footer) => !is_header && footer.apply_to == apply_to,
+                    _ => false,
+                };
+                if matches {
+                    return Some((para_index, control_index));
+                }
+            }
+        }
+        None
+    }
 }
 
 /// `DocumentCore` 는 스레드 경계 너머로 소유될 수 있어야 한다 — native 소비자(MCP 서버,
@@ -420,6 +477,7 @@ impl DocumentCore {
             deferred_pagination_descriptor: None,
             pending_pagination_job: None,
             page_tree_cache: RefCell::new(Vec::new()),
+            header_footer_preview_tree_cache: RefCell::new(None),
             layer_tree_json_cache: RefCell::new(Vec::new()),
             page_layer_tree_cache: RefCell::new(Vec::new()),
             bin_data_epoch: 0,

@@ -3865,7 +3865,13 @@ fn parse_hwp3_inner(
 
     // 7. 문단 리스트 파싱 및 Document Model(IR)로 매핑 변환
     // Square wrap 어울림 계산을 위해 페이지 레이아웃 정보 전달 (단위: HWPUNIT)
-    let body_left_hu = doc_info.left_margin as i32 * 4;
+    // [#5696] 제본 여백은 본문 왼쪽을 그만큼 밀어낸다 — `Rect::page_areas` 가
+    // `margin_left + margin_gutter` 로 본문을 잡으므로 사다리 합성도 같은 폭을 써야
+    // 한다. 종전에는 여기서만 빠져 있어 `hwp3-sample19`(제본 8.0mm) 의 119 행 전부가
+    // 상자보다 1.06 배 넓은 `segment_width` 를 실었다 — 한컴 변환본은 `37420` 인데
+    // 우리는 본문 폭 그대로 `39688` 이었다(차 `2268HU` = 정확히 8.0mm).
+    let body_gutter_hu = doc_info.binding_margin as i32 * 4;
+    let body_left_hu = doc_info.left_margin as i32 * 4 + body_gutter_hu;
     let body_right_hu = doc_info.right_margin as i32 * 4;
     let paper_width_hu = doc_info.paper_width as i32 * 4;
     let paper_height_hu = doc_info.paper_length as i32 * 4;

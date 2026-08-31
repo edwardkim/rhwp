@@ -2,8 +2,8 @@
 
 use super::super::helpers::color_ref_to_css;
 use crate::document_core::{
-    DeferredPaginationJobState, DeferredPaginationStepResult, DeferredPaginationTargetStatus,
-    DocumentCore, PendingPaginationJob,
+    header_footer_apply_from_u8, DeferredPaginationJobState, DeferredPaginationStepResult,
+    DeferredPaginationTargetStatus, DocumentCore, PendingPaginationJob,
 };
 use crate::error::HwpError;
 use crate::model::control::Control;
@@ -6594,6 +6594,10 @@ impl DocumentCore {
         for i in from..cache.len() {
             cache[i] = None;
         }
+        // 대표 HF tree는 일반 pagination tree와 다른 active target을 담는다. 부분
+        // 무효화의 원인이 HF 자체가 아니더라도 body/쪽번호/페이지 기하가 바뀔 수 있어
+        // 단일 entry를 보수적으로 비운다 (#6452).
+        self.header_footer_preview_tree_cache.borrow_mut().take();
         let mut json_cache = self.layer_tree_json_cache.borrow_mut();
         for i in from..json_cache.len() {
             json_cache[i].clear();
@@ -6610,6 +6614,8 @@ impl DocumentCore {
         if let Some(slot) = self.page_tree_cache.borrow_mut().get_mut(idx) {
             *slot = None;
         }
+        // 대표 HF tree도 페이지 숨김 상태를 포함하므로 함께 무효화한다 (#6452).
+        self.header_footer_preview_tree_cache.borrow_mut().take();
         if let Some(variants) = self.layer_tree_json_cache.borrow_mut().get_mut(idx) {
             variants.clear();
         }
@@ -6873,6 +6879,7 @@ impl DocumentCore {
         {
             variants.clear();
         }
+        self.header_footer_preview_tree_cache.borrow_mut().take();
         Some(FocusedPageTreePatch {
             page_index: template.page_index as u32,
             dirty_rect: BoundingBox::new(
@@ -6887,6 +6894,7 @@ impl DocumentCore {
     /// 페이지 렌더 트리 캐시 전체 무효화.
     pub(crate) fn invalidate_page_tree_cache(&self) {
         self.page_tree_cache.borrow_mut().clear();
+        self.header_footer_preview_tree_cache.borrow_mut().take();
         self.layer_tree_json_cache.borrow_mut().clear();
         self.page_layer_tree_cache.borrow_mut().clear();
         // [Task #1949] IR 이 바뀌는 재조판 경계에서 셀 단위 레이아웃 캐시(포인터 키)도
@@ -6983,40 +6991,28 @@ impl DocumentCore {
         is_header: bool,
         apply_to: u8,
     ) -> Result<HeaderFooterRef, HwpError> {
-        let apply_to = match apply_to {
-            1 => HeaderFooterApply::Even,
-            2 => HeaderFooterApply::Odd,
-            _ => HeaderFooterApply::Both,
-        };
-        let section = self
-            .document
-            .sections
-            .get(section_idx)
-            .ok_or_else(|| HwpError::RenderError(format!("구역 {} 범위 초과", section_idx)))?;
-        for (para_index, para) in section.paragraphs.iter().enumerate() {
-            for (control_index, control) in para.controls.iter().enumerate() {
-                let matches_target = match control {
-                    Control::Header(header) => is_header && header.apply_to == apply_to,
-                    Control::Footer(footer) => !is_header && footer.apply_to == apply_to,
-                    _ => false,
-                };
-                if matches_target {
-                    return Ok(HeaderFooterRef {
-                        para_index,
-                        control_index,
-                        source_section_index: section_idx,
-                        table_path: Vec::new(),
-                    });
-                }
-            }
-        }
-        Err(HwpError::RenderError(format!(
-            "머리말/꼬리말 편집 target을 찾을 수 없습니다: sec={}, is_header={}, apply_to={}",
-            section_idx, is_header, apply_to as u8
-        )))
+        let apply = header_footer_apply_from_u8(apply_to);
+        let (para_index, control_index) = self
+            .find_header_footer_control(section_idx, is_header, apply)
+            .ok_or_else(|| {
+                HwpError::RenderError(format!(
+                    "머리말/꼬리말 편집 target을 찾을 수 없습니다: sec={}, is_header={}, apply_to={}",
+                    section_idx, is_header, apply_to
+                ))
+            })?;
+        Ok(HeaderFooterRef {
+            para_index,
+            control_index,
+            source_section_index: section_idx,
+            table_path: Vec::new(),
+        })
     }
 
-    /// 구역 첫 페이지에 요청한 HF 정의를 임시로 투영한 비캐시 렌더 트리.
+    /// 구역 첫 페이지에 요청한 HF 정의를 임시로 투영한 렌더 트리.
+    ///
+    /// 실제 page tree cache와 섞지 않고 마지막 편집 target 한 건만 재사용한다. 선택
+    /// 드래그는 hit-test와 selection geometry를 프레임마다 연속 조회하므로, 캐시가
+    /// 없으면 같은 대표 페이지를 매번 full build하게 된다 (#6452).
     pub(crate) fn build_header_footer_edit_preview_tree(
         &self,
         page_num: u32,
@@ -7030,10 +7026,19 @@ impl DocumentCore {
                 page_num, section_idx
             )));
         }
-        self.build_page_tree_with_header_footer_override(
+        let key = (page_num, section_idx, is_header, apply_to);
+        if let Some((cached_key, tree)) = self.header_footer_preview_tree_cache.borrow().as_ref() {
+            if *cached_key == key {
+                return Ok(tree.clone());
+            }
+        }
+
+        let tree = self.build_page_tree_with_header_footer_override(
             page_num,
             Some((section_idx, is_header, apply_to)),
-        )
+        )?;
+        *self.header_footer_preview_tree_cache.borrow_mut() = Some((key, tree.clone()));
+        Ok(tree)
     }
 
     /// 페이지 렌더 트리를 빌드한다.

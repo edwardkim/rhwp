@@ -980,6 +980,7 @@ impl LayoutEngine {
                     &cell.paragraphs,
                     styles,
                     cell.apply_inner_margin,
+                    cell.line_wrap == crate::model::table::CELL_LINE_WRAP_SQUEEZE,
                 );
                 pad_left = new_pl;
                 pad_right = new_pr;
@@ -1905,8 +1906,10 @@ impl LayoutEngine {
                     // 흐름 y 를 함께 들고 간다.
                     let mut inline_tac_line = 0usize;
                     let mut inline_tac_y = para_y_before_compose;
-                    // 폭 초과로 줄을 내린 개체의 하단 — composed 는 그 개체를 줄 높이에
-                    // 계상하지 않아(첫 줄이 글꼴 줄높이 그대로다) 흐름이 모자란다.
+                    // 폭 초과로 줄을 내린 개체의 하단(#6122). 쪽 분할 칸의 단독 TAC
+                    // 그림(#6114)도 같은 값으로 흐름을 민다 — 일반 칸까지 밀면
+                    // 칸 상자 밖 글이 아래 본문과 겹친다.
+                    let split_cell_tac_flow = cut_units.is_some();
                     let mut wrapped_tac_flow_bottom: Option<f64> = None;
                     let mut rendered_top_and_bottom_non_inline = false;
 
@@ -2023,6 +2026,13 @@ impl LayoutEngine {
                                                 Some(&cell_context),
                                                 styles,
                                             );
+                                            if split_cell_tac_flow {
+                                                wrapped_tac_flow_bottom = Some(
+                                                    wrapped_tac_flow_bottom
+                                                        .unwrap_or(f64::MIN)
+                                                        .max(empty_tac_y + clamped_h),
+                                                );
+                                            }
                                             empty_tac_x += clamped_w;
                                             continue;
                                         }
@@ -2108,6 +2118,13 @@ impl LayoutEngine {
                                             Some(&cell_context),
                                             styles,
                                         );
+                                        if split_cell_tac_flow {
+                                            wrapped_tac_flow_bottom = Some(
+                                                wrapped_tac_flow_bottom
+                                                    .unwrap_or(f64::MIN)
+                                                    .max(inline_tac_y + clamped_h),
+                                            );
+                                        }
                                         inline_x += clamped_w;
                                         continue;
                                     }

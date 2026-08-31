@@ -1577,7 +1577,6 @@ export class InputHandler {
         this.cursor.setHfCursorPosition(
           hfHit.hit.paraIndex,
           hfHit.hit.charOffset,
-          hfHit.pageIdx,
         );
         this.updateCaretDuringDrag();
       }
@@ -2021,7 +2020,7 @@ export class InputHandler {
       applyTo: ordered.end.applyTo,
       paraIdx: this.cursor.hfParaIdx,
       charOffset: this.cursor.hfCharOffset,
-      preferredPage: ordered.preferredPage,
+      previewPage: ordered.previewPage,
     };
     const bodyPosition = this.cursor.getPosition();
     this.executeOperation({
@@ -2319,7 +2318,7 @@ export class InputHandler {
           applyTo,
           paraIdx: hfParaIdx,
           charOffset: hfCharOffset,
-          preferredPage: cur.hfPreferredPage,
+          previewPage: cur.hfPreviewPage,
         },
         operation: (wasm) => {
           wasm.applyParaFormatInHf(sectionIdx, isHeader, applyTo, hfParaIdx, propsJson);
@@ -2680,7 +2679,7 @@ export class InputHandler {
       mode: 'headerFooter',
       start: { ...selection.start },
       end: { ...selection.end },
-      preferredPage: selection.preferredPage,
+      previewPage: selection.previewPage,
     };
   }
 
@@ -2716,13 +2715,13 @@ export class InputHandler {
     };
     const start = ordered?.start ?? collapsed;
     const end = ordered?.end ?? collapsed;
-    const preferredPage = this.cursor.hfPreferredPage;
+    const previewPage = this.cursor.hfPreviewPage;
     const contextBefore: EditContext = {
       mode: 'headerFooter',
       ...target,
       paraIdx: this.cursor.hfParaIdx,
       charOffset: this.cursor.hfCharOffset,
-      preferredPage,
+      previewPage,
     };
     const selectionBefore = ordered && options.restoreSelectionOnUndo
       ? this.headerFooterSelectionSnapshot(ordered)
@@ -2744,7 +2743,7 @@ export class InputHandler {
             ...target,
             paraIdx: result.hfParaIndex,
             charOffset: result.charOffset,
-            preferredPage,
+            previewPage,
           };
         },
         selectionBefore,
@@ -2770,7 +2769,7 @@ export class InputHandler {
         this.cursor.selectHeaderFooterRange(
           ordered.start,
           ordered.end,
-          ordered.preferredPage,
+          ordered.previewPage,
         );
       }
       console.warn('[InputHandler] HF 범위 치환 실패:', err);
@@ -2801,7 +2800,7 @@ export class InputHandler {
       applyTo: this.cursor.hfApplyTo,
       paraIdx: this.cursor.hfParaIdx,
       charOffset: this.cursor.hfCharOffset,
-      preferredPage: this.cursor.hfPreferredPage,
+      previewPage: this.cursor.hfPreviewPage,
     });
     return true;
   }
@@ -2907,20 +2906,20 @@ export class InputHandler {
             ctx.isHeader,
             ctx.sectionIdx,
             ctx.applyTo,
-            ctx.preferredPage,
+            ctx.previewPage,
           );
         } else {
           this.cursor.enterHeaderFooterMode(
             ctx.isHeader,
             ctx.sectionIdx,
             ctx.applyTo,
-            ctx.preferredPage,
+            ctx.previewPage,
           );
         }
         // 진입/전환 양쪽 모두 mode-change 를 알려 툴바/오버레이가 stale 하지 않게 한다.
         emitHeaderFooterModeChanged(this.eventBus, this.cursor);
       }
-      this.cursor.setHfCursorPosition(ctx.paraIdx, ctx.charOffset, ctx.preferredPage);
+      this.cursor.setHfCursorPosition(ctx.paraIdx, ctx.charOffset);
       return;
     }
 
@@ -3006,7 +3005,7 @@ export class InputHandler {
     if (!range) return;
     if ('mode' in range) {
       if (range.mode === 'headerFooter') {
-        this.cursor.selectHeaderFooterRange(range.start, range.end, range.preferredPage);
+        this.cursor.selectHeaderFooterRange(range.start, range.end, range.previewPage);
       }
       return;
     }
@@ -3025,7 +3024,7 @@ export class InputHandler {
     const range = cmd?.selectionAfter?.();
     if (!range) return;
     if ('mode' in range && range.mode === 'headerFooter') {
-      this.cursor.selectHeaderFooterRange(range.start, range.end, range.preferredPage);
+      this.cursor.selectHeaderFooterRange(range.start, range.end, range.previewPage);
     }
   }
 
@@ -3534,7 +3533,7 @@ export class InputHandler {
             const isHeader = this.cursor.headerFooterMode === 'header';
             startRect = this.wasm.getCursorRectInHeaderFooter(
               this.cursor.hfSectionIdx, isHeader, this.cursor.hfApplyTo,
-              this.cursor.hfParaIdx, anchor.charOffset, this.cursor.getRect()?.pageIndex ?? 0,
+              this.cursor.hfParaIdx, anchor.charOffset, this.cursor.hfPreviewPage,
             )!;
           } else if (this.cursor.isInFootnote()) {
             startRect = this.wasm.getCursorRectInFootnote(

@@ -95,7 +95,7 @@ function insertHfField(
     sectionIdx: cursor.hfSectionIdx,
     isHeader,
     applyTo: cursor.hfApplyTo,
-    preferredPage: cursor.hfPreferredPage,
+    previewPage: cursor.hfPreviewPage,
   };
   const paraIdx = cursor.hfParaIdx;
   const charOffset = cursor.hfCharOffset;

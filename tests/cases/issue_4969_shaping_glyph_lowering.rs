@@ -1395,6 +1395,58 @@ fn issue_4969_q2_d5_r1_product_page_lowering_reuses_one_prepared_source() {
 }
 
 #[test]
+fn issue_4969_q5_d_q2_run_resource_matrix_is_unique_source_bounded() {
+    let (sidecars, measurement, _) = prepared_sidecar();
+    let run = text_run();
+    let bbox = BoundingBox::new(3.0, 5.0, measurement.total_advance_px, 14.0);
+    let mut observations = Vec::new();
+
+    for run_count in [1_usize, 2, 8] {
+        let ops = (0..run_count)
+            .map(|_| PaintOp::text_run(bbox, run.clone()))
+            .collect();
+        let mut node = LayerNode::leaf(bbox, Some(17), ops);
+        let mut resources = ResourceArena::default();
+        let claimed = lower_horizontal_shaping_page_sidecars(&mut node, &sidecars, &mut resources);
+        let rhwp::paint::LayerNodeKind::Leaf { ops } = &node.kind else {
+            panic!("fixture node must remain a leaf");
+        };
+        let text_runs = ops
+            .iter()
+            .filter(|op| matches!(op, PaintOp::TextRun { .. }))
+            .count();
+        let glyph_runs = ops
+            .iter()
+            .filter(|op| matches!(op, PaintOp::GlyphRun { .. }))
+            .count();
+
+        assert_eq!(claimed.len(), run_count);
+        assert!((0..run_count as u32).all(|text_source_id| claimed.contains(&text_source_id)));
+        assert_eq!(text_runs, run_count);
+        assert_eq!(glyph_runs, run_count);
+        assert_eq!(resources.font_blob_count(), 1);
+        assert_eq!(resources.font_resources().blobs.len(), 1);
+        assert_eq!(resources.font_resources().faces.len(), 1);
+        observations.push(serde_json::json!({
+            "runs": run_count,
+            "textRuns": text_runs,
+            "glyphRuns": glyph_runs,
+            "fontBlobs": resources.font_blob_count(),
+            "fontFaces": resources.font_resources().faces.len(),
+            "fontPayloadBytes": SOURCE_HAN.len()
+        }));
+    }
+
+    println!(
+        "{}",
+        serde_json::json!({
+            "kind": "q5-d-q2-run-resource-matrix",
+            "observations": observations
+        })
+    );
+}
+
+#[test]
 fn issue_4969_q2_d5_r1_prepared_cache_debug_excludes_font_bytes() {
     let (sidecars, measurement, _) = prepared_sidecar();
     let run = text_run();

@@ -16,7 +16,7 @@ flate2 = "1.0"
 getrandom = { version = "0.4", features = ["wasm_js"] }
 hmac = "0.13"
 pbkdf2 = "0.13"
-quick-xml = "0.41"
+quick-xml = "0.42"
 roxmltree = "0.21"
 sha1 = "0.11"
 sha2 = "0.11"

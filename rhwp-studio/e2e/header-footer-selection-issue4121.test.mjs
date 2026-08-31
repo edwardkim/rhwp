@@ -84,12 +84,12 @@ runTest('#4121 HF 선택 반복 페이지 scroll-in 투영', async ({ page }) =>
       target.applyTo,
       startPage,
     );
-    handler.cursor.setHfCursorPosition(0, 0, startPage);
+    handler.cursor.setHfCursorPosition(0, 0);
     handler.eventBus.emit('headerFooterModeChanged', {
       mode: 'header',
       sectionIdx: handler.cursor.hfSectionIdx,
       applyTo: handler.cursor.hfApplyTo,
-      previewPage: handler.cursor.hfPreferredPage,
+      previewPage: handler.cursor.hfPreviewPage,
     });
     handler.viewportManager.setZoom(0.7);
     handler.focus();
@@ -122,7 +122,7 @@ runTest('#4121 HF 선택 반복 페이지 scroll-in 투영', async ({ page }) =>
       cursor.hfApplyTo,
       0,
     ));
-    const pageNum = cursor.hfPreferredPage;
+    const pageNum = cursor.hfPreviewPage;
     const start = wasm.getCursorRectInHeaderFooter(
       cursor.hfSectionIdx, true, cursor.hfApplyTo, 0, 1, pageNum,
     );
@@ -267,11 +267,11 @@ runTest('#4121 HF 선택 반복 페이지 scroll-in 투영', async ({ page }) =>
     return {
       length: info.charCount,
       selection: handler.cursor.getHeaderFooterSelectionOrdered(),
-      page: handler.cursor.hfPreferredPage,
+      page: handler.cursor.hfPreviewPage,
     };
   });
   assert(cutUndo.length === 13 && cutUndo.selection !== null && cutUndo.page === setup.startPage,
-    'cut Undo는 내용·HF 선택·preferredPage를 복원한다');
+    'cut Undo는 내용·HF 선택·previewPage를 복원한다');
 
   await page.evaluate(() => window.__inputHandler.performRedo());
   await settle(page, 250);
@@ -514,12 +514,12 @@ runTest('#4121 HF 선택 반복 페이지 scroll-in 투영', async ({ page }) =>
     handler.viewportManager.setZoom(0.55);
     handler.afterEdit();
     handler.cursor.enterHeaderFooterMode(true, sectionIdx, 0, pages[0]);
-    handler.cursor.setHfCursorPosition(0, 0, pages[0]);
+    handler.cursor.setHfCursorPosition(0, 0);
     handler.eventBus.emit('headerFooterModeChanged', {
       mode: 'header',
       sectionIdx: handler.cursor.hfSectionIdx,
       applyTo: handler.cursor.hfApplyTo,
-      previewPage: handler.cursor.hfPreferredPage,
+      previewPage: handler.cursor.hfPreviewPage,
     });
     handler.updateCaret();
     handler.focus();
@@ -741,15 +741,15 @@ runTest('#4121 HF 선택 반복 페이지 scroll-in 투영', async ({ page }) =>
   await page.evaluate(({ sectionIdx, startPage }) => {
     const handler = window.__inputHandler;
     handler.cursor.switchHeaderFooterTarget(false, sectionIdx, 1, startPage);
-    handler.cursor.setHfCursorPosition(0, 0, startPage);
+    handler.cursor.setHfCursorPosition(0, 0);
     handler.eventBus.emit('headerFooterModeChanged', {
       mode: 'footer',
       sectionIdx: handler.cursor.hfSectionIdx,
       applyTo: handler.cursor.hfApplyTo,
-      previewPage: handler.cursor.hfPreferredPage,
+      previewPage: handler.cursor.hfPreviewPage,
     });
     handler.viewportManager.setScrollTop(
-      handler.virtualScroll.getPageOffset(handler.cursor.hfPreferredPage),
+      handler.virtualScroll.getPageOffset(handler.cursor.hfPreviewPage),
     );
     handler.focus();
   }, { sectionIdx: matrixSetup.sectionIdx, startPage: activeParity[0].pageNum });
@@ -757,10 +757,10 @@ runTest('#4121 HF 선택 반복 페이지 scroll-in 투영', async ({ page }) =>
   const representativeEditing = await page.evaluate(() => {
     const handler = window.__inputHandler;
     const layer = document.querySelector(
-      `[data-rhwp-hf-edit-page="${handler.cursor.hfPreferredPage}"].is-representative`,
+      `[data-rhwp-hf-edit-page="${handler.cursor.hfPreviewPage}"].is-representative`,
     );
     return {
-      preferredPage: handler.cursor.hfPreferredPage,
+      previewPage: handler.cursor.hfPreviewPage,
       expectedPreviewPage: handler.wasm.getHeaderFooterPreviewPage(handler.cursor.hfSectionIdx),
       label: document.querySelector('.tb-hf-label')?.textContent || '',
       badge: layer?.querySelector('.hf-edit-badge')?.textContent || '',
@@ -769,8 +769,8 @@ runTest('#4121 HF 선택 반복 페이지 scroll-in 투영', async ({ page }) =>
     };
   });
   assert(
-    representativeEditing.preferredPage === representativeEditing.expectedPreviewPage
-      && representativeEditing.preferredPage === matrixSetup.pages[0],
+    representativeEditing.previewPage === representativeEditing.expectedPreviewPage
+      && representativeEditing.previewPage === matrixSetup.pages[0],
     `짝수 꼬리말도 구역 첫 페이지에서 대표 편집한다 (${JSON.stringify(representativeEditing)})`,
   );
   assert(
@@ -790,7 +790,7 @@ runTest('#4121 HF 선택 반복 페이지 scroll-in 투영', async ({ page }) =>
   assert(paritySelection?.start.applyTo === 1 && paritySelection.end.charOffset === 7,
     'Shift+End가 짝수 쪽 꼬리말 선택을 만든다');
   assert(
-    await visibleSelectionProjectsToPage(page, representativeEditing.preferredPage),
+    await visibleSelectionProjectsToPage(page, representativeEditing.previewPage),
     '짝수 쪽 꼬리말 선택이 대표 편집 페이지에 투영된다',
   );
 
@@ -808,7 +808,7 @@ runTest('#4121 HF 선택 반복 페이지 scroll-in 투영', async ({ page }) =>
     assert(related, `짝수 쪽 ${target.pageNum + 1}쪽은 실제 적용 영역으로 연관 표시된다`);
   }
   for (const target of otherParity) {
-    if (target.pageNum === representativeEditing.preferredPage) continue;
+    if (target.pageNum === representativeEditing.previewPage) continue;
     await page.evaluate((pageNum) => {
       const handler = window.__inputHandler;
       handler.viewportManager.setScrollTop(handler.virtualScroll.getPageOffset(pageNum));
@@ -819,7 +819,7 @@ runTest('#4121 HF 선택 반복 페이지 scroll-in 투영', async ({ page }) =>
   }
 
   const switchTarget = otherParity.find(
-    target => target.pageNum !== representativeEditing.preferredPage,
+    target => target.pageNum !== representativeEditing.previewPage,
   );
   assert(Boolean(switchTarget), '대표 페이지 밖에 홀수 꼬리말 적용 쪽이 있다');
   await page.evaluate((pageNum) => {
@@ -842,7 +842,7 @@ runTest('#4121 HF 선택 반복 페이지 scroll-in 투영', async ({ page }) =>
     return {
       mode: handler.cursor.headerFooterMode,
       applyTo: handler.cursor.hfApplyTo,
-      page: handler.cursor.hfPreferredPage,
+      page: handler.cursor.hfPreviewPage,
       previewPage: handler.wasm.getHeaderFooterPreviewPage(handler.cursor.hfSectionIdx),
       label: document.querySelector('.tb-hf-label')?.textContent || '',
       selection: handler.cursor.getHeaderFooterSelectionOrdered(),
@@ -860,7 +860,7 @@ runTest('#4121 HF 선택 반복 페이지 scroll-in 투영', async ({ page }) =>
 
   const actualPreviewTarget = await page.evaluate(() => {
     const handler = window.__inputHandler;
-    return handler.wasm.getHeaderFooterEditTarget(handler.cursor.hfPreferredPage, false);
+    return handler.wasm.getHeaderFooterEditTarget(handler.cursor.hfPreviewPage, false);
   });
   await page.click('[data-cmd="page:headerfooter-close"]');
   await settle(page, 250);

@@ -1903,6 +1903,20 @@ fn square_wrap_table_line_anchor_y(
 }
 
 pub(crate) const ENDNOTE_COLUMN_BOTTOM_BLEED_TOLERANCE_PX: f64 = 24.0;
+/// [#4318] 마지막 단 split/tail 여유. 24px bleed 는 한 줄(≈12px)을 본문
+/// 프레임 아래(+14px)에 통째 남긴다. 저장 vpos 수 px 보정만 허용한다.
+pub(crate) const ENDNOTE_LAST_COLUMN_SPLIT_BLEED_PX: f64 = 4.0;
+
+/// [#4318] 마지막 단에서 `added_height` 를 붙이면 본문 하단을 넘기는지.
+pub(crate) fn endnote_last_column_tail_overflows_frame(
+    current_height: f64,
+    added_height: f64,
+    available: f64,
+) -> bool {
+    current_height > available * 0.90
+        && current_height + added_height > available + ENDNOTE_LAST_COLUMN_SPLIT_BLEED_PX
+}
+
 const ENDNOTE_COLUMN_BOTTOM_OVERFLOW_LOG_TOLERANCE_PX: f64 = 48.0;
 const ENDNOTE_EQUATION_TAIL_LINE_BOX_OVERFLOW_LOG_TOLERANCE_PX: f64 = 68.0;
 const ZERO_ENDNOTE_COLUMN_BOTTOM_OVERFLOW_LOG_TOLERANCE_PX: f64 = 33.0;

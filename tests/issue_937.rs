@@ -19,14 +19,14 @@ fn svg_text_content(svg: &str) -> String {
 
     loop {
         match reader.read_event_into(&mut buf) {
-            Ok(quick_xml::events::Event::Start(e)) if e.name().as_ref() == b"text" => {
+            Ok(quick_xml::events::Event::Start(e)) if e.name().as_ref() == "text" => {
                 in_text = true;
             }
-            Ok(quick_xml::events::Event::End(e)) if e.name().as_ref() == b"text" => {
+            Ok(quick_xml::events::Event::End(e)) if e.name().as_ref() == "text" => {
                 in_text = false;
             }
             Ok(quick_xml::events::Event::Text(e)) if in_text => {
-                out.push_str(&e.decode().expect("decode SVG text node"));
+                out.push_str(e.as_ref());
             }
             Ok(quick_xml::events::Event::Eof) => break,
             Ok(_) => {}
