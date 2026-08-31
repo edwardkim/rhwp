@@ -31,6 +31,9 @@ const ROWBREAK_STALE_PAGE_SCALE_PICTURE_OFFSET_MIN_HU: i32 = -40_000;
 /// remarks 셋째 줄 소유 회귀로 실증됐다. 그래서 잡음대(≤0.03px)와 실초과(≥0.19px)
 /// 사이의 0.1px 로 고정한다.
 const ROW_CUT_CAPACITY_FP_EPSILON_PX: f64 = 0.1;
+/// 쪽 스케일 칸 바닥값 — `cell_units` 쪽 프레임 판정과 같다. 이보다 작은 칸은
+/// 한 쪽에 들어가므로 [#6114] TAC 그림 높이 회계를 적용하지 않는다.
+const PAGE_SCALE_CELL_HEIGHT_PX: f64 = 800.0;
 
 /// [#2424 프로파일] 분할 표 컷 프리미티브 실측 카운터 — `RHWP_2424_PROFILE` 전용, 동작 불변.
 /// 프로세스 누적이며 `RHWP_2424_STEP_PROFILE` 출력(typeset.rs)이 스냅샷을 읽는다.
@@ -85,6 +88,26 @@ pub(super) fn effective_margin_left_line(margin_left: f64, indent: f64, line_n: 
     margin_left + line_indent
 }
 
+/// [#6353] 머리말·바탕쪽 셀 오른쪽 TAC 는 저장 줄 폭(sw)에 붙인다.
+/// 본문 표는 셀 내폭을 유지해 issue_617 exam_kor 본문 스냅샷을 흔들지 않는다.
+fn header_cell_tac_right_box_w(
+    para: &Paragraph,
+    line_idx: usize,
+    inner_width: f64,
+    dpi: f64,
+    in_header_or_master: bool,
+) -> f64 {
+    if !in_header_or_master {
+        return inner_width;
+    }
+    para.line_segs
+        .get(line_idx)
+        .filter(|seg| seg.segment_width > 0)
+        .map(|seg| hwpunit_to_px(seg.segment_width, dpi))
+        .filter(|&sw| sw + 0.5 < inner_width)
+        .unwrap_or(inner_width)
+}
+
 fn cell_para_line_anchor_y(
     base_y: f64,
     content_cell_y: f64,
@@ -103,6 +126,17 @@ fn cell_para_line_anchor_y(
     } else {
         base_y + hwpunit_to_px(vertical_pos_hu, dpi)
     }
+}
+
+/// [#6114] 쪽 나눔이 허용되고 선언 높이가 쪽 규모인 칸.
+/// 이 칸의 그림-only TAC 줄만 페인트 높이로 조각 회계·흐름을 민다.
+fn cell_is_page_split_candidate(
+    cell: &crate::model::table::Cell,
+    table: &crate::model::table::Table,
+    dpi: f64,
+) -> bool {
+    !matches!(table.page_break, TablePageBreak::None)
+        && hwpunit_to_px(cell.height.min(i32::MAX as u32) as i32, dpi) >= PAGE_SCALE_CELL_HEIGHT_PX
 }
 
 fn has_initial_tac_shape_host(paragraphs: &[Paragraph]) -> bool {
@@ -176,7 +210,7 @@ fn stored_layout_relocated_empty_rowbreak_picture_resets_offset(
 use super::super::composer::effective_text_for_metrics;
 use super::super::{hwpunit_to_px, ShapeStyle};
 use super::border_rendering::{
-    build_row_col_x, collect_cell_borders, create_border_line_nodes,
+    apply_table_outer_border_fill, build_row_col_x, collect_cell_borders, create_border_line_nodes,
     mark_cell_span_interior_covered, render_cell_diagonal, render_edge_borders,
     render_transparent_borders,
 };
@@ -1984,6 +2018,8 @@ struct HorizontalCellVars {
     outline_numbering_id: u16,
     depth: usize,
     clamp_header_negative_para_offset: bool,
+    /// [#6353] 머리말/꼬리말/바탕쪽 표 칸 — 오른쪽 TAC 는 저장 sw 를 쓴다.
+    header_or_master_cell: bool,
     /// root-body table owner의 첫 저장 LINE_SEG vpos. nested/header/footer 호출은 None.
     outer_host_stored_vpos_hu: Option<i32>,
     inline_table_flow_y_shift: f64,
@@ -2582,8 +2618,13 @@ impl LayoutEngine {
                 row_count,
                 y_start,
                 hwpunit_to_px(table.common.height as i32, self.dpi),
-                row_heights.iter().map(|h| (h * 10.0).round() / 10.0).collect::<Vec<_>>(),
-                decl.iter().map(|h| (h * 10.0).round() / 10.0).collect::<Vec<_>>(),
+                row_heights
+                    .iter()
+                    .map(|h| (h * 10.0).round() / 10.0)
+                    .collect::<Vec<_>>(),
+                decl.iter()
+                    .map(|h| (h * 10.0).round() / 10.0)
+                    .collect::<Vec<_>>(),
             );
         }
 
@@ -3044,6 +3085,10 @@ impl LayoutEngine {
             scalar_replay_terminal_boundary_unit,
             split_terminal,
             clamp_header_negative_para_offset,
+            matches!(
+                col_node.node_type,
+                RenderNodeType::Header | RenderNodeType::Footer | RenderNodeType::MasterPage
+            ),
             inline_table_flow_y_shift,
             // HWP5에서 표 안의 비글자 1×1 표가 `inMargin=(0,0,141,141)`를
             // 갖더라도 셀의 작은 좌우 저장 margin을 계속 적용하는 형상이 있다.
@@ -3069,80 +3114,18 @@ impl LayoutEngine {
         }
 
         // ── 5-1. 표 전체 외곽 테두리 보충 ──
-        // 셀 테두리만으로는 표 외곽이 비어있을 수 있음.
-        // 셀이 해당 외곽 엣지를 커버하지 않는 곳에만 table.border_fill_id fallback 적용.
-        // (셀이 존재하지만 의도적으로 테두리를 없앤 곳에는 적용하지 않음)
+        // 칸이 바깥을 덮지 않는 구멍은 표 테두리 fallback. 제목 칸만 바깥
+        // SOLID 를 그린 일러두기 부분 프레임만 occupancy+NONE 슬롯을 메운다
+        // (#6311). 일반 표·부분 시작 박스의 의도적 NONE 은 그대로 둔다.
         if table.border_fill_id > 0 {
             let tbl_idx = (table.border_fill_id as usize).saturating_sub(1);
             if let Some(tbl_bs) = styles.border_styles.get(tbl_idx) {
-                let borders = &tbl_bs.borders; // [left, right, top, bottom]
-
-                // 셀이 커버하는 외곽 엣지 맵 구축
-                let mut h_covered = vec![vec![false; col_count]; row_count + 1];
-                let mut v_covered = vec![vec![false; row_count]; col_count + 1];
-                for cell in &table.cells {
-                    let c = cell.col as usize;
-                    let r = cell.row as usize;
-                    if c >= col_count || r >= row_count {
-                        continue;
-                    }
-                    let ec = (c + cell.col_span as usize).min(col_count);
-                    let er = (r + cell.row_span as usize).min(row_count);
-                    // 상단
-                    if r == 0 {
-                        for cc in c..ec {
-                            h_covered[0][cc] = true;
-                        }
-                    }
-                    // 하단
-                    if er == row_count {
-                        for cc in c..ec {
-                            h_covered[row_count][cc] = true;
-                        }
-                    }
-                    // 좌측
-                    if c == 0 {
-                        for rr in r..er {
-                            v_covered[0][rr] = true;
-                        }
-                    }
-                    // 우측
-                    if ec == col_count {
-                        for rr in r..er {
-                            v_covered[col_count][rr] = true;
-                        }
-                    }
-                }
-
-                // 셀이 커버하지 않는 외곽 엣지에만 fallback 적용
-                for c in 0..col_count {
-                    if h_edges[0][c].is_none() && !h_covered[0][c] {
-                        let b = &borders[2];
-                        if !matches!(b.line_type, crate::model::style::BorderLineType::None) {
-                            h_edges[0][c] = Some(*b);
-                        }
-                    }
-                    if h_edges[row_count][c].is_none() && !h_covered[row_count][c] {
-                        let b = &borders[3];
-                        if !matches!(b.line_type, crate::model::style::BorderLineType::None) {
-                            h_edges[row_count][c] = Some(*b);
-                        }
-                    }
-                }
-                for r in 0..row_count {
-                    if v_edges[0][r].is_none() && !v_covered[0][r] {
-                        let b = &borders[0];
-                        if !matches!(b.line_type, crate::model::style::BorderLineType::None) {
-                            v_edges[0][r] = Some(*b);
-                        }
-                    }
-                    if v_edges[col_count][r].is_none() && !v_covered[col_count][r] {
-                        let b = &borders[1];
-                        if !matches!(b.line_type, crate::model::style::BorderLineType::None) {
-                            v_edges[col_count][r] = Some(*b);
-                        }
-                    }
-                }
+                apply_table_outer_border_fill(
+                    &mut h_edges,
+                    &mut v_edges,
+                    &tbl_bs.borders,
+                    &table.cells,
+                );
             }
         }
 
@@ -4783,6 +4766,7 @@ impl LayoutEngine {
             outline_numbering_id,
             depth,
             clamp_header_negative_para_offset,
+            header_or_master_cell,
             outer_host_stored_vpos_hu,
             inline_table_flow_y_shift,
             single_row_continuation,
@@ -5189,15 +5173,28 @@ impl LayoutEngine {
                     .unwrap_or(total_inline_width);
                 let line_margin =
                     effective_margin_left_line(para_margin_left_px, para_indent_px, 0);
+                // [#6353] 머리말·바탕쪽 셀 오른쪽 TAC 만 저장 sw 에 붙인다.
+                // exam_kor 바탕쪽 머리 표 홀수형 박스: 셀 내폭 22206HU vs sw 22054HU.
+                let right_box_w = header_cell_tac_right_box_w(
+                    para,
+                    0,
+                    inner_area.width,
+                    self.dpi,
+                    header_or_master_cell,
+                );
                 match para_alignment {
                     Alignment::Center | Alignment::Distribute => {
                         inner_area.x + (inner_area.width - line_w).max(0.0) / 2.0
                     }
-                    Alignment::Right => inner_area.x + (inner_area.width - line_w).max(0.0),
+                    Alignment::Right => inner_area.x + (right_box_w - line_w).max(0.0),
                     _ => inner_area.x + line_margin,
                 }
             };
             let mut tac_img_y = para_y_before_compose;
+            // [#6114] 쪽 분할 칸에서만 폴백 TAC 그림 페인트 하단으로 흐름을 민다.
+            // 일반 칸까지 밀면 칸 상자 밖 글이 아래 본문과 겹친다.
+            let split_cell_tac_flow = fragment_cut_units.is_some();
+            let mut tac_flow_bottom: Option<f64> = None;
             // [#5712] 같은 문단에서 앞서 배치된 비-TAC TopAndBottom 중첩 표가
             // para_y 를 전진시켰는지 — co-anchored TAC 표의 적층 판별에 쓴다.
             let mut prior_float_table_stacked = false;
@@ -5376,6 +5373,13 @@ impl LayoutEngine {
                                     cell_context.as_ref(),
                                     styles,
                                 );
+                                if split_cell_tac_flow {
+                                    tac_flow_bottom = Some(
+                                        tac_flow_bottom
+                                            .unwrap_or(f64::MIN)
+                                            .max(tac_img_y + clamped_h),
+                                    );
+                                }
                                 inline_x += clamped_w;
                                 continue;
                             }
@@ -5856,12 +5860,19 @@ impl LayoutEngine {
                                     para_indent_px,
                                     target_line,
                                 );
+                                let right_box_w = header_cell_tac_right_box_w(
+                                    para,
+                                    target_line,
+                                    inner_area.width,
+                                    self.dpi,
+                                    header_or_master_cell,
+                                );
                                 inline_x = match para_alignment {
                                     Alignment::Center | Alignment::Distribute => {
                                         inner_area.x + (inner_area.width - line_w).max(0.0) / 2.0
                                     }
                                     Alignment::Right => {
-                                        inner_area.x + (inner_area.width - line_w).max(0.0)
+                                        inner_area.x + (right_box_w - line_w).max(0.0)
                                     }
                                     _ => inner_area.x + line_margin,
                                 };
@@ -6577,6 +6588,9 @@ impl LayoutEngine {
             if rendered_top_and_bottom_non_inline {
                 para_y += self.paragraph_top_and_bottom_non_inline_flow_height(&para.controls);
             }
+            if let Some(bottom) = tac_flow_bottom {
+                para_y = para_y.max(bottom);
+            }
 
             // 마지막 인라인 Shape 이후의 남은 텍스트 렌더링 (예: "일")
             if prev_tac_text_pos > 0 {
@@ -6776,6 +6790,7 @@ impl LayoutEngine {
         replay_terminal_boundary_unit: bool,
         split_terminal: bool,
         clamp_header_negative_para_offset: bool,
+        header_or_master_cell: bool,
         inline_table_flow_y_shift: f64,
         nested_non_tac_cell_margin_compat: bool,
         cellzone_diagonal_origin_covered: &[Vec<bool>],
@@ -7414,6 +7429,7 @@ impl LayoutEngine {
                         outline_numbering_id,
                         depth,
                         clamp_header_negative_para_offset,
+                        header_or_master_cell,
                         outer_host_stored_vpos_hu,
                         inline_table_flow_y_shift,
                         single_row_continuation: scalar_single_row_continuation,
@@ -9497,8 +9513,18 @@ impl LayoutEngine {
             } else {
                 None
             };
+            // [#6114] 쪽 분할 칸의 그림-only TAC 줄만 페인트 높이를 조각 회계에
+            // 넣는다. 일반 칸·본문 섞인 줄까지 max 하면 컷이 빨라져 글이 겹친다.
+            let apply_split_cell_tac = cell_is_page_split_candidate(cell, table, self.dpi);
             let corrected_h = |line: &ComposedLine, li: usize| -> f64 {
                 let raw_lh = hwpunit_to_px(line.line_height, self.dpi);
+                let tac_h = if apply_split_cell_tac {
+                    crate::renderer::composed_line_tac_object_height_px(p, &comp, li, self.dpi)
+                        .unwrap_or(0.0)
+                } else {
+                    0.0
+                };
+                let with_tac = |h: f64| h.max(tac_h);
                 // [Task #1811] HWPX RowBreak 셀의 synthetic lineSeg 는 저장 근거가 아니라
                 // reflow 산물이다. row cut 측정에서 다시 corrected_line_height 를 적용하면
                 // HWP 기준보다 줄 유닛이 커져 p4→p5 split 이 한 유닛 빨라진다.
@@ -9506,7 +9532,7 @@ impl LayoutEngine {
                     && is_block_rowbreak
                     && para_uses_synthetic_line_segs
                 {
-                    return raw_lh;
+                    return with_tac(raw_lh);
                 }
                 // [#2112] 실제 저장 LINE_SEG 를 보유한 셀 문단은 저장 줄높이를 신뢰한다.
                 // 한글은 압축 줄높이(lh < 글자크기)를 저장값대로 렌더하는데 corrected
@@ -9514,7 +9540,7 @@ impl LayoutEngine {
                 // +76.8px, 표 합계 +335px → 다쪽 표 쪽수 밀림). 보정은 lineseg 부재
                 // 폴백(#674/#993 원 목적)에만 유지.
                 if p.line_segs.iter().any(|ls| !line_seg_is_synthetic(ls)) {
-                    return raw_lh;
+                    return with_tac(raw_lh);
                 }
                 match para_style {
                     Some(ps) => {
@@ -9553,19 +9579,21 @@ impl LayoutEngine {
                         // max_fs*ls% 팽창을 em 으로 교정 — CellBreak 표.
                         // [#2150/#2169] 일반화: 한글 NO_LS fresh 공식 — 비마지막 줄
                         // fs×ls% 동치 + 셀 마지막 줄만 em (ls 사다리 + 80168 per-row 확정).
-                        crate::renderer::corrected_line_height_for_variant_synthetic(
-                            raw_lh,
-                            max_fs,
-                            ps.line_spacing_type,
-                            ps.line_spacing,
-                            crate::renderer::para_has_no_stored_line_segs(p)
-                                && (!p.text.is_empty() || p.controls.is_empty())
-                                && (matches!(table.page_break, TablePageBreak::CellBreak)
+                        with_tac(
+                            crate::renderer::corrected_line_height_for_variant_synthetic(
+                                raw_lh,
+                                max_fs,
+                                ps.line_spacing_type,
+                                ps.line_spacing,
+                                crate::renderer::para_has_no_stored_line_segs(p)
+                                    && (!p.text.is_empty() || p.controls.is_empty())
+                                    && (matches!(table.page_break, TablePageBreak::CellBreak)
                                     // [#2070 실험] 셀 마지막 줄 = em (5축 전면).
                                     || cell_last_line_idx == Some(li)),
+                            ),
                         )
                     }
-                    None => raw_lh,
+                    None => with_tac(raw_lh),
                 }
             };
             let has_table_in_para = p.controls.iter().any(|c| matches!(c, Control::Table(_)));
@@ -14508,12 +14536,7 @@ impl LayoutEngine {
             if std::env::var("RHWP_DIAG_SCAN").is_ok() {
                 eprintln!(
                     "DIAG_SCAN DEFER_WRAPPER_PREFIX? r={} c={} inner_start={} partial_end={} start_cut={:?} end_cut={:?}",
-                    row,
-                    wrapper_cell.col,
-                    inner_table_start,
-                    partial_end,
-                    start_cut,
-                    end_cut,
+                    row, wrapper_cell.col, inner_table_start, partial_end, start_cut, end_cut,
                 );
             }
             if partial_end == 0 || partial_end >= inner_table_start {

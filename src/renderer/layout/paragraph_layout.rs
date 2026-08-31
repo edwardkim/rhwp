@@ -1378,6 +1378,39 @@ fn right_tab_block_width_with_tac(
     Some(estimate_text_width(&tail, &ts) + tac_w)
 }
 
+/// [#6303] 칸 폭 자동 축소(#6196) 셀의 오버플로우 자간을 안쪽 폭에 수렴시킨다.
+///
+/// 저장 사다리가 한 줄·안쪽 폭으로 적어 둔 칸이 자연 폭에서 안쪽 폭을 15% 넘게
+/// 놓친 경우에만 쓴다. 선형 1회 `slack/N` 은 말미 글자·narrow glyph 클램프 때문에
+/// 목표보다 1~2% 헐겁다. 일반 문단·일반 셀의 자간은 그대로 둔다.
+fn converge_cell_overflow_char_spacing(
+    comp_line: &ComposedLine,
+    styles: &ResolvedStyleSet,
+    tab_width: f64,
+    total_char_count: usize,
+    total_text_width: f64,
+    available_width: f64,
+) -> f64 {
+    let avg_char_w = total_text_width / total_char_count as f64;
+    let min_sp = -avg_char_w * 0.5;
+    let mut extra = ((available_width - total_text_width) / total_char_count as f64).max(min_sp);
+    for _ in 0..4 {
+        let mut measured = 0.0f64;
+        for run in &comp_line.runs {
+            let mut ts = resolved_to_text_style(styles, run.char_style_id, run.lang_index);
+            ts.default_tab_width = tab_width;
+            ts.extra_char_spacing = extra;
+            measured += estimate_text_width(&run.text, &ts);
+        }
+        let delta = available_width - measured;
+        if delta >= -0.05 && delta.abs() < 0.25 {
+            break;
+        }
+        extra = (extra + delta / total_char_count as f64).max(min_sp);
+    }
+    extra.min(0.0)
+}
+
 /// [Task #2067] 정렬(양쪽/배분/나눔)·오버플로우·셀 underflow 에 따른 여분 간격 계산.
 /// 반환 = (extra_word_sp, extra_char_sp, extra_dash_sp). Task #352 dash leader 분배 포함.
 #[allow(clippy::too_many_arguments)]
@@ -1394,6 +1427,7 @@ fn compute_line_extra_spacing(
     has_tabs: bool,
     renders_synthetic_wrap_trailing_space: bool,
     suppress_cell_overflow_spacing: bool,
+    converge_auto_shrink_cell: bool,
     total_char_count: usize,
     total_text_width: f64,
     available_width: f64,
@@ -1659,6 +1693,19 @@ fn compute_line_extra_spacing(
             } else if suppress_cell_overflow_spacing && slack < 0.0 {
                 // 셀의 좁은 내부 폭은 줄바꿈 기준일 뿐, 숫자/문자를 수평 압축하지 않는다.
                 (0.0, 0.0, 0.0)
+            } else if converge_auto_shrink_cell && slack < 0.0 {
+                (
+                    0.0,
+                    converge_cell_overflow_char_spacing(
+                        comp_line,
+                        styles,
+                        tab_width,
+                        total_char_count,
+                        total_text_width,
+                        available_width,
+                    ),
+                    0.0,
+                )
             } else {
                 let raw = slack / total_char_count as f64;
                 let avg_char_w = total_text_width / total_char_count as f64;
@@ -1715,6 +1762,23 @@ fn compute_line_extra_spacing(
         // 비정렬(왼쪽/오른쪽/가운데) 텍스트가 오버플로우할 때 글자 간격 압축
         if suppress_cell_overflow_spacing {
             (0.0, 0.0, 0.0)
+        } else if converge_auto_shrink_cell {
+            // [#6303] 칸 폭 자동 축소(#6196) 가 선형 slack/N 한 번이면 목표가
+            // 1~2% 헐거워 긴 행 꼬리가 괘선 밖으로 나간다. 저장 한 줄이 안쪽 폭을
+            // 15% 넘게 넘는 칸에서만 줄바꿈은 그대로 두고 실측 폭을 수렴시킨다.
+            // 일반 in_cell 줄까지 수렴하면 page-local hash·text-overlap 이 흔들린다.
+            (
+                0.0,
+                converge_cell_overflow_char_spacing(
+                    comp_line,
+                    styles,
+                    tab_width,
+                    total_char_count,
+                    total_text_width,
+                    available_width,
+                ),
+                0.0,
+            )
         } else {
             let raw = (available_width - total_text_width) / total_char_count as f64;
             let avg_char_w = total_text_width / total_char_count as f64;
@@ -4610,6 +4674,11 @@ impl LayoutEngine {
                 && total_text_width > available_width * 1.15
                 && !stored_single_line_fits_cell
                 && !stored_ladder_fits_frame;
+            // [#6303] 자동 축소는 저장 한 줄이 **안쪽 폭을 놓친** 칸에만 수렴한다.
+            // 일반 셀·문단의 선형 slack/N 을 바꾸면 page-local hash 와 text-overlap 이
+            // 흔들린다. 1.15 는 #6196 억제 임계와 같다.
+            let converge_auto_shrink_cell =
+                stored_single_line_fits_cell && total_text_width > available_width * 1.15;
             let is_hancom_company_pua_logo_line =
                 is_hancom_company_pua_logo_line(comp_line, alignment);
 
@@ -4631,6 +4700,7 @@ impl LayoutEngine {
                     has_tabs,
                     renders_synthetic_wrap_trailing_space,
                     suppress_cell_overflow_spacing,
+                    converge_auto_shrink_cell,
                     total_char_count,
                     total_text_width,
                     available_width,
@@ -8283,6 +8353,7 @@ mod issue_2809_split_alignment_tests {
             false,
             false,
             false,
+            false,
             5,
             30.0,
             90.0,
@@ -8319,6 +8390,7 @@ mod issue_2809_split_alignment_tests {
             false,
             true,
             false,
+            false,
             6,
             natural_width,
             available_width,
@@ -8352,6 +8424,7 @@ mod issue_2809_split_alignment_tests {
             Alignment::Split,
             true,
             true,
+            false,
             false,
             false,
             false,
@@ -8407,6 +8480,7 @@ mod issue_2809_split_alignment_tests {
             false,
             false,
             false,
+            false,
             12,
             62.5,
             481.8,
@@ -8423,6 +8497,7 @@ mod issue_2809_split_alignment_tests {
             Alignment::Justify,
             false,
             true,
+            false,
             false,
             false,
             false,
@@ -8472,6 +8547,7 @@ mod issue_4657_distribute_alignment_tests {
             false,
             false,
             true,
+            false,
             false,
             false,
             false,

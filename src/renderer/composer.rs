@@ -836,7 +836,7 @@ fn compose_lines(para: &Paragraph) -> Vec<ComposedLine> {
         return lines;
     }
 
-    let mut lines = Vec::new();
+    let mut lines: Vec<ComposedLine> = Vec::new();
     let line_seg_count = effective_line_seg_count(para);
 
     for line_idx in 0..line_seg_count {
@@ -883,25 +883,23 @@ fn compose_lines(para: &Paragraph) -> Vec<ComposedLine> {
         );
 
         // 강제 줄넘김(\n) + TAC 표 문단 처리 (Task #19/Task #20)
-        //
-        // [#6300] `\n` 이 이 줄의 **마지막 글자**면 저장 사다리가 이미 거기서 끊어
-        // 둔 것이라 분할 대상이 아니다. Task #19/20 이 겨냥한 형상은 한 줄 안에서
-        // `\n` 이 텍스트와 표를 가르는 것인데, 문단 끝이 `… \n [인라인 개체]` 이면
-        // `\n` 은 그 줄의 끝이고 개체는 **다음 seg** 가 이미 갖고 있다.
-        //
-        // 그런데도 분할하면 이 줄의 앞부분이 **이전 줄에 합쳐지고** 그 자리에 빈 줄이
-        // 남아, 줄 하나가 비고 다음 줄이 두 줄 분량을 받는다 — 156464313 17쪽 실측:
-        // 저장 경계 [0,45,83,119,152] 가 [0,45,83,83] 로 무너져 69자 줄이 본문 우단을
-        // 47.6pt 넘겼다. 문서 전수에서 `\n` 뒤 인라인 개체 문단 7개 ↔ 우단 초과 쪽
-        // 7개가 정확히 일치한다.
-        let newline_pos = line_text
-            .find('\n')
-            .filter(|&nl_pos| line_text[nl_pos..].chars().nth(1).is_some());
+        let newline_pos = line_text.find('\n');
         if let (true, Some(nl_pos)) = (has_tac, newline_pos) {
             let pre_text: String = line_text.chars().take(nl_pos).collect();
             let pre_end = text_start + nl_pos;
+            let post_start = text_start + nl_pos + 1;
+            let post_text: String = line_text.chars().skip(nl_pos + 1).collect();
+            let post_text_clean = post_text.trim_end_matches('\n').to_string();
+            // [#6300] 강제 줄나눔이 이 저장 줄의 끝이고, 다음 LINE_SEG 가 인라인
+            // 개체일 때만 경계를 유지한다. 같은 저장 줄 안의 `\n`+표(Task #20)는
+            // 기존처럼 `\n` 앞 텍스트를 이전 줄에 합친다. 이 가드 밖의 `\n` 은
+            // off-canvas·overflow-cell 래칫을 키우지 않는다.
+            let keep_stored_boundary = post_text_clean.is_empty()
+                && line_idx + 1 < line_seg_count
+                && tac_inline_object_starts_at(para, text_end)
+                && matches!(lines.last(), Some(prev) if prev.char_start != text_start);
 
-            if !pre_text.is_empty() && !lines.is_empty() {
+            if !pre_text.is_empty() && !lines.is_empty() && !keep_stored_boundary {
                 // \n 앞 텍스트를 이전 ComposedLine에 합침 (한컴 방식: \n 전 전체가 한 줄)
                 let prev: &mut ComposedLine = lines.last_mut().unwrap();
                 let mut extra_runs = split_by_char_shapes(
@@ -914,7 +912,7 @@ fn compose_lines(para: &Paragraph) -> Vec<ComposedLine> {
                 prev.runs.append(&mut extra_runs);
                 prev.has_line_break = true;
             } else if !pre_text.is_empty() {
-                // 이전 줄이 없으면 새 ComposedLine 생성
+                // 이전 줄이 없거나 [#6300] 저장 줄 경계를 유지할 때 새 ComposedLine
                 let pre_runs = split_by_char_shapes(
                     &pre_text,
                     text_start,
@@ -942,26 +940,26 @@ fn compose_lines(para: &Paragraph) -> Vec<ComposedLine> {
             }
 
             // \n 이후: 표 줄 (빈 runs, 표는 layout에서 별도 처리)
-            let post_start = text_start + nl_pos + 1;
-            let post_text: String = line_text.chars().skip(nl_pos + 1).collect();
-            let post_text_clean = post_text.trim_end_matches('\n').to_string();
-            let post_runs = split_by_char_shapes(
-                &post_text_clean,
-                post_start,
-                text_end,
-                &para.char_offsets,
-                &para.char_shapes,
-            );
-            lines.push(ComposedLine {
-                runs: post_runs,
-                line_height: line_seg.line_height,
-                baseline_distance: line_seg.baseline_distance,
-                segment_width: line_seg.segment_width,
-                column_start: line_seg.column_start,
-                line_spacing: line_seg.line_spacing,
-                has_line_break: post_text.ends_with('\n'),
-                char_start: post_start,
-            });
+            // [#6300] 다음 저장 줄이 인라인 개체면 빈 후속 줄을 여기서 만들지 않는다.
+            if !(keep_stored_boundary && post_text_clean.is_empty()) {
+                let post_runs = split_by_char_shapes(
+                    &post_text_clean,
+                    post_start,
+                    text_end,
+                    &para.char_offsets,
+                    &para.char_shapes,
+                );
+                lines.push(ComposedLine {
+                    runs: post_runs,
+                    line_height: line_seg.line_height,
+                    baseline_distance: line_seg.baseline_distance,
+                    segment_width: line_seg.segment_width,
+                    column_start: line_seg.column_start,
+                    line_spacing: line_seg.line_spacing,
+                    has_line_break: post_text.ends_with('\n'),
+                    char_start: post_start,
+                });
+            }
         } else {
             // 일반 처리: LINE_SEG 범위 안에 강제 줄바꿈(\n)이 있으면 실제 줄로 분할한다.
             // Shift+Enter는 문단을 새로 만들지 않지만 렌더러/커서/들여쓰기 계산에서는
@@ -1398,6 +1396,14 @@ fn is_render_inline_control(ctrl: &Control) -> bool {
         Control::Form(form) => form.common.treat_as_char,
         _ => false,
     }
+}
+
+/// [#6300] `pos` 에 treat_as_char 인라인 개체가 시작하는지.
+fn tac_inline_object_starts_at(para: &Paragraph, pos: usize) -> bool {
+    para.controls
+        .iter()
+        .zip(para.control_text_positions())
+        .any(|(ctrl, ctrl_pos)| is_render_inline_control(ctrl) && ctrl_pos == pos)
 }
 
 pub(crate) fn find_render_inline_control_positions(para: &Paragraph) -> Vec<usize> {

@@ -1195,6 +1195,75 @@ pub(crate) fn line_owning_tac_object_height_px(
         })
 }
 
+fn para_text_is_picture_only_host(para: &crate::model::paragraph::Paragraph) -> bool {
+    para.text.chars().all(|ch| {
+        ch.is_whitespace()
+            || ch == '\u{FFFC}'
+            || ch <= '\u{001F}'
+            || ('\u{E000}'..='\u{F8FF}').contains(&ch)
+    })
+}
+
+/// 쪽 분할 칸의 그림-only 문단에서, 합성 줄이 담은 TAC 그림의 흐름 높이.
+///
+/// 저장 LINE_SEG 가 글줄만 담아도 그 줄의 TAC 그림은 자기 높이만큼 칸 조각
+/// 회계에 들어가야 한다 (#6114: 312px 차트가 26px 만 전진해 아래 표가 겹침).
+/// 본문과 섞인 줄에는 쓰지 않는다 — 일반 칸 글줄까지 그림 높이로 키우면
+/// 칸 상자 밖으로 글이 밀려 text-overlap 이 는다.
+pub(crate) fn composed_line_tac_object_height_px(
+    para: &crate::model::paragraph::Paragraph,
+    composed: &composer::ComposedParagraph,
+    line_idx: usize,
+    dpi: f64,
+) -> Option<f64> {
+    if !para_text_is_picture_only_host(para) {
+        return None;
+    }
+    let line = composed.lines.get(line_idx)?;
+    let start = line.char_start;
+    let end = composed
+        .lines
+        .get(line_idx + 1)
+        .map(|next| next.char_start)
+        .unwrap_or_else(|| para.text.chars().count().saturating_add(1))
+        .max(start.saturating_add(1));
+
+    let mut max_h = 0.0f64;
+    for &(pos, _, ci) in &composed.tac_controls {
+        if pos < start || pos >= end {
+            continue;
+        }
+        if let Some(height) = para
+            .controls
+            .get(ci)
+            .and_then(|ctrl| tac_object_flow_height_px(ctrl, dpi))
+        {
+            max_h = max_h.max(height);
+        }
+    }
+
+    if max_h <= 0.5 && para_text_is_picture_only_host(para) {
+        let heights: Vec<f64> = para
+            .controls
+            .iter()
+            .filter_map(|ctrl| tac_object_flow_height_px(ctrl, dpi))
+            .filter(|height| *height > 0.5)
+            .collect();
+        if heights.len() == 1 && line_idx == 0 {
+            max_h = heights[0];
+        } else if heights.len() > 1
+            && line_idx < heights.len()
+            && composed.lines.len() == heights.len()
+        {
+            max_h = heights[line_idx];
+        } else if line_idx == 0 && composed.lines.len() <= 1 {
+            max_h = heights.into_iter().fold(0.0, f64::max);
+        }
+    }
+
+    (max_h > 0.5).then_some(max_h)
+}
+
 /// 셀의 저장 vpos 흐름이 문단 위치를 구분해 담고 있는지 ("사다리" 온전성).
 ///
 /// 셀 안 문단이 전부 `vpos == 0` 으로 저장된 문서(중첩 표 안쪽 셀에서 흔하다)에서는

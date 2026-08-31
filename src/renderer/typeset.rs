@@ -29,7 +29,10 @@ use crate::renderer::height_measurer::{
     MeasuredTable,
 };
 use crate::renderer::layout::table_layout::native_terminal_child_host_line_spacing;
-use crate::renderer::layout::{border_width_to_px, ENDNOTE_COLUMN_BOTTOM_BLEED_TOLERANCE_PX};
+use crate::renderer::layout::{
+    border_width_to_px, endnote_last_column_tail_overflows_frame,
+    ENDNOTE_COLUMN_BOTTOM_BLEED_TOLERANCE_PX, ENDNOTE_LAST_COLUMN_SPLIT_BLEED_PX,
+};
 use crate::renderer::page_layout::PageLayoutInfo;
 use crate::renderer::style_resolver::ResolvedStyleSet;
 use crate::renderer::{
@@ -10715,6 +10718,11 @@ impl TypesetEngine {
             let zero_between_large_separator_margin = endnote_flow_profile
                 .map(EndnoteFlowProfile::visible_zero_between_large_separator_margin)
                 .unwrap_or(false);
+            // [#4318] 구분선 위/아래 20mm + 기본 미주 사이(7mm). 다른 미주
+            // 모양까지 4px bleed·꼬리 넘김을 쓰면 쪽수/off-canvas 가 흔들린다.
+            let both_large_separator_default_between = endnote_flow_profile
+                .map(EndnoteFlowProfile::visible_both_large_separator_default_between)
+                .unwrap_or(false);
             let endnote_has_text_or_equation = para_has_visible_text_or_equation(en_para);
             let endnote_has_visible_payload =
                 endnote_has_text_or_equation || para_has_non_tac_picture_or_shape(en_para);
@@ -11375,6 +11383,35 @@ impl TypesetEngine {
                 // 아래로 내려갈 수 있다. 한컴은 이 tail 한 줄을 다음 쪽
                 // 첫 줄로 넘기므로 마지막 줄 직전에 분할한다.
                 (head_fits && tail_overflows && last_line_visible).then_some(tail_split)
+            } else {
+                split_endnote_to_fit
+            };
+            // [#4318] 구분선 위/아래 20mm + 기본 미주 사이 마지막 단: 0/0/0
+            // 가드가 없어도 마지막 줄이 본문 하단을 넘기면 그 줄만 넘긴다.
+            let split_endnote_to_fit = if split_endnote_to_fit.is_none()
+                && compact_endnote_separator_profile
+                && both_large_separator_default_between
+                && has_visible_endnote_separator
+                && ep_idx > 0
+                && st.current_column + 1 >= st.col_count
+                && fmt.line_heights.len() >= 2
+                && !local_vpos_rewind
+                && !internal_vpos_rewind
+                && endnote_has_visible_payload
+            {
+                let tail_split = fmt.line_heights.len() - 1;
+                let head_h = fmt.line_advances_sum(0..tail_split);
+                let tail_h = fmt.line_advance(tail_split);
+                let last_line_visible =
+                    line_has_visible_text_or_tac_equation(en_para, &composed, tail_split);
+                (st.current_height + head_h <= available + ENDNOTE_LAST_COLUMN_SPLIT_BLEED_PX
+                    && endnote_last_column_tail_overflows_frame(
+                        st.current_height + head_h,
+                        tail_h,
+                        available,
+                    )
+                    && last_line_visible)
+                    .then_some(tail_split)
             } else {
                 split_endnote_to_fit
             };
@@ -12852,6 +12889,22 @@ impl TypesetEngine {
                                 .paragraphs
                                 .get(ep_idx + 1)
                                 .is_some_and(para_is_treat_as_char_picture_only)));
+            // [#4318] 구분선 위/아래 20mm + 기본 미주 사이 마지막 단 한 줄 꼬리.
+            let last_column_visible_text_tail_starts_next_page = compact_endnote_separator_profile
+                && both_large_separator_default_between
+                && has_visible_endnote_separator
+                && ep_idx > 0
+                && st.current_column + 1 >= st.col_count
+                && !local_vpos_rewind
+                && !internal_vpos_rewind
+                && !para_is_treat_as_char_picture_only(en_para)
+                && para_has_visible_text_or_equation(en_para)
+                && fmt.line_heights.len() == 1
+                && endnote_last_column_tail_overflows_frame(
+                    st.current_height,
+                    fmt.total_height,
+                    available,
+                );
             let large_between_zero_above_whole_note_small_bleed_fits =
                 compact_endnote_separator_profile
                     && visible_large_between_zero_above_compact_below
@@ -12878,6 +12931,7 @@ impl TypesetEngine {
                 || visible_separator_text_after_equation_tail_overflows_frame
                 || zero_visible_last_column_text_tail_starts_next_page
                 || zero_between_visible_last_column_text_tail_starts_next_page
+                || last_column_visible_text_tail_starts_next_page
                 || endnote_boundary_gap_tail_overflows_frame
                 || default_title_tail_body_advances_column
                 || large_between_title_tail_body_advances_page
@@ -12914,6 +12968,7 @@ impl TypesetEngine {
                     || visible_separator_text_after_equation_tail_overflows_frame
                     || zero_visible_last_column_text_tail_starts_next_page
                     || zero_between_visible_last_column_text_tail_starts_next_page
+                    || last_column_visible_text_tail_starts_next_page
                     || zero_between_large_separator_last_column_title_orphan
                     || large_between_last_column_final_lead_tac_tail_starts_next_page
                     || internal_reset_split_head_render_overflows
@@ -13707,6 +13762,37 @@ impl TypesetEngine {
                     .or(large_between_last_column_visual_split)
                     .or(large_between_last_column_flow_tail_split)
                     .or(split_endnote_to_fit)
+            };
+            // [#4318] 구분선 20/20+기본 미주사이 마지막 단: LINE_SEG 마지막
+            // 줄 vpos=0 reset 은 그 줄만 넘긴다. reset 앞 head 가 저장 vpos
+            // 기준으로 단 하단을 넘기면 들어가는 줄까지 줄여 넘긴다.
+            let split_candidate = if both_large_separator_default_between
+                && compact_endnote_separator_profile
+                && has_visible_endnote_separator
+                && st.current_column + 1 >= st.col_count
+                && saved_page_reset_rewind
+            {
+                match (
+                    split_candidate,
+                    self.predict_current_column_para_y(
+                        &st,
+                        en_para_idx,
+                        paragraphs,
+                        &styles,
+                        measured_tables,
+                        Some(en_col_w),
+                    ),
+                ) {
+                    (Some(mut split), Some(render_y)) if split >= 2 => {
+                        while split >= 2 && render_y + fmt.line_advances_sum(0..split) > available {
+                            split -= 1;
+                        }
+                        Some(split)
+                    }
+                    (other, _) => other,
+                }
+            } else {
+                split_candidate
             };
             if self.emit_endnote_split(
                 st,
@@ -26403,6 +26489,15 @@ impl EndnoteFlowProfile {
 
     fn visible_zero_between_large_separator_margin(self) -> bool {
         self.visible_separator && self.between_notes_hu == 0 && self.large_separator_margin()
+    }
+
+    /// [#4318] 구분선 위/아래가 모두 7mm를 넘는 20mm급이고, 미주 사이는
+    /// 기본(0이 아닌 7mm 이하). 0/0/0·미주사이 0·미주사이 20은 제외한다.
+    fn visible_both_large_separator_default_between(self) -> bool {
+        self.visible_separator
+            && self.separator_above_hu > ENDNOTE_BETWEEN_NOTES_BASE_FLOW_HU
+            && self.separator_below_hu > ENDNOTE_BETWEEN_NOTES_BASE_FLOW_HU
+            && self.nonzero_default_between_notes()
     }
 
     fn visible_large_between_zero_above_compact_below(self) -> bool {
