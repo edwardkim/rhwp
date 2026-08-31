@@ -1,0 +1,142 @@
+{
+  "schemaVersion": 1,
+  "kind": "font-w10-q6-submission-validation",
+  "issue": 4969,
+  "stage": "W10-Q6-C",
+  "date": "2026-08-31",
+  "status": "qualified-approved",
+  "resultApproval": "explicit",
+  "checkpointApproved": true,
+  "source": {
+    "q6BApprovedCheckpoint": "6a9656dfffb494fd769c6b09381306dcab93dcc9",
+    "branch": "task_m100_4969_w10_q5",
+    "upstreamDevel": "3afbb066fe93724ab44309163a2e04efb954bf18",
+    "mergeBase": "3afbb066fe93724ab44309163a2e04efb954bf18",
+    "ahead": 8,
+    "behind": 0,
+    "baseMergeRequired": false
+  },
+  "submittedDiff": {
+    "documentationPaths": 17,
+    "integrationTestPaths": 3,
+    "productSourcePaths": 0,
+    "studioSourcePaths": 0,
+    "workflowPaths": 0,
+    "otherPaths": 0,
+    "integrationTestSources": [
+      "tests/cases/issue_4969_shaping_glyph_lowering.rs",
+      "tests/cases/issue_4969_shaping_request_contract.rs",
+      "tests/cases/issue_4969_shaping_shadow_context.rs"
+    ],
+    "newIntegrationSources": 0,
+    "generatedArtifactsSubmitted": false
+  },
+  "localValidation": {
+    "manifestPrepare": {
+      "status": "passed",
+      "integrationSources": 1075,
+      "staticTestAttributes": 4718,
+      "generatedSuites": 28,
+      "exceptionTargets": 20,
+      "accountedTargets": 48,
+      "expectedTargets": 48,
+      "minimumCases": 6559
+    },
+    "cargoFmtAll": "passed",
+    "cargoFmtAllCheck": "passed",
+    "nativeRootClippy": {
+      "status": "passed",
+      "denyWarnings": true,
+      "elapsedSeconds": 58.99
+    },
+    "wasm32LibraryClippy": {
+      "status": "passed",
+      "denyWarnings": true,
+      "target": "wasm32-unknown-unknown",
+      "elapsedSeconds": 46.90
+    },
+    "workspaceBuild": {
+      "status": "passed",
+      "elapsedSeconds": 94
+    },
+    "workspaceAllTargetsClippy": {
+      "status": "passed",
+      "denyWarnings": true,
+      "elapsedSeconds": 71
+    },
+    "manifestCheck": "passed",
+    "issue4969FocusedNextest": {
+      "selected": 117,
+      "passed": 117,
+      "failed": 0,
+      "nonSelected": 8795,
+      "testElapsedSeconds": 1.068,
+      "nextestVersion": "0.9.137",
+      "recommendedNextestVersion": "0.9.140"
+    },
+    "studioResourceReuse": {
+      "selected": 5,
+      "passed": 5,
+      "failed": 0,
+      "elapsedMilliseconds": 326.229661,
+      "primaryCheckoutNodeModulesTemporarilyLinked": true,
+      "temporaryLinkRemoved": true
+    },
+    "gitDiffCheck": "passed"
+  },
+  "reusedEvidence": {
+    "eligibilityAuthority": "w10_q5_evidence_eligibility.json",
+    "productTreeUnchanged": true,
+    "pr6493CodeCandidate": {
+      "head": "7a67f250851babf37e8d21f242494829952ade74",
+      "success": 30,
+      "expectedSkipped": 4,
+      "failed": 0,
+      "pending": 0
+    },
+    "pr6493TrailingReview": {
+      "head": "2497f48f283aa3ad714b53497d8cc2a33f5019a4",
+      "success": 11,
+      "expectedFastPassSkipped": 19,
+      "cancelStaleSkipped": 1,
+      "failed": 0,
+      "pending": 0
+    },
+    "fullNextestRepeat": "not-required-by-q5-evidence-eligibility-and-test-helper-scope",
+    "nativeSkiaRepeat": "not-required-product-source-diff-zero",
+    "dockerWasmRepeat": "not-required-product-source-diff-zero",
+    "canvasKitPixelRepeat": "not-required-product-and-studio-source-diff-zero",
+    "currentDockerWasm": {
+      "bytes": 9905805,
+      "sha256": "ed11bdb3bf2b11b44c3f6fed5c16d403257b60b27bffa469e5e3c1dfecf912a4"
+    },
+    "githubPrHeadFullCiStillRequired": true
+  },
+  "environment": {
+    "sharedTarget": "/home/edward/mygithub/rhwp/target/pr-review",
+    "worktreeLocalTargetCreated": false,
+    "studioNodeModulesLinkPresentAfterValidation": false,
+    "temporaryManifestLogRemoved": true,
+    "nextestWarning": "local 0.9.137 is older than recommended 0.9.140 and ignores report-skipped",
+    "warningAffectedResult": false
+  },
+  "qualification": {
+    "latestBaseConflict": 0,
+    "unresolvedOwnerOverlap": 0,
+    "lintOrFocusedFailure": 0,
+    "submittedGeneratedArtifact": 0,
+    "productSourceMutation": 0,
+    "result": "qualified"
+  },
+  "boundaries": {
+    "remotePushed": false,
+    "pullRequestCreated": false,
+    "githubMutated": false,
+    "trackerPublished": false,
+    "issueClosed": false
+  },
+  "next": {
+    "stage": "W10-Q6-D",
+    "action": "checkpoint-after-maintainer-approval-then-request-separate-remote-push-and-pr-creation-approval"
+  }
+}

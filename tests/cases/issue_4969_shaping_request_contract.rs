@@ -27,7 +27,7 @@ use shaping_vertical::{
     VerticalLatinOrientation, VerticalLegacyGeometry, VerticalPoint, VerticalRect,
     VerticalRunClass, VerticalShapingContext, VerticalShapingContextRejectReason,
     VerticalShapingContextRequest, VerticalShapingPageSidecars, VerticalShapingSidecarRejectReason,
-    NOTO_SANS_KR_REGULAR_SHA256,
+    MAX_VERTICAL_SHAPING_PAGE_SIDECARS, NOTO_SANS_KR_REGULAR_SHA256,
 };
 use std::sync::Arc;
 #[cfg(target_arch = "wasm32")]
@@ -1826,6 +1826,51 @@ fn issue_4969_q4_d2_vertical_sidecar_is_atomic_and_keeps_one_geometry_owner() {
         .expect_err("duplicate node must fail before mutation");
     assert_eq!(duplicate, VerticalShapingSidecarRejectReason::DuplicateNode);
     assert_eq!(sidecars.len(), 1);
+    assert_eq!(sidecars.registry_generation(), generation);
+}
+
+#[test]
+fn issue_4969_q5_c_vertical_page_sidecar_limit_rejects_without_mutation() {
+    let slot = ExactFontSlot::new(4969, 0);
+    let mut registry = ExactFontSourceRegistry::default();
+    registry
+        .register(
+            slot,
+            ExactFontSource {
+                bytes: NOTO,
+                face_index: 0,
+            },
+        )
+        .expect("register public Noto exact source");
+    let context = VerticalShapingContext::new(registry);
+    let certified = Arc::new(
+        context
+            .prepare_dormant(q4_d1_context_request(slot, "한글"))
+            .expect("certify bounded vertical owner"),
+    );
+    let mut sidecars = VerticalShapingPageSidecars::default();
+
+    for node_id in 1..=MAX_VERTICAL_SHAPING_PAGE_SIDECARS as u32 {
+        sidecars
+            .attach_bounded_hwp5_table_cell_atomic(Arc::new(
+                BoundedVerticalHwp5TableCellSidecar::new(node_id, Arc::clone(&certified), "한글"),
+            ))
+            .expect("fill the bounded vertical page table");
+    }
+    assert_eq!(sidecars.len(), MAX_VERTICAL_SHAPING_PAGE_SIDECARS);
+    let generation = sidecars.registry_generation();
+
+    assert_eq!(
+        sidecars.attach_bounded_hwp5_table_cell_atomic(Arc::new(
+            BoundedVerticalHwp5TableCellSidecar::new(
+                MAX_VERTICAL_SHAPING_PAGE_SIDECARS as u32 + 1,
+                certified,
+                "한글",
+            ),
+        )),
+        Err(VerticalShapingSidecarRejectReason::EntryLimitExceeded)
+    );
+    assert_eq!(sidecars.len(), MAX_VERTICAL_SHAPING_PAGE_SIDECARS);
     assert_eq!(sidecars.registry_generation(), generation);
 }
 
