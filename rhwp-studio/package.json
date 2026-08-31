@@ -73,7 +73,7 @@
     "e2e:issue-6053": "node e2e/run-with-vite.mjs -- node e2e/chart-data-structure-issue6053.test.mjs --mode=headless"
   },
   "devDependencies": {
-    "@types/chrome": "^0.2.6",
+    "@types/chrome": "^0.2.7",
     "puppeteer-core": "^25.8.0",
     "typescript": "^7.0.2",
     "vite": "^8.2.2",
