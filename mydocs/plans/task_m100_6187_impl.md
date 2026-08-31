@@ -2,8 +2,9 @@
 
 - Issue: [#6187](https://github.com/edwardkim/rhwp/issues/6187)
 - 작성일: 2026-08-31 KST
-- 상태: 2026-08-31 작업지시자 계획 승인 완료 / Stage 1 착수.
+- 상태: Stage 1 구현·focused 검증 완료 / 결과 승인 및 Stage 2 착수 승인 대기.
 - 수행 계획: [task_m100_6187.md](task_m100_6187.md)
+- Stage 1 결과: [상시 표시·입력 정책 구현 보고](../working/task_m100_6187_stage1.md)
 - 브랜치: `codex/issue-6187-always-visible-ruler`
 - 기준: `upstream/devel@e50792c6341a0b61afc3ffeb687a92fc6a807e69`
 

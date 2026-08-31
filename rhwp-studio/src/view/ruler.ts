@@ -1,8 +1,8 @@
-import { EventBus } from '@/core/event-bus';
-import { WasmBridge } from '@/core/wasm-bridge';
+import type { EventBus } from '@/core/event-bus';
+import type { WasmBridge } from '@/core/wasm-bridge';
 import type { ParaProperties } from '@/core/types';
-import { VirtualScroll } from './virtual-scroll';
-import { ViewportManager } from './viewport-manager';
+import type { VirtualScroll } from './virtual-scroll';
+import type { ViewportManager } from './viewport-manager';
 import {
   horizontalPinCommit,
   pageMarginPinX,
@@ -105,12 +105,16 @@ export class Ruler {
   } | null = null;
   private vDrag: { kind: 'top' | 'bottom'; pageIdx: number; y: number; startY: number } | null = null;
 
-  private onHPinDownBound: (e: MouseEvent) => void;
-  private onHPinHoverBound: (e: MouseEvent) => void;
-  private onVPinDownBound: (e: MouseEvent) => void;
-  private onVPinHoverBound: (e: MouseEvent) => void;
-  private onPinDragMoveBound: (e: MouseEvent) => void;
-  private onPinDragUpBound: (e: MouseEvent) => void;
+  private dragPointerId: number | null = null;
+  private dragCanvas: HTMLCanvasElement | null = null;
+  private onHPinDownBound: (e: PointerEvent) => void;
+  private onHPinHoverBound: (e: PointerEvent) => void;
+  private onVPinDownBound: (e: PointerEvent) => void;
+  private onVPinHoverBound: (e: PointerEvent) => void;
+  private onPinDragMoveBound: (e: PointerEvent) => void;
+  private onPinDragUpBound: (e: PointerEvent) => void;
+  private onPinDragCancelBound: (e: PointerEvent) => void;
+  private onPinDragBlurBound: () => void;
 
   /** 드래그 커밋 싱크 — 문단 서식/쪽 여백 두 종류를 한 콜백으로 묶는다. main.ts가 하나의
    * 핸들러로 연결한다 — 별개 콜백 두 개였을 때 한쪽만 executeOperation 커밋 경로를 타고
@@ -137,10 +141,14 @@ export class Ruler {
     this.onVPinHoverBound = this.onVPinHover.bind(this);
     this.onPinDragMoveBound = this.onPinDragMove.bind(this);
     this.onPinDragUpBound = this.onPinDragUp.bind(this);
-    this.hCanvas.addEventListener('mousedown', this.onHPinDownBound);
-    this.hCanvas.addEventListener('mousemove', this.onHPinHoverBound);
-    this.vCanvas.addEventListener('mousedown', this.onVPinDownBound);
-    this.vCanvas.addEventListener('mousemove', this.onVPinHoverBound);
+    this.onPinDragCancelBound = (e) => {
+      if (this.isDragPointer(e)) this.cancelPinDrag();
+    };
+    this.onPinDragBlurBound = () => this.cancelPinDrag();
+    this.hCanvas.addEventListener('pointerdown', this.onHPinDownBound);
+    this.hCanvas.addEventListener('pointermove', this.onHPinHoverBound);
+    this.vCanvas.addEventListener('pointerdown', this.onVPinDownBound);
+    this.vCanvas.addEventListener('pointermove', this.onVPinHoverBound);
 
     this.unsubscribers.push(
       eventBus.on('viewport-scroll', () => this.scheduleUpdate()),
@@ -299,10 +307,30 @@ export class Ruler {
     this.scheduleUpdate();
   }
 
-  private onHPinDown(e: MouseEvent): void {
-    // 왼쪽 버튼만. 오른쪽 버튼으로 누르면 드래그가 시작된 채 상황 메뉴가 열리고, 메뉴에서
-    // 뗀 왼쪽 클릭이 그 자리를 여백으로 커밋한다.
-    if (e.button !== 0) return;
+  /** 폭/UA가 아니라 지금 입력을 판정한다. touch/pen의 호환 mouse 이벤트는 구독하지 않는다. */
+  private canStartPinDrag(e: PointerEvent): boolean {
+    return e.pointerType === 'mouse' && e.isPrimary && e.button === 0 && this.dragPointerId === null;
+  }
+
+  private isDragPointer(e: PointerEvent): boolean {
+    return e.pointerType === 'mouse' && e.pointerId === this.dragPointerId;
+  }
+
+  private beginPinDrag(e: PointerEvent, canvas: HTMLCanvasElement): void {
+    this.dragPointerId = e.pointerId;
+    this.dragCanvas = canvas;
+    document.addEventListener('pointermove', this.onPinDragMoveBound);
+    document.addEventListener('pointerup', this.onPinDragUpBound);
+    document.addEventListener('pointercancel', this.onPinDragCancelBound);
+    window.addEventListener('blur', this.onPinDragBlurBound);
+    canvas.addEventListener('lostpointercapture', this.onPinDragCancelBound);
+    canvas.setPointerCapture(e.pointerId);
+    // 핀을 잡은 mouse만 소비한다. 무시한 touch의 기본 스크롤·확대는 막지 않는다.
+    e.preventDefault();
+  }
+
+  private onHPinDown(e: PointerEvent): void {
+    if (!this.canStartPinDrag(e)) return;
     // hasParaInfo 게이트 없음 — ▽(paraIndent)는 hasParaInfo일 때만 drawHorizontal이
     // hPins에 넣으므로 이미 자연히 걸러진다. △(쪽 여백)는 문단 정보와 무관하게 항상
     // 존재해 여기서 막으면 안 된다.
@@ -314,8 +342,7 @@ export class Ruler {
     );
     if (!hit) return;
     this.hDrag = { kind: hit.kind, pageIdx: this.hPageIdx, x, startX: x };
-    document.addEventListener('mousemove', this.onPinDragMoveBound);
-    document.addEventListener('mouseup', this.onPinDragUpBound);
+    this.beginPinDrag(e, this.hCanvas);
   }
 
   /** 마주보는 두 핀 사이에 남겨야 하는 간격 (화면 px).
@@ -347,8 +374,12 @@ export class Ruler {
     };
   }
 
-  private onHPinHover(e: MouseEvent): void {
-    if (this.hDrag) return;
+  private onHPinHover(e: PointerEvent): void {
+    if (e.pointerType !== 'mouse') {
+      this.hCanvas.style.cursor = 'default';
+      return;
+    }
+    if (this.dragPointerId !== null) return;
     const rect = this.hCanvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
@@ -357,14 +388,13 @@ export class Ruler {
         ? 'ew-resize' : 'default';
   }
 
-  private onVPinDown(e: MouseEvent): void {
-    if (e.button !== 0) return;
+  private onVPinDown(e: PointerEvent): void {
+    if (!this.canStartPinDrag(e)) return;
     const y = e.clientY - this.vCanvas.getBoundingClientRect().top;
     const hit = this.vPins.find((p) => Math.abs(p.y - y) <= PIN_HIT_RADIUS);
     if (!hit) return;
     this.vDrag = { kind: hit.kind, pageIdx: hit.pageIdx, y, startY: y };
-    document.addEventListener('mousemove', this.onPinDragMoveBound);
-    document.addEventListener('mouseup', this.onPinDragUpBound);
+    this.beginPinDrag(e, this.vCanvas);
   }
 
   /** 잡은 세로 핀이 움직일 수 있는 범위 (화면 px) — 머리말/꼬리말 안쪽부터 반대쪽 핀까지 */
@@ -382,8 +412,12 @@ export class Ruler {
       : { min: (sibling ?? pageTop) + minGap, max: pageBottom };
   }
 
-  private onVPinHover(e: MouseEvent): void {
-    if (this.vDrag) return;
+  private onVPinHover(e: PointerEvent): void {
+    if (e.pointerType !== 'mouse') {
+      this.vCanvas.style.cursor = 'default';
+      return;
+    }
+    if (this.dragPointerId !== null) return;
     const y = e.clientY - this.vCanvas.getBoundingClientRect().top;
     this.vCanvas.style.cursor =
       this.vPins.some((p) => Math.abs(p.y - y) <= PIN_HIT_RADIUS) ? 'ns-resize' : 'default';
@@ -394,7 +428,13 @@ export class Ruler {
     return Math.min(Math.max(v, range.min), Math.max(range.min, range.max));
   }
 
-  private onPinDragMove(e: MouseEvent): void {
+  private onPinDragMove(e: PointerEvent): void {
+    if (!this.isDragPointer(e)) return;
+    // 창 밖에서 버튼을 뗀 뒤 복귀했거나 chord에서 왼쪽 버튼만 해제된 경우 취소한다.
+    if ((e.buttons & 1) === 0) {
+      this.cancelPinDrag();
+      return;
+    }
     if (this.hDrag) {
       const x = e.clientX - this.hCanvas.getBoundingClientRect().left;
       this.hDrag = { ...this.hDrag, x: Ruler.clampToRange(x, this.hDragRange(this.hDrag.kind)) };
@@ -407,16 +447,14 @@ export class Ruler {
     }
   }
 
-  private onPinDragUp(): void {
+  private onPinDragUp(e: PointerEvent): void {
+    if (!this.isDragPointer(e)) return;
     // 커밋보다 먼저 드래그 상태와 전역 리스너를 정리한다. 커밋이 던지면(드래그 중 쪽 수가
     // 줄어 getPageInfo 가 실패하는 경우 등) 정리 코드에 닿지 못해, 이후 화면 어디서 뗀
     // 마우스든 같은 커밋을 다시 쏘는 상태로 세션이 끝난다.
     const hDrag = this.hDrag;
     const vDrag = this.vDrag;
-    this.hDrag = null;
-    this.vDrag = null;
-    document.removeEventListener('mousemove', this.onPinDragMoveBound);
-    document.removeEventListener('mouseup', this.onPinDragUpBound);
+    this.clearPinDrag();
     this.scheduleUpdate();
 
     // 움직이지 않았으면 커밋하지 않는다. 히트 반경이 8px이라 핀에서 몇 px 벗어난 지점을
@@ -424,6 +462,29 @@ export class Ruler {
     // 쪽 여백 변경은 구역 전체 재래핑까지 부른다.
     if (hDrag && hDrag.x !== hDrag.startX) this.commitHDrag(hDrag);
     if (vDrag && vDrag.y !== vDrag.startY) this.commitVDrag(vDrag);
+  }
+
+  private cancelPinDrag(): void {
+    if (this.dragPointerId === null) return;
+    this.clearPinDrag();
+    this.scheduleUpdate();
+  }
+
+  private clearPinDrag(): void {
+    const canvas = this.dragCanvas;
+    const pointerId = this.dragPointerId;
+    this.hDrag = null;
+    this.vDrag = null;
+    this.dragCanvas = null;
+    this.dragPointerId = null;
+    document.removeEventListener('pointermove', this.onPinDragMoveBound);
+    document.removeEventListener('pointerup', this.onPinDragUpBound);
+    document.removeEventListener('pointercancel', this.onPinDragCancelBound);
+    window.removeEventListener('blur', this.onPinDragBlurBound);
+    canvas?.removeEventListener('lostpointercapture', this.onPinDragCancelBound);
+    if (pointerId !== null && canvas?.hasPointerCapture(pointerId)) canvas.releasePointerCapture(pointerId);
+    this.hCanvas.style.cursor = 'default';
+    this.vCanvas.style.cursor = 'default';
   }
 
   /** 가로 핀 드롭 → 문서 변경. 소유 규칙(△=쪽 여백, ▽=문단 들여쓰기)과 좌표 역함수는
@@ -809,6 +870,7 @@ export class Ruler {
 
   /** 리소스 정리 */
   dispose(): void {
+    this.clearPinDrag();
     if (this.rafId) {
       cancelAnimationFrame(this.rafId);
       this.rafId = 0;
@@ -818,11 +880,9 @@ export class Ruler {
     }
     this.unsubscribers = [];
 
-    this.hCanvas.removeEventListener('mousedown', this.onHPinDownBound);
-    this.hCanvas.removeEventListener('mousemove', this.onHPinHoverBound);
-    this.vCanvas.removeEventListener('mousedown', this.onVPinDownBound);
-    this.vCanvas.removeEventListener('mousemove', this.onVPinHoverBound);
-    document.removeEventListener('mousemove', this.onPinDragMoveBound);
-    document.removeEventListener('mouseup', this.onPinDragUpBound);
+    this.hCanvas.removeEventListener('pointerdown', this.onHPinDownBound);
+    this.hCanvas.removeEventListener('pointermove', this.onHPinHoverBound);
+    this.vCanvas.removeEventListener('pointerdown', this.onVPinDownBound);
+    this.vCanvas.removeEventListener('pointermove', this.onVPinHoverBound);
   }
 }
