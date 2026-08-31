@@ -4,7 +4,9 @@ use super::sink::println;
 /// parser와 같은 옵션만 적어 도움말이 존재하지 않는 문법을 만들지 않는다.
 pub(super) fn print() {
     println!("  dump-extents <파일.hwp> [-p <쪽번호>] [--min-h <px>] [--outside] [--gaps]");
-    println!("      페이지 render tree의 항목별 실제 extent를 출력해 쪽 밖 배치와 빈 공간을 조사한다");
+    println!(
+        "      페이지 render tree의 항목별 실제 extent를 출력해 쪽 밖 배치와 빈 공간을 조사한다"
+    );
     println!();
     println!("      -p, --page <쪽번호>      0부터 시작하는 한 페이지만 조사 (생략 시 전체)");
     println!("      --min-h <px>             이 높이 미만 노드 생략 (기본: 0)");
@@ -12,7 +14,9 @@ pub(super) fn print() {
     println!("      --gaps                   콘텐츠 사이의 세로 빈 구간만 출력");
     println!("      출력의 페이지 번호는 사람이 읽는 1부터 시작하며, -p 입력만 0부터 시작한다");
     println!();
-    println!("  measure-width --size <pt> [--font <이름>] [--ratio <백분율>] [--repeat <N>] <text>...");
+    println!(
+        "  measure-width --size <pt> [--font <이름>] [--ratio <백분율>] [--repeat <N>] <text>..."
+    );
     println!("      렌더러의 텍스트 폭 추정값을 TSV로 출력하는 글꼴 폭 프로브");
     println!();
     println!("      --size <pt>              양수 글자 크기 (필수)");

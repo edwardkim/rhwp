@@ -139,7 +139,6 @@ fn scoped_help_is_a_fraction_of_the_whole_help() {
 
 #[test]
 fn every_declared_group_help_is_a_sorted_subcommand_index() {
-    let whole = stdout_of(&run(&["--help"]));
     for (parent, subcommands) in declared()
         .into_iter()
         .filter(|(_, subcommands)| !subcommands.is_empty())
@@ -149,21 +148,14 @@ fn every_declared_group_help_is_a_sorted_subcommand_index() {
             text.contains("하나만 보기"),
             "{parent} 도움말에 다음 수가 없다:\n{text}"
         );
-        assert!(
-            text.len() * 3 < whole.len(),
-            "{parent} 목차가 절 전체를 쏟고 있다 (목차 {} B, 통짜 {} B)",
-            text.len(),
-            whole.len()
-        );
-
         let mut expected = subcommands;
         expected.sort();
         let mut previous = 0usize;
         for subcommand in expected {
             let marker = format!("      {subcommand}");
-            let position = text.find(&marker).unwrap_or_else(|| {
-                panic!("{parent} --help index에 {subcommand} 이 없다:\n{text}")
-            });
+            let position = text
+                .find(&marker)
+                .unwrap_or_else(|| panic!("{parent} --help index에 {subcommand} 이 없다:\n{text}"));
             assert!(
                 previous <= position,
                 "{parent} --help 하위 명령이 이름순이 아니다: {subcommand}\n{text}"
