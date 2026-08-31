@@ -4425,7 +4425,7 @@ impl DocumentCore {
                 continue;
             }
             let tree = if actual_target == (section_idx, apply_to) {
-                self.build_page_tree(page_num)?
+                self.build_page_tree_cached(page_num)?
             } else {
                 self.build_header_footer_edit_preview_tree(
                     page_num,
@@ -4652,7 +4652,7 @@ impl DocumentCore {
             return Ok("{\"hit\":false}".to_string());
         }
         let tree = if actual_target == (section_idx, apply_to) {
-            self.build_page_tree(page_num)?
+            self.build_page_tree_cached(page_num)?
         } else {
             self.build_header_footer_edit_preview_tree(page_num, section_idx, is_header, apply_to)?
         };
@@ -4955,7 +4955,7 @@ impl DocumentCore {
         }
 
         let tree = if actual_target == (section_idx, apply_to) {
-            self.build_page_tree(page_num)?
+            self.build_page_tree_cached(page_num)?
         } else {
             self.build_header_footer_edit_preview_tree(page_num, section_idx, is_header, apply_to)?
         };
