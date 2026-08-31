@@ -3488,6 +3488,19 @@ fn convert_pua_enclosed_numbers(composed: &mut ComposedParagraph) {
 mod line_breaking;
 pub mod lineseg_compare;
 
+/// [#5678] fit 판정(자간 trim) 계약을 밖에서 구속하기 위한 통로. **rhwp 의 API 가 아니다.**
+///
+/// 이 헬퍼들의 unit test 는 `src/` 의 `#[cfg(test)]` 로 둘 수 없다(source unit tier 정책).
+/// 그래서 `tests/cases/issue_5678_fit_test_letter_spacing_trim.rs` 가 밖에서 부르고,
+/// 그 한 가지 이유로만 `pub` 이다.
+#[doc(hidden)]
+pub mod fit_test_internals {
+    pub use super::line_breaking::{
+        fit_test_letter_spacing_trim_hwp, text_token_fits_line_hwp, to_hwp, FitWidthHwp,
+        LINE_BREAK_TOLERANCE,
+    };
+}
+
 pub(crate) use line_breaking::{
     is_line_end_forbidden, is_line_start_forbidden, layout_picture_band, paragraph_flow_end,
     recalculate_section_vpos, reflow_line_segs, reflow_line_segs_after_cell_split,
