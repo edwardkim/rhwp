@@ -15,7 +15,10 @@ mod paint {
     pub(crate) const MAX_PORTABLE_FONT_BLOB_BYTES: usize = 32 * 1024 * 1024;
 }
 
-use kerning::{ExactFontSlot, ExactFontSource, ExactFontSourceRegistry};
+use kerning::{
+    ExactFontRegistryError, ExactFontSlot, ExactFontSource, ExactFontSourceRegistry,
+    MAX_KERNING_REGISTRY_SLOTS,
+};
 use shaping::MAX_SHAPING_VARIATION_AXES;
 use shaping::{ShapingFeature, ShapingRejectReason, ShapingVariation, TerminalShapingDisposition};
 use shaping_context::{
@@ -36,6 +39,7 @@ const SOURCE_HAN: &[u8] =
     include_bytes!("../../ttfs/opensource/SourceHanSerifK-OldHangul-subset.otf");
 const HAPPINESS: &[u8] =
     include_bytes!("../../ttfs/redistributable/happiness-sans/HappinessSansVF.ttf");
+const EXACT_INSTANCE_SMOKE: &[u8] = include_bytes!("../fixtures/fonts/RHWPExactKerningSmoke.ttf");
 
 const NOTO_SLOT: ExactFontSlot = ExactFontSlot {
     char_shape_id: 4969,
@@ -474,6 +478,72 @@ fn issue_4969_q3_d_explicit_slot_request_is_canonical_and_generation_owned() {
         HAPPINESS_SLOT
     );
     assert_eq!(context.cached_result_count(), 2);
+}
+
+#[test]
+fn issue_4969_q5_c_instance_request_limit_is_coupled_to_exact_source_slots() {
+    assert_eq!(
+        MAX_HORIZONTAL_SHAPING_INSTANCE_REQUESTS,
+        MAX_KERNING_REGISTRY_SLOTS
+    );
+
+    let mut sources = ExactFontSourceRegistry::default();
+    for char_shape_id in 0..MAX_KERNING_REGISTRY_SLOTS as u32 {
+        sources
+            .register(
+                ExactFontSlot::new(char_shape_id, 0),
+                ExactFontSource {
+                    bytes: EXACT_INSTANCE_SMOKE,
+                    face_index: 0,
+                },
+            )
+            .expect("fill the bounded exact-source slot table");
+    }
+    assert_eq!(sources.slot_count(), MAX_KERNING_REGISTRY_SLOTS);
+    assert_eq!(sources.source_count(), 1);
+    assert_eq!(
+        sources.register(
+            ExactFontSlot::new(MAX_KERNING_REGISTRY_SLOTS as u32, 0),
+            ExactFontSource {
+                bytes: EXACT_INSTANCE_SMOKE,
+                face_index: 0,
+            },
+        ),
+        Err(ExactFontRegistryError::SlotLimitExceeded)
+    );
+
+    let mut requests = HorizontalShapingInstanceRequestRegistry::default();
+    for char_shape_id in 0..MAX_HORIZONTAL_SHAPING_INSTANCE_REQUESTS as u32 {
+        assert_eq!(
+            requests.set_verified(&sources, ExactFontSlot::new(char_shape_id, 0), &[],),
+            Ok(HorizontalShapingInstanceRequestRegistration::Registered)
+        );
+    }
+    assert_eq!(
+        requests.request_count(),
+        MAX_HORIZONTAL_SHAPING_INSTANCE_REQUESTS
+    );
+    assert_eq!(
+        requests.generation(),
+        MAX_HORIZONTAL_SHAPING_INSTANCE_REQUESTS as u64
+    );
+
+    assert_eq!(
+        requests.set_verified(
+            &sources,
+            ExactFontSlot::new(MAX_HORIZONTAL_SHAPING_INSTANCE_REQUESTS as u32, 0),
+            &[],
+        ),
+        Err(HorizontalShapingInstanceRequestError::SourceUnavailable)
+    );
+    assert_eq!(
+        requests.request_count(),
+        MAX_HORIZONTAL_SHAPING_INSTANCE_REQUESTS
+    );
+    assert_eq!(
+        requests.generation(),
+        MAX_HORIZONTAL_SHAPING_INSTANCE_REQUESTS as u64
+    );
 }
 
 #[test]
