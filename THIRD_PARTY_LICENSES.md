@@ -4,7 +4,7 @@ rhwp 프로젝트가 사용하는 서드파티 라이브러리 및 리소스의 
 
 기준 파일:
 
-- `Cargo.toml` / `Cargo.lock` (`rhwp` v0.8.4)
+- `Cargo.toml` / `Cargo.lock` (`rhwp` v0.8.6)
 - `rhwp-studio/package.json` / `rhwp-studio/package-lock.json`
 - `rhwp-chrome/package.json` / `rhwp-chrome/package-lock.json`
 - `rhwp-firefox/package.json` / `rhwp-firefox/package-lock.json`
@@ -96,8 +96,8 @@ source를 가진 외부 Rust 크레이트는 243개다. 나머지 4개는 현재
 
 | 패키지 | 버전 | 라이선스 | 용도 |
 |--------|------|---------|------|
-| @rhwp/core | 0.8.4 | MIT | WASM parser/renderer API |
-| @rhwp/editor | 0.8.4 | MIT | iframe 기반 웹 에디터 wrapper |
+| @rhwp/core | 0.8.6 | MIT | WASM parser/renderer API |
+| @rhwp/editor | 0.8.6 | MIT | iframe 기반 웹 에디터 wrapper |
 
 ### rhwp-studio
 
