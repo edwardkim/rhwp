@@ -60,3 +60,23 @@ Hancom Office 2020 기준 PDF와 rhwp SVG PDF의 전 8페이지 visual sweep도 
 - 로컬 검증: full nextest 8925 passed, Native Skia 3946 passed, WASM package build 완료
 - 후속 작업: #6575 auto-close 상태 <OPEN/CLOSED> 확인; PR 범위 내 추가 작업 없음
 ~~~
+
+## Merge 후 확정 기록
+
+- merge: [#6578](https://github.com/edwardkim/rhwp/pull/6578)은 [merge commit `59bde68e`](https://github.com/edwardkim/rhwp/commit/59bde68e66e3dfe3fdf9b5bb9a7daa311e7c73e7)로 2026-09-01T18:07:40Z에 병합됐다.
+- devel: `git merge-base --is-ancestor 59bde68e upstream/devel` 성공으로 포함을 확인했다.
+- issue: [#6575](https://github.com/edwardkim/rhwp/issues/6575)는 2026-09-01T18:07:58Z에 closing keyword로 자동 종료됐다. 기존 maintainer 종료 기록은 없었다.
+- CI: code head `53282aa5e`의 Lint, Native Skia, Render Diff, CodeQL, Proptest, test archive가 성공했다. 문서 trailing head `556653609`은 Build & Test와 preflight가 성공했고 code-heavy job은 trusted post-merge reuse 또는 skip으로 종료됐다.
+
+### 게시할 maintainer comment
+
+PR과 issue에는 아래 본문을 `--body-file`로 각각 게시한다. 이 PR은 시각 asset을 merge 판단 근거로 쓰지 않았으므로 raw asset URL이나 이미지를 넣지 않는다.
+
+~~~markdown
+검토 및 머지 완료했습니다. 감사합니다.
+
+- merge: [#6578](https://github.com/edwardkim/rhwp/pull/6578) -> [59bde68e](https://github.com/edwardkim/rhwp/commit/59bde68e66e3dfe3fdf9b5bb9a7daa311e7c73e7)
+- CI: code head의 Build & Test, Lint, Native Skia tests, Render Diff, CodeQL, Proptest roundtrip, test archive 성공 확인; 문서 trailing head의 preflight와 Build & Test 성공 확인
+- 로컬 검증: full nextest 8925 passed, Native Skia 3946 passed, WASM package build 완료
+- issue: [#6575](https://github.com/edwardkim/rhwp/issues/6575) auto-close 상태를 확인했으며, PR 범위 내 추가 작업은 없습니다.
+~~~
