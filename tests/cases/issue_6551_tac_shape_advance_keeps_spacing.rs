@@ -1,6 +1,5 @@
 //! Issue #6551: TAC 글상자를 품은 host 문단의 **항목 전진량**이 `layout_paragraph` 가
-//! 이미 적용한 문단 앞 간격(`spacing_before`)과 줄간격(`line_spacing`)을 되돌리던
-//! 결함의 가드.
+//! 이미 적용한 문단 앞 간격(`spacing_before`)을 되돌리던 결함의 가드.
 //!
 //! `layout_column_item` 의 "TAC Shape 높이 보정" 블록은 개체가 글줄보다 클 때 흐름
 //! 하단을 개체 바닥까지 내리는 장치다. 그런데 그 바닥을 `para_start + line_height` 로
@@ -38,8 +37,14 @@ use std::path::Path;
 
 const SAMPLE: &str = "samples/issue6551/113424_evaluation_guideline.hwpx";
 
-/// 글상자 아래 첫 제목이 있어야 할 y(px). 회귀하면 sb+ls 25.0px 만큼 위로 올라온다.
-const MIN_HEADING_Y: f64 = 605.0;
+/// 글상자 아래 첫 제목의 한글 2024 기준 y(px)는 611.2px이다.
+/// 종전 회귀값 598.1px과 구분하면서 미세 렌더 편차만 허용한다.
+const HEADING_Y_MIN: f64 = 610.0;
+const HEADING_Y_MAX: f64 = 612.0;
+
+/// 단 상단 문단은 한글이 `spacing_before`를 트림하므로, 별도 절대 위치를 고정한다.
+const COLUMN_TOP_HEADING_Y: f64 = 169.3;
+const COLUMN_TOP_TOLERANCE_PX: f64 = 1.0;
 
 fn collect_texts(node: &serde_json::Value, out: &mut Vec<(String, f64)>) {
     if let (Some(text), Some(bbox)) = (node.get("text").and_then(|t| t.as_str()), node.get("bbox"))
@@ -81,10 +86,29 @@ fn tac_shape_height_correction_keeps_paragraph_spacing() {
         .expect("7쪽에 '목 적' 제목 노드가 있어야 한다");
 
     assert!(
-        heading_y >= MIN_HEADING_Y,
+        (HEADING_Y_MIN..=HEADING_Y_MAX).contains(&heading_y),
         "'1. 목 적' 이 y={heading_y:.1}px 에 있다 — #6551 회귀. \
-         TAC Shape 높이 보정이 개체 바닥을 `para_start + lh` 로 잡으면 문단 앞 간격 13.3px 과 \
-         줄간격 11.7px 을 버려 제목이 글상자 안으로 올라온다 \
-         (하한 {MIN_HEADING_Y:.1}px, 조판 계상값 611.4px)"
+         TAC Shape 높이 보정이 개체 바닥을 `para_start + lh` 로 잡으면 문단 앞 간격 13.3px 을 \
+         버려 제목이 글상자 안으로 올라온다 \
+         (허용 범위 {HEADING_Y_MIN:.1}~{HEADING_Y_MAX:.1}px, 한글 2024 기준 611.4px)"
+    );
+
+    let page8_json = document
+        .get_page_render_tree(7)
+        .expect("render tree page 8");
+    let page8_tree: serde_json::Value =
+        serde_json::from_str(&page8_json).expect("parse page 8 render tree json");
+    let mut page8_texts = Vec::new();
+    collect_texts(&page8_tree, &mut page8_texts);
+    let overview_y = page8_texts
+        .iter()
+        .find(|(text, _)| text.replace(' ', "") == "개요")
+        .map(|(_, y)| *y)
+        .expect("8쪽에 '개요' 제목 노드가 있어야 한다");
+    assert!(
+        (overview_y - COLUMN_TOP_HEADING_Y).abs() <= COLUMN_TOP_TOLERANCE_PX,
+        "8쪽 단 상단 '개요'가 y={overview_y:.1}px 에 있다 — #6551 회귀. \
+         단 상단 문단은 `spacing_before`를 트림해야 한다 \
+         (기준 {COLUMN_TOP_HEADING_Y:.1}px, 허용 오차 {COLUMN_TOP_TOLERANCE_PX:.1}px)"
     );
 }

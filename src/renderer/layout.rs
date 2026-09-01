@@ -8575,24 +8575,16 @@ impl LayoutEngine {
                             if effective_h > 0.0 {
                                 let para_start = *para_start_y.get(para_index).unwrap_or(&y_offset);
                                 // [#6551] `para_start` 는 **문단 앞 간격(sb) 이전** 위치다.
-                                // 개체는 sb 아래에서 시작하므로 그만큼 더해야 하고,
-                                // 개체가 앉은 줄의 줄간격(ls)도 문단 소비분이다. 종전에는
-                                // 둘 다 버리고 `para_start + lh` 로 덮어써, 이 블록이
+                                // 개체는 sb 아래에서 시작하므로 그만큼 더해야 한다. 종전에는
+                                // 이를 버리고 `para_start + lh` 로 덮어써, 이 블록이
                                 // `layout_paragraph` 가 이미 적용한 sb 를 되돌렸다
-                                // (113424 7쪽 pi=73: 조판 h=68.5 인데 렌더 43.5 — 정확히
-                                // sb 13.3 + ls 11.7 만큼 모자라 다음 제목이 글상자 안으로
-                                // 올라왔다).
+                                // (113424 7쪽 pi=73: 렌더 전진량 43.5에 sb 13.3이 빠져
+                                // 다음 제목이 글상자 안으로 올라왔다).
                                 let (sb, sa) = styles
                                     .para_styles
                                     .get(para.para_shape_id as usize)
                                     .map(|s| (s.spacing_before, s.spacing_after))
                                     .unwrap_or((0.0, 0.0));
-                                let seg_ls: f64 = para
-                                    .line_segs
-                                    .iter()
-                                    .map(|seg| hwpunit_to_px(seg.line_spacing, self.dpi))
-                                    .fold(0.0f64, f64::max);
-                                let _ = seg_ls;
                                 // 단 상단 문단은 한컴이 `sb` 를 트림한다(`is_column_top`)
                                 // — `layout_paragraph` 도 그렇게 놓으므로 여기서 더하면
                                 // 되레 어긋난다. 단 아래로 흐른 문단에만 더한다.
