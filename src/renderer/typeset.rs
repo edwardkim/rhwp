@@ -22905,11 +22905,26 @@ impl TypesetEngine {
                 // 복원이 실제로 상향한 경우에만 마진을 건다 — 코호트 재판정 신호(슬랙 스칼라)는
                 // 그대로 두고 적용 범위만 좁힌다.
                 let restoration_raised_fit = sync_h > st.current_height;
-                let uncertain_anchor_margin = if anchor_vpos <= 0 && restoration_raised_fit {
-                    50.0
-                } else {
-                    0.0
-                };
+                // [#6535] 마진을 거는 세 번째 조건 — **흐름 좌표가 실제로 뒤처져 있을 때만**.
+                //
+                // 슬랙 스칼라로는 두 코호트가 갈리지 않는다는 것이 이 마진의 기지 한계였다.
+                // 경합 구간을 전수 재 보니 갈리는 것은 슬랙이 아니라 `flow_underrun` 이다 —
+                // 이 단의 문단 place 가 트림한 `(total_height − advance)` 누계로, 0 보다
+                // 크면 `cur_h` 가 실제 내용 하단을 **과소**하게 들고 있다는 뜻이다. 마진이
+                // 보정하려던 불확실성이 바로 그것이다.
+                //
+                //   흡수 정답(한글 1쪽, rhwp 2쪽): slack 25.0 / 25.8 / 31.6 / 35.7 / 37.8
+                //                                  underrun **전부 0.00**
+                //   분할 정답(한글 2쪽)          : slack 42.5  underrun **37.60**
+                //
+                // 슬랙은 25.0~42.5 로 완전히 겹치는데 `underrun` 은 0 vs 37.60 으로 갈린다.
+                let flow_lags_behind_content = st.flow_underrun > 0.5;
+                let uncertain_anchor_margin =
+                    if anchor_vpos <= 0 && restoration_raised_fit && flow_lags_behind_content {
+                        50.0
+                    } else {
+                        0.0
+                    };
                 // [#2279 진단] footer 흡수/분할 판정 변수 분해 — 동작 불변.
                 // underrun = 이 단의 문단 place 가 트림한 (total_height − advance) 누계
                 // (렌더/한글 좌표와의 발산 중 문단-sa 성분; 표 place 성분은 미포함).
