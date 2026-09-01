@@ -484,6 +484,19 @@ fn inline_table_stored_line_top_offset_px(
         return None;
     }
     let delta = seg.vertical_pos - first.vertical_pos;
+    // [#4599] 사다리 델타가 이 문단 **자신의** 줄 진행량 합을 크게 넘으면, 그 초과분은
+    // 문단이 아니라 이미 따로 그려진 자리차지 밴드의 공간이다. 그대로 쓰면 밴드를 두 번
+    // 센다(36374873 야간방호일지 pi=4: 기대 3014HU 자리에 54302HU — 초과 51288HU=683.8px
+    // 가 pi=3 소유 13x8 자리차지 표의 공간이고, 그 표는 이미 Table 항목으로 726.7px
+    // 소비했다). #6181 의 표본은 델타가 진행량 합과 **정확히** 일치하므로(1778+976=2754)
+    // 영향받지 않는다. 어긋나면 None 으로 물러나 종전 추정(표 하단 기준)을 쓴다.
+    let own_advance: i32 = para.line_segs[..line_index]
+        .iter()
+        .map(|s| s.line_height.max(s.text_height) + s.line_spacing)
+        .sum();
+    if own_advance > 0 && delta > own_advance + own_advance / 4 {
+        return None;
+    }
     (delta > 0).then(|| hwpunit_to_px(delta, dpi))
 }
 
