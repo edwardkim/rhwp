@@ -17,8 +17,8 @@ VS Code 확장 빌드와 호스트 Chrome CDP E2E를 실행했다. 제품 회귀
 작업 트리에서 `@noble/hashes` 2.4.0과 `canvaskit-wasm` 0.42.0으로 정정했고 font asset·
 라이선스 계약 6건을 재검증했다.
 
-정정·보고와 credential-shaped fixture 제거를 commit
-`07ab264e85f081680b9c66b08bdac0ac2a75c1a1`로 고정한 뒤 AMO source
+정정·보고, credential-shaped fixture 제거와 브라우저 확장 README 현행화를 commit
+`adb40d62a6a2f91e2ac37c7f66286a3c6748321c`로 고정한 뒤 AMO source
 zip을 정본 `git archive ... HEAD`로 재생성했다. archive comment의 commit SHA, 정정된
 라이선스 버전, integrity, allowlist·denylist, symlink 내부 타겟과 비밀정보 재검사가 통과했다.
 
@@ -134,7 +134,7 @@ VS Code의 `npm run package`는 로컬 `vsce` executable이 없어 실패했다.
 | `rhwp-edge-0.8.6.zip` | 33,661,620 | `8d87cebd464674b841107b13ad7ac7f75bdd06d30a1d819af19bcc40aa4fe42f` | PASS |
 | `rhwp-firefox-0.8.6.zip` | 33,657,414 | `172277ee70fb1ea172947e0ff2b4990f8cd35dd6eb2b6ff316cbe142b92ca087` | PASS |
 | `rhwp-vscode-0.8.6.vsix` | 18,558,124 | `6a2d22f5b5814ca1c4d45a886178b7bed8882c4749923b607ba01a6002755fa7` | PASS |
-| `rhwp-source-0.8.6-amo.zip` | 33,862,451 | `48e7ff140a268fda2602862fdeed05cd85b3a13634d7ff6c24dcf54407990760` | PASS |
+| `rhwp-source-0.8.6-amo.zip` | 33,862,701 | `289fac0204d0e2efd59a652a5db9666f58df8ddc70b0ec9cdf449a812fb2e9f3` | PASS |
 
 Chrome·Edge·Firefox·VSIX와 재생성한 source zip은 모두 archive integrity 검사를 통과했다.
 source zip은 2,436 entry, 33.9 MB로 AMO 200 MB 제한 이하이다. 5개 symlink는 Firefox shared
@@ -162,9 +162,11 @@ lock 정본은 Studio·VS Code 모두 `@noble/hashes` 2.4.0, `canvaskit-wasm` 0.
 `THIRD_PARTY_LICENSES.md`에 2.3.0, 0.41.1이 남아 있었다. 두 package 구간 4개 cell을 정정했고
 package-lock 대사, font license contract 6건, 문서 링크 검사를 통과했다.
 
-commit `07ab264e85f081680b9c66b08bdac0ac2a75c1a1`에서 `mydocs/manual/publish_guide.md`의
+commit `adb40d62a6a2f91e2ac37c7f66286a3c6748321c`에서 `mydocs/manual/publish_guide.md`의
 exact `git archive` 명령으로 source zip을 재생성했다. archive comment와 commit SHA가 일치하고,
 새 크기·SHA-256·integrity·allowlist·denylist·entry별 secret scan이 통과했다.
+AMO source allowlist에 포함되는 Firefox README의 v0.8.6·`.xlsx`·privacy 설명도 archive 내부에서
+재확인했다.
 
 ## 7. 디스크·작업 트리
 
