@@ -1,7 +1,7 @@
 name: Release Binary
 
 # Issue #612 — CLI 바이너리 릴리즈 파이프라인
-# 4 플랫폼 (Linux x86_64 / macOS x86_64 + aarch64 / Windows x86_64) matrix 빌드
+# 5 플랫폼 (Linux x86_64 + aarch64 / macOS x86_64 + aarch64 / Windows x86_64) matrix 빌드
 # release tag (v*) push 시 자동 트리거 + workflow_dispatch 수동 실행 (테스트용)
 
 on:
@@ -30,6 +30,11 @@ jobs:
             runner: ubuntu-latest
             archive: tar.gz
             archive_suffix: linux-x86_64
+            binary_name: rhwp
+          - target: aarch64-unknown-linux-gnu
+            runner: ubuntu-24.04-arm
+            archive: tar.gz
+            archive_suffix: linux-aarch64
             binary_name: rhwp
           - target: x86_64-apple-darwin
             # macos-13 (Intel) runner 큐 적체 영역 회피 — Apple Silicon (macos-14)

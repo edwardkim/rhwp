@@ -19,6 +19,7 @@ GitHub repository·Actions의 공통 권한, 승인, 적용 후 관찰과 rollba
 | 대상 | 패키지명 | 배포 방식 | 트리거 |
 |------|---------|----------|--------|
 | GitHub Pages (데모) | — | CI/CD 자동 | main push 또는 태그 |
+| GitHub Release CLI | `rhwp` | CI/CD 자동 | `v*` 태그 push |
 | npm WASM 코어 | @rhwp/core | CI/CD 자동 | GitHub Release 생성 |
 | npm 에디터 | @rhwp/editor | CI/CD 자동 | GitHub Release 생성 |
 | VSCode Marketplace | rhwp-vscode | CI/CD 자동 | GitHub Release 생성 |
@@ -37,6 +38,7 @@ GitHub repository·Actions의 공통 권한, 승인, 적용 후 관찰과 rollba
 |------|--------|------|
 | `.github/workflows/ci.yml` | push/PR (main, devel) | cargo build + test + clippy 검증 |
 | `.github/workflows/deploy-pages.yml` | main push, 태그 | WASM 빌드 → rhwp-studio 빌드 → GitHub Pages 배포 |
+| `.github/workflows/release-binary.yml` | `v*` 태그, 수동 실행 | 5플랫폼 CLI 빌드 → archive·SHA-256을 GitHub Release에 첨부 |
 | `.github/workflows/npm-publish.yml` | **GitHub Release 생성** 또는 수동 실행 | WASM 빌드 → @rhwp/core + @rhwp/editor + VSCode/Open VSX 익스텐션 배포 |
 
 ### CI/CD 자동 배포 흐름
@@ -49,6 +51,8 @@ devel 대상 PR merge → CI 자동 실행 (build + test + clippy)
 main 대상 release PR merge → GitHub Pages 자동 배포
   ↓
 GitHub Release 생성 (태그)
+  ↓ Release Binary가 Linux x86_64/AArch64, macOS x86_64/AArch64,
+    Windows x86_64 CLI archive와 SHA256SUMS.txt 첨부
   ↓ npm-publish.yml 자동 실행
   ├─ WASM 빌드
   ├─ npm @rhwp/core 배포
@@ -66,6 +70,34 @@ GitHub Release 생성 (태그)
 > 단, release workflow를 재실행하면서 이미 VS Code/Open VSX 배포가 끝난 경우에는
 > `workflow_dispatch`의 `publish_extensions=false` 입력으로 npm publish만 다시 시도한다.
 > Chrome/Edge/Firefox 브라우저 확장은 스토어 심사 흐름이 달라 현재 수동 업로드한다.
+
+### GitHub Release CLI target
+
+`release-binary.yml`은 다음 다섯 native target을 만든다.
+
+| 운영체제·architecture | Rust target | runner | archive suffix |
+| --- | --- | --- | --- |
+| Linux x86_64 | `x86_64-unknown-linux-gnu` | `ubuntu-latest` | `linux-x86_64` |
+| Linux AArch64 | `aarch64-unknown-linux-gnu` | `ubuntu-24.04-arm` | `linux-aarch64` |
+| macOS x86_64 | `x86_64-apple-darwin` | `macos-14` | `macos-x86_64` |
+| macOS AArch64 | `aarch64-apple-darwin` | `macos-14` | `macos-aarch64` |
+| Windows x86_64 | `x86_64-pc-windows-msvc` | `windows-latest` | `windows-x86_64` |
+
+Linux AArch64는 cross compile이나 self-hosted runner가 아니라 GitHub 표준 native ARM64 runner에서
+빌드하고 같은 runner에서 `rhwp --version`을 실행한다. runner label의 현재 지원 여부는
+[GitHub-hosted runners 정본](https://docs.github.com/en/actions/reference/runners/github-hosted-runners)을
+확인한다.
+
+릴리즈 전 dry-run은 작업 브랜치 exact head에서 `workflow_dispatch`의 `tag=test`로 실행한다.
+이 값은 `v`로 시작하지 않으므로 release job은 실행되지 않고 build artifact만 만든다. Linux AArch64
+job이 성공하면 `rhwp-test-linux-aarch64.tar.gz`를 내려받아 다음을 확인한다.
+
+- archive 내부: `rhwp/rhwp`, `rhwp/LICENSE`, `rhwp/README.md`, `rhwp/README_EN.md`
+- 실행 파일: ELF 64-bit AArch64
+- Actions log: `rhwp --version` 종료 코드 0
+
+정식 `v*` 실행에서는 다섯 archive가 모두 성공한 뒤에만 release job이 `SHA256SUMS.txt`와 함께
+GitHub Release에 첨부한다.
 
 ### GitHub Secrets 설정
 
@@ -423,11 +455,13 @@ GitHub Release 생성 후 Actions 탭에서 `Publish All Packages` 워크플로�
 - [ ] THIRD_PARTY_LICENSES.md 현행화
 - [ ] 확장 스토어 제출 문서 현행화 (`mydocs/feedback/`)
 - [ ] 배포 zip에 `.env`, 개인 폰트, token, `node_modules/`, `target/`, `dist/` 불포함 확인
+- [ ] Release Binary dry-run 5플랫폼 성공 및 Linux AArch64 archive·ELF architecture 확인
 
 ### 배포 순서
 
 - [ ] devel 대상 PR merge → CI 통과 확인
 - [ ] main 대상 release PR merge → GitHub Pages 배포 확인
+- [ ] v0.8.5 Release Binary 5개 archive와 `SHA256SUMS.txt` 확인
 - [ ] GitHub Release 생성 → Actions 탭에서 `Publish All Packages` 실행 확인
 - [ ] @rhwp/core npm 배포 확인
 - [ ] @rhwp/editor npm 배포 확인
