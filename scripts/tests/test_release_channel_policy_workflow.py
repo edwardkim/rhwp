@@ -15,6 +15,7 @@ from pathlib import Path
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+RELEASE_BINARY_WORKFLOW = REPO_ROOT / ".github/workflows/release-binary.yml"
 
 PRESERVED = [
     ".github/workflows/deploy-pages.yml",
@@ -71,7 +72,57 @@ def tracked_path(path: str) -> bool:
     return bool(result.stdout.strip())
 
 
+def release_binary_matrix() -> dict[str, dict[str, str]]:
+    """Release Binary의 include matrix를 사람이 검토할 수 있는 계약으로 읽는다."""
+    workflow = RELEASE_BINARY_WORKFLOW.read_text(encoding="utf-8")
+    block = workflow.split("      matrix:\n", maxsplit=1)[1].split(
+        "\n    steps:", maxsplit=1
+    )[0]
+    entries: dict[str, dict[str, str]] = {}
+    current: dict[str, str] | None = None
+    for raw_line in block.splitlines():
+        line = raw_line.strip()
+        if line.startswith("- target:"):
+            target = line.split(":", maxsplit=1)[1].strip(" '\"")
+            current = {"target": target}
+            if target in entries:
+                raise AssertionError(f"release target 중복: {target}")
+            entries[target] = current
+            continue
+        if current is None or ":" not in line or line.startswith("#"):
+            continue
+        key, value = line.split(":", maxsplit=1)
+        if key in {"runner", "archive", "archive_suffix", "binary_name"}:
+            current[key] = value.strip(" '\"")
+    return entries
+
+
 class ReleaseChannelPolicyWorkflowTests(unittest.TestCase):
+    def test_release_binary_matrix_includes_linux_aarch64(self):
+        entries = release_binary_matrix()
+        expected_targets = {
+            "x86_64-unknown-linux-gnu",
+            "aarch64-unknown-linux-gnu",
+            "x86_64-apple-darwin",
+            "aarch64-apple-darwin",
+            "x86_64-pc-windows-msvc",
+        }
+        self.assertEqual(
+            set(entries),
+            expected_targets,
+            "공식 CLI release matrix는 기존 네 target과 Linux AArch64를 포함해야 한다",
+        )
+
+        linux_arm = entries["aarch64-unknown-linux-gnu"]
+        self.assertEqual(linux_arm.get("runner"), "ubuntu-24.04-arm")
+        self.assertEqual(linux_arm.get("archive"), "tar.gz")
+        self.assertEqual(linux_arm.get("archive_suffix"), "linux-aarch64")
+        self.assertEqual(linux_arm.get("binary_name"), "rhwp")
+
+        suffixes = [entry.get("archive_suffix") for entry in entries.values()]
+        self.assertNotIn(None, suffixes, "archive suffix가 없는 release target이 있다")
+        self.assertEqual(len(suffixes), len(set(suffixes)), "archive suffix가 중복됐다")
+
     def test_user_visible_versions_match_release_version(self):
         cargo = tomllib.loads((REPO_ROOT / "Cargo.toml").read_text(encoding="utf-8"))
         release_version = cargo["package"]["version"]
