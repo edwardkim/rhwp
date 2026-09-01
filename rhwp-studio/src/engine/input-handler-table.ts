@@ -10,6 +10,7 @@ import {
   buildColumnResizeUpdates,
   buildLocalResizeUpdates,
   buildBoundaryResizeUpdates,
+  cellOverlapsSelectionRange,
   type CellSelectionRange,
   type LocalResizeUpdate,
   type ResizeArrowKey,
@@ -878,13 +879,10 @@ export function finishResizeDrag(this: any, e: MouseEvent): void {
       return;
     }
   } else if (state.edge.type === 'col' && inCellSel && range) {
-    // 선택 셀만 추출
+    // 선택 셀만 추출 — 병합 셀은 시작 좌표가 아니라 겹침으로 판정한다 (PK-38529)
     const selectedBboxes = state.affectedCellIndices
       .map((cellIdx: any) => state.bboxes.find((b: any) => b.cellIdx === cellIdx))
-      .filter((b: any): b is CellBbox =>
-        b !== undefined &&
-        b.row >= range.startRow && b.row <= range.endRow &&
-        b.col >= range.startCol && b.col <= range.endCol);
+      .filter((b: any): b is CellBbox => b !== undefined && cellOverlapsSelectionRange(b, range));
     if (selectedBboxes.length === 0) {
       this.cleanupResizeDrag();
       return;

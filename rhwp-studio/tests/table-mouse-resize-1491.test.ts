@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { cellOverlapsSelectionRange } from '../src/engine/table-resize-updates.ts';
+import type { CellBbox } from '../src/core/types.ts';
 
 const rootDir = dirname(dirname(fileURLToPath(import.meta.url)));
 
@@ -175,4 +177,46 @@ test('Shift 세로 resize는 가로처럼 단일 셀 local height 경로를 사�
   );
   assert.match(finish, /heightDelta:\s*0,[\s\S]*renderHeight: targetDesiredSize,/, '세로 Shift는 모델 행 높이가 아니라 target renderHeight만 바꿔야 함');
   assert.match(finish, /heightDelta:\s*0,[\s\S]*renderHeight: neighborDesiredSize,/, '세로 Shift 보상 셀도 모델 행 높이가 아니라 renderHeight만 바꿔야 함');
+});
+
+// PK-38529: 병합 셀이 섞인 표에서 마우스 드래그 리사이즈가 셀 선택 범위 내 병합 셀을
+// 누락시키지 않는다. 이 파일의 다른 테스트와 달리 finishResizeDrag 가 실제로 쓰는
+// cellOverlapsSelectionRange 를 직접 호출해 검증한다.
+
+function pk38529Bbox(row: number, col: number, rowSpan: number, colSpan: number): CellBbox {
+  return { cellIdx: row * 100 + col, row, col, rowSpan, colSpan, pageIndex: 0, x: 0, y: 0, w: 40, h: 20 };
+}
+
+test('PK-38529: 세로 병합 셀은 시작 행이 선택 범위 밖이어도 하위 행 선택과 겹친다', () => {
+  // row0~1 세로 병합 셀(col0). 사용자가 row1 만 셀 선택한 채 열 경계를 드래그하는 시나리오 —
+  // 시작 좌표 비교(row >= startRow)라면 이 병합 셀이 통째로 빠진다.
+  const merged = pk38529Bbox(0, 0, 2, 1);
+  const range = { startRow: 1, startCol: 0, endRow: 1, endCol: 0 };
+  assert.equal(cellOverlapsSelectionRange(merged, range), true);
+});
+
+test('PK-38529: 가로 병합 셀은 시작 열이 선택 범위 밖이어도 하위 열 선택과 겹친다', () => {
+  const merged = pk38529Bbox(0, 0, 1, 3);
+  const range = { startRow: 0, startCol: 2, endRow: 0, endCol: 2 };
+  assert.equal(cellOverlapsSelectionRange(merged, range), true);
+});
+
+test('PK-38529: 선택 범위와 겹치지 않는 셀은 여전히 제외된다', () => {
+  const plain = pk38529Bbox(2, 2, 1, 1);
+  const range = { startRow: 0, startCol: 0, endRow: 1, endCol: 1 };
+  assert.equal(cellOverlapsSelectionRange(plain, range), false);
+});
+
+test('PK-38529: finishResizeDrag 선택 셀 필터는 overlap 판정을 사용한다', () => {
+  const finish = finishResizeDragBlock();
+  assert.match(
+    finish,
+    /cellOverlapsSelectionRange\(b, range\)/,
+    '마우스 경로 선택 필터는 시작 좌표 비교가 아니라 cellOverlapsSelectionRange 를 써야 함 (PK-38529)',
+  );
+  assert.doesNotMatch(
+    finish,
+    /b\.row >= range\.startRow/,
+    '시작 좌표 직접 비교가 남아 있으면 병합 셀 누락이 재발한다',
+  );
 });
