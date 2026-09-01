@@ -7,8 +7,9 @@ use super::composer::{
     compose_paragraph, effective_text_for_metrics, first_text_line, ComposedParagraph,
 };
 use super::float_placement::{
-    empty_host_physical_ladder_extras_hu, horizontal_range, is_para_topbottom_float,
-    native_empty_host_physical_outer_box_paint_inset, native_empty_host_rowbreak_line_advance_hu,
+    empty_host_physical_ladder_extras_hu, empty_offset_float_deferred_text_ladder_hu,
+    horizontal_range, is_para_topbottom_float, native_empty_host_physical_outer_box_paint_inset,
+    native_empty_host_rowbreak_line_advance_hu,
     original_hwpx_column_rowbreak_equal_outer_margin_hu, signed_hwpunit,
     stored_empty_anchor_band_host_line_advance_hu, stored_visible_anchor_band_host_line_advance_hu,
     FloatLaneSet, FloatPlacementContext,
@@ -8133,6 +8134,28 @@ impl LayoutEngine {
         };
         match item {
             PageItem::FullParagraph { para_index } => {
+                let deferred_empty_float_text_anchor_y =
+                    para_index.checked_sub(1).and_then(|host_index| {
+                        let host = paragraphs.get(host_index)?;
+                        let following = paragraphs.get(*para_index)?;
+                        let Control::Table(table) = host.controls.first()? else {
+                            return None;
+                        };
+                        empty_offset_float_deferred_text_ladder_hu(host, table, following).map(
+                            |(vertical_pos, line_advance)| {
+                                col_area.y
+                                    + hwpunit_to_px(
+                                        vertical_pos.saturating_add(line_advance),
+                                        self.dpi,
+                                    )
+                            },
+                        )
+                    });
+                if let Some(anchor_y) = deferred_empty_float_text_anchor_y {
+                    // 양수 offset 빈 host 표는 본문을 표 아래로 밀어내지 않는다. 표의
+                    // 저장 anchor부터 다음 계산 본문을 재개해 표 위 gap을 먼저 채운다.
+                    y_offset = anchor_y;
+                }
                 // 빈 줄 감추기: 높이 0 처리된 문단은 문단부호만 렌더링하고 y_offset 변경 없음
                 if self.hidden_empty_paras.borrow().contains(para_index) {
                     // 문단부호는 렌더링 (클리핑 바깥에 표시)
@@ -10238,7 +10261,33 @@ impl LayoutEngine {
         let tac_line_fits_above_offset_float = paragraphs
             .get(para_index)
             .is_some_and(|para| host_line_fits_above_offset_float(para, control_index, self.dpi));
-        if let Some(existing_y) = para_start_y.get(&para_index) {
+        let deferred_empty_float_anchor_y = paragraphs.get(para_index).and_then(|host| {
+            host.controls
+                .get(control_index)
+                .and_then(|control| match control {
+                    Control::Table(table)
+                        if paragraphs.get(para_index + 1).is_some_and(|following| {
+                            empty_offset_float_deferred_text_ladder_hu(host, table, following)
+                                .is_some()
+                        }) =>
+                    {
+                        host.line_segs
+                            .iter()
+                            .find(|seg| {
+                                seg.tag
+                                    & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                                    == 0
+                            })
+                            .map(|seg| col_area.y + hwpunit_to_px(seg.vertical_pos, self.dpi))
+                    }
+                    _ => None,
+                })
+        });
+        if let Some(anchor_y) = deferred_empty_float_anchor_y {
+            // typeset가 다음 계산 본문을 표보다 먼저 배치해도 표는 host의 저장 anchor에
+            // 남겨야 한다. 그렇지 않으면 표까지 본문 높이만큼 함께 아래로 이동한다.
+            para_start_y.insert(para_index, anchor_y);
+        } else if let Some(existing_y) = para_start_y.get(&para_index) {
             if is_current_tac && y_offset > *existing_y + 1.0 && !tac_line_fits_above_offset_float {
                 para_start_y.insert(para_index, y_offset);
             }
@@ -10694,7 +10743,23 @@ impl LayoutEngine {
                             })
                         })
                         .flatten();
-                let lane_flow_bottom = if let Some((table, line_advance)) =
+                let deferred_empty_offset_float_bottom = deferred_empty_float_anchor_y.map(|_| {
+                    let outer_bottom = para
+                        .controls
+                        .get(control_index)
+                        .and_then(|control| match control {
+                            Control::Table(table) => Some(table.outer_margin_bottom as i32),
+                            _ => None,
+                        })
+                        .unwrap_or(0);
+                    lanes.max_bottom() + hwpunit_to_px(outer_bottom, self.dpi)
+                });
+                let lane_flow_bottom = if let Some(bottom) = deferred_empty_offset_float_bottom {
+                    // 생성 본문을 먼저 gap에 배치한 뒤에는 offset을 뺀 예약 높이가 아니라
+                    // 실제 표 하단과 바깥 아래 여백까지 흐름을 진행해야 다음 문단이 표와
+                    // 겹치지 않는다.
+                    bottom
+                } else if let Some((table, line_advance)) =
                     single_positive_empty_float_before_plain_text
                 {
                     // #2439: a single empty-host TopAndBottom float followed by an ordinary

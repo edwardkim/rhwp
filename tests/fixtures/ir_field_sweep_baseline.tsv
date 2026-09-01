@@ -250,6 +250,9 @@ hwp5rb	issue5877/fragment_ghost_vrules.hwp	sections[].paragraphs[].controls[].ce
 hwp5rb	issue5877/fragment_ghost_vrules.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	52
 hwp5rb	issue5885/3171199_design_capability_criteria.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	30
 hwp5rb	issue5885/3171199_design_capability_criteria.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	6
+hwp5rb	issue5941/1130000-200900012_anchor_delay_ulp.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	4
+hwp5rb	issue5941/1130000-200900012_anchor_delay_ulp.hwp	sections[].paragraphs[].controls[].section_def.raw_ctrl_extra.len	1
+hwp5rb	issue5941/1130000-200900012_anchor_delay_ulp.hwp	sections[].section_def.raw_ctrl_extra.len	1
 hwp5rb	issue5941/1490000-201600081_roadmap_research.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	1078
 hwp5rb	issue5966/1130000-202100008_franchise_review_report.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	19
 hwp5rb	issue5966/1130000-202100008_franchise_review_report.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	5
@@ -280,6 +283,9 @@ hwp5rb	issue6280/156742029_prosecutor_transfer_list.hwp	sections[].paragraphs[].
 hwp5rb	issue6300/trade_report_forced_break_object.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	2767
 hwp5rb	issue6442/access_pass_form.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	14
 hwp5rb	issue6442/access_pass_form.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	164
+hwp5rb	issue6524/30098_float_host_split_lineseg.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	124
+hwp5rb	issue6542/156678235_mid_para_vpos_rewind.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	11
+hwp5rb	issue6542/156678235_mid_para_vpos_rewind.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	8
 hwp5rb	issue_1133.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	15
 hwp5rb	issues/2809/jubo_20260104.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	174
 hwp5rb	k-water-rfp-2024.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	457
@@ -558,4 +564,3 @@ hwpx	tb-org-02.hwpx	sections[].paragraphs[].raw_header_extra[]	4
 hwpx	tbox-v-flow-01.hwpx	sections[].paragraphs[].controls[].text_box.paragraphs[].raw_header_extra[]	18
 hwpx	tbox-v-flow-01.hwpx	sections[].paragraphs[].raw_header_extra[]	4
 hwpx	water-mark.hwpx	sections[].paragraphs[].raw_header_extra[]	1
-hwp5rb	issue6524/30098_float_host_split_lineseg.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	124

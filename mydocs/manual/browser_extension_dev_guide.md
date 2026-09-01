@@ -2,14 +2,15 @@
 kind: guide
 status: active
 canonical: mydocs/manual/browser_extension_dev_guide.md
-last_verified: 2026-07-17
+last_verified: 2026-09-01
 ---
 
 # 브라우저 확장 프로그램 개발 가이드 (Safari/Chrome/Edge/Firefox)
 
-**작성일**: 2026-04-09 · **최종 갱신**: 2026-04-23
+**작성일**: 2026-04-09 · **최종 갱신**: 2026-09-01
 **대상**: rhwp 프로젝트 컨트리뷰터
-**교훈 기반**: Task #83 Safari 확장 개발, Task #84 보안 수정, PR #169 Firefox 포팅, PR #214 rhwp-shared 공통 모듈 도입
+**교훈 기반**: Task #83 Safari 확장 개발, Task #84 보안 수정, PR #169 Firefox 포팅,
+PR #214 rhwp-shared 공통 모듈 도입, Issue #6534 다운로드 metadata·HWPX 구조 판정 분리
 
 ---
 
@@ -140,7 +141,11 @@ background에서 `fetch(message.url)`을 무검증으로 실행하면:
 2. 내부 IP 차단 (127.*, 10.*, 192.168.*, 169.254.*, ::1)
 3. `redirect: 'manual'` — 리다이렉트 대상 URL 재검증
 4. `credentials: 'omit'` — 쿠키 전송 차단
-5. 응답 매직 넘버 검증 (HWP: `D0 CF 11 E0`, HWPX: `50 4B 03 04`)
+5. 응답 시그니처 검증
+   - HWP CFB: `D0 CF 11 E0`이면 HWP 후보
+   - `50 4B 03 04`는 **ZIP 컨테이너 후보**일 뿐 HWPX 확정 근거가 아님
+   - HWPX 최종 확정은 Rust core가 ZIP 중앙 디렉터리의 `Contents/content.hpf`와
+     `Contents/header.xml`을 모두 확인한 뒤 수행
 6. 파일 크기 제한
 7. sender 검증 (viewer.html만 허용)
 
@@ -469,6 +474,50 @@ downloads.onChanged.addListener(async (delta) => {
   // 공통 상태 머신과 HWP 판정을 모두 통과한 항목만 처리한다.
 });
 ```
+
+### 다운로드 metadata 판정 우선순위 (#6534)
+
+다운로드 자동 열기 판정과 문서 바이트 형식 판정은 서로 다른 방어 계층이다. 다운로드 observer는
+파일 본문이나 ZIP을 읽지 않고 브라우저가 제공한 metadata만으로 탭 생성 여부를 결정한다.
+
+`rhwp-shared/sw/download-interceptor-common.js`의 `classifyDownload(item, { metadataFinalized })`는
+다음 우선순위를 따른다.
+
+| 우선순위 | 근거 | 판정 |
+| ---: | --- | --- |
+| 1 | DEXT5 등 재요청 불가 URL/referrer | `ignore` |
+| 2 | 확정 `.hwp/.hwpx/.hml` 파일명 | `intercept` |
+| 3 | 확정 Office/PDF/ZIP/ODF 등 비-HWP 파일명 | `ignore` |
+| 4 | 구체적인 비-HWP MIME | `ignore` |
+| 5 | URL/finalUrl/HWP MIME만 일치하고 metadata 미확정 | `defer` |
+| 6 | 같은 HWP 보조 근거가 filename 확정 또는 terminal까지 유지 | `intercept` |
+
+확정 HWP 파일명은 공공기관이 보내는 generic·부정확 MIME보다 우선한다. 반대로 확정 `.xlsx` 파일명은
+URL이나 MIME에 남은 HWP 힌트보다 우선한다. `onCreated`에서 URL/MIME만 일치한 후보는 상태만 추적하고,
+`onChanged` 재조회에서 `delta.filename.current` 또는 terminal state를 확인한 뒤
+`metadataFinalized: true`로 다시 분류한다. `finalUrl`만 먼저 바뀐 경우에는 계속 보류한다.
+
+`ignore`는 브라우저의 정상 다운로드를 취소하거나 파일명을 바꾸는 동작이 아니다. rhwp 뷰어 탭을
+자동 생성하지 않는다는 뜻이다. 기존 boolean `shouldInterceptDownload()`은 최종 metadata를 받는
+호환 wrapper이며, 이벤트 adapter에서는 3상태 함수를 사용한다.
+
+### ZIP 후보와 HWPX 최종 확정 경계 (#6534)
+
+ZIP local-file signature `50 4B 03 04`는 HWPX뿐 아니라 XLSX·DOCX·PPTX와 일반 ZIP도 공유한다.
+따라서 이 시그니처만 보고 `hwpx`라고 이름 붙이거나 HWPX parser 성공을 주장하면 안 된다.
+
+1. Studio `detectDocumentByteKind()`는 ZIP 시그니처를 `zip` 후보로 반환한다.
+2. transport gate는 후보 바이트를 WASM/Rust core로 전달한다.
+3. Rust `detect_format()`은 payload를 압축 해제하지 않고 중앙 디렉터리에서
+   `Contents/content.hpf`와 `Contents/header.xml`을 exact lookup한다.
+4. 두 entry가 모두 있을 때만 `FileFormat::Hwpx`이며, XLSX·일반 ZIP·손상 ZIP·한 entry만 있는 ZIP은
+   `FileFormat::Unknown`이다.
+
+Safari는 downloads API가 없어 content-script→background fetch 경로를 사용한다. 현재 Safari 선행
+게이트가 공유 `rhwp-shared/security/file-signature.js`에서 ZIP 시그니처를 `hwpx` 후보로 표현하는 차이는
+남아 있다. 공통 WASM core의 최종 구조 판정은 일반 ZIP을 거부하지만, 이 선행 명칭을 Chrome/Firefox
+다운로드 정책의 확정 근거로 복사하지 않는다. Safari 후보 명칭과 선행 거부를 정합화하려면 별도 범위로
+계획한다.
 
 ### 교차 교훈
 
