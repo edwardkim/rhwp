@@ -1,7 +1,7 @@
 ---
 doc_kind: pr_review_impl
 title: "PR #6541 planet6897 연속 체리픽 통합 수행계획"
-status: draft
+status: active
 pr: 6541
 reviewed_at: 2026-09-01
 ---
@@ -26,12 +26,12 @@ reviewed_at: 2026-09-01
 
 | 순서 | 원 PR | 접수 head | 현재 integration 상태 | 기능 축 |
 |---:|---:|---|---|---|
-| 1 | #6514 | `b643b3822edccaa234133fc4cf2701910b090b8f` | `c8708e2d8` 적용, blocker 있음 | 자간 fit-test |
-| 2 | #6536 | `8e4269db82cae5a45115f332c2fb80a467a45f32` | `b8041f23c` 적용, `0ff2e25b6` 보정도 불충분 | 쪽-앵커 표 흐름 |
-| 3 | #6543 | `a3e1f514b9b7d52902b62f95a21f9b492745f674` | 미적용 | 한컴 font face chain |
-| 4 | #6546 | `581740ccb1581f6cb9b17bf73ed00d49fd5e6647` | 미적용 | 문단 내부 vpos 되감김 |
-| 5 | #6548 | `578afd06265a664584ab9516af47342ce54ecc26` | 미적용 | anchor-delay 1 ULP |
-| 6 | #6552 | `f7aa7d4c6d5052d4598825ff0f841f7cc919cea2` | 미적용 | 미주 reset 사다리 |
+| 1 | #6514 | `b643b3822edccaa234133fc4cf2701910b090b8f` | `c8708e2d8` 적용 → `ad877288b` 보정 | 자간 fit-test |
+| 2 | #6536 | `8e4269db82cae5a45115f332c2fb80a467a45f32` | `b8041f23c` 적용 → `0ff2e25b6`, `7cf17c1ce` 보정 | 쪽-앵커 표 흐름 |
+| 3 | #6543 | `a3e1f514b9b7d52902b62f95a21f9b492745f674` | `3955515d3`, `7e903460d` 적용 | 한컴 font face chain |
+| 4 | #6546 | `581740ccb1581f6cb9b17bf73ed00d49fd5e6647` | `a1648ea87` 적용 → `cae16410d` 원장 | 문단 내부 vpos 되감김 |
+| 5 | #6548 | `578afd06265a664584ab9516af47342ce54ecc26` | `604230770` 적용 → `cae16410d` 원장 | anchor-delay 1 ULP |
+| 6 | #6552 | `f7aa7d4c6d5052d4598825ff0f841f7cc919cea2` | `ddb6f43f1` 적용 | 미주 reset 사다리 |
 
 체리픽 직전 `gh pr view`와 `git ls-remote`로 head를 다시 비교한다. 새 head가 생기면 위 접수 SHA의
 검증을 재사용하지 않고 diff·CI·patch-id를 갱신한다.
@@ -144,6 +144,23 @@ integration commit만 revert한다. source PR history를 변경하지 않는다.
 2. `pr_6514_review.md`, `pr_6536_review.md`의 오래된 판정을 고치고 #6543/#6546/#6548/#6552 기록을 추가한다.
 3. 실제 검증 결과와 시각 asset을 하나의 trailing review commit으로 반영한다.
 4. code candidate 이후에는 허용된 review-only 범위만 추가한다.
+
+### Stage 7 실행 결과 — local candidate
+
+- code candidate: `ddb6f43f1d606918886fa6881af06e3c89183dc0`
+- 통합 기준: `upstream/devel@336c4526e9cc5047d6dd9906ebc8d0d5ee6f2188`
+- 원 PR 여섯 개의 원격 head는 접수 SHA에서 변하지 않았고 확인 시점의 GitHub checks는 모두 green이다.
+- mandatory Rust lint bundle과 unit-tier gate를 통과했다.
+- release-test 전체 nextest: `8,914 passed`, `46 skipped`, 실패 0, 374.273초
+- Native Skia: lib 전체와 placeholder 2/2, direct PDF 4/4 통과
+- locked Docker WASM: wasm-pack 0.15.0, 최적화 포함 6분 52초, `/app/pkg` 생성 성공
+- Chrome 151 host font 계측에서 세 face 모두 접미사 제거명만 fallback 기준선과 다른 glyph/폭을 냈다.
+- 문서별 직접 판정과 잔여 범위는 각 검토 기록에 고정했다:
+  [#6514](pr_6514_review.md), [#6536](pr_6536_review.md), [#6543](pr_6543_review.md),
+  [#6546](pr_6546_review.md), [#6548](pr_6548_review.md), [#6552](pr_6552_review.md).
+
+원격 push·Draft 해제·review 게시·merge는 아직 수행하지 않았다. trailing review commit 이후의 SHA를
+최종 local candidate로 동결하고 Q7 원격 승인을 별도로 받는다.
 
 ### Stage 8 — 원격 통합
 

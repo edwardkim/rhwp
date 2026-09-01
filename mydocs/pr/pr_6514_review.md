@@ -2,30 +2,38 @@
 
 - 검토일: 2026-09-01
 - 작성자: `planet6897`
-- base: `devel` (`upstream/devel@891e395bb`)
+- 기준: `upstream/devel@336c4526e`
 - 원 PR head: `b643b3822edccaa234133fc4cf2701910b090b8f`
-- 통합 commit: `c8708e2d8`
-- 상태: 승인 (개별 범위 기준)
+- 원 적용 commit: `c8708e2d8`
+- 메인터너 보정 commit: `ad877288b`
+- 상태: 통합 candidate 수용 가능 — 특성화 범위 제한
 
-## 범위
+## 범위와 보정
 
-- line-breaking fit-test의 trailing letter-spacing trim을 typed `FitWidthHwp`로 구속한다.
-- source unit tier를 우회하지 않고 integration case에서 trim 부호, 경계, pair adjustment 계약을 고정한다.
+원 PR은 line-breaking fit-test의 trailing letter-spacing trim을 typed `FitWidthHwp`로 구속했다.
+메인터너 보정에서는 `#[doc(hidden)] pub` test helper를 제거하고, exact test font를 등록한
+`DocumentCore` 공개 조판 경로에서 양수·음수 자간의 실제 첫 줄을 관찰하도록 integration case를
+바꿨다.
 
-## 검토 결과
+누적 candidate에서 두 경우 모두 첫 줄은 `가나다라`다.
 
-- 실제 fill path는 candidate 마지막 글자의 trailing spacing만 제외한 `FitWidthHwp::trimmed`를 만들고, kerning pair adjustment도 동일 fit-width 축에만 더한다.
-- tuple field는 private로 유지돼 외부 test가 raw HWPUNIT를 직접 주입할 수 없고, `#[doc(hidden)]` re-export는 integration test 계약 전용이다.
-- `issue_5678_fit_test_letter_spacing_trim`은 `release-test` 종료 코드 `0`으로 통과했다.
+- 양수 자간 `20`, content width `4,500 HWPUNIT`
+- 음수 자간 `-20`, content width `3,950 HWPUNIT`
 
-## 공통 검증
+## 판정 경계
 
-- `rust-test-suite-manifest` prepare/check 통과: 48/48 targets, 최소 6559 cases
-- Rust format, native/WASM/workspace/all-target Clippy, workspace build 통과
-- full nextest 종료 코드 `0`
+이 검사는 자간 부호에 따라 마지막 후보의 trailing spacing을 trim하는 현재 줄 나눔 계약을 고정한다.
+한컴 정답지의 glyph ink 경계와 per-character allocation이 맞다는 correctness oracle은 아니다.
+해당 잔여 과제는 #5678에 남기며 이 통합만으로 이슈를 닫지 않는다.
 
-## 병합 조건
+## 누적 검증
 
-- #6536와 묶은 통합 검토에서는 #6536의 시각 차단 결함 때문에 PR을 만들지 않는다.
-- #6514를 분리 병합하려면 원 PR head와 CI green 상태를 다시 확인한다.
+- `issue_5678_fit_test_letter_spacing_trim`: 2/2 통과
+- SVG snapshot 두 건과 #6543 font chain을 함께 실행해 첫 줄 계약 무회귀 확인
+- 전체 nextest: 8,914 passed, 46 skipped, 실패 0
+- Rust lint 묶음, unit-tier, Native Skia, Docker WASM 통과
 
+## 결론
+
+공개 test-only API 문제는 제거됐고 특성화의 주장 범위도 코드 주석과 검토 기록에서 일치한다.
+따라서 #6541 통합 candidate에는 수용하되, #5678의 잉크 오라클 완료로 확대 해석하지 않는다.
