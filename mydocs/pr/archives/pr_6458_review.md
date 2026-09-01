@@ -1,6 +1,6 @@
 ---
 kind: pr-review
-status: pending-push
+status: draft-ci-green
 canonical: mydocs/manual/pr_review_workflow.md
 last_verified: 2026-09-01
 pr: 6458
@@ -32,13 +32,13 @@ author: postmelee
 | devel merge commit | `a19020085`, `db1a15fb1` |
 | Stage 1.2 code candidate | `333fa8f5d` |
 | local integration candidate | `afa32ef18` |
-| remote head | `0a6e6e2a320611ec5f2bb64483f927242597c251` |
-| 누적 규모 | 20 files, `+1153/-51`, 11 commits |
-| 원격 상태 | Draft, local candidate push·required CI 대기 |
+| remote head | `dff556c8ef91df233291454a69bcac4a66673709` |
+| 누적 규모 | 20 files, `+1177/-51`, 12 commits |
+| 원격 상태 | Draft, `MERGEABLE/CLEAN`, required checks 완료 |
 
-PR #6458은 GitHub native stack의 bottom PR이다. 현재 로컬 후보는 최신 `upstream/devel`을 merge commit으로
-통합했으며, 원격 Draft head는 maintainer review 이전 후보에 머물러 있다. 따라서 아래 Stage 1.2 해결 근거는
-push 전 로컬 판정이고 원격 required checks의 성공을 주장하지 않는다.
+PR #6458은 GitHub native stack의 bottom PR이다. 최신 `upstream/devel` 통합과 Stage 1.2 해결 근거가
+remote Draft head에 게시됐고 required checks까지 완료됐다. Ready 전환은 stack 전체를 완성한 뒤 별도
+승인 gate에서 처리한다.
 
 현재 code candidate가 포함하는 범위는 다음과 같다.
 
@@ -95,6 +95,13 @@ Rust source·test·fixture·renderer/export 출력은 바꾸지 않으므로 Rus
 실행하지 않았다. Studio 화면 배치와 overlay 동작은 actual method test와 실제 browser 결과를 권위
 근거로 사용한다.
 
+remote head `dff556c8e`의 34 checks는 18 success, 15 scope-based skip, 1 neutral, failure·pending 0으로
+완료됐다. [CI run 33499726401](https://github.com/edwardkim/rhwp/actions/runs/33499726401),
+[CodeQL run 33499726503](https://github.com/edwardkim/rhwp/actions/runs/33499726503),
+[Render Diff run 33499726189](https://github.com/edwardkim/rhwp/actions/runs/33499726189),
+[Adapter inter-diff run 33499726498](https://github.com/edwardkim/rhwp/actions/runs/33499726498),
+[Proptest run 33499726475](https://github.com/edwardkim/rhwp/actions/runs/33499726475)이 성공했다.
+
 ## 실제 브라우저·시각 검증
 
 Canvas2D로 77쪽 `kps-ai.hwp`를 열고 자동 배치 77%에서 편집 viewport 폭을 왕복했다.
@@ -121,8 +128,9 @@ Stage 1.1의 기존 브라우저 근거도 유지된다. 6쪽 문서 자동 60%�
 
 - #6444는 contributor credit과 source head 계보를 댓글로 남기고 #6458→#6467→#6042에 인계한 뒤
   2026-09-01 닫았다.
-- #6438은 이 local candidate를 #6458 원격에 push해 maintainer가 대체 구현을 확인할 수 있게 한 뒤,
-  contributor credit·검토에서 얻은 Canvas ownership 조건을 명시하고 닫는다.
+- #6438은 contributor `kevin9327`의 source head `29b37abec`와 Canvas ownership·visible/prefetch 검토
+  조건을 [인계 댓글](https://github.com/edwardkim/rhwp/pull/6438#issuecomment-5492945930)로 보존하고,
+  #6458 required checks가 성공한 뒤 superseded 상태로 닫았다. merge하지 않았다.
 - #6454에서 공유 frame 좌표계의 비용·효과를 먼저 측정한다. 그 결정 전에 #6467을 새 bottom head 위로
   반복 restack하지 않는다.
 - #6454 결정 뒤 #6467을 #6458 위에 restack하고 layer diff·CI·34/50/100% 시각 증적을 다시 검증한다.
@@ -130,7 +138,7 @@ Stage 1.1의 기존 브라우저 근거도 유지된다. 6쪽 문서 자동 60%�
 
 ## 최종 권고
 
-**Stage 1.2 local candidate는 push 가능한 상태지만 PR은 Draft로 유지한다.** Maintainer가 지적한 live
-hysteresis, actual CanvasView 경로, Canvas 단일 소유권, 브라우저 caret/ruler/hit-test, 최신 devel 통합은
-로컬에서 해결·검증했다. 다음 절차는 local candidate push와 #6458 설명 댓글, 새 required CI 확인이다.
-그 뒤 #6438을 인계·종료하고 하이퍼워터폴 다음 gate인 #6454 측정 계획으로 이동한다.
+**Stage 1.2는 원격 제출·CI까지 완료됐고 PR은 Draft로 유지한다.** Maintainer가 지적한 live hysteresis,
+actual CanvasView 경로, Canvas 단일 소유권, 브라우저 caret/ruler/hit-test, 최신 devel 통합을 해결·검증했다.
+#6438 인계·종료도 완료했다. 하이퍼워터폴 다음 gate는 #6454 공유 frame 좌표계의 측정·결정 계획이며,
+그 결과 뒤에 #6467을 restack한다.

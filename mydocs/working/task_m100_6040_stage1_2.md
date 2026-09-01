@@ -76,6 +76,6 @@ resize 19건 wrapper를 포함한 Ruler 계약을 다시 통과시켰다. 제품
 이 Stage는 live 열 commit과 오버레이 좌표 동기화만 보정한다. 폐기된 Canvas 전용 zoom preview,
 점진 Canvas 교체, #6041 render scale, #6042 LRU·scheduler는 포함하지 않는다.
 
-#6444는 contributor credit과 head 계보를 남기고 #6458→#6467→#6042로 인계한 뒤 닫았다. #6438은
-이 Stage를 원격 #6458에 게시해 maintainer가 대체 구현을 볼 수 있게 한 뒤 같은 방식으로 인계·종료한다.
-그 전에는 contributor PR을 닫지 않는다.
+#6444는 contributor credit과 head 계보를 남기고 #6458→#6467→#6042로 인계한 뒤 닫았다. #6438도
+#6458 remote head `dff556c8e`의 required checks가 성공한 뒤 source head와 maintainer가 발견한 Canvas
+ownership 조건을 댓글로 보존하고 superseded 상태로 닫았다. 두 PR 모두 merge하지 않았다.
