@@ -115,6 +115,52 @@ test('표 경계 mousedown은 hover 캐시가 없으면 새 table bbox를 만들
   assert.match(block, /const resizeHit = resolveTableResizeHit\(this,\s*pageIdx,\s*pageX,\s*pageY\);/, '일반 mousedown resize는 helper를 사용해야 함');
 });
 
+// #4117: 셀 선택 클릭 전에는 아무도 bbox 캐시를 채우지 않아 표 경계 리사이즈가
+// 시작되지 않았다. 이제 hover 가 단일 채움 지점(ensureTableCellBboxCache)으로
+// 캐시를 채우되, task 2010 이 막은 "이동마다 표 전체 재계산"은 캐시·실패 메모가
+// 계속 막는다 (행동 계약은 tests/table-resize-bbox-cache.test.ts).
+test('표 경계 hover는 셀 선택 없이도 choke point로 캐시를 채운다 (#4117)', () => {
+  const block = resizeHoverBlock();
+  assert.match(
+    block,
+    /ensureTableCellBboxCache\(this,\s*tableRef,\s*pageIdx\)/,
+    'hover 는 단일 채움 지점으로만 캐시를 채워야 함',
+  );
+  assert.doesNotMatch(
+    block,
+    /this\.wasm\.getTableCellBboxes/,
+    'hover 에서 메모이제이션 없는 직접 엔진 조회 금지',
+  );
+
+  const cache = source('src/engine/table-bbox-cache.ts');
+  assert.match(
+    cache,
+    /getTableCellBboxes\(tableRef\.sec,\s*tableRef\.ppi,\s*tableRef\.ci,\s*pageIdx\)/,
+    '조회는 현재 페이지를 hint 로 전달해야 함 — 없으면 페이지 0부터 스윕',
+  );
+  assert.match(
+    cache,
+    /tableBboxFetchFailure/,
+    '실패 메모 없이 이동마다 재시도하면 task 2010 이 막은 랙이 돌아온다',
+  );
+
+  const handler = source('src/engine/input-handler.ts');
+  assert.match(
+    handler,
+    /this\.tableBboxFetchFailure = null;/,
+    '문서 변경(clearTableResizeRuntimeCache) 시 실패 메모도 함께 비워야 함',
+  );
+});
+
+test('셀 선택 경로의 bbox 조회도 현재 페이지를 hint 로 전달한다 (#4117)', () => {
+  const block = cellSelectionMouseDownBlock();
+  assert.match(
+    block,
+    /getTableCellBboxes\(ctx\.sec,\s*ctx\.ppi,\s*ctx\.ci,\s*pageIdx\)/,
+    'hint 없이 부르면 엔진이 페이지 0부터 렌더 트리를 훑는다',
+  );
+});
+
 test('표 경계 hitTest는 교차점에서 행 경계 선반환으로 컬럼 resize를 막지 않는다', () => {
   const block = hitTestBorderBlock();
 

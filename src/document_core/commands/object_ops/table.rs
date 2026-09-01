@@ -1219,17 +1219,21 @@ impl DocumentCore {
         let start = page_hint.min(total_pages.saturating_sub(1));
 
         // page_hint부터 뒤쪽 탐색
+        // [#4117] hover 경로가 이 질의를 표 진입마다 부르므로, 캐시 히트에서
+        // 트리 전체를 clone 하는 build_page_tree_cached 대신 참조로 읽는다.
         let mut found = false;
         for page_num in start..total_pages {
-            let tree = self.build_page_tree_cached(page_num as u32)?;
-            if find_table_cells(
-                &tree.root,
-                section_idx,
-                parent_para_idx,
-                control_idx,
-                page_num,
-                &mut cells,
-            ) {
+            let found_here = self.with_page_tree_cached(page_num as u32, |tree| {
+                Ok(find_table_cells(
+                    &tree.root,
+                    section_idx,
+                    parent_para_idx,
+                    control_idx,
+                    page_num,
+                    &mut cells,
+                ))
+            })?;
+            if found_here {
                 found = true;
             } else if found {
                 break;
@@ -1239,27 +1243,31 @@ impl DocumentCore {
         // page_hint에서 못 찾았으면 앞쪽 탐색 (페이지 분할 표가 hint 이전 페이지에서 시작될 수 있음)
         if !found && start > 0 {
             for page_num in (0..start).rev() {
-                let tree = self.build_page_tree_cached(page_num as u32)?;
-                if find_table_cells(
-                    &tree.root,
-                    section_idx,
-                    parent_para_idx,
-                    control_idx,
-                    page_num,
-                    &mut cells,
-                ) {
+                let found_here = self.with_page_tree_cached(page_num as u32, |tree| {
+                    Ok(find_table_cells(
+                        &tree.root,
+                        section_idx,
+                        parent_para_idx,
+                        control_idx,
+                        page_num,
+                        &mut cells,
+                    ))
+                })?;
+                if found_here {
                     found = true;
                     // 이 페이지에서 찾음 — hint까지 다시 정방향 탐색하여 누락된 페이지 수집
                     for fwd in (page_num + 1)..=start {
-                        let tree2 = self.build_page_tree_cached(fwd as u32)?;
-                        if !find_table_cells(
-                            &tree2.root,
-                            section_idx,
-                            parent_para_idx,
-                            control_idx,
-                            fwd,
-                            &mut cells,
-                        ) {
+                        let found_fwd = self.with_page_tree_cached(fwd as u32, |tree| {
+                            Ok(find_table_cells(
+                                &tree.root,
+                                section_idx,
+                                parent_para_idx,
+                                control_idx,
+                                fwd,
+                                &mut cells,
+                            ))
+                        })?;
+                        if !found_fwd {
                             break;
                         }
                     }

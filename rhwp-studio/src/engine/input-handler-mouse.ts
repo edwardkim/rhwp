@@ -7,6 +7,7 @@ import * as _connector from './input-handler-connector';
 import { MoveLineEndpointCommand, SetZOrderCommand } from './command';
 import { computeLineEndpointRecord } from './object-drag-record';
 import { emitHeaderFooterModeChanged } from './header-footer-mode';
+import { ensureTableCellBboxCache } from './table-bbox-cache';
 
 function protectedCellKey(hit: any): string | null {
   if (!hit || hit.isTextBox) return null;
@@ -168,6 +169,7 @@ function resolveTableResizeHit(
 ): { tableRef: { sec: number; ppi: number; ci: number; pageHint?: number }; bboxes: any[]; pageBboxes: any[] } | null {
   // 일반 클릭에서 새 bbox를 만들면 대형/중첩 표 문서가 수 초 동안 멈춘다.
   // 리사이즈 시작은 이미 확보된 bbox 캐시가 있을 때만 판정하고, 없으면 텍스트 클릭으로 처리한다.
+  // 캐시는 hover 경로(ensureTableCellBboxCache)가 표 진입 시 채워 둔다 (#4117).
   if (self.cachedTableRef && self.cachedCellBboxes?.length) {
     const pageBboxes = self.cachedCellBboxes.filter((b: any) => b.pageIndex === pageIdx);
     if (pageBboxes.length > 0) {
@@ -699,9 +701,6 @@ export function onClick(this: any, e: MouseEvent): void {
       const ctx = this.cursor.getCellTableContext();
       if (ctx) {
         try {
-          const bboxes = this.wasm.getTableCellBboxes(ctx.sec, ctx.ppi, ctx.ci);
-          this.cachedTableRef = { sec: ctx.sec, ppi: ctx.ppi, ci: ctx.ci };
-          this.cachedCellBboxes = bboxes;
           const zoom = this.viewportManager.getZoom();
           const scrollContent = this.container.querySelector('#scroll-content');
           if (scrollContent) {
@@ -709,9 +708,14 @@ export function onClick(this: any, e: MouseEvent): void {
             const contentX = e.clientX - contentRect.left;
             const contentY = e.clientY - contentRect.top;
             const pageIdx = this.virtualScroll.getPageAtPoint(contentX, contentY);
-            // hover 경로(handleMouseMove)의 캐시 일치 판정이 pageHint 를 비교하므로 여기서
-            // 채워준다. 비워두면 `undefined !== pageIdx` 가 항상 참이라 hover 가 매번
-            // early return 해 표 리사이즈 marker 가 한 번도 표시되지 않는다.
+            // [#4117] 현재 페이지를 hint 로 넘긴다 — 없으면 엔진이 페이지 0부터
+            // 렌더 트리를 훑어 뒤쪽 페이지의 표일수록 느려진다.
+            const bboxes = this.wasm.getTableCellBboxes(ctx.sec, ctx.ppi, ctx.ci, pageIdx);
+            this.cachedTableRef = { sec: ctx.sec, ppi: ctx.ppi, ci: ctx.ci };
+            this.cachedCellBboxes = bboxes;
+            // hover 경로(ensureTableCellBboxCache)의 캐시 일치 판정이 pageHint 를
+            // 먼저 비교하므로 채워 둔다 — 없어도 페이지 포함 검사로 통과하지만,
+            // hint 일치가 셀 배열 스캔 없이 끝나는 빠른 길이다.
             this.cachedTableRef.pageHint = pageIdx;
             const pageOffset = this.virtualScroll.getPageOffset(pageIdx);
             const pageDisplayWidth = this.virtualScroll.getPageWidth(pageIdx);
@@ -1869,23 +1873,14 @@ export function handleResizeHover(this: any, e: MouseEvent): void {
     return;
   }
 
-  // 셀 bbox 캐싱 (같은 표면 재사용)
-  // passive hover 중 새 bbox를 만들면 대형/중첩 표에서 커서 이동만으로도 수 초간 멈춘다.
-  // 이미 캐시된 표만 리사이즈 marker를 갱신하고, 실제 리사이즈 시작 판정은 mousedown 경로에서 처리한다.
-  if (!this.cachedTableRef ||
-      this.cachedTableRef.sec !== tableRef.sec ||
-      this.cachedTableRef.ppi !== tableRef.ppi ||
-      this.cachedTableRef.ci !== tableRef.ci ||
-      this.cachedTableRef.pageHint !== pageIdx) {
-    this.tableResizeRenderer.clear();
-    hideProtectedCellHover(this);
-    if (this.container.style.cursor) {
-      this.container.style.cursor = '';
-    }
-    return;
-  }
-
-  if (!this.cachedCellBboxes || this.cachedCellBboxes.length === 0) {
+  // 셀 bbox 캐시 확보 (#4117)
+  // 예전에는 셀 선택 모드 클릭이 채워 둔 캐시가 있을 때만 marker 를 갱신해,
+  // 셀 선택 전에는 리사이즈가 시작되지 않았다. 이제 hover 가 표 진입당 1회
+  // (그리고 document-changed 후 첫 hover 에 1회) 캐시를 채운다. 같은 표 위
+  // 이동은 캐시만 읽으므로 task 2010 이 막은 "이동마다 표 전체 재계산"은
+  // 여전히 일어나지 않는다.
+  const bboxes = ensureTableCellBboxCache(this, tableRef, pageIdx);
+  if (!bboxes || bboxes.length === 0) {
     this.tableResizeRenderer.clear();
     hideProtectedCellHover(this);
     if (this.container.style.cursor) {
@@ -1895,7 +1890,7 @@ export function handleResizeHover(this: any, e: MouseEvent): void {
   }
 
   // 해당 페이지의 셀만 필터
-  const pageBboxes = this.cachedCellBboxes.filter((b: any) => b.pageIndex === pageIdx);
+  const pageBboxes = bboxes.filter((b: any) => b.pageIndex === pageIdx);
   if (pageBboxes.length === 0) {
     this.tableResizeRenderer.clear();
     hideProtectedCellHover(this);
