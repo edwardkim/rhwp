@@ -149,7 +149,7 @@ test('표 경계 hover는 셀 선택 없이도 choke point로 캐시를 채운�
   const handler = source('src/engine/input-handler.ts');
   assert.match(
     handler,
-    /this\.tableBboxFetchFailure = null;/,
+    /this\.tableBboxFetchFailures\.clear\(\);/,
     '문서 변경(clearTableResizeRuntimeCache) 시 실패 메모도 함께 비워야 함',
   );
 });

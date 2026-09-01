@@ -7,7 +7,7 @@ import * as _connector from './input-handler-connector';
 import { MoveLineEndpointCommand, SetZOrderCommand } from './command';
 import { computeLineEndpointRecord } from './object-drag-record';
 import { emitHeaderFooterModeChanged } from './header-footer-mode';
-import { ensureTableCellBboxCache } from './table-bbox-cache';
+import { cacheTableCellBboxes, ensureTableCellBboxCache } from './table-bbox-cache';
 
 function protectedCellKey(hit: any): string | null {
   if (!hit || hit.isTextBox) return null;
@@ -711,12 +711,7 @@ export function onClick(this: any, e: MouseEvent): void {
             // [#4117] 현재 페이지를 hint 로 넘긴다 — 없으면 엔진이 페이지 0부터
             // 렌더 트리를 훑어 뒤쪽 페이지의 표일수록 느려진다.
             const bboxes = this.wasm.getTableCellBboxes(ctx.sec, ctx.ppi, ctx.ci, pageIdx);
-            this.cachedTableRef = { sec: ctx.sec, ppi: ctx.ppi, ci: ctx.ci };
-            this.cachedCellBboxes = bboxes;
-            // hover 경로(ensureTableCellBboxCache)의 캐시 일치 판정이 pageHint 를
-            // 먼저 비교하므로 채워 둔다 — 없어도 페이지 포함 검사로 통과하지만,
-            // hint 일치가 셀 배열 스캔 없이 끝나는 빠른 길이다.
-            this.cachedTableRef.pageHint = pageIdx;
+            cacheTableCellBboxes(this, ctx, pageIdx, bboxes);
             const pageOffset = this.virtualScroll.getPageOffset(pageIdx);
             const pageDisplayWidth = this.virtualScroll.getPageWidth(pageIdx);
             const pageLeft = this.virtualScroll.getPageLeftResolved(pageIdx, scrollContent.clientWidth);

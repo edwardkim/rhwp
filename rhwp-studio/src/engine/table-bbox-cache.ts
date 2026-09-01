@@ -24,17 +24,47 @@ export interface PageScopedBbox {
   pageIndex: number;
 }
 
+export interface CachedTableRef extends TableRef {
+  pageHint?: number;
+  pageIndexes?: ReadonlySet<number>;
+}
+
 export interface TableBboxCacheHost<B extends PageScopedBbox = PageScopedBbox> {
   wasm: {
     getTableCellBboxes(sec: number, ppi: number, ci: number, pageHint?: number): B[];
   };
-  cachedTableRef: (TableRef & { pageHint?: number }) | null;
+  cachedTableRef: CachedTableRef | null;
   cachedCellBboxes: B[] | null;
-  tableBboxFetchFailure: (TableRef & { pageIdx: number }) | null;
+  tableBboxFetchFailures: Set<string>;
 }
 
 function sameTable(a: TableRef, b: TableRef): boolean {
   return a.sec === b.sec && a.ppi === b.ppi && a.ci === b.ci;
+}
+
+function failureKey(tableRef: TableRef, pageIdx: number): string {
+  return `${tableRef.sec}:${tableRef.ppi}:${tableRef.ci}:${pageIdx}`;
+}
+
+/** 성공한 bbox 조회를 한 번에 기록하고, 같은 범위의 과거 실패를 해제한다. */
+export function cacheTableCellBboxes<B extends PageScopedBbox>(
+  host: TableBboxCacheHost<B>,
+  tableRef: TableRef,
+  pageIdx: number,
+  bboxes: B[],
+): B[] {
+  if (bboxes.length === 0) return bboxes;
+
+  const pageIndexes = new Set(bboxes.map((bbox) => bbox.pageIndex));
+  // 조회가 성공한 hint 페이지도 membership에 포함한다. 분할 표의 엔진 결과가
+  // 인접 페이지 bbox만 담더라도 같은 성공 조회를 mousemove에서 반복하지 않는다.
+  pageIndexes.add(pageIdx);
+  host.cachedTableRef = { ...tableRef, pageHint: pageIdx, pageIndexes };
+  host.cachedCellBboxes = bboxes;
+  for (const cachedPageIdx of pageIndexes) {
+    host.tableBboxFetchFailures.delete(failureKey(tableRef, cachedPageIdx));
+  }
+  return bboxes;
 }
 
 export function ensureTableCellBboxCache<B extends PageScopedBbox>(
@@ -50,30 +80,23 @@ export function ensureTableCellBboxCache<B extends PageScopedBbox>(
     // 여러 쪽에 걸친 표는 한 번의 조회가 걸친 쪽들을 함께 담아 오므로,
     // hint 가 달라도 요구 페이지가 이미 있으면 재조회하지 않는다.
     (cached.pageHint === pageIdx ||
-      host.cachedCellBboxes.some((b) => b.pageIndex === pageIdx))
+      cached.pageIndexes?.has(pageIdx) === true)
   ) {
     return host.cachedCellBboxes;
   }
 
-  const failed = host.tableBboxFetchFailure;
-  if (failed && sameTable(failed, tableRef) && failed.pageIdx === pageIdx) {
+  const key = failureKey(tableRef, pageIdx);
+  if (host.tableBboxFetchFailures.has(key)) {
     return null;
   }
 
   try {
     const bboxes = host.wasm.getTableCellBboxes(tableRef.sec, tableRef.ppi, tableRef.ci, pageIdx);
     if (bboxes && bboxes.length > 0) {
-      host.cachedTableRef = {
-        sec: tableRef.sec, ppi: tableRef.ppi, ci: tableRef.ci, pageHint: pageIdx,
-      };
-      host.cachedCellBboxes = bboxes;
-      host.tableBboxFetchFailure = null;
-      return bboxes;
+      return cacheTableCellBboxes(host, tableRef, pageIdx, bboxes);
     }
   } catch { /* 조회 실패 — 아래 실패 메모가 이동마다 재시도를 막는다 */ }
 
-  host.tableBboxFetchFailure = {
-    sec: tableRef.sec, ppi: tableRef.ppi, ci: tableRef.ci, pageIdx,
-  };
+  host.tableBboxFetchFailures.add(key);
   return null;
 }

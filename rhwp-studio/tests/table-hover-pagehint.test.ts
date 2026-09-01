@@ -26,24 +26,26 @@ test('hover 가 pageHint 불일치를 early return 으로 처리하는 구조가
   assert.doesNotMatch(src, /cachedTableRef\.pageHint\s*!==/,
     'pageHint 불일치는 조기 반환이 아니라 ensureTableCellBboxCache 의 재조회로 이어져야 한다');
 
-  // 새 판정: hint 일치 빠른 길 + 페이지 포함 검사, 그 아래 재조회.
+  // 새 판정: hint 일치 빠른 길 + O(1) 페이지 membership 검사, 그 아래 재조회.
   assert.match(cache, /cached\.pageHint === pageIdx \|\|/,
     'hint 일치가 셀 배열 스캔 없는 빠른 길이어야 함');
-  assert.match(cache, /some\(\(b\) => b\.pageIndex === pageIdx\)/,
-    'hint 가 달라도 캐시가 그 페이지를 담고 있으면 재조회 없이 응답해야 함');
+  assert.match(cache, /cached\.pageIndexes\?\.has\(pageIdx\)/,
+    'hint 가 달라도 O(1) page membership으로 캐시 포함 여부를 판정해야 함');
+  assert.doesNotMatch(cache, /cachedCellBboxes\.some\(/,
+    '분할 표의 다른 페이지에서 mousemove마다 전체 bbox를 선형 검색하면 안 됨');
 });
 
 test('pageHint 는 채움 지점들이 pageIdx 로 기록한다', () => {
   // 셀 선택 mousedown 경로.
-  assert.match(src, /this\.cachedTableRef\.pageHint = pageIdx;/,
-    '캐시를 만든 페이지 번호를 그대로 기록해야 판정과 축이 맞는다');
+  assert.match(src, /cacheTableCellBboxes\(this, ctx, pageIdx, bboxes\);/,
+    'mousedown 성공도 공통 채움 지점으로 실패 메모와 페이지 membership을 함께 갱신해야 한다');
   // hover 채움(choke point) 경로.
   assert.match(cache, /pageHint: pageIdx/,
     'ensureTableCellBboxCache 도 조회한 페이지를 pageHint 로 기록해야 함');
 
   // pageIdx 산출보다 뒤에서 대입해야 한다(선언 전 사용 방지).
   const pageIdxAt = src.search(/const pageIdx = this\.virtualScroll\.getPageAtPoint\(/);
-  const assignAt = src.search(/this\.cachedTableRef\.pageHint = pageIdx;/);
+  const assignAt = src.search(/cacheTableCellBboxes\(this, ctx, pageIdx, bboxes\);/);
   assert.ok(pageIdxAt >= 0 && assignAt >= 0, 'pageIdx 산출과 대입이 모두 존재해야 함');
   assert.ok(pageIdxAt < assignAt, 'pageHint 대입은 pageIdx 산출 뒤여야 함');
 });
