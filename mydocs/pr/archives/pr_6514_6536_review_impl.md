@@ -8,6 +8,7 @@
 - 검토일: 2026-09-01
 - 통합 브랜치: `review/planet6897-6514-6536-20260831`
 - base: `upstream/devel@891e395bb`
+- 최종 통합: PR #6541, merge commit `e9d2f8b258b8310fd10d465b486b9ab4d85e771e`
 
 ## 적용 계보
 
@@ -27,7 +28,7 @@
 ## 시각 검증과 결론
 
 - #6536 fixture를 Hancom 2020 direct-dll-host로 PDF 변환해 physical p1을 비교했다. PDF SHA-256은 `d5a4a5f8702937d835aba7111c1c72dbbdfed6297c6d1ae3eff23ae656e8c66b`이다.
-- [p1 review 패널](assets/pr_6536_issue6535_p1_review.png)은 flagged `0`이지만, Hancom PDF의 표 앞 `2.` 문단이 rhwp에서 표 뒤로 이동한 것을 보인다.
+- [p1 review 패널](../assets/pr_6536_issue6535_p1_review.png)은 flagged `0`이지만, Hancom PDF의 표 앞 `2.` 문단이 rhwp에서 표 뒤로 이동한 것을 보인다.
 - 따라서 #6536은 P1 변경 요청이며, 이 통합 브랜치로 remote PR을 만들거나 병합하지 않는다.
 - #6514는 독립 변경으로 승인 가능하지만, 현재 요청의 통합 범위에서는 #6536 수정본과 함께 재검토한다.
 
@@ -40,4 +41,6 @@
   [`pr_6536_review.md`](pr_6536_review.md)를 따른다.
 - 로컬 검증: lint 묶음, Native Skia, locked WASM package, focused #6535, 전체 nextest `8,912 passed, 46 skipped` 통과.
 - 시각 증적: `mydocs/pr/assets/pr_6536_issue6535_p1_2020.pdf` (SHA-256 `d5a4a5f8702937d835aba7111c1c72dbbdfed6297c6d1ae3eff23ae656e8c66b`) 및 `mydocs/pr/assets/pr_6536_issue6535_p1_maintainer_review.png`을 함께 보관했다. physical page 1, visual sweep flagged 0, 사람 검토 순서 일치.
-- 원격 조건: 작업지시자 승인 후 보정 commit을 포함한 integration PR을 만들고, 최신 head Full CI와 mergeability를 재확인한 뒤에만 병합한다. 원 contributor fork head는 변경하거나 삭제하지 않는다.
+- 당시 원격 조건은 보정 commit을 포함한 integration head의 최신 CI와 mergeability 확인이었다. 이후
+  최종 후보 `88d0924e550041746464627bc7bc32b1a2511177`이 승인·검증됐고 정상 merge commit
+  `e9d2f8b258b8310fd10d465b486b9ab4d85e771e`로 병합됐다. 원 contributor fork head는 변경하지 않았다.

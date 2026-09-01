@@ -1,7 +1,7 @@
 ---
 doc_kind: pr_review_impl
 title: "PR #6541 planet6897 연속 체리픽 통합 수행계획"
-status: active
+status: archived
 pr: 6541
 reviewed_at: 2026-09-01
 ---
@@ -15,9 +15,10 @@ reviewed_at: 2026-09-01
 체리픽한다. 메인테이너·collaborator 보정은 별도 commit으로 분리한다.
 
 - 통합 branch: `review/planet6897-6514-6536-20260831`
-- 원격 integration head: `7d2aec2d6949305f4dbd9f3b145cba8b37541aa6`
+- 초기 원격 integration head: `7d2aec2d6949305f4dbd9f3b145cba8b37541aa6`
+- 최종 integration head: `88d0924e550041746464627bc7bc32b1a2511177`
 - 현재 기준 `upstream/devel`: `336c4526e9cc5047d6dd9906ebc8d0d5ee6f2188`
-- PR 상태: Draft
+- 최종 상태: PR #6541 `MERGED`, merge commit `e9d2f8b258b8310fd10d465b486b9ab4d85e771e`
 - 원 contributor branch: 수정·rebase·force-push하지 않는다.
 - remote push, Ready 전환, review 게시, merge, close는 각각 별도 승인을 받는다.
 - 이번 배치 candidate가 고정된 뒤 등록되는 새 PR은 다음 integration PR로 넘긴다.
@@ -42,7 +43,7 @@ reviewed_at: 2026-09-01
 
 - `#[doc(hidden)] pub`은 문서에서만 숨을 뿐 downstream에 공개된 test-only API다.
 - 양수 자간 trim을 실제 glyph ink·공개 조판 경로·오라클 없이 최종 계약으로 단정했다.
-- `mydocs/pr/pr_6514_review.md`와 기존 통합 기록의 `승인` 표현은 최신 메인테이너 판정과 맞지 않는다.
+- 당시 active 경로의 `pr_6514_review.md`와 기존 통합 기록의 `승인` 표현은 최신 메인테이너 판정과 맞지 않았다.
 
 ### #6536
 
@@ -50,7 +51,7 @@ reviewed_at: 2026-09-01
 - `0ff2e25b6` 보정 뒤 render tree에서도 `연번` 표는 `y=456.2, h=178.4, bottom=634.6`,
   `끝.`은 `y=600.1`이라 표의 세로 범위와 겹친다.
 - 현 회귀 테스트의 `body_y < table_y && table_y < ending_y`는 table top만 확인한다.
-- `mydocs/pr/pr_6536_review.md`와 기존 통합 기록의 “보정 완료”·“수용 가능” 표현은 정정해야 한다.
+- 당시 active 경로의 `pr_6536_review.md`와 기존 통합 기록의 “보정 완료”·“수용 가능” 표현은 정정 대상이었다.
 
 기존 review 문서를 먼저 사실과 다르게 유지한 채 merge하지 않는다. 다만 code candidate를 고정하기 전에
 여러 번 review-only commit을 추가하지 않고, 현재 Draft comment와 이 계획서로 상태를 표시한 뒤 최종
@@ -159,8 +160,9 @@ integration commit만 revert한다. source PR history를 변경하지 않는다.
   [#6514](pr_6514_review.md), [#6536](pr_6536_review.md), [#6543](pr_6543_review.md),
   [#6546](pr_6546_review.md), [#6548](pr_6548_review.md), [#6552](pr_6552_review.md).
 
-원격 push·Draft 해제·review 게시·merge는 아직 수행하지 않았다. trailing review commit 이후의 SHA를
-최종 local candidate로 동결하고 Q7 원격 승인을 별도로 받는다.
+이 문단은 Stage 7 완료 시점의 기록이다. 당시에는 원격 push·Draft 해제·review 게시·merge를 아직
+수행하지 않았고, trailing review commit 이후의 SHA를 최종 local candidate로 동결해 Q7 원격 승인을
+별도로 받았다.
 
 ### Stage 8 — 원격 통합
 
@@ -170,6 +172,15 @@ integration commit만 revert한다. source PR history를 변경하지 않는다.
 4. 최종 review와 작업지시자 승인 뒤 Draft를 해제한다.
 5. Ready 상태 최신 head의 required check를 다시 통과한 뒤 정상 merge commit 방식으로 병합한다.
 
+### Stage 8 실행 결과 — merged
+
+- 최종 head `88d0924e550041746464627bc7bc32b1a2511177`의 메인테이너 self-review를 게시하고
+  Draft를 해제했다.
+- code candidate의 full CI 이후 trailing review-only head는 fast-pass로 성공 11건, 정책상 skip
+  20건, 실패·대기 0건을 확인했다.
+- PR #6541은 2026-09-01에 정상 2-parent merge commit
+  `e9d2f8b258b8310fd10d465b486b9ab4d85e771e`로 `devel`에 병합됐다.
+
 ### Stage 9 — 원 PR·이슈 후속 처리
 
 1. #6541 merge SHA와 `devel` 반영을 확인한다.
@@ -178,6 +189,9 @@ integration commit만 revert한다. source PR history를 변경하지 않는다.
 4. 이슈는 실제 해결 범위로 별도 판단한다. 부분 해결 이슈는 open으로 유지하거나 후속 이슈를 만든 뒤
    closure 관계를 명시한다.
 5. integration worktree·review target·agent 생성 임시 산출물은 종료 게이트에서 정리한다.
+
+Stage 9의 원 PR·이슈 comment/close와 local cleanup은 이 archive 기록이 `devel`에 반영된 뒤 별도 승인
+범위에서 수행한다. 이 문서의 merge 완료 기록 자체는 그 원격 조치를 수행했다는 뜻이 아니다.
 
 ## 5. 승인 게이트
 

@@ -5,7 +5,8 @@
 - 원 PR/source head: `581740ccb1581f6cb9b17bf73ed00d49fd5e6647`
 - 적용 commit: `a1648ea87`
 - 통합 원장 보정: `cae16410d`
-- 상태: 통합 candidate 수용 가능
+- 상태: 통합 병합 완료
+- 통합 PR / merge: #6541 / `e9d2f8b258b8310fd10d465b486b9ab4d85e771e`
 
 ## 판정
 
@@ -28,3 +29,12 @@ Hancom 2022와의 직접 비교에서는 안전 결함은 해소됐지만 완전
 
 `cae16410d`는 두 source PR의 baseline 행을 기계적으로 합친 것이 아니라 누적 head 전수 dump를
 재산출해 사전순 원장으로 고정한 integration-only commit이다.
+
+## Merge 후 contributor PR comment 계획
+
+- 원 head `581740ccb` → 적용 `a1648ea87` → 통합 원장 `cae16410d` →
+  통합 merge `e9d2f8b25` 계보를 남긴다.
+- #6542의 footer/page-number 영역 넘침 제거와 보호 ratchet 통과를 알린다.
+- Hancom 2022 대비 p7 시작점이 약 한 줄 빠른 시각 잔여는 숨기지 않되, 신고된 안전 결함은
+  해결됐으므로 #6542는 close 후보로 기록한다.
+- 계보 comment를 게시한 뒤 원 PR #6546을 중복 병합하지 않고 close한다.

@@ -4,7 +4,8 @@
 - 작성자: `planet6897`
 - 원 PR head: `a3e1f514b9b7d52902b62f95a21f9b492745f674`
 - 적용 commit: `3955515d3`, `7e903460d`
-- 상태: 통합 candidate 수용 가능
+- 상태: 통합 병합 완료
+- 통합 PR / merge: #6541 / `e9d2f8b258b8310fd10d465b486b9ab4d85e771e`
 
 ## 계보와 구현
 
@@ -36,3 +37,12 @@ Windows 호스트 Chrome CDP에서 없는 글꼴 + `Times New Roman` 기준선�
 
 이 PR은 core SVG/PDF 축을 닫는다. Studio가 core chain의 첫 이름을 버리고 자체 표를 만드는 별도 축은
 #6263 후속 범위로 남기며, 이번 통합으로 해결됐다고 주장하지 않는다.
+
+## Merge 후 contributor PR comment 계획
+
+- source `1749531a9`, `a3e1f514b` → integration `3955515d3`, `7e903460d` →
+  통합 merge `e9d2f8b25` 계보를 남긴다.
+- Chrome 151에서 접미사 제거명만 실제 face를 선택한 재계측과 SVG 결정성 검증을 알린다.
+- #6263은 이미 closed 상태이며, 이번 core SVG/PDF 통합이 Studio 잔여까지 해결한 것은 아님을
+  issue 후속 comment에도 명시한다.
+- 계보 comment를 게시한 뒤 원 PR #6543을 중복 병합하지 않고 close한다.

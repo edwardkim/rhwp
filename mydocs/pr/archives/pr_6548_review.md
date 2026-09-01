@@ -5,7 +5,8 @@
 - 원 PR/source head: `578afd06265a664584ab9516af47342ce54ecc26`
 - 적용 commit: `604230770`
 - 통합 원장 보정: `cae16410d`
-- 상태: 통합 candidate 수용 가능
+- 상태: 통합 병합 완료
+- 통합 PR / merge: #6541 / `e9d2f8b258b8310fd10d465b486b9ab4d85e771e`
 
 ## 판정
 
@@ -25,3 +26,11 @@
 - 네 종류 global layout ratchet 각 16 partition 통과
 
 따라서 ULP 경계 수정과 누적 baseline 모두 재계측 근거가 있으며 통합 candidate에 수용한다.
+
+## Merge 후 contributor PR comment 계획
+
+- 원 head `578afd062` → 적용 `604230770` → 통합 원장 `cae16410d` →
+  통합 merge `e9d2f8b25` 계보를 남긴다.
+- 대상 fixture 2쪽 복원, #2070 315쪽 유지, IR sweep 재산출 결과를 알린다.
+- #5941은 73건 회귀를 추적하는 넓은 이슈이므로 이번 1 ULP 사례만으로 close하지 않고 계속 open으로 둔다.
+- 계보 comment를 게시한 뒤 원 PR #6548을 중복 병합하지 않고 close한다.

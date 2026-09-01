@@ -6,7 +6,8 @@
 - 원 PR head: `b643b3822edccaa234133fc4cf2701910b090b8f`
 - 원 적용 commit: `c8708e2d8`
 - 메인터너 보정 commit: `ad877288b`
-- 상태: 통합 candidate 수용 가능 — 특성화 범위 제한
+- 상태: 통합 병합 완료 — 특성화 범위 제한
+- 통합 PR / merge: #6541 / `e9d2f8b258b8310fd10d465b486b9ab4d85e771e`
 
 ## 범위와 보정
 
@@ -37,3 +38,11 @@
 
 공개 test-only API 문제는 제거됐고 특성화의 주장 범위도 코드 주석과 검토 기록에서 일치한다.
 따라서 #6541 통합 candidate에는 수용하되, #5678의 잉크 오라클 완료로 확대 해석하지 않는다.
+
+## Merge 후 contributor PR comment 계획
+
+- 원 head `b643b3822` → 원 적용 `c8708e2d8` → 메인터너 보정 `ad877288b` →
+  통합 merge `e9d2f8b25` 계보를 남긴다.
+- 전체 검증 통과와 공개 test-only API 제거를 알리고 기여에 감사한다.
+- #5678은 glyph ink 오라클과 per-character allocation이 남아 계속 open임을 명시한다.
+- 계보 comment를 게시한 뒤 원 PR #6514를 중복 병합하지 않고 close한다.
