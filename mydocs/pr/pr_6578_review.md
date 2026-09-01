@@ -39,3 +39,24 @@ Hancom Office 2020 기준 PDF와 rhwp SVG PDF의 전 8페이지 visual sweep도 
 - 병합 전 조건: 갱신된 PR head의 필수 CI, Native Skia, Render Diff, CodeQL, test archive가 모두 green이고 mergeability를 다시 확인한다.
 - 현재 상태: PR head CI 진행 중이므로 merge하지 않는다.
 - 조건 충족 뒤: admin merge 후 merge SHA, `devel` 반영, PR/issue 기록, contributor branch와 검토 산출물 정리를 절차에 따라 수행한다.
+
+## Merge 후 contributor PR comment 계획
+
+게시 gate는 원 코드 PR의 merge SHA 확인, `upstream/devel` fast-forward, #6575 close 상태 확인, 그리고 실제 CI 결과 재확인 뒤다. merge 전에는 comment를 게시하지 않는다.
+
+- 대상 PR: [#6578](https://github.com/edwardkim/rhwp/pull/6578)
+- 관련 issue: [#6575](https://github.com/edwardkim/rhwp/issues/6575)
+- PR comment: 감사, [#6578](https://github.com/edwardkim/rhwp/pull/6578)의 merge 사실과 실제 merge commit direct link, Build & Test·Lint·Native Skia·Render Diff·CodeQL·Proptest의 최신 head 성공, 이 문서의 local 검증 요약, 남은 PR 범위 후속 작업 유무를 기록한다.
+- issue comment: `upstream/devel` 반영 뒤 #6575의 auto-close 상태와 기존 maintainer 기록을 확인한다. maintainer 기록이 없으면 같은 merge commit과 검증 근거를 남긴다. issue가 OPEN이면 작업지시자 승인 뒤에만 수동 close한다.
+- 시각 증적: 이 PR의 수용 판단은 fixture 기반 TAC Picture 회귀와 code 경로 보정에 근거한다. 로컬 `pdf/pr_6578_rebased_sweep_20260902/`는 devel asset이 아니며, 페이지 5의 별도 renderer 차이도 PR merge 판단 근거가 아니므로 PR/issue comment에 raw URL·이미지를 넣지 않는다.
+
+게시 직전 실제 결과로 아래 초안의 placeholder를 채운다. 미완료 check 또는 devel에 없는 asset을 성공·link로 기록하지 않는다.
+
+~~~markdown
+검토 및 머지 완료했습니다. 감사합니다.
+
+- merge: [#6578](https://github.com/edwardkim/rhwp/pull/6578) -> [<merge-sha>](https://github.com/edwardkim/rhwp/commit/<merge-sha>)
+- CI: Build & Test, Lint, Native Skia tests, Render Diff, CodeQL, Proptest roundtrip의 최신 head 성공 확인
+- 로컬 검증: full nextest 8925 passed, Native Skia 3946 passed, WASM package build 완료
+- 후속 작업: #6575 auto-close 상태 <OPEN/CLOSED> 확인; PR 범위 내 추가 작업 없음
+~~~
