@@ -1599,7 +1599,7 @@ fn mcp_declares_batch_fill_and_wires_every_input() {
 
 #[test]
 fn help_documents_the_fill_axis_and_its_different_input() {
-    let args = ["--help"];
+    let args = ["batch", "fill", "--help"];
     let output = run(&args);
     let help = String::from_utf8_lossy(&output.stdout);
     for needle in ["batch fill", "--form", "--name-field", "--data"] {

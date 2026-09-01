@@ -407,15 +407,15 @@ draft 해제 전에 **두 baseline 절차**를 수행한다: ① IR field sweep(
 
 ~~~bash
 RHWP_IR_SWEEP_DUMP=/tmp/ir_field_sweep_current.tsv \
-  cargo test --locked --profile release-test \
-  --test regression_suite_014 \
-  ir_field_sweep_baseline::ir_field_sweep_does_not_regress -- --nocapture
+  node scripts/run-rust-test.mjs ir_field_sweep_baseline -- \
+  --cargo-profile release-test --target-dir target/pr-review
 diff -u tests/fixtures/ir_field_sweep_baseline.tsv /tmp/ir_field_sweep_current.tsv
 ~~~
 
-`ir_field_sweep_baseline.rs`는 standalone Cargo test target이 아니라 generated
-`regression_suite_014`에 포함된다. 따라서 독립 target을 지정하지 않고 위 module filter로
-실행한다. generated suite 파일 자체는 review 산출물이므로 수정하거나 stage하지 않는다.
+`ir_field_sweep_baseline.rs`는 standalone Cargo test target이 아니라 generated regression suite에
+포함된다. suite 번호는 manifest 재생성마다 달라질 수 있으므로 고정 번호를 쓰지 않고
+`run-rust-test.mjs`가 현재 manifest에서 module filter를 해석하게 한다. generated suite 파일 자체는
+review 산출물이므로 수정하거나 stage하지 않는다.
 
 - baseline은 fixture 목록이 아니라 관측된 비영 왕복 발산의 래칫이다. 발산이 없으면 행을 억지로 추가하지 않는다.
 - 새 발산은 먼저 RHWP_IR_SWEEP_DETAIL로 원본값·재생성값을 확인한다. 의도된 정규화임을 증명한 경우에만
@@ -432,10 +432,15 @@ diff -u tests/fixtures/ir_field_sweep_baseline.tsv /tmp/ir_field_sweep_current.t
 
 ~~~bash
 RHWP_OVERFLOW_CELL_DUMP=/tmp/overflow_cell_current.tsv \
-  cargo test --locked --profile release-test \
+  cargo test --locked --profile release-test --target-dir target/pr-review \
   --test overflow_cell_baseline -- --nocapture
+LC_ALL=C cat /tmp/overflow_cell_current.tsv.part??-of16 | \
+  LC_ALL=C sort > /tmp/overflow_cell_current.tsv
 diff -u tests/fixtures/overflow_cell_baseline.tsv /tmp/overflow_cell_current.tsv
 ~~~
+
+`overflow_cell_baseline`은 16개 partition test가 병렬로 dump를 쓰므로, 지정한 경로 자체가 아니라
+`<경로>.part00-of16`부터 `.part15-of16`까지를 사전순 병합한 파일을 비교한다.
 
 - 원장은 0 이 아닌 문서만 `상대경로\t줄수` 사전순으로 기록한다. 0 인 문서는 행을 만들지 않는다.
 - **원인 정정이 원칙이다** — 소실 줄은 사용자에게 보이지 않는 콘텐츠(#3236 계열)이므로,

@@ -70,38 +70,38 @@ fn is_token(s: &str) -> bool {
             .all(|ch| ch.is_ascii_lowercase() || ch.is_ascii_digit() || ch == '-')
 }
 
-/// 그룹 명령의 하위명령 실명 — `--help` 의 "  <머리> <하위> …" 줄에서 수확한다.
+/// 그룹 명령의 하위명령 실명 — 각 그룹의 `--help` 색인에서 수확한다.
 ///
-/// 두 표기 모두 거둔다: 실토큰 줄("edit replace-text …")과 대안 나열
-/// 플레이스홀더("batch <export-text|info|…>"). 후자를 안 거두면 batch 가
-/// `batch fill` 줄 하나 때문에 {fill}만 가진 그룹으로 등록되어, 정당한
-/// `rhwp batch info` 참조가 오탐된다(개발 중 실측).
+/// 루트 help는 최상위 명령만 짧게 보이고, 하위명령은 `rhwp <그룹> --help`에서
+/// 발견해야 한다. 이를 따라야 스킬의 `rhwp edit replace-text` 같은 참조도 실제
+/// 탐색 경로와 같은 계약을 검증한다.
 fn group_subcommands() -> BTreeMap<String, BTreeSet<String>> {
     let mut map: BTreeMap<String, BTreeSet<String>> = BTreeMap::new();
-    for line in rhwp(&["--help"]).lines() {
-        let Some(rest) = line.strip_prefix("  ") else {
-            continue;
-        };
-        let mut it = rest.split_whitespace();
-        let (Some(head), Some(sub)) = (it.next(), it.next()) else {
-            continue;
-        };
-        if !is_token(head) {
-            continue;
-        }
-        if is_token(sub) {
-            map.entry(head.to_string())
-                .or_default()
-                .insert(sub.to_string());
-        } else if sub.starts_with('<') && sub.contains('|') {
-            // `batch <export-text|info|…>` — 대안 나열 플레이스홀더도 하위명령
-            // 실명이다. 이것을 안 거두면 batch 가 {fill}만 가진 그룹이 되어
-            // 정당한 `rhwp batch info` 참조가 오탐된다(실측).
-            for alt in sub.trim_matches(|c| c == '<' || c == '>').split('|') {
-                if is_token(alt) {
-                    map.entry(head.to_string())
-                        .or_default()
-                        .insert(alt.to_string());
+    for head in ["batch", "edit", "inspect"] {
+        for line in rhwp(&[head, "--help"]).lines() {
+            let Some(rest) = line.strip_prefix("  ") else {
+                continue;
+            };
+            let mut tokens = rest.split_whitespace();
+            let Some(first) = tokens.next() else {
+                continue;
+            };
+            let sub = if first == head {
+                tokens.next().unwrap_or("")
+            } else {
+                first
+            };
+            if is_token(sub) {
+                map.entry(head.to_string())
+                    .or_default()
+                    .insert(sub.to_string());
+            } else if sub.starts_with('<') && sub.contains('|') {
+                for alt in sub.trim_matches(|c| c == '<' || c == '>').split('|') {
+                    if is_token(alt) {
+                        map.entry(head.to_string())
+                            .or_default()
+                            .insert(alt.to_string());
+                    }
                 }
             }
         }

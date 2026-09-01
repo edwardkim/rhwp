@@ -79,19 +79,25 @@ fn dispatch_names() -> Vec<&'static str> {
 fn help_names() -> BTreeSet<String> {
     let output = run(&["--help"]);
     assert_eq!(output.status.code(), Some(0));
-    String::from_utf8_lossy(&output.stdout)
-        .lines()
-        .filter_map(|line| {
-            let rest = line.strip_prefix("  ")?;
-            if rest.starts_with(' ') || rest.starts_with('-') {
-                return None;
-            }
-            let token = rest.split_whitespace().next()?;
-            token
-                .chars()
-                .all(|c| c.is_ascii_lowercase() || c.is_ascii_digit() || c == '-')
-                .then(|| token.to_string())
+    let help = String::from_utf8_lossy(&output.stdout);
+    commands()
+        .iter()
+        .filter(|command| command.in_help())
+        .filter(|command| {
+            help.lines().any(|line| {
+                let Some(rest) = line.strip_prefix("  ") else {
+                    return false;
+                };
+                let Some(tail) = rest.strip_prefix(command.name) else {
+                    return false;
+                };
+                tail.chars()
+                    .next()
+                    .map(char::is_whitespace)
+                    .unwrap_or(false)
+            })
         })
+        .map(|command| command.name.to_string())
         .collect()
 }
 

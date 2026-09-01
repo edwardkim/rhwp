@@ -72,13 +72,13 @@ Cargo 성공은 시각 검증 판정을 대체하지 않는다. 다음 중 하�
 - PR 설명이 특정 문서의 페이지, 표, 줄바꿈, clipping, 겹침, 여백, z-order, 그림·도형 배치 개선을
   주장한다.
 
-이 경우 review 문서의 최종 권고를 `merge` 또는 `수용`으로 쓰기 전에 다음 중 하나를 완료해야 한다.
+이 경우 review 문서의 최종 판정을 `승인`으로 쓰기 전에 다음 중 하나를 완료해야 한다.
 
 - `rhwp info --json`으로 원본 HWP/HWPX의 저장 버전을 확인하고, 버전에 맞는 MCP 기준 PDF를 만든 뒤,
   visual sweep 대표 PNG와 요약 지표를 실제로 열어 확인한다.
 - 이미 PR branch에 포함된 기준 PDF/PNG를 쓰는 경우에도, 그 파일을 직접 열어 PR 주장의 페이지·영역이
   해결됐는지 확인하고, 원본·기준·검토 asset의 경로와 SHA-256을 review 문서에 적는다.
-- 직접 시각 검증을 수행하지 못하면 최종 권고는 `보류` 또는 `조건부 보류`로 적고, "원 PR 제공
+- 직접 시각 검증을 수행하지 못하면 최종 판정은 `머지 보류`로 적고, "원 PR 제공
   before/after만 확인했고 maintainer visual sweep은 미실행"처럼 누락 범위를 명시한다.
 
 원 PR이 before/after 이미지나 수치를 제공했더라도 maintainer가 직접 확인한 visual sweep 또는 동등한
@@ -117,7 +117,7 @@ review 문서에는 최소한 다음을 포함한다.
 - 판정 근거와 다음 조건: `승인`이면 merge 전 게이트, `머지 보류`면 해제 조건,
   `메인터너 보정 후 수용 가능`이면 원 head·보정 SHA·통합 검증 경로
 
-시각 검증을 최종 권고의 근거로 썼다면 `Merge 후 contributor PR comment 계획`도 review 문서에 포함한다.
+시각 검증을 최종 판정의 근거로 썼다면 `Merge 후 contributor PR comment 계획`도 review 문서에 포함한다.
 계획에는 Visual Sweep 정본 direct link, 실제 페이지·후보 수·지표와 사람의 판정, representative PNG의
 `mydocs/pr/assets/` 안정 경로, `<merge-commit-sha>` 고정 raw image URL 형식, merge 뒤 `--body-file` 게시 및
 API 재조회 조건을 적는다. 이는 게시 승인이나 사전 comment를 뜻하지 않는다. asset이 devel에 반영되고 merge

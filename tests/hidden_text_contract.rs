@@ -694,11 +694,12 @@ fn capabilities_and_help_both_advertise_inspect() {
         );
     }
 
-    let help = run(&["--help"]);
+    let help = run(&["inspect", "--help"]);
     let text = String::from_utf8_lossy(&help.stdout);
     assert!(
-        text.contains("inspect hidden-text"),
-        "--help 에 inspect 가 없습니다"
+        text.lines()
+            .any(|line| line.trim_start().starts_with("hidden-text")),
+        "inspect --help 에 hidden-text 가 없습니다"
     );
 }
 

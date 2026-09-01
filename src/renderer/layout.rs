@@ -8574,14 +8574,28 @@ impl LayoutEngine {
                             let effective_h = seg_lh.max(shape_max_h);
                             if effective_h > 0.0 {
                                 let para_start = *para_start_y.get(para_index).unwrap_or(&y_offset);
-                                let shape_bottom = para_start + effective_h;
+                                // [#6551] `para_start` 는 **문단 앞 간격(sb) 이전** 위치다.
+                                // 개체는 sb 아래에서 시작하므로 그만큼 더해야 한다. 종전에는
+                                // 이를 버리고 `para_start + lh` 로 덮어써, 이 블록이
+                                // `layout_paragraph` 가 이미 적용한 sb 를 되돌렸다
+                                // (113424 7쪽 pi=73: 렌더 전진량 43.5에 sb 13.3이 빠져
+                                // 다음 제목이 글상자 안으로 올라왔다).
+                                let (sb, sa) = styles
+                                    .para_styles
+                                    .get(para.para_shape_id as usize)
+                                    .map(|s| (s.spacing_before, s.spacing_after))
+                                    .unwrap_or((0.0, 0.0));
+                                // 단 상단 문단은 한컴이 `sb` 를 트림한다(`is_column_top`)
+                                // — `layout_paragraph` 도 그렇게 놓으므로 여기서 더하면
+                                // 되레 어긋난다. 단 아래로 흐른 문단에만 더한다.
+                                let sb_applied = if para_start > col_area.y + 0.5 {
+                                    sb.max(0.0)
+                                } else {
+                                    0.0
+                                };
+                                let shape_bottom = para_start + sb_applied + effective_h;
                                 if shape_bottom > y_offset {
-                                    let spacing = styles
-                                        .para_styles
-                                        .get(para.para_shape_id as usize)
-                                        .map(|s| s.spacing_after)
-                                        .unwrap_or(0.0);
-                                    y_offset = shape_bottom + spacing;
+                                    y_offset = shape_bottom + sa;
                                 }
                             }
                         }

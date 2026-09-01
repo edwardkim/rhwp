@@ -510,7 +510,7 @@ fn layout_anomaly_declared_flags_are_actually_accepted() {
 
 #[test]
 fn help_mentions_batch_and_exit_contract() {
-    let output = run(&["--help"]);
+    let output = run(&["layout-anomaly", "--help"]);
     let joined = format!(
         "{}\n{}",
         String::from_utf8_lossy(&output.stdout),
