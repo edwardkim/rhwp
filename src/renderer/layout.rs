@@ -7,7 +7,7 @@ use super::composer::{
     compose_paragraph, effective_text_for_metrics, first_text_line, ComposedParagraph,
 };
 use super::float_placement::{
-    empty_host_physical_ladder_extras_hu, empty_offset_float_defers_to_following_generated_text,
+    empty_host_physical_ladder_extras_hu, empty_offset_float_deferred_text_ladder_hu,
     horizontal_range, is_para_topbottom_float, native_empty_host_physical_outer_box_paint_inset,
     native_empty_host_rowbreak_line_advance_hu,
     original_hwpx_column_rowbreak_equal_outer_margin_hu, signed_hwpunit,
@@ -8134,29 +8134,22 @@ impl LayoutEngine {
         };
         match item {
             PageItem::FullParagraph { para_index } => {
-                let deferred_empty_float_text_anchor_y = para_index
-                    .checked_sub(1)
-                    .and_then(|host_index| {
+                let deferred_empty_float_text_anchor_y =
+                    para_index.checked_sub(1).and_then(|host_index| {
                         let host = paragraphs.get(host_index)?;
                         let following = paragraphs.get(*para_index)?;
                         let Control::Table(table) = host.controls.first()? else {
                             return None;
                         };
-                        empty_offset_float_defers_to_following_generated_text(host, table, following)
-                            .then(|| {
-                                host.line_segs
-                                    .iter()
-                                    .find(|segment| {
-                                        segment.tag
-                                            & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
-                                            == 0
-                                    })
-                                    .map(|segment| {
-                                        col_area.y
-                                            + hwpunit_to_px(segment.vertical_pos, self.dpi)
-                                    })
-                            })
-                            .flatten()
+                        empty_offset_float_deferred_text_ladder_hu(host, table, following).map(
+                            |(vertical_pos, line_advance)| {
+                                col_area.y
+                                    + hwpunit_to_px(
+                                        vertical_pos.saturating_add(line_advance),
+                                        self.dpi,
+                                    )
+                            },
+                        )
                     });
                 if let Some(anchor_y) = deferred_empty_float_text_anchor_y {
                     // 양수 offset 빈 host 표는 본문을 표 아래로 밀어내지 않는다. 표의
@@ -10274,9 +10267,8 @@ impl LayoutEngine {
                 .and_then(|control| match control {
                     Control::Table(table)
                         if paragraphs.get(para_index + 1).is_some_and(|following| {
-                            empty_offset_float_defers_to_following_generated_text(
-                                host, table, following,
-                            )
+                            empty_offset_float_deferred_text_ladder_hu(host, table, following)
+                                .is_some()
                         }) =>
                     {
                         host.line_segs
@@ -10751,7 +10743,23 @@ impl LayoutEngine {
                             })
                         })
                         .flatten();
-                let lane_flow_bottom = if let Some((table, line_advance)) =
+                let deferred_empty_offset_float_bottom = deferred_empty_float_anchor_y.map(|_| {
+                    let outer_bottom = para
+                        .controls
+                        .get(control_index)
+                        .and_then(|control| match control {
+                            Control::Table(table) => Some(table.outer_margin_bottom as i32),
+                            _ => None,
+                        })
+                        .unwrap_or(0);
+                    lanes.max_bottom() + hwpunit_to_px(outer_bottom, self.dpi)
+                });
+                let lane_flow_bottom = if let Some(bottom) = deferred_empty_offset_float_bottom {
+                    // 생성 본문을 먼저 gap에 배치한 뒤에는 offset을 뺀 예약 높이가 아니라
+                    // 실제 표 하단과 바깥 아래 여백까지 흐름을 진행해야 다음 문단이 표와
+                    // 겹치지 않는다.
+                    bottom
+                } else if let Some((table, line_advance)) =
                     single_positive_empty_float_before_plain_text
                 {
                     // #2439: a single empty-host TopAndBottom float followed by an ordinary

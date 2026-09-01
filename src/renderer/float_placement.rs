@@ -187,13 +187,17 @@ pub(crate) fn is_para_topbottom_float(common: &CommonObjAttr) -> bool {
 }
 
 /// A positive-offset empty host float whose next, generated body paragraph has
-/// no stored line-segment anchor.  Hancom lays that body paragraph in the gap
-/// above the float, then resumes ordinary flow below the float.
-pub(crate) fn empty_offset_float_defers_to_following_generated_text(
+/// no stored line-segment anchor. Hancom consumes the empty host's physical row,
+/// lays that body paragraph in the remaining gap above the float, then resumes
+/// ordinary flow below the float.
+///
+/// Returns the stored host row's `(vertical_pos, line_height + line_spacing)`.
+/// The first coordinate anchors the float; their sum anchors the generated text.
+pub(crate) fn empty_offset_float_deferred_text_ladder_hu(
     host: &Paragraph,
     table: &Table,
     following: &Paragraph,
-) -> bool {
+) -> Option<(i32, i32)> {
     let has_non_whitespace_text = |paragraph: &Paragraph| {
         paragraph
             .text
@@ -201,7 +205,7 @@ pub(crate) fn empty_offset_float_defers_to_following_generated_text(
             .any(|ch| !ch.is_whitespace() && ch != '\u{FFFC}')
     };
 
-    is_para_topbottom_float(&table.common)
+    let qualifies = is_para_topbottom_float(&table.common)
         && table.common.flow_with_text
         && signed_hwpunit(table.common.vertical_offset) > 0
         && host.controls.len() == 1
@@ -211,7 +215,23 @@ pub(crate) fn empty_offset_float_defers_to_following_generated_text(
         // 저장 segment가 하나라도 있으면 그 위치를 우선해야 하므로 제외한다.
         && following.line_segs.iter().all(|segment| {
             segment.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0
-        })
+        });
+    qualifies.then(|| {
+        host.line_segs
+            .iter()
+            .find(|segment| {
+                segment.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0
+            })
+            .map(|segment| {
+                (
+                    segment.vertical_pos,
+                    segment
+                        .line_height
+                        .saturating_add(segment.line_spacing)
+                        .max(0),
+                )
+            })
+    })?
 }
 
 /// [#6366] 원본 HWPX 문단 기준 글앞으로 다행·다열 표가 `flowWithText` 이면

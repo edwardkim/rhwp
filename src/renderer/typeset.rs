@@ -17,10 +17,10 @@ use crate::model::paragraph::{ColumnBreakType, LineSeg, Paragraph};
 use crate::model::shape::CaptionDirection;
 use crate::renderer::composer::{compose_paragraph, first_text_line, ComposedParagraph};
 use crate::renderer::float_placement::{
-    empty_offset_float_defers_to_following_generated_text, horizontal_range,
-    is_page_bottom_fixed_float, is_para_topbottom_float,
-    native_empty_host_rowbreak_line_advance_hu, original_hwpx_infront_para_flow_paginates,
-    signed_hwpunit, stored_empty_anchor_band_host_line_advance_hu,
+    empty_offset_float_deferred_text_ladder_hu, horizontal_range, is_page_bottom_fixed_float,
+    is_para_topbottom_float, native_empty_host_rowbreak_line_advance_hu,
+    original_hwpx_infront_para_flow_paginates, signed_hwpunit,
+    stored_empty_anchor_band_host_line_advance_hu,
     stored_visible_anchor_band_host_line_advance_from_vpos, FloatLaneSet, FloatPlacementContext,
 };
 use crate::renderer::height_cursor::HeightCursor;
@@ -17392,7 +17392,7 @@ impl TypesetEngine {
                         .get(*host_para_idx)
                         .and_then(|host| host.controls.get(*control_index).map(|control| (host, control)))
                         .is_some_and(|(host, control)| matches!(control, Control::Table(table)
-                            if empty_offset_float_defers_to_following_generated_text(host, table, para)))
+                            if empty_offset_float_deferred_text_ladder_hu(host, table, para).is_some()))
             );
             let paragraph_item = PageItem::FullParagraph {
                 para_index: para_idx,

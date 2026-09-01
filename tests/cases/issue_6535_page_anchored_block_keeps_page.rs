@@ -44,20 +44,20 @@ fn contains_text(node: &rhwp::renderer::render_tree::RenderNode, needle: &str) -
     find_text_y(node, needle).is_some()
 }
 
-fn find_table_y_with_text(
+fn find_table_bounds_with_text(
     node: &rhwp::renderer::render_tree::RenderNode,
     needle: &str,
-) -> Option<f64> {
+) -> Option<(f64, f64)> {
     if matches!(
         node.node_type,
         rhwp::renderer::render_tree::RenderNodeType::Table(_)
     ) && contains_text(node, needle)
     {
-        return Some(node.bbox.y);
+        return Some((node.bbox.y, node.bbox.y + node.bbox.height));
     }
     node.children
         .iter()
-        .find_map(|child| find_table_y_with_text(child, needle))
+        .find_map(|child| find_table_bounds_with_text(child, needle))
 }
 
 #[test]
@@ -95,10 +95,25 @@ fn issue_6535_page_anchored_block_stays_on_its_page() {
     );
 
     let body_y = find_text_y(&tree.root, "2.").expect("find numbered body paragraph");
-    let table_y = find_table_y_with_text(&tree.root, "연번").expect("find incident table");
+    let (table_y, table_bottom) =
+        find_table_bounds_with_text(&tree.root, "연번").expect("find incident table");
     let ending_y = find_text_y(&tree.root, "끝.").expect("find ending paragraph");
     assert!(
-        body_y < table_y && table_y < ending_y,
-        "Hancom 순서와 달리 본문({body_y:.1})/표({table_y:.1})/종결문({ending_y:.1})이 배치됐다"
+        body_y < table_y && table_bottom <= ending_y,
+        "Hancom 순서·비중첩과 달리 본문({body_y:.1})/표({table_y:.1}..{table_bottom:.1})/종결문({ending_y:.1})이 배치됐다"
     );
+
+    // Hancom 2020 PDF(d5a4a5f8…)의 bbox 좌표를 72→96 DPI로 환산한 기준이다.
+    // 순서만 맞고 본문이 한 줄 위로 가거나 종결문이 표에 걸치는 보정을 막는다.
+    let tolerance_px = 2.0;
+    for (name, actual, oracle) in [
+        ("2. 본문", body_y, 393.5),
+        ("연번 표", table_y, 456.2),
+        ("끝. 종결문", ending_y, 646.9),
+    ] {
+        assert!(
+            (actual - oracle).abs() <= tolerance_px,
+            "{name} y={actual:.1}px, Hancom 2020 oracle={oracle:.1}px (허용 ±{tolerance_px:.1}px)"
+        );
+    }
 }
