@@ -36,8 +36,28 @@ export function printReadyText(intent: PrintIntent): string {
     : '인쇄 미리보기 준비 완료';
 }
 
+// 표준 판형의 변 길이(mm): A3~A5 · JIS B4/B5 · Letter · Legal · Tabloid.
+// HWP 파일은 길이를 정수 HWPUNIT(1/7200인치)으로 저장하므로 A4 297mm 가
+// 84188 유닛(=296.9966mm)이 되고, get_page_info_native 의 소수 1자리 px
+// 직렬화가 더 깎아 환산 결과가 296.995mm 로 나온다. 산술로는 "297" 을
+// 복원할 수 없어 인쇄 mm 경계에서 표준 치수로 스냅해 판형 정체성을 되살린다.
+const STANDARD_PAPER_DIMENSIONS_MM = [
+  148, 182, 210, 215.9, 257, 279.4, 297, 355.6, 364, 420, 431.8,
+];
+
+// 유닛 양자화(≤0.004mm)와 wire 의 소수 1자리 px 절단(≤0.014mm)만 흡수하는
+// 크기. 사용자가 입력할 수 있는 비표준 크기(0.1mm 단위)는 건드리지 않는다.
+const PAPER_SNAP_TOLERANCE_MM = 0.05;
+
+export function snapToStandardPaperMm(mm: number): number {
+  for (const standard of STANDARD_PAPER_DIMENSIONS_MM) {
+    if (Math.abs(mm - standard) <= PAPER_SNAP_TOLERANCE_MM) return standard;
+  }
+  return mm;
+}
+
 export function pxToPrintMm(px: number): number {
-  return Math.round((px * 25.4 / 96) * 1000) / 1000;
+  return snapToStandardPaperMm(Math.round((px * 25.4 / 96) * 1000) / 1000);
 }
 
 function formatMm(mm: number): string {
