@@ -92,3 +92,12 @@ review PNG를 직접 열어 본문, 첨부 목록, 시장 서명, 하단 업무�
   `<merge-commit-sha>` 고정 raw URL로 표시한다.
 - UTF-8 without BOM body file로 게시하고 API로 재조회한 뒤 원 PR을 중복 병합하지 않고 close한다.
 - #6535는 이번 PR 하나만으로 close하지 않는다.
+
+## 통합 PR self-review 확정
+
+Draft 통합 PR #6563의 최신 증거 head `220e9fb5ae5bf9640657543abad3698036d014d6`를 메인터너
+self-review했다. 기존 앵커 마진의 두 조건을 유지한 채 실제 `flow_underrun > 0.5`만 추가하므로
+마진의 목적을 제거하지 않고 저슬랙 오탐만 제한한다. focused·전체 회귀·engine 2020 직접 비교와 code
+candidate Full CI, 증거 head Fast Pass가 모두 성공했고 blocking finding은 없다.
+
+이번 마진 갈래는 merge를 권고하되 다른 원인의 #6535 사례가 남으므로 이슈 전체는 close하지 않는다.

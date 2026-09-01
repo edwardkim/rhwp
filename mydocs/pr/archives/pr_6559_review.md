@@ -100,3 +100,14 @@ baseline conflict 해결과 위 검증을 포함한 integration head만 `메인�
   `<merge-commit-sha>` 고정 raw URL로 표시한다.
 - UTF-8 without BOM body file로 게시하고 API로 재조회한 뒤 원 PR을 중복 병합하지 않고 close한다.
 - #6549는 신고된 표 분할 계약이 해결됐는지 본문과 후속 범위를 재확인한 뒤 별도 close한다.
+
+## 통합 PR self-review 확정
+
+Draft 통합 PR #6563의 최신 증거 head `220e9fb5ae5bf9640657543abad3698036d014d6`를 메인터너
+self-review했다. `Square` 표에 기존 bounded-extension 조건을 재사용하고 `TopAndBottom` 보호 갈래는
+유지한다. 충돌 해결은 최신 기준선에서 중복 과거 행을 되살리지 않고 신규 #6549 행 하나만 추가했다.
+focused·전체 회귀·engine 2020 직접 비교와 code candidate Full CI, 증거 head Fast Pass가 모두
+성공했고 blocking finding은 없다.
+
+원 contributor head 자체는 `DIRTY`이므로 중복 merge하지 않고, 의미 기반 보정을 포함한 #6563만
+merge 대상으로 권고한다. #6549 close 여부는 통합 뒤 신고 범위를 다시 확인한다.

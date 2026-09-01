@@ -93,3 +93,13 @@ engine 2020 기준 PDF로 직접 검증한 뒤 이 판정을 최종 원장에 �
 - #6544는 잔여 `pi=659` 원인이 남으므로 close하지 않는다.
 - 통합 merge 뒤 UTF-8 without BOM body file로 comment를 게시하고 API로 본문을 재조회한 뒤 원 PR을
   중복 병합하지 않고 close한다.
+
+## 통합 PR self-review 확정
+
+Draft 통합 PR #6563의 최신 증거 head `220e9fb5ae5bf9640657543abad3698036d014d6`를 메인터너
+self-review했다. 저장 사다리와 실제 fit이 함께 성립할 때만 위험 휴리스틱을 억제하므로 저장 증거가
+없거나 실제 가용 높이를 넘는 갈래를 완화하지 않는다. focused·전체 회귀·직접 시각 검증과 code
+candidate Full CI, 증거 head Fast Pass가 모두 성공했고 blocking finding은 없다.
+
+따라서 이번 좁은 정정은 merge를 권고한다. 다만 p13 `pi=659` 잔여 때문에 #6544는 merge 뒤에도
+열어 둔다.
