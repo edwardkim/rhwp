@@ -369,8 +369,17 @@ export class InputHandler {
 
   // 표 경계선 hover 상태
   private resizeHoverRafId = 0;
-  private cachedTableRef: { sec: number; ppi: number; ci: number; pageHint?: number } | null = null;
+  private cachedTableRef: {
+    sec: number;
+    ppi: number;
+    ci: number;
+    pageHint?: number;
+    pageIndexes?: ReadonlySet<number>;
+  } | null = null;
   private cachedCellBboxes: CellBbox[] | null = null;
+  // [#4117] hover 캐시 채움(ensureTableCellBboxCache) 실패 메모 — 같은 (표, 페이지)
+  // 조회를 마우스 이동마다 재시도하지 않기 위한 표식. 문서 변경 시 함께 비운다.
+  private tableBboxFetchFailures = new Set<string>();
   private protectedCellHitCache: { key: string; protected: boolean } | null = null;
   private protectedCellHoverEl: HTMLDivElement | null = null;
   private deferredPaginationFlushTimer: ReturnType<typeof setTimeout> | null = null;
@@ -809,6 +818,9 @@ export class InputHandler {
     this.tableLocalResizeSegments.clear();
     this.cachedTableRef = null;
     this.cachedCellBboxes = null;
+    // [#4117] hover 채움 실패 메모도 함께 비운다 — 문서가 바뀌면 실패했던
+    // (표, 페이지) 조회가 성공할 수 있다.
+    this.tableBboxFetchFailures.clear();
     this.tableResizeRenderer?.clear();
   }
 

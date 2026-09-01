@@ -83,6 +83,8 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `issue-6117-cell-underline-canvas2d.test.mjs` | 상시 | active | #6117 표 칸 안 밑줄이 우측 괘선을 넘어 그려지지 않는 Canvas2D 잉크 경계 | issue6117/52690_higher_education_decree.hwp | 수동 | 9쪽 실제 fixture, `output/6117` 증적 |
 | `line-spacing.test.mjs` | 상시 | active | 줄간격 변경에 따른 페이지 넘김 검증 | — | 수동 |  |
 | `loading-busy-cursor.test.mjs` | 상시 | active | #5740 대형 문서 로딩 중 busy 상태와 wait cursor 표시 계약 | 2025 행정업무운영 편람(최종).hwp | npm e2e:loading-busy-cursor |  |
+| `merged-cell-boundary-drag.test.mjs` | 상시 | active | #6557 세로 병합 셀 표에서 하위 행만 선택하고 열 경계를 드래그 — 선택 필터의 병합 셀 포함·걸친 모든 행의 이웃 보상·균일 결과 무마킹 세 층이 함께 고쳐져야 경계가 전 행에서 같은 x 로 이동 | — | npm e2e:issue-6557-merged-col | dev server 필요 — run-with-vite.mjs 경유 · 증적 [assets/merged-cell-resize-evidence](https://github.com/jeong-sik/rhwp/tree/assets/merged-cell-resize-evidence) |
+| `merged-cell-row-boundary-drag.test.mjs` | 상시 | active | #6557 가로 병합 셀 표의 행 경계 드래그 — 병합 셀이 걸친 모든 열의 아래 이웃이 보상을 받아 표 전체 높이가 보존되는지 검증 | — | npm e2e:issue-6557-merged-row | dev server 필요 — run-with-vite.mjs 경유 · 증적 [assets/merged-cell-resize-evidence](https://github.com/jeong-sik/rhwp/tree/assets/merged-cell-resize-evidence) |
 | `navigation-shortcuts.test.mjs` | 상시 | active | 플랫폼별 navigation shortcut | — | 수동 |  |
 | `page-border-toggle.test.mjs` | 상시 | active | 쪽 테두리/배경 미리보기 버튼 토글 | — | 수동 |  |
 | `page-break.test.mjs` | 상시 | active | biz_plan.hwp 강제 쪽 나누기 / "5. 사업추진조직" 문단 앞에 쪽 나누기 삽입 후 페이지 재배치 확인 | biz_plan.hwp | 수동 |  |
@@ -101,8 +103,9 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `renderer-baseline.mjs` | 유틸 | active | 렌더러 baseline 스윕 러너 (manifest 기반 다문서 측정) | — | npm+CI |  |
 | `renderer-contract.test.mjs` | 상시 | active | 렌더러 백엔드 계약 검증 (plane/replay 정합) | — | npm+CI |  |
 | `report-generator.mjs` | 유틸 | active | E2E 테스트 HTML 보고서 생성기 | — | 수동 |  |
-| `responsive.test.mjs` | 상시 | active | #6118 서식 바 962/961/808/807/460/459px 경계·문단 더보기와 #6138 기본 도구 한 줄 divider 스크롤·동시 퇴장 통합 검증 | — | npm e2e:responsive + CI |  |
+| `responsive.test.mjs` | 상시 | active | #6118 서식 바 경계·문단 더보기, #6138 도구 한 줄 스크롤, #6187 모든 너비·낮은 높이의 눈금자 표시와 grid 정렬 검증 (resize 프레임 공백 검증은 별도) | — | npm e2e:responsive + CI |  |
 | `ruler-document-switch.test.mjs` | 상시 | active | 문서를 바꿔 열면 눈금자가 새 문서의 쪽을 다시 그린다 (`document-view-loaded`) — 문단 여백이 같은 문서를 잇달아 열 때 앞 문서 눈금이 남는 회귀 가드 | 누름틀-2024.hwp · 253E164F57A1BC6934-empty.hwp | npm e2e:ruler-document-switch |  |
+| `ruler-resize.test.mjs` | 상시 | active | #6187 resize 경계의 눈금자 grid·정렬·실제 화면 snapshot 검사; 전체 합성 프레임 보증과 구분, browser-client driver 주입 지원 | exam_kor.hwp | 수동 |  |
 | `run-render-diff.mjs` | 유틸 | active | render-diff CI 러너 (canvas/pdf diff 오케스트레이션) | — | npm+CI |  |
 | `run-with-vite.mjs` | 유틸 | active | Vite dev server 기동 + 임의 명령 실행 공용 러너 (VITE_URL 주입, 종료 코드 전파) | — | npm e2e:undo-depth |  |
 | `save-as-format.test.mjs` | 상시 | active | 저장 출력 포맷 선택 (file:save-as-hwp / file:save-as-hwpx) E2E — #1613 | biz_plan.hwp, hwpx/footnote-01.hwpx | 수동 |  |
@@ -111,6 +114,7 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `shape-inline.test.mjs` | 상시 | active | 도형 인라인 컨트롤 — 커서 이동 및 텍스트 삽입 | — | 수동 |  |
 | `shift-end.test.mjs` | 상시 | active | shift-return.hwp Shift+End 블록 선택 | shift-return.hwp | 수동 |  |
 | `status-page-number.test.mjs` | 상시 | active | #5749 상태 표시줄 쪽 번호가 물리 순번이 아니라 문서 쪽번호를 따르는 계약 | 쪽기준.hwp | npm e2e:status-page-number |  |
+| `table-border-hover-resize-issue4117.test.mjs` | 상시 | active | #4117 셀 선택 모드 클릭 없이 표 경계 hover → 리사이즈 커서·드래그 동작 — 이동 스톰 60회 중 엔진 호출 ≤2 단정으로 task 2010 랙 재발 방지 | — | npm e2e:issue-4117-border-hover | dev server 필요 — run-with-vite.mjs 경유 |
 | `table-picture-resize-1282.test.mjs` | 상시 | active | E2E 테스트 (Issue #1282): 회전된 표 셀 내부 picture 리사이즈. | ta-pic-001-r-쪽영역안제한.hwp, ta-pic-001-r-쪽영역안제한 | 수동 |  |
 | `tac-inline-create.test.mjs` | 상시 | active | 빈 문서에서 인라인 TAC 표 직접 생성 (Issue #32) | — | 수동 |  |
 | `tac-inline-table.test.mjs` | 상시 | active | 인라인 TAC 표 배치 검증 (Issue #31) | tac-case-001.hwp | 수동 |  |
