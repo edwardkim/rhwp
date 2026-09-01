@@ -114,6 +114,7 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `shape-inline.test.mjs` | 상시 | active | 도형 인라인 컨트롤 — 커서 이동 및 텍스트 삽입 | — | 수동 |  |
 | `shift-end.test.mjs` | 상시 | active | shift-return.hwp Shift+End 블록 선택 | shift-return.hwp | 수동 |  |
 | `status-page-number.test.mjs` | 상시 | active | #5749 상태 표시줄 쪽 번호가 물리 순번이 아니라 문서 쪽번호를 따르는 계약 | 쪽기준.hwp | npm e2e:status-page-number |  |
+| `table-border-hover-resize-issue4117.test.mjs` | 상시 | active | #4117 셀 선택 모드 클릭 없이 표 경계 hover → 리사이즈 커서·드래그 동작 — 이동 스톰 60회 중 엔진 호출 ≤2 단정으로 task 2010 랙 재발 방지 | — | npm e2e:issue-4117-border-hover | dev server 필요 — run-with-vite.mjs 경유 |
 | `table-picture-resize-1282.test.mjs` | 상시 | active | E2E 테스트 (Issue #1282): 회전된 표 셀 내부 picture 리사이즈. | ta-pic-001-r-쪽영역안제한.hwp, ta-pic-001-r-쪽영역안제한 | 수동 |  |
 | `tac-inline-create.test.mjs` | 상시 | active | 빈 문서에서 인라인 TAC 표 직접 생성 (Issue #32) | — | 수동 |  |
 | `tac-inline-table.test.mjs` | 상시 | active | 인라인 TAC 표 배치 검증 (Issue #31) | tac-case-001.hwp | 수동 |  |

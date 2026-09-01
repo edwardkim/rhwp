@@ -71,6 +71,7 @@
     "e2e:undo-depth": "node e2e/run-with-vite.mjs -- node e2e/undo-depth-issue5769.test.mjs --mode=headless",
     "e2e:responsive": "node e2e/run-with-vite.mjs -- node e2e/responsive.test.mjs --mode=headless",
     "e2e:issue-6053": "node e2e/run-with-vite.mjs -- node e2e/chart-data-structure-issue6053.test.mjs --mode=headless",
+    "e2e:issue-4117-border-hover": "node e2e/run-with-vite.mjs -- node e2e/table-border-hover-resize-issue4117.test.mjs --mode=headless",
     "e2e:issue-6557-merged-col": "node e2e/run-with-vite.mjs -- node e2e/merged-cell-boundary-drag.test.mjs --mode=headless",
     "e2e:issue-6557-merged-row": "node e2e/run-with-vite.mjs -- node e2e/merged-cell-row-boundary-drag.test.mjs --mode=headless"
   },
