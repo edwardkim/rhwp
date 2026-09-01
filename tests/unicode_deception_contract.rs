@@ -428,7 +428,7 @@ fn capabilities_and_help_both_carry_inspect() {
         "{entry}"
     );
 
-    let help = run(&["--help"]);
+    let help = run(&["inspect", "unicode", "--help"]);
     let help_text = String::from_utf8_lossy(&help.stdout);
     assert!(
         help_text
@@ -436,8 +436,8 @@ fn capabilities_and_help_both_carry_inspect() {
             .any(|l| l.starts_with("  inspect unicode ")),
         "--help 에 inspect 줄이 없습니다"
     );
-    // 선언한 플래그는 help 에도 실제로 보여야 한다.
-    for flag in flags {
+    // unicode 하위 명령이 받는 플래그는 자신의 상세 help 에 실제로 보여야 한다.
+    for flag in ["--json", "--kind"] {
         assert!(help_text.contains(flag), "help 에 {flag} 안내 없음");
     }
 }

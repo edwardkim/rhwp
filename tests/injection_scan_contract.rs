@@ -803,11 +803,11 @@ fn capabilities_and_mcp_declare_the_command_consistently() {
 fn help_documents_the_default_scope() {
     // "기본값이 무엇인지 help 에 명시하라" — 기본 범위를 모르면 사용자는 훑지 않은
     // 영역을 훑었다고 오해한다.
-    let out = run(&["--help"]);
+    let out = run(&["inspect", "injection", "--help"]);
     let help = String::from_utf8_lossy(&out.stdout);
     assert!(
         help.contains("inspect injection"),
-        "--help 에 inspect injection 이 없습니다"
+        "상세 help 에 inspect injection 이 없습니다"
     );
     assert!(
         help.contains("--include-fields"),

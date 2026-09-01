@@ -64,7 +64,19 @@ impl CommandSpec {
 
     #[allow(dead_code)]
     pub(crate) const fn in_help(self) -> bool {
-        matches!(self.visibility, Visibility::Public)
+        self.help_group().is_some()
+    }
+
+    /// 사람용 root help에서 표시할 그룹.
+    ///
+    /// dispatch-only는 아직 사람이 호출할 계약도 정해지지 않았으므로 제외하지만,
+    /// capabilities에 선언된 내부 개발·회귀 명령은 별도 섹션으로 숨기지 않는다.
+    pub(crate) const fn help_group(self) -> Option<&'static str> {
+        match self.visibility {
+            Visibility::Public => Some("public"),
+            Visibility::Hidden(_) => Some("internal"),
+            Visibility::DispatchOnly(_) => None,
+        }
     }
 }
 
