@@ -3097,7 +3097,8 @@ impl LayoutEngine {
                             if raw_lh + 4.0 >= pic_h {
                                 *reserved_tac_picture_height = Some(pic_h);
                             }
-                            let img_y = (y + baseline - pic_h).max(y);
+                            let box_h = tac_object_box_height_px(pic_h, &pic.caption, self.dpi);
+                            let img_y = (y + baseline - box_h).max(y);
                             let bin_data_id = pic.image_attr.bin_data_id;
                             let image_data = find_bin_data_bytes(bdc, bin_data_id);
                             let crop = {
@@ -7948,16 +7949,6 @@ impl LayoutEngine {
                             );
                             let base_img_y = if label_extra > 0.0 {
                                 vars.y + label_extra
-                            } else if vars.raw_lh - pic_h > 4.0 {
-                                // [#6575] 줄이 그림보다 크게 저장된 빈 줄의 TAC 그림은
-                                // baseline 이 아니라 줄 상단에 붙는다. 한글 2024 는
-                                // 156489219 5쪽 그림을 저장 lineseg 상단(176.0pt)에
-                                // 그리는데, baseline 바닥 맞춤은 bl−h 만큼(+25.5pt)
-                                // 내려간다. 보통 줄(lh≈h, 4px 공차)은 두 규칙이 같은
-                                // 답을 내므로 기존 baseline 경로를 유지한다. 선 도형은
-                                // baseline 에 앉는 것이 정답(#5789)이라 Shape 분기는
-                                // 그대로 둔다.
-                                vars.y
                             } else {
                                 // [#6575] baseline 정렬 대상은 그림이 아니라 개체 상자 전체다.
                                 let box_h = tac_object_box_height_px(pic_h, &pic.caption, self.dpi);
