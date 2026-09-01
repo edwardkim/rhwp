@@ -7,7 +7,7 @@
 - **기계 정본**:
   `mydocs/tech/investigations/issue-6584/release_contributor_ledger.json`
 - **ledger SHA-256**:
-  `ce18e46c1180d8bff454588a6ac4e13982019d12bbff0802ad81ba16e4ff4930`
+  `934a96927831ec87d2b19db296ea1976111b1f1e815c66291369e2a0c1929c28`
 
 ## 1. 결론
 
@@ -35,7 +35,10 @@ GitHub mention인 `@dkh0324`로 만들지 않는다.
 | `#번호` + 신규 PR archive 후보 | 1,906 | 이슈·과거 PR 언급을 포함한 원시 후보 |
 | GitHub Issue | 847 | 기여 PR 수에서 제외 |
 | GitHub PullRequest 후보 | 1,059 | 언급만 된 PR을 포함 |
-| merge commit이 범위 안인 PR | 253 | 공개 PR provenance로 채택 |
+| 번호 후보 중 merge commit이 범위 안인 PR | 253 | commit message·archive 출발점 |
+| `devel` merged PR 독립 조회 | 261 | merge commit으로 release range 재검증 |
+| 독립 조회가 추가로 복원한 PR | 9 | 번호 없는 merge/squash 계보 누락 방지 |
+| 최종 고유 PR provenance | 262 | `devel` 261개 + 범위 안 task-branch PR 1개 |
 | 범위 merge가 아닌 PR 언급 | 806 | 사람 credit 근거로 사용하지 않음 |
 | cherry-pick 원본 SHA | 630 | commit trailer에서 결정론적으로 추출 |
 | GitHub에서 조회 가능한 원본 SHA | 629 | 1개는 원본 객체가 조회되지 않음 |
@@ -44,9 +47,10 @@ GitHub mention인 `@dkh0324`로 만들지 않는다.
 | 미해결 PR 번호 / Git 정체성 | 0 / 0 | 종료 게이트 통과 |
 
 PR 번호가 commit message나 review archive에 나타났다는 이유만으로 기여자를 올리면 806개 과거·종속 PR이
-과대계상된다. 따라서 PR author는 merge commit이 정확한 릴리스 커밋 집합 안에 있을 때만 채택했다. maintainer
-통합 PR로 흡수된 외부 기여는 원 PR이 GitHub에서 `merged`가 아니더라도 보존된 Git author와 co-author로
-복원했다.
+과대계상된다. 반대로 그 후보만 사용하면 번호가 본문에 남지 않은 실제 `devel` merge PR 9개가 빠진다. 따라서
+`devel` merged PR을 독립 조회하고 merge commit이 정확한 릴리스 커밋 집합에 있는지 다시 판정했다. 후보에서
+확인된 범위 안 task-branch PR 1개를 더해 최종 고유 PR provenance는 262개다. maintainer 통합 PR로 흡수된
+외부 기여는 원 PR이 GitHub에서 `merged`가 아니더라도 보존된 Git author와 co-author로 복원했다.
 
 GitHub의 `associatedPullRequests`는 629개 조회 가능 cherry-pick 원본에서도 결과를 주지 않았다. 이를
 필수 근거로 삼으면 실제 기여자가 누락되므로 원본 SHA 연결은 보조 진단으로만 남기고, release commit에 보존된
@@ -66,7 +70,7 @@ co-author 커밋 증거 수다. PR이 0이어도 commit evidence가 있으면 �
 | `edwardkim` | 24 | 527 | 1 | maintainer |
 | `humdrum00001010` | 1 | 58 | 3 | 동일인 정체성 통합 |
 | `JamesPsh` | 1 | 6 | 2 | 동일인 정체성 통합 |
-| `jangster77` | 177 | 656 | 3 | `Taesup Jang`·`TaesupJang` 동일인 통합 |
+| `jangster77` | 186 | 656 | 3 | `Taesup Jang`·`TaesupJang` 동일인 통합 |
 | `jeong-sik` | 5 | 46 | 1 | PR + 직접 Git author |
 | `johndoekim` | 5 | 60 | 2 | author·co-author 정체성 통합 |
 | `keepYaoung` | 3 | 12 | 2 | 동일인 정체성 통합 |
@@ -103,6 +107,8 @@ python3 scripts/release_contributor_audit.py candidates \
 python3 scripts/release_contributor_audit.py github \
   --candidates output/6584/contributor-candidates.json \
   --repository edwardkim/rhwp \
+  --merged-base-ref devel \
+  --merged-search 'merged:>=2026-08-12' \
   --output output/6584/contributor-github.json
 
 python3 scripts/release_contributor_audit.py ledger \
@@ -114,7 +120,7 @@ python3 scripts/release_contributor_audit.py ledger \
 ```
 
 같은 candidate·GitHub metadata·override 입력으로 ledger를 두 번 생성해 byte-for-byte `cmp`를 통과했다.
-fixture unit test 9건과 Python 구문 검사도 통과했다. release base가 전진하면 기존 결과에 덧붙이지 않고 새
+fixture unit test 10건과 Python 구문 검사도 통과했다. release base가 전진하면 기존 결과에 덧붙이지 않고 새
 범위로 세 입력과 ledger를 모두 다시 생성해야 한다.
 
 ## 6. Stage R1 판정
@@ -122,8 +128,8 @@ fixture unit test 9건과 Python 구문 검사도 통과했다. release base가 
 Stage R1은 다음 조건으로 통과한다.
 
 - 공개 사람 credit key 20개 모두 PR 또는 직접 Git provenance가 있다.
-- 과거·종속 PR 언급 806개를 기여자로 과대계상하지 않았다.
+- 과거·종속 PR 언급 806개를 기여자로 과대계상하지 않았고 번호가 남지 않은 실제 merge PR 9개도 복원했다.
 - 동일인 alias, bot, AI 공동작성 표기를 분리했고 미해결 번호·정체성이 0이다.
 - 기계 원장 재실행 결과가 결정론적이다.
 
-다음 Stage R2에서는 이 원장의 253개 범위 PR과 2,214개 커밋을 사용자 영향 변경군으로 분류한다.
+다음 Stage R2에서는 이 원장의 262개 PR provenance와 2,214개 커밋을 사용자 영향 변경군으로 분류한다.

@@ -277,6 +277,41 @@ Co-authored-by: Bob Example <bob@example.com>
         self.assertEqual(ledger["counts"]["cherryPickSources"], 1)
         self.assertEqual(ledger["counts"]["resolvedCherryPickSourceObjects"], 1)
 
+    def test_ledger_adds_merged_pr_missing_from_text_candidates(self) -> None:
+        integrated_sha = "1" * 40
+        candidates = candidate_document(
+            base_sha="a" * 40,
+            head_sha="b" * 40,
+            commits=[
+                {
+                    "sha": integrated_sha,
+                    "authorName": "Maintainer",
+                    "authorEmail": "1+maintainer@users.noreply.github.com",
+                    "message": "merge without textual PR number",
+                }
+            ],
+            archive_paths=[],
+        )
+        ledger = build_ledger(
+            candidates,
+            {
+                "records": [],
+                "commitAuthors": [],
+                "sourceCommitPullRequests": [],
+                "mergedPullRequests": [
+                    {
+                        "number": 88,
+                        "author": "maintainer",
+                        "mergeCommit": integrated_sha,
+                    }
+                ],
+            },
+            {"identityToHandle": {}},
+        )
+        self.assertEqual(ledger["contributors"][0]["prNumbers"], [88])
+        self.assertEqual(ledger["counts"]["baseMergedPullRequests"], 1)
+        self.assertEqual(ledger["counts"]["unreferencedBaseMergedPullRequests"], 1)
+
     def test_overrides_merge_direct_commits_and_pr_authorship(self) -> None:
         candidates = candidate_document(
             base_sha="a" * 40,

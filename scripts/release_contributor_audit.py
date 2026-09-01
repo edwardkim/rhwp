@@ -323,6 +323,8 @@ def resolve_github_metadata(
     candidates: dict[str, Any],
     repository: str,
     *,
+    merged_base_ref: str | None = None,
+    merged_search: str | None = None,
     gh_runner: Callable[[list[str]], bytes] = run_gh,
 ) -> dict[str, Any]:
     try:
@@ -331,6 +333,8 @@ def resolve_github_metadata(
         raise ValueError("repository must use OWNER/NAME") from error
     if not owner or not name:
         raise ValueError("repository must use OWNER/NAME")
+    if (merged_base_ref is None) != (merged_search is None):
+        raise ValueError("merged base ref and search must be supplied together")
 
     numbers = sorted(int(item["number"]) for item in candidates["prCandidates"])
     records: list[dict[str, Any]] = []
@@ -433,6 +437,52 @@ def resolve_github_metadata(
             }
         )
 
+    merged_pull_requests: list[dict[str, Any]] = []
+    if merged_base_ref is not None and merged_search is not None:
+        merged_value = json.loads(
+            gh_runner(
+                [
+                    "pr",
+                    "list",
+                    "--repo",
+                    repository,
+                    "--state",
+                    "merged",
+                    "--base",
+                    merged_base_ref,
+                    "--limit",
+                    "1000",
+                    "--search",
+                    merged_search,
+                    "--json",
+                    (
+                        "number,title,author,labels,mergedAt,mergeCommit,url,"
+                        "baseRefName,headRefName"
+                    ),
+                ]
+            ).decode("utf-8")
+        )
+        if len(merged_value) >= 1000:
+            raise ValueError("merged PR query reached the 1000 item safety limit")
+        merged_pull_requests = [
+            {
+                "number": item["number"],
+                "title": item["title"],
+                "author": normalized_handle(item.get("author")),
+                "labels": sorted(label["name"] for label in item.get("labels", [])),
+                "mergedAt": item.get("mergedAt"),
+                "mergeCommit": (
+                    item.get("mergeCommit", {}).get("oid")
+                    if item.get("mergeCommit")
+                    else None
+                ),
+                "url": item.get("url"),
+                "baseRefName": item.get("baseRefName"),
+                "headRefName": item.get("headRefName"),
+            }
+            for item in merged_value
+        ]
+
     return {
         "schema": SCHEMA,
         "kind": "github-metadata",
@@ -441,6 +491,11 @@ def resolve_github_metadata(
         "records": records,
         "commitAuthors": commit_authors,
         "sourceCommitPullRequests": source_commit_pull_requests,
+        "mergedPullRequestQuery": {
+            "baseRefName": merged_base_ref,
+            "search": merged_search,
+        },
+        "mergedPullRequests": merged_pull_requests,
     }
 
 
@@ -510,6 +565,8 @@ def build_ledger(
     unresolved_numbers: list[int] = []
     excluded_pull_request_references: list[int] = []
     included_pull_request_numbers: set[int] = set()
+    candidate_merged_pull_request_numbers: set[int] = set()
+    base_merged_pull_request_numbers: set[int] = set()
 
     def person(handle: str) -> dict[str, Any]:
         handle = handle_aliases.get(handle.casefold(), handle)
@@ -549,6 +606,23 @@ def build_ledger(
         item["prNumbers"].add(number)
         item["evidence"].update(evidence)
         included_pull_request_numbers.add(number)
+        candidate_merged_pull_request_numbers.add(number)
+
+    for record in github_mapping.get("mergedPullRequests", []):
+        merge_commit = record.get("mergeCommit")
+        if merge_commit not in release_commit_shas:
+            continue
+        handle = normalized_handle(record.get("author"))
+        number = int(record["number"])
+        if handle is None:
+            if number not in dispositions:
+                unresolved_numbers.append(number)
+            continue
+        item = person(handle)
+        item["prNumbers"].add(number)
+        item["evidence"].add(f"merge:{merge_commit}")
+        included_pull_request_numbers.add(number)
+        base_merged_pull_request_numbers.add(number)
 
     for source_sha, pull_requests in sorted(source_commit_pull_requests.items()):
         integrated_shas = sorted(
@@ -664,6 +738,14 @@ def build_ledger(
             "bots": len(bots),
             "pullRequests": included_pull_request_count,
             "pullRequestCandidates": pull_request_candidate_count,
+            "candidateMergedPullRequests": len(
+                candidate_merged_pull_request_numbers
+            ),
+            "baseMergedPullRequests": len(base_merged_pull_request_numbers),
+            "unreferencedBaseMergedPullRequests": len(
+                base_merged_pull_request_numbers
+                - candidate_merged_pull_request_numbers
+            ),
             "excludedPullRequestReferences": len(excluded_pull_request_references),
             "issueReferences": issue_reference_count,
             "unresolvedNumbers": len(unresolved_numbers),
@@ -723,6 +805,8 @@ def parse_args() -> argparse.Namespace:
     github = subparsers.add_parser("github")
     github.add_argument("--candidates", type=Path, required=True)
     github.add_argument("--repository", required=True)
+    github.add_argument("--merged-base-ref")
+    github.add_argument("--merged-search")
     github.add_argument("--output", default="-")
     return parser.parse_args()
 
@@ -735,6 +819,8 @@ def main() -> int:
         value = resolve_github_metadata(
             load_json(args.candidates),
             args.repository,
+            merged_base_ref=args.merged_base_ref,
+            merged_search=args.merged_search,
         )
     else:
         value = build_ledger(
