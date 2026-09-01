@@ -1,6 +1,6 @@
 ---
 kind: implementation_plan
-status: local-validation-passed
+status: ci-passed
 canonical: mydocs/manual/pr_review_workflow.md
 last_verified: 2026-09-01
 ---
@@ -121,13 +121,14 @@ node scripts/rust-test-suite-manifest.mjs --check
 - `mydocs/pr/pr_6564_review.md`에 원 head와 보정 head, conflict, 검증, 시각 판정을
   분리 기록한다.
 - 판정은 원 head만의 승인으로 쓰지 않고 `메인터너 보정 후 수용 가능`로 기록한다.
-- 작업지시자 승인 뒤에만 contributor source branch로 current candidate를 push한다.
-- 새 head의 GitHub Full CI 성공과 `MERGEABLE/CLEAN`을 확인한 뒤 merge 승인을 다시
-  요청한다.
+- 승인에 따라 contributor source branch로 current candidate를 push했다.
+- 원격 head `257d81c3ec6cb3762463e946c04d5a98a2213a12`의 GitHub Full CI 성공과
+  `MERGEABLE/CLEAN`을 확인했다. self-review 뒤 merge 승인을 별도로 요청한다.
 
 ## 제출·정리 경계
 
 - 새 Rust integration source, generated suite·manifest, golden/baseline은 추가하지 않는다.
-- source branch push, GitHub comment, merge는 각각 승인 전 수행하지 않는다.
+- source branch push는 승인 뒤 완료했다. GitHub comment와 merge는 각각 승인 전 수행하지
+  않는다.
 - #6564 완료 뒤 review archive·오늘할일·issue/PR comment와 전용 worktree/branch 정리를
   post-merge 순서로 수행한다.

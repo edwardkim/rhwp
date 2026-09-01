@@ -1,6 +1,6 @@
 ---
 kind: pr_review
-status: local-validation-passed
+status: ci-passed
 canonical: mydocs/manual/pr_review_workflow.md
 last_verified: 2026-09-01
 ---
@@ -19,9 +19,10 @@ mousemove에서 엔진 호출을 1회로 제한했지만, 페이지별 실패 me
 고쳤다. 최신 `devel` 통합, 필수 Rust lint 묶음, Docker WASM build, Studio 전체 unit,
 TypeScript, #4117 headless Chrome 왕복과 사람이 직접 연 전·후 screenshot이 통과했다.
 
-이 판정은 contributor 원 head의 승인이나 GitHub approve·comment·push·merge 실행 승인이
-아니다. 보정이 포함된 source head를 원격에 반영하고, 그 정확한 SHA의 required checks와
-`MERGEABLE/CLEAN`을 다시 확인한 뒤에만 merge 승인 단계로 갈 수 있다.
+보정이 포함된 source head `257d81c3ec6cb3762463e946c04d5a98a2213a12`를 원격에
+반영했고, 그 정확한 SHA의 Full CI와 보조 workflow가 모두 통과했다. GitHub 상태도
+`MERGEABLE/CLEAN`이다. 이 판정과 CI 성공은 merge 실행 승인이 아니며, self-review를
+마친 뒤 merge는 별도 승인을 받아야 한다.
 
 ## 라우팅
 
@@ -43,13 +44,20 @@ TypeScript, #4117 headless Chrome 왕복과 사람이 직접 연 전·후 screen
 | 검토 기준 `devel` | `0d1540931d59a8712c27f339fcbb71e1c00fd4b1` |
 | current-base merge | `c919bc209e8ae22f9918fde1a0af204e18b8d6c0` |
 | 메인터너 보정 code candidate | `b4df21457419650e97f4fa6d27cbcac5681d40fd` |
+| 검증 완료 원격 head | `257d81c3ec6cb3762463e946c04d5a98a2213a12` |
 | 원 PR 규모 | 10 files, `+452/-66` |
-| 원격 참고 상태 | 원 head `0987770e`, open, non-draft, `DIRTY/CONFLICTING`; 작성 시점 값 |
+| 원격 현재 상태 | head `257d81c3e`, open, non-draft, `MERGEABLE/CLEAN`; 2026-09-01 확인 |
 | reviewer | `edwardkim` |
 
-원격 head와 `devel`은 로컬 검증 종료 뒤 다시 조회했으며 둘 다 위 SHA에서 변하지 않았다.
-원 head의 GitHub CI·CodeQL·Proptest·Render Diff·Adapter는 성공했지만, 해당 결과는 보정
-candidate의 녹색 CI로 재사용하지 않았다.
+원 head의 GitHub CI·CodeQL·Proptest·Render Diff·Adapter 성공은 보정 candidate의
+녹색 CI로 재사용하지 않았다. 보정과 review 증적을 포함한 원격 head `257d81c3e`에서 Full
+CI run `33497972187`, CodeQL run `33497972198`, Proptest run `33497972307`, Adapter run
+`33497972262`, Render Diff run `33497971898`을 새로 확인했다. 최종 check 집계는 성공 28건,
+정책상 neutral 1건과 skip 5건, 실패 0건, 대기 0건이다.
+
+로컬 검증 기준 `devel`은 위 표의 `0d1540931d`다. CI 종료 뒤 원격 `devel`이
+`b9d408f0d698de84d4a0c5f1bf4cc12e35ef2f16`까지 전진했으나, 2026-09-01 재조회에서
+현재 PR head는 계속 `MERGEABLE/CLEAN`이었다. 이 값은 merge 직전 다시 조회한다.
 
 ## 원 변경과 current-base 통합
 
@@ -157,10 +165,10 @@ output은 source 제출 대상이 아니며 위 두 PNG만 장기 review 증적�
   세션의 memory 상한을 별도 계측하지는 않았다.
 - E2E는 3×3 synthetic 표의 happy path와 이동 budget을 증명한다. 원 이슈가 수치를 확보하지
   못한 중첩 표와 장시간 multi-page stress는 이번 PR의 merge blocker로 확대하지 않는다.
-- 원격 source branch에는 아직 current-base merge와 보정 commit이 없다. 따라서 원 head의
-  녹색 CI나 `CONFLICTING` 상태를 candidate 완료 근거로 쓰지 않는다.
-- 다음 게이트는 작업지시자가 source push를 별도 승인한 뒤 보정 포함 head의 required checks를
-  새로 통과하고 `MERGEABLE/CLEAN`을 확인하는 것이다. 그 뒤에도 merge는 별도 승인을 받는다.
+- current-base merge, 보정 commit, review 증적은 source branch에 반영됐고 정확한 원격 head의
+  Full CI와 `MERGEABLE/CLEAN`을 확인했다.
+- 다음 게이트는 이 확정 head의 self-review다. self-review 뒤에도 merge는 별도 승인을 받으며,
+  merge 직전 head SHA, required checks와 `MERGEABLE/CLEAN`을 다시 확인한다.
 
 ## Merge 후 contributor PR comment 계획
 
@@ -177,5 +185,6 @@ output은 source 제출 대상이 아니며 위 두 PNG만 장기 review 증적�
 
 ## 원격 조치 상태
 
-reviewer 지정 외에 이번 local 보정 단계에서는 GitHub comment, review event, source push,
-ready 전환, close 또는 merge를 수행하지 않았다.
+승인에 따라 current-base merge, 메인터너 보정과 review 증적을 contributor source branch에
+fast-forward push했다. GitHub comment, review event, ready 전환, close 또는 merge는 아직
+수행하지 않았다.
