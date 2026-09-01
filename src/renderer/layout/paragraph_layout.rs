@@ -3802,6 +3802,45 @@ impl LayoutEngine {
                 None
             }
         };
+        // [#6545] 쪽을 넘어온 미주 문단 꼬리는 **첫 걸음에서만** 사다리가 뒤로 감긴다.
+        //
+        // HWPX 미주는 쪽 경계에서 `vertpos=0` 으로 리셋하고 그 뒤 줄들을 새 쪽 좌표계로
+        // 적는다. 파서(`normalize_hwpx_note_line_vpos`, #1692)는 note 안의 `0` 을 연속줄
+        // 아티팩트로 보고 `prev + line_height + line_spacing` 으로 되돌리는데, 뒤 줄들은
+        // 새 좌표계 그대로라 **리셋 줄 하나만** 앞 쪽 좌표로 튄다.
+        //
+        //   seg9 1487426 → seg10 *1505494* → seg11 1450574 → seg12 1451926
+        //                  (되돌린 값)        ← 여기서만 감김, 이후는 단조
+        //
+        // 그 한 걸음 때문에 위 단조 검사가 꺼지면 꼬리 **전체**가 저장 배치를 잃고
+        // `line_height`(=`vertsize`) 누적으로 떨어진다. `vertsize > textheight` 인 줄에서
+        // 진행량이 부풀어(2205+452 vs 900+452) 다음 문단이 수식 위에 겹친다
+        // (3-09월_교육_통합_2022 23쪽).
+        //
+        // IR 을 고치면 미주 흐름 회계 전체가 흔들리므로(형제 문서 회귀 확인), 배치만
+        // 되살린다 — 리셋 줄은 흐름대로 두고, **둘째 줄부터** 저장 델타를 쓴다. 기준 y 는
+        // 그 줄에 도달했을 때의 흐름 y 라 루프 안에서 늦게 잡는다.
+        let endnote_lazy_vpos_base_from: Option<usize> = {
+            let base = self.endnote_para_base.get();
+            if endnote_line_vpos_base.is_none()
+                && cell_ctx.is_none()
+                && para_index >= base
+                && start_line > 0
+                && end > start_line + 2
+            {
+                para.and_then(|p| {
+                    let range = p.line_segs.get(start_line..end)?;
+                    let backward_at_first_step = range[0].vertical_pos > range[1].vertical_pos;
+                    let rest_is_monotonic = range[1..]
+                        .windows(2)
+                        .all(|w| w[1].vertical_pos >= w[0].vertical_pos);
+                    (backward_at_first_step && rest_is_monotonic).then_some(start_line + 1)
+                })
+            } else {
+                None
+            }
+        };
+        let mut endnote_line_vpos_base = endnote_line_vpos_base;
         let para_topbottom_line_vpos_base: Option<(i32, f64)> = {
             if cell_ctx.is_none() && has_para_topbottom_float {
                 para.and_then(|p| {
@@ -3853,6 +3892,13 @@ impl LayoutEngine {
             let comp_line = &composed.lines[line_idx];
             let mut current_line_reserved_tac_picture_height: Option<f64> = None;
             let mut endnote_used_auto_wrap_y = false;
+            // [#6545] 감긴 첫 걸음을 지난 지점에서 기준을 늦게 잡는다 — 이 줄의 흐름 y 가
+            // 곧 기준 y 이므로 이 줄 자신의 위치는 바뀌지 않고, 뒤 줄들만 저장 델타를 탄다.
+            if endnote_line_vpos_base.is_none() && endnote_lazy_vpos_base_from == Some(line_idx) {
+                endnote_line_vpos_base = para
+                    .and_then(|p| p.line_segs.get(line_idx))
+                    .map(|seg| (seg.vertical_pos, y));
+            }
             if let (Some((base_vpos, base_y)), Some(seg)) = (
                 endnote_line_vpos_base,
                 para.and_then(|p| p.line_segs.get(line_idx)),
@@ -5372,8 +5418,21 @@ impl LayoutEngine {
                     &tac_offsets_px,
                     line_idx,
                 );
+            // [#6545] 저장 사다리가 이 줄에 **자기 vertical_pos** 를 줬다면 앞 줄이 예약한
+            // TAC 개체 높이의 유령 사본이 아니다 — 파일이 두 줄로 적어 둔 실제 줄이다.
+            // 높이만 같다고 건너뛰면 수식 줄이 흐름에 0 을 내고, 뒤 문단 전체가 그
+            // 한 줄만큼 위로 올라붙는다 (3-09월_교육_통합_2022 23쪽: −13.5pt).
+            let stored_line_has_own_vpos = endnote_line_vpos_base.is_some()
+                && para
+                    .and_then(|p| {
+                        let prev = p.line_segs.get(line_idx.checked_sub(1)?)?;
+                        let cur = p.line_segs.get(line_idx)?;
+                        Some(cur.vertical_pos != prev.vertical_pos)
+                    })
+                    .unwrap_or(false);
             let skip_advance_empty_tac_picture = runs_all_whitespace
                 && current_line_reserved_tac_picture_height.is_none()
+                && !stored_line_has_own_vpos
                 && prev_line_reserved_tac_picture_height
                     .map(|pic_h| (raw_lh - pic_h).abs() <= 4.0)
                     .unwrap_or(false);
