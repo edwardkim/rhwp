@@ -3097,7 +3097,8 @@ impl LayoutEngine {
                             if raw_lh + 4.0 >= pic_h {
                                 *reserved_tac_picture_height = Some(pic_h);
                             }
-                            let img_y = (y + baseline - pic_h).max(y);
+                            let box_h = tac_object_box_height_px(pic_h, &pic.caption, self.dpi);
+                            let img_y = (y + baseline - box_h).max(y);
                             let bin_data_id = pic.image_attr.bin_data_id;
                             let image_data = find_bin_data_bytes(bdc, bin_data_id);
                             let crop = {
