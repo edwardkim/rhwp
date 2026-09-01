@@ -12,6 +12,7 @@ import {
   buildBoundaryResizeUpdates,
   buildCellSelectionColumnDragUpdates,
   cellOverlapsSelectionRange,
+  findResizeCompensationNeighbors,
   type CellSelectionRange,
   type LocalResizeUpdate,
   type ResizeArrowKey,
@@ -110,17 +111,24 @@ function computeAffectedResizePositionBounds(
   for (const cellIdx of affectedCellIndices) {
     const targetBox = bboxes.find(b => b.cellIdx === cellIdx);
     if (!targetBox) continue;
-    const neighborIdx = findResizeCompensationNeighbor(edge, targetBox, bboxes);
-    const neighborBox = neighborIdx === null
-      ? null
-      : bboxes.find(b => b.cellIdx === neighborIdx) ?? null;
+    const neighborBoxes = findResizeCompensationNeighbors(edge, targetBox, bboxes);
 
     if (edge.type === 'col') {
       min = Math.max(min, targetBox.x + minSizePx);
-      max = Math.min(max, neighborBox ? neighborBox.x + neighborBox.w - minSizePx : maxX);
+      max = Math.min(
+        max,
+        neighborBoxes.length > 0
+          ? Math.min(...neighborBoxes.map(b => b.x + b.w - minSizePx))
+          : maxX,
+      );
     } else {
       min = Math.max(min, targetBox.y + minSizePx);
-      max = Math.min(max, neighborBox ? neighborBox.y + neighborBox.h - minSizePx : maxY);
+      max = Math.min(
+        max,
+        neighborBoxes.length > 0
+          ? Math.min(...neighborBoxes.map(b => b.y + b.h - minSizePx))
+          : maxY,
+      );
     }
     found = true;
   }
@@ -514,25 +522,12 @@ function pushLocalResizeDisplayHint(
   }
 }
 
-function findResizeCompensationNeighbor(
-  edge: BorderEdge,
-  bbox: CellBbox,
-  bboxes: CellBbox[],
-): number | null {
-  if (edge.type === 'col') {
-    const neighbor = bboxes.find(b => b.row === bbox.row && b.col === bbox.col + bbox.colSpan);
-    return neighbor?.cellIdx ?? null;
-  }
-
-  const neighbor = bboxes.find(b => b.col === bbox.col && b.row === bbox.row + bbox.rowSpan);
-  return neighbor?.cellIdx ?? null;
-}
 
 function clampCompensatedResizeDelta(
   wasm: any,
   tableRef: { sec: number; ppi: number; ci: number },
   edge: BorderEdge,
-  pairs: Array<{ targetCellIdx: number; neighborCellIdx: number | null }>,
+  pairs: Array<{ targetCellIdx: number; neighborCellIdxs: number[] }>,
   requestedDelta: number,
 ): number {
   if (requestedDelta === 0) return 0;
@@ -546,8 +541,8 @@ function clampCompensatedResizeDelta(
         finiteLimits.push(Math.max(0, Math.round(targetSize - MIN_TABLE_CELL_SIZE_HWP)));
       }
 
-      if (pair.neighborCellIdx !== null) {
-        const neighborProps = wasm.getCellProperties(tableRef.sec, tableRef.ppi, tableRef.ci, pair.neighborCellIdx);
+      for (const neighborCellIdx of pair.neighborCellIdxs) {
+        const neighborProps = wasm.getCellProperties(tableRef.sec, tableRef.ppi, tableRef.ci, neighborCellIdx);
         const neighborSize = edge.type === 'col' ? neighborProps.width : neighborProps.height;
         if (requestedDelta > 0 && Number.isFinite(neighborSize)) {
           finiteLimits.push(Math.max(0, Math.round(neighborSize - MIN_TABLE_CELL_SIZE_HWP)));
@@ -566,7 +561,7 @@ function clampCompensatedResizeDelta(
 
 function clampCompensatedDisplayDelta(
   edge: BorderEdge,
-  pairs: Array<{ targetBox: CellBbox; neighborBox: CellBbox | null }>,
+  pairs: Array<{ targetBox: CellBbox; neighborBoxes: CellBbox[] }>,
   requestedDelta: number,
 ): number {
   if (requestedDelta === 0) return 0;
@@ -574,10 +569,11 @@ function clampCompensatedDisplayDelta(
 
   for (const pair of pairs) {
     if (requestedDelta > 0) {
-      if (!pair.neighborBox) continue;
-      finiteLimits.push(
-        Math.max(0, getCellDisplaySize(pair.neighborBox, edge) - MIN_TABLE_CELL_SIZE_HWP),
-      );
+      for (const neighborBox of pair.neighborBoxes) {
+        finiteLimits.push(
+          Math.max(0, getCellDisplaySize(neighborBox, edge) - MIN_TABLE_CELL_SIZE_HWP),
+        );
+      }
     } else {
       finiteLimits.push(
         Math.max(0, getCellDisplaySize(pair.targetBox, edge) - MIN_TABLE_CELL_SIZE_HWP),
@@ -904,25 +900,24 @@ export function finishResizeDrag(this: any, e: MouseEvent): void {
     const targetBboxes = state.affectedCellIndices
       .map((cellIdx: any) => state.bboxes.find((b: any) => b.cellIdx === cellIdx))
       .filter((b: any): b is CellBbox => b !== undefined);
-    const pairs: Array<{ targetCellIdx: number; neighborCellIdx: number | null }> =
+    const pairs: Array<{ targetCellIdx: number; neighborCellIdxs: number[] }> =
       targetBboxes.map((bbox: CellBbox) => ({
       targetCellIdx: bbox.cellIdx,
-      neighborCellIdx: findResizeCompensationNeighbor(state.edge, bbox, state.bboxes),
+      neighborCellIdxs: findResizeCompensationNeighbors(state.edge, bbox, state.bboxes)
+        .map(neighbor => neighbor.cellIdx),
     }));
     const pairBoxes = pairs
-      .map((pair: { targetCellIdx: number; neighborCellIdx: number | null }) => ({
+      .map((pair: { targetCellIdx: number; neighborCellIdxs: number[] }) => ({
         targetCellIdx: pair.targetCellIdx,
-        neighborCellIdx: pair.neighborCellIdx,
         targetBox: state.bboxes.find((b: CellBbox) => b.cellIdx === pair.targetCellIdx),
-        neighborBox: pair.neighborCellIdx === null
-          ? null
-          : state.bboxes.find((b: CellBbox) => b.cellIdx === pair.neighborCellIdx) ?? null,
+        neighborBoxes: pair.neighborCellIdxs
+          .map(cellIdx => state.bboxes.find((b: CellBbox) => b.cellIdx === cellIdx))
+          .filter((b): b is CellBbox => b !== undefined),
       }))
       .filter((pair): pair is {
         targetCellIdx: number;
-        neighborCellIdx: number | null;
         targetBox: CellBbox;
-        neighborBox: CellBbox | null;
+        neighborBoxes: CellBbox[];
       } => pair.targetBox !== undefined);
     const hasLocalHistory = hasLocalResizeHistory(this, state.tableRef);
     const delta = hasLocalHistory
@@ -961,25 +956,26 @@ export function finishResizeDrag(this: any, e: MouseEvent): void {
         );
         updatedCells.add(pair.targetCellIdx);
 
-        if (pair.neighborCellIdx !== null && pair.neighborBox && !updatedCells.has(pair.neighborCellIdx)) {
+        for (const neighborBox of pair.neighborBoxes) {
+          if (updatedCells.has(neighborBox.cellIdx)) continue;
           const neighborProps = this.wasm.getCellProperties(
             state.tableRef.sec,
             state.tableRef.ppi,
             state.tableRef.ci,
-            pair.neighborCellIdx,
+            neighborBox.cellIdx,
           );
           const neighborDesiredSize = Math.max(
             MIN_TABLE_CELL_SIZE_HWP,
-            getCellDisplaySize(pair.neighborBox, state.edge) - delta,
+            getCellDisplaySize(neighborBox, state.edge) - delta,
           );
           pushLocalResizeDisplayHint(
             updates,
             state.edge,
-            pair.neighborCellIdx,
+            neighborBox.cellIdx,
             neighborDesiredSize,
             neighborDesiredSize - getCellModelSize(neighborProps, state.edge),
           );
-          updatedCells.add(pair.neighborCellIdx);
+          updatedCells.add(neighborBox.cellIdx);
         }
       }
       for (const box of state.bboxes) {
@@ -1000,15 +996,17 @@ export function finishResizeDrag(this: any, e: MouseEvent): void {
       for (const pair of pairs) {
         if (state.edge.type === 'col') {
           updates.push({ cellIdx: pair.targetCellIdx, widthDelta: delta });
-          if (pair.neighborCellIdx !== null && !addedNeighbors.has(pair.neighborCellIdx)) {
-            updates.push({ cellIdx: pair.neighborCellIdx, widthDelta: -delta });
-            addedNeighbors.add(pair.neighborCellIdx);
+          for (const neighborCellIdx of pair.neighborCellIdxs) {
+            if (addedNeighbors.has(neighborCellIdx)) continue;
+            updates.push({ cellIdx: neighborCellIdx, widthDelta: -delta });
+            addedNeighbors.add(neighborCellIdx);
           }
         } else {
           updates.push({ cellIdx: pair.targetCellIdx, heightDelta: delta });
-          if (pair.neighborCellIdx !== null && !addedNeighbors.has(pair.neighborCellIdx)) {
-            updates.push({ cellIdx: pair.neighborCellIdx, heightDelta: -delta });
-            addedNeighbors.add(pair.neighborCellIdx);
+          for (const neighborCellIdx of pair.neighborCellIdxs) {
+            if (addedNeighbors.has(neighborCellIdx)) continue;
+            updates.push({ cellIdx: neighborCellIdx, heightDelta: -delta });
+            addedNeighbors.add(neighborCellIdx);
           }
         }
       }

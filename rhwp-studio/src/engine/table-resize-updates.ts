@@ -111,6 +111,29 @@ export function buildCellSelectionColumnDragUpdates(
   return updates;
 }
 
+/**
+ * 경계 반대편에서 보상(-delta)을 받아야 하는 이웃 셀 전부. 병합 셀은 걸친
+ * 모든 행(열 경계)/열(행 경계)의 이웃을 쓸어야 한다 — 시작 행/열의 이웃
+ * 하나만 보상하면 나머지 줄의 폭/높이 합이 어긋나 표 크기가 뒤틀린다.
+ */
+export function findResizeCompensationNeighbors(
+  edge: { type: 'row' | 'col' },
+  bbox: CellBbox,
+  bboxes: CellBbox[],
+): CellBbox[] {
+  if (edge.type === 'col') {
+    return bboxes.filter(b =>
+      b.col === bbox.col + bbox.colSpan
+      && b.row < bbox.row + bbox.rowSpan
+      && b.row + b.rowSpan > bbox.row);
+  }
+
+  return bboxes.filter(b =>
+    b.row === bbox.row + bbox.rowSpan
+    && b.col < bbox.col + bbox.colSpan
+    && b.col + b.colSpan > bbox.col);
+}
+
 /** F5는 병합 셀의 시작 좌표만 보관하므로 실제 병합 범위까지 선택 축을 확장한다. */
 function selectedAxisRange(
   cells: CellBbox[],

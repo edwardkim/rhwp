@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { buildCellSelectionColumnDragUpdates, cellOverlapsSelectionRange } from '../src/engine/table-resize-updates.ts';
+import { buildCellSelectionColumnDragUpdates, cellOverlapsSelectionRange, findResizeCompensationNeighbors } from '../src/engine/table-resize-updates.ts';
 import type { CellBbox } from '../src/core/types.ts';
 
 const rootDir = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -247,6 +247,41 @@ test('병합 셀 열 드래그는 걸친 모든 행의 오른쪽 이웃을 보�
   assert.equal(byCell.get(r1c1.cellIdx), -100, '(1,1) 도 -delta — 시작 행만 보상하면 여기가 빠진다');
   assert.equal(byCell.get(r2c1.cellIdx), -100, '(2,1) 은 -delta');
   assert.equal(updates.length, 5, '표의 다섯 셀 전부가 정확히 한 번씩 update 를 받는다');
+});
+
+test('일반 모드 경계 드래그 보상 이웃은 병합 셀이 걸친 모든 줄을 쓴다', () => {
+  // 실측(2026-09-01, headless studio): 2x3 표에서 row0 cols0-1 을 가로 병합하고
+  // row0|row1 경계를 드래그하면, 아래 이웃 보상이 병합 셀의 시작 열 이웃만 찾아
+  // (1,1) 이 -delta 를 받지 못했다. 드래그가 절반만 먹고 표 전체 높이가
+  // 194.2px → 208.2px 로 불었다. 걸친 모든 열의 이웃이 보상을 받아야 한다.
+  const hMerged = mergedGridBbox(0, 0, 1, 2); // row0, cols0-1 가로 병합
+  const r02 = mergedGridBbox(0, 2, 1, 1);
+  const r10 = mergedGridBbox(1, 0, 1, 1);
+  const r11 = mergedGridBbox(1, 1, 1, 1);
+  const r12 = mergedGridBbox(1, 2, 1, 1);
+  const all = [hMerged, r02, r10, r11, r12];
+
+  const below = findResizeCompensationNeighbors({ type: 'row', index: 1 } as any, hMerged, all);
+  assert.deepEqual(
+    below.map(b => b.cellIdx).sort((a, b) => a - b),
+    [r10.cellIdx, r11.cellIdx].sort((a, b) => a - b),
+    '가로 병합 셀의 행 경계 보상은 걸친 두 열의 아래 이웃 모두여야 한다',
+  );
+
+  // 세로 병합(rowSpan=2) 열 경계 대칭: 걸친 두 행의 오른쪽 이웃 모두
+  const vMerged = mergedGridBbox(0, 0, 2, 1);
+  const c01 = mergedGridBbox(0, 1, 1, 1);
+  const c11 = mergedGridBbox(1, 1, 1, 1);
+  const right = findResizeCompensationNeighbors({ type: 'col', index: 1 } as any, vMerged, [vMerged, c01, c11]);
+  assert.deepEqual(
+    right.map(b => b.cellIdx).sort((a, b) => a - b),
+    [c01.cellIdx, c11.cellIdx].sort((a, b) => a - b),
+    '세로 병합 셀의 열 경계 보상은 걸친 두 행의 오른쪽 이웃 모두여야 한다',
+  );
+
+  // 병합 없는 셀은 종전처럼 이웃 하나
+  const single = findResizeCompensationNeighbors({ type: 'row', index: 1 } as any, r02, all);
+  assert.deepEqual(single.map(b => b.cellIdx), [r12.cellIdx]);
 });
 
 test('병합 없는 표의 열 드래그 보상은 기존과 같다', () => {
