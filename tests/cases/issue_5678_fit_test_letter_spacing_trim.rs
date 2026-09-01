@@ -1,93 +1,104 @@
-//! [Issue #5678] 문제 3 — fit 판정의 자간 trim 이 어느 시험에도 구속되지 않았다.
+//! [Issue #5678] 자간이 있는 문단의 fit 판정을 공개 조판 경로에서 구속한다.
 //!
-//! `fit_test_letter_spacing_trim_hwp` 와 `FitWidthHwp::trimmed` 는 글자마다 값을 할당하면서도
-//! 저장소 어느 시험에도 걸려 있지 않았다. 다섯 건으로 계약을 못박는다.
-//!
-//! 음성 대조: trim 을 제거하면 부호 시험과 판정-뒤집기 시험 2건이 실패한다.
-//!
-//! 이 시험이 `src/` 의 `#[cfg(test)]` 가 아니라 여기 있는 이유는 source unit tier 정책이
-//! 제품 소스의 신규 unit test 를 금지하기 때문이다. 헬퍼는 `renderer::composer::fit_test_internals`
-//! 가 `#[doc(hidden)]` 으로 내보낸다 — rhwp 의 API 가 아니다.
+//! 이것은 현재 구현의 양방향 특성화다. 양수 자간에서 줄 끝 잉크가 한컴 정답지와
+//! 일치한다는 판정은 포함하지 않으며, 그 오라클 과제와 per-character allocation은
+//! #5678에 남긴다. 내부 helper를 공개하지 않고 `DocumentCore`의 실제 조판 결과만 본다.
 #![cfg(not(target_arch = "wasm32"))]
 
-use rhwp::renderer::composer::fit_test_internals::{
-    fit_test_letter_spacing_trim_hwp, text_token_fits_line_hwp, to_hwp, FitWidthHwp,
-    LINE_BREAK_TOLERANCE,
-};
+use rhwp::document_core::DocumentCore;
+use rhwp::model::paragraph::{CharShapeRef, Paragraph};
+use rhwp::paint::{LayerNode, LayerNodeKind, PaintOp};
 
-/// 계약: **후보 토큰의 마지막 글자 뒤 자간만** 뺀다. 줄 끝 글자의 뒤 자간은 그려지지
-/// 않으므로 "들어가는가"를 따질 때 빼고 재고, 펜은 전체 폭만큼 전진한다.
-#[test]
-fn trim_takes_only_the_spacing_after_the_candidate_last_char() {
-    let spacing = [1.0, 2.0, 4.0];
-    // token_end_idx 는 exclusive — 마지막 글자는 idx-1 이다.
-    assert_eq!(fit_test_letter_spacing_trim_hwp(&spacing, 1), to_hwp(1.0));
-    assert_eq!(fit_test_letter_spacing_trim_hwp(&spacing, 2), to_hwp(2.0));
-    assert_eq!(fit_test_letter_spacing_trim_hwp(&spacing, 3), to_hwp(4.0));
+const SOURCE_HAN: &[u8] =
+    include_bytes!("../../ttfs/opensource/SourceHanSerifK-OldHangul-subset.otf");
+const TEXT: &str = "가나다라마바사아자차";
+
+fn document_with_spacing(spacing: i8, content_width_hwp: u32) -> DocumentCore {
+    let mut core = DocumentCore::new_empty();
+    core.create_blank_document_native()
+        .expect("public blank template");
+    let mut document = core.document().clone();
+
+    let mut char_shape = document.doc_info.char_shapes[0].clone();
+    char_shape.raw_data = None;
+    char_shape.base_size = 1_000;
+    char_shape.ratios = [100; 7];
+    char_shape.spacings = [spacing; 7];
+    char_shape.bold = false;
+    char_shape.italic = false;
+    char_shape.kerning = false;
+    char_shape.border_fill_id = 0;
+    let char_shape_id = document.doc_info.char_shapes.len() as u32;
+    document.doc_info.char_shapes.push(char_shape);
+
+    let mut paragraph = Paragraph::new_empty();
+    paragraph.text = TEXT.to_string();
+    paragraph.char_count = TEXT.encode_utf16().count() as u32;
+    paragraph.char_offsets = (0..TEXT.chars().count() as u32).collect();
+    paragraph.char_shapes = vec![CharShapeRef {
+        start_pos: 0,
+        char_shape_id,
+    }];
+    paragraph.line_segs.clear();
+    paragraph.invalidate_layout_inputs();
+    document.sections[0].paragraphs = vec![paragraph];
+    let page = &mut document.sections[0].section_def.page_def;
+    page.width = content_width_hwp + 2_000;
+    page.height = 100_000;
+    page.margin_left = 1_000;
+    page.margin_right = 1_000;
+    page.margin_top = 1_000;
+    page.margin_bottom = 1_000;
+    core.set_document(document);
+    core.register_exact_font_source_native(char_shape_id, 0, SOURCE_HAN, 0)
+        .expect("register exact test font");
+    core
 }
 
-/// 토큰이 비었거나(`0`) 자간 배열 밖이면 보정하지 않는다.
-#[test]
-fn trim_is_zero_outside_the_spacing_slice() {
-    let spacing = [3.0];
-    assert_eq!(fit_test_letter_spacing_trim_hwp(&spacing, 0), 0);
-    assert_eq!(fit_test_letter_spacing_trim_hwp(&spacing, 9), 0);
-    assert_eq!(fit_test_letter_spacing_trim_hwp(&[], 1), 0);
+fn collect_text_runs<'a>(node: &'a LayerNode, runs: &mut Vec<(f64, &'a str)>) {
+    match &node.kind {
+        LayerNodeKind::Group { children, .. } => {
+            for child in children {
+                collect_text_runs(child, runs);
+            }
+        }
+        LayerNodeKind::ClipRect { child, .. } => collect_text_runs(child, runs),
+        LayerNodeKind::Leaf { ops } => {
+            for op in ops {
+                if let PaintOp::TextRun { bbox, run } = op {
+                    runs.push((bbox.y, run.text.as_str()));
+                }
+            }
+        }
+    }
 }
 
-/// **부호가 고정돼 있지 않다.** 양수 자간은 후보를 좁게, 음수 자간은 넓게 만든다.
-///
-/// 이슈가 지적한 대로 근거 코퍼스(`76076_regulatory_analysis`)는 `-0.16…-1.76px`
-/// 로 음수 방향뿐이었다. 양수 방향을 여기서 함께 고정한다.
-#[test]
-fn trimmed_width_follows_the_spacing_sign() {
-    let w = to_hwp(100.0);
-    let narrower = FitWidthHwp::trimmed(w, &[2.0], 1);
-    let wider = FitWidthHwp::trimmed(w, &[-2.0], 1);
-    assert!(
-        narrower.hwp() < w,
-        "양수 자간은 fit 판정 폭을 좁혀야 한다: {} vs {w}",
-        narrower.hwp()
-    );
-    assert!(
-        wider.hwp() > w,
-        "음수 자간은 fit 판정 폭을 넓혀야 한다: {} vs {w}",
-        wider.hwp()
-    );
-    assert_eq!(narrower.hwp(), w - to_hwp(2.0));
-    assert_eq!(wider.hwp(), w - to_hwp(-2.0));
+fn first_line(spacing: i8, content_width_hwp: u32) -> String {
+    let tree = document_with_spacing(spacing, content_width_hwp)
+        .build_page_layer_tree(0)
+        .expect("render synthetic paragraph");
+    let mut runs = Vec::new();
+    collect_text_runs(&tree.root, &mut runs);
+    runs.first()
+        .expect("at least one rendered line")
+        .1
+        .to_string()
 }
 
-/// **양수 자간에서 trim 이 판정을 뒤집는 지점이 실재한다.**
-///
-/// 이슈 문제 2 가 지목한 상쇄다 — 자기 뒤 자간을 뺀 덕에만 들어간 토큰이 있고,
-/// 펜은 `w_hwp` 전체만큼 전진한다. 이것은 결함이 아니라 **선언된 계약**이다
-/// (줄 끝 자간은 그려지지 않는다). 다만 계약이 실제로 발동하는 구간이 있다는
-/// 사실 자체를 고정해 두어, 나중에 trim 을 없애도 아무 시험이 안 깨지는 일이
-/// 다시 생기지 않게 한다.
 #[test]
-fn positive_spacing_trim_can_flip_the_fit_verdict() {
-    let effective = to_hwp(100.0);
-    let current = to_hwp(90.0);
-    // 자연 폭은 tolerance 를 넘고, trim 을 빼면 들어간다.
-    let token_w = effective + LINE_BREAK_TOLERANCE - current + to_hwp(1.0);
-    let untrimmed = FitWidthHwp::untrimmed(token_w);
-    let trimmed = FitWidthHwp::trimmed(token_w, &[2.0], 1);
-    assert!(
-        !text_token_fits_line_hwp(current, untrimmed, 0, effective, 12.0),
-        "trim 없이는 들어가지 않아야 한다"
-    );
-    assert!(
-        text_token_fits_line_hwp(current, trimmed, 0, effective, 12.0),
-        "trim 을 빼면 들어가야 한다"
+fn positive_spacing_characterizes_the_current_public_line_break() {
+    assert_eq!(
+        first_line(20, 4_500),
+        "가나다라",
+        "양수 자간의 후보 끝 보정을 제거하면 첫 줄은 '가나다'로 줄어든다"
     );
 }
 
-/// 커닝 보정은 fit 판정 폭에만 더한다 — 펜 전진 폭 축과 섞이지 않는다.
 #[test]
-fn pair_adjustment_only_moves_the_fit_width() {
-    let w = to_hwp(50.0);
-    let base = FitWidthHwp::trimmed(w, &[1.0], 1);
-    let adjusted = base.with_pair_adjustment(to_hwp(3.0));
-    assert_eq!(adjusted.hwp(), base.hwp() + to_hwp(3.0));
+fn negative_spacing_characterizes_the_current_public_line_break() {
+    assert_eq!(
+        first_line(-20, 3_950),
+        "가나다라",
+        "음수 자간의 후보 끝 보정을 제거하면 첫 줄은 '가나다라마'로 늘어난다"
+    );
 }

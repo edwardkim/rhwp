@@ -1160,11 +1160,8 @@ fn apply_paragraph_kerning_to_tokens(
 
 /// px를 HWPUNIT(i32)로 변환 (내림, DPI=96 기준: px * 75)
 ///
-/// `pub` 인 이유는 `tests/cases/issue_5678_fit_test_letter_spacing_trim.rs` 가 fit 판정 계약을
-/// 밖에서 구속하기 때문이지, rhwp 의 API 라는 뜻이 아니다. `#[doc(hidden)]` 이 그 사실을 적는다.
-#[doc(hidden)]
 #[inline]
-pub fn to_hwp(px: f64) -> i32 {
+fn to_hwp(px: f64) -> i32 {
     (px * 75.0) as i32
 }
 
@@ -1182,8 +1179,7 @@ fn condensed_line_width_hwp(width_hwp: i32, space_savings_hwp: i32) -> i32 {
 
 // 한컴은 HWPUNIT 정수 양자화 시 미세한 반올림 차이를 허용한다.
 // 15 HU 이내의 초과는 줄에 포함한다.
-#[doc(hidden)]
-pub const LINE_BREAK_TOLERANCE: i32 = 15;
+const LINE_BREAK_TOLERANCE: i32 = 15;
 
 fn condense_fit_can_pull_next_token(
     current_width_hwp: i32,
@@ -1220,8 +1216,7 @@ fn condense_fit_can_pull_next_token(
 /// `-0.16…-1.76` px).
 /// Forced to 0 under an active character grid, which is inert here: every
 /// corpus section has `char_grid == 0`.
-#[doc(hidden)]
-pub fn fit_test_letter_spacing_trim_hwp(letter_spacing_px: &[f64], token_end_idx: usize) -> i32 {
+fn fit_test_letter_spacing_trim_hwp(letter_spacing_px: &[f64], token_end_idx: usize) -> i32 {
     if token_end_idx == 0 {
         return 0;
     }
@@ -1265,42 +1260,26 @@ fn resolved_letter_spacing_px(
 /// 차이를 잡지 못했다. 이제 원시 정수는 이 함수에 들어가지 못하고, 호출부는 생성자
 /// 이름으로 어느 쪽인지 밝혀야 한다.
 ///
-/// `pub` 이지만 내부 필드는 private 이다 — 원시 정수가 생성자를 우회하지 못한다는 위 계약이
-/// 밖에서도 그대로 선다. `#[doc(hidden)]` 은 이것이 rhwp 의 API 가 아님을 적는다.
-#[doc(hidden)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub struct FitWidthHwp(i32);
+struct FitWidthHwp(i32);
 
 impl FitWidthHwp {
-    /// fit 판정 폭을 HWPUNIT 으로 읽는다. 시험이 값을 확인하는 유일한 통로다.
-    #[inline]
-    pub fn hwp(self) -> i32 {
-        self.0
-    }
-
-    /// 자간 보정 없이 fit 판정 폭을 만든다 (자간이 0 인 문단·대조군용).
-    #[inline]
-    pub fn untrimmed(token_width_hwp: i32) -> Self {
-        Self(token_width_hwp)
-    }
-
     /// 후보 토큰의 마지막 글자 뒤 자간을 뺀 폭. 실사용 fill 이 쓰는 값이다.
     ///
     /// 줄 끝에 오는 글자의 뒤 자간은 그려지지 않으므로 들어가는지 따질 때 빼고 잰다.
     /// 펜은 전체 폭만큼 전진한다.
-    pub fn trimmed(token_width_hwp: i32, letter_spacing_px: &[f64], token_end_idx: usize) -> Self {
+    fn trimmed(token_width_hwp: i32, letter_spacing_px: &[f64], token_end_idx: usize) -> Self {
         Self(token_width_hwp - fit_test_letter_spacing_trim_hwp(letter_spacing_px, token_end_idx))
     }
 
     /// 커닝 경계쌍 보정을 fit 판정 폭에 더한다 (#4439 커닝 세션과의 병합점).
     /// 펜 전진 폭에는 더하지 않는다 — fit 판정 전용 축이다.
-    pub fn with_pair_adjustment(self, adjustment_hwp: i32) -> Self {
+    fn with_pair_adjustment(self, adjustment_hwp: i32) -> Self {
         Self(self.0 + adjustment_hwp)
     }
 }
 
-#[doc(hidden)]
-pub fn text_token_fits_line_hwp(
+fn text_token_fits_line_hwp(
     current_width_hwp: i32,
     token_width: FitWidthHwp,
     space_savings_hwp: i32,
