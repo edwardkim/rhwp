@@ -1,6 +1,6 @@
 ---
 kind: pr_review
-status: ci-passed
+status: completed
 canonical: mydocs/manual/pr_review_workflow.md
 last_verified: 2026-09-01
 ---
@@ -19,10 +19,11 @@ mousemove에서 엔진 호출을 1회로 제한했지만, 페이지별 실패 me
 고쳤다. 최신 `devel` 통합, 필수 Rust lint 묶음, Docker WASM build, Studio 전체 unit,
 TypeScript, #4117 headless Chrome 왕복과 사람이 직접 연 전·후 screenshot이 통과했다.
 
-보정이 포함된 source head `257d81c3ec6cb3762463e946c04d5a98a2213a12`를 원격에
-반영했고, 그 정확한 SHA의 Full CI와 보조 workflow가 모두 통과했다. GitHub 상태도
-`MERGEABLE/CLEAN`이다. 이 판정과 CI 성공은 merge 실행 승인이 아니며, self-review를
-마친 뒤 merge는 별도 승인을 받아야 한다.
+보정이 포함된 source head `257d81c3ec6cb3762463e946c04d5a98a2213a12`의 Full CI와
+보조 workflow가 모두 통과했다. review-only 최종 head
+`4a2be5541c6ef3c82c41304416ade830500f03ae`의 Fast Pass와 메인터너 self-review를 확인한
+뒤, 작업지시자 승인으로 정상 2-parent merge commit
+`07e1dd7ef6e51bb063b4b4bf10e5694d8eec94c5`를 `devel`에 반영했다.
 
 ## 라우팅
 
@@ -45,8 +46,11 @@ TypeScript, #4117 headless Chrome 왕복과 사람이 직접 연 전·후 screen
 | current-base merge | `c919bc209e8ae22f9918fde1a0af204e18b8d6c0` |
 | 메인터너 보정 code candidate | `b4df21457419650e97f4fa6d27cbcac5681d40fd` |
 | 검증 완료 원격 head | `257d81c3ec6cb3762463e946c04d5a98a2213a12` |
+| review-only 최종 head | `4a2be5541c6ef3c82c41304416ade830500f03ae` |
+| self-review | [COMMENTED review #5077158890](https://github.com/edwardkim/rhwp/pull/6564#pullrequestreview-5077158890) |
+| merge commit | `07e1dd7ef6e51bb063b4b4bf10e5694d8eec94c5` |
 | 원 PR 규모 | 10 files, `+452/-66` |
-| 원격 현재 상태 | head `257d81c3e`, open, non-draft, `MERGEABLE/CLEAN`; 2026-09-01 확인 |
+| 원격 최종 상태 | head `4a2be5541`, `MERGED`; #4117 자동 종료, 2026-09-01 확인 |
 | reviewer | `edwardkim` |
 
 원 head의 GitHub CI·CodeQL·Proptest·Render Diff·Adapter 성공은 보정 candidate의
@@ -58,6 +62,10 @@ CI run `33497972187`, CodeQL run `33497972198`, Proptest run `33497972307`, Adap
 로컬 검증 기준 `devel`은 위 표의 `0d1540931d`다. CI 종료 뒤 원격 `devel`이
 `b9d408f0d698de84d4a0c5f1bf4cc12e35ef2f16`까지 전진했으나, 2026-09-01 재조회에서
 현재 PR head는 계속 `MERGEABLE/CLEAN`이었다. 이 값은 merge 직전 다시 조회한다.
+
+review-only 최종 head의 Fast Pass는 성공 11건, 정책상 skip 20건, 실패·대기 0건으로
+종료됐다. merge 직전에도 head SHA, required checks, `MERGEABLE/CLEAN`과 최신 `devel`의
+무충돌 merge simulation을 다시 확인했다.
 
 ## 원 변경과 current-base 통합
 
@@ -158,7 +166,7 @@ marker, drag 전·후 열 경계, 세 행 정렬, 도구 UI의 깨짐 여부를 
 SHA-256은 `c585c42add86b8903c6b663b06bd3576e8ad93b0bc017134b43f3b36ccb7faba`다.
 output은 source 제출 대상이 아니며 위 두 PNG만 장기 review 증적으로 보존한다.
 
-## 잔여 위험과 다음 조건
+## 잔여 위험과 완료 상태
 
 - 실패 `Set`은 문서 snapshot 변경 시 비워지며 그 전에는 실제로 hover한 실패 page key만
   보관한다. 문서 전체 표·페이지를 사전 열거하지는 않지만, 극단적으로 많은 표를 모두 hover한
@@ -166,9 +174,9 @@ output은 source 제출 대상이 아니며 위 두 PNG만 장기 review 증적�
 - E2E는 3×3 synthetic 표의 happy path와 이동 budget을 증명한다. 원 이슈가 수치를 확보하지
   못한 중첩 표와 장시간 multi-page stress는 이번 PR의 merge blocker로 확대하지 않는다.
 - current-base merge, 보정 commit, review 증적은 source branch에 반영됐고 정확한 원격 head의
-  Full CI와 `MERGEABLE/CLEAN`을 확인했다.
-- 다음 게이트는 이 확정 head의 self-review다. self-review 뒤에도 merge는 별도 승인을 받으며,
-  merge 직전 head SHA, required checks와 `MERGEABLE/CLEAN`을 다시 확인한다.
+  Full CI와 Fast Pass를 확인했다.
+- 메인터너 self-review에서 blocking finding이 없음을 확인하고 별도 merge 승인을 받은 뒤 정상
+  merge commit 방식으로 병합했다. #4117은 closing keyword에 의해 자동 종료됐다.
 
 ## Merge 후 contributor PR comment 계획
 
@@ -186,5 +194,6 @@ output은 source 제출 대상이 아니며 위 두 PNG만 장기 review 증적�
 ## 원격 조치 상태
 
 승인에 따라 current-base merge, 메인터너 보정과 review 증적을 contributor source branch에
-fast-forward push했다. GitHub comment, review event, ready 전환, close 또는 merge는 아직
-수행하지 않았다.
+fast-forward push했다. 메인터너 self-review는 `COMMENTED`로 남겼고 PR #6564는 정상 merge
+commit으로 병합됐다. #4117은 자동 종료됐으며, maintainer issue comment와 merge 결과 contributor
+comment는 후속 게시 대상으로 남긴다.

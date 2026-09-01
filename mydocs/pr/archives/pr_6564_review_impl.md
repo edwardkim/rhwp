@@ -1,6 +1,6 @@
 ---
 kind: implementation_plan
-status: ci-passed
+status: completed
 canonical: mydocs/manual/pr_review_workflow.md
 last_verified: 2026-09-01
 ---
@@ -123,12 +123,14 @@ node scripts/rust-test-suite-manifest.mjs --check
 - 판정은 원 head만의 승인으로 쓰지 않고 `메인터너 보정 후 수용 가능`로 기록한다.
 - 승인에 따라 contributor source branch로 current candidate를 push했다.
 - 원격 head `257d81c3ec6cb3762463e946c04d5a98a2213a12`의 GitHub Full CI 성공과
-  `MERGEABLE/CLEAN`을 확인했다. self-review 뒤 merge 승인을 별도로 요청한다.
+  `MERGEABLE/CLEAN`을 확인했다. review-only 최종 head `4a2be5541c6ef3c82c41304416ade830500f03ae`의
+  Fast Pass와 self-review 뒤 별도 승인을 받아 merge commit
+  `07e1dd7ef6e51bb063b4b4bf10e5694d8eec94c5`로 병합했다.
 
 ## 제출·정리 경계
 
 - 새 Rust integration source, generated suite·manifest, golden/baseline은 추가하지 않는다.
-- source branch push는 승인 뒤 완료했다. GitHub comment와 merge는 각각 승인 전 수행하지
-  않는다.
+- source branch push, self-review와 merge는 각각 승인 뒤 완료했다. merge 후 issue·contributor
+  comment는 별도 승인 범위로 남긴다.
 - #6564 완료 뒤 review archive·오늘할일·issue/PR comment와 전용 worktree/branch 정리를
   post-merge 순서로 수행한다.
