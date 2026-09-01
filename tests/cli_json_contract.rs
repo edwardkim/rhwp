@@ -868,7 +868,8 @@ fn help_hidden() -> Vec<(&'static str, &'static str)> {
 #[test]
 fn help_covers_every_capabilities_command() {
     // 드리프트 가드 ③: capabilities 가 광고하는 최상위 명령은 루트 `--help` 색인에도
-    // 있어야 한다. 세부 플래그와 하위 명령은 각각 `rhwp <명령> --help`에서 안내한다.
+    // 있어야 한다. 내부 프로브도 별도 내부 개발·회귀 section에 보이므로 숨김 예외로
+    // 빼지 않는다. 세부 플래그와 하위 명령은 각각 `rhwp <명령> --help`에서 안내한다.
     let cap = parse_stdout_json(&["capabilities"], &run(&["capabilities"]));
     let output = run(&["--help"]);
     let help_text = String::from_utf8_lossy(&output.stdout);
@@ -893,43 +894,40 @@ fn help_covers_every_capabilities_command() {
                     .unwrap_or(false)
             })
         })
-        .filter(|n| !hidden.iter().any(|(hidden, _)| *hidden == *n))
         .collect();
     assert!(
         missing.is_empty(),
-        "capabilities 에는 있는데 루트 --help 색인에 없는 명령: {missing:?}\n\
-         사용자용이면 root_command_index 에 추가하고, 내부 프로브면 HELP_HIDDEN 에 사유와 함께 넣으세요."
+        "capabilities 에는 있는데 루트 --help 색인에 없는 명령: {missing:?}"
     );
 
-    // 허용목록이 낡는 것도 같은 부류의 드리프트다 — help 에 실린 명령이 목록에 남아
-    // 있으면 "감췄다"는 설명 자체가 거짓이 되므로 지우게 만든다.
-    let stale: Vec<&str> = hidden
-        .iter()
-        .map(|(hidden, _)| *hidden)
-        .filter(|hidden| {
-            help_text.lines().any(|line| {
+    let internal_heading = "내부 개발·회귀 명령 (이름순";
+    let internal_start = help_text
+        .find(internal_heading)
+        .expect("root --help에 내부 개발·회귀 명령 section이 없습니다");
+    let internal_end = help_text[internal_start..]
+        .find("계층형 명령:")
+        .map(|offset| internal_start + offset)
+        .expect("root --help의 내부 section 끝을 찾지 못했습니다");
+    let internal_section = &help_text[internal_start..internal_end];
+    for (hidden, why) in hidden {
+        assert!(
+            !why.trim().is_empty(),
+            "{hidden} 의 은닉 사유가 비었습니다."
+        );
+        assert!(
+            internal_section.lines().any(|line| {
                 let Some(rest) = line.strip_prefix("  ") else {
                     return false;
                 };
-                let Some(tail) = rest.strip_prefix(*hidden) else {
+                let Some(tail) = rest.strip_prefix(hidden) else {
                     return false;
                 };
                 tail.chars()
                     .next()
                     .map(char::is_whitespace)
                     .unwrap_or(false)
-            })
-        })
-        .collect();
-    assert!(
-        stale.is_empty(),
-        "이미 --help 에 실린 명령이 HELP_HIDDEN 에 남아 있습니다: {stale:?}"
-    );
-
-    for (hidden, why) in hidden {
-        assert!(
-            !why.trim().is_empty(),
-            "{hidden} 의 은닉 사유가 비었습니다."
+            }),
+            "내부 capabilities 명령 {hidden} 이 내부 개발·회귀 section에 없습니다"
         );
     }
 }

@@ -79,6 +79,16 @@ fn every_declared_command_answers_help_on_stdout() {
             text.contains(name.as_str()),
             "rhwp {name} --help 출력에 자기 이름이 없다:\n{text}"
         );
+        for heading in ["사용법:", "옵션:", "예시:"] {
+            assert!(
+                text.contains(heading),
+                "rhwp {name} --help 에 구조화된 {heading} 절이 없다:\n{text}"
+            );
+        }
+        assert!(
+            !text.contains("상세 절은 아직 없다"),
+            "rhwp {name} --help 가 fallback 문구를 냈다:\n{text}"
+        );
         assert!(
             out.stderr.is_empty(),
             "도움말은 stdout 이다 — {name} 이 stderr 로 샜다: {}",
@@ -103,6 +113,16 @@ fn every_declared_subcommand_answers_help() {
             assert!(
                 text.contains(&sub),
                 "rhwp {name} {sub} --help 출력에 자기 이름이 없다:\n{text}"
+            );
+            for heading in ["사용법:", "옵션:", "예시:"] {
+                assert!(
+                    text.contains(heading),
+                    "rhwp {name} {sub} --help 에 구조화된 {heading} 절이 없다:\n{text}"
+                );
+            }
+            assert!(
+                !text.contains("상세 절은 아직 없다"),
+                "rhwp {name} {sub} --help 가 fallback 문구를 냈다:\n{text}"
             );
             checked += 1;
         }
@@ -130,7 +150,7 @@ fn scoped_help_is_a_fraction_of_the_whole_help() {
         "명령별 도움말이 비었다 — 통짜와의 비교가 무의미하다"
     );
     assert!(
-        whole.len() > scoped.len() * 50,
+        whole.len() > scoped.len() * 20,
         "명령별 도움말이 통짜 대비 충분히 작지 않다 (통짜 {} B, fields {} B)",
         whole.len(),
         scoped.len()
@@ -183,29 +203,50 @@ fn whole_help_is_a_sorted_command_index() {
         !text.contains("  edit fill-fields "),
         "root help가 edit 하위 상세 절을 중복 출력한다"
     );
-    let hidden_diagnostics = ["core-pages", "dump-extents", "measure-width"];
+    let internal_diagnostics = ["core-pages", "dump-extents", "measure-width"];
+    let internal_heading = "내부 개발·회귀 명령 (이름순";
+    let internal_start = text
+        .find(internal_heading)
+        .expect("root help의 내부 개발·회귀 명령 제목이 사라졌다");
+    let hierarchy_start = text
+        .find("계층형 명령:")
+        .expect("root help의 계층형 명령 제목이 사라졌다");
+    let public_section = &text[..internal_start];
+    let internal_section = &text[internal_start..hierarchy_start];
     let mut expected: Vec<String> = declared()
         .into_iter()
         .map(|(name, _)| name)
-        .filter(|name| !hidden_diagnostics.contains(&name.as_str()))
+        .filter(|name| !internal_diagnostics.contains(&name.as_str()))
         .collect();
     expected.sort();
     let mut previous = 0usize;
     for name in expected {
         let marker = format!("  {name:<28}");
-        let position = text
+        let position = public_section
             .find(&marker)
-            .unwrap_or_else(|| panic!("root index에 {name} 이 없다:\n{text}"));
+            .unwrap_or_else(|| panic!("공개 root index에 {name} 이 없다:\n{text}"));
         assert!(
             previous <= position,
             "root index가 명령 이름순이 아니다: {name} 이 앞 명령보다 먼저 나왔다\n{text}"
         );
         previous = position;
     }
+    let mut previous = 0usize;
+    for name in internal_diagnostics {
+        let marker = format!("  {name:<28}");
+        let position = internal_section
+            .find(&marker)
+            .unwrap_or_else(|| panic!("내부 root index에 {name} 이 없다:\n{text}"));
+        assert!(
+            previous <= position,
+            "내부 root index가 명령 이름순이 아니다: {name}\n{text}"
+        );
+        previous = position;
+    }
 }
 
 #[test]
-fn formerly_fallback_diagnostics_have_real_detail() {
+fn internal_diagnostics_have_structured_and_detailed_help() {
     for (args, required) in [
         (
             ["dump-extents", "--help"].as_slice(),
@@ -227,10 +268,41 @@ fn formerly_fallback_diagnostics_have_real_detail() {
                 "{args:?} detail에 {needle:?}가 없다:\n{text}"
             );
         }
+        for heading in ["사용법:", "옵션:", "예시:"] {
+            assert!(
+                text.contains(heading),
+                "{args:?}의 구조화된 {heading} 절이 없다:\n{text}"
+            );
+        }
         assert!(
             !text.contains("상세 절은 아직 없다"),
             "{args:?}가 fallback 문구만 출력한다:\n{text}"
         );
+    }
+}
+
+#[test]
+fn capabilities_declared_routes_all_have_structured_help_contract() {
+    let envelope = capabilities();
+    for command in envelope["commands"].as_array().expect("commands 배열") {
+        let name = command["name"].as_str().expect("명령 이름");
+        let output = stdout_of(&run(&[name, "--help"]));
+        for heading in ["사용법:", "옵션:", "예시:"] {
+            assert!(
+                output.contains(heading),
+                "capabilities 명령 {name}의 {heading} 계약이 없다:\n{output}"
+            );
+        }
+        for subcommand in command["subcommands"].as_array().into_iter().flatten() {
+            let sub = subcommand["name"].as_str().expect("하위 명령 이름");
+            let output = stdout_of(&run(&[name, sub, "--help"]));
+            for heading in ["사용법:", "옵션:", "예시:"] {
+                assert!(
+                    output.contains(heading),
+                    "capabilities 하위 명령 {name} {sub}의 {heading} 계약이 없다:\n{output}"
+                );
+            }
+        }
     }
 }
 
