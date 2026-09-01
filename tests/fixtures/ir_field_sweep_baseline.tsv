@@ -559,3 +559,4 @@ hwpx	tbox-v-flow-01.hwpx	sections[].paragraphs[].controls[].text_box.paragraphs[
 hwpx	tbox-v-flow-01.hwpx	sections[].paragraphs[].raw_header_extra[]	4
 hwpx	water-mark.hwpx	sections[].paragraphs[].raw_header_extra[]	1
 hwp5rb	issue6524/30098_float_host_split_lineseg.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	124
+hwp5rb	issue6549/16418295_square_rowbreak_table.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	17
