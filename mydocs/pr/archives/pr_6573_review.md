@@ -1,6 +1,6 @@
 ---
 kind: pr-review
-status: remote-validation-pending
+status: approved
 canonical: mydocs/manual/pr_review_workflow.md
 last_verified: 2026-09-01
 pr: 6573
@@ -18,10 +18,9 @@ author: edwardkim
 `workflow_dispatch`, `contents: write`, release job 조건과 action pin은 바꾸지 않았다.
 
 로컬 workflow 계약 48건, YAML 구조, 문서 링크와 diff 검사가 통과했고 blocking finding은 없다.
-다만 runner label·toolchain·linker·바이너리 실행·artifact는 로컬 x86_64 환경에서 증명할 수 없는
-O3 실행 계약이다. 따라서 이 승인은 기술 검토 판정이며, 병합 전에는 최신 PR head의 Full CI와
-별도 승인된 `Release Binary(tag=test)` 다섯 job, Linux AArch64 archive의 독립 검증이 모두
-성공해야 한다.
+exact head `ea20afc4b`의 Full CI와 `Release Binary(tag=test)` 다섯 job도 성공했다. Linux AArch64
+archive를 직접 내려받아 구성·실행 권한·ELF AArch64를 확인했다. 이 결과 기록이 추가된 trailing
+head의 required checks와 `MERGEABLE/CLEAN`을 다시 확인하면 merge 검증 조건이 충족된다.
 
 이 PR은 collaborator 본인 self-review이므로 reviewer와 GitHub approve review를 지정하지 않는다.
 이 문서의 작성은 workflow dispatch, merge 또는 #5949 close 승인이 아니다.
@@ -121,22 +120,40 @@ merge 전 rollback은 작업 branch와 PR을 폐기하는 것으로 끝난다. m
 revert해 matrix·계약·문서를 함께 제거한다. 게시된 release asset은 같은 버전으로 조용히 교체하지 않고
 별도 patch release 절차를 사용한다.
 
+## 원격 실행 검증 완료
+
+- exact head Full CI:
+  [run 33509308330](https://github.com/edwardkim/rhwp/actions/runs/33509308330) 성공
+- Release Binary dry-run:
+  [run 33510934562](https://github.com/edwardkim/rhwp/actions/runs/33510934562) 성공
+- 다섯 matrix build: 모두 성공
+- Linux AArch64 runner: `ubuntu-24.04-arm`
+- native version 실행: `rhwp v0.8.4`
+- archive: `rhwp-test-linux-aarch64.tar.gz`
+- 내부 archive SHA-256:
+  `ba55608c2ea67ebdd9b2aff46334d33824d9ecea878a86d4b3ee7d520126fe8c`
+- binary: ELF64 little-endian PIE, `Machine: AArch64`, mode `-rwxr-xr-x`
+- Release job: skip, `test` GitHub Release 없음
+
+상세 command·job 시간·artifact ID와 envelope/archive checksum 구분은
+[`task_m100_5949_stage4.md`](../../working/task_m100_5949_stage4.md)에 고정했다.
+
 ## 최종 판정과 다음 조건
 
 - 판정: **승인**
 - 판정 대상: code candidate `eaf1bcfc9fb4ef030e5951d560ee8db364c92987`
-- 원격 필수 gate: 최신 PR head Full CI, `Release Binary(tag=test)` 다섯 build job,
+- 완료한 원격 gate: exact head Full CI, `Release Binary(tag=test)` 다섯 build job,
   Linux AArch64 `--version`과 artifact upload 성공
-- artifact gate: archive의 `rhwp/rhwp`, `LICENSE`, `README.md`, `README_EN.md`와
-  ELF 64-bit AArch64 확인
+- 완료한 artifact gate: archive의 `rhwp/rhwp`, `LICENSE`, `README.md`, `README_EN.md`,
+  실행 권한과 ELF 64-bit AArch64 확인
+- trailing 조건: 이 결과 기록을 push한 최신 PR head의 required checks와
+  `MERGEABLE/CLEAN` 재확인
 - merge 방식: 작업지시자 별도 승인 뒤 `--admin` 없이 정상 2-parent merge commit
 - 이슈 종료: 구현 merge 뒤에도 #5949를 열어 두고, v0.8.5 실제 archive와 checksum 검증 뒤 close
 
 ## 후속 순서
 
-1. 이 review와 오늘할일 trailing commit을 별도 승인 뒤 원격 branch에 push한다.
-2. 최신 PR head의 Full CI와 `MERGEABLE/CLEAN`을 확인한다.
-3. 별도 승인 뒤 exact branch에서 `Release Binary`를 `tag=test`로 dispatch한다.
-4. 다섯 matrix job과 Linux AArch64 archive를 검증해 Stage O3-4 기록을 완성한다.
-5. 최종 merge 승인을 받은 뒤 정상 merge commit 방식으로 `devel`에 병합한다.
-6. v0.8.5 release에서 실제 Linux AArch64 asset과 checksum을 검증한 뒤 #5949를 종료한다.
+1. Stage O3-4 결과 기록을 별도 승인 뒤 원격 branch에 push한다.
+2. 최신 trailing head의 required checks와 `MERGEABLE/CLEAN`을 확인한다.
+3. 최종 merge 승인을 받은 뒤 정상 merge commit 방식으로 `devel`에 병합한다.
+4. v0.8.5 release에서 실제 Linux AArch64 asset과 checksum을 검증한 뒤 #5949를 종료한다.
