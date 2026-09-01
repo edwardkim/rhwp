@@ -12450,7 +12450,25 @@ impl TypesetEngine {
                     endnote_has_visible_payload,
                     large_separator_block,
                     compact_between_notes_gap,
-                );
+                )
+                // [#6544] 저장 사다리가 "이 단에 들어간다"고 말하고 **자기 회계로도 들어가면**
+                // 위험 휴리스틱을 적용하지 않는다.
+                //
+                // 이 술어는 저장 증거를 보지 않는 순수 띠다 — "단의 96% 를 넘었고 이 문단을
+                // 넣으면 하단 20px 안으로 들어온다"면 넘긴다. 그런데 `advance_for_fit` 안에서
+                // `compact_endnote_own_vpos_span_fits_for_flow`(= 문단의 저장 vpos 폭이 남은
+                // 공간에 든다)를 **뚫는 예외**로 등재돼 있어, 파일이 같은 단에 두라고 적어 둔
+                // 문단까지 넘긴다.
+                //
+                // 3-09월_교육_통합_2023 13쪽 왼쪽 단: 저장 사다리가 pi=657·658·659 를 Δ=1352
+                // 로 연속 기록하고 되감김(=단 경계)은 pi=660 에서 낸다. pi=658 을 넘길 때
+                // 누계는 974.2 로 가용 1001.6 안이고 진행량 18.0 을 더해도 992.2 라 실제로
+                // 들어간다 — 위험 판정이 근거 없이 발동한 것이다.
+                //
+                // 예외를 통째로 빼면 #1274·#1284 sweep 핀과 off_canvas 래칫이 걸린다. 여기서는
+                // **넣어도 가용 안에 남는** 경우로만 좁힌다.
+                && !(compact_endnote_own_vpos_span_fits_for_flow
+                    && st.current_height + total_advance_fit <= available);
             let zero_tac_picture_tail_bleeds_frame = compact_endnote_separator_profile
                 && zero_endnote_spacing_profile
                 && has_visible_endnote_separator
@@ -21974,7 +21992,25 @@ impl TypesetEngine {
                     // r=5 실측: near-miss 시그니처는 동형이나 잔여 949.9px = 다음
                     // 조각의 본체) 확장이 오히려 쪽 경계를 옮긴다(#4763 핀 —
                     // issue_3931/3930/5801 이 381 로 무너짐). 3232693 은 잔여 38.4px.
-                    let frame_tail_rest = if mid_frame_only {
+                    // [#6549] 어울림(Square) 자리차지 표도 같은 상한을 쓴다.
+                    //
+                    // 이 확장 계약(#5584 ②/#4763)은 **위아래 배치(TopAndBottom)** 표가
+                    // 쪽을 넘기는 형상에서 검증됐다 — 382쪽 편람 핀
+                    // (issue_3931/3930/5801)이 모두 `wrap=TopAndBottom` 이다. 어울림 표는
+                    // 옆으로 글이 흐르므로 프레임 회계가 달라, 상한 없는 확장이 그대로
+                    // 쪽 넘침이 된다.
+                    //
+                    // 실측 (원자력안전위 16418295, 어울림 RowBreak 표 r=6):
+                    //   budget 75.8 → 92.8 (확장 25.6) → 행이 통째로 수용돼 표가
+                    //   안 쪼개지고 본문 하한을 17.1px 넘는다. 한글은 2쪽, rhwp 1쪽.
+                    //   확장을 막으면 2쪽이 되어 한글과 맞는다.
+                    //
+                    // 편람 핀들의 확장은 15.3~107.4px 로 이 값(25.6)을 사이에 두고
+                    // 흩어져 있어 `extension`·`consumed` 비·`frame_tail_rest`·예산 초과율
+                    // 어느 축으로도 갈리지 않는다. 갈리는 것은 **배치 종류** 하나다.
+                    let bounded_extension_branch = mid_frame_only
+                        || table.common.text_wrap == crate::model::shape::TextWrap::Square;
+                    let frame_tail_rest = if bounded_extension_branch {
                         layout_engine.row_cut_content_height(
                             table,
                             r,
@@ -21985,7 +22021,7 @@ impl TypesetEngine {
                     } else {
                         0.0
                     };
-                    let mid_extension_ok = !mid_frame_only
+                    let mid_extension_ok = !bounded_extension_branch
                         || (extension <= 24.0
                             && res.consumed_height >= 3.0 * extension
                             && frame_tail_rest > 0.5
@@ -22905,11 +22941,26 @@ impl TypesetEngine {
                 // 복원이 실제로 상향한 경우에만 마진을 건다 — 코호트 재판정 신호(슬랙 스칼라)는
                 // 그대로 두고 적용 범위만 좁힌다.
                 let restoration_raised_fit = sync_h > st.current_height;
-                let uncertain_anchor_margin = if anchor_vpos <= 0 && restoration_raised_fit {
-                    50.0
-                } else {
-                    0.0
-                };
+                // [#6535] 마진을 거는 세 번째 조건 — **흐름 좌표가 실제로 뒤처져 있을 때만**.
+                //
+                // 슬랙 스칼라로는 두 코호트가 갈리지 않는다는 것이 이 마진의 기지 한계였다.
+                // 경합 구간을 전수 재 보니 갈리는 것은 슬랙이 아니라 `flow_underrun` 이다 —
+                // 이 단의 문단 place 가 트림한 `(total_height − advance)` 누계로, 0 보다
+                // 크면 `cur_h` 가 실제 내용 하단을 **과소**하게 들고 있다는 뜻이다. 마진이
+                // 보정하려던 불확실성이 바로 그것이다.
+                //
+                //   흡수 정답(한글 1쪽, rhwp 2쪽): slack 25.0 / 25.8 / 31.6 / 35.7 / 37.8
+                //                                  underrun **전부 0.00**
+                //   분할 정답(한글 2쪽)          : slack 42.5  underrun **37.60**
+                //
+                // 슬랙은 25.0~42.5 로 완전히 겹치는데 `underrun` 은 0 vs 37.60 으로 갈린다.
+                let flow_lags_behind_content = st.flow_underrun > 0.5;
+                let uncertain_anchor_margin =
+                    if anchor_vpos <= 0 && restoration_raised_fit && flow_lags_behind_content {
+                        50.0
+                    } else {
+                        0.0
+                    };
                 // [#2279 진단] footer 흡수/분할 판정 변수 분해 — 동작 불변.
                 // underrun = 이 단의 문단 place 가 트림한 (total_height − advance) 누계
                 // (렌더/한글 좌표와의 발산 중 문단-sa 성분; 표 place 성분은 미포함).
