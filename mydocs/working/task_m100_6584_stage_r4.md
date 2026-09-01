@@ -5,22 +5,22 @@
 - release base: `upstream/devel` `063041a2ced54085b5cf94c2e646ac7aa0e1960d`
 - 대상 버전: `0.8.6`
 - 실행일: 2026-09-02 KST
-- 현재 판정: 런타임·패키지 검증 통과, source zip 라이선스 기록 정정 후 재생성 대기
+- 현재 판정: Stage R4 종료 게이트 PASS
 
 ## 1. 요약
 
 Rust release build, full nextest, Native Skia, Docker WASM, npm package, Studio, Chrome·Firefox·
 VS Code 확장 빌드와 호스트 Chrome CDP E2E를 실행했다. 제품 회귀 실패는 0건이다.
 
-배포 archive 검사에서 보호 폰트·token·개인키·불필요한 빌드 경로 유입은 0건이었다.
+배포 archive 검사에서 보호 폰트·실제 token·개인키·불필요한 빌드 경로 유입은 0건이었다.
 다만 `THIRD_PARTY_LICENSES.md`의 Studio·VS Code 의존성 버전이 lock과 다른 결함을 발견했다.
 작업 트리에서 `@noble/hashes` 2.4.0과 `canvaskit-wasm` 0.42.0으로 정정했고 font asset·
 라이선스 계약 6건을 재검증했다.
 
-AMO source zip은 정본 `git archive ... HEAD`로 생성하므로 아직 커밋하지 않은 정정을
-포함할 수 없다. 따라서 현재 source zip은 사전 검증 산출물이며 게시 후보가 아니다.
-Stage R4 종료는 정정 commit 후 source zip을 재생성하고 같은 allowlist·denylist·결정성
-검사를 통과하는 것을 조건으로 한다.
+정정·보고와 credential-shaped fixture 제거를 commit
+`07ab264e85f081680b9c66b08bdac0ac2a75c1a1`로 고정한 뒤 AMO source
+zip을 정본 `git archive ... HEAD`로 재생성했다. archive comment의 commit SHA, 정정된
+라이선스 버전, integrity, allowlist·denylist, symlink 내부 타겟과 비밀정보 재검사가 통과했다.
 
 ## 2. 사전 계약
 
@@ -134,16 +134,20 @@ VS Code의 `npm run package`는 로컬 `vsce` executable이 없어 실패했다.
 | `rhwp-edge-0.8.6.zip` | 33,661,620 | `8d87cebd464674b841107b13ad7ac7f75bdd06d30a1d819af19bcc40aa4fe42f` | PASS |
 | `rhwp-firefox-0.8.6.zip` | 33,657,414 | `172277ee70fb1ea172947e0ff2b4990f8cd35dd6eb2b6ff316cbe142b92ca087` | PASS |
 | `rhwp-vscode-0.8.6.vsix` | 18,558,124 | `6a2d22f5b5814ca1c4d45a886178b7bed8882c4749923b607ba01a6002755fa7` | PASS |
-| `rhwp-source-0.8.6-amo.zip` | 33,862,403 | `34f8370c579f5d4249fb9de6193fff8e51c251b4518c7fbd653ef51793f2d6c5` | **재생성 대기** |
+| `rhwp-source-0.8.6-amo.zip` | 33,862,451 | `48e7ff140a268fda2602862fdeed05cd85b3a13634d7ff6c24dcf54407990760` | PASS |
 
-Chrome·Edge·Firefox·VSIX와 기존 source zip은 모두 archive integrity 검사를 통과했다.
+Chrome·Edge·Firefox·VSIX와 재생성한 source zip은 모두 archive integrity 검사를 통과했다.
 source zip은 2,436 entry, 33.9 MB로 AMO 200 MB 제한 이하이다. 5개 symlink는 Firefox shared
 service-worker 4개와 Studio canonical font link 1개이며 모두 archive 내부 타겟을 가진다.
 
 ### 6.2 allowlist·denylist
 
 - source zip의 `node_modules/`, `target/`, `dist/`, `output/`, `pdf-large/`, `samples/`: 0건
-- token·AWS key·private-key header·실값이 든 배포 token assignment 패턴: 0건
+- token·AWS key·private-key header·실값이 든 배포 token assignment 형식: 0건
+- `font_decision_trace_contract.test.mjs`의 민감값 거부 테스트는 가짜 GitHub token을
+  런타임에서 조합하도록 바꿔 source scanner에 credential 형식 문자열을 남기지 않았다.
+  개인 식별 호스트 경로도 `/home/tester/...`로 익명화했다. 민감값 거부 계약과
+  W1 digest drift exact-set test를 포함한 focused suite 12/12가 통과했다.
 - `.pem`, `.key`, `.p12`, `.pfx`: 0건
 - 환경 관련 파일: 템플릿 `.env.docker.example`, `legacy-peer-deps=true`만 든
   `rhwp-studio/.npmrc`
@@ -158,9 +162,9 @@ lock 정본은 Studio·VS Code 모두 `@noble/hashes` 2.4.0, `canvaskit-wasm` 0.
 `THIRD_PARTY_LICENSES.md`에 2.3.0, 0.41.1이 남아 있었다. 두 package 구간 4개 cell을 정정했고
 package-lock 대사, font license contract 6건, 문서 링크 검사를 통과했다.
 
-기존 source zip은 `HEAD` 정본을 따라 이전 값을 포함한다. 정정 및 본 보고서 commit 후
-`mydocs/manual/publish_guide.md`의 exact `git archive` 명령으로 source zip을 다시 만들고,
-새 크기·SHA-256·integrity·allowlist·denylist·secret scan을 다시 기록해야 한다.
+commit `07ab264e85f081680b9c66b08bdac0ac2a75c1a1`에서 `mydocs/manual/publish_guide.md`의
+exact `git archive` 명령으로 source zip을 재생성했다. archive comment와 commit SHA가 일치하고,
+새 크기·SHA-256·integrity·allowlist·denylist·entry별 secret scan이 통과했다.
 
 ## 7. 디스크·작업 트리
 
@@ -179,8 +183,7 @@ R5 exact-head 재검증 전에 지우면 수십 분 수준의 재빌드 비용�
 2. 정책 skip: 2건, 사유·현행 대체 검증 기록 완료
 3. 비밀·개인 자산·저작권 폰트 유입: **0건**
 4. 제3자 라이선스 기록 결함: 1건 발견, 작업 트리 정정·focused 재검증 완료
-5. AMO source zip: 정정 commit 후 정본 재생성·재검증 필요
+5. AMO source zip: 정정 commit 기준 정본 재생성·재검증 **PASS**
 
-따라서 제품 release candidate 검증은 통과했지만 Stage R4 종료 게이트는 아직
-**조건부 PASS**다. 메인테이너가 본 결과와 정정을 승인하면 Stage R4 변경을 commit한 뒤,
-새 exact HEAD에서 source zip만 재생성·재검증하고 R5 release-prep PR 절차로 이행한다.
+따라서 Stage R4 종료 게이트는 **PASS**다. 다음은 본 재검증 결과를 기록으로 고정한 뒤,
+최신 `upstream/devel` drift를 다시 확인하고 R5 release-prep PR·5플랫폼 dry-run으로 이행하는 절차다.
