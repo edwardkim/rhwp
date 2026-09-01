@@ -12449,7 +12449,25 @@ impl TypesetEngine {
                     endnote_has_visible_payload,
                     large_separator_block,
                     compact_between_notes_gap,
-                );
+                )
+                // [#6544] 저장 사다리가 "이 단에 들어간다"고 말하고 **자기 회계로도 들어가면**
+                // 위험 휴리스틱을 적용하지 않는다.
+                //
+                // 이 술어는 저장 증거를 보지 않는 순수 띠다 — "단의 96% 를 넘었고 이 문단을
+                // 넣으면 하단 20px 안으로 들어온다"면 넘긴다. 그런데 `advance_for_fit` 안에서
+                // `compact_endnote_own_vpos_span_fits_for_flow`(= 문단의 저장 vpos 폭이 남은
+                // 공간에 든다)를 **뚫는 예외**로 등재돼 있어, 파일이 같은 단에 두라고 적어 둔
+                // 문단까지 넘긴다.
+                //
+                // 3-09월_교육_통합_2023 13쪽 왼쪽 단: 저장 사다리가 pi=657·658·659 를 Δ=1352
+                // 로 연속 기록하고 되감김(=단 경계)은 pi=660 에서 낸다. pi=658 을 넘길 때
+                // 누계는 974.2 로 가용 1001.6 안이고 진행량 18.0 을 더해도 992.2 라 실제로
+                // 들어간다 — 위험 판정이 근거 없이 발동한 것이다.
+                //
+                // 예외를 통째로 빼면 #1274·#1284 sweep 핀과 off_canvas 래칫이 걸린다. 여기서는
+                // **넣어도 가용 안에 남는** 경우로만 좁힌다.
+                && !(compact_endnote_own_vpos_span_fits_for_flow
+                    && st.current_height + total_advance_fit <= available);
             let zero_tac_picture_tail_bleeds_frame = compact_endnote_separator_profile
                 && zero_endnote_spacing_profile
                 && has_visible_endnote_separator
