@@ -2439,9 +2439,37 @@ impl DocumentCore {
                 table.local_resize_cols.push(col);
             }
         }
+        // 폭 합이 보존된 행/열이라도, 적용 결과가 base grid(열별 max / 행별 max)와
+        // 실제로 갈라진 행/열만 행·열 단위 resize 로 마킹한다. 결과가 전 행 균일한
+        // 경우(예: 세로 병합 셀이 낀 경계 드래그 — 병합 셀 delta 는 홈 행에만
+        // 집계된다)까지 마킹하면, 병합 셀이 걸친 나머지 행이 base grid 추출에서
+        // 열 폭 소스를 잃어 그 열이 기본값 1800 으로 무너진다.
+        let column_widths = table.get_column_widths();
+        let width_divergent_rows: std::collections::BTreeSet<u16> = table
+            .cells
+            .iter()
+            .filter(|cell| {
+                cell.col_span == 1
+                    && (cell.col as usize) < column_widths.len()
+                    && cell.width != column_widths[cell.col as usize]
+            })
+            .map(|cell| cell.row)
+            .collect();
+        let raw_row_heights = table.get_raw_row_heights();
+        let height_divergent_cols: std::collections::BTreeSet<u16> = table
+            .cells
+            .iter()
+            .filter(|cell| {
+                cell.row_span == 1
+                    && (cell.row as usize) < raw_row_heights.len()
+                    && cell.height != raw_row_heights[cell.row as usize]
+            })
+            .map(|cell| cell.col)
+            .collect();
         for (row, (count, delta_sum)) in width_delta_by_row {
             if count >= 2
                 && (delta_sum == 0 || force_local_resize)
+                && width_divergent_rows.contains(&row)
                 && !table.local_resize_rows.contains(&row)
             {
                 table.local_resize_rows.push(row);
@@ -2450,6 +2478,7 @@ impl DocumentCore {
         for (col, (count, delta_sum)) in height_delta_by_col {
             if count >= 2
                 && (delta_sum == 0 || force_local_resize)
+                && height_divergent_cols.contains(&col)
                 && !table.local_resize_cols.contains(&col)
             {
                 table.local_resize_cols.push(col);
