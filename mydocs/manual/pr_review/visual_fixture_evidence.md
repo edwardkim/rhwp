@@ -20,7 +20,7 @@ renderer/layout/typeset/paint 등 사용자-visible 렌더링 경로가 바뀌�
 reviewer는 source PR이 첨부한 before/after나 수치만으로 "시각 검증 완료"라고 쓰지 않는다. 통합 head에서
 직접 만든 기준 PDF·visual sweep 또는 reviewer가 직접 연 기준 PDF/PNG 판정이 있어야 수용 근거가 된다.
 
-직접 visual sweep 또는 동등한 판정을 수행하지 못한 경우 review 문서의 최종 권고는 다음처럼 제한한다.
+직접 visual sweep 또는 동등한 판정을 수행하지 못한 경우 review 문서의 최종 판정은 다음처럼 제한한다.
 
 - `머지 보류`: PR 주장이 시각 결과 자체인데 기준 산출물 또는 maintainer 직접 판정이 없다.
   코드·회귀 테스트만 통과했거나 원 PR 증적만 확인한 경우도 이 판정이다.
@@ -119,7 +119,7 @@ visual sweep을 실제 merge 판단에 썼으면 merge 가능 또는 승인 요�
   direct link로 남긴다. output 경로 link만 남기지 않고, merge commit에 반영된 asset의 **commit SHA 고정**
   raw URL을 Markdown image로 실제 표시한다. raw URL은 PNG 표시용 증적이며 문서 비교 방법의 인용은
   Visual Sweep 정본과 review 문서가 담당한다.
-- 시각 검증을 `수용` 또는 `merge 권고` 근거로 쓰면, merge 전 개별 review 문서에 `Merge 후 contributor PR
+- 시각 검증을 `승인`의 근거로 쓰면, merge 전 개별 review 문서에 `Merge 후 contributor PR
   comment 계획`을 작성한다. 계획에는 실제 확인 페이지·후보 수·지표·사람의 결론과 한계, representative PNG의
   안정 경로, `<merge-commit-sha>` 고정 raw URL 형식, merge 뒤 `--body-file` 게시·API 재조회 조건을 넣는다.
   이 계획이 없으면 merge 뒤 임시 산출물에서 수치를 추정해 comment하지 않고 review 기록부터 보완한다.

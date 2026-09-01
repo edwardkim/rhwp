@@ -325,12 +325,12 @@ link와 review 문서의 실제 수치·결론을 함께 남기며, PNG는 merge
 renderer/layout/typeset/paint 등 사용자-visible 렌더링 변경에 HWP/HWPX/PDF fixture가 붙어 있으면
 "시각 검증을 판단 근거로 사용한 경우"가 아니라 **시각 검증 필요 후보**로 먼저 분류한다. 이때 원 PR의
 before/after 이미지나 한컴 수치만 확인하고 maintainer의 직접 visual sweep 또는 동등한 판정 없이
-`수용`·`merge 권고`로 결론 내리지 않는다. 직접 수행하지 못했으면 review 문서와 PR comment에
+최종 판정을 `승인`으로 내리지 않는다. 직접 수행하지 못했으면 review 문서와 PR comment에
 `visual sweep 미실행`, `원 PR 증적만 확인`, `보류/조건부 보류` 중 하나를 명시한다.
 
 ### 4.2 시각 증적 PR comment 계획
 
-시각 검증을 `수용` 또는 `merge 권고`의 근거로 사용한 개별 review 문서는 최종 권고 전에
+시각 검증을 `승인`의 근거로 사용한 개별 review 문서는 최종 판정 전에
 `Merge 후 contributor PR comment 계획` 절을 포함해야 한다. 이 절은 merge 뒤 새로 추정하거나 임시
 output에서 수치를 옮기는 일을 막기 위한 사전 기록이며, 최소한 다음을 적는다.
 
@@ -341,7 +341,7 @@ output에서 수치를 옮기는 일을 막기 위한 사전 기록이며, 최�
    게시 뒤 API 재조회로 실제 Markdown과 이미지를 확인한다는 조건
 
 시각 검증을 실행하지 못한 경우에도 같은 절에 미실행 범위와 보류 사유를 적는다. 이 상태에서는 없는 수치나
-이미지 URL을 계획으로 만들지 않으며, 최종 권고를 `수용`으로 쓸 수 없다. 임시 `output/` 경로만 적거나
+이미지 URL을 계획으로 만들지 않으며, 최종 판정을 `승인`으로 쓸 수 없다. 임시 `output/` 경로만 적거나
 merge 뒤 게시할 comment를 review 기록에 남기지 않는 것은 완료된 시각 증적으로 인정하지 않는다.
 
 ## 5. 기존 절 번호 대응
