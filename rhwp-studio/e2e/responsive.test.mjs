@@ -8,12 +8,14 @@ const VIEWPORTS = [
   { name: 'wide-desktop', width: 1920, height: 1080, styleMode: 'full' },
   { name: 'desktop', width: 1280, height: 900, styleMode: 'full' },
   { name: 'narrow-desktop', width: 1024, height: 768, styleMode: 'full' },
+  { name: 'below-desktop-boundary', width: 1023, height: 768, styleMode: 'full' },
   { name: 'full-boundary', width: 962, height: 900, styleMode: 'full' },
   { name: 'compact-boundary', width: 961, height: 900, styleMode: 'compact' },
   { name: 'compact-desktop', width: 883, height: 900, styleMode: 'compact' },
   { name: 'one-row-boundary', width: 808, height: 900, styleMode: 'compact' },
   { name: 'two-row-boundary', width: 807, height: 900, styleMode: 'inline' },
   { name: 'tablet', width: 768, height: 1024, styleMode: 'inline' },
+  { name: 'below-tablet-boundary', width: 767, height: 1024, styleMode: 'inline' },
   { name: 'command-inline-boundary', width: 460, height: 900, styleMode: 'inline' },
   { name: 'command-overflow-boundary', width: 459, height: 900, styleMode: 'overflow' },
   { name: 'mobile-wide', width: 412, height: 915, styleMode: 'overflow' },
@@ -43,6 +45,31 @@ async function primeTheme(page, skin = 'default', mode = 'light') {
   }, { selectedSkin: skin, selectedMode: mode });
 }
 
+// 정착 후 표시·배치 계약만 검사한다. 연속 resize의 프레임 공백 검증과 구분한다 (#6187).
+function readRulerLayout() {
+  const editor = document.getElementById('editor-area');
+  const scroll = document.getElementById('scroll-container');
+  const corner = document.getElementById('ruler-corner');
+  const h = document.getElementById('h-ruler');
+  const v = document.getElementById('v-ruler');
+  const visible = element => element && getComputedStyle(element).display !== 'none'
+    && getComputedStyle(element).visibility !== 'hidden'
+    && element.getBoundingClientRect().width > 0 && element.getBoundingClientRect().height > 0;
+  if (![editor, scroll, corner, h, v].every(visible)) return { visible: false };
+  const [sRect, cRect, hRect, vRect] = [scroll, corner, h, v].map(e => e.getBoundingClientRect());
+  const near = (a, b) => Math.abs(a - b) <= 1;
+  return {
+    visible: true,
+    grid: getComputedStyle(editor).display === 'grid',
+    aligned: near(hRect.left, sRect.left) && near(hRect.top, cRect.top)
+      && near(vRect.top, sRect.top) && near(vRect.left, cRect.left)
+      && near(hRect.width, scroll.clientWidth) && near(vRect.height, scroll.clientHeight)
+      && near(cRect.width, 20) && near(cRect.height, 20)
+      && near(hRect.height, 20) && near(vRect.width, 20),
+    noOuterOverflow: document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+  };
+}
+
 async function run() {
   console.log('=== E2E: 반응형 레이아웃 테스트 ===\n');
 
@@ -61,6 +88,13 @@ async function run() {
       console.error(`  FAIL: ${msg}`);
       reporter.fail(tc, msg);
     }
+  };
+
+  const checkRulers = (tc, result) => {
+    check(tc, result.visible, '가로·세로 눈금자와 교차 코너 상시 표시');
+    check(tc, result.grid, '눈금자 편집 영역 grid 유지');
+    check(tc, result.aligned, '20px 눈금자 슬롯과 편집 viewport 정렬');
+    check(tc, result.noOuterOverflow, '눈금자 표시로 page 가로 overflow가 생기지 않음');
   };
 
   for (const vp of VIEWPORTS) {
@@ -186,6 +220,7 @@ async function run() {
 
       check(tc, result.hasCanvas, '캔버스 존재');
       check(tc, result.editorVisible, '편집 영역 표시');
+      checkRulers(tc, await page.evaluate(readRulerLayout));
       check(tc, result.pageCount >= 1, `페이지 수: ${result.pageCount}`);
       check(tc, result.menuBarVisible, '메뉴바 표시');
       check(tc, result.menuBarHeight === 28, `마우스 메뉴바 28px 한 줄 높이 (h=${result.menuBarHeight})`);
@@ -643,6 +678,28 @@ async function run() {
       console.error(`  ERROR: ${err.message}`);
       reporter.fail(tc, err.message);
       failed++;
+    } finally {
+      await closePage(page);
+    }
+  }
+
+  // 기존 메뉴/서식 바 기대값과 분리해 가상 키보드 높이 조건의 눈금자 grid를 검증한다.
+  for (const [width, height] of [[375, 400], [767, 500], [767, 501]]) {
+    const tc = `short-ruler-layout (${width}x${height})`;
+    const page = await createPage(browser, width, height);
+    try {
+      await primeTheme(page);
+      await loadApp(page);
+      await page.evaluate(() => window.__eventBus?.emit('create-new-document'));
+      await page.evaluate(() => new Promise(resolve => setTimeout(resolve, 1000)));
+      checkRulers(tc, await page.evaluate(readRulerLayout));
+      const menuHidden = await page.evaluate(
+        () => getComputedStyle(document.getElementById('menu-bar')).display === 'none',
+      );
+      check(tc, menuHidden === (height <= 500), '기존 낮은 높이 도구 영역 축약 유지');
+      await screenshot(page, `responsive-short-ruler-${width}-${height}`);
+    } catch (error) {
+      check(tc, false, String(error));
     } finally {
       await closePage(page);
     }

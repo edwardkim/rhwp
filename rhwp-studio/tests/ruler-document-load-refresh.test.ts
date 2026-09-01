@@ -21,13 +21,9 @@ test('문서 화면이 새로 서면 눈금자에게 알린다', () => {
   );
 });
 
-test('눈금자는 문서 로드 알림에 크기와 눈금을 모두 다시 잡는다', () => {
+test('눈금자는 문서 로드 알림에 크기·paint를 함께 처리하는 갱신을 예약한다', () => {
   // 캐럿·스크롤·확대 이벤트는 값이 그대로면 오지 않는다. 그 셋에만 기대면 문서를 열어도
   // 빈 쪽 단계에서 그린 눈금 없는 띠가 남는다.
-  const handler = ruler.match(
-    /eventBus\.on\('document-view-loaded', \(\) => \{(?<body>[^}]*)\}/,
-  )?.groups?.body;
-  assert.ok(handler, '눈금자가 document-view-loaded 를 구독하지 않는다');
-  assert.match(handler, /this\.resize\(\)/);
-  assert.match(handler, /this\.scheduleUpdate\(\)/);
+  // bitmap 크기 변경과 두 축 paint의 실제 실행 순서는 ruler-resize의 행위 테스트가 검증한다.
+  assert.match(ruler, /eventBus\.on\('document-view-loaded', \(\) => this\.scheduleUpdate\(\)\)/);
 });
