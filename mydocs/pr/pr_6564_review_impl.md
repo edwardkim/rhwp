@@ -1,6 +1,6 @@
 ---
 kind: implementation_plan
-status: proposed
+status: local-validation-passed
 canonical: mydocs/manual/pr_review_workflow.md
 last_verified: 2026-09-01
 ---
