@@ -92,6 +92,39 @@ test('자동 열 후보는 잘못된 geometry에 1열로 수렴하고 열 경계
   }), 1, '감소 경계 -8px를 벗어나면 1열 commit');
 });
 
+test('같은 VirtualScroll의 자동 열 commit은 연속 zoom/resize 경계 입력에서 왕복하지 않는다', () => {
+  const scroll = new VirtualScroll(10);
+  const setViewport = (viewportWidth: number): number => {
+    scroll.setPageDimensions(pages(3, 400, 600), 1, viewportWidth, { kind: 'auto' });
+    return scroll.getColumns();
+  };
+
+  assert.equal(setViewport(800), 1);
+  assert.equal(setViewport(814), 1, '증가 dead band 안에서는 1열 유지');
+  assert.equal(setViewport(806), 1, '경계를 되짚어도 1열 유지');
+  assert.equal(setViewport(818), 2, '증가 dead band를 지난 뒤에만 2열 commit');
+  assert.equal(setViewport(806), 2, '감소 dead band 안에서는 2열 유지');
+  assert.equal(setViewport(801), 1, '감소 dead band를 벗어나면 1열 commit');
+});
+
+test('명시 배치와 문서 교체는 이전 자동 열 commit을 다음 자동 계산에 넘기지 않는다', () => {
+  const scroll = new VirtualScroll(10);
+  const samplePages = pages(3, 400, 600);
+
+  scroll.setPageDimensions(samplePages, 1, 800, { kind: 'auto' });
+  assert.equal(scroll.getColumns(), 1);
+
+  scroll.setPageDimensions(samplePages, 1, 814, { kind: 'double' });
+  scroll.setPageDimensions(samplePages, 1, 814, { kind: 'auto' });
+  assert.equal(scroll.getColumns(), 2, '명시 배치를 거치면 자동 배치는 현재 geometry에서 다시 시작');
+
+  scroll.setPageDimensions(samplePages, 1, 806, { kind: 'auto' });
+  assert.equal(scroll.getColumns(), 2, '감소 dead band 안에서는 기존 2열 commit 유지');
+  scroll.resetAutoColumnCommit();
+  scroll.setPageDimensions(samplePages, 1, 806, { kind: 'auto' });
+  assert.equal(scroll.getColumns(), 1, '문서 교체 reset 뒤에는 현재 geometry 후보를 즉시 commit');
+});
+
 test('한 쪽은 낮은 배율에서도 한 행 한 쪽과 중앙 정렬을 유지한다', () => {
   const scroll = new VirtualScroll(10);
   scroll.setPageDimensions(pages(3), 0.25, 1200, { kind: 'single' });

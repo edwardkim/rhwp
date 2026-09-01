@@ -1253,6 +1253,7 @@ export class CanvasView {
     this.headerFooterEditState = null;
     this.pageRenderer.setPageMarginGuideEdges('both');
     this.activePageSnapshot = null;
+    this.virtualScroll.resetAutoColumnCommit();
     if (hadActivePage) this.eventBus.emit('active-page-changed', null);
     if (hadFocusedPage) this.eventBus.emit('focused-page-changed', null);
     this.pages = [];

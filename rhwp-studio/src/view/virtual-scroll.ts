@@ -91,6 +91,7 @@ export class VirtualScroll {
   private columns = 1;
   private gridMode = false;
   private horizontalMode = false;
+  private committedAutoColumns: number | undefined;
   private readonly pageGapAt100Percent: number;
   private pageGap: number;
 
@@ -115,12 +116,14 @@ export class VirtualScroll {
 
     this.horizontalMode = movement === 'horizontal';
     if (this.horizontalMode) {
+      this.committedAutoColumns = undefined;
       this.gridMode = false;
       this.layoutHorizontalRow(viewportWidth, viewportHeight);
       return;
     }
 
     const normalized = normalizePageArrangement(arrangement);
+    if (normalized.kind !== 'auto') this.committedAutoColumns = undefined;
     switch (normalized.kind) {
       case 'single':
         this.gridMode = false;
@@ -148,7 +151,9 @@ export class VirtualScroll {
             viewportWidth,
             displayedPageWidth: this.maxPageWidth,
             pageGap: this.pageGap,
+            committedColumns: this.committedAutoColumns,
           });
+          this.committedAutoColumns = columns;
           this.gridMode = columns > 1;
           if (this.gridMode) {
             this.layoutUniformGrid(viewportWidth, columns);
@@ -159,6 +164,11 @@ export class VirtualScroll {
         break;
     }
     this.applyHorizontalPanSpace(viewportWidth);
+  }
+
+  /** 문서 교체 시 이전 문서의 자동 열 commit이 새 문서 경계 판단에 섞이지 않게 한다. */
+  resetAutoColumnCommit(): void {
+    this.committedAutoColumns = undefined;
   }
 
   /** 한컴 가로 쪽 이동: 한 쪽 배치의 모든 페이지를 왼쪽에서 오른쪽으로 잇는다. */

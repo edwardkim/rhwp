@@ -660,34 +660,8 @@ export class InputHandler {
     this.textarea.addEventListener('cut', this.onCutBound);
     this.textarea.addEventListener('paste', this.onPasteBound);
 
-    // 줌 변경 시 캐럿/선택 마커 위치 갱신
-    eventBus.on('zoom-changed', () => {
-      if (this.active) {
-        const rect = this.cursor.getRect();
-        if (rect) {
-          this.caret.updatePosition(this.viewportManager.getZoom());
-        }
-        // 필드 마커도 줌에 맞게 갱신
-        if (this.fieldMarker.isVisible) {
-          this.updateFieldMarkers();
-        }
-      }
-      // 텍스트 블럭 선택 줌 동기화
-      if (this.cursor.hasSelection()) {
-        this.updateSelection();
-      }
-      // F5 셀 선택 줌 동기화
-      if (this.cursor.isInCellSelectionMode()) {
-        this.updateCellSelection();
-      }
-      // 도형/표 선택 핸들 줌 동기화
-      if (this.cursor.isInPictureObjectSelection()) {
-        this.renderPictureObjectSelection();
-      }
-      if (this.cursor.isInTableObjectSelection()) {
-        this.renderTableObjectSelection();
-      }
-    });
+    // 배율이나 자동 열 수가 바뀌면 페이지 기준 오버레이도 같은 확정 좌표로 옮긴다.
+    eventBus.on('zoom-changed', () => this.updateViewportOverlayPositions());
 
     eventBus.on('document-view-changed', () => {
       if (!this.active) return;
@@ -709,7 +683,8 @@ export class InputHandler {
       if (this.cursor.getHeaderFooterSelectionOrdered()) this.updateSelection();
     });
     eventBus.on('viewport-resize', () => {
-      if (this.cursor.getHeaderFooterSelectionOrdered()) this.updateSelection();
+      // CanvasView가 같은 이벤트에서 VirtualScroll을 먼저 확정한 다음 그 좌표를 읽는다.
+      window.setTimeout(() => this.updateViewportOverlayPositions(), 0);
     });
 
     // 표 객체 선택 변경 시 렌더링
@@ -752,6 +727,18 @@ export class InputHandler {
       // 서식바 조작으로 빠진 포커스를 항상 복원
       this.focusTextarea();
     });
+  }
+
+  /** 줌·resize 뒤 VirtualScroll 확정 좌표에 캐럿과 선택 오버레이를 다시 투영한다. */
+  private updateViewportOverlayPositions(): void {
+    // updatePosition은 CaretRenderer가 현재 rect를 보유하지 않으면 no-op이고 display도 바꾸지
+    // 않는다. textarea focus가 순간 빠진 상태에서도 화면에 남은 캐럿은 새 쪽 슬롯을 따라야 한다.
+    this.caret.updatePosition(this.viewportManager.getZoom());
+    if (this.active && this.fieldMarker.isVisible) this.updateFieldMarkers();
+    if (this.cursor.hasSelection()) this.updateSelection();
+    if (this.cursor.isInCellSelectionMode()) this.updateCellSelection();
+    if (this.cursor.isInPictureObjectSelection()) this.renderPictureObjectSelection();
+    if (this.cursor.isInTableObjectSelection()) this.renderTableObjectSelection();
   }
 
   /** 클릭 이벤트 처리 — hitTest로 커서 배치 */

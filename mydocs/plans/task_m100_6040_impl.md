@@ -2,12 +2,12 @@
 
 - **이슈**: [#6040](https://github.com/edwardkim/rhwp/issues/6040)
 - **브랜치**: `codex/issue-6040-zoom-topology`
-- **PR 기준 commit**: `upstream/devel` `7592e9c99`
+- **PR 기준 commit**: `upstream/devel` `0d1540931`
 - **최초 구현 기준**: `upstream/devel` `2deb3dd61`
 - **문서 성격**: 구현 전 파일·상태 전이 설계
 - **계획 승인**: 2026-08-30 작업지시자 승인, Stage 1 진행
-- **현재 상태**: Stage 2·3 구현 폐기·Stage 1 `a135cc266` 재구성 완료. 아래 줌 상태 전이 설계는
-  역사적 폐기안이며 새 공유 좌표 계획 승인 전에는 구현하지 않는다.
+- **현재 상태**: Stage 2·3 구현 폐기, Stage 1·1.1 유지, Stage 1.2 live 자동 열 commit 보정. 아래 줌
+  상태 전이 설계는 역사적 폐기안이며 새 공유 좌표 계획 승인 전에는 구현하지 않는다.
 
 ## 자동 열 계약
 
@@ -70,13 +70,19 @@ VirtualScroll 좌표와 snapshot으로 현재 active Canvas·overlay에만 previ
 
 - `GRID_ZOOM_THRESHOLD`와 그 분기를 제거한다.
 - auto candidate/commit에 필요한 순수 helper 또는 작은 value object를 추가한다.
-- `setPageDimensions()`가 auto의 이전 committed columns 또는 명시적 commit 값을 받을 수 있게 하되 fixed
-  arrangement 호출 계약은 바꾸지 않는다.
+- `VirtualScroll` 인스턴스가 auto의 이전 committed columns를 보존하고 다음 `setPageDimensions()` 계산에
+  전달한다. horizontal·고정 배치·문서 교체에서는 이를 reset하며 fixed arrangement 호출 계약은 바꾸지
+  않는다.
 - `getLayoutTopologyKey()`에 commit된 auto columns만 반영해 preview 후보가 topology 변경으로 보이지 않게
   한다.
 - auto의 grid width와 margin은 실제 점유 열을 사용한다.
 
 ### `rhwp-studio/src/view/canvas-view.ts`
+
+- **Stage 1.2 실제 변경**: `reset()`이 `VirtualScroll.resetAutoColumnCommit()`을 호출해 이전 문서의
+  경계 상태를 제거한다. settled zoom의 기존 전체 반환·재할당 경로는 변경하지 않는다.
+
+아래 항목은 폐기된 Stage 2 설계이며 현재 code candidate에 포함되지 않는다.
 
 - `ZoomLayoutPreviewSession` 상태와 render epoch를 관리한다.
 - `onZoomChanged()`를 animation preview와 settled commit 경로로 분리한다.
@@ -106,6 +112,12 @@ VirtualScroll 좌표와 snapshot으로 현재 active Canvas·overlay에만 previ
 - 기존 DEV 진단 패턴을 따라 제스처당 preview frame, layout commit, candidate change, full release,
   page replacement 횟수와 anchor CSS px 오차를 관찰 가능하게 한다.
 - production 동작이나 공개 문서 모델에는 진단 상태를 저장하지 않는다.
+
+### `rhwp-studio/src/engine/input-handler.ts`
+
+- **Stage 1.2 실제 변경**: 기존 zoom overlay 갱신을 공통 메서드로 모으고, viewport resize에서는
+  CanvasView가 레이아웃을 확정한 다음 tick에 캐럿·필드·텍스트/셀 선택·그림/표 선택을 다시 투영한다.
+- 별도 preview 좌표를 만들지 않고 기존 cursor/VirtualScroll authoritative geometry만 소비한다.
 
 ## 테스트
 
@@ -138,9 +150,11 @@ VirtualScroll 좌표와 snapshot으로 현재 active Canvas·overlay에만 previ
 ## Stage별 예상 변경 경계
 
 1. Stage 1: `virtual-scroll.ts`와 자동 배치 focused test, working 보고서
-2. Stage 2: `canvas-view.ts` 줌 상태 전이와 앵커 focused test, working 보고서
-3. Stage 3: `canvas-pool.ts`/필요한 `page-renderer.ts` 최소 교체 API와 계측 test, working 보고서
-4. Stage 4: 통합 test·build·browser evidence와 최종 보고서
+2. Stage 1.1: 수평 눈금자 끝 라벨 경계 처리와 실제 브라우저 검증
+3. Stage 1.2: live auto commit·문서 reset·resize overlay 재투영과 actual CanvasView/CanvasPool test
+4. Stage 2: **폐기**, Canvas 전용 줌 상태 전이와 앵커 설계를 현재 branch에서 제거
+5. Stage 3: **폐기**, 점진 Canvas 교체와 계측을 현재 branch에서 제거
+6. Stage 4: Stage 1~1.2 통합 test·build·browser evidence와 최종 보고서
 
 각 Stage 결과 승인 뒤 해당 source·test·보고 문서를 하나의 검토 가능한 commit으로 고정한다. 실제 조사에서
 파일 책임이 달라지면 source를 수정하기 전에 이 구현 계획과 승인 기록부터 갱신한다.
