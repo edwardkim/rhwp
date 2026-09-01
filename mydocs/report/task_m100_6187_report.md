@@ -6,7 +6,7 @@
 - **최초 기준**: `upstream/devel@e50792c6341a0b61afc3ffeb687a92fc6a807e69`
 - **PR 준비 기준**: `upstream/devel@0d15409319c0bcaec71bb85a061090b637b9e4f2`
 - **완료일**: 2026-09-01 KST
-- **판정**: Stage 3 사용자 승인·최신 devel 통합·PR 준비 검증 완료, remote push·PR 생성 승인 대기
+- **판정**: PR #6570 생성·code candidate CI 성공·maintainer self-review 승인, trailing 기록 검증·정상 merge 대기
 
 ## 1. 결과
 
@@ -105,4 +105,8 @@ Supersedes #6432
 Closes #6187
 ```
 
-remote push와 PR 생성, PR #6432 종료, 이슈·PR comment와 merge는 아직 수행하지 않았다.
+사용자 승인 뒤 [PR #6570](https://github.com/edwardkim/rhwp/pull/6570)을 생성했다. code candidate
+`88ca4d1bfd1d766aa6e0ff8b426576a285daa443`의 CI·CodeQL·Canvas visual diff·Proptest·Adapter
+inter-diff가 모두 성공했고, maintainer self-review 판정은 `승인`이다. review·오늘 작업 기록만 추가한
+trailing commit의 fast-pass와 최신 `MERGEABLE`·`CLEAN` 확인 뒤 정상 merge한다. PR #6432 종료와
+이슈·PR comment는 #6570의 실제 merge 뒤 수행한다.

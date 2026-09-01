@@ -2,7 +2,7 @@
 
 - Issue: [#6187](https://github.com/edwardkim/rhwp/issues/6187)
 - 작성일: 2026-08-31 KST
-- 상태: Stage 3 사용자 승인·최신 devel 통합·PR 준비 검증 완료 / remote push·PR 생성 승인 대기.
+- 상태: PR #6570 생성·code candidate CI 성공·maintainer self-review 승인 / trailing 기록 검증·정상 merge 대기.
 - 수행 계획: [task_m100_6187.md](task_m100_6187.md)
 - Stage 1 결과: [상시 표시·입력 정책 구현 보고](../working/task_m100_6187_stage1.md)
 - Stage 2 결과: [resize 갱신 원자화 보고](../working/task_m100_6187_stage2.md)
@@ -187,4 +187,13 @@ Stage 3 결과를 승인했다. 확인 중 발견한 세로 끝 번호 `42`는 P
 PR 준비 승인에 따라 최신 `upstream/devel@0d1540931`을 merge commit `7d4f4a18f`로 통합했다. 통합 뒤
 Studio 전체 npm 테스트 1350 passed / 0 failed / 1 skipped와 TypeScript 검사가 통과했다. 최신 head를
 인앱 브라우저에서 다시 불러 767px·1024px의 두 눈금자·교차 코너·20px grid와 console 무오류를
-확인했다. 최종 보고서와 PR 본문 초안을 작성하되, remote push와 PR 생성은 별도 승인을 기다린다.
+확인했다. 최종 보고서와 PR 본문 초안을 작성해 별도 승인을 기다렸다.
+
+### 2026-09-01 PR #6570 self-review
+
+작업지시자의 “권장 순서대로 진행” 승인에 따라 `task_m100_6187` branch를 push하고 PR #6570을
+생성했다. code candidate `88ca4d1bfd1d766aa6e0ff8b426576a285daa443`의 CI·CodeQL·Canvas visual
+diff·Proptest·Adapter inter-diff가 모두 성공했고 GitHub 상태는 `MERGEABLE`·`CLEAN`이다.
+`mydocs/pr/archives/pr_6570_review.md`에서 maintainer self-review 판정을 `승인`으로 확정했다.
+review·오늘 작업 기록만 추가한 trailing commit은 fast-pass를 확인한 뒤 정상 merge하고, 그 뒤에만
+#6187과 대체된 PR #6432를 정리한다.
