@@ -1,0 +1,19 @@
+{
+  "additionalContributors": [],
+  "handleAliases": {
+    "dependabot": "dependabot[bot]"
+  },
+  "identityDispositions": {
+    "882bfb45e29f2077f6b56531b00d578c3b3336729efa268f8cfec2a189d0a6a2": "ai-assistant-coauthor-not-human-release-credit"
+  },
+  "identityHashToHandle": {
+    "5dbc6f314daa91e8f0419e234c8acde966b64857cd3e0887dbff953c2deecbb8": "postmelee",
+    "6d1ee105260f27de3f9a768971a7699ec2b0947736a70574da6b3f5408163aed": "johndoekim",
+    "8ed0e30eef80eb34643691ca321c566e7173c060bf73bdba8f1d1368e7b541e1": "dkh0324",
+    "a7abf832852250737ed56fd761ae508ca9fa832306b771090912691be88e38ff": "jangster77",
+    "bf9c8db09cb9648b733f0174465a9ba507c18c9e0fdc87c5463a132c59702f94": "planet6897",
+    "c4c3b39f7db193b65135d1a56de9e1c758100a941d792523201282f0b7b39f56": "kevin9327",
+    "d5757cc59110ed570cc90c814c73f0f54230f57548ba02b76d574e947b54396a": "kevin9327"
+  },
+  "numberDispositions": {}
+}
