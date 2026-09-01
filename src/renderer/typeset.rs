@@ -21992,7 +21992,25 @@ impl TypesetEngine {
                     // r=5 실측: near-miss 시그니처는 동형이나 잔여 949.9px = 다음
                     // 조각의 본체) 확장이 오히려 쪽 경계를 옮긴다(#4763 핀 —
                     // issue_3931/3930/5801 이 381 로 무너짐). 3232693 은 잔여 38.4px.
-                    let frame_tail_rest = if mid_frame_only {
+                    // [#6549] 어울림(Square) 자리차지 표도 같은 상한을 쓴다.
+                    //
+                    // 이 확장 계약(#5584 ②/#4763)은 **위아래 배치(TopAndBottom)** 표가
+                    // 쪽을 넘기는 형상에서 검증됐다 — 382쪽 편람 핀
+                    // (issue_3931/3930/5801)이 모두 `wrap=TopAndBottom` 이다. 어울림 표는
+                    // 옆으로 글이 흐르므로 프레임 회계가 달라, 상한 없는 확장이 그대로
+                    // 쪽 넘침이 된다.
+                    //
+                    // 실측 (원자력안전위 16418295, 어울림 RowBreak 표 r=6):
+                    //   budget 75.8 → 92.8 (확장 25.6) → 행이 통째로 수용돼 표가
+                    //   안 쪼개지고 본문 하한을 17.1px 넘는다. 한글은 2쪽, rhwp 1쪽.
+                    //   확장을 막으면 2쪽이 되어 한글과 맞는다.
+                    //
+                    // 편람 핀들의 확장은 15.3~107.4px 로 이 값(25.6)을 사이에 두고
+                    // 흩어져 있어 `extension`·`consumed` 비·`frame_tail_rest`·예산 초과율
+                    // 어느 축으로도 갈리지 않는다. 갈리는 것은 **배치 종류** 하나다.
+                    let bounded_extension_branch = mid_frame_only
+                        || table.common.text_wrap == crate::model::shape::TextWrap::Square;
+                    let frame_tail_rest = if bounded_extension_branch {
                         layout_engine.row_cut_content_height(
                             table,
                             r,
@@ -22003,7 +22021,7 @@ impl TypesetEngine {
                     } else {
                         0.0
                     };
-                    let mid_extension_ok = !mid_frame_only
+                    let mid_extension_ok = !bounded_extension_branch
                         || (extension <= 24.0
                             && res.consumed_height >= 3.0 * extension
                             && frame_tail_rest > 0.5
