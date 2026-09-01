@@ -72,15 +72,24 @@ function overlapCount(b: CellBbox, isHoriz: boolean, start: number, end: number)
   return Math.max(0, Math.min(axisEnd(b, isHoriz), end) - Math.max(axisStart(b, isHoriz), start) + 1);
 }
 
+/**
+ * 셀 선택 범위와 셀이 실제로 겹치는지 판정한다. 병합 셀은 bbox에 시작 행/열만
+ * 저장되므로 시작 좌표를 범위와 직접 비교하면 선택 범위가 병합 셀의 하위 행/열일 때
+ * 그 병합 셀이 통째로 누락된다. F5 키보드 경로(selectedAxisRange)와
+ * 마우스 드래그 경로(finishResizeDrag)가 이 판정 하나를 공유한다.
+ */
+export function cellOverlapsSelectionRange(b: CellBbox, range: CellSelectionRange): boolean {
+  return overlapCount(b, true, range.startCol, range.endCol) > 0
+    && overlapCount(b, false, range.startRow, range.endRow) > 0;
+}
+
 /** F5는 병합 셀의 시작 좌표만 보관하므로 실제 병합 범위까지 선택 축을 확장한다. */
 function selectedAxisRange(
   cells: CellBbox[],
   range: CellSelectionRange,
   isHoriz: boolean,
 ): { start: number; end: number } | null {
-  const selected = cells.filter(cell =>
-    overlapCount(cell, true, range.startCol, range.endCol) > 0
-      && overlapCount(cell, false, range.startRow, range.endRow) > 0);
+  const selected = cells.filter(cell => cellOverlapsSelectionRange(cell, range));
   if (selected.length === 0) return null;
   return {
     start: Math.min(...selected.map(cell => axisStart(cell, isHoriz))),
