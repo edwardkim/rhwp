@@ -83,6 +83,34 @@ export function cellOverlapsSelectionRange(b: CellBbox, range: CellSelectionRang
     && overlapCount(b, false, range.startRow, range.endRow) > 0;
 }
 
+/**
+ * 셀 선택 상태의 마우스 열 경계 드래그: 경계 왼쪽의 선택 셀에 delta, 오른쪽 이웃에
+ * 반대 delta 를 만들어 표 외곽 폭을 유지한다. 병합 셀은 걸친 모든 행의 이웃을
+ * 보상해야 한다 — 시작 행의 이웃 하나만 보상하면 나머지 행의 열 폭 합이 어긋나
+ * 표가 깨진다 (finishResizeDrag 가 사용).
+ */
+export function buildCellSelectionColumnDragUpdates(
+  selectedBboxes: CellBbox[],
+  allBboxes: CellBbox[],
+  deltaHwpUnit: number,
+): LocalResizeUpdate[] {
+  const updates: LocalResizeUpdate[] = [];
+  const addedNeighbors = new Set<number>();
+  for (const bbox of selectedBboxes) {
+    updates.push({ cellIdx: bbox.cellIdx, widthDelta: deltaHwpUnit });
+    const neighbors = allBboxes.filter(b =>
+      b.col === bbox.col + bbox.colSpan
+      && b.row < bbox.row + bbox.rowSpan
+      && b.row + b.rowSpan > bbox.row);
+    for (const neighbor of neighbors) {
+      if (addedNeighbors.has(neighbor.cellIdx)) continue;
+      updates.push({ cellIdx: neighbor.cellIdx, widthDelta: -deltaHwpUnit });
+      addedNeighbors.add(neighbor.cellIdx);
+    }
+  }
+  return updates;
+}
+
 /** F5는 병합 셀의 시작 좌표만 보관하므로 실제 병합 범위까지 선택 축을 확장한다. */
 function selectedAxisRange(
   cells: CellBbox[],

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { cellOverlapsSelectionRange } from '../src/engine/table-resize-updates.ts';
+import { buildCellSelectionColumnDragUpdates, cellOverlapsSelectionRange } from '../src/engine/table-resize-updates.ts';
 import type { CellBbox } from '../src/core/types.ts';
 
 const rootDir = dirname(dirname(fileURLToPath(import.meta.url)));
@@ -218,5 +218,51 @@ test('finishResizeDrag 선택 셀 필터는 overlap 판정을 사용한다', () 
     finish,
     /b\.row >= range\.startRow/,
     '시작 좌표 직접 비교가 남아 있으면 병합 셀 누락이 재발한다',
+  );
+  assert.match(
+    finish,
+    /buildCellSelectionColumnDragUpdates\(selectedBboxes, state\.bboxes, deltaHwpUnit\)/,
+    '셀 선택 열 드래그 update 구성은 추출된 순수 함수를 써야 함',
+  );
+});
+
+test('병합 셀 열 드래그는 걸친 모든 행의 오른쪽 이웃을 보상한다', () => {
+  // 3x2 표, col0 rows0-1 세로 병합. 경계 왼쪽 선택 셀 = 병합 셀 + (2,0).
+  // 실측(2026-09-01, headless studio): 시작 행 이웃만 보상하면 row1 의 열 폭 합이
+  // 어긋나 병합 셀이 최소폭으로 붕괴했다 (279.7px → 24px). 걸친 행 전부의 이웃
+  // (0,1)·(1,1)·(2,1) 이 반대 delta 를 받아야 행별 합이 유지된다.
+  const merged = mergedGridBbox(0, 0, 2, 1);
+  const r2c0 = mergedGridBbox(2, 0, 1, 1);
+  const r0c1 = mergedGridBbox(0, 1, 1, 1);
+  const r1c1 = mergedGridBbox(1, 1, 1, 1);
+  const r2c1 = mergedGridBbox(2, 1, 1, 1);
+  const all = [merged, r0c1, r1c1, r2c0, r2c1];
+
+  const updates = buildCellSelectionColumnDragUpdates([merged, r2c0], all, 100);
+  const byCell = new Map(updates.map(u => [u.cellIdx, u.widthDelta]));
+
+  assert.equal(byCell.get(merged.cellIdx), 100, '병합 셀은 +delta');
+  assert.equal(byCell.get(r2c0.cellIdx), 100, '(2,0) 은 +delta');
+  assert.equal(byCell.get(r0c1.cellIdx), -100, '(0,1) 은 -delta');
+  assert.equal(byCell.get(r1c1.cellIdx), -100, '(1,1) 도 -delta — 시작 행만 보상하면 여기가 빠진다');
+  assert.equal(byCell.get(r2c1.cellIdx), -100, '(2,1) 은 -delta');
+  assert.equal(updates.length, 5, '표의 다섯 셀 전부가 정확히 한 번씩 update 를 받는다');
+});
+
+test('병합 없는 표의 열 드래그 보상은 기존과 같다', () => {
+  const r0c0 = mergedGridBbox(0, 0, 1, 1);
+  const r1c0 = mergedGridBbox(1, 0, 1, 1);
+  const r0c1 = mergedGridBbox(0, 1, 1, 1);
+  const r1c1 = mergedGridBbox(1, 1, 1, 1);
+  const all = [r0c0, r0c1, r1c0, r1c1];
+
+  const updates = buildCellSelectionColumnDragUpdates([r1c0], all, 100);
+  assert.deepEqual(
+    updates,
+    [
+      { cellIdx: r1c0.cellIdx, widthDelta: 100 },
+      { cellIdx: r1c1.cellIdx, widthDelta: -100 },
+    ],
+    '선택된 (1,0) 과 그 행의 오른쪽 이웃만 반대 delta 를 받는다',
   );
 });

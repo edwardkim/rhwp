@@ -10,6 +10,7 @@ import {
   buildColumnResizeUpdates,
   buildLocalResizeUpdates,
   buildBoundaryResizeUpdates,
+  buildCellSelectionColumnDragUpdates,
   cellOverlapsSelectionRange,
   type CellSelectionRange,
   type LocalResizeUpdate,
@@ -887,29 +888,9 @@ export function finishResizeDrag(this: any, e: MouseEvent): void {
       this.cleanupResizeDrag();
       return;
     }
-    updates = [];
-    const addedNeighbors = new Set<number>();
-    for (const bbox of selectedBboxes) {
-      if (state.edge.type === 'col') {
-        updates.push({ cellIdx: bbox.cellIdx, widthDelta: deltaHwpUnit });
-        // 같은 행의 오른쪽 이웃 셀에 반대 delta
-        const neighbor = state.bboxes.find((b: any) =>
-          b.row === bbox.row && b.col === bbox.col + bbox.colSpan);
-        if (neighbor && !addedNeighbors.has(neighbor.cellIdx)) {
-          updates.push({ cellIdx: neighbor.cellIdx, widthDelta: -deltaHwpUnit });
-          addedNeighbors.add(neighbor.cellIdx);
-        }
-      } else {
-        updates.push({ cellIdx: bbox.cellIdx, heightDelta: deltaHwpUnit });
-        // 같은 열의 아래쪽 이웃 셀에 반대 delta
-        const neighbor = state.bboxes.find((b: any) =>
-          b.col === bbox.col && b.row === bbox.row + bbox.rowSpan);
-        if (neighbor && !addedNeighbors.has(neighbor.cellIdx)) {
-          updates.push({ cellIdx: neighbor.cellIdx, heightDelta: -deltaHwpUnit });
-          addedNeighbors.add(neighbor.cellIdx);
-        }
-      }
-    }
+    // 오른쪽 이웃 보상은 병합 셀이 걸친 모든 행을 쓸어야 한다 — 시작 행만 보상하면
+    // 행별 열 폭 합이 어긋나 표가 깨진다. (이 분기는 edge.type === 'col' 전용이다)
+    updates = buildCellSelectionColumnDragUpdates(selectedBboxes, state.bboxes, deltaHwpUnit);
     if (updates.length === 0) {
       this.cleanupResizeDrag();
       return;
