@@ -4,7 +4,7 @@ rhwp 프로젝트가 사용하는 서드파티 라이브러리 및 리소스의 
 
 기준 파일:
 
-- `Cargo.toml` / `Cargo.lock` (`rhwp` v0.8.4)
+- `Cargo.toml` / `Cargo.lock` (`rhwp` v0.8.6)
 - `rhwp-studio/package.json` / `rhwp-studio/package-lock.json`
 - `rhwp-chrome/package.json` / `rhwp-chrome/package-lock.json`
 - `rhwp-firefox/package.json` / `rhwp-firefox/package-lock.json`
@@ -96,15 +96,15 @@ source를 가진 외부 Rust 크레이트는 243개다. 나머지 4개는 현재
 
 | 패키지 | 버전 | 라이선스 | 용도 |
 |--------|------|---------|------|
-| @rhwp/core | 0.8.4 | MIT | WASM parser/renderer API |
-| @rhwp/editor | 0.8.4 | MIT | iframe 기반 웹 에디터 wrapper |
+| @rhwp/core | 0.8.6 | MIT | WASM parser/renderer API |
+| @rhwp/editor | 0.8.6 | MIT | iframe 기반 웹 에디터 wrapper |
 
 ### rhwp-studio
 
 | 패키지 | Lock 버전 | 라이선스 | 용도 |
 |--------|-----------|---------|------|
-| canvaskit-wasm | 0.41.1 | BSD-3-Clause | CanvasKit 렌더링 backend |
-| @noble/hashes | 2.3.0 | MIT | 렌더 리소스 키와 문서 digest |
+| canvaskit-wasm | 0.42.0 | BSD-3-Clause | CanvasKit 렌더링 backend |
+| @noble/hashes | 2.4.0 | MIT | 렌더 리소스 키와 문서 digest |
 | @types/chrome | 0.2.5 | MIT | Chrome API 타입 |
 | pixelmatch | 7.2.0 | ISC | 시각 diff 픽셀 비교 |
 | pngjs | 7.0.0 | MIT | 시각 diff PNG 처리 |
@@ -134,8 +134,8 @@ source를 가진 외부 Rust 크레이트는 243개다. 나머지 4개는 현재
 | typescript | 6.0.2 | Apache-2.0 | TypeScript 컴파일 |
 | webpack | 5.109.2 | MIT | 번들러 |
 | webpack-cli | 7.2.2 | MIT | Webpack CLI |
-| @noble/hashes | 2.3.0 | MIT | 문서 digest |
-| canvaskit-wasm | 0.41.1 | BSD-3-Clause | 자동 선택 CanvasKit backend |
+| @noble/hashes | 2.4.0 | MIT | 문서 digest |
+| canvaskit-wasm | 0.42.0 | BSD-3-Clause | 자동 선택 CanvasKit backend |
 
 ### rhwp-shared
 

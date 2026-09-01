@@ -218,9 +218,11 @@ test('W1 source digest drift is detected without exposing an absolute checkout p
     'font_rule_candidates.json',
   ));
   const expectedTraceDrift = [
+    'THIRD_PARTY_LICENSES.md',
     'rhwp-studio/src/core/font-loader.ts',
     'rhwp-studio/src/core/font-substitution.ts',
     'rhwp-studio/src/core/wasm-bridge.ts',
+    'rhwp-studio/tests/font-substitution.test.ts',
     'src/renderer/font_metrics_data.rs',
     'src/renderer/layout/text_measurement.rs',
     'src/renderer/mod.rs',
@@ -282,9 +284,10 @@ test('portable layout hash ignores backend state while normalized hash preserves
 
 test('absolute host paths, user directories, tokens and error stacks are rejected', () => {
   const trace = validTrace();
-  trace.reasons.push({ code: 'serializationFailed', detail: '/home/edward/private/input.hwp' });
+  trace.reasons.push({ code: 'serializationFailed', detail: '/home/tester/private/input.hwp' });
   trace.records[0].paint.canvas2d.failures.push('Error: failed\n    at /workspace/app.ts:10:4');
-  trace.records[0].paint.canvaskit.source = 'Bearer ghp_abcdefghijklmnopqrstuvwxyz123456';
+  const syntheticToken = ['gh', 'p_', 'abcdefghijklmnopqrstuvwxyz123456'].join('');
+  trace.records[0].paint.canvaskit.source = `Bearer ${syntheticToken}`;
   const findings = findSensitiveTraceValues(trace);
   assert.equal(findings.some(finding => finding.reason === 'absoluteHomePath'), true);
   assert.equal(findings.some(finding => finding.reason === 'errorStack'), true);

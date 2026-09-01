@@ -461,7 +461,7 @@ GitHub Release 생성 후 Actions 탭에서 `Publish All Packages` 워크플로�
 
 - [ ] devel 대상 PR merge → CI 통과 확인
 - [ ] main 대상 release PR merge → GitHub Pages 배포 확인
-- [ ] v0.8.5 Release Binary 5개 archive와 `SHA256SUMS.txt` 확인
+- [ ] v0.8.6 Release Binary 5개 archive와 `SHA256SUMS.txt` 확인
 - [ ] GitHub Release 생성 → Actions 탭에서 `Publish All Packages` 실행 확인
 - [ ] @rhwp/core npm 배포 확인
 - [ ] @rhwp/editor npm 배포 확인

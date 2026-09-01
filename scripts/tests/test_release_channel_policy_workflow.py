@@ -132,14 +132,62 @@ class ReleaseChannelPolicyWorkflowTests(unittest.TestCase):
 
         visible_versions = {
             "rhwp-studio About": package_version("rhwp-studio/package.json"),
+            "VS Code extension": package_version("rhwp-vscode/package.json"),
+            "npm editor": package_version("npm/editor/package.json"),
             "Chrome and Edge extension": package_version("rhwp-chrome/manifest.json"),
+            "Chrome package": package_version("rhwp-chrome/package.json"),
             "Firefox extension": package_version("rhwp-firefox/manifest.json"),
+            "Firefox package": package_version("rhwp-firefox/package.json"),
+            "Safari extension": package_version("rhwp-safari/src/manifest.json"),
         }
-        self.assertEqual(release_version, "0.8.4")
+        self.assertEqual(release_version, "0.8.6")
         self.assertEqual(
             set(visible_versions.values()),
             {release_version},
             f"사용자 표시 버전이 릴리스 버전과 다르다: {visible_versions}",
+        )
+
+        lock_versions = {
+            path: json.loads((REPO_ROOT / path).read_text(encoding="utf-8"))["packages"][
+                ""
+            ]["version"]
+            for path in (
+                "rhwp-studio/package-lock.json",
+                "rhwp-vscode/package-lock.json",
+                "rhwp-chrome/package-lock.json",
+                "rhwp-firefox/package-lock.json",
+            )
+        }
+        self.assertEqual(
+            set(lock_versions.values()),
+            {release_version},
+            f"root package-lock 버전이 릴리스 버전과 다르다: {lock_versions}",
+        )
+
+        cargo_lock = tomllib.loads(
+            (REPO_ROOT / "Cargo.lock").read_text(encoding="utf-8")
+        )
+        rhwp_packages = [
+            package for package in cargo_lock["package"] if package["name"] == "rhwp"
+        ]
+        self.assertEqual(len(rhwp_packages), 1)
+        self.assertEqual(rhwp_packages[0]["version"], release_version)
+
+        release_document_markers = {
+            "README.md": "**v0.8.6 — v1.0 조판 엔진 체계화**",
+            "README_EN.md": "**v0.8.6 — systematizing the v1.0 typesetting engine**",
+            "THIRD_PARTY_LICENSES.md": "`rhwp` v0.8.6",
+            "rhwp-vscode/CHANGELOG.md": "## 0.8.6 — 2026-09-02",
+        }
+        stale_release_documents = [
+            path
+            for path, marker in release_document_markers.items()
+            if marker not in (REPO_ROOT / path).read_text(encoding="utf-8")
+        ]
+        self.assertEqual(
+            stale_release_documents,
+            [],
+            f"사용자 안내 버전이 릴리스와 다르다: {stale_release_documents}",
         )
 
         display_wiring = {
