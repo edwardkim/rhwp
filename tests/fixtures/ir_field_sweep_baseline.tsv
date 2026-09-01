@@ -565,3 +565,5 @@ hwpx	tb-org-02.hwpx	sections[].paragraphs[].raw_header_extra[]	4
 hwpx	tbox-v-flow-01.hwpx	sections[].paragraphs[].controls[].text_box.paragraphs[].raw_header_extra[]	18
 hwpx	tbox-v-flow-01.hwpx	sections[].paragraphs[].raw_header_extra[]	4
 hwpx	water-mark.hwpx	sections[].paragraphs[].raw_header_extra[]	1
+hwp5rb	issue6575/156489219_satellite_pm_release.hwp	sections[].paragraphs[].controls[].cells[].list_header_width_ref	36
+hwp5rb	issue6575/156489219_satellite_pm_release.hwp	sections[].paragraphs[].controls[].cells[].paragraphs[].controls[].cells[].list_header_width_ref	13

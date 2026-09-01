@@ -28,7 +28,8 @@ use crate::model::bin_data::BinDataContent;
 use crate::model::control::Control;
 use crate::model::paragraph::{LineSeg, Paragraph};
 use crate::model::shape::{
-    CaptionDirection, CommonObjAttr, HorzAlign, HorzRelTo, ShapeObject, TextWrap, VertRelTo,
+    Caption, CaptionDirection, CommonObjAttr, HorzAlign, HorzRelTo, ShapeObject, TextWrap,
+    VertRelTo,
 };
 use crate::model::style::{Alignment, HeadType, LineSpacingType, Numbering, UnderlineType};
 use crate::model::table::Table;
@@ -1266,6 +1267,42 @@ fn tac_picture_label_extra_px(
         return 0.0;
     }
     max_font_size + line_spacing_px.max(0.0)
+}
+
+/// [#6575] TAC 개체를 baseline 에 앉힐 때 쓰는 **개체 상자 전체 높이**(px).
+///
+/// 종전에는 그림 높이만으로 `y + baseline - pic_h` 를 잡았다. 그런데 위/아래 캡션이
+/// 붙은 그림은 저장 줄이 **그림 + 캡션 간격 + 캡션**을 통째로 예약하므로, 그림만
+/// 바닥맞춤하면 캡션 높이만큼 아래로 내려간다.
+///
+/// 실측 `156489219` 5쪽 `pi=43`(한글 2024 오라클):
+///
+/// ```text
+/// y=233.7  baseline=240.7  pic_h=205.7  raw_lh=283.1  caption=Bottom(spacing 850, 3문단)
+///   종전:  233.7 + 240.7 - 205.7            = 268.7   (한/글 233.7 대비 +35.0px)
+///   상자:  (233.7 + 240.7 - 283.1).max(233.7) = 233.7  ✔
+/// ```
+///
+/// 상자가 baseline 보다 크면 기존 `.max(y)` 클램프가 그대로 줄 상단을 준다 — 한컴이
+/// 이런 줄에서 개체를 줄 상단에 붙이는 동작과 같은 답이다.
+///
+/// 좌/우 캡션은 폭을 늘릴 뿐 높이를 늘리지 않으므로 세로 방향(Top/Bottom)만 센다.
+fn tac_object_box_height_px(object_h: f64, caption: &Option<Caption>, dpi: f64) -> f64 {
+    let Some(cap) = caption else {
+        return object_h;
+    };
+    if !matches!(
+        cap.direction,
+        CaptionDirection::Top | CaptionDirection::Bottom
+    ) || cap.paragraphs.is_empty()
+    {
+        return object_h;
+    }
+    let caption_h = crate::renderer::composer::caption_height_px(caption, dpi);
+    if caption_h <= 0.0 {
+        return object_h;
+    }
+    object_h + hwpunit_to_px(i32::from(cap.spacing), dpi) + caption_h
 }
 
 fn tac_picture_label_extra_for_line(
@@ -6610,7 +6647,10 @@ impl LayoutEngine {
                                 let base_img_y = if label_extra > 0.0 {
                                     y + label_extra
                                 } else {
-                                    (y + baseline - pic_h).max(y)
+                                    // [#6575] 같은 계약의 형제 경로 — 상자 전체로 맞춘다.
+                                    let box_h =
+                                        tac_object_box_height_px(pic_h, &pic.caption, self.dpi);
+                                    (y + baseline - box_h).max(y)
                                 };
                                 let img_y = base_img_y + sibling_reserved_px;
                                 let bin_data_id = pic.image_attr.bin_data_id;
@@ -7896,7 +7936,9 @@ impl LayoutEngine {
                             let base_img_y = if label_extra > 0.0 {
                                 vars.y + label_extra
                             } else {
-                                (vars.y + vars.baseline - pic_h).max(vars.y)
+                                // [#6575] baseline 정렬 대상은 그림이 아니라 개체 상자 전체다.
+                                let box_h = tac_object_box_height_px(pic_h, &pic.caption, self.dpi);
+                                (vars.y + vars.baseline - box_h).max(vars.y)
                             };
                             let img_y = base_img_y + sibling_reserved_px;
                             let bin_data_id = pic.image_attr.bin_data_id;
