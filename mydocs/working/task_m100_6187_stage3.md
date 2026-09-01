@@ -2,7 +2,7 @@
 
 - Issue: [#6187](https://github.com/edwardkim/rhwp/issues/6187)
 - 작성일: 2026-08-31 KST
-- 상태: 실행 가능한 통합 검증 기록·로컬 서버 제공. **Stage 3 전체 완료 아님** — 사용자 창 드래그 확인 및 잔여 검증 대기.
+- 상태: 사용자 실제 창 드래그 확인·Stage 3 결과 승인·최신 devel 통합 재검증 완료.
 - 브랜치: `codex/issue-6187-always-visible-ruler`
 - 검증 제품 소스: Stage 2 commit `35a1e4a63`. 이번 체크포인트에 제품 소스 변경 없음.
 - 기준: `upstream/devel@e50792c6341a0b61afc3ffeb687a92fc6a807e69`
@@ -145,18 +145,22 @@ sample 탭의 조회된 warning/error 로그는 0건이었다. 새 빈 문서 �
 
 ![공개 sample 1280px 100%](../report/studio-ruler-6187/desktop-1280-100.jpg)
 
-## 7. 남은 검증과 사용자 확인
+## 7. 사용자 확인과 승인
 
-아래 미실행 항목을 통과나 자동 면제로 처리하지 않는다.
+2026-09-01 작업지시자가 실제 OS 브라우저 창을 드래그해 이번 작업의 resize 깜빡임 제거와 눈금자
+상시 표시를 확인한 뒤 “이번 작업에서의 수정은 테스트해본 결과 만족스러워.”와 “현재 작업의 Stage 3은
+통과인 것 같아.”로 결과를 승인했다. 다음 사용자 메시지에서 Stage 3 승인 기록과 PR 준비를 명시적으로
+지시했다.
 
-1. 실제 OS 창을 드래그하는 연속 화면과 사용자 육안 확인. 전체 합성 프레임의 무공백은 아직 미확정.
-2. 실제 touch/pen의 무변경·undo 항목 유지와 같은 세션 mouse 전환. Node 입력 계약 23개는 통과했지만
+아래 한계는 승인 뒤에도 검증 기록에서 삭제하거나 통과로 바꾸지 않는다.
+
+1. 실제 touch/pen의 무변경·undo 항목 유지와 같은 세션 mouse 전환. Node 입력 계약 23개는 통과했지만
    실제 모바일/에뮬레이션 입력 검증은 실행하지 못했다.
-3. 기존 `responsive.test.mjs`·문서 전환 E2E의 원본 자동 실행. 기존 스크립트의 page global 조작을
+2. 기존 `responsive.test.mjs`·문서 전환 E2E의 원본 자동 실행. 기존 스크립트의 page global 조작을
    Browser 도구에서 재현하지 않았다. 이번 배치 matrix·새 문서 스모크를 원본 suite 통과로 대신하지 않는다.
-4. 수정 전 브라우저 후보에서 새 screenshot 검사기의 실제 실패 검출. Stage 2의 수정 전 Node 실패와
+3. 수정 전 브라우저 후보에서 새 screenshot 검사기의 실제 실패 검출. Stage 2의 수정 전 Node 실패와
    합성 PNG 부정 대조는 있지만, 브라우저 red-baseline 실행은 없다.
-5. 넓은 resize의 모든 focus·쪽 기준 보존 조건과 위 CanvasView 로그의 baseline 비교.
+4. 넓은 resize의 모든 focus·쪽 기준 보존 조건과 위 CanvasView 로그의 baseline 비교.
 
 사용자 확인 방법:
 
@@ -167,5 +171,34 @@ sample 탭의 조회된 warning/error 로그는 0건이었다. 새 빈 문서 �
 4. 좁은 창에서도 마우스 여백/들여쓰기 핀을 움직이고 실행 취소가 되는지 확인한다.
 5. 재현되면 배율, 쪽 이동 방향, 대략적인 창 크기와 영상 구간을 알려준다.
 
-로컬 서버는 유지한다. Stage 3 체크포인트를 commit한 뒤 사용자 결과를 기다리며,
-전체 해결·PR 준비 완료로 확정하지 않는다. remote push·새 PR·원 PR 종료·이슈 종료·댓글은 수행하지 않았다.
+로컬 서버와 사용자 검증 탭은 유지한다. remote push·새 PR·원 PR 종료·이슈 종료·댓글은 수행하지 않았다.
+
+### 사용자 확인에서 분리한 후속 결함
+
+- 세로 눈금자의 마지막 번호 `42`: 가로 마지막 번호를 숨기는 기존 정책과 대칭이어야 한다. 이 정책을
+  이미 다루는 PR #6458의 보정 commit으로 처리하고 #6187 diff에는 섞지 않는다.
+- macOS Firefox의 10%·13%·14% 트랙패드 축소가 브라우저 native zoom으로 이탈: #6187은
+  `viewport-manager.ts`, `index.html` 및 wheel listener 소유 범위를 변경하지 않았다. 초기
+  `ViewportManager`의 `#scroll-container` 한정 listener가 가진 잠재 범위 공백을 저배율 UI가 노출한
+  별도 결함으로 분류하며, 실제 Firefox event trace 뒤 독립 이슈·PR로 처리한다.
+
+두 결함은 사용자와 함께 #6187 회귀가 아니라고 판정했다. #6187의 Stage 3 승인과 별도 추적한다.
+
+## 8. 최신 devel 통합과 PR 준비 재검증
+
+2026-09-01 PR 준비 승인 뒤 `upstream/devel`을 `0d1540931`까지 갱신했다. 최초 기준 이후 94 commit이
+전진했으며 #6187과 같은 제품 파일인 `ruler.ts`·`responsive.css`는 바뀌지 않았다. E2E manifest의
+서로 다른 행 추가만 자동 병합됐고 merge commit은 `7d4f4a18f`다.
+
+| 검사 | 최신 통합 head 결과 |
+| --- | --- |
+| `npm test` | 1350 passed / 0 failed / 1 skipped (총 1351) |
+| `npx --no-install tsc --noEmit` | 통과 |
+| 인앱 브라우저 767px | 두 눈금자·교차 코너 visible, `20px + content` grid 유지 |
+| 인앱 브라우저 1024px | 두 눈금자·교차 코너 visible, `20px + content` grid 유지 |
+| 브라우저 warning/error | 0건 |
+
+실제 브라우저는 최신 head로 reload한 뒤 확인했고 임시 viewport override는 해제했다. 사용자의 native 창
+드래그 승인은 통합 전 code candidate에 대한 것이지만, 통합에서 #6187 제품 파일이 바뀌지 않았고 최신
+head의 정적·자동 게이트를 다시 통과했으므로 승인 결과를 유지한다. Rust 변경은 현재 PR diff에 없어
+Rust·WASM 게이트는 적용하지 않는다.

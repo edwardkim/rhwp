@@ -2,11 +2,12 @@
 
 - Issue: [#6187](https://github.com/edwardkim/rhwp/issues/6187)
 - 작성일: 2026-08-31 KST
-- 상태: Stage 3 검증 체크포인트 기록 / 사용자 창 드래그 및 잔여 검증 대기.
+- 상태: Stage 3 사용자 승인·최신 devel 통합·PR 준비 검증 완료 / remote push·PR 생성 승인 대기.
 - 수행 계획: [task_m100_6187.md](task_m100_6187.md)
 - Stage 1 결과: [상시 표시·입력 정책 구현 보고](../working/task_m100_6187_stage1.md)
 - Stage 2 결과: [resize 갱신 원자화 보고](../working/task_m100_6187_stage2.md)
-- Stage 3 체크포인트: [전체 테스트·브라우저 검증 기록](../working/task_m100_6187_stage3.md)
+- Stage 3 결과: [전체 테스트·브라우저 검증 및 사용자 승인 기록](../working/task_m100_6187_stage3.md)
+- 최종 결과: [눈금자 상시 표시와 resize 무깜빡임 보고](../report/task_m100_6187_report.md)
 - 브랜치: `codex/issue-6187-always-visible-ruler`
 - 기준: `upstream/devel@e50792c6341a0b61afc3ffeb687a92fc6a807e69`
 
@@ -175,3 +176,15 @@ Stage 2 결과 승인 뒤 아래 범위의 실행 승인을 받아 수행한다.
 계약과 전체 합성 프레임 검증을 완료했다고 간주하지 않는다. page global에 직접 쓰는 기존 E2E도
 이 도구로 우회 실행하지 않았다. 상세 미실행 항목은 Stage 3 기록에 남겼고, 원 계획의 수용 기준을
 snapshot 통과만으로 축소하지 않는다. 사용자에게 실제 창 드래그용 서버를 제공한 체크포인트다.
+
+### 2026-09-01 사용자 승인과 PR 준비
+
+작업지시자는 실제 OS 브라우저 창을 드래그해 이번 변경의 상시 표시와 resize 무깜빡임을 확인하고
+Stage 3 결과를 승인했다. 확인 중 발견한 세로 끝 번호 `42`는 PR #6458의 가로 끝 라벨 정책에 대칭
+보정하고, macOS Firefox 트랙패드 pinch 이탈은 별도 결함으로 추적하기로 했다. 두 항목을 #6187 구현에
+추가하지 않는다.
+
+PR 준비 승인에 따라 최신 `upstream/devel@0d1540931`을 merge commit `7d4f4a18f`로 통합했다. 통합 뒤
+Studio 전체 npm 테스트 1350 passed / 0 failed / 1 skipped와 TypeScript 검사가 통과했다. 최신 head를
+인앱 브라우저에서 다시 불러 767px·1024px의 두 눈금자·교차 코너·20px grid와 console 무오류를
+확인했다. 최종 보고서와 PR 본문 초안을 작성하되, remote push와 PR 생성은 별도 승인을 기다린다.
