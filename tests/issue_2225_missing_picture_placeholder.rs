@@ -59,7 +59,7 @@ fn issue_2225_missing_picture_placeholder_split() {
 
 #[cfg(feature = "native-skia")]
 #[test]
-fn issue_2225_export_png_defaults_to_print_equivalent_skia_profile() {
+fn issue_2225_export_png_defaults_to_screen_skia_profile() {
     let repo_root = Path::new(env!("CARGO_MANIFEST_DIR"));
     let sample_path = repo_root.join(SAMPLE);
     let nonce = std::time::SystemTime::now()
@@ -129,8 +129,12 @@ fn issue_2225_export_png_defaults_to_print_equivalent_skia_profile() {
     let _ = fs::remove_dir_all(&output_root);
 
     assert_eq!(
-        default_ink, 0,
-        "default export-png emitted print-equivalent missingPicture ink"
+        default_ink, screen_ink,
+        "default export-png did not match the explicit screen profile"
+    );
+    assert!(
+        default_ink > 1_000,
+        "default export-png did not emit the missingPicture editor visual: {default_ink}"
     );
     assert!(
         screen_ink > 1_000,

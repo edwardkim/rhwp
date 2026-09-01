@@ -11,7 +11,7 @@
 //        경로 결정을 무효화하므로 filename 결정 단계에서 완전히 빠진다.
 
 import { openViewer } from './viewer-launcher.js';
-import { shouldInterceptDownload } from './download-interceptor-common.js';
+import { classifyDownload } from './download-interceptor-common.js';
 import { loadSettingsForAutomaticActions } from './settings-store.js';
 import {
   DEFAULT_STATE_TTL_MS,
@@ -58,7 +58,7 @@ async function handleCreated(item) {
 
   if (decision.action !== 'track') return;
   await setDownloadState(decision.state);
-  await processDownloadCandidate(item, decision.state);
+  await processDownloadCandidate(item, decision.state, { metadataFinalized: false });
 }
 
 async function handleChanged(delta) {
@@ -71,7 +71,9 @@ async function handleChanged(delta) {
       const decision = evaluateDownloadChanged(delta, item, state, now);
       if (decision.action === 'candidate') {
         state = decision.state;
-        state = await processDownloadCandidate(item, state);
+        state = await processDownloadCandidate(item, state, {
+          metadataFinalized: Boolean(delta.filename?.current || isTerminalDelta(delta)),
+        });
       }
     } catch (err) {
       console.error('[rhwp] 다운로드 항목 재조회 오류:', err);
@@ -87,9 +89,9 @@ async function handleChanged(delta) {
   }
 }
 
-async function processDownloadCandidate(item, state) {
+async function processDownloadCandidate(item, state, context) {
   if (!item || state?.handledAt) return state;
-  if (!shouldInterceptDownload(item)) return state;
+  if (classifyDownload(item, context).action !== 'intercept') return state;
   const existingProcessing = processingDownloadPromises.get(item.id);
   if (existingProcessing) return existingProcessing;
 

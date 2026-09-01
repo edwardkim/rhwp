@@ -128,11 +128,23 @@ impl ClipRect {
         (clipped.right > clipped.x && clipped.bottom > clipped.y).then_some(clipped)
     }
 
+    /// [#5301] 허용치가 `0.01px` 에서 `0.5px` 로 넓어졌다 — **전진 상자와 잉크를
+    /// 가른다.**
+    ///
+    /// `RenderNode.bbox` 는 글리프 **전진폭** 상자다. 잉크가 아니다. p34 근거설명
+    /// 줄은 전진 상자가 클립을 `0.40px`(0.30pt) 넘지만 600dpi 래스터로 재면 괘선
+    /// 너머 어두운 픽셀이 **0** 이다 — 한글 2024 정답지도 같은 줄을 괘선에 닿게
+    /// 그린다(글자 상자 `156.96..522.60pt`, 칸 폭 `365.72pt`). `#6443`·`#6303` 이
+    /// 같은 착시를 두 번 기록했다.
+    ///
+    /// 종전에는 `aim=false` 중첩 칸에 저장 여백 `510HU` 를 얹어 폭을 `10.2pt` 줄인
+    /// 덕에 이 여유가 생겼는데, 그 여백이 바로 66쪽에서 글자를 소실시키던 원인이다.
     fn contains_node(self, node: &RenderNode) -> bool {
-        node.bbox.x >= self.x - 0.01
-            && node.bbox.y >= self.y - 0.01
-            && node.bbox.x + node.bbox.width <= self.right + 0.01
-            && node.bbox.y + node.bbox.height <= self.bottom + 0.01
+        const ADVANCE_BOX_TOLERANCE_PX: f64 = 0.5;
+        node.bbox.x >= self.x - ADVANCE_BOX_TOLERANCE_PX
+            && node.bbox.y >= self.y - ADVANCE_BOX_TOLERANCE_PX
+            && node.bbox.x + node.bbox.width <= self.right + ADVANCE_BOX_TOLERANCE_PX
+            && node.bbox.y + node.bbox.height <= self.bottom + ADVANCE_BOX_TOLERANCE_PX
     }
 
     fn intersects_node(self, node: &RenderNode) -> bool {

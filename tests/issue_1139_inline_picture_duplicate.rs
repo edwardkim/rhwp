@@ -2167,12 +2167,20 @@ fn issue_1284_2023_sep_page20_question30_title_stays_in_left_tail() {
     let q30_continuation = page20
         .find("FullParagraph[미주]  pi=976")
         .expect("page 20 question 30 right-column continuation");
+    // [#6544] 한글 2022 오라클 재측정으로 기대값을 정정한다.
+    //
+    // 종전 기대("식 줄은 오른쪽 단")는 위험 휴리스틱이 저장 사다리를 뚫던 시절의 동작을
+    // 고정한 것이고 한컴 PDF 와 어긋난다. 저장 사다리의 단 경계 신호(vpos 되감김)는
+    // pi=976 에서 나고(1213345 -> 1209109), 이 쪽 저장 회계도 단 0 `diff = -0.0px` 다.
+    //
+    // 한글 2022 PDF p20: `9b PQ=4a AB …… ㉠` 이 **왼쪽 단 하단** y=810.0pt 에 있고,
+    // 오른쪽 단은 `, 이므로 ㉠에서` y=68.1pt 로 시작한다.
     assert!(
         q30_title < page20_col1
             && q30_intro < page20_col1
-            && q30_equation > page20_col1
+            && q30_equation < page20_col1
             && q30_continuation > page20_col1,
-        "현재 sweep 기준 문30은 page 20 왼쪽 단 하단에 제목과 첫 풀이 2줄을 남기고 오른쪽 단 수식으로 이어져야 함\n{page20}"
+        "문30 은 page 20 왼쪽 단 하단에 제목·풀이·식까지 남기고 오른쪽 단으로 이어져야 함 (한글 2022 오라클)\n{page20}"
     );
 
     let tree = doc.build_page_render_tree(19).expect("page 20 render tree");
@@ -2198,8 +2206,8 @@ fn issue_1284_2023_sep_page20_question30_title_stays_in_left_tail() {
         q30_condition_bbox
     );
     assert!(
-        q30_equation_bbox.x > 390.0 && (84.0..=110.0).contains(&q30_equation_bbox.y),
-        "문30 식 줄은 현재 sweep처럼 오른쪽 단 상단에서 이어져야 함: {:?}",
+        q30_equation_bbox.x < 80.0 && (1068.0..=1090.0).contains(&q30_equation_bbox.y),
+        "문30 식 줄은 한글 2022 처럼 왼쪽 단 하단(약 y=1080px = 810.0pt)에 남아야 함: {:?}",
         q30_equation_bbox
     );
     assert!(
@@ -3134,13 +3142,18 @@ fn issue_1274_2022_oct_page11_question20_equation_tail_keeps_pdf_bleed() {
     let equation_bottom =
         max_equation_visual_bottom_in_region(&tree.root, 395.0, 700.0, 1020.0, 1100.0)
             .expect("문20 하단 수식");
+    // [#6544] 한글 2022 오라클 재측정으로 기대값을 정정한다.
+    //
+    // 종전 하한(>= 1118.0px = 838.5pt)은 단 하단 819.21pt 를 **20.3pt 넘는 bleed** 를
+    // 요구했다. 한컴 PDF 는 그 bleed 를 만들지 않는다 — 오른쪽 단 마지막 잉크 하단이
+    // 818.3pt(= 1091.1px)로 단 **안**에서 끝난다(rhwp 종전 839.5pt).
     assert!(
-        equation_bottom <= 1124.0,
-        "문20 하단 수식-only tail은 현재 sweep 기준 허용 bleed 안에 남아야 함: bottom={equation_bottom}"
+        equation_bottom <= 1100.0,
+        "문20 하단 수식 tail 은 단 하단(1092.3px) 언저리에서 끝나야 함: bottom={equation_bottom}"
     );
     assert!(
-        equation_bottom >= 1118.0,
-        "문20 수식 tail을 과도하게 끌어올리면 현재 sweep의 하단 잔여 흐름과 달라짐: bottom={equation_bottom}"
+        equation_bottom >= 1088.0,
+        "문20 수식 tail 을 과도하게 끌어올리면 한글(1091.1px)보다 위로 간다: bottom={equation_bottom}"
     );
 }
 
@@ -3316,9 +3329,14 @@ fn issue_1274_2022_oct_page16_question30_title_tail_continues_next_column() {
         (1060.0..=1085.0).contains(&title.y),
         "문30 제목은 한컴/PDF처럼 16쪽 하단에 남아야 함: title={title:?}"
     );
+    // [#6544] 한글 2022 오라클 재측정으로 기대값을 정정한다.
+    //
+    // 한컴 PDF p16 은 `함수 …의 한 부정적분을 …라 하자.` 를 **왼쪽 단** y=809.7pt 에
+    // 두고, 오른쪽 단은 `조건 (가)에서` y=68.0pt 로 시작한다. 종전 기대(첫 본문 줄이
+    // 다음 단 상단)는 휴리스틱이 저장 사다리를 뚫던 시절의 동작이다.
     assert!(
-        first_line.x > 390.0 && (84.0..=104.0).contains(&first_line.y),
-        "문30 첫 본문 줄은 현재 sweep 기준 다음 단 상단에서 이어져야 함: title={title:?}, first_line={first_line:?}"
+        first_line.x < 80.0 && (1078.0..=1094.0).contains(&first_line.y),
+        "문30 첫 본문 줄은 한글 2022 처럼 제목 바로 아래 왼쪽 단에서 이어져야 함: title={title:?}, first_line={first_line:?}"
     );
 }
 
@@ -3676,5 +3694,22 @@ fn issue_1139_endnote_equation_exposes_note_ref_and_properties() {
         props["hasCaption"].as_bool(),
         Some(false),
         "캡션이 없는 수식은 수식 속성 여백/캡션 탭에서 위치 없음으로 표시되어야 함: {props}"
+    );
+}
+
+#[test]
+fn issue_1139_2024_hwpx_page9_endnote_title_moves_with_first_payload_line() {
+    let bytes = std::fs::read("samples/3-09월_교육_통합_2022.hwpx").expect("sample");
+    let doc = HwpDocument::from_bytes(&bytes).expect("parse");
+    let page9 = doc.dump_page_items(Some(8));
+    let page10 = doc.dump_page_items(Some(9));
+
+    assert!(
+        !page9.contains("pi=523"),
+        "문8 제목만 9쪽 오른쪽 단 하단에 남기면 한컴 2024 PDF와 달라짐\n{page9}"
+    );
+    assert!(
+        page10.contains("pi=523"),
+        "문8은 첫 payload 줄과 함께 10쪽에서 시작해야 함\n{page10}"
     );
 }

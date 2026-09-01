@@ -1159,6 +1159,7 @@ fn apply_paragraph_kerning_to_tokens(
 }
 
 /// px를 HWPUNIT(i32)로 변환 (내림, DPI=96 기준: px * 75)
+///
 #[inline]
 fn to_hwp(px: f64) -> i32 {
     (px * 75.0) as i32
@@ -1258,6 +1259,7 @@ fn resolved_letter_spacing_px(
 /// 한 자리만 자간을 뺀 값을 넘겼다. 자간이 0 인 문단에서는 두 값이 같아 어떤 테스트도
 /// 차이를 잡지 못했다. 이제 원시 정수는 이 함수에 들어가지 못하고, 호출부는 생성자
 /// 이름으로 어느 쪽인지 밝혀야 한다.
+///
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 struct FitWidthHwp(i32);
 

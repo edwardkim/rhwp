@@ -17,9 +17,10 @@ use crate::model::paragraph::{ColumnBreakType, LineSeg, Paragraph};
 use crate::model::shape::CaptionDirection;
 use crate::renderer::composer::{compose_paragraph, first_text_line, ComposedParagraph};
 use crate::renderer::float_placement::{
-    horizontal_range, is_page_bottom_fixed_float, is_para_topbottom_float,
-    native_empty_host_rowbreak_line_advance_hu, original_hwpx_infront_para_flow_paginates,
-    signed_hwpunit, stored_empty_anchor_band_host_line_advance_hu,
+    empty_offset_float_deferred_text_ladder_hu, horizontal_range, is_page_bottom_fixed_float,
+    is_para_topbottom_float, native_empty_host_rowbreak_line_advance_hu,
+    original_hwpx_infront_para_flow_paginates, signed_hwpunit,
+    stored_empty_anchor_band_host_line_advance_hu,
     stored_visible_anchor_band_host_line_advance_from_vpos, FloatLaneSet, FloatPlacementContext,
 };
 use crate::renderer::height_cursor::HeightCursor;
@@ -60,6 +61,28 @@ const ENDNOTE_PAGE_OFFCANVAS_GUARD_PX: f64 = 56.0;
 /// 불필요하게 페이지 단위로 분리한다. 두 장 이상이라는 #1995의 하한은 유지한다.
 fn has_majority_fullpage_images(fullpage_count: usize, noninline_picture_count: usize) -> bool {
     fullpage_count >= 2 && fullpage_count.saturating_mul(2) > noninline_picture_count
+}
+
+/// [#6511] #1995 낱장 배치는 본문 흐름에 참여하는 비-TAC 그림만 후보와 과반
+/// 분모로 센다. 글뒤로/글앞으로(BehindText/InFrontOfText) 그림은 흐름 공간을
+/// 소비하지 않아 한 쪽에 몇 장이든 공존할 수 있으므로(#703 표와 같은 불변식)
+/// 전면 크기라도 스캔 이미지가 아니라 배경/워터마크다. 낱장 배치 후보로 세면
+/// 배경 프레임을 깐 안내문이 강제 새 쪽을 얻고, 분모로만 남겨도 스캔 그림의
+/// 과반을 희석해 정당한 낱장 배치를 억제한다 — 양쪽 모두에서 제외한다.
+fn flow_noninline_picture(ctrl: &Control) -> Option<&crate::model::image::Picture> {
+    match ctrl {
+        Control::Picture(pic)
+            if !pic.common.treat_as_char
+                && !matches!(
+                    pic.common.text_wrap,
+                    crate::model::shape::TextWrap::BehindText
+                        | crate::model::shape::TextWrap::InFrontOfText
+                ) =>
+        {
+            Some(pic)
+        }
+        _ => None,
+    }
 }
 
 /// [#2085] 표 행-스캔 분할점 캐리 (값 왕복). split_end_cut 은 move.
@@ -1499,6 +1522,31 @@ fn para_has_visible_text_or_equation(para: &Paragraph) -> bool {
             .controls
             .iter()
             .any(|c| matches!(c, Control::Equation(eq) if eq.common.treat_as_char))
+}
+
+fn para_has_visible_text_and_treat_as_char_equation(para: &Paragraph) -> bool {
+    para_has_visible_text(para)
+        && para
+            .controls
+            .iter()
+            .any(|c| matches!(c, Control::Equation(eq) if eq.common.treat_as_char))
+}
+
+/// HWPX가 자동으로 만드는 미주 제목은 자동번호 컨트롤과 짧은 답 표식만 가진다.
+/// 리터럴 문항명이 남은 HWP5 제목과 구별해, 단 하단에서 제목만 고립시키지 않는다.
+fn para_is_short_auto_endnote_marker(para: &Paragraph) -> bool {
+    para.text
+        .chars()
+        .filter(|c| *c > '\u{001F}' && *c != '\u{FFFC}' && !c.is_whitespace())
+        .count()
+        <= 1
+        && para.controls.iter().any(|control| {
+            matches!(
+                control,
+                Control::AutoNumber(number)
+                    if number.number_type == crate::model::control::AutoNumberType::Endnote
+            )
+        })
 }
 
 fn is_treat_as_char_equation_control(ctrl: Option<&Control>) -> bool {
@@ -8613,17 +8661,16 @@ impl TypesetEngine {
             // 각각 한 페이지에 단독 배치해야 한다. 미수정 시 96장이 한 앵커에 스택되어
             // 문서가 과소 페이지가 된다(오라클 268 vs rhwp 174). 한 문단에 본문높이의
             // 60% 이상인 non-TAC 그림이 2장 이상일 때만 발동(정상 단일 그림 문단 불변).
+            // 글뒤로/글앞으로 그림은 후보·분모 모두에서 제외한다(#6511, `flow_noninline_picture`).
             let fullpage_img_body_h = st.base_available_height();
             let fullpage_img_ctrls: Vec<usize> = if fullpage_img_body_h > 0.0 && !has_table {
                 para.controls
                     .iter()
                     .enumerate()
-                    .filter_map(|(ci, c)| match c {
-                        Control::Picture(pic) if !pic.common.treat_as_char => {
-                            let h = hwpunit_to_px(pic.common.height as i32, self.dpi);
-                            (h >= fullpage_img_body_h * 0.6).then_some(ci)
-                        }
-                        _ => None,
+                    .filter_map(|(ci, c)| {
+                        let pic = flow_noninline_picture(c)?;
+                        let h = hwpunit_to_px(pic.common.height as i32, self.dpi);
+                        (h >= fullpage_img_body_h * 0.6).then_some(ci)
                     })
                     .collect()
             } else {
@@ -8638,7 +8685,7 @@ impl TypesetEngine {
             let noninline_pic_count = para
                 .controls
                 .iter()
-                .filter(|c| matches!(c, Control::Picture(pic) if !pic.common.treat_as_char))
+                .filter(|c| flow_noninline_picture(c).is_some())
                 .count();
             // [#4770] #2004 본문 정규화와 같은 엄격한 저장 스택 계약을 쓴다. 즉 빈
             // 문단의 비-TAC Square·겹침불허 그림/그림-도형이 같은 세로 band에 있고,
@@ -11043,7 +11090,14 @@ impl TypesetEngine {
                 && st.col_count > 1
                 && !st.current_items.is_empty()
                 && st.current_height > available * 0.5
-                && (local_vpos_rewind || st.column_had_compact_endnote_rewind);
+                && (local_vpos_rewind
+                    || st.column_had_compact_endnote_rewind
+                    // [#6495] 되감김 신호가 **없는** 단도 넘친다. 3-09월_교육_통합_2022
+                    // 9쪽 오른쪽 단은 되감김이 한 번도 없는데 타이프셋 누계가
+                    // 1048.9 로 가용 1001.6 을 47px 넘고, 그린 줄이 용지 끝
+                    // 841.17pt(용지 841.9)에 닿는다. 누계가 이미 가용을 넘었으면
+                    // 신호와 무관하게 시뮬로 확인한다.
+                    || st.current_height > available);
             let simulated_endnote_bottom = if ssot_level >= EnSsotLevel::A2 || page_offcanvas_sim {
                 self.simulate_endnote_column_bottom_y(
                     &st,
@@ -11063,9 +11117,23 @@ impl TypesetEngine {
             } else {
                 None
             };
+            // [#5886] 허용 bleed 는 **용지 안에 남는 만큼**을 넘을 수 없다.
+            //
+            // 관문 이름 그대로 이것은 "용지 밖(off-canvas)"을 막는 장치인데, 허용치를
+            // 단 하단 기준 고정 56px 로 두면 쪽 아래 여백이 그보다 좁은 문서에서
+            // **여백과 56px 사이 구간이 통째로 사각지대**가 된다. 3-09월_교육_통합_2022
+            // 12쪽이 그 예로, 단 하단 1092.3 에서 용지 1122.5 까지 30.2px 뿐인데
+            // 관문은 +56px 을 넘을 때까지 침묵해 세 문단(시뮬 하단 1016.6·1034.6·1052.7)
+            // 이 놓인 뒤에야 발동했다. 뒤 두 문단은 용지 밖이라 다시 그려지지도 않는다.
+            //
+            // 여백이 56px 이상인 문서는 종전과 같다 — 좁은 쪽에서만 조인다.
+            let page_bottom_room = (st.layout.page_height
+                - (st.layout.body_area.y + st.layout.body_area.height))
+                .max(0.0);
+            let page_offcanvas_guard_px = ENDNOTE_PAGE_OFFCANVAS_GUARD_PX.min(page_bottom_room);
             let page_offcanvas_with_para = page_offcanvas_sim
                 && simulated_endnote_bottom
-                    .is_some_and(|bottom| bottom > available + ENDNOTE_PAGE_OFFCANVAS_GUARD_PX);
+                    .is_some_and(|bottom| bottom > available + page_offcanvas_guard_px);
             // 구분선 없는 큰 미주 block에서는 다줄 수식 문단의 advance가
             // frame을 약간 넘더라도 실제 보이는 줄은 하단 frame 안에 남는다.
             // 이 tail을 통째로 유지해야 다음 단의 새 문항 시작점이 한컴과 맞는다.
@@ -12124,6 +12192,7 @@ impl TypesetEngine {
                     endnote_shape,
                     available,
                     ep_idx,
+                    next_endnote_first_line_advance,
                     next_endnote_head_pair_advance,
                     default_between_notes_gap,
                     compact_endnote_separator_profile,
@@ -12381,7 +12450,25 @@ impl TypesetEngine {
                     endnote_has_visible_payload,
                     large_separator_block,
                     compact_between_notes_gap,
-                );
+                )
+                // [#6544] 저장 사다리가 "이 단에 들어간다"고 말하고 **자기 회계로도 들어가면**
+                // 위험 휴리스틱을 적용하지 않는다.
+                //
+                // 이 술어는 저장 증거를 보지 않는 순수 띠다 — "단의 96% 를 넘었고 이 문단을
+                // 넣으면 하단 20px 안으로 들어온다"면 넘긴다. 그런데 `advance_for_fit` 안에서
+                // `compact_endnote_own_vpos_span_fits_for_flow`(= 문단의 저장 vpos 폭이 남은
+                // 공간에 든다)를 **뚫는 예외**로 등재돼 있어, 파일이 같은 단에 두라고 적어 둔
+                // 문단까지 넘긴다.
+                //
+                // 3-09월_교육_통합_2023 13쪽 왼쪽 단: 저장 사다리가 pi=657·658·659 를 Δ=1352
+                // 로 연속 기록하고 되감김(=단 경계)은 pi=660 에서 낸다. pi=658 을 넘길 때
+                // 누계는 974.2 로 가용 1001.6 안이고 진행량 18.0 을 더해도 992.2 라 실제로
+                // 들어간다 — 위험 판정이 근거 없이 발동한 것이다.
+                //
+                // 예외를 통째로 빼면 #1274·#1284 sweep 핀과 off_canvas 래칫이 걸린다. 여기서는
+                // **넣어도 가용 안에 남는** 경우로만 좁힌다.
+                && !(compact_endnote_own_vpos_span_fits_for_flow
+                    && st.current_height + total_advance_fit <= available);
             let zero_tac_picture_tail_bleeds_frame = compact_endnote_separator_profile
                 && zero_endnote_spacing_profile
                 && has_visible_endnote_separator
@@ -15280,6 +15367,7 @@ impl TypesetEngine {
         endnote_shape: Option<&FootnoteShape>,
         available: f64,
         ep_idx: usize,
+        next_endnote_first_line_advance: Option<f64>,
         next_endnote_head_pair_advance: Option<f64>,
         default_between_notes_gap: bool,
         compact_endnote_separator_profile: bool,
@@ -15302,15 +15390,28 @@ impl TypesetEngine {
             && st.current_height > available * 0.95
             && st.current_height + fmt.line_advance(0)
                 <= available + ENDNOTE_COLUMN_BOTTOM_BLEED_TOLERANCE_PX
-            && en_ctrl.paragraphs.get(1).is_some_and(|next_para| {
+            && ((en_ctrl.paragraphs.get(1).is_some_and(|next_para| {
                 !para_has_visible_text(next_para) && para_has_visible_text_or_equation(next_para)
-            })
-            && next_endnote_head_pair_advance
+            }) && next_endnote_head_pair_advance
                 .map(|next_h| {
                     st.current_height + fmt.line_advance(0) + next_h
                         > available + ENDNOTE_COLUMN_BOTTOM_BLEED_TOLERANCE_PX + 2.0
                 })
-                .unwrap_or(false)
+                .unwrap_or(false))
+                || (st.profile.hwpx_stored_layout()
+                    && en_ctrl
+                        .paragraphs
+                        .first()
+                        .is_some_and(para_is_short_auto_endnote_marker)
+                    && en_ctrl
+                        .paragraphs
+                        .get(1)
+                        .is_some_and(para_has_visible_text_and_treat_as_char_equation)
+                    && next_endnote_first_line_advance
+                        .map(|next_h| {
+                            st.current_height + fmt.line_advance(0) + next_h > available + 2.0
+                        })
+                        .unwrap_or(false)))
             && endnote_has_visible_payload
     }
 
@@ -17299,9 +17400,30 @@ impl TypesetEngine {
                 || saved_list_tail_body_vpos_fits)
         {
             // place: 전체 배치
-            st.current_items.push(PageItem::FullParagraph {
+            let defer_preceding_float = matches!(
+                st.current_items.last(),
+                Some(PageItem::Table {
+                    para_index: host_para_idx,
+                    control_index,
+                }) if *host_para_idx + 1 == para_idx
+                    && paragraphs
+                        .get(*host_para_idx)
+                        .and_then(|host| host.controls.get(*control_index).map(|control| (host, control)))
+                        .is_some_and(|(host, control)| matches!(control, Control::Table(table)
+                            if empty_offset_float_deferred_text_ladder_hu(host, table, para).is_some()))
+            );
+            let paragraph_item = PageItem::FullParagraph {
                 para_index: para_idx,
-            });
+            };
+            if defer_preceding_float {
+                // 빈 host의 양수-offset 자리차지 표는 다음 계산 본문 문단이 표 위 빈칸을
+                // 채운 뒤에 그려진다. 표를 먼저 놓으면 그 본문이 표 하단으로 밀린다.
+                let table_item = st.current_items.pop().expect("checked trailing table item");
+                st.current_items.push(paragraph_item);
+                st.current_items.push(table_item);
+            } else {
+                st.current_items.push(paragraph_item);
+            }
             // [Task #391] 다단/단단 분기:
             //   - 단단 (col_count == 1): total_height (k-water-rfp p3 311px drift 차단, #359)
             //   - 다단 (col_count > 1): height_for_fit (exam_eng 8p 정상 단 채움 복원)
@@ -17888,6 +18010,57 @@ impl TypesetEngine {
             {
                 end_line -= 1;
                 cumulative = fmt.line_advances_sum(cursor_line..end_line);
+            }
+
+            // [#6542] 문단 **안**에서 저장 `vertical_pos` 가 되감기면 그 줄부터 다음 쪽이다.
+            //
+            // 위 `next_para_is_rowbreak_anchor_table` 갈래가 "다음 줄의 저장 vpos 가 0(새 쪽
+            // 상단)" 을 근거로 `end_line` 을 되돌리는 것과 같은 종류의 증거인데, 되감김
+            // (vpos 가 앞줄보다 **작아짐**) 은 배선돼 있지 않았다. `dump-pages` 는 이미
+            // `[vpos-rewind@lineN]` 으로 검출해 찍지만 그것은 진단 문자열일 뿐이다.
+            //
+            // 실측(156678235 pi=59, 물리 6쪽): 저장 사다리가 `68896 → 5040` 으로 line1 에서
+            // 되감기는데 lines 0..3 을 한 쪽에 얹어 `used 1008.3px > 본문 933.6px` — 세 줄이
+            // 본문 하한 1028.1 을 넘어(+3.7 / +37.3 / +70.9px) 쪽번호 아래에 그려졌다.
+            // line0 만 남기면 907.5px 로 들어간다.
+            //
+            // 발동을 두 겹으로 좁힌다.
+            //   ① **실제로 넘칠 때만** — 되감김이 있어도 예산 안에 들어가는 문단은 종전
+            //      배분을 그대로 둔다(쪽 경계 판정은 #2098·#2138·#2279 로 눈금이 맞춰진
+            //      지점들과 얽혀 있다).
+            //   ② **쪽 규모 되감김만** — 문단 안의 작은 국소 리셋(들여쓰기·조각 재시작 산물)
+            //      까지 쪽 경계로 읽으면 안 된다. 넓게 켠 판(①만)은 `#2070` 시장구조조사
+            //      핀을 315 → 316쪽으로 깨뜨렸다(한글 기준 PDF 정답 315). 되감김 폭이 남은
+            //      본문 높이의 절반 이상일 때만 "다음 쪽 상단으로 돌아갔다"로 읽는다.
+            // 저장 사다리가 권위인 native HWP5 조판에 한정한다.
+            let page_scale_rewind_hu =
+                (crate::renderer::px_to_hwpunit(st.base_available_height(), self.dpi) / 2).max(1);
+            if st.profile.hwp5_stored_pagination_layout()
+                && end_line > cursor_line + 1
+                && cumulative > avail_for_lines
+            {
+                let rewind_line = (cursor_line + 1..end_line).find(|&k| {
+                    match (para.line_segs.get(k - 1), para.line_segs.get(k)) {
+                        (Some(prev), Some(cur)) => {
+                            !is_synthetic_line_seg(prev)
+                                && !is_synthetic_line_seg(cur)
+                                // `vpos == 0` 은 되감김이 아니라 **새 물리 쪽 상단** 표식이고
+                                // 바로 위 `next_para_is_rowbreak_anchor_table` 갈래를 비롯해
+                                // 별도 기계가 이미 다룬다. 여기서 같이 자르면 #2070
+                                // 시장구조조사가 315 → 316쪽이 된다(pi=343·1088 실측:
+                                // 54444→0, 53265→0).
+                                && cur.vertical_pos > 0
+                                && cur.vertical_pos < prev.vertical_pos
+                                && i64::from(prev.vertical_pos) - i64::from(cur.vertical_pos)
+                                    >= i64::from(page_scale_rewind_hu)
+                        }
+                        _ => false,
+                    }
+                });
+                if let Some(k) = rewind_line {
+                    end_line = k;
+                    cumulative = fmt.line_advances_sum(cursor_line..end_line);
+                }
             }
 
             let part_line_height = fmt.line_advances_sum(cursor_line..end_line);
@@ -21819,7 +21992,25 @@ impl TypesetEngine {
                     // r=5 실측: near-miss 시그니처는 동형이나 잔여 949.9px = 다음
                     // 조각의 본체) 확장이 오히려 쪽 경계를 옮긴다(#4763 핀 —
                     // issue_3931/3930/5801 이 381 로 무너짐). 3232693 은 잔여 38.4px.
-                    let frame_tail_rest = if mid_frame_only {
+                    // [#6549] 어울림(Square) 자리차지 표도 같은 상한을 쓴다.
+                    //
+                    // 이 확장 계약(#5584 ②/#4763)은 **위아래 배치(TopAndBottom)** 표가
+                    // 쪽을 넘기는 형상에서 검증됐다 — 382쪽 편람 핀
+                    // (issue_3931/3930/5801)이 모두 `wrap=TopAndBottom` 이다. 어울림 표는
+                    // 옆으로 글이 흐르므로 프레임 회계가 달라, 상한 없는 확장이 그대로
+                    // 쪽 넘침이 된다.
+                    //
+                    // 실측 (원자력안전위 16418295, 어울림 RowBreak 표 r=6):
+                    //   budget 75.8 → 92.8 (확장 25.6) → 행이 통째로 수용돼 표가
+                    //   안 쪼개지고 본문 하한을 17.1px 넘는다. 한글은 2쪽, rhwp 1쪽.
+                    //   확장을 막으면 2쪽이 되어 한글과 맞는다.
+                    //
+                    // 편람 핀들의 확장은 15.3~107.4px 로 이 값(25.6)을 사이에 두고
+                    // 흩어져 있어 `extension`·`consumed` 비·`frame_tail_rest`·예산 초과율
+                    // 어느 축으로도 갈리지 않는다. 갈리는 것은 **배치 종류** 하나다.
+                    let bounded_extension_branch = mid_frame_only
+                        || table.common.text_wrap == crate::model::shape::TextWrap::Square;
+                    let frame_tail_rest = if bounded_extension_branch {
                         layout_engine.row_cut_content_height(
                             table,
                             r,
@@ -21830,7 +22021,7 @@ impl TypesetEngine {
                     } else {
                         0.0
                     };
-                    let mid_extension_ok = !mid_frame_only
+                    let mid_extension_ok = !bounded_extension_branch
                         || (extension <= 24.0
                             && res.consumed_height >= 3.0 * extension
                             && frame_tail_rest > 0.5
@@ -22683,7 +22874,24 @@ impl TypesetEngine {
                 // +482px vs 흐름 +143px) target_y 가 본문 끝이 아니다 — 동기화를
                 // 건너뛰고 흐름 좌표로 판정한다(한글 PDF 본문 끝 ~520px = 흐름
                 // 517.3px 실측 일치, stored 861.2px 는 허상. 한글 1쪽 vs +1 유령).
+                // [#6535] 이 블록 **자신**이 쪽-앵커면 그 host 문단의 저장 vpos 도 절대 위치
+                // 산물이다 — 위 `page_has_page_abs_top_table` 이 "같은 쪽의 **다른** 절대배치
+                // 표"에 대해 편 논리와 같은 것이고, 블록 자신에게 적용하지 않을 이유가 없다.
+                //
+                // 실측(36404612 pi=4, `vert=쪽(0)` 발신명의 틀): 흐름 542.80px 인데 저장
+                // vpos 49154 = 655.39px 로 **112.6px** 상향돼 배타 잔여 638.87 을 넘어(slack
+                // -16.52) 틀이 통째로 2쪽에 단독 배치됐다 — 본문 없는 빈 쪽이 생기고 한/글은
+                // 1쪽이다. 동기화를 건너뛰면 slack +96.07 로 같은 쪽에 흡수된다.
+                //
+                // `anchor_vpos <= 0` 인 경우는 위에서 이미 `prev_body_bottom_vpos`(직전 본문
+                // 문단의 저장 흐름 하단)로 복원한 **본문 좌표**라 이 예외 대상이 아니다.
+                let block_anchor_vpos_is_absolute = anchor_vpos > 0
+                    && matches!(
+                        table.common.vert_rel_to,
+                        crate::model::shape::VertRelTo::Page
+                    );
                 let sync_h = if !st.page_has_page_abs_top_table
+                    && !block_anchor_vpos_is_absolute
                     && target_y <= st.current_height + block_height
                 {
                     st.current_height.max(target_y)
@@ -22733,11 +22941,26 @@ impl TypesetEngine {
                 // 복원이 실제로 상향한 경우에만 마진을 건다 — 코호트 재판정 신호(슬랙 스칼라)는
                 // 그대로 두고 적용 범위만 좁힌다.
                 let restoration_raised_fit = sync_h > st.current_height;
-                let uncertain_anchor_margin = if anchor_vpos <= 0 && restoration_raised_fit {
-                    50.0
-                } else {
-                    0.0
-                };
+                // [#6535] 마진을 거는 세 번째 조건 — **흐름 좌표가 실제로 뒤처져 있을 때만**.
+                //
+                // 슬랙 스칼라로는 두 코호트가 갈리지 않는다는 것이 이 마진의 기지 한계였다.
+                // 경합 구간을 전수 재 보니 갈리는 것은 슬랙이 아니라 `flow_underrun` 이다 —
+                // 이 단의 문단 place 가 트림한 `(total_height − advance)` 누계로, 0 보다
+                // 크면 `cur_h` 가 실제 내용 하단을 **과소**하게 들고 있다는 뜻이다. 마진이
+                // 보정하려던 불확실성이 바로 그것이다.
+                //
+                //   흡수 정답(한글 1쪽, rhwp 2쪽): slack 25.0 / 25.8 / 31.6 / 35.7 / 37.8
+                //                                  underrun **전부 0.00**
+                //   분할 정답(한글 2쪽)          : slack 42.5  underrun **37.60**
+                //
+                // 슬랙은 25.0~42.5 로 완전히 겹치는데 `underrun` 은 0 vs 37.60 으로 갈린다.
+                let flow_lags_behind_content = st.flow_underrun > 0.5;
+                let uncertain_anchor_margin =
+                    if anchor_vpos <= 0 && restoration_raised_fit && flow_lags_behind_content {
+                        50.0
+                    } else {
+                        0.0
+                    };
                 // [#2279 진단] footer 흡수/분할 판정 변수 분해 — 동작 불변.
                 // underrun = 이 단의 문단 place 가 트림한 (total_height − advance) 누계
                 // (렌더/한글 좌표와의 발산 중 문단-sa 성분; 표 place 성분은 미포함).
@@ -22960,6 +23183,17 @@ impl TypesetEngine {
             let measured_fits_current = st.current_height + table_total <= available;
             let declared_overflows_current = st.current_height + declared_total > available;
             let measured_declared_excess = (table_total - declared_total).max(0.0);
+            // [#5941] `anchor_delay <= measured_declared_excess` 는 둘 다 0 인 정상 형상에서
+            // **부동소수점 1 ULP** 로 뒤집힌다. 실측(1130000-200900012 pi=1):
+            //
+            //     anchor = 42.93333333333333   cur_h = 42.93333333333334
+            //     delay  = 7.105427357601002e-15   excess = 0.0   → 판정 false
+            //
+            // 저장 하단(881.39px)이 본문(895.73px)에 들어가는데도 표가 제 쪽으로 밀려
+            // 2쪽 문서가 3쪽이 됐다(한/글 2쪽). 두 값 모두 HWPUNIT→px 나눗셈 산물이라
+            // 비트 일치를 요구할 수 없다 — 픽셀 이하 오차 폭을 준다. 실제 지연(≥0.01px)
+            // 은 종전대로 걸러진다.
+            const ANCHOR_DELAY_FLOAT_EPS_PX: f64 = 1e-6;
             // 저장된 LineSeg와 객체 높이가 현재 쪽 본문 하단 안에 들어간다고 말하려면,
             // anchor 지연이 실제 measured excess로 설명되어야 한다.
             let saved_span = para
@@ -22987,7 +23221,7 @@ impl TypesetEngine {
                 saved_span.is_some_and(|(anchor_px, _top_px, bottom_px)| {
                     let anchor_delay = (st.current_height - anchor_px).max(0.0);
                     anchor_px <= st.current_height
-                        && anchor_delay <= measured_declared_excess
+                        && anchor_delay <= measured_declared_excess + ANCHOR_DELAY_FLOAT_EPS_PX
                         && bottom_px <= available
                 });
             // [#2097] 저장 앵커가 현재 흐름 위치와 정합하는데 저장 하단이 쪽 본문을

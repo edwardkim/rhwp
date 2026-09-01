@@ -8,7 +8,18 @@
 import { test } from 'node:test';
 import { strict as assert } from 'node:assert';
 
-import { shouldInterceptDownload } from './download-interceptor-common.js';
+import * as downloadPolicy from './download-interceptor-common.js';
+
+const { shouldInterceptDownload } = downloadPolicy;
+
+function assertDecision(item, context, expected) {
+  assert.equal(
+    typeof downloadPolicy.classifyDownload,
+    'function',
+    '3상태 다운로드 분류 표면이 있어야 한다',
+  );
+  assert.deepEqual(downloadPolicy.classifyDownload(item, context), expected);
+}
 
 // ─── HWP 감지 ──────────────────────────────────────────
 
@@ -211,4 +222,94 @@ test('Firefox onChanged: filename 확정 후 일반 파일은 미감지', () => 
     }),
     false,
   );
+});
+
+// ─── #6534: 상충 메타데이터와 단계별 결정 계약 ────────
+
+test('확정 XLSX 파일명은 HWP URL보다 우선한다 (#6534)', () => {
+  const item = {
+    filename: '/home/me/Downloads/public-report.xlsx',
+    url: 'https://public.example.go.kr/download/report.hwp',
+    mime: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  };
+
+  assert.equal(shouldInterceptDownload(item), false);
+  assertDecision(item, { metadataFinalized: true }, {
+    action: 'ignore',
+    reason: 'non-hwp-filename',
+  });
+});
+
+test('확정 XLSX 파일명은 잘못된 HWP MIME보다 우선한다 (#6534)', () => {
+  assertDecision({
+    filename: 'statistics.xlsx',
+    url: 'https://public.example.go.kr/download?id=6534',
+    mime: 'application/x-hwp',
+  }, { metadataFinalized: true }, {
+    action: 'ignore',
+    reason: 'non-hwp-filename',
+  });
+});
+
+test('XLSX MIME은 generic filename과 HWP redirect의 충돌을 거부한다 (#6534)', () => {
+  assertDecision({
+    filename: 'download',
+    url: 'https://public.example.go.kr/download?id=6534',
+    finalUrl: 'https://cdn.example.go.kr/archive/report.hwp',
+    mime: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  }, { metadataFinalized: true }, {
+    action: 'ignore',
+    reason: 'non-hwp-mime',
+  });
+});
+
+test('URL 또는 MIME만 HWP인 onCreated 후보는 보류한다 (#6534)', () => {
+  assertDecision({
+    filename: 'download',
+    url: 'https://public.example.go.kr/report.hwp',
+    mime: 'application/octet-stream',
+  }, { metadataFinalized: false }, {
+    action: 'defer',
+    reason: 'provisional-hwp-evidence',
+  });
+
+  assertDecision({
+    filename: 'download',
+    url: 'https://public.example.go.kr/download?id=6534',
+    mime: 'application/x-hwp',
+  }, { metadataFinalized: false }, {
+    action: 'defer',
+    reason: 'provisional-hwp-evidence',
+  });
+});
+
+test('extensionless HWP 보조 근거는 terminal에서 수용한다 (#198/#6534)', () => {
+  assertDecision({
+    filename: 'download',
+    url: 'https://public.example.go.kr/download?id=198',
+    mime: 'application/x-hwp',
+  }, { metadataFinalized: true }, {
+    action: 'intercept',
+    reason: 'final-hwp-evidence',
+  });
+});
+
+test('확정 HWP 파일명과 DEXT5 우선순위는 유지한다 (#198/#6534)', () => {
+  assertDecision({
+    filename: 'confirmed.hwp',
+    url: 'https://public.example.go.kr/download?id=6534',
+    mime: 'application/vnd.ms-excel',
+  }, { metadataFinalized: false }, {
+    action: 'intercept',
+    reason: 'hwp-filename',
+  });
+
+  assertDecision({
+    filename: 'confirmed.hwp',
+    url: 'https://public.example.go.kr/dext5handler.do?id=6534',
+    mime: 'application/x-hwp',
+  }, { metadataFinalized: true }, {
+    action: 'ignore',
+    reason: 'non-refetchable',
+  });
 });

@@ -7,8 +7,9 @@ use super::composer::{
     compose_paragraph, effective_text_for_metrics, first_text_line, ComposedParagraph,
 };
 use super::float_placement::{
-    empty_host_physical_ladder_extras_hu, horizontal_range, is_para_topbottom_float,
-    native_empty_host_physical_outer_box_paint_inset, native_empty_host_rowbreak_line_advance_hu,
+    empty_host_physical_ladder_extras_hu, empty_offset_float_deferred_text_ladder_hu,
+    horizontal_range, is_para_topbottom_float, native_empty_host_physical_outer_box_paint_inset,
+    native_empty_host_rowbreak_line_advance_hu,
     original_hwpx_column_rowbreak_equal_outer_margin_hu, signed_hwpunit,
     stored_empty_anchor_band_host_line_advance_hu, stored_visible_anchor_band_host_line_advance_hu,
     FloatLaneSet, FloatPlacementContext,
@@ -1760,14 +1761,48 @@ fn para_has_visible_textless_float_shape_item(
 /// 실제로 어떻게 했는지가 다음 문단과의 vpos 델타에 남는다(30213 9쪽 실측: 도식 앵커
 /// 2560 = lh1600+gap960 전체 예약 — vert_rel_to 휴리스틱으로는 못 가르는 케이스).
 /// 쪽 경계 리셋(음수 델타)·다중 lineseg·값 부재는 None 으로 물러나 휴리스틱에 맡긴다.
+/// [#6524] 저장 사다리에서 이 문단이 **한 줄**일 때 그 줄의 대표 조각을 준다.
+///
+/// 어울림 개체를 안은 문단의 저장 줄은 개체를 피해 좌·우 띠로 쪼개져 `LINE_SEG` 조각
+/// 둘로 남는다(30098 pi=36: 둘 다 `vpos=21722`·`lh=1500`·`sp=900`, `cs` 는 0 과 45305).
+/// 같은 `vertical_pos` 를 공유하면서 `column_start` 가 갈라지는 조각은 **한 줄**이다
+/// (#6299 술어, `height_measurer::is_same_vertpos_wrap_fragment` 와 같은 판별).
+///
+/// `cs` 까지 같은 쌍은 쪽 리셋·중복이라 뜻이 갈리고, 진짜 여러 줄은 stale 사다리일 수
+/// 있으므로 둘 다 `None` 으로 물러난다.
+fn stored_single_visual_line(para: &Paragraph) -> Option<&crate::model::paragraph::LineSeg> {
+    let segs = para.line_segs.as_slice();
+    let first = segs.first()?;
+    segs[1..]
+        .iter()
+        .all(|other| {
+            other.vertical_pos == first.vertical_pos && other.column_start != first.column_start
+        })
+        .then_some(first)
+}
+
 fn textless_host_ladder_line_advance(paragraphs: &[Paragraph], para_index: usize) -> Option<bool> {
     let cur = paragraphs.get(para_index)?;
     let next = paragraphs.get(para_index + 1)?;
-    let (seg, next_seg) = match (cur.line_segs.as_slice(), next.line_segs.first()) {
-        ([seg], Some(next_seg)) => (seg, next_seg),
-        _ => return None,
-    };
-    let expected = seg.line_height + seg.line_spacing;
+    // [#6524] 물러날 대상은 "**줄**이 여럿"이지 "**조각**이 여럿"이 아니다. 종전 술어
+    // `[seg]` 는 좌·우로 쪼개진 한 줄에서도 통째로 물러나 진행량 0 을 주었고, 다음 문단이
+    // 24.00pt 위로 올라와 본문 전체가 15.00pt 상승했다(30098 3쪽: `추진경과` 제목이 도표
+    // 테두리와 6.01pt 겹침, 한/글은 8.70pt 여유).
+    let seg = stored_single_visual_line(cur)?;
+    let next_seg = next.line_segs.first()?;
+    // 줄 규모는 조각들의 최대값으로 본다 — 좌·우 띠는 같은 줄이라 높이를 더하지 않는다.
+    let expected = cur
+        .line_segs
+        .iter()
+        .map(|s| s.line_height)
+        .max()
+        .unwrap_or(0)
+        + cur
+            .line_segs
+            .iter()
+            .map(|s| s.line_spacing)
+            .max()
+            .unwrap_or(0);
     if expected <= 0 {
         return None;
     }
@@ -1779,7 +1814,7 @@ fn textless_host_ladder_line_advance(paragraphs: &[Paragraph], para_index: usize
     // Square 호스트까지 이 사다리 질의를 넓히면서(호출부) stale 사다리가
     // 계약을 뒤집던 반증(issue_2069 편집 시나리오)을 태그로 차단한다.
     let synth = crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY;
-    if seg.tag & synth != 0 || next_seg.tag & synth != 0 {
+    if cur.line_segs.iter().any(|s| s.tag & synth != 0) || next_seg.tag & synth != 0 {
         return None;
     }
     let delta = next_seg.vertical_pos - seg.vertical_pos;
@@ -8099,6 +8134,28 @@ impl LayoutEngine {
         };
         match item {
             PageItem::FullParagraph { para_index } => {
+                let deferred_empty_float_text_anchor_y =
+                    para_index.checked_sub(1).and_then(|host_index| {
+                        let host = paragraphs.get(host_index)?;
+                        let following = paragraphs.get(*para_index)?;
+                        let Control::Table(table) = host.controls.first()? else {
+                            return None;
+                        };
+                        empty_offset_float_deferred_text_ladder_hu(host, table, following).map(
+                            |(vertical_pos, line_advance)| {
+                                col_area.y
+                                    + hwpunit_to_px(
+                                        vertical_pos.saturating_add(line_advance),
+                                        self.dpi,
+                                    )
+                            },
+                        )
+                    });
+                if let Some(anchor_y) = deferred_empty_float_text_anchor_y {
+                    // 양수 offset 빈 host 표는 본문을 표 아래로 밀어내지 않는다. 표의
+                    // 저장 anchor부터 다음 계산 본문을 재개해 표 위 gap을 먼저 채운다.
+                    y_offset = anchor_y;
+                }
                 // 빈 줄 감추기: 높이 0 처리된 문단은 문단부호만 렌더링하고 y_offset 변경 없음
                 if self.hidden_empty_paras.borrow().contains(para_index) {
                     // 문단부호는 렌더링 (클리핑 바깥에 표시)
@@ -8210,10 +8267,12 @@ impl LayoutEngine {
                                 .then(|| {
                                     let cur = paragraphs.get(*para_index)?;
                                     let next = paragraphs.get(*para_index + 1)?;
-                                    let seg = match cur.line_segs.as_slice() {
-                                        [seg] => seg,
-                                        _ => return None,
-                                    };
+                                    // [#6524] 사다리 질의와 **같은 술어**를 써야 한다.
+                                    // 여기만 `[seg]` 로 두면 좌·우 조각 문단이 저장 델타를
+                                    // 못 받고 `paragraph_line_advance_px` 로 물러나는데,
+                                    // 그 폴백은 조각 둘을 **두 줄**로 세어 24.00pt 를 더
+                                    // 전진시킨다(30098 pi=36: 24.00 대신 48.00).
+                                    let seg = stored_single_visual_line(cur)?;
                                     let delta =
                                         next.line_segs.first()?.vertical_pos - seg.vertical_pos;
                                     (delta > 0).then(|| hwpunit_to_px(delta, self.dpi))
@@ -10202,7 +10261,33 @@ impl LayoutEngine {
         let tac_line_fits_above_offset_float = paragraphs
             .get(para_index)
             .is_some_and(|para| host_line_fits_above_offset_float(para, control_index, self.dpi));
-        if let Some(existing_y) = para_start_y.get(&para_index) {
+        let deferred_empty_float_anchor_y = paragraphs.get(para_index).and_then(|host| {
+            host.controls
+                .get(control_index)
+                .and_then(|control| match control {
+                    Control::Table(table)
+                        if paragraphs.get(para_index + 1).is_some_and(|following| {
+                            empty_offset_float_deferred_text_ladder_hu(host, table, following)
+                                .is_some()
+                        }) =>
+                    {
+                        host.line_segs
+                            .iter()
+                            .find(|seg| {
+                                seg.tag
+                                    & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY
+                                    == 0
+                            })
+                            .map(|seg| col_area.y + hwpunit_to_px(seg.vertical_pos, self.dpi))
+                    }
+                    _ => None,
+                })
+        });
+        if let Some(anchor_y) = deferred_empty_float_anchor_y {
+            // typeset가 다음 계산 본문을 표보다 먼저 배치해도 표는 host의 저장 anchor에
+            // 남겨야 한다. 그렇지 않으면 표까지 본문 높이만큼 함께 아래로 이동한다.
+            para_start_y.insert(para_index, anchor_y);
+        } else if let Some(existing_y) = para_start_y.get(&para_index) {
             if is_current_tac && y_offset > *existing_y + 1.0 && !tac_line_fits_above_offset_float {
                 para_start_y.insert(para_index, y_offset);
             }
@@ -10658,7 +10743,23 @@ impl LayoutEngine {
                             })
                         })
                         .flatten();
-                let lane_flow_bottom = if let Some((table, line_advance)) =
+                let deferred_empty_offset_float_bottom = deferred_empty_float_anchor_y.map(|_| {
+                    let outer_bottom = para
+                        .controls
+                        .get(control_index)
+                        .and_then(|control| match control {
+                            Control::Table(table) => Some(table.outer_margin_bottom as i32),
+                            _ => None,
+                        })
+                        .unwrap_or(0);
+                    lanes.max_bottom() + hwpunit_to_px(outer_bottom, self.dpi)
+                });
+                let lane_flow_bottom = if let Some(bottom) = deferred_empty_offset_float_bottom {
+                    // 생성 본문을 먼저 gap에 배치한 뒤에는 offset을 뺀 예약 높이가 아니라
+                    // 실제 표 하단과 바깥 아래 여백까지 흐름을 진행해야 다음 문단이 표와
+                    // 겹치지 않는다.
+                    bottom
+                } else if let Some((table, line_advance)) =
                     single_positive_empty_float_before_plain_text
                 {
                     // #2439: a single empty-host TopAndBottom float followed by an ordinary

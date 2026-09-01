@@ -215,8 +215,14 @@ pub fn detect_format(data: &[u8]) -> FileFormat {
         if data[0] == 0xD0 && data[1] == 0xCF && data[2] == 0x11 && data[3] == 0xE0 {
             return FileFormat::Hwp;
         }
-        // ZIP 시그니처: 50 4B 03 04 ("PK\x03\x04")
-        if data[0] == 0x50 && data[1] == 0x4B && data[2] == 0x03 && data[3] == 0x04 {
+        // ZIP 시그니처는 HWPX 후보일 뿐이다. XLSX/DOCX 등 OOXML도 같은 매직을
+        // 사용하므로 중앙 디렉터리의 HWPX 필수 엔트리까지 확인해 최종 확정한다.
+        if data[0] == 0x50
+            && data[1] == 0x4B
+            && data[2] == 0x03
+            && data[3] == 0x04
+            && hwpx::reader::has_required_package_entries(data)
+        {
             return FileFormat::Hwpx;
         }
     }
@@ -2754,14 +2760,34 @@ mod tests {
 
     #[test]
     fn test_detect_format_hwpx() {
-        let zip_header = [0x50, 0x4B, 0x03, 0x04, 0x14, 0x00, 0x06, 0x00];
-        assert_eq!(detect_format(&zip_header), FileFormat::Hwpx);
+        let data = make_zip(&[
+            ("Contents/content.hpf", b"<package/>"),
+            ("Contents/header.xml", b"<head/>"),
+        ]);
+        assert_eq!(detect_format(&data), FileFormat::Hwpx);
     }
 
     #[test]
     fn test_detect_format_unknown() {
         let data = [0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00];
         assert_eq!(detect_format(&data), FileFormat::Unknown);
+    }
+
+    fn make_zip(entries: &[(&str, &[u8])]) -> Vec<u8> {
+        use std::io::{Cursor, Write};
+        use zip::write::SimpleFileOptions;
+
+        let mut output = Cursor::new(Vec::new());
+        {
+            let mut writer = zip::ZipWriter::new(&mut output);
+            let options = SimpleFileOptions::default();
+            for (name, contents) in entries {
+                writer.start_file(*name, options).expect("ZIP entry start");
+                writer.write_all(contents).expect("ZIP entry write");
+            }
+            writer.finish().expect("ZIP finish");
+        }
+        output.into_inner()
     }
 
     #[test]
