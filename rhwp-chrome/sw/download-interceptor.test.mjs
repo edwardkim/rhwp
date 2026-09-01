@@ -290,6 +290,86 @@ test('filename finalized in onChanged is rechecked with downloads.search', async
   });
 });
 
+test('XLSX filename is not opened even when source URL ends with hwp (#6534)', async () => {
+  const env = createChromeMock();
+
+  await withChromeMock(env, async ({ listeners, calls }) => {
+    listeners.onCreated[0]({
+      id: 402,
+      url: 'https://public.example.go.kr/download/report.hwp',
+      filename: '/home/me/Downloads/public-report.xlsx',
+      mime: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      startTime: new Date().toISOString(),
+    });
+    await flushAsyncWork();
+
+    assert.deepEqual(calls.tabsCreate, []);
+    assert.deepEqual(calls.cancel, []);
+    assert.deepEqual(calls.erase, []);
+  });
+});
+
+test('provisional HWP URL waits for XLSX filename finalization (#6534)', async () => {
+  const env = createChromeMock();
+
+  await withChromeMock(env, async ({ listeners, calls, searchItems }) => {
+    listeners.onCreated[0]({
+      id: 403,
+      url: 'https://public.example.go.kr/download/report.hwp',
+      filename: 'download',
+      mime: 'application/octet-stream',
+      startTime: new Date().toISOString(),
+    });
+    await flushAsyncWork();
+
+    assert.deepEqual(calls.tabsCreate, [], 'URL 단독 근거는 onCreated에서 보류해야 함');
+
+    searchItems.set(403, {
+      id: 403,
+      url: 'https://public.example.go.kr/download/report.hwp',
+      filename: '/home/me/Downloads/final-report.xlsx',
+      mime: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      startTime: new Date().toISOString(),
+    });
+    await listeners.onChanged[0]({
+      id: 403,
+      filename: { current: '/home/me/Downloads/final-report.xlsx' },
+    });
+    await flushAsyncWork();
+
+    assert.deepEqual(calls.search, [{ id: 403 }]);
+    assert.deepEqual(calls.tabsCreate, []);
+  });
+});
+
+test('extensionless HWP MIME opens only after terminal recheck (#198/#6534)', async () => {
+  const env = createChromeMock();
+
+  await withChromeMock(env, async ({ listeners, calls, searchItems }) => {
+    const item = {
+      id: 404,
+      url: 'https://public.example.go.kr/download?id=404',
+      filename: 'download',
+      mime: 'application/x-hwp',
+      startTime: new Date().toISOString(),
+    };
+    listeners.onCreated[0](item);
+    await flushAsyncWork();
+
+    assert.deepEqual(calls.tabsCreate, [], 'MIME 단독 근거는 onCreated에서 보류해야 함');
+
+    searchItems.set(404, { ...item, state: 'complete', endTime: new Date().toISOString() });
+    await listeners.onChanged[0]({
+      id: 404,
+      state: { current: 'complete' },
+    });
+    await flushAsyncWork();
+
+    assert.deepEqual(calls.search, [{ id: 404 }]);
+    assert.equal(calls.tabsCreate.length, 1);
+  });
+});
+
 test('local file HWP is opened and suppressed best-effort', async () => {
   const env = createChromeMock();
 

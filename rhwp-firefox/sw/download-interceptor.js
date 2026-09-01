@@ -7,7 +7,7 @@
 // #1516: 공통 다운로드 관찰자 상태 머신으로 과거 항목/중복 이벤트를 판정한다.
 
 import { openViewer } from './viewer-launcher.js';
-import { shouldInterceptDownload } from './download-interceptor-common.js';
+import { classifyDownload } from './download-interceptor-common.js';
 import {
   DEFAULT_STATE_TTL_MS,
   evaluateDownloadChanged,
@@ -40,7 +40,7 @@ async function handleCreated(item) {
 
   if (decision.action !== 'track') return;
   await setDownloadState(decision.state);
-  await processDownloadCandidate(item, decision.state);
+  await processDownloadCandidate(item, decision.state, { metadataFinalized: false });
 }
 
 async function handleChanged(delta) {
@@ -54,7 +54,9 @@ async function handleChanged(delta) {
       if (decision.action === 'candidate') {
         state = decision.state;
         await setDownloadState(state);
-        state = await processDownloadCandidate(item, state);
+        state = await processDownloadCandidate(item, state, {
+          metadataFinalized: Boolean(delta.filename?.current || isTerminalDelta(delta)),
+        });
       }
     } catch (err) {
       console.error('[rhwp] 다운로드 항목 재조회 오류:', err);
@@ -70,9 +72,9 @@ async function handleChanged(delta) {
   }
 }
 
-async function processDownloadCandidate(item, state) {
+async function processDownloadCandidate(item, state, context) {
   if (!item || state?.handledAt) return state;
-  if (!shouldInterceptDownload(item)) return state;
+  if (classifyDownload(item, context).action !== 'intercept') return state;
 
   try {
     const settings = await browser.storage.sync.get({ autoOpen: true });

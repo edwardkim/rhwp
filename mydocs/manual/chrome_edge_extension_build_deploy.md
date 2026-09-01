@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/manual/browser_extension_dev_guide.md
-last_verified: 2026-08-20
+last_verified: 2026-09-01
 ---
 
 # 브라우저 확장 빌드 및 배포 매뉴얼 (Chrome/Edge/Firefox/Safari)
@@ -179,6 +179,43 @@ RHWP_EXTENSION_SMOKE_REPEAT=10 npm --prefix rhwp-chrome run test:e2e:smoke
 
 단계 timeout은 기본 60초이며 느린 진단 환경에서만 `RHWP_EXTENSION_SMOKE_TIMEOUT_MS`를 양의
 밀리초 값으로 지정한다. retry를 추가해 실패를 숨기지 않는다.
+
+### 3.7 실제 다운로드 자동 열기 E2E
+
+다운로드 metadata 판정이나 observer adapter를 바꾼 경우 단위 테스트만으로 끝내지 않는다. 최종
+`rhwp-chrome/dist`를 격리 Chrome for Testing에 적재하고 실제 browser download와 뷰어 탭 생성을 함께
+확인한다.
+
+```bash
+npm --prefix rhwp-chrome ci
+npm --prefix rhwp-chrome run test:e2e:download
+```
+
+두 번째 명령은 확장을 다시 빌드한 뒤 자체 loopback fixture server, 임시 Chrome profile과 download
+directory를 사용해 다음 계약을 검증한다.
+
+| 사례 | 기대 결과 |
+| --- | --- |
+| 정상 `.xlsx` | 파일 저장, rhwp 탭 0 |
+| URL은 `.hwp`, 최종 filename/MIME은 XLSX | 파일 저장, rhwp 탭 0 |
+| 확정 `.hwp` | 파일 저장, 해당 download의 rhwp 탭 1 |
+| extensionless URL + HWP MIME/body | terminal 뒤 파일 저장, 해당 download의 rhwp 탭 1 |
+
+E2E는 CDP `Browser.downloadWillBegin`/`Browser.downloadProgress`, 저장 파일의 존재·크기와
+`chrome.downloads.search()`의 완료된 download id를 교차 확인한다. 사용자 Chrome profile과 외부
+네트워크는 사용하지 않으며 종료 시 browser, server, 임시 profile/download를 정리한다.
+
+한 사례만 진단할 때는 다음처럼 case id를 지정한다.
+
+```bash
+RHWP_EXTENSION_DOWNLOAD_CASE=misleading-hwp-url \
+  npm --prefix rhwp-chrome run test:e2e:download
+```
+
+알려진 id는 `normal-xlsx`, `misleading-hwp-url`, `confirmed-hwp`, `extensionless-hwp`다. 단계 timeout은
+기본 30초이며 느린 환경에서만 `RHWP_EXTENSION_DOWNLOAD_TIMEOUT_MS`를 양의 밀리초 값으로 늘린다.
+timeout이나 retry로 제품 실패를 숨기지 말고, 특정 사례 단독 실행과 전체 순차 실행을 비교해 fixture tab
+활성화·정리 같은 하네스 문제를 제품 판정과 분리한다.
 
 ---
 
