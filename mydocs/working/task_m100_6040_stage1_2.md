@@ -3,8 +3,8 @@
 - **이슈**: [#6040](https://github.com/edwardkim/rhwp/issues/6040)
 - **PR**: [#6458](https://github.com/edwardkim/rhwp/pull/6458)
 - **브랜치**: `codex/issue-6040-zoom-topology`
-- **최신 기준**: `upstream/devel@0d1540931`
-- **최신 devel 통합 commit**: `a19020085`
+- **최신 기준**: `upstream/devel@b9d408f0d`
+- **최신 devel 통합 commit**: `a19020085`, `db1a15fb1`
 - **작성일**: 2026-09-01 KST
 - **Stage 범위**: live 자동 열 commit 연결, 문서·배치 경계 reset, resize 뒤 오버레이 재투영
 
@@ -41,11 +41,15 @@ PR #6438에서 지적된 progressive Canvas 교체와 active pool/DOM 이중 소
 - 실제 CanvasView zoom test에서 1→2열 경계를 왕복하고, 초기 1회와 zoom event당 1회만 레이아웃을
   commit하며 매 정착 뒤 DOM canvas 수·고유 page slot·CanvasPool active page가 일치함을 확인했다.
 - InputHandler source contract test로 zoom과 resize가 같은 overlay 재투영 경로를 사용함을 고정했다.
-- focused test: 34/34 pass
+- Stage 1.2와 최신 Ruler actual harness focused test: 45/45 pass
 - TypeScript `npx tsc --noEmit`: 통과
-- 전체 Studio: 1,352건 중 1,351 pass·1 policy skip·0 fail
+- 전체 Studio: 1,361건 중 1,360 pass·1 policy skip·0 fail
 - production build: 246 modules, 통과. 기존 CanvasKit browser externalize와 대형 chunk 경고만 확인
 - `git diff --check`: 통과
+
+첫 push 뒤 병합된 #6570의 Ruler actual harness는 Stage 1.1의 `ctx.measureText()`를 fake하지 않아 통합
+focused test가 실패했다. 브라우저 숫자 라벨 폭을 반환하는 최소 Canvas mock을 추가해 pointer 1건과
+resize 19건 wrapper를 포함한 Ruler 계약을 다시 통과시켰다. 제품 코드는 추가 변경하지 않았다.
 
 ## 실제 브라우저 검증
 
@@ -62,6 +66,10 @@ PR #6438에서 지적된 progressive Canvas 교체와 active pool/DOM 이중 소
 - 수평 눈금자 canvas 폭은 매 단계 편집 viewport 폭과 정확히 일치했다.
 - 클릭 hit-test 뒤 현재 쪽은 2/77로 유지됐다.
 - DOM canvas 수와 고유 page slot 수가 항상 같아 orphan/중복 Canvas가 없었다.
+
+최신 `devel@b9d408f0d` 통합 뒤 같은 문서·배율·폭 순서로 다시 실행해 동일한 열·Canvas·캐럿 결과를
+확인했다. #6570 눈금자 변경 뒤에도 매 단계 ruler bitmap 폭과 client 폭이 각각
+`1225, 1235, 1240, 1235, 1220px`로 viewport와 정확히 일치했다.
 
 ## 범위 감사와 다음 게이트
 

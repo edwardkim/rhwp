@@ -2,7 +2,7 @@
 
 - **이슈**: [#6040](https://github.com/edwardkim/rhwp/issues/6040)
 - **브랜치**: `codex/issue-6040-zoom-topology`
-- **PR 기준 commit**: `upstream/devel` `0d1540931`
+- **PR 기준 commit**: `upstream/devel` `b9d408f0d`
 - **최초 구현 기준**: `upstream/devel` `2deb3dd61`
 - **문서 성격**: 구현 전 파일·상태 전이 설계
 - **계획 승인**: 2026-08-30 작업지시자 승인, Stage 1 진행
