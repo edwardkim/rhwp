@@ -17,9 +17,10 @@ use crate::model::paragraph::{ColumnBreakType, LineSeg, Paragraph};
 use crate::model::shape::CaptionDirection;
 use crate::renderer::composer::{compose_paragraph, first_text_line, ComposedParagraph};
 use crate::renderer::float_placement::{
-    horizontal_range, is_page_bottom_fixed_float, is_para_topbottom_float,
-    native_empty_host_rowbreak_line_advance_hu, original_hwpx_infront_para_flow_paginates,
-    signed_hwpunit, stored_empty_anchor_band_host_line_advance_hu,
+    empty_offset_float_deferred_text_ladder_hu, horizontal_range, is_page_bottom_fixed_float,
+    is_para_topbottom_float, native_empty_host_rowbreak_line_advance_hu,
+    original_hwpx_infront_para_flow_paginates, signed_hwpunit,
+    stored_empty_anchor_band_host_line_advance_hu,
     stored_visible_anchor_band_host_line_advance_from_vpos, FloatLaneSet, FloatPlacementContext,
 };
 use crate::renderer::height_cursor::HeightCursor;
@@ -17381,9 +17382,30 @@ impl TypesetEngine {
                 || saved_list_tail_body_vpos_fits)
         {
             // place: 전체 배치
-            st.current_items.push(PageItem::FullParagraph {
+            let defer_preceding_float = matches!(
+                st.current_items.last(),
+                Some(PageItem::Table {
+                    para_index: host_para_idx,
+                    control_index,
+                }) if *host_para_idx + 1 == para_idx
+                    && paragraphs
+                        .get(*host_para_idx)
+                        .and_then(|host| host.controls.get(*control_index).map(|control| (host, control)))
+                        .is_some_and(|(host, control)| matches!(control, Control::Table(table)
+                            if empty_offset_float_deferred_text_ladder_hu(host, table, para).is_some()))
+            );
+            let paragraph_item = PageItem::FullParagraph {
                 para_index: para_idx,
-            });
+            };
+            if defer_preceding_float {
+                // 빈 host의 양수-offset 자리차지 표는 다음 계산 본문 문단이 표 위 빈칸을
+                // 채운 뒤에 그려진다. 표를 먼저 놓으면 그 본문이 표 하단으로 밀린다.
+                let table_item = st.current_items.pop().expect("checked trailing table item");
+                st.current_items.push(paragraph_item);
+                st.current_items.push(table_item);
+            } else {
+                st.current_items.push(paragraph_item);
+            }
             // [Task #391] 다단/단단 분기:
             //   - 단단 (col_count == 1): total_height (k-water-rfp p3 311px drift 차단, #359)
             //   - 다단 (col_count > 1): height_for_fit (exam_eng 8p 정상 단 채움 복원)
@@ -17970,6 +17992,57 @@ impl TypesetEngine {
             {
                 end_line -= 1;
                 cumulative = fmt.line_advances_sum(cursor_line..end_line);
+            }
+
+            // [#6542] 문단 **안**에서 저장 `vertical_pos` 가 되감기면 그 줄부터 다음 쪽이다.
+            //
+            // 위 `next_para_is_rowbreak_anchor_table` 갈래가 "다음 줄의 저장 vpos 가 0(새 쪽
+            // 상단)" 을 근거로 `end_line` 을 되돌리는 것과 같은 종류의 증거인데, 되감김
+            // (vpos 가 앞줄보다 **작아짐**) 은 배선돼 있지 않았다. `dump-pages` 는 이미
+            // `[vpos-rewind@lineN]` 으로 검출해 찍지만 그것은 진단 문자열일 뿐이다.
+            //
+            // 실측(156678235 pi=59, 물리 6쪽): 저장 사다리가 `68896 → 5040` 으로 line1 에서
+            // 되감기는데 lines 0..3 을 한 쪽에 얹어 `used 1008.3px > 본문 933.6px` — 세 줄이
+            // 본문 하한 1028.1 을 넘어(+3.7 / +37.3 / +70.9px) 쪽번호 아래에 그려졌다.
+            // line0 만 남기면 907.5px 로 들어간다.
+            //
+            // 발동을 두 겹으로 좁힌다.
+            //   ① **실제로 넘칠 때만** — 되감김이 있어도 예산 안에 들어가는 문단은 종전
+            //      배분을 그대로 둔다(쪽 경계 판정은 #2098·#2138·#2279 로 눈금이 맞춰진
+            //      지점들과 얽혀 있다).
+            //   ② **쪽 규모 되감김만** — 문단 안의 작은 국소 리셋(들여쓰기·조각 재시작 산물)
+            //      까지 쪽 경계로 읽으면 안 된다. 넓게 켠 판(①만)은 `#2070` 시장구조조사
+            //      핀을 315 → 316쪽으로 깨뜨렸다(한글 기준 PDF 정답 315). 되감김 폭이 남은
+            //      본문 높이의 절반 이상일 때만 "다음 쪽 상단으로 돌아갔다"로 읽는다.
+            // 저장 사다리가 권위인 native HWP5 조판에 한정한다.
+            let page_scale_rewind_hu =
+                (crate::renderer::px_to_hwpunit(st.base_available_height(), self.dpi) / 2).max(1);
+            if st.profile.hwp5_stored_pagination_layout()
+                && end_line > cursor_line + 1
+                && cumulative > avail_for_lines
+            {
+                let rewind_line = (cursor_line + 1..end_line).find(|&k| {
+                    match (para.line_segs.get(k - 1), para.line_segs.get(k)) {
+                        (Some(prev), Some(cur)) => {
+                            !is_synthetic_line_seg(prev)
+                                && !is_synthetic_line_seg(cur)
+                                // `vpos == 0` 은 되감김이 아니라 **새 물리 쪽 상단** 표식이고
+                                // 바로 위 `next_para_is_rowbreak_anchor_table` 갈래를 비롯해
+                                // 별도 기계가 이미 다룬다. 여기서 같이 자르면 #2070
+                                // 시장구조조사가 315 → 316쪽이 된다(pi=343·1088 실측:
+                                // 54444→0, 53265→0).
+                                && cur.vertical_pos > 0
+                                && cur.vertical_pos < prev.vertical_pos
+                                && i64::from(prev.vertical_pos) - i64::from(cur.vertical_pos)
+                                    >= i64::from(page_scale_rewind_hu)
+                        }
+                        _ => false,
+                    }
+                });
+                if let Some(k) = rewind_line {
+                    end_line = k;
+                    cumulative = fmt.line_advances_sum(cursor_line..end_line);
+                }
             }
 
             let part_line_height = fmt.line_advances_sum(cursor_line..end_line);
@@ -22765,7 +22838,24 @@ impl TypesetEngine {
                 // +482px vs 흐름 +143px) target_y 가 본문 끝이 아니다 — 동기화를
                 // 건너뛰고 흐름 좌표로 판정한다(한글 PDF 본문 끝 ~520px = 흐름
                 // 517.3px 실측 일치, stored 861.2px 는 허상. 한글 1쪽 vs +1 유령).
+                // [#6535] 이 블록 **자신**이 쪽-앵커면 그 host 문단의 저장 vpos 도 절대 위치
+                // 산물이다 — 위 `page_has_page_abs_top_table` 이 "같은 쪽의 **다른** 절대배치
+                // 표"에 대해 편 논리와 같은 것이고, 블록 자신에게 적용하지 않을 이유가 없다.
+                //
+                // 실측(36404612 pi=4, `vert=쪽(0)` 발신명의 틀): 흐름 542.80px 인데 저장
+                // vpos 49154 = 655.39px 로 **112.6px** 상향돼 배타 잔여 638.87 을 넘어(slack
+                // -16.52) 틀이 통째로 2쪽에 단독 배치됐다 — 본문 없는 빈 쪽이 생기고 한/글은
+                // 1쪽이다. 동기화를 건너뛰면 slack +96.07 로 같은 쪽에 흡수된다.
+                //
+                // `anchor_vpos <= 0` 인 경우는 위에서 이미 `prev_body_bottom_vpos`(직전 본문
+                // 문단의 저장 흐름 하단)로 복원한 **본문 좌표**라 이 예외 대상이 아니다.
+                let block_anchor_vpos_is_absolute = anchor_vpos > 0
+                    && matches!(
+                        table.common.vert_rel_to,
+                        crate::model::shape::VertRelTo::Page
+                    );
                 let sync_h = if !st.page_has_page_abs_top_table
+                    && !block_anchor_vpos_is_absolute
                     && target_y <= st.current_height + block_height
                 {
                     st.current_height.max(target_y)
@@ -23042,6 +23132,17 @@ impl TypesetEngine {
             let measured_fits_current = st.current_height + table_total <= available;
             let declared_overflows_current = st.current_height + declared_total > available;
             let measured_declared_excess = (table_total - declared_total).max(0.0);
+            // [#5941] `anchor_delay <= measured_declared_excess` 는 둘 다 0 인 정상 형상에서
+            // **부동소수점 1 ULP** 로 뒤집힌다. 실측(1130000-200900012 pi=1):
+            //
+            //     anchor = 42.93333333333333   cur_h = 42.93333333333334
+            //     delay  = 7.105427357601002e-15   excess = 0.0   → 판정 false
+            //
+            // 저장 하단(881.39px)이 본문(895.73px)에 들어가는데도 표가 제 쪽으로 밀려
+            // 2쪽 문서가 3쪽이 됐다(한/글 2쪽). 두 값 모두 HWPUNIT→px 나눗셈 산물이라
+            // 비트 일치를 요구할 수 없다 — 픽셀 이하 오차 폭을 준다. 실제 지연(≥0.01px)
+            // 은 종전대로 걸러진다.
+            const ANCHOR_DELAY_FLOAT_EPS_PX: f64 = 1e-6;
             // 저장된 LineSeg와 객체 높이가 현재 쪽 본문 하단 안에 들어간다고 말하려면,
             // anchor 지연이 실제 measured excess로 설명되어야 한다.
             let saved_span = para
@@ -23069,7 +23170,7 @@ impl TypesetEngine {
                 saved_span.is_some_and(|(anchor_px, _top_px, bottom_px)| {
                     let anchor_delay = (st.current_height - anchor_px).max(0.0);
                     anchor_px <= st.current_height
-                        && anchor_delay <= measured_declared_excess
+                        && anchor_delay <= measured_declared_excess + ANCHOR_DELAY_FLOAT_EPS_PX
                         && bottom_px <= available
                 });
             // [#2097] 저장 앵커가 현재 흐름 위치와 정합하는데 저장 하단이 쪽 본문을
