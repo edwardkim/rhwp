@@ -18,6 +18,9 @@ last_verified: 2026-09-02
 
 관련 문서:
 
+- 정답 권위 전수 원장: [`../docs/authority_ledger.md`](../docs/authority_ledger.md)
+- 원장 생성 도구: [`authority_ledger.py`](authority_ledger.py)
+- 원장 단위 시험: [`../../scripts/tests/test_gym_authority_ledger.py`](../../scripts/tests/test_gym_authority_ledger.py)
 - 모듈 자체: [`oracle_probe.py`](oracle_probe.py)
 - 단위 시험: [`../../scripts/tests/test_gym_oracle_probe.py`](../../scripts/tests/test_gym_oracle_probe.py)
 - 실문서 과제: [`../packs/oracle-probe/README.md`](../packs/oracle-probe/README.md)
