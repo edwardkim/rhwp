@@ -788,9 +788,10 @@ pub(crate) fn render_paragraph_parts(
     } else {
         8 * hwp5_only_slot_positions.len() as u32
     };
+    let serializable_line_segs = para.serializable_line_segs();
     let rebased_line_segs: Option<Vec<LineSeg>> =
-        (!hwp5_only_slot_positions.is_empty() && !para.line_segs.is_empty()).then(|| {
-            para.line_segs
+        (!hwp5_only_slot_positions.is_empty() && !serializable_line_segs.is_empty()).then(|| {
+            serializable_line_segs
                 .iter()
                 .map(|seg| {
                     let shift = 8 * hwp5_only_slot_positions
@@ -804,7 +805,9 @@ pub(crate) fn render_paragraph_parts(
                 })
                 .collect()
         });
-    let source_line_segs = rebased_line_segs.as_deref().unwrap_or(&para.line_segs);
+    let source_line_segs = rebased_line_segs
+        .as_deref()
+        .unwrap_or(serializable_line_segs);
 
     let line_seg_axis_end = para
         .char_count
