@@ -210,9 +210,9 @@ fn stored_layout_relocated_empty_rowbreak_picture_resets_offset(
 use super::super::composer::effective_text_for_metrics;
 use super::super::{hwpunit_to_px, ShapeStyle};
 use super::border_rendering::{
-    apply_table_outer_border_fill, build_row_col_x, collect_cell_borders, create_border_line_nodes,
-    mark_cell_span_interior_covered, render_cell_diagonal, render_edge_borders,
-    render_transparent_borders,
+    apply_cellzone_border_fill, apply_table_outer_border_fill, build_row_col_x,
+    collect_cell_borders, create_border_line_nodes, mark_cell_span_interior_covered,
+    render_cell_diagonal, render_edge_borders, render_transparent_borders,
 };
 use super::text_measurement::{estimate_text_width, resolved_to_text_style};
 use super::utils::find_bin_data_bytes;
@@ -3152,6 +3152,19 @@ impl LayoutEngine {
 
         if !cellzone_diagonal_nodes.is_empty() {
             table_node.children.extend(cellzone_diagonal_nodes);
+        }
+
+        // ── 5-0. cellzone 테두리 덮어쓰기 (#6619) ──
+        // zone 배경·대각선은 4-2 에서 이미 그렸다. 네 변은 셀 테두리 그리드가 다 찬
+        // 다음에 덮어써야 셀 고유 선을 이긴다(31쪽 점선 → zone 실선).
+        for zone in &table.zones {
+            if zone.border_fill_id == 0 {
+                continue;
+            }
+            let zone_idx = (zone.border_fill_id as usize).saturating_sub(1);
+            if let Some(zone_bs) = styles.border_styles.get(zone_idx) {
+                apply_cellzone_border_fill(&mut h_edges, &mut v_edges, &zone_bs.borders, zone);
+            }
         }
 
         // ── 5-1. 표 전체 외곽 테두리 보충 ──
