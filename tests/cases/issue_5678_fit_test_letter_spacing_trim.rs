@@ -65,7 +65,7 @@ fn collect_text_runs<'a>(node: &'a LayerNode, runs: &mut Vec<(f64, &'a str)>) {
         LayerNodeKind::ClipRect { child, .. } => collect_text_runs(child, runs),
         LayerNodeKind::Leaf { ops } => {
             for op in ops {
-                if let PaintOp::TextRun { bbox, run } = op {
+                if let PaintOp::TextRun { bbox, run, .. } = op {
                     runs.push((bbox.y, run.text.as_str()));
                 }
             }

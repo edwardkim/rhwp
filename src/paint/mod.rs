@@ -80,4 +80,7 @@ pub use text_v2::{
     TextV2CompatibilityProfile, TextV2Diagnostics, TextV2LineBreakRisk, TextV2LineBreakRiskLevel,
     TextV2SlotDiagnostic, TextV2ValidationIssue, TextV2ValidationSeverity, TextV2VariantDiagnostic,
 };
-pub use text_variants::{validate_text_variant_scope, TextVariantScopeError};
+pub use text_variants::{
+    text_visual_replay_role, validate_text_variant_scope, TextVariantScopeError,
+    TextVisualReplayRole,
+};

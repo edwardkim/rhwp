@@ -24,6 +24,7 @@ use super::{
     boxed_pua_char_overlap_semantics, clamp_tab_leader_end_x, GradientFillInfo, LineStyle,
     PathCommand, PatternFillInfo, Renderer, ShapeStyle, StrokeDash, TextStyle,
 };
+use crate::paint::{PaintOp, TextDecorationKind};
 
 /// Hanyang-PUA 옛한글 코드포인트를 KS X 1026-1:2007 자모 시퀀스로 확장.
 /// PUA 가 없으면 원본 문자열 그대로 반환 (allocation 없음).
@@ -47,6 +48,13 @@ use crate::model::style::{ImageFillMode, UnderlineType};
 use base64::Engine;
 
 const TEXT_MARK_CLIP_RIGHT_PAD: f64 = 48.0;
+
+/// Result of translating one canonical paint operation to SVG syntax.
+pub(super) enum SvgPaintDisposition {
+    Rendered,
+    /// SVG intentionally selects the validated `TextRun` fallback for glyph-native variants.
+    UnsupportedTextVariant,
+}
 
 /// SVG 폰트 임베딩 모드
 #[derive(Debug, Clone, Copy, Default, PartialEq)]
@@ -140,8 +148,12 @@ pub struct SvgRenderer {
     /// (2307287 4쪽 실측). 문단 마지막 줄·강제 줄바꿈 줄의 밑줄 친 말미 공백
     /// (서명란, issue_157)은 저자 콘텐츠라 제외하지 않는다.
     soft_wrap_decoration_trim: Option<(u32, usize)>,
+    forced_decoration_trim: Option<usize>,
     /// draw_text 한 회 한정 활성 트림 수 (위 필드에서 파생).
     active_decoration_trim: usize,
+    /// Canonical sidecar replay reuses `draw_text_positioned` for decoration geometry while
+    /// suppressing the mirrored base glyphs.
+    suppress_text_glyphs: bool,
     /// [#6451] 이 run 의 **레이아웃 폭**(render tree bbox). 장식선(밑줄/취소선)은
     /// 작성기의 자체 글자 측정 대신 이 값을 쓴다.
     ///
@@ -152,49 +164,57 @@ pub struct SvgRenderer {
 }
 
 /// 디버그 오버레이용 문단 경계 정보
-struct OverlayBounds {
-    section_index: usize,
-    x: f64,
-    y: f64,
-    width: f64,
-    height: f64,
+pub(super) struct OverlayBounds {
+    pub(super) section_index: usize,
+    pub(super) x: f64,
+    pub(super) y: f64,
+    pub(super) width: f64,
+    pub(super) height: f64,
 }
 
 /// 디버그 오버레이용 vpos=0 리셋 마커
-struct OverlayVposReset {
-    section_index: usize,
-    para_index: usize,
-    line_index: u32,
+pub(super) struct OverlayVposReset {
+    pub(super) section_index: usize,
+    pub(super) para_index: usize,
+    pub(super) line_index: u32,
     /// 줄 시작 y (px)
-    y: f64,
+    pub(super) y: f64,
     /// 줄 시작 x (px)
-    x: f64,
+    pub(super) x: f64,
     /// 줄 폭 (px)
-    width: f64,
+    pub(super) width: f64,
 }
 
 /// 디버그 오버레이용 표 정보
-struct OverlayTableInfo {
-    section_index: usize,
-    para_index: usize,
-    control_index: usize,
-    x: f64,
-    y: f64,
-    width: f64,
-    height: f64,
-    row_count: u16,
-    col_count: u16,
+pub(super) struct OverlayTableInfo {
+    pub(super) section_index: usize,
+    pub(super) para_index: usize,
+    pub(super) control_index: usize,
+    pub(super) x: f64,
+    pub(super) y: f64,
+    pub(super) width: f64,
+    pub(super) height: f64,
+    pub(super) row_count: u16,
+    pub(super) col_count: u16,
 }
 
 /// 디버그 오버레이용 이미지 정보
-struct OverlayImageInfo {
-    section_index: usize,
-    para_index: usize,
-    control_index: usize,
-    x: f64,
-    y: f64,
-    width: f64,
-    height: f64,
+pub(super) struct OverlayImageInfo {
+    pub(super) section_index: usize,
+    pub(super) para_index: usize,
+    pub(super) control_index: usize,
+    pub(super) x: f64,
+    pub(super) y: f64,
+    pub(super) width: f64,
+    pub(super) height: f64,
+}
+
+pub(super) struct LayerDebugOverlayProjection {
+    pub(super) paragraph_bounds: std::collections::HashMap<usize, OverlayBounds>,
+    pub(super) table_bounds: Vec<OverlayTableInfo>,
+    pub(super) image_bounds: Vec<OverlayImageInfo>,
+    pub(super) vpos_resets: Vec<OverlayVposReset>,
+    pub(super) page_section: i32,
 }
 
 impl SvgRenderer {
@@ -226,7 +246,9 @@ impl SvgRenderer {
             annotate_metric_font: false,
             metric_faces: std::collections::BTreeSet::new(),
             soft_wrap_decoration_trim: None,
+            forced_decoration_trim: None,
             active_decoration_trim: 0,
+            suppress_text_glyphs: false,
             active_decoration_width: None,
         }
     }
@@ -251,6 +273,302 @@ impl SvgRenderer {
     /// 렌더 트리를 SVG로 렌더링
     pub fn render_tree(&mut self, tree: &PageRenderTree) {
         self.render_node(&tree.root);
+    }
+
+    /// Opens the SVG document consumed by direct `PageLayerTree` replay.
+    pub(super) fn begin_layer_page(&mut self, width: f64, height: f64) {
+        self.begin_page(width, height);
+    }
+
+    /// Closes the SVG document consumed by direct `PageLayerTree` replay.
+    pub(super) fn end_layer_page(&mut self) {
+        self.end_page();
+    }
+
+    /// Serializes one canonical paint operation without rebuilding semantic tree structure.
+    ///
+    /// The temporary `RenderNode` values below are leaf payload adapters for the mature SVG
+    /// primitive writer. They never carry children, visibility, profile, clipping, or stacking;
+    /// those decisions remain owned by `PageLayerTree` and `SvgLayerRenderer`.
+    pub(super) fn render_layer_paint_op(
+        &mut self,
+        op: &PaintOp,
+        source_node_id: Option<u32>,
+    ) -> SvgPaintDisposition {
+        let node_id = source_node_id.unwrap_or(0);
+        match op {
+            PaintOp::PageBackground { bbox, background } => self.render_layer_payload_node(
+                node_id,
+                RenderNodeType::PageBackground(background.as_ref().clone()),
+                *bbox,
+                false,
+            ),
+            PaintOp::TextRun { bbox, run, .. } => {
+                // LayerBuilder publishes explicit ops for visuals that legacy TextRun mirrored.
+                // Strip those mirrors so each canonical paint decision is serialized once.
+                let mut base = run.as_ref().clone();
+                base.char_overlap = None;
+                base.style.tab_leaders.clear();
+                base.style.underline = UnderlineType::None;
+                base.style.strikethrough = false;
+                base.style.emphasis_dot = 0;
+                self.render_layer_payload_node(
+                    node_id,
+                    RenderNodeType::TextRun(base),
+                    *bbox,
+                    false,
+                );
+            }
+            PaintOp::GlyphRun { .. } | PaintOp::GlyphOutline { .. } => {
+                return SvgPaintDisposition::UnsupportedTextVariant;
+            }
+            PaintOp::CharOverlap { bbox, run, .. } => {
+                let rotation = run.rotation;
+                let mut overlap = run.as_ref().clone();
+                overlap.rotation = 0.0;
+                self.with_layer_text_rotation(rotation, *bbox, |renderer| {
+                    renderer.render_layer_payload_node(
+                        node_id,
+                        RenderNodeType::TextRun(overlap),
+                        *bbox,
+                        false,
+                    );
+                });
+            }
+            PaintOp::TextControlMark { bbox, run, .. } => {
+                let rotation = run.rotation;
+                let mut mark = run.as_ref().clone();
+                mark.rotation = 0.0;
+                mark.char_overlap = None;
+                mark.style.tab_leaders.clear();
+                mark.style.underline = UnderlineType::None;
+                mark.style.strikethrough = false;
+                mark.style.emphasis_dot = 0;
+                mark.style.shadow_type = 0;
+                mark.style.shade_color = crate::model::color::NONE;
+                self.with_layer_text_rotation(rotation, *bbox, |renderer| {
+                    renderer.with_suppressed_text_glyphs(|renderer| {
+                        renderer.render_layer_payload_node(
+                            node_id,
+                            RenderNodeType::TextRun(mark),
+                            *bbox,
+                            true,
+                        );
+                    });
+                });
+            }
+            PaintOp::TabLeader { bbox, run, .. } => {
+                let rotation = run.rotation;
+                let mut leader = run.as_ref().clone();
+                leader.rotation = 0.0;
+                leader.char_overlap = None;
+                leader.style.underline = UnderlineType::None;
+                leader.style.strikethrough = false;
+                leader.style.emphasis_dot = 0;
+                leader.style.shadow_type = 0;
+                leader.style.shade_color = crate::model::color::NONE;
+                self.with_layer_text_rotation(rotation, *bbox, |renderer| {
+                    renderer.with_suppressed_text_glyphs(|renderer| {
+                        renderer.render_layer_payload_node(
+                            node_id,
+                            RenderNodeType::TextRun(leader),
+                            *bbox,
+                            false,
+                        );
+                    });
+                });
+            }
+            PaintOp::TextDecoration {
+                bbox,
+                run,
+                kind,
+                trim_trailing_spaces,
+                ..
+            } => {
+                let rotation = run.rotation;
+                let mut decoration = run.as_ref().clone();
+                decoration.rotation = 0.0;
+                decoration.char_overlap = None;
+                decoration.style.tab_leaders.clear();
+                decoration.style.shadow_type = 0;
+                decoration.style.shade_color = crate::model::color::NONE;
+                decoration.style.underline = if *kind == TextDecorationKind::Underline {
+                    run.style.underline
+                } else {
+                    UnderlineType::None
+                };
+                decoration.style.strikethrough =
+                    *kind == TextDecorationKind::Strikethrough && run.style.strikethrough;
+                decoration.style.emphasis_dot = if *kind == TextDecorationKind::EmphasisDot {
+                    run.style.emphasis_dot
+                } else {
+                    0
+                };
+                let previous_forced_trim = self.forced_decoration_trim;
+                self.forced_decoration_trim = Some(*trim_trailing_spaces);
+                self.with_layer_text_rotation(rotation, *bbox, |renderer| {
+                    renderer.with_suppressed_text_glyphs(|renderer| {
+                        renderer.render_layer_payload_node(
+                            node_id,
+                            RenderNodeType::TextRun(decoration),
+                            *bbox,
+                            false,
+                        );
+                    });
+                });
+                self.forced_decoration_trim = previous_forced_trim;
+            }
+            PaintOp::FootnoteMarker { bbox, marker } => self.render_layer_payload_node(
+                node_id,
+                RenderNodeType::FootnoteMarker(marker.as_ref().clone()),
+                *bbox,
+                false,
+            ),
+            PaintOp::Line { bbox, line } => self.render_layer_payload_node(
+                node_id,
+                RenderNodeType::Line(line.as_ref().clone()),
+                *bbox,
+                false,
+            ),
+            PaintOp::Rectangle { bbox, rect } => self.render_layer_payload_node(
+                node_id,
+                RenderNodeType::Rectangle(rect.as_ref().clone()),
+                *bbox,
+                false,
+            ),
+            PaintOp::Ellipse { bbox, ellipse } => self.render_layer_payload_node(
+                node_id,
+                RenderNodeType::Ellipse(ellipse.as_ref().clone()),
+                *bbox,
+                false,
+            ),
+            PaintOp::Path { bbox, path } => self.render_layer_payload_node(
+                node_id,
+                RenderNodeType::Path(path.as_ref().clone()),
+                *bbox,
+                false,
+            ),
+            PaintOp::Image {
+                bbox,
+                image,
+                resolved,
+            } => {
+                let image = crate::renderer::image_resolver::image_node_with_resolved_payload(
+                    image,
+                    resolved.as_deref(),
+                );
+                self.render_layer_payload_node(node_id, RenderNodeType::Image(image), *bbox, false);
+            }
+            PaintOp::Equation { bbox, equation } => {
+                self.render_layer_payload_node(
+                    node_id,
+                    RenderNodeType::Equation(equation.as_ref().clone()),
+                    *bbox,
+                    false,
+                );
+            }
+            PaintOp::ControlLabel { bbox, label } => {
+                self.render_layer_control_label(label, *bbox);
+            }
+            PaintOp::FormObject { bbox, form } => self.render_layer_payload_node(
+                node_id,
+                RenderNodeType::FormObject(form.as_ref().clone()),
+                *bbox,
+                false,
+            ),
+            PaintOp::Placeholder { bbox, placeholder } => self.render_layer_payload_node(
+                node_id,
+                RenderNodeType::Placeholder(placeholder.as_ref().clone()),
+                *bbox,
+                false,
+            ),
+            PaintOp::RawSvg { bbox, raw } => self.render_layer_payload_node(
+                node_id,
+                RenderNodeType::RawSvg(raw.as_ref().clone()),
+                *bbox,
+                false,
+            ),
+        }
+        SvgPaintDisposition::Rendered
+    }
+
+    fn render_layer_payload_node(
+        &mut self,
+        node_id: u32,
+        node_type: RenderNodeType,
+        bbox: BoundingBox,
+        emit_text_marks: bool,
+    ) {
+        let debug_overlay = self.debug_overlay;
+        let show_control_codes = self.show_control_codes;
+        let show_paragraph_marks = self.show_paragraph_marks;
+        self.debug_overlay = false;
+        self.show_control_codes = emit_text_marks && show_control_codes;
+        self.show_paragraph_marks = emit_text_marks && show_paragraph_marks;
+        self.render_node(&RenderNode::new(node_id, node_type, bbox));
+        self.debug_overlay = debug_overlay;
+        self.show_control_codes = show_control_codes;
+        self.show_paragraph_marks = show_paragraph_marks;
+    }
+
+    fn with_suppressed_text_glyphs(&mut self, render: impl FnOnce(&mut Self)) {
+        let previous = self.suppress_text_glyphs;
+        self.suppress_text_glyphs = true;
+        render(self);
+        self.suppress_text_glyphs = previous;
+    }
+
+    fn with_layer_text_rotation(
+        &mut self,
+        rotation: f64,
+        bbox: BoundingBox,
+        render: impl FnOnce(&mut Self),
+    ) {
+        if rotation != 0.0 {
+            let center_x = bbox.x + bbox.width / 2.0;
+            let center_y = bbox.y + bbox.height / 2.0;
+            self.output.push_str(&format!(
+                "<g transform=\"rotate({rotation},{center_x},{center_y})\">\n"
+            ));
+        }
+        render(self);
+        if rotation != 0.0 {
+            self.output.push_str("</g>\n");
+        }
+    }
+
+    /// Opens a structural clip selected by the canonical layer tree.
+    pub(super) fn begin_layer_clip(&mut self, clip: BoundingBox, id: &str) {
+        self.defs.push(format!(
+            "<clipPath id=\"{}\"><rect x=\"{}\" y=\"{}\" width=\"{}\" height=\"{}\"/></clipPath>\n",
+            id, clip.x, clip.y, clip.width, clip.height,
+        ));
+        self.output
+            .push_str(&format!("<g clip-path=\"url(#{})\">", id));
+    }
+
+    pub(super) fn end_layer_clip(&mut self) {
+        self.output.push_str("</g>\n");
+    }
+
+    fn render_layer_control_label(&mut self, label: &str, bounds: BoundingBox) {
+        let font_size = 10.0;
+        self.output.push_str(&format!(
+            "<text x=\"{}\" y=\"{}\" font-size=\"{}\" fill=\"#CC3333\">{}</text>\n",
+            bounds.x,
+            bounds.y + font_size,
+            font_size,
+            escape_xml(label),
+        ));
+    }
+
+    /// Accepts pre-projected diagnostic records for SVG serialization.
+    pub(super) fn apply_layer_debug_overlay(&mut self, projection: LayerDebugOverlayProjection) {
+        self.overlay_para_bounds = projection.paragraph_bounds;
+        self.overlay_table_bounds = projection.table_bounds;
+        self.overlay_image_bounds = projection.image_bounds;
+        self.overlay_vpos_resets = projection.vpos_resets;
+        self.overlay_page_section = projection.page_section;
     }
 
     /// [Issue #1167/#1197] 노드의 z-order plane 키 (작을수록 먼저=아래).
@@ -441,10 +759,12 @@ impl SvgRenderer {
                         ));
                     }
                 } else {
-                    self.active_decoration_trim = match self.soft_wrap_decoration_trim {
-                        Some((id, trim)) if id == node.id => trim,
-                        _ => 0,
-                    };
+                    self.active_decoration_trim = self.forced_decoration_trim.unwrap_or({
+                        match self.soft_wrap_decoration_trim {
+                            Some((id, trim)) if id == node.id => trim,
+                            _ => 0,
+                        }
+                    });
                     // [#6451] 장식선은 레이아웃 폭을 따른다 — 작성기 자체 측정과
                     // 어긋나면 run 경계마다 실틈이 남는다.
                     self.active_decoration_width = Some(node.bbox.width);
@@ -3026,7 +3346,9 @@ impl Renderer for SvgRenderer {
         let clusters = split_into_clusters(text);
 
         // 형광펜 배경 (CharShape.shade_color 기반 — web_canvas.rs와 동일 로직)
-        if crate::model::color::char_shade(style.shade_color).is_some() {
+        if !self.suppress_text_glyphs
+            && crate::model::color::char_shade(style.shade_color).is_some()
+        {
             let text_width = *char_positions.last().unwrap_or(&0.0);
             if text_width > 0.0 {
                 self.output.push_str(&format!(
@@ -3071,7 +3393,7 @@ impl Renderer for SvgRenderer {
         // 하이픈 표기가 밑줄로 보여 읽는 사람이 생략인지 빈칸인지 구분할 수 없다.
 
         // 그림자 렌더링 (원본 아래에 오프셋된 그림자색 텍스트)
-        if style.shadow_type > 0 {
+        if !self.suppress_text_glyphs && style.shadow_type > 0 {
             let shadow_color = color_to_svg(style.shadow_color);
             let dx = style.shadow_offset_x;
             let dy = style.shadow_offset_y;
@@ -3122,83 +3444,88 @@ impl Renderer for SvgRenderer {
             }
         }
 
-        // 원본 텍스트 렌더링
-        for (char_idx, cluster_str) in clusters.iter() {
-            if cluster_str == " " || cluster_str == "\t" {
-                continue;
-            }
-            // [#6127] 한컴 사각 안 숫자(U+F02B1~F02C4) 평문 폴백 — web_canvas
-            // (`draw_boxed_pua_number`)와 동일한 bounded vector 합성. raw PUA 를
-            // 흘리면 함초롬 확장 글꼴이 없는 소비자(브라우저·PyMuPDF)에서 빈칸이
-            // 된다(2599643 "②⓪⓪" 소실). CharOverlap 경로의 #4158 합성과 같은
-            // 의미이고, 백엔드 간 패리티를 맞춘다.
-            if cluster_str.chars().count() == 1 {
-                if let Some(number) = cluster_str.chars().next().and_then(super::boxed_pua_number) {
-                    let char_x = x + char_positions[*char_idx];
-                    self.draw_boxed_pua_number(number, char_x, y, style, font_size);
+        // 원본 텍스트 렌더링. Canonical decoration/leader sidecars reuse the exact
+        // positioning calculation below without repainting their TextRun mirror.
+        if !self.suppress_text_glyphs {
+            for (char_idx, cluster_str) in clusters.iter() {
+                if cluster_str == " " || cluster_str == "\t" {
                     continue;
                 }
-            }
-            if is_middle_dot(cluster_str) {
-                let adv = cluster_advance(*char_idx, cluster_str);
-                let cx = x + char_positions[*char_idx] + adv / 2.0;
-                let cy = y + dot_cy_offset;
-                self.output.push_str(&format!(
-                    "<circle cx=\"{:.4}\" cy=\"{:.4}\" r=\"{:.4}\" fill=\"{}\"/>\n",
-                    cx, cy, dot_radius, color,
-                ));
-                // Task #257 은 폰트별 LSB 편차를 피하려고 `·` 를 벡터로 그린다. 그
-                // 부작용으로 이 문자가 **출력 텍스트 스트림에서 사라져** PDF 검색과
-                // 스크린리더에서 누락된다 (10k 표본 300건 실측: 문서의 38.0% 가
-                // U+00B7 을 전량 소실). 보이지 않는 텍스트를 같은 자리에 겹쳐
-                // 추출만 복구한다 — 그려지는 것은 위 원 그대로이므로 시각 회귀 없음.
-                self.output.push_str(&format!(
-                    "<text x=\"{:.4}\" y=\"{:.4}\" font-size=\"{}\" fill=\"{}\" \
-                     fill-opacity=\"0\"{}>{}</text>\n",
-                    x + char_positions[*char_idx],
-                    y,
-                    font_size,
-                    color,
-                    svg_cluster_text_length_attrs(
-                        cluster_str,
-                        adv,
-                        style,
-                        script_advance_scale,
-                        ratio,
-                    ),
-                    escape_xml(cluster_str),
-                ));
-                continue;
-            }
-            let char_x = x + char_positions[*char_idx];
-            let length_attrs = svg_cluster_text_length_attrs(
-                cluster_str,
-                cluster_advance(*char_idx, cluster_str),
-                style,
-                script_advance_scale,
-                ratio,
-            );
-            let common_attrs = attrs_for_cluster(cluster_str, &color);
-
-            if has_ratio {
-                self.output.push_str(&format!(
-                    "<text transform=\"translate({},{}) scale({:.4},1)\" {}{}>{}</text>\n",
-                    char_x,
-                    y,
+                // [#6127] 한컴 사각 안 숫자(U+F02B1~F02C4) 평문 폴백 — web_canvas
+                // (`draw_boxed_pua_number`)와 동일한 bounded vector 합성. raw PUA 를
+                // 흘리면 함초롬 확장 글꼴이 없는 소비자(브라우저·PyMuPDF)에서 빈칸이
+                // 된다(2599643 "②⓪⓪" 소실). CharOverlap 경로의 #4158 합성과 같은
+                // 의미이고, 백엔드 간 패리티를 맞춘다.
+                if cluster_str.chars().count() == 1 {
+                    if let Some(number) =
+                        cluster_str.chars().next().and_then(super::boxed_pua_number)
+                    {
+                        let char_x = x + char_positions[*char_idx];
+                        self.draw_boxed_pua_number(number, char_x, y, style, font_size);
+                        continue;
+                    }
+                }
+                if is_middle_dot(cluster_str) {
+                    let adv = cluster_advance(*char_idx, cluster_str);
+                    let cx = x + char_positions[*char_idx] + adv / 2.0;
+                    let cy = y + dot_cy_offset;
+                    self.output.push_str(&format!(
+                        "<circle cx=\"{:.4}\" cy=\"{:.4}\" r=\"{:.4}\" fill=\"{}\"/>\n",
+                        cx, cy, dot_radius, color,
+                    ));
+                    // Task #257 은 폰트별 LSB 편차를 피하려고 `·` 를 벡터로 그린다. 그
+                    // 부작용으로 이 문자가 **출력 텍스트 스트림에서 사라져** PDF 검색과
+                    // 스크린리더에서 누락된다 (10k 표본 300건 실측: 문서의 38.0% 가
+                    // U+00B7 을 전량 소실). 보이지 않는 텍스트를 같은 자리에 겹쳐
+                    // 추출만 복구한다 — 그려지는 것은 위 원 그대로이므로 시각 회귀 없음.
+                    self.output.push_str(&format!(
+                        "<text x=\"{:.4}\" y=\"{:.4}\" font-size=\"{}\" fill=\"{}\" \
+                         fill-opacity=\"0\"{}>{}</text>\n",
+                        x + char_positions[*char_idx],
+                        y,
+                        font_size,
+                        color,
+                        svg_cluster_text_length_attrs(
+                            cluster_str,
+                            adv,
+                            style,
+                            script_advance_scale,
+                            ratio,
+                        ),
+                        escape_xml(cluster_str),
+                    ));
+                    continue;
+                }
+                let char_x = x + char_positions[*char_idx];
+                let length_attrs = svg_cluster_text_length_attrs(
+                    cluster_str,
+                    cluster_advance(*char_idx, cluster_str),
+                    style,
+                    script_advance_scale,
                     ratio,
-                    common_attrs,
-                    length_attrs,
-                    escape_xml(cluster_str),
-                ));
-            } else {
-                self.output.push_str(&format!(
-                    "<text x=\"{}\" y=\"{}\" {}{}>{}</text>\n",
-                    char_x,
-                    y,
-                    common_attrs,
-                    length_attrs,
-                    escape_xml(cluster_str),
-                ));
+                );
+                let common_attrs = attrs_for_cluster(cluster_str, &color);
+
+                if has_ratio {
+                    self.output.push_str(&format!(
+                        "<text transform=\"translate({},{}) scale({:.4},1)\" {}{}>{}</text>\n",
+                        char_x,
+                        y,
+                        ratio,
+                        common_attrs,
+                        length_attrs,
+                        escape_xml(cluster_str),
+                    ));
+                } else {
+                    self.output.push_str(&format!(
+                        "<text x=\"{}\" y=\"{}\" {}{}>{}</text>\n",
+                        char_x,
+                        y,
+                        common_attrs,
+                        length_attrs,
+                        escape_xml(cluster_str),
+                    ));
+                }
             }
         }
 

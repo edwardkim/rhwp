@@ -31,6 +31,30 @@ import { isExpectedCanvasKitUnsupportedOp } from '../src/view/canvaskit/diagnost
 import type { LayerInfo, LayerPaintOp } from '../src/core/types.ts';
 import { glyphOutlinePayloadResourceKey, glyphOutlinePayloadStatus } from '../src/view/glyph-outline-payload-status.ts';
 import { collectVectorRawSvgDataUrls } from '../src/view/raw-svg-prefetch.ts';
+import {
+  canvasKitCanonicalClipEnabled,
+  canvasKitCanonicalClipRect,
+} from '../src/view/canvaskit/clip-replay.ts';
+
+test('CanvasKit applies producer-published clip geometry verbatim', () => {
+  const xywh = (x: number, y: number, width: number, height: number) => ({ x, y, width, height });
+  assert.deepEqual(
+    canvasKitCanonicalClipRect({ x: 10, y: 20, width: 88, height: 40 }, xywh),
+    { x: 10, y: 20, width: 88, height: 40 },
+    'marked Body width must stay 88 instead of receiving another 48px pad',
+  );
+  assert.deepEqual(
+    canvasKitCanonicalClipRect({ x: 3, y: 4, width: 25, height: 16 }, xywh),
+    { x: 3, y: 4, width: 25, height: 16 },
+    'non-Body clips must remain unchanged',
+  );
+});
+
+test('CanvasKit honors the canonical clip enable switch', () => {
+  assert.equal(canvasKitCanonicalClipEnabled(false, true), false);
+  assert.equal(canvasKitCanonicalClipEnabled(undefined, false), false);
+  assert.equal(canvasKitCanonicalClipEnabled(undefined, undefined), true);
+});
 
 test('render backend resolver keeps Canvas2D as the compatibility default and accepts explicit aliases', () => {
   assert.equal(resolveRenderBackend(''), 'canvas2d');
@@ -222,10 +246,11 @@ test('CanvasKit contains malformed images and bounds both decode caches', () => 
   assert.match(source, /resetDocumentResources\(\): void/);
 });
 
-test('CanvasKit distinguishes missing-picture editor and print replay', () => {
+test('CanvasKit translates a present missing-picture op without a profile gate', () => {
   const source = readFileSync(new URL('../src/view/canvaskit-renderer.ts', import.meta.url), 'utf8');
   assert.match(codeOnly(source), /op\.kind === 'missingPicture'/);
-  assert.match(codeOnly(source), /profile === 'print' \|\| profile === 'highQuality'/);
+  assert.doesNotMatch(codeOnly(source), /profile === 'print' \|\| profile === 'highQuality'/);
+  assert.match(codeOnly(source), /this\.renderPlaceholder\(canvas, op\)/);
   assert.match(codeOnly(source), /MAX_PLACEHOLDER_DASH_SEGMENTS_PER_AXIS = 2048/);
   assert.match(source, /\.every\(Number\.isFinite\)/);
 });

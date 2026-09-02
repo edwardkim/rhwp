@@ -753,7 +753,7 @@ fn is_deferred_blank_para_float_stack_anchor(
 }
 
 /// 표 경로의 단일 레벨 (표 → 셀 → 문단)
-#[derive(Debug, Clone, Copy, serde::Serialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize)]
 pub struct CellPathEntry {
     /// 문단 내 컨트롤 인덱스 (표)
     pub control_index: usize,
@@ -766,7 +766,7 @@ pub struct CellPathEntry {
 }
 
 /// 표 셀 내부 문단 편집용 컨텍스트 (중첩 표 경로 지원)
-#[derive(Debug, Clone, serde::Serialize)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize)]
 pub struct CellContext {
     /// 최외곽 표를 소유한 구역 문단 인덱스
     pub parent_para_index: usize,

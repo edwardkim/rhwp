@@ -7,12 +7,14 @@ use std::collections::{BTreeSet, HashMap, HashSet};
 
 use crate::error::HwpError;
 use crate::model::image::ImageEffect;
+use crate::model::style::UnderlineType;
 use crate::model::ColorRef;
 use crate::paint::replay_order::layer_node_has_replay_plane;
 use crate::paint::{
-    paint_op_replay_plane_with_layer, GlyphRunOrientation, GlyphRunReplayEligibility,
-    LayerGlyphRunPaint, LayerNode, LayerNodeKind, LayerOutputOptions, PageLayerTree, PaintOp,
-    PaintReplayPlane, ResourceArena, TextVariantQuality,
+    paint_op_replay_plane_with_layer, text_visual_replay_role, validate_text_variant_scope,
+    GlyphRunOrientation, GlyphRunReplayEligibility, LayerGlyphRunPaint, LayerNode, LayerNodeKind,
+    LayerOutputOptions, PageLayerTree, PaintOp, PaintReplayPlane, ResourceArena,
+    TextDecorationKind, TextVariantQuality, TextVisualReplayRole,
 };
 use crate::renderer::form_caption::display_form_caption;
 use crate::renderer::layer_renderer::{
@@ -555,6 +557,9 @@ impl SkiaLayerRenderer {
         fallback_raster_scale: f32,
         strict_resource_failures: bool,
     ) -> LayerRenderResult<()> {
+        validate_text_variant_scope(tree).map_err(|error| {
+            HwpError::RenderError(format!("invalid PageLayerTree text contract: {error}"))
+        })?;
         if !fallback_raster_scale.is_finite() || fallback_raster_scale <= 0.0 {
             return Err(HwpError::RenderError(format!(
                 "invalid Skia fallback raster scale: {fallback_raster_scale}"
@@ -572,7 +577,6 @@ impl SkiaLayerRenderer {
                 &tree.resources,
                 replay_plane,
                 None,
-                tree.profile.shows_editor_visuals(),
                 &mut next_text_source_id,
                 fallback_raster_scale,
                 strict_resource_failures,
@@ -589,7 +593,6 @@ impl SkiaLayerRenderer {
         resources: &ResourceArena,
         replay_plane: PaintReplayPlane,
         inherited_layer: Option<RenderLayerInfo>,
-        show_editor_placeholders: bool,
         next_text_source_id: &mut u32,
         fallback_raster_scale: f32,
         strict_resource_failures: bool,
@@ -749,7 +752,6 @@ impl SkiaLayerRenderer {
                         resources,
                         replay_plane,
                         active_layer,
-                        show_editor_placeholders,
                         next_text_source_id,
                         fallback_raster_scale,
                         strict_resource_failures,
@@ -765,7 +767,6 @@ impl SkiaLayerRenderer {
                         resources,
                         replay_plane,
                         active_layer,
-                        show_editor_placeholders,
                         next_text_source_id,
                         fallback_raster_scale,
                         strict_resource_failures,
@@ -789,7 +790,6 @@ impl SkiaLayerRenderer {
                     resources,
                     replay_plane,
                     active_layer,
-                    show_editor_placeholders,
                     next_text_source_id,
                     fallback_raster_scale,
                     strict_resource_failures,
@@ -852,9 +852,12 @@ impl SkiaLayerRenderer {
                         continue;
                     }
                     let skip_unselected_text_variant = match op {
-                        PaintOp::TextRun { .. } => {
-                            let source_id = *next_text_source_id;
-                            *next_text_source_id = (*next_text_source_id).saturating_add(1);
+                        PaintOp::TextRun { source, .. } => {
+                            let source_id = source
+                                .as_ref()
+                                .map_or(*next_text_source_id, |source| source.id.0);
+                            *next_text_source_id =
+                                (*next_text_source_id).max(source_id.saturating_add(1));
                             selected_text_sources.contains(&source_id)
                         }
                         PaintOp::GlyphRun { run, .. } => {
@@ -955,23 +958,79 @@ impl SkiaLayerRenderer {
                                 canvas.draw_rect(rect, &paint);
                             }
                         }
-                        PaintOp::TextRun { bbox, run } => {
+                        PaintOp::TextRun { bbox, run, .. }
+                        | PaintOp::CharOverlap { bbox, run, .. }
+                        | PaintOp::TextControlMark { bbox, run, .. }
+                        | PaintOp::TabLeader { bbox, run, .. }
+                        | PaintOp::TextDecoration { bbox, run, .. } => {
+                            let role = text_visual_replay_role(op);
+                            if role == TextVisualReplayRole::SuppressedFallback {
+                                continue;
+                            }
+                            let mut projected = run.as_ref().clone();
+                            projected.char_overlap = None;
+                            projected.style.tab_leaders.clear();
+                            projected.style.underline = UnderlineType::None;
+                            projected.style.strikethrough = false;
+                            projected.style.emphasis_dot = 0;
+                            let (suppress_glyphs, render_marks) = match role {
+                                TextVisualReplayRole::BaseText => (false, false),
+                                TextVisualReplayRole::CharOverlap => {
+                                    projected.char_overlap = run.char_overlap.clone();
+                                    (false, false)
+                                }
+                                TextVisualReplayRole::ControlMark => (true, true),
+                                TextVisualReplayRole::TabLeader => {
+                                    projected
+                                        .style
+                                        .tab_leaders
+                                        .clone_from(&run.style.tab_leaders);
+                                    (true, false)
+                                }
+                                TextVisualReplayRole::Decoration(kind) => {
+                                    match kind {
+                                        TextDecorationKind::Underline => {
+                                            projected.style.underline = run.style.underline;
+                                        }
+                                        TextDecorationKind::Strikethrough => {
+                                            projected.style.strikethrough = run.style.strikethrough;
+                                        }
+                                        TextDecorationKind::EmphasisDot => {
+                                            projected.style.emphasis_dot = run.style.emphasis_dot;
+                                        }
+                                    }
+                                    (true, false)
+                                }
+                                TextVisualReplayRole::SuppressedFallback
+                                | TextVisualReplayRole::Other => continue,
+                            };
+                            let decoration_trim = match op {
+                                PaintOp::TextDecoration {
+                                    trim_trailing_spaces,
+                                    ..
+                                } => *trim_trailing_spaces,
+                                _ => 0,
+                            };
                             let is_marker = !matches!(
-                                run.field_marker,
+                                projected.field_marker,
                                 crate::renderer::render_tree::FieldMarkerType::None
                             );
                             text_replay.draw_text(
-                                run.display_or_text(),
+                                projected.display_or_text(),
                                 *bbox,
-                                &run.style,
-                                run.baseline,
-                                run.rotation,
-                                run.is_vertical,
-                                run.char_overlap.as_ref(),
+                                &projected.style,
+                                projected.baseline,
+                                projected.rotation,
+                                projected.is_vertical,
+                                projected.char_overlap.as_ref(),
                                 is_marker,
-                                run.is_para_end,
-                                run.is_line_break_end,
-                                run.validated_layout_positions_for(run.display_or_text()),
+                                projected.is_para_end,
+                                projected.is_line_break_end,
+                                projected
+                                    .validated_layout_positions_for(projected.display_or_text()),
+                                decoration_trim,
+                                suppress_glyphs,
+                                render_marks,
                             );
                         }
                         PaintOp::GlyphRun { run, .. } => {
@@ -1001,6 +1060,20 @@ impl SkiaLayerRenderer {
                                 false,
                                 false,
                                 None,
+                                0,
+                                false,
+                                false,
+                            );
+                        }
+                        PaintOp::ControlLabel { bbox, label } => {
+                            let style = crate::renderer::TextStyle {
+                                font_size: 10.0,
+                                color: 0x003333CC,
+                                ..Default::default()
+                            };
+                            text_replay.draw_text(
+                                label, *bbox, &style, 10.0, 0.0, false, None, false, false, false,
+                                None, 0, false, false,
                             );
                         }
                         PaintOp::Line { bbox, line } => {
@@ -1294,13 +1367,7 @@ impl SkiaLayerRenderer {
                             self.draw_form_control(canvas, *bbox, form);
                         }
                         PaintOp::Placeholder { bbox, placeholder } => {
-                            // [Task #2225] 그림 미지정 placeholder 는 편집 profile에서만 표시.
-                            if placeholder.kind
-                                != crate::renderer::render_tree::PlaceholderKind::MissingPicture
-                                || show_editor_placeholders
-                            {
-                                draw_placeholder(*bbox, placeholder.label.as_str());
-                            }
+                            draw_placeholder(*bbox, placeholder.label.as_str());
                         }
                         PaintOp::RawSvg { bbox, raw } => {
                             if !draw_svg_fragment(
@@ -1321,10 +1388,6 @@ impl SkiaLayerRenderer {
                                 draw_placeholder(*bbox, "svg");
                             }
                         }
-                        PaintOp::CharOverlap { .. }
-                        | PaintOp::TextControlMark { .. }
-                        | PaintOp::TabLeader { .. }
-                        | PaintOp::TextDecoration { .. } => {}
                     }
                 }
             }
@@ -1619,17 +1682,19 @@ mod tests {
         font_blob_resource_key, resource_digest_hex, BinaryResourceKind, BinaryResourceRef,
         CacheHint, FontBlobKey, FontBlobResource, FontDigest, FontFaceKey, FontFaceResource,
         FontFallbackPolicyId, FontInstanceKey, FontPortability, FontResourceSource, GlyphCluster,
-        GlyphRange, GroupKind, LayerAffineTransform, LayerNode, LayerOutputOptions, LayerPoint,
-        PaintTextStyle, PaintVariantMeta, RenderProfile, ScriptTag, ShapeKey, ShapingEngineId,
-        TextDirection, TextSourceId, TextSourceRange, TextSourceSpan, TextVariantKind, WritingMode,
+        GlyphRange, GroupKind, LayerAffineTransform, LayerBuilder, LayerNode, LayerOutputOptions,
+        LayerPoint, PaintTextStyle, PaintVariantMeta, RenderProfile, ScriptTag, ShapeKey,
+        ShapingEngineId, TextDirection, TextSourceId, TextSourceRange, TextSourceSpan,
+        TextVariantKind, WritingMode,
     };
     use crate::renderer::composer::CharOverlapInfo;
     use crate::renderer::equation::ast::EqNode;
     use crate::renderer::equation::layout::EqLayout;
     use crate::renderer::render_tree::{
         BoundingBox, EquationNode, FootnoteMarkerNode, FormObjectNode, ImageNode,
-        PageBackgroundImage, PageBackgroundNode, PathNode, PlaceholderNode, RawSvgNode,
-        RectangleNode, RenderLayerInfo, TextRunNode,
+        PageBackgroundImage, PageBackgroundNode, PageNode, PageRenderTree, PathNode,
+        PlaceholderNode, RawSvgNode, RectangleNode, RenderLayerInfo, RenderNode, RenderNodeType,
+        TextRunNode,
     };
     use crate::renderer::{GradientFillInfo, PatternFillInfo, TabLeaderInfo, TextStyle};
     use image::{ImageFormat, Rgba, RgbaImage};
@@ -2937,16 +3002,17 @@ mod tests {
             layout_positions: None,
             display_text: None,
         };
+        let bounds = BoundingBox::new(8.0, 8.0, 24.0, 24.0);
         let tree = PageLayerTree::new(
             40.0,
             40.0,
             LayerNode::leaf(
                 BoundingBox::new(0.0, 0.0, 40.0, 40.0),
                 None,
-                vec![PaintOp::text_run(
-                    BoundingBox::new(8.0, 8.0, 24.0, 24.0),
-                    run,
-                )],
+                vec![
+                    PaintOp::text_run(bounds, run.clone()),
+                    PaintOp::char_overlap(bounds, run),
+                ],
             ),
         );
         let output = SkiaLayerRenderer::new()
@@ -2988,16 +3054,17 @@ mod tests {
             layout_positions: None,
             display_text: None,
         };
+        let bounds = BoundingBox::new(4.0, 4.0, 80.0, 28.0);
         let tree = PageLayerTree::new(
             88.0,
             36.0,
             LayerNode::leaf(
                 BoundingBox::new(0.0, 0.0, 88.0, 36.0),
                 None,
-                vec![PaintOp::text_run(
-                    BoundingBox::new(4.0, 4.0, 80.0, 28.0),
-                    run,
-                )],
+                vec![
+                    PaintOp::text_run(bounds, run.clone()),
+                    PaintOp::tab_leader(bounds, run),
+                ],
             ),
         );
         let output = SkiaLayerRenderer::new()
@@ -3034,16 +3101,17 @@ mod tests {
             layout_positions: None,
             display_text: None,
         };
+        let bounds = BoundingBox::new(4.0, 4.0, 60.0, 28.0);
         let tree = PageLayerTree::new(
             72.0,
             36.0,
             LayerNode::leaf(
                 BoundingBox::new(0.0, 0.0, 72.0, 36.0),
                 None,
-                vec![PaintOp::text_run(
-                    BoundingBox::new(4.0, 4.0, 60.0, 28.0),
-                    run,
-                )],
+                vec![
+                    PaintOp::text_run(bounds, run.clone()),
+                    PaintOp::text_control_mark(bounds, run),
+                ],
             ),
         )
         .with_output_options(LayerOutputOptions {
@@ -3088,16 +3156,23 @@ mod tests {
             layout_positions: None,
             display_text: None,
         };
+        let bounds = BoundingBox::new(8.0, 8.0, 32.0, 28.0);
         let tree = PageLayerTree::new(
             48.0,
             40.0,
             LayerNode::leaf(
                 BoundingBox::new(0.0, 0.0, 48.0, 40.0),
                 None,
-                vec![PaintOp::text_run(
-                    BoundingBox::new(8.0, 8.0, 32.0, 28.0),
-                    run,
-                )],
+                vec![
+                    PaintOp::text_run(bounds, run.clone()),
+                    PaintOp::text_decoration(bounds, run.clone(), TextDecorationKind::Underline),
+                    PaintOp::text_decoration(
+                        bounds,
+                        run.clone(),
+                        TextDecorationKind::Strikethrough,
+                    ),
+                    PaintOp::text_decoration(bounds, run, TextDecorationKind::EmphasisDot),
+                ],
             ),
         );
         let output = SkiaLayerRenderer::new()
@@ -3324,17 +3399,28 @@ mod tests {
 
     #[test]
     fn missing_picture_placeholder_follows_render_profile() {
-        let root = LayerNode::leaf(
-            BoundingBox::new(0.0, 0.0, 32.0, 24.0),
-            None,
-            vec![PaintOp::placeholder(
-                BoundingBox::new(4.0, 4.0, 20.0, 14.0),
-                PlaceholderNode::missing_picture(None, None, None, None),
-            )],
+        let mut render_tree = PageRenderTree::new(0, 32.0, 24.0);
+        render_tree.root.node_type = RenderNodeType::Page(PageNode {
+            page_index: 0,
+            width: 32.0,
+            height: 24.0,
+            section_index: 0,
+        });
+        render_tree.root.children.push(RenderNode::new(
+            1,
+            RenderNodeType::Placeholder(PlaceholderNode::missing_picture(None, None, None, None)),
+            BoundingBox::new(4.0, 4.0, 20.0, 14.0),
+        ));
+        let screen_tree = LayerBuilder::new(RenderProfile::Screen).build(&render_tree);
+        let print_tree = LayerBuilder::new(RenderProfile::Print).build(&render_tree);
+        assert!(matches!(screen_tree.root.kind, LayerNodeKind::Group { .. }));
+        let LayerNodeKind::Group { children, .. } = &print_tree.root.kind else {
+            panic!("page root must remain a group");
+        };
+        assert!(
+            children.is_empty(),
+            "print tree must omit editor placeholder"
         );
-        let screen_tree =
-            PageLayerTree::with_profile(32.0, 24.0, root.clone(), RenderProfile::Screen);
-        let print_tree = PageLayerTree::with_profile(32.0, 24.0, root, RenderProfile::Print);
         let renderer = SkiaLayerRenderer::new();
         let screen = renderer
             .render_raster_with_options(&screen_tree, RasterRenderOptions::default())

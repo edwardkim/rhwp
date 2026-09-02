@@ -1095,6 +1095,7 @@ export type LayerPaintOp =
   | LayerPlaceholderOp
   | LayerRawSvgOp
   | LayerTextDecorationOp
+  | LayerControlLabelOp
   | LayerTextControlMarkOp
   | LayerTabLeaderOp
   | LayerCharOverlapOp
@@ -1334,6 +1335,14 @@ export interface LayerEquationOp {
   color?: string;
   fontSize?: number;
   layoutBox?: LayerEquationLayoutBox;
+}
+
+export interface LayerControlLabelOp {
+  type: 'controlLabel';
+  bbox: LayerBounds;
+  label: string;
+  fontSize?: number;
+  color?: string;
 }
 
 export type LayerEquationMatrixStyle = 'plain' | 'paren' | 'bracket' | 'vert';

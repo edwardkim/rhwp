@@ -52,7 +52,7 @@ use std::time::Instant;
 use kerning::{ExactFontSlot, ExactFontSource, ExactFontSourceRegistry};
 use rhwp::paint::{
     font_blob_resource_key, parse_font_blob_resource_key, resource_digest_hex, LayerJsonOptions,
-    LayerNode, PageLayerTree, PaintOp, ResourceArena, TextVariantKind,
+    LayerNode, PageLayerTree, PaintOp, ResourceArena, TextSourceSpan, TextVariantKind,
 };
 use rhwp::renderer::layer_renderer::{
     analyze_text_variant_selection, TextVariantSelectionOptions, VariantRejectReason,
@@ -330,7 +330,10 @@ fn variable_lowering(
     TextRunNode,
 ) {
     let (sidecars, measurement) = variable_sidecar(node_id, variations);
-    let run = variable_text_run();
+    let mut run = variable_text_run();
+    run.section_index = Some(7);
+    run.para_index = Some(8);
+    run.char_start = Some(9);
     let bbox = BoundingBox::new(3.0, 5.0, measurement.total_advance_px, 14.0);
     let node = LayerNode::leaf(bbox, Some(node_id), Vec::new());
     let mut resources = ResourceArena::default();
@@ -364,12 +367,14 @@ fn issue_4969_q3_c_canonical_instance_reaches_glyph_run_and_variable_outline() {
             value: 900.0,
         },
     ];
-    let (report, measurement, _, _, _) = variable_lowering(30, &title);
+    let (report, measurement, _, _, run) = variable_lowering(30, &title);
+    let expected_source = TextSourceSpan::for_text_run(23, &run);
 
     assert_eq!(report.reject_reason, None);
     let glyph_run = report
         .glyph_run
         .expect("instance-qualified GlyphRun shadow");
+    assert_eq!(glyph_run.source, expected_source);
     assert_eq!(glyph_run.shape_key.font_instance.variations.len(), 2);
     assert_eq!(glyph_run.shape_key.font_instance.variations[0].tag, "opsz");
     assert_eq!(glyph_run.shape_key.font_instance.variations[0].value, 900.0);
@@ -379,6 +384,7 @@ fn issue_4969_q3_c_canonical_instance_reaches_glyph_run_and_variable_outline() {
     let outline = report
         .glyph_outline
         .expect("exact variable outline shadow candidate");
+    assert_eq!(outline.source, expected_source);
     let proof = report
         .variable_outline_proof
         .expect("variable outline bbox proof");
