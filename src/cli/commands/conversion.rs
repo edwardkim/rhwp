@@ -301,8 +301,18 @@ pub(crate) fn convert_hwp(args: &[String]) -> i32 {
     match serialized {
         Ok(bytes) => match fs::write(output_path, &bytes) {
             Ok(_) => {
+                // Report the persisted artifact, never a value derived from the
+                // password-bearing serialization buffer. A successful write
+                // makes this metadata the authoritative public byte count.
+                let persisted_bytes_len = fs::metadata(output_path)
+                    .map(|metadata| metadata.len() as usize)
+                    .unwrap_or_default();
                 if !json_mode {
-                    println!("저장 완료: {} ({}KB)", output_path, bytes.len() / 1024);
+                    println!(
+                        "저장 완료: {} ({}KB)",
+                        output_path,
+                        persisted_bytes_len / 1024
+                    );
                 }
                 let mut verify_report = serde_json::Value::Null;
                 let mut verify_pages_report = serde_json::Value::Null;
@@ -385,7 +395,7 @@ pub(crate) fn convert_hwp(args: &[String]) -> i32 {
                     }
                 }
                 if json_mode {
-                    emit_envelope(bytes.len(), verify_report, verify_pages_report);
+                    emit_envelope(persisted_bytes_len, verify_report, verify_pages_report);
                 }
                 if exit_code != EXIT_OK {
                     process::exit(exit_code);
