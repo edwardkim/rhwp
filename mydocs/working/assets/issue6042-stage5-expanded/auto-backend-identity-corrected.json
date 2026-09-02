@@ -1,0 +1,26 @@
+[
+  {
+    "dpr": "2",
+    "height": 1588,
+    "key": "blake3:83be17e3769ecec831f6e4e9d4e93adea380e30e70256997fa1f2500eba28dbf|revision:2|profile:screen|resources:2|request:auto|mode:default|page:0|geometry:1122.5x1587.4|backend:canvas2d|profile:screen|scale:1|layers:4|surfaces:background:1123x1588,behind:1123x1588,main:1123x1588,front:1123x1588",
+    "width": 1123
+  },
+  {
+    "dpr": "2",
+    "height": 1588,
+    "key": "blake3:83be17e3769ecec831f6e4e9d4e93adea380e30e70256997fa1f2500eba28dbf|revision:2|profile:screen|resources:2|request:auto|mode:default|page:1|geometry:1122.5x1587.4|backend:canvas2d|profile:screen|scale:1|layers:3|surfaces:background:1123x1588,behind:1123x1588,main:1123x1588",
+    "width": 1123
+  },
+  {
+    "dpr": "2",
+    "height": 1588,
+    "key": "blake3:83be17e3769ecec831f6e4e9d4e93adea380e30e70256997fa1f2500eba28dbf|revision:2|profile:screen|resources:2|request:auto|mode:default|page:2|geometry:1122.5x1587.4|backend:canvas2d|profile:screen|scale:1|layers:3|surfaces:background:1123x1588,behind:1123x1588,main:1123x1588",
+    "width": 1123
+  },
+  {
+    "dpr": "2",
+    "height": 1588,
+    "key": "blake3:83be17e3769ecec831f6e4e9d4e93adea380e30e70256997fa1f2500eba28dbf|revision:2|profile:screen|resources:2|request:auto|mode:default|page:3|geometry:1122.5x1587.4|backend:canvas2d|profile:screen|scale:1|layers:3|surfaces:background:1123x1588,behind:1123x1588,main:1123x1588",
+    "width": 1123
+  }
+]

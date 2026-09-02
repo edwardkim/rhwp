@@ -1,0 +1,875 @@
+{
+  "final": {
+    "enabled": true,
+    "dpr": 2,
+    "viewport": {
+      "width": 1280,
+      "height": 720
+    },
+    "targetViewport": {
+      "scope": "4/4/8",
+      "zoom": 0.34,
+      "x": 0,
+      "y": 1637
+    },
+    "appliedViewport": {
+      "scope": "4/4/8",
+      "zoom": 0.34,
+      "x": 0,
+      "y": 1637
+    },
+    "pageCount": 20,
+    "layoutPageCount": 20,
+    "scope": "4/4/8",
+    "zoom": 0.34,
+    "columns": 4,
+    "focused": 1,
+    "visible": [
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19
+    ],
+    "retained": [
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19
+    ],
+    "scroll": {
+      "x": 0,
+      "y": 1637
+    },
+    "pages": [
+      {
+        "page": 8,
+        "visible": true,
+        "dpr": 2,
+        "scale": 0.68,
+        "surfaces": [
+          {
+            "kind": "main",
+            "width": 764,
+            "height": 1080
+          },
+          {
+            "kind": "background",
+            "width": 764,
+            "height": 1080
+          },
+          {
+            "kind": "behind",
+            "width": 764,
+            "height": 1080
+          }
+        ],
+        "pixels": 2475360,
+        "box": {
+          "x": 26,
+          "y": -401.0703125,
+          "width": 382,
+          "height": 540
+        },
+        "image": {
+          "scope": "4/4/8",
+          "kind": "decoded"
+        },
+        "flowImages": "ready"
+      },
+      {
+        "page": 9,
+        "visible": true,
+        "dpr": 2,
+        "scale": 0.68,
+        "surfaces": [
+          {
+            "kind": "main",
+            "width": 764,
+            "height": 1080
+          },
+          {
+            "kind": "background",
+            "width": 764,
+            "height": 1080
+          },
+          {
+            "kind": "behind",
+            "width": 764,
+            "height": 1080
+          }
+        ],
+        "pixels": 2475360,
+        "box": {
+          "x": 413.6484375,
+          "y": -401.0703125,
+          "width": 382,
+          "height": 540
+        },
+        "image": {
+          "scope": "4/4/8",
+          "kind": "decoded"
+        },
+        "flowImages": "ready"
+      },
+      {
+        "page": 10,
+        "visible": true,
+        "dpr": 2,
+        "scale": 0.68,
+        "surfaces": [
+          {
+            "kind": "main",
+            "width": 764,
+            "height": 1080
+          },
+          {
+            "kind": "background",
+            "width": 764,
+            "height": 1080
+          },
+          {
+            "kind": "behind",
+            "width": 764,
+            "height": 1080
+          }
+        ],
+        "pixels": 2475360,
+        "box": {
+          "x": 801.296875,
+          "y": -401.0703125,
+          "width": 382,
+          "height": 540
+        },
+        "image": {
+          "scope": "4/4/8",
+          "kind": "decoded"
+        },
+        "flowImages": "ready"
+      },
+      {
+        "page": 11,
+        "visible": true,
+        "dpr": 2,
+        "scale": 0.68,
+        "surfaces": [
+          {
+            "kind": "main",
+            "width": 764,
+            "height": 1080
+          },
+          {
+            "kind": "background",
+            "width": 764,
+            "height": 1080
+          },
+          {
+            "kind": "behind",
+            "width": 764,
+            "height": 1080
+          }
+        ],
+        "pixels": 2475360,
+        "box": {
+          "x": 1188.9453125,
+          "y": -401.0703125,
+          "width": 382,
+          "height": 540
+        },
+        "image": {
+          "scope": "4/4/8",
+          "kind": "decoded"
+        },
+        "flowImages": "ready"
+      },
+      {
+        "page": 12,
+        "visible": true,
+        "dpr": 2,
+        "scale": 0.68,
+        "surfaces": [
+          {
+            "kind": "main",
+            "width": 764,
+            "height": 1080
+          },
+          {
+            "kind": "background",
+            "width": 764,
+            "height": 1080
+          },
+          {
+            "kind": "behind",
+            "width": 764,
+            "height": 1080
+          },
+          {
+            "kind": "front",
+            "width": 764,
+            "height": 1080
+          }
+        ],
+        "pixels": 3300480,
+        "box": {
+          "x": 26,
+          "y": 144.640625,
+          "width": 382,
+          "height": 540
+        },
+        "image": {
+          "scope": "4/4/8",
+          "kind": "decoded"
+        },
+        "flowImages": "ready"
+      },
+      {
+        "page": 13,
+        "visible": true,
+        "dpr": 2,
+        "scale": 0.68,
+        "surfaces": [
+          {
+            "kind": "main",
+            "width": 764,
+            "height": 1080
+          },
+          {
+            "kind": "background",
+            "width": 764,
+            "height": 1080
+          },
+          {
+            "kind": "behind",
+            "width": 764,
+            "height": 1080
+          }
+        ],
+        "pixels": 2475360,
+        "box": {
+          "x": 413.6484375,
+          "y": 144.640625,
+          "width": 382,
+          "height": 540
+        },
+        "image": {
+          "scope": "4/4/8",
+          "kind": "decoded"
+        },
+        "flowImages": "ready"
+      },
+      {
+        "page": 14,
+        "visible": true,
+        "dpr": 2,
+        "scale": 0.68,
+        "surfaces": [
+          {
+            "kind": "main",
+            "width": 764,
+            "height": 1080
+          },
+          {
+            "kind": "background",
+            "width": 764,
+            "height": 1080
+          },
+          {
+            "kind": "behind",
+            "width": 764,
+            "height": 1080
+          }
+        ],
+        "pixels": 2475360,
+        "box": {
+          "x": 801.296875,
+          "y": 144.640625,
+          "width": 382,
+          "height": 540
+        },
+        "image": {
+          "scope": "4/4/8",
+          "kind": "cached"
+        },
+        "flowImages": "ready"
+      },
+      {
+        "page": 15,
+        "visible": true,
+        "dpr": 2,
+        "scale": 0.68,
+        "surfaces": [
+          {
+            "kind": "main",
+            "width": 764,
+            "height": 1080
+          },
+          {
+            "kind": "background",
+            "width": 764,
+            "height": 1080
+          },
+          {
+            "kind": "behind",
+            "width": 764,
+            "height": 1080
+          }
+        ],
+        "pixels": 2475360,
+        "box": {
+          "x": 1188.9453125,
+          "y": 144.640625,
+          "width": 382,
+          "height": 540
+        },
+        "image": {
+          "scope": "4/4/8",
+          "kind": "cached"
+        },
+        "flowImages": "ready"
+      },
+      {
+        "page": 16,
+        "visible": true,
+        "dpr": 2,
+        "scale": 0.68,
+        "surfaces": [
+          {
+            "kind": "main",
+            "width": 764,
+            "height": 1080
+          },
+          {
+            "kind": "background",
+            "width": 764,
+            "height": 1080
+          },
+          {
+            "kind": "behind",
+            "width": 764,
+            "height": 1080
+          },
+          {
+            "kind": "front",
+            "width": 764,
+            "height": 1080
+          }
+        ],
+        "pixels": 3300480,
+        "box": {
+          "x": 26,
+          "y": 690.359375,
+          "width": 382,
+          "height": 540
+        },
+        "image": {
+          "scope": "4/4/8",
+          "kind": "decoded"
+        },
+        "flowImages": "ready"
+      },
+      {
+        "page": 17,
+        "visible": true,
+        "dpr": 2,
+        "scale": 0.68,
+        "surfaces": [
+          {
+            "kind": "main",
+            "width": 764,
+            "height": 1080
+          },
+          {
+            "kind": "background",
+            "width": 764,
+            "height": 1080
+          },
+          {
+            "kind": "behind",
+            "width": 764,
+            "height": 1080
+          }
+        ],
+        "pixels": 2475360,
+        "box": {
+          "x": 413.6484375,
+          "y": 690.359375,
+          "width": 382,
+          "height": 540
+        },
+        "image": {
+          "scope": "4/4/8",
+          "kind": "decoded"
+        },
+        "flowImages": "ready"
+      },
+      {
+        "page": 18,
+        "visible": true,
+        "dpr": 2,
+        "scale": 0.68,
+        "surfaces": [
+          {
+            "kind": "main",
+            "width": 764,
+            "height": 1080
+          },
+          {
+            "kind": "background",
+            "width": 764,
+            "height": 1080
+          },
+          {
+            "kind": "behind",
+            "width": 764,
+            "height": 1080
+          }
+        ],
+        "pixels": 2475360,
+        "box": {
+          "x": 801.296875,
+          "y": 690.359375,
+          "width": 382,
+          "height": 540
+        },
+        "image": {
+          "scope": "4/4/8",
+          "kind": "decoded"
+        },
+        "flowImages": "ready"
+      },
+      {
+        "page": 19,
+        "visible": true,
+        "dpr": 2,
+        "scale": 0.68,
+        "surfaces": [
+          {
+            "kind": "main",
+            "width": 764,
+            "height": 1080
+          },
+          {
+            "kind": "background",
+            "width": 764,
+            "height": 1080
+          },
+          {
+            "kind": "behind",
+            "width": 764,
+            "height": 1080
+          }
+        ],
+        "pixels": 2475360,
+        "box": {
+          "x": 1188.9453125,
+          "y": 690.359375,
+          "width": 382,
+          "height": 540
+        },
+        "image": {
+          "scope": "4/4/8",
+          "kind": "decoded"
+        },
+        "flowImages": "ready"
+      },
+      {
+        "page": 4,
+        "visible": false,
+        "dpr": 2,
+        "scale": 0.68,
+        "surfaces": [
+          {
+            "kind": "main",
+            "width": 764,
+            "height": 1080
+          },
+          {
+            "kind": "background",
+            "width": 764,
+            "height": 1080
+          },
+          {
+            "kind": "behind",
+            "width": 764,
+            "height": 1080
+          }
+        ],
+        "pixels": 2475360,
+        "box": {
+          "x": 26,
+          "y": -946.7890625,
+          "width": 382,
+          "height": 540
+        },
+        "image": {
+          "scope": "4/4/8",
+          "kind": "cached"
+        },
+        "flowImages": "ready"
+      },
+      {
+        "page": 5,
+        "visible": false,
+        "dpr": 2,
+        "scale": 0.68,
+        "surfaces": [
+          {
+            "kind": "main",
+            "width": 764,
+            "height": 1080
+          },
+          {
+            "kind": "background",
+            "width": 764,
+            "height": 1080
+          },
+          {
+            "kind": "behind",
+            "width": 764,
+            "height": 1080
+          }
+        ],
+        "pixels": 2475360,
+        "box": {
+          "x": 413.6484375,
+          "y": -946.7890625,
+          "width": 382,
+          "height": 540
+        },
+        "image": {
+          "scope": "4/4/8",
+          "kind": "cached"
+        },
+        "flowImages": "ready"
+      },
+      {
+        "page": 6,
+        "visible": false,
+        "dpr": 1.5,
+        "scale": 0.51,
+        "surfaces": [
+          {
+            "kind": "main",
+            "width": 573,
+            "height": 810
+          },
+          {
+            "kind": "background",
+            "width": 573,
+            "height": 810
+          },
+          {
+            "kind": "behind",
+            "width": 573,
+            "height": 810
+          }
+        ],
+        "pixels": 1392390,
+        "box": {
+          "x": 801.296875,
+          "y": -946.7890625,
+          "width": 382,
+          "height": 540
+        },
+        "image": {
+          "scope": "4/4/8",
+          "kind": "cached"
+        },
+        "flowImages": "ready"
+      },
+      {
+        "page": 7,
+        "visible": false,
+        "dpr": 1.5,
+        "scale": 0.51,
+        "surfaces": [
+          {
+            "kind": "main",
+            "width": 573,
+            "height": 810
+          },
+          {
+            "kind": "background",
+            "width": 573,
+            "height": 810
+          },
+          {
+            "kind": "behind",
+            "width": 573,
+            "height": 810
+          }
+        ],
+        "pixels": 1392390,
+        "box": {
+          "x": 1188.9453125,
+          "y": -946.7890625,
+          "width": 382,
+          "height": 540
+        },
+        "image": {
+          "scope": "4/4/8",
+          "kind": "cached"
+        },
+        "flowImages": "ready"
+      }
+    ],
+    "pool": [],
+    "activePixels": 39090060,
+    "idlePoolPixels": 0,
+    "detachedCache": {
+      "pixelBudget": 40000000,
+      "reservedPixels": 39090060,
+      "cachedPixels": 0,
+      "totalAccountedPixels": 39090060,
+      "overBudgetMandatory": false,
+      "entryCount": 0,
+      "hits": 78,
+      "misses": 91,
+      "evictions": 7,
+      "rejected": 0,
+      "invalidations": 2
+    },
+    "scheduler": {
+      "generation": 200,
+      "visibleQueued": 0,
+      "prefetchQueued": 0,
+      "frameScheduled": false,
+      "idleScheduled": false,
+      "visibleSlices": 8,
+      "visibleExecuted": 8,
+      "prefetchExecuted": 37,
+      "prefetchAdmissionRejected": 3,
+      "staleDropped": 0,
+      "maxQueueDepth": 6
+    },
+    "totalAllocatedPixels": 39090060,
+    "pendingImages": 0,
+    "pendingPrefetch": 0,
+    "errors": []
+  },
+  "traceStatusCounts": {
+    "superseded": 16,
+    "complete": 24
+  },
+  "sources": [
+    {
+      "source": "user-page-key",
+      "status": "superseded",
+      "reason": "new-interaction"
+    },
+    {
+      "source": "user-page-key",
+      "status": "superseded",
+      "reason": "new-interaction"
+    },
+    {
+      "source": "user-page-key",
+      "status": "complete",
+      "reason": "known render work only; presentation and decoder completeness are separate evidence"
+    },
+    {
+      "source": "user-page-key",
+      "status": "complete",
+      "reason": "known render work only; presentation and decoder completeness are separate evidence"
+    },
+    {
+      "source": "user-page-key",
+      "status": "complete",
+      "reason": "known render work only; presentation and decoder completeness are separate evidence"
+    },
+    {
+      "source": "user-page-key",
+      "status": "superseded",
+      "reason": "new-interaction"
+    },
+    {
+      "source": "user-page-key",
+      "status": "complete",
+      "reason": "known render work only; presentation and decoder completeness are separate evidence"
+    },
+    {
+      "source": "user-page-key",
+      "status": "complete",
+      "reason": "known render work only; presentation and decoder completeness are separate evidence"
+    },
+    {
+      "source": "user-page-key",
+      "status": "superseded",
+      "reason": "new-interaction"
+    },
+    {
+      "source": "user-page-key",
+      "status": "complete",
+      "reason": "known render work only; presentation and decoder completeness are separate evidence"
+    },
+    {
+      "source": "user-page-key",
+      "status": "superseded",
+      "reason": "new-interaction"
+    },
+    {
+      "source": "user-page-key",
+      "status": "complete",
+      "reason": "known render work only; presentation and decoder completeness are separate evidence"
+    },
+    {
+      "source": "user-page-key",
+      "status": "superseded",
+      "reason": "new-interaction"
+    },
+    {
+      "source": "user-page-key",
+      "status": "complete",
+      "reason": "known render work only; presentation and decoder completeness are separate evidence"
+    },
+    {
+      "source": "user-page-key",
+      "status": "superseded",
+      "reason": "new-interaction"
+    },
+    {
+      "source": "user-page-key",
+      "status": "complete",
+      "reason": "known render work only; presentation and decoder completeness are separate evidence"
+    },
+    {
+      "source": "user-page-key",
+      "status": "complete",
+      "reason": "known render work only; presentation and decoder completeness are separate evidence"
+    },
+    {
+      "source": "user-page-key",
+      "status": "superseded",
+      "reason": "new-interaction"
+    },
+    {
+      "source": "user-page-key",
+      "status": "complete",
+      "reason": "known render work only; presentation and decoder completeness are separate evidence"
+    },
+    {
+      "source": "user-page-key",
+      "status": "superseded",
+      "reason": "new-interaction"
+    },
+    {
+      "source": "user-page-key",
+      "status": "complete",
+      "reason": "known render work only; presentation and decoder completeness are separate evidence"
+    },
+    {
+      "source": "user-page-key",
+      "status": "complete",
+      "reason": "known render work only; presentation and decoder completeness are separate evidence"
+    },
+    {
+      "source": "user-page-key",
+      "status": "superseded",
+      "reason": "new-interaction"
+    },
+    {
+      "source": "user-page-key",
+      "status": "complete",
+      "reason": "known render work only; presentation and decoder completeness are separate evidence"
+    },
+    {
+      "source": "user-page-key",
+      "status": "superseded",
+      "reason": "new-interaction"
+    },
+    {
+      "source": "user-page-key",
+      "status": "complete",
+      "reason": "known render work only; presentation and decoder completeness are separate evidence"
+    },
+    {
+      "source": "user-page-key",
+      "status": "superseded",
+      "reason": "new-interaction"
+    },
+    {
+      "source": "user-page-key",
+      "status": "complete",
+      "reason": "known render work only; presentation and decoder completeness are separate evidence"
+    },
+    {
+      "source": "user-page-key",
+      "status": "complete",
+      "reason": "known render work only; presentation and decoder completeness are separate evidence"
+    },
+    {
+      "source": "user-page-key",
+      "status": "superseded",
+      "reason": "new-interaction"
+    },
+    {
+      "source": "user-page-key",
+      "status": "complete",
+      "reason": "known render work only; presentation and decoder completeness are separate evidence"
+    },
+    {
+      "source": "user-page-key",
+      "status": "complete",
+      "reason": "known render work only; presentation and decoder completeness are separate evidence"
+    },
+    {
+      "source": "user-page-key",
+      "status": "complete",
+      "reason": "known render work only; presentation and decoder completeness are separate evidence"
+    },
+    {
+      "source": "user-page-key",
+      "status": "superseded",
+      "reason": "new-interaction"
+    },
+    {
+      "source": "user-page-key",
+      "status": "complete",
+      "reason": "known render work only; presentation and decoder completeness are separate evidence"
+    },
+    {
+      "source": "user-page-key",
+      "status": "superseded",
+      "reason": "new-interaction"
+    },
+    {
+      "source": "user-page-key",
+      "status": "complete",
+      "reason": "known render work only; presentation and decoder completeness are separate evidence"
+    },
+    {
+      "source": "user-page-key",
+      "status": "complete",
+      "reason": "known render work only; presentation and decoder completeness are separate evidence"
+    },
+    {
+      "source": "user-page-key",
+      "status": "superseded",
+      "reason": "new-interaction"
+    },
+    {
+      "source": "user-page-key",
+      "status": "complete",
+      "reason": "known render work only; presentation and decoder completeness are separate evidence"
+    }
+  ]
+}

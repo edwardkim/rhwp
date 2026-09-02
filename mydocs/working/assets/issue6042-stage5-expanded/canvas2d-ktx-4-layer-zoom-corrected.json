@@ -1,0 +1,870 @@
+[
+  {
+    "enabled": true,
+    "dpr": 2,
+    "viewport": {
+      "width": 1280,
+      "height": 720
+    },
+    "targetViewport": {
+      "scope": "9/9/18",
+      "zoom": 0.34,
+      "x": 0,
+      "y": 0
+    },
+    "appliedViewport": {
+      "scope": "9/9/18",
+      "zoom": 0.34,
+      "x": 0,
+      "y": 0
+    },
+    "pageCount": 1,
+    "layoutPageCount": 1,
+    "scope": "9/9/18",
+    "zoom": 0.34,
+    "columns": 1,
+    "focused": 0,
+    "visible": [
+      0
+    ],
+    "retained": [
+      0
+    ],
+    "scroll": {
+      "x": 0,
+      "y": 0
+    },
+    "pages": [
+      {
+        "page": 0,
+        "visible": true,
+        "dpr": 2,
+        "scale": 0.68,
+        "surfaces": [
+          {
+            "kind": "main",
+            "width": 764,
+            "height": 540
+          },
+          {
+            "kind": "background",
+            "width": 764,
+            "height": 540
+          },
+          {
+            "kind": "behind",
+            "width": 764,
+            "height": 540
+          },
+          {
+            "kind": "front",
+            "width": 764,
+            "height": 540
+          }
+        ],
+        "pixels": 1650240,
+        "box": {
+          "x": 458.9921875,
+          "y": 144.5,
+          "width": 382,
+          "height": 270
+        },
+        "image": {
+          "scope": "9/9/18",
+          "kind": "none"
+        },
+        "flowImages": "ready"
+      }
+    ],
+    "pool": [
+      {
+        "width": 0,
+        "height": 0
+      },
+      {
+        "width": 0,
+        "height": 0
+      },
+      {
+        "width": 0,
+        "height": 0
+      }
+    ],
+    "activePixels": 1650240,
+    "idlePoolPixels": 0,
+    "detachedCache": {
+      "pixelBudget": 40000000,
+      "reservedPixels": 1650240,
+      "cachedPixels": 0,
+      "totalAccountedPixels": 1650240,
+      "overBudgetMandatory": false,
+      "entryCount": 0,
+      "hits": 78,
+      "misses": 175,
+      "evictions": 7,
+      "rejected": 0,
+      "invalidations": 15
+    },
+    "scheduler": {
+      "generation": 289,
+      "visibleQueued": 0,
+      "prefetchQueued": 0,
+      "frameScheduled": false,
+      "idleScheduled": false,
+      "visibleSlices": 8,
+      "visibleExecuted": 8,
+      "prefetchExecuted": 69,
+      "prefetchAdmissionRejected": 3,
+      "staleDropped": 0,
+      "maxQueueDepth": 6
+    },
+    "totalAllocatedPixels": 1650240,
+    "pendingImages": 0,
+    "pendingPrefetch": 0,
+    "errors": []
+  },
+  {
+    "enabled": true,
+    "dpr": 2,
+    "viewport": {
+      "width": 1280,
+      "height": 720
+    },
+    "targetViewport": {
+      "scope": "9/9/18",
+      "zoom": 0.5,
+      "x": 0,
+      "y": 0
+    },
+    "appliedViewport": {
+      "scope": "9/9/18",
+      "zoom": 0.5,
+      "x": 0,
+      "y": 0
+    },
+    "pageCount": 1,
+    "layoutPageCount": 1,
+    "scope": "9/9/18",
+    "zoom": 0.5,
+    "columns": 1,
+    "focused": 0,
+    "visible": [
+      0
+    ],
+    "retained": [
+      0
+    ],
+    "scroll": {
+      "x": 0,
+      "y": 0
+    },
+    "pages": [
+      {
+        "page": 0,
+        "visible": true,
+        "dpr": 2,
+        "scale": 1,
+        "surfaces": [
+          {
+            "kind": "main",
+            "width": 1123,
+            "height": 794
+          },
+          {
+            "kind": "background",
+            "width": 1123,
+            "height": 794
+          },
+          {
+            "kind": "behind",
+            "width": 1123,
+            "height": 794
+          },
+          {
+            "kind": "front",
+            "width": 1123,
+            "height": 794
+          }
+        ],
+        "pixels": 3566648,
+        "box": {
+          "x": 369.25,
+          "y": 144.5,
+          "width": 561.5,
+          "height": 397
+        },
+        "image": {
+          "scope": "9/9/18",
+          "kind": "none"
+        },
+        "flowImages": "ready"
+      }
+    ],
+    "pool": [
+      {
+        "width": 0,
+        "height": 0
+      },
+      {
+        "width": 0,
+        "height": 0
+      },
+      {
+        "width": 0,
+        "height": 0
+      }
+    ],
+    "activePixels": 3566648,
+    "idlePoolPixels": 0,
+    "detachedCache": {
+      "pixelBudget": 40000000,
+      "reservedPixels": 3566648,
+      "cachedPixels": 0,
+      "totalAccountedPixels": 3566648,
+      "overBudgetMandatory": false,
+      "entryCount": 0,
+      "hits": 78,
+      "misses": 176,
+      "evictions": 7,
+      "rejected": 0,
+      "invalidations": 15
+    },
+    "scheduler": {
+      "generation": 299,
+      "visibleQueued": 0,
+      "prefetchQueued": 0,
+      "frameScheduled": false,
+      "idleScheduled": false,
+      "visibleSlices": 8,
+      "visibleExecuted": 8,
+      "prefetchExecuted": 69,
+      "prefetchAdmissionRejected": 3,
+      "staleDropped": 0,
+      "maxQueueDepth": 6
+    },
+    "totalAllocatedPixels": 3566648,
+    "pendingImages": 0,
+    "pendingPrefetch": 0,
+    "errors": []
+  },
+  {
+    "enabled": true,
+    "dpr": 2,
+    "viewport": {
+      "width": 1280,
+      "height": 720
+    },
+    "targetViewport": {
+      "scope": "9/9/18",
+      "zoom": 1,
+      "x": 0,
+      "y": 192.5
+    },
+    "appliedViewport": {
+      "scope": "9/9/18",
+      "zoom": 1,
+      "x": 0,
+      "y": 192.5
+    },
+    "pageCount": 1,
+    "layoutPageCount": 1,
+    "scope": "9/9/18",
+    "zoom": 1,
+    "columns": 1,
+    "focused": 0,
+    "visible": [
+      0
+    ],
+    "retained": [
+      0
+    ],
+    "scroll": {
+      "x": 0,
+      "y": 192.5
+    },
+    "pages": [
+      {
+        "page": 0,
+        "visible": true,
+        "dpr": 2,
+        "scale": 2,
+        "surfaces": [
+          {
+            "kind": "main",
+            "width": 2246,
+            "height": 1588
+          },
+          {
+            "kind": "background",
+            "width": 2246,
+            "height": 1588
+          },
+          {
+            "kind": "behind",
+            "width": 2246,
+            "height": 1588
+          },
+          {
+            "kind": "front",
+            "width": 2246,
+            "height": 1588
+          }
+        ],
+        "pixels": 14266592,
+        "box": {
+          "x": 88.5,
+          "y": -44,
+          "width": 1123,
+          "height": 794
+        },
+        "image": {
+          "scope": "9/9/18",
+          "kind": "none"
+        },
+        "flowImages": "ready"
+      }
+    ],
+    "pool": [
+      {
+        "width": 0,
+        "height": 0
+      },
+      {
+        "width": 0,
+        "height": 0
+      },
+      {
+        "width": 0,
+        "height": 0
+      }
+    ],
+    "activePixels": 14266592,
+    "idlePoolPixels": 0,
+    "detachedCache": {
+      "pixelBudget": 40000000,
+      "reservedPixels": 14266592,
+      "cachedPixels": 0,
+      "totalAccountedPixels": 14266592,
+      "overBudgetMandatory": false,
+      "entryCount": 0,
+      "hits": 78,
+      "misses": 177,
+      "evictions": 7,
+      "rejected": 0,
+      "invalidations": 15
+    },
+    "scheduler": {
+      "generation": 314,
+      "visibleQueued": 0,
+      "prefetchQueued": 0,
+      "frameScheduled": false,
+      "idleScheduled": false,
+      "visibleSlices": 8,
+      "visibleExecuted": 8,
+      "prefetchExecuted": 69,
+      "prefetchAdmissionRejected": 3,
+      "staleDropped": 0,
+      "maxQueueDepth": 6
+    },
+    "totalAllocatedPixels": 14266592,
+    "pendingImages": 0,
+    "pendingPrefetch": 0,
+    "errors": []
+  },
+  {
+    "enabled": true,
+    "dpr": 2,
+    "viewport": {
+      "width": 1280,
+      "height": 720
+    },
+    "targetViewport": {
+      "scope": "9/9/18",
+      "zoom": 2,
+      "x": 752.5,
+      "y": 664
+    },
+    "appliedViewport": {
+      "scope": "9/9/18",
+      "zoom": 2,
+      "x": 752.5,
+      "y": 664
+    },
+    "pageCount": 1,
+    "layoutPageCount": 1,
+    "scope": "9/9/18",
+    "zoom": 2,
+    "columns": 1,
+    "focused": 0,
+    "visible": [
+      0
+    ],
+    "retained": [
+      0
+    ],
+    "scroll": {
+      "x": 752.5,
+      "y": 664
+    },
+    "pages": [
+      {
+        "page": 0,
+        "visible": true,
+        "dpr": 2,
+        "scale": 4,
+        "surfaces": [
+          {
+            "kind": "main",
+            "width": 4491,
+            "height": 3175
+          },
+          {
+            "kind": "background",
+            "width": 4491,
+            "height": 3175
+          },
+          {
+            "kind": "behind",
+            "width": 4491,
+            "height": 3175
+          },
+          {
+            "kind": "front",
+            "width": 4491,
+            "height": 3175
+          }
+        ],
+        "pixels": 57035700,
+        "box": {
+          "x": -472.5,
+          "y": -505.5,
+          "width": 2245.5,
+          "height": 1587.5
+        },
+        "image": {
+          "scope": "9/9/18",
+          "kind": "none"
+        },
+        "flowImages": "ready"
+      }
+    ],
+    "pool": [
+      {
+        "width": 0,
+        "height": 0
+      },
+      {
+        "width": 0,
+        "height": 0
+      },
+      {
+        "width": 0,
+        "height": 0
+      }
+    ],
+    "activePixels": 57035700,
+    "idlePoolPixels": 0,
+    "detachedCache": {
+      "pixelBudget": 40000000,
+      "reservedPixels": 57035700,
+      "cachedPixels": 0,
+      "totalAccountedPixels": 57035700,
+      "overBudgetMandatory": true,
+      "entryCount": 0,
+      "hits": 78,
+      "misses": 178,
+      "evictions": 7,
+      "rejected": 0,
+      "invalidations": 15
+    },
+    "scheduler": {
+      "generation": 330,
+      "visibleQueued": 0,
+      "prefetchQueued": 0,
+      "frameScheduled": false,
+      "idleScheduled": false,
+      "visibleSlices": 8,
+      "visibleExecuted": 8,
+      "prefetchExecuted": 69,
+      "prefetchAdmissionRejected": 3,
+      "staleDropped": 0,
+      "maxQueueDepth": 6
+    },
+    "totalAllocatedPixels": 57035700,
+    "pendingImages": 0,
+    "pendingPrefetch": 0,
+    "errors": []
+  },
+  {
+    "enabled": true,
+    "dpr": 2,
+    "viewport": {
+      "width": 1280,
+      "height": 720
+    },
+    "targetViewport": {
+      "scope": "9/9/18",
+      "zoom": 1,
+      "x": 0,
+      "y": 193
+    },
+    "appliedViewport": {
+      "scope": "9/9/18",
+      "zoom": 1,
+      "x": 0,
+      "y": 193
+    },
+    "pageCount": 1,
+    "layoutPageCount": 1,
+    "scope": "9/9/18",
+    "zoom": 1,
+    "columns": 1,
+    "focused": 0,
+    "visible": [
+      0
+    ],
+    "retained": [
+      0
+    ],
+    "scroll": {
+      "x": 0,
+      "y": 193
+    },
+    "pages": [
+      {
+        "page": 0,
+        "visible": true,
+        "dpr": 2,
+        "scale": 2,
+        "surfaces": [
+          {
+            "kind": "main",
+            "width": 2246,
+            "height": 1588
+          },
+          {
+            "kind": "background",
+            "width": 2246,
+            "height": 1588
+          },
+          {
+            "kind": "behind",
+            "width": 2246,
+            "height": 1588
+          },
+          {
+            "kind": "front",
+            "width": 2246,
+            "height": 1588
+          }
+        ],
+        "pixels": 14266592,
+        "box": {
+          "x": 88.5,
+          "y": -44.5,
+          "width": 1123,
+          "height": 794
+        },
+        "image": {
+          "scope": "9/9/18",
+          "kind": "none"
+        },
+        "flowImages": "ready"
+      }
+    ],
+    "pool": [
+      {
+        "width": 0,
+        "height": 0
+      },
+      {
+        "width": 0,
+        "height": 0
+      },
+      {
+        "width": 0,
+        "height": 0
+      }
+    ],
+    "activePixels": 14266592,
+    "idlePoolPixels": 0,
+    "detachedCache": {
+      "pixelBudget": 40000000,
+      "reservedPixels": 14266592,
+      "cachedPixels": 0,
+      "totalAccountedPixels": 14266592,
+      "overBudgetMandatory": false,
+      "entryCount": 0,
+      "hits": 78,
+      "misses": 179,
+      "evictions": 7,
+      "rejected": 0,
+      "invalidations": 15
+    },
+    "scheduler": {
+      "generation": 346,
+      "visibleQueued": 0,
+      "prefetchQueued": 0,
+      "frameScheduled": false,
+      "idleScheduled": false,
+      "visibleSlices": 8,
+      "visibleExecuted": 8,
+      "prefetchExecuted": 69,
+      "prefetchAdmissionRejected": 3,
+      "staleDropped": 0,
+      "maxQueueDepth": 6
+    },
+    "totalAllocatedPixels": 14266592,
+    "pendingImages": 0,
+    "pendingPrefetch": 0,
+    "errors": []
+  },
+  {
+    "enabled": true,
+    "dpr": 2,
+    "viewport": {
+      "width": 1280,
+      "height": 720
+    },
+    "targetViewport": {
+      "scope": "9/9/18",
+      "zoom": 0.5,
+      "x": 0,
+      "y": 0
+    },
+    "appliedViewport": {
+      "scope": "9/9/18",
+      "zoom": 0.5,
+      "x": 0,
+      "y": 0
+    },
+    "pageCount": 1,
+    "layoutPageCount": 1,
+    "scope": "9/9/18",
+    "zoom": 0.5,
+    "columns": 1,
+    "focused": 0,
+    "visible": [
+      0
+    ],
+    "retained": [
+      0
+    ],
+    "scroll": {
+      "x": 0,
+      "y": 0
+    },
+    "pages": [
+      {
+        "page": 0,
+        "visible": true,
+        "dpr": 2,
+        "scale": 1,
+        "surfaces": [
+          {
+            "kind": "main",
+            "width": 1123,
+            "height": 794
+          },
+          {
+            "kind": "background",
+            "width": 1123,
+            "height": 794
+          },
+          {
+            "kind": "behind",
+            "width": 1123,
+            "height": 794
+          },
+          {
+            "kind": "front",
+            "width": 1123,
+            "height": 794
+          }
+        ],
+        "pixels": 3566648,
+        "box": {
+          "x": 369.25,
+          "y": 144.5,
+          "width": 561.5,
+          "height": 397
+        },
+        "image": {
+          "scope": "9/9/18",
+          "kind": "none"
+        },
+        "flowImages": "ready"
+      }
+    ],
+    "pool": [
+      {
+        "width": 0,
+        "height": 0
+      },
+      {
+        "width": 0,
+        "height": 0
+      },
+      {
+        "width": 0,
+        "height": 0
+      }
+    ],
+    "activePixels": 3566648,
+    "idlePoolPixels": 0,
+    "detachedCache": {
+      "pixelBudget": 40000000,
+      "reservedPixels": 3566648,
+      "cachedPixels": 0,
+      "totalAccountedPixels": 3566648,
+      "overBudgetMandatory": false,
+      "entryCount": 0,
+      "hits": 78,
+      "misses": 180,
+      "evictions": 7,
+      "rejected": 0,
+      "invalidations": 15
+    },
+    "scheduler": {
+      "generation": 359,
+      "visibleQueued": 0,
+      "prefetchQueued": 0,
+      "frameScheduled": false,
+      "idleScheduled": false,
+      "visibleSlices": 8,
+      "visibleExecuted": 8,
+      "prefetchExecuted": 69,
+      "prefetchAdmissionRejected": 3,
+      "staleDropped": 0,
+      "maxQueueDepth": 6
+    },
+    "totalAllocatedPixels": 3566648,
+    "pendingImages": 0,
+    "pendingPrefetch": 0,
+    "errors": []
+  },
+  {
+    "enabled": true,
+    "dpr": 2,
+    "viewport": {
+      "width": 1280,
+      "height": 720
+    },
+    "targetViewport": {
+      "scope": "9/9/18",
+      "zoom": 0.34,
+      "x": 0,
+      "y": 0
+    },
+    "appliedViewport": {
+      "scope": "9/9/18",
+      "zoom": 0.34,
+      "x": 0,
+      "y": 0
+    },
+    "pageCount": 1,
+    "layoutPageCount": 1,
+    "scope": "9/9/18",
+    "zoom": 0.34,
+    "columns": 1,
+    "focused": 0,
+    "visible": [
+      0
+    ],
+    "retained": [
+      0
+    ],
+    "scroll": {
+      "x": 0,
+      "y": 0
+    },
+    "pages": [
+      {
+        "page": 0,
+        "visible": true,
+        "dpr": 2,
+        "scale": 0.68,
+        "surfaces": [
+          {
+            "kind": "main",
+            "width": 764,
+            "height": 540
+          },
+          {
+            "kind": "background",
+            "width": 764,
+            "height": 540
+          },
+          {
+            "kind": "behind",
+            "width": 764,
+            "height": 540
+          },
+          {
+            "kind": "front",
+            "width": 764,
+            "height": 540
+          }
+        ],
+        "pixels": 1650240,
+        "box": {
+          "x": 458.9921875,
+          "y": 144.5,
+          "width": 382,
+          "height": 270
+        },
+        "image": {
+          "scope": "9/9/18",
+          "kind": "none"
+        },
+        "flowImages": "ready"
+      }
+    ],
+    "pool": [
+      {
+        "width": 0,
+        "height": 0
+      },
+      {
+        "width": 0,
+        "height": 0
+      },
+      {
+        "width": 0,
+        "height": 0
+      }
+    ],
+    "activePixels": 1650240,
+    "idlePoolPixels": 0,
+    "detachedCache": {
+      "pixelBudget": 40000000,
+      "reservedPixels": 1650240,
+      "cachedPixels": 0,
+      "totalAccountedPixels": 1650240,
+      "overBudgetMandatory": false,
+      "entryCount": 0,
+      "hits": 78,
+      "misses": 181,
+      "evictions": 7,
+      "rejected": 0,
+      "invalidations": 15
+    },
+    "scheduler": {
+      "generation": 369,
+      "visibleQueued": 0,
+      "prefetchQueued": 0,
+      "frameScheduled": false,
+      "idleScheduled": false,
+      "visibleSlices": 8,
+      "visibleExecuted": 8,
+      "prefetchExecuted": 69,
+      "prefetchAdmissionRejected": 3,
+      "staleDropped": 0,
+      "maxQueueDepth": 6
+    },
+    "totalAllocatedPixels": 1650240,
+    "pendingImages": 0,
+    "pendingPrefetch": 0,
+    "errors": []
+  }
+]

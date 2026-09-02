@@ -1,0 +1,1542 @@
+[
+  {
+    "case": {
+      "fixture": 0,
+      "name": "exam_kor",
+      "arrangement": "auto",
+      "zoom": 50
+    },
+    "snapshot": {
+      "enabled": true,
+      "dpr": 2,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "targetViewport": {
+        "scope": "11/11/22",
+        "zoom": 0.5,
+        "x": 0,
+        "y": 128
+      },
+      "appliedViewport": {
+        "scope": "11/11/22",
+        "zoom": 0.5,
+        "x": 0,
+        "y": 128
+      },
+      "pageCount": 20,
+      "layoutPageCount": 20,
+      "scope": "11/11/22",
+      "zoom": 0.5,
+      "columns": 2,
+      "focused": 0,
+      "visible": [
+        0,
+        1
+      ],
+      "retained": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "scroll": {
+        "x": 0,
+        "y": 128
+      },
+      "pages": [
+        {
+          "page": 0,
+          "visible": true,
+          "dpr": 2,
+          "scale": 1,
+          "surfaces": [
+            {
+              "kind": "main",
+              "width": 1123,
+              "height": 1588
+            },
+            {
+              "kind": "background",
+              "width": 1123,
+              "height": 1588
+            },
+            {
+              "kind": "behind",
+              "width": 1123,
+              "height": 1588
+            },
+            {
+              "kind": "front",
+              "width": 1123,
+              "height": 1588
+            }
+          ],
+          "pixels": 7133296,
+          "box": {
+            "x": 85.75,
+            "y": 16.5,
+            "width": 561.5,
+            "height": 794
+          },
+          "image": {
+            "scope": "11/11/22",
+            "kind": "cached"
+          },
+          "flowImages": "ready"
+        },
+        {
+          "page": 1,
+          "visible": true,
+          "dpr": 2,
+          "scale": 1,
+          "surfaces": [
+            {
+              "kind": "main",
+              "width": 1123,
+              "height": 1588
+            },
+            {
+              "kind": "background",
+              "width": 1123,
+              "height": 1588
+            },
+            {
+              "kind": "behind",
+              "width": 1123,
+              "height": 1588
+            }
+          ],
+          "pixels": 5349972,
+          "box": {
+            "x": 653,
+            "y": 16.5,
+            "width": 561.5,
+            "height": 794
+          },
+          "image": {
+            "scope": "11/11/22",
+            "kind": "cached"
+          },
+          "flowImages": "ready"
+        },
+        {
+          "page": 2,
+          "visible": false,
+          "dpr": 2,
+          "scale": 1,
+          "surfaces": [
+            {
+              "kind": "main",
+              "width": 1123,
+              "height": 1588
+            },
+            {
+              "kind": "background",
+              "width": 1123,
+              "height": 1588
+            },
+            {
+              "kind": "behind",
+              "width": 1123,
+              "height": 1588
+            }
+          ],
+          "pixels": 5349972,
+          "box": {
+            "x": 85.75,
+            "y": 816.1953125,
+            "width": 561.5,
+            "height": 794
+          },
+          "image": {
+            "scope": "11/11/22",
+            "kind": "cached"
+          },
+          "flowImages": "ready"
+        },
+        {
+          "page": 3,
+          "visible": false,
+          "dpr": 2,
+          "scale": 1,
+          "surfaces": [
+            {
+              "kind": "main",
+              "width": 1123,
+              "height": 1588
+            },
+            {
+              "kind": "background",
+              "width": 1123,
+              "height": 1588
+            },
+            {
+              "kind": "behind",
+              "width": 1123,
+              "height": 1588
+            }
+          ],
+          "pixels": 5349972,
+          "box": {
+            "x": 653,
+            "y": 816.1953125,
+            "width": 561.5,
+            "height": 794
+          },
+          "image": {
+            "scope": "11/11/22",
+            "kind": "cached"
+          },
+          "flowImages": "ready"
+        }
+      ],
+      "pool": [],
+      "activePixels": 23183212,
+      "idlePoolPixels": 0,
+      "detachedCache": {
+        "pixelBudget": 40000000,
+        "reservedPixels": 23183212,
+        "cachedPixels": 0,
+        "totalAccountedPixels": 23183212,
+        "overBudgetMandatory": false,
+        "entryCount": 0,
+        "hits": 306,
+        "misses": 248,
+        "evictions": 7,
+        "rejected": 0,
+        "invalidations": 31
+      },
+      "scheduler": {
+        "generation": 421,
+        "visibleQueued": 0,
+        "prefetchQueued": 0,
+        "frameScheduled": false,
+        "idleScheduled": false,
+        "visibleSlices": 20,
+        "visibleExecuted": 20,
+        "prefetchExecuted": 92,
+        "prefetchAdmissionRejected": 3,
+        "staleDropped": 0,
+        "maxQueueDepth": 12
+      },
+      "totalAllocatedPixels": 23183212,
+      "pendingImages": 0,
+      "pendingPrefetch": 0,
+      "errors": []
+    }
+  },
+  {
+    "case": {
+      "fixture": 3,
+      "name": "KTX 4-layer",
+      "arrangement": "single",
+      "zoom": 100
+    },
+    "snapshot": {
+      "enabled": true,
+      "dpr": 2,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "targetViewport": {
+        "scope": "12/12/24",
+        "zoom": 1,
+        "x": 0,
+        "y": 193.5
+      },
+      "appliedViewport": {
+        "scope": "12/12/24",
+        "zoom": 1,
+        "x": 0,
+        "y": 193.5
+      },
+      "pageCount": 1,
+      "layoutPageCount": 1,
+      "scope": "12/12/24",
+      "zoom": 1,
+      "columns": 1,
+      "focused": 0,
+      "visible": [
+        0
+      ],
+      "retained": [
+        0
+      ],
+      "scroll": {
+        "x": 0,
+        "y": 193.5
+      },
+      "pages": [
+        {
+          "page": 0,
+          "visible": true,
+          "dpr": 2,
+          "scale": 2,
+          "surfaces": [
+            {
+              "kind": "main",
+              "width": 2246,
+              "height": 1588
+            },
+            {
+              "kind": "background",
+              "width": 2246,
+              "height": 1588
+            },
+            {
+              "kind": "behind",
+              "width": 2246,
+              "height": 1588
+            },
+            {
+              "kind": "front",
+              "width": 2246,
+              "height": 1588
+            }
+          ],
+          "pixels": 14266592,
+          "box": {
+            "x": 88.5,
+            "y": -45,
+            "width": 1123,
+            "height": 794
+          },
+          "image": {
+            "scope": "12/12/24",
+            "kind": "none"
+          },
+          "flowImages": "ready"
+        }
+      ],
+      "pool": [
+        {
+          "width": 0,
+          "height": 0
+        },
+        {
+          "width": 0,
+          "height": 0
+        },
+        {
+          "width": 0,
+          "height": 0
+        }
+      ],
+      "activePixels": 14266592,
+      "idlePoolPixels": 0,
+      "detachedCache": {
+        "pixelBudget": 40000000,
+        "reservedPixels": 14266592,
+        "cachedPixels": 0,
+        "totalAccountedPixels": 14266592,
+        "overBudgetMandatory": false,
+        "entryCount": 0,
+        "hits": 306,
+        "misses": 250,
+        "evictions": 7,
+        "rejected": 0,
+        "invalidations": 31
+      },
+      "scheduler": {
+        "generation": 443,
+        "visibleQueued": 0,
+        "prefetchQueued": 0,
+        "frameScheduled": false,
+        "idleScheduled": false,
+        "visibleSlices": 20,
+        "visibleExecuted": 20,
+        "prefetchExecuted": 92,
+        "prefetchAdmissionRejected": 3,
+        "staleDropped": 0,
+        "maxQueueDepth": 12
+      },
+      "totalAllocatedPixels": 14266592,
+      "pendingImages": 0,
+      "pendingPrefetch": 0,
+      "errors": []
+    }
+  },
+  {
+    "case": {
+      "fixture": 1,
+      "name": "hwpspec",
+      "arrangement": "four",
+      "zoom": 34
+    },
+    "snapshot": {
+      "enabled": true,
+      "dpr": 2,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "targetViewport": {
+        "scope": "13/13/26",
+        "zoom": 0.34,
+        "x": 0,
+        "y": 0
+      },
+      "appliedViewport": {
+        "scope": "13/13/26",
+        "zoom": 0.34,
+        "x": 0,
+        "y": 0
+      },
+      "pageCount": 178,
+      "layoutPageCount": 178,
+      "scope": "13/13/26",
+      "zoom": 0.34,
+      "columns": 4,
+      "focused": 0,
+      "visible": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "retained": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11
+      ],
+      "scroll": {
+        "x": 0,
+        "y": 0
+      },
+      "pages": [
+        {
+          "page": 0,
+          "visible": true,
+          "dpr": 2,
+          "scale": 0.68,
+          "surfaces": [
+            {
+              "kind": "main",
+              "width": 540,
+              "height": 764
+            },
+            {
+              "kind": "front",
+              "width": 540,
+              "height": 764
+            }
+          ],
+          "pixels": 825120,
+          "box": {
+            "x": 101.28125,
+            "y": 144.5,
+            "width": 270,
+            "height": 382
+          },
+          "image": {
+            "scope": "13/13/26",
+            "kind": "cached"
+          },
+          "flowImages": "ready"
+        },
+        {
+          "page": 1,
+          "visible": true,
+          "dpr": 2,
+          "scale": 0.68,
+          "surfaces": [
+            {
+              "kind": "main",
+              "width": 540,
+              "height": 764
+            }
+          ],
+          "pixels": 412560,
+          "box": {
+            "x": 377.140625,
+            "y": 144.5,
+            "width": 270,
+            "height": 382
+          },
+          "image": {
+            "scope": "13/13/26",
+            "kind": "none"
+          },
+          "flowImages": "ready"
+        },
+        {
+          "page": 2,
+          "visible": true,
+          "dpr": 2,
+          "scale": 0.68,
+          "surfaces": [
+            {
+              "kind": "main",
+              "width": 540,
+              "height": 764
+            }
+          ],
+          "pixels": 412560,
+          "box": {
+            "x": 653,
+            "y": 144.5,
+            "width": 270,
+            "height": 382
+          },
+          "image": {
+            "scope": "13/13/26",
+            "kind": "none"
+          },
+          "flowImages": "ready"
+        },
+        {
+          "page": 3,
+          "visible": true,
+          "dpr": 2,
+          "scale": 0.68,
+          "surfaces": [
+            {
+              "kind": "main",
+              "width": 540,
+              "height": 764
+            }
+          ],
+          "pixels": 412560,
+          "box": {
+            "x": 928.8515625,
+            "y": 144.5,
+            "width": 270,
+            "height": 382
+          },
+          "image": {
+            "scope": "13/13/26",
+            "kind": "none"
+          },
+          "flowImages": "ready"
+        },
+        {
+          "page": 4,
+          "visible": true,
+          "dpr": 2,
+          "scale": 0.68,
+          "surfaces": [
+            {
+              "kind": "main",
+              "width": 540,
+              "height": 764
+            }
+          ],
+          "pixels": 412560,
+          "box": {
+            "x": 101.28125,
+            "y": 532.1484375,
+            "width": 270,
+            "height": 382
+          },
+          "image": {
+            "scope": "13/13/26",
+            "kind": "none"
+          },
+          "flowImages": "ready"
+        },
+        {
+          "page": 5,
+          "visible": true,
+          "dpr": 2,
+          "scale": 0.68,
+          "surfaces": [
+            {
+              "kind": "main",
+              "width": 540,
+              "height": 764
+            }
+          ],
+          "pixels": 412560,
+          "box": {
+            "x": 377.140625,
+            "y": 532.1484375,
+            "width": 270,
+            "height": 382
+          },
+          "image": {
+            "scope": "13/13/26",
+            "kind": "none"
+          },
+          "flowImages": "ready"
+        },
+        {
+          "page": 6,
+          "visible": true,
+          "dpr": 2,
+          "scale": 0.68,
+          "surfaces": [
+            {
+              "kind": "main",
+              "width": 540,
+              "height": 764
+            }
+          ],
+          "pixels": 412560,
+          "box": {
+            "x": 653,
+            "y": 532.1484375,
+            "width": 270,
+            "height": 382
+          },
+          "image": {
+            "scope": "13/13/26",
+            "kind": "none"
+          },
+          "flowImages": "ready"
+        },
+        {
+          "page": 7,
+          "visible": true,
+          "dpr": 2,
+          "scale": 0.68,
+          "surfaces": [
+            {
+              "kind": "main",
+              "width": 540,
+              "height": 764
+            }
+          ],
+          "pixels": 412560,
+          "box": {
+            "x": 928.8515625,
+            "y": 532.1484375,
+            "width": 270,
+            "height": 382
+          },
+          "image": {
+            "scope": "13/13/26",
+            "kind": "none"
+          },
+          "flowImages": "ready"
+        },
+        {
+          "page": 8,
+          "visible": false,
+          "dpr": 2,
+          "scale": 0.68,
+          "surfaces": [
+            {
+              "kind": "main",
+              "width": 540,
+              "height": 764
+            }
+          ],
+          "pixels": 412560,
+          "box": {
+            "x": 101.28125,
+            "y": 919.796875,
+            "width": 270,
+            "height": 382
+          },
+          "image": {
+            "scope": "13/13/26",
+            "kind": "none"
+          },
+          "flowImages": "ready"
+        },
+        {
+          "page": 9,
+          "visible": false,
+          "dpr": 2,
+          "scale": 0.68,
+          "surfaces": [
+            {
+              "kind": "main",
+              "width": 540,
+              "height": 764
+            }
+          ],
+          "pixels": 412560,
+          "box": {
+            "x": 377.140625,
+            "y": 919.796875,
+            "width": 270,
+            "height": 382
+          },
+          "image": {
+            "scope": "13/13/26",
+            "kind": "none"
+          },
+          "flowImages": "ready"
+        },
+        {
+          "page": 10,
+          "visible": false,
+          "dpr": 2,
+          "scale": 0.68,
+          "surfaces": [
+            {
+              "kind": "main",
+              "width": 540,
+              "height": 764
+            }
+          ],
+          "pixels": 412560,
+          "box": {
+            "x": 653,
+            "y": 919.796875,
+            "width": 270,
+            "height": 382
+          },
+          "image": {
+            "scope": "13/13/26",
+            "kind": "none"
+          },
+          "flowImages": "ready"
+        },
+        {
+          "page": 11,
+          "visible": false,
+          "dpr": 2,
+          "scale": 0.68,
+          "surfaces": [
+            {
+              "kind": "main",
+              "width": 540,
+              "height": 764
+            }
+          ],
+          "pixels": 412560,
+          "box": {
+            "x": 928.8515625,
+            "y": 919.796875,
+            "width": 270,
+            "height": 382
+          },
+          "image": {
+            "scope": "13/13/26",
+            "kind": "none"
+          },
+          "flowImages": "ready"
+        }
+      ],
+      "pool": [],
+      "activePixels": 5363280,
+      "idlePoolPixels": 0,
+      "detachedCache": {
+        "pixelBudget": 40000000,
+        "reservedPixels": 5363280,
+        "cachedPixels": 0,
+        "totalAccountedPixels": 5363280,
+        "overBudgetMandatory": false,
+        "entryCount": 0,
+        "hits": 306,
+        "misses": 268,
+        "evictions": 7,
+        "rejected": 0,
+        "invalidations": 31
+      },
+      "scheduler": {
+        "generation": 465,
+        "visibleQueued": 0,
+        "prefetchQueued": 0,
+        "frameScheduled": false,
+        "idleScheduled": false,
+        "visibleSlices": 20,
+        "visibleExecuted": 20,
+        "prefetchExecuted": 99,
+        "prefetchAdmissionRejected": 3,
+        "staleDropped": 0,
+        "maxQueueDepth": 12
+      },
+      "totalAllocatedPixels": 5363280,
+      "pendingImages": 0,
+      "pendingPrefetch": 0,
+      "errors": []
+    }
+  },
+  {
+    "case": {
+      "fixture": 4,
+      "name": "4-page real",
+      "arrangement": "double",
+      "zoom": 50
+    },
+    "snapshot": {
+      "enabled": true,
+      "dpr": 2,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "targetViewport": {
+        "scope": "14/14/28",
+        "zoom": 0.5,
+        "x": 0,
+        "y": 128
+      },
+      "appliedViewport": {
+        "scope": "14/14/28",
+        "zoom": 0.5,
+        "x": 0,
+        "y": 128
+      },
+      "pageCount": 4,
+      "layoutPageCount": 4,
+      "scope": "14/14/28",
+      "zoom": 0.5,
+      "columns": 2,
+      "focused": 0,
+      "visible": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "retained": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "scroll": {
+        "x": 0,
+        "y": 128
+      },
+      "pages": [
+        {
+          "page": 0,
+          "visible": true,
+          "dpr": 2,
+          "scale": 1,
+          "surfaces": [
+            {
+              "kind": "main",
+              "width": 794,
+              "height": 1123
+            }
+          ],
+          "pixels": 891662,
+          "box": {
+            "x": 250.1484375,
+            "y": 16.5,
+            "width": 397,
+            "height": 561.5
+          },
+          "image": {
+            "scope": "14/14/28",
+            "kind": "none"
+          },
+          "flowImages": "ready"
+        },
+        {
+          "page": 1,
+          "visible": true,
+          "dpr": 2,
+          "scale": 1,
+          "surfaces": [
+            {
+              "kind": "main",
+              "width": 794,
+              "height": 1123
+            }
+          ],
+          "pixels": 891662,
+          "box": {
+            "x": 653,
+            "y": 16.5,
+            "width": 397,
+            "height": 561.5
+          },
+          "image": {
+            "scope": "14/14/28",
+            "kind": "none"
+          },
+          "flowImages": "ready"
+        },
+        {
+          "page": 2,
+          "visible": true,
+          "dpr": 2,
+          "scale": 1,
+          "surfaces": [
+            {
+              "kind": "main",
+              "width": 794,
+              "height": 1123
+            }
+          ],
+          "pixels": 891662,
+          "box": {
+            "x": 250.1484375,
+            "y": 583.75,
+            "width": 397,
+            "height": 561.5
+          },
+          "image": {
+            "scope": "14/14/28",
+            "kind": "none"
+          },
+          "flowImages": "ready"
+        },
+        {
+          "page": 3,
+          "visible": true,
+          "dpr": 2,
+          "scale": 1,
+          "surfaces": [
+            {
+              "kind": "main",
+              "width": 794,
+              "height": 1123
+            }
+          ],
+          "pixels": 891662,
+          "box": {
+            "x": 653,
+            "y": 583.75,
+            "width": 397,
+            "height": 561.5
+          },
+          "image": {
+            "scope": "14/14/28",
+            "kind": "none"
+          },
+          "flowImages": "ready"
+        }
+      ],
+      "pool": [],
+      "activePixels": 3566648,
+      "idlePoolPixels": 0,
+      "detachedCache": {
+        "pixelBudget": 40000000,
+        "reservedPixels": 3566648,
+        "cachedPixels": 0,
+        "totalAccountedPixels": 3566648,
+        "overBudgetMandatory": false,
+        "entryCount": 0,
+        "hits": 306,
+        "misses": 280,
+        "evictions": 7,
+        "rejected": 0,
+        "invalidations": 31
+      },
+      "scheduler": {
+        "generation": 485,
+        "visibleQueued": 0,
+        "prefetchQueued": 0,
+        "frameScheduled": false,
+        "idleScheduled": false,
+        "visibleSlices": 20,
+        "visibleExecuted": 20,
+        "prefetchExecuted": 99,
+        "prefetchAdmissionRejected": 3,
+        "staleDropped": 0,
+        "maxQueueDepth": 12
+      },
+      "totalAllocatedPixels": 3566648,
+      "pendingImages": 0,
+      "pendingPrefetch": 0,
+      "errors": []
+    }
+  },
+  {
+    "case": {
+      "fixture": 2,
+      "name": "kps-ai",
+      "arrangement": "four",
+      "zoom": 34
+    },
+    "snapshot": {
+      "enabled": true,
+      "dpr": 2,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "targetViewport": {
+        "scope": "15/15/30",
+        "zoom": 0.34,
+        "x": 0,
+        "y": 0
+      },
+      "appliedViewport": {
+        "scope": "15/15/30",
+        "zoom": 0.34,
+        "x": 0,
+        "y": 0
+      },
+      "pageCount": 77,
+      "layoutPageCount": 77,
+      "scope": "15/15/30",
+      "zoom": 0.34,
+      "columns": 4,
+      "focused": 0,
+      "visible": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "retained": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11
+      ],
+      "scroll": {
+        "x": 0,
+        "y": 0
+      },
+      "pages": [
+        {
+          "page": 0,
+          "visible": true,
+          "dpr": 2,
+          "scale": 0.68,
+          "surfaces": [
+            {
+              "kind": "main",
+              "width": 540,
+              "height": 764
+            }
+          ],
+          "pixels": 412560,
+          "box": {
+            "x": 101.28125,
+            "y": 144.5,
+            "width": 270,
+            "height": 382
+          },
+          "image": {
+            "scope": "15/15/30",
+            "kind": "none"
+          },
+          "flowImages": "ready"
+        },
+        {
+          "page": 1,
+          "visible": true,
+          "dpr": 2,
+          "scale": 0.68,
+          "surfaces": [
+            {
+              "kind": "main",
+              "width": 540,
+              "height": 764
+            }
+          ],
+          "pixels": 412560,
+          "box": {
+            "x": 377.140625,
+            "y": 144.5,
+            "width": 270,
+            "height": 382
+          },
+          "image": {
+            "scope": "15/15/30",
+            "kind": "none"
+          },
+          "flowImages": "ready"
+        },
+        {
+          "page": 2,
+          "visible": true,
+          "dpr": 2,
+          "scale": 0.68,
+          "surfaces": [
+            {
+              "kind": "main",
+              "width": 540,
+              "height": 764
+            }
+          ],
+          "pixels": 412560,
+          "box": {
+            "x": 653,
+            "y": 144.5,
+            "width": 270,
+            "height": 382
+          },
+          "image": {
+            "scope": "15/15/30",
+            "kind": "none"
+          },
+          "flowImages": "ready"
+        },
+        {
+          "page": 3,
+          "visible": true,
+          "dpr": 2,
+          "scale": 0.68,
+          "surfaces": [
+            {
+              "kind": "main",
+              "width": 540,
+              "height": 764
+            }
+          ],
+          "pixels": 412560,
+          "box": {
+            "x": 928.8515625,
+            "y": 144.5,
+            "width": 270,
+            "height": 382
+          },
+          "image": {
+            "scope": "15/15/30",
+            "kind": "none"
+          },
+          "flowImages": "ready"
+        },
+        {
+          "page": 4,
+          "visible": true,
+          "dpr": 2,
+          "scale": 0.68,
+          "surfaces": [
+            {
+              "kind": "main",
+              "width": 540,
+              "height": 764
+            }
+          ],
+          "pixels": 412560,
+          "box": {
+            "x": 101.28125,
+            "y": 532.1484375,
+            "width": 270,
+            "height": 382
+          },
+          "image": {
+            "scope": "15/15/30",
+            "kind": "none"
+          },
+          "flowImages": "ready"
+        },
+        {
+          "page": 5,
+          "visible": true,
+          "dpr": 2,
+          "scale": 0.68,
+          "surfaces": [
+            {
+              "kind": "main",
+              "width": 540,
+              "height": 764
+            }
+          ],
+          "pixels": 412560,
+          "box": {
+            "x": 377.140625,
+            "y": 532.1484375,
+            "width": 270,
+            "height": 382
+          },
+          "image": {
+            "scope": "15/15/30",
+            "kind": "none"
+          },
+          "flowImages": "ready"
+        },
+        {
+          "page": 6,
+          "visible": true,
+          "dpr": 2,
+          "scale": 0.68,
+          "surfaces": [
+            {
+              "kind": "main",
+              "width": 540,
+              "height": 764
+            }
+          ],
+          "pixels": 412560,
+          "box": {
+            "x": 653,
+            "y": 532.1484375,
+            "width": 270,
+            "height": 382
+          },
+          "image": {
+            "scope": "15/15/30",
+            "kind": "none"
+          },
+          "flowImages": "ready"
+        },
+        {
+          "page": 7,
+          "visible": true,
+          "dpr": 2,
+          "scale": 0.68,
+          "surfaces": [
+            {
+              "kind": "main",
+              "width": 540,
+              "height": 764
+            }
+          ],
+          "pixels": 412560,
+          "box": {
+            "x": 928.8515625,
+            "y": 532.1484375,
+            "width": 270,
+            "height": 382
+          },
+          "image": {
+            "scope": "15/15/30",
+            "kind": "none"
+          },
+          "flowImages": "ready"
+        },
+        {
+          "page": 8,
+          "visible": false,
+          "dpr": 2,
+          "scale": 0.68,
+          "surfaces": [
+            {
+              "kind": "main",
+              "width": 540,
+              "height": 764
+            }
+          ],
+          "pixels": 412560,
+          "box": {
+            "x": 101.28125,
+            "y": 919.796875,
+            "width": 270,
+            "height": 382
+          },
+          "image": {
+            "scope": "15/15/30",
+            "kind": "none"
+          },
+          "flowImages": "ready"
+        },
+        {
+          "page": 9,
+          "visible": false,
+          "dpr": 2,
+          "scale": 0.68,
+          "surfaces": [
+            {
+              "kind": "main",
+              "width": 540,
+              "height": 764
+            }
+          ],
+          "pixels": 412560,
+          "box": {
+            "x": 377.140625,
+            "y": 919.796875,
+            "width": 270,
+            "height": 382
+          },
+          "image": {
+            "scope": "15/15/30",
+            "kind": "none"
+          },
+          "flowImages": "ready"
+        },
+        {
+          "page": 10,
+          "visible": false,
+          "dpr": 2,
+          "scale": 0.68,
+          "surfaces": [
+            {
+              "kind": "main",
+              "width": 540,
+              "height": 764
+            }
+          ],
+          "pixels": 412560,
+          "box": {
+            "x": 653,
+            "y": 919.796875,
+            "width": 270,
+            "height": 382
+          },
+          "image": {
+            "scope": "15/15/30",
+            "kind": "none"
+          },
+          "flowImages": "ready"
+        },
+        {
+          "page": 11,
+          "visible": false,
+          "dpr": 2,
+          "scale": 0.68,
+          "surfaces": [
+            {
+              "kind": "main",
+              "width": 540,
+              "height": 764
+            }
+          ],
+          "pixels": 412560,
+          "box": {
+            "x": 928.8515625,
+            "y": 919.796875,
+            "width": 270,
+            "height": 382
+          },
+          "image": {
+            "scope": "15/15/30",
+            "kind": "none"
+          },
+          "flowImages": "ready"
+        }
+      ],
+      "pool": [],
+      "activePixels": 4950720,
+      "idlePoolPixels": 0,
+      "detachedCache": {
+        "pixelBudget": 40000000,
+        "reservedPixels": 4950720,
+        "cachedPixels": 0,
+        "totalAccountedPixels": 4950720,
+        "overBudgetMandatory": false,
+        "entryCount": 0,
+        "hits": 306,
+        "misses": 302,
+        "evictions": 7,
+        "rejected": 0,
+        "invalidations": 31
+      },
+      "scheduler": {
+        "generation": 505,
+        "visibleQueued": 0,
+        "prefetchQueued": 0,
+        "frameScheduled": false,
+        "idleScheduled": false,
+        "visibleSlices": 20,
+        "visibleExecuted": 20,
+        "prefetchExecuted": 105,
+        "prefetchAdmissionRejected": 3,
+        "staleDropped": 0,
+        "maxQueueDepth": 12
+      },
+      "totalAllocatedPixels": 4950720,
+      "pendingImages": 0,
+      "pendingPrefetch": 0,
+      "errors": []
+    }
+  },
+  {
+    "case": {
+      "fixture": 0,
+      "name": "exam_kor revisit",
+      "arrangement": "auto",
+      "zoom": 100
+    },
+    "snapshot": {
+      "enabled": true,
+      "dpr": 2,
+      "viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "targetViewport": {
+        "scope": "16/16/32",
+        "zoom": 1,
+        "x": 0,
+        "y": 2131
+      },
+      "appliedViewport": {
+        "scope": "16/16/32",
+        "zoom": 1,
+        "x": 0,
+        "y": 2131
+      },
+      "pageCount": 20,
+      "layoutPageCount": 20,
+      "scope": "16/16/32",
+      "zoom": 1,
+      "columns": 1,
+      "focused": 0,
+      "visible": [
+        1
+      ],
+      "retained": [
+        0,
+        1,
+        2
+      ],
+      "scroll": {
+        "x": 0,
+        "y": 2131
+      },
+      "pages": [
+        {
+          "page": 1,
+          "visible": true,
+          "dpr": 1,
+          "scale": 1,
+          "surfaces": [
+            {
+              "kind": "main",
+              "width": 1123,
+              "height": 1588
+            },
+            {
+              "kind": "background",
+              "width": 1123,
+              "height": 1588
+            },
+            {
+              "kind": "behind",
+              "width": 1123,
+              "height": 1588
+            }
+          ],
+          "pixels": 5349972,
+          "box": {
+            "x": 88.5,
+            "y": -385.1015625,
+            "width": 1123,
+            "height": 1588
+          },
+          "image": {
+            "scope": "16/16/32",
+            "kind": "cached"
+          },
+          "flowImages": "ready"
+        },
+        {
+          "page": 0,
+          "visible": false,
+          "dpr": 2,
+          "scale": 2,
+          "surfaces": [
+            {
+              "kind": "main",
+              "width": 2246,
+              "height": 3175
+            },
+            {
+              "kind": "background",
+              "width": 2246,
+              "height": 3175
+            },
+            {
+              "kind": "behind",
+              "width": 2246,
+              "height": 3175
+            },
+            {
+              "kind": "front",
+              "width": 2246,
+              "height": 3175
+            }
+          ],
+          "pixels": 28524200,
+          "box": {
+            "x": 88.5,
+            "y": -1982.5,
+            "width": 1123,
+            "height": 1587.5
+          },
+          "image": {
+            "scope": "16/16/32",
+            "kind": "cached"
+          },
+          "flowImages": "ready"
+        },
+        {
+          "page": 2,
+          "visible": false,
+          "dpr": 1,
+          "scale": 1,
+          "surfaces": [
+            {
+              "kind": "main",
+              "width": 1123,
+              "height": 1588
+            },
+            {
+              "kind": "background",
+              "width": 1123,
+              "height": 1588
+            },
+            {
+              "kind": "behind",
+              "width": 1123,
+              "height": 1588
+            }
+          ],
+          "pixels": 5349972,
+          "box": {
+            "x": 88.5,
+            "y": 1212.296875,
+            "width": 1123,
+            "height": 1588
+          },
+          "image": {
+            "scope": "16/16/32",
+            "kind": "cached"
+          },
+          "flowImages": "ready"
+        }
+      ],
+      "pool": [
+        {
+          "width": 0,
+          "height": 0
+        }
+      ],
+      "activePixels": 39224144,
+      "idlePoolPixels": 0,
+      "detachedCache": {
+        "pixelBudget": 40000000,
+        "reservedPixels": 39224144,
+        "cachedPixels": 0,
+        "totalAccountedPixels": 39224144,
+        "overBudgetMandatory": false,
+        "entryCount": 0,
+        "hits": 306,
+        "misses": 326,
+        "evictions": 7,
+        "rejected": 0,
+        "invalidations": 31
+      },
+      "scheduler": {
+        "generation": 530,
+        "visibleQueued": 0,
+        "prefetchQueued": 0,
+        "frameScheduled": false,
+        "idleScheduled": false,
+        "visibleSlices": 20,
+        "visibleExecuted": 20,
+        "prefetchExecuted": 114,
+        "prefetchAdmissionRejected": 3,
+        "staleDropped": 0,
+        "maxQueueDepth": 12
+      },
+      "totalAllocatedPixels": 39224144,
+      "pendingImages": 0,
+      "pendingPrefetch": 0,
+      "errors": []
+    }
+  }
+]

@@ -1,0 +1,207 @@
+{
+  "enabled": true,
+  "dpr": 2,
+  "viewport": {
+    "width": 1280,
+    "height": 720
+  },
+  "targetViewport": {
+    "scope": "2/2/4",
+    "zoom": 0.5,
+    "x": 0,
+    "y": 0
+  },
+  "appliedViewport": {
+    "scope": "2/2/4",
+    "zoom": 0.5,
+    "x": 0,
+    "y": 0
+  },
+  "pageCount": 20,
+  "layoutPageCount": 20,
+  "scope": "2/2/4",
+  "zoom": 0.5,
+  "columns": 2,
+  "focused": 0,
+  "visible": [
+    0,
+    1
+  ],
+  "retained": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "scroll": {
+    "x": 0,
+    "y": 0
+  },
+  "pages": [
+    {
+      "page": 0,
+      "visible": true,
+      "dpr": 2,
+      "scale": 1,
+      "surfaces": [
+        {
+          "kind": "main",
+          "width": 1123,
+          "height": 1588
+        },
+        {
+          "kind": "background",
+          "width": 1123,
+          "height": 1588
+        },
+        {
+          "kind": "behind",
+          "width": 1123,
+          "height": 1588
+        },
+        {
+          "kind": "front",
+          "width": 1123,
+          "height": 1588
+        }
+      ],
+      "pixels": 7133296,
+      "box": {
+        "x": 85.75,
+        "y": 146,
+        "width": 561.5,
+        "height": 794
+      },
+      "image": {
+        "scope": "2/2/4",
+        "kind": "cached"
+      },
+      "flowImages": "ready"
+    },
+    {
+      "page": 1,
+      "visible": true,
+      "dpr": 2,
+      "scale": 1,
+      "surfaces": [
+        {
+          "kind": "main",
+          "width": 1123,
+          "height": 1588
+        },
+        {
+          "kind": "background",
+          "width": 1123,
+          "height": 1588
+        },
+        {
+          "kind": "behind",
+          "width": 1123,
+          "height": 1588
+        }
+      ],
+      "pixels": 5349972,
+      "box": {
+        "x": 653,
+        "y": 146,
+        "width": 561.5,
+        "height": 794
+      },
+      "image": {
+        "scope": "2/2/4",
+        "kind": "cached"
+      },
+      "flowImages": "ready"
+    },
+    {
+      "page": 2,
+      "visible": false,
+      "dpr": 2,
+      "scale": 1,
+      "surfaces": [
+        {
+          "kind": "main",
+          "width": 1123,
+          "height": 1588
+        },
+        {
+          "kind": "background",
+          "width": 1123,
+          "height": 1588
+        },
+        {
+          "kind": "behind",
+          "width": 1123,
+          "height": 1588
+        }
+      ],
+      "pixels": 5349972,
+      "box": {
+        "x": 85.75,
+        "y": 945.6953125,
+        "width": 561.5,
+        "height": 794
+      },
+      "image": {
+        "scope": "2/2/4",
+        "kind": "cached"
+      },
+      "flowImages": "ready"
+    },
+    {
+      "page": 3,
+      "visible": false,
+      "dpr": 2,
+      "scale": 1,
+      "surfaces": [
+        {
+          "kind": "main",
+          "width": 1123,
+          "height": 1588
+        },
+        {
+          "kind": "background",
+          "width": 1123,
+          "height": 1588
+        },
+        {
+          "kind": "behind",
+          "width": 1123,
+          "height": 1588
+        }
+      ],
+      "pixels": 5349972,
+      "box": {
+        "x": 653,
+        "y": 945.6953125,
+        "width": 561.5,
+        "height": 794
+      },
+      "image": {
+        "scope": "2/2/4",
+        "kind": "decoded"
+      },
+      "flowImages": "ready"
+    }
+  ],
+  "pool": [],
+  "activePixels": 23183212,
+  "idlePoolPixels": 0,
+  "detachedCache": {
+    "pixelBudget": 40000000,
+    "reservedPixels": 23183212,
+    "cachedPixels": 0,
+    "totalAccountedPixels": 23183212,
+    "overBudgetMandatory": false,
+    "entryCount": 0,
+    "hits": 0,
+    "misses": 12,
+    "evictions": 0,
+    "rejected": 0,
+    "invalidations": 0
+  },
+  "totalAllocatedPixels": 23183212,
+  "pendingImages": 0,
+  "pendingPrefetch": 0,
+  "errors": []
+}

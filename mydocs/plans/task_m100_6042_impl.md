@@ -1,7 +1,7 @@
 # 구현 계획 — Task M100 #6042
 
 - 작성일: 2026-08-31 KST
-- 상태: **Stage 4 보정 완료·재수용 조건 통과, Stage 5 확장 matrix 재개 대기**
+- 상태: **Stage 5 자동화 가능 확장 matrix 통과, 실제 DPR 1·창 resize·사용자 시각 승인 대기**
 - 현재 기준: #6467 `23b5bcf73f6e8659a90b25ebfde1311e1965364f`
 - 역사 Stage 1 측정 기준: #6467 `ba68cd655aed5fd94804f725c033cf615231ce4b`
 - branch: `codex/issue-6042-page-virtualization`
@@ -11,6 +11,7 @@
 - Stage 4 결과: [완료 보고](../working/task_m100_6042_stage4.md)
 - Stage 5 결과: [중단 보고](../working/task_m100_6042_stage5.md)
 - Stage 4 보정 결과: [검증 보고](../working/task_m100_6042_stage4_correction.md)
+- Stage 5 확장 결과: [검증 보고](../working/task_m100_6042_stage5_expanded.md)
 
 ## 1. 경계와 파일별 변경안
 
@@ -262,6 +263,13 @@ surface를 target descriptor 비용으로 예약한다. missing prefetch는 승�
 최종 ledger, 동일 배치의 좌표·surface·physical pixel도 동등했다. cold first-visible, 1·2쪽 zoom fast
 path를 포함한 전체 matrix는 기존 Stage 5 증거와 결정론적 회귀 테스트만으로 대체하지 않고 Stage 5에서
 계속 검증한다.
+
+후속 Stage 5 확장 matrix에서는 DPR 2·1280×720 조건으로 Canvas2D/CanvasKit/auto fallback,
+single/double/fixed four/auto/facing, 세로·가로·급반전, 34/50/100/200% 줌, `exam_kor`·`hwpspec`·
+`kps-ai`·KTX 4-layer·4쪽/21쪽 실문서와 document switch·edit/undo/redo를 A/B로 검증했다.
+revision당 성능 표본 260개는 모두 완료·오류 0이며 사전 경보선 안이다. 자세한 수치와 원시는
+[확장 보고](../working/task_m100_6042_stage5_expanded.md)를 따른다. 실제 DPR 1, 실제 창 resize,
+browser image failure 주입과 사용자 시각 승인은 자동화 환경 밖의 남은 종료 조건이다.
 
 ## 6. Stage 5~6 검증과 철회 조건
 

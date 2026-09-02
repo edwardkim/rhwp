@@ -1,0 +1,305 @@
+{
+  "top": {
+    "enabled": true,
+    "dpr": 2,
+    "viewport": {
+      "width": 1280,
+      "height": 720
+    },
+    "targetViewport": {
+      "scope": "9/9/18",
+      "zoom": 0.5,
+      "x": 0,
+      "y": 0
+    },
+    "appliedViewport": {
+      "scope": "9/9/18",
+      "zoom": 0.5,
+      "x": 0,
+      "y": 0
+    },
+    "pageCount": 4,
+    "layoutPageCount": 4,
+    "scope": "9/9/18",
+    "zoom": 0.5,
+    "columns": 2,
+    "focused": 0,
+    "visible": [
+      0
+    ],
+    "retained": [
+      0,
+      1,
+      2
+    ],
+    "scroll": {
+      "x": 0,
+      "y": 0
+    },
+    "pages": [
+      {
+        "page": 0,
+        "visible": true,
+        "dpr": 2,
+        "scale": 1,
+        "surfaces": [
+          {
+            "kind": "main",
+            "width": 794,
+            "height": 1123
+          }
+        ],
+        "pixels": 891662,
+        "box": {
+          "x": 653,
+          "y": 144.5,
+          "width": 397,
+          "height": 561.5
+        },
+        "image": {
+          "scope": "9/9/18",
+          "kind": "none"
+        },
+        "flowImages": "ready"
+      },
+      {
+        "page": 1,
+        "visible": false,
+        "dpr": 2,
+        "scale": 1,
+        "surfaces": [
+          {
+            "kind": "main",
+            "width": 794,
+            "height": 1123
+          }
+        ],
+        "pixels": 891662,
+        "box": {
+          "x": 250.1484375,
+          "y": 711.75,
+          "width": 397,
+          "height": 561.5
+        },
+        "image": {
+          "scope": "9/9/18",
+          "kind": "none"
+        },
+        "flowImages": "ready"
+      },
+      {
+        "page": 2,
+        "visible": false,
+        "dpr": 2,
+        "scale": 1,
+        "surfaces": [
+          {
+            "kind": "main",
+            "width": 794,
+            "height": 1123
+          }
+        ],
+        "pixels": 891662,
+        "box": {
+          "x": 653,
+          "y": 711.75,
+          "width": 397,
+          "height": 561.5
+        },
+        "image": {
+          "scope": "9/9/18",
+          "kind": "none"
+        },
+        "flowImages": "ready"
+      }
+    ],
+    "pool": [
+      {
+        "width": 0,
+        "height": 0
+      }
+    ],
+    "activePixels": 2674986,
+    "idlePoolPixels": 0,
+    "detachedCache": {
+      "pixelBudget": 40000000,
+      "reservedPixels": 2674986,
+      "cachedPixels": 0,
+      "totalAccountedPixels": 2674986,
+      "overBudgetMandatory": false,
+      "entryCount": 0,
+      "hits": 534,
+      "misses": 452,
+      "evictions": 248,
+      "rejected": 0,
+      "invalidations": 32
+    },
+    "totalAllocatedPixels": 2674986,
+    "pendingImages": 0,
+    "pendingPrefetch": 0,
+    "errors": []
+  },
+  "bottom": {
+    "enabled": true,
+    "dpr": 2,
+    "viewport": {
+      "width": 1280,
+      "height": 720
+    },
+    "targetViewport": {
+      "scope": "9/9/18",
+      "zoom": 0.5,
+      "x": 0,
+      "y": 1125.5
+    },
+    "appliedViewport": {
+      "scope": "9/9/18",
+      "zoom": 0.5,
+      "x": 0,
+      "y": 1125.5
+    },
+    "pageCount": 4,
+    "layoutPageCount": 4,
+    "scope": "9/9/18",
+    "zoom": 0.5,
+    "columns": 2,
+    "focused": 0,
+    "visible": [
+      1,
+      2,
+      3
+    ],
+    "retained": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "scroll": {
+      "x": 0,
+      "y": 1125.5
+    },
+    "pages": [
+      {
+        "page": 0,
+        "visible": false,
+        "dpr": 2,
+        "scale": 1,
+        "surfaces": [
+          {
+            "kind": "main",
+            "width": 794,
+            "height": 1123
+          }
+        ],
+        "pixels": 891662,
+        "box": {
+          "x": 653,
+          "y": -981,
+          "width": 397,
+          "height": 561.5
+        },
+        "image": {
+          "scope": "9/9/18",
+          "kind": "none"
+        },
+        "flowImages": "ready"
+      },
+      {
+        "page": 1,
+        "visible": true,
+        "dpr": 2,
+        "scale": 1,
+        "surfaces": [
+          {
+            "kind": "main",
+            "width": 794,
+            "height": 1123
+          }
+        ],
+        "pixels": 891662,
+        "box": {
+          "x": 250.1484375,
+          "y": -413.75,
+          "width": 397,
+          "height": 561.5
+        },
+        "image": {
+          "scope": "9/9/18",
+          "kind": "none"
+        },
+        "flowImages": "ready"
+      },
+      {
+        "page": 2,
+        "visible": true,
+        "dpr": 2,
+        "scale": 1,
+        "surfaces": [
+          {
+            "kind": "main",
+            "width": 794,
+            "height": 1123
+          }
+        ],
+        "pixels": 891662,
+        "box": {
+          "x": 653,
+          "y": -413.75,
+          "width": 397,
+          "height": 561.5
+        },
+        "image": {
+          "scope": "9/9/18",
+          "kind": "none"
+        },
+        "flowImages": "ready"
+      },
+      {
+        "page": 3,
+        "visible": true,
+        "dpr": 2,
+        "scale": 1,
+        "surfaces": [
+          {
+            "kind": "main",
+            "width": 794,
+            "height": 1123
+          }
+        ],
+        "pixels": 891662,
+        "box": {
+          "x": 250.1484375,
+          "y": 153.5,
+          "width": 397,
+          "height": 561.5
+        },
+        "image": {
+          "scope": "9/9/18",
+          "kind": "none"
+        },
+        "flowImages": "ready"
+      }
+    ],
+    "pool": [],
+    "activePixels": 3566648,
+    "idlePoolPixels": 0,
+    "detachedCache": {
+      "pixelBudget": 40000000,
+      "reservedPixels": 3566648,
+      "cachedPixels": 0,
+      "totalAccountedPixels": 3566648,
+      "overBudgetMandatory": false,
+      "entryCount": 0,
+      "hits": 534,
+      "misses": 453,
+      "evictions": 248,
+      "rejected": 0,
+      "invalidations": 32
+    },
+    "totalAllocatedPixels": 3566648,
+    "pendingImages": 0,
+    "pendingPrefetch": 0,
+    "errors": []
+  }
+}
