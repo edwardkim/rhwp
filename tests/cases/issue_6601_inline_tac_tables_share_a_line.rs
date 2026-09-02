@@ -31,8 +31,21 @@
 //! layout-anomaly  off-canvas 1 → 0 · 넘침 2 → 1 · 쪽수 4 불변
 //! ```
 //!
-//! ⚠ 둘째 표의 x 는 아직 한/글보다 33pt 왼쪽이다(177 vs 210). 세로 배치는 닫혔고
-//! 가로 분배는 남는다.
+//! ## 가로 분배 — 같은 함수의 **세그먼트 순서**가 두 번째 근인이었다
+//!
+//! 선행 컨트롤 개수를 `offsets[0] / 8` 로 셌는데, 그 값은 **모든** 선행 컨트롤을 센다
+//! (구역정의·단정의 등 비-인라인 포함). 그만큼 빈 세그먼트를 더 앞세워 표와 텍스트의
+//! 순서가 뒤집힌다.
+//!
+//! ```text
+//! controls = [구역정의(0), 단정의(0), 표(0), 표(3)]   text = "   " (3칸 = 45px)
+//! offsets[0] = 24 → num_leading = 3 → 빈 세그먼트 2개
+//!   종전 배치  빈 · 표0 · 빈 · 표1 · 텍스트     둘째 표 x0=177
+//!   한/글      표0 · 텍스트 · 표1              둘째 표 x0=210
+//!   수정 후                                    둘째 표 x0=211  ✔
+//! ```
+//!
+//! 선행 개수를 **인라인 표 중 문자 위치가 0 인 것**으로 세면 맞는다.
 
 #![cfg(not(target_arch = "wasm32"))]
 
@@ -43,6 +56,10 @@ const SAMPLE: &str = "samples/issue6601/36331407_side_by_side_tac_tables.hwpx";
 
 /// 두 표의 상단 y 차이가 이보다 작으면 "나란하다". 회귀하면 143pt 벌어진다.
 const MAX_TOP_DELTA_PX: f64 = 20.0;
+/// 둘째 표의 좌단 x(px). 한/글 2024 는 210pt = 280px, 현재 211pt = 281.3px.
+/// 세그먼트 순서가 뒤집히면 177pt = 236px 로 돌아간다.
+const SECOND_TABLE_X_MIN_PX: f64 = 270.0;
+const SECOND_TABLE_X_MAX_PX: f64 = 292.0;
 
 fn collect_tables(node: &serde_json::Value, out: &mut Vec<(f64, f64, f64)>) {
     if let (Some(ty), Some(bbox)) = (node.get("type").and_then(|t| t.as_str()), node.get("bbox")) {
@@ -90,5 +107,16 @@ fn two_inline_tac_tables_stay_on_one_line() {
         "1쪽 상단 두 TAC 표가 y={y0:.1} / {y1:.1} 로 갈라졌다 — #6601 회귀. \
          정렬 폭이 열 합산(과소)이고 줄넘김 폭이 선언 폭이면 둘째 표가 다음 줄로 내려가 \
          아래 내용이 143pt 밀린다 (허용 차 {MAX_TOP_DELTA_PX:.1}px)"
+    );
+
+    // 가로 분배 — 두 표 사이 공백(45px)이 제자리에 있어야 둘째 표가 한/글 x 에 온다.
+    let second_x = if tables[0].1 < tables[1].1 {
+        tables[1].1
+    } else {
+        tables[0].1
+    };
+    assert!(
+        (SECOND_TABLE_X_MIN_PX..=SECOND_TABLE_X_MAX_PX).contains(&second_x),
+        "둘째 TAC 표가 x={second_x:.1}px 에 있다 — #6601 가로 회귀.          선행 컨트롤 수를 `offsets[0] / 8` 로 세면 빈 세그먼트가 과하게 앞서          두 표 사이 공백이 뒤로 밀리고 x 가 236px 로 돌아간다          (허용 {SECOND_TABLE_X_MIN_PX:.1}~{SECOND_TABLE_X_MAX_PX:.1}px, 한/글 280px)"
     );
 }
