@@ -972,6 +972,33 @@ pub fn svgs_to_pdf_with_options(
     svgs_to_pdf_with_to_chunk(svg_pages, export_options, svg2pdf_to_chunk)
 }
 
+/// [#6612] 페이지 SVG 안의 `data:image/svg+xml` 그림을 이미지째 읽는 usvg 리졸버.
+///
+/// rhwp 는 WMF·EMF·AI 그림을 SVG 로 바꿔 `<image href="data:image/svg+xml;base64,…">` 로
+/// 심는다. usvg 의 기본 데이터 리졸버는 이런 하위 SVG 를 `load_sub_svg` 로 읽는데, 그 함수는
+/// SVG 규격("`<image>` 가 참조한 SVG 는 자기 안에 `<image>` 를 둘 수 없다")대로 하위 SVG 의
+/// `<image>` 를 전부 버린다. 비트맵을 품은 WMF(`<svg viewBox><image href="data:image/png"/></svg>`)
+/// 는 그래서 PDF 에서 빈칸이 됐다(hwp3-sample14 그림 13장 전부). 페이지 SVG 와 하위 SVG 를
+/// 모두 rhwp 가 만들므로 하위 SVG 를 같은 옵션으로 파싱해 이미지를 유지한다. 다른 mime 은
+/// usvg 기본 리졸버가 처리한다.
+#[cfg(not(target_arch = "wasm32"))]
+fn pdf_image_href_resolver() -> usvg::ImageHrefResolver<'static> {
+    let default_data = usvg::ImageHrefResolver::default_data_resolver();
+    usvg::ImageHrefResolver {
+        resolve_data: Box::new(move |mime, data, opts| match mime {
+            "image/svg+xml" => match usvg::Tree::from_data(&data, opts) {
+                Ok(tree) => Some(usvg::ImageKind::SVG(tree)),
+                Err(e) => {
+                    eprintln!("경고: PDF 변환 중 하위 SVG 그림을 파싱하지 못해 건너뜁니다: {e}");
+                    None
+                }
+            },
+            _ => default_data(mime, data, opts),
+        }),
+        resolve_string: usvg::ImageHrefResolver::default_string_resolver(),
+    }
+}
+
 /// 페이지별 `to_chunk` 를 주입할 수 있는 PDF 변환.
 ///
 /// #3773: `SubsetError` 는 경고로 강등하고 나머지 페이지를 계속한다.
@@ -996,6 +1023,7 @@ where
     let fontdb = create_fontdb(export_options);
     let mut options = usvg::Options::default();
     options.fontdb = std::sync::Arc::new(fontdb);
+    options.image_href_resolver = pdf_image_href_resolver();
 
     let mut alloc = Ref::new(1);
     let catalog_ref = alloc.bump();
