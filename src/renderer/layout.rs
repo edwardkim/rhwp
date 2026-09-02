@@ -3894,8 +3894,6 @@ impl LayoutEngine {
                                     area_node,
                                     pic,
                                     area,
-                                    body_area,
-                                    paper_area,
                                     y_offset,
                                     bin_data_content,
                                     outer_section_index,
@@ -4869,14 +4867,20 @@ impl LayoutEngine {
     }
 
     #[allow(clippy::too_many_arguments)]
+    /// 머리말·꼬리말에 직접 놓인 부동 그림.
+    ///
+    /// [#6608] 머리말·꼬리말 안 개체는 그 틀(`area`)이 배치 기준이다 — 용지(`Paper`)·
+    /// 쪽(`Page`) 기준도 물리 용지나 본문 영역이 아니라 틀 원점에서 오프셋을 잰다.
+    /// `pic-in-head-02.hwp` 머리말 그림(`PAPER`, 오프셋 (245, 1066)HU)을 한/글은
+    /// 틀 원점 (왼쪽 여백 75.6, 위 여백 37.8)px 에서 재 (78.68, 51.94)px 에 그리는데,
+    /// 종전엔 용지 (0, 0) 에서 재 (3.3, 14.2)px 였다 — 6쪽 전부 쪽 여백만큼 어긋났다.
+    /// 실측은 `PAPER` 만 있고 `Page` 는 같은 틀로 푼다(본문 영역은 머리말 안에서 뜻이 없다).
     fn layout_header_footer_picture(
         &self,
         tree: &mut PageLayoutContext,
         area_node: &mut RenderNode,
         pic: &crate::model::image::Picture,
         area: &LayoutRect,
-        body_area: &LayoutRect,
-        paper_area: &LayoutRect,
         para_y: f64,
         bin_data_content: &[BinDataContent],
         outer_section_index: Option<usize>,
@@ -4917,8 +4921,8 @@ impl LayoutEngine {
             frame_height,
             area,
             area,
-            body_area,
-            paper_area,
+            area,
+            area,
             para_y,
             Alignment::Left,
         );
