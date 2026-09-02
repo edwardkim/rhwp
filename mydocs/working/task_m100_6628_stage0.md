@@ -103,24 +103,61 @@ WIP의 두 파일 patch는 로컬 `task_m100_6641@ce2fb30b868f`에만 보존했�
 patch SHA-256 `e24390a58045aad1f8823308c5f60085a2ce2d72e53f2797a7ea24267b21b283`가
 일치한다. assignee·milestone과 원격 branch는 추가하지 않았다.
 
-## 6. replay 권고안
+## 6. replay 실행 결과
 
-다음 순서가 과도기 이력을 제거하면서 WIP를 잃지 않는 최소 절차다.
+메인테이너 승인 뒤 다음 순서로 과도기 이력을 제거했다.
 
-1. `refs/safety/task_m100_6628-pre-replay`를 WIP head에 만든다.
+1. `refs/safety/task_m100_6628-pre-replay`를 WIP head에 만들었다.
 2. 제품 결함 #6641과 로컬 `task_m100_6641` branch가 Rust 2개 파일의 patch를
-   보존하는지 확인한다.
-3. 현재 Gym branch는 `upstream/devel` 기준으로 mixed reset하여 파일은 보존하고
-   commit 계보만 되돌린다. `--hard`는 사용하지 않는다.
-4. 처분표의 제외 대상을 제거하고 다음 논리 단위로 다시 commit한다.
+   보존하는지 확인했다.
+3. 현재 Gym branch를 `upstream/devel` 기준으로 mixed reset해 파일은 보존하고
+   commit 계보만 되돌렸다. `--hard`는 사용하지 않았다.
+4. 처분표의 제외 대상을 제거하고 다음 논리 단위로 다시 commit했다.
    - 승인 계획과 원인 계보
    - 약한 task/reference·검사 연산자 정산
    - baseline/discrimination/trajectory 도구·계약
    - Gym 전용 workflow와 CI impact 경계
-5. 정리된 tree를 WIP tree와 비교한다. 승인된 제외·재작성 경로 외 차이는 0이어야 한다.
-6. 제품 patch가 별도 branch에 보존되고 Gym replay가 검증된 뒤 safety ref를 삭제한다.
+5. 정리된 tree를 WIP tree와 비교했다.
+6. 제품 patch 보존과 Gym replay를 검증한 뒤 safety ref를 삭제했다.
 
-이 절차는 아직 실행하지 않았다. 다음 승인 지점은 **제품 이슈 생성 및 위 replay 방식**이다.
+replay head는 `b6e5b5400868`, tree는
+`717c84b877c5f6cbd29ebac1831f80105691f26e`다. 기능 replay 계보는 다음 다섯
+커밋이며, 이 표를 고정하는 Stage 0 종료 증적 커밋 1개가 뒤따른다.
+
+| commit | 역할 |
+|---|---|
+| `0718a4612` | 승인 계획, 원인 계보, Stage 0 감사, 운영 경계 |
+| `84d89dc50` | 약한 answer/artifact 오라클 정산 |
+| `ccb163ca2` | reference 실행·baseline·trajectory WIP 정산 |
+| `d147cc6a0` | Gym 증적의 의미와 릴리스 비의존 문서 |
+| `b6e5b5400` | Gym 전용 workflow·CI impact 경계 WIP |
+
+원래 WIP와 replay tree의 endpoint 차이는 다음 여덟 경로뿐이다.
+
+- 승인된 제외: `.github/workflows/ci.yml`의 timeout hunk,
+  `scripts/tests/test_ci_impact_workflow.py`, `mydocs/plans/task_m100_6584.md`
+- #6641 분리: `src/document_core/queries/field_query.rs`,
+  `tests/batch_fill_contract.rs`
+- #6628 신규 정본: 계획서와 Stage 0 보고서
+- 경로·내용 정정: #6584 이름의 WIP 보고서를 #6628 원인 계보로 변경
+
+다른 Gym 변경의 손실은 0건이다. `refs/safety/task_m100_6628-pre-replay`는 검증 뒤
+삭제했으며 원래 Rust patch는 `task_m100_6641`에 남아 있다.
+
+replay 중 직접 관련된 검사는 다음 결과를 냈다.
+
+- 약한 오라클 관련 Python: 119/119 통과
+- reference·trajectory 관련 Python: 317/317 통과
+- `gym/tools/audit.py --json`: 21 pack, 1,035 task/reference, issue 0
+- CI classifier·policy: 78/78 통과
+- Gym benchmark workflow 계약: 8/8 통과
+- workflow wiring: 3/3 통과
+- workflow YAML 4개: 파싱 통과
+- tutorial 전체 계약: 76건 중 날짜 정문 snapshot 1건 실패
+- `test_gym_*.py` 전수 기준선: 3,121건, failure 5·error 4·skip 1로 replay 전과 동일
+
+마지막 실패는 계획에 이미 분류한 Stage 2 대상이다. replay 승인 범위를 넘어 기대값을
+바꾸지 않았으며 Stage 2에서 날짜 값이 아니라 front matter 형식·정본 관계를 검증하게 한다.
 
 ## 7. Stage 0 현재 판정
 
@@ -128,6 +165,7 @@ patch SHA-256 `e24390a58045aad1f8823308c5f60085a2ce2d72e53f2797a7ea24267b21b283`
 - 최종 트리 release producer/consumer 비의존: 통과
 - WIP disposition 표: 완료
 - Rust 제품 수정 분리: #6641과 로컬 branch에 보존 완료
-- 논리 replay: 승인 대기
+- 논리 replay: 완료
 
-Stage 0은 분석 구간을 마쳤고, 외부 변경과 복구 가능한 이력 정리 승인 지점에서 멈춘다.
+Stage 0 종료 게이트를 충족했다. 다음 승인 지점은 Stage 1의 정답 권위 분류 모델과
+1,035개 task 전수 원장 설계·구현이다.
