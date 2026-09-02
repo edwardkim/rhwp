@@ -4022,6 +4022,7 @@ impl LayoutEngine {
                     self.dpi,
                     self.profile.get().legacy_hwp3_stored_geometry(),
                     self.profile.get().native_hwp5_layout(),
+                    &self.single_line_overflow_cache,
                 );
                 self.calc_para_lines_height(
                     &comp.lines,
@@ -7222,6 +7223,7 @@ impl LayoutEngine {
                             self.dpi,
                             self.profile.get().legacy_hwp3_stored_geometry(),
                             self.profile.get().native_hwp5_layout(),
+                            &self.single_line_overflow_cache,
                         );
                     } else {
                         crate::renderer::composer::recompose_cell_lines_in_frame(
@@ -8505,6 +8507,7 @@ impl LayoutEngine {
                         self.dpi,
                         self.profile.get().legacy_hwp3_stored_geometry(),
                         self.profile.get().native_hwp5_layout(),
+                        &self.single_line_overflow_cache,
                     );
                 } else {
                     crate::renderer::composer::recompose_cell_lines_in_frame(
@@ -8678,6 +8681,7 @@ impl LayoutEngine {
                                 self.dpi,
                                 self.profile.get().legacy_hwp3_stored_geometry(),
                                 self.profile.get().native_hwp5_layout(),
+                                &self.single_line_overflow_cache,
                             );
                         } else {
                             crate::renderer::composer::recompose_cell_lines_in_frame(
@@ -9498,6 +9502,7 @@ impl LayoutEngine {
                     self.dpi,
                     self.profile.get().legacy_hwp3_stored_geometry(),
                     self.profile.get().native_hwp5_layout(),
+                    &self.single_line_overflow_cache,
                 );
             } else {
                 crate::renderer::composer::recompose_cell_lines_in_frame(
@@ -12470,7 +12475,10 @@ impl LayoutEngine {
                     // line segment만으로는 원본과 구별되지 않는다. 편집 관문이 남긴
                     // provenance가 있을 때는 일반 capacity cut으로 새 줄을 분할한다.
                     if self.profile.get().hwp5_stored_pagination_layout()
-                        && !table.text_reflowed_after_edit
+                        && !self
+                            .render_normalization
+                            .borrow()
+                            .table_text_reflowed(table)
                     {
                         if let Some((absorbed_h, absorbed_j)) =
                             Self::absorb_tail_before_stored_frame_break(&units, j, h, avail_height)

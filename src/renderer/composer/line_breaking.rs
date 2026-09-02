@@ -3397,9 +3397,6 @@ fn reflow_line_segs_impl(
     if !paragraph_box.is_usable() {
         return false;
     }
-    // [#4149] 셀 편집의 단일 관문(reflow_cell_paragraph[_by_path])과 서식 적용
-    // (formatting.rs) 이 모두 여기로 수렴한다 — 단일줄 과밀 memo 무효화.
-    para.invalidate_single_line_overflow_memo();
     // [#4677] 줄을 다시 계산하면 이전에 붙여 둔 조판 전용 보강 줄은 사라진다 — 표식을
     // 남겨 두면 실제 줄을 저장에서 잘라 내게 된다.
     para.layout_only_fill_lines = 0;

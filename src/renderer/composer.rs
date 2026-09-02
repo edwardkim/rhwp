@@ -12,7 +12,7 @@ use super::style_resolver::{detect_lang_category, ResolvedStyleSet};
 use super::{hwpunit_to_px, px_to_hwpunit, TextStyle};
 use crate::model::control::Control;
 use crate::model::document::Section;
-use crate::model::paragraph::{CharShapeRef, LineSeg, Paragraph, SingleLineOverflowMemo};
+use crate::model::paragraph::{CharShapeRef, LineSeg, Paragraph};
 use crate::model::shape::Caption;
 use crate::renderer::layout_frame::LayoutFrame;
 pub use crate::renderer::layout_frame::ParagraphBox;
@@ -112,6 +112,46 @@ pub struct ComposedParagraph {
     /// owner로 넘기며 line breaking·layout·paint는 아직 이 값을 소비하지 않는다.
     pub(crate) horizontal_shaping:
         Option<std::sync::Arc<crate::renderer::shaping_paragraph::HorizontalShapingLineOutcome>>,
+}
+
+/// Renderer-session cache for the expensive stored single-line overflow probe.
+///
+/// Paragraph identity is valid only until the owning layout session clears its
+/// caches. The concrete cell width completes the key; source/style mutations
+/// clear the session cache instead of reaching into the source model.
+#[derive(Default)]
+pub(crate) struct SingleLineOverflowCache {
+    entries: std::cell::RefCell<std::collections::HashMap<(usize, u32), bool>>,
+    #[cfg(test)]
+    measurements: std::cell::Cell<usize>,
+}
+
+impl SingleLineOverflowCache {
+    #[inline]
+    fn get(&self, para: &Paragraph, width_key: u32) -> Option<bool> {
+        self.entries
+            .borrow()
+            .get(&(para as *const Paragraph as usize, width_key))
+            .copied()
+    }
+
+    #[inline]
+    fn insert(&self, para: &Paragraph, width_key: u32, overflowed: bool) {
+        self.entries
+            .borrow_mut()
+            .insert((para as *const Paragraph as usize, width_key), overflowed);
+        #[cfg(test)]
+        self.measurements.set(self.measurements.get() + 1);
+    }
+
+    pub(crate) fn clear(&self) {
+        self.entries.borrow_mut().clear();
+    }
+
+    #[cfg(test)]
+    fn measurement_count(&self) -> usize {
+        self.measurements.get()
+    }
 }
 
 /// 구역의 문단 목록을 구성한다.
@@ -1777,6 +1817,24 @@ pub fn recompose_stored_single_line_if_overflowing(
     styles: &ResolvedStyleSet,
     dpi: f64,
 ) {
+    recompose_stored_single_line_if_overflowing_cached(
+        composed,
+        para,
+        cell_inner_width_px,
+        styles,
+        dpi,
+        None,
+    );
+}
+
+fn recompose_stored_single_line_if_overflowing_cached(
+    composed: &mut ComposedParagraph,
+    para: &Paragraph,
+    cell_inner_width_px: f64,
+    styles: &ResolvedStyleSet,
+    dpi: f64,
+    cache: Option<&SingleLineOverflowCache>,
+) {
     if composed.lines.is_empty() || cell_inner_width_px <= 0.0 {
         return;
     }
@@ -1822,27 +1880,27 @@ pub fn recompose_stored_single_line_if_overflowing(
     // 패딩 발산 범위(≤~1.5×)를 넘는 부실 저장만 재래핑한다. #2291 원 타깃
     // (76자 1-lineseg = ~7.6× 초과, 절단 해소)은 임계 위라 계속 재래핑.
     //
-    // [#4149] 판정 memo — 같은 (문단 text·char_shapes, 셀 내폭)이면 판정이 결정적
+    // [#4149] 판정 memo — 같은 source paragraph와 셀 내폭이면 판정이 결정적
     // 인데, 페이지 트리 재빌드마다 estimate_composed_line_width 재측정이 반복돼
     // 거대 셀 문서의 캐럿 rect 질의당 ~30% 를 차지했다. 폭 키(f32 bits 패킹)로
     // 판정만 memo 하고(측정 생략), over=true 의 fresh 재래핑 자체는 매 빌드 그대로
     // 수행한다 — 재래핑 결과는 composed 에만 반영되고 저장 line_segs 는 안 바뀌므로
-    // 재래핑을 생략하면 절단 렌더 회귀. text/char_shapes 변경 경로는
-    // `invalidate_single_line_overflow_memo` 로 비운다 (셀 크기 조정은 키 불일치로
-    // 자연 재판정).
-    let width_key = SingleLineOverflowMemo::width_key(cell_inner_width_px);
-    let over = match para.single_line_overflow_memo.get(width_key) {
-        Some(memoized) => memoized,
-        None => {
+    // 재래핑을 생략하면 절단 렌더 회귀. cache는 renderer session이 소유하고
+    // source/style mutation과 함께 session cache 전체를 비운다.
+    let width_key = (cell_inner_width_px as f32).to_bits();
+    let over = cache
+        .and_then(|cache| cache.get(para, width_key))
+        .unwrap_or_else(|| {
             let measured = composed
                 .lines
                 .first()
-                .map(|l| estimate_composed_line_width(l, styles) > cell_inner_width_px * 1.8)
+                .map(|line| estimate_composed_line_width(line, styles) > cell_inner_width_px * 1.8)
                 .unwrap_or(false);
-            para.single_line_overflow_memo.set(width_key, measured);
+            if let Some(cache) = cache {
+                cache.insert(para, width_key, measured);
+            }
             measured
-        }
-    };
+        });
     if std::env::var("RHWP_DIAG_CELLREWRAP").is_ok() && over {
         if let Some(l) = composed.lines.first() {
             for run in &l.runs {
@@ -1901,6 +1959,7 @@ pub(crate) fn recompose_horizontal_cell_lines_for_width(
     dpi: f64,
     legacy_hwp3_stored_geometry: bool,
     repair_stored_overflow: bool,
+    overflow_cache: &SingleLineOverflowCache,
 ) {
     recompose_cell_lines_in_frame(
         composed,
@@ -1911,12 +1970,13 @@ pub(crate) fn recompose_horizontal_cell_lines_for_width(
         legacy_hwp3_stored_geometry,
     );
     if repair_stored_overflow {
-        recompose_stored_single_line_if_overflowing(
+        recompose_stored_single_line_if_overflowing_cached(
             composed,
             para,
             cell_inner_width_px,
             styles,
             dpi,
+            Some(overflow_cache),
         );
     }
 }

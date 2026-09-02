@@ -217,7 +217,6 @@ impl DocumentCore {
             }
         }
         table.update_ctrl_dimensions();
-        table.dirty = true;
         let new_table_height = table.common.height as i32;
         if let Some((vertical_pos, line_height_extra)) = line_seg_update {
             if let Some(seg) = para.line_segs.first_mut() {
@@ -578,8 +577,6 @@ impl DocumentCore {
             raw_table_record_attr: 0x00000006, // 한컴 기본값 (bit1=셀분리금지, bit2=repeat_header)
             // [#3570] 한컴은 TABLE 레코드를 zone 개수까지만 쓴다 — 여분 2바이트 없음.
             raw_table_record_extra: Vec::new(),
-            dirty: true,
-            text_reflowed_after_edit: false,
             local_resize_rows: Vec::new(),
             local_resize_cols: Vec::new(),
             local_resize_cell_widths: Vec::new(),
@@ -1008,8 +1005,6 @@ impl DocumentCore {
             raw_table_record_attr: 0x04000006,
             // [#3570] 한컴은 TABLE 레코드를 zone 개수까지만 쓴다 — 여분 2바이트 없음.
             raw_table_record_extra: Vec::new(),
-            dirty: true,
-            text_reflowed_after_edit: false,
             local_resize_rows: Vec::new(),
             local_resize_cols: Vec::new(),
             local_resize_cell_widths: Vec::new(),

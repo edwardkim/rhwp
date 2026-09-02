@@ -2323,8 +2323,13 @@ impl DocumentCore {
             para.has_para_text = false;
         }
         if cleared {
-            table.dirty = true;
             self.document.sections[section].raw_stream = None;
+            // Cell contents changed under an otherwise stable outer paragraph.
+            // The core-owned paragraph revision invalidates measured tables;
+            // pagination invalidates page trees and the layout-session caches.
+            self.mark_cell_control_dirty(section, host_para, control_index);
+            self.mark_section_dirty(section);
+            self.paginate_if_needed();
         }
         Ok(format!(r#"{{"ok":true,"cleared":{}}}"#, cleared))
     }
@@ -2445,6 +2450,112 @@ mod tests {
     use super::*;
     use crate::model::document::Section;
     use crate::model::style::ParaShape;
+
+    fn render_tree_contains_text(
+        node: &crate::renderer::render_tree::RenderNode,
+        needle: &str,
+    ) -> bool {
+        matches!(
+            &node.node_type,
+            crate::renderer::render_tree::RenderNodeType::TextRun(run)
+                if run.text.contains(needle)
+        ) || node
+            .children
+            .iter()
+            .any(|child| render_tree_contains_text(child, needle))
+    }
+
+    fn first_table_cell_width(
+        node: &crate::renderer::render_tree::RenderNode,
+        model_cell_index: u32,
+    ) -> Option<f64> {
+        if matches!(
+            &node.node_type,
+            crate::renderer::render_tree::RenderNodeType::TableCell(cell)
+                if cell.model_cell_index == Some(model_cell_index)
+        ) {
+            return Some(node.bbox.width);
+        }
+        node.children
+            .iter()
+            .find_map(|child| first_table_cell_width(child, model_cell_index))
+    }
+
+    #[test]
+    fn clearing_table_cells_invalidates_measurement_and_page_tree_owners() {
+        let mut core = DocumentCore::new_empty();
+        core.create_blank_document_native().expect("blank document");
+        let created = core
+            .create_table_native(0, 0, 0, 1, 1)
+            .expect("single-cell table");
+        let created: serde_json::Value = serde_json::from_str(&created).expect("table result");
+        let host_para = created["paraIdx"].as_u64().expect("table paragraph") as usize;
+        let control_index = created["controlIdx"].as_u64().expect("table control") as usize;
+        core.insert_text_in_cell_native(0, host_para, control_index, 0, 0, 0, "CLEAR-ME")
+            .expect("cell text");
+
+        let before = core.build_page_tree_cached(0).expect("cached page tree");
+        assert!(render_tree_contains_text(&before.root, "CLEAR-ME"));
+        let (_, lists) = core.collect_fields_and_lists();
+        let list_id = lists
+            .iter()
+            .find(|entry| {
+                entry.host_para_index == host_para
+                    && entry.control_index == control_index
+                    && entry
+                        .grid
+                        .is_some_and(|grid| grid.row == 0 && grid.col == 0)
+            })
+            .expect("cell list")
+            .list_id;
+
+        let result = core
+            .clear_table_cells_at_cursor(list_id, 0, 0)
+            .expect("clear cell contents");
+        assert!(result.contains("\"cleared\":true"), "{result}");
+        let after = core.build_page_tree_cached(0).expect("rebuilt page tree");
+        assert!(
+            !render_tree_contains_text(&after.root, "CLEAR-ME"),
+            "the pre-clear cached page must not survive"
+        );
+    }
+
+    #[test]
+    fn cursor_cell_resize_invalidates_cached_table_geometry() {
+        let mut core = DocumentCore::new_empty();
+        core.create_blank_document_native().expect("blank document");
+        let created = core
+            .create_table_native(0, 0, 0, 1, 2)
+            .expect("two-cell table");
+        let created: serde_json::Value = serde_json::from_str(&created).expect("table result");
+        let host_para = created["paraIdx"].as_u64().expect("table paragraph") as usize;
+        let control_index = created["controlIdx"].as_u64().expect("table control") as usize;
+        let (_, lists) = core.collect_fields_and_lists();
+        let list_id = lists
+            .iter()
+            .find(|entry| {
+                entry.host_para_index == host_para
+                    && entry.control_index == control_index
+                    && entry
+                        .grid
+                        .is_some_and(|grid| grid.row == 0 && grid.col == 0)
+            })
+            .expect("first cell list")
+            .list_id;
+
+        let before = core.build_page_tree_cached(0).expect("cached table tree");
+        let before_width = first_table_cell_width(&before.root, 0).expect("first cell bbox");
+        let result = core
+            .table_edit_at_cursor(list_id, "resizeCellRight")
+            .expect("cell boundary resize");
+        assert!(result.contains("\"moved\":true"), "{result}");
+        let after = core.build_page_tree_cached(0).expect("rebuilt table tree");
+        let after_width = first_table_cell_width(&after.root, 0).expect("first cell bbox");
+        assert!(
+            (after_width - before_width).abs() > 0.1,
+            "cached geometry survived source resize: {before_width} -> {after_width}"
+        );
+    }
 
     /// 문단 모양이 한글 코드값과 단위로 나가는지 — 이름만 같고 값이 rhwp 내부 표현이면
     /// 오라클과 어긋난다.

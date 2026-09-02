@@ -3,7 +3,7 @@
 //! 페이지네이션 전에 각 콘텐츠의 실제 렌더링 높이를 측정한다.
 //! LayoutEngine과 동일한 계산 로직을 사용하여 정확한 높이를 산출한다.
 
-use super::composer::{compose_paragraph, ComposedParagraph};
+use super::composer::{compose_paragraph, ComposedParagraph, SingleLineOverflowCache};
 use super::style_resolver::ResolvedStyleSet;
 use super::{hwpunit_to_px, DEFAULT_DPI};
 use crate::model::control::Control;
@@ -624,6 +624,9 @@ pub struct HeightMeasurer {
     /// [#6175] 이 구역의 용지/쪽 기준 어울림 개체 흐름 증거 — 저장 행 admission의
     /// 외부-기하 증거. 측정과 렌더가 같은 증거를 써야 두 경로가 갈리지 않는다.
     float_carve_evidence: Vec<crate::renderer::float_placement::FloatCarveEvidence>,
+    /// Measurement-session owner for the same derived probe used by layout.
+    /// A new measurer starts a new source/style revision scope.
+    single_line_overflow_cache: SingleLineOverflowCache,
 }
 
 /// [#6299] 이 저장 seg 가 **앞 줄의 가로 조각**인가 — 같은 물리 줄의 오른쪽 조각.
@@ -663,6 +666,7 @@ impl HeightMeasurer {
                 crate::renderer::render_normalization::RenderNormalizationOverlay::default(),
             ),
             float_carve_evidence: Vec::new(),
+            single_line_overflow_cache: SingleLineOverflowCache::default(),
         }
     }
 
@@ -1668,6 +1672,7 @@ impl HeightMeasurer {
                                 self.dpi,
                                 self.legacy_hwp3_stored_geometry,
                                 self.is_native_hwp5,
+                                &self.single_line_overflow_cache,
                             );
                             let para_style = styles.para_styles.get(p.para_shape_id as usize);
                             let is_last_para = pidx + 1 == cell_para_count;
@@ -2232,6 +2237,7 @@ impl HeightMeasurer {
                                 self.dpi,
                                 self.legacy_hwp3_stored_geometry,
                                 self.is_native_hwp5,
+                                &self.single_line_overflow_cache,
                             );
                             comp.lines
                                 .last()
@@ -2311,6 +2317,7 @@ impl HeightMeasurer {
                                 self.dpi,
                                 self.legacy_hwp3_stored_geometry,
                                 self.is_native_hwp5,
+                                &self.single_line_overflow_cache,
                             );
                             let para_style =
                                 styles.para_styles.get(cell_para.para_shape_id as usize);
@@ -2534,6 +2541,7 @@ impl HeightMeasurer {
                                 self.dpi,
                                 self.legacy_hwp3_stored_geometry,
                                 self.is_native_hwp5,
+                                &self.single_line_overflow_cache,
                             );
                             let para_style = styles.para_styles.get(p.para_shape_id as usize);
                             let is_last_para = pidx + 1 == cell_para_count;
@@ -3285,14 +3293,16 @@ impl HeightMeasurer {
         }
     }
 
-    /// 구역의 모든 콘텐츠 높이를 증분 측정한다.
-    /// dirty=false인 표는 prev_measured에서 재사용하고, dirty=true인 표만 재측정한다.
+    /// Re-measure a section whose paragraph invalidation scope is unavailable.
+    ///
+    /// Table validity belongs to the section/paragraph measurement owner, not
+    /// to source `Table`. A full-dirty section therefore measures every table.
     pub fn measure_section_incremental(
         &self,
         paragraphs: &[Paragraph],
         composed: &[ComposedParagraph],
         styles: &ResolvedStyleSet,
-        prev_measured: &MeasuredSection,
+        _prev_measured: &MeasuredSection,
         column_width_px: Option<f64>,
     ) -> MeasuredSection {
         let mut measured_paras = Vec::with_capacity(paragraphs.len());
@@ -3313,12 +3323,6 @@ impl HeightMeasurer {
 
             for (ctrl_idx, ctrl) in para.controls.iter().enumerate() {
                 if let Control::Table(table) = ctrl {
-                    if !table.dirty {
-                        if let Some(prev) = prev_measured.get_measured_table(para_idx, ctrl_idx) {
-                            measured_tables.push(prev.clone());
-                            continue;
-                        }
-                    }
                     let measured_table = self.measure_table(table, para_idx, ctrl_idx, styles);
                     measured_tables.push(measured_table);
                 }
@@ -3346,7 +3350,7 @@ impl HeightMeasurer {
         let dirty_bits = match dirty_paras {
             Some(bits) => bits,
             None => {
-                // 전체 dirty: 기존 incremental (표 수준만 캐싱) 폴백
+                // 전체 dirty: 모든 문단과 표를 다시 측정한다.
                 return self.measure_section_incremental(
                     paragraphs,
                     composed,
@@ -3367,16 +3371,15 @@ impl HeightMeasurer {
                 // 문단 측정 캐시 재사용
                 if let Some(prev_para) = prev_measured.fallback_paragraphs.get(para_idx) {
                     measured_paras.push(prev_para.clone());
-                    // 표 dirty 체크는 항상 수행 (셀 편집 시 문단 non-dirty지만 표 dirty)
+                    // A clean paragraph owns the validity of its table
+                    // measurements. Missing entries fail closed to measuring.
                     for (ctrl_idx, ctrl) in para.controls.iter().enumerate() {
                         if let Control::Table(table) = ctrl {
-                            if !table.dirty {
-                                if let Some(prev_t) =
-                                    prev_measured.get_measured_table(para_idx, ctrl_idx)
-                                {
-                                    measured_tables.push(prev_t.clone());
-                                    continue;
-                                }
+                            if let Some(prev_t) =
+                                prev_measured.get_measured_table(para_idx, ctrl_idx)
+                            {
+                                measured_tables.push(prev_t.clone());
+                                continue;
                             }
                             let mt = self.measure_table(table, para_idx, ctrl_idx, styles);
                             measured_tables.push(mt);
@@ -3400,12 +3403,6 @@ impl HeightMeasurer {
 
             for (ctrl_idx, ctrl) in para.controls.iter().enumerate() {
                 if let Control::Table(table) = ctrl {
-                    if !table.dirty {
-                        if let Some(prev) = prev_measured.get_measured_table(para_idx, ctrl_idx) {
-                            measured_tables.push(prev.clone());
-                            continue;
-                        }
-                    }
                     let mt = self.measure_table(table, para_idx, ctrl_idx, styles);
                     measured_tables.push(mt);
                 }

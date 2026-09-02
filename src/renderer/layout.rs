@@ -2713,6 +2713,10 @@ pub struct LayoutEngine {
     /// 보유 여부)의 표 포인터 키 메모 — 거대 표 서브트리 재스캔 방지.
     /// `cell_units_cache` 와 동일 조판 경계에서 clear 한다.
     cursor_probe_block_cache: std::cell::RefCell<std::collections::HashMap<usize, bool>>,
+    /// [#4149] Derived verdict keyed by source paragraph identity and actual
+    /// cell width. This lives for the layout session and is cleared at the same
+    /// source/style invalidation boundary as the other pointer-keyed caches.
+    single_line_overflow_cache: super::composer::SingleLineOverflowCache,
     /// Issue #2214 test-only: cache miss가 실제 table-wide scan으로 이어진 횟수.
     #[cfg(test)]
     table_nested_text_flag_scan_count: std::cell::Cell<usize>,
@@ -2813,6 +2817,7 @@ impl LayoutEngine {
             cell_units_cache: std::cell::RefCell::new(std::collections::HashMap::new()),
             table_nested_text_flag_cache: std::cell::RefCell::new(std::collections::HashMap::new()),
             cursor_probe_block_cache: std::cell::RefCell::new(std::collections::HashMap::new()),
+            single_line_overflow_cache: Default::default(),
             #[cfg(test)]
             table_nested_text_flag_scan_count: std::cell::Cell::new(0),
         }
@@ -2824,6 +2829,7 @@ impl LayoutEngine {
         self.cell_units_cache.borrow_mut().clear();
         self.table_nested_text_flag_cache.borrow_mut().clear();
         self.cursor_probe_block_cache.borrow_mut().clear();
+        self.single_line_overflow_cache.clear();
     }
 
     pub(crate) fn register_exact_font_source(

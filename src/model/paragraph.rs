@@ -108,114 +108,13 @@ pub struct Paragraph {
     /// None = 앞 번호 목록에 이어 (기본)
     /// Some(NumberingRestart) = 이전 번호 이어 / 새 번호 시작
     pub numbering_restart: Option<NumberingRestart>,
-    /// [#4149] 문단 조판 입력 상태. 낮은 63비트는 셀 단일줄 과밀 판정 memo,
-    /// 최상위 비트는 저장 LineSeg의 텍스트 분할이 text/char_shapes 변이 뒤
-    /// 무효가 되었음을 기록한다. 두 상태는 같은 입력에서 함께 무효화된다.
-    /// 과밀 판정 입력은 (text, char_shapes, 셀 내폭)뿐이다. 제약:
-    /// - 직렬화 금지: `Paragraph` 는 serde derive 가 없고 HWP/HWPX 저장기는 필드를
-    ///   명시 기록하므로 파일로 새지 않는다. 새 직렬화 경로를 추가하면 이 필드를 제외할 것.
-    /// - 스레드: `DocumentCore` 의 `Send` 단언이 `Arc<Vec<Paragraph>>`
-    ///   (document_core/mod.rs render normalization 캐시) 경유로 `Paragraph: Sync` 를
-    ///   요구한다 — `Cell` 불가, `AtomicU64` 패킹 사용.
-    /// - text/char_shapes 를 바꾸는 모든 경로는 `invalidate_single_line_overflow_memo`
-    ///   호출 필수 (Clone 은 memo 를 함께 복제하지만, 복제본도 자기 상태 기준으로
-    ///   유효하므로 안전 — 이후 변이 시 무효화 규약은 동일하게 적용).
-    pub single_line_overflow_memo: SingleLineOverflowMemo,
-}
-
-/// [#4149] 단일줄 과밀 판정 memo 저장소 — `AtomicU64` 1개에 (폭 키, 판정) 패킹.
-///
-/// 인코딩: `0` = 미판정. 그 외 `(width_key as u64) << 1 | overflowed`.
-/// `width_key` 는 셀 내폭의 `f32` 비트 — guard 가 내폭 > 0 을 보장하므로 키가 0 이
-/// 될 수 없어 유효 인코딩은 sentinel `0` 과 충돌하지 않는다. 폭이 바뀌면(셀 크기
-/// 조정) 키 불일치로 자연 재판정된다. f32 축약의 키 충돌은 인접 ulp 폭(상대 ~2⁻²⁴)
-/// 뿐이라 ×1.8 임계 판정에 영향이 없다.
-///
-/// `Relaxed` 순서로 충분하다 — 값은 (문단, 폭)의 결정적 함수라 경합 시 최악이
-/// 중복 측정일 뿐 오답이 없다.
-#[derive(Debug, Default, serde::Serialize)]
-pub struct SingleLineOverflowMemo(std::sync::atomic::AtomicU64);
-
-impl SingleLineOverflowMemo {
-    const STORED_PARTITION_DIRTY: u64 = 1 << 63;
-    const OVERFLOW_MEMO_MASK: u64 = !Self::STORED_PARTITION_DIRTY;
-
-    /// 셀 내폭(px) → memo 폭 키.
-    #[inline]
-    pub fn width_key(cell_inner_width_px: f64) -> u32 {
-        (cell_inner_width_px as f32).to_bits()
-    }
-
-    /// 저장된 판정 조회 — 폭 키가 일치할 때만 `Some(overflowed)`.
-    #[inline]
-    pub fn get(&self, width_key: u32) -> Option<bool> {
-        let v = self.0.load(std::sync::atomic::Ordering::Relaxed) & Self::OVERFLOW_MEMO_MASK;
-        if v != 0 && (v >> 1) as u32 == width_key {
-            Some(v & 1 == 1)
-        } else {
-            None
-        }
-    }
-
-    /// 판정 저장. `width_key == 0`(내폭 ≤ 0)은 sentinel 과 겹치므로 저장하지 않는다.
-    #[inline]
-    pub fn set(&self, width_key: u32, overflowed: bool) {
-        if width_key == 0 {
-            return;
-        }
-        let memo = ((width_key as u64) << 1) | (overflowed as u64);
-        let _ = self.0.fetch_update(
-            std::sync::atomic::Ordering::Relaxed,
-            std::sync::atomic::Ordering::Relaxed,
-            |current| Some((current & Self::STORED_PARTITION_DIRTY) | memo),
-        );
-    }
-
-    /// Clear the width memo and record that stored row text boundaries no
-    /// longer describe the paragraph's current layout inputs.
-    #[inline]
-    pub fn invalidate_layout_inputs(&self) {
-        self.0.store(
-            Self::STORED_PARTITION_DIRTY,
-            std::sync::atomic::Ordering::Relaxed,
-        );
-    }
-
-    #[inline]
-    pub fn stored_partition_is_dirty(&self) -> bool {
-        self.0.load(std::sync::atomic::Ordering::Relaxed) & Self::STORED_PARTITION_DIRTY != 0
-    }
-
-    /// Publish freshly computed rows and reset every value derived from the
-    /// superseded partition in one transition.
-    #[inline]
-    fn publish_current_partition(&self) {
-        self.0.store(0, std::sync::atomic::Ordering::Relaxed);
-    }
-
-    /// Clear only the width memo, preserving text-partition provenance.
-    #[inline]
-    pub fn clear(&self) {
-        self.0.fetch_and(
-            Self::STORED_PARTITION_DIRTY,
-            std::sync::atomic::Ordering::Relaxed,
-        );
-    }
-
-    /// 미판정 여부 (invalidation 검증용).
-    #[inline]
-    pub fn is_unjudged(&self) -> bool {
-        self.0.load(std::sync::atomic::Ordering::Relaxed) & Self::OVERFLOW_MEMO_MASK == 0
-    }
-}
-
-impl Clone for SingleLineOverflowMemo {
-    fn clone(&self) -> Self {
-        // 파생 캐시 복제 — 복제본도 자기 (text, char_shapes) 기준으로 유효하다.
-        Self(std::sync::atomic::AtomicU64::new(
-            self.0.load(std::sync::atomic::Ordering::Relaxed),
-        ))
-    }
+    /// Stored LineSeg text boundaries no longer describe the edited text.
+    ///
+    /// This is persistence provenance, not a renderer cache: serializers omit
+    /// an invalid partition while layout may retain it only as a metric
+    /// template until fresh rows are published.
+    #[serde(skip_serializing)]
+    pub stored_text_partition_dirty: bool,
 }
 
 /// 문단 스코프 메타데이터 — 문단 병합의 역연산(undo)에서 복원해야 하는 값들.
@@ -707,23 +606,17 @@ impl Paragraph {
         &self.line_segs[..source_len]
     }
 
-    /// Clear only the derived single-line width memo.
-    #[inline]
-    pub fn invalidate_single_line_overflow_memo(&self) {
-        self.single_line_overflow_memo.clear();
-    }
-
     /// Invalidate every layout result derived from text or CharShapeRef input.
     /// Existing rows remain as edit-reflow metric templates, but cannot be
     /// admitted or serialized as the current text partition.
     #[inline]
-    pub fn invalidate_layout_inputs(&self) {
-        self.single_line_overflow_memo.invalidate_layout_inputs();
+    pub fn invalidate_layout_inputs(&mut self) {
+        self.stored_text_partition_dirty = true;
     }
 
     #[inline]
     pub fn stored_text_partition_is_dirty(&self) -> bool {
-        self.single_line_overflow_memo.stored_partition_is_dirty()
+        self.stored_text_partition_dirty
     }
 
     /// Replace stored rows and their validity state at one owner boundary.
@@ -736,7 +629,7 @@ impl Paragraph {
         // [#5961] 새로 계산한 줄은 `char_offsets` 와 같은 HWP5 축에서 나온다. 파일에서
         // 읽은 줄에만 붙던 보정폭을 그대로 두면 다음 투영에서 이중으로 더해진다.
         self.hwpx_axis_shift = 0;
-        self.single_line_overflow_memo.publish_current_partition();
+        self.stored_text_partition_dirty = false;
     }
 
     /// 문자의 UTF-16 코드 유닛 수를 반환한다.
@@ -829,8 +722,6 @@ impl Paragraph {
         if shift == 0 {
             return;
         }
-        // [#4149] 제어문자 삽입은 char_shapes 경계를 옮긴다 — memo 무효화 (보수적).
-        self.invalidate_single_line_overflow_memo();
         // 문단 시작(pos 0)에 고정된 첫 스타일은 유지(insert_text_at 과 동일).
         for cs in &mut self.char_shapes {
             if cs.start_pos > insert_pos || (cs.start_pos == insert_pos && cs.start_pos > 0) {
@@ -870,9 +761,6 @@ impl Paragraph {
         if new_text.is_empty() {
             return char_offset.min(self.text.chars().count());
         }
-        // [#4149] text 변이 — 단일줄 과밀 memo 무효화.
-        self.invalidate_single_line_overflow_memo();
-
         let text_chars: Vec<char> = self.text.chars().collect();
         let text_len = text_chars.len();
 
@@ -1025,9 +913,6 @@ impl Paragraph {
             return 0;
         }
 
-        // [#4149] text 변이 — 단일줄 과밀 memo 무효화.
-        self.invalidate_single_line_overflow_memo();
-
         // 실제 삭제할 문자 수 (범위 클램핑)
         let actual_count = count.min(text_len - char_offset);
         let del_end = char_offset + actual_count;
@@ -1172,9 +1057,6 @@ impl Paragraph {
     /// 분할의 시맨틱이다. 병합의 역연산으로 쓰는 호출부는 `apply_meta` 로 사라진
     /// 문단의 원래 값을 되돌려야 한다 (Task #2342).
     pub fn split_at(&mut self, char_offset: usize) -> Paragraph {
-        // [#4149] 분할은 양쪽 text 를 모두 바꾼다 — 앞 절반 memo 무효화.
-        // 새 절반은 아래 구성에서 미판정(None)으로 시작한다.
-        self.invalidate_single_line_overflow_memo();
         let control_positions = self.split_logical_control_positions();
         let split_pos = self.split_text_pos_for_logical_offset(char_offset, &control_positions);
         let text_chars: Vec<char> = self.text.chars().collect();
@@ -1461,8 +1343,7 @@ impl Paragraph {
             tab_extended: Vec::new(),
             title_marks: new_title_marks,
             numbering_restart: None,
-            // [#4149] 분할 산출 문단은 미판정으로 시작한다.
-            single_line_overflow_memo: SingleLineOverflowMemo::default(),
+            stored_text_partition_dirty: false,
         }
     }
 
@@ -1475,9 +1356,6 @@ impl Paragraph {
         if other.text.is_empty() && other.controls.is_empty() {
             return self.text.chars().count();
         }
-        // [#4149] 병합은 text/char_shapes 를 바꾼다 — memo 무효화 (미판정 재시작).
-        self.invalidate_single_line_overflow_memo();
-
         let self_text_len = self.text.chars().count();
 
         // 현재 문단 끝의 UTF-16 위치.
@@ -1942,8 +1820,6 @@ impl Paragraph {
         if start_char_offset >= end_char_offset || self.char_offsets.is_empty() {
             return;
         }
-        // [#4149] char_shapes 변이 — 단일줄 과밀 memo 무효화.
-        self.invalidate_single_line_overflow_memo();
         if self.char_shapes.is_empty() {
             self.char_shapes.push(CharShapeRef {
                 start_pos: 0,
@@ -2067,8 +1943,6 @@ impl Paragraph {
 
     /// 문단의 글자 모양을 단일 CharShapeRef로 초기화한다.
     pub fn set_single_char_shape(&mut self, char_shape_id: u32) {
-        // [#4149] char_shapes 변이 — 단일줄 과밀 memo 무효화.
-        self.invalidate_single_line_overflow_memo();
         self.char_shapes.clear();
         self.char_shapes.push(CharShapeRef {
             start_pos: 0,
@@ -2096,8 +1970,6 @@ impl Paragraph {
         }
 
         if replaced {
-            // [#4149] char_shapes 변이 — 단일줄 과밀 memo 무효화.
-            self.invalidate_single_line_overflow_memo();
             self.merge_adjacent_char_shapes();
         }
     }

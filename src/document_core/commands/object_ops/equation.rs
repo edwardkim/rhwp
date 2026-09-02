@@ -231,15 +231,9 @@ impl DocumentCore {
         )?;
         Self::apply_equation_properties(eq, dpi, props_json);
 
-        // 표 셀 내 수식인 경우 표 dirty 플래그 설정
+        // 셀 수식은 최외곽 문단의 측정 revision을 무효화한다.
         if cell_idx.is_some() {
-            if let Some(Control::Table(t)) = self.document.sections[section_idx].paragraphs
-                [parent_para_idx]
-                .controls
-                .get_mut(control_idx)
-            {
-                t.dirty = true;
-            }
+            self.mark_cell_control_dirty(section_idx, parent_para_idx, control_idx);
         }
 
         // 재조판
