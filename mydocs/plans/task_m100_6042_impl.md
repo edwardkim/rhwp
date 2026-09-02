@@ -1,7 +1,7 @@
 # 구현 계획 — Task M100 #6042
 
 - 작성일: 2026-08-31 KST
-- 상태: **Stage 6 완료 — push·native Draft PR 생성 승인 대기**
+- 상태: **Draft PR #6637 제출 — review-only head·stack 재검증 대기**
 - 현재 기준: #6467 `23b5bcf73f6e8659a90b25ebfde1311e1965364f`
 - 역사 Stage 1 측정 기준: #6467 `ba68cd655aed5fd94804f725c033cf615231ce4b`
 - branch: `codex/issue-6042-page-virtualization`
@@ -16,6 +16,9 @@
 - Stage 5 종료 결과: [완료 보고](../working/task_m100_6042_stage5_complete.md)
 - Stage 6 제출 감사: [완료 보고](../working/task_m100_6042_stage6.md)
 - 최종 처리 결과: [최종 보고](../report/task_m100_6042_report.md)
+- 제출 PR: [#6637](https://github.com/edwardkim/rhwp/pull/6637)
+- self-review: [review](../pr/archives/pr_6637_review.md),
+  [구현 검토](../pr/archives/pr_6637_review_impl.md)
 
 ## 1. 경계와 파일별 변경안
 

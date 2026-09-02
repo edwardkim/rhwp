@@ -2,12 +2,15 @@
 
 - Issue: [#6042](https://github.com/edwardkim/rhwp/issues/6042)
 - 완료일: 2026-09-02 KST
-- 상태: **구현·검증·로컬 제출 준비 완료**
+- 상태: **Draft PR #6637 제출 — review-only head·stack 재검증 대기**
 - branch: `codex/issue-6042-page-virtualization`
 - 직접 base: #6467 `23b5bcf73f6e8659a90b25ebfde1311e1965364f`
 - 수행 계획: [task_m100_6042.md](../plans/task_m100_6042.md)
 - 구현 계획: [task_m100_6042_impl.md](../plans/task_m100_6042_impl.md)
 - 제출 감사: [Stage 6](../working/task_m100_6042_stage6.md)
+- 제출 PR: [#6637](https://github.com/edwardkim/rhwp/pull/6637)
+- self-review: [review](../pr/archives/pr_6637_review.md),
+  [구현 검토](../pr/archives/pr_6637_review_impl.md)
 
 ## 1. 결과
 
@@ -124,8 +127,8 @@ OffscreenCanvas는 검토했지만 사용자 지시에 따라 포함하지 않�
 상태를 유지한다.
 
 원격 stack은 #6458 → #6467 → #6042 순서다. 현재 #6458은 최신 `devel`과 conflict이므로 전체 stack을
-Ready로 바꾸기 전에 bottom부터 restack하고 위 PR을 다시 쌓아야 한다. 현재 단계는 local commit까지만
-완료하며 push, Draft PR 생성, self-review, Ready, merge는 별도 승인 경계다.
+Ready로 바꾸기 전에 bottom부터 restack하고 위 PR을 다시 쌓아야 한다. Draft PR #6637과 self-review
+기록까지 제출했으며, review-only head CI, stack restack, Ready, merge는 후속 경계다.
 
 ## 7. 근거 문서
 

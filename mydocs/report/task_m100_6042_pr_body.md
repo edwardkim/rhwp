@@ -2,7 +2,7 @@ Closes #6042
 
 이 PR은 GitHub native stack의 세 번째 PR입니다.
 
-`#6458 (#6040) → #6467 (#6041) → 이 PR (#6042)`
+`#6458 (#6040) → #6467 (#6041) → #6637 (#6042)`
 
 리뷰는 #6467 대비 diff를 기준으로 부탁드립니다. 현재 bottom #6458은 최신 `devel`과 conflict가 있어,
 전체 stack의 Ready 전환 전 bottom부터 restack하고 위 PR을 다시 쌓아 재검증할 예정입니다.
@@ -189,9 +189,10 @@ cursor가 없는 쪽으로 스크롤했을 때는 이동 중 surface를 유지�
 - browser 수명 회귀: `e2e/page-virtualization-image-failure.test.mjs`, `e2e/ruler-resize.test.mjs`
 - 최종 판정: `mydocs/report/task_m100_6042_report.md`
 
-전체 diff는 202 files, +489,848/-219지만 162개·약 16MB가 반복 A/B raw evidence입니다. 제품·테스트·E2E는
-24 files, +4,063/-218입니다. 리뷰 UI가 raw JSON을 접어도 `summary.json`과 위 제품 파일만으로 먼저
-구조와 판정을 확인할 수 있습니다.
+PR 채번 전 code candidate diff는 202 files, +489,954/-219지만 162개·약 16MB가 반복 A/B raw
+evidence입니다. 제품·테스트·E2E는 24 files, +4,063/-218입니다. 리뷰 UI가 raw JSON을 접어도
+`summary.json`과 위 제품 파일만으로 먼저 구조와 판정을 확인할 수 있습니다. PR 번호 기반 self-review와
+당일 orders는 code candidate 뒤의 review-only trailing commit으로 추가합니다.
 
 ## 범위 밖
 

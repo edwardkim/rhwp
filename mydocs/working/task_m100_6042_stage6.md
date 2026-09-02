@@ -2,13 +2,14 @@
 
 - Issue: [#6042](https://github.com/edwardkim/rhwp/issues/6042)
 - 완료일: 2026-09-02 KST
-- 상태: **로컬 제출 준비 완료 — push·native Draft PR 생성 승인 대기**
+- 상태: **Draft PR #6637 제출 — review-only trailing head 준비**
 - 검증 source: `4ea694ff3`
 - 직접 base: #6467 `23b5bcf73f6e8659a90b25ebfde1311e1965364f`
 - branch: `codex/issue-6042-page-virtualization`
 - PR 제목: `perf(studio): 다중 페이지 스크롤 렌더링을 가상화한다`
 - 최종 보고: [처리 결과](../report/task_m100_6042_report.md)
 - PR 본문: [Draft PR 초안](../report/task_m100_6042_pr_body.md) — `--body-file`에 바로 사용
+- 제출 PR: [#6637](https://github.com/edwardkim/rhwp/pull/6637)
 
 ## 1. 판정
 
@@ -16,9 +17,9 @@
 #6467 head의 직접 descendant이고 base 대비 19개 커밋이다. 이 Stage 6 문서 커밋을 더해도 같은 lineage의
 20개 커밋만 가지므로 **#6467 branch를 base로 하는 GitHub native Draft PR**을 만들 수 있는 로컬 상태다.
 
-이번 단계는 원격 변경을 하지 않았다. push, PR 생성, Ready 전환, merge, 다른 contributor PR의 close는
-포함하지 않는다. PR 번호가 생긴 뒤 collaborator self-review 문서와 오늘할일을 그 번호로 작성하는 절차도
-다음 제출 단계에서 수행한다.
+Stage 6 완료 commit 자체는 원격 변경을 하지 않았다. 후속 사용자 승인으로 code candidate를 push하고
+Draft PR #6637을 생성했으며, 이 문서와 PR 번호 기반 self-review·오늘할일은 review-only trailing
+commit으로 이어진다. Ready 전환, merge, 다른 contributor PR의 close는 여전히 포함하지 않는다.
 
 ## 2. 최종 stack·ancestry 감사
 
@@ -37,8 +38,9 @@
 
 ## 3. 범위 감사
 
-보강한 PR 본문까지 포함한 직접 base 대비 전체 diff는 202 files, +489,954/-219다. 대부분은 반복 A/B의
-raw JSON이다.
+PR 채번 전 code candidate의 직접 base 대비 diff는 202 files, +489,954/-219다. 대부분은 반복 A/B의
+raw JSON이다. 채번 뒤의 self-review·오늘할일은 별도 review-only trailing commit이며 제품 범위를
+바꾸지 않는다.
 
 | 범주 | 파일 / 크기 | 설명 |
 | --- | ---: | --- |
@@ -102,7 +104,8 @@ safety gate다.
 
 ## 7. 다음 승인 경계
 
-별도 승인 뒤 이 branch를 push하고, base를 `codex/issue-6041-budget-first-render-scale`로 지정한 Draft PR을
-생성한다. 생성 직후 PR 번호를 사용해 collaborator self-review 문서·오늘할일을 작성하고 같은 branch에
-후속 커밋한다. 이때도 Ready 전환은 하지 않는다. 전체 stack Ready 전에는 #6458을 최신 `devel` 위에
-restack하고 #6467·#6042를 순서대로 다시 쌓아 각 게이트를 재실행한다.
+승인에 따라 이 branch를 push하고, base를 `codex/issue-6041-budget-first-render-scale`로 지정한 Draft
+PR #6637을 생성했다. 게시 직후 base/head·Draft·`MERGEABLE/CLEAN`, 한글 본문과 이미지 링크를 재조회해
+확인했다. 다음은 채번된 self-review·오늘할일을 trailing commit으로 push하고 그 exact head의 CI를
+확인하는 것이다. Ready 전환은 하지 않는다. 전체 stack Ready 전에는 #6458을 최신 `devel` 위에
+restack하고 #6467·#6637을 순서대로 다시 쌓아 각 게이트를 재실행한다.
