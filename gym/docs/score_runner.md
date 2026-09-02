@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: gym/docs/score_runner.md
-last_verified: 2026-08-18
+last_verified: 2026-09-02
 ---
 
 # gym 채점기(score/runner) 예외 경로 규약
@@ -215,6 +215,12 @@ pack id · profile id 는 한 칸 이름이다. 허용은 영숫자와 `-` `_`.
 `answer.json 파싱 실패:` 로 시작한다. 파일이 없으면 빈 객체로 본다
 — answer 과제가 아닌 산출물 과제가 있기 때문이다.
 
+artifact 텍스트에 쓰는 `text_file_envelope_eq`는 제출 파일 전체와 CLI JSON
+봉투의 `path` 문자열을 정확히 비교한다. BOM·CRLF를 포함한 UTF-8 바이트가
+모두 같아야 하며, 기대 크기와 다르면 파일 본문을 읽지 않고 실패한다. 기대
+문자열이 8 MiB를 넘어도 거부한다. 결과 상세는 본문을 재출력하지 않고
+SHA-256과 바이트 수만 남긴다.
+
 `checks` 가 `[]` 이면 `empty-checks`. `bool([]) and all(...)` 가
 거짓이라 예전도 실패였지만, 이유가 없었다. 이제 kind 가 남는다.
 
@@ -278,7 +284,7 @@ error 만 있고 scored 가 0 이면 deny. 채점이 시작 전에 죽으면
 | `discriminate.py` | 약한 오라클(음성 대조) | 러너의 `score_task` 를 부르되 파일을 수정하지 않음 |
 | `trajectory.py` | 경로(마지막 스텝) | 러너의 `score_task` 를 부르되 파일을 수정하지 않음 |
 | `fuzz_corpus.py` | 결정적 변형 | 채점기를 직접 고치지 않음 |
-| `release_gate.py` | 릴리스 파이프라인 | 채점 결과를 소비할 수 있으나 이 규약 밖 |
+| `release_gate.py` | 수동 Gym 구·신 차등 조사 | 채점 결과를 소비할 수 있으나 제품 릴리스 권한은 없음 |
 | `audit.py` | pack 정합 | 바이너리 없이 파일만. 러너 예외와 별개 |
 
 이 작업은 automation / core-cli / casual-rides pack JSON 을 고치지

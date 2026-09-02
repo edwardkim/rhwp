@@ -2,10 +2,15 @@
 kind: guide
 status: active
 canonical: gym/tools/README.md
-last_verified: 2026-08-18
+last_verified: 2026-09-02
 ---
 
 # gym/tools — 라이브 오라클 프로브
+
+> **운영 경계:** 이 라이브 오라클은 채점 대상과 같은 현재 rhwp를 다시 실행해 Gym
+> 제출물을 평가한다. 따라서 AI 에이전트의 rhwp CLI/API 사용 능력과 벤치마크 자체의
+> 결정성을 검사할 수 있지만, 한컴 출력이나 독립 구현과 대조한 제품 정답지는 아니다.
+> 결과를 release/main/devel 일반 CI, tag 또는 게시의 허용·차단 조건으로 사용하지 않는다.
 
 이 문서는 `gym/tools/oracle_probe.py` 의 정본 설명이다. 새 CLI 바이너리는
 없다. 프로브는 순수 Python 이고, gym 채점이 믿는 전제를 팩 픽스처 없이
@@ -115,6 +120,13 @@ gym 의 채점 규약은 한 문장이다.
 
 `value_eq` 는 제출 키가 아니라 오라클 좌표를 상수와 비교한다. 편집
 과제에서 많이 쓰지만, 이 프로브 pack 은 읽기 전용 조회에 집중한다.
+
+`text_file_envelope_eq`는 artifact 텍스트 전체를 채점 시점 CLI JSON 봉투의
+지목 문자열과 바이트 단위로 대조한다. 예를 들어 `chart.csv`는
+`chart-to-csv --json` 봉투의 `charts[0].csv`와 비교하면 CSV 수치를 task에
+복제하지 않아도 된다. BOM·CRLF·모든 셀이 일치해야 하며, 8 MiB 상한을
+넘는 봉투 문자열은 거부한다. 채점 상세에는 untrusted 본문 대신 SHA-256과
+바이트 수만 남긴다.
 
 기준 풀이(`reference/*.json`) 도 숫자를 박제하지 않는다. 같은 명령을
 다시 적어 `build_baseline.py` 가 제출물을 만든다. 이중 계산은 과제와

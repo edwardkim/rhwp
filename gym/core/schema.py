@@ -191,6 +191,7 @@ CHECK_FIELD_HINTS = {
     "xml_root_eq": ("file", "value"),
     "json_value_eq": ("file", "value"),
     "csv_cell_eq": ("file", "row", "col", "value"),
+    "text_file_envelope_eq": ("file",),
     "utf8_bom": ("file",),
     "answer_eq": ("answer",),
     "len_answer_eq": ("answer",),

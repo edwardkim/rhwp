@@ -26,6 +26,18 @@
         "{\"planVersion\": \"1.0\", \"input\": \"samples/field-01.hwp\", \"output\": \"mode-set.hwp\", \"steps\": [{\"action\": \"replace_text\", \"find\": \"마케팅\", \"replace\": \"모드집합\"}]}",
         "--json"
       ]
+    },
+    {
+      "name": "제출 mode 라이브 일치",
+      "op": "answer_eq",
+      "answer": "mode",
+      "path": "mode",
+      "cmd": [
+        "replay",
+        "--plan-json",
+        "{\"planVersion\": \"1.0\", \"input\": \"samples/field-01.hwp\", \"output\": \"mode-set.hwp\", \"steps\": [{\"action\": \"replace_text\", \"find\": \"마케팅\", \"replace\": \"모드집합\"}]}",
+        "--json"
+      ]
     }
   ]
 }
