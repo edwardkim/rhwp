@@ -2,7 +2,7 @@
 
 - Issue: [#6042](https://github.com/edwardkim/rhwp/issues/6042)
 - 측정일: 2026-09-02 KST
-- 상태: **구현·자동화 A/B 통과, 사용자 재검증과 Stage 5 잔여 조건 대기**
+- 상태: **구현·자동화 A/B·사용자 재검증 통과 — Stage 5 종료 보고로 인계**
 - before: Stage 3 `5f5d60071bb403b361e796e6d229d2d5b5a9ebef`, `127.0.0.1:4191`
 - after: `a762e58ea`, `127.0.0.1:4193`
 - 환경: Chromium 151, viewport 1280×720 CSS px, 실제 DPR 2, Canvas2D
@@ -113,7 +113,7 @@ visible을 무조건 DPR 2로 만드는 대신 64M 집합 gate가 200% 두 쪽�
 
 Vite의 CanvasKit `fs`/`path` externalization과 500kB chunk 경고는 기존 경고이며 build 실패가 아니다.
 
-## 7. 남은 사용자 검증
+## 7. 사용자 검증과 종료 인계
 
 1. `:4191`과 `:4193`에서 `exam_kor`, 두 쪽, 100%를 열고 cursor가 없는 행으로 스크롤한다.
 2. 클릭하지 않은 채 약 0.5초 기다린다. before는 흐린 상태가 남고 after는 정착 뒤 선명해져야 한다.
@@ -121,5 +121,7 @@ Vite의 CanvasKit `fs`/`path` externalization과 500kB chunk 경고는 기존 �
 4. 자동 34%에서 기존 다중 쪽 화질·중앙 배치, 200% 한 쪽/두 쪽에서 메모리 안전 fallback을 확인한다.
 5. zoom 중 ruler 즉시 반영, focus/caret/현재 쪽 불변도 함께 확인한다.
 
-자동화 환경에서 만들지 못한 실제 DPR 1, 실제 창 resize, browser image failure와 사용자의 직접 시각
-승인은 기존 Stage 5 잔여 조건이다. 이를 승인하기 전 Stage 5 완료·Stage 6·push·PR 생성으로 넘어가지 않는다.
+사용자는 위 보정을 적용한 현재 서버를 직접 다시 조작한 뒤, 앞서 제보한 스크롤 버벅임이 사라진 것
+같다고 보고했다. 실제 DPR 1, 28개 browser viewport resize와 실제 image decode failure/fallback도
+후속 실행 검증을 통과했다. 전체 종료 판정과 명령·한계는
+[Stage 5 종료 보고](task_m100_6042_stage5_complete.md)를 따른다. Stage 6·push·PR 생성은 별도 경계다.

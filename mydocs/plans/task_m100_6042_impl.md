@@ -1,7 +1,7 @@
 # 구현 계획 — Task M100 #6042
 
 - 작성일: 2026-08-31 KST
-- 상태: **Stage 5 사용자 검증 보정 자동화 통과 — 사용자 재검증 대기**
+- 상태: **Stage 5 완료 — Stage 6 제출 준비 승인 대기**
 - 현재 기준: #6467 `23b5bcf73f6e8659a90b25ebfde1311e1965364f`
 - 역사 Stage 1 측정 기준: #6467 `ba68cd655aed5fd94804f725c033cf615231ce4b`
 - branch: `codex/issue-6042-page-virtualization`
@@ -269,8 +269,9 @@ path를 포함한 전체 matrix는 기존 Stage 5 증거와 결정론적 회귀 
 single/double/fixed four/auto/facing, 세로·가로·급반전, 34/50/100/200% 줌, `exam_kor`·`hwpspec`·
 `kps-ai`·KTX 4-layer·4쪽/21쪽 실문서와 document switch·edit/undo/redo를 A/B로 검증했다.
 revision당 성능 표본 260개는 모두 완료·오류 0이며 사전 경보선 안이다. 자세한 수치와 원시는
-[확장 보고](../working/task_m100_6042_stage5_expanded.md)를 따른다. 실제 DPR 1, 실제 창 resize,
-browser image failure 주입과 사용자 시각 승인은 자동화 환경 밖의 남은 종료 조건이다.
+[확장 보고](../working/task_m100_6042_stage5_expanded.md)를 따른다. 후속 실제 DPR 1, 28개 browser viewport
+resize, image decode 실패/fallback과 사용자 직접 조작은
+[Stage 5 종료 보고](../working/task_m100_6042_stage5_complete.md)에서 통과했다.
 
 ### 5.5 사용자 검증 보정 — scroll 중 surface 고정, 정착 뒤 visible 화질 회복
 
@@ -312,6 +313,9 @@ path 회귀가 아니라 입력 종료 뒤 수행하는 명시적 화질 비용�
 `PageInfo × zoom` 논리 geometry로 고정해 DPR 교체가 배치·scroll·ruler geometry를 바꾸지 않게 했다.
 결정론적 테스트와 전체 Studio gate 결과는
 [Stage 5 사용자 화질 보정 보고](../working/task_m100_6042_stage5_scroll_quality_correction.md)를 따른다.
+실제 DPR 1·viewport resize·browser image failure와 사용자 직접 조작까지 합친 최종 판정은
+[Stage 5 종료 보고](../working/task_m100_6042_stage5_complete.md)를 따른다. 장치 성능별 자동 확장과 짧은
+문서의 전체 surface 상주는 사용자 지시에 따라 이번 범위에서 제외한다.
 
 ## 6. Stage 5~6 검증과 철회 조건
 

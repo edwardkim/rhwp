@@ -2,7 +2,7 @@
 
 - Issue: [#6042](https://github.com/edwardkim/rhwp/issues/6042)
 - 측정일: 2026-09-02 KST
-- 상태: **자동화 가능 matrix 통과, 실제 DPR 1·창 resize·사용자 시각 승인 대기**
+- 상태: **자동화 가능 matrix 통과 — 잔여 조건은 후속 Stage 5 종료 보고에서 완료**
 - before: Stage 3 `5f5d60071bb403b361e796e6d229d2d5b5a9ebef`
 - after: Stage 4 보정 `63d29e68b`
 - 관찰기 판정 보정: `6c65df255`
@@ -21,9 +21,10 @@ p50/p95는 결과 확인 전에 고정한 `max(10ms, 5%)` / `max(25ms, 10%)` 경
 CanvasKit은 surface cache key의 `backend:canvaskit`으로, auto는 양쪽 모두
 `backend:canvas2d` 폴백으로 확인했다.
 
-다만 in-app browser는 viewport 1280×720과 실제 DPR 2로 고정돼 실제 DPR 1과 live resize를 만들 수
-없다. browser image failure 주입과 사용자 시각 승인도 남았다. 따라서 **자동화 matrix는 수용하지만
-Stage 5 전체와 Stage 6은 아직 완료 처리하지 않는다.**
+이 보고 시점의 in-app browser는 viewport 1280×720과 실제 DPR 2로 고정돼 실제 DPR 1과 live resize를
+만들 수 없었다. browser image failure 주입과 사용자 시각 승인도 당시 남았다. 후속 별도 Chrome 실행과
+사용자 직접 조작으로 이 조건을 채운 최종 판정은 [Stage 5 종료 보고](task_m100_6042_stage5_complete.md)를
+따른다.
 
 ## 2. 조건과 방법
 
@@ -159,15 +160,16 @@ materialize된 working set만 image/flow/retained-complete 대기 대상으로 �
 
 Vite의 CanvasKit `fs`/`path` externalization과 500kB chunk 경고는 기존 경고이며 build 실패가 아니다.
 
-## 9. 남은 Stage 5 종료 조건
+## 9. 이 보고 시점에 남았던 Stage 5 종료 조건
 
 1. 실제 DPR 1 환경에서 Canvas2D/auto의 single·double·4열 34/50/100/200% smoke
 2. 실제 창 폭을 줄였다 늘리는 동안 auto 열 hysteresis, ruler, scroll 좌표 검증
 3. browser 이미지 실패/fallback fault-injection 또는 동등한 실행 기반 수명 증거
 4. 사용자의 직접 조작으로 눈금자 지연, 좌우/상하 점프, 빈 쪽·화질 회귀가 없다는 시각 승인
 
-위 네 항목을 확인하기 전 Stage 6 제출 준비, push, Draft PR 생성 또는 stack Ready 전환을 수행하지 않는다.
-현재 4191/4193 서버는 Stage 3/보정 A/B 직접 검증에 사용할 수 있다.
+위 네 항목은 [Stage 5 종료 보고](task_m100_6042_stage5_complete.md)에서 모두 확인했다. Stage 6 제출 준비,
+push, Draft PR 생성 또는 stack Ready 전환은 여전히 별도 승인 경계다. 현재 4191/4193 서버는
+Stage 3/보정 A/B 직접 검증에 사용할 수 있다.
 
 ## 10. 증거 목록
 

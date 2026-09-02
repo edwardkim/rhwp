@@ -106,6 +106,7 @@ e2e 스크립트의 **단일 권위 목록**이다. 파일 추가/변경/폐기 
 | `responsive.test.mjs` | 상시 | active | #6118 서식 바 경계·문단 더보기, #6138 도구 한 줄 스크롤, #6187 모든 너비·낮은 높이의 눈금자 표시와 grid 정렬 검증 (resize 프레임 공백 검증은 별도) | — | npm e2e:responsive + CI |  |
 | `ruler-document-switch.test.mjs` | 상시 | active | 문서를 바꿔 열면 눈금자가 새 문서의 쪽을 다시 그린다 (`document-view-loaded`) — 문단 여백이 같은 문서를 잇달아 열 때 앞 문서 눈금이 남는 회귀 가드 | 누름틀-2024.hwp · 253E164F57A1BC6934-empty.hwp | npm e2e:ruler-document-switch |  |
 | `ruler-resize.test.mjs` | 상시 | active | #6187 resize 경계의 눈금자 grid·정렬·실제 화면 snapshot 검사; 전체 합성 프레임 보증과 구분, browser-client driver 주입 지원 | exam_kor.hwp | 수동 |  |
+| `page-virtualization-image-failure.test.mjs` | 상시 | active | #6042 실제 Chromium에서 첫 embedded-image decode 실패를 주입하고 PageRenderer fallback 뒤 scheduler·image job·flow layer 정착을 검사 | test-image.hwp | 수동 |  |
 | `run-render-diff.mjs` | 유틸 | active | render-diff CI 러너 (canvas/pdf diff 오케스트레이션) | — | npm+CI |  |
 | `run-with-vite.mjs` | 유틸 | active | Vite dev server 기동 + 임의 명령 실행 공용 러너 (VITE_URL 주입, 종료 코드 전파) | — | npm e2e:undo-depth |  |
 | `save-as-format.test.mjs` | 상시 | active | 저장 출력 포맷 선택 (file:save-as-hwp / file:save-as-hwpx) E2E — #1613 | biz_plan.hwp, hwpx/footnote-01.hwpx | 수동 |  |
