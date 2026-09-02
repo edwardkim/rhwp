@@ -22,9 +22,29 @@ use super::{
 use crate::model::bin_data::BinDataContent;
 use crate::model::control::Control;
 use crate::model::paragraph::Paragraph;
-use crate::model::shape::CaptionDirection;
+use crate::model::shape::{CaptionDirection, CommonObjAttr, HorzRelTo};
 use crate::model::style::{Alignment, BorderLine};
 use crate::renderer::float_placement::native_multirow_internal_reset_rowbreak_anchor_advance_hu;
+
+/// 인라인으로 재분류된 부동 그림이 유지해야 할 문단 기준 가로 오프셋(px).
+///
+/// `[#2004]` 정규화(`reclassify_cell_floating_stacks`)는 같은 자리에 겹친 전면급
+/// 부동 그림 더미를 **그림 1장짜리 인라인 문단 N개**로 쪼갠다. 한글이 이런 더미를
+/// 쪽당 1장씩 놓는 것을 재현하려면 필요한 변환이다(끄면 그림이 아예 안 그려진다).
+/// 다만 그 변환은 `treat_as_char` 만 바꾸고 개체의 `horzOffset` 은 그대로 두는데,
+/// 인라인 배치는 그 값을 보지 않아 쪼갠 그림이 전부 셀 왼끝에 겹친다
+/// (issue2004 5~8쪽: 한글 대비 −19~−28px).
+///
+/// 저장 글자처럼 그림은 위치값을 쓰지 않는다 — samples/ 의 `treat_as_char` 그림
+/// 360장 중 354장이 `horzOffset = 0` 이고, 0 이 아닌 6장은 전부 `horz_rel_to`
+/// 가 `Column` 이다. 문단 기준 오프셋을 가진 인라인 그림은 이 재분류가 만든
+/// 것뿐이므로, 이 보정은 그 그림에만 실제로 작동한다.
+fn inline_para_horizontal_offset_px(common: &CommonObjAttr, dpi: f64) -> f64 {
+    if !matches!(common.horz_rel_to, HorzRelTo::Para) {
+        return 0.0;
+    }
+    hwpunit_to_px(common.horizontal_offset as i32, dpi)
+}
 
 /// `layout_partial_table_resolved`가 표 자체와 분리해 사용하는 host 문맥.
 ///
@@ -2099,7 +2119,11 @@ impl LayoutEngine {
                                             );
                                         }
                                         let pic_area = LayoutRect {
-                                            x: inline_x,
+                                            x: inline_x
+                                                + inline_para_horizontal_offset_px(
+                                                    &pic.common,
+                                                    self.dpi,
+                                                ),
                                             y: inline_tac_y,
                                             width: clamped_w,
                                             height: clamped_h,
