@@ -5,9 +5,11 @@
 //! - **콤보 차트** (bar + line) 및 **이중 Y축** 지원
 
 use super::{
-    BarGrouping, LegendPos, OfPieInfo, OfPieType, OoxmlChart, OoxmlChartType, OoxmlSeries,
-    SeriesMarker, View3D,
+    AxisPos, BarGrouping, LegendPos, OfPieInfo, OfPieType, OoxmlAxis, OoxmlChart, OoxmlChartType,
+    OoxmlSeries, SeriesMarker, TickMark, View3D,
 };
+
+use super::LineSpec;
 
 /// 기본 시리즈 색상 팔레트 (시리즈 색상 미지정 시 순환 사용)
 ///
@@ -66,6 +68,69 @@ mod hancom_default {
     pub const DIGIT_EM: f64 = 0.55;
     /// 격자선·축선 스타일 (실측 #8C8C8C, 1px — 3D 방 선은 `ROOM_LINE_STYLE` 별도 실측).
     pub const GRID_STYLE: &str = "stroke=\"#8c8c8c\" stroke-width=\"1\"";
+    /// 주 눈금 길이 = 0.23 × 라벨 글꼴 (실측 4배 래스터 10~12px = 2.5~3px, 축선과 같은 선).
+    pub const TICK_EM: f64 = 0.23;
+    /// 차트 바깥 테두리 — `c:chartSpace > c:spPr` 미지정일 때 (실측 4배 래스터 3px·gray 134).
+    pub const FRAME_STYLE: &str = "stroke=\"#8c8c8c\" stroke-width=\"0.75\"";
+}
+
+/// 선 선언 → SVG stroke 속성. 미지정이면 `default_attr`, `a:noFill` 이면 선 없음. [#6624]
+fn line_attr(spec: LineSpec, default_attr: &str) -> String {
+    match spec {
+        LineSpec::Unspecified => default_attr.to_string(),
+        LineSpec::None => "stroke=\"none\"".to_string(),
+        LineSpec::Solid { rgb, width_emu } => format!(
+            "stroke=\"{}\" stroke-width=\"{:.2}\"",
+            color_hex(rgb),
+            width_emu.map(|w| w as f64 / EMU_PER_PT).unwrap_or(0.75) * PX_PER_PT
+        ),
+    }
+}
+
+/// 플롯 영역 사각형 — 흰 면 + `c:plotArea > c:spPr > a:ln`. 미지정·noFill 이면 테두리 없음
+/// (코퍼스 전건 noFill, 한/글 실측 플롯 테두리 없음). [#6624]
+fn plot_rect(chart: &OoxmlChart, px: f64, py: f64, pw: f64, ph: f64) -> String {
+    format!(
+        "<rect x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" fill=\"#ffffff\" {}/>\n",
+        px,
+        py,
+        pw,
+        ph,
+        line_attr(chart.plot_area_line, "stroke=\"none\"")
+    )
+}
+
+/// 해당 위치의 축 선언. 없으면 코퍼스 기본(격자 있음·눈금 out·표시) — 축 요소를 안 쓴
+/// 문서와 모델을 직접 만드는 테스트가 종전 격자 출력을 유지하도록. [#6624]
+fn axis_at(chart: &OoxmlChart, pos: AxisPos) -> OoxmlAxis {
+    chart
+        .axes
+        .iter()
+        .find(|a| a.pos == pos)
+        .cloned()
+        .unwrap_or(OoxmlAxis {
+            pos,
+            major_gridlines: true,
+            ..Default::default()
+        })
+}
+
+/// 눈금 하나 — `outward` 는 축 바깥쪽 단위 벡터. `TickMark::Cross` 는 양쪽. [#6624]
+fn push_tick(svg: &mut String, tick: TickMark, x: f64, y: f64, ox: f64, oy: f64, len: f64) {
+    let (a, b) = match tick {
+        TickMark::Out => (0.0, 1.0),
+        TickMark::In => (-1.0, 0.0),
+        TickMark::Cross => (-1.0, 1.0),
+        TickMark::None => return,
+    };
+    svg.push_str(&format!(
+        "<line class=\"hwp-chart-tick\" x1=\"{:.2}\" y1=\"{:.2}\" x2=\"{:.2}\" y2=\"{:.2}\" {}/>\n",
+        x + ox * len * a,
+        y + oy * len * a,
+        x + ox * len * b,
+        y + oy * len * b,
+        hancom_default::GRID_STYLE
+    ));
 }
 
 /// CSS px / pt (96dpi).
@@ -272,8 +337,12 @@ pub fn render_chart_svg(chart: &OoxmlChart, x: f64, y: f64, w: f64, h: f64) -> S
 
     let mut svg = String::new();
     svg.push_str(&format!(
-        "<g class=\"hwp-ooxml-chart\"><rect x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" fill=\"#ffffff\" stroke=\"#cccccc\" stroke-width=\"0.5\"/>\n",
-        x, y, w, h
+        "<g class=\"hwp-ooxml-chart\"><rect x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" fill=\"#ffffff\" {}/>\n",
+        x,
+        y,
+        w,
+        h,
+        line_attr(chart.chart_line, hancom_default::FRAME_STYLE)
     ));
 
     // C1c #1882 갭①: 명시 제목이 없어도 c:title 요소가 있고 autoTitleDeleted=0이면
@@ -704,14 +773,11 @@ fn render_bars(
         return;
     }
 
-    svg.push_str(&format!(
-        "<rect x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" fill=\"#ffffff\" stroke=\"#cccccc\" stroke-width=\"0.5\"/>\n",
-        px, py, pw, ph
-    ));
+    svg.push_str(&plot_rect(chart, px, py, pw, ph));
 
     render_value_grid(
         svg,
-        label_font_px(chart),
+        chart,
         px,
         py,
         pw,
@@ -867,13 +933,10 @@ fn render_line(svg: &mut String, chart: &OoxmlChart, px: f64, py: f64, pw: f64, 
         value_range(chart, VERTICAL_AXIS_TICKS)
     };
 
-    svg.push_str(&format!(
-        "<rect x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" fill=\"#ffffff\" stroke=\"#cccccc\" stroke-width=\"0.5\"/>\n",
-        px, py, pw, ph
-    ));
+    svg.push_str(&plot_rect(chart, px, py, pw, ph));
     render_value_grid(
         svg,
-        label_font_px(chart),
+        chart,
         px,
         py,
         pw,
@@ -971,13 +1034,10 @@ fn render_stock(svg: &mut String, chart: &OoxmlChart, px: f64, py: f64, pw: f64,
     let (vmin, mx, vstep) = nice_axis_no_headroom(raw_min, raw_max, VERTICAL_AXIS_TICKS);
     let vmax = mx + vstep;
 
-    svg.push_str(&format!(
-        "<rect x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" fill=\"#ffffff\" stroke=\"#cccccc\" stroke-width=\"0.5\"/>\n",
-        px, py, pw, ph
-    ));
+    svg.push_str(&plot_rect(chart, px, py, pw, ph));
     render_value_grid(
         svg,
-        label_font_px(chart),
+        chart,
         px,
         py,
         pw,
@@ -1124,17 +1184,13 @@ fn render_scatter(svg: &mut String, chart: &OoxmlChart, px: f64, py: f64, pw: f6
     let yspan = (ymax - ymin).max(1e-9);
 
     // 플롯 배경
-    svg.push_str(&format!(
-        "<rect x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" fill=\"#ffffff\" stroke=\"#cccccc\" stroke-width=\"0.5\"/>\n",
-        px, py, pw, ph
-    ));
+    svg.push_str(&plot_rect(chart, px, py, pw, ph));
     // X축(하단, 수직 격자선) + Y축(좌측, 수평 격자선) — 둘 다 수치축, 소수 라벨
-    let font = label_font_px(chart);
     render_value_grid(
-        svg, font, px, py, pw, ph, xmin, xmax, xstep, None, true, false, false, true,
+        svg, chart, px, py, pw, ph, xmin, xmax, xstep, None, true, false, false, true,
     );
     render_value_grid(
-        svg, font, px, py, pw, ph, ymin, ymax, ystep, None, false, false, false, true,
+        svg, chart, px, py, pw, ph, ymin, ymax, ystep, None, false, false, false, true,
     );
 
     let (show_line, smooth, show_markers) = chart.scatter_style.flags();
@@ -1650,28 +1706,12 @@ fn render_combo(svg: &mut String, chart: &OoxmlChart, px: f64, py: f64, pw: f64,
         value_range_for(sec.iter().cloned(), VERTICAL_AXIS_TICKS)
     };
 
-    svg.push_str(&format!(
-        "<rect x=\"{:.2}\" y=\"{:.2}\" width=\"{:.2}\" height=\"{:.2}\" fill=\"#ffffff\" stroke=\"#cccccc\" stroke-width=\"0.5\"/>\n",
-        px, py, pw, ph
-    ));
+    svg.push_str(&plot_rect(chart, px, py, pw, ph));
 
     // 기본축 격자 (좌측)
     let pri_fmt = pri.first().and_then(|s| s.format_code.as_deref());
     render_value_grid(
-        svg,
-        label_font_px(chart),
-        px,
-        py,
-        pw,
-        ph,
-        pri_min,
-        pri_max,
-        pri_step,
-        pri_fmt,
-        false,
-        false,
-        false,
-        false,
+        svg, chart, px, py, pw, ph, pri_min, pri_max, pri_step, pri_fmt, false, false, false, false,
     );
 
     // 보조축 격자 (우측, 눈금만) — step 기반이라 기본축과 눈금 수가 다를 수 있음
@@ -1679,19 +1719,7 @@ fn render_combo(svg: &mut String, chart: &OoxmlChart, px: f64, py: f64, pw: f64,
     if !sec.is_empty() {
         let sec_fmt = sec.first().and_then(|s| s.format_code.as_deref());
         render_value_grid(
-            svg,
-            label_font_px(chart),
-            px,
-            py,
-            pw,
-            ph,
-            sec_min,
-            sec_max,
-            sec_step,
-            sec_fmt,
-            false,
-            true,
-            false,
+            svg, chart, px, py, pw, ph, sec_min, sec_max, sec_step, sec_fmt, false, true, false,
             false,
         );
     }
@@ -1810,7 +1838,7 @@ fn render_combo(svg: &mut String, chart: &OoxmlChart, px: f64, py: f64, pw: f64,
 #[allow(clippy::too_many_arguments)]
 fn render_value_grid(
     svg: &mut String,
-    font: f64,
+    chart: &OoxmlChart,
     px: f64,
     py: f64,
     pw: f64,
@@ -1840,9 +1868,21 @@ fn render_value_grid(
     let span = (vmax - vmin).max(1e-9);
     let step = if step > 0.0 { step } else { span / 5.0 };
     let grid_lines = (span / step).round().max(1.0) as usize;
-    // [#6624] 한/글은 값축 격자선과 같은 스타일로 축선(값축·카테고리축)을 그린다.
-    // 눈금 0 의 격자선이 한쪽 축선을 겸하므로 나머지 축선 하나만 더 긋는다.
-    if !secondary {
+    // [#6624] 축 선언대로: 격자선은 `c:majorGridlines` 가 있는 축만, 축선은 숨기지 않은 축,
+    // 눈금은 `c:majorTickMark` 방향으로 (한/글 실측: 값축 축선 있음, 눈금 out 약 3px,
+    // 주식형은 격자 없음). 셋 다 격자선과 같은 선 스타일.
+    let font = label_font_px(chart);
+    let axis = axis_at(
+        chart,
+        match (horizontal, secondary) {
+            (true, false) => AxisPos::Bottom,
+            (true, true) => AxisPos::Top,
+            (false, false) => AxisPos::Left,
+            (false, true) => AxisPos::Right,
+        },
+    );
+    let tick_len = font * hancom_default::TICK_EM;
+    if !secondary && !axis.deleted {
         if horizontal {
             svg.push_str(&format!(
                 "<line class=\"hwp-chart-axis\" x1=\"{:.2}\" y1=\"{:.2}\" x2=\"{:.2}\" y2=\"{:.2}\" {}/>\n",
@@ -1868,7 +1908,7 @@ fn render_value_grid(
         if horizontal {
             let gx = px + pw * t;
             // 보조축일 때는 격자선 중복 방지, 라벨만
-            if !secondary {
+            if !secondary && axis.major_gridlines {
                 svg.push_str(&format!(
                     "<line x1=\"{:.2}\" y1=\"{:.2}\" x2=\"{:.2}\" y2=\"{:.2}\" {}/>\n",
                     gx,
@@ -1877,6 +1917,12 @@ fn render_value_grid(
                     py + ph,
                     hancom_default::GRID_STYLE
                 ));
+            }
+            if axis.deleted {
+                continue;
+            }
+            if !secondary {
+                push_tick(svg, axis.major_tick_mark, gx, py + ph, 0.0, 1.0, tick_len);
             }
             let v = vmin + step * i as f64;
             svg.push_str(&format!(
@@ -1889,7 +1935,7 @@ fn render_value_grid(
             ));
         } else {
             let gy = py + ph - ph * t;
-            if !secondary {
+            if !secondary && axis.major_gridlines {
                 svg.push_str(&format!(
                     "<line x1=\"{:.2}\" y1=\"{:.2}\" x2=\"{:.2}\" y2=\"{:.2}\" {}/>\n",
                     px,
@@ -1898,6 +1944,12 @@ fn render_value_grid(
                     gy,
                     hancom_default::GRID_STYLE
                 ));
+            }
+            if axis.deleted {
+                continue;
+            }
+            if !secondary {
+                push_tick(svg, axis.major_tick_mark, px, gy, -1.0, 0.0, tick_len);
             }
             let v = vmin + step * i as f64;
             let gap = font * hancom_default::LEFT_GAP_EM * 0.5;
@@ -2286,11 +2338,60 @@ fn render_category_labels_at(
     } else {
         pw / cat_count as f64
     };
+    // [#6624] 카테고리 축선 + 경계 눈금 (한/글 실측: 아래/왼쪽 축선, 카테고리 경계마다
+    // 바깥 눈금 약 3px). `c:delete` 면 축선·눈금·라벨 전부 생략.
+    let cat_axis = axis_at(
+        chart,
+        if horizontal {
+            AxisPos::Left
+        } else {
+            AxisPos::Bottom
+        },
+    );
+    if cat_axis.deleted {
+        return;
+    }
+    let font = label_font_px(chart);
+    let tick_len = font * hancom_default::TICK_EM;
+    if horizontal {
+        svg.push_str(&format!(
+            "<line class=\"hwp-chart-cat-axis\" x1=\"{:.2}\" y1=\"{:.2}\" x2=\"{:.2}\" y2=\"{:.2}\" {}/>\n",
+            px,
+            py,
+            px,
+            py + ph,
+            hancom_default::GRID_STYLE
+        ));
+        for i in 0..=cat_count {
+            let y = py + cat_span * i as f64;
+            push_tick(svg, cat_axis.major_tick_mark, px, y, -1.0, 0.0, tick_len);
+        }
+    } else {
+        svg.push_str(&format!(
+            "<line class=\"hwp-chart-cat-axis\" x1=\"{:.2}\" y1=\"{:.2}\" x2=\"{:.2}\" y2=\"{:.2}\" {}/>\n",
+            px,
+            py + ph,
+            px + pw,
+            py + ph,
+            hancom_default::GRID_STYLE
+        ));
+        for i in 0..=cat_count {
+            let x = px + cat_span * i as f64;
+            push_tick(
+                svg,
+                cat_axis.major_tick_mark,
+                x,
+                py + ph,
+                0.0,
+                1.0,
+                tick_len,
+            );
+        }
+    }
     for (ci, cat) in chart.categories.iter().enumerate() {
         if ci >= cat_count {
             break;
         }
-        let font = label_font_px(chart);
         if horizontal {
             // 가로 막대: 카테고리 아래→위 (한컴 실측 — 막대 배치와 동일 순서)
             let row = cat_count - 1 - ci;

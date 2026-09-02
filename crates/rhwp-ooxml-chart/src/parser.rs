@@ -17,6 +17,53 @@ use quick_xml::events::Event;
 use quick_xml::Reader;
 use std::collections::HashMap;
 
+use super::{AxisKind, AxisPos, LineSpec, OoxmlAxis, TickMark};
+
+/// [#6624] 계열 밖 `c:spPr > a:ln` 의 주인.
+#[derive(Clone, Copy)]
+enum LineOwner {
+    PlotArea,
+    ChartSpace,
+}
+
+/// 지금 열린 `a:ln` 이 플롯 영역/차트 바깥 것인지. 계열·축·점별·표식·제목·범례·데이터표의
+/// spPr 은 해당 없음.
+fn line_owner(st: &ParseState) -> Option<LineOwner> {
+    if !(st.in_sp_pr && st.in_ln)
+        || st.cur_series.is_some()
+        || st.cur_axis.is_some()
+        || st.in_d_pt
+        || st.in_marker
+        || st.in_chart_title
+        || st.in_d_table
+    {
+        return None;
+    }
+    if st.in_plot_area {
+        Some(LineOwner::PlotArea)
+    } else if !st.in_chart_body {
+        Some(LineOwner::ChartSpace)
+    } else {
+        None
+    }
+}
+
+fn set_line(chart: &mut OoxmlChart, owner: LineOwner, spec: LineSpec) {
+    match owner {
+        LineOwner::PlotArea => chart.plot_area_line = spec,
+        LineOwner::ChartSpace => chart.chart_line = spec,
+    }
+}
+
+/// [#6624] 축 선언 시작 — `chart.axes` 에 넣고 열린 축으로 표시한다.
+fn open_axis(chart: &mut OoxmlChart, st: &mut ParseState, kind: AxisKind) {
+    chart.axes.push(OoxmlAxis {
+        kind,
+        ..Default::default()
+    });
+    st.cur_axis = Some(chart.axes.len() - 1);
+}
+
 /// 파싱 진행 시 문맥(현재 어떤 태그 트리에 있는지) 추적
 #[derive(Default)]
 struct ParseState {
@@ -43,6 +90,11 @@ struct ParseState {
     in_plot_area: bool,
     in_tx_pr: bool,
     in_marker: bool,
+    // [#6624] 지금 열려 있는 축 선언의 `chart.axes` 색인 (catAx/valAx/dateAx/serAx 안).
+    cur_axis: Option<usize>,
+    // [#6624] 열린 `a:ln` 의 `w`(EMU) — 플롯 영역·차트 테두리 선 굵기용.
+    cur_ln_w: Option<u32>,
+    in_d_table: bool,
     bar_dir: Option<BarDir>,
     // 현재 파싱 중인 plot 블록 (barChart/lineChart/pieChart) 안에 있는지
     cur_plot_type: Option<OoxmlChartType>,
@@ -520,10 +572,11 @@ fn handle_start(e: &quick_xml::events::BytesStart, chart: &mut OoxmlChart, st: &
         b"solidFill" => st.in_solid_fill = true,
         b"ln" => {
             st.in_ln = true;
+            st.cur_ln_w = attr_val(e, "w").and_then(|v| v.parse::<u32>().ok());
             // [#6624] 계열 `c:spPr > a:ln w` (EMU) — 선 굵기. 점별(dPt)·표식(marker)의
             // spPr 은 계열 선이 아니라 제외.
             if st.in_sp_pr && !st.in_d_pt && !st.in_marker {
-                if let Some(w) = attr_val(e, "w").and_then(|v| v.parse::<u32>().ok()) {
+                if let Some(w) = st.cur_ln_w {
                     if let Some(ser) = st.cur_series.as_mut() {
                         if ser.line_width_emu.is_none() {
                             ser.line_width_emu = Some(w);
@@ -532,12 +585,15 @@ fn handle_start(e: &quick_xml::events::BytesStart, chart: &mut OoxmlChart, st: &
                 }
             }
         }
+        b"dTable" => st.in_d_table = true,
         // [#6053] `c:spPr > a:ln > a:noFill` — 선 없음. `a:ln` 안일 때만 본다
         // (`spPr > noFill` 은 면 채움 없음이라 뜻이 다르다). 주식형 렌더러가 소비한다.
         b"noFill" => {
             if st.in_sp_pr && st.in_ln {
                 if let Some(ser) = st.cur_series.as_mut() {
                     ser.line_none = true;
+                } else if let Some(owner) = line_owner(st) {
+                    set_line(chart, owner, LineSpec::None);
                 }
             }
         }
@@ -549,6 +605,15 @@ fn handle_start(e: &quick_xml::events::BytesStart, chart: &mut OoxmlChart, st: &
                             if ser.color.is_none() {
                                 ser.color = Some(rgb);
                             }
+                        } else if let Some(owner) = line_owner(st) {
+                            set_line(
+                                chart,
+                                owner,
+                                LineSpec::Solid {
+                                    rgb,
+                                    width_emu: st.cur_ln_w,
+                                },
+                            );
                         }
                     }
                 }
@@ -562,6 +627,15 @@ fn handle_start(e: &quick_xml::events::BytesStart, chart: &mut OoxmlChart, st: &
                             if ser.color.is_none() {
                                 ser.color = Some(rgb);
                             }
+                        } else if let Some(owner) = line_owner(st) {
+                            set_line(
+                                chart,
+                                owner,
+                                LineSpec::Solid {
+                                    rgb,
+                                    width_emu: st.cur_ln_w,
+                                },
+                            );
                         }
                     }
                 }
@@ -583,8 +657,16 @@ fn handle_start(e: &quick_xml::events::BytesStart, chart: &mut OoxmlChart, st: &
             }
         }
         b"axPos" => {
-            if st.in_val_ax {
-                if let Some(val) = attr_val(e, "val") {
+            if let Some(val) = attr_val(e, "val") {
+                if let Some(ax) = st.cur_axis.and_then(|i| chart.axes.get_mut(i)) {
+                    ax.pos = match val.as_str() {
+                        "l" => AxisPos::Left,
+                        "r" => AxisPos::Right,
+                        "t" => AxisPos::Top,
+                        _ => AxisPos::Bottom,
+                    };
+                }
+                if st.in_val_ax {
                     st.cur_val_ax_pos = Some(val);
                 }
             }
@@ -593,6 +675,37 @@ fn handle_start(e: &quick_xml::events::BytesStart, chart: &mut OoxmlChart, st: &
             st.in_val_ax = true;
             st.cur_val_ax_id = None;
             st.cur_val_ax_pos = None;
+            open_axis(chart, st, AxisKind::Value);
+        }
+        b"catAx" => open_axis(chart, st, AxisKind::Category),
+        b"dateAx" => open_axis(chart, st, AxisKind::Date),
+        b"serAx" => open_axis(chart, st, AxisKind::Series),
+        // [#6624] 축 선언 안의 격자·눈금·숨김. 축 밖의 동명 요소(dLbls 의 delete 등)는 무시.
+        b"majorGridlines" => {
+            if let Some(ax) = st.cur_axis.and_then(|i| chart.axes.get_mut(i)) {
+                ax.major_gridlines = true;
+            }
+        }
+        b"majorTickMark" => {
+            if let (Some(ax), Some(val)) = (
+                st.cur_axis.and_then(|i| chart.axes.get_mut(i)),
+                attr_val(e, "val"),
+            ) {
+                ax.major_tick_mark = match val.as_str() {
+                    "in" => TickMark::In,
+                    "cross" => TickMark::Cross,
+                    "none" => TickMark::None,
+                    _ => TickMark::Out,
+                };
+            }
+        }
+        b"delete" => {
+            if let (Some(ax), Some(val)) = (
+                st.cur_axis.and_then(|i| chart.axes.get_mut(i)),
+                attr_val(e, "val"),
+            ) {
+                ax.deleted = matches!(val.as_str(), "1" | "true");
+            }
         }
         _ => {}
     }
@@ -665,10 +778,16 @@ fn handle_end(name: &[u8], chart: &mut OoxmlChart, st: &mut ParseState) {
             st.in_sp_pr = false;
         }
         b"solidFill" => st.in_solid_fill = false,
-        b"ln" => st.in_ln = false,
+        b"ln" => {
+            st.in_ln = false;
+            st.cur_ln_w = None;
+        }
+        b"dTable" => st.in_d_table = false,
         b"numCache" => st.in_num_cache = false,
+        b"catAx" | b"dateAx" | b"serAx" => st.cur_axis = None,
         b"valAx" => {
             st.in_val_ax = false;
+            st.cur_axis = None;
             if let (Some(id), Some(pos)) = (st.cur_val_ax_id.take(), st.cur_val_ax_pos.take()) {
                 st.val_ax_map.insert(id, pos);
             } else if let Some(id) = st.cur_val_ax_id.take() {

@@ -58,6 +58,16 @@ pub struct OoxmlChart {
     pub categories: Vec<String>,
     /// 시리즈 중 하나라도 보조축을 쓰면 true
     pub has_secondary_axis: bool,
+    /// [#6624] `c:plotArea` 의 축 선언(`c:catAx`/`c:valAx`/`c:dateAx`/`c:serAx`) — 문서 순서.
+    /// 격자선(`c:majorGridlines`)·눈금(`c:majorTickMark`)·숨김(`c:delete`)을 렌더러가 읽는다.
+    /// 코퍼스: 값축(l)만 격자, 눈금은 전부 `out`, 주식형은 격자 없음. 선언이 없으면(축 없는
+    /// 원형, 축 요소를 안 쓴 문서) 렌더러가 코퍼스 기본(값축 격자·눈금 out)을 쓴다.
+    pub axes: Vec<OoxmlAxis>,
+    /// [#6624] `c:plotArea > c:spPr > a:ln` — 플롯 영역 테두리. 코퍼스는 전건 `a:noFill`.
+    pub plot_area_line: LineSpec,
+    /// [#6624] `c:chartSpace > c:spPr > a:ln` — 차트 바깥 테두리. 코퍼스는 전건 미지정이라
+    /// 한/글 기본(#8c8c8c 0.75px)으로 그린다.
+    pub chart_line: LineSpec,
     /// 막대(bar/bar3D) plot의 `c:grouping` (clustered/stacked/percentStacked).
     /// 막대 렌더러만 사용. line/pie 무관. (C1a #1453 막대 누적 보정)
     pub grouping: BarGrouping,
@@ -205,6 +215,61 @@ pub enum SeriesMarker {
     Auto,
     /// 명시 심볼 (diamond/square/triangle/x 등 — 코퍼스 밖, 사이클 폴백과 병행)
     Named(String),
+}
+
+/// 선 선언 (`c:spPr > a:ln`) — 플롯 영역·차트 테두리용. [#6624]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum LineSpec {
+    /// `a:ln` 이 없다 — 렌더러가 기본 서식을 정한다.
+    #[default]
+    Unspecified,
+    /// `a:ln > a:noFill` — 선 없음.
+    None,
+    /// `a:ln > a:solidFill` — 색과 굵기(EMU, 없으면 None).
+    Solid { rgb: u32, width_emu: Option<u32> },
+}
+
+/// 축 종류 (`c:catAx`/`c:valAx`/`c:dateAx`/`c:serAx`). [#6624]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum AxisKind {
+    #[default]
+    Category,
+    Value,
+    Date,
+    Series,
+}
+
+/// 축 위치 (`c:axPos`). [#6624]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum AxisPos {
+    Left,
+    Right,
+    Top,
+    #[default]
+    Bottom,
+}
+
+/// 주 눈금 표시 (`c:majorTickMark`). 없으면 OOXML 기본 `cross` 가 아니라 코퍼스 기본 `out`
+/// 을 쓴다 — 한/글 문서는 전건 명시한다. [#6624]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum TickMark {
+    #[default]
+    Out,
+    In,
+    Cross,
+    None,
+}
+
+/// 축 선언 하나. [#6624]
+#[derive(Debug, Clone, PartialEq, Eq, Default)]
+pub struct OoxmlAxis {
+    pub kind: AxisKind,
+    pub pos: AxisPos,
+    /// `c:majorGridlines` 요소 존재 — 이 축의 눈금 위치에 격자선.
+    pub major_gridlines: bool,
+    pub major_tick_mark: TickMark,
+    /// `c:delete val="1"` — 축선·눈금·라벨을 그리지 않는다 (격자선은 유지).
+    pub deleted: bool,
 }
 
 /// 범례 위치 (`c:legendPos`). C1c #1882 갭③.

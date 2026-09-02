@@ -10,7 +10,10 @@
 use std::path::Path;
 
 use rhwp::ooxml_chart::renderer::render_chart_svg;
-use rhwp::ooxml_chart::{BarGrouping, LegendPos, OoxmlChart, OoxmlChartType, OoxmlSeries};
+use rhwp::ooxml_chart::{
+    AxisKind, AxisPos, BarGrouping, LegendPos, LineSpec, OoxmlChart, OoxmlChartType, OoxmlSeries,
+    TickMark,
+};
 
 fn page0_svg(rel: &str) -> String {
     let path = Path::new(env!("CARGO_MANIFEST_DIR")).join(rel);
@@ -129,6 +132,137 @@ fn pie_fills_plot_region_like_hancom() {
         (cy_ratio - 0.578).abs() < 0.02,
         "중심 y/프레임 높이 0.578: {cy_ratio:.3}"
     );
+}
+
+// ---- 축 선언대로: 격자선·축선·눈금 ----
+
+/// 차트 그룹 안의 `<line …/>` 태그들.
+fn lines(g: &str) -> Vec<&str> {
+    g.split("<line ")
+        .skip(1)
+        .map(|l| &l[..l.find("/>").expect("line 닫힘")])
+        .collect()
+}
+
+#[test]
+fn stock_has_axes_and_ticks_but_no_gridlines() {
+    // 주식형 XML 은 두 축 다 `c:majorGridlines` 없음, `c:majorTickMark val="out"`.
+    // 한/글 실측: 격자 없음, 값축(왼쪽)·카테고리축(아래) 축선, 눈금 바깥 약 3px.
+    let svg = page0_svg("samples/chart/기타/시가고가저가종가.hwp");
+    let g = chart_group(&svg);
+    let ls = lines(g);
+    let plain: Vec<&&str> = ls.iter().filter(|l| !l.contains("class=")).collect();
+    assert!(
+        plain.is_empty(),
+        "격자선이 없어야 한다: {:?}",
+        plain.first()
+    );
+    assert_eq!(
+        ls.iter().filter(|l| l.contains("hwp-chart-axis")).count(),
+        1,
+        "값축 축선"
+    );
+    assert_eq!(
+        ls.iter()
+            .filter(|l| l.contains("hwp-chart-cat-axis"))
+            .count(),
+        1,
+        "카테고리 축선"
+    );
+    // 값축 눈금 5(0·20·40·60·80) + 카테고리 경계 눈금 5(4 카테고리)
+    let ticks: Vec<&&str> = ls.iter().filter(|l| l.contains("hwp-chart-tick")).collect();
+    assert_eq!(ticks.len(), 10, "눈금 수");
+    let t = ticks[0];
+    let (x1, x2) = (num_after(t, " x1=\""), num_after(t, " x2=\""));
+    let (y1, y2) = (num_after(t, " y1=\""), num_after(t, " y2=\""));
+    assert!(
+        ((x2 - x1).abs() - 3.07).abs() < 0.05 || ((y2 - y1).abs() - 3.07).abs() < 0.05,
+        "눈금 길이 0.23L = 3.07px: {t}"
+    );
+}
+
+#[test]
+fn scatter_draws_gridlines_only_for_the_axis_that_declares_them() {
+    // 분산형 XML: valAx(b) 격자 없음, valAx(l) 격자 있음 → 가로 격자선만.
+    let svg = page0_svg("samples/chart/분산형/직선이있는분산형.hwp");
+    let g = chart_group(&svg);
+    let ls = lines(g);
+    let grid: Vec<&&str> = ls.iter().filter(|l| !l.contains("class=")).collect();
+    assert!(!grid.is_empty(), "값축(l) 격자선");
+    for l in grid {
+        let (y1, y2) = (num_after(l, " y1=\""), num_after(l, " y2=\""));
+        assert!((y1 - y2).abs() < 0.01, "세로 격자선이 그려졌다: {l}");
+    }
+}
+
+#[test]
+fn plot_area_has_no_border_and_frame_uses_hancom_default() {
+    // plotArea spPr 는 `a:noFill` + `a:ln > a:noFill` → 플롯 테두리 없음. chartSpace spPr 없음
+    // → 한/글 기본 바깥 테두리 #8c8c8c 0.75px (실측 4배 래스터 3px·gray 134).
+    let svg = page0_svg("samples/chart/기타/시가고가저가종가.hwp");
+    let g = chart_group(&svg);
+    assert!(!g.contains("#cccccc"), "옛 연회색 테두리 잔존");
+    let frame = &g[..g.find("/>").unwrap()];
+    assert!(
+        frame.contains("stroke=\"#8c8c8c\" stroke-width=\"0.75\""),
+        "바깥 테두리: {frame}"
+    );
+    let plot = g.split("<rect ").nth(2).expect("플롯 rect");
+    let plot = &plot[..plot.find("/>").unwrap()];
+    assert!(plot.contains("stroke=\"none\""), "플롯 테두리 없음: {plot}");
+}
+
+#[test]
+fn parse_plot_area_and_chart_space_lines() {
+    let xml = r#"<c:chartSpace xmlns:c="x" xmlns:a="y"><c:chart>
+<c:title><c:spPr><a:ln><a:solidFill><a:srgbClr val="FF0000"/></a:solidFill></a:ln></c:spPr></c:title>
+<c:plotArea><c:barChart><c:barDir val="col"/><c:ser>
+  <c:spPr><a:ln w="12700"><a:solidFill><a:srgbClr val="00FF00"/></a:solidFill></a:ln></c:spPr>
+  <c:val><c:numRef><c:numCache><c:pt idx="0"><c:v>3</c:v></c:pt></c:numCache></c:numRef></c:val>
+</c:ser></c:barChart>
+<c:valAx><c:axPos val="l"/><c:spPr><a:ln><a:noFill/></a:ln></c:spPr></c:valAx>
+<c:spPr><a:noFill/><a:ln w="9525"><a:noFill/></a:ln></c:spPr>
+</c:plotArea>
+<c:legend><c:spPr><a:ln><a:solidFill><a:srgbClr val="0000FF"/></a:solidFill></a:ln></c:spPr></c:legend>
+</c:chart>
+<c:spPr><a:ln w="19050"><a:solidFill><a:srgbClr val="123456"/></a:solidFill></a:ln></c:spPr>
+</c:chartSpace>"#;
+    let c = OoxmlChart::parse(xml.as_bytes()).expect("parse OK");
+    assert_eq!(c.plot_area_line, LineSpec::None, "plotArea ln noFill");
+    assert_eq!(
+        c.chart_line,
+        LineSpec::Solid {
+            rgb: 0x123456,
+            width_emu: Some(19050)
+        },
+        "chartSpace ln (제목·범례·축 spPr 은 무관)"
+    );
+    assert_eq!(c.series[0].color, Some(0x00FF00));
+}
+
+#[test]
+fn parse_axes_gridlines_ticks_delete() {
+    let xml = r#"<c:chartSpace xmlns:c="x" xmlns:a="y"><c:chart><c:plotArea>
+<c:barChart><c:barDir val="col"/><c:ser>
+  <c:val><c:numRef><c:numCache><c:pt idx="0"><c:v>3</c:v></c:pt></c:numCache></c:numRef></c:val>
+  <c:dLbls><c:delete val="1"/></c:dLbls>
+</c:ser><c:axId val="A"/><c:axId val="B"/></c:barChart>
+<c:catAx><c:axId val="A"/><c:delete val="0"/><c:axPos val="b"/><c:majorTickMark val="none"/></c:catAx>
+<c:valAx><c:axId val="B"/><c:delete val="1"/><c:axPos val="l"/><c:majorGridlines/><c:majorTickMark val="cross"/></c:valAx>
+</c:plotArea></c:chart></c:chartSpace>"#;
+    let c = OoxmlChart::parse(xml.as_bytes()).expect("parse OK");
+    assert_eq!(c.axes.len(), 2);
+    assert_eq!(c.axes[0].kind, AxisKind::Category);
+    assert_eq!(c.axes[0].pos, AxisPos::Bottom);
+    assert!(!c.axes[0].major_gridlines && !c.axes[0].deleted);
+    assert_eq!(c.axes[0].major_tick_mark, TickMark::None);
+    assert_eq!(c.axes[1].kind, AxisKind::Value);
+    assert_eq!(c.axes[1].pos, AxisPos::Left);
+    assert!(
+        c.axes[1].major_gridlines && c.axes[1].deleted,
+        "dLbls 의 delete 는 축과 무관"
+    );
+    assert_eq!(c.axes[1].major_tick_mark, TickMark::Cross);
 }
 
 // ---- 파서: 차트 XML 에서 읽는 값 ----
