@@ -3122,7 +3122,13 @@ impl LayoutEngine {
             }
             let zone_idx = (zone.border_fill_id as usize).saturating_sub(1);
             if let Some(zone_bs) = styles.border_styles.get(zone_idx) {
-                apply_cellzone_border_fill(&mut h_edges, &mut v_edges, &zone_bs.borders, zone);
+                apply_cellzone_border_fill(
+                    &mut h_edges,
+                    &mut v_edges,
+                    &zone_bs.borders,
+                    zone,
+                    &table.cells,
+                );
             }
         }
 
