@@ -318,6 +318,8 @@ fn emf_record_kind(record: &Record) -> String {
         // [#6577] 패스 기반 EMF 의 주 구성 레코드.
         Record::PolylineTo16 { .. } => "PolylineTo16".to_string(),
         Record::PolyBezierTo16 { .. } => "PolyBezierTo16".to_string(),
+        Record::IntersectClipRect(_) => "IntersectClipRect".to_string(),
+        Record::ExtSelectClipRgn { .. } => "ExtSelectClipRgn".to_string(),
         Record::BeginPath => "BeginPath".to_string(),
         Record::EndPath => "EndPath".to_string(),
         Record::CloseFigure => "CloseFigure".to_string(),

@@ -30,6 +30,9 @@ const RT_CREATE_PEN: u32 = 0x00000026;
 const RT_CREATE_BRUSH_INDIRECT: u32 = 0x00000027;
 /// [#6577] 이 파일군의 비-스톡 펜은 전부 여기서 온다(`EMR_CREATEPEN` 은 0건).
 const RT_EXT_CREATE_PEN: u32 = 0x0000005F;
+/// [#6577] 156627451 내장 EMF 는 클립을 112건 쓴다 — 종전에는 클립이 아예 없었다.
+const RT_INTERSECT_CLIP_RECT: u32 = 0x0000001E;
+const RT_EXT_SELECT_CLIP_RGN: u32 = 0x0000004B;
 const RT_DELETE_OBJECT: u32 = 0x00000028;
 const RT_EXT_CREATE_FONT_INDIRECT_W: u32 = 0x00000052;
 // 드로잉 (단계 12)
@@ -142,6 +145,8 @@ fn is_paintable(record: &Record) -> bool {
             | Record::PolyBezier16 { .. }
             | Record::PolylineTo16 { .. }
             | Record::PolyBezierTo16 { .. }
+            | Record::IntersectClipRect(_)
+            | Record::ExtSelectClipRgn { .. }
             | Record::FillPath(_)
             | Record::StrokePath(_)
             | Record::StrokeAndFillPath(_)
@@ -268,6 +273,15 @@ fn dispatch(record_type: u32, c: &mut Cursor<'_>, payload_len: usize) -> Result<
         RT_CREATE_BRUSH_INDIRECT => {
             let (handle, brush) = object::parse_create_brush_indirect(c)?;
             Record::CreateBrushIndirect { handle, brush }
+        }
+        RT_INTERSECT_CLIP_RECT => Record::IntersectClipRect(drawing::parse_rect(c)?),
+        RT_EXT_SELECT_CLIP_RGN => {
+            let cb_rgn_data = c.u32()?;
+            let mode = c.u32()?;
+            Record::ExtSelectClipRgn {
+                mode,
+                has_region: cb_rgn_data > 0,
+            }
         }
         RT_EXT_CREATE_PEN => {
             let (handle, pen) = object::parse_ext_create_pen(c)?;
