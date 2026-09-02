@@ -120,7 +120,15 @@ impl Player {
             Record::SetBkColor(v) => self.dc_stack.current_mut().bk_color = *v,
 
             // 드로잉
-            Record::MoveToEx(p) => self.dc_stack.current_mut().current_pos = (p.x, p.y),
+            Record::MoveToEx(p) => {
+                // [#6577] 패스 모드에서는 새 서브패스의 시작점이다. 종전에는
+                // current_pos 만 갱신하고 `path_d` 를 비워 둬, 뒤이은 `FillPath` 가
+                // 빈 패스를 채우고 도형이 통째로 사라졌다.
+                if self.path_active {
+                    let _ = write!(self.path_d, " M{} {}", p.x, p.y);
+                }
+                self.dc_stack.current_mut().current_pos = (p.x, p.y);
+            }
             Record::LineTo(p) => self.emit_line_to(p),
             Record::Rectangle(r) => self.emit_rect(r, None),
             Record::RoundRect {
@@ -137,6 +145,8 @@ impl Player {
             Record::Polyline16 { points, .. } => self.emit_polyline16(points, false),
             Record::Polygon16 { points, .. } => self.emit_polyline16(points, true),
             Record::PolyBezier16 { points, .. } => self.emit_polybezier16(points),
+            Record::PolylineTo16 { points, .. } => self.emit_polyline_to16(points),
+            Record::PolyBezierTo16 { points, .. } => self.emit_polybezier_to16(points),
 
             // 패스
             Record::BeginPath => {
@@ -383,6 +393,63 @@ impl Player {
             stroke.width,
         );
         self.svg.push(&node);
+    }
+
+    /// [#6577] `EMR_POLYLINETO16` — 현재 위치에서 이어지는 선분열을 패스에 누적한다.
+    ///
+    /// 패스 기반 EMF(Office·Illustrator 내장본)는 도형을 거의 전부
+    /// `BeginPath → MoveTo → {PolylineTo16 | PolyBezierTo16}* → CloseFigure → FillPath`
+    /// 로 표현한다. 이 두 레코드가 없으면 패스가 비어 채움이 통째로 사라진다
+    /// (156627451 내장 EMF: POLYBEZIERTO16 758건 · POLYLINETO16 644건).
+    fn emit_polyline_to16(&mut self, points: &[(i16, i16)]) {
+        if points.is_empty() {
+            return;
+        }
+        if !self.path_active {
+            // 패스 밖의 `…To` 는 현재 위치에서 시작하는 선분열로 그린다.
+            let (cx, cy) = self.dc_stack.current().current_pos;
+            let mut all = vec![(cx as i16, cy as i16)];
+            all.extend_from_slice(points);
+            self.emit_polyline16(&all, false);
+        } else {
+            for (x, y) in points {
+                let _ = write!(self.path_d, " L{x} {y}");
+            }
+        }
+        if let Some((x, y)) = points.last() {
+            self.dc_stack.current_mut().current_pos = (i32::from(*x), i32::from(*y));
+        }
+    }
+
+    /// [#6577] `EMR_POLYBEZIERTO16` — 현재 위치에서 이어지는 3차 베지에열.
+    fn emit_polybezier_to16(&mut self, points: &[(i16, i16)]) {
+        if points.len() < 3 {
+            return;
+        }
+        let mut d = String::new();
+        let mut i = 0;
+        while i + 2 < points.len() {
+            let (c1x, c1y) = points[i];
+            let (c2x, c2y) = points[i + 1];
+            let (ex, ey) = points[i + 2];
+            let _ = write!(d, " C{c1x} {c1y} {c2x} {c2y} {ex} {ey}");
+            i += 3;
+        }
+        if self.path_active {
+            self.path_d.push_str(&d);
+        } else {
+            let (cx, cy) = self.dc_stack.current().current_pos;
+            let stroke = self.stroke_spec();
+            let stroke_color = stroke.color.as_deref().unwrap_or("none");
+            let node = format!(
+                "<path d=\"M{cx} {cy}{d}\" fill=\"none\" stroke=\"{stroke_color}\" stroke-width=\"{:.2}\"/>",
+                stroke.width,
+            );
+            self.svg.push(&node);
+        }
+        if let Some((x, y)) = points.get(i.saturating_sub(1)).or_else(|| points.last()) {
+            self.dc_stack.current_mut().current_pos = (i32::from(*x), i32::from(*y));
+        }
     }
 
     fn emit_path(&mut self, fill: Option<String>, stroke: Option<StrokeSpec>) {
