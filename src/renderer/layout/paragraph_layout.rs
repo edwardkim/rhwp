@@ -1329,7 +1329,17 @@ pub(crate) fn tac_picture_outer_margins_px(
     pic: &crate::model::image::Picture,
     dpi: f64,
 ) -> (f64, f64, f64, f64) {
-    let m = &pic.common.margin;
+    tac_object_outer_margins_px(&pic.common, dpi)
+}
+
+/// [#6606] 글자처럼 개체(그림·도형·묶음 공통)의 바깥 여백(px) — (왼쪽, 오른쪽, 위, 아래).
+/// 도형도 같은 상자 규칙을 따른다: `draw-group` 의 글자처럼 묶음(좌우 3.20mm)은 자식
+/// 그림 10장이 전부 왼쪽 여백만큼(−12.05px) 왼쪽에 그려졌다.
+pub(crate) fn tac_object_outer_margins_px(
+    common: &crate::model::shape::CommonObjAttr,
+    dpi: f64,
+) -> (f64, f64, f64, f64) {
+    let m = &common.margin;
     (
         hwpunit_to_px(i32::from(m.left), dpi),
         hwpunit_to_px(i32::from(m.right), dpi),
@@ -3626,6 +3636,12 @@ impl LayoutEngine {
                                         + margin_left
                                         + margin_right,
                                 )
+                            }
+                            Control::Shape(shape) => {
+                                // [#6606] 도형·묶음도 줄 안에서 상자(폭 + 좌우 여백)를 차지한다.
+                                let (margin_left, margin_right, _, _) =
+                                    tac_object_outer_margins_px(shape.common(), self.dpi);
+                                Some(hwpunit_to_px(*w_hu, self.dpi) + margin_left + margin_right)
                             }
                             _ => None,
                         })
@@ -6775,10 +6791,15 @@ impl LayoutEngine {
                                 max_fs,
                                 line_spacing_px,
                             );
+                            // [#6606] 상자(도형 + 위아래 여백)를 baseline 에 앉히고 도형은
+                            // 상자의 (왼쪽, 위) 여백 안쪽에 둔다 — TAC 그림(#6603)과 같은 계약.
+                            let (margin_left, _, margin_top, margin_bottom) =
+                                tac_object_outer_margins_px(common, self.dpi);
                             let shape_y = if label_extra > 0.0 {
-                                y + label_extra
+                                y + label_extra + margin_top
                             } else {
-                                (y + baseline - shape_h).max(y)
+                                (y + baseline - shape_h - margin_top - margin_bottom).max(y)
+                                    + margin_top
                             };
                             // 인라인 좌표 등록 → shape_layout.rs에서 이 Shape를 스킵
                             tree.set_inline_shape_position(
@@ -6786,7 +6807,7 @@ impl LayoutEngine {
                                 para_index,
                                 tac_ci,
                                 cell_ctx.as_ref(),
-                                x,
+                                x + margin_left,
                                 shape_y,
                             );
                         }
@@ -7933,13 +7954,18 @@ impl LayoutEngine {
                             } else {
                                 hwpunit_to_px(comp_line.baseline_distance, self.dpi)
                             };
-                            let shape_y = (vars.y + baseline - shape_h).max(vars.y);
+                            // [#6606] 상자(도형 + 위아래 여백)를 baseline 에 앉히고 도형은
+                            // 상자의 (왼쪽, 위) 여백 안쪽에 둔다 — TAC 그림(#6603)과 같은 계약.
+                            let (margin_left, _, margin_top, margin_bottom) =
+                                tac_object_outer_margins_px(common, self.dpi);
+                            let box_h = shape_h + margin_top + margin_bottom;
+                            let shape_y = (vars.y + baseline - box_h).max(vars.y) + margin_top;
                             tree.set_inline_shape_position(
                                 vars.section_index,
                                 vars.para_index,
                                 tac_ci,
                                 cell_ctx.as_ref(),
-                                img_x,
+                                img_x + margin_left,
                                 shape_y,
                             );
                             img_x += tac_w;
