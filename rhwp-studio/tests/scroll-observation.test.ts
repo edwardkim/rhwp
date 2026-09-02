@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { admittedRetainedPages, currentImageRequest, flowImageState, imageCompletion, observeBoundary, ScrollObservation, surfacePixels, viewportApplied } from '../src/dev/scroll-observation.ts';
+import { admittedRetainedPages, currentImageRequest, flowImageState, imageCompletion, observeBoundary, renderSchedulerSettled, ScrollObservation, surfacePixels, viewportApplied } from '../src/dev/scroll-observation.ts';
 
 test('관찰은 this·인수·반환 값과 원래 prototype descriptor를 보존한다', () => {
   class Host { n = 3; run(a: number) { return this.n + a; } }
@@ -92,6 +92,23 @@ test('surface 비용은 실제 다층·익명 pool dimension 합이며 명목 DP
 
 test('예산 gate로 materialize하지 않은 선택 retained 후보는 완료 대기 대상에서 제외한다', () => {
   assert.deepEqual(admittedRetainedPages([4, 5, 6], page => page !== 5), [4, 6]);
+});
+
+test('관찰 완료는 queue뿐 아니라 scroll 정착 callback까지 기다린다', () => {
+  assert.equal(renderSchedulerSettled({
+    visibleQueued: 0,
+    prefetchQueued: 0,
+    scrollSettleScheduled: true,
+  }), false);
+  assert.equal(renderSchedulerSettled({
+    visibleQueued: 0,
+    prefetchQueued: 0,
+    scrollSettleScheduled: false,
+  }), true);
+  assert.equal(renderSchedulerSettled({
+    visibleQueued: 0,
+    prefetchQueued: 0,
+  }), true, '정착 API가 없는 before revision 관찰기와 호환한다');
 });
 
 test('scroll setter 뒤 이전 visibility는 완료가 아니며 scope·zoom·양축 ack가 모두 필요하다', () => {

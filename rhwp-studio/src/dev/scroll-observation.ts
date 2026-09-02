@@ -147,6 +147,16 @@ export function surfacePixels(surfaces: readonly { width: number; height: number
   return surfaces.reduce((sum, surface) => sum + surface.width * surface.height, 0);
 }
 
+export function renderSchedulerSettled(snapshot: {
+  visibleQueued: number;
+  prefetchQueued: number;
+  scrollSettleScheduled?: boolean;
+}): boolean {
+  return snapshot.visibleQueued === 0
+    && snapshot.prefetchQueued === 0
+    && snapshot.scrollSettleScheduled !== true;
+}
+
 /**
  * retained는 예산상 시도할 수 있는 후보 집합이다. 선택 prefetch가 admission에서 거절된 쪽은
  * surface가 없으므로, 완료 대기는 실제로 materialize된 retained working set에만 적용한다.

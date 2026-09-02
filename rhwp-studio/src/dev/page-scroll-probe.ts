@@ -5,7 +5,7 @@ import type { EventBus } from '../core/event-bus';
 import type { PageInfo } from '../core/types';
 import type { RenderSurfaceDecision } from '../view/render-surface-budget';
 import { clampRenderScale } from '../view/render-backend';
-import { admittedRetainedPages, currentImageRequest, flowImageState, imageCompletion, observeBoundary, ScrollObservation, surfacePixels, viewportApplied,
+import { admittedRetainedPages, currentImageRequest, flowImageState, imageCompletion, observeBoundary, renderSchedulerSettled, ScrollObservation, surfacePixels, viewportApplied,
   type BoundaryObservation, type ObservedViewport } from './scroll-observation';
 
 /** #6042 Stage 1 관찰 adapter. 제품 DPR/geometry/queue/renderer 결과를 수정하지 않는다. */
@@ -45,6 +45,7 @@ interface ProbeView {
       prefetchQueued: number;
       frameScheduled: boolean;
       idleScheduled: boolean;
+      scrollSettleScheduled?: boolean;
       visibleSlices: number;
       visibleExecuted: number;
       prefetchExecuted: number;
@@ -139,8 +140,7 @@ export function installPageScrollProbe(
   const stable = () => viewportApplied(viewport(), applied) && !vm.isZoomAnimating() && cv.currentVisiblePages.length > 0
     && cv.currentVisiblePages.every(p => rendered(p) && !pending(p))
     && admittedRetained().every(p => rendered(p) && !pending(p))
-    && cv.pageRenderScheduler.snapshot().visibleQueued === 0
-    && cv.pageRenderScheduler.snapshot().prefetchQueued === 0;
+    && renderSchedulerSettled(cv.pageRenderScheduler.snapshot());
 
   const inspectMilestones = () => {
     const id = trace.id;
