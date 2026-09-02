@@ -199,7 +199,7 @@ cursor가 없는 쪽으로 스크롤했을 때는 이동 중 surface를 유지�
 PR 채번 전 code candidate diff는 202 files, +489,954/-219지만 162개·약 16MB가 반복 A/B raw
 evidence입니다. 제품·테스트·E2E는 24 files, +4,063/-218입니다. 리뷰 UI가 raw JSON을 접어도
 `summary.json`과 위 제품 파일만으로 먼저 구조와 판정을 확인할 수 있습니다. PR 번호 기반 self-review와
-당일 orders는 code candidate 뒤의 review-only trailing commit으로 추가합니다.
+당일 orders는 code candidate 뒤의 review-only trailing commit으로 함께 제출했습니다.
 
 ## 범위 밖
 
