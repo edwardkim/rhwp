@@ -1749,6 +1749,22 @@ impl LayoutEngine {
                     line_widths
                 };
 
+                // [#6653] 중첩 표를 품은 줄은 저장 사다리에 그 표 높이로 적혀 있다
+                // (hwpx_sample2 p[21] `ls[1] vpos=0 lh=12080` = 161.07px, 표 157.3px).
+                // 글자와 표를 함께 가진 문단은 아래 텍스트 갈래를 타는데, 그 갈래가 표
+                // 전용 줄까지 지나 `para_y` 를 밀고 나서 표를 그린다 — 같은 높이를 두 번
+                // 쓴다. 8쪽에는 글자 줄이 있어 드러나지 않지만, 표 줄만 넘어온 9쪽 조각은
+                // 표가 161px 아래로 내려가 위에 빈 띠가 남는다(한/글 52.1 vs rhwp 210.6).
+                // 이 조각이 그리는 줄에 보이는 글자가 없으면 표 전용 줄이므로, 표는 그
+                // 줄이 시작한 자리에 놓는다.
+                let table_host_line_only_fragment = has_table_ctrl
+                    && composed
+                        .lines
+                        .iter()
+                        .skip(start_line)
+                        .take(end_line.saturating_sub(start_line))
+                        .all(|line| line.runs.iter().all(|run| run.text.trim().is_empty()));
+                let para_y_before_lines = para_y;
                 // 표 컨트롤이 없는 문단: 텍스트 먼저, 컨트롤 나중 (기존 동작)
                 // 표 컨트롤이 있는 문단: 문단 앞 간격 적용 → 표 먼저 배치 → 텍스트(엔터 등) 나중
                 if !has_table_ctrl
@@ -2543,7 +2559,11 @@ impl LayoutEngine {
                                 {
                                     // 중첩 표가 셀 가용 공간을 초과하면 행 범위 필터 적용
                                     let nested_y = if has_preceding_text {
-                                        para_y
+                                        if table_host_line_only_fragment {
+                                            para_y_before_lines
+                                        } else {
+                                            para_y
+                                        }
                                     } else {
                                         inner_area.y
                                     };
