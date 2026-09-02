@@ -93,6 +93,46 @@ impl RenderNormalizationOverlay {
                         continue;
                     };
                     let path = RenderPath::top_level(section_index, parent_paragraph_index);
+                    // [#6590] 최상위 글자처럼(TAC) 표의 선언 폭이 본문 폭을 근소 초과하면
+                    // 한/글은 본문 폭으로 비례 축소해 그린다. 근거는 host 문단의 저장
+                    // lineseg 다 — `samples/basic/BlogForm_BookReview.hwp` 실측: 표 선언
+                    // 폭 35719HU > 본문 폭 35149HU 인데 host 줄의 저장 `segment_width`
+                    // 는 35148HU 로 본문 폭과 같다(한/글이 표를 본문 폭 줄박스에
+                    // 실었다는 직접 증거). 그대로 그리면 표 우단이 본문 우단을 넘는다
+                    // (같은 표본 7.6px).
+                    //
+                    // near-fit(축소율 0.9 이상)에만 적용한다 — 본문보다 훨씬 넓은 표는
+                    // 저작 의도가 다르고(가로 넘침 허용·다단 등) 기존 경로가 맡는다.
+                    if hwp5_stored_pagination_layout && table.common.treat_as_char {
+                        let page_def = &section.section_def.page_def;
+                        let body_width = page_def
+                            .width
+                            .saturating_sub(page_def.margin_left)
+                            .saturating_sub(page_def.margin_right);
+                        let source_width = table.common.width;
+                        if body_width > 0
+                            && source_width > body_width
+                            && f64::from(body_width) >= f64::from(source_width) * 0.9
+                        {
+                            let mut top_path = path.clone();
+                            top_path.target_control_index = Some(control_index);
+                            let table_pointer = table.as_ref() as *const Table as usize;
+                            let projection = Arc::new(NestedTableWidthProjection {
+                                path: top_path.clone(),
+                                source_width,
+                                effective_width: body_width,
+                                width_scale: f64::from(body_width) / f64::from(source_width),
+                                use_owner_content_box: false,
+                                table_pointer,
+                            });
+                            overlay
+                                .nested_table_widths_by_pointer
+                                .insert(table_pointer, Arc::clone(&projection));
+                            overlay
+                                .nested_table_widths_by_path
+                                .insert(top_path, projection);
+                        }
+                    }
                     overlay.collect_nested_tables(
                         table,
                         path,
