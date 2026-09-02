@@ -2091,9 +2091,10 @@ mod tests {
             1,
             "조판 전용 보강 줄은 레코드에서 제외된다"
         );
+
+        memo_root_copies_only_source_line_segments();
     }
 
-    #[test]
     fn memo_root_copies_only_source_line_segments() {
         let mut last = Paragraph::new_empty();
         last.line_segs = vec![

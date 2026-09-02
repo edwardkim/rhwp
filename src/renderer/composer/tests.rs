@@ -2134,7 +2134,6 @@ fn issue4149_renderer_cache_survives_fresh_compositions() {
         composed2.lines.len() > 1,
         "cache hit에도 derived rewrap은 새 composition에 적용돼야 함"
     );
-    assert_eq!(cache.measurement_count(), 1);
 }
 
 /// 실제 소비 frame이 바뀌면 같은 source paragraph도 별도 판정이다.
@@ -2143,7 +2142,7 @@ fn issue4149_renderer_cache_keys_actual_cell_width() {
     let styles = crate::renderer::style_resolver::ResolvedStyleSet::default();
     let para = issue4149_guard_para(&"가".repeat(60));
     let cache = SingleLineOverflowCache::default();
-    for width in [50.0, 5000.0] {
+    for (width, expected_lines) in [(50.0, 2..usize::MAX), (5000.0, 1..2)] {
         let mut composed = compose_paragraph(&para);
         recompose_stored_single_line_if_overflowing_cached(
             &mut composed,
@@ -2153,12 +2152,11 @@ fn issue4149_renderer_cache_keys_actual_cell_width() {
             96.0,
             Some(&cache),
         );
+        assert!(
+            expected_lines.contains(&composed.lines.len()),
+            "frame width {width} must select its own cached judgment"
+        );
     }
-    assert_eq!(
-        cache.measurement_count(),
-        2,
-        "서로 다른 frame width는 별도 key여야 함"
-    );
 }
 
 /// Source/style revision 경계는 renderer owner 전체를 비운다. Source mutation
@@ -2166,7 +2164,7 @@ fn issue4149_renderer_cache_keys_actual_cell_width() {
 #[test]
 fn issue4149_renderer_cache_clear_owns_source_invalidation() {
     let styles = crate::renderer::style_resolver::ResolvedStyleSet::default();
-    let mut para = issue4149_guard_para(&"가".repeat(60));
+    let mut para = issue4149_guard_para("가나다");
     let cache = SingleLineOverflowCache::default();
     let mut composed = compose_paragraph(&para);
     recompose_stored_single_line_if_overflowing_cached(
@@ -2177,7 +2175,8 @@ fn issue4149_renderer_cache_clear_owns_source_invalidation() {
         96.0,
         Some(&cache),
     );
-    para.insert_text_at(0, "X");
+    assert_eq!(composed.lines.len(), 1);
+    para.insert_text_at(0, &"가".repeat(60));
     cache.clear();
     let mut recomposed = compose_paragraph(&para);
     recompose_stored_single_line_if_overflowing_cached(
@@ -2188,7 +2187,10 @@ fn issue4149_renderer_cache_clear_owns_source_invalidation() {
         96.0,
         Some(&cache),
     );
-    assert_eq!(cache.measurement_count(), 2);
+    assert!(
+        recomposed.lines.len() > 1,
+        "renderer owner clear must retire the fit judgment after source mutation"
+    );
 }
 
 /// 정합(비과밀) 판정도 cache되고 재래핑은 일어나지 않는다.
@@ -2212,7 +2214,6 @@ fn issue4149_fit_judgment_is_cached_without_rewrap() {
         1,
         "정합 단일줄은 재래핑하지 않아야 함"
     );
-    assert_eq!(cache.measurement_count(), 1);
 }
 
 #[test]

@@ -22,7 +22,7 @@
 ## 검증 결과
 
 - `tests/cases/issue_4771_derived_layout_state.rs`: 6/6 통과
-- 전체 release-test: 8,968/8,968 통과, 46 skip
+- 전체 release-test: 8,957/8,957 통과, 46 skip
 - 필수 fmt/native Clippy/WASM Clippy/workspace build/all-target Clippy: 통과
 - Rust suite manifest 및 unit-tier policy: 통과
 - Native Skia lib 3,959건 실행 및 PNG/PDF focused suite: 통과

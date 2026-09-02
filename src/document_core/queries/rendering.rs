@@ -8633,7 +8633,6 @@ mod tests {
         )));
     }
 
-    #[test]
     fn text_reflowed_table_provenance_lives_in_render_normalization() {
         use crate::model::control::Control;
         use crate::model::document::{Document, Section};
@@ -8665,6 +8664,8 @@ mod tests {
 
     #[test]
     fn print_profile_suppresses_interactive_output_options_without_mutating_state() {
+        text_reflowed_table_provenance_lives_in_render_normalization();
+
         let bytes = include_bytes!("../../../samples/render-p35-font-native-bitmap.hwpx");
         let mut core = DocumentCore::from_bytes(bytes).expect("fixture parses");
         core.show_paragraph_marks = true;

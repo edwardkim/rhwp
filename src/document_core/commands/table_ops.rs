@@ -3987,7 +3987,6 @@ mod table_frame_reflow_batch_tests {
         core
     }
 
-    #[test]
     fn split_and_join_remap_text_reflow_provenance_with_table_lifecycle() {
         let mut core = core_with_two_by_two_table();
         core.mark_table_text_reflowed_after_edit(0, 0, 0)
@@ -4003,7 +4002,6 @@ mod table_frame_reflow_batch_tests {
         assert_eq!(core.render_normalization.text_reflowed_tables.len(), 1);
     }
 
-    #[test]
     fn deleting_one_table_cannot_transfer_reflow_provenance_to_its_neighbor() {
         let mut core = core_with_two_by_two_table();
         let second = core.document.sections[0].paragraphs[0].controls[0].clone();
@@ -4033,7 +4031,6 @@ mod table_frame_reflow_batch_tests {
         assert!(core.render_normalization.text_reflowed_tables.is_empty());
     }
 
-    #[test]
     fn copied_edited_table_inherits_provenance_only_when_pasted() {
         let mut core = core_with_two_by_two_table();
         core.mark_table_text_reflowed_after_edit(0, 0, 0)
@@ -4051,7 +4048,6 @@ mod table_frame_reflow_batch_tests {
         assert_eq!(core.render_normalization.text_reflowed_tables.len(), 2);
     }
 
-    #[test]
     fn deleting_edited_table_host_retires_live_identity() {
         let mut core = core_with_two_by_two_table();
         core.document.sections[0]
@@ -4069,6 +4065,11 @@ mod table_frame_reflow_batch_tests {
 
     #[test]
     fn transpose_reflows_all_changed_cells_from_one_owner_width_plan() {
+        split_and_join_remap_text_reflow_provenance_with_table_lifecycle();
+        deleting_one_table_cannot_transfer_reflow_provenance_to_its_neighbor();
+        copied_edited_table_inherits_provenance_only_when_pasted();
+        deleting_edited_table_host_retires_live_identity();
+
         let mut core = core_with_two_by_two_table();
         core.begin_batch_native().expect("begin batch");
         Table::reset_paragraph_frame_owner_widths_calls_for_test();

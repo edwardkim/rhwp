@@ -2481,7 +2481,6 @@ mod tests {
             .find_map(|child| first_table_cell_width(child, model_cell_index))
     }
 
-    #[test]
     fn clearing_table_cells_invalidates_measurement_and_page_tree_owners() {
         let mut core = DocumentCore::new_empty();
         core.create_blank_document_native().expect("blank document");
@@ -2520,7 +2519,6 @@ mod tests {
         );
     }
 
-    #[test]
     fn cursor_cell_resize_invalidates_cached_table_geometry() {
         let mut core = DocumentCore::new_empty();
         core.create_blank_document_native().expect("blank document");
@@ -2561,6 +2559,9 @@ mod tests {
     /// 오라클과 어긋난다.
     #[test]
     fn para_shape_set_uses_hwp_codes() {
+        clearing_table_cells_invalidates_measurement_and_page_tree_owners();
+        cursor_cell_resize_invalidates_cached_table_geometry();
+
         let mut core = DocumentCore::new_empty();
         core.document.doc_info.para_shapes = vec![ParaShape {
             alignment: Alignment::Center,
