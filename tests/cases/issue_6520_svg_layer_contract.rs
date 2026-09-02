@@ -22,6 +22,7 @@ use rhwp::renderer::svg_layer::SvgLayerRenderer;
 use rhwp::renderer::{ShapeStyle, TextStyle};
 use rhwp::wasm_api::HwpDocument;
 use std::path::PathBuf;
+use std::process::Command;
 
 fn text_run(text: &str) -> TextRunNode {
     TextRunNode {
@@ -162,6 +163,68 @@ fn solid_rect(bounds: BoundingBox, color: u32) -> PaintOp {
             None,
         ),
     )
+}
+
+fn rhwp_bin() -> PathBuf {
+    std::env::var_os("CARGO_BIN_EXE_rhwp")
+        .map(PathBuf::from)
+        .or_else(|| option_env!("CARGO_BIN_EXE_rhwp").map(PathBuf::from))
+        .expect("rhwp binary path")
+}
+
+#[test]
+fn cli_legacy_backend_is_explicit_and_cannot_override_layer_options() {
+    let root = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    let sample = root.join("samples/para-001.hwp");
+    let output_root =
+        std::env::temp_dir().join(format!("rhwp-issue-6520-legacy-{}", std::process::id()));
+    for (backend_arg, expected_backend) in [(None, "layer"), (Some("legacy"), "legacy")] {
+        let output = output_root.join(expected_backend);
+        let mut command = Command::new(rhwp_bin());
+        command.args([
+            "export-svg",
+            sample.to_str().unwrap(),
+            "--page",
+            "0",
+            "--json",
+            "--output",
+        ]);
+        command.arg(&output);
+        if let Some(backend) = backend_arg {
+            command.args(["--backend", backend]);
+        }
+        let result = command.output().expect("run SVG backend");
+        assert!(
+            result.status.success(),
+            "{}",
+            String::from_utf8_lossy(&result.stderr)
+        );
+        let envelope: serde_json::Value =
+            serde_json::from_slice(&result.stdout).expect("parse export-svg envelope");
+        assert_eq!(envelope["backend"], expected_backend);
+        let svg_count = std::fs::read_dir(&output)
+            .expect("read SVG output")
+            .filter_map(Result::ok)
+            .filter(|entry| entry.path().extension().is_some_and(|ext| ext == "svg"))
+            .count();
+        assert_eq!(svg_count, 1);
+    }
+
+    let invalid = Command::new(rhwp_bin())
+        .args([
+            "export-svg",
+            sample.to_str().unwrap(),
+            "--backend",
+            "legacy",
+            "--profile",
+            "print",
+        ])
+        .output()
+        .expect("run invalid legacy/profile combination");
+    assert_eq!(invalid.status.code(), Some(2));
+    assert!(String::from_utf8_lossy(&invalid.stderr).contains("compatibility 진단 전용"));
+
+    std::fs::remove_dir_all(output_root).expect("remove temporary SVG output");
 }
 
 #[test]

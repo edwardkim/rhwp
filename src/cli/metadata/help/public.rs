@@ -22,6 +22,7 @@ pub(super) fn print() {
     println!(
         "      --profile <프로필>      layer 출력 프로필: screen|print|high-quality|fast-preview"
     );
+    println!("      --backend <백엔드>      layer(기본)|legacy(compatibility 진단 전용)");
     println!("      --show-para-marks       문단부호(↵/↓) 표시");
     println!("      --annotate-metric-font  배치에 쓴 내장 메트릭 face 를 data-metric-font 로 주석 (#4709)");
     println!("      --show-control-codes    조판부호 보이기 (문단부호 + 개체 마커 등)");
