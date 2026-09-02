@@ -37,13 +37,13 @@
 
 ## 3. 범위 감사
 
-Stage 6 문서까지 포함한 직접 base 대비 전체 diff는 202 files, +489,848/-219다. 대부분은 반복 A/B의
+보강한 PR 본문까지 포함한 직접 base 대비 전체 diff는 202 files, +489,954/-219다. 대부분은 반복 A/B의
 raw JSON이다.
 
 | 범주 | 파일 / 크기 | 설명 |
 | --- | ---: | --- |
 | Studio source·test·E2E | 24 files, +4,063/-218 | 행/X 인덱스, visibility snapshot, page surface LRU, scheduler, 수명·회귀 테스트 |
-| 계획·보고·피드백(원시 증거 제외) | 16 files, +2,272/-1 | Hyper-Waterfall 단계별 계약과 판정 |
+| 계획·보고·피드백(원시 증거 제외) | 16 files, +2,378/-1 | Hyper-Waterfall 단계별 계약과 판정 |
 | `issue6042*` 증거 | 162 files, 약 16MB | 실문서 raw trace, 정규화 snapshot, 비교 이미지·집계기 |
 
 Rust source, Rust test/fixture, `Cargo.toml`, `Cargo.lock`, GitHub Actions 변경은 없다. 따라서 저장소 정책의
