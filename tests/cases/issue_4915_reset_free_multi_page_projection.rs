@@ -56,7 +56,11 @@ fn reset_free_multi_page_nested_table_fragments_stay_inside_the_page() {
     let document = rhwp::wasm_api::HwpDocument::from_bytes(&bytes)
         .unwrap_or_else(|e| panic!("parse {SAMPLE}: {e}"));
 
-    assert_eq!(document.page_count(), 3, "쪽수는 한/글과 같은 3 이어야 한다");
+    assert_eq!(
+        document.page_count(),
+        3,
+        "쪽수는 한/글과 같은 3 이어야 한다"
+    );
 
     // p2(0-기준 1)가 종전에 표 전체 높이(2137px)를 그리던 조각이다.
     let json = document
