@@ -1,10 +1,27 @@
+> **Stack 3/3** — base는 의도적으로 `codex/issue-6041-budget-first-render-scale`입니다.
+>
+> 1. #6458 (`devel` ← `codex/issue-6040-zoom-topology`)
+> 2. #6467 (`codex/issue-6040-zoom-topology` ← `codex/issue-6041-budget-first-render-scale`)
+> 3. **이 PR** (`codex/issue-6041-budget-first-render-scale` ← `codex/issue-6042-page-virtualization`)
+>
+> 세 PR은 GitHub native stack #6640으로 연결되어 있습니다. 리뷰는 #6467 대비 이 layer의 diff를 기준으로 부탁드립니다.
+
+## 변경 요약
+
+- 전체 페이지를 반복 조사하지 않고 기존 geometry에서 만든 row/X index와 immutable visibility snapshot을
+  공유합니다.
+- mandatory visible 쪽은 viewport 중심부터 page 단위 rAF slice로 처리하고, optional prefetch는 visible
+  완료 뒤 idle에서 한 쪽씩 실행합니다. 새 입력은 generation으로 오래된 작업을 취소합니다.
+- 같은 문서·revision·backend·scale의 완성 main/overlay page bundle을 physical-pixel 예산 안에서 exact
+  LRU로 재사용합니다.
+- 스크롤 중에는 현재 surface DPR을 유지하고, 입력 종료 150ms 뒤 충분히 노출된 쪽을 center-first로
+  승격합니다. 64M surface-pixel gate를 넘으면 #6467 planner 결과를 유지합니다.
+- 초기 표시, 1·2쪽 fast path, zoom·resize·편집·undo/redo·strict render의 기존 동기 계약과 #6040의 배치,
+  #6467의 DPR/surface budget은 바꾸지 않습니다.
+
+## 관련 이슈
+
 Closes #6042
-
-이 PR은 GitHub native stack #6640의 세 번째 layer입니다.
-
-`#6458 (#6040) → #6467 (#6041) → #6637 (#6042)`
-
-리뷰는 #6467 대비 이 layer의 diff를 기준으로 부탁드립니다.
 
 ## 해결하려는 사용자 문제
 
@@ -34,60 +51,6 @@ Closes #6042
 이 PR은 “모든 페이지를 미리 그려 영구 보존”하는 방식으로 돌아가지 않습니다. visible은 반드시 처리하고,
 완성 bitmap 재사용과 선택 prefetch만 현재 physical-pixel headroom 안에서 수행합니다. 짧은 문서의
 fully-warm 전체 상주나 장치 성능별 자동 확장은 별도 문제로 남깁니다.
-
-## 구현 변화
-
-다중 페이지 문서의 일반 스크롤에서 전체 페이지 판정과 연속 raster가 입력 callback을 오래 점유하던
-구조를 다음 세 층으로 분리합니다.
-
-1. 기존 page geometry로 row/X index와 immutable visibility snapshot을 만듭니다.
-2. 같은 문서·revision·backend·실제 scale의 완성 main/overlay page bundle을 physical-pixel 예산 안에서
-   exact LRU로 재사용합니다.
-3. visible을 focused/viewport-center 순서의 page 단위 rAF slice로 처리하고, 선택 prefetch는 visible 완료
-   뒤 idle callback당 한 쪽만 실행합니다. 새 입력은 generation으로 stale work를 기각합니다.
-
-초기 표시, 1·2쪽 fast path, zoom-settled, resize, 편집/undo/redo, strict render는 기존 동기 의미를
-유지합니다. #6040의 배치와 #6467의 32M/40M DPR·surface budget도 바꾸지 않습니다.
-
-스크롤 중에는 현재 surface DPR을 고정해 재래스터를 피합니다. 마지막 입력 150ms 뒤 충분히 노출된 visible
-쪽만 center-first로 화면 DPR까지 회복합니다. 전체 raw 비용이 64M surface px를 넘으면 DPR 1.5, 그것도
-넘으면 #6467 planner 결과를 유지합니다. 이 64M은 cache 예산이 아니라 정착 visible 품질의 safety gate입니다.
-
-## 실제 사용 시나리오
-
-### 1. 긴 문서의 cold 이동
-
-`hwpspec.hwp` 178쪽을 34%·4열로 열고 첫 행에서 먼 행으로 scrollbar를 이동합니다. before는 같은 12쪽을
-그리면서 `visibility.update`가 p50 243.8ms 동안 입력 경로를 점유했습니다. after는 판정과 첫 visible
-작업을 분리해 `visibility.update`를 19.1ms, 첫 visible을 56.5ms에 완료했습니다.
-
-### 2. 읽던 구간의 warm 왕복
-
-같은 문서에서 인접 행을 반복 왕복합니다. exact page surface가 예산 안에 남아 있으면 다시 그리지 않고
-DOM에 재부착합니다. 측정한 warm 왕복에서는 before/after 모두 main raster 0이었고 완료 시간도
-16.9/17.7ms와 16.6/17.7ms로 동등했습니다. 즉 긴 문서의 cold 이동을 개선하기 위해 이미 warm한 경로를
-희생하지 않았습니다.
-
-### 3. 빠른 방향 반전과 cache thrash 방지
-
-`exam_kor.hwp`에서 네 쪽 행 사이를 빠르게 아래→위로 되돌아옵니다. 최초 scheduler는 아직 축소되지 않은
-active surface를 기준으로 LRU를 너무 일찍 trim해 역방향 raster가 3→5회로 늘어났습니다. 이를 Stage 5
-수용 차단으로 기록하고, target-state 예약과 선택 prefetch benefit gate를 추가했습니다. 최종 구현은
-before와 동일한 raster 3회·cache take 4회를 회복했습니다.
-
-### 4. 스크롤 후 읽기 화질
-
-`exam_kor.hwp`를 두 쪽·100%로 열고 cursor가 없는 다음 행으로 스크롤한 뒤 클릭하지 않고 기다립니다.
-스크롤 중에는 현재 bitmap을 그대로 사용해 입력을 막지 않고, 150ms 정착 뒤 화면에 충분히 노출된 두 쪽을
-center-first로 DPR 2까지 올립니다. 200%처럼 두 쪽 승격 비용이 64M을 넘는 경우에는 기존 planner 결과를
-유지해 무제한 allocation을 막습니다.
-
-### 5. 줌·배치·편집 수명
-
-자동 보기 34→50→100→200→100→50→34%, 가로/맞쪽/마지막 미완성 행, 실제 문서 연속 교체,
-입력→undo→redo를 반복했습니다. 열 수, visible/retained 집합, page box, focus, integer surface, image
-pending과 scheduler queue가 정착 후 before와 같은 계약을 유지했습니다. DPR 1.5에서도 CSS page box는
-physical Canvas 역산이 아니라 `PageInfo × zoom`으로 고정해 좌우·상하 점프를 만들지 않습니다.
 
 ## 주요 설계 결정
 
@@ -188,10 +151,8 @@ cursor가 없는 쪽으로 스크롤했을 때는 이동 중 surface를 유지�
 - browser 수명 회귀: `e2e/page-virtualization-image-failure.test.mjs`, `e2e/ruler-resize.test.mjs`
 - 최종 판정: `mydocs/report/task_m100_6042_report.md`
 
-PR 채번 전 code candidate diff는 202 files, +489,954/-219지만 162개·약 16MB가 반복 A/B raw
-evidence입니다. 제품·테스트·E2E는 24 files, +4,063/-218입니다. 리뷰 UI가 raw JSON을 접어도
-`summary.json`과 위 제품 파일만으로 먼저 구조와 판정을 확인할 수 있습니다. PR 번호 기반 self-review와
-당일 orders는 code candidate 뒤의 review-only trailing commit으로 함께 제출했습니다.
+diff의 큰 부분은 반복 A/B raw evidence입니다. 리뷰 UI가 raw JSON을 접어도 `summary.json`과 위 제품
+파일부터 보면 구조와 판정을 확인할 수 있습니다.
 
 ## 범위 밖
 
