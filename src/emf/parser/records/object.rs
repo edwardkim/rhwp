@@ -13,6 +13,37 @@ pub fn parse_create_pen(c: &mut Cursor<'_>) -> Result<(u32, LogPen), Error> {
     Ok((handle, pen))
 }
 
+/// [#6577] `EMR_EXTCREATEPEN`: ihPen(4) + offBmi(4) + cbBmi(4) + offBits(4) + cbBits(4)
+/// + LogPenEx{ PenStyle(4) Width(4) BrushStyle(4) ColorRef(4) BrushHatch(4)
+/// NumStyleEntries(4) StyleEntry[] }.
+///
+/// 이 파일군(156627451 내장 EMF)의 비-스톡 펜은 **전부** 이 레코드에서 온다
+/// (`EMR_CREATEPEN` 0건 · `EMR_EXTCREATEPEN` 16건). 종전에는 `Unknown` 으로 버려져
+/// 획 색·굵기가 직전 펜에 그대로 묶였다.
+///
+/// `LogPenEx` 의 색은 `BrushStyle == BS_SOLID(0)` 일 때 `ColorRef` 다. 그 밖의
+/// 브러시 스타일(해치·패턴)은 이 단계에서 단색으로 근사한다.
+pub fn parse_ext_create_pen(c: &mut Cursor<'_>) -> Result<(u32, LogPen), Error> {
+    let handle = c.u32()?;
+    // offBmi · cbBmi · offBits · cbBits — 이 단계에서는 브러시 비트맵을 쓰지 않는다.
+    for _ in 0..4 {
+        let _ = c.u32()?;
+    }
+    let style = c.u32()?;
+    let width = c.u32()? as i32;
+    let _brush_style = c.u32()?;
+    let color = c.u32()?;
+    Ok((
+        handle,
+        LogPen {
+            style,
+            width,
+            _reserved: 0,
+            color,
+        },
+    ))
+}
+
 /// EMR_CREATEBRUSHINDIRECT: ihBrush(u32) + LogBrush(12B) = 16B.
 pub fn parse_create_brush_indirect(c: &mut Cursor<'_>) -> Result<(u32, LogBrush), Error> {
     let handle = c.u32()?;
