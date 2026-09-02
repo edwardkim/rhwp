@@ -24,8 +24,9 @@ thrash와 fractional DPR geometry 문제를 최종 후보에서 해소했고, �
 
 이 PR은 native stack #6640의 top(3/3)이다. bottom #6458이 최신 `devel`과 충돌하므로 지금 Ready 또는
 merge 후보로 올리지 않는다. native stack에서는 이 PR이 직접 #6467을 base로 두더라도 branch protection과
-Actions가 trunk `devel` 기준으로 평가된다. 연결 직후 status check는 비어 있으며 이는 CI 통과가 아니다.
-cascading rebase로 선형성을 회복한 각 exact head에서 Full CI와 descendant 전체 검증을 다시 수행해야 한다.
+Actions가 trunk `devel` 기준으로 평가된다. 등록 뒤 top의 새 push가 Actions를 시작하는 것을 확인했다.
+cascading rebase로 선형성을 회복하면 SHA가 바뀌므로 갱신된 각 exact head에서 Full CI와 descendant 전체
+검증을 다시 수행해야 한다.
 
 ## 검토 경로와 metadata
 

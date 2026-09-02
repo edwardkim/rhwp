@@ -35,8 +35,9 @@ commit으로 이어진다. Ready 전환, merge, 다른 contributor PR의 close�
 `git rev-list --left-right --count 23b5bcf73...HEAD`는 `0 19`였다. #6458의 conflict는 현재 top PR을 Draft로
 게시하는 것을 막지는 않지만, 세 PR을 Ready로 바꾸기 전에는 bottom부터 restack하고 descendant를 다시
 쌓은 뒤 CI·시각 검증을 재자격화해야 한다. 이후 세 PR을 trunk `devel`의 native stack #6640으로
-연결했다. native stack에서는 중간·상단도 trunk 기준 protection과 Actions를 적용받는다. 연결 직후 checks
-없음은 green CI가 아니다. Stage 6 구현 시점에는 하위 branch를 수정하지 않았다.
+연결했다. native stack에서는 중간·상단도 trunk 기준 protection과 Actions를 적용받는다. 연결 직후
+status checks는 비어 있었지만 top의 후속 push에서 실제 CI 실행을 확인했다. Stage 6 구현 시점에는 하위
+branch를 수정하지 않았다.
 
 ## 3. 범위 감사
 

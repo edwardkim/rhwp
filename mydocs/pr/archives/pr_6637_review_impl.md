@@ -74,8 +74,8 @@ Stage 5에서 나온 불리한 `exam_kor` 역방향 결과를 숨기지 않고 �
 2. 최신 trailing head의 base/head, Draft, 게시 본문을 재확인한다. **완료**
 3. #6458·#6467·#6637을 trunk `devel`의 native stack #6640으로 연결하고 1/3·2/3·3/3 등록을 API로
    확인한다. **완료**
-4. native stack 규칙상 protection과 Actions가 trunk `devel` 기준으로 평가됨을 기록한다. 연결 직후
-   status check가 비어 있으므로 green CI로 간주하지 않는다. **완료**
+4. native stack 규칙상 protection과 Actions가 trunk `devel` 기준으로 평가됨을 기록하고, top의 후속
+   push가 실제 CI를 시작하는 것을 확인한다. **완료**
 5. bottom #6458 conflict를 cascading rebase로 해소해 세 layer의 선형성을 회복한다.
 6. 갱신된 각 exact head의 Full CI와 #6040/#6041/#6042 시각·성능 게이트를 재확인한다.
 7. 세 PR을 일괄 Ready로 바꾸는 것은 작업지시자의 별도 승인 뒤 수행한다.

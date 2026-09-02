@@ -12,9 +12,9 @@ conflict가 있어, 전체 stack의 Ready 전환 전 GitHub의 cascading rebase�
 
 세 PR은 native stack #6640으로 연결됐으며 trunk는 `devel`입니다. 따라서 이 layer가 직접 #6467을
 base로 두더라도 branch protection과 GitHub Actions는 stack trunk인 `devel`을 기준으로 평가됩니다.
-stack 연결 직후 세 layer의 status check는 아직 비어 있으며, 이를 CI 통과로 간주하지 않습니다. bottom
-conflict를 cascading rebase로 해소한 뒤 각 exact head의 Full CI와 시각·성능 게이트를 다시 통과하기
-전에는 Ready로 전환하지 않습니다.
+등록 뒤 이 layer의 새 push에서 실제 Actions 실행도 확인했습니다. 다만 bottom conflict를 cascading
+rebase로 해소하면 세 layer의 SHA가 바뀌므로, 갱신된 각 exact head의 Full CI와 시각·성능 게이트를 다시
+통과하기 전에는 Ready로 전환하지 않습니다.
 
 ## 해결하려는 사용자 문제
 

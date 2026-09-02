@@ -128,9 +128,8 @@ OffscreenCanvas는 검토했지만 사용자 지시에 따라 포함하지 않�
 
 원격 #6458 → #6467 → #6637은 trunk `devel`의 native stack #6640으로 등록됐다. 현재 #6458은 최신
 `devel`과 conflict이므로 전체 stack을 Ready로 바꾸기 전에 cascading rebase로 선형성을 회복해야 한다.
-native stack에서는 중간·상단 PR도 trunk 기준 protection과 Actions를 적용받는다. 연결 직후 checks가
-비어 있는 상태는 CI 통과로 간주하지 않는다. 갱신된 각 exact head의 Full CI, Ready, merge는 후속
-경계다.
+native stack에서는 중간·상단 PR도 trunk 기준 protection과 Actions를 적용받으며, top 후속 push에서
+실제 CI가 시작됐다. cascading rebase 뒤 갱신된 각 exact head의 Full CI, Ready, merge는 후속 경계다.
 
 ## 7. 근거 문서
 
