@@ -1897,9 +1897,13 @@ fn native_hwp5_square_picture_uses_the_next_page_wrap_owner() {
         "그림 64는 PDF처럼 p156 우측 Square band에 있어야 함: {:?}",
         p156_images[0]
     );
+    // [#6596] 그림 64 는 outMargin top=510HU(6.8px). 한/글은 여백을 포함한 상자를 문단 상단 +
+    // 518HU 오프셋에 놓고 잉크를 그 안쪽에 그린다 — 쪽 상단 문단도 같다(hwp3-sample 3쪽
+    // pi=41: 오프셋 0·여백 11.4px 그림의 한/글 PDF 잉크 y=143.5 = 본문 상단 132.3 + 11.4).
+    // 잉크 y = 83.2(본문 상단) + 6.9(518HU) + 6.8(510HU) = 96.9.
     assert!(
-        (p156_images[0].1 - 90.1).abs() <= 1.0,
-        "p156 그림 64는 full-width tail 뒤 reset contract의 518HU offset을 유지해야 함: {:?}",
+        (p156_images[0].1 - 96.9).abs() <= 1.0,
+        "p156 그림 64는 full-width tail 뒤 reset contract의 518HU offset과 바깥 위 여백 510HU 를 유지해야 함: {:?}",
         p156_images[0]
     );
 
@@ -2016,9 +2020,11 @@ fn native_hwp5_square_picture_figure_56_uses_the_same_next_page_owner_contract()
         "그림 56은 PDF처럼 p127 우측 Square band에 있어야 함: {:?}",
         p127_images[0]
     );
+    // [#6596] next-page owner 의 상자(잉크 + 바깥 여백)가 본문 상단에서 시작하고, 잉크는
+    // 위 여백 510HU(6.8px) 만큼 안쪽이다: 83.2 + 6.8 = 90.0. 근거는 그림 64 주석과 같다.
     assert!(
-        (p127_images[0].1 - 83.2).abs() <= 1.0,
-        "p127 그림 56은 next-page owner body top에서 시작해야 함: {:?}",
+        (p127_images[0].1 - 90.0).abs() <= 1.0,
+        "p127 그림 56은 next-page owner body top에서 바깥 위 여백만큼 안쪽에서 시작해야 함: {:?}",
         p127_images[0]
     );
 
