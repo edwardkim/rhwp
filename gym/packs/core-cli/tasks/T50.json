@@ -3,7 +3,7 @@
   "tier": 2,
   "title": "다중 표 첫 셀 표기",
   "input": "samples/multi-table-001.hwp",
-  "instructions": "T50 은 입문·코어 온램프를 두껍게 하는 과제다. 표가 여러 개인 문서의 첫 표 (0,0) 만 바꾼다. 다른 표를 건드리면 실패할 수 있다. 표본은 `samples/multi-table-001.hwp` 이고, 이미 저장소 `samples/` 에 있다. 새 파일을 만들지 마라. 정답 숫자는 과제에 박제되어 있지 않다. 채점기가 같은 명령을 다시 돌린다. 힌트: rhwp edit set-cell 또는 run 계획서 action set_cell table=0 row=0 col=0 text=다중표온램프. 제출은 answer.json 에 cell.hwp 로 적는다. 원본을 덮어쓰지 마라. T07 의 fields[0]==홍길동 판정을 복제하지 마라. 좌표를 지목하라. 전역 치환이 아니다. 채점은 표 0 의 (0,0) 셀만 본다. 홍길동을 쓰지 마라.",
+  "instructions": "T50 은 입문·코어 온램프를 두껍게 하는 과제다. 표가 여러 개인 문서의 첫 표 (0,0) 을 '다중표온램프' 로 바꾼다. 다른 표를 건드리면 실패할 수 있다. 표본은 `samples/multi-table-001.hwp` 이고, 이미 저장소 `samples/` 에 있다. 새 파일을 만들지 마라. 정답 숫자는 과제에 박제되어 있지 않다. 채점기가 같은 명령을 다시 돌린다. 힌트: rhwp edit set-cell 또는 run 계획서 action set_cell table=0 row=0 col=0 text=다중표온램프. 제출은 answer.json 에 cell.hwp 로 적는다. 원본을 덮어쓰지 마라. T07 의 fields[0]==홍길동 판정을 복제하지 마라. 좌표를 지목하라. 전역 치환이 아니다. 채점은 표 0 의 (0,0) 셀만 본다. 홍길동을 쓰지 마라.",
   "submit": {
     "kind": "artifact",
     "files": [
