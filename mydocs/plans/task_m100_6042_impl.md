@@ -1,7 +1,7 @@
 # 구현 계획 — Task M100 #6042
 
 - 작성일: 2026-08-31 KST
-- 상태: **Stage 4 구현·검증 완료, Stage 5 승인 대기**. Stage 5 이후 제품 작업은 미착수.
+- 상태: **Stage 5 측정 중단, Stage 4 보정 재승인 대기**. 역방향 exact cache thrash를 확인했다.
 - 현재 기준: #6467 `23b5bcf73f6e8659a90b25ebfde1311e1965364f`
 - 역사 Stage 1 측정 기준: #6467 `ba68cd655aed5fd94804f725c033cf615231ce4b`
 - branch: `codex/issue-6042-page-virtualization`
@@ -9,6 +9,7 @@
 - Stage 2 결과: [완료 보고](../working/task_m100_6042_stage2.md)
 - Stage 3 결과: [완료 보고](../working/task_m100_6042_stage3.md)
 - Stage 4 결과: [완료 보고](../working/task_m100_6042_stage4.md)
+- Stage 5 결과: [중단 보고](../working/task_m100_6042_stage5.md)
 
 ## 1. 경계와 파일별 변경안
 
@@ -220,6 +221,40 @@ PageRenderer의 기존 job identity/token 가드를 유지하되, `canvas.parent
 않는다. 반환된 Canvas를 다른 페이지가 사용하거나 이전 decode callback이 늦게 도착하는 경우를 lease로
 차단한다. 공유 image decoder 자체를 무조건 취소하지 않고 해당 렌더 작업의 결과 적용 권한을 취소한다.
 reset/dispose는 예약·가드를 먼저 무효화해 reentrant focus 이벤트가 이전 작업을 부활시키지 못하게 한다.
+
+### 5.4 Stage 5 발견에 따른 보정안 — 재승인 대기
+
+Stage 5의 `exam_kor` 4열·34% 역방향 20회에서 Stage 4가 기준선보다 매회 main raster 두 쪽을 더
+수행했다. 대표 trace는 Stage 3의 `18 → 19 → 4`와 exact hit `5 → 6 → 7`이 Stage 4에서 exact hit
+`7`, raster `6 → 5 → 4 → 19 → 18`로 바뀐다. retained-complete p95는 227.8ms에서 310.5ms로
+36.3% 악화됐다.
+
+원인은 scroll DPR 전환을 미룬 뒤 cache admission 순서를 그대로 둔 데 있다. target에서 작아질 active
+surface가 아직 이전 큰 actual 크기인 동안 새 detached bundle을 `put`·trim해, 곧 생길 headroom보다
+먼저 exact bundle을 퇴거한다. 이후 실제 downscale로 여유가 생겨도 퇴거한 bundle은 복구되지 않는다.
+또한 `overBudgetMandatory` 상태에서도 선택 prefetch를 dispatch 전에 중단하는 gate가 없다.
+
+보정 범위는 다음으로 제한한다.
+
+1. scheduler work를 visible 필수, active target-DPR 전환, 선택 prefetch로 구분해 진단과 admission을
+   서로 섞지 않는다. 화질·DPR planner·좌표·줌 경로는 바꾸지 않는다.
+2. content/layer 구성이 같은 active DPR 전환은 current layer 수와 target integer surface 크기로
+   target-state pixel을 예약한다. 확대 delta는 allocation 전에 확보하고 축소는 완료 직후 actual로
+   reconcile한다. descriptor의 최대 layer 추정이나 이전 큰 actual 중 하나만으로 cache를 조기 trim하지
+   않는다.
+3. 한 update에서 막 detach한 exact bundle은 target-state reconcile이 끝날 때까지 별도 pending admission으로
+   ledger에 한 번만 센다. 이는 추가 메모리 예산이 아니며 새 allocation을 허용하기 위한 headroom으로
+   중복 계산하지 않는다. generation 취소·오류·문서 경계에서는 즉시 일반 LRU admission 또는 폐기한다.
+4. 선택 prefetch의 `isValid`/dispatch 경계에서 실제 headroom과 target bundle 비용을 다시 확인한다.
+   mandatory target 예약이 budget을 넘거나 완료 bundle을 보존할 수 없으면 skip하고 진단 카운터를 남긴다.
+5. 실행 테스트는 downscale 직전 exact cache 4쪽, visible DPR 전환 2쪽, 역방향 복귀를 구성한다. 임시
+   actual 크기 때문에 exact 두 쪽을 잃지 않는지, 확대 전환이 allocation 전에 퇴거하는지,
+   `overBudgetMandatory` prefetch가 raster 0인지 확인한다.
+
+같은 A/B를 다시 실행해 `exam_kor` 역방향 raster가 기준선 3회 이하이고 p50/p95가 사전 경보선 안이어야
+한다. 동시에 178쪽 cold first-visible·visible-stable·retained 개선, 최종 ledger, 1·2쪽 zoom fast path를
+다시 검증한다. 이 보정은 [Stage 5 보고](../working/task_m100_6042_stage5.md)의 사용자 재승인 전 구현하지
+않는다.
 
 ## 6. Stage 5~6 검증과 철회 조건
 
