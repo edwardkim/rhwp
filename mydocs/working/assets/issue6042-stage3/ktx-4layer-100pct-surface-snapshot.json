@@ -1,0 +1,33 @@
+{
+  "cache": null,
+  "errors": [],
+  "layers": [
+    {
+      "height": 1588,
+      "kind": "background",
+      "page": "0",
+      "width": 2246
+    },
+    {
+      "height": 1588,
+      "kind": "behind",
+      "page": "0",
+      "width": 2246
+    },
+    {
+      "height": 1588,
+      "kind": "front",
+      "page": "0",
+      "width": 2246
+    }
+  ],
+  "main": [
+    {
+      "height": 1588,
+      "key": "blake3:b7c9a68e7450ead201d89393db9db45129b7d1e335049d94ffe6ee98062f13a4|revision:5|profile:screen|resources:5|request:canvas2d|mode:default|page:0|geometry:1122.5x793.7|backend:canvas2d|profile:screen|scale:2|layers:4|surfaces:background:2246x1588,behind:2246x1588,main:2246x1588,front:2246x1588",
+      "pixels": 14266592,
+      "width": 2246
+    }
+  ],
+  "status": "1 / 1 쪽\n구역: 1 / 1\n삽입\nKTX.hwp — 1페이지 (74.2ms)\n100%"
+}

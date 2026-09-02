@@ -1,12 +1,13 @@
 # 구현 계획 — Task M100 #6042
 
 - 작성일: 2026-08-31 KST
-- 상태: **Stage 2 구현·검증 완료, Stage 3 승인 대기**. Stage 3 이후 제품 설계는 미구현.
+- 상태: **Stage 3 구현·검증 완료, Stage 4 승인 대기**. Stage 4 이후 제품 설계는 미구현.
 - 현재 기준: #6467 `23b5bcf73f6e8659a90b25ebfde1311e1965364f`
 - 역사 Stage 1 측정 기준: #6467 `ba68cd655aed5fd94804f725c033cf615231ce4b`
 - branch: `codex/issue-6042-page-virtualization`
 - 수행 범위·단계·fixture·수용 기준: [수행 계획서](task_m100_6042.md)
 - Stage 2 결과: [완료 보고](../working/task_m100_6042_stage2.md)
+- Stage 3 결과: [완료 보고](../working/task_m100_6042_stage3.md)
 
 ## 1. 경계와 파일별 변경안
 

@@ -375,6 +375,35 @@ export class PageRenderer {
     this.canvaskitDiagnosticsByPage.clear();
   }
 
+  /** 비동기 이미지/RawSvg 보정까지 끝난 surface만 완성 cache entry로 승격한다. */
+  isPageSurfaceComplete(parent: HTMLElement, pageIdx: number): boolean {
+    if (this.reRenderJobs.has(pageIdx)) return false;
+    return Array.from(
+      parent.querySelectorAll<HTMLImageElement>(
+        `[data-rhwp-overlay-page="${pageIdx}"] img`,
+      ),
+    ).every(image => image.complete && image.naturalWidth > 0);
+  }
+
+  /** main Canvas와 해당 page overlay를 현재 DOM 순서 그대로 분리한다. */
+  detachPageSurfaceElements(
+    parent: HTMLElement,
+    pageIdx: number,
+    mainCanvas: HTMLCanvasElement,
+  ): HTMLElement[] {
+    const page = String(pageIdx);
+    const elements = Array.from(parent.children).filter((element): element is HTMLElement => (
+      element === mainCanvas
+      || (element instanceof HTMLElement && element.dataset.rhwpOverlayPage === page)
+    ));
+    for (const element of elements) element.remove();
+    return elements;
+  }
+
+  attachPageSurfaceElements(parent: HTMLElement, elements: readonly HTMLElement[]): void {
+    for (const element of elements) parent.appendChild(element);
+  }
+
   private renderPageCanvasKit(
     pageIdx: number,
     canvas: HTMLCanvasElement,

@@ -1,0 +1,247 @@
+{
+  "byPage": {
+    "4": {
+      "main": {
+        "height": 764,
+        "pixels": 825120,
+        "visible": "false",
+        "width": 540
+      },
+      "overlays": [
+        {
+          "height": 764,
+          "kind": "front",
+          "width": 540
+        }
+      ]
+    },
+    "5": {
+      "main": {
+        "height": 764,
+        "pixels": 825120,
+        "visible": "false",
+        "width": 540
+      },
+      "overlays": [
+        {
+          "height": 764,
+          "kind": "front",
+          "width": 540
+        }
+      ]
+    },
+    "6": {
+      "main": {
+        "height": 764,
+        "pixels": 825120,
+        "visible": "false",
+        "width": 540
+      },
+      "overlays": [
+        {
+          "height": 764,
+          "kind": "front",
+          "width": 540
+        }
+      ]
+    },
+    "7": {
+      "main": {
+        "height": 764,
+        "pixels": 825120,
+        "visible": "false",
+        "width": 540
+      },
+      "overlays": [
+        {
+          "height": 764,
+          "kind": "front",
+          "width": 540
+        }
+      ]
+    },
+    "8": {
+      "main": {
+        "height": 764,
+        "pixels": 825120,
+        "visible": "true",
+        "width": 540
+      },
+      "overlays": [
+        {
+          "height": 764,
+          "kind": "front",
+          "width": 540
+        }
+      ]
+    },
+    "9": {
+      "main": {
+        "height": 764,
+        "pixels": 825120,
+        "visible": "true",
+        "width": 540
+      },
+      "overlays": [
+        {
+          "height": 764,
+          "kind": "front",
+          "width": 540
+        }
+      ]
+    },
+    "10": {
+      "main": {
+        "height": 764,
+        "pixels": 825120,
+        "visible": "true",
+        "width": 540
+      },
+      "overlays": [
+        {
+          "height": 764,
+          "kind": "front",
+          "width": 540
+        }
+      ]
+    },
+    "11": {
+      "main": {
+        "height": 764,
+        "pixels": 825120,
+        "visible": "true",
+        "width": 540
+      },
+      "overlays": [
+        {
+          "height": 764,
+          "kind": "front",
+          "width": 540
+        }
+      ]
+    },
+    "12": {
+      "main": {
+        "height": 764,
+        "pixels": 825120,
+        "visible": "true",
+        "width": 540
+      },
+      "overlays": [
+        {
+          "height": 764,
+          "kind": "front",
+          "width": 540
+        }
+      ]
+    },
+    "13": {
+      "main": {
+        "height": 764,
+        "pixels": 825120,
+        "visible": "true",
+        "width": 540
+      },
+      "overlays": [
+        {
+          "height": 764,
+          "kind": "front",
+          "width": 540
+        }
+      ]
+    },
+    "14": {
+      "main": {
+        "height": 764,
+        "pixels": 825120,
+        "visible": "true",
+        "width": 540
+      },
+      "overlays": [
+        {
+          "height": 764,
+          "kind": "front",
+          "width": 540
+        }
+      ]
+    },
+    "15": {
+      "main": {
+        "height": 764,
+        "pixels": 825120,
+        "visible": "true",
+        "width": 540
+      },
+      "overlays": [
+        {
+          "height": 764,
+          "kind": "front",
+          "width": 540
+        }
+      ]
+    },
+    "16": {
+      "main": {
+        "height": 764,
+        "pixels": 825120,
+        "visible": "false",
+        "width": 540
+      },
+      "overlays": [
+        {
+          "height": 764,
+          "kind": "front",
+          "width": 540
+        }
+      ]
+    },
+    "17": {
+      "main": {
+        "height": 764,
+        "pixels": 825120,
+        "visible": "false",
+        "width": 540
+      },
+      "overlays": [
+        {
+          "height": 764,
+          "kind": "front",
+          "width": 540
+        }
+      ]
+    },
+    "18": {
+      "main": {
+        "height": 764,
+        "pixels": 825120,
+        "visible": "false",
+        "width": 540
+      },
+      "overlays": [
+        {
+          "height": 764,
+          "kind": "front",
+          "width": 540
+        }
+      ]
+    },
+    "19": {
+      "main": {
+        "height": 764,
+        "pixels": 825120,
+        "visible": "false",
+        "width": 540
+      },
+      "overlays": [
+        {
+          "height": 764,
+          "kind": "front",
+          "width": 540
+        }
+      ]
+    }
+  },
+  "cache": null,
+  "mainCount": 16,
+  "overlayCount": 16
+}

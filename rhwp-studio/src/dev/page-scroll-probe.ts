@@ -23,6 +23,22 @@ interface ProbeView {
     available: HTMLCanvasElement[];
     getCanvas(page: number): HTMLCanvasElement | undefined;
   };
+  pageSurfaceLru: {
+    takeLookup(key: string): unknown;
+    put(entry: unknown): boolean;
+    snapshot(): {
+      reservedPixels: number;
+      cachedPixels: number;
+      totalAccountedPixels: number;
+      overBudgetMandatory: boolean;
+      entryCount: number;
+      hits: number;
+      misses: number;
+      evictions: number;
+      rejected: number;
+      invalidations: number;
+    };
+  };
   pageRenderer: {
     reRenderJobs: Map<number, unknown>;
     prefetchedImageSignatures: Map<number, { documentGeneration: number }>;
@@ -208,6 +224,7 @@ export function installPageScrollProbe(
     [vs, 'getVisibilitySnapshot', 'visibility.snapshot'],
     [cv, 'updateVisiblePages', 'visibility.update'], [cv, 'refreshRenderSurfacePlan', 'budget.refresh'],
     [cv, 'renderCanvas', 'raster.main'], [cv, 'renderPage', 'page.render'],
+    [cv.pageSurfaceLru, 'takeLookup', 'cache.take'], [cv.pageSurfaceLru, 'put', 'cache.put'],
     [cv, 'onZoomChanged', 'geometry.zoom'], [cv, 'prepareDocumentLoad', 'document.begin'],
     [cv, 'showBlankPage', 'document.blank'], [cv, 'refreshPages', 'document.refresh'],
     [cv.canvasPool, 'release', 'pool.release'], [cv.canvasPool, 'acquire', 'pool.acquire'],
@@ -267,12 +284,15 @@ export function installPageScrollProbe(
     });
     const pool = cv.canvasPool.available.map(c => ({ width: c.width, height: c.height }));
     const activePixels = pages.reduce((sum, p) => sum + p.pixels, 0);
+    const cache = cv.pageSurfaceLru.snapshot();
     return { enabled, browser: navigator.userAgent, dpr: devicePixelRatio, viewport: { width: innerWidth, height: innerHeight },
       targetViewport: viewport(), appliedViewport: applied,
       pageCount: wasm.pageCount, layoutPageCount: cv.pages.length, scope: scope(), zoom: vm.getZoom(),
       columns: vs.getColumns(), focused: cv.editingPageIndex, visible: cv.currentVisiblePages, retained: cv.currentRetainedPages,
       scroll: { x: vm.getScrollX(), y: vm.getScrollY() }, pages, pool, activePixels, idlePoolPixels: surfacePixels(pool),
-      totalAllocatedPixels: activePixels + surfacePixels(pool), pendingImages: cv.pageRenderer.reRenderJobs.size,
+      detachedCache: cache,
+      totalAllocatedPixels: activePixels + surfacePixels(pool) + cache.cachedPixels,
+      pendingImages: cv.pageRenderer.reRenderJobs.size,
       pendingPrefetch: cv.pendingPrefetchPages.size, traces: trace.snapshot(), errors, longTasks,
       note: 'RGBA 환산=actual pixels×4; not GPU/RSS. Timings are known-render-work/next-frame opportunities, not compositor presentation. Focus sharp requires observed decode/no-image evidence. Bounds/readback only on explicit snapshot.' };
   };
