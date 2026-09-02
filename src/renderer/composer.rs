@@ -122,8 +122,6 @@ pub struct ComposedParagraph {
 #[derive(Default)]
 pub(crate) struct SingleLineOverflowCache {
     entries: std::cell::RefCell<std::collections::HashMap<(usize, u32), bool>>,
-    #[cfg(test)]
-    measurements: std::cell::Cell<usize>,
 }
 
 impl SingleLineOverflowCache {
@@ -140,17 +138,10 @@ impl SingleLineOverflowCache {
         self.entries
             .borrow_mut()
             .insert((para as *const Paragraph as usize, width_key), overflowed);
-        #[cfg(test)]
-        self.measurements.set(self.measurements.get() + 1);
     }
 
     pub(crate) fn clear(&self) {
         self.entries.borrow_mut().clear();
-    }
-
-    #[cfg(test)]
-    fn measurement_count(&self) -> usize {
-        self.measurements.get()
     }
 }
 

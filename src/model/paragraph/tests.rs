@@ -434,9 +434,10 @@ fn test_split_at_middle() {
     assert_eq!(new_para.char_offsets, vec![0, 1, 2]);
     assert_eq!(new_para.char_shapes[0].start_pos, 0);
     assert_eq!(new_para.char_shapes[0].char_shape_id, 1);
+
+    split_publishes_fresh_rows_without_old_suffix_or_source_positions();
 }
 
-#[test]
 fn split_publishes_fresh_rows_without_old_suffix_or_source_positions() {
     let mut para = Paragraph {
         text: "abcd".to_string(),
@@ -604,9 +605,10 @@ fn test_merge_from_basic() {
     assert_eq!(merge_pos, 2); // 원래 "안녕"의 길이
     assert_eq!(para1.text, "안녕하세요");
     assert_eq!(para1.char_offsets, vec![0, 1, 2, 3, 4]);
+
+    merge_publishes_fresh_rows_without_old_suffix_or_source_positions();
 }
 
-#[test]
 fn merge_publishes_fresh_rows_without_old_suffix_or_source_positions() {
     let mut first = Paragraph {
         text: "ab".to_string(),
