@@ -46,6 +46,14 @@ pub struct OoxmlChart {
     pub has_title_elem: bool,
     /// `c:autoTitleDeleted val="1"` — 자동 제목 억제 플래그. (C1c #1882 갭①)
     pub auto_title_deleted: bool,
+    /// [#6624] `c:chartSpace > c:txPr > a:p > a:pPr > a:defRPr sz` — 차트 전체 기본 글꼴
+    /// 크기(pt). 축 라벨·범례·격자 여백 산정이 쓴다. 한컴 코퍼스 28종은 전건 `sz="1000"`.
+    /// 없으면 렌더러가 10pt 를 쓴다.
+    pub text_size_pt: Option<f64>,
+    /// [#6624] `c:title` 안의 `a:defRPr sz`/`a:rPr sz` — 제목 글꼴 크기(pt). 축 제목
+    /// (`c:plotArea` 안 `c:title`)은 제외. 코퍼스는 전건 미지정이라 한컴이 14pt 로 그린다.
+    /// 없으면 렌더러가 14pt 를 쓴다.
+    pub title_size_pt: Option<f64>,
     pub series: Vec<OoxmlSeries>,
     pub categories: Vec<String>,
     /// 시리즈 중 하나라도 보조축을 쓰면 true
@@ -320,6 +328,10 @@ pub struct OoxmlSeries {
     /// 막대·꺾은선·분산형은 자기 규칙(`line_markers`·`scatter_style`)으로 선을 정하므로
     /// 이 값을 보지 않는다.
     pub line_none: bool,
+    /// [#6624] 계열 `c:spPr > a:ln w` — 선 굵기(EMU, 12700 = 1pt). 점별(`c:dPt`)·표식
+    /// (`c:marker`) 의 spPr 은 제외. 없으면 렌더러가 Office 기본 2.25pt 를 쓴다
+    /// (한컴 꺽은선형 실측 3px = 2.25pt).
+    pub line_width_emu: Option<u32>,
 }
 
 impl OoxmlChart {
