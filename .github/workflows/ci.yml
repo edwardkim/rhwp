@@ -978,11 +978,45 @@ jobs:
 
       - name: Validate Rust test suite manifest
         env:
-          RHWP_TEST_POLICY_BASE_REF: ${{ github.event.pull_request.base.sha || '' }}
+          RHWP_TEST_POLICY_BASE_SHA: ${{ github.event.pull_request.base.sha || '' }}
+          RHWP_TEST_POLICY_BASE_BRANCH: ${{ github.event.pull_request.base.ref || '' }}
+          RHWP_TEST_POLICY_HEAD_SHA: ${{ github.event.pull_request.head.sha || '' }}
+          RHWP_TEST_POLICY_HEAD_BRANCH: ${{ github.event.pull_request.head.ref || '' }}
+          RHWP_TEST_POLICY_HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name || '' }}
+          RHWP_REPOSITORY: ${{ github.repository }}
         run: |
+          policy_base_ref="$RHWP_TEST_POLICY_BASE_SHA"
+
+          # main이 현행 test-policy 도입 전 release라면 canonical devel -> main
+          # promotion에서 누적된 검증 완료 source를 모두 신규 위반으로 오판한다. 같은
+          # 저장소의 exact promotion이고 base가 head의 조상이며 synthetic merge tree가
+          # head tree와 같을 때만 증분 기준을 devel head로 전환한다. 전체 manifest와
+          # unit-tier 검사는 아래에서 그대로 실행한다.
+          if [[ "$RHWP_TEST_POLICY_BASE_BRANCH" == "main" \
+            && "$RHWP_TEST_POLICY_HEAD_BRANCH" == "devel" \
+            && "$RHWP_TEST_POLICY_HEAD_REPOSITORY" == "$RHWP_REPOSITORY" ]]; then
+            if [[ -z "$RHWP_TEST_POLICY_BASE_SHA" || -z "$RHWP_TEST_POLICY_HEAD_SHA" ]]; then
+              echo "::error::canonical devel -> main promotion SHA가 비어 있습니다."
+              exit 1
+            fi
+            if ! git merge-base --is-ancestor \
+              "$RHWP_TEST_POLICY_BASE_SHA" "$RHWP_TEST_POLICY_HEAD_SHA"; then
+              echo "::error::main은 canonical devel promotion head의 조상이어야 합니다."
+              exit 1
+            fi
+            checkout_tree="$(git rev-parse 'HEAD^{tree}')"
+            head_tree="$(git rev-parse "${RHWP_TEST_POLICY_HEAD_SHA}^{tree}")"
+            if [[ "$checkout_tree" != "$head_tree" ]]; then
+              echo "::error::devel -> main synthetic merge tree가 canonical head tree와 다릅니다."
+              exit 1
+            fi
+            policy_base_ref="$RHWP_TEST_POLICY_HEAD_SHA"
+            echo "canonical devel -> main promotion: incremental policy base=$policy_base_ref"
+          fi
+
           base_args=()
-          if [[ -n "$RHWP_TEST_POLICY_BASE_REF" ]]; then
-            base_args=(--base-ref "$RHWP_TEST_POLICY_BASE_REF")
+          if [[ -n "$policy_base_ref" ]]; then
+            base_args=(--base-ref "$policy_base_ref")
           fi
           node --test scripts/tests/rust-test-suite-manifest.test.mjs
           node scripts/rust-test-suite-manifest.mjs --check "${base_args[@]}"

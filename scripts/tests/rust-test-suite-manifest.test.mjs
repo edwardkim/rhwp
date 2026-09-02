@@ -413,11 +413,15 @@ test('검토·개발 가이드는 파생 suite 준비 경로를 안내한다', (
   }
 });
 
-test('CI가 PR base를 integration과 source unit 정책 검사에 전달한다', () => {
+test('CI가 일반 PR base를 integration과 source unit 정책 검사에 전달한다', () => {
   const workflow = readFileSync(path.join(ROOT, '.github/workflows/ci.yml'), 'utf8');
   assert.match(
     workflow,
-    /RHWP_TEST_POLICY_BASE_REF: \$\{\{ github\.event\.pull_request\.base\.sha \|\| '' \}\}/,
+    /RHWP_TEST_POLICY_BASE_SHA: \$\{\{ github\.event\.pull_request\.base\.sha \|\| '' \}\}/,
+  );
+  assert.match(
+    workflow,
+    /policy_base_ref="\$RHWP_TEST_POLICY_BASE_SHA"/,
   );
   assert.match(
     workflow,
@@ -431,6 +435,27 @@ test('CI가 PR base를 integration과 source unit 정책 검사에 전달한다'
     workflow,
     /rust-unit-test-tiers\.mjs --check "\$\{base_args\[@\]\}"/,
   );
+});
+
+test('CI는 same-repository devel-to-main exact promotion에서만 head를 정책 기준으로 쓴다', () => {
+  const workflow = readFileSync(path.join(ROOT, '.github/workflows/ci.yml'), 'utf8');
+  for (const expected of [
+    /RHWP_TEST_POLICY_BASE_BRANCH: \$\{\{ github\.event\.pull_request\.base\.ref \|\| '' \}\}/,
+    /RHWP_TEST_POLICY_HEAD_SHA: \$\{\{ github\.event\.pull_request\.head\.sha \|\| '' \}\}/,
+    /RHWP_TEST_POLICY_HEAD_BRANCH: \$\{\{ github\.event\.pull_request\.head\.ref \|\| '' \}\}/,
+    /RHWP_TEST_POLICY_HEAD_REPOSITORY: \$\{\{ github\.event\.pull_request\.head\.repo\.full_name \|\| '' \}\}/,
+    /RHWP_REPOSITORY: \$\{\{ github\.repository \}\}/,
+    /"\$RHWP_TEST_POLICY_BASE_BRANCH" == "main"/,
+    /"\$RHWP_TEST_POLICY_HEAD_BRANCH" == "devel"/,
+    /"\$RHWP_TEST_POLICY_HEAD_REPOSITORY" == "\$RHWP_REPOSITORY"/,
+    /git merge-base --is-ancestor/,
+    /checkout_tree="\$\(git rev-parse 'HEAD\^\{tree\}'\)"/,
+    /head_tree="\$\(git rev-parse "\$\{RHWP_TEST_POLICY_HEAD_SHA\}\^\{tree\}"\)"/,
+    /if \[\[ "\$checkout_tree" != "\$head_tree" \]\]/,
+    /policy_base_ref="\$RHWP_TEST_POLICY_HEAD_SHA"/,
+  ]) {
+    assert.match(workflow, expected);
+  }
 });
 
 test('CI lint checkout은 PR base 3-way diff를 위해 전체 Git 계보를 가져온다', () => {
