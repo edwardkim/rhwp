@@ -1,7 +1,7 @@
 # 구현 계획 — Task M100 #6042
 
 - 작성일: 2026-08-31 KST
-- 상태: **Stage 5 자동화 가능 확장 matrix 통과, 실제 DPR 1·창 resize·사용자 시각 승인 대기**
+- 상태: **Stage 5 사용자 검증 보정 진행 중 — scroll 정착 visible 화질 회복**
 - 현재 기준: #6467 `23b5bcf73f6e8659a90b25ebfde1311e1965364f`
 - 역사 Stage 1 측정 기준: #6467 `ba68cd655aed5fd94804f725c033cf615231ce4b`
 - branch: `codex/issue-6042-page-virtualization`
@@ -12,6 +12,7 @@
 - Stage 5 결과: [중단 보고](../working/task_m100_6042_stage5.md)
 - Stage 4 보정 결과: [검증 보고](../working/task_m100_6042_stage4_correction.md)
 - Stage 5 확장 결과: [검증 보고](../working/task_m100_6042_stage5_expanded.md)
+- Stage 5 사용자 피드백: [scroll 정착 전 visible 화질](../feedback/task_m100_6042_stage5_visible_quality.md)
 
 ## 1. 경계와 파일별 변경안
 
@@ -270,6 +271,35 @@ single/double/fixed four/auto/facing, 세로·가로·급반전, 34/50/100/200% 
 revision당 성능 표본 260개는 모두 완료·오류 0이며 사전 경보선 안이다. 자세한 수치와 원시는
 [확장 보고](../working/task_m100_6042_stage5_expanded.md)를 따른다. 실제 DPR 1, 실제 창 resize,
 browser image failure 주입과 사용자 시각 승인은 자동화 환경 밖의 남은 종료 조건이다.
+
+### 5.5 사용자 검증 보정 — scroll 중 surface 고정, 정착 뒤 visible 화질 회복
+
+Stage 3과 Stage 4 보정 모두에서 cursor가 없는 쪽으로 스크롤한 뒤 클릭 전까지 visible 두 쪽이 DPR 1로
+남고, 클릭한 편집 쪽만 DPR 2로 승격됐다. 이는 새 scheduler 회귀가 아니라 #6467 planner가 32M visible
+예산을 넘는 비포커스 쪽을 낮추고 hysteresis가 그 결정을 유지한 결과다. viewport 쪽을 편집 focus로
+바꾸면 ruler·caret 의미가 깨지므로 보정은 #6042의 시간축에만 둔다.
+
+`PageRenderScheduler`는 마지막 scroll 뒤 150ms debounce callback을 하나 소유한다. 새 scroll은 앞선
+callback과 대기 visible 승격 work를 최신 generation으로 교체하며, strict/zoom/resize/mutation/reset은
+이를 취소한다. `scroll-settled` work는 1·2 visible fast path도 사용하지 않고 rAF에서 center-first,
+page-boundary 단위로 실행한다.
+
+active scroll planner 입력에는 실제 active Canvas가 마지막으로 렌더한 requested DPR을 lock으로 준다.
+따라서 이전 정착 세대가 DPR 2를 목표로만 잡고 아직 그리지 못했더라도 새 scroll은 실제 DPR 1 surface를
+1로 되돌려 잠그며, 이미 DPR 2로 완성된 surface는 2로 유지한다. lock은 hysteresis나 focus가 아니고 해당
+interaction 동안 재래스터를 막는 실행 제약이다. 완성 bundle을 detach할 때도 현재 목표가 아니라 Canvas에
+기록된 실제 exact key로 보존해 대기 승격 취소가 유효 surface를 버리지 않게 한다.
+
+정착 시 현재 viewport와 양 축 8 CSS px 이상 겹치는 쪽만 품질 보호 집합으로 삼는다. 실제 layer 수를
+사용해 raw DPR 전체 비용을 O(visible)로 한 번 합산하고 64M absolute gate 이하면 raw DPR을 lock한다.
+초과하면 DPR 1.5를 한 번 시도하며 이것도 gate를 넘으면 별도 lock 없이 #6467 결정을 유지한다. 64M은
+retained cache 예산이 아니고 정착 visible mandatory surface의 추가 안전 상한이다. print/highQuality는
+기존처럼 raw를 유지한다. 최종 `clampRenderScale` per-Canvas guard도 그대로 적용한다.
+
+RED 순서는 (1) debounce·취소, (2) planner DPR lock과 raw/1.5/hard fallback, (3) CanvasView의 scroll/
+scroll-settled 실행·center priority·focus 불변, (4) target과 actual이 다른 complete bundle 보존이다.
+그 뒤 focused suite와 전체 Studio gate, `:4191`/`:4193` 실문서 A/B를 수행한다. 150ms 의도 대기와 실제
+raster 시간, 클릭 전/후 DPR·pixel·scroll/focus/ruler 상태를 분리해 보고한다.
 
 ## 6. Stage 5~6 검증과 철회 조건
 
