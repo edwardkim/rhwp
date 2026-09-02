@@ -1,7 +1,7 @@
 # 구현 계획 — Task M100 #6042
 
 - 작성일: 2026-08-31 KST
-- 상태: **Stage 5 사용자 검증 보정 진행 중 — scroll 정착 visible 화질 회복**
+- 상태: **Stage 5 사용자 검증 보정 자동화 통과 — 사용자 재검증 대기**
 - 현재 기준: #6467 `23b5bcf73f6e8659a90b25ebfde1311e1965364f`
 - 역사 Stage 1 측정 기준: #6467 `ba68cd655aed5fd94804f725c033cf615231ce4b`
 - branch: `codex/issue-6042-page-virtualization`
@@ -300,6 +300,18 @@ RED 순서는 (1) debounce·취소, (2) planner DPR lock과 raw/1.5/hard fallbac
 scroll-settled 실행·center priority·focus 불변, (4) target과 actual이 다른 complete bundle 보존이다.
 그 뒤 focused suite와 전체 Studio gate, `:4191`/`:4193` 실문서 A/B를 수행한다. 150ms 의도 대기와 실제
 raster 시간, 클릭 전/후 DPR·pixel·scroll/focus/ruler 상태를 분리해 보고한다.
+
+구현 뒤 실제 DPR 2 브라우저 A/B에서 `exam_kor` 100% 두 쪽의 비포커스 visible은 클릭 없이
+DPR 1→2로 회복했다. 자동 34%는 수정 전후 모두 DPR 2를 유지했고, 200% 한 쪽은 DPR 1.5 fallback,
+두 쪽은 합산 hard gate로 기존 DPR 1을 유지했다. active scroll callback p50/p95는 양쪽 모두
+0/0.1ms이며, 최종 정착 완료는 추가 화질 raster 때문에 p50/p95 33.3/54.1ms 늦다. 이는 scroll hot
+path 회귀가 아니라 입력 종료 뒤 수행하는 명시적 화질 비용으로 보고한다.
+
+추가 A/B에서 DPR 1.5 surface의 정수 physical dimension을 `dimension / DPR`로 CSS에 되돌릴 때
+1px 미만의 page box 차이가 생기는 것을 발견했다. main과 모든 overlay의 CSS 크기를
+`PageInfo × zoom` 논리 geometry로 고정해 DPR 교체가 배치·scroll·ruler geometry를 바꾸지 않게 했다.
+결정론적 테스트와 전체 Studio gate 결과는
+[Stage 5 사용자 화질 보정 보고](../working/task_m100_6042_stage5_scroll_quality_correction.md)를 따른다.
 
 ## 6. Stage 5~6 검증과 철회 조건
 
