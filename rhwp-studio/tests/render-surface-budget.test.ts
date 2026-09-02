@@ -254,11 +254,11 @@ test('print와 highQuality는 surface 예산으로 낮추지 않는다', () => {
 test('CanvasView는 가시 집합과 포커스 변경 후 budget plan을 갱신한다', () => {
   const source = readFileSync(new URL('../src/view/canvas-view.ts', import.meta.url), 'utf8');
   const visibleAssignment = source.indexOf('this.currentVisiblePages = visiblePages;');
-  const planRefresh = source.indexOf('this.refreshRenderSurfacePlan(true);', visibleAssignment);
-  const visibleRenderLoop = source.indexOf('for (const pageIdx of visiblePages)', planRefresh);
+  const planRefresh = source.indexOf('this.refreshRenderSurfacePlan(!isScroll);', visibleAssignment);
+  const visibleWorkCreation = source.indexOf('const visibleWork = isScroll', planRefresh);
 
   assert.ok(visibleAssignment >= 0 && visibleAssignment < planRefresh);
-  assert.ok(planRefresh < visibleRenderLoop);
+  assert.ok(planRefresh < visibleWorkCreation);
   assert.match(
     source,
     /setEditingPageIndex[\s\S]*?focused-page-changed[\s\S]*?refreshRenderSurfacePlan\(true\)/,

@@ -1,13 +1,14 @@
 # 구현 계획 — Task M100 #6042
 
 - 작성일: 2026-08-31 KST
-- 상태: **Stage 3 구현·검증 완료, Stage 4 승인 대기**. Stage 4 이후 제품 설계는 미구현.
+- 상태: **Stage 4 구현·검증 완료, Stage 5 승인 대기**. Stage 5 이후 제품 작업은 미착수.
 - 현재 기준: #6467 `23b5bcf73f6e8659a90b25ebfde1311e1965364f`
 - 역사 Stage 1 측정 기준: #6467 `ba68cd655aed5fd94804f725c033cf615231ce4b`
 - branch: `codex/issue-6042-page-virtualization`
 - 수행 범위·단계·fixture·수용 기준: [수행 계획서](task_m100_6042.md)
 - Stage 2 결과: [완료 보고](../working/task_m100_6042_stage2.md)
 - Stage 3 결과: [완료 보고](../working/task_m100_6042_stage3.md)
+- Stage 4 결과: [완료 보고](../working/task_m100_6042_stage4.md)
 
 ## 1. 경계와 파일별 변경안
 
@@ -194,6 +195,10 @@ offscreen 변경은 낮은 우선순위로 미룬다. tier label만 바뀌고 �
 측정으로 확정·승인한다. 작고 즉시 처리 가능한 1·2 visible 작업은 기존 동기 표시를 유지하는 fast path를 둔다.
 initial은 열 수와 무관하게 기존 경로를 보존한다. page 내부 WASM 호출은 선점 불가하므로 시간 상한은 soft다.
 한 쪽만으로 long task가 생기면 이 scheduler가 해결했다고 주장하지 않고 별도 병목으로 기록한다.
+
+Stage 4에서는 위 수치를 page-boundary 실험값으로 적용했다. 실문서에서 한 쪽 raster가 4ms를 넘는 조건을
+확인했으므로 최종 정책 채택과 조정은 [Stage 4 보고](../working/task_m100_6042_stage4.md)를 입력으로 Stage 5
+A/B·사용자 검증 뒤 결정한다.
 
 host에 now/rAF/cancel/idle/timer를 주입한다. 예산 소진/새 입력/idle deadline 부족 시 후속 task로 양보한다.
 기다리는 visible가 있는데 prefetch가 선행하지 않게 하고, timeout fallback도 한 번에 한정 작업만 한다.

@@ -1,0 +1,268 @@
+{
+  "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36",
+  "dpr": 2,
+  "viewport": {
+    "width": 1280,
+    "height": 720
+  },
+  "statusText": "완료",
+  "pageCount": 4,
+  "zoom": 1,
+  "columns": 1,
+  "visible": [
+    1
+  ],
+  "retained": [
+    0,
+    1,
+    2
+  ],
+  "pages": [
+    {
+      "page": 0,
+      "visible": false,
+      "dpr": 2,
+      "scale": 2,
+      "surfaces": [
+        {
+          "kind": "main",
+          "width": 1588,
+          "height": 2245
+        }
+      ],
+      "pixels": 3565060,
+      "box": {
+        "x": 252.9921875,
+        "y": -982.5,
+        "width": 794,
+        "height": 1122.5
+      },
+      "image": null,
+      "flowImages": "ready"
+    },
+    {
+      "page": 1,
+      "visible": true,
+      "dpr": 2,
+      "scale": 2,
+      "surfaces": [
+        {
+          "kind": "main",
+          "width": 1588,
+          "height": 2245
+        }
+      ],
+      "pixels": 3565060,
+      "box": {
+        "x": 252.9921875,
+        "y": 150,
+        "width": 794,
+        "height": 1122.5
+      },
+      "image": null,
+      "flowImages": "ready"
+    },
+    {
+      "page": 2,
+      "visible": false,
+      "dpr": 2,
+      "scale": 2,
+      "surfaces": [
+        {
+          "kind": "main",
+          "width": 1588,
+          "height": 2245
+        }
+      ],
+      "pixels": 3565060,
+      "box": {
+        "x": 252.9921875,
+        "y": 1282.5,
+        "width": 794,
+        "height": 1122.5
+      },
+      "image": null,
+      "flowImages": "ready"
+    }
+  ],
+  "scheduler": {
+    "generation": 14,
+    "visibleQueued": 0,
+    "prefetchQueued": 0,
+    "frameScheduled": false,
+    "idleScheduled": false,
+    "visibleSlices": 0,
+    "visibleExecuted": 0,
+    "prefetchExecuted": 2,
+    "staleDropped": 0,
+    "maxQueueDepth": 1
+  },
+  "pendingImages": 0,
+  "pendingPrefetch": 0,
+  "traces": [
+    {
+      "id": 2,
+      "scope": "2/4/5",
+      "source": "probe-scroll-row",
+      "startedAt": 2200.0999999940395,
+      "status": "complete",
+      "reason": "known render work only; presentation and decoder completeness are separate evidence",
+      "milestones": {
+        "visibleFirst": 27.900000005960464,
+        "visibleStable": 27.900000005960464,
+        "retainedComplete": 27.900000005960464,
+        "preview": 28.200000002980232
+      },
+      "counters": {
+        "visibility.snapshot": {
+          "calls": 1,
+          "inclusiveMs": 0.09999999403953552,
+          "maxMs": 0.09999999403953552,
+          "units": 1
+        },
+        "wasm.pageInfo": {
+          "calls": 4,
+          "inclusiveMs": 0.09999999403953552,
+          "maxMs": 0.09999999403953552,
+          "units": 0
+        },
+        "budget.refresh": {
+          "calls": 1,
+          "inclusiveMs": 0,
+          "maxMs": 0,
+          "units": 0
+        },
+        "scheduler.desired": {
+          "calls": 1,
+          "inclusiveMs": 0,
+          "maxMs": 0,
+          "units": 0
+        },
+        "visibility.update": {
+          "calls": 1,
+          "inclusiveMs": 0.29999999701976776,
+          "maxMs": 0.29999999701976776,
+          "units": 0
+        },
+        "cache.take": {
+          "calls": 1,
+          "inclusiveMs": 0,
+          "maxMs": 0,
+          "units": 0
+        },
+        "pool.acquire": {
+          "calls": 1,
+          "inclusiveMs": 0,
+          "maxMs": 0,
+          "units": 0
+        },
+        "raster.main": {
+          "calls": 1,
+          "inclusiveMs": 20.299999997019768,
+          "maxMs": 20.299999997019768,
+          "units": 0
+        },
+        "page.render": {
+          "calls": 1,
+          "inclusiveMs": 20.299999997019768,
+          "maxMs": 20.299999997019768,
+          "units": 0
+        },
+        "ruler.update": {
+          "calls": 1,
+          "inclusiveMs": 0.20000000298023224,
+          "maxMs": 0.20000000298023224,
+          "units": 0
+        }
+      },
+      "spans": [
+        {
+          "boundary": "visibility.snapshot",
+          "page": null,
+          "at": 5.9000000059604645,
+          "ms": 0.09999999403953552
+        },
+        {
+          "boundary": "wasm.pageInfo",
+          "page": 1,
+          "at": 6,
+          "ms": 0
+        },
+        {
+          "boundary": "budget.refresh",
+          "page": null,
+          "at": 6.100000008940697,
+          "ms": 0
+        },
+        {
+          "boundary": "scheduler.desired",
+          "page": null,
+          "at": 6.100000008940697,
+          "ms": 0
+        },
+        {
+          "boundary": "visibility.update",
+          "page": null,
+          "at": 5.9000000059604645,
+          "ms": 0.29999999701976776
+        },
+        {
+          "boundary": "cache.take",
+          "page": null,
+          "at": 7.100000008940697,
+          "ms": 0
+        },
+        {
+          "boundary": "pool.acquire",
+          "page": 2,
+          "at": 7.100000008940697,
+          "ms": 0
+        },
+        {
+          "boundary": "wasm.pageInfo",
+          "page": 2,
+          "at": 7.100000008940697,
+          "ms": 0
+        },
+        {
+          "boundary": "raster.main",
+          "page": 2,
+          "at": 7.100000008940697,
+          "ms": 20.299999997019768
+        },
+        {
+          "boundary": "page.render",
+          "page": 2,
+          "at": 7.100000008940697,
+          "ms": 20.299999997019768
+        },
+        {
+          "boundary": "wasm.pageInfo",
+          "page": 0,
+          "at": 28,
+          "ms": 0
+        },
+        {
+          "boundary": "wasm.pageInfo",
+          "page": 0,
+          "at": 28.100000008940697,
+          "ms": 0.09999999403953552
+        },
+        {
+          "boundary": "ruler.update",
+          "page": null,
+          "at": 28,
+          "ms": 0.20000000298023224
+        }
+      ],
+      "spansDropped": 0,
+      "frames": [
+        22,
+        0.8999999910593033
+      ],
+      "framesDropped": 0
+    }
+  ],
+  "errors": [],
+  "longTasks": []
+}

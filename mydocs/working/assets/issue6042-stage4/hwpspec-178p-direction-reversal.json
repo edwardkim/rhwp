@@ -1,0 +1,1949 @@
+{
+  "enabled": true,
+  "browser": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36",
+  "dpr": 2,
+  "viewport": {
+    "width": 1280,
+    "height": 720
+  },
+  "targetViewport": {
+    "scope": "2/2/3",
+    "zoom": 0.34,
+    "x": 0,
+    "y": 1070
+  },
+  "appliedViewport": {
+    "scope": "2/2/3",
+    "zoom": 0.34,
+    "x": 0,
+    "y": 1070
+  },
+  "pageCount": 178,
+  "layoutPageCount": 178,
+  "scope": "2/2/3",
+  "zoom": 0.34,
+  "columns": 4,
+  "focused": 0,
+  "visible": [
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19
+  ],
+  "retained": [
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23
+  ],
+  "scroll": {
+    "x": 0,
+    "y": 1070
+  },
+  "pages": [
+    {
+      "page": 8,
+      "visible": true,
+      "dpr": 2,
+      "scale": 0.68,
+      "surfaces": [
+        {
+          "kind": "main",
+          "width": 540,
+          "height": 764
+        }
+      ],
+      "pixels": 412560,
+      "box": {
+        "x": 101.28125,
+        "y": -148.703125,
+        "width": 270,
+        "height": 382
+      },
+      "image": {
+        "scope": "2/2/3",
+        "kind": "none"
+      },
+      "flowImages": "ready"
+    },
+    {
+      "page": 9,
+      "visible": true,
+      "dpr": 2,
+      "scale": 0.68,
+      "surfaces": [
+        {
+          "kind": "main",
+          "width": 540,
+          "height": 764
+        }
+      ],
+      "pixels": 412560,
+      "box": {
+        "x": 377.140625,
+        "y": -148.703125,
+        "width": 270,
+        "height": 382
+      },
+      "image": {
+        "scope": "2/2/3",
+        "kind": "none"
+      },
+      "flowImages": "ready"
+    },
+    {
+      "page": 10,
+      "visible": true,
+      "dpr": 2,
+      "scale": 0.68,
+      "surfaces": [
+        {
+          "kind": "main",
+          "width": 540,
+          "height": 764
+        }
+      ],
+      "pixels": 412560,
+      "box": {
+        "x": 653,
+        "y": -148.703125,
+        "width": 270,
+        "height": 382
+      },
+      "image": {
+        "scope": "2/2/3",
+        "kind": "none"
+      },
+      "flowImages": "ready"
+    },
+    {
+      "page": 11,
+      "visible": true,
+      "dpr": 2,
+      "scale": 0.68,
+      "surfaces": [
+        {
+          "kind": "main",
+          "width": 540,
+          "height": 764
+        }
+      ],
+      "pixels": 412560,
+      "box": {
+        "x": 928.8515625,
+        "y": -148.703125,
+        "width": 270,
+        "height": 382
+      },
+      "image": {
+        "scope": "2/2/3",
+        "kind": "none"
+      },
+      "flowImages": "ready"
+    },
+    {
+      "page": 12,
+      "visible": true,
+      "dpr": 2,
+      "scale": 0.68,
+      "surfaces": [
+        {
+          "kind": "main",
+          "width": 540,
+          "height": 764
+        },
+        {
+          "kind": "background",
+          "width": 540,
+          "height": 764
+        },
+        {
+          "kind": "behind",
+          "width": 540,
+          "height": 764
+        },
+        {
+          "kind": "front",
+          "width": 540,
+          "height": 764
+        }
+      ],
+      "pixels": 1650240,
+      "box": {
+        "x": 101.28125,
+        "y": 238.9453125,
+        "width": 270,
+        "height": 382
+      },
+      "image": {
+        "scope": "2/2/3",
+        "kind": "decoded"
+      },
+      "flowImages": "ready"
+    },
+    {
+      "page": 13,
+      "visible": true,
+      "dpr": 2,
+      "scale": 0.68,
+      "surfaces": [
+        {
+          "kind": "main",
+          "width": 540,
+          "height": 764
+        }
+      ],
+      "pixels": 412560,
+      "box": {
+        "x": 377.140625,
+        "y": 238.9453125,
+        "width": 270,
+        "height": 382
+      },
+      "image": {
+        "scope": "2/2/3",
+        "kind": "none"
+      },
+      "flowImages": "ready"
+    },
+    {
+      "page": 14,
+      "visible": true,
+      "dpr": 2,
+      "scale": 0.68,
+      "surfaces": [
+        {
+          "kind": "main",
+          "width": 540,
+          "height": 764
+        }
+      ],
+      "pixels": 412560,
+      "box": {
+        "x": 653,
+        "y": 238.9453125,
+        "width": 270,
+        "height": 382
+      },
+      "image": {
+        "scope": "2/2/3",
+        "kind": "none"
+      },
+      "flowImages": "ready"
+    },
+    {
+      "page": 20,
+      "visible": false,
+      "dpr": 2,
+      "scale": 0.68,
+      "surfaces": [
+        {
+          "kind": "main",
+          "width": 540,
+          "height": 764
+        }
+      ],
+      "pixels": 412560,
+      "box": {
+        "x": 101.28125,
+        "y": 1014.25,
+        "width": 270,
+        "height": 382
+      },
+      "image": {
+        "scope": "2/2/3",
+        "kind": "none"
+      },
+      "flowImages": "ready"
+    },
+    {
+      "page": 21,
+      "visible": false,
+      "dpr": 2,
+      "scale": 0.68,
+      "surfaces": [
+        {
+          "kind": "main",
+          "width": 540,
+          "height": 764
+        }
+      ],
+      "pixels": 412560,
+      "box": {
+        "x": 377.140625,
+        "y": 1014.25,
+        "width": 270,
+        "height": 382
+      },
+      "image": {
+        "scope": "2/2/3",
+        "kind": "none"
+      },
+      "flowImages": "ready"
+    },
+    {
+      "page": 22,
+      "visible": false,
+      "dpr": 2,
+      "scale": 0.68,
+      "surfaces": [
+        {
+          "kind": "main",
+          "width": 540,
+          "height": 764
+        }
+      ],
+      "pixels": 412560,
+      "box": {
+        "x": 653,
+        "y": 1014.25,
+        "width": 270,
+        "height": 382
+      },
+      "image": {
+        "scope": "2/2/3",
+        "kind": "none"
+      },
+      "flowImages": "ready"
+    },
+    {
+      "page": 23,
+      "visible": false,
+      "dpr": 2,
+      "scale": 0.68,
+      "surfaces": [
+        {
+          "kind": "main",
+          "width": 540,
+          "height": 764
+        }
+      ],
+      "pixels": 412560,
+      "box": {
+        "x": 928.8515625,
+        "y": 1014.25,
+        "width": 270,
+        "height": 382
+      },
+      "image": {
+        "scope": "2/2/3",
+        "kind": "none"
+      },
+      "flowImages": "ready"
+    },
+    {
+      "page": 17,
+      "visible": true,
+      "dpr": 2,
+      "scale": 0.68,
+      "surfaces": [
+        {
+          "kind": "main",
+          "width": 540,
+          "height": 764
+        }
+      ],
+      "pixels": 412560,
+      "box": {
+        "x": 377.140625,
+        "y": 626.59375,
+        "width": 270,
+        "height": 382
+      },
+      "image": {
+        "scope": "2/2/3",
+        "kind": "none"
+      },
+      "flowImages": "ready"
+    },
+    {
+      "page": 16,
+      "visible": true,
+      "dpr": 2,
+      "scale": 0.68,
+      "surfaces": [
+        {
+          "kind": "main",
+          "width": 540,
+          "height": 764
+        }
+      ],
+      "pixels": 412560,
+      "box": {
+        "x": 101.28125,
+        "y": 626.59375,
+        "width": 270,
+        "height": 382
+      },
+      "image": {
+        "scope": "2/2/3",
+        "kind": "none"
+      },
+      "flowImages": "ready"
+    },
+    {
+      "page": 4,
+      "visible": false,
+      "dpr": 2,
+      "scale": 0.68,
+      "surfaces": [
+        {
+          "kind": "main",
+          "width": 540,
+          "height": 764
+        }
+      ],
+      "pixels": 412560,
+      "box": {
+        "x": 101.28125,
+        "y": -536.3515625,
+        "width": 270,
+        "height": 382
+      },
+      "image": {
+        "scope": "2/2/3",
+        "kind": "none"
+      },
+      "flowImages": "ready"
+    },
+    {
+      "page": 5,
+      "visible": false,
+      "dpr": 2,
+      "scale": 0.68,
+      "surfaces": [
+        {
+          "kind": "main",
+          "width": 540,
+          "height": 764
+        }
+      ],
+      "pixels": 412560,
+      "box": {
+        "x": 377.140625,
+        "y": -536.3515625,
+        "width": 270,
+        "height": 382
+      },
+      "image": {
+        "scope": "2/2/3",
+        "kind": "none"
+      },
+      "flowImages": "ready"
+    },
+    {
+      "page": 6,
+      "visible": false,
+      "dpr": 2,
+      "scale": 0.68,
+      "surfaces": [
+        {
+          "kind": "main",
+          "width": 540,
+          "height": 764
+        }
+      ],
+      "pixels": 412560,
+      "box": {
+        "x": 653,
+        "y": -536.3515625,
+        "width": 270,
+        "height": 382
+      },
+      "image": {
+        "scope": "2/2/3",
+        "kind": "none"
+      },
+      "flowImages": "ready"
+    },
+    {
+      "page": 7,
+      "visible": false,
+      "dpr": 2,
+      "scale": 0.68,
+      "surfaces": [
+        {
+          "kind": "main",
+          "width": 540,
+          "height": 764
+        }
+      ],
+      "pixels": 412560,
+      "box": {
+        "x": 928.8515625,
+        "y": -536.3515625,
+        "width": 270,
+        "height": 382
+      },
+      "image": {
+        "scope": "2/2/3",
+        "kind": "none"
+      },
+      "flowImages": "ready"
+    },
+    {
+      "page": 15,
+      "visible": true,
+      "dpr": 2,
+      "scale": 0.68,
+      "surfaces": [
+        {
+          "kind": "main",
+          "width": 540,
+          "height": 764
+        }
+      ],
+      "pixels": 412560,
+      "box": {
+        "x": 928.8515625,
+        "y": 238.9453125,
+        "width": 270,
+        "height": 382
+      },
+      "image": {
+        "scope": "2/2/3",
+        "kind": "none"
+      },
+      "flowImages": "ready"
+    },
+    {
+      "page": 18,
+      "visible": true,
+      "dpr": 2,
+      "scale": 0.68,
+      "surfaces": [
+        {
+          "kind": "main",
+          "width": 540,
+          "height": 764
+        }
+      ],
+      "pixels": 412560,
+      "box": {
+        "x": 653,
+        "y": 626.59375,
+        "width": 270,
+        "height": 382
+      },
+      "image": {
+        "scope": "2/2/3",
+        "kind": "none"
+      },
+      "flowImages": "ready"
+    },
+    {
+      "page": 19,
+      "visible": true,
+      "dpr": 2,
+      "scale": 0.68,
+      "surfaces": [
+        {
+          "kind": "main",
+          "width": 540,
+          "height": 764
+        }
+      ],
+      "pixels": 412560,
+      "box": {
+        "x": 928.8515625,
+        "y": 626.59375,
+        "width": 270,
+        "height": 382
+      },
+      "image": {
+        "scope": "2/2/3",
+        "kind": "none"
+      },
+      "flowImages": "ready"
+    }
+  ],
+  "pool": [],
+  "activePixels": 9488880,
+  "idlePoolPixels": 0,
+  "detachedCache": {
+    "pixelBudget": 40000000,
+    "reservedPixels": 9488880,
+    "cachedPixels": 7013520,
+    "totalAccountedPixels": 16502400,
+    "overBudgetMandatory": false,
+    "entryCount": 16,
+    "hits": 24,
+    "misses": 37,
+    "evictions": 0,
+    "rejected": 0,
+    "invalidations": 0
+  },
+  "scheduler": {
+    "generation": 26,
+    "visibleQueued": 0,
+    "prefetchQueued": 0,
+    "frameScheduled": false,
+    "idleScheduled": false,
+    "visibleSlices": 15,
+    "visibleExecuted": 16,
+    "prefetchExecuted": 12,
+    "staleDropped": 0,
+    "maxQueueDepth": 16
+  },
+  "totalAllocatedPixels": 16502400,
+  "pendingImages": 0,
+  "pendingPrefetch": 0,
+  "traces": [
+    {
+      "id": 3,
+      "scope": "2/2/3",
+      "source": "user-plain-wheel",
+      "startedAt": 18781.29999999702,
+      "status": "superseded",
+      "reason": "new-interaction",
+      "milestones": {
+        "visibleFirst": 35.70000000298023,
+        "preview": 35.900000005960464
+      },
+      "counters": {
+        "visibility.snapshot": {
+          "calls": 1,
+          "inclusiveMs": 0,
+          "maxMs": 0,
+          "units": 12
+        },
+        "wasm.pageInfo": {
+          "calls": 4,
+          "inclusiveMs": 0.09999999403953552,
+          "maxMs": 0.09999999403953552,
+          "units": 0
+        },
+        "budget.refresh": {
+          "calls": 1,
+          "inclusiveMs": 27.600000008940697,
+          "maxMs": 27.600000008940697,
+          "units": 0
+        },
+        "cache.put": {
+          "calls": 16,
+          "inclusiveMs": 0.09999999403953552,
+          "maxMs": 0.09999999403953552,
+          "units": 0
+        },
+        "cache.take": {
+          "calls": 13,
+          "inclusiveMs": 0,
+          "maxMs": 0,
+          "units": 0
+        },
+        "page.render": {
+          "calls": 13,
+          "inclusiveMs": 9.5,
+          "maxMs": 9.200000002980232,
+          "units": 0
+        },
+        "scheduler.desired": {
+          "calls": 1,
+          "inclusiveMs": 0,
+          "maxMs": 0,
+          "units": 0
+        },
+        "visibility.update": {
+          "calls": 1,
+          "inclusiveMs": 28.700000002980232,
+          "maxMs": 28.700000002980232,
+          "units": 0
+        },
+        "ruler.update": {
+          "calls": 1,
+          "inclusiveMs": 0.20000000298023224,
+          "maxMs": 0.20000000298023224,
+          "units": 0
+        },
+        "pool.acquire": {
+          "calls": 1,
+          "inclusiveMs": 0,
+          "maxMs": 0,
+          "units": 0
+        },
+        "wasm.layerRaster": {
+          "calls": 4,
+          "inclusiveMs": 8.200000002980232,
+          "maxMs": 3.7999999970197678,
+          "units": 0
+        },
+        "image.schedule": {
+          "calls": 1,
+          "inclusiveMs": 0,
+          "maxMs": 0,
+          "units": 0
+        },
+        "raster.main": {
+          "calls": 1,
+          "inclusiveMs": 9.100000008940697,
+          "maxMs": 9.100000008940697,
+          "units": 0
+        },
+        "image.prefetch": {
+          "calls": 1,
+          "inclusiveMs": 4.700000002980232,
+          "maxMs": 4.700000002980232,
+          "units": 0
+        }
+      },
+      "spans": [
+        {
+          "boundary": "visibility.snapshot",
+          "page": null,
+          "at": 5.799999997019768,
+          "ms": 0
+        },
+        {
+          "boundary": "wasm.pageInfo",
+          "page": 9,
+          "at": 6.200000002980232,
+          "ms": 0.09999999403953552
+        },
+        {
+          "boundary": "budget.refresh",
+          "page": null,
+          "at": 6.299999997019768,
+          "ms": 27.600000008940697
+        },
+        {
+          "boundary": "cache.put",
+          "page": null,
+          "at": 33.900000005960464,
+          "ms": 0
+        },
+        {
+          "boundary": "cache.put",
+          "page": null,
+          "at": 33.900000005960464,
+          "ms": 0
+        },
+        {
+          "boundary": "cache.put",
+          "page": null,
+          "at": 33.900000005960464,
+          "ms": 0
+        },
+        {
+          "boundary": "cache.put",
+          "page": null,
+          "at": 33.900000005960464,
+          "ms": 0
+        },
+        {
+          "boundary": "cache.put",
+          "page": null,
+          "at": 33.900000005960464,
+          "ms": 0
+        },
+        {
+          "boundary": "cache.put",
+          "page": null,
+          "at": 33.900000005960464,
+          "ms": 0
+        },
+        {
+          "boundary": "cache.put",
+          "page": null,
+          "at": 33.900000005960464,
+          "ms": 0
+        },
+        {
+          "boundary": "cache.put",
+          "page": null,
+          "at": 33.900000005960464,
+          "ms": 0
+        },
+        {
+          "boundary": "cache.put",
+          "page": null,
+          "at": 33.900000005960464,
+          "ms": 0
+        },
+        {
+          "boundary": "cache.put",
+          "page": null,
+          "at": 33.900000005960464,
+          "ms": 0.09999999403953552
+        },
+        {
+          "boundary": "cache.put",
+          "page": null,
+          "at": 34,
+          "ms": 0
+        },
+        {
+          "boundary": "cache.put",
+          "page": null,
+          "at": 34,
+          "ms": 0
+        },
+        {
+          "boundary": "cache.put",
+          "page": null,
+          "at": 34,
+          "ms": 0
+        },
+        {
+          "boundary": "cache.put",
+          "page": null,
+          "at": 34,
+          "ms": 0
+        },
+        {
+          "boundary": "cache.put",
+          "page": null,
+          "at": 34,
+          "ms": 0
+        },
+        {
+          "boundary": "cache.put",
+          "page": null,
+          "at": 34,
+          "ms": 0
+        },
+        {
+          "boundary": "cache.take",
+          "page": null,
+          "at": 34,
+          "ms": 0
+        },
+        {
+          "boundary": "page.render",
+          "page": 0,
+          "at": 34,
+          "ms": 0.10000000894069672
+        },
+        {
+          "boundary": "cache.take",
+          "page": null,
+          "at": 34.1000000089407,
+          "ms": 0
+        },
+        {
+          "boundary": "page.render",
+          "page": 1,
+          "at": 34.1000000089407,
+          "ms": 0
+        },
+        {
+          "boundary": "cache.take",
+          "page": null,
+          "at": 34.1000000089407,
+          "ms": 0
+        },
+        {
+          "boundary": "page.render",
+          "page": 2,
+          "at": 34.1000000089407,
+          "ms": 0
+        },
+        {
+          "boundary": "cache.take",
+          "page": null,
+          "at": 34.1000000089407,
+          "ms": 0
+        },
+        {
+          "boundary": "page.render",
+          "page": 3,
+          "at": 34.1000000089407,
+          "ms": 0
+        },
+        {
+          "boundary": "cache.take",
+          "page": null,
+          "at": 34.1000000089407,
+          "ms": 0
+        },
+        {
+          "boundary": "page.render",
+          "page": 4,
+          "at": 34.1000000089407,
+          "ms": 0.09999999403953552
+        },
+        {
+          "boundary": "cache.take",
+          "page": null,
+          "at": 34.20000000298023,
+          "ms": 0
+        },
+        {
+          "boundary": "page.render",
+          "page": 5,
+          "at": 34.20000000298023,
+          "ms": 0
+        },
+        {
+          "boundary": "cache.take",
+          "page": null,
+          "at": 34.20000000298023,
+          "ms": 0
+        },
+        {
+          "boundary": "page.render",
+          "page": 6,
+          "at": 34.20000000298023,
+          "ms": 0
+        },
+        {
+          "boundary": "cache.take",
+          "page": null,
+          "at": 34.20000000298023,
+          "ms": 0
+        },
+        {
+          "boundary": "page.render",
+          "page": 7,
+          "at": 34.20000000298023,
+          "ms": 0
+        },
+        {
+          "boundary": "cache.take",
+          "page": null,
+          "at": 34.20000000298023,
+          "ms": 0
+        },
+        {
+          "boundary": "page.render",
+          "page": 8,
+          "at": 34.20000000298023,
+          "ms": 0
+        },
+        {
+          "boundary": "cache.take",
+          "page": null,
+          "at": 34.20000000298023,
+          "ms": 0
+        },
+        {
+          "boundary": "page.render",
+          "page": 9,
+          "at": 34.20000000298023,
+          "ms": 0.09999999403953552
+        },
+        {
+          "boundary": "cache.take",
+          "page": null,
+          "at": 34.29999999701977,
+          "ms": 0
+        },
+        {
+          "boundary": "page.render",
+          "page": 10,
+          "at": 34.29999999701977,
+          "ms": 0
+        },
+        {
+          "boundary": "cache.take",
+          "page": null,
+          "at": 34.29999999701977,
+          "ms": 0
+        },
+        {
+          "boundary": "page.render",
+          "page": 11,
+          "at": 34.29999999701977,
+          "ms": 0
+        },
+        {
+          "boundary": "scheduler.desired",
+          "page": null,
+          "at": 34.400000005960464,
+          "ms": 0
+        },
+        {
+          "boundary": "visibility.update",
+          "page": null,
+          "at": 5.700000002980232,
+          "ms": 28.700000002980232
+        },
+        {
+          "boundary": "wasm.pageInfo",
+          "page": 0,
+          "at": 35.79999999701977,
+          "ms": 0
+        },
+        {
+          "boundary": "wasm.pageInfo",
+          "page": 0,
+          "at": 35.900000005960464,
+          "ms": 0
+        },
+        {
+          "boundary": "ruler.update",
+          "page": null,
+          "at": 35.70000000298023,
+          "ms": 0.20000000298023224
+        },
+        {
+          "boundary": "cache.take",
+          "page": null,
+          "at": 35.900000005960464,
+          "ms": 0
+        },
+        {
+          "boundary": "pool.acquire",
+          "page": 12,
+          "at": 35.900000005960464,
+          "ms": 0
+        },
+        {
+          "boundary": "wasm.layerRaster",
+          "page": 12,
+          "at": 36.70000000298023,
+          "ms": 0.5
+        },
+        {
+          "boundary": "wasm.pageInfo",
+          "page": 12,
+          "at": 37.20000000298023,
+          "ms": 0
+        },
+        {
+          "boundary": "wasm.layerRaster",
+          "page": 12,
+          "at": 37.20000000298023,
+          "ms": 0.5
+        },
+        {
+          "boundary": "wasm.layerRaster",
+          "page": 12,
+          "at": 37.70000000298023,
+          "ms": 3.4000000059604645
+        },
+        {
+          "boundary": "wasm.layerRaster",
+          "page": 12,
+          "at": 41.1000000089407,
+          "ms": 3.7999999970197678
+        },
+        {
+          "boundary": "image.schedule",
+          "page": 12,
+          "at": 45,
+          "ms": 0
+        },
+        {
+          "boundary": "raster.main",
+          "page": 12,
+          "at": 36,
+          "ms": 9.100000008940697
+        },
+        {
+          "boundary": "page.render",
+          "page": 12,
+          "at": 35.900000005960464,
+          "ms": 9.200000002980232
+        },
+        {
+          "boundary": "image.prefetch",
+          "page": 12,
+          "at": 45.20000000298023,
+          "ms": 4.700000002980232
+        }
+      ],
+      "spansDropped": 0,
+      "frames": [
+        30
+      ],
+      "framesDropped": 0
+    },
+    {
+      "id": 4,
+      "scope": "2/2/3",
+      "source": "user-plain-wheel",
+      "startedAt": 18833.70000000298,
+      "status": "superseded",
+      "reason": "new-interaction",
+      "milestones": {
+        "visibleFirst": 58.79999999701977,
+        "preview": 59.20000000298023
+      },
+      "counters": {
+        "wasm.layerRaster": {
+          "calls": 7,
+          "inclusiveMs": 53.599999994039536,
+          "maxMs": 33.1000000089407,
+          "units": 0
+        },
+        "wasm.pageInfo": {
+          "calls": 7,
+          "inclusiveMs": 0,
+          "maxMs": 0,
+          "units": 0
+        },
+        "raster.image": {
+          "calls": 1,
+          "inclusiveMs": 3.4000000059604645,
+          "maxMs": 3.4000000059604645,
+          "units": 0
+        },
+        "cache.take": {
+          "calls": 11,
+          "inclusiveMs": 0,
+          "maxMs": 0,
+          "units": 0
+        },
+        "pool.acquire": {
+          "calls": 3,
+          "inclusiveMs": 0,
+          "maxMs": 0,
+          "units": 0
+        },
+        "image.schedule": {
+          "calls": 3,
+          "inclusiveMs": 0,
+          "maxMs": 0,
+          "units": 0
+        },
+        "raster.main": {
+          "calls": 3,
+          "inclusiveMs": 51.20000001788139,
+          "maxMs": 33.6000000089407,
+          "units": 0
+        },
+        "page.render": {
+          "calls": 11,
+          "inclusiveMs": 51.80000001192093,
+          "maxMs": 33.6000000089407,
+          "units": 0
+        },
+        "visibility.snapshot": {
+          "calls": 1,
+          "inclusiveMs": 0,
+          "maxMs": 0,
+          "units": 12
+        },
+        "budget.refresh": {
+          "calls": 1,
+          "inclusiveMs": 0.10000000894069672,
+          "maxMs": 0.10000000894069672,
+          "units": 0
+        },
+        "cache.put": {
+          "calls": 8,
+          "inclusiveMs": 0,
+          "maxMs": 0,
+          "units": 0
+        },
+        "scheduler.desired": {
+          "calls": 1,
+          "inclusiveMs": 0.10000000894069672,
+          "maxMs": 0.10000000894069672,
+          "units": 0
+        },
+        "visibility.update": {
+          "calls": 1,
+          "inclusiveMs": 0.7999999970197678,
+          "maxMs": 0.7999999970197678,
+          "units": 0
+        },
+        "ruler.update": {
+          "calls": 1,
+          "inclusiveMs": 0.4000000059604645,
+          "maxMs": 0.4000000059604645,
+          "units": 0
+        }
+      },
+      "spans": [
+        {
+          "boundary": "wasm.layerRaster",
+          "page": 12,
+          "at": 0.09999999403953552,
+          "ms": 0.5
+        },
+        {
+          "boundary": "wasm.pageInfo",
+          "page": 12,
+          "at": 0.5999999940395355,
+          "ms": 0
+        },
+        {
+          "boundary": "wasm.layerRaster",
+          "page": 12,
+          "at": 0.7000000029802322,
+          "ms": 0.3999999910593033
+        },
+        {
+          "boundary": "wasm.layerRaster",
+          "page": 12,
+          "at": 1.0999999940395355,
+          "ms": 0.7000000029802322
+        },
+        {
+          "boundary": "wasm.layerRaster",
+          "page": 12,
+          "at": 1.7999999970197678,
+          "ms": 1.7000000029802322
+        },
+        {
+          "boundary": "raster.image",
+          "page": 12,
+          "at": 0.09999999403953552,
+          "ms": 3.4000000059604645
+        },
+        {
+          "boundary": "cache.take",
+          "page": null,
+          "at": 3.7999999970197678,
+          "ms": 0
+        },
+        {
+          "boundary": "pool.acquire",
+          "page": 13,
+          "at": 3.7999999970197678,
+          "ms": 0
+        },
+        {
+          "boundary": "wasm.layerRaster",
+          "page": 13,
+          "at": 4,
+          "ms": 0.5999999940395355
+        },
+        {
+          "boundary": "wasm.pageInfo",
+          "page": 13,
+          "at": 4.5999999940395355,
+          "ms": 0
+        },
+        {
+          "boundary": "image.schedule",
+          "page": 13,
+          "at": 4.5999999940395355,
+          "ms": 0
+        },
+        {
+          "boundary": "raster.main",
+          "page": 13,
+          "at": 3.8999999910593033,
+          "ms": 0.800000011920929
+        },
+        {
+          "boundary": "page.render",
+          "page": 13,
+          "at": 3.7999999970197678,
+          "ms": 1
+        },
+        {
+          "boundary": "cache.take",
+          "page": null,
+          "at": 4.799999997019768,
+          "ms": 0
+        },
+        {
+          "boundary": "pool.acquire",
+          "page": 14,
+          "at": 4.799999997019768,
+          "ms": 0
+        },
+        {
+          "boundary": "wasm.layerRaster",
+          "page": 14,
+          "at": 4.799999997019768,
+          "ms": 16.599999994039536
+        },
+        {
+          "boundary": "wasm.pageInfo",
+          "page": 14,
+          "at": 21.399999991059303,
+          "ms": 0
+        },
+        {
+          "boundary": "image.schedule",
+          "page": 14,
+          "at": 21.5,
+          "ms": 0
+        },
+        {
+          "boundary": "raster.main",
+          "page": 14,
+          "at": 4.799999997019768,
+          "ms": 16.799999997019768
+        },
+        {
+          "boundary": "page.render",
+          "page": 14,
+          "at": 4.799999997019768,
+          "ms": 16.900000005960464
+        },
+        {
+          "boundary": "visibility.snapshot",
+          "page": null,
+          "at": 21.700000002980232,
+          "ms": 0
+        },
+        {
+          "boundary": "wasm.pageInfo",
+          "page": 17,
+          "at": 21.899999991059303,
+          "ms": 0
+        },
+        {
+          "boundary": "budget.refresh",
+          "page": null,
+          "at": 21.899999991059303,
+          "ms": 0.10000000894069672
+        },
+        {
+          "boundary": "cache.put",
+          "page": null,
+          "at": 22,
+          "ms": 0
+        },
+        {
+          "boundary": "cache.put",
+          "page": null,
+          "at": 22.099999994039536,
+          "ms": 0
+        },
+        {
+          "boundary": "cache.put",
+          "page": null,
+          "at": 22.099999994039536,
+          "ms": 0
+        },
+        {
+          "boundary": "cache.put",
+          "page": null,
+          "at": 22.099999994039536,
+          "ms": 0
+        },
+        {
+          "boundary": "cache.put",
+          "page": null,
+          "at": 22.099999994039536,
+          "ms": 0
+        },
+        {
+          "boundary": "cache.put",
+          "page": null,
+          "at": 22.099999994039536,
+          "ms": 0
+        },
+        {
+          "boundary": "cache.put",
+          "page": null,
+          "at": 22.099999994039536,
+          "ms": 0
+        },
+        {
+          "boundary": "cache.put",
+          "page": null,
+          "at": 22.099999994039536,
+          "ms": 0
+        },
+        {
+          "boundary": "cache.take",
+          "page": null,
+          "at": 22.099999994039536,
+          "ms": 0
+        },
+        {
+          "boundary": "page.render",
+          "page": 20,
+          "at": 22.099999994039536,
+          "ms": 0
+        },
+        {
+          "boundary": "cache.take",
+          "page": null,
+          "at": 22.099999994039536,
+          "ms": 0
+        },
+        {
+          "boundary": "page.render",
+          "page": 21,
+          "at": 22.099999994039536,
+          "ms": 0
+        },
+        {
+          "boundary": "cache.take",
+          "page": null,
+          "at": 22.099999994039536,
+          "ms": 0
+        },
+        {
+          "boundary": "page.render",
+          "page": 22,
+          "at": 22.099999994039536,
+          "ms": 0
+        },
+        {
+          "boundary": "cache.take",
+          "page": null,
+          "at": 22.099999994039536,
+          "ms": 0
+        },
+        {
+          "boundary": "page.render",
+          "page": 23,
+          "at": 22.099999994039536,
+          "ms": 0
+        },
+        {
+          "boundary": "cache.take",
+          "page": null,
+          "at": 22.099999994039536,
+          "ms": 0
+        },
+        {
+          "boundary": "page.render",
+          "page": 24,
+          "at": 22.099999994039536,
+          "ms": 0
+        },
+        {
+          "boundary": "cache.take",
+          "page": null,
+          "at": 22.099999994039536,
+          "ms": 0
+        },
+        {
+          "boundary": "page.render",
+          "page": 25,
+          "at": 22.099999994039536,
+          "ms": 0.29999999701976776
+        },
+        {
+          "boundary": "cache.take",
+          "page": null,
+          "at": 22.399999991059303,
+          "ms": 0
+        },
+        {
+          "boundary": "page.render",
+          "page": 26,
+          "at": 22.399999991059303,
+          "ms": 0
+        },
+        {
+          "boundary": "cache.take",
+          "page": null,
+          "at": 22.399999991059303,
+          "ms": 0
+        },
+        {
+          "boundary": "page.render",
+          "page": 27,
+          "at": 22.399999991059303,
+          "ms": 0
+        },
+        {
+          "boundary": "scheduler.desired",
+          "page": null,
+          "at": 22.399999991059303,
+          "ms": 0.10000000894069672
+        },
+        {
+          "boundary": "visibility.update",
+          "page": null,
+          "at": 21.700000002980232,
+          "ms": 0.7999999970197678
+        },
+        {
+          "boundary": "cache.take",
+          "page": null,
+          "at": 25.099999994039536,
+          "ms": 0
+        },
+        {
+          "boundary": "pool.acquire",
+          "page": 17,
+          "at": 25.099999994039536,
+          "ms": 0
+        },
+        {
+          "boundary": "wasm.layerRaster",
+          "page": 17,
+          "at": 25.399999991059303,
+          "ms": 33.1000000089407
+        },
+        {
+          "boundary": "wasm.pageInfo",
+          "page": 17,
+          "at": 58.5,
+          "ms": 0
+        },
+        {
+          "boundary": "image.schedule",
+          "page": 17,
+          "at": 58.599999994039536,
+          "ms": 0
+        },
+        {
+          "boundary": "raster.main",
+          "page": 17,
+          "at": 25.099999994039536,
+          "ms": 33.6000000089407
+        },
+        {
+          "boundary": "page.render",
+          "page": 17,
+          "at": 25.099999994039536,
+          "ms": 33.6000000089407
+        },
+        {
+          "boundary": "wasm.pageInfo",
+          "page": 0,
+          "at": 59.20000000298023,
+          "ms": 0
+        },
+        {
+          "boundary": "wasm.pageInfo",
+          "page": 0,
+          "at": 59.20000000298023,
+          "ms": 0
+        },
+        {
+          "boundary": "ruler.update",
+          "page": null,
+          "at": 58.79999999701977,
+          "ms": 0.4000000059604645
+        }
+      ],
+      "spansDropped": 0,
+      "frames": [
+        37.099999994039536
+      ],
+      "framesDropped": 0
+    },
+    {
+      "id": 5,
+      "scope": "2/2/3",
+      "source": "user-plain-wheel",
+      "startedAt": 18896,
+      "status": "complete",
+      "reason": "known render work only; presentation and decoder completeness are separate evidence",
+      "milestones": {
+        "visibleFirst": 63.099999994039536,
+        "preview": 63.400000005960464,
+        "visibleStable": 147.20000000298023,
+        "retainedComplete": 147.20000000298023
+      },
+      "counters": {
+        "cache.take": {
+          "calls": 8,
+          "inclusiveMs": 0,
+          "maxMs": 0,
+          "units": 0
+        },
+        "pool.acquire": {
+          "calls": 4,
+          "inclusiveMs": 0,
+          "maxMs": 0,
+          "units": 0
+        },
+        "wasm.layerRaster": {
+          "calls": 4,
+          "inclusiveMs": 106,
+          "maxMs": 32,
+          "units": 0
+        },
+        "wasm.pageInfo": {
+          "calls": 7,
+          "inclusiveMs": 0.19999998807907104,
+          "maxMs": 0.09999999403953552,
+          "units": 0
+        },
+        "image.flowLayer": {
+          "calls": 2,
+          "inclusiveMs": 0.29999999701976776,
+          "maxMs": 0.29999999701976776,
+          "units": 0
+        },
+        "image.schedule": {
+          "calls": 4,
+          "inclusiveMs": 0,
+          "maxMs": 0,
+          "units": 0
+        },
+        "raster.main": {
+          "calls": 4,
+          "inclusiveMs": 129,
+          "maxMs": 38.29999999701977,
+          "units": 0
+        },
+        "page.render": {
+          "calls": 8,
+          "inclusiveMs": 129.40000000596046,
+          "maxMs": 38.29999999701977,
+          "units": 0
+        },
+        "visibility.snapshot": {
+          "calls": 1,
+          "inclusiveMs": 0,
+          "maxMs": 0,
+          "units": 12
+        },
+        "budget.refresh": {
+          "calls": 1,
+          "inclusiveMs": 0,
+          "maxMs": 0,
+          "units": 0
+        },
+        "cache.put": {
+          "calls": 4,
+          "inclusiveMs": 0,
+          "maxMs": 0,
+          "units": 0
+        },
+        "scheduler.desired": {
+          "calls": 1,
+          "inclusiveMs": 0,
+          "maxMs": 0,
+          "units": 0
+        },
+        "visibility.update": {
+          "calls": 1,
+          "inclusiveMs": 0.5,
+          "maxMs": 0.5,
+          "units": 0
+        },
+        "ruler.update": {
+          "calls": 1,
+          "inclusiveMs": 0.20000000298023224,
+          "maxMs": 0.20000000298023224,
+          "units": 0
+        }
+      },
+      "spans": [
+        {
+          "boundary": "cache.take",
+          "page": null,
+          "at": 0.20000000298023224,
+          "ms": 0
+        },
+        {
+          "boundary": "pool.acquire",
+          "page": 16,
+          "at": 0.20000000298023224,
+          "ms": 0
+        },
+        {
+          "boundary": "wasm.layerRaster",
+          "page": 16,
+          "at": 0.4000000059604645,
+          "ms": 26.5
+        },
+        {
+          "boundary": "wasm.pageInfo",
+          "page": 16,
+          "at": 29,
+          "ms": 0
+        },
+        {
+          "boundary": "image.flowLayer",
+          "page": 16,
+          "at": 29,
+          "ms": 0.29999999701976776
+        },
+        {
+          "boundary": "image.schedule",
+          "page": 16,
+          "at": 29.299999997019768,
+          "ms": 0
+        },
+        {
+          "boundary": "raster.main",
+          "page": 16,
+          "at": 0.20000000298023224,
+          "ms": 29.200000002980232
+        },
+        {
+          "boundary": "page.render",
+          "page": 16,
+          "at": 0.20000000298023224,
+          "ms": 29.200000002980232
+        },
+        {
+          "boundary": "visibility.snapshot",
+          "page": null,
+          "at": 30,
+          "ms": 0
+        },
+        {
+          "boundary": "wasm.pageInfo",
+          "page": 13,
+          "at": 30.099999994039536,
+          "ms": 0
+        },
+        {
+          "boundary": "budget.refresh",
+          "page": null,
+          "at": 30.200000002980232,
+          "ms": 0
+        },
+        {
+          "boundary": "cache.put",
+          "page": null,
+          "at": 30.200000002980232,
+          "ms": 0
+        },
+        {
+          "boundary": "cache.put",
+          "page": null,
+          "at": 30.200000002980232,
+          "ms": 0
+        },
+        {
+          "boundary": "cache.put",
+          "page": null,
+          "at": 30.200000002980232,
+          "ms": 0
+        },
+        {
+          "boundary": "cache.put",
+          "page": null,
+          "at": 30.200000002980232,
+          "ms": 0
+        },
+        {
+          "boundary": "cache.take",
+          "page": null,
+          "at": 30.200000002980232,
+          "ms": 0
+        },
+        {
+          "boundary": "page.render",
+          "page": 4,
+          "at": 30.200000002980232,
+          "ms": 0.09999999403953552
+        },
+        {
+          "boundary": "cache.take",
+          "page": null,
+          "at": 30.299999997019768,
+          "ms": 0
+        },
+        {
+          "boundary": "page.render",
+          "page": 5,
+          "at": 30.299999997019768,
+          "ms": 0
+        },
+        {
+          "boundary": "cache.take",
+          "page": null,
+          "at": 30.299999997019768,
+          "ms": 0
+        },
+        {
+          "boundary": "page.render",
+          "page": 6,
+          "at": 30.299999997019768,
+          "ms": 0
+        },
+        {
+          "boundary": "cache.take",
+          "page": null,
+          "at": 30.299999997019768,
+          "ms": 0
+        },
+        {
+          "boundary": "page.render",
+          "page": 7,
+          "at": 30.299999997019768,
+          "ms": 0.20000000298023224
+        },
+        {
+          "boundary": "scheduler.desired",
+          "page": null,
+          "at": 30.5,
+          "ms": 0
+        },
+        {
+          "boundary": "visibility.update",
+          "page": null,
+          "at": 30,
+          "ms": 0.5
+        },
+        {
+          "boundary": "cache.take",
+          "page": null,
+          "at": 34,
+          "ms": 0
+        },
+        {
+          "boundary": "pool.acquire",
+          "page": 15,
+          "at": 34,
+          "ms": 0
+        },
+        {
+          "boundary": "wasm.layerRaster",
+          "page": 15,
+          "at": 34.20000000298023,
+          "ms": 28.5
+        },
+        {
+          "boundary": "wasm.pageInfo",
+          "page": 15,
+          "at": 62.70000000298023,
+          "ms": 0.09999999403953552
+        },
+        {
+          "boundary": "image.schedule",
+          "page": 15,
+          "at": 62.900000005960464,
+          "ms": 0
+        },
+        {
+          "boundary": "raster.main",
+          "page": 15,
+          "at": 34,
+          "ms": 29
+        },
+        {
+          "boundary": "page.render",
+          "page": 15,
+          "at": 34,
+          "ms": 29
+        },
+        {
+          "boundary": "wasm.pageInfo",
+          "page": 0,
+          "at": 63.400000005960464,
+          "ms": 0
+        },
+        {
+          "boundary": "wasm.pageInfo",
+          "page": 0,
+          "at": 63.400000005960464,
+          "ms": 0
+        },
+        {
+          "boundary": "ruler.update",
+          "page": null,
+          "at": 63.20000000298023,
+          "ms": 0.20000000298023224
+        },
+        {
+          "boundary": "cache.take",
+          "page": null,
+          "at": 67.59999999403954,
+          "ms": 0
+        },
+        {
+          "boundary": "pool.acquire",
+          "page": 18,
+          "at": 67.59999999403954,
+          "ms": 0
+        },
+        {
+          "boundary": "wasm.layerRaster",
+          "page": 18,
+          "at": 67.90000000596046,
+          "ms": 32
+        },
+        {
+          "boundary": "wasm.pageInfo",
+          "page": 18,
+          "at": 99.90000000596046,
+          "ms": 0.09999999403953552
+        },
+        {
+          "boundary": "image.schedule",
+          "page": 18,
+          "at": 100,
+          "ms": 0
+        },
+        {
+          "boundary": "raster.main",
+          "page": 18,
+          "at": 67.59999999403954,
+          "ms": 32.5
+        },
+        {
+          "boundary": "page.render",
+          "page": 18,
+          "at": 67.59999999403954,
+          "ms": 32.6000000089407
+        },
+        {
+          "boundary": "cache.take",
+          "page": null,
+          "at": 103.90000000596046,
+          "ms": 0
+        },
+        {
+          "boundary": "pool.acquire",
+          "page": 19,
+          "at": 103.90000000596046,
+          "ms": 0
+        },
+        {
+          "boundary": "wasm.layerRaster",
+          "page": 19,
+          "at": 109.90000000596046,
+          "ms": 19
+        },
+        {
+          "boundary": "wasm.pageInfo",
+          "page": 19,
+          "at": 142,
+          "ms": 0
+        },
+        {
+          "boundary": "image.flowLayer",
+          "page": 19,
+          "at": 142.09999999403954,
+          "ms": 0
+        },
+        {
+          "boundary": "image.schedule",
+          "page": 19,
+          "at": 142.09999999403954,
+          "ms": 0
+        },
+        {
+          "boundary": "raster.main",
+          "page": 19,
+          "at": 103.90000000596046,
+          "ms": 38.29999999701977
+        },
+        {
+          "boundary": "page.render",
+          "page": 19,
+          "at": 103.90000000596046,
+          "ms": 38.29999999701977
+        }
+      ],
+      "spansDropped": 0,
+      "frames": [
+        33.099999994039536,
+        37.20000000298023,
+        42.1000000089407,
+        4.799999997019768,
+        1.2000000029802322
+      ],
+      "framesDropped": 0
+    }
+  ],
+  "errors": [],
+  "longTasks": [],
+  "note": "RGBA 환산=actual pixels×4; not GPU/RSS. Timings are known-render-work/next-frame opportunities, not compositor presentation. Focus sharp requires observed decode/no-image evidence. Bounds/readback only on explicit snapshot."
+}
