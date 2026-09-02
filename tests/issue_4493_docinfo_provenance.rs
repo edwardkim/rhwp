@@ -109,7 +109,7 @@ fn swapped_raw_stream_is_not_honored() {
 }
 
 #[test]
-fn issue_4432_save_lowers_dirty_and_reseals() {
+fn save_reseals_only_the_output_snapshot() {
     let mut core = DocumentCore::from_bytes(&sample_bytes()).expect("open");
     // dirty 를 세우는 통상 편집 경로 — 중앙 무효화 진입점(document_mut) 경유.
     core.document_mut().doc_info.char_shapes[0].base_size += 700;
@@ -117,11 +117,11 @@ fn issue_4432_save_lowers_dirty_and_reseals() {
 
     let first = core.export_hwp_with_adapter().expect("save 1");
     assert!(
-        !core.document().doc_info.raw_stream_dirty,
-        "저장 성공 지점에서 dirty 가 내려가야 한다 (#4432)"
+        core.document().doc_info.raw_stream_dirty,
+        "output cache resealing must not mutate the live Document"
     );
     let second = core.export_hwp_with_adapter().expect("save 2");
-    assert_eq!(first, second, "재밀봉 뒤 무변경 재저장은 같은 바이트");
+    assert_eq!(first, second, "같은 snapshot lowering은 결정적이어야 한다");
 
     // 재밀봉된 캐시가 실제 모델 상태와 정합해야 한다 — 재로드로 검증.
     let reparsed = parse_document(&second).expect("reparse");

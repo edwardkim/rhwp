@@ -320,3 +320,65 @@ fn renderer_cache_lifecycle_is_absent_from_source_models() {
         "editor layout projection must not be stored on source Table"
     );
 }
+
+fn assert_live_document_unchanged(core: &DocumentCore, before: &str, api: &str) {
+    let after = format!("{:#?}", core.document());
+    assert_eq!(after, before, "{api} mutated the live Document");
+}
+
+#[test]
+fn every_hwp_lowering_api_preserves_the_live_document() {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR")).join("samples/누름틀-2024.hwpx");
+    let mut core = DocumentCore::from_bytes(&std::fs::read(path).expect("fixture read"))
+        .expect("fixture parse");
+    let before = format!("{:#?}", core.document());
+
+    core.export_hwp_with_adapter()
+        .expect("legacy adapter export");
+    assert_live_document_unchanged(&core, &before, "export_hwp_with_adapter");
+
+    core.export_hwp_with_adapter_snapshot()
+        .expect("snapshot export");
+    assert_live_document_unchanged(&core, &before, "export_hwp_with_adapter_snapshot");
+
+    let _ = core
+        .export_hwp_with_adapter_snapshot_with_report()
+        .expect("snapshot report export");
+    assert_live_document_unchanged(
+        &core,
+        &before,
+        "export_hwp_with_adapter_snapshot_with_report",
+    );
+
+    core.export_hwp_with_adapter_with_password(b"4771-test")
+        .expect("password export");
+    assert_live_document_unchanged(&core, &before, "export_hwp_with_adapter_with_password");
+
+    let _ = core
+        .export_hwp_with_adapter_snapshot_with_password_and_report(b"4771-test")
+        .expect("password report export");
+    assert_live_document_unchanged(
+        &core,
+        &before,
+        "export_hwp_with_adapter_snapshot_with_password_and_report",
+    );
+
+    core.serialize_hwp_with_verify().expect("verified export");
+    assert_live_document_unchanged(&core, &before, "serialize_hwp_with_verify");
+}
+
+#[test]
+fn cli_verification_uses_the_snapshot_that_produces_the_bytes() {
+    for source in [
+        include_str!("../../src/cli/commands/conversion.rs"),
+        include_str!("../../src/cli/commands/batch_convert.rs"),
+    ] {
+        assert!(source.contains("let export_snapshot = doc.prepare_hwp_export_snapshot()"));
+        assert!(source.contains("export_snapshot.document().clone()"));
+        assert!(source.contains("export_snapshot.serialize()"));
+        assert!(
+            !source.contains("converters::hwpx_to_hwp::convert_if_hwpx_source"),
+            "CLI must not own a partial copy of the lowering pipeline"
+        );
+    }
+}

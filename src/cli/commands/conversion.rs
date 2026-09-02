@@ -290,9 +290,13 @@ pub(crate) fn convert_hwp(args: &[String]) -> i32 {
                 )
             );
         };
+    let export_snapshot = doc.prepare_hwp_export_snapshot();
+    let verify_expected = verify_options
+        .verify
+        .then(|| export_snapshot.document().clone());
     let serialized = match output_password.as_deref() {
-        Some(password) => doc.export_hwp_with_adapter_with_password(password.as_bytes()),
-        None => doc.export_hwp_with_adapter(),
+        Some(password) => export_snapshot.serialize_with_password(password.as_bytes()),
+        None => export_snapshot.serialize(),
     };
     match serialized {
         Ok(bytes) => match fs::write(output_path, &bytes) {
@@ -346,8 +350,11 @@ pub(crate) fn convert_hwp(args: &[String]) -> i32 {
                     }
 
                     if verify_options.verify {
+                        let expected = verify_expected
+                            .as_ref()
+                            .expect("verify expected snapshot must exist");
                         let diff = rhwp::serializer::hwpx::roundtrip::diff_documents(
-                            doc.document(),
+                            expected,
                             reloaded.document(),
                         );
                         // [#3505, #3930] 출처별로 대상 포맷에 표현 자리가 없는 항목만
