@@ -1318,6 +1318,26 @@ fn tac_object_box_height_px(object_h: f64, caption: &Option<Caption>, dpi: f64) 
     object_h + hwpunit_to_px(i32::from(cap.spacing), dpi) + caption_h
 }
 
+/// [#6603] 글자처럼 그림의 바깥 여백(px) — (왼쪽, 오른쪽, 위, 아래).
+///
+/// 한/글은 여백을 포함한 상자를 줄 안에 놓고 잉크를 상자의 (왼쪽 여백, 위 여백)
+/// 안쪽에 그린다. 줄 안 폭과 baseline 에 앉히는 높이는 상자로 세고, ImageNode 는
+/// 잉크 크기로 낸다. 실측(samples↔pdf 215문서): 사방 3.01mm 여백의 빈 문단 TAC
+/// 그림이 왼쪽·양쪽 정렬에서 (−11.33, −11.22)px, 가운데 정렬에서 (0, −11.22)px
+/// 어긋났다 — 가운데는 좌우 여백이 같아 x 가 상쇄된다 (hwp3-sample14-hwp5 3쪽 pi=29).
+pub(crate) fn tac_picture_outer_margins_px(
+    pic: &crate::model::image::Picture,
+    dpi: f64,
+) -> (f64, f64, f64, f64) {
+    let m = &pic.common.margin;
+    (
+        hwpunit_to_px(i32::from(m.left), dpi),
+        hwpunit_to_px(i32::from(m.right), dpi),
+        hwpunit_to_px(i32::from(m.top), dpi),
+        hwpunit_to_px(i32::from(m.bottom), dpi),
+    )
+}
+
 fn tac_picture_label_extra_for_line(
     _cell_ctx: Option<&CellContext>,
     runs_all_whitespace: bool,
@@ -3093,12 +3113,18 @@ impl LayoutEngine {
                     }
                     if let Some(ctrl) = p.controls.get(tac_ci) {
                         if let Control::Picture(pic) = ctrl {
-                            let (_, pic_h) = self.resolve_inline_picture_size(pic, col_area);
+                            let (pic_w, pic_h) = self.resolve_inline_picture_size(pic, col_area);
                             if raw_lh + 4.0 >= pic_h {
                                 *reserved_tac_picture_height = Some(pic_h);
                             }
-                            let box_h = tac_object_box_height_px(pic_h, &pic.caption, self.dpi);
-                            let img_y = (y + baseline - box_h).max(y);
+                            // [#6603] 상자(잉크 + 캡션 + 위아래 여백)를 baseline 에 앉히고
+                            // 잉크는 상자의 (왼쪽, 위) 여백 안쪽에 그린다.
+                            let (margin_left, _, margin_top, margin_bottom) =
+                                tac_picture_outer_margins_px(pic, self.dpi);
+                            let box_h = tac_object_box_height_px(pic_h, &pic.caption, self.dpi)
+                                + margin_top
+                                + margin_bottom;
+                            let img_y = (y + baseline - box_h).max(y) + margin_top;
                             let bin_data_id = pic.image_attr.bin_data_id;
                             let image_data = find_bin_data_bytes(bdc, bin_data_id);
                             let crop = {
@@ -3125,7 +3151,7 @@ impl LayoutEngine {
                                 original_size_hu,
                                 bin_data_id,
                                 image_data,
-                                BoundingBox::new(x, img_y, tac_w, pic_h),
+                                BoundingBox::new(x + margin_left, img_y, pic_w, pic_h),
                             );
                             line_node.children.push(img_node);
                             x += tac_w;
@@ -3592,7 +3618,14 @@ impl LayoutEngine {
                         .and_then(|p| p.controls.get(*ci))
                         .and_then(|ctrl| match ctrl {
                             Control::Picture(pic) => {
-                                Some(self.resolve_inline_picture_size(pic, col_area).0)
+                                // [#6603] 줄 안에서 차지하는 폭은 잉크 + 좌우 바깥 여백.
+                                let (margin_left, margin_right, _, _) =
+                                    tac_picture_outer_margins_px(pic, self.dpi);
+                                Some(
+                                    self.resolve_inline_picture_size(pic, col_area).0
+                                        + margin_left
+                                        + margin_right,
+                                )
                             }
                             _ => None,
                         })
@@ -6624,7 +6657,11 @@ impl LayoutEngine {
                     if let (Some(p), Some(bdc)) = (para, bin_data_content) {
                         if let Some(ctrl) = p.controls.get(tac_ci) {
                             if let Control::Picture(pic) = ctrl {
-                                let (_, pic_h) = self.resolve_inline_picture_size(pic, col_area);
+                                let (pic_w, pic_h) =
+                                    self.resolve_inline_picture_size(pic, col_area);
+                                // [#6603] 잉크는 바깥 여백 상자의 (왼쪽, 위) 안쪽에 그린다.
+                                let (margin_left, _, margin_top, margin_bottom) =
+                                    tac_picture_outer_margins_px(pic, self.dpi);
                                 // LINE_SEG vpos가 TopAndBottom 흐름 위치를 이미 담고 있으면
                                 // sibling 예약 높이를 다시 더하지 않는다.
                                 let sibling_reserved_px = if para_topbottom_line_vpos_base.is_some()
@@ -6662,11 +6699,14 @@ impl LayoutEngine {
                                     y + label_extra
                                 } else {
                                     // [#6575] 같은 계약의 형제 경로 — 상자 전체로 맞춘다.
+                                    // [#6603] 상자에는 위아래 바깥 여백도 들어간다.
                                     let box_h =
-                                        tac_object_box_height_px(pic_h, &pic.caption, self.dpi);
+                                        tac_object_box_height_px(pic_h, &pic.caption, self.dpi)
+                                            + margin_top
+                                            + margin_bottom;
                                     (y + baseline - box_h).max(y)
                                 };
-                                let img_y = base_img_y + sibling_reserved_px;
+                                let img_y = base_img_y + sibling_reserved_px + margin_top;
                                 let bin_data_id = pic.image_attr.bin_data_id;
                                 let image_data = find_bin_data_bytes(bdc, bin_data_id);
                                 let crop = {
@@ -6696,7 +6736,7 @@ impl LayoutEngine {
                                     original_size_hu,
                                     bin_data_id,
                                     image_data,
-                                    BoundingBox::new(x, img_y, tac_w, pic_h),
+                                    BoundingBox::new(x + margin_left, img_y, pic_w, pic_h),
                                 );
                                 line_node.children.push(img_node);
                                 // [Task #864 Stage G] inline TAC picture 의 위치 등록.
@@ -6712,7 +6752,7 @@ impl LayoutEngine {
                                     para_index,
                                     tac_ci,
                                     cell_ctx.as_ref(),
-                                    x,
+                                    x + margin_left,
                                     img_y,
                                 );
                             }
@@ -7925,7 +7965,10 @@ impl LayoutEngine {
                                 empty_line_logical_end += 1;
                                 continue;
                             }
-                            let (_, pic_h) = self.resolve_inline_picture_size(pic, col_area);
+                            let (pic_w, pic_h) = self.resolve_inline_picture_size(pic, col_area);
+                            // [#6603] 잉크는 바깥 여백 상자의 (왼쪽, 위) 안쪽에 그린다.
+                            let (margin_left, _, margin_top, margin_bottom) =
+                                tac_picture_outer_margins_px(pic, self.dpi);
                             // LINE_SEG vpos가 TopAndBottom 흐름 위치를 이미 담고 있으면
                             // sibling 예약 높이를 다시 더하지 않는다.
                             let sibling_reserved_px = if vars.has_topbottom_vpos_base {
@@ -7951,10 +7994,13 @@ impl LayoutEngine {
                                 vars.y + label_extra
                             } else {
                                 // [#6575] baseline 정렬 대상은 그림이 아니라 개체 상자 전체다.
-                                let box_h = tac_object_box_height_px(pic_h, &pic.caption, self.dpi);
+                                // [#6603] 상자에는 위아래 바깥 여백도 들어간다.
+                                let box_h = tac_object_box_height_px(pic_h, &pic.caption, self.dpi)
+                                    + margin_top
+                                    + margin_bottom;
                                 (vars.y + vars.baseline - box_h).max(vars.y)
                             };
-                            let img_y = base_img_y + sibling_reserved_px;
+                            let img_y = base_img_y + sibling_reserved_px + margin_top;
                             let bin_data_id = pic.image_attr.bin_data_id;
                             let image_data = find_bin_data_bytes(bdc, bin_data_id);
                             let crop = {
@@ -7981,7 +8027,7 @@ impl LayoutEngine {
                                 original_size_hu,
                                 bin_data_id,
                                 image_data,
-                                BoundingBox::new(img_x, img_y, tac_w, pic_h),
+                                BoundingBox::new(img_x + margin_left, img_y, pic_w, pic_h),
                             );
                             line_node.children.push(img_node);
                             // [Task #418/#376] layout_shape_item 의 Task #347 분기 (빈 문단 +
@@ -7992,7 +8038,7 @@ impl LayoutEngine {
                                 vars.para_index,
                                 tac_ci,
                                 cell_ctx.as_ref(),
-                                img_x,
+                                img_x + margin_left,
                                 img_y,
                             );
                             img_x += tac_w;
