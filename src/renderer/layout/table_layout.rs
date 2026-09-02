@@ -2564,7 +2564,23 @@ impl LayoutEngine {
                             false,
                         );
 
-                        let y_end = y_end + pad_b;
+                        // The unwrapped child determines the minimum visual content height, but it
+                        // must not erase a larger declared wrapper height.  The host 1x1 table is
+                        // still the observable box: downstream flow and its bottom border use the
+                        // larger of the padded child and the stored outer rectangle (#6621).
+                        let padded_child_y_end = y_end + pad_b;
+                        let y_end = if self.profile.get().hwp5_stored_pagination_layout() {
+                            let declared_outer_height = hwpunit_to_px(
+                                crate::renderer::float_placement::signed_hwpunit(
+                                    table.common.height,
+                                )
+                                .max(0),
+                                self.dpi,
+                            );
+                            padded_child_y_end.max(y_start + declared_outer_height)
+                        } else {
+                            padded_child_y_end
+                        };
                         if let Some(bs_borders) = outer_border_meta {
                             let outer_h_actual = (y_end - outer_y).max(0.0);
                             if outer_h_actual > 0.0 {

@@ -69,9 +69,10 @@ fn nested_table_pictures_sit_inside_the_wrapper_cell_padding() {
 }
 
 #[test]
-fn wrapper_border_box_includes_top_and_bottom_padding() {
+fn wrapper_border_box_preserves_declared_height_after_padding() {
     let svg = page0_svg();
-    // 상자 왼쪽 세로 테두리: x≈549.9 인 <line> 중 가장 긴 것. 높이 = 안쪽 표 343.9 + 여백 22.7.
+    // 상자 왼쪽 세로 테두리: x≈549.9 인 <line> 중 가장 긴 것. 안쪽 표+여백보다
+    // 큰 1x1 host의 선언 높이 27774HU=370.3px를 계속 보존해야 한다.
     let mut best: Option<(f64, f64)> = None;
     for t in svg.split("<line ").skip(1) {
         let t = &t[..t.find("/>").expect("line 닫힘")];
@@ -90,8 +91,8 @@ fn wrapper_border_box_includes_top_and_bottom_padding() {
     let (top, bottom) = best.expect("상자 왼쪽 테두리");
     assert!((top - 325.0).abs() < 0.7, "상자 위 325.0: {top:.1}");
     assert!(
-        (bottom - top - (343.9 + 22.7)).abs() < 1.0,
-        "상자 높이 = 안쪽 표 343.9 + 여백 22.7: {:.1}",
+        (bottom - top - 370.3).abs() < 1.0,
+        "상자 높이 = host 선언 높이 370.3: {:.1}",
         bottom - top
     );
 }
