@@ -210,9 +210,9 @@ fn stored_layout_relocated_empty_rowbreak_picture_resets_offset(
 use super::super::composer::effective_text_for_metrics;
 use super::super::{hwpunit_to_px, ShapeStyle};
 use super::border_rendering::{
-    apply_table_outer_border_fill, build_row_col_x, collect_cell_borders, create_border_line_nodes,
-    mark_cell_span_interior_covered, render_cell_diagonal, render_edge_borders,
-    render_transparent_borders,
+    apply_cellzone_border_fill, apply_table_outer_border_fill, build_row_col_x,
+    collect_cell_borders, create_border_line_nodes, mark_cell_span_interior_covered,
+    render_cell_diagonal, render_edge_borders, render_transparent_borders,
 };
 use super::text_measurement::{estimate_text_width, resolved_to_text_style};
 use super::utils::find_bin_data_bytes;
@@ -2453,6 +2453,7 @@ impl LayoutEngine {
                                 0.0,
                                 0.0,
                                 para_y,
+                                outer_host_stored_vpos_hu,
                                 allow_para_top_bleed,
                             )
                         } else {
@@ -2496,15 +2497,28 @@ impl LayoutEngine {
                             None
                         };
 
+                        // [#6621] 상자를 unwrap 해도 상자 셀의 안 여백은 남는다. 한/글은 안쪽 표를
+                        // 여백만큼 안쪽(+pad_l, +pad_t)에 놓고, 상자 테두리는 바깥 표 선언 폭과
+                        // "안쪽 표 높이 + 상하 여백"으로 그리며, 뒤 흐름도 아래 여백만큼 더 내려간다.
+                        // exam_social 1쪽 pi=15 실측: 여백 850HU=11.3px, 안쪽 표·그림 5장이
+                        // (+11.3, +11.3), 상자 높이 +22.7px. 여백 0 이면 종전과 같다.
+                        let (pad_l, pad_r, pad_t, pad_b) =
+                            self.resolve_cell_padding_for_context(cell, table);
                         // nested 표 위치/size 미리 결정 (nested layout 의 위치 결정 logic 동일)
                         let pw_now = self.current_paper_width.get();
                         let paper_w = if pw_now > 0.0 { Some(pw_now) } else { None };
                         let nested_w = hwpunit_to_px(nested.common.width as i32, self.dpi)
                             * self.render_table_width_scale(nested);
-                        let outer_w_for_box = nested_w;
+                        let outer_w_declared = hwpunit_to_px(table.common.width as i32, self.dpi)
+                            * self.render_table_width_scale(table);
+                        let outer_w_for_box = if outer_w_declared > 0.5 {
+                            outer_w_declared
+                        } else {
+                            nested_w + pad_l + pad_r
+                        };
                         let outer_x_for_box = self.compute_table_x_position(
-                            nested,
-                            nested_w,
+                            table,
+                            outer_w_for_box,
                             col_area,
                             depth,
                             host_alignment,
@@ -2513,6 +2527,27 @@ impl LayoutEngine {
                             inline_x_override,
                             paper_w,
                         );
+                        // [#6648] 안쪽 표의 바깥 여백도 셀 안 여백 안쪽에 그대로 남는다. 아래
+                        // `layout_table` 호출은 상자와 같은 depth(본문이면 0)·inline 위치로 안쪽
+                        // 표를 놓아 `compute_table_y_position` 의 중첩 표 분기(om_top)와
+                        // `physical_outer_box_paint_inset`(om_left)을 타지 않으므로 여기서 더한다.
+                        // k-water 17쪽 실측: 셀 pad (510,510,141,141) + 안쪽 표 om 141 → 한/글 점선은
+                        // 실선에서 (8.7, 3.8) 안쪽 (90.6, 587.0); om 없이는 (88.7, 585.2).
+                        let om_l = hwpunit_to_px(nested.outer_margin_left as i32, self.dpi);
+                        let om_r = hwpunit_to_px(nested.outer_margin_right as i32, self.dpi);
+                        let om_t = hwpunit_to_px(nested.outer_margin_top as i32, self.dpi);
+                        let om_b = hwpunit_to_px(nested.outer_margin_bottom as i32, self.dpi);
+                        // 안쪽 표가 여백을 뺀 내용 상자보다 조금 넓게 저장된 문서(exam_social:
+                        // 1.4px)는 한/글처럼 오른쪽 여백으로 흘러넘기고 축소하지 않는다.
+                        let inner_area = LayoutRect {
+                            x: col_area.x + pad_l + om_l,
+                            y: col_area.y,
+                            width: (col_area.width - pad_l - pad_r - om_l - om_r).max(nested_w),
+                            height: col_area.height,
+                        };
+                        let inner_y_start = y_start + pad_t + om_t;
+                        // 글자처럼 상자는 x 를 줄 배치가 준 inline_x_override 로 받으므로 그 값도 옮긴다.
+                        let inner_inline_x = inline_x_override.map(|x| x + pad_l + om_l);
 
                         let y_end = self.layout_table(
                             tree,
@@ -2521,8 +2556,8 @@ impl LayoutEngine {
                             section_index,
                             styles,
                             outline_numbering_id,
-                            col_area,
-                            y_start,
+                            &inner_area,
+                            inner_y_start,
                             bin_data_content,
                             None,
                             depth,
@@ -2531,7 +2566,7 @@ impl LayoutEngine {
                             enclosing_cell_ctx,
                             host_margin_left,
                             host_margin_right,
-                            inline_x_override,
+                            inner_inline_x,
                             nested_split,
                             para_y,
                             None,
@@ -2540,6 +2575,23 @@ impl LayoutEngine {
                             false,
                         );
 
+                        // The unwrapped child determines the minimum visual content height, but it
+                        // must not erase a larger declared wrapper height.  The host 1x1 table is
+                        // still the observable box: downstream flow and its bottom border use the
+                        // larger of the padded child and the stored outer rectangle (#6621).
+                        let padded_child_y_end = y_end + om_b + pad_b;
+                        let y_end = if self.profile.get().hwp5_stored_pagination_layout() {
+                            let declared_outer_height = hwpunit_to_px(
+                                crate::renderer::float_placement::signed_hwpunit(
+                                    table.common.height,
+                                )
+                                .max(0),
+                                self.dpi,
+                            );
+                            padded_child_y_end.max(y_start + declared_outer_height)
+                        } else {
+                            padded_child_y_end
+                        };
                         if let Some(bs_borders) = outer_border_meta {
                             let outer_h_actual = (y_end - outer_y).max(0.0);
                             if outer_h_actual > 0.0 {
@@ -2892,6 +2944,7 @@ impl LayoutEngine {
                 caption_height,
                 caption_spacing,
                 para_y,
+                outer_host_stored_vpos_hu,
                 allow_para_top_bleed,
             );
             if depth > 0 && render_caption {
@@ -3111,6 +3164,25 @@ impl LayoutEngine {
 
         if !cellzone_diagonal_nodes.is_empty() {
             table_node.children.extend(cellzone_diagonal_nodes);
+        }
+
+        // ── 5-0. cellzone 테두리 덮어쓰기 (#6619) ──
+        // zone 배경·대각선은 4-2 에서 이미 그렸다. 네 변은 셀 테두리 그리드가 다 찬
+        // 다음에 덮어써야 셀 고유 선을 이긴다(31쪽 점선 → zone 실선).
+        for zone in &table.zones {
+            if zone.border_fill_id == 0 {
+                continue;
+            }
+            let zone_idx = (zone.border_fill_id as usize).saturating_sub(1);
+            if let Some(zone_bs) = styles.border_styles.get(zone_idx) {
+                apply_cellzone_border_fill(
+                    &mut h_edges,
+                    &mut v_edges,
+                    &zone_bs.borders,
+                    zone,
+                    &table.cells,
+                );
+            }
         }
 
         // ── 5-1. 표 전체 외곽 테두리 보충 ──
@@ -4508,6 +4580,9 @@ impl LayoutEngine {
         caption_height: f64,
         caption_spacing: f64,
         para_y: Option<f64>,
+        // [#6598] 앵커 문단의 저장 흐름 상단(HWPUNIT). `para_y` 가 칼럼 상단으로 들어오는
+        // 경로를 이 값으로 바로잡는다.
+        stored_anchor_vpos_hu: Option<i32>,
         allow_para_top_bleed: bool,
     ) -> f64 {
         let table_treat_as_char = table.common.treat_as_char;
@@ -4535,6 +4610,45 @@ impl LayoutEngine {
 
             let page_h_approx = col_area.y * 2.0 + col_area.height;
             let vert_rel_to = table.common.vert_rel_to;
+            // [#6598] 문단 기준 표의 저장 흐름 상단. `Some` 이면 아래 `ref_y` 와
+            // `om_top_px` 가 같이 그 기준으로 옮겨간다(둘을 따로 켜면 1.9px 어긋난다).
+            //
+            // ⚠⚠ **입력이 모순인 경우만** 고친다. `para_y` 가 칼럼 상단과 같다는 것은
+            // "이 문단이 단의 첫 줄"이라는 뜻인데, 저장 사다리는 그 문단이 더 아래에서
+            // 시작한다고 적는다 — 둘 중 `para_y` 가 틀린 것이다.
+            //
+            // 이 두 조건을 다 요구하지 않고 "저장 vpos 가 para_y 보다 아래"만으로
+            // 넓히면 자리차지 표 핀 **57건**이 깨진다(실측). 정상 문서에서는 저장 vpos
+            // 가 문단 흐름 위치와 다른 게 오히려 흔하기 때문이다.
+            let para_anchor_y = para_y.unwrap_or(y_start);
+            let para_anchor_is_column_top = (para_anchor_y - col_area.y).abs() <= 0.5;
+            // ⚠ 흐름(`y_start`)이 이미 칼럼 상단을 지났다는 **독립 증거**가 있어야 한다.
+            // `y_start` 도 칼럼 상단이면 `para_y` 가 틀렸다고 볼 근거가 없다 — 이월된
+            // 표의 빈 host 가 정확히 그 형상이고(#6032: para_y=y_start=col_y,
+            // stored 65212=869.5px 는 **앞 쪽 말미** 좌표), 그때 저장 vpos 로 옮기면
+            // 그 축의 계약이 깨진다.
+            let flow_advanced_past_column_top = y_start > para_anchor_y + 0.5;
+            let para_stored_anchor_y =
+                if matches!(vert_rel_to, crate::model::shape::VertRelTo::Para)
+                    && para_anchor_is_column_top
+                    && flow_advanced_past_column_top
+                {
+                    stored_anchor_vpos_hu
+                        .filter(|hu| *hu > 0)
+                        .map(|hu| col_area.y + hwpunit_to_px(hu, self.dpi))
+                        .filter(|y| *y > para_anchor_y + 0.5)
+                        // ⚠⚠ 저장값이 **흐름을 뒷받침**할 때만 쓴다.
+                        //
+                        // 옳은 사례(2744465)는 저장 138.3 ↔ 흐름 139.9 로 1.6px 안이다 —
+                        // `para_y` 만 낡았고 나머지 둘은 같은 곳을 가리킨다. 반대로
+                        // `issue6147/156741101_press_release_band.hwpx` 는 저장 492.0 ↔
+                        // 흐름 135.8/323.4 로 169~356px 벌어져 있다. 그 저장값은 이
+                        // 배치와 무관한 좌표이고, 그걸 기준점으로 삼으면 뒤 내용이
+                        // 용지 밖으로 밀려 **off-canvas 10건**이 났다.
+                        .filter(|y| (*y - y_start).abs() <= 4.0)
+                } else {
+                    None
+                };
             // Task #297: Page는 본문 영역(body area) 기준, Paper는 용지 전체 기준
             // (HWP 스펙: Page=쪽 본문, Paper=용지 전체). 바탕쪽 문맥에서는
             // col_area = paper_area이므로 두 경로 결과가 동일하여 회귀 없음.
@@ -4549,7 +4663,22 @@ impl LayoutEngine {
                     }
                 }
                 crate::model::shape::VertRelTo::Para => {
-                    (anchor_y, col_area.height - (anchor_y - col_area.y).max(0.0))
+                    // [#6598] 문단 기준 오프셋의 기준점은 **앵커 문단의 흐름 상단**이다.
+                    //
+                    // 그런데 `para_y` 가 **칼럼 상단**으로 들어오는 경로가 있다
+                    // (`2744465` 1쪽: 표는 문단 1 의 컨트롤인데 `para_index=1`,
+                    // `y_offset=para_y=108.5=col_area.y`). 그러면 `v_offset` 전체가
+                    // 앵커 문단 진행량만큼 위로 뜬다 — 테두리 그림은 제자리인데 그 안
+                    // 양식이 통째로 31.3px 올라갔다.
+                    //
+                    // 저장 사다리가 그 문단의 흐름 상단을 정확히 적고 있다
+                    // (`vertpos=2240HU=29.87px`, 108.5+29.87=138.4). 그것을 기준점으로
+                    // 쓴다 — 한/글 실측 171.5 ≈ 138.4 + v_offset 31.41 + om_top 1.88.
+                    //
+                    // ⚠ **아래로만 움직인다.** 저장 vpos 가 현재 앵커보다 위를 가리키면
+                    // 종전 경로를 그대로 둔다(되감김·재배치 문서를 건드리지 않는다).
+                    let base_y = para_stored_anchor_y.unwrap_or(anchor_y);
+                    (base_y, col_area.height - (base_y - col_area.y).max(0.0))
                 }
                 crate::model::shape::VertRelTo::Paper => (0.0, page_h_approx),
             };
@@ -4572,7 +4701,12 @@ impl LayoutEngine {
             let vert_align = table.common.vert_align;
             // [Task #898] Paper-relative 표는 v_offset 이 외곽 박스 (outer_margin 포함) 기준이므로
             // 가시 표 상단 = v_offset + outer_margin_top. 한컴 PDF (exam_math.hwp 바탕쪽 쪽번호 박스) 정합.
-            let om_top_px = if matches!(vert_rel_to, crate::model::shape::VertRelTo::Paper) {
+            // [#6598] `Para` 도 저장 기준점으로 옮긴 경우에는 바깥여백 위를 더한다 —
+            // 한/글 실측 171.5 = 저장 상단 138.4 + v_offset 31.41 + om_top 1.88.
+            // 기준점을 안 옮긴 문단 기준 표는 종전대로 0 이다(근거 없이 넓히지 않는다).
+            let om_top_px = if matches!(vert_rel_to, crate::model::shape::VertRelTo::Paper)
+                || para_stored_anchor_y.is_some()
+            {
                 hwpunit_to_px(table.outer_margin_top as i32, self.dpi)
             } else {
                 0.0
@@ -5024,6 +5158,30 @@ impl LayoutEngine {
                 }
             }
 
+            // [#6630] 세로 가운데/아래 셀의 첫 문단이 저장 앵커를 쓰지 않았으면 저장 vpos 를
+            // 상한으로 한 위 여백을 더한다 — 내용 높이(`calc_para_lines_height`)에 같은 값이
+            // 들어 있어 정렬이 맞는다. Top 셀은 `text_y_start` 가 저장 vpos 를 이미 품고, 앵커를
+            // 쓴 문단은 앵커가 그 값을 품는다 (exam_eng 바탕쪽 머리 표: 위 여백 1136HU, vpos 568).
+            // y 를 여기서 직접 옮기면 layout 쪽이 "단 맨 위가 아니다"로 보고 위 여백을 한 번 더
+            // 더하므로, 대신 column-top 규칙(`spacing_before.min(저장 vpos)`, #853)을 이 문단에만
+            // 허용한다(`suppress_column_top_vpos_fallback=false`).
+            let first_para_lead_px = if cp_idx == 0
+                && !use_top_vpos_anchor
+                && !trust_stored_cell_flow
+                && !has_nested_table
+                && !snap_anchored_with_spacing_before
+                && (para_y - text_y_start).abs() < 1e-9
+            {
+                let sb = styles
+                    .para_styles
+                    .get(para.para_shape_id as usize)
+                    .map(|s| s.spacing_before)
+                    .unwrap_or(0.0);
+                crate::renderer::cell_first_para_stored_lead(para, sb, self.dpi)
+            } else {
+                0.0
+            };
+            let allow_first_para_lead = first_para_lead_px > 0.0;
             let para_y_before_compose = para_y;
 
             // 줄별 TAC 컨트롤 너비 합산: 각 TAC가 속한 줄을 판별하여 줄별 최대 너비 계산
@@ -5114,7 +5272,7 @@ impl LayoutEngine {
                     section_index,
                     cp_idx,
                     cell_context.clone(),
-                    !use_top_vpos_anchor,
+                    !use_top_vpos_anchor && !allow_first_para_lead,
                     is_last_para,
                     0.0,
                     None,
@@ -5186,7 +5344,9 @@ impl LayoutEngine {
                     _ => inner_area.x + line_margin,
                 }
             };
-            let mut tac_img_y = para_y_before_compose;
+            // [#6630] 글자처럼 그림은 문단 배치의 y 가 아니라 여기서 따로 놓이므로 첫 문단
+            // 위 여백(저장 vpos 상한)을 같이 준다.
+            let mut tac_img_y = para_y_before_compose + first_para_lead_px;
             // [#6114] 쪽 분할 칸에서만 폴백 TAC 그림 페인트 하단으로 흐름을 민다.
             // 일반 칸까지 밀면 칸 상자 밖 글이 아래 본문과 겹친다.
             let split_cell_tac_flow = fragment_cut_units.is_some();
@@ -7413,6 +7573,25 @@ impl LayoutEngine {
                 total_content_height
             };
             let use_top_vpos_anchor = matches!(effective_valign, VerticalAlign::Top);
+            // [#6630] 세로 가운데/아래 셀: 첫 문단의 위 여백(저장 vpos 상한)이 내용 높이에 없어
+            // 정렬이 그만큼 위로 쏠린다 — 정렬 계산에만 넣는다. Top 셀은 text_y_start 가 저장
+            // vpos 를 품고, 저장 흐름을 믿는 셀은 stored_flow_extent 가 그 값을 품는다.
+            let first_para_lead =
+                if use_top_vpos_anchor || trust_stored_cell_flow || has_nested_table {
+                    0.0
+                } else {
+                    cell.paragraphs
+                        .first()
+                        .map(|p| {
+                            let sb = styles
+                                .para_styles
+                                .get(p.para_shape_id as usize)
+                                .map(|s| s.spacing_before)
+                                .unwrap_or(0.0);
+                            crate::renderer::cell_first_para_stored_lead(p, sb, self.dpi)
+                        })
+                        .unwrap_or(0.0)
+                };
             let text_y_start = if use_top_vpos_anchor
                 && !has_nested_table
                 && first_line_vpos.filter(|&v| v > 0.0).is_some()
@@ -7424,11 +7603,13 @@ impl LayoutEngine {
                     VerticalAlign::Top => content_cell_y + pad_top,
                     VerticalAlign::Center => {
                         let mechanical_offset =
-                            (inner_height - total_content_height).max(0.0) / 2.0;
+                            (inner_height - total_content_height - first_para_lead).max(0.0) / 2.0;
                         content_cell_y + pad_top + mechanical_offset
                     }
                     VerticalAlign::Bottom => {
-                        content_cell_y + pad_top + (inner_height - total_content_height).max(0.0)
+                        content_cell_y
+                            + pad_top
+                            + (inner_height - total_content_height - first_para_lead).max(0.0)
                     }
                 }
             };
@@ -8149,6 +8330,14 @@ impl LayoutEngine {
                 && self.profile.get().hwpx_stored_layout()
                 && !self.profile.get().hwp5_origin_hwpx()
                 && nested_table_height > page_height + 0.5;
+            // [#4915] reset 이 전혀 없어도 물리 높이가 **두 쪽을 넘는** 1×1 표는
+            // legacy 원자(2095.6px)로 두면 조각 페인트가 용지 1.9배까지 그린다
+            // (18098267 p2). issue1891 의 깊은 wrapper(반증 사례)는 한 쪽 언저리라
+            // 2쪽 임계에 걸리지 않는다.
+            let direct_hwpx_reset_free_multi_page_projection = stored_page_frame_boundaries == 0
+                && self.profile.get().hwpx_stored_layout()
+                && !self.profile.get().hwp5_origin_hwpx()
+                && nested_table_height > page_height * 2.0 + 0.5;
             // canonical CellUnit의 hard-break 원장은 HWP5 저장 좌표 계약이다.
             // direct HWPX의 셀 lineSeg reset은 중첩 셀 로컬 viewport 재시작일 수
             // 있으므로, reset 수가 둘 이상이어도 이 경로로 승격하지 않는다.
@@ -8201,10 +8390,18 @@ impl LayoutEngine {
             // `is_stored_frame_rewind`의 저장 frame 판정에서 이미 제외된다.
             // 42065 p10은 같은 문단 58620→0, p14는 item7→item8의 문단간
             // 32932→0 경계이며 둘 다 한컴 정본의 실제 쪽 경계다.
+            // [#4915] reset 이 전혀 없어도 물리 높이가 **두 쪽을 넘는** 1×1 표는
+            // legacy 원자(2095.6px)로 두면 조각 페인트가 용지 1.9배까지 그린다
+            // (18098267 p2: 괘선 최하 1603.2pt / 용지 841.9). canonical 원장은 이
+            // 셀을 63 유닛으로 분해하므로 그대로 투영한다. 한 쪽 언저리 표(form-002
+            // ·76076 계열 반증 사례)는 2쪽 임계에 걸리지 않는다.
+            let reset_free_multi_page_projection =
+                stored_page_frame_boundaries == 0 && nested_table_height > page_height * 2.0 + 0.5;
             if canonical_stored_frame_profile
                 && (stored_page_frame_boundaries >= 2
                     || has_authoritative_frame_boundary
-                    || preserve_single_multi_page_boundary)
+                    || preserve_single_multi_page_boundary
+                    || reset_free_multi_page_projection)
             {
                 return units
                     .iter()
@@ -8240,7 +8437,8 @@ impl LayoutEngine {
                 && !self.profile.get().hwp5_origin_hwpx()
                 && (stored_page_frame_boundaries >= 2
                     || has_authoritative_frame_boundary
-                    || direct_hwpx_single_multi_page_projection)
+                    || direct_hwpx_single_multi_page_projection
+                    || direct_hwpx_reset_free_multi_page_projection)
             {
                 // PR #4122 이전 direct-HWPX fallback은 빈 host의 자식 표를
                 // 재귀적으로 평탄화하고, 같은 문단의 placeholder line과 표 높이를

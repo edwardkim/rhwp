@@ -1560,6 +1560,95 @@ fn stored_layout_relocated_empty_rowbreak_picture_next_flow_top(
 /// 이를 한 번 더 본문 끝에 가산하면 표가 한 문단 높이만큼 아래로 밀린다
 /// (정책연구용역… HWP/HWPX p9, pi=222). 따라서 그 경우는 일반 Para anchor
 /// 경로에 맡긴다.
+/// [#6614] 문단 **끝**에 오는 비인라인 TAC 표가 저장 사다리에서 **자기 줄**을 받았으면
+/// 그 줄 상단에 앉힌다.
+///
+/// 폭이 줄 폭과 같아 `is_tac_table_inline_in_para` 가 인라인을 거부한 TAC 표는
+/// `table_y_start` 사슬의 마지막 `else { y_offset }` 로 떨어져 **문단 흐름 시작**에
+/// 놓인다. 문단 첫 줄보다 위다. 그래서 표가 본문 위에 겹쳐 그려진다.
+///
+/// 실측 — `156658611` 1쪽 담당부서 표(px @96dpi, 오라클 한/글 2020):
+///
+/// ```text
+/// 저장 사다리  seg0..3 vpos 53839/56359/58879/61399  lh 1400/1400/1400/1500  ← 글자 줄
+///              seg4    vpos 69067                    lh 3696                 ← 표 줄
+/// 표           height 3130 + om_top 283 + om_bottom 283 = 3696  ← seg4 와 정확히 일치
+/// rhwp 770.8 (문단 흐름 시작) vs 한/글 약 1005 — 234px 위
+/// ```
+///
+/// 밴드(`om_top + 선언높이 + om_bottom`)가 저장 줄 높이와 일치하는 것이 판별자다
+/// (#5729 가 인라인 경로에 쓰는 것과 같은 계약).
+///
+/// ⚠ **우연 일치를 막는 가드가 필요하다.** 소형 TAC 표는 밴드가 글자 줄 높이와
+/// 우연히 같을 수 있다(`is_tac_table_inline_in_para` 의 `own_line_evidence` 가 같은
+/// 이유로 전면급 30000HU 로 한정한다). 여기서는 크기 대신
+/// **① 표가 문단의 유일한 TAC 표 ② 맞는 줄이 마지막 줄 ③ 그 줄이 글자 줄보다
+/// 1.5배 이상 높다 ④ 흐름보다 아래 ⑤ 단 안에 들어감** 다섯으로 좁힌다.
+fn tac_paragraph_tail_stored_line_top(
+    stored_layout: bool,
+    has_receipt_filler: bool,
+    para: &Paragraph,
+    table: &crate::model::table::Table,
+    col_area: &LayoutRect,
+    flow_y: f64,
+    dpi: f64,
+) -> Option<f64> {
+    // 접수증 필러(`tac_receipt_filler_prefix`)가 있는 문단은 #2020 이 "필러 줄 다음
+    // line-seg" 라는 자기 계약을 갖는다(복학원서). 그 축을 건드리지 않는다.
+    if !stored_layout
+        || has_receipt_filler
+        || !table.common.treat_as_char
+        || !para_has_visible_text(para)
+    {
+        return None;
+    }
+    // ① 이 문단의 유일한 TAC 표일 때만 — 여럿이면 어느 줄이 어느 표인지 모른다.
+    if para
+        .controls
+        .iter()
+        .filter(|c| matches!(c, Control::Table(t) if t.common.treat_as_char))
+        .count()
+        != 1
+    {
+        return None;
+    }
+    let stored: Vec<_> = para
+        .line_segs
+        .iter()
+        .filter(|seg| seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0)
+        .collect();
+    if stored.len() < 2 {
+        return None;
+    }
+    // ② 표 줄은 마지막 줄이어야 한다(문단 끝의 표).
+    let last = stored.last()?;
+    let band_hu = table.common.height as i64
+        + table.outer_margin_top as i64
+        + table.outer_margin_bottom as i64;
+    if (last.line_height as i64 - band_hu).abs() > 75 {
+        return None;
+    }
+    // ③ 글자 줄보다 확실히 높아야 한다(우연 일치 배제).
+    let text_line_max = stored[..stored.len() - 1]
+        .iter()
+        .map(|seg| seg.line_height as i64)
+        .max()
+        .unwrap_or(0);
+    if text_line_max <= 0 || (last.line_height as i64) * 2 < text_line_max * 3 {
+        return None;
+    }
+    let top = col_area.y
+        + hwpunit_to_px(last.vertical_pos, dpi)
+        + hwpunit_to_px(table.outer_margin_top as i32, dpi);
+    // ④ 흐름보다 위로 올리지 않는다. ⑤ 단을 넘지 않는다.
+    if top < flow_y - 0.5
+        || top + hwpunit_to_px(table.common.height as i32, dpi) > col_area.y + col_area.height + 1.0
+    {
+        return None;
+    }
+    Some(top)
+}
+
 fn native_multiline_visible_float_table_top(
     native_hwp5_layout: bool,
     para: &Paragraph,
@@ -3894,8 +3983,6 @@ impl LayoutEngine {
                                     area_node,
                                     pic,
                                     area,
-                                    body_area,
-                                    paper_area,
                                     y_offset,
                                     bin_data_content,
                                     outer_section_index,
@@ -4869,14 +4956,20 @@ impl LayoutEngine {
     }
 
     #[allow(clippy::too_many_arguments)]
+    /// 머리말·꼬리말에 직접 놓인 부동 그림.
+    ///
+    /// [#6608] 머리말·꼬리말 안 개체는 그 틀(`area`)이 배치 기준이다 — 용지(`Paper`)·
+    /// 쪽(`Page`) 기준도 물리 용지나 본문 영역이 아니라 틀 원점에서 오프셋을 잰다.
+    /// `pic-in-head-02.hwp` 머리말 그림(`PAPER`, 오프셋 (245, 1066)HU)을 한/글은
+    /// 틀 원점 (왼쪽 여백 75.6, 위 여백 37.8)px 에서 재 (78.68, 51.94)px 에 그리는데,
+    /// 종전엔 용지 (0, 0) 에서 재 (3.3, 14.2)px 였다 — 6쪽 전부 쪽 여백만큼 어긋났다.
+    /// 실측은 `PAPER` 만 있고 `Page` 는 같은 틀로 푼다(본문 영역은 머리말 안에서 뜻이 없다).
     fn layout_header_footer_picture(
         &self,
         tree: &mut PageLayoutContext,
         area_node: &mut RenderNode,
         pic: &crate::model::image::Picture,
         area: &LayoutRect,
-        body_area: &LayoutRect,
-        paper_area: &LayoutRect,
         para_y: f64,
         bin_data_content: &[BinDataContent],
         outer_section_index: Option<usize>,
@@ -4917,8 +5010,8 @@ impl LayoutEngine {
             frame_height,
             area,
             area,
-            body_area,
-            paper_area,
+            area,
+            area,
             para_y,
             Alignment::Left,
         );
@@ -9464,6 +9557,17 @@ impl LayoutEngine {
                         + hwpunit_to_px(signed_hwpunit(t.common.vertical_offset), self.dpi)
                 } else if tac_detached_line_shift > 0.0 {
                     y_offset + tac_detached_line_shift
+                } else if let Some(tail_top) = tac_paragraph_tail_stored_line_top(
+                    self.profile.get().hwpx_stored_layout()
+                        || self.profile.get().hwp5_stored_pagination_layout(),
+                    tac_receipt_seal_line.is_some(),
+                    para,
+                    t,
+                    col_area,
+                    y_offset,
+                    self.dpi,
+                ) {
+                    tail_top
                 } else {
                     y_offset
                 };
@@ -11599,6 +11703,14 @@ impl LayoutEngine {
                 if let Control::Picture(pic) = ctrl {
                     if pic.common.treat_as_char {
                         let (pic_w, pic_h) = self.resolve_inline_picture_size(pic, col_area);
+                        // [#6603] 줄 안 폭·높이는 바깥 여백을 포함한 상자로 세고, 잉크는
+                        // 상자의 (왼쪽, 위) 여백 안쪽에 그린다 (paragraph_layout 과 같은 계약).
+                        let (margin_left, margin_right, margin_top, margin_bottom) =
+                            super::layout::paragraph_layout::tac_picture_outer_margins_px(
+                                pic, self.dpi,
+                            );
+                        let box_w = pic_w + margin_left + margin_right;
+                        let box_h = pic_h + margin_top + margin_bottom;
                         // 같은 paragraph 의 sibling wrap=TopAndBottom 개체(tac=false)가
                         // 차지하는 vertical 영역만큼 picture y 보정.
                         let sibling_reserved_hu =
@@ -11615,9 +11727,18 @@ impl LayoutEngine {
                             .iter()
                             .enumerate()
                             .filter_map(|(ci, control)| match control {
-                                Control::Picture(sibling) if sibling.common.treat_as_char => Some(
-                                    (ci, self.resolve_inline_picture_size(sibling, col_area).0),
-                                ),
+                                Control::Picture(sibling) if sibling.common.treat_as_char => {
+                                    let (ml, mr, _, _) =
+                                        super::layout::paragraph_layout::tac_picture_outer_margins_px(
+                                            sibling, self.dpi,
+                                        );
+                                    Some((
+                                        ci,
+                                        self.resolve_inline_picture_size(sibling, col_area).0
+                                            + ml
+                                            + mr,
+                                    ))
+                                }
                                 _ => None,
                             })
                             .collect();
@@ -11686,7 +11807,7 @@ impl LayoutEngine {
                         let para_margin_right =
                             para_style_ref.map(|s| s.margin_right).unwrap_or(0.0);
                         let avail_w =
-                            (col_area.width - effective_margin_left - para_margin_right).max(pic_w);
+                            (col_area.width - effective_margin_left - para_margin_right).max(box_w);
                         // [Task #1151 v9 결함 D] pic_x 결정:
                         // - 단일 picture: 기존 alignment 그대로
                         // - 시퀀스 첫 picture: total_tac_width 기반 alignment + state 초기화
@@ -11699,7 +11820,7 @@ impl LayoutEngine {
                             let line_right = col_area.x + effective_margin_left + avail_w;
                             // [Task #1151 v9 Stage 24] line wrap: cursor_x + pic_w > avail 면
                             // 다음 line 으로 wrap (cursor_x reset, line_top_y advance).
-                            if cur + pic_w > line_right + 0.5 {
+                            if cur + box_w > line_right + 0.5 {
                                 if let Some(state) = para_inline_state.get_mut(&para_index) {
                                     state.cursor_x = col_area.x + effective_margin_left;
                                     state.line_top_y += state.line_height;
@@ -11726,10 +11847,10 @@ impl LayoutEngine {
                                 Alignment::Center | Alignment::Distribute => {
                                     col_area.x
                                         + effective_margin_left
-                                        + (avail_w - pic_w).max(0.0) / 2.0
+                                        + (avail_w - box_w).max(0.0) / 2.0
                                 }
                                 Alignment::Right => {
-                                    col_area.x + effective_margin_left + (avail_w - pic_w).max(0.0)
+                                    col_area.x + effective_margin_left + (avail_w - box_w).max(0.0)
                                 }
                                 _ => col_area.x + effective_margin_left,
                             }
@@ -11792,19 +11913,19 @@ impl LayoutEngine {
                         if !is_single_pic {
                             let entry = para_inline_state.entry(para_index).or_insert(
                                 super::layout::paragraph_layout::ParaInlineState {
-                                    cursor_x: pic_x + pic_w,
+                                    cursor_x: pic_x + box_w,
                                     line_top_y: pic_y,
-                                    line_height: pic_h,
+                                    line_height: box_h,
                                 },
                             );
                             if is_subsequent_in_seq {
-                                entry.cursor_x = pic_x + pic_w;
-                                entry.line_height = entry.line_height.max(pic_h);
+                                entry.cursor_x = pic_x + box_w;
+                                entry.line_height = entry.line_height.max(box_h);
                             } else {
                                 // 첫 picture: 초기화 (기존 값 덮어쓰기)
-                                entry.cursor_x = pic_x + pic_w;
+                                entry.cursor_x = pic_x + box_w;
                                 entry.line_top_y = pic_y;
-                                entry.line_height = pic_h;
+                                entry.line_height = box_h;
                             }
                         }
 
@@ -11841,7 +11962,12 @@ impl LayoutEngine {
                                     external_path: pic.image_attr.external_path.clone(),
                                     ..ImageNode::new(bin_data_id, image_data)
                                 }),
-                                BoundingBox::new(pic_x, pic_y, pic_w, pic_h),
+                                BoundingBox::new(
+                                    pic_x + margin_left,
+                                    pic_y + margin_top,
+                                    pic_w,
+                                    pic_h,
+                                ),
                             );
                             // Task #347: 같은 문단의 InFrontOfText 표가 이미 렌더되어
                             // col_node.children에 들어있으면 그 앞에 끼워넣어 z-order 보존
@@ -11862,8 +11988,8 @@ impl LayoutEngine {
                                 para_index,
                                 control_index,
                                 None,
-                                pic_x,
-                                pic_y,
+                                pic_x + margin_left,
+                                pic_y + margin_top,
                             );
                             if !has_real_text {
                                 // [Task #462] LINE_SEG 의 lh+ls 를 advance 로 사용 — 이미지 박스
@@ -11930,17 +12056,14 @@ impl LayoutEngine {
                             use crate::model::shape::CaptionDirection;
                             let caption_spacing = hwpunit_to_px(caption.spacing as i32, self.dpi);
                             let caption_h = self.calculate_caption_height(&pic.caption, styles);
-                            // [Task #864 Stage E v2] paragraph_layout 가 inline TAC image 를
-                            // baseline-aligned (y = pic_y + baseline - pic_h) 위치에 emit
-                            // 함. caption 은 image 바로 아래 (image_bottom = pic_y + baseline)
-                            // 에 위치해야 함. 기존 pic_y + pic_h 사용 시 image 영역 안에
-                            // 그려져 가려짐.
-                            let baseline_px = para
-                                .line_segs
-                                .first()
-                                .map(|ls| hwpunit_to_px(ls.baseline_distance, self.dpi))
-                                .unwrap_or(effective_pic_h);
-                            let image_bottom = effective_pic_y + baseline_px.max(effective_pic_h);
+                            // 캡션은 실제로 그려진 그림 상자 바로 아래에 붙는다.
+                            // `effective_pic_y` 는 emit 된 ImageNode 의 상단이므로 상자 바닥은
+                            // 그 높이를 더한 값이다. 종전에는 상단에 `max(baseline, 높이)` 를
+                            // 더했는데, 저장 줄이 그림+캡션을 통째로 예약해 baseline 이 그림보다
+                            // 큰 줄에서는 (baseline − 그림 높이)만큼 캡션이 내려가 줄을 넘고,
+                            // 그 아래 내용이 전부 밀렸다 (156489219 5쪽: 캡션 +25.5pt, 뒤따르는
+                            // 표·그림 +17.9pt). 보통 줄은 baseline < 그림 높이라 두 식이 같다.
+                            let image_bottom = effective_pic_y + effective_pic_h;
                             let cap_y = match caption.direction {
                                 CaptionDirection::Bottom => image_bottom + caption_spacing,
                                 CaptionDirection::Top => effective_pic_y,

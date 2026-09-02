@@ -174,19 +174,49 @@ impl DeviceContext {
     }
 
     pub fn point_s_to_absolute_point(&self, point: &PointS) -> PointS {
-        let x = (f32::from((point.x - self.window.origin_x).abs()) / self.window.scale_x) as i16;
-        let y = (f32::from((point.y - self.window.origin_y).abs()) / self.window.scale_y) as i16;
+        let (x, y) = self
+            .window
+            .to_device(f32::from(point.x), f32::from(point.y));
 
-        PointS { x, y }
+        PointS {
+            x: x as i16,
+            y: y as i16,
+        }
     }
 
     pub fn point_s_to_relative_point(&self, point: &PointS) -> PointS {
-        let x = (f32::from((point.x - self.window.origin_x).abs()) / self.window.scale_x) as i16
-            + self.drawing_position.x;
-        let y = (f32::from((point.y - self.window.origin_y).abs()) / self.window.scale_y) as i16
-            + self.drawing_position.y;
+        let (x, y) = self
+            .window
+            .to_device(f32::from(point.x), f32::from(point.y));
 
-        PointS { x, y }
+        PointS {
+            x: x as i16 + self.drawing_position.x,
+            y: y as i16 + self.drawing_position.y,
+        }
+    }
+
+    /// [#6617] 블릿(BitBlt·StretchBlt·DIB 계열) 목적 사각형을 장치 좌표로 옮긴다.
+    ///
+    /// 두 모서리 `(x, y)`·`(x + width, y + height)` 를 각각 창 매핑으로 보내고 작은 쪽을
+    /// 원점으로 삼는다. GDI 의 뒤집기는 논리 폭/높이 부호와 창 축 방향의 **곱**으로
+    /// 정해지므로, 장치 좌표에서 두 번째 모서리가 첫 모서리보다 앞이면 그 축을 뒤집는다.
+    /// y-up 창(SetWindowExt y<0)의 음수 높이 DIB 는 두 부호가 상쇄돼 바로 선 그림이다
+    /// (bitmap.hwp OLE 표현, 156462405 7쪽 인물 사진).
+    pub fn blit_dest_rect(&self, x: i16, y: i16, width: i16, height: i16) -> BlitDestRect {
+        let (x0, y0) = self.window.to_device(f32::from(x), f32::from(y));
+        let (x1, y1) = self.window.to_device(
+            f32::from(x) + f32::from(width),
+            f32::from(y) + f32::from(height),
+        );
+        let (ix0, iy0, ix1, iy1) = (x0 as i32, y0 as i32, x1 as i32, y1 as i32);
+        BlitDestRect {
+            x: ix0.min(ix1),
+            y: iy0.min(iy1),
+            width: (ix1 - ix0).abs(),
+            height: (iy1 - iy0).abs(),
+            flip_x: ix1 < ix0,
+            flip_y: iy1 < iy0,
+        }
     }
 
     pub fn poly_fill_rule(&self) -> String {
@@ -202,6 +232,18 @@ impl DeviceContext {
     }
 }
 
+/// [#6617] 장치(viewBox) 좌표로 정규화한 블릿 목적 사각형. 폭·높이는 0 이상이고
+/// 뒤집힘은 `flip_x`/`flip_y` 로 따로 든다.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct BlitDestRect {
+    pub x: i32,
+    pub y: i32,
+    pub width: i32,
+    pub height: i32,
+    pub flip_x: bool,
+    pub flip_y: bool,
+}
+
 #[derive(Clone, Debug)]
 pub struct Window {
     pub x: i16,
@@ -212,8 +254,10 @@ pub struct Window {
     pub scale_y: f32,
     /// SetWindowExt가 명시적으로 호출되었는지 여부
     pub ext_explicitly_set: bool,
-    /// [Task #860 Stage D] WMF 의 SetWindowExt y < 0 (Cartesian, bottom-up) 인 경우 true.
-    /// SVG renderer 는 top-down (y 아래 증가). y < 0 처리를 위해 element y 좌표 flip 필요.
+    /// SetWindowExt x < 0 — 논리 x 가 커질수록 장치에서는 왼쪽으로 간다.
+    pub x_inverted: bool,
+    /// SetWindowExt y < 0 (Cartesian, bottom-up) — 논리 y 가 커질수록 장치에서는 위로 간다.
+    /// SVG 는 top-down 이라 `to_device` 가 y 축을 뒤집는다.
     pub y_inverted: bool,
 }
 
@@ -227,6 +271,7 @@ impl Default for Window {
             scale_x: 1.0,
             scale_y: 1.0,
             ext_explicitly_set: false,
+            x_inverted: false,
             y_inverted: false,
         }
     }
@@ -241,13 +286,24 @@ impl Window {
         self.x = x.abs();
         self.y = y.abs();
         self.ext_explicitly_set = true;
-        // [Task #860 Stage D] y < 0 = Cartesian 좌표계 (bottom-up) — 일부 application
-        // 이 WMF 에 SetWindowExt(width, -height) 로 bottom-up 설정. SVG 변환 시
-        // y-flip transform 필요. 현재 sample 들에서는 미발견.
-        if y < 0 {
-            self.y_inverted = true;
-        }
+        self.x_inverted = x < 0;
+        self.y_inverted = y < 0;
         self
+    }
+
+    /// [#6617] 논리 좌표를 창 원점 기준 장치(viewBox) 좌표로 옮긴다.
+    ///
+    /// viewBox 는 `(0, 0, |ext_x|, |ext_y|)` 이고(`as_view_box`), 창 범위 안의 논리 점은
+    /// 여기서 `[0, |ext|]` 로 들어온다. 축이 뒤집힌 창(SetWindowExt 음수)은 그 축의 부호를
+    /// 바꿔서 옮긴다 — y-up 창에서 논리 `origin_y` 가 장치 0(위), `origin_y + ext_y`
+    /// (ext_y<0) 가 장치 `|ext_y|`(아래) 다. 창 밖의 점은 음수 또는 범위 밖 좌표가 되고,
+    /// `generate` 의 viewBox 자동 확장이 그 점을 포함시킨다.
+    pub fn to_device(&self, x: f32, y: f32) -> (f32, f32) {
+        let dx = x - f32::from(self.origin_x);
+        let dy = y - f32::from(self.origin_y);
+        let dx = if self.x_inverted { -dx } else { dx };
+        let dy = if self.y_inverted { -dy } else { dy };
+        (dx / self.scale_x, dy / self.scale_y)
     }
 
     pub fn origin(mut self, origin_x: i16, origin_y: i16) -> Self {

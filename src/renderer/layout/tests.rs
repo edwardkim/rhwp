@@ -2727,8 +2727,13 @@ fn header_paper_relative_shape_uses_page_origin() {
     assert!((bbox.y - hwpunit_to_px(2_250, DEFAULT_DPI)).abs() < 0.01);
 }
 
+/// [#6608] 머리말 안 용지 기준 그림은 물리 용지가 아니라 **머리말 틀 원점**에서
+/// 오프셋을 잰다. PR #1682 는 바탕쪽의 용지 원점 규칙을 머리말에도 유추해
+/// 이 테스트를 용지 원점으로 적었지만, 실문서 `pic-in-head-02.hwp` 를 한/글 2020·2022
+/// PDF 와 대조하면 머리말 그림(`PAPER`, 오프셋 (245, 1066)HU)이 틀 원점
+/// (왼쪽 여백, 위 여백) + 오프셋 = (78.68, 51.94)px 에 있다 — 6쪽 전부.
 #[test]
-fn header_paper_relative_picture_uses_page_origin() {
+fn header_paper_relative_picture_uses_header_frame_origin() {
     let tree =
         render_tree_with_header_control(Control::Picture(Box::new(crate::model::image::Picture {
             common: CommonObjAttr {
@@ -2752,8 +2757,14 @@ fn header_paper_relative_picture_uses_page_origin() {
             RenderNodeType::Image(_) | RenderNodeType::Placeholder(_)
         )
     });
-    assert!((bbox.x - hwpunit_to_px(1_500, DEFAULT_DPI)).abs() < 0.01);
-    assert!((bbox.y - hwpunit_to_px(2_250, DEFAULT_DPI)).abs() < 0.01);
+    let header_area =
+        PageLayoutInfo::from_page_def_default(&a4_page_def(), &ColumnDef::default()).header_area;
+    assert!(
+        header_area.x > 0.0 && header_area.y > 0.0,
+        "픽스처 머리말 틀은 용지 원점과 달라야 한다"
+    );
+    assert!((bbox.x - (header_area.x + hwpunit_to_px(1_500, DEFAULT_DPI))).abs() < 0.01);
+    assert!((bbox.y - (header_area.y + hwpunit_to_px(2_250, DEFAULT_DPI))).abs() < 0.01);
 }
 
 // [Task #2102] 쪽 배경 이미지 채우기는 구역 첫 쪽에만 적용된다.

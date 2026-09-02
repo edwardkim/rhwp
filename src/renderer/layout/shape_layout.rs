@@ -3106,20 +3106,12 @@ impl LayoutEngine {
                     + textbox_vpos_px(first_ls.vertical_pos, textbox_vpos_origin_hu, self.dpi);
                 para_y = vpos_y.max(para_y);
             }
-            // 인라인(treat_as_char) 컨트롤의 총 폭 계산
-            let tb_inline_width: f64 = para
-                .controls
-                .iter()
-                .map(|ctrl| match ctrl {
-                    Control::Picture(pic) if pic.common.treat_as_char => {
-                        hwpunit_to_px(pic.common.width as i32, self.dpi)
-                    }
-                    Control::Shape(shape) if shape.common().treat_as_char => {
-                        hwpunit_to_px(shape.common().width as i32, self.dpi)
-                    }
-                    _ => 0.0,
-                })
-                .sum();
+            // [#6651] 글자처럼 개체 폭 합을 첫 줄 글자 오프셋(`first_line_x_offset`)으로
+            // 넘기지 않는다. 그 오프셋은 "개체를 문단 시작에 놓고 글자를 뒤에" 두던 옛
+            // 모델의 것이고, 지금은 `layout_composed_paragraph` 의 `run_tacs` 분기가 개체의
+            // 글자 위치에서 `tac_w` 를 전진시키며 아래 인라인 개체 렌더러가 개체를 그 자리에
+            // 놓는다. 오프셋을 겹쳐 주면 글자만 개체 폭만큼 두 번 밀린다 — table-in-tbox
+            // 2쪽 "␣[그림]␣서비스 기간" 의 '서' 가 134.3 (한/글 116.8, 그림 17.5).
             let para_col_area = LayoutRect {
                 y: para_y,
                 ..inner_area
@@ -3153,7 +3145,7 @@ impl LayoutEngine {
                 Some(cell_ctx),
                 true,
                 is_last_para,
-                tb_inline_width,
+                0.0,
                 None,
                 Some(para),
                 None,

@@ -5672,6 +5672,42 @@ fn normalize_hwpx_note_line_vpos(paragraph: &mut Paragraph, preserve_all_zero: b
         return;
     }
 
+    // [#6495] `vertpos=0` 이 **연속줄 아티팩트**인 문단과 **실제 단/쪽 경계**인 문단을
+    // 가른다 — 판별자는 그 문단의 **0 이 아닌 값들 사이에 되감김이 있는가**다.
+    //
+    // ```text
+    // #1692  SO-SUEOP.hwpx endnote 161   vpos = [v, 0]              0 아닌 값 하나
+    //        → 되감김 없음 = 연속줄 아티팩트, 종전대로 복원
+    //
+    // #6495  3-09월_교육_통합_2023 pi=512
+    //        .hwp   vpos = 65968 / 61499(되감김) / 63001
+    //        .hwpx  vpos = 65968 /      0        / 63001   ← 0 아닌 값이 이미 되감긴다
+    //        → 이 0 도 경계다. 덮으면 65968/67320/63001 이 되어 되감김이 idx=1 에서
+    //          idx=2 로 **한 칸 밀리고** split 이 한 줄 늦어진다.
+    // ```
+    //
+    // 보존하면 `.hwpx` 가 `.hwp` 와 같은 자리에서 끊는다.
+    //
+    // ```text
+    // 3-09월_교육_통합_2022.hwpx  off-canvas 4 → 1   넘침 11 → 4   쪽수 23 불변
+    // 3-09월_교육_통합_2023.hwpx  off-canvas 2 → 0   넘침  6 → 2   쪽수 20 불변
+    // 9쪽 오른쪽 단 최하단  841.17 → 795.09pt (한/글 794.51)
+    // ```
+    let nonzero_rewinds = {
+        let mut prev = None;
+        paragraph.line_segs.iter().any(|seg| {
+            if seg.vertical_pos <= 0 {
+                return false;
+            }
+            let rewound = prev.is_some_and(|p| seg.vertical_pos < p);
+            prev = Some(seg.vertical_pos);
+            rewound
+        })
+    };
+    if nonzero_rewinds {
+        return;
+    }
+
     let mut expected_vpos = None;
     for line_seg in &mut paragraph.line_segs {
         if let Some(expected) = expected_vpos {
