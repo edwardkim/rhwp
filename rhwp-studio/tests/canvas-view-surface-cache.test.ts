@@ -48,6 +48,33 @@ class FakeParent extends FakeElement {
   }
 }
 
+test('CanvasView는 fractional DPR 재래스터 뒤에도 page surface CSS 크기를 고정한다', async () => {
+  const studioRoot = fileURLToPath(new URL('..', import.meta.url));
+  const vite = await createServer({
+    root: studioRoot,
+    appType: 'custom',
+    logLevel: 'silent',
+    server: { middlewareMode: true },
+  });
+  try {
+    const { CanvasView } = await vite.ssrLoadModule('/src/view/canvas-view.ts');
+    const main = new FakeCanvas();
+    const overlay = new FakeCanvas();
+    const view = Object.create(CanvasView.prototype) as Record<string, any>;
+    view.pages = [{ width: 1123, height: 1587.5 }];
+    view.pageSurfaceElements = () => [main, overlay];
+
+    view.applyPageSurfaceCssSize(0, main, 2);
+
+    assert.equal(main.style.width, '2246px');
+    assert.equal(main.style.height, '3175px');
+    assert.equal(overlay.style.width, '2246px');
+    assert.equal(overlay.style.height, '3175px');
+  } finally {
+    await vite.close();
+  }
+});
+
 test('CanvasView는 완성 다층 bundle을 exact key로 재부착하고 raster를 반복하지 않는다', async () => {
   const studioRoot = fileURLToPath(new URL('..', import.meta.url));
   const vite = await createServer({

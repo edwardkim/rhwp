@@ -1276,6 +1276,24 @@ export class CanvasView {
     ));
   }
 
+  private applyPageSurfaceCssSize(
+    pageIdx: number,
+    mainCanvas: HTMLCanvasElement,
+    zoom: number,
+  ): void {
+    const page = this.pages[pageIdx];
+    if (!page) return;
+    const cssWidth = `${page.width * zoom}px`;
+    const cssHeight = `${page.height * zoom}px`;
+    // physical canvas 축은 정수라 fractional DPR(예: 1.5)에서 width / DPR로
+    // CSS 크기를 역산하면 최대 1px 미만의 page box 점프가 생긴다. 가상 배치가
+    // 사용하는 논리 크기를 모든 layer에 다시 적용해 DPR 교체가 layout을 건드리지 않게 한다.
+    for (const element of this.pageSurfaceElements(pageIdx, mainCanvas)) {
+      element.style.width = cssWidth;
+      element.style.height = cssHeight;
+    }
+  }
+
   private pageSurfaceShape(elements: readonly HTMLElement[], mainCanvas: HTMLCanvasElement): string {
     return elements.map((element) => {
       const kind = element === mainCanvas
@@ -1497,9 +1515,9 @@ export class CanvasView {
       return false;
     }
 
-    // CSS 표시 크기 = 물리 픽셀 / DPR (= 페이지크기 × zoom)
-    renderedCanvas.style.width = `${renderedCanvas.width / dpr}px`;
-    renderedCanvas.style.height = `${renderedCanvas.height / dpr}px`;
+    // CSS 표시 크기는 논리 page geometry를 따른다. physical canvas 정수 반올림은
+    // 화질에만 영향을 주고 page box·scroll·ruler geometry를 바꾸면 안 된다.
+    this.applyPageSurfaceCssSize(pageIdx, renderedCanvas, zoom);
     renderedCanvas.style.transformOrigin = '';
     renderedCanvas.dataset.rhwpRenderedZoom = String(zoom);
     renderedCanvas.dataset.rhwpRenderTier = surfaceDecision?.tier ?? 'screen';
