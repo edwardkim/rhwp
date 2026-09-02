@@ -234,3 +234,114 @@ fn cellzone_border_overrides_cell_own_border() {
         "아래 변이 실선이어야 한다(31쪽 stroke-dasharray 회귀) — got {dash:?}, lines={lines:?}"
     );
 }
+
+/// 축 ③ — zone 의 **끝 주소가 병합 칸**이면 그 span 끝까지가 바깥 변이다.
+///
+/// `startColAddr`/`endColAddr` 는 그리드 좌표가 아니라 **칸 주소**다. `156745900`
+/// 2쪽 표는 3×3 인데 zone 38 이 가리키는 `(row2, col0)` 칸이 `colSpan=3` 이라,
+/// `end_col + 1` 로 계산하면 오른쪽 변이 표 한복판(x=290.4)에 서고 아래 변도 거기서
+/// 끊긴다. 실측으로 잡은 회귀다 — 이 시험이 없었으면 반쪽 틀을 내보낼 뻔했다.
+#[test]
+fn cellzone_end_address_follows_merged_span() {
+    const W: u32 = 4000;
+    const H: u32 = 3000;
+    // 2행 3열. 아래 행은 세 열을 하나로 병합한 칸 하나다.
+    let mut table = Table {
+        row_count: 2,
+        col_count: 3,
+        border_fill_id: 1,
+        cells: vec![
+            Cell {
+                col: 0,
+                row: 0,
+                col_span: 1,
+                row_span: 1,
+                width: W,
+                height: H,
+                border_fill_id: 1,
+                paragraphs: vec![Paragraph::default()],
+                ..Default::default()
+            },
+            Cell {
+                col: 1,
+                row: 0,
+                col_span: 1,
+                row_span: 1,
+                width: W,
+                height: H,
+                border_fill_id: 1,
+                paragraphs: vec![Paragraph::default()],
+                ..Default::default()
+            },
+            Cell {
+                col: 2,
+                row: 0,
+                col_span: 1,
+                row_span: 1,
+                width: W,
+                height: H,
+                border_fill_id: 1,
+                paragraphs: vec![Paragraph::default()],
+                ..Default::default()
+            },
+            Cell {
+                col: 0,
+                row: 1,
+                col_span: 3,
+                row_span: 1,
+                width: W * 3,
+                height: H,
+                border_fill_id: 1,
+                paragraphs: vec![Paragraph::default()],
+                ..Default::default()
+            },
+        ],
+        // 병합 칸 하나만 가리키는 zone — 표 전체 폭을 둘러야 한다.
+        zones: vec![TableZone {
+            start_col: 0,
+            start_row: 1,
+            end_col: 0,
+            end_row: 1,
+            border_fill_id: 2,
+        }],
+        ..Default::default()
+    };
+    table.common.width = W * 3;
+    table.common.height = H * 2;
+    table.rebuild_grid();
+
+    let mut owner = Paragraph::default();
+    owner.controls.push(Control::Table(Box::new(table)));
+    let mut section = Section::default();
+    section.section_def.page_def = PageDef {
+        width: 59528,
+        height: 84188,
+        ..Default::default()
+    };
+    section.paragraphs.push(owner);
+    let mut doc = Document::default();
+    doc.doc_info.para_shapes = vec![ParaShape::default()];
+    doc.doc_info.char_shapes = vec![CharShape::default()];
+    doc.doc_info.border_fills = vec![none_fill(), zone_fill()];
+    doc.doc_properties.section_count = 1;
+    doc.sections.push(section);
+
+    let (lines, (left, _top, right, bottom)) = table_lines(doc);
+
+    // 아래 변이 표 **오른쪽 끝까지** 가야 한다. 병합을 무시하면 1/3 지점에서 끊긴다.
+    let full_bottom = lines.iter().any(|&(x1, y1, x2, y2, _, _)| {
+        (y1 - bottom).abs() <= 2.0
+            && (y2 - bottom).abs() <= 2.0
+            && (x1.min(x2) - left).abs() <= 4.0
+            && x1.max(x2) >= right - 4.0
+    });
+    // 오른쪽 세로변도 표 오른쪽 끝에 서야 한다.
+    let right_edge = lines.iter().any(|&(x1, y1, x2, y2, _, _)| {
+        (x1 - right).abs() <= 2.0 && (x2 - right).abs() <= 2.0 && (y1 - y2).abs() >= 4.0
+    });
+
+    assert!(
+        full_bottom && right_edge,
+        "병합 칸을 가리키는 zone 은 span 끝까지 둘러야 한다 — #6619 회귀.          bottom={full_bottom} right={right_edge} left={left} right_x={right} lines={lines:?}"
+    );
+}

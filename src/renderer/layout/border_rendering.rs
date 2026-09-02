@@ -500,11 +500,18 @@ pub(crate) fn collect_cell_borders(
 /// 기존 셀 선을 지워야 하지만, 이 문서에서 한/글이 더 그리는 선은 있어도 **덜 그리는
 /// 선은 없다**(오라클 13 vs rhwp 6, rhwp 에만 있는 선 0). 근거 없는 지우기를 넣지
 /// 않는다.
+///
+/// ⚠⚠ **끝 주소는 병합 span 으로 환산한다.** `startColAddr`/`endColAddr` 는 그리드
+/// 좌표가 아니라 **칸 주소**다. `156745900` 2쪽 표는 3×3 인데 zone 38 이 가리키는
+/// `(row2, col0)` 칸이 `colSpan=3` 이라, `end_col + 1` 로 계산하면 오른쪽 변이 표
+/// 한복판(x=290.4)에 서고 아래 변도 거기서 끊긴다. 끝 주소의 칸을 찾아
+/// `col + col_span` · `row + row_span` 을 써야 표 오른쪽 끝(x=720.0)까지 간다.
 pub(crate) fn apply_cellzone_border_fill(
     h_edges: &mut [Vec<Option<BorderLine>>],
     v_edges: &mut [Vec<Option<BorderLine>>],
     zone_borders: &[BorderLine; 4],
     zone: &TableZone,
+    cells: &[Cell],
 ) {
     if h_edges.is_empty() || v_edges.is_empty() {
         return;
@@ -520,8 +527,18 @@ pub(crate) fn apply_cellzone_border_fill(
     if sc >= col_count || sr >= row_count {
         return;
     }
-    let ec = (zone.end_col as usize + 1).min(col_count);
-    let er = (zone.end_row as usize + 1).min(row_count);
+    // 끝 주소의 칸이 병합돼 있으면 그 span 끝까지가 zone 의 바깥 변이다.
+    let end_cell = cells.iter().find(|c| {
+        c.row as usize == zone.end_row as usize && c.col as usize == zone.end_col as usize
+    });
+    let ec = end_cell
+        .map(|c| c.col as usize + (c.col_span as usize).max(1))
+        .unwrap_or(zone.end_col as usize + 1)
+        .min(col_count);
+    let er = end_cell
+        .map(|c| c.row as usize + (c.row_span as usize).max(1))
+        .unwrap_or(zone.end_row as usize + 1)
+        .min(row_count);
     if ec <= sc || er <= sr {
         return;
     }
