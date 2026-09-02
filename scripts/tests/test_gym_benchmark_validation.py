@@ -44,6 +44,7 @@ class GymBenchmarkWorkflowTests(unittest.TestCase):
         self.assertIn("scripts.tests.test_gym_build_baseline", contracts)
         self.assertIn("scripts.tests.test_gym_discriminate", contracts)
         self.assertIn("scripts.tests.test_gym_trajectory", contracts)
+        self.assertIn("scripts.tests.test_gym_authority_ledger", contracts)
         self.assertIn("scripts.tests.test_gym_competitive_bench", contracts)
         self.assertIn("scripts.tests.test_gym_tutorial", contracts)
         self.assertNotIn("unittest discover", contracts)
@@ -53,6 +54,7 @@ class GymBenchmarkWorkflowTests(unittest.TestCase):
         self.assertIn("needs: contracts", full)
         self.assertIn("if: ${{ github.event_name == 'workflow_dispatch' }}", full)
         for tool in (
+            "authority_ledger.py",
             "oracle_probe.py",
             "build_baseline.py",
             "discriminate.py",
@@ -64,6 +66,8 @@ class GymBenchmarkWorkflowTests(unittest.TestCase):
 
     def test_evidence_is_benchmark_scoped(self) -> None:
         self.assertIn("gym-benchmark-evidence", self.workflow)
+        self.assertIn("authority-ledger.json", self.workflow)
+        self.assertIn("authority_ledger=${authority_exit}", self.workflow)
         self.assertIn("gym-benchmark-validation-${{ github.sha }}", self.workflow)
         self.assertIn("if: always()", self.workflow)
         self.assertIn("if-no-files-found: error", self.workflow)
