@@ -34,6 +34,7 @@ export interface PageRenderSchedulerOptions {
   maxVisiblePagesPerSlice?: number;
   idleTimeoutMs?: number;
   timeoutFallbackDelayMs?: number;
+  scrollSettleDelayMs?: number;
 }
 
 export interface PageRenderSchedulerSnapshot {
@@ -42,6 +43,7 @@ export interface PageRenderSchedulerSnapshot {
   prefetchQueued: number;
   frameScheduled: boolean;
   idleScheduled: boolean;
+  scrollSettleScheduled: boolean;
   visibleSlices: number;
   visibleExecuted: number;
   prefetchExecuted: number;
@@ -64,6 +66,7 @@ const DEFAULT_VISIBLE_SLICE_BUDGET_MS = 4;
 const DEFAULT_MAX_VISIBLE_PAGES_PER_SLICE = 2;
 const DEFAULT_IDLE_TIMEOUT_MS = 1000;
 const DEFAULT_TIMEOUT_FALLBACK_DELAY_MS = 250;
+const DEFAULT_SCROLL_SETTLE_DELAY_MS = 150;
 
 function positiveFinite(value: number | undefined, fallback: number): number {
   return typeof value === 'number' && Number.isFinite(value) && value > 0
@@ -88,12 +91,14 @@ export class PageRenderScheduler {
   private readonly maxVisiblePagesPerSlice: number;
   private readonly idleTimeoutMs: number;
   private readonly timeoutFallbackDelayMs: number;
+  private readonly scrollSettleDelayMs: number;
   private generation = 0;
   private sequence = 0;
   private visible = new Map<number, QueuedWork>();
   private prefetch = new Map<number, QueuedWork>();
   private frameId: number | null = null;
   private deferredTask: DeferredTask | null = null;
+  private scrollSettleTimerId: number | null = null;
   private visibleSlices = 0;
   private visibleExecuted = 0;
   private prefetchExecuted = 0;
@@ -118,6 +123,10 @@ export class PageRenderScheduler {
     this.timeoutFallbackDelayMs = positiveFinite(
       options.timeoutFallbackDelayMs,
       DEFAULT_TIMEOUT_FALLBACK_DELAY_MS,
+    );
+    this.scrollSettleDelayMs = positiveFinite(
+      options.scrollSettleDelayMs,
+      DEFAULT_SCROLL_SETTLE_DELAY_MS,
     );
   }
 
@@ -162,6 +171,22 @@ export class PageRenderScheduler {
       this.frameId = null;
     }
     this.cancelDeferredTask();
+    this.cancelScrollSettle();
+  }
+
+  /** 마지막 scroll 입력 하나만 정착 경계로 전달한다. */
+  scheduleScrollSettle(callback: () => void): void {
+    this.cancelScrollSettle();
+    this.scrollSettleTimerId = this.host.setTimeout(() => {
+      this.scrollSettleTimerId = null;
+      callback();
+    }, this.scrollSettleDelayMs);
+  }
+
+  cancelScrollSettle(): void {
+    if (this.scrollSettleTimerId === null) return;
+    this.host.clearTimeout(this.scrollSettleTimerId);
+    this.scrollSettleTimerId = null;
   }
 
   /** retained 예산상 보존 이득이 없어 dispatch 전에 거절한 선택 prefetch를 기록한다. */
@@ -177,6 +202,7 @@ export class PageRenderScheduler {
       prefetchQueued: this.prefetch.size,
       frameScheduled: this.frameId !== null,
       idleScheduled: this.deferredTask !== null,
+      scrollSettleScheduled: this.scrollSettleTimerId !== null,
       visibleSlices: this.visibleSlices,
       visibleExecuted: this.visibleExecuted,
       prefetchExecuted: this.prefetchExecuted,

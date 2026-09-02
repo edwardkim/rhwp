@@ -56,6 +56,7 @@ import {
   DEFAULT_CANVAS2D_LAYER_COUNT,
   DEFAULT_RETAINED_SURFACE_PIXEL_BUDGET,
   planRenderSurfaceBudget,
+  resolveSettledVisibleEffectiveDpr,
   type RenderSurfaceBudgetPlan,
   type RenderSurfaceDecision,
 } from './render-surface-budget.ts';
@@ -80,6 +81,7 @@ const AUTO_RENDERER_RESELECTION_DELAY_MS = 300;
 
 type VisibilityUpdateReason =
   | 'scroll'
+  | 'scroll-settled'
   | 'initial'
   | 'zoom-settled'
   | 'resize'
@@ -90,6 +92,10 @@ interface ScrollMotion {
   direction: -1 | 0 | 1;
   speed: number;
 }
+
+type RenderSurfacePlanPhase = 'default' | 'scrolling' | 'scroll-settled';
+
+const MIN_SETTLED_VISIBLE_OVERLAP_CSS_PX = 8;
 
 interface PageSurfaceBundle extends PageSurfaceCacheEntry {
   mainCanvas: HTMLCanvasElement;
@@ -548,6 +554,7 @@ export class CanvasView {
     const scrollX = this.viewportManager.getScrollX();
     const { width: vpWidth, height: vpHeight } = this.viewportManager.getViewportSize();
     const isScroll = reason === 'scroll';
+    const isScrollSettled = reason === 'scroll-settled';
     if (!isScroll) {
       this.pageRenderScheduler.cancelAll();
       this.lastScrollSample = null;
@@ -586,12 +593,15 @@ export class CanvasView {
     this.currentVisiblePages = visiblePages;
     this.currentRetainedPages = prefetchPages;
     this.updateActivePageSnapshot();
-    this.refreshRenderSurfacePlan(!isScroll);
+    this.refreshRenderSurfacePlan(
+      !isScroll && !isScrollSettled,
+      isScroll ? 'scrolling' : isScrollSettled ? 'scroll-settled' : 'default',
+    );
     this.reconcilePageSurfaceBudget();
     for (const bundle of detachedBundles) this.pageSurfaceLru.put(bundle);
     this.reconcilePageSurfaceBudget();
 
-    if (!isScroll) {
+    if (!isScroll && !isScrollSettled) {
       // 초기/줌/resize/편집/strict는 기존처럼 visible 전체를 응답 전에 동기 렌더한다.
       for (const pageIdx of visiblePages) {
         if (!this.canvasPool.has(pageIdx)) this.renderPage(pageIdx);
@@ -608,8 +618,13 @@ export class CanvasView {
           scrollY + vpHeight / 2,
         )
       : null;
-    const visibleWork = isScroll
-      ? this.buildVisibleRenderWork(visiblePages, centerPage, generation)
+    const visibleWork = isScroll || isScrollSettled
+      ? this.buildVisibleRenderWork(
+          visiblePages,
+          centerPage,
+          generation,
+          isScrollSettled,
+        )
       : [];
     const adjacentPages = prefetchPages.filter((pageIdx) => !visibleSet.has(pageIdx));
     const prefetchWork = this.buildPrefetchRenderWork(
@@ -624,6 +639,12 @@ export class CanvasView {
       prefetchWork,
       isScroll,
     );
+    if (isScroll) {
+      this.pageRenderScheduler.scheduleScrollSettle(() => {
+        if (this.disposed || generation !== this.renderWorkGeneration) return;
+        this.updateVisiblePages('scroll-settled');
+      });
+    }
     this.renderHeaderFooterEditOverlays();
   }
 
@@ -653,6 +674,7 @@ export class CanvasView {
     visiblePages: readonly number[],
     centerPage: number | null,
     generation: number,
+    preferViewportCenter = false,
   ): PageRenderWork[] {
     const focusedVisible = this.editingPageIndex !== null
       && visiblePages.includes(this.editingPageIndex)
@@ -663,11 +685,15 @@ export class CanvasView {
       if (!descriptor) return [];
       const canvas = this.canvasPool.getCanvas(pageIdx);
       if (canvas?.dataset.rhwpSurfaceCacheLookupKey === descriptor.lookupKey) return [];
-      const focusPriority = pageIdx === focusedVisible
-        ? 0
-        : pageIdx === centerPage
-          ? 1
-          : 2 + Math.abs(pageIdx - (centerPage ?? pageIdx)) / 1000;
+      const focusPriority = preferViewportCenter
+        ? pageIdx === centerPage
+          ? 0
+          : 1 + Math.abs(pageIdx - (centerPage ?? pageIdx)) / 1000
+        : pageIdx === focusedVisible
+          ? 0
+          : pageIdx === centerPage
+            ? 1
+            : 2 + Math.abs(pageIdx - (centerPage ?? pageIdx)) / 1000;
       return [this.createPageRenderWork(
         pageIdx,
         descriptor.lookupKey,
@@ -1051,7 +1077,10 @@ export class CanvasView {
     this.reconcilePageSurfaceBudget();
   }
 
-  private refreshRenderSurfacePlan(rerenderChangedPages: boolean): void {
+  private refreshRenderSurfacePlan(
+    rerenderChangedPages: boolean,
+    phase: RenderSurfacePlanPhase = 'default',
+  ): void {
     if (this.pages.length === 0 || this.currentRetainedPages.length === 0) {
       this.renderSurfacePlan = null;
       this.renderSurfaceDecisions.clear();
@@ -1076,6 +1105,27 @@ export class CanvasView {
       this.previousEffectiveDpr.clear();
       this.renderSurfaceEnvironmentKey = environmentKey;
     }
+    const settledVisiblePages = phase === 'scroll-settled'
+      ? this.materiallyVisiblePages()
+      : [];
+    const settledVisibleSet = new Set(settledVisiblePages);
+    const settledVisibleDpr = phase === 'scroll-settled'
+      ? resolveSettledVisibleEffectiveDpr({
+          pages: settledVisiblePages.flatMap((pageIndex) => {
+            const page = this.pages[pageIndex];
+            if (!page) return [];
+            return [{
+              width: page.width,
+              height: page.height,
+              layerCount: this.pageRenderer.getCanvasSurfaceLayerCount(pageIndex),
+              focused: this.editingPageIndex === pageIndex,
+            }];
+          }),
+          zoom: this.viewportManager.getZoom(),
+          rawDpr,
+          layerCount,
+        })
+      : null;
     const plan = planRenderSurfaceBudget({
       pages: this.currentRetainedPages.flatMap((pageIndex) => {
         const page = this.pages[pageIndex];
@@ -1088,6 +1138,11 @@ export class CanvasView {
           visible: visibleSet.has(pageIndex),
           focused: this.editingPageIndex === pageIndex,
           distanceFromFocus: Math.abs(pageIndex - focusPage),
+          lockedEffectiveDpr: phase === 'scrolling'
+            ? this.activeSurfaceRequestedDpr(pageIndex)
+            : settledVisibleDpr !== null && settledVisibleSet.has(pageIndex)
+              ? settledVisibleDpr
+              : undefined,
         }];
       }),
       zoom: this.viewportManager.getZoom(),
@@ -1143,6 +1198,32 @@ export class CanvasView {
       }
     }
     this.reconcilePageSurfaceBudget();
+  }
+
+  private activeSurfaceRequestedDpr(pageIndex: number): number | undefined {
+    const canvas = this.canvasPool.getCanvas(pageIndex);
+    const value = Number(canvas?.dataset.rhwpRequestedDpr);
+    return Number.isFinite(value) && value > 0 ? value : undefined;
+  }
+
+  /** 1px짜리 경계 노출을 정착 화질 승격 대상으로 세지 않는다. */
+  private materiallyVisiblePages(): number[] {
+    const scrollX = this.viewportManager.getScrollX();
+    const scrollY = this.viewportManager.getScrollY();
+    const viewport = this.viewportManager.getViewportSize();
+    const viewportRight = scrollX + viewport.width;
+    const viewportBottom = scrollY + viewport.height;
+    const layoutWidth = Math.max(viewport.width, this.virtualScroll.getTotalWidth());
+    return this.currentVisiblePages.filter((pageIndex) => {
+      const left = this.virtualScroll.getPageLeftResolved(pageIndex, layoutWidth);
+      const top = this.virtualScroll.getPageOffset(pageIndex);
+      const right = left + this.virtualScroll.getPageWidth(pageIndex);
+      const bottom = top + this.virtualScroll.getPageHeight(pageIndex);
+      const overlapX = Math.min(right, viewportRight) - Math.max(left, scrollX);
+      const overlapY = Math.min(bottom, viewportBottom) - Math.max(top, scrollY);
+      return overlapX >= MIN_SETTLED_VISIBLE_OVERLAP_CSS_PX
+        && overlapY >= MIN_SETTLED_VISIBLE_OVERLAP_CSS_PX;
+    });
   }
 
   private applySurfaceDecisionDiagnostics(pageIdx: number, canvas: HTMLCanvasElement): void {
@@ -1214,11 +1295,10 @@ export class CanvasView {
 
   private detachCompletedPageSurface(pageIdx: number): PageSurfaceBundle | null {
     const mainCanvas = this.canvasPool.getCanvas(pageIdx);
-    const descriptor = this.pageSurfaceDescriptor(pageIdx);
+    const actualLookupKey = mainCanvas?.dataset.rhwpSurfaceCacheLookupKey;
     if (
       !mainCanvas
-      || !descriptor
-      || mainCanvas.dataset.rhwpSurfaceCacheLookupKey !== descriptor.lookupKey
+      || !actualLookupKey
       || !this.pageRenderer.isPageSurfaceComplete(this.scrollContent, pageIdx)
     ) return null;
 
@@ -1235,10 +1315,10 @@ export class CanvasView {
       return null;
     }
     const pixelCount = this.actualPageSurfacePixels(elements);
-    const key = `${descriptor.lookupKey}|surfaces:${this.pageSurfaceShape(elements, mainCanvas)}`;
+    const key = `${actualLookupKey}|surfaces:${this.pageSurfaceShape(elements, mainCanvas)}`;
     return {
       key,
-      lookupKey: descriptor.lookupKey,
+      lookupKey: actualLookupKey,
       pageIndex: pageIdx,
       pixelCount,
       mainCanvas,
@@ -1424,6 +1504,7 @@ export class CanvasView {
     renderedCanvas.dataset.rhwpRenderedZoom = String(zoom);
     renderedCanvas.dataset.rhwpRenderTier = surfaceDecision?.tier ?? 'screen';
     renderedCanvas.dataset.rhwpRenderBucket = String(dpr);
+    renderedCanvas.dataset.rhwpRequestedDpr = String(requestedDpr);
     renderedCanvas.dataset.rhwpRenderScale = String(renderScale);
     renderedCanvas.dataset.rhwpRawDpr = String(rawDpr);
     renderedCanvas.dataset.rhwpEffectiveDpr = String(dpr);

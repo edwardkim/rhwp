@@ -193,6 +193,21 @@ test('scroll interaction lock은 실제 surface DPR을 예산·히스테리시�
   assert.equal(plan.heldByHysteresis, false, 'interaction lock을 hysteresis 보존으로 보고하지 않는다');
 });
 
+test('interaction lock은 편집 focus의 raw DPR 보호를 낮추지 않는다', () => {
+  const input = pages(1, { focused: 0, width: 1000, height: 1000 });
+  input[0]!.lockedEffectiveDpr = 1;
+  const plan = planRenderSurfaceBudget({
+    pages: input,
+    zoom: 1,
+    rawDpr: 2,
+    layerCount: 4,
+    visiblePixelBudget: 1,
+    retainedPixelBudget: 1,
+  });
+
+  assert.equal(plan.decisions[0]?.effectiveDpr, 2);
+});
+
 test('scroll 정착 visible DPR은 64M absolute gate에서 raw, 1.5, planner fallback을 구분한다', () => {
   assert.equal(resolveSettledVisibleEffectiveDpr({
     pages: pages(2, { width: 1000, height: 1000 }),
@@ -296,7 +311,7 @@ test('print와 highQuality는 surface 예산으로 낮추지 않는다', () => {
 test('CanvasView는 가시 집합과 포커스 변경 후 budget plan을 갱신한다', () => {
   const source = readFileSync(new URL('../src/view/canvas-view.ts', import.meta.url), 'utf8');
   const visibleAssignment = source.indexOf('this.currentVisiblePages = visiblePages;');
-  const planRefresh = source.indexOf('this.refreshRenderSurfacePlan(!isScroll);', visibleAssignment);
+  const planRefresh = source.indexOf('this.refreshRenderSurfacePlan(', visibleAssignment);
   const visibleWorkCreation = source.indexOf('const visibleWork = isScroll', planRefresh);
 
   assert.ok(visibleAssignment >= 0 && visibleAssignment < planRefresh);

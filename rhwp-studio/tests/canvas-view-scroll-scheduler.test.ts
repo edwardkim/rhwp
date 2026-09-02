@@ -247,6 +247,70 @@ test('CanvasView는 scroll 중 surface를 유지하고 정착 승격은 center-f
   }
 });
 
+test('CanvasView planner는 scroll 중 실제 requested DPR을 잠그고 정착 visible을 raw로 회복한다', async () => {
+  const studioRoot = fileURLToPath(new URL('..', import.meta.url));
+  const vite = await createServer({
+    root: studioRoot,
+    appType: 'custom',
+    logLevel: 'silent',
+    server: { middlewareMode: true },
+  });
+  const windowDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'window');
+  try {
+    Object.defineProperty(globalThis, 'window', {
+      configurable: true,
+      value: { devicePixelRatio: 2 },
+    });
+    const { CanvasView } = await vite.ssrLoadModule('/src/view/canvas-view.ts');
+    const surfaces = [
+      { dataset: { rhwpRequestedDpr: '1' } },
+      { dataset: { rhwpRequestedDpr: '2' } },
+    ];
+    const view = Object.create(CanvasView.prototype) as Record<string, any>;
+    Object.assign(view, {
+      pages: Array.from({ length: 2 }, () => ({ width: 1000, height: 1000 })),
+      currentVisiblePages: [0, 1],
+      currentRetainedPages: [0, 1],
+      editingPageIndex: null,
+      activePageSnapshot: { pageIndex: 0, source: 'viewport' },
+      renderSurfacePlan: null,
+      renderSurfaceDecisions: new Map(),
+      previousEffectiveDpr: new Map(),
+      renderSurfaceEnvironmentKey: null,
+      pendingPrefetchSurfaceReservations: new Map(),
+      canvasPool: {
+        activePages: [0, 1],
+        getCanvas: (page: number) => surfaces[page],
+      },
+      pageRenderer: {
+        getBackend: () => 'canvas2d',
+        getRenderProfile: () => 'screen',
+        getCanvasSurfaceLayerCount: () => 4,
+      },
+      viewportManager: { getZoom: () => 1 },
+      materiallyVisiblePages: () => [0, 1],
+      pageSurfaceDescriptor: () => null,
+      reconcilePageSurfaceBudget: () => undefined,
+    });
+
+    view.refreshRenderSurfacePlan(false, 'scrolling');
+    assert.deepEqual(
+      [...view.renderSurfaceDecisions.values()].map((decision: any) => decision.effectiveDpr),
+      [1, 2],
+    );
+
+    view.refreshRenderSurfacePlan(false, 'scroll-settled');
+    assert.deepEqual(
+      [...view.renderSurfaceDecisions.values()].map((decision: any) => decision.effectiveDpr),
+      [2, 2],
+    );
+  } finally {
+    if (windowDescriptor) Object.defineProperty(globalThis, 'window', windowDescriptor);
+    else Reflect.deleteProperty(globalThis, 'window');
+    await vite.close();
+  }
+});
+
 test('scroll exact LRU hit는 raster queue 없이 retained working set에 모두 재부착한다', async () => {
   const studioRoot = fileURLToPath(new URL('..', import.meta.url));
   const vite = await createServer({
