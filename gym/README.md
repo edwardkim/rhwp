@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: gym/README.md
-last_verified: 2026-08-10
+last_verified: 2026-09-03
 ---
 
 # rhwp 에이전트 짐(gym) — 운동장
@@ -11,6 +11,10 @@ last_verified: 2026-08-10
 무엇이든)가 실제 한국 문서로 실제 작업을 수행하고, 기계 채점으로 실력을 기록으로
 남기는 운동장이다. 문서를 읽는 곳이 아니라 뛰는 곳이다 — 이 README 하나만 읽고
 스스로 수행→제출→자가 채점이 되도록 만들어져 있다.
+
+> 인간 개발자·메인테이너가 구조 계약과 전수 벤치마크를 실행할 때는
+> [수동 운영 매뉴얼](../mydocs/manual/gym_benchmark_operations.md)을 따른다. AI 에이전트는
+> 참가자·감사자 역할을 구분하는 [Gym 범위 지침](AGENTS.md)을 먼저 적용한다.
 
 > 🎡 **놀이공원처럼 둘러보려면** → [PARK.md](PARK.md) (테마파크 지도) ·
 > [tutorial/](tutorial/README.md) (☕ 휴게실, 첫 방문 5분) ·
@@ -21,24 +25,24 @@ last_verified: 2026-08-10
 
 ```bash
 cargo build --bin rhwp                 # 1) 운동화 (바이너리)
-cat gym/tasks/T01.json                 # 2) 과제 읽기 (instructions 필드가 일감)
-mkdir -p gym/submissions/<너의이름>/T01  # 3) 과제별 폴더에 제출물 넣기
+cat gym/packs/casual-rides/tasks/CR01.json  # 2) 과제 읽기 (instructions 필드가 일감)
+mkdir -p gym/submissions/<너의이름>/casual-rides/CR01  # 3) 과제별 폴더에 제출물 넣기
 python gym/score.py --agent <너의이름>   # 4) 자가 채점 — 스코어카드 발급
 ```
 
 ## 규칙 — 세 줄
 
-1. **과제 파일이 유일한 지시서다.** `tasks/T*.json` 의 `instructions` 를 읽고
+1. **과제 파일이 유일한 지시서다.** `packs/<id>/tasks/*.json` 의 `instructions` 를 읽고
    `input` 문서에 대해 수행하라. 힌트는 있지만 경로 탐색(어느 명령을 어떻게
    조합할지)은 네 몫이다 — 그것이 측정 대상이다.
 2. **제출은 파일이다.** 과제의 `submit` 이 요구하는 것(answer.json, 산출물,
-   또는 산출물 쌍)을 `submissions/<이름>/<과제ID>/` 에 놓아라.
+   또는 산출물 쌍)을 `submissions/<이름>/<pack-id>/<과제ID>/` 에 놓아라.
 3. **채점 권위를 숨기지 않는다.** 대부분의 과제는 `score.py`가 현재 rhwp로
    기대값을 다시 계산하는 `self-live`다. 일부는 작성자 상수나 공개 입력 fixture
    관계를 검사한다. 어느 경우도 한컴 또는 독립 구현의 제품 정답으로 자동 승격하지
    않는다. 전수 분류와 한계는 [정답 권위 원장](docs/authority_ledger.md)을 따른다.
 
-## 과제판 — pack 12개 · 과제 100건 · 만점 221
+## 과제판 — pack 21개 · 과제 1,035건 · 만점 2,379
 
 능력 영역을 **pack** 으로 나눈다. 점수는 pack 별로 보존되며 총점은 편의값이다 —
 어느 능력이 모자란지는 pack 별 점수가 말한다. 🎡 [테마파크 지도](PARK.md)는
@@ -46,18 +50,27 @@ python gym/score.py --agent <너의이름>   # 4) 자가 채점 — 스코어카
 
 | pack | 이름 | 능력 축 | 과제 | 만점 |
 |---|---|---|---|---|
-| `casual-rides` | 🎠 입문 놀이기구 | 입문 (읽고 세기 — 누구나·부모님도) | 4 | 4 |
-| `core-cli` | 코어 CLI | 조사·추출·편집·검증 (운동장 최소 코어) | 14 | 32 |
-| `automation` | 자동화·검증 사다리 | 자동화 (계획·캡슐·서명·앵커·정산·감사) | 13 | 35 |
-| `corpus-diagnostics` | 코퍼스·진단 | 진단 (폴더 스윕·쪽 덤프·비교 판정) | 7 | 14 |
-| `expert-challenges` | 🐉 보스 어트랙션 | 자동화 (사다리 완주 — tier 4~5 고난도) | 5 | 23 |
-| `layout-rendering` | 조판·렌더링 | 검증 (조판 판정·렌더 산출) | 8 | 15 |
-| `objects-media` | 개체·미디어 | 발견 (필드·개체·렌더 산출물) | 7 | 15 |
-| `security` | 보안 스윕 | 보안 (은닉·주입·유니코드·PII) | 9 | 18 |
-| `self-description` | 자기서술 표면 | 자기서술 (도구가 스스로를 설명하는 계약) | 7 | 12 |
-| `serialization` | 저장·변환 | 변환 (형식 왕복·IR 대조) | 8 | 19 |
-| `table-editing` | 표 편집 | 편집 (표 좌표 지정) | 8 | 16 |
-| `text-editing` | 본문 편집 | 편집 (탐색→치환→재검증) | 10 | 18 |
+| `automation` | 자동화·검증 사다리 | 자동화 (계획·캡슐·서명·앵커·정산·감사) | 70 | 189 |
+| `batch-ops` | 다문서 대량 처리 | 자동화 (다문서 대량 처리) | 20 | 57 |
+| `casual-rides` | 🎠 입문 놀이기구 | 입문 (읽고 세기 — 누구나·부모님도) | 44 | 44 |
+| `core-cli` | 코어 CLI | 조사·추출·편집·검증 (운동장 최소 코어) | 54 | 107 |
+| `corpus-diagnostics` | 코퍼스·진단 | 진단 (폴더 스윕·쪽 덤프·비교 판정) | 48 | 109 |
+| `expert-challenges` | 🐉 보스 어트랙션 | 자동화 (사다리 완주 — tier 4~5 고난도) | 55 | 257 |
+| `extraction` | 데이터 추출 | 조회 (문서에서 데이터를 뽑아내는 능력) | 28 | 56 |
+| `form-journeys` | 서식 여정 | 편집 (이름 지목·순번·dry-run·재독) | 72 | 178 |
+| `layout-rendering` | 조판·렌더링 | 검증 (조판 판정·렌더 산출) | 48 | 89 |
+| `objects-media` | 개체·미디어 | 발견 (필드·개체·렌더 산출물) | 45 | 91 |
+| `oracle-probe` | 라이브 오라클 이중 계산 | 검증 (라이브 오라클·이중 계산·부재 보고) | 44 | 81 |
+| `render-tree` | 렌더 트리 구조 추출 | 조회 (렌더 트리 구조 추출) | 40 | 99 |
+| `security` | 보안 스윕 | 보안 (은닉·주입·유니코드·PII) | 80 | 161 |
+| `self-description` | 자기서술 표면 | 자기서술 (도구가 스스로를 설명하는 계약) | 74 | 159 |
+| `serialization` | 저장·변환 | 변환 (형식 왕복·IR 대조) | 56 | 133 |
+| `showcase` | 🎆 쇼케이스 | 쇼케이스 (rhwp 고유 기능 시연) | 6 | 17 |
+| `studio-e2e` | 스튜디오 e2e 문서 계약 | 편집 (studio e2e 파생 CLI 검증) | 40 | 85 |
+| `table-csv` | 표 CSV 왕복 | 편집 (CSV 추출·수정·되쓰기) | 25 | 56 |
+| `table-editing` | 표 편집 | 편집 (표 좌표 지정) | 40 | 116 |
+| `text-editing` | 본문 편집 | 편집 (탐색→치환→재검증) | 90 | 174 |
+| `work-receipt` | 작업 영수증 여정 | 자동화 (발급·계보·감사) | 56 | 121 |
 
 난도 티어는 1~5다: **1=입문(부모님도), 2=초급, 3=중급, 4=고급, 5=보스**.
 한쪽 끝(`casual-rides`)엔 키 제한 없는 회전목마를, 다른 끝(`expert-challenges`)엔
@@ -98,7 +111,8 @@ packs/<id>/
 | `editor` (편집자) | `core-cli`, `text-editing`, `table-editing`, `objects-media` |
 | `publisher` (배포자) | `serialization`, `layout-rendering`, `security` |
 | `boss` (🐉 보스 코스) | `expert-challenges` — 사다리 완주급 고난도만 |
-| `maintainer` (메인테이너) | 전 12 pack 완주 코스 |
+| `maintainer` (메인테이너) | 전 21 pack 완주 코스 |
+| `operator` (운영자) | `corpus-diagnostics`, `automation` |
 
 ```bash
 python gym/score.py --agent <이름>                 # 전 pack

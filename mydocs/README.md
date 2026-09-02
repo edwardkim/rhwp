@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: mydocs/README.md
-last_verified: 2026-08-25
+last_verified: 2026-09-03
 ---
 
 # rhwp 문서 지도와 canonical manifest
@@ -61,6 +61,7 @@ front matter는 `mydocs/manual`, `mydocs/tech`, `mydocs/troubleshootings`의 모
 | [첫 기여자 외부 PR 처리](manual/pr_review/first_time_contributor.md) | guide | active | `manual/pr_review_workflow.md` | 2026-08-28 |
 | [에이전트 capability 카탈로그](manual/agent_capability_registry.md) | canonical | active | `manual/agent_capability_registry.md` | 2026-07-26 |
 | [개발 환경 가이드](manual/dev_environment_guide.md) | guide | active | `manual/dev_environment_guide.md` | 2026-08-11 |
+| [Gym 벤치마크 수동 운영 매뉴얼](manual/gym_benchmark_operations.md) | canonical | active | `manual/gym_benchmark_operations.md` | 2026-09-03 |
 | [온보딩 가이드](manual/onboarding_guide.md) | guide | active | `manual/README.md` | 2026-07-17 |
 | [배포 가이드](manual/publish_guide.md) | guide | active | `manual/publish_guide.md` | 2026-07-17 |
 | [Hyper-Waterfall 문서 체계](manual/hyper_waterfall_docs_guide.md) | guide | active | `manual/codex/docs_and_git_workflow.md` | 2026-07-17 |

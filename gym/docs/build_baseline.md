@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: gym/docs/build_baseline.md
-last_verified: 2026-08-18
+last_verified: 2026-09-03
 ---
 
 # gym 기준 풀이 조립기 규약
@@ -22,7 +22,7 @@ last_verified: 2026-08-18
 감사 계약이 깨진다. 이 문서는 그 서명을 유지한 채 예외 자리를
 연다.
 
-CLI 플래그는 `--agent` · `--pack` · `--bin` 뿐이다. 새 플래그·새
+CLI 플래그는 `--agent` · `--pack` · `--bin` · `--json`뿐이다. 새 플래그·새
 pack 을 이 도구에 붙이지 않는다.
 
 ## 1. 왜 이 기둥이 필요한가
@@ -54,6 +54,7 @@ pack 을 이 도구에 붙이지 않는다.
 python gym/tools/build_baseline.py --agent claude-fable-5
 python gym/tools/build_baseline.py --agent claude-fable-5 --pack core-cli
 python gym/tools/build_baseline.py --agent claude-fable-5 --pack text-editing --bin target/debug/rhwp
+python gym/tools/build_baseline.py --agent maintainer-run --bin target/debug/rhwp --json
 ```
 
 | 인자 | 기본 | 의미 |
@@ -61,9 +62,10 @@ python gym/tools/build_baseline.py --agent claude-fable-5 --pack text-editing --
 | `--agent` | `claude-fable-5` | 제출 폴더 이름. `gym/submissions/<agent>/` |
 | `--pack` | 전 pack | 반복 가능. 지정한 pack 만 조립한다. |
 | `--bin` | 러너 탐색 | rhwp 바이너리. `runner.find_bin` 이 상대경로를 절대화한다. |
+| `--json` | 꺼짐 | 최종 `gymBaselineVerification` 봉투를 stdout에 쓴다. 진행·실패 줄은 stderr다. |
 
-새 플래그는 없다. `--json` / `--task` / `--limit` / `--out` /
-`--dry-run` 은 없다. 이 도구의 점는 **왕복을 실제로 돌리는 것**이다.
+새 플래그는 없다. `--task` / `--limit` / `--out` / `--dry-run` 은 없다.
+이 도구의 점은 **왕복을 실제로 돌리는 것**이다.
 한 과제만 골라 성공했다고 말하면 나머지 pack 의 구멍이 남는다. 한
 과제만 보고 싶을 때는 `--pack` 으로 pack 을 줄인다. 과제 ID 필터는
 넣지 않는다.
@@ -78,8 +80,17 @@ python gym/tools/build_baseline.py --agent claude-fable-5 --pack text-editing --
 기준 풀이 파일이 없는 과제는 `skipped` 다. 실패가 아니다. 왕복
 요약의 "기준 풀이 없음" 칸이 그 수다.
 
+`--json` 전수 수용에서는 `skipped`도 완료가 아니다. 봉투의 `ok`는 `taskCount>0`,
+`built==taskCount`, `failed==0`, `skipped==0`, 모든 `results[].ok=true`일 때만 참이다.
+집계 키는 `built`, `failed`, `skipped`, `missingArtifact`, `failedScore`, `buildError`다.
+종료 코드는 봉투의 `exit`와 같다. 자동화는 stdout JSON만 파싱하고 stderr 진행 줄을
+합치지 않는다.
+
 작업 디렉터리는 `gym/submissions/<agent>/<pack>/<task>/` 이다. 한
 과제를 다시 조립하면 그 폴더를 지우고 시작한다.
+
+전수 수동 실행의 격리 worktree·증적·정리 절차는
+[`Gym 벤치마크 수동 운영 매뉴얼`](../../mydocs/manual/gym_benchmark_operations.md)을 따른다.
 
 ## 3. 자리표 — 바꾸지 않는 칸
 
