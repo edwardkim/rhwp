@@ -85,6 +85,20 @@ fn polyline_to16_and_polybezier_to16_are_parsed() {
     }
     push_record(&mut emf, 0x58, &payload);
 
+    // EMR_EXTCREATEPEN (0x5F): ihPen + offBmi/cbBmi/offBits/cbBits + LogPenEx 앞 4필드
+    let mut payload = Vec::new();
+    push_u32(&mut payload, 7); // ihPen
+    for _ in 0..4 {
+        push_u32(&mut payload, 0);
+    }
+    push_u32(&mut payload, 0); // PenStyle = PS_SOLID
+    push_u32(&mut payload, 3); // Width
+    push_u32(&mut payload, 0); // BrushStyle = BS_SOLID
+    push_u32(&mut payload, 0x0000_00FF); // ColorRef
+    push_u32(&mut payload, 0); // BrushHatch
+    push_u32(&mut payload, 0); // NumStyleEntries
+    push_record(&mut emf, 0x5F, &payload);
+
     push_record(&mut emf, 14, &[]); // EMR_EOF (내용 없이도 파서가 멈추면 됨)
 
     let types = record_types(&emf);
@@ -95,5 +109,10 @@ fn polyline_to16_and_polybezier_to16_are_parsed() {
     assert!(
         types.iter().any(|t| t == "PolyBezierTo16"),
         "EMR_POLYBEZIERTO16 이 Unknown 으로 버려졌다 — #6577 회귀. 파싱 결과: {types:?}"
+    );
+    // [#6577 ③] 이 파일군의 비-스톡 펜은 전부 EXTCREATEPEN 이다(EMR_CREATEPEN 0건).
+    assert!(
+        types.iter().any(|t| t == "CreatePen"),
+        "EMR_EXTCREATEPEN 이 Unknown 으로 버려졌다 — #6577 회귀. 파싱 결과: {types:?}"
     );
 }
