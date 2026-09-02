@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "before": "exam-4col-34-stage3.jpg",
+  "after": "exam-4col-34-corrected.jpg",
+  "diff": "exam-4col-34-diff.png",
+  "width": 1280,
+  "height": 720,
+  "threshold": 0.1,
+  "includeAntialiasing": false,
+  "differingPixels": 744,
+  "differingPercent": 0.0807,
+  "coordinatesAndSurfacesEqual": true,
+  "note": "동일 viewport·4열·34%·scroll의 browser JPEG compositor 화면 비교다. footer load time과 probe 상태 문구 차이를 포함한다."
+}

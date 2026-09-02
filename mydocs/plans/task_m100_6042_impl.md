@@ -1,7 +1,7 @@
 # 구현 계획 — Task M100 #6042
 
 - 작성일: 2026-08-31 KST
-- 상태: **Stage 5 측정 중단, Stage 4 보정 재승인 대기**. 역방향 exact cache thrash를 확인했다.
+- 상태: **Stage 4 보정 완료·재수용 조건 통과, Stage 5 확장 matrix 재개 대기**
 - 현재 기준: #6467 `23b5bcf73f6e8659a90b25ebfde1311e1965364f`
 - 역사 Stage 1 측정 기준: #6467 `ba68cd655aed5fd94804f725c033cf615231ce4b`
 - branch: `codex/issue-6042-page-virtualization`
@@ -10,6 +10,7 @@
 - Stage 3 결과: [완료 보고](../working/task_m100_6042_stage3.md)
 - Stage 4 결과: [완료 보고](../working/task_m100_6042_stage4.md)
 - Stage 5 결과: [중단 보고](../working/task_m100_6042_stage5.md)
+- Stage 4 보정 결과: [검증 보고](../working/task_m100_6042_stage4_correction.md)
 
 ## 1. 경계와 파일별 변경안
 
@@ -222,7 +223,7 @@ PageRenderer의 기존 job identity/token 가드를 유지하되, `canvas.parent
 차단한다. 공유 image decoder 자체를 무조건 취소하지 않고 해당 렌더 작업의 결과 적용 권한을 취소한다.
 reset/dispose는 예약·가드를 먼저 무효화해 reentrant focus 이벤트가 이전 작업을 부활시키지 못하게 한다.
 
-### 5.4 Stage 5 발견에 따른 보정안 — 재승인 대기
+### 5.4 Stage 5 발견에 따른 보정 — 완료
 
 Stage 5의 `exam_kor` 4열·34% 역방향 20회에서 Stage 4가 기준선보다 매회 main raster 두 쪽을 더
 수행했다. 대표 trace는 Stage 3의 `18 → 19 → 4`와 exact hit `5 → 6 → 7`이 Stage 4에서 exact hit
@@ -252,9 +253,15 @@ surface가 아직 이전 큰 actual 크기인 동안 새 detached bundle을 `put
    `overBudgetMandatory` prefetch가 raster 0인지 확인한다.
 
 같은 A/B를 다시 실행해 `exam_kor` 역방향 raster가 기준선 3회 이하이고 p50/p95가 사전 경보선 안이어야
-한다. 동시에 178쪽 cold first-visible·visible-stable·retained 개선, 최종 ledger, 1·2쪽 zoom fast path를
-다시 검증한다. 이 보정은 [Stage 5 보고](../working/task_m100_6042_stage5.md)의 사용자 재승인 전 구현하지
-않는다.
+한다. 보정 커밋 `63d29e68b`는 work를 `visible`·`retained-transition`·`prefetch`로 구분하고 active stale
+surface를 target descriptor 비용으로 예약한다. missing prefetch는 승인·dispatch 두 경계에서 mandatory
+예약과 실제 ledger를 확인하며, active 전환은 입력 기회를 남기는 한 쪽 단위 task로 진행한다.
+
+[보정 보고](../working/task_m100_6042_stage4_correction.md)의 교차 A/B에서 `exam_kor` 역방향 raster는
+3회로 복구됐고 retained p50/p95 증가는 4.2/4.6ms로 고정 경보선 안이다. 178쪽 `hwpspec` warm 결과와
+최종 ledger, 동일 배치의 좌표·surface·physical pixel도 동등했다. cold first-visible, 1·2쪽 zoom fast
+path를 포함한 전체 matrix는 기존 Stage 5 증거와 결정론적 회귀 테스트만으로 대체하지 않고 Stage 5에서
+계속 검증한다.
 
 ## 6. Stage 5~6 검증과 철회 조건
 
