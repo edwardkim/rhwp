@@ -2,6 +2,7 @@
 
 - **실행일**: 2026-09-03 KST
 - **제품 commit**: `9bc475bfb`
+- **최신 devel 보존 merge**: `17dbbef65` (`upstream/devel@8d4c25d01`)
 - **integration 배치**: 기존 `tests/issue_838_field_set_value.rs`만 강화
 - **파생 source**: 제출 대상 0건
 
@@ -50,8 +51,13 @@ HWP5는 LineSeg 수·시작·vpos의 저장 보존을 요구한다. HWPX는 편�
 | `issue_1893` | 1/1 PASS |
 | **합계** | **56/56 PASS** |
 
-manifest check 기준은 `1120 sources / 4808 static test attrs / 48/48 integration targets /
-nextest 최소 6559 cases`다. `cargo fmt --all`과 `git diff --check`도 통과했다.
+최초 제품 head와 최신 devel 보존 merge 뒤에 focused 56건을 각각 통과했다. 최신 merge head의
+manifest check 기준은 `1129 sources / 4821 static test attrs / 48/48 integration targets /
+nextest 최소 6559 cases`다. `cargo fmt --all -- --check`와 `git diff --check`도 통과했다.
+
+원격 devel은 최초 기준 `2edbe62e5`에서 `8d4c25d01`로 20커밋 전진했다. renderer·표·문단 layout
+변경을 포함했지만 제품 파일 충돌은 없었다. 같은 날짜 오늘할일의 후행 기록 충돌 한 건만 양쪽을
+모두 보존해 해소했고, 정상 merge commit `17dbbef65` 뒤 전체 focused 결과는 그대로 56/56이다.
 
 ## 4. Stage 4 인계
 
