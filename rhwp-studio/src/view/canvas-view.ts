@@ -507,18 +507,14 @@ export class CanvasView {
     const scrollX = this.viewportManager.getScrollX();
     const { width: vpWidth, height: vpHeight } = this.viewportManager.getViewportSize();
 
-    const prefetchPages = this.virtualScroll.getPrefetchPages(
+    const visibility = this.virtualScroll.getVisibilitySnapshot(
       scrollY,
       vpHeight,
       scrollX,
       vpWidth,
     );
-    const visiblePages = this.virtualScroll.getVisiblePages(
-      scrollY,
-      vpHeight,
-      scrollX,
-      vpWidth,
-    );
+    const visiblePages = [...visibility.visiblePages];
+    const prefetchPages = [...visibility.prefetchPages];
     const visibleSet = new Set(visiblePages);
 
     // 벗어난 페이지 해제
@@ -1368,7 +1364,7 @@ export class CanvasView {
     this.headerFooterEditState = null;
     this.pageRenderer.setPageMarginGuideEdges('both');
     this.activePageSnapshot = null;
-    this.virtualScroll.resetAutoColumnCommit();
+    this.virtualScroll.reset();
     this.previousEffectiveDpr.clear();
     this.renderSurfaceEnvironmentKey = null;
     if (hadActivePage) this.eventBus.emit('active-page-changed', null);

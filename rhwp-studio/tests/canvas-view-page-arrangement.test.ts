@@ -104,15 +104,22 @@ test('배치와 배율 transaction은 표준 zoom 이벤트를 유지하고 최�
   );
 });
 
-test('가로 쪽 이동은 배치와 함께 한 번에 전환하고 가로 가시 범위를 사용한다', () => {
+test('가로 쪽 이동은 배치와 함께 한 번에 전환하고 단일 가시성 snapshot을 사용한다', () => {
   assert.match(
     canvasViewSource,
     /eventBus\.on\('page-view-settings-changed',[\s\S]*?this\.setPageViewSettings/,
   );
   assert.match(
     canvasViewSource,
-    /getVisiblePages\([\s\S]*?scrollX,[\s\S]*?vpWidth/,
+    /getVisibilitySnapshot\([\s\S]*?scrollX,[\s\S]*?vpWidth/,
   );
+  const visibilityMethod = classMethodSource('updateVisiblePages', 'renderHeaderFooterEditOverlays');
+  assert.equal(
+    visibilityMethod.match(/getVisibilitySnapshot\(/g)?.length,
+    1,
+    'visible과 prefetch는 같은 snapshot을 한 번만 소비해야 한다',
+  );
+  assert.doesNotMatch(visibilityMethod, /get(?:Visible|Prefetch)Pages\(/);
   const method = classMethodSource('setPageViewSettings', 'getViewportManager');
   assert.match(method, /resolvePageViewSettings/);
   assert.doesNotMatch(method, /document-(?:changed|mutated)/);
@@ -248,6 +255,23 @@ test('실제 CanvasView zoom 경로는 자동 열 commit과 Canvas pool 단일 �
 
     assert.equal(layoutCommitCount, 4, '초기 1회와 zoom event당 1회만 레이아웃 commit');
     assert.equal(removeCount, 3, 'settled zoom마다 기존 Canvas를 반환한 뒤 하나만 다시 할당');
+
+    view.cancelPendingPrefetch = () => undefined;
+    view.currentVisiblePages = [0];
+    view.currentRetainedPages = [0];
+    view.editingPageIndex = null;
+    view.headerFooterEditState = null;
+    view.activePageSnapshot = null;
+    view.previousEffectiveDpr = new Map();
+    (view.pageRenderer as Record<string, unknown>).setPageMarginGuideEdges = () => undefined;
+    (scrollContent as Record<string, unknown>).replaceChildren = () => { children.length = 0; };
+    invoke('reset');
+    assert.equal(virtualScroll.pageCount, 0, 'CanvasView reset은 이전 문서 geometry도 함께 비운다');
+    assert.deepEqual(
+      virtualScroll.getVisibilitySnapshot(scrollTop, 600, scrollLeft, 817).visiblePages,
+      [],
+      'reset 뒤 늦은 viewport 갱신은 이전 page를 요청하지 않는다',
+    );
   } finally {
     if (previousDocument) {
       Object.defineProperty(globalThis, 'document', previousDocument);

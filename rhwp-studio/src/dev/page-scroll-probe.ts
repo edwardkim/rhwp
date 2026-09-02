@@ -158,7 +158,9 @@ export function installPageScrollProbe(
 
   const observe = (name: string, call: BoundaryObservation) => {
     const page = /^(wasm\.|raster\.|page\.|pool\.|image\.)/.test(name) && typeof call.args[0] === 'number' ? call.args[0] : null;
-    const units = name === 'visibility.linear' ? vs.pageCount : 0;
+    const units = name === 'visibility.snapshot'
+      ? Number((call.result as { queryStats?: { pagesExamined?: number } } | null)?.queryStats?.pagesExamined ?? 0)
+      : 0;
     trace.count(call.token, name, call.startedAt, call.endedAt, units, page);
     if (call.failed) { diagnostic(call.error, name); trace.finish('interrupted', name); }
     if (name === 'document.begin' || name === 'document.blank' || name === 'document.refresh') {
@@ -203,7 +205,7 @@ export function installPageScrollProbe(
 
   const boundaries: [object, string, string][] = [
     [vm, 'setZoom', 'zoom.set'], [vm, 'smoothZoomTo', 'zoom.smooth'],
-    [vs, 'getVisiblePages', 'visibility.linear'], [vs, 'getPrefetchPages', 'visibility.prefetch'],
+    [vs, 'getVisibilitySnapshot', 'visibility.snapshot'],
     [cv, 'updateVisiblePages', 'visibility.update'], [cv, 'refreshRenderSurfacePlan', 'budget.refresh'],
     [cv, 'renderCanvas', 'raster.main'], [cv, 'renderPage', 'page.render'],
     [cv, 'onZoomChanged', 'geometry.zoom'], [cv, 'prepareDocumentLoad', 'document.begin'],

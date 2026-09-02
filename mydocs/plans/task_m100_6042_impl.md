@@ -1,11 +1,12 @@
 # 구현 계획 — Task M100 #6042
 
 - 작성일: 2026-08-31 KST
-- 상태: **Stage 2 승인·착수**. Stage 3 이후 제품 설계는 미구현.
+- 상태: **Stage 2 구현·검증 완료, Stage 3 승인 대기**. Stage 3 이후 제품 설계는 미구현.
 - 현재 기준: #6467 `23b5bcf73f6e8659a90b25ebfde1311e1965364f`
 - 역사 Stage 1 측정 기준: #6467 `ba68cd655aed5fd94804f725c033cf615231ce4b`
 - branch: `codex/issue-6042-page-virtualization`
 - 수행 범위·단계·fixture·수용 기준: [수행 계획서](task_m100_6042.md)
+- Stage 2 결과: [완료 보고](../working/task_m100_6042_stage2.md)
 
 ## 1. 경계와 파일별 변경안
 
@@ -52,7 +53,7 @@ active/focused snapshot 경로로 전달하고, ruler rAF를 raster 완료 뒤�
 PNG readback, trace 직렬화는 별도 명시 실행으로 뺀다. 고정 용량 ring buffer를 사용한다. #6521의
 `zoom-performance.ts`는 계약 참고 자료일 뿐 cold image·fallback·document switch 검증 없이 복사하지 않는다.
 
-## 3. Stage 2 — 행 인덱스와 visibility snapshot
+## 3. Stage 2 — 행 인덱스와 visibility snapshot (완료)
 
 ### 3.1 Geometry의 단일 권위
 
