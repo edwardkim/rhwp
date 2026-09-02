@@ -93,12 +93,13 @@ fn issue_6036_yoongothic_logo_advances_use_real_metrics() {
     let gap1 = glyphs[1].0 - glyphs[0].0;
     let gap2 = glyphs[2].0 - glyphs[1].0;
 
-    // 글리프 간 전진 = 한글 0.88em + fwSpace 0.5em ≈ 1.3~1.4em.
-    // 메트릭 부재(맑은 고딕 대체)면 1.55em+ 로 벌어져 글상자 clip 을 깎는다.
+    // 글리프 간 전진 = 한글 0.88em + fwSpace 0.25em ≈ 1.13em ([#6644] 고정폭 빈칸은
+    // 한/글 실측 0.25em; 종전 0.5em 이던 때는 1.3~1.4em 이었다).
+    // 메트릭 부재(맑은 고딕 대체)면 한글 1.05em+ 로 벌어져 1.30em+ 가 되고 글상자 clip 을 깎는다.
     for gap in [gap1, gap2] {
         let em = gap / fs;
         assert!(
-            (1.15..=1.48).contains(&em),
+            (1.00..=1.25).contains(&em),
             "로고 글리프 전진 {em:.2}em — 윤고딕 720 실메트릭(0.88em)이 아니라 \
              대체 폭으로 측정됨 (gap {gap:.1}px @ fs {fs:.1})",
         );

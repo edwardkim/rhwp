@@ -1123,7 +1123,13 @@ pub(crate) fn char_width_decision<'a>(
         };
     }
     if c == '\u{2007}' {
-        let base_width_px = font_size * 0.5;
+        // [#6644] HWP 고정폭 빈칸(제어 문자 31)은 유니코드 FIGURE SPACE(숫자 폭 0.5em)가
+        // 아니라 한/글의 빈칸이고, 한/글은 이를 0.25em(× 장평)으로 전진한다.
+        // 한/글 2022 PDF 글리프 origin 실측: k-water-rfp 8쪽 "업체␣중" 16px 장평 1.0 →
+        // 4.0px, exam_kor 1쪽 "제␣1␣교시" 26.2px 장평 0.849 → 5.6px, exam_social 2쪽
+        // 머리말 "2␣(" 41.7px 장평 0.95 → 9.9px. 0.5em 이던 종전에는 exam_kor 5쪽
+        // "㉠␣[그림]" 묶음이 장당 3.4px 씩 밀렸다.
+        let base_width_px = font_size * 0.25;
         let final_width_px = base_width_px * ratio
             + glyph_letter_spacing(style.letter_spacing, base_width_px * ratio, font_size)
             + style.extra_char_spacing;
