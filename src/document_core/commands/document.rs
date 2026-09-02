@@ -38,8 +38,36 @@ pub struct HwpExportVerification {
     pub recovered: bool,
 }
 
-type PageBorderFillExtras = Vec<crate::model::page::PageBorderFill>;
-type HwpPageBorderFillOverlay = Vec<(PageBorderFillExtras, Vec<Vec<Option<PageBorderFillExtras>>>)>;
+/// One immutable HWP-lowered document shared by serialization and verification.
+///
+/// Callers may inspect the exact IR that produces the bytes, but cannot run a
+/// second partial lowering pipeline or mutate this adapter-owned snapshot.
+pub struct HwpExportSnapshot {
+    document: Document,
+}
+
+impl HwpExportSnapshot {
+    pub fn document(&self) -> &Document {
+        &self.document
+    }
+
+    fn serialize_with<T>(
+        &self,
+        serialize: impl FnOnce(&Document) -> Result<T, crate::serializer::SerializeError>,
+    ) -> Result<T, HwpError> {
+        serialize(&self.document).map_err(|error| HwpError::RenderError(error.to_string()))
+    }
+
+    pub fn serialize(&self) -> Result<Vec<u8>, HwpError> {
+        self.serialize_with(crate::serializer::serialize_document)
+    }
+
+    pub fn serialize_with_password(&self, password: &[u8]) -> Result<Vec<u8>, HwpError> {
+        self.serialize_with(|document| {
+            crate::serializer::serialize_hwp_with_password(document, password)
+        })
+    }
+}
 
 const MAX_EXACT_FONT_INSTANCE_OPTIONS_BYTES: usize = 16 * 1024;
 
@@ -1473,99 +1501,28 @@ impl DocumentCore {
             .map_err(|e| HwpError::RenderError(e.to_string()))
     }
 
-    /// HWPX 원본의 pageBorderFill XML 구조를 저장 전 보관한다.
+    /// Run format lowering and serialization against one disposable snapshot.
     ///
-    /// 한컴 HWP5 출력은 구역마다 세 PAGE_BORDER_FILL record가 필요하다. 하지만 HWPX
-    /// 원본은 일반적으로 BOTH 하나만 가지므로, adapter가 채운 EVEN/ODD는 저장 직후
-    /// `SectionDef`와 serializer가 읽는 `Control::SectionDef`에서 함께 복원한다.
-    fn snapshot_hwpx_page_border_fill_overlay(&self) -> Option<HwpPageBorderFillOverlay> {
-        // [#5933] HML 출처도 저장 직전에 PBF 를 3개로 채우므로(HWP5 스트림 계약),
-        // 저장 뒤 live IR 은 원래 형상(단일 BOTH)으로 되돌린다 — HWPX 와 같은 계약.
-        matches!(
-            self.source_format,
-            crate::parser::FileFormat::Hwpx | crate::parser::FileFormat::Hml
-        )
-        .then(|| {
-            self.document
-                .sections
-                .iter()
-                .map(|section| {
-                    (
-                        section.section_def.extra_page_border_fills.clone(),
-                        section
-                            .paragraphs
-                            .iter()
-                            .map(|paragraph| {
-                                paragraph
-                                    .controls
-                                    .iter()
-                                    .map(|control| match control {
-                                        Control::SectionDef(section_def) => {
-                                            Some(section_def.extra_page_border_fills.clone())
-                                        }
-                                        _ => None,
-                                    })
-                                    .collect::<Vec<_>>()
-                            })
-                            .collect::<Vec<_>>(),
-                    )
-                })
-                .collect::<Vec<_>>()
-        })
-    }
+    /// The adapter may insert controls, rewrite image tone values, and rebuild
+    /// raw DocInfo caches. None of those output-format decisions are allowed to
+    /// become the editable document after save.
+    pub fn prepare_hwp_export_snapshot(&self) -> HwpExportSnapshot {
+        use crate::document_core::converters::hwpx_to_hwp::convert_if_hwpx_source;
 
-    fn restore_hwpx_page_border_fill_overlay(&mut self, saved_extras: HwpPageBorderFillOverlay) {
-        debug_assert_eq!(saved_extras.len(), self.document.sections.len());
-        for (section, (section_extras, control_extras)) in
-            self.document.sections.iter_mut().zip(saved_extras)
-        {
-            section.section_def.extra_page_border_fills = section_extras.clone();
-            for (paragraph_idx, paragraph) in section.paragraphs.iter_mut().enumerate() {
-                for (control_idx, control) in paragraph.controls.iter_mut().enumerate() {
-                    if let Control::SectionDef(section_def) = control {
-                        let original_extras = control_extras
-                            .get(paragraph_idx)
-                            .and_then(|paragraph_controls| paragraph_controls.get(control_idx))
-                            .and_then(|extras| extras.as_ref())
-                            .unwrap_or(&section_extras);
-                        section_def.extra_page_border_fills = original_extras.clone();
-                    }
-                }
-            }
-        }
+        let mut snapshot = self.document.clone();
+        let _report = convert_if_hwpx_source(&mut snapshot, self.source_format);
+        Self::refresh_doc_info_raw_cache(&mut snapshot);
+        HwpExportSnapshot { document: snapshot }
     }
-
-    /// Adapter 적용 뒤 직렬화하고, HWPX 원본에 한해 pageBorderFill overlay를 되돌린다.
-    /// 다른 adapter materialization은 기존처럼 live IR에 유지한다.
-    fn serialize_hwp_after_adapter<T>(
-        &mut self,
-        saved_hwpx_page_border_fills: Option<HwpPageBorderFillOverlay>,
-        serialize: impl FnOnce(&Document) -> Result<T, crate::serializer::SerializeError>,
-    ) -> Result<T, HwpError> {
-        let result = serialize(&self.document);
-        if let Some(saved_extras) = saved_hwpx_page_border_fills {
-            self.restore_hwpx_page_border_fill_overlay(saved_extras);
-        }
-        result.map_err(|error| HwpError::RenderError(error.to_string()))
-    }
-
     /// HWPX 출처 IR 을 HWP 호환 형태로 변환 후 HWP 5.0 CFB 바이너리로 직렬화한다 (#178).
     ///
     /// HWP 출처는 어댑터가 no-op 이므로 `export_hwp_native` 와 동일 결과.
     /// 사용자 시나리오: HWPX 로 연 문서를 편집 후 HWP 로 저장하는 모든 경로의 단일 진입점.
     ///
     /// HWPX 원본의 단일 BOTH pageBorderFill은 HWP 저장에는 세 record로 materialize하고,
-    /// 저장 후 live IR에서는 원래 구조로 복원한다.
+    /// live IR에는 반영하지 않는다.
     pub fn export_hwp_with_adapter(&mut self) -> Result<Vec<u8>, HwpError> {
-        use crate::document_core::converters::hwpx_to_hwp::convert_if_hwpx_source;
-
-        let saved_hwpx_page_border_fills = self.snapshot_hwpx_page_border_fill_overlay();
-        let _report = convert_if_hwpx_source(&mut self.document, self.source_format);
-        self.refresh_doc_info_raw_cache();
-        self.serialize_hwp_after_adapter(
-            saved_hwpx_page_border_fills,
-            crate::serializer::serialize_document,
-        )
+        self.prepare_hwp_export_snapshot().serialize()
     }
 
     /// [#4432] DocInfo raw 캐시 재밀봉 — dirty(또는 봉인 불일치) 상태로 저장에
@@ -1575,8 +1532,7 @@ impl DocumentCore {
     /// "직렬화 성공 지점에서 되돌리는 것이 자연스러운 자리" 를 &mut 저장
     /// 진입점에서 구현한 것이다. raw 캐시가 없던 문서(HWPX/HWP3 출처)는 건드리지
     /// 않는다(raw_stream 유무가 출처 판별에 쓰이는 경로를 오염시키지 않기 위함).
-    fn refresh_doc_info_raw_cache(&mut self) {
-        let doc = &mut self.document;
+    fn refresh_doc_info_raw_cache(doc: &mut Document) {
         if doc.doc_info.raw_stream.is_none() {
             return;
         }
@@ -1599,21 +1555,9 @@ impl DocumentCore {
 
     /// 어댑터를 **복제본에 적용해** HWP5 를 낸다 — 호출자의 IR 은 그대로다.
     ///
-    /// `export_hwp_with_adapter` 는 살아 있는 IR 을 직접 정규화한다. 저장 직후 종료하는
-    /// CLI 에서는 관측되지 않지만, 저장 뒤에도 계속 쓰이는 핸들(MCP 세션)에서는 저장이
-    /// 문서를 바꿔 버린다. 특히 어댑터는 `Hwpx | Hwp3` 양쪽에서 돌면서 각 구역 첫 문단의
-    /// `controls[0]` 에 `Control::SectionDef` 를 끼워 넣는데, 같은 문단의
-    /// `field_ranges[].control_idx` 는 밀어 주지 않는다 — 저장 한 번에 누름틀이 가리키는
-    /// 컨트롤이 한 칸씩 어긋난다. 저장은 스냅숏이어야 하므로 복제본에만 어댑터를 태운다.
-    ///
-    /// 비용은 `Document` 1회 clone 이다. 그 값을 치를 이유가 없는 CLI 경로는
-    /// `export_hwp_with_adapter` 를 계속 쓴다.
+    /// 모든 HWP lowering entrypoint가 같은 snapshot helper로 수렴한다.
     pub fn export_hwp_with_adapter_snapshot(&self) -> Result<Vec<u8>, HwpError> {
-        use crate::document_core::converters::hwpx_to_hwp::convert_if_hwpx_source;
-        let mut snapshot = self.document.clone();
-        let _report = convert_if_hwpx_source(&mut snapshot, self.source_format);
-        crate::serializer::serialize_document(&snapshot)
-            .map_err(|e| HwpError::RenderError(e.to_string()))
+        self.prepare_hwp_export_snapshot().serialize()
     }
 
     /// 스냅숏 HWP 저장 바이트와 바로 그 산출물의 내용 손실을 함께 반환한다 (#4430).
@@ -1624,11 +1568,8 @@ impl DocumentCore {
     pub fn export_hwp_with_adapter_snapshot_with_report(
         &self,
     ) -> Result<crate::serializer::SerializedDocument, HwpError> {
-        use crate::document_core::converters::hwpx_to_hwp::convert_if_hwpx_source;
-        let mut snapshot = self.document.clone();
-        let _adapter_report = convert_if_hwpx_source(&mut snapshot, self.source_format);
-        crate::serializer::serialize_document_with_report(&snapshot)
-            .map_err(|error| HwpError::RenderError(error.to_string()))
+        self.prepare_hwp_export_snapshot()
+            .serialize_with(crate::serializer::serialize_document_with_report)
     }
 
     /// 비밀번호 HWP 스냅숏 저장 + 내용 손실 보고 (#4430).
@@ -1636,11 +1577,10 @@ impl DocumentCore {
         &self,
         password: &[u8],
     ) -> Result<crate::serializer::SerializedDocument, HwpError> {
-        use crate::document_core::converters::hwpx_to_hwp::convert_if_hwpx_source;
-        let mut snapshot = self.document.clone();
-        let _adapter_report = convert_if_hwpx_source(&mut snapshot, self.source_format);
-        crate::serializer::serialize_hwp_with_password_and_report(&snapshot, password)
-            .map_err(|error| HwpError::RenderError(error.to_string()))
+        self.prepare_hwp_export_snapshot()
+            .serialize_with(|document| {
+                crate::serializer::serialize_hwp_with_password_and_report(document, password)
+            })
     }
 
     /// HWPX 출처 어댑터를 적용한 뒤 HWP5 EncryptVersion 4 비밀번호 문서로 저장한다.
@@ -1651,14 +1591,8 @@ impl DocumentCore {
         &mut self,
         password: &[u8],
     ) -> Result<Vec<u8>, HwpError> {
-        use crate::document_core::converters::hwpx_to_hwp::convert_if_hwpx_source;
-
-        let saved_hwpx_page_border_fills = self.snapshot_hwpx_page_border_fill_overlay();
-        let _report = convert_if_hwpx_source(&mut self.document, self.source_format);
-        self.refresh_doc_info_raw_cache();
-        self.serialize_hwp_after_adapter(saved_hwpx_page_border_fills, |document| {
-            crate::serializer::serialize_hwp_with_password(document, password)
-        })
+        self.prepare_hwp_export_snapshot()
+            .serialize_with_password(password)
     }
 
     /// 어댑터 적용 + 직렬화 + 자기 재로드 검증을 한 번에 수행한다 (#178 Stage 6).
