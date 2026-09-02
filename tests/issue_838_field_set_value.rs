@@ -14,7 +14,7 @@ use rhwp::model::paragraph::{LineSeg, Paragraph};
 #[derive(Clone, Copy)]
 enum LineSegRoundtrip {
     Persist,
-    OmitSyntheticHwpx,
+    RecomputeSyntheticHwpx,
 }
 
 fn load_sample(relative: &str) -> DocumentCore {
@@ -104,7 +104,7 @@ fn assert_field_layout_roundtrip(
             line_position_signature(before),
             "persisted field owner LineSeg count/start/vpos should survive roundtrip"
         ),
-        LineSegRoundtrip::OmitSyntheticHwpx => {
+        LineSegRoundtrip::RecomputeSyntheticHwpx => {
             assert!(
                 before
                     .line_segs
@@ -113,8 +113,12 @@ fn assert_field_layout_roundtrip(
                 "fresh HWPX field reflow must be marked as derived layout"
             );
             assert!(
-                after.line_segs.is_empty(),
-                "derived HWPX LineSeg must be omitted so the consumer recomputes layout"
+                after.line_segs.is_empty()
+                    || after
+                        .line_segs
+                        .iter()
+                        .all(|line| line.tag & LineSeg::TAG_IMPLEMENTATION_PROPERTY != 0),
+                "reloaded HWPX LineSeg must remain absent or implementation-derived"
             );
         }
     }
@@ -244,7 +248,12 @@ fn set_field_value_by_id_updates_virtual_hwpx_cell_and_roundtrips_layout() {
 
     let saved = core.export_hwpx_native().expect("export edited HWPX");
     let reparsed = DocumentCore::from_bytes(&saved).expect("reparse edited HWPX");
-    assert_field_layout_roundtrip(&core, &reparsed, NAME, LineSegRoundtrip::OmitSyntheticHwpx);
+    assert_field_layout_roundtrip(
+        &core,
+        &reparsed,
+        NAME,
+        LineSegRoundtrip::RecomputeSyntheticHwpx,
+    );
 }
 
 #[test]
@@ -301,5 +310,10 @@ fn set_field_value_by_name_at_reflows_deep_hwpx_clickhere() {
         .expect("set deep HWPX ClickHere by occurrence");
     let saved = core.export_hwpx_native().expect("export edited HWPX");
     let reparsed = DocumentCore::from_bytes(&saved).expect("reparse edited HWPX");
-    assert_field_layout_roundtrip(&core, &reparsed, NAME, LineSegRoundtrip::OmitSyntheticHwpx);
+    assert_field_layout_roundtrip(
+        &core,
+        &reparsed,
+        NAME,
+        LineSegRoundtrip::RecomputeSyntheticHwpx,
+    );
 }

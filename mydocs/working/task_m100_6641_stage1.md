@@ -45,7 +45,7 @@ HWPX 저장기는 #5847 안전 규약에 따라 이를 파일에서 생략한다
 | `samples/issue6102/36444579_traffic_fine_exemption.hwpx` | `기관명` | 표 셀 가상 필드 | by-id range 초과 |
 | `samples/76076_regulatory_analysis.hwp` | `안건명` | 표 셀 | 저장 왕복 LineSeg·값 일치 |
 | `samples/basic/BlogForm_BookReview.hwp` | `이곳에 책 표지 그림을 넣으세요.` | 표 셀 → 글상자 | 저장 왕복 LineSeg·값 일치 |
-| `samples/issue1893_clickhere_field_roundtrip.hwpx` | 조직명 XPath형 필드명 | 표 셀 → 표 셀 | 편집 직후 합성 LineSeg 유효, HWPX 저장 뒤 의도대로 생략 |
+| `samples/issue1893_clickhere_field_roundtrip.hwpx` | 조직명 XPath형 필드명 | 표 셀 → 표 셀 | 편집 직후 합성 LineSeg 유효, 파일에서는 생략·재적재 시 조건별 재합성 |
 
 깊은 HWPX fixture의 무편집 `export-hwpx --verify`는 diff 0이다. 필드 mutation 뒤 strict verify는
 `ParagraphLinesegs expected=1 actual=0` 한 건을 보고한다. 메모리 쪽 한 줄은 모두
