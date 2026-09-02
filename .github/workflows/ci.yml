@@ -1156,8 +1156,9 @@ jobs:
   native-skia-tests:
     name: Native Skia tests
     runs-on: ubuntu-latest
-    # [#3284] 러너 hang 을 실패로 드러내는 상한 (성능 목표 아님) — 실험 종료 후에도 유지
-    timeout-minutes: 30
+    # v0.8.6 tag run 33584174087은 release profile 컴파일 중 기존 30분 상한에
+    # 도달했다. 태그/main의 cold-cache release-grade 실행을 수용하되 무한 실행은 막는다.
+    timeout-minutes: 60
     # [#5164 Stage 3] Native Skia는 독립 runner에서 실행되므로 lint·frontend를 기다리지 않는다.
     # 각 lane의 성공·skip 계약은 최종 Build & Test 집계 job이 함께 검증한다.
     needs: [preflight]
