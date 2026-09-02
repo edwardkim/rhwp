@@ -4463,7 +4463,9 @@ pub fn generate_embedded_font_style(
     embedded_fonts: &std::collections::HashMap<String, Vec<u8>>,
 ) -> String {
     let mut css = String::new();
-    for font_name in renderer.font_codepoints().keys() {
+    let mut font_names = renderer.font_codepoints().keys().collect::<Vec<_>>();
+    font_names.sort_unstable();
+    for font_name in font_names {
         if let Some(line) = embedded_font_face_css(font_name, embedded_fonts) {
             css.push_str(&line);
         }
@@ -4485,12 +4487,14 @@ pub fn generate_font_style(
     if codepoints.is_empty() {
         return String::new();
     }
+    let mut font_names = codepoints.keys().collect::<Vec<_>>();
+    font_names.sort_unstable();
 
     let mut css = String::new();
 
     match renderer.font_embed_mode {
         FontEmbedMode::Style => {
-            for font_name in codepoints.keys() {
+            for &font_name in &font_names {
                 if let Some(line) = embedded_font_face_css(font_name, embedded_fonts) {
                     css.push_str(&line);
                     continue;
@@ -4515,7 +4519,8 @@ pub fn generate_font_style(
             }
         }
         FontEmbedMode::Subset => {
-            for (font_name, chars) in codepoints.iter() {
+            for &font_name in &font_names {
+                let chars = &codepoints[font_name];
                 if let Some(line) = embedded_font_face_css(font_name, embedded_fonts) {
                     css.push_str(&line);
                     continue;
@@ -4524,16 +4529,18 @@ pub fn generate_font_style(
                 if let Some(font_path) = find_font_file(&regular_lookup) {
                     if let Ok(font_data) = std::fs::read(&font_path) {
                         // codepoint → glyph ID 변환 (ttf-parser cmap 사용)
-                        let mut remapper = subsetter::GlyphRemapper::new();
-                        if let Ok(face) = ttf_parser::Face::parse(&font_data, 0) {
-                            // glyph 0 (.notdef) 항상 포함
-                            remapper.remap(0);
-                            for ch in chars {
-                                if let Some(gid) = face.glyph_index(*ch) {
-                                    remapper.remap(gid.0);
-                                }
-                            }
-                        }
+                        let glyphs = ttf_parser::Face::parse(&font_data, 0)
+                            .map(|face| {
+                                chars
+                                    .iter()
+                                    .filter_map(|character| face.glyph_index(*character))
+                                    .map(|glyph| glyph.0)
+                                    .collect::<Vec<_>>()
+                            })
+                            .unwrap_or_default();
+                        // HashSet character order is intentionally irrelevant: stable glyph IDs
+                        // make subset bytes and the embedded base64 deterministic.
+                        let remapper = subsetter::GlyphRemapper::new_from_glyphs_sorted(&glyphs);
                         // 서브셋 추출
                         match subsetter::subset(&font_data, 0, &remapper) {
                             Ok(subset_data) => {
@@ -4591,7 +4598,7 @@ pub fn generate_font_style(
             }
         }
         FontEmbedMode::Full => {
-            for font_name in codepoints.keys() {
+            for &font_name in &font_names {
                 if let Some(line) = embedded_font_face_css(font_name, embedded_fonts) {
                     css.push_str(&line);
                     continue;

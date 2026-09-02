@@ -17,8 +17,11 @@ use rhwp::renderer::render_tree::{
     PlaceholderNode, RawSvgNode, RectangleNode, RenderLayerInfo, RenderNode, RenderNodeType,
     TableNode, TextRunNode,
 };
+use rhwp::renderer::svg::FontEmbedMode;
 use rhwp::renderer::svg_layer::SvgLayerRenderer;
 use rhwp::renderer::{ShapeStyle, TextStyle};
+use rhwp::wasm_api::HwpDocument;
+use std::path::PathBuf;
 
 fn text_run(text: &str) -> TextRunNode {
     TextRunNode {
@@ -159,6 +162,89 @@ fn solid_rect(bounds: BoundingBox, color: u32) -> PaintOp {
             None,
         ),
     )
+}
+
+#[test]
+fn production_svg_routes_share_the_screen_layer_contract() {
+    for sample in ["samples/para-001.hwp", "samples/lseg-05-tab.hwp"] {
+        let bytes = std::fs::read(sample).expect("sample");
+        let document = HwpDocument::from_bytes(&bytes).expect("parse sample");
+
+        let production = document.render_page_svg_native(0).expect("production SVG");
+        let explicit = document
+            .render_page_svg_layer_with_profile_native(0, RenderProfile::Screen)
+            .expect("explicit screen SVG");
+        let font_route = document
+            .render_page_svg_with_fonts(0, FontEmbedMode::None, &[])
+            .expect("font-option SVG route");
+
+        assert_eq!(production, explicit, "{sample}: default route diverged");
+        assert_eq!(production, font_route, "{sample}: font route diverged");
+        assert!(production.starts_with("<svg"));
+        assert!(production.contains("body-clip-"));
+    }
+}
+
+#[test]
+fn production_svg_sorts_multiple_document_embedded_font_rules() {
+    let bytes = std::fs::read("samples/render-p35-font-native-bitmap.hwpx").expect("sample");
+    let mut document = HwpDocument::from_bytes(&bytes).expect("parse sample");
+    let mut model = document.document().clone();
+    let first_name = model.doc_info.font_faces[0][1].name.clone();
+    let mut second_font = model.doc_info.font_faces[0][1].clone();
+    second_font.name = "ZZZ Issue 6520 Embedded".to_string();
+    model.doc_info.font_faces[1][1] = second_font;
+    let paragraph = &mut model.sections[0].paragraphs[0];
+    paragraph.text = "가A".to_string();
+    paragraph.char_count = 2;
+    paragraph.char_offsets = vec![0, 1];
+    document.set_document(model);
+
+    let first = document.render_page_svg_native(0).expect("first SVG");
+    let second = document.render_page_svg_native(0).expect("second SVG");
+    assert_eq!(first, second);
+    let first_rule = first
+        .find(&format!("@font-face {{ font-family: \"{first_name}\""))
+        .expect("first embedded face rule");
+    let second_rule = first
+        .find("@font-face { font-family: \"ZZZ Issue 6520 Embedded\"")
+        .expect("second embedded face rule");
+    assert!(
+        first_rule < second_rule,
+        "embedded font rules must be name-sorted"
+    );
+}
+
+#[test]
+fn subset_font_bytes_are_deterministic_for_multiple_codepoints() {
+    let bytes = std::fs::read("samples/para-001.hwp").expect("sample");
+    let mut document = HwpDocument::from_bytes(&bytes).expect("parse sample");
+    let mut model = document.document().clone();
+    for font in model.doc_info.font_faces.iter_mut().flatten() {
+        font.name = "한컴돋움".to_string();
+        font.is_embedded = false;
+        font.resolved_bin_data_id = None;
+    }
+    let paragraph = &mut model.sections[0].paragraphs[0];
+    paragraph.text = "가나다ABC123".to_string();
+    paragraph.char_count = 9;
+    paragraph.char_offsets = (0..9).collect();
+    document.set_document(model);
+    let font_path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("ttfs/opensource");
+
+    let outputs = (0..8)
+        .map(|_| {
+            document
+                .render_page_svg_with_fonts(
+                    0,
+                    FontEmbedMode::Subset,
+                    std::slice::from_ref(&font_path),
+                )
+                .expect("subset SVG")
+        })
+        .collect::<Vec<_>>();
+    assert!(outputs[0].contains("data:font/opentype;base64,"));
+    assert!(outputs.windows(2).all(|pair| pair[0] == pair[1]));
 }
 
 #[test]

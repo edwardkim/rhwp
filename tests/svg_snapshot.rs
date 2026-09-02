@@ -21,8 +21,9 @@
 //! These tests assume:
 //! - `render_page_svg_native` output is deterministic for a fixed input
 //!   (no timestamps, no random IDs, no host-font-dependent glyph IDs).
-//! - Font embedding is OFF (`FontEmbedMode::None` via the native entry
-//!   point) so host system fonts cannot leak into the snapshot.
+//! - The native entry point embeds only document-owned font bytes and emits
+//!   their `@font-face` rules in sorted family-name order. Host font files are
+//!   never read by this path, so host state cannot leak into the snapshot.
 //!
 //! If a flake is observed, the first debugging step is to diff two
 //! back-to-back runs on the same machine. Host-specific variance
