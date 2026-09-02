@@ -1,8 +1,9 @@
 # rhwp v0.8.6
 
-v0.8.6은 v0.8.4 이후 2,214개 커밋과 262개 PR provenance를 통합한 누적 PATCH
-릴리스입니다. HWP/HWPX 문서의 조판·저장 충실도, Studio 편집, CLI·agent 표면,
-입력 안전성과 배포 신뢰성을 함께 보강했습니다. 기존 JSON 봉투 major는 유지합니다.
+v0.8.6은 v0.8.4 이후 기능 기준선의 2,214개 커밋에서 확인한 262개 PR provenance를
+바탕으로 준비한 누적 PATCH 릴리스입니다. 이후 버전·검증·릴리스 기록 commit은 이 계측
+범위와 분리합니다. HWP/HWPX 문서의 조판·저장 충실도, Studio 편집, CLI·agent 표면,
+입력 안전성과 배포 신뢰성을 함께 보강했으며 기존 JSON 봉투 major는 유지합니다.
 
 ## 주요 변경
 

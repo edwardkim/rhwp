@@ -8,9 +8,10 @@ This document records the major changes of the rhwp project.
 
 ## [0.8.6] — 2026-09-02
 
-> Cumulative PATCH release integrating 2,214 commits and provenance from 262 PRs since v0.8.4. It improves
-> document fidelity, Studio editing, CLI and agent surfaces, input safety, and release reliability while keeping
-> the existing JSON envelope major.
+> Cumulative PATCH release prepared from provenance for 262 PRs found in the 2,214-commit feature baseline
+> after v0.8.4. Later versioning, validation, and release-record commits are tracked separately from that measured
+> range. It improves document fidelity, Studio editing, CLI and agent surfaces, input safety, and release
+> reliability while keeping the existing JSON envelope major.
 
 ### Typesetting, rendering, and fonts
 
