@@ -11,6 +11,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -167,6 +168,27 @@ class TextFileEnvelopeEqTests(unittest.TestCase):
         detail = self.score("x", "x" * 100)
         self.assertFalse(detail["ok"], detail)
         self.assertEqual(detail["actual"], {"sha256": None, "bytes": 1})
+
+    def test_oversize_submitted_file_fails_before_file_read(self):
+        checks, _runner, _schema = load_core()
+        with mock.patch.object(checks, "MAX_TEXT_FILE_ENVELOPE_BYTES", 3):
+            detail = self.score(b"xxxx", "abc")
+        self.assertFalse(detail["ok"], detail)
+        self.assertEqual(detail["actual"], {"sha256": None, "bytes": 4})
+
+    def test_oversize_envelope_text_fails_without_echoing_content(self):
+        checks, _runner, _schema = load_core()
+        with mock.patch.object(checks, "MAX_TEXT_FILE_ENVELOPE_BYTES", 3):
+            detail = self.score("xxxx", "xxxx")
+        self.assertFalse(detail["ok"], detail)
+        self.assertIn("상한 초과", detail["actual"])
+        self.assertNotIn("xxxx", str(detail))
+
+    def test_invalid_utf8_fails_without_echoing_submitted_bytes(self):
+        detail = self.score(b"\xff\xfe", "ok")
+        self.assertFalse(detail["ok"], detail)
+        self.assertIn("전체 텍스트 대조 실패", detail["actual"])
+        self.assertNotIn("\\xff", str(detail))
 
 
 class SchemaAcceptanceTests(unittest.TestCase):
