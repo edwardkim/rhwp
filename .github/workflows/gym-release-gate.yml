@@ -38,6 +38,10 @@ jobs:
           scripts.tests.test_gym_benchmark_validation
           scripts.tests.test_gym_score
           scripts.tests.test_gym_packs
+          scripts.tests.test_gym_coverage
+          scripts.tests.test_gym_profiles
+          scripts.tests.test_gym_schema
+          scripts.tests.test_gym_pack_health
           scripts.tests.test_gym_audit
           scripts.tests.test_gym_certify
           scripts.tests.test_gym_build_baseline

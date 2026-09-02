@@ -41,6 +41,10 @@ class GymBenchmarkWorkflowTests(unittest.TestCase):
             "  full-benchmark:", maxsplit=1
         )[0]
         self.assertIn("scripts.tests.test_gym_benchmark_validation", contracts)
+        self.assertIn("scripts.tests.test_gym_coverage", contracts)
+        self.assertIn("scripts.tests.test_gym_profiles", contracts)
+        self.assertIn("scripts.tests.test_gym_schema", contracts)
+        self.assertIn("scripts.tests.test_gym_pack_health", contracts)
         self.assertIn("scripts.tests.test_gym_build_baseline", contracts)
         self.assertIn("scripts.tests.test_gym_discriminate", contracts)
         self.assertIn("scripts.tests.test_gym_trajectory", contracts)
