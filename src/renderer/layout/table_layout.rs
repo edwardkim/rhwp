@@ -210,9 +210,9 @@ fn stored_layout_relocated_empty_rowbreak_picture_resets_offset(
 use super::super::composer::effective_text_for_metrics;
 use super::super::{hwpunit_to_px, ShapeStyle};
 use super::border_rendering::{
-    apply_table_outer_border_fill, build_row_col_x, collect_cell_borders, create_border_line_nodes,
-    mark_cell_span_interior_covered, render_cell_diagonal, render_edge_borders,
-    render_transparent_borders,
+    apply_cellzone_border_fill, apply_table_outer_border_fill, build_row_col_x,
+    collect_cell_borders, create_border_line_nodes, mark_cell_span_interior_covered,
+    render_cell_diagonal, render_edge_borders, render_transparent_borders,
 };
 use super::text_measurement::{estimate_text_width, resolved_to_text_style};
 use super::utils::find_bin_data_bytes;
@@ -2453,6 +2453,7 @@ impl LayoutEngine {
                                 0.0,
                                 0.0,
                                 para_y,
+                                outer_host_stored_vpos_hu,
                                 allow_para_top_bleed,
                             )
                         } else {
@@ -2933,6 +2934,7 @@ impl LayoutEngine {
                 caption_height,
                 caption_spacing,
                 para_y,
+                outer_host_stored_vpos_hu,
                 allow_para_top_bleed,
             );
             if depth > 0 && render_caption {
@@ -3152,6 +3154,25 @@ impl LayoutEngine {
 
         if !cellzone_diagonal_nodes.is_empty() {
             table_node.children.extend(cellzone_diagonal_nodes);
+        }
+
+        // ── 5-0. cellzone 테두리 덮어쓰기 (#6619) ──
+        // zone 배경·대각선은 4-2 에서 이미 그렸다. 네 변은 셀 테두리 그리드가 다 찬
+        // 다음에 덮어써야 셀 고유 선을 이긴다(31쪽 점선 → zone 실선).
+        for zone in &table.zones {
+            if zone.border_fill_id == 0 {
+                continue;
+            }
+            let zone_idx = (zone.border_fill_id as usize).saturating_sub(1);
+            if let Some(zone_bs) = styles.border_styles.get(zone_idx) {
+                apply_cellzone_border_fill(
+                    &mut h_edges,
+                    &mut v_edges,
+                    &zone_bs.borders,
+                    zone,
+                    &table.cells,
+                );
+            }
         }
 
         // ── 5-1. 표 전체 외곽 테두리 보충 ──
@@ -4549,6 +4570,9 @@ impl LayoutEngine {
         caption_height: f64,
         caption_spacing: f64,
         para_y: Option<f64>,
+        // [#6598] 앵커 문단의 저장 흐름 상단(HWPUNIT). `para_y` 가 칼럼 상단으로 들어오는
+        // 경로를 이 값으로 바로잡는다.
+        stored_anchor_vpos_hu: Option<i32>,
         allow_para_top_bleed: bool,
     ) -> f64 {
         let table_treat_as_char = table.common.treat_as_char;
@@ -4576,6 +4600,45 @@ impl LayoutEngine {
 
             let page_h_approx = col_area.y * 2.0 + col_area.height;
             let vert_rel_to = table.common.vert_rel_to;
+            // [#6598] 문단 기준 표의 저장 흐름 상단. `Some` 이면 아래 `ref_y` 와
+            // `om_top_px` 가 같이 그 기준으로 옮겨간다(둘을 따로 켜면 1.9px 어긋난다).
+            //
+            // ⚠⚠ **입력이 모순인 경우만** 고친다. `para_y` 가 칼럼 상단과 같다는 것은
+            // "이 문단이 단의 첫 줄"이라는 뜻인데, 저장 사다리는 그 문단이 더 아래에서
+            // 시작한다고 적는다 — 둘 중 `para_y` 가 틀린 것이다.
+            //
+            // 이 두 조건을 다 요구하지 않고 "저장 vpos 가 para_y 보다 아래"만으로
+            // 넓히면 자리차지 표 핀 **57건**이 깨진다(실측). 정상 문서에서는 저장 vpos
+            // 가 문단 흐름 위치와 다른 게 오히려 흔하기 때문이다.
+            let para_anchor_y = para_y.unwrap_or(y_start);
+            let para_anchor_is_column_top = (para_anchor_y - col_area.y).abs() <= 0.5;
+            // ⚠ 흐름(`y_start`)이 이미 칼럼 상단을 지났다는 **독립 증거**가 있어야 한다.
+            // `y_start` 도 칼럼 상단이면 `para_y` 가 틀렸다고 볼 근거가 없다 — 이월된
+            // 표의 빈 host 가 정확히 그 형상이고(#6032: para_y=y_start=col_y,
+            // stored 65212=869.5px 는 **앞 쪽 말미** 좌표), 그때 저장 vpos 로 옮기면
+            // 그 축의 계약이 깨진다.
+            let flow_advanced_past_column_top = y_start > para_anchor_y + 0.5;
+            let para_stored_anchor_y =
+                if matches!(vert_rel_to, crate::model::shape::VertRelTo::Para)
+                    && para_anchor_is_column_top
+                    && flow_advanced_past_column_top
+                {
+                    stored_anchor_vpos_hu
+                        .filter(|hu| *hu > 0)
+                        .map(|hu| col_area.y + hwpunit_to_px(hu, self.dpi))
+                        .filter(|y| *y > para_anchor_y + 0.5)
+                        // ⚠⚠ 저장값이 **흐름을 뒷받침**할 때만 쓴다.
+                        //
+                        // 옳은 사례(2744465)는 저장 138.3 ↔ 흐름 139.9 로 1.6px 안이다 —
+                        // `para_y` 만 낡았고 나머지 둘은 같은 곳을 가리킨다. 반대로
+                        // `issue6147/156741101_press_release_band.hwpx` 는 저장 492.0 ↔
+                        // 흐름 135.8/323.4 로 169~356px 벌어져 있다. 그 저장값은 이
+                        // 배치와 무관한 좌표이고, 그걸 기준점으로 삼으면 뒤 내용이
+                        // 용지 밖으로 밀려 **off-canvas 10건**이 났다.
+                        .filter(|y| (*y - y_start).abs() <= 4.0)
+                } else {
+                    None
+                };
             // Task #297: Page는 본문 영역(body area) 기준, Paper는 용지 전체 기준
             // (HWP 스펙: Page=쪽 본문, Paper=용지 전체). 바탕쪽 문맥에서는
             // col_area = paper_area이므로 두 경로 결과가 동일하여 회귀 없음.
@@ -4590,7 +4653,22 @@ impl LayoutEngine {
                     }
                 }
                 crate::model::shape::VertRelTo::Para => {
-                    (anchor_y, col_area.height - (anchor_y - col_area.y).max(0.0))
+                    // [#6598] 문단 기준 오프셋의 기준점은 **앵커 문단의 흐름 상단**이다.
+                    //
+                    // 그런데 `para_y` 가 **칼럼 상단**으로 들어오는 경로가 있다
+                    // (`2744465` 1쪽: 표는 문단 1 의 컨트롤인데 `para_index=1`,
+                    // `y_offset=para_y=108.5=col_area.y`). 그러면 `v_offset` 전체가
+                    // 앵커 문단 진행량만큼 위로 뜬다 — 테두리 그림은 제자리인데 그 안
+                    // 양식이 통째로 31.3px 올라갔다.
+                    //
+                    // 저장 사다리가 그 문단의 흐름 상단을 정확히 적고 있다
+                    // (`vertpos=2240HU=29.87px`, 108.5+29.87=138.4). 그것을 기준점으로
+                    // 쓴다 — 한/글 실측 171.5 ≈ 138.4 + v_offset 31.41 + om_top 1.88.
+                    //
+                    // ⚠ **아래로만 움직인다.** 저장 vpos 가 현재 앵커보다 위를 가리키면
+                    // 종전 경로를 그대로 둔다(되감김·재배치 문서를 건드리지 않는다).
+                    let base_y = para_stored_anchor_y.unwrap_or(anchor_y);
+                    (base_y, col_area.height - (base_y - col_area.y).max(0.0))
                 }
                 crate::model::shape::VertRelTo::Paper => (0.0, page_h_approx),
             };
@@ -4613,7 +4691,12 @@ impl LayoutEngine {
             let vert_align = table.common.vert_align;
             // [Task #898] Paper-relative 표는 v_offset 이 외곽 박스 (outer_margin 포함) 기준이므로
             // 가시 표 상단 = v_offset + outer_margin_top. 한컴 PDF (exam_math.hwp 바탕쪽 쪽번호 박스) 정합.
-            let om_top_px = if matches!(vert_rel_to, crate::model::shape::VertRelTo::Paper) {
+            // [#6598] `Para` 도 저장 기준점으로 옮긴 경우에는 바깥여백 위를 더한다 —
+            // 한/글 실측 171.5 = 저장 상단 138.4 + v_offset 31.41 + om_top 1.88.
+            // 기준점을 안 옮긴 문단 기준 표는 종전대로 0 이다(근거 없이 넓히지 않는다).
+            let om_top_px = if matches!(vert_rel_to, crate::model::shape::VertRelTo::Paper)
+                || para_stored_anchor_y.is_some()
+            {
                 hwpunit_to_px(table.outer_margin_top as i32, self.dpi)
             } else {
                 0.0
@@ -8237,6 +8320,14 @@ impl LayoutEngine {
                 && self.profile.get().hwpx_stored_layout()
                 && !self.profile.get().hwp5_origin_hwpx()
                 && nested_table_height > page_height + 0.5;
+            // [#4915] reset 이 전혀 없어도 물리 높이가 **두 쪽을 넘는** 1×1 표는
+            // legacy 원자(2095.6px)로 두면 조각 페인트가 용지 1.9배까지 그린다
+            // (18098267 p2). issue1891 의 깊은 wrapper(반증 사례)는 한 쪽 언저리라
+            // 2쪽 임계에 걸리지 않는다.
+            let direct_hwpx_reset_free_multi_page_projection = stored_page_frame_boundaries == 0
+                && self.profile.get().hwpx_stored_layout()
+                && !self.profile.get().hwp5_origin_hwpx()
+                && nested_table_height > page_height * 2.0 + 0.5;
             // canonical CellUnit의 hard-break 원장은 HWP5 저장 좌표 계약이다.
             // direct HWPX의 셀 lineSeg reset은 중첩 셀 로컬 viewport 재시작일 수
             // 있으므로, reset 수가 둘 이상이어도 이 경로로 승격하지 않는다.
@@ -8289,10 +8380,18 @@ impl LayoutEngine {
             // `is_stored_frame_rewind`의 저장 frame 판정에서 이미 제외된다.
             // 42065 p10은 같은 문단 58620→0, p14는 item7→item8의 문단간
             // 32932→0 경계이며 둘 다 한컴 정본의 실제 쪽 경계다.
+            // [#4915] reset 이 전혀 없어도 물리 높이가 **두 쪽을 넘는** 1×1 표는
+            // legacy 원자(2095.6px)로 두면 조각 페인트가 용지 1.9배까지 그린다
+            // (18098267 p2: 괘선 최하 1603.2pt / 용지 841.9). canonical 원장은 이
+            // 셀을 63 유닛으로 분해하므로 그대로 투영한다. 한 쪽 언저리 표(form-002
+            // ·76076 계열 반증 사례)는 2쪽 임계에 걸리지 않는다.
+            let reset_free_multi_page_projection =
+                stored_page_frame_boundaries == 0 && nested_table_height > page_height * 2.0 + 0.5;
             if canonical_stored_frame_profile
                 && (stored_page_frame_boundaries >= 2
                     || has_authoritative_frame_boundary
-                    || preserve_single_multi_page_boundary)
+                    || preserve_single_multi_page_boundary
+                    || reset_free_multi_page_projection)
             {
                 return units
                     .iter()
@@ -8328,7 +8427,8 @@ impl LayoutEngine {
                 && !self.profile.get().hwp5_origin_hwpx()
                 && (stored_page_frame_boundaries >= 2
                     || has_authoritative_frame_boundary
-                    || direct_hwpx_single_multi_page_projection)
+                    || direct_hwpx_single_multi_page_projection
+                    || direct_hwpx_reset_free_multi_page_projection)
             {
                 // PR #4122 이전 direct-HWPX fallback은 빈 host의 자식 표를
                 // 재귀적으로 평탄화하고, 같은 문단의 placeholder line과 표 높이를
