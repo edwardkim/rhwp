@@ -3,7 +3,7 @@
 - Issue: [#6042](https://github.com/edwardkim/rhwp/issues/6042)
 - 측정일: 2026-09-02 KST
 - 상태: **역사적 Stage 5 중단 보고 — Stage 4 보정은 후속 검증 통과, 전체 Stage 5는 미완료**
-- before: Stage 3 `5f5d60071f7975b99bb0bec03ef20c14597aff04`
+- before: Stage 3 `5f5d60071bb403b361e796e6d229d2d5b5a9ebef`
 - after: Stage 4 `6f2d82d24`
 - 계획: [수행](../plans/task_m100_6042.md), [구현](../plans/task_m100_6042_impl.md)
 - 집계 정본: [summary.json](assets/issue6042-stage5/summary.json)

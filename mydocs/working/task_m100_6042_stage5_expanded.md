@@ -3,7 +3,7 @@
 - Issue: [#6042](https://github.com/edwardkim/rhwp/issues/6042)
 - 측정일: 2026-09-02 KST
 - 상태: **자동화 가능 matrix 통과, 실제 DPR 1·창 resize·사용자 시각 승인 대기**
-- before: Stage 3 `5f5d60071f7975b99bb0bec03ef20c14597aff04`
+- before: Stage 3 `5f5d60071bb403b361e796e6d229d2d5b5a9ebef`
 - after: Stage 4 보정 `63d29e68b`
 - 관찰기 판정 보정: `6c65df255`
 - 계획: [수행](../plans/task_m100_6042.md), [구현](../plans/task_m100_6042_impl.md)

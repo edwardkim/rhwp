@@ -3,7 +3,7 @@
 - Issue: [#6042](https://github.com/edwardkim/rhwp/issues/6042)
 - 검증일: 2026-09-02 KST
 - 상태: **보정 구현·재수용 조건 통과, Stage 5 확장 matrix 미완료**
-- 기준선: Stage 3 `5f5d60071f7975b99bb0bec03ef20c14597aff04`
+- 기준선: Stage 3 `5f5d60071bb403b361e796e6d229d2d5b5a9ebef`
 - 실패한 Stage 4: `6f2d82d24`
 - 보정: `63d29e68b`
 - 계획: [수행](../plans/task_m100_6042.md), [구현](../plans/task_m100_6042_impl.md)

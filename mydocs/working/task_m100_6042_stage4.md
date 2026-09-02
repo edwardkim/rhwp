@@ -4,7 +4,7 @@
 - 완료: 2026-09-02 14:10 KST
 - 상태: **Stage 4 구현·검증 완료, Stage 5 승인 대기**
 - 직접 base: #6467 `23b5bcf73f6e8659a90b25ebfde1311e1965364f`
-- Stage 4 시작점: `5f5d60071f7975b99bb0bec03ef20c14597aff04`
+- Stage 4 시작점: `5f5d60071bb403b361e796e6d229d2d5b5a9ebef`
 - 계획: [수행](../plans/task_m100_6042.md), [구현](../plans/task_m100_6042_impl.md)
 
 ## 1. 구현 범위
