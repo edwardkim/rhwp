@@ -2348,8 +2348,35 @@ impl LayoutEngine {
             .collect();
 
         // 5. 총 폭과 정렬 계산 (TAC 표는 outMargin 좌/우 포함 폭 — Issue #3396)
+        // [#6601] 정렬 폭은 **선언 폭**을 우선한다 — `table_widths` 는 열별 셀 폭
+        // (`col_span == 1` max 합)이라 병합 셀이 많은 표에서 과소합산된다. 같은 함수
+        // 안의 줄넘김 검사(`should_wrap_middle_anchored_table`)는 선언 폭 기반
+        // `table_footprint` 를 쓰므로, 둘이 갈리면 정렬이 줄 폭을 잘못 나눠 준다.
+        //
+        // 실측 `36331407_결재문서본문.hwpx` pi=0 (TAC 표 2개, 한글 2024 는 나란히):
+        //
+        // ```text
+        // table_widths = [172.96, **124.95**]      선언 폭은 33920HU = 452.3px
+        // total 350.3 → Center 시작 x 가 +165.0    (실제로 필요한 건 +23.6)
+        // 그 165.0 때문에 341.7 + 455.9 = 797.6 > 680.3 → 둘째 표가 줄을 넘는다
+        // 선언 폭을 쓰면 176.6 + 455.9 = 632.5 < 680.3 → 한 줄에 나란히
+        // ```
+        //
+        // `#5785` 가 `is_tac_table_inline` 에 세운 계약과 같다.
+        let table_declared_widths: Vec<f64> = inline_tables
+            .iter()
+            .zip(table_widths.iter())
+            .map(|((_, t), colsum)| {
+                let declared = hwpunit_to_px(t.flow_width_hu() as i32, self.dpi);
+                if declared > 0.0 {
+                    declared
+                } else {
+                    *colsum
+                }
+            })
+            .collect();
         let total_width: f64 = seg_widths.iter().sum::<f64>()
-            + table_widths.iter().sum::<f64>()
+            + table_declared_widths.iter().sum::<f64>()
             + table_om_px.iter().map(|(l, r)| l + r).sum::<f64>();
         let available_width = col_area.width - margin_left - margin_right;
         let start_x = match alignment {
