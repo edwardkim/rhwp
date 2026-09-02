@@ -2,7 +2,7 @@
 
 - Issue: [#6042](https://github.com/edwardkim/rhwp/issues/6042)
 - 완료일: 2026-09-02 KST
-- 상태: **Draft PR #6637 제출 — stack 재정렬·Full CI 대기**
+- 상태: **native stack #6640 등록 — cascading rebase·Full CI 대기**
 - branch: `codex/issue-6042-page-virtualization`
 - 직접 base: #6467 `23b5bcf73f6e8659a90b25ebfde1311e1965364f`
 - 수행 계획: [task_m100_6042.md](../plans/task_m100_6042.md)
@@ -126,11 +126,11 @@ Rust source/test/fixture와 CI 설정은 바꾸지 않아 Rust lint bundle 대�
 OffscreenCanvas는 검토했지만 사용자 지시에 따라 포함하지 않았다. #6521의 저배율 화질 저하안도 폐기
 상태를 유지한다.
 
-원격 stack은 #6458 → #6467 → #6042 순서다. 현재 #6458은 최신 `devel`과 conflict이므로 전체 stack을
-Ready로 바꾸기 전에 bottom부터 restack하고 위 PR을 다시 쌓아야 한다. Draft PR #6637과 self-review
-기록까지 제출했다. 현재 feature branch base는 저장소의 `main`/`devel` pull-request workflow 범위 밖이라
-checks가 생성되지 않으며, 이를 CI 통과로 간주하지 않는다. stack restack 뒤 `devel` 대상 exact head의
-Full CI, Ready, merge는 후속 경계다.
+원격 #6458 → #6467 → #6637은 trunk `devel`의 native stack #6640으로 등록됐다. 현재 #6458은 최신
+`devel`과 conflict이므로 전체 stack을 Ready로 바꾸기 전에 cascading rebase로 선형성을 회복해야 한다.
+native stack에서는 중간·상단 PR도 trunk 기준 protection과 Actions를 적용받는다. 연결 직후 checks가
+비어 있는 상태는 CI 통과로 간주하지 않는다. 갱신된 각 exact head의 Full CI, Ready, merge는 후속
+경계다.
 
 ## 7. 근거 문서
 

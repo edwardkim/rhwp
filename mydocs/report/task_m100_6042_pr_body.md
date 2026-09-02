@@ -1,18 +1,20 @@
 Closes #6042
 
-이 PR은 GitHub native stack의 세 번째 PR입니다.
+이 PR은 GitHub native stack #6640의 세 번째 layer입니다.
 
 `#6458 (#6040) → #6467 (#6041) → #6637 (#6042)`
 
-리뷰는 #6467 대비 diff를 기준으로 부탁드립니다. 현재 bottom #6458은 최신 `devel`과 conflict가 있어,
-전체 stack의 Ready 전환 전 bottom부터 restack하고 위 PR을 다시 쌓아 재검증할 예정입니다.
+리뷰는 #6467 대비 이 layer의 diff를 기준으로 부탁드립니다. 현재 bottom #6458은 최신 `devel`과
+conflict가 있어, 전체 stack의 Ready 전환 전 GitHub의 cascading rebase로 선형성을 회복하고 세 layer를
+재검증할 예정입니다.
 
 ## Stack CI 상태
 
-저장소의 pull-request workflow는 base가 `main` 또는 `devel`인 PR만 실행합니다. 이 PR은 native stack을
-유지하기 위해 현재 #6467 feature branch를 base로 두므로 GitHub Actions run/check가 생성되지 않습니다.
-이는 CI 통과를 뜻하지 않습니다. 제품 후보는 아래 로컬 전체 게이트를 통과했지만, bottom-first restack
-후 이 PR이 `devel` 대상이 된 exact head에서 Full CI를 다시 통과하기 전에는 Ready로 전환하지 않습니다.
+세 PR은 native stack #6640으로 연결됐으며 trunk는 `devel`입니다. 따라서 이 layer가 직접 #6467을
+base로 두더라도 branch protection과 GitHub Actions는 stack trunk인 `devel`을 기준으로 평가됩니다.
+stack 연결 직후 세 layer의 status check는 아직 비어 있으며, 이를 CI 통과로 간주하지 않습니다. bottom
+conflict를 cascading rebase로 해소한 뒤 각 exact head의 Full CI와 시각·성능 게이트를 다시 통과하기
+전에는 Ready로 전환하지 않습니다.
 
 ## 해결하려는 사용자 문제
 

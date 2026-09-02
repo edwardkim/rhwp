@@ -22,11 +22,10 @@ self-review 대상 code candidate는 `68beaa5dce0ac0fbc794761324abea959d0245ef`,
 `23b5bcf73f6e8659a90b25ebfde1311e1965364f`다. 단계별 테스트·실문서 A/B에서 발견한 역방향 cache
 thrash와 fractional DPR geometry 문제를 최종 후보에서 해소했고, 차단 finding은 남아 있지 않다.
 
-이 PR은 Draft stack의 top이다. bottom #6458이 최신 `devel`과 충돌하므로 지금 Ready 또는 merge 후보로
-올리지 않는다. 저장소 workflow의 `pull_request.branches`가 `main`, `devel`만 대상으로 하므로 feature
-branch인 #6467을 base로 둔 현재 native stacked PR에는 Actions run/check가 생성되지 않는다. 이는 CI
-통과가 아니다. bottom부터 stack을 restack하고 최종적으로 `devel` 대상이 된 exact head에서 Full CI와
-descendant 전체 검증을 다시 수행해야 한다.
+이 PR은 native stack #6640의 top(3/3)이다. bottom #6458이 최신 `devel`과 충돌하므로 지금 Ready 또는
+merge 후보로 올리지 않는다. native stack에서는 이 PR이 직접 #6467을 base로 두더라도 branch protection과
+Actions가 trunk `devel` 기준으로 평가된다. 연결 직후 status check는 비어 있으며 이는 CI 통과가 아니다.
+cascading rebase로 선형성을 회복한 각 exact head에서 Full CI와 descendant 전체 검증을 다시 수행해야 한다.
 
 ## 검토 경로와 metadata
 
@@ -34,8 +33,8 @@ descendant 전체 검증을 다시 수행해야 한다.
 - 보조 경로: `local_validation.md`, `visual_fixture_evidence.md`, `review_only_fast_pass.md`,
   `rework_and_exceptions.md`
 - self PR이므로 reviewer와 GitHub approval review를 지정하지 않는다.
-- 작성 시점: OPEN / Draft, base `codex/issue-6041-budget-first-render-scale`,
-  head `codex/issue-6042-page-virtualization`, `MERGEABLE/CLEAN`.
+- 현재: native stack #6640 3/3, OPEN / Draft, base `codex/issue-6041-budget-first-render-scale`,
+  head `codex/issue-6042-page-virtualization`, `MERGEABLE/BLOCKED`(하단 conflict·미충족 stack gate).
 - code candidate 규모: 202 files, +489,954/-219, 21 commits. 이 중 제품·test·E2E는
   24 files, +4,063/-218이고, 162 files·약 16MB는 A/B raw evidence다.
 - Rust source/test/fixture, Cargo, workflow 변경은 없다.
@@ -203,6 +202,6 @@ compositor dropped-frame 수가 아니다. LRU는 메모리를 더 보존해 CPU
 - 코드·로컬 검증: 통과
 - 차단 finding: 없음
 - 원격 상태: Draft 유지
-- 남은 조건: bottom-first restack, `devel` 대상 exact head의 Full CI, descendant 재검증, 별도 Ready 승인
+- 남은 조건: cascading rebase, 각 stack exact head의 Full CI, descendant 재검증, 별도 Ready 승인
 - 원격 조치: self PR이므로 GitHub approval review는 만들지 않는다. issue close·Ready·merge도 수행하지
   않는다.

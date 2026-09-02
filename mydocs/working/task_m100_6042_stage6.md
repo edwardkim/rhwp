@@ -2,7 +2,7 @@
 
 - Issue: [#6042](https://github.com/edwardkim/rhwp/issues/6042)
 - 완료일: 2026-09-02 KST
-- 상태: **Draft PR #6637 제출 — stack 재정렬·Full CI 대기**
+- 상태: **native stack #6640 등록 — cascading rebase·Full CI 대기**
 - 검증 source: `4ea694ff3`
 - 직접 base: #6467 `23b5bcf73f6e8659a90b25ebfde1311e1965364f`
 - branch: `codex/issue-6042-page-virtualization`
@@ -34,9 +34,9 @@ commit으로 이어진다. Ready 전환, merge, 다른 contributor PR의 close�
 검증 source `4ea694ff3`에서 `git merge-base --is-ancestor 23b5bcf73... HEAD`는 통과했고,
 `git rev-list --left-right --count 23b5bcf73...HEAD`는 `0 19`였다. #6458의 conflict는 현재 top PR을 Draft로
 게시하는 것을 막지는 않지만, 세 PR을 Ready로 바꾸기 전에는 bottom부터 restack하고 descendant를 다시
-쌓은 뒤 CI·시각 검증을 재자격화해야 한다. 현재 #6637의 base는 feature branch라 `main`/`devel`만
-대상으로 하는 pull-request workflow가 실행되지 않는다. checks 없음은 green CI가 아니다. Stage 6에서
-하위 branch는 수정하지 않았다.
+쌓은 뒤 CI·시각 검증을 재자격화해야 한다. 이후 세 PR을 trunk `devel`의 native stack #6640으로
+연결했다. native stack에서는 중간·상단도 trunk 기준 protection과 Actions를 적용받는다. 연결 직후 checks
+없음은 green CI가 아니다. Stage 6 구현 시점에는 하위 branch를 수정하지 않았다.
 
 ## 3. 범위 감사
 
@@ -108,7 +108,7 @@ safety gate다.
 
 승인에 따라 이 branch를 push하고, base를 `codex/issue-6041-budget-first-render-scale`로 지정한 Draft
 PR #6637을 생성했다. 게시 직후 base/head·Draft·`MERGEABLE/CLEAN`, 한글 본문과 이미지 링크를 재조회해
-확인했다. 채번된 self-review·오늘할일의 trailing commit push와 원격 본문 재검증까지 완료했다. 현재
-feature branch base에서는 저장소 Actions trigger상 PR CI가 생성되지 않으므로 이를 통과로 간주하지
-않는다. Ready 전환은 하지 않는다. 전체 stack Ready 전에는 #6458을 최신 `devel` 위에 restack하고
-#6467·#6637을 순서대로 다시 쌓아 `devel` 대상 exact head에서 Full CI와 각 게이트를 재실행한다.
+확인했다. 채번된 self-review·오늘할일의 trailing commit push와 원격 본문 재검증까지 완료했다. 이후
+#6458·#6467·#6637을 native stack #6640의 1/3·2/3·3/3으로 등록했다. Ready 전환은 하지 않는다. 전체
+stack Ready 전에는 GitHub cascading rebase로 #6458의 최신 `devel` conflict와 세 layer의 선형성을
+회복한 뒤, 각 exact head에서 Full CI와 각 게이트를 재실행한다.
