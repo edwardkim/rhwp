@@ -181,7 +181,7 @@ pub(crate) fn build_row_col_x(
     // 이 결함은 전역 grid 가 선언 폭과 어긋난 표에서만 나타난다.
     let global_grid_matches_declared =
         (base_rx.last().copied().unwrap_or(0.0) - target_total).abs() <= 0.5;
-    if table.local_resize_rows.is_empty() && !global_grid_matches_declared {
+    if !global_grid_matches_declared {
         let mut declared = vec![base_rx.clone(); row_count];
         let mut any_declared_row = false;
         for (r, row_x) in declared.iter_mut().enumerate().take(row_count) {
@@ -238,101 +238,6 @@ pub(crate) fn build_row_col_x(
 
     if table.common.treat_as_char {
         return Ok(vec![base_rx; row_count]);
-    }
-
-    let inferred_local_resize_rows = table.inferred_local_resize_rows();
-    if !table.local_resize_rows.is_empty() || !inferred_local_resize_rows.is_empty() {
-        let mut row_col_x_from_cells = vec![base_rx.clone(); row_count];
-        let mut has_cell_order_row = false;
-        for (r, row_x) in row_col_x_from_cells.iter_mut().enumerate().take(row_count) {
-            let row_idx = r as u16;
-            let is_explicit_local_resize = table.local_resize_rows.contains(&row_idx);
-            let is_inferred_local_resize = inferred_local_resize_rows.contains(&row_idx);
-            if !is_explicit_local_resize && !is_inferred_local_resize {
-                continue;
-            }
-            let mut row_cells: Vec<_> = table
-                .cells
-                .iter()
-                .enumerate()
-                .filter(|(_, cell)| cell.row as usize == r && cell.row_span == 1)
-                .collect();
-            row_cells.sort_by_key(|(_, cell)| cell.col);
-            let has_width_overrides = row_cells.iter().any(|(cell_idx, _)| {
-                table
-                    .local_resize_cell_widths
-                    .iter()
-                    .any(|(idx, _)| idx == cell_idx)
-            });
-
-            let mut cursor = 0.0;
-            let mut next_col = 0usize;
-            let mut candidate = vec![0.0f64; col_count + 1];
-            let mut valid = !row_cells.is_empty();
-            for (cell_idx, cell) in row_cells {
-                let c = cell.col as usize;
-                let span = cell.col_span.max(1) as usize;
-                let end = (c + span).min(col_count);
-                if c != next_col || end <= c {
-                    valid = false;
-                    break;
-                }
-
-                candidate[c] = cursor;
-                let cell_w = table
-                    .local_resize_cell_widths
-                    .iter()
-                    .find(|(idx, _)| *idx == cell_idx)
-                    .map(|(_, width)| hwpunit_to_px(*width as i32, dpi))
-                    .unwrap_or_else(|| {
-                        if has_width_overrides {
-                            (base_rx[end] - base_rx[c]).max(0.0)
-                        } else {
-                            hwpunit_to_px(cell.width as i32, dpi) * width_scale
-                        }
-                    });
-                let end_x = cursor + cell_w;
-                for inner_col in c + 1..end {
-                    let ratio = (inner_col - c) as f64 / span as f64;
-                    candidate[inner_col] = cursor + cell_w * ratio;
-                }
-                candidate[end] = end_x;
-                cursor = end_x + if end < col_count { cell_spacing } else { 0.0 };
-                next_col = end;
-            }
-
-            if valid && next_col == col_count {
-                let residual = target_total - cursor;
-                if residual < -0.5 {
-                    valid = false;
-                } else if residual > 0.5 {
-                    if is_explicit_local_resize {
-                        // Studio 런타임의 명시적 힌트는 기존 동작을 보존한다.
-                        candidate[col_count] += residual;
-                    } else {
-                        // 자동 추론 행의 부족 폭을 마지막 셀에 몰아주면 퇴화한
-                        // 앞 셀 폭이 그대로 노출된다. 추론이 불완전하면 base grid로
-                        // 폴백하고 마지막 셀의 경계를 임의로 늘리지 않는다.
-                        valid = false;
-                    }
-                }
-            }
-
-            if valid && next_col == col_count {
-                *row_x = candidate;
-                has_cell_order_row = true;
-            }
-        }
-
-        if has_cell_order_row
-            && row_col_x_from_cells.iter().any(|rx| {
-                rx.iter()
-                    .zip(base_rx.iter())
-                    .any(|(a, b)| (a - b).abs() > 0.01)
-            })
-        {
-            return Ok(row_col_x_from_cells);
-        }
     }
 
     let has_independent_widths = cell_width_grid.iter().any(|row| {
@@ -438,7 +343,6 @@ fn declared_row_col_x(
     }
     Some(candidate)
 }
-
 /// 셀 테두리를 엣지 그리드에 수집
 /// h_edges[row_boundary][col]: 수평 엣지 (row_boundary 0..=row_count, col 0..col_count)
 /// v_edges[col_boundary][row]: 수직 엣지 (col_boundary 0..=col_count, row 0..row_count)

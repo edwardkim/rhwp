@@ -8,14 +8,13 @@ import type { WasmBridge } from '@/core/wasm-bridge';
 import type { BorderEdge } from './table-resize-renderer';
 import {
   buildColumnResizeUpdates,
-  buildLocalResizeUpdates,
-  buildBoundaryResizeUpdates,
   buildCellSelectionColumnDragUpdates,
   cellOverlapsSelectionRange,
   findResizeCompensationNeighbors,
   type CellSelectionRange,
   type LocalResizeUpdate,
   type ResizeArrowKey,
+  LOCAL_TABLE_RESIZE_UNSUPPORTED_MESSAGE,
 } from './table-resize-updates';
 import { showToast } from '@/ui/toast';
 
@@ -757,6 +756,14 @@ export function finishResizeDrag(this: any, e: MouseEvent): void {
     return;
   }
 
+  if (state.singleCellTarget) {
+    // The gesture changes one row/column boundary independently. Stop at the
+    // editor boundary so an unpersistable projection never reaches the IR.
+    showToast({ message: LOCAL_TABLE_RESIZE_UNSUPPORTED_MESSAGE });
+    this.cleanupResizeDrag();
+    return;
+  }
+
   // Shift 단일 셀 resize는 가로/세로 모두 singleCellTarget 분기에서 처리한다.
   // 일반 세로 경계는 셀 선택 상태와 무관하게 행 전체 높이 조절로 처리한다.
   let updates: Array<{
@@ -1011,6 +1018,14 @@ export function finishResizeDrag(this: any, e: MouseEvent): void {
         }
       }
     }
+  }
+
+  if (updates.some(update => update.localResize === true)) {
+    // Do not let a legacy in-memory hint cross into the persistence model.
+    // The user sees the format limitation instead of a swallowed Rust error.
+    showToast({ message: LOCAL_TABLE_RESIZE_UNSUPPORTED_MESSAGE });
+    this.cleanupResizeDrag();
+    return;
   }
 
   // WASM 배치 API 호출 (복합 셀 보상 변경은 스냅샷으로 Undo 기록)
@@ -1442,12 +1457,14 @@ export function resizeCellByKeyboard(this: any, key: ResizeArrowKey): void {
 
 /** Alt+방향키 — 선택 칸/줄과 바로 오른쪽/아래 이웃을 반대로 조절 (한컴 table(size).htm). */
 export function resizeCellLocalByKeyboard(this: any, key: ResizeArrowKey): void {
-  applyKeyboardResize.call(this, key, 'resizeCellLocalByKeyboard', buildLocalResizeUpdates);
+  void key;
+  showToast({ message: LOCAL_TABLE_RESIZE_UNSUPPORTED_MESSAGE });
 }
 
 /** Shift+방향키 — 경계 이동, 이웃이 반대로 조절 (한컴 table(size).htm). */
 export function resizeCellBoundaryByKeyboard(this: any, key: ResizeArrowKey): void {
-  applyKeyboardResize.call(this, key, 'resizeCellBoundaryByKeyboard', buildBoundaryResizeUpdates);
+  void key;
+  showToast({ message: LOCAL_TABLE_RESIZE_UNSUPPORTED_MESSAGE });
 }
 
 /** 전체 표 비율 리사이즈 (phase 3, Ctrl+방향키) */

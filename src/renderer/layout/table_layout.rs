@@ -1382,81 +1382,6 @@ fn top_caption_flow_extra(
     }
 }
 
-fn build_col_row_y_from_cell_heights(
-    table: &crate::model::table::Table,
-    row_heights: &[f64],
-    row_y: &[f64],
-    col_count: usize,
-    row_count: usize,
-    cell_spacing: f64,
-    dpi: f64,
-) -> Vec<Vec<f64>> {
-    let mut cell_height_grid = vec![vec![None::<f64>; row_count]; col_count];
-    for (cell_idx, cell) in table.cells.iter().enumerate() {
-        if cell.row_span == 1
-            && cell.col_span == 1
-            && cell.height < 0x8000_0000
-            && (cell.col as usize) < col_count
-            && (cell.row as usize) < row_count
-        {
-            let render_height = table
-                .local_resize_cell_heights
-                .iter()
-                .find(|(idx, _)| *idx == cell_idx)
-                .map(|(_, height)| *height)
-                .unwrap_or(cell.height);
-            cell_height_grid[cell.col as usize][cell.row as usize] =
-                Some(hwpunit_to_px(render_height as i32, dpi));
-        }
-    }
-
-    let fallback_h = hwpunit_to_px(400, dpi);
-    let target_total = if table.common.height > 0 {
-        hwpunit_to_px(table.common.height as i32, dpi)
-            + cell_spacing * row_count.saturating_sub(1) as f64
-    } else {
-        row_y.last().copied().unwrap_or(0.0)
-    };
-    let mut col_row_y = vec![vec![0.0f64; row_count + 1]; col_count];
-    for c in 0..col_count {
-        let col_idx = c as u16;
-        if !table.local_resize_cols.contains(&col_idx) {
-            col_row_y[c].clone_from_slice(row_y);
-            continue;
-        }
-        for r in 0..row_count {
-            let h = cell_height_grid[c][r]
-                .or_else(|| row_heights.get(r).copied())
-                .unwrap_or(fallback_h);
-            col_row_y[c][r + 1] =
-                col_row_y[c][r] + h + if r + 1 < row_count { cell_spacing } else { 0.0 };
-        }
-        // 저장 파일의 cell.height는 표 전체 높이와 맞지 않는 보조값일 수 있다.
-        // 열별 누적 높이가 표 외곽과 맞을 때만 독립 horizontal segment로 해석한다.
-        // A Shift-style vertical resize publishes one complete independent
-        // column of absolute height hints. Balanced row resize touches several
-        // columns and must keep the shared row grid even if some source columns
-        // happen to have complete historical hints.
-        let complete_independent_column =
-            table.local_resize_cols.len() == 1 && cell_height_grid[c].iter().all(Option::is_some);
-        if !complete_independent_column
-            && (col_row_y[c][row_count] - target_total).abs() > 0.5
-            && row_y.len() == row_count + 1
-        {
-            col_row_y[c].clone_from_slice(row_y);
-        }
-    }
-    col_row_y
-}
-
-fn has_independent_col_row_y(col_row_y: &[Vec<f64>], row_y: &[f64]) -> bool {
-    col_row_y.iter().any(|cy| {
-        cy.iter()
-            .zip(row_y.iter())
-            .any(|(a, b)| (a - b).abs() > 0.01)
-    })
-}
-
 fn render_cell_box_borders(
     tree: &mut PageLayoutContext,
     bs: &ResolvedBorderStyle,
@@ -2777,24 +2702,7 @@ impl LayoutEngine {
             Ok(grid) => grid,
             Err(_) => return if depth == 0 { y_start } else { 0.0 },
         };
-        let independent_col_row_y = if split_row_range.is_none() && !table.common.treat_as_char {
-            let col_row_y = build_col_row_y_from_cell_heights(
-                table,
-                &row_heights,
-                &row_y,
-                col_count,
-                row_count,
-                cell_spacing,
-                self.dpi,
-            );
-            if has_independent_col_row_y(&col_row_y, &row_y) {
-                Some(col_row_y)
-            } else {
-                None
-            }
-        } else {
-            None
-        };
+        let independent_col_row_y: Option<Vec<Vec<f64>>> = None;
 
         let mut table_width = row_col_x
             .iter()
@@ -3369,12 +3277,10 @@ impl LayoutEngine {
     ) -> Vec<f64> {
         let width_scale = self.render_table_width_scale(table);
         // 1단계: col_span==1인 셀에서 개별 열 폭 추출
-        let base_grid_outlier_rows = table.base_grid_outlier_rows();
+        let invalid_rows = table.invalid_declared_width_rows();
         let mut col_widths = vec![0.0f64; col_count];
         for cell in &table.cells {
-            if table.local_resize_rows.contains(&cell.row)
-                || base_grid_outlier_rows.contains(&cell.row)
-            {
+            if invalid_rows.contains(&cell.row) {
                 continue;
             }
             if cell.col_span == 1 && (cell.col as usize) < col_count {
@@ -3389,9 +3295,7 @@ impl LayoutEngine {
         {
             let mut constraints: Vec<(usize, usize, f64)> = Vec::new();
             for cell in &table.cells {
-                if table.local_resize_rows.contains(&cell.row)
-                    || base_grid_outlier_rows.contains(&cell.row)
-                {
+                if invalid_rows.contains(&cell.row) {
                     continue;
                 }
                 let c = cell.col as usize;
@@ -3665,9 +3569,6 @@ impl LayoutEngine {
         // 행별 **컨텐츠** 하한 — 2단계 축소 규칙(#5910)의 바닥. HeightMeasurer 미러.
         let mut content_row_floor = vec![0.0f64; row_count];
         for cell in &table.cells {
-            if table.local_resize_cols.contains(&cell.col) {
-                continue;
-            }
             if cell.row_span == 1 && (cell.row as usize) < row_count {
                 let r = cell.row as usize;
                 if cell.height < 0x80000000 {
@@ -3681,9 +3582,6 @@ impl LayoutEngine {
 
         // 1-b단계: 셀 내 실제 컨텐츠 높이 계산
         for cell in &table.cells {
-            if table.local_resize_cols.contains(&cell.col) {
-                continue;
-            }
             if cell.row_span == 1 && (cell.row as usize) < row_count {
                 let r = cell.row as usize;
                 let (pad_left, pad_right, pad_top, pad_bottom) =
@@ -3763,9 +3661,6 @@ impl LayoutEngine {
         {
             let mut constraints: Vec<(usize, usize, f64)> = Vec::new();
             for cell in &table.cells {
-                if table.local_resize_cols.contains(&cell.col) {
-                    continue;
-                }
                 let r = cell.row as usize;
                 let span = cell.row_span as usize;
                 if span > 1 && r + span <= row_count && cell.height < 0x80000000 {
@@ -3837,9 +3732,6 @@ impl LayoutEngine {
 
         // 2-b단계: 병합 셀 컨텐츠 높이 > 결합 행 높이이면 마지막 행 확장
         for cell in &table.cells {
-            if table.local_resize_cols.contains(&cell.col) {
-                continue;
-            }
             let r = cell.row as usize;
             let span = cell.row_span as usize;
             if span > 1 && r + span <= row_count {
