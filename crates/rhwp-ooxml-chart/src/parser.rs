@@ -37,6 +37,12 @@ struct ParseState {
     // c:dPt(점별 속성) 블록 내부 — 점별 explosion 을 계열로 승격하지 않기 위한
     // 문맥 게이트 (PR #2500 후속)
     in_d_pt: bool,
+    // [#6624] 글꼴 크기·선 굵기 문맥. c:chart 밖의 c:txPr 만 차트 전체 기본 글꼴이고,
+    // c:plotArea 안 c:title 은 축 제목, c:marker 안 spPr 은 표식 테두리라 제외한다.
+    in_chart_body: bool,
+    in_plot_area: bool,
+    in_tx_pr: bool,
+    in_marker: bool,
     bar_dir: Option<BarDir>,
     // 현재 파싱 중인 plot 블록 (barChart/lineChart/pieChart) 안에 있는지
     cur_plot_type: Option<OoxmlChartType>,
@@ -408,6 +414,7 @@ fn handle_start(e: &quick_xml::events::BytesStart, chart: &mut OoxmlChart, st: &
             }
         }
         b"marker" => {
+            st.in_marker = true;
             if let Some(ser) = st.cur_series.as_mut() {
                 // 계열 내부 <c:marker> 래퍼 — symbol 자식이 없으면 자동 표식
                 // (stock 종가 실측: <c:marker><c:size val="7"/> 만). symbol이 오면
@@ -492,9 +499,39 @@ fn handle_start(e: &quick_xml::events::BytesStart, chart: &mut OoxmlChart, st: &
             st.in_a_t = true;
             st.cur_text_buf.clear();
         }
+        b"chart" => st.in_chart_body = true,
+        b"plotArea" => st.in_plot_area = true,
+        b"txPr" => st.in_tx_pr = true,
+        // [#6624] 글꼴 크기(sz, 1/100pt). `c:chartSpace > c:txPr`(c:chart 밖)의 defRPr 는
+        // 차트 전체 기본, `c:title` 안의 defRPr/rPr 는 제목. 축 제목(plotArea 안)은 제외.
+        b"defRPr" | b"rPr" => {
+            if let Some(pt) = attr_val(e, "sz").and_then(|v| v.parse::<f64>().ok()) {
+                let pt = pt / 100.0;
+                if st.in_chart_title && !st.in_plot_area {
+                    if chart.title_size_pt.is_none() {
+                        chart.title_size_pt = Some(pt);
+                    }
+                } else if st.in_tx_pr && !st.in_chart_body && chart.text_size_pt.is_none() {
+                    chart.text_size_pt = Some(pt);
+                }
+            }
+        }
         b"spPr" => st.in_sp_pr = true,
         b"solidFill" => st.in_solid_fill = true,
-        b"ln" => st.in_ln = true,
+        b"ln" => {
+            st.in_ln = true;
+            // [#6624] 계열 `c:spPr > a:ln w` (EMU) — 선 굵기. 점별(dPt)·표식(marker)의
+            // spPr 은 계열 선이 아니라 제외.
+            if st.in_sp_pr && !st.in_d_pt && !st.in_marker {
+                if let Some(w) = attr_val(e, "w").and_then(|v| v.parse::<u32>().ok()) {
+                    if let Some(ser) = st.cur_series.as_mut() {
+                        if ser.line_width_emu.is_none() {
+                            ser.line_width_emu = Some(w);
+                        }
+                    }
+                }
+            }
+        }
         // [#6053] `c:spPr > a:ln > a:noFill` — 선 없음. `a:ln` 안일 때만 본다
         // (`spPr > noFill` 은 면 채움 없음이라 뜻이 다르다). 주식형 렌더러가 소비한다.
         b"noFill" => {
@@ -611,6 +648,10 @@ fn handle_end(name: &[u8], chart: &mut OoxmlChart, st: &mut ParseState) {
         b"cat" => st.in_cat = false,
         b"val" => st.in_val = false,
         b"dPt" => st.in_d_pt = false,
+        b"chart" => st.in_chart_body = false,
+        b"plotArea" => st.in_plot_area = false,
+        b"txPr" => st.in_tx_pr = false,
+        b"marker" => st.in_marker = false,
         b"xVal" => st.in_x_val = false,
         b"yVal" => st.in_y_val = false,
         b"title" => st.in_chart_title = false,
