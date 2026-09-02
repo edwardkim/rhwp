@@ -13,9 +13,9 @@ pub fn parse_create_pen(c: &mut Cursor<'_>) -> Result<(u32, LogPen), Error> {
     Ok((handle, pen))
 }
 
-/// [#6577] `EMR_EXTCREATEPEN`: ihPen(4) + offBmi(4) + cbBmi(4) + offBits(4) + cbBits(4)
-/// + LogPenEx{ PenStyle(4) Width(4) BrushStyle(4) ColorRef(4) BrushHatch(4)
-/// NumStyleEntries(4) StyleEntry[] }.
+/// [#6577] `EMR_EXTCREATEPEN`: ihPen(4) + offBmi(4) + cbBmi(4) + offBits(4) +
+/// cbBits(4) + LogPenEx{ PenStyle(4) Width(4) BrushStyle(4) ColorRef(4)
+/// BrushHatch(4) NumStyleEntries(4) StyleEntry[] }.
 ///
 /// 이 파일군(156627451 내장 EMF)의 비-스톡 펜은 **전부** 이 레코드에서 온다
 /// (`EMR_CREATEPEN` 0건 · `EMR_EXTCREATEPEN` 16건). 종전에는 `Unknown` 으로 버려져
