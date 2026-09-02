@@ -1560,6 +1560,95 @@ fn stored_layout_relocated_empty_rowbreak_picture_next_flow_top(
 /// 이를 한 번 더 본문 끝에 가산하면 표가 한 문단 높이만큼 아래로 밀린다
 /// (정책연구용역… HWP/HWPX p9, pi=222). 따라서 그 경우는 일반 Para anchor
 /// 경로에 맡긴다.
+/// [#6614] 문단 **끝**에 오는 비인라인 TAC 표가 저장 사다리에서 **자기 줄**을 받았으면
+/// 그 줄 상단에 앉힌다.
+///
+/// 폭이 줄 폭과 같아 `is_tac_table_inline_in_para` 가 인라인을 거부한 TAC 표는
+/// `table_y_start` 사슬의 마지막 `else { y_offset }` 로 떨어져 **문단 흐름 시작**에
+/// 놓인다. 문단 첫 줄보다 위다. 그래서 표가 본문 위에 겹쳐 그려진다.
+///
+/// 실측 — `156658611` 1쪽 담당부서 표(px @96dpi, 오라클 한/글 2020):
+///
+/// ```text
+/// 저장 사다리  seg0..3 vpos 53839/56359/58879/61399  lh 1400/1400/1400/1500  ← 글자 줄
+///              seg4    vpos 69067                    lh 3696                 ← 표 줄
+/// 표           height 3130 + om_top 283 + om_bottom 283 = 3696  ← seg4 와 정확히 일치
+/// rhwp 770.8 (문단 흐름 시작) vs 한/글 약 1005 — 234px 위
+/// ```
+///
+/// 밴드(`om_top + 선언높이 + om_bottom`)가 저장 줄 높이와 일치하는 것이 판별자다
+/// (#5729 가 인라인 경로에 쓰는 것과 같은 계약).
+///
+/// ⚠ **우연 일치를 막는 가드가 필요하다.** 소형 TAC 표는 밴드가 글자 줄 높이와
+/// 우연히 같을 수 있다(`is_tac_table_inline_in_para` 의 `own_line_evidence` 가 같은
+/// 이유로 전면급 30000HU 로 한정한다). 여기서는 크기 대신
+/// **① 표가 문단의 유일한 TAC 표 ② 맞는 줄이 마지막 줄 ③ 그 줄이 글자 줄보다
+/// 1.5배 이상 높다 ④ 흐름보다 아래 ⑤ 단 안에 들어감** 다섯으로 좁힌다.
+fn tac_paragraph_tail_stored_line_top(
+    stored_layout: bool,
+    has_receipt_filler: bool,
+    para: &Paragraph,
+    table: &crate::model::table::Table,
+    col_area: &LayoutRect,
+    flow_y: f64,
+    dpi: f64,
+) -> Option<f64> {
+    // 접수증 필러(`tac_receipt_filler_prefix`)가 있는 문단은 #2020 이 "필러 줄 다음
+    // line-seg" 라는 자기 계약을 갖는다(복학원서). 그 축을 건드리지 않는다.
+    if !stored_layout
+        || has_receipt_filler
+        || !table.common.treat_as_char
+        || !para_has_visible_text(para)
+    {
+        return None;
+    }
+    // ① 이 문단의 유일한 TAC 표일 때만 — 여럿이면 어느 줄이 어느 표인지 모른다.
+    if para
+        .controls
+        .iter()
+        .filter(|c| matches!(c, Control::Table(t) if t.common.treat_as_char))
+        .count()
+        != 1
+    {
+        return None;
+    }
+    let stored: Vec<_> = para
+        .line_segs
+        .iter()
+        .filter(|seg| seg.tag & crate::model::paragraph::LineSeg::TAG_IMPLEMENTATION_PROPERTY == 0)
+        .collect();
+    if stored.len() < 2 {
+        return None;
+    }
+    // ② 표 줄은 마지막 줄이어야 한다(문단 끝의 표).
+    let last = stored.last()?;
+    let band_hu = table.common.height as i64
+        + table.outer_margin_top as i64
+        + table.outer_margin_bottom as i64;
+    if (last.line_height as i64 - band_hu).abs() > 75 {
+        return None;
+    }
+    // ③ 글자 줄보다 확실히 높아야 한다(우연 일치 배제).
+    let text_line_max = stored[..stored.len() - 1]
+        .iter()
+        .map(|seg| seg.line_height as i64)
+        .max()
+        .unwrap_or(0);
+    if text_line_max <= 0 || (last.line_height as i64) * 2 < text_line_max * 3 {
+        return None;
+    }
+    let top = col_area.y
+        + hwpunit_to_px(last.vertical_pos, dpi)
+        + hwpunit_to_px(table.outer_margin_top as i32, dpi);
+    // ④ 흐름보다 위로 올리지 않는다. ⑤ 단을 넘지 않는다.
+    if top < flow_y - 0.5
+        || top + hwpunit_to_px(table.common.height as i32, dpi) > col_area.y + col_area.height + 1.0
+    {
+        return None;
+    }
+    Some(top)
+}
+
 fn native_multiline_visible_float_table_top(
     native_hwp5_layout: bool,
     para: &Paragraph,
@@ -9464,6 +9553,17 @@ impl LayoutEngine {
                         + hwpunit_to_px(signed_hwpunit(t.common.vertical_offset), self.dpi)
                 } else if tac_detached_line_shift > 0.0 {
                     y_offset + tac_detached_line_shift
+                } else if let Some(tail_top) = tac_paragraph_tail_stored_line_top(
+                    self.profile.get().hwpx_stored_layout()
+                        || self.profile.get().hwp5_stored_pagination_layout(),
+                    tac_receipt_seal_line.is_some(),
+                    para,
+                    t,
+                    col_area,
+                    y_offset,
+                    self.dpi,
+                ) {
+                    tail_top
                 } else {
                     y_offset
                 };
