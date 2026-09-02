@@ -182,7 +182,7 @@ fn intersect_clip_rect_reaches_the_svg() {
     push_record(&mut emf, 0x59, &payload);
 
     push_record(&mut emf, 0x3C, &[]); // EndPath
-    push_record(&mut emf, 0x40, &vec![0u8; 16]); // StrokePath(bounds)
+    push_record(&mut emf, 0x40, &[0u8; 16]); // StrokePath(bounds)
     push_record(&mut emf, 14, &[]);
 
     let svg = rhwp::emf::convert_to_standalone_svg(&emf)
