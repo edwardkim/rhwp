@@ -7,13 +7,6 @@ Closes #6042
 리뷰는 #6467 대비 이 layer의 diff를 기준으로 부탁드립니다. bottom #6458부터 최신 `devel` 위로
 cascading rebase해 세 layer의 선형성과 기존 conflict를 회복했습니다.
 
-## Stack CI 상태
-
-세 PR은 native stack #6640으로 연결됐으며 trunk는 `devel`입니다. 따라서 이 layer가 직접 #6467을
-base로 두더라도 branch protection과 GitHub Actions는 stack trunk인 `devel`을 기준으로 평가됩니다.
-등록 뒤 이 layer의 새 push에서 실제 Actions 실행도 확인했습니다. 갱신된 각 exact head의 Full CI와
-시각·성능 게이트를 다시 통과하기 전에는 Ready로 전환하지 않습니다.
-
 ## 최신 `devel` conflict 해소
 
 2026-09-02에 stack trunk를 `upstream/devel@51043f5f8`로 갱신하고 bottom부터 cascading rebase했습니다.
