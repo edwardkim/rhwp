@@ -2496,15 +2496,28 @@ impl LayoutEngine {
                             None
                         };
 
+                        // [#6621] 상자를 unwrap 해도 상자 셀의 안 여백은 남는다. 한/글은 안쪽 표를
+                        // 여백만큼 안쪽(+pad_l, +pad_t)에 놓고, 상자 테두리는 바깥 표 선언 폭과
+                        // "안쪽 표 높이 + 상하 여백"으로 그리며, 뒤 흐름도 아래 여백만큼 더 내려간다.
+                        // exam_social 1쪽 pi=15 실측: 여백 850HU=11.3px, 안쪽 표·그림 5장이
+                        // (+11.3, +11.3), 상자 높이 +22.7px. 여백 0 이면 종전과 같다.
+                        let (pad_l, pad_r, pad_t, pad_b) =
+                            self.resolve_cell_padding_for_context(cell, table);
                         // nested 표 위치/size 미리 결정 (nested layout 의 위치 결정 logic 동일)
                         let pw_now = self.current_paper_width.get();
                         let paper_w = if pw_now > 0.0 { Some(pw_now) } else { None };
                         let nested_w = hwpunit_to_px(nested.common.width as i32, self.dpi)
                             * self.render_table_width_scale(nested);
-                        let outer_w_for_box = nested_w;
+                        let outer_w_declared = hwpunit_to_px(table.common.width as i32, self.dpi)
+                            * self.render_table_width_scale(table);
+                        let outer_w_for_box = if outer_w_declared > 0.5 {
+                            outer_w_declared
+                        } else {
+                            nested_w + pad_l + pad_r
+                        };
                         let outer_x_for_box = self.compute_table_x_position(
-                            nested,
-                            nested_w,
+                            table,
+                            outer_w_for_box,
                             col_area,
                             depth,
                             host_alignment,
@@ -2513,6 +2526,17 @@ impl LayoutEngine {
                             inline_x_override,
                             paper_w,
                         );
+                        // 안쪽 표가 여백을 뺀 내용 상자보다 조금 넓게 저장된 문서(exam_social:
+                        // 1.4px)는 한/글처럼 오른쪽 여백으로 흘러넘기고 축소하지 않는다.
+                        let inner_area = LayoutRect {
+                            x: col_area.x + pad_l,
+                            y: col_area.y,
+                            width: (col_area.width - pad_l - pad_r).max(nested_w),
+                            height: col_area.height,
+                        };
+                        let inner_y_start = y_start + pad_t;
+                        // 글자처럼 상자는 x 를 줄 배치가 준 inline_x_override 로 받으므로 그 값도 옮긴다.
+                        let inner_inline_x = inline_x_override.map(|x| x + pad_l);
 
                         let y_end = self.layout_table(
                             tree,
@@ -2521,8 +2545,8 @@ impl LayoutEngine {
                             section_index,
                             styles,
                             outline_numbering_id,
-                            col_area,
-                            y_start,
+                            &inner_area,
+                            inner_y_start,
                             bin_data_content,
                             None,
                             depth,
@@ -2531,7 +2555,7 @@ impl LayoutEngine {
                             enclosing_cell_ctx,
                             host_margin_left,
                             host_margin_right,
-                            inline_x_override,
+                            inner_inline_x,
                             nested_split,
                             para_y,
                             None,
@@ -2540,6 +2564,7 @@ impl LayoutEngine {
                             false,
                         );
 
+                        let y_end = y_end + pad_b;
                         if let Some(bs_borders) = outer_border_meta {
                             let outer_h_actual = (y_end - outer_y).max(0.0);
                             if outer_h_actual > 0.0 {
