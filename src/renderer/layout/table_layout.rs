@@ -8149,6 +8149,14 @@ impl LayoutEngine {
                 && self.profile.get().hwpx_stored_layout()
                 && !self.profile.get().hwp5_origin_hwpx()
                 && nested_table_height > page_height + 0.5;
+            // [#4915] reset 이 전혀 없어도 물리 높이가 **두 쪽을 넘는** 1×1 표는
+            // legacy 원자(2095.6px)로 두면 조각 페인트가 용지 1.9배까지 그린다
+            // (18098267 p2). issue1891 의 깊은 wrapper(반증 사례)는 한 쪽 언저리라
+            // 2쪽 임계에 걸리지 않는다.
+            let direct_hwpx_reset_free_multi_page_projection = stored_page_frame_boundaries == 0
+                && self.profile.get().hwpx_stored_layout()
+                && !self.profile.get().hwp5_origin_hwpx()
+                && nested_table_height > page_height * 2.0 + 0.5;
             // canonical CellUnit의 hard-break 원장은 HWP5 저장 좌표 계약이다.
             // direct HWPX의 셀 lineSeg reset은 중첩 셀 로컬 viewport 재시작일 수
             // 있으므로, reset 수가 둘 이상이어도 이 경로로 승격하지 않는다.
@@ -8201,10 +8209,18 @@ impl LayoutEngine {
             // `is_stored_frame_rewind`의 저장 frame 판정에서 이미 제외된다.
             // 42065 p10은 같은 문단 58620→0, p14는 item7→item8의 문단간
             // 32932→0 경계이며 둘 다 한컴 정본의 실제 쪽 경계다.
+            // [#4915] reset 이 전혀 없어도 물리 높이가 **두 쪽을 넘는** 1×1 표는
+            // legacy 원자(2095.6px)로 두면 조각 페인트가 용지 1.9배까지 그린다
+            // (18098267 p2: 괘선 최하 1603.2pt / 용지 841.9). canonical 원장은 이
+            // 셀을 63 유닛으로 분해하므로 그대로 투영한다. 한 쪽 언저리 표(form-002
+            // ·76076 계열 반증 사례)는 2쪽 임계에 걸리지 않는다.
+            let reset_free_multi_page_projection =
+                stored_page_frame_boundaries == 0 && nested_table_height > page_height * 2.0 + 0.5;
             if canonical_stored_frame_profile
                 && (stored_page_frame_boundaries >= 2
                     || has_authoritative_frame_boundary
-                    || preserve_single_multi_page_boundary)
+                    || preserve_single_multi_page_boundary
+                    || reset_free_multi_page_projection)
             {
                 return units
                     .iter()
@@ -8240,7 +8256,8 @@ impl LayoutEngine {
                 && !self.profile.get().hwp5_origin_hwpx()
                 && (stored_page_frame_boundaries >= 2
                     || has_authoritative_frame_boundary
-                    || direct_hwpx_single_multi_page_projection)
+                    || direct_hwpx_single_multi_page_projection
+                    || direct_hwpx_reset_free_multi_page_projection)
             {
                 // PR #4122 이전 direct-HWPX fallback은 빈 host의 자식 표를
                 // 재귀적으로 평탄화하고, 같은 문단의 placeholder line과 표 높이를
