@@ -68,7 +68,6 @@ impl DocumentCore {
         table
             .insert_row(row_idx, below)
             .map_err(|e| HwpError::RenderError(e))?;
-        table.dirty = true;
         let row_count = table.row_count;
         let col_count = table.col_count;
 
@@ -109,7 +108,6 @@ impl DocumentCore {
         table
             .insert_column(col_idx, right)
             .map_err(|e| HwpError::RenderError(e))?;
-        table.dirty = true;
         let row_count = table.row_count;
         let col_count = table.col_count;
 
@@ -146,7 +144,6 @@ impl DocumentCore {
         table
             .delete_row(row_idx)
             .map_err(|e| HwpError::RenderError(e))?;
-        table.dirty = true;
         let row_count = table.row_count;
         let col_count = table.col_count;
 
@@ -186,7 +183,6 @@ impl DocumentCore {
         table
             .delete_column(col_idx)
             .map_err(|e| HwpError::RenderError(e))?;
-        table.dirty = true;
         let row_count = table.row_count;
         let col_count = table.col_count;
 
@@ -228,6 +224,8 @@ impl DocumentCore {
         use crate::model::control::Control;
         use crate::model::paragraph::{CharShapeRef, LineSeg, Paragraph};
 
+        let inherit_text_reflow =
+            self.table_text_reflowed_path_exists(section_idx, parent_para_idx, control_idx);
         let host_para_shape_id;
         let host_char_shape_id;
         {
@@ -356,7 +354,6 @@ impl DocumentCore {
                 .collect();
             back.rebuild_grid();
             back.update_ctrl_dimensions();
-            back.dirty = true;
 
             // 앞 표: at_row 이후를 잘라낸다.
             table.cells.retain(|c| c.row < at_row);
@@ -379,7 +376,6 @@ impl DocumentCore {
                 .retain(|(idx, _)| *idx < front_cell_count);
             table.rebuild_grid();
             table.update_ctrl_dimensions();
-            table.dirty = true;
             back
         };
 
@@ -427,6 +423,9 @@ impl DocumentCore {
         let paragraphs = &mut self.document.sections[section_idx].paragraphs;
         paragraphs.insert(parent_para_idx + 1, between_para);
         paragraphs.insert(parent_para_idx + 2, back_para);
+        if inherit_text_reflow {
+            self.mark_table_text_reflowed_after_edit(section_idx, parent_para_idx + 2, 0)?;
+        }
 
         // [Task #2299] 신규 문단(사이 빈 문단·뒤 표 host)의 placeholder vpos 를
         // 흐름에 연결한다 — 방치하면 vertical_pos=0 이 저장 단/쪽 리셋으로
@@ -539,6 +538,9 @@ impl DocumentCore {
             }
             found.ok_or_else(|| HwpError::RenderError("붙일 다음 표가 없습니다".to_string()))?
         };
+        let merged_text_reflow =
+            self.table_text_reflowed_path_exists(section_idx, parent_para_idx, control_idx)
+                || self.table_text_reflowed_path_exists(section_idx, back_para_idx, back_ctrl_idx);
 
         // 2) 남은 검증을 문서 변형 전에 끝낸다 — 여기서 실패하면 문서는 그대로다.
         //    (뒤 표를 먼저 remove 하면 실패 경로에서 뒤 표가 소실된다.)
@@ -554,13 +556,19 @@ impl DocumentCore {
         }
 
         // 3) 뒤 표 분리 회수.
-        let back_table = {
+        let (back_table, back_reflow_key) = {
             let para = &mut self.document.sections[section_idx].paragraphs[back_para_idx];
             match para.controls.remove(back_ctrl_idx) {
-                Control::Table(t) => *t,
+                Control::Table(t) => {
+                    let key = super::super::TableTextReflowKey::from_table(t.as_ref());
+                    (*t, key)
+                }
                 _ => unreachable!("표 컨트롤 위치 확인됨"),
             }
         };
+        self.render_normalization
+            .text_reflowed_tables
+            .remove(&back_reflow_key);
 
         // 4) 앞 표에 행 이어붙이기. (이 조회는 2)에서 이미 성공한 재차용이라
         //    실패하지 않는다 — borrow 를 좁히기 위한 재조회일 뿐이다.)
@@ -610,13 +618,15 @@ impl DocumentCore {
             );
             table.rebuild_grid();
             table.update_ctrl_dimensions();
-            table.dirty = true;
         }
 
         // 5) 사이 빈 문단들과 뒤 표 host 문단 제거.
         self.document.sections[section_idx]
             .paragraphs
             .drain(parent_para_idx + 1..=back_para_idx);
+        if merged_text_reflow {
+            self.mark_table_text_reflowed_after_edit(section_idx, parent_para_idx, control_idx)?;
+        }
 
         // [Task #2299] host 표 높이가 늘고 뒤 문단들이 당겨졌으므로 저장 vpos 를
         // 재계산한다 — 방치하면 stale vpos 가 그대로 직렬화된다.
@@ -666,7 +676,6 @@ impl DocumentCore {
         table
             .merge_cells(start_row, start_col, end_row, end_col)
             .map_err(|e| HwpError::RenderError(e))?;
-        table.dirty = true;
         let cell_count = table.cells.len();
 
         // Table::merge_cells()는 비주 셀을 retain()으로 제거하고 남은 셀을
@@ -733,7 +742,6 @@ impl DocumentCore {
         table
             .split_cell(row, col)
             .map_err(|e| HwpError::RenderError(e))?;
-        table.dirty = true;
         let cell_count = table.cells.len();
 
         // Table::split_cell()은 대상 셀을 나눈 새 셀들을 push()한 뒤 재정렬하므로
@@ -776,7 +784,6 @@ impl DocumentCore {
         table
             .split_cell_into(row, col, n_rows, m_cols, equal_row_height, merge_first)
             .map_err(|e| HwpError::RenderError(e))?;
-        table.dirty = true;
         let cell_count = table.cells.len();
 
         // split_table_cell_native()와 동일한 사유(위 주석 참조): split_cell_into()도 새 셀들을
@@ -886,7 +893,6 @@ impl DocumentCore {
                 equal_row_height,
             )
             .map_err(|e| HwpError::RenderError(e))?;
-        table.dirty = true;
         let cell_count = table.cells.len();
 
         // split_table_cell_native()/split_table_cell_into_native()와 동일한 이유(위 주석 참조):
@@ -1491,7 +1497,6 @@ impl DocumentCore {
             if size_changed {
                 table.update_ctrl_dimensions();
             }
-            table.dirty = true;
             (needs_reflow, table.cells[cell_idx].paragraphs.len())
         };
 
@@ -1882,7 +1887,6 @@ impl DocumentCore {
                 border_fill_id: new_bf_id,
             });
         }
-        table.dirty = true;
 
         self.document.sections[section_idx].raw_stream = None;
         self.recompose_section(section_idx);
@@ -2017,7 +2021,6 @@ impl DocumentCore {
                     (None, None) => {}
                 }
             }
-            table.dirty = true;
         }
         self.rebuild_resolved_styles();
 
@@ -2524,7 +2527,6 @@ impl DocumentCore {
                     .copy_from_slice(&original_height.to_le_bytes());
             }
         }
-        table.dirty = true;
 
         // 너비가 변경된 셀의 모든 문단에 대해 line_segs 재계산 (텍스트 리플로우)
         let reflow_cells: Vec<(usize, usize)> = {
@@ -2567,7 +2569,6 @@ impl DocumentCore {
         table
             .set_column_widths(&widths)
             .map_err(HwpError::RenderError)?;
-        table.dirty = true;
         let col_count = table.col_count;
         let total: u32 = table.get_column_widths().iter().sum();
 
@@ -3264,7 +3265,6 @@ impl DocumentCore {
             }
         }
         if caption_changed || caption_created {
-            table.dirty = true;
         }
 
         // BorderFill 변경 — 표 테두리/배경/대각선 변경 시 모든 셀에도 동일 적용
@@ -3284,7 +3284,6 @@ impl DocumentCore {
             for cell in &mut table.cells {
                 cell.border_fill_id = new_bf_id;
             }
-            table.dirty = true;
         }
 
         // 캡션 생성/수정/삭제 후에는 문서 전체 AutoNumber를 다시 배정한다.
@@ -3589,7 +3588,7 @@ impl DocumentCore {
                 section_idx
             )));
         }
-        {
+        let removed_table_key = {
             let section = &mut self.document.sections[section_idx];
             if parent_para_idx >= section.paragraphs.len() {
                 return Err(HwpError::RenderError(format!(
@@ -3669,7 +3668,7 @@ impl DocumentCore {
             }
 
             // 컨트롤 및 대응하는 ctrl_data_record 제거
-            para.controls.remove(control_idx);
+            let removed = para.controls.remove(control_idx);
             if control_idx < para.ctrl_data_records.len() {
                 para.ctrl_data_records.remove(control_idx);
             }
@@ -3680,6 +3679,13 @@ impl DocumentCore {
             }
 
             section.raw_stream = None;
+            match removed {
+                Control::Table(table) => Some(super::super::TableTextReflowKey::from_table(&table)),
+                _ => None,
+            }
+        };
+        if let Some(key) = removed_table_key {
+            self.render_normalization.text_reflowed_tables.remove(&key);
         }
 
         // [Task #2299] 리셋 판별용 — reflow 이전 저장 흐름 end 캡처.
@@ -3888,8 +3894,12 @@ impl DocumentCore {
                 cell.shift_text_area_width(step);
             }
         }
-        table.dirty = true;
         self.document.sections[section_idx].raw_stream = None;
+        if moved {
+            self.mark_cell_control_dirty(section_idx, parent_para_idx, control_idx);
+            self.mark_section_dirty(section_idx);
+            self.paginate_if_needed();
+        }
         Ok(format!(r#"{{"ok":true,"moved":{}}}"#, moved))
     }
 
@@ -4039,8 +4049,10 @@ impl DocumentCore {
         table.cells.sort_by_key(|c| (c.row, c.col));
         table.rebuild_grid();
         table.rebuild_row_sizes();
-        table.dirty = true;
         self.document.sections[section_idx].raw_stream = None;
+        self.mark_cell_control_dirty(section_idx, parent_para_idx, control_idx);
+        self.mark_section_dirty(section_idx);
+        self.paginate_if_needed();
         Ok(r#"{"ok":true,"moved":true}"#.to_string())
     }
 }
@@ -4211,6 +4223,86 @@ mod table_frame_reflow_batch_tests {
         table.common.width = 10_000;
         table.rebuild_grid();
         core
+    }
+
+    #[test]
+    fn split_and_join_remap_text_reflow_provenance_with_table_lifecycle() {
+        let mut core = core_with_two_by_two_table();
+        core.mark_table_text_reflowed_after_edit(0, 0, 0)
+            .expect("front table provenance");
+
+        core.split_table_native(0, 0, 0, 1).expect("split table");
+        assert!(core.table_text_reflowed_path_exists(0, 0, 0));
+        assert!(core.table_text_reflowed_path_exists(0, 2, 0));
+
+        core.merge_table_with_next_native(0, 0, 0)
+            .expect("join tables");
+        assert!(core.table_text_reflowed_path_exists(0, 0, 0));
+        assert_eq!(core.render_normalization.text_reflowed_tables.len(), 1);
+    }
+
+    #[test]
+    fn deleting_one_table_cannot_transfer_reflow_provenance_to_its_neighbor() {
+        let mut core = core_with_two_by_two_table();
+        let second = core.document.sections[0].paragraphs[0].controls[0].clone();
+        core.document.sections[0].paragraphs[0]
+            .controls
+            .push(second);
+        core.mark_table_text_reflowed_after_edit(0, 0, 0)
+            .expect("first table provenance");
+        core.compute_render_normalized();
+        let controls = &core.document.sections[0].paragraphs[0].controls;
+        let (Control::Table(first), Control::Table(second)) = (&controls[0], &controls[1]) else {
+            unreachable!()
+        };
+        assert!(core.render_normalization.overlay.table_text_reflowed(first));
+        assert!(
+            !core
+                .render_normalization
+                .overlay
+                .table_text_reflowed(second),
+            "equal format instance IDs must not alias live derived identity"
+        );
+
+        core.delete_table_control_native(0, 0, 0)
+            .expect("delete first table");
+
+        assert!(!core.table_text_reflowed_path_exists(0, 0, 0));
+        assert!(core.render_normalization.text_reflowed_tables.is_empty());
+    }
+
+    #[test]
+    fn copied_edited_table_inherits_provenance_only_when_pasted() {
+        let mut core = core_with_two_by_two_table();
+        core.mark_table_text_reflowed_after_edit(0, 0, 0)
+            .expect("source provenance");
+        core.copy_control_native(0, 0, &[], 0)
+            .expect("copy table control");
+        let pasted = core
+            .paste_control_native(0, 0, 0)
+            .expect("paste table control");
+        let pasted: serde_json::Value = serde_json::from_str(&pasted).expect("paste result");
+        let pasted_para = pasted["paraIdx"].as_u64().expect("pasted paragraph") as usize;
+
+        assert!(core.table_text_reflowed_path_exists(0, 0, 0));
+        assert!(core.table_text_reflowed_path_exists(0, pasted_para, 0));
+        assert_eq!(core.render_normalization.text_reflowed_tables.len(), 2);
+    }
+
+    #[test]
+    fn deleting_edited_table_host_retires_live_identity() {
+        let mut core = core_with_two_by_two_table();
+        core.document.sections[0]
+            .paragraphs
+            .push(Paragraph::new_empty());
+        core.recompose_section(0);
+        core.mark_table_text_reflowed_after_edit(0, 0, 0)
+            .expect("table provenance");
+
+        core.delete_paragraph_native(0, 0)
+            .expect("delete table host paragraph");
+
+        assert!(core.render_normalization.text_reflowed_tables.is_empty());
     }
 
     #[test]

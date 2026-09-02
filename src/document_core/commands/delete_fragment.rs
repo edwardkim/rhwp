@@ -35,6 +35,7 @@ use crate::error::HwpError;
 use crate::model::event::DocumentEvent;
 use crate::model::paragraph::{LineSeg, Paragraph};
 use crate::model::raw_provenance::SectionSeal;
+use crate::renderer::render_normalization::RenderPath;
 
 /// 선택 삭제 1회분의 복원 조각.
 #[derive(Debug, Clone)]
@@ -63,6 +64,9 @@ pub struct DeleteFragment {
     /// 다이제스트가 DocProperties 전체를 포함하므로(`raw_provenance.rs`
     /// `doc_info_model_digest`) 이것도 되돌려야 DocInfo raw 재사용이 살아난다.
     pub caret: (u32, u32),
+    /// Renderer provenance projected to logical paths before paragraph clones
+    /// replace their live Box identities.
+    pub text_reflowed_table_paths: std::collections::HashSet<RenderPath>,
 }
 
 impl DocumentCore {
@@ -83,6 +87,7 @@ impl DocumentCore {
                 self.document.sections.len()
             )));
         }
+        let text_reflowed_table_paths = self.text_reflowed_table_paths_for_snapshot();
         let section = &self.document.sections[section_idx];
         if start_para > end_para {
             return Err(HwpError::RenderError(format!(
@@ -116,6 +121,7 @@ impl DocumentCore {
                 self.document.doc_properties.caret_list_id,
                 self.document.doc_properties.caret_para_id,
             ),
+            text_reflowed_table_paths,
         };
 
         let id = self.next_fragment_id;
@@ -183,6 +189,7 @@ impl DocumentCore {
         // 구역 raw 필드 복원 — 저장 바이트 왕복 동일성의 핵심
         section.raw_stream = frag.raw_stream.clone();
         section.raw_provenance = frag.raw_provenance.clone();
+        self.restore_text_reflowed_tables_from_snapshot(&frag.text_reflowed_table_paths);
 
         let cursor_para = frag.start_para;
         let caret = frag.caret;
@@ -219,5 +226,59 @@ impl DocumentCore {
     /// 호출하는 것이 계약이다. 코어는 자동 축출하지 않는다.
     pub fn discard_delete_fragment_native(&mut self, frag_id: u32) {
         self.fragment_store.retain(|(id, _)| *id != frag_id);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::model::control::Control;
+    use crate::model::document::{Document, Section};
+    use crate::model::paragraph::Paragraph;
+    use crate::model::table::{Cell, Table};
+
+    #[test]
+    fn fragment_restore_rebuilds_unrelated_table_reflow_identity() {
+        let table = Table {
+            row_count: 1,
+            col_count: 1,
+            row_sizes: vec![1],
+            cells: vec![Cell::new_empty(0, 0, 3_600, 1_000, 1)],
+            ..Default::default()
+        };
+        let text_para = |text: &str| Paragraph {
+            text: text.to_string(),
+            char_count: text.chars().count() as u32 + 1,
+            char_offsets: (0..text.chars().count() as u32).collect(),
+            ..Default::default()
+        };
+        let document = Document {
+            sections: vec![Section {
+                paragraphs: vec![
+                    Paragraph {
+                        controls: vec![Control::Table(Box::new(table))],
+                        ..Default::default()
+                    },
+                    text_para("A"),
+                    text_para("B"),
+                ],
+                ..Default::default()
+            }],
+            ..Default::default()
+        };
+        let mut core = DocumentCore::new_empty();
+        core.set_document(document);
+        core.mark_table_text_reflowed_after_edit(0, 0, 0)
+            .expect("table provenance");
+        let fragment = core
+            .capture_delete_range_native(0, 1, 2)
+            .expect("capture unrelated text range");
+        core.delete_range_native(0, 1, 0, 2, 1, None)
+            .expect("delete text range");
+
+        core.restore_delete_fragment_native(fragment)
+            .expect("restore fragment");
+
+        assert!(core.table_text_reflowed_path_exists(0, 0, 0));
     }
 }

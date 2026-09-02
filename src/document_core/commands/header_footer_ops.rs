@@ -763,6 +763,7 @@ impl DocumentCore {
         self.clipboard = Some(ClipboardData {
             paragraphs: clip_paragraphs,
             plain_text,
+            copied_table_text_reflowed: false,
         });
         Ok(super::super::helpers::json_ok_with(&format!(
             "\"text\":\"{}\"",

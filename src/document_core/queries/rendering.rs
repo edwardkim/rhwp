@@ -4207,6 +4207,152 @@ impl DocumentCore {
         self.para_offset[section_idx] -= 1;
     }
 
+    pub(crate) fn table_text_reflowed_path_exists(
+        &self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+    ) -> bool {
+        let Some(Control::Table(table)) = self
+            .document
+            .sections
+            .get(section_idx)
+            .and_then(|section| section.paragraphs.get(parent_para_idx))
+            .and_then(|paragraph| paragraph.controls.get(control_idx))
+        else {
+            return false;
+        };
+        self.render_normalization
+            .text_reflowed_tables
+            .contains(&super::super::TableTextReflowKey::from_table(table))
+    }
+
+    pub(crate) fn forget_text_reflowed_tables_in_paragraph_at(
+        &mut self,
+        section_idx: usize,
+        paragraph_idx: usize,
+    ) {
+        let keys = self
+            .document
+            .sections
+            .get(section_idx)
+            .and_then(|section| section.paragraphs.get(paragraph_idx))
+            .map(|paragraph| {
+                paragraph
+                    .controls
+                    .iter()
+                    .filter_map(|control| match control {
+                        Control::Table(table) => {
+                            Some(super::super::TableTextReflowKey::from_table(table))
+                        }
+                        _ => None,
+                    })
+                    .collect::<Vec<_>>()
+            })
+            .unwrap_or_default();
+        for key in keys {
+            self.render_normalization.text_reflowed_tables.remove(&key);
+        }
+    }
+
+    pub(crate) fn text_reflowed_table_control_indices_at(
+        &self,
+        section_idx: usize,
+        paragraph_idx: usize,
+    ) -> Vec<usize> {
+        self.document
+            .sections
+            .get(section_idx)
+            .and_then(|section| section.paragraphs.get(paragraph_idx))
+            .map(|paragraph| {
+                paragraph
+                    .controls
+                    .iter()
+                    .enumerate()
+                    .filter_map(|(control_index, control)| match control {
+                        Control::Table(table)
+                            if self
+                                .render_normalization
+                                .text_reflowed_tables
+                                .contains(&super::super::TableTextReflowKey::from_table(table)) =>
+                        {
+                            Some(control_index)
+                        }
+                        _ => None,
+                    })
+                    .collect()
+            })
+            .unwrap_or_default()
+    }
+
+    pub(crate) fn inherit_text_reflowed_table_controls(
+        &mut self,
+        section_idx: usize,
+        paragraph_idx: usize,
+        control_offset: usize,
+        source_control_indices: &[usize],
+    ) -> Result<(), HwpError> {
+        for &source_control_index in source_control_indices {
+            self.mark_table_text_reflowed_after_edit(
+                section_idx,
+                paragraph_idx,
+                control_offset.saturating_add(source_control_index),
+            )?;
+        }
+        Ok(())
+    }
+
+    pub(crate) fn text_reflowed_table_paths_for_snapshot(
+        &self,
+    ) -> std::collections::HashSet<crate::renderer::render_normalization::RenderPath> {
+        let mut paths = std::collections::HashSet::new();
+        for (section_index, section) in self.document.sections.iter().enumerate() {
+            for (paragraph_index, paragraph) in section.paragraphs.iter().enumerate() {
+                for (control_index, control) in paragraph.controls.iter().enumerate() {
+                    let Control::Table(table) = control else {
+                        continue;
+                    };
+                    if self
+                        .render_normalization
+                        .text_reflowed_tables
+                        .contains(&super::super::TableTextReflowKey::from_table(table))
+                    {
+                        paths.insert(crate::renderer::render_normalization::RenderPath {
+                            section_index,
+                            parent_paragraph_index: paragraph_index,
+                            entries: Vec::new(),
+                            target_control_index: Some(control_index),
+                        });
+                    }
+                }
+            }
+        }
+        paths
+    }
+
+    pub(crate) fn restore_text_reflowed_tables_from_snapshot(
+        &mut self,
+        paths: &std::collections::HashSet<crate::renderer::render_normalization::RenderPath>,
+    ) {
+        self.render_normalization.text_reflowed_tables.clear();
+        for path in paths {
+            let Some(control_index) = path.target_control_index else {
+                continue;
+            };
+            if let Some(Control::Table(table)) = self
+                .document
+                .sections
+                .get(path.section_index)
+                .and_then(|section| section.paragraphs.get(path.parent_paragraph_index))
+                .and_then(|paragraph| paragraph.controls.get(control_index))
+            {
+                self.render_normalization
+                    .text_reflowed_tables
+                    .insert(super::super::TableTextReflowKey::from_table(table));
+            }
+        }
+    }
+
     /// 모든 구역을 dirty로 표시한다.
     pub(crate) fn mark_all_sections_dirty(&mut self) {
         for d in &mut self.dirty_sections {
@@ -4229,7 +4375,7 @@ impl DocumentCore {
     /// 않게 된 순간**에 부르는 연산이다. 문서를 통째로 갈아끼운 직후(`set_document`,
     /// 스냅샷 복원), 그리고 파생본을 만든 코드 자체가 교체된 직후(핫패치)가 그 순간이다.
     ///
-    /// 증분 게이트(`dirty_sections`·`section_revisions`·`measured_sections`·`table.dirty`)는
+    /// 증분 게이트(`dirty_sections`·`section_revisions`·`dirty_paragraphs`·`measured_sections`)는
     /// 모두 "원본이 그대로면 파생본을 재사용한다"는 한 가지 규칙이라, 원본이 그대로인 채
     /// 파생본만 못 믿게 된 상황을 스스로 판별할 수 없다. 그래서 이 메서드가 게이트가 읽는
     /// 상태를 전부 비우고 재조판까지 한 번에 끝낸다 — 돌아온 뒤 "나중에 다시 계산해야
@@ -4350,7 +4496,8 @@ impl DocumentCore {
         } else {
             measurer.measure_section(paragraphs, composed, &self.styles, Some(column_width))
         };
-        let typesetter = TypesetEngine::new(self.dpi);
+        let typesetter = TypesetEngine::new(self.dpi)
+            .with_render_normalization(std::sync::Arc::clone(&self.render_normalization.overlay));
         let Some(renderer_job) = typesetter.begin_resumable_table_pagination(
             paragraphs,
             composed,
@@ -4450,14 +4597,18 @@ impl DocumentCore {
                     page_count: self.page_count(),
                 };
             };
-            TypesetEngine::new(self.dpi).step_resumable_table_pagination(
-                &mut pending.renderer_job,
-                paragraph,
-                table,
-                measured_table,
-                &self.styles,
-                fragment_budget,
-            )
+            TypesetEngine::new(self.dpi)
+                .with_render_normalization(std::sync::Arc::clone(
+                    &self.render_normalization.overlay,
+                ))
+                .step_resumable_table_pagination(
+                    &mut pending.renderer_job,
+                    paragraph,
+                    table,
+                    measured_table,
+                    &self.styles,
+                    fragment_budget,
+                )
         };
         if !step.complete {
             self.pending_pagination_job = Some(pending);
@@ -4472,11 +4623,16 @@ impl DocumentCore {
         let section_index = pending.descriptor.section_index;
         let result = {
             let section = &self.document.sections[section_index];
-            let Some(mut result) = TypesetEngine::new(self.dpi).finish_resumable_table_pagination(
-                pending.renderer_job,
-                &section.paragraphs,
-                section_index,
-            ) else {
+            let Some(mut result) = TypesetEngine::new(self.dpi)
+                .with_render_normalization(std::sync::Arc::clone(
+                    &self.render_normalization.overlay,
+                ))
+                .finish_resumable_table_pagination(
+                    pending.renderer_job,
+                    &section.paragraphs,
+                    section_index,
+                )
+            else {
                 return DeferredPaginationStepResult {
                     state: DeferredPaginationJobState::Fallback,
                     revision,
@@ -4531,13 +4687,6 @@ impl DocumentCore {
         self.para_column_map[section_index] = vec![0; paragraph_count];
         for offset in &mut self.para_offset {
             *offset = 0;
-        }
-        for paragraph in &mut self.document.sections[section_index].paragraphs {
-            for control in &mut paragraph.controls {
-                if let Control::Table(table) = control {
-                    table.dirty = false;
-                }
-            }
         }
         self.deferred_pagination_descriptor = None;
         self.invalidate_page_tree_cache();
@@ -4726,11 +4875,6 @@ impl DocumentCore {
             self.dirty_paragraphs.push(None);
         }
         self.dirty_paragraphs.truncate(sec_count);
-        // [#4325] 이번 패스에서 실제로 재측정한 구역만 표시한다. dirty가 아니어서 건너뛴
-        // 구역은 표 dirty 플래그를 지우면 안 된다 — 지우는 범위와 소비하는 범위(측정 스킵)가
-        // 어긋나면 그 구역의 표가 이후 dirty로 마킹돼도 이번 패스의 clear로 소실된다.
-        let mut remeasured_sections = vec![false; sec_count];
-
         // 구역 간 쪽번호 위치/번호 상속
         let mut carry_page_number_pos: Option<crate::model::control::PageNumberPos> = None;
         let mut carry_last_page_number: u32 = 0; // 이전 구역의 마지막 쪽번호
@@ -4945,7 +5089,9 @@ impl DocumentCore {
                 } else {
                     EndnoteDeferral::None
                 };
-                let typesetter = TypesetEngine::new(self.dpi);
+                let typesetter = TypesetEngine::new(self.dpi).with_render_normalization(
+                    std::sync::Arc::clone(&self.render_normalization.overlay),
+                );
                 typesetter.typeset_section_with_variant(
                     para_src,
                     composed,
@@ -5339,7 +5485,6 @@ impl DocumentCore {
             }
             self.pagination[idx] = result;
             self.dirty_sections[idx] = false;
-            remeasured_sections[idx] = true;
             // 문단 dirty 비트맵 초기화 (모든 문단 clean)
             let para_count = section.paragraphs.len();
             self.dirty_paragraphs[idx] = Some(vec![false; para_count]);
@@ -5379,22 +5524,6 @@ impl DocumentCore {
             *off = 0;
         }
 
-        // 표 dirty 플래그 초기화. [#4325] 이번 패스에서 재측정하지 않고 건너뛴 구역은
-        // 제외한다 — 그 구역의 표는 measure_section_incremental이 아직 소비하지 않았으므로
-        // dirty를 여기서 지우면 이후 실제로 재측정될 때 변경 전 MeasuredTable을 그대로
-        // clone하게 된다(issue #4325).
-        for (idx, section) in self.document.sections.iter_mut().enumerate() {
-            if !remeasured_sections[idx] {
-                continue;
-            }
-            for para in &mut section.paragraphs {
-                for ctrl in &mut para.controls {
-                    if let Control::Table(table) = ctrl {
-                        table.dirty = false;
-                    }
-                }
-            }
-        }
         let issue2424_cleanup_elapsed = issue2424_cleanup_started
             .map(|started| started.elapsed())
             .unwrap_or_default();
@@ -5588,12 +5717,40 @@ impl DocumentCore {
             }));
         }
         self.render_normalization.sections = out;
-        let overlay = std::sync::Arc::new(
+        let mut overlay =
             crate::renderer::render_normalization::RenderNormalizationOverlay::from_document_reusing(
                 &self.document,
                 &self.render_normalization.overlay,
-            ),
-        );
+            );
+        for (section_index, section) in self.document.sections.iter().enumerate() {
+            for (paragraph_index, paragraph) in section.paragraphs.iter().enumerate() {
+                for (control_index, control) in paragraph.controls.iter().enumerate() {
+                    let Control::Table(table) = control else {
+                        continue;
+                    };
+                    let key = super::super::TableTextReflowKey::from_table(table);
+                    if !self
+                        .render_normalization
+                        .text_reflowed_tables
+                        .contains(&key)
+                    {
+                        continue;
+                    }
+                    overlay.register_text_reflowed_table(table);
+                    if let Some(Control::Table(normalized)) = self
+                        .render_normalization
+                        .sections
+                        .get(section_index)
+                        .and_then(|section| section.as_ref())
+                        .and_then(|section| section.paragraphs.get(paragraph_index))
+                        .and_then(|paragraph| paragraph.controls.get(control_index))
+                    {
+                        overlay.register_text_reflowed_table(normalized);
+                    }
+                }
+            }
+        }
+        let overlay = std::sync::Arc::new(overlay);
         self.render_normalization.overlay = std::sync::Arc::clone(&overlay);
         self.layout_engine.set_render_normalization_overlay(overlay);
     }
@@ -5723,6 +5880,36 @@ impl DocumentCore {
             .entry(path)
             .or_insert(0);
         *revision = revision.wrapping_add(1);
+        Ok(())
+    }
+
+    /// Record that live text reflow superseded a top-level table's stored
+    /// pagination frame. The logical path survives renderer reconstruction;
+    /// concrete source/normalized pointers are rebuilt in the overlay.
+    pub(crate) fn mark_table_text_reflowed_after_edit(
+        &mut self,
+        section_idx: usize,
+        parent_para_idx: usize,
+        control_idx: usize,
+    ) -> Result<(), HwpError> {
+        let table = self
+            .document
+            .sections
+            .get(section_idx)
+            .and_then(|section| section.paragraphs.get(parent_para_idx))
+            .and_then(|paragraph| paragraph.controls.get(control_idx))
+            .and_then(|control| match control {
+                Control::Table(table) => Some(table.as_ref()),
+                _ => None,
+            });
+        let Some(table) = table else {
+            return Err(HwpError::RenderError(format!(
+                "text-reflowed table path mismatch: section={section_idx} para={parent_para_idx} control={control_idx}"
+            )));
+        };
+        self.render_normalization
+            .text_reflowed_tables
+            .insert(super::super::TableTextReflowKey::from_table(table));
         Ok(())
     }
 
@@ -5922,7 +6109,8 @@ impl DocumentCore {
     }
 
     fn dump_section_typesetter(&self, sec_idx: usize) -> TypesetEngine {
-        let typesetter = TypesetEngine::new(self.dpi);
+        let typesetter = TypesetEngine::new(self.dpi)
+            .with_render_normalization(std::sync::Arc::clone(&self.render_normalization.overlay));
         typesetter.apply_section_format_context(
             self.section_render_paragraphs(sec_idx),
             &self.styles,
@@ -8439,6 +8627,36 @@ mod tests {
                 paragraph_index: 0
             }
         )));
+    }
+
+    #[test]
+    fn text_reflowed_table_provenance_lives_in_render_normalization() {
+        use crate::model::control::Control;
+        use crate::model::document::{Document, Section};
+        use crate::model::paragraph::Paragraph;
+        use crate::model::table::Table;
+
+        let document = Document {
+            sections: vec![Section {
+                paragraphs: vec![Paragraph {
+                    controls: vec![Control::Table(Box::default())],
+                    ..Default::default()
+                }],
+                ..Default::default()
+            }],
+            ..Default::default()
+        };
+        let mut core = DocumentCore::new_empty();
+        core.set_document(document);
+        core.mark_table_text_reflowed_after_edit(0, 0, 0)
+            .expect("table path");
+        core.compute_render_normalized();
+
+        let Control::Table(table) = &core.document.sections[0].paragraphs[0].controls[0] else {
+            unreachable!()
+        };
+        assert!(core.render_normalization.overlay.table_text_reflowed(table));
+        assert_eq!(core.render_normalization.text_reflowed_tables.len(), 1);
     }
 
     #[test]

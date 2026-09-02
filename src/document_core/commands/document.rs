@@ -1442,6 +1442,7 @@ impl DocumentCore {
         let sec_count = document.sections.len();
 
         self.document = document;
+        self.render_normalization.text_reflowed_tables.clear();
         self.bump_bin_data_epoch();
         self.rebuild_resolved_styles();
         self.composed = composed;
@@ -2025,10 +2026,11 @@ impl DocumentCore {
     ///
     /// [#4582] 이미 문서가 들어 있던 core 에도 쓸 수 있으므로 파생 상태는 손으로 고르지 않고
     /// [`DocumentCore::rebuild_derived_state`] 에 통째로 맡긴다. 종전에는 스타일·문단 구성·
-    /// dirty 표시만 다시 만들고 측정 캐시를 그대로 뒀다 — 그러면 새 문서의 `!table.dirty` 인 표와
-    /// clean 으로 남은 문단이 **이전 문서의 측정값**을 재사용했다.
+    /// dirty 표시만 다시 만들고 측정 캐시를 그대로 둬 새 문서의 문단이 **이전 문서의
+    /// 측정값**을 재사용했다.
     pub fn set_document(&mut self, doc: Document) {
         self.document = doc;
+        self.render_normalization.text_reflowed_tables.clear();
         self.bump_bin_data_epoch();
         self.rebuild_derived_state();
     }
@@ -2280,7 +2282,11 @@ impl DocumentCore {
     pub fn save_snapshot_native(&mut self) -> u32 {
         let id = self.next_snapshot_id;
         self.next_snapshot_id += 1;
-        self.snapshot_store.push((id, self.document.clone()));
+        self.snapshot_store.push((
+            id,
+            self.document.clone(),
+            self.text_reflowed_table_paths_for_snapshot(),
+        ));
         // 최대 100개 제한 — 초과 시 가장 오래된 스냅샷 제거.
         // [Task #2328] studio 히스토리(rhwp-studio/src/engine/history.ts 의
         // WASM_MAX_SNAPSHOTS)와 양방향 결합. 이 값을 studio 예산(MAX-2)보다 낮추면
@@ -2318,10 +2324,11 @@ impl DocumentCore {
         let idx = self
             .snapshot_store
             .iter()
-            .position(|(sid, _)| *sid == id)
+            .position(|(sid, _, _)| *sid == id)
             .ok_or_else(|| HwpError::RenderError(format!("스냅샷 {} 없음", id)))?;
-        let (_, doc) = self.snapshot_store[idx].clone();
+        let (_, doc, text_reflowed_table_paths) = self.snapshot_store[idx].clone();
         self.document = doc;
+        self.restore_text_reflowed_tables_from_snapshot(&text_reflowed_table_paths);
         self.bump_bin_data_epoch();
         // 문서를 통째로 갈아끼웠으므로 파생 상태는 전부 새 원본에서 다시 만든다.
         self.rebuild_derived_state();
@@ -2330,7 +2337,7 @@ impl DocumentCore {
 
     /// 지정 ID의 스냅샷을 저장소에서 제거하여 메모리를 해제한다.
     pub fn discard_snapshot_native(&mut self, id: u32) {
-        self.snapshot_store.retain(|(sid, _)| *sid != id);
+        self.snapshot_store.retain(|(sid, _, _)| *sid != id);
     }
 
     pub fn measure_width_diagnostic_native(
@@ -2635,11 +2642,7 @@ impl DocumentCore {
                     }
                 }
             }
-            if any_removed {
-                // [#4149] text/char_shapes 직접 수술 — 단일줄 과밀 memo 무효화
-                // (process_table 경유로 셀 문단에도 적용된다).
-                para.invalidate_single_line_overflow_memo();
-            }
+            if any_removed {}
         }
 
         fn process_table(table: &mut crate::model::table::Table) {
@@ -3127,11 +3130,7 @@ mod validate_linesegs_tests {
 
         for paragraph in &mut section.paragraphs[325..332] {
             paragraph.invalidate_layout_inputs();
-            paragraph.single_line_overflow_memo.set(123, true);
         }
-        section.paragraphs[332]
-            .single_line_overflow_memo
-            .set(123, true);
         section.paragraphs[325].line_segs.clear();
         core.validation_report = DocumentCore::validate_linesegs(&core.document, true);
         assert!(
@@ -3183,12 +3182,6 @@ mod validate_linesegs_tests {
                 expected_vpos += actual.line_height + actual.line_spacing;
             }
         }
-        assert!(
-            section.paragraphs[325..332]
-                .iter()
-                .all(|paragraph| paragraph.single_line_overflow_memo.is_unjudged()),
-            "each published row invalidates its derived overflow memo"
-        );
         assert!(
             section.paragraphs[325..332]
                 .iter()
@@ -3249,12 +3242,6 @@ mod validate_linesegs_tests {
                 .all(|line| line.column_start == 0 && line.segment_width > 3_406),
             "p332 is the first full-width row after the side-wrap band"
         );
-        assert!(
-            !section.paragraphs[332]
-                .single_line_overflow_memo
-                .is_unjudged(),
-            "p332 was not published as part of the Picture band"
-        );
     }
 
     #[test]
@@ -3269,9 +3256,6 @@ mod validate_linesegs_tests {
         let stored_p326_segment_width = stored_band[1][0].segment_width;
         let first_full_width = section.paragraphs[332].line_segs[0].segment_width;
 
-        for paragraph in &mut section.paragraphs[325..332] {
-            paragraph.single_line_overflow_memo.set(123, true);
-        }
         section.paragraphs[326].line_segs.clear();
         core.validation_report = DocumentCore::validate_linesegs(&core.document, true);
         assert!(
@@ -3323,12 +3307,6 @@ mod validate_linesegs_tests {
                 expected_vpos += actual.line_height + actual.line_spacing;
             }
         }
-        assert!(
-            section.paragraphs[325..332]
-                .iter()
-                .all(|paragraph| paragraph.single_line_overflow_memo.is_unjudged()),
-            "the stored host and every successor are atomically republished"
-        );
         let p326 = &section.paragraphs[326].line_segs[0];
         assert_eq!(p326.column_start, stored_p326_column_start);
         assert_eq!(p326.segment_width, stored_p326_segment_width);
@@ -3344,9 +3322,6 @@ mod validate_linesegs_tests {
         let section = &mut core.document.sections[0];
         section.paragraphs[326].line_segs.clear();
         section.paragraphs[329].column_type = ColumnBreakType::Page;
-        for paragraph in &mut section.paragraphs[325..333] {
-            paragraph.single_line_overflow_memo.set(123, true);
-        }
         let source_rows = section.paragraphs[325..333]
             .iter()
             .map(|paragraph| line_seg_fields(&paragraph.line_segs))
@@ -3373,12 +3348,6 @@ mod validate_linesegs_tests {
         assert!(
             section.paragraphs[326].line_segs.is_empty(),
             "the rejected tracked host must not scalar-reflow the missing successor"
-        );
-        assert!(
-            section.paragraphs[325..333]
-                .iter()
-                .all(|paragraph| !paragraph.single_line_overflow_memo.is_unjudged()),
-            "the failed transaction must not publish or invalidate any source row"
         );
     }
 
@@ -3557,8 +3526,8 @@ mod set_document_tests {
         core.measured_tables[0][0].total_height
     }
 
-    /// [#4582] 이미 문서가 들어 있던 core 에 새 문서를 넣으면, 증분 측정이 `!table.dirty`
-    /// 인 표에 대해 **이전 문서의 `MeasuredTable`** 을 재사용한다. `set_document` 가
+    /// [#4582] 이미 문서가 들어 있던 core 에 새 문서를 넣으면, 증분 측정이 clean 문단의
+    /// 표에 대해 **이전 문서의 `MeasuredTable`** 을 재사용한다. `set_document` 가
     /// 측정 캐시를 비우지 않기 때문이다.
     ///
     /// 판정 기준은 "빈 core 에 같은 문서를 넣었을 때의 측정값" 이다 — 문서가 같으면

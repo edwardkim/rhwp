@@ -297,3 +297,22 @@ fn issue_2004_projection_preserves_each_picture_identity_and_final_bounds() {
         }
     }
 }
+
+#[test]
+fn renderer_cache_lifecycle_is_absent_from_source_models() {
+    let paragraph_source = include_str!("../../src/model/paragraph.rs");
+    let table_source = include_str!("../../src/model/table.rs");
+
+    assert!(
+        !paragraph_source.contains("pub single_line_overflow_memo"),
+        "renderer memo must be owned by a renderer session cache"
+    );
+    assert!(
+        !table_source.contains("pub dirty: bool"),
+        "measurement validity must be owned by DocumentCore revisions"
+    );
+    assert!(
+        !table_source.contains("text_reflowed_after_edit"),
+        "pagination provenance must be owned by render normalization"
+    );
+}
