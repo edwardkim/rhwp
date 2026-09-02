@@ -9,6 +9,22 @@ use rhwp::schema_registry::ENVELOPE_SCHEMA_VERSION;
 use super::allows_implicit_sibling_resources;
 use crate::{hu_to_mm, load_document, EXIT_OK, EXIT_RUNTIME, EXIT_USAGE};
 
+#[derive(Clone, Copy, Default, PartialEq, Eq)]
+enum SvgExportBackend {
+    #[default]
+    Layer,
+    Legacy,
+}
+
+impl SvgExportBackend {
+    fn as_str(self) -> &'static str {
+        match self {
+            Self::Layer => "layer",
+            Self::Legacy => "legacy",
+        }
+    }
+}
+
 struct SvgExportArgs<'a> {
     file_path: &'a str,
     output_dir: String,
@@ -24,6 +40,7 @@ struct SvgExportArgs<'a> {
     font_embed_mode: rhwp::renderer::svg::FontEmbedMode,
     font_paths: Vec<std::path::PathBuf>,
     render_profile: Option<rhwp::paint::RenderProfile>,
+    backend: SvgExportBackend,
     json_mode: bool,
 }
 
@@ -44,6 +61,7 @@ fn parse_export_svg_args<'a>(args: &'a [String]) -> Result<SvgExportArgs<'a>, i3
     let mut font_embed_mode = rhwp::renderer::svg::FontEmbedMode::None;
     let mut font_paths: Vec<std::path::PathBuf> = Vec::new();
     let mut render_profile: Option<rhwp::paint::RenderProfile> = None;
+    let mut backend = SvgExportBackend::Layer;
     let mut json_mode = false;
 
     let mut i = 0;
@@ -87,6 +105,21 @@ fn parse_export_svg_args<'a>(args: &'a [String]) -> Result<SvgExportArgs<'a>, i3
                     eprintln!("오류: --profile 뒤에 프로필 이름이 필요합니다.");
                     return Err(EXIT_USAGE);
                 }
+            }
+            "--backend" => {
+                if i + 1 >= args.len() {
+                    eprintln!("오류: --backend 뒤에 layer 또는 legacy 가 필요합니다.");
+                    return Err(EXIT_USAGE);
+                }
+                backend = match args[i + 1].as_str() {
+                    "layer" => SvgExportBackend::Layer,
+                    "legacy" => SvgExportBackend::Legacy,
+                    value => {
+                        eprintln!("오류: --backend 값이 올바르지 않습니다 (layer|legacy): {value}");
+                        return Err(EXIT_USAGE);
+                    }
+                };
+                i += 2;
             }
             "--show-para-marks" => {
                 show_para_marks = true;
@@ -227,6 +260,14 @@ fn parse_export_svg_args<'a>(args: &'a [String]) -> Result<SvgExportArgs<'a>, i3
         eprintln!("오류: --profile은 --font-style/--embed-fonts와 함께 사용할 수 없습니다.");
         return Err(EXIT_USAGE);
     }
+    if backend == SvgExportBackend::Legacy
+        && (render_profile.is_some() || font_embed_mode != rhwp::renderer::svg::FontEmbedMode::None)
+    {
+        eprintln!(
+            "오류: --backend legacy는 compatibility 진단 전용이며 --profile/--font-style/--embed-fonts와 함께 사용할 수 없습니다."
+        );
+        return Err(EXIT_USAGE);
+    }
 
     Ok(SvgExportArgs {
         file_path,
@@ -243,6 +284,7 @@ fn parse_export_svg_args<'a>(args: &'a [String]) -> Result<SvgExportArgs<'a>, i3
         font_embed_mode,
         font_paths,
         render_profile,
+        backend,
         json_mode,
     })
 }
@@ -292,6 +334,7 @@ pub(crate) fn export_svg(args: &[String]) -> i32 {
         font_embed_mode,
         font_paths,
         render_profile,
+        backend,
         json_mode,
     } = match parse_export_svg_args(args) {
         Ok(options) => options,
@@ -379,18 +422,16 @@ pub(crate) fn export_svg(args: &[String]) -> i32 {
     let mut overflow_cell_total: u64 = 0;
 
     for page_num in &pages {
-        let svg_result = if let Some(profile) = render_profile {
+        let svg_result = if backend == SvgExportBackend::Legacy {
+            doc.render_page_svg_legacy_native(*page_num)
+        } else if let Some(profile) = render_profile {
             doc.render_page_svg_layer_with_profile_native(*page_num, profile)
         } else if font_embed_mode != rhwp::renderer::svg::FontEmbedMode::None {
             doc.render_page_svg_with_fonts(*page_num, font_embed_mode, &font_paths)
         } else {
-            // 기본 SVG도 Studio Canvas와 같은 screen 레이어 트리를 재생한다.
-            // 레거시 PageRenderTree 경로를 기본으로 두면 동일 문서가 Studio와
-            // export-svg에서 서로 다른 배치/클리핑 결과를 낼 수 있다.
-            doc.render_page_svg_layer_with_profile_native(
-                *page_num,
-                rhwp::paint::RenderProfile::Screen,
-            )
+            // Production API owns the default screen-profile layer contract. Keeping the CLI
+            // on that public entry point prevents a second routing policy from forming here.
+            doc.render_page_svg_native(*page_num)
         };
         let page_overflow_cell_lines = doc.take_overflow_cell_lines();
         overflow_cell_total += u64::from(page_overflow_cell_lines);
@@ -459,6 +500,7 @@ pub(crate) fn export_svg(args: &[String]) -> i32 {
             "schemaVersion": ENVELOPE_SCHEMA_VERSION,
             "source": file_path,
             "format": "svg",
+            "backend": backend.as_str(),
             "outputDir": output_dir,
             "pageCount": page_count,
             "renderedCount": written,
