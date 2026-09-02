@@ -315,4 +315,8 @@ fn renderer_cache_lifecycle_is_absent_from_source_models() {
         !table_source.contains("text_reflowed_after_edit"),
         "pagination provenance must be owned by render normalization"
     );
+    assert!(
+        !table_source.contains("local_resize_"),
+        "editor layout projection must not be stored on source Table"
+    );
 }

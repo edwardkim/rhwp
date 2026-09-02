@@ -388,10 +388,6 @@ fn build_table_paragraph(rows: &[Vec<String>], content_width: u32) -> Option<Par
         raw_ctrl_seal: None,
         raw_table_record_attr: 0x0000_0006, // bit1=셀분리금지, bit2=repeat_header
         raw_table_record_extra: Vec::new(),
-        local_resize_rows: Vec::new(),
-        local_resize_cols: Vec::new(),
-        local_resize_cell_widths: Vec::new(),
-        local_resize_cell_heights: Vec::new(),
     };
     table.rebuild_grid();
 

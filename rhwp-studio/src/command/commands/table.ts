@@ -18,6 +18,8 @@ import {
   type TableDeleteRowColumnMode,
   type TableInsertRowColumnMode,
 } from '@/ui/table-row-column-dialog';
+import { LOCAL_TABLE_RESIZE_UNSUPPORTED_MESSAGE } from '@/engine/table-resize-updates';
+import { showToast } from '@/ui/toast';
 
 const inTable = (ctx: EditorContext) => ctx.inTable;
 const inTableOrCellSelection = (ctx: EditorContext) => ctx.inTable || ctx.inCellSelectionMode;
@@ -93,16 +95,6 @@ function selectedBlockCalculationCells(
     cells.push(cellRow);
   }
   return cells;
-}
-
-function equalizeTargetRange(ih: ReturnType<CommandServices['getInputHandler']>, dims: TableDimensions): CellRange {
-  const range = ih?.isInCellSelectionMode?.() ? ih.getSelectedCellRange?.() : null;
-  return range ?? {
-    startRow: 0,
-    startCol: 0,
-    endRow: Math.max(0, dims.rowCount - 1),
-    endCol: Math.max(0, dims.colCount - 1),
-  };
 }
 
 function hasNonRectangularCellSelection(ih: ReturnType<CommandServices['getInputHandler']>): boolean {
@@ -977,55 +969,8 @@ export const tableCommands: CommandDef[] = [
     label: '셀 높이를 같게',
     shortcutLabel: 'H',
     canExecute: inTableOrCellSelection,
-    execute(services) {
-      const ih = services.getInputHandler();
-      if (!ih) return;
-      const pos = ih.getCursorPosition();
-      if (pos.parentParaIndex === undefined || pos.controlIndex === undefined || pos.cellIndex === undefined) return;
-      const sec = pos.sectionIndex, ppi = pos.parentParaIndex, ci = pos.controlIndex;
-      try {
-        if (hasNonRectangularCellSelection(ih)) return;
-        const dims = services.wasm.getTableDimensions(sec, ppi, ci);
-        const range = equalizeTargetRange(ih, dims);
-        const bboxes = services.wasm.getTableCellBboxes(sec, ppi, ci);
-        const bboxByCellIdx = new Map(bboxes.map(bbox => [bbox.cellIdx, bbox]));
-        const cells: Array<{ idx: number; height: number; renderHeight: number }> = [];
-        for (let i = 0; i < dims.cellCount; i++) {
-          const info = services.wasm.getCellInfo(sec, ppi, ci, i);
-          if (!isCellInRange(info, range)) continue;
-          if (info.rowSpan > 1) continue;
-          const h = services.wasm.getCellProperties(sec, ppi, ci, i).height;
-          const bbox = bboxByCellIdx.get(i);
-          const renderHeight = bbox ? Math.round(bbox.h * 75) : h;
-          cells.push({ idx: i, height: h, renderHeight });
-        }
-        if (cells.length < 2) return;
-        const totalHeight = cells.reduce((sum, cell) => sum + cell.renderHeight, 0);
-        const avgHeight = Math.round(totalHeight / cells.length);
-        const updates: Parameters<CommandServices['wasm']['resizeTableCells']>[3] = [];
-        let changed = false;
-        for (const c of cells) {
-          if (c.renderHeight !== avgHeight) changed = true;
-          updates.push({
-            cellIdx: c.idx,
-            heightDelta: 0,
-            localResize: true,
-            renderHeight: avgHeight,
-          });
-        }
-        if (!changed) return;
-        safeTableOp(() => ih.executeOperation({
-          kind: 'snapshot',
-          operationType: 'equalizeTableCellHeights',
-          operation: (wasm) => {
-            wasm.resizeTableCells(sec, ppi, ci, updates);
-            return pos;
-          },
-        }), '셀 높이를 같게');
-        restoreEditorFocus(ih);
-      } catch (err) {
-        console.warn('[table:cell-height-equal] 높이 균등화 실패:', err);
-      }
+    execute() {
+      showToast({ message: LOCAL_TABLE_RESIZE_UNSUPPORTED_MESSAGE });
     },
   },
   {
@@ -1033,56 +978,8 @@ export const tableCommands: CommandDef[] = [
     label: '셀 너비를 같게',
     shortcutLabel: 'W',
     canExecute: inTableOrCellSelection,
-    execute(services) {
-      const ih = services.getInputHandler();
-      if (!ih) return;
-      const pos = ih.getCursorPosition();
-      if (pos.parentParaIndex === undefined || pos.controlIndex === undefined || pos.cellIndex === undefined) return;
-      const sec = pos.sectionIndex, ppi = pos.parentParaIndex, ci = pos.controlIndex;
-      try {
-        if (hasNonRectangularCellSelection(ih)) return;
-        const dims = services.wasm.getTableDimensions(sec, ppi, ci);
-        const range = equalizeTargetRange(ih, dims);
-        const bboxes = services.wasm.getTableCellBboxes(sec, ppi, ci);
-        const bboxByCellIdx = new Map(bboxes.map(bbox => [bbox.cellIdx, bbox]));
-        const cells: Array<{ idx: number; col: number; width: number; renderWidth: number }> = [];
-        for (let i = 0; i < dims.cellCount; i++) {
-          const info = services.wasm.getCellInfo(sec, ppi, ci, i);
-          if (!isCellInRange(info, range)) continue;
-          if (info.rowSpan > 1) continue;
-          const w = services.wasm.getCellProperties(sec, ppi, ci, i).width;
-          const bbox = bboxByCellIdx.get(i);
-          const renderWidth = bbox ? Math.round(bbox.w * 75) : w;
-          cells.push({ idx: i, col: info.col, width: w, renderWidth });
-        }
-        if (cells.length < 2) return;
-        const totalWidth = cells.reduce((sum, cell) => sum + cell.renderWidth, 0);
-        const avgWidth = Math.round(totalWidth / cells.length);
-        const updates: Parameters<CommandServices['wasm']['resizeTableCells']>[3] = [];
-        let changed = false;
-        for (const c of cells) {
-          const delta = avgWidth - c.width;
-          if (delta !== 0 || c.renderWidth !== avgWidth) changed = true;
-          updates.push({
-            cellIdx: c.idx,
-            widthDelta: delta,
-            localResize: true,
-            renderWidth: avgWidth,
-          });
-        }
-        if (!changed) return;
-        safeTableOp(() => ih.executeOperation({
-          kind: 'snapshot',
-          operationType: 'equalizeTableCellWidths',
-          operation: (wasm) => {
-            wasm.resizeTableCells(sec, ppi, ci, updates);
-            return pos;
-          },
-        }), '셀 너비를 같게');
-        restoreEditorFocus(ih);
-      } catch (err) {
-        console.warn('[table:cell-width-equal] 너비 균등화 실패:', err);
-      }
+    execute() {
+      showToast({ message: LOCAL_TABLE_RESIZE_UNSUPPORTED_MESSAGE });
     },
   },
   {

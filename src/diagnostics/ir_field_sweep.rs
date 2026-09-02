@@ -932,10 +932,6 @@ fn sweep_table(base: &str, a: &Table, b: &Table, out: &mut DivergenceCollector) 
         raw_ctrl_seal: _,
         raw_table_record_attr,
         raw_table_record_extra,
-        local_resize_rows,
-        local_resize_cols,
-        local_resize_cell_widths,
-        local_resize_cell_heights,
     } = a;
 
     macro_rules! f {
@@ -962,10 +958,6 @@ fn sweep_table(base: &str, a: &Table, b: &Table, out: &mut DivergenceCollector) 
     f!(raw_ctrl_data);
     f!(raw_table_record_attr);
     f!(raw_table_record_extra);
-    f!(local_resize_rows);
-    f!(local_resize_cols);
-    f!(local_resize_cell_widths);
-    f!(local_resize_cell_heights);
 
     // 캡션: 속성은 문단을 뺀 사본으로, 문단은 재귀로.
     {
