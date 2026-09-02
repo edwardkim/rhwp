@@ -2,7 +2,7 @@
 kind: guide
 status: active
 canonical: gym/docs/robustness.md
-last_verified: 2026-08-18
+last_verified: 2026-09-02
 ---
 
 # gym 손상-강건성 감사 규약
@@ -411,14 +411,14 @@ packs·checks·coverage·다른 도구는 건드리지 않는다. 이 기둥은 
 
 | | `robustness.py` | `fuzz_corpus.py` |
 |---|---|---|
-| 역할 | 릴리스 게이트 | 발견 엔진 |
+| 역할 | 결정적 회귀 표본 | 발견 엔진 |
 | 범위 | 결정적 부분집합 | 전 코퍼스 × 다명령 |
 | 난수 | 없음 | 없음(결정적)이되 조합이 넓다 |
 | 산출 | 패닉·행 0 인가 | file:line 클러스터 |
 | 실패 | 회귀 | 아직 안 고친 DoS 목록 |
 
-발견이 고유 버그를 내면 고치고, 이 게이트가 그 회귀를 막는다. 게이트를
-exhaustive 로 키우면 CI 예산이 발견 엔진과 겹친다. 그래서 거대 입력의 splice
+발견이 고유 버그를 내면 고치고, 이 표본이 같은 회귀를 다시 찾는다. 표본을
+exhaustive로 키우면 실행 예산이 발견 엔진과 겹친다. 그래서 거대 입력의 splice
 를 생략하고 표본을 stride 로 묶는다.
 
 ## 12. 시험 지도

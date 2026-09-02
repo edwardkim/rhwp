@@ -183,11 +183,11 @@ python gym/tools/leaderboard.py render                # 검증본에서 순위�
 신원으로 등재되어 이후 변조되지 않았다" 까지다. 채점 자체의 재현은 스코어카드에
 박힌 runner 신원과 커밋된 제출물로 제3자가 수행한다.
 
-## CI 릴리스 게이트 — 도구를 파이프라인에 물린다 (#4662)
+## 수동 버전 차등 판정 — 제품 릴리스 게이트가 아니다 (#4662)
 
-아래 회귀 도구들이 도구로만 있으면 사람이 기억해서 돌려야 한다. 릴리스
-파이프라인에 물리면 잊어도 돈다. `gym/tools/release_gate.py` 가 셋을 하나의
-판정으로 묶는다:
+`gym/tools/release_gate.py`는 구·신 rhwp가 같은 Gym 관측을 내는지와 리더보드
+체인 무결성을 하나의 판정으로 묶는 수동 조사 도구다. 파일명과 종료 코드의
+`gate`·`block`은 역사적 인터페이스이며 제품 릴리스 승인 권한을 뜻하지 않는다.
 
 ```bash
 python gym/tools/release_gate.py --old <직전 태그 바이너리> --new target/debug/rhwp
@@ -195,15 +195,16 @@ python gym/tools/release_gate.py --old <직전 태그 바이너리> --new target
 
 | 판정 | exit | 조건 |
 |---|---|---|
-| pass | 0 | 릴리스 차등 stable + 리더보드 체인 무결 |
+| pass | 0 | Gym 버전 차등 stable + 리더보드 체인 무결 |
 | review | 2 | surface-changed — 표면 변경, 사람 판정(차단 아님) |
 | block | 3 | regression 또는 리더보드 체인 파손 |
 
-**regression 만 차단한다** — 도구는 "무엇이 바뀌었나"를 가리키지 "어느 쪽이
-옳은가"를 판정하지 않으므로(#4661), 표면 변경은 리뷰 신호이지 자동 차단이 아니다.
-독립 워크플로 `.github/workflows/gym-release-gate.yml`(수동 실행 + 태그 관찰)로
-돌며, 릴리스 본체(`release-binary.yml`)는 건드리지 않는다. old 바이너리가 없으면
-차등을 생략한다(부재≠실패).
+**regression만 도구 결과 `block`으로 분류한다.** 도구는 "무엇이 바뀌었나"를
+가리키지 "어느 쪽이 옳은가"를 판정하지 않으므로(#4661), 이 결과만으로 제품
+릴리스를 막거나 허용할 수 없다. 독립 워크플로
+`.github/workflows/gym-release-gate.yml`은 Gym 관련 PR의 계약 검사와 메인테이너가
+명시적으로 시작한 전건 벤치마크만 수행한다. 일반 제품 PR, devel/main push,
+`v*` 태그, `release-binary.yml`과 게시 워크플로에서는 실행하거나 소비하지 않는다.
 
 ## 판별력 감사 — 약한 오라클(false-pass)을 못 들어오게 막는다 (#4808)
 
@@ -223,9 +224,9 @@ python gym/tools/discriminate.py --bin target/debug/rhwp   # 전 과제 판별 �
   모두 실행한다. `differs_from_input`만이 아니라 형식·핵심값 검사도 garbage를 거부해야 한다.
 
 음성 대조에 통과하는 과제 = 판별력 없는 약한 오라클. 거부하면 진짜 일을 요구하는
-것이다. 이 감사는 릴리스 게이트(`gym-release-gate.yml`)에서 old/new 차등 **이전**에
-돌며, 약한 오라클이 하나라도 있으면 릴리스를 차단한다 — 벤치마크 자체가 성립하는지
-먼저 보는 무결성 전제조건이다(표면 변경과 달리 리뷰 신호가 아니라 결함이다).
+것이다. 이 감사는 수동 전건 벤치마크(`gym-release-gate.yml`)에서 실행되며, 약한
+오라클이 하나라도 있으면 **벤치마크 결과를 무효화한다**. 이는 제품 릴리스 결함이
+아니라 벤치마크 자체가 성립하지 않는 결함이다.
 
 ## 릴리스 간 차등 회귀 — 시간축 차등 오라클 (#4661)
 
@@ -266,8 +267,8 @@ python gym/tools/trajectory.py --bin target/debug/rhwp
 부분 트라젝토리가 **통과** = 마지막 외부 의미 스텝이 채점에 무의미 =
 **트라젝토리 연극**. 실패(빌드 실패 포함) = 그 스텝이 load-bearing(정상). 이는
 판별력 감사(종점: "산출이 입력과 다른가")를 **경로**로 민 것이다 — 모든 선언된
-스텝이 결과를 바꿔야 한다. 릴리스 게이트(`gym-release-gate.yml`)에서 차등 이전에
-돌며, 연극이 하나라도 있으면 릴리스를 차단한다.
+스텝이 결과를 바꿔야 한다. 수동 전건 벤치마크(`gym-release-gate.yml`)에서 돌며,
+연극이 하나라도 있으면 **벤치마크 결과를 무효화한다**.
 
 ## 차등 오라클 — 골든 파일 없는 회귀 사냥
 
@@ -319,7 +320,7 @@ python gym/tools/robustness.py --bin target/debug/rhwp --limit 40
 
 ## 코퍼스 퍼징 발견 엔진 — DoS 를 근본원인별로 색출한다
 
-`robustness.py` 가 릴리스 **게이트**(바운드된 부분집합으로 "패닉·행 0" 강제)라면,
+`robustness.py`가 결정적 **회귀 표본**(바운드된 부분집합으로 "패닉·행 0" 확인)이라면,
 `fuzz_corpus.py` 는 그 앞단의 **발견 엔진**이다. 전 코퍼스를 여러 명령·여러 손상으로
 **exhaustive** 하게 병렬로 두들겨, 아직 안 고쳐진 DoS 를 **소스 위치(file:line)별로
 클러스터링**해 "고쳐야 할 고유 버그 목록"을 낸다.
