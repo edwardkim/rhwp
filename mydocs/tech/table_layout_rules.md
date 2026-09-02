@@ -2,7 +2,7 @@
 kind: canonical
 status: active
 canonical: mydocs/tech/table_layout_rules.md
-last_verified: 2026-07-16
+last_verified: 2026-09-03
 ---
 
 # 문단 내 표의 본문배치 및 페이지 조판 규칙
@@ -12,6 +12,11 @@ last_verified: 2026-07-16
 HWP에서 표(Table)는 문단의 컨트롤로 존재하며, 두 가지 속성 조합으로 조판 방식이 결정됩니다:
 - **본문배치(text_wrap)**: TopAndBottom, Square, InFrontOfText, BehindText
 - **글자처럼 취급(treat_as_char)**: true/false
+
+`localResize`는 HWP/HWPX에 대응 저장 슬롯이 없는 편집기 제스처다. renderer가 source `Table`에
+cell-index sidecar를 남기거나 save/reopen 뒤 폭의 minority pattern으로 제스처를 추론하지 않는다.
+독립 행·열 경계 요청은 source mutation 전에 명시적으로 거부하며, 포맷이 표현하는 공유 cell grid
+편집만 저장한다.
 
 ## 조합별 조판 규칙
 
