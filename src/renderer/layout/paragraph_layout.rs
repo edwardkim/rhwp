@@ -4242,7 +4242,12 @@ impl LayoutEngine {
                 (font_lh, ensure_min_baseline(font_bl, max_fs))
             } else if has_tac_shape
                 && !empty_tac_guide_has_explicit_shape_height
-                && (cell_ctx.is_none() || max_fs > 0.0)
+                // [#6632] 셀 안에서는 접지 않는다. 접힌 높이를 되돌리는 바닥값
+                // (`layout_column_item` 의 `para_start + max(seg_lh, shape_max_h)`)은 본문
+                // 문단에만 있어서, 셀에서 접으면 다음 문단이 도형 높이만큼 위로 올라온다
+                // (exam_kor 5쪽 셀: 글자+글상자 줄 lh 26.5 → 18.4, 뒤 그림 줄 8.1px 위).
+                // 행 높이 측정은 저장 lh 를 믿으므로 배치도 같은 값을 써야 맞는다.
+                && cell_ctx.is_none()
                 && raw_lh > max_fs * 1.5
             {
                 // Shape와 텍스트가 같은 줄에 있으면 Shape 높이가 line_height에 포함된다.
