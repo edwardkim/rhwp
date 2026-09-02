@@ -79,6 +79,14 @@ fn line_position_signature(paragraph: &Paragraph) -> Vec<(u32, i32)> {
         .collect()
 }
 
+fn field_range_signature(paragraph: &Paragraph) -> Vec<(usize, usize, usize)> {
+    paragraph
+        .field_ranges
+        .iter()
+        .map(|range| (range.start_char_idx, range.end_char_idx, range.control_idx))
+        .collect()
+}
+
 fn assert_field_layout_roundtrip(
     before_save: &DocumentCore,
     after_load: &DocumentCore,
@@ -126,6 +134,19 @@ fn assert_field_layout_roundtrip(
         char_shape_signature(after),
         char_shape_signature(before),
         "field owner char-shape boundaries should survive roundtrip"
+    );
+    assert_eq!(
+        after.char_count, before.char_count,
+        "field owner char_count"
+    );
+    assert_eq!(
+        after.char_offsets, before.char_offsets,
+        "field owner char_offsets should survive roundtrip"
+    );
+    assert_eq!(
+        field_range_signature(after),
+        field_range_signature(before),
+        "field ranges should survive roundtrip"
     );
 }
 
